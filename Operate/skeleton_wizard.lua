@@ -30,23 +30,26 @@ NITE_JOINT_LEFT_FOOT,
 NITE_JOINT_RIGHT_FOOT = 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 local nJoints = 15
 
---[[
-local function pack_positions(user_id)
-	local jp = ''
-	for j=1,nJoints do
-		local joint = openni.joint(user_id,j)
-		jp = jp..mp.pack(joint.position)
-	end
-	return jp
-end
---]]
-
+-- Functions for transmitting the data
 local function pack_positions(user_id)
 	local jp = {}
 	for j=1,nJoints do
 		jp[j] = openni.joint(user_id,j)
 	end
 	return mp.pack(jp)
+end
+
+local function broadcast_skeleton_zmq()
+  local packed_metadata = mp.pack(metadata)
+	skeleton_ch1:send({packed_metadata,encoded_joints1})
+	skeleton_ch2:send({packed_metadata,encoded_joints2})
+end
+
+local function broadcast_skeleton_udp()
+	local packed_joints = mp.pack({meta=metadata,raw=encoded_joints1})
+	udp_skeleton1:send( packed_joints )
+	local packed_joints = mp.pack({meta=metadata,raw=encoded_joints2})
+	udp_skeleton2:send( packed_joints )
 end
 
 -- Set up the UDP sending
@@ -73,53 +76,33 @@ while true do
 	-- Check the time of acquisition
 	local t = unix.time()
 	
-	-- Acquire and pack the data
-	local encoded_joints1 = nil
-	local encoded_joints2 = nil
-	if visible[1] then
-		encoded_joints1 = pack_positions(1)
-	end
-	if visible[2] then
-		encoded_joints2 = pack_positions(2)
-	end
-	
-	-- Save the metadata
-	local metadata = {}
-	metadata.t = t
-	local packed_metadata = mp.pack(metadata)
-	
-	-- Send Skeleton 1
-	if encoded_joints1 then
-		-- Send over UDP
-		local packed_joints = mp.pack({meta=metadata,raw=encoded_joints1})
-		udp_skeleton1:send( packed_joints )
-		-- Send over ZMQ
-		skeleton_ch1:send({packed_metadata,encoded_joints})
-	end
-	
-	-- Send Skeleton 2
-	if encoded_joints2 then
-		-- Send over UDP
-		local packed_joints = mp.pack({meta=metadata,raw=encoded_joints2})
-		udp_skeleton2:send( packed_joints )
-		-- Send over ZMQ
-		skeleton_ch2:send({packed_metadata,encoded_joints})
-	end
+  -- Broadcast data
+  if use_zmq or use_udp then
+    -- Save the metadata
+    metadata = {}
+    metadata.t = t
+    -- Pack the positions data
+    enc_jnts1 = nil
+    enc_jnts2 = nil
+  	if visible[1] then enc_jnts1 = pack_positions(1) end
+  	if visible[2] then enc_jnts2 = pack_positions(2) end
+    if use_zmq then broadcast_skeleton_zmq(metadata,enc_jnts1,enc_jnts2) end
+    if use_udp then broadcast_skeleton_udp(metadata,enc_jnts1,enc_jnts2) end
+  end
 	
 	-- Debug the timing
   cnt = cnt+1
   if t-t_last>t_debug then
     local msg = string.format("%.2f FPS.  Tracking", cnt/t_debug)
-		if encoded_joints1 then
+		if enc_jnts1 then
 			msg = msg..' User 1'
-			print( 'Torso position',unpack( openni.joint(1,NITE_JOINT_TORSO).position ) )
+			--print( 'Torso position',unpack( openni.joint(1,NITE_JOINT_TORSO).position ) )
 		end
-		if encoded_joints2 then
+		if enc_jnts2 then
 			msg = msg..' User 2'
-			print( 'Torso position',unpack( openni.joint(2,NITE_JOINT_TORSO).position ) )
 		end
     io.write("Skeleton Wizard | ",msg,'\n\n')
-		
+		io.flush()
     t_last = t
     cnt = 0
   end

@@ -17,6 +17,8 @@ shared_data.sensor.velocity = vector.zeros( nJoints )
 shared_data.actuator = {}
 -- Position of joints is in radians from the zero position
 shared_data.actuator.command = vector.zeros( nJoints )
+-- Torque enable of joints is 0 or 1
+shared_data.actuator.torque_enable = vector.zeros( nJoints )
 -- Velocity of joints is in radians per second
 shared_data.actuator.velocity = vector.zeros( nJoints )
 

@@ -162,14 +162,15 @@ libDynamixel.nx_registers = nx_registers
 --------------------
 -- Convienence functions for constructing Sync Write instructions
 local function sync_write_byte(ids, addr, data)
+  local all_data = nil
 	local nid = #ids
-	local all_data = #ids
   -- All get the same value
 	if type(data)=='number' then 
     all_data = data
   else
-    assert(nids==#data,'Incongruent ids and data')
+    assert(nid==#data,'Incongruent ids and data')
   end
+  
 	local t = {}
 	local n = 1
 	local len = 1 -- byte
@@ -178,6 +179,7 @@ local function sync_write_byte(ids, addr, data)
 		t[n+1] = all_data or data[i]
 		n = n + len + 1
 	end
+  
 	return t
 end
 
@@ -188,7 +190,7 @@ local function sync_write_word(ids, addr, data)
 		-- All get the same value
 		all_data = data
   else
-    assert(nids==#data,'Incongruent ids and data')
+    assert(nid==#data,'Incongruent ids and data')
 	end
 
 	local t = {}
@@ -205,14 +207,14 @@ local function sync_write_word(ids, addr, data)
 end
 
 local function sync_write_dword(ids, addr, data)
+  local all_data = nil
 	local nid = #ids
 	local len = 4
-	local all_data = nil
 	if type(data)=='number' then
 		-- All get the same value
 		all_data = data
   else
-    assert(nids==#data,'Incongruent ids and data')
+    assert(nid==#data,'Incongruent ids and data')
 	end
 	local t = {};
 	local n = 1;
@@ -353,7 +355,7 @@ end
 --------------------
 -- Set MX functions
 for k,v in pairs( mx_registers ) do
-	libDynamixel['set_mx_'..k] = function( motor_ids, values, bus)
+	libDynamixel['set_mx_'..k] = function( motor_ids, values, bus )
 		local addr = v[1]
 		local sz = v[2]
 		
@@ -370,11 +372,11 @@ for k,v in pairs( mx_registers ) do
     if not bus then return instruction end
 
     -- Write the instruction to the bus
-    local ret = unix.write(fd, instruction)
+    local ret = unix.write(bus.fd, instruction)
 		
     -- Grab any status returns
     if using_status_return and single then
-      local status = get_status( fd )[1]
+      local status = get_status( bus.fd )[1]
       local value = byte_to_number[sz]( unpack(status.parameter) )
       return status, value
     end
@@ -767,7 +769,10 @@ libDynamixel.service = function( dynamixels, main )
     local main_param = nil
     if main_thread then
       local status_code, main_param = coroutine.resume( main_thread )
-      if not status_code then print(main_param) end
+      if not status_code then 
+        print(main_param)
+        main_thread = nil
+      end
     end
     
 	end -- while servicing

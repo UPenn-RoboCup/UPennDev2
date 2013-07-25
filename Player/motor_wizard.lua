@@ -6,6 +6,9 @@
 
 dofile'include.lua'
 
+local DEG_TO_RAD = math.pi/180
+local RAD_TO_DEG = 180/math.pi
+
 -- Libraries
 local unix = require'unix'
 local signal = require'signal'
@@ -18,6 +21,10 @@ local motor_to_joint = Body.servo.motor_to_joint
 local dynamixels = {}
 
 -- Initialize the dynamixels
+--local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5A')
+--local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5B')
+--local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
+--local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5D')
 local spine_dynamixel = libDynamixel.new_bus()
 
 -- Spine dynamixel
@@ -33,8 +40,10 @@ if spine_dynamixel then
     -- Update the shared memory
     for k,v in pairs(data) do
       -- k is the motor id
-      -- v is the value
-      Body.set_one_position( motor_to_joint[k], v )
+      -- v is the step value
+      local idx = motor_to_joint[k]
+      local rad = Body.make_joint_radian( idx, v )
+      Body.set_one_position( idx, rad )
     end
     
     -- If finished a read, then stop the reading process
@@ -64,13 +73,20 @@ local main = function()
   local main_cnt = 0
   local t0 = unix.time()
   
+  -- Entry should torque on the motors...
+  Body.set_aux_torque_enable(1)
+  local sync_torque = Body.set_aux_torque_enable_packet()
+  --print(sync_torque:byte(1,#sync_torque))
+  table.insert( spine_dynamixel.instructions, sync_torque )  
+  
   -- Enter the coroutine
   while true do
     
     --------------------
     -- Set commands for next sync
     if #spine_dynamixel.instructions==0 then
-      local sync_aux = Body.get_aux_command_packet()
+      local sync_aux = Body.set_aux_command_packet()
+      --print(sync_aux:byte(1,#sync_aux))
       table.insert( spine_dynamixel.instructions, sync_aux )
     end
     
@@ -108,13 +124,22 @@ end
 -- Print the motor state upon shutdown
 function shutdown()
   print'Shutting down the Dynamixel chains...'
-  -- TODO: sync write a torque off
+  
   for i,d in ipairs(dynamixels) do
-    d:close()
+    -- TODO: sync write a torque off
+    libDynamixel.set_mx_torque_enable( d.ids_on_bus, 0, d )
+    Body.set_aux_torque_enable(0)
+    libDynamixel.set_mx_led( d.ids_on_bus, 0, d )
     io.write('\n',d.name,' chain\n')
-    for k,v in pairs(d.data) do
-      io.write('Motor ',k,' @ ',v,'\n')
+    for _,m in ipairs(d.ids_on_bus) do
+      local j = motor_to_joint[m]
+      local rad = Body.get_one_position(j)
+      local deg = rad * RAD_TO_DEG
+      local msg = string.format('%s Joint %d (Motor %d): %.3f rad %.1f deg',
+      Body.inv_parts[j], j,m,rad,deg)
+      print(msg)
     end
+    d:close()
   end
   error('Finished!')
 end

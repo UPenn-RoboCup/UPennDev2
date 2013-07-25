@@ -58,7 +58,7 @@ local nJoint = 25
 --]]
 assert(nJoint==(indexAux+nJointAux)-indexHead,'Bad joint counting!')
 Body.nJoint = nJoint
-Body.parts = {
+local parts = {
   ['Head']=vector.count(indexHead,nJointHead),
   ['Spine']=vector.count(indexSpine,nJointSpine),
   ['LArm']=vector.count(indexLArm,nJointLArm),
@@ -67,7 +67,14 @@ Body.parts = {
   ['RArm']=vector.count(indexRArm,nJointRArm),
   ['Aux']=vector.count(indexAux,nJointAux)
 }
-
+local inv_parts = {}
+for name,list in pairs(parts) do
+  for i,idx in ipairs(list) do
+    inv_parts[idx] = name
+  end
+end
+Body.parts = parts
+Body.inv_parts = inv_parts
 --------------------------------
 -- Servo parameters
 local servo = {}
@@ -87,6 +94,16 @@ servo.joint_to_motor={
   
 }
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
+
+local motor_parts = {}
+for name,list in pairs(parts) do
+  motor_parts[name] = vector.zeros(#list)
+  for i,idx in ipairs(list) do
+    motor_parts[name][i] = servo.joint_to_motor[idx]
+  end
+end
+Body.motor_parts = motor_parts
+
 -- Make the reverse map
 servo.motor_to_joint={}
 for j,m in ipairs(servo.joint_to_motor) do
@@ -109,23 +126,61 @@ servo.direction = vector.new({
   })
 assert(#servo.direction==nJoint,'Bad servo direction!')
 
+--http://support.robotis.com/en/product/dynamixel_pro/control_table.htm#Actuator_Address_611
 -- TODO: Use some loop based upon MX/NX
+servo.step_bias = vector.zeros(nJoint)
 servo.moveRange = 360 * DEG_TO_RAD * vector.ones(nJoint)
-servo.steps = 4096 * vector.ones(nJoint)
+-- TODO: some pros are different
+servo.steps = 2 * 251000 * vector.ones(nJoint)
+-- Aux is MX
+for i,idx in ipairs( parts['Aux'] ) do
+  servo.steps[idx] = 4096
+end
+
+-- Convienence tables to go between steps and radians
+servo.to_radians = vector.zeros(nJoint)
+servo.to_steps = vector.zeros(nJoint)
+servo.step_zero = vector.zeros(nJoint)
+for i,nsteps in ipairs(servo.steps) do
+  servo.to_radians[i] = servo.moveRange[i] / nsteps
+  servo.to_steps[i] = nsteps / servo.moveRange[i]
+  servo.step_zero[i] = servo.steps[i] / 2
+end
+
 Body.servo = servo
+
+-- Radian to step, using offsets and biases
+local make_joint_step = function( idx, radian )
+  local step = (radian / servo.to_radians[idx]) 
+    + servo.step_bias[idx] + servo.step_zero[idx]
+  return math.min(math.max(step, 0), servo.steps[idx]-1);
+end
+Body.make_joint_step = make_joint_step
+-- Step to radian
+local make_joint_radian = function( idx, step )
+  return (step - servo.step_zero[idx] - servo.step_bias[idx]) 
+    * servo.to_radians[idx]
+end
+Body.make_joint_radian = make_joint_radian
 
 --------------------------------
 -- Motor wizard Standard convenience functions to access jcm
+Body.get_one_position = function(idx)
+  return jcm.sensorPtr.position[idx]
+end
 Body.set_one_position = function(idx,val)
   jcm.sensorPtr.position[idx] = val
 end
 
+Body.set_one_command = function(idx,val)
+  jcm.actuatorPtr.command[idx] = val
+end
 Body.get_one_command = function(idx)
   return jcm.actuatorPtr.command[idx]
 end
 
 --------------------------------
--- Standard convenience functions to access jcm
+-- Standard Convenience functions to access jcm
 for part,list in pairs(Body.parts) do
   Body['get_'..part:lower()..'_position'] = function(idx)
     if idx then return jcm.sensorPtr.position[ list[idx] ] end
@@ -164,6 +219,26 @@ for part,list in pairs(Body.parts) do
       end
     end -- if number
   end -- Set
+  
+  
+  Body['get_'..part:lower()..'_torque_enable'] = function(idx)
+    if idx then return jcm.actuatorPtr.torque_enable[ list[idx] ] end
+    return jcm.actuatorPtr.torque_enable:table( list[1], list[#list] )
+  end -- Get
+  Body['set_'..part:lower()..'_torque_enable'] = function(val,idx)
+    if type(val)=='number' then
+      if idx then jcm.sensorPtr.position[ list[idx] ] = val; return; end
+      for _,l in ipairs(list) do
+        jcm.actuatorPtr.torque_enable[l] = val
+      end
+    else
+      for i,l in ipairs(list) do
+        jcm.actuatorPtr.torque_enable[l] = val[i]
+      end
+    end -- if number
+  end -- Set
+  
+  
 end
 
 --------------------------------
@@ -172,26 +247,48 @@ end
 for k,v in pairs(libDynamixel.nx_registers) do
   local get_func = libDynamixel['get_nx_'..k]
   local set_func = libDynamixel['get_nx_'..k]
-  for part,list in pairs(Body.parts) do
+  for part,mlist in pairs(Body.motor_parts) do
+    local jlist = Body.parts[part]
+    local a = jlist[1]
+    local b = jlist[#jlist]
     Body['get_'..part..'_'..k..'_packet'] = function()
-      return get_func(list)
+      return get_func(mlist)
     end
     Body['set_'..part..'_'..k..'_packet'] = function()
-      return set_func(list,jcm.actuatorPtr.command:table( list[1], list[#list] ))
+      return set_func(mlist,jcm.actuatorPtr.command:table( a, b ))
     end
   end
 end
+
 -- Gripper and lidar actuator are MX
 -- TODO: make general somehow
 for k,v in pairs(libDynamixel.mx_registers) do
   local get_func = libDynamixel['get_mx_'..k]
-  local set_func = libDynamixel['get_mx_'..k]
+  local set_func = libDynamixel['set_mx_'..k]
+  local mlist = Body.motor_parts['Aux']
+  local jlist = Body.parts['Aux']
+  local a = jlist[1]
+  local b = jlist[#jlist]
   Body['get_aux_'..k..'_packet'] = function()
-    return get_func(list)
+    return get_func(mlist)
   end
   Body['set_aux_'..k..'_packet'] = function()
-    return set_func(list,jcm.actuatorPtr.command:table( list[1], list[#list] ))
+    local vals = jcm.actuatorPtr[k]:table( a, b )
+    return set_func( mlist, vals )
+  end
+  if k=='command' then
+    --print'overwriting command'
+    Body['set_aux_command_packet'] = function()
+      -- Shm has radians
+      local vals = jcm.actuatorPtr.command:table( a, b )
+      -- Convert to 
+      for i,idx in ipairs(jlist) do
+        vals[i] = make_joint_step(idx,vals[i])
+      end
+      return set_func( mlist, vals )
+    end
   end
 end
+
 
 return Body

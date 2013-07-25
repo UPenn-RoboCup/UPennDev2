@@ -13,8 +13,16 @@ local mp = require'msgpack'
 local wait_channels = {}
 
 -- Memory
-require'jcm'
+local Body = require'Body'
 require'hcm'
+
+local function write_body(grip_percentage, which_hand )
+  if which_hand=='left' then
+    jcm.set_commanded_hand( grip*vector.ones(3) )
+  elseif which_hand=='right' then
+    
+  end
+end
 
 local leap_ch = simple_ipc.new_subscriber('leap')
 leap_ch.callback = function()
@@ -53,7 +61,7 @@ leap_ch.callback = function()
   last_grip_t = unix.time()
   
   -- Set the shared memory
-  jcm.set_commanded_hand( grip*vector.ones(3) )
+  Body.set_lgrip_percent( grip )
   
 end
 table.insert(wait_channels,leap_ch)

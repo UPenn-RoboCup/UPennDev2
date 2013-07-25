@@ -37,7 +37,6 @@ local function save_keyframes()
 end
 
 -- Arm joint specifics
-local max_joint = #Body.parts['LArm']
 local arm_part_names = {
   [1]='wrist',
   [2]='wrist',
@@ -45,22 +44,48 @@ local arm_part_names = {
   [4]='shoulder',
   [5]='shoulder',
   [6]='shoulder',
+  [7]='finger1',
+  [8]='finger2',
+  [9]='finger3',
 }
+local max_joint = #arm_part_names
+--local max_joint = #Body.parts['LArm']
 
 -- Joint access helpers
 local function get_joint()
   if current_arm=='left' then
-    return Body.get_larm_command(current_joint)
+    if current_joint<7 then
+      return Body.get_larm_command(current_joint)
+    else
+      -- finger
+      return Body.get_aux_command(current_joint-6)
+    end
   else
-    return Body.get_rarm_command(current_joint)
+    if current_joint<7 then
+      return Body.get_rarm_command(current_joint)
+    else
+      -- finger
+      return Body.set_aux_command(current_joint-3)
+    end
   end
 end
 
 local function set_joint(val)
   if current_arm=='left' then
-    Body.set_larm_command(val,current_joint)
+    if current_joint<7 then
+      Body.set_larm_command(val,current_joint)
+    else
+      -- finger
+      Body.set_aux_command(val,current_joint-6)
+    end
   else
-    Body.set_rarm_command(val,current_joint)
+    -- Right
+    if current_joint<7 then
+      Body.set_rarm_command(val,current_joint)
+    else
+      -- finger
+      Body.set_aux_command(val,current_joint-3)
+    end
   end
 end
 
@@ -82,12 +107,17 @@ end
 local function state_msg()
   local msg = '=========\nKeyboard Wizard\n'
   msg = msg..'Current State'
-  local left_fmt = 'Left:\t'
-  for i=1,max_joint do left_fmt=left_fmt..' %6.3f' end
-  local left = string.format(left_fmt,unpack(Body.get_larm_command()) )
-  local right_fmt = 'Right:\t'
-  for i=1,max_joint do right_fmt=right_fmt..' %6.3f' end
-  local right = string.format(right_fmt,unpack(Body.get_rarm_command()) )
+  
+  local larm = Body.get_larm_command()
+  local rarm = Body.get_rarm_command()
+  local lfinger = vector.slice(Body.get_aux_command(),1,3)
+  local rfinger = vector.slice(Body.get_aux_command(),4,6)
+  local left = 'Left:\t'
+  for i,v in ipairs(larm) do left = left..string.format( ' %6.3f', v ) end
+  for i,v in ipairs(lfinger) do left = left..string.format( ' %6.3f', v ) end
+  local right = 'Right:\t'
+  for i,v in ipairs(rarm) do right = right..string.format( ' %6.3f', v ) end
+  for i,v in ipairs(rfinger) do right = right..string.format( ' %6.3f', v ) end
   return msg..'\n'..left..'\n'..right
 end
 

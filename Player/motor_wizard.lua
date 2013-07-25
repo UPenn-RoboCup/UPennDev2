@@ -43,7 +43,9 @@ if spine_dynamixel then
       -- v is the step value
       local idx = motor_to_joint[k]
       local rad = Body.make_joint_radian( idx, v )
-      Body.set_one_position( idx, rad )
+      Body.set_joint_position( idx, rad )
+      --print(k,idx,v,rad,rad*RAD_TO_DEG)
+      print(rad*RAD_TO_DEG)
     end
     
     -- If finished a read, then stop the reading process
@@ -74,7 +76,7 @@ local main = function()
   local t0 = unix.time()
   
   -- Entry should torque on the motors...
-  Body.set_aux_torque_enable(1)
+  Body.set_aux_torque_enable(0)
   local sync_torque = Body.set_aux_torque_enable_packet()
   --print(sync_torque:byte(1,#sync_torque))
   table.insert( spine_dynamixel.instructions, sync_torque )  
@@ -126,14 +128,17 @@ function shutdown()
   print'Shutting down the Dynamixel chains...'
   
   for i,d in ipairs(dynamixels) do
-    -- TODO: sync write a torque off
+    -- Turn off motors
+    -- TODO: Store the motor type for each on the chain
+    -- NOTE: This could be used as a check on the body configuration
     libDynamixel.set_mx_torque_enable( d.ids_on_bus, 0, d )
     Body.set_aux_torque_enable(0)
     libDynamixel.set_mx_led( d.ids_on_bus, 0, d )
+    -- Print out the chain
     io.write('\n',d.name,' chain\n')
     for _,m in ipairs(d.ids_on_bus) do
       local j = motor_to_joint[m]
-      local rad = Body.get_one_position(j)
+      local rad = Body.get_joint_position(j)
       local deg = rad * RAD_TO_DEG
       local msg = string.format('%s Joint %d (Motor %d): %.3f rad %.1f deg',
       Body.inv_parts[j], j,m,rad,deg)

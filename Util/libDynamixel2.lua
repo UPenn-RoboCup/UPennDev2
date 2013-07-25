@@ -766,7 +766,6 @@ libDynamixel.service = function( dynamixels, main )
     --------------------
     -- Process the main thread after each coroutine yields
     -- This main loop should update the dynamixel chain commands
-    local main_param = nil
     if main_thread then
       local status_code, main_param = coroutine.resume( main_thread )
       if not status_code then 

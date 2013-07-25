@@ -47,6 +47,7 @@ local rx_registers = {
 	['battery'] = {42,2},
 	['temperature'] = {43,1},
 }
+libDynamixel.rx_registers = rx_registers
 
 -- MX
 -- http://support.robotis.com/en/product/dynamixel/mx_series/mx-28.htm
@@ -72,6 +73,7 @@ local mx_registers = {
 	['battery'] = {string.char(42,0),2},
 	['temperature'] = {string.char(43,0),1},
 }
+libDynamixel.mx_registers = mx_registers
 
 -- Dynamixel PRO
 -- English to Hex Addresses of various commands/information
@@ -155,6 +157,7 @@ local nx_registers = {
 	['voltage'] = {string.char(0x6F,0x02),2},
 	['temperature'] = {string.char(0x71,0x02),1},
 }
+libDynamixel.nx_registers = nx_registers
 
 --------------------
 -- Convienence functions for constructing Sync Write instructions
@@ -162,7 +165,11 @@ local function sync_write_byte(ids, addr, data)
 	local nid = #ids
 	local all_data = #ids
   -- All get the same value
-	if type(data)=='number' then all_data = data end
+	if type(data)=='number' then 
+    all_data = data
+  else
+    assert(nids==#data,'Incongruent ids and data')
+  end
 	local t = {}
 	local n = 1
 	local len = 1 -- byte
@@ -180,6 +187,8 @@ local function sync_write_word(ids, addr, data)
 	if type(data)=='number' then
 		-- All get the same value
 		all_data = data
+  else
+    assert(nids==#data,'Incongruent ids and data')
 	end
 
 	local t = {}
@@ -202,6 +211,8 @@ local function sync_write_dword(ids, addr, data)
 	if type(data)=='number' then
 		-- All get the same value
 		all_data = data
+  else
+    assert(nids==#data,'Incongruent ids and data')
 	end
 	local t = {};
 	local n = 1;
@@ -277,16 +288,11 @@ local function get_status( fd, npkt, protocol, timeout )
 end
 
 --------------------
--- Set NX functions
+-- Set NX functions: returns the command to send on the chain
 for k,v in pairs( nx_registers ) do
-	libDynamixel['set_nx_'..k] = function( bus, motor_ids, values, serviced )
+	libDynamixel['set_nx_'..k] = function( motor_ids, values, bus)
 		local addr = v[1]
 		local sz = v[2]
-		local fd = bus.fd
-		
-    -- TODO: The I/O should be handled elsewhere
-		-- Clear old status packets
-		local clear = unix.read(fd)
 		
 		-- Construct the instruction (single or sync)
     local single = type(motor_ids)=='number'
@@ -298,19 +304,14 @@ for k,v in pairs( nx_registers ) do
 			instruction = DP2.sync_write(addr, sz, string.char(unpack(msg)))
 		end
 		
-    -- TODO: Just queue the instruction on the bus
-    -- TODO: Give expected status size in bytes
-    -- TODO: How to return data to the sender?
-    if serviced then
-      return instruction
-    end
+    if not bus then return instruction end
 
     -- Write the instruction to the bus 
-    local ret = unix.write(fd, instruction)
+    local ret = unix.write(bus.fd, instruction)
 		
     -- Grab any status returns
     if using_status_return and single then
-      local status = get_status( fd, 1 )
+      local status = get_status( bus.fd, 1 )
       return status[1]
     end
 		
@@ -320,35 +321,28 @@ end
 --------------------
 -- Get NX functions
 for k,v in pairs( nx_registers ) do
-	libDynamixel['get_nx_'..k] = function( bus, motor_ids, serviced )
+	libDynamixel['get_nx_'..k] = function( motor_ids )
 		local addr = v[1]
 		local sz = v[2]
-		local fd = bus.fd
 		
 		-- Construct the instruction (single or sync)
 		local instruction = nil
 		local nids = 1
-		if type(motor_ids)=='table' then
-			instruction = DP2.sync_read(string.char(unpack(motor_ids)), addr, sz)
-			nids = #motor_ids
-		else
+		if type(motor_ids)=='number' then
       -- Single motor
 			instruction = DP2.read_data(motor_ids, addr, sz)
+		else
+			instruction = DP2.sync_read(string.char(unpack(motor_ids)), addr, sz)
+			nids = #motor_ids
 		end
 		
-    -- TODO: Just queue the instruction on the bus
-    -- TODO: Give expected status size in btyes
-    -- TODO: How to return data to the sender?
-    if serviced then
-      local status_sz = nids*(11 + sz)
-      return instruction, status_sz
-    end
+    if not bus then return instruction end
     
 		-- Clear old status packets
-		local clear = unix.read(fd)
+		local clear = unix.read(bus.fd)
     
     -- Write the instruction to the bus 
-    local ret = unix.write(fd, instruction)
+    local ret = unix.write(bus.fd, instruction)
 		
     -- Grab the status of the register
     return get_status( fd, nids )
@@ -359,14 +353,9 @@ end
 --------------------
 -- Set MX functions
 for k,v in pairs( mx_registers ) do
-	libDynamixel['set_mx_'..k] = function( bus, motor_ids, values, serviced )
+	libDynamixel['set_mx_'..k] = function( motor_ids, values, bus)
 		local addr = v[1]
 		local sz = v[2]
-		local fd = bus.fd
-		
-    -- TODO: The I/O should be handled elsewhere
-		-- Clear old status packets
-		local clear = unix.read(fd)
 		
 		-- Construct the instruction (single or sync)
     local single = type(motor_ids)=='number'
@@ -378,10 +367,7 @@ for k,v in pairs( mx_registers ) do
 			instruction = DP2.sync_write(addr, sz, string.char(unpack(msg)))
 		end
 		
-    -- TODO: Just queue the instruction on the bus
-    -- TODO: Give expected status size in bytes
-    -- TODO: How to return data to the sender?
-    if serviced then return instruction end
+    if not bus then return instruction end
 
     -- Write the instruction to the bus
     local ret = unix.write(fd, instruction)
@@ -399,38 +385,31 @@ end
 --------------------
 -- Get MX functions
 for k,v in pairs( mx_registers ) do
-	libDynamixel['get_mx_'..k] = function( bus, motor_ids, serviced )
+	libDynamixel['get_mx_'..k] = function( motor_ids, bus )
 		local addr = v[1]
 		local sz = v[2]
-		local fd = bus.fd
 		
 		-- Construct the instruction (single or sync)
 		local instruction = nil
 		local nids = 1
-		if type(motor_ids)=='table' then
-			instruction = DP2.sync_read(string.char(unpack(motor_ids)), addr, sz)
-			nids = #motor_ids
-		else
+		if type(motor_ids)=='number' then
       -- Single motor
 			instruction = DP2.read_data(motor_ids, addr, sz)
+		else
+			instruction = DP2.sync_read(string.char(unpack(motor_ids)), addr, sz)
+			nids = #motor_ids
 		end
 		
-    -- TODO: Just queue the instruction on the bus
-    -- TODO: Give expected status size in btyes
-    -- TODO: How to return data to the sender?
-    if serviced then
-      local status_sz = nids*(11 + sz)
-      return instruction, status_sz
-    end
+    if not bus then return instruction end
     
 		-- Clear old status packets
-		local clear = unix.read(fd)
+		local clear = unix.read( bus.fd )
     
     -- Write the instruction to the bus 
-    local ret = unix.write(fd, instruction)
+    local ret = unix.write( bus.fd, instruction)
 		
     -- Grab the status of the register
-    local status = get_status( fd, nids )
+    local status = get_status( bus.fd, nids )
     local values = {}
     for i,s in ipairs(status) do
       table.insert(values,byte_to_number[sz]( unpack(s.parameter) ))
@@ -443,17 +422,12 @@ end
 --------------------
 -- Set RX functions
 for k,v in pairs( rx_registers ) do
-	libDynamixel['set_rx_'..k] = function( bus, motor_ids, values, serviced )
+	libDynamixel['set_rx_'..k] = function( motor_ids, values, bus)
 		local addr = v[1]
 		local sz = v[2]
-		local fd = bus.fd
-		
-    -- TODO: The I/O should be handled elsewhere
-		-- Clear old status packets
-		local clear = unix.read(fd)
 		
 		-- Construct the instruction (single or sync)
-    local single = type(motor_ids)=='number' 
+    local single = type(motor_ids)=='number'
 		local instruction = nil
 		if single then
 			instruction = rx_single_write[sz](motor_ids, addr, values)
@@ -462,19 +436,14 @@ for k,v in pairs( rx_registers ) do
 			instruction = DP1.sync_write(addr, sz, string.char(unpack(msg)))
 		end
 		
-    -- TODO: Just queue the instruction on the bus
-    -- TODO: Give expected status size in bytes
-    -- TODO: How to return data to the sender?
-    if serviced then
-      return instruction
-    end
+    if not bus then return instruction end
 
     -- Write the instruction to the bus 
-    local ret = unix.write(fd, instruction)
+    local ret = unix.write(bus.fd, instruction)
 		
     -- Grab any status returns
     if using_status_return and single then
-      local status = get_status( fd, 1 )
+      local status = get_status( bus.fd, 1 )
       return status[1]
     end
 		
@@ -484,32 +453,25 @@ end
 --------------------
 -- Get RX functions
 for k,v in pairs( rx_registers ) do
-	libDynamixel['get_rx_'..k] = function( bus, motor_id, serviced )
+	libDynamixel['get_rx_'..k] = function( motor_ids, bus )
 		local addr = v[1]
 		local sz = v[2]
-		local fd = bus.fd
 		
 		-- Construct the instruction (single or sync)
 		local instruction = nil
     -- Single motor
 		instruction = DP1.read_data(motor_id, addr, sz)
-		
-    -- TODO: Just queue the instruction on the bus
-    -- TODO: Give expected status size in btyes
-    -- TODO: How to return data to the sender?
-    if serviced then
-      -- Return the instruction and expected status packet size
-      return instruction, 6 + sz
-    end
+
+    if not bus then return instruction end
     
 		-- Clear old status packets
-		local clear = unix.read(fd)
+		local clear = unix.read(bus.fd)
     
     -- Write the instruction to the bus 
-    local ret = unix.write(fd, instruction)
+    local ret = unix.write(bus.fd, instruction)
 		
     -- Grab the status of the register
-    local status = get_status( fd, 1, 1 )
+    local status = get_status( bus.fd, 1, 1 )
     local value = byte_to_number[sz]( unpack(status[1].parameter) )
     return status, value
 		
@@ -518,7 +480,7 @@ end
 
 --------------------
 -- Ping functions
-libDynamixel.send_ping = function( self, id, protocol, twait )
+libDynamixel.send_ping = function( id, protocol, bus, twait )
 	protocol = protocol or 2
 	local instruction = nil
 	if protocol==1 then
@@ -526,23 +488,23 @@ libDynamixel.send_ping = function( self, id, protocol, twait )
 	else
 		instruction = DP2.ping(id)
 	end
-  local fd = self.fd
-	unix.write(self.fd, instruction)
-  local status = get_status( fd, 1, protocol, twait )
+  if not bus then return instruction end
+
+	unix.write(bus.fd, instruction)
+  local status = get_status( bus.fd, 1, protocol, twait )
   if status then return status[1] end
 end
 
-libDynamixel.ping_probe = function(self, protocol, twait)
+local function ping_probe(self, protocol, twait)
   protocol = protocol or 2
 	twait = twait or 0.010
   local found_ids = {}
 	for id = 0,253 do
-		local status = libDynamixel.send_ping( self, id, protocol, twait )
+		local status = libDynamixel.send_ping( id, protocol, bus, twait )
 		if status then
       --print( string.format('Found %d.0 Motor: %d\n',protocol,status.id) )
       table.insert( found_ids, status.id )
 		end
-    unix.sleep( twait )
 	end
   return found_ids
 end
@@ -591,16 +553,19 @@ function libDynamixel.new_bus( ttyname, ttybaud )
 		unix.usleep( 1e3 )
 		self.fd = libDynamixel.open( self.ttyname )
 	end
+  obj.ping_probe = ping_probe
 	-------------------
 	
 	-------------------
 	-- Add libDynamixel functions
+  --[[
 	for name,func in pairs( libDynamixel ) do
 		obj[name] = func
 	end
 	-- new_bus not allowed on a current bus
 	obj.new_bus = nil
 	obj.service = nil
+  --]]
 	-------------------
   
   -------------------
@@ -648,7 +613,7 @@ libDynamixel.service = function( dynamixels, main )
       
       -- Make a read-all command
       local DP = DP2
-      local sync_read_all_cmd = dynamixel:get_mx_position( dynamixel.ids_on_bus, true )
+      local sync_read_all_cmd = libDynamixel.get_mx_position( dynamixel.ids_on_bus )
       local read_param_sz = mx_registers['position'][2]
       local param_to_val = byte_to_number[read_param_sz]
       
@@ -702,7 +667,7 @@ libDynamixel.service = function( dynamixels, main )
         -- Sync Write LED data to the chain
         if unix.time()-time_elapsed>1 then
           local sync_led_cmd = 
-            dynamixel:set_mx_led( dynamixel.ids_on_bus, led_state, true )
+            libDynamixel.set_mx_led( dynamixel.ids_on_bus, led_state )
           local ret = unix.write(fd, sync_led_cmd)
           assert(ret~=-1,string.format('BAD WRITE on %s',dynamixel.name))
           led_state = 1-led_state

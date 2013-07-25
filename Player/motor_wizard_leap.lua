@@ -71,8 +71,17 @@ local main = function()
     -- Set commands for next sync
     if #spine_dynamixel.instructions==0 then
       local hand = jcm.get_commanded_hand()
+      local percentage = hand[1]/100
+      
+      local ids14 = {14,16,18}
+      local h14 = math.floor( (2400-1950)*percentage+1950 )
+      local h16 = math.floor( (1650-2164)*percentage+2164 )
+      local h18 = math.floor( (2400-1950)*percentage+1950 )
+      local datah = {h14,h16,h18}
+      
       local sync_command_cmd = 
-      spine_dynamixel:set_mx_command( hand, hand_position, true )
+      spine_dynamixel:set_mx_command( ids14, datah, true )
+        --spine_dynamixel:set_mx_command( spine_dynamixel.ids_on_bus, 2048, true )
       table.insert( spine_dynamixel.instructions, sync_command_cmd )
     end
     

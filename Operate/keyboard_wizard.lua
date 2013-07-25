@@ -1,35 +1,44 @@
 -----------------------------------------------------------------
--- Keyboard Arm control
+-- Keyboard Wizard
 -- Listens to keyboard input to control the arm joints
 -- (c) Stephen McGill, 2013
 ---------------------------------
 
 dofile'include.lua'
 
+--local is_debug = true
+
 -- Libraries
 local unix = require'unix'
 local getch = require'getch'
+local mp = require'msgpack'
 
--- Getting/Setting shared memory
-require'jcm'
+-- Getting/Setting The Body
+local Body = require'Body'
 
-local debug = true
 local current_joint = 1
 local current_arm = 'left'
 
--- Joint changing
-local delta_joint = 0.1 -- Change in radians for each +/-
+-- Change in radians for each +/-
+local DEG_TO_RAD = math.pi/180
+local delta_joint = 0.1 * DEG_TO_RAD
 
 -- Keyframing
 local keyframe_num = 0
-local function save_keyframe()
+local keyframe_file_num = 0
+local function add_keyframe()
   keyframe_num = keyframe_num+1
 end
+local function save_keyframes()
+  local filename = string.format('keyframe_%d.mp.raw',keyframe_file_num)
+  keyframe_file_num = keyframe_file_num + 1
+  keyframe_num = 0
+  return filename
+end
 
--- Joint tables
-local min_joint, max_joint = 1, 6
-
-local joint_names = {
+-- Arm joint specifics
+local max_joint = #Body.parts['LArm']
+local arm_part_names = {
   [1]='wrist',
   [2]='wrist',
   [3]='elbow',
@@ -38,29 +47,27 @@ local joint_names = {
   [6]='shoulder',
 }
 
-local joint_ids = {
-  ['left'] = {
-    [1]=1,
-    [2]=2,
-    [3]=3,
-    [4]=4,
-    [5]=5,
-    [6]=6
-    },
-    ['right'] = {
-      [1]=1,
-      [2]=2,
-      [3]=3,
-      [4]=4,
-      [5]=5,
-      [6]=6
-    }
-  }
+-- Joint access helpers
+local function get_joint()
+  if current_arm=='left' then
+    return Body.get_larm_command(current_joint)
+  else
+    return Body.get_rarm_command(current_joint)
+  end
+end
+
+local function set_joint(val)
+  if current_arm=='left' then
+    Body.set_larm_command(val,current_joint)
+  else
+    Body.set_rarm_command(val,current_joint)
+  end
+end
 
 -- Print Message helpers
 local switch_msg = function()
-  return string.format('Switched to %s joint on the %s arm.', 
-  joint_names[current_joint],current_arm)
+  return string.format('Switched to %s %s @ %.2f radians.', 
+  current_arm,arm_part_names[current_joint],get_joint())
 end
 
 local change_msg = function(old,new)
@@ -68,24 +75,20 @@ local change_msg = function(old,new)
   if new>old then inc_dec='Increased'
   elseif new<old then inc_dec='Decreased'
   end
-  return string.format('%s arm | %s %s joint to %.3f', 
-  current_arm,inc_dec,joint_names[current_joint],new)
+  return string.format('%s arm | %s %s to %.3f', 
+  current_arm,inc_dec,arm_part_names[current_joint],new)
 end
 
--- Joint access helpers
-local function get_joint()
-  local joint_id = joint_ids[current_arm][current_joint]
-  local joints = jcm.get_commanded_position()
-  local current = joints[joint_id]
-  return current
-end
-
-local function set_joint(val)
-  assert(type(val)=='number','Bad set!')
-  local joint_id = joint_ids[current_arm][current_joint]
-  local joints = jcm.get_commanded_position()
-  joints[joint_id] = val
-  jcm.set_commanded_position(joints)
+local function state_msg()
+  local msg = '=========\nKeyboard Wizard\n'
+  msg = msg..'Current State'
+  local left_fmt = 'Left:\t'
+  for i=1,max_joint do left_fmt=left_fmt..' %6.3f' end
+  local left = string.format(left_fmt,unpack(Body.get_larm_command()) )
+  local right_fmt = 'Right:\t'
+  for i=1,max_joint do right_fmt=right_fmt..' %6.3f' end
+  local right = string.format(right_fmt,unpack(Body.get_rarm_command()) )
+  return msg..'\n'..left..'\n'..right
 end
 
 -- Character processing
@@ -102,7 +105,7 @@ local function process_character(key_code,key_char,key_char_lower)
       return change_msg(current,0)
     end
     -- Check that the joint number is in range
-    if switch_joint<min_joint or switch_joint>max_joint then
+    if switch_joint<1 or switch_joint>max_joint then
       return 'Joint '..switch_joint..' out of range!'
     end
     -- Switch to that joint
@@ -141,17 +144,20 @@ local function process_character(key_code,key_char,key_char_lower)
     return change_msg(current,new)
   end
   
-  -- +/- Increases and decreases
+  -- Keyframe management
   if key_char=='k' then
-    local keyframe = save_keyframe()
-    return string.format('Saved keyframe %d!',keyframe_num)
+    local keyframe = add_keyframe()
+    return string.format('Added keyframe %d!',keyframe_num)
+  elseif key_char=='s' then
+    local name = save_keyframes()
+    return string.format('Saved keyframe file %s!',name)
   end
   
-  -- Help and debugging
+  -- Help and is_debugging
   if key_char=='h' then
     return'HELP'
   elseif key_char=='p' then
-    return'Print arm status'
+    return state_msg()
   end
   
   -- Default message
@@ -161,9 +167,8 @@ end
 
 ------------
 -- Start processing
-print('\n\n=========')
-print(string.format('Keyboard Wizard on %s joint on the %s arm.',
-joint_names[current_joint],current_arm))
+io.write( '\n\n',state_msg() )
+io.flush()
 local t0 = unix.time()
 while true do
   
@@ -181,14 +186,15 @@ while true do
   t0 = t
   local fps = 1/t_diff
   
-  -- Print debugging message
-  if debug then
+  -- Print is_debugging message
+  if is_debug then
     print( string.format('\nKeyboard | Code: %d, Char: %s, Lower: %s',
     key_code,key_char,key_char_lower) )
     print('Response time:',t_diff)
   end
   
   -- Print result of the key press
-  print(msg)
+  io.write( '\n\n', msg )
+  io.flush()
     
 end

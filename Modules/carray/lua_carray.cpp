@@ -280,8 +280,12 @@ static int lua_carray_typename(lua_State *L) {
 // Copy carray to Lua table
 static int lua_carray_totable(lua_State *L) {
   structCArray *p = lua_checkcarray(L, 1);
-  lua_createtable(L, p->size, 0);
-  for (int i = 0; i < p->size; i++) {
+  int start = luaL_optint(L, 2, 1)-1;
+  int stop = luaL_optint(L, 3,  p->size);
+  int tbl_idx = 1;
+   
+  lua_createtable(L, stop-start+1, 0);
+  for (int i = start; i < stop; i++) {
     double val;
     switch (p->type) {
     case 'b':
@@ -312,7 +316,7 @@ static int lua_carray_totable(lua_State *L) {
       val = 0;
     }
     lua_pushnumber(L, val);
-    lua_rawseti(L, -2, i+1);
+    lua_rawseti(L, -2, tbl_idx++);
   }
   return 1;
 }

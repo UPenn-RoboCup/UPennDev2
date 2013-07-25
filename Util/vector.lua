@@ -25,6 +25,15 @@ function zeros(n)
   return setmetatable(t, mt);
 end
 
+function count(start,n)
+  n = n or 1
+  local t = {}
+  for i = 1,n do
+    t[i] = start+i-1
+  end
+  return setmetatable(t, mt);
+end
+
 function slice(v1, istart, iend)
   local v = {};
   iend = iend or #v1;

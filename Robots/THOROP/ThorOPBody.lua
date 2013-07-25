@@ -115,6 +115,16 @@ servo.steps = 4096 * vector.ones(nJoint)
 Body.servo = servo
 
 --------------------------------
+-- Motor wizard Standard convenience functions to access jcm
+Body.set_one_position = function(idx,val)
+  jcm.sensorPtr.position[idx] = val
+end
+
+Body.get_one_command = function(idx)
+  return jcm.actuatorPtr.command[idx]
+end
+
+--------------------------------
 -- Standard convenience functions to access jcm
 for part,list in pairs(Body.parts) do
   Body['get_'..part:lower()..'_position'] = function(idx)
@@ -156,70 +166,9 @@ for part,list in pairs(Body.parts) do
   end -- Set
 end
 
---[[
--- Get
-function get_head_position()
-  local q = jcm.get_sensor_position()
-  return {unpack(q, indexHead, indexHead+nJointHead-1)}
-end
-function get_spine_position()
-  local q = jcm.get_sensor_position()
-  return {unpack(q, indexSpine, indexSpine+nJointSpine-1)}
-end
-function get_larm_position()
-  local q = jcm.get_sensor_position()
-  return {unpack(q, indexLArm, indexLArm+nJointLArm-1)}
-end
-function get_rarm_position()
-  local q = jcm.get_sensor_position()
-  return {unpack(q, indexRArm, indexRArm+nJointRArm-1)}
-end
-function get_lleg_position()
-  local q = jcm.get_sensor_position()
-  return {unpack(q, indexLLeg, indexLLeg+nJointLLeg-1)}
-end
-function get_rleg_position()
-  local q = jcm.get_sensor_position()
-  return {unpack(q, indexRLeg, indexRLeg+nJointRLeg-1)}
-end
--- Set
-function set_head_command(val)
-  for i=indexHead,#val do
-    jcm.actuatorPtr.command[indexHead] = val
-  end
-end
-function set_spine_command(val)
-  for i=indexHead,#val do
-    jcm.actuatorPtr.command[indexSpine] = val
-  end
-end
-function set_lleg_command(val)
-  for i=indexHead,#val do
-    jcm.actuatorPtr.command[indexLLeg] = val
-  end
-end
-function set_rleg_command(val)
-  for i=indexHead,#val do
-    jcm.actuatorPtr.command[indexRLeg] = val
-  end
-end
-function set_larm_command(val)
-  for i=indexHead,#val do
-    jcm.actuatorPtr.command[indexLArm] = val
-  end
-end
-function set_rarm_command(val)
-  for i=indexHead,#val do
-    jcm.actuatorPtr.command[indexRArm] = val
-  end
-end
---]]
-
-
 --------------------------------
 -- Convenience functions
 -- Use libDynamixel to have access to more settings, via instructions
-----[[
 for k,v in pairs(libDynamixel.nx_registers) do
   local get_func = libDynamixel['get_nx_'..k]
   local set_func = libDynamixel['get_nx_'..k]
@@ -227,12 +176,12 @@ for k,v in pairs(libDynamixel.nx_registers) do
     Body['get_'..part..'_'..k..'_packet'] = function()
       return get_func(list)
     end
-    Body['set_'..part..'_'..k..'_packet'] = function( vals )
-      return set_func(list,vals)
+    Body['set_'..part..'_'..k..'_packet'] = function()
+      return set_func(list,jcm.actuatorPtr.command:table( list[1], list[#list] ))
     end
   end
 end
--- Gripper is MX
+-- Gripper and lidar actuator are MX
 -- TODO: make general somehow
 for k,v in pairs(libDynamixel.mx_registers) do
   local get_func = libDynamixel['get_mx_'..k]
@@ -240,10 +189,9 @@ for k,v in pairs(libDynamixel.mx_registers) do
   Body['get_aux_'..k..'_packet'] = function()
     return get_func(list)
   end
-  Body['set_aux_'..k..'_packet'] = function( vals )
-    return set_func(list,vals)
+  Body['set_aux_'..k..'_packet'] = function()
+    return set_func(list,jcm.actuatorPtr.command:table( list[1], list[#list] ))
   end
 end
---]]
 
 return Body

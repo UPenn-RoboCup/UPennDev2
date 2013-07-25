@@ -10,7 +10,9 @@ dofile'include.lua'
 local unix = require'unix'
 local signal = require'signal'
 local libDynamixel = require'libDynamixel2'
-require'jcm'
+local Body = require'Body'
+local joint_to_motor = Body.servo.joint_to_motor
+local motor_to_joint = Body.servo.motor_to_joint
 
 -- Setup the dynamixels array
 local dynamixels = {}
@@ -32,10 +34,8 @@ if spine_dynamixel then
     for k,v in pairs(data) do
       -- k is the motor id
       -- v is the value
-      --jcm.set_present_position(v,k)
-      spine_dynamixel.data[k] = v
+      Body.set_one_position( motor_to_joint[k], v )
     end
-    
     
     -- If finished a read, then stop the reading process
     spine_dynamixel.perform_read = false
@@ -70,10 +70,8 @@ local main = function()
     --------------------
     -- Set commands for next sync
     if #spine_dynamixel.instructions==0 then
-      local hand = jcm.get_commanded_hand()
-      local sync_command_cmd = 
-      spine_dynamixel:set_mx_command( hand, hand_position, true )
-      table.insert( spine_dynamixel.instructions, sync_command_cmd )
+      local sync_aux = Body.get_aux_command_packet()
+      table.insert( spine_dynamixel.instructions, sync_aux )
     end
     
     -- Update the read every so often
@@ -110,6 +108,7 @@ end
 -- Print the motor state upon shutdown
 function shutdown()
   print'Shutting down the Dynamixel chains...'
+  -- TODO: sync write a torque off
   for i,d in ipairs(dynamixels) do
     d:close()
     io.write('\n',d.name,' chain\n')

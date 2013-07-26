@@ -341,4 +341,56 @@ Body.set_rgrip_percent = function( percent )
   end
 end
 
+----------------------
+-- Inverse Kinematics
+local Kinematics = require'THOROPKinematics'
+
+-- take in a transform and output joint angles
+Body.get_larm_ik = function( tr )
+  
+  local qLArm = get_larm_position();
+  local trLArm = Kinematics.inverse_l_arm(tr, qLArm)
+  
+  -- Check the distance
+  local torso_arm_ik = Kinematics.l_arm_torso( trLArm )
+  
+  local dist_pos = math.sqrt(
+    (torso_arm_ik[1]-tr[1])^2+
+    (torso_arm_ik[2]-tr[2])^2+
+    (torso_arm_ik[3]-tr[3])^2)
+
+  local dist_angle = math.sqrt(
+    util.mod_angle( torso_arm_ik[4]-tr[4] )^2+
+    util.mod_angle( torso_arm_ik[5]-tr[5])^2+
+    util.mod_angle( torso_arm_ik[6]-tr[6])^2)
+
+  if dist_pos>0.001 then return false end
+  
+  return trLArm, trLArm, dist_pos, dist_angle
+end
+
+-- take in a transform and output joint angles
+Body.get_rarm_ik = function( tr )
+  
+  local qRArm = get_rarm_position();
+  local trRArm = Kinematics.inverse_r_arm(tr, qRArm)
+  
+  -- Check the distance
+  local torso_arm_ik = Kinematics.r_arm_torso( trRArm )
+  
+  local dist_pos = math.sqrt(
+    (torso_arm_ik[1]-tr[1])^2+
+    (torso_arm_ik[2]-tr[2])^2+
+    (torso_arm_ik[3]-tr[3])^2)
+
+  local dist_angle = math.sqrt(
+    util.mod_angle( torso_arm_ik[4]-tr[4] )^2+
+    util.mod_angle( torso_arm_ik[5]-tr[5])^2+
+    util.mod_angle( torso_arm_ik[6]-tr[6])^2)
+
+  if dist_pos>0.001 then return false end
+  
+  return trRArm, trRArm, dist_pos, dist_angle
+end
+
 return Body

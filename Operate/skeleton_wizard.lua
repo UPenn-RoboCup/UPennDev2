@@ -9,6 +9,11 @@ local depth_info, color_info = openni.stream_info()
 assert(depth_info.width==320,'Bad depth resolution')
 assert(color_info.width==320,'Bad color resolution')
 
+-- How to communicate data?
+local use_body = true
+local use_zmq = true
+local use_udp = false
+
 -- Data packing
 local mp = require'msgpack'
 
@@ -53,14 +58,22 @@ local function broadcast_skeleton_udp()
 end
 
 -- Set up the UDP sending
-local udp = require'udp'
-local udp_skeleton1 = udp.new_sender('localhost',43234)
-local udp_skeleton2 = udp.new_sender('localhost',43235)
+if use_zmq then
+  udp = require'udp'
+  udp_skeleton1 = udp.new_sender('localhost',43234)
+  udp_skeleton2 = udp.new_sender('localhost',43235)
+end
 
 -- Set up the ZMQ sending
-local simple_ipc = require'simple_ipc'
-skeleton_ch1 = simple_ipc.new_publisher('skeleton1')
-skeleton_ch2 = simple_ipc.new_publisher('skeleton2')
+if use_zmq then
+  simple_ipc = require'simple_ipc'
+  skeleton_ch1 = simple_ipc.new_publisher('skeleton1')
+  skeleton_ch2 = simple_ipc.new_publisher('skeleton2')
+end
+
+if use_body then
+  Body = require'Body'
+end
 
 -- Set up timing debugging
 local cnt = 0;
@@ -89,18 +102,17 @@ while true do
     if use_zmq then broadcast_skeleton_zmq(metadata,enc_jnts1,enc_jnts2) end
     if use_udp then broadcast_skeleton_udp(metadata,enc_jnts1,enc_jnts2) end
   end
+  
+  if use_body then
+  end
 	
 	-- Debug the timing
   cnt = cnt+1
   if t-t_last>t_debug then
     local msg = string.format("%.2f FPS.  Tracking", cnt/t_debug)
-		if enc_jnts1 then
-			msg = msg..' User 1'
-			--print( 'Torso position',unpack( openni.joint(1,NITE_JOINT_TORSO).position ) )
-		end
-		if enc_jnts2 then
-			msg = msg..' User 2'
-		end
+		if visible[1] then msg = msg..' User 1' end
+		if visible[2] then msg = msg..' User 2' end
+    --print( 'Torso pos:',unpack( openni.joint(1,NITE_JOINT_TORSO).position ) )
     io.write("Skeleton Wizard | ",msg,'\n\n')
 		io.flush()
     t_last = t

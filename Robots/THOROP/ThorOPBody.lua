@@ -330,7 +330,6 @@ Body.set_lgrip_percent = function( percent )
   for idx=indexLGrip,indexLGrip+nLGrip-1 do
     local radian = percent*servo.min_rad[idx] + (1-percent)*servo.max_rad[idx]
     jcm.actuatorPtr.command[idx] = radian
-    print(idx,radian,servo.min_rad[idx],servo.max_rad[idx])
   end
 end
 Body.set_rgrip_percent = function( percent )

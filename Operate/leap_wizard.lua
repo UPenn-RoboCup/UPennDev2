@@ -40,7 +40,7 @@ leap_ch.callback = function()
   if not running_grip then running_grip = meta.sphereRadius end
   running_grip = meta.sphereRadius * alpha + running_grip * (1-alpha)
   
-  local min, max = 60, 90
+  local min, max = 60, 120
   -- 1 minus to reverse 
   local percent = 1-(running_grip-min)/(max-min)
   

@@ -146,37 +146,45 @@ servo.step_bias = vector.zeros(nJoint)
 servo.to_radians = vector.zeros(nJoint)
 servo.to_steps = vector.zeros(nJoint)
 servo.step_zero = vector.zeros(nJoint)
-servo.max = vector.zeros(nJoint)
-servo.min = vector.zeros(nJoint)
+servo.max_step = vector.zeros(nJoint)
+servo.min_step = vector.zeros(nJoint)
+servo.max_rad = vector.zeros(nJoint)
+servo.min_rad = vector.zeros(nJoint)
 for i,nsteps in ipairs(servo.steps) do
   servo.step_zero[i] = nsteps/2
   servo.to_radians[i] = servo.moveRange[i] / nsteps
   servo.to_steps[i] = nsteps / servo.moveRange[i]
-  servo.min[i] = 0
-  servo.max[i] = servo.steps[i]
+  servo.min_step[i] = 0
+  servo.max_step[i] = servo.steps[i]
+  servo.min_rad[i] = servo.to_radians[i] * servo.min_step[i]
+  servo.max_rad[i] = servo.to_radians[i] * servo.max_step[i]
+end
+
+-- Some overrides
+-- Gripper has different min/max limits
+for _,idx in ipairs(Body.parts['Aux']) do
+  servo.min_rad[idx] = -5*DEG_TO_RAD
+  servo.max_rad[idx] = 30*DEG_TO_RAD
+  servo.min_step[idx] = servo.min_step[idx] * servo.to_steps[idx]
+  servo.max_step[idx] = servo.max_step[idx] * servo.to_steps[idx]
 end
 
 -- Radian to step, using offsets and biases
-local make_joint_step = function( idx, radian )
-  local step = servo.direction[idx] * radian * servo.to_steps[idx]
-    + servo.step_bias[idx] + servo.step_zero[idx]
-  return math.min(math.max(step, servo.min[idx]),servo.max[idx])
+local make_joint_step = function( idx, radian, safe )
+  local step = math.floor(servo.direction[idx] * radian * servo.to_steps[idx]
+    + servo.step_bias[idx] + servo.step_zero[idx])
+  if not safe then return step end
+  return math.min(math.max(step, servo.min_step[idx]),servo.max_step[idx])
   --return math.min(math.max(step, 0), servo.steps[idx]-1);
 end
 Body.make_joint_step = make_joint_step
 -- Step to radian
 local make_joint_radian = function( idx, step )
-  return servo.direction[idx] * servo.to_radians[idx] * 
+  local radian = servo.direction[idx] * servo.to_radians[idx] * 
     (step - servo.step_zero[idx] - servo.step_bias[idx])
+  return radian
 end
 Body.make_joint_radian = make_joint_radian
-
--- Some overrides
--- Gripper has different min/max limits
-for _,idx in ipairs(Body.parts['Aux']) do
-  servo.min[idx] = make_joint_step( idx, -5*DEG_TO_RAD )
-  servo.max[idx] = make_joint_step( idx, 30*DEG_TO_RAD )
-end
 
 Body.servo = servo
 
@@ -246,16 +254,16 @@ for part,jlist in pairs(Body.parts) do
   
   Body['get_'..part:lower()..'_torque_enable'] = function(idx)
     if idx then return jcm.actuatorPtr.torque_enable[ list[idx] ] end
-    return jcm.actuatorPtr.torque_enable:table( list[1], list[#list] )
+    return jcm.actuatorPtr.torque_enable:table( a, b )
   end -- Get
   Body['set_'..part:lower()..'_torque_enable'] = function(val,idx)
     if type(val)=='number' then
-      if idx then jcm.sensorPtr.position[ list[idx] ] = val; return; end
-      for _,l in ipairs(list) do
+      if idx then jcm.sensorPtr.position[ jlist[idx] ] = val; return; end
+      for _,l in ipairs(jlist) do
         jcm.actuatorPtr.torque_enable[l] = val
       end
     else
-      for i,l in ipairs(list) do
+      for i,l in ipairs(jlist) do
         jcm.actuatorPtr.torque_enable[l] = val[i]
       end
     end -- if number
@@ -306,7 +314,7 @@ for k,v in pairs(libDynamixel.mx_registers) do
       local vals = jcm.actuatorPtr.command:table( a, b )
       -- Convert to 
       for i,idx in ipairs(jlist) do
-        vals[i] = make_joint_step(idx,vals[i])
+        vals[i] = make_joint_step(idx,vals[i],true)
       end
       return set_func( mlist, vals )
     end
@@ -317,16 +325,19 @@ end
 -- Grip module may have more advanced techniques...
 -- More gripper functions
 Body.set_lgrip_percent = function( percent )
+  percent = math.min(math.max(percent,0),1)
   -- Convex combo
-  for idx=indexLGrip,indexLGrip+nLGrip do
-    local radian = percent * servo.min[idx] + (1-percent)*servo.min[idx]
+  for idx=indexLGrip,indexLGrip+nLGrip-1 do
+    local radian = percent*servo.min_rad[idx] + (1-percent)*servo.max_rad[idx]
     jcm.actuatorPtr.command[idx] = radian
+    print(idx,radian,servo.min_rad[idx],servo.max_rad[idx])
   end
 end
 Body.set_rgrip_percent = function( percent )
+  percent = math.min(math.max(percent,0),1)
   -- Convex combo
-  for idx=indexRGrip,indexRGrip+nLGrip do
-    local radian = percent * servo.min[idx] + (1-percent)*servo.min[idx]
+  for idx=indexRGrip,indexRGrip+nRGrip-1 do
+    local radian = percent * servo.min_rad[idx] + (1-percent)*servo.max_rad[idx]
     jcm.actuatorPtr.command[idx] = radian
   end
 end

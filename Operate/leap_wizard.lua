@@ -25,43 +25,30 @@ local function write_body(grip_percentage, which_hand )
 end
 
 local leap_ch = simple_ipc.new_subscriber('leap')
+local running_grip = nil
 leap_ch.callback = function()
   local metadata, has_more = leap_ch:receive()
   local meta = mp.unpack(metadata)
-  --for k,v in pairs(meta) do print(k,v) end
-  hcm.set_leap_sphere(meta.sphereRadius)
-  hcm.set_leap_timestamp(meta.timestamp)
+  local t = unix.time()
+  local t_diff = t-(last_grip_t or t)
+  last_grip_t = t
+  -- Timeout
+  if t_diff>.5 then running_grip = nil end
+  
+  -- Simple filter
+  local alpha = .25
+  if not running_grip then running_grip = meta.sphereRadius end
+  running_grip = meta.sphereRadius * alpha + running_grip * (1-alpha)
   
   local min, max = 60, 90
-  
-  --if meta.sphereRadius>max or meta.sphereRadius<min then return end
-  local grip = math.min( math.max(meta.sphereRadius,min),max )
-  
-  -- Percent grip
-  grip = 100*(meta.sphereRadius-min)/(max-min)
-  
-  -- Check the time diff
-  local t_diff = unix.time()-(last_grip_t or unix.time())
-  if t_diff>1/2 then last_grip = grip end
-
-  -- Disallow big changes
-  last_grip = last_grip or grip
-  local grip_diff = grip - (last_grip or grip)
-  if math.abs(grip_diff)>40 then return end
-  
-  -- Filter
-  local alpha = .5
-  grip = alpha*grip + (1-alpha)*last_grip
+  -- 1 minus to reverse 
+  local percent = 1-(running_grip-min)/(max-min)
   
   -- Set the grip
-  print('Setting',grip)
-  
-  -- Set the last grip
-  last_grip = grip
-  last_grip_t = unix.time()
+  print('Setting',percent)
   
   -- Set the shared memory
-  Body.set_lgrip_percent( grip )
+  Body.set_lgrip_percent( percent )
   
 end
 table.insert(wait_channels,leap_ch)

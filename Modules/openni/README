@@ -3,8 +3,12 @@ make ALLOW_WARNINGS=1
 
 In /usr/local/include:
 ln -s ~/src/OpenNI2/Include ./OpenNI2
+ln -s ~/src/NiTE-MacOSX-x64-2.2/Include ./NiTE
 
 In /usr/local/lib:
 ln -s ~/src/OpenNI2/Bin/x64-Release/lib* .
+ln -s ~/src/OpenNI2/Bin/x64-Release/OpenNI2 .
+n -s ~/src/NiTE-MacOSX-x64-2.2/Redist/libNiTE2.* .
+ln -s ~/src/NiTE-MacOSX-x64-2.2/Redist/NiTE2 .
 
 You must put the ini file with the .so file in the same directory wherever you go

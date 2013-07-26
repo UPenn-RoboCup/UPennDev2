@@ -163,7 +163,7 @@ end
 -- Some overrides
 -- Gripper has different min/max limits
 for _,idx in ipairs(Body.parts['Aux']) do
-  servo.min_rad[idx] = -5*DEG_TO_RAD
+  servo.min_rad[idx] = -10*DEG_TO_RAD
   servo.max_rad[idx] = 30*DEG_TO_RAD
   servo.min_step[idx] = servo.min_step[idx] * servo.to_steps[idx]
   servo.max_step[idx] = servo.max_step[idx] * servo.to_steps[idx]

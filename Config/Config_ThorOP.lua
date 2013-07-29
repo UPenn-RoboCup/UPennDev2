@@ -18,7 +18,7 @@ Config = util.LoadConfig(params, platform,Config)
 
 -- Device Interface Libraries
 Config.dev = {}
-Config.dev.body = 'WebotsTHOROPBody2'
+Config.dev.body = 'THOROPBody'
 Config.dev.kinematics = 'THOROPKinematics'
 Config.dev.ip_wired = '192.168.123.255' 
 Config.dev.ip_wired_port = 111111

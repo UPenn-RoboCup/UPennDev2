@@ -44,8 +44,6 @@ package.path = HOME..'Player/Motion/Arms/?.lua;'..package.path
 -- include World files to the path
 package.path = HOME..'Player/World/?.lua;'..package.path
 
-
-
 --[[
 package.path = HOME..'Player/?.lua;'..package.path
 package.path = HOME..'Player/GameFSM/?.lua;'..package.path
@@ -62,21 +60,14 @@ package.path = HOME..'Player/Util/?.lua;'..package.path
 package.path = HOME..'Player/Config/?.lua;'..package.path
 --]]
 
--- include webots stuff
+-- Include webots files, if needed
+-- For now, these are located in Util
 if IS_WEBOTS then
 	print'Instantiating Webots specific items...'
-  package.cpath = HOME..'Frameworks/Webots/Controller/?.so;'..package.cpath
-  package.cpath = HOME..'Frameworks/Webots/GameControl/?.so;'..package.cpath
-  package.path = HOME..'Frameworks/Webots/Comm/?.lua;'..package.path
-  package.path = HOME..'Frameworks/Webots/GameControl/?.lua;'..package.path
 end
 
 -- include platform specific modules
 local Config = require'Config'
-local Platform = dofile(HOME..'Robots/'..Config.platform.name..'/Platform.lua')
-for i = 1, #Platform.path do
-  package.path = HOME..'Robots/'..Config.platform.name..Platform.path[i]..package.path
-end
-for i = 1, #Platform.cpath do
-  package.cpath = HOME..'Robots/'..Config.platform.name..Platform.cpath[i]..package.cpath
-end
+PLATFORM_NAME = Config.platform.name
+package.path = HOME..'Robots/'..PLATFORM_NAME..'/?.lua;'..package.path
+package.cpath = HOME..'Robots/'..PLATFORM_NAME..'/?.so;'..package.cpath

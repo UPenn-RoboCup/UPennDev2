@@ -131,7 +131,7 @@ servo.direction = vector.new({
 	1,1, -- Waist
 	-- TODO: Check the gripper
 	1,-1,1, -- left gripper
-	1,1,1, -- right gripper
+	1,-1,1, -- right gripper
 	1, -- Lidar pan
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
@@ -165,6 +165,7 @@ servo.max_rad = vector.zeros(nJoint)
 -- TODO: Implement step bias
 servo.step_bias = vector.zeros(nJoint)
 servo.rad_bias = vector.zeros(nJoint)
+-- TODO: Offset
 for i, nsteps in ipairs(servo.steps) do
 	servo.to_radians[i] = servo.moveRange[i] / nsteps
   if nsteps==4096 then
@@ -187,6 +188,9 @@ for _,idx in ipairs( parts['Aux'] ) do
 	servo.min_step[idx] = servo.min_step[idx] * servo.to_steps[idx]
 	servo.max_step[idx] = servo.max_step[idx] * servo.to_steps[idx]
 end
+-- Add some bias to this finger, since it was mounted wrong...
+-- TODO: Remount the finger...
+servo.step_bias[33] = -920
 
 -- Radian to step, using offsets and biases
 local make_joint_step = function( idx, radian, safe )

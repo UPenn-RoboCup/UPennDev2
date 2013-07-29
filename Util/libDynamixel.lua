@@ -70,7 +70,9 @@ local mx_registers = {
 	['command'] = {string.char(30,0),2},
 	['velocity'] = {string.char(32,0),2},
 	['position'] = {string.char(36,0),2},
-	
+  ['speed'] = {string.char(38,0),2},
+  ['load'] = {string.char(40,0),2},
+  
 	['battery'] = {string.char(42,0),2},
 	['temperature'] = {string.char(43,0),1},
 }
@@ -553,9 +555,7 @@ function libDynamixel.new_bus( ttyname, ttybaud )
 	obj.ttyname = ttyname
 	obj.baud = baud
 	-- Close out the device
-	obj.close = function (self)
-		return unix.close( self.fd )==0
-	end
+	obj.close = function (self) return unix.close( self.fd )==0 end
 	-- Reset the device
 	obj.reset = function(self)
 		self:close()
@@ -689,12 +689,12 @@ libDynamixel.service = function( dynamixels, main )
           response = coroutine.yield( true )
           -- We did something
           did_something = true
-        else
-          response = coroutine.yield( false )
+--        else
+--          response = coroutine.yield( false )
         end
         
         -- Yield if did nothing
-        --if not did_something then response = coroutine.yield( false ) end
+        if not did_something then response = coroutine.yield( false ) end
         
       end -- read/write loop
 		end -- coroutine function

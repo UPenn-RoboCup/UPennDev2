@@ -85,8 +85,8 @@ local function entry()
     end
     io.write'Done!\n'
     io.flush()
-    --print(#dynamixel.mx_on_bus..' MX:',unpack(dynamixel.mx_on_bus))
-    --print(#dynamixel.nx_on_bus..' NX:',unpack(dynamixel.nx_on_bus))
+    print(#dynamixel.mx_on_bus..' MX:',unpack(dynamixel.mx_on_bus))
+    print(#dynamixel.nx_on_bus..' NX:',unpack(dynamixel.nx_on_bus))
     dynamixel.t_last_read = unix.time()
   end
 end
@@ -101,19 +101,27 @@ local update_read = function(self,data,name)
     -- k is the motor id
     -- v is the step value
     local idx = motor_to_joint[k]
-    local rad = Body.make_joint_radian( idx, v )
-    local deg = rad*RAD_TO_DEG
-    print( string.format('Joint %d @ %.2f, step: %d',k,deg,v) )
-    Body.set_sensor_position( rad, idx )
+    if k == 15 then print('finger',idx,k,v) end
+    if name=='position' then
+      local rad = Body.make_joint_radian( idx, v )
+      --print( string.format('Joint %d @ %.2f, step: %d',k,rad,v) )
+      Body.set_sensor_position( rad, idx )
+    elseif name=='load' then
+      print( string.format('Joint %d @ %d load',k,v) )
+      --Body.set_sensor_position( rad, idx )
+    else
+      print('Could not place',name,'into shared memory')
+    end
   end
-  -- If finished a read, then stop the reading process
-  self.perform_read = false
     
   -- Show debugging output
-  local fps = 1 / self.t_diff_read
-  local debug_msg = string.format('%s chain reading at %.2f Hz', self.name,fps)
+  --[[
+  local debug_msg = string.format(
+  '%s chain reading %d packets %d ms %f', 
+  self.name, #data, self.t_diff_read*1000, self.t_last_read)
   print()
   print(debug_msg)
+  --]]
 end -- callback function
 
 --------------------
@@ -126,7 +134,7 @@ local update_instructions = function()
       -- Form the packets
       local sync_aux = Body.set_aux_command_packet()
       --print(sync_aux:byte(1,#sync_aux))
-      --table.insert( spine_dynamixel.instructions, sync_aux )
+      table.insert( d.instructions, sync_aux )
     end
   end
 end
@@ -138,11 +146,15 @@ local update_requests = function()
   -- Loop through the dynamixels and add read requests
   for _,d in ipairs(dynamixels) do
     -- Do not overpopulate (just yet)
-    if #d.requests==0 then
-      local inst = libDynamixel.get_nx_position( d.nx_on_bus )
-      if t-d.t_last_read > 1 then
-        table.insert( d.requests, {inst,'position'} )
-      end
+    if #d.requests==0 and t-d.t_last_read > 1 then
+      local inst_nx = libDynamixel.get_nx_position( d.nx_on_bus )
+      table.insert( d.requests, {inst_nx,'position'} )
+      local inst_mx = libDynamixel.get_mx_position( d.mx_on_bus )
+      table.insert( d.requests, {inst_mx,'position'} )
+      --[[
+      local inst_mx = libDynamixel.get_mx_load( d.mx_on_bus )
+      table.insert( d.requests, {inst_mx,'load'} )
+      --]]
     end
   end
 end
@@ -158,7 +170,7 @@ local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
 --------------------
 -- Left dynamixel
 if left_dynamixel then
-  left_dynamixel.name = 'Left arm'
+  left_dynamixel.name = 'LArm'
   table.insert(dynamixels,left_dynamixel)
   -- Set up the callback when joints were read
   left_dynamixel.callback = update_read
@@ -166,7 +178,7 @@ end -- if left chain
 
 -- Right dynamixel
 if right_dynamixel then
-  right_dynamixel.name = 'Right arm'
+  right_dynamixel.name = 'RArm'
   table.insert(dynamixels,right_dynamixel)
   -- Set up the callback when joints were read
   right_dynamixel.callback = update_read
@@ -208,11 +220,13 @@ local main = function()
       local debug_str = string.format('\nMain loop: %7.2f Hz',main_cnt/t_diff)
       led_state = 1-led_state
       for _,d in ipairs(dynamixels) do
+        --[[
+        print()
         print(string.format(
-        '%s chain | Read: %.2f Write: %.2f',
+        '%s chain |\tRead: %.2f Write: %.2f',
         d.name, t-d.t_last_read, t-d.t_last_write
         ))
-        
+        --]]
         -- Blink the led
         local sync_led_cmd = 
           libDynamixel.set_mx_led( d.mx_on_bus, led_state )
@@ -222,7 +236,7 @@ local main = function()
         table.insert( d.instructions, sync_led_red_cmd )
         
       end
-      --[[
+      ----[[
       os.execute('clear')
       print(debug_str)
       --]]

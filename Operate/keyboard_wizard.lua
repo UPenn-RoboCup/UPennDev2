@@ -30,7 +30,7 @@ local max_joint = #Body.parts['LArm']+3
 -- Change in radians for each +/-
 local DEG_TO_RAD = math.pi/180
 local delta_joint = 1 * DEG_TO_RAD
-local delta_ik = .05 -- meters
+local delta_ik = .01 -- meters
 
 -- Keyframing
 local keyframe_num = 0
@@ -108,21 +108,40 @@ local function ik_change(dx,dy,dz)
   -- For now, just go there...
   -- Other layers should perform safety checks
   local target = nil
+  local p = nil
   if current_arm=='left' then
-    local pL = Body.get_forward_larm()
-    pL[1] = pL[1] + dx
-    pL[2] = pL[2] + dy
-    pL[3] = pL[3] + dz
-    target = Body.get_inverse_larm(pL)
+    p = Body.get_forward_larm()
   else
-    local pR = Body.get_forward_rarm()
-    pR[1] = pR[1] + dx
-    pR[2] = pR[2] + dy
-    pR[3] = pR[3] + dz
-    target = Body.get_inverse_rarm(pR)
+    p = Body.get_forward_rarm()
   end
   
-  return target
+  print('\np', unpack(p) )
+  
+  -- Increment the position
+  p[1] = p[1] + dx
+  p[2] = p[2] + dy
+  p[3] = p[3] + dz
+  
+  print('\nnp', unpack(p) )
+  
+  if current_arm=='left' then
+    target = Body.get_inverse_larm(p)
+    if target then Body.set_larm_command(target) end
+  else
+    target = Body.get_inverse_rarm(p)
+    if target then Body.set_rarm_command(target) end
+  end
+  
+  print('\ncur', unpack(Body.get_rarm_position()) )
+  print('\nik', unpack(target) )
+  
+  -- Return the status
+  if target then
+    return string.format( 'Updated arm angles via IK' )
+  else
+    return 'Invalid IK update!'
+  end
+  
 end
 
 -- Print Message helpers
@@ -142,64 +161,54 @@ local change_msg = function(old,new)
   current_arm,inc_dec,joint_name(),new)
 end
 
+local function jangle_str(arm_name,arm_angles,finger_angles)
+  local text = string.format('%s:\t',arm_name)
+  for i,v in ipairs(arm_angles) do 
+    if i==current_joint then
+      if current_arm==arm_name:lower() then
+        text = text..' *'
+      else
+        text = text..'  '
+      end
+    else
+      text = text..' '
+    end
+    text = text..string.format( '%6.3f', v )
+  end
+  for i,v in ipairs(finger_angles) do
+    if i+6==current_joint then
+      if current_arm==arm_name:lower() then
+        text = text..' *'
+      else
+        text = text..'  '
+      end
+    else
+      text = text..' '
+    end
+    text = text..string.format( '%6.3f', v )
+  end
+  return text
+end
+
 local function state_msg()
   local msg = '=========\nKeyboard Wizard\n'
   msg = msg..'Current State'
+
+  local larm_cmd = Body.get_larm_command()
+  local rarm_cmd = Body.get_rarm_command()
+  local lfinger_cmd = vector.slice(Body.get_aux_command(),1,3)
+  local rfinger_cmd = vector.slice(Body.get_aux_command(),4,6)
+
+  local larm = Body.get_larm_position()
+  local rarm = Body.get_rarm_position()
+  local lfinger = vector.slice(Body.get_aux_position(),1,3)
+  local rfinger = vector.slice(Body.get_aux_position(),4,6)
   
-  local larm = Body.get_larm_command()
-  local rarm = Body.get_rarm_command()
-  local lfinger = vector.slice(Body.get_aux_command(),1,3)
-  local rfinger = vector.slice(Body.get_aux_command(),4,6)
-  local left = 'Left:\t'
-  for i,v in ipairs(larm) do 
-    if i==current_joint then
-      if current_arm=='left' then
-        left = left..' *'
-      else
-        left = left..'  '
-      end
-    else
-      left = left..' '
-    end
-    left = left..string.format( '%6.3f', v )
-  end
-  for i,v in ipairs(lfinger) do
-    if i+6==current_joint then
-      if current_arm=='left' then
-        left = left..' *'
-      else
-        left = left..'  '
-      end
-    else
-      left = left..' '
-    end
-    left = left..string.format( '%6.3f', v )
-  end
-  local right = 'Right:\t'
-  for i,v in ipairs(rarm) do
-    if i==current_joint then
-      if current_arm=='right' then
-        right = right..' *'
-      else
-        right = right..'  '
-      end
-    else
-      right = right..' '
-    end
-    right = right..string.format( '%6.3f', v )
-  end
-  for i,v in ipairs(rfinger) do
-    if i+6==current_joint then
-      if current_arm=='right' then
-        right = right..' *'
-      else
-        right = right..'  '
-      end
-    else
-      right = right..' '
-    end
-    right = right..string.format( '%6.3f', v )
-  end
+  local left  = jangle_str('left', larm,lfinger)
+  local right = jangle_str('right',rarm,rfinger)
+  local left_cmd  = jangle_str('left', larm_cmd,lfinger_cmd)
+  local right_cmd = jangle_str('right',rarm_cmd,rfinger_cmd)
+
   
   local cur = 'Operating on '..current_arm..' '..joint_name()..' in radians'
   local m = 'Control Mode: '..mode_msg[current_mode]
@@ -213,8 +222,8 @@ local function state_msg()
   )
   
   return string.format(
-  '======\nKeyboard Wizard State\n%s\n%s\n%s\n%s\n%s\n%s',
-  cur,m,lik,rik,left,right)
+  '======\nKeyboard Wizard State\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n%s',
+  cur,m,lik,rik,left,right,left_cmd,right_cmd)
 end
 
 -- Character processing
@@ -265,7 +274,7 @@ local function process_character(key_code,key_char,key_char_lower)
   if key_char_lower=='k' then
     local keyframe = add_keyframe()
     return string.format('Added keyframe %d!',keyframe_num)
-  elseif key_char_lower=='s' then
+  elseif key_char_lower=='v' then
     local name = save_keyframes()
     return string.format('Saved keyframe file %s!',name)
   end
@@ -290,24 +299,17 @@ local function process_character(key_code,key_char,key_char_lower)
   -- IK Changes with wasd
   local ik_update = nil
   if key_char_lower=='w' then
-    -- Change the joint changes using cartesian coordinates
-    ik_update = ik_change( delta_ik, 0, 0 )
+    return ik_change( delta_ik, 0, 0 )
   elseif key_char_lower=='a' then
-    ik_update = ik_change( 0, delta_ik, 0 )
+    return ik_change( 0, delta_ik, 0 )
   elseif key_char_lower=='s' then
-    ik_update = ik_change( -delta_ik, 0, 0 )
+    return ik_change( -delta_ik, 0, 0 )
   elseif key_char_lower=='d' then
-    ik_update = ik_change( 0, -delta_ik, 0 )
-  end
-  if ik_update then
-    -- Put the new angles into shm
-    if current_arm=='left' then
-      Body.set_larm_command(ik_update)
-    elseif current_arm=='right' then
-      Body.set_rarm_command(ik_update)
-    end
-    -- Return the status
-    return 'Updated arm angles via IK!'
+    return ik_change( 0, -delta_ik, 0 )
+  elseif key_char_lower=='q' then
+    return ik_change( 0, 0, delta_ik )
+  elseif key_char_lower=='z' then
+    return ik_change( 0, 0, -delta_ik )
   end
 
   -- Default message
@@ -344,7 +346,8 @@ while true do
   end
   
   -- Print result of the key press
-  --io.write( '\n\n', msg )
+  os.execute("clear")
+  io.write( '\n\n', msg )
   io.write( '\n\n', state_msg() )
   io.flush()
     

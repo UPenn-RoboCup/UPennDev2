@@ -12,20 +12,23 @@ local RAD_TO_DEG = 180/math.pi
 -- Libraries
 local unix = require'unix'
 local signal = require'signal'
-local libDynamixel = require'libDynamixel2'
+local libDynamixel = require'libDynamixel'
 local Body = require'Body'
 local joint_to_motor = Body.servo.joint_to_motor
 local motor_to_joint = Body.servo.motor_to_joint
+
+-- Body entry
+Body.entry()
 
 -- Setup the dynamixels array
 local dynamixels = {}
 
 -- Initialize the dynamixels
 --local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5A')
---local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5B')
+local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5B')
 --local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
 --local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5D')
-local spine_dynamixel = libDynamixel.new_bus()
+--local spine_dynamixel = libDynamixel.new_bus()
 
 -- Spine dynamixel
 if spine_dynamixel then
@@ -43,9 +46,10 @@ if spine_dynamixel then
       -- v is the step value
       local idx = motor_to_joint[k]
       local rad = Body.make_joint_radian( idx, v )
-      Body.set_joint_position( idx, rad )
-      --print(k,idx,v,rad,rad*RAD_TO_DEG)
-      print(rad*RAD_TO_DEG)
+      local deg = rad*RAD_TO_DEG
+      print('pkt id',k,idx)
+      print('pkt data',v,rad,deg)
+      Body.set_sensor_position( rad, idx )
     end
     
     -- If finished a read, then stop the reading process
@@ -89,7 +93,7 @@ local main = function()
     if #spine_dynamixel.instructions==0 then
       local sync_aux = Body.set_aux_command_packet()
       --print(sync_aux:byte(1,#sync_aux))
-      table.insert( spine_dynamixel.instructions, sync_aux )
+      --table.insert( spine_dynamixel.instructions, sync_aux )
     end
     
     -- Update the read every so often

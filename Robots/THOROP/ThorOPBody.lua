@@ -436,6 +436,7 @@ Body.get_time = unix.time
 Body.entry = function()
   -- Zero all joint requests
   for i=1,nJoint do Body.set_actuator_command(0,i) end
+  for i=1,nJoint do Body.set_sensor_position(0,i) end
 end
 Body.update = function()
 end

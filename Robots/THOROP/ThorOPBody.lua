@@ -1,7 +1,7 @@
 -- THOR OP Body
 print('webots?',_G['IS_WEBOTS'])
 -- Dynamixel definitions
-local libDynamixel = require'libDynamixel2'
+local libDynamixel = require'libDynamixel'
 
 -- Shared memory for the joints
 require'jcm'
@@ -139,9 +139,19 @@ assert(#servo.direction==nJoint,'Bad servo direction!')
 --http://support.robotis.com/en/product/dynamixel_pro/control_table.htm#Actuator_Address_611
 -- TODO: Use some loop based upon MX/NX
 -- TODO: some pros are different
-servo.steps = 2 * 251000 * vector.ones(nJoint)
--- Aux is MX
-for _,idx in ipairs( parts['Aux'] ) do servo.steps[idx] = 4096 end
+servo.steps = vector.new({
+	151875,151875, -- Head
+	251000,251000,251000,251000,151875,151875, --LArm
+	-- TODO: No legs yet! Using fake directions for now
+	251000,251000,251000,251000,251000,251000, --LLeg
+	251000,251000,251000,251000,251000,251000, --LArm
+	251000,251000,251000,251000,151875,151875, --RArm
+	251000,251000, -- Waist
+	-- TODO: Check the gripper
+	4096,4096,4096, -- left gripper
+	4096,4096,4096, -- right gripper
+	4096, -- Lidar pan
+})
 
 -- Convienence tables to go between steps and radians
 servo.moveRange = 360 * DEG_TO_RAD * vector.ones(nJoint)
@@ -157,7 +167,11 @@ servo.step_bias = vector.zeros(nJoint)
 servo.rad_bias = vector.zeros(nJoint)
 for i, nsteps in ipairs(servo.steps) do
 	servo.to_radians[i] = servo.moveRange[i] / nsteps
-	servo.step_zero[i] = nsteps / 2
+  if nsteps==4096 then
+	  servo.step_zero[i] = nsteps / 2
+  else
+    servo.step_zero[i] = 0
+  end
 	servo.to_steps[i] = nsteps / servo.moveRange[i]
 	servo.max_step[i] = servo.steps[i]
 	servo.min_rad[i] = servo.to_radians[i] * servo.min_step[i]

@@ -40,6 +40,7 @@ if spine_dynamixel then
   -- Set up the callback when joints were read
   spine_dynamixel.callback = function(data)
     
+    os.execute('clear')
     -- Update the shared memory
     for k,v in pairs(data) do
       -- k is the motor id
@@ -47,8 +48,7 @@ if spine_dynamixel then
       local idx = motor_to_joint[k]
       local rad = Body.make_joint_radian( idx, v )
       local deg = rad*RAD_TO_DEG
-      print('pkt id',k,idx)
-      print('pkt data',v,rad,deg)
+      print( string.format('Joint %d @ %.2f, step: %d',k,deg,v) )
       Body.set_sensor_position( rad, idx )
     end
     
@@ -114,7 +114,10 @@ local main = function()
         '\n\tDynamixel %s chain was seen %5.3f seconds ago',
         d.name,last_seen)
       end
+      --[[
+      os.execute('clear')
       print(debug_str)
+      --]]
       t0 = t_now
       main_cnt = 0
     end

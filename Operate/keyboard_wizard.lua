@@ -168,7 +168,7 @@ local function state_msg()
     right = right..string.format( '%6.3f', v )
   end
   
-  local cur = 'Operating on '..current_arm..' '..joint_name()
+  local cur = 'Operating on '..current_arm..' '..joint_name()..' in radians'
   
   return string.format(
   '======\nKeyboard Wizard State\n%s\n%s\n%s',

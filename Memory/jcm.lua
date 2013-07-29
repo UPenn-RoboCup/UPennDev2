@@ -17,6 +17,7 @@ shared_data.sensor.velocity = vector.zeros( nJoints )
 shared_data.sensor.accelerometer = vector.zeros( 3 )
 shared_data.sensor.gyro = vector.zeros( 3 )
 shared_data.sensor.compass = vector.zeros( 3 )
+shared_data.sensor.imuAngle = vector.zeros( 3 )
 
 shared_data.actuator = {}
 -- Position of joints is in radians from the zero position

@@ -239,7 +239,7 @@ function update()
   end
   
   -- Get a keypress
-  process_keyinput();
+  --process_keyinput();
 end
 
 local tDelay=0.002*1E6;

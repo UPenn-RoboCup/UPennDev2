@@ -82,7 +82,6 @@ servo.joint_to_motor={
   14,16,18, -- left gripper
   13,15,17, -- right gripper
   36, -- Lidar pan
-  
 }
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
 
@@ -93,7 +92,6 @@ for name,list in pairs(parts) do
     motor_parts[name][i] = servo.joint_to_motor[idx]
   end
 end
-
 
 -- Make the reverse map
 servo.motor_to_joint={}
@@ -114,7 +112,6 @@ servo.direction = vector.new({
   1,-1,1, -- left gripper
   1,1,1, -- right gripper
   1, -- Lidar pan
-  
   })
 assert(#servo.direction==nJoint,'Bad servo direction!')
 
@@ -130,18 +127,17 @@ servo.moveRange = 360 * DEG_TO_RAD * vector.ones(nJoint)
 servo.to_radians = vector.zeros(nJoint)
 servo.to_steps = vector.zeros(nJoint)
 servo.step_zero = vector.zeros(nJoint)
-servo.max_step = vector.zeros(nJoint)
 servo.min_step = vector.zeros(nJoint)
-servo.max_rad = vector.zeros(nJoint)
+servo.max_step = vector.new(servo.steps)
 servo.min_rad = vector.zeros(nJoint)
+servo.max_rad = vector.zeros(nJoint)
 -- TODO: Implement step bias
 servo.step_bias = vector.zeros(nJoint)
 servo.rad_bias = vector.zeros(nJoint)
-for i,nsteps in ipairs(servo.steps) do
-  servo.step_zero[i] = nsteps/2
+for i, nsteps in ipairs(servo.steps) do
   servo.to_radians[i] = servo.moveRange[i] / nsteps
+  servo.step_zero[i] = nsteps / 2
   servo.to_steps[i] = nsteps / servo.moveRange[i]
-  servo.min_step[i] = 0
   servo.max_step[i] = servo.steps[i]
   servo.min_rad[i] = servo.to_radians[i] * servo.min_step[i]
   servo.max_rad[i] = servo.to_radians[i] * servo.max_step[i]
@@ -189,20 +185,9 @@ Body.get_actuator_command = function(idx)
   return jcm.actuatorPtr.command[idx]
 end
 
--- TODO: Get rid of these somehow
--- TODO: Why Waist and not waist?
-Body.set_larm_hardness = function()
-end
-Body.set_rarm_hardness = function()
-end
-Body.set_waist_command = function()
-end
-Body.set_waist_hardness = function()
-end
 Body.set_syncread_enable = function()
 end
-Body.set_head_hardness = function()
-end
+
 
 --------------------------------
 -- Standard Convenience functions to access jcm
@@ -225,6 +210,14 @@ for part,jlist in pairs( parts ) do
       end
     end -- if number
   end -- Set
+  
+  -- TODO: Hardness should set some PID values
+  Body['get_'..part:lower()..'_hardness'] = function(idx)
+    return 0
+  end
+  Body['set_'..part:lower()..'_hardness'] = function(val,idx)
+  end
+  
 end
 
 --------------------------------
@@ -346,6 +339,17 @@ end
 -- Body sensor readings
 -- NOTE: Should just iterate through jcm...
 -- jcm should be the API compliance test
+for sensor, pointer in pairs(jcm.sensorPtr) do
+  Body['set_sensor_'..sensor] = function(val,idx)
+    if idx then pointer[idx] = val; return; end
+    for i,v in ipairs(val) do pointer[i] = v end
+  end
+  Body['get_sensor_'..sensor] = function(idx)
+    local s = pointer:table()
+    if idx then return s[idx] end
+    return s
+  end
+end
 
 ----------------------
 -- Inverse Kinematics
@@ -409,32 +413,28 @@ if IS_WEBOTS then
   
   servo.direction = vector.new({
     1,-1, -- Head
-    1,1, -- Waist
     1,-1,-1,1,-1,1, --LArm
     -- TODO: No legs yet!
     -1,-1,-1,-1,1,1, --LLeg
     -1,-1,1,1,-1,1, --LArm
     -1,-1,-1,-1,-1,1, --RArm
     -- TODO: Check the gripper
+    1,1, -- Waist
     1,1,1, -- left gripper
     1,1,1, -- right gripper
     1, -- Lidar pan
   })
   servo.rad_bias = vector.new({
-    0,0,
+    0,0, -- head
     -90,-10,0,45,0,0,
     0,0,0,0,0,0,
     0,0,0,0,0,0,
     -90,10,0,45,0,0,
     0,0,
-    0,0,
-    0,0,
+    0,0,0,
+    0,0,0,
     0,
   })*math.pi/180
-  
-  Body.make_joint_radian = function( idx, val )
-    return servo.direction[idx] * val - servo.rad_bias[idx];
-  end
 
   jointNames = { "Neck","Head", -- Head
   -- Left Arm
@@ -484,7 +484,8 @@ Body.entry = function()
 	-- Gyro
 	tags.gyro = webots.wb_robot_get_device("Gyro")
 	webots.wb_gyro_enable(tags.gyro, timeStep)
-	-- TODO: Gps
+	-- TODO: Gps, compass, kinect
+  --[[
 	tags.gps = webots.wb_robot_get_device("zero")
 	webots.wb_gps_enable(tags.gps, timeStep)
 	-- Compass
@@ -493,6 +494,7 @@ Body.entry = function()
 	-- Kinect
 	tags.kinect = webots.wb_robot_get_device("kinect")
 	webots.wb_camera_enable(tags.kinect, timeStep)
+  --]]
   
   -- Take a step to get some values
   webots.wb_robot_step(timeStep)
@@ -504,7 +506,6 @@ Body.entry = function()
 
 end
 Body.update = function()
-	print('Updating the webots body...')
 	
 	local tDelta = .001 * Body.timeStep
 	-- Set actuator commands from shared memory
@@ -533,7 +534,7 @@ Body.update = function()
     end
 
     -- Only set in webots if Torque Enabled
-    if en > 0 then webots.wb_servo_set_position( jtag, new_pos) end
+    if en > 0 and jtag>0 then webots.wb_servo_set_position(jtag, new_pos) end
   end
 
 	
@@ -542,10 +543,12 @@ Body.update = function()
 	if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
   
   -- Update the sensor readings
+  -- TODO: Verify the compass
+  --[[
   local compass = webots.wb_compass_get_values(tags.compass)
   -- Swap webots coordinates into our coordinates
-  -- TODO: Verify the compass
   Body.set_sensor_compass( {compass[1],-compass[2],compass[3]} )
+  --]]
   
   -- Accelerometer data (verified)
   local accel = webots.wb_accelerometer_get_values(tags.accelerometer)
@@ -561,9 +564,11 @@ Body.update = function()
   -- Update the sensor readings of the joint positions
   -- TODO: If a joint is not found?
   for idx, jtag in ipairs(tags.joints) do
-    local val = controller.wb_servo_get_position( jtag )
-    local rad = Body.make_joint_radian( idx, v )
-    Body.set_joint_position( idx, rad )
+    if jtag>0 then
+      local val = webots.wb_servo_get_position( jtag )
+      local rad = servo.direction[idx] * val - servo.rad_bias[idx]
+      Body.set_sensor_position( rad, idx )
+    end
   end
   
 end

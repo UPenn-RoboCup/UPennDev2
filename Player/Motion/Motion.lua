@@ -164,9 +164,7 @@ stillTime0 = 0;
 wasStill = false;
 
 -- Ultra Sound Processor
-if UltraSound then
-	UltraSound.entry()
-end
+if UltraSound then UltraSound.entry() end
 
 function entry()
   sm:entry()
@@ -176,12 +174,15 @@ end
 
 function update()
   -- update us
-  UltraSound.update();
+	if UltraSound then UltraSound.update() end
 
   local imuAngle = Body.get_sensor_imuAngle();
-  local maxImuAngle = math.max(math.abs(imuAngle[1]), math.abs(imuAngle[2]-bodyTilt));
-  fall = mcm.get_motion_fall_check() --Should we check for fall? 1 = yes
-  if (maxImuAngle > fallAngle and fall==1) then
+  local maxImuAngle = 
+	math.max(math.abs(imuAngle[1]), math.abs(imuAngle[2]-bodyTilt));
+	
+	--Should we check for fall? 1 = yes
+  local fall = mcm.get_motion_fall_check() 
+  if maxImuAngle > fallAngle and fall==1 then
     sm:add_event("fall");
     mcm.set_walk_isFallDown(1); --Notify world to reset heading 
   else
@@ -247,8 +248,10 @@ function update_shm()
   mcm.set_walk_bodyOffset(walk.get_body_offset());
   mcm.set_walk_uLeft(walk.uLeft);
   mcm.set_walk_uRight(walk.uRight);
-  mcm.set_us_left(UltraSound.left);
-  mcm.set_us_right(UltraSound.right);
+	if UltraSound then
+		mcm.set_us_left(UltraSound.left);
+		mcm.set_us_right(UltraSound.right);
+	end
   mcm.set_walk_stillTime( stillTime );
 end
 

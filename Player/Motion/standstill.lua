@@ -111,8 +111,8 @@ function update()
 
   pTorso=pTorso+dpTorso;
 
-  vcm.set_camera_bodyHeight(pTorso[3]);
-  vcm.set_camera_bodyTilt(pTorso[5]);
+  mcm.set_camera_bodyHeight(pTorso[3]);
+  mcm.set_camera_bodyTilt(pTorso[5]);
 --print("BodyHeight/Tilt:",pTorso[3],pTorso[5]*180/math.pi)
 
   q = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);

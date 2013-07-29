@@ -18,12 +18,19 @@ local Body = require'Body'
 
 local current_joint = 1
 local current_arm = 'left'
+-- Modes: direct, ik
+local current_mode = 1
+local mode_msg = {
+  'direct',
+  'inverse kinematics'
+}
 -- Arm with three fingers
 local max_joint = #Body.parts['LArm']+3
 
 -- Change in radians for each +/-
 local DEG_TO_RAD = math.pi/180
 local delta_joint = 1 * DEG_TO_RAD
+local delta_ik = .05 -- meters
 
 -- Keyframing
 local keyframe_num = 0
@@ -39,7 +46,6 @@ local function save_keyframes()
 end
 
 local function joint_name()
-  print('hi')
 	local jName = 'Unknown'
 	if current_arm=='left' then
 		if current_joint<7 then
@@ -95,10 +101,33 @@ local function set_joint(val)
   end
 end
 
+-- Change the joints via IK
+local function ik_change(dx,dy,dz)
+  -- Perform FK to get current coordinates
+  -- Solve for the new set of coordinates
+  -- For now, just go there...
+  -- Other layers should perform safety checks
+  local target = nil
+  if current_arm=='left' then
+    local pL = Body.get_forward_larm()
+    pL[1] = pL[1] + dx
+    pL[2] = pL[2] + dy
+    pL[3] = pL[3] + dz
+    target = Body.get_inverse_larm(pL)
+  else
+    local pR = Body.get_forward_rarm()
+    pR[1] = pR[1] + dx
+    pR[2] = pR[2] + dy
+    pR[3] = pR[3] + dz
+    target = Body.get_inverse_rarm(pR)
+  end
+  
+  return target
+end
+
 -- Print Message helpers
 local switch_msg = function()
   local jName = joint_name()
-  print('jn',jName)
   local sw = string.format('Switched to %s %s @ %.2f radians.', 
   current_arm, jName, get_joint() )
   return sw
@@ -173,10 +202,19 @@ local function state_msg()
   end
   
   local cur = 'Operating on '..current_arm..' '..joint_name()..' in radians'
+  local m = 'Control Mode: '..mode_msg[current_mode]
+  local pL = Body.get_forward_larm()
+  local pR = Body.get_forward_rarm()
+  local lik = string.format(
+    'Left  IK:\t(%.2f  %.2f  %.2f) (%.2f  %.2f  %.2f)',unpack(pL)
+  )
+  local rik = string.format(
+    'Right IK:\t(%.2f  %.2f  %.2f) (%.2f  %.2f  %.2f)',unpack(pR)
+  )
   
   return string.format(
-  '======\nKeyboard Wizard State\n%s\n%s\n%s',
-  cur,left,right)
+  '======\nKeyboard Wizard State\n%s\n%s\n%s\n%s\n%s\n%s',
+  cur,m,lik,rik,left,right)
 end
 
 -- Character processing
@@ -224,21 +262,54 @@ local function process_character(key_code,key_char,key_char_lower)
   end
   
   -- Keyframe management
-  if key_char=='k' then
+  if key_char_lower=='k' then
     local keyframe = add_keyframe()
     return string.format('Added keyframe %d!',keyframe_num)
-  elseif key_char=='s' then
+  elseif key_char_lower=='s' then
     local name = save_keyframes()
     return string.format('Saved keyframe file %s!',name)
   end
   
   -- Help and is_debugging
-  if key_char=='h' then
+  if key_char_lower=='h' then
     return'HELP'
-  elseif key_char=='p' then
-    return state_msg()
+  elseif key_char_lower=='p' then
+    return 'Printing the state'
   end
   
+  -- Control modes
+  -- TODO: Why need to change modes at all?
+  if key_char_lower=='m' then
+    current_mode = current_mode + 1
+    if current_mode>#mode_msg then
+      current_mode = 1
+    end
+    return string.format('Switched to %s mode',mode_msg[current_mode])
+  end
+  
+  -- IK Changes with wasd
+  local ik_update = nil
+  if key_char_lower=='w' then
+    -- Change the joint changes using cartesian coordinates
+    ik_update = ik_change( delta_ik, 0, 0 )
+  elseif key_char_lower=='a' then
+    ik_update = ik_change( 0, delta_ik, 0 )
+  elseif key_char_lower=='s' then
+    ik_update = ik_change( -delta_ik, 0, 0 )
+  elseif key_char_lower=='d' then
+    ik_update = ik_change( 0, -delta_ik, 0 )
+  end
+  if ik_update then
+    -- Put the new angles into shm
+    if current_arm=='left' then
+      Body.set_larm_command(ik_update)
+    elseif current_arm=='right' then
+      Body.set_rarm_command(ik_update)
+    end
+    -- Return the status
+    return 'Updated arm angles via IK!'
+  end
+
   -- Default message
   return 'Nothing changes'
   
@@ -273,7 +344,8 @@ while true do
   end
   
   -- Print result of the key press
-  io.write( '\n\n', msg )
+  --io.write( '\n\n', msg )
+  io.write( '\n\n', state_msg() )
   io.flush()
     
 end

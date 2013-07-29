@@ -406,12 +406,26 @@ end
 Body.get_inverse_larm = function( tr )
 	local qLArm = Body.get_larm_position()
 	local qLArm_target = Kinematics.inverse_l_arm(tr, qLArm)
-	if check_ik_error( qLArm_target, tr ) then return qLArm_target end
+	--if not check_ik_error( qLArm_target, tr ) then return nil end
+  return qLArm_target
 end
 Body.get_inverse_rarm = function( tr )
 	local qRArm = Body.get_rarm_position()
 	local qRArm_target = Kinematics.inverse_r_arm(tr, qRArm)
-	if check_ik_error( qRArm_target, tr ) then return qRArm_target end
+	--if not check_ik_error( qRArm_target, tr ) then return nil end
+  return qRArm_target
+end
+
+-- Take in joint angles and output an {x,y,z,r,p,yaw} table
+Body.get_forward_larm = function()
+	local qLArm = Body.get_larm_position()
+	local pLArm = Kinematics.l_arm_torso( qLArm )
+  return pLArm
+end
+Body.get_forward_rarm = function()
+	local qRArm = Body.get_rarm_position()
+	local pRArm = Kinematics.r_arm_torso( qRArm )
+  return pRArm
 end
 
 -- TODO: Write functions to modify transform in directions
@@ -420,6 +434,8 @@ end
 -- More standard api functions
 Body.get_time = unix.time
 Body.entry = function()
+  -- Zero all joint requests
+  for i=1,nJoint do Body.set_actuator_command(0,i) end
 end
 Body.update = function()
 end
@@ -429,7 +445,7 @@ end
 ----------------------
 -- Webots compatibility
 if IS_WEBOTS then
-	local webots = require('webots')
+	local webots = require'webots'
 	Body.get_time = webots.wb_robot_get_time
 
 	servo.direction = vector.new({

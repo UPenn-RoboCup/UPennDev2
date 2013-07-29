@@ -20,54 +20,61 @@ local motor_to_joint = Body.servo.motor_to_joint
 -- Body entry
 Body.entry()
 
+local process_read = function(self,data)
+  --os.execute('clear')
+  -- Update the shared memory
+  for k,v in pairs(data) do
+    -- k is the motor id
+    -- v is the step value
+    local idx = motor_to_joint[k]
+    local rad = Body.make_joint_radian( idx, v )
+    local deg = rad*RAD_TO_DEG
+    print( string.format('Joint %d @ %.2f, step: %d',k,deg,v) )
+    Body.set_sensor_position( rad, idx )
+  end
+  -- If finished a read, then stop the reading process
+  self.perform_read = false
+    
+  -- Show debugging output
+  local fps = 1 / self.t_diff_read
+  local debug_msg = string.format('%s chain reading at %.2f Hz',
+  self.name,fps)
+  print()
+  print(debug_msg)
+end -- callback function
+
 -- Setup the dynamixels array
 local dynamixels = {}
 
 -- Initialize the dynamixels
---local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5A')
+local left_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5A')
 local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5B')
---local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
---local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5D')
+local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
+--local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5D')
 --local spine_dynamixel = libDynamixel.new_bus()
+
+-- Left dynamixel
+if left_dynamixel then
+  left_dynamixel.name = 'Left arm'
+  table.insert(dynamixels,left_dynamixel)
+  -- Set up the callback when joints were read
+  left_dynamixel.callback = process_read
+end -- if left chain
+
+-- Right dynamixel
+if right_dynamixel then
+  right_dynamixel.name = 'Right arm'
+  table.insert(dynamixels,right_dynamixel)
+  -- Set up the callback when joints were read
+  right_dynamixel.callback = process_read
+end -- if left chain
 
 -- Spine dynamixel
 if spine_dynamixel then
   spine_dynamixel.name = 'Spine'
-  spine_dynamixel.data = {}
   table.insert(dynamixels,spine_dynamixel)
-  local last_spine = 0
-  local spine_cnt = 0
   -- Set up the callback when joints were read
-  spine_dynamixel.callback = function(data)
-    
-    os.execute('clear')
-    -- Update the shared memory
-    for k,v in pairs(data) do
-      -- k is the motor id
-      -- v is the step value
-      local idx = motor_to_joint[k]
-      local rad = Body.make_joint_radian( idx, v )
-      local deg = rad*RAD_TO_DEG
-      print( string.format('Joint %d @ %.2f, step: %d',k,deg,v) )
-      Body.set_sensor_position( rad, idx )
-    end
-    
-    -- If finished a read, then stop the reading process
-    spine_dynamixel.perform_read = false
-    
-    -- Show debugging output
-    local t_diff = spine_dynamixel.t_last_read - last_spine
-    spine_cnt = spine_cnt+1
-    if t_diff>1 then
-      local spine_fps = spine_cnt / t_diff
-      local spine_debug = string.format('%s chain reading at %.2f Hz',
-      spine_dynamixel.name,spine_fps)
-      print()
-      print(spine_debug)
-      spine_cnt = 0
-      last_spine = spine_dynamixel.t_last_read
-    end
-    end-- callback function
+  spine_dynamixel.callback = process_read
 end -- if spine chain
 
 -- Begin to service
@@ -98,6 +105,8 @@ local main = function()
     
     -- Update the read every so often
     if unix.time()-spine_dynamixel.t_last_read > 1 then
+      left_dynamixel.perform_read = true
+      right_dynamixel.perform_read = true
       spine_dynamixel.perform_read = true
     end
     

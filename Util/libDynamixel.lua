@@ -617,7 +617,7 @@ libDynamixel.service = function( dynamixels, main )
     io.flush()
 		dynamixel.ids_on_bus = dynamixel:ping_probe()
 --    dynamixel.ids_on_bus = {14,16,18}
-    assert(#dynamixel.ids_on_bus>0,'No Dynamixels found!')
+    assert(#dynamixel.ids_on_bus>0,'No Dynamixels found on '..dynamixel.name)
     io.write'Done!\n'
     io.write('Found')
     for i,id in ipairs(dynamixel.ids_on_bus) do io.write(' ',id) end
@@ -640,7 +640,6 @@ libDynamixel.service = function( dynamixels, main )
     end
     print(#dynamixel.mx_on_bus..' MX:',unpack(dynamixel.mx_on_bus))
     print(#dynamixel.nx_on_bus..' NX:',unpack(dynamixel.nx_on_bus))
-    
 		dynamixel.t_last_read = unix.time()
 		dynamixel.thread = coroutine.create( 
 		function()
@@ -680,7 +679,9 @@ libDynamixel.service = function( dynamixels, main )
           -- Grab the status return packets from the bus
           local pkts, done = DP.input( status_str )
           -- Yield the packets
-          dynamixel.t_last_read = unix.time()
+          local t = unix.time()
+          dynamixel.t_diff_read = t - dynamixel.t_last_read
+          dynamixel.t_last_read = t
           local values = {}
           for p,pkt in ipairs(pkts) do
             local status = DP.parse_status_packet( pkt )
@@ -716,8 +717,10 @@ libDynamixel.service = function( dynamixels, main )
           local ret = unix.write(fd, sync_led_red_cmd)
           assert(ret~=-1,string.format('BAD WRITE on %s',dynamixel.name))
           -- Update last write state
-          time_elapsed = unix.time()
-          dynamixel.t_last_write = unix.time()
+          local t = unix.time()
+          time_elapsed = t
+          dynamixel.t_diff_write = t - dynamixel.t_last_write
+          dynamixel.t_last_write = t
           -- Sync write yields true
           response = coroutine.yield( true )
           -- We did something
@@ -729,7 +732,9 @@ libDynamixel.service = function( dynamixels, main )
         if #dynamixel.instructions>0 then
           local instruction = dynamixel.instructions[1]
           local command_ret = unix.write( fd, instruction )
-          dynamixel.t_last_write = unix.time()
+          local t = unix.time()
+          dynamixel.t_diff_write = t - dynamixel.t_last_write
+          dynamixel.t_last_write = t
           -- Pop the item
           table.remove(dynamixel.instructions,1)
           -- Yield true for syncing
@@ -800,7 +805,7 @@ libDynamixel.service = function( dynamixels, main )
           table.remove(dynamixel_fds,d_id)
         elseif param_type=='table' and who_to_service.callback then
           -- Process the callback for read data
-          who_to_service.callback( param )
+          who_to_service:callback( param )
           who_to_service.is_syncing = true
         elseif param_type=='number' then
           --print('requesting data from',param,'motors')

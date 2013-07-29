@@ -616,12 +616,10 @@ libDynamixel.service = function( dynamixels, main )
     io.write('Checking ids on ',dynamixel.name,' chain...')
     io.flush()
 		dynamixel.ids_on_bus = dynamixel:ping_probe()
+    -- TODO: For faster startup, cache the results in a Config/Body file
 --    dynamixel.ids_on_bus = {14,16,18}
     assert(#dynamixel.ids_on_bus>0,'No Dynamixels found on '..dynamixel.name)
     io.write'Done!\n'
-    io.write('Found')
-    for i,id in ipairs(dynamixel.ids_on_bus) do io.write(' ',id) end
-    io.write('\n')
     io.flush()
     
     -- Read each motor id to classify each as NX or MX motors
@@ -634,7 +632,8 @@ libDynamixel.service = function( dynamixels, main )
       if model_version==29 then
         table.insert( dynamixel.mx_on_bus, model_reg.id )
       else
-        print(model_reg.id,'Model',model_version)
+        -- TODO: There is a model difference on the right shoulder!
+        --print(model_reg.id,'Model',model_version)
         table.insert( dynamixel.nx_on_bus, model_reg.id )
       end
     end

@@ -47,11 +47,11 @@ end -- callback function
 local dynamixels = {}
 
 -- Initialize the dynamixels
-local left_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5A')
-local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5B')
-local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
---local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5D')
---local spine_dynamixel = libDynamixel.new_bus()
+local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5A')
+local left_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5B')
+local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
+--local none_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5D')
+--local test_dynamixel = libDynamixel.new_bus()
 
 -- Left dynamixel
 if left_dynamixel then

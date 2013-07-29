@@ -190,6 +190,7 @@ local function jangle_str(arm_name,arm_angles,finger_angles)
   return text
 end
 
+-- TODO: Add torque enabling
 local function state_msg()
   local msg = '=========\nKeyboard Wizard\n'
   msg = msg..'Current State'
@@ -209,7 +210,6 @@ local function state_msg()
   local left_cmd  = jangle_str('left', larm_cmd,lfinger_cmd)
   local right_cmd = jangle_str('right',rarm_cmd,rfinger_cmd)
 
-  
   local cur = 'Operating on '..current_arm..' '..joint_name()..' in radians'
   local m = 'Control Mode: '..mode_msg[current_mode]
   local pL = Body.get_forward_larm()

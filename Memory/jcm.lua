@@ -26,6 +26,8 @@ shared_data.actuator.command = vector.zeros( nJoints )
 shared_data.actuator.torque_enable = vector.zeros( nJoints )
 -- Velocity of joints is in radians per second
 shared_data.actuator.velocity = vector.zeros( nJoints )
+-- Hardness of joints is legacy, but offers a simple abstraction of pid gains
+shared_data.actuator.hardness = vector.zeros( nJoints )
 
 -- Call the initializer
 util.init_shm_segment(..., shared_data, shared_data_sz)

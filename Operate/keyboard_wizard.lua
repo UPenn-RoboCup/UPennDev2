@@ -18,6 +18,8 @@ local Body = require'Body'
 
 local current_joint = 1
 local current_arm = 'left'
+-- Arm with three fingers
+local max_joint = #Body.parts['LArm']+3
 
 -- Change in radians for each +/-
 local DEG_TO_RAD = math.pi/180
@@ -36,20 +38,23 @@ local function save_keyframes()
   return filename
 end
 
--- Arm joint specifics
-local arm_part_names = {
-  [1]='wrist',
-  [2]='wrist',
-  [3]='elbow',
-  [4]='shoulder',
-  [5]='shoulder',
-  [6]='shoulder',
-  [7]='finger1',
-  [8]='finger2',
-  [9]='finger3',
-}
-local max_joint = #arm_part_names
---local max_joint = #Body.parts['LArm']
+local function joint_name()
+	local jName = 'Unknown'
+	if current_arm=='left' then
+		if current_joint<7 then
+			jName = Body.jointNames[Body.indexLArm+current_joint-1]
+		else
+			jName = 'finger '..current_joint-6
+		end
+	elseif current_arm=='right' then
+		if current_joint<7 then
+			jName = Body.jointNames[Body.indexRArm+current_joint-1]
+		else
+			jName = 'finger '..current_joint-6
+		end
+	end
+	return jName
+end
 
 -- Joint access helpers
 local function get_joint()
@@ -92,7 +97,7 @@ end
 -- Print Message helpers
 local switch_msg = function()
   return string.format('Switched to %s %s @ %.2f radians.', 
-  current_arm,arm_part_names[current_joint],get_joint())
+  current_arm,joint_name(),get_joint())
 end
 
 local change_msg = function(old,new)
@@ -101,7 +106,7 @@ local change_msg = function(old,new)
   elseif new<old then inc_dec='Decreased'
   end
   return string.format('%s arm | %s %s to %.3f', 
-  current_arm,inc_dec,arm_part_names[current_joint],new)
+  current_arm,inc_dec,joint_name(),new)
 end
 
 local function state_msg()
@@ -113,12 +118,61 @@ local function state_msg()
   local lfinger = vector.slice(Body.get_aux_command(),1,3)
   local rfinger = vector.slice(Body.get_aux_command(),4,6)
   local left = 'Left:\t'
-  for i,v in ipairs(larm) do left = left..string.format( ' %6.3f', v ) end
-  for i,v in ipairs(lfinger) do left = left..string.format( ' %6.3f', v ) end
+  for i,v in ipairs(larm) do 
+    if i==current_joint then
+      if current_arm=='left' then
+        left = left..' *'
+      else
+        left = left..'  '
+      end
+    else
+      left = left..' '
+    end
+    left = left..string.format( '%6.3f', v )
+  end
+  for i,v in ipairs(lfinger) do
+    if i+6==current_joint then
+      if current_arm=='left' then
+        left = left..' *'
+      else
+        left = left..'  '
+      end
+    else
+      left = left..' '
+    end
+    left = left..string.format( '%6.3f', v )
+  end
   local right = 'Right:\t'
-  for i,v in ipairs(rarm) do right = right..string.format( ' %6.3f', v ) end
-  for i,v in ipairs(rfinger) do right = right..string.format( ' %6.3f', v ) end
-  return msg..'\n'..left..'\n'..right
+  for i,v in ipairs(rarm) do
+    if i==current_joint then
+      if current_arm=='right' then
+        right = right..' *'
+      else
+        right = right..'  '
+      end
+    else
+      right = right..' '
+    end
+    right = right..string.format( '%6.3f', v )
+  end
+  for i,v in ipairs(rfinger) do
+    if i+6==current_joint then
+      if current_arm=='right' then
+        right = right..' *'
+      else
+        right = right..'  '
+      end
+    else
+      right = right..' '
+    end
+    right = right..string.format( '%6.3f', v )
+  end
+  
+  local cur = 'Operating on '..current_arm..' '..joint_name()
+  
+  return string.format(
+  '======\nKeyboard Wizard State\n%s\n%s\n%s',
+  cur,left,right)
 end
 
 -- Character processing
@@ -147,16 +201,7 @@ local function process_character(key_code,key_char,key_char_lower)
   if key_char=='[' then
     current_arm = 'left'
     return switch_msg()
-  elseif key_char=='[' then
-    current_arm = 'right'
-    return switch_msg()
-  end
-  
-  -- Bracket keys switch arms
-  if key_char=='[' then
-    current_arm = 'left'
-    return switch_msg()
-  elseif key_char=='[' then
+  elseif key_char==']' then
     current_arm = 'right'
     return switch_msg()
   end

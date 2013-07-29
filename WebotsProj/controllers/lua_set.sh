@@ -30,16 +30,18 @@ export PLAYER_ID=$1
 export TEAM_ID=$2
 export PLATFORM=webots
 
+TESTFILE=webots_wizard.lua
+#TESTFILE=Test/test_ladder.lua
+#TESTFILE=Test/test_walk_webots.lua
+
 # Spawn the right terminal
 if [ "$EXT_TERM" -gt "0" ]
 then
   # In separate xterms
-#  exec $TERM -l -e "$LUA Test/test_ladder.lua"
-  exec $TERM -l -e "$LUA Test/test_walk_webots.lua"
+  exec $TERM -l -e "$LUA $TESTFILE"
 else
   # In webots console
-#  exec $LUA Test/test_ladder.lua
-  exec $LUA Test/test_walk_webots.lua
+  exec $LUA $TESTFILE
 fi
 
 #exec luajit -l controller start.lua

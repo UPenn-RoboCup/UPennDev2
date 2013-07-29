@@ -462,6 +462,9 @@ if IS_WEBOTS then
 	local tags = {}
 
 	Body.entry = function()
+    
+    -- Zero all joint requests
+    for i=1,nJoint do Body.set_actuator_command(0,i) end
 
 		-- Initialize the webots system
 		webots.wb_robot_init()
@@ -515,7 +518,7 @@ if IS_WEBOTS then
 			local cmd = Body.get_actuator_command(i)
 			local pos = Body.get_sensor_position(i)
 			-- TODO: What is velocity?
-			local vel = 1 or Body.get_actuator_velocity(i)
+			local vel = 0 or Body.get_actuator_velocity(i)
 			local en = 1 or Body.get_actuator_torque_enable(i)
 			local deltaMax = tDelta * vel
 			-- Only update the joint if the motor is torqued on

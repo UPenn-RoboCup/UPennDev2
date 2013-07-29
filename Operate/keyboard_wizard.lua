@@ -23,7 +23,7 @@ local max_joint = #Body.parts['LArm']+3
 
 -- Change in radians for each +/-
 local DEG_TO_RAD = math.pi/180
-local delta_joint = 0.1 * DEG_TO_RAD
+local delta_joint = 1 * DEG_TO_RAD
 
 -- Keyframing
 local keyframe_num = 0
@@ -39,6 +39,7 @@ local function save_keyframes()
 end
 
 local function joint_name()
+  print('hi')
 	local jName = 'Unknown'
 	if current_arm=='left' then
 		if current_joint<7 then
@@ -70,7 +71,7 @@ local function get_joint()
       return Body.get_rarm_command(current_joint)
     else
       -- finger
-      return Body.set_aux_command(current_joint-3)
+      return Body.get_aux_command(current_joint-3)
     end
   end
 end
@@ -96,8 +97,11 @@ end
 
 -- Print Message helpers
 local switch_msg = function()
-  return string.format('Switched to %s %s @ %.2f radians.', 
-  current_arm,joint_name(),get_joint())
+  local jName = joint_name()
+  print('jn',jName)
+  local sw = string.format('Switched to %s %s @ %.2f radians.', 
+  current_arm, jName, get_joint() )
+  return sw
 end
 
 local change_msg = function(old,new)

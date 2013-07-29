@@ -362,14 +362,15 @@ function util.get_wireless_ip()
   return ip;
 end
 
-local loadconfig = function(configName)
-  local local_config=require(configName);
+local loadconfig = function(configName,Config)
+  local local_config=require(configName)
   for k,v in pairs(local_config) do
-    Config[k]=local_config[k];
+    Config[k]=local_config[k]
   end
+	return Config
 end
 
-function util.LoadConfig(params, platform)
+function util.LoadConfig(params, platform, Config)
   local file_header = "Config_"..platform.name;
   for k, v in pairs(params.name) do
     local file_name = params[v] or "";
@@ -381,8 +382,9 @@ function util.LoadConfig(params, platform)
     end
     if string.len(file_name) ~= 0 then file_name = '_'..file_name; end
     file_name = v..'/'..file_header..'_'..v..file_name
-    loadconfig(file_name)
+    Config = loadconfig(file_name,Config)
   end
+	return Config
 end
 
 return util

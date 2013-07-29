@@ -8,12 +8,14 @@ local relax = require('relax')
 local stance = require('stance')
 local nullstate = require('nullstate')
 local sit = require('sit')
-local standstill = require('standstill') -- This makes torso straight (for webots robostadium)
+-- This makes torso straight (for webots robostadium)
+local standstill = require('standstill') 
 
 local falling = require('falling')
 local standup = require('standup')
 local kick = require(Config.dev.kick)
-local align = require('align') -- slow, non-dynamic stepping for fine alignment before kick
+-- slow, non-dynamic stepping for fine alignment before kick
+local align = require('align') 
 
 --For diving
 local divewait = require('divewait')
@@ -23,10 +25,12 @@ local dive = require('dive')
 local grip = require 'grip'
 
 if Config.platform.name~="WebotsOP" then
-  crawl = require(Config.dev.crawl)  --Quadruped locomotion controller
-  largestep = require(Config.dev.largestep) --Special walk controller with footstep planning
-  stancetocrawl = require'stancetocrawl' -- Changes between standing, sitting, crawling state
-end
+	--Quadruped locomotion controller
+  crawl = require(Config.dev.crawl)
+	--Special walk controller with footstep planning
+  largestep = require(Config.dev.largestep)
+	-- Changes between standing, sitting, crawling state
+  stancetocrawl = require'stancetocrawl' end
 
 local sit_disable = Config.sit_disable or 0;
 
@@ -145,8 +149,9 @@ else --For large robots that cannot sit down or getup
 
 end
 
+-- TODO: This should be in mcm
 -- set state debug handle to shared memory settor
-sm:set_state_debug_handle(gcm.set_fsm_motion_state);
+--sm:set_state_debug_handle(gcm.set_fsm_motion_state);
 
 -- TODO: fix kick->fall transition
 --sm:set_transition(kick, 'fall', falling);
@@ -159,7 +164,9 @@ stillTime0 = 0;
 wasStill = false;
 
 -- Ultra Sound Processor
-UltraSound.entry();
+if UltraSound then
+	UltraSound.entry()
+end
 
 function entry()
   sm:entry()

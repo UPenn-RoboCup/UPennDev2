@@ -7,6 +7,11 @@ local Config = require('Config');
 local shared = {}
 local shsize = {}
 
+-- For the vision system
+shared.camera = {}
+shared.camera.bodyTilt = vector.zeros(1);
+shared.camera.bodyHeight = vector.zeros(1);
+
 shared.walk = {};
 shared.walk.bipedal = vector.zeros(1); --are we on foot or on four?
 

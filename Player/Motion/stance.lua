@@ -1,11 +1,14 @@
+--[[
 local Config = require('Config')
 local Body = require(Config.dev.body)
 local Kinematics = require(Config.dev.kinematics)
 local walk = require(Config.dev.walk)
 local vector = require('vector')
 local Transform = require('Transform')
-require('vcm')
 require('mcm')
+--]]
+
+require'common_motion'
 
 local stance = {}
 stance._NAME = ...
@@ -124,8 +127,14 @@ function stance.update()
 
   pTorso=pTorso+dpTorso;
 
-  vcm.set_camera_bodyHeight(pTorso[3]);
-  vcm.set_camera_bodyTilt(pTorso[5]);
+  --vcm.set_camera_bodyHeight(pTorso[3]);
+  --vcm.set_camera_bodyTilt(pTorso[5]);
+
+	-- Change to use mcm for the body height and body tilt
+  mcm.set_camera_bodyHeight(pTorso[3]);
+  mcm.set_camera_bodyTilt(pTorso[5]);
+	
+
 --print("BodyHeight/Tilt:",pTorso[3],pTorso[5]*180/math.pi)
 
   q = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);
@@ -143,8 +152,12 @@ function stance.update()
     else
       if t-tFinish>tEndWait then
 	print("Stand done, time elapsed",t-tStart)
-	vcm.set_camera_bodyHeight(Config.walk.bodyHeight);
-	vcm.set_camera_bodyTilt(Config.walk.bodyTilt);
+	--vcm.set_camera_bodyHeight(Config.walk.bodyHeight);
+	--vcm.set_camera_bodyTilt(Config.walk.bodyTilt);
+	-- Change to use mcm
+	mcm.set_camera_bodyHeight(Config.walk.bodyHeight);
+	mcm.set_camera_bodyTilt(Config.walk.bodyTilt);
+
 	walk.stance_reset();
 --	walk.start();
         return "done"

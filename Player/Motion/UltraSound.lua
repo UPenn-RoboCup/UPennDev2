@@ -1,4 +1,8 @@
-module(..., package.seeall);
+module(..., package.seeall)
+
+if Config.platform.name~='nao' then
+	return false
+end
 
 -- TODO: use auto UltraSound from naoqi? switching modes takes as long as 1.0sec
 

@@ -1,18 +1,11 @@
 module(..., package.seeall);
 require'common_motion'
-
 local keyframe = require('keyframe')
-local wcm = require('wcm')
 
-local cwd = unix.getcwd();
-if string.find(cwd, "WebotsController") then
-  cwd = cwd.."/Run";
-end
-cwd = cwd.."/Motion/keyframes"
-
-keyframe.load_motion_file(cwd.."/"..Config.km.standup_front,
+-- Load the front and back getup keyframes
+keyframe.load_motion_file(KEYFRAME_DIR.."/"..Config.km.standup_front,
                           "standupFromFront");
-keyframe.load_motion_file(cwd.."/"..Config.km.standup_back,
+keyframe.load_motion_file(KEYFRAME_DIR.."/"..Config.km.standup_back,
                           "standupFromBack");
 
 use_rollback_getup = Config.use_rollback_getup or 0;
@@ -25,18 +18,18 @@ function entry()
   Body.set_body_hardness(1);
   -- start standup routine (back/front)
   local imuAngleY = Body.get_sensor_imuAngle(2);
-  if (imuAngleY > 0) then
+  if imuAngleY > 0 then
     print("standupFromFront");
     keyframe.do_motion("standupFromFront");
   else
-    pose = wcm.get_pose();
-    batt_level=Body.get_battery_level();
-
-    if math.abs(pose.x) < 2.0 and
+    local batt_level = Body.get_battery_level();
+		if wcm then
+    	pose = wcm.get_pose();
+		end
+    if pose and math.abs(pose.x) < 2.0 and
        use_rollback_getup > 0 and
        batt_level*10>batt_max then
-
-      print("standupFromBack");
+      print("Backflip standupFromBack");
       keyframe.do_motion("standupFromBack2");
     else
       print("standupFromBack");

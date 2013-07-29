@@ -4,7 +4,7 @@
 --------------------------------
 local vector = require'vector'
 local util = require'util'
-local nJoints = 25
+local nJoints = 35
 local shared_data = {}
 local shared_data_sz = {}
 
@@ -13,6 +13,10 @@ shared_data.sensor = {}
 shared_data.sensor.position = vector.zeros( nJoints )
 -- Velocity of joints is in radians per second
 shared_data.sensor.velocity = vector.zeros( nJoints )
+-- Raw inertial readings
+shared_data.sensor.accelerometer = vector.zeros( 3 )
+shared_data.sensor.gyro = vector.zeros( 3 )
+shared_data.sensor.compass = vector.zeros( 3 )
 
 shared_data.actuator = {}
 -- Position of joints is in radians from the zero position

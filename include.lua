@@ -1,7 +1,7 @@
 local handle = io.popen('pwd')
 local cwd = handle:read("*a"):gsub("%s+$", "")
 handle:close()
-local Webots = false
+IS_WEBOTS = false
 local HOME = cwd:gsub('Player.*$','')
 HOME = HOME:gsub('Operate.*$','')
 HOME = HOME:gsub('Tools.*$','')
@@ -9,13 +9,16 @@ HOME = HOME:gsub('Frameworks.*$','')
 HOME = HOME:gsub('Util.*$','')
 if HOME:find("Webots") ~= nil then
   HOME = HOME:gsub('Webots.*$','')
-  Webots = true
+  IS_WEBOTS = true
 end
---HOME = HOME..'/'
+
+KEYFRAME_DIR = HOME.."Player/Motion/keyframes"
+
 OPERATING_SYSTEM = io.popen('uname'):read('*a'):lower():gsub("%s+$", "")
 print( 'Working Dir:', cwd )
 print( 'Home Dir:', HOME )
 print( 'Operating Sys:', OPERATING_SYSTEM )
+print( 'Keyframes directory:', KEYFRAME_DIR )
 
 -- include C modules to cpath
 package.cpath = HOME..'Modules/?/?.so;'..package.cpath
@@ -60,7 +63,7 @@ package.path = HOME..'Player/Config/?.lua;'..package.path
 --]]
 
 -- include webots stuff
-if Webots then
+if IS_WEBOTS then
 	print'Instantiating Webots specific items...'
   package.cpath = HOME..'Frameworks/Webots/Controller/?.so;'..package.cpath
   package.cpath = HOME..'Frameworks/Webots/GameControl/?.so;'..package.cpath

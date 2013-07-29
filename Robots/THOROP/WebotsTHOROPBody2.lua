@@ -1,4 +1,5 @@
--- THOR OP Kinematics
+-- THOR OP Body
+print('webots?',_G['IS_WEBOTS'])
 -- Dynamixel definitions
 local libDynamixel = require'libDynamixel2'
 
@@ -6,6 +7,7 @@ local libDynamixel = require'libDynamixel2'
 require'jcm'
 
 -- Utilities
+require'unix'
 require'vector'
 local function mod_angle(a)
   -- Reduce angle to [-pi, pi)
@@ -21,61 +23,40 @@ local Body = {}
 
 --------------------------------
 -- Shared memory layout
---[[
--- Real THOR-OP
+
+-- Real THOR-OP (Cenatur uses ankles for wheels, maybe?)
 local indexHead = 1   -- Head: 1 2
 local nJointHead = 2
-local indexSpine = 3  --Spine: 3 4
-local nJointSpine = 2
-local indexLArm = 5   --LArm: 5 6 7 8 9 10
+local indexLArm = 3   --LArm: 5 6 7 8 9 10
 local nJointLArm = 6 		
-local indexLLeg = 11  --LLeg: 11 12 13 14 15 16
+local indexLLeg = 9  --LLeg: 11 12 13 14 15 16
 local nJointLLeg = 6
-local indexRLeg = 17  --RLeg: 17 18 19 20 21 22
+local indexRLeg = 15  --RLeg: 17 18 19 20 21 22
 local nJointRLeg = 6
-local indexRArm = 23  --RArm: 23 24 25 26 27 28
+local indexRArm = 21  --RArm: 23 24 25 26 27 28
 local nJointRArm = 6
+local indexWaist = 27  --Waist: 3 4
+local nJointWaist = 2
 -- Auxiliary servos
 -- 6 Fingers for gripping
 -- 1 servo for lidar panning
-local indexAux = 29 
+local indexAux = 29
 local nJointAux = 7
-local nJoint = 35
---]]
-----[[
--- THOR-OP Centaur
-local indexHead = 1   -- Head: 1 2
-local nJointHead = 2
-local indexSpine = 3  --Spine: 3 4
-local nJointSpine = 2
-local indexLArm = 5   --LArm: 5 6 7 8 9 10
-local nJointLArm = 6 		
-local indexLLeg = 11  --LWheel: 11
-local nJointLLeg = 1
-local indexRLeg = 12  --RWheel: 12
-local nJointRLeg = 1
-local indexRArm = 13  --RArm: 13 14 15 16 17 18
-local nJointRArm = 6
--- Auxiliary servos
--- 6 Fingers for gripping
--- 1 servo for lidar panning
-local indexAux = 19
-local nJointAux = 7
-local nJoint = 25
-local indexLGrip = 19
+local indexLGrip = 29
 local nLGrip = 3
-local indexRGrip = 22
+local indexRGrip = 32
 local nRGrip = 3
---]]
+local nJoint = 35
+
 assert(nJoint==(indexAux+nJointAux)-indexHead,'Bad joint counting!')
-Body.nJoint = nJoint
+
 local parts = {
   ['Head']=vector.count(indexHead,nJointHead),
-  ['Spine']=vector.count(indexSpine,nJointSpine),
   ['LArm']=vector.count(indexLArm,nJointLArm),
   ['LLeg']=vector.count(indexLLeg,nJointLLeg),
   ['RLeg']=vector.count(indexRLeg,nJointRLeg),
   ['RArm']=vector.count(indexRArm,nJointRArm),
+  ['Waist']=vector.count(indexWaist,nJointWaist),
   ['Aux']=vector.count(indexAux,nJointAux)
 }
 local inv_parts = {}
@@ -84,8 +65,7 @@ for name,list in pairs(parts) do
     inv_parts[idx] = name
   end
 end
-Body.parts = parts
-Body.inv_parts = inv_parts
+
 --------------------------------
 -- Servo parameters
 local servo = {}
@@ -93,12 +73,12 @@ local servo = {}
 -- shm joint id to dynamixel motor id
 servo.joint_to_motor={
   27,28,  --Head
-  25,26,  -- Spine
   1,3,5,7,9,11, --LArm
-  -- TODO: No legs!
-  20, -- left wheel
-  19, -- right wheel
+  -- TODO: No legs!  Using fake id numbers for now
+  20,51,52,53,54,55, -- left wheel
+  19,61,62,63,64,65, -- right wheel
   2,4,6,8,10,12,  --RArm
+  25,26,  -- Waist
   14,16,18, -- left gripper
   13,15,17, -- right gripper
   36, -- Lidar pan
@@ -113,7 +93,7 @@ for name,list in pairs(parts) do
     motor_parts[name][i] = servo.joint_to_motor[idx]
   end
 end
-Body.motor_parts = motor_parts
+
 
 -- Make the reverse map
 servo.motor_to_joint={}
@@ -121,14 +101,15 @@ for j,m in ipairs(servo.joint_to_motor) do
   servo.motor_to_joint[m] = j
 end
 
+-- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
   1,1, -- Head
-  1,1, -- Spine
   1,1,1,-1,1,-1, --LArm
-  -- TODO: No legs yet!
-  1, --LLeg
-  1, --LArm
+  -- TODO: No legs yet! Using fake directions for now
+  1, 1,1,1,1,1, --LLeg
+  1, 1,1,1,1,1, --LArm
   -1,1,1,1, 1,-1, --RArm
+  1,1, -- Waist
   -- TODO: Check the gripper
   1,-1,1, -- left gripper
   1,1,1, -- right gripper
@@ -142,13 +123,10 @@ assert(#servo.direction==nJoint,'Bad servo direction!')
 -- TODO: some pros are different
 servo.steps = 2 * 251000 * vector.ones(nJoint)
 -- Aux is MX
-for _,idx in ipairs( parts['Aux'] ) do
-  servo.steps[idx] = 4096
-end
+for _,idx in ipairs( parts['Aux'] ) do servo.steps[idx] = 4096 end
 
 -- Convienence tables to go between steps and radians
 servo.moveRange = 360 * DEG_TO_RAD * vector.ones(nJoint)
-servo.step_bias = vector.zeros(nJoint)
 servo.to_radians = vector.zeros(nJoint)
 servo.to_steps = vector.zeros(nJoint)
 servo.step_zero = vector.zeros(nJoint)
@@ -156,6 +134,9 @@ servo.max_step = vector.zeros(nJoint)
 servo.min_step = vector.zeros(nJoint)
 servo.max_rad = vector.zeros(nJoint)
 servo.min_rad = vector.zeros(nJoint)
+-- TODO: Implement step bias
+servo.step_bias = vector.zeros(nJoint)
+servo.rad_bias = vector.zeros(nJoint)
 for i,nsteps in ipairs(servo.steps) do
   servo.step_zero[i] = nsteps/2
   servo.to_radians[i] = servo.moveRange[i] / nsteps
@@ -164,11 +145,12 @@ for i,nsteps in ipairs(servo.steps) do
   servo.max_step[i] = servo.steps[i]
   servo.min_rad[i] = servo.to_radians[i] * servo.min_step[i]
   servo.max_rad[i] = servo.to_radians[i] * servo.max_step[i]
+  servo.rad_bias[i] = servo.to_radians[i] * servo.step_bias[i]
 end
 
 -- Some overrides
 -- Gripper has different min/max limits
-for _,idx in ipairs(Body.parts['Aux']) do
+for _,idx in ipairs( parts['Aux'] ) do
   servo.min_rad[idx] = -10*DEG_TO_RAD
   servo.max_rad[idx] = 30*DEG_TO_RAD
   servo.min_step[idx] = servo.min_step[idx] * servo.to_steps[idx]
@@ -181,38 +163,50 @@ local make_joint_step = function( idx, radian, safe )
     + servo.step_bias[idx] + servo.step_zero[idx])
   if not safe then return step end
   return math.min(math.max(step, servo.min_step[idx]),servo.max_step[idx])
-  --return math.min(math.max(step, 0), servo.steps[idx]-1);
+  --return math.min(math.max(step, 0), servo.steps[idx]-1)
 end
-Body.make_joint_step = make_joint_step
+
 -- Step to radian
 local make_joint_radian = function( idx, step )
   local radian = servo.direction[idx] * servo.to_radians[idx] * 
     (step - servo.step_zero[idx] - servo.step_bias[idx])
   return radian
 end
-Body.make_joint_radian = make_joint_radian
-
-Body.servo = servo
 
 --------------------------------
 -- Motor wizard Standard convenience functions to access jcm
-Body.get_joint_position = function(idx)
+Body.get_sensor_position = function(idx)
   return jcm.sensorPtr.position[idx]
 end
-Body.set_joint_position = function(idx,val)
+Body.set_sensor_position = function(val,idx)
   jcm.sensorPtr.position[idx] = val
 end
 
-Body.set_joint_command = function(idx,val)
+Body.set_actuator_command = function(val,idx)
   jcm.actuatorPtr.command[idx] = val
 end
-Body.get_joint_command = function(idx)
+Body.get_actuator_command = function(idx)
   return jcm.actuatorPtr.command[idx]
+end
+
+-- TODO: Get rid of these somehow
+-- TODO: Why Waist and not waist?
+Body.set_larm_hardness = function()
+end
+Body.set_rarm_hardness = function()
+end
+Body.set_waist_command = function()
+end
+Body.set_waist_hardness = function()
+end
+Body.set_syncread_enable = function()
+end
+Body.set_head_hardness = function()
 end
 
 --------------------------------
 -- Standard Convenience functions to access jcm
-for part,jlist in pairs(Body.parts) do
+for part,jlist in pairs( parts ) do
   local a = jlist[1]
   local b = jlist[#jlist]
   Body['get_'..part:lower()..'_position'] = function(idx)
@@ -221,7 +215,7 @@ for part,jlist in pairs(Body.parts) do
   end -- Get
   Body['set_'..part:lower()..'_command'] = function(val,idx)
     if type(val)=='number' then
-      if idx then jcm.actuatorPtr.command[ jlist[idx] ] = val; return; end
+      if idx then jcm.actuatorPtr.command[ jlist[idx] ] = val return end
       for _,l in ipairs(jlist) do
         jcm.actuatorPtr.command[l] = val
       end
@@ -235,7 +229,7 @@ end
 
 --------------------------------
 -- Additional Convenience functions to access jcm
-for part,jlist in pairs(Body.parts) do
+for part,jlist in pairs(parts) do
   
   local a = jlist[1]
   local b = jlist[#jlist]
@@ -246,7 +240,7 @@ for part,jlist in pairs(Body.parts) do
   end -- Get
   Body['set_'..part:lower()..'_position'] = function(val,idx)
     if type(val)=='number' then
-      if idx then jcm.sensorPtr.position[ list[idx] ] = val; return; end
+      if idx then jcm.sensorPtr.position[ list[idx] ] = val return end
       for _,jid in ipairs(jlist) do
         jcm.sensorPtr.position[jid] = val
       end
@@ -264,7 +258,7 @@ for part,jlist in pairs(Body.parts) do
   end -- Get
   Body['set_'..part:lower()..'_torque_enable'] = function(val,idx)
     if type(val)=='number' then
-      if idx then jcm.sensorPtr.position[ jlist[idx] ] = val; return; end
+      if idx then jcm.sensorPtr.position[ jlist[idx] ] = val return end
       for _,l in ipairs(jlist) do
         jcm.actuatorPtr.torque_enable[l] = val
       end
@@ -284,8 +278,8 @@ end
 for k,v in pairs(libDynamixel.nx_registers) do
   local get_func = libDynamixel['get_nx_'..k]
   local set_func = libDynamixel['get_nx_'..k]
-  for part,mlist in pairs(Body.motor_parts) do
-    local jlist = Body.parts[part]
+  for part,mlist in pairs(motor_parts) do
+    local jlist = parts[part]
     local a = jlist[1]
     local b = jlist[#jlist]
     Body['get_'..part..'_'..k..'_packet'] = function()
@@ -302,8 +296,8 @@ end
 for k,v in pairs(libDynamixel.mx_registers) do
   local get_func = libDynamixel['get_mx_'..k]
   local set_func = libDynamixel['set_mx_'..k]
-  local mlist = Body.motor_parts['Aux']
-  local jlist = Body.parts['Aux']
+  local mlist = motor_parts['Aux']
+  local jlist = parts['Aux']
   local a = jlist[1]
   local b = jlist[#jlist]
   Body['get_aux_'..k..'_packet'] = function()
@@ -346,6 +340,12 @@ Body.set_rgrip_percent = function( percent )
     jcm.actuatorPtr.command[idx] = radian
   end
 end
+
+
+----------------------
+-- Body sensor readings
+-- NOTE: Should just iterate through jcm...
+-- jcm should be the API compliance test
 
 ----------------------
 -- Inverse Kinematics
@@ -390,5 +390,198 @@ Body.get_inverse_rarm = function( tr )
 end
 
 -- TODO: Write functions to modify transform in directions
+
+----------------------
+-- More standard api functions
+Body.get_time = unix.time
+Body.entry = function()
+end
+Body.update = function()
+end
+Body.exit = function()
+end
+
+----------------------
+-- Webots compatibility
+if IS_WEBOTS then
+  local webots = require('webots')
+  Body.get_time = webots.wb_robot_get_time
+  
+  servo.direction = vector.new({
+    1,-1, -- Head
+    1,1, -- Waist
+    1,-1,-1,1,-1,1, --LArm
+    -- TODO: No legs yet!
+    -1,-1,-1,-1,1,1, --LLeg
+    -1,-1,1,1,-1,1, --LArm
+    -1,-1,-1,-1,-1,1, --RArm
+    -- TODO: Check the gripper
+    1,1,1, -- left gripper
+    1,1,1, -- right gripper
+    1, -- Lidar pan
+  })
+  servo.rad_bias = vector.new({
+    0,0,
+    -90,-10,0,45,0,0,
+    0,0,0,0,0,0,
+    0,0,0,0,0,0,
+    -90,10,0,45,0,0,
+    0,0,
+    0,0,
+    0,0,
+    0,
+  })*math.pi/180
+  
+  Body.make_joint_radian = function( idx, val )
+    return servo.direction[idx] * val - servo.rad_bias[idx];
+  end
+
+  jointNames = { "Neck","Head", -- Head
+  -- Left Arm
+  "ShoulderL", "ArmUpperL", "LeftShoulderYaw",
+  "ArmLowerL","LeftWristYaw","LeftWristRoll",
+  -- Left leg
+  "PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",
+  -- Right leg
+  "PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
+  --Right arm
+  "ShoulderR", "ArmUpperR", "RightShoulderYaw","ArmLowerR",
+  "RightWristYaw","RightWristRoll",
+  -- Waist
+  "TorsoPitch","TorsoYaw",
+  -- Gripper
+  "l_wrist_grip1","l_wrist_grip2","l_wrist_grip3",
+  "r_wrist_grip1","r_wrist_grip2","r_wrist_grip3",
+  -- lidar movement
+  "ChestLidar",
+  };
+
+	-- Setup the webots tags
+	local tags = {}
+
+Body.entry = function()
+
+  -- Initialize the webots system
+	webots.wb_robot_init()
+  
+  -- Grab the update time
+  local timeStep = webots.wb_robot_get_basic_time_step()
+  
+  -- Grab the tags from the joint names
+	tags.joints = {}
+	for i,v in ipairs(jointNames) do
+		tags.joints[i] = webots.wb_robot_get_device(v)
+    if tags.joints[i]>0 then
+		  webots.wb_servo_enable_position(tags.joints[i], timeStep)
+    else
+      print(v,'not found')
+    end
+	end
+  -- Add Sensor Tags
+	-- Accelerometer
+	tags.accelerometer = webots.wb_robot_get_device("Accelerometer")
+	webots.wb_accelerometer_enable(tags.accelerometer, timeStep)
+	-- Gyro
+	tags.gyro = webots.wb_robot_get_device("Gyro")
+	webots.wb_gyro_enable(tags.gyro, timeStep)
+	-- TODO: Gps
+	tags.gps = webots.wb_robot_get_device("zero")
+	webots.wb_gps_enable(tags.gps, timeStep)
+	-- Compass
+	tags.compass = webots.wb_robot_get_device("compass")
+	webots.wb_compass_enable(tags.compass, timeStep)
+	-- Kinect
+	tags.kinect = webots.wb_robot_get_device("kinect")
+	webots.wb_camera_enable(tags.kinect, timeStep)
+  
+  -- Take a step to get some values
+  webots.wb_robot_step(timeStep)
+  Body.timeStep = timeStep
+  -- Filter the IMU a bit?
+  -- TODO: Should use Yida's IMU filter
+	--imuAngle = {0, 0, 0}
+	--aImuFilter = 1 - math.exp(-tDelta/0.5)
+
+end
+Body.update = function()
+	print('Updating the webots body...')
+	
+	local tDelta = .001 * Body.timeStep
+	-- Set actuator commands from shared memory
+	for i, jtag in ipairs(tags.joints) do
+    local cmd = Body.get_actuator_command(i)
+    local pos = Body.get_sensor_position(i)
+    -- TODO: What is velocity?
+    local vel = 1 or Body.get_actuator_velocity(i)
+    local en = 1 or Body.get_actuator_torque_enable(i)
+    local deltaMax = tDelta * vel
+    -- Only update the joint if the motor is torqued on
+		
+    -- If the joint is moving
+    -- Clamp the difference between commanded and actuated
+    -- so that we don't have huge jumped
+    -- NOTE: This *should* be handled by the simulator?
+    local new_pos = cmd
+    if vel > 0 then
+      local delta = cmd - pos
+      if delta > deltaMax then
+        delta = deltaMax
+      elseif delta < -deltaMax then
+        delta = -deltaMax
+      end
+      new_pos = pos + delta
+    end
+
+    -- Only set in webots if Torque Enabled
+    if en > 0 then webots.wb_servo_set_position( jtag, new_pos) end
+  end
+
+	
+
+	-- Step the simulation, and shutdown if the update fails
+	if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
+  
+  -- Update the sensor readings
+  local compass = webots.wb_compass_get_values(tags.compass)
+  -- Swap webots coordinates into our coordinates
+  -- TODO: Verify the compass
+  Body.set_sensor_compass( {compass[1],-compass[2],compass[3]} )
+  
+  -- Accelerometer data (verified)
+  local accel = webots.wb_accelerometer_get_values(tags.accelerometer)
+  Body.set_sensor_accelerometer( 
+    {(accel[1]-512)/128,(accel[2]-512)/128,-(accel[3]-512)/128}
+  )
+  -- Gyro data (verified)
+  local gyro = webots.wb_gyro_get_values(tags.gyro)
+  Body.set_sensor_gyro( 
+    {(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273}
+  )
+  
+  -- Update the sensor readings of the joint positions
+  -- TODO: If a joint is not found?
+  for idx, jtag in ipairs(tags.joints) do
+    local val = controller.wb_servo_get_position( jtag )
+    local rad = Body.make_joint_radian( idx, v )
+    Body.set_joint_position( idx, rad )
+  end
+  
+end
+
+Body.exit = function()
+end
+
+Body.tags = tags
+
+end -- webots check
+
+-- Exports for use in other functions
+Body.nJoint = nJoint
+Body.parts = parts
+Body.inv_parts = inv_parts
+Body.motor_parts = motor_parts
+Body.servo = servo
+Body.make_joint_step = make_joint_step
+Body.make_joint_radian = make_joint_radian
 
 return Body

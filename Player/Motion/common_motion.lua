@@ -4,5 +4,5 @@ Kinematics = require(Config.dev.kinematics)
 walk = require(Config.dev.walk)
 util = require'util'
 require'mcm'
-require'gcm'
-require'vcm'
+--require'gcm'
+--require'vcm'

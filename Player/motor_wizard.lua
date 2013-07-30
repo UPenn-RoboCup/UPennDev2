@@ -101,14 +101,17 @@ local update_read = function(self,data,name)
     -- k is the motor id
     -- v is the step value
     local idx = motor_to_joint[k]
-    if k == 15 then print('finger',idx,k,v) end
+    -- Uncomment for specific bias tuning
+    --if k == 15 then print('finger',idx,k,v) end
     if name=='position' then
       local rad = Body.make_joint_radian( idx, v )
       --print( string.format('Joint %d @ %.2f, step: %d',k,rad,v) )
       Body.set_sensor_position( rad, idx )
     elseif name=='load' then
-      print( string.format('Joint %d @ %d load',k,v) )
-      --Body.set_sensor_position( rad, idx )
+      local load_ratio = v/10.24
+      if v>=1024 then load_ratio = load_ratio - 100 end
+      --print( string.format('Joint %d @ %d load (%.3f)',k,v,load_ratio) )
+      Body.set_sensor_load( load_ratio, idx )
     else
       print('Could not place',name,'into shared memory')
     end
@@ -149,9 +152,11 @@ local update_requests = function()
     if #d.requests==0 and t-d.t_last_read > 1 then
       local inst_nx = libDynamixel.get_nx_position( d.nx_on_bus )
       table.insert( d.requests, {inst_nx,'position'} )
+      --[[
       local inst_mx = libDynamixel.get_mx_position( d.mx_on_bus )
       table.insert( d.requests, {inst_mx,'position'} )
-      --[[
+      --]]
+      ----[[
       local inst_mx = libDynamixel.get_mx_load( d.mx_on_bus )
       table.insert( d.requests, {inst_mx,'load'} )
       --]]

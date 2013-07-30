@@ -162,7 +162,7 @@ local change_msg = function(old,new)
 end
 
 local function jangle_str(arm_name,arm_angles,finger_angles)
-  local text = string.format('%s:\t',arm_name)
+  local text = ''
   for i,v in ipairs(arm_angles) do 
     if i==current_joint then
       if current_arm==arm_name:lower() then
@@ -192,38 +192,53 @@ end
 
 -- TODO: Add torque enabling
 local function state_msg()
-  local msg = '=========\nKeyboard Wizard\n'
-  msg = msg..'Current State'
 
+  -- Command
   local larm_cmd = Body.get_larm_command()
   local rarm_cmd = Body.get_rarm_command()
   local lfinger_cmd = vector.slice(Body.get_aux_command(),1,3)
   local rfinger_cmd = vector.slice(Body.get_aux_command(),4,6)
 
+  -- Position
   local larm = Body.get_larm_position()
   local rarm = Body.get_rarm_position()
   local lfinger = vector.slice(Body.get_aux_position(),1,3)
   local rfinger = vector.slice(Body.get_aux_position(),4,6)
   
-  local left  = jangle_str('left', larm,lfinger)
-  local right = jangle_str('right',rarm,rfinger)
-  local left_cmd  = jangle_str('left', larm_cmd,lfinger_cmd)
-  local right_cmd = jangle_str('right',rarm_cmd,rfinger_cmd)
-
-  local cur = 'Operating on '..current_arm..' '..joint_name()..' in radians'
-  local m = 'Control Mode: '..mode_msg[current_mode]
+  -- Load
+  local larm_load = Body.get_larm_load()
+  local rarm_load = Body.get_rarm_load()
+  local lfinger_load = vector.slice(Body.get_aux_load(),1,3)
+  local rfinger_load = vector.slice(Body.get_aux_load(),4,6)
+  
+  -- Inverse Kinematics
   local pL = Body.get_forward_larm()
   local pR = Body.get_forward_rarm()
-  local lik = string.format(
-    'Left  IK:\t(%.2f  %.2f  %.2f) (%.2f  %.2f  %.2f)',unpack(pL)
-  )
-  local rik = string.format(
-    'Right IK:\t(%.2f  %.2f  %.2f) (%.2f  %.2f  %.2f)',unpack(pR)
-  )
   
-  return string.format(
-  '======\nKeyboard Wizard State\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n%s',
-  cur,m,lik,rik,left,right,left_cmd,right_cmd)
+  -- Make the message
+  local msg = '=========\nKeyboard Wizard\n'
+  msg = msg..'Current State\n'
+  msg = msg..'Current State\n'
+  msg = msg..'Operating on '..current_arm..' '..joint_name()..' in radians'
+
+  -- Add the IK processing
+  msg = msg..string.format(
+    '\nLeft  IK:\t(%.2f  %.2f  %.2f) (%.2f  %.2f  %.2f)',unpack(pL)
+  )
+  msg = msg..string.format(
+    '\nRight IK:\t(%.2f  %.2f  %.2f) (%.2f  %.2f  %.2f)',unpack(pR)
+  )
+  -- Add the shared memory
+  msg = msg..'\n\nLeft  pos\t'..jangle_str('left', larm,lfinger)
+  msg = msg..'\nRight pos\t'..jangle_str('right',rarm,rfinger)
+  msg = msg..'\n\nLeft  cmd\t'..jangle_str('left', larm_cmd,lfinger_cmd)
+  msg = msg..'\nRight cmd\t'..jangle_str('right',rarm_cmd,rfinger_cmd)
+  msg = msg..'\n\nLeft  load\t'..jangle_str('left', larm_load,lfinger_load)
+  msg = msg..'\nRight load\t'..jangle_str('right',rarm_load,rfinger_load)
+
+  
+  -- Return the message
+  return msg
 end
 
 -- Character processing

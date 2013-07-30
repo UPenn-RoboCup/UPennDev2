@@ -13,6 +13,8 @@ shared_data.sensor = {}
 shared_data.sensor.position = vector.zeros( nJoints )
 -- Velocity of joints is in radians per second
 shared_data.sensor.velocity = vector.zeros( nJoints )
+-- Load of joints is measured in percentage
+shared_data.sensor.load = vector.zeros( nJoints )
 -- Raw inertial readings
 shared_data.sensor.accelerometer = vector.zeros( 3 )
 shared_data.sensor.gyro = vector.zeros( 3 )

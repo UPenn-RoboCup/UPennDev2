@@ -290,7 +290,7 @@ for part,jlist in pairs(parts) do
 	end -- Get
 	Body['set_'..part:lower()..'_torque_enable'] = function(val,idx)
 		if type(val)=='number' then
-			if idx then jcm.sensorPtr.position[ jlist[idx] ] = val return end
+			if idx then jcm.actuatorPtr.torque_enable[ jlist[idx] ] = val return end
 			for _,l in ipairs(jlist) do
 				jcm.actuatorPtr.torque_enable[l] = val
 			end
@@ -301,6 +301,18 @@ for part,jlist in pairs(parts) do
 		end -- if number
 	end -- Set
 
+	Body['get_'..part:lower()..'_load'] = function(idx)
+		if idx then return jcm.sensorPtr.load[ list[idx] ] end
+		return jcm.sensorPtr.load:table( a, b )
+	end -- Get
+	Body['set_'..part:lower()..'_load'] = function(val,idx)
+		if type(val)=='number' then
+			if idx then jcm.sensorPtr.load[ jlist[idx] ] = val return end
+			for _,l in ipairs(jlist) do jcm.sensorPtr.load[l] = val end
+		else
+			for i,l in ipairs(jlist) do jcm.sensorPtr.load[l] = val[i] end
+		end -- if number
+	end -- Set
 
 end
 

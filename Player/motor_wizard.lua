@@ -25,6 +25,14 @@ local dynamixels = {}
 local nMotors = 0
 
 --------------------
+-- Initialize the dynamixels
+local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5A')
+local left_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5B')
+local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
+--local none_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5D')
+--local test_dynamixel = libDynamixel.new_bus()
+
+--------------------
 -- Clean Shutdown function
 function shutdown()
   print'Shutting down the Dynamixel chains...'
@@ -87,7 +95,23 @@ local function entry()
     io.flush()
     print(#dynamixel.mx_on_bus..' MX:',unpack(dynamixel.mx_on_bus))
     print(#dynamixel.nx_on_bus..' NX:',unpack(dynamixel.nx_on_bus))
-    dynamixel.t_last_read = unix.time()
+    
+    -- Set the status return level?
+    --local status = libDynamixel.set_nx_status_return_level(m,1,test_dynamixel)
+    
+    -- Torque enable some motors
+    if dynamixel.name=='RArm' then
+      local w_ids = vector.slice(joint_to_motor,Body.indexRArm-1+4,Body.indexRArm-1+6)
+      print('Setting',w_ids,'on')
+      local sync_wrist_en = libDynamixel.set_nx_torque_enable(w_ids,1)
+      table.insert( dynamixel.instructions, sync_wrist_en )
+    elseif dynamixel.name=='LArm' then
+      local w_ids = vector.slice(joint_to_motor,Body.indexLArm-1+4,Body.indexLArm-1+6)
+      print('Setting',w_ids,'on')
+      local sync_wrist_en = libDynamixel.set_nx_torque_enable(w_ids,1)
+      table.insert( dynamixel.instructions, sync_wrist_en )
+    end
+    --dynamixel.t_last_read = unix.time()
   end
 end
 
@@ -131,13 +155,22 @@ end -- callback function
 -- Update the commands to write to the robot
 local update_instructions = function()
   -- Loop through the dynamixels and add instructions to send
+  local w_ids = vector.slice(joint_to_motor,Body.indexRArm-1+5,Body.indexRArm-1+6)
   for _,d in ipairs(dynamixels) do
     -- Do not overpopulate (just yet)
     if #d.instructions==0 then
-      -- Form the packets
-      local sync_aux = Body.set_aux_command_packet()
-      --print(sync_aux:byte(1,#sync_aux))
-      table.insert( d.instructions, sync_aux )
+      if d.name=='RArm' then
+        local sync_rarm = Body.set_rarm_command_position_packet()
+        table.insert( d.instructions, sync_rarm )
+        -- Form the hand packets
+        local sync_aux = Body.set_aux_command_packet()
+        --table.insert( d.instructions, sync_aux )
+      elseif d.name=='LArm' then
+        local sync_larm = Body.set_larm_command_position_packet()
+        table.insert( d.instructions, sync_larm )
+        local sync_aux = Body.set_aux_command_packet()
+        --table.insert( d.instructions, sync_aux )
+      end
     end
   end
 end
@@ -165,14 +198,7 @@ local update_requests = function()
 end
 
 --------------------
--- Initialize the dynamixels
-local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5A')
-local left_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5B')
-local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
---local none_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5D')
---local test_dynamixel = libDynamixel.new_bus()
-
---------------------
+-- Check the dynamixels
 -- Left dynamixel
 if left_dynamixel then
   left_dynamixel.name = 'LArm'
@@ -203,12 +229,6 @@ local led_state = 0
 local main = function()
   local main_cnt = 0
   local t0 = unix.time()
-  
-  -- Entry should torque on the motors...
-  Body.set_aux_torque_enable(0)
-  local sync_torque = Body.set_aux_torque_enable_packet()
-  --print(sync_torque:byte(1,#sync_torque))
-  table.insert( spine_dynamixel.instructions, sync_torque )  
   
   -- Enter the coroutine
   while true do
@@ -242,7 +262,7 @@ local main = function()
         
       end
       ----[[
-      os.execute('clear')
+      --os.execute('clear')
       print(debug_str)
       --]]
       t0 = t

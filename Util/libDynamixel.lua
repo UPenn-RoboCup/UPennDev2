@@ -98,6 +98,8 @@ local nx_registers = {
 	5: 3Mbps, 6: 4Mbps, 7: 4.5Mbps, 8: 10.5Mbps
 	--]]
 	['baud'] = {string.char(0x08,0x00),1},
+  -- Delay in us: wish to have zero
+  ['delay'] = {string.char(9,0),1},
 	
 	-- Operation Mode
 	-- Mode 0: Torque Control
@@ -159,6 +161,9 @@ local nx_registers = {
 	['load'] = {string.char(0x6B,0x02),2},
 	['voltage'] = {string.char(0x6F,0x02),2},
 	['temperature'] = {string.char(0x71,0x02),1},
+  
+  -- Status return
+  ['status_return_level'] = {string.char(0x7B,0x03),1},
 }
 libDynamixel.nx_registers = nx_registers
 

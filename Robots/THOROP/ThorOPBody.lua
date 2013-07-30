@@ -27,15 +27,15 @@ local Body = {}
 -- Real THOR-OP (Cenatur uses ankles for wheels, maybe?)
 local indexHead = 1   -- Head: 1 2
 local nJointHead = 2
-local indexLArm = 3   --LArm: 5 6 7 8 9 10
+local indexLArm = 3   --LArm: 3 4 5 6 7 8
 local nJointLArm = 6 		
-local indexLLeg = 9  --LLeg: 11 12 13 14 15 16
+local indexLLeg = 9  --LLeg: 9 10 11 12 13 14
 local nJointLLeg = 6
-local indexRLeg = 15  --RLeg: 17 18 19 20 21 22
+local indexRLeg = 15  --RLeg: 15 16 17 18 19 20
 local nJointRLeg = 6
-local indexRArm = 21  --RArm: 23 24 25 26 27 28
+local indexRArm = 21  --RArm: 21 22 23 24 25 26
 local nJointRArm = 6
-local indexWaist = 27  --Waist: 3 4
+local indexWaist = 27  --Waist: 27 28
 local nJointWaist = 2
 -- Auxiliary servos
 -- 6 Fingers for gripping
@@ -123,7 +123,7 @@ end
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
 	1,1, -- Head
-	1,1,1,-1,1,-1, --LArm
+  1,1,1,-1,1,-1, --LArm
 	-- TODO: No legs yet! Using fake directions for now
 	1, 1,1,1,1,1, --LLeg
 	1, 1,1,1,1,1, --LArm
@@ -139,7 +139,7 @@ assert(#servo.direction==nJoint,'Bad servo direction!')
 --http://support.robotis.com/en/product/dynamixel_pro/control_table.htm#Actuator_Address_611
 -- TODO: Use some loop based upon MX/NX
 -- TODO: some pros are different
-servo.steps = vector.new({
+servo.steps = 2*vector.new({
 	151875,151875, -- Head
 	251000,251000,251000,251000,151875,151875, --LArm
 	-- TODO: No legs yet! Using fake directions for now
@@ -148,57 +148,90 @@ servo.steps = vector.new({
 	251000,251000,251000,251000,151875,151875, --RArm
 	251000,251000, -- Waist
 	-- TODO: Check the gripper
-	4096,4096,4096, -- left gripper
-	4096,4096,4096, -- right gripper
-	4096, -- Lidar pan
+	2048,2048,2048, -- left gripper
+	2048,2048,2048, -- right gripper
+	2048, -- Lidar pan
 })
 
 -- Convienence tables to go between steps and radians
 servo.moveRange = 360 * DEG_TO_RAD * vector.ones(nJoint)
+-- Step<-->Radian ratios
 servo.to_radians = vector.zeros(nJoint)
 servo.to_steps = vector.zeros(nJoint)
-servo.step_zero = vector.zeros(nJoint)
-servo.min_step = vector.zeros(nJoint)
-servo.max_step = vector.new(servo.steps)
-servo.min_rad = vector.zeros(nJoint)
-servo.max_rad = vector.zeros(nJoint)
--- TODO: Implement step bias
-servo.step_bias = vector.zeros(nJoint)
-servo.rad_bias = vector.zeros(nJoint)
--- TODO: Offset
 for i, nsteps in ipairs(servo.steps) do
-	servo.to_radians[i] = servo.moveRange[i] / nsteps
-  if nsteps==4096 then
-	  servo.step_zero[i] = nsteps / 2
-  else
-    servo.step_zero[i] = 0
-  end
-	servo.to_steps[i] = nsteps / servo.moveRange[i]
-	servo.max_step[i] = servo.steps[i]
-	servo.min_rad[i] = servo.to_radians[i] * servo.min_step[i]
-	servo.max_rad[i] = servo.to_radians[i] * servo.max_step[i]
-	servo.rad_bias[i] = servo.to_radians[i] * servo.step_bias[i]
+  servo.to_steps[i] = nsteps / servo.moveRange[i]
+  servo.to_radians[i] = servo.moveRange[i] / nsteps
 end
 
--- Some overrides
+-- Set the radians
+servo.min_rad = vector.ones(nJoint) * -175 * DEG_TO_RAD
+servo.max_rad = vector.ones(nJoint) * 175 * DEG_TO_RAD
+
+-- Set the steps
+servo.min_step = vector.zeros(nJoint)
+servo.max_step = vector.zeros(nJoint)
+servo.step_zero = vector.new(servo.steps) / 2
+for i, nsteps in ipairs(servo.steps) do
+  if nsteps~=4096 then servo.step_zero[i] = 0 end
+end
+
+-- TODO: Implement step bias
+servo.step_bias = vector.zeros(nJoint)
+-- TODO: Offset
+servo.rad_bias = vector.zeros(nJoint)
+
+for i, nsteps in ipairs(servo.steps) do
+  servo.rad_bias[i] = servo.to_radians[i] * servo.step_bias[i]
+	servo.max_step[i] = servo.steps[i] + servo.step_bias[i]
+	servo.min_rad[i] = servo.to_radians[i]*servo.min_step[i]
+	servo.max_rad[i] = servo.to_radians[i]*servo.max_step[i]
+end
+
+-- Specific biases/offsets?
+
+-- Add some bias to this finger, since it was mounted wrong...
+-- TODO: Remount the finger...
+servo.step_bias[33] = -920
+-- Some limit overrides
+-- Elbow should not go beyond some boundaries and has some offsets
+servo.step_bias[24] = 45 * DEG_TO_RAD * servo.to_steps[24]
+servo.min_rad[24]  = -100 * DEG_TO_RAD
+servo.max_rad[24]  = 0
+-- Elbow should not go beyond some boundaries and has some offsets
+local elL = indexLArm+4-1
+servo.step_bias[elL] = -45 * DEG_TO_RAD * servo.to_steps[elL]
+servo.min_rad[elL]  = 0
+servo.max_rad[elL]  = 100 * DEG_TO_RAD
+
+-- Right Wrist should not go beyond some boundaries
+servo.min_rad[25]  = -100*DEG_TO_RAD
+servo.max_rad[25]  = 100*DEG_TO_RAD
+servo.min_rad[26]  = -80*DEG_TO_RAD
+servo.max_rad[26]  = 80*DEG_TO_RAD
+
 -- Gripper has different min/max limits
 for _,idx in ipairs( parts['Aux'] ) do
 	servo.min_rad[idx] = -10*DEG_TO_RAD
 	servo.max_rad[idx] = 30*DEG_TO_RAD
-	servo.min_step[idx] = servo.min_step[idx] * servo.to_steps[idx]
-	servo.max_step[idx] = servo.max_step[idx] * servo.to_steps[idx]
 end
--- Add some bias to this finger, since it was mounted wrong...
--- TODO: Remount the finger...
-servo.step_bias[33] = -920
+
+-- Add the bias in to the helper tables
+for i, min_rad in ipairs(servo.min_rad) do
+  servo.min_step[i] = math.floor( min_rad * servo.to_steps[i] ) + servo.step_zero[i]
+end
+for i, max_rad in ipairs(servo.max_rad) do
+  servo.max_step[i] = math.floor( max_rad * servo.to_steps[i] ) + servo.step_zero[i]
+end
 
 -- Radian to step, using offsets and biases
 local make_joint_step = function( idx, radian, safe )
 	local step = math.floor(servo.direction[idx] * radian * servo.to_steps[idx]
 	+ servo.step_bias[idx] + servo.step_zero[idx])
 	if not safe then return step end
-	return math.min(math.max(step, servo.min_step[idx]),servo.max_step[idx])
-	--return math.min(math.max(step, 0), servo.steps[idx]-1)
+  local safe_step = math.min(
+  math.max(step, servo.min_step[idx]+servo.step_bias[idx]),
+  servo.max_step[idx]+servo.step_bias[idx])
+	return safe_step
 end
 
 -- Step to radian
@@ -209,27 +242,12 @@ local make_joint_radian = function( idx, step )
 end
 
 --------------------------------
--- Motor wizard Standard convenience functions to access jcm
---[[
-Body.get_sensor_position = function(idx)
-	return jcm.sensorPtr.position[idx]
-end
-Body.set_sensor_position = function(val,idx)
-	jcm.sensorPtr.position[idx] = val
-end
-Body.set_actuator_command = function(val,idx)
-	jcm.actuatorPtr.command[idx] = val
-end
-Body.get_actuator_command = function(idx)
-	return jcm.actuatorPtr.command[idx]
-end
---]]
+-- Legacy API
 Body.set_syncread_enable = function()
 end
 
-
 --------------------------------
--- Standard Convenience functions to access jcm
+-- Standard convenient antropomorphic functions to access jcm
 for part,jlist in pairs( parts ) do
 	local a = jlist[1]
 	local b = jlist[#jlist]
@@ -250,6 +268,7 @@ for part,jlist in pairs( parts ) do
 		end -- if number
 	end -- Set
 
+  -- Legacy API
 	-- TODO: Hardness should set some PID values
 	Body['get_'..part:lower()..'_hardness'] = function(idx)
 		return 0
@@ -285,7 +304,7 @@ for part,jlist in pairs(parts) do
 
 
 	Body['get_'..part:lower()..'_torque_enable'] = function(idx)
-		if idx then return jcm.actuatorPtr.torque_enable[ list[idx] ] end
+		if idx then return jcm.actuatorPtr.torque_enable[ jlist[idx] ] end
 		return jcm.actuatorPtr.torque_enable:table( a, b )
 	end -- Get
 	Body['set_'..part:lower()..'_torque_enable'] = function(val,idx)
@@ -317,24 +336,43 @@ for part,jlist in pairs(parts) do
 end
 
 --------------------------------
--- Convenience functions
--- Use libDynamixel to have access to more settings, via instructions
+-- Packet generators
+-- NX packet generators
 for k,v in pairs(libDynamixel.nx_registers) do
-	local get_func = libDynamixel['get_nx_'..k]
-	local set_func = libDynamixel['get_nx_'..k]
-	for part,mlist in pairs(motor_parts) do
-		local jlist = parts[part]
-		local a = jlist[1]
-		local b = jlist[#jlist]
-		Body['get_'..part..'_'..k..'_packet'] = function()
-			return get_func(mlist)
-		end
-		Body['set_'..part..'_'..k..'_packet'] = function()
-			return set_func(mlist,jcm.actuatorPtr.command:table( a, b ))
-		end
-	end
-end
+  local get_func = libDynamixel['get_nx_'..k]
+  local set_func = libDynamixel['set_nx_'..k]
+  
+  for part,jlist in pairs(parts) do
 
+    local a = jlist[1]
+    local b = jlist[#jlist]
+  
+    local mlist = motor_parts[part]
+    local jlist = parts[part]
+    local a = jlist[1]
+    local b = jlist[#jlist]
+    Body['get_'..part:lower()..'_'..k..'_packet'] = function()
+      return get_func(mlist)
+    end
+    Body['set_'..part:lower()..'_'..k..'_packet'] = function()
+      local vals = jcm.actuatorPtr[k]:table( a, b )
+      return set_func( mlist, vals )
+    end
+    if k=='command_position' then
+      --print'overwriting command'
+      Body['set_'..part:lower()..'_'..k..'_packet'] = function()
+        -- Shm has radians
+        local vals = jcm.actuatorPtr.command:table( a, b )
+        -- Convert to 
+        for i,idx in ipairs(jlist) do
+          vals[i] = make_joint_step(idx,vals[i],true)
+        end
+        return set_func( mlist, vals )
+      end
+    end
+  end--jlist
+end
+  
 -- Gripper and lidar actuator are MX
 -- TODO: make general somehow
 for k,v in pairs(libDynamixel.mx_registers) do

@@ -8,10 +8,13 @@ int spnav_parse(structSpnav *ud, int len) {
     case SPNAV_EVENT_EMPTY:
 //      fprintf(stdout, "empty event\n");
       break;
-    case SPNAV_EVENT_MOTION:
-      fprintf(stdout, "motion event\n");
+    case SPNAV_EVENT_ROTATE:
+      fprintf(stdout, "rotate event\n");
       break;
-    case SPNAV_EVENT_BUTTOM:
+    case SPNAV_EVENT_TRANSLATE:
+      fprintf(stdout, "translate event\n");
+      break;
+    case SPNAV_EVENT_BUTTON:
       fprintf(stdout, "button event\n");
       break;
     default:

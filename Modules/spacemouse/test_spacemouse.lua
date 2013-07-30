@@ -6,18 +6,27 @@ sm = spacemouse.init(0x046d, 0xc626) --regular
 
 local cnt = 0
 while true do
-  tbl = sm:get()
-  if tbl and tbl.event then
-    local evt = false
-    for k,v in pairs(tbl) do
-      if v~=0 and k~='event' then evt = true end
-      if evt then
-        io.write("\n\n",cnt," | ",tbl.event," (",k,"): ",v)
-      end
-    end
-    if evt then
-      io.flush()
-      cnt = cnt+1
-    end
+
+  local event, data = sm:get()
+  if event=='button' then
+    --io.write('\nButton ',data)
+    io.flush()
+  elseif event=='translate' and false then
+    io.write('\nTranslate\n')
+    for k,v in pairs(data) do io.write('\t',k,': ',v) end
+    io.flush()
+  elseif event=='rotate' and true then
+    io.write('\nRotate\n')
+    for k,v in pairs(data) do io.write('\t',k,': ',v) end
+    io.flush()
   end
+
+  --[[
+  local raw = sm:get_raw()
+  if raw then
+    --print( raw:byte(1,#raw) )
+    print( raw )
+    print()
+  end
+  --]]
 end

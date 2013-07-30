@@ -147,6 +147,8 @@ static int lua_spnav_get_raw(lua_State *L) {
   int res = hid_read(ud->handle, ud->buf, MAX_BUF * sizeof(unsigned char));
   if (res < 0)
     luaL_error(L ,"Unable to read request\n");
+  if (res==0)
+    return 0;
 
   char * buffer = (char *)malloc(MAX_BUF * 2 * sizeof(char));
   char * bufferp = buffer;
@@ -169,58 +171,43 @@ static int lua_spnav_get(lua_State *L) {
   int res = hid_read(ud->handle, ud->buf, MAX_BUF * sizeof(unsigned char));
   if (res < 0)
     luaL_error(L ,"Unable to read request\n");
+  if (res==0)
+    return 0;
 
-  int event_type = ud->buf[0] - 1;
-  if (event_type == SPNAV_EVENT_MOTION) {
-//      fprintf(stdout, "motion event\n");
-      
-      lua_createtable(L, 0, 1);
-
-  		lua_pushstring(L, "event");
-  		lua_pushstring(L, "motion");
-  		lua_settable(L, -3);
-  
-  		lua_pushstring(L, "x");
-  		lua_pushinteger(L, (char)ud->buf[1]);
-  		lua_settable(L, -3);
-  
-  		lua_pushstring(L, "y");
-  		lua_pushinteger(L, (char)ud->buf[2]);
-  		lua_settable(L, -3); 
-  
-  		lua_pushstring(L, "z");
-  		lua_pushinteger(L, (char)ud->buf[3]);
-  		lua_settable(L, -3); 
-  
-  		lua_pushstring(L, "rx");
-  		lua_pushinteger(L, (char)ud->buf[4]);
-  		lua_settable(L, -3);
-  
-  		lua_pushstring(L, "ry");
-  		lua_pushinteger(L, (char)ud->buf[5]);
-  		lua_settable(L, -3); 
-  
-  		lua_pushstring(L, "rz");
-  		lua_pushinteger(L, (char)ud->buf[6]);
-  		lua_settable(L, -3); 
-  		return 1;
-
-  } else if (event_type == SPNAV_EVENT_BUTTOM) {
-//      fprintf(stdout, "button event\n"); 
-		  lua_createtable(L, 0, 4);
-      
-		  lua_pushstring(L, "event");
-		  lua_pushstring(L, "button");
-		  lua_settable(L, -3);
-
-		  lua_pushstring(L, "bnum");
-		  lua_pushinteger(L, ud->buf[1]);
-		  lua_settable(L, -3); 
-
-		  return 1;
+  //int event_type = ud->buf[0];
+  int16_t * payload = (int16_t *)(&ud->buf[1]);
+  switch (ud->buf[0]) {
+    case SPNAV_EVENT_EMPTY:
+      return 0;
+    case SPNAV_EVENT_ROTATE:
+      lua_pushstring(L, "rotate");
+      lua_createtable(L, 0, 3);
+    	lua_pushnumber(L, -1*payload[0] );
+    	lua_setfield(L, -2, "wy");
+    	lua_pushnumber(L, -1*payload[1] );
+    	lua_setfield(L, -2, "wx");
+    	lua_pushnumber(L, -1*payload[2] );
+    	lua_setfield(L, -2, "wz");
+      break;
+    case SPNAV_EVENT_TRANSLATE:
+      lua_pushstring(L, "translate");
+      lua_createtable(L, 0, 3);
+    	lua_pushnumber(L,-1*payload[0]);
+      lua_setfield(L, -2, "y");
+    	lua_pushnumber(L,-1*payload[1]);
+      lua_setfield(L, -2, "x");
+    	lua_pushnumber(L,-1*payload[2]);
+      lua_setfield(L, -2, "z");
+      break;
+    case SPNAV_EVENT_BUTTON:
+      lua_pushstring(L, "button");
+      // Push the button number
+    	lua_pushnumber(L,payload[0]);
+      break;
+    default:
+      return 0;
   }
-
-  return 0;
+  return 2;
 }
 
 static int lua_spnav_lsusb(lua_State *L) {

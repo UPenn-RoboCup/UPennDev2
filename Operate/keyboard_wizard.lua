@@ -211,6 +211,12 @@ local function state_msg()
   local lfinger_load = vector.slice(Body.get_aux_load(),1,3)
   local rfinger_load = vector.slice(Body.get_aux_load(),4,6)
   
+  -- Torque Enable
+  local larm_en = Body.get_larm_torque_enable()
+  local rarm_en = Body.get_rarm_torque_enable()
+  local lfinger_en = vector.slice(Body.get_aux_torque_enable(),1,3)
+  local rfinger_en = vector.slice(Body.get_aux_torque_enable(),4,6)
+  
   -- Inverse Kinematics
   local pL = Body.get_forward_larm()
   local pR = Body.get_forward_rarm()
@@ -235,7 +241,8 @@ local function state_msg()
   msg = msg..'\nRight cmd\t'..jangle_str('right',rarm_cmd,rfinger_cmd)
   msg = msg..'\n\nLeft  load\t'..jangle_str('left', larm_load,lfinger_load)
   msg = msg..'\nRight load\t'..jangle_str('right',rarm_load,rfinger_load)
-
+  msg = msg..'\n\nLeft  enable\t'..jangle_str('left', larm_en,lfinger_en)
+  msg = msg..'\nRight enable\t'..jangle_str('right',rarm_en,rfinger_en)
   
   -- Return the message
   return msg

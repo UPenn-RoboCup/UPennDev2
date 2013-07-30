@@ -210,20 +210,20 @@ end
 
 --------------------------------
 -- Motor wizard Standard convenience functions to access jcm
+--[[
 Body.get_sensor_position = function(idx)
 	return jcm.sensorPtr.position[idx]
 end
 Body.set_sensor_position = function(val,idx)
 	jcm.sensorPtr.position[idx] = val
 end
-
 Body.set_actuator_command = function(val,idx)
 	jcm.actuatorPtr.command[idx] = val
 end
 Body.get_actuator_command = function(idx)
 	return jcm.actuatorPtr.command[idx]
 end
-
+--]]
 Body.set_syncread_enable = function()
 end
 
@@ -403,6 +403,22 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
 end
 
 ----------------------
+-- Body actuator commands
+-- NOTE: Should just iterate through jcm...
+-- jcm should be the API compliance test
+for actuator, pointer in pairs(jcm.actuatorPtr) do
+	Body['set_actuator_'..actuator] = function(val,idx)
+		if idx then pointer[idx] = val; return; end
+		for i,v in ipairs(val) do pointer[i] = v end
+	end
+	Body['get_actuator_'..actuator] = function(idx)
+		local s = pointer:table()
+		if idx then return s[idx] end
+		return s
+	end
+end
+
+----------------------
 -- Inverse Kinematics
 local Kinematics = require'THOROPKinematics'
 
@@ -467,6 +483,8 @@ Body.entry = function()
   -- Zero all joint requests
   for i=1,nJoint do Body.set_actuator_command(0,i) end
   for i=1,nJoint do Body.set_sensor_position(0,i) end
+  for i=1,nJoint do Body.set_sensor_load(0,i) end
+  for i=1,nJoint do Body.set_actuator_torque_enable(0,i) end
 end
 Body.update = function()
 end

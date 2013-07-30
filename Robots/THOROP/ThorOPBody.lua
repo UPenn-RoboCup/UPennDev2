@@ -120,13 +120,29 @@ for j,m in ipairs(servo.joint_to_motor) do
 	servo.motor_to_joint[m] = j
 end
 
+--http://support.robotis.com/en/product/dynamixel_pro/control_table.htm#Actuator_Address_611
+-- TODO: Use some loop based upon MX/NX
+-- TODO: some pros are different
+servo.steps = 2 * vector.new({
+	151875,151875, -- Head
+	251000,251000,251000,251000,151875,151875, --LArm
+	251000,251000,251000,251000,251000,251000, --LLeg
+	251000,251000,251000,251000,251000,251000, --RLeg
+	251000,251000,251000,251000,151875,151875, --RArm
+	251000,251000, -- Waist
+	2048,2048,2048, -- Left gripper
+	2048,2048,2048, -- Right gripper
+	2048, -- Lidar pan
+})
+assert(#servo.steps==nJoint,'Bad servo steps!')
+
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
 	1,1, -- Head
   1,1,1,-1,1,-1, --LArm
 	-- TODO: No legs yet! Using fake directions for now
 	1, 1,1,1,1,1, --LLeg
-	1, 1,1,1,1,1, --LArm
+	1, 1,1,1,1,1, --RLeg
 	-1,1,1,1, 1,-1, --RArm
 	1,1, -- Waist
 	-- TODO: Check the gripper
@@ -136,95 +152,76 @@ servo.direction = vector.new({
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
 
---http://support.robotis.com/en/product/dynamixel_pro/control_table.htm#Actuator_Address_611
--- TODO: Use some loop based upon MX/NX
--- TODO: some pros are different
-servo.steps = 2*vector.new({
-	151875,151875, -- Head
-	251000,251000,251000,251000,151875,151875, --LArm
-	-- TODO: No legs yet! Using fake directions for now
-	251000,251000,251000,251000,251000,251000, --LLeg
-	251000,251000,251000,251000,251000,251000, --LArm
-	251000,251000,251000,251000,151875,151875, --RArm
-	251000,251000, -- Waist
-	-- TODO: Check the gripper
-	2048,2048,2048, -- left gripper
-	2048,2048,2048, -- right gripper
-	2048, -- Lidar pan
-})
+-- TODO: Offset in addition to bias?
+servo.rad_bias = vector.new({
+	0,0, -- Head
+	-90,-90,-90,-45,90,0, --LArm
+	0,0,0,0,0,0, --LLeg
+	0,0,0,0,0,0, --RLeg
+	90,90,90,45,-90,0, --RArm
+	0,0, -- Waist
+	0,0,0, -- left gripper
+	0,-80,0, -- right gripper -- TODO: Remount the finger...
+	0, -- Lidar pan
+})*DEG_TO_RAD
+assert(#servo.rad_bias==nJoint,'Bad servo rad_bias!')
+
+servo.min_rad = vector.new({
+	-175,-175, -- Head
+	-175,-175,-175,-175,-100,-80, --LArm
+	-175,-175,-175,-175,-175,-175, --LLeg
+	-175,-175,-175,-175,-175,-175, --RLeg
+	-175,-175,-175,-175,-100,-80, --RArm
+	-175,-175, -- Waist
+	-10,-10,-10, -- left gripper
+	-10,-10,-10, -- right gripper
+	-175, -- Lidar pan
+})*DEG_TO_RAD
+assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
+
+servo.max_rad = vector.new({
+	175,175, -- Head
+	175,175,175,175,100,80, --LArm
+	175,175,175,175,175,175, --LLeg
+	175,175,175,175,175,175, --RLeg
+	175,175,175,175,100,80, --RArm
+	175,175, -- Waist
+	30,30,30, -- left gripper
+	30,30,30, -- right gripper
+	175, -- Lidar pan
+})*DEG_TO_RAD
+assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
 
 -- Convienence tables to go between steps and radians
 servo.moveRange = 360 * DEG_TO_RAD * vector.ones(nJoint)
 -- Step<-->Radian ratios
 servo.to_radians = vector.zeros(nJoint)
 servo.to_steps = vector.zeros(nJoint)
-for i, nsteps in ipairs(servo.steps) do
+for i,nsteps in ipairs(servo.steps) do
   servo.to_steps[i] = nsteps / servo.moveRange[i]
   servo.to_radians[i] = servo.moveRange[i] / nsteps
 end
-
--- Set the radians
-servo.min_rad = vector.ones(nJoint) * -175 * DEG_TO_RAD
-servo.max_rad = vector.ones(nJoint) * 175 * DEG_TO_RAD
-
--- Set the steps
-servo.min_step = vector.zeros(nJoint)
-servo.max_step = vector.zeros(nJoint)
+-- Set the step zero
+-- NOTE: rad zero is always zero
 servo.step_zero = vector.new(servo.steps) / 2
-for i, nsteps in ipairs(servo.steps) do
+for i,nsteps in ipairs(servo.steps) do
+  -- MX is halfway, while NX is 0 and goes positive/negative
   if nsteps~=4096 then servo.step_zero[i] = 0 end
 end
 
--- TODO: Implement step bias
--- TODO: Offset
-servo.step_bias = vector.zeros(nJoint)
-servo.rad_bias = vector.zeros(nJoint)
-
-for i, nsteps in ipairs(servo.steps) do
-  servo.rad_bias[i] = servo.to_radians[i] * servo.step_bias[i]
-	servo.max_step[i] = servo.steps[i] + servo.step_bias[i]
-	servo.min_rad[i] = servo.to_radians[i]*servo.min_step[i]
-	servo.max_rad[i] = servo.to_radians[i]*servo.max_step[i]
-end
-
--- Add some bias to this finger, since it was mounted wrong...
--- TODO: Remount the finger...
-if not IS_WEBOTS then
-  servo.step_bias[33] = -920
-end
--- Some limit overrides
--- Elbow should not go beyond some boundaries and has some offsets
-local elR = indexLArm+4-1
-servo.step_bias[elR] = 45 * DEG_TO_RAD * servo.to_steps[elR]
-servo.min_rad[elR]  = -100 * DEG_TO_RAD
-servo.max_rad[elR]  = 0
--- Elbow should not go beyond some boundaries and has some offsets
-local elL = indexLArm+4-1
-servo.step_bias[elL] = -45 * DEG_TO_RAD * servo.to_steps[elL]
-servo.min_rad[elL]  = 0
-servo.max_rad[elL]  = 100 * DEG_TO_RAD
-
--- Right Wrist should not go beyond some boundaries
-servo.min_rad[25]  = -100*DEG_TO_RAD
-servo.max_rad[25]  = 100*DEG_TO_RAD
-servo.min_rad[26]  = -80*DEG_TO_RAD
-servo.max_rad[26]  = 80*DEG_TO_RAD
-
--- Gripper has different min/max limits
-for _,idx in ipairs( parts['Aux'] ) do
-	servo.min_rad[idx] = -10*DEG_TO_RAD
-	servo.max_rad[idx] = 30*DEG_TO_RAD
-end
-
+-- TODO: How is direction used?
 -- Add the bias in to the min/max helper tables
+servo.step_bias = vector.zeros(nJoint)
+servo.min_step  = vector.zeros(nJoint)
+servo.max_step  = vector.zeros(nJoint)
+for i, bias in ipairs(servo.rad_bias) do
+  servo.step_bias[i] = bias * servo.to_steps[i]
+end
 for i, min_rad in ipairs(servo.min_rad) do
   servo.min_step[i] = math.floor( min_rad * servo.to_steps[i] ) + servo.step_zero[i] + servo.step_bias[i]
 end
 for i, max_rad in ipairs(servo.max_rad) do
   servo.max_step[i] = math.floor( max_rad * servo.to_steps[i] ) + servo.step_zero[i] + servo.step_bias[i]
-end
-for i, bias in ipairs(servo.step_bias) do
-  servo.rad_bias[i] = bias * servo.to_radians[i]
 end
 
 -- Radian to step, using offsets and biases
@@ -570,6 +567,7 @@ if IS_WEBOTS then
     
     -- Zero all joint requests
     for i=1,nJoint do Body.set_actuator_command(0,i) end
+    for i=1,nJoint do Body.set_sensor_position(0,i) end
 
 		-- Initialize the webots system
 		webots.wb_robot_init()

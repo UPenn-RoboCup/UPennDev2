@@ -18,8 +18,6 @@ local joint_to_motor = Body.servo.joint_to_motor
 local motor_to_joint = Body.servo.motor_to_joint
 
 --------------------
--- Body entry
-Body.entry()
 -- Setup the dynamixels array
 local dynamixels = {}
 local nMotors = 0
@@ -62,6 +60,8 @@ signal.signal("SIGTERM", shutdown)
 -- TODO: Verify with Body that the ids have the right motor type
 local function entry()
 
+  Body.entry()
+
   for _,dynamixel in ipairs(dynamixels) do
     -- Check which ids are on this chain
     io.write('\n')
@@ -99,14 +99,27 @@ local function entry()
     -- Set the status return level?
     --local status = libDynamixel.set_nx_status_return_level(m,1,test_dynamixel)
     
+    -- Perform a read to instantiate the motor commands and sensor positions
+    for _,id in ipairs(dynamixel.nx_on_bus) do
+      local pos_status = libDynamixel.get_nx_position(id,dynamixel)
+      local pos_parser = libDynamixel.byte_to_number[ #pos_status.parameter ]
+      local pos_val = pos_parser(unpack(pos_status.parameter))
+      local idx = motor_to_joint[id]
+      local rad = Body.make_joint_radian( idx, pos_val )
+      --print( string.format('Joint %d @ %.2f, step: %d',k,rad,v) )
+      Body.set_sensor_position( rad, idx )
+      Body.set_actuator_command( rad, idx )
+    end
+    
+    
     -- Torque enable some motors
     if dynamixel.name=='RArm' then
-      local w_ids = vector.slice(joint_to_motor,Body.indexRArm-1+3,Body.indexRArm-1+6)
+      local w_ids = vector.slice(joint_to_motor,Body.indexRArm-1+2,Body.indexRArm-1+6)
       print('Setting',w_ids,'on')
       local sync_wrist_en = libDynamixel.set_nx_torque_enable(w_ids,1)
       table.insert( dynamixel.instructions, sync_wrist_en )
     elseif dynamixel.name=='LArm' then
-      local w_ids = vector.slice(joint_to_motor,Body.indexLArm-1+3,Body.indexLArm-1+6)
+      local w_ids = vector.slice(joint_to_motor,Body.indexLArm-1+2,Body.indexLArm-1+6)
       print('Setting',w_ids,'on')
       local sync_wrist_en = libDynamixel.set_nx_torque_enable(w_ids,1)
       table.insert( dynamixel.instructions, sync_wrist_en )
@@ -164,12 +177,12 @@ local update_instructions = function()
         table.insert( d.instructions, sync_rarm )
         -- Form the hand packets
         local sync_aux = Body.set_aux_command_packet()
-        --table.insert( d.instructions, sync_aux )
+        table.insert( d.instructions, sync_aux )
       elseif d.name=='LArm' then
         local sync_larm = Body.set_larm_command_position_packet()
         table.insert( d.instructions, sync_larm )
         local sync_aux = Body.set_aux_command_packet()
-        --table.insert( d.instructions, sync_aux )
+        table.insert( d.instructions, sync_aux )
       end
     end
   end
@@ -185,11 +198,11 @@ local update_requests = function()
     if #d.requests==0 and t-d.t_last_read > 1 then
       local inst_nx = libDynamixel.get_nx_position( d.nx_on_bus )
       table.insert( d.requests, {inst_nx,'position'} )
-      --[[
+      ----[[
       local inst_mx = libDynamixel.get_mx_position( d.mx_on_bus )
       table.insert( d.requests, {inst_mx,'position'} )
       --]]
-      ----[[
+      --[[
       local inst_mx = libDynamixel.get_mx_load( d.mx_on_bus )
       table.insert( d.requests, {inst_mx,'load'} )
       --]]

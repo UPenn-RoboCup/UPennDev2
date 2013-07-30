@@ -176,8 +176,8 @@ for i, nsteps in ipairs(servo.steps) do
 end
 
 -- TODO: Implement step bias
-servo.step_bias = vector.zeros(nJoint)
 -- TODO: Offset
+servo.step_bias = vector.zeros(nJoint)
 servo.rad_bias = vector.zeros(nJoint)
 
 for i, nsteps in ipairs(servo.steps) do
@@ -187,16 +187,17 @@ for i, nsteps in ipairs(servo.steps) do
 	servo.max_rad[i] = servo.to_radians[i]*servo.max_step[i]
 end
 
--- Specific biases/offsets?
-
 -- Add some bias to this finger, since it was mounted wrong...
 -- TODO: Remount the finger...
-servo.step_bias[33] = -920
+if not IS_WEBOTS then
+  servo.step_bias[33] = -920
+end
 -- Some limit overrides
 -- Elbow should not go beyond some boundaries and has some offsets
-servo.step_bias[24] = 45 * DEG_TO_RAD * servo.to_steps[24]
-servo.min_rad[24]  = -100 * DEG_TO_RAD
-servo.max_rad[24]  = 0
+local elR = indexLArm+4-1
+servo.step_bias[elR] = 45 * DEG_TO_RAD * servo.to_steps[elR]
+servo.min_rad[elR]  = -100 * DEG_TO_RAD
+servo.max_rad[elR]  = 0
 -- Elbow should not go beyond some boundaries and has some offsets
 local elL = indexLArm+4-1
 servo.step_bias[elL] = -45 * DEG_TO_RAD * servo.to_steps[elL]
@@ -215,22 +216,23 @@ for _,idx in ipairs( parts['Aux'] ) do
 	servo.max_rad[idx] = 30*DEG_TO_RAD
 end
 
--- Add the bias in to the helper tables
+-- Add the bias in to the min/max helper tables
 for i, min_rad in ipairs(servo.min_rad) do
-  servo.min_step[i] = math.floor( min_rad * servo.to_steps[i] ) + servo.step_zero[i]
+  servo.min_step[i] = math.floor( min_rad * servo.to_steps[i] ) + servo.step_zero[i] + servo.step_bias[i]
 end
 for i, max_rad in ipairs(servo.max_rad) do
-  servo.max_step[i] = math.floor( max_rad * servo.to_steps[i] ) + servo.step_zero[i]
+  servo.max_step[i] = math.floor( max_rad * servo.to_steps[i] ) + servo.step_zero[i] + servo.step_bias[i]
+end
+for i, bias in ipairs(servo.step_bias) do
+  servo.rad_bias[i] = bias * servo.to_radians[i]
 end
 
 -- Radian to step, using offsets and biases
 local make_joint_step = function( idx, radian, safe )
 	local step = math.floor(servo.direction[idx] * radian * servo.to_steps[idx]
-	+ servo.step_bias[idx] + servo.step_zero[idx])
+	+ servo.step_zero[idx] + servo.step_bias[idx])
 	if not safe then return step end
-  local safe_step = math.min(
-  math.max(step, servo.min_step[idx]+servo.step_bias[idx]),
-  servo.max_step[idx]+servo.step_bias[idx])
+  local safe_step = math.min(math.max(step, servo.min_step[idx]), servo.max_step[idx])
 	return safe_step
 end
 
@@ -642,7 +644,9 @@ if IS_WEBOTS then
 			end
 
 			-- Only set in webots if Torque Enabled
-			if en > 0 and jtag>0 then webots.wb_servo_set_position(jtag, new_pos) end
+			if en > 0 and jtag>0 then
+        webots.wb_servo_set_position(jtag, servo.direction[i] * new_pos - servo.rad_bias[i])
+      end
 		end
 
 

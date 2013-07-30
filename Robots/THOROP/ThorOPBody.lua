@@ -645,7 +645,7 @@ if IS_WEBOTS then
 
 			-- Only set in webots if Torque Enabled
 			if en > 0 and jtag>0 then
-        webots.wb_servo_set_position(jtag, servo.direction[i] * new_pos - servo.rad_bias[i])
+        webots.wb_servo_set_position(jtag, servo.direction[i] * (new_pos + servo.rad_bias[i]) )
       end
 		end
 

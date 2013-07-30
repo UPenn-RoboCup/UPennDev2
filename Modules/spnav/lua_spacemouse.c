@@ -255,7 +255,7 @@ static const struct luaL_reg spnav_methods [] = {
   {NULL, NULL}
 };
 
-int luaopen_spnav(lua_State *L) {
+int luaopen_spacemouse(lua_State *L) {
   luaL_newmetatable(L, MT_NAME);
 
 #if LUA_VERSION_NUM == 502

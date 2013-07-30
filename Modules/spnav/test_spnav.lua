@@ -1,28 +1,37 @@
-local spnav = require 'spnav'
+local spacemouse = require 'spacemouse'
 
 --spnav.lsusb()
 
-spMousePro_ud = spnav.init(0x046d, 0xc62b)
-spNavigator_ud = spnav.init(0x046d, 0xc626)
+--sm = spacemouse.init(0x046d, 0xc62b)
+sm = spacemouse.init(0x046d, 0xc626)
 
+local cnt = 0
 while true do
---  tbl = spnav_ud:get()
---  if tbl then
---    if tbl.event == 'motion' then
---      print(tbl.x, tbl.y, tbl.z, tbl.rx, tbl.ry, tbl.rz)
---    elseif tbl.event == 'button' then
---      print(tbl.bnum, tbl.bpress)
---    end
---  end
+  tbl = sm:get()
+  if tbl and tbl.event then
+    local evt = false
+    for k,v in pairs(tbl) do
+      if v~=0 and k~='event' then
+        io.write("\n\n",cnt," | ",tbl.event," (",k,"): ",v)
+        evt = true
+      end
+    end
+    if evt then cnt = cnt+1 end
+  end
+  
 
-  str = spMousePro_ud:get_raw()
+  --[[
+  str = sm:get_raw()
   if #str > 0 then
     print("SpaceMouse Pro", #str, str)
   end
+  --]]
 
-  str = spNavigator_ud:get_raw()
+  --[[
+  str = sm:get_raw()
   if #str > 0 then
     print("SpaceNavigator", #str, str)
   end
-
+  --]]
+  io.flush()
 end

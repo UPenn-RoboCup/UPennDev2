@@ -114,12 +114,12 @@ local function entry()
     
     -- Torque enable some motors
     if dynamixel.name=='RArm' then
-      local w_ids = vector.slice(joint_to_motor,Body.indexRArm-1+2,Body.indexRArm-1+6)
+      local w_ids = vector.slice(joint_to_motor,Body.indexRArm-1+1,Body.indexRArm-1+6)
       print('Setting',w_ids,'on')
       local sync_wrist_en = libDynamixel.set_nx_torque_enable(w_ids,1)
       table.insert( dynamixel.instructions, sync_wrist_en )
     elseif dynamixel.name=='LArm' then
-      local w_ids = vector.slice(joint_to_motor,Body.indexLArm-1+2,Body.indexLArm-1+6)
+      local w_ids = vector.slice(joint_to_motor,Body.indexLArm-1+1,Body.indexLArm-1+6)
       print('Setting',w_ids,'on')
       local sync_wrist_en = libDynamixel.set_nx_torque_enable(w_ids,1)
       table.insert( dynamixel.instructions, sync_wrist_en )

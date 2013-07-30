@@ -1,23 +1,35 @@
 dofile'include.lua'
+local unix = require'unix'
 local spacemouse = require 'spacemouse'
 --sm = spacemouse.init(0x046d, 0xc62b) -- pro
 local sm = spacemouse.init(0x046d, 0xc626) -- regular
 
-local cnt = 0
-while true do
-  local tbl = sm:get()
-  local is_event = false
-  
-  if tbl then    
-    for k,v in pairs(tbl) do
-      if v~=0 and k~='event' then is_event = true end
-      if is_event then
-        io.write("\n\n",cnt," | ",tbl.event," (",k,"): ",v)
-      end
-    end
-    if is_event then
-      io.flush()
-      cnt = cnt+1
-    end
+local function process_button(data)
+  print('Got button input!',data)
+end
+
+local function process_rotate(data)
+  print('Got rotate input!')
+  for k,v in pairs(data) do
+    print(k,v)
   end
+end
+
+local function process_translate(data)
+  print('Got translate input!')
+  for k,v in pairs(data) do
+    print(k,v)
+  end
+end
+
+-- Update every 10ms
+local update_interval = 0.010 * 1e6
+while true do
+  local t = unix.time()
+  local evt, data = sm:get()
+  if evt then print(t) end
+  if evt=='button' then process_button(data) end
+  if evt=='rotate' then process_rotate(data) end
+  if evt=='translate' then process_translate(data) end
+  unix.usleep(update_interval)
 end

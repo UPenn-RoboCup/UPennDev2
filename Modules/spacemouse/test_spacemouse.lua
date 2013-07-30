@@ -8,14 +8,14 @@ local cnt = 0
 while true do
 
   local event, data = sm:get()
-  if event=='button' then
-    --io.write('\nButton ',data)
+  if event=='button' and true then
+    io.write('\nButton ',data)
     io.flush()
   elseif event=='translate' and false then
     io.write('\nTranslate\n')
     for k,v in pairs(data) do io.write('\t',k,': ',v) end
     io.flush()
-  elseif event=='rotate' and true then
+  elseif event=='rotate' and false then
     io.write('\nRotate\n')
     for k,v in pairs(data) do io.write('\t',k,': ',v) end
     io.flush()

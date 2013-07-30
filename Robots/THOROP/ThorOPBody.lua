@@ -219,10 +219,8 @@ for i, bias in ipairs(servo.rad_bias) do
 end
 
 -- Radian to step, using offsets and biases
-local make_joint_step = function( idx, radian, unsafe )
-  if safe then
-   radian = math.min(math.max(radian, servo.min_rad[idx]), servo.max_rad[idx])
-  end
+local make_joint_step = function( idx, radian )
+  radian = math.min(math.max(radian, servo.min_rad[idx]), servo.max_rad[idx])
 	local step = math.floor(servo.direction[idx] * radian * servo.to_steps[idx]
 	+ servo.step_zero[idx] + servo.step_bias[idx])
 	return step
@@ -359,7 +357,7 @@ for k,v in pairs(libDynamixel.nx_registers) do
         local vals = jcm.actuatorPtr.command:table( a, b )
         -- Convert to 
         for i,idx in ipairs(jlist) do
-          vals[i] = make_joint_step(idx,vals[i],true)
+          vals[i] = make_joint_step(idx,vals[i])
         end
         return set_func( mlist, vals )
       end
@@ -390,7 +388,7 @@ for k,v in pairs(libDynamixel.mx_registers) do
 			local vals = jcm.actuatorPtr.command:table( a, b )
 			-- Convert to 
 			for i,idx in ipairs(jlist) do
-				vals[i] = make_joint_step(idx,vals[i],true)
+				vals[i] = make_joint_step(idx,vals[i])
 			end
 			return set_func( mlist, vals )
 		end

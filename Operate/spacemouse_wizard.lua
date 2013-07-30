@@ -248,19 +248,24 @@ end
 local function process_button(btn)
   -- Bracket keys switch arms
   if btn==1 then
-    current_arm = 'left'
+    current_joint = current_joint-1
+    if current_joint<1 then current_joint = max_joint end
     return''
     --return switch_msg()
   elseif btn==2 then
-    current_arm = 'right'
+    current_joint = current_joint+1
+    if current_joint>max_joint then current_joint = 1 end
     return''
     --return switch_msg()
   elseif btn==0 then
     return''
   elseif btn==3 then
     -- Switch to that joint
-    current_joint = current_joint+1
-    if current_joint>max_joint then current_joint = 1 end
+    if current_arm == 'left' then
+      current_arm = 'right'
+    elseif current_arm == 'right' then
+      current_arm = 'left'
+    end
     return''
   end
   return'bad button!'
@@ -270,7 +275,7 @@ local trans_scale = 0.01 / 350
 local function process_translate( data )
   local delta_ik = trans_scale * vector.new({data.x,data.y,data.z})
   if vector.norm(delta_ik)<0.003 then return nil end
-  return ik_change( unpack(delta_ik) )
+  --return ik_change( unpack(delta_ik) )
 end
 
 local rot_scale = 1 * (math.pi/180)/350

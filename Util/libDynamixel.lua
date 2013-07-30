@@ -657,8 +657,13 @@ libDynamixel.service = function( dynamixels, main )
           for p,pkt in ipairs(pkts) do
             local status = DP.parse_status_packet( pkt )
             local read_parser = byte_to_number[ #status.parameter ]
-            local value = read_parser( unpack(status.parameter) )
-            values[status.id] = value
+            if not read_parser then
+              print(request[2],'Status error',status.id,status.error)
+            else
+              local value = read_parser( unpack(status.parameter) )
+              values[status.id] = value
+            end
+            
           end
           
           -- Save the read time

@@ -115,14 +115,10 @@ local function ik_change(dx,dy,dz)
     p = Body.get_forward_rarm()
   end
   
-  print('\np', unpack(p) )
-  
   -- Increment the position
   p[1] = p[1] + dx
   p[2] = p[2] + dy
   p[3] = p[3] + dz
-  
-  print('\nnp', unpack(p) )
   
   if current_arm=='left' then
     target = Body.get_inverse_larm(p)
@@ -131,9 +127,6 @@ local function ik_change(dx,dy,dz)
     target = Body.get_inverse_rarm(p)
     if target then Body.set_rarm_command(target) end
   end
-  
-  print('\ncur', unpack(Body.get_rarm_position()) )
-  print('\nik', unpack(target) )
   
   -- Return the status
   if target then

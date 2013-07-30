@@ -167,28 +167,28 @@ servo.rad_bias = vector.new({
 assert(#servo.rad_bias==nJoint,'Bad servo rad_bias!')
 
 servo.min_rad = vector.new({
-	-175,-175, -- Head
-	-175,-175,-175,-175,-100,-80, --LArm
+	-60,-80, -- Head
+	-90,-5,-90,-140,-100,-80, --LArm
 	-175,-175,-175,-175,-175,-175, --LLeg
 	-175,-175,-175,-175,-175,-175, --RLeg
-	-175,-175,-175,-175,-100,-80, --RArm
+	-175,-150,-180,-140,-100,-80, --RArm
 	-175,-175, -- Waist
 	-10,-10,-10, -- left gripper
 	-10,-10,-10, -- right gripper
-	-175, -- Lidar pan
+	-45, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 
 servo.max_rad = vector.new({
-	175,175, -- Head
-	175,175,175,175,100,80, --LArm
+	60,80, -- Head
+	160,150,180,0,100,80, --LArm
 	175,175,175,175,175,175, --LLeg
 	175,175,175,175,175,175, --RLeg
-	175,175,175,175,100,80, --RArm
+	160,5,90,0,100,80, --RArm
 	175,175, -- Waist
-	30,30,30, -- left gripper
-	30,30,30, -- right gripper
-	175, -- Lidar pan
+	20,25,25, -- left gripper
+	20,25,25, -- right gripper
+	45, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
 
@@ -217,20 +217,15 @@ servo.max_step  = vector.zeros(nJoint)
 for i, bias in ipairs(servo.rad_bias) do
   servo.step_bias[i] = bias * servo.to_steps[i]
 end
-for i, min_rad in ipairs(servo.min_rad) do
-  servo.min_step[i] = math.floor( min_rad * servo.to_steps[i] ) + servo.step_zero[i] + servo.step_bias[i]
-end
-for i, max_rad in ipairs(servo.max_rad) do
-  servo.max_step[i] = math.floor( max_rad * servo.to_steps[i] ) + servo.step_zero[i] + servo.step_bias[i]
-end
 
 -- Radian to step, using offsets and biases
-local make_joint_step = function( idx, radian, safe )
+local make_joint_step = function( idx, radian, unsafe )
+  if safe then
+   radian = math.min(math.max(radian, servo.min_rad[idx]), servo.max_rad[idx])
+  end
 	local step = math.floor(servo.direction[idx] * radian * servo.to_steps[idx]
 	+ servo.step_zero[idx] + servo.step_bias[idx])
-	if not safe then return step end
-  local safe_step = math.min(math.max(step, servo.min_step[idx]), servo.max_step[idx])
-	return safe_step
+	return step
 end
 
 -- Step to radian

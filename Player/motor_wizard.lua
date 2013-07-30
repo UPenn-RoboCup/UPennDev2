@@ -83,6 +83,7 @@ local function entry()
     io.flush()
     for _,id in ipairs(dynamixel.ids_on_bus) do
       local model_reg = libDynamixel.get_nx_model_num(id,dynamixel)
+      assert(model_reg)
       local model_parser = libDynamixel.byte_to_number[ #model_reg.parameter ]
       local model_version = model_parser(unpack(model_reg.parameter))
       if model_version==29 then
@@ -105,6 +106,8 @@ local function entry()
       local pos_parser = libDynamixel.byte_to_number[ #pos_status.parameter ]
       local pos_val = pos_parser(unpack(pos_status.parameter))
       local idx = motor_to_joint[id]
+      assert(idx)
+      assert(pos_val)
       local rad = Body.make_joint_radian( idx, pos_val )
       --print( string.format('Joint %d @ %.2f, step: %d',k,rad,v) )
       Body.set_sensor_position( rad, idx )
@@ -117,12 +120,12 @@ local function entry()
       local w_ids = vector.slice(joint_to_motor,Body.indexRArm-1+1,Body.indexRArm-1+6)
       print('Setting',w_ids,'on')
       local sync_wrist_en = libDynamixel.set_nx_torque_enable(w_ids,1)
-      table.insert( dynamixel.instructions, sync_wrist_en )
+      --table.insert( dynamixel.instructions, sync_wrist_en )
     elseif dynamixel.name=='LArm' then
       local w_ids = vector.slice(joint_to_motor,Body.indexLArm-1+1,Body.indexLArm-1+6)
       print('Setting',w_ids,'on')
       local sync_wrist_en = libDynamixel.set_nx_torque_enable(w_ids,1)
-      table.insert( dynamixel.instructions, sync_wrist_en )
+      --table.insert( dynamixel.instructions, sync_wrist_en )
     end
     --dynamixel.t_last_read = unix.time()
   end

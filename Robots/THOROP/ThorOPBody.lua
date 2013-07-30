@@ -139,11 +139,11 @@ assert(#servo.steps==nJoint,'Bad servo steps!')
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
 	1,1, -- Head
-  1,1,1,-1,1,-1, --LArm
+  1,1,1,-1,1,1, --LArm
 	-- TODO: No legs yet! Using fake directions for now
 	1, 1,1,1,1,1, --LLeg
 	1, 1,1,1,1,1, --RLeg
-	-1,1,1,1, 1,-1, --RArm
+	-1,1,1,1, 1,1, --RArm
 	1,1, -- Waist
 	-- TODO: Check the gripper
 	1,-1,1, -- left gripper

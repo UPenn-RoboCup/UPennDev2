@@ -48,6 +48,7 @@ static int lua_spnav_init(lua_State *L) {
 
 
   /* SpaceMouse 0x046D, 0xC626 */
+  /* SpaceMouse Pro 0x046D, 0xC62b */
   ud->handle = hid_open(vendorID, productID, NULL); 
   if (!ud->handle) {
     luaL_error(L, "Unable to open SpaceMouse\n");

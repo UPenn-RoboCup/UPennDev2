@@ -173,7 +173,7 @@ servo.min_rad = vector.new({
 	-175,-175,-175,-175,-175,-175, --RLeg
 	-175,-150,-180,-140,-100,-80, --RArm
 	-175,-175, -- Waist
-	-10,-10,-10, -- left gripper
+	-20,-20,-20, -- left gripper
 	-10,-10,-10, -- right gripper
 	-45, -- Lidar pan
 })*DEG_TO_RAD
@@ -186,7 +186,7 @@ servo.max_rad = vector.new({
 	175,175,175,175,175,175, --RLeg
 	160,5,90,0,100,80, --RArm
 	175,175, -- Waist
-	20,25,25, -- left gripper
+	10,10,10, -- left gripper
 	20,25,25, -- right gripper
 	45, -- Lidar pan
 })*DEG_TO_RAD

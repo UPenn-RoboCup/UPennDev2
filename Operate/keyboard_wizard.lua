@@ -12,6 +12,7 @@ dofile'include.lua'
 local unix = require'unix'
 local getch = require'getch'
 local mp = require'msgpack'
+local colors = require'colors'
 
 -- Getting/Setting The Body
 local Body = require'Body'
@@ -334,6 +335,7 @@ end
 
 ------------
 -- Start processing
+--"\033[33m",'test',"\033[0m"
 io.write( '\n\n',state_msg() )
 io.flush()
 local t0 = unix.time()
@@ -360,9 +362,11 @@ while true do
     print('Response time:',t_diff)
   end
   
+  -- http://lua-users.org/lists/lua-l/2009-12/msg00937.html
   -- Print result of the key press
   os.execute("clear")
-  io.write( '\n\n', msg )
+  colors.print_blink_red(msg)
+  colors.print_white_on_red(msg)
   io.write( '\n\n', state_msg() )
   io.flush()
     

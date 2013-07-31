@@ -365,9 +365,7 @@ while true do
   -- http://lua-users.org/lists/lua-l/2009-12/msg00937.html
   -- Print result of the key press
   os.execute("clear")
-  colors.print_blink_red(msg)
-  colors.print_white_on_red(msg)
-  io.write( '\n\n', state_msg() )
-  io.flush()
+  print(colors.wrap(msg,'yellow'))
+  print( '\n\n', state_msg() )
     
 end

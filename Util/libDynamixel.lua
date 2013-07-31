@@ -636,10 +636,11 @@ libDynamixel.service = function( dynamixels, main )
         if #dynamixel.requests>0 then
           -- Clear the bus with a unix.read()?
           local leftovers = unix.read(fd)
+          assert(leftovers~=-1, 'BAD Clearing READ')
           if leftovers then
-            assert(leftovers~=-1, '-1 Leftovers!!!!')
-            assert(leftovers~=nil, string.format('%d Leftovers!!!!',#leftovers) )
+            assert(leftovers==nil, string.format('Leftovers!!!! %d',#leftovers) )
           end
+          
           -- Pop the request
           local request = table.remove(dynamixel.requests,1)
           
@@ -691,9 +692,9 @@ libDynamixel.service = function( dynamixels, main )
           -- Did we actually receive more?
           if response then
             -- Straggler bytes
-            print'reading more from the buffer...'
             local more_status_str = unix.read( fd )
-            print('#more_status_str',#more_status_str)
+            local pkts2, done2 = DP.input( status_str..more_status_str )
+            error(string.format('Prev: %d. New: %d',#pkts,#pkts2))
           end
           -- We did something
           did_something = true
@@ -744,10 +745,14 @@ libDynamixel.service = function( dynamixels, main )
       --print('checking',i,is_ready,who_to_service.is_syncing)
       -- Check if the Dynamixel has information available
       if is_ready or who_to_service.is_syncing or t>who_to_service.timeout then
-
+        local response = nil
+        if is_ready and who_to_service.is_syncing then
+          --print(who_to_service.name,'has more to read but is syncing also!')
+          response = 'more'
+        end
         --------------------
         -- Resume the thread
-        local status_code, param, reg = coroutine.resume(who_to_service.thread)
+        local status_code, param, reg = coroutine.resume(who_to_service.thread,response)
         local param_type = type(param)
         
         --------------------

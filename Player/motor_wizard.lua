@@ -12,6 +12,7 @@ local RAD_TO_DEG = 180/math.pi
 -- Libraries
 local unix = require'unix'
 local signal = require'signal'
+local colors = require'colors'
 local libDynamixel = require'libDynamixel'
 local Body = require'Body'
 local joint_to_motor = Body.servo.joint_to_motor
@@ -21,6 +22,10 @@ local motor_to_joint = Body.servo.motor_to_joint
 -- Setup the dynamixels array
 local dynamixels = {}
 local nMotors = 0
+local status_color = {
+  ['suspended'] = 'green',
+  ['dead'] = 'red',
+}
 
 --------------------
 -- Callback processing on data from a named register
@@ -279,6 +284,7 @@ local main = function()
         '\nMain loop: %7.2f Hz (LED: %d)',main_cnt/t_diff,led_state)
       led_state = 1-led_state
       for _,d in ipairs(dynamixels) do
+        debug_str = debug_str..'\n\n'
         -- Blink the led
         local sync_led_cmd = 
           libDynamixel.set_mx_led( d.mx_on_bus, led_state )
@@ -292,9 +298,10 @@ local main = function()
         -- Append debugging information
         local t_read = t-d.t_last_read
         local t_write = t-d.t_last_write
+        local dstatus = coroutine.status(d.thread)
+        debug_str = debug_str..colors.wrap(string.format('%s chain %s',d.name, dstatus),status_color[dstatus])
         debug_str = debug_str..string.format(
-        '\n\n%s chain\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',
-        d.name, t_read, t_write)
+          '\n\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',t_read,t_write)
         debug_str = debug_str..string.format(
           '\n\t%d requests in the pipeline',#d.requests)
         debug_str = debug_str..string.format(

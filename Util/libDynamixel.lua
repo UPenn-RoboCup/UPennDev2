@@ -637,9 +637,6 @@ libDynamixel.service = function( dynamixels, main )
           -- Clear the bus with a unix.read()?
           local leftovers = unix.read(fd)
           assert(leftovers~=-1, 'BAD Clearing READ')
-          if leftovers then
-            assert(leftovers==nil, string.format('Leftovers!!!! %d',#leftovers) )
-          end
           
           -- Pop the request
           local request = table.remove(dynamixel.requests,1)
@@ -655,51 +652,58 @@ libDynamixel.service = function( dynamixels, main )
           response = coroutine.yield( 1 )
 
           -- Read the packets and check the returns
-          -- If -1 returned, the bus may be detached - throw an error
-          -- If no return, something *maybe* went awry with the dynamixel
-          local status_str = unix.read( fd )
-          assert(status_str~=-1,string.format('BAD READ: %s',dynamixel.name))
-          --assert(status_str, string.format('NO READ: %s',dynamixel.name))
-          -- Save the read time
-          local t = unix.time()
-
-          -- Parse the statuses from the bus
+          local status_str = ''
+          -- Accrue values from the status packets
           local values = {}
-          local pkts = {}
-          local done = false
-          -- If not status string then do nothing...
-          if status_str then pkts, done = DP.input( status_str ) end
-          for p,pkt in ipairs(pkts) do
-            local status = DP.parse_status_packet( pkt )
-            local read_parser = byte_to_number[ #status.parameter ]
-            -- Check if there is a parser
-            assert(read_parser, 
-            string.format('Status error for %s from %d: %d (%d)',
-            request[2],status.id,status.error,#status.parameter) )
-            -- Convert the value into a number from bytes
-            local value = read_parser( unpack(status.parameter) )
-            values[status.id] = value
-          end
-          -- Yield the table of motor values and the register name
-          response = coroutine.yield( values, request[2] )
+          local t = unix.time()
+          local response = 'more' -- kinda hacky for now
+          while t<dynamixel.timeout and response do
+
+            local new_status_str = unix.read( fd )
+            assert(new_status_str~=-1,string.format('BAD READ: %s',dynamixel.name))
+            --assert(status_str, string.format('NO READ: %s',dynamixel.name))
+
+            -- Do nothing when receiving nothing
+            if not new_status_str then
+              assert(#status_str>0,'Two false reads!')
+              break
+            end
+            
+            -- Append the new status
+            status_str = status_str..new_status_str
+            
+            -- Process the status string into a packet
+            local pkts, done = DP.input( status_str )
+            
+            -- For each packet, append to the values table
+            for p,pkt in ipairs(pkts) do
+              local status = DP.parse_status_packet( pkt )
+              local read_parser = byte_to_number[ #status.parameter ]
+              -- Check if there is a parser
+              assert(read_parser, 
+              string.format('Status error for %s from %d: %d (%d)',
+              request[2],status.id,status.error,#status.parameter) )
+              -- Convert the value into a number from bytes
+              local value = read_parser( unpack(status.parameter) )
+              values[status.id] = value
+            end
+            
+            -- Yield the table of motor values and the register name
+            response = coroutine.yield( values, request[2] )
           
-          -- Record it only after processing
-          if #pkts>0 then
-            dynamixel.t_diff_read = t - dynamixel.t_last_read
-            dynamixel.t_last_read = t
-          end
+            -- Record it only after processing
+            if #pkts>0 then
+              dynamixel.t_diff_read = t - dynamixel.t_last_read
+              dynamixel.t_last_read = t
+            end
           
-          -- Did we actually receive more?
-          if response then
-            -- Straggler bytes
-            local more_status_str = unix.read( fd )
-            local pkts2, done2 = DP.input( status_str..more_status_str )
-            error(string.format('Prev: %d. New: %d',#pkts,#pkts2))
-          end
-          -- We did something
+          end -- if use read
+          
+          -- We did something during this resume of the coroutine
           did_something = true
-        end -- if use read
-        
+          -- Update the time for the timeout
+          t = unix.time()
+        end -- while reading responses
         --------------------
         -- Sync write an instruction in the queue
         if #dynamixel.instructions>0 then

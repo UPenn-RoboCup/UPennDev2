@@ -151,5 +151,30 @@ unsigned char * to_rgb( int tag ) {
 %include <webots/robot.h>
 %include <webots/servo.h>
 %include <webots/speaker.h>
+
+%{
+  typedef struct {
+    void *ptr;
+    char type;
+    int size;
+    int own; // 1 if array was created by Lua and needs to be deleted
+  } structCArray;
+%}
+
+%typemap(in) (const double values[3]) {
+  //$1 = (double*)lua_touserdata(L, $input);
+  structCArray* p = (structCArray*)lua_touserdata(L, $input);
+  /*
+  double* vals = ((double *)p->ptr);
+  printf("Vals: %lf %lf\n",vals[0],vals[1]);
+  
+  fprintf(stdout,"box_position_now %d\n",lua_type(L,$input));
+  fflush(stdout);
+  */
+  $1 = (double *)p->ptr;
+}
 %include <webots/supervisor.h>
+// Reset now...
+%typemap(in) (const double values[3]);
+
 %include <webots/touch_sensor.h>

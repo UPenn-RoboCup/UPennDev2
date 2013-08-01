@@ -72,17 +72,17 @@ end
 local function get_joint()
   if current_arm=='left' then
     if current_joint<7 then
-      return Body.get_larm_command(current_joint)
+      return Body.get_larm_command_position(current_joint)
     else
       -- finger
-      return Body.get_aux_command(current_joint-6)
+      return Body.get_lgrip_command_position(current_joint-6)
     end
   else
     if current_joint<7 then
-      return Body.get_rarm_command(current_joint)
+      return Body.get_rarm_command_position(current_joint)
     else
       -- finger
-      return Body.get_aux_command(current_joint-3)
+      return Body.get_rgrip_command_position(current_joint-6)
     end
   end
 end
@@ -90,24 +90,24 @@ end
 local function set_joint(val)
   if current_arm=='left' then
     if current_joint<7 then
-      Body.set_larm_command(val,current_joint)
+      Body.set_larm_command_position(val,current_joint)
     else
       -- finger
-      Body.set_aux_command(val,current_joint-6)
+      Body.set_lgrip_command_position(val,current_joint-6)
     end
   else
     -- Right
     if current_joint<7 then
-      Body.set_rarm_command(val,current_joint)
+      Body.set_rarm_command_position(val,current_joint)
     else
       -- finger
-      Body.set_aux_command(val,current_joint-3)
+      Body.set_rgrip_command_position(val,current_joint-6)
     end
   end
 end
 
 -- Change the joints via IK
-local function ik_change(dx,dy,dz)
+local function ik_change( dTrans )
   -- Perform FK to get current coordinates
   -- Solve for the new set of coordinates
   -- For now, just go there...
@@ -121,16 +121,14 @@ local function ik_change(dx,dy,dz)
   end
   
   -- Increment the position
-  p[1] = p[1] + dx
-  p[2] = p[2] + dy
-  p[3] = p[3] + dz
+  p = p + dTrans 
   
   if current_arm=='left' then
     target = Body.get_inverse_larm(p)
-    if target then Body.set_larm_command(target) end
+    if target then Body.set_larm_command_position(target) end
   else
     target = Body.get_inverse_rarm(p)
-    if target then Body.set_rarm_command(target) end
+    if target then Body.set_rarm_command_position(target) end
   end
   
   -- Return the status
@@ -192,28 +190,28 @@ end
 local function state_msg()
 
   -- Command
-  local larm_cmd = Body.get_larm_command()
-  local rarm_cmd = Body.get_rarm_command()
-  local lfinger_cmd = vector.slice(Body.get_aux_command(),1,3)
-  local rfinger_cmd = vector.slice(Body.get_aux_command(),4,6)
+  local larm_cmd = Body.get_larm_command_position()
+  local rarm_cmd = Body.get_rarm_command_position()
+  local lfinger_cmd = Body.get_lgrip_command_position()
+  local rfinger_cmd = Body.get_rgrip_command_position()
 
   -- Position
   local larm = Body.get_larm_position()
   local rarm = Body.get_rarm_position()
-  local lfinger = vector.slice(Body.get_aux_position(),1,3)
-  local rfinger = vector.slice(Body.get_aux_position(),4,6)
+  local lfinger = Body.get_lgrip_position()
+  local rfinger = Body.get_rgrip_position()
   
   -- Load
   local larm_load = Body.get_larm_load()
   local rarm_load = Body.get_rarm_load()
-  local lfinger_load = vector.slice(Body.get_aux_load(),1,3)
-  local rfinger_load = vector.slice(Body.get_aux_load(),4,6)
+  local lfinger_load = Body.get_lgrip_load()
+  local rfinger_load = Body.get_rgrip_load()
   
   -- Torque Enable
   local larm_en = Body.get_larm_torque_enable()
   local rarm_en = Body.get_rarm_torque_enable()
-  local lfinger_en = vector.slice(Body.get_aux_torque_enable(),1,3)
-  local rfinger_en = vector.slice(Body.get_aux_torque_enable(),4,6)
+  local lfinger_en = Body.get_lgrip_torque_enable()
+  local rfinger_en = Body.get_rgrip_torque_enable()
   
   -- Inverse Kinematics
   local pL = Body.get_forward_larm()
@@ -273,13 +271,19 @@ end
 
 local trans_scale = 0.01 / 350
 local function process_translate( data )
-  local delta_ik = trans_scale * vector.new({data.x,data.y,data.z})
+  local delta_ik = trans_scale * vector.new({data.x,data.y,data.z,0,0,0})
   if vector.norm(delta_ik)<0.003 then return nil end
-  --return ik_change( unpack(delta_ik) )
+  return ik_change( delta_ik )
 end
 
 local rot_scale = 1 * (math.pi/180)/350
 local function process_rotate(data)
+  local delta_ik = rot_scale * vector.new({0,0,0,data.wx,data.wy,data.wz})
+  if vector.norm(delta_ik)<0.003 then return nil end
+  return ik_change( delta_ik )
+end
+
+local function direct_rotate(dat)
   local current = get_joint()
   local new = current - rot_scale * data.wz
   set_joint(new)

@@ -8,6 +8,9 @@ local nJoints = 35
 local shared_data = {}
 local shared_data_sz = {}
 
+-- NOTE: Sensor and actuator names should not overlap!
+-- This is because Body makes certain get/set assumptions
+
 shared_data.sensor = {}
 -- Position of joints is in radians from the zero position
 shared_data.sensor.position = vector.zeros( nJoints )
@@ -23,11 +26,11 @@ shared_data.sensor.imuAngle = vector.zeros( 3 )
 
 shared_data.actuator = {}
 -- Position of joints is in radians from the zero position
-shared_data.actuator.command = vector.zeros( nJoints )
+shared_data.actuator.command_position = vector.zeros( nJoints )
+-- Position of joints is in radians from the zero position
+shared_data.actuator.command_velocity = vector.zeros( nJoints )
 -- Torque enable of joints is 0 or 1
 shared_data.actuator.torque_enable = vector.zeros( nJoints )
--- Velocity of joints is in radians per second
-shared_data.actuator.velocity = vector.zeros( nJoints )
 -- Hardness of joints is legacy, but offers a simple abstraction of pid gains
 shared_data.actuator.hardness = vector.zeros( nJoints )
 

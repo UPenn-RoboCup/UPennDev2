@@ -40,12 +40,12 @@ local nJointWaist = 2
 -- Auxiliary servos
 -- 6 Fingers for gripping
 -- 1 servo for lidar panning
-local indexAux = 29
-local nJointAux = 7
 local indexLGrip = 29
-local nLGrip = 3
+local nJointLGrip = 3
 local indexRGrip = 32
-local nRGrip = 3
+local nJointRGrip = 3
+local indexAux = 35
+local nJointAux = 1
 local nJoint = 35
 
 assert(nJoint==(indexAux+nJointAux)-indexHead,'Bad joint counting!')
@@ -78,13 +78,13 @@ local parts = {
 	['RLeg']=vector.count(indexRLeg,nJointRLeg),
 	['RArm']=vector.count(indexRArm,nJointRArm),
 	['Waist']=vector.count(indexWaist,nJointWaist),
-	['Aux']=vector.count(indexAux,nJointAux)
+	['LGrip']=vector.count(indexLGrip,nJointLGrip),
+  ['RGrip']=vector.count(indexRGrip,nJointRGrip),
+  ['Aux']=vector.count(indexAux,nJointAux)
 }
 local inv_parts = {}
 for name,list in pairs(parts) do
-	for i,idx in ipairs(list) do
-		inv_parts[idx] = name
-	end
+	for _,idx in ipairs(list) do inv_parts[idx] = name end
 end
 
 --------------------------------
@@ -218,9 +218,15 @@ for i, bias in ipairs(servo.rad_bias) do
   servo.step_bias[i] = bias * servo.to_steps[i]
 end
 
+-- Clamp the radian within the min and max
+-- Used when sending packets and working with actuator commands
+local radian_clamp = function( idx, radian )
+  return math.min(math.max(radian, servo.min_rad[idx]), servo.max_rad[idx])
+end
+
 -- Radian to step, using offsets and biases
 local make_joint_step = function( idx, radian )
-  radian = math.min(math.max(radian, servo.min_rad[idx]), servo.max_rad[idx])
+  radian = radian_clamp( idx, radian )
 	local step = math.floor(servo.direction[idx] * radian * servo.to_steps[idx]
 	+ servo.step_zero[idx] + servo.step_bias[idx])
 	return step
@@ -238,109 +244,139 @@ end
 Body.set_syncread_enable = function()
 end
 
---------------------------------
--- Standard convenient antropomorphic functions to access jcm
-for part,jlist in pairs( parts ) do
-	local a = jlist[1]
-	local b = jlist[#jlist]
-	Body['get_'..part:lower()..'_position'] = function(idx)
-		if idx then return jcm.sensorPtr.position[ jlist[idx] ] end
-		return jcm.sensorPtr.position:table( a, b )
-	end -- Get
-	Body['set_'..part:lower()..'_command'] = function(val,idx)
-		if type(val)=='number' then
-			if idx then jcm.actuatorPtr.command[ jlist[idx] ] = val return end
-			for _,l in ipairs(jlist) do
-				jcm.actuatorPtr.command[l] = val
-			end
-		else
-			for i,l in ipairs(jlist) do
-				jcm.actuatorPtr.command[l] = val[i]
-			end
-		end -- if number
-	end -- Set
-
-  -- Legacy API
-	-- TODO: Hardness should set some PID values
-	Body['get_'..part:lower()..'_hardness'] = function(idx)
-		return 0
+----------------------
+-- Body sensor commands
+-- jcm should be the API compliance test
+for sensor, pointer in pairs(jcm.sensorPtr) do
+	Body['set_sensor_'..sensor] = function(val,idx)
+    if type(val)=='number' then
+      if type(idx)=='number' then
+        pointer[idx] = val
+      else
+        for _,i in ipairs(idx) do pointer[i] = val end
+      end
+    else
+      if not idx then
+        for i,v in ipairs(val) do pointer[i] = v end
+      elseif type(idx)=='number' then
+        for i,v in ipairs(val) do pointer[idx+i-1] = v end
+      else
+        -- ji: joint index. vi: value index
+        for vi,ji in ipairs(idx) do pointer[ji] = val[vi] end
+      end
+    end
 	end
-	Body['set_'..part:lower()..'_hardness'] = function(val,idx)
+	Body['get_sensor_'..sensor] = function(idx,idx2)
+		if idx then
+      -- Return the values from idx to idx2
+      if idx2 then return pointer:table(idx,idx2) end 
+      return pointer[idx]
+    end
+    -- If no idx is supplied, then return the values of all joints
+    -- TODO: return as a table or carray?
+		return pointer:table()
 	end
-
+  --------------------------------
+  -- Antropomorphic access to jcm
+  -- TODO: Do not use string concatenation to call the get/set methods of Body
+  for part,jlist in pairs( parts ) do
+  	local a = jlist[1]
+  	local b = jlist[#jlist]
+  	Body['get_'..part:lower()..'_'..sensor] = function(idx)
+  		if idx then return Body['get_sensor_'..sensor](jlist[idx]) end
+  		return Body['get_sensor_'..sensor](a,b)
+  	end -- Get
+  	Body['set_'..part:lower()..'_'..sensor] = function(val,idx)
+  		if idx then return Body['set_sensor_'..sensor](val,jlist[idx]) end
+      -- Ensure that the parameters are proper
+      assert(type(val)=='number' or #val==b-a+1 )
+  		return Body['set_sensor_'..sensor](val,a,b)
+  	end -- Set
+  end -- anthropomorphic
+  --------------------------------
 end
 
---------------------------------
--- Additional Convenience functions to access jcm
-for part,jlist in pairs(parts) do
 
-	local a = jlist[1]
-	local b = jlist[#jlist]
-
-	Body['get_'..part:lower()..'_command'] = function(idx)
-		if idx then return jcm.actuatorPtr.command[ jlist[idx] ] end
-		return jcm.actuatorPtr.command:table( a, b )
-	end -- Get
-	Body['set_'..part:lower()..'_position'] = function(val,idx)
-		if type(val)=='number' then
-			if idx then jcm.sensorPtr.position[ list[idx] ] = val return end
-			for _,jid in ipairs(jlist) do
-				jcm.sensorPtr.position[jid] = val
-			end
-		else
-			for i,jid in ipairs(jlist) do
-				jcm.sensorPtr.position[jid] = val[i]
-			end
-		end -- if number
-	end -- Set
-
-
-	Body['get_'..part:lower()..'_torque_enable'] = function(idx)
-		if idx then return jcm.actuatorPtr.torque_enable[ jlist[idx] ] end
-		return jcm.actuatorPtr.torque_enable:table( a, b )
-	end -- Get
-	Body['set_'..part:lower()..'_torque_enable'] = function(val,idx)
-		if type(val)=='number' then
-			if idx then jcm.actuatorPtr.torque_enable[ jlist[idx] ] = val return end
-			for _,l in ipairs(jlist) do
-				jcm.actuatorPtr.torque_enable[l] = val
-			end
-		else
-			for i,l in ipairs(jlist) do
-				jcm.actuatorPtr.torque_enable[l] = val[i]
-			end
-		end -- if number
-	end -- Set
-
-	Body['get_'..part:lower()..'_load'] = function(idx)
-		if idx then return jcm.sensorPtr.load[ list[idx] ] end
-		return jcm.sensorPtr.load:table( a, b )
-	end -- Get
-	Body['set_'..part:lower()..'_load'] = function(val,idx)
-		if type(val)=='number' then
-			if idx then jcm.sensorPtr.load[ jlist[idx] ] = val return end
-			for _,l in ipairs(jlist) do jcm.sensorPtr.load[l] = val end
-		else
-			for i,l in ipairs(jlist) do jcm.sensorPtr.load[l] = val[i] end
-		end -- if number
-	end -- Set
-
+----------------------
+-- Body actuator commands
+-- jcm should be the API compliance test
+for actuator, pointer in pairs(jcm.actuatorPtr) do
+	Body['set_actuator_'..actuator] = function(val,idx)
+    if type(val)=='number' then
+      if type(idx)=='number' then
+        pointer[idx] = val
+      else
+        for _,i in ipairs(idx) do pointer[i] = val end
+      end
+    else
+      if not idx then
+        for i,v in ipairs(val) do pointer[i] = v end
+      elseif type(idx)=='number' then
+        for i,v in ipairs(val) do pointer[idx+i-1] = v end
+      else
+        -- ji: joint index. vi: value index
+        for vi,ji in ipairs(idx) do pointer[ji] = val[vi] end
+      end
+    end
+	end
+	Body['get_actuator_'..actuator] = function(idx,idx2)
+		if idx then
+      -- Return the values from idx to idx2
+      if idx2 then return pointer:table(idx,idx2) end 
+      return pointer[idx]
+    end
+    -- If no idx is supplied, then return the values of all joints
+    -- TODO: return as a table or carray?
+		return pointer:table()
+	end
+  --------------------------------
+  -- Antropomorphic access to jcm
+  -- TODO: Do not use string concatenation to call the get/set methods of Body
+  for part,jlist in pairs( parts ) do
+  	local a = jlist[1]
+  	local b = jlist[#jlist]
+  	Body['get_'..part:lower()..'_'..actuator] = function(idx)
+  		if idx then return Body['get_actuator_'..actuator](jlist[idx]) end
+  		return Body['get_actuator_'..actuator](a,b)
+  	end -- Get
+  	Body['set_'..part:lower()..'_'..actuator] = function(val,idx)
+  		if idx then
+        -- idx is only allowed to be a number
+        assert(type(idx)=='number','body limb idx must be a number!')
+        val = radian_clamp(idx,val)
+        return Body['set_actuator_'..actuator](val,jlist[idx])
+      end
+      -- With no idx, val is number or table
+      -- Make sure to clamp this value
+      -- If val is a number to set all limb joints
+      if type(val)=='number' then
+        local values = {}
+        for i,idx in ipairs(jlist) do values[i] = radian_clamp(idx,val) end
+        return Body['set_actuator_'..actuator](values,a,b)
+      end
+      -- If val is a set of values for each limb joints
+      assert(#val==b-a+1,'Must set the exact number of limb joints!')
+      for i,idx in ipairs(jlist) do
+        val[i] = radian_clamp(idx,val[i])
+      end
+  		return Body['set_actuator_'..actuator](val,a,b)
+  	end -- Set
+  end -- anthropomorphic
+  --------------------------------
 end
 
 --------------------------------
 -- Packet generators
 -- NX packet generators
+-- TODO: Use anthropomorphic get/set functions
 for k,v in pairs(libDynamixel.nx_registers) do
   local get_func = libDynamixel['get_nx_'..k]
   local set_func = libDynamixel['set_nx_'..k]
   
   for part,jlist in pairs(parts) do
-
-    local a = jlist[1]
-    local b = jlist[#jlist]
-  
+    --print(part,'nx jlist',jlist)
     local mlist = motor_parts[part]
-    local jlist = parts[part]
+    --local jlist = parts[part]
     local a = jlist[1]
     local b = jlist[#jlist]
     Body['get_'..part:lower()..'_'..k..'_packet'] = function()
@@ -350,15 +386,14 @@ for k,v in pairs(libDynamixel.nx_registers) do
       local vals = jcm.actuatorPtr[k]:table( a, b )
       return set_func( mlist, vals )
     end
+    -- Add protection for command_position
     if k=='command_position' then
       --print'overwriting command'
       Body['set_'..part:lower()..'_'..k..'_packet'] = function()
         -- Shm has radians
-        local vals = jcm.actuatorPtr.command:table( a, b )
-        -- Convert to 
-        for i,idx in ipairs(jlist) do
-          vals[i] = make_joint_step(idx,vals[i])
-        end
+        local vals = jcm.actuatorPtr.command_position:table( a, b )
+        -- Convert to steps
+        for i,idx in ipairs(jlist) do vals[i]=make_joint_step(idx,vals[i]) end
         return set_func( mlist, vals )
       end
     end
@@ -370,40 +405,47 @@ end
 for k,v in pairs(libDynamixel.mx_registers) do
 	local get_func = libDynamixel['get_mx_'..k]
 	local set_func = libDynamixel['set_mx_'..k]
-	local mlist = motor_parts['Aux']
-	local jlist = parts['Aux']
-	local a = jlist[1]
-	local b = jlist[#jlist]
-	Body['get_aux_'..k..'_packet'] = function()
-		return get_func(mlist)
-	end
-	Body['set_aux_'..k..'_packet'] = function()
-		local vals = jcm.actuatorPtr[k]:table( a, b )
-		return set_func( mlist, vals )
-	end
-	if k=='command' then
-		--print'overwriting command'
-		Body['set_aux_command_packet'] = function()
-			-- Shm has radians
-			local vals = jcm.actuatorPtr.command:table( a, b )
-			-- Convert to 
-			for i,idx in ipairs(jlist) do
-				vals[i] = make_joint_step(idx,vals[i])
-			end
-			return set_func( mlist, vals )
-		end
-	end
+  
+  for _,part in pairs({'LGrip','RGrip','Aux'}) do
+    local mlist = motor_parts[part]
+    local jlist = parts[part]
+    local a = jlist[1]
+    local b = jlist[#jlist]
+    
+    -- Getter setters
+    Body['get_'..part:lower()..'_'..k..'_packet'] = function()
+      return get_func(mlist)
+    end
+    Body['set_'..part:lower()..'_'..k..'_packet'] = function()
+      local vals = jcm.actuatorPtr[k]:table( a, b )
+      return set_func( mlist, vals )
+    end
+
+    -- Add protection for command_position
+  	if k=='command_position' then
+  		--print'overwriting command'
+  		Body['set_'..part:lower()..'_'..k..'_packet'] = function()
+  			-- Shm has radians
+  			local vals = jcm.actuatorPtr.command_position:table( a, b )
+  			-- Convert to steps
+  			for i,idx in ipairs(jlist) do vals[i]=make_joint_step(idx,vals[i]) end
+  			return set_func( mlist, vals )
+  		end
+  	end
+  
+  end
 end
 
 -- TODO: should be in body or a Grip module?
 -- Grip module may have more advanced techniques...
 -- More gripper functions
+-- TODO: Use body actuator access to JCM
 Body.set_lgrip_percent = function( percent )
 	percent = math.min(math.max(percent,0),1)
 	-- Convex combo
 	for idx=indexLGrip,indexLGrip+nLGrip-1 do
 		local radian = percent*servo.min_rad[idx] + (1-percent)*servo.max_rad[idx]
-		jcm.actuatorPtr.command[idx] = radian
+		jcm.actuatorPtr.command_position[idx] = radian
 	end
 end
 Body.set_rgrip_percent = function( percent )
@@ -411,40 +453,7 @@ Body.set_rgrip_percent = function( percent )
 	-- Convex combo
 	for idx=indexRGrip,indexRGrip+nRGrip-1 do
 		local radian = percent * servo.min_rad[idx] + (1-percent)*servo.max_rad[idx]
-		jcm.actuatorPtr.command[idx] = radian
-	end
-end
-
-
-----------------------
--- Body sensor readings
--- NOTE: Should just iterate through jcm...
--- jcm should be the API compliance test
-for sensor, pointer in pairs(jcm.sensorPtr) do
-	Body['set_sensor_'..sensor] = function(val,idx)
-		if idx then pointer[idx] = val; return; end
-		for i,v in ipairs(val) do pointer[i] = v end
-	end
-	Body['get_sensor_'..sensor] = function(idx)
-		local s = pointer:table()
-		if idx then return s[idx] end
-		return s
-	end
-end
-
-----------------------
--- Body actuator commands
--- NOTE: Should just iterate through jcm...
--- jcm should be the API compliance test
-for actuator, pointer in pairs(jcm.actuatorPtr) do
-	Body['set_actuator_'..actuator] = function(val,idx)
-		if idx then pointer[idx] = val; return; end
-		for i,v in ipairs(val) do pointer[i] = v end
-	end
-	Body['get_actuator_'..actuator] = function(idx)
-		local s = pointer:table()
-		if idx then return s[idx] end
-		return s
+		jcm.actuatorPtr.command_position[idx] = radian
 	end
 end
 
@@ -559,7 +568,7 @@ if IS_WEBOTS then
 	Body.entry = function()
     
     -- Zero all joint requests
-    for i=1,nJoint do Body.set_actuator_command(0,i) end
+    for i=1,nJoint do Body.set_actuator_command_position(0,i) end
     for i=1,nJoint do Body.set_sensor_position(0,i) end
 
 		-- Initialize the webots system
@@ -611,10 +620,10 @@ if IS_WEBOTS then
 		local tDelta = .001 * Body.timeStep
 		-- Set actuator commands from shared memory
 		for i, jtag in ipairs(tags.joints) do
-			local cmd = Body.get_actuator_command(i)
+			local cmd = Body.get_actuator_command_position(i)
 			local pos = Body.get_sensor_position(i)
 			-- TODO: What is velocity?
-			local vel = 0 or Body.get_actuator_velocity(i)
+			local vel = 0 or Body.get_actuator_command_velocity(i)
 			local en = 1 or Body.get_actuator_torque_enable(i)
 			local deltaMax = tDelta * vel
 			-- Only update the joint if the motor is torqued on

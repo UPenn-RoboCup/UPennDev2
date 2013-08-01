@@ -44,7 +44,7 @@ local rx_registers = {
 	['delay'] = {5,1},
 	['torque_enable'] = {24,1},
 	['led'] = {25,1},
-	['command'] = {30,2},
+	['command_position'] = {30,2},
 	['position'] = {36,2},
 	['battery'] = {42,2},
 	['temperature'] = {43,1},
@@ -69,7 +69,7 @@ local mx_registers = {
 	['position_i'] = {string.char(27,0),1},
 	['position_d'] = {string.char(26,0),1},
 	
-	['command'] = {string.char(30,0),2},
+	['command_position'] = {string.char(30,0),2},
 	['velocity'] = {string.char(32,0),2},
 	['position'] = {string.char(36,0),2},
   ['speed'] = {string.char(38,0),2},

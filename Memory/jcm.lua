@@ -2,8 +2,7 @@
 -- Joint Communication Module
 -- (c) 2013 Stephen McGill
 --------------------------------
-local vector = require'vector'
-local util = require'util'
+local memory = require'memory'
 local nJoints = 35
 local shared_data = {}
 local shared_data_sz = {}
@@ -35,4 +34,4 @@ shared_data.actuator.torque_enable = vector.zeros( nJoints )
 shared_data.actuator.hardness = vector.zeros( nJoints )
 
 -- Call the initializer
-util.init_shm_segment(..., shared_data, shared_data_sz)
+memory.init_shm_segment(..., shared_data, shared_data_sz)

@@ -1,20 +1,15 @@
 -- THOR OP Body
-print('webots?',_G['IS_WEBOTS'])
--- Dynamixel definitions
-local libDynamixel = require'libDynamixel'
+local use_telekinesis = true
 
 -- Shared memory for the joints
 require'jcm'
+if use_telekinesis then require'tkcm' end
 
 -- Utilities
-require'unix'
-require'vector'
-local function mod_angle(a)
-	-- Reduce angle to [-pi, pi)
-	local b = a % (2*math.pi)
-	if b >= math.pi then return (b - 2*math.pi) end
-	return b
-end
+local unix = require'unix'
+local vector = require'vector'
+local util = require'util'
+local libDynamixel = require'libDynamixel'
 
 local DEG_TO_RAD = math.pi/180
 local RAD_TO_DEG = 180/math.pi
@@ -488,9 +483,9 @@ local function check_ik_error( q, tr )
 	( tr_q[3]-tr[3] )^2 )
 
 	local angle_error = math.sqrt(
-	mod_angle( trRArm_target[4]-tr[4] )^2 +
-	mod_angle( trRArm_target[5]-tr[5] )^2 +
-	mod_angle( trRArm_target[6]-tr[6] )^2 )
+	util.memory( trRArm_target[4]-tr[4] )^2 +
+	util.memory( trRArm_target[5]-tr[5] )^2 +
+	util.memory( trRArm_target[6]-tr[6] )^2 )
 
 	-- If within tolerance, return true
 	if dist_pos<IK_TOLERANCE then return true end
@@ -654,24 +649,46 @@ if IS_WEBOTS then
 		webots.wb_camera_enable(tags.kinect, timeStep)
 		--]]
     
-    -- Grab the box and move it around?
-    telekinesis.box = {}
-    telekinesis.box.tag = webots.wb_supervisor_node_get_from_def("MY_OBJ")
-    telekinesis.box.translation = webots.wb_supervisor_node_get_field(telekinesis.box.tag, "translation")
-    telekinesis.box.get_position = function(self)
-      return webots.wb_supervisor_field_get_sf_vec3f(self.translation)
+    -- Grab the box and move it around
+    -- TODO: Check if null or so, since this needs a PRO license
+    if use_telekinesis then
+      -- Table (for placing objects on?)
+      telekinesis.table = {}
+      telekinesis.table.tag = webots.wb_supervisor_node_get_from_def("MY_TABLE")
+      telekinesis.table.translation = 
+      webots.wb_supervisor_node_get_field(telekinesis.table.tag, "translation")
+      telekinesis.table.get_position = function(self)
+        return tkcm.get_table_position(), webots.wb_supervisor_field_get_sf_vec3f(self.translation)
+      end
+      telekinesis.table.set_position = function( self, new_position )
+        webots.wb_supervisor_field_set_sf_vec3f( self.translation, carray.double( new_position ) )
+      end
+      telekinesis.table.update = function(self)
+        local table_pos_shm, table_pos_wbt = telekinesis.table:get_position()
+        -- Webots xyz is not the same as the Body xyz residing in shm
+        local table_new_pos={table_pos_shm[2],table_pos_wbt[2],table_pos_shm[1]}
+        telekinesis.table:set_position(table_new_pos)
+      end
+      -- Drill
+      telekinesis.drill = {}
+      telekinesis.drill.tag = webots.wb_supervisor_node_get_from_def("MY_DRILL")
+      telekinesis.drill.translation = 
+      webots.wb_supervisor_node_get_field(telekinesis.drill.tag, "translation")
+      telekinesis.drill.get_position = function(self)
+        return tkcm.get_drill_position(), webots.wb_supervisor_field_get_sf_vec3f(self.translation)
+      end
+      telekinesis.drill.set_position = function( self, new_position )
+        webots.wb_supervisor_field_set_sf_vec3f( self.translation, carray.double( new_position ) )
+      end
+      telekinesis.drill.update = function(self)
+        local drill_pos_shm, drill_pos_wbt = telekinesis.drill:get_position()
+        -- Webots xyz is not the same as the Body xyz residing in shm
+        local drill_new_pos={drill_pos_shm[2],drill_pos_shm[3],drill_pos_shm[1]}
+        telekinesis.drill:set_position(drill_new_pos)
+      end
+      -- Associate the table with the body
+      Body.telekinesis = telekinesis
     end
-    telekinesis.box.set_position = function( self, new_position )
-      webots.wb_supervisor_field_set_sf_vec3f( self.translation, carray.double( new_position ) )
-    end
-    
-    local box_pos = telekinesis.box:get_position()
-    print('my box position', unpack( box_pos ) )
-    box_pos[1] = box_pos[1] + 1
-    telekinesis.box:set_position(box_pos)
-    box_pos = telekinesis.box:get_position()
-    print('my new box position', unpack( box_pos ) )
-    
 
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
@@ -715,8 +732,12 @@ if IS_WEBOTS then
         webots.wb_servo_set_position(jtag, servo.direction[i] * (new_pos + servo.rad_bias[i]) )
       end
 		end
-
-
+    
+    -- Update the telekinesis
+    if use_telekinesis then
+      telekinesis.table:update()
+      telekinesis.drill:update()
+    end
 
 		-- Step the simulation, and shutdown if the update fails
 		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end

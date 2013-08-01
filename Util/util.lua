@@ -1,4 +1,4 @@
-local vector = require('vector');
+local vector = require'vector'
 
 local util = {}
 
@@ -16,7 +16,7 @@ end
 function util.ptorch(data, W, Precision)
   local w = W or 5
   local precision = Precision or 10
-  local torch = require 'torch'
+  local torch = require'torch'
   local tp = type(data)
   if tp == 'userdata' then
     tp = torch.typename(data) or ''
@@ -24,9 +24,7 @@ function util.ptorch(data, W, Precision)
     local row = data:size(1)
     local col = 1
     if dim == 1 then
-      for i = 1, row do
-        print(data[i])
-      end
+      for i = 1, row do print(data[i]) end
       print('\n'..tp..' - size: '..row..'\n')
     elseif dim == 2 then 
       col = data:size(2) 
@@ -38,20 +36,19 @@ function util.ptorch(data, W, Precision)
       end
       print('\n'..tp..' - size: '..row..'x'..col..'\n')
     else
-      print('Not Support Print torch object with more than 2 dimensions')
+      print'Printing torch objects with more than 2 dimensions is not support'
     end
-  else print(data)
+  else
+    print(data)
   end
+  io.flush()
 end
 
 function util.mod_angle(a)
-  if a==nil then return nil end
-  -- Reduce angle to [-pi, pi)
-  a = a % (2*math.pi);
-  if (a >= math.pi) then
-    a = a - 2*math.pi;
-  end
-  return a;
+	-- Reduce angle to [-pi, pi)
+	local b = a % (2*math.pi)
+	if b >= math.pi then return (b - 2*math.pi) end
+	return b
 end
 
 function util.sign(x)
@@ -164,131 +161,6 @@ function util.randn(n)
   end
   return t;
 end
-
-
-function util.init_shm_segment(name, shared, shsize, tid, pid)
-  local shm = require('shm');
-  local carray = require('carray');
-  local tid = tid or 0
-  local pid = pid or 1
-
-  local fenv = _G[name]
-  if fenv == nil then
-    _G[name] = {}
-    fenv = _G[name]
-  end
-
-  -- initialize shm segments from the *cm format
-  for shtable, shval in pairs(shared) do
-    -- create shared memory segment
-    local shmHandleName = shtable..'Shm';
-    -- segment names are constructed as follows:
-    -- [file_name][shared_table_name][team_number][player_id][username]
-    -- ex. vcmBall01brindza is the segment for shared.ball table in vcm.lua
-    -- NOTE: the first letter of the shared_table_name is capitalized
-    local shmName = name..string.upper(string.sub(shtable, 1, 1))..string.sub(shtable, 2)..tid..pid..(os.getenv('USER') or '');
-    
-    fenv[shmHandleName] = shm.new(shmName, shsize[shtable]);
-    local shmHandle = fenv[shmHandleName];
-
-    -- intialize shared memory
-    util.init_shm_keys(shmHandle, shared[shtable]);
-
-    -- generate accessors and pointers
-    local shmPointerName = shtable..'Ptr';
-    fenv[shmPointerName] = {};
-    local shmPointer = fenv[shmPointerName]
-
-    for k,v in pairs(shared[shtable]) do
-      shmPointer[k] = carray.cast(shmHandle:pointer(k))
-      
-      if type(v)=='string' then
-        -- Get String
-        fenv['get_'..shtable..'_'..k] = function()
-            local bytes = shmHandle:get(k);
-            if bytes == nil then
-              return ''
-            else
-              for i=1,#bytes do
-                --Testing NaN
-                if not (bytes[i]>0) then 
-                  print("NaN Detected at string!") return
-                end
-              end
-              return string.char(unpack(bytes));
-            end
-          end
-        -- Set string
-        fenv['set_'..shtable..'_'..k] = function(val)
-          return shmHandle:set(k, {string.byte(val, 1, string.len(val))});
-        end
-        
-      elseif type(v)=='number' then
-        -- Get userdata
-        fenv['get_'..shtable..'_'..k] = function() return shmHandle:pointer(k) end
-        -- Set userdata
-        fenv['set_'..shtable..'_'..k] = function(val) return shmHandle:set(k, val, v) end
-        
-      elseif type(v)=='table' then
-        -- setup accessors for a number/vector 
-        fenv['get_'..shtable..'_'..k] = function()
-          val = shmHandle:get(k)
-          if type(val) == 'table' then val = vector.new(val) end
-          return val
-        end
-        -- Set table
-        fenv['set_'..shtable..'_'..k] = function(val, ...)
-          return shmHandle:set(k, val, ...)
-        end
-
-      else
-        -- unsupported type
-        error('Unsupported shm type '..type(v));
-      end
-    end
-  end
-end
-
-function util.init_shm_keys(shmHandle, shmTable)
-  -- initialize a shared memory block (creating the entries if needed)
-  for k,v in pairs(shmTable) do 
-    -- create the key if needed
-    if type(v) == 'string' then
-      if not util.shm_key_exists(shmHandle, k) then
-        shmHandle:set(k, {string.byte(v, 1, string.len(v))});
-      end
-    elseif type(v) == 'number' then 
-      if not util.shm_key_exists(shmHandle, k) or shmHandle:size(k) ~= v then
-        shmHandle:empty(k, v);
-      end
-    elseif type(v) == 'table' then
-      if not util.shm_key_exists(shmHandle, k, #v) then
-        shmHandle[k] = v;
-      end
-    end
-  end
-end
-
-function util.shm_key_exists(shmHandle, k, nvals)
-  -- checks the shm segment for the given key
-  -- returns true if the key exists and is of the correct length nvals (if provided)
-  local carray = require('carray');
-  for sk,sv in shmHandle.next, shmHandle do
-    cpsv = carray.cast(shmHandle:pointer(sk));
-    if (k == sk) then
-      -- key exists, check length
-      if (nvals and nvals ~= #cpsv) then
-        return false;
-      else
-        return true;
-      end
-    end
-  end
-
-  -- key does not exist
-  return false; 
-end
-
 
 -- For HZD
 --[[

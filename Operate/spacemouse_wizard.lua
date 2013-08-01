@@ -1,6 +1,6 @@
 -----------------------------------------------------------------
--- Keyboard Wizard
--- Listens to keyboard input to control the arm joints
+-- Spacemouse Wizard
+-- Listens to spacemouse input to control the arm joints
 -- (c) Stephen McGill, 2013
 ---------------------------------
 
@@ -12,6 +12,7 @@ dofile'include.lua'
 local unix = require'unix'
 local mp = require'msgpack'
 local spacemouse = require 'spacemouse'
+local colors = require'colors'
 --sm = spacemouse.init(0x046d, 0xc62b) -- pro
 local sm = spacemouse.init(0x046d, 0xc626) -- regular
 -- Update every 10ms
@@ -219,8 +220,7 @@ local function state_msg()
   local pR = Body.get_forward_rarm()
   
   -- Make the message
-  local msg = '=========\nKeyboard Wizard\n'
-  msg = msg..'Current State\n'
+  local msg = colors.wrap('\nSpacemouse Wizard\n','blue')
   msg = msg..'Current State\n'
   msg = msg..'Operating on '..current_arm..' '..joint_name()..' in radians'
 
@@ -288,6 +288,7 @@ end
 
 ------------
 -- Start processing
+os.execute("clear")
 io.write( '\n\n',state_msg() )
 io.flush()
 local msg = 'Unknown'
@@ -300,10 +301,9 @@ while true do
   -- Print result of the key press
   if evt then
     os.execute("clear")
-    io.write( '\n\n', state_msg() )
-    io.write( '\n\n', msg )
+    print( '\n\n', state_msg() )
+    print(colors.wrap(msg,'yellow'))
     msg = 'Unknown'
-    io.flush()
   end
   unix.usleep( update_interval )
 end

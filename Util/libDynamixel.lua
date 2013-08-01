@@ -729,8 +729,8 @@ libDynamixel.service = function( dynamixels, main )
 	end
   
   -- Loop and select appropriately
-  --local status_timeout = 1/120 -- 120Hz timeout
-  local status_timeout = 1/60 -- 120Hz timeout
+  local status_timeout = 1/120 -- 120Hz timeout
+  --local status_timeout = 1/60 -- 120Hz timeout
   --local status_timeout = 0 -- Instant timeout
 	while #dynamixel_fds>0 do
     

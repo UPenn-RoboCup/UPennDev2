@@ -216,8 +216,7 @@ local function state_msg()
   local pR = Body.get_forward_rarm()
   
   -- Make the message
-  local msg = '=========\nKeyboard Wizard\n'
-  msg = msg..'Current State\n'
+  local msg = colors.wrap('\nKeyboard Wizard\n','blue')
   msg = msg..'Current State\n'
   msg = msg..'Operating on '..current_arm..' '..joint_name()..' in radians'
 
@@ -335,7 +334,7 @@ end
 
 ------------
 -- Start processing
---"\033[33m",'test',"\033[0m"
+os.execute("clear")
 io.write( '\n\n',state_msg() )
 io.flush()
 local t0 = unix.time()
@@ -365,7 +364,8 @@ while true do
   -- http://lua-users.org/lists/lua-l/2009-12/msg00937.html
   -- Print result of the key press
   os.execute("clear")
+  print( state_msg() )
+  print()
   print(colors.wrap(msg,'yellow'))
-  print( '\n\n', state_msg() )
     
 end

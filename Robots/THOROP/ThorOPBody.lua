@@ -368,6 +368,7 @@ end
 --------------------------------
 -- Packet generators
 -- NX packet generators
+-- TODO: make general somehow
 -- TODO: Use anthropomorphic get/set functions
 for k,v in pairs(libDynamixel.nx_registers) do
   local get_func = libDynamixel['get_nx_'..k]
@@ -400,8 +401,9 @@ for k,v in pairs(libDynamixel.nx_registers) do
   end--jlist
 end
   
--- Gripper and lidar actuator are MX
+-- MX packet generators
 -- TODO: make general somehow
+-- TODO: Use anthropomorphic get/set functions
 for k,v in pairs(libDynamixel.mx_registers) do
 	local get_func = libDynamixel['get_mx_'..k]
 	local set_func = libDynamixel['set_mx_'..k]
@@ -513,6 +515,37 @@ Body.get_forward_rarm = function()
   return pRArm
 end
 
+-- Change the joints via IK
+Body.set_inverse_larm = function( dTrans )
+  -- Perform FK to get current coordinates
+  local p = Body.get_forward_larm()
+  -- Increment the position
+  p = p + dTrans 
+  -- Set the shm to reflect the inverse kinematics solution
+  local target = Body.get_inverse_larm(p)
+  -- Check if the new position is invalid  
+  if not target then return false end
+  -- Update the Body command
+  Body.set_larm_command_position(target)
+  -- Return true upon success
+  return true
+end
+
+Body.set_inverse_rarm = function( dTrans )
+  -- Perform FK to get current coordinates
+  local p = Body.get_forward_rarm()
+  -- Increment the position
+  p = p + dTrans 
+  -- Set the shm to reflect the inverse kinematics solution
+  local target = Body.get_inverse_rarm(p)
+  -- Check if the new position is invalid  
+  if not target then return false end
+  -- Update the Body command
+  Body.set_rarm_command_position(target)
+  -- Return true upon success
+  return true
+end
+
 -- TODO: Write functions to modify transform in directions
 
 ----------------------
@@ -560,7 +593,6 @@ if IS_WEBOTS then
 		0,0,0,
 		0,
 	})*math.pi/180
-
 
 	-- Setup the webots tags
 	local tags = {}

@@ -18,7 +18,7 @@ local colors = require'colors'
 local Body = require'Body'
 
 local current_joint = 1
-local current_arm = 'left'
+local current_arm = 'larm'
 -- Modes: direct, ik
 local current_mode = 1
 local mode_msg = {
@@ -48,13 +48,13 @@ end
 
 local function joint_name()
 	local jName = 'Unknown'
-	if current_arm=='left' then
+	if current_arm=='larm' then
 		if current_joint<7 then
 			jName = Body.jointNames[Body.indexLArm+current_joint-1]
 		else
 			jName = 'finger '..current_joint-6
 		end
-	elseif current_arm=='right' then
+	elseif current_arm=='rarm' then
 		if current_joint<7 then
 			jName = Body.jointNames[Body.indexRArm+current_joint-1]
 		else
@@ -66,77 +66,42 @@ end
 
 -- Joint access helpers
 local function get_joint()
-  if current_arm=='left' then
+  if current_arm=='larm' then
     if current_joint<7 then
-      return Body.get_larm_command(current_joint)
+      return Body.get_larm_command_position(current_joint)
     else
       -- finger
-      return Body.get_aux_command(current_joint-6)
+      return Body.get_aux_command_position(current_joint-6)
     end
   else
     if current_joint<7 then
-      return Body.get_rarm_command(current_joint)
+      return Body.get_rarm_command_position(current_joint)
     else
       -- finger
-      return Body.get_aux_command(current_joint-3)
+      return Body.get_aux_command_position(current_joint-3)
     end
   end
 end
 
 local function set_joint(val)
-  if current_arm=='left' then
+  if current_arm=='larm' then
     if current_joint<7 then
-      Body.set_larm_command(val,current_joint)
+      Body.set_larm_command_position(val,current_joint)
     else
       -- finger
-      Body.set_aux_command(val,current_joint-6)
+      Body.set_aux_command_position(val,current_joint-6)
     end
   else
     -- Right
     if current_joint<7 then
-      Body.set_rarm_command(val,current_joint)
+      Body.set_rarm_command_position(val,current_joint)
     else
       -- finger
-      Body.set_aux_command(val,current_joint-3)
+      Body.set_aux_command_position(val,current_joint-3)
     end
   end
 end
 
--- Change the joints via IK
-local function ik_change(dx,dy,dz)
-  -- Perform FK to get current coordinates
-  -- Solve for the new set of coordinates
-  -- For now, just go there...
-  -- Other layers should perform safety checks
-  local target = nil
-  local p = nil
-  if current_arm=='left' then
-    p = Body.get_forward_larm()
-  else
-    p = Body.get_forward_rarm()
-  end
-  
-  -- Increment the position
-  p[1] = p[1] + dx
-  p[2] = p[2] + dy
-  p[3] = p[3] + dz
-  
-  if current_arm=='left' then
-    target = Body.get_inverse_larm(p)
-    if target then Body.set_larm_command(target) end
-  else
-    target = Body.get_inverse_rarm(p)
-    if target then Body.set_rarm_command(target) end
-  end
-  
-  -- Return the status
-  if target then
-    return string.format( 'Updated arm angles via IK' )
-  else
-    return 'Invalid IK update!'
-  end
-  
-end
 
 -- Print Message helpers
 local switch_msg = function()
@@ -188,28 +153,28 @@ end
 local function state_msg()
 
   -- Command
-  local larm_cmd = Body.get_larm_command()
-  local rarm_cmd = Body.get_rarm_command()
-  local lfinger_cmd = vector.slice(Body.get_aux_command(),1,3)
-  local rfinger_cmd = vector.slice(Body.get_aux_command(),4,6)
+  local larm_cmd = Body.get_larm_command_position()
+  local rarm_cmd = Body.get_rarm_command_position()
+  local lfinger_cmd = Body.get_lgrip_command_position()
+  local rfinger_cmd = Body.get_rgrip_command_position()
 
   -- Position
   local larm = Body.get_larm_position()
   local rarm = Body.get_rarm_position()
-  local lfinger = vector.slice(Body.get_aux_position(),1,3)
-  local rfinger = vector.slice(Body.get_aux_position(),4,6)
+  local lfinger = Body.get_lgrip_position()
+  local rfinger = Body.get_rgrip_position()
   
   -- Load
   local larm_load = Body.get_larm_load()
   local rarm_load = Body.get_rarm_load()
-  local lfinger_load = vector.slice(Body.get_aux_load(),1,3)
-  local rfinger_load = vector.slice(Body.get_aux_load(),4,6)
+  local lfinger_load = Body.get_lgrip_load()
+  local rfinger_load = Body.get_rgrip_load()
   
   -- Torque Enable
   local larm_en = Body.get_larm_torque_enable()
   local rarm_en = Body.get_rarm_torque_enable()
-  local lfinger_en = vector.slice(Body.get_aux_torque_enable(),1,3)
-  local rfinger_en = vector.slice(Body.get_aux_torque_enable(),4,6)
+  local lfinger_en = Body.get_lgrip_torque_enable()
+  local rfinger_en = Body.get_rgrip_torque_enable()
   
   -- Inverse Kinematics
   local pL = Body.get_forward_larm()
@@ -228,14 +193,14 @@ local function state_msg()
     '\nRight IK:\t(%.2f  %.2f  %.2f) (%.2f  %.2f  %.2f)',unpack(pR)
   )
   -- Add the shared memory
-  msg = msg..'\n\nLeft  pos\t'..jangle_str('left', larm,lfinger)
-  msg = msg..'\nRight pos\t'..jangle_str('right',rarm,rfinger)
-  msg = msg..'\n\nLeft  cmd\t'..jangle_str('left', larm_cmd,lfinger_cmd)
-  msg = msg..'\nRight cmd\t'..jangle_str('right',rarm_cmd,rfinger_cmd)
-  msg = msg..'\n\nLeft  load\t'..jangle_str('left', larm_load,lfinger_load)
-  msg = msg..'\nRight load\t'..jangle_str('right',rarm_load,rfinger_load)
-  msg = msg..'\n\nLeft  enable\t'..jangle_str('left', larm_en,lfinger_en)
-  msg = msg..'\nRight enable\t'..jangle_str('right',rarm_en,rfinger_en)
+  msg = msg..'\n\nLeft  pos\t'..jangle_str('larm', larm,lfinger)
+  msg = msg..'\nRight pos\t'..jangle_str('rarm',rarm,rfinger)
+  msg = msg..'\n\nLeft  cmd\t'..jangle_str('larm', larm_cmd,lfinger_cmd)
+  msg = msg..'\nRight cmd\t'..jangle_str('rarm',rarm_cmd,rfinger_cmd)
+  msg = msg..'\n\nLeft  load\t'..jangle_str('larm', larm_load,lfinger_load)
+  msg = msg..'\nRight load\t'..jangle_str('rarm',rarm_load,rfinger_load)
+  msg = msg..'\n\nLeft  enable\t'..jangle_str('larm', larm_en,lfinger_en)
+  msg = msg..'\nRight enable\t'..jangle_str('rarm',rarm_en,rfinger_en)
   
   -- Return the message
   return msg
@@ -265,10 +230,10 @@ local function process_character(key_code,key_char,key_char_lower)
   
   -- Bracket keys switch arms
   if key_char=='[' then
-    current_arm = 'left'
+    current_arm = 'larm'
     return switch_msg()
   elseif key_char==']' then
-    current_arm = 'right'
+    current_arm = 'rarm'
     return switch_msg()
   end
   
@@ -305,27 +270,26 @@ local function process_character(key_code,key_char,key_char_lower)
   -- TODO: Why need to change modes at all?
   if key_char_lower=='m' then
     current_mode = current_mode + 1
-    if current_mode>#mode_msg then
-      current_mode = 1
-    end
+    if current_mode>#mode_msg then current_mode=1 end
     return string.format('Switched to %s mode',mode_msg[current_mode])
   end
   
   -- IK Changes with wasd
-  local ik_update = nil
+  local iku = nil
   if key_char_lower=='w' then
-    return ik_change( delta_ik, 0, 0 )
-  elseif key_char_lower=='a' then
-    return ik_change( 0, delta_ik, 0 )
+    iku=Body['set_inverse_'..current_arm](delta_ik*vector.new({1,0,0, 0,0,0}))
   elseif key_char_lower=='s' then
-    return ik_change( -delta_ik, 0, 0 )
+    iku=Body['set_inverse_'..current_arm](delta_ik*vector.new({-1,0,0, 0,0,0}))
+  elseif key_char_lower=='a' then
+    iku=Body['set_inverse_'..current_arm](delta_ik*vector.new({0,1,0, 0,0,0}))
   elseif key_char_lower=='d' then
-    return ik_change( 0, -delta_ik, 0 )
+    iku=Body['set_inverse_'..current_arm](delta_ik*vector.new({0,-1,0, 0,0,0}))
   elseif key_char_lower=='q' then
-    return ik_change( 0, 0, delta_ik )
+    iku=Body['set_inverse_'..current_arm](delta_ik*vector.new({0,0,1, 0,0,0}))
   elseif key_char_lower=='z' then
-    return ik_change( 0, 0, -delta_ik )
+    iku=Body['set_inverse_'..current_arm](delta_ik*vector.new({0,0,-1, 0,0,0}))
   end
+  if iku then return'updated ik!' end
 
   -- Default message
   return 'Nothing changes'

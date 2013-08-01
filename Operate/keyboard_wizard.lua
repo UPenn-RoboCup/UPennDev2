@@ -19,6 +19,7 @@ local Body = require'Body'
 
 local current_joint = 1
 local current_arm = 'larm'
+local current_grip = 'larm'
 -- Modes: direct, ik
 local current_mode = 1
 local mode_msg = {
@@ -66,48 +67,23 @@ end
 
 -- Joint access helpers
 local function get_joint()
-  if current_arm=='larm' then
-    if current_joint<7 then
-      return Body.get_larm_command_position(current_joint)
-    else
-      -- finger
-      return Body.get_aux_command_position(current_joint-6)
-    end
-  else
-    if current_joint<7 then
-      return Body.get_rarm_command_position(current_joint)
-    else
-      -- finger
-      return Body.get_aux_command_position(current_joint-3)
-    end
+  if current_joint>6 then -- finger
+    return Body['get_'..current_grip..'_command_position'](current_joint-6)
   end
+  return Body['get_'..current_arm..'_command_position'](current_joint)
 end
 
 local function set_joint(val)
-  if current_arm=='larm' then
-    if current_joint<7 then
-      Body.set_larm_command_position(val,current_joint)
-    else
-      -- finger
-      Body.set_aux_command_position(val,current_joint-6)
-    end
-  else
-    -- Right
-    if current_joint<7 then
-      Body.set_rarm_command_position(val,current_joint)
-    else
-      -- finger
-      Body.set_aux_command_position(val,current_joint-3)
-    end
-  end
+  if current_joint>6 then -- finger
+    return Body['set_'..current_grip..'_command_position'](val,current_joint-6)
+  end    
+  return Body['set_'..current_arm..'_command_position'](val,current_joint)
 end
-
 
 -- Print Message helpers
 local switch_msg = function()
-  local jName = joint_name()
   local sw = string.format('Switched to %s %s @ %.2f radians.', 
-  current_arm, jName, get_joint() )
+  current_arm, joint_name(), get_joint() )
   return sw
 end
 
@@ -122,27 +98,25 @@ end
 
 local function jangle_str(arm_name,arm_angles,finger_angles)
   local text = ''
-  for i,v in ipairs(arm_angles) do 
+  for i,v in ipairs(arm_angles) do
+    text = text..' '
     if i==current_joint then
       if current_arm==arm_name:lower() then
-        text = text..' *'
+        text = text..'*'
       else
-        text = text..'  '
+        text = text..' '
       end
-    else
-      text = text..' '
     end
     text = text..string.format( '%6.3f', v )
   end
   for i,v in ipairs(finger_angles) do
+    text = text..' '
     if i+6==current_joint then
       if current_arm==arm_name:lower() then
-        text = text..' *'
+        text = text..'*'
       else
-        text = text..'  '
+        text = text..' '
       end
-    else
-      text = text..' '
     end
     text = text..string.format( '%6.3f', v )
   end
@@ -231,9 +205,11 @@ local function process_character(key_code,key_char,key_char_lower)
   -- Bracket keys switch arms
   if key_char=='[' then
     current_arm = 'larm'
+    current_grip = 'lgrip'
     return switch_msg()
   elseif key_char==']' then
     current_arm = 'rarm'
+    current_grip = 'lgrip'
     return switch_msg()
   end
   

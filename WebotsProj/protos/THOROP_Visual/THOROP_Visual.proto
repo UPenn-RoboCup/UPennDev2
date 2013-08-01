@@ -20,7 +20,7 @@ PROTO THOROP_Visual [
 #  field SFInt32    channel 0
 ]
 {
-Robot {
+Supervisor {
   translation IS translation
   rotation IS rotation
   controller IS controller

@@ -43,7 +43,7 @@ DEF GROUND Solid {
   ]
   boundingObject USE GROUND_SHAPE
 }
-WoodBox {
+DEF MY_OBJ WoodBox {
   translation 0.605448 0.2 -0.00121984
   boxSize 0.6 0.4 0.6
 }

@@ -162,15 +162,7 @@ unsigned char * to_rgb( int tag ) {
 %}
 
 %typemap(in) (const double values[3]) {
-  //$1 = (double*)lua_touserdata(L, $input);
   structCArray* p = (structCArray*)lua_touserdata(L, $input);
-  /*
-  double* vals = ((double *)p->ptr);
-  printf("Vals: %lf %lf\n",vals[0],vals[1]);
-  
-  fprintf(stdout,"box_position_now %d\n",lua_type(L,$input));
-  fflush(stdout);
-  */
   $1 = (double *)p->ptr;
 }
 %include <webots/supervisor.h>

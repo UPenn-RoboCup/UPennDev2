@@ -71,7 +71,6 @@ leap_ch.callback = function()
     elseif key_char_lower=='l' then
       leap_dir = 'left'
     end
-    
   end
   
 end

@@ -84,8 +84,21 @@ local parts = {
 }
 local inv_parts = {}
 for name,list in pairs(parts) do
-	for _,idx in ipairs(list) do inv_parts[idx] = name end
+	for _,idx in ipairs(list) do inv_parts[idx]=name end
 end
+
+-- Initial joint positions
+Body.initial_joints = vector.new({
+	0,0, -- Head
+	90,0,0,0,0,0, --LArm
+	0,0,0,0,0,0, --LLeg
+	0,0,0,0,0,0, --RLeg
+	90,0,0,0,0,0, --RArm
+	0,0, -- Waist
+	0,0,0, -- Left gripper
+	0,0,0, -- Right gripper
+	0, -- Lidar pan
+})*DEG_TO_RAD
 
 --------------------------------
 -- Servo parameters
@@ -343,7 +356,7 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
   		if idx then
         -- idx is only allowed to be a number
         assert(type(idx)=='number','body limb idx must be a number!')
-        val = radian_clamp(idx,val)
+        val = radian_clamp(jlist[idx],val)
         return Body['set_actuator_'..actuator](val,jlist[idx])
       end
       -- With no idx, val is number or table
@@ -351,14 +364,12 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
       -- If val is a number to set all limb joints
       if type(val)=='number' then
         local values = {}
-        for i,idx in ipairs(jlist) do values[i] = radian_clamp(idx,val) end
+        for i,idx in ipairs(jlist) do values[i]=radian_clamp(jlist[idx],val) end
         return Body['set_actuator_'..actuator](values,a,b)
       end
       -- If val is a set of values for each limb joints
       assert(#val==b-a+1,'Must set the exact number of limb joints!')
-      for i,idx in ipairs(jlist) do
-        val[i] = radian_clamp(idx,val[i])
-      end
+      for i,idx in ipairs(jlist) do val[i]=radian_clamp(idx,val[i]) end
   		return Body['set_actuator_'..actuator](val,a,b)
   	end -- Set
   end -- anthropomorphic
@@ -552,9 +563,10 @@ end
 -- More standard api functions
 Body.get_time = unix.time
 Body.entry = function()
-  -- Zero all joint requests
-  for i=1,nJoint do Body.set_actuator_command(0,i) end
-  for i=1,nJoint do Body.set_sensor_position(0,i) end
+  -- Make the initial commands
+  for i=1,nJoint do Body.set_actuator_command_position(Body.initial_joints[i],i) end
+  for i=1,nJoint do Body.set_sensor_position(Body.initial_joints[i],i) end
+  -- Zero some shm
   for i=1,nJoint do Body.set_sensor_load(0,i) end
   for i=1,nJoint do Body.set_actuator_torque_enable(0,i) end
 end
@@ -596,12 +608,16 @@ if IS_WEBOTS then
 
 	-- Setup the webots tags
 	local tags = {}
+  local telekinesis = {}
 
 	Body.entry = function()
     
-    -- Zero all joint requests
-    for i=1,nJoint do Body.set_actuator_command_position(0,i) end
-    for i=1,nJoint do Body.set_sensor_position(0,i) end
+    -- Make the initial commands
+    for i=1,nJoint do Body.set_actuator_command_position(Body.initial_joints[i],i) end
+    for i=1,nJoint do Body.set_sensor_position(Body.initial_joints[i],i) end
+    -- Zero some shm
+    for i=1,nJoint do Body.set_sensor_load(0,i) end
+    for i=1,nJoint do Body.set_actuator_torque_enable(0,i) end
 
 		-- Initialize the webots system
 		webots.wb_robot_init()
@@ -637,6 +653,25 @@ if IS_WEBOTS then
 		tags.kinect = webots.wb_robot_get_device("kinect")
 		webots.wb_camera_enable(tags.kinect, timeStep)
 		--]]
+    
+    -- Grab the box and move it around?
+    telekinesis.box = {}
+    telekinesis.box.tag = webots.wb_supervisor_node_get_from_def("MY_OBJ")
+    telekinesis.box.translation = webots.wb_supervisor_node_get_field(telekinesis.box.tag, "translation")
+    telekinesis.box.get_position = function(self)
+      return webots.wb_supervisor_field_get_sf_vec3f(self.translation)
+    end
+    telekinesis.box.set_position = function( self, new_position )
+      webots.wb_supervisor_field_set_sf_vec3f( self.translation, carray.double( new_position ) )
+    end
+    
+    local box_pos = telekinesis.box:get_position()
+    print('my box position', unpack( box_pos ) )
+    box_pos[1] = box_pos[1] + 1
+    telekinesis.box:set_position(box_pos)
+    box_pos = telekinesis.box:get_position()
+    print('my new box position', unpack( box_pos ) )
+    
 
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)

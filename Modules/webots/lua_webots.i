@@ -165,8 +165,13 @@ unsigned char * to_rgb( int tag ) {
   structCArray* p = (structCArray*)lua_touserdata(L, $input);
   $1 = (double *)p->ptr;
 }
+%typemap(in) (const double values[4]) {
+  structCArray* p = (structCArray*)lua_touserdata(L, $input);
+  $1 = (double *)p->ptr;
+}
 %include <webots/supervisor.h>
 // Reset now...
 %typemap(in) (const double values[3]);
+%typemap(in) (const double values[4]);
 
 %include <webots/touch_sensor.h>

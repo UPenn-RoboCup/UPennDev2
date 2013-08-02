@@ -1,4 +1,5 @@
 local vector=require'vector'
+local util=require'util'
 local quaternion = {}
 
 local mt = {}
@@ -16,7 +17,7 @@ function quaternion.new(t,alpha)
   if wNorm < 1e-6 then return setmetatable(q, mt) end
   -- If given, use alpha as the amount of rotation about the axis vector t
   alpha = alpha or wNorm
-  local scale = math.sin(alpha/2) / mag
+  local scale = math.sin(alpha/2) / wNorm
   q[1] = math.cos(alpha/2)
   q[2] = scale*t[1]
   q[3] = scale*t[2]
@@ -26,27 +27,41 @@ end
 
 -- Return the Roll/Pitch/Yaw of this quaternion
 -- Modified from Yida's UKF
+-- http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 function quaternion.to_rpy( q )
   local rpy = {}
-  rpy[1] = math.atan2(2*(q[1]*q[2]+q[3]*q[4]), 1-2*(q[2]*q[2]+q[3]*q[3]))
-  rpy[2] = math.asin(2*(q[1]*q[3]-q[4]*q[2]))
-  rpy[3] = math.atan2(2*(q[1]*q[4]+q[2]*q[3]), 1-2*(q[3]*q[3]+q[4]*q[4]))
+  rpy[1] = util.mod_angle( 
+    math.atan2( 2*(q[1]*q[2]+q[3]*q[4]), 1-2*(q[2]*q[2]+q[3]*q[3]) )
+  )
+  rpy[2] = util.mod_angle(
+    math.asin( util.procFunc(2*(q[1]*q[3]-q[4]*q[2]),0,1) )
+  )
+  rpy[3] = util.mod_angle(
+    math.atan2(2*(q[1]*q[4]+q[2]*q[3]), 1-2*(q[3]*q[3]+q[4]*q[4]))
+  )
   return vector.new(rpy)
 end
 
-function quaternion.conjugate(v1, istart, iend)
+function quaternion.conjugate( q )
+  q[2] = -1*q[2]
+  q[3] = -1*q[3]
+  q[4] = -1*q[4]
+  return setmetatable(q, mt)
+end
+
+-- Make a unit quaternion
+-- Assumes that q is already a quaternion
+function quaternion.unit( v1 )
   local v = {}
-  iend = iend or #v1
-  for i = 1,iend-istart+1 do
-    v[i] = v1[istart+i-1]
-  end
+  local a = vector.norm(v1)
+  for i = 1, #v1 do v[i] = v1[i] / a end
   return setmetatable(v, mt)
 end
 
 -- Return a rotation vector
 -- From Yida
 function quaternion.vector(q)
-  assert( math.abs(q[1])<=1, 'Bad quaternion' )
+  assert( math.abs(q[1])<=1, 'Bad unit quaternion' )
   local alphaW = 2*math.acos(q[1])
   local v = vector.new({0,0,0})
   -- Avoid the divide by zero scenario
@@ -56,6 +71,29 @@ function quaternion.vector(q)
     v[3] = q[4] / math.sin(alphaW/2) * alphaW
   end
   return v
+end
+
+function quaternion.from_angle_axis(angle,axis)
+  local s = math.sin(angle/2)
+  return quaternion.new({
+    math.cos(angle/2),
+    s*axis[1],
+    s*axis[2],
+    s*axis[3],
+  })
+end
+
+function quaternion.angle_axis(q)
+  assert( math.abs(q[1])<=1, 'Bad unit quaternion' )
+  local angle = 2*math.acos(q[1])
+  local v = vector.new({0,0,0})
+  -- Avoid the divide by zero scenario
+  if angle > 1e-6 then
+    v[1] = q[2] / math.sin(angle/2)
+    v[2] = q[3] / math.sin(angle/2)
+    v[3] = q[4] / math.sin(angle/2)
+  end
+  return angle, v
 end
 
 -- Take the average of a set of quaternions
@@ -100,7 +138,7 @@ local function mul(q1, q2)
   q[2] = a1*b2 + b1*a2 + c1*d2 - d1*c2
   q[3] = a1*c2 - b1*d2 + c1*a2 + d1*b2
   q[4] = a1*d2 + b1*c2 - c1*b2 + d1*a2
-  return q
+  return setmetatable(q, mt)
 end
 
 -- Same tostring as a vector

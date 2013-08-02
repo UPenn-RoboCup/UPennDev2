@@ -8,6 +8,8 @@ if use_telekinesis then require'tkcm' end
 -- Utilities
 local unix = require'unix'
 local vector = require'vector'
+local quaternion = require'quaternion'
+local Transform = require'Transform'
 local util = require'util'
 local libDynamixel = require'libDynamixel'
 
@@ -674,17 +676,63 @@ if IS_WEBOTS then
       telekinesis.drill.tag = webots.wb_supervisor_node_get_from_def("MY_DRILL")
       telekinesis.drill.translation = 
       webots.wb_supervisor_node_get_field(telekinesis.drill.tag, "translation")
+      telekinesis.drill.rotation = 
+      webots.wb_supervisor_node_get_field(telekinesis.drill.tag, "rotation")
       telekinesis.drill.get_position = function(self)
-        return tkcm.get_drill_position(), webots.wb_supervisor_field_get_sf_vec3f(self.translation)
+        local p_wbt = vector.new( webots.wb_supervisor_field_get_sf_vec3f(self.translation) )
+        return tkcm.get_drill_position(),p_wbt
       end
       telekinesis.drill.set_position = function( self, new_position )
+        assert(#new_orientation==3,'Bad new_position!')
         webots.wb_supervisor_field_set_sf_vec3f( self.translation, carray.double( new_position ) )
       end
+      telekinesis.drill.get_orientation = function(self)
+        local q = quaternion.new(tkcm.get_drill_orientation())
+        local aa_wbt = webots.wb_supervisor_field_get_sf_rotation(self.rotation)
+        local q_wbt = quaternion.from_angle_axis(aa_wbt[4],{aa_wbt[1],aa_wbt[2],aa_wbt[3]})
+        return q, quaternion.unit(q_wbt)
+      end
+      telekinesis.drill.set_orientation = function( self, new_orientation )
+        assert(#new_orientation==4,'Bad new_orientation!')
+        local angle, axis = quaternion.angle_axis(new_orientation)
+        local q_wbt_new = carray.double({
+          axis[1],
+          axis[2],
+          axis[3],
+          angle
+        })
+        webots.wb_supervisor_field_set_sf_rotation( self.rotation, q_wbt_new )
+      end
       telekinesis.drill.update = function(self)
+        local q_drill_shm, q_drill_wbt = telekinesis.drill:get_orientation()
+        local rpy = quaternion.to_rpy(q_drill_wbt)
+        local body_rpy = vector.new({rpy[1],-1*rpy[3],rpy[2]})
+        
+        -- Rotate 18 degrees each step?
+        local tr = Transform.rotZ( math.pi/10 )
+        local q_tr = Transform.to_quaternion(tr)
+        local q_drill_wbt_new = q_tr*q_drill_wbt
+        
+        --q_drill_wbt_new = quaternion.new({0,0,1},math.pi/4)
+        
+        
+        
+        local rpy = quaternion.to_rpy(q_drill_wbt_new)
+        local body_rpy_new = vector.new({rpy[1],-1*rpy[3],rpy[2]})
+        
+        print('Wbt rpy', body_rpy*180/math.pi )
+        print('Wbt rpy new', body_rpy_new*180/math.pi )
+        print()
+        print('From',q_drill_wbt)
+        print('To',q_drill_wbt_new)
+        print()
+        print()
+        self:set_orientation(q_drill_wbt_new)
+        
         local drill_pos_shm, drill_pos_wbt = telekinesis.drill:get_position()
         -- Webots xyz is not the same as the Body xyz residing in shm
         local drill_new_pos={drill_pos_shm[2],drill_pos_shm[3],drill_pos_shm[1]}
-        telekinesis.drill:set_position(drill_new_pos)
+        --telekinesis.drill:set_position(drill_new_pos)
       end
       -- Associate the table with the body
       Body.telekinesis = telekinesis

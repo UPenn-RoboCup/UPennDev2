@@ -10,8 +10,8 @@ WorldInfo {
   displayRefresh 2
 }
 Viewpoint {
-  orientation -0.570406 -0.772963 -0.277786 1.12441
-  position -1.85696 2.59764 1.28767
+  orientation -0.72 0.68 0.04 0.17
+  position 0 1.3 3.3
 }
 Background {
   skyColor [

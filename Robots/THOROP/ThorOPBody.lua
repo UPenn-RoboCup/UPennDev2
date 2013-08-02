@@ -689,38 +689,37 @@ if IS_WEBOTS then
       telekinesis.drill.get_orientation = function(self)
         local q = quaternion.new(tkcm.get_drill_orientation())
         local aa_wbt = webots.wb_supervisor_field_get_sf_rotation(self.rotation)
-        local q_wbt = quaternion.from_angle_axis(aa_wbt[4],{aa_wbt[1],aa_wbt[2],aa_wbt[3]})
+        -- Webots x is our y, Webots y is our z, Webots z is our x, 
+        -- Our x is Webots z, Our y is Webots x, Our z is Webots y
+        local q_wbt = quaternion.from_angle_axis(aa_wbt[4],{aa_wbt[3],aa_wbt[1],aa_wbt[2]})
         return q, quaternion.unit(q_wbt)
       end
       telekinesis.drill.set_orientation = function( self, new_orientation )
         assert(#new_orientation==4,'Bad new_orientation!')
         local angle, axis = quaternion.angle_axis(new_orientation)
+        -- Webots x is our y, Webots y is our z, Webots z is our x, 
+        -- Our x is Webots z, Our y is Webots x, Our z is Webots y
         local q_wbt_new = carray.double({
-          axis[1],
           axis[2],
           axis[3],
+          axis[1],
           angle
-        })
-        print('New aa',angle,axis)
-        
+        })        
         webots.wb_supervisor_field_set_sf_rotation( self.rotation, q_wbt_new )
       end
       telekinesis.drill.update = function(self)
         local q_drill_shm, q_drill_wbt = telekinesis.drill:get_orientation()
-        local rpy = quaternion.to_rpy(q_drill_wbt)
-        local body_rpy = vector.new({rpy[1],-1*rpy[3],rpy[2]})
-        
         -- Rotate 18 degrees each step?
-        local tr = Transform.rotZ( math.pi/10 )
+        local tr = Transform.rotX( math.pi/20 )
         local q_tr = Transform.to_quaternion(tr)
-        local q_drill_wbt_new = q_tr*q_drill_wbt
+        local q_drill_wbt_new = quaternion.unit(q_tr * q_drill_wbt)
         --q_drill_wbt_new = quaternion.new({0,0,1},math.pi/4)
-
-        local rpy = quaternion.to_rpy(q_drill_wbt_new)
-        local body_rpy_new = vector.new({rpy[1],-1*rpy[3],rpy[2]})
         
-        print('Wbt rpy', body_rpy*180/math.pi )
-        print('Wbt rpy new', body_rpy_new*180/math.pi )
+        local cur_rpy = quaternion.to_rpy( q_drill_wbt )
+        local new_rpy = quaternion.to_rpy( q_drill_wbt_new )
+        
+        print('Wbt rpy', cur_rpy*180/math.pi )
+        print('Wbt rpy new', new_rpy*180/math.pi )
         print()
         print('From',q_drill_wbt)
         print('To',q_drill_wbt_new)

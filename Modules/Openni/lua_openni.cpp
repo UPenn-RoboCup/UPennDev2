@@ -156,13 +156,13 @@ static int lua_retrieve_joint(lua_State *L) {
   // Orientation table (as a quaternion)
   lua_pushstring(L, "orientation");
   lua_createtable(L, 4, 0);
-  lua_pushnumber(L, q.x);
-  lua_rawseti(L, -2, 1);
-  lua_pushnumber(L, q.y);
-  lua_rawseti(L, -2, 2);
-  lua_pushnumber(L, q.z);
-  lua_rawseti(L, -2, 3);
   lua_pushnumber(L, q.w);
+  lua_rawseti(L, -2, 1);
+  lua_pushnumber(L, q.x);
+  lua_rawseti(L, -2, 2);
+  lua_pushnumber(L, q.y);
+  lua_rawseti(L, -2, 3);
+  lua_pushnumber(L, q.z);
   lua_rawseti(L, -2, 4);
   lua_settable(L, -3);
   //lua_rawset(L, -3);

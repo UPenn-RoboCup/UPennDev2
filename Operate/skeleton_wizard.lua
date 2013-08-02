@@ -6,7 +6,10 @@ local use_body = true
 local use_zmq = false
 local use_udp = false
 
--- Data packing
+-- Libraries
+require'unix'
+local util = require'util'
+local quaternion = require'quaternion'
 local mp = require'msgpack'
 
 -- Functions for transmitting the data
@@ -42,7 +45,8 @@ if use_body then
 end
 
 -- Start the Skeleton system
-libSkeleton.entry( log_file )
+--libSkeleton.entry( log_file )
+libSkeleton.entry()
 
 -- Set up timing debugging
 local cnt = 0;
@@ -61,7 +65,15 @@ while true do
   -- Directly use the body to change the robot's joint
   if use_body then
     local qLArm, qRArm = libSkeleton.get_thorop_arm_angles(2)
-    print('qLArm',qLArm,'qRArm',qRArm)
+  end
+  
+  -- Debug
+  local user2 = libSkeleton.get_joint_table(2)
+  if user2[1] then 
+    local q = quaternion.new( user2[5].orientation )
+    print()
+    --print('q',q)
+    print('rpy',quaternion.to_rpy(q)*180/math.pi )
   end
   
   -- Broadcast data

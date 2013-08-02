@@ -26,12 +26,12 @@ end
 
 -- Return the Roll/Pitch/Yaw of this quaternion
 -- Modified from Yida's UKF
-function quaternion.rpy( q )
+function quaternion.to_rpy( q )
   local rpy = {}
   rpy[1] = math.atan2(2*(q[1]*q[2]+q[3]*q[4]), 1-2*(q[2]*q[2]+q[3]*q[3]))
   rpy[2] = math.asin(2*(q[1]*q[3]-q[4]*q[2]))
   rpy[3] = math.atan2(2*(q[1]*q[4]+q[2]*q[3]), 1-2*(q[3]*q[3]+q[4]*q[4]))
-  return rpy
+  return vector.new(rpy)
 end
 
 function quaternion.conjugate(v1, istart, iend)

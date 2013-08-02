@@ -164,7 +164,6 @@ function libSkeleton.get_thorop_arm_angles(user)
     
 	-- Body Yaw
 	local body_yaw = math.atan2(s2s[1],s2s[2])
-	print('Yaw',body_yaw)
 
   -- Elbow calculations
   -- Find the angle of the elbows

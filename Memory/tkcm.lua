@@ -14,14 +14,14 @@ shared_data.table = {}
 shared_data.table.position = vector.zeros( 3 )
 -- Orientation is a quaternion
 -- TODO: Write a lua quaternion library
-shared_data.table.orientation = vector.zeros( 4 )
+shared_data.table.orientation = vector.new( {1,0,0,0} )
 
 shared_data.drill = {}
 -- Position is in world coordinates? relative?
 shared_data.drill.position = vector.zeros( 3 )
 -- Orientation is a quaternion
 -- TODO: Write a lua quaternion library
-shared_data.drill.orientation = vector.zeros( 4 )
+shared_data.drill.orientation = vector.new( {1,0,0,0} )
 
 -- Call the initializer
 memory.init_shm_segment(..., shared_data, shared_data_sz)

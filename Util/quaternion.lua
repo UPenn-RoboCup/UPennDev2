@@ -52,9 +52,10 @@ end
 -- Make a unit quaternion
 -- Assumes that q is already a quaternion
 function quaternion.unit( v1 )
-  local v = {}
-  local a = vector.norm(v1)
-  for i = 1, #v1 do v[i] = v1[i] / a end
+  local v = {1,0,0,0}
+  local wNorm = vector.norm(v1)
+  if wNorm < 1e-6 then return setmetatable(v, mt) end
+  for i = 1, #v1 do v[i] = v1[i] / wNorm end
   return setmetatable(v, mt)
 end
 

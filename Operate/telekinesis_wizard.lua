@@ -11,6 +11,8 @@ require'tkcm'
 
 -- Libraries
 local unix = require'unix'
+local vector = require'vector'
+local quaternion = require'quaternion'
 local spacemouse = require 'spacemouse'
 local getch = require'getch'
 local colors = require'colors'
@@ -50,6 +52,11 @@ end
 
 local rot_scale = 1 * (math.pi/180)/350
 local function process_rotate(data)
+  local q_w = rot_scale * vector.new({data.wx,data.wy,data.wz})
+  local d_q = quaternion.new(q_w)
+  local q_cur = tkcm['get_'..objects[current_obj]..'_orientation']()
+  local q_new = quaternion.unit( d_q*q_cur )
+  tkcm['set_'..objects[current_obj]..'_orientation'](q_new)
 end
 
 local function direct_rotate(dat)

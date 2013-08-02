@@ -84,16 +84,17 @@ function quaternion.from_angle_axis(angle,axis)
 end
 
 function quaternion.angle_axis(q)
+  q = quaternion.unit( q )
   assert( math.abs(q[1])<=1, 'Bad unit quaternion' )
   local angle = 2*math.acos(q[1])
-  local v = vector.new({0,0,0})
+  local v = vector.new({1,0,0})
   -- Avoid the divide by zero scenario
   if angle > 1e-6 then
     v[1] = q[2] / math.sin(angle/2)
     v[2] = q[3] / math.sin(angle/2)
     v[3] = q[4] / math.sin(angle/2)
   end
-  return angle, v
+  return util.mod_angle(angle), v
 end
 
 -- Take the average of a set of quaternions

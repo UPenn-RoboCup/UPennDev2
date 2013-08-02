@@ -701,6 +701,8 @@ if IS_WEBOTS then
           axis[3],
           angle
         })
+        print('New aa',angle,axis)
+        
         webots.wb_supervisor_field_set_sf_rotation( self.rotation, q_wbt_new )
       end
       telekinesis.drill.update = function(self)
@@ -712,11 +714,8 @@ if IS_WEBOTS then
         local tr = Transform.rotZ( math.pi/10 )
         local q_tr = Transform.to_quaternion(tr)
         local q_drill_wbt_new = q_tr*q_drill_wbt
-        
         --q_drill_wbt_new = quaternion.new({0,0,1},math.pi/4)
-        
-        
-        
+
         local rpy = quaternion.to_rpy(q_drill_wbt_new)
         local body_rpy_new = vector.new({rpy[1],-1*rpy[3],rpy[2]})
         

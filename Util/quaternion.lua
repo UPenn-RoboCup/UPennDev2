@@ -1,3 +1,9 @@
+-----------------------------------------------------------------
+-- Quaternion
+-- Performs operations on quaternions
+-- (c) Stephen McGill, Yida Zhang 2013
+---------------------------------
+
 local vector=require'vector'
 local util=require'util'
 local quaternion = {}

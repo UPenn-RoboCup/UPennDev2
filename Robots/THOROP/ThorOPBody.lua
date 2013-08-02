@@ -1,3 +1,8 @@
+--------------------------------
+-- Body abstraction for THOR-OP
+-- (c) 2013 Stephen McGill, Seung-Joon Yi
+--------------------------------
+
 -- THOR OP Body
 local use_telekinesis = true
 

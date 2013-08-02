@@ -1,6 +1,7 @@
 -----------------------------------------------------------------
--- Spacemouse Wizard
--- Listens to spacemouse input to control the arm joints
+-- Telekinesis Wizard
+-- Listens to spacemouse input to control 
+-- the position/orientation of virtual object
 -- (c) Stephen McGill, 2013
 ---------------------------------
 

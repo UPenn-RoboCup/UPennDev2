@@ -115,8 +115,7 @@ function shutdown()
     -- Torque off motors
     libDynamixel.set_mx_torque_enable( d.mx_on_bus, 0, d )
     libDynamixel.set_nx_torque_enable( d.nx_on_bus, 0, d )
-    -- Save the torque enable states to SHM
-    Body.set_aux_torque_enable(0)
+    -- TODO: Save the torque enable states to SHM
     -- Turn off the LEDs
     libDynamixel.set_mx_led( d.mx_on_bus, 0, d )
     libDynamixel.set_nx_led_red( d.nx_on_bus, 0, d )
@@ -191,7 +190,7 @@ local function entry()
       local rad = Body.make_joint_radian( idx, pos_val )
       --print( string.format('Joint %d @ %.2f, step: %d',k,rad,v) )
       Body.set_sensor_position( rad, idx )
-      Body.set_actuator_command( rad, idx )
+      Body.set_actuator_command_position( rad, idx )
     end
     
     
@@ -205,7 +204,7 @@ local function entry()
       local w_ids = vector.slice(joint_to_motor,Body.indexLArm-1+1,Body.indexLArm-1+6)
       print('Setting',w_ids,'on')
       local sync_wrist_en = libDynamixel.set_nx_torque_enable(w_ids,1)
-      table.insert( dynamixel.instructions, sync_wrist_en )
+      --table.insert( dynamixel.instructions, sync_wrist_en )
     end
     --dynamixel.t_last_read = unix.time()
   end
@@ -223,13 +222,13 @@ local update_instructions = function()
         local sync_rarm = Body.set_rarm_command_position_packet()
         table.insert( d.instructions, sync_rarm )
         -- Form the hand packets
-        local sync_aux = Body.set_aux_command_packet()
-        table.insert( d.instructions, sync_aux )
+        local sync_rgrip = Body.set_rgrip_command_position_packet()
+        --table.insert( d.instructions, sync_rgrip )
       elseif d.name=='LArm' then
         local sync_larm = Body.set_larm_command_position_packet()
-        table.insert( d.instructions, sync_larm )
-        local sync_aux = Body.set_aux_command_packet()
-        table.insert( d.instructions, sync_aux )
+        --table.insert( d.instructions, sync_larm )
+        local sync_lgrip = Body.set_lgrip_command_position_packet()
+        --table.insert( d.instructions, sync_lgrip )
       end
     end
   end
@@ -253,8 +252,8 @@ local update_requests = function()
         for _,idx in ipairs(d.mx_on_bus) do
           --local inst_mx = libDynamixel.get_mx_position( d.mx_on_bus )
           --table.insert( d.requests, {inst_mx,'position'} )
-          local inst_mx = libDynamixel.get_mx_load( idx )
-          table.insert( d.requests, {inst_mx,'load'} )
+          --local inst_mx = libDynamixel.get_mx_load( idx )
+          --table.insert( d.requests, {inst_mx,'load'} )
         end
       end -- if mx
     end --req==0
@@ -296,10 +295,11 @@ local main = function()
         end
         
         -- Append debugging information
-        local t_read = t-d.t_last_read
+        local t_read  = t-d.t_last_read
         local t_write = t-d.t_last_write
         local dstatus = coroutine.status(d.thread)
         debug_str = debug_str..colors.wrap(string.format('%s chain %s',d.name, dstatus),status_color[dstatus])
+        if d.message then debug_str = debug_str..': '..d.message end
         debug_str = debug_str..string.format(
           '\n\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',t_read,t_write)
         debug_str = debug_str..string.format(

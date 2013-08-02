@@ -9,8 +9,8 @@ local DP2 = require'DynamixelPacket2' -- 2.0 protocol
 local unix = require'unix'
 local stty = require'stty'
 local using_status_return = true
--- 10ms default timeout
-local READ_TIMEOUT = 0.050
+-- 75ms default timeout
+local READ_TIMEOUT = 0.075
 
 --------------------
 -- Convienence functions for reading dynamixel packets
@@ -512,18 +512,17 @@ libDynamixel.send_ping = function( id, protocol, bus, twait )
   if status then return status end
 end
 
-local function ping_probe(self, protocol, twait, tinterval)
-  protocol = protocol or 2
-	twait = twait or READ_TIMEOUT
-  tinterval = tinterval or READ_TIMEOUT
+local function ping_probe(self, protocol, twait)
   local found_ids = {}
 	for id = 0,253 do
-		local status = libDynamixel.send_ping( id, protocol, self, twait )
+		local status = 
+      libDynamixel.send_ping( id, protocol or 2, self, twait or READ_TIMEOUT )
 		if status then
       --print( string.format('Found %d.0 Motor: %d\n',protocol,status.id) )
       table.insert( found_ids, status.id )
 		end
-    unix.usleep(tinterval)
+    -- Wait 1 ms
+    unix.usleep(1e3)
 	end
   return found_ids
 end
@@ -595,6 +594,8 @@ function libDynamixel.new_bus( ttyname, ttybaud )
   obj.nx_on_bus = nil -- ids of nx
   obj.mx_on_bus = nil -- ids of mx
   obj.ids_on_bus = nil --all on the bus
+  obj.name = 'Default'
+  obj.message = nil
   -------------------
 	
 	return obj
@@ -656,8 +657,7 @@ libDynamixel.service = function( dynamixels, main )
           -- Accrue values from the status packets
           local values = {}
           local t = unix.time()
-          local response = 'more' -- kinda hacky for now
-          while t<dynamixel.timeout and response do
+          while t<dynamixel.timeout do
 
             local new_status_str = unix.read( fd )
             assert(new_status_str~=-1,string.format('BAD READ: %s',dynamixel.name))
@@ -692,10 +692,13 @@ libDynamixel.service = function( dynamixels, main )
             response = coroutine.yield( values, request[2] )
           
             -- Record it only after processing
+            --assert(#pkts>0,'no packets found!'..#status_str)
             if #pkts>0 then
               dynamixel.t_diff_read = t - dynamixel.t_last_read
               dynamixel.t_last_read = t
             end
+            
+            if response then break end
           
           end -- if use read
           
@@ -729,8 +732,8 @@ libDynamixel.service = function( dynamixels, main )
 	end
   
   -- Loop and select appropriately
-  local status_timeout = 1/120 -- 120Hz timeout
-  --local status_timeout = 1/60 -- 120Hz timeout
+  --local status_timeout = 1/120 -- 120Hz timeout
+  local status_timeout = 1/60 -- 120Hz timeout
   --local status_timeout = 0 -- Instant timeout
 	while #dynamixel_fds>0 do
     
@@ -746,7 +749,8 @@ libDynamixel.service = function( dynamixels, main )
     for i_fd,is_ready in pairs(ready) do
       -- Grab the dynamixel chain
       local who_to_service = fd_to_dynamixel[i_fd]
-      --print('checking',i,is_ready,who_to_service.is_syncing)
+          --print('checking',who_to_service.name,i_fd,is_ready,who_to_service.is_syncing)
+      --print()
       -- Check if the Dynamixel has information available
       if is_ready or who_to_service.is_syncing or t>who_to_service.timeout then
         local response = nil
@@ -762,8 +766,9 @@ libDynamixel.service = function( dynamixels, main )
         --------------------
         -- Check if there were errors in the coroutine
         if not status_code then
-          print( 'Dead dynamixel coroutine!', who_to_service.name, param )
+          --print( 'Dead dynamixel coroutine!', who_to_service.name, param )
           who_to_service:close()
+          who_to_service.message = param
           local i_to_remove = 0
           for i,fd in ipairs(dynamixel_fds) do
             if fd==i_fd then i_to_remove = i end

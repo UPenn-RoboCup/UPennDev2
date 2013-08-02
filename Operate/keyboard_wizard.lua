@@ -76,7 +76,7 @@ end
 local function set_joint(val)
   if current_joint>6 then -- finger
     return Body['set_'..current_grip..'_command_position'](val,current_joint-6)
-  end    
+  end
   return Body['set_'..current_arm..'_command_position'](val,current_joint)
 end
 

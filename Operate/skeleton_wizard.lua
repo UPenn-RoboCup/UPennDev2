@@ -51,9 +51,11 @@ libSkeleton.entry()
 -- Set up timing debugging
 local cnt = 0;
 local t_last = unix.time()
-local t_debug = 1
+local t_debug = .5
 
 -- Start loop
+local q = quaternion.new()
+local left_shoulder_rpy = vector.zeros(3)
 while true do
 	
 	-- Update the skeleton
@@ -63,18 +65,27 @@ while true do
 	local t = unix.time()
   
   -- Directly use the body to change the robot's joint
-  if use_body then
-    local qLArm, qRArm = libSkeleton.get_thorop_arm_angles(2)
-  end
-  
   -- Debug
   local user2 = libSkeleton.get_joint_table(2)
-  if user2[1] then 
-    local q = quaternion.new( user2[5].orientation )
-    print()
-    --print('q',q)
-    print('rpy',quaternion.to_rpy(q)*180/math.pi )
+  if use_body then
+    local qLArm, qRArm = libSkeleton.get_thorop_arm_angles(2)
+    if user2[1] then
+      q = quaternion.new( user2[3].orientation )
+      left_shoulder_rpy = quaternion.to_rpy(q)
+      left_shoulder_rpy = vector.new({left_shoulder_rpy[2],left_shoulder_rpy[3],left_shoulder_rpy[1]})
+      left_shoulder_rpy = left_shoulder_rpy+vector.new({math.pi/2,-math.pi/2,0})
+      Body.set_larm_command_position({
+        left_shoulder_rpy[2],
+        left_shoulder_rpy[3],
+        left_shoulder_rpy[1],
+        0,
+        0,
+        0
+        })
+      left_shoulder_rpy = left_shoulder_rpy*180/math.pi
+      end
   end
+
   
   -- Broadcast data
   if use_zmq or use_udp then
@@ -93,11 +104,23 @@ while true do
 	-- Debug the timing
   cnt = cnt+1
   if t-t_last>t_debug then
+    os.execute('clear')
     local msg = string.format("%.2f FPS.  Tracking", cnt/t_debug)
 		if visible_users[1] then msg = msg..' User 1' end
 		if visible_users[2] then msg = msg..' User 2' end
     io.write("Skeleton Wizard | ",msg,'\n\n')
 		io.flush()
+    
+    if user2[1] then 
+      print()
+      print('Left Shoulder pitch (1st joint on THOR-OP)')
+      print(left_shoulder_rpy[1])
+      print('Left Shoulder roll (2nd joint on THOR-OP)')
+      print(left_shoulder_rpy[2])
+      print('Left Shoulder yaw (3rd joint on THOR-OP)')
+      print(left_shoulder_rpy[3])
+    end
+    
     t_last = t
     cnt = 0
   end

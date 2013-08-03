@@ -1,4 +1,7 @@
 local Body = require'Body'
+-- TODO: Get the shm desired endpoints
+-- TODO: Should these endpoints be in vcm?  Probably...
+require'vcm'
 
 local lidarPan = {}
 lidarPan._NAME = 'lidarPan'
@@ -10,6 +13,8 @@ local t_update = 0 -- When the state was last updated
 -- Set up the default min and max pan angles
 local min_pan = Body.servo.min_rad[Body.indexLidar]
 local max_pan = Body.servo.max_rad[Body.indexLidar]
+-- Save for shared memory to use
+vcm.set_chest_lidar_endpoints({min_pan,max_pan})
 local mid_pan = 0
 local mag_pan = max_pan - min_pan
 

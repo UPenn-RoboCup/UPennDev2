@@ -26,7 +26,7 @@ CFLAGS=-O3 -mtune=native -march=native -fpic
 LIBRT=-lrt
 SHLIBEXT=so
 
-#USE_TORCH=1
+USE_TORCH=1
 
 # OS Specific overrides
 ifeq ($(OSTYPE),darwin)

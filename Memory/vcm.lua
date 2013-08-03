@@ -22,11 +22,19 @@ shared.head_lidar = {}
 -- Hokuyo uses a float, which is 4 bytes, to represent each range
 shared.head_lidar.scan = 4*1081
 shared.head_lidar.t = vector.zeros(1)
+-- Radian endpoints for where the lidar is scanning
+shared.head_lidar.endpoints = vector.zeros(2)
 
 shared.chest_lidar = {}
 -- Hokuyo uses a float, which is 4 bytes, to represent each range
 shared.chest_lidar.scan = 4*1081
 shared.chest_lidar.t = vector.zeros(1)
+-- Radian endpoints for where the lidar is scanning, since it is actuated
+shared.chest_lidar.endpoints = vector.new({-.5,.5})
+-- Pixel resolution of the mesh from actuated lidar scans
+shared.chest_lidar.mesh_resolution = vector.new({500,480})
+-- Care only about ranges between these two points to include in the mesh
+shared.chest_lidar.mesh_range = vector.new({.1,5})
 
 -- Customize the shared memory size, due to using userdata
 shsize.head_camera = shared.head_camera.image + shared.head_camera.lut + 2^16

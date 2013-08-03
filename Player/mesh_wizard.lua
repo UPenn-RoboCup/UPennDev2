@@ -20,34 +20,69 @@ local Body       = require'Body'
 local util       = require'util'
 
 -- Mesh images
-local chest_mesh_byte  = torch.ByteTensor( 3, 1081 ):zero()
-local chest_mesh  = torch.FloatTensor( 3, 1081 ):zero()
+-- TODO: Ajust the downsample, since we may not care about 30 meters away, but just 2 meters
+-- 30 meters is the max range of the hokuyo and the max float we will see
+local chest_range     = vcm.get_chest_lidar_mesh_range()
+local chest_res       = vcm.get_chest_lidar_mesh_resolution()
+local chest_start     = vcm.get_chest_lidar_endpoints()[1]
+local chest_stop      = vcm.get_chest_lidar_endpoints()[2]
+-- TODO: Get 1081 as a Body parameter for the size of the lidar
+local chest_offset    = math.floor( (1081-chest_res[2])/2 )
+local chest_mesh_byte = torch.ByteTensor( unpack(chest_res) ):zero()
+local chest_mesh      = torch.FloatTensor( unpack(chest_res) ):zero()
 
 -- Convert a pan angle to a column of the mesh image
-local function pan_to_column( pan )
-  return 1
+local function pan_to_column( rad )
+  rad = math.max( math.min(rad, chest_stop), chest_start )
+  local ratio = (rad-chest_start)/(chest_stop-chest_start)
+  ratio = math.min(ratio,1)
+  return math.floor(math.max(ratio*chest_res[1],1)+.5)
 end
 
 ------------------------------
 -- Callback functions
 local function chest_callback()
+  --print('Chest!')
 	local meta, has_more = chest_lidar_ch:receive()
   local metadata = mp.unpack(meta)
   -- Get raw data from shared memory
   local ranges = Body.get_chest_lidar()
   -- Insert into the correct column
   local col = pan_to_column(metadata.pangle)
+  --print('CHEST | Inserting Column',col)
+  local chest_slice = chest_mesh:select(1,col)
+  --print('Got',chest_slice:nElement(),chest_slice:isContiguous())
   -- Copy to the torch object for fast modification
-  ranges:tensor( chest_mesh:select(1,col) )
+  ranges:tensor( chest_slice, chest_res[2], chest_offset )
   
-  print('CHEST | Inserting Column '..col..'...')  
-  -- TODO: Scale into 0-255 for jpeg compression when desired
+  -- Scale into 0-255 for jpeg compression when saving
+  if col==1 or col==chest_res[1] then
+    print('Saving!')
+    
+    -- Enhance the dynamic range of the mesh image
+    local adjusted_range = torch.add( chest_mesh, -chest_range[1] )
+    adjusted_range:mul( 255/(chest_range[2]-chest_range[1]) )
+    
+    -- Ensure that we are between 0 and 255
+    adjusted_range[torch.lt(adjusted_range,0)] = 0
+    adjusted_range[torch.gt(adjusted_range,255)] = 255
+    
+    chest_mesh_byte:copy( adjusted_range )
+    local jdepth = jpeg.compress_gray(
+      chest_mesh_byte:storage():pointer(),
+      chest_res[2],chest_res[1] )
+    print('jdepth',#jdepth)
+    -- Temporary: dump to file
+    local f = io.open('mesh.jpeg','w')
+    f:write(jdepth)
+    f:close()
+    print('Done writing!')
+  end
   
 end
 
 local function head_callback()
-	local meta, has_more = head_lidar_ch:receive()
-  local head_angle = Body.get_head_command_position(1)
+  --print('Head!')
 end
 ------------------------------
 

@@ -564,6 +564,17 @@ end
 -- TODO: Write functions to modify transform in directions
 
 ----------------------
+-- Sensor access functions for convienence
+-- TODO: Lidar scans should return metadata, too
+Body.get_chest_lidar = function()
+  -- TODO: Just use the chest_lidarPtr.scan as a carray of 1081?
+  return carray.float( vcm.get_chest_lidar_scan(), 1081 )
+end
+Body.get_head_lidar = function()
+  return carray.float( vcm.get_head_lidar_scan(), 1081 )
+end
+
+----------------------
 -- More standard api functions
 Body.get_time = unix.time
 Body.entry = function()
@@ -582,8 +593,10 @@ end
 ----------------------
 -- Webots compatibility
 if IS_WEBOTS then
-	local webots = require'webots'
-  Body.get_time = webots.wb_robot_get_time
+	local webots     = require'webots'
+  local simple_ipc = require'simple_ipc'
+  local mp         = require'msgpack'
+  Body.get_time    = webots.wb_robot_get_time
 
 	servo.direction = vector.new({
 		1,-1, -- Head
@@ -613,12 +626,15 @@ if IS_WEBOTS then
 	-- Setup the webots tags
 	local tags = {}
   local telekinesis = {}
-  local chest_lidar_wbt = nil
-  local head_lidar_wbt = nil
-  --[[
-  local chest_lidar_scan = nil
-  local head_lidar_scan = nil
-  --]]
+  
+  -- Webots body broadcasting
+  
+  local chest_lidar_wbt = {}
+  local head_lidar_wbt = {}
+  head_lidar_wbt.meta = {}
+  chest_lidar_wbt.meta = {}
+  head_lidar_wbt.channel  = simple_ipc.new_publisher'head_lidar'
+  chest_lidar_wbt.channel = simple_ipc.new_publisher'chest_lidar'
 
 	Body.entry = function()
     
@@ -667,13 +683,13 @@ if IS_WEBOTS then
 		-- Chest Lidar
 		tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
 		webots.wb_camera_enable(tags.chest_lidar, timeStep)
-    chest_lidar_wbt = webots.wb_camera_get_range_image(tags.chest_lidar)
-    --chest_lidar_scan = carray.float(chest_lidar_wbt,1081)
+    chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
+    chest_lidar_wbt.meta.count = 0
     -- Head Lidar
 		tags.head_lidar  = webots.wb_robot_get_device("HeadLidar")
 		webots.wb_camera_enable(tags.head_lidar, timeStep)
-    head_lidar_wbt = webots.wb_camera_get_range_image(tags.chest_lidar)
-    --head_lidar_scan  = carray.float(head_lidar_wbt,1081)
+    head_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
+    head_lidar_wbt.meta.count = 0
 
     -- Grab the box and move it around
     -- TODO: Check if null or so, since this needs a PRO license
@@ -832,9 +848,16 @@ if IS_WEBOTS then
 		end
     
     -- Set lidar data into shared memory
-    vcm.set_head_lidar_scan( head_lidar_wbt )
-    vcm.set_chest_lidar_scan( chest_lidar_wbt )
-    --vcm.set_chest_lidar_scan( tostring(carray.float(chest_lidar_wbt,1081)) )
+    vcm.set_head_lidar_scan( head_lidar_wbt.pointer )
+    head_lidar_wbt.meta.count  = head_lidar_wbt.meta.count  + 1
+    head_lidar_wbt.meta.hangle = Body.get_head_command_position()
+    vcm.set_chest_lidar_scan( chest_lidar_wbt.pointer )
+    chest_lidar_wbt.meta.count = chest_lidar_wbt.meta.count + 1
+    chest_lidar_wbt.meta.pangle = Body.get_lidar_command_position(1)
+    
+    -- Send the count on the channel so they know to process a new frame
+    head_lidar_wbt.channel:send(  mp.pack(head_lidar_wbt.meta)  )
+    chest_lidar_wbt.channel:send( mp.pack(chest_lidar_wbt.meta) )
 
 	end
 
@@ -844,15 +867,6 @@ if IS_WEBOTS then
 	Body.tags = tags
 
 end -- webots check
-
--- Sensor functions for the body
--- TODO: Lidar scans should return metadata, too
-Body.get_chest_lidar = function()
-  return carray.float( vcm.get_chest_lidar_scan(), 1081 )
-end
-Body.get_head_lidar = function()
-  return carray.float( vcm.get_head_lidar_scan(), 1081 )
-end
 
 -- Exports for use in other functions
 

@@ -13,6 +13,7 @@ local unix = require'unix'
 local mp = require'msgpack'
 local spacemouse = require 'spacemouse'
 local colors = require'colors'
+local getch=require'getch'
 --sm = spacemouse.init(0x046d, 0xc62b) -- pro
 local sm = spacemouse.init(0x046d, 0xc626) -- regular
 -- Update every 10ms
@@ -22,7 +23,7 @@ local update_interval = 0.010 * 1e6
 local Body = require'Body'
 
 local current_joint = 1
-local current_arm = 'left'
+local current_arm = 'larm'
 -- Modes: direct, ik
 local current_mode = 1
 local mode_msg = {
@@ -52,13 +53,13 @@ end
 
 local function joint_name()
 	local jName = 'Unknown'
-	if current_arm=='left' then
+	if current_arm=='larm' then
 		if current_joint<7 then
 			jName = Body.jointNames[Body.indexLArm+current_joint-1]
 		else
 			jName = 'finger '..current_joint-6
 		end
-	elseif current_arm=='right' then
+	elseif current_arm=='rarm' then
 		if current_joint<7 then
 			jName = Body.jointNames[Body.indexRArm+current_joint-1]
 		else
@@ -171,14 +172,14 @@ local function state_msg()
     '\nRight IK:\t(%.2f  %.2f  %.2f) (%.2f  %.2f  %.2f)',unpack(pR)
   )
   -- Add the shared memory
-  msg = msg..'\n\nLeft  pos\t'..jangle_str('left', larm,lfinger)
-  msg = msg..'\nRight pos\t'..jangle_str('right',rarm,rfinger)
-  msg = msg..'\n\nLeft  cmd\t'..jangle_str('left', larm_cmd,lfinger_cmd)
-  msg = msg..'\nRight cmd\t'..jangle_str('right',rarm_cmd,rfinger_cmd)
-  msg = msg..'\n\nLeft  load\t'..jangle_str('left', larm_load,lfinger_load)
-  msg = msg..'\nRight load\t'..jangle_str('right',rarm_load,rfinger_load)
-  msg = msg..'\n\nLeft  enable\t'..jangle_str('left', larm_en,lfinger_en)
-  msg = msg..'\nRight enable\t'..jangle_str('right',rarm_en,rfinger_en)
+  msg = msg..'\n\nLeft  pos\t'..jangle_str('larm', larm,lfinger)
+  msg = msg..'\nRight pos\t'..jangle_str('rarm',rarm,rfinger)
+  msg = msg..'\n\nLeft  cmd\t'..jangle_str('larm', larm_cmd,lfinger_cmd)
+  msg = msg..'\nRight cmd\t'..jangle_str('rarm',rarm_cmd,rfinger_cmd)
+  msg = msg..'\n\nLeft  load\t'..jangle_str('larm', larm_load,lfinger_load)
+  msg = msg..'\nRight load\t'..jangle_str('rarm',rarm_load,rfinger_load)
+  msg = msg..'\n\nLeft  enable\t'..jangle_str('larm', larm_en,lfinger_en)
+  msg = msg..'\nRight enable\t'..jangle_str('rarm',rarm_en,rfinger_en)
   
   -- Return the message
   return msg
@@ -200,10 +201,10 @@ local function process_button(btn)
     return''
   elseif btn==3 then
     -- Switch to that joint
-    if current_arm == 'left' then
-      current_arm = 'right'
-    elseif current_arm == 'right' then
-      current_arm = 'left'
+    if current_arm == 'larm' then
+      current_arm = 'rarm'
+    elseif current_arm == 'rarm' then
+      current_arm = 'larm'
     end
     return''
   end
@@ -214,7 +215,7 @@ local trans_scale = 0.01 / 350
 local function process_translate( data )
   local delta_ik = trans_scale * vector.new({data.x,data.y,data.z,0,0,0})
   if vector.norm(delta_ik)<0.003 then return nil end
-  return Body['set_inverse_'..current_arm](delta_ik)
+  --return Body['set_inverse_'..current_arm](delta_ik)
 end
 
 local rot_scale = 1 * (math.pi/180)/350
@@ -224,9 +225,9 @@ local function process_rotate(data)
   return Body['set_inverse_'..current_arm](delta_ik)
 end
 
-local function direct_rotate(dat)
+local function direct_rotate(data)
   local current = get_joint()
-  local new = current - rot_scale * data.wz
+  local new = current + rot_scale * data.wz
   set_joint(new)
   return''
 end
@@ -240,8 +241,8 @@ local msg = 'Unknown'
 while true do
   local t = unix.time()
   local evt, data = sm:get()
-  if evt=='button' then msg=process_button(data) end
-  if evt=='rotate' then process_rotate(data) end
+  if evt=='button' then process_button(data) end
+  if evt=='rotate' then direct_rotate(data) end
   if evt=='translate' then process_translate(data) end
   -- Print result of the key press
   if evt then

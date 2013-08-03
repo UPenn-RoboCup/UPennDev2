@@ -22,6 +22,8 @@ local DEG_TO_RAD = math.pi/180
 local RAD_TO_DEG = 180/math.pi
 
 local Body = {}
+Body.DEG_TO_RAD = DEG_TO_RAD
+Body.RAD_TO_DEG = RAD_TO_DEG
 
 --------------------------------
 -- Shared memory layout
@@ -39,18 +41,16 @@ local indexRArm = 21  --RArm: 21 22 23 24 25 26
 local nJointRArm = 6
 local indexWaist = 27  --Waist: 27 28
 local nJointWaist = 2
--- Auxiliary servos
 -- 6 Fingers for gripping
 -- 1 servo for lidar panning
 local indexLGrip = 29
 local nJointLGrip = 3
 local indexRGrip = 32
 local nJointRGrip = 3
-local indexAux = 35
-local nJointAux = 1
+-- One motor for lidar panning
+local indexLidar = 35
+local nJointLidar = 1
 local nJoint = 35
-
-assert(nJoint==(indexAux+nJointAux)-indexHead,'Bad joint counting!')
 
 local jointNames = {
 	"Neck","Head", -- Head
@@ -82,7 +82,7 @@ local parts = {
 	['Waist']=vector.count(indexWaist,nJointWaist),
 	['LGrip']=vector.count(indexLGrip,nJointLGrip),
   ['RGrip']=vector.count(indexRGrip,nJointRGrip),
-  ['Aux']=vector.count(indexAux,nJointAux)
+  ['Lidar']=vector.count(indexLidar,nJointLidar)
 }
 local inv_parts = {}
 for name,list in pairs(parts) do
@@ -421,7 +421,7 @@ for k,v in pairs(libDynamixel.mx_registers) do
 	local get_func = libDynamixel['get_mx_'..k]
 	local set_func = libDynamixel['set_mx_'..k]
   
-  for _,part in pairs({'LGrip','RGrip','Aux'}) do
+  for _,part in pairs({'LGrip','RGrip','Lidar'}) do
     local mlist = motor_parts[part]
     local jlist = parts[part]
     local a = jlist[1]
@@ -605,8 +605,8 @@ if IS_WEBOTS then
 		0,0,
 		0,0,0,
 		0,0,0,
-		0,
-	})*math.pi/180
+		-60,--30,
+	})*DEG_TO_RAD
 
 	-- Setup the webots tags
 	local tags = {}
@@ -836,16 +836,14 @@ Body.indexRArm = 21  --RArm: 23 24 25 26 27 28
 Body.nJointRArm = 6
 Body.indexWaist = 27  --Waist: 3 4
 Body.nJointWaist = 2
--- Auxiliary servos
 -- 6 Fingers for gripping
 -- 1 servo for lidar panning
-Body.indexAux = 29
-Body.nJointAux = 7
 Body.indexLGrip = 29
 Body.nLGrip = 3
 Body.indexRGrip = 32
 Body.nRGrip = 3
-
+Body.indexLidar = 35
+Body.nJointLidar = 1
 Body.nJoint = nJoint
 Body.jointNames = jointNames
 Body.parts = parts

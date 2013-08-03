@@ -8,7 +8,15 @@ local libDynamixel = require'libDynamixel'
 local test_dynamixel = libDynamixel.new_bus('/dev/tty.usbserial-FTT3AAV5A')
 
 print('Using',test_dynamixel.ttyname)
-local found = test_dynamixel:ping_probe()
+--local found = test_dynamixel:ping_probe()
+
+--for _,m in ipairs(found) do print(string.format('\nFound ID %2d',m)) end
+
+local status = libDynamixel.get_mx_max_torque(15,test_dynamixel)
+print( libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter)) )
+
+if true then return end
+
 --found = {14,18}
 for _,m in ipairs(found) do
   print(string.format('\nFound ID %2d',m))

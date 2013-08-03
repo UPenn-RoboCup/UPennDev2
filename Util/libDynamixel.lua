@@ -60,6 +60,7 @@ local mx_registers = {
 	['id'] = {string.char(3,0),1},
   ['baud'] = {string.char(4,0),1},
 	['delay'] = {string.char(5,0),1},
+  ['max_torque'] = {string.char(14,0),2},
   ['status_return_level'] = {string.char(16,0),1},
 	['torque_enable'] = {string.char(24,0),1},
 	['led'] = {string.char(25,0),1},
@@ -619,7 +620,7 @@ libDynamixel.service = function( dynamixels, main )
     -- Set up easy access to select IDs
     table.insert(dynamixel_fds,dynamixel.fd)
     fd_to_dynamixel[dynamixel.fd] = dynamixel
-		dynamixel.thread = coroutine.create( 
+		dynamixel.thread = coroutine.create(
 		function()
       
       -- Make a read all NX command

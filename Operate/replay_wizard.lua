@@ -10,7 +10,7 @@ local t_first_log = nil
 local j_last_cmd = nil
 
 local function entry()
-  local f = io.open('../Logs/larm.log','r')
+  local f = io.open('../Logs/rarm.log','r')
   local data = f:read("*all")
   f:close()
   up = mp.unpacker( data )
@@ -31,8 +31,8 @@ local function update()
   if not jval then return false end
   local j_cmd = vector.slice(jval,1,#jval-1)
   local t_log = jval[#jval]
-  Body.set_larm_command_position(j_cmd)
-  unix.usleep( 1e6*(t_log-t_last_log) )
+  Body.set_rarm_command_position(j_cmd)
+  unix.usleep( 1e6*(t_log-t_last_log) / 2 )
   t_last_log = t_log
   return true
 end

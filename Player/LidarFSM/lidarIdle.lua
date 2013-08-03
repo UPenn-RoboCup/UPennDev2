@@ -1,19 +1,19 @@
-module(..., package.seeall);
+local Body = require'Body'
 
-require('lcm')
-require('unix')
-Config = require('ConfigPenn')
-Body = require(Config.Body);
+local lidarIdle = {}
+lidarIdle._NAME = 'lidarIdle'
 
-function entry()
-  lcm:set_chest_lidar_panning(0);
+function lidarIdle.entry()
   print(_NAME..' Entry' ) 
 end
 
-function update()
---  print(_NAME..' Update' ) 
+function lidarIdle.update()
+--  print(_NAME..' Update' )
+-- TODO: Torque off?
 end
 
-function exit()
+function lidarIdle.exit()
   print(_NAME..' Exit' ) 
 end
+
+return lidarIdle

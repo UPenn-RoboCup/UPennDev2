@@ -19,7 +19,7 @@ local mid_pan = 0
 local mag_pan = max_pan - min_pan
 
 -- Set up the pan timing (can reaange order based on needs)
-local ph_duration = 5 -- Number of seconds per pan
+local ph_duration = 10 -- Number of seconds per pan
 local rad_speed = mag_pan / ph_duration -- radians per second
 local ph_speed = 1/ph_duration -- radians per second
 

@@ -42,23 +42,23 @@ end
 ------------------------------
 -- Callback functions
 local function chest_callback()
-  --print('Chest!')
+  local t = unix.time()
 	local meta, has_more = chest_lidar_ch:receive()
   local metadata = mp.unpack(meta)
   -- Get raw data from shared memory
   local ranges = Body.get_chest_lidar()
   -- Insert into the correct column
   local col = pan_to_column(metadata.pangle)
-  --print('CHEST | Inserting Column',col)
   local chest_slice = chest_mesh:select(1,col)
-  --print('Got',chest_slice:nElement(),chest_slice:isContiguous())
+  
   -- Copy to the torch object for fast modification
   ranges:tensor( chest_slice, chest_res[2], chest_offset )
   
-  -- Scale into 0-255 for jpeg compression when saving
-  if col==1 or col==chest_res[1] then
-    print('Saving!')
-    
+  -- Check if we wish to save and send to the user
+  local save_request = vcm.get_chest_lidar_mesh_save()
+  if save_request==1 then
+    -- Remove the save request
+    vcm.set_chest_lidar_mesh_save(0)
     -- Enhance the dynamic range of the mesh image
     local adjusted_range = torch.add( chest_mesh, -chest_range[1] )
     adjusted_range:mul( 255/(chest_range[2]-chest_range[1]) )
@@ -67,16 +67,14 @@ local function chest_callback()
     adjusted_range[torch.lt(adjusted_range,0)] = 0
     adjusted_range[torch.gt(adjusted_range,255)] = 255
     
+    -- Compress to JPEG for sending over the wire
+    -- TODO: We may not wish to JPEG the image in some cases
     chest_mesh_byte:copy( adjusted_range )
     local jdepth = jpeg.compress_gray(
       chest_mesh_byte:storage():pointer(),
       chest_res[2],chest_res[1] )
-    print('jdepth',#jdepth)
-    -- Temporary: dump to file
-    local f = io.open('mesh.jpeg','w')
-    f:write(jdepth)
-    f:close()
-    print('Done writing!')
+      
+    -- TODO: Associate metadata with this depth image?
   end
   
 end

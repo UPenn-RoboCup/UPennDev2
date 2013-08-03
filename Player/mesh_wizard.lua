@@ -31,6 +31,9 @@ local chest_offset    = math.floor( (1081-chest_res[2])/2 )
 local chest_mesh_byte = torch.ByteTensor( unpack(chest_res) ):zero()
 local chest_mesh      = torch.FloatTensor( unpack(chest_res) ):zero()
 
+-- Sending the chest mesh
+head_mesh_ch  = simple_ipc.new_publisher'chest_mesh'
+
 -- Convert a pan angle to a column of the mesh image
 local function pan_to_column( rad )
   rad = math.max( math.min(rad, chest_stop), chest_start )
@@ -74,7 +77,13 @@ local function chest_callback()
       chest_mesh_byte:storage():pointer(),
       chest_res[2],chest_res[1] )
       
-    -- TODO: Associate metadata with this depth image?
+    -- TODO: Associate metadata with this depth image
+    local meta_chest = {}
+    meta_chest.t = t
+    head_mesh_ch:send( {mp.pack(meta_chest), jdepth} )
+    
+    print('Sent a mesh!', #jdepth)
+    
   end
   
 end

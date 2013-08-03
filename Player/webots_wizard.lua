@@ -1,5 +1,6 @@
 dofile'include.lua'
 local Body = require'Body'
+local util = require'util'
 local colors = require'colors'
 
 local state_machines = {}

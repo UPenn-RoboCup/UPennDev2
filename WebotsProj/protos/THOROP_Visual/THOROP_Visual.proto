@@ -83,7 +83,10 @@ Supervisor {
     }
     DEF Chest_Lidar_yaw Servo {
       translation 0 -0.05 0.1
-      rotation 0 1 0 1.046 #60 deg
+      rotation 0 1 0 -1.046 #60 deg
+      #rotation 0 1 0 1.046 #60 deg
+      #rotation 0 1 0 2.094 #120 deg
+      #rotation 0 1 0 -2.094 #-120 deg
       children [
         Solid{
           rotation 0 0 1 1.57
@@ -98,7 +101,7 @@ Supervisor {
 				  } 
         }
       ]
-      name "ChestLidar"
+      name "ChestLidarPan"
       physics Physics {
         density -1
         # mass 0.2

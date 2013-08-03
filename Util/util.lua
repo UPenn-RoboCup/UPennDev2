@@ -22,7 +22,8 @@ function util.min(t)
   -- returns the min value and its index
   local imin = 0
   local tmin = math.huge
-  for i,v in ipairs(t) do
+  for i=1,#t do
+    v = t[i]
     if v < tmin then
       tmin = v
       imin = i
@@ -36,7 +37,8 @@ function util.max(t)
   -- returns the min value and its index
   local imax = 0
   local tmax = -math.huge
-  for i,v in ipairs(t) do
+  for i=1,#t do
+    v = t[i]
     if v > tmax then
       tmax = v
       imax = i

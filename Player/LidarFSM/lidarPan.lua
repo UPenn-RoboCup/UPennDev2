@@ -22,7 +22,7 @@ local ph_speed = 1/ph_duration -- radians per second
 local ph = .5
 -- Assume that we are going forward to start
 -- Dir: forward is true, backward is false
-local dir = true
+local forward = true
 
 -- Take a phase of the panning scan and return the angle to set the lidar
 -- ph is between 0 and 1
@@ -56,8 +56,7 @@ function lidarPan.entry()
   
   -- Ascertain the phase, from the current position of the lidar
   local cur_angle = Body.get_lidar_position(1)
-  ph, dir = radians_to_ph( cur_angle )
-  print('Lidar @ ',cur_angle*Body.RAD_TO_DEG)
+  ph, forward = radians_to_ph( cur_angle )
 end
 
 function lidarPan.update()
@@ -66,13 +65,13 @@ function lidarPan.update()
   -- Get the time of entry
   local t = Body.get_time()
   local t_diff = t - t_update
-  -- Save this at the last update time
+  -- Save this at the last update timeå
   t_update = t
   
   -- Update the direction
-  dir = (dir and ph<1) or ph<0
+  forward = (forward and ph<1) or ph<0
   -- Update the phase of the pan
-  if dir then
+  if forward then
     ph = ph + t_diff * ph_speed
   else
     ph = ph - t_diff * ph_speed

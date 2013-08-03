@@ -113,8 +113,13 @@ unsigned char * to_rgb( int tag ) {
   lua_pushlightuserdata(L, $1);
   SWIG_arg++;
 }
+%typemap(out) float * {
+  lua_pushlightuserdata(L, $1);
+  SWIG_arg++;
+}
 %include <webots/camera.h>
 %typemap(out) unsigned char *;
+%typemap(out) float *;
 
 %include <webots/compass.h>
 %include <webots/connector.h>

@@ -62,7 +62,7 @@ function memory.init_shm_segment(name, shared, shsize, tid, pid)
       elseif type(v)=='number' then
         -- Get userdata
         fenv['get_'..shtable..'_'..k] = function() return shmHandle:pointer(k) end
-        -- Set userdata
+        -- Set userdata (Can accept a string for memcpy'ing the string)
         fenv['set_'..shtable..'_'..k] = function(val) return shmHandle:set(k, val, v) end
         
       elseif type(v)=='table' then

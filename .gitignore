@@ -49,7 +49,7 @@ WebotsProj/controllers/nao_soccer_supervisor/
 WebotsProj/controllers/nsl_soccer_supervisor/
 
 #auto-generated webots file
-*.wrl
+#*.wrl
 *.wbproj
 
 # Temp and Swap files

@@ -9,13 +9,11 @@ dofile'include.lua'
 --local is_debug = true
 
 -- Libraries
-local unix = require'unix'
+local unix  = require'unix'
 local getch = require'getch'
-local mp = require'msgpack'
-local colors = require'colors'
-
--- Getting/Setting The Body
-local Body = require'Body'
+local mp    = require'msgpack'
+local util  = require'util'
+local Body  = require'Body'
 
 local current_joint = 1
 local current_arm = 'larm'
@@ -155,7 +153,7 @@ local function state_msg()
   local pR = Body.get_forward_rarm()
   
   -- Make the message
-  local msg = colors.wrap('\nKeyboard Wizard\n','blue')
+  local msg = util.color('\nKeyboard Wizard\n','blue')
   msg = msg..'Current State\n'
   msg = msg..'Operating on '..current_arm..' '..joint_name()..' in radians'
 
@@ -175,6 +173,9 @@ local function state_msg()
   msg = msg..'\nRight load\t'..jangle_str('rarm',rarm_load,rfinger_load)
   msg = msg..'\n\nLeft  enable\t'..jangle_str('larm', larm_en,lfinger_en)
   msg = msg..'\nRight enable\t'..jangle_str('rarm',rarm_en,rfinger_en)
+  
+  msg = msg..'\nLidar pos:\t'..string.format('%g',Body.get_lidar_position(1))
+  
   
   -- Return the message
   return msg
@@ -306,6 +307,6 @@ while true do
   os.execute("clear")
   print( state_msg() )
   print()
-  print(colors.wrap(msg,'yellow'))
+  print(util.color(msg,'yellow'))
     
 end

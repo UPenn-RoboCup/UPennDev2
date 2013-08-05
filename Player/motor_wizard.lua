@@ -12,7 +12,7 @@ local RAD_TO_DEG = 180/math.pi
 -- Libraries
 local unix = require'unix'
 local signal = require'signal'
-local colors = require'colors'
+local util = require'util'
 local libDynamixel = require'libDynamixel'
 local Body = require'Body'
 local joint_to_motor = Body.servo.joint_to_motor
@@ -193,13 +193,12 @@ local function entry()
       Body.set_actuator_command_position( rad, idx )
     end
     
-    
     -- Torque enable some motors
     if dynamixel.name=='RArm' then
       local w_ids = vector.slice(joint_to_motor,Body.indexRArm-1+1,Body.indexRArm-1+6)
       print('Setting',w_ids,'on')
       local sync_wrist_en = libDynamixel.set_nx_torque_enable(w_ids,1)
-      table.insert( dynamixel.instructions, sync_wrist_en )
+      --table.insert( dynamixel.instructions, sync_wrist_en )
     elseif dynamixel.name=='LArm' then
       local w_ids = vector.slice(joint_to_motor,Body.indexLArm-1+1,Body.indexLArm-1+6)
       print('Setting',w_ids,'on')
@@ -229,8 +228,11 @@ local update_instructions = function()
         --table.insert( d.instructions, sync_larm )
         local sync_lgrip = Body.set_lgrip_command_position_packet()
         --table.insert( d.instructions, sync_lgrip )
-      end
-    end
+      elseif d.name=='Spine' then
+        local sync_lidar  = Body.set_lidar_command_position_packet()
+        table.insert( d.instructions, sync_lidar )
+        end--d.name
+      end--#instructions
   end
 end
 
@@ -250,8 +252,8 @@ local update_requests = function()
       -- MX readings
       if #d.mx_on_bus>0 then
         for _,idx in ipairs(d.mx_on_bus) do
-          --local inst_mx = libDynamixel.get_mx_position( d.mx_on_bus )
-          --table.insert( d.requests, {inst_mx,'position'} )
+          local inst_mx = libDynamixel.get_mx_position( d.mx_on_bus )
+          table.insert( d.requests, {inst_mx,'position'} )
           --local inst_mx = libDynamixel.get_mx_load( idx )
           --table.insert( d.requests, {inst_mx,'load'} )
         end
@@ -298,7 +300,7 @@ local main = function()
         local t_read  = t-d.t_last_read
         local t_write = t-d.t_last_write
         local dstatus = coroutine.status(d.thread)
-        debug_str = debug_str..colors.wrap(string.format('%s chain %s',d.name, dstatus),status_color[dstatus])
+        debug_str = debug_str..util.color(string.format('%s chain %s',d.name, dstatus),status_color[dstatus])
         if d.message then debug_str = debug_str..': '..d.message end
         debug_str = debug_str..string.format(
           '\n\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',t_read,t_write)

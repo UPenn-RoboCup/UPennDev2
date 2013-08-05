@@ -13,11 +13,11 @@ if use_telekinesis then require'tkcm' end
 require'vcm'
 
 -- Utilities
-local unix = require'unix'
-local vector = require'vector'
-local quaternion = require'quaternion'
-local Transform = require'Transform'
-local util = require'util'
+local unix         = require'unix'
+local vector       = require'vector'
+local quaternion   = require'quaternion'
+local Transform    = require'Transform'
+local util         = require'util'
 local libDynamixel = require'libDynamixel'
 
 local DEG_TO_RAD = math.pi/180

@@ -22,8 +22,8 @@ local hokuyos = {}
 -- Acquire Hokuyo data
 -- TODO: OS stuff should be abstracted in libHokuyo
 if OPERATING_SYSTEM=='darwin' then
-  head_device = "/dev/cu.usbmodemfd111"
-  chest_device = "/dev/cu.usbmodemfd121"
+  head_device = "/dev/cu.usbmodemfd121"
+  chest_device = "/dev/cu.usbmodemfd111"
 end
 
 -- Initialize the Hokuyos

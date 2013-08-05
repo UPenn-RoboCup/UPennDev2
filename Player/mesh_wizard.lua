@@ -15,6 +15,8 @@ torch.Tensor     = torch.DoubleTensor
 local simple_ipc = require'simple_ipc'
 local carray     = require'carray'
 local jpeg       = require'jpeg'
+-- Use high quality jpeg.  TODO: Grab from vcm
+jpeg.set_quality( 90 )
 local mp         = require'msgpack'
 local Body       = require'Body'
 local util       = require'util'

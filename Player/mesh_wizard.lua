@@ -39,7 +39,8 @@ local function pan_to_column( rad )
   rad = math.max( math.min(rad, chest_stop), chest_start )
   local ratio = (rad-chest_start)/(chest_stop-chest_start)
   ratio = math.min(ratio,1)
-  return math.floor(math.max(ratio*chest_res[1],1)+.5)
+  local col = math.floor(math.max(ratio*chest_res[1],1)+.5)
+  return col
 end
 
 ------------------------------
@@ -58,10 +59,10 @@ local function chest_callback()
   ranges:tensor( chest_slice, chest_res[2], chest_offset )
   
   -- Check if we wish to save and send to the user
-  local save_request = vcm.get_chest_lidar_mesh_save()
+  local save_request = vcm.get_chest_lidar_mesh_request()
   if save_request==1 then
     -- Remove the save request
-    vcm.set_chest_lidar_mesh_save(0)
+    vcm.set_chest_lidar_mesh_request(0)
     -- Enhance the dynamic range of the mesh image
     local adjusted_range = torch.add( chest_mesh, -chest_range[1] )
     adjusted_range:mul( 255/(chest_range[2]-chest_range[1]) )
@@ -89,7 +90,7 @@ local function chest_callback()
 end
 
 local function head_callback()
-  --print('Head!')
+  local meta, has_more = head_lidar_ch:receive()
 end
 ------------------------------
 

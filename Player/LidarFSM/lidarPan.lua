@@ -15,7 +15,7 @@ local function update_pan_params()
   mid_pan = (max_pan + min_pan) / 2
   mag_pan = max_pan - min_pan
   -- Grab the desired resolution (number of columns)
-  local res = vcm.get_chest_lidar_resolution()[1]
+  local res = vcm.get_chest_lidar_mesh_resolution()[1]
   -- Complete the scan at this rate
   ph_speed = 40 / res -- 40 Hz update of the LIDAR
 end

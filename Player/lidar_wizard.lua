@@ -43,7 +43,7 @@ if head_hokuyo then
     
     local meta = {}
     meta.count  = head_hokuyo.count
-    meta.hangle = Body.get_head_command_position()
+    meta.hangle = Body.get_head_position()
     local ret = head_lidar_ch:send( mp.pack(meta) )
   end
 end
@@ -60,7 +60,7 @@ if chest_hokuyo then
 
     local meta = {}
     meta.count  = chest_hokuyo.count
-    meta.pangle = Body.get_lidar_command_position(1)
+    meta.pangle = Body.get_lidar_position(1)
     local ret = chest_lidar_ch:send( mp.pack(meta) )
   end
 end
@@ -79,6 +79,7 @@ signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
 -- Begin to service
+os.execute('clear')
 assert(#hokuyos>0,"No hokuyos detected!")
 print( util.color('Servicing '..#hokuyos..' Hokuyos','green') )
 
@@ -91,10 +92,12 @@ local main = function()
     local t_diff = t_now - t0
     if t_diff>1 then
       local debug_str = string.format('\nMain loop: %7.2f Hz',main_cnt/t_diff)
+      debug_str = util.color(debug_str,'yellow')
       for i,h in ipairs(hokuyos) do
         debug_str = debug_str..string.format(
         '\n\t%s Hokuyo was seen %5.3f seconds ago',h.name,t_now - h.t_last)
       end
+      os.execute('clear')
       print(debug_str)
       t0 = t_now
       main_cnt = 0

@@ -7,7 +7,7 @@
 ---------------------------------
 
 dofile'../include.lua'
---local use_udp = true
+local use_udp = true
 
 -- Libraries
 require 'unix'
@@ -43,7 +43,7 @@ end
 -- Robot-wide used Mesh images parameters
 -- TODO: Contuously use these in LidarFSM
 -- Desired panning resolution
-local chest_res       = vcm.get_chest_lidar_resolution()
+local chest_res       = vcm.get_chest_lidar_mesh_resolution()
 -- Panning endpoints
 local chest_start     = vcm.get_chest_lidar_endpoints()[1]
 local chest_stop      = vcm.get_chest_lidar_endpoints()[2]

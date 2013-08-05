@@ -314,7 +314,6 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
   --------------------------------
 end
 
-
 ----------------------
 -- Body actuator commands
 -- jcm should be the API compliance test

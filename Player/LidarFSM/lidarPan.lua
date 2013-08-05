@@ -11,12 +11,17 @@ local t_entry = 0 -- When the state was last entered
 local t_update = 0 -- When the state was last updated
 
 -- Set up the default min and max pan angles
-local min_pan = Body.servo.min_rad[Body.indexLidar]
-local max_pan = Body.servo.max_rad[Body.indexLidar]
--- Save for shared memory to use
-vcm.set_chest_lidar_endpoints({min_pan,max_pan})
-local mid_pan = 0
+local min_pan = vcm.get_chest_lidar_endpoints()[1]
+local max_pan = vcm.get_chest_lidar_endpoints()[2]
+local mid_pan = (max_pan + min_pan) / 2
 local mag_pan = max_pan - min_pan
+
+local function update_pan_params()
+  min_pan = vcm.get_chest_lidar_endpoints()[1]
+  max_pan = vcm.get_chest_lidar_endpoints()[2]
+  mid_pan = (max_pan + mag_pan) / 2
+  mag_pan = max_pan - min_pan
+end
 
 -- Set up the pan timing (can reaange order based on needs)
 local ph_duration = 10 -- Number of seconds per pan
@@ -59,19 +64,25 @@ function lidarPan.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   
+  -- Grab the updated pan paramters
+  update_pan_params()
+  
   -- Ascertain the phase, from the current position of the lidar
   local cur_angle = Body.get_lidar_position(1)
   ph, forward = radians_to_ph( cur_angle )
 end
 
 function lidarPan.update()
-  --print(lidarPan._NAME..' Update' ) 
+  --print(lidarPan._NAME..' Update' )
 
   -- Get the time of entry
   local t = Body.get_time()
   local t_diff = t - t_update
   -- Save this at the last update timeå
   t_update = t
+  
+  -- Grab the updated pan paramters
+  update_pan_params()
   
   -- Update the direction
   forward = (forward and ph<1) or ph<0

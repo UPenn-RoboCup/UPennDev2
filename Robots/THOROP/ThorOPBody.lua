@@ -26,6 +26,7 @@ local RAD_TO_DEG = 180/math.pi
 local Body = {}
 Body.DEG_TO_RAD = DEG_TO_RAD
 Body.RAD_TO_DEG = RAD_TO_DEG
+Body.get_time = unix.time
 
 --------------------------------
 -- Shared memory layout
@@ -567,16 +568,22 @@ end
 -- Sensor access functions for convienence
 -- TODO: Lidar scans should return metadata, too
 Body.get_chest_lidar = function()
-  -- TODO: Just use the chest_lidarPtr.scan as a carray of 1081?
   return carray.float( vcm.get_chest_lidar_scan(), 1081 )
 end
 Body.get_head_lidar = function()
   return carray.float( vcm.get_head_lidar_scan(), 1081 )
 end
+Body.set_chest_lidar = function( data )
+	vcm.set_chest_lidar_scan( data )
+	vcm.set_chest_lidar_t( Body.get_time() )
+end
+Body.set_head_lidar = function( data )
+	vcm.set_head_lidar_scan( data )
+	vcm.set_head_lidar_t( Body.get_time() )
+end
 
 ----------------------
 -- More standard api functions
-Body.get_time = unix.time
 Body.entry = function()
   -- Make the initial commands
   for i=1,nJoint do Body.set_actuator_command_position(Body.initial_joints[i],i) end
@@ -848,10 +855,11 @@ if IS_WEBOTS then
 		end
     
     -- Set lidar data into shared memory
-    vcm.set_head_lidar_scan( head_lidar_wbt.pointer )
+	Body.set_chest_lidar(chest_lidar_wbt.pointer)
+	Body.set_head_lidar(head_lidar_wbt.pointer)
+	
     head_lidar_wbt.meta.count  = head_lidar_wbt.meta.count  + 1
     head_lidar_wbt.meta.hangle = Body.get_head_command_position()
-    vcm.set_chest_lidar_scan( chest_lidar_wbt.pointer )
     chest_lidar_wbt.meta.count = chest_lidar_wbt.meta.count + 1
     chest_lidar_wbt.meta.pangle = Body.get_lidar_command_position(1)
     

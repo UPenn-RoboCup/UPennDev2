@@ -11,9 +11,10 @@ local unix       = require'unix'
 local signal     = require'signal'
 local carray     = require'carray'
 local mp         = require'msgpack'
-local colors     = require'colors'
+local util       = require'util'
 local simple_ipc = require'simple_ipc'
 local libHokuyo  = require'libHokuyo'
+local Body       = require'Body'
 
 -- Setup the Hokuyos array
 local hokuyos = {}
@@ -21,8 +22,8 @@ local hokuyos = {}
 -- Acquire Hokuyo data
 -- TODO: OS stuff should be abstracted in libHokuyo
 if OPERATING_SYSTEM=='darwin' then
-  head_device = "/dev/cu.usbmodem1411"
-  chest_device = "/dev/cu.usbmodem1421"
+  head_device = "/dev/cu.usbmodemfd111"
+  chest_device = "/dev/cu.usbmodemfd121"
 end
 
 -- Initialize the Hokuyos
@@ -32,40 +33,35 @@ local chest_hokuyo = libHokuyo.new_hokuyo(chest_device)
 -- Head Hokuyo
 if head_hokuyo then
   head_hokuyo.name = 'Head'
+  head_hokuyo.count = 0
   local head_lidar_ch = simple_ipc.new_publisher('head_lidar') --head lidar
   table.insert(hokuyos,head_hokuyo)
   head_hokuyo.callback = function(data)
-    vcm.set_head_lidar_scan( data )
-    vcm.set_head_lidar_t( head_hokuyo.t_last )
-    -- TODO: Send a message that shm has a new lidar.
-    -- NOTE: This is because ZMQ may be slow.  However, zero-copy may fix this.
-    local serialized = mp.pack({head_hokuyo.t_last,data})
-    local ret = head_lidar_ch:send(serialized)
-    --[[
-    local t_diff = head_hokuyo.t_last - (last_head or unix.time())
-    last_head = head_hokuyo.t_last
-    print('head',ret,#serialized,1/t_diff..' Hz')
-    --]]
+    -- TODO: ZeroMQ zero copy may work as well as SHM?
+    Body.set_head_lidar( data )
+    head_hokuyo.count = head_hokuyo.count + 1
+    
+    local meta = {}
+    meta.count  = head_hokuyo.count
+    meta.hangle = Body.get_head_command_position()
+    local ret = head_lidar_ch:send( mp.pack(meta) )
   end
 end
 
 -- Chest Hokuyo
 if chest_hokuyo then
   chest_hokuyo.name = 'Chest'
+  chest_hokuyo.count = 0
   table.insert(hokuyos,chest_hokuyo)
   local chest_lidar_ch = simple_ipc.new_publisher('chest_lidar') --chest lidar
   chest_hokuyo.callback = function(data)
-    vcm.set_chest_lidar_scan( data )
-    vcm.set_chest_lidar_t( chest_hokuyo.t_last )
-    -- TODO: Send a message that shm has a new lidar.
-    -- NOTE: This is because ZMQ may be slow.  However, zero-copy may fix this.
-    local serialized = mp.pack({chest_hokuyo.t_last,data})
-    local ret = chest_lidar_ch:send(serialized)
-    --[[
-    local t_diff = chest_hokuyo.t_last - (last_chest or unix.time())
-    last_chest = chest_hokuyo.t_last
-    print('chest',ret,#serialized,1/t_diff..' Hz')
-    --]]
+    Body.set_chest_lidar( data )
+    chest_hokuyo.count = chest_hokuyo.count + 1
+
+    local meta = {}
+    meta.count  = chest_hokuyo.count
+    meta.pangle = Body.get_lidar_command_position(1)
+    local ret = chest_lidar_ch:send( mp.pack(meta) )
   end
 end
 
@@ -84,7 +80,7 @@ signal.signal("SIGTERM", shutdown)
 
 -- Begin to service
 assert(#hokuyos>0,"No hokuyos detected!")
-print(colors.wrap('Servicing '..#hokuyos..' Hokuyos'),'green')
+print( util.color('Servicing '..#hokuyos..' Hokuyos','green') )
 
 local main = function()
   local main_cnt = 0

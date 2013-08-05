@@ -23,7 +23,7 @@ local mp         = require'msgpack'
 local Body       = require'Body'
 local util       = require'util'
 local udp_port   = 43288
-local udp_target = 'localhost'
+local udp_target = '192.168.123.23'
 
 -- Sending the mesh replies on zmq or UDP
 local mesh_rep_zmq = simple_ipc.new_publisher'mesh_response'
@@ -84,7 +84,6 @@ local function reply_chest(chest_range)
   chest_mesh_byte:size(2),
   chest_mesh_byte:size(1) )
  
-      
   -- TODO: Associate metadata with this depth image
   local meta_chest = {}
   meta_chest.t = t
@@ -94,10 +93,10 @@ local function reply_chest(chest_range)
 end
 
 ------------------------------
--- Callback functions
+-- Lidar Callback functions
 local function chest_callback()
   
-	local meta, has_more = chest_lidar_ch:receive()
+  local meta, has_more = chest_lidar_ch:receive()
   local metadata = mp.unpack(meta)
   -- Get raw data from shared memory
   local ranges = Body.get_chest_lidar()
@@ -116,6 +115,8 @@ local function head_callback()
   local meta, has_more = head_lidar_ch:receive()
 end
 
+------------------------------
+-- Request Callback functions
 local function zmq_request_callback()
   local request, has_more = mesh_req_zmq:receive()
   local params = mp.unpack(request)
@@ -132,8 +133,25 @@ local function zmq_request_callback()
     util.ptable(params)
   end
 end
-------------------------------
 
+local function udp_request_callback()
+  local request = nil
+  while mesh_req_udp:size()>0 do request = mesh_req_udp:receive() end
+  local params = mp.unpack(request)
+  if params.type=='chest' then
+    jpeg.set_quality( params.quality or 90 )
+    local metadata, payload = reply_chest(params.range or {0.10,5.00})
+    if not metadata then return end
+    metadata.sz = #payload
+    local packet = mp.pack(metadata)..payload
+    mesh_rep_udp:send( packet, #packet )
+    print('Sent a mesh packet!', #packet, #payload )
+  end
+  if params.type=='modify' then
+    print("Modifying")
+    util.ptable(params)
+  end
+end
 ------------------------------
 -- Polling with zeromq
 
@@ -151,6 +169,13 @@ if mesh_req_zmq then
   mesh_req_zmq.callback = zmq_request_callback
   table.insert( wait_channels, mesh_req_zmq )
 end
+if mesh_req_udp then
+  print('Listening on',udp_port)
+  local mesh_req_udp_poll = {}
+  mesh_req_udp_poll.socket_handle = mesh_req_udp:descriptor()
+  mesh_req_udp_poll.callback      = udp_request_callback
+  table.insert( wait_channels, mesh_req_udp_poll )
+end
 local channel_polls = simple_ipc.wait_on_channels( wait_channels )
 
 -- Begin polling
@@ -158,7 +183,7 @@ channel_polls:start()
 --[[
 local channel_timeout = 100;
 while true do
-  local npoll = channel_polls:poll(channel_timeout)
-  if npoll<1 then print'timeout' end
+local npoll = channel_polls:poll(channel_timeout)
+if npoll<1 then print'timeout' end
 end
 --]]

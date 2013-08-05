@@ -39,12 +39,11 @@ local write_command = function(fd, cmd, expected_response)
     local status, ready = unix.select( {fd}, TIMEOUT )
     -- Check the timeout
     if not status then return nil end
-    
-		local response_buf = unix.read(fd)
-		if response then
+    if status>0 then
+      local response_buf = unix.read(fd)
       response = response..response_buf
-			iCmd = response:find(cmd)
-		end
+      iCmd = response:find(cmd)
+    end
     
 		-- Timeout if not finding the response in time
 		local t_diff = unix.time() - t_write

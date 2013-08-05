@@ -7,6 +7,7 @@
 ---------------------------------
 
 dofile'../include.lua'
+--local use_udp = true
 
 -- Libraries
 require 'unix'
@@ -27,18 +28,22 @@ local udp_target = '192.168.123.23'
 
 -- Sending the mesh replies on zmq or UDP
 local mesh_rep_zmq = simple_ipc.new_publisher'mesh_response'
-local mesh_rep_udp = udp.new_sender( udp_target, udp_port )
 -- Receiving LIDAR ranges
 local head_lidar_ch  = simple_ipc.new_subscriber'head_lidar'
 local chest_lidar_ch = simple_ipc.new_subscriber'chest_lidar'
 -- Sending the mesh requests on zmq or UDP
 local mesh_req_zmq   = simple_ipc.new_subscriber'mesh_request'
-local mesh_req_udp   = udp.new_receiver( udp_port )
+
+if use_udp then
+mesh_rep_udp = udp.new_sender( udp_target, udp_port )
+mesh_req_udp   = udp.new_receiver( udp_port )
+end
+
 
 -- Robot-wide used Mesh images parameters
 -- TODO: Contuously use these in LidarFSM
 -- Desired panning resolution
-local chest_res       = vcm.get_chest_lidar_mesh_resolution()
+local chest_res       = vcm.get_chest_lidar_resolution()
 -- Panning endpoints
 local chest_start     = vcm.get_chest_lidar_endpoints()[1]
 local chest_stop      = vcm.get_chest_lidar_endpoints()[2]

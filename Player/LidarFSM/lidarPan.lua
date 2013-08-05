@@ -6,33 +6,19 @@ require'vcm'
 local lidarPan = {}
 lidarPan._NAME = 'lidarPan'
 
--- Timings
-local t_entry = 0 -- When the state was last entered
-local t_update = 0 -- When the state was last updated
-
--- Set up the default min and max pan angles
-local min_pan = vcm.get_chest_lidar_endpoints()[1]
-local max_pan = vcm.get_chest_lidar_endpoints()[2]
-local mid_pan = (max_pan + min_pan) / 2
-local mag_pan = max_pan - min_pan
-
+-- Update the parameters
 local function update_pan_params()
-  min_pan = vcm.get_chest_lidar_endpoints()[1]
-  max_pan = vcm.get_chest_lidar_endpoints()[2]
-  mid_pan = (max_pan + mag_pan) / 2
+  -- Set up the pan boundaries
+  local e = vcm.get_chest_lidar_endpoints()
+  min_pan = e[1]
+  max_pan = e[2]
+  mid_pan = (max_pan + min_pan) / 2
   mag_pan = max_pan - min_pan
+  -- Grab the desired resolution (number of columns)
+  local res = vcm.get_chest_lidar_resolution()[1]
+  -- Complete the scan at this rate
+  ph_speed = 40 / res -- 40 Hz update of the LIDAR
 end
-
--- Set up the pan timing (can reaange order based on needs)
-local ph_duration = 10 -- Number of seconds per pan
-local rad_speed = mag_pan / ph_duration -- radians per second
-local ph_speed = 1/ph_duration -- radians per second
-
--- Assume a starting phase of mid-way
-local ph = .5
--- Assume that we are going forward to start
--- Dir: forward is true, backward is false
-local forward = true
 
 -- Take a phase of the panning scan and return the angle to set the lidar
 -- ph is between 0 and 1
@@ -51,6 +37,7 @@ end
 
 -- Take a given radian and back convert to find the durrent phase
 -- Direction is the side of the mid point, as a boolean (forward is true)
+-- Dir: forward is true, backward is false
 local function radians_to_ph( rad, forward )
   rad = math.max( math.min(rad, max_pan), min_pan )
   return ( rad - min_pan ) / mag_pan, (forward or rad>mid_pan)
@@ -78,7 +65,7 @@ function lidarPan.update()
   -- Get the time of entry
   local t = Body.get_time()
   local t_diff = t - t_update
-  -- Save this at the last update timeå
+  -- Save this at the last update time
   t_update = t
   
   -- Grab the updated pan paramters

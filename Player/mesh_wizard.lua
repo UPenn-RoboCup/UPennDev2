@@ -144,8 +144,12 @@ local function udp_request_callback()
     if not metadata then return end
     metadata.sz = #payload
     local packet = mp.pack(metadata)..payload
-    mesh_rep_udp:send( packet, #packet )
-    print('Sent a mesh packet!', #packet, #payload )
+    local ret, err = mesh_rep_udp:send( packet, #packet )
+    if ret==-1 then
+      print(err)
+    else
+      print( string.format('Sent a %d kB mesh packet!', ret / 1024) )
+    end
   end
   if params.type=='modify' then
     print("Modifying")

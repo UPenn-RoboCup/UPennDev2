@@ -1,7 +1,6 @@
 dofile'include.lua'
 local Body = require'Body'
 local util = require'util'
-local colors = require'colors'
 
 local state_machines = {}
 -- TODO: Make coroutines for each FSM
@@ -14,11 +13,16 @@ end
 
 local entry_str = 'Running'
 for name,_ in pairs(state_machines) do entry_str = entry_str..' '..name end
-print(colors.wrap(entry_str,'green'))
+print(util.color(entry_str,'green'))
 
 -- Start the webots routine
 local t0 = Body.get_time()
 local t_debug = t0
+
+-- Update rate
+local fps = 100
+local us_sleep = 1e6 / fps
+
 Body.entry()
 for _,sm in pairs(state_machines) do sm:entry() end
 while true do
@@ -33,6 +37,10 @@ while true do
   end
   -- NOTE: Body is the main update, so it must not fail
 	Body.update()
+  
+  -- Sleep a bit if not webots
+  if not IS_WEBOTS then unix.usleep(us_sleep) end
+  
 end
 
 Body.exit()

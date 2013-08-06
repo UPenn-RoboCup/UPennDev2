@@ -2,14 +2,14 @@ dofile'../include.lua'
 local openni = require 'openni'
 local signal = require'signal'
 local n_users = openni.startup()
-
 assert(n_users==0,'Should not use skeletons')
 
 -- Verify stream
 local depth_info, color_info = openni.stream_info()
 assert(depth_info.width==320,'Bad depth resolution')
 assert(color_info.width==320,'Bad color resolution')
-print('Verified depth information...')
+
+require'vcm'
 
 --[[
 local jp = require'jpeg'
@@ -44,6 +44,8 @@ while true do
 	
 	-- Acquire the Data
 	local depth, color = openni.update_rgbd()
+  vcm.set_kinect_color(color)
+  vcm.set_kinect_depth(depth)
 	
 	-- Check the time of acquisition
 	local t = unix.time()

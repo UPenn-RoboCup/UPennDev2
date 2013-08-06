@@ -37,10 +37,19 @@ shared.chest_lidar.mesh_resolution = vector.new({500,480})
 shared.chest_lidar.mesh_range      = vector.new({.1,5})
 shared.chest_lidar.mesh_request    = vector.zeros(1)
 
+shared.kinect       = {}
+-- RGB for the kinect
+shared.kinect.color = 3*320*240
+shared.kinect.depth = 3*320*240
+-- Look up table is 262144 bytes
+shared.kinect.lut   = 262144
+shared.kinect.t     = vector.zeros(1)
+
 -- Customize the shared memory size, due to using userdata
 shsize.head_camera = shared.head_camera.image + shared.head_camera.lut + 2^16
 shsize.head_lidar  = shared.head_lidar.scan + 2^16
 shsize.chest_lidar = shared.chest_lidar.scan + 2^16
+shsize.kinect      = shared.kinect.color + shared.kinect.depth + shared.kinect.lut + 2^16
 
 -- Initialize the segment
 memory.init_shm_segment(..., shared, shsize)

@@ -56,10 +56,8 @@ VideoStream* color;
 VideoFrameRef* dframe;
 VideoFrameRef* cframe;
 
-Device* device;
-Recorder recorder;
-Status rc;
-
+Device* device = NULL;
+Recorder* recorder = NULL;
 
 #ifdef USE_NITE_SKELETON
 // Skeleton Updating function
@@ -184,7 +182,12 @@ static int lua_retrieve_joint(lua_State *L) {
 #endif
 
 static int lua_startup(lua_State *L) {
-	
+
+#ifdef DEBUG	
+  fprintf(stdout,"Starting up!\n");
+  fflush(stdout);
+#endif
+  
   if(init==1)
     return luaL_error(L, "Two OpenNI devices not supported yet.\n" );
 	
@@ -194,17 +197,44 @@ static int lua_startup(lua_State *L) {
   const char *logmode = luaL_optstring(L, 2, NULL); // TODO: Add time and date
 	
 #ifdef DEBUG
-  if(file_uri==NULL)
-    printf("Accessing a physical device...\n");
-  else if( logmode==NULL )
-    printf("Accessing log file %s...\n",file_uri);
-  else
-    printf("Recording a physical device to logfile %s\n",file_uri);
+  fprintf(stdout,"Grabbed input...\n");
+  fflush(stdout);
+  
+  if(file_uri){
+    fprintf(stdout,"Accessing a log file...\n"); 
+  } else {
+    fprintf(stdout,"Accessing a physical device...\n"); 
+  }
+  if( logmode ){
+    fprintf(stdout,"Recording log files...\n");
+  } else {
+    fprintf(stdout,"Not recording log file...\n");
+  }
+  fflush(stdout);
 #endif
 	
   // Setup device
+  Status rc;
+
+#ifdef DEBUG
+  fprintf(stdout,"Initializing...\n");
+  fflush(stdout);
+#endif
+  
   rc = OpenNI::initialize();
+
+#ifdef DEBUG
+  fprintf(stdout,"New Device...\n");
+  fflush(stdout);
+#endif
+  
   device = new Device();
+
+#ifdef DEBUG
+  fprintf(stdout,"Checking Device status...\n");
+  fflush(stdout);
+#endif
+  
   if (rc != STATUS_OK)
     return luaL_error(L,"OpenNI failed\n%s\n",OpenNI::getExtendedError());
   if( file_uri!=NULL && logmode==NULL )
@@ -214,6 +244,11 @@ static int lua_startup(lua_State *L) {
   if (rc != STATUS_OK)
     return luaL_error(L,"Device failed\n%s\n",OpenNI::getExtendedError());
 
+#ifdef DEBUG
+  fprintf(stdout,"Starting streams...\n");
+  fflush(stdout);
+#endif
+
   m_streams = new VideoStream[2];
 	
   depth = &m_streams[0];
@@ -222,6 +257,10 @@ static int lua_startup(lua_State *L) {
   cframe = new VideoFrameRef;
 	
   // Setup depth
+#ifdef DEBUG
+  fprintf(stdout,"Create depth stream...\n");
+  fflush(stdout);
+#endif
   if (device->getSensorInfo(SENSOR_DEPTH) == NULL)
     return luaL_error(L,"No depth sensor\n%s\n", OpenNI::getExtendedError());
   rc = depth->create( *device, SENSOR_DEPTH);
@@ -233,7 +272,11 @@ static int lua_startup(lua_State *L) {
   Stream.setVideoMode(mode);
   Stream.setMirroringEnabled(false);
   */
-	
+
+#ifdef DEBUG
+  fprintf(stdout,"Start depth stream...\n");
+  fflush(stdout);
+#endif
   if (rc != STATUS_OK)
     return luaL_error(L,"Depth create\n%s\n", OpenNI::getExtendedError());
   rc = depth->start();
@@ -242,27 +285,65 @@ static int lua_startup(lua_State *L) {
     return luaL_error(L,"Depth start\n%s\n", OpenNI::getExtendedError());
   }
 
+#ifdef DEBUG
+  fprintf(stdout,"Create Color stream...\n");
+  fflush(stdout);
+#endif
+
   // Setup color
   if (device->getSensorInfo(SENSOR_COLOR) == NULL)
     return luaL_error(L,"No color sensor\n%s\n", OpenNI::getExtendedError());
   rc = color->create( *device, SENSOR_COLOR);
   if (rc != STATUS_OK)
     return luaL_error(L,"Color create\n%s\n", OpenNI::getExtendedError());
+  
+#ifdef DEBUG
+  fprintf(stdout,"Start color stream...\n");
+  fflush(stdout);
+#endif
+  
   rc = color->start();
   if (rc != STATUS_OK) {
     color->destroy();
     return luaL_error(L,"Color start\n%s\n", OpenNI::getExtendedError());
   }
-	
+
   // Begin recording
-  if(file_uri!=NULL && logmode!=NULL )
-    recorder.create( file_uri );
-  if( recorder.isValid() ){
-    recorder.attach( *depth );
-    recorder.attach( *color );
-    recorder.start();
+  if(file_uri!=NULL && logmode!=NULL ){
+    
+#ifdef DEBUG
+  fprintf(stdout,"Create recorder...\n");
+  fflush(stdout);
+#endif
+    
+    recorder = new Recorder();
+    recorder->create( file_uri );
+    
+#ifdef DEBUG
+    fprintf(stdout,"Check valid recorder...\n");
+    fflush(stdout);
+#endif
+
+    if( recorder->isValid() ){
+#ifdef DEBUG
+      fprintf(stdout,"Attach recorder...\n");
+      fflush(stdout);
+#endif
+      recorder->attach( *depth );
+      recorder->attach( *color );
+      recorder->start();
+    }
+    
   }
+
+  
+
 	
+#ifdef DEBUG
+  fprintf(stdout,"Begin NiTE...\n");
+  fflush(stdout);
+#endif
+  
 #ifdef USE_NITE_SKELETON
   /* Initialize the Skeleton Tracking system */
   if(use_skeleton==1){
@@ -273,6 +354,12 @@ static int lua_startup(lua_State *L) {
       return luaL_error(L, "Couldn't create user tracker!\n" );
   }
 #endif
+  
+#ifdef DEBUG
+  fprintf(stdout,"Return values...\n");
+  fflush(stdout);
+#endif
+  
   // Push the number of users to be tracked
   if(use_skeleton==1){
     lua_pushinteger( L, MAX_USERS );
@@ -323,6 +410,7 @@ static int lua_stream_info(lua_State *L) {
 
 static int lua_update_rgbd(lua_State *L) {
   int changedIndex;
+  Status rc;
   rc = OpenNI::waitForAnyStream( &m_streams, 2, &changedIndex);
   if (rc != STATUS_OK)
     return luaL_error(L, "Wait failed!\n" );
@@ -335,17 +423,15 @@ static int lua_update_rgbd(lua_State *L) {
   return 2;
 }
 
-
-
 static int lua_skeleton_shutdown(lua_State *L) {
 	
   if(init==0)
     return luaL_error(L, "Cannot shutdown an uninitialized object!\n" );
 	
   // Kill the recorder if being used
-  if( recorder.isValid()==1 ){
-    recorder.stop();
-    recorder.destroy();
+  if( recorder && recorder->isValid()==1 ){
+    recorder->stop();
+    recorder->destroy();
   }
 #ifdef DEBUG
   printf("Done shutting down the recorder\n");
@@ -384,15 +470,14 @@ static int lua_skeleton_shutdown(lua_State *L) {
   fflush(stdout);
 #endif
   
-  /*
-  // Device is closed by the C++ destructor
-  //http://www.openni.org/wp-content/doxygen/html/classopenni_1_1_device.html#a1804e9fe6cd46185f762d01e8d949518
+  
+  // Device is closed by the C++ destructor //http://www.openni.org/wp-content/doxygen/html/classopenni_1_1_device.html#a1804e9fe6cd46185f762d01e8d949518
   device->close();
 #ifdef DEBUG
   printf("Done shutting down the device\n");
   fflush(stdout);
 #endif
-  */
+  
   init = 0;
   lua_pushboolean(L,1);
   return 1;

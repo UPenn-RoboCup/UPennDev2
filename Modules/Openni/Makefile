@@ -1,4 +1,4 @@
-USE_NITE_SKELETON=1
+#USE_NITE_SKELETON=1
 LIBNAME=openni
 include ../../Makefile.inc
 INCLUDES+=-I/usr/local/include/OpenNI2

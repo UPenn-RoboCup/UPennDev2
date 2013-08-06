@@ -18,6 +18,7 @@ local udp        = require'udp'
 local carray     = require'carray'
 local util       = require'util'
 local jpeg       = require'jpeg'
+local png       = require'png'
 -- Use high quality jpeg as the default.  TODO: Grab from vcm
 jpeg.set_quality( 90 )
 local mp         = require'msgpack'
@@ -84,6 +85,13 @@ local function reply_chest(chest_range)
   -- Compress to JPEG for sending over the wire
   -- TODO: We may not wish to JPEG the image in some cases
   chest_mesh_byte:copy( adjusted_range )
+  
+  local pdepth = png.compress(
+  chest_mesh_byte:storage():pointer(),
+  chest_mesh_byte:size(1),
+  chest_mesh_byte:size(2),
+  0 )
+  
   local jdepth = jpeg.compress_gray(
   chest_mesh_byte:storage():pointer(),
   chest_mesh_byte:size(2),
@@ -93,7 +101,7 @@ local function reply_chest(chest_range)
   local meta_chest = {}
   meta_chest.t = t
 
-  return meta_chest, jdepth
+  return meta_chest, pdepth, jdepth
     
 end
 

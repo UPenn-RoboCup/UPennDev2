@@ -7,7 +7,7 @@
 ---------------------------------
 
 dofile'../include.lua'
-local use_udp = true
+--local use_udp = true
 
 -- Libraries
 require 'unix'
@@ -59,7 +59,7 @@ local chest_mesh      = torch.FloatTensor( unpack(chest_res) ):zero()
 local function pan_to_column( rad )
   rad = math.max( math.min(rad, chest_stop), chest_start )
   local ratio = (rad-chest_start)/(chest_stop-chest_start)
-  local col = math.floor(ratio*chest_res[1]+.5)
+  local col = math.floor(ratio*chest_res[2]+.5)
   -- Do not return a column number if out of bounds
   if col>=1 and col<=chest_res[1] then return col end
 end

@@ -43,7 +43,7 @@ if head_hokuyo then
     
     local meta = {}
     meta.count  = head_hokuyo.count
-    meta.hangle = Body.get_head_position()
+    meta.hangle = Body.get_head_command_position()
     local ret = head_lidar_ch:send( mp.pack(meta) )
   end
 end
@@ -60,7 +60,7 @@ if chest_hokuyo then
 
     local meta = {}
     meta.count  = chest_hokuyo.count
-    meta.pangle = Body.get_lidar_position(1)
+    meta.pangle = Body.get_lidar_command_position(1)
     local ret = chest_lidar_ch:send( mp.pack(meta) )
   end
 end

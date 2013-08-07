@@ -83,6 +83,7 @@ local function reply_chest(chest_range,compression)
   -- TODO: Associate metadata with this depth image
   local meta_chest = {}
   meta_chest.t = t
+  meta_chest.res = chest_res
   
   if compression=='png' then
     local pdepth = png.compress(

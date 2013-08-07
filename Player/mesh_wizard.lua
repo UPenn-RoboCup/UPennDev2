@@ -7,7 +7,6 @@
 ---------------------------------
 
 dofile'../include.lua'
---local use_udp = true
 
 -- Libraries
 require 'unix'
@@ -27,19 +26,14 @@ local util       = require'util'
 local udp_port   = 43288
 local udp_target = '192.168.123.23'
 
--- Sending the mesh replies on zmq or UDP
-local mesh_rep_zmq = simple_ipc.new_publisher'mesh_response'
 -- Receiving LIDAR ranges
 local head_lidar_ch  = simple_ipc.new_subscriber'head_lidar'
 local chest_lidar_ch = simple_ipc.new_subscriber'chest_lidar'
--- Sending the mesh requests on zmq or UDP
-local mesh_req_zmq   = simple_ipc.new_subscriber'mesh_request'
-
-if use_udp then
-mesh_rep_udp = udp.new_sender( udp_target, udp_port )
-mesh_req_udp   = udp.new_receiver( udp_port )
-end
-
+-- Sending/Receiving the mesh messages on zmq or UDP
+local mesh_rep_zmq   = simple_ipc.new_publisher'from_mesh'
+local mesh_req_zmq   = simple_ipc.new_subscriber'to_mesh'
+local mesh_rep_udp   = udp.new_sender( udp_target, udp_port )
+local mesh_req_udp   = udp.new_receiver( udp_port )
 
 -- Robot-wide used Mesh images parameters
 -- TODO: Contuously use these in LidarFSM
@@ -65,7 +59,7 @@ local function pan_to_column( rad )
   if col>=1 and col<=chest_res[1] then return col end
 end
 
-local function reply_chest(chest_range)
+local function reply_chest(chest_range,compression)
   
   -- Safety check
   if chest_range[1]>=chest_range[2] then return end
@@ -86,23 +80,26 @@ local function reply_chest(chest_range)
   -- TODO: We may not wish to JPEG the image in some cases
   chest_mesh_byte:copy( adjusted_range )
   
-  local pdepth = png.compress(
-  chest_mesh_byte:storage():pointer(),
-  chest_mesh_byte:size(1),
-  chest_mesh_byte:size(2),
-  0 )
+  -- TODO: Associate metadata with this depth image
+  local meta_chest = {}
+  meta_chest.t = t
+  
+  if compression=='png' then
+    local pdepth = png.compress(
+    chest_mesh_byte:storage():pointer(),
+    chest_mesh_byte:size(1),
+    chest_mesh_byte:size(2),
+    0 )
+    return meta_chest, pdepth
+  end
   
   local jdepth = jpeg.compress_gray(
   chest_mesh_byte:storage():pointer(),
   chest_mesh_byte:size(2),
   chest_mesh_byte:size(1) )
- 
-  -- TODO: Associate metadata with this depth image
-  local meta_chest = {}
-  meta_chest.t = t
-
-  return meta_chest, pdepth, jdepth
-    
+  
+  return meta_chest, jdepth
+  
 end
 
 ------------------------------
@@ -133,10 +130,14 @@ end
 local function zmq_request_callback()
   local request, has_more = mesh_req_zmq:receive()
   local params = mp.unpack(request)
-  if params.type=='chest' then
+  if params.loc=='chest' then
     jpeg.set_quality( params.quality or 90 )
-    local metadata, payload = reply_chest(params.range or {0.10,5.00})
+    local metadata, payload = reply_chest(
+    params.range or {0.10,5.00},
+    params.compression or 'png')
+    
     if not metadata then return end
+    --metadata.type='mesh'
     local meta = mp.pack(metadata)
     mesh_rep_zmq:send( {meta, payload} )
     print('Sent a mesh!', #meta, #payload)

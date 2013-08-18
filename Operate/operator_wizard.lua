@@ -2,6 +2,7 @@ dofile'include.lua'
 local simple_ipc = require'simple_ipc'
 local util = require'util'
 local mp = require'msgpack'
+local quaternion = require'quaternion'
 
 -- Listen for mesh requests on both zmq and udp
 local zmq_send_ch = simple_ipc.new_publisher'from_operator'
@@ -16,7 +17,7 @@ local function p_telekinesis()
   local current = zmq_recv_tk_ch:receive()
   local msg = {}
   msg.pos = tkcm.get_drill_position()
-  msg.rot = tkcm.get_drill_orientation()
+  msg.q = tkcm.get_drill_orientation()
   msg.t   = tkcm.get_drill_t()
   msg.tool=current
   zmq_send_ch:send( mp.pack(msg) )

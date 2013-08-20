@@ -43,7 +43,7 @@ function shutdown()
   openni.shutdown()
   error('Finished!')
 end
-signal.signal("SIGINT", shutdown)
+signal.signal("SIGINT",  shutdown)
 signal.signal("SIGTERM", shutdown)
 
 -- Start loop

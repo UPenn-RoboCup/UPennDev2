@@ -4,7 +4,6 @@
 ---------------------------------------------------------------------------
 local memory = require'memory'
 local vector = require'vector'
-
 -- TODO: Use the Config file somehow
 
 -- shared properties
@@ -35,7 +34,7 @@ shared.head_lidar.mesh_resolution = vector.new({500,480})
 -- Care only about ranges between these two points to include in the mesh
 shared.head_lidar.mesh_range      = vector.new({.1,5})
 -- UDP Stream Mode | 0: None, 1: Raw, 2: JPEG, 3: PNG, 4: ZLIB
-shared.head_lidar.stream    = vector.zeros(1)
+shared.head_lidar.mesh_stream    = vector.new({2})
 
 ------------------------
 --  Chest LIDAR
@@ -48,9 +47,10 @@ shared.chest_lidar.endpoints       = vector.new({-.5,.5})
 -- Pixel resolution of the mesh from actuated lidar scans
 shared.chest_lidar.mesh_resolution = vector.new({500,480})
 -- Care only about ranges between these two points to include in the mesh
-shared.chest_lidar.mesh_range      = vector.new({.1,5})
+-- {Near in meters, Far in meters, Quality}
+shared.chest_lidar.mesh_range      = vector.new({.1,5,80})
 -- UDP Stream Mode | 0: None, 1: Raw, 2: JPEG, 3: PNG, 4: ZLIB
-shared.chest_lidar.stream    = vector.zeros(1)
+shared.chest_lidar.mesh_stream    = vector.new({2})
 
 ------------------------
 --  Kinect
@@ -76,3 +76,5 @@ shsize.kinect      = shared.kinect.lut + 2^16
 ------------------------
 -- Initialize the segment
 memory.init_shm_segment(..., shared, shsize)
+
+return STREAM

@@ -4,8 +4,12 @@ local rep = simple_ipc.new_replier'test'
 local reply = 'world'
 
 while true do
-  local reply, has_more = rep:receive()
-  print('Request: ', reply, has_more)
+  local request, has_more = rep:receive()
+  print('Request: ', request, has_more)
+  if has_more then
+    request2, has_more = rep:receive()
+    print('Request2: ', request2, has_more)
+  end
 
   print('Replying',reply)
   local ret = rep:send(reply)

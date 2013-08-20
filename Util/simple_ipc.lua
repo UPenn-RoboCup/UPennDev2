@@ -265,7 +265,6 @@ simple_ipc.new_replier = function( channel, filter, addr )
   local rc = channel_obj.socket_handle:bind( channel_obj.name )
   -- Store the filter
   channel_obj.filter = filter or ''
-  --channel_obj.socket_handle:setopt( zmq.SUBSCRIBE, channel_obj.filter, 0 )
 
   -- Set up the sending object
   function channel_obj.send( self, messages )

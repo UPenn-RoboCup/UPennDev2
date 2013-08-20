@@ -238,7 +238,7 @@ simple_ipc.new_requester = function( channel, filter )
   return channel_obj
 end
 
-simple_ipc.new_replier = function( channel, filter, addr )
+simple_ipc.new_replier = function( channel, addr )
   local channel_obj = {}
   local channel_type = type(channel)
   if channel_type=="string" then
@@ -247,7 +247,7 @@ simple_ipc.new_replier = function( channel, filter, addr )
     channel_obj.name = 
 			simple_ipc.intercom_prefix:gsub('*',addr or 'localhost')..channel
   else
-    print('Bad input to new_replier!',channel,filter)
+    print('Bad input to new_replier!',channel,addr)
     return
   end
 
@@ -263,16 +263,14 @@ simple_ipc.new_replier = function( channel, filter, addr )
 
   -- Connect to a message pipeline
   local rc = channel_obj.socket_handle:bind( channel_obj.name )
-  -- Store the filter
-  channel_obj.filter = filter or ''
+  assert(rc,'Bad bind! '..channel_obj.name)
 
   -- Set up the sending object
   function channel_obj.send( self, messages )
     if type(messages) == "string" then
-      return self.socket_handle:send( self.filter..messages )
+      return self.socket_handle:send( messages )
     end
     local nmessages = #messages
-    local filter = self.filter
     for i=1,nmessages do
       local msg = messages[i]
       -- TODO: Does this slow the process by a noticeable margin?
@@ -281,9 +279,9 @@ simple_ipc.new_replier = function( channel, filter, addr )
       self.name, type(msg) )
       )
       if i==nmessages then
-        return self.socket_handle:send( filter..msg )
+        return self.socket_handle:send( msg )
       else
-        ret = self.socket_handle:send( filter..msg, zmq.SNDMORE )
+        ret = self.socket_handle:send( msg, zmq.SNDMORE )
       end
     end
   end

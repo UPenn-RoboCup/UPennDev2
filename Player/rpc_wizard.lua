@@ -1,11 +1,13 @@
 dofile'include.lua'
 local mp = require'msgpack'
 local simple_ipc = require'simple_ipc'
-local rep = simple_ipc.new_replier'test'
+--local rep = simple_ipc.new_replier'test'
+local rep = simple_ipc.new_replier(5555,'*')
 local util = require'util'
 
 -- TODO: Require all necessary modules
 require'vcm'
+require'jcm'
 
 while true do
 	repeat

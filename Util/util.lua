@@ -190,6 +190,15 @@ function util.ptable(t)
   for k,v in pairs(t) do print(k,v) end
 end
 
+function util.stable(t)
+  local str = ''
+  for k,v in pairs(t) do
+    str=string.format('\n%s\n%s\t%s',str,tostring(k),tostring(v))
+  end
+  -- Remove initial '\n'
+  return str:sub(1)
+end
+
 function util.ptorch(data, W, Precision)
   local w = W or 5
   local precision = Precision or 10

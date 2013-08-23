@@ -1,7 +1,7 @@
 module(..., package.seeall)
 local vector = require('vector')
 local unix = require 'unix'
-
+local RAD = math.pi/180
 ----------------------------------------------------
 -- Kneeling parameters
 ----------------------------------------------------
@@ -235,3 +235,20 @@ stance.dpLimitStance = vector.new({.4, .3, .4, .05, .4, .1})*0.6
 stance.dpLimitStance = vector.new({.04, .03, .07, .4, .4, .4})
 stance.dpLimitSit = vector.new({.1,.01,.06,.1,.3,.1})*2
 stance.delay = 80 
+
+-- For the arm FSM
+arm = {}
+arm.qLArmInit={
+vector.new({90,0,90,-0,-90,0})*RAD,
+vector.new({90,90,90,-90,-90,0})*RAD,
+vector.new({0,90,90,-90,-90,-45})*RAD,
+}
+
+arm.qRArmInit={
+vector.new({90,-0,-90,-0,90,0})*RAD,
+vector.new({90,-90,-90,-90,90,0})*RAD,
+vector.new({0,-90,-90,-90,90,45})*RAD,
+}
+
+arm.FingerClosed = 0.9
+arm.FingerOpen = 0.1

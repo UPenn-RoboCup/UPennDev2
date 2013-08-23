@@ -4,6 +4,8 @@ state._NAME = 'armIdle'
 local Config     = require'Config'
 local Body       = require'Body'
 
+local timeout = 10.0
+
 local t_entry, t_update, t_finish
 
 local qLArmInit = Config.arm.qLArmInit
@@ -20,11 +22,15 @@ function state.entry()
   -- Move the arms to the Idle position
   -- TODO: Is this the best implementation?
 
+-- TODO: This state machine should implement these methods,
+-- and not the Body
+--[[
   Body.enable_larm_linear_movement(false) 
   Body.set_larm_target_position(qLArmInit[1])
   Body.set_rarm_target_position(qRArmInit[1])
   Body.set_lhand_position(Config.arm.FingerOpen)
   Body.set_rhand_position(Config.arm.FingerOpen)
+  --]]
 end
 
 function state.update()
@@ -42,3 +48,5 @@ function state.exit()
   print(state._NAME..' Exit' )
 
 end
+
+return state

@@ -6,9 +6,6 @@ local Body       = require'Body'
 local util       = require'util'
 local t_entry, t_update, t_finish
 
-require('lcm')
-require('unix')
-
 local qLArmInit = Config.arm.qLArmInit 
 local qRArmInit = Config.arm.qRArmInit 
 
@@ -78,3 +75,5 @@ end
 function state.exit()
   print(state._NAME..' Exit' )
 end
+
+return state

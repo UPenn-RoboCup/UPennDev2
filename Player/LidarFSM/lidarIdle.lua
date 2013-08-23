@@ -4,7 +4,7 @@ local lidarIdle = {}
 lidarIdle._NAME = 'lidarIdle'
 
 function lidarIdle.entry()
-  print(_NAME..' Entry' ) 
+  print(lidarIdle._NAME..' Entry' ) 
 end
 
 function lidarIdle.update()
@@ -13,7 +13,7 @@ function lidarIdle.update()
 end
 
 function lidarIdle.exit()
-  print(_NAME..' Exit' ) 
+  print(lidarIdle._NAME..' Exit' ) 
 end
 
 return lidarIdle

@@ -7,6 +7,11 @@ tDelta = .001*timeStep;
 imuAngle = {0, 0, 0};
 aImuFilter = 1 - math.exp(-tDelta/0.5);
 
+--Different timestep for sensors!!!!
+tStep_camera = 33;
+tStep_lidar = 25;
+
+
 -- Get webots tags:
 tags = {};
 
@@ -89,6 +94,20 @@ tags.gps = controller.wb_robot_get_device("GPS");
 controller.wb_gps_enable(tags.gps, timeStep);
 tags.compass = controller.wb_robot_get_device("Compass");
 controller.wb_compass_enable(tags.compass, timeStep);
+
+--ENABLE LIDAR
+print("a")
+tags.chestLidar = controller.wb_robot_get_device("ChestLidar");
+controller.wb_camera_enable(tags.chestLidar,tStep_lidar);
+
+
+tags.headLidar = controller.wb_robot_get_device("HeadLidar");
+controller.wb_camera_enable(tags.headLidar,tStep_lidar);
+
+--tStep_camera = 33;
+--tStep_lidar = 25;
+
+
 
 
 controller.wb_robot_step(timeStep);

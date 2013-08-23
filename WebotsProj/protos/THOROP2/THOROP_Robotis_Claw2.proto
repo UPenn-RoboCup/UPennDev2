@@ -88,8 +88,12 @@ Robot {
         Solid{
           rotation 0 0 1 1.57
 	        children [ 
-            hokuyo{
+            hokuyo2{
+#plus minus 60 degree, 240+1+240 rays
               name "ChestLidar"
+					    maxRange 5
+						  width 481
+							fieldOfView 2.094
 						}
           ]
           physics Physics{
@@ -98,7 +102,7 @@ Robot {
 				  } 
         }
       ]
-      name "ChestLidar"
+      name "ChestLidarYaw"
       physics Physics {
         density -1
         mass 0.2
@@ -1242,10 +1246,11 @@ Robot {
           translation 0 0.161 0
           rotation -1 0 0 -0.17
           children [
-            hokuyo{
+            hokuyo2{
 						  rotation 0 1 0 3.14159
 #              translation 0 0.072 0.0785
               translation 0 0.1 0
+						  maxRange 5
               name "HeadLidar"
 						}
             Camera {

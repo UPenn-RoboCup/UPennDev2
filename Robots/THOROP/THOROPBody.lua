@@ -710,14 +710,15 @@ if IS_WEBOTS then
 		webots.wb_camera_enable(tags.kinect, timeStep)
 		--]]
     -- TODO: Copy the lidar readings to shm on each iteration
+    local lidar_timeStep = 25
 		-- Chest Lidar
 		tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
-		webots.wb_camera_enable(tags.chest_lidar, timeStep)
+		webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
     chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
     chest_lidar_wbt.meta.count = 0
     -- Head Lidar
 		tags.head_lidar  = webots.wb_robot_get_device("HeadLidar")
-		webots.wb_camera_enable(tags.head_lidar, timeStep)
+		webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
     head_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
     head_lidar_wbt.meta.count = 0
 

@@ -14,14 +14,14 @@ local t_entry, t_update
 
 -- Walk Parameters
 -- Stance and velocity limit values
-stanceLimitX=Config.walk.stanceLimitX or {-0.10 , 0.10}
-stanceLimitY=Config.walk.stanceLimitY or {0.09 , 0.20}
-stanceLimitA=Config.walk.stanceLimitA or {-0*math.pi/180, 40*math.pi/180}
-velLimitX = Config.walk.velLimitX or {-.06, .08}
-velLimitY = Config.walk.velLimitY or {-.06, .06}
-velLimitA = Config.walk.velLimitA or {-.4, .4}
-velDelta = Config.walk.velDelta or {.03,.015,.15}
-vaFactor = Config.walk.vaFactor or 0.6
+local stanceLimitX = Config.walk.stanceLimitX or {-0.10 , 0.10}
+local stanceLimitY = Config.walk.stanceLimitY or {0.09 , 0.20}
+local stanceLimitA = Config.walk.stanceLimitA or {-0*math.pi/180, 40*math.pi/180}
+local velLimitX = Config.walk.velLimitX or {-.06, .08}
+local velLimitY = Config.walk.velLimitY or {-.06, .06}
+local velLimitA = Config.walk.velLimitA or {-.4, .4}
+local velDelta = Config.walk.velDelta or {.03,.015,.15}
+local vaFactor = Config.walk.vaFactor or 0.6
 
 velXHigh = Config.walk.velXHigh or 0.06
 velDeltaXHigh = Config.walk.velDeltaXHigh or 0.01
@@ -53,14 +53,14 @@ hardnessArm0 = Config.walk.hardnessArm or 0.2
 hardnessArm = Config.walk.hardnessArm or 0.2
 
 --Gait parameters
-tStep0 = Config.walk.tStep
-tStep = Config.walk.tStep
-tZmp = Config.walk.tZmp
-stepHeight0 = Config.walk.stepHeight
-stepHeight = Config.walk.stepHeight
-ph1Single = Config.walk.phSingle[1]
-ph2Single = Config.walk.phSingle[2]
-ph1Zmp,ph2Zmp=ph1Single,ph2Single
+local tStep0 = Config.walk.tStep
+local tStep = Config.walk.tStep
+local tZmp = Config.walk.tZmp
+local stepHeight0 = Config.walk.stepHeight
+local stepHeight = Config.walk.stepHeight
+local ph1Single = Config.walk.phSingle[1]
+local ph2Single = Config.walk.phSingle[2]
+local ph1Zmp,ph2Zmp=ph1Single,ph2Single
 
 --Compensation parameters
 hipRollCompensation = Config.walk.hipRollCompensation
@@ -547,7 +547,7 @@ function walk.stance_reset() --standup/sitdown/falldown handling
   uTorso1, uTorso2 = uTorso, uTorso
   uSupport = uTorso
   tLastStep=Body.get_time()
-  walkKickRequest = 0 
+  walkKickRequest = 0
   iStep0 = -1
   iStep = 0
   current_step_type=0

@@ -78,9 +78,8 @@ function state.update()
     --Body.set_lleg_hardness(hardnessLeg)
     --Body.set_rleg_hardness(hardnessLeg)
     started = true
-    print('pTorso',pTorso)
   end
-  print(pTorso,'pTorso')
+  
   -- Ensure that we do not move motors too quickly
   local dpDeltaMax = Config.stance.dpLimitStance * dt
   local dpTorso    = pTorsoTarget - pTorso  

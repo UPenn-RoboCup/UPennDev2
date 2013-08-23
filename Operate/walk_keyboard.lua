@@ -13,21 +13,49 @@ local unix  = require'unix'
 local getch = require'getch'
 local mp    = require'msgpack'
 local util  = require'util'
+local vector  = require'vector'
 local Body  = require'Body'
 -- Keypresses for walking
 local simple_ipc = require'simple_ipc'
 local motion_events = simple_ipc.new_publisher('fsm_motion',true)
+require'mcm'
+
+local char_to_event = {
+  ['7'] = 'sit',
+  ['8'] = 'stand',
+  ['9'] = 'walk',
+}
+
+local char_to_vel = {
+  ['i'] = vector.new({0.1, 0, 0}),
+  ['k'] = vector.new({-.1, 0, 0}),
+  ['j'] = vector.new({0, 0.1, 0}),
+  ['l'] = vector.new({0, -.1, 0}),
+  ['u'] = vector.new({0, 0, 5})*math.pi/180,
+  ['o'] = vector.new({0, 0, 5})*math.pi/180,
+  ['0'] = function() mcm.set_walk_vel({0,0,0}) end
+}
 
 local function process_character(key_code,key_char,key_char_lower)
-  local evt_str
-  if key_char_lower=='8' then
-    evt_str = 'stand'
-  end
+  local evt_str = char_to_event[key_char_lower]
   if evt_str then
+    print( util.color(evt_str,'yellow') )
     motion_events:send(evt_str)
-    return evt_str
+    return
   end
-  return'Bad event'
+
+  local vel_adjustment = char_to_vel[key_char_lower]
+  if type(vel_adjustment)=='table' then
+    mcm.set_walk_vel(vel_adjustment+mcm.get_walk_vel())
+    print( util.color('Inc vel by','yellow'), vel_adjustment, 'to', mcm.get_walk_vel() )
+    return
+  elseif type(vel_adjustment)=='function' then
+    local cur = mcm.get_walk_vel()
+    vel_adjustment()
+    print( util.color('Vel from','yellow'), cur, 'to', mcm.get_walk_vel() )
+    return
+  end
+  print( util.color('Bad event','red') )
 end
 
 ------------
@@ -57,12 +85,5 @@ while true do
     key_code,key_char,key_char_lower) )
     print('Response time:',t_diff)
   end
-  
-  -- http://lua-users.org/lists/lua-l/2009-12/msg00937.html
-  -- Print result of the key press
-  os.execute("clear")
-  --print( state_msg() )
-  --print()
-  print(key_code..':', util.color(msg,'yellow'))
     
 end

@@ -14,4 +14,15 @@ local sm = fsm.new( lidarPan,lidarIdle )
 sm:set_transition( lidarPan,  'stop',  lidarIdle )
 sm:set_transition( lidarIdle, 'start', lidarPan  )
 
-return sm
+local obj = {}
+obj.entry = function()
+  sm:entry()
+end
+obj.update = function()
+  sm:update()
+end
+obj.update = function()
+  sm:exit()
+end
+
+return obj

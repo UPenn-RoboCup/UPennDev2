@@ -46,7 +46,7 @@ end
 
 -- Make a new publisher
 -- Publish with a filter prefix on a (possibly) pre-existing channel
-simple_ipc.new_publisher = function( channel, filter )
+simple_ipc.new_publisher = function( channel, inverted, filter )
   local channel_obj = {}
   local channel_type = type(channel)
   if channel_type=="string" then
@@ -77,7 +77,7 @@ simple_ipc.new_publisher = function( channel, filter )
   assert( channel_obj.socket_handle )
 
   -- Bind to a message pipeline
-  -- TODO: connect?
+  if inverted
   channel_obj.socket_handle:bind( channel_obj.name )
 
   -- Set the filter for sending messages

@@ -31,4 +31,19 @@ sm:set_transition(motionSit, 'done',    motionRelax)
 sm:set_transition(motionSit, 'standup', motionStance)
 --]]
 
-return sm
+
+
+local obj = {}
+obj.entry = function()
+  sm:entry()
+end
+obj.update = function()
+  -- Check for out of process events
+  
+  sm:update()
+end
+obj.update = function()
+  sm:exit()
+end
+
+return object

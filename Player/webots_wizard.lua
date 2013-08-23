@@ -24,13 +24,13 @@ local fps = 100
 local us_sleep = 1e6 / fps
 
 Body.entry()
-for _,sm in pairs(state_machines) do sm:entry() end
+for _,sm in pairs(state_machines) do sm.entry() end
 while true do
   local t = Body.get_time()
   local t_diff = t-t_debug
   
   -- Update each state machine
-  for _,sm in pairs(state_machines) do sm:update() end
+  for _,sm in pairs(state_machines) do sm.update() end
   
   if t_diff>1 then
 	  print( string.format('Running Time: %d seconds',t-t0) )

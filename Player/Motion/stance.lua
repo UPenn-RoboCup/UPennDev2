@@ -15,10 +15,7 @@ stance._NAME = ...
 
 local active = true;
 local t0 = 0;
- 
-local footX = Config.walk.footX or 0;
-local footY = Config.walk.footY;
-local supportX = Config.walk.supportX;
+
 local bodyHeight = Config.walk.bodyHeight;
 local bodyTilt=Config.walk.bodyTilt;
 local qLArm = Config.walk.qLArm;
@@ -40,10 +37,9 @@ function stance.entry()
   print("Motion SM:"..stance._NAME.." entry");
 
   -- Final stance foot position6D
-  pTorsoTarget = vector.new({-mcm.get_footX(), 0, bodyHeight, 
-		0,bodyTilt,0});
-  pLLeg = vector.new({-supportX , footY, 0, 0,0,0});
-  pRLeg = vector.new({-supportX , -footY, 0, 0,0,0});
+  pTorsoTarget = vector.new({-mcm.get_footX(), 0, bodyHeight, 0,bodyTilt,0})
+  pLLeg = vector.new({-Config.walk.supportX, Config.walk.footY, 0, 0,0,0})
+  pRLeg = vector.new({-Config.walk.supportX, -Config.walk.footY, 0, 0,0,0})
 
   Body.set_syncread_enable(1); 
   started=false; 

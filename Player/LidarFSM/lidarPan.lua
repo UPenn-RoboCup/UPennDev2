@@ -62,7 +62,7 @@ end
 function lidarPan.update()
   --print(lidarPan._NAME..' Update' )
 
-  -- Get the time of entry
+  -- Get the time of update
   local t = Body.get_time()
   local t_diff = t - t_update
   -- Save this at the last update time

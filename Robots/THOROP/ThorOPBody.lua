@@ -368,13 +368,13 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
       -- If val is a number to set all limb joints
       if type(val)=='number' then
         local values = {}
-        for i,idx in ipairs(jlist) do values[i]=radian_clamp(jlist[idx],val) end
-        return Body['set_actuator_'..actuator](values,a,b)
+        for i,idx in ipairs(jlist) do values[i]=radian_clamp(idx,val) end
+        return Body['set_actuator_'..actuator](values,a)
       end
       -- If val is a set of values for each limb joints
-      assert(#val==b-a+1,'Must set the exact number of limb joints!')
+      --assert(#val==b-a+1,'Must set the exact number of limb joints!')
       for i,idx in ipairs(jlist) do val[i]=radian_clamp(idx,val[i]) end
-  		return Body['set_actuator_'..actuator](val,a,b)
+  		return Body['set_actuator_'..actuator](val,a)
   	end -- Set
   end -- anthropomorphic
   --------------------------------
@@ -473,6 +473,30 @@ Body.set_rgrip_percent = function( percent )
 		jcm.actuatorPtr.command_position[idx] = radian
 	end
 end
+
+
+
+
+--------------------------------
+-- TODO: Hardness
+Body['set_actuator_hardness'] = function(val,idx)
+-- TODO
+end
+Body['get_actuator_hardness'] = function(idx,idx2)
+  -- TODO
+end
+for part,jlist in pairs( parts ) do
+	Body['get_'..part:lower()..'_hardness'] = function(idx)
+    -- TODO
+	end -- Get
+	Body['set_'..part:lower()..'_hardness'] = function(val,idx)
+		-- TODO
+	end -- Set
+end -- anthropomorphic
+--------------------------------
+
+
+
 
 ----------------------
 -- Inverse Kinematics
@@ -854,8 +878,8 @@ if IS_WEBOTS then
 		end
     
     -- Set lidar data into shared memory
-	Body.set_chest_lidar(chest_lidar_wbt.pointer)
-	Body.set_head_lidar(head_lidar_wbt.pointer)
+    Body.set_chest_lidar(chest_lidar_wbt.pointer)
+    Body.set_head_lidar(head_lidar_wbt.pointer)
 	
     head_lidar_wbt.meta.count  = head_lidar_wbt.meta.count  + 1
     head_lidar_wbt.meta.hangle = Body.get_head_command_position()
@@ -906,5 +930,7 @@ Body.motor_parts = motor_parts
 Body.servo = servo
 Body.make_joint_step = make_joint_step
 Body.make_joint_radian = make_joint_radian
+
+Body.Kinematics = Kinematics
 
 return Body

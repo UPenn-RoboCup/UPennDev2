@@ -7,7 +7,6 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 15
-  displayRefresh 3
 }
 Viewpoint {
   orientation -0.570406 -0.772963 -0.277786 1.12441
@@ -66,6 +65,5 @@ WoodBox {
 THOROP_Robotis_Claw {
   translation 0 1.168 0
   controller "thor"
-#  controller "void"
   controllerArgs "0 98"
 }

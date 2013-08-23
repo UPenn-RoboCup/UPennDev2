@@ -95,6 +95,9 @@ controller.wb_camera_enable(tags.chestLidar,tStep_lidar);
 tags.headLidar = controller.wb_robot_get_device("HeadLidar");
 controller.wb_camera_enable(tags.headLidar,tStep_lidar);
 
+tags.camera = controller.wb_robot_get_device("Camera");
+controller.wb_camera_enable(tags.camera,tStep_camera);
+
 --tStep_camera = 33;
 --tStep_lidar = 25;
 

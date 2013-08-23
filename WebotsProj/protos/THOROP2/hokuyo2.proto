@@ -12,6 +12,9 @@ PROTO hokuyo2 [
   field SFRotation rotation  0 1 0 3.14
   field SFString name "UTM-30LX"
   field SFFloat noise 0.0
+  field SFFloat fieldOfView 4.71238
+  field SFInt32 width 1081
+  field SFFloat maxRange 30
 ]
 {
 Camera {
@@ -3872,8 +3875,9 @@ Camera {
     density -1
     mass 0.37
   }
-  fieldOfView 4.71238
-  width 1081
+  fieldOfView IS fieldOfView
+  width IS width
+  maxRange IS maxRange
   height 1
   type "range-finder"
   spherical TRUE

@@ -15,13 +15,6 @@ tStep_lidar = 25;
 -- Get webots tags:
 tags = {};
 
-print("USINGTHISBODY")
-print("USINGTHISBODY")
-print("USINGTHISBODY")
-print("USINGTHISBODY")
-print("USINGTHISBODY")
-print("USINGTHISBODY")
-
 --For ROBOTIS model
 -- THOR-OP2 joint names in webots
 jointNames = {"Neck","Head",
@@ -32,7 +25,7 @@ jointNames = {"Neck","Head",
 			  "TorsoPitch","TorsoYaw",
 	      "l_wrist_grip1","l_wrist_grip2",
 	      "r_wrist_grip1","r_wrist_grip2",
-				"ChestLidar",
+				"ChestLidarYaw",
              };
 
 nJoint = #jointNames;
@@ -96,10 +89,8 @@ tags.compass = controller.wb_robot_get_device("Compass");
 controller.wb_compass_enable(tags.compass, timeStep);
 
 --ENABLE LIDAR
-print("a")
 tags.chestLidar = controller.wb_robot_get_device("ChestLidar");
 controller.wb_camera_enable(tags.chestLidar,tStep_lidar);
-
 
 tags.headLidar = controller.wb_robot_get_device("HeadLidar");
 controller.wb_camera_enable(tags.headLidar,tStep_lidar);

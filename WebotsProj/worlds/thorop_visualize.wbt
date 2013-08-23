@@ -6,8 +6,8 @@ WorldInfo {
     "Webpage: http://www.robotstadium.org"
   ]
   title "Robotstadium"
-  basicTimeStep 40
-  displayRefresh 2
+  basicTimeStep 15
+  FPS 15
 }
 Viewpoint {
   orientation -0.72 0.68 0.04 0.17

@@ -5,7 +5,7 @@ local util = require'util'
 local state_machines = {}
 -- TODO: Make coroutines for each FSM
 for _,sm in ipairs(unix.readdir(CWD)) do
-  if sm:find('LidarFSM') or sm:find('MotionFSM') then
+  if sm:find('LidarFSM') or sm:find('MotionFSM') or sm:find('ArmFSM') then
     package.path = CWD..'/'..sm..'/?.lua;'..package.path
     state_machines[sm] = require(sm)
   end

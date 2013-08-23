@@ -1,7 +1,7 @@
 require'mcm'
 local Config     = require'Config'
-local util       = require'util'
 local Body       = require'Body'
+local util       = require'util'
 local K          = Body.Kinematics
 local timeout    = 20.0
 local t_readings = 0.20
@@ -17,7 +17,7 @@ local state = {}
 state._NAME = 'motionStance'
 
 function state.entry()
-  print(state._NAME..' Entry' ) 
+  print(state._NAME..' Entry' )
 
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called

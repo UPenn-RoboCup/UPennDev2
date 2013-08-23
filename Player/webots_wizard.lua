@@ -23,10 +23,6 @@ local t_debug = t0
 local fps = 100
 local us_sleep = 1e6 / fps
 
--- Keypresses for walking
-local simple_ipc = require'simple_ipc'
-local evts = simple_ipc.new_publisher('fsm_motion',true)
-
 Body.entry()
 for _,sm in pairs(state_machines) do sm.entry() end
 while true do
@@ -45,10 +41,6 @@ while true do
   
   -- Sleep a bit if not webots
   if not IS_WEBOTS then unix.usleep(us_sleep) end
-
-  if IS_WEBOTS then
-    get_walk_char()
-  end
   
 end
 

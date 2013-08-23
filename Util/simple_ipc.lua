@@ -46,7 +46,7 @@ end
 
 -- Make a new publisher
 -- Publish with a filter prefix on a (possibly) pre-existing channel
-simple_ipc.new_publisher = function( channel, inverted, filter )
+simple_ipc.new_publisher = function( channel, inverted, addr, filter )
   local channel_obj = {}
   local channel_type = type(channel)
   if channel_type=="string" then
@@ -111,7 +111,7 @@ simple_ipc.new_publisher = function( channel, inverted, filter )
 end
 
 -- Make a new subscriber
-simple_ipc.new_subscriber = function( channel, filter, addr )
+simple_ipc.new_subscriber = function( channel, inverted, filter, addr )
   local channel_obj = {}
   local channel_type = type(channel)
   if channel_type=="string" then

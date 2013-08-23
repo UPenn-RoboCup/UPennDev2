@@ -2,6 +2,9 @@
 local Config = require'Config'
 -- Use the fsm module
 local fsm = require'fsm'
+-- Simple IPC for remote state triggers
+local simple_ipc = require'simple_ipc'
+local evts = simple_ipc.new_subscriber('fsm_motion',true)
 
 -- Require the needed states
 local motionRelax  = require'motionRelax'
@@ -36,12 +39,13 @@ obj.entry = function()
   sm:entry()
 end
 obj.update = function()
-  -- Check for out of process events
-  
+  -- Check for out of process events in non-blocking
+  local event, has_more = evts:receive(true)
+  if event then print('Motion Event:',event) end
   sm:update()
 end
-obj.update = function()
+obj.exit = function()
   sm:exit()
 end
 
-return object
+return obj

@@ -21,7 +21,7 @@ end
 obj.update = function()
   sm:update()
 end
-obj.update = function()
+obj.exit = function()
   sm:exit()
 end
 

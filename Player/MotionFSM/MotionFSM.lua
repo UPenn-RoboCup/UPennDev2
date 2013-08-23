@@ -31,8 +31,6 @@ sm:set_transition(motionSit, 'done',    motionRelax)
 sm:set_transition(motionSit, 'standup', motionStance)
 --]]
 
-
-
 local obj = {}
 obj.entry = function()
   sm:entry()

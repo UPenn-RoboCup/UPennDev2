@@ -77,8 +77,11 @@ simple_ipc.new_publisher = function( channel, inverted, filter )
   assert( channel_obj.socket_handle )
 
   -- Bind to a message pipeline
-  if inverted
-  channel_obj.socket_handle:bind( channel_obj.name )
+  if inverted then
+    channel_obj.socket_handle:connect( channel_obj.name )
+  else
+    channel_obj.socket_handle:bind( channel_obj.name )
+  end
 
   -- Set the filter for sending messages
   channel_obj.filter = filter or ''
@@ -133,8 +136,13 @@ simple_ipc.new_subscriber = function( channel, filter, addr )
 
   -- Store the filter
   channel_obj.filter = filter or ''
-  -- Connect to a message pipeline
-  local rc = channel_obj.socket_handle:connect( channel_obj.name )
+  -- Connect to a message pipeline  
+  if inverted then
+    channel_obj.socket_handle:bind( channel_obj.name )
+  else
+    channel_obj.socket_handle:connect( channel_obj.name )
+  end
+  
   channel_obj.socket_handle:setopt( zmq.SUBSCRIBE, channel_obj.filter, 0 )
 
   -- Set up receiving object

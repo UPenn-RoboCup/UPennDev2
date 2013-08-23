@@ -17,7 +17,7 @@ all none: modules
 	
 Webots%:
 	@printf "  %b %s %s\n" Making Webots $@;
-	@cd Modules/Webots && make && cd $(CWD)
+	@cd Modules/webots && make && cd $(CWD)
 	@cd Robots/Transform && make transform && cd $(CWD)
 	@cd Robots/$@ && make && cd $(CWD)
 	@printf "  %b for %s\n" Configuring $@;

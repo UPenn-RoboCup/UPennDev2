@@ -21,7 +21,7 @@ if [ "$COMPUTER" = "Darwin" ]
 then
   #export OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 	eval `/usr/libexec/path_helper -s`
-	source ~/.bash_profile
+	#source ~/.bash_profile
 fi
 TERM=`which xterm`
 

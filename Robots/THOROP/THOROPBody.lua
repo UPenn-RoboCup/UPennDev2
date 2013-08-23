@@ -5,6 +5,7 @@
 
 -- THOR OP Body
 local use_telekinesis = false
+local use_lidar = false
 
 -- Shared memory for the joints
 require'jcm'
@@ -710,17 +711,19 @@ if IS_WEBOTS then
 		webots.wb_camera_enable(tags.kinect, timeStep)
 		--]]
     -- TODO: Copy the lidar readings to shm on each iteration
-    local lidar_timeStep = 25
-		-- Chest Lidar
-		tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
-		webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
-    chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
-    chest_lidar_wbt.meta.count = 0
-    -- Head Lidar
-		tags.head_lidar  = webots.wb_robot_get_device("HeadLidar")
-		webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
-    head_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
-    head_lidar_wbt.meta.count = 0
+    if use_lidar then
+      local lidar_timeStep = 25
+      -- Chest Lidar
+      tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
+      webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
+      chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
+      chest_lidar_wbt.meta.count = 0
+      -- Head Lidar
+      tags.head_lidar  = webots.wb_robot_get_device("HeadLidar")
+      webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
+      head_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
+      head_lidar_wbt.meta.count = 0
+    end
 
     -- Grab the box and move it around
     -- TODO: Check if null or so, since this needs a PRO license
@@ -879,17 +882,18 @@ if IS_WEBOTS then
 		end
     
     -- Set lidar data into shared memory
-    Body.set_chest_lidar(chest_lidar_wbt.pointer)
-    Body.set_head_lidar(head_lidar_wbt.pointer)
-	
-    head_lidar_wbt.meta.count  = head_lidar_wbt.meta.count  + 1
-    head_lidar_wbt.meta.hangle = Body.get_head_command_position()
-    chest_lidar_wbt.meta.count = chest_lidar_wbt.meta.count + 1
-    chest_lidar_wbt.meta.pangle = Body.get_lidar_command_position(1)
-    
-    -- Send the count on the channel so they know to process a new frame
-    head_lidar_wbt.channel:send(  mp.pack(head_lidar_wbt.meta)  )
-    chest_lidar_wbt.channel:send( mp.pack(chest_lidar_wbt.meta) )
+    if use_lidar then
+      Body.set_chest_lidar(chest_lidar_wbt.pointer)
+      Body.set_head_lidar(head_lidar_wbt.pointer)
+      -- Save important metadata
+      head_lidar_wbt.meta.count  = head_lidar_wbt.meta.count  + 1
+      head_lidar_wbt.meta.hangle = Body.get_head_command_position()
+      chest_lidar_wbt.meta.count = chest_lidar_wbt.meta.count + 1
+      chest_lidar_wbt.meta.pangle = Body.get_lidar_command_position(1)
+      -- Send the count on the channel so they know to process a new frame
+      head_lidar_wbt.channel:send(  mp.pack(head_lidar_wbt.meta)  )
+      chest_lidar_wbt.channel:send( mp.pack(chest_lidar_wbt.meta) )
+    end
 
 	end
 

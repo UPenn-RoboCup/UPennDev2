@@ -85,7 +85,7 @@ height 0.3
 ]
 }
 
-THOROP_Visual {
+THOROP_Visual_S {
   translation 0 1.168 0
   controller "thor"
 #  controller "void"

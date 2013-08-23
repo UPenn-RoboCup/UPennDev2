@@ -5,7 +5,7 @@
 
 -- THOR OP Body
 local use_telekinesis = false
-local use_lidar = true
+local use_lidar = false
 
 -- Shared memory for the joints
 require'jcm'

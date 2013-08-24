@@ -116,14 +116,14 @@ function ret = lidarbody()
   end
 
   function [nBytes] = update(fd)
+    disp('getting a mesh!')
     nBytes = 0;
     while udp_recv('getQueueSize',fd) > 0
       udp_data = udp_recv('receive',fd);
       nBytes = nBytes + numel(udp_data);
     end
-    data = msgpack('unpack',udp_data);
-    metadata = data{1};
-    jdepth = data{2};
+    [metadata offset] = msgpack('unpack',udp_data);
+    jdepth = udp_data(offset+1:end);
     if metadata.type==0
       HEAD_LIDAR.ranges = djpeg(jdepth);
       HEAD_LIDAR.lidarangles = metadata.lidarangles;

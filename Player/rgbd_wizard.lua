@@ -69,10 +69,10 @@ local function send_color_udp(metadata)
   end
   if not c_color then return end
   -- Metadata
-  local meta = mp.pack(meta)
+  local meta = mp.pack(metadata)
   -- Send over UDP
   local ret_c,err_c = udp_color:send( meta..c_color )
-  t_last_color_udp = t
+  t_last_color_udp = unix.time()
   if net_settings[1]==1 then
     net_settings[1] = 0
     vcm.set_kinect_net_color(net_settings)
@@ -95,10 +95,10 @@ local function send_depth_udp(metadata)
     c_depth = png.compress(depth, depth_info.width,depth_info.height, 2)
   end
   -- Metadata
-  local meta = mp.pack(meta)
+  local meta = mp.pack(metadata)
   -- Send over UDP
   local ret_d,err_d = udp_depth:send( meta..c_depth )
-  t_last_depth_udp = t
+  t_last_depth_udp = unix.time()
   if net_settings[1]==1 then
     net_settings[1] = 0
     vcm.set_kinect_net_depth(net_settings)

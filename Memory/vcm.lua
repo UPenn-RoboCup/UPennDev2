@@ -32,8 +32,7 @@ shared.head_lidar.endpoints = vector.zeros(2)
 shared.head_lidar.mesh_resolution = vector.new({500,480})
 -- Care only about ranges between these two points to include in the mesh
 shared.head_lidar.mesh_range      = vector.new({.1,5})
--- UDP Stream Mode | 0: None, 1: Raw, 2: JPEG, 3: PNG, 4: ZLIB
-shared.head_lidar.mesh_stream    = vector.new({2})
+shared.head_lidar.net = vector.zeros(3)
 
 ------------------------
 --  Chest LIDAR
@@ -48,8 +47,7 @@ shared.chest_lidar.mesh_resolution = vector.new({500,480})
 -- Care only about ranges between these two points to include in the mesh
 -- {Near in meters, Far in meters, Quality}
 shared.chest_lidar.mesh_range      = vector.new({.1,5,80})
--- UDP Stream Mode | 0: None, 1: Raw, 2: JPEG, 3: PNG, 4: ZLIB
-shared.chest_lidar.mesh_stream    = vector.new({2})
+shared.chest_lidar.net = vector.zeros(3)
 
 ------------------------
 --  Kinect

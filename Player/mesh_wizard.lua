@@ -22,8 +22,10 @@ local mp         = require'msgpack'
 local carray     = require'carray'
 local simple_ipc = require'simple_ipc'
 local udp        = require'udp'
-local udp_port   = 43288
-local udp_target = '192.168.123.23'
+local udp_port   = 54345
+local udp_target = 'localhost'
+--local udp_target = '192.168.123.23'
+jpeg.set_quality( 95 )
 
 -- Sending the mesh messages on zmq or UDP
 local mesh_pub_ch = simple_ipc.new_publisher'mesh'
@@ -56,16 +58,15 @@ local function pan_to_column( rad )
   if col>=1 and col<=chest.res[1] then return col end
 end
 
+local t_last_mesh_udp = unix.time()
 -- type is head or chest table
 local function stream_mesh(type)
-
-  -- Grab the parameters
-  local stream_mode = vcm.get_chest_lidar_mesh_stream()
-  -- No streaming right now
-  if stream_mode==0 then return end
-  
+  -- Network streaming settings
+  local net_settings = vcm.get_chest_lidar_net()
+  -- Streaming
+  if net_settings[1]==0 then return end
+  -- Sensitivity range in meters
   local my_range = vcm.get_chest_lidar_mesh_range()
-
   -- Safety check
   if my_range[1]>=my_range[2] then return end
   
@@ -84,29 +85,35 @@ local function stream_mesh(type)
   adjusted_range[torch.gt(adjusted_range,255)] = 255
   type.mesh_byte:copy( adjusted_range )
   
-  -- Compress the mesh
-  local payload = nil
-  if stream_mode==3 then
-    payload = png.compress(
+  -- Compression
+  local c_mesh
+  if net_settings[2]==1 then
+    -- jpeg
+    metadata.c = 'jpeg'
+    c_mesh = jpeg.compress_gray(
+    type.mesh_byte:storage():pointer(),
+    type.mesh_byte:size(2),
+    type.mesh_byte:size(1) )
+  elseif net_settings[2]==2 then
+    -- png
+    c_mesh = png.compress(
     type.mesh_byte:storage():pointer(),
     type.mesh_byte:size(2),
     type.mesh_byte:size(1),
     1 )
-  elseif stream_mode==2 then
-    jpeg.set_quality( my_range[3] )
-    payload = jpeg.compress_gray(
-    type.mesh_byte:storage():pointer(),
-    type.mesh_byte:size(2),
-    type.mesh_byte:size(1) )
   end
   
   -- Perform the sending
   local meta = mp.pack(metadata)
   --mesh_pub_ch:send( {meta, payload} )
-  local pkt = mp.pack(metadata)..payload
-  local ret, err = mesh_udp_ch:send( pkt, #pkt )
+  local ret, err = mesh_udp_ch:send( meta..c_mesh )
+  t_last_mesh_udp = unix.time()
   print(err or string.format('Sent a %g kB chest mesh packet!', ret / 1024))
-  
+  if net_settings[1]==1 then
+    net_settings[1] = 0
+    vcm.set_chest_lidar_net(net_settings)
+    return
+  end
 end
 
 ------------------------------

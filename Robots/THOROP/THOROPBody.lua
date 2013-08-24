@@ -4,8 +4,8 @@
 --------------------------------
 
 -- THOR OP Body
-local use_camera = true
-local use_lidar  = false
+local use_camera = false
+local use_lidar  = true
 
 -- Shared memory for the joints
 require'jcm'

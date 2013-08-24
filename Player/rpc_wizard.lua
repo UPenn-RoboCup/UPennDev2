@@ -32,24 +32,26 @@ local function process_rpc(rpc)
   local shm = rpc.shm
   -- TODO: Make safety checks
   if shm then
+    local mem = _G[shm]
+    if type(mem)~='table' then return 'Bad shm' end
     if rpc.val then
       -- Set memory
       local method = 'set_'..rpc.segment..'_'..rpc.key
-      local func = _G[shm][method]
+      local func = mem[method]
       -- Use a protected call
       status, reply = pcall(func,rpc.val)
     elseif rpc.delta then
       -- Increment/Decrement memory
       local method = rpc.segment..'_'..rpc.key
-      local func = _G[shm]['get_'..method]
+      local func = mem['get_'..method]
       status, cur = pcall(func)
-      func = _G[shm]['set_'..method]
+      func = mem['set_'..method]
       local up = cur+vector.new(rpc.delta)
       status, reply = pcall(func,up)
     else
       -- Get memory
       local method = 'get_'..rpc.segment..'_'..rpc.key
-      local func = _G[shm][method]
+      local func = mem[method]
       -- Use a protected call
       status, reply = pcall(func)
     end

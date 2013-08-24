@@ -55,7 +55,7 @@ while true do
   -- State machine events
   local fsm = rpc.fsm
   if fsm then
-    local ch = fsm_channels[sm]
+    local ch = fsm_channels[fsm]
     if ch and type(rpc.evt)=='string' then
       ch:send(rpc.evt)
     else

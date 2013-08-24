@@ -1,11 +1,7 @@
 -- Config guides special situations
 local Config = require'Config'
-local util = require'util'
 -- Use the fsm module
 local fsm = require'fsm'
--- Simple IPC for remote state triggers
-local simple_ipc = require'simple_ipc'
-local evts = simple_ipc.new_subscriber('fsm_motion',true)
 
 -- Require the needed states
 local motionWalk   = require(Config.dev.walk)
@@ -40,9 +36,13 @@ sm:set_transition(motionSit, 'done',    motionIdle)
 sm:set_transition(motionSit, 'standup', motionStance)
 --]]
 
--- Setup the FSM object for use in the main routine
+-- Setup the FSM object
 local obj = {}
-obj._NAME = 'Motion'
+local util = require'util'
+-- Simple IPC for remote state triggers
+local simple_ipc = require'simple_ipc'
+local evts = simple_ipc.new_subscriber(...,true)
+obj._NAME = ...
 obj.entry = function()
   sm:entry()
 end

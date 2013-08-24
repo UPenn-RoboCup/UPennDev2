@@ -1,11 +1,7 @@
 -- Config guides special situations
 local Config = require'Config'
-local util = require'util'
 -- Use the fsm module
 local fsm = require'fsm'
--- Simple IPC for remote state triggers
-local simple_ipc = require'simple_ipc'
-local evts = simple_ipc.new_subscriber('fsm_body',true)
 
 -- Require the needed states
 local bodyIdle = require'bodyIdle'
@@ -29,8 +25,12 @@ sm:set_transition(bodyTeleop, 'navigate', bodyNavigate)
 sm:set_transition(bodyNavigate, 'done', bodyIdle)
 sm:set_transition(bodyNavigate, 'stop', bodyIdle)
 
--- Structure the FSM object to be returned
+-- Setup the FSM object
 local obj = {}
+local util = require'util'
+-- Simple IPC for remote state triggers
+local simple_ipc = require'simple_ipc'
+local evts = simple_ipc.new_subscriber(...,true)
 obj._NAME = ...
 obj.entry = function()
   sm:entry()

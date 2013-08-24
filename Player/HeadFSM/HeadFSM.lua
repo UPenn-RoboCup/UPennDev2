@@ -1,11 +1,7 @@
 -- Config guides special situations
 local Config = require'Config'
-local util = require'util'
 -- Use the fsm module
 local fsm = require'fsm'
--- Simple IPC for remote state triggers
-local simple_ipc = require'simple_ipc'
-local evts = simple_ipc.new_subscriber('fsm_head',true)
 
 -- Require the needed states
 local headIdle = require'headIdle'
@@ -22,7 +18,12 @@ sm:set_transition(headIdle, 'tiltscan', headTiltScan)
 --
 sm:set_transition(headTiltScan, 'done', headIdle)
 
+-- Setup the FSM object
 local obj = {}
+local util = require'util'
+-- Simple IPC for remote state triggers
+local simple_ipc = require'simple_ipc'
+local evts = simple_ipc.new_subscriber(...,true)
 obj._NAME = ...
 obj.entry = function()
   sm:entry()

@@ -2,7 +2,7 @@ dofile'include.lua'
 local mp = require'msgpack'
 local simple_ipc = require'simple_ipc'
 local rep = simple_ipc.new_replier(5555,'*')
---local rep = simple_ipc.new_replier'test'
+--local rep = simple_ipc.new_replier'upenn_rpc'
 local util = require'util'
 
 -- TODO: Require all necessary modules
@@ -10,34 +10,59 @@ require'vcm'
 require'jcm'
 require'mcm'
 
+-- TODO: Require all necessary fsm channels
+local simple_ipc = require'simple_ipc'
+local fsm_channels = {}
+-- TODO: Make coroutines for each FSM
+for _,sm in ipairs(unix.readdir(CWD)) do
+  if sm:find'FSM' then
+    fsm_channels[sm] = simple_ipc.new_publisher(sm,true)
+  end
+end
+
 while true do
-	repeat
-		request, has_more = rep:receive()
-    local rpc_tbl = mp.unpack(request)
-		
-    util.ptable(rpc_tbl)
-    
-    method = rpc_tbl.call..'_'..rpc_tbl.segment..'_'..rpc_tbl.key
-    mem    = rpc_tbl.memory
-    func   = _G[mem][method]
-    
-    --[[
-    print('method',method,func)
-    if type(rpc_tbl.val)=='table' then
-      util.ptable(rpc_tbl.val)
+  -- NOTE: has_more is innocuous in this situation
+  local request, has_more = rep:receive()
+  local rpc = mp.unpack(request)
+  util.ptable(rpc)
+
+  local status, reply
+  -- Shared memory modification
+  local shm = rpc.shm
+  -- TODO: Make safety checks
+  if shm then
+    if rpc.val then
+      -- Set memory
+      local method = 'set_'..rpc.segment..'_'..rpc.key
+      local func = _G[shm][method]
+      -- Use a protected call
+      pcall(func,rpc.val)
+    elseif rpc.delta then
+      -- Increment/Decrement memory
+      local method = rpc.segment..'_'..rpc.key
+      local func = _G[shm]['get_'..method]
+      pcall(func,rpc.val)
+      func = _G[shm]['set_'..method]
+      pcall(func,rpc.val)
     else
-      print(rpc_tbl.val)
+      -- Get memory
+      local method = 'get_'..rpc.segment..'_'..rpc.key
+      local func = _G[shm][method]
+      -- Use a protected call
+      status, reply = pcall(func)
     end
-    --]]
-    
-    -- Use a protected call so that we do not error out on a bad RPC
-    status, reply = pcall(func,rpc_tbl.val)
-    -- TODO: if set ensure rpc_tbl.val, and other checks
-    
-    --print('RPC status',status)
-    
-	until not has_more
-	local ret = rep:send( mp.pack(reply) )
-  --print( util.color('RPC:','yellow'), util.color(mem,'red'), util.color(method,'green'), reply )
-	--print('Return',ret)
+  end -- if shm
+  -- State machine events
+  local fsm = rpc.fsm
+  if fsm then
+    local ch = fsm_channels[sm]
+    if ch and type(rpc.evt)=='string' then
+      ch:send(rpc.evt)
+    else
+      reply = 'bad fsm rpc call'
+    end
+  end
+
+  -- Send the result of the last request
+  local ret = rep:send( mp.pack(reply) )
 end

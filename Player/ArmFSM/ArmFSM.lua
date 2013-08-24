@@ -1,9 +1,7 @@
+-- Config guides special situations
+local Config = require'Config'
 -- fsm module
 local fsm = require'fsm'
-
--- Simple IPC for remote state triggers
-local simple_ipc = require'simple_ipc'
-local evts = simple_ipc.new_subscriber('fsm_arm',true)
 
 -- Require the needed states
 local armIdle   = require'armIdle'
@@ -51,9 +49,13 @@ sm:set_transition(armWheelTurn, 'stop', armWheelRelease)
 sm:set_transition(armWheelRelease, 'done', armReady)
 --]]
 
--- Setup the FSM object for use in the main routine
+-- Setup the FSM object
 local obj = {}
-obj._NAME = 'Arm'
+local util = require'util'
+-- Simple IPC for remote state triggers
+local simple_ipc = require'simple_ipc'
+local evts = simple_ipc.new_subscriber(...,true)
+obj._NAME = ...
 obj.entry = function()
   sm:entry()
 end

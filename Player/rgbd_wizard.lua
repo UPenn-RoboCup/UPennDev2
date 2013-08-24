@@ -52,12 +52,12 @@ end
 signal.signal("SIGINT",  shutdown)
 signal.signal("SIGTERM", shutdown)
 
+-- TODO: single frame is reliable TCP, not UDP
 local t_last_color_udp = unix.time()
 local function send_color_udp(metadata)
   local net_settings = vcm.get_kinect_net_color()
   -- Streaming
   if net_settings[1]==0 then return end
-  print('net color',net_settings)
   -- Compression
   local c_color
   if net_settings[2]==1 then

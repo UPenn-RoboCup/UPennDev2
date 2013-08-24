@@ -18,8 +18,7 @@ shared.head_camera.image = 2*160*120
 -- Look up table is 262144 bytes
 shared.head_camera.lut   = 262144
 shared.head_camera.t     = vector.zeros(1)
--- UDP Stream Mode | 0: None, 1: Raw, 2: JPEG, 3: PNG, 4: ZLIB
-shared.head_camera.stream    = vector.zeros(1)
+shared.head_camera.net = vector.zeros(3)
 
 ------------------------
 --  Head LIDAR

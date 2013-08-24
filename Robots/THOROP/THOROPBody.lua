@@ -4,12 +4,11 @@
 --------------------------------
 
 -- THOR OP Body
-local use_telekinesis = false
-local use_lidar = false
+local use_camera = true
+local use_lidar  = false
 
 -- Shared memory for the joints
 require'jcm'
-if use_telekinesis then require'tkcm' end
 -- Shared memory for vision of the world
 require'vcm'
 
@@ -627,6 +626,9 @@ if IS_WEBOTS then
 	local webots     = require'webots'
   local simple_ipc = require'simple_ipc'
   local mp         = require'msgpack'
+  local udp        = require'udp'
+  local jpeg       = require'jpeg'
+  local png        = require'png'
   Body.get_time    = webots.wb_robot_get_time
 
 	servo.direction = vector.new({
@@ -656,16 +658,52 @@ if IS_WEBOTS then
 
 	-- Setup the webots tags
 	local tags = {}
-  local telekinesis = {}
   
   -- Webots body broadcasting
-  
-  local chest_lidar_wbt = {}
-  local head_lidar_wbt = {}
-  head_lidar_wbt.meta = {}
-  chest_lidar_wbt.meta = {}
-  head_lidar_wbt.channel  = simple_ipc.new_publisher'head_lidar'
-  chest_lidar_wbt.channel = simple_ipc.new_publisher'chest_lidar'
+  local chest_lidar_wbt, head_lidar_wbt
+  if use_lidar then
+    head_lidar_wbt = {}
+    head_lidar_wbt.meta = {}
+    head_lidar_wbt.channel  = simple_ipc.new_publisher'head_lidar'
+    chest_lidar_wbt = {}
+    chest_lidar_wbt.meta = {}
+    chest_lidar_wbt.channel = simple_ipc.new_publisher'chest_lidar'
+  end
+  local head_camera_wbt, update_head_camera
+  if use_camera then
+    head_camera_wbt = {}
+    head_camera_wbt.meta = {}
+    --head_camera_wbt.channel = simple_ipc.new_publisher'head_cam'
+    head_camera_wbt.channel = udp.new_sender('localhost',54321)
+    update_head_camera = function()
+      local metadata = {}
+      metadata.t = Body.get_time()
+      local net_settings = vcm.get_head_camera_net()
+      if net_settings[1]==0 then return end
+      local c_color
+      if net_settings[2]==1 then
+        metadata.c = 'jpeg'
+        c_color = jpeg.compress_rgb(
+          head_camera_wbt.pointer,
+          head_camera_wbt.width,
+          head_camera_wbt.height)
+      elseif net_settings[2]==2 then
+        metadata.c = 'png'
+        c_color = png.compress(
+          head_camera_wbt.pointer,
+          head_camera_wbt.width,
+          head_camera_wbt.height)
+      end
+      if not c_color then return end
+      local meta = mp.pack(head_camera_wbt.meta)
+      local ret_c,err_c = head_camera_wbt.channel:send( meta..c_color )
+      if net_settings[1]==1 then
+        net_settings[1] = 0
+        vcm.set_head_camera_net(net_settings)
+        return
+      end
+    end --update_head_camera
+  end
 
 	Body.entry = function()
     
@@ -724,80 +762,15 @@ if IS_WEBOTS then
       head_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
       head_lidar_wbt.meta.count = 0
     end
-
-    -- Grab the box and move it around
-    -- TODO: Check if null or so, since this needs a PRO license
-    if use_telekinesis then
-      -- Table (for placing objects on?)
-      telekinesis.table = {}
-      telekinesis.table.tag = webots.wb_supervisor_node_get_from_def("MY_TABLE")
-      telekinesis.table.translation = 
-      webots.wb_supervisor_node_get_field(telekinesis.table.tag, "translation")
-      telekinesis.table.get_position = function(self)
-        return tkcm.get_table_position(), webots.wb_supervisor_field_get_sf_vec3f(self.translation)
-      end
-      telekinesis.table.set_position = function( self, new_position )
-        webots.wb_supervisor_field_set_sf_vec3f( self.translation, carray.double( new_position ) )
-      end
-      telekinesis.table.update = function(self)
-        local table_pos_shm, table_pos_wbt = telekinesis.table:get_position()
-        -- Webots xyz is not the same as the Body xyz residing in shm
-        local table_new_pos={table_pos_shm[2],table_pos_wbt[2],table_pos_shm[1]}
-        telekinesis.table:set_position(table_new_pos)
-      end
-      -- Drill
-      telekinesis.drill = {}
-      telekinesis.drill.tag = webots.wb_supervisor_node_get_from_def("MY_DRILL")
-      telekinesis.drill.translation = 
-      webots.wb_supervisor_node_get_field(telekinesis.drill.tag, "translation")
-      telekinesis.drill.rotation = 
-      webots.wb_supervisor_node_get_field(telekinesis.drill.tag, "rotation")
-      telekinesis.drill.get_position = function(self)
-        local p_wbt = webots.wb_supervisor_field_get_sf_vec3f(self.translation)
-        -- Webots x is our y, Webots y is our z, Webots z is our x, 
-        -- Our x is Webots z, Our y is Webots x, Our z is Webots y
-        return tkcm.get_drill_position(), vector.new({p_wbt[3],p_wbt[1],p_wbt[2]})
-      end
-      telekinesis.drill.set_position = function( self, new_position )
-        assert(#new_position==3,'Bad new_position!')
-        -- Webots x is our y, Webots y is our z, Webots z is our x, 
-        -- Our x is Webots z, Our y is Webots x, Our z is Webots y
-        local p_wbt = carray.double({
-          new_position[2],
-          new_position[3],
-          new_position[1]
-        })
-        webots.wb_supervisor_field_set_sf_vec3f( self.translation, p_wbt )
-      end
-      telekinesis.drill.get_orientation = function(self)
-        local q = quaternion.new(tkcm.get_drill_orientation())
-        local aa_wbt = webots.wb_supervisor_field_get_sf_rotation(self.rotation)
-        -- Webots x is our y, Webots y is our z, Webots z is our x, 
-        -- Our x is Webots z, Our y is Webots x, Our z is Webots y
-        local q_wbt = quaternion.from_angle_axis(aa_wbt[4],{aa_wbt[3],aa_wbt[1],aa_wbt[2]})
-        return q, quaternion.unit(q_wbt)
-      end
-      telekinesis.drill.set_orientation = function( self, new_orientation )
-        assert(#new_orientation==4,'Bad new_orientation!')
-        local angle, axis = quaternion.angle_axis(new_orientation)
-        -- Webots x is our y, Webots y is our z, Webots z is our x, 
-        -- Our x is Webots z, Our y is Webots x, Our z is Webots y
-        local q_wbt_new = carray.double({
-          axis[2],
-          axis[3],
-          axis[1],
-          angle
-        })        
-        webots.wb_supervisor_field_set_sf_rotation( self.rotation, q_wbt_new )
-      end
-      telekinesis.drill.update = function(self)
-        local q_drill_shm, q_drill_wbt = telekinesis.drill:get_orientation()
-        local drill_pos_shm, drill_pos_wbt = telekinesis.drill:get_position()
-        self:set_orientation(q_drill_shm)
-        telekinesis.drill:set_position(drill_pos_shm)
-      end
-      -- Associate the table with the body
-      Body.telekinesis = telekinesis
+    if use_camera then
+      local camera_timeStep = 25
+      -- Head Camera
+      tags.head_camera = webots.wb_robot_get_device("Camera")
+      webots.wb_camera_enable(tags.head_camera, camera_timeStep)
+      head_camera_wbt.pointer = webots.wb_camera_get_image(tags.head_camera)
+      head_camera_wbt.meta.count = 0
+      head_camera_wbt.width = webots.wb_camera_get_width(tags.head_camera)
+      head_camera_wbt.height = webots.wb_camera_get_height(tags.head_camera)
     end
 
 		-- Take a step to get some values
@@ -841,13 +814,7 @@ if IS_WEBOTS then
 			if en > 0 and jtag>0 then
         webots.wb_servo_set_position(jtag, servo.direction[i] * (new_pos + servo.rad_bias[i]) )
       end
-		end
-    
-    -- Update the telekinesis
-    if use_telekinesis then
-      telekinesis.table:update()
-      telekinesis.drill:update()
-    end
+		end --for
 
 		-- Step the simulation, and shutdown if the update fails
 		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
@@ -894,8 +861,10 @@ if IS_WEBOTS then
       head_lidar_wbt.channel:send(  mp.pack(head_lidar_wbt.meta)  )
       chest_lidar_wbt.channel:send( mp.pack(chest_lidar_wbt.meta) )
     end
-
-	end
+    if use_camera then
+      update_head_camera()
+    end --use_camera
+	end -- function
 
 	Body.exit = function()
 	end

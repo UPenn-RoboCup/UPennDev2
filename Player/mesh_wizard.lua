@@ -89,9 +89,9 @@ local function stream_mesh(type)
   if stream_mode==3 then
     payload = png.compress(
     type.mesh_byte:storage():pointer(),
-    type.mesh_byte:size(1),
     type.mesh_byte:size(2),
-    0 )
+    type.mesh_byte:size(1),
+    1 )
   elseif stream_mode==2 then
     jpeg.set_quality( my_range[3] )
     payload = jpeg.compress_gray(

@@ -71,7 +71,6 @@ while true do
 
   if use_udp then
     -- Compress the payload
-    
     local jdepth = jpeg.compress_16(depth,depth_info.width,depth_info.height,4)
     local jcolor = jpeg.compress_rgb(color,color_info.width,color_info.height)
     

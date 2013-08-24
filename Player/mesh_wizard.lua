@@ -42,6 +42,7 @@ chest.stop      = vcm.get_chest_lidar_endpoints()[2]
 chest.mesh_byte = torch.ByteTensor(  unpack(chest.res) ):zero()
 chest.mesh      = torch.FloatTensor( unpack(chest.res) ):zero()
 chest.mesh_adj  = torch.FloatTensor( unpack(chest.res) ):zero()
+chest.lidarangles  = torch.DoubleTensor( chest.res[1] ):zero()
 -- Index Offset for copying using carray
 -- TODO: Get 1081 as a Body parameter for the size of the lidar
 chest.offset    = math.floor( (1081-chest.res[2])/2 )
@@ -74,6 +75,10 @@ local function stream_mesh(type)
   local metadata = type.meta
   metadata.t     = unix.time()
   metadata.res   = type.res
+  metadata.lidarangles = type.lidarangles
+  metadata.lidarrange = chest.res[2]-chest.res[1]
+  metadata.range0 = type.start
+  metadata.range1 = type.stop
 
   -- Enhance the dynamic range of the mesh image
   local adjusted_range = type.mesh_adj
@@ -128,8 +133,10 @@ local function chest_callback()
   local col = pan_to_column(metadata.pangle)
   -- Only if a valid column is returned
   if col then
-    -- Copy to the torch object for fast modification
+    -- Copy lidar readings to the torch object for fast modification
     ranges:tensor( chest.mesh:select(1,col), chest.res[2], chest.offset )
+    -- Save the pan angle
+    chest.lidarangles[col] = Body.get_lidar_position()[1]
   end
   -- Stream the current mesh
   stream_mesh(chest)
@@ -142,7 +149,7 @@ end
 ------------------------------
 -- Polling with zeromq
 local wait_channels = {}
-if head_lidar_ch  then
+if head_lidar_ch then
   head_lidar_ch.callback = head_callback
   table.insert( wait_channels, head_lidar_ch )
 end

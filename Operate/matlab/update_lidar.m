@@ -87,7 +87,7 @@ disp('HEAD LIDARDATA')
 
 
 
-
+%{
   if lidar.type==0
     [verts faces cdatas facecount]=lidartrans('headmesh',...
      rayangles_skipped, lidarangles_skipped, range_skipped, ...
@@ -97,7 +97,6 @@ disp('HEAD LIDARDATA')
      rayangles_skipped, lidarangles_skipped, range_skipped, ...
      connect_th, max_dist, ground_height, max_height);
   end
-
   verts=verts';
 
   %include pose for drawing patches
@@ -120,6 +119,8 @@ disp('HEAD LIDARDATA')
   else
     CHEST_LIDAR = lidar;
   end
+  %}
 
-tPassed=  toc(t0);
+tPassed = toc(t0);
+fprintf('Processed lidar: %f',tPassed)
 end

@@ -5,15 +5,17 @@ local util = require'util'
 local fsm = require'fsm'
 -- Simple IPC for remote state triggers
 local simple_ipc = require'simple_ipc'
-local evts = simple_ipc.new_subscriber('fsm_motion',true)
+local evts = simple_ipc.new_subscriber('fsm_head',true)
 
 -- Require the needed states
 local headIdle = require'headIdle'
 local headTiltScan = require'headTiltScan'
+local headTeleop = require'headTeleop'
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
 local sm = fsm.new( headIdle, headTiltScan )
+sm:add_state(headTeleop)
 
 -- Setup the transistions for this FSM
 sm:set_transition(headIdle, 'tiltscan', headTiltScan)
@@ -21,7 +23,7 @@ sm:set_transition(headIdle, 'tiltscan', headTiltScan)
 sm:set_transition(headTiltScan, 'done', headIdle)
 
 local obj = {}
-obj._NAME = 'Head'
+obj._NAME = ...
 obj.entry = function()
   sm:entry()
 end

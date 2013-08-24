@@ -8,7 +8,7 @@ for _,sm in ipairs(unix.readdir(CWD)) do
   if sm:find'FSM' then
     package.path = CWD..'/'..sm..'/?.lua;'..package.path
     state_machines[sm] = require(sm)
-    print('Using FSM',sm)
+    print( util.color('FSM | Loaded','yellow'),sm)
   end
 end
 

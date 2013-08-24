@@ -9,7 +9,7 @@ local evts = simple_ipc.new_subscriber('fsm_motion',true)
 
 -- Require the needed states
 local motionWalk   = require(Config.dev.walk)
-local motionRelax  = require'motionRelax'
+local motionIdle  = require'motionIdle'
 local motionStance = require'motionStance'
 local motionFall   = require'motionFall'
 --[[
@@ -18,15 +18,15 @@ local motionSit    = require'motionSit'
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
-local sm = fsm.new( motionRelax, motionStance, motionWalk, motionFall )
+local sm = fsm.new( motionIdle, motionStance, motionWalk, motionFall )
 
 -- Setup the transitions for this FSM
-sm:set_transition(motionRelax, 'stand',   motionStance )
-sm:set_transition(motionRelax, 'walk',    motionWalk )
-sm:set_transition(motionRelax, 'fall',    motionFall )
-sm:set_transition(motionRelax, 'timeout', motionRelax )
+sm:set_transition(motionIdle, 'stand',   motionStance )
+sm:set_transition(motionIdle, 'walk',    motionWalk )
+sm:set_transition(motionIdle, 'fall',    motionFall )
+sm:set_transition(motionIdle, 'timeout', motionIdle )
 --
-sm:set_transition(motionStance, 'done',    motionRelax)
+sm:set_transition(motionStance, 'done',    motionIdle)
 sm:set_transition(motionStance, 'fall',    motionFall)
 sm:set_transition(motionStance, 'timeout', motionStance)
 --sm:set_transition(motionStance, 'walk', motionWalk)
@@ -36,7 +36,7 @@ sm:set_transition(motionStance, 'timeout', motionStance)
 sm:set_transition(motionWalk, 'stand', motionStance)
 sm:set_transition(motionWalk, 'fall', motionFall)
 --[[
-sm:set_transition(motionSit, 'done',    motionRelax)
+sm:set_transition(motionSit, 'done',    motionIdle)
 sm:set_transition(motionSit, 'standup', motionStance)
 --]]
 

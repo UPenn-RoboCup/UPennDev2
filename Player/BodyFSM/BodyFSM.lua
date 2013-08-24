@@ -31,7 +31,7 @@ sm:set_transition(bodyNavigate, 'stop', bodyIdle)
 
 -- Structure the FSM object to be returned
 local obj = {}
-obj._NAME = 'Body'
+obj._NAME = ...
 obj.entry = function()
   sm:entry()
 end

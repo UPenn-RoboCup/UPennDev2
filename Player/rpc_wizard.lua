@@ -30,7 +30,6 @@ local function process_rpc(rpc)
   local status, reply
   -- Shared memory modification
   local shm = rpc.shm
-  -- TODO: Make safety checks
   if shm then
     local mem = _G[shm]
     if type(mem)~='table' then return 'Bad shm' end

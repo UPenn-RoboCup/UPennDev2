@@ -39,4 +39,6 @@ obj.exit = function()
   sm:exit()
 end
 
+obj.sm = sm
+
 return obj

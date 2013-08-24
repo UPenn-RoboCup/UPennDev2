@@ -1,13 +1,30 @@
 dofile'include.lua'
 local Body = require'Body'
 local util = require'util'
+local mp = require'msgpack'
+local simple_ipc = require'simple_ipc'
+local state_pub_ch = simple_ipc.new_publisher(5544)
 
 local state_machines = {}
+
+local function broadcast_states(name)
+  local status = {}
+  for _,my_fsm in pairs(state_machines) do
+    local cur_st = my_fsm.sm:get_current_state()
+    print('FSM Status',my_fsm._NAME,cur_st._NAME)
+    table.insert(status,{my_fsm._NAME,cur_st._NAME})
+  end
+  -- Broadcast over UDP/TCP/IPC
+  local ret = state_pub_ch:send( mp.pack(status) )
+end
+
 -- TODO: Make coroutines for each FSM
 for _,sm in ipairs(unix.readdir(CWD)) do
   if sm:find'FSM' then
     package.path = CWD..'/'..sm..'/?.lua;'..package.path
-    state_machines[sm] = require(sm)
+    local my_fsm = require(sm)
+    my_fsm.sm:set_state_debug_handle(broadcast_states)
+    state_machines[sm] = my_fsm
     print( util.color('FSM | Loaded','yellow'),sm)
   end
 end

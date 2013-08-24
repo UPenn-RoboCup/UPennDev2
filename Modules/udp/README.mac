@@ -1,12 +1,14 @@
 UDP settings for the Mac:
 Please execute this, if having issues sending UDP packets due to exceeding the maximum size:
 
-sudo sysctl -w net.inet.udp.recvspace=147456 net.inet.udp.maxdgram=65536
+sudo sysctl -w net.inet.udp.recvspace=262144 net.inet.udp.maxdgram=65536
 
 ----- PERSISTENT SETTINGS -----
 Add these lines to /etc/sysctl.conf
-net.inet.udp.recvspace=147456
+net.inet.udp.recvspace=262144
 net.inet.udp.maxdgram=65536
+
+2^16 and 2^18 respectively
 
 with 
 sudo nano /etc/sysctl.conf

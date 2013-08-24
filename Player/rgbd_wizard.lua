@@ -48,7 +48,7 @@ signal.signal("SIGTERM", shutdown)
 
 -- Start loop
 while true do
-  
+
   -- Acquire the Data
   local depth, color = openni.update_rgbd()
   -- Check the time of acquisition
@@ -75,24 +75,32 @@ while true do
     local jcolor = jpeg.compress_rgb(color,color_info.width,color_info.height)
     
     -- PNG option
+    --[[
     local pcolor = png.compress(
     color,
     color_info.width,
     color_info.height)
-
     local pdepth = png.compress(
     depth,
     color_info.width,
     color_info.height,
     2)
-    
-    -- Send over UDP
-    --udp_depth:send( meta..jdepth )
-    --udp_color:send( meta..jcolor )
+    --]]
 
+    -- Send over UDP
+    local ret_d,err_d = udp_depth:send( meta..jdepth )
+    local ret_c,err_c = udp_color:send( meta..jcolor )
+    
+
+--[[
+    if err_c then print('C',err_c) end
+    if err_d then print('D',err_d) end
+    print('Bytes | Meta:', #meta)
     print('Bytes | Color:',#color,'Depth:',#depth)
     print('Bytes | JColor:',#jcolor,'JDepth:',#jdepth)
-    print('Bytes | PColor:',#pcolor,'PDepth:',#pdepth)
+    --print('Bytes | PColor:',#pcolor,'PDepth:',#pdepth)
+    print('Bytes | UDP C:',ret_c,'UDP D:',ret_d)
+--]]
   end
   
   -- Debug the timing

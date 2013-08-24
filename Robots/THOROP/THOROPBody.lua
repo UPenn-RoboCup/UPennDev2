@@ -630,6 +630,8 @@ if IS_WEBOTS then
   local jpeg       = require'jpeg'
   local png        = require'png'
   Body.get_time    = webots.wb_robot_get_time
+  -- Setup the webots tags
+  local tags = {}
 
 	servo.direction = vector.new({
 		1,-1, -- Head
@@ -655,9 +657,6 @@ if IS_WEBOTS then
 		0,0,0,
 		60,--30,
 	})*DEG_TO_RAD
-
-	-- Setup the webots tags
-	local tags = {}
   
   -- Webots body broadcasting
   local chest_lidar_wbt, head_lidar_wbt
@@ -684,19 +683,20 @@ if IS_WEBOTS then
       if net_settings[2]==1 then
         metadata.c = 'jpeg'
         c_color = jpeg.compress_rgb(
-          head_camera_wbt.pointer,
+          webots.to_rgb(tags.head_camera),
           head_camera_wbt.width,
           head_camera_wbt.height)
       elseif net_settings[2]==2 then
         metadata.c = 'png'
         c_color = png.compress(
-          head_camera_wbt.pointer,
+          webots.to_rgb(tags.head_camera),
           head_camera_wbt.width,
           head_camera_wbt.height)
       end
       if not c_color then return end
       local meta = mp.pack(head_camera_wbt.meta)
-      local ret_c,err_c = head_camera_wbt.channel:send( meta..c_color )
+      local ret_c,err_c = head_camera_wbt.channel:send( c_color )
+      print('sent',ret_c)
       if net_settings[1]==1 then
         net_settings[1] = 0
         vcm.set_head_camera_net(net_settings)
@@ -767,7 +767,7 @@ if IS_WEBOTS then
       -- Head Camera
       tags.head_camera = webots.wb_robot_get_device("Camera")
       webots.wb_camera_enable(tags.head_camera, camera_timeStep)
-      head_camera_wbt.pointer = webots.wb_camera_get_image(tags.head_camera)
+      --head_camera_wbt.pointer = webots.wb_camera_get_image(tags.head_camera)
       head_camera_wbt.meta.count = 0
       head_camera_wbt.width = webots.wb_camera_get_width(tags.head_camera)
       head_camera_wbt.height = webots.wb_camera_get_height(tags.head_camera)

@@ -212,7 +212,7 @@ void mex_unpack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   size_t offset = 0;
   msgpack_unpacked msg;
   msgpack_unpacked_init(&msg);
-  if (!msgpack_unpack_next(&msg, str, size, &offset)) 
+  if (!msgpack_unpack_next(&msg, str, size, &offset))
     mexErrMsgTxt("unpack error");
 
   /* prints the deserialized object. */

@@ -696,7 +696,7 @@ if IS_WEBOTS then
       if not c_color then return end
       local meta = mp.pack(head_camera_wbt.meta)
       local ret_c,err_c = head_camera_wbt.channel:send( c_color )
-      print('sent',ret_c)
+      if err_c then print('head cam',util.color(err_c,'red')) end
       if net_settings[1]==1 then
         net_settings[1] = 0
         vcm.set_head_camera_net(net_settings)

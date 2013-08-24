@@ -30,9 +30,7 @@ export PLAYER_ID=$1
 export TEAM_ID=$2
 export PLATFORM=webots
 
-#TESTFILE=Test/test_ladder.lua
-#TESTFILE=Test/test_walk_webots.lua
-TESTFILE=webots_wizard.lua
+TESTFILE=state_wizard.lua
 
 # Spawn the right terminal
 if [ "$EXT_TERM" -gt "0" ]

@@ -19,6 +19,8 @@ local function broadcast_states(name)
 end
 
 -- TODO: Make coroutines for each FSM
+-- TODO: Or other way of handling state machine failure
+-- Maybe a reset() function in each fsm?
 for _,sm in ipairs(unix.readdir(CWD)) do
   if sm:find'FSM' then
     package.path = CWD..'/'..sm..'/?.lua;'..package.path
@@ -28,10 +30,6 @@ for _,sm in ipairs(unix.readdir(CWD)) do
     print( util.color('FSM | Loaded','yellow'),sm)
   end
 end
-
-local entry_str = 'Running'
-for name,_ in pairs(state_machines) do entry_str = entry_str..' '..name end
-print(util.color(entry_str,'green'))
 
 -- Start the webots routine
 local t0 = Body.get_time()

@@ -21,6 +21,7 @@ sm:set_transition(headIdle, 'tiltscan', headTiltScan)
 sm:set_transition(headTiltScan, 'done', headIdle)
 
 local obj = {}
+obj._NAME = 'Head'
 obj.entry = function()
   sm:entry()
 end

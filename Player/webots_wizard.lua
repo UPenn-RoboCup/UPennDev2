@@ -5,7 +5,7 @@ local util = require'util'
 local state_machines = {}
 -- TODO: Make coroutines for each FSM
 for _,sm in ipairs(unix.readdir(CWD)) do
-  if sm:find('LidarFSM') or sm:find('MotionFSM') or sm=='ArmFSM' then
+  if sm:find'FSM' then
     package.path = CWD..'/'..sm..'/?.lua;'..package.path
     state_machines[sm] = require(sm)
     print('Using FSM',sm)
@@ -24,6 +24,7 @@ local t_debug = t0
 local fps = 100
 local us_sleep = 1e6 / fps
 
+-- Perform inialization
 Body.entry()
 for _,sm in pairs(state_machines) do sm.entry() end
 while true do

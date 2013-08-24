@@ -1,9 +1,13 @@
 dofile'include.lua'
+local Config = require'Config'
 local mp = require'msgpack'
 local simple_ipc = require'simple_ipc'
-local rep = simple_ipc.new_replier(5555,'*')
---local rep = simple_ipc.new_replier'upenn_rpc'
+local udp = require'udp'
 local util = require'util'
+
+-- TODO: Use the Config file for the ports
+local rpc_zmq = simple_ipc.new_replier(5555,'*')
+local rpc_udp = udp.new_receiver( 5556 )
 
 -- TODO: Require all necessary modules
 require'vcm'
@@ -11,7 +15,7 @@ require'jcm'
 require'mcm'
 
 -- TODO: Require all necessary fsm channels
-local simple_ipc = require'simple_ipc'
+local simple_ipc   = require'simple_ipc'
 local fsm_channels = {}
 -- TODO: Make coroutines for each FSM
 for _,sm in ipairs(unix.readdir(CWD)) do
@@ -20,10 +24,7 @@ for _,sm in ipairs(unix.readdir(CWD)) do
   end
 end
 
-while true do
-  -- NOTE: has_more is innocuous in this situation
-  local request, has_more = rep:receive()
-  local rpc = mp.unpack(request)
+local function process_rpc(rpc)
   util.ptable(rpc)
 
   local status, reply
@@ -37,7 +38,7 @@ while true do
       local func = _G[shm][method]
       -- Use a protected call
       pcall(func,rpc.val)
-    elseif rpc.delta then
+      elseif rpc.delta then
       -- Increment/Decrement memory
       local method = rpc.segment..'_'..rpc.key
       local func = _G[shm]['get_'..method]
@@ -63,6 +64,32 @@ while true do
     end
   end
 
-  -- Send the result of the last request
-  local ret = rep:send( mp.pack(reply) )
+  return reply
 end
+
+local function process_zmq()
+  print('here')
+  -- TODO: is has_more is innocuous in this situation?
+  local request, has_more = rpc_zmq:receive()
+  local rpc = mp.unpack(request)
+  local reply = process_rpc(rpc)
+  -- NOTE: The zmq channel is REP/REQ
+  -- Reply with the result of the request
+  local ret = rpc_zmq:send( mp.pack(reply) )
+end
+
+local function process_udp()
+  while command_udp_recv:size()>0 do
+    local request = command_udp_recv:receive()
+    local rpc = mp.unpack(request)
+    process_rpc(rpc)
+  end
+end
+
+rpc_zmq.callback = process_zmq
+local rpc_udp_poll = {}
+rpc_udp_poll.socket_handle = rpc_udp:descriptor()
+rpc_udp_poll.callback = process_udp_command
+local wait_channels = {rpc_zmq,command_udp_recv_poll}
+local channel_poll = simple_ipc.wait_on_channels( wait_channels );
+channel_poll:start()

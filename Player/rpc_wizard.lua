@@ -42,9 +42,10 @@ local function process_rpc(rpc)
       -- Increment/Decrement memory
       local method = rpc.segment..'_'..rpc.key
       local func = _G[shm]['get_'..method]
-      pcall(func,rpc.val)
+      status, cur = pcall(func)
       func = _G[shm]['set_'..method]
-      status, reply = pcall(func,rpc.val)
+      local up = cur+vector.new(rpc.delta)
+      status, reply = pcall(func,up)
     else
       -- Get memory
       local method = 'get_'..rpc.segment..'_'..rpc.key

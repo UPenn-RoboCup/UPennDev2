@@ -58,13 +58,14 @@ shared.kinect       = {}
 -- Timestamp of last acquisition
 shared.kinect.t     = vector.zeros(1)
 -- RGB for the kinect
---shared.kinect.color = 3*320*240
---shared.kinect.depth = 3*320*240
--- Look up table is 262144 bytes
+-- Look up table is 2^18 bytes
 shared.kinect.lut   = 262144
--- UDP Stream Mode | 0: None, 1: Raw, 2: JPEG, 3: PNG, 4: ZLIB
--- TODO: color and depth can have different values
-shared.kinect.stream = vector.zeros(1)
+-- Network Requests: [stream,compression,fps]
+-- Stream | 0: None, 1: Single Frame, 2: Stream
+-- Compression | 0: None, 1: JPEG, 2: PNG
+-- Interval | Frames per second
+shared.kinect.net_color = vector.zeros(3)
+shared.kinect.net_depth = vector.zeros(3)
 
 -- Customize the shared memory size, due to using userdata
 shsize.head_camera = shared.head_camera.image + shared.head_camera.lut + 2^16

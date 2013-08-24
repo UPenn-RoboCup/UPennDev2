@@ -12,14 +12,19 @@ assert(color_info.width==320,'Bad color resolution')
 -- Require some modules
 require'vcm'
 local jpeg = require'jpeg'
+jpeg.set_quality( 80 )
 local png = require'png'
 local mp = require'msgpack'
+
+-- Access point
+local depth, color
 
 -- Settings
 --use_zmq=true
 use_udp=true
 
 -- Set up the UDP sending
+local udp_depth, udp_color
 if use_udp then
   local udp = require'udp'
   udp_depth = udp.new_sender('localhost',43230)
@@ -27,6 +32,7 @@ if use_udp then
 end
 
 -- Set up the ZMQ sending
+local rgbd_color_ch, rgbd_depth_ch
 if use_zmq then
   local simple_ipc = require'simple_ipc'
   rgbd_color_ch = simple_ipc.new_publisher'rgbd_color'
@@ -46,61 +52,83 @@ end
 signal.signal("SIGINT",  shutdown)
 signal.signal("SIGTERM", shutdown)
 
+local t_last_color_udp = unix.time()
+local function send_color_udp(metadata)
+  local net_settings = vcm.get_kinect_net_color()
+  -- Streaming
+  if net_settings[1]==0 then return end
+  print('net color',net_settings)
+  -- Compression
+  local c_color
+  if net_settings[2]==1 then
+    metadata.c = 'jpeg'
+    c_color = jpeg.compress_rgb(color,color_info.width,color_info.height)
+  elseif net_settings[2]==2 then
+    metadata.c = 'png'
+    c_color = png.compress(color, color_info.width, color_info.height)
+  end
+  if not c_color then return end
+  -- Metadata
+  local meta = mp.pack(meta)
+  -- Send over UDP
+  local ret_c,err_c = udp_color:send( meta..c_color )
+  t_last_color_udp = t
+  if net_settings[1]==1 then
+    net_settings[1] = 0
+    vcm.set_kinect_net_color(net_settings)
+    return
+  end
+end
+
+local t_last_depth_udp = unix.time()
+local function send_depth_udp(metadata)
+  local net_settings = vcm.get_kinect_net_depth()
+  -- Streaming
+  if net_settings[1]==0 then return end
+  -- Compression
+  local c_depth
+  if net_settings[2]==1 then
+    metadata.c = 'jpeg'
+    c_depth = jpeg.compress_16(depth,depth_info.width,depth_info.height,4)
+  elseif net_settings[2]==2 then
+    metadata.c = 'png'
+    c_depth = png.compress(depth, depth_info.width,depth_info.height, 2)
+  end
+  -- Metadata
+  local meta = mp.pack(meta)
+  -- Send over UDP
+  local ret_d,err_d = udp_depth:send( meta..c_depth )
+  t_last_depth_udp = t
+  if net_settings[1]==1 then
+    net_settings[1] = 0
+    vcm.set_kinect_net_depth(net_settings)
+    return
+  end
+end
+
 -- Start loop
 while true do
 
   -- Acquire the Data
-  local depth, color = openni.update_rgbd()
+  depth, color = openni.update_rgbd()
   -- Check the time of acquisition
   local t = unix.time()
   
   -- Save the metadata  
   vcm.set_kinect_t(t)
-  -- Pack it, if needed...
-  if use_zmq or use_udp then
-    local metadata = {}
-    metadata.t = t
-    meta = mp.pack(meta)
-  end
+  local metadata = {}
+  metadata.t = t
   
   if use_zmq then
+    local meta = mp.pack(meta)
     -- Send over ZMQ
     rgbd_color_ch:send({meta,color})
     rgbd_depth_ch:send({meta,depth})
   end
 
   if use_udp then
-    -- Compress the payload
-    local jdepth = jpeg.compress_16(depth,depth_info.width,depth_info.height,4)
-    local jcolor = jpeg.compress_rgb(color,color_info.width,color_info.height)
-    
-    -- PNG option
-    --[[
-    local pcolor = png.compress(
-    color,
-    color_info.width,
-    color_info.height)
-    local pdepth = png.compress(
-    depth,
-    color_info.width,
-    color_info.height,
-    2)
-    --]]
-
-    -- Send over UDP
-    local ret_d,err_d = udp_depth:send( meta..jdepth )
-    local ret_c,err_c = udp_color:send( meta..jcolor )
-    
-
---[[
-    if err_c then print('C',err_c) end
-    if err_d then print('D',err_d) end
-    print('Bytes | Meta:', #meta)
-    print('Bytes | Color:',#color,'Depth:',#depth)
-    print('Bytes | JColor:',#jcolor,'JDepth:',#jdepth)
-    --print('Bytes | PColor:',#pcolor,'PDepth:',#pdepth)
-    print('Bytes | UDP C:',ret_c,'UDP D:',ret_d)
---]]
+    send_color_udp(metadata)
+    send_depth_udp(metadata)
   end
   
   -- Debug the timing

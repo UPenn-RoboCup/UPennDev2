@@ -17,7 +17,8 @@ local vector  = require'vector'
 local Body  = require'Body'
 -- Keypresses for walking
 local simple_ipc = require'simple_ipc'
-local motion_events = simple_ipc.new_publisher('fsm_motion',true)
+--local motion_events = simple_ipc.new_publisher('fsm_motion',true)
+local rpc_ch = simple_ipc.new_requester(5555)
 require'mcm'
 
 local char_to_event = {
@@ -28,34 +29,51 @@ local char_to_event = {
 
 local char_to_vel = {
   ['i'] = vector.new({0.1, 0, 0}),
-  ['k'] = vector.new({-.1, 0, 0}),
+  [','] = vector.new({-.1, 0, 0}),
   ['j'] = vector.new({0, 0.1, 0}),
   ['l'] = vector.new({0, -.1, 0}),
   ['u'] = vector.new({0, 0, 5})*math.pi/180,
   ['o'] = vector.new({0, 0, 5})*math.pi/180,
-  ['0'] = function() mcm.set_walk_vel({0,0,0}) end
 }
 
 local function process_character(key_code,key_char,key_char_lower)
+  local cmd
+
+  -- Send motion fsm events
   local evt_str = char_to_event[key_char_lower]
   if evt_str then
-    print( util.color(evt_str,'yellow') )
-    motion_events:send(evt_str)
-    return
+    print( 'MotionFSM', util.color(evt_str,'yellow') )
+    cmd = {}
+    cmd.fsm = 'MotionFSM'
+    cmd.evt = evt_str
   end
 
+  -- Adjust the velocity
   local vel_adjustment = char_to_vel[key_char_lower]
   if type(vel_adjustment)=='table' then
-    mcm.set_walk_vel(vel_adjustment+mcm.get_walk_vel())
-    print( util.color('Inc vel by','yellow'), vel_adjustment, 'to', mcm.get_walk_vel() )
-    return
-  elseif type(vel_adjustment)=='function' then
-    local cur = mcm.get_walk_vel()
-    vel_adjustment()
-    print( util.color('Vel from','yellow'), cur, 'to', mcm.get_walk_vel() )
-    return
+    print( util.color('Inc vel by','yellow'), vel_adjustment )
+    cmd = {}
+    cmd.shm = 'mcm'
+    cmd.segment = 'walk'
+    cmd.key = 'vel'
+    cmd.delta = vel_adjustment
+  elseif key_char_lower=='k' then
+    print( util.color('Zero Velocity','yellow'))
+    cmd = {}
+    cmd.shm = 'mcm'
+    cmd.segment = 'walk'
+    cmd.key = 'vel'
+    cmd.val = {0, 0, 0}
   end
-  print( util.color('Bad event','red') )
+
+  -- With no command, return
+  if not cmd then return end
+
+  -- Default case is to send the command and receive a reply
+  local ret   = rpc_ch:send(mp.pack(cmd))
+  local reply = rpc_ch:receive()
+  return mp.unpack(reply)
+
 end
 
 ------------

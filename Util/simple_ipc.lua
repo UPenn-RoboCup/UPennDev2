@@ -173,13 +173,14 @@ end
 -- Request/Reply
 -- Make a new request channel
 -- Publish with a filter prefix on a (possibly) pre-existing channel
-simple_ipc.new_requester = function( channel, filter )
+simple_ipc.new_requester = function( channel, addr, filter )
   local channel_obj = {}
   local channel_type = type(channel)
   if channel_type=="string" then
     channel_obj.name = simple_ipc.local_prefix..channel
   elseif channel_type=="number" then
-    channel_obj.name = simple_ipc.intercom_prefix..channel
+    channel_obj.name = 
+      simple_ipc.intercom_prefix:gsub('*',addr or 'localhost')..channel
   elseif channel_type=="table" and channel.name and channel.filter~=filter then
     print('Copying',channel.name )
     -- Copy and apply a different filter

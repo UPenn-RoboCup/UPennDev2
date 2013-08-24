@@ -25,7 +25,7 @@ for _,sm in ipairs(unix.readdir(CWD)) do
 end
 
 local function process_rpc(rpc)
-  util.ptable(rpc)
+  --util.ptable(rpc)
 
   local status, reply
   -- Shared memory modification
@@ -37,14 +37,14 @@ local function process_rpc(rpc)
       local method = 'set_'..rpc.segment..'_'..rpc.key
       local func = _G[shm][method]
       -- Use a protected call
-      pcall(func,rpc.val)
-      elseif rpc.delta then
+      status, reply = pcall(func,rpc.val)
+    elseif rpc.delta then
       -- Increment/Decrement memory
       local method = rpc.segment..'_'..rpc.key
       local func = _G[shm]['get_'..method]
       pcall(func,rpc.val)
       func = _G[shm]['set_'..method]
-      pcall(func,rpc.val)
+      status, reply = pcall(func,rpc.val)
     else
       -- Get memory
       local method = 'get_'..rpc.segment..'_'..rpc.key
@@ -58,7 +58,7 @@ local function process_rpc(rpc)
   if fsm then
     local ch = fsm_channels[fsm]
     if ch and type(rpc.evt)=='string' then
-      ch:send(rpc.evt)
+      reply = ch:send(rpc.evt)
     else
       reply = 'bad fsm rpc call'
     end
@@ -68,7 +68,6 @@ local function process_rpc(rpc)
 end
 
 local function process_zmq()
-  print('here')
   -- TODO: is has_more is innocuous in this situation?
   local request, has_more = rpc_zmq:receive()
   local rpc = mp.unpack(request)

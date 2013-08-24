@@ -5,8 +5,11 @@
  * of the X11 license.
  * 
  * lua wrapper by Yida Zhang <yida@seas.upenn.edu>
+ * Stephen McGill <smcgill3@seas.upenn.edu>
  * University of Pennsylvania
  */
+
+// http://www.libpng.org/pub/png/libpng-1.2.5-manual.html
 
 #include <lua.hpp>
 #include <unistd.h>
@@ -20,7 +23,7 @@
 #define MT_NAME "png_mt"
 #include <png.h>
 
-typedef struct {
+ typedef struct {
   int width, height, stride;
   png_byte color_type;
   png_byte bit_depth;
@@ -74,7 +77,7 @@ static int lua_png_delete(lua_State *L) {
   /* cleanup heap allocation */
   int y;
   for (y=0; y<p->height; y++)
-          free(p->row_pointers[y]);
+    free(p->row_pointers[y]);
   free(p->row_pointers);
 
   return 1;
@@ -95,7 +98,7 @@ static int lua_png_setValue(lua_State *L) {
   int c = index - r * p->stride;
 
   p->row_pointers[r][c] = val;
- 
+  
   return 1;
 }
 
@@ -131,23 +134,23 @@ static int lua_png_load(lua_State *L) {
   /* open file and test for it being a png */
   FILE *fp = fopen(file_name, "rb");
   if (!fp)
-          abort_("[read_png_file] File %s could not be opened for reading", file_name);
+    abort_("[read_png_file] File %s could not be opened for reading", file_name);
   int ret = fread(header, 1, 8, fp);
   if (png_sig_cmp((const png_byte*)header, 0, 8))
-          abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
+    abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
 
   /* initialize stuff */
   png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
   if (!png_ptr)
-          abort_("[read_png_file] png_create_read_struct failed");
+    abort_("[read_png_file] png_create_read_struct failed");
 
   png_infop info_ptr = png_create_info_struct(png_ptr);
   if (!info_ptr)
-          abort_("[read_png_file] png_create_info_struct failed");
+    abort_("[read_png_file] png_create_info_struct failed");
 
   if (setjmp(png_jmpbuf(png_ptr)))
-          abort_("[read_png_file] Error during init_io");
+    abort_("[read_png_file] Error during init_io");
 
   png_init_io(png_ptr, fp);
   png_set_sig_bytes(png_ptr, 8);
@@ -164,7 +167,7 @@ static int lua_png_load(lua_State *L) {
 
   /* read file */
   if (setjmp(png_jmpbuf(png_ptr)))
-          abort_("[read_png_file] Error during read_image");
+    abort_("[read_png_file] Error during read_image");
 
   int x, y, stride;
   stride = png_get_rowbytes(png_ptr, info_ptr);
@@ -195,23 +198,23 @@ static int lua_png_new(lua_State *L) {
   /* open file and test for it being a png */
   FILE *fp = fopen(file_name, "rb");
   if (!fp)
-          abort_("[read_png_file] File %s could not be opened for reading", file_name);
+    abort_("[read_png_file] File %s could not be opened for reading", file_name);
   int ret = fread(header, 1, 8, fp);
   if (png_sig_cmp((const png_byte*)header, 0, 8))
-          abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
+    abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
 
   /* initialize stuff */
   ud->png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
   if (!ud->png_ptr)
-          abort_("[read_png_file] png_create_read_struct failed");
+    abort_("[read_png_file] png_create_read_struct failed");
 
   ud->info_ptr = png_create_info_struct(ud->png_ptr);
   if (!ud->info_ptr)
-          abort_("[read_png_file] png_create_info_struct failed");
+    abort_("[read_png_file] png_create_info_struct failed");
 
   if (setjmp(png_jmpbuf(ud->png_ptr)))
-          abort_("[read_png_file] Error during init_io");
+    abort_("[read_png_file] Error during init_io");
 
   png_init_io(ud->png_ptr, fp);
   png_set_sig_bytes(ud->png_ptr, 8);
@@ -229,7 +232,7 @@ static int lua_png_new(lua_State *L) {
 
   /* read file */
   if (setjmp(png_jmpbuf(ud->png_ptr)))
-          abort_("[read_png_file] Error during read_image");
+    abort_("[read_png_file] Error during read_image");
 
   ud->row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * ud->height);
 
@@ -267,46 +270,46 @@ static int lua_png_write(lua_State *L) {
   /* create file */
   FILE *fp = fopen(file_name, "wb");
   if (!fp)
-          abort_("[write_png_file] File %s could not be opened for writing", file_name);
+    abort_("[write_png_file] File %s could not be opened for writing", file_name);
 
 
   /* initialize stuff */
   ud->png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
   if (!ud->png_ptr)
-          abort_("[write_png_file] png_create_write_struct failed");
+    abort_("[write_png_file] png_create_write_struct failed");
 
   ud->info_ptr = png_create_info_struct(ud->png_ptr);
   if (!ud->info_ptr)
-          abort_("[write_png_file] png_create_info_struct failed");
+    abort_("[write_png_file] png_create_info_struct failed");
 
   if (setjmp(png_jmpbuf(ud->png_ptr)))
-          abort_("[write_png_file] Error during init_io");
+    abort_("[write_png_file] Error during init_io");
 
   png_init_io(ud->png_ptr, fp);
 
 
   /* write header */
   if (setjmp(png_jmpbuf(ud->png_ptr)))
-          abort_("[write_png_file] Error during writing header");
+    abort_("[write_png_file] Error during writing header");
 
   png_set_IHDR(ud->png_ptr, ud->info_ptr, ud->width, ud->height,
-               ud->bit_depth, ud->color_type, PNG_INTERLACE_NONE,
-               PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+   ud->bit_depth, ud->color_type, PNG_INTERLACE_NONE,
+   PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
   png_write_info(ud->png_ptr, ud->info_ptr);
 
 
   /* write bytes */
   if (setjmp(png_jmpbuf(ud->png_ptr)))
-          abort_("[write_png_file] Error during writing bytes");
+    abort_("[write_png_file] Error during writing bytes");
 
   png_write_image(ud->png_ptr, ud->row_pointers);
 
 
   /* end write */
   if (setjmp(png_jmpbuf(ud->png_ptr)))
-          abort_("[write_png_file] Error during end of write");
+    abort_("[write_png_file] Error during end of write");
 
   png_write_end(ud->png_ptr, NULL);
 
@@ -341,36 +344,36 @@ static int lua_png_save(lua_State *L) {
   /* create file */
   FILE *fp = fopen(file_name, "wb");
   if (!fp)
-          abort_("[write_png_file] File %s could not be opened for writing", file_name);
+    abort_("[write_png_file] File %s could not be opened for writing", file_name);
 
   /* initialize stuff */
   png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
   if (!png_ptr)
-          abort_("[write_png_file] png_create_write_struct failed");
+    abort_("[write_png_file] png_create_write_struct failed");
 
   png_infop info_ptr = png_create_info_struct(png_ptr);
   if (!info_ptr)
-          abort_("[write_png_file] png_create_info_struct failed");
+    abort_("[write_png_file] png_create_info_struct failed");
 
   if (setjmp(png_jmpbuf(png_ptr)))
-          abort_("[write_png_file] Error during init_io");
+    abort_("[write_png_file] Error during init_io");
 
   png_init_io(png_ptr, fp);
 
   /* write header */
   if (setjmp(png_jmpbuf(png_ptr)))
-          abort_("[write_png_file] Error during writing header");
+    abort_("[write_png_file] Error during writing header");
 
   png_set_IHDR(png_ptr, info_ptr, w, h,
-               bit_depth, color_type, PNG_INTERLACE_NONE,
-               PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+   bit_depth, color_type, PNG_INTERLACE_NONE,
+   PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
   png_write_info(png_ptr, info_ptr);
 
   /* write bytes */
   if (setjmp(png_jmpbuf(png_ptr)))
-          abort_("[write_png_file] Error during writing bytes");
+    abort_("[write_png_file] Error during writing bytes");
 
   png_bytep * row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * h);
   int x, y;
@@ -385,7 +388,7 @@ static int lua_png_save(lua_State *L) {
 
   /* end write */
   if (setjmp(png_jmpbuf(png_ptr)))
-          abort_("[write_png_file] Error during end of write");
+    abort_("[write_png_file] Error during end of write");
 
   png_write_end(png_ptr, NULL);
 
@@ -447,28 +450,43 @@ void lua_png_write_string(png_structp png_ptr, png_bytep data, png_size_t length
 }
 
 static int lua_png_compress(lua_State *L) {
-  unsigned char* data = (unsigned char*) lua_touserdata(L, 1);
-  if ((data == NULL) || !lua_islightuserdata(L, 1) )
-    return luaL_error(L, "Input not light userdata");
 
-  int h = lua_tointeger(L, 2);
-  int stride = lua_tointeger(L, 3);
-  png_byte color_type = lua_tointeger(L, 4);
+  unsigned char * data = NULL;
+  size_t sz = 0;
+  if (lua_isstring(L, 1)) {
+    data = (uint8_t *) lua_tolstring(L, 1, &sz); 
+  } else if (lua_islightuserdata(L, 1)) {
+    if ( (data=(uint8_t *)lua_touserdata(L, 1))==NULL ){
+      return luaL_error(L, "NULL userdata");
+    }
+  } else {
+    return luaL_error(L, "Bad PNG Compress input");
+  }
+
   int bit_depth = 8;
-  int bytes_per_pixel = 3;
-  if (color_type == PNG_COLOR_TYPE_GRAY)
-    bytes_per_pixel = 1;
-  else if (color_type == PNG_COLOR_TYPE_RGB)
-    bytes_per_pixel = 3;
-  else if (color_type == PNG_COLOR_TYPE_RGB_ALPHA)
-    bytes_per_pixel = 4;
-  else if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-    bytes_per_pixel = 2;
-  else
-    bytes_per_pixel = 0;
+  int w = lua_tointeger(L, 2);
+  int h = lua_tointeger(L, 3);
+  int bytes_per_pixel = luaL_optinteger(L, 4, 3);
 
-  int w = stride / bytes_per_pixel;
+  png_byte color_type;
+  switch(bytes_per_pixel) {
+    case 1:
+    color_type = PNG_COLOR_TYPE_GRAY;
+    break;
+    case 2:
+    color_type = PNG_COLOR_TYPE_GRAY_ALPHA;
+    break;
+    case 3:
+    color_type = PNG_COLOR_TYPE_RGB;
+    break;
+    case 4:
+    color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+    break;
+    default:
+    return luaL_error(L, "Bad PNG Color type");
+  }
 
+  int stride = w * bytes_per_pixel;
   struct mem_encode state;
   state.buffer = NULL;
   state.size = 0;
@@ -477,30 +495,30 @@ static int lua_png_compress(lua_State *L) {
   png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
   if (!png_ptr)
-          abort_("[write_png_file] png_create_write_struct failed");
+    abort_("[write_png_file] png_create_write_struct failed");
 
   png_set_write_fn(png_ptr, &state, lua_png_write_string, NULL);
 
   png_infop info_ptr = png_create_info_struct(png_ptr);
   if (!info_ptr)
-          abort_("[write_png_file] png_create_info_struct failed");
+    abort_("[write_png_file] png_create_info_struct failed");
 
   if (setjmp(png_jmpbuf(png_ptr)))
-          abort_("[write_png_file] Error during init_io");
+    abort_("[write_png_file] Error during init_io");
 
   /* write header */
   if (setjmp(png_jmpbuf(png_ptr)))
-          abort_("[write_png_file] Error during writing header");
+    abort_("[write_png_file] Error during writing header");
 
   png_set_IHDR(png_ptr, info_ptr, w, h,
-               bit_depth, color_type, PNG_INTERLACE_NONE,
-               PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+   bit_depth, color_type, PNG_INTERLACE_NONE,
+   PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
   png_write_info(png_ptr, info_ptr);
 
   /* write bytes */
   if (setjmp(png_jmpbuf(png_ptr)))
-          abort_("[write_png_file] Error during writing bytes");
+    abort_("[write_png_file] Error during writing bytes");
 
   png_bytep * row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * h);
   int x, y;
@@ -514,7 +532,7 @@ static int lua_png_compress(lua_State *L) {
 
   /* end write */
   if (setjmp(png_jmpbuf(png_ptr)))
-          abort_("[write_png_file] Error during end of write");
+    abort_("[write_png_file] Error during end of write");
 
   png_write_end(png_ptr, NULL);
 
@@ -549,7 +567,7 @@ static int lua_png_uncompress(lua_State *L) {
   state.size += 8;
 
   if (png_sig_cmp((const png_byte*)header, 0, 8))
-          abort_("[read_png_stream] stream is not recognized as a PNG file");
+    abort_("[read_png_stream] stream is not recognized as a PNG file");
 
   /* initialize stuff */
   ud->png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -580,7 +598,7 @@ static int lua_png_uncompress(lua_State *L) {
 
   /* read file */
   if (setjmp(png_jmpbuf(ud->png_ptr)))
-          abort_("[read_png_file] Error during read_image");
+    abort_("[read_png_file] Error during read_image");
 
   ud->row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * ud->height);
 

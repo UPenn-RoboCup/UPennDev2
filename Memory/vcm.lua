@@ -27,7 +27,7 @@ shared.head_lidar           = {}
 shared.head_lidar.scan      = 4*1081
 shared.head_lidar.t         = vector.zeros(1)
 -- Radian endpoints for where the lidar is scanning
-shared.head_lidar.endpoints = vector.new({-1,60})*math.pi/180
+shared.head_lidar.endpoints = vector.new({0,45})*math.pi/180
 -- Pixel resolution of the mesh from actuated lidar scans
 shared.head_lidar.mesh_resolution = vector.new({500,480})
 -- Care only about ranges between these two points to include in the mesh

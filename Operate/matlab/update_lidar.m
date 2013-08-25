@@ -9,8 +9,10 @@ function [ nBytes ] = update_lidar(lidar_type)
 
 %Updates 2D depth image and 3D mesh from lidar data
 t0 = tic;
-  linenum = size(lidar.ranges,1);
+  linenum = size(lidar.ranges,1)
   filpped = 0;
+
+size(lidar.ranges)
 
   if iscell(lidar.lidarangles)
     lidarangles=cell2mat(lidar.lidarangles);

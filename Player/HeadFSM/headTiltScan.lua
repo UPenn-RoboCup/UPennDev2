@@ -3,11 +3,11 @@ local Body = require'Body'
 -- TODO: Should these endpoints be in vcm?  Probably...
 require'vcm'
 
-local min_tilt, max_tilt, mid_tilt, mag_tilt
-local t_entry, t_update, ph_speed, ph, forward
-
 local state = {}
 state._NAME = 'headTiltScan'
+
+local min_tilt, max_tilt, mid_tilt, mag_tilt
+local t_entry, t_update, ph_speed, ph, forward
 
 -- Update the parameters
 local function update_tilt_params()
@@ -20,22 +20,7 @@ local function update_tilt_params()
   -- Grab the desired resolution (number of columns)
   local res = vcm.get_head_lidar_mesh_resolution()[1]
   -- Complete the scan at this rate
-  ph_speed = 40 / res / 2; -- 40 Hz update of the LIDAR
-end
-
--- Take a phase of the tiltning scan and return the angle to set the lidar
--- ph is between 0 and 1.  ph and forward are in state's scope
-local function ph_to_radians()
-  -- Clamp the phase to avoid crazy behavior
-  ph = math.max( math.min(ph, 1), 0 )
-  print('ph',ph)
-  if forward then
-    -- Forward direction
-    return min_tilt + ph*mag_tilt
-  else
-    -- Backwards direction
-    return max_tilt - ph*mag_tilt
-  end
+  ph_speed = 40 / res -- 40 Hz update of the LIDAR
 end
 
 -- Take a given radian and back convert to find the durrent phase
@@ -76,17 +61,18 @@ function state.update()
   update_tilt_params()
   
   -- Update the direction
-  forward = (forward and ph<1) or ph<0
+  forward = (forward and ph<1) or ph<=0
   -- Update the phase of the tilt
   if forward then
     ph = ph + t_diff * ph_speed
   else
     ph = ph - t_diff * ph_speed
   end
+  -- Clamp the phase to avoid crazy behavior
+  ph = math.max( math.min(ph, 1), 0 )
 
   -- Set the desired angle of the lidar tilt
-  local rad = ph_to_radians(ph)
-  print('rad',rad)
+  local rad = min_tilt + ph*mag_tilt
   Body.set_head_command_position( {0, rad} )
 end
 

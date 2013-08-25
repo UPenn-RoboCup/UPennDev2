@@ -20,22 +20,7 @@ local function update_pan_params()
   -- Grab the desired resolution (number of columns)
   local res = vcm.get_chest_lidar_mesh_resolution()[1]
   -- Complete the scan at this rate
-  ph_speed = 40 / res / 2; -- 40 Hz update of the LIDAR
-end
-
--- Take a phase of the panning scan and return the angle to set the lidar
--- ph is between 0 and 1 and is defined for this state
-local function ph_to_radians()
-  -- Clamp the phase to avoid crazy behavior
-  ph = math.max( math.min(ph, 1), 0 )
-  
-  if forward then
-    -- Forward direction
-    return min_pan + ph*mag_pan
-  else
-    -- Backwards direction
-    return max_pan - ph*mag_pan
-  end
+  ph_speed = 40 / res -- 40 Hz update of the LIDAR
 end
 
 -- Take a given radian and back convert to find the current phase
@@ -75,16 +60,17 @@ function lidarPan.update()
   update_pan_params()
   
   -- Update the direction
-  forward = (forward and ph<1) or ph<0
+  forward = (forward and ph<1) or ph<=0
   -- Update the phase of the pan
   if forward then
     ph = ph + t_diff * ph_speed
   else
     ph = ph - t_diff * ph_speed
   end
-
-  -- Set the desired angle of the lidar pan
-  local rad = ph_to_radians()
+  -- Clamp the phase to avoid crazy behavior
+  ph = math.max( math.min(ph, 1), 0 )
+  -- Set the desired angle of the lidar tilt
+  local rad = min_pan + ph*mag_pan
   Body.set_lidar_command_position( {rad} )
 end
 

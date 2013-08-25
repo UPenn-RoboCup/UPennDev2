@@ -178,7 +178,7 @@ local function head_callback()
   -- Only if a valid column is returned
   if row then
     -- Copy lidar readings to the torch object for fast modification
-    ranges:tensor( head.mesh:select(1,row), head.res[1], head.offset )
+    ranges:tensor( head.mesh:select(1,row), head.res[2], head.offset )
     -- Save the pan angle
     head.lidarangles[row] = Body.get_head_position()[2]
   end

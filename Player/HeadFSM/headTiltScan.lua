@@ -20,7 +20,7 @@ local function update_tilt_params()
   -- Grab the desired resolution (number of columns)
   local res = vcm.get_head_lidar_mesh_resolution()[1]
   -- Complete the scan at this rate
-  ph_speed = 40 / res -- 40 Hz update of the LIDAR
+  ph_speed = 40 / res / 2 -- 40 Hz update of the LIDAR
 end
 
 -- Take a given radian and back convert to find the durrent phase

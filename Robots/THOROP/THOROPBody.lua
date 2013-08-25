@@ -759,7 +759,7 @@ if IS_WEBOTS then
       -- Head Lidar
       tags.head_lidar  = webots.wb_robot_get_device("HeadLidar")
       webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
-      head_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
+      head_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.head_lidar)
       head_lidar_wbt.meta.count = 0
     end
     if use_camera then

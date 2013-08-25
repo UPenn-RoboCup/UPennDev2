@@ -83,7 +83,6 @@ local function tilt_to_row( rad )
   rad = math.max( math.min(rad, head.stop), head.start )
   local ratio = (rad-head.start)/(head.stop-head.start)
   local row = math.floor(ratio*head.res[1]+.5)
-  print('row',row)
   -- Do not return a row number if out of bounds
   if row<1 or row>head.res[2] then return end
   return row
@@ -92,16 +91,16 @@ end
 -- type is head or chest table
 local function stream_mesh(type)
   -- Network streaming settings
-  local net_settings = vcm.get_chest_lidar_net()
-  --print(net_settings,'net_settings')
+  local net_settings = vcm['get_'..type.meta.name..'_lidar_net']()
+  print(type.meta.name,net_settings,'net_settings')
   -- Streaming
   if net_settings[1]==0 then return end
   if net_settings[1]==1 then
     net_settings[1] = 0
-    vcm.set_chest_lidar_net(net_settings)
+    vcm['set_'..type.meta.name..'_lidar_net'](net_settings)
   end
   -- Sensitivity range in meters
-  local my_range = vcm.get_chest_lidar_mesh_range()
+  local my_range = vcm['get_'..type.meta.name..'_lidar_mesh_range']()
   -- Safety check
   if my_range[1]>=my_range[2] then return end
   
@@ -159,7 +158,6 @@ local function chest_callback()
   -- Insert into the correct column
   local col = pan_to_column(metadata.pangle)
   -- Only if a valid column is returned
-  print('col',col)
   if col then
     -- Copy lidar readings to the torch object for fast modification
     ranges:tensor( chest.mesh:select(1,col), chest.res[2], chest.offset )

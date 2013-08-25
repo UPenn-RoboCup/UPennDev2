@@ -257,13 +257,13 @@ Supervisor {
                         }
                       ]
                       name "RightWristYaw"
-                      boundingObject Transform {
-                        children [
-                          Box {
-                            size 0.05 0.05 0.1
-                          }
-                        ]
-                      }
+#                      boundingObject Transform {
+#                        children [
+#                          Box {
+#                            size 0.05 0.05 0.1
+#                          }
+#                        ]
+#                      }
                       physics Physics {
                         density -1
                         mass 0.2
@@ -282,15 +282,15 @@ Supervisor {
                   ]
                   name "ArmLowerR"
                   boundingObject Group {
-                    children [
-                      Transform {
-                        rotation 1 0 0 0.7854
-                        children [
-                          Box {
-                            size 0.13 0.065 0.065
-                          }
-                        ]
-                      }
+                     children [
+#                      Transform {
+#                        rotation 1 0 0 0.7854
+#                        children [
+#                          Box {
+#                            size 0.13 0.065 0.065
+#                          }
+#                        ]
+#                      }
                       Transform {
                         translation 0 -0.115 -0.03
                         children [
@@ -344,13 +344,13 @@ Supervisor {
             }
           ]
           name "ArmUpperR"
-          boundingObject Transform {
-            children [
-              Box {
-                size 0.06 0.06 0.13
-              }
-            ]
-          }
+#          boundingObject Transform {
+#            children [
+#              Box {
+#                size 0.06 0.06 0.13
+#              }
+#            ]
+#          }
           physics Physics {
             density -1
             mass 0.3
@@ -360,14 +360,14 @@ Supervisor {
         }
       ]
       name "ShoulderR"
-      boundingObject Transform {
-        translation 0.01 0 0
-        children [
-          Box {
-            size 0.085 0.066 0.15
-          }
-        ]
-      }
+#      boundingObject Transform {
+#        translation 0.01 0 0
+#        children [
+#          Box {
+#            size 0.085 0.066 0.15
+#          }
+#        ]
+#      }
       physics Physics {
         density -1
         mass 0.1
@@ -504,13 +504,13 @@ Supervisor {
                         }
                       ]
                       name "LeftWristYaw"
-                      boundingObject Transform {
-                        children [
-                          Box {
-                            size 0.05 0.05 0.1
-                          }
-                        ]
-                      }
+#                      boundingObject Transform {
+#                        children [
+#                          Box {
+#                            size 0.05 0.05 0.1
+#                          }
+#                        ]
+#                      }
                       physics Physics {
                         density -1
                         mass 0.2
@@ -529,14 +529,14 @@ Supervisor {
                   name "ArmLowerL"
                   boundingObject Group {
                     children [
-                      Transform {
-                        rotation 1 0 0 0.7854
-                        children [
-                          Box {
-                            size 0.13 0.065 0.065
-                          }
-                        ]
-                      }
+#                      Transform {
+#                        rotation 1 0 0 0.7854
+#                        children [
+#                          Box {
+#                            size 0.13 0.065 0.065
+#                          }
+#                        ]
+#                      }
                       Transform {
                         translation 0 -0.115 -0.03
                         children [
@@ -589,13 +589,13 @@ Supervisor {
             }
           ]
           name "ArmUpperL"
-          boundingObject Transform {
-            children [
-              Box {
-                size 0.06 0.06 0.13
-              }
-            ]
-          }
+#          boundingObject Transform {
+#            children [
+#              Box {
+#                size 0.06 0.06 0.13
+#              }
+#            ]
+#          }
           physics Physics {
             density -1
             mass 0.3
@@ -613,14 +613,14 @@ Supervisor {
         }
       ]
       name "ShoulderL"
-      boundingObject Transform {
-        translation -0.01 0 0
-        children [
-          Box {
-            size 0.085 0.066 0.15
-          }
-        ]
-      }
+#      boundingObject Transform {
+#        translation -0.01 0 0
+#        children [
+#          Box {
+#            size 0.085 0.066 0.15
+#          }
+#        ]
+#      }
       physics Physics {
         density -1
         mass 0.1
@@ -779,14 +779,14 @@ Supervisor {
                                           }
                                         ]
                                       }
-                                      Transform {
-                                        translation 0 -0.04 -0.013
-                                        children [
-                                          Box {
-                                            size 0.066 0.14 0.13
-                                          }
-                                        ]
-                                      }
+#                                      Transform {
+#                                        translation 0 -0.04 -0.013
+#                                        children [
+#                                          Box {
+#                                            size 0.066 0.14 0.13
+#                                          }
+#                                        ]
+#                                      }
                                     ]
                                   }
                                   physics Physics {
@@ -805,14 +805,14 @@ Supervisor {
                                 }
                               ]
                               name "AnkleR"
-                              boundingObject Transform {
-                                translation 0 0 -0.012
-                                children [
-                                  Box {
-                                    size 0.06 0.06 0.12
-                                  }
-                                ]
-                              }
+#                              boundingObject Transform {
+#                                translation 0 0 -0.012
+#                                children [
+#                                  Box {
+#                                    size 0.06 0.06 0.12
+#                                  }
+#                                ]
+#                              }
                               physics Physics {
                                 density -1
                                 mass 0.2
@@ -850,15 +850,15 @@ Supervisor {
                               }
                             ]
                           }
-                          Transform {
-                            translation -0.025 -0.3 -0.025
-                            rotation 1 0 0 0.7854
-                            children [
-                              Box {
-                                size 0.144 0.066 0.066
-                              }
-                            ]
-                          }
+#                          Transform {
+#                            translation -0.025 -0.3 -0.025
+#                            rotation 1 0 0 0.7854
+#                            children [
+#                              Box {
+#                                size 0.144 0.066 0.066
+#                              }
+#                            ]
+#                          }
                         ]
                       }
                       physics Physics {
@@ -1052,14 +1052,14 @@ Supervisor {
                                           }
                                         ]
                                       }
-                                      Transform {
-                                        translation 0 -0.04 -0.013
-                                        children [
-                                          Box {
-                                            size 0.066 0.14 0.13
-                                          }
-                                        ]
-                                      }
+#                                      Transform {
+#                                        translation 0 -0.04 -0.013
+#                                        children [
+#                                          Box {
+#                                            size 0.066 0.14 0.13
+#                                          }
+#                                        ]
+#                                      }
                                     ]
                                   }
                                   physics Physics {
@@ -1078,14 +1078,14 @@ Supervisor {
                                 }
                               ]
                               name "AnkleL"
-                              boundingObject Transform {
-                                translation 0 0 -0.012
-                                children [
-                                  Box {
-                                    size 0.06 0.06 0.12
-                                  }
-                                ]
-                              }
+#                              boundingObject Transform {
+#                                translation 0 0 -0.012
+#                                children [
+#                                  Box {
+#                                    size 0.06 0.06 0.12
+#                                  }
+#                                ]
+#                              }
                               physics Physics {
                                 density -1
                                 mass 0.2
@@ -1123,15 +1123,15 @@ Supervisor {
                               }
                             ]
                           }
-                          Transform {
-                            translation 0.025 -0.3 -0.025
-                            rotation 1 0 0 0.7854
-                            children [
-                              Box {
-                                size 0.144 0.066 0.066
-                              }
-                            ]
-                          }
+#                          Transform {
+#                            translation 0.025 -0.3 -0.025
+#                            rotation 1 0 0 0.7854
+#                            children [
+#                              Box {
+#                                size 0.144 0.066 0.066
+#                              }
+#                            ]
+#                          }
                         ]
                       }
                       physics Physics {
@@ -1287,14 +1287,14 @@ Supervisor {
         }
       ]
       name "Neck"
-      boundingObject Transform {
-        translation 0 0.06 0
-        children [
-          Box {
-            size 0.04 0.125 0.04
-          }
-        ]
-      }
+#      boundingObject Transform {
+#        translation 0 0.06 0
+#        children [
+#          Box {
+#            size 0.04 0.125 0.04
+#          }
+#        ]
+#      }
       physics Physics {
         density -1
         mass 0.1

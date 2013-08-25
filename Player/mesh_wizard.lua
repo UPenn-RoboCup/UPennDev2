@@ -60,7 +60,7 @@ head.stop      = vcm.get_head_lidar_endpoints()[2]
 head.mesh_byte = torch.ByteTensor(  unpack(head.res) ):zero()
 head.mesh      = torch.FloatTensor( unpack(head.res) ):zero()
 head.mesh_adj  = torch.FloatTensor( unpack(head.res) ):zero()
-head.lidarangles  = torch.DoubleTensor( head.res[2] ):zero()
+head.lidarangles  = torch.DoubleTensor( head.res[1] ):zero()
 -- Index Offset for copying using carray
 head.offset    = math.floor( (1081-head.res[1])/2 )
 head.lidar_ch  = simple_ipc.new_subscriber'head_lidar'

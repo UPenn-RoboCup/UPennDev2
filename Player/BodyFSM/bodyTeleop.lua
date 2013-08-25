@@ -35,7 +35,6 @@ function state.update()
 
   -- Get the human set input
   local h_vel = hcm.get_motion_velocity()
-  print('h_vel',h_vel)
 
   -- Propagate to shared memory
   mcm.set_walk_vel(h_vel)

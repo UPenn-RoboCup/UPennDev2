@@ -32,10 +32,10 @@ local char_to_event = {
 local char_to_vel = {
   ['i'] = vector.new({0.1, 0, 0}),
   [','] = vector.new({-.1, 0, 0}),
-  ['j'] = vector.new({0, 0.1, 0}),
-  ['l'] = vector.new({0, -.1, 0}),
-  ['u'] = vector.new({0, 0, 5})*math.pi/180,
-  ['o'] = vector.new({0, 0, 5})*math.pi/180,
+  ['h'] = vector.new({0, 0.1, 0}),
+  [';'] = vector.new({0, -.1, 0}),
+  ['j'] = vector.new({0, 0, 5})*math.pi/180,
+  ['l'] = vector.new({0, 0, -5})*math.pi/180,
 }
 
 local function process_character(key_code,key_char,key_char_lower)

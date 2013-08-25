@@ -19,7 +19,7 @@ local Body  = require'Body'
 local simple_ipc = require'simple_ipc'
 --local motion_events = simple_ipc.new_publisher('fsm_motion',true)
 local rpc_ch = simple_ipc.new_requester(5555)
-require'mcm'
+require'hcm'
 
 local char_to_event = {
   ['7'] = 'sit',
@@ -49,18 +49,19 @@ local function process_character(key_code,key_char,key_char_lower)
   end
 
   -- Adjust the velocity
+  -- Only used in direct teleop mode
   local vel_adjustment = char_to_vel[key_char_lower]
   if type(vel_adjustment)=='table' then
     print( util.color('Inc vel by','yellow'), vel_adjustment )
     cmd = {}
-    cmd.shm = 'mcm'
+    cmd.shm = 'hcm'
     cmd.segment = 'walk'
     cmd.key = 'vel'
     cmd.delta = vel_adjustment
   elseif key_char_lower=='k' then
     print( util.color('Zero Velocity','yellow'))
     cmd = {}
-    cmd.shm = 'mcm'
+    cmd.shm = 'hcm'
     cmd.segment = 'walk'
     cmd.key = 'vel'
     cmd.val = {0, 0, 0}

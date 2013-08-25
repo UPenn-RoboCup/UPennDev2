@@ -1,6 +1,6 @@
 local Config = require'Config'
 local Body   = require'Body'
---require'hcm'
+require'hcm'
 
 local state = {}
 state._NAME = 'bodyTeleop'
@@ -15,9 +15,8 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  -- TODO: Fix this
-  --Body.set_lwheel_velocity(0);
-  --Body.set_rwheel_velocity(0);
+  -- Initially stop movement
+  mcm.set_walk_vel({0,0,0})
 end
 
 function state.update()
@@ -27,17 +26,21 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
+  -- Default timeout exit strategy
   if t-t_entry > timeout then return'timeout' end
 
-  local wheelVel = hcm:get_control_wheel_velocity();
-  Body.set_lwheel_velocity(wheelVel[1]);
-  Body.set_rwheel_velocity(wheelVel[2]);
+  -- Get the human set input
+  local h_vel = hcm.get_motion_velocity()
+
+  -- Propagate to the walking engine
+  mcm.set_walk_vel(h_vel)
 end
 
 function state.exit()
   print(_NAME..' Exit' ) 
-  Body.set_lwheel_velocity(0);
-  Body.set_rwheel_velocity(0);
+  mcm.set_walk_vel({0,0,0})
+  -- Also reset the human input
+  hcm.set_motion_velocity({0,0,0})
 end
 
 return state

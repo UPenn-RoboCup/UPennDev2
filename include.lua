@@ -12,7 +12,7 @@ if HOME:find("Webots") ~= nil then
   IS_WEBOTS = true
 end
 
-KEYFRAME_DIR = HOME.."Player/Motion/keyframes"
+KEYFRAME_DIR = HOME.."Player/Keyframes"
 OPERATING_SYSTEM = io.popen('uname'):read('*a'):lower():gsub("%s+$", "")
 
 -- include C modules to cpath
@@ -32,10 +32,12 @@ package.path = HOME..'Memory/?.lua;'..package.path
 package.path = HOME..'Player/Dev/?.lua;'..package.path
 
 -- include Motion files to path
+--[[
 package.path = HOME..'Player/Motion/?.lua;'..package.path
 package.path = HOME..'Player/Motion/keyframes/?.lua;'..package.path
 package.path = HOME..'Player/Motion/Walk/?.lua;'..package.path
 package.path = HOME..'Player/Motion/Arms/?.lua;'..package.path
+--]]
 
 -- include World files to the path
 package.path = HOME..'Player/World/?.lua;'..package.path

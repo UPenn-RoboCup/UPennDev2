@@ -14,8 +14,8 @@ PROTO THOROP_NG [
   field SFString   name "THOROP_Visual"
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
-  field SFInt32    cameraWidth 160
-  field SFInt32    cameraHeight 120
+  field SFInt32    cameraWidth 320
+  field SFInt32    cameraHeight 240
 	field SFFloat    cameraFov 1.0472
 #  field SFInt32    channel 0
 ]

@@ -112,17 +112,11 @@ end
 
 function state.exit()
   print(state._NAME..' Exit.  Time elapsed:',t_finish-t_entry )
-  
   -- now on feet
   mcm.set_walk_bipedal(1)
-  
   -- Update current pose for use by the camera
   mcm.set_camera_bodyHeight(pTorso[3])
   mcm.set_camera_bodyTilt(pTorso[5])
-  
-  -- Reset the stance in the walk controller
-  -- TODO: Send on a walk channel or something?
-  --walk.stance_reset()
 end
 
 return state

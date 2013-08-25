@@ -7,8 +7,8 @@ local t_entry, t_update, t_finish
 local timeout = 15.0
 
 -- Goal position is arm Init
-local qLArmInit = Config.arm.qLArmInit[1]
-local qRArmInit = Config.arm.qRArmInit[1]
+local qLArmInit = Config.arm.qLArmInit[3]
+local qRArmInit = Config.arm.qRArmInit[3]
 local qLArm, qRArm
 
 -- Angular velocity
@@ -24,7 +24,7 @@ function state.entry()
 
   -- Where are the arms right now?
   qLArm = Body.get_larm_position()
-  qRArm = Body.get_rleg_position()
+  qRArm = Body.get_rarm_position()
   Body.set_larm_command_position(qLArm)
   Body.set_rarm_command_position(qRArm)
 
@@ -39,7 +39,6 @@ function state.update()
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 
-  -- Ensure that we do not move motors too quickly
   -- Left
   qLArm = Body.get_larm_command_position()
   local dqLArm   = qLArmInit - qLArm
@@ -49,10 +48,26 @@ function state.update()
   for i,dqL in ipairs(dqLArm) do
     if math.abs(dqL) > tolLimit then
       tol = false
+      -- Ensure that we do not move motors too quickly
       dqLArm[i] = util.procFunc(dqL,0,dqArmMax[i]*dt)
     end
   end
   Body.set_larm_command_position( qLArm+dqLArm )
+
+  -- Right
+  qRArm = Body.get_rarm_command_position()
+  local dqRArm   = qRArmInit - qRArm
+  -- Tolerance check (Asumme within tolerance)
+  local tol      = true
+  local tolLimit = 1e-6
+  for i,dqR in ipairs(dqRArm) do
+    if math.abs(dqR) > tolLimit then
+      tol = false
+      -- Ensure that we do not move motors too quickly
+      dqRArm[i] = util.procFunc(dqR,0,dqArmMax[i]*dt)
+    end
+  end
+  Body.set_rarm_command_position( qRArm+dqRArm )
 
 end
 

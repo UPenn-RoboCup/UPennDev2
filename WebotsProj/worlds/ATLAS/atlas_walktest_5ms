@@ -1,0 +1,37 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Qual-1 arena for DRC"
+  ]
+  title "Qual1"
+  basicTimeStep 5
+  displayRefresh 4
+}
+Viewpoint {
+  orientation -0.0706673 0.989579 0.125461 2.40813
+  position 1.67775 1.69931 -2.31757
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR MetricFloor {
+  color 0.95 0.95 0.95
+}
+ATLAS {
+  translation -0.0495526 0.93 0.00543427
+  rotation 1 0 0 -1.57
+  controller "darwin-op_team_0"
+  controllerArgs "0 98"
+}

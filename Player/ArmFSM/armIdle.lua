@@ -19,18 +19,11 @@ function state.entry()
   t_update = t_entry
   t_finish = t
 
-  -- Move the arms to the Idle position
-  -- TODO: Is this the best implementation?
+  -- Release the fingers
+  -- TODO: Torque off?
+  Body.set_lgrip_percent(0)
+  Body.set_rgrip_percent(0)
 
--- TODO: This state machine should implement these methods,
--- and not the Body
---[[
-  Body.enable_larm_linear_movement(false) 
-  Body.set_larm_target_position(qLArmInit[1])
-  Body.set_rarm_target_position(qRArmInit[1])
-  Body.set_lhand_position(Config.arm.FingerOpen)
-  Body.set_rhand_position(Config.arm.FingerOpen)
-  --]]
 end
 
 function state.update()

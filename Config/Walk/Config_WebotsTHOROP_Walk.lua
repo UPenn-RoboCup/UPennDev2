@@ -245,9 +245,9 @@ vector.new({0,90,90,-90,-90,-45})*RAD,
 }
 
 arm.qRArmInit={
-vector.new({90,-0,-90,-0,90,0})*RAD,
-vector.new({90,-90,-90,-90,90,0})*RAD,
-vector.new({0,-90,-90,-90,90,45})*RAD,
+vector.new({90,-0,-90,-0,90,0})*RAD, -- at sides
+vector.new({90,-90,-90,-90,90,0})*RAD,  -- scarecrow
+vector.new({0,-90,-90,-90,90,45})*RAD, -- arms in front
 }
 
 arm.FingerClosed = 0.9

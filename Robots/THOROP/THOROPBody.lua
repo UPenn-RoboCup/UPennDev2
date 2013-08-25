@@ -460,7 +460,7 @@ end
 Body.set_lgrip_percent = function( percent )
 	percent = math.min(math.max(percent,0),1)
 	-- Convex combo
-	for idx=indexLGrip,indexLGrip+nLGrip-1 do
+	for idx=indexLGrip,indexLGrip+nJointLGrip-1 do
 		local radian = percent*servo.min_rad[idx] + (1-percent)*servo.max_rad[idx]
 		jcm.actuatorPtr.command_position[idx] = radian
 	end
@@ -468,7 +468,7 @@ end
 Body.set_rgrip_percent = function( percent )
 	percent = math.min(math.max(percent,0),1)
 	-- Convex combo
-	for idx=indexRGrip,indexRGrip+nRGrip-1 do
+	for idx=indexRGrip,indexRGrip+nJointRGrip-1 do
 		local radian = percent * servo.min_rad[idx] + (1-percent)*servo.max_rad[idx]
 		jcm.actuatorPtr.command_position[idx] = radian
 	end

@@ -6,7 +6,7 @@ local util    = require'util'
 local t_entry, t_update, t_finish
 local timeout = 15.0
 
--- Goal position is arm Init
+-- Goal position is arm Init, with hands in front, ready to manipulate
 local qLArmInit = Config.arm.qLArmInit[3]
 local qRArmInit = Config.arm.qRArmInit[3]
 local qLArm, qRArm
@@ -68,6 +68,9 @@ function state.update()
     end
   end
   Body.set_rarm_command_position( qRArm+dqRArm )
+
+  -- We are done when we are within tolerance
+  if tol then return 'done' end
 
 end
 

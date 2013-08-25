@@ -1,14 +1,14 @@
 local state = {}
-state._NAME = 'armInit'
+state._NAME = 'armMidReady'
 local Config  = require'Config'
 local Body    = require'Body'
 local util    = require'util'
 local t_entry, t_update, t_finish
 local timeout = 15.0
 
--- Goal position is arm Init, with hands at the side
-local qLArmInit = Config.arm.qLArmInit[1]
-local qRArmInit = Config.arm.qRArmInit[1]
+-- Goal position is arm Init, with hands in front, ready to manipulate
+local qLArmInit = Config.arm.qLArmInit[2]
+local qRArmInit = Config.arm.qRArmInit[2]
 local qLArm, qRArm
 
 -- Angular velocity

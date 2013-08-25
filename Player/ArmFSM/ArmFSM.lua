@@ -4,13 +4,13 @@ local Config = require'Config'
 local fsm = require'fsm'
 
 -- Require the needed states
-local armIdle   = require'armIdle'
-local armInit   = require'armInit'
-local armReady  = require'armReady'
+local armIdle = require'armIdle'
+local armInit = require'armInit'
+local armPreReady  = require'armInitReady' -- From Init toward Ready
+local armPostReady = require'armInitReady' -- From Ready toward Init
+local armReady = require'armReady'
 --[[
-local armReset  = require('armReset')
 local armTeleop = require('armTeleop')
-
 -- Wheel specific states
 local armWheelGrip = require('armWheelGrip')
 local armWheelTurn = require('armWheelTurn')
@@ -19,10 +19,8 @@ local armWheelRelease = require('armWheelRelease')
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
---local sm = fsm.new(armIdle,armInit,armReady)
-local sm = fsm.new(armReady,armIdle,armInit)
+local sm = fsm.new(armIdle,armInit,armPreReady,armReady,armPostReady)
 --[[
-sm:add_state(armReset)
 sm:add_state(armWheelGrip)
 sm:add_state(armWheelTurn)
 sm:add_state(armWheelRelease)
@@ -32,13 +30,17 @@ sm:add_state(armTeleop)
 -- Setup the transitions for this FSM
 sm:set_transition(armIdle, 'init', armInit)
 --
-sm:set_transition(armInit, 'done', armReady)
+sm:set_transition(armInit, 'ready', armPreReady)
+--
+sm:set_transition(armPreReady, 'reset', armInit)
+sm:set_transition(armPreReady, 'done', armReady)
+--
+sm:set_transition(armPostReady, 'done', armInit)
+sm:set_transition(armPostReady, 'reset', armReady)
+--
+sm:set_transition(armReady, 'init', armPostReady)
+--sm:set_transition(armReady, 'wheelgrab', armWheelGrip)
 --[[
-sm:set_transition(armReset, 'done', armIdle)
---
-sm:set_transition(armReady, 'wheelgrab', armWheelGrip)
-sm:set_transition(armReady, 'reset', armReset)
---
 sm:set_transition(armWheelGrip, 'reset', armWheelRelease)
 sm:set_transition(armWheelGrip, 'done', armWheelTurn)
 sm:set_transition(armWheelGrip, 'stop', armReady)

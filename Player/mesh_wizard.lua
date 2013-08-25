@@ -92,7 +92,6 @@ end
 local function stream_mesh(type)
   -- Network streaming settings
   local net_settings = vcm['get_'..type.meta.name..'_lidar_net']()
-  print(type.meta.name,net_settings,'net_settings')
   -- Streaming
   if net_settings[1]==0 then return end
   if net_settings[1]==1 then
@@ -106,7 +105,7 @@ local function stream_mesh(type)
   
   -- Associate metadata with this depth image
   local metadata = type.meta
-  metadata.t     = unix.time()
+  metadata.t     = Body.get_time()
   metadata.res   = type.res
   metadata.lidarangles = type.lidarangles
   metadata.lidarrange = type.res[2]-type.res[1]

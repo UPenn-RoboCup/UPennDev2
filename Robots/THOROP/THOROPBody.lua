@@ -763,7 +763,7 @@ if IS_WEBOTS then
       head_lidar_wbt.meta.count = 0
     end
     if use_camera then
-      local camera_timeStep = 25
+      local camera_timeStep = 33
       -- Head Camera
       tags.head_camera = webots.wb_robot_get_device("Camera")
       webots.wb_camera_enable(tags.head_camera, camera_timeStep)

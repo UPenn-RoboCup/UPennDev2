@@ -420,6 +420,7 @@ walk_requests.set_velocity = function()
   velCommand[3] = math.min(math.max(velCommand[3],velLimitA[1]),velLimitA[2])
 end
 walk_requests.start = function()
+  print( util.color('Walk Start','green'))
   stopRequest = 0
   if not active then
     active = true
@@ -427,13 +428,14 @@ walk_requests.start = function()
     iStep0 = -1
     t0 = Body.get_time()
     tLastStep = Body.get_time()
-    initial_step=2
+    initial_step = 2
   end
 end
 walk_requests.stop = function()
+  print( util.color('Walk Stop','red'))
   --Always stops with feet together (which helps kicking)
   stopRequest = math.max(1,stopRequest)
-  --  stopRequest = 2 --Stop w/o feet together
+  -- stopRequest = 2 --Stop w/o feet together
 end
 
 ---------------------------
@@ -481,8 +483,8 @@ function walk.update()
   repeat
     event, has_more = evts:receive(true)
     if type(event)=='string' then
-      print( util.color('Walk Event:','green'),event)
       local request = walk_requests[event]
+      --print( util.color('Walk Event:','green'),event)
       if request then request() end
     end
   until not has_more

@@ -4,7 +4,7 @@
 --------------------------------
 
 -- THOR OP Body
-local use_camera = false
+local use_camera = true
 local use_lidar  = true
 
 -- Shared memory for the joints
@@ -31,7 +31,7 @@ Body.get_time = unix.time
 --------------------------------
 -- Shared memory layout
 
--- Real THOR-OP (Cenatur uses ankles for wheels, maybe?)
+-- Real THOR-OP (Centaur uses ankles for wheels, maybe?)
 local indexHead = 1   -- Head: 1 2
 local nJointHead = 2
 local indexLArm = 3   --LArm: 3 4 5 6 7 8

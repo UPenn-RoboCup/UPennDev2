@@ -6,7 +6,7 @@ WorldInfo {
     "Webpage: http://www.robotstadium.org"
   ]
   title "Robotstadium"
-  basicTimeStep 15
+  basicTimeStep 25
   FPS 15
 }
 Viewpoint {

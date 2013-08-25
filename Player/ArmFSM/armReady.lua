@@ -1,11 +1,18 @@
 local state = {}
 state._NAME = 'armReady'
-local Config     = require'Config'
-local Body       = require'Body'
+local Config  = require'Config'
+local Body    = require'Body'
+local util    = require'util'
 local t_entry, t_update, t_finish
+local timeout = 15.0
 
-local qLArmInit=Config.arm.qLArmInit;
-local qRArmInit=Config.arm.qRArmInit;
+-- Goal position is arm Init
+local qLArmInit = Config.arm.qLArmInit[1]
+local qRArmInit = Config.arm.qRArmInit[1]
+local qLArm, qRArm
+
+-- Angular velocity
+local dqArmMax = vector.new({10,10,10,15,45,45})*Body.DEG_TO_RAD
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -15,12 +22,11 @@ function state.entry()
   t_update = t_entry
   t_finish = t
 
-  Body.enable_larm_linear_movement(false); 
-  Body.enable_rarm_linear_movement(false); 
-  
-  --super slow
-  dArmVelAngle = vector.new({10,10,10,15,45,45})*math.pi/180; --30 degree per second
-  Body.set_arm_movement_velocity(dArmVelAngle);
+  -- Where are the arms right now?
+  qLArm = Body.get_larm_position()
+  qRArm = Body.get_rleg_position()
+  Body.set_larm_command_position(qLArm)
+  Body.set_rarm_command_position(qRArm)
 
 end
 
@@ -33,9 +39,21 @@ function state.update()
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 
-    Body.enable_larm_linear_movement(false); 
-    Body.set_larm_target_position(qLArmInit[#qLArmInit]);
-    Body.set_rarm_target_position(qRArmInit[#qRArmInit]);
+  -- Ensure that we do not move motors too quickly
+  -- Left
+  qLArm = Body.get_larm_command_position()
+  local dqLArm   = qLArmInit - qLArm
+  -- Tolerance check (Asumme within tolerance)
+  local tol      = true
+  local tolLimit = 1e-6
+  for i,dqL in ipairs(dqLArm) do
+    if math.abs(dqL) > tolLimit then
+      tol = false
+      dqLArm[i] = util.procFunc(dqL,0,dqArmMax[i]*dt)
+    end
+  end
+  Body.set_larm_command_position( qLArm+dqLArm )
+
 end
 
 function state.exit()

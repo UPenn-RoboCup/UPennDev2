@@ -19,7 +19,8 @@ local armWheelRelease = require('armWheelRelease')
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
-local sm = fsm.new(armIdle,armInit,armReady)
+--local sm = fsm.new(armIdle,armInit,armReady)
+local sm = fsm.new(armReady,armIdle,armInit)
 --[[
 sm:add_state(armReset)
 sm:add_state(armWheelGrip)

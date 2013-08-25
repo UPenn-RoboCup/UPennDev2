@@ -10,7 +10,8 @@ local headTeleop = require'headTeleop'
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
-local sm = fsm.new( headIdle, headTiltScan )
+local sm = fsm.new( headTiltScan, headIdle )
+--local sm = fsm.new( headIdle, headTiltScan )
 sm:add_state(headTeleop)
 
 -- Setup the transistions for this FSM

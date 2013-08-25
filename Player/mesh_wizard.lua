@@ -49,6 +49,24 @@ chest.offset    = math.floor( (1081-chest.res[2])/2 )
 chest.lidar_ch  = simple_ipc.new_subscriber'chest_lidar'
 chest.meta      = {}
 chest.meta.name = 'chest'
+chest.meta.invert = true
+local head = {}
+-- Desired panning resolution
+head.res       = vcm.get_head_lidar_mesh_resolution()
+-- Tilting endpoints
+head.start     = vcm.get_head_lidar_endpoints()[1]
+head.stop      = vcm.get_head_lidar_endpoints()[2]
+-- TODO: Be able to resize these
+head.mesh_byte = torch.ByteTensor(  unpack(head.res) ):zero()
+head.mesh      = torch.FloatTensor( unpack(head.res) ):zero()
+head.mesh_adj  = torch.FloatTensor( unpack(head.res) ):zero()
+head.lidarangles  = torch.DoubleTensor( head.res[2] ):zero()
+-- Index Offset for copying using carray
+head.offset    = math.floor( (1081-head.res[1])/2 )
+head.lidar_ch  = simple_ipc.new_subscriber'head_lidar'
+head.meta      = {}
+head.meta.name = 'head'
+head.meta.invert = false
 
 -- Convert a pan angle to a column of the chest mesh image
 local function pan_to_column( rad )
@@ -56,16 +74,32 @@ local function pan_to_column( rad )
   local ratio = (rad-chest.start)/(chest.stop-chest.start)
   local col = math.floor(ratio*chest.res[2]+.5)
   -- Do not return a column number if out of bounds
-  if col>=1 and col<=chest.res[1] then return col end
+  if col<1 or col>chest.res[1] then return end
+  return col
 end
 
-local t_last_mesh_udp = unix.time()
+-- Convert a head tilt angle to a row of the head mesh image
+local function tilt_to_row( rad )
+  rad = math.max( math.min(rad, head.stop), head.start )
+  local ratio = (rad-head.start)/(head.stop-head.start)
+  local row = math.floor(ratio*head.res[1]+.5)
+  print('row',row)
+  -- Do not return a row number if out of bounds
+  if row<1 or row>head.res[2] then return end
+  return row
+end
+
 -- type is head or chest table
 local function stream_mesh(type)
   -- Network streaming settings
   local net_settings = vcm.get_chest_lidar_net()
+  --print(net_settings,'net_settings')
   -- Streaming
   if net_settings[1]==0 then return end
+  if net_settings[1]==1 then
+    net_settings[1] = 0
+    vcm.set_chest_lidar_net(net_settings)
+  end
   -- Sensitivity range in meters
   local my_range = vcm.get_chest_lidar_mesh_range()
   -- Safety check
@@ -76,7 +110,7 @@ local function stream_mesh(type)
   metadata.t     = unix.time()
   metadata.res   = type.res
   metadata.lidarangles = type.lidarangles
-  metadata.lidarrange = chest.res[2]-chest.res[1]
+  metadata.lidarrange = type.res[2]-type.res[1]
   metadata.range0 = type.start
   metadata.range1 = type.stop
 
@@ -112,19 +146,12 @@ local function stream_mesh(type)
   local meta = mp.pack(metadata)
   --mesh_pub_ch:send( {meta, payload} )
   local ret, err = mesh_udp_ch:send( meta..c_mesh )
-  t_last_mesh_udp = unix.time()
-  print(err or string.format('Sent a %g kB chest mesh packet!', ret / 1024))
-  if net_settings[1]==1 then
-    net_settings[1] = 0
-    vcm.set_chest_lidar_net(net_settings)
-    return
-  end
+  print(err or string.format('Sent a %g kB %s packet!', ret/1024, type.meta.name))
 end
 
 ------------------------------
 -- Lidar Callback functions
 local function chest_callback()
-  
   local meta, has_more = chest.lidar_ch:receive()
   local metadata = mp.unpack(meta)
   -- Get raw data from shared memory
@@ -132,26 +159,37 @@ local function chest_callback()
   -- Insert into the correct column
   local col = pan_to_column(metadata.pangle)
   -- Only if a valid column is returned
+  print('col',col)
   if col then
     -- Copy lidar readings to the torch object for fast modification
     ranges:tensor( chest.mesh:select(1,col), chest.res[2], chest.offset )
     -- Save the pan angle
     chest.lidarangles[col] = Body.get_lidar_position()[1]
   end
-  -- Stream the current mesh
-  stream_mesh(chest)
 end
 
 local function head_callback()
-  local meta, has_more = head_lidar_ch:receive()
+  local meta, has_more = head.lidar_ch:receive()
+  local metadata = mp.unpack(meta)
+  -- Get raw data from shared memory
+  local ranges = Body.get_head_lidar()
+  -- Insert into the correct column
+  local row = tilt_to_row( metadata.hangle[2] )
+  -- Only if a valid column is returned
+  if row then
+    -- Copy lidar readings to the torch object for fast modification
+    ranges:tensor( head.mesh:select(1,row), head.res[1], head.offset )
+    -- Save the pan angle
+    head.lidarangles[row] = Body.get_head_position()[2]
+  end
 end
 
 ------------------------------
 -- Polling with zeromq
 local wait_channels = {}
-if head_lidar_ch then
-  head_lidar_ch.callback = head_callback
-  table.insert( wait_channels, head_lidar_ch )
+if head.lidar_ch then
+  head.lidar_ch.callback = head_callback
+  table.insert( wait_channels, head.lidar_ch )
 end
 if chest.lidar_ch then
   chest.lidar_ch.callback = chest_callback
@@ -160,11 +198,14 @@ end
 local channel_polls = simple_ipc.wait_on_channels( wait_channels )
 
 -- Begin polling
-channel_polls:start()
---[[
-local channel_timeout = 100;
+--channel_polls:start()
+----[[
+local channel_timeout = 100 --milliseconds
 while true do
-local npoll = channel_polls:poll(channel_timeout)
-if npoll<1 then print'timeout' end
+  local npoll = channel_polls:poll(channel_timeout)
+  --if npoll<1 then print'timeout' end
+  -- Stream the current mesh
+  stream_mesh(head)
+  stream_mesh(chest)
 end
 --]]

@@ -4,7 +4,7 @@ local Body = require'Body'
 require'vcm'
 
 local min_pan, max_pan, mid_pan, mag_pan
-local t_entry, t_update, ph_speed
+local t_entry, t_update, ph_speed, ph, forward
 
 local lidarPan = {}
 lidarPan._NAME = 'lidarPan'
@@ -24,8 +24,8 @@ local function update_pan_params()
 end
 
 -- Take a phase of the panning scan and return the angle to set the lidar
--- ph is between 0 and 1
-local function ph_to_radians( ph, forward )
+-- ph is between 0 and 1 and is defined for this state
+local function ph_to_radians()
   -- Clamp the phase to avoid crazy behavior
   ph = math.max( math.min(ph, 1), 0 )
   
@@ -38,12 +38,12 @@ local function ph_to_radians( ph, forward )
   end
 end
 
--- Take a given radian and back convert to find the durrent phase
+-- Take a given radian and back convert to find the current phase
 -- Direction is the side of the mid point, as a boolean (forward is true)
 -- Dir: forward is true, backward is false
-local function radians_to_ph( rad, forward )
+local function radians_to_ph( rad )
   rad = math.max( math.min(rad, max_pan), min_pan )
-  return ( rad - min_pan ) / mag_pan, (forward or rad>mid_pan)
+  return ( rad - min_pan ) / mag_pan, rad>mid_pan
 end
 
 function lidarPan.entry()
@@ -84,7 +84,7 @@ function lidarPan.update()
   end
 
   -- Set the desired angle of the lidar pan
-  local rad = ph_to_radians(ph)
+  local rad = ph_to_radians()
   Body.set_lidar_command_position( {rad} )
 end
 

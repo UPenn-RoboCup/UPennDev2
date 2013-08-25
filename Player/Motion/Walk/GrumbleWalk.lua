@@ -23,34 +23,34 @@ local velLimitA = Config.walk.velLimitA or {-.4, .4}
 local velDelta = Config.walk.velDelta or {.03,.015,.15}
 local vaFactor = Config.walk.vaFactor or 0.6
 
-velXHigh = Config.walk.velXHigh or 0.06
-velDeltaXHigh = Config.walk.velDeltaXHigh or 0.01
+local velXHigh = Config.walk.velXHigh or 0.06
+local velDeltaXHigh = Config.walk.velDeltaXHigh or 0.01
 
 --Toe/heel overlap checking values
-footSizeX = Config.walk.footSizeX or {-0.05,0.05}
-stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015
-stanceLimitY2= 2* Config.walk.footY-stanceLimitMarginY
+local footSizeX = Config.walk.footSizeX or {-0.05,0.05}
+local stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015
+local stanceLimitY2= 2* Config.walk.footY-stanceLimitMarginY
 
 --OP default stance width: 0.0375*2 = 0.075
 --Heel overlap At radian 0.15 at each foot = 0.05*sin(0.15)*2=0.015
 --Heel overlap At radian 0.30 at each foot = 0.05*sin(0.15)*2=0.030
 
 --Stance parameters
-bodyHeight = Config.walk.bodyHeight
-bodyTilt=Config.walk.bodyTilt or 0
-footX = Config.walk.footX
-footY = Config.walk.footY
-supportX = Config.walk.supportX
-supportY = Config.walk.supportY
-qLArm0=Config.walk.qLArm
-qRArm0=Config.walk.qRArm
+local bodyHeight = Config.walk.bodyHeight
+local bodyTilt=Config.walk.bodyTilt or 0
+local footX = Config.walk.footX
+local footY = Config.walk.footY
+local supportX = Config.walk.supportX
+local supportY = Config.walk.supportY
+local qLArm0=Config.walk.qLArm
+local qRArm0=Config.walk.qRArm
 
 --Hardness parameters
-hardnessSupport = Config.walk.hardnessSupport or 0.7
-hardnessSwing = Config.walk.hardnessSwing or 0.5
+local hardnessSupport = Config.walk.hardnessSupport or 0.7
+local hardnessSwing = Config.walk.hardnessSwing or 0.5
 
-hardnessArm0 = Config.walk.hardnessArm or 0.2
-hardnessArm = Config.walk.hardnessArm or 0.2
+local hardnessArm0 = Config.walk.hardnessArm or 0.2
+local hardnessArm = Config.walk.hardnessArm or 0.2
 
 --Gait parameters
 local tStep0 = Config.walk.tStep
@@ -63,11 +63,11 @@ local ph2Single = Config.walk.phSingle[2]
 local ph1Zmp,ph2Zmp=ph1Single,ph2Single
 
 --Compensation parameters
-hipRollCompensation = Config.walk.hipRollCompensation
-ankleMod = Config.walk.ankleMod or {0,0}
-spreadComp = Config.walk.spreadComp or 0
-turnCompThreshold = Config.walk.turnCompThreshold or 0
-turnComp = Config.walk.turnComp or 0
+local hipRollCompensation = Config.walk.hipRollCompensation
+local ankleMod = Config.walk.ankleMod or {0,0}
+local spreadComp = Config.walk.spreadComp or 0
+local turnCompThreshold = Config.walk.turnCompThreshold or 0
+local turnComp = Config.walk.turnComp or 0
 
 --Gyro stabilization parameters
 ankleImuParamX = Config.walk.ankleImuParamX
@@ -84,41 +84,41 @@ supportModYInitial = Config.walk.supportModYInitial or 0
 -- Walk state variables
 ----------------------------------------------------------
 
-uTorso = vector.new({supportX, 0, 0})
-uLeft = vector.new({0, footY, 0})
-uRight = vector.new({0, -footY, 0})
+local uTorso = vector.new({supportX, 0, 0})
+local uLeft = vector.new({0, footY, 0})
+local uRight = vector.new({0, -footY, 0})
 
-pLLeg = vector.new({0, footY, 0, 0,0,0})
-pRLeg = vector.new({0, -footY, 0, 0,0,0})
-pTorso = vector.new({supportX, 0, bodyHeight, 0,bodyTilt,0})
+local pLLeg = vector.new({0, footY, 0, 0,0,0})
+local pRLeg = vector.new({0, -footY, 0, 0,0,0})
+local pTorso = vector.new({supportX, 0, bodyHeight, 0,bodyTilt,0})
 
-velCurrent = vector.new({0, 0, 0})
-velCommand = vector.new({0, 0, 0})
-velDiff = vector.new({0, 0, 0})
+local velCurrent = vector.new({0, 0, 0})
+local velCommand = vector.new({0, 0, 0})
+local velDiff = vector.new({0, 0, 0})
 
 --ZMP exponential coefficients:
-aXP, aXN, aYP, aYN = 0, 0, 0, 0
+local aXP, aXN, aYP, aYN = 0, 0, 0, 0
 
 --Gyro stabilization variables
-ankleShift = vector.new({0, 0})
-kneeShift = 0
-hipShift = vector.new({0,0})
-armShift = vector.new({0, 0})
+local ankleShift = vector.new({0, 0})
+local kneeShift = 0
+local hipShift = vector.new({0,0})
+local armShift = vector.new({0, 0})
 
-active = false
-started = false
-iStep0 = -1
-iStep = 0
-t0 = Body.get_time()
-tLastStep = Body.get_time()
-ph0=0
-ph=0
-phSingle = 0
+local active = false
+local started = false
+local iStep0 = -1
+local iStep = 0
+local t0 = Body.get_time()
+local tLastStep = Body.get_time()
+local ph0=0
+local ph=0
+local phSingle = 0
 
-stopRequest = 2
-canWalkKick = 0 --Can we do walkkick with this walk code?
-initial_step=2
-upper_body_overridden = 0
+local stopRequest = 2
+local canWalkKick = 0 --Can we do walkkick with this walk code?
+local initial_step=2
+local upper_body_overridden = 0
 
 ----------------------------------------------------------
 -- End initialization 

@@ -21,10 +21,12 @@ local simple_ipc = require'simple_ipc'
 local rpc_ch = simple_ipc.new_requester(5555)
 require'hcm'
 
+-- Events for the FSMs
 local char_to_event = {
-  ['7'] = 'sit',
-  ['8'] = 'stand',
-  ['9'] = 'walk',
+  ['7'] = {'MotionFSM','sit'},
+  ['8'] = {'MotionFSM','stand'},
+  ['9'] = {'MotionFSM','walk'},
+  ['t'] = {'BodyFSM','teleop'},
 }
 
 local char_to_vel = {
@@ -40,13 +42,14 @@ local function process_character(key_code,key_char,key_char_lower)
   local cmd
 
   -- Send motion fsm events
-  local evt_str = char_to_event[key_char_lower]
-  if evt_str then
-    print( 'MotionFSM', util.color(evt_str,'yellow') )
+  local event = char_to_event[key_char_lower]
+  if event then
+    print( event[1], util.color(event[2],'yellow') )
     cmd = {}
-    cmd.fsm = 'MotionFSM'
-    cmd.evt = evt_str
+    cmd.fsm = event[1]
+    cmd.evt = event[2]
   end
+
 
   -- Adjust the velocity
   -- Only used in direct teleop mode
@@ -55,15 +58,15 @@ local function process_character(key_code,key_char,key_char_lower)
     print( util.color('Inc vel by','yellow'), vel_adjustment )
     cmd = {}
     cmd.shm = 'hcm'
-    cmd.segment = 'walk'
-    cmd.key = 'vel'
+    cmd.segment = 'motion'
+    cmd.key = 'velocity'
     cmd.delta = vel_adjustment
   elseif key_char_lower=='k' then
     print( util.color('Zero Velocity','yellow'))
     cmd = {}
     cmd.shm = 'hcm'
-    cmd.segment = 'walk'
-    cmd.key = 'vel'
+    cmd.segment = 'motion'
+    cmd.key = 'velocity'
     cmd.val = {0, 0, 0}
   end
 

@@ -398,7 +398,7 @@ local walk_requests = {}
 walk_requests.set_velocity = function()
 
   -- Grab from the shared memory
-  vx,vy,va = mcm.get_walk_velocity()
+  vx,vy,va = unpack(mcm.get_walk_vel())
 
   --Filter the commanded speed
   vx = math.min(math.max(vx,velLimitX[1]),velLimitX[2])
@@ -481,7 +481,7 @@ function walk.update()
   repeat
     event, has_more = evts:receive(true)
     if type(event)=='string' then
-      print( util.color(obj._NAME..' Event:','green'),event)
+      print( util.color('Walk Event:','green'),event)
       local request = walk_requests[event]
       if request then request() end
     end

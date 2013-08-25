@@ -8,6 +8,10 @@ state._NAME = 'bodyTeleop'
 local t_entry, t_update, t_exit
 local timeout = 10.0
 
+-- Talk to the walk engine
+local simple_ipc = require'simple_ipc'
+local walk_ch = simple_ipc.new_publisher('Walk',true)
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -27,13 +31,17 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   -- Default timeout exit strategy
-  if t-t_entry > timeout then return'timeout' end
+  --if t-t_entry > timeout then return'timeout' end
 
   -- Get the human set input
   local h_vel = hcm.get_motion_velocity()
+  print('h_vel',h_vel)
 
-  -- Propagate to the walking engine
+  -- Propagate to shared memory
   mcm.set_walk_vel(h_vel)
+
+  -- Tell the walk engine to update the velocity
+  local ret = walk_ch:send('set_velocity')
 end
 
 function state.exit()

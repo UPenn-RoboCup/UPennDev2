@@ -13,6 +13,7 @@ local rpc_udp = udp.new_receiver( 5556 )
 require'vcm'
 require'jcm'
 require'mcm'
+require'hcm'
 
 -- TODO: Require all necessary fsm channels
 local simple_ipc   = require'simple_ipc'

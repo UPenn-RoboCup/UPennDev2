@@ -9,6 +9,9 @@ local vector = require'vector'
 local unix   = require'unix'
 local util   = require'util'
 require'mcm'
+-- Simple IPC for remote state triggers
+local simple_ipc = require'simple_ipc'
+local evts = simple_ipc.new_subscriber('Walk',true)
 
 local t_entry, t_update
 
@@ -123,6 +126,12 @@ local upper_body_overridden = 0
 --------------------
 -- Local Functions
 --------------------
+local function step_torso(uLeft, uRight,shiftFactor)
+  local u0 = util.se2_interpolate(.5, uLeft, uRight)
+  local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeft)
+  local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight)
+  return util.se2_interpolate(shiftFactor, uLeftSupport, uRightSupport)
+end
 
 local function stance_reset() --standup/sitdown/falldown handling
   print"Stance has been reset!"
@@ -142,7 +151,7 @@ local function stance_reset() --standup/sitdown/falldown handling
 end
 
 local function update_still()
-  uTorso = walk.step_torso(uLeft, uRight,0.5)
+  uTorso = step_torso(uLeft, uRight,0.5)
 
   pTorso[4], pTorso[5],pTorso[6] = 0,bodyTilt,0
 
@@ -306,6 +315,127 @@ local function step_right_destination(vel, uLeft, uRight)
   return util.pose_global(uRightLeft, uLeft)
 end
 
+local function update_velocity()
+  velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
+    -velDelta[1]),velDelta[1])
+  velDiff[2]= math.min(math.max(velCommand[2]-velCurrent[2],
+  -velDelta[2]),velDelta[2])
+  velDiff[3]= math.min(math.max(velCommand[3]-velCurrent[3],
+  -velDelta[3]),velDelta[3])
+
+  velCurrent[1] = velCurrent[1]+velDiff[1]
+  velCurrent[2] = velCurrent[2]+velDiff[2]
+  velCurrent[3] = velCurrent[3]+velDiff[3]
+
+  if initial_step>0 then
+    velCurrent=vector.new({0,0,0})
+    initial_step=initial_step-1
+  end
+
+  -- Save the updated velocity to sahred memory
+  mcm.set_walk_current_vel(velCurrent)
+
+  --  print(string.format("VEL:%.2f,%.2f,%.2f",unpack(velCurrent)))
+end
+
+local function zmp_solve(zs, z1, z2, x1, x2)
+  --[[
+  Solves ZMP equation:
+  x(t) = z(t) + aP*exp(t/tZmp) + aN*exp(-t/tZmp) - tZmp*mi*sinh((t-Ti)/tZmp)
+  where the ZMP point is piecewise linear:
+  z(0) = z1, z(T1 < t < T2) = zs, z(tStep) = z2
+  --]]
+  local T1 = tStep*ph1Zmp
+  local T2 = tStep*ph2Zmp
+  local m1 = (zs-z1)/T1
+  local m2 = -(zs-z2)/(tStep-T2)
+  local c1 = x1-z1+tZmp*m1*math.sinh(-T1/tZmp)
+  local c2 = x2-z2+tZmp*m2*math.sinh((tStep-T2)/tZmp)
+  local expTStep = math.exp(tStep/tZmp)
+  local aP = (c2 - c1/expTStep)/(expTStep-1/expTStep)
+  local aN = (c1*expTStep - c2)/(expTStep-1/expTStep)
+  return aP, aN
+end
+
+--Finds the necessary COM for stability and returns it
+local function zmp_com(ph)
+  local com = vector.new({0, 0, 0})
+  local expT = math.exp(tStep*ph/tZmp)
+  com[1] = uSupport[1] + aXP*expT + aXN/expT
+  com[2] = uSupport[2] + aYP*expT + aYN/expT
+  if ph < ph1Zmp then
+    com[1] = com[1] + m1X*tStep*(ph-ph1Zmp)
+    -tZmp*m1X*math.sinh(tStep*(ph-ph1Zmp)/tZmp)
+    com[2] = com[2] + m1Y*tStep*(ph-ph1Zmp)
+    -tZmp*m1Y*math.sinh(tStep*(ph-ph1Zmp)/tZmp)
+  elseif (ph > ph2Zmp) then
+    com[1] = com[1] + m2X*tStep*(ph-ph2Zmp)
+    -tZmp*m2X*math.sinh(tStep*(ph-ph2Zmp)/tZmp)
+    com[2] = com[2] + m2Y*tStep*(ph-ph2Zmp)
+    -tZmp*m2Y*math.sinh(tStep*(ph-ph2Zmp)/tZmp)
+  end
+  --com[3] = .5*(uLeft[3] + uRight[3])
+  --Linear speed turning
+  com[3] = ph* (uLeft2[3]+uRight2[3])/2 + (1-ph)* (uLeft1[3]+uRight1[3])/2
+  return com
+end
+
+local function foot_phase(ph)
+  -- Computes relative x,z motion of foot during single support phase
+  -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0
+  phSingle = math.min(math.max(ph-ph1Single, 0)/(ph2Single-ph1Single),1)
+  local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
+  local xf = .5*(1-math.cos(math.pi*phSingleSkew))
+  local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
+  return xf, zf
+end
+
+---------------------------
+-- Handle walk requests --
+---------------------------
+local walk_requests = {}
+-- Setting velocity
+walk_requests.set_velocity = function()
+
+  -- Grab from the shared memory
+  vx,vy,va = mcm.get_walk_velocity()
+
+  --Filter the commanded speed
+  vx = math.min(math.max(vx,velLimitX[1]),velLimitX[2])
+  vy = math.min(math.max(vy,velLimitY[1]),velLimitY[2])
+  va = math.min(math.max(va,velLimitA[1]),velLimitA[2])
+
+  --Slow down when turning
+  vFactor = 1-math.abs(va)/vaFactor
+
+  local stepMag=math.sqrt(vx^2+vy^2)
+  local magFactor=math.min(velLimitX[2]*vFactor,stepMag)/(stepMag+0.000001)
+
+  velCommand[1]=vx*magFactor
+  velCommand[2]=vy*magFactor
+  velCommand[3]=va
+
+  velCommand[1] = math.min(math.max(velCommand[1],velLimitX[1]),velLimitX[2])
+  velCommand[2] = math.min(math.max(velCommand[2],velLimitY[1]),velLimitY[2])
+  velCommand[3] = math.min(math.max(velCommand[3],velLimitA[1]),velLimitA[2])
+end
+walk_requests.start = function()
+  stopRequest = 0
+  if not active then
+    active = true
+    started = false
+    iStep0 = -1
+    t0 = Body.get_time()
+    tLastStep = Body.get_time()
+    initial_step=2
+  end
+end
+walk_requests.stop = function()
+  --Always stops with feet together (which helps kicking)
+  stopRequest = math.max(1,stopRequest)
+  --  stopRequest = 2 --Stop w/o feet together
+end
+
 ---------------------------
 -- State machine methods --
 ---------------------------
@@ -332,7 +462,9 @@ function walk.entry()
   Body.set_waist_command_position(0)
   Body.set_waist_hardness(1.0)
   mcm.set_walk_bipedal(1)
-  walk.start()
+  
+  -- Start walking
+  walk_requests.start()
 end
 
 function walk.update()
@@ -342,8 +474,21 @@ function walk.update()
   -- Save this at the last update time
   t_update = t
 
-  -- TODO: Don't run update if the robot is sitting or standing
+  -- Parse mcm events
+  -- TODO: Maybe use a WalkFSM channel?
+  -- Check for out of process events in non-blocking
+  local event, has_more
+  repeat
+    event, has_more = evts:receive(true)
+    if type(event)=='string' then
+      print( util.color(obj._NAME..' Event:','green'),event)
+      local request = walk_requests[event]
+      if request then request() end
+    end
+  until not has_more
 
+  -- TODO: Don't run update 
+  -- if the robot is sitting or standing
   if not active then 
     walk.update_still()
     return 
@@ -353,7 +498,7 @@ function walk.update()
     started = true
     tLastStep = Body.get_time()
   end
-  ph0=ph
+  ph0 = ph
 
   --SJ: Variable tStep support for walkkick
   ph = (t-tLastStep)/tStep
@@ -364,15 +509,15 @@ function walk.update()
   end
 
   --Stop when stopping sequence is done
-  if (iStep > iStep0) and(stopRequest==2) then
+  if iStep>iStep0 and stopRequest==2 then
     stopRequest = 0
     active = false
     return "stop"
   end
 
   -- New step
-  if (iStep > iStep0) then
-    walk.update_velocity()
+  if iStep>iStep0 then
+    update_velocity()
     iStep0 = iStep
     supportLeg = iStep % 2 -- 0 for left support, 1 for right support
     uLeft1 = uLeft2
@@ -383,7 +528,7 @@ function walk.update()
     shiftFactor = 0.5 --How much should we shift final Torso pose?
 
     if walkKickRequest==0 then
-      if (stopRequest==1) then  --Final step
+      if stopRequest==1 then --Final step
         stopRequest=2
         velCurrent=vector.new({0,0,0})
         velCommand=vector.new({0,0,0})
@@ -402,7 +547,7 @@ function walk.update()
       end
     end
 
-    uTorso2 = walk.step_torso(uLeft2, uRight2,shiftFactor)
+    uTorso2 = step_torso(uLeft2, uRight2,shiftFactor)
 
     --Adjustable initial step body swing
     if initial_step>0 then 
@@ -437,14 +582,14 @@ function walk.update()
     m2X = (uTorso2[1]-uSupport[1])/(tStep*(1-ph2Zmp))
     m1Y = (uSupport[2]-uTorso1[2])/(tStep*ph1Zmp)
     m2Y = (uTorso2[2]-uSupport[2])/(tStep*(1-ph2Zmp))
-    aXP, aXN = walk.zmp_solve(uSupport[1], uTorso1[1], uTorso2[1],
+    aXP, aXN = zmp_solve(uSupport[1], uTorso1[1], uTorso2[1],
     uTorso1[1], uTorso2[1])
-    aYP, aYN = walk.zmp_solve(uSupport[2], uTorso1[2], uTorso2[2],
+    aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2],
     uTorso1[2], uTorso2[2])
 
   end --End new step
 
-  xFoot, zFoot = walk.foot_phase(ph)  
+  xFoot, zFoot = foot_phase(ph)  
   if initial_step>0 then zFoot=0  end --Don't lift foot at initial step
   pLLeg[3], pRLeg[3] = 0
   if supportLeg == 0 then    -- Left support
@@ -455,7 +600,7 @@ function walk.update()
     pLLeg[3] = stepHeight*zFoot
   end
   uTorsoOld=uTorso
-  uTorso = walk.zmp_com(ph)
+  uTorso = zmp_com(ph)
 
   pTorso[4], pTorso[5],pTorso[6] = 0,bodyTilt,0
 
@@ -475,78 +620,6 @@ function walk.exit()
   print(state._NAME..' Exit')
 end
 
-function walk.step_torso(uLeft, uRight,shiftFactor)
-  local u0 = util.se2_interpolate(.5, uLeft, uRight)
-  local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeft)
-  local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight)
-  return util.se2_interpolate(shiftFactor, uLeftSupport, uRightSupport)
-end
-
-function walk.set_velocity(vx, vy, va)
-  --Filter the commanded speed
-  vx= math.min(math.max(vx,velLimitX[1]),velLimitX[2])
-  vy= math.min(math.max(vy,velLimitY[1]),velLimitY[2])
-  va= math.min(math.max(va,velLimitA[1]),velLimitA[2])
-
-  --Slow down when turning
-  vFactor = 1-math.abs(va)/vaFactor
-
-  local stepMag=math.sqrt(vx^2+vy^2)
-  local magFactor=math.min(velLimitX[2]*vFactor,stepMag)/(stepMag+0.000001)
-
-  velCommand[1]=vx*magFactor
-  velCommand[2]=vy*magFactor
-  velCommand[3]=va
-
-  velCommand[1] = math.min(math.max(velCommand[1],velLimitX[1]),velLimitX[2])
-  velCommand[2] = math.min(math.max(velCommand[2],velLimitY[1]),velLimitY[2])
-  velCommand[3] = math.min(math.max(velCommand[3],velLimitA[1]),velLimitA[2])
-
-end
-
-function walk.update_velocity()
-  velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
-    -velDelta[1]),velDelta[1])
-  velDiff[2]= math.min(math.max(velCommand[2]-velCurrent[2],
-  -velDelta[2]),velDelta[2])
-  velDiff[3]= math.min(math.max(velCommand[3]-velCurrent[3],
-  -velDelta[3]),velDelta[3])
-
-  velCurrent[1] = velCurrent[1]+velDiff[1]
-  velCurrent[2] = velCurrent[2]+velDiff[2]
-  velCurrent[3] = velCurrent[3]+velDiff[3]
-
-  if initial_step>0 then
-    velCurrent=vector.new({0,0,0})
-    initial_step=initial_step-1
-  end
-
-  --  print(string.format("VEL:%.2f,%.2f,%.2f",unpack(velCurrent)))
-
-end
-
-function walk.get_velocity()
-  return velCurrent
-end
-
-function walk.start()
-  stopRequest = 0
-  if not active then
-    active = true
-    started = false
-    iStep0 = -1
-    t0 = Body.get_time()
-    tLastStep = Body.get_time()
-    initial_step=2
-  end
-end
-
-function walk.stop()
-  --Always stops with feet together (which helps kicking)
-  stopRequest = math.max(1,stopRequest)
-  --  stopRequest = 2 --Stop w/o feet together
-end
-
 function walk.get_odometry(u0)
   u0 = u0 or vector.new({0, 0, 0})
   local uFoot = util.se2_interpolate(.5, uLeft, uRight)
@@ -556,58 +629,6 @@ end
 function walk.get_body_offset()
   local uFoot = util.se2_interpolate(.5, uLeft, uRight)
   return util.pose_relative(uTorso, uFoot)
-end
-
-function walk.zmp_solve(zs, z1, z2, x1, x2)
-  --[[
-  Solves ZMP equation:
-  x(t) = z(t) + aP*exp(t/tZmp) + aN*exp(-t/tZmp) - tZmp*mi*sinh((t-Ti)/tZmp)
-  where the ZMP point is piecewise linear:
-  z(0) = z1, z(T1 < t < T2) = zs, z(tStep) = z2
-  --]]
-  local T1 = tStep*ph1Zmp
-  local T2 = tStep*ph2Zmp
-  local m1 = (zs-z1)/T1
-  local m2 = -(zs-z2)/(tStep-T2)
-  local c1 = x1-z1+tZmp*m1*math.sinh(-T1/tZmp)
-  local c2 = x2-z2+tZmp*m2*math.sinh((tStep-T2)/tZmp)
-  local expTStep = math.exp(tStep/tZmp)
-  local aP = (c2 - c1/expTStep)/(expTStep-1/expTStep)
-  local aN = (c1*expTStep - c2)/(expTStep-1/expTStep)
-  return aP, aN
-end
-
---Finds the necessary COM for stability and returns it
-function walk.zmp_com(ph)
-  local com = vector.new({0, 0, 0})
-  local expT = math.exp(tStep*ph/tZmp)
-  com[1] = uSupport[1] + aXP*expT + aXN/expT
-  com[2] = uSupport[2] + aYP*expT + aYN/expT
-  if ph < ph1Zmp then
-    com[1] = com[1] + m1X*tStep*(ph-ph1Zmp)
-    -tZmp*m1X*math.sinh(tStep*(ph-ph1Zmp)/tZmp)
-    com[2] = com[2] + m1Y*tStep*(ph-ph1Zmp)
-    -tZmp*m1Y*math.sinh(tStep*(ph-ph1Zmp)/tZmp)
-  elseif (ph > ph2Zmp) then
-    com[1] = com[1] + m2X*tStep*(ph-ph2Zmp)
-    -tZmp*m2X*math.sinh(tStep*(ph-ph2Zmp)/tZmp)
-    com[2] = com[2] + m2Y*tStep*(ph-ph2Zmp)
-    -tZmp*m2Y*math.sinh(tStep*(ph-ph2Zmp)/tZmp)
-  end
-  --com[3] = .5*(uLeft[3] + uRight[3])
-  --Linear speed turning
-  com[3] = ph* (uLeft2[3]+uRight2[3])/2 + (1-ph)* (uLeft1[3]+uRight1[3])/2
-  return com
-end
-
-function walk.foot_phase(ph)
-  -- Computes relative x,z motion of foot during single support phase
-  -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0
-  phSingle = math.min(math.max(ph-ph1Single, 0)/(ph2Single-ph1Single),1)
-  local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
-  local xf = .5*(1-math.cos(math.pi*phSingleSkew))
-  local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
-  return xf, zf
 end
 
 function walk.doWalkKickLeft()

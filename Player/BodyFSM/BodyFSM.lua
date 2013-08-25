@@ -4,8 +4,8 @@ local Config = require'Config'
 local fsm = require'fsm'
 
 -- Require the needed states
-local bodyIdle = require'bodyIdle'
-local bodyTeleop = require'bodyTeleop'
+local bodyIdle     = require'bodyIdle'
+local bodyTeleop   = require'bodyTeleop'
 local bodyNavigate = require'bodyNavigate'
 
 -- Instantiate a new state machine with an initial state

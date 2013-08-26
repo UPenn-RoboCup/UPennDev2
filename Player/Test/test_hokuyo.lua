@@ -1,10 +1,10 @@
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 
-require('Hokuyo')
-require('signal')
-require('unix')
-require('rcm')
+local Hokuyo = require('Hokuyo')
+local signal = require('signal')
+local unix = require('unix')
+local rcm = require('rcm')
 
 function ShutDownFN()
   print("Proper shutdown")

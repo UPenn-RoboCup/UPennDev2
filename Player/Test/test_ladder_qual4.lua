@@ -1,35 +1,20 @@
--- CHARLI laser testing
-print('Testing ARMS')
+print'THOR-OP ladder test'
+dofile'../include.lua'
 
-cwd = cwd or os.getenv('PWD')
-package.path = cwd.."/?.lua;"..package.path;
-require('init')
-
-require 'carray'
-
-require('Config')
-require('Body')
-require('Speak')
-require('Motion')
-require('vector')
-
--- Laser getting
---require 'WebotsLaser'
---print( "LIDAR Dim:", WebotsLaser.get_width(), WebotsLaser.get_height())
---nlidar_readings = WebotsLaser.get_width() * WebotsLaser.get_height();
-
-
-require 'rcm'
---
-require 'mcm'
+print'Initializing modules...'
+local carray = require'carray'
+local Motion = require'Motion'
+local vector = require'vector'
+local Transform = require'Transform'
 
 -- Arms
-require 'pickercm'
-require ('Kinematics')
-require 'Transform'
-
-
-require 'Team' --To receive the GPS coordinates from objects
+print'Requiring Kinematics...'
+local Config = require'Config'
+local Kinematics = require'Kinematics'
+print('Body',Config.dev.body)
+local Body = require(Config.dev.body)
+--To receive the GPS coordinates from objects
+local Team = require(Config.dev.team)
 require 'wcm'
 
 
@@ -81,6 +66,7 @@ targetvel=vector.zeros(3);
 if (string.find(Config.platform.name,'Webots')) then
   print('On webots!')
   webots = true;
+  controller = require'webots'
 end
 Team.entry();
 
@@ -89,7 +75,7 @@ Team.entry();
 if( webots ) then
   controller.wb_robot_keyboard_enable( 100 );
 else
-  require 'getch'
+  local getch = require 'getch'
   getch.enableblock(1);
 end
 
@@ -644,9 +630,9 @@ function check_ik(tr, is_left)
   end
 
   dist = math.sqrt(
-	(torso_arm_ik[1]-tr[1])^2+
-	(torso_arm_ik[2]-tr[2])^2+
-	(torso_arm_ik[3]-tr[3])^2);
+    (torso_arm_ik[1]-tr[1])^2+
+    (torso_arm_ik[2]-tr[2])^2+
+    (torso_arm_ik[3]-tr[3])^2);
   return qInv, dist;
 end
 
@@ -922,7 +908,6 @@ function update()
   if (count ~= lcount) then
     print('count: '..count)
     print('lcount: '..lcount)
-    Speak.talk('missed cycle');
     lcount = count;
   end
   io.stdout:flush();  

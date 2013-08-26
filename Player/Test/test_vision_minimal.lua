@@ -1,6 +1,6 @@
 module(... or "", package.seeall)
 
-require('unix')
+local unix = require('unix')
 webots = false;
 darwin = false;
 
@@ -34,10 +34,10 @@ package.path = cwd.."/World/?.lua;"..package.path;
 package.path = cwd.."/BodyFSM/?.lua;"..package.path;
 package.path = cwd.."/HeadFSM/?.lua;"..package.path;
 
-require('Config');
+local Config = require('Config');
 --Config.dev.comm='NaoCommWired'
 
-require('shm')
+local shm = require('shm')
 
 --[[
 if Config.platform.name=='Nao' then
@@ -51,19 +51,19 @@ end
 	dcmShm:set('ready',{1});
 --]]
 
-require('Body')
-require('vector')
+local Body = require('Body')
+local vector = require('vector')
 
 BodyFSM=require('BodyFSM');
 HeadFSM=require('HeadFSM');
-require('getch')
-require('vcm'); 
-require('Motion');
-require('walk');
---require('HeadTransform')
-require('Broadcast')
-require('Comm')
-require('Speak')
+local getch = require('getch')
+local vcm = require('vcm'); 
+local Motion = require('Motion');
+local walk = require('walk');
+--local HeadTransform = require('HeadTransform')
+local Broadcast = require('Broadcast')
+local Comm = require('Comm')
+local Speak = require('Speak')
 
 
 

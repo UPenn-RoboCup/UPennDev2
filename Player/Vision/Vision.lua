@@ -1,20 +1,20 @@
 module(..., package.seeall);
 
-require('carray');
-require('vector');
-require('Config');
+local carray = require('carray');
+local vector = require('vector');
+local Config = require('Config');
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
   webots = 1;
 end
 
-require('ColorLUT');
-require('ImageProc');
-require('HeadTransform');
+local ColorLUT = require('ColorLUT');
+local ImageProc = require('ImageProc');
+local HeadTransform = require('HeadTransform');
 
 require('vcm');
 require('mcm');
-require('Body')
+local Body = require('Body')
 
 --Added for webots fast simulation
 use_gps_only = Config.use_gps_only or 0;
@@ -24,10 +24,17 @@ enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
 obs_challenge_enable = Config.obs_challenge or 0;
 enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
 
+--if Config.game.playerID==1 and Config.game.teamNumber==1 then
+--  ffi = require 'ffi'
+--  local jpeg = require 'jpeg'
+--  simple_ipc = require 'simple_ipc'
+--  img_channel = simple_ipc.new_publisher('img');
+--end
 
+local Camera = nil
 if use_gps_only==0 then
-  require('Camera');
-  require('Detection');
+  Camera = require('Camera');
+  local Detection = require('Detection');
   
   if (Config.camera.width ~= Camera.get_width()
       or Config.camera.height ~= Camera.get_height()) then
@@ -68,7 +75,7 @@ if use_gps_only==0 then
   print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
   print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
 else
-  require('GPSVision');
+  local GPSVision = require('GPSVision');
 end
 
 colorOrange = Config.color.orange;
@@ -233,6 +240,16 @@ function update()
                                           camera.height);
   end
 
+--  if Config.game.playerID==1 and Config.game.teamNumber==1 then
+--    local comp_img = jpeg.compress(
+--    carray.pointer(Camera.image), 
+--    camera.width, camera.height, 3);
+--    img_channel:send( 'i'..comp_img );
+--    print('sending msg...',#comp_img)
+--    local la = ffi.string(labelA.data,labelA.npixel);
+--    img_channel:send( 'a'..la );    
+--  end
+
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
 
@@ -256,7 +273,6 @@ function update()
   end
 
   update_shm(status, headAngles)
-
 
   vcm.refresh_debug_message();
 

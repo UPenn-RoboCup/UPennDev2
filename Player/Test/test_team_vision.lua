@@ -1,19 +1,19 @@
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 
-require('Config')
-require('unix')
-require('getch')
-require('Broadcast')
-require('shm')
-require('vector')
-require('mcm')
-require('vcm')
-require('wcm')
-require('Speak')
-require('Body')
-require('Motion')
-require('gcm')
+local Config = require('Config')
+local unix = require('unix')
+local getch = require('getch')
+local Broadcast = require('Broadcast')
+local shm = require('shm')
+local vector = require('vector')
+local mcm = require('mcm')
+local vcm = require('vcm')
+local wcm = require('wcm')
+local Speak = require('Speak')
+local Body = require('Body')
+local Motion = require('Motion')
+local gcm = require('gcm')
 
 smindex = 0;
 
@@ -247,8 +247,8 @@ function update()
       -- initialize state machines
       package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
       package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
-      require('BodyFSM')
-      require('HeadFSM')
+      local BodyFSM = require('BodyFSM')
+      local HeadFSM = require('HeadFSM')
 
       BodyFSM.entry();
       HeadFSM.entry();

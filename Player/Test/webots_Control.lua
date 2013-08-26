@@ -1,16 +1,16 @@
 cwd = cwd or os.getenv('PWD')
 package.path = cwd.."/?.lua;"..package.path;
-require('init')
+local init = require('init')
 
-require('Config')
-require('shm')
-require('vector')
-require('controller');
-require('Speak')
-require('Body')
-require('Motion')
-require('unix')
-require('cognition')
+local Config = require('Config')
+local shm = require('shm')
+local vector = require('vector')
+local controller = require('controller');
+local Speak = require('Speak')
+local Body = require('Body')
+local Motion = require('Motion')
+local unix = require('unix')
+local cognition = require('cognition')
 
 webots = false;
 darwin = false;

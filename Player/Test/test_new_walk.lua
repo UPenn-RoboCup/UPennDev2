@@ -1,6 +1,6 @@
 module(... or "", package.seeall)
 
-require('unix')
+local unix = require('unix')
 webots = false;
 darwin = false;
 
@@ -34,18 +34,18 @@ package.path = cwd.."/World/?.lua;"..package.path;
 package.path = cwd.."/BodyFSM/?.lua;"..package.path;
 package.path = cwd.."/HeadFSM/?.lua;"..package.path;
 
-require('Config')
-require('shm')
-require('vector')
-require('Motion')
-require('walk')
-require('Body')
+local Config = require('Config')
+local shm = require('shm')
+local vector = require('vector')
+local Motion = require('Motion')
+local walk = require('walk')
+local Body = require('Body')
 require("getch")
-require('kick')
-require('Speak')
---require('World')
---require('Team')
---require('battery')
+local kick = require('kick')
+local Speak = require('Speak')
+--local World = require('World')
+--local Team = require('Team')
+--local battery = require('battery')
 Vision = require 'vcm' -- Steve
 Speak.talk("Starting test parameters.")
 
@@ -98,9 +98,9 @@ function update()
       package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
       package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
       package.path = cwd..'/GameFSM/'..Config.fsm.game..'/?.lua;'..package.path;
-      require('BodyFSM')
-      require('HeadFSM')
-      require('GameFSM')
+      local BodyFSM = require('BodyFSM')
+      local HeadFSM = require('HeadFSM')
+      local GameFSM = require('GameFSM')
 
       BodyFSM.entry();
       HeadFSM.entry();

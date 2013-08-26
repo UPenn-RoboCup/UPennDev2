@@ -12,11 +12,11 @@ package.path = cwd.."/../../Player/Util/?.lua;"..package.path;
 package.path = cwd.."/../../Player/Config/?.lua;"..package.path;
 package.path = cwd.."/../../Player/Vision/?.lua;"..package.path;
 
-require('serialization');
-require 'cutil'
-require 'carray'
-require('unix');
-require('rcm');
+local serialization = require('serialization');
+local cutil = require 'cutil'
+local carray = require 'carray'
+local unix = require('unix');
+local rcm = require('rcm');
 
 -- Create files
 imufilecnt = 0;

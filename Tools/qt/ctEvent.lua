@@ -1,4 +1,4 @@
-require 'unix'
+local unix = require 'unix'
 
 fileList = {}
 currentFile = '' 

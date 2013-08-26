@@ -1,11 +1,11 @@
 module(..., package.seeall);
 
-require('Config');
-require('Body');
-require('Comm');
-require('Speak');
-require('vector');
-require('util')
+local Config = require('Config');
+local Body = require('Body');
+local Comm = require('Comm');
+local Speak = require('Speak');
+local vector = require('vector');
+local util = require('util')
 local serialization = require('serialization');
 
 require('wcm');
@@ -332,7 +332,7 @@ function update()
   --print("====PLAYERID:",playerID);
   for id = 1,5 do 
 
-    if not states[id] then
+    if not states[id] or not states[id].ball.x then
       -- no message from player have been received
       eta[id] = math.huge;
       ddefend[id] = math.huge;

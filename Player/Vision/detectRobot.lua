@@ -1,14 +1,13 @@
 module(..., package.seeall);
 
-require('Config');      -- For Ball and Goal Size
-require('ImageProc');
-require('HeadTransform');       -- For Projection
-require('Vision');
-require('Body');
-require('shm');
-require('vcm');
-require('Detection');
-require('Debug');
+local Config = require('Config');      -- For Ball and Goal Size
+local ImageProc = require('ImageProc');
+local HeadTransform = require('HeadTransform');       -- For Projection
+local Vision = require('Vision');
+local Body = require('Body');
+local shm = require('shm');
+local vcm = require('vcm');
+local Detection = require('Detection');
 
 -- Define Color
 colorOrange = Config.color.orange;

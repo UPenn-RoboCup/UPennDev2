@@ -1,11 +1,11 @@
 module(..., package.seeall);
 
-require('Config');
-require('Body');
-require('Comm')
-require('Speak');
-require('vector');
-require('serialization');
+local Config = require('Config');
+local Body = require(Config.dev.body);
+local Comm = require(Config.dev.comm)
+local Speak = require('Speak');
+local vector = require('vector');
+local serialization = require('serialization');
 require('wcm');
 require('gcm');
 

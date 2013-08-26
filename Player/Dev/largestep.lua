@@ -1,4 +1,6 @@
 require('Config');
 
-largestep = require(Config.dev.largestep)
+if Config.largestep_enable then
+  largestep = require(Config.dev.largestep)
+end
 

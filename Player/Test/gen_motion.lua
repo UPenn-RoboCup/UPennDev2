@@ -1,6 +1,6 @@
 module(... or "", package.seeall)
 
-require('os')
+local os = require('os')
 
 webots = false;
 
@@ -31,12 +31,12 @@ package.path = cwd.."/World/?.lua;"..package.path;
 package.path = cwd.."/BodyFSM/?.lua;"..package.path;
 package.path = cwd.."/HeadFSM/?.lua;"..package.path;
 
-require('unix')
-require('Config');
-require('Body')
-require('vector')
-require('getch')
-require('util')
+local unix = require('unix')
+local Config = require('Config');
+local Body = require('Body')
+local vector = require('vector')
+local getch = require('getch')
+local util = require('util')
 
 getch.enableblock(1);
 

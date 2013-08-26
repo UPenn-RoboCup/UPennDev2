@@ -1,16 +1,16 @@
 cwd = cwd or os.getenv('PWD')
 package.path = cwd.."/?.lua;"..package.path;
-require('init')
+local init = require('init')
 
-require('Config')
-require('Body')
-require('Speak')
-require('Motion')
-require('vector')
-require 'boxercm'
+local Config = require('Config')
+local Body = require('Body')
+local Speak = require('Speak')
+local Motion = require('Motion')
+local vector = require('vector')
+local boxercm = require 'boxercm'
 package.path = cwd..'/BodyFSM/Boxer/?.lua;'..package.path;
-require 'bodyBox'
-require 'bodyMimicWalk'
+local bodyBox = require 'bodyBox'
+local bodyMimicWalk = require 'bodyMimicWalk'
 
 -- Initialize Variables
 darwin = false;
@@ -44,7 +44,7 @@ end
 if( webots ) then
   controller.wb_robot_keyboard_enable( 100 );
 else
-  require 'getch'
+  local getch = require 'getch'
   getch.enableblock(1);
 end
 

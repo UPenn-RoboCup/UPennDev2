@@ -1,6 +1,6 @@
 #!/usr/bin/lua
 
-require 'noqt'
+local noqt = require 'noqt'
 
 n1 = n1_LQT_F.new();
 n2 = n2_LQT_F.new();

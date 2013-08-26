@@ -1,13 +1,13 @@
 module(..., package.seeall);
-require('Comm');
+local Comm = require('Comm');
 
-require('gcm');
-require 'vcm'
-require 'Z'
-require 'serialization'
-require 'unix'
-require 'util'
-require 'pickercm'
+local gcm = require('gcm');
+local vcm = require 'vcm'
+local Z = require 'Z'
+local serialization = require 'serialization'
+local unix = require 'unix'
+local util = require 'util'
+local pickercm = require 'pickercm'
 
 wired = true;
 ps = false;

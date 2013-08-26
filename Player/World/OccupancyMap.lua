@@ -1,16 +1,16 @@
 module(... or "", package.seeall);
 
-require('Config');	
-require('Body')
-require('shm');
+local Config = require('Config');	
+local Body = require('Body')
+local shm = require('shm');
 require('vcm');
-require('unix'); -- Get Time
+local unix = require('unix'); -- Get Time
 require('wcm');
 require('mcm');
 require('ocm');
-require('OccMap');
-require('vector');
-require('walk');
+local OccMap = require('OccMap');
+local vector = require('vector');
+local walk = require('walk');
 
 maxOb = 5;
 obs = {};

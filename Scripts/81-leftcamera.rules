@@ -1,0 +1,1 @@
+KERNEL=="video?", ATTRS{serial}=="357570AE", SYMLINK+="leftcam", GROUP="users"

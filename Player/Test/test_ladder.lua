@@ -1,36 +1,27 @@
 -- CHARLI laser testing
 print('Testing ARMS')
+dofile'../include.lua'
 
-cwd = cwd or os.getenv('PWD')
-package.path = cwd.."/?.lua;"..package.path;
-require('init')
+local carray = require 'carray'
+local Config = require('Config')
+require'Kinematics'
+require'Body'
+require'Team'
+local Speak = require('Speak')
+local Motion = require('Motion')
+local vector = require('vector')
+local webots = require'webots'
+local mcm = require 'mcm'
+--To receive the GPS coordinates from objects
+local wcm = require 'wcm'
+-- Arms
 
-require 'carray'
-
-require('Config')
-require('Body')
-require('Speak')
-require('Motion')
-require('vector')
+local Transform = require 'Transform'
 
 -- Laser getting
---require 'WebotsLaser'
+--local WebotsLaser = require 'WebotsLaser'
 --print( "LIDAR Dim:", WebotsLaser.get_width(), WebotsLaser.get_height())
 --nlidar_readings = WebotsLaser.get_width() * WebotsLaser.get_height();
-
-
-require 'rcm'
---
-require 'mcm'
-
--- Arms
-require 'pickercm'
-require ('Kinematics')
-require 'Transform'
-
-
-require 'Team' --To receive the GPS coordinates from objects
-require 'wcm'
 
 
 --Arm target transforms
@@ -71,7 +62,7 @@ Body.set_l_gripper_hardness({1,1});
 Body.set_r_gripper_hardness({1,1});
 
 -- Initialize Variables
-webots = false;
+is_webots = false;
 teamID   = Config.game.teamNumber;
 playerID = Config.game.playerID;
 print '=====================';
@@ -80,16 +71,17 @@ print '=====================';
 targetvel=vector.zeros(3);
 if (string.find(Config.platform.name,'Webots')) then
   print('On webots!')
-  webots = true;
+  is_webots = true;
 end
-Team.entry();
+
+Team.entry()
 
 
 -- Key Input
-if( webots ) then
-  controller.wb_robot_keyboard_enable( 100 );
+if is_webots then
+  webots.wb_robot_keyboard_enable( 100 );
 else
-  require 'getch'
+  local getch = require 'getch'
   getch.enableblock(1);
 end
 
@@ -556,8 +548,8 @@ end
 
 -- Process Key Inputs
 function process_keyinput()
-  if( webots ) then
-    str = controller.wb_robot_keyboard_get_key()
+  if is_webots then
+    str = webots.wb_robot_keyboard_get_key()
     byte = str;
     -- Webots only return captal letter number
     if byte>=65 and byte<=90 then
@@ -699,7 +691,7 @@ function update()
 
   walk.active = false;
 
-  -- Update State Machines 
+  -- Update State Machines
   if arm_initing>0 then
     Motion.update();
   end

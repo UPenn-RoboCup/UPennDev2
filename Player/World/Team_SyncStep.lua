@@ -1,14 +1,14 @@
 module(..., package.seeall);
 --by SJ, 0215
 
-require('Body');
-require('World');
-require('Comm');
-require('vector');
-require('Config')
-require('serialization')
-require('vcm')
-require 'walk'
+local Body = require('Body');
+local World = require('World');
+local Comm = require('Comm');
+local vector = require('vector');
+local Config = require('Config')
+local serialization = require('serialization')
+local vcm = require('vcm')
+local walk = require 'walk'
 
 playerID = Config.game.playerID;
 role = Config.game.role;

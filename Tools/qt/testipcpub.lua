@@ -4,7 +4,7 @@ package.path = pwd..'/../../Player/Util/ffi/?.lua;'..package.path
 package.path = pwd..'/../../Player/Util/?.lua;'..package.path
 
 local simple_ipc = require 'simple_ipc'
-local imu_channel = simple_ipc.setup_publisher('imu');
+local imu_channel = simple_ipc.new_publisher('imu');
 local mp = require 'MessagePack'
 local unix = require 'unix'
 

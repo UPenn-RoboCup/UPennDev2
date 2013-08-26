@@ -25,15 +25,15 @@ package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
 
-require('unix')
-require('Config')
-require('shm')
-require('vector')
-require('mcm')
-require('Speak')
-require('getch')
-require('Body')
-require('Motion')
+local unix = require('unix')
+local Config = require('Config')
+local shm = require('shm')
+local vector = require('vector')
+local mcm = require('mcm')
+local Speak = require('Speak')
+local getch = require('getch')
+local Body = require('Body')
+local Motion = require('Motion')
 
 Motion.entry();
 

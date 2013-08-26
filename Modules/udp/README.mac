@@ -1,0 +1,19 @@
+UDP settings for the Mac:
+Please execute this, if having issues sending UDP packets due to exceeding the maximum size:
+
+sudo sysctl -w net.inet.udp.recvspace=262144 net.inet.udp.maxdgram=65536
+
+----- PERSISTENT SETTINGS -----
+Add these lines to /etc/sysctl.conf
+net.inet.udp.recvspace=262144
+net.inet.udp.maxdgram=65536
+
+2^16 and 2^18 respectively
+
+with 
+sudo nano /etc/sysctl.conf
+
+By writing to this file, upon reboot, the settings will stay permanent.  By default, on a 10.8 system, the defaults are:
+net.inet.udp.recvspace=196724
+net.inet.udp.maxdgram=9216
+

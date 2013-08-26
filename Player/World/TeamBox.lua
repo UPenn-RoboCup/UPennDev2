@@ -1,9 +1,9 @@
 module(..., package.seeall);
-require('Comm');
+local Comm = require('Comm');
 
-require('gcm');
-require 'serialization'
-require 'unix'
+local gcm = require('gcm');
+local serialization = require 'serialization'
+local unix = require 'unix'
 wired = true;
 ps = false;
 
@@ -44,7 +44,7 @@ function entry( prime )
       print('Requiring ',i,bc[i])
     end
   else
-    require 'boxercm'
+    local boxercm = require 'boxercm'
   end
 end
 

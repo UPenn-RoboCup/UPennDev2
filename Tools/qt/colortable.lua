@@ -4,13 +4,13 @@ package.cpath = pwd..'/lib/util/?.so;'..package.cpath
 package.cpath = pwd..'/../../Player/Lib/?.so;'..package.cpath
 package.path = pwd..'/../../Player/Util/ffi/?.lua;'..package.path
 
-require 'qtcore'
-require 'qtgui'
+local qtcore = require 'qtcore'
+local qtgui = require 'qtgui'
 
-require ('ctLayout')
-require ('ctImageProc')
-require ('ctCommon')
-require ('ctEvent')
+local ctLayout = require ('ctLayout')
+local ctImageProc = require ('ctImageProc')
+local ctCommon = require ('ctCommon')
+local ctEvent = require ('ctEvent')
 
 -- Initial Qt Application
 app = QApplication(1 + select('#', ...), {arg[0], ...})

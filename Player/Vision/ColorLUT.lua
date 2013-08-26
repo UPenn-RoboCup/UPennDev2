@@ -1,15 +1,15 @@
 module(..., package.seeall);
 
-require('Config')
-require('carray')
-require('ImageProc')
+local Config = require('Config')
+local carray = require('carray')
+local ImageProc = require('ImageProc')
 require('vcm')
 
 LUT = {};
 
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
-  require('Camera')
+  local Camera = require('Camera')
   webots = 1;
 end
 
@@ -43,7 +43,7 @@ function load_lutfile(fname, lut)
   end
   local cwd = unix.getcwd();
   if string.find(cwd, "WebotsController") then
-    cwd = cwd.."/Player";
+    cwd = cwd.."/Run";
   end
   cwd = cwd.."/Data/";
   local f = io.open(cwd..fname, "r");

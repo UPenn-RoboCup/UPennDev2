@@ -6,7 +6,7 @@
 -- Webots THOR-OP Body sensors
 local use_camera = false
 local use_lidar  = false
-local use_pose   = false
+local use_pose   = true
 
 -- Shared memory for the joints
 require'jcm'
@@ -738,13 +738,15 @@ if IS_WEBOTS then
 		-- Gyro
 		tags.gyro = webots.wb_robot_get_device("Gyro")
 		webots.wb_gyro_enable(tags.gyro, timeStep)
-		-- TODO: Gps, compass, kinect
-		--[[
-		tags.gps = webots.wb_robot_get_device("zero")
-		webots.wb_gps_enable(tags.gps, timeStep)
-		-- Compass
-		tags.compass = webots.wb_robot_get_device("compass")
-		webots.wb_compass_enable(tags.compass, timeStep)
+    -- GPS
+    if use_pose then
+		  tags.gps = webots.wb_robot_get_device("GPS")
+		  webots.wb_gps_enable(tags.gps, timeStep)
+		  -- Compass
+		  tags.compass = webots.wb_robot_get_device("Compass")
+		  webots.wb_compass_enable(tags.compass, timeStep)
+    end
+    --[[
 		-- Kinect
 		tags.kinect = webots.wb_robot_get_device("kinect")
 		webots.wb_camera_enable(tags.kinect, timeStep)
@@ -820,14 +822,6 @@ if IS_WEBOTS then
 		-- Step the simulation, and shutdown if the update fails
 		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
 
-		-- Update the sensor readings
-		-- TODO: Verify the compass
-		--[[
-		local compass = webots.wb_compass_get_values(tags.compass)
-		-- Swap webots coordinates into our coordinates
-		Body.set_sensor_compass( {compass[1],-compass[2],compass[3]} )
-		--]]
-
 		-- Accelerometer data (verified)
 		local accel = webots.wb_accelerometer_get_values(tags.accelerometer)
 		Body.set_sensor_accelerometer( 
@@ -835,9 +829,16 @@ if IS_WEBOTS then
 		)
 		-- Gyro data (verified)
 		local gyro = webots.wb_gyro_get_values(tags.gyro)
-		Body.set_sensor_gyro( 
+		Body.set_sensor_gyro(
 		{(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273}
 		)
+    -- GPS and compass data
+    if use_pose then
+      local gps = webots.wb_gps_get_values(tags.gps)
+      local compass = webots.wb_compass_get_values(tags.compass)
+      --wcm.set_global_pose( gps )
+      --wcm.set_global_orientation( compass )
+    end
 
 		-- Update the sensor readings of the joint positions
 		-- TODO: If a joint is not found?

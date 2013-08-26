@@ -3,17 +3,7 @@
 #include <stdio.h>
 #include <vector>
 #include "zlib.h"
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
+#include <lua.hpp>
 
 using namespace std;
 
@@ -150,11 +140,11 @@ static const luaL_Reg Z_lib [] = {
 #ifdef __cplusplus
 extern "C"
 #endif
-int luaopen_Z (lua_State *L) {
+int luaopen_zlib (lua_State *L) {
 #if LUA_VERSION_NUM == 502
   luaL_newlib(L, Z_lib);
 #else
-  luaL_register(L, "Z", Z_lib);
+  luaL_register(L, "zlib", Z_lib);
 #endif
 
   return 1;

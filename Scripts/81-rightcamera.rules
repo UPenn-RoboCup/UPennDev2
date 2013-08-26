@@ -1,0 +1,1 @@
+KERNEL=="video?", ATTRS{serial}=="D81270A3", SYMLINK+="rightcam", GROUP="video"

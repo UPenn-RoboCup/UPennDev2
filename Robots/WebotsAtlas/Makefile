@@ -1,17 +1,6 @@
-CWD= $(shell pwd)
-
-all:: body camera kinematics 
-
-body::
-	cd Body && make && cd $(CWD)
-
-camera::
-	cd Camera && make && cd $(CWD)
-
-kinematics::
-	cd Kinematics && MODE=$(MODE) make && cd $(CWD)
-
-clean::
-	cd Body && make clean && cd $(CWD)
-	cd Camera && make clean && cd $(CWD)
-	cd Kinematics && make clean && cd $(CWD)
+LIBNAME = AtlasKinematics
+EXTRA_OBJ = AtlasKinematics.o
+EXTRA_LINK = ../Transform/Transform.o
+include ../../Makefile.inc
+LIBOPTS += -lm
+INCLUDES +=-I../Transform/

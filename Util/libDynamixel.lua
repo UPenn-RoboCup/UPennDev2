@@ -1,479 +1,31 @@
 -- Dynamixel Library
 -- (c) 2013 Stephen McGill
 -- (c) 2013 Daniel D. Lee
+-- Support: http://support.robotis.com/en/product/dynamixel_pro/communication/instruction_status_packet.htm
 
 local libDynamixel = {}
-local DP1 = require('DynamixelPacket1'); -- 1.0 protocol
-local DP2 = require('DynamixelPacket2'); -- 2.0 protocol
+local DP1 = require'DynamixelPacket1' -- 1.0 protocol
+local DP2 = require'DynamixelPacket2' -- 2.0 protocol
+local unix = require'unix'
+local stty = require'stty'
+local using_status_return = true
+-- 75ms default timeout
+local READ_TIMEOUT = 0.075
 
--- RX (uses 1.0)
-local rx_ram_addr = {
-	['id'] = 3,
-  ['baud'] = 4,
-	['delay'] = 5,
-	['led'] = 25,
-	['command'] = 30,
-	['position'] = 36,
-	['battery'] = 42,
-	['temperature'] = 43,
-	['torque_enable'] = 24,
-}
-local rx_ram_sz = {
-	['id'] = 1,
-  ['baud'] = 1,
-	['delay'] = 1,
-	['led'] = 1,
-	['command'] = 2,
-	['hardness'] = 2,
-	['position'] = 2,
-	['battery'] = 2,
-	['temperature'] = 1,
-	['torque_enable'] = 1,
-}
-
--- MX
-local mx_ram_addr = {
-	['id'] = string.char(3,0),
-  ['baud'] = string.char(4,0),
-	['delay'] = string.char(5,0),
-	['led'] = string.char(25,0),
-	['command'] = string.char(30,0),
-	['torque_enable'] = string.char(24,0),
-	-- Position PID Gains (position control mode)
-	['position_p'] = string.char(28,0),
-	['position_i'] = string.char(27,0),
-	['position_d'] = string.char(26,0),
-	-- Present information
-	['velocity'] = string.char(32,0),
-	['position'] = string.char(36,0),
-	['battery'] = string.char(42,0),
-	['temperature'] = string.char(43,0),
-  ['status_return_level'] = string.char(16,0);
-}
-local mx_ram_sz = {
-	['id'] = 1,
-  ['baud'] = 1,
-	['led'] = 1,
-	['delay'] = 1,
-	['torque_enable'] = 1,
-	['command'] = 2,
-	['hardness'] = 2,
-	['velocity'] = 2,
-	['position'] = 2,
-	['position_p'] = 1,
-	['position_i'] = 1,
-	['position_d'] = 1,
-	['battery'] = 2,
-	['temperature'] = 1,
-  ['status_return_level'] = 1,
-}
-
--- Dynamixel PRO
--- English to Hex Addresses of various commands/information
--- Convention: string.char( LOW_BYTE, HIGH_BYTE )
-local nx_ram_addr = {
-	
-	-- Legacy API Convention --
-	-- TODO: Manually write legacy functions
-	-- Comments adjacent gives the corresponding New API key
-	--['led'] = string.char(0x33,0x02), -- Red Led
-	--['battery'] = string.char(0x6F,0x02), -- Voltage
-	--['command'] = string.char(0x54,0x02), -- command_position
-	
-	-- New API --
-	-- ENTER EEPROM AREA
-	-- Operation Mode
-	-- Mode 0: Torque Control
-	-- Mode 1: Velocity Control
-	-- Mode 2: Position Control
-	-- Mode 3: position-Velocity Control
-	['mode'] = string.char(0x0B,0x00),
-	-- General Operation information
-	['model_num']  = string.char(0x00,0x00),
-	['model_info'] = string.char(0x02,0x00),
-	['firmware'] =   string.char(0x06,0x00),
-	['id'] =   string.char(0x07,0x00),
-	['baud'] = string.char(0x08,0x00),
-	--[[
-	0: 2400 ,1: 57600, 2: 115200, 3: 1Mbps, 4: 2Mbps
-	5: 3Mbps, 6: 4Mbps, 7: 4.5Mbps, 8: 10.5Mbps
-	--]]
-	-- Limits
-	['max_temperature'] = string.char(0x15,0x00),
-	['max_voltage'] = string.char(0x16,0x00),
-	['min_voltage'] = string.char(0x18,0x00),
-	['max_acceleration'] = string.char(0x1A,0x00),
-	['max_torque'] = string.char(0x1E,0x00),
-	['max_velocity'] = string.char(0x20,0x00),
-	['max_position'] = string.char(0x24,0x00),
-	['min_position'] = string.char(0x28,0x00),
-	['shutdown'] = string.char(0x30,0x00),
-	
-	-- ENTER RAM AREA
-	['torque_enable'] = string.char(0x32,0x02), -- Same in new API
-	-- Position Options --
-	-- Position Commands (position control mode)
-	['command_position'] = string.char(0x54,0x02),
-	['command_velocity'] = string.char(0x58,0x02),
-	['command_acceleration'] = string.char(0x5E,0x02),
-	-- Position PID Gains (position control mode)
-	['position_p'] = string.char(0x52,0x02),
-	['position_i'] = string.char(0x50,0x02),
-	['position_d'] = string.char(0x4E,0x02),
-	-- Velocity PID Gains (position control mode)
-	['velocity_p'] = string.char(0x46,0x02),
-	['velocity_i'] = string.char(0x4A,0x02),
-	['velocity_d'] = string.char(0x4C,0x02),
-	-- Low Pass Fitler settings
-	['position_lpf'] = string.char(0x42,0x02),
-	['velocity_lpf'] = string.char(0x46,0x02),
-	-- Feed Forward mechanism
-	['acceleration_ff'] = string.char(0x3A,0x02),
-	['velocity_ff'] = string.char(0x3E,0x02),
-	
-	-- Torque options --
-	-- Commanded Torque (torque control mode)
-	['command_torque'] = string.char(0x5C,0x02),
-	-- Current (V=iR) PI Gains (torque control mode)
-	['current_p'] = string.char(0x38,0x02),
-	['current_i'] = string.char(0x36,0x02),
-
-	-- LED lighting
-	['led_red'] = string.char(0x33,0x02),
-	['led_green'] = string.char(0x34,0x02),
-	['led_blue'] = string.char(0x35,0x02),
-	
-	-- Present information
-	['position'] = string.char(0x63,0x02), -- Same in new API
-	['velocity'] = string.char(0x67,0x02), -- Same in new API
-	['current'] = string.char(0x6D,0x02),
-	['load'] = string.char(0x6B,0x02),
-	['voltage'] = string.char(0x6F,0x02),
-	['temperature'] = string.char(0x71,0x02), -- Same in new API
-}
--- Size on RAM/EEPROM in bytes
-local nx_ram_sz = {
-	-- Legacy API --
-	['led'] = 1,
-	['battery'] = 2,
-	['command'] = 4,
-	-- Same in legacy and new
-	['velocity'] = 4,
-	['position'] = 4,
-	['temperature'] = 1,
-	['torque_enable'] = 1,
-	-- New API --
-	['model_num']  = 2,
-	['model_info'] = 4,
-	['firmware'] = 1,
-	['id'] = 1,
-	['baud'] = 1,
-	['mode'] = 1,
-	-- Limits
-	['max_temperature'] = 1,
-	['max_voltage'] = 2,
-	['min_voltage'] = 2,
-	['max_acceleration'] = 4,
-	['max_torque'] = 2,
-	['max_velocity'] = 4,
-	['max_position'] = 4,
-	['min_position'] = 4,
-	['shutdown'] = 1,
-	-- Position Control
-	['command_position'] = 4,
-	['command_velocity'] = 4,
-	['command_acceleration'] = 4,
-	-- Gains
-	['position_p'] = 2,
-	['position_i'] = 2,
-	['position_d'] = 2,
-	['velocity_p'] = 2,
-	['velocity_i'] = 2,
-	['velocity_d'] = 2,
-	-- Advanced Position Control
-	['position_lpf'] = 4,
-	['velocity_lpf'] = 4,
-	['acceleration_ff'] = 4,
-	['velocity_ff'] = 4,
-	-- Torque Control
-	['command_torque'] = 4,
-	-- Current PI Gains
-	['current_p'] = 2,
-	['current_i'] = 2,
-	-- Indicators
-	['led_red'] = 1,
-	['led_green'] = 1,
-	['led_blue'] = 1,
-	-- Present information
-	['current'] = 2,
-	['load'] = 2,
-	['voltage'] = 2,
-}
-
--- Add a poor man's unix library
-local unix2 = {}
-unix2.write = function(fd,msg)
-	local str = string.format('\n%s fd:(%d) sz:(%d)',type(msg),fd,#msg)
-	local str2 = 'Dec:\t'
-	local str3 = 'Hex:\t'
-	for i=1,#msg do
-		str2 = str2..string.format('%3d ', msg:byte(i))
-		str3 = str3..string.format(' %.2X ', msg:byte(i))
-	end
-	io.write(str,'\n',str2,'\n',str3,'\n')
-	return #msg
-end
-unix2.time = function()
-	return os.clock()
-end
-unix2.read = function(fd)
-	return nil
-end
-unix2.usleep = function(n_usec)
-	--os.execute('sleep '..n_usec/1e6)
-end
-unix2.close = function( fd )
-	io.write('Closed fd ',fd)
-end
-local unix = unix2
-
-------------------------------------------------
-------------------------------------------------
--- 1.0 stuff!!
-function libDynamixel.set_ram1(fd,id,addr,value,sz)
-	local inst = nil
-	if type(id) == 'number' then
-		if sz==1 then
-			inst = DP1.write_byte(id, addr, value)
-		elseif sz==2 then
-			inst = DP1.write_word(id, addr, value)
-		elseif sz==4 then
-			inst = DP1.write_dword(id, addr, value)
-		end
-		local clear = unix.read(fd); -- clear old status packets
-		local ret = unix.write(fd, inst)
-		local statuses = libDynamixel.get_status1(fd,1);
-		if not statuses then
-			print('No status packet from the write')
-			return nil
-		end
-		local err_msg  = DP1.strerr(statuses.error)
-		if err_msg then
-			return err_msg
-		end
-	elseif type(id)=='table' then
-		-- Sync write
-		if sz==1 then
-			libDynamixel.sync_write_byte1(fd, id, addr, value)
-		elseif sz==2 then
-			libDynamixel.sync_write_word1(fd, id, addr, value)
-		elseif sz==4 then
-			error('NO SIR!')
-			libDynamixel.sync_write_dword(fd, id, addr, value)
-		end
-	end
+--------------------
+-- Convienence functions for reading dynamixel packets
+DP1.parse_status_packet = function(pkt) -- 1.0 protocol
+   local t = {}
+   t.id = pkt:byte(3)
+   t.length = pkt:byte(4)
+   t.error = pkt:byte(5)
+   t.parameter = {pkt:byte(6,t.length+3)}
+   t.checksum = pkt:byte(t.length+4)
+   return t
 end
 
--- Get a single element
-function libDynamixel.get_ram1(fd, id, addr, sz)
-	local inst = nil
-	local nids = 1
-	if type(id) == 'number' then
-		inst = DP1.read_data(id, addr, sz);
-		local clear = unix.read(fd); -- clear old status packets
-		local ret = unix.write(fd, inst)
-		local status = libDynamixel.get_status1(fd,nids);
-		if not status then
-			return nil
-		end
-		if sz==1 then
-			return status.parameter,DP1.strerr(status.error)
-		elseif sz==2 then
-			return DP1.byte_to_word(unpack(status.parameter,1,2)),DP1.strerr(status.error)
-		elseif sz==4 then
-			return DP1.byte_to_dword(unpack(status.parameter,1,4)),DP1.strerr(status.error)
-		end
-	elseif type(id)=='table' then -- does not exist!!!!!!
-		error('NO SIR DOES DEOS EXIST IN 1.0!')
-		inst = DP1.sync_read(string.char(unpack(id)), addr, sz)
-		nids = #id
-	else
-		return nil
-	end
-	local clear = unix.read(fd); -- clear old status packets
-	local ret = unix.write(fd, inst)
-	local statuses = libDynamixel.get_status1(fd,nids);
-	if not statuses then
-		return nil
-	end
-	-- Make a return table
-	local status_return = {}
-	local error_return = {}
-	for s,status in ipairs(statuses) do
-		table.insert(error_return, DP1.strerr(status.error) )
-		if sz==1 then
-			table.insert(status_return,status.parameter[1])
-		elseif sz==2 then
-			table.insert(status_return,
-			DP1.byte_to_word(unpack(status.parameter,1,2)) )
-		elseif sz==4 then
-			table.insert(status_return,
-			DP1.byte_to_dword(unpack(status.parameter,1,4)) )
-		end
-	end
-	return status_return, error_return
-end
--- 1.0 stuff done!!
-------------------------------------------------
-------------------------------------------------
-
-function libDynamixel.set_ram(fd,id,addr,value,sz)
-	local inst = nil
-	if type(id) == 'number' then
-		if sz==1 then
-			inst = DP2.write_byte(id, addr, value)
-		elseif sz==2 then
-			inst = DP2.write_word(id, addr, value)
-		elseif sz==4 then
-			inst = DP2.write_dword(id, addr, value)
-		end
-		local clear = unix.read(fd); -- clear old status packets
-		local ret = unix.write(fd, inst)
-		local statuses = libDynamixel.get_status(fd,1);
-		local err_msg  = DP2.strerr(statuses[1].error)
-		if err_msg then
-			return err_msg
-		end
-	elseif type(id)=='table' then
-		-- Sync write
-		if sz==1 then
-			libDynamixel.sync_write_byte(fd, id, addr, value)
-		elseif sz==2 then
-			libDynamixel.sync_write_word(fd, id, addr, value)
-		elseif sz==4 then
-			libDynamixel.sync_write_dword(fd, id, addr, value)
-		end
-	end
-end
-
--- Get a single element
--- TODO: Grab neighboring RAM segments of different meaningful data
-function libDynamixel.get_ram(fd, id, addr, sz)
-	local inst = nil
-	local nids = 1
-	if type(id) == 'number' then
-		inst = DP2.read_data(id, addr, sz);
-		local clear = unix.read(fd); -- clear old status packets
-		local ret = unix.write(fd, inst)
-		local statuses = libDynamixel.get_status(fd,nids);
-		if not statuses then
-			return nil
-		end
-		local status = statuses[1]
-		if sz==1 then
-			return status.parameter,DP2.strerr(status.error)
-		elseif sz==2 then
-			return DP2.byte_to_word(unpack(status.parameter,1,2)),DP2.strerr(status.error)
-		elseif sz==4 then
-			return DP2.byte_to_dword(unpack(status.parameter,1,4)),DP2.strerr(status.error)
-		end
-	elseif type(id)=='table' then
-		inst = DP2.sync_read(string.char(unpack(id)), addr, sz)
-		nids = #id
-	else
-		return nil
-	end
-	local clear = unix.read(fd); -- clear old status packets
-	local ret = unix.write(fd, inst)
-	local statuses = libDynamixel.get_status(fd,nids);
-	if not statuses then
-		return nil
-	end
-	-- Make a return table
-	local status_return = {}
-	local error_return = {}
-	for s,status in ipairs(statuses) do
-		table.insert(error_return, DP2.strerr(status.error) )
-		if sz==1 then
-			table.insert(status_return,status.parameter[1])
-		elseif sz==2 then
-			table.insert(status_return,
-			DP2.byte_to_word(unpack(status.parameter,1,2)) )
-		elseif sz==4 then
-			table.insert(status_return,
-			DP2.byte_to_dword(unpack(status.parameter,1,4)) )
-		end
-	end
-	return status_return, error_return
-end
-
-function init_device_handle(obj)
-	-- MX Series Calls
-	for key,addr in pairs(mx_ram_addr) do
-		obj['set_mx_'..key] = function(self,id,val)
-			return libDynamixel.set_ram(self.fd, id, addr, val, mx_ram_sz[key])
-		end
-		obj['get_mx_'..key] = function(self,id)
-			return libDynamixel.get_ram(self.fd, id, addr, mx_ram_sz[key])
-		end
-	end
-	-- NX Series Calls
-	for key,addr in pairs(nx_ram_addr) do
-		obj['set_nx_'..key] = function(self,id,val)
-			return libDynamixel.set_ram(self.fd, id, addr, val, nx_ram_sz[key])
-		end
-		obj['get_nx_'..key] = function(self,id)
-			return libDynamixel.get_ram(self.fd, id, addr, nx_ram_sz[key])
-		end
-	end
-	-- RX Series Calls
-	for key,addr in pairs(rx_ram_addr) do
-		obj['set_rx_'..key] = function(self,id,val)
-			return libDynamixel.set_ram1(self.fd, id, addr, val, rx_ram_sz[key])
-		end
-		obj['get_rx_'..key] = function(self,id)
-			return libDynamixel.get_ram1(self.fd, id, addr, rx_ram_sz[key])
-		end
-	end
-	return obj
-end
-
-
-function libDynamixel.parse_status_packet1(pkt)
-   local t = {};
-   t.id = pkt:byte(3);
-   t.length = pkt:byte(4);
-   t.error = pkt:byte(5);
-   t.parameter = {pkt:byte(6,t.length+3)};
-   t.checksum = pkt:byte(t.length+4);
-   return t;
-end
-
-function libDynamixel.get_status1( fd, npkt, timeout )
-	timeout = timeout or 0.010;
-	local t0 = unix.time();
-	local str = "";
-	while (unix.time()-t0 < timeout) do
-		local s = unix.read(fd);
-		if (type(s) == "string") then
-			str = str..s;
-			pkt = DP1.input(str);
-			if pkt then
-				local status = libDynamixel.parse_status_packet1(pkt);
-				--print(string.format("Status: id=%d error=%d",status.id,status.error));
-				return status
-			end
-		end
-		-- TODO: adjust the sleep time
-		unix.usleep(100);
-	end
-	return nil;
-end
-
-
-
--- TODO: Is the status packet the same in Dynamixel 2.0?
-libDynamixel.parse_status_packet = function(pkt)
+DP2.parse_status_packet = function(pkt) -- 2.0 protocol
+  --print('status pkt',pkt:byte(1,#pkt) )
 	local t = {}
 	t.id = pkt:byte(5)
 	t.length = pkt:byte(6)+2^8*pkt:byte(7)
@@ -481,260 +33,784 @@ libDynamixel.parse_status_packet = function(pkt)
 	t.error = pkt:byte(9)
 	t.parameter = {pkt:byte(10,t.length+5)}
 	t.checksum = string.char( pkt:byte(t.length+6), pkt:byte(t.length+7) );
-	return t;
+	return t
 end
+
+-- RX (uses 1.0)
+-- Format: { Register Address, Register Byte Size}
+local rx_registers = {
+	['id'] = {3,1},
+  ['baud'] = {4,1},
+	['delay'] = {5,1},
+	['torque_enable'] = {24,1},
+	['led'] = {25,1},
+	['command_position'] = {30,2},
+	['position'] = {36,2},
+	['battery'] = {42,2},
+	['temperature'] = {43,1},
+}
+libDynamixel.rx_registers = rx_registers
+
+-- MX
+-- http://support.robotis.com/en/product/dynamixel/mx_series/mx-28.htm
+-- Convention: {string.char( ADDR_LOW_BYTE, ADDR_HIGH_BYTE ), n_bytes_of_value}
+local mx_registers = {
+  ['model_num'] = {string.char(0,0),2},
+  ['firmware'] = {string.char(2,0),1},
+	['id'] = {string.char(3,0),1},
+  ['baud'] = {string.char(4,0),1},
+	['delay'] = {string.char(5,0),1},
+  ['max_torque'] = {string.char(14,0),2},
+  ['status_return_level'] = {string.char(16,0),1},
+	['torque_enable'] = {string.char(24,0),1},
+	['led'] = {string.char(25,0),1},
+	
+	-- Position PID Gains (position control mode)
+	['position_p'] = {string.char(28,0),1},
+	['position_i'] = {string.char(27,0),1},
+	['position_d'] = {string.char(26,0),1},
+	
+	['command_position'] = {string.char(30,0),2},
+	['velocity'] = {string.char(32,0),2},
+	['position'] = {string.char(36,0),2},
+  ['speed'] = {string.char(38,0),2},
+  ['load'] = {string.char(40,0),2},
+  
+	['battery'] = {string.char(42,0),2},
+	['temperature'] = {string.char(43,0),1},
+}
+libDynamixel.mx_registers = mx_registers
+
+-- Dynamixel PRO
+-- English to Hex Addresses of various commands/information
+-- Convention: string.char( LOW_BYTE, HIGH_BYTE )
+-- http://support.robotis.com/en/product/dynamixel_pro/control_table.htm
+local nx_registers = {
+	
+	-- New API --
+	-- ENTER EEPROM AREA
+
+	-- General Operation information
+	['model_num']  = {string.char(0x00,0x00),2},
+	['model_info'] = {string.char(0x02,0x00),4},
+	['firmware'] =   {string.char(0x06,0x00),1},
+	['id'] =   {string.char(0x07,0x00),1},
+	-- Baud
+	--[[
+	0: 2400 ,1: 57600, 2: 115200, 3: 1Mbps, 4: 2Mbps
+	5: 3Mbps, 6: 4Mbps, 7: 4.5Mbps, 8: 10.5Mbps
+	--]]
+	['baud'] = {string.char(0x08,0x00),1},
+  -- Delay in us: wish to have zero
+  ['delay'] = {string.char(9,0),1},
+	
+	-- Operation Mode
+	-- Mode 0: Torque Control
+	-- Mode 1: Velocity Control
+	-- Mode 2: Position Control
+	-- Mode 3: position-Velocity Control
+	['mode'] = {string.char(0x0B,0x00),1},
+	
+	-- Limits
+	['max_temperature'] = {string.char(0x15,0x00,1)},
+	['max_voltage'] = {string.char(0x16,0x00),2},
+	['min_voltage'] = {string.char(0x18,0x00),2},
+	['max_acceleration'] = {string.char(0x1A,0x00),4},
+	['max_torque'] = {string.char(0x1E,0x00),2},
+	['max_velocity'] = {string.char(0x20,0x00),4},
+	['max_position'] = {string.char(0x24,0x00),4},
+	['min_position'] = {string.char(0x28,0x00),4},
+	['shutdown'] = {string.char(0x30,0x00),1},
+	
+	-- ENTER RAM AREA
+	['torque_enable'] = {string.char(0x32,0x02),1},
+	-- Position Options --
+	-- Position Commands (position control mode)
+	['command_position'] = {string.char(0x54,0x02),4},
+	['command_velocity'] = {string.char(0x58,0x02),4},
+	['command_acceleration'] = {string.char(0x5E,0x02),4},
+	-- Position PID Gains (position control mode)
+	['position_p'] = {string.char(0x52,0x02),2},
+	['position_i'] = {string.char(0x50,0x02),2},
+	['position_d'] = {string.char(0x4E,0x02),2},
+	-- Velocity PID Gains (position control mode)
+	['velocity_p'] = {string.char(0x46,0x02),2},
+	['velocity_i'] = {string.char(0x4A,0x02),2},
+	['velocity_d'] = {string.char(0x4C,0x02),2},
+	
+	-- Low Pass Fitler settings
+	['position_lpf'] = {string.char(0x42,0x02),4},
+	['velocity_lpf'] = {string.char(0x46,0x02),4},
+	-- Feed Forward mechanism
+	['acceleration_ff'] = {string.char(0x3A,0x02),4},
+	['velocity_ff'] = {string.char(0x3E,0x02),4},
+	
+	-- Torque options --
+	-- Commanded Torque (torque control mode)
+	['command_torque'] = {string.char(0x5C,0x02),4},
+	-- Current (V=iR) PI Gains (torque control mode)
+	['current_p'] = {string.char(0x38,0x02),2},
+	['current_i'] = {string.char(0x36,0x02),2},
+
+	-- LED lighting
+	['led_red'] = {string.char(0x33,0x02),1},
+	['led_green'] = {string.char(0x34,0x02),1},
+	['led_blue'] = {string.char(0x35,0x02),1},
+	
+	-- Present information
+	['position'] = {string.char(0x63,0x02),4},
+	['velocity'] = {string.char(0x67,0x02),4},
+	['current'] = {string.char(0x6D,0x02),2},
+	['load'] = {string.char(0x6B,0x02),2},
+	['voltage'] = {string.char(0x6F,0x02),2},
+	['temperature'] = {string.char(0x71,0x02),1},
+  
+  -- Status return
+  ['status_return_level'] = {string.char(0x7B,0x03),1},
+}
+libDynamixel.nx_registers = nx_registers
+
+--------------------
+-- Convienence functions for constructing Sync Write instructions
+local function sync_write_byte(ids, addr, data)
+  local all_data = nil
+	local nid = #ids
+  -- All get the same value
+	if type(data)=='number' then 
+    all_data = data
+  else
+    assert(nid==#data,'Incongruent ids and data')
+  end
+  
+	local t = {}
+	local n = 1
+	local len = 1 -- byte
+	for i = 1,nid do
+		t[n] = ids[i]
+		t[n+1] = all_data or data[i]
+		n = n + len + 1
+	end
+  
+	return t
+end
+
+local function sync_write_word(ids, addr, data)
+	local all_data = nil
+  local nid = #ids
+	if type(data)=='number' then
+		-- All get the same value
+		all_data = data
+  else
+    assert(nid==#data,'Incongruent ids and data')
+	end
+
+	local t = {}
+	local n = 1
+	local len = 2 -- word
+	for i = 1,nid do
+		t[n] = ids[i];
+		local val = all_data or data[i]
+		-- Word to byte is the same for both packet types...
+		t[n+1],t[n+2] = DP2.word_to_byte(val)
+		n = n + len + 1;
+	end
+	return t
+end
+
+local function sync_write_dword(ids, addr, data)
+  local all_data = nil
+	local nid = #ids
+	local len = 4
+	if type(data)=='number' then
+		-- All get the same value
+		all_data = data
+  else
+    assert(nid==#data,'Incongruent ids and data')
+	end
+	local t = {};
+	local n = 1;
+	for i = 1,nid do
+		t[n] = ids[i];
+		local val = all_data or data[i]
+		t[n+1],t[n+2],t[n+3],t[n+4] = DP2.dword_to_byte(val)
+		n = n + len + 1;
+	end
+	return t
+end
+
+--------------------
+-- Initialize functions for reading/writing to NX motors
+local nx_single_write = {}
+nx_single_write[1] = DP2.write_byte
+nx_single_write[2] = DP2.write_word
+nx_single_write[4] = DP2.write_dword
+
+local mx_single_write = {}
+mx_single_write[1] = DP2.write_byte
+mx_single_write[2] = DP2.write_word
+mx_single_write[4] = DP2.write_dword
+
+local rx_single_write = {}
+rx_single_write[1] = DP1.write_byte
+rx_single_write[2] = DP1.write_word
+rx_single_write[4] = DP1.write_dword
+
+local sync_write = {}
+sync_write[1] = sync_write_byte
+sync_write[2] = sync_write_word
+sync_write[4] = sync_write_dword
+
+local byte_to_number = {}
+byte_to_number[1] = function(byte)
+  return byte
+end
+byte_to_number[2] = DP2.byte_to_word
+byte_to_number[4] = DP2.byte_to_dword
+libDynamixel.byte_to_number = byte_to_number
 
 -- Old get status method
-libDynamixel.get_status = function( fd, npkt, timeout )
+local function get_status( fd, npkt, protocol, timeout )
 	-- TODO: Is this the best default timeout for the new PRO series?
-	timeout = timeout or 0.1;
+	timeout = timeout or READ_TIMEOUT
+  npkt = npkt or 1
 
-timeout = .5
+  local DP = DP2
+	if protocol==1 then DP = DP1 end
 
-	local t0 = unix.time();
-	local str = "";
-	local pkt_cnt = 0;
-	while unix.time()-t0 < timeout do
-		local s = unix.read(fd);
-		if type(s) == "string" then
-			str = str..s;
-			local pkt, done = DP2.input(str);
-			if done and #pkt>=npkt then
-				local statuses = {}
-				for pp=1,#pkt do
-					local status = libDynamixel.parse_status_packet(pkt[pp]);
-					table.insert(statuses,status)
+	local t0 = unix.time()
+	local status_str = ''
+	local pkt_cnt = 0
+	local statuses = {}
+	while unix.time()-t0<timeout do
+		local s = unix.read(fd)
+		if s then
+			status_str = status_str..s
+			local pkts = DP.input(status_str)
+      --print('Status sz',#status_str)
+			if pkts then
+				for p,pkt in ipairs(pkts) do
+					local status = DP.parse_status_packet( pkt )
+          if npkt==1 then return status end
+					table.insert( statuses, status )
 				end
-				return statuses;
-			end
+				if #statuses==npkt then return statuses end
+			end -- if pkts
+		end
+    unix.select({fd},0.001)
+	end
+	-- Did we timeout?
+	return nil
+end
+
+--------------------
+-- Set NX functions: returns the command to send on the chain
+for k,v in pairs( nx_registers ) do
+	libDynamixel['set_nx_'..k] = function( motor_ids, values, bus)
+		local addr = v[1]
+		local sz = v[2]
+		
+		-- Construct the instruction (single or sync)
+    local single = type(motor_ids)=='number'
+		local instruction = nil
+		if single then
+			instruction = nx_single_write[sz](motor_ids, addr, values)
 		else
+			local msg = sync_write[sz](motor_ids, addr, values)
+			instruction = DP2.sync_write(addr, sz, string.char(unpack(msg)))
 		end
-		-- TODO: tune the sleep amount
-		unix.usleep(100);
+		
+    if not bus then return instruction end
+
+    -- Clear the reading
+    local clr = unix.read(bus.fd)
+
+    -- Write the instruction to the bus 
+    local ret = unix.write(bus.fd, instruction)
+		
+    -- Grab any status returns
+    if using_status_return and single then
+      return get_status( bus.fd, 1 )
+    end
+		
+	end --function
+end
+
+--------------------
+-- Get NX functions
+for k,v in pairs( nx_registers ) do
+	libDynamixel['get_nx_'..k] = function( motor_ids, bus )
+		local addr = v[1]
+		local sz = v[2]
+		
+		-- Construct the instruction (single or sync)
+		local instruction = nil
+		local nids = 1
+		if type(motor_ids)=='number' then
+      -- Single motor
+			instruction = DP2.read_data(motor_ids, addr, sz)
+		else
+			instruction = DP2.sync_read(string.char(unpack(motor_ids)), addr, sz)
+			nids = #motor_ids
+		end
+		
+    if not bus then return instruction end
+    
+		-- Clear old status packets
+    repeat buf = unix.read(bus.fd) until not buf
+    
+    -- Write the instruction to the bus 
+    local ret = unix.write(bus.fd, instruction)
+		
+    -- Grab the status of the register
+    return get_status( bus.fd, nids )
+		
+	end --function
+end
+
+--------------------
+-- Set MX functions
+for k,v in pairs( mx_registers ) do
+	libDynamixel['set_mx_'..k] = function( motor_ids, values, bus )
+		local addr = v[1]
+		local sz = v[2]
+		
+		-- Construct the instruction (single or sync)
+    local single = type(motor_ids)=='number'
+		local instruction = nil
+		if single then
+			instruction = mx_single_write[sz](motor_ids, addr, values)
+		else
+			local msg = sync_write[sz](motor_ids, addr, values)
+			instruction = DP2.sync_write(addr, sz, string.char(unpack(msg)))
+		end
+		
+    if not bus then return instruction end
+
+    -- Write the instruction to the bus
+    local ret = unix.write(bus.fd, instruction)
+		
+    -- Grab any status returns
+    if using_status_return and single then
+      local status = get_status( bus.fd )
+      local value = byte_to_number[sz]( unpack(status.parameter) )
+      return status, value
+    end
+		
+	end --function
+end
+
+--------------------
+-- Get MX functions
+for k,v in pairs( mx_registers ) do
+	libDynamixel['get_mx_'..k] = function( motor_ids, bus )
+		local addr = v[1]
+		local sz = v[2]
+		
+		-- Construct the instruction (single or sync)
+		local instruction = nil
+		local nids = 1
+		if type(motor_ids)=='number' then
+      -- Single motor
+			instruction = DP2.read_data(motor_ids, addr, sz)
+		else
+			instruction = DP2.sync_read(string.char(unpack(motor_ids)), addr, sz)
+			nids = #motor_ids
+		end
+		
+    if not bus then return instruction end
+    
+		-- Clear old status packets
+		local clear = unix.read( bus.fd )
+    
+    -- Write the instruction to the bus 
+    local ret = unix.write( bus.fd, instruction)
+		
+    -- Grab the status of the register
+    local status = get_status( bus.fd, nids )
+    local values = {}
+    for i,s in ipairs(status) do
+      table.insert(values,byte_to_number[sz]( unpack(s.parameter) ))
+    end
+    return status, values
+		
+	end --function
+end
+
+--------------------
+-- Set RX functions
+for k,v in pairs( rx_registers ) do
+	libDynamixel['set_rx_'..k] = function( motor_ids, values, bus)
+		local addr = v[1]
+		local sz = v[2]
+		
+		-- Construct the instruction (single or sync)
+    local single = type(motor_ids)=='number'
+		local instruction = nil
+		if single then
+			instruction = rx_single_write[sz](motor_ids, addr, values)
+		else
+			local msg = sync_write[sz](motor_ids, addr, values)
+			instruction = DP1.sync_write(addr, sz, string.char(unpack(msg)))
+		end
+		
+    if not bus then return instruction end
+
+    -- Write the instruction to the bus 
+    local ret = unix.write(bus.fd, instruction)
+		
+    -- Grab any status returns
+    if using_status_return and single then
+      local status = get_status( bus.fd, 1 )
+      return status[1]
+    end
+		
+	end --function
+end
+
+--------------------
+-- Get RX functions
+for k,v in pairs( rx_registers ) do
+	libDynamixel['get_rx_'..k] = function( motor_ids, bus )
+		local addr = v[1]
+		local sz = v[2]
+		
+		-- Construct the instruction (single or sync)
+		local instruction = nil
+    -- Single motor
+		instruction = DP1.read_data(motor_id, addr, sz)
+
+    if not bus then return instruction end
+    
+		-- Clear old status packets
+		local clear = unix.read(bus.fd)
+    
+    -- Write the instruction to the bus 
+    local ret = unix.write(bus.fd, instruction)
+		
+    -- Grab the status of the register
+    local status = get_status( bus.fd, 1, 1 )
+    local value = byte_to_number[sz]( unpack(status[1].parameter) )
+    return status, value
+		
+	end --function
+end
+
+--------------------
+-- Ping functions
+libDynamixel.send_ping = function( id, protocol, bus, twait )
+	protocol = protocol or 2
+	local instruction = nil
+	if protocol==1 then
+		instruction = DP1.ping(id)
+	else
+		instruction = DP2.ping(id)
 	end
-	print('BAD STATUSES',#str,str)
-	return nil;
+  if not bus then return instruction end
+
+	unix.write(bus.fd, instruction)
+  local status = get_status( bus.fd, 1, protocol, twait )
+  --print('st',status)
+  if status then return status end
 end
 
-
-
-libDynamixel.send_ping1 = function( self, id )
-	local inst = DP1.ping(id);
-	return unix.write(self.fd, inst);
-end
-
-libDynamixel.ping_probe1 = function(self, twait)
-	twait = twait or 0.010;
+local function ping_probe(self, protocol, twait)
+  local found_ids = {}
 	for id = 0,253 do
-		libDynamixel.send_ping1( self, id );
-		local status = libDynamixel.get_status1(self.fd,1,twait);
+		local status = 
+      libDynamixel.send_ping( id, protocol or 2, self, twait or READ_TIMEOUT )
 		if status then
-			io.write('FOUND 1.0: ',status.id,'\n')
+      --print( string.format('Found %d.0 Motor: %d\n',protocol,status.id) )
+      table.insert( found_ids, status.id )
 		end
+    -- Wait 1 ms
+    unix.usleep(1e3)
 	end
+  return found_ids
 end
 
-libDynamixel.send_ping = function( self, id )
-	local inst = DP2.ping(id);
-	return unix.write(self.fd, inst);
-end
-
-libDynamixel.ping_probe = function(self, twait)
-	twait = twait or 0.010;
-	for id = 0,253 do
-		libDynamixel.send_ping( self, id );
-		local statuses = libDynamixel.get_status(self.fd,1,twait);
-		if statuses and #statuses==1 then
-			io.write('FOUND 2.0: ',statuses[1].id,'\n')
-		end
-	end
-end
-
-libDynamixel.sync_read = function(fd, ids, addr, len, twait)
-	twait = twait or 0.100;
-	len  = len or 2;
-	local inst = DP2.sync_read( addr, len,
-	string.char(unpack(ids)) );
-	unix.read(fd); -- clear old status packets
-	unix.write(fd, inst)
-	local status = libDynamixel.get_status(fd, #ids);
-	if status then
-		return status.parameter;
-	end
-end
-
-
-
-
-
-function libDynamixel.sync_write_byte1(fd, ids, addr, data)
-   local nid = #ids
-   local len = 1
-	 local all_data = nil
-	 if type(data)=='number' then
-		 -- All get the same value
-		 all_data = data
-	 end
-
-   local t = {};
-   local n = 1;
-   for i = 1,nid do
-      t[n] = ids[i];
-      t[n+1] = all_data or data[i];
-      n = n + len + 1;
-   end
-   local inst = DP1.sync_write(addr, len, string.char(unpack(t)))
-   unix.write(fd, inst);
-end
-
-function libDynamixel.sync_write_word1(fd, ids, addr, data)
-   local nid = #ids
-   local len = 2
-	 local all_data = nil
-	 if type(data)=='number' then
-		 -- All get the same value
-		 all_data = data
-	 end
-
-   local t = {}
-   local n = 1
-   for i = 1,nid do
-      t[n] = ids[i]
-      t[n+1],t[n+2] = DP1.word_to_byte(all_data or data[i])
-      n = n + len + 1
-   end
-   local inst = DP1.sync_write(addr, len, string.char(unpack(t)))
-   unix.write(fd, inst);
-end
-
-
-
-
--- TODO: Reorganize the sync_write commands
-libDynamixel.sync_write_byte = function(fd, ids, addr, data)
-	local nid = #ids;
-	local len = 1;
-	local all_data = nil
-	if type(data)=='number' then
-		-- All get the same value
-		all_data = data
-	end
-	local t = {};
-	local n = 1;
-	for i = 1,nid do
-		t[n] = ids[i];
-		t[n+1] = all_data or data[i];
-		n = n + len + 1;
-	end
-	local inst = DP2.sync_write(addr, len, string.char(unpack(t)));
-	unix.write(fd, inst);
-end
-
-libDynamixel.sync_write_word = function(fd, ids, addr, data)
-	local nid = #ids;
-	local len = 2;
-	local all_data = nil
-	if type(data)=='number' then
-		--print('data type is number!')
-		-- All get the same value
-		all_data = data
-	end
-
-	local t = {};
-	local n = 1;
-	for i = 1,nid do
-		t[n] = ids[i];
-		local val = all_data or data[i]
-		t[n+1],t[n+2] = DP2.word_to_byte(val)
-		--print("Sync word",t[n],val,t[n+1],t[n+2])
-		n = n + len + 1;
-	end
-	local inst = DP2.sync_write(addr, len,
-	string.char(unpack(t)));
-	unix.write(fd, inst);
-end
-
-libDynamixel.sync_write_dword = function(fd, ids, addr, data)
-	local nid = #ids;
-	local len = 4;
-	local all_data = nil
-	if type(data)=='number' then
-		-- All get the same value
-		all_data = data
-	end
-	local t = {};
-	local n = 1;
-	for i = 1,nid do
-		t[n] = ids[i];
-		local val = all_data or data[i]
-		t[n+1],t[n+2],t[n+3],t[n+4] = 
-			DP2.dword_to_byte(val)
-		n = n + len + 1;
-	end
-	local inst = DP2.sync_write(addr, len,
-	string.char(unpack(t)));
-	unix.write(fd, inst);
-end
-
+--------------------
+-- Generator of a new bus
 function libDynamixel.new_bus( ttyname, ttybaud )
 	-------------------------------
-	-- Perform require upon an open
+	-- Find the device
 	local baud = ttybaud or 1000000;
-	local fd = -1
-	if ttyname and ttyname=='fake' then
-		fd = -2; -- FAKE
-	else
-		unix = require('unix');
-		stty = require('stty');
-	end
-	-------------------------------	
 	if not ttyname then
 		local ttys = unix.readdir("/dev");
 		for i=1,#ttys do
-			if (string.find(ttys[i], "tty.usb") or
-			string.find(ttys[i], "ttyUSB")) then
-				ttyname = "/dev/"..ttys[i];
-				break;
+			if ttys[i]:find("tty.usb") or ttys[i]:find("ttyUSB") then
+				ttyname = "/dev/"..ttys[i]
+        -- TODO: Test if in use
+				break
 			end
 		end
 	end
 	assert(ttyname, "Dynamixel tty not found");
+	-------------------------------
 
 	-------------------
-	if fd~=-2 then
-		fd = unix.open(ttyname, unix.O_RDWR+unix.O_NOCTTY+unix.O_NONBLOCK);
-		assert(fd > 2, string.format("Could not open port %s, (%d)", ttyname, fd) );
-		-- Setup serial port parameters
-		stty.raw(fd);
-		stty.serial(fd);
-		stty.speed(fd, baud);
-	end
+	-- Setup serial port
+	local fd = unix.open(ttyname, unix.O_RDWR+unix.O_NOCTTY+unix.O_NONBLOCK);
+	assert(fd > 2, string.format("Could not open port %s, (%d)", ttyname, fd) );
+	stty.raw(fd)
+	stty.serial(fd)
+	stty.speed(fd, baud)
 	-------------------
 
+	-------------------
 	-- Object of the Dynamixel
 	local obj = {}
 	obj.fd = fd
 	obj.ttyname = ttyname
 	obj.baud = baud
-	obj = init_device_handle(obj)
 	-- Close out the device
-	obj.close = function (self)
-		if self.fd < 3 then
-			return false
-		end
-		return unix.close( self.fd )==0
-	end
+	obj.close = function (self) return unix.close( self.fd )==0 end
 	-- Reset the device
 	obj.reset = function(self)
 		self:close()
-		unix.usleep( 1e5 )
+		unix.usleep( 1e3 )
 		self.fd = libDynamixel.open( self.ttyname )
 	end
-	obj.ping = libDynamixel.send_ping
-	obj.ping_probe = libDynamixel.ping_probe
-	obj.ping1 = libDynamixel.send_ping1
-	obj.ping_probe1 = libDynamixel.ping_probe1
-	return obj;
+  obj.ping_probe = ping_probe
+	-------------------
+	
+	-------------------
+	-- Add libDynamixel functions
+  --[[
+	for name,func in pairs( libDynamixel ) do
+		obj[name] = func
+	end
+	-- new_bus not allowed on a current bus
+	obj.new_bus = nil
+	obj.service = nil
+  --]]
+	-------------------
+  
+  -------------------
+  -- Read/write properties
+  obj.t_last_read = 0
+  obj.t_last_write = 0
+  obj.instructions = {}
+  obj.requests = {}
+  obj.is_syncing = true
+  obj.nx_on_bus = nil -- ids of nx
+  obj.mx_on_bus = nil -- ids of mx
+  obj.ids_on_bus = nil --all on the bus
+  obj.name = 'Default'
+  obj.message = nil
+  -------------------
+	
+	return obj
+end
+
+---------------------------
+-- Service multiple Dynamixel buses
+libDynamixel.service = function( dynamixels, main )
+  
+  -- Enable the main function as a coroutine thread
+  local main_thread = nil
+  if main then
+    main_thread = coroutine.create( main )
+  end
+
+	-- Start the streaming of each dynamixel
+  -- Instantiate the dynamixel coroutine thread
+  local dynamixel_fds = {}
+  local fd_to_dynamixel = {}
+	for i,dynamixel in ipairs(dynamixels) do
+    -- Set up easy access to select IDs
+    table.insert(dynamixel_fds,dynamixel.fd)
+    fd_to_dynamixel[dynamixel.fd] = dynamixel
+		dynamixel.thread = coroutine.create(
+		function()
+      
+      -- Make a read all NX command
+      local DP = DP2
+      
+      -- The coroutine should never end
+      local fd = dynamixel.fd
+      local response = nil
+			while true do -- read/write loop
+        
+        local did_something = false
+        
+        --------------------
+        -- Request data from the chain
+        if #dynamixel.requests>0 then
+          -- Clear the bus with a unix.read()?
+          local leftovers = unix.read(fd)
+          assert(leftovers~=-1, 'BAD Clearing READ')
+          
+          -- Pop the request
+          local request = table.remove(dynamixel.requests,1)
+          
+          -- Write the read request instruction to the chain
+          local req_ret = unix.write(fd, request[1])
+          -- Set a timeout for this request
+          dynamixel.timeout = unix.time() + READ_TIMEOUT
+          -- If -1 returned, the bus may be detached - throw an error
+          assert(req_ret~=-1,string.format('BAD READ REQ on %s',dynamixel.name))
+          -- Yield the number of motors read
+          -- TODO: Should it just return true? the number of bytes sent to the bus? The number of packets to expect?
+          response = coroutine.yield( 1 )
+
+          -- Read the packets and check the returns
+          local status_str = ''
+          -- Accrue values from the status packets
+          local values = {}
+          local t = unix.time()
+          while t<dynamixel.timeout do
+
+            local new_status_str = unix.read( fd )
+            assert(new_status_str~=-1,string.format('BAD READ: %s',dynamixel.name))
+            --assert(status_str, string.format('NO READ: %s',dynamixel.name))
+
+            -- Do nothing when receiving nothing
+            if not new_status_str then
+              assert(#status_str>0,'Two false reads!')
+              break
+            end
+            
+            -- Append the new status
+            status_str = status_str..new_status_str
+            
+            -- Process the status string into a packet
+            local pkts, done = DP.input( status_str )
+            
+            -- For each packet, append to the values table
+            for p,pkt in ipairs(pkts) do
+              local status = DP.parse_status_packet( pkt )
+              local read_parser = byte_to_number[ #status.parameter ]
+              -- Check if there is a parser
+              assert(read_parser, 
+              string.format('Status error for %s from %d: %d (%d)',
+              request[2],status.id,status.error,#status.parameter) )
+              -- Convert the value into a number from bytes
+              local value = read_parser( unpack(status.parameter) )
+              values[status.id] = value
+            end
+            
+            -- Yield the table of motor values and the register name
+            response = coroutine.yield( values, request[2] )
+          
+            -- Record it only after processing
+            --assert(#pkts>0,'no packets found!'..#status_str)
+            if #pkts>0 then
+              dynamixel.t_diff_read = t - dynamixel.t_last_read
+              dynamixel.t_last_read = t
+            end
+            
+            if response then break end
+          
+          end -- if use read
+          
+          -- We did something during this resume of the coroutine
+          did_something = true
+          -- Update the time for the timeout
+          t = unix.time()
+        end -- while reading responses
+        --------------------
+        -- Sync write an instruction in the queue
+        if #dynamixel.instructions>0 then
+          -- Pop the item
+          local instruction = table.remove(dynamixel.instructions,1)
+          local command_ret = unix.write( fd, instruction )
+          -- Save the write time
+          local t = unix.time()
+          dynamixel.t_diff_write = t - dynamixel.t_last_write
+          dynamixel.t_last_write = t
+          -- Yield true for syncing
+          response = coroutine.yield( true )
+          -- We did something
+          did_something = true
+        end
+        
+        -- Yield if did nothing
+        if not did_something then response = coroutine.yield( false ) end
+        
+      end -- read/write loop
+		end -- coroutine function
+		)
+	end
+  
+  -- Loop and select appropriately
+  --local status_timeout = 1/120 -- 120Hz timeout
+  local status_timeout = 1/60 -- 120Hz timeout
+  --local status_timeout = 0 -- Instant timeout
+	while #dynamixel_fds>0 do
+    
+    -- TODO: Use the dynamixel objects somehow to accept more commands...
+    -- TODO: Change from position reading to other reading?
+
+    --------------------
+    -- Perform Select on all dynamixels
+    local status, ready = unix.select( dynamixel_fds, status_timeout )
+    local t = unix.time()
+    --------------------
+    -- Loop through the dynamixel chains
+    for i_fd,is_ready in pairs(ready) do
+      -- Grab the dynamixel chain
+      local who_to_service = fd_to_dynamixel[i_fd]
+          --print('checking',who_to_service.name,i_fd,is_ready,who_to_service.is_syncing)
+      --print()
+      -- Check if the Dynamixel has information available
+      if is_ready or who_to_service.is_syncing or t>who_to_service.timeout then
+        local response = nil
+        if is_ready and who_to_service.is_syncing then
+          --print(who_to_service.name,'has more to read but is syncing also!')
+          response = 'more'
+        end
+        --------------------
+        -- Resume the thread
+        local status_code, param, reg = coroutine.resume(who_to_service.thread,response)
+        local param_type = type(param)
+        
+        --------------------
+        -- Check if there were errors in the coroutine
+        if not status_code then
+          --print( 'Dead dynamixel coroutine!', who_to_service.name, param )
+          who_to_service:close()
+          who_to_service.message = param
+          local i_to_remove = 0
+          for i,fd in ipairs(dynamixel_fds) do
+            if fd==i_fd then i_to_remove = i end
+          end
+          table.remove(dynamixel_fds,i_to_remove)
+          --error('stopping')
+        elseif param_type=='table' then
+          who_to_service.is_syncing = true
+          -- Process the callback for read data
+          if who_to_service.callback then
+            who_to_service:callback( param, reg )
+          end
+        elseif param_type=='string' then
+          error( string.format('%s: %s',who_to_service.name, param) )
+        elseif param_type=='number' then
+          -- Not syncing if reading from a number of motors
+          who_to_service.is_syncing = false
+        elseif param_type=='boolean' then
+          -- Syncing if returns true
+          -- false means nothing happened on the coroutine
+          -- TODO: This seems like complicated logic...
+          --who_to_service.is_syncing = param
+          who_to_service.is_syncing = true
+        end -- status_code
+        
+      end -- is_ready 
+    end -- pairs(ready)
+    
+    --------------------
+    -- Process the main thread after each coroutine yields
+    -- This main loop should update the dynamixel chain commands
+    if main_thread then
+      local status_code, main_param = coroutine.resume( main_thread )
+      if not status_code then 
+        print('Dead main coroutine!',main_param)
+        main_thread = nil
+      end
+    end
+    
+	end -- while servicing
+  print'Nothing left to service!'
 end
 
 return libDynamixel

@@ -1,6 +1,8 @@
 ifeq ($(shell uname),Darwin)
 all:
-	@echo No Mac uvc
+	@printf "No Mac uvc\n"
+clean:
+	@printf "No cleaning needed\n"
 else
 LIBNAME=uvc
 EXTRA_OBJ=v4l2.o timeScalar.o

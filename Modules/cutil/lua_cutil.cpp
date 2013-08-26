@@ -11,16 +11,19 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <lua.hpp>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
-#ifdef __cplusplus
-}
+#ifdef TORCH
+#include <torch/luaT.h>
+#include <torch/TH/TH.h>
+/* Keep pointers to Torch objects */
+static THByteTensor * b_t;
+static THCharTensor * c_t;
+static THShortTensor * s_t;
+static THIntTensor * i_t;
+static THLongTensor * l_t;
+static THFloatTensor * f_t;
+static THDoubleTensor * d_t;
 #endif
 
 
@@ -690,6 +693,80 @@ static int lua_bitrshift(lua_State *L) {
   return 1;
 }
 
+#ifdef TORCH
+/* Copies data to the torch tensor */
+static int lua_string2tensor(lua_State *L) {
+  void* src = NULL;
+  void* dest = NULL;
+  unsigned long tensor_sz;
+  
+  /* Grab the source string */
+  size_t num;
+  src = (void*)lua_tolstring(L, 1, &num);
+  /* Check that we have a src (should be true...) */
+  if( src==NULL )
+    return luaL_error(L, "Bad source.");
+  
+  /* Grab the destination tensor */
+  const char* tensor_typename = luaT_typename(L,2);
+  char type = tensor_typename[6]+32;
+  
+  switch (type) {
+  case 'b':
+    b_t = (THByteTensor *) luaT_checkudata(L, 2, "torch.ByteTensor");
+  	dest = b_t->storage->data + b_t->storageOffset;
+    tensor_sz = b_t->size[0] * sizeof(unsigned char);
+    break;
+  case 'c':
+    c_t = (THCharTensor *) luaT_checkudata(L, 2, "torch.CharTensor");
+  	dest = c_t->storage->data + c_t->storageOffset;
+    tensor_sz = b_t->size[0] * sizeof(char);
+    break;
+  case 's':
+    s_t = (THShortTensor *) luaT_checkudata(L, 2, "torch.ShortTensor");
+  	dest = s_t->storage->data + s_t->storageOffset;
+    tensor_sz = s_t->size[0] * sizeof(short);
+    break;
+  case 'l':
+    l_t = (THLongTensor *) luaT_checkudata(L, 2, "torch.LongTensor");
+  	dest = l_t->storage->data + l_t->storageOffset;
+    tensor_sz = l_t->size[0] * sizeof(long);
+    break;
+  case 'i':
+    i_t = (THIntTensor *) luaT_checkudata(L, 2, "torch.IntTensor");
+  	dest = i_t->storage->data + i_t->storageOffset;
+    tensor_sz = i_t->size[0] * sizeof(int);
+    break;
+  case 'f':
+    f_t = (THFloatTensor *) luaT_checkudata(L, 2, "torch.FloatTensor");
+  	dest = f_t->storage->data + f_t->storageOffset;
+    tensor_sz = f_t->size[0] * sizeof(float);
+    break;
+  case 'd':
+    d_t = (THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
+  	dest = d_t->storage->data + d_t->storageOffset;
+    tensor_sz = d_t->size[0] * sizeof(double);
+    break;
+  default:
+    return luaL_error(L, "Bad carray.");
+  }
+  
+  /* Check that we got a destination */
+  if( dest == NULL )
+    return luaL_error(L, "Bad destination.");
+  
+  /* Ensure that we are not overstepping our boundary of the tensor */
+  if( num == tensor_sz )
+    return luaL_error(L, "Not same Tensor size.");
+  /* TODO: Ensure that the tensor is contiguous */
+  
+	/* Copy the data */
+	memcpy( dest, src, num );
+  
+  return 0;
+}
+#endif
+
 static const luaL_Reg cutil_lib [] = {
   {"array2string", lua_array2string},
   {"string2userdata", lua_string2userdata},
@@ -712,7 +789,9 @@ static const luaL_Reg cutil_lib [] = {
 	{"bit_rshift", lua_bitrshift},
   {"sizeof", lua_sizeof},
   {"test_array", lua_testarray},
-
+#ifdef TORCH
+  {"string2tensor", lua_string2tensor},
+#endif
   {NULL, NULL}
 };
 

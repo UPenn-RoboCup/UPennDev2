@@ -475,15 +475,17 @@ static int lua_msgpack_unpack(lua_State *L) {
   const char * opt = luaL_optstring(L, 2, "");
 
   /* deserializes it. */
+  size_t offset = 0;
   msgpack_unpacked msg;
   msgpack_unpacked_init(&msg);
-  if (!msgpack_unpack_next(&msg, str, size, NULL)) 
+  if (!msgpack_unpack_next(&msg, str, size, &offset))
     luaL_error(L, "unpack error");
 
   /* prints the deserialized object. */
   msgpack_object obj = msg.data;
   (*unPackMap[obj.type])(L, obj, opt);
-  return 1;
+  lua_pushnumber(L,offset);
+  return 2;
 }
 
 static int lua_msgpack_newunpacker(lua_State *L) {

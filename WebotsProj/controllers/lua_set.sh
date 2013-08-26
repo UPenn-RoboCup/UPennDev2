@@ -21,7 +21,6 @@ if [ "$COMPUTER" = "Darwin" ]
 then
   #export OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 	eval `/usr/libexec/path_helper -s`
-	source ~/.bash_profile
 fi
 TERM=`which xterm`
 
@@ -31,16 +30,16 @@ export PLAYER_ID=$1
 export TEAM_ID=$2
 export PLATFORM=webots
 
+TESTFILE=state_wizard.lua
+
 # Spawn the right terminal
 if [ "$EXT_TERM" -gt "0" ]
 then
   # In separate xterms
-#  exec $TERM -l -e "$LUA Test/test_ladder.lua"
-  exec $TERM -l -e "$LUA Test/test_walk_webots.lua"
+  exec $TERM -l -e "$LUA $TESTFILE"
 else
   # In webots console
-#  exec $LUA Test/test_ladder.lua
-  exec $LUA Test/test_walk_webots.lua
+  exec $LUA $TESTFILE
 fi
 
 #exec luajit -l controller start.lua

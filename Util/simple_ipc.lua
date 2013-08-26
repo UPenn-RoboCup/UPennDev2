@@ -4,8 +4,8 @@
 -- (c) Stephen McGill, 2013
 ---------------------------------
 
-local zmq = require 'zmq' -- Based on ZMQ
-local poller = require 'zmq/poller'
+local zmq        = require 'zmq' -- Based on ZMQ
+local poller     = require 'zmq/poller'
 local simple_ipc = {} -- Our module
 
 --[[
@@ -36,7 +36,7 @@ if simple_ipc.intercom_interface then
   print( string.format(
 	'Selecting (%s) as the inter-pc interface\nUsing address (%s)',
   simple_ipc.intercom_interface, simple_ipc.intercom_interface_ip)
-	);
+	)
   simple_ipc.intercom_prefix = 
 	'epgm://'..simple_ipc.intercom_interface_ip..';239.192.1.1:'
 else
@@ -46,7 +46,7 @@ end
 
 -- Make a new publisher
 -- Publish with a filter prefix on a (possibly) pre-existing channel
-simple_ipc.new_publisher = function( channel, filter )
+simple_ipc.new_publisher = function( channel, inverted, addr, filter )
   local channel_obj = {}
   local channel_type = type(channel)
   if channel_type=="string" then
@@ -58,10 +58,10 @@ simple_ipc.new_publisher = function( channel, filter )
     -- Copy and apply a different filter
     -- In this way, we do not rebind :)
     channel_obj.socket_handle = channel.socket_handle
-    channel_obj.send = channel.send;
-    channel_obj.name = channel.name;
-    channel_obj.filter = filter;
-    return channel_obj;
+    channel_obj.send          = channel.send
+    channel_obj.name          = channel.name
+    channel_obj.filter        = filter
+    return channel_obj
   else
     print('Bad input to new_publisher!',channel,filter)
     return
@@ -73,42 +73,45 @@ simple_ipc.new_publisher = function( channel, filter )
   assert( channel_obj.context_handle )
 
   -- Set the socket type
-  channel_obj.socket_handle = channel_obj.context_handle:socket( zmq.PUB );
-  assert( channel_obj.socket_handle );
+  channel_obj.socket_handle = channel_obj.context_handle:socket( zmq.PUB )
+  assert( channel_obj.socket_handle )
 
   -- Bind to a message pipeline
-  -- TODO: connect?
-  channel_obj.socket_handle:bind( channel_obj.name )
+  if inverted then
+    channel_obj.socket_handle:connect( channel_obj.name )
+  else
+    channel_obj.socket_handle:bind( channel_obj.name )
+  end
 
   -- Set the filter for sending messages
-  channel_obj.filter = filter or '';
+  channel_obj.filter = filter or ''
 
   -- Set up the sending object
   function channel_obj.send( self, messages )
     if type(messages) == "string" then
-      return self.socket_handle:send( self.filter..messages );
+      return self.socket_handle:send( self.filter..messages )
     end
-    local nmessages = #messages;
-    local filter = self.filter;
+    local nmessages = #messages
+    local filter = self.filter
     for i=1,nmessages do
-      local msg = messages[i];
+      local msg = messages[i]
       -- TODO: Does this slow the process by a noticeable margin?
       assert( type(msg)=="string", 
       string.format("SimpleIPC (%s): Type (%s) not implemented",
       self.name, type(msg) )
-      );
+      )
       if i==nmessages then
-        return self.socket_handle:send( filter..msg );
+        return self.socket_handle:send( filter..msg )
       else
-        ret = self.socket_handle:send( filter..msg, zmq.SNDMORE );
+        ret = self.socket_handle:send( filter..msg, zmq.SNDMORE )
       end
     end
   end
-  return channel_obj;
+  return channel_obj
 end
 
 -- Make a new subscriber
-simple_ipc.new_subscriber = function( channel, filter, addr )
+simple_ipc.new_subscriber = function( channel, inverted, filter, addr )
   local channel_obj = {}
   local channel_type = type(channel)
   if channel_type=="string" then
@@ -128,32 +131,182 @@ simple_ipc.new_subscriber = function( channel, filter, addr )
   assert( channel_obj.context_handle )
 
   -- Set the socket type
-  channel_obj.socket_handle = channel_obj.context_handle:socket( zmq.SUB );
-  assert( channel_obj.socket_handle );
+  channel_obj.socket_handle = channel_obj.context_handle:socket( zmq.SUB )
+  assert( channel_obj.socket_handle )
 
   -- Store the filter
-  channel_obj.filter = filter or '';
-  -- Connect to a message pipeline
-  local rc = channel_obj.socket_handle:connect( channel_obj.name )
+  channel_obj.filter = filter or ''
+  -- Connect to a message pipeline  
+  if inverted then
+    channel_obj.socket_handle:bind( channel_obj.name )
+  else
+    channel_obj.socket_handle:connect( channel_obj.name )
+  end
+  
   channel_obj.socket_handle:setopt( zmq.SUBSCRIBE, channel_obj.filter, 0 )
 
   -- Set up receiving object
-  function channel_obj.receive( self )
-    local ret = self.socket_handle:recv();
-    local has_more = self.socket_handle:getopt( zmq.RCVMORE )
-    return ret, has_more==1;
+  function channel_obj.receive( self, noblock )
+    local ret = nil
+    if noblock then
+      ret = self.socket_handle:recv(zmq.NOBLOCK)    
+    else
+      ret = self.socket_handle:recv()
+    end
+      local has_more = self.socket_handle:getopt( zmq.RCVMORE )
+      return ret, has_more==1
   end
 
-  return channel_obj;
+  return channel_obj
 end
 
 -- Return a ZMQ Poller object based on the set of channels
+-- Callbacks set in the code
 simple_ipc.wait_on_channels = function( channels )
   local poll_obj = poller.new( #channels )
   for i=1,#channels do
-    poll_obj:add( channels[i].socket_handle, zmq.POLLIN, channels[i].callback );--no callback yet
+    poll_obj:add( channels[i].socket_handle, zmq.POLLIN, channels[i].callback )
   end
-  return poll_obj;
+  return poll_obj
+end
+
+-- Request/Reply
+-- Make a new request channel
+-- Publish with a filter prefix on a (possibly) pre-existing channel
+simple_ipc.new_requester = function( channel, addr, filter )
+  local channel_obj = {}
+  local channel_type = type(channel)
+  if channel_type=="string" then
+    channel_obj.name = simple_ipc.local_prefix..channel
+  elseif channel_type=="number" then
+    channel_obj.name = 
+      simple_ipc.intercom_prefix:gsub('*',addr or 'localhost')..channel
+  elseif channel_type=="table" and channel.name and channel.filter~=filter then
+    print('Copying',channel.name )
+    -- Copy and apply a different filter
+    -- In this way, we do not rebind :)
+    channel_obj.socket_handle = channel.socket_handle
+    channel_obj.send          = channel.send
+    channel_obj.name          = channel.name
+    channel_obj.filter        = filter
+    return channel_obj
+  else
+    print('Bad input to new_requester!',channel,filter)
+    return
+  end
+  assert(channel_obj.name)
+  print('Requesting on',channel_obj.name,'with filter',filter)
+
+  channel_obj.context_handle = zmq.init( simple_ipc.n_zmq_threads )
+  assert( channel_obj.context_handle )
+
+  -- Set the socket type
+  channel_obj.socket_handle = channel_obj.context_handle:socket( zmq.REQ )
+  assert( channel_obj.socket_handle )
+
+  -- Bind to a message pipeline
+  -- TODO: connect?
+  channel_obj.socket_handle:connect( channel_obj.name )
+
+  -- Set the filter for sending messages
+  channel_obj.filter = filter or ''
+
+  -- Set up the sending object
+  function channel_obj.send( self, messages )
+    if type(messages) == "string" then
+      return self.socket_handle:send( self.filter..messages )
+    end
+    local nmessages = #messages
+    local filter = self.filter
+    for i=1,nmessages do
+      local msg = messages[i]
+      -- TODO: Does this slow the process by a noticeable margin?
+      assert( type(msg)=="string", 
+      string.format("SimpleIPC (%s): Type (%s) not implemented",
+      self.name, type(msg) )
+      )
+      if i==nmessages then
+        return self.socket_handle:send( filter..msg )
+      else
+        ret = self.socket_handle:send( filter..msg, zmq.SNDMORE )
+      end
+    end
+  end
+  -- Set up receiving object
+  function channel_obj.receive( self, noblock )
+    local ret = nil
+    if noblock then
+      ret = self.socket_handle:recv(zmq.NOBLOCK)    
+    else
+      ret = self.socket_handle:recv()
+    end
+    local has_more = self.socket_handle:getopt( zmq.RCVMORE )
+    return ret, has_more==1
+  end
+  
+  return channel_obj
+end
+
+simple_ipc.new_replier = function( channel, addr )
+  local channel_obj = {}
+  local channel_type = type(channel)
+  if channel_type=="string" then
+    channel_obj.name = simple_ipc.local_prefix..channel
+  elseif channel_type=="number" then
+    channel_obj.name = 
+			simple_ipc.intercom_prefix:gsub('*',addr or 'localhost')..channel
+  else
+    print('Bad input to new_replier!',channel,addr)
+    return
+  end
+
+  assert(channel_obj.name)
+  print('Replying on',channel_obj.name)
+
+  channel_obj.context_handle = zmq.init( simple_ipc.n_zmq_threads )
+  assert( channel_obj.context_handle )
+
+  -- Set the socket type
+  channel_obj.socket_handle = channel_obj.context_handle:socket( zmq.REP )
+  assert( channel_obj.socket_handle )
+
+  -- Connect to a message pipeline
+  local rc = channel_obj.socket_handle:bind( channel_obj.name )
+  assert(rc,'Bad bind! '..channel_obj.name)
+
+  -- Set up the sending object
+  function channel_obj.send( self, messages )
+    if type(messages) == "string" then
+      return self.socket_handle:send( messages )
+    end
+    local nmessages = #messages
+    for i=1,nmessages do
+      local msg = messages[i]
+      -- TODO: Does this slow the process by a noticeable margin?
+      assert( type(msg)=="string", 
+      string.format("SimpleIPC (%s): Type (%s) not implemented",
+      self.name, type(msg) )
+      )
+      if i==nmessages then
+        return self.socket_handle:send( msg )
+      else
+        ret = self.socket_handle:send( msg, zmq.SNDMORE )
+      end
+    end
+  end
+  -- Set up receiving object
+  function channel_obj.receive( self, noblock )
+    local ret = nil
+    if noblock then
+      ret = self.socket_handle:recv(zmq.NOBLOCK)    
+    else
+      ret = self.socket_handle:recv()
+    end
+    local has_more = self.socket_handle:getopt( zmq.RCVMORE )
+    return ret, has_more==1
+  end
+
+  return channel_obj
 end
 
 return simple_ipc

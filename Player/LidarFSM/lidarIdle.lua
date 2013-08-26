@@ -1,19 +1,30 @@
-module(..., package.seeall);
+local Body = require'Body'
 
-require('lcm')
-require('unix')
-Config = require('ConfigPenn')
-Body = require(Config.Body);
+local t_entry, t_update
 
-function entry()
-  lcm:set_chest_lidar_panning(0);
-  print(_NAME..' Entry' ) 
+local state = {}
+state._NAME = 'lidarIdle'
+
+function state.entry()
+  print(state._NAME..' Entry' ) 
+  -- When entry was previously called
+  local t_entry_prev = t_entry
+  -- Update the time of entry
+  t_entry = Body.get_time()
+  t_update = t_entry
 end
 
-function update()
---  print(_NAME..' Update' ) 
+function state.update()
+--  print(_NAME..' Update' )
+  -- Get the time of update
+  local t = Body.get_time()
+  local t_diff = t - t_update
+  -- Save this at the last update time
+  t_update = t
 end
 
-function exit()
-  print(_NAME..' Exit' ) 
+function state.exit()
+  print(state._NAME..' Exit' ) 
 end
+
+return state

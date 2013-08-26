@@ -1,27 +1,45 @@
-module(..., package.seeall);
+local state = {}
+state._NAME = 'armIdle'
 
-require('unix')
-Config = require('ConfigPenn')
-Body = require(Config.Body);
+local Config     = require'Config'
+local Body       = require'Body'
 
-qLArmInit=Config.arm.qLArmInit;
-qRArmInit=Config.arm.qRArmInit;
+local timeout = 10.0
 
-function entry()
-  print(_NAME..' Entry' ) 
-  Body.enable_larm_linear_movement(false); 
-  Body.set_larm_target_position(qLArmInit[1]);
-  Body.set_rarm_target_position(qRArmInit[1]);
-  Body.set_lhand_position(Config.arm.FingerOpen);
-  Body.set_rhand_position(Config.arm.FingerOpen);
+local t_entry, t_update, t_finish
+
+local qLArmInit = Config.arm.qLArmInit
+local qRArmInit = Config.arm.qRArmInit
+
+function state.entry()
+  print(state._NAME..' Entry' )
+  -- Update the time of entry
+  local t_entry_prev = t_entry -- When entry was previously called
+  t_entry = Body.get_time()
+  t_update = t_entry
+  t_finish = t
+
+  -- Release the fingers
+  -- TODO: Torque off?
+  Body.set_lgrip_percent(0)
+  Body.set_rgrip_percent(0)
+
 end
 
-function update()
---  print(_NAME..' Update' ) 
+function state.update()
+--  print(state._NAME..' Update' ) 
+  -- Get the time of update
+  local t  = Body.get_time()
+  local dt = t - t_update
+  -- Save this at the last update time
+  t_update = t
+  if t-t_entry > timeout then return'timeout' end
 
 end
 
-function exit()
-  print(_NAME..' Exit' ) 
+function state.exit()
+  print(state._NAME..' Exit' )
 
 end
+
+return state

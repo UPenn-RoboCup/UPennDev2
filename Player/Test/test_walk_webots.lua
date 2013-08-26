@@ -32,12 +32,12 @@ if is_webots then
   webots.wb_robot_keyboard_enable( 100 );
 else
   local getch = require 'getch'
-  getch.enableblock(1);
 end
 
 
 -- initialize state machines
 Motion.entry();
+Body.entry()
 --Motion.event("standup");
 
 Body.set_head_hardness({0.4,0.4});
@@ -81,7 +81,7 @@ function process_keyinput()
       byte = byte + 32;
     end
   else
-    str  = getch.get();
+    str  = getch.nonblock();
     byte = string.byte(str,1);
   end
 
@@ -239,7 +239,7 @@ function update()
   end
   
   -- Get a keypress
-  process_keyinput();
+  --process_keyinput();
 end
 
 local tDelay=0.002*1E6;

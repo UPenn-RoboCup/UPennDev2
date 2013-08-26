@@ -1,65 +1,81 @@
-module(..., package.seeall);
+local state = {}
+state._NAME = 'armInit'
+local Config  = require'Config'
+local Body    = require'Body'
+local util    = require'util'
+local t_entry, t_update, t_finish
+local timeout = 15.0
 
-require('lcm')
-require('unix')
-Config = require('ConfigPenn')
-Body = require(Config.Body);
+-- Goal position is arm Init, with hands at the side
+local qLArmInit = Config.arm.qLArmInit[1]
+local qRArmInit = Config.arm.qRArmInit[1]
+local qLArm, qRArm
 
-qLArmInit=Config.arm.qLArmInit;
-qRArmInit=Config.arm.qRArmInit;
+-- Angular velocity
+local dqArmMax = vector.new({10,10,10,15,45,45})*Body.DEG_TO_RAD
 
+function state.entry()
+  print(state._NAME..' Entry' )
+  -- Update the time of entry
+  local t_entry_prev = t_entry -- When entry was previously called
+  t_entry = Body.get_time()
+  t_update = t_entry
+  t_finish = t
 
-function entry()
-  print(_NAME..' Entry' ) 
-  left_arm_mode = 1;
-  right_arm_mode = 1;
-  
-   --super slow
-  dArmVelAngle = vector.new({10,10,10,15,45,45})*math.pi/180; --30 degree per second
-  Body.set_arm_movement_velocity(dArmVelAngle);
+  -- Where are the arms right now?
+  qLArm = Body.get_larm_position()
+  qRArm = Body.get_rarm_position()
+  Body.set_larm_command_position(qLArm)
+  Body.set_rarm_command_position(qRArm)
 
 end
 
+function state.update()
+--  print(state._NAME..' Update' )
+  -- Get the time of update
+  local t  = Body.get_time()
+  local dt = t - t_update
+  -- Save this at the last update time
+  t_update = t
+  --if t-t_entry > timeout then return'timeout' end
 
-function update()
---  print(_NAME..' Update' ) 
-
-
-  if left_arm_mode==1 then
-    Body.enable_larm_linear_movement(false); 
-    Body.set_larm_target_position(qLArmInit[1]);
-    if Body.larm_joint_movement_done() then left_arm_mode = 2;end
-  elseif left_arm_mode==2 then
-    Body.set_larm_target_position(qLArmInit[2]);
-    if Body.larm_joint_movement_done() then left_arm_mode = 3;end
-  elseif left_arm_mode==3 then
-    Body.set_larm_target_position(qLArmInit[3]);
-    if Body.larm_joint_movement_done() then 
-      left_arm_mode = 4;
+  -- Left
+  qLArm = Body.get_larm_command_position()
+  local dqLArm   = qLArmInit - qLArm
+  -- Tolerance check (Asumme within tolerance)
+  local tol      = true
+  local tolLimit = 1e-6
+  for i,dqL in ipairs(dqLArm) do
+    if math.abs(dqL) > tolLimit then
+      tol = false
+      -- Ensure that we do not move motors too quickly
+      dqLArm[i] = util.procFunc(dqL,0,dqArmMax[i]*dt)
     end
   end
+  Body.set_larm_command_position( qLArm+dqLArm )
 
-  if right_arm_mode==1 then
-    Body.enable_rarm_linear_movement(false); 
-    Body.set_rarm_target_position(qRArmInit[1]);
-    if Body.rarm_joint_movement_done() then right_arm_mode = 2;end
-  elseif right_arm_mode==2 then
-    Body.set_rarm_target_position(qRArmInit[2]);
-    if Body.rarm_joint_movement_done() then right_arm_mode = 3;end
-  elseif right_arm_mode==3 then
-    Body.set_rarm_target_position(qRArmInit[3]);
-    if Body.rarm_joint_movement_done() then 
-      right_arm_mode = 4;
+  -- Right
+  qRArm = Body.get_rarm_command_position()
+  local dqRArm   = qRArmInit - qRArm
+  -- Tolerance check (Asumme within tolerance)
+  local tol      = true
+  local tolLimit = 1e-6
+  for i,dqR in ipairs(dqRArm) do
+    if math.abs(dqR) > tolLimit then
+      tol = false
+      -- Ensure that we do not move motors too quickly
+      dqRArm[i] = util.procFunc(dqR,0,dqArmMax[i]*dt)
     end
   end
+  Body.set_rarm_command_position( qRArm+dqRArm )
 
-
-  if left_arm_mode==4 and right_arm_mode==4 then
-    return "done";
-  end
-end
-
-function exit()
-  print(_NAME..' Exit' ) 
+  -- We are done when we are within tolerance
+  if tol then return 'done' end
 
 end
+
+function state.exit()
+  print(state._NAME..' Exit' )
+end
+
+return state

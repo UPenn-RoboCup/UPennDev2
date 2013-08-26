@@ -1,0 +1,1 @@
+KERNEL=="video?", ATTRS{serial}=="E27733EF", SYMLINK+="headcam", GROUP="video"

@@ -113,8 +113,13 @@ unsigned char * to_rgb( int tag ) {
   lua_pushlightuserdata(L, $1);
   SWIG_arg++;
 }
+%typemap(out) float * {
+  lua_pushlightuserdata(L, $1);
+  SWIG_arg++;
+}
 %include <webots/camera.h>
 %typemap(out) unsigned char *;
+%typemap(out) float *;
 
 %include <webots/compass.h>
 %include <webots/connector.h>
@@ -151,5 +156,27 @@ unsigned char * to_rgb( int tag ) {
 %include <webots/robot.h>
 %include <webots/servo.h>
 %include <webots/speaker.h>
+
+%{
+  typedef struct {
+    void *ptr;
+    char type;
+    int size;
+    int own; // 1 if array was created by Lua and needs to be deleted
+  } structCArray;
+%}
+
+%typemap(in) (const double values[3]) {
+  structCArray* p = (structCArray*)lua_touserdata(L, $input);
+  $1 = (double *)p->ptr;
+}
+%typemap(in) (const double values[4]) {
+  structCArray* p = (structCArray*)lua_touserdata(L, $input);
+  $1 = (double *)p->ptr;
+}
 %include <webots/supervisor.h>
+// Reset now...
+%typemap(in) (const double values[3]);
+%typemap(in) (const double values[4]);
+
 %include <webots/touch_sensor.h>

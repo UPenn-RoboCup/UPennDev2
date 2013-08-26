@@ -177,6 +177,7 @@ void *xbox360_thread_func(void *) {
   }
   xbox360_thread_cleanup();
   running = 0;
+	return NULL;
 }
 
 int xbox360_thread_init() {

@@ -619,7 +619,7 @@ function walk.update()
 end -- walk.update
 
 function walk.exit()
-  print(state._NAME..' Exit')
+  print(walk._NAME..' Exit')
 end
 
 function walk.get_odometry(u0)

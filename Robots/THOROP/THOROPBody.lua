@@ -3,9 +3,10 @@
 -- (c) 2013 Stephen McGill, Seung-Joon Yi
 --------------------------------
 
--- THOR OP Body
+-- Webots THOR-OP Body sensors
 local use_camera = false
 local use_lidar  = false
+local use_pose   = false
 
 -- Shared memory for the joints
 require'jcm'

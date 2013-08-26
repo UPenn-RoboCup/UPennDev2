@@ -26,6 +26,7 @@ local fsm = {}
   statesNames - mapping state index to string name
   statesHash - mapping state string name to state index
   sm:set_state(state_string) -- sets the state by the string name
+
 --]]-------
 
 -- TODO: Remove getfenv, as it just 

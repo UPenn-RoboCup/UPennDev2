@@ -1,3 +1,7 @@
+--------------------------------
+-- Humanoid arm state machine
+-- (c) 2013 Stephen McGill, Seung-Joon Yi
+--------------------------------
 -- Config guides special situations
 local Config = require'Config'
 -- Use the fsm module

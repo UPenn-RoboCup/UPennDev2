@@ -1,3 +1,8 @@
+--------------------------------
+-- Humanoid arm state machine
+-- (c) 2013 Stephen McGill, Seung-Joon Yi
+--------------------------------
+
 -- Config guides special situations
 local Config = require'Config'
 -- fsm module
@@ -30,23 +35,42 @@ sm:add_state(armTeleop)
 -- Setup the transitions for this FSM
 sm:set_transition(armIdle, 'init', armInit)
 --
-sm:set_transition(armInit, 'ready', armInitReady)
---
-sm:set_transition(armInitReady, 'reset', armInit)
--- Stateful transitions
-sm:set_transition(armInitReady, 'done', armReady, function()
-  -- When arm ready is done, armInitReady switches direction
-  sm:set_transition(armInitReady, 'done', armInit)
-  -- Resetting armInitReady now means to go back to armReady
-  sm:set_transition(armInitReady, 'reset', armReady)
-  -- armIdle is already in the ready position
-  sm:set_transition(armIdle, 'ready', armReady)
-  -- Must go through armInitReady to get to armInit
-  sm:set_transition(armIdle, 'init', armInitReady)
+sm:set_transition(armInit, 'done', armIdle, function()
+  -- When we are in the init state, we are allowed to make some transitions
+  sm:set_transition(armIdle, 'ready', armInitReady)
 end)
 --
+function armInitReady.epi.update()
+  -- Set the direction epi-state when armInitReady is done
+  if not armInitReady.epi.reverse then armInitReady.epi.reverse = false end
+  armInitReady.epi.reverse = not armInitReady.epi.reverse
+  if armInitReady.epi.reverse then
+    sm:set_transition(armInitReady, 'done', armInit)
+    -- Resetting armInitReady now means to go back to armReady
+    sm:set_transition(armInitReady, 'reset', armReady)
+    -- armIdle is already in the ready position
+    --sm:set_transition(armIdle, 'ready', armReady)
+    -- Must go through armInitReady to get to armInit
+    --sm:set_transition(armIdle, 'init', armInitReady)
+  else
+    sm:set_transition(armInitReady, 'done', armReady)
+    -- Resetting armInitReady now means to go back to armReady
+    sm:set_transition(armInitReady, 'reset', armInit)
+    -- armIdle is already in the ready position
+    --sm:set_transition(armIdle, 'ready', armInitReady)
+    -- Must go through armInitReady to get to armInit
+    --sm:set_transition(armIdle, 'init', armInit)
+  end
+end
+sm:set_transition(armInitReady, 'reset', armInit)
+-- Stateful transitions
+sm:set_transition(armInitReady, 'done', armReady, armInitReady.epi.update)
+--
 sm:set_transition(armReady, 'init', armInitReady)
-sm:set_transition(armReady, 'done', armIdle)
+sm:set_transition(armReady, 'done', armIdle, function()
+  -- When we are in the init state, we are allowed to make some transitions
+  sm:set_transition(armIdle, 'init', armInitReady)
+end)
 --sm:set_transition(armReady, 'wheelgrab', armWheelGrip)
 --[[
 sm:set_transition(armWheelGrip, 'reset', armWheelRelease)

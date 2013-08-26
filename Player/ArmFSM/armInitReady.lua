@@ -1,3 +1,7 @@
+--------------------------------
+-- Humanoid arm state
+-- (c) 2013 Stephen McGill, Seung-Joon Yi
+--------------------------------
 local state = {}
 state._NAME = 'armInitReady'
 local Config  = require'Config'
@@ -77,5 +81,10 @@ end
 function state.exit()
   print(state._NAME..' Exit' )
 end
+
+-- Add Epi-sate
+state.epi = {}
+-- Is this going going in forward to Ready, or reverse to Init?
+state.epi.reverse = false
 
 return state

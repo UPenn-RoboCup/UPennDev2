@@ -1,0 +1,9 @@
+sudo sysctl -w kern.sysv.shmmax=16777216
+
+
+sudo nano /etc/sysctl.conf
+kern.sysv.shmmax=16777216
+kern.sysv.shmmin=1
+kern.sysv.shmmni=128
+kern.sysv.shmseg=32
+kern.sysv.shmall=4096

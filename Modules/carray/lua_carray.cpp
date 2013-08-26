@@ -10,6 +10,19 @@
 #include <iostream>
 #include <lua.hpp>
 
+#ifdef TORCH
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include <torch/luaT.h>
+#include <torch/TH/TH.h>
+#ifdef __cplusplus
+}
+#endif
+#include <iostream>
+#endif
+
 #define MT_NAME "carray_mt"
 #define LUA_TCDATA 10
 
@@ -22,6 +35,17 @@ typedef struct {
   int size;
   int own; // 1 if array was created by Lua and needs to be deleted
 } structCArray;
+
+#ifdef TORCH
+/* Keep pointers to Torch objects */
+static THByteTensor * b_t;
+static THCharTensor * c_t;
+static THShortTensor * s_t;
+static THIntTensor * i_t;
+static THLongTensor * l_t;
+static THFloatTensor * f_t;
+static THDoubleTensor * d_t;
+#endif
 
 static structCArray * lua_checkcarray(lua_State *L, int narg) {
   void *ud = luaL_checkudata(L, narg, MT_NAME);
@@ -39,7 +63,7 @@ template<typename T, char name>
 static int lua_carray_new(lua_State *L) {
   structCArray *ud = (structCArray *)lua_newuserdata(L, sizeof(structCArray));
   ud->type = name;
-
+  
   if (lua_type(L, 1) == LUA_TCDATA) {
 //    ud->size = luaL_optint(L, -2, 1);  // Get optional size argument
     ud->size = lua_tointeger(L, 2);  // Get optional size argument
@@ -47,7 +71,7 @@ static int lua_carray_new(lua_State *L) {
     ud->ptr = (void *) lua_topointer(L, 1);
   }
   else if (lua_type(L, 1) == LUA_TLIGHTUSERDATA) { // Cast from pointer
-    ud->size = luaL_optint(L, -2, 1);  // Get optional size argument
+    ud->size = luaL_optint(L, 2, 1);  // Get optional size argument
     ud->own = 0; // Do not free memory when deleting
     ud->ptr = (void *) lua_topointer(L, 1);
   }
@@ -277,11 +301,120 @@ static int lua_carray_typename(lua_State *L) {
   return 1;
 }
 
+#ifdef TORCH
+/* Copies data to the torch tensor */
+static int lua_carray_totensor(lua_State *L) {
+  void* src = NULL;
+  void* dest = NULL;
+  size_t num = 0;
+  size_t element_sz;
+  unsigned long tensor_sz;
+  structCArray *p = lua_checkcarray(L, 1);
+  const char* tensor_typename = luaT_typename(L,2);
+  /* Ensure that the types are the same */
+  /* "torch.ByteTensor" */
+  if( tensor_typename[6] != (p->type-32) )
+    return luaL_error(L, "Tensor type check is bad.");
+	/* Number of elements to copy */
+	//size_t n_elements = luaL_checkinteger( L, 3 );
+  size_t n_elements = luaL_optint( L, 3, p->size );
+  /* Optional Offset in the carray */
+  size_t offset = luaL_optint(L,4,0);
+  
+  /* Ensure that we are not overstepping our boundary of the carray */
+  if( (offset+n_elements) > p->size )
+    return luaL_error(L, "Copying outside of carray boundary.");
+  
+  switch (p->type) {
+  case 'b':
+    b_t = (THByteTensor *) luaT_checkudata(L, 2, "torch.ByteTensor");
+  	dest = b_t->storage->data + b_t->storageOffset;
+    tensor_sz = b_t->size[0];
+    num = n_elements * sizeof(unsigned char);
+    src = ((unsigned char*)p->ptr)+offset;
+    break;
+  case 'c':
+    c_t = (THCharTensor *) luaT_checkudata(L, 2, "torch.CharTensor");
+  	dest = c_t->storage->data + c_t->storageOffset;
+    tensor_sz = b_t->size[0];
+    num = n_elements * sizeof(char);
+    src = ((char*)p->ptr)+offset;
+    break;
+  case 's':
+    s_t = (THShortTensor *) luaT_checkudata(L, 2, "torch.ShortTensor");
+  	dest = s_t->storage->data + s_t->storageOffset;
+    tensor_sz = s_t->size[0];
+    num = n_elements * sizeof(short);
+    src = ((short*)p->ptr)+offset;
+    break;
+  case 'l':
+    l_t = (THLongTensor *) luaT_checkudata(L, 2, "torch.LongTensor");
+  	dest = l_t->storage->data + l_t->storageOffset;
+    tensor_sz = l_t->size[0];
+    num = n_elements * sizeof(long);
+    src = ((long*)p->ptr)+offset;
+    break;
+  case 'i':
+    i_t = (THIntTensor *) luaT_checkudata(L, 2, "torch.IntTensor");
+  	dest = i_t->storage->data + i_t->storageOffset;
+    tensor_sz = i_t->size[0];
+    num = n_elements * sizeof(int);
+    src = ((int*)p->ptr)+offset;
+    break;
+  case 'u':
+    i_t = (THIntTensor *) luaT_checkudata(L, 2, "torch.IntTensor");
+  	dest = i_t->storage->data + i_t->storageOffset;
+    tensor_sz = i_t->size[0];
+    num = n_elements * sizeof(int);
+    src = ((int*)p->ptr)+offset;
+    break;
+  case 'f':
+    f_t = (THFloatTensor *) luaT_checkudata(L, 2, "torch.FloatTensor");
+  	dest = f_t->storage->data + f_t->storageOffset;
+    tensor_sz = f_t->size[0];
+    num = n_elements * sizeof(float);
+    src = ((float*)p->ptr)+offset;
+    break;
+  case 'd':
+    d_t = (THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
+  	dest = d_t->storage->data + d_t->storageOffset;
+    tensor_sz = d_t->size[0];
+    num = n_elements * sizeof(double);
+    src = ((double*)p->ptr)+offset;
+    break;
+  default:
+    return luaL_error(L, "Bad carray.");
+  }
+  
+  /* Check that we got a destination */
+  if(dest==NULL)
+    return luaL_error(L, "Bad destination.");
+  
+  /* Check that we have a src (should be true...) */
+  if(src==NULL)
+    return luaL_error(L, "Bad source.");
+  
+  /* Ensure that we are not overstepping our boundary of the tensor */
+  if( n_elements > tensor_sz )
+    return luaL_error(L, "Not enough Tensor space.");
+  /* TODO: Ensure that the tensor is contiguous */
+  
+	/* Copy the data */
+	memcpy( dest, src, num );
+  
+  return 0;
+}
+#endif
+
 // Copy carray to Lua table
 static int lua_carray_totable(lua_State *L) {
   structCArray *p = lua_checkcarray(L, 1);
-  lua_createtable(L, p->size, 0);
-  for (int i = 0; i < p->size; i++) {
+  int start = luaL_optint(L, 2, 1)-1;
+  int stop = luaL_optint(L, 3,  p->size);
+  int tbl_idx = 1;
+   
+  lua_createtable(L, stop-start+1, 0);
+  for (int i = start; i < stop; i++) {
     double val;
     switch (p->type) {
     case 'b':
@@ -312,7 +445,7 @@ static int lua_carray_totable(lua_State *L) {
       val = 0;
     }
     lua_pushnumber(L, val);
-    lua_rawseti(L, -2, i+1);
+    lua_rawseti(L, -2, tbl_idx++);
   }
   return 1;
 }
@@ -650,6 +783,9 @@ static const luaL_Reg carray_methods[] = {
   {"pointer", lua_carray_pointer},
 	{"bytesize", lua_carray_bytesize},
   {"typename", lua_carray_typename},
+#ifdef TORCH
+  {"tensor", lua_carray_totensor},
+#endif
   {"table", lua_carray_totable},
   {"string", lua_carray_tostring},
   {"__gc", lua_carray_delete},

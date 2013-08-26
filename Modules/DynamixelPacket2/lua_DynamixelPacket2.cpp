@@ -158,6 +158,7 @@ static int lua_dynamixel_input(lua_State *L) {
 	int nPacket = luaL_optinteger(L, 2, 1)-1;
 	DynamixelPacket pkt;
 	int ret = 0;
+  int strindex = 0;
 	// Packet Table
 	lua_newtable(L);
 	if (str) {
@@ -166,11 +167,13 @@ static int lua_dynamixel_input(lua_State *L) {
 			if (nPacket < 0){
 				ret += lua_pushpacket(L, &pkt);
 				lua_rawseti(L, -2, ret);
+        strindex = i;
 			}
 		} //for
 	} //if str
 	lua_pushboolean(L, nPacket==-1);
-	return 2;
+  lua_pushnumber(L, strindex);
+	return 3;
 }
 
 static int lua_dynamixel_word_to_byte(lua_State *L) {

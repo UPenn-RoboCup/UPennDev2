@@ -116,18 +116,19 @@ function ret = lidarbody()
   end
 
   function [nBytes] = update(fd)
+    disp('getting a mesh!')
     nBytes = 0;
     while udp_recv('getQueueSize',fd) > 0
       udp_data = udp_recv('receive',fd);
       nBytes = nBytes + numel(udp_data);
     end
-    data = msgpack('unpack',udp_data);
-    metadata = data{1};
-    jdepth = data{2};
-    if metadata.type==0
+    [metadata offset] = msgpack('unpack',udp_data)
+    jdepth = udp_data(offset+1:end);
+    %if metadata.type==0
+    if strncmp(char(metadata.name),'head',3)==1
       HEAD_LIDAR.ranges = djpeg(jdepth);
       HEAD_LIDAR.lidarangles = metadata.lidarangles;
-      HEAD_LIDAR.spineangles = metadata.spineangles;
+      %HEAD_LIDAR.spineangles = metadata.spineangles;
       HEAD_LIDAR.lidarrange = metadata.lidarrange;
       HEAD_LIDAR.range0 = double(metadata.range0);
       HEAD_LIDAR.range1 = double(metadata.range1);
@@ -152,7 +153,7 @@ function ret = lidarbody()
     else
       CHEST_LIDAR.ranges = djpeg(jdepth);
       CHEST_LIDAR.lidarangles = metadata.lidarangles;
-      CHEST_LIDAR.spineangles = metadata.spineangles;
+      %CHEST_LIDAR.spineangles = metadata.spineangles;
       CHEST_LIDAR.lidarrange = metadata.lidarrange;
       CHEST_LIDAR.range0 = double(metadata.range0);
       CHEST_LIDAR.range1 = double(metadata.range1);

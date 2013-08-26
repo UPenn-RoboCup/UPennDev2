@@ -76,18 +76,20 @@ static int lua_hokuyo_parse(lua_State *L) {
 	size_t packet_len = 0;
 	const char * packet = lua_tolstring(L, 1, &packet_len);
 	const char * ptr = packet;
-	int lf_pos;
-	/* Get end pos of command echo */
+	int lf_pos = 0;
+  /*
+	// Get end pos of command echo
 	lf_pos = strfind(ptr, '\n', packet_len);
 	ptr += (lf_pos + 1); 
 	packet_len -= (lf_pos + 1);
-
-	/* Get status code */
-	lf_pos = strfind(ptr, '\n', packet_len);
+  */
+	// Get status code
 	if ( strncmp(ptr, "99", 2) != 0){
+    //printf("Data:\n%s\n\n",ptr);
 		lua_pushnil(L);
 		return 1;
 	}
+  lf_pos = strfind(ptr, '\n', packet_len);
 	ptr += (lf_pos + 1);
 	packet_len -= (lf_pos + 1);
 
@@ -107,10 +109,10 @@ static int lua_hokuyo_parse(lua_State *L) {
 	int scan_idx = 0, j = 0, i = 0;
 	for (i = 0; i < 50; i++) {
 		if (checksum(ptr, LINE_LEN) < 0) {
-			printf("%s %d", ptr, i);
+			//printf("%s %d", ptr, i);
       lua_pushnil(L);
       return 1;
-//			return luaL_error(L, "Checksum fail\n");
+      //return luaL_error(L, "Checksum fail: |%s|: |%d|", ptr, i);
 		}
 		memcpy(rawp, ptr, CLINE_LEN * sizeof(char));
 		rawp += CLINE_LEN;
@@ -122,7 +124,6 @@ static int lua_hokuyo_parse(lua_State *L) {
 		raw_scan = ((raw[j] - 0x30) << 12) + ((raw[j + 1] - 0x30) << 6) + raw[j + 2] - 0x30;
 		scan[scan_idx++] = (float) (raw_scan * 0.001);
 	}
-
 	lua_pushlstring(L, (char *)scan, MAX_COUNT * sizeof(float));
 
 	return 1;

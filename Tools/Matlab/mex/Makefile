@@ -7,8 +7,8 @@ LIBRT= $(shell [ `uname` != "Darwin" ] && echo "-lrt")
 TARGETS=lidartrans time mexshm getch \
 udp_recv udp_send cjpeg djpeg \
 msgpack zmq ImageProc Planner tcpopen \
-serialize deserialize #zlibCompress zlibUncompress
-.PHONY: all clean $(TARGETS)
+serialize deserialize zlibCompress zlibUncompress
+.PHONY: all clean
 	
 all: $(TARGETS)
 
@@ -39,14 +39,6 @@ djpeg:
 zmq:	
 	$(MEX) $@.cc -lzmq
 	
-ImageProc:
-	@echo "Building ImageProc"
-	cd ImageProc && make && cd $(PWD)
-
-Planner:
-	@echo "Building Planner"
-	cd Planner && make && cd $(PWD)
-	
 msgpack:
 	$(MEX) $@.cc -lmsgpack
 	
@@ -70,6 +62,14 @@ serialopen:
 	$(MEX) $@.c	
 uvc:
 	$(MEX) $@.cc
+	
+ImageProc:
+	@echo "Building ImageProc"
+	cd ImageProc && make && cd $(PWD)
+
+Planner:
+	@echo "Building Planner"
+	cd Planner && make && cd $(PWD)
 	
 test:
 	@echo "Testing matlab scripts!"

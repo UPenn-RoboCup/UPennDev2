@@ -129,6 +129,18 @@ static int lua_shm_set(lua_State *L) {
       // if the data does not fit evenly into the value_t types
       nval++;
     }
+  } else if (lua_isstring(L, 3)) {
+    size_t len;
+    // if the input is a string then use memcpy
+    light_ptr = (const void*)lua_tolstring(L, 3, &len);
+    // get the number of bytes to copy
+    light_bytes = (unsigned int)len;
+    // calculate size of the shm array (based on sizeof(value_t)
+    nval = light_bytes >> 3;
+    if (light_bytes & BOOST_BINARY(111)) {
+      // if the data does not fit evenly into the value_t types
+      nval++;
+    }
   }
   
   // Find key in shm

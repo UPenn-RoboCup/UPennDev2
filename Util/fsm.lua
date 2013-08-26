@@ -118,17 +118,17 @@ function update(self)
   local state = self.currentState
 
   -- if no nextState update current state:
-  if (not self.nextState) then
+  if not self.nextState then
     local ret = state.update()
     -- add ret from state to events:
-    if (ret) then
+    if ret then
       self.events[#self.events+1] = ret
     end
 
     -- process events
     for i = 1,#self.events do
       local event = self.events[i]
-      if (self.transitions[state][event]) then
+      if self.transitions[state][event] then
         self.nextState = self.transitions[state][event]
         self.nextAction = self.actions[state][event]
         break
@@ -138,15 +138,17 @@ function update(self)
   end
 
   -- check and enter next state
-  if (self.nextState) then
+  if self.nextState then
     state.exit()
-    if (self.nextAction) then
+
+    if self.nextAction then
       ret = self.nextAction()
       self.nextAction = nil
     end
 
     self.previousState = self.currentState
     self.currentState = self.nextState
+    
     self.nextState = nil
     self.currentState.entry()
     if (self.state_debug_handle) then

@@ -6,8 +6,8 @@ local fsm = require'fsm'
 -- Require the needed states
 local armIdle = require'armIdle'
 local armInit = require'armInit'
-local armPreReady  = require'armInitReady' -- From Init toward Ready
-local armPostReady = require'armInitReady' -- From Ready toward Init
+-- From Init toward Ready
+local armInitReady = require'armInitReady'
 local armReady = require'armReady'
 --[[
 local armTeleop = require('armTeleop')
@@ -19,7 +19,7 @@ local armWheelRelease = require('armWheelRelease')
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
-local sm = fsm.new(armIdle,armInit,armPreReady,armReady,armPostReady)
+local sm = fsm.new(armIdle,armInit,armInitReady,armReady)
 --[[
 sm:add_state(armWheelGrip)
 sm:add_state(armWheelTurn)
@@ -30,15 +30,23 @@ sm:add_state(armTeleop)
 -- Setup the transitions for this FSM
 sm:set_transition(armIdle, 'init', armInit)
 --
-sm:set_transition(armInit, 'ready', armPreReady)
+sm:set_transition(armInit, 'ready', armInitReady)
 --
-sm:set_transition(armPreReady, 'reset', armInit)
-sm:set_transition(armPreReady, 'done', armReady)
+sm:set_transition(armInitReady, 'reset', armInit)
+-- Stateful transitions
+sm:set_transition(armInitReady, 'done', armReady, function()
+  -- When arm ready is done, armInitReady switches direction
+  sm:set_transition(armInitReady, 'done', armInit)
+  -- Resetting armInitReady now means to go back to armReady
+  sm:set_transition(armInitReady, 'reset', armReady)
+  -- armIdle is already in the ready position
+  sm:set_transition(armIdle, 'ready', armReady)
+  -- Must go through armInitReady to get to armInit
+  sm:set_transition(armIdle, 'init', armInitReady)
+end)
 --
-sm:set_transition(armPostReady, 'done', armInit)
-sm:set_transition(armPostReady, 'reset', armReady)
---
-sm:set_transition(armReady, 'init', armPostReady)
+sm:set_transition(armReady, 'init', armInitReady)
+sm:set_transition(armReady, 'done', armIdle)
 --sm:set_transition(armReady, 'wheelgrab', armWheelGrip)
 --[[
 sm:set_transition(armWheelGrip, 'reset', armWheelRelease)
@@ -66,8 +74,8 @@ obj.update = function()
   -- Check for out of process events in non-blocking
   local event, has_more = evts:receive(true)
   if event then
-  	print( util.color(obj._NAME..' Event:','green'),event)
-  	sm:add_event(event)
+    print( util.color(obj._NAME..' Event:','green'),event)
+    sm:add_event(event)
   end
   sm:update()
 end

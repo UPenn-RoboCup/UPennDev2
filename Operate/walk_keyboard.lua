@@ -27,6 +27,8 @@ local char_to_event = {
   ['8'] = {'MotionFSM','stand'},
   ['9'] = {'MotionFSM','walk'},
   ['t'] = {'BodyFSM','teleop'},
+  ['a'] = {'ArmFSM','init'},
+  ['r'] = {'ArmFSM','ready'},
 }
 
 local char_to_vel = {

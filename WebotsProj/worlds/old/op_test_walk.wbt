@@ -6,9 +6,8 @@ WorldInfo {
     "Webpage: http://www.robotstadium.org"
   ]
   title "Robotstadium"
-  basicTimeStep 40
+  basicTimeStep 10
   runRealTime TRUE
-  displayRefresh 1
 #  runRealTime FALSE
 }
 Viewpoint {
@@ -64,7 +63,7 @@ DEF PLAYER_1_99 DARwInOPGPS {
   translation 1.5 0.3 0.8
   rotation 0 1 0 -1.56
   controller "darwin-op_team_0"
-  controllerArgs "1 98"
+  controllerArgs "1 31"
   waistBand TRUE
   waistBandColor 1 0 0
   plasticColor 1 0 0

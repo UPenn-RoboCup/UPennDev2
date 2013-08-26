@@ -633,6 +633,8 @@ if IS_WEBOTS then
   Body.get_time    = webots.wb_robot_get_time
   -- Setup the webots tags
   local tags = {}
+  local lidar_timeStep = 25
+  local camera_timeStep = 33
 
 	servo.direction = vector.new({
 		1,-1, -- Head
@@ -661,50 +663,48 @@ if IS_WEBOTS then
   
   -- Webots body broadcasting
   local chest_lidar_wbt, head_lidar_wbt
-  if use_lidar then
-    head_lidar_wbt = {}
-    head_lidar_wbt.meta = {}
-    head_lidar_wbt.channel  = simple_ipc.new_publisher'head_lidar'
-    chest_lidar_wbt = {}
-    chest_lidar_wbt.meta = {}
-    chest_lidar_wbt.channel = simple_ipc.new_publisher'chest_lidar'
-  end
+  head_lidar_wbt = {}
+  head_lidar_wbt.meta = {}
+  head_lidar_wbt.channel  = simple_ipc.new_publisher'head_lidar'
+  chest_lidar_wbt = {}
+  chest_lidar_wbt.meta = {}
+  chest_lidar_wbt.channel = simple_ipc.new_publisher'chest_lidar'
   local head_camera_wbt, update_head_camera
-  if use_camera then
-    head_camera_wbt = {}
-    head_camera_wbt.meta = {}
-    --head_camera_wbt.channel = simple_ipc.new_publisher'head_cam'
-    head_camera_wbt.channel = udp.new_sender('localhost',54321)
-    update_head_camera = function()
-      local metadata = {}
-      metadata.t = Body.get_time()
-      local net_settings = vcm.get_head_camera_net()
-      if net_settings[1]==0 then return end
-      local c_color
-      if net_settings[2]==1 then
-        metadata.c = 'jpeg'
-        c_color = jpeg.compress_rgb(
-          webots.to_rgb(tags.head_camera),
-          head_camera_wbt.width,
-          head_camera_wbt.height)
-      elseif net_settings[2]==2 then
-        metadata.c = 'png'
-        c_color = png.compress(
-          webots.to_rgb(tags.head_camera),
-          head_camera_wbt.width,
-          head_camera_wbt.height)
-      end
-      if not c_color then return end
-      local meta = mp.pack(head_camera_wbt.meta)
-      local ret_c,err_c = head_camera_wbt.channel:send( c_color )
-      if err_c then print('head cam',util.color(err_c,'red')) end
-      if net_settings[1]==1 then
-        net_settings[1] = 0
-        vcm.set_head_camera_net(net_settings)
-        return
-      end
-    end --update_head_camera
-  end
+  -- camera
+  head_camera_wbt = {}
+  head_camera_wbt.meta = {}
+  --head_camera_wbt.channel = simple_ipc.new_publisher'head_cam'
+  head_camera_wbt.channel = udp.new_sender('localhost',54321)
+  update_head_camera = function()
+    local metadata = {}
+    metadata.t = Body.get_time()
+    local net_settings = vcm.get_head_camera_net()
+    if net_settings[1]==0 then return end
+    local c_color
+    if net_settings[2]==1 then
+      metadata.c = 'jpeg'
+      c_color = jpeg.compress_rgb(
+        webots.to_rgb(tags.head_camera),
+        head_camera_wbt.width,
+        head_camera_wbt.height)
+    elseif net_settings[2]==2 then
+      metadata.c = 'png'
+      c_color = png.compress(
+        webots.to_rgb(tags.head_camera),
+        head_camera_wbt.width,
+        head_camera_wbt.height)
+    end
+    if not c_color then return end
+    local meta = mp.pack(head_camera_wbt.meta)
+    local ret_c,err_c = head_camera_wbt.channel:send( c_color )
+    if err_c then print('head cam',util.color(err_c,'red')) end
+    if net_settings[1]==1 then
+      net_settings[1] = 0
+      vcm.set_head_camera_net(net_settings)
+      return
+    end
+  end --update_head_camera
+  
 
 	Body.entry = function()
     
@@ -720,6 +720,9 @@ if IS_WEBOTS then
 
 		-- Grab the update time
 		local timeStep = webots.wb_robot_get_basic_time_step()
+
+    -- Enable the keyboard 100ms
+    webots.wb_robot_keyboard_enable( 100 )
 
 		-- Grab the tags from the joint names
 		tags.joints = {}
@@ -752,21 +755,21 @@ if IS_WEBOTS then
 		webots.wb_camera_enable(tags.kinect, timeStep)
 		--]]
     -- TODO: Copy the lidar readings to shm on each iteration
+    
+    -- Chest Lidar
+    tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
+    chest_lidar_wbt.meta.count = 0
+    -- Head Lidar
+    tags.head_lidar  = webots.wb_robot_get_device("HeadLidar")
+    head_lidar_wbt.meta.count = 0
     if use_lidar then
-      local lidar_timeStep = 25
-      -- Chest Lidar
-      tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
       webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
-      chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
-      chest_lidar_wbt.meta.count = 0
-      -- Head Lidar
-      tags.head_lidar  = webots.wb_robot_get_device("HeadLidar")
       webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
       head_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.head_lidar)
-      head_lidar_wbt.meta.count = 0
+      chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
     end
     if use_camera then
-      local camera_timeStep = 33
+      
       -- Head Camera
       tags.head_camera = webots.wb_robot_get_device("Camera")
       webots.wb_camera_enable(tags.head_camera, camera_timeStep)
@@ -866,6 +869,27 @@ if IS_WEBOTS then
     if use_camera then
       update_head_camera()
     end --use_camera
+
+    -- Grab keyboard input
+    local key_code = webots.wb_robot_keyboard_get_key()
+    local key_char = string.char(key_code)
+    local key_char_lower = string.lower(key_char)
+    if key_char_lower=='l' then
+      use_lidar = not use_lidar
+      -- Toggle lidar
+      if use_lidar then
+        print(util.color('LIDAR enabled!','yellow'))
+        webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
+        webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
+        head_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.head_lidar)
+        chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
+      else
+        print(util.color('LIDAR disabled!','yellow'))
+        webots.wb_camera_disable(tags.chest_lidar)
+        webots.wb_camera_disable(tags.head_lidar)
+      end
+    end
+
 	end -- function
 
 	Body.exit = function()

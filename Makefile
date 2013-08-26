@@ -52,3 +52,4 @@ clean:
 	printf "  %b \n" $$dir ; \
 	$(MAKE) -C Robots/$$dir clean; \
 	done
+	@rm -f $(CWD)/Config/Config.lua

@@ -20,7 +20,7 @@ function state.entry()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
   -- Set hcm to be here
-  hcm.set_joints_plarm(K.r_arm_torso(qLArm))
+  hcm.set_joints_plarm(K.l_arm_torso(qLArm))
   hcm.set_joints_prarm(K.r_arm_torso(qRArm))
   hcm.set_joints_qlarm( qLArm )
   hcm.set_joints_qrarm( qRArm )

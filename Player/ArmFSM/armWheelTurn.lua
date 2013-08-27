@@ -2,9 +2,10 @@ local state = {}
 state._NAME = 'armWheelTurn'
 local Config = require'Config'
 local Body   = require'Body'
-local K   = Body.Kinematics
+local K      = Body.Kinematics
 local T      = require'Transform'
 local util   = require'util'
+require'hcm'
 
 -- Arm joints Angular velocity limits
 local dqArmMax = vector.new({30,30,30,45,60,60})*Body.DEG_TO_RAD

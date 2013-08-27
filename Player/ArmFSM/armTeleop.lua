@@ -1,113 +1,65 @@
-module(..., package.seeall);
+local state = {}
+state._NAME = 'armTeleop'
+local Config = require'Config'
+local Body   = require'Body'
+local K      = Body.Kinematics
+local T      = require'Transform'
+local util   = require'util'
+require'hcm'
 
-require('hcm')
-require('unix')
-Config = require('ConfigPenn')
-Body = require(Config.Body);
+-- Arm joints Angular velocity limits
+local dqArmMax = vector.new({30,30,30,45,60,60})*Body.DEG_TO_RAD
 
-local Kinematics = require'Kinematics'
-
-armpos_resolution = 0.001;
-
-
-function entry()
-  qLArm = Body.get_larm_command_position();
-  qRArm = Body.get_rarm_command_position();
-  trLArmTarget = Kinematics.l_arm_torso(qLArm); 
-  trRArmTarget = Kinematics.r_arm_torso(qRArm); 
-  trLArmTarget0=Kinematics.l_arm_torso(qLArm)
-  trRArmTarget0=Kinematics.r_arm_torso(qRArm)
-  larm_mode_command_old = {0};
-  rarm_mode_command_old = {0};
-  larm_movement_old={0,0,0};
-  rarm_movement_old={0,0,0};
-  print(_NAME..' Entry' ) 
+function state.entry()
+  print(state._NAME..' Entry' )
+  -- Update the time of entry
+  local t_entry_prev = t_entry
+  t_entry  = Body.get_time()
+  t_update = t_entry
+  -- Get the current joint positions (via commands)
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+  -- Set hcm to be here
+  hcm.set_joints_plarm(K.r_arm_torso(qLArm))
+  hcm.set_joints_prarm(K.r_arm_torso(qRArm))
+  hcm.set_joints_qlarm( qLArm )
+  hcm.set_joints_qrarm( qRArm )
 end
 
+function state.update()
+  --print(state._NAME..' Update' )
+  -- Get the time of update
+  local t  = Body.get_time()
+  local dt = t - t_update
+  -- Save this at the last update time
+  t_update = t
+  --if t-t_entry > timeout then return'timeout' end
 
-function update()
---  print(_NAME..' Update' ) 
+  -- Get the current joint positions (via commands)
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
 
-  local larm_mode_command = hcm:get_control_left_arm_mode();
-  local rarm_mode_command = hcm:get_control_right_arm_mode();
-
-  if larm_mode_command[1]==9 then --2nd trigger pulled, enable arm movement
-    local lgripper_command = hcm:get_control_left_gripper();
-    Body.set_lhand_position(lgripper_command[1]);
-    Body.enable_larm_linear_movement(true); 
-
-    if larm_mode_command_old[1]==0 then --Button just pressed
-      --Store current controller position
-      larm_movement_old = hcm:get_control_left_arm_movement();
-      --Store initial arm transform
-      trLArmTarget0={trLArmTarget[1],trLArmTarget[2],trLArmTarget[3],
-        trLArmTarget[4],trLArmTarget[5],trLArmTarget[6]}
-    end
-    --Now get curret reading
-    local larm_movement = hcm:get_control_left_arm_movement();
-    local trTemp ={
-		  trLArmTarget0[1]+  (larm_movement[1]-larm_movement_old[1])*armpos_resolution,
-		  trLArmTarget0[2]+  (larm_movement[2]-larm_movement_old[2])*armpos_resolution,
-		  trLArmTarget0[3]+  (larm_movement[3]-larm_movement_old[3])*armpos_resolution,
-		  trLArmTarget0[4],
-		  trLArmTarget0[5],
-		  trLArmTarget0[6]}
-    local done = Body.set_larm_target_transform(trTemp);
-    if done then trLArmTarget = trTemp;   --IK possible
-    else   Body.set_larm_target_transform(trLArmTarget); --IK not possible, don't move
-    end
-  else --2nd trigger released, stop every movement
-    Body.enable_larm_linear_movement(false); 
-    qLArm = Body.get_larm_command_position();
-    trTemp = Kinematics.l_arm_torso(qLArm); 
-    trLArmTarget[1],trLArmTarget[2],trLArmTarget[3]= trTemp[1],trTemp[2],trTemp[3];
-    Body.set_larm_target_transform(trLArmTarget);
+  -- Get the desired IK position
+  local trLArm = hcm.get_joints_plarm()
+  local trRArm = hcm.get_joints_prarm()
+  print(trLArm,trRArm)
+  local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
+  local qR_desired = Body.get_inverse_rarm(qRArm,trRArm)
+  -- Go there
+  if qL_desired then
+    qL_desired = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
+    if qL_desired~=true then Body.set_larm_command_position( qL_desired ) end
+  end
+  if qR_desired then
+    qR_desired = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
+    if qR_desired~=true then Body.set_rarm_command_position( qR_desired ) end
   end
 
-
-  if rarm_mode_command[1]==9 then --2nd trigger pulled, enable arm movement
-    local rgripper_command = hcm:get_control_right_gripper();
-    Body.set_rhand_position(rgripper_command[1]);
-
-    if rarm_mode_command_old[1]==0 then --Button just pressed
-      Body.enable_rarm_linear_movement(true); 
-      --Store current controller position
-      rarm_movement_old = hcm:get_control_right_arm_movement();
-      --Store current arm transform
-      trRArmTarget0={trRArmTarget[1],trRArmTarget[2],trRArmTarget[3],
-        trRArmTarget[4],trRArmTarget[5],trRArmTarget[6]}
-      end
-      --Now get curret reading
-      local rarm_movement = hcm:get_control_right_arm_movement();
-      local trTemp ={
-			  trRArmTarget0[1]+ (rarm_movement[1]-rarm_movement_old[1])*armpos_resolution,
-			  trRArmTarget0[2]+ (rarm_movement[2]-rarm_movement_old[2])*armpos_resolution,
-			  trRArmTarget0[3]+ (rarm_movement[3]-rarm_movement_old[3])*armpos_resolution,
-			  trRArmTarget0[4],
-			  trRArmTarget0[5],
-			  trRArmTarget0[6]}
-
-      local done = Body.set_rarm_target_transform(trTemp);
-      if done then  trRArmTarget = trTemp; --IK possible
-      else  Body.set_rarm_target_transform(trRArmTarget); --Ik not possible
-      end
-
-  else
-
-     Body.enable_rarm_linear_movement(false); 
-     qRArm = Body.get_rarm_position();
-     trTemp = Kinematics.r_arm_torso(qRArm); 
-     trRArmTarget[1],trRArmTarget[2],trRArmTarget[3]=
-		  trTemp[1],trTemp[2],trTemp[3];
-     Body.set_rarm_target_transform(trRArmTarget);
-  end
-
-  larm_mode_command_old[1] = larm_mode_command[1];
-  rarm_mode_command_old[1] = rarm_mode_command[1];
+--Body.get_inverse_larm = function( qLArm, trL, pos_tol, ang_tol )
 end
 
-function exit()
-
-  print(_NAME..' Exit' ) 
-
+function state.exit()
+  print(state._NAME..' Exit' )
 end
+
+return state

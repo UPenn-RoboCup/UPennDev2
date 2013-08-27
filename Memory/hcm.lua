@@ -11,7 +11,12 @@ local shared_data_sz = {}
 
 -- Desired joint properties
 shared_data.joints = {}
-shared_data.joints.positions = vector.zeros( nJoints )
+shared_data.joints.plarm  = vector.zeros( 6 ) -- x,y,z,roll,pitch,yaw
+shared_data.joints.prarm  = vector.zeros( 6 )
+shared_data.joints.qlarm  = vector.zeros( 6 ) -- 6 joints
+shared_data.joints.qrarm  = vector.zeros( 6 )
+shared_data.joints.qlgrip = vector.zeros( 3 ) -- 3 fingers
+shared_data.joints.qrgrip = vector.zeros( 3 )
 
 -- Motion directives
 shared_data.motion = {}

@@ -70,13 +70,15 @@ local function process_rpc(rpc)
 end
 
 local function process_zmq()
-  -- TODO: is has_more is innocuous in this situation?
-  local request, has_more = rpc_zmq:receive()
-  local rpc = mp.unpack(request)
-  local reply = process_rpc(rpc)
-  -- NOTE: The zmq channel is REP/REQ
-  -- Reply with the result of the request
-  local ret = rpc_zmq:send( mp.pack(reply) )
+  local request, has_more
+  repeat
+    request, has_more = rpc_zmq:receive()
+    local rpc         = mp.unpack(request)
+    local reply       = process_rpc(rpc)
+    -- NOTE: The zmq channel is REP/REQ
+    -- Reply with the result of the request
+    local ret         = rpc_zmq:send( mp.pack(reply) )
+  until not has_more
 end
 
 local function process_udp()

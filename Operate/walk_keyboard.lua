@@ -19,7 +19,6 @@ local Body  = require'Body'
 local simple_ipc = require'simple_ipc'
 --local motion_events = simple_ipc.new_publisher('fsm_motion',true)
 local rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
-require'hcm'
 
 -- Events for the FSMs
 local char_to_event = {

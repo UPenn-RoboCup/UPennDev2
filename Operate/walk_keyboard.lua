@@ -32,7 +32,7 @@ local char_to_event = {
   ['a'] = {'ArmFSM','init'},
   ['r'] = {'ArmFSM','ready'},
   ['s'] = {'ArmFSM','reset'},
-  ['w'] = {'ArmFSM','wheelgrab'}
+  ['w'] = {'ArmFSM','wheelgrab'},
   ['x'] = {'ArmFSM','teleop'}
 }
 

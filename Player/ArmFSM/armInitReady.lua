@@ -14,7 +14,7 @@ local timeout = 15.0
 local qLArmInit = Config.arm.qLArmInit[2]
 local qRArmInit = Config.arm.qRArmInit[2]
 
--- Angular velocity
+-- Angular velocity limit
 local dqArmMax = vector.new({10,10,10,15,45,45})*Body.DEG_TO_RAD
 
 function state.entry()

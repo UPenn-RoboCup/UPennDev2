@@ -1,5 +1,5 @@
 local state = {}
-state._NAME = 'armReady'
+state._NAME = 'armWheelGrip'
 local Config = require'Config'
 local Body   = require'Body'
 local T      = require'Transform'
@@ -50,22 +50,24 @@ function state.entry()
   t_update = t_entry
   
   -- Let's store wheel data here
-  handle_pos =  hcm:get_wheel_pos()
-  handle_pitch = hcm:get_wheel_pitchangle()
-  handle_yaw = hcm:get_wheel_yawangle()
+  handle_pos     = hcm:get_wheel_pos()
+  handle_pitch   = hcm:get_wheel_pitchangle()
+  handle_yaw     = hcm:get_wheel_yawangle()
   handle_radius1 = hcm:get_wheel_radius()
   handle_radius0 = handle_radius1 + 0.08
-  handle_radius = handle_radius0
+  handle_radius  = handle_radius0
   
+  --[[
   print("hpose:",unpack(handle_pos))
   print("hpitch:",handle_pitch)
   print("hradius",handle_radius)
   print("tAngle",turnAngle)
-  
+  --]]
+
 end
 
 function state.update()
-  print(state._NAME..' Update' )
+--  print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update

@@ -26,6 +26,10 @@ function state.entry()
   local qRArm = Body.get_rarm_position()
   Body.set_larm_command_position(qLArm)
   Body.set_rarm_command_position(qRArm)
+
+  -- Open the gripper
+  Body.set_lgrip_percent(1)
+  Body.set_rgrip_percent(1)
 end
 
 function state.update()

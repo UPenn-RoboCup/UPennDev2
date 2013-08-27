@@ -4,7 +4,7 @@
 --------------------------------
 local vector = require'vector'
 local memory = require'memory'
-local nJoints = 35
+local nJoints = 40
 
 local shared_data = {}
 local shared_data_sz = {}
@@ -23,7 +23,7 @@ shared_data.motion.estop = vector.zeros(1)
 -- Task specific information
 --------------------------------
 shared_data.wheel = {}
-shared_data.wheel.pos        = vector.new({.4,0,.1})
+shared_data.wheel.pos        = vector.new({.3,0,.1})
 shared_data.wheel.radius     = vector.new({.15})
 shared_data.wheel.yawangle   = vector.zeros(1)
 shared_data.wheel.pitchangle = vector.zeros(1)

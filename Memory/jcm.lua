@@ -3,7 +3,7 @@
 -- (c) 2013 Stephen McGill
 --------------------------------
 local memory = require'memory'
-local nJoints = 35
+local nJoints = 40
 local shared_data = {}
 local shared_data_sz = {}
 
@@ -24,6 +24,12 @@ shared_data.sensor.accelerometer = vector.zeros( 3 )
 shared_data.sensor.gyro          = vector.zeros( 3 )
 shared_data.sensor.compass       = vector.zeros( 3 )
 shared_data.sensor.imuAngle      = vector.zeros( 3 )
+------------------------
+-- Request reads from some motors
+shared_data.read = {}
+for k,v in pairs(shared_data.sensor)
+  shared_data.read[k] = v
+end
 
 ------------------------
 --  Write to the motors/other actuators
@@ -36,6 +42,13 @@ shared_data.actuator.command_velocity = vector.zeros( nJoints )
 shared_data.actuator.torque_enable    = vector.zeros( nJoints )
 -- Hardness of joints is legacy, but offers a simple abstraction of pid gains
 shared_data.actuator.hardness         = vector.zeros( nJoints )
+
+------------------------
+-- Request writes to some motors
+shared_data.write = {}
+for k,v in pairs(shared_data.actuator)
+  shared_data.write[k] = v
+end
 
 ------------------------
 -- Call the initializer

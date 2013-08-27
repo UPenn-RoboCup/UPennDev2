@@ -14,31 +14,29 @@ local armInit = require'armInit'
 -- From Init toward Ready
 local armInitReady = require'armInitReady'
 local armReady = require'armReady'
---local armTeleop = require('armTeleop')
--- Wheel specific states
-local armWheelGrip = require'armWheelGrip'
-local armWheelTurn = require('armWheelTurn')
---[[
-local armWheelRelease = require('armWheelRelease')
---]]
-
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
 local sm = fsm.new(armIdle,armInit,armInitReady,armReady)
+--
+
+-- Wheel specific states
+local armWheelGrip = require'armWheelGrip'
+local armWheelTurn = require'armWheelTurn'
 sm:add_state(armWheelGrip)
 sm:add_state(armWheelTurn)
---[[
-sm:add_state(armWheelRelease)
-sm:add_state(armTeleop)
---]]
+
+-- Direct teleop override
+--local armTeleop = require'armTeleop'
+--sm:add_state(armTeleop)
 
 ----------
 -- Event types
 ----------
 -- 'reset': This exists for relay states, like armInitReady
 --          where you go back to the start end of the relay
---          before finishing the relay
+--          before finishing the relay.  Human guided (or robot predicted)
 -- 'done':  Attained that state.  Epi-callbacks are preferable.
+-- Fully autonomous, since the human can estimate the state?
 
 -- Setup the transitions for this FSM
 sm:set_transition(armIdle, 'init', armInit)
@@ -81,17 +79,8 @@ end)
 --
 sm:set_transition(armWheelGrip, 'reset', armReady)
 sm:set_transition(armWheelGrip, 'done', armWheelTurn)
---[[
-sm:set_transition(armWheelGrip, 'reset', armWheelRelease)
-sm:set_transition(armWheelGrip, 'done', armWheelTurn)
-sm:set_transition(armWheelGrip, 'stop', armReady)
-sm:set_transition(armWheelGrip, 'reset', armWheelRelease)
 --
-sm:set_transition(armWheelTurn, 'reset', armWheelRelease)
-sm:set_transition(armWheelTurn, 'stop', armWheelRelease)
---
-sm:set_transition(armWheelRelease, 'done', armReady)
---]]
+sm:set_transition(armWheelTurn, 'reset', armReady)
 
 -- Setup the FSM object
 local obj = {}

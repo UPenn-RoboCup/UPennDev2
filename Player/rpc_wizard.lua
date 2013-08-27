@@ -45,7 +45,7 @@ local function process_rpc(rpc)
       local func = mem['get_'..method]
       status, cur = pcall(func)
       func = mem['set_'..method]
-      local up = cur+vector.new(rpc.delta)
+      local up = vector.new(cur)+vector.new(rpc.delta)
       status, reply = pcall(func,up)
     else
       -- Get memory

@@ -9,8 +9,8 @@ local util   = require'util'
 -- Arm joints Angular velocity limits
 local dqArmMax = vector.new({30,30,30,45,60,60})*Body.DEG_TO_RAD
 -- Turning speed
-local dturnAngleMax = 3*math.pi/180 --3 deg per sec
-local turnAngleMax = 10*math.pi/180 -- 10 deg max
+local dturnAngleMax = 3*math.pi/180 -- 3 deg per sec
+local turnAngleMax = 9*math.pi/180  -- 9 deg max
 
 local turnAngle = 0
 local body_pos = {0,0,0}
@@ -81,7 +81,7 @@ function state.entry()
 end
 
 function state.update()
-  print(state._NAME..' Update' )
+  --print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update
@@ -94,21 +94,16 @@ function state.update()
   local qRArm = Body.get_rarm_command_position()
   -- Get the current turning angle
   --local turnAngleCurrent = calculate_turn_angle(qLArm,qRArm)
-  print('turnAngleCurrent',turnAngleCurrent)
   -- Get the target turning angle
-  --local turnAngleTarget = hcm:get_wheel_turnangle()
-  turnAngleTarget = 10*Body.DEG_TO_RAD
-  print('turnAngleTarget',turnAngleTarget)
+  local turnAngleTarget = hcm:get_wheel_turnangle()
   -- Find out how much more we need to turn
   local turnAngleDiff = turnAngleTarget-turnAngleCurrent
   -- Do not allow too much movement
   turnAngleDiff = util.procFunc(turnAngleDiff,0,dturnAngleMax*dt)
-  print('turnAngleDiff',turnAngleDiff)
   -- Find the new commanded turning angle
   local turnAngleCommand = turnAngleCurrent + turnAngleDiff
   -- Cannot steer to too extreme values
   turnAngleCommand = util.procFunc(turnAngleCommand,0,turnAngleMax)
-  print('turnAngleCommand',turnAngleCommand)
   
   -- Find our current arm position
   --local pLArm = K.l_arm_torso(qLArm)
@@ -131,6 +126,12 @@ function state.update()
   -- NOTE: This is kinda poor...
   -- Should calculate from arm angles
   turnAngleCurrent = turnAngleCommand
+
+--[[
+  if qL_desired==true and qR_desired==true then
+    return'done'
+  end
+--]]
 
 end
 

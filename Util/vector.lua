@@ -3,6 +3,7 @@ module(..., package.seeall)
 local mt = {}
 
 function new(t)
+  if type(t)=='number' then t = {t} end
   t = t or {}
   return setmetatable(t, mt)
 end

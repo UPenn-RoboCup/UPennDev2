@@ -44,6 +44,18 @@ local char_to_vel = {
   ['l'] = vector.new({0, 0, -5})*math.pi/180,
 }
 
+local char_to_wheel = {
+  ['['] = vector.new({-1*Body.DEG_TO_RAD}),
+  [']'] = vector.new({1*Body.DEG_TO_RAD}),
+}
+
+local function send_command(cmd)
+  -- Default case is to send the command and receive a reply
+  local ret   = rpc_ch:send(mp.pack(cmd))
+  local reply = rpc_ch:receive()
+  return mp.unpack(reply)
+end
+
 local function process_character(key_code,key_char,key_char_lower)
   local cmd
 
@@ -54,19 +66,20 @@ local function process_character(key_code,key_char,key_char_lower)
     cmd = {}
     cmd.fsm = event[1]
     cmd.evt = event[2]
+    return send_command(cmd)
   end
-
 
   -- Adjust the velocity
   -- Only used in direct teleop mode
   local vel_adjustment = char_to_vel[key_char_lower]
-  if type(vel_adjustment)=='table' then
+  if vel_adjustment then
     print( util.color('Inc vel by','yellow'), vel_adjustment )
     cmd = {}
     cmd.shm = 'hcm'
     cmd.segment = 'motion'
     cmd.key = 'velocity'
     cmd.delta = vel_adjustment
+    return send_command(cmd)
   elseif key_char_lower=='k' then
     print( util.color('Zero Velocity','yellow'))
     cmd = {}
@@ -74,15 +87,28 @@ local function process_character(key_code,key_char,key_char_lower)
     cmd.segment = 'motion'
     cmd.key = 'velocity'
     cmd.val = {0, 0, 0}
+    return send_command(cmd)
   end
 
-  -- With no command, return
-  if not cmd then return end
-
-  -- Default case is to send the command and receive a reply
-  local ret   = rpc_ch:send(mp.pack(cmd))
-  local reply = rpc_ch:receive()
-  return mp.unpack(reply)
+  -- Adjust the wheel angle
+  local wheel_adj = char_to_wheel[key_char_lower]
+  if wheel_adj then
+    print( util.color('Turn wheel','yellow'), wheel_adj )
+    cmd = {}
+    cmd.shm = 'hcm'
+    cmd.segment = 'wheel'
+    cmd.key = 'turnangle'
+    cmd.delta = wheel_adj
+    return send_command(cmd)
+  elseif key_char_lower=='\\' then
+    print( util.color('Center the wheel','yellow') )
+    cmd = {}
+    cmd.shm = 'hcm'
+    cmd.segment = 'wheel'
+    cmd.key = 'turnangle'
+    cmd.val = {0}
+    return send_command(cmd)
+  end
 
 end
 

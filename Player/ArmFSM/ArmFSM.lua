@@ -85,7 +85,7 @@ sm:set_transition(armWheelTurn, 'reset', armReady)
 -- TODO: This may not be the best
 -- We may wish to give ready and init
 -- TODO: make epi transitions for reset
-sm:set_transition(armTeleop, 'reset', armInit)
+--sm:set_transition(armTeleop, 'reset', armInit)
 
 -- Setup the FSM object
 local obj = {}

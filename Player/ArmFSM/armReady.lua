@@ -7,9 +7,8 @@ local t_entry, t_update, t_finish
 local timeout = 15.0
 
 -- Goal position is arm Init, with hands in front, ready to manipulate
-local qLArmInit = Config.arm.qLArmInit[3]
-local qRArmInit = Config.arm.qRArmInit[3]
-local qLArm, qRArm
+local qLArmReady = Config.arm.qLArmInit[3]
+local qRArmReady = Config.arm.qRArmInit[3]
 
 -- Angular velocity
 local dqArmMax = vector.new({10,10,10,15,45,45})*Body.DEG_TO_RAD
@@ -23,8 +22,8 @@ function state.entry()
   t_finish = t
 
   -- Where are the arms right now?
-  qLArm = Body.get_larm_position()
-  qRArm = Body.get_rarm_position()
+  local qLArm = Body.get_larm_position()
+  local qRArm = Body.get_rarm_position()
   Body.set_larm_command_position(qLArm)
   Body.set_rarm_command_position(qRArm)
 
@@ -40,37 +39,20 @@ function state.update()
   if t-t_entry > timeout then return'timeout' end
 
   -- Left
-  qLArm = Body.get_larm_command_position()
-  local dqLArm   = qLArmInit - qLArm
-  -- Tolerance check (Asumme within tolerance)
-  local tol      = true
-  local tolLimit = 1e-6
-  for i,dqL in ipairs(dqLArm) do
-    if math.abs(dqL) > tolLimit then
-      tol = false
-      -- Ensure that we do not move motors too quickly
-      dqLArm[i] = util.procFunc(dqL,0,dqArmMax[i]*dt)
-    end
+  local qLArm = Body.get_larm_command_position()
+  qLArm = util.approachTol( qLArm, qLArmReady, dqArmMax, dt )
+  if qLArm~=true then
+    Body.set_larm_command_position( qLArm )
   end
-  Body.set_larm_command_position( qLArm+dqLArm )
-
   -- Right
-  qRArm = Body.get_rarm_command_position()
-  local dqRArm   = qRArmInit - qRArm
-  -- Tolerance check (Asumme within tolerance)
-  local tol      = true
-  local tolLimit = 1e-6
-  for i,dqR in ipairs(dqRArm) do
-    if math.abs(dqR) > tolLimit then
-      tol = false
-      -- Ensure that we do not move motors too quickly
-      dqRArm[i] = util.procFunc(dqR,0,dqArmMax[i]*dt)
-    end
+  local qRArm = Body.get_rarm_command_position()
+  qRArm = util.approachTol( qRArm, qRArmReady, dqArmMax, dt )
+  if qRArm~=true then
+    Body.set_rarm_command_position( qRArm )
   end
-  Body.set_rarm_command_position( qRArm+dqRArm )
 
   -- We are done when we are within tolerance
-  if tol then return 'done' end
+  if qLArm==true and qRArm==true then return 'done' end
 
 end
 

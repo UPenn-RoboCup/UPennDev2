@@ -3,10 +3,10 @@ local vector = require'vector'
 local util = {}
 
 function util.mod_angle(a)
-	-- Reduce angle to [-pi, pi)
-	local b = a % (2*math.pi)
-	if b >= math.pi then return (b - 2*math.pi) end
-	return b
+  -- Reduce angle to [-pi, pi)
+  local b = a % (2*math.pi)
+  if b >= math.pi then return (b - 2*math.pi) end
+  return b
 end
 
 function util.sign(x)
@@ -80,6 +80,30 @@ function util.procFunc(a,deadband,maxvalue)
   local b = math.min( math.max(0,math.abs(a)-deadband), maxvalue)
   if a<=0 then return -b end
   return b
+end
+
+-- Tolerance approach to a vector
+-- Kinda like a gradient descent
+function util.approachTol( values, targets, speedlimits, dt, tolerance )
+  tolerance = tolerance or 1e-6
+  -- Tolerance check (Asumme within tolerance)
+  local within_tolerance = true
+  -- Iterate through the limits of movements to approach
+  for i,speedlimit in ipairs(speedlimits) do
+    -- Target value minus present value
+    local delta = targets[i] - values[i]
+    -- If any values is out of tolerance,
+    -- then we are not within tolerance
+    if math.abs(delta) > tolerance then
+      within_tolerance = false
+      -- Ensure that we do not move motors too quickly
+      delta = util.procFunc(delta,0,speedlimit*dt)
+      values[i] = values[i]+delta
+    end
+  end
+  -- Return true if in tolerance, 
+  -- else the next values to take on
+  return within_tolerance or values
 end
 
 function util.pose_global(pRelative, pose)
@@ -233,9 +257,9 @@ end
 --https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
 --[[
 Color table[7]
-Intensity	0	1	2	3	4	5	6	7
-Normal	Black	Red	Green	Yellow	Blue	Magenta	Cyan	White
-Bright	Black	Red	Green	Yellow	Blue	Magenta	Cyan	White
+Intensity 0 1 2 3 4 5 6 7
+Normal  Black Red Green Yellow  Blue  Magenta Cyan  White
+Bright  Black Red Green Yellow  Blue  Magenta Cyan  White
 --]]
 local ctable = {
   ['black'] = 0,

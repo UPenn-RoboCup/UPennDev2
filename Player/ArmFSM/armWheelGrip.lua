@@ -4,14 +4,14 @@ local Config = require'Config'
 local Body   = require'Body'
 local T      = require'Transform'
 
-rotating_direction = 1
-body_pos = {0,0,0}
-body_rpy = {0,0,0}
+local rotating_direction = 1
+local body_pos = {0,0,0}
+local body_rpy = {0,0,0}
 
-t_init = 5.0
-t_grip = 5.0
+local t_init = 5.0
+local t_grip = 5.0
 
-
+local trHandle, trGripL, trGripR, trBody, trLArm, trRArm
 local function calculate_arm_position()
    trHandle = T.eye()
        * T.trans(handle_pos[1],handle_pos[2],handle_pos[3])
@@ -27,7 +27,7 @@ local function calculate_arm_position()
        * T.trans(0,-handle_radius,0)
        * T.rotZ(math.pi/4)
        
-   trBody=T.eye()
+   trBody = T.eye()
        * T.trans(body_pos[1],body_pos[2],body_pos[3])
        * T.rotZ(body_rpy[3])
 		   * T.rotY(body_rpy[2])
@@ -71,23 +71,22 @@ function state.update()
   --if t-t_entry > timeout then return'timeout' end
   
   calculate_arm_position()
-  qLArm = Body.get_larm_command_position()
-  qRArm = Body.get_rarm_command_position()
-  qLInv = Kinematics.inverse_l_arm(trLArm, qLArm)
-  qRInv = Kinematics.inverse_r_arm(trRArm, qRArm)
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+  local qLInv = Kinematics.inverse_l_arm(trLArm, qLArm)
+  local qRInv = Kinematics.inverse_r_arm(trRArm, qRArm)
+
+  -- Target arm position
+  Body.set_larm_target_position(qLInv)
+  Body.set_rarm_target_position(qRInv)
 
   if phase==1 then
-    Body.set_larm_target_position(qLInv) 
-    Body.set_rarm_target_position(qRInv) 
     if Body.larm_joint_movement_done() and Body.rarm_joint_movement_done() then
       phase = phase + 1
       t0 = unix.time()
       return
     end
   elseif phase==2 then
-    Body.set_larm_target_position(qLInv) 
-    Body.set_rarm_target_position(qRInv) 
-    t = unix.time()
     ph = (t-t0)/t_grip
     if ph>1 then
       handle_radius = handle_radius1

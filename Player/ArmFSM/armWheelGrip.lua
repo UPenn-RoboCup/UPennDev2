@@ -95,7 +95,6 @@ function state.update()
   --]]
 
   if qLArm==true and qRArm==true then
-    print'done grabbing'
     Body.set_lgrip_percent(.5)
     Body.set_rgrip_percent(.5)
     return'done'

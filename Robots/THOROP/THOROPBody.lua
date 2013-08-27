@@ -505,44 +505,46 @@ local Kinematics = require'THOROPKinematics'
 
 -- Check the error from a desired transform tr
 -- to a forwards kinematics of in IK solution q
--- Tolerate a 1mm error in distance
-local IK_TOLERANCE = 0.001
-local function check_ik_error( q, tr )
-	-- Transform from q (joint angles)
-	local tr_q = Kinematics.r_arm_torso( q, tr )
+local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
+  -- Tolerate a 1mm error in distance
+  pos_tol = pos_tol or 0.001
+  ang_tol = ang_tol or 1*DEG_TO_RAD
 
 	local position_error = math.sqrt(
-	( tr_q[1]-tr[1] )^2 +
-	( tr_q[2]-tr[2] )^2 +
-	( tr_q[3]-tr[3] )^2 )
+	( tr_check[1]-tr[1] )^2 +
+	( tr_check[2]-tr[2] )^2 +
+	( tr_check[3]-tr[3] )^2 )
 
 	local angle_error = math.sqrt(
-	util.memory( trRArm_target[4]-tr[4] )^2 +
-	util.memory( trRArm_target[5]-tr[5] )^2 +
-	util.memory( trRArm_target[6]-tr[6] )^2 )
+	util.mod_angle( tr_check[4]-tr[4] )^2 +
+	util.mod_angle( tr_check[5]-tr[5] )^2 +
+	util.mod_angle( tr_check[6]-tr[6] )^2 )
 
 	-- If within tolerance, return true
-	if dist_pos<IK_TOLERANCE then return true end
-
-	-- By default, return false, that we are out of tolerance
-	return false
+  local in_tolerance = true
+	if position_error>pos_tol then in_tolerance=false end
+  if angle_error>ang_tol then in_tolerance=false end
+	return in_tolerance
 
 end
 
--- Take in a transform and output joint angles
-Body.get_inverse_larm = function( tr )
-	local qLArm = Body.get_larm_position()
-	local qLArm_target = Kinematics.inverse_l_arm(tr, qLArm)
-	--if not check_ik_error( qLArm_target, tr ) then return nil end
-  return qLArm_target
+-- Can we go from angle q to position p?
+Body.get_inverse_larm = function( qL, trL, pos_tol, ang_tol )
+	local qL_target = Kinematics.inverse_l_arm(trL, qL)
+  local trL_check = Kinematics.l_arm_torso(qL_target)
+	if not check_ik_error( trL, trL_check, pos_tol, ang_tol ) then
+    return
+  end
+  return qL_target
 end
-Body.get_inverse_rarm = function( tr )
-	local qRArm = Body.get_rarm_position()
-	local qRArm_target = Kinematics.inverse_r_arm(tr, qRArm)
-	--if not check_ik_error( qRArm_target, tr ) then return nil end
-  return qRArm_target
+Body.get_inverse_rarm = function( qR, trR, pos_tol, ang_tol )
+  local qR_target = Kinematics.inverse_r_arm(trR, qR)
+  local trR_check = Kinematics.r_arm_torso(qR_target)
+  if not check_ik_error( trR, trR_check, pos_tol, ang_tol ) then
+    return
+  end
+  return qR_target
 end
-
 -- Take in joint angles and output an {x,y,z,r,p,yaw} table
 Body.get_forward_larm = function()
 	local qLArm = Body.get_larm_position()

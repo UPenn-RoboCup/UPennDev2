@@ -17,8 +17,8 @@ local armReady = require'armReady'
 --local armTeleop = require('armTeleop')
 -- Wheel specific states
 local armWheelGrip = require'armWheelGrip'
---[[
 local armWheelTurn = require('armWheelTurn')
+--[[
 local armWheelRelease = require('armWheelRelease')
 --]]
 
@@ -26,8 +26,8 @@ local armWheelRelease = require('armWheelRelease')
 -- This will be returned to the user
 local sm = fsm.new(armIdle,armInit,armInitReady,armReady)
 sm:add_state(armWheelGrip)
---[[
 sm:add_state(armWheelTurn)
+--[[
 sm:add_state(armWheelRelease)
 sm:add_state(armTeleop)
 --]]
@@ -80,7 +80,7 @@ sm:set_transition(armReady, 'done', armIdle, function()
 end)
 --
 sm:set_transition(armWheelGrip, 'reset', armReady)
---sm:set_transition(armWheelGrip, 'done', armWheelTurn)
+sm:set_transition(armWheelGrip, 'done', armWheelTurn)
 --[[
 sm:set_transition(armWheelGrip, 'reset', armWheelRelease)
 sm:set_transition(armWheelGrip, 'done', armWheelTurn)

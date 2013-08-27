@@ -17,7 +17,6 @@ end
 -- Device Interface Libraries
 Config.dev = {}
 Config.dev.body         = 'THOROPBody'
-Config.dev.kinematics   = 'THOROPKinematics'
 Config.dev.game_control = 'OPGameControl'
 Config.dev.team         = 'TeamNSL'
 Config.dev.kick         = 'NewNewKick'

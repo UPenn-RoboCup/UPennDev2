@@ -27,7 +27,7 @@ shared_data.sensor.imuAngle      = vector.zeros( 3 )
 ------------------------
 -- Request reads from some motors
 shared_data.read = {}
-for k,v in pairs(shared_data.sensor)
+for k,v in pairs(shared_data.sensor) do
   shared_data.read[k] = v
 end
 
@@ -46,7 +46,7 @@ shared_data.actuator.hardness         = vector.zeros( nJoints )
 ------------------------
 -- Request writes to some motors
 shared_data.write = {}
-for k,v in pairs(shared_data.actuator)
+for k,v in pairs(shared_data.actuator) do
   shared_data.write[k] = v
 end
 

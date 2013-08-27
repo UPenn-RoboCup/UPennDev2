@@ -51,6 +51,7 @@ WebotsProj/controllers/nsl_soccer_supervisor/
 #auto-generated webots file
 #*.wrl
 *.wbproj
+*.cache
 
 # Temp and Swap files
 *~

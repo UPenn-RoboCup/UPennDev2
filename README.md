@@ -9,8 +9,7 @@ adaptable system that is easily ported to different humanoids.
 
 The project began with the University of Pennsylvania RoboCup code base from
 the 2011 RoboCup season and is continuing to evolve into an ever more
-generalized and versatile robot software framework.
-
+generalized and versatile robot software framework.  The DARPA Robotics Challenge also pushed sevelopment
 
 This is a work of the University of Pennsylvania along with help from:
   * IPRE faculty and students: http://calicoproject.org/Main_Page
@@ -18,13 +17,19 @@ This is a work of the University of Pennsylvania along with help from:
 
 
 Copyright:
-  All code sources associated with this project are (c) 2013 Stephen McGill, Seung-Joon Yi, Daniel D. Lee, Yida Zhang, Spyridon Karachalios, Qin He.  Exceptions are noted on a per file basis.
+  All code sources associated with this project are (c) 2013 Stephen McGill, Seung-Joon Yi, Daniel D. Lee, Yida Zhang, Spyridon Karachalios, Qin He, Jordan Brindza.  Exceptions are noted on a per file basis.
 
 Contact Information:
   UPenn E-mail:      upennalizers@gmail.com
   UPenn Website:    https://fling.seas.upenn.edu/~robocup/wiki/index.php
   
-`brew install lua boost png libusb jpeg-turbo msgpack zeromq swig`
-`brew link --force jpeg-turbo`
-`brew tap smcgill3/grasp-brew`
-`brwe install torch openni octomap`
+Mac
+* `brew install lua boost png libusb jpeg-turbo msgpack zeromq swig`
+* `brew link --force jpeg-turbo`
+* `brew tap smcgill3/grasp-brew`
+* `brew install torch openni octomap`
+
+Making
+* make clean
+* make -j8
+* make THOROP

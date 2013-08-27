@@ -15,7 +15,7 @@ addpath(genpath('.'))
 %% Set up the event triggers
 % Robot data
 
-PORT_LIDAR = 54345;
+PORT_LIDAR = 33334;
 PORT_FEEDBACK = 54329;
 PORT_HCAMERA = 54321;
 PORT_LCAMERA = 54322;

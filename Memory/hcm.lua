@@ -23,8 +23,8 @@ shared_data.motion.estop = vector.zeros(1)
 -- Task specific information
 --------------------------------
 shared_data.wheel = {}
-shared_data.wheel.pos        = vector.zeros(3)
-shared_data.wheel.radius     = vector.zeros(1)
+shared_data.wheel.pos        = vector.new({.4,0,.1})
+shared_data.wheel.radius     = vector.new({.15})
 shared_data.wheel.yawangle   = vector.zeros(1)
 shared_data.wheel.pitchangle = vector.zeros(1)
 shared_data.wheel.turnangle  = vector.zeros(1)

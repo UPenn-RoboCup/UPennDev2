@@ -3,14 +3,20 @@ state._NAME = 'armReady'
 local Config = require'Config'
 local Body   = require'Body'
 local T      = require'Transform'
+local util   = require'util'
 
-local rotating_direction = 1
+-- Angular velocity limit
+local dqArmMax = vector.new({10,10,10,15,45,45})*Body.DEG_TO_RAD
+
+local turnAngle = 0
 local body_pos = {0,0,0}
 local body_rpy = {0,0,0}
 
 local t_init = 5.0
 local t_grip = 5.0
 
+local handle_pos,handle_pitch,handle_yaw
+local handle_radius1,handle_radius0,handle_radius
 local trHandle, trGripL, trGripR, trBody, trLArm, trRArm
 local function calculate_arm_position()
    trHandle = T.eye()
@@ -43,26 +49,23 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   
-  phase = 1
-  t0 = unix.time()
-  		  --Let's store wheel data here
+  -- Let's store wheel data here
   handle_pos =  hcm:get_wheel_pos()
-  handle_pitch = hcm:get_wheel_pitchangle()[1]
-  handle_yaw = hcm:get_wheel_yawangle()[1]
-  handle_radius0 = hcm:get_wheel_radius()[1] + 0.08
-  handle_radius1 = hcm:get_wheel_radius()[1]
-  turnAngle = 0
-
+  handle_pitch = hcm:get_wheel_pitchangle()
+  handle_yaw = hcm:get_wheel_yawangle()
+  handle_radius1 = hcm:get_wheel_radius()
+  handle_radius0 = handle_radius1 + 0.08
+  handle_radius = handle_radius0
+  
   print("hpose:",unpack(handle_pos))
   print("hpitch:",handle_pitch)
   print("hradius",handle_radius)
   print("tAngle",turnAngle)
   
-  handle_radius = handle_radius0
 end
 
 function state.update()
---  print(state._NAME..' Update' )
+  print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update
@@ -70,33 +73,32 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
   
+  -- Calculate where we need to go  
   calculate_arm_position()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
   local qLInv = Kinematics.inverse_l_arm(trLArm, qLArm)
   local qRInv = Kinematics.inverse_r_arm(trRArm, qRArm)
 
-  -- Target arm position
-  Body.set_larm_target_position(qLInv)
-  Body.set_rarm_target_position(qRInv)
+  -- Go to the target arm position
+  qLArm = util.approachTol( qLArm, qLInv, dqArmMax, dt )
+  if qLArm~=true then Body.set_larm_command_position( qLArm ) end
+  qRArm = util.approachTol( qRArm, qRInv, dqArmMax, dt )
+  if qRArm~=true then Body.set_rarm_command_position( qRArm ) end
 
-  if phase==1 then
-    if Body.larm_joint_movement_done() and Body.rarm_joint_movement_done() then
-      phase = phase + 1
-      t0 = unix.time()
-      return
-    end
-  elseif phase==2 then
+  -- TODO: Begin to grip by approaching the inner radius
+  --[[
     ph = (t-t0)/t_grip
-    if ph>1 then
-      handle_radius = handle_radius1
-      phase = 3
-      Body.set_lhand_position(Config.arm.FingerClosed)
-      Body.set_rhand_position(Config.arm.FingerClosed)
-      return "done"  
-    end
     handle_radius = handle_radius0*(1-ph) + ph*handle_radius1
+  --]]
+
+  if qLArm==true and qRArm==true then
+    print'done grabbing'
+    Body.set_lgrip_percent(.5)
+    Body.set_rgrip_percent(.5)
+    return'done'
   end
+  
 end
 
 function state.exit()

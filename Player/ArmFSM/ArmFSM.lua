@@ -14,10 +14,10 @@ local armInit = require'armInit'
 -- From Init toward Ready
 local armInitReady = require'armInitReady'
 local armReady = require'armReady'
---[[
-local armTeleop = require('armTeleop')
+--local armTeleop = require('armTeleop')
 -- Wheel specific states
-local armWheelGrip = require('armWheelGrip')
+local armWheelGrip = require'armWheelGrip'
+--[[
 local armWheelTurn = require('armWheelTurn')
 local armWheelRelease = require('armWheelRelease')
 --]]
@@ -25,8 +25,8 @@ local armWheelRelease = require('armWheelRelease')
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
 local sm = fsm.new(armIdle,armInit,armInitReady,armReady)
---[[
 sm:add_state(armWheelGrip)
+--[[
 sm:add_state(armWheelTurn)
 sm:add_state(armWheelRelease)
 sm:add_state(armTeleop)
@@ -74,8 +74,13 @@ sm:set_transition(armReady, 'done', armIdle, function()
   -- we are allowed to make some transitions
   sm:set_transition(armIdle, 'init', armInitReady)
   sm:set_transition(armIdle, 'ready', armReady)
+  -- Manipulation ability!
+  -- TODO: How to remove (prune) this functionality when back in init?
+  sm:set_transition(armIdle, 'wheelgrab', armWheelGrip)
 end)
---sm:set_transition(armReady, 'wheelgrab', armWheelGrip)
+--
+sm:set_transition(armWheelGrip, 'reset', armReady)
+--sm:set_transition(armWheelGrip, 'done', armWheelTurn)
 --[[
 sm:set_transition(armWheelGrip, 'reset', armWheelRelease)
 sm:set_transition(armWheelGrip, 'done', armWheelTurn)

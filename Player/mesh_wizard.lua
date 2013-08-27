@@ -11,6 +11,7 @@ dofile'../include.lua'
 -- Libraries
 require'unix'
 require'vcm'
+local Config = require'Config'
 local torch      = require'torch'
 torch.Tensor     = torch.DoubleTensor
 local util       = require'util'
@@ -22,9 +23,8 @@ local mp         = require'msgpack'
 local carray     = require'carray'
 local simple_ipc = require'simple_ipc'
 local udp        = require'udp'
-local udp_port   = 54345
-local udp_target = 'localhost'
---local udp_target = '192.168.123.23'
+local udp_port   = Config.net.mesh
+local udp_target = Config.net.operator.wireless
 jpeg.set_quality( 95 )
 
 -- Sending the mesh messages on zmq or UDP

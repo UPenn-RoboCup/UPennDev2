@@ -1,18 +1,23 @@
 dofile'include.lua'
+local Config = require'Config'
 local Body = require'Body'
 local util = require'util'
 local mp = require'msgpack'
 local simple_ipc = require'simple_ipc'
-local state_pub_ch = simple_ipc.new_publisher(5544)
+local state_pub_ch = simple_ipc.new_publisher(Config.net.state)
 
 local state_machines = {}
 
+local status = {}
+local needs_broadcast = false
+local function set_broadcast()
+  needs_broadcast = true
+end
+
 local function broadcast_states(name)
-  local status = {}
   for _,my_fsm in pairs(state_machines) do
     local cur_st = my_fsm.sm:get_current_state()
-    print('FSM Status',my_fsm._NAME,cur_st._NAME)
-    table.insert(status,{my_fsm._NAME,cur_st._NAME})
+    status[my_fsm._NAME] = cur_st._NAME
   end
   -- Broadcast over UDP/TCP/IPC
   local ret = state_pub_ch:send( mp.pack(status) )
@@ -25,7 +30,7 @@ for _,sm in ipairs(unix.readdir(CWD)) do
   if sm:find'FSM' then
     package.path = CWD..'/'..sm..'/?.lua;'..package.path
     local my_fsm = require(sm)
-    my_fsm.sm:set_state_debug_handle(broadcast_states)
+    my_fsm.sm:set_state_debug_handle(set_broadcast)
     state_machines[sm] = my_fsm
     print( util.color('FSM | Loaded','yellow'),sm)
   end
@@ -48,6 +53,15 @@ while true do
   
   -- Update each state machine
   for _,sm in pairs(state_machines) do sm.update() end
+
+  if needs_broadcast then
+    needs_broadcast = false
+    broadcast_states()
+    print()
+    print( util.color('FSM Status','blue') )
+    util.ptable(status)
+    print()
+  end
 
   if t_diff>1 then
 	  print( string.format('Running Time: %d seconds',t-t0) )

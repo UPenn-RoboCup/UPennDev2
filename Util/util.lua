@@ -261,30 +261,4 @@ util.color = function(str,fg,bg,blink)
   return begin_fg..str..color_end
 end
 
--- TODO: remove these...
-local loadconfig = function(configName,Config)
-  local local_config=require(configName)
-  for k,v in pairs(local_config) do
-    Config[k]=local_config[k]
-  end
-	return Config
-end
-
-function util.LoadConfig(params, platform, Config)
-  local file_header = "Config_"..platform.name
-  for k, v in pairs(params.name) do
-    local file_name = params[v] or ""
-    local overload_platform = params[v..'_Platform'] or ""
-    if string.len(overload_platform) ~= 0 then 
-      file_header = "Config_"..overload_platform
-    else
-      file_header = "Config_"..platform.name
-    end
-    if string.len(file_name) ~= 0 then file_name = '_'..file_name end
-    file_name = v..'/'..file_header..'_'..v..file_name
-    Config = loadconfig(file_name,Config)
-  end
-	return Config
-end
-
 return util

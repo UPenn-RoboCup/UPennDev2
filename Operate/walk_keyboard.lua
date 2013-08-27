@@ -5,10 +5,10 @@
 ---------------------------------
 
 dofile'include.lua'
-
 --local is_debug = true
 
 -- Libraries
+local Config  = require'Config'
 local unix  = require'unix'
 local getch = require'getch'
 local mp    = require'msgpack'
@@ -18,7 +18,7 @@ local Body  = require'Body'
 -- Keypresses for walking
 local simple_ipc = require'simple_ipc'
 --local motion_events = simple_ipc.new_publisher('fsm_motion',true)
-local rpc_ch = simple_ipc.new_requester(5555)
+local rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
 require'hcm'
 
 -- Events for the FSMs

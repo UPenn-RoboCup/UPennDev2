@@ -48,8 +48,8 @@ if IS_WEBOTS then print'Instantiating Webots specific items...' end
 
 -- include platform specific modules
 local Config = require'Config'
-PLATFORM_NAME = Config.platform.name
-package.path = HOME..'Robots/'..PLATFORM_NAME..'/?.lua;'..package.path
+PLATFORM_NAME = Config.PLATFORM_NAME
+package.path  = HOME..'Robots/'..PLATFORM_NAME..'/?.lua;'..package.path
 package.cpath = HOME..'Robots/'..PLATFORM_NAME..'/?.so;'..package.cpath
 
 -- Print out the globally available variables, when using include.lua

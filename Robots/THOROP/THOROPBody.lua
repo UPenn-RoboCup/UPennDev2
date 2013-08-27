@@ -631,7 +631,7 @@ if IS_WEBOTS then
   local mp         = require'msgpack'
   local udp        = require'udp'
   local jpeg       = require'jpeg'
-  local png        = require'png'
+  --local png        = require'png'
   Body.get_time    = webots.wb_robot_get_time
   -- Setup the webots tags
   local tags = {}

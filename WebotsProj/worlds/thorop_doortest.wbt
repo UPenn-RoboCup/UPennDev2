@@ -1,0 +1,42 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Default world for the THOR-OP"
+  ]
+  title "handletest"
+  basicTimeStep 40
+  FPS 15
+}
+Viewpoint {
+  orientation -0.681732 -0.611551 -0.401555 1.54984
+  position -0.577544 4.2405 0.540305
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR MetricFloor {
+  color 0.95 0.95 0.95
+}
+#THOROP {
+THOROP_NoBoundaries {
+  translation 0.0133002 1.155 0.247651
+  rotation 0 1 0 1.57
+  controller "thorop"
+  controllerArgs "0 32"
+}
+SingleDoorEntree {
+  translation 0.685298 0 0.6
+  rotation 0 1 0 1.57
+}

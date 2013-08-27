@@ -33,6 +33,7 @@ local char_to_event = {
   ['r'] = {'ArmFSM','ready'},
   ['s'] = {'ArmFSM','reset'},
   ['w'] = {'ArmFSM','wheelgrab'}
+  ['x'] = {'ArmFSM','teleop'}
 }
 
 local char_to_vel = {

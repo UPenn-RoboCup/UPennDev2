@@ -66,10 +66,10 @@ ret = CONTROL;
     end
 
     function setup_arm_controls(b1,b2,b3,b4)
-        CONTROL.arm.init = b1;
-        CONTROL.arm.grab = b2;
+        CONTROL.arm.init  = b1;
+        CONTROL.arm.grab  = b2;
         CONTROL.arm.reset = b3;
-        CONTROL.arm.stop = b4;
+        CONTROL.arm.stop  = b4;
         
         set(b1,'CallBack',{@arm_control,1});
         set(b2,'CallBack',{@arm_control,2});
@@ -126,7 +126,9 @@ ret = CONTROL;
         if flags==1
             send_control_packet('arm','init');		%Two arm init
         elseif flags==2
-            data=LIDAR.wheel_calc();
+            data = LIDAR.wheel_calc();
+            disp('arm_control')
+            disp(data)
             if numel(data)>0
                 send_control_packet('arm','wheelgrab',data);
             end

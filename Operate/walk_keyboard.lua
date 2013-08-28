@@ -110,6 +110,16 @@ local function process_character(key_code,key_char,key_char_lower)
     return send_command(cmd)
   end
 
+  if key_char_lower=='m' then
+    print( util.color('Request Mesh','yellow') )
+    cmd = {}
+    cmd.shm = 'vcm'
+    cmd.segment = 'head_lidar'
+    cmd.key = 'net'
+    cmd.val = {1,1,0}
+    return send_command(cmd)
+  end
+
 end
 
 ------------

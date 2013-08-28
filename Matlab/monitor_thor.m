@@ -27,8 +27,9 @@ PORT_HEIGHTMAP = 43230;
 PORT_RELIABLE_RPC = 55555; %for UI events
 PORT_UNRELIABLE_RPC = 55556; %for UI events
 
-UDP_IP = '192.168.123.255';
-%UDP_IP = '127.0.0.1';
+WIRED_IP    = '192.168.123.22';
+WIRELESS_IP = '192.168.1.22';
+ROBOT_IP    = '127.0.0.1';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -85,7 +86,7 @@ NETMON.num_callbacks = numel(s_callbacks);
 global CALLBACK_NAMES;
 CALLBACK_NAMES = {};
 for i=1:numel(s_callbacks)
-	callback_names{i} = 'Unknown';
+    callback_names{i} = 'Unknown';
 end
 callback_names{s_head_jimg+1} = 'Head Camera';
 callback_names{s_left_jimg+1} = 'Left Hand Camera';
@@ -100,8 +101,8 @@ callback_names{s_mesh+1} = 'Mesh Image';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sending commands to the robot
-CONTROL.udp_send_id = udp_send( 'init', UDP_IP, PORT_COMMAND );
-%CONTROL_FD = udp_send( 'init', UDP_IP, PORT_CONTROL );
+CONTROL.udp_send_id = udp_send( 'init', ROBOT_IP, PORT_UNRELIABLE_RPC );
+%CONTROL.zmq_send_id = zmq( 'publish', 'tcp', ROBOT_IP, PORT_RELIABLE_RPC )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -121,41 +122,41 @@ netmon_interval = 5;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Begin the main loop
 while 1
-
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  %% Poll and perform callbacks
-  % 1 FPS timeout
-  idx = zmq('poll',1000*inv_target_fps);
-  for s=1:numel(idx)
-    s_idx = idx(s);
-    [s_data,has_more] = zmq( 'receive', s_idx );
-    % +1 since the socket handles begin at 0, but MATLAB indexes at 1
-    s_idx_m = s_idx + 1;
-    s_callback  = s_callbacks{s_idx_m};
-    nBytes = s_callback(s_data);
-    NETMON.update(s_idx_m,nBytes);
-    % We have new data to draw
-    dirty = 1;
-  end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Control the drawing update interval
-  t_diff = toc(t0);
-  counter = counter+1;
-  if t_diff>inv_target_fps
-    % Update the title
-    netmon_count =netmon_count+1;
-    if mod(netmon_count,netmon_interval)==0 
-      NETMON.redraw(1/t_diff,POSE.battery);
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% Poll and perform callbacks
+    % 1 FPS timeout
+    idx = zmq('poll',1000*inv_target_fps);
+    for s=1:numel(idx)
+        s_idx = idx(s);
+        [s_data,has_more] = zmq( 'receive', s_idx );
+        % +1 since the socket handles begin at 0, but MATLAB indexes at 1
+        s_idx_m = s_idx + 1;
+        s_callback  = s_callbacks{s_idx_m};
+        nBytes = s_callback(s_data);
+        NETMON.update(s_idx_m,nBytes);
+        % We have new data to draw
+        dirty = 1;
     end
-    % Update timing 
-    counter = 0;
-    t0 = tic;
-    if dirty==1
-      dirty = 0;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Control the drawing update interval
+    t_diff = toc(t0);
+    counter = counter+1;
+    if t_diff>inv_target_fps
+        % Update the title
+        netmon_count =netmon_count+1;
+        if mod(netmon_count,netmon_interval)==0
+            NETMON.redraw(1/t_diff,POSE.battery);
+        end
+        % Update timing
+        counter = 0;
+        t0 = tic;
+        if dirty==1
+            dirty = 0;
+        end
     end
-  end
-  drawnow;
-
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    drawnow;
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end % main loop

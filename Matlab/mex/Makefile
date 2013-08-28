@@ -4,7 +4,8 @@ MEXEXT=$(shell mexext)
 PWD=$(shell pwd)
 LIBRT= $(shell [ `uname` != "Darwin" ] && echo "-lrt")
 
-TARGETS=lidartrans time mexshm getch \
+TARGETS= \
+lidartrans time mexshm getch \
 udp_recv udp_send cjpeg djpeg \
 msgpack zmq ImageProc Planner tcpopen \
 serialize deserialize zlibCompress zlibUncompress

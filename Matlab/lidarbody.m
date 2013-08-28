@@ -296,7 +296,7 @@ CHEST_LIDAR.posea=[];
 
 
 
-    function select_3d(h_omap, ~, flags)
+    function select_3d(~, ~, flags)
         
         clicktype = get(H_FIGURE,'selectionType');
         if strcmp(clicktype,'alt')>0
@@ -307,13 +307,12 @@ CHEST_LIDAR.posea=[];
         end
         
         
-        % Add a waypoint
+        % Add a circle point
         point = get(gca,'CurrentPoint');
-        posxy = [point(1,1) point(1,2)];
+        posxy = [point(1,1) point(1,2)]
         if flags==1 % HEAD LIDAR
-            posxy
             HEAD_LIDAR.selected_points =[HEAD_LIDAR.selected_points;posxy];
-            points=HEAD_LIDAR.selected_points
+            points = HEAD_LIDAR.selected_points
             set(HEAD_LIDAR.pointdraw,'XData',HEAD_LIDAR.selected_points(:,1));
             set(HEAD_LIDAR.pointdraw,'YData',HEAD_LIDAR.selected_points(:,2));
             
@@ -330,10 +329,9 @@ CHEST_LIDAR.posea=[];
                 LIDAR.selected_points = [LIDAR.selected_points; endpos];
                 disp_str = sprintf('Selected 3D pos: (%.3f %.3f %.3f)',endpos(1),endpos(2),endpos(3) );
                 DEBUGMON.addtext(disp_str);
-            else
-            end
-        end
-    end
+            end %isfield
+        end % is head lidar
+    end % select_3d
 
 ret = LIDAR;
 end

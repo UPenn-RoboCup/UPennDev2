@@ -15,6 +15,7 @@ local function calculate_arm_position()
   local body_pos   = vector.new{0,0,0}
   local body_rpy   = vector.new{0,0,0}
   local handle     = hcm.get_door_handle()
+  handle = vector.new{0.4,-0.2,0.1, math.pi/4, .1 }
   local open_angle = hcm.get_door_open_ang()
 
   local trHandle = T.eye()
@@ -22,6 +23,7 @@ local function calculate_arm_position()
       * T.rotZ(open_angle)
 
   local trGrip = trHandle
+      * T.rotZ( 45*math.pi/180 ) -- wrist offset yaw
       * T.rotX(handle[4])
       * T.trans(0,handle[4]/2,0)
        
@@ -53,22 +55,14 @@ function state.update()
   
   -- Calculate where we need to place our arm  
   local trArm = calculate_arm_position()
-  local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-  local qLInv = Kinematics.inverse_l_arm(trArm, qLArm)
   local qRInv = Kinematics.inverse_r_arm(trArm, qRArm)
 
   -- Go to the target arm position
-  qLArm = util.approachTol( qLArm, qLInv, dqArmMax, dt )
-  if qLArm~=true then Body.set_larm_command_position( qLArm ) end
   qRArm = util.approachTol( qRArm, qRInv, dqArmMax, dt )
-  if qRArm~=true then Body.set_rarm_command_position( qRArm ) end
+  if qRArm==true then return'done' end
 
-  if qLArm==true and qRArm==true then
-    Body.set_lgrip_percent(.5)
-    Body.set_rgrip_percent(.5)
-    return'done'
-  end
+  Body.set_rarm_command_position( qRArm )
   
 end
 

@@ -42,7 +42,9 @@ function state.update()
   -- Get the desired IK position
   local trLArm = hcm.get_joints_plarm()
   local trRArm = hcm.get_joints_prarm()
-  print(trLArm,trRArm)
+  print('Teleop | Desired')
+  print(trLArm)
+  print(trRArm)
   local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
   local qR_desired = Body.get_inverse_rarm(qRArm,trRArm)
   -- Go there

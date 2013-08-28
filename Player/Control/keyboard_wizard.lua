@@ -4,7 +4,7 @@
 -- (c) Stephen McGill, 2013
 ---------------------------------
 
-dofile'include.lua'
+dofile'../include.lua'
 
 --local is_debug = true
 

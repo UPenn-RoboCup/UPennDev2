@@ -9,6 +9,7 @@ dofile'include.lua'
 --local is_debug = true
 
 -- Libraries
+local Config = require'Config'
 local unix       = require'unix'
 --local getch      = require'getch'
 local mp         = require'msgpack'

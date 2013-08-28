@@ -61,6 +61,8 @@ Config.net.team           = 44444
 Config.net.state          = 44445
 Config.net.head_camera    = 33333
 Config.net.mesh           = 33334
+Config.net.left_camera    = 33335
+Config.net.right_camera   = 33336
 Config.net.rgbd           = 33335
 
 -- keyframe files

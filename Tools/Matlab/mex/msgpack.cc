@@ -209,15 +209,17 @@ void mex_unpack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   int size = mxGetM(prhs[0]) * mxGetN(prhs[0]);
 
   /* deserializes it. */
+  size_t offset = 0;
   msgpack_unpacked msg;
   msgpack_unpacked_init(&msg);
-  if (!msgpack_unpack_next(&msg, str, size, NULL)) 
+  if (!msgpack_unpack_next(&msg, str, size, &offset))
     mexErrMsgTxt("unpack error");
 
   /* prints the deserialized object. */
   msgpack_object obj = msg.data;
 
   plhs[0] = (*unPackMap[obj.type])(obj);
+  plhs[1] = mxCreateDoubleScalar(offset);
 }
 
 void mex_pack_unknown(msgpack_packer *pk, int nrhs, const mxArray *prhs) {

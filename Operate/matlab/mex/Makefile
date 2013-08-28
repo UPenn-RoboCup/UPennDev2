@@ -4,8 +4,11 @@ MEXEXT=$(shell mexext)
 PWD=$(shell pwd)
 LIBRT= $(shell [ `uname` != "Darwin" ] && echo "-lrt")
 
-TARGETS=lidartrans time mexshm getch udp_recv udp_send cjpeg djpeg msgpack zmq ImageProc Planner tcpopen
-.PHONY: all clean $(TARGETS)
+TARGETS=lidartrans time mexshm getch \
+udp_recv udp_send cjpeg djpeg \
+msgpack zmq ImageProc Planner tcpopen \
+serialize deserialize zlibCompress zlibUncompress
+.PHONY: all clean
 	
 all: $(TARGETS)
 
@@ -36,6 +39,30 @@ djpeg:
 zmq:	
 	$(MEX) $@.cc -lzmq
 	
+msgpack:
+	$(MEX) $@.cc -lmsgpack
+	
+tcpopen:
+	$(MEX) $@.c
+
+serialize:
+	$(MEX) $@.c
+
+deserialize:
+	$(MEX) $@.c
+	
+zlibCompress:
+	$(MEX) $@.cc -lz
+
+zlibUncompress:
+	$(MEX) $@.cc -lz
+
+# Platform dependent modules
+serialopen:
+	$(MEX) $@.c	
+uvc:
+	$(MEX) $@.cc
+	
 ImageProc:
 	@echo "Building ImageProc"
 	cd ImageProc && make && cd $(PWD)
@@ -43,18 +70,6 @@ ImageProc:
 Planner:
 	@echo "Building Planner"
 	cd Planner && make && cd $(PWD)
-	
-msgpack:
-	$(MEX) $@.cc -lmsgpack
-	
-tcpopen:
-	$(MEX) $@.c
-	
-# Platform dependent modules
-serialopen:
-	$(MEX) $@.c	
-uvc:
-	$(MEX) $@.cc
 	
 test:
 	@echo "Testing matlab scripts!"

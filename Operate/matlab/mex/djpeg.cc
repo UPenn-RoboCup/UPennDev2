@@ -29,6 +29,7 @@ boolean fill_input_buffer(j_decompress_ptr cinfo)
 {
   jpeg_destroy_decompress(cinfo);
   mexPrintf("fill_input_buffer\n");
+  return TRUE;
 }
 
 void skip_input_data(j_decompress_ptr cinfo, long num_bytes)

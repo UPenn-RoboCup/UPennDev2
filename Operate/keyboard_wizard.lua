@@ -233,7 +233,6 @@ local function process_character(key_code,key_char,key_char_lower)
   -- IK Changes with wasd
   local ik_change = char_to_ik[key_char_lower]
   if ik_change then
-    
     cmd = {}
     cmd.shm = 'hcm'
     cmd.segment = 'joints'

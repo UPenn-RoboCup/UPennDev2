@@ -19,15 +19,21 @@ local armReady = require'armReady'
 local sm = fsm.new(armIdle,armInit,armInitReady,armReady)
 --
 
+-- Direct teleop override
+local armTeleop = require'armTeleop'
+sm:add_state(armTeleop)
+
 -- Wheel specific states
 local armWheelGrip = require'armWheelGrip'
 local armWheelTurn = require'armWheelTurn'
 sm:add_state(armWheelGrip)
 sm:add_state(armWheelTurn)
 
--- Direct teleop override
-local armTeleop = require'armTeleop'
-sm:add_state(armTeleop)
+-- Door specific states
+local armDoorGrip = require'armDoorGrip'
+local armDoorTurn = require'armDoorTurn'
+sm:add_state(armDoorGrip)
+sm:add_state(armDoorTurn)
 
 ----------
 -- Event types

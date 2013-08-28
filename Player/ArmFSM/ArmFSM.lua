@@ -31,9 +31,9 @@ sm:add_state(armWheelTurn)
 
 -- Door specific states
 local armDoorGrip = require'armDoorGrip'
-local armDoorTurn = require'armDoorTurn'
+--local armDoorTurn = require'armDoorTurn'
 sm:add_state(armDoorGrip)
-sm:add_state(armDoorTurn)
+--sm:add_state(armDoorTurn)
 
 ----------
 -- Event types
@@ -80,8 +80,9 @@ sm:set_transition(armReady, 'done', armIdle, function()
   sm:set_transition(armIdle, 'ready', armReady)
   -- Manipulation ability!
   -- TODO: How to remove (prune) this functionality when back in init?
-  sm:set_transition(armIdle, 'wheelgrab', armWheelGrip)
   sm:set_transition(armIdle, 'teleop', armTeleop)
+  sm:set_transition(armIdle, 'wheelgrab', armWheelGrip)
+  sm:set_transition(armIdle, 'doorgrab', armDoorGrip)
 end)
 --
 sm:set_transition(armWheelGrip, 'reset', armReady)

@@ -4,42 +4,34 @@ local Config = require'Config'
 local Body   = require'Body'
 local T      = require'Transform'
 local util   = require'util'
+local vector = require'vector'
+require'hcm'
 
 -- Angular velocity limit
 local dqArmMax = vector.new({10,10,10,15,45,45})*Body.DEG_TO_RAD
 
 local turnAngle = 0
-local body_pos = {0,0,0}
-local body_rpy = {0,0,0}
-
-local t_init = 5.0
-local t_grip = 5.0
-
-local handle_pos,handle_pitch,handle_yaw
-local handle_radius1,handle_radius0,handle_radius
-local trHandle, trGripL, trGripR, trBody, trLArm, trRArm
 local function calculate_arm_position()
-   trHandle = T.eye()
-       * T.trans(handle_pos[1],handle_pos[2],handle_pos[3])
-       * T.rotZ(handle_yaw)
-       * T.rotY(handle_pitch)
+  local body_pos   = vector.new{0,0,0}
+  local body_rpy   = vector.new{0,0,0}
+  local handle     = hcm.get_door_handle()
+  local open_angle = hcm.get_door_open_ang()
 
-   trGripL = trHandle
-       * T.rotX(turnAngle)
-       * T.trans(0,handle_radius,0)
-       * T.rotZ(-math.pi/4)
-   trGripR = trHandle
-       * T.rotX(turnAngle)
-       * T.trans(0,-handle_radius,0)
-       * T.rotZ(math.pi/4)
+  local trHandle = T.eye()
+      * T.trans(unpack(vector.slice(handle,1,3)) )
+      * T.rotZ(open_angle)
+
+  local trGrip = trHandle
+      * T.rotX(handle[4])
+      * T.trans(0,handle[4]/2,0)
        
-   trBody = T.eye()
-       * T.trans(body_pos[1],body_pos[2],body_pos[3])
-       * T.rotZ(body_rpy[3])
-		   * T.rotY(body_rpy[2])
-		   
-   trLArm = T.position6D(T.inv(trBody)*trGripL)
-   trRArm = T.position6D(T.inv(trBody)*trGripR)
+  local trBody = T.eye()
+      * T.trans( unpack(body_pos) )
+      * T.rotZ(body_rpy[3])
+      * T.rotY(body_rpy[2])
+  	   
+  local trArm = T.position6D(T.inv(trBody)*trGrip)
+  return trArm
 end
 
 function state.entry()
@@ -48,22 +40,6 @@ function state.entry()
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-  
-  -- Let's store wheel data here
-  handle_pos     = hcm:get_wheel_pos()
-  handle_pitch   = hcm:get_wheel_pitchangle()
-  handle_yaw     = hcm:get_wheel_yawangle()
-  handle_radius1 = hcm:get_wheel_radius()
-  handle_radius0 = handle_radius1 + 0.08
-  handle_radius  = handle_radius0
-  
-  --[[
-  print("hpose:",unpack(handle_pos))
-  print("hpitch:",handle_pitch)
-  print("hradius",handle_radius)
-  print("tAngle",turnAngle)
-  --]]
-
 end
 
 function state.update()
@@ -75,24 +51,18 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
   
-  -- Calculate where we need to go  
-  calculate_arm_position()
+  -- Calculate where we need to place our arm  
+  local trArm = calculate_arm_position()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-  local qLInv = Kinematics.inverse_l_arm(trLArm, qLArm)
-  local qRInv = Kinematics.inverse_r_arm(trRArm, qRArm)
+  local qLInv = Kinematics.inverse_l_arm(trArm, qLArm)
+  local qRInv = Kinematics.inverse_r_arm(trArm, qRArm)
 
   -- Go to the target arm position
   qLArm = util.approachTol( qLArm, qLInv, dqArmMax, dt )
   if qLArm~=true then Body.set_larm_command_position( qLArm ) end
   qRArm = util.approachTol( qRArm, qRInv, dqArmMax, dt )
   if qRArm~=true then Body.set_rarm_command_position( qRArm ) end
-
-  -- TODO: Begin to grip by approaching the inner radius
-  --[[
-    ph = (t-t0)/t_grip
-    handle_radius = handle_radius0*(1-ph) + ph*handle_radius1
-  --]]
 
   if qLArm==true and qRArm==true then
     Body.set_lgrip_percent(.5)

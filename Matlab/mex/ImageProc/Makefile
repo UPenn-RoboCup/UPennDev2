@@ -16,7 +16,7 @@ all: yuyv2label.$(MEXEXT) \
 	label_to_mask.$(MEXEXT)
 
 %.o: %.cc
-	$(CXX) -fpic -Os -o $@ -c $<
+	$(CXX) -fpic -O3 -o $@ -c $<
 
 %.$(MEXEXT): %.cc
 	$(MEX) $<

@@ -41,7 +41,7 @@ shared_data.door.hinge_pos  = vector.new({.2,0,.1})
 -- What angle from the horizon is the handle
 -- What is the length of the handle
 -- {axis_x,axis_y,axis_z, angle, length}
-shared_data.door.handle = vector.new({.2,0,.1,0,.1})
+shared_data.door.handle = vector.new{0.4,-0.2,0.1, math.pi/2, .1 }
 -- How much to open the door
 shared_data.door.open_ang   = vector.zeros(1)
 -- Which hand opens the door?

@@ -23,7 +23,7 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
-  if t - t_entry > timeout then return'timeout' end
+  --if t - t_entry > timeout then return'timeout' end
 
 end
 

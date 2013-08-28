@@ -1,5 +1,5 @@
 function ret = controlbody()
-  global CONTROL SLAM COMMAND_FD BODY LIDAR POSE
+  global CONTROL SLAM BODY LIDAR POSE
 
   CONTROL=[];
 
@@ -149,17 +149,37 @@ function ret = controlbody()
 
   end
 
-  function send_control_packet(fsmtype,event,data)
-    disp(sprintf('Control command: %s / %s',fsmtype,event));
+  function send_control_packet( fsmtype, event, shared, key, data )
+    
+    disp('Sending a control packet')
+      
     senddata=[];
-    senddata.fsm = fsmtype;
-    senddata.event = event;
-    senddata.data = -1;
-    if nargin>2 senddata.data=data; end
+    if numel(fsmtype)>0
+        fprintf('Control fsm:\t%s / %s\n',fsmtype,event);
+        senddata.fsm = fsmtype;
+        senddata.evt = event;
+    end
+    
+    %disp(nargin)
+    
+    if nargin>2 && numel(shared)>0
+        fprintf('Control data:\t%s / %s\n',shared,key);
+        senddata.shm = shared;
+        senddata.key = key;
+        senddata.val = data;
+    end
+    
+    if numel(senddata)==0
+        return;
+    end
+
+    % Form the string payload
     data_msg = msgpack( 'pack', senddata );
-    nBytes  = udp_send( 'send', CONTROL.udp_send_id, data_msg );
-   	fprintf( 'Control packet sent %d/%d bytes', nBytes, numel(data_msg) );
-		disp(senddata);
+    % Send UDP packet
+    % TODO: This should use reliable rpc...
+    nBytes   = udp_send( 'send', CONTROL.udp_send_id, data_msg );
+   	fprintf( 'Control packet sent %d/%d bytes\n', nBytes, numel(data_msg) );
+	disp(senddata);
   end
 end
 

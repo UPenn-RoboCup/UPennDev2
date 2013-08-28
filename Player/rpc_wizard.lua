@@ -24,8 +24,9 @@ for _,sm in ipairs(unix.readdir(CWD)) do
   end
 end
 
+--NOTE: Can do memory AND fsm event.  In that order
 local function process_rpc(rpc)
-  --util.ptable(rpc)
+  util.ptable(rpc)
 
   local status, reply
   -- Shared memory modification
@@ -55,6 +56,7 @@ local function process_rpc(rpc)
       status, reply = pcall(func)
     end
   end -- if shm
+
   -- State machine events
   local fsm = rpc.fsm
   if fsm then
@@ -82,8 +84,8 @@ local function process_zmq()
 end
 
 local function process_udp()
-  while command_udp_recv:size()>0 do
-    local request = command_udp_recv:receive()
+  while rpc_udp:size()>0 do
+    local request = rpc_udp:receive()
     local rpc = mp.unpack(request)
     process_rpc(rpc)
   end
@@ -92,7 +94,7 @@ end
 rpc_zmq.callback = process_zmq
 local rpc_udp_poll = {}
 rpc_udp_poll.socket_handle = rpc_udp:descriptor()
-rpc_udp_poll.callback = process_udp_command
-local wait_channels = {rpc_zmq,command_udp_recv_poll}
+rpc_udp_poll.callback = process_udp
+local wait_channels = {rpc_zmq,rpc_udp_poll}
 local channel_poll = simple_ipc.wait_on_channels( wait_channels );
 channel_poll:start()

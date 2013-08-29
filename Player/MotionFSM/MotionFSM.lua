@@ -4,39 +4,39 @@ local Config = require'Config'
 local fsm = require'fsm'
 
 -- Require the needed states
-local motionWalk   = require(Config.dev.walk)
-local motionIdle  = require'motionIdle'
-local motionStance = require'motionStance'
+local motionIdle   = require'motionIdle'
 local motionFall   = require'motionFall'
---[[
-local motionSit    = require'motionSit'
---]]
+local motionWalk   = require(Config.dev.walk)
+local motionStance = require'motionStance'
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
-local sm = fsm.new( motionIdle, motionStance, motionWalk, motionFall )
+local sm = fsm.new( motionIdle, motionStance, motionFall )
+sm:add_state(motionWalk)
 
 -- Setup the transitions for this FSM
-sm:set_transition(motionIdle, 'stand',   motionStance )
-sm:set_transition(motionIdle, 'walk',    motionWalk )
-sm:set_transition(motionIdle, 'fall',    motionFall )
-sm:set_transition(motionIdle, 'timeout', motionIdle )
+sm:set_transition(motionIdle, 'stand', motionStance )
 --
-sm:set_transition(motionStance, 'done',    motionIdle)
-sm:set_transition(motionStance, 'fall',    motionFall)
-sm:set_transition(motionStance, 'timeout', motionStance)
---sm:set_transition(motionStance, 'walk', motionWalk)
---sm:set_transition(motionStance, 'sit',  motionSit)
+sm:set_transition(motionStance, 'done', motionIdle, function(exit_val)
+  -- Stance exit value should be some foot positions...
+  -- These foot positions *should* be in shared memory though
+  -- Initially, the walk event is disallowed, since we do not know our configuration
+  sm:set_transition(motionIdle, 'walk', motionWalk )
+end)
 --
---sm:set_transition(motionWalk, 'sit',    motionSit)
-sm:set_transition(motionWalk, 'stand', motionStance)
-sm:set_transition(motionWalk, 'fall', motionFall)
---[[
-sm:set_transition(motionSit, 'done',    motionIdle)
-sm:set_transition(motionSit, 'standup', motionStance)
---]]
+sm:set_transition(motionWalk, 'stand', motionStance, function(exit_val)
+  -- Walk exit value should be some foot positions...
+  -- These foot positions *should* be in shared memory though
+end)
 
--- Setup the FSM object
+
+
+
+
+
+--------------------------
+-- Setup the FSM object --
+--------------------------
 local obj = {}
 local util = require'util'
 -- Simple IPC for remote state triggers
@@ -53,6 +53,7 @@ obj.update = function()
   	print( util.color(obj._NAME..' Event:','green'),event)
   	sm:add_event(event)
   end
+  -- TODO: If falling, maybe just call that update function?
   sm:update()
 end
 obj.exit = function()

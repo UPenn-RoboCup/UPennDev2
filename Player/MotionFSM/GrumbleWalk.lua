@@ -112,14 +112,11 @@ local kneeShift = 0
 local hipShift = vector.new({0,0})
 local armShift = vector.new({0, 0})
 
-local active  = false
-local started = false
 local iStep0  = -1
 local iStep   = 0
 local tLastStep = Body.get_time()
 local ph  = 0
 
-local stopRequest  = 2
 local initial_step = 2
 local upper_body_overridden = 0
 
@@ -132,23 +129,6 @@ local function step_torso(uLeft, uRight,shiftFactor)
   local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeft)
   local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight)
   return util.se2_interpolate(shiftFactor, uLeftSupport, uRightSupport)
-end
-
-local function stance_reset() --standup/sitdown/falldown handling
-  print"Stance has been reset!"
-  uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso)
-  uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso)
-  uLeft1, uLeft2 = uLeft, uLeft
-  uRight1, uRight2 = uRight, uRight
-  uTorso1, uTorso2 = uTorso, uTorso
-  uSupport  = uTorso
-  tLastStep = Body.get_time()
-  walkKickRequest = 0
-  iStep0 = -1
-  iStep = 0
-  current_step_type=0
-  motion_playing = 0
-  uLRFootOffset = vector.new({0,footY,0})
 end
 
 local function update_still()
@@ -385,7 +365,7 @@ local function zmp_com(ph)
   end
   --com[3] = .5*(uLeft[3] + uRight[3])
   --Linear speed turning
-  com[3] = util.se2_interpolate(ph,uLeft1[3]+uRight1[3],uLeft2[3]+uRight2[3]) / 2
+  com[3] = ph* (uLeft2[3]+uRight2[3])/2 + (1-ph)* (uLeft1[3]+uRight1[3])/2
   return com
 end
 
@@ -408,6 +388,7 @@ walk_requests.set_velocity = function()
 
   -- Grab from the shared memory
   local vx,vy,va = unpack(mcm.get_walk_vel())
+  print( util.color('Walk velocity','blue'), vx,vy,va )
 
   --Filter the commanded speed
   vx = math.min(math.max(vx,velLimitX[1]),velLimitX[2])
@@ -428,23 +409,6 @@ walk_requests.set_velocity = function()
   velCommand[2] = math.min(math.max(velCommand[2],velLimitY[1]),velLimitY[2])
   velCommand[3] = math.min(math.max(velCommand[3],velLimitA[1]),velLimitA[2])
 end
-walk_requests.start = function()
-  print( util.color('Walk Start','green'))
-  stopRequest = 0
-  if not active then
-    active = true
-    started = false
-    iStep0 = -1
-    tLastStep = Body.get_time()
-    initial_step = 2
-  end
-end
-walk_requests.stop = function()
-  print( util.color('Walk Stop','red'))
-  --Always stops with feet together (which helps kicking)
-  stopRequest = math.max(1,stopRequest)
-  -- stopRequest = 2 --Stop w/o feet together
-end
 
 ---------------------------
 -- State machine methods --
@@ -457,9 +421,23 @@ function walk.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   
-  --SJ: now we always assume that we start walking with feet together
-  --Because joint readings are not always available with darwins
-  stance_reset()
+  -- SJ: now we always assume that we start walking with feet together
+  -- Because joint readings are not always available with darwins
+  -- TODO: Use shared memory readings, or calculate upon entry
+  -- (Re)Set our local variables to the current uFoot positions
+  uLeft  = util.pose_global(vector.new({-supportX, footY, 0}),uTorso)
+  uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso)
+  uLeft1, uLeft2 = uLeft, uLeft
+  uRight1, uRight2 = uRight, uRight
+  uTorso1, uTorso2 = uTorso, uTorso
+  uSupport  = uTorso
+  tLastStep = Body.get_time()
+  iStep0 = -1
+  iStep = 0
+  current_step_type=0
+  motion_playing = 0
+  uLRFootOffset = vector.new({0,footY,0})
+
   --Place arms in appropriate position at sides
 
   if upper_body_overridden==0 then
@@ -472,9 +450,12 @@ function walk.entry()
   Body.set_waist_command_position(0)
   Body.set_waist_hardness(1.0)
   mcm.set_walk_bipedal(1)
-  
-  -- Start walking
-  walk_requests.start()
+
+  -- Entry is now the start point
+  tLastStep = Body.get_time()
+  iStep0 = -1
+  initial_step = 2
+
 end
 
 function walk.update()
@@ -497,19 +478,6 @@ function walk.update()
   until not has_more
   ------------------------------------------
 
-  -- TODO: Don't run update 
-  -- if the robot is sitting or standing
-  if not active then 
-    walk.update_still()
-    return 
-  end
-
-  -- Begin walking (from a stop position?)
-  if not started then
-    started = true
-    tLastStep = Body.get_time()
-  end
-
   -- SJ: Variable tStep support for walkkick
   -- Grab our phase for the current tStep
   local ph = (t-tLastStep)/tStep
@@ -525,14 +493,9 @@ function walk.update()
   -- New step
   if iStep>iStep0 then
 
-    -- Stop when stopping sequence is done
-    if stopRequest==2 then
-      stopRequest = 0
-      active = false
-      return "stop"
-    end
-
+    -- Update the velocity via a filter
     update_velocity()
+    -- Store the previous step
     iStep0 = iStep
     -- supportLeg: 0 for left support, 1 for right support
     supportLeg = iStep % 2
@@ -543,32 +506,16 @@ function walk.update()
     --Support Point modulation for walkkick
     local supportMod = {0,0}
 
-    if walkKickRequest==0 then
-      if stopRequest==1 then
-        --Final step
-        stopRequest = 2
-        velCurrent = vector.new{0,0,0}
-        velCommand = vector.new{0,0,0}
-        if supportLeg == 0 then
-          -- Left support
-          uRight2 = util.pose_global(-2*uLRFootOffset, uLeft1)
-        else
-          -- Right support
-          uLeft2 = util.pose_global(2*uLRFootOffset, uRight1)
-        end
-      else
-        --Normal walk, advance steps
-        tStep = tStep0 
-        if supportLeg == 0 then
-          -- Left support
-          uRight2 = step_right_destination(velCurrent, uLeft1, uRight1)
-        else
-          -- Right support
-          uLeft2 = step_left_destination(velCurrent, uLeft1, uRight1)
-        end
-      end
+    --Normal walk, advance steps
+    tStep = tStep0 
+    if supportLeg == 0 then
+      -- Left support
+      uRight2 = step_right_destination(velCurrent, uLeft1, uRight1)
+    else
+      -- Right support
+      uLeft2 = step_left_destination(velCurrent, uLeft1, uRight1)
     end
-
+    
     uTorso2 = step_torso(uLeft2, uRight2, 0.5)
 
     --Adjustable initial step body swing
@@ -659,6 +606,18 @@ end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')
+  -- Reset our velocity
+  velCurrent = vector.new{0,0,0}
+  velCommand = vector.new{0,0,0}
+
+  if supportLeg == 0 then
+        -- Left support
+        uRight2 = util.pose_global(-2*uLRFootOffset, uLeft1)
+      else
+        -- Right support
+        uLeft2 = util.pose_global(2*uLRFootOffset, uRight1)
+      end
+
 end
 
 return walk

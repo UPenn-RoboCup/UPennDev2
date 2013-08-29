@@ -66,6 +66,25 @@ function new(state1, ...)
   return o
 end
 
+-- Remove a transition
+function remove_transition(self, fromState, event, toState)
+  -- Make sure we are valid
+  assert(self.reverseStates[fromState], "Unknown from state")
+  assert(type(event) == "string", "Unknown event")
+  assert(self.reverseStates[toState], "Unknown to state")
+
+  -- Remove this transition if a transitions table exists
+  if self.transitions[fromState] and self.transitions[fromState][event] then
+    self.transitions[fromState][event] = nil
+  end
+  -- Remove this action if an actions table exists
+  if self.actions[fromState] and self.actions[fromState][event] then
+    self.actions[fromState][event] = nil
+  end
+
+end
+
+-- Add a transition
 function set_transition(self, fromState, event, toState, action)
   assert(self.reverseStates[fromState], "Unknown from state")
   assert(type(event) == "string", "Unknown event")
@@ -74,9 +93,10 @@ function set_transition(self, fromState, event, toState, action)
     assert(type(action) == "function", "Unknown action function")
   end
 
+  -- If no transitions yet from this state, then make a transitions table
   if not self.transitions[fromState] then self.transitions[fromState] = {} end
   self.transitions[fromState][event] = toState
-
+  -- If no actions yet from this state, then make an actions table
   if not self.actions[fromState] then self.actions[fromState] = {} end
   self.actions[fromState][event] = action
 end

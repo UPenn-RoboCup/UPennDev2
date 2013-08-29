@@ -21,68 +21,56 @@ local t_entry, t_update
 -- These are set one and read everywhere.
 -- Used for conveinence
 ----------------------------------------------------------
--- Stance and velocity limit values
+-- Stance limits used in step_destination_* functions
 local stanceLimitX = Config.walk.stanceLimitX or {-0.10 , 0.10}
 local stanceLimitY = Config.walk.stanceLimitY or {0.09 , 0.20}
 local stanceLimitA = Config.walk.stanceLimitA or {-0*math.pi/180, 40*math.pi/180}
+-- Toe/heel overlap checking values
+local footSizeX = Config.walk.footSizeX or {-0.05,0.05}
+local stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015
+local stanceLimitY2 = 2* Config.walk.footY-stanceLimitMarginY
+
+-- Velocity limits used in update_velocity function
 local velLimitX = Config.walk.velLimitX or {-.06, .08}
 local velLimitY = Config.walk.velLimitY or {-.06, .06}
 local velLimitA = Config.walk.velLimitA or {-.4, .4}
 local velDelta  = Config.walk.velDelta or {.03,.015,.15}
 local vaFactor  = Config.walk.vaFactor or 0.6
 
---Toe/heel overlap checking values
-local footSizeX = Config.walk.footSizeX or {-0.05,0.05}
-local stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015
-local stanceLimitY2= 2* Config.walk.footY-stanceLimitMarginY
-
---OP default stance width: 0.0375*2 = 0.075
---Heel overlap At radian 0.15 at each foot = 0.05*sin(0.15)*2=0.015
---Heel overlap At radian 0.30 at each foot = 0.05*sin(0.15)*2=0.030
-
---Stance parameters
-local bodyHeight = Config.walk.bodyHeight
+-- Stance parameters
 local bodyTilt = Config.walk.bodyTilt or 0
-local torsoX = Config.walk.torsoX
-local footY = Config.walk.footY
+local torsoX   = Config.walk.torsoX
+local footY    = Config.walk.footY
 local supportX = Config.walk.supportX
 local supportY = Config.walk.supportY
-local qLArm0=Config.walk.qLArm
-local qRArm0=Config.walk.qRArm
+local qLArm0   = Config.walk.qLArm
+local qRArm0   = Config.walk.qRArm
 
---Hardness parameters
+-- Hardness parameters
 local hardnessSupport = Config.walk.hardnessSupport or 0.7
-local hardnessSwing = Config.walk.hardnessSwing or 0.5
-
-local hardnessArm0 = Config.walk.hardnessArm or 0.2
-local hardnessArm = Config.walk.hardnessArm or 0.2
+local hardnessSwing   = Config.walk.hardnessSwing or 0.5
+local hardnessArm     = Config.walk.hardnessArm or 0.2
+local hardnessArm0    = hardnessArm
 
 --Gait parameters
+local tZmp   = Config.walk.tZmp
 local tStep0 = Config.walk.tStep
-local tStep = Config.walk.tStep
-local tZmp = Config.walk.tZmp
-local stepHeight0 = Config.walk.stepHeight
-local stepHeight = Config.walk.stepHeight
-local ph1Single = Config.walk.phSingle[1]
-local ph2Single = Config.walk.phSingle[2]
-local ph1Zmp,ph2Zmp=ph1Single,ph2Single
+local tStep  = tStep0
+local stepHeight  = Config.walk.stepHeight
+local ph1Single,ph2Single = unpack(Config.walk.phSingle)
+local ph1Zmp,ph2Zmp = ph1Single, ph2Single
 
---Compensation parameters
-local hipRollCompensation = Config.walk.hipRollCompensation
-local ankleMod = Config.walk.ankleMod or {0,0}
-local spreadComp = Config.walk.spreadComp or 0
-local turnCompThreshold = Config.walk.turnCompThreshold or 0
-local turnComp = Config.walk.turnComp or 0
-
---Gyro stabilization parameters
+-- Gyro stabilization parameters
 local ankleImuParamX = Config.walk.ankleImuParamX
 local ankleImuParamY = Config.walk.ankleImuParamY
-local kneeImuParamX = Config.walk.kneeImuParamX
-local hipImuParamY = Config.walk.hipImuParamY
-local armImuParamX = Config.walk.armImuParamX
-local armImuParamY = Config.walk.armImuParamY
+local kneeImuParamX  = Config.walk.kneeImuParamX
+local hipImuParamY   = Config.walk.hipImuParamY
+local armImuParamX   = Config.walk.armImuParamX
+local armImuParamY   = Config.walk.armImuParamY
 
---Initial body swing 
+-- Compensation parameters
+local hipRollCompensation = Config.walk.hipRollCompensation
+-- Initial body swing 
 local supportModYInitial = Config.walk.supportModYInitial or 0
 
 ----------------------------------------------------------
@@ -90,28 +78,22 @@ local supportModYInitial = Config.walk.supportModYInitial or 0
 --
 -- These are continuously updated on each update
 ----------------------------------------------------------
-
 local uTorso = vector.new({supportX, 0, 0})
 local uLeft  = vector.new({0, footY, 0})
 local uRight = vector.new({0, -footY, 0})
-
-local pLLeg  = vector.new({0, footY, 0, 0,0,0})
-local pRLeg  = vector.new({0, -footY, 0, 0,0,0})
-local pTorso = vector.new({supportX, 0, bodyHeight, 0,bodyTilt,0})
-
+-- Save the velocity between update cycles
 local velCurrent = vector.new({0, 0, 0})
-
--- ZMP exponential coefficients:
+-- Save ZMP exponential coefficients between update cycles
 local aXP, aXN, aYP, aYN = 0, 0, 0, 0
 
---Gyro stabilization variables
+-- Save gyro stabilization variables between update cycles
+-- They are filtered.  TODO: Use dt in the filters
 local ankleShift = vector.new({0, 0})
-local kneeShift = 0
-local hipShift = vector.new({0,0})
-local armShift = vector.new({0, 0})
+local kneeShift  = 0
+local hipShift   = vector.new({0,0})
+local armShift   = vector.new({0, 0})
 
-local iStep0  = -1
-local iStep   = 0
+-- Save which step we are on between cycles
 local tLastStep = Body.get_time()
 local ph  = 0
 
@@ -129,41 +111,24 @@ local function step_torso(uLeft, uRight,shiftFactor)
   return util.se2_interpolate(shiftFactor, uLeftSupport, uRightSupport)
 end
 
-local function update_still()
-  uTorso = step_torso(uLeft, uRight,0.5)
-
-  pTorso[4], pTorso[5],pTorso[6] = 0,bodyTilt,0
-
-  uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
-
-  pTorso[6] = pTorso[6]+ uTorsoActual[3]
-  pTorso[1], pTorso[2] = uTorsoActual[1],uTorsoActual[2] 
-
-  pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3]
-  pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3]
-  
-  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg)
-  motion_legs(qLegs)
-  motion_arms()
-end
-
-local function motion_legs(qLegs,phSingle)
-  -- TODO: Not sure what this is...
-  -- Find the body yaw
+local function get_gyro_feedback()
   local body_yaw
-  if not active then -- double support
-    body_yaw = (uLeft[3]+uRight[3])/2-uTorsoActual[3]
-  elseif supportLeg == 0 then  -- Left support
+  if supportLeg == 0 then  -- Left support
     body_yaw = uLeft[3]-uTorsoActual[3]
-  elseif supportLeg==1 then
+  else
     body_yaw = uRight[3]-uTorsoActual[3]
   end
   -- Ankle stabilization using gyro feedback
-  local gyro_roll0,gyro_pitch0,gyro_yaw0= unpack(Body.get_sensor_gyro())
+  local gyro_roll0, gyro_pitch0, gyro_yaw0= unpack(Body.get_sensor_gyro())
   -- Get effective gyro angle considering body yaw offset
   -- Rotate the Roll and pitch about the intended body yaw
-  gyro_roll  = gyro_roll0  * math.cos(body_yaw) - gyro_pitch0 * math.sin(body_yaw)
-  gyro_pitch = gyro_pitch0 * math.cos(body_yaw) - gyro_roll0  * math.sin(body_yaw)
+  local gyro_roll  = gyro_roll0  * math.cos(body_yaw) - gyro_pitch0 * math.sin(body_yaw)
+  local gyro_pitch = gyro_pitch0 * math.cos(body_yaw) - gyro_roll0  * math.sin(body_yaw)
+  -- Give these parameters
+  return gyro_roll, gyro_pitch, gyro_yaw
+end
+
+local function get_leg_feedback(phSingle,gyro_roll,gyro_pitch,gyro_yaw)
 
   -- Ankle feedback
   local ankleShiftX = util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4])
@@ -179,80 +144,52 @@ local function motion_legs(qLegs,phSingle)
   local hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
   hipShift[2]=hipShift[2]+hipImuParamY[1]*(hipShiftY-hipShift[2])
 
-  -- Arm feedback
-  local armShiftX=util.procFunc(gyro_pitch*armImuParamY[2],armImuParamY[3],armImuParamY[4])
-  local armShiftY=util.procFunc(gyro_roll*armImuParamY[2],armImuParamY[3],armImuParamY[4])
-  armShift[1]=armShift[1]+armImuParamX[1]*(armShiftX-armShift[1])
-  armShift[2]=armShift[2]+armImuParamY[1]*(armShiftY-armShift[2])
-
   --TODO: Toe/heel lifting
   local toeTipCompensation = 0
 
-  if not active then
-    --Double support, standing still
-    --qLegs[2] = qLegs[2] + hipShift[2]    --Hip roll stabilization
-    qLegs[4] = qLegs[4] + kneeShift    --Knee pitch stabilization
-    qLegs[5] = qLegs[5]  + ankleShift[1]    --Ankle pitch stabilization
-    --qLegs[6] = qLegs[6] + ankleShift[2]    --Ankle roll stabilization
+  local delta_legs = vector.zeros(Body.nJointLLeg+Body.nJointRLeg)
 
-    --qLegs[8] = qLegs[8]  + hipShift[2]    --Hip roll stabilization
-    qLegs[10] = qLegs[10] + kneeShift    --Knee pitch stabilization
-    qLegs[11] = qLegs[11]  + ankleShift[1]    --Ankle pitch stabilization
-    --qLegs[12] = qLegs[12] + ankleShift[2]    --Ankle roll stabilization
-
-  elseif supportLeg == 0 then
+  if supportLeg == 0 then
     -- Left support
     local phComp = math.min( 1, phSingle/.1, (1-phSingle)/.1 )
-    qLegs[2] = qLegs[2] + hipShift[2]
-    qLegs[4] = qLegs[4] + kneeShift
-    qLegs[5] = qLegs[5] + ankleShift[1]
-    qLegs[6] = qLegs[6] + ankleShift[2]
-    qLegs[11] = qLegs[11]  + toeTipCompensation*phComp--Lifting toetip
-
---    if initial_step==0 then 
-    if true then
-      qLegs[2] = qLegs[2] + hipRollCompensation*phComp --Hip roll compensation
-    end
+    delta_legs[2] = hipShift[2] + hipRollCompensation*phComp
+    delta_legs[4] = kneeShift
+    delta_legs[5] = ankleShift[1]
+    delta_legs[6] = ankleShift[2]
+    -- right toe tip swing
+    delta_legs[11] = toeTipCompensation*phComp--Lifting toetip
   else
     -- Right support
     local phComp = math.min( 1, phSingle/.1, (1-phSingle)/.1 )
-    qLegs[8]  = qLegs[8]  + hipShift[2]
-    qLegs[10] = qLegs[10] + kneeShift
-    qLegs[11] = qLegs[11] + ankleShift[1]
-    qLegs[12] = qLegs[12] + ankleShift[2]
-
-    qLegs[5] = qLegs[5]  + toeTipCompensation*phComp--Lifting toetip
---    if initial_step==0 then 
-    if true then
-      qLegs[8] = qLegs[8] - hipRollCompensation*phComp--Hip roll compensation
-    end
+    delta_legs[8]  = hipShift[2] - hipRollCompensation*phComp
+    delta_legs[10] = kneeShift
+    delta_legs[11] = ankleShift[1]
+    delta_legs[12] = ankleShift[2]
+    -- left toe tip swing
+    delta_legs[5] = toeTipCompensation*phComp--Lifting toetip
   end
 
-  Body.set_lleg_command_position(qLegs)
+  return delta_legs
+
 end
 
-local function motion_arms()
-  if upper_body_overridden>0 then return end
-  
-  local qLArmActual = vector.zeros(Body.nJointLArm)
-  local qRArmActual = vector.zeros(Body.nJointLArm)
-
-  qLArmActual[1],qLArmActual[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2]
-  qRArmActual[1],qRArmActual[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2]
-
-  if upper_body_overridden>0 or motion_playing>0 then
-    qLArmActual[1],qLArmActual[2],qLArmActual[3]=qLArmOR[1],qLArmOR[2],qLArmOR[3]
-    qRArmActual[1],qRArmActual[2],qRArmActual[3]=qRArmOR[1],qRArmOR[2],qRArmOR[3]
-    qLArmActual[4],qLArmActual[5],qLArmActual[6]=qLArmOR[4],qLArmOR[5],qLArmOR[6]
-    qRArmActual[4],qRArmActual[5],qRArmActual[6]=qRArmOR[4],qRArmOR[5],qRArmOR[6]
-  end
---  qLArmActual[3]=qLArm0[3]
---  qRArmActual[3]=qRArm0[3]
-  Body.set_larm_command_position(qLArmActual)
-  Body.set_rarm_command_position(qRArmActual)
+local function get_arm_feedback(gyro_roll,gyro_pitch,gyro_yaw)
+  -- Arm feedback amount in X/Y directions
+  local armShiftX=util.procFunc(gyro_pitch*armImuParamX[2],armImuParamX[3],armImuParamX[4])
+  local armShiftY=util.procFunc(gyro_roll*armImuParamY[2],armImuParamY[3],armImuParamY[4])
+  armShift[1]=armShift[1]+armImuParamX[1]*(armShiftX-armShift[1])
+  armShift[2]=armShift[2]+armImuParamY[1]*(armShiftY-armShift[2])
+  -- Arm delta to apply to the joints
+  local delta_arms = vector.zeros(Body.nJointLArm)
+  -- First arm joint is roll
+  delta_arms[1] = armShift[1]
+  -- Second arm joint
+  delta_arms[2] = armShift[2]
+  -- TODO: Use IK to shift arms
+  return delta_arms
 end
 
-local function step_left_destination(vel, uLeft, uRight)
+local function step_destination_left(vel, uLeft, uRight)
   local u0 = util.se2_interpolate(.5, uLeft, uRight)
   -- Determine nominal midpoint position 1.5 steps in future
   local u1 = util.pose_global(vel, u0)
@@ -276,7 +213,7 @@ local function step_left_destination(vel, uLeft, uRight)
   return util.pose_global(uLeftRight, uRight)
 end
 
-local function step_right_destination(vel, uLeft, uRight)
+local function step_destination_right(vel, uLeft, uRight)
   local u0 = util.se2_interpolate(.5, uLeft, uRight)
   -- Determine nominal midpoint position 1.5 steps in future
   local u1 = util.pose_global(vel, u0)
@@ -356,6 +293,16 @@ local function zmp_solve(zs, z1, z2, x1, x2)
   return aP, aN
 end
 
+local function compute_zmp()
+  -- Compute ZMP coefficients for the global walk engine
+  m1X = (uSupport[1]-uTorso1[1])/(tStep*ph1Zmp)
+  m2X = (uTorso2[1]-uSupport[1])/(tStep*(1-ph2Zmp))
+  m1Y = (uSupport[2]-uTorso1[2])/(tStep*ph1Zmp)
+  m2Y = (uTorso2[2]-uSupport[2])/(tStep*(1-ph2Zmp))
+  aXP, aXN = zmp_solve(uSupport[1], uTorso1[1], uTorso2[1], uTorso1[1], uTorso2[1])
+  aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2], uTorso1[2], uTorso2[2])
+end
+
 -- Finds the necessary COM for stability and returns it
 -- Globals: tStep, tZmp, uSupport
 -- Globals: coefficients from zmp_solve
@@ -391,6 +338,67 @@ local function foot_phase(ph)
   return xf, zf, phSingle
 end
 
+local function calculate_step()
+  
+  -- Update the velocity via a filter
+  update_velocity()
+
+  -- supportLeg: 0 for left support, 1 for right support
+  supportLeg = iStep % 2
+  uLeft1  = uLeft2
+  uRight1 = uRight2
+  uTorso1 = uTorso2
+
+  --Support Point modulation for walkkick
+  local supportMod = {0,0}
+
+  -- Normal walk, advance steps
+  tStep = tStep0 
+  if supportLeg == 0 then
+    -- Left support
+    uRight2 = step_destination_right(velCurrent, uLeft1, uRight1)
+  else
+    -- Right support
+    uLeft2 = step_destination_left(velCurrent, uLeft1, uRight1)
+  end
+  
+  uTorso2 = step_torso(uLeft2, uRight2, 0.5)
+
+  -- Adjustable initial step body swing
+  if initial_step>0 then 
+    if supportLeg == 0 then
+      -- left
+      supportMod[2]=supportModYInitial
+    else
+      -- right
+      supportMod[2]=-supportModYInitial
+    end
+  end
+
+  -- Apply velocity-based support point modulation for uSupport
+  if supportLeg == 0 then
+    -- left
+    local uLeftTorso = util.pose_relative(uLeft1,uTorso1)
+    local uTorsoModded = util.pose_global(
+      vector.new({supportMod[1],supportMod[2],0}),uTorso)
+    local uLeftModded = util.pose_global (uLeftTorso,uTorsoModded) 
+    uSupport = util.pose_global({supportX, supportY, 0},uLeftModded)
+    Body.set_lleg_hardness(hardnessSupport)
+    Body.set_rleg_hardness(hardnessSwing)
+  else
+    -- right
+    local uRightTorso = util.pose_relative(uRight1,uTorso1)
+    local uTorsoModded = 
+      util.pose_global(vector.new({supportMod[1],supportMod[2],0}),uTorso)
+    local uRightModded = util.pose_global (uRightTorso,uTorsoModded) 
+    uSupport = util.pose_global({supportX, -supportY, 0}, uRightModded)
+    Body.set_lleg_hardness(hardnessSwing)
+    Body.set_rleg_hardness(hardnessSupport)
+  end
+
+  compute_zmp()
+end
+
 ---------------------------
 -- Handle walk requests --
 ---------------------------
@@ -422,11 +430,11 @@ function walk.entry()
   uTorso1, uTorso2 = uTorso, uTorso
   uSupport  = uTorso
   tLastStep = Body.get_time()
-  iStep0 = -1
-  iStep = 0
-  current_step_type=0
-  motion_playing = 0
+  -- Zero the step index
+  iStep = 1
   uLRFootOffset = vector.new({0,footY,0})
+  -- Copmute initial zmp from these foot positions
+  compute_zmp()
 
   --Place arms in appropriate position at sides
 
@@ -443,8 +451,9 @@ function walk.entry()
 
   -- Entry is now the start point
   tLastStep = Body.get_time()
-  iStep0 = -1
   initial_step = 2
+  -- Reset our velocity
+  velCurrent = vector.new{0,0,0}
 
 end
 
@@ -457,6 +466,7 @@ function walk.update()
 
   ------------------------------------------
   -- Check for out of process events
+  -- TODO: May not need this...
   local event, has_more
   repeat
     event, has_more = evts:receive(true)
@@ -476,83 +486,20 @@ function walk.update()
     iStep = iStep + 1
     -- Wrap around the phase
     ph = ph % 1
+    -- Calculate the next step
+    calculate_step()
     -- Update tLastStep to be the next step in the future
     tLastStep = tLastStep + tStep
   end
-
-  -- New step
-  if iStep>iStep0 then
-
-    -- Update the velocity via a filter
-    update_velocity()
-    -- Store the previous step
-    iStep0 = iStep
-    -- supportLeg: 0 for left support, 1 for right support
-    supportLeg = iStep % 2
-    uLeft1  = uLeft2
-    uRight1 = uRight2
-    uTorso1 = uTorso2
-
-    --Support Point modulation for walkkick
-    local supportMod = {0,0}
-
-    --Normal walk, advance steps
-    tStep = tStep0 
-    if supportLeg == 0 then
-      -- Left support
-      uRight2 = step_right_destination(velCurrent, uLeft1, uRight1)
-    else
-      -- Right support
-      uLeft2 = step_left_destination(velCurrent, uLeft1, uRight1)
-    end
-    
-    uTorso2 = step_torso(uLeft2, uRight2, 0.5)
-
-    --Adjustable initial step body swing
-    if initial_step>0 then 
-      if supportLeg == 0 then --LS
-        supportMod[2]=supportModYInitial
-      else --RS
-        supportMod[2]=-supportModYInitial
-      end
-    end
-
-    --Apply velocity-based support point modulation for uSupport
-    if supportLeg == 0 then --LS
-      local uLeftTorso = util.pose_relative(uLeft1,uTorso1)
-      local uTorsoModded = util.pose_global(
-        vector.new({supportMod[1],supportMod[2],0}),uTorso)
-      local uLeftModded = util.pose_global (uLeftTorso,uTorsoModded) 
-      uSupport = util.pose_global({supportX, supportY, 0},uLeftModded)
-      Body.set_lleg_hardness(hardnessSupport)
-      Body.set_rleg_hardness(hardnessSwing)
-    else --RS
-      local uRightTorso = util.pose_relative(uRight1,uTorso1)
-      local uTorsoModded = 
-        util.pose_global(vector.new({supportMod[1],supportMod[2],0}),uTorso)
-      local uRightModded = util.pose_global (uRightTorso,uTorsoModded) 
-      uSupport = util.pose_global({supportX, -supportY, 0}, uRightModded)
-      Body.set_lleg_hardness(hardnessSwing)
-      Body.set_rleg_hardness(hardnessSupport)
-    end
-
-    --Compute ZMP coefficients
-    m1X = (uSupport[1]-uTorso1[1])/(tStep*ph1Zmp)
-    m2X = (uTorso2[1]-uSupport[1])/(tStep*(1-ph2Zmp))
-    m1Y = (uSupport[2]-uTorso1[2])/(tStep*ph1Zmp)
-    m2Y = (uTorso2[2]-uSupport[2])/(tStep*(1-ph2Zmp))
-    aXP, aXN = zmp_solve(uSupport[1], uTorso1[1], uTorso2[1], uTorso1[1], uTorso2[1])
-    aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2], uTorso1[2], uTorso2[2])
-
-  end --End new step
 
   -- See where to place our feet
   local xFoot, zFoot, phSingle = foot_phase(ph)  
   --Don't lift foot at initial step
   if initial_step>0 then zFoot = 0 end
 
-
-  pLLeg[3], pRLeg[3] = 0
+  -- Begin to solve for our leg positions
+  local pLLeg = vector.new{0, footY,0, 0,0,0}
+  local pRLeg = vector.new{0,-footY,0, 0,0,0}
   if supportLeg == 0 then
     -- Left support
     uRight = util.se2_interpolate(xFoot, uRight1, uRight2)
@@ -563,10 +510,12 @@ function walk.update()
     pLLeg[3] = stepHeight*zFoot
   end
 
-  -- Calculate the next desired torso position
+  -- Where does zmp think the torso should be?
   uTorso = zmp_com(ph)
   -- The reference frame is from the right foot, so reframe the torso
   uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
+   -- Calculate the next desired torso position
+  local pTorso = vector.new({supportX, 0, Config.walk.bodyHeight, 0,bodyTilt,0})
   -- The position of the torso, in Transform format is here
   pTorso[1], pTorso[2] = uTorsoActual[1], uTorsoActual[2] 
   -- Add the default angle of the torso in RPY format
@@ -578,11 +527,19 @@ function walk.update()
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3]
   -- Solve the IK for these transforms
   local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg)
+  -- Grab gyro feedback for these joint angles
+  local r,p,y = get_gyro_feedback()
   -- Make the motion commands for the legs
-  motion_legs(qLegs,phSingle)
+  local leg_feedback = get_leg_feedback(phSingle,r,p,y)
+  qLegs = qLegs + leg_feedback
+  -- Send the leg commands
+  Body.set_lleg_command_position(qLegs)
   -- Add arm motion
-  motion_arms()
-
+  if upper_body_overridden==0 then
+    local arm_feedback = get_arm_feedback(r,p,y)
+    Body.set_larm_command_position(qLArm0+arm_feedback)
+    Body.set_rarm_command_position(qRArm0+arm_feedback)
+  end
   ------------------------------------------
   -- Update the status in shared memory
   local uFoot = util.se2_interpolate(.5, uLeft, uRight)
@@ -596,17 +553,15 @@ end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')
-  -- Reset our velocity
-  velCurrent = vector.new{0,0,0}
-  velCommand = vector.new{0,0,0}
 
+  -- These are the desired stopping foot placements
   if supportLeg == 0 then
-        -- Left support
-        uRight2 = util.pose_global(-2*uLRFootOffset, uLeft1)
-      else
-        -- Right support
-        uLeft2 = util.pose_global(2*uLRFootOffset, uRight1)
-      end
+    -- Left support
+    uRight2 = util.pose_global(-2*uLRFootOffset, uLeft1)
+  else
+    -- Right support
+    uLeft2 = util.pose_global(2*uLRFootOffset, uRight1)
+  end
 
 end
 

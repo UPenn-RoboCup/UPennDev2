@@ -71,6 +71,11 @@ local walk = {}
 walk.stanceLimitX = {-0.60,0.60}
 walk.stanceLimitY = {0.16,0.60}
 walk.stanceLimitA = {-10*math.pi/180,30*math.pi/180}
+-- TODO: Toe/heel overlap checking values
+--OP default stance width: 0.0375*2 = 0.075
+--Heel overlap At radian 0.15 at each foot = 0.05*sin(0.15)*2=0.015
+--Heel overlap At radian 0.30 at each foot = 0.05*sin(0.15)*2=0.030
+
 walk.velLimitX = {-.20,.30}
 walk.velLimitY = {-.20,.20}
 walk.velLimitA = {-.3,.3}
@@ -109,22 +114,23 @@ walk.phZmp = {0.15,0.85}
 ------------------------------------
 walk.hipRollCompensation = 1*math.pi/180
 walk.ankleMod = vector.new({-1,0})/ 3*math.pi/180
-walk.supportModYInitial=-0.04 --Reduce initial body swing
+walk.supportModYInitial = -0.04 --Reduce initial body swing
 
 -----------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max --
 -----------------------------------------------------------
 gyroFactor = 0.273*math.pi/180 * 300 / 1024 --dps to rad/s conversion
-
---We won't use gyro feedback on webots
-gyroFactorX = gyroFactor*0
-gyroFactorY = gyroFactor*0
-
+-- We won't use gyro feedback on webots
+gyroFactorX = gyroFactor * 0
+gyroFactorY = gyroFactor * 0
+--
 walk.ankleImuParamX={0.3,0.75*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
-walk.kneeImuParamX={0.3,1.5*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
-
 walk.ankleImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
+--
+walk.kneeImuParamX={0.3,1.5*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
+--
 walk.hipImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
+--
 walk.armImuParamX={1,10*gyroFactorX, 20*math.pi/180, 45*math.pi/180}
 walk.armImuParamY={1,10*gyroFactorY, 20*math.pi/180, 45*math.pi/180}
 

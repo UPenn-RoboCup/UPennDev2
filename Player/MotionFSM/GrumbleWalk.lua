@@ -8,6 +8,8 @@ local K      = Body.Kinematics
 local vector = require'vector'
 local unix   = require'unix'
 local util   = require'util'
+local libZMP = require'libZMP'
+local zmp_solver
 require'mcm'
 -- Simple IPC for remote state triggers
 local simple_ipc = require'simple_ipc'
@@ -295,7 +297,6 @@ local function zmp_solve(zs, z1, z2, x1, x2, walk_params )
   return aP, aN
 end
 
--- walk_params: {tStep, tZMP, ph1, ph2}
 local function compute_zmp( walk_params )
   -- Compute ZMP coefficients for the global walk engine
   m1X = (uSupport[1]-uTorso1[1])/(tStep*ph1Zmp)
@@ -327,9 +328,6 @@ local function zmp_com(ph)
     com[2] = com[2] + m2Y*tStep*(ph-ph2Zmp)
     -tZmp*m2Y*math.sinh(tStep*(ph-ph2Zmp)/tZmp)
   end
-  --com[3] = .5*(uLeft[3] + uRight[3])
-  --Linear speed turning
-  com[3] = ph* (uLeft2[3]+uRight2[3])/2 + (1-ph)* (uLeft1[3]+uRight1[3])/2
   return com
 end
 
@@ -405,6 +403,8 @@ local function calculate_step()
     Body.set_rleg_hardness(hardnessSupport)
   end
 
+  zmp_solver:compute(uSupport,uTorso1,uTorso2)
+
   compute_zmp()
 end
 
@@ -420,7 +420,6 @@ end
 ---------------------------
 -- State machine methods --
 ---------------------------
-
 function walk.entry()
   print(walk._NAME..' Entry' )
   -- Update the time of entry
@@ -464,6 +463,15 @@ function walk.entry()
   initial_step = 2
   -- Reset our velocity
   velCurrent = vector.new{0,0,0}
+
+  -- Make our solver
+  zmp_solver = libZMP.new_solver({
+    ['tStep'] = tStep,
+    ['tZMP'] = tZmp,
+    ['start_phase'] = ph1Single,
+    ['finish_phase'] = ph2Single,
+    })
+  zmp_solver:compute(uSupport,uTorso1, uTorso2)
 
 end
 
@@ -522,6 +530,12 @@ function walk.update()
 
   -- Where does zmp think the torso should be?
   uTorso = zmp_com(ph)
+  local uTorso_steve = zmp_solver:get_com(ph)
+  print('zmp com',uTorso,uTorso_steve)
+  -- Adjust the angle
+  --com[3] = .5*(uLeft[3] + uRight[3])
+  --Linear speed turning
+  uTorso[3] = ph* (uLeft2[3]+uRight2[3])/2 + (1-ph)* (uLeft1[3]+uRight1[3])/2
   -- The reference frame is from the right foot, so reframe the torso
   uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   -- Grab gyro feedback for these joint angles

@@ -405,7 +405,7 @@ local function calculate_step()
 
   zmp_solver:compute(uSupport,uTorso1,uTorso2)
 
-  compute_zmp()
+  --compute_zmp()
 end
 
 ---------------------------
@@ -439,7 +439,7 @@ function walk.entry()
   uSupport  = uTorso
   
   -- Compute initial zmp from these foot positions
-  compute_zmp()
+  --compute_zmp()
 
     -- Zero the step index
   iStep = 1
@@ -529,9 +529,9 @@ function walk.update()
   end
 
   -- Where does zmp think the torso should be?
-  uTorso = zmp_com(ph)
-  local uTorso_steve = zmp_solver:get_com(ph)
-  print('zmp com',uTorso,uTorso_steve)
+  --uTorso = zmp_com(ph)
+  local uTorso = zmp_solver:get_com(ph)
+  --print('zmp com',uTorso,uTorso_steve)
   -- Adjust the angle
   --com[3] = .5*(uLeft[3] + uRight[3])
   --Linear speed turning

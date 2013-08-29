@@ -100,8 +100,6 @@ local pRLeg  = vector.new({0, -footY, 0, 0,0,0})
 local pTorso = vector.new({supportX, 0, bodyHeight, 0,bodyTilt,0})
 
 local velCurrent = vector.new({0, 0, 0})
-local velCommand = vector.new({0, 0, 0})
-local velDiff = vector.new({0, 0, 0})
 
 -- ZMP exponential coefficients:
 local aXP, aXN, aYP, aYN = 0, 0, 0, 0
@@ -303,26 +301,40 @@ local function step_right_destination(vel, uLeft, uRight)
 end
 
 local function update_velocity()
-  velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
-    -velDelta[1]),velDelta[1])
-  velDiff[2]= math.min(math.max(velCommand[2]-velCurrent[2],
-  -velDelta[2]),velDelta[2])
-  velDiff[3]= math.min(math.max(velCommand[3]-velCurrent[3],
-  -velDelta[3]),velDelta[3])
-
-  velCurrent[1] = velCurrent[1]+velDiff[1]
-  velCurrent[2] = velCurrent[2]+velDiff[2]
-  velCurrent[3] = velCurrent[3]+velDiff[3]
-
+  -- If our first step(s), then use zero velocity
   if initial_step>0 then
-    velCurrent=vector.new({0,0,0})
+    velCurrent=vector.new{0,0,0}
     initial_step=initial_step-1
+    return
   end
-
+  -- Grab from the shared memory the desired walking speed
+  local vx,vy,va = unpack(mcm.get_walk_vel())
+  --Filter the commanded speed
+  vx = math.min(math.max(vx,velLimitX[1]),velLimitX[2])
+  vy = math.min(math.max(vy,velLimitY[1]),velLimitY[2])
+  va = math.min(math.max(va,velLimitA[1]),velLimitA[2])
+  -- Find the magnitude of the velocity
+  local stepMag = math.sqrt(vx^2+vy^2)
+  --Slow down when turning
+  local vFactor   = 1-math.abs(va)/vaFactor
+  local magFactor = math.min(velLimitX[2]*vFactor,stepMag)/(stepMag+0.000001)
+  -- Limit the forwards and backwards velocity
+  vx = math.min(math.max(vx*magFactor,velLimitX[1]),velLimitX[2])
+  vy = math.min(math.max(vy*magFactor,velLimitY[1]),velLimitY[2])
+  va = math.min(math.max(va,velLimitA[1]),velLimitA[2])
+  -- Check the change in the velocity
+  local velDiff = vector.new({vx,vy,va}) - velCurrent
+  -- Limit the maximum velocity change PER STEP
+  velDiff[1] = util.procFunc(velDiff[1],0,velDelta[1])
+  velDiff[2] = util.procFunc(velDiff[2],0,velDelta[2])
+  velDiff[3] = util.procFunc(velDiff[3],0,velDelta[3])
+  -- Update the current velocity command
+  velCurrent = velCurrent + velDiff
   -- Save the updated velocity to shared memory
   mcm.set_status_velocity(velCurrent)
-
-  --  print(string.format("VEL:%.2f,%.2f,%.2f",unpack(velCurrent)))
+  -- Print a debugging message
+  local debug = string.format("%g, %g, %g -> %g, %g, %g",vx,vy,va,unpack(velCurrent))
+  print( util.color('Walk velocity','blue'), debug )
 end
 
 local function zmp_solve(zs, z1, z2, x1, x2)
@@ -384,30 +396,8 @@ end
 ---------------------------
 local walk_requests = {}
 -- Setting velocity
-walk_requests.set_velocity = function()
-
-  -- Grab from the shared memory
-  local vx,vy,va = unpack(mcm.get_walk_vel())
-  print( util.color('Walk velocity','blue'), vx,vy,va )
-
-  --Filter the commanded speed
-  vx = math.min(math.max(vx,velLimitX[1]),velLimitX[2])
-  vy = math.min(math.max(vy,velLimitY[1]),velLimitY[2])
-  va = math.min(math.max(va,velLimitA[1]),velLimitA[2])
-
-  --Slow down when turning
-  vFactor = 1-math.abs(va)/vaFactor
-
-  local stepMag=math.sqrt(vx^2+vy^2)
-  local magFactor=math.min(velLimitX[2]*vFactor,stepMag)/(stepMag+0.000001)
-
-  velCommand[1] = vx*magFactor
-  velCommand[2] = vy*magFactor
-  velCommand[3] = va
-
-  velCommand[1] = math.min(math.max(velCommand[1],velLimitX[1]),velLimitX[2])
-  velCommand[2] = math.min(math.max(velCommand[2],velLimitY[1]),velLimitY[2])
-  velCommand[3] = math.min(math.max(velCommand[3],velLimitA[1]),velLimitA[2])
+walk_requests.some_request = function()
+  print('some request')
 end
 
 ---------------------------

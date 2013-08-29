@@ -38,9 +38,6 @@ function state.update()
 
   -- Propagate to shared memory
   mcm.set_walk_vel(h_vel)
-
-  -- Tell the walk engine to update the velocity
-  local ret = walk_ch:send('set_velocity')
 end
 
 function state.exit()

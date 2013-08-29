@@ -97,6 +97,7 @@ local armShift   = vector.new({0, 0})
 local tLastStep = Body.get_time()
 local ph  = 0
 
+-- Still have an initial step for now
 local initial_step = 2
 local upper_body_overridden = 0
 
@@ -274,7 +275,8 @@ local function update_velocity()
   print( util.color('Walk velocity','blue'), debug )
 end
 
-local function zmp_solve(zs, z1, z2, x1, x2)
+-- walk_params: {tStep, tZMP, ph1, ph2}
+local function zmp_solve(zs, z1, z2, x1, x2, walk_params )
   --[[
   Solves ZMP equation:
   x(t) = z(t) + aP*exp(t/tZmp) + aN*exp(-t/tZmp) - tZmp*mi*sinh((t-Ti)/tZmp)
@@ -293,14 +295,17 @@ local function zmp_solve(zs, z1, z2, x1, x2)
   return aP, aN
 end
 
-local function compute_zmp()
+-- walk_params: {tStep, tZMP, ph1, ph2}
+local function compute_zmp( walk_params )
   -- Compute ZMP coefficients for the global walk engine
   m1X = (uSupport[1]-uTorso1[1])/(tStep*ph1Zmp)
   m2X = (uTorso2[1]-uSupport[1])/(tStep*(1-ph2Zmp))
+  aXP, aXN = zmp_solve(uSupport[1], uTorso1[1], uTorso2[1], uTorso1[1], uTorso2[1], walk_params)
+  --
   m1Y = (uSupport[2]-uTorso1[2])/(tStep*ph1Zmp)
-  m2Y = (uTorso2[2]-uSupport[2])/(tStep*(1-ph2Zmp))
-  aXP, aXN = zmp_solve(uSupport[1], uTorso1[1], uTorso2[1], uTorso1[1], uTorso2[1])
-  aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2], uTorso1[2], uTorso2[2])
+  m2Y = (uTorso2[2]-uSupport[2])/(tStep*(1-ph2Zmp))  
+  aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2], uTorso1[2], uTorso2[2], walk_params)
+  return {m1X,m2X,aXP,aXN}, {m1Y,m2Y,aYP,aYN}
 end
 
 -- Finds the necessary COM for stability and returns it
@@ -340,30 +345,34 @@ end
 
 local function calculate_step()
   
-  -- Update the velocity via a filter
-  update_velocity()
-
+  -- Advance the steps to find the next desired torso position
+  -- Increment the step index
+  iStep = iStep + 1
   -- supportLeg: 0 for left support, 1 for right support
   supportLeg = iStep % 2
+
+  -- Reset the time between steps
+  tStep = tStep0
+
+  -- Save the previous desired foot positions as the current foot positions
+  -- TODO: Some feedback could get the uLeft/uRight perfectly correct
   uLeft1  = uLeft2
   uRight1 = uRight2
-  uTorso1 = uTorso2
-
-  --Support Point modulation for walkkick
-  local supportMod = {0,0}
-
-  -- Normal walk, advance steps
-  tStep = tStep0 
   if supportLeg == 0 then
     -- Left support
     uRight2 = step_destination_right(velCurrent, uLeft1, uRight1)
   else
     -- Right support
-    uLeft2 = step_destination_left(velCurrent, uLeft1, uRight1)
+    uLeft2  = step_destination_left(velCurrent, uLeft1, uRight1)
   end
   
+  -- This torso position is the prior desired torso position
+  uTorso1 = uTorso2
+  -- This is the next desired torso position
   uTorso2 = step_torso(uLeft2, uRight2, 0.5)
 
+  --Support Point modulation for walkkick
+  local supportMod = {0,0}
   -- Adjustable initial step body swing
   if initial_step>0 then 
     if supportLeg == 0 then
@@ -429,12 +438,13 @@ function walk.entry()
   uRight1, uRight2 = uRight, uRight
   uTorso1, uTorso2 = uTorso, uTorso
   uSupport  = uTorso
-  tLastStep = Body.get_time()
-  -- Zero the step index
+  
+  -- Compute initial zmp from these foot positions
+  compute_zmp()
+
+    -- Zero the step index
   iStep = 1
   uLRFootOffset = vector.new({0,footY,0})
-  -- Copmute initial zmp from these foot positions
-  compute_zmp()
 
   --Place arms in appropriate position at sides
 
@@ -482,10 +492,10 @@ function walk.update()
   -- Grab our phase for the current tStep
   local ph = (t-tLastStep)/tStep
   if ph>1 then
-    -- Increment the step index when past 100% phase
-    iStep = iStep + 1
     -- Wrap around the phase
     ph = ph % 1
+    -- Update the velocity via a filter
+    update_velocity()
     -- Calculate the next step
     calculate_step()
     -- Update tLastStep to be the next step in the future
@@ -514,6 +524,9 @@ function walk.update()
   uTorso = zmp_com(ph)
   -- The reference frame is from the right foot, so reframe the torso
   uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
+  -- Grab gyro feedback for these joint angles
+  local r,p,y = get_gyro_feedback()
+
    -- Calculate the next desired torso position
   local pTorso = vector.new({supportX, 0, Config.walk.bodyHeight, 0,bodyTilt,0})
   -- The position of the torso, in Transform format is here
@@ -522,13 +535,12 @@ function walk.update()
   pTorso[4], pTorso[5],pTorso[6] = 0, bodyTilt, 0
   -- The yaw angle should include the default body angle and the yaw swing of the torso
   pTorso[6] = pTorso[6] + uTorsoActual[3]
+
   -- Find the transform of the legs, from the torso information
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3]
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3]
   -- Solve the IK for these transforms
   local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg)
-  -- Grab gyro feedback for these joint angles
-  local r,p,y = get_gyro_feedback()
   -- Make the motion commands for the legs
   local leg_feedback = get_leg_feedback(phSingle,r,p,y)
   qLegs = qLegs + leg_feedback

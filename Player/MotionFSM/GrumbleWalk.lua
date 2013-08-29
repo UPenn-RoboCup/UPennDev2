@@ -118,7 +118,6 @@ local iStep0  = -1
 local iStep   = 0
 local tLastStep = Body.get_time()
 local ph  = 0
-local phSingle = 0
 
 local stopRequest  = 2
 local initial_step = 2
@@ -365,10 +364,12 @@ local function zmp_solve(zs, z1, z2, x1, x2)
   return aP, aN
 end
 
---Finds the necessary COM for stability and returns it
+-- Finds the necessary COM for stability and returns it
+-- Globals: tStep, tZmp, uSupport
+-- Globals: coefficients from zmp_solve
 local function zmp_com(ph)
-  local com = vector.new({0, 0, 0})
-  local expT = math.exp(tStep*ph/tZmp)
+  local com = vector.new{0, 0, 0}
+  local expT = math.exp( ph * tStep/tZmp )
   com[1] = uSupport[1] + aXP*expT + aXN/expT
   com[2] = uSupport[2] + aYP*expT + aYN/expT
   if ph < ph1Zmp then
@@ -376,7 +377,7 @@ local function zmp_com(ph)
     -tZmp*m1X*math.sinh(tStep*(ph-ph1Zmp)/tZmp)
     com[2] = com[2] + m1Y*tStep*(ph-ph1Zmp)
     -tZmp*m1Y*math.sinh(tStep*(ph-ph1Zmp)/tZmp)
-  elseif (ph > ph2Zmp) then
+  elseif ph > ph2Zmp then
     com[1] = com[1] + m2X*tStep*(ph-ph2Zmp)
     -tZmp*m2X*math.sinh(tStep*(ph-ph2Zmp)/tZmp)
     com[2] = com[2] + m2Y*tStep*(ph-ph2Zmp)
@@ -384,7 +385,7 @@ local function zmp_com(ph)
   end
   --com[3] = .5*(uLeft[3] + uRight[3])
   --Linear speed turning
-  com[3] = ph* (uLeft2[3]+uRight2[3])/2 + (1-ph)* (uLeft1[3]+uRight1[3])/2
+  com[3] = util.se2_interpolate(ph,uLeft1[3]+uRight1[3],uLeft2[3]+uRight2[3]) / 2
   return com
 end
 
@@ -533,7 +534,8 @@ function walk.update()
 
     update_velocity()
     iStep0 = iStep
-    supportLeg = iStep % 2 -- 0 for left support, 1 for right support
+    -- supportLeg: 0 for left support, 1 for right support
+    supportLeg = iStep % 2
     uLeft1  = uLeft2
     uRight1 = uRight2
     uTorso1 = uTorso2
@@ -602,27 +604,29 @@ function walk.update()
     m2X = (uTorso2[1]-uSupport[1])/(tStep*(1-ph2Zmp))
     m1Y = (uSupport[2]-uTorso1[2])/(tStep*ph1Zmp)
     m2Y = (uTorso2[2]-uSupport[2])/(tStep*(1-ph2Zmp))
-    aXP, aXN = zmp_solve(uSupport[1], uTorso1[1], uTorso2[1],
-    uTorso1[1], uTorso2[1])
-    aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2],
-    uTorso1[2], uTorso2[2])
+    aXP, aXN = zmp_solve(uSupport[1], uTorso1[1], uTorso2[1], uTorso1[1], uTorso2[1])
+    aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2], uTorso1[2], uTorso2[2])
 
   end --End new step
 
+  -- See where to place our feet
   local xFoot, zFoot, phSingle = foot_phase(ph)  
-  if initial_step>0 then zFoot=0  end --Don't lift foot at initial step
+  --Don't lift foot at initial step
+  if initial_step>0 then zFoot = 0 end
+
+
   pLLeg[3], pRLeg[3] = 0
-  if supportLeg == 0 then    -- Left support
+  if supportLeg == 0 then
+    -- Left support
     uRight = util.se2_interpolate(xFoot, uRight1, uRight2)
     pRLeg[3] = stepHeight*zFoot
-  else    -- Right support
+  else
+    -- Right support
     uLeft = util.se2_interpolate(xFoot, uLeft1, uLeft2)
     pLLeg[3] = stepHeight*zFoot
   end
-  
-  -- Save the old torso position
-  local uTorsoOld = uTorso
-  -- Calculate teh next desired torso position
+
+  -- Calculate the next desired torso position
   uTorso = zmp_com(ph)
   -- The reference frame is from the right foot, so reframe the torso
   uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)

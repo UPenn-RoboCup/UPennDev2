@@ -1,9 +1,9 @@
-module(..., package.seeall);
-
-local shm = require('shm');
-local util = require('util');
-local vector = require('vector');
-local Config = require('Config');
+--------------------------------
+-- World Communication Module
+-- (c) 2013 Stephen McGill
+--------------------------------
+local vector = require'vector'
+local memory = require'memory'
 
 -- shared properties
 local shared = {};
@@ -190,7 +190,7 @@ if listen_monitor>0 then
 
 end
 
-util.init_shm_segment(..., shared, shsize);
+memory.init_shm_segment(..., shared, shsize);
 
 -- helper functions for access the data in the same manner as World
 

@@ -26,7 +26,7 @@ function state.entry()
   t_finish = t
   
   -- Grab the desired final torso and feet positions for stance
-  pTorsoTarget = vector.new({-Config.walk.footX, 0, Config.walk.bodyHeight, 
+  pTorsoTarget = vector.new({-Config.walk.torsoX, 0, Config.walk.bodyHeight, 
   0,Config.walk.bodyTilt,0})
   pLLeg = vector.new({-Config.walk.supportX, Config.walk.footY, 0, 0,0,0})
   pRLeg = vector.new({-Config.walk.supportX, -Config.walk.footY, 0, 0,0,0})
@@ -63,8 +63,8 @@ function state.update()
   
   -- Acquire the joint positions of our legs
   if not started then
-    local qLLeg  = Body.get_lleg_position()
-    local qRLeg  = Body.get_rleg_position()
+    local qLLeg = Body.get_lleg_position()
+    local qRLeg = Body.get_rleg_position()
     Body.set_lleg_command_position(qLLeg)
     Body.set_rleg_command_position(qRLeg)
     

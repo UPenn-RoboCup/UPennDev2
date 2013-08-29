@@ -67,47 +67,49 @@ local walk = {}
 ------------------------------------
 -- Stance and velocity limit values
 ------------------------------------
-walk.stanceLimitX={-0.60,0.60}
-walk.stanceLimitY={0.16,0.60}
-walk.stanceLimitA={-10*math.pi/180,30*math.pi/180}
-walk.velLimitX={-.20,.20}
-walk.velLimitY={-.10,.10}
-walk.velLimitA={-.2,.2}
-walk.velDelta={0.10,0.10,0.3} 
+-- NOTE: Large stride test (up to 300mm)
+walk.stanceLimitX = {-0.60,0.60}
+walk.stanceLimitY = {0.16,0.60}
+walk.stanceLimitA = {-10*math.pi/180,30*math.pi/180}
+walk.velLimitX = {-.20,.30}
+walk.velLimitY = {-.20,.20}
+walk.velLimitA = {-.3,.3}
+walk.velDelta  = {0.15,0.10,0.3}
 
 ------------------------------------
 -- Stance parameters
 ------------------------------------
-walk.bodyHeight = 0.75 
-walk.bodyTilt=4*math.pi/180 
-walk.footX= 0.01 
-walk.footY = 0.09
-walk.supportX = 0
-walk.supportY = 0.0
+walk.bodyHeight = 1.15
+walk.bodyTilt = 0*math.pi/180
+-- footX is deprecated in favor of torsoX
+walk.torsoX = 0.00
+walk.footY = 0.10
+walk.supportX = 0.03
+walk.supportY = 0.02
 walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40,0,0})
 walk.qRArm = math.pi/180*vector.new({110, -12, 0, -40,0,0})
 
 walk.qLArmKick = math.pi/180*vector.new({110, 12, -0, -40,0,0})
 walk.qRArmKick = math.pi/180*vector.new({110, -12, 0, -40,0,0})
 
-
 walk.hardnessSupport = 1
 walk.hardnessSwing = 1
-walk.hardnessArm=.1
+walk.hardnessArm = .1
 ------------------------------------
 -- Gait parameters
 ------------------------------------
-walk.tStep = 1.0
-walk.tZmp = 0.25
-walk.stepHeight = 0.06
-walk.phSingle={0.1,0.9}
-walk.phZmp={0.1,0.9}
+walk.stepHeight = 0.052
+walk.tZmp = 0.30 --Com height 0.9
+walk.tStep = 0.8
+walk.phSingle = {0.15,0.85}
+walk.phZmp = {0.15,0.85}
 
 ------------------------------------
 -- Compensation parameters
 ------------------------------------
-walk.hipRollCompensation = 0*math.pi/180
+walk.hipRollCompensation = 1*math.pi/180
 walk.ankleMod = vector.new({-1,0})/ 3*math.pi/180
+walk.supportModYInitial=-0.04 --Reduce initial body swing
 
 -----------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max --
@@ -129,72 +131,11 @@ walk.armImuParamY={1,10*gyroFactorY, 20*math.pi/180, 45*math.pi/180}
 ------------------------------------
 -- WalkKick parameters
 ------------------------------------
-
 walk.walkKickDef={}
-
----------------------------------------------
--- Robot - specific calibration parameters --
----------------------------------------------
-
-walk.kickXComp = 0
-walk.supportCompL = {0,0,0}
-walk.supportCompR = {0,0,0}
-
-walk.kickXComp = 0
-walk.supportCompL = {0,0,0}
-walk.supportCompR = {0,0,0}
-walk.servoBias = {0,0,0,0,0,0,0,0,0,0,0,0}
-walk.footXComp = 0
-walk.footYComp = 0
-
---Default pitch angle offset of Charli 
-walk.headPitchBias = 0* math.pi / 180 
-
---webots thor-op values
-walk.bodyHeight = 1.15 
-walk.footX= 0.00  --depreciated now
-walk.torsoX = 0.00 --Now use this... torsoX is -footX 
-walk.footY = 0.07
-
-walk.supportX = 0.03
-walk.supportY = 0.04
-walk.bodyTilt = 0*math.pi/180
-
---walk.tZmp = 0.26 --Com height 0.65
---walk.tZmp = 0.34 --Com height 1.15
---walk.tZmp = 0.32 --Com height 1.0
-walk.tZmp = 0.30 --Com height 0.9
-
-walk.tStep = 0.8
-walk.stepHeight = 0.052
-walk.phSingle = {0.15,0.85}
-walk.phZmp = {0.15,0.85}
-walk.hipRollCompensation = 3*math.pi/180
-
-walk.supportModYInitial=-0.04 --Reduce initial body swing
-
---Large stride test (up to 300mm)
-walk.velLimitX={-.20,.30}
-walk.stanceLimitX={-0.60,0.60}
-walk.stanceLimitY={0.16,0.60}
-
-walk.velLimitY={-.20,.20}
-walk.velLimitA={-.3,.3}
-walk.velDelta={0.15,0.10,0.3} 
-walk.velXHigh = 0.30
-
-
-------------------------------------
--- Robotis THOR-OP values
-
-walk.stepHeight = 0.052
-walk.supportY = 0.02
-walk.footY = 0.10
-walk.hipRollCompensation = 1*math.pi/180
 
 ------------------------------------
 -- Sit/stand stance parameters
--- Never sit down!
+-- NOTE: Never sit down!
 
 local stance={}
 stance.enable_sit = false

@@ -27,12 +27,27 @@ shared_data.motion.estop = vector.zeros(1)
 --------------------------------
 -- Task specific information
 --------------------------------
+-- Wheel/Valve
 shared_data.wheel = {}
 shared_data.wheel.pos        = vector.new({.3,0,.1})
 shared_data.wheel.radius     = vector.new({.15})
 shared_data.wheel.yawangle   = vector.zeros(1)
 shared_data.wheel.pitchangle = vector.zeros(1)
 shared_data.wheel.turnangle  = vector.zeros(1)
+-- Door Opening
+shared_data.door = {}
+shared_data.door.hinge_pos  = vector.new({.2,0,.1})
+-- What is the position of the handle axis
+-- What angle from the horizon is the handle
+-- What is the length of the handle
+-- {axis_x,axis_y,axis_z, angle, length}
+shared_data.door.handle = vector.new{0.4,-0.2,0.1, math.pi/2, .1 }
+-- How much to open the door
+shared_data.door.open_ang   = vector.zeros(1)
+-- Which hand opens the door?
+-- 0: left
+-- 1: right
+shared_data.door.hand   = vector.zeros(1)
 
 -- Call the initializer
 memory.init_shm_segment(..., shared_data, shared_data_sz)

@@ -23,7 +23,7 @@ function util.min(t)
   local imin = 0
   local tmin = math.huge
   for i=1,#t do
-    v = t[i]
+    local v = t[i]
     if v < tmin then
       tmin = v
       imin = i
@@ -38,7 +38,7 @@ function util.max(t)
   local imax = 0
   local tmax = -math.huge
   for i=1,#t do
-    v = t[i]
+    local v = t[i]
     if v > tmax then
       tmax = v
       imax = i

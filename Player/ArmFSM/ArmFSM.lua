@@ -19,15 +19,21 @@ local armReady = require'armReady'
 local sm = fsm.new(armIdle,armInit,armInitReady,armReady)
 --
 
+-- Direct teleop override
+local armTeleop = require'armTeleop'
+sm:add_state(armTeleop)
+
 -- Wheel specific states
 local armWheelGrip = require'armWheelGrip'
 local armWheelTurn = require'armWheelTurn'
 sm:add_state(armWheelGrip)
 sm:add_state(armWheelTurn)
 
--- Direct teleop override
-local armTeleop = require'armTeleop'
-sm:add_state(armTeleop)
+-- Door specific states
+local armDoorGrip = require'armDoorGrip'
+--local armDoorTurn = require'armDoorTurn'
+sm:add_state(armDoorGrip)
+--sm:add_state(armDoorTurn)
 
 ----------
 -- Event types
@@ -74,8 +80,9 @@ sm:set_transition(armReady, 'done', armIdle, function()
   sm:set_transition(armIdle, 'ready', armReady)
   -- Manipulation ability!
   -- TODO: How to remove (prune) this functionality when back in init?
-  sm:set_transition(armIdle, 'wheelgrab', armWheelGrip)
   sm:set_transition(armIdle, 'teleop', armTeleop)
+  sm:set_transition(armIdle, 'wheelgrab', armWheelGrip)
+  sm:set_transition(armIdle, 'doorgrab', armDoorGrip)
 end)
 --
 sm:set_transition(armWheelGrip, 'reset', armReady)
@@ -83,10 +90,12 @@ sm:set_transition(armWheelGrip, 'done', armWheelTurn)
 --
 sm:set_transition(armWheelTurn, 'reset', armReady)
 --
+sm:set_transition(armDoorGrip, 'reset', armTeleop)
+sm:set_transition(armDoorGrip, 'done', armTeleop)
 -- TODO: This may not be the best
 -- We may wish to give ready and init
 -- TODO: make epi transitions for reset
-sm:set_transition(armTeleop, 'reset', armInit)
+sm:set_transition(armTeleop, 'reset', armInitReady)
 
 -- Setup the FSM object
 local obj = {}

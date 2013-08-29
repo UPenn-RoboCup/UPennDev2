@@ -72,6 +72,16 @@ shsize.kinect      = shared.kinect.lut + 2^16
 --shsize.kinect      = shared.kinect.color + shared.kinect.depth + shared.kinect.lut + 2^16
 
 ------------------------
+-- Ultrasound
+shared.us = {}
+shared.us.left      = vector.zeros(10)
+shared.us.right     = vector.zeros(10)
+shared.us.obstacles = vector.zeros(2)
+shared.us.free      = vector.zeros(2)
+shared.us.dSum      = vector.zeros(2)
+shared.us.distance  = vector.zeros(2)
+
+------------------------
 -- Initialize the segment
 memory.init_shm_segment(..., shared, shsize)
 

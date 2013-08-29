@@ -115,12 +115,12 @@ function entry(self)
 end
 
 function update(self)
-  local ret
+  local ret, event
   local state = self.currentState
 
   -- if no nextState update current state:
   if not self.nextState then
-    local ret = state.update()
+    ret = state.update()
     -- add ret from state to events:
     if ret then
       self.events[#self.events+1] = ret
@@ -128,7 +128,7 @@ function update(self)
 
     -- process events
     for i = 1,#self.events do
-      local event = self.events[i]
+      event = self.events[i]
       if self.transitions[state][event] then
         self.nextState = self.transitions[state][event]
         self.nextAction = self.actions[state][event]
@@ -140,10 +140,12 @@ function update(self)
 
   -- check and enter next state
   if self.nextState then
-    state.exit()
+    -- Give the exit return to the function
+    local exit_val = state.exit(event)
 
+    -- The function can make changes to the exit_val
     if self.nextAction then
-      ret = self.nextAction()
+      exit_val = self.nextAction(exit_val) or exit_val
       self.nextAction = nil
     end
 
@@ -151,8 +153,8 @@ function update(self)
     self.currentState = self.nextState
     
     self.nextState = nil
-    self.currentState.entry()
-    if (self.state_debug_handle) then
+    self.currentState.entry(exit_val)
+    if self.state_debug_handle then
       self.state_debug_handle(self.currentState._NAME)
     end
   end

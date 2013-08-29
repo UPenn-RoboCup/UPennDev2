@@ -29,10 +29,14 @@ local char_to_event = {
   ['t'] = {'BodyFSM','teleop'},
   --
   ['a'] = {'ArmFSM','init'},
-  ['r'] = {'ArmFSM','ready'},
   ['s'] = {'ArmFSM','reset'},
+  ['r'] = {'ArmFSM','ready'},
+  --
+  ['x'] = {'ArmFSM','teleop'},
+  --
   ['w'] = {'ArmFSM','wheelgrab'},
-  ['x'] = {'ArmFSM','teleop'}
+  --
+  ['d'] = {'ArmFSM','doorgrab'},
 }
 
 local char_to_vel = {

@@ -8,11 +8,13 @@ local motionIdle   = require'motionIdle'
 local motionFall   = require'motionFall'
 local motionWalk   = require(Config.dev.walk)
 local motionStance = require'motionStance'
+local motionStep   = require'motionStep'
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
 local sm = fsm.new( motionIdle, motionStance, motionFall )
 sm:add_state(motionWalk)
+sm:add_state(motionStep)
 
 -- Setup the transitions for this FSM
 sm:set_transition(motionIdle, 'stand', motionStance )
@@ -22,6 +24,7 @@ sm:set_transition(motionStance, 'done', motionIdle, function(exit_val)
   -- These foot positions *should* be in shared memory though
   -- Initially, the walk event is disallowed, since we do not know our configuration
   sm:set_transition(motionIdle, 'walk', motionWalk )
+  sm:set_transition(motionIdle, 'step', motionStep )
 end)
 --
 sm:set_transition(motionWalk, 'stand', motionStance, function(exit_val)
@@ -29,6 +32,7 @@ sm:set_transition(motionWalk, 'stand', motionStance, function(exit_val)
   -- These foot positions *should* be in shared memory though
 end)
 
+sm:set_transition(motionStep, 'done', motionIdle )
 
 
 

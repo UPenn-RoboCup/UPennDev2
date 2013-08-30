@@ -30,8 +30,8 @@ shared.status = {}
 shared.status.velocity   = vector.zeros(3)
 shared.status.odometry   = vector.zeros(3)
 shared.status.bodyOffset = vector.zeros(3)
-shared.walk.uLeft        = vector.zeros(3)
-shared.walk.uRight       = vector.zeros(3)
+shared.status.uLeft      = vector.zeros(3)
+shared.status.uRight     = vector.zeros(3)
 shared.status.falling    = vector.zeros(1)
 
 memory.init_shm_segment(..., shared, shsize)

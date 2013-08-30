@@ -1,6 +1,6 @@
 --THOR-OP specific (FOR 6DOF ARM)
 local walk = {}
-walk._NAME = 'GrumbleWalk'
+walk._NAME = 'motionStep'
 
 local Config = require'Config'
 local Body   = require'Body'
@@ -394,6 +394,7 @@ function walk.update()
   -- SJ: Variable tStep support for walkkick
   -- Grab the phase of the current step
   local ph = (t-t_last_step)/zmp_solver.tStep
+  if initial_step==0 then return'done' end
   if ph>1 then
     -- TODO: reset the tStep, if variable
     -- can get it from mcm?
@@ -440,9 +441,7 @@ function walk.update()
   -- Where does zmp think the swing foot should be?
   local xFoot, zFoot, phSingle = zmp_solver:get_foot(ph)  
   --Don't lift foot at initial step
-  if initial_step>0 then
-    zFoot = 0
-  end
+  if initial_step>1 then zFoot = 0 end
 
   -- Begin to solve for our leg positions
   local pLLeg = vector.new{0, footY,0, 0,0,0}

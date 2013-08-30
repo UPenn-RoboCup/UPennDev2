@@ -289,50 +289,46 @@ local function calculate_step( supportLeg )
   -- This torso position is the prior desired torso position
   uTorso1 = uTorso2
 
-
   if supportLeg == 0 then
     -- Left support
-    uRight2 = step_destination_right(velCurrent, uLeft1, uRight1)
+    -- Find the left support point
+    uSupport = util.pose_global({supportX, supportY, 0}, uLeft1)
+    -- Find the right foot destination
+    uRight2  = step_destination_right(velCurrent, uLeft1, uRight1)
   else
     -- Right support
-    uLeft2  = step_destination_left(velCurrent, uLeft1, uRight1)
+    -- Find the right support point
+    uSupport = util.pose_global({supportX, -supportY, 0}, uRight1)
+    -- Find the left foot destination
+    uLeft2   = step_destination_left(velCurrent, uLeft1, uRight1)
   end
-  
-  -- This is the next desired torso position
-  uTorso2 = step_torso(uLeft2, uRight2, 0.5)
 
-  --Support Point modulation for walkkick
-  local supportMod = {0,0,0}
   -- Adjustable initial step body swing
-  if initial_step>0 then 
+  if initial_step>0 then
+    --Support Point modulation for walkkick
+    local supportMod = {0,0,0}
     if supportLeg == 0 then
       -- left
       supportMod[2]=supportModYInitial
+      local uLeftTorso = util.pose_relative(uLeft1,uTorso1)
+      local uTorsoModded = util.pose_global(
+      vector.new({supportMod[1],supportMod[2],0}),uTorso)
+      local uLeftModded = util.pose_global (uLeftTorso,uTorsoModded) 
+      uSupport = util.pose_global({supportX, supportY, 0},uLeftModded)
     else
       -- right
       supportMod[2]=-supportModYInitial
-      
+      -- Find where the right foot is relative to the torso
+      local uRightTorso = util.pose_relative(uRight1,uTorso1)
+      -- If we use a first step support modification
+      local uTorsoModded = util.pose_global(supportMod,uTorso)
+      local uRightModded = util.pose_global(uRightTorso,uTorsoModded) 
+      uSupport = util.pose_global({supportX, -supportY, 0}, uRightModded)
     end
   end
 
-  -- Apply velocity-based support point modulation for uSupport
-  if supportLeg == 0 then
-    -- left
-    local uLeftTorso = util.pose_relative(uLeft1,uTorso1)
-    local uTorsoModded = util.pose_global(
-      vector.new({supportMod[1],supportMod[2],0}),uTorso)
-    local uLeftModded = util.pose_global (uLeftTorso,uTorsoModded) 
-    uSupport = util.pose_global({supportX, supportY, 0},uLeftModded)
-  else
-    -- right
-    -- Find where the right foot is relative to the torso
-    local uRightTorso = util.pose_relative(uRight1,uTorso1)
-    -- If we use a first step support modification
-    local uTorsoModded = util.pose_global(supportMod,uTorso)
-    -- 
-    local uRightModded = util.pose_global(uRightTorso,uTorsoModded) 
-    uSupport = util.pose_global({supportX, -supportY, 0}, uRightModded)
-  end
+  -- This is the next desired torso position
+  uTorso2 = step_torso(uLeft2, uRight2, 0.5)
 
   -- Compute coefficients for this step to 
   -- guide the legs and torso through the phase

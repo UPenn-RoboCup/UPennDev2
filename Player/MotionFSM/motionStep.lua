@@ -327,7 +327,7 @@ function walk.entry()
   t_last_step = t_entry
 
   -- Reset our velocity
-  velCurrent = vector.new{0,0,0}
+  velCurrent = vector.new{.1,0,0}
   mcm.set_walk_vel(velCurrent)
 
   -- Make our ZMP solver
@@ -409,7 +409,7 @@ function walk.update()
     velCurrent = update_velocity(velCurrent)
       -- If our first step(s), then use zero velocity
     if initial_step>0 then
-      velCurrent = vector.new{0,0,0}
+      --velCurrent = vector.new{0,0,0}
       initial_step = initial_step-1
     end
     -- Save the previous desired positions as the current desired positions

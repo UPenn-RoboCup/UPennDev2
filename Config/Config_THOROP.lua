@@ -43,6 +43,7 @@ Config.net.operator = {
 ['wireless_broadcast'] = '192.168.1.255'
 }
 
+-- For use only when testing in webots on a local computer
 if Config.USE_LOCALHOST then
   -- wired
   Config.net.robot.wired = 'localhost'

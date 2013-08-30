@@ -101,21 +101,23 @@ local upper_body_overridden = 0
 --------------------
 -- Local Functions
 --------------------
--- Take footsteps, and convert to torso positions
+-- Take footsteps, and convert to a torso position
 local function step_torso( uLeft, uRight, shiftFactor )
   -- shiftFactor: How much should we shift final Torso pose?
   local u0 = util.se2_interpolate(.5, uLeft, uRight)
-  local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeft)
+  -- NOTE: supportX and supportY are globals
+  local uLeftSupport  = util.pose_global({supportX, supportY, 0}, uLeft)
   local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight)
-  return util.se2_interpolate(shiftFactor, uLeftSupport, uRightSupport)
+  local uTorso = util.se2_interpolate(shiftFactor, uLeftSupport, uRightSupport)
+  return uTorso
 end
-
-local function get_gyro_feedback()
+-- Get and massage gyro readings
+local function get_gyro_feedback( supportLeg )
   local body_yaw
   if supportLeg == 0 then  -- Left support
-    body_yaw = uLeft[3]-uTorsoActual[3]
+    body_yaw = uLeft[3]  - uTorsoActual[3]
   else
-    body_yaw = uRight[3]-uTorsoActual[3]
+    body_yaw = uRight[3] - uTorsoActual[3]
   end
   -- Ankle stabilization using gyro feedback
   local gyro_roll0, gyro_pitch0, gyro_yaw0= unpack(Body.get_sensor_gyro())
@@ -126,12 +128,13 @@ local function get_gyro_feedback()
   -- Give these parameters
   return gyro_roll, gyro_pitch, gyro_yaw
 end
-
+-- Get leg joint delta angles from gyro feedback
 local function get_leg_feedback(phSingle,gyro_roll,gyro_pitch,gyro_yaw)
 
   -- Ankle feedback
   local ankleShiftX = util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4])
   local ankleShiftY = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])
+  -- Ankle shift is filtered... thus a global
   ankleShift[1] = ankleShift[1]+ankleImuParamX[1]*(ankleShiftX-ankleShift[1])
   ankleShift[2] = ankleShift[2]+ankleImuParamY[1]*(ankleShiftY-ankleShift[2])
 
@@ -147,10 +150,13 @@ local function get_leg_feedback(phSingle,gyro_roll,gyro_pitch,gyro_yaw)
   local toeTipCompensation = 0
 
   local delta_legs = vector.zeros(Body.nJointLLeg+Body.nJointRLeg)
-
+  -- Change compensation in the beginning of the phase (first 10%)
+  -- Saturate compensation afterwards
+  -- Change compensation at the beginning of the phase (first 10%)
+  -- Same sort of trapezoid at double->single->double support shape
+  local phComp = 10 * math.min( phSingle, .1, 1-phSingle )
   if supportLeg == 0 then
     -- Left support
-    local phComp = math.min( 1, phSingle/.1, (1-phSingle)/.1 )
     delta_legs[2] = hipShift[2] + hipRollCompensation*phComp
     delta_legs[4] = kneeShift
     delta_legs[5] = ankleShift[1]
@@ -159,7 +165,6 @@ local function get_leg_feedback(phSingle,gyro_roll,gyro_pitch,gyro_yaw)
     delta_legs[11] = toeTipCompensation*phComp--Lifting toetip
   else
     -- Right support
-    local phComp = math.min( 1, phSingle/.1, (1-phSingle)/.1 )
     delta_legs[8]  = hipShift[2] - hipRollCompensation*phComp
     delta_legs[10] = kneeShift
     delta_legs[11] = ankleShift[1]
@@ -176,8 +181,9 @@ local function get_arm_feedback(gyro_roll,gyro_pitch,gyro_yaw)
   -- Arm feedback amount in X/Y directions
   local armShiftX=util.procFunc(gyro_pitch*armImuParamX[2],armImuParamX[3],armImuParamX[4])
   local armShiftY=util.procFunc(gyro_roll*armImuParamY[2],armImuParamY[3],armImuParamY[4])
-  armShift[1]=armShift[1]+armImuParamX[1]*(armShiftX-armShift[1])
-  armShift[2]=armShift[2]+armImuParamY[1]*(armShiftY-armShift[2])
+  -- Arm shift is also filtered, and thus a global
+  armShift[1] = armShift[1]+armImuParamX[1]*(armShiftX-armShift[1])
+  armShift[2] = armShift[2]+armImuParamY[1]*(armShiftY-armShift[2])
   -- Arm delta to apply to the joints
   local delta_arms = vector.zeros(Body.nJointLArm)
   -- First arm joint is roll
@@ -272,21 +278,18 @@ local function update_velocity()
   print( util.color('Walk velocity','blue'), debug )
 end
 
-local function calculate_step()
-  
-  -- Advance the steps to find the next desired torso position
-  -- Increment the step index
-  iStep = iStep + 1
-  -- supportLeg: 0 for left support, 1 for right support
-  supportLeg = iStep % 2
+local function calculate_step( supportLeg )
 
   -- Reset the time between steps
   tStep = tStep0
-
   -- Save the previous desired foot positions as the current foot positions
   -- TODO: Some feedback could get the uLeft/uRight perfectly correct
   uLeft1  = uLeft2
   uRight1 = uRight2
+  -- This torso position is the prior desired torso position
+  uTorso1 = uTorso2
+
+
   if supportLeg == 0 then
     -- Left support
     uRight2 = step_destination_right(velCurrent, uLeft1, uRight1)
@@ -295,13 +298,11 @@ local function calculate_step()
     uLeft2  = step_destination_left(velCurrent, uLeft1, uRight1)
   end
   
-  -- This torso position is the prior desired torso position
-  uTorso1 = uTorso2
   -- This is the next desired torso position
   uTorso2 = step_torso(uLeft2, uRight2, 0.5)
 
   --Support Point modulation for walkkick
-  local supportMod = {0,0}
+  local supportMod = {0,0,0}
   -- Adjustable initial step body swing
   if initial_step>0 then 
     if supportLeg == 0 then
@@ -310,6 +311,7 @@ local function calculate_step()
     else
       -- right
       supportMod[2]=-supportModYInitial
+      
     end
   end
 
@@ -321,20 +323,20 @@ local function calculate_step()
       vector.new({supportMod[1],supportMod[2],0}),uTorso)
     local uLeftModded = util.pose_global (uLeftTorso,uTorsoModded) 
     uSupport = util.pose_global({supportX, supportY, 0},uLeftModded)
-    Body.set_lleg_hardness(hardnessSupport)
-    Body.set_rleg_hardness(hardnessSwing)
   else
     -- right
+    -- Find where the right foot is relative to the torso
     local uRightTorso = util.pose_relative(uRight1,uTorso1)
-    local uTorsoModded = 
-      util.pose_global(vector.new({supportMod[1],supportMod[2],0}),uTorso)
-    local uRightModded = util.pose_global (uRightTorso,uTorsoModded) 
+    -- If we use a first step support modification
+    local uTorsoModded = util.pose_global(supportMod,uTorso)
+    -- 
+    local uRightModded = util.pose_global(uRightTorso,uTorsoModded) 
     uSupport = util.pose_global({supportX, -supportY, 0}, uRightModded)
-    Body.set_lleg_hardness(hardnessSwing)
-    Body.set_rleg_hardness(hardnessSupport)
   end
 
-  zmp_solver:compute(uSupport,uTorso1,uTorso2)
+  -- Compute coefficients for this step to 
+  -- guide the legs and torso through the phase
+  zmp_solver:compute( uSupport, uTorso1, uTorso2 )
 
 end
 
@@ -433,10 +435,15 @@ function walk.update()
   if ph>1 then
     -- Wrap around the phase
     ph = ph % 1
+    -- Advance the steps to find the next desired torso position
+    -- Increment the step index
+    iStep = iStep + 1
+    -- supportLeg: 0 for left support, 1 for right support
+    supportLeg = iStep % 2
     -- Update the velocity via a filter
     update_velocity()
     -- Calculate the next step
-    calculate_step()
+    calculate_step( supportLeg )
     -- Update t_last_step
     t_last_step = Body.get_time()
   end
@@ -469,7 +476,7 @@ function walk.update()
   -- The reference frame is from the right foot, so reframe the torso
   uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   -- Grab gyro feedback for these joint angles
-  local r,p,y = get_gyro_feedback()
+  local r,p,y = get_gyro_feedback( supportLeg )
 
    -- Calculate the next desired torso position
   local pTorso = vector.new({supportX, 0, Config.walk.bodyHeight, 0,bodyTilt,0})
@@ -490,6 +497,13 @@ function walk.update()
   qLegs = qLegs + leg_feedback
   -- Send the leg commands
   Body.set_lleg_command_position(qLegs)
+  if supportLeg==0 then
+    Body.set_lleg_hardness(hardnessSupport)
+    Body.set_rleg_hardness(hardnessSwing)
+  else
+    Body.set_lleg_hardness(hardnessSwing)
+    Body.set_rleg_hardness(hardnessSupport)
+  end
   -- Add arm motion
   if upper_body_overridden==0 then
     local arm_feedback = get_arm_feedback(r,p,y)

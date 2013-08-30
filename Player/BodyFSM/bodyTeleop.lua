@@ -20,7 +20,8 @@ function state.entry()
   t_update = t_entry
 
   -- Initially stop movement
-  mcm.set_walk_vel({0,0,0})
+  mcm.set_walk_vel{0,0,0}
+  hcm.set_motion_velocity{0,0,0}
 end
 
 function state.update()

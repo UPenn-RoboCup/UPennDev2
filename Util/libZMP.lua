@@ -88,6 +88,8 @@ end
 local function get_foot(self,ph)
   -- Computes relative x, z motion of foot during single support phase
   -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0
+  -- phSingle is 100% @ finish_phase, and 0% at start_phase
+  -- It just ignores the double support phase so we know how long we've been in single support
   local phSingle = math.min( math.max(ph-self.start_phase, 0)/(self.finish_phase-self.start_phase), 1)
   local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
   local xf = .5*(1-math.cos(math.pi*phSingleSkew))

@@ -427,6 +427,10 @@ function walk.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   
+  -- Reset our velocity
+  velCurrent = vector.new{0,0,0}
+  mcm.set_walk_vel{0,0,0}
+
   -- SJ: now we always assume that we start walking with feet together
   -- Because joint readings are not always available with darwins
   -- TODO: Use shared memory readings, or calculate upon entry
@@ -436,10 +440,18 @@ function walk.entry()
   uLeft1, uLeft2 = uLeft, uLeft
   uRight1, uRight2 = uRight, uRight
   uTorso1, uTorso2 = uTorso, uTorso
-  uSupport  = uTorso
+  uSupport = uTorso
   
   -- Compute initial zmp from these foot positions
   --compute_zmp()
+  -- Make our solver
+  zmp_solver = libZMP.new_solver({
+    ['tStep'] = tStep,
+    ['tZMP'] = tZmp,
+    ['start_phase'] = ph1Single,
+    ['finish_phase'] = ph2Single,
+    })
+  zmp_solver:compute(uSupport,uTorso1, uTorso2)
 
     -- Zero the step index
   iStep = 1
@@ -461,17 +473,6 @@ function walk.entry()
   -- Entry is now the start point
   tLastStep = Body.get_time()
   initial_step = 2
-  -- Reset our velocity
-  velCurrent = vector.new{0,0,0}
-
-  -- Make our solver
-  zmp_solver = libZMP.new_solver({
-    ['tStep'] = tStep,
-    ['tZMP'] = tZmp,
-    ['start_phase'] = ph1Single,
-    ['finish_phase'] = ph2Single,
-    })
-  zmp_solver:compute(uSupport,uTorso1, uTorso2)
 
 end
 
@@ -529,13 +530,17 @@ function walk.update()
   end
 
   -- Where does zmp think the torso should be?
-  --uTorso = zmp_com(ph)
-  local uTorso = zmp_solver:get_com(ph)
-  --print('zmp com',uTorso,uTorso_steve)
+  print'====='
+  uTorso = zmp_solver:get_com(ph)
   -- Adjust the angle
   --com[3] = .5*(uLeft[3] + uRight[3])
   --Linear speed turning
   uTorso[3] = ph* (uLeft2[3]+uRight2[3])/2 + (1-ph)* (uLeft1[3]+uRight1[3])/2
+  print('zmp com',uTorso)
+  --uTorso = zmp_com(ph)
+  --uTorso[3] = ph* (uLeft2[3]+uRight2[3])/2 + (1-ph)* (uLeft1[3]+uRight1[3])/2
+  --print('zmp com',uTorso)
+  
   -- The reference frame is from the right foot, so reframe the torso
   uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   -- Grab gyro feedback for these joint angles

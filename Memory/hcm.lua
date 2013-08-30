@@ -29,7 +29,9 @@ shared_data.motion.estop = vector.zeros(1)
 --------------------------------
 -- Wheel/Valve
 shared_data.wheel = {}
-shared_data.wheel.pos        = vector.new({.3,0,.1})
+--shared_data.wheel.pos        = vector.new({.3,0,.1})
+shared_data.wheel.pos        = vector.new({.40,0,.1})
+
 shared_data.wheel.radius     = vector.new({.15})
 shared_data.wheel.yawangle   = vector.zeros(1)
 shared_data.wheel.pitchangle = vector.zeros(1)

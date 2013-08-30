@@ -21,8 +21,10 @@ function state.entry()
 
   -- Release the fingers
   -- TODO: Torque off?
-  Body.set_lgrip_percent(0)
-  Body.set_rgrip_percent(0)
+
+--SJ: This makes finger jerk at transitions
+--  Body.set_lgrip_percent(0)
+--  Body.set_rgrip_percent(0)
 
 end
 

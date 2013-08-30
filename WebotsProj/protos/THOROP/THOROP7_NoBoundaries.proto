@@ -5,7 +5,7 @@
 # 2013/7
 #############################################
 
-PROTO THOROP [
+PROTO THOROP7_NoBoundaries [
   field SFVec3f    translation 0 1 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
@@ -157,13 +157,18 @@ Supervisor {
                         DEF Right_wrist_roll Servo {
                           rotation 0 0 -1 0
                           children [
-
+###ADDED WRISTYAW2 JOINT
+                            DEF Right_wrist_yaw2 Servo {
+                              translation 0 -0.10 0
+                              rotation 0 1 0 0
+                              children [
+#############
 
 ######################################################################
 # RGRIP START
 
               Transform{   #Palm
-                translation 0 -0.065 0
+                translation 0 -0.0325 0
                 children [
                   Shape{geometry Box {size 0.05 0.065 0.02}}
                 ]
@@ -265,10 +270,30 @@ Supervisor {
               physics Physics {}
            }
 
+
 # RGRIP END
 ######################################################################
 
 
+                          ]
+                          name "RightWristYaw2"
+                          physics Physics {
+                            density -1
+                            mass 0.4
+                            centerOfMass 0 -0.1 0
+                          }
+                          maxForce 40
+                          controlP 16
+                        }
+                        DEF Right_wrist2 Transform {
+                          translation 0 -0.05 0
+                          children [
+                            Shape{geometry Box {size 0.04 0.10 0.04}}
+                          ]
+                        }                        
+################
+##WRISTYAW2 JOINT END
+#################                
 
                           ]
                           name "RightWristRoll"
@@ -312,8 +337,8 @@ Supervisor {
                     }
                   ]
                   name "ArmLowerR"
-                  boundingObject Group {
-                     children [
+#                  boundingObject Group {
+#                     children [
 #                      Transform {
 #                        rotation 1 0 0 0.7854
 #                        children [
@@ -322,16 +347,16 @@ Supervisor {
 #                          }
 #                        ]
 #                      }
-                      Transform {
-                        translation 0 -0.115 -0.03
-                        children [
-                          Box {
-                            size 0.055 0.16 0.055
-                          }
-                        ]
-                      }
-                    ]
-                  }
+#                      Transform {
+#                        translation 0 -0.115 -0.03
+#                        children [
+#                          Box {
+#                            size 0.055 0.16 0.055
+#                          }
+#                        ]
+#                      }
+#                    ]
+#                  }
                   physics Physics {
                     density -1
                     mass 0.5
@@ -350,14 +375,14 @@ Supervisor {
                 }
               ]
               name "RightShoulderYaw"
-              boundingObject Transform {
-                translation 0 -0.13 0
-                children [
-                  Box {
-                    size 0.07 0.22 0.07
-                  }
-                ]
-              }
+#              boundingObject Transform {
+#                translation 0 -0.13 0
+#                children [
+#                  Box {
+#                    size 0.07 0.22 0.07
+#                  }
+#                ]
+#              }
               physics Physics {
                 density -1
                 mass 0.8
@@ -425,13 +450,18 @@ Supervisor {
                         DEF Left_wrist_roll Servo {
                           rotation 0 0 -1 0
                           children [
-
+###ADDED WRISTYAW2 JOINT
+                            DEF Left_wrist_yaw2 Servo {
+                              translation 0 -0.10 0
+                              rotation 0 1 0 0
+                              children [
+#############
 
 ###########################################################
 ## LGRIP START
 
                    Transform{   #Palm
-                     translation 0 -0.065 0 
+                     translation 0 -0.0325 0 
                      children [
                        Shape{geometry Box {size 0.05 0.065 0.02}}
                      ]
@@ -499,7 +529,7 @@ Supervisor {
                       ]
                     }
                     physics Physics {}
-                }
+        }
                 DEF l_wrist_grip3 Servo{ #Third finger for gripper
                     translation 0.02 -0.08 -0.02
                     rotation 0 0 1 -0.78
@@ -538,12 +568,25 @@ Supervisor {
 
 ###########################################################
 
-#                            DEF Left_gripper Transform {
-#                              scale 0.001 0.001 0.001
-#                              children [
-#                               LEFT_GRIPPER{}                                
-#                              ]
-#                            }
+                          ]
+                          name "LeftWristYaw2"
+                          physics Physics {
+                            density -1
+                            mass 0.4
+                            centerOfMass 0 -0.1 0
+                          }
+                          maxForce 40
+                          controlP 16
+                        }
+                        DEF Left_wrist2 Transform {
+                          translation 0 -0.05 0
+                          children [
+                            Shape{geometry Box {size 0.04 0.10 0.04}}
+                          ]
+                        }                        
+################
+##WRISTYAW2 JOINT END
+#################      
 
 
                           ]
@@ -589,8 +632,8 @@ Supervisor {
                     }
                   ]
                   name "ArmLowerL"
-                  boundingObject Group {
-                    children [
+#                  boundingObject Group {
+#                    children [
 #                      Transform {
 #                        rotation 1 0 0 0.7854
 #                        children [
@@ -599,16 +642,16 @@ Supervisor {
 #                          }
 #                        ]
 #                      }
-                      Transform {
-                        translation 0 -0.115 -0.03
-                        children [
-                          Box {
-                            size 0.055 0.16 0.055
-                          }
-                        ]
-                      }
-                    ]
-                  }
+#                      Transform {
+#                        translation 0 -0.115 -0.03
+#                        children [
+#                          Box {
+#                            size 0.055 0.16 0.055
+#                          }
+#                        ]
+#                      }
+#                    ]
+#                  }
                   physics Physics {
                     density -1
                     mass 0.5
@@ -626,14 +669,14 @@ Supervisor {
                 }
               ]
               name "LeftShoulderYaw"
-              boundingObject Transform {
-                translation 0 -0.13 0
-                children [
-                  Box {
-                    size 0.07 0.22 0.07
-                  }
-                ]
-              }
+#              boundingObject Transform {
+#                translation 0 -0.13 0
+#                children [
+#                  Box {
+#                    size 0.07 0.22 0.07
+#                  }
+#                ]
+#              }
               physics Physics {
                 density -1
                 mass 0.8
@@ -816,14 +859,14 @@ Supervisor {
                                     DEF Right_ankle_yaw Servo {
                                       translation 0 -0.09 0
                                       name "right_ankle_yaw"
-                                      boundingObject Transform {
-                                        translation 0 -0.003 0.0177
-                                        children [
-                                          Box {
-                                            size 0.147 0.05 0.262
-                                          }
-                                        ]
-                                      }
+#                                      boundingObject Transform {
+#                                        translation 0 -0.003 0.0177
+#                                        children [
+#                                          Box {
+#                                            size 0.147 0.05 0.262
+#                                          }
+#                                        ]
+#                                      }
                                       physics Physics {
                                       }
                                       maxForce 100
@@ -884,14 +927,14 @@ Supervisor {
                             }
                           ]
                           name "LegLowerR"
-                          boundingObject Transform {
-                            translation -0.025 -0.192 0.043
-                            children [
-                              Box {
-                                size 0.144 0.35 0.085
-                              }
-                            ]
-                          }
+#                          boundingObject Transform {
+#                            translation -0.025 -0.192 0.043
+#                            children [
+#                              Box {
+#                                size 0.144 0.35 0.085
+#                              }
+#                            ]
+#                          }
                           physics Physics {
                             density -1
                             mass 1.1
@@ -902,16 +945,16 @@ Supervisor {
                         }
                       ]
                       name "LegUpperR"
-                      boundingObject Group {
-                        children [
-                          Transform {
-                            translation -0.025 -0.145 0.012
-                            children [
-                              Box {
-                                size 0.144 0.355 0.085
-                              }
-                            ]
-                          }
+#                      boundingObject Group {
+#                        children [
+#                          Transform {
+#                            translation -0.025 -0.145 0.012
+#                            children [
+#                              Box {
+#                                size 0.144 0.355 0.085
+#                              }
+#                            ]
+#                          }
 #                          Transform {
 #                            translation -0.025 -0.3 -0.025
 #                            rotation 1 0 0 0.7854
@@ -921,8 +964,8 @@ Supervisor {
 #                              }
 #                            ]
 #                          }
-                        ]
-                      }
+#                        ]
+#                      }
                       physics Physics {
                         density -1
                         mass 1.1
@@ -1157,14 +1200,14 @@ Supervisor {
                             }
                           ]
                           name "LegLowerL"
-                          boundingObject Transform {
-                            translation 0.025 -0.192 0.043
-                            children [
-                              Box {
-                                size 0.144 0.35 0.085
-                              }
-                            ]
-                          }
+#                          boundingObject Transform {
+#                            translation 0.025 -0.192 0.043
+#                            children [
+#                              Box {
+#                                size 0.144 0.35 0.085
+#                              }
+#                            ]
+#                          }
                           physics Physics {
                             density -1
                             mass 1.1
@@ -1175,16 +1218,16 @@ Supervisor {
                         }
                       ]
                       name "LegUpperL"
-                      boundingObject Group {
-                        children [
-                          Transform {
-                            translation 0.025 -0.145 0.012
-                            children [
-                              Box {
-                                size 0.144 0.355 0.085
-                              }
-                            ]
-                          }
+#                      boundingObject Group {
+#                        children [
+#                          Transform {
+#                            translation 0.025 -0.145 0.012
+#                            children [
+#                              Box {
+#                                size 0.144 0.355 0.085
+#                              }
+#                            ]
+#                          }
 #                          Transform {
 #                            translation 0.025 -0.3 -0.025
 #                            rotation 1 0 0 0.7854
@@ -1194,8 +1237,8 @@ Supervisor {
 #                              }
 #                            ]
 #                          }
-                        ]
-                      }
+#                        ]
+#                      }
                       physics Physics {
                         density -1
                         mass 1.1
@@ -1254,14 +1297,14 @@ Supervisor {
             }
           ]
           name "TorsoYaw"
-          boundingObject Transform {
-            translation 0 -0.092 -0.011
-            children [
-              Box {
-                size 0.23 0.149 0.21
-              }
-            ]
-          }
+#          boundingObject Transform {
+#            translation 0 -0.092 -0.011
+#            children [
+#              Box {
+#                size 0.23 0.149 0.21
+#              }
+#            ]
+#          }
           physics Physics {
             density -1
             mass 0.6
@@ -1367,14 +1410,14 @@ Supervisor {
     }
   ]
   name "THOROP_Robotis"
-  boundingObject Transform {
-    translation 0 -0.04 -0.029
-    children [
-      Box {
-        size 0.35 0.23 0.32
-      }
-    ]
-  }
+#  boundingObject Transform {
+#    translation 0 -0.04 -0.029
+#    children [
+#      Box {
+#        size 0.35 0.23 0.32
+#      }
+#    ]
+#  }
   physics Physics {
     density -1
     mass 1

@@ -30,9 +30,9 @@ DEF FLOOR MetricFloor{
   color 0.95 0.95 0.95
   locked TRUE
 }
-THOROP7 {
+#THOROP7 {
+THOROP7_NoBoundaries {
   translation 0 1.155 0
-  #controller "thorop"
-#  controller ""
-#  controllerArgs "0 32" 
+  controller "thorop"
+  controllerArgs "0 32" 
 }

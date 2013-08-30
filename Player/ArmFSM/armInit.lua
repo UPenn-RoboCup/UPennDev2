@@ -30,6 +30,7 @@ function state.entry()
   -- Open the gripper
   Body.set_lgrip_percent(1)
   Body.set_rgrip_percent(1)
+
 end
 
 function state.update()

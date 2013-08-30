@@ -170,15 +170,15 @@ vector.new({0,-90,-90,-90,90,45})*DEG_TO_RAD, -- arms in front
 
 --SJ: New arm angles for 7DOF arm
 arm.qLArmInit={
-vector.new({90,30,90,-15,-90,0})*DEG_TO_RAD,
-vector.new({90,90,90,-90,-90,0})*DEG_TO_RAD,
-vector.new({0,90,90,-90,-90,-45})*DEG_TO_RAD,
+vector.new({90,30,90,-15,-90,0,0})*DEG_TO_RAD,
+vector.new({90,90,90,-90,-90,0,0})*DEG_TO_RAD,
+vector.new({0,90,90,-90,-90,-45,0})*DEG_TO_RAD,
 }
 
 arm.qRArmInit={
-vector.new({90,-30,-90,-15,90,0})*DEG_TO_RAD, -- at sides
-vector.new({90,-90,-90,-90,90,0})*DEG_TO_RAD,  -- scarecrow
-vector.new({0,-90,-90,-90,90,45})*DEG_TO_RAD, -- arms in front
+vector.new({90,-30,-90,-15,90,0,0})*DEG_TO_RAD, -- at sides
+vector.new({90,-90,-90,-90,90,0,0})*DEG_TO_RAD,  -- scarecrow
+vector.new({0,-90,-90,-90,90,45,0})*DEG_TO_RAD, -- arms in front
 }
 
 

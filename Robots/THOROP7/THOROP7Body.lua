@@ -532,6 +532,7 @@ local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
 
 end
 
+--[[
 -- Can we go from angle q to position p?
 Body.get_inverse_larm = function( qL, trL, pos_tol, ang_tol )
 	local qL_target = Kinematics.inverse_l_arm(trL, qL)
@@ -560,6 +561,46 @@ Body.get_forward_rarm = function()
 	local pRArm = Kinematics.r_arm_torso( qRArm )
   return pRArm
 end
+--]]
+
+
+--7DOF FUCNTIONS
+-- Can we go from angle q to position p?
+
+shoulder_yaw_L = 60*DEG_TO_RAD;
+shoulder_yaw_R = -60*DEG_TO_RAD;
+
+
+Body.get_inverse_larm = function( qL, trL, pos_tol, ang_tol )
+--  local qL_target = Kinematics.inverse_l_arm_7(trL, qL)
+  local qL_target = Kinematics.inverse_l_arm_7(trL, shoulder_yaw_L)
+  local trL_check = Kinematics.l_arm_torso_7(qL_target)
+  if not check_ik_error( trL, trL_check, pos_tol, ang_tol ) then
+    return
+  end
+  return qL_target
+end
+Body.get_inverse_rarm = function( qR, trR, pos_tol, ang_tol )
+--  local qR_target = Kinematics.inverse_r_arm(trR, qR)
+  local qR_target = Kinematics.inverse_r_arm_7(trR, shoulder_yaw_R)
+  local trR_check = Kinematics.r_arm_torso_7(qR_target)
+  if not check_ik_error( trR, trR_check, pos_tol, ang_tol ) then
+    return
+  end
+  return qR_target
+end
+-- Take in joint angles and output an {x,y,z,r,p,yaw} table
+Body.get_forward_larm = function()
+  local qLArm = Body.get_larm_position()
+  local pLArm = Kinematics.l_arm_torso_7( qLArm )
+  return pLArm
+end
+Body.get_forward_rarm = function()
+  local qRArm = Body.get_rarm_position()
+  local pRArm = Kinematics.r_arm_torso_7( qRArm )
+  return pRArm
+end
+
 
 -- Change the joints via IK
 Body.set_inverse_larm = function( dTrans )
@@ -644,11 +685,13 @@ if IS_WEBOTS then
 
 	servo.direction = vector.new({
 		1,-1, -- Head
-		1,-1,-1,1,-1,1,1, --LArm
+--		1,-1,-1,1,-1,1,-1, --LArm
+    1,-1,-1,1,-1,-1,-1, --LArm    
 		-- TODO: No legs yet!
 		-1,-1,-1,-1,1,1, --LLeg
 		-1,-1,1,1,-1,1, --LArm
-		-1,-1,-1,-1,-1,1,1, --RArm
+--		-1,-1,-1,-1,-1,1,-1, --RArm
+      -1,-1,-1,-1,-1,-1,-1, --RArm    
 		-- TODO: Check the gripper
 		1,1, -- Waist
 		-1,1,-1, -- left gripper

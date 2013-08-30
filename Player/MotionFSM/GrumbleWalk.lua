@@ -57,8 +57,7 @@ local hardnessArm0    = hardnessArm
 
 --Gait parameters
 local tZmp   = Config.walk.tZmp
-local tStep0 = Config.walk.tStep
-local tStep  = tStep0
+local tStep  = Config.walk.tStep
 local stepHeight  = Config.walk.stepHeight
 local ph1Single,ph2Single = unpack(Config.walk.phSingle)
 local ph1Zmp,ph2Zmp = ph1Single, ph2Single
@@ -280,8 +279,6 @@ end
 
 local function calculate_step( supportLeg )
 
-  -- Reset the time between steps
-  tStep = tStep0
   -- Save the previous desired foot positions as the current foot positions
   -- TODO: Some feedback could get the uLeft/uRight perfectly correct
   uLeft1  = uLeft2
@@ -289,6 +286,10 @@ local function calculate_step( supportLeg )
   -- This torso position is the prior desired torso position
   uTorso1 = uTorso2
 
+  -- This is the next desired torso position
+  uTorso2 = step_torso(uLeft2, uRight2, 0.5)
+
+  local uSupport
   if supportLeg == 0 then
     -- Left support
     -- Find the left support point
@@ -303,37 +304,32 @@ local function calculate_step( supportLeg )
     uLeft2   = step_destination_left(velCurrent, uLeft1, uRight1)
   end
 
-  -- Adjustable initial step body swing
-  if initial_step>0 then
-    --Support Point modulation for walkkick
-    local supportMod = {0,0,0}
-    if supportLeg == 0 then
-      -- left
-      supportMod[2]=supportModYInitial
-      local uLeftTorso = util.pose_relative(uLeft1,uTorso1)
-      local uTorsoModded = util.pose_global(
-      vector.new({supportMod[1],supportMod[2],0}),uTorso)
-      local uLeftModded = util.pose_global (uLeftTorso,uTorsoModded) 
-      uSupport = util.pose_global({supportX, supportY, 0},uLeftModded)
-    else
-      -- right
-      supportMod[2]=-supportModYInitial
-      -- Find where the right foot is relative to the torso
-      local uRightTorso = util.pose_relative(uRight1,uTorso1)
-      -- If we use a first step support modification
-      local uTorsoModded = util.pose_global(supportMod,uTorso)
-      local uRightModded = util.pose_global(uRightTorso,uTorsoModded) 
-      uSupport = util.pose_global({supportX, -supportY, 0}, uRightModded)
-    end
+  return uSupport
+
+end
+
+local function support_modification()
+  --Support Point modulation for walkkick
+  local supportMod = {0,0,0}
+  if supportLeg == 0 then
+    -- left
+    supportMod[2]=supportModYInitial
+    local uLeftTorso = util.pose_relative(uLeft1,uTorso1)
+    local uTorsoModded = util.pose_global(
+    vector.new({supportMod[1],supportMod[2],0}),uTorso)
+    local uLeftModded = util.pose_global (uLeftTorso,uTorsoModded) 
+    uSupport = util.pose_global({supportX, supportY, 0},uLeftModded)
+  else
+    -- right
+    supportMod[2]=-supportModYInitial
+    -- Find where the right foot is relative to the torso
+    local uRightTorso = util.pose_relative(uRight1,uTorso1)
+    -- If we use a first step support modification
+    local uTorsoModded = util.pose_global(supportMod,uTorso)
+    local uRightModded = util.pose_global(uRightTorso,uTorsoModded) 
+    uSupport = util.pose_global({supportX, -supportY, 0}, uRightModded)
   end
-
-  -- This is the next desired torso position
-  uTorso2 = step_torso(uLeft2, uRight2, 0.5)
-
-  -- Compute coefficients for this step to 
-  -- guide the legs and torso through the phase
-  zmp_solver:compute( uSupport, uTorso1, uTorso2 )
-
+  return uSupport
 end
 
 ---------------------------
@@ -376,10 +372,9 @@ function walk.entry()
   uLeft1, uLeft2 = uLeft, uLeft
   uRight1, uRight2 = uRight, uRight
   uTorso1, uTorso2 = uTorso, uTorso
-  uSupport = uTorso
   
   -- Compute initial zmp from these foot positions
-  zmp_solver:compute( uSupport,uTorso1, uTorso2 )
+  zmp_solver:compute( uTorso, uTorso1, uTorso2 )
 
     -- Zero the step index
   iStep = 1
@@ -426,9 +421,11 @@ function walk.update()
   ------------------------------------------
 
   -- SJ: Variable tStep support for walkkick
-  -- Grab our phase for the current tStep
+  -- Grab the phase of the current step
   local ph = (t-t_last_step)/tStep
   if ph>1 then
+    -- TODO: reset the tStep, if variable
+    -- can get it from mcm?
     -- Wrap around the phase
     ph = ph % 1
     -- Advance the steps to find the next desired torso position
@@ -439,7 +436,14 @@ function walk.update()
     -- Update the velocity via a filter
     update_velocity()
     -- Calculate the next step
-    calculate_step( supportLeg )
+    local uSupport = calculate_step( supportLeg )
+    if initial_step>0 then
+      -- Adjustable initial step body swing
+      uSupport = support_modification()
+    end
+    -- Compute coefficients for this step to 
+    -- guide the legs and torso through the phase
+    zmp_solver:compute( uSupport, uTorso1, uTorso2 )
     -- Update t_last_step
     t_last_step = Body.get_time()
   end

@@ -11,7 +11,7 @@ kneel.bodyTilt = 90*math.pi/180
 
 kneel.ph1Single = 0.2
 kneel.ph2Single = 0.8
-kneel.tZmp = 0.22
+kneel.tZMP = 0.22
 
 kneel.tStep = 0.50
 kneel.stepHeight = 0.15
@@ -52,7 +52,7 @@ kneel.torsoX = -(kneel.armX + kneel.legX)/2
 local zmpstep = {}
 zmpstep.bodyHeight = 0.98 
 zmpstep.bodyTilt = 0
-zmpstep.tZmp = 0.28 
+zmpstep.tZMP = 0.28 
 zmpstep.supportX = 0.02
 zmpstep.supportY = 0.0
 zmpstep.stepHeight = 0.10
@@ -104,7 +104,7 @@ walk.hardnessArm = .1
 -- Gait parameters
 ------------------------------------
 walk.stepHeight = 0.052
-walk.tZmp = 0.30 --Com height 0.9
+walk.tZMP = 0.30 --Com height 0.9
 walk.tStep = 0.8
 walk.phSingle = {0.15,0.85}
 walk.phZmp = {0.15,0.85}

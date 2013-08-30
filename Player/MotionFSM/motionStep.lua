@@ -33,13 +33,6 @@ local footSizeX = Config.walk.footSizeX or {-0.05,0.05}
 local stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015
 local stanceLimitY2 = 2* Config.walk.footY-stanceLimitMarginY
 
--- Velocity limits used in update_velocity function
-local velLimitX = Config.walk.velLimitX or {-.06, .08}
-local velLimitY = Config.walk.velLimitY or {-.06, .06}
-local velLimitA = Config.walk.velLimitA or {-.4, .4}
-local velDelta  = Config.walk.velDelta or {.03,.015,.15}
-local vaFactor  = Config.walk.vaFactor or 0.6
-
 -- Stance parameters
 local bodyTilt = Config.walk.bodyTilt or 0
 local torsoX   = Config.walk.torsoX
@@ -189,7 +182,7 @@ local function get_arm_feedback(gyro_roll,gyro_pitch,gyro_yaw)
   -- TODO: Use IK to shift arms
   return delta_arms
 end
-
+-- vel is meters per step!
 local function step_destination_left(vel, uLeft, uRight)
   local u0 = util.se2_interpolate(.5, uLeft, uRight)
   -- Determine nominal midpoint position 1.5 steps in future
@@ -237,31 +230,6 @@ local function step_destination_right(vel, uLeft, uRight)
   return util.pose_global(uRightLeft, uLeft)
 end
 
-local function update_velocity(velCurrent)
-  -- Grab from the shared memory the desired walking speed
-  local vx,vy,va = unpack(mcm.get_walk_vel())
-  --Filter the commanded speed
-  vx = math.min(math.max(vx,velLimitX[1]),velLimitX[2])
-  vy = math.min(math.max(vy,velLimitY[1]),velLimitY[2])
-  va = math.min(math.max(va,velLimitA[1]),velLimitA[2])
-  -- Find the magnitude of the velocity
-  local stepMag = math.sqrt(vx^2+vy^2)
-  --Slow down when turning
-  local vFactor   = 1-math.abs(va)/vaFactor
-  local magFactor = math.min(velLimitX[2]*vFactor,stepMag)/(stepMag+0.000001)
-  -- Limit the forwards and backwards velocity
-  vx = math.min(math.max(vx*magFactor,velLimitX[1]),velLimitX[2])
-  vy = math.min(math.max(vy*magFactor,velLimitY[1]),velLimitY[2])
-  va = math.min(math.max(va,velLimitA[1]),velLimitA[2])
-  -- Check the change in the velocity
-  local velDiff = vector.new({vx,vy,va}) - velCurrent
-  -- Limit the maximum velocity change PER STEP
-  velDiff[1] = util.procFunc(velDiff[1],0,velDelta[1])
-  velDiff[2] = util.procFunc(velDiff[2],0,velDelta[2])
-  velDiff[3] = util.procFunc(velDiff[3],0,velDelta[3])
-  -- Update the current velocity command
-  return velCurrent + velDiff
-end
 -- Return the next support position and next foot positions
 local function calculate_step( uLeft_now, uRight_now, supportLeg )
   if supportLeg == 0 then
@@ -326,14 +294,16 @@ function walk.entry()
   t_update = t_entry
   t_last_step = t_entry
 
+  -- Set our support foot
+  supportLeg = 0 -- 0: left / 1: right
   -- Reset our velocity
-  velCurrent = vector.new{.1,0,0}
+  velCurrent = vector.new{0.2,0,0}
   mcm.set_walk_vel(velCurrent)
 
   -- Make our ZMP solver
   zmp_solver = libZMP.new_solver({
     ['tStep'] = Config.walk.tStep,
-    ['tZMP']  = Config.walk.tZmp,
+    ['tZMP']  = Config.walk.tZMP,
     ['start_phase']  = Config.walk.phSingle[1],
     ['finish_phase'] = Config.walk.phSingle[2],
   })
@@ -394,7 +364,6 @@ function walk.update()
   -- SJ: Variable tStep support for walkkick
   -- Grab the phase of the current step
   local ph = (t-t_last_step)/zmp_solver.tStep
-  if initial_step==0 then return'done' end
   if ph>1 then
     -- TODO: reset the tStep, if variable
     -- can get it from mcm?
@@ -405,13 +374,11 @@ function walk.update()
     iStep = iStep + 1
     -- supportLeg: 0 for left support, 1 for right support
     supportLeg = iStep % 2
-    -- Update the velocity via a filter
-    velCurrent = update_velocity(velCurrent)
-      -- If our first step(s), then use zero velocity
-    if initial_step>0 then
-      --velCurrent = vector.new{0,0,0}
-      initial_step = initial_step-1
-    end
+    -- Decrement our step counter (we use two steps)
+    -- First step just puts weight over one foot
+    -- Second takes the step
+    initial_step = initial_step-1
+    if initial_step==0 then return'done' end
     -- Save the previous desired positions as the current desired positions
     -- TODO: Some feedback could get the uLeft/uRight/uTorso perfectly correct
     uLeft1, uRight1, uTorso1 = uLeft2, uRight2, uTorso2
@@ -422,10 +389,8 @@ function walk.update()
     -- TODO: We can queue steps, rather than use on the fly calculations...
     -- That could be sent to the walk engine as via points...?
     uSupport, uLeft2, uRight2 = calculate_step( uLeft1, uRight1, supportLeg )
-    if initial_step>0 then
-      -- Adjustable initial step body swing
-      uSupport = support_modification()
-    end
+    -- Adjustable initial step body swing
+    uSupport = support_modification()
     -- Compute coefficients for this step to 
     -- guide the legs and torso through the phase
     zmp_solver:compute( uSupport, uTorso1, uTorso2 )

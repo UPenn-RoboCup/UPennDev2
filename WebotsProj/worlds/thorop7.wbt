@@ -32,7 +32,6 @@ DEF FLOOR MetricFloor{
 }
 THOROP7 {
   translation 0 1.155 0
-  #controller "thorop"
-#  controller ""
-#  controllerArgs "0 32" 
+  controller "thorop"
+  controllerArgs "0 32" 
 }

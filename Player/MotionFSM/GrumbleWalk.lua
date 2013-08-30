@@ -15,7 +15,8 @@ require'mcm'
 local simple_ipc = require'simple_ipc'
 local evts = simple_ipc.new_subscriber('Walk',true)
 
-local t_entry, t_update
+-- Keep track of important times
+local t_entry, t_update, t_last_step
 
 ----------------------------------------------------------
 -- Walk Parameters
@@ -81,23 +82,17 @@ local supportModYInitial = Config.walk.supportModYInitial or 0
 -- These are continuously updated on each update
 ----------------------------------------------------------
 local uTorso = vector.new({supportX, 0, 0})
-local uLeft  = vector.new({0, footY, 0})
+local uLeft  = vector.new({0,  footY, 0})
 local uRight = vector.new({0, -footY, 0})
 -- Save the velocity between update cycles
 local velCurrent = vector.new({0, 0, 0})
--- Save ZMP exponential coefficients between update cycles
-local aXP, aXN, aYP, aYN = 0, 0, 0, 0
 
 -- Save gyro stabilization variables between update cycles
 -- They are filtered.  TODO: Use dt in the filters
 local ankleShift = vector.new({0, 0})
 local kneeShift  = 0
-local hipShift   = vector.new({0,0})
+local hipShift   = vector.new({0, 0})
 local armShift   = vector.new({0, 0})
-
--- Save which step we are on between cycles
-local tLastStep = Body.get_time()
-local ph  = 0
 
 -- Still have an initial step for now
 local initial_step = 2
@@ -106,7 +101,8 @@ local upper_body_overridden = 0
 --------------------
 -- Local Functions
 --------------------
-local function step_torso(uLeft, uRight,shiftFactor)
+-- Take footsteps, and convert to torso positions
+local function step_torso( uLeft, uRight, shiftFactor )
   -- shiftFactor: How much should we shift final Torso pose?
   local u0 = util.se2_interpolate(.5, uLeft, uRight)
   local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeft)
@@ -226,10 +222,9 @@ local function step_destination_right(vel, uLeft, uRight)
   -- Do not pidgeon toe, cross feet:
 
   --Check toe and heel overlap
-  local toeOverlap= footSizeX[1]*uRightLeft[3]
-  local heelOverlap= footSizeX[2]*uRightLeft[3]
-  local limitY = math.max(stanceLimitY[1],
-  stanceLimitY2+math.max(toeOverlap,heelOverlap))
+  local toeOverlap  = footSizeX[1] * uRightLeft[3]
+  local heelOverlap = footSizeX[2] * uRightLeft[3]
+  local limitY = math.max(stanceLimitY[1], stanceLimitY2+math.max(toeOverlap,heelOverlap))
 
   --print("Toeoverlap Heeloverlap",toeOverlap,heelOverlap,limitY)
 
@@ -275,16 +270,6 @@ local function update_velocity()
   -- Print a debugging message
   local debug = string.format("%g, %g, %g -> %g, %g, %g",vx,vy,va,unpack(velCurrent))
   print( util.color('Walk velocity','blue'), debug )
-end
-
-local function foot_phase(ph)
-  -- Computes relative x,z motion of foot during single support phase
-  -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0
-  local phSingle = math.min( math.max(ph-ph1Single, 0)/(ph2Single-ph1Single), 1)
-  local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
-  local xf = .5*(1-math.cos(math.pi*phSingleSkew))
-  local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
-  return xf, zf, phSingle
 end
 
 local function calculate_step()
@@ -396,7 +381,7 @@ function walk.entry()
   uSupport = uTorso
   
   -- Compute initial zmp from these foot positions
-  zmp_solver:compute(uSupport,uTorso1, uTorso2)
+  zmp_solver:compute( uSupport,uTorso1, uTorso2 )
 
     -- Zero the step index
   iStep = 1
@@ -416,7 +401,7 @@ function walk.entry()
   mcm.set_walk_bipedal(1)
 
   -- Entry is now the start point
-  tLastStep = Body.get_time()
+  t_last_step = Body.get_time()
   initial_step = 2
 
 end
@@ -444,7 +429,7 @@ function walk.update()
 
   -- SJ: Variable tStep support for walkkick
   -- Grab our phase for the current tStep
-  local ph = (t-tLastStep)/tStep
+  local ph = (t-t_last_step)/tStep
   if ph>1 then
     -- Wrap around the phase
     ph = ph % 1
@@ -452,12 +437,14 @@ function walk.update()
     update_velocity()
     -- Calculate the next step
     calculate_step()
-    -- Update tLastStep to be the next step in the future
-    tLastStep = tLastStep + tStep
+    -- Update t_last_step
+    t_last_step = Body.get_time()
   end
 
-  -- See where to place our feet
-  local xFoot, zFoot, phSingle = foot_phase(ph)  
+  -- Where does zmp think the torso should be?
+  uTorso = zmp_solver:get_com(ph)
+  -- Where does zmp think the swing foot should be?
+  local xFoot, zFoot, phSingle = zmp_solver:get_foot(ph)  
   --Don't lift foot at initial step
   if initial_step>0 then zFoot = 0 end
 
@@ -474,11 +461,9 @@ function walk.update()
     pLLeg[3] = stepHeight*zFoot
   end
 
-  -- Where does zmp think the torso should be?
-  uTorso = zmp_solver:get_com(ph)
-  -- Adjust the angle
+  -- Adjust the yaw angle of the center of mass
   --com[3] = .5*(uLeft[3] + uRight[3])
-  --Linear speed turning
+  -- Linear speed turning
   uTorso[3] = ph*(uLeft2[3]+uRight2[3])/2 + (1-ph)*(uLeft1[3]+uRight1[3])/2
   
   -- The reference frame is from the right foot, so reframe the torso

@@ -85,6 +85,16 @@ local function get_com( self, ph )
   return com
 end
 
+local function get_foot(self,ph)
+  -- Computes relative x, z motion of foot during single support phase
+  -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0
+  local phSingle = math.min( math.max(ph-self.start_phase, 0)/(self.finish_phase-self.start_phase), 1)
+  local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
+  local xf = .5*(1-math.cos(math.pi*phSingleSkew))
+  local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
+  return xf, zf, phSingle
+end
+
 -- Begin the library code
 local libZMP = {}
 -- Make a new solver with certain parameters
@@ -100,6 +110,7 @@ libZMP.new_solver = function( params )
   -- Add the functions
   s.compute = compute
   s.get_com = get_com
+  s.get_foot = get_foot
 	return s
 end
 

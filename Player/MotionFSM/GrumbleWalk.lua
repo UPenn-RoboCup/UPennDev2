@@ -277,60 +277,6 @@ local function update_velocity()
   print( util.color('Walk velocity','blue'), debug )
 end
 
--- walk_params: {tStep, tZMP, ph1, ph2}
-local function zmp_solve(zs, z1, z2, x1, x2, walk_params )
-  --[[
-  Solves ZMP equation:
-  x(t) = z(t) + aP*exp(t/tZmp) + aN*exp(-t/tZmp) - tZmp*mi*sinh((t-Ti)/tZmp)
-  where the ZMP point is piecewise linear:
-  z(0) = z1, z(T1 < t < T2) = zs, z(tStep) = z2
-  --]]
-  local T1 = tStep*ph1Zmp
-  local T2 = tStep*ph2Zmp
-  local m1 = (zs-z1)/T1
-  local m2 = -(zs-z2)/(tStep-T2)
-  local c1 = x1-z1+tZmp*m1*math.sinh(-T1/tZmp)
-  local c2 = x2-z2+tZmp*m2*math.sinh((tStep-T2)/tZmp)
-  local expTStep = math.exp(tStep/tZmp)
-  local aP = (c2 - c1/expTStep)/(expTStep-1/expTStep)
-  local aN = (c1*expTStep - c2)/(expTStep-1/expTStep)
-  return aP, aN
-end
-
-local function compute_zmp( walk_params )
-  -- Compute ZMP coefficients for the global walk engine
-  m1X = (uSupport[1]-uTorso1[1])/(tStep*ph1Zmp)
-  m2X = (uTorso2[1]-uSupport[1])/(tStep*(1-ph2Zmp))
-  aXP, aXN = zmp_solve(uSupport[1], uTorso1[1], uTorso2[1], uTorso1[1], uTorso2[1], walk_params)
-  --
-  m1Y = (uSupport[2]-uTorso1[2])/(tStep*ph1Zmp)
-  m2Y = (uTorso2[2]-uSupport[2])/(tStep*(1-ph2Zmp))  
-  aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2], uTorso1[2], uTorso2[2], walk_params)
-  return {m1X,m2X,aXP,aXN}, {m1Y,m2Y,aYP,aYN}
-end
-
--- Finds the necessary COM for stability and returns it
--- Globals: tStep, tZmp, uSupport
--- Globals: coefficients from zmp_solve
-local function zmp_com(ph)
-  local com = vector.new{0, 0, 0}
-  local expT = math.exp( ph * tStep/tZmp )
-  com[1] = uSupport[1] + aXP*expT + aXN/expT
-  com[2] = uSupport[2] + aYP*expT + aYN/expT
-  if ph < ph1Zmp then
-    com[1] = com[1] + m1X*tStep*(ph-ph1Zmp)
-    -tZmp*m1X*math.sinh(tStep*(ph-ph1Zmp)/tZmp)
-    com[2] = com[2] + m1Y*tStep*(ph-ph1Zmp)
-    -tZmp*m1Y*math.sinh(tStep*(ph-ph1Zmp)/tZmp)
-  elseif ph > ph2Zmp then
-    com[1] = com[1] + m2X*tStep*(ph-ph2Zmp)
-    -tZmp*m2X*math.sinh(tStep*(ph-ph2Zmp)/tZmp)
-    com[2] = com[2] + m2Y*tStep*(ph-ph2Zmp)
-    -tZmp*m2Y*math.sinh(tStep*(ph-ph2Zmp)/tZmp)
-  end
-  return com
-end
-
 local function foot_phase(ph)
   -- Computes relative x,z motion of foot during single support phase
   -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0
@@ -405,7 +351,6 @@ local function calculate_step()
 
   zmp_solver:compute(uSupport,uTorso1,uTorso2)
 
-  --compute_zmp()
 end
 
 ---------------------------
@@ -431,6 +376,14 @@ function walk.entry()
   velCurrent = vector.new{0,0,0}
   mcm.set_walk_vel{0,0,0}
 
+  -- Make our ZMP solver
+  zmp_solver = libZMP.new_solver({
+    ['tStep'] = tStep,
+    ['tZMP'] = tZmp,
+    ['start_phase'] = ph1Single,
+    ['finish_phase'] = ph2Single,
+  })
+
   -- SJ: now we always assume that we start walking with feet together
   -- Because joint readings are not always available with darwins
   -- TODO: Use shared memory readings, or calculate upon entry
@@ -443,14 +396,6 @@ function walk.entry()
   uSupport = uTorso
   
   -- Compute initial zmp from these foot positions
-  --compute_zmp()
-  -- Make our solver
-  zmp_solver = libZMP.new_solver({
-    ['tStep'] = tStep,
-    ['tZMP'] = tZmp,
-    ['start_phase'] = ph1Single,
-    ['finish_phase'] = ph2Single,
-    })
   zmp_solver:compute(uSupport,uTorso1, uTorso2)
 
     -- Zero the step index
@@ -530,16 +475,11 @@ function walk.update()
   end
 
   -- Where does zmp think the torso should be?
-  print'====='
   uTorso = zmp_solver:get_com(ph)
   -- Adjust the angle
   --com[3] = .5*(uLeft[3] + uRight[3])
   --Linear speed turning
-  uTorso[3] = ph* (uLeft2[3]+uRight2[3])/2 + (1-ph)* (uLeft1[3]+uRight1[3])/2
-  print('zmp com',uTorso)
-  --uTorso = zmp_com(ph)
-  --uTorso[3] = ph* (uLeft2[3]+uRight2[3])/2 + (1-ph)* (uLeft1[3]+uRight1[3])/2
-  --print('zmp com',uTorso)
+  uTorso[3] = ph*(uLeft2[3]+uRight2[3])/2 + (1-ph)*(uLeft1[3]+uRight1[3])/2
   
   -- The reference frame is from the right foot, so reframe the torso
   uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)

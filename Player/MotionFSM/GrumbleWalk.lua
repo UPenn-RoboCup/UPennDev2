@@ -74,6 +74,8 @@ local armImuParamY   = Config.walk.armImuParamY
 local hipRollCompensation = Config.walk.hipRollCompensation
 -- Initial body swing 
 local supportModYInitial = Config.walk.supportModYInitial or 0
+-- Helper
+local uLRFootOffset = vector.new({0,footY,0})
 
 ----------------------------------------------------------
 -- Walk state variables
@@ -105,7 +107,7 @@ local function step_torso( uLeft, uRight, shiftFactor )
   -- shiftFactor: How much should we shift final Torso pose?
   local u0 = util.se2_interpolate(.5, uLeft, uRight)
   -- NOTE: supportX and supportY are globals
-  local uLeftSupport  = util.pose_global({supportX, supportY, 0}, uLeft)
+  local uLeftSupport  = util.pose_global({supportX,  supportY, 0}, uLeft )
   local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight)
   local uTorso = util.se2_interpolate(shiftFactor, uLeftSupport, uRightSupport)
   return uTorso
@@ -203,8 +205,8 @@ local function step_destination_left(vel, uLeft, uRight)
   -- Do not pidgeon toe, cross feet:
 
   --Check toe and heel overlap
-  local toeOverlap= -footSizeX[1]*uLeftRight[3]
-  local heelOverlap= -footSizeX[2]*uLeftRight[3]
+  local toeOverlap  = -footSizeX[1] * uLeftRight[3]
+  local heelOverlap = -footSizeX[2] * uLeftRight[3]
   local limitY = math.max(stanceLimitY[1],
   stanceLimitY2+math.max(toeOverlap,heelOverlap))
 
@@ -276,36 +278,23 @@ local function update_velocity()
   local debug = string.format("%g, %g, %g -> %g, %g, %g",vx,vy,va,unpack(velCurrent))
   print( util.color('Walk velocity','blue'), debug )
 end
-
-local function calculate_step( supportLeg )
-
-  -- Save the previous desired foot positions as the current foot positions
-  -- TODO: Some feedback could get the uLeft/uRight perfectly correct
-  uLeft1  = uLeft2
-  uRight1 = uRight2
-  -- This torso position is the prior desired torso position
-  uTorso1 = uTorso2
-
-  -- This is the next desired torso position
-  uTorso2 = step_torso(uLeft2, uRight2, 0.5)
-
-  local uSupport
+-- Return the next support position and next foot positions
+local function calculate_step( uLeft_now, uRight_now, supportLeg )
   if supportLeg == 0 then
     -- Left support
     -- Find the left support point
-    uSupport = util.pose_global({supportX, supportY, 0}, uLeft1)
+    local uSupport = util.pose_global({supportX, supportY, 0}, uLeft_now)
     -- Find the right foot destination
-    uRight2  = step_destination_right(velCurrent, uLeft1, uRight1)
+    local uRight_next  = step_destination_right(velCurrent, uLeft_now, uRight_now)
+    return uSupport, uLeft_now, uRight_next
   else
     -- Right support
     -- Find the right support point
-    uSupport = util.pose_global({supportX, -supportY, 0}, uRight1)
+    local uSupport = util.pose_global({supportX, -supportY, 0}, uRight_now)
     -- Find the left foot destination
-    uLeft2   = step_destination_left(velCurrent, uLeft1, uRight1)
+    local uLeft_next   = step_destination_left(velCurrent, uLeft_now, uRight_now)
+    return uSupport, uLeft_next, uRight_now
   end
-
-  return uSupport
-
 end
 
 local function support_modification()
@@ -318,7 +307,8 @@ local function support_modification()
     local uTorsoModded = util.pose_global(
     vector.new({supportMod[1],supportMod[2],0}),uTorso)
     local uLeftModded = util.pose_global (uLeftTorso,uTorsoModded) 
-    uSupport = util.pose_global({supportX, supportY, 0},uLeftModded)
+    local uSupport = util.pose_global({supportX, supportY, 0},uLeftModded)
+    return uSupport
   else
     -- right
     supportMod[2]=-supportModYInitial
@@ -327,9 +317,9 @@ local function support_modification()
     -- If we use a first step support modification
     local uTorsoModded = util.pose_global(supportMod,uTorso)
     local uRightModded = util.pose_global(uRightTorso,uTorsoModded) 
-    uSupport = util.pose_global({supportX, -supportY, 0}, uRightModded)
+    local uSupport = util.pose_global({supportX, -supportY, 0}, uRightModded)
+    return uSupport
   end
-  return uSupport
 end
 
 ---------------------------
@@ -350,7 +340,8 @@ function walk.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-  
+  t_last_step = t_entry
+
   -- Reset our velocity
   velCurrent = vector.new{0,0,0}
   mcm.set_walk_vel{0,0,0}
@@ -369,19 +360,19 @@ function walk.entry()
   -- (Re)Set our local variables to the current uFoot positions
   uLeft  = util.pose_global(vector.new({-supportX, footY, 0}),uTorso)
   uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso)
-  uLeft1, uLeft2 = uLeft, uLeft
+  uLeft1,  uLeft2  = uLeft,  uLeft
   uRight1, uRight2 = uRight, uRight
   uTorso1, uTorso2 = uTorso, uTorso
   
   -- Compute initial zmp from these foot positions
   zmp_solver:compute( uTorso, uTorso1, uTorso2 )
 
-    -- Zero the step index
+  -- Initialize the step index
   iStep = 1
-  uLRFootOffset = vector.new({0,footY,0})
+  -- Initial step modification counter
+  initial_step = 2
 
   --Place arms in appropriate position at sides
-
   if upper_body_overridden==0 then
     Body.set_larm_command_position(qLArm0)
     Body.set_rarm_command_position(qRArm0)
@@ -392,10 +383,6 @@ function walk.entry()
   Body.set_waist_command_position(0)
   Body.set_waist_hardness(1.0)
   mcm.set_walk_bipedal(1)
-
-  -- Entry is now the start point
-  t_last_step = Body.get_time()
-  initial_step = 2
 
 end
 
@@ -435,8 +422,16 @@ function walk.update()
     supportLeg = iStep % 2
     -- Update the velocity via a filter
     update_velocity()
+    -- Save the previous desired positions as the current desired positions
+    -- TODO: Some feedback could get the uLeft/uRight/uTorso perfectly correct
+    uLeft1, uRight1, uTorso1 = uLeft2, uRight2, uTorso2
+    -- This is the next desired torso position
+    uTorso2 = step_torso(uLeft1, uRight1, 0.5)
     -- Calculate the next step
-    local uSupport = calculate_step( supportLeg )
+    local uSupport
+    -- TODO: We can queue steps, rather than use on the fly calculations...
+    -- That could be sent to the walk engine as via points...?
+    uSupport, uLeft2, uRight2 = calculate_step( uLeft1, uRight1, supportLeg )
     if initial_step>0 then
       -- Adjustable initial step body swing
       uSupport = support_modification()
@@ -460,7 +455,7 @@ function walk.update()
   local pRLeg = vector.new{0,-footY,0, 0,0,0}
   if supportLeg == 0 then
     -- Left support
-    uRight = util.se2_interpolate(xFoot, uRight1, uRight2)
+    uRight   = util.se2_interpolate(xFoot, uRight1, uRight2)
     pRLeg[3] = stepHeight*zFoot
   else
     -- Right support
@@ -478,7 +473,7 @@ function walk.update()
   -- Grab gyro feedback for these joint angles
   local r,p,y = get_gyro_feedback( supportLeg )
 
-   -- Calculate the next desired torso position
+  -- Calculate the next desired torso position
   local pTorso = vector.new({supportX, 0, Config.walk.bodyHeight, 0,bodyTilt,0})
   -- The position of the torso, in Transform format is here
   pTorso[1], pTorso[2] = uTorsoActual[1], uTorsoActual[2] 
@@ -523,16 +518,6 @@ end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')
-
-  -- These are the desired stopping foot placements
-  if supportLeg == 0 then
-    -- Left support
-    uRight2 = util.pose_global(-2*uLRFootOffset, uLeft1)
-  else
-    -- Right support
-    uLeft2 = util.pose_global(2*uLRFootOffset, uRight1)
-  end
-
 end
 
 return walk

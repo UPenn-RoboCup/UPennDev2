@@ -94,6 +94,7 @@ local function get_foot(self,ph)
   local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
   local xf = .5*(1-math.cos(math.pi*phSingleSkew))
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
+  -- xf and zf and percentages, it seems
   return xf, zf, phSingle
 end
 

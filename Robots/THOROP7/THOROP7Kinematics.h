@@ -25,14 +25,31 @@ const double shoulderOffsetZ = .144;
 const double upperArmLength = .246;
 const double elbowOffsetX = .030; //Elbow offset
 //const double lowerArmLength = .242; //Webots value
-const double lowerArmLength = .215; //From actual robot
+const double lowerArmLength = .216; //From actual robot
 
 //Hand offset is based on current webots model
 //We assume hand is offseted inside 
 
+/*
 const double handOffsetX = 0.12; //From actual robot
 const double handOffsetY = 0.05;
 const double handOffsetZ = 0;
+*/
+//Longer wrist for 7DOF hand
+
+const double handOffsetX = 0.22; //From webots model
+const double handOffsetY = 0.086;
+const double handOffsetZ = 0;
+
+
+
+
+
+
+
+
+
+
 
 
 //const double hipOffsetX = 0.01;

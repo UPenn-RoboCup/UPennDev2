@@ -14,13 +14,13 @@ using namespace std;
 vector<uint8_t> temp;
 vector<uint8_t> temp_un(MAX_UNCOMPRESSED_SIZE);
 
-int GetMaxCompressedLen( int nLenSrc ) 
+int GetMaxCompressedLen( size_t nLenSrc ) 
 {
-    int n16kBlocks = (nLenSrc+16383) / 16384; // round up any fraction of a block
+    size_t n16kBlocks = (nLenSrc+16383) / 16384; // round up any fraction of a block
     return ( nLenSrc + 6 + (n16kBlocks*5) );
 }
 
-int CompressData( const BYTE* abSrc, int nLenSrc, BYTE* abDst, int nLenDst )
+int CompressData( const BYTE* abSrc, size_t nLenSrc, BYTE* abDst, int nLenDst )
 {
     z_stream zInfo ={0};
 
@@ -55,7 +55,7 @@ int CompressData( const BYTE* abSrc, int nLenSrc, BYTE* abDst, int nLenDst )
     return( nRet );
 }
 
-int UncompressData( const BYTE* abSrc, int nLenSrc, BYTE* abDst, int nLenDst )
+int UncompressData( const BYTE* abSrc, size_t nLenSrc, BYTE* abDst, int nLenDst )
 {
     z_stream zInfo ={0};
     zInfo.total_in=  zInfo.avail_in=  nLenSrc;
@@ -88,46 +88,56 @@ int UncompressData( const BYTE* abSrc, int nLenSrc, BYTE* abDst, int nLenDst )
 }
 
 static int lua_z_compress(lua_State *L) {
-  uint8_t * dataSrc = (uint8_t *) luaL_checkstring(L, 1);
-  if ((dataSrc == NULL) || !lua_isstring(L, 1)) {
-    return luaL_error(L, "ZCompress: First argument must be string");
-  }
-  int lenSrc = luaL_checkint(L, 2);
 
-  int lenDst= GetMaxCompressedLen(lenSrc);
+  uint8_t * dataSrc = NULL;
+  size_t sz = 0;
+  if (lua_isstring(L, 1)) {
+    dataSrc = (uint8_t *) lua_tolstring(L, 1, &sz);
+    //sz = luaL_optint(L, 2, sz);
+  } else if (lua_islightuserdata(L, 1)) {
+    dataSrc = (uint8_t *) lua_touserdata(L, 1);
+    sz = luaL_checkint(L, 2);
+  } else {
+    return luaL_error(L, "Bad zlib input");
+  }
+
+  size_t lenDst = GetMaxCompressedLen(sz);
 
   temp.resize(lenDst);
 
   //printf("%d %d\n",lenSrc,lenDst);
-  int lenPacked= CompressData( dataSrc, lenSrc, &(temp[0]), lenDst );
+  int lenPacked = CompressData( dataSrc, sz, &(temp[0]), lenDst );
 
-  if (lenPacked > 0) {
-    lua_pushlstring(L, (const char *)&(temp[0]), lenPacked);
-  }
-  else {
-    return luaL_error(L, "Compress Error");
-  }
+  if (lenPacked<0)
+    return luaL_error(L, "Compression Error");
+
+  // Push data as a string
+  lua_pushlstring(L, (const char *)&(temp[0]), lenPacked);
 
   return 1;
 }
 
 static int lua_z_uncompress(lua_State *L) {
-  uint8_t * dataSrc = (uint8_t *) luaL_checkstring(L, 1);
-  if ((dataSrc == NULL) || !lua_isstring(L, 1)) {
-    return luaL_error(L, "ZUncompress: First argument must be string");
+
+  uint8_t * dataSrc = NULL;
+  size_t sz = 0;
+  if (lua_isstring(L, 1)) {
+    dataSrc = (uint8_t *) lua_tolstring(L, 1, &sz);
+    //sz = luaL_optint(L, 2, sz);
+  } else if (lua_islightuserdata(L, 1)) {
+    dataSrc = (uint8_t *) lua_touserdata(L, 1);
+    sz = luaL_checkint(L, 2);
+  } else {
+    return luaL_error(L, "Bad zlib input");
   }
-  int lenSrc = luaL_checkint(L, 2);
  
   //printf("%d %d\n",lenSrc,lenDst);
-  int lenUnpacked= UncompressData( dataSrc, lenSrc, &(temp_un[0]), temp_un.size() );
+  int lenUnpacked = UncompressData( dataSrc, sz, &(temp_un[0]), temp_un.size() );
 
-  if (lenUnpacked > 0) {
-    lua_pushlstring(L, (const char *)&(temp_un[0]), lenUnpacked);
-  }
-  else {
-    return luaL_error(L, "Uncompress Error");
-  }
+  if (lenUnpacked<0)
+    return luaL_error(L, "Decompression Error");
 
+  lua_pushlstring(L, (const char *)&(temp_un[0]), lenUnpacked);
   return 1;
 }
 

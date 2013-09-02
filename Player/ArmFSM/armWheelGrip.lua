@@ -27,11 +27,11 @@ local function calculate_arm_position(turnAngle)
 
    local trGripL = trHandle
        * T.rotX(turnAngle)
-       * T.trans(0,handle_radius,0)
+       * T.trans(0,handle_radius1,0)
        * T.rotZ(-math.pi/4)
    local trGripR = trHandle
        * T.rotX(turnAngle)
-       * T.trans(0,-handle_radius,0)
+       * T.trans(0,-handle_radius1,0)
        * T.rotZ(math.pi/4)
        
    local trBody = T.eye()
@@ -60,8 +60,6 @@ function state.entry()
   -- Inner and outer radius
   handle_radius0 = handle_radius - 0.02
   handle_radius1 = handle_radius + 0.02
-
-  print('Grabbing wheel:',wheel)
 
 end
 
@@ -108,8 +106,9 @@ function state.update()
   --]]
 
   if qL_desired==true and qR_desired==true then
-    Body.set_lgrip_percent(.5)
-    Body.set_rgrip_percent(.5)
+    -- Close the fingers
+    Body.set_lgrip_percent(1)
+    Body.set_rgrip_percent(1)
     return'done'
   end
   

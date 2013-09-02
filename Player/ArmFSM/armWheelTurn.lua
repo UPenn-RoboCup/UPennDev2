@@ -8,7 +8,7 @@ local util   = require'util'
 require'hcm'
 
 -- Arm joints Angular velocity limits
-local dqArmMax = vector.new({30,30,30,45,60,60,60})*Body.DEG_TO_RAD
+local dqArmMax = vector.new({30,30,30,45,60,60})*Body.DEG_TO_RAD
 -- Turning speed
 local dturnAngleMax = 3*math.pi/180 -- 3 deg per sec
 local turnAngleMax = 9*math.pi/180  -- 9 deg max
@@ -19,7 +19,7 @@ local body_rpy = {0,0,0}
 
 local turnAngleCurrent
 local handle_pos,handle_pitch,handle_yaw
-local handle_radius1,handle_radius0,handle_radius
+local handle_radius1,handle_radius0
 local function calculate_arm_position(turnAngle)
    local trHandle = T.eye()
        * T.trans(handle_pos[1],handle_pos[2],handle_pos[3])
@@ -28,11 +28,11 @@ local function calculate_arm_position(turnAngle)
 
    local trGripL = trHandle
        * T.rotX(turnAngle)
-       * T.trans(0,handle_radius,0)
+       * T.trans(0,handle_radius1,0)
        * T.rotZ(-math.pi/4)
    local trGripR = trHandle
        * T.rotX(turnAngle)
-       * T.trans(0,-handle_radius,0)
+       * T.trans(0,-handle_radius1,0)
        * T.rotZ(math.pi/4)
        
    local trBody = T.eye()
@@ -63,11 +63,15 @@ function state.entry()
   t_entry  = Body.get_time()
   t_update = t_entry 
   
-  -- TODO: Ever re-perceive the wheel properties?
-  handle_pos    = hcm:get_wheel_pos()
-  handle_pitch  = hcm:get_wheel_pitchangle()
-  handle_yaw    = hcm:get_wheel_yawangle()
-  handle_radius = hcm:get_wheel_radius()
+-- Let's store wheel data here
+  local wheel   = hcm.get_wheel_model()
+  handle_pos    = vector.slice(wheel,1,3)
+  handle_yaw    = wheel[4]
+  handle_pitch  = wheel[5]
+  local handle_radius = wheel[6]
+  -- Inner and outer radius
+  handle_radius0 = handle_radius - 0.02
+  handle_radius1 = handle_radius + 0.02
 
   -- Always enter this state
   -- with a turn angle of zero
@@ -115,8 +119,7 @@ function state.update()
   local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
   local qR_desired = Body.get_inverse_rarm(qLArm,trRArm)
 
-
-    -- Go there
+  -- Go there
   if qL_desired then
     qL_desired = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
     if qL_desired~=true then Body.set_larm_command_position( qL_desired ) end

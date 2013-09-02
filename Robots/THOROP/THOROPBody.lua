@@ -180,7 +180,7 @@ servo.rad_bias = vector.new({
 	90,90,90,45,-90,0, --RArm
 	0,0, -- Waist
 	0,0,0, -- left gripper
-	0,-80,0, -- right gripper -- TODO: Remount the finger...
+	0,0,0, -- right gripper -- TODO: Remount the finger...
 	0, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.rad_bias==nJoint,'Bad servo rad_bias!')
@@ -192,8 +192,8 @@ servo.min_rad = vector.new({
 	-175,-175,-175,-175,-175,-175, --RLeg
 	-175,-150,-180,-140,-100,-80, --RArm
 	-175,-175, -- Waist
-	-20,-20,-20, -- left gripper
-	-10,-10,-10, -- right gripper
+	0,0,0, -- left gripper
+	0,0,0, -- right gripper
 	-45, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
@@ -205,8 +205,8 @@ servo.max_rad = vector.new({
 	175,175,175,175,175,175, --RLeg
 	160,5,90,0,100,80, --RArm
 	175,175, -- Waist
-	10,10,10, -- left gripper
-	20,25,25, -- right gripper
+	90,90,90, -- left gripper
+	90,90,90, -- right gripper
 	45, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
@@ -626,6 +626,7 @@ end
 ----------------------
 -- Webots compatibility
 if IS_WEBOTS then
+  local Config     = require'Config'
 	local webots     = require'webots'
   local simple_ipc = require'simple_ipc'
   local mp         = require'msgpack'
@@ -647,8 +648,8 @@ if IS_WEBOTS then
 		-1,-1,-1,-1,-1,1, --RArm
 		-- TODO: Check the gripper
 		1,1, -- Waist
-		1,1,1, -- left gripper
-		1,1,1, -- right gripper
+		1,-1,1, -- left gripper
+		1,-1,-1, -- right gripper
 		1, -- Lidar pan
 	})
 	servo.rad_bias = vector.new({
@@ -676,7 +677,7 @@ if IS_WEBOTS then
   head_camera_wbt = {}
   head_camera_wbt.meta = {}
   --head_camera_wbt.channel = simple_ipc.new_publisher'head_cam'
-  head_camera_wbt.channel = udp.new_sender('localhost',54321)
+  head_camera_wbt.channel = udp.new_sender(Config.net.operator.wired,Config.net.head_camera)
   update_head_camera = function()
     local metadata = {}
     metadata.t = Body.get_time()
@@ -752,8 +753,8 @@ if IS_WEBOTS then
 		  tags.compass = webots.wb_robot_get_device("Compass")
 		  webots.wb_compass_enable(tags.compass, timeStep)
       -- RPY
-      --tags.rpy = webots.wb_robot_get_device("InertialUnit")
-      --webots.wb_inertial_unit_enable(tags.rpy, timeStep)
+      tags.inertialunit = webots.wb_robot_get_device("InertialUnit")
+      --webots.wb_inertial_unit_enable(tags.inertialunit, timeStep)
     end
     --[[
 		-- Kinect
@@ -824,8 +825,9 @@ if IS_WEBOTS then
 			end
 
 			-- Only set in webots if Torque Enabled
-			if en > 0 and jtag>0 then
-        webots.wb_servo_set_position(jtag, servo.direction[i] * (new_pos + servo.rad_bias[i]) )
+			if en>0 and jtag>0 then
+        local pos = servo.direction[i] * (new_pos + servo.rad_bias[i])
+        webots.wb_servo_set_position(jtag, pos )
       end
 		end --for
 
@@ -846,7 +848,7 @@ if IS_WEBOTS then
     if use_pose then
       local gps = webots.wb_gps_get_values(tags.gps)
       local compass = webots.wb_compass_get_values(tags.compass)
-      --local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.rpy)
+      --local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
       --wcm.set_global_pose( gps )
       --wcm.set_global_orientation( compass )
     end

@@ -18,14 +18,6 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   t_finish = t
-
-  -- Release the fingers
-  -- TODO: Torque off?
-
---SJ: This makes finger jerk at transitions
---  Body.set_lgrip_percent(0)
---  Body.set_rgrip_percent(0)
-
 end
 
 function state.update()

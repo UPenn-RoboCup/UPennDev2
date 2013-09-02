@@ -26,7 +26,7 @@ end
 
 --NOTE: Can do memory AND fsm event.  In that order
 local function process_rpc(rpc)
-  util.ptable(rpc)
+  --util.ptable(rpc)
 
   local status, reply
   -- Shared memory modification

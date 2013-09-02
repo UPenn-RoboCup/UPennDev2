@@ -29,9 +29,13 @@ shared_data.motion.estop = vector.zeros(1)
 --------------------------------
 -- Wheel/Valve
 shared_data.wheel = {}
---shared_data.wheel.pos        = vector.new({.3,0,.1})
-shared_data.wheel.pos        = vector.new({.40,0,.1})
+-- This has all values: the right way, since one rpc call
+-- {handlepos(3) handleyaw handlepitch handleradius}
+shared_data.wheel.model = vector.zeros(6)
 
+
+-- This is the old way, with many sets...
+shared_data.wheel.pos        = vector.new({.40,0,.1})
 shared_data.wheel.radius     = vector.new({.15})
 shared_data.wheel.yawangle   = vector.zeros(1)
 shared_data.wheel.pitchangle = vector.zeros(1)

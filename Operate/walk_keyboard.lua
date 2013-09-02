@@ -120,8 +120,15 @@ local function process_character(key_code,key_char,key_char_lower)
     cmd = {}
     cmd.shm = 'vcm'
     cmd.segment = 'head_lidar'
+    cmd.key = 'depths'
+    cmd.val = {0.1,2}
+    send_command(cmd)
+    cmd = {}
+    cmd.shm = 'vcm'
+    cmd.segment = 'head_lidar'
     cmd.key = 'net'
-    cmd.val = {1,1,0}
+    --cmd.val = {1,1,0} --jpeg
+    cmd.val = {1,2,0} --zlib
     return send_command(cmd)
   elseif key_char_lower=='c' then
     print( util.color('Request Chest Mesh','yellow') )
@@ -129,7 +136,8 @@ local function process_character(key_code,key_char,key_char_lower)
     cmd.shm = 'vcm'
     cmd.segment = 'chest_lidar'
     cmd.key = 'net'
-    cmd.val = {1,1,0}
+    --cmd.val = {1,1,0} --jpeg
+    cmd.val = {1,2,0} --zlib
     return send_command(cmd)
   end
 

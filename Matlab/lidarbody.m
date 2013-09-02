@@ -1,5 +1,5 @@
 function ret = lidarbody()
-global HEAD_LIDAR CHEST_LIDAR LIDAR H_FIGURE DEBUGMON POSE
+global HEAD_LIDAR CHEST_LIDAR LIDAR H_FIGURE DEBUGMON POSE CONTROL
 LIDAR.init = @init;
 LIDAR.update = @update;
 LIDAR.set_meshtype = @set_meshtype;
@@ -146,14 +146,19 @@ CHEST_LIDAR.posea=[];
             nBytes = nBytes + numel(udp_data);
         end
         [metadata,offset] = msgpack('unpack',udp_data);
-        jdepth = udp_data(offset+1:end);
-        depth_img = djpeg(jdepth);
+        disp(metadata)
+        cdepth = udp_data(offset+1:end);
+        if strncmp(char(metadata.c),'jpeg',3)==1
+            depth_img = djpeg(cdepth);
+        else
+            depth_img = zlibUncompress(cdepth);
+            depth_img = reshape(depth_img,[metadata.resolution(2) metadata.resolution(1)]);
+            depth_img = depth_img';
+        end
         % Calculate the angles
         fov_angles = metadata.fov(1) : .25*(pi/180) : metadata.fov(2);
         scanline_angles = metadata.scanlines(1) : 1/metadata.scanlines(3) : metadata.scanlines(2);
-        metadata.depths
-        % Debugging
-        disp(metadata)
+        
         if strncmp(char(metadata.name),'head',3)==1
             % Save data
             HEAD_LIDAR.ranges = depth_img;
@@ -182,7 +187,7 @@ CHEST_LIDAR.posea=[];
     end
 
     function data = wheel_calc(h,~,val)
-        points3d = LIDAR.selected_points;
+        points3d = LIDAR.selected_points
         data=[];
         disp('Wheel calculation...');
         if numel(points3d)>=3*3
@@ -198,21 +203,22 @@ CHEST_LIDAR.posea=[];
                 % x distance in meters
                 disp('Handle is too far or too close!');
                 disp(handlepos)
-                return;
+                %return;
             end
 
             % Find the radius of the wheel
             handleradius = norm(leftrelpos-rightrelpos)/2;
             if handleradius>1 || handleradius<0.10
                 % radius in meters
-                disp('Raduis is too big or too small!');
+                disp('Radius is too big or too small!');
                 disp(handleradius)
-                return;
+                %return;
             end
 
             handleyaw = atan2(...
-                leftrelpos(2)-rightrelpos(2),leftrelpos(1)-rightrelpos(1)...
-                ) - pi/2;
+                leftrelpos(2)-rightrelpos(2), ...
+                leftrelpos(1)-rightrelpos(1)) ...
+                - pi/2;
             % TODO: yaw checks
 
             handlepitch = atan2(...
@@ -231,7 +237,7 @@ CHEST_LIDAR.posea=[];
             % TODO: use two separate wheel estimates?
             % TODO: send this data to the robot
             LIDAR.wheel_model = [handlepos handleyaw handlepitch handleradius]
-            %send_control_packet([],[],'hcm','wheel','model',LIDAR.wheel_model);
+            CONTROL.send_control_packet([],[],'hcm','wheel','model',LIDAR.wheel_model);
 
             % Reset the user clicked points
             LIDAR.clicked_points = [];
@@ -384,10 +390,8 @@ CHEST_LIDAR.posea=[];
             local_to_global(3,1) = -sin(scanline_angle_selected);
             global_point = local_to_global * local_point;
             global_point(3) = global_point(3) + HEAD_LIDAR.neck_height;
-            local_point
-            global_point
             
-            LIDAR.selected_points = [LIDAR.selected_points; global_point];
+            LIDAR.selected_points = [LIDAR.selected_points; global_point(1:3)'];
             disp_str = sprintf('Selected (%.3f %.3f %.3f)', ...
                     global_point(1),global_point(2),global_point(3) );
             DEBUGMON.addtext(disp_str);

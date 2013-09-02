@@ -97,7 +97,9 @@ local function stream_mesh(type)
     vcm['set_'..type.meta.name..'_lidar_net'](net_settings)
   end
   -- Sensitivity range in meters
-  local depths = type.meta.depths
+  -- Depths when compressing
+  local depths = vcm['get_'..type.meta.name..'_lidar_depths']()
+  type.meta.depths = depths
   local near = depths[1]
   local far = depths[2]
   -- Safety check

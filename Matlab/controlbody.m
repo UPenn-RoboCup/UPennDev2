@@ -33,13 +33,14 @@ ret = CONTROL;
         set(b4,'CallBack',{BODY.set_viewpoint,4});
     end
 
-    function setup_lidarbody_controls(b1,b2, lmb1,lmb2,lmb3)
+    function setup_lidarbody_controls(b1,b2, lmb1,lmb2,lmb3,lmb4)
         set(b1,'CallBack',{LIDAR.set_meshtype,1});
         set(b2,'CallBack',{LIDAR.set_meshtype,2});
         
         set(lmb1,'CallBack',{LIDAR.set_zoomlevel,1});
         set(lmb2,'CallBack',{LIDAR.set_zoomlevel,2});
         set(lmb3,'CallBack',{LIDAR.clear_points});
+        set(lmb4,'CallBack',{LIDAR.set_img_display});
         
     end
 

@@ -14,7 +14,7 @@ if lidar_type==0
     linenum = size(lidar.ranges, 1)
     disp('HEAD LIDARDATA')
     % Update 2D depth image
-    depthfig = lidar.ranges
+    depthfig = lidar.ranges;
     depthfig = flipdim(depthfig,2);
     set(lidar.h1,'Cdata', depthfig);
     set(lidar.p1, 'XLim', [1 size(lidar.ranges,2)]);

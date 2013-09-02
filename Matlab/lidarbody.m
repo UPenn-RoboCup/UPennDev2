@@ -1,14 +1,20 @@
 function ret = lidarbody()
 global HEAD_LIDAR CHEST_LIDAR LIDAR H_FIGURE DEBUGMON POSE
-LIDAR.meshtype = 2; %Chest lidar default
-
 LIDAR.init = @init;
 LIDAR.update = @update;
 LIDAR.set_meshtype = @set_meshtype;
+LIDAR.set_img_display = @set_img_display;
 LIDAR.wheel_calc = @wheel_calc;
 LIDAR.get_single_approach = @get_single_approach;
 LIDAR.get_double_approach = @get_double_approach;
 
+% Which mesh to display
+% Chest lidar default
+LIDAR.meshtype = 2;
+
+% 0: Show head
+% 1: Show chest
+LIDAR.mesh_img_display = 1;
 
 LIDAR.clear_points = @clear_points;
 LIDAR.set_zoomlevel = @set_zoomlevel;
@@ -61,36 +67,25 @@ CHEST_LIDAR.posex=[];
 CHEST_LIDAR.posey=[];
 CHEST_LIDAR.posea=[];
 
-    function init(a1,a2,a_mesh)
+    function init(a1,a_mesh)
         %maximum size for 3d mesh
         
-        %% Setup the figure
-        HEAD_LIDAR.p1 = a1;
+        %% Setup the image figure
         if a1~=0
+            LIDAR.p_img = a1;
             axes(a1);
-            HEAD_LIDAR.h1= imagesc( HEAD_LIDAR.ranges );
-            set(HEAD_LIDAR.p1,'xtick',[],'ytick',[])
+            % Default to head lidar
+            LIDAR.h_img = imagesc( HEAD_LIDAR.ranges );
+            set(LIDAR.p_img,'xtick',[],'ytick',[])
             colormap('HOT')
-            set(HEAD_LIDAR.h1, 'ButtonDownFcn', {@select_3d,1});
+            set(LIDAR.h_img, 'ButtonDownFcn', {@select_3d,1});
             hold on;
-            HEAD_LIDAR.pointdraw = plot(a1,0,0,'g.');
-            set(HEAD_LIDAR.pointdraw, 'MarkerSize', 40 );
+            LIDAR.pointdraw = plot(a1,0,0,'g.');
+            set(LIDAR.pointdraw, 'MarkerSize', 40 );
             hold off;
         end
         
-        CHEST_LIDAR.p1 = a2;
-        if a2~=0
-            axes(a2);
-            CHEST_LIDAR.h1= imagesc( CHEST_LIDAR.ranges );
-            set(CHEST_LIDAR.p1,'xtick',[],'ytick',[])
-            colormap('HOT')
-            set(CHEST_LIDAR.h1, 'ButtonDownFcn', {@select_3d,2});
-            hold on;
-            CHEST_LIDAR.pointdraw = plot(a2,0,0,'g*');
-            hold off;
-        end
-        
-        %Shared mesh display
+        % Shared 3d mesh display
         LIDAR.p = a_mesh;
         if a_mesh~=0
             axes(a_mesh);
@@ -115,8 +110,32 @@ CHEST_LIDAR.posea=[];
         end
     end
 
+    function set_img_display(h,~,val)
+        LIDAR.mesh_img_display = 1-LIDAR.mesh_img_display;
+        if LIDAR.mesh_img_display==0
+            % Set the string to the next mesh (not current)
+            set(h,'String','Chest');
+        else
+            set(h,'String','Head');
+        end
+        draw_mesh_image();
+    end
+
+    function draw_mesh_image()
+        % Draw the data
+        if LIDAR.mesh_img_display==0
+            depthfig = flipdim(HEAD_LIDAR.ranges,2);
+        elseif LIDAR.mesh_img_display==1
+            depthfig = (CHEST_LIDAR.ranges)';
+        end
+        set(LIDAR.h_img,'Cdata', depthfig);
+        set(LIDAR.p_img, 'XLim', [1 size(depthfig,2)]);
+        set(LIDAR.p_img, 'YLim', [1 size(depthfig,1)]);
+    end
+
     function [nBytes] = update(fd)
-        disp('getting a mesh!')
+        disp('Getting a mesh!');
+        t0 = tic;
         nBytes = 0;
         while udp_recv('getQueueSize',fd) > 0
             udp_data = udp_recv('receive',fd);
@@ -124,54 +143,28 @@ CHEST_LIDAR.posea=[];
         end
         [metadata,offset] = msgpack('unpack',udp_data);
         jdepth = udp_data(offset+1:end);
-        %if metadata.type==0
+        depth_img = djpeg(jdepth);
+        % Debugging
+        disp(metadata)
         if strncmp(char(metadata.name),'head',3)==1
-            HEAD_LIDAR.ranges = djpeg(jdepth);
-            %HEAD_LIDAR.lidarangles = metadata.lidarangles;
-            %HEAD_LIDAR.spineangles = metadata.spineangles;
-            %HEAD_LIDAR.lidarrange = metadata.lidarrange;
-            %HEAD_LIDAR.range0 = double(metadata.range0);
-            %HEAD_LIDAR.range1 = double(metadata.range1);
-            
-            %{
-      if isfield(metadata,'posex')
-        HEAD_LIDAR.posex = cell2mat(metadata.posex);
-        HEAD_LIDAR.posey = cell2mat(metadata.posey);
-        HEAD_LIDAR.posea = cell2mat(metadata.posea);
-      end
-            %}
-            %{
-            HEAD_LIDAR.verts=[];
-            HEAD_LIDAR.faces=[];
-            HEAD_LIDAR.cdatas=[];
-            %      disp('Head lidar data')
-            %}
-            update_lidar(0);
-            
-            %TEST AUTODETECT
-            %	    detect_wheel(HEAD_LIDAR);
-            
+            % Save data
+            HEAD_LIDAR.ranges = depth_img;
+            % Update the figure
+            if LIDAR.mesh_img_display==0
+                draw_mesh_image()
+            end
         else
-            CHEST_LIDAR.ranges = djpeg(jdepth);
-            CHEST_LIDAR.lidarangles = metadata.lidarangles;
-            %CHEST_LIDAR.spineangles = metadata.spineangles;
-            CHEST_LIDAR.lidarrange = metadata.lidarrange;
-            CHEST_LIDAR.range0 = double(metadata.range0);
-            CHEST_LIDAR.range1 = double(metadata.range1);
-            %{
-      if isfield(metadata,'posex')
-        CHEST_LIDAR.posex = cell2mat(metadata.posex);
-        CHEST_LIDAR.posey = cell2mat(metadata.posey);
-        CHEST_LIDAR.posea = cell2mat(metadata.posea);
-      end
-            %}
-            CHEST_LIDAR.verts=[];
-            CHEST_LIDAR.faces=[];
-            CHEST_LIDAR.cdatas=[];
-            %     disp('Chest lidar data')
-            update_lidar(1);
+            % Save data
+            CHEST_LIDAR.ranges = depth_img;
+            % Update the figure
+            if LIDAR.mesh_img_display==1
+                draw_mesh_image()
+            end
         end
-        set_meshtype(0,0,LIDAR.meshtype); % redraw figure
+
+        % end of update
+        tPassed = toc(t0);
+        fprintf('Update lidar: %f seconds.\n',tPassed);
     end
 
     function data = wheel_calc()

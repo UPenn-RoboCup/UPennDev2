@@ -150,7 +150,8 @@ local function angle_to_scanline( meta, rad )
   local res   = meta.resolution[1]
   local ratio = (rad-start)/(stop-start)
   -- Round
-  local scanline = math.floor(ratio*res+.5)
+  --local scanline = math.floor(ratio*res+.5)
+  local scanline = math.ceil(ratio*res)
   -- Return a bounded value
   return math.max( math.min(scanline, res), 1 )
 end

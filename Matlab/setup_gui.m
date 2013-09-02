@@ -80,7 +80,7 @@ BODY = robotbody();
 BODY.init(H_MESH_AXES);
 
 LIDAR = lidarbody();
-LIDAR.init(H_DMAP_AXES,0,H_MESH_AXES);
+LIDAR.init(H_DMAP_AXES,H_MESH_AXES);
 
 
 rb1=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
@@ -125,6 +125,10 @@ lmb3 = uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
     'FontSize', 14, ...
     'Position', [THIRD_COL+0.00 SECOND_ROW-0.09 0.04 0.04]);
 
+lmb4 = uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+    'String', 'Head', 'Units', 'Normalized', ...
+    'FontSize', 14, ...
+    'Position', [THIRD_COL+0.00 SECOND_ROW-0.12 0.04 0.04]);
 
 
 %{
@@ -143,7 +147,7 @@ lmb3 = uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
     
     
     CONTROL.setup_robotbody_controls(rb1,rb2,rb3,rb4);
-    CONTROL.setup_lidarbody_controls(lb1,lb2,lmb1,lmb2,lmb3);
+    CONTROL.setup_lidarbody_controls(lb1,lb2,lmb1,lmb2,lmb3,lmb4);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     

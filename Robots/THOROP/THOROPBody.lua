@@ -863,10 +863,10 @@ if IS_WEBOTS then
       -- Save important metadata
       head_lidar_wbt.meta.t  = t
       head_lidar_wbt.meta.count  = head_lidar_wbt.meta.count  + 1
-      head_lidar_wbt.meta.angle = Body.get_head_command_position(2)
+      head_lidar_wbt.meta.angle = Body.get_head_position(2)
       chest_lidar_wbt.meta.t  = t
       chest_lidar_wbt.meta.count = chest_lidar_wbt.meta.count + 1
-      chest_lidar_wbt.meta.angle = Body.get_lidar_command_position(1)
+      chest_lidar_wbt.meta.angle = Body.get_lidar_position(1)
       -- Send the count on the channel so they know to process a new frame
       head_lidar_wbt.channel:send(  mp.pack(head_lidar_wbt.meta)  )
       chest_lidar_wbt.channel:send( mp.pack(chest_lidar_wbt.meta) )

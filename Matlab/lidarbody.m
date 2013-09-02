@@ -228,7 +228,7 @@ CHEST_LIDAR.posea=[];
             
             % Debug message
             wheel_str = sprintf(...
-                'Wheel property: pos %.2f %.2f %.2f yaw %.1f pitch %.1f radius %.2f',...
+                'Pos %.2f %.2f %.2f\nY %.1f P %.1f Rad %.2f',...
                 handlepos(1),handlepos(2),handlepos(3),...
                 handleyaw*180/pi,handlepitch*180/pi,handleradius );
             DEBUGMON.addtext(wheel_str);
@@ -362,20 +362,28 @@ CHEST_LIDAR.posea=[];
         
         % if head
         if LIDAR.mesh_img_display==0
-            fov_angle_index = numel(HEAD_LIDAR.fov_angles)+1 - floor(posxy(1)-0.5);
-            scanline_index = floor(posxy(2)-0.5);
-            range = double( HEAD_LIDAR.ranges(scanline_index,fov_angle_index) )
-            range = (range/255.0) * (HEAD_LIDAR.depths(2)-HEAD_LIDAR.depths(1));
-            range = range + HEAD_LIDAR.depths(1)
-            fov_angle_selected = -1*HEAD_LIDAR.fov_angles(fov_angle_index)
-            scanline_angle_selected = -1*HEAD_LIDAR.scanline_angles(scanline_index)
-            % TODO: Average nearby neighbor ranges
+            %fov_angle_index = numel(HEAD_LIDAR.fov_angles)+1 - floor(posxy(1)-0.5);
+            %scanline_index = floor(posxy(2)-0.5);
+            fov_angle_index = floor(posxy(1)-0.5);
+            scanline_index  = floor(posxy(2)-0.5);
             
+            size(HEAD_LIDAR.ranges);
+            size(HEAD_LIDAR.scanline_angles);
+            size(HEAD_LIDAR.fov_angles);
+
+            range = HEAD_LIDAR.ranges(scanline_index,fov_angle_index)
+            range = double(range)/255 * (HEAD_LIDAR.depths(2)-HEAD_LIDAR.depths(1));
+            range = range + HEAD_LIDAR.depths(1);
+            fov_angle_selected = -1*HEAD_LIDAR.fov_angles(fov_angle_index);
+            scanline_angle_selected = -1*HEAD_LIDAR.scanline_angles(scanline_index);
+            % TODO: Average nearby neighbor ranges
+            %{
             global_point = lidartrans(...
                 'headproject', ...
                 fov_angle_selected, ...
                 scanline_angle_selected, ...
-                range)
+                range);
+            %}
             
             local_point = [ ...
             range*cos(fov_angle_selected); ...

@@ -12,7 +12,7 @@ local t_entry, t_update, ph_speed, ph, forward
 -- Update the parameters
 local function update_tilt_params()
   -- Set up the tilt boundaries
-  local e = vcm.get_chest_lidar_scanlines()
+  local e = vcm.get_head_lidar_scanlines()
   min_tilt = e[1]
   max_tilt = e[2]
   mid_tilt = (max_tilt + min_tilt) / 2

@@ -236,14 +236,8 @@ function mesh.update()
   local npoll = channel_polls:poll(channel_timeout)
   --print('here',npoll,head.needs_update,chest.needs_update)
   -- Stream the current mesh
-  if head.needs_update then
-    stream_mesh(head)
-    head.needs_update = false
-  end
-  if chest.needs_update then
-    stream_mesh(chest)
-    chest.needs_update = false
-  end
+  stream_mesh(head)
+  stream_mesh(chest)
 end
 
 function mesh.exit()

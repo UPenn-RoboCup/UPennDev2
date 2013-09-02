@@ -4,12 +4,12 @@ WorldInfo {
     "Handle operating test for DRC"
   ]
   title "handletest"
-  basicTimeStep 15
-  displayRefresh 3
+  basicTimeStep 25
+  FPS 10
 }
 Viewpoint {
-  orientation -0.484978 0.830748 0.273228 1.16681
-  position 2.2 2.7 1.4
+  orientation -0.535527 0.679765 0.501129 1.87165
+  position 1.27731 5.0983 1.92407
 }
 Background {
   skyColor [
@@ -26,43 +26,39 @@ DirectionalLight {
   direction 0.5 -0.5 0.5
   intensity 0.5
 }
-DEF FLOOR MetricFloor{
+DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
-  locked TRUE
 }
-THOROP {
-#THOROP_NoBoundaries {
-  translation 0.0133002 1.155 0.247651
-  rotation 0 1 0 1.57
+THOROP_NoBoundaries {
+  translation -0.133665 1.15535 1.96092
+  rotation -0.000302509 0.999999 0.00130804 1.57002
   controller "thorop"
   controllerArgs "0 32"
 }
-
-Solid{
-  translation 0.3 1.2 0
+Solid {
+  translation 0.316526 1.2 -0.0240073
   rotation 0 0 1 0
-  children[
-    SteeringWheelSmall{}
+  children [
+    SteeringWheelSmall {
+    }
   ]
   locked TRUE
 }
-
-
-Solid{
-  translation 0.3 1.2 1.0
+Solid {
+  translation 0.3 1.2 1
   rotation 0 0 1 0
-  children[
-    SteeringWheelSmall{}
+  children [
+    SteeringWheelSmall {
+    }
   ]
   locked TRUE
 }
-
-
-Solid{
-  translation 0.3 1.2 2.0
+Solid {
+  translation 0.3 1.2 2
   rotation 0 0 1 -0.5
-  children[
-    SteeringWheelSmall{}
+  children [
+    SteeringWheelSmall {
+    }
   ]
   locked TRUE
 }

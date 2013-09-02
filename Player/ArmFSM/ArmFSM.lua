@@ -90,7 +90,7 @@ sm:set_transition(armWheelGrip, 'done', armWheelTurn)
 --
 sm:set_transition(armWheelTurn, 'reset', armReady)
 --
-sm:set_transition(armDoorGrip, 'reset', armTeleop)
+sm:set_transition(armDoorGrip, 'reset', armReady)
 sm:set_transition(armDoorGrip, 'done', armTeleop)
 -- TODO: This may not be the best
 -- We may wish to give ready and init

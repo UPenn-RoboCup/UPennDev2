@@ -111,17 +111,22 @@ ret = CONTROL;
         SLAM.clear_waypoint();
     end
 
-    function setup_arm_controls(b1,b2,b3,b4)
+    function setup_arm_controls(b1,b2,b3,b4,b5)
         CONTROL.arm.init  = b1;
-        CONTROL.arm.grab  = b2;
+        CONTROL.arm.ready = b2;
         CONTROL.arm.reset = b3;
-        CONTROL.arm.stop  = b4;
+        %
+        CONTROL.arm.grab  = b4;
         
-        % init
+        
+        % standard
         set(b1,'CallBack',{@send_arm_event,'init'});
         set(b2,'CallBack',{@send_arm_event,'ready'});
-        set(b3,'CallBack',{@send_arm_event,'wheelgrab'});
-        set(b4,'CallBack',{@send_arm_event,'reset'});
+        set(b3,'CallBack',{@send_arm_event,'reset'});
+        % grabbing
+        set(b4,'CallBack',{@send_arm_event,'wheelgrab'});
+        set(b5,'CallBack',{@send_arm_event,'doorgrab'});
+        
     end
 
     function send_arm_event(~,~,evt)

@@ -1,39 +1,47 @@
 local state = {}
-state._NAME = 'armDoorGrip'
+state._NAME = ...
 local Config = require'Config'
 local Body   = require'Body'
 local T      = require'Transform'
 local util   = require'util'
-local vector = require'vector'
 require'hcm'
 
 -- Angular velocity limit
 local dqArmMax = vector.new({10,10,10,15,45,45})*Body.DEG_TO_RAD
 
 local turnAngle = 0
-local function calculate_arm_position()
-  local body_pos   = vector.new{0,0,0}
-  local body_rpy   = vector.new{0,0,0}
-  local handle     = hcm.get_door_handle()
-  handle = vector.new{0.4,-0.2,0.1, math.pi/4, .1 }
-  local open_angle = hcm.get_door_open_ang()
+local body_pos = {0,0,0}
+local body_rpy = {0,0,0}
 
-  local trHandle = T.eye()
-      * T.trans(unpack(vector.slice(handle,1,3)) )
-      * T.rotZ(open_angle)
+local t_init = 5.0
+local t_grip = 5.0
 
-  local trGrip = trHandle
-      * T.rotZ( 45*math.pi/180 ) -- wrist offset yaw
-      * T.rotX(handle[4])
-      * T.trans(0,handle[4]/2,0)
+local handle_pos,handle_pitch,handle_yaw
+local handle_radius1,handle_radius0,handle_radius
+local trHandle, trGripL, trGripR, trBody, trLArm, trRArm
+local function calculate_arm_position(turnAngle)
+   local trHandle = T.eye()
+       * T.trans(handle_pos[1],handle_pos[2],handle_pos[3])
+       * T.rotZ(handle_yaw)
+       * T.rotY(handle_pitch)
+
+   local trGripL = trHandle
+       * T.rotX(turnAngle)
+       * T.trans(0,handle_radius/2,0)
+       * T.rotZ(-math.pi/4)
+   local trGripR = trHandle
+       * T.rotX(turnAngle)
+       * T.trans(0,-handle_radius/2,0)
+       * T.rotZ(math.pi/4)
        
-  local trBody = T.eye()
-      * T.trans( unpack(body_pos) )
-      * T.rotZ(body_rpy[3])
-      * T.rotY(body_rpy[2])
-  	   
-  local trArm = T.position6D(T.inv(trBody)*trGrip)
-  return trArm
+   local trBody = T.eye()
+       * T.trans(body_pos[1],body_pos[2],body_pos[3])
+       * T.rotZ(body_rpy[3])
+       * T.rotY(body_rpy[2])
+       
+   local trLArm = T.position6D(T.inv(trBody)*trGripL)
+   local trRArm = T.position6D(T.inv(trBody)*trGripR)
+   return trLArm, trRArm
 end
 
 function state.entry()
@@ -42,6 +50,14 @@ function state.entry()
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
+  
+  -- Let's store handle data here
+  local handle   = hcm.get_door_handle()
+  handle_pos    = vector.slice(handle,1,3)
+  handle_yaw    = 0--handle[4]
+  handle_pitch  = 0--wheel[5]
+  handle_radius = handle[6] / 2
+
 end
 
 function state.update()
@@ -53,16 +69,45 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
   
-  -- Calculate where we need to place our arm  
-  local trArm = calculate_arm_position()
+  local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-  local qRInv = Kinematics.inverse_r_arm(trArm, qRArm)
+  
+  -- Calculate where we need to go  
+  local trLArm, trRArm = calculate_arm_position(0)
+  -- Get desired angles from current angles and target transform
+  local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
+  local qR_desired = Body.get_inverse_rarm(qLArm,trRArm)
+  if not qL_desired then
+    print('Left not possible')
+    return'reset'
+  end
+  if not qR_desired then
+    print('Right not possible')
+    return'reset'
+  end
 
-  -- Go to the target arm position
-  qRArm = util.approachTol( qRArm, qRInv, dqArmMax, dt )
-  if qRArm==true then return'done' end
+  -- Go there
+  if qL_desired then
+    qL_desired = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
+    if qL_desired~=true then Body.set_larm_command_position( qL_desired ) end
+  end
+  if qR_desired then
+    qR_desired = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
+    if qR_desired~=true then Body.set_rarm_command_position( qR_desired ) end
+  end
 
-  Body.set_rarm_command_position( qRArm )
+  -- TODO: Begin to grip by approaching the inner radius
+  --[[
+    ph = (t-t0)/t_grip
+    handle_radius = handle_radius0*(1-ph) + ph*handle_radius1
+  --]]
+
+  if qL_desired==true and qR_desired==true then
+    -- Close the fingers
+    Body.set_lgrip_percent(1)
+    Body.set_rgrip_percent(1)
+    return'done'
+  end
   
 end
 

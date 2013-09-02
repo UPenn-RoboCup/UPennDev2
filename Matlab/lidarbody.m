@@ -5,9 +5,10 @@ LIDAR.update = @update;
 LIDAR.set_meshtype = @set_meshtype;
 LIDAR.set_img_display = @set_img_display;
 LIDAR.get_depth_img = @get_depth_img;
-LIDAR.wheel_calc = @wheel_calc;
 LIDAR.get_single_approach = @get_single_approach;
 LIDAR.get_double_approach = @get_double_approach;
+LIDAR.clear_points = @clear_points;
+LIDAR.set_zoomlevel = @set_zoomlevel;
 
 % Which mesh to display
 % Chest lidar default
@@ -20,9 +21,6 @@ LIDAR.mesh_img_display = 0;
 LIDAR.clicked_points  = []; % 2d
 LIDAR.selected_points = []; % 3d
 LIDAR.pointdraw = 0;
-
-LIDAR.clear_points = @clear_points;
-LIDAR.set_zoomlevel = @set_zoomlevel;
 
 %depth map size and zooming
 LIDAR.xsize = 0;
@@ -199,70 +197,6 @@ CHEST_LIDAR.posea=[];
         fprintf('Update lidar: %f seconds.\n',tPassed);
     end
 
-    function data = wheel_calc(h,~,val)
-        points3d = LIDAR.selected_points;
-        data=[];
-        disp('Wheel calculation...');
-        if numel(points3d)>=3*3
-
-            % NOTE: Assume a left right top clicking order!!
-            leftrelpos  = points3d(size(points3d,1)-2, :);
-            rightrelpos = points3d(size(points3d,1)-1, :);
-            toprelpos   = points3d(size(points3d,1),   :);
-
-            % Find the center of the wheel
-            handlepos = (leftrelpos+rightrelpos) / 2;
-            if handlepos(1) > 1 || handlepos(1) < 0.10
-                % x distance in meters
-                disp('Handle is too far or too close!');
-                disp(handlepos);
-                %return;
-            end
-
-            % Find the radius of the wheel
-            handleradius = norm(leftrelpos-rightrelpos)/2;
-            if handleradius>1 || handleradius<0.10
-                % radius in meters
-                disp('Radius is too big or too small!');
-                disp(handleradius);
-                %return;
-            end
-
-            handleyaw = atan2(...
-                leftrelpos(2)-rightrelpos(2), ...
-                leftrelpos(1)-rightrelpos(1)) ...
-                - pi/2;
-            % TODO: yaw checks
-
-            handlepitch = atan2(...
-                toprelpos(1)-handlepos(1),toprelpos(3)-handlepos(3)...
-                );
-            % TODO: pitch checks
-            
-            % Debug message
-            wheel_str = sprintf(...
-                'Pos %.2f %.2f %.2f\nY %.1f P %.1f Rad %.2f',...
-                handlepos(1),handlepos(2),handlepos(3),...
-                handleyaw*180/pi,handlepitch*180/pi,handleradius );
-            DEBUGMON.addtext(wheel_str);
-            
-            % Overwrite wheel estimate?
-            % TODO: use two separate wheel estimates?
-            % TODO: send this data to the robot
-            LIDAR.wheel_model = [handlepos handleyaw handlepitch handleradius];
-            CONTROL.send_control_packet([],[],'hcm','wheel','model',LIDAR.wheel_model);
-
-            % Reset the user clicked points
-            LIDAR.clicked_points = [];
-            set(LIDAR.pointdraw,'XData',[]);
-            set(LIDAR.pointdraw,'YData',[]);
-            set(LIDAR.pointdraw,'MarkerSize',30);
-
-            % TODO: Draw another point on there, with the actual wheel center?
-            
-        end
-    end
-
 
 %%%TODO
     function set_zoomlevel(h_omap, ~, flags)
@@ -302,6 +236,7 @@ CHEST_LIDAR.posea=[];
         LIDAR.selected_points = []; % 3d
         set(LIDAR.pointdraw,'XData',[]);
         set(LIDAR.pointdraw,'YData',[]);
+        set(LIDAR.pointdraw,'MarkerSize',30);
         DEBUGMON.clearstr();
     end
 

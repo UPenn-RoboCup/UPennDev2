@@ -1,5 +1,5 @@
 function ret = controlbody()
-global CONTROL SLAM BODY LIDAR POSE
+global CONTROL SLAM BODY LIDAR POSE MODELS
 
 CONTROL=[];
 
@@ -9,6 +9,7 @@ CONTROL.arm=[];
 CONTROL.setup_slambody_controls = @setup_slambody_controls;
 CONTROL.setup_robotbody_controls = @setup_robotbody_controls;
 CONTROL.setup_lidarbody_controls = @setup_lidarbody_controls;
+CONTROL.setup_model_controls = @setup_model_controls;
 
 CONTROL.setup_body_controls = @setup_body_controls;
 CONTROL.setup_head_controls = @setup_head_controls;
@@ -33,7 +34,7 @@ ret = CONTROL;
         set(b4,'CallBack',{BODY.set_viewpoint,4});
     end
 
-    function setup_lidarbody_controls(b1,b2, lmb1,lmb2,lmb3,lmb4,lmb5,lmb6,lmb7,lmb8)
+    function setup_lidarbody_controls(b1,b2, lmb1,lmb2,lmb3,lmb4,lmb5)
         set(b1,'CallBack',{LIDAR.set_meshtype,1});
         set(b2,'CallBack',{LIDAR.set_meshtype,2});
         
@@ -42,10 +43,13 @@ ret = CONTROL;
         set(lmb3,'CallBack',{LIDAR.clear_points});
         set(lmb4,'CallBack',{LIDAR.set_img_display});
         set(lmb5,'CallBack',{LIDAR.get_depth_img});
-        set(lmb6,'CallBack',LIDAR.wheel_calc);
-        %set(lmb7,'CallBack',LIDAR.door_calc);
-        %set(lmb8,'CallBack',LIDAR.tool_calc);
         
+    end
+
+    function setup_model_controls(b1,b2,b3)
+        set(b1,'CallBack',MODELS.wheel_calc);
+        set(b2,'CallBack',MODELS.door_calc);
+        set(b3,'CallBack',MODELS.tool_calc);
     end
 
     function setup_body_controls(b1,b2,b3,b4)
@@ -64,22 +68,14 @@ ret = CONTROL;
         CONTROL.head.freelook = b2;
         CONTROL.head.qscan = b3;
         CONTROL.head.scan = b4;
-        set(b1,'CallBack',{@head_control,1});
-        set(b2,'CallBack',{@head_control,2});
-        set(b3,'CallBack',{@head_control,3});
-        set(b4,'CallBack',{@head_control,4});
+        set(b1,'CallBack',{@head_control,'fixed'});
+        set(b2,'CallBack',{@head_control,'teleop'});
+        set(b3,'CallBack',{@head_control,'tiltscan'});
+        set(b4,'CallBack',{@head_control,'center'});
     end
 
-    function head_control(h,~,flags)
-        if flags==1
-            send_control_packet('head','fixed');
-        elseif flags==2
-            send_control_packet('head','teleop');
-        elseif flags==3
-            send_control_packet('head','scan');
-        elseif flags==4
-            send_control_packet('head','slowscan');
-        end
+    function head_control(h,~,evt)
+        send_control_packet('HeadFSM',evt);
     end
 
     function targetpos = transform_global(relpos)

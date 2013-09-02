@@ -34,15 +34,9 @@ shared_data.wheel = {}
 shared_data.wheel.model = vector.zeros(6)
 
 
--- This is the old way, with many sets...
-shared_data.wheel.pos        = vector.new({.40,0,.1})
-shared_data.wheel.radius     = vector.new({.15})
-shared_data.wheel.yawangle   = vector.zeros(1)
-shared_data.wheel.pitchangle = vector.zeros(1)
-shared_data.wheel.turnangle  = vector.zeros(1)
 -- Door Opening
 shared_data.door = {}
-shared_data.door.hinge_pos  = vector.new({.2,0,.1})
+shared_data.door.hinge  = vector.new({.2,0,.1})
 -- What is the position of the handle axis
 -- What angle from the horizon is the handle
 -- What is the length of the handle

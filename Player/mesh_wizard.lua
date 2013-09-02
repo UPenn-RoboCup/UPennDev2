@@ -97,7 +97,7 @@ local function stream_mesh(type)
     vcm['set_'..type.meta.name..'_lidar_net'](net_settings)
   end
   -- Sensitivity range in meters
-  local depths = vcm['get_'..type.meta.name..'_lidar_depths']()
+  local depths = type.meta.depths
   local near = depths[1]
   local far = depths[2]
   -- Safety check
@@ -138,7 +138,7 @@ local function stream_mesh(type)
   local meta = mp.pack(type.meta)
   --mesh_pub_ch:send( {meta, payload} )
   local ret, err = mesh_udp_ch:send( meta..c_mesh )
-  print(err or string.format('Sent a %g kB %s packet!', ret/1024, type.meta.name))
+  print(err or string.format('Sent a %g kB %s packet from %g to %g.', ret/1024, type.meta.name, near, far))
 end
 
 ------------------------------

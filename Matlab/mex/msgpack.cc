@@ -198,7 +198,25 @@ mxArray* mex_unpack_array(msgpack_object obj) {
     // just make them all double
     mxArray *ret = mxCreateNumericMatrix(1, obj.via.array.size, mxDOUBLE_CLASS, mxREAL);
     double *ptrd = mxGetPr(ret);
-    for (int i = 0; i < obj.via.array.size; i++) ptrd[i] = obj.via.array.ptr[i].via.dec;
+    double val;
+    for (int i = 0; i < obj.via.array.size; i++){
+      msgpack_object ob = obj.via.array.ptr[i];
+      switch (ob.type) {
+        case 2:
+        val = (double)obj.via.array.ptr[i].via.u64;
+        break;
+        case 3:
+        val = (double)obj.via.array.ptr[i].via.i64;
+        break;
+        case 4:
+        val = (double)obj.via.array.ptr[i].via.dec;
+        break;
+        default:
+        val = 13.37;
+        break;
+      }
+      ptrd[i] = val;
+    }
     /*
     mxArray *ret = mxCreateCellMatrix(1, obj.via.array.size);
     for (int i = 0; i < obj.via.array.size; i++) {

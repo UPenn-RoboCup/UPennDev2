@@ -16,7 +16,8 @@ LIDAR.meshtype = 2;
 % 1: Show chest
 LIDAR.mesh_img_display = 0;
 % points draw on this handle
-LIDAR.clicked_points = [];
+LIDAR.clicked_points  = []; % 2d
+LIDAR.selected_points = []; % 3d
 LIDAR.pointdraw = 0;
 
 LIDAR.clear_points = @clear_points;
@@ -30,13 +31,13 @@ LIDAR.ymag =0;
 
 LIDAR.last_posxy = [];
 
-LIDAR.selected_points = [];
-
 
 wdim_mesh=361;
 hdim_mesh=60;
 
 HEAD_LIDAR=[];
+HEAD_LIDAR.off_axis_height = 0.10; % 10cm off axis
+HEAD_LIDAR.neck_height = 0.30;
 HEAD_LIDAR.type = 0;
 HEAD_LIDAR.ranges=zeros(wdim_mesh,hdim_mesh);
 HEAD_LIDAR.range_actual=ones(wdim_mesh,hdim_mesh);
@@ -150,7 +151,7 @@ CHEST_LIDAR.posea=[];
         % Calculate the angles
         fov_angles = metadata.fov(1) : .25*(pi/180) : metadata.fov(2);
         scanline_angles = metadata.scanlines(1) : 1/metadata.scanlines(3) : metadata.scanlines(2);
-
+        metadata.depths
         % Debugging
         disp(metadata)
         if strncmp(char(metadata.name),'head',3)==1
@@ -183,7 +184,7 @@ CHEST_LIDAR.posea=[];
     function data = wheel_calc(h,~,val)
         points3d = LIDAR.selected_points;
         data=[];
-        disp('Wheel calculation!');
+        disp('Wheel calculation...');
         if numel(points3d)>=3*3
 
             % NOTE: Assume a left right top clicking order!!
@@ -229,8 +230,8 @@ CHEST_LIDAR.posea=[];
             % Overwrite wheel estimate?
             % TODO: use two separate wheel estimates?
             % TODO: send this data to the robot
-            LIDAR.wheel_data = [handlepos handleyaw handlepitch handleradius]
-            %send_control_packet([],[],'hcm','wheel');
+            LIDAR.wheel_model = [handlepos handleyaw handlepitch handleradius]
+            %send_control_packet([],[],'hcm','wheel','model',LIDAR.wheel_model);
 
             % Reset the user clicked points
             LIDAR.clicked_points = [];
@@ -278,7 +279,8 @@ CHEST_LIDAR.posea=[];
     end
 
     function clear_points(h_omap, ~, flags)
-        LIDAR.selected_points=[];
+        LIDAR.clicked_points  = []; % 2d
+        LIDAR.selected_points = []; % 3d
         set(LIDAR.pointdraw,'XData',[]);
         set(LIDAR.pointdraw,'YData',[]);
         DEBUGMON.clearstr();
@@ -355,22 +357,40 @@ CHEST_LIDAR.posea=[];
         % if head
         if LIDAR.mesh_img_display==0
             fov_angle_index = numel(HEAD_LIDAR.fov_angles)+1 - floor(posxy(1)-0.5);
-            fov_angle_selected = HEAD_LIDAR.fov_angles(fov_angle_index);
             scanline_index = floor(posxy(2)-0.5);
-            scanline_angle_selected = HEAD_LIDAR.scanline_angles(scanline_index);
             range = double( HEAD_LIDAR.ranges(scanline_index,fov_angle_index) )
-            range = (range/255.0) * (HEAD_LIDAR.depths(2)-HEAD_LIDAR.depths(1))
+            range = (range/255.0) * (HEAD_LIDAR.depths(2)-HEAD_LIDAR.depths(1));
             range = range + HEAD_LIDAR.depths(1)
+            fov_angle_selected = -1*HEAD_LIDAR.fov_angles(fov_angle_index)
+            scanline_angle_selected = -1*HEAD_LIDAR.scanline_angles(scanline_index)
             % TODO: Average nearby neighbor ranges
-            endpos = lidartrans(...
+            
+            global_point = lidartrans(...
                 'headproject', ...
                 fov_angle_selected, ...
-                HEAD_LIDAR.scanline_angles(), ...
+                scanline_angle_selected, ...
                 range)
-                LIDAR.selected_points = [LIDAR.selected_points; endpos];
-                disp_str = sprintf('Selected (%.3f %.3f %.3f)', ...
-                    endpos(1),endpos(2),endpos(3) );
-                DEBUGMON.addtext(disp_str);
+            
+            local_point = [ ...
+            range*cos(fov_angle_selected); ...
+            range*sin(fov_angle_selected); ...
+            HEAD_LIDAR.off_axis_height; ...
+            0
+            ];
+            local_to_global = eye(4);
+            local_to_global(1,1) = cos(scanline_angle_selected);
+            local_to_global(3,3) = cos(scanline_angle_selected);
+            local_to_global(1,3) = sin(scanline_angle_selected);
+            local_to_global(3,1) = -sin(scanline_angle_selected);
+            global_point = local_to_global * local_point;
+            global_point(3) = global_point(3) + HEAD_LIDAR.neck_height;
+            local_point
+            global_point
+            
+            LIDAR.selected_points = [LIDAR.selected_points; global_point];
+            disp_str = sprintf('Selected (%.3f %.3f %.3f)', ...
+                    global_point(1),global_point(2),global_point(3) );
+            DEBUGMON.addtext(disp_str);
         end % head
     end % select_3d
 

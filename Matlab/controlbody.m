@@ -33,7 +33,7 @@ ret = CONTROL;
         set(b4,'CallBack',{BODY.set_viewpoint,4});
     end
 
-    function setup_lidarbody_controls(b1,b2, lmb1,lmb2,lmb3,lmb4,lmb5)
+    function setup_lidarbody_controls(b1,b2, lmb1,lmb2,lmb3,lmb4,lmb5,lmb6,lmb7,lmb8)
         set(b1,'CallBack',{LIDAR.set_meshtype,1});
         set(b2,'CallBack',{LIDAR.set_meshtype,2});
         
@@ -41,7 +41,10 @@ ret = CONTROL;
         set(lmb2,'CallBack',{LIDAR.set_zoomlevel,2});
         set(lmb3,'CallBack',{LIDAR.clear_points});
         set(lmb4,'CallBack',{LIDAR.set_img_display});
-        set(lmb5,'CallBack',LIDAR.wheel_calc);
+        set(lmb5,'CallBack',{LIDAR.get_depth_img});
+        set(lmb6,'CallBack',LIDAR.wheel_calc);
+        %set(lmb7,'CallBack',LIDAR.door_calc);
+        %set(lmb8,'CallBack',LIDAR.tool_calc);
         
     end
 
@@ -65,18 +68,6 @@ ret = CONTROL;
         set(b2,'CallBack',{@head_control,2});
         set(b3,'CallBack',{@head_control,3});
         set(b4,'CallBack',{@head_control,4});
-    end
-
-    function setup_arm_controls(b1,b2,b3,b4)
-        CONTROL.arm.init  = b1;
-        CONTROL.arm.grab  = b2;
-        CONTROL.arm.reset = b3;
-        CONTROL.arm.stop  = b4;
-        
-        set(b1,'CallBack',{@arm_control,1});
-        set(b2,'CallBack',{@arm_control,2});
-        set(b3,'CallBack',{@arm_control,3});
-        set(b4,'CallBack',{@arm_control,4});
     end
 
     function head_control(h,~,flags)
@@ -124,33 +115,21 @@ ret = CONTROL;
         SLAM.clear_waypoint();
     end
 
-    function arm_control(h,~,flags)
-        if flags==1
-            send_control_packet('arm','init');		%Two arm init
-        elseif flags==2
-            data = LIDAR.wheel_calc();
-            disp('arm_control')
-            disp(data)
-            if numel(data)>0
-                send_control_packet('arm','wheelgrab',data);
-            end
-        elseif flags==3								%left arm grab
-            send_control_packet('arm','reset');
-        elseif flags==4								%left arm grab
-            send_control_packet('arm','stop');
-        end
+    function setup_arm_controls(b1,b2,b3,b4)
+        CONTROL.arm.init  = b1;
+        CONTROL.arm.grab  = b2;
+        CONTROL.arm.reset = b3;
+        CONTROL.arm.stop  = b4;
         
-        %{
- 	    %use last clicked 3D position
-      points3d = LIDAR.selected_points;
-      if numel(points3d)>0
-        targetrelpos = points3d(size(points3d,1),:);
-        disp(sprintf('Pickup: target %.2f %.2f %.2f',...
-							targetrelpos(1),targetrelpos(2),targetrelpos(3) ));
-  	    send_control_packet('arm','grab',targetrelpos);
-      end
-        %}
-        
+        % init
+        set(b1,'CallBack',{@send_arm_event,'init'});
+        set(b2,'CallBack',{@send_arm_event,'ready'});
+        set(b3,'CallBack',{@send_arm_event,'wheelgrab'});
+        set(b4,'CallBack',{@send_arm_event,'reset'});
+    end
+
+    function send_arm_event(~,~,evt)
+        send_control_packet( 'ArmFSM', evt )
     end
 
     function send_control_packet( fsmtype, event, shared, segment, key, data )

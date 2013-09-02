@@ -81,6 +81,11 @@ Supervisor {
         27.925 1024 0
       ]
     }
+    InertialUnit {
+      translation 0 0 0.02
+      rotation 0 0.707107 0.707107 3.14159
+      name "InertialUnit"
+    }
     DEF Chest_Lidar_yaw Servo {
       translation 0 -0.05 0.1
       rotation 0 1 0 -1.046 #60 deg

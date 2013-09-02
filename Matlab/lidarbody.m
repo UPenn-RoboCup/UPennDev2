@@ -4,6 +4,7 @@ LIDAR.init = @init;
 LIDAR.update = @update;
 LIDAR.set_meshtype = @set_meshtype;
 LIDAR.set_img_display = @set_img_display;
+LIDAR.get_depth_img = @get_depth_img;
 LIDAR.wheel_calc = @wheel_calc;
 LIDAR.get_single_approach = @get_single_approach;
 LIDAR.get_double_approach = @get_double_approach;
@@ -36,7 +37,7 @@ wdim_mesh=361;
 hdim_mesh=60;
 
 HEAD_LIDAR=[];
-HEAD_LIDAR.off_axis_height = 0.10; % 10cm off axis
+HEAD_LIDAR.off_axis_height = 0.01; % 1cm off axis
 HEAD_LIDAR.neck_height = 0.30;
 HEAD_LIDAR.type = 0;
 HEAD_LIDAR.ranges=zeros(wdim_mesh,hdim_mesh);
@@ -127,6 +128,16 @@ CHEST_LIDAR.posea=[];
         draw_mesh_image();
     end
 
+    function get_depth_img(h,~)
+        if LIDAR.mesh_img_display==0
+            % head
+            CONTROL.send_control_packet([],[],'vcm','head_lidar','net',[1,2,0]);
+        else
+            % chest
+            CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[1,2,0]);
+        end
+    end
+
     function draw_mesh_image()
         % Draw the data
         if LIDAR.mesh_img_display==0
@@ -141,7 +152,6 @@ CHEST_LIDAR.posea=[];
     end
 
     function [nBytes] = update(fd)
-        disp('Getting a mesh!');
         t0 = tic;
         nBytes = 0;
         while udp_recv('getQueueSize',fd) > 0
@@ -149,7 +159,7 @@ CHEST_LIDAR.posea=[];
             nBytes = nBytes + numel(udp_data);
         end
         [metadata,offset] = msgpack('unpack',udp_data);
-        disp(metadata)
+        %disp(metadata)
         cdepth = udp_data(offset+1:end);
         if strncmp(char(metadata.c),'jpeg',3)==1
             depth_img = djpeg(cdepth);
@@ -374,7 +384,7 @@ CHEST_LIDAR.posea=[];
             range = double(range)/255 * (HEAD_LIDAR.depths(2)-HEAD_LIDAR.depths(1));
             range = range + HEAD_LIDAR.depths(1);
             fov_angle_selected = -1*HEAD_LIDAR.fov_angles(fov_angle_index);
-            scanline_angle_selected = -1*HEAD_LIDAR.scanline_angles(scanline_index);
+            scanline_angle_selected = HEAD_LIDAR.scanline_angles(scanline_index);
             % TODO: Average nearby neighbor ranges
             % Convert the local coordinates to global
             local_point = [ ...

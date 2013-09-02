@@ -7,8 +7,7 @@ local util   = require'util'
 require'hcm'
 
 -- Angular velocity limit
-local dqArmMax = vector.new({10,10,10,15,45,45,45})*Body.DEG_TO_RAD
-
+local dqArmMax = vector.new({10,10,10,15,45,45})*Body.DEG_TO_RAD
 
 local turnAngle = 0
 local body_pos = {0,0,0}
@@ -53,22 +52,16 @@ function state.entry()
   t_update = t_entry
   
   -- Let's store wheel data here
-  handle_pos     = hcm:get_wheel_pos()
-  handle_pitch   = hcm:get_wheel_pitchangle()
-  handle_yaw     = hcm:get_wheel_yawangle()
-  handle_radius1 = hcm:get_wheel_radius()
-  handle_radius0 = handle_radius1 + 0.08 
-  --hack
-  handle_radius0 = handle_radius1 
+  local wheel   = hcm.get_wheel_model()
+  handle_pos    = vector.slice(wheel,1,3)
+  handle_yaw    = wheel[4]
+  handle_pitch  = wheel[5]
+  handle_radius = wheel[6]
+  -- Inner and outer radius
+  handle_radius0 = handle_radius - 0.02
+  handle_radius1 = handle_radius + 0.02
 
-  handle_radius  = handle_radius0
-  
-  --[[
-  print("hpose:",unpack(handle_pos))
-  print("hpitch:",handle_pitch)
-  print("hradius",handle_radius)
-  print("tAngle",turnAngle)
-  --]]
+  print('Grabbing wheel:',wheel)
 
 end
 
@@ -89,8 +82,16 @@ function state.update()
   -- Get desired angles from current angles and target transform
   local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
   local qR_desired = Body.get_inverse_rarm(qLArm,trRArm)
+  if not qL_desired then
+    print('Left not possible')
+    return'reset'
+  end
+  if not qR_desired then
+    print('Right not possible')
+    return'reset'
+  end
 
-    -- Go there
+  -- Go there
   if qL_desired then
     qL_desired = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
     if qL_desired~=true then Body.set_larm_command_position( qL_desired ) end

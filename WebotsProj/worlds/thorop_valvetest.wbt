@@ -8,8 +8,8 @@ WorldInfo {
   FPS 10
 }
 Viewpoint {
-  orientation -0.535527 0.679765 0.501129 1.87165
-  position 1.27731 5.0983 1.92407
+  orientation 0.379143 0.766724 0.518058 4.15138
+  position -2.04378 7.80906 0.24506
 }
 Background {
   skyColor [
@@ -30,13 +30,13 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP_NoBoundaries {
-  translation -0.133665 1.15535 1.96092
+  translation -0.0732995 1.15535 0.00374813
   rotation -0.000302509 0.999999 0.00130804 1.57002
   controller "thorop"
   controllerArgs "0 32"
 }
 Solid {
-  translation 0.316526 1.2 -0.0240073
+  translation 0.316526 1 0
   rotation 0 0 1 0
   children [
     SteeringWheelSmall {

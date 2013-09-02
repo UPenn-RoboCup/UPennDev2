@@ -115,13 +115,16 @@ local function process_character(key_code,key_char,key_char_lower)
     return send_command(cmd)
   end
 
+  -- TODO: smarter range setting
+  -- For now, care about things from 10cm to 1m in front
+  local near, far = 0.10, 1
   if key_char_lower=='v' then
     print( util.color('Request Head Mesh','yellow') )
     cmd = {}
     cmd.shm = 'vcm'
     cmd.segment = 'head_lidar'
     cmd.key = 'depths'
-    cmd.val = {0.1,2}
+    cmd.val = {near,far}
     send_command(cmd)
     cmd = {}
     cmd.shm = 'vcm'
@@ -132,6 +135,13 @@ local function process_character(key_code,key_char,key_char_lower)
     return send_command(cmd)
   elseif key_char_lower=='c' then
     print( util.color('Request Chest Mesh','yellow') )
+    cmd = {}
+    cmd.shm = 'vcm'
+    cmd.segment = 'chest_lidar'
+    cmd.key = 'depths'
+    cmd.val = {near,far}
+    send_command(cmd)
+
     cmd = {}
     cmd.shm = 'vcm'
     cmd.segment = 'chest_lidar'

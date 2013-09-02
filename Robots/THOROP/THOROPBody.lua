@@ -743,13 +743,17 @@ if IS_WEBOTS then
 		-- Gyro
 		tags.gyro = webots.wb_robot_get_device("Gyro")
 		webots.wb_gyro_enable(tags.gyro, timeStep)
-    -- GPS
+    -- Perfect Pose
     if use_pose then
+      -- GPS
 		  tags.gps = webots.wb_robot_get_device("GPS")
 		  webots.wb_gps_enable(tags.gps, timeStep)
 		  -- Compass
 		  tags.compass = webots.wb_robot_get_device("Compass")
 		  webots.wb_compass_enable(tags.compass, timeStep)
+      -- RPY
+      --tags.rpy = webots.wb_robot_get_device("InertialUnit")
+      --webots.wb_inertial_unit_enable(tags.rpy, timeStep)
     end
     --[[
 		-- Kinect
@@ -842,6 +846,7 @@ if IS_WEBOTS then
     if use_pose then
       local gps = webots.wb_gps_get_values(tags.gps)
       local compass = webots.wb_compass_get_values(tags.compass)
+      --local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.rpy)
       --wcm.set_global_pose( gps )
       --wcm.set_global_orientation( compass )
     end

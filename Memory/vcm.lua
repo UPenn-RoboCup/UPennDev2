@@ -97,5 +97,3 @@ shared.us.distance  = vector.zeros(2)
 ------------------------
 -- Initialize the segment
 memory.init_shm_segment(..., shared, shsize)
-
-return STREAM

@@ -7,17 +7,25 @@ local fsm = require'fsm'
 local headIdle = require'headIdle'
 local headTiltScan = require'headTiltScan'
 local headTeleop = require'headTeleop'
+local headCenter = require'headCenter'
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
 local sm = fsm.new( headTiltScan, headIdle )
 --local sm = fsm.new( headIdle, headTiltScan )
 sm:add_state(headTeleop)
+sm:add_state(headCenter)
 
 -- Setup the transistions for this FSM
 sm:set_transition(headIdle, 'tiltscan', headTiltScan)
+sm:set_transition(headIdle, 'teleop', headTeleop)
 --
-sm:set_transition(headTiltScan, 'done', headIdle)
+sm:set_transition(headTiltScan, 'tiltscan', headTiltScan)
+sm:set_transition(headTiltScan, 'reset', headIdle)
+--
+sm:set_transition(headTeleop, 'reset', headIdle)
+--
+sm:set_transition(headCenter, 'done', headIdle)
 
 -- Setup the FSM object
 local obj = {}

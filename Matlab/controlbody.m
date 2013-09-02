@@ -164,9 +164,7 @@ ret = CONTROL;
             senddata.evt = event;
         end
         
-        %disp(nargin)
-        
-        if nargin==6 && numel(shared)>0
+        if nargin==6
             fprintf('Control data:\t%s / %s\n',shared,segment,key);
             senddata.shm = shared;
             senddata.segment = segment;

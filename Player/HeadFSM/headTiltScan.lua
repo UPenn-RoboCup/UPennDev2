@@ -1,10 +1,8 @@
 local Body = require'Body'
--- TODO: Get the shm desired endpoints
--- TODO: Should these endpoints be in vcm?  Probably...
 require'vcm'
 
 local state = {}
-state._NAME = 'headTiltScan'
+state._NAME = ...
 
 local min_tilt, max_tilt, mid_tilt, mag_tilt
 local t_entry, t_update, ph_speed, ph, forward
@@ -17,10 +15,11 @@ local function update_tilt_params()
   max_tilt = e[2]
   mid_tilt = (max_tilt + min_tilt) / 2
   mag_tilt = max_tilt - min_tilt
-  -- Grab the desired resolution (number of columns)
+  -- Grab the desired resolution (number of scanlines)
   local res = math.abs(e[3]*(max_tilt-min_tilt))
-  -- Complete the scan at this rate
-  ph_speed = 40 / math.ceil(res) -- 40 Hz update of the LIDAR
+  -- Complete the scan at this rate (scans per second)
+  -- 40 Hz update of the LIDAR
+  ph_speed = 40 / math.ceil(res)
 end
 
 -- Take a given radian and back convert to find the durrent phase
@@ -44,8 +43,9 @@ function state.entry()
   update_tilt_params()
   
   -- Ascertain the phase, from the current position of the lidar
-  local cur_angle = Body.get_head_position()[2]
-  ph, forward = radians_to_ph( cur_angle )
+  --local cur_angle = Body.get_head_position()[2]
+  --ph, forward = radians_to_ph( cur_angle )
+  ph, forward = 0, true
 end
 
 function state.update()

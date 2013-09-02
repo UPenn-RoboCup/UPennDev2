@@ -130,14 +130,14 @@ CHEST_LIDAR.posea=[];
     function draw_mesh_image()
         % Draw the data
         if LIDAR.mesh_img_display==0
-            %depthfig = flipdim(HEAD_LIDAR.ranges,2);
-            depthfig = HEAD_LIDAR.ranges;
-        elseif LIDAR.mesh_img_display==1
-            depthfig = (CHEST_LIDAR.ranges)';
+            set(LIDAR.h_img,'Cdata', HEAD_LIDAR.ranges);
+            set(LIDAR.p_img, 'XLim', [1 size(HEAD_LIDAR.ranges,2)]);
+            set(LIDAR.p_img, 'YLim', [1 size(HEAD_LIDAR.ranges,1)]);
+        else
+            set(LIDAR.h_img,'Cdata', CHEST_LIDAR.ranges);
+            set(LIDAR.p_img, 'XLim', [1 size(CHEST_LIDAR.ranges,2)]);
+            set(LIDAR.p_img, 'YLim', [1 size(CHEST_LIDAR.ranges,1)]);
         end
-        set(LIDAR.h_img,'Cdata', depthfig);
-        set(LIDAR.p_img, 'XLim', [1 size(depthfig,2)]);
-        set(LIDAR.p_img, 'YLim', [1 size(depthfig,1)]);
     end
 
     function [nBytes] = update(fd)
@@ -174,7 +174,7 @@ CHEST_LIDAR.posea=[];
             end
         else
             % Save data
-            CHEST_LIDAR.ranges = depth_img;
+            CHEST_LIDAR.ranges = depth_img';
             CHEST_LIDAR.fov_angles = fov_angles;
             CHEST_LIDAR.scanline_angles = scanline_angles;
             CHEST_LIDAR.depths = metadata.depths;
@@ -190,7 +190,7 @@ CHEST_LIDAR.posea=[];
     end
 
     function data = wheel_calc(h,~,val)
-        points3d = LIDAR.selected_points
+        points3d = LIDAR.selected_points;
         data=[];
         disp('Wheel calculation...');
         if numel(points3d)>=3*3
@@ -205,7 +205,7 @@ CHEST_LIDAR.posea=[];
             if handlepos(1) > 1 || handlepos(1) < 0.10
                 % x distance in meters
                 disp('Handle is too far or too close!');
-                disp(handlepos)
+                disp(handlepos);
                 %return;
             end
 
@@ -214,7 +214,7 @@ CHEST_LIDAR.posea=[];
             if handleradius>1 || handleradius<0.10
                 % radius in meters
                 disp('Radius is too big or too small!');
-                disp(handleradius)
+                disp(handleradius);
                 %return;
             end
 
@@ -239,7 +239,7 @@ CHEST_LIDAR.posea=[];
             % Overwrite wheel estimate?
             % TODO: use two separate wheel estimates?
             % TODO: send this data to the robot
-            LIDAR.wheel_model = [handlepos handleyaw handlepitch handleradius]
+            LIDAR.wheel_model = [handlepos handleyaw handlepitch handleradius];
             CONTROL.send_control_packet([],[],'hcm','wheel','model',LIDAR.wheel_model);
 
             % Reset the user clicked points
@@ -396,7 +396,7 @@ CHEST_LIDAR.posea=[];
             fov_angle_index = round( posxy(2) );
             scanline_index  = round( posxy(1) );
             % grab the range
-            range = CHEST_LIDAR.ranges(fov_angle_index,scanline_index)
+            range = CHEST_LIDAR.ranges(fov_angle_index,scanline_index);
             range = double(range)/255 * (CHEST_LIDAR.depths(2)-CHEST_LIDAR.depths(1));
             range = range + CHEST_LIDAR.depths(1);
             % Grab the correct angles

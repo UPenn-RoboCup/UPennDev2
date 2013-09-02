@@ -26,14 +26,16 @@ end
 
 --NOTE: Can do memory AND fsm event.  In that order
 local function process_rpc(rpc)
-  --util.ptable(rpc)
+  util.ptable(rpc)
 
   local status, reply
   -- Shared memory modification
   local shm = rpc.shm
   if shm then
     local mem = _G[shm]
-    if type(mem)~='table' then return 'Bad shm' end
+    if type(mem)~='table' then
+      return 'Bad shm'
+    end
     if rpc.val then
       -- Set memory
       local method = 'set_'..rpc.segment..'_'..rpc.key
@@ -87,7 +89,8 @@ local function process_udp()
   while rpc_udp:size()>0 do
     local request = rpc_udp:receive()
     local rpc = mp.unpack(request)
-    process_rpc(rpc)
+    local reply = process_rpc(rpc)
+    print('Reply',reply)
   end
 end
 

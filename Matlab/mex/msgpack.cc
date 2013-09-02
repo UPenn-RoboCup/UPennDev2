@@ -358,12 +358,14 @@ void mex_pack_logical(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
 }
 
 void mex_pack_char(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-  mwSize str_len = mxGetNumberOfElements(prhs) + 1;
-  char *buf = (char *)mxCalloc(str_len, sizeof(char));
-
-  if (mxGetString(prhs, buf, str_len) != 0)
+  mwSize str_len = mxGetNumberOfElements(prhs);
+  
+  /* Add the NULL terminator for MATLAB */
+  char *buf = (char *)mxCalloc(str_len+1, sizeof(char));
+  if (mxGetString(prhs, buf, str_len+1) != 0)
     mexErrMsgTxt("Could not convert to C string data");
 
+  /* Don't use the null terminator for raw packing */
   msgpack_pack_raw(pk, str_len);
   msgpack_pack_raw_body(pk, buf, str_len);
 

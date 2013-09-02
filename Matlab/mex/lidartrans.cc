@@ -21,8 +21,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <msgpack.h>
-
 #include "mex.h"
 #include "matrix.h"
 #include "math.h"

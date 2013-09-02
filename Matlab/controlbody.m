@@ -33,7 +33,7 @@ ret = CONTROL;
         set(b4,'CallBack',{BODY.set_viewpoint,4});
     end
 
-    function setup_lidarbody_controls(b1,b2, lmb1,lmb2,lmb3,lmb4)
+    function setup_lidarbody_controls(b1,b2, lmb1,lmb2,lmb3,lmb4,lmb5)
         set(b1,'CallBack',{LIDAR.set_meshtype,1});
         set(b2,'CallBack',{LIDAR.set_meshtype,2});
         
@@ -41,6 +41,7 @@ ret = CONTROL;
         set(lmb2,'CallBack',{LIDAR.set_zoomlevel,2});
         set(lmb3,'CallBack',{LIDAR.clear_points});
         set(lmb4,'CallBack',{LIDAR.set_img_display});
+        set(lmb5,'CallBack',LIDAR.wheel_calc);
         
     end
 
@@ -152,7 +153,7 @@ ret = CONTROL;
         
     end
 
-    function send_control_packet( fsmtype, event, shared, key, data )
+    function send_control_packet( fsmtype, event, shared, segment, key, data )
         
         disp('Sending a control packet')
         
@@ -165,9 +166,10 @@ ret = CONTROL;
         
         %disp(nargin)
         
-        if nargin>2 && numel(shared)>0
-            fprintf('Control data:\t%s / %s\n',shared,key);
+        if nargin==6 && numel(shared)>0
+            fprintf('Control data:\t%s / %s\n',shared,segment,key);
             senddata.shm = shared;
+            senddata.segment = segment;
             senddata.key = key;
             senddata.val = data;
         end

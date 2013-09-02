@@ -152,7 +152,7 @@ mxArray* mex_unpack_map(msgpack_object obj) {
 }
 
 mxArray* mex_unpack_array(msgpack_object obj) {
-  /* validata array element type */
+  /* validate array element type */
   int types = 0;
   int unique_type = -1;
   for (int i = 0; i < obj.via.array.size; i++)
@@ -168,6 +168,7 @@ mxArray* mex_unpack_array(msgpack_object obj) {
     int64_t * ptri = NULL;
     uint64_t * ptru = NULL;
     switch (unique_type) {
+      // TODO: if a unique type, then we should just memcpy...
       case 1:
         ret = mxCreateLogicalMatrix(1, obj.via.array.size);
         ptrb = (bool*)mxGetPr(ret);
@@ -194,11 +195,17 @@ mxArray* mex_unpack_array(msgpack_object obj) {
     return ret;
   }
   else {
+    // just make them all double
+    mxArray *ret = mxCreateNumericMatrix(1, obj.via.array.size, mxDOUBLE_CLASS, mxREAL);
+    double *ptrd = mxGetPr(ret);
+    for (int i = 0; i < obj.via.array.size; i++) ptrd[i] = obj.via.array.ptr[i].via.dec;
+    /*
     mxArray *ret = mxCreateCellMatrix(1, obj.via.array.size);
     for (int i = 0; i < obj.via.array.size; i++) {
       msgpack_object ob = obj.via.array.ptr[i];
       mxSetCell(ret, i, (*unPackMap[ob.type])(ob));
     }
+    */
     return ret;
   }
 }

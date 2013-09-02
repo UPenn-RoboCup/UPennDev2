@@ -14,7 +14,10 @@ LIDAR.meshtype = 2;
 
 % 0: Show head
 % 1: Show chest
-LIDAR.mesh_img_display = 1;
+LIDAR.mesh_img_display = 0;
+% points draw on this handle
+LIDAR.clicked_points = [];
+LIDAR.pointdraw = 0;
 
 LIDAR.clear_points = @clear_points;
 LIDAR.set_zoomlevel = @set_zoomlevel;
@@ -45,7 +48,6 @@ HEAD_LIDAR.faces=[];
 HEAD_LIDAR.cdatas=[];
 HEAD_LIDAR.lidarrange = 1;
 HEAD_LIDAR.selected_points =[];
-HEAD_LIDAR.pointdraw = 0;
 
 HEAD_LIDAR.posex=[];
 HEAD_LIDAR.posey=[];
@@ -61,7 +63,6 @@ CHEST_LIDAR.verts=[];
 CHEST_LIDAR.faces=[];
 CHEST_LIDAR.cdatas=[];
 CHEST_LIDAR.lidarrange = 1;
-CHEST_LIDAR.pointdraw = 0;
 
 CHEST_LIDAR.posex=[];
 CHEST_LIDAR.posey=[];
@@ -78,7 +79,7 @@ CHEST_LIDAR.posea=[];
             LIDAR.h_img = imagesc( HEAD_LIDAR.ranges );
             set(LIDAR.p_img,'xtick',[],'ytick',[])
             colormap('HOT')
-            set(LIDAR.h_img, 'ButtonDownFcn', {@select_3d,1});
+            set(LIDAR.h_img, 'ButtonDownFcn', @select_3d );
             hold on;
             LIDAR.pointdraw = plot(a1,0,0,'g.');
             set(LIDAR.pointdraw, 'MarkerSize', 40 );
@@ -118,13 +119,15 @@ CHEST_LIDAR.posea=[];
         else
             set(h,'String','Head');
         end
+        clear_points();
         draw_mesh_image();
     end
 
     function draw_mesh_image()
         % Draw the data
         if LIDAR.mesh_img_display==0
-            depthfig = flipdim(HEAD_LIDAR.ranges,2);
+            %depthfig = flipdim(HEAD_LIDAR.ranges,2);
+            depthfig = HEAD_LIDAR.ranges;
         elseif LIDAR.mesh_img_display==1
             depthfig = (CHEST_LIDAR.ranges)';
         end
@@ -144,11 +147,18 @@ CHEST_LIDAR.posea=[];
         [metadata,offset] = msgpack('unpack',udp_data);
         jdepth = udp_data(offset+1:end);
         depth_img = djpeg(jdepth);
+        % Calculate the angles
+        fov_angles = metadata.fov(1) : .25*(pi/180) : metadata.fov(2);
+        scanline_angles = metadata.scanlines(1) : 1/metadata.scanlines(3) : metadata.scanlines(2);
+
         % Debugging
         disp(metadata)
         if strncmp(char(metadata.name),'head',3)==1
             % Save data
             HEAD_LIDAR.ranges = depth_img;
+            HEAD_LIDAR.fov_angles = fov_angles;
+            HEAD_LIDAR.scanline_angles = scanline_angles;
+            HEAD_LIDAR.depths = metadata.depths;
             % Update the figure
             if LIDAR.mesh_img_display==0
                 draw_mesh_image()
@@ -156,6 +166,9 @@ CHEST_LIDAR.posea=[];
         else
             % Save data
             CHEST_LIDAR.ranges = depth_img;
+            CHEST_LIDAR.fov_angles = fov_angles;
+            CHEST_LIDAR.scanline_angles = scanline_angles;
+            CHEST_LIDAR.depths = metadata.depths;
             % Update the figure
             if LIDAR.mesh_img_display==1
                 draw_mesh_image()
@@ -167,36 +180,66 @@ CHEST_LIDAR.posea=[];
         fprintf('Update lidar: %f seconds.\n',tPassed);
     end
 
-    function data = wheel_calc()
+    function data = wheel_calc(h,~,val)
         points3d = LIDAR.selected_points;
         data=[];
+        disp('Wheel calculation!');
         if numel(points3d)>=3*3
-            leftrelpos = points3d(size(points3d,1)-2, :);
+
+            % NOTE: Assume a left right top clicking order!!
+            leftrelpos  = points3d(size(points3d,1)-2, :);
             rightrelpos = points3d(size(points3d,1)-1, :);
-            toprelpos = points3d(size(points3d,1), :);
-            if leftrelpos(1)>0.10 && rightrelpos(1) > 0.10 && toprelpos(1)>0.10
-                handlepos = (leftrelpos+rightrelpos) / 2;
-                handleyaw = atan2(...
-                    leftrelpos(2)-rightrelpos(2),leftrelpos(1)-rightrelpos(1)...
-                    ) - pi/2;
-                handlepitch = atan2(...
-                    toprelpos(1)-handlepos(1),toprelpos(3)-handlepos(3)...
-                    );
-                handleradius = norm(leftrelpos-rightrelpos)/2;
-                wheel_str=sprintf(...
-                    'Wheel property: pos %.2f %.2f %.2f yaw %.1f pitch %.1f radius %.2f',...
-                    handlepos(1),handlepos(2),handlepos(3),...
-                    handleyaw*180/pi,handlepitch*180/pi,handleradius );
-                DEBUGMON.addtext(wheel_str);
-                
-                data = [handlepos handleyaw handlepitch handleradius];
-                %        send_control_packet('arm','wheelcalc',data);
-                HEAD_LIDAR.selected_points=[];
-                set(HEAD_LIDAR.pointdraw,'XData',[]);
-                set(HEAD_LIDAR.pointdraw,'YData',[]);
-                set(HEAD_LIDAR.pointdraw,'MarkerSize',30);
-                
+            toprelpos   = points3d(size(points3d,1),   :);
+
+            % Find the center of the wheel
+            handlepos = (leftrelpos+rightrelpos) / 2;
+            if handlepos(1) > 1 || handlepos(1) < 0.10
+                % x distance in meters
+                disp('Handle is too far or too close!');
+                disp(handlepos)
+                return;
             end
+
+            % Find the radius of the wheel
+            handleradius = norm(leftrelpos-rightrelpos)/2;
+            if handleradius>1 || handleradius<0.10
+                % radius in meters
+                disp('Raduis is too big or too small!');
+                disp(handleradius)
+                return;
+            end
+
+            handleyaw = atan2(...
+                leftrelpos(2)-rightrelpos(2),leftrelpos(1)-rightrelpos(1)...
+                ) - pi/2;
+            % TODO: yaw checks
+
+            handlepitch = atan2(...
+                toprelpos(1)-handlepos(1),toprelpos(3)-handlepos(3)...
+                );
+            % TODO: pitch checks
+            
+            % Debug message
+            wheel_str = sprintf(...
+                'Wheel property: pos %.2f %.2f %.2f yaw %.1f pitch %.1f radius %.2f',...
+                handlepos(1),handlepos(2),handlepos(3),...
+                handleyaw*180/pi,handlepitch*180/pi,handleradius );
+            DEBUGMON.addtext(wheel_str);
+            
+            % Overwrite wheel estimate?
+            % TODO: use two separate wheel estimates?
+            % TODO: send this data to the robot
+            LIDAR.wheel_data = [handlepos handleyaw handlepitch handleradius]
+            %send_control_packet([],[],'hcm','wheel');
+
+            % Reset the user clicked points
+            LIDAR.clicked_points = [];
+            set(LIDAR.pointdraw,'XData',[]);
+            set(LIDAR.pointdraw,'YData',[]);
+            set(LIDAR.pointdraw,'MarkerSize',30);
+
+            % TODO: Draw another point on there, with the actual wheel center?
+            
         end
     end
 
@@ -235,9 +278,9 @@ CHEST_LIDAR.posea=[];
     end
 
     function clear_points(h_omap, ~, flags)
-        HEAD_LIDAR.selected_points=[];
-        set(HEAD_LIDAR.pointdraw,'XData',[]);
-        set(HEAD_LIDAR.pointdraw,'YData',[]);
+        LIDAR.selected_points=[];
+        set(LIDAR.pointdraw,'XData',[]);
+        set(LIDAR.pointdraw,'YData',[]);
         DEBUGMON.clearstr();
     end
 
@@ -300,31 +343,35 @@ CHEST_LIDAR.posea=[];
             return;
         end
         
-        
         % Add a circle point
         point = get(gca,'CurrentPoint');
         posxy = [point(1,1) point(1,2)]
-        if flags==1 % HEAD LIDAR
-            HEAD_LIDAR.selected_points =[HEAD_LIDAR.selected_points;posxy];
-            points = HEAD_LIDAR.selected_points
-            set(HEAD_LIDAR.pointdraw,'XData',HEAD_LIDAR.selected_points(:,1));
-            set(HEAD_LIDAR.pointdraw,'YData',HEAD_LIDAR.selected_points(:,2));
-            
-            if isfield(HEAD_LIDAR,'rayangles') % we have some data
-                lidarangle_index = floor(posxy(2)-0.5);
-                rayangle_index = size(HEAD_LIDAR.rayangles,1)+1 - floor(posxy(1)-0.5);
-                lidarangle_selected = HEAD_LIDAR.lidarangles_trimmed(lidarangle_index);
-                rayangle_selected = HEAD_LIDAR.rayangles(rayangle_index);
-                range = HEAD_LIDAR.range_actual(rayangle_index,lidarangle_index);
-                
-                range = range+0.015; %to grab steering wheel
-                endpos = lidartrans('headproject',...
-                    rayangle_selected, lidarangle_selected,range);
+
+        % Plot all the 2d points
+        LIDAR.clicked_points = [LIDAR.clicked_points;posxy];
+            set(LIDAR.pointdraw,'XData',LIDAR.clicked_points(:,1));
+            set(LIDAR.pointdraw,'YData',LIDAR.clicked_points(:,2));
+        
+        % if head
+        if LIDAR.mesh_img_display==0
+            fov_angle_index = numel(HEAD_LIDAR.fov_angles)+1 - floor(posxy(1)-0.5);
+            fov_angle_selected = HEAD_LIDAR.fov_angles(fov_angle_index);
+            scanline_index = floor(posxy(2)-0.5);
+            scanline_angle_selected = HEAD_LIDAR.scanline_angles(scanline_index);
+            range = double( HEAD_LIDAR.ranges(scanline_index,fov_angle_index) )
+            range = (range/255.0) * (HEAD_LIDAR.depths(2)-HEAD_LIDAR.depths(1))
+            range = range + HEAD_LIDAR.depths(1)
+            % TODO: Average nearby neighbor ranges
+            endpos = lidartrans(...
+                'headproject', ...
+                fov_angle_selected, ...
+                HEAD_LIDAR.scanline_angles(), ...
+                range)
                 LIDAR.selected_points = [LIDAR.selected_points; endpos];
-                disp_str = sprintf('Selected 3D pos: (%.3f %.3f %.3f)',endpos(1),endpos(2),endpos(3) );
+                disp_str = sprintf('Selected (%.3f %.3f %.3f)', ...
+                    endpos(1),endpos(2),endpos(3) );
                 DEBUGMON.addtext(disp_str);
-            end %isfield
-        end % is head lidar
+        end % head
     end % select_3d
 
 ret = LIDAR;

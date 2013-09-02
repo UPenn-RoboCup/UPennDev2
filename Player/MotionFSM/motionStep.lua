@@ -358,7 +358,7 @@ function walk.entry()
   -- Other params
   stepHeight = .12 -- 7cm step height
   local t_step = 1.5 -- 1 second per step
-  velCurrent = vector.new{.1,0,0} -- 10cm per step
+  velCurrent = vector.new{-.1,0,0} -- 10cm per step
   -- how much to shift the body
   supportY = 0.075 -- 7.5 cm shift
   

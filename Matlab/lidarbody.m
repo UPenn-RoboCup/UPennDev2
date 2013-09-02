@@ -127,11 +127,11 @@ CHEST_LIDAR.posea=[];
         %if metadata.type==0
         if strncmp(char(metadata.name),'head',3)==1
             HEAD_LIDAR.ranges = djpeg(jdepth);
-            HEAD_LIDAR.lidarangles = metadata.lidarangles;
+            %HEAD_LIDAR.lidarangles = metadata.lidarangles;
             %HEAD_LIDAR.spineangles = metadata.spineangles;
-            HEAD_LIDAR.lidarrange = metadata.lidarrange;
-            HEAD_LIDAR.range0 = double(metadata.range0);
-            HEAD_LIDAR.range1 = double(metadata.range1);
+            %HEAD_LIDAR.lidarrange = metadata.lidarrange;
+            %HEAD_LIDAR.range0 = double(metadata.range0);
+            %HEAD_LIDAR.range1 = double(metadata.range1);
             
             %{
       if isfield(metadata,'posex')
@@ -140,11 +140,12 @@ CHEST_LIDAR.posea=[];
         HEAD_LIDAR.posea = cell2mat(metadata.posea);
       end
             %}
-            
+            %{
             HEAD_LIDAR.verts=[];
             HEAD_LIDAR.faces=[];
             HEAD_LIDAR.cdatas=[];
             %      disp('Head lidar data')
+            %}
             update_lidar(0);
             
             %TEST AUTODETECT

@@ -767,11 +767,10 @@ if IS_WEBOTS then
     if use_lidar then
       webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
       webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
-      head_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.head_lidar)
+      head_lidar_wbt.pointer  = webots.wb_camera_get_range_image(tags.head_lidar)
       chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
     end
     if use_camera then
-      
       -- Head Camera
       tags.head_camera = webots.wb_robot_get_device("Camera")
       webots.wb_camera_enable(tags.head_camera, camera_timeStep)
@@ -791,6 +790,8 @@ if IS_WEBOTS then
 
 	end
 	Body.update = function()
+
+    local t = Body.get_time()
 
 		local tDelta = .001 * Body.timeStep
 		-- Set actuator commands from shared memory
@@ -860,10 +861,12 @@ if IS_WEBOTS then
       Body.set_chest_lidar(chest_lidar_wbt.pointer)
       Body.set_head_lidar(head_lidar_wbt.pointer)
       -- Save important metadata
+      head_lidar_wbt.meta.t  = t
       head_lidar_wbt.meta.count  = head_lidar_wbt.meta.count  + 1
-      head_lidar_wbt.meta.hangle = Body.get_head_command_position()
+      head_lidar_wbt.meta.angle = Body.get_head_command_position(2)
+      chest_lidar_wbt.meta.t  = t
       chest_lidar_wbt.meta.count = chest_lidar_wbt.meta.count + 1
-      chest_lidar_wbt.meta.pangle = Body.get_lidar_command_position(1)
+      chest_lidar_wbt.meta.angle = Body.get_lidar_command_position(1)
       -- Send the count on the channel so they know to process a new frame
       head_lidar_wbt.channel:send(  mp.pack(head_lidar_wbt.meta)  )
       chest_lidar_wbt.channel:send( mp.pack(chest_lidar_wbt.meta) )

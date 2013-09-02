@@ -10,6 +10,8 @@ local vector = require'vector'
 local shared = {}
 local shsize = {}
 
+local DEG_TO_RAD = math.pi/180
+
 ------------------------
 --  Head Camera
 shared.head_camera       = {}
@@ -27,12 +29,18 @@ shared.head_lidar           = {}
 shared.head_lidar.scan      = 4*1081
 shared.head_lidar.t         = vector.zeros(1)
 -- Radian endpoints for where the lidar is scanning
-shared.head_lidar.endpoints = vector.new({0,45})*math.pi/180
--- Pixel resolution of the mesh from actuated lidar scans
-shared.head_lidar.mesh_resolution = vector.new({500,480})
--- Care only about ranges between these two points to include in the mesh
-shared.head_lidar.mesh_range      = vector.new({.1,5})
-shared.head_lidar.net = vector.zeros(3)
+-- Last one is the resolution: scanlines per radian
+shared.head_lidar.scanlines = vector.new({0*DEG_TO_RAD,45*DEG_TO_RAD,10/DEG_TO_RAD})
+-- Care only about lidar readings within this field of view
+-- {Start angle, stop angle}
+shared.head_lidar.fov      = vector.new({-45,45})*DEG_TO_RAD
+-- when compressing to 0-255, care about points within these depths
+shared.head_lidar.depths      = vector.new({.1,5})
+-- Network Requests: [stream,compression,fps]
+-- Stream | 0: None, 1: Single Frame, 2: Stream
+-- Compression | 0: None, 1: JPEG, 2: zlib
+-- Interval | Frames per second
+shared.head_lidar.net      = vector.zeros(3)
 
 ------------------------
 --  Chest LIDAR
@@ -40,14 +48,19 @@ shared.chest_lidar                 = {}
 -- Hokuyo uses a float, which is 4 bytes, to represent each range
 shared.chest_lidar.scan            = 4*1081
 shared.chest_lidar.t               = vector.zeros(1)
--- Radian endpoints for where the lidar is scanning, since it is actuated
-shared.chest_lidar.endpoints       = vector.new({-.5,.5})
--- Pixel resolution of the mesh from actuated lidar scans
-shared.chest_lidar.mesh_resolution = vector.new({500,480})
--- Care only about ranges between these two points to include in the mesh
--- {Near in meters, Far in meters, Quality}
-shared.chest_lidar.mesh_range      = vector.new({.1,5})
-shared.chest_lidar.net = vector.zeros(3)
+-- Radian endpoints for where the lidar is scanning
+-- Last one is the resolution: scanlines per radian
+shared.chest_lidar.scanlines = vector.new({-45*DEG_TO_RAD,45*DEG_TO_RAD,10/DEG_TO_RAD})
+-- Care only about lidar readings within this field of view
+-- {Start angle, stop angle}
+shared.chest_lidar.fov      = vector.new({-45,45})*DEG_TO_RAD
+-- when compressing to 0-255, care about points within these depths
+shared.chest_lidar.depths      = vector.new({.1,5})
+-- Network Requests: [stream,compression,fps]
+-- Stream | 0: None, 1: Single Frame, 2: Stream
+-- Compression | 0: None, 1: JPEG, 2: zlib
+-- Interval | Frames per second
+shared.chest_lidar.net      = vector.zeros(3)
 
 ------------------------
 --  Kinect

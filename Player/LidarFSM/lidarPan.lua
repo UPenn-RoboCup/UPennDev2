@@ -1,6 +1,4 @@
 local Body = require'Body'
--- TODO: Get the shm desired endpoints
--- TODO: Should these endpoints be in vcm?  Probably...
 require'vcm'
 
 local min_pan, max_pan, mid_pan, mag_pan
@@ -12,15 +10,15 @@ lidarPan._NAME = 'lidarPan'
 -- Update the parameters
 local function update_pan_params()
   -- Set up the pan boundaries
-  local e = vcm.get_chest_lidar_endpoints()
+  local e = vcm.get_chest_lidar_scanlines()
   min_pan = e[1]
   max_pan = e[2]
   mid_pan = (max_pan + min_pan) / 2
   mag_pan = max_pan - min_pan
   -- Grab the desired resolution (number of columns)
-  local res = vcm.get_chest_lidar_mesh_resolution()[1]
+  local res = math.abs(e[3]*(max_pan-min_pan))
   -- Complete the scan at this rate
-  ph_speed = 40 / res -- 40 Hz update of the LIDAR
+  ph_speed = 40 / math.ceil(res) -- 40 Hz update of the LIDAR
 end
 
 -- Take a given radian and back convert to find the current phase

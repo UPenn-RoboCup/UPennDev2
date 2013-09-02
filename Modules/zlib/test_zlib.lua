@@ -5,6 +5,6 @@ print('Input string:',src);
 print('Input length:',#src);
 src_c = zlib.compress(src)
 print('Compressed length:',#src_c);
-src_uc = zlib.uncompress(src_c, #src_c)
+src_uc = zlib.uncompress(src_c)
 print('Output length:',#src_uc);
 print('Output string:',src_uc);

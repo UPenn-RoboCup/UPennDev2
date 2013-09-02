@@ -12,11 +12,19 @@ t0 = tic;
 if lidar_type==0
     lidar = HEAD_LIDAR;
     linenum = size(lidar.ranges, 1)
+    disp('HEAD LIDARDATA')
+    % Update 2D depth image
+    depthfig = lidar.ranges
+    depthfig = flipdim(depthfig,2);
+    set(lidar.h1,'Cdata', depthfig);
+    set(lidar.p1, 'XLim', [1 size(lidar.ranges,2)]);
+    set(lidar.p1, 'YLim', [1 size(lidar.ranges,1)]);
 else
     lidar = CHEST_LIDAR;
     linenum = size(lidar.ranges, 2)
 end
 
+%{
 lidarangles = lidar.lidarangles;
 
 if lidar.p1~=0
@@ -45,6 +53,9 @@ if lidar.p1~=0
     LIDAR.xmag = size(lidar.ranges,2)/2;
     LIDAR.ymag = size(lidar.ranges,1)/2;
 end
+%}
+
+%{
 
 xskip=2;
 yskip=2;
@@ -83,7 +94,7 @@ max_dist = lidar.lidarrange * 0.9;
 ground_height = -0.7;
 max_height = 1.0;
 
-
+%}
 
 %{
   if lidar.type==0

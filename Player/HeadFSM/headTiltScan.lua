@@ -12,15 +12,15 @@ local t_entry, t_update, ph_speed, ph, forward
 -- Update the parameters
 local function update_tilt_params()
   -- Set up the tilt boundaries
-  local e = vcm.get_head_lidar_endpoints()
+  local e = vcm.get_chest_lidar_scanlines()
   min_tilt = e[1]
   max_tilt = e[2]
   mid_tilt = (max_tilt + min_tilt) / 2
   mag_tilt = max_tilt - min_tilt
   -- Grab the desired resolution (number of columns)
-  local res = vcm.get_head_lidar_mesh_resolution()[1]
+  local res = math.abs(e[3]*(max_tilt-min_tilt))
   -- Complete the scan at this rate
-  ph_speed = 40 / res -- 40 Hz update of the LIDAR
+  ph_speed = 40 / math.ceil(res) -- 40 Hz update of the LIDAR
 end
 
 -- Take a given radian and back convert to find the durrent phase

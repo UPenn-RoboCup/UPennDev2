@@ -21,8 +21,10 @@ INCLUDES=
 LIBOPTS=
 LDFLAGS=-shared -fpic
 STRIP=strip
-CXXFLAGS=-O3 -mtune=native -march=native -fpic
-CFLAGS=-O3 -mtune=native -march=native -fpic
+CXXFLAGS=-O3 -fpic
+CFLAGS=-O3 -fpic
+#CFLAGS+= -mtune=native -march=native
+#CXXFLAGS+= -mtune=native -march=native
 LIBRT=-lrt
 SHLIBEXT=so
 

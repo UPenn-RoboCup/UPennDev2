@@ -31,15 +31,15 @@ local function update_joint(dt)
   -- Go to the allowable position
   local qL_approach, doneL
   qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
-  Body.set_larm_command_position( qL_approach )
+  qL_approach = Body.set_larm_command_position( qL_approach )
   
   local qR_approach, doneR
   qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
-  Body.set_rarm_command_position( qR_approach )
+  qR_approach = Body.set_rarm_command_position( qR_approach )
 
   -- Set our hcm in case of a mode switch
-  hcm.set_joints_plarm(K.l_arm_torso(qLArm))
-  hcm.set_joints_prarm(K.r_arm_torso(qRArm))
+  hcm.set_joints_plarm( K.l_arm_torso(qL_approach) )
+  hcm.set_joints_prarm( K.r_arm_torso(qR_approach) )
 end
 
 local function update_ik(dt)
@@ -77,11 +77,11 @@ local function update_ik(dt)
   -- Go to the allowable position
   local qL_approach, doneL
   qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
-  Body.set_larm_command_position( qL_approach )
+  qL_approach = Body.set_larm_command_position( qL_approach )
   
   local qR_approach, doneR
   qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
-  Body.set_rarm_command_position( qR_approach )
+  qR_approach = Body.set_rarm_command_position( qR_approach )
 
   -- Set our hcm in case of a mode switch
   hcm.set_joints_qlarm( qL_approach )
@@ -104,8 +104,8 @@ function state.entry()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
   -- Set hcm to be here
-  hcm.set_joints_plarm(K.l_arm_torso(qLArm))
-  hcm.set_joints_prarm(K.r_arm_torso(qRArm))
+  hcm.set_joints_plarm( K.l_arm_torso(qLArm) )
+  hcm.set_joints_prarm( K.r_arm_torso(qRArm) )
   hcm.set_joints_qlarm( qLArm )
   hcm.set_joints_qrarm( qRArm )
 end

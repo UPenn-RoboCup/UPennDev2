@@ -194,7 +194,7 @@ servo.min_rad = vector.new({
 	-175,-175, -- Waist
 	0,0,0, -- left gripper
 	0,0,0, -- right gripper
-	-45, -- Lidar pan
+	-60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 
@@ -207,7 +207,7 @@ servo.max_rad = vector.new({
 	175,175, -- Waist
 	90,90,90, -- left gripper
 	90,90,90, -- right gripper
-	45, -- Lidar pan
+	60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
 

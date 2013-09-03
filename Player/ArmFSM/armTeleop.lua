@@ -8,7 +8,7 @@ local util   = require'util'
 require'hcm'
 
 -- Arm joints Angular velocity limits
-local dqArmMax = vector.new({30,30,30,45,60,60})*Body.DEG_TO_RAD
+local dqArmMax = Config.arm.fast_limit
 
 local t_debug = Body.get_time()
 local function update_joint(dt)

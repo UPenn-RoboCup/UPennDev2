@@ -52,6 +52,8 @@ sm:set_transition(armInit, 'done', armIdle, function()
   -- we are allowed to make some transitions
   sm:set_transition(armIdle, 'ready', armInitReady)
   sm:set_transition(armIdle, 'init', armInit)
+  -- The initial position is great for grabbing the door
+  sm:set_transition(armIdle, 'doorgrab', armDoorGrip)
 end)
 --
 function armInitReady.epi.update()
@@ -80,9 +82,10 @@ sm:set_transition(armReady, 'done', armIdle, function()
   sm:set_transition(armIdle, 'ready', armReady)
   -- Manipulation ability!
   -- TODO: How to remove (prune) this functionality when back in init?
+  -- The ready position is great for teleop and wheel grabbing
+  -- It's a bit awkward for the door opening
   sm:set_transition(armIdle, 'teleop', armTeleop)
   sm:set_transition(armIdle, 'wheelgrab', armWheelGrip)
-  sm:set_transition(armIdle, 'doorgrab', armDoorGrip)
 end)
 --
 sm:set_transition(armWheelGrip, 'reset', armReady)
@@ -90,7 +93,9 @@ sm:set_transition(armWheelGrip, 'done', armWheelTurn)
 --
 sm:set_transition(armWheelTurn, 'reset', armReady)
 --
-sm:set_transition(armDoorGrip, 'reset', armReady)
+-- The initial arm pose is great for door gripping, 
+-- and should be the reset position
+sm:set_transition(armDoorGrip, 'reset', armInit)
 sm:set_transition(armDoorGrip, 'done', armTeleop)
 -- TODO: This may not be the best
 -- We may wish to give ready and init

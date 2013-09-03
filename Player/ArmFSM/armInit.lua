@@ -11,7 +11,7 @@ local qL_desired = Config.arm.qLArmInit[1]
 local qR_desired = Config.arm.qRArmInit[1]
 
 -- Angular velocity
-local dqArmMax = vector.new({10,10,10,15,45,45})*Body.DEG_TO_RAD
+local dqArmMax = Config.arm.slow_limit
 
 function state.entry()
   print(state._NAME..' Entry' )

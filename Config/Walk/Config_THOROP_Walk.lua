@@ -162,19 +162,24 @@ stance.delay = 80
 -- For the arm FSM
 local arm = {}
 arm.qLArmInit={
-vector.new({90,0,90,-0,-90,0})*DEG_TO_RAD,
+vector.new({90,0,0,0,0,0})*DEG_TO_RAD,
 vector.new({90,90,90,-90,-90,0})*DEG_TO_RAD,
 vector.new({0,90,90,-90,-90,-45})*DEG_TO_RAD,
 }
 
 arm.qRArmInit={
-vector.new({90,-0,-90,-0,90,0})*DEG_TO_RAD, -- at sides
+vector.new({90,0,0,0,0,0})*DEG_TO_RAD, -- at sides
 vector.new({90,-90,-90,-90,90,0})*DEG_TO_RAD,  -- scarecrow
 vector.new({0,-90,-90,-90,90,45})*DEG_TO_RAD, -- arms in front
 }
 
+-- Finger position limits
 arm.FingerClosed = 0.9
 arm.FingerOpen = 0.1
+
+-- Arm speed limits
+arm.fast_limit = vector.new({30,30,30,45,60,60})*DEG_TO_RAD
+arm.slow_limit = vector.new({10,10,10,15,30,30})*DEG_TO_RAD
 
 ------------------------------------
 -- Associate with the table

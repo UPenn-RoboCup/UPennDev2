@@ -129,9 +129,11 @@ CHEST_LIDAR.posea=[];
     function get_depth_img(h,~)
         if LIDAR.mesh_img_display==0
             % head
+            CONTROL.send_control_packet([],[],'vcm','head_lidar','depths',[.1,1.5]);
             CONTROL.send_control_packet([],[],'vcm','head_lidar','net',[1,2,0]);
         else
             % chest
+            CONTROL.send_control_packet([],[],'vcm','chest_lidar','depths',[0,2]);
             CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[1,2,0]);
         end
     end
@@ -367,6 +369,8 @@ CHEST_LIDAR.posea=[];
             local_to_global(2,2) = cos(scanline_angle_selected);
             local_to_global(1,2) = sin(scanline_angle_selected);
             local_to_global(2,1) = -sin(scanline_angle_selected);
+            disp(class(local_to_global))
+            disp(class(local_point))
             global_point = local_to_global * local_point;
             global_point(1) = global_point(1) + CHEST_LIDAR.chest_depth;
             global_point(3) = global_point(3) + CHEST_LIDAR.chest_height;

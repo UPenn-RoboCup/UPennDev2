@@ -7,14 +7,14 @@ local util   = require'util'
 require'hcm'
 
 -- Angular velocity limit
-local dqArmMax = vector.new({10,10,10,15,45,45})*Body.DEG_TO_RAD
+local dqArmMax = Config.arm.slow_limit
 
 local SHOULDER_Y = .259 -- From the shoulder offset in Kinematics
 local GRIP_ROLL  = -90*Body.DEG_TO_RAD
 local GRIP_YAW   = 0*Body.DEG_TO_RAD
 
 -- Tune our entry point for gripping
-local GRIP_PITCH = -60*Body.DEG_TO_RAD
+local GRIP_PITCH = 0 -- -60*Body.DEG_TO_RAD
 
 local turnAngle = 0
 local body_pos = {0,0,0}
@@ -23,13 +23,17 @@ local body_rpy = {0,0,0}
 local t_init = 5.0
 local t_grip = 5.0
 
-local handle_pos,handle_pitch,handle_yaw
-local handle_radius1,handle_radius0,handle_radius
-
+local handle, handle_x, handle_z, door_arm
 local update_human = function()
-  local handle = hcm.get_door_handle()
+  handle = hcm.get_door_handle()
   handle_x = handle[1]
   handle_z = handle[3]
+  -- Decide which arm to use
+  if handle[2]>0 then
+    door_arm = 'left'
+  else
+    door_arm = 'right'
+  end
 end
 
 local function calculate_arm_position()
@@ -56,6 +60,8 @@ function state.entry()
   -- Get the human estimate
   update_human()
 
+  print('Grab door with', door_arm)
+
 end
 
 function state.update()
@@ -72,6 +78,8 @@ function state.update()
 
   -- Get the human estimate
   update_human()
+
+  -- 
   
   -- Calculate where we need to go  
   local trLArm = calculate_arm_position()

@@ -336,6 +336,7 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
         for vi,ji in ipairs(idx) do pointer[ji] = val[vi] end
       end
     end
+    return val, idx
 	end
 	Body['get_actuator_'..actuator] = function(idx,idx2)
 		if idx then
@@ -348,7 +349,7 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
 		return pointer:table()
 	end
   --------------------------------
-  -- Antropomorphic access to jcm
+  -- Anthropomorphic access to jcm
   -- TODO: Do not use string concatenation to call the get/set methods of Body
   for part,jlist in pairs( parts ) do
   	local a = jlist[1]
@@ -360,8 +361,9 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
   	Body['set_'..part:lower()..'_'..actuator] = function(val,idx)
   		if idx then
         -- idx is only allowed to be a number
-        assert(type(idx)=='number','body limb idx must be a number!')
-        val = radian_clamp(jlist[idx],val)
+        --assert(type(idx)=='number','body limb idx must be a number!')
+        if type(idx)~='number' then return end
+        if actuator=='command_position' then val = radian_clamp(jlist[idx],val) end
         return Body['set_actuator_'..actuator](val,jlist[idx])
       end
       -- With no idx, val is number or table
@@ -369,12 +371,17 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
       -- If val is a number to set all limb joints
       if type(val)=='number' then
         local values = {}
-        for i,idx in ipairs(jlist) do values[i]=radian_clamp(idx,val) end
+        -- clamp just for command position!
+        if actuator=='command_position' then
+          for i,idx in ipairs(jlist) do values[i]=radian_clamp(idx,val) end
+        end
         return Body['set_actuator_'..actuator](values,a)
       end
       -- If val is a set of values for each limb joints
       --assert(#val==b-a+1,'Must set the exact number of limb joints!')
-      for i,idx in ipairs(jlist) do val[i]=radian_clamp(idx,val[i]) end
+      if actuator=='command_position' then
+        for i,idx in ipairs(jlist) do val[i]=radian_clamp(idx,val[i]) end
+      end
   		return Body['set_actuator_'..actuator](val,a)
   	end -- Set
   end -- anthropomorphic

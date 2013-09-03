@@ -64,8 +64,8 @@ local function update_ik(dt)
 
   -- If not possible, set to where we are
   if not qL_desired then
-    qR_desired = qLArm
-    pL = K.l_arm_torso(qR_desired)
+    qL_desired = qLArm
+    pL = K.l_arm_torso(qL_desired)
     hcm.set_joints_plarm(pL)
   end
   if not qR_desired then

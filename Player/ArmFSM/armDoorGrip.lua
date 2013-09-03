@@ -9,7 +9,12 @@ require'hcm'
 -- Angular velocity limit
 local dqArmMax = vector.new({10,10,10,15,45,45})*Body.DEG_TO_RAD
 
-local shoulder_y = .259
+local SHOULDER_Y = .259 -- From the shoulder offset in Kinematics
+local GRIP_ROLL  = -90*Body.DEG_TO_RAD
+local GRIP_YAW   = 0*Body.DEG_TO_RAD
+
+-- Tune our entry point for gripping
+local GRIP_PITCH = -60*Body.DEG_TO_RAD
 
 local turnAngle = 0
 local body_pos = {0,0,0}
@@ -20,23 +25,25 @@ local t_grip = 5.0
 
 local handle_pos,handle_pitch,handle_yaw
 local handle_radius1,handle_radius0,handle_radius
-local trHandle, trGripL, trGripR, trBody, trLArm, trRArm
-local function calculate_arm_position(turnAngle)
 
-   local trHandle = T.eye()
-       * T.trans(handle_pos[1],handle_pos[2],handle_pos[3])
-       * T.rotZ(handle_yaw)
-       * T.rotY(handle_pitch)
-       
-   local trBody = T.eye()
-       * T.trans(body_pos[1],body_pos[2],body_pos[3])
-       * T.rotZ(body_rpy[3])
-       * T.rotY(body_rpy[2])
-       
-   local trLArm = T.position6D(T.inv(trBody)*trHandle)
+local update_human = function()
+  local handle = hcm.get_door_handle()
+  handle_x = handle[1]
+  handle_z = handle[3]
+end
+
+local function calculate_arm_position()
+
+    local trLArm = vector.new({
+    handle_x, -- Free param
+    SHOULDER_Y, -- 6 DOF arm cannot go certain places
+    handle_z, -- Free param
+    GRIP_ROLL, -- Assume a certain orientation
+    GRIP_PITCH, -- Tune this, or update based on the handle position
+    GRIP_YAW -- Assume a certain orientation
+    })
 
    return trLArm
-
 end
 
 function state.entry()
@@ -45,15 +52,9 @@ function state.entry()
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-  
-  -- Let's store handle data here
-  local handle   = hcm.get_door_handle()
-  handle_pos    = vector.slice(handle,1,3)
-  -- ALways use this shoulder y
-  handle_pos[2] = shoulder_y
-  handle_yaw    = 0--handle[4]
-  handle_pitch  = 0--wheel[5]
-  handle_radius = handle[6] / 2
+
+  -- Get the human estimate
+  update_human()
 
 end
 
@@ -66,15 +67,14 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
   
+  -- Where are we now?
   local qLArm = Body.get_larm_command_position()
+
+  -- Get the human estimate
+  update_human()
   
   -- Calculate where we need to go  
-  --local trLArm = calculate_arm_position()
-  -- TODO: Find the constraint in the plane
-  local trLArm = vector.new({
-    .43, shoulder_y, .22,
-    -90*Body.DEG_TO_RAD, -60*Body.DEG_TO_RAD, 0, 
-    })
+  local trLArm = calculate_arm_position()
 
   -- Get desired angles from current angles and target transform
   local qL_desired = Body.get_inverse_larm(qLArm,trLArm)

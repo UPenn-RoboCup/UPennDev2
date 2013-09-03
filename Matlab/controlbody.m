@@ -123,14 +123,19 @@ ret = CONTROL;
         set(b1,'CallBack',{@send_arm_event,'init'});
         set(b2,'CallBack',{@send_arm_event,'ready'});
         set(b3,'CallBack',{@send_arm_event,'reset'});
-        % grabbing
-        set(b4,'CallBack',{@send_arm_event,'wheelgrab'});
-        set(b5,'CallBack',{@send_arm_event,'doorgrab'});
+        % grab
+        set(b4,'CallBack',{@send_arm_event,'grab'});
+        set(b5,'CallBack',{@send_arm_event,'teleop'});
         
     end
 
     function send_arm_event(~,~,evt)
-        send_control_packet( 'ArmFSM', evt )
+        if strcmp(evt,'grab')
+            send_control_packet( 'ArmFSM', strcat(MODELS.grab,evt) );
+        else
+            send_control_packet( 'ArmFSM', evt );
+        end
+        
     end
 
     function send_control_packet( fsmtype, event, shared, segment, key, data )

@@ -11,12 +11,18 @@ local shared_data_sz = {}
 
 -- Desired joint properties
 shared_data.joints = {}
-shared_data.joints.plarm  = vector.zeros( 6 ) -- x,y,z,roll,pitch,yaw
+-- x,y,z,roll,pitch,yaw
+shared_data.joints.plarm  = vector.zeros( 6 )
 shared_data.joints.prarm  = vector.zeros( 6 )
-shared_data.joints.qlarm  = vector.zeros( 6 ) -- 6 joints
+-- TODO: 6->7 arm joint angles
+shared_data.joints.qlarm  = vector.zeros( 6 )
 shared_data.joints.qrarm  = vector.zeros( 6 )
-shared_data.joints.qlgrip = vector.zeros( 3 ) -- 3 fingers
+-- 3 finger joint angles
+shared_data.joints.qlgrip = vector.zeros( 3 )
 shared_data.joints.qrgrip = vector.zeros( 3 )
+-- Teleop mode
+-- 1: joint, 2: IK
+shared_data.joints.teleop = vector.ones( 1 )
 
 -- Motion directives
 shared_data.motion = {}
@@ -32,7 +38,7 @@ shared_data.wheel = {}
 -- This has all values: the right way, since one rpc call
 -- {handlepos(3) handleyaw handlepitch handleradius}
 shared_data.wheel.model = vector.zeros(6)
-
+shared_data.wheel.turn_angle = vector.zeros(1)
 
 -- Door Opening
 shared_data.door = {}

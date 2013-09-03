@@ -89,15 +89,14 @@ function state.update()
     return'reset'
   end
 
-  -- Go there
-  if qL_desired then
-    qL_desired = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
-    if qL_desired~=true then Body.set_larm_command_position( qL_desired ) end
-  end
-  if qR_desired then
-    qR_desired = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
-    if qR_desired~=true then Body.set_rarm_command_position( qR_desired ) end
-  end
+  -- Go to the allowable position
+  local qL_approach, doneL
+  qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
+  Body.set_larm_command_position( qL_approach )
+  
+  local qR_approach, doneR
+  qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
+  Body.set_rarm_command_position( qR_approach )
 
   -- TODO: Begin to grip by approaching the inner radius
   --[[
@@ -105,7 +104,7 @@ function state.update()
     handle_radius = handle_radius0*(1-ph) + ph*handle_radius1
   --]]
 
-  if qL_desired==true and qR_desired==true then
+  if doneL and doneR then
     -- Close the fingers
     Body.set_lgrip_percent(1)
     Body.set_rgrip_percent(1)

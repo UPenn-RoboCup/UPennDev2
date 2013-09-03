@@ -21,12 +21,13 @@ local rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
 local current_joint = 1
 local current_arm = 'larm'
 local current_grip = 'larm'
--- Modes: direct, ik
+-- Modes: 0: direct, 1: ik
 local current_mode = 1
 local mode_msg = {
   'direct',
   'inverse kinematics'
 }
+local n_modes = #mode_msg
 -- Arm with three fingers
 local max_joint = #Body.parts['LArm']+3
 
@@ -208,6 +209,7 @@ local function process_character(key_code,key_char,key_char_lower)
     -- Switch to that joint
     current_joint = switch_joint
     print(util.color('Switched to','yellow'),current_arm,current_joint)
+    return
   end
   
   -- Bracket keys switch arms
@@ -215,35 +217,63 @@ local function process_character(key_code,key_char,key_char_lower)
     current_arm = 'larm'
     current_grip = 'lgrip'
     print(util.color('Switched to','yellow'),current_arm)
+    return
   elseif key_char==']' then
     current_arm = 'rarm'
     current_grip = 'rgrip'
     print(util.color('Switched to','yellow'),current_arm)
+    return
+  end
+  
+  -- Switch control modes
+  if key_char=='`' then
+    current_mode = current_mode + 1
+    if current_mode>n_modes then current_mode = 1 end
+    local cmd = {}
+    cmd.shm = 'hcm'
+    cmd.segment = 'joints'
+    cmd.key = 'teleop'
+    cmd.val = current_mode
+    send_command(cmd)
+    print(util.color('Switched to','yellow'),mode_msg[current_mode])
   end
   
   -- +/- Increases and decreases
+  local delta_joint = 1*math.pi/180
+  -- TODO: 6->7 joints
+  local delta_arm_joints = vector.zeros(6)
+  local is_delta_joint = false
   if key_char=='-' then
-    print(util.color('Decreased joint','yellow'))
+    delta_arm_joints[current_joint] = -delta_joint
+    is_delta_joint = true
   elseif key_char=='=' then -- +/= are the same key
-    print(util.color('Increased joint','yellow'))
+    delta_arm_joints[current_joint] = delta_joint
+    is_delta_joint = true
   elseif key_char=='0' then
-    print(util.color('Zeroed','yellow'))
+    print(util.color('Zeroed','yellow'),'Not implemented yet')
   end
-  
-  -- IK Changes with wasd
-  local ik_change = char_to_ik[key_char_lower]
-  if ik_change then
-    cmd = {}
+  if is_delta_joint then
+    local cmd = {}
     cmd.shm = 'hcm'
     cmd.segment = 'joints'
-    if current_arm=='larm' then
-      cmd.key = 'plarm'
-    else
-      cmd.key = 'prarm'
-    end
+    cmd.key = 'q'..current_arm
+    cmd.delta = delta_arm_joints
+    send_command(cmd)
+    print(current_arm..util.color(' Change joints','yellow'),delta_arm_joints)
+    return
+  end
+  
+  -- IK Changes with wasd/ijkl
+  local ik_change = char_to_ik[key_char_lower]
+  if ik_change then
+    local cmd = {}
+    cmd.shm = 'hcm'
+    cmd.segment = 'joints'
+    cmd.key = 'p'..current_arm
     cmd.delta = ik_change
     send_command(cmd)
     print( util.color('Move '..current_arm,'yellow'), ik_change )
+    return
   end
 
   -- Default message
@@ -255,6 +285,7 @@ end
 -- Start processing
 os.execute("clear")
 io.flush()
+print('Keyboard wizard for arm teleop')
 local t0 = unix.time()
 while true do
   
@@ -262,6 +293,7 @@ while true do
   local key_code = getch.block()
   local key_char = string.char(key_code)
   local key_char_lower = string.lower(key_char)
+  --print(key_code,key_char,key_char_lower)
   
   -- Process the character
   local msg = process_character(key_code,key_char,key_char_lower)

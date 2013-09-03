@@ -3,6 +3,7 @@ global MODELS LIDAR CONTROL DEBUGMON
 MODELS.wheel_calc = @wheel_calc;
 MODELS.tool_calc  = @tool_calc;
 MODELS.door_calc  = @door_calc;
+MODELS.grab = '';
 
 	%%%%%%%%%%%%
 	%% Door calculations
@@ -66,6 +67,8 @@ MODELS.door_calc  = @door_calc;
         handle = [grip_pos handle_yaw handle_roll handle_length];
         CONTROL.send_control_packet([],[],'hcm','door','handle',handle);
         % TODO: Draw another point on there, with the actual wheel center?
+
+        MODELS.grab = 'door'
 	end
 
 	%%%%%%%%%%%%
@@ -188,6 +191,7 @@ MODELS.door_calc  = @door_calc;
         wheel = [handlepos handleyaw handlepitch handleradius];
         CONTROL.send_control_packet([],[],'hcm','wheel','model', wheel );
         % TODO: Draw another point on there, with the actual wheel center?
+        MODELS.grab = 'door';
 	end
 
 ret = MODELS;

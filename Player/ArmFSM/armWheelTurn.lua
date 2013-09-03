@@ -1,5 +1,5 @@
 local state = {}
-state._NAME = 'armWheelTurn'
+state._NAME = ...
 local Config = require'Config'
 local Body   = require'Body'
 local K      = Body.Kinematics
@@ -119,18 +119,14 @@ function state.update()
   local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
   local qR_desired = Body.get_inverse_rarm(qLArm,trRArm)
 
-  -- Go there
-  if qL_desired then
-    qL_desired = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
-    if qL_desired~=true then Body.set_larm_command_position( qL_desired ) end
-  end
-  if qR_desired then
-    qR_desired = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
-    if qR_desired~=true then Body.set_rarm_command_position( qR_desired ) end
-  end
-
-
-
+  -- Go to the allowable position
+  local qL_approach, doneL
+  qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
+  Body.set_larm_command_position( qL_approach )
+  
+  local qR_approach, doneR
+  qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
+  Body.set_rarm_command_position( qR_approach )
 
   -- NOTE: This is kinda poor...
   -- Should calculate from arm angles

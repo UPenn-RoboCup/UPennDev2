@@ -101,9 +101,8 @@ function util.approachTol( values, targets, speedlimits, dt, tolerance )
       values[i] = values[i]+delta
     end
   end
-  -- Return true if in tolerance, 
-  -- else the next values to take on
-  return within_tolerance or values
+  -- Return the next values to take and if we are within tolerance
+  return values, within_tolerance
 end
 
 function util.pose_global(pRelative, pose)

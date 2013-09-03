@@ -7,8 +7,8 @@ local t_entry, t_update, t_finish
 local timeout = 15.0
 
 -- Goal position is arm Init, with hands at the side
-local qLArmInit = Config.arm.qLArmInit[1]
-local qRArmInit = Config.arm.qRArmInit[1]
+local qL_desired = Config.arm.qLArmInit[1]
+local qR_desired = Config.arm.qRArmInit[1]
 
 -- Angular velocity
 local dqArmMax = vector.new({10,10,10,15,45,45})*Body.DEG_TO_RAD
@@ -42,21 +42,21 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-  -- Left
+  -- Get the current joint positions (via commands)
   local qLArm = Body.get_larm_command_position()
-  qLArm = util.approachTol( qLArm, qLArmInit, dqArmMax, dt )
-  if qLArm~=true then
-    Body.set_larm_command_position( qLArm )
-  end
-  -- Right
   local qRArm = Body.get_rarm_command_position()
-  qRArm = util.approachTol( qRArm, qRArmInit, dqArmMax, dt )
-  if qRArm~=true then
-    Body.set_rarm_command_position( qRArm )
-  end
+
+  -- Go to the allowable position
+  local qL_approach, doneL
+  qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
+  Body.set_larm_command_position( qL_approach )
+  
+  local qR_approach, doneR
+  qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
+  Body.set_rarm_command_position( qR_approach )
 
   -- We are done when we are within tolerance
-  if qLArm==true and qRArm==true then return 'done' end
+  if doneR and doneR then return 'done' end
 
 end
 

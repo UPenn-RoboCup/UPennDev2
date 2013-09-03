@@ -20,7 +20,7 @@ PROTO THOROP_NoBoundaries [
 #  field SFInt32    channel 0
 ]
 {
-Supervisor {
+Robot {
   translation IS translation
   rotation IS rotation
   controller IS controller

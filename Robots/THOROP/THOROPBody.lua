@@ -639,6 +639,7 @@ if IS_WEBOTS then
   local mp         = require'msgpack'
   local udp        = require'udp'
   local jpeg       = require'jpeg'
+  require'wcm'
   --local png        = require'png'
   Body.get_time    = webots.wb_robot_get_time
   -- Setup the webots tags
@@ -856,7 +857,8 @@ if IS_WEBOTS then
       local gps = webots.wb_gps_get_values(tags.gps)
       local compass = webots.wb_compass_get_values(tags.compass)
       --local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
-      --wcm.set_global_pose( gps )
+      local angle = math.atan2(compass[1],compass[3])
+      wcm.set_robot_pose( {gps[1],-gps[3],-angle} )
       --wcm.set_global_orientation( compass )
     end
 

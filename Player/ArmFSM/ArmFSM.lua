@@ -86,6 +86,8 @@ sm:set_transition(armReady, 'done', armIdle, function()
   -- It's a bit awkward for the door opening
   sm:set_transition(armIdle, 'teleop', armTeleop)
   sm:set_transition(armIdle, 'wheelgrab', armWheelGrip)
+  -- Cannot do anymore
+  sm:remove_transition(armIdle, 'doorgrab', armDoorGrip)
 end)
 --
 sm:set_transition(armWheelGrip, 'reset', armReady)
@@ -96,11 +98,11 @@ sm:set_transition(armWheelTurn, 'reset', armReady)
 -- The initial arm pose is great for door gripping, 
 -- and should be the reset position
 sm:set_transition(armDoorGrip, 'reset', armInit)
-sm:set_transition(armDoorGrip, 'done', armTeleop)
+sm:set_transition(armDoorGrip, 'done',  armTeleop)
 -- TODO: This may not be the best
 -- We may wish to give ready and init
 -- TODO: make epi transitions for reset
-sm:set_transition(armTeleop, 'reset', armInitReady)
+sm:set_transition(armTeleop, 'reset', armInit)
 
 -- Setup the FSM object
 local obj = {}

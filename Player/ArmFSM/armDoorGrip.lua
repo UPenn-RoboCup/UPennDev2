@@ -50,9 +50,6 @@ local function calculate_arm_position()
    return trLArm
 end
 
-local function handle_reachable()
-end
-
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -82,13 +79,6 @@ function state.update()
   -- Update the human estimate
   update_human()
 
-  -- Check if the handle is reachable
-  -- If not, then replan footsteps
-  if not handle_reachable() then
-    print('Not reachable, approaching...')
-    return'approach'
-  end
-  
   -- Calculate where we need to go  
   local trLArm = calculate_arm_position()
 

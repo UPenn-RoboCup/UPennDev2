@@ -5,6 +5,7 @@
 local vector = require'vector'
 local memory = require'memory'
 local nJoints = 40
+local maxWaypoints = 4
 
 local shared_data = {}
 local shared_data_sz = {}
@@ -29,6 +30,15 @@ shared_data.motion = {}
 shared_data.motion.velocity = vector.zeros(3)
 -- Emergency stop of motion
 shared_data.motion.estop = vector.zeros(1)
+-- Waypoints
+-- {[x y a][x y a][x y a][x y a]...}
+shared_data.motion.waypoints  = vector.zeros(3*maxWaypoints)
+-- How many of the waypoints are actually used
+shared_data.motion.nwaypoints = vector.zeros(1)
+-- Local or global waypoint frame of reference
+-- 0: local
+-- 1: global
+shared_data.motion.waypoint_frame = vector.zeros(1)
 
 --------------------------------
 -- Task specific information

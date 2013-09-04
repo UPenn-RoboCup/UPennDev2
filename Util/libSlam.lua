@@ -11,7 +11,7 @@ local libTrig = require'libTrig'
 
 -- Configuration
 -- TODO: Should be Config_Slam
-local Sensors = require 'sensors/Config_Sensors'
+local Sensors = require 'Config_Sensors'
 
 require 'torch'
 torch.Tensor = torch.DoubleTensor

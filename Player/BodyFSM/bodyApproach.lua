@@ -1,7 +1,6 @@
 local state = {}
 state._NAME = ...
-local Config = require'Config'
-local Body   = require'Body'
+local Body  = require'Body'
 
 local t_entry, t_update, t_exit
 local waypoints = {}

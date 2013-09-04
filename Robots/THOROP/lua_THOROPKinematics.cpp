@@ -5,6 +5,21 @@
 #include <lua.hpp>
 #include "THOROPKinematics.h"
 
+/* Copied from lua_unix */
+struct def_info {
+  const char *name;
+  double value;
+};
+
+void lua_install_constants(lua_State *L, const struct def_info constants[]) {
+  int i;
+  for (i = 0; constants[i].name; i++) {
+    lua_pushstring(L, constants[i].name);
+    lua_pushnumber(L, constants[i].value);
+    lua_rawset(L, -3);
+  }
+}
+
 static void lua_pushvector(lua_State *L, std::vector<double> v) {
 	int n = v.size();
 	lua_createtable(L, n, 0);
@@ -332,6 +347,21 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{NULL, NULL}
 };
 
+static const def_info kinematics_constants[] = {
+  {"neckOffsetX", neckOffsetX},
+  {"neckOffsetZ", neckOffsetZ},
+  {"shoulderOffsetX", shoulderOffsetX},
+  {"shoulderOffsetY", shoulderOffsetY},
+  {"shoulderOffsetZ", shoulderOffsetZ},
+  {"upperArmLength", upperArmLength},
+  {"lowerArmLength", lowerArmLength},
+  {"elbowOffsetX", elbowOffsetX},
+  {"handOffsetX", handOffsetX},
+  {"handOffsetY", handOffsetY},
+  {"handOffsetZ", handOffsetZ},
+  {NULL, 0}
+};
+
 extern "C"
 int luaopen_THOROPKinematics (lua_State *L) {
 #if LUA_VERSION_NUM == 502
@@ -339,6 +369,7 @@ int luaopen_THOROPKinematics (lua_State *L) {
 #else
 	luaL_register(L, "Kinematics", kinematics_lib);
 #endif
+	lua_install_constants(L, kinematics_constants);
 	return 1;
 }
 

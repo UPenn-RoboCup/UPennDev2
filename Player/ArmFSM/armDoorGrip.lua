@@ -1,15 +1,15 @@
 local state = {}
 state._NAME = ...
-local Config = require'Config'
-local Body   = require'Body'
-local T      = require'Transform'
-local util   = require'util'
+local Body  = require'Body'
+local K     = Body.Kinematics
+local T     = require'Transform'
+local util  = require'util'
 require'hcm'
 
 -- Angular velocity limit
 local dqArmMax = Config.arm.slow_limit
 
-local SHOULDER_Y = .259 -- From the shoulder offset in Kinematics
+--local SHOULDER_Y = .259 -- From the shoulder offset in Kinematics
 local GRIP_ROLL  = -90*Body.DEG_TO_RAD
 local GRIP_YAW   = 0*Body.DEG_TO_RAD
 
@@ -40,7 +40,7 @@ local function calculate_arm_position()
 
     local trLArm = vector.new({
     handle_x, -- Free param
-    SHOULDER_Y, -- 6 DOF arm cannot go certain places
+    K.shoulderOffsetY, -- 6 DOF arm cannot go certain places
     handle_z, -- Free param
     GRIP_ROLL, -- Assume a certain orientation
     GRIP_PITCH, -- Tune this, or update based on the handle position
@@ -61,6 +61,7 @@ function state.entry()
   update_human()
 
   print('Grab door with', door_arm)
+  Body.set_lgrip_percent(.5)
 
 end
 

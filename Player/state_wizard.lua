@@ -1,9 +1,8 @@
 dofile'include.lua'
-local Config = require'Config'
 local Body = require'Body'
 local util = require'util'
-local mp = require'msgpack'
-local simple_ipc = require'simple_ipc'
+local mp   = require'msgpack'
+local simple_ipc   = require'simple_ipc'
 local state_pub_ch = simple_ipc.new_publisher(Config.net.state)
 
 local state_machines = {}
@@ -17,14 +16,11 @@ end
 -- TODO: Make coroutines for each FSM
 -- TODO: Or other way of handling state machine failure
 -- Maybe a reset() function in each fsm?
-for _,sm in ipairs(unix.readdir(CWD)) do
-  if sm:find'FSM' then
-    package.path = CWD..'/'..sm..'/?.lua;'..package.path
-    local my_fsm = require(sm)
-    my_fsm.sm:set_state_debug_handle(set_broadcast)
-    state_machines[sm] = my_fsm
-    print( util.color('FSM | Loaded','yellow'),sm)
-  end
+for _,sm in ipairs(Config.fsm.enabled) do
+  local my_fsm = require(sm)
+  my_fsm.sm:set_state_debug_handle(set_broadcast)
+  state_machines[sm] = my_fsm
+  print( util.color('FSM | Loaded','yellow'),sm)
 end
 
 -- Update rate (if not webots)

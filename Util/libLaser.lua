@@ -5,10 +5,9 @@
 require 'torch'
 torch.Tensor = torch.DoubleTensor
 local libTrig = require 'libTrig'
-local tutil = require 'tutil'
+--local tutil = require 'tutil'
 
 local libLaser = {}
-
 
 
 local function transform(self, roll, pitch, yaw)
@@ -37,12 +36,13 @@ local function transform(self, roll, pitch, yaw)
 	--------------
 
 	--------------
-	-- Prune based on the minimum and maximum ranges
+	--[[ Prune based on the minimum and maximum ranges
 	self.nRanges = tutil.band_mask_key(
 	self.ranges,
 	self.minRange, self.maxRange,
 	xs, ys
 	)
+	--]]
 	if self.nRanges < 1 then
 		return
 	end
@@ -61,11 +61,12 @@ local function transform(self, roll, pitch, yaw)
 		self.points_xyz:mm( X, self.T:t() )
 		------------------------------------------------
 
-		-- Prune the lidar points that are outside of proper height
+		--[[ Prune the lidar points that are outside of proper height
 		tutil.band_mask_key_points(
 		self.points_xyz:select(2,3),
 		self.minHeight, self.maxHeight,
 		self.points_xyz)
+		--]]
 		self.nPoints = self.points_xyz:size(1)
 
 	elseif self.location == 'chest' then
@@ -87,7 +88,7 @@ local function transform(self, roll, pitch, yaw)
 		self.points_xyz:mm( X, self.T:t() )
 		------------------------------------------------
 
-	    -- Print for debugging
+	  -- Print for debugging
 		-- The transformation is fine
 		--[[
 	    for i=1, X:size(1) do

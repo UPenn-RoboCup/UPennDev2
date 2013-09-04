@@ -9,14 +9,40 @@ require'hcm'
 require'wcm'
 
 local t_entry, t_update, t_exit
-local waypoints, nwaypoints
+local nwaypoints, wp_id
+local waypoints = {}
+
 
 local dist_threshold  = 0.02
 local angle_threshold = 1*math.pi/180
 local turn_threshold  = 5*math.pi/180
 
+local function pose_idx(t,idx)
+  if idx=='x' then
+    return t[1]
+  elseif idx=='y' then
+    return t[2]
+  elseif idx=='a' then
+    return t[3]
+  end
+end
+
+local function pose_newidx(t,idx)
+  if idx=='x' then
+    return t[1]
+  elseif idx=='y' then
+    return t[2]
+  elseif idx=='a' then
+    return t[3]
+  end
+end
+
 function state.entry()
-  print(_NAME..' Entry' )
+  print(state._NAME..' Entry' )
+  -- Update the time of entry
+  local t_entry_prev = t_entry -- When entry was previously called
+  t_entry = Body.get_time()
+  t_update = t_entry
   -- Zero the velocity
   -- Initially stop movement
   mcm.set_walk_vel{0,0,0}
@@ -27,41 +53,69 @@ function state.entry()
 
   -- Grab the waypoints
   nwaypoints = hcm.get_motion_nwaypoints()
-  waypoints = vector.slice(hcm.get_motion_waypoints(),3*nwaypoints)
+  local raw_waypoints = vector.slice(hcm.get_motion_waypoints(),3*nwaypoints)
 
   -- Check the frame of reference
   local waypoint_frame = hcm.get_motion_waypoint_frame()
-  if waypoint_frame==0 then
-    -- If a relative frame, then set our local waypoint copy
-    -- to a global frame
-    local waypoint_idx = 1
-    for w=1,nwaypoints do
-      local rel_waypoint = vector.slice(waypoints,waypoint_idx,waypoint_idx+2)
-      local global_waypoint = util.pose_global(rel_waypoint, pose)
-      -- Update our local waypoints array
-      waypoints[waypoint_idx] = global_waypoint[1]
-      waypoints[waypoint_idx+1] = global_waypoint[2]
-      waypoints[waypoint_idx+2] = global_waypoint[3]
-      -- Increment the index
-      waypoint_idx = waypoint_idx + 3
+
+  local idx = 1
+  for w=1,nwaypoints do
+    local waypoint = vector.slice(raw_waypoints,idx,idx+2)
+    if waypoint_frame==0 then
+      -- If a relative frame, then convert to the global frame
+      waypoint = util.pose_global(waypoint, pose)
     end
+    -- Add waypoint.x, waypoint.y, waypoint.a
+    local mt = getmetatable(waypoint)
+    mt.__index = pose_idx
+    -- Add to the waypoints table
+    waypoints[w] = setmetatable(waypoint,mt)
+    -- Increment the index
+    idx = idx + 3
   end
 
-  waypoint_count = 1
-  target_pose = waypoints[waypoint_count]
-  target_pose[3]=0
-  relPoseTarget = util.pose_relative(target_pose,pose)
-  aTurn = util.mod_angle(math.atan2(relPoseTarget[2],relPoseTarget[1]))
+  -- Start with the first waypoint
+  wp_id = 1
   
+end
+
+function state.update()
+  -- print(state._NAME..' Update' ) 
+  -- Get the time of update
+  local t  = Body.get_time()
+  local dt = t - t_update
+  -- Save this at the last update time
+  t_update = t
+
+  -- Grab the current waypoint
+  local wp = waypoints[wp_id]
+
+  -- Grab the current pose
+  local pose = wcm.get_robot_pose()
+
+  -- Set with relative coordinates
+  rel_wp = util.pose_relative(wp,pose)
+
+  -- Add waypoint.x, waypoint.y, waypoint.a
+  local mt = getmetatable(rel_wp)
+  mt.__index = pose_idx
+  -- Add to the waypoints table
+  rel_wp = setmetatable(rel_wp,mt)
+
+  -- Distance to the waypoint
+  local wpR = math.sqrt(rel_wp.x^2 + rel_wp.y^2)
+  local aTurn = util.mod_angle(math.atan2(rel_wp.y,rel_wp.x))
+
+  -- Find the walk velocity
+  
+  --[[
   print("Current pose:",pose[1],pose[2],pose[3]*180/math.pi)
   print("Current target:",target_pose[1],target_pose[2] )
   print("Rel pose:",relPoseTarget[1],relPoseTarget[2] )
   print("target angle:",aTurn/math.pi*180)
   print("\n")
-end
+  --]]
 
-function state.update()
---  print(_NAME..' Update' ) 
   if waypoint_count>#waypoints then return "done" end
 
   pose = scm:get_pose()

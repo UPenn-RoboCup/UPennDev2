@@ -8,10 +8,6 @@ state._NAME = 'bodyTeleop'
 local t_entry, t_update, t_exit
 local timeout = 10.0
 
--- Talk to the walk engine
-local simple_ipc = require'simple_ipc'
-local walk_ch = simple_ipc.new_publisher('Walk',true)
-
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry

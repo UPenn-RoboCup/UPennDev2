@@ -1,4 +1,4 @@
-local shm = require'shm'
+local shm    = require'shm'
 local carray = require'carray'
 local vector = require'vector'
 

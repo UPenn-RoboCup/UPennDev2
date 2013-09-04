@@ -19,6 +19,7 @@
 #include <stdarg.h>
 #include <sstream>
 #include <istream>
+#include <stdint.h>
 
 #define MT_NAME "png_mt"
 #include <png.h>

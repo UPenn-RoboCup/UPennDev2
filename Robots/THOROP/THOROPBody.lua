@@ -179,6 +179,10 @@ servo.rad_bias = vector.new({
 	0,0,0,0,0,0, --RLeg
 	90,90,90,45,-90,0, --RArm
 	0,0, -- Waist
+  --[[
+  0,0,0, -- left gripper
+  0,-80,0, -- right gripper -- TODO: Remount the finger...
+  --]]
 	0,0,0, -- left gripper
 	0,0,0, -- right gripper -- TODO: Remount the finger...
 	0, -- Lidar pan
@@ -192,6 +196,10 @@ servo.min_rad = vector.new({
 	-175,-175,-175,-175,-175,-175, --RLeg
 	-175,-150,-180,-140,-100,-80, --RArm
 	-175,-175, -- Waist
+  --[[
+  -20,-20,-20, -- left gripper
+  -10,-10,-10, -- right gripper
+  --]]
 	0,0,0, -- left gripper
 	0,0,0, -- right gripper
 	-60, -- Lidar pan
@@ -205,6 +213,10 @@ servo.max_rad = vector.new({
 	175,175,175,175,175,175, --RLeg
 	160,5,90,0,100,80, --RArm
 	175,175, -- Waist
+  --[[
+  10,10,10, -- left gripper
+  20,25,25, -- right gripper
+  --]]
 	90,90,90, -- left gripper
 	90,90,90, -- right gripper
 	60, -- Lidar pan

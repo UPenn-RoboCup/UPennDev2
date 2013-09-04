@@ -49,7 +49,6 @@ sm:set_transition(armInit, 'done', armIdle, function()
   -- When we are in the idle (init) state,
   -- we are allowed to make some transitions
   sm:set_transition(armIdle, 'ready', armInitReady)
-  sm:set_transition(armIdle, 'init', armInit)
   -- The initial position is great for grabbing the door
   sm:set_transition(armIdle, 'doorgrab', armDoorGrip)
 end)
@@ -72,11 +71,11 @@ sm:set_transition(armInitReady, 'reset', armInit)
 -- Stateful transitions
 sm:set_transition(armInitReady, 'done', armReady, armInitReady.epi.update)
 --
-sm:set_transition(armReady, 'init', armInitReady)
+sm:set_transition(armReady, 'reset', armInitReady)
 sm:set_transition(armReady, 'done', armIdle, function()
   -- When we are in the idle (ready) state,
   -- we are allowed to make some transitions
-  sm:set_transition(armIdle, 'init', armInitReady)
+  sm:set_transition(armIdle, 'reset', armInitReady)
   sm:set_transition(armIdle, 'ready', armReady)
   -- Manipulation ability!
   -- TODO: How to remove (prune) this functionality when back in init?

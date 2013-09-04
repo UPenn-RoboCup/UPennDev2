@@ -6,19 +6,6 @@ local Config = {}
 Config.PLATFORM_NAME = 'THOROP'
 Config.USE_LOCALHOST = true
 
----------------------------
--- Complementary Configs --
----------------------------
-local exo = {}
-exo.Walk = 'Walk'
--- Load each exogenous Config file
-for k,v in pairs(exo) do
-  local exo_name = k..'/Config_'..Config.PLATFORM_NAME..'_'..v
-  print('Loading exogenous',v)
-  local exo_config = require(exo_name)
-  for kk,vv in pairs(exo_config) do Config[kk] = vv end
-end
-
 -----------------------
 -- Device Interfaces --
 -----------------------
@@ -92,11 +79,28 @@ Config.net.left_camera    = 33335
 Config.net.right_camera   = 33336
 Config.net.rgbd           = 33335
 
+---------------------------
+-- Complementary Configs --
+---------------------------
+local exo = {}
+exo.Walk = 'Walk'
+-- Load each exogenous Config file
+for k,v in pairs(exo) do
+  local exo_name = k..'/Config_'..Config.PLATFORM_NAME..'_'..v
+  print('Loading exogenous',v)
+  local exo_config = require(exo_name)
+  for kk,vv in pairs(exo_config) do Config[kk] = vv end
+end
+
 ---------------
 -- Keyframes --
 ---------------
 Config.km = {}
 Config.km.standup_front = 'km_Charli_StandupFromFront.lua'
 Config.km.standup_back  = 'km_Charli_StandupFromBack.lua'
+
+--------------------------
+-- Temporary Overwrites --
+--------------------------
 
 return Config

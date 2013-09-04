@@ -33,12 +33,13 @@ shared.team.forced_role = vector.zeros(1); --for role testing
 --]]
 
 -- Keep track of every state machine
--- Check if include.lua was loaded (should have been)
+-- Use the Config'd FSMs
 shared.fsm = {}
-shared.fsm.body_state = '';
-shared.fsm.head_state = '';
-shared.fsm.motion_state = '';
-shared.fsm.game_state = '';
+if Config and Config.fsm then
+  for _,sm in ipairs(Config.fsm.enabled) do
+    shared.fsm[sm] = ''
+  end
+end
 
 -- Call the initializer
 memory.init_shm_segment(..., shared, shsize)

@@ -7,16 +7,21 @@ local fsm = require'fsm'
 
 -- Require the needed states
 local bodyIdle     = require'bodyIdle'
-local bodyTeleop   = require'bodyTeleop'
-local bodyNavigate = require'bodyNavigate'
+local bodyInit     = require'bodyInit'
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
-local sm = fsm.new(bodyIdle)
+local sm = fsm.new(bodyIdle,bodyInit)
+
+local bodyTeleop   = require'bodyTeleop'
 sm:add_state(bodyTeleop)
+
+local bodyNavigate = require'bodyNavigate'
 sm:add_state(bodyNavigate)
 
 -- Setup the transistions for this FSM
+--
+sm:set_transition(bodyIdle, 'init', bodyInit)
 --
 sm:set_transition(bodyIdle, 'teleop', bodyTeleop)
 sm:set_transition(bodyIdle, 'navigate', bodyNavigate)

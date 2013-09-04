@@ -5,16 +5,17 @@ local fsm = require'fsm'
 
 -- Require the needed states
 local lidarIdle = require'lidarIdle'
-local lidarPan  = require'lidarPan'
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
-local sm = fsm.new( lidarPan,lidarIdle )
---sm:add_state(lidarIdle)
+local sm = fsm.new( lidarIdle )
+
+local lidarPan  = require'lidarPan'
+sm:add_state(lidarPan)
 
 -- Setup the transistions for this FSM
-sm:set_transition( lidarPan,  'stop',  lidarIdle )
 sm:set_transition( lidarIdle, 'start', lidarPan  )
+sm:set_transition( lidarPan,  'stop',  lidarIdle )
 
 -- Setup the FSM object
 local obj = {}

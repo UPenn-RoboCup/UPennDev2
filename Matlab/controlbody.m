@@ -22,6 +22,30 @@ CONTROL.send_control_packet=@send_control_packet;
 CONTROL.udp_send_id = -1;
 ret = CONTROL;
 
+    function head_control(h,~,evt)
+        send_control_packet('HeadFSM',evt);
+    end
+
+    function body_control(h,~,evt)
+        send_control_packet('BodyFSM',evt);
+    end
+
+    function lidar_control(h,~,evt)
+        send_control_packet('LidarFSM',evt);
+    end
+
+    function arm_control(h,~,evt)
+        if strcmp(evt,'grab')
+            send_control_packet( 'ArmFSM', strcat(MODELS.grab,evt) );
+        else
+            send_control_packet( 'ArmFSM', evt );
+        end
+    end
+
+    function motion_control(h,~,evt)
+        send_control_packet('MotionFSM',evt);
+    end
+
     function setup_slambody_controls(b1,b2)
         set(b1,'CallBack',{SLAM.set_zoomlevel,1});
         set(b2,'CallBack',{SLAM.set_zoomlevel,2});
@@ -43,7 +67,6 @@ ret = CONTROL;
         set(lmb3,'CallBack',{LIDAR.clear_points});
         set(lmb4,'CallBack',{LIDAR.set_img_display});
         set(lmb5,'CallBack',{LIDAR.get_depth_img});
-        
     end
 
     function setup_model_controls(b1,b2,b3)
@@ -53,13 +76,9 @@ ret = CONTROL;
     end
 
     function setup_body_controls(b1,b2,b3,b4)
-        CONTROL.body.stop = b1;
-        CONTROL.body.teleop = b2;
-        CONTROL.body.navigate = b3;
-        CONTROL.body.wapproach = b4;
-        set(b1,'CallBack',{@body_control,1});
-        set(b2,'CallBack',{@body_control,2});
-        set(b3,'CallBack',{@body_control,3});
+        set(b1,'CallBack',{@body_control,'init'});
+        set(b2,'CallBack',{@body_control,'approach'});
+        set(b3,'CallBack',{@body_control,'navigate'});
         set(b4,'CallBack',{@body_control,4});
     end
 
@@ -74,17 +93,17 @@ ret = CONTROL;
         set(b4,'CallBack',{@head_control,'center'});
     end
 
-    function head_control(h,~,evt)
-        send_control_packet('HeadFSM',evt);
+    function setup_arm_controls(b1,b2,b3,b4,b5)
+        % standard
+        set(b1,'CallBack',{@arm_control,'init'});
+        set(b2,'CallBack',{@arm_control,'ready'});
+        set(b3,'CallBack',{@arm_control,'reset'});
+        % grab
+        set(b4,'CallBack',{@arm_control,'grab'});
+        set(b5,'CallBack',{@arm_control,'teleop'});
     end
 
-    function targetpos = transform_global(relpos)
-        pose = POSE.pose;
-        targetpos=[];
-        targetpos(1) =pose(1) + cos(pose(3)) * relpos(1) - sin(pose(3))*relpos(2);
-        targetpos(2) =pose(2) + sin(pose(3)) * relpos(1) + cos(pose(3))*relpos(2);
-    end
-
+%{
     function body_control(h,~,flags)
         if flags==1
             %	    send_control_packet('body','stop');
@@ -110,33 +129,9 @@ ret = CONTROL;
         end
         SLAM.clear_waypoint();
     end
+%}
 
-    function setup_arm_controls(b1,b2,b3,b4,b5)
-        CONTROL.arm.init  = b1;
-        CONTROL.arm.ready = b2;
-        CONTROL.arm.reset = b3;
-        %
-        CONTROL.arm.grab  = b4;
-        
-        
-        % standard
-        set(b1,'CallBack',{@send_arm_event,'init'});
-        set(b2,'CallBack',{@send_arm_event,'ready'});
-        set(b3,'CallBack',{@send_arm_event,'reset'});
-        % grab
-        set(b4,'CallBack',{@send_arm_event,'grab'});
-        set(b5,'CallBack',{@send_arm_event,'teleop'});
-        
-    end
 
-    function send_arm_event(~,~,evt)
-        if strcmp(evt,'grab')
-            send_control_packet( 'ArmFSM', strcat(MODELS.grab,evt) );
-        else
-            send_control_packet( 'ArmFSM', evt );
-        end
-        
-    end
 
     function send_control_packet( fsmtype, event, shared, segment, key, data )
         

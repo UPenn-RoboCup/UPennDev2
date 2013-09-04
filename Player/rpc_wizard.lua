@@ -1,12 +1,11 @@
 dofile'include.lua'
 require'unix'
-local Config = require'Config'
-local mp = require'msgpack'
-local simple_ipc = require'simple_ipc'
-local udp = require'udp'
+local mp   = require'msgpack'
 local util = require'util'
+local simple_ipc = require'simple_ipc'
 
 -- TODO: Use the Config file for the ports
+local udp = require'udp'
 local rpc_zmq = simple_ipc.new_replier(Config.net.reliable_rpc,'*')
 local rpc_udp = udp.new_receiver( Config.net.unreliable_rpc )
 
@@ -18,10 +17,8 @@ require'hcm'
 
 -- Require all necessary fsm channels
 local fsm_channels = {}
-for _,sm in ipairs(unix.readdir(CWD)) do
-  if sm:find'FSM' then
-    fsm_channels[sm] = simple_ipc.new_publisher(sm,true)
-  end
+for _,sm in ipairs(Config.fsm.enabled) do
+  fsm_channels[sm] = simple_ipc.new_publisher(sm,true)
 end
 
 --NOTE: Can do memory AND fsm event.  In that order

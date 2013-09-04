@@ -175,7 +175,7 @@ function update(self)
     self.nextState = nil
     self.currentState.entry(exit_val)
     if self.state_debug_handle then
-      self.state_debug_handle(self.currentState._NAME)
+      self.state_debug_handle(self.currentState._NAME,event)
     end
   end
 

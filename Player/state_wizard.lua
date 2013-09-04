@@ -5,20 +5,28 @@ local mp   = require'msgpack'
 local simple_ipc   = require'simple_ipc'
 local state_pub_ch = simple_ipc.new_publisher(Config.net.state)
 
+require'gcm'
+
 local state_machines = {}
 
 local status = {}
-local needs_broadcast = false
-local function set_broadcast()
-  needs_broadcast = true
-end
 
 -- TODO: Make coroutines for each FSM
 -- TODO: Or other way of handling state machine failure
 -- Maybe a reset() function in each fsm?
 for _,sm in ipairs(Config.fsm.enabled) do
   local my_fsm = require(sm)
-  my_fsm.sm:set_state_debug_handle(set_broadcast)
+  my_fsm.sm:set_state_debug_handle(function(cur_state_name,event)
+    -- For other processes
+    gcm['set_fsm_'..sm](cur_state_name)
+    -- Local copy
+    local s = {cur_state_name,event}
+    status[my_fsm._NAME] = s
+    -- Broadcast requirement
+    needs_broadcast = true
+    -- Debugging printing
+    --print(table.concat(s,' from '))
+  end)
   state_machines[sm] = my_fsm
   print( util.color('FSM | Loaded','yellow'),sm)
 end
@@ -35,8 +43,11 @@ local t_debug = t0
 Body.entry()
 for _,my_fsm in pairs(state_machines) do
   my_fsm.entry()
-  local cur_st = my_fsm.sm:get_current_state()
-  status[my_fsm._NAME] = cur_st._NAME
+  local cur_state = my_fsm.sm:get_current_state()
+  local cur_state_name = cur_state._NAME
+  local s = {cur_state_name,nil}
+  status[my_fsm._NAME] = s
+  local ret = state_pub_ch:send( mp.pack(status) )
 end
 while true do
   local t = Body.get_time()
@@ -44,11 +55,7 @@ while true do
   
   -- Update each state machine
   for _,my_fsm in pairs(state_machines) do
-    local event  = my_fsm.update()
-    local cur_st = my_fsm.sm:get_current_state()
-    local s = {cur_st._NAME,event}
-    status[my_fsm._NAME] = s
-    if event then print(unpack(s)) end
+    local event = my_fsm.update()
   end
 
   if needs_broadcast then
@@ -67,7 +74,9 @@ end
 Body.exit()
 for _,my_fsm in pairs(state_machines) do
   my_fsm.exit()
-  local cur_st = my_fsm.sm:get_current_state()
-  status[my_fsm._NAME] = cur_st._NAME
+  local cur_state = my_fsm.sm:get_current_state()
+  local cur_state_name = cur_state._NAME
+  local s = {cur_state_name,nil}
+  status[my_fsm._NAME] = s
   local ret = state_pub_ch:send( mp.pack(status) )
 end

@@ -3,6 +3,7 @@ CWD = handle:read("*a"):gsub("%s+$", "")
 handle:close()
 IS_WEBOTS = false
 HOME = CWD:gsub('Player.*$','')
+HOME = CWD:gsub('Robots.*$','')
 HOME = HOME:gsub('Operate.*$','')
 HOME = HOME:gsub('Tools.*$','')
 HOME = HOME:gsub('Frameworks.*$','')

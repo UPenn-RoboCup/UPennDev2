@@ -27,17 +27,17 @@ ret = CONTROL;
     end
 
     function body_control(h,~,evt)
-        if strcmp(evt,'approach')
+        if strcmp(evt,'follow')
             % Use the currently set waypoints in MODELS
             % To change the current waypoints, just click the model button with NO POINTS SELECTED
             % or with points selected, but they much be the RIGHT points
             CONTROL.send_control_packet([],[],'hcm','motion','waypoints',MODELS.waypoints);
             % Set the number of waypoints
-            nwaypoints = floor(numel(MODELS.waypoints/3));
+            nwaypoints = floor(numel(MODELS.waypoints)/3);
             CONTROL.send_control_packet([],[],'hcm','motion','nwaypoints',nwaypoints);
             % Set the local frame
             CONTROL.send_control_packet([],[],'hcm','motion','waypoint_frame',0);
-            send_control_packet( 'BodyFSM', 'approach' );
+            send_control_packet( 'BodyFSM', 'follow' );
         else
             send_control_packet( 'BodyFSM', evt );
         end
@@ -163,6 +163,7 @@ ret = CONTROL;
             senddata.segment = segment;
             senddata.key = key;
             senddata.val = data;
+            disp(data);
         end
         
         if numel(senddata)==0

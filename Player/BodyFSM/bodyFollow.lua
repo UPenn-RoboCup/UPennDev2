@@ -1,6 +1,7 @@
 local state = {}
 state._NAME = ...
 local Body  = require'Body'
+local util  = require'util'
 
 -- Get the human guided approach
 require'hcm'
@@ -111,7 +112,8 @@ function state.entry()
 
   -- Grab the waypoints
   nwaypoints = hcm.get_motion_nwaypoints()
-  local raw_waypoints = vector.slice(hcm.get_motion_waypoints(),3*nwaypoints)
+  local raw_waypoints = vector.slice(hcm.get_motion_waypoints(),1,3*nwaypoints)
+
 
   -- Check the frame of reference
   local waypoint_frame = hcm.get_motion_waypoint_frame()

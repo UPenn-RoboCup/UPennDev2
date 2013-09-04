@@ -3,6 +3,7 @@ CWD = handle:read("*a"):gsub("%s+$", "")
 handle:close()
 IS_WEBOTS = false
 HOME = CWD:gsub('Player.*$','')
+HOME = HOME:gsub('Robots.*$','')
 HOME = HOME:gsub('Operate.*$','')
 HOME = HOME:gsub('Tools.*$','')
 HOME = HOME:gsub('Frameworks.*$','')
@@ -12,8 +13,14 @@ if HOME:find'Webots' ~= nil then
   IS_WEBOTS = true
 end
 
-KEYFRAME_DIR = HOME.."/Player/Keyframes"
 OPERATING_SYSTEM = io.popen('uname'):read('*a'):lower():gsub("%s+$", "")
+
+-- Print out the globally available variables, when using include.lua
+print( 'Working Dir:', CWD )
+print( 'Home Dir:', HOME )
+print( 'Operating Sys:', OPERATING_SYSTEM )
+print( 'Webots:', IS_WEBOTS )
+
 
 -- include C modules to cpath
 -- getch.so is in Modules/getch/ (Modules/unix/unix.so -> Modules/?/?.so)
@@ -40,10 +47,7 @@ Config = require'Config'
 package.path  = HOME..'/Robots/'..Config.PLATFORM_NAME..'/?.lua;'..package.path
 package.cpath = HOME..'/Robots/'..Config.PLATFORM_NAME..'/?.so;'..package.cpath
 
--- Print out the globally available variables, when using include.lua
-print( 'Working Dir:', CWD )
-print( 'Home Dir:', HOME )
-print( 'Operating Sys:', OPERATING_SYSTEM )
-print( 'Keyframes directory:', KEYFRAME_DIR )
-print( 'Webots:', IS_WEBOTS )
+KEYFRAME_DIR = HOME.."/Player/Keyframes"
+
 print( 'Platform:', Config.PLATFORM_NAME )
+print( 'Keyframes directory:', KEYFRAME_DIR )

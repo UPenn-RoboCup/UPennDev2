@@ -4,6 +4,11 @@ MODELS.wheel_calc = @wheel_calc;
 MODELS.tool_calc  = @tool_calc;
 MODELS.door_calc  = @door_calc;
 MODELS.grab = '';
+MODELS.waypoints = [];
+% TODO: Each model has properties
+MODELS.door  = [];
+MODELS.wheel = [];
+
 
 	%%%%%%%%%%%%
 	%% Door calculations
@@ -69,6 +74,8 @@ MODELS.grab = '';
         % TODO: Draw another point on there, with the actual wheel center?
 
         MODELS.grab = 'door'
+        % Waypoint is x,y,a
+        MODELS.waypoints = [grip_pos(1),grip_pos(2),0];
 	end
 
 	%%%%%%%%%%%%

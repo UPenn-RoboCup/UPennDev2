@@ -88,7 +88,7 @@ end
 function state.update()
   --print(state._NAME..' Update' )
   -- Get the time of update
-  local t  = Body.get_time()
+  local  t = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
@@ -100,7 +100,7 @@ function state.update()
   -- Get the current turning angle
   --local turnAngleCurrent = calculate_turn_angle(qLArm,qRArm)
   -- Get the target turning angle
-  local turnAngleTarget = hcm:get_wheel_turnangle()
+  local turnAngleTarget = hcm.get_wheel_turnangle()
   -- Find out how much more we need to turn
   local turnAngleDiff = turnAngleTarget-turnAngleCurrent
   -- Do not allow too much movement

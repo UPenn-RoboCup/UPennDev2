@@ -50,6 +50,9 @@ local function calculate_arm_position()
    return trLArm
 end
 
+local function handle_reachable()
+end
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -67,7 +70,7 @@ end
 function state.update()
 --  print(state._NAME..' Update' )
   -- Get the time of update
-  local t  = Body.get_time()
+  local  t = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
@@ -76,16 +79,22 @@ function state.update()
   -- Where are we now?
   local qLArm = Body.get_larm_command_position()
 
-  -- Get the human estimate
+  -- Update the human estimate
   update_human()
 
-  -- 
+  -- Check if the handle is reachable
+  -- If not, then replan footsteps
+  if not handle_reachable() then
+    print('Not reachable, approaching...')
+    return'approach'
+  end
   
   -- Calculate where we need to go  
   local trLArm = calculate_arm_position()
 
   -- Get desired angles from current angles and target transform
   local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
+  -- Double check reachability
   if not qL_desired then
     print('Left not possible',trLArm)
     return'reset'

@@ -191,7 +191,7 @@ MODELS.grab = '';
         wheel = [handlepos handleyaw handlepitch handleradius];
         CONTROL.send_control_packet([],[],'hcm','wheel','model', wheel );
         % TODO: Draw another point on there, with the actual wheel center?
-        MODELS.grab = 'door';
+        MODELS.grab = 'wheel';
 	end
 
 ret = MODELS;

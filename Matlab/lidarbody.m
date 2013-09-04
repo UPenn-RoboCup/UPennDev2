@@ -177,7 +177,7 @@ CHEST_LIDAR.posea=[];
             HEAD_LIDAR.ranges = depth_img;
             HEAD_LIDAR.fov_angles = fov_angles;
             HEAD_LIDAR.scanline_angles = scanline_angles;
-            HEAD_LIDAR.depths = metadata.depths;
+            HEAD_LIDAR.depths = double(metadata.depths);
             % Update the figure
             if LIDAR.mesh_img_display==0
                 draw_mesh_image()
@@ -187,7 +187,7 @@ CHEST_LIDAR.posea=[];
             CHEST_LIDAR.ranges = depth_img';
             CHEST_LIDAR.fov_angles = fov_angles;
             CHEST_LIDAR.scanline_angles = scanline_angles;
-            CHEST_LIDAR.depths = metadata.depths;
+            CHEST_LIDAR.depths = double(metadata.depths);
             % Update the figure
             if LIDAR.mesh_img_display==1
                 draw_mesh_image()
@@ -344,10 +344,10 @@ CHEST_LIDAR.posea=[];
             scanline_index  = round( posxy(1) );
             % grab the range
             range = CHEST_LIDAR.ranges(fov_angle_index,scanline_index);
-            range = double(range)/255 * (CHEST_LIDAR.depths(2)-CHEST_LIDAR.depths(1));
+            range = double(range)/255 * (CHEST_LIDAR.depths(2)-CHEST_LIDAR.depths(1))
             range = range + CHEST_LIDAR.depths(1);
             % Grab the correct angles
-            fov_angle_selected = -1*CHEST_LIDAR.fov_angles(fov_angle_index);
+            fov_angle_selected = -1*CHEST_LIDAR.fov_angles(fov_angle_index)
             scanline_angle_selected = -1*CHEST_LIDAR.scanline_angles(scanline_index);
             % TODO: Average nearby neighbor ranges
             %{
@@ -369,8 +369,6 @@ CHEST_LIDAR.posea=[];
             local_to_global(2,2) = cos(scanline_angle_selected);
             local_to_global(1,2) = sin(scanline_angle_selected);
             local_to_global(2,1) = -sin(scanline_angle_selected);
-            disp(class(local_to_global))
-            disp(class(local_point))
             global_point = local_to_global * local_point;
             global_point(1) = global_point(1) + CHEST_LIDAR.chest_depth;
             global_point(3) = global_point(3) + CHEST_LIDAR.chest_height;

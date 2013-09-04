@@ -13,8 +13,11 @@ local bodyInit     = require'bodyInit'
 -- This will be returned to the user
 local sm = fsm.new(bodyIdle,bodyInit)
 
-local bodyTeleop   = require'bodyTeleop'
+local bodyTeleop = require'bodyTeleop'
 sm:add_state(bodyTeleop)
+
+local bodyFollow = require'bodyFollow'
+sm:add_state(bodyFollow)
 
 local bodyNavigate = require'bodyNavigate'
 sm:add_state(bodyNavigate)
@@ -23,14 +26,12 @@ sm:add_state(bodyNavigate)
 --
 sm:set_transition(bodyIdle, 'init', bodyInit)
 --
-sm:set_transition(bodyIdle, 'teleop', bodyTeleop)
-sm:set_transition(bodyIdle, 'navigate', bodyNavigate)
+sm:set_transition(bodyInit, 'follow', bodyFollow)
 --
-sm:set_transition(bodyTeleop, 'stop', bodyIdle)
-sm:set_transition(bodyTeleop, 'navigate', bodyNavigate)
---
-sm:set_transition(bodyNavigate, 'done', bodyIdle)
-sm:set_transition(bodyNavigate, 'stop', bodyIdle)
+sm:set_transition( bodyInit,   'teleop', bodyTeleop )
+sm:set_transition( bodyTeleop, 'reset',  bodyInit   )
+sm:set_transition( bodyTeleop, 'follow', bodyFollow )
+
 
 -- Setup the FSM object
 local obj = {}

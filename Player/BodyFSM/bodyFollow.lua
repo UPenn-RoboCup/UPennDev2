@@ -12,29 +12,87 @@ local t_entry, t_update, t_exit
 local nwaypoints, wp_id
 local waypoints = {}
 
+-- maximum stride length to take
+local maxStep = .1
 
+-- Thresholds for moving to the next waypoint
 local dist_threshold  = 0.02
 local angle_threshold = 1*math.pi/180
 local turn_threshold  = 5*math.pi/180
 
-local function pose_idx(t,idx)
-  if idx=='x' then
-    return t[1]
-  elseif idx=='y' then
-    return t[2]
-  elseif idx=='a' then
-    return t[3]
+local function robocup_follow( pose, wp, rel_wp )
+
+  -- Distance to the waypoint
+  local wpR = math.sqrt(rel_wp.x^2 + rel_wp.y^2)
+  -- Angle to the waypoint
+  local aTurn = util.mod_angle(math.atan2(rel_wp.y,rel_wp.x))
+
+  if wpR<dist_threshold and math.abs(aTurn)<angle_threshold then
+    return {0,0,0}, true
+  end
+
+  -- calculate walk step velocity based on ball position
+  local vStep = vector.zeros(3)
+  -- TODO: Adjust these constants
+  vStep[1] = .60 * rel_wp.x
+  vStep[2] = .75 * rel_wp.y
+  -- Reduce speed based on how far away from the waypoint we are
+  local scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1);
+  vStep = scale * vStep;
+
+  ballA = math.atan2(ball.y, ball.x+0.10)
+  vStep[3] = 0.75*ballA
+  
+  return vStep, false
+
+end
+
+local function chase_follow(pose,wp,rel_wp)
+  -- Check how close we are to the waypoint
+  -- Distance to the waypoint
+  local wpR = math.sqrt(rel_wp.x^2 + rel_wp.y^2)
+  -- Angle to the waypoint
+  local aTurn = util.mod_angle(math.atan2(rel_wp.y,rel_wp.x))
+
+  -- If we are close enough, then increment the waypoint id
+  if wpR<dist_threshold then
+
   end
 end
 
-local function pose_newidx(t,idx)
+local follow = {
+  [1] = simple_follow,
+  [2] = robocup_follow,
+  [3] = chase_follow,
+}
+
+-- Metatables for pose vectors
+-- TODO: Use as a utility pose file, too
+local function pose_index(p,idx)
   if idx=='x' then
-    return t[1]
+    return p[1]
   elseif idx=='y' then
-    return t[2]
+    return p[2]
   elseif idx=='a' then
-    return t[3]
+    return p[3]
   end
+end
+
+local function pose_newindex(p,idx,val)
+  if idx=='x' then
+    p[1] = val
+  elseif idx=='y' then
+    p[2] = val
+  elseif idx=='a' then
+    p[3] = val
+  end
+end
+
+local function pose_tostring(p)
+  return string.format(
+    "x=%g, y=%g, a=%g degrees",
+    p[1], p[2], p[3]*180/math.pi
+  )
 end
 
 function state.entry()
@@ -67,7 +125,9 @@ function state.entry()
     end
     -- Add waypoint.x, waypoint.y, waypoint.a
     local mt = getmetatable(waypoint)
-    mt.__index = pose_idx
+    mt.__index    = pose_index
+    mt.__newindex = pose_newindex
+    mt.__tostring = pose_tostring
     -- Add to the waypoints table
     waypoints[w] = setmetatable(waypoint,mt)
     -- Increment the index
@@ -87,6 +147,11 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+  -- If ID out of bounds
+  print('wp_id',wp_id,'of',nwaypoints)
+  if wp_id>nwaypoints then return'done' end
+  if wp_id<1 then return'error' end
+
   -- Grab the current waypoint
   local wp = waypoints[wp_id]
 
@@ -94,40 +159,42 @@ function state.update()
   local pose = wcm.get_robot_pose()
 
   -- Set with relative coordinates
-  rel_wp = util.pose_relative(wp,pose)
+  local rel_wp = util.pose_relative(wp,pose)
+
+  -- Add pose.x, pose.y, pose.a
+  local mt = getmetatable(pose)
+  mt.__index    = pose_index
+  mt.__newindex = pose_newindex
+  mt.__tostring = pose_tostring
+  -- Add to the waypoints table
+  pose = setmetatable(pose,mt)
 
   -- Add waypoint.x, waypoint.y, waypoint.a
   local mt = getmetatable(rel_wp)
-  mt.__index = pose_idx
+  mt.__index    = pose_index
+  mt.__newindex = pose_newindex
+  mt.__tostring = pose_tostring
   -- Add to the waypoints table
   rel_wp = setmetatable(rel_wp,mt)
 
-  -- Distance to the waypoint
-  local wpR = math.sqrt(rel_wp.x^2 + rel_wp.y^2)
-  local aTurn = util.mod_angle(math.atan2(rel_wp.y,rel_wp.x))
+  -- Debug
+  print(pose,wp,rel_wp)
 
-  -- Find the walk velocity
-  
+  -- Grab the follow mode
+  local mode = hcm.get_motion_follow_mode()
+  local up = follow[mode]
+  if not up then return'error' end
+  local vel, at_waypoint = up(pose,wp,rel_wp)
+
+  -- Update the velocity
+  mcm.set_walk_vel(vel)
+
+  -- Check if we are at the waypoint
+  if at_waypoint then
+    wp_id = wp_id + 1
+  end
+
   --[[
-  print("Current pose:",pose[1],pose[2],pose[3]*180/math.pi)
-  print("Current target:",target_pose[1],target_pose[2] )
-  print("Rel pose:",relPoseTarget[1],relPoseTarget[2] )
-  print("target angle:",aTurn/math.pi*180)
-  print("\n")
-  --]]
-
-  if waypoint_count>#waypoints then return "done" end
-
-  pose = scm:get_pose()
-  target_pose = waypoints[waypoint_count]
-  target_pose[3]=0
-
-  relPoseTarget = util.pose_relative(target_pose,pose)
-  aTurn = util.mod_angle(math.atan2(relPoseTarget[2],relPoseTarget[1]))
-
-  dist_error = math.sqrt(
-		(pose[1]-target_pose[1])^2 + 
-		(pose[2]-target_pose[2])^2 ) 
 
   run_reverse = 1
   if math.abs(aTurn)>math.pi/180 * 90  then
@@ -151,6 +218,8 @@ function state.update()
     waypoint_count = waypoint_count + 1
     forwardVel = 0
   end
+  --]]
+
 end
 
 function state.exit()

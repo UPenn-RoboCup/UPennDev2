@@ -293,9 +293,10 @@ local function head_callback()
       local single = torch.FloatTensor(1, head.all_ranges:size(2)):zero()
       single:copy(head.all_ranges:select(1, scanline))
       lidar0.ranges:copy(single:transpose(1,2))
+      print('check ranges', lidar0.ranges:max(), lidar0.ranges:min())
     end
 	
-	local head_roll, head_pitch, head_yaw = 0, 0, 0 -- FIXME
+	local head_roll, head_pitch, head_yaw = 0, head.scan_angles[scanline], 0 
 	lidar0:transform( head_roll, head_pitch, head_yaw )
 	------------------
 		
@@ -459,7 +460,7 @@ function slam.update()
 	-- Compress and send the SLAM map and pose over UDP
 	--TODO: use zlib
 	local c_map
-	---[[
+	--[[
 	head.meta.c = 'zlib' -- temp
   c_map = zlib.compress(
 	  libSlam.SMAP.data:storage():pointer(),
@@ -467,7 +468,7 @@ function slam.update()
 	)
 	--]]
     
-	--[[
+	---[[
 	head.meta.c = 'jpeg'
 	local c_map = jpeg.compress_gray(
 	libSlam.SMAP.data:storage():pointer(),
@@ -497,11 +498,10 @@ function slam.update()
 	------------------
  
 	------------------
-	--[[ Perform the poll (Slam Processing)
+	-- Perform the poll (Slam Processing)
 	local npoll = channel_polls:poll(channel_timeout)
 	local t = unix.time()
 	cnt = cnt+1
-	--]]
 	------------------
 end
 

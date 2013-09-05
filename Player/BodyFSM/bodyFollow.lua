@@ -9,6 +9,10 @@ require'hcm'
 -- wcm is needed for pose, too
 require'wcm'
 
+-- FSM coordination
+local simple_ipc = require'simple_ipc'
+local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
+
 local t_entry, t_update, t_exit
 local nwaypoints, wp_id
 local waypoints = {}
@@ -37,12 +41,11 @@ local function robocup_follow( pose, wp, rel_wp )
   -- TODO: Adjust these constants
   vStep[1] = .60 * rel_wp.x
   vStep[2] = .75 * rel_wp.y
+  
   -- Reduce speed based on how far away from the waypoint we are
-  local scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1);
-  vStep = scale * vStep;
-
-  ballA = math.atan2(ball.y, ball.x+0.10)
-  vStep[3] = 0.75*ballA
+  local scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1)
+  vStep = scale * vStep
+  vStep[3] = 0.75*aTurn
   
   return vStep, false
 
@@ -62,8 +65,8 @@ local function chase_follow(pose,wp,rel_wp)
 end
 
 local follow = {
-  [1] = simple_follow,
-  [2] = robocup_follow,
+  [1] = robocup_follow,
+  [2] = simple_follow,
   [3] = chase_follow,
 }
 
@@ -102,10 +105,6 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-  -- Zero the velocity
-  -- Initially stop movement
-  mcm.set_walk_vel{0,0,0}
-  hcm.set_motion_velocity{0,0,0}
   
   -- Grab the pose
   local pose = wcm.get_robot_pose()
@@ -113,7 +112,6 @@ function state.entry()
   -- Grab the waypoints
   nwaypoints = hcm.get_motion_nwaypoints()
   local raw_waypoints = vector.slice(hcm.get_motion_waypoints(),1,3*nwaypoints)
-
 
   -- Check the frame of reference
   local waypoint_frame = hcm.get_motion_waypoint_frame()
@@ -138,6 +136,14 @@ function state.entry()
 
   -- Start with the first waypoint
   wp_id = 1
+
+  -- Zero the velocity
+  -- Initially stop movement
+  mcm.set_walk_vel{0,0,0}
+  hcm.set_motion_velocity{0,0,0}
+
+  -- Begin walking
+  motion_ch:send'walk'
   
 end
 

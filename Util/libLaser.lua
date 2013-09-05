@@ -43,6 +43,9 @@ local function transform(self, roll, pitch, yaw)
 	xs, ys
 	)
 	--]]
+
+	-- TODO: temporarily no pruning
+	self.nRanges = self.ranges:size(1)
 	if self.nRanges < 1 then
 		return
 	end
@@ -105,6 +108,7 @@ end
 
 
 local function update_head( self, roll, pitch, yaw )
+--TODO: parameters need to be updated
 	-----------------------
 	-- Rotation of the lidar
 	self.t_roll  = libTrig.rotx( roll )

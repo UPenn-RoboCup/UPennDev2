@@ -251,7 +251,7 @@ local function head_callback()
 	local head_roll,head_pitch,head_yaw = 0,neck[1],neck[2]
 	if realFlag ==1 and (math.abs(head_pitch)>math.pi/180 or math.abs(head_yaw)>math.pi/180) then
 		--print('bad head!!!!')
-		wcm:set_slam_pose({libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom})
+		wcm:set_pose_slam({libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom})
 		return
 	end
 	------------------------------------------------------
@@ -278,7 +278,6 @@ local function head_callback()
       print('\nRES:', head.meta.resolution[1],head.meta.resolution[2])
     	print('SCANLINE', scanline)
       -- Copy lidar readings to the torch object for fast modification
-      --FIXME
       ranges:tensor( 
         head.all_ranges:select(1, scanline),
         head.all_ranges:size(2),
@@ -306,6 +305,8 @@ local function head_callback()
 	local t1_processL0 = unix.time()
 	--print( string.format('processL0 took: \t%.2f ms', (t1_processL0-t0_processL0)*1000) )
 	------------------
+  
+  --wcm:set_pose_slam({libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom})
 
 	------------------
 	--[[ For real robot
@@ -457,30 +458,50 @@ function slam.update()
 	------------------
 	-- Compress and send the SLAM map and pose over UDP
 	--TODO: use zlib
-	local jomap = jpeg.compress_gray(
+	local c_map
+	---[[
+	head.meta.c = 'zlib' -- temp
+  c_map = zlib.compress(
+	  libSlam.SMAP.data:storage():pointer(),
+	  libSlam.SMAP.data:nElement()
+	)
+	--]]
+    
+	--[[
+	head.meta.c = 'jpeg'
+	local c_map = jpeg.compress_gray(
 	libSlam.SMAP.data:storage():pointer(),
 	libSlam.MAPS.sizex,
 	libSlam.MAPS.sizey
 	)
+	--]]
 	
-	local metadata={
+	local shiftdata={
 		Xmin = libSlam.SMAP.xmin,
 		Ymin = libSlam.SMAP.ymin,
 		Xmax = libSlam.SMAP.xmax,
 		Ymax = libSlam.SMAP.ymax
 	}
 
-	data = mp.pack({image=jomap,data=metadata})
-	local udp_ret, err = omap_udp_ch:send( data, #data )
+  -- old streaming
+	--data = mp.pack({image=c_map,data=shiftdata})
+	--local udp_ret, err = omap_udp_ch:send( data, #data )
+
+	---[[ new streaming
+  head.meta.shift = shiftdata
+	local meta = mp.pack(head.meta)
+	local ret, err = omap_udp_ch:send( meta..c_map )
+	--]]
+
 	print(err or 'Omap data sent!')
 	------------------
  
 	------------------
-	-- Perform the poll (Slam Processing)
+	--[[ Perform the poll (Slam Processing)
 	local npoll = channel_polls:poll(channel_timeout)
-	--print('poll', npoll)
 	local t = unix.time()
 	cnt = cnt+1
+	--]]
 	------------------
 end
 

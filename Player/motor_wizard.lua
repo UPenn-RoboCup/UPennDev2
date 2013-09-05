@@ -27,6 +27,20 @@ local status_color = {
   ['dead'] = 'red',
 }
 
+--[[
+-- TODO: Battery
+local function update_battery()
+  nx_vol_now = Dynamixel:get_nx_voltage( nx_ids )
+  --Average voltage reading from servos
+  sum = 0;
+  if nx_vol_now then
+    for i=1,#nx_vol_now do sum=sum+nx_vol_now[i]; end
+    return sum / #nx_vol_now / 10;
+  end
+  return 0;
+end
+--]]
+
 --------------------
 -- Callback processing on data from a named register
 local update_read = function(self,data,name)

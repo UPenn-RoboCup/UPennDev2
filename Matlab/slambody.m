@@ -127,9 +127,18 @@ function ret=slambody()
       udp_data = udp_recv('receive',fd);
       nBytes = nBytes+numel(udp_data);
     end
-    data_unpacked = msgpack('unpack',udp_data);
-    thor_omap = djpeg(data_unpacked.image);
-    thor_omapdata = data_unpacked.data;
+    %data_unpacked = msgpack('unpack',udp_data);
+    [data_unpacked, offset] = msgpack('unpack',udp_data);
+    % new streaming
+%     disp(data_unpacked)
+    cmap = udp_data(offset+1:end);
+    if strncmp(char(data_unpacked.c),'jpeg',3)==1
+        thor_omap = djpeg(cmap);
+    else
+        thor_omap = zlibUncompress(cmap);
+        thor_omap = thor_omap'; %necessary?
+    end
+    thor_omapdata = data_unpacked.shift;
 
 	  SLAM.omap.xmin = thor_omapdata.Xmin;
 	  SLAM.omap.ymin = thor_omapdata.Ymin;

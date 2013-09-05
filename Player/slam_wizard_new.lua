@@ -6,10 +6,8 @@
 -- Set the path for the libraries
 dofile'../include.lua'
 local Config = require'Config'
-local new_body = require'Body'
-local ConfigPenn = require'ConfigPenn'
 -- TODO: make sure Body works with gazebo, too
---local Body = require(ConfigPenn.Body)
+local Body = require'Body'
 require 'unix'
 
 -- Set the Debugging mode
@@ -18,8 +16,6 @@ local Benchmark = false --true
 
 -- Set the real-robot mode
 local realFlag = 1
--- Replay log?
-logFile = false --false
 IS_WEBOTS = true
 
 ---------------------------------
@@ -30,14 +26,14 @@ local carray = require'carray'
 local libLaser = require'libLaser'
 local libSlam = require'libSlam'
 local mp = require'msgpack'
---local tutil = require'tutil' 
 local msg = require'msgpack'
 --local jcm = require'jcm'
 local jpeg = require'jpeg'
---local scm = require'scm'
+local zlib = require'zlib'
 local util = require'util'
 local udp = require'udp'
-local udp_port = Config.net.omap -- TODO: add hmap later
+-- TODO: add hmap later or just use merged map?
+local udp_port = Config.net.omap
 local udp_target = Config.net.operator.wireless
 jpeg.set_quality( 90 ) -- 90? other ?
 ---------------------------------
@@ -53,26 +49,15 @@ local omap_udp_ch
 -- Input Channels
 local channel_polls
 local channel_timeout = 100 -- ms
---TODO: Data structures
 
-
----------------------------------
--- IPC channels
-local lidar_channel_0 = simple_ipc.new_subscriber('head_lidar')
-local lidar_channel_1 = simple_ipc.new_subscriber('chest_lidar')
----------------------------------
+-- Lidar objects
+-- TODO: renames as head and chest
+local lidar0 -- head
+local lidar1 -- chest
 
 ---------------------------------
--- Initialize lidars
--- TODO: add function setup_lidar() for general initialization
--- Arguments: location, minRange, maxRange, minHeight, maxHeight
--- TODO: add min/max angles as well?
--- l0: chest  l1: head
-local l0minIdx = 1
-local l0maxIdx = 1081
-local l1minIdx = 0
-local l1maxIdx = 0
- 
+-- Filter Parameters
+-- TODO: the following should be put in vcm 
 if realFlag == 1 then
 	l1minIdx = 541 --541
 	l1maxIdx = 781 --781
@@ -80,76 +65,142 @@ else
 	l1minIdx = 201 --541
 	l1maxIdx = 881 --781
 end
+
 local l0minHeight = -0.6 -- meters
 local l0maxHeight = 1.2
 -- We don't need height limits for chest lidar
 local minRange = 0.15 -- meters
 local maxRange = 28
 
-local lidar0 = 
-libLaser.new_lidar('head', minRange, maxRange, l0minHeight, l0maxHeight, l0minIdx, l0maxIdx)
-local lidar1 = 
-libLaser.new_lidar('chest', minRange, maxRange, 0,0, l1minIdx, l1maxIdx)
----------------------------------
 
 ---------------------------------
--- Process the head lidar
+-- Lidar processing params
 lidar0_count = 0
-lidar0_interval = 3 -- process every 2 frames
+lidar0_interval = 3 -- process every # frames
 
 lidar1_count = 0
-lidar1_interval = 3 -- process every 2 frames
+lidar1_interval = 3 -- process every # frames
 
 time_match = 0;
 time_total = 0;
-proc_count = 0;
 
 pre_pose = {0,0,0}
 
 
---libSlam.SLAM.xOdom = libSlam.SLAM.xOdom + dx
-lidar_channel_0.callback = function()
-	
-	-- Grab the data	
-	local ts, has_more = lidar_channel_0:receive()
-	local lidar_ts = tonumber(ts);
-	if not has_more then
-		local debug_msg = string.format('LIDAR (%.2f) | ', unix.time() )
-		print(debug_msg.."Bad 0 ts", type(ts))
-		return
-	end
-	local ranges_str, has_more = lidar_channel_0:receive()
-	
-	if realFlag==1 then
-		if not has_more then
-			local debug_msg = string.format('LIDAR (%.2f) | ', unix.time() )
-			print(debug_msg.."Bad 0 ranges_str", type(ranges_str))
-			return
-		end
-		local metadata, has_more = lidar_channel_0:receive()
-		local meta = mp.unpack( metadata )
-		cur_pose = meta[1]
-		neck = meta[2]
-	else
-		neck = Body.get_neck_position()
-		cur_pose = scm:get_pose_odom()
-	end
-	
-		
+-- Setup metadata and tensors for a lidar readings
+local function setup_lidar( name )
+  local tbl = {}
+  -- Save the meta data for easy sending
+  tbl.meta = {}
+  tbl.meta.name = name
+
+  -- Actuator endpoints
+  -- In radians, specifices the actuator scanline angle endpoints
+  -- The third number is the scanline density (scanlines/radian)
+  tbl.meta.scanlines = vcm['get_'..name..'_lidar_scanlines']()
+
+  -- Field of view endpoints of the lidar ranges
+  -- -135 to 135 degrees for Hokuyo
+  -- This is in RADIANS, though -- TODO: add correspondint INDEX?
+  tbl.meta.fov = vcm['get_'..name..'_lidar_fov']()
+
+
+  -- Depths when compressing TODO: may not needed
+  tbl.meta.depths = vcm['get_'..name..'_lidar_depths']()
+  -- Type of compression
+  tbl.meta.c = 'jpeg'
+  -- Timestamp
+  tbl.meta.t = Body.get_time()
+
+  -- Find the resolutions
+  local scan_resolution = tbl.meta.scanlines[3]
+    * math.abs(tbl.meta.scanlines[2]-tbl.meta.scanlines[1])
+  scan_resolution = math.ceil(scan_resolution)
+  local reading_per_radian = 1 / (.25*math.pi/180)
+  local fov_resolution = reading_per_radian
+    * math.abs(tbl.meta.fov[2]-tbl.meta.fov[1])
+  fov_resolution = math.ceil(fov_resolution)
+  -- Resolution
+  tbl.meta.resolution = {scan_resolution,fov_resolution}
+
+  -- Conver RADIANS to INDEX
+  local deg2rad = math.pi/180
+  tbl.meta.fov_idx = {0, 0}
+  tbl.meta.fov_idx[1] = reading_per_radian
+    * ( tbl.meta.fov[1] - (-135)*deg2rad ) -- + 1 or not?
+  tbl.meta.fov_idx[1] = math.floor(tbl.meta.fov_idx[1])
+  tbl.meta.fov_idx[2] = math.min( tbl.meta.fov_idx[1] + fov_resolution - 1, 1081)
+  --print('fov_idx', unpack(tbl.meta.fov_idx))
+  --TODO: make sure if the order needs to be flipped
+
+  -- Setup lidar object
+  -- Arguments: location, minRange, maxRange
+  -- minHeight, maxHeight, minIdx, maxIdx
+  if name == 'head' then
+    lidar0 = 
+    libLaser.new_lidar(
+      'head', 
+      minRange, maxRange, 
+      l0minHeight, l0maxHeight, 
+      tbl.meta.fov_idx[1], tbl.meta.fov_idx[2] )
+  else
+    lidar1 = 
+    libLaser.new_lidar(
+      'chest', 
+      minRange, maxRange, 
+      0,0, 
+      tbl.meta.fov_idx[1], tbl.meta.fov_idx[2] )
+  end
+
+  tbl.all_ranges = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
+  -- TODO: Save the exact actuator angles?
+  tbl.scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
+
+  -- Subscribe to a lidar channel
+  tbl.lidar_ch  = simple_ipc.new_subscriber(name..'_lidar')
+
+  -- Find the offset for copying lidar readings into the torch object
+  tbl.offset_idx = math.floor((1081-fov_resolution)/2)
+  -- For streaming
+  tbl.needs_update = true
+
+  return tbl
+end
+
+------------------------------
+-- Data copying helpers
+-- Convert a pan angle_to_scanline to a column of the chest mesh image
+local function angle_to_scanline( meta, rad )
+  local start = meta.scanlines[1]
+  local stop  = meta.scanlines[2]
+  local res   = meta.resolution[1]
+  local ratio = (rad-start)/(stop-start)
+  -- Round
+  --local scanline = math.floor(ratio*res+.5)
+  local scanline = math.ceil(ratio*res)
+  -- Return a bounded value
+  return math.max( math.min(scanline, res), 1 )
+end
+------------------------------
+
+
+local function head_callback()
 	-- Don't slam all the time
 	lidar0_count = lidar0_count + 1;
-	if lidar0_count%lidar0_interval~=0 then
+	if lidar0_count % lidar0_interval~=0 then
 		return
 	end
-	
-	------------------
-	-- Benchmark
-	local t0 = unix.time()
-	------------------
-	
+
+	-- TODO: head_pitch
+	if IS_WEBOTS then
+		cur_pose = wcm.get_robot_pose() -- Ground truth pose
+	elseif USE_SLAM_ODOM then
+	  --cur_pose = scm/blah:get_pose()
+	end
+		
 	---------------------------------
 	-- Reduce angle to [-pi, pi)
-	---[[
+	--[[ TODO: util.mod_angle()
 	cur_pose[3] = cur_pose[3] % (2*math.pi)
 	if (cur_pose[3]  >= math.pi) then
 		cur_pose[3]  = cur_pose[3]  - 2*math.pi
@@ -157,13 +208,13 @@ lidar_channel_0.callback = function()
 	--]]
 	---------------------------------
 	
-	---[[
+	--[[
 	---------------------------------
 	-- Find out how much we have moved since last slamming
 	--pre_pose = pre_pose or cur_pose
 	local dx = cur_pose[1] - pre_pose[1]
 	local dy = cur_pose[2] - pre_pose[2]
-	local da =  cur_pose[3] - pre_pose[3] --util.mod_angle( cur_pose[3] - pre_pose[3] )
+	local da =  cur_pose[3] - pre_pose[3]
 	-- Save the previous pose
 	pre_pose = cur_pose
 	---------------------------------
@@ -181,23 +232,58 @@ lidar_channel_0.callback = function()
 		--print('SLAM_before',libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom)
 	end
 	---------------------------------
-	--]]
+	
 	------------------------------------------------------
 	-- Do not slam when the head is moving
 	local head_roll,head_pitch,head_yaw = 0,neck[1],neck[2]
 	if realFlag ==1 and (math.abs(head_pitch)>math.pi/180 or math.abs(head_yaw)>math.pi/180) then
 		--print('bad head!!!!')
-		scm:set_pose_slam({libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom})
+		wcm:set_pose_slam({libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom})
 		return
 	end
 	------------------------------------------------------
+	--]]
 	
-	------------------
-	-- Copy received data to the lidar object
-	-- Transform the points into the right frame
-	--tutil.memcpy( lidar0.ranges:storage():pointer(), ranges_str )
-	-- TODO: I don't think this will work well
-	tutil.memcpy_ranges_fov( lidar0.ranges, ranges_str, l0minIdx, l0maxIdx )
+	----------------
+	-- Benchmark
+	t0 = unix.time()
+	----------------
+	
+	-- Grab the data	
+    local meta, has_more = head.lidar_ch:receive()
+    local metadata = mp.unpack(meta)
+    -- Get raw data from shared memory
+    local ranges = Body.get_head_lidar()
+    -- Insert into the correct scanlin
+    local angle = metadata.angle
+    local scanline = angle_to_scanline( head.meta, angle )
+    -- Only if a valid column is returned
+    -- TODO: for slam, we don't need to acquire readings from 
+    -- multiple scanlines. only a 1-dimensional ranges valve
+    -- should be fine
+    if scanline then
+      print('\nRES:', head.meta.resolution[1],head.meta.resolution[2])
+    	print('SCANLINE', scanline)
+      -- Copy lidar readings to the torch object for fast modification
+      ranges:tensor( 
+        head.all_ranges:select(1, scanline),
+        head.all_ranges:size(2),
+        head.offset_idx
+      )
+      -- Save the pan angle
+      head.scan_angles[scanline] = angle
+      head.needs_update = true
+      head.meta.t = metadata.t
+
+      -- Converstion of ranges for use in libLaser
+      -- TODO: copy may be slow
+      local single = torch.FloatTensor(1, head.all_ranges:size(2)):zero()
+      single:copy(head.all_ranges:select(1, scanline))
+      lidar0.ranges:copy(single:transpose(1,2))
+      print('head lidar range limit', lidar0.ranges:max(), lidar0.ranges:min())
+    end
+	
+	local head_roll, head_pitch, head_yaw = 0, head.scan_angles[scanline], 0 
 	lidar0:transform( head_roll, head_pitch, head_yaw )
 	------------------
 		
@@ -207,6 +293,8 @@ lidar_channel_0.callback = function()
 	local t1_processL0 = unix.time()
 	--print( string.format('processL0 took: \t%.2f ms', (t1_processL0-t0_processL0)*1000) )
 	------------------
+  
+  --wcm:set_pose_slam({libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom})
 
 	------------------
 	--[[ For real robot
@@ -226,7 +314,6 @@ lidar_channel_0.callback = function()
 	end
   
 	time_total = time_match + (t1-t0);
-	proc_count = proc_count + 1;
   
 end
 
@@ -235,71 +322,60 @@ end
 ------------------------------------------------------
 -- Chest lidar callback
 ------------------------------------------------------
-lidar_channel_1.callback = function()
-	-- Grab the data
-	local meta, has_more = lidar_channel_1:receive()
-	local metadata = mp.unpack(meta)
-	local ranges_str = new_body.get_chest_lidar()
-	
-	-- TODO: chest_yaw? scanlines?
+local function chest_callback()
+	-- Don't process every time
+	lidar1_count = lidar1_count + 1;
+	if lidar1_count%lidar1_interval~=0 then
+		return
+	end
+		
 	if IS_WEBOTS then
 		cur_pose = wcm.get_robot_pose() -- Ground truth pose
 	elseif USE_SLAM_ODOM then
 	  --cur_pose = scm/blah:get_pose()
 	end
 
-  --[[
-	local ts, has_more = lidar_channel_1:receive()
-	local lidar_ts = tonumber(ts);
-	if not has_more then
-		local debug_msg = string.format('LIDAR (%.2f) | ', unix.time() )
-		print(debug_msg.."Bad 1 ts", type(ts))
-		return
-	end
-
-	local ranges_str, has_more = lidar_channel_1:receive()	
-	if not logFile and realFlag==1 then
-		if not has_more then
-			local debug_msg = string.format('LIDAR (%.2f) | ', unix.time() )
-			print(debug_msg.."Bad 1 ranges_str", type(ranges_str))
-			return
-		end
-		local metadata, has_more = lidar_channel_1:receive()
-		local meta = mp.unpack( metadata )
-		cur_pose = meta[1]
-		chest_yaw = meta[2]
-	else
-		-- Gazebo
-		
-		chest_yaw = Body.get_lidar_position()[1]
-		if realFlag == 0 then
-			chest_yaw = -1*(chest_yaw-math.pi)*180/math.pi
-		end
-		cur_pose = scm:get_pose_odom()
-	end
-	--]]
-	
-	
-	-- Don't process every time
-	lidar1_count = lidar1_count + 1;
-	if lidar1_count%lidar1_interval~=0 then
-		return
-	end
-
 	------------------
 	-- Copy received data to the lidar object
 	-- Transform the points into the body frame and
 	-- prune based on Indices for angles
-	-- TODO: I think this may cause memory access issues
+	-- Grab the data
+	local meta, has_more = chest.lidar_ch:receive()
+	local metadata = mp.unpack(meta)
+    -- Get raw data from shared memory
+	local ranges = Body.get_chest_lidar()
 	
-	--tutil.memcpy_ranges_fov( lidar1.ranges, ranges_str, l1minIdx, l1maxIdx )
-	lidar1.ranges = torch.DoubleTensor(1080, 1):zero() -- TODO: stupid testing
-
+    -- Insert into the correct column
+    local angle = metadata.angle
+    local scanline = angle_to_scanline( chest.meta, angle )
+    -- Only if a valid column is returned
+    if scanline then
+      -- Copy lidar readings to the torch object for fast modification
+      ranges:tensor(
+        chest.all_ranges:select(1, scanline),
+        chest.all_ranges:size(2),
+        chest.offset_idx 
+		)
+      -- Save the pan angle
+      chest.scan_angles[scanline] = angle
+      -- We've been updated
+      chest.needs_update = true
+      chest.meta.t     = metadata.t
+      
+      -- Converstion of ranges for use in libLaser
+      -- TODO: copy may be slow
+      local single = torch.FloatTensor(1, chest.all_ranges:size(2)):zero()
+      single:copy(chest.all_ranges:select(1, scanline))
+      lidar1.ranges:copy(single:transpose(1,2))
+      print('chest lidar range limit', lidar1.ranges:max(), lidar1.ranges:min())
+    end
+	
 	-- Transform the points into the body frame
 	------------------
 	-- Get the chest lidar current pose
 	local chest_roll = 0
 	local chest_pitch = 0
+	local chest_yaw = chest.scan_angles[scanline]
 	lidar1:transform(chest_roll, chest_pitch, chest_yaw)
 	------------------
 
@@ -344,9 +420,11 @@ local cnt = 0
 local slam = {}
 
 function slam.entry()
-  -- Set up data structure for omap
+  -- Set up data structure for each lidar
+  chest = setup_lidar('chest')
+  head = setup_lidar('head')
 
-  --[[ Poll lidar readings
+  -- Poll lidar readings
   local wait_channels = {}
   if head.lidar_ch then
     head.lidar_ch.callback = head_callback
@@ -356,9 +434,6 @@ function slam.entry()
     chest.lidar_ch.callback = chest_callback
     table.insert( wait_channels, chest.lidar_ch )
   end
-  --]]
-
-  local wait_channels = {lidar_channel_1}
 
   -- Set up omap messages sender on UDP
   omap_udp_ch = udp.new_sender( udp_target, udp_port )
@@ -371,54 +446,48 @@ function slam.update()
 	------------------
 	libSlam.mergeMap()
 	
-	
 	------------------
 	-- Compress and send the SLAM map and pose over UDP
-	local jomap = jpeg.compress_gray(
-	libSlam.SMAP.data:storage():pointer(),
-	libSlam.MAPS.sizex,
-	libSlam.MAPS.sizey
-	)
+	local c_map
+	local meta = {}
+	--TODO: get from vcm
+  meta.c = 'jpeg' -- zlib
+  if meta.c == 'zlib' then
+    c_map = zlib.compress(
+      libSlam.SMAP.data:storage():pointer(),
+      libSlam.SMAP.data:nElement()
+    )
+  elseif meta.c == 'jpeg' then  
+    c_map = jpeg.compress_gray(
+      libSlam.SMAP.data:storage():pointer(),
+      libSlam.MAPS.sizex,
+      libSlam.MAPS.sizey
+    )
+	else
+		return
+	end
 	
-	local metadata={
+	local shiftdata={
 		Xmin = libSlam.SMAP.xmin,
 		Ymin = libSlam.SMAP.ymin,
 		Xmax = libSlam.SMAP.xmax,
 		Ymax = libSlam.SMAP.ymax
 	}
 
-  -- TODO: compression like in mesh_wizard?
-	data = mp.pack({image=jomap,data=metadata})
-	local udp_ret, err = omap_udp_ch:send( data, #data )
+	-- Streaming
+  meta.shift = shiftdata
+	local meta = mp.pack(meta)
+	local ret, err = omap_udp_ch:send( meta..c_map )
+
 	print(err or 'Omap data sent!')
 	------------------
  
 	------------------
 	-- Perform the poll (Slam Processing)
 	local npoll = channel_polls:poll(channel_timeout)
-	--print('poll', npoll)
 	local t = unix.time()
-	cnt = cnt+1;
+	cnt = cnt+1
 	------------------
-	
-	------------------
-	-- Debugging output
-	if t-t_last>t_debug then
-		local msg = string.format(
-		"\nSlam Manager (%.2f) | %.2f FPS", t, cnt/t_debug
-		);
-		local pose_debug = string.format(
-		'My pose is:\t %.2f,%.2f, %.2f',
-		libSlam.SLAM.xOdom, libSlam.SLAM.yOdom, libSlam.SLAM.yawOdom
-		)
-		
-		--print(msg)
-		--print(pose_debug)
-		t_last = t;
-		cnt = 0;
-	end
-	-----------------
-	
 end
 
 function slam.exit()

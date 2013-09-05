@@ -31,9 +31,6 @@ shared.status.velocity   = vector.zeros(3)
 shared.status.odometry   = vector.zeros(3)
 shared.status.bodyOffset = vector.zeros(3)
 shared.status.falling    = vector.zeros(1)
--- Filtered Roll/Pitch/Yaw
--- Raw gyro and acceleromater come from jcm
-shared.status.rpy        = vector.zeros(3)
 
 -- Foot support
 shared.support = {}

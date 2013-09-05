@@ -28,26 +28,35 @@ local turn_threshold  = 5*math.pi/180
 local function robocup_follow( pose, wp, rel_wp )
 
   -- Distance to the waypoint
-  local wpR = math.sqrt(rel_wp.x^2 + rel_wp.y^2)
-  -- Angle to the waypoint
+  local rel_dist = math.sqrt(rel_wp.x^2 + rel_wp.y^2)
+  
+  -- Angle towards the waypoint
   local aTurn = util.mod_angle(math.atan2(rel_wp.y,rel_wp.x))
-  print('dist',wpR,aTurn)
-
-  if wpR<dist_threshold and math.abs(aTurn)<angle_threshold then
-    return {0,0,0}, true
-  end
 
   -- calculate walk step velocity based on ball position
   local vStep = vector.zeros(3)
   -- TODO: Adjust these constants
-  vStep[1] = .60 * (wp.x - pose.x)
-  vStep[2] = .75 * (wp.y - pose.y)
+  vStep[1] = .60 * rel_wp.x
+  vStep[2] = .75 * rel_wp.y
   
   -- Reduce speed based on how far away from the waypoint we are
   local scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1)
   vStep = scale * vStep
-  --vStep[3] = 0.75*aTurn
-  
+  vStep[3] = 0.75*aTurn
+
+  -- If we are close to the waypoint and have the right angle threshold, we are fine
+  -- TODO: Only with the last point do we care about the angle
+  print('Relative distances',rel_dist,rel_wp.a*180/math.pi)
+  if rel_dist<dist_threshold then
+    -- if not the last waypoint, then we are done with this waypoint
+    if wp_id<nwaypoints then return {0,0,0}, true end
+    -- else, we DO need to end with the right orientation
+    if math.abs(rel_wp.a)<angle_threshold then return {0,0,0}, true end
+    -- Just turn in place since we are close
+    print('Turning in place')
+    vStep[3] = .5*rel_wp.a
+  end
+
   return vStep, false
 
 end
@@ -139,9 +148,7 @@ function state.entry()
   wp_id = 1
 
   -- Zero the velocity
-  -- Initially stop movement
   mcm.set_walk_vel{0,0,0}
-  hcm.set_motion_velocity{0,0,0}
 
   -- Begin walking
   motion_ch:send'walk'
@@ -199,7 +206,6 @@ function state.update()
   local vel, at_waypoint = up(pose,wp,rel_wp)
 
   -- Update the velocity
-  print(vel,at_waypoint)
   mcm.set_walk_vel(vel)
   --mcm.set_walk_vel{0,0,0}
 
@@ -237,9 +243,9 @@ function state.update()
 end
 
 function state.exit()
-  Body.set_lwheel_velocity(0)
-  Body.set_rwheel_velocity(0)
-  print(_NAME..' Exit' ) 
+  print(state._NAME..' Exit' )
+  -- Zero the velocity
+  mcm.set_walk_vel{0,0,0}
 end
 
 return state

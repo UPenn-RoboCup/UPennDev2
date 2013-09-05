@@ -9,15 +9,12 @@
 dofile'../include.lua'
 
 -- Libraries
-require'unix'
-require'vcm'
-local Config = require'Config'
 local torch      = require'torch'
 torch.Tensor     = torch.DoubleTensor
+local Body       = require'Body'
 local util       = require'util'
 local jpeg       = require'jpeg'
 local zlib       = require'zlib'
-local Body       = require'Body'
 local util       = require'util'
 local mp         = require'msgpack'
 local carray     = require'carray'
@@ -25,7 +22,8 @@ local simple_ipc = require'simple_ipc'
 local udp        = require'udp'
 local udp_port   = Config.net.mesh
 local udp_target = Config.net.operator.wireless
-jpeg.set_quality( 95 )
+
+require'vcm'
 
 -- Globals
 -- Output channels
@@ -35,6 +33,8 @@ local channel_polls
 local channel_timeout = 100 --milliseconds
 -- Data structures
 local chest, head
+
+jpeg.set_quality( 95 )
 
 -- Setup metadata and tensors for a lidar mesh
 local function setup_mesh( name )

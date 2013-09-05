@@ -1,9 +1,8 @@
-local Config = require'Config'
+local state = {}
+state._NAME = ...
+
 local Body   = require'Body'
 require'hcm'
-
-local state = {}
-state._NAME = 'bodyTeleop'
 
 local t_entry, t_update, t_exit
 local timeout = 10.0

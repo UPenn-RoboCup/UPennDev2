@@ -1,7 +1,7 @@
 local state = {}
 state._NAME = ...
-local Body  = require'Body'
-local util  = require'util'
+local Body   = require'Body'
+local util   = require'util'
 local vector = require'vector'
 
 -- Get the human guided approach

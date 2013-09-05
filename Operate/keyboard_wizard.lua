@@ -9,12 +9,12 @@ dofile'include.lua'
 --local is_debug = true
 
 -- Libraries
-local Config = require'Config'
 local unix  = require'unix'
 local getch = require'getch'
 local mp    = require'msgpack'
 local util  = require'util'
 local Body  = require'Body'
+local vector = require'vector'
 local simple_ipc = require'simple_ipc'
 local rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
 

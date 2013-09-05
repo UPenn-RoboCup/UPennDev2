@@ -3,6 +3,7 @@
 -- (c) 2013 Stephen McGill, Seung-Joon Yi
 --------------------------------
 local memory = require'memory'
+local vector = require'vector'
 
 -- shared properties
 local shared = {}

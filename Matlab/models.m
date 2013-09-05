@@ -3,12 +3,11 @@ global MODELS LIDAR CONTROL DEBUGMON
 MODELS.wheel_calc = @wheel_calc;
 MODELS.tool_calc  = @tool_calc;
 MODELS.door_calc  = @door_calc;
-MODELS.grab = '';
-MODELS.waypoints = [];
+MODELS.ooi = '';
 % TODO: Each model has properties
 MODELS.door  = [];
 MODELS.wheel = [];
-
+MODELS.waypoints = [];
 
 	%%%%%%%%%%%%
 	%% Door calculations
@@ -17,9 +16,20 @@ MODELS.wheel = [];
 	    points3d = LIDAR.selected_points;
 	    LIDAR.clear_points();
 
+	    MODELS.ooi = 'door'
+
 	    disp('Door calculation...');
 	    % Just get the handle first...
-	    npoints = size(points3d,1);
+	    npoints = size(points3d,1)
+
+	    % If no points, then just set this as the object of interest
+		if npoints == 0
+			%CONTROL.send_control_packet('GameFSM',MODELS.ooi);
+			return
+		end
+
+		% We just want two point for the handle
+		% TODO: add the hinge
 	    if npoints ~= 2
 	    	return;
 	    end
@@ -70,12 +80,9 @@ MODELS.wheel = [];
         % TODO: use two separate wheel estimates?
         % TODO: send this data to the robot
         handle = [grip_pos handle_yaw handle_roll handle_length];
-        CONTROL.send_control_packet([],[],'hcm','door','handle',handle);
+        CONTROL.send_control_packet('GameFSM',MODELS.ooi,'hcm','door','handle',handle);
         % TODO: Draw another point on there, with the actual wheel center?
 
-        MODELS.grab = 'door'
-        % Waypoint is x,y,a
-        MODELS.waypoints = [grip_pos(1),grip_pos(2),0];
 	end
 
 	%%%%%%%%%%%%
@@ -146,15 +153,25 @@ MODELS.wheel = [];
 	    points3d = LIDAR.selected_points;
 	    LIDAR.clear_points();
 
+	    MODELS.ooi = 'wheel'
+
+	    npoints = size(points3d,1);
+
+	    % If no points, then just set this as the object of interest
+		if npoints == 0
+			return
+		end
+
 	    disp('Wheel calculation...');
-	    if numel(points3d)<3*3
+	    % Need at least three points to determine the circle
+	    if npoints<3
 	    	return
 	    end
 
 		% NOTE: Assume a left right top clicking order!!
-		leftrelpos  = points3d(size(points3d,1)-2, :);
-		rightrelpos = points3d(size(points3d,1)-1, :);
-		toprelpos   = points3d(size(points3d,1),   :);
+		leftrelpos  = points3d(npoints-2, :);
+		rightrelpos = points3d(npoints-1, :);
+		toprelpos   = points3d(npoints,   :);
 
 		% Find the center of the wheel
 		handlepos = (leftrelpos+rightrelpos) / 2;
@@ -196,9 +213,9 @@ MODELS.wheel = [];
         % TODO: use two separate wheel estimates?
         % TODO: send this data to the robot
         wheel = [handlepos handleyaw handlepitch handleradius];
-        CONTROL.send_control_packet([],[],'hcm','wheel','model', wheel );
+        CONTROL.send_control_packet('GameFSM',MODELS.ooi,'hcm','wheel','model', wheel );
         % TODO: Draw another point on there, with the actual wheel center?
-        MODELS.grab = 'wheel';
+
 	end
 
 ret = MODELS;

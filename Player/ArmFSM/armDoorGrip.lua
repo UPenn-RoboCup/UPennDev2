@@ -4,6 +4,7 @@ local Body  = require'Body'
 local K     = Body.Kinematics
 local T     = require'Transform'
 local util  = require'util'
+local vector = require'vector'
 require'hcm'
 
 -- Angular velocity limit
@@ -36,20 +37,6 @@ local update_human = function()
   end
 end
 
-local function calculate_arm_position()
-
-    local trLArm = vector.new({
-    handle_x, -- Free param
-    K.shoulderOffsetY, -- 6 DOF arm cannot go certain places
-    handle_z, -- Free param
-    GRIP_ROLL, -- Assume a certain orientation
-    GRIP_PITCH, -- Tune this, or update based on the handle position
-    GRIP_YAW -- Assume a certain orientation
-    })
-
-   return trLArm
-end
-
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -61,7 +48,11 @@ function state.entry()
   update_human()
 
   print('Grab door with', door_arm)
-  Body.set_lgrip_percent(.5)
+  if door_arm=='right' then
+    Body.set_rgrip_percent(.5)
+  else
+    Body.set_lgrip_percent(.5)
+  end
 
 end
 
@@ -76,25 +67,51 @@ function state.update()
   
   -- Where are we now?
   local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
 
   -- Update the human estimate
   update_human()
 
   -- Calculate where we need to go  
-  local trLArm = calculate_arm_position()
+  local trArm = vector.new({
+    handle_x, -- Free param
+    K.shoulderOffsetY, -- 6 DOF arm cannot go certain places
+    handle_z, -- Free param
+    GRIP_ROLL, -- Assume a certain orientation
+    GRIP_PITCH, -- Tune this, or update based on the handle position
+    GRIP_YAW -- Assume a certain orientation
+  })
+  -- Side adjustment
+  if door_arm=='right' then
+    -- y direction swapped
+    trArm[2] = -trArm[2]
+    -- roll the other way
+    trArm[4] = -trArm[4]
+  end
 
   -- Get desired angles from current angles and target transform
-  local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
+  local q_desired
+  if door_arm=='right' then
+    q_desired = Body.get_inverse_rarm(qRArm,trArm)
+  else
+    q_desired = Body.get_inverse_larm(qLArm,trArm)
+  end
+  
   -- Double check reachability
-  if not qL_desired then
-    print('Left not possible',trLArm)
+  if not q_desired then
+    print('Door grip not possible',trArm)
     return'reset'
   end
 
   -- Go to the allowable position
-  local qL_approach, doneL
-  qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
-  Body.set_larm_command_position( qL_approach )
+  local qL_approach, qR_approach, done
+  if door_arm=='right' then
+    qR_approach, done = util.approachTol( qRArm, q_desired, dqArmMax, dt )
+    Body.set_rarm_command_position( qR_approach )
+  else
+    qL_approach, done = util.approachTol( qLArm, q_desired, dqArmMax, dt )
+    Body.set_larm_command_position( qL_approach )
+  end
 
   -- TODO: Begin to grip by approaching the inner radius
   --[[
@@ -102,9 +119,13 @@ function state.update()
     handle_radius = handle_radius0*(1-ph) + ph*handle_radius1
   --]]
 
-  if doneL then
+  if done then
     -- Close the fingers
-    Body.set_lgrip_percent(1)
+    if door_arm=='right' then
+      Body.set_rgrip_percent(1)
+    else
+      Body.set_lgrip_percent(1)
+    end
     return'done'
   end
   

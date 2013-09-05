@@ -1,8 +1,8 @@
 local state = {}
-state._NAME = 'armReady'
-local Config  = require'Config'
-local Body    = require'Body'
-local util    = require'util'
+state._NAME = ...
+local Body   = require'Body'
+local vector = require'vector'
+local util   = require'util'
 local t_entry, t_update, t_finish
 local timeout = 15.0
 

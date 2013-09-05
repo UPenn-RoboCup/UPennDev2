@@ -81,7 +81,7 @@ CHEST_LIDAR.posea=[];
             % Default to head lidar
             LIDAR.h_img = imagesc( HEAD_LIDAR.ranges );
             set(LIDAR.p_img,'xtick',[],'ytick',[])
-            colormap('HOT')
+            colormap('JET')
             set(LIDAR.h_img, 'ButtonDownFcn', @select_3d );
             hold on;
             LIDAR.pointdraw = plot(a1,0,0,'g.');
@@ -129,11 +129,11 @@ CHEST_LIDAR.posea=[];
     function get_depth_img(h,~)
         if LIDAR.mesh_img_display==0
             % head
-            CONTROL.send_control_packet([],[],'vcm','head_lidar','depths',[.1,1.5]);
+            CONTROL.send_control_packet([],[],'vcm','head_lidar','depths',[.1,2]);
             CONTROL.send_control_packet([],[],'vcm','head_lidar','net',[1,2,0]);
         else
             % chest
-            CONTROL.send_control_packet([],[],'vcm','chest_lidar','depths',[0,2]);
+            CONTROL.send_control_packet([],[],'vcm','chest_lidar','depths',[.1,5]);
             CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[1,2,0]);
         end
     end

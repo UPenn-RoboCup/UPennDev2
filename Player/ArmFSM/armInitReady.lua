@@ -3,10 +3,12 @@
 -- (c) 2013 Stephen McGill, Seung-Joon Yi
 --------------------------------
 local state = {}
-state._NAME = 'armInitReady'
-local Config  = require'Config'
-local Body    = require'Body'
-local util    = require'util'
+state._NAME = ...
+
+local Body   = require'Body'
+local util   = require'util'
+local vector = require'vector'
+
 local t_entry, t_update, t_finish
 local timeout = 15.0
 

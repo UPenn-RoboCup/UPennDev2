@@ -1,8 +1,11 @@
+local state = {}
+state._NAME = ...
+
 require'mcm'
-local Config     = require'Config'
 local Body       = require'Body'
-local util       = require'util'
 local K          = Body.Kinematics
+local util       = require'util'
+local vector = require'vector'
 local timeout    = 20.0
 local t_readings = 0.20
 local t_settle   = 0.10
@@ -10,11 +13,15 @@ local t_settle   = 0.10
 -- This is 5.1 and 5.2 compatible
 -- NOTE: http://www.luafaq.org/#T1.37.1
 local t_entry, t_update, t_finish
-local pTorsoTarget, pLLeg, pRLeg, pTorso
+local pLLeg, pRLeg, pTorso
 local started = false
 
-local state = {}
-state._NAME = 'motionStance'
+-- Grab the desired final torso and feet positions for stance
+local pTorsoTarget = vector.new({-Config.walk.torsoX, 0, Config.walk.bodyHeight, 
+  0,Config.walk.bodyTilt,0})
+local pLLeg = vector.new({-Config.walk.supportX, Config.walk.footY, 0, 0,0,0})
+local pRLeg = vector.new({-Config.walk.supportX, -Config.walk.footY, 0, 0,0,0})
+local dpMaxDelta = Config.stance.dpLimitStance
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -24,12 +31,6 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   t_finish = t
-  
-  -- Grab the desired final torso and feet positions for stance
-  pTorsoTarget = vector.new({-Config.walk.torsoX, 0, Config.walk.bodyHeight, 
-  0,Config.walk.bodyTilt,0})
-  pLLeg = vector.new({-Config.walk.supportX, Config.walk.footY, 0, 0,0,0})
-  pRLeg = vector.new({-Config.walk.supportX, -Config.walk.footY, 0, 0,0,0})
   
   -- Instantly put the head and waist into position
   -- TODO: replace hardness
@@ -63,6 +64,7 @@ function state.update()
   
   -- Acquire the joint positions of our legs
   if not started then
+    -- Joint positions here come from the sensors!
     local qLLeg = Body.get_lleg_position()
     local qRLeg = Body.get_rleg_position()
     Body.set_lleg_command_position(qLLeg)
@@ -81,29 +83,15 @@ function state.update()
   end
   
   -- Ensure that we do not move motors too quickly
-  local dpDeltaMax = Config.stance.dpLimitStance * dt
-  local dpTorso    = pTorsoTarget - pTorso  
-  -- Tolerance check (Asumme within tolerance)
-  local tol      = true
-  local tolLimit = 1e-6
-  for i,dpT in ipairs(dpTorso) do
-    if math.abs(dpT) > tolLimit then
-      tol = false
-      dpTorso[i] = util.procFunc(dpT,0,dpDeltaMax[i])
-    end
-  end
+  local pTorso_approach, doneTorso = 
+    util.approachTol( pTorso, pTorsoTarget, dpMaxDelta, dt )
+
+  -- If not yet within tolerance, then update the last known finish time
+  if not doneTorso then t_finish = t end
   
-  -- Set the desired torso
-  pTorso = pTorso + dpTorso
   -- Command the body
-  local q = Kinematics.inverse_legs( pLLeg, pRLeg, pTorso, 0 )
+  local q = Kinematics.inverse_legs( pLLeg, pRLeg, pTorso_approach, 0 )
   Body.set_lleg_command_position( q )
-  
-  -- If not yet within tolerance, then update the last known finish time only
-  if not tol then
-    t_finish = t
-    return
-  end
   
   -- Once in tolerance, let the robot settle
   if t-t_finish>t_settle then return'done' end

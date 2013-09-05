@@ -1,31 +1,21 @@
--- Config guides special situations
-local Config = require'Config'
 -- Use the fsm module
 local fsm = require'fsm'
 
 -- Require the needed states
-local headIdle = require'headIdle'
-local headTiltScan = require'headTiltScan'
-local headTeleop = require'headTeleop'
-local headCenter = require'headCenter'
+local gameIdle = require'gameIdle'
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
-local sm = fsm.new( headIdle, headTiltScan )
---local sm = fsm.new( headIdle, headTiltScan )
-sm:add_state(headTeleop)
-sm:add_state(headCenter)
+local sm = fsm.new( gameIdle )
+
+local gameDoor  = require'gameDoor'
+sm:add_state(gameDoor)
 
 -- Setup the transistions for this FSM
-sm:set_transition(headIdle, 'tiltscan', headTiltScan)
-sm:set_transition(headIdle, 'teleop', headTeleop)
+sm:set_transition( gameIdle, 'door', gameDoor )
 --
-sm:set_transition(headTiltScan, 'tiltscan', headTiltScan)
-sm:set_transition(headTiltScan, 'reset', headIdle)
---
-sm:set_transition(headTeleop, 'reset', headIdle)
---
-sm:set_transition(headCenter, 'done', headIdle)
+sm:set_transition( gameDoor, 'done', gameIdle )
+sm:set_transition( gameDoor, 'door', gameDoor )
 
 -- Setup the FSM object
 local obj = {}

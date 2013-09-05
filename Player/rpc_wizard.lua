@@ -2,6 +2,7 @@ dofile'include.lua'
 require'unix'
 local mp   = require'msgpack'
 local util = require'util'
+local vector = require'vector'
 local simple_ipc = require'simple_ipc'
 
 -- TODO: Use the Config file for the ports

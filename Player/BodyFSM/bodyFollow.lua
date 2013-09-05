@@ -2,6 +2,7 @@ local state = {}
 state._NAME = ...
 local Body  = require'Body'
 local util  = require'util'
+local vector = require'vector'
 
 -- Get the human guided approach
 require'hcm'
@@ -110,38 +111,9 @@ local function simple_follow(pose,wp,rel_wp)
 end
 
 local follow = {
-  [2] = robocup_follow,
-  [1] = simple_follow,
+  [1] = robocup_follow,
+  [2] = simple_follow,
 }
-
--- Metatables for pose vectors
--- TODO: Use as a utility pose file, too
-local function pose_index(p,idx)
-  if idx=='x' then
-    return p[1]
-  elseif idx=='y' then
-    return p[2]
-  elseif idx=='a' then
-    return p[3]
-  end
-end
-
-local function pose_newindex(p,idx,val)
-  if idx=='x' then
-    p[1] = val
-  elseif idx=='y' then
-    p[2] = val
-  elseif idx=='a' then
-    p[3] = val
-  end
-end
-
-local function pose_tostring(p)
-  return string.format(
-    "{x=%g, y=%g, a=%g degrees}",
-    p[1], p[2], p[3]*180/math.pi
-  )
-end
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -167,13 +139,8 @@ function state.entry()
       -- If a relative frame, then convert to the global frame
       waypoint = util.pose_global(waypoint, pose)
     end
-    -- Add waypoint.x, waypoint.y, waypoint.a
-    local mt = getmetatable(waypoint)
-    mt.__index    = pose_index
-    mt.__newindex = pose_newindex
-    mt.__tostring = pose_tostring
     -- Add to the waypoints table
-    waypoints[w] = setmetatable(waypoint,mt)
+    waypoints[w] = waypoint
     -- Increment the index
     idx = idx + 3
   end
@@ -206,26 +173,10 @@ function state.update()
   local wp = waypoints[wp_id]
 
   -- Grab the current pose
-  local pose = wcm.get_robot_pose()
+  local pose = vector.pose(wcm.get_robot_pose())
 
   -- Set with relative coordinates
   local rel_wp = util.pose_relative(wp,pose)
-
-  -- Add pose.x, pose.y, pose.a
-  local mt = getmetatable(pose)
-  mt.__index    = pose_index
-  mt.__newindex = pose_newindex
-  mt.__tostring = pose_tostring
-  -- Add to the waypoints table
-  pose = setmetatable(pose,mt)
-
-  -- Add waypoint.x, waypoint.y, waypoint.a
-  local mt = getmetatable(rel_wp)
-  mt.__index    = pose_index
-  mt.__newindex = pose_newindex
-  mt.__tostring = pose_tostring
-  -- Add to the waypoints table
-  rel_wp = setmetatable(rel_wp,mt)
 
   -- Debug
   --[[

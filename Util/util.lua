@@ -108,7 +108,7 @@ end
 function util.pose_global(pRelative, pose)
   local ca = math.cos(pose[3])
   local sa = math.sin(pose[3])
-  return vector.new{pose[1] + ca*pRelative[1] - sa*pRelative[2],
+  return vector.pose{pose[1] + ca*pRelative[1] - sa*pRelative[2],
                     pose[2] + sa*pRelative[1] + ca*pRelative[2],
                     pose[3] + pRelative[3]}
 end
@@ -119,7 +119,7 @@ function util.pose_relative(pGlobal, pose)
   local px = pGlobal[1]-pose[1]
   local py = pGlobal[2]-pose[2]
   local pa = pGlobal[3]-pose[3]
-  return vector.new{ca*px + sa*py, -sa*px + ca*py, util.mod_angle(pa)}
+  return vector.pose{ca*px + sa*py, -sa*px + ca*py, util.mod_angle(pa)}
 end
 
 ---table of uniform distributed random numbers

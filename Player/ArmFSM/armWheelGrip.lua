@@ -1,9 +1,9 @@
 local state = {}
-state._NAME = 'armWheelGrip'
-local Config = require'Config'
+state._NAME = ...
 local Body   = require'Body'
 local T      = require'Transform'
 local util   = require'util'
+local vector = require'vector'
 require'hcm'
 
 -- Angular velocity limit

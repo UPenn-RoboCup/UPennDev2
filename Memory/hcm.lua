@@ -43,9 +43,9 @@ shared_data.motion.waypoint_frame = vector.zeros(1)
 -- 1: simple, 2: robocup
 shared_data.motion.follow_mode = vector.ones(1)
 
---------------------------------
--- Task specific information
---------------------------------
+-------------------------------
+-- Task specific information --
+-------------------------------
 -- Wheel/Valve
 shared_data.wheel = {}
 -- This has all values: the right way, since one rpc call

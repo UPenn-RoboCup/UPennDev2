@@ -9,7 +9,7 @@ require'hcm'
 
 local t_entry, t_update
 
-local x_offset_from_handle = -0.30
+local x_offset_from_handle = 0.30
 
 local function update_approach()
     -- These are the relative coordinates of the handle
@@ -22,7 +22,7 @@ local function update_approach()
   -- Find the desired pose to approach
   local offset = vector.pose()
   -- Stay just a bit in front of the door
-  offset.x = x_offset_from_handle
+  offset.x = -x_offset_from_handle
   -- Open with the left hand if on the left side
   offset.y = -util.sign(handle.y) * K.shoulderOffsetY
 

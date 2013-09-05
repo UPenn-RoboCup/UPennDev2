@@ -56,7 +56,7 @@ HEAD_LIDAR.posea=[];
 
 CHEST_LIDAR=[];
 CHEST_LIDAR.off_axis_depth = 0.05;
-CHEST_LIDAR.chest_depth  = 0.05
+CHEST_LIDAR.chest_depth  = 0.05;
 CHEST_LIDAR.chest_height = 0.10;
 CHEST_LIDAR.type = 1;
 CHEST_LIDAR.ranges=zeros(wdim_mesh,hdim_mesh);

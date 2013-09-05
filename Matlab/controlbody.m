@@ -83,7 +83,7 @@ ret = CONTROL;
         set(b1,'CallBack',{@body_control,'init'});
         set(b2,'CallBack',{@body_control,'follow'});
         set(b3,'CallBack',{@body_control,'navigate'});
-        set(b4,'CallBack',{@body_control,4});
+        set(b4,'CallBack',{@body_control,'teleop'});
     end
 
     function setup_head_controls(b1,b2,b3,b4)

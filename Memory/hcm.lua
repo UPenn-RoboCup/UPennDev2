@@ -1,6 +1,6 @@
 --------------------------------
--- Human Communication Module
--- (c) 2013 Stephen McGill
+-- Human Communication Module --
+-- (c) 2013 Stephen McGill    --
 --------------------------------
 local vector = require'vector'
 local memory = require'memory'

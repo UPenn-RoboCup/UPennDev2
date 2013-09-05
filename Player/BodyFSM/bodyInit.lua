@@ -9,9 +9,9 @@ local t_entry, t_update, t_exit
 
 -- Require all necessary fsm channels
 local arm_ch    = simple_ipc.new_publisher('ArmFSM',true)
-local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
+local head_ch   = simple_ipc.new_publisher('HeadFSM',true)
 local lidar_ch  = simple_ipc.new_publisher('LidarFSM',true)
-local head_ch  = simple_ipc.new_publisher('HeadFSM',true)
+local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -20,13 +20,10 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  -- TODO: Fix this
-  --Body.set_lwheel_velocity(0);
-  --Body.set_rwheel_velocity(0);
-  ret=arm_ch:send'init'
-  ret=lidar_ch:send'pan'
-  ret=head_ch:send'tiltscan'
-  ret=motion_ch:send'stand'
+  arm_ch:send'init'
+  lidar_ch:send'pan'
+  head_ch:send'tiltscan'
+  motion_ch:send'stand'
 end
 
 function state.update()

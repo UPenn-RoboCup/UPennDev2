@@ -8,6 +8,10 @@ state._NAME = 'bodyTeleop'
 local t_entry, t_update, t_exit
 local timeout = 10.0
 
+-- FSM coordination
+local simple_ipc = require'simple_ipc'
+local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -18,6 +22,8 @@ function state.entry()
   -- Initially stop movement
   mcm.set_walk_vel{0,0,0}
   hcm.set_motion_velocity{0,0,0}
+  -- Begin walking
+  motion_ch:send'walk'
 end
 
 function state.update()

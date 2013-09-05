@@ -1,7 +1,7 @@
----------------------------------------------------------------------------
--- Vision Communication Module
--- (c) 2013 Stephen McGill
----------------------------------------------------------------------------
+---------------------------------
+-- Vision Communication Module --
+-- (c) 2013 Stephen McGill     --
+---------------------------------
 local memory = require'memory'
 local vector = require'vector'
 -- TODO: Use the Config file somehow

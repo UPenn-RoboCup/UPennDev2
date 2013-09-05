@@ -258,9 +258,6 @@ local function head_callback()
     local angle = metadata.angle
     local scanline = angle_to_scanline( head.meta, angle )
     -- Only if a valid column is returned
-    -- TODO: for slam, we don't need to acquire readings from 
-    -- multiple scanlines. only a 1-dimensional ranges valve
-    -- should be fine
     if scanline then
       print('\nRES:', head.meta.resolution[1],head.meta.resolution[2])
     	print('SCANLINE', scanline)

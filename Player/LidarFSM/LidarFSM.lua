@@ -14,7 +14,7 @@ local lidarPan  = require'lidarPan'
 sm:add_state(lidarPan)
 
 -- Setup the transistions for this FSM
-sm:set_transition( lidarIdle, 'start', lidarPan  )
+sm:set_transition( lidarIdle, 'pan', lidarPan  )
 sm:set_transition( lidarPan,  'stop',  lidarIdle )
 
 -- Setup the FSM object

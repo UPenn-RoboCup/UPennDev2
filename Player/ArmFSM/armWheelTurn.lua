@@ -1,10 +1,10 @@
 local state = {}
 state._NAME = ...
-local Config = require'Config'
 local Body   = require'Body'
 local K      = Body.Kinematics
 local T      = require'Transform'
 local util   = require'util'
+local vector = require'vector'
 require'hcm'
 
 -- Arm joints Angular velocity limits

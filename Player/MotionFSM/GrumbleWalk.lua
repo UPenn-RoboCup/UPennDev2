@@ -1,8 +1,7 @@
 --THOR-OP specific (FOR 6DOF ARM)
 local walk = {}
-walk._NAME = 'GrumbleWalk'
+walk._NAME = ...
 
-local Config = require'Config'
 local Body   = require'Body'
 local K      = Body.Kinematics
 local vector = require'vector'

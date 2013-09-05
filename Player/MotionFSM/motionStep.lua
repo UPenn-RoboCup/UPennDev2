@@ -2,12 +2,12 @@
 local walk = {}
 walk._NAME = 'motionStep'
 
-local Config = require'Config'
 local Body   = require'Body'
 local K      = Body.Kinematics
 local vector = require'vector'
 local unix   = require'unix'
 local util   = require'util'
+local vector = require'vector'
 local libZMP = require'libZMP'
 local zmp_solver
 require'mcm'

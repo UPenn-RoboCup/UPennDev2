@@ -11,6 +11,7 @@ local t_entry, t_update, t_exit
 local arm_ch    = simple_ipc.new_publisher('ArmFSM',true)
 local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
 local lidar_ch  = simple_ipc.new_publisher('LidarFSM',true)
+local head_ch  = simple_ipc.new_publisher('HeadFSM',true)
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -23,7 +24,8 @@ function state.entry()
   --Body.set_lwheel_velocity(0);
   --Body.set_rwheel_velocity(0);
   ret=arm_ch:send'init'
-  ret=lidar_ch:send'start'
+  ret=lidar_ch:send'pan'
+  ret=head_ch:send'tiltscan'
   ret=motion_ch:send'stand'
 end
 

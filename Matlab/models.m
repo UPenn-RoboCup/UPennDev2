@@ -36,9 +36,9 @@ MODELS.wheel = [];
 		grip_pos = (axis_pos+end_pos) / 2;
 		if grip_pos(1) > .5 || grip_pos(1) < 0.10
 		    % x distance in meters
-		    disp('Grip is too far or too close!');
+		    disp('WARNING: Grip is too far or too close!');
 		    disp(grip_pos);
-		    return;
+		    %return;
 		end
 
 		% Find the radius of the wheel

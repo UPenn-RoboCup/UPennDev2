@@ -23,11 +23,8 @@ function state.entry()
   --Body.set_lwheel_velocity(0);
   --Body.set_rwheel_velocity(0);
   ret=arm_ch:send'init'
-  print(ret)
   ret=lidar_ch:send'start'
-  print(ret)
   ret=motion_ch:send'stand'
-  print(ret)
 end
 
 function state.update()

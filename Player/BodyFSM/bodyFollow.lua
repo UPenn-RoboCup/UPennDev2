@@ -18,12 +18,13 @@ local nwaypoints, wp_id
 local waypoints = {}
 
 -- maximum stride length to take
-local maxStep = .05
+local maxStep = .1
 
 -- Thresholds for moving to the next waypoint
-local dist_threshold  = 0.02
-local angle_threshold = 1*math.pi/180
-local turn_threshold  = 5*math.pi/180
+local dist_threshold  = 0.15
+local angle_threshold = 2*math.pi/180
+-- Thresholds for spinning to face the waypoint
+local spin_threshold = 5*math.pi/180
 
 local function robocup_follow( pose, wp, rel_wp )
 
@@ -42,42 +43,75 @@ local function robocup_follow( pose, wp, rel_wp )
   -- Reduce speed based on how far away from the waypoint we are
   local scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1)
   vStep = scale * vStep
-  vStep[3] = 0.75*aTurn
+  vStep[3] = util.procFunc(0.75*aTurn,0,.5)
 
   -- If we are close to the waypoint and have the right angle threshold, we are fine
   -- TODO: Only with the last point do we care about the angle
-  print('Relative distances',rel_dist,rel_wp.a*180/math.pi)
+  --print('Relative distances',rel_dist,rel_wp.a*180/math.pi)
   if rel_dist<dist_threshold then
     -- if not the last waypoint, then we are done with this waypoint
     if wp_id<nwaypoints then return {0,0,0}, true end
     -- else, we DO need to end with the right orientation
     if math.abs(rel_wp.a)<angle_threshold then return {0,0,0}, true end
     -- Just turn in place since we are close
-    print('Turning in place')
-    vStep[3] = .5*rel_wp.a
+    --print('Turning in place')
+    vStep[3] = .05*util.sign(rel_wp.a)
   end
 
   return vStep, false
 
 end
 
-local function chase_follow(pose,wp,rel_wp)
-  -- Check how close we are to the waypoint
+local function simple_follow(pose,wp,rel_wp)
+
   -- Distance to the waypoint
-  local wpR = math.sqrt(rel_wp.x^2 + rel_wp.y^2)
-  -- Angle to the waypoint
+  local rel_dist = math.sqrt(rel_wp.x^2 + rel_wp.y^2)
+  
+  -- Angle towards the waypoint
   local aTurn = util.mod_angle(math.atan2(rel_wp.y,rel_wp.x))
-
-  -- If we are close enough, then increment the waypoint id
-  if wpR<dist_threshold then
-
+  --[[
+  local aTurn = 0
+  if rel_wp.x<-dist_threshold then
+    print('backup!')
+  else
+    aTurn = util.mod_angle(math.atan2(rel_wp.y,rel_wp.x))
   end
+  --]]
+
+  -- calculate walk step velocity based on ball position
+  local vStep = vector.zeros(3)
+  -- Go straight to the waypoint
+  vStep[1] = .6 * rel_wp.x
+  vStep[1] = math.min(maxStep/math.abs(vStep[1]), 1) * vStep[1]
+  --[[
+  if rel_wp.x<-dist_threshold then
+    vStep[1] = -maxStep
+  end
+  --]]
+  -- Spin to face the waypoint
+  vStep[3] = util.procFunc(0.75*aTurn,0,.1)
+  if math.abs(aTurn)>spin_threshold and rel_wp.x>0 then
+    -- Spin in place to face the waypoint
+    vStep[1] = 0
+  end
+
+  -- If we are close to the waypoint and have the right angle threshold
+  -- Then we are done
+  if rel_dist<dist_threshold then
+    --print('dist in thresh')
+    -- if not the last waypoint, then we are done with this waypoint
+    if wp_id<nwaypoints then return {0,0,0}, true end
+    -- else, we DO need to end with the right orientation
+    if math.abs(rel_wp.a)<angle_threshold then return {0,0,0}, true end
+    vStep[3] = .05*util.sign(rel_wp.a)
+  end
+
+  return vStep, false
 end
 
 local follow = {
-  [1] = robocup_follow,
-  [2] = simple_follow,
-  [3] = chase_follow,
+  [2] = robocup_follow,
+  [1] = simple_follow,
 }
 
 -- Metatables for pose vectors
@@ -156,8 +190,7 @@ function state.entry()
 end
 
 function state.update()
-  print()
-  print(state._NAME..' Update' ) 
+  --print(state._NAME..' Update' ) 
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update
@@ -165,7 +198,7 @@ function state.update()
   t_update = t
 
   -- If ID out of bounds
-  print('wp_id',wp_id,'of',nwaypoints)
+  --print('wp_id',wp_id,'of',nwaypoints)
   if wp_id>nwaypoints then return'done' end
   if wp_id<1 then return'error' end
 
@@ -195,9 +228,11 @@ function state.update()
   rel_wp = setmetatable(rel_wp,mt)
 
   -- Debug
+  --[[
   print('pose',pose)
   print('wayp',wp)
   print('rela',rel_wp)
+  --]]
 
   -- Grab the follow mode
   local mode = hcm.get_motion_follow_mode()
@@ -213,32 +248,6 @@ function state.update()
   if at_waypoint then
     wp_id = wp_id + 1
   end
-
-  --[[
-
-  run_reverse = 1
-  if math.abs(aTurn)>math.pi/180 * 90  then
-    aTurnDir = util.mod_angle(aTurn+math.pi)
-    run_reverse = -1
-  else
-    aTurnDir = aTurn
-  end
-
-  if dist_error>dist_threshold then
-    forwardVel = math.min(2000, dist_error/0.20 * 2000) + 1000  
-    turnVel = math.min(1000, math.abs(aTurnDir)/(10*Body.DEG_TO_RAD)*1000) + 500           
-    if aTurnDir<0 then turnVel = -turnVel end
-    aTurnMag = math.min(1, math.abs(aTurnDir)/turn_threshold)
-    lVel = run_reverse*forwardVel * (1-aTurnMag) - turnVel * aTurnMag
-    rVel = run_reverse*forwardVel * (1-aTurnMag) + turnVel * aTurnMag
-    Body.set_wheel_velocity_direct({lVel,rVel})
-  else
-    --waypoint reached, increment counter
-    print(string.format("Waypoint %d reached",waypoint_count ))
-    waypoint_count = waypoint_count + 1
-    forwardVel = 0
-  end
-  --]]
 
 end
 

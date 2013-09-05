@@ -16,6 +16,7 @@ local Benchmark = false --true
 
 -- Set the real-robot mode
 local realFlag = 1
+local deg2rad = math.pi/180
 IS_WEBOTS = true
 
 ---------------------------------
@@ -124,7 +125,6 @@ local function setup_lidar( name )
   tbl.meta.resolution = {scan_resolution,fov_resolution}
 
   -- Conver RADIANS to INDEX
-  local deg2rad = math.pi/180
   tbl.meta.fov_idx = {0, 0}
   tbl.meta.fov_idx[1] = reading_per_radian
     * ( tbl.meta.fov[1] - (-135)*deg2rad ) -- + 1 or not?
@@ -258,9 +258,6 @@ local function head_callback()
     local angle = metadata.angle
     local scanline = angle_to_scanline( head.meta, angle )
     -- Only if a valid column is returned
-    -- TODO: for slam, we don't need to acquire readings from 
-    -- multiple scanlines. only a 1-dimensional ranges valve
-    -- should be fine
     if scanline then
       print('\nRES:', head.meta.resolution[1],head.meta.resolution[2])
     	print('SCANLINE', scanline)
@@ -420,6 +417,10 @@ local cnt = 0
 local slam = {}
 
 function slam.entry()
+  -- Specify desired FOV
+  vcm['set_head_lidar_fov']({-135*deg2rad, 135*deg2rad})
+  vcm['set_chest_lidar_fov']({-60*deg2rad, 60*deg2rad})
+
   -- Set up data structure for each lidar
   chest = setup_lidar('chest')
   head = setup_lidar('head')

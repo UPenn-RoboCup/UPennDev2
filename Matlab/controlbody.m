@@ -91,7 +91,7 @@ ret = CONTROL;
         CONTROL.head.freelook = b2;
         CONTROL.head.qscan = b3;
         CONTROL.head.scan = b4;
-        set(b1,'CallBack',{@head_control,'fixed'});
+        set(b1,'CallBack',{@head_control,'reset'});
         set(b2,'CallBack',{@head_control,'teleop'});
         set(b3,'CallBack',{@head_control,'tiltscan'});
         set(b4,'CallBack',{@head_control,'center'});

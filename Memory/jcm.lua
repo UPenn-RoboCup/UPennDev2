@@ -23,7 +23,8 @@ shared_data.sensor.load          = vector.zeros( nJoints )
 shared_data.sensor.accelerometer = vector.zeros( 3 )
 shared_data.sensor.gyro          = vector.zeros( 3 )
 shared_data.sensor.compass       = vector.zeros( 3 )
-shared_data.sensor.imuAngle      = vector.zeros( 3 )
+-- Filtered Roll/Pitch/Yaw
+shared_data.sensor.rpy           = vector.zeros( 3 )
 ------------------------
 -- Request reads from some motors
 shared_data.read = {}

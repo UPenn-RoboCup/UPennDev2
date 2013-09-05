@@ -30,10 +30,10 @@ local msg = require'msgpack'
 --local jcm = require'jcm'
 local jpeg = require'jpeg'
 local zlib = require'zlib'
---local scm = require'scm'
 local util = require'util'
 local udp = require'udp'
-local udp_port = Config.net.omap -- TODO: add hmap later
+-- TODO: add hmap later or just use merged map?
+local udp_port = Config.net.omap
 local udp_target = Config.net.operator.wireless
 jpeg.set_quality( 90 ) -- 90? other ?
 ---------------------------------
@@ -56,13 +56,8 @@ local lidar0 -- head
 local lidar1 -- chest
 
 ---------------------------------
--- Initialize lidars
-
-local l0minIdx = 1
-local l0maxIdx = 1081
-local l1minIdx = 1
-local l1maxIdx = 1081
- 
+-- Filter Parameters
+-- TODO: the following should be put in vcm 
 if realFlag == 1 then
 	l1minIdx = 541 --541
 	l1maxIdx = 781 --781
@@ -70,6 +65,7 @@ else
 	l1minIdx = 201 --541
 	l1maxIdx = 881 --781
 end
+
 local l0minHeight = -0.6 -- meters
 local l0maxHeight = 1.2
 -- We don't need height limits for chest lidar
@@ -78,12 +74,12 @@ local maxRange = 28
 
 
 ---------------------------------
--- Process the head lidar
+-- Lidar processing params
 lidar0_count = 0
-lidar0_interval = 3 -- process every 2 frames
+lidar0_interval = 3 -- process every # frames
 
 lidar1_count = 0
-lidar1_interval = 3 -- process every 2 frames
+lidar1_interval = 3 -- process every # frames
 
 time_match = 0;
 time_total = 0;
@@ -156,13 +152,6 @@ local function setup_lidar( name )
       tbl.meta.fov_idx[1], tbl.meta.fov_idx[2] )
   end
 
-  ---------------------------------
-
-  --[[ TODO: Be able to resize these
-  tbl.mesh_byte = torch.ByteTensor( scan_resolution, fov_resolution ):zero()
-  tbl.mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
-  tbl.mesh_adj  = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
-  --]]
   tbl.all_ranges = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
   -- TODO: Save the exact actuator angles?
   tbl.scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
@@ -174,8 +163,6 @@ local function setup_lidar( name )
   tbl.offset_idx = math.floor((1081-fov_resolution)/2)
   -- For streaming
   tbl.needs_update = true
-
-  -- Old parametser
 
   return tbl
 end
@@ -342,7 +329,6 @@ local function chest_callback()
 		return
 	end
 		
-	-- TODO: chest_yaw? scanlines?
 	if IS_WEBOTS then
 		cur_pose = wcm.get_robot_pose() -- Ground truth pose
 	elseif USE_SLAM_ODOM then
@@ -364,18 +350,25 @@ local function chest_callback()
     local scanline = angle_to_scanline( chest.meta, angle )
     -- Only if a valid column is returned
     if scanline then
-    	-- FIXME
       -- Copy lidar readings to the torch object for fast modification
       ranges:tensor(
-        lidar1.ranges:select(1,scanline) -- TODO: chest.ranges
-        --, chest.mesh:size(2),
-        --chest.offset_idx 
+        chest.all_ranges:select(1, scanline),
+        chest.all_ranges:size(2),
+        chest.offset_idx 
 		)
       -- Save the pan angle
       chest.scan_angles[scanline] = angle
       -- We've been updated
       chest.needs_update = true
       chest.meta.t     = metadata.t
+      
+      -- Converstion of ranges for use in libLaser
+      -- TODO: copy may be slow
+      local single = torch.FloatTensor(1, chest.all_ranges:size(2)):zero()
+      single:copy(chest.all_ranges:select(1, scanline))
+      lidar1.ranges:copy(single:transpose(1,2))
+      print('check ranges', lidar0.ranges:max(), lidar0.ranges:min())
+
     end
 	
 	-- Transform the points into the body frame
@@ -383,6 +376,7 @@ local function chest_callback()
 	-- Get the chest lidar current pose
 	local chest_roll = 0
 	local chest_pitch = 0
+	local chest_yaw = chest.scan_angles[scanline]
 	lidar1:transform(chest_roll, chest_pitch, chest_yaw)
 	------------------
 
@@ -437,12 +431,10 @@ function slam.entry()
     head.lidar_ch.callback = head_callback
     table.insert( wait_channels, head.lidar_ch )
   end
-  --[[
   if chest.lidar_ch then
     chest.lidar_ch.callback = chest_callback
     table.insert( wait_channels, chest.lidar_ch )
   end
-  --]]
 
   -- Set up omap messages sender on UDP
   omap_udp_ch = udp.new_sender( udp_target, udp_port )

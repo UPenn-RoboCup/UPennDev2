@@ -173,7 +173,7 @@ assert(#servo.direction==nJoint,'Bad servo direction!')
 
 -- TODO: Offset in addition to bias?
 servo.rad_bias = vector.new({
-	0,0, -- Head
+	0,-1.8, -- Head
 	-90,-90,-90,-45,90,0, --LArm
 	0,0,0,0,0,0, --LLeg
 	0,0,0,0,0,0, --RLeg

@@ -24,6 +24,14 @@ local body_rpy = {0,0,0}
 local t_init = 5.0
 local t_grip = 5.0
 
+local function undercut()
+end
+
+local grip_mode = {
+  [1] = undercut,
+  [2] = sj
+}
+
 local handle, handle_x, handle_z, door_arm
 local update_human = function()
   handle = hcm.get_door_handle()

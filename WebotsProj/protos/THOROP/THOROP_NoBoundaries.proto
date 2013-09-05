@@ -133,7 +133,8 @@ Robot {
     }
 
     DEF Right_shoulder_pitch Servo {
-      translation -0.216 -0.008 0
+      #translation -0.216 -0.008 0
+      translation -0.259 -0.008 0
       rotation -1 0 0 0
       children [
         DEF Right_shoulder_pitch Transform {
@@ -410,7 +411,8 @@ Robot {
       controlP 16
     }
     DEF Left_shoulder_pitch Servo {
-      translation 0.216 -0.008 0
+      #translation 0.216 -0.008 0
+      translation 0.259 -0.008 0
       rotation 1 0 0 0
       children [
         DEF Left_shoulder_roll Servo {

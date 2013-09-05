@@ -140,13 +140,6 @@ function ret=slambody()
     end
     thor_omapdata = data_unpacked.shift;
 
-%     % old streaming
-%     disp(data_unpacked)
-%     disp(data_unpacked.data)
-%     thor_omap = djpeg(data_unpacked.image);
-%     disp(size(thor_omap))
-%     thor_omapdata = data_unpacked.data;
-
 	  SLAM.omap.xmin = thor_omapdata.Xmin;
 	  SLAM.omap.ymin = thor_omapdata.Ymin;
 	  SLAM.omap.xmax = thor_omapdata.Xmax;

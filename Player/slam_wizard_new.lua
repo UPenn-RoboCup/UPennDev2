@@ -280,7 +280,7 @@ local function head_callback()
       local single = torch.FloatTensor(1, head.all_ranges:size(2)):zero()
       single:copy(head.all_ranges:select(1, scanline))
       lidar0.ranges:copy(single:transpose(1,2))
-      print('check ranges', lidar0.ranges:max(), lidar0.ranges:min())
+      print('head lidar range limit', lidar0.ranges:max(), lidar0.ranges:min())
     end
 	
 	local head_roll, head_pitch, head_yaw = 0, head.scan_angles[scanline], 0 
@@ -367,8 +367,7 @@ local function chest_callback()
       local single = torch.FloatTensor(1, chest.all_ranges:size(2)):zero()
       single:copy(chest.all_ranges:select(1, scanline))
       lidar1.ranges:copy(single:transpose(1,2))
-      print('check ranges', lidar0.ranges:max(), lidar0.ranges:min())
-
+      print('chest lidar range limit', lidar1.ranges:max(), lidar1.ranges:min())
     end
 	
 	-- Transform the points into the body frame
@@ -447,27 +446,26 @@ function slam.update()
 	------------------
 	libSlam.mergeMap()
 	
-	
 	------------------
 	-- Compress and send the SLAM map and pose over UDP
-	--TODO: use zlib
 	local c_map
-	--[[
-	head.meta.c = 'zlib' -- temp
-  c_map = zlib.compress(
-	  libSlam.SMAP.data:storage():pointer(),
-	  libSlam.SMAP.data:nElement()
-	)
-	--]]
-    
-	---[[
-	head.meta.c = 'jpeg'
-	local c_map = jpeg.compress_gray(
-	libSlam.SMAP.data:storage():pointer(),
-	libSlam.MAPS.sizex,
-	libSlam.MAPS.sizey
-	)
-	--]]
+	local meta = {}
+	--TODO: get from vcm
+  meta.c = 'jpeg' -- zlib
+  if meta.c == 'zlib' then
+    c_map = zlib.compress(
+      libSlam.SMAP.data:storage():pointer(),
+      libSlam.SMAP.data:nElement()
+    )
+  elseif meta.c == 'jpeg' then  
+    c_map = jpeg.compress_gray(
+      libSlam.SMAP.data:storage():pointer(),
+      libSlam.MAPS.sizex,
+      libSlam.MAPS.sizey
+    )
+	else
+		return
+	end
 	
 	local shiftdata={
 		Xmin = libSlam.SMAP.xmin,
@@ -476,15 +474,10 @@ function slam.update()
 		Ymax = libSlam.SMAP.ymax
 	}
 
-  -- old streaming
-	--data = mp.pack({image=c_map,data=shiftdata})
-	--local udp_ret, err = omap_udp_ch:send( data, #data )
-
-	---[[ new streaming
-  head.meta.shift = shiftdata
-	local meta = mp.pack(head.meta)
+	-- Streaming
+  meta.shift = shiftdata
+	local meta = mp.pack(meta)
 	local ret, err = omap_udp_ch:send( meta..c_map )
-	--]]
 
 	print(err or 'Omap data sent!')
 	------------------

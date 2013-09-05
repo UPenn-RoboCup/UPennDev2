@@ -207,7 +207,7 @@ servo.min_rad = vector.new({
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 
 servo.max_rad = vector.new({
-	60,80, -- Head
+	45,80, -- Head
 	160,150,180,0,100,80, --LArm
 	175,175,175,175,175,175, --LLeg
 	175,175,175,175,175,175, --RLeg

@@ -30,7 +30,7 @@ shared.head_lidar.scan      = 4*1081
 shared.head_lidar.t         = vector.zeros(1)
 -- Radian endpoints for where the lidar is scanning
 -- Last one is the resolution: scanlines per radian
-shared.head_lidar.scanlines = vector.new({0*DEG_TO_RAD,60*DEG_TO_RAD,10/DEG_TO_RAD})
+shared.head_lidar.scanlines = vector.new({0*DEG_TO_RAD,45*DEG_TO_RAD,10/DEG_TO_RAD})
 -- Care only about lidar readings within this field of view
 -- {Start angle, stop angle}
 shared.head_lidar.fov      = vector.new({-60,60})*DEG_TO_RAD

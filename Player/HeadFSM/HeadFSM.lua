@@ -22,6 +22,7 @@ sm:set_transition(headIdle, 'teleop', headTeleop)
 --
 sm:set_transition(headTiltScan, 'tiltscan', headTiltScan)
 sm:set_transition(headTiltScan, 'reset', headIdle)
+sm:set_transition(headTiltScan, 'center', headCenter)
 --
 sm:set_transition(headTeleop, 'reset', headIdle)
 --

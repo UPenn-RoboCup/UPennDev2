@@ -3,6 +3,7 @@
 -- (c) 2013 Stephen McGill
 --------------------------------
 local memory = require'memory'
+local vector = require'vector'
 local shared_data = {}
 local shared_data_sz = {}
 

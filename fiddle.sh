@@ -1,2 +1,2 @@
 #!/bin/sh
-lua -i include.lua
+lua -i fiddle.lua

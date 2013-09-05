@@ -22,8 +22,8 @@ function state.entry()
   t_finish = t
 
   -- Where are the arms right now?
-  local qLArm = Body.get_larm_position()
-  local qRArm = Body.get_rarm_position()
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
   Body.set_larm_command_position(qLArm)
   Body.set_rarm_command_position(qRArm)
 

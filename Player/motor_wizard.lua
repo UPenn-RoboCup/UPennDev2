@@ -138,7 +138,7 @@ function shutdown()
     -- Print helpful message
     print('Closed',d.name)
   end
-  error('Finished shutdown procedure!')
+  os.exit()
 end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
@@ -202,24 +202,36 @@ local function entry()
       local pos_val = pos_parser(unpack(pos_status.parameter))
       local idx = motor_to_joint[id]
       local rad = Body.make_joint_radian( idx, pos_val )
-      --print( string.format('Joint %d @ %.2f, step: %d',k,rad,v) )
+      print( string.format('%d | Joint %d @ %.2f, step: %d',id,idx,rad,pos_val) )
       Body.set_sensor_position( rad, idx )
       Body.set_actuator_command_position( rad, idx )
+      dynamixel.t_last_read = Body.get_time()
     end
     
     -- Torque enable some motors
+    -- TODO: this should be prettier...
     if dynamixel.name=='RArm' then
-      local w_ids = vector.slice(joint_to_motor,Body.indexRArm-1+1,Body.indexRArm-1+6)
+      local w_ids = vector.slice(joint_to_motor,Body.indexRArm,Body.indexRArm-1+Body.nJointRArm)
       print('Setting',w_ids,'on')
-      local sync_wrist_en = libDynamixel.set_nx_torque_enable(w_ids,1)
-      --table.insert( dynamixel.instructions, sync_wrist_en )
+      local sync_en = libDynamixel.set_nx_torque_enable(w_ids,1)
+      table.insert( dynamixel.instructions, sync_en )
     elseif dynamixel.name=='LArm' then
-      local w_ids = vector.slice(joint_to_motor,Body.indexLArm-1+1,Body.indexLArm-1+6)
+      local w_ids = vector.slice(joint_to_motor,Body.indexLArm,Body.indexLArm-1+Body.nJointLArm)
       print('Setting',w_ids,'on')
-      local sync_wrist_en = libDynamixel.set_nx_torque_enable(w_ids,1)
-      --table.insert( dynamixel.instructions, sync_wrist_en )
+      local sync_en = libDynamixel.set_nx_torque_enable(w_ids,1)
+      table.insert( dynamixel.instructions, sync_en )
+    elseif dynamixel.name=='Spine' then
+      local w_ids = vector.slice(joint_to_motor,Body.indexHead,Body.indexHead-1+Body.nJointHead)
+      local sync_en = libDynamixel.set_nx_torque_enable(w_ids,1)
+      print('Torque enable head',w_ids)
+      table.insert( dynamixel.instructions, sync_en )
+            
+      local w_ids = vector.slice(joint_to_motor,Body.indexLidar,Body.indexLidar-1+Body.nJointLidar)
+      local sync_en = libDynamixel.set_nx_torque_enable(w_ids,1)
+      print('Torque enable lidar',w_ids)
+      table.insert( dynamixel.instructions, sync_en )
     end
-    --dynamixel.t_last_read = Body.get_time()
+    dynamixel.t_last_write = Body.get_time()
   end
 end
 
@@ -227,7 +239,6 @@ end
 -- Update the commands to write to the robot
 local update_instructions = function()
   -- Loop through the dynamixels and add instructions to send
-  local w_ids = vector.slice(joint_to_motor,Body.indexRArm-1+5,Body.indexRArm-1+6)
   for _,d in ipairs(dynamixels) do
     -- Do not overpopulate (just yet)
     if #d.instructions==0 then
@@ -239,12 +250,14 @@ local update_instructions = function()
         --table.insert( d.instructions, sync_rgrip )
       elseif d.name=='LArm' then
         local sync_larm = Body.set_larm_command_position_packet()
-        --table.insert( d.instructions, sync_larm )
+        table.insert( d.instructions, sync_larm )
         local sync_lgrip = Body.set_lgrip_command_position_packet()
         --table.insert( d.instructions, sync_lgrip )
       elseif d.name=='Spine' then
-        local sync_lidar  = Body.set_lidar_command_position_packet()
+        local sync_lidar = Body.set_lidar_command_position_packet()
         table.insert( d.instructions, sync_lidar )
+        local sync_head = Body.set_head_command_position_packet()
+        table.insert( d.instructions, sync_head )
         end--d.name
       end--#instructions
   end
@@ -261,13 +274,13 @@ local update_requests = function()
       -- NX reading
       if #d.nx_on_bus>0 then
         local inst_nx = libDynamixel.get_nx_position( d.nx_on_bus )
-        table.insert( d.requests, {inst_nx,'position'} )
+        --table.insert( d.requests, {inst_nx,'position'} )
       end
       -- MX readings
       if #d.mx_on_bus>0 then
         for _,idx in ipairs(d.mx_on_bus) do
           local inst_mx = libDynamixel.get_mx_position( d.mx_on_bus )
-          table.insert( d.requests, {inst_mx,'position'} )
+          --table.insert( d.requests, {inst_mx,'position'} )
           --local inst_mx = libDynamixel.get_mx_load( idx )
           --table.insert( d.requests, {inst_mx,'load'} )
         end

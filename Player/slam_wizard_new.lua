@@ -124,16 +124,22 @@ local function setup_lidar( name )
   local fov_resolution = reading_per_radian
     * math.abs(tbl.meta.fov[2]-tbl.meta.fov[1])
   fov_resolution = math.ceil(fov_resolution)
+  -- Resolution
+  tbl.meta.resolution = {scan_resolution,fov_resolution}
 
   -- Conver RADIANS to INDEX
   local deg2rad = math.pi/180
   tbl.meta.fov_idx = {0, 0}
   tbl.meta.fov_idx[1] = reading_per_radian
     * ( tbl.meta.fov[1] - (-135)*deg2rad ) -- + 1 or not?
-  tbl.meta.fov_idx[2] = math.max( tbl.meta.fov_idx[1] + fov_resolution - 1, 1081)
+  tbl.meta.fov_idx[1] = math.floor(tbl.meta.fov_idx[1])
+  tbl.meta.fov_idx[2] = math.min( tbl.meta.fov_idx[1] + fov_resolution - 1, 1081)
+  --print('fov_idx', unpack(tbl.meta.fov_idx))
+  --TODO: make sure if the order needs to be flipped
 
   -- Setup lidar object
-  -- Arguments: location, minRange, maxRange, minHeight, maxHeight
+  -- Arguments: location, minRange, maxRange
+  -- minHeight, maxHeight, minIdx, maxIdx
   if name == 'head' then
     lidar0 = 
     libLaser.new_lidar(
@@ -151,14 +157,13 @@ local function setup_lidar( name )
   end
 
   ---------------------------------
-  -- Resolution
-  tbl.meta.resolution = {scan_resolution,fov_resolution}
 
   --[[ TODO: Be able to resize these
   tbl.mesh_byte = torch.ByteTensor( scan_resolution, fov_resolution ):zero()
   tbl.mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
   tbl.mesh_adj  = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
   --]]
+  tbl.all_ranges = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
   -- TODO: Save the exact actuator angles?
   tbl.scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
 
@@ -266,18 +271,29 @@ local function head_callback()
     local angle = metadata.angle
     local scanline = angle_to_scanline( head.meta, angle )
     -- Only if a valid column is returned
+    -- TODO: for slam, we don't need to acquire readings from 
+    -- multiple scanlines. only a 1-dimensional ranges valve
+    -- should be fine
     if scanline then
-    -- Copy lidar readings to the torch object for fast modification
-	  --[[FIXME
-	  ranges:tensor( 
-	    lidar0.ranges:select(1, scanline)
-	    --, lidar0.ranges:size(2)
-	  )
-	  --]]
+      print('\nRES:', head.meta.resolution[1],head.meta.resolution[2])
+    	print('SCANLINE', scanline)
+      -- Copy lidar readings to the torch object for fast modification
+      --FIXME
+      ranges:tensor( 
+        head.all_ranges:select(1, scanline),
+        head.all_ranges:size(2),
+        head.offset_idx
+      )
       -- Save the pan angle
       head.scan_angles[scanline] = angle
       head.needs_update = true
       head.meta.t = metadata.t
+
+      -- Converstion of ranges for use in libLaser
+      -- TODO: copy may be slow
+      local single = torch.FloatTensor(1, head.all_ranges:size(2)):zero()
+      single:copy(head.all_ranges:select(1, scanline))
+      lidar0.ranges:copy(single:transpose(1,2))
     end
 	
 	local head_roll, head_pitch, head_yaw = 0, 0, 0 -- FIXME

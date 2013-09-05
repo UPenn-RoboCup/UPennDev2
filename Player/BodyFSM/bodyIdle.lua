@@ -12,10 +12,6 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-
-  -- TODO: Fix this
-  --Body.set_lwheel_velocity(0);
-  --Body.set_rwheel_velocity(0);
 end
 
 function state.update()
@@ -26,7 +22,6 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
-
 end
 
 function state.exit()

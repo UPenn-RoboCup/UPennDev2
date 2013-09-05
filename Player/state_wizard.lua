@@ -2,6 +2,7 @@ dofile'include.lua'
 local Body = require'Body'
 local util = require'util'
 local mp   = require'msgpack'
+local signal = require'signal'
 local simple_ipc   = require'simple_ipc'
 local state_pub_ch = simple_ipc.new_publisher(Config.net.state)
 
@@ -38,6 +39,20 @@ local us_sleep = 1e6 / fps
 -- Start the state machines
 local t0 = Body.get_time()
 local t_debug = t0
+
+--------------------
+-- Clean Shutdown function
+function shutdown()
+  print'Shutting down the state machines...'
+  for _,my_fsm in pairs(state_machines) do
+    my_fsm.exit()
+    -- Print helpful message
+    print('Exit',my_fsm._NAME)
+  end
+  os.exit()
+end
+signal.signal("SIGINT", shutdown)
+signal.signal("SIGTERM", shutdown)
 
 -- Perform inialization
 Body.entry()

@@ -21,7 +21,7 @@ sm:add_state(bodyFollow)
 
 -- Setup the transistions for this FSM
 --
-sm:set_transition(bodyIdle, 'init', bodyInit)
+sm:set_transition( bodyIdle, 'init', bodyInit )
 --
 sm:set_transition( bodyInit,   'follow', bodyFollow )
 sm:set_transition( bodyFollow, 'done',   bodyInit )

@@ -12,6 +12,11 @@ local using_status_return = true
 -- 75ms default timeout
 local READ_TIMEOUT = 0.075
 
+-- TODO: Make this a parameter to set externally
+local status_timeout = 1/120 -- 120Hz timeout
+--local status_timeout = 1/60 -- 60Hz timeout
+--local status_timeout = 0 -- Instant timeout
+
 --------------------
 -- Convienence functions for reading dynamixel packets
 DP1.parse_status_packet = function(pkt) -- 1.0 protocol
@@ -645,10 +650,10 @@ libDynamixel.service = function( dynamixels, main )
           
           -- Write the read request instruction to the chain
           local req_ret = unix.write(fd, request[1])
-          -- Set a timeout for this request
-          dynamixel.timeout = unix.time() + READ_TIMEOUT
           -- If -1 returned, the bus may be detached - throw an error
           assert(req_ret~=-1,string.format('BAD READ REQ on %s',dynamixel.name))
+          -- Set a timeout for this request
+          dynamixel.timeout = unix.time() + READ_TIMEOUT
           -- Yield the number of motors read
           -- TODO: Should it just return true? the number of bytes sent to the bus? The number of packets to expect?
           response = coroutine.yield( 1 )
@@ -713,7 +718,9 @@ libDynamixel.service = function( dynamixels, main )
         if #dynamixel.instructions>0 then
           -- Pop the item
           local instruction = table.remove(dynamixel.instructions,1)
-          local command_ret = unix.write( fd, instruction )
+          local cmd_ret = unix.write( fd, instruction )
+          assert(#instruction==cmd_ret,
+            string.format('BAD INST WRITE: %s',dynamixel.name))
           -- Save the write time
           local t = unix.time()
           dynamixel.t_diff_write = t - dynamixel.t_last_write
@@ -733,9 +740,6 @@ libDynamixel.service = function( dynamixels, main )
 	end
   
   -- Loop and select appropriately
-  --local status_timeout = 1/120 -- 120Hz timeout
-  local status_timeout = 1/60 -- 120Hz timeout
-  --local status_timeout = 0 -- Instant timeout
 	while #dynamixel_fds>0 do
     
     -- TODO: Use the dynamixel objects somehow to accept more commands...
@@ -767,7 +771,7 @@ libDynamixel.service = function( dynamixels, main )
         --------------------
         -- Check if there were errors in the coroutine
         if not status_code then
-          --print( 'Dead dynamixel coroutine!', who_to_service.name, param )
+          print( 'Dead dynamixel coroutine!', who_to_service.name, param )
           who_to_service:close()
           who_to_service.message = param
           local i_to_remove = 0

@@ -1,5 +1,4 @@
 dofile'include.lua'
-require'unix'
 local mp   = require'msgpack'
 local util = require'util'
 local vector = require'vector'

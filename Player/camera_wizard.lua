@@ -3,13 +3,14 @@
 ---- (c) Stephen McGill, Yida Zhang 2013
 -----------------------------------
 dofile 'include.lua'
-local Config = require'ConfigPenn'
-local uvc = require'uvc'
-local carray = require'carray'
+local Body       = require'Body'
+local uvc        = require'uvc'
+local carray     = require'carray'
 local simple_ipc = require'simple_ipc'
-local jpeg = require'jpeg'
-local udp = require 'udp'
-local unix = require 'unix'
+local jpeg       = require'jpeg'
+local udp        = require 'udp'
+local unix       = require 'unix'
+
 
 --[[
 local use_wrist_cameras = true
@@ -55,14 +56,14 @@ local head_camera =
 -- Create the callback functions
 local head_camera_poll = {}
 head_camera_poll.socket_handle = head_camera:descriptor()
-head_camera_poll.ts = unix.time()
+head_camera_poll.ts = Body.get_time()
 head_camera_poll.count = 0
 head_camera_poll.callback = function()
-  local t_img = unix.time()
+  local t_img = Body.get_time()
   local head_img, head_img_sz = head_camera:get_image()
 
   if head_camera_poll.count%head_frame_rate==0 then
-    local t_now = unix.time()
+    local t_now = Body.get_time()
     local t_diff = t_now - head_camera_poll.ts
     print(string.format('Head | %5.2f FPS', head_camera_poll.count/t_diff))
     head_camera_poll.count = 0
@@ -88,14 +89,14 @@ local left_camera =
 -- Create the callback functions
 local left_camera_poll = {}
 left_camera_poll.socket_handle = left_camera:descriptor()
-left_camera_poll.ts = unix.time()
+left_camera_poll.ts = Body.get_time()
 left_camera_poll.count = 0
 left_camera_poll.callback = function()
-  local t_img = unix.time()
+  local t_img = Body.get_time()
   local left_img, left_img_sz = left_camera:get_image()
 
   if left_camera_poll.count%left_frame_rate==0 then
-    local t_now = unix.time()
+    local t_now = Body.get_time()
     local t_diff = t_now - left_camera_poll.ts
     print(string.format('Left | %5.2f FPS', left_camera_poll.count/t_diff))
     left_camera_poll.count = 0
@@ -117,14 +118,14 @@ local right_camera =
 -- Create the callback functions
 local right_camera_poll = {}
 right_camera_poll.socket_handle = right_camera:descriptor()
-right_camera_poll.ts = unix.time()
+right_camera_poll.ts = Body.get_time()
 right_camera_poll.count = 0
 right_camera_poll.callback = function()
-  local t_img = unix.time()
+  local t_img = Body.get_time()
   local right_img, right_img_sz = right_camera:get_image()
 
   if right_camera_poll.count%right_frame_rate==0 then
-    local t_now = unix.time()
+    local t_now = Body.get_time()
     local t_diff = t_now - right_camera_poll.ts
     print(string.format('Right | %5.2f FPS', right_camera_poll.count/t_diff))
     right_camera_poll.count = 0
@@ -152,14 +153,14 @@ local left_camera =
 -- Create the callback functions
 local left_camera_poll = {}
 left_camera_poll.socket_handle = left_camera:descriptor()
-left_camera_poll.ts = unix.time()
+left_camera_poll.ts = Body.get_time()
 left_camera_poll.count = 0
 left_camera_poll.callback = function()
-  local t_img = unix.time()
+  local t_img = Body.get_time()
   local img, img_sz = left_camera:get_image()
 
   if left_camera_poll.count%left_frame_rate==0 then
-    local t_now = unix.time()
+    local t_now = Body.get_time()
     local t_diff = t_now - left_camera_poll.ts
     print(string.format('Left | %5.2f FPS', left_camera_poll.count/t_diff))
     left_camera_poll.count = 0
@@ -184,13 +185,13 @@ local right_camera =
 -- Create the callback functions
 local right_camera_poll = {}
 right_camera_poll.socket_handle = right_camera:descriptor()
-right_camera_poll.ts = unix.time()
+right_camera_poll.ts = Body.get_time()
 right_camera_poll.count = 0
 right_camera_poll.callback = function()
-  local t_img = unix.time()
+  local t_img = Body.get_time()
   local img, img_sz = right_camera:get_image()
   if right_camera_poll.count%right_frame_rate==0 then
-    local t_now = unix.time()
+    local t_now = Body.get_time()
     local t_diff = t_now - right_camera_poll.ts
     print(string.format('Right | %5.2f FPS', right_camera_poll.count/t_diff))
     right_camera_poll.count = 0
@@ -221,11 +222,11 @@ local channel_timeout = 1e5
 -- Only the callback will be made: no timeout
 --channel_poll:start()
 local cnt = 0;
-local t_last = unix.time()
+local t_last = Body.get_time()
 local t_debug = 1
 while true do
   local npoll = channel_poll:poll(channel_timeout)
-  local t = unix.time()
+  local t = Body.get_time()
   cnt = cnt+1;
   if t-t_last>t_debug then
     local msg = string.format("%.2f FPS", cnt/t_debug);

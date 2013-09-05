@@ -1,6 +1,9 @@
 dofile'../include.lua'
+local Body   = require'Body'
 local openni = require 'openni'
 local signal = require'signal'
+require'vcm'
+
 local n_users = openni.startup()
 assert(n_users==0,'Should not use skeletons')
 
@@ -10,11 +13,10 @@ assert(depth_info.width==320,'Bad depth resolution')
 assert(color_info.width==320,'Bad color resolution')
 
 -- Require some modules
-require'vcm'
+local png  = require'png'
+local mp   = require'msgpack'
 local jpeg = require'jpeg'
 jpeg.set_quality( 80 )
-local png = require'png'
-local mp = require'msgpack'
 
 -- Access point
 local depth, color
@@ -41,7 +43,7 @@ end
 
 -- Set up timing debugging
 local cnt = 0;
-local t_last = unix.time()
+local t_last = Body.get_time()
 local t_debug = 1
 
 function shutdown()
@@ -53,7 +55,7 @@ signal.signal("SIGINT",  shutdown)
 signal.signal("SIGTERM", shutdown)
 
 -- TODO: single frame is reliable TCP, not UDP
-local t_last_color_udp = unix.time()
+local t_last_color_udp = Body.get_time()
 local function send_color_udp(metadata)
   local net_settings = vcm.get_kinect_net_color()
   -- Streaming
@@ -72,7 +74,7 @@ local function send_color_udp(metadata)
   local meta = mp.pack(metadata)
   -- Send over UDP
   local ret_c,err_c = udp_color:send( meta..c_color )
-  t_last_color_udp = unix.time()
+  t_last_color_udp = Body.get_time()
   if net_settings[1]==1 then
     net_settings[1] = 0
     vcm.set_kinect_net_color(net_settings)
@@ -80,7 +82,7 @@ local function send_color_udp(metadata)
   end
 end
 
-local t_last_depth_udp = unix.time()
+local t_last_depth_udp = Body.get_time()
 local function send_depth_udp(metadata)
   local net_settings = vcm.get_kinect_net_depth()
   -- Streaming
@@ -98,7 +100,7 @@ local function send_depth_udp(metadata)
   local meta = mp.pack(metadata)
   -- Send over UDP
   local ret_d,err_d = udp_depth:send( meta..c_depth )
-  t_last_depth_udp = unix.time()
+  t_last_depth_udp = Body.get_time()
   if net_settings[1]==1 then
     net_settings[1] = 0
     vcm.set_kinect_net_depth(net_settings)
@@ -112,7 +114,7 @@ while true do
   -- Acquire the Data
   depth, color = openni.update_rgbd()
   -- Check the time of acquisition
-  local t = unix.time()
+  local t = Body.get_time()
   
   -- Save the metadata  
   vcm.set_kinect_t(t)

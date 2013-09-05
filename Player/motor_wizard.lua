@@ -10,11 +10,11 @@ local DEG_TO_RAD = math.pi/180
 local RAD_TO_DEG = 180/math.pi
 
 -- Libraries
-local unix = require'unix'
+local Body   = require'Body'
 local signal = require'signal'
-local util = require'util'
+local vector = require'vector'
+local util   = require'util'
 local libDynamixel = require'libDynamixel'
-local Body = require'Body'
 local joint_to_motor = Body.servo.joint_to_motor
 local motor_to_joint = Body.servo.motor_to_joint
 
@@ -205,7 +205,7 @@ local function entry()
       local sync_wrist_en = libDynamixel.set_nx_torque_enable(w_ids,1)
       --table.insert( dynamixel.instructions, sync_wrist_en )
     end
-    --dynamixel.t_last_read = unix.time()
+    --dynamixel.t_last_read = Body.get_time()
   end
 end
 
@@ -239,7 +239,7 @@ end
 -- Set commands for next sync read    
 -- Update the read every so often
 local update_requests = function()
-  local t = unix.time()
+  local t = Body.get_time()
   -- Loop through the dynamixels and add read requests
   for _,d in ipairs(dynamixels) do
     -- Do not overpopulate (just yet)
@@ -267,11 +267,11 @@ end --function
 local led_state = 0
 local main = function()
   local main_cnt = 0
-  local t0 = unix.time()
+  local t0 = Body.get_time()
   
   -- Enter the coroutine
   while true do
-    local t = unix.time()
+    local t = Body.get_time()
     
     -- Set commands for next sync write
     update_instructions()

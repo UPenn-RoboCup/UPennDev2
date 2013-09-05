@@ -774,7 +774,7 @@ if IS_WEBOTS then
 		  webots.wb_compass_enable(tags.compass, timeStep)
       -- RPY
       tags.inertialunit = webots.wb_robot_get_device("InertialUnit")
-      --webots.wb_inertial_unit_enable(tags.inertialunit, timeStep)
+      webots.wb_inertial_unit_enable(tags.inertialunit, timeStep)
     end
     --[[
 		-- Kinect
@@ -865,13 +865,24 @@ if IS_WEBOTS then
 		{(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273}
 		)
     -- GPS and compass data
+    -- Webots x is our y, Webots y is our z, Webots z is our x, 
+    -- Our x is Webots z, Our y is Webots x, Our z is Webots y
     if use_pose then
-      local gps = webots.wb_gps_get_values(tags.gps)
+      local gps     = webots.wb_gps_get_values(tags.gps)
       local compass = webots.wb_compass_get_values(tags.compass)
-      --local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
-      local angle = math.atan2(compass[1],compass[3])
-      wcm.set_robot_pose( {gps[1],-gps[3],-angle} )
+      local angle   = math.atan2( compass[3], compass[1] )
+      local pose    = {gps[3], gps[1], angle}
+      wcm.set_robot_pose( pose )
+      local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
+      Body.set_sensor_rpy(rpy)
       --wcm.set_global_orientation( compass )
+      --[[
+      print('rpy',unpack(rpy) )
+      print('gps',unpack(gps) )
+      print('compass',unpack(compass) )
+      print('pose', unpack(pose) )
+      print()
+      --]]
     end
 
 		-- Update the sensor readings of the joint positions

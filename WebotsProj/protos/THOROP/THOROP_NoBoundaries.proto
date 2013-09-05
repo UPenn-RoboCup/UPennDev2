@@ -53,15 +53,17 @@ Robot {
       ]
     }
     InertialUnit {
-      rotation 0 1 0 -1.5708
+      #rotation 0 1 0 -1.5708
       name "InertialUnit"
     }
+    # Webots x is our y, Webots y is our z, Webots z is our x, 
+    # Our x is Webots z, Our y is Webots x, Our z is Webots y
     Compass {
-      rotation 0 1 0 -1.5708
+      #rotation 0 1 0 1.5708
       name "Compass"
     }
     GPS {
-      rotation 0 1 0 -1.5708
+      #rotation 0 1 0 -1.5708
       name "GPS"
     }
     Accelerometer {

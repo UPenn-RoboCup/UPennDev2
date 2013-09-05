@@ -18,7 +18,7 @@ local nwaypoints, wp_id
 local waypoints = {}
 
 -- maximum stride length to take
-local maxStep = .1
+local maxStep = .05
 
 -- Thresholds for moving to the next waypoint
 local dist_threshold  = 0.02
@@ -31,6 +31,7 @@ local function robocup_follow( pose, wp, rel_wp )
   local wpR = math.sqrt(rel_wp.x^2 + rel_wp.y^2)
   -- Angle to the waypoint
   local aTurn = util.mod_angle(math.atan2(rel_wp.y,rel_wp.x))
+  print('dist',wpR,aTurn)
 
   if wpR<dist_threshold and math.abs(aTurn)<angle_threshold then
     return {0,0,0}, true
@@ -39,13 +40,13 @@ local function robocup_follow( pose, wp, rel_wp )
   -- calculate walk step velocity based on ball position
   local vStep = vector.zeros(3)
   -- TODO: Adjust these constants
-  vStep[1] = .60 * rel_wp.x
-  vStep[2] = .75 * rel_wp.y
+  vStep[1] = .60 * (wp.x - pose.x)
+  vStep[2] = .75 * (wp.y - pose.y)
   
   -- Reduce speed based on how far away from the waypoint we are
   local scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1)
   vStep = scale * vStep
-  vStep[3] = 0.75*aTurn
+  --vStep[3] = 0.75*aTurn
   
   return vStep, false
 
@@ -94,7 +95,7 @@ end
 
 local function pose_tostring(p)
   return string.format(
-    "x=%g, y=%g, a=%g degrees",
+    "{x=%g, y=%g, a=%g degrees}",
     p[1], p[2], p[3]*180/math.pi
   )
 end
@@ -148,7 +149,8 @@ function state.entry()
 end
 
 function state.update()
-  -- print(state._NAME..' Update' ) 
+  print()
+  print(state._NAME..' Update' ) 
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update
@@ -186,7 +188,9 @@ function state.update()
   rel_wp = setmetatable(rel_wp,mt)
 
   -- Debug
-  print(pose,wp,rel_wp)
+  print('pose',pose)
+  print('wayp',wp)
+  print('rela',rel_wp)
 
   -- Grab the follow mode
   local mode = hcm.get_motion_follow_mode()
@@ -195,7 +199,9 @@ function state.update()
   local vel, at_waypoint = up(pose,wp,rel_wp)
 
   -- Update the velocity
+  print(vel,at_waypoint)
   mcm.set_walk_vel(vel)
+  --mcm.set_walk_vel{0,0,0}
 
   -- Check if we are at the waypoint
   if at_waypoint then

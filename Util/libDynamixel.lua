@@ -13,8 +13,8 @@ local using_status_return = true
 local READ_TIMEOUT = 0.075
 
 -- TODO: Make this a parameter to set externally
-local status_timeout = 1/120 -- 120Hz timeout
---local status_timeout = 1/60 -- 60Hz timeout
+--local status_timeout = 1/120 -- 120Hz timeout
+local status_timeout = 1/60 -- 60Hz timeout
 --local status_timeout = 0 -- Instant timeout
 
 --------------------
@@ -412,7 +412,7 @@ for k,v in pairs( mx_registers ) do
 		local sz = v[2]
 		
 		-- Construct the instruction (single or sync)
-		local instruction = nil
+		local instruction
 		local nids = 1
 		if type(motor_ids)=='number' then
       -- Single motor
@@ -432,6 +432,8 @@ for k,v in pairs( mx_registers ) do
 		
     -- Grab the status of the register
     local status = get_status( bus.fd, nids )
+    if not status then return end
+    
     local values = {}
     for i,s in ipairs(status) do
       table.insert(values,byte_to_number[sz]( unpack(s.parameter) ))
@@ -520,15 +522,17 @@ end
 
 local function ping_probe(self, protocol, twait)
   local found_ids = {}
+  protocol = protocol or 2
+  twait = twait or READ_TIMEOUT
 	for id = 0,253 do
 		local status = 
-      libDynamixel.send_ping( id, protocol or 2, self, twait or READ_TIMEOUT )
+      libDynamixel.send_ping( id, protocol, self, twait )
 		if status then
-      --print( string.format('Found %d.0 Motor: %d\n',protocol,status.id) )
+      print( string.format('Found %d.0 Motor: %d\n',protocol,status.id) )
       table.insert( found_ids, status.id )
 		end
-    -- Wait 1 ms
-    unix.usleep(1e3)
+    -- Wait .1 ms
+    unix.usleep(1e4)
 	end
   return found_ids
 end

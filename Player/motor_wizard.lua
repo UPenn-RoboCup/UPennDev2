@@ -104,7 +104,7 @@ if right_dynamixel then
   table.insert(dynamixels,right_dynamixel)
   -- Set up the callback when joints were read
   right_dynamixel.callback = update_read
-  right_dynamixel.mx_on_bus = {13,15,17}
+  right_dynamixel.mx_on_bus = {15,17} --{13,15,17}
   right_dynamixel.nx_on_bus = {2, 4, 6, 8, 10, 12}
   right_dynamixel.ids_on_bus = {2, 4, 6, 8, 10, 12,13,15,17}
 end -- if left chain
@@ -196,11 +196,28 @@ local function entry()
     
     -- Perform a read to instantiate the motor commands and sensor positions
     for _,id in ipairs(dynamixel.nx_on_bus) do
+      local idx = motor_to_joint[id]
       local pos_status = libDynamixel.get_nx_position(id,dynamixel)
-      assert(pos_status, string.format('%s: Did not find ID %d',dynamixel.name,id) )
+      assert(pos_status, string.format('%s: Did not find ID %s: %d',dynamixel.name,Body.jointNames[idx],id) )
       local pos_parser = libDynamixel.byte_to_number[ #pos_status.parameter ]
       local pos_val = pos_parser(unpack(pos_status.parameter))
+      
+      local rad = Body.make_joint_radian( idx, pos_val )
+      print( util.color(Body.jointNames[idx],'yellow'), '\n',string.format('\t%d (%d) @ %.2f, step: %d',
+        idx,id,rad*Body.RAD_TO_DEG,pos_val) )
+      Body.set_sensor_position( rad, idx )
+      Body.set_actuator_command_position( rad, idx )
+      dynamixel.t_last_read = Body.get_time()
+    end
+    
+    -- Perform a read to instantiate the motor commands and sensor positions
+    for _,id in ipairs(dynamixel.mx_on_bus) do
       local idx = motor_to_joint[id]
+      local pos_status = libDynamixel.get_mx_position(id,dynamixel)
+      assert(pos_status, string.format('%s: Did not find ID %s: %d',dynamixel.name,Body.jointNames[idx],id) )
+      local pos_parser = libDynamixel.byte_to_number[ #pos_status.parameter ]
+      local pos_val = pos_parser(unpack(pos_status.parameter))
+      
       local rad = Body.make_joint_radian( idx, pos_val )
       print( util.color(Body.jointNames[idx],'yellow'), '\n',string.format('\t%d (%d) @ %.2f, step: %d',
         idx,id,rad*Body.RAD_TO_DEG,pos_val) )
@@ -249,19 +266,19 @@ local update_instructions = function()
         table.insert( d.instructions, sync_rarm )
         -- Form the hand packets
         local sync_rgrip = Body.set_rgrip_command_position_packet()
-        --table.insert( d.instructions, sync_rgrip )
+        table.insert( d.instructions, sync_rgrip )
       elseif d.name=='LArm' then
         local sync_larm = Body.set_larm_command_position_packet()
         table.insert( d.instructions, sync_larm )
         local sync_lgrip = Body.set_lgrip_command_position_packet()
-        --table.insert( d.instructions, sync_lgrip )
+        table.insert( d.instructions, sync_lgrip )
       elseif d.name=='Spine' then
         local sync_lidar = Body.set_lidar_command_position_packet()
         table.insert( d.instructions, sync_lidar )
         local sync_head = Body.set_head_command_position_packet()
         table.insert( d.instructions, sync_head )
-        end--d.name
-      end--#instructions
+      end--d.name
+    end--#instructions
   end
 end
 

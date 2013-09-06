@@ -179,14 +179,8 @@ servo.rad_bias = vector.new({
 	0,0,0,0,0,0, --RLeg
 	90,90,90,45,-90,0, --RArm
 	0,0, -- Waist
-  ----[[
   0,0,0, -- left gripper
   0,-80,0, -- right gripper -- TODO: Remount the finger...
-  --]]
-  --[[
-	0,0,0, -- left gripper
-	0,0,0, -- right gripper
-  ]]
 	0, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.rad_bias==nJoint,'Bad servo rad_bias!')
@@ -198,14 +192,8 @@ servo.min_rad = vector.new({
 	-175,-175,-175,-175,-175,-175, --RLeg
 	-175,-150,-180,-140,-100,-80, --RArm
 	-175,-175, -- Waist
-  ----[[
   -20,-20,-20, -- left gripper
   -20,-20,-20, -- right gripper
-  --]]
-  --[[
-	0,0,0, -- left gripper
-	0,0,0, -- right gripper
-  --]]
 	-60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
@@ -217,14 +205,8 @@ servo.max_rad = vector.new({
 	175,175,175,175,175,175, --RLeg
 	160,5,90,0,100,80, --RArm
 	175,175, -- Waist
-  ----[[
   10,10,10, -- left gripper
   10,10,10, -- right gripper
-  --]]
-  --[[
-	90,90,90, -- left gripper
-	90,90,90, -- right gripper
-  --]]
 	60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
@@ -655,6 +637,7 @@ end
 ----------------------
 -- Webots compatibility
 if IS_WEBOTS then
+  -- TODO: fix the min/max/bias for the grippers
   local Config     = require'Config'
 	local webots     = require'webots'
   local simple_ipc = require'simple_ipc'
@@ -693,6 +676,30 @@ if IS_WEBOTS then
 		0,0,0,
 		60,--30,
 	})*DEG_TO_RAD
+  
+  servo.min_rad = vector.new({
+  	-60,-80, -- Head
+  	-90,-5,-90,-140,-100,-80, --LArm
+  	-175,-175,-175,-175,-175,-175, --LLeg
+  	-175,-175,-175,-175,-175,-175, --RLeg
+  	-175,-150,-180,-140,-100,-80, --RArm
+  	-175,-175, -- Waist
+  	0,0,0, -- left gripper
+  	0,0,0, -- right gripper
+  	-60, -- Lidar pan
+  })*DEG_TO_RAD
+  
+  servo.max_rad = vector.new({
+  	45,80, -- Head
+  	160,150,180,0,100,80, --LArm
+  	175,175,175,175,175,175, --LLeg
+  	175,175,175,175,175,175, --RLeg
+  	160,5,90,0,100,80, --RArm
+  	175,175, -- Waist
+  	90,90,90, -- left gripper
+  	90,90,90, -- right gripper
+  	60, -- Lidar pan
+  })*DEG_TO_RAD
   
   -- Webots body broadcasting
   local chest_lidar_wbt, head_lidar_wbt

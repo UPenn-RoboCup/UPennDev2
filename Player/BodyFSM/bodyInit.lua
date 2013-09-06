@@ -38,10 +38,10 @@ function state.update()
   
   local dqMax = vector.new({10,10})*Body.DEG_TO_RAD
   local qWaist = vector.new(Body.get_waist_command_position())
-  print('qWaist',qWaist)
+  --print('qWaist',qWaist)
   local q_desired = {0,0}
   local qW,done = util.approachTol( qWaist, q_desired, dqMax, dt )
-  print(unpack(qW))
+  --print(unpack(qW))
   Body.set_waist_command_position(qW)
 
 end

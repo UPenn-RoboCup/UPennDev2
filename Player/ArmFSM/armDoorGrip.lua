@@ -136,9 +136,9 @@ local function uppercut()
   local qL_approach, qR_approach, done
   print('stage 3',done)
   if door_arm=='right' then
-    qR_approach, done = util.approachTol( qRArm, q_desired, dqArmMax, dt )
+    qR_approach, done = util.approachTol( qRArm, q_desired, dqArmMax*.7, dt )
   else
-    qL_approach, done = util.approachTol( qLArm, q_desired, dqArmMax, dt )
+    qL_approach, done = util.approachTol( qLArm, q_desired, dqArmMax*.7, dt )
   end
 
   -- Increment stage if done

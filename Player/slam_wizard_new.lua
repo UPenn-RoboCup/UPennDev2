@@ -289,11 +289,13 @@ local function head_callback()
 	local t0_processL0 = unix.time()
 	-- TODO: use head.meta.t for slam
 	-- TODO: use RPY from webots
-	local rpy = wcm.get_robot_rpy() -- Body or wcm??
+	local rpy = wcm.get_robot_rpy()
+	local gyro = wcm.get_robot_gyro()
+	print('GYRO:', unpack(gyro))
 	-- Default yaw is 1.57
 	rpy[3] = rpy[3] - math.pi/2
 	--print('RPY:', unpack(rpy))
-	libSlam.processIMU( rpy )
+	libSlam.processIMU( rpy, gyro[3], head.meta.t )
 	libSlam.processL0( lidar0.points_xyz )
 	local t1_processL0 = unix.time()
 	--print( string.format('processL0 took: \t%.2f ms', (t1_processL0-t0_processL0)*1000) )

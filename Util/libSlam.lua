@@ -479,6 +479,11 @@ libSlam.scanMatchTwo = function( Y )
 	-- Reset the ranges based on the current odometry
 	-- TODO: determine how much to search over the yaw space based on 
 	-- the instantaneous angular velocity from the imu
+
+  
+	pass2.dyaw = math.abs(IMU.yawdot* 0.5)
+	print('yawdot', IMU.yawdot)
+
 	local xCand = pass2.xCand;
 	local yCand = pass2.yCand;
 	local aCand = pass2.aCand;
@@ -863,12 +868,16 @@ end
 ----------------------------------------------------
 -- Process the IMU data
 ----------------------------------------------------
-libSlam.processIMU = function( rpy )
-  -- TODO: use the RPY from webots
+local t_pre = 0
+libSlam.processIMU = function( rpy, yawdot, t )
 	IMU.roll = rpy[1]
 	IMU.pitch = rpy[2]
 	IMU.yaw = rpy[3]
 	IMU.dyaw = IMU.yaw - IMU.lastYaw
+	dt = t - t_pre
+	--TODO: gyro readings are always zero
+	IMU.yawdot = IMU.dyaw/dt
+	t_pre = t
 	IMU.lastYaw = IMU.yaw
 end
 ----------------------------------------------------

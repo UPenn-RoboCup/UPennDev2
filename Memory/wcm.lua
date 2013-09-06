@@ -14,6 +14,7 @@ shared.robot = {}
 shared.robot.pose = vector.zeros(3)
 -- Sensor readings
 shared.robot.rpy = vector.zeros(3)
+shared.robot.gyro= vector.zeros(3)
 
 --[[
 shared.robot.team_ball = vector.zeros(3);

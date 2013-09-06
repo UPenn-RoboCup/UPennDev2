@@ -18,8 +18,9 @@ torch.Tensor = torch.DoubleTensor
 
 local libSlam = {}
 
---Flag for IMU: 0 <=> w/o IMU, 1 <=> w/ IMU
-local IMUflag = 0 
+--Flag for IMU:
+local IMUflag = true 
+--local IMUflag = false 
 
 -- Flag for benchmarking
 local Benchmark = false --true
@@ -120,22 +121,26 @@ local IMU = {}
 IMU.roll = 0
 IMU.pitch = 0
 IMU.yaw = 0
+IMU.dyaw = 0
 IMU.lastYaw = 0
 libSlam.IMU = IMU
 
-
+---------------------------
+-- For ThorCentaur
+---------------------------
 -- Setup Encoder values
 local Encoder = {}
 Encoder.dia = 0.1   -- REAL ROBOT:0.15
 -- GAZEBO: BEST BASELINE 0.55 ~ 0.6
 Encoder.baseline = 0.555  -- REAL ROBOT:0.34
 Encoder.t_last = unix.time()
--- Scaler for encoder TODO: tune the parameter
+-- Scaler for encoder
 Encoder.scaler = 1 
 Encoder.l = 0
 Encoder.r = 0
 Encoder.cnts = 0
 libSlam.Encoder = Encoder
+---------------------------
 
 
 -- Set the parameters for our C program
@@ -147,16 +152,16 @@ slam.set_boundaries( OMAP.xmin, OMAP.ymin, OMAP.xmax, OMAP.ymax )
 local scan_match_tune = {}
 local pass1 = {};
 -- Number of yaw positions to check
-pass1.nyaw = 13
-pass1.dyaw = 0.5 * math.pi/180.0;
+pass1.nyaw = 1 --13 -- FIXME
+pass1.dyaw = 0.5 * math.pi/180.0
 -- At this resolution
 -- TODO: make this dependent on angular velocity / motion speed
 --if abs(tLidar0-tEncoders) < 0.1
 pass1.nxs  = 19  --21
 pass1.nys  = 19
 -- resolution of the candidate poses
-pass1.dx  = 0.025
-pass1.dy  = 0.025
+pass1.dx  = 0.05 --0.025
+pass1.dy  = 0.05 --0.025
 --else
 --  nxs1  = 11;
 --  nys1  = 11;
@@ -175,7 +180,7 @@ scan_match_tune[1] = pass1;
 
 local pass2 = {};
 pass2.nyaw = 15
-pass2.dyaw = 0.01 * math.pi/180.0
+pass2.dyaw = 0.05 * math.pi/180.0  --0.01
 pass2.nxs  = 1
 pass2.nys  = 1
 pass2.dx   = 0.01
@@ -224,7 +229,7 @@ libSlam.processL0 = function( lidar_points )
 			print('No good laser correlations! hmax:',hmax)
 			SLAM.x = SLAM.xOdom
 			SLAM.y = SLAM.yOdom
-			if IMUflag == 0 then
+			if not IMUflag then
 			    SLAM.yaw = SLAM.yawOdom
 			else
 			    SLAM.yaw = IMU.yaw
@@ -245,10 +250,6 @@ libSlam.processL0 = function( lidar_points )
 	SLAM.xOdom   = SLAM.x;
 	SLAM.yOdom   = SLAM.y;
 	SLAM.yawOdom = SLAM.yaw;
-  if Benchmark then
-		print(string.format('slam odometry update takes: \t\t%.5f ms', (unix.time()-scan_t)*1000) )
-    scan_t = unix.time();
-  end
 	
 	------------------------------------
 	-- Transform lidar points into the world frame
@@ -350,8 +351,6 @@ libSlam.processL0 = function( lidar_points )
 		print(string.format('map decay takes: \t\t%.5f ms', (unix.time()-t0)*1000) )
 	end
 	
-	
-	-- Finished the decay
 
 	---------------------------
 	-- Shift the map if needed
@@ -379,7 +378,7 @@ libSlam.processL0 = function( lidar_points )
 		slam.set_boundaries( HMAP.xmin, HMAP.ymin, HMAP.xmax, HMAP.ymax )
 		slam.set_boundaries( SMAP.xmin, SMAP.ymin, SMAP.xmax, SMAP.ymax )
 	end
-	-- TODO
+	-- TODO: use meta.t from vcm
 	-- Set the last updated time
 	--LIDAR0.lastTime = LIDAR0.scan.startTime;
 
@@ -409,7 +408,7 @@ libSlam.scanMatchOne = function( Y )
 			SLAM.y = 0;
 			SLAM.xOdom = 0;
 			SLAM.yOdom = 0;
-			if IMUflag == 0 then
+			if not IMUflag then
 			    SLAM.yaw = 0
 			    SLAM.yawOdom = 0
 			else
@@ -424,7 +423,7 @@ libSlam.scanMatchOne = function( Y )
 	--tEncoders = ENCODERS.counts.t;
 	tLidar0 = Sensors.LIDAR0.startTime;
     local wyaw = 0
-    if IMUflag == 1 then
+    if IMUflag then
         wyaw = IMU.dyaw
     end
 	--print('wyaw:',wyaw)
@@ -450,7 +449,7 @@ libSlam.scanMatchOne = function( Y )
 	local midx = math.floor(xCand:size(1)/2)+1
 	local midy = math.floor(yCand:size(1)/2)+1
 	local mida = math.floor(aCand:size(1)/2)+1
-	hits[mida][midx][midy] = 1000
+	hits[mida][midx][midy] = 3000 --1000
 	-- TODO: General Gaussian centered here
 	-------------------------------
 	
@@ -468,6 +467,7 @@ libSlam.scanMatchOne = function( Y )
 	SLAM.y = yCand[iymax]
 	SLAM.yaw = aCand[iamax]
 	--print('Match1', (unix.time()-t_m0)*1000,'ms' )
+	print('ixmax, iymx, iamax', ixmax, iymax, iamax)
 	
 	return hmax
 end
@@ -802,7 +802,6 @@ libSlam.processL1 = function( lidar_points )
 	-- coordinates into the world frame
 	------------------------------------
 	-- Maybe not needed
-	--local pose = scm:get_pose()
 	local T = torch.mm( 
 	libTrig.trans( {SLAM.x, SLAM.y, SLAM.z} ),
 	libTrig.rotz( SLAM.yaw )
@@ -864,11 +863,11 @@ end
 ----------------------------------------------------
 -- Process the IMU data
 ----------------------------------------------------
-libSlam.processIMU = function( imu )
-    --TODO: roll and pitch of body may need to be considered
-	IMU.roll = imu[7]
-	IMU.pitch = imu[8]
-	IMU.yaw = imu[9]
+libSlam.processIMU = function( rpy )
+  -- TODO: use the RPY from webots
+	IMU.roll = rpy[1]
+	IMU.pitch = rpy[2]
+	IMU.yaw = rpy[3]
 	IMU.dyaw = IMU.yaw - IMU.lastYaw
 	IMU.lastYaw = IMU.yaw
 end
@@ -940,8 +939,6 @@ libSlam.processOdometry = function( encoder_lv, encoder_rv)
 	
 end
 ----------------------------------------------------
-
-
 
 
 ----------------------------------------------------

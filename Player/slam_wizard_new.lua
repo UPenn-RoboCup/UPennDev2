@@ -127,7 +127,7 @@ local function setup_lidar( name )
   -- Conver RADIANS to INDEX
   tbl.meta.fov_idx = {0, 0}
   tbl.meta.fov_idx[1] = reading_per_radian
-    * ( tbl.meta.fov[1] - (-135)*deg2rad ) -- + 1 or not?
+    * ( tbl.meta.fov[1] - (-135)*deg2rad ) + 1 
   tbl.meta.fov_idx[1] = math.floor(tbl.meta.fov_idx[1])
   tbl.meta.fov_idx[2] = math.min( tbl.meta.fov_idx[1] + fov_resolution - 1, 1081)
   --print('fov_idx', unpack(tbl.meta.fov_idx))
@@ -160,7 +160,8 @@ local function setup_lidar( name )
   tbl.lidar_ch  = simple_ipc.new_subscriber(name..'_lidar')
 
   -- Find the offset for copying lidar readings into the torch object
-  tbl.offset_idx = math.floor((1081-fov_resolution)/2)
+  tbl.offset_idx = tbl.meta.fov_idx[1] - 1
+  print('LIDAR OFFSET', name, tbl.offset_idx)
   -- For streaming
   tbl.needs_update = true
 
@@ -259,8 +260,6 @@ local function head_callback()
     local scanline = angle_to_scanline( head.meta, angle )
     -- Only if a valid column is returned
     if scanline then
-      print('\nRES:', head.meta.resolution[1],head.meta.resolution[2])
-    	print('SCANLINE', scanline)
       -- Copy lidar readings to the torch object for fast modification
       ranges:tensor( 
         head.all_ranges:select(1, scanline),
@@ -277,15 +276,24 @@ local function head_callback()
       local single = torch.FloatTensor(1, head.all_ranges:size(2)):zero()
       single:copy(head.all_ranges:select(1, scanline))
       lidar0.ranges:copy(single:transpose(1,2))
-      print('head lidar range limit', lidar0.ranges:max(), lidar0.ranges:min())
     end
 	
-	local head_roll, head_pitch, head_yaw = 0, head.scan_angles[scanline], 0 
+	local head_roll, head_yaw = 0, 0 
+	--FIXME: when scan_angle=0, the head_pitch is not zero
+	local head_pitch = head.scan_angles[scanline] + 5*deg2rad
+	--print(string.format('\nHEAD PITCH:\t%.2f', head_pitch*180/math.pi))
 	lidar0:transform( head_roll, head_pitch, head_yaw )
 	------------------
 		
 	-- Scan match
 	local t0_processL0 = unix.time()
+	-- TODO: use head.meta.t for slam
+	-- TODO: use RPY from webots
+	local rpy = wcm.get_robot_rpy() -- Body or wcm??
+	-- Default yaw is 1.57
+	rpy[3] = rpy[3] - math.pi/2
+	--print('RPY:', unpack(rpy))
+	libSlam.processIMU( rpy )
 	libSlam.processL0( lidar0.points_xyz )
 	local t1_processL0 = unix.time()
 	--print( string.format('processL0 took: \t%.2f ms', (t1_processL0-t0_processL0)*1000) )
@@ -364,7 +372,6 @@ local function chest_callback()
       local single = torch.FloatTensor(1, chest.all_ranges:size(2)):zero()
       single:copy(chest.all_ranges:select(1, scanline))
       lidar1.ranges:copy(single:transpose(1,2))
-      print('chest lidar range limit', lidar1.ranges:max(), lidar1.ranges:min())
     end
 	
 	-- Transform the points into the body frame
@@ -410,16 +417,13 @@ if not debugging then
 end
 ------------------
 
-------------------
--- Perform the loop
-local cnt = 0
 
 local slam = {}
 
 function slam.entry()
   -- Specify desired FOV
-  vcm['set_head_lidar_fov']({-135*deg2rad, 135*deg2rad})
-  vcm['set_chest_lidar_fov']({-60*deg2rad, 60*deg2rad})
+  vcm.set_head_lidar_fov({-135*deg2rad, 135*deg2rad})
+  vcm.set_chest_lidar_fov({-60*deg2rad, 60*deg2rad})
 
   -- Set up data structure for each lidar
   chest = setup_lidar('chest')
@@ -433,13 +437,15 @@ function slam.entry()
   end
   if chest.lidar_ch then
     chest.lidar_ch.callback = chest_callback
-    table.insert( wait_channels, chest.lidar_ch )
+    --table.insert( wait_channels, chest.lidar_ch )
   end
 
   -- Set up omap messages sender on UDP
   omap_udp_ch = udp.new_sender( udp_target, udp_port )
   channel_polls = simple_ipc.wait_on_channels( wait_channels )
 end
+
+local cnt = 0
 
 function slam.update()
 	------------------
@@ -452,7 +458,8 @@ function slam.update()
 	local c_map
 	local meta = {}
 	--TODO: get from vcm
-  meta.c = 'jpeg' -- zlib
+  meta.c = 'jpeg'
+  --meta.c = 'zlib'
   if meta.c == 'zlib' then
     c_map = zlib.compress(
       libSlam.SMAP.data:storage():pointer(),
@@ -479,8 +486,7 @@ function slam.update()
   meta.shift = shiftdata
 	local meta = mp.pack(meta)
 	local ret, err = omap_udp_ch:send( meta..c_map )
-
-	print(err or 'Omap data sent!')
+  if err then print(err) end
 	------------------
  
 	------------------
@@ -488,6 +494,12 @@ function slam.update()
 	local npoll = channel_polls:poll(channel_timeout)
 	local t = unix.time()
 	cnt = cnt+1
+  if cnt % 40 == 0 then
+  	print(string.format('\nSLAM pose:%6.2f %6.2f %6.2f', 
+  	  libSlam.SLAM.xOdom, libSlam.SLAM.yOdom, libSlam.SLAM.yawOdom))
+  	print(string.format('Scan Match pose:%6.2f %6.2f %6.2f', 
+  	  libSlam.SLAM.x, libSlam.SLAM.y, libSlam.SLAM.yaw))
+  end
 	------------------
 end
 

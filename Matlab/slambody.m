@@ -134,6 +134,7 @@ function ret=slambody()
     cmap = udp_data(offset+1:end);
     if strncmp(char(data_unpacked.c),'jpeg',3)==1
         thor_omap = djpeg(cmap);
+        thor_omap = fliplr(thor_omap);
     else
         thor_omap = zlibUncompress(cmap);
         thor_omap = thor_omap'; %necessary?

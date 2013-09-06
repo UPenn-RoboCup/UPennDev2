@@ -56,7 +56,7 @@ function state.update()
   Body.set_rarm_command_position( qR_approach )
 
   -- We are done when we are within tolerance
-  if doneR and doneR then return 'done' end
+  if doneL and doneR then return 'done' end
 
 end
 

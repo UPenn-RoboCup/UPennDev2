@@ -15,7 +15,7 @@ local GRIP_ROLL  = -90*Body.DEG_TO_RAD
 local GRIP_YAW   = 0*Body.DEG_TO_RAD
 
 -- Tune our entry point for gripping
-local GRIP_PITCH = -20*Body.DEG_TO_RAD -- 0 -- -60*Body.DEG_TO_RAD
+local GRIP_PITCH = 0 -- -20*Body.DEG_TO_RAD -- 0 -- -60*Body.DEG_TO_RAD
 
 local turnAngle = 0
 local body_pos = {0,0,0}
@@ -114,15 +114,22 @@ function state.update()
     print('Door grip not possible',trArm)
     return'reset'
   end
-
+  
+  -- Safety check for the joints
+  q_desired[2] = 0
+  q_desired[3] = 0
+  
   print('q_desired',vector.new(q_desired)*180/math.pi)
 
   -- Go to the allowable position
   local qL_approach, qR_approach, done
   if door_arm=='right' then
+    -- more safety
+    q_desired[5] = 90*Body.DEG_TO_RAD
     qR_approach, done = util.approachTol( qRArm, q_desired, dqArmMax, dt )
     Body.set_rarm_command_position( qR_approach )
   else
+    q_desired[5] = -90*Body.DEG_TO_RAD
     qL_approach, done = util.approachTol( qLArm, q_desired, dqArmMax, dt )
     Body.set_larm_command_position( qL_approach )
   end

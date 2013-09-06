@@ -1,7 +1,17 @@
 dofile'include.lua'
--- Put unix into the global space
-unix = require'unix'
-util = require'util'
+
+-- Important libraries in the global space
+local libs = {
+  'Body',
+  'unix',
+  'util',
+  'vector'
+}
+
+-- Load the libraries
+for _,lib in ipairs(libs) do _G[lib] = require(lib) end
+
+-- FSM communicationg
 local listing = unix.readdir(HOME..'/Player')
 -- Add all FSM directories that are in Player
 local simple_ipc = require'simple_ipc'
@@ -15,7 +25,8 @@ for _,sm in ipairs(listing) do
     print( util.color(name,'yellow') )
   end
 end
--- Add all shm
+
+-- Shared memory
 local listing = unix.readdir(HOME..'/Memory')
 for _,mem in ipairs(listing) do
   local found, found_end = mem:find'cm'
@@ -25,3 +36,4 @@ for _,mem in ipairs(listing) do
     print( util.color(name,'yellow') )
   end
 end
+

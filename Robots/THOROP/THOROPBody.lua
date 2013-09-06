@@ -630,12 +630,15 @@ end
 ----------------------
 -- More standard api functions
 Body.entry = function()
+  -- TODO: This is not correct, but is it useful?
   -- Make the initial commands
+  --[[
   for i=1,nJoint do Body.set_actuator_command_position(Body.initial_joints[i],i) end
   for i=1,nJoint do Body.set_sensor_position(Body.initial_joints[i],i) end
   -- Zero some shm
   for i=1,nJoint do Body.set_sensor_load(0,i) end
   for i=1,nJoint do Body.set_actuator_torque_enable(0,i) end
+  --]]
 end
 Body.update = function()
 end

@@ -202,7 +202,8 @@ local function entry()
       local pos_val = pos_parser(unpack(pos_status.parameter))
       local idx = motor_to_joint[id]
       local rad = Body.make_joint_radian( idx, pos_val )
-      print( string.format('%d | Joint %d @ %.2f, step: %d',id,idx,rad,pos_val) )
+      print( util.color(Body.jointNames[idx],'yellow'), '\n',string.format('\t%d (%d) @ %.2f, step: %d',
+        idx,id,rad*Body.RAD_TO_DEG,pos_val) )
       Body.set_sensor_position( rad, idx )
       Body.set_actuator_command_position( rad, idx )
       dynamixel.t_last_read = Body.get_time()
@@ -233,6 +234,7 @@ local function entry()
     end
     dynamixel.t_last_write = Body.get_time()
   end
+--  os.exit()
 end
 
 --------------------

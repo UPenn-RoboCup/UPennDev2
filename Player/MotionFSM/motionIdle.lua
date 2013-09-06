@@ -1,8 +1,9 @@
+local state = {}
+state._NAME = ...
+
 local Body = require'Body'
 local timeout = 10.0
 local t_entry, t_update
-local state = {}
-state._NAME = ...
 
 function state.entry()
   print(state._NAME..' Entry' ) 

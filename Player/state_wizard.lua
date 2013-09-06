@@ -64,6 +64,7 @@ for _,my_fsm in pairs(state_machines) do
   status[my_fsm._NAME] = s
   local ret = state_pub_ch:send( mp.pack(status) )
 end
+
 while true do
   local t = Body.get_time()
   local t_diff = t-t_debug

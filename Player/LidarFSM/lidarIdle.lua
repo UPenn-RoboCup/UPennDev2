@@ -1,9 +1,8 @@
-local Body = require'Body'
-
-local t_entry, t_update
-
 local state = {}
-state._NAME = 'lidarIdle'
+state._NAME = ...
+
+local Body = require'Body'
+local t_entry, t_update
 
 function state.entry()
   print(state._NAME..' Entry' ) 

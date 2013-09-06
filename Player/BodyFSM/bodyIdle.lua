@@ -1,7 +1,7 @@
 local state = {}
 state._NAME = ...
 
-local Body   = require'Body'
+local Body = require'Body'
 
 --local timeout = 10.0
 local t_entry, t_update, t_exit

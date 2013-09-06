@@ -33,43 +33,20 @@ local handle, handle_x, handle_z, door_arm
 local stage = 1
 
 local function scrunch()
-    -- Calculate where we need to go  
-  local trArm = vector.new({
-    0, -- Free param
-    K.shoulderOffsetY, -- 6 DOF arm cannot go certain places
-    math.min(-0.15,handle_z), -- Free param
-    GRIP_ROLL, -- Assume a certain orientation
-    GRIP_PITCH, -- Tune this, or update based on the handle position
-    GRIP_YAW -- Assume a certain orientation
-  })
-  -- Side adjustment
-  if door_arm=='right' then
-    -- y direction swapped
-    trArm[2] = -trArm[2]
-    -- roll the other way
-    trArm[4] = -trArm[4]
-  end
-
-  -- Get desired angles from current angles and target transform
-  local q_desired
-  if door_arm=='right' then
-    q_desired = Body.get_inverse_rarm(qRArm,trArm)
-  else
-    q_desired = Body.get_inverse_larm(qLArm,trArm)
-  end
   
-  -- Safety check for the joints
-  -- We must stay in the saggital plane
-  q_desired[2] = 0
-  q_desired[3] = 0
+  local q_desired = vector.new({160,0,0,-140,0,0})*Body.DEG_TO_RAD
 
   -- Go to the allowable position
   local qL_approach, qR_approach, done
   if door_arm=='right' then
+    q_desired[5] = 90*Body.DEG_TO_RAD
     qR_approach, done = util.approachTol( qRArm, q_desired, dqArmMax, dt )
   else
+    q_desired[5] = -90*Body.DEG_TO_RAD
     qL_approach, done = util.approachTol( qLArm, q_desired, dqArmMax, dt )
   end
+
+  print(1,q_desired,vector.new(qL_approach))
 
   -- Increment stage if done
   if done then stage=stage+1 end
@@ -79,9 +56,9 @@ end
 local function punch_out()
     -- Calculate where we need to go  
   local trArm = vector.new({
-    .9*handle_x, -- Free param
+    handle_x, -- Free param
     K.shoulderOffsetY, -- 6 DOF arm cannot go certain places
-    math.min(-0.1,handle_z), -- Free param
+    handle_z-0.05, -- Free param
     GRIP_ROLL, -- Assume a certain orientation
     GRIP_PITCH, -- Tune this, or update based on the handle position
     GRIP_YAW -- Assume a certain orientation
@@ -106,6 +83,9 @@ local function punch_out()
   -- We must stay in the saggital plane
   q_desired[2] = 0
   q_desired[3] = 0
+
+q_desired[1] = q_desired[1] + 20*Body.DEG_TO_RAD
+q_desired[4] = q_desired[4] - 20*Body.DEG_TO_RAD
 
   -- Go to the allowable position
   local qL_approach, qR_approach, done
@@ -243,6 +223,8 @@ function state.entry()
   else
     Body.set_lgrip_percent(.5)
   end
+  
+  stage = 1
 
 end
 

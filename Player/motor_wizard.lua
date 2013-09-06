@@ -248,6 +248,12 @@ local function entry()
       local sync_en = libDynamixel.set_nx_torque_enable(w_ids,1)
       print('Torque enable lidar',w_ids)
       table.insert( dynamixel.instructions, sync_en )
+      
+      local w_ids = vector.slice(joint_to_motor,Body.indexWaist,Body.indexWaist-1+Body.nJointWaist)
+      local sync_en = libDynamixel.set_nx_torque_enable(w_ids,1)
+      print('Torque enable waist',w_ids)
+      table.insert( dynamixel.instructions, sync_en )
+      
     end
     dynamixel.t_last_write = Body.get_time()
   end
@@ -277,6 +283,8 @@ local update_instructions = function()
         table.insert( d.instructions, sync_lidar )
         local sync_head = Body.set_head_command_position_packet()
         table.insert( d.instructions, sync_head )
+        local sync_waist = Body.set_waist_command_position_packet()
+        table.insert( d.instructions, sync_waist )
       end--d.name
     end--#instructions
   end

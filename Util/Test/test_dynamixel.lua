@@ -10,19 +10,23 @@ assert(test_dynamixel)
 
 print('Using',test_dynamixel.ttyname)
 
+--[[
 local found = test_dynamixel:ping_probe()
 for _,m in ipairs(found) do print(string.format('\nFound ID %2d',m)) end
+--]]
 
-os.exit()
+--os.exit()
 
-local status = libDynamixel.get_mx_max_torque(15,test_dynamixel)
-print( libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter)) )
+--local status = libDynamixel.get_mx_max_torque(15,test_dynamixel)
+--print( libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter)) )
 
 
 
---found = {14,18}
+local found = {14,16,18}
 for _,m in ipairs(found) do
   print(string.format('\nFound ID %2d',m))
+  
+  --[[
   local status = libDynamixel.get_nx_status_return_level(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
@@ -52,13 +56,21 @@ for _,m in ipairs(found) do
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
     print(string.format('Firmware: %d',value))
   end
+  --]]
+  
+  local status = libDynamixel.get_mx_position(m,test_dynamixel)
+  if status then 
+    local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
+    print(string.format('Position: %d',value))
+  end
 
 end
 
-
+--[[
 status = libDynamixel.set_nx_torque_enable( 12, 1, test_dynamixel )
 status = libDynamixel.set_nx_led_green( 12, 255 ,test_dynamixel )
 status = libDynamixel.set_nx_command_position( 12, 0, test_dynamixel )
+--]]
 --[[
 if status then
   print('write return',status, value )

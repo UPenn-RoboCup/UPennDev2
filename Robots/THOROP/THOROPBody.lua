@@ -166,7 +166,7 @@ servo.direction = vector.new({
 	1,1, -- Waist
 	-- TODO: Check the gripper
 	1,-1,1, -- left gripper
-	1,-1,1, -- right gripper
+	-1,1,-1, -- right gripper
 	1, -- Lidar pan
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
@@ -200,7 +200,7 @@ servo.min_rad = vector.new({
 	-175,-175, -- Waist
   ----[[
   -20,-20,-20, -- left gripper
-  -10,-10,-10, -- right gripper
+  -20,-20,-20, -- right gripper
   --]]
   --[[
 	0,0,0, -- left gripper
@@ -219,7 +219,7 @@ servo.max_rad = vector.new({
 	175,175, -- Waist
   ----[[
   10,10,10, -- left gripper
-  20,25,25, -- right gripper
+  10,10,10, -- right gripper
   --]]
   --[[
 	90,90,90, -- left gripper
@@ -258,6 +258,7 @@ end
 -- Clamp the radian within the min and max
 -- Used when sending packets and working with actuator commands
 local radian_clamp = function( idx, radian )
+  --print('clamp...',idx,radian,servo.min_rad[idx],servo.max_rad[idx])
   return math.min(math.max(radian, servo.min_rad[idx]), servo.max_rad[idx])
 end
 
@@ -487,7 +488,7 @@ Body.set_lgrip_percent = function( percent )
 	percent = math.min(math.max(percent,0),1)
 	-- Convex combo
 	for idx=indexLGrip,indexLGrip+nJointLGrip-1 do
-		local radian = percent*servo.min_rad[idx] + (1-percent)*servo.max_rad[idx]
+		local radian = (1-percent)*servo.min_rad[idx] + percent*servo.max_rad[idx]
 		jcm.actuatorPtr.command_position[idx] = radian
 	end
 end
@@ -495,7 +496,7 @@ Body.set_rgrip_percent = function( percent )
 	percent = math.min(math.max(percent,0),1)
 	-- Convex combo
 	for idx=indexRGrip,indexRGrip+nJointRGrip-1 do
-		local radian = percent * servo.min_rad[idx] + (1-percent)*servo.max_rad[idx]
+		local radian = (1-percent) * servo.min_rad[idx] + percent*servo.max_rad[idx]
 		jcm.actuatorPtr.command_position[idx] = radian
 	end
 end

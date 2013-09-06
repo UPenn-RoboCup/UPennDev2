@@ -734,15 +734,6 @@ if IS_WEBOTS then
 
 	Body.entry = function()
     
-		for idx, jtag in ipairs(tags.joints) do
-			if jtag>0 then
-				local val = webots.wb_servo_get_position( jtag )
-				local rad = servo.direction[idx] * val - servo.rad_bias[idx]
-				Body.set_sensor_position( rad, idx )
-        Body.set_actuator_command_position( rad, idx )
-			end
-		end
-    
     --[[
     -- Make the initial commands
     for i=1,nJoint do Body.set_actuator_command_position(Body.initial_joints[i],i) end
@@ -826,6 +817,15 @@ if IS_WEBOTS then
 		-- TODO: Should use Yida's IMU filter
 		--imuAngle = {0, 0, 0}
 		--aImuFilter = 1 - math.exp(-tDelta/0.5)
+
+    for idx, jtag in ipairs(tags.joints) do
+      if jtag>0 then
+        local val = webots.wb_servo_get_position( jtag )
+        local rad = servo.direction[idx] * val - servo.rad_bias[idx]
+        Body.set_sensor_position( rad, idx )
+        Body.set_actuator_command_position( rad, idx )
+      end
+    end
 
 	end
 	Body.update = function()

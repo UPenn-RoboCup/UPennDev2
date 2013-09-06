@@ -224,11 +224,11 @@ end
 
 local function sync_write_dword(ids, addr, data)
   local all_data = nil
-	local nid = #ids
-	local len = 4
-	if type(data)=='number' then
-		-- All get the same value
-		all_data = data
+  local nid = #ids
+  local len = 4
+  if type(data)=='number' then
+  	-- All get the same value
+	all_data = data
   else
     assert(nid==#data,'Incongruent ids and data')
 	end
@@ -315,7 +315,7 @@ for k,v in pairs( nx_registers ) do
 		local sz = v[2]
 		
 		-- Construct the instruction (single or sync)
-    local single = type(motor_ids)=='number'
+    	local single = type(motor_ids)=='number'
 		local instruction = nil
 		if single then
 			instruction = nx_single_write[sz](motor_ids, addr, values)
@@ -324,18 +324,18 @@ for k,v in pairs( nx_registers ) do
 			instruction = DP2.sync_write(addr, sz, string.char(unpack(msg)))
 		end
 		
-    if not bus then return instruction end
+    	if not bus then return instruction end
 
-    -- Clear the reading
-    local clr = unix.read(bus.fd)
+	    -- Clear the reading
+	    local clr = unix.read(bus.fd)
 
-    -- Write the instruction to the bus 
-    local ret = unix.write(bus.fd, instruction)
-		
-    -- Grab any status returns
-    if using_status_return and single then
-      return get_status( bus.fd, 1 )
-    end
+	    -- Write the instruction to the bus 
+	    local ret = unix.write(bus.fd, instruction)
+			
+	    -- Grab any status returns
+	    if using_status_return and single then
+	      return get_status( bus.fd, 1 )
+	    end
 		
 	end --function
 end

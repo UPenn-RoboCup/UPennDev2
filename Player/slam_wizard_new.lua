@@ -152,6 +152,7 @@ local function setup_lidar( name )
       tbl.meta.fov_idx[1], tbl.meta.fov_idx[2] )
   end
 
+  -- TODO: We don't need to keep all ranges...?
   tbl.all_ranges = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
   -- TODO: Save the exact actuator angles?
   tbl.scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
@@ -255,6 +256,7 @@ local function head_callback()
     local metadata = mp.unpack(meta)
     -- Get raw data from shared memory
     local ranges = Body.get_head_lidar()
+    -- TODO: You don't need scanlines...
     -- Insert into the correct scanlin
     local angle = metadata.angle
     local scanline = angle_to_scanline( head.meta, angle )
@@ -289,6 +291,7 @@ local function head_callback()
 	local t0_processL0 = unix.time()
 	-- TODO: use head.meta.t for slam
 	-- TODO: use RPY from webots
+	-- TODO: Just add the gyro values to the lidar metadata
 	local rpy = wcm.get_robot_rpy()
 	local gyro = wcm.get_robot_gyro()
 	print('GYRO:', unpack(gyro))

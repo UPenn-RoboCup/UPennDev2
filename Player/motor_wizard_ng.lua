@@ -271,18 +271,27 @@ end -- entry
 local update_instructions = function()
 
   -- Loop through the motors to see which needs to send commands
-  for idx,d in ipairs(idx2chain) do
+  for _,d in ipairs(dynamixels) do
     -- Loop through the registers
     for register,ptr in pairs(jcm.writePtr) do
-      local is_write = ptr[idx]
-      if is_write>0 then
-        -- Add the write instruction to the chain
-        table.insert( d.instructions, sync_rarm )
-      end
-      -- Kill the write once
-      if is_write==1 then ptr[idx]==0 end
-    end
-  end
+      local packet_ids = {}
+      local packet_vals = {}
+      -- Through the vals?
+      for id,val in ipairs(d.nx_on_bus)
+        --joint_to_motor[idx]
+        local idx = motor_to_joint[id]
+        local is_write = ptr[idx]
+        if is_write>0 then
+          -- Add the write instruction to the chain
+          table.insert( packet_ids, id )
+        end
+        -- Kill the write once
+        if is_write==1 then ptr[idx]==0 end
+      end -- for each _on_bus id
+    end -- for each register
+  end -- for each bus
+
+local set_func = libDynamixel['set_nx_'..k]
 
   -- Loop through the dynamixels and add instructions to send
   for _,d in ipairs(dynamixels) do

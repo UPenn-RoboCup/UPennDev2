@@ -297,7 +297,7 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
 		return pointer:table()
 	end
   --------------------------------
-  -- Antropomorphic access to jcm
+  -- Anthropomorphic access to jcm
   -- TODO: Do not use string concatenation to call the get/set methods of Body
   for part,jlist in pairs( parts ) do
   	local a = jlist[1]

@@ -3,8 +3,8 @@ state._NAME = ...
 
 local Body = require'Body'
 local simple_ipc = require'simple_ipc'
-local vector=require'vector'
-local util = require'util'
+--local vector=require'vector'
+--local util = require'util'
 --local timeout = 10.0
 local t_entry, t_update, t_exit
 
@@ -22,9 +22,9 @@ function state.entry()
   t_update = t_entry
 
   arm_ch:send'init'
-  --lidar_ch:send'pan'
-  --head_ch:send'tiltscan'
-  --motion_ch:send'stand'
+  lidar_ch:send'pan'
+  head_ch:send'tiltscan'
+  motion_ch:send'stand'
 end
 
 function state.update()
@@ -35,14 +35,6 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
-  
-  local dqMax = vector.new({10,10})*Body.DEG_TO_RAD
-  local qWaist = vector.new(Body.get_waist_command_position())
-  --print('qWaist',qWaist)
-  local q_desired = {0,0}
-  local qW,done = util.approachTol( qWaist, q_desired, dqMax, dt )
-  --print(unpack(qW))
-  Body.set_waist_command_position(qW)
 
 end
 

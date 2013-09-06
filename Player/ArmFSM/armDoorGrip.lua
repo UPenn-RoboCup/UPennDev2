@@ -162,7 +162,6 @@ local function uppercut()
   end
 
   -- Increment stage if done
-  print('stage 3',done)
   if done then stage=stage+1 end
   return qL_approach, qR_approach
 
@@ -275,7 +274,7 @@ function state.update()
     handle_radius = handle_radius0*(1-ph) + ph*handle_radius1
   --]]
 
-  print('stage',stage,#door_stages)
+  --print('stage',stage,#door_stages)
 
   if stage>#door_stages then
     -- Close the fingers

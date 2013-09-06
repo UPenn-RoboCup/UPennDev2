@@ -15,7 +15,7 @@ local GRIP_ROLL  = -90*Body.DEG_TO_RAD
 local GRIP_YAW   = 0*Body.DEG_TO_RAD
 
 -- Tune our entry point for gripping
-local GRIP_PITCH = 0 -- -60*Body.DEG_TO_RAD
+local GRIP_PITCH = -20*Body.DEG_TO_RAD -- 0 -- -60*Body.DEG_TO_RAD
 
 local turnAngle = 0
 local body_pos = {0,0,0}
@@ -80,6 +80,10 @@ function state.update()
   -- Update the human estimate
   update_human()
 
+  -- Sanity checks
+  if handle_x<.3 then return'reset' end
+  if math.abs(handle_z)>.3 then return'reset' end
+
   -- Calculate where we need to go  
   local trArm = vector.new({
     handle_x, -- Free param
@@ -110,6 +114,8 @@ function state.update()
     print('Door grip not possible',trArm)
     return'reset'
   end
+
+  print('q_desired',vector.new(q_desired)*180/math.pi)
 
   -- Go to the allowable position
   local qL_approach, qR_approach, done

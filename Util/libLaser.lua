@@ -5,7 +5,8 @@
 require 'torch'
 torch.Tensor = torch.DoubleTensor
 local libTrig = require 'libTrig'
---local tutil = require 'tutil'
+local Body = require'Body'
+local K = Body.Kinematics
 
 local libLaser = {}
 
@@ -117,8 +118,8 @@ local function update_head( self, roll, pitch, yaw )
 	self.t_rotation = torch.mm(torch.mm(self.t_roll, self.t_pitch), self.t_yaw)
 	-----------------------
 
-	self.head_height = 0.15
-	self.lidar_offestz = 0.10
+	self.head_height = K.neckOffsetZ
+	self.lidar_offestz = 0.10 --FIXME
 
 	-----------------------
 	-- Height off the chest to the head
@@ -153,6 +154,7 @@ local function update_chest( self, roll, pitch, yaw )
 	-----------------------
 
 	-- Offset of lidar from chest (body center)
+	-- FIXME
 	self.lidar_offsetz = -0.05
 	self.lidar_offsety = 0.05
 	self.lidar_offsetx = 0.04

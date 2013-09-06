@@ -616,6 +616,15 @@ Body.set_head_lidar = function( data )
 	vcm.set_head_lidar_t( Body.get_time() )
 end
 
+Body.set_sensor_rpy = function( rpy )
+  wcm.set_robot_rpy( rpy )
+end
+
+Body.set_sensor_gyro = function( gyro )
+print('GYRO IN BODY:', unpack(gyro))
+  wcm.set_robot_gyro( gyro )
+end
+
 ----------------------
 -- More standard api functions
 Body.entry = function()

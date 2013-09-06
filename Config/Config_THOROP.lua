@@ -104,5 +104,12 @@ Config.km.standup_back  = 'km_Charli_StandupFromBack.lua'
 --------------------------
 -- Temporary Overwrites --
 --------------------------
+if not IS_WEBOTS then
+  print('We are the centaur!')
+  IS_CENTAUR = true
+end
+if IS_CENTAUR then
+  Config.stance.enable_legs = false
+end
 
 return Config

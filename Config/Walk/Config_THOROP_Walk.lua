@@ -145,6 +145,9 @@ walk.walkKickDef={}
 
 local stance={}
 stance.enable_sit = false
+-- centaur has no legs
+stance.enable_legs = false
+stance.delay = 80
 
 stance.hardnessLeg = 1
 stance.bodyHeightSit = 0.75
@@ -153,10 +156,18 @@ stance.bodyHeightDive = 0.65
 
 --bodyInitial bodyTilt, 0 for webots
 stance.bodyTiltStance = 0*math.pi/180
-stance.dpLimitStance = vector.new({.4, .3, .4, .05, .4, .1})*0.6
-stance.dpLimitStance = vector.new({.04, .03, .07, .4, .4, .4})
+-- Legs for stance
+stance.dpLimitStance = vector.new{.04, .03, .07, .4, .4, .4}
+stance.pLLeg = vector.new{-walk.supportX,walk.footY,0, 0,0,0}
+stance.pRLeg = vector.new{-walk.supportX, -walk.footY, 0, 0,0,0}
+stance.pTorso = vector.new{-walk.torsoX, 0, walk.bodyHeight, 
+  0,walk.bodyTilt,0}
+-- Stance waist
+stance.dqWaistLimit = 10*DEG_TO_RAD*vector.ones(2)
+stance.qWaist = vector.zeros(2)
+
+-- Sitting (NOTE: There is no sitting...)
 stance.dpLimitSit = vector.new({.1,.01,.06,.1,.3,.1})*2
-stance.delay = 80 
 
 ------------------------------------
 -- For the arm FSM
@@ -172,10 +183,6 @@ vector.new({90,0,0,0,0,0})*DEG_TO_RAD, -- at sides
 vector.new({90,-90,-90,-90,90,0})*DEG_TO_RAD,  -- scarecrow
 vector.new({0,-90,-90,-90,90,45})*DEG_TO_RAD, -- arms in front
 }
-
--- Finger position limits
-arm.FingerClosed = 0.9
-arm.FingerOpen = 0.1
 
 -- Arm speed limits
 arm.fast_limit = vector.new({30,30,30,45,60,60})*DEG_TO_RAD

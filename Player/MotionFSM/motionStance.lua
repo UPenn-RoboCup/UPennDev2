@@ -5,7 +5,7 @@ require'mcm'
 local Body       = require'Body'
 local K          = Body.Kinematics
 local util       = require'util'
-local vector = require'vector'
+local vector     = require'vector'
 local timeout    = 20.0
 local t_readings = 0.20
 local t_settle   = 0.10
@@ -13,14 +13,11 @@ local t_settle   = 0.10
 -- This is 5.1 and 5.2 compatible
 -- NOTE: http://www.luafaq.org/#T1.37.1
 local t_entry, t_update, t_finish
-local pLLeg, pRLeg, pTorso
+local pLLeg_desired, pRLeg_desired, pTorso_desired, pTorso
+-- Desired Waist position and limits
+local qWaist_desired, dqWaistLimit
 local started = false
 
--- Grab the desired final torso and feet positions for stance
-local pTorsoTarget = vector.new({-Config.walk.torsoX, 0, Config.walk.bodyHeight, 
-  0,Config.walk.bodyTilt,0})
-local pLLeg = vector.new({-Config.walk.supportX, Config.walk.footY, 0, 0,0,0})
-local pRLeg = vector.new({-Config.walk.supportX, -Config.walk.footY, 0, 0,0,0})
 local dpMaxDelta = Config.stance.dpLimitStance
 
 function state.entry()
@@ -32,19 +29,20 @@ function state.entry()
   t_update = t_entry
   t_finish = t
   
-  -- Instantly put the head and waist into position
-  -- TODO: replace hardness
-  -- TODO: abstract the number of waist joints
-  --Body.set_head_hardness(.5)
-  --Body.set_waist_hardness(1)
-  Body.set_head_command_position({0,0})
-  Body.set_waist_command_position({0,0})
-  
   -- TODO: Set walk.active to false, using mcm
-  
   -- TODO: Enqueue joint angle readings
   
   started = false
+
+  -- Set the default waist
+  qWaist_desired = Config.stance.qWaist
+  dqWaistLimit   = Config.stance.dqWaistLimit
+
+  -- Set the desired legs
+  pLLeg_desired = Config.stance.pLLeg
+  pRLeg_desired = Config.stance.pRLeg
+  -- Desired torso
+  pTorso_desired = Config.stance.pTorso
 
 end
 
@@ -61,7 +59,13 @@ function state.update()
   
   -- Wait for the joint angle readings to return from every motor
   if t-t_entry<t_readings then return end
-  
+
+  -- Zero the waist
+  local qWaist = Body.get_waist_command_position()
+  local qWaist_approach,doneWaist = 
+    util.approachTol( qWaist, qWaist_desired, dqWaistLimit, dt )
+  Body.set_waist_command_position(qWaist_approach)
+
   -- Acquire the joint positions of our legs
   if not started then
     -- Joint positions here come from the sensors!
@@ -70,31 +74,36 @@ function state.update()
     Body.set_lleg_command_position(qLLeg)
     Body.set_rleg_command_position(qRLeg)
     
-    -- Solve for the current torso position
+    -- How far away from the torso are the legs currently?
     local dpLLeg = K.torso_lleg(qLLeg)
     local dpRLeg = K.torso_rleg(qRLeg)
-    local pTorsoL = pLLeg+dpLLeg
-    local pTorsoR = pRLeg+dpRLeg
+    -- 
+    local pTorsoL = pLLeg_desired + dpLLeg
+    local pTorsoR = pRLeg_desired + dpRLeg
     pTorso = (pTorsoL+pTorsoR)/2
     -- TODO: Hardness
     --Body.set_lleg_hardness(hardnessLeg)
     --Body.set_rleg_hardness(hardnessLeg)
     started = true
   end
-  
+
   -- Ensure that we do not move motors too quickly
   local pTorso_approach, doneTorso = 
-    util.approachTol( pTorso, pTorsoTarget, dpMaxDelta, dt )
-
+  util.approachTol( pTorso, pTorso_desired, dpMaxDelta, dt )
   -- If not yet within tolerance, then update the last known finish time
   if not doneTorso then t_finish = t end
   
   -- Command the body
-  local q = Kinematics.inverse_legs( pLLeg, pRLeg, pTorso_approach, 0 )
-  Body.set_lleg_command_position( q )
-  
-  -- Once in tolerance, let the robot settle
-  if t-t_finish>t_settle then return'done' end
+  -- TODO: Should we approach these positions?
+  local qLegs = Kinematics.inverse_legs( pLLeg_desired, pRLeg_desired, pTorso_approach, 0 )
+
+  if Config.stance.enable_legs then
+    Body.set_lleg_command_position( qLegs )  
+    -- Once in tolerance, let the robot settle
+    if t-t_finish>t_settle then return'done' end
+  else
+    return doneWaist
+  end
   
 end
 

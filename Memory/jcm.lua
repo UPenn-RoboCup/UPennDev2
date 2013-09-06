@@ -30,9 +30,15 @@ shared_data.sensor.rpy           = vector.zeros( 3 )
 shared_data.sensor.battery       = vector.zeros( 1 )
 ------------------------
 -- Request reads from some motors
+-- 0: do not read
+-- 1: read once
+-- 2: read continuously
 shared_data.read = {}
+-- Timestamps of the last read
+shared_data.tread = {}
 for k,v in pairs(shared_data.sensor) do
   shared_data.read[k] = v
+  shared_data.tread[k] = v
 end
 
 ------------------------
@@ -49,9 +55,14 @@ shared_data.actuator.hardness         = vector.zeros( nJoints )
 
 ------------------------
 -- Request writes to some motors
+-- 0: do not write
+-- 1: write once
+-- 2: write continuously
 shared_data.write = {}
+shared_data.twrite = {}
 for k,v in pairs(shared_data.actuator) do
   shared_data.write[k] = v
+  shared_data.twrite[k] = v
 end
 
 ------------------------

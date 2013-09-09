@@ -235,8 +235,8 @@ local function entry()
       local rad = Body.make_joint_radian( idx, pos_val )
 
       -- Sync shared memory
-      Body.set_sensor_position( rad, idx )
-      Body.set_actuator_command_position( rad, idx )
+      jcm.sensorPtr.position[idx] = rad
+      jcm.actuatorPtr.command_position[idx] = rad
 
       -- Populate the lookup table from id to chain
       idx_to_dynamixel[idx] = dynamixel
@@ -264,8 +264,8 @@ local function entry()
       local rad = Body.make_joint_radian( idx, pos_val )
 
       -- Sync shared memory
-      Body.set_sensor_position( rad, idx )
-      Body.set_actuator_command_position( rad, idx )
+      jcm.sensorPtr.position[idx] = rad
+      jcm.actuatorPtr.command_position[idx] = rad
 
       -- Populate the tables
       idx_to_dynamixel[idx] = dynamixel
@@ -301,7 +301,7 @@ local update_commands = function()
           table.insert( idx_to_ids[idx], joint_to_motor[idx] )
           if register=='command_position' then
             -- Convert from radians to steps for set command_position
-            table.insert( idx_to_vals[idx], make_joint_step(idx,val_ptr[idx]) )
+            table.insert( idx_to_vals[idx], Body.make_joint_step(idx,val_ptr[idx]) )
           else
             table.insert( idx_to_vals[idx], val_ptr[idx] )
           end

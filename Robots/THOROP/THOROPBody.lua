@@ -265,28 +265,11 @@ Body.set_syncread_enable = function()
 end
 
 ----------------------
--- Body sensor commands
+-- Body sensor positions
 -- jcm should be the API compliance test
 for sensor, pointer in pairs(jcm.sensorPtr) do
-	Body['set_sensor_'..sensor] = function(val,idx)
-    if type(val)=='number' then
-      if type(idx)=='number' then
-        pointer[idx] = val
-      else
-        for _,i in ipairs(idx) do pointer[i] = val end
-      end
-    else
-      if not idx then
-        for i,v in ipairs(val) do pointer[i] = v end
-      elseif type(idx)=='number' then
-        for i,v in ipairs(val) do pointer[idx+i-1] = v end
-      else
-        -- ji: joint index. vi: value index
-        for vi,ji in ipairs(idx) do pointer[ji] = val[vi] end
-      end
-    end
-	end
-	Body['get_sensor_'..sensor] = function(idx,idx2)
+  local get_key = 'get_sensor_'..sensor
+	local get_func = function(idx,idx2)
 		if idx then
       -- Return the values from idx to idx2
       if idx2 then return pointer:table(idx,idx2) end 
@@ -296,6 +279,7 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
     -- TODO: return as a table or carray?
 		return pointer:table()
 	end
+  Body[get_key] = get_func
   --------------------------------
   -- Anthropomorphic access to jcm
   -- TODO: Do not use string concatenation to call the get/set methods of Body
@@ -303,43 +287,83 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
   	local a = jlist[1]
   	local b = jlist[#jlist]
   	Body['get_'..part:lower()..'_'..sensor] = function(idx)
-  		if idx then return Body['get_sensor_'..sensor](jlist[idx]) end
-  		return Body['get_sensor_'..sensor](a,b)
+  		if idx then return get_func(jlist[idx]) end
+  		return get_func(a,b)
   	end -- Get
-  	Body['set_'..part:lower()..'_'..sensor] = function(val,idx)
-  		if idx then return Body['set_sensor_'..sensor](val,jlist[idx]) end
-      -- Ensure that the parameters are proper
-      assert(type(val)=='number' or #val==b-a+1 )
-  		return Body['set_sensor_'..sensor](val,a,b)
-  	end -- Set
   end -- anthropomorphic
   --------------------------------
+end
+
+----------------------
+-- Body sensor read requests
+-- jcm should be the API compliance test
+for sensor, pointer in pairs(jcm.readPtr) do
+	Body['request_'..sensor] = function(idx)
+    if type(idx)=='number' then pointer[idx] = 1
+    else for _,i in ipairs(idx) do pointer[i] = 1 end
+    end
+	end
+  ---------------------
+  -- Anthropomorphic --
+  for part,jlist in pairs( parts ) do
+  	local a = jlist[1]
+  	local b = jlist[#jlist]
+    local read_key = 'read_'..sensor
+  	Body['request_'..part:lower()..'_'..sensor] = function(idx)
+  		if idx then return Body[read_key](jlist[idx]) end
+  		return Body[read_key](jlist)
+  	end -- Set
+  end -- anthropomorphic
+  ----------------------
 end
 
 ----------------------
 -- Body actuator commands
 -- jcm should be the API compliance test
 for actuator, pointer in pairs(jcm.actuatorPtr) do
-	Body['set_actuator_'..actuator] = function(val,idx)
+  local get_key = 'get_actuator_'..actuator
+  local set_key = 'set_actuator_'..actuator
+  local write_ptr = jcm.writePtr[actuator]
+  
+	 local set_func = function(val,idx)
     if type(val)=='number' then
       if type(idx)=='number' then
-        pointer[idx] = val
+        pointer[idx]   = val
+        write_ptr[idx] = 1
+        return
       else
-        for _,i in ipairs(idx) do pointer[i] = val end
-      end
-    else
-      if not idx then
-        for i,v in ipairs(val) do pointer[i] = v end
-      elseif type(idx)=='number' then
-        for i,v in ipairs(val) do pointer[idx+i-1] = v end
-      else
-        -- ji: joint index. vi: value index
-        for vi,ji in ipairs(idx) do pointer[ji] = val[vi] end
+        for _,i in ipairs(idx) do
+          pointer[i]   = val
+          write_ptr[i] = 1
+        end
+        return
       end
     end
-    return val, idx
+    if not idx then
+      for i,v in ipairs(val) do
+        pointer[i]   = v
+        write_ptr[i] = 1
+      end
+      return
+    end
+    if type(idx)=='number' then
+      for i,v in ipairs(val) do
+        local offset = idx+i-1
+        pointer[offset]   = v
+        write_ptr[offset] = 1
+      end
+      return
+    else
+      -- ji: joint index. vi: value index
+      for vi,ji in ipairs(idx) do
+        pointer[ji]   = val[vi]
+        write_ptr[ji] = 1
+      end
+      return
+    end
 	end
-	Body['get_actuator_'..actuator] = function(idx,idx2)
+  Body[set_key] = set_func
+	local get_func = function(idx,idx2)
 		if idx then
       -- Return the values from idx to idx2
       if idx2 then return pointer:table(idx,idx2) end 
@@ -349,6 +373,7 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
     -- TODO: return as a table or carray?
 		return pointer:table()
 	end
+  Body[get_key] = get_func
   --------------------------------
   -- Anthropomorphic access to jcm
   -- TODO: Do not use string concatenation to call the get/set methods of Body
@@ -356,34 +381,37 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
   	local a = jlist[1]
   	local b = jlist[#jlist]
   	Body['get_'..part:lower()..'_'..actuator] = function(idx)
-  		if idx then return Body['get_actuator_'..actuator](jlist[idx]) end
-  		return Body['get_actuator_'..actuator](a,b)
+  		if idx then return get_func(jlist[idx]) end
+  		return get_func(a,b)
   	end -- Get
-  	Body['set_'..part:lower()..'_'..actuator] = function(val,idx)
-  		if idx then
-        -- idx is only allowed to be a number
-        --assert(type(idx)=='number','body limb idx must be a number!')
-        if type(idx)~='number' then return end
-        if actuator=='command_position' then val = radian_clamp(jlist[idx],val) end
-        return Body['set_actuator_'..actuator](val,jlist[idx])
+  	Body['set_'..part:lower()..'_'..actuator] = function(val,i)
+  		if type(i)=='number' then
+        local idx = jlist[i]
+        if actuator=='command_position' then val = radian_clamp(idx,val) end
+        set_func(val,idx)
+        return val
       end
       -- With no idx, val is number or table
       -- Make sure to clamp this value
       -- If val is a number to set all limb joints
       if type(val)=='number' then
-        local values = {}
+        local values
         -- clamp just for command position!
         if actuator=='command_position' then
+          values = {}
           for i,idx in ipairs(jlist) do values[i]=radian_clamp(idx,val) end
+        else
+          values = val*vector.ones(#jlist)
         end
-        return Body['set_actuator_'..actuator](values,a)
+        set_func(values,a)
+        return values
       end
       -- If val is a set of values for each limb joints
-      --assert(#val==b-a+1,'Must set the exact number of limb joints!')
       if actuator=='command_position' then
         for i,idx in ipairs(jlist) do val[i]=radian_clamp(idx,val[i]) end
       end
-  		return Body['set_actuator_'..actuator](val,a)
+  		set_func(val,a)
+      return val
   	end -- Set
   end -- anthropomorphic
   --------------------------------

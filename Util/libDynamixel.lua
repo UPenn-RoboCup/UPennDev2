@@ -3,6 +3,8 @@
 -- (c) 2013 Daniel D. Lee
 -- Support: http://support.robotis.com/en/product/dynamixel_pro/communication/instruction_status_packet.htm
 
+local util = require'util'
+
 local libDynamixel = {}
 local DP1 = require'DynamixelPacket1' -- 1.0 protocol
 local DP2 = require'DynamixelPacket2' -- 2.0 protocol
@@ -290,9 +292,8 @@ local function get_status( fd, npkt, protocol, timeout )
   while unix.time()-t0<timeout do
     local s = unix.read(fd)
     if s then
-      status_str = status_str..s
-      local pkts = DP.input(status_str)
-      --print('Status sz',#status_str)
+      local pkts,status_str = DP.input(status_str..s)
+      --print('Status sz',#status_str,#pkts)
       if pkts then
         for p,pkt in ipairs(pkts) do
           local status = DP.parse_status_packet( pkt )
@@ -515,9 +516,8 @@ libDynamixel.send_ping = function( id, protocol, bus, twait )
   end
   if not bus then return instruction end
 
-  unix.write(bus.fd, instruction)
+  local ret    = unix.write(bus.fd, instruction)
   local status = get_status( bus.fd, 1, protocol, twait )
-  --print('st',status)
   if status then return status end
 end
 
@@ -597,8 +597,8 @@ function libDynamixel.new_bus( ttyname, ttybaud )
   
   -------------------
   -- Read/write properties
-  obj.t_last_read = 0
-  obj.t_last_command = 0
+  obj.t_read = 0
+  obj.t_command = 0
   obj.commands = {}
   obj.requests = {}
   obj.is_syncing = true
@@ -648,7 +648,7 @@ libDynamixel.service = function( dynamixels, main )
         local did_command = false
         for _,command in ipairs(dynamixel.commands) do
           local cmd_ret = unix.write( fd, command )
-          did_write = true
+          did_command = true
           assert(#command==cmd_ret,
             string.format('BAD INST WRITE: %s',dynamixel.name))
           -- What if there was data on the bus... that is in the non-sync read
@@ -656,7 +656,7 @@ libDynamixel.service = function( dynamixels, main )
         end -- If sent command
         dynamixel.commands = {}
         if did_command then
-          dynamixel.t_last_command = t
+          dynamixel.t_command = t
           has_data, t = coroutine.yield()
         end
 
@@ -706,7 +706,7 @@ libDynamixel.service = function( dynamixels, main )
               values[status.id] = value
             end
             -- Remember the read time
-            dynamixel.t_last_read = t
+            dynamixel.t_read = t
             -- Yield the table of motor values and the register name
             has_data, t = coroutine.yield( values, register )
           end
@@ -726,19 +726,22 @@ libDynamixel.service = function( dynamixels, main )
   -- While servicing the dynamixel fds
   while #dynamixel_fds>0 do
     --------------------
-    -- Perform Select on all dynamixels
+    -- Perform select on all dynamixels
     local status, ready = unix.select( dynamixel_fds, WRITE_TIMEOUT )
+    print('status',status,#ready)
+    assert(status==#ready,string.format('Possibly unplugged... (%d,%d)',status,#ready))
+    
     local t = unix.time()
     --------------------
     -- Loop through the dynamixel chains
     for i_fd,is_ready in pairs(ready) do
       -- Grab the dynamixel chain
       local who_to_service = fd_to_dynamixel[i_fd]
-      --print('checking',who_to_service.name,i_fd,is_ready,who_to_service.is_syncing)
+      --print('checking', who_to_service.name, i_fd, is_ready, who_to_service.is_reading)
       --print()
       -- Check if the Dynamixel has information available
-      if (dynamixel.is_reading and not is_ready and t<who_to_service.timeout)
-        or (not dynamixel.is_reading and #dynamixel.commands==0) then
+      if (who_to_service.is_reading and not is_ready and t<who_to_service.timeout)
+        or (not who_to_service.is_reading and #who_to_service.commands==0) then
         -- do not resume, since we are waiting on the data
         -- We also have nothing to send...
       else

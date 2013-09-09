@@ -41,8 +41,7 @@ static int lua_dynamixel_error(lua_State *L) {
 
 static int lua_pushpacket(lua_State *L, DynamixelPacket *p) {
   if (p != NULL) {
-    int nlen = p->length + 4;
-    lua_pushlstring(L, (char *)p, nlen);
+    lua_pushlstring(L, (char *)p, p->length + 4);
     return 1;
   }
   return 0;
@@ -123,8 +122,8 @@ static int lua_dynamixel_input(lua_State *L) {
   int nPacket = luaL_optinteger(L, 2, 1)-1;
 
   DynamixelPacket pkt;
-  int ret;
-  int strindex = 0;
+  int ret = 0;
+  int offset = 0;
   /* Packet Table */
   lua_newtable(L);
   for (int i = 0; i < nstr; i++) {
@@ -133,13 +132,14 @@ static int lua_dynamixel_input(lua_State *L) {
     if (nPacket < 0){
       /* Packet found */
       ret += lua_pushpacket(L, &pkt);
+      /* Index this in the table */
       lua_rawseti(L, -2, ret);
-      strindex = i;
+      offset = i+1;
     }
   } /* for */
 
   /* Push the leftover string */
-  lua_pushlstring(L, str+strindex+1, nstr-strindex );
+  lua_pushlstring(L, str+offset, nstr-offset );
   return 2;
 }
 

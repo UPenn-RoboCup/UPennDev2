@@ -650,7 +650,6 @@ Body.set_sensor_rpy = function( rpy )
 end
 
 Body.set_sensor_gyro = function( gyro )
-print('GYRO IN BODY:', unpack(gyro))
   wcm.set_robot_gyro( gyro )
 end
 

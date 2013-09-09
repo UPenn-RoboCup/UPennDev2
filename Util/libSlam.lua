@@ -467,7 +467,7 @@ libSlam.scanMatchOne = function( Y )
 	SLAM.y = yCand[iymax]
 	SLAM.yaw = aCand[iamax]
 	--print('Match1', (unix.time()-t_m0)*1000,'ms' )
-	print('ixmax, iymx, iamax', ixmax, iymax, iamax)
+	--print('ixmax, iymx, iamax', ixmax, iymax, iamax)
 	
 	return hmax
 end
@@ -875,8 +875,8 @@ libSlam.processIMU = function( rpy, yawdot, t )
 	IMU.yaw = rpy[3]
 	IMU.dyaw = IMU.yaw - IMU.lastYaw
 	dt = t - t_pre
-	--TODO: gyro readings are always zero
-	IMU.yawdot = IMU.dyaw/dt
+	IMU.yawdot = yawdot
+	--print('yawdot',yawdot)
 	t_pre = t
 	IMU.lastYaw = IMU.yaw
 end

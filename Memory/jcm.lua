@@ -20,14 +20,6 @@ shared_data.sensor.position      = vector.zeros( nJoints )
 shared_data.sensor.velocity      = vector.zeros( nJoints )
 -- Load of joints is measured in percentage
 shared_data.sensor.load          = vector.zeros( nJoints )
--- Raw inertial readings
-shared_data.sensor.accelerometer = vector.zeros( 3 )
-shared_data.sensor.gyro          = vector.zeros( 3 )
-shared_data.sensor.compass       = vector.zeros( 3 )
--- Filtered Roll/Pitch/Yaw
-shared_data.sensor.rpy           = vector.zeros( 3 )
--- Battery level (in volts)
-shared_data.sensor.battery       = vector.zeros( 1 )
 ------------------------
 -- Request reads from some motors
 -- 0: do not read
@@ -40,6 +32,17 @@ for k,v in pairs(shared_data.sensor) do
   shared_data.read[k] = v
   shared_data.tread[k] = v
 end
+
+-- These should not be tied in with the motor readings,
+-- so they come after the read/tread setup
+-- Raw inertial readings
+shared_data.sensor.accelerometer = vector.zeros( 3 )
+shared_data.sensor.gyro          = vector.zeros( 3 )
+shared_data.sensor.compass       = vector.zeros( 3 )
+-- Filtered Roll/Pitch/Yaw
+shared_data.sensor.rpy           = vector.zeros( 3 )
+-- Battery level (in volts)
+shared_data.sensor.battery       = vector.zeros( 1 )
 
 ------------------------
 --  Write to the motors/other actuators

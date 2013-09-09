@@ -426,6 +426,7 @@ for k,v in pairs(libDynamixel.nx_registers) do
 end
   
 -- MX packet generators
+-- TODO: Just set shared memory values accordingly
 -- TODO: make general somehow
 -- TODO: Use anthropomorphic get/set functions
 for k,v in pairs(libDynamixel.mx_registers) do

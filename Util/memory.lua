@@ -47,7 +47,7 @@ function memory.init_shm_segment(name, shared, shsize, tid, pid)
             else
               for i=1,#bytes do
                 --Testing NaN
-                if not (bytes[i]>0) then 
+                if not bytes[i]>0 then 
                   print("NaN Detected at string!") return
                 end
               end

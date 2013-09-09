@@ -29,10 +29,13 @@ local status_color = {
   ['dead'] = 'red',
 }
 -- Lookup table for id to chain
-local idx2chain = {}
+local idx_to_dynamixel = {}
+local idx_to_didx = {}
+local idx_to_ids = {}
+local idx_to_vals = {}
 
 --[[
--- TODO: Battery
+-- TODO: Battery (every second, update? via main routine...)
 local function update_battery()
   nx_vol_now = Dynamixel:get_nx_voltage( nx_ids )
   --Average voltage reading from servos
@@ -50,7 +53,7 @@ end
 -- TODO: eliminate jcm, and use Body calls
 -- TODO: that might be bad for performance, though
 local update_read = function(self,data,register)
-
+  local t = Body.get_time()
   -- Update the shared memory
   for k,v in pairs(data) do
     -- k is the motor id
@@ -68,7 +71,7 @@ local update_read = function(self,data,register)
       -- Kill the read once flag
       if jcm.readPtr.position[idx]==1 then jcm.readPtr.position[idx]=0 end
       -- Update the timestamp
-      jcm.treadPtr.position[idx] = Body.get_time()
+      jcm.treadPtr.position[idx] = t
     elseif register=='load' then
       if v>=1024 then v = v - 1024 end
       local load_ratio = v/10.24
@@ -76,7 +79,9 @@ local update_read = function(self,data,register)
       -- Kill the read once flag
       if jcm.readPtr.load[idx]==1 then jcm.readPtr.load[idx]=0 end
       -- Update the timestamp
-      jcm.treadPtr.load[idx] = Body.get_time()
+      jcm.treadPtr.load[idx] = t
+    elseif register=='battery' then
+      -- Somehow make an estimate
     end
 
     -- Update the read timestamps in shared memory
@@ -92,7 +97,7 @@ local update_read = function(self,data,register)
     if ptr[idx]==1 then ptr[idx]=0 end
     -- Update the timestamp
     ptr = jcm.treadPtr[register]
-    ptr[idx] = Body.get_time()
+    ptr[idx] = t
 
   end -- loop through data
 
@@ -144,7 +149,7 @@ end -- if spine chain
 function shutdown()
   print'Shutting down the Dynamixel chains...'
   
-  for i,d in ipairs(dynamixels) do
+  for d_id,d in ipairs(dynamixels) do
     -- Torque off motors
     libDynamixel.set_mx_torque_enable( d.mx_on_bus, 0, d )
     libDynamixel.set_nx_torque_enable( d.nx_on_bus, 0, d )
@@ -167,8 +172,14 @@ local function entry()
 
   Body.entry()
 
-  for _,dynamixel in ipairs(dynamixels) do
-    
+  for didx,dynamixel in ipairs(dynamixels) do
+    -- Some temporay variables
+    dynamixel.packet_ids  = {}
+    dynamixel.packet_vals = {}
+    dynamixel.mx_packet_ids  = {}
+    dynamixel.mx_packet_vals = {}
+
+
     if not dynamixel.ids_on_bus then
       -- Check which ids are on this chain
       io.write('\n')
@@ -211,7 +222,7 @@ local function entry()
     --local status = libDynamixel.set_nx_status_return_level(m,1,test_dynamixel)
     
     -- Perform a read to instantiate the motor commands and sensor positions
-    for _,id in ipairs(dynamixel.nx_on_bus) do
+    for d_id,id in ipairs(dynamixel.nx_on_bus) do
 
       -- Read the NX motor positions
       local idx = motor_to_joint[id]
@@ -229,7 +240,10 @@ local function entry()
       Body.set_actuator_command_position( rad, idx )
 
       -- Populate the lookup table from id to chain
-      idx2chain[idx] = dynamixel
+      idx_to_dynamixel[idx] = dynamixel
+      idx_to_didx[idx] = didx
+      idx_to_ids[idx]  = packet_ids
+      idx_to_vals[idx] = packet_vals
       
       -- Debug output
       print( util.color(Body.jointNames[idx],'yellow'), '\n',
@@ -254,8 +268,11 @@ local function entry()
       Body.set_sensor_position( rad, idx )
       Body.set_actuator_command_position( rad, idx )
 
-      -- Populate the lookup table from id to chain
-      idx2chain[idx] = dynamixel
+      -- Populate the tables
+      idx_to_dynamixel[idx] = dynamixel
+      idx_to_didx[idx] = didx
+      idx_to_ids[idx]  = mx_packet_ids
+      idx_to_vals[idx] = mx_packet_vals
       
       -- Debug output
       print( util.color(Body.jointNames[idx],'yellow'), '\n',
@@ -267,83 +284,103 @@ end -- entry
 
 --------------------
 -- Update the commands to write to the robot
--- TODO: What if too many instructions?
-local update_instructions = function()
-
-  -- Loop through the motors to see which needs to send commands
-  for _,d in ipairs(dynamixels) do
-    -- Loop through the registers
-    for register,ptr in pairs(jcm.writePtr) do
-      local packet_ids = {}
-      local packet_vals = {}
-      -- Through the vals?
-      for id,val in ipairs(d.nx_on_bus)
-        --joint_to_motor[idx]
-        local idx = motor_to_joint[id]
-        local is_write = ptr[idx]
-        if is_write>0 then
-          -- Add the write instruction to the chain
-          table.insert( packet_ids, id )
+-- TODO: What if too many commands?
+local update_commands = function()
+  -- Loop through the registers
+  for register,write_ptr in pairs(jcm.writePtr) do
+    local val_ptr = jcm.actuatorPtr[register]
+    -- Reset the tmp variable
+    for _,d in ipairs(dynamixels) do
+      d.packet_ids  = {}
+      d.packet_vals = {}
+      d.mx_packet_ids  = {}
+      d.mx_packet_vals = {}
+    end
+    local set_func    = libDynamixel['set_nx_'..register]
+    local mx_set_func = libDynamixel['set_mx_'..register]
+    -- go through each value
+    for idx,is_write in ipairs(write_ptr) do
+      if is_write>0 then
+        -- Add the write instruction to the chain
+        local pkt_ids = idx_to_ids[idx]
+        if pkt_ids then
+          table.insert( pkt_ids, joint_to_motor[idx] )
+          if register=='command_position' then
+            -- Convert from radians to steps for set command_position
+            table.insert( idx_to_vals[idx], make_joint_step(idx,val_ptr[idx]) )
+          else
+            table.insert( idx_to_vals[idx], val_ptr[idx] )
+          end
         end
         -- Kill the write once
-        if is_write==1 then ptr[idx]==0 end
-      end -- for each _on_bus id
-    end -- for each register
-  end -- for each bus
-
-local set_func = libDynamixel['set_nx_'..k]
-
-  -- Loop through the dynamixels and add instructions to send
-  for _,d in ipairs(dynamixels) do
-    -- Do not overpopulate (just yet)
-    if #d.instructions==0 then
-      if d.name=='RArm' then
-        local sync_rarm = Body.set_rarm_command_position_packet()
-        table.insert( d.instructions, sync_rarm )
-        -- Form the hand packets
-        local sync_rgrip = Body.set_rgrip_command_position_packet()
-        table.insert( d.instructions, sync_rgrip )
-      elseif d.name=='LArm' then
-        local sync_larm = Body.set_larm_command_position_packet()
-        table.insert( d.instructions, sync_larm )
-        local sync_lgrip = Body.set_lgrip_command_position_packet()
-        table.insert( d.instructions, sync_lgrip )
-      elseif d.name=='Spine' then
-        local sync_lidar = Body.set_lidar_command_position_packet()
-        table.insert( d.instructions, sync_lidar )
-        local sync_head = Body.set_head_command_position_packet()
-        table.insert( d.instructions, sync_head )
-        local sync_waist = Body.set_waist_command_position_packet()
-        table.insert( d.instructions, sync_waist )
-      end--d.name
-    end--#instructions
-  end
+        if is_write==1 then write_ptr[idx]=0 end
+      end
+    end -- for each enable
+    -- Make the request for this register on each chain
+    for _,d in ipairs(dynamixels) do
+      local nids = #d.packet_ids
+      if #d.packet_ids>0 then
+        -- Make the NX request
+        table.insert( d.commands, 
+          set_func(d.packet_ids,d.packet_vals) )
+      end
+      if #d.mx_packet_ids>0 then
+        -- Make the MX request
+        table.insert( d.commands, 
+          mx_set_func(d.mx_packet_ids,d.mx_packet_vals) )
+      end
+    end -- for making commands for the chains
+  end -- for each register
 end
 
 -- Set commands for next sync read    
 -- Update the read every so often
 local update_requests = function()
-  local t = Body.get_time()
-  -- Loop through the dynamixels and add read requests
-  for _,d in ipairs(dynamixels) do
-    -- Do not overpopulate (just yet)
-    if #d.requests==0 and t-d.t_last_read>.5 then
-      -- NX reading
-      if #d.nx_on_bus>0 then
-        local inst_nx = libDynamixel.get_nx_position( d.nx_on_bus )
-        --table.insert( d.requests, {inst_nx,'position'} )
-      end
-      -- MX readings
-      if #d.mx_on_bus>0 then
-        for _,idx in ipairs(d.mx_on_bus) do
-          local inst_mx = libDynamixel.get_mx_position( d.mx_on_bus )
-          --table.insert( d.requests, {inst_mx,'position'} )
-          --local inst_mx = libDynamixel.get_mx_load( idx )
-          --table.insert( d.requests, {inst_mx,'load'} )
+  -- Loop through the registers
+  for register,read_ptr in pairs(jcm.readPtr) do
+    -- Reset the tmp variable
+    for _,d in ipairs(dynamixels) do
+      d.packet_ids  = {}
+      d.mx_packet_ids = {}
+    end
+    local get_func = libDynamixel['get_nx_'..register]
+    local mx_get_func = libDynamixel['get_mx_'..register]
+    for idx,is_read in ipairs(read_ptr) do
+      -- Check if we are to read each of the values
+      if is_read>0 then
+        -- Add the read instruction to the chain
+        local pkt_ids = idx_to_ids[idx]
+        if pkt_ids then
+          table.insert( pkt_ids, joint_to_motor[idx] )
         end
-      end -- if mx
-    end --req==0
-  end -- for d
+        -- Kill the read once
+        if is_read==1 then read_ptr[idx]=0 end
+      end
+    end -- for each enable
+    -- Make the request for this register on each chain
+    for _,d in ipairs(dynamixels) do
+      local nids    = #d.packet_ids
+      local mx_nids = #d.mx_packet_ids
+      if nids>0 then
+        -- Make the request
+        local req = {
+          nids = nids,
+          reg  = register,
+          inst = get_func(d.packet_ids)
+        }
+        table.insert( d.requests, req )
+      end
+      if mx_nids>0 then
+        -- Make the request
+        local req = {
+          nids = mx_nids,
+          reg  = register,
+          inst = mx_get_func(d.mx_packet_ids)
+        }
+        table.insert( d.requests, req )
+      end
+    end -- for making commands for the chains
+  end -- for each register
 end --function
 
 --------------------
@@ -358,43 +395,42 @@ local main = function()
     local t = Body.get_time()
     
     -- Set commands for next sync write
-    update_instructions()
-    update_requests()
+    if #d.commands==0 then update_commands() end
+    if #d.requests==0 then update_requests() end
     
     -- Show debugging information and blink the LED
     main_cnt = main_cnt + 1
     local t_diff = t - t0
     if t_diff>1 then
-      local debug_str = string.format(
-        '\nMain loop: %7.2f Hz (LED: %d)',main_cnt/t_diff,led_state)
+      local debug_tbl = {}
+      table.insert(debug_tbl, string.format(
+        '\nMain loop: %7.2f Hz (LED: %d)',
+        main_cnt/t_diff,led_state))
       led_state = 1-led_state
       for _,d in ipairs(dynamixels) do
-        debug_str = debug_str..'\n\n'
         -- Blink the led
         local sync_led_cmd = 
           libDynamixel.set_mx_led( d.mx_on_bus, led_state )
         local sync_led_red_cmd = 
           libDynamixel.set_nx_led_red( d.nx_on_bus, 255*led_state )
-        if #d.instructions<5 then
-          table.insert( d.instructions, sync_led_cmd )
-          table.insert( d.instructions, sync_led_red_cmd )
-        end
-        
+        table.insert( d.commands, sync_led_cmd )
+        table.insert( d.commands, sync_led_red_cmd )
+
         -- Append debugging information
-        local t_read  = t-d.t_last_read
-        local t_write = t-d.t_last_write
         local dstatus = coroutine.status(d.thread)
-        debug_str = debug_str..util.color(string.format('%s chain %s',d.name, dstatus),status_color[dstatus])
-        if d.message then debug_str = debug_str..': '..d.message end
-        debug_str = debug_str..string.format(
-          '\n\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',t_read,t_write)
-        debug_str = debug_str..string.format(
-          '\n\t%d requests in the pipeline',#d.requests)
-        debug_str = debug_str..string.format(
-          '\n\t%d instructions in the pipeline',#d.instructions)
+        table.insert(debug_tbl, util.color(
+          string.format('%s chain %s',d.name, dstatus),
+          status_color[dstatus]))
+        table.insert(debug_tbl,string.format(
+          '\n\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',
+          t-d.t_read,t-d.t_write))
+        table.insert(debug_tbl,string.format(
+          '\n\t%d requests in the pipeline',#d.requests))
+        table.insert(debug_tbl,string.format(
+          '\n\t%d commands in the pipeline',#d.commands))
       end
       os.execute('clear')
-      print(debug_str)
+      print( table.concat(debug_str,'\n') )
       t0 = t
       main_cnt = 0
     end

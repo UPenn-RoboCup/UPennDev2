@@ -28,9 +28,12 @@ shared_data.sensor.load          = vector.zeros( nJoints )
 shared_data.read = {}
 -- Timestamps of the last read
 shared_data.tread = {}
+-- Timestamps of the last request
+shared_data.trequest = {}
 for k,v in pairs(shared_data.sensor) do
   shared_data.read[k] = v
   shared_data.tread[k] = v
+  shared_data.trequest[k] = v
 end
 
 -- These should not be tied in with the motor readings,

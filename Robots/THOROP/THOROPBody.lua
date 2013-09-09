@@ -268,16 +268,28 @@ end
 -- Body sensor positions
 -- jcm should be the API compliance test
 for sensor, pointer in pairs(jcm.sensorPtr) do
-  local get_key = 'get_sensor_'..sensor
+  local tread_ptr = jcm.treadPtr[sensor]
+  local treq_ptr  = jcm.trequestPtr[sensor]
+  
+  local get_key  = 'get_sensor_'..sensor
 	local get_func = function(idx,idx2)
 		if idx then
       -- Return the values from idx to idx2
-      if idx2 then return pointer:table(idx,idx2) end 
-      return pointer[idx]
+      if idx2 then
+        local up2date = true
+        for i=idx,idx2 do
+          if treq_ptr[i]>tread_ptr[i] then up2date=false break end
+        end
+        return vector.new(pointer:table(idx,idx2)), up2date
+      end 
+      return pointer[idx], tread_ptr[i]>treq_ptr[i]
     end
     -- If no idx is supplied, then return the values of all joints
-    -- TODO: return as a table or carray?
-		return pointer:table()
+    local up2date = true
+    for i=1,nJoint do
+      if treq_ptr[i]>tread_ptr[i] then up2date=false break end
+    end
+		return vector.new(pointer:table()),up2date
 	end
   Body[get_key] = get_func
   --------------------------------
@@ -298,11 +310,18 @@ end
 -- Body sensor read requests
 -- jcm should be the API compliance test
 for sensor, pointer in pairs(jcm.readPtr) do
-	Body['request_'..sensor] = function(idx)
-    if type(idx)=='number' then pointer[idx] = 1
-    else for _,i in ipairs(idx) do pointer[i] = 1 end
+  local req_key = 'request_'..sensor
+  local req_func = function(idx)
+    if type(idx)=='number' then
+      pointer[idx] = 1
+      return
+    else
+      for _,i in ipairs(idx) do
+        pointer[i] = 1
+      end
     end
 	end
+  Body[req_key] = req_func
   ---------------------
   -- Anthropomorphic --
   for part,jlist in pairs( parts ) do
@@ -310,8 +329,8 @@ for sensor, pointer in pairs(jcm.readPtr) do
   	local b = jlist[#jlist]
     local read_key = 'read_'..sensor
   	Body['request_'..part:lower()..'_'..sensor] = function(idx)
-  		if idx then return Body[read_key](jlist[idx]) end
-  		return Body[read_key](jlist)
+  		if idx then return req_func(jlist[idx]) end
+  		return req_func(jlist)
   	end -- Set
   end -- anthropomorphic
   ----------------------
@@ -366,12 +385,12 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
 	local get_func = function(idx,idx2)
 		if idx then
       -- Return the values from idx to idx2
-      if idx2 then return pointer:table(idx,idx2) end 
+      if idx2 then return vector.new(pointer:table(idx,idx2)) end 
       return pointer[idx]
     end
     -- If no idx is supplied, then return the values of all joints
     -- TODO: return as a table or carray?
-		return pointer:table()
+		return vector.new(pointer:table())
 	end
   Body[get_key] = get_func
   --------------------------------
@@ -420,6 +439,7 @@ end
 --------------------------------
 -- Packet generators
 -- NX packet generators
+--[[
 -- TODO: make general somehow
 -- TODO: Use anthropomorphic get/set functions
 for k,v in pairs(libDynamixel.nx_registers) do
@@ -490,6 +510,7 @@ for k,v in pairs(libDynamixel.mx_registers) do
   
   end
 end
+--]]
 
 -- TODO: should be in body or a Grip module?
 -- Grip module may have more advanced techniques...

@@ -646,7 +646,11 @@ libDynamixel.service = function( dynamixels, main )
         -- Sync write an command in the queue
         dynamixel.is_reading = false
         local n_cmd_bytes = 0
-        for _,command in ipairs(dynamixel.commands) do
+        local n_cmd_left = #dynamixel.commands
+        while n_cmd_left>0 do
+          -- Pop a command
+          local command = table.remove(dynamixel.commands,1)
+          n_cmd_left = n_cmd_left - 1
           local cmd_ret = unix.write( fd, command )
           assert(#command==cmd_ret,
             string.format('BAD INST WRITE: %s',dynamixel.name))
@@ -654,7 +658,6 @@ libDynamixel.service = function( dynamixels, main )
           -- What if there was data on the bus... that is in the non-sync read
           -- It would be an error status
         end -- If sent command
-        dynamixel.commands = {}
         local did_command = false
         if n_cmd_bytes>0 then
           --print('wrote',n_cmd_bytes)
@@ -666,13 +669,15 @@ libDynamixel.service = function( dynamixels, main )
         --------------------
         -- Request data from the chain
         local did_request = false
-        for _,request in ipairs(dynamixel.requests) do
+        local n_req_left = #dynamixel.requests
+        while n_req_left>0 do
           dynamixel.is_reading = true
           -- Non-block saving a leftovers (if any)
           local leftovers = unix.read(fd)
           assert(leftovers~=-1, 'BAD Clearing READ')
           -- Pop a request
           local request = table.remove(dynamixel.requests,1)
+          n_req_left = n_req_left - 1
           -- Write the read request command to the chain
           local inst = request.inst
           local req_ret = unix.write(fd, inst)
@@ -687,15 +692,19 @@ libDynamixel.service = function( dynamixels, main )
           local values = {}
           local pkts = {}
           local nids = request.nids
+          local n_recv = 0
+          --print('Expecting',nids)
           local register =request.reg
           local status_str = ''
-          while t<dynamixel.timeout and #pkts<nids do
+          while t<dynamixel.timeout and n_recv<nids do
             local new_status_str = unix.read( fd )
             assert(new_status_str~=-1,string.format('BAD READ: %s',dynamixel.name))
             -- What is the meaning of a non-read here?
             assert(status_str, string.format('NO READ: %s',dynamixel.name))
             -- Process the status string into a packet
             pkts, status_str = DP.input( status_str..new_status_str )
+            n_recv = n_recv + #pkts
+            --print('npkts',#pkts,n_recv)
             -- For each packet, append to the values table
             for _,pkt in ipairs(pkts) do
               local status = DP.parse_status_packet( pkt )
@@ -714,8 +723,6 @@ libDynamixel.service = function( dynamixels, main )
             has_data, t = coroutine.yield( values, register )
           end
         end -- if requested data
-        -- Done with reading from the file descriptor
-        dynamixel.requests = {}
 
         -- Nothing happened... why?
         if not did_command and not did_request then

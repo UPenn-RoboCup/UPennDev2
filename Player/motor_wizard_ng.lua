@@ -54,6 +54,8 @@ end
 -- TODO: that might be bad for performance, though
 local update_read = function(self,data,register)
   local t = Body.get_time()
+  util.ptable(data)
+  if type(data)~='table' then return end
   -- Update the shared memory
   for k,v in pairs(data) do
     -- k is the motor id
@@ -69,29 +71,26 @@ local update_read = function(self,data,register)
       jcm.sensorPtr.position[idx] = Body.make_joint_radian( idx, v )
       -- Update the timestamp
       jcm.treadPtr.position[idx] = t
-      return
     elseif register=='load' then
       if v>=1024 then v = v - 1024 end
       local load_ratio = v/10.24
       jcm.sensorPtr.load[idx] = load_ratio
       -- Update the timestamp
       jcm.treadPtr.load[idx] = t
-      return
     elseif register=='battery' then
       -- Somehow make an estimate
+    else
+      -- Update the read timestamps in shared memory
+      local ptr = jcm.sensorPtr[register]
+      if not ptr then
+        print('Register is not in jcm',register)
+        return
+      end
+      ptr[idx] = v
+      -- Update the timestamp
+      ptr = jcm.treadPtr[register]
+      ptr[idx] = t
     end
-
-    -- Update the read timestamps in shared memory
-    -- TODO: eliminate jcm, and use a Body call
-    local ptr = jcm.sensorPtr[register]
-    if not ptr then
-      print('Register is not in jcm',register)
-      return
-    end
-    ptr[idx] = v
-    -- Update the timestamp
-    ptr = jcm.treadPtr[register]
-    ptr[idx] = t
 
   end -- loop through data
 
@@ -284,12 +283,13 @@ end -- entry
 --------------------
 -- Update the commands to write to the robot
 -- TODO: What if too many commands?
-local update_commands = function()
+local update_commands = function(t)
   -- Loop through the registers
   for register,write_ptr in pairs(jcm.writePtr) do
     local val_ptr     = jcm.actuatorPtr[register]
     local set_func    = libDynamixel['set_nx_'..register]
     local mx_set_func = libDynamixel['set_mx_'..register]
+    local t_ptr = jcm.twritePtr[register]
     -- go through each value
     for idx=1,#write_ptr do
       is_write = write_ptr[idx]
@@ -305,6 +305,8 @@ local update_commands = function()
           else
             table.insert( idx_to_vals[idx], val_ptr[idx] )
           end
+          -- Update the write time
+          t_ptr[idx] = t
         end
       end
     end -- for each enable
@@ -316,7 +318,7 @@ local update_commands = function()
         table.insert( d.commands, 
           set_func(d.packet_ids,d.packet_vals) )
         -- reset
-        for i,_ in ipairs(d.nx_on_bus) do
+        for i,_ in ipairs(d.packet_ids) do
           d.packet_ids[i]  = nil
           d.packet_vals[i] = nil
         end
@@ -325,7 +327,7 @@ local update_commands = function()
         -- Make the MX request
         table.insert( d.commands, 
           mx_set_func(d.mx_packet_ids,d.mx_packet_vals) )
-        for i,_ in ipairs(d.mx_on_bus) do
+        for i,_ in ipairs(d.mx_packet_ids) do
           d.mx_packet_ids[i]  = nil
           d.mx_packet_vals[i] = nil
         end
@@ -336,11 +338,12 @@ end
 
 -- Set commands for next sync read    
 -- Update the read every so often
-local update_requests = function()
+local update_requests = function(t)
   -- Loop through the registers
   for register,read_ptr in pairs(jcm.readPtr) do
     local get_func = libDynamixel['get_nx_'..register]
     local mx_get_func = libDynamixel['get_mx_'..register]
+    local t_ptr = jcm.trequestPtr[register]
     for idx=1,#read_ptr do
       is_read = read_ptr[idx]
       -- Check if we are to read each of the values
@@ -351,6 +354,8 @@ local update_requests = function()
         local d = idx_to_dynamixel[idx]
         if d and #d.requests==0 then
           table.insert( idx_to_ids[idx], joint_to_motor[idx] )
+          -- Update the request time
+          t_ptr[idx] = t
         end
       end
     end -- for each enable
@@ -366,7 +371,7 @@ local update_requests = function()
             inst = get_func(d.packet_ids)
           }
           table.insert( d.requests, req )
-          for i,_ in ipairs(d.nx_on_bus) do d.packet_ids[i] = nil end
+          for i,_ in ipairs(d.packet_ids) do d.packet_ids[i] = nil end
         end
         local mx_nids = #d.mx_packet_ids
         if mx_nids>0 then
@@ -377,7 +382,7 @@ local update_requests = function()
             inst = mx_get_func(d.mx_packet_ids)
           }
           table.insert( d.requests, req )
-          for i,_ in ipairs(d.mx_on_bus) do d.mx_packet_ids[i]  = nil end
+          for i,_ in ipairs(d.mx_packet_ids) do d.mx_packet_ids[i]  = nil end
         end
       end -- if #req==0
     end -- for making commands for the chains
@@ -396,8 +401,8 @@ local main = function()
     local t = Body.get_time()
     
     -- Set commands for next sync write
-    update_commands()
-    update_requests()
+    update_commands(t)
+    update_requests(t)
     
     -- Show debugging information and blink the LED
     main_cnt = main_cnt + 1

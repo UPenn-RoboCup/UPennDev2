@@ -95,6 +95,12 @@ local function setup_lidar( name )
   tbl.meta = {}
   tbl.meta.name = name
 
+	tbl.meta.rpy = wcm.get_robot_rpy()
+	-- Default yaw is 1.57
+	tbl.meta.rpy[3] = tbl.meta.rpy[3] - math.pi/2
+	tbl.meta.gyro = wcm.get_robot_gyro()
+	print('GYRO:', unpack(tbl.meta.gyro))
+
   -- Actuator endpoints
   -- In radians, specifices the actuator scanline angle endpoints
   -- The third number is the scanline density (scanlines/radian)
@@ -102,7 +108,7 @@ local function setup_lidar( name )
 
   -- Field of view endpoints of the lidar ranges
   -- -135 to 135 degrees for Hokuyo
-  -- This is in RADIANS, though -- TODO: add correspondint INDEX?
+  -- This is in RADIANS
   tbl.meta.fov = vcm['get_'..name..'_lidar_fov']()
 
 
@@ -153,7 +159,8 @@ local function setup_lidar( name )
   end
 
   -- TODO: We don't need to keep all ranges...?
-  tbl.all_ranges = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
+  --tbl.all_ranges = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
+  tbl.range = torch.FloatTensor(1, fov_resolution):zero()
   -- TODO: Save the exact actuator angles?
   tbl.scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
 
@@ -264,8 +271,9 @@ local function head_callback()
     if scanline then
       -- Copy lidar readings to the torch object for fast modification
       ranges:tensor( 
-        head.all_ranges:select(1, scanline),
-        head.all_ranges:size(2),
+        --head.all_ranges:select(1, scanline),
+        head.range:select(1,1),
+        head.range:size(2),
         head.offset_idx
       )
       -- Save the pan angle
@@ -275,9 +283,9 @@ local function head_callback()
 
       -- Converstion of ranges for use in libLaser
       -- TODO: copy may be slow
-      local single = torch.FloatTensor(1, head.all_ranges:size(2)):zero()
-      single:copy(head.all_ranges:select(1, scanline))
-      lidar0.ranges:copy(single:transpose(1,2))
+      --local single = torch.FloatTensor(1, head.all_ranges:size(2)):zero()
+      --single:copy(head.all_ranges:select(1, scanline))
+      lidar0.ranges:copy(head.range:transpose(1,2))
     end
 	
 	local head_roll, head_yaw = 0, 0 
@@ -292,13 +300,7 @@ local function head_callback()
 	-- TODO: use head.meta.t for slam
 	-- TODO: use RPY from webots
 	-- TODO: Just add the gyro values to the lidar metadata
-	local rpy = wcm.get_robot_rpy()
-	local gyro = wcm.get_robot_gyro()
-	print('GYRO:', unpack(gyro))
-	-- Default yaw is 1.57
-	rpy[3] = rpy[3] - math.pi/2
-	--print('RPY:', unpack(rpy))
-	libSlam.processIMU( rpy, gyro[3], head.meta.t )
+	libSlam.processIMU( head.meta.rpy, head.meta.gyro[3], head.meta.t )
 	libSlam.processL0( lidar0.points_xyz )
 	local t1_processL0 = unix.time()
 	--print( string.format('processL0 took: \t%.2f ms', (t1_processL0-t0_processL0)*1000) )
@@ -362,8 +364,9 @@ local function chest_callback()
     if scanline then
       -- Copy lidar readings to the torch object for fast modification
       ranges:tensor(
-        chest.all_ranges:select(1, scanline),
-        chest.all_ranges:size(2),
+        --chest.all_ranges:select(1, scanline),
+        chest.range:select(1,1),
+        chest.range:size(2),
         chest.offset_idx 
 		)
       -- Save the pan angle
@@ -374,9 +377,9 @@ local function chest_callback()
       
       -- Converstion of ranges for use in libLaser
       -- TODO: copy may be slow
-      local single = torch.FloatTensor(1, chest.all_ranges:size(2)):zero()
-      single:copy(chest.all_ranges:select(1, scanline))
-      lidar1.ranges:copy(single:transpose(1,2))
+      --local single = torch.FloatTensor(1, chest.all_ranges:size(2)):zero()
+      --single:copy(chest.all_ranges:select(1, scanline))
+      lidar1.ranges:copy(chest.range:transpose(1,2))
     end
 	
 	-- Transform the points into the body frame

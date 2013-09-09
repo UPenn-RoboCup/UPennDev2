@@ -16,8 +16,8 @@ local READ_TIMEOUT = 0.075
 
 -- TODO: Make this a parameter to set externally
 -- TODO: This should be tuned based on the byte size written?
---local WRITE_TIMEOUT = 1/120 -- 120Hz timeout
-local WRITE_TIMEOUT = 1/60 -- 60Hz timeout
+local WRITE_TIMEOUT = 1/120 -- 120Hz timeout
+--local WRITE_TIMEOUT = 1/60 -- 60Hz timeout
 --local WRITE_TIMEOUT = 0 -- Instant timeout
 
 --------------------
@@ -645,18 +645,21 @@ libDynamixel.service = function( dynamixels, main )
         --------------------
         -- Sync write an command in the queue
         dynamixel.is_reading = false
-        local did_command = false
+        local n_cmd_bytes = 0
         for _,command in ipairs(dynamixel.commands) do
           local cmd_ret = unix.write( fd, command )
-          did_command = true
           assert(#command==cmd_ret,
             string.format('BAD INST WRITE: %s',dynamixel.name))
+          n_cmd_bytes = n_cmd_bytes+cmd_ret
           -- What if there was data on the bus... that is in the non-sync read
           -- It would be an error status
         end -- If sent command
         dynamixel.commands = {}
-        if did_command then
+        local did_command = false
+        if n_cmd_bytes>0 then
+          print('wrote',n_cmd_bytes)
           dynamixel.t_command = t
+          did_command = true
           has_data, t = coroutine.yield()
         end
 
@@ -715,7 +718,7 @@ libDynamixel.service = function( dynamixels, main )
         dynamixel.requests = {}
 
         -- Nothing happened... why?
-        if not did_write and not did_request then
+        if not did_command and not did_request then
           has_data, t = coroutine.yield()
         end
 
@@ -728,23 +731,23 @@ libDynamixel.service = function( dynamixels, main )
     --------------------
     -- Perform select on all dynamixels
     local status, ready = unix.select( dynamixel_fds, WRITE_TIMEOUT )
-    print('status',status,#ready)
-    assert(status==#ready,string.format('Possibly unplugged... (%d,%d)',status,#ready))
-    
     local t = unix.time()
     --------------------
     -- Loop through the dynamixel chains
     for i_fd,is_ready in pairs(ready) do
       -- Grab the dynamixel chain
       local who_to_service = fd_to_dynamixel[i_fd]
-      --print('checking', who_to_service.name, i_fd, is_ready, who_to_service.is_reading)
-      --print()
+      if #who_to_service.commands>0 then
+        print('n_commands',#who_to_service.commands)
+      end
       -- Check if the Dynamixel has information available
-      if (who_to_service.is_reading and not is_ready and t<who_to_service.timeout)
-        or (not who_to_service.is_reading and #who_to_service.commands==0) then
+      if not is_ready and who_to_service.is_reading and t<who_to_service.timeout then
         -- do not resume, since we are waiting on the data
+      elseif is_ready and not who_to_service.is_reading then
         -- We also have nothing to send...
-      else
+        -- Non-block saving a leftovers (if any)
+        assert(unix.read(i_fd)~=-1,'Unplugged?')
+      elseif is_ready or #who_to_service.commands>0 or #who_to_service.requests>0 then
         -- Resume the thread
         local status_code, param, reg = coroutine.resume(who_to_service.thread,is_ready,t)
         if not status_code then

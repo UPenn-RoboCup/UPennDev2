@@ -31,7 +31,7 @@ local status_color = {
 -- Lookup table for id to chain
 local idx_to_dynamixel = {}
 local idx_to_didx = {}
-local idx_to_ids = {}
+local idx_to_ids  = {}
 local idx_to_vals = {}
 
 --[[
@@ -66,20 +66,17 @@ local update_read = function(self,data,register)
     
     -- Specific handling of register types
     if register=='position' then
-      local rad = Body.make_joint_radian( idx, v )
-      jcm.sensorPtr.position[idx] = rad
-      -- Kill the read once flag
-      if jcm.readPtr.position[idx]==1 then jcm.readPtr.position[idx]=0 end
+      jcm.sensorPtr.position[idx] = Body.make_joint_radian( idx, v )
       -- Update the timestamp
       jcm.treadPtr.position[idx] = t
+      return
     elseif register=='load' then
       if v>=1024 then v = v - 1024 end
       local load_ratio = v/10.24
       jcm.sensorPtr.load[idx] = load_ratio
-      -- Kill the read once flag
-      if jcm.readPtr.load[idx]==1 then jcm.readPtr.load[idx]=0 end
       -- Update the timestamp
       jcm.treadPtr.load[idx] = t
+      return
     elseif register=='battery' then
       -- Somehow make an estimate
     end
@@ -92,9 +89,6 @@ local update_read = function(self,data,register)
       return
     end
     ptr[idx] = v
-    ptr = jcm.readPtr[register]
-    -- Kill the read once
-    if ptr[idx]==1 then ptr[idx]=0 end
     -- Update the timestamp
     ptr = jcm.treadPtr[register]
     ptr[idx] = t
@@ -182,7 +176,8 @@ local function entry()
     dynamixel.packet_vals = {}
     dynamixel.mx_packet_ids  = {}
     dynamixel.mx_packet_vals = {}
-
+    print(dynamixel.packet_ids,dynamixel.mx_packet_ids)
+    print(dynamixel.packet_vals,dynamixel.mx_packet_vals)
 
     if not dynamixel.ids_on_bus then
       -- Check which ids are on this chain
@@ -232,7 +227,7 @@ local function entry()
       local idx = motor_to_joint[id]
       local pos_status = libDynamixel.get_nx_position(id,dynamixel)
       assert(pos_status, string.format('%s: Did not find ID %s: %d',dynamixel.name,Body.jointNames[idx],id) )
-      dynamixel.t_last_read = Body.get_time()
+      dynamixel.t_read = Body.get_time()
 
       -- Parse the value
       local pos_parser = libDynamixel.byte_to_number[ #pos_status.parameter ]
@@ -261,7 +256,7 @@ local function entry()
       local idx = motor_to_joint[id]
       local pos_status = libDynamixel.get_mx_position(id,dynamixel)
       assert(pos_status, string.format('%s: Did not find ID %s: %d',dynamixel.name,Body.jointNames[idx],id) )
-      dynamixel.t_last_read = Body.get_time()
+      dynamixel.t_read = Body.get_time()
 
       -- Parse the value
       local pos_parser = libDynamixel.byte_to_number[ #pos_status.parameter ]
@@ -292,25 +287,18 @@ end -- entry
 local update_commands = function()
   -- Loop through the registers
   for register,write_ptr in pairs(jcm.writePtr) do
-    local val_ptr = jcm.actuatorPtr[register]
-    -- Reset the tmp variable
-    for _,d in ipairs(dynamixels) do
-      d.packet_ids  = {}
-      d.packet_vals = {}
-      d.mx_packet_ids  = {}
-      d.mx_packet_vals = {}
-    end
+    local val_ptr     = jcm.actuatorPtr[register]
     local set_func    = libDynamixel['set_nx_'..register]
     local mx_set_func = libDynamixel['set_mx_'..register]
     -- go through each value
     for idx=1,#write_ptr do
-      is_write=write_ptr[idx]
+      is_write = write_ptr[idx]
       if is_write>0 then
+        write_ptr[idx]=0
         -- Add the write instruction to the chain
-        local pkt_ids = idx_to_ids[idx]
-        --print('Writing',register,idx,val_ptr[idx],pkt_ids)
-        if pkt_ids then
-          table.insert( pkt_ids, joint_to_motor[idx] )
+        local d = idx_to_dynamixel[idx]
+        if d and #d.commands==0 then
+          table.insert( idx_to_ids[idx], joint_to_motor[idx] )
           if register=='command_position' then
             -- Convert from radians to steps for set command_position
             table.insert( idx_to_vals[idx], make_joint_step(idx,val_ptr[idx]) )
@@ -318,26 +306,30 @@ local update_commands = function()
             table.insert( idx_to_vals[idx], val_ptr[idx] )
           end
         end
-        -- Kill the write once
-        if is_write==1 then write_ptr[idx]=0 end
       end
     end -- for each enable
     -- Make the request for this register on each chain
     for _,d in ipairs(dynamixels) do
-      if #d.commands==0 then
-        local nids = #d.packet_ids
-        if #d.packet_ids>0 then
-          print('making packet!',nids)
-          -- Make the NX request
-          table.insert( d.commands, 
-            set_func(d.packet_ids,d.packet_vals) )
+      if #d.packet_ids>0 then
+        --print('making packet!',#d.packet_ids)
+        -- Make the NX request
+        table.insert( d.commands, 
+          set_func(d.packet_ids,d.packet_vals) )
+        -- reset
+        for i,_ in ipairs(d.nx_on_bus) do
+          d.packet_ids[i]  = nil
+          d.packet_vals[i] = nil
         end
-        if #d.mx_packet_ids>0 then
-          -- Make the MX request
-          table.insert( d.commands, 
-            mx_set_func(d.mx_packet_ids,d.mx_packet_vals) )
+      end -- if nx
+      if #d.mx_packet_ids>0 then
+        -- Make the MX request
+        table.insert( d.commands, 
+          mx_set_func(d.mx_packet_ids,d.mx_packet_vals) )
+        for i,_ in ipairs(d.mx_on_bus) do
+          d.mx_packet_ids[i]  = nil
+          d.mx_packet_vals[i] = nil
         end
-      end -- if #cmds==0
+      end -- if mx
     end -- for making commands for the chains
   end -- for each register
 end
@@ -347,31 +339,25 @@ end
 local update_requests = function()
   -- Loop through the registers
   for register,read_ptr in pairs(jcm.readPtr) do
-    -- Reset the tmp variable
-    for _,d in ipairs(dynamixels) do
-      d.packet_ids  = {}
-      d.mx_packet_ids = {}
-    end
     local get_func = libDynamixel['get_nx_'..register]
     local mx_get_func = libDynamixel['get_mx_'..register]
     for idx=1,#read_ptr do
-      is_read=read_ptr[idx]
+      is_read = read_ptr[idx]
       -- Check if we are to read each of the values
       if is_read>0 then
+        -- Kill the reading
+        read_ptr[idx] = 0
         -- Add the read instruction to the chain
-        local pkt_ids = idx_to_ids[idx]
-        if pkt_ids then
-          table.insert( pkt_ids, joint_to_motor[idx] )
+        local d = idx_to_dynamixel[idx]
+        if d and #d.requests==0 then
+          table.insert( idx_to_ids[idx], joint_to_motor[idx] )
         end
-        -- Kill the read once
-        if is_read==1 then read_ptr[idx]=0 end
       end
     end -- for each enable
     -- Make the request for this register on each chain
     for _,d in ipairs(dynamixels) do
       if #d.requests==0 then
-        local nids    = #d.packet_ids
-        local mx_nids = #d.mx_packet_ids
+        local nids = #d.packet_ids
         if nids>0 then
           -- Make the request
           local req = {
@@ -380,7 +366,9 @@ local update_requests = function()
             inst = get_func(d.packet_ids)
           }
           table.insert( d.requests, req )
+          for i,_ in ipairs(d.nx_on_bus) do d.packet_ids[i] = nil end
         end
+        local mx_nids = #d.mx_packet_ids
         if mx_nids>0 then
           -- Make the request
           local req = {
@@ -389,6 +377,7 @@ local update_requests = function()
             inst = mx_get_func(d.mx_packet_ids)
           }
           table.insert( d.requests, req )
+          for i,_ in ipairs(d.mx_on_bus) do d.mx_packet_ids[i]  = nil end
         end
       end -- if #req==0
     end -- for making commands for the chains

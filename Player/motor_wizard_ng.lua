@@ -30,7 +30,6 @@ local status_color = {
 }
 -- Lookup table for id to chain
 local idx_to_dynamixel = {}
-local idx_to_didx = {}
 local idx_to_ids  = {}
 local idx_to_vals = {}
 
@@ -54,7 +53,6 @@ end
 -- TODO: that might be bad for performance, though
 local update_read = function(self,data,register)
   local t = Body.get_time()
-  util.ptable(data)
   if type(data)~='table' then return end
   -- Update the shared memory
   for k,v in pairs(data) do
@@ -64,7 +62,10 @@ local update_read = function(self,data,register)
     local idx = motor_to_joint[k]
 
     -- Debug
-    print(string.format('%s: %s %s is %g',self.name,jointNames[idx],register,v))
+    --[[
+    print(string.format('%s: %s %s is %g',
+    self.name,jointNames[idx],register,v))
+    --]]
     
     -- Specific handling of register types
     if register=='position' then
@@ -175,8 +176,6 @@ local function entry()
     dynamixel.packet_vals = {}
     dynamixel.mx_packet_ids  = {}
     dynamixel.mx_packet_vals = {}
-    print(dynamixel.packet_ids,dynamixel.mx_packet_ids)
-    print(dynamixel.packet_vals,dynamixel.mx_packet_vals)
 
     if not dynamixel.ids_on_bus then
       -- Check which ids are on this chain
@@ -220,10 +219,14 @@ local function entry()
     --local status = libDynamixel.set_nx_status_return_level(m,1,test_dynamixel)
     
     -- Perform a read to instantiate the motor commands and sensor positions
-    for d_id,id in ipairs(dynamixel.nx_on_bus) do
+    for _,id in ipairs(dynamixel.nx_on_bus) do
+      local idx = motor_to_joint[id]
+      
+      -- Torque off the motor
+      libDynamixel.set_nx_torque_enable(id,0,dynamixel)
+      dynamixel.t_command = Body.get_time()
 
       -- Read the NX motor positions
-      local idx = motor_to_joint[id]
       local pos_status = libDynamixel.get_nx_position(id,dynamixel)
       assert(pos_status, string.format('%s: Did not find ID %s: %d',dynamixel.name,Body.jointNames[idx],id) )
       dynamixel.t_read = Body.get_time()
@@ -239,7 +242,6 @@ local function entry()
 
       -- Populate the lookup table from id to chain
       idx_to_dynamixel[idx] = dynamixel
-      idx_to_didx[idx] = didx
       idx_to_ids[idx]  = dynamixel.packet_ids
       idx_to_vals[idx] = dynamixel.packet_vals
       
@@ -253,6 +255,12 @@ local function entry()
     -- Perform a read to instantiate the motor commands and sensor positions
     for _,id in ipairs(dynamixel.mx_on_bus) do
       local idx = motor_to_joint[id]
+      
+      -- Torque off the motor
+      libDynamixel.set_mx_torque_enable(id,0,dynamixel)
+      dynamixel.t_command = Body.get_time()
+      
+      -- Read the motor position
       local pos_status = libDynamixel.get_mx_position(id,dynamixel)
       assert(pos_status, string.format('%s: Did not find ID %s: %d',dynamixel.name,Body.jointNames[idx],id) )
       dynamixel.t_read = Body.get_time()
@@ -268,7 +276,6 @@ local function entry()
 
       -- Populate the tables
       idx_to_dynamixel[idx] = dynamixel
-      idx_to_didx[idx] = didx
       idx_to_ids[idx]  = dynamixel.mx_packet_ids
       idx_to_vals[idx] = dynamixel.mx_packet_vals
       

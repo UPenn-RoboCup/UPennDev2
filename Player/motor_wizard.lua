@@ -89,8 +89,7 @@ local update_read = function(self,data,register)
       end
       ptr[idx] = v
       -- Update the timestamp
-      ptr = jcm.treadPtr[register]
-      ptr[idx] = t
+      jcm.treadPtr[register][idx] = t
     end
 
   end -- loop through data

@@ -270,27 +270,40 @@ end
 for sensor, pointer in pairs(jcm.sensorPtr) do
   local tread_ptr = jcm.treadPtr[sensor]
   local treq_ptr  = jcm.trequestPtr[sensor]
-  
   local get_key  = 'get_sensor_'..sensor
-	local get_func = function(idx,idx2)
-		if idx then
-      -- Return the values from idx to idx2
-      if idx2 then
-        local up2date = true
-        for i=idx,idx2 do
-          if treq_ptr[i]>tread_ptr[i] then up2date=false break end
-        end
-        return vector.new(pointer:table(idx,idx2)), up2date
-      end 
-      return pointer[idx], tread_ptr[i]>treq_ptr[i]
+  local get_func
+  if tread_ptr then
+  	get_func = function(idx,idx2)
+  		if idx then
+        -- Return the values from idx to idx2
+        if idx2 then
+          local up2date = true
+          for i=idx,idx2 do
+            if treq_ptr[i]>tread_ptr[i] then up2date=false break end
+          end
+          return vector.new(pointer:table(idx,idx2)), up2date
+        end 
+        return pointer[idx], tread_ptr[idx]>treq_ptr[idx]
+      end
+      -- If no idx is supplied, then return the values of all joints
+      local up2date = true
+      for i=1,nJoint do
+        if treq_ptr[i]>tread_ptr[i] then up2date=false break end
+      end
+  		return vector.new(pointer:table()),up2date
+  	end
+  else
+    -- Override for non-dynamixel sensors
+    get_func = function(idx,idx2)
+      if idx then
+        -- Return the values from idx to idx2
+        if idx2 then return vector.new(pointer:table(idx,idx2)) end 
+        return pointer[idx]
+      end
+      -- If no idx is supplied, then return the values of all joints
+      return vector.new(pointer:table())
     end
-    -- If no idx is supplied, then return the values of all joints
-    local up2date = true
-    for i=1,nJoint do
-      if treq_ptr[i]>tread_ptr[i] then up2date=false break end
-    end
-		return vector.new(pointer:table()),up2date
-	end
+  end
   Body[get_key] = get_func
   --------------------------------
   -- Anthropomorphic access to jcm
@@ -314,12 +327,10 @@ for sensor, pointer in pairs(jcm.readPtr) do
   local req_func = function(idx)
     if type(idx)=='number' then
       pointer[idx] = 1
-      return
     else
-      for _,i in ipairs(idx) do
-        pointer[i] = 1
-      end
+      for _,i in ipairs(idx) do pointer[i] = 1 end
     end
+    return
 	end
   Body[req_key] = req_func
   ---------------------
@@ -435,82 +446,6 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
   end -- anthropomorphic
   --------------------------------
 end
-
---------------------------------
--- Packet generators
--- NX packet generators
---[[
--- TODO: make general somehow
--- TODO: Use anthropomorphic get/set functions
-for k,v in pairs(libDynamixel.nx_registers) do
-  local get_func = libDynamixel['get_nx_'..k]
-  local set_func = libDynamixel['set_nx_'..k]
-  
-  for part,jlist in pairs(parts) do
-    --print(part,'nx jlist',jlist)
-    local mlist = motor_parts[part]
-    --local jlist = parts[part]
-    local a = jlist[1]
-    local b = jlist[#jlist]
-    Body['get_'..part:lower()..'_'..k..'_packet'] = function()
-      return get_func(mlist)
-    end
-    Body['set_'..part:lower()..'_'..k..'_packet'] = function()
-      local vals = jcm.actuatorPtr[k]:table( a, b )
-      return set_func( mlist, vals )
-    end
-    -- Add protection for command_position
-    if k=='command_position' then
-      --print'overwriting command'
-      Body['set_'..part:lower()..'_'..k..'_packet'] = function()
-        -- Shm has radians
-        local vals = jcm.actuatorPtr.command_position:table( a, b )
-        -- Convert to steps
-        for i,idx in ipairs(jlist) do vals[i]=make_joint_step(idx,vals[i]) end
-        return set_func( mlist, vals )
-      end
-    end
-  end--jlist
-end
-  
--- MX packet generators
--- TODO: Just set shared memory values accordingly
--- TODO: make general somehow
--- TODO: Use anthropomorphic get/set functions
-for k,v in pairs(libDynamixel.mx_registers) do
-	local get_func = libDynamixel['get_mx_'..k]
-	local set_func = libDynamixel['set_mx_'..k]
-  
-  for _,part in pairs({'LGrip','RGrip','Lidar'}) do
-    local mlist = motor_parts[part]
-    local jlist = parts[part]
-    local a = jlist[1]
-    local b = jlist[#jlist]
-    
-    -- Getter setters
-    Body['get_'..part:lower()..'_'..k..'_packet'] = function()
-      return get_func(mlist)
-    end
-    Body['set_'..part:lower()..'_'..k..'_packet'] = function()
-      local vals = jcm.actuatorPtr[k]:table( a, b )
-      return set_func( mlist, vals )
-    end
-
-    -- Add protection for command_position
-  	if k=='command_position' then
-  		--print'overwriting command'
-  		Body['set_'..part:lower()..'_'..k..'_packet'] = function()
-  			-- Shm has radians
-  			local vals = jcm.actuatorPtr.command_position:table( a, b )
-  			-- Convert to steps
-  			for i,idx in ipairs(jlist) do vals[i]=make_joint_step(idx,vals[i]) end
-  			return set_func( mlist, vals )
-  		end
-  	end
-  
-  end
-end
---]]
 
 -- TODO: should be in body or a Grip module?
 -- Grip module may have more advanced techniques...
@@ -666,26 +601,9 @@ Body.set_head_lidar = function( data )
 	vcm.set_head_lidar_t( Body.get_time() )
 end
 
-Body.set_sensor_rpy = function( rpy )
-  wcm.set_robot_rpy( rpy )
-end
-
-Body.set_sensor_gyro = function( gyro )
-  wcm.set_robot_gyro( gyro )
-end
-
 ----------------------
 -- More standard api functions
 Body.entry = function()
-  -- TODO: This is not correct, but is it useful?
-  -- Make the initial commands
-  --[[
-  for i=1,nJoint do Body.set_actuator_command_position(Body.initial_joints[i],i) end
-  for i=1,nJoint do Body.set_sensor_position(Body.initial_joints[i],i) end
-  -- Zero some shm
-  for i=1,nJoint do Body.set_sensor_load(0,i) end
-  for i=1,nJoint do Body.set_actuator_torque_enable(0,i) end
-  --]]
 end
 Body.update = function()
 end
@@ -806,14 +724,8 @@ if IS_WEBOTS then
 
 	Body.entry = function()
     
-    --[[
-    -- Make the initial commands
-    for i=1,nJoint do Body.set_actuator_command_position(Body.initial_joints[i],i) end
-    for i=1,nJoint do Body.set_sensor_position(Body.initial_joints[i],i) end
-    -- Zero some shm
-    for i=1,nJoint do Body.set_sensor_load(0,i) end
-    for i=1,nJoint do Body.set_actuator_torque_enable(0,i) end
-    --]]
+    -- Request @ t=0 to always be earlier than position reads
+    jcm.set_trequest_position( vector.zeros(nJoint) )
 
 		-- Initialize the webots system
 		webots.wb_robot_init()
@@ -894,8 +806,10 @@ if IS_WEBOTS then
       if jtag>0 then
         local val = webots.wb_servo_get_position( jtag )
         local rad = servo.direction[idx] * val - servo.rad_bias[idx]
-        Body.set_sensor_position( rad, idx )
-        Body.set_actuator_command_position( rad, idx )
+        jcm.sensorPtr.position[idx] = rad
+        jcm.actuatorPtr.command_position[idx] = rad
+        jcm.treadPtr.position[idx] = t
+        jcm.twritePtr.command_position[idx] = t
       end
     end
 
@@ -906,12 +820,12 @@ if IS_WEBOTS then
 
 		local tDelta = .001 * Body.timeStep
 		-- Set actuator commands from shared memory
-		for i, jtag in ipairs(tags.joints) do
-			local cmd = Body.get_actuator_command_position(i)
-			local pos = Body.get_sensor_position(i)
+		for idx, jtag in ipairs(tags.joints) do
+			local cmd = Body.get_actuator_command_position(idx)
+			local pos = Body.get_sensor_position(idx)
 			-- TODO: What is velocity?
-			local vel = 0 or Body.get_actuator_command_velocity(i)
-			local en = 1 or Body.get_actuator_torque_enable(i)
+			local vel = 0 or Body.get_actuator_command_velocity(idx)
+			local en  = 1 or Body.get_actuator_torque_enable(idx)
 			local deltaMax = tDelta * vel
 			-- Only update the joint if the motor is torqued on
 
@@ -932,8 +846,9 @@ if IS_WEBOTS then
 
 			-- Only set in webots if Torque Enabled
 			if en>0 and jtag>0 then
-        local pos = servo.direction[i] * (new_pos + servo.rad_bias[i])
+        local pos = servo.direction[idx] * (new_pos + servo.rad_bias[idx])
         webots.wb_servo_set_position(jtag, pos )
+        jcm.twritePtr.command_position[idx] = t
       end
 		end --for
 
@@ -942,14 +857,20 @@ if IS_WEBOTS then
 
 		-- Accelerometer data (verified)
 		local accel = webots.wb_accelerometer_get_values(tags.accelerometer)
-		Body.set_sensor_accelerometer( 
-		{(accel[1]-512)/128,(accel[2]-512)/128,-(accel[3]-512)/128}
-		)
+    jcm.sensorPtr.accelerometer[1] = (accel[1]-512)/128
+    jcm.sensorPtr.accelerometer[2] = (accel[2]-512)/128
+    jcm.sensorPtr.accelerometer[3] = (accel[3]-512)/128
+
 		-- Gyro data (verified)
 		local gyro = webots.wb_gyro_get_values(tags.gyro)
-		Body.set_sensor_gyro(
-		{(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273}
-		)
+    jcm.sensorPtr.gyro[1] = (gyro[1]-512)/0.273
+    jcm.sensorPtr.gyro[2] = (gyro[2]-512)/0.273
+    jcm.sensorPtr.gyro[3] = (gyro[3]-512)/0.273
+
+    -- Debugging:
+    --print('Gyro:',Body.get_sensor_gyro())
+    --print('Accel:',Body.get_sensor_accelerometer())
+
     -- GPS and compass data
     -- Webots x is our y, Webots y is our z, Webots z is our x, 
     -- Our x is Webots z, Our y is Webots x, Our z is Webots y
@@ -957,16 +878,17 @@ if IS_WEBOTS then
       local gps     = webots.wb_gps_get_values(tags.gps)
       local compass = webots.wb_compass_get_values(tags.compass)
       local angle   = math.atan2( compass[3], compass[1] )
-      local pose    = {gps[3], gps[1], angle}
+      local pose    = vector.pose{gps[3], gps[1], angle}
       wcm.set_robot_pose( pose )
       local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
-      Body.set_sensor_rpy(rpy)
-      --wcm.set_global_orientation( compass )
+      jcm.sensorPtr.rpy[1],jcm.sensorPtr.rpy[2],jcm.sensorPtr.rpy[3] = 
+        unpack(rpy)
+
       --[[
       print('rpy',unpack(rpy) )
       print('gps',unpack(gps) )
       print('compass',unpack(compass) )
-      print('pose', unpack(pose) )
+      print('pose', pose )
       print()
       --]]
     end
@@ -977,7 +899,8 @@ if IS_WEBOTS then
 			if jtag>0 then
 				local val = webots.wb_servo_get_position( jtag )
 				local rad = servo.direction[idx] * val - servo.rad_bias[idx]
-				Body.set_sensor_position( rad, idx )
+        jcm.sensorPtr.position[idx] = rad
+        jcm.treadPtr.position[idx] = t
 			end
 		end
     
@@ -989,9 +912,14 @@ if IS_WEBOTS then
       head_lidar_wbt.meta.t  = t
       head_lidar_wbt.meta.count  = head_lidar_wbt.meta.count  + 1
       head_lidar_wbt.meta.angle = Body.get_head_position(2)
+      head_lidar_wbt.meta.rpy  = Body.get_sensor_rpy()
+      head_lidar_wbt.meta.gyro = Body.get_sensor_gyro()
+
       chest_lidar_wbt.meta.t  = t
       chest_lidar_wbt.meta.count = chest_lidar_wbt.meta.count + 1
       chest_lidar_wbt.meta.angle = Body.get_lidar_position(1)
+      chest_lidar_wbt.meta.rpy  = Body.get_sensor_rpy()
+      chest_lidar_wbt.meta.gyro = Body.get_sensor_gyro()
       -- Send the count on the channel so they know to process a new frame
       head_lidar_wbt.channel:send(  mp.pack(head_lidar_wbt.meta)  )
       chest_lidar_wbt.channel:send( mp.pack(chest_lidar_wbt.meta) )

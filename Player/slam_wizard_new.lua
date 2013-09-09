@@ -27,12 +27,12 @@ local carray = require'carray'
 local libLaser = require'libLaser'
 local libSlam = require'libSlam'
 local mp = require'msgpack'
-local msg = require'msgpack'
 --local jcm = require'jcm'
 local jpeg = require'jpeg'
 local zlib = require'zlib'
 local util = require'util'
-local udp = require'udp'
+local vector = require'vector'
+local udp  = require'udp'
 -- TODO: add hmap later or just use merged map?
 local udp_port = Config.net.omap
 local udp_target = Config.net.operator.wireless
@@ -94,11 +94,10 @@ local function setup_lidar( name )
   -- Save the meta data for easy sending
   tbl.meta = {}
   tbl.meta.name = name
-
-	tbl.meta.rpy = wcm.get_robot_rpy()
+	tbl.meta.rpy = Body.get_sensor_rpy()
 	-- Default yaw is 1.57
 	tbl.meta.rpy[3] = tbl.meta.rpy[3] - math.pi/2
-	tbl.meta.gyro = wcm.get_robot_gyro()
+	tbl.meta.gyro = Body.get_sensor_rpy()
 	print('GYRO:', unpack(tbl.meta.gyro))
 
   -- Actuator endpoints
@@ -202,7 +201,8 @@ local function head_callback()
 
 	-- TODO: head_pitch
 	if IS_WEBOTS then
-		cur_pose = wcm.get_robot_pose() -- Ground truth pose
+		-- Ground truth pose
+		cur_pose = wcm.get_robot_pose()
 	elseif USE_SLAM_ODOM then
 	  --cur_pose = scm/blah:get_pose()
 	end
@@ -300,7 +300,8 @@ local function head_callback()
 	-- TODO: use head.meta.t for slam
 	-- TODO: use RPY from webots
 	-- TODO: Just add the gyro values to the lidar metadata
-	libSlam.processIMU( head.meta.rpy, head.meta.gyro[3], head.meta.t )
+	print('RPY/Gyro',vector.new(metadata.rpy), metadata.gyro[3])
+	libSlam.processIMU( metadata.rpy, metadata.gyro[3], head.meta.t )
 	libSlam.processL0( lidar0.points_xyz )
 	local t1_processL0 = unix.time()
 	--print( string.format('processL0 took: \t%.2f ms', (t1_processL0-t0_processL0)*1000) )
@@ -420,9 +421,7 @@ local t_debug = 1 -- Print debug output every second
 ------------------
 -- No debugging messages
 -- Only the callback will be made
-if not debugging then
-	channel_polls:start()
-end
+if not debugging then channel_polls:start() end
 ------------------
 
 
@@ -494,7 +493,7 @@ function slam.update()
   meta.shift = shiftdata
 	local meta = mp.pack(meta)
 	local ret, err = omap_udp_ch:send( meta..c_map )
-  if err then print(err) end
+  if err then print('OMAP send error:',err,#c_map,#meta) end
 	------------------
  
 	------------------

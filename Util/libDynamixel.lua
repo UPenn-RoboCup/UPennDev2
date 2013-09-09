@@ -657,7 +657,7 @@ libDynamixel.service = function( dynamixels, main )
         dynamixel.commands = {}
         local did_command = false
         if n_cmd_bytes>0 then
-          print('wrote',n_cmd_bytes)
+          --print('wrote',n_cmd_bytes)
           dynamixel.t_command = t
           did_command = true
           has_data, t = coroutine.yield()
@@ -737,9 +737,11 @@ libDynamixel.service = function( dynamixels, main )
     for i_fd,is_ready in pairs(ready) do
       -- Grab the dynamixel chain
       local who_to_service = fd_to_dynamixel[i_fd]
+      --[[
       if #who_to_service.commands>0 then
         print('n_commands',#who_to_service.commands)
       end
+      --]]
       -- Check if the Dynamixel has information available
       if not is_ready and who_to_service.is_reading and t<who_to_service.timeout then
         -- do not resume, since we are waiting on the data

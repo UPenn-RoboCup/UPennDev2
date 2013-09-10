@@ -7,7 +7,7 @@ local quaternion = require'quaternion'
 local libTransform = {}
 
 -- TODO: Make sure the helper functions are working properly!
-libTransform.rotx = function(t)
+libTransform.rotX = function(t)
   -- Homogeneous transformation representing a rotation of theta
   -- about the X axis.
   local ct = math.cos(t)
@@ -20,7 +20,7 @@ libTransform.rotx = function(t)
   return r
 end
 
-libTransform.roty = function(t)
+libTransform.rotY = function(t)
   -- Homogeneous transformation representing a rotation of theta
   -- about the Y axis.
   local ct = math.cos(t)
@@ -33,7 +33,7 @@ libTransform.roty = function(t)
   return r
 end
 
-libTransform.rotz = function(t)
+libTransform.rotZ = function(t)
   -- Homogeneous transformation representing a rotation of theta
   -- about the Z axis.
   local ct = math.cos(t)
@@ -60,7 +60,17 @@ libTransform.to_rpy = function( R )
   local y = math.atan2(R[2][1], R[1][1])
   local p = math.atan2(-R[3][1], math.sqrt(R[3][2]^2+R[3][3]^2))
   local r = math.atan2(R[3][2], R[3][3])
-  return {r,p,y}
+  return vector.new{r,p,y}
+end
+
+-- This gives xyz,rpy, 
+-- so should be better than the to_rpy function...
+function libTransform.position6D(tr)
+  return vector.new({
+  tr[1][4],tr[2][4],tr[3][4],0,0,0})
+  p[4] = math.atan2(tr[3][2],tr[3][3])
+  p[5] = -math.asin(tr[3][1])
+  p[6] = math.atan2(tr[2][1],tr[1][1])
 end
 
 -- From Yida, with a resourse
@@ -148,6 +158,59 @@ function libTransform.from_angle_axis( angle, axis )
   t[3][1] = z*x*nc-y*s
   t[3][2] = z*y*nc+x*s
   t[3][3] = z*z*nc+c
+  return t
+end
+
+-- Assume dipole and root are torch objects...
+function libTransform.from_dipole( dipole, root )
+  local z_axis = torch.Tensor{0,0,1}
+  local dot    = (dipole/torch.norm(dipole))*z_axis
+  local axis   = torch.cross(dipole,z_axis)
+  local angle  = 2*math.acos(dot)
+  local r = libTransform.from_angle_axis( angle, axis )
+  if root then
+    return torch.mm(libTransform.trans(root),r)
+  else
+    return r
+  end
+end
+
+-- from 6d x,y,z,r,p,y
+function libTransform.transform6D(p)
+  local t = {}
+
+  local cwx = math.cos(p[4])
+  local swx = math.sin(p[4])
+  local cwy = math.cos(p[5])
+  local swy = math.sin(p[5])
+  local cwz = math.cos(p[6])
+  local swz = math.sin(p[6])
+
+  local t = torch.eye(4)
+
+  t[1][1] = cwy*cwz
+  t[1][2] = swx*swy*cwz-cwx*swz
+  t[1][3] = cwx*swy*cwz+swx*swz
+  t[1][4] = p[1]
+  t[2][1] = cwy*swz
+  t[2][2] = swx*swy*swz+cwx*cwz
+  t[2][3] = cwx*swy*swz-swx*cwz
+  t[2][4] = p[2]
+  t[3][1] = -swy
+  t[3][2] = swx*cwy
+  t[3][3] = cwx*cwy
+  t[3][4] = p[3]
+
+  return t
+end
+
+-- Quicker inverse, since Transformation matrices are special cases
+function libTransform.inv(a)
+  local t = torch.eye(4)
+  -- Rotation component transposed
+  local r_t = a:sub(1,3,1,3):t()
+  -- Translation portion
+  t:sub(1,3,4,4):mv(r_t,a:sub(1,3,4,4)):mul(-1)
   return t
 end
 

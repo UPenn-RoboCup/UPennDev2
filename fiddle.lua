@@ -5,11 +5,13 @@ local libs = {
   'Body',
   'unix',
   'util',
-  'vector'
+  'vector',
+  'torch'
 }
 
 -- Load the libraries
 for _,lib in ipairs(libs) do _G[lib] = require(lib) end
+if torch then torch.Tensor = torch.DoubleTensor end
 
 -- FSM communicationg
 local listing = unix.readdir(HOME..'/Player')

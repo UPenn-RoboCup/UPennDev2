@@ -218,4 +218,28 @@ function libTransform.inv(a)
   return t
 end
 
+--[[
+  -- These should form an orthonormal basis
+  -- Each norm is 1
+  t2n = t2n / vector.norm(t2n);
+  s2s = s2s / vector.norm(s2s);
+  --Check the properties:
+  --if( t2n*s2s > 0.05 ) then
+  --print('Dot product should be zero: ', n2t*sL2sR);
+  --end
+  -- Find the cross product
+  chest = cross(s2s,t2n);
+
+  -- Remap the coordinates
+  u = vector.new({chest[3],chest[1],chest[2]})
+  v = vector.new({s2s[3],s2s[1],s2s[2]})
+  w = vector.new({t2n[3],t2n[1],t2n[2]})
+
+  -- Find the closest Orthonormal matrix
+  local matrix = require 'matrix'
+  M = matrix.transpose( matrix{u,v,w} )
+  -- Real Rotation Matrix
+  R = M*(matrix.transpose(M)*M)^-1/2
+--]]
+
 return libTransform

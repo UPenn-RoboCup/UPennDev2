@@ -30,7 +30,9 @@ function state.entry()
   t_finish = t
   
   -- TODO: Set walk.active to false, using mcm
-  -- TODO: Enqueue joint angle readings
+  -- Enqueue joint angle readings
+  Body.request_lleg_position()
+  Body.request_rleg_position()
   
   started = false
 
@@ -66,11 +68,14 @@ function state.update()
     util.approachTol( qWaist, qWaist_desired, dqWaistLimit, dt )
   Body.set_waist_command_position(qWaist_approach)
 
+  
   -- Acquire the joint positions of our legs
   if not started then
+
     -- Joint positions here come from the sensors!
-    local qLLeg = Body.get_lleg_position()
-    local qRLeg = Body.get_rleg_position()
+    local qLLeg, updatedL = Body.get_lleg_position()
+    local qRLeg, updatedR = Body.get_rleg_position()
+
     Body.set_lleg_command_position(qLLeg)
     Body.set_rleg_command_position(qRLeg)
     
@@ -98,6 +103,7 @@ function state.update()
   local qLegs = Kinematics.inverse_legs( pLLeg_desired, pRLeg_desired, pTorso_approach, 0 )
 
   if Config.stance.enable_legs then
+    print('here')
     Body.set_lleg_command_position( qLegs )  
     -- Once in tolerance, let the robot settle
     if t-t_finish>t_settle then return'done' end

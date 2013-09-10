@@ -146,7 +146,7 @@ walk.walkKickDef={}
 local stance={}
 stance.enable_sit = false
 -- centaur has no legs
-stance.enable_legs = false
+stance.enable_legs = true
 stance.delay = 80
 
 stance.hardnessLeg = 1

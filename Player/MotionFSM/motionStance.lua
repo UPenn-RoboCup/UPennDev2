@@ -64,7 +64,7 @@ function state.update()
 
   -- Zero the waist
   local qWaist = Body.get_waist_command_position()
-  local qWaist_approach,doneWaist = 
+  local qWaist_approach, doneWaist = 
     util.approachTol( qWaist, qWaist_desired, dqWaistLimit, dt )
   Body.set_waist_command_position(qWaist_approach)
 
@@ -103,12 +103,11 @@ function state.update()
   local qLegs = Kinematics.inverse_legs( pLLeg_desired, pRLeg_desired, pTorso_approach, 0 )
 
   if Config.stance.enable_legs then
-    print('here')
     Body.set_lleg_command_position( qLegs )  
     -- Once in tolerance, let the robot settle
     if t-t_finish>t_settle then return'done' end
   else
-    return doneWaist
+    return true
   end
   
 end

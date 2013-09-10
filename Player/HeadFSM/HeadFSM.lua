@@ -19,6 +19,7 @@ sm:add_state(headCenter)
 -- Setup the transistions for this FSM
 sm:set_transition(headIdle, 'tiltscan', headTiltScan)
 sm:set_transition(headIdle, 'teleop', headTeleop)
+sm:set_transition(headIdle, 'center', headCenter)
 --
 sm:set_transition(headTiltScan, 'tiltscan', headTiltScan)
 sm:set_transition(headTiltScan, 'reset', headIdle)

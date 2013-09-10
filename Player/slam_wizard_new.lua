@@ -61,17 +61,15 @@ local lidar1 -- chest
 ---------------------------------
 -- Filter Parameters
 -- TODO: the following should be put in vcm 
-local l0minIdx = -135*Body.DEG_TO_RAD
-local l0maxIdx = 135*Body.DEG_TO_RAD
-local l1minIdx = -45*Body.DEG_TO_RAD
-local l1maxIdx = 45*Body.DEG_TO_RAD
-
+local l0minFOV = -135*Body.DEG_TO_RAD
+local l0maxFOV =  135*Body.DEG_TO_RAD
+local l1minFOV = -45*Body.DEG_TO_RAD
+local l1maxIdx =  45*Body.DEG_TO_RAD
 local l0minHeight = -0.6 -- meters
 local l0maxHeight = 1.2
 -- We don't need height limits for chest lidar
 local minRange = 0.15 -- meters
 local maxRange = 28
-
 
 ---------------------------------
 -- Lidar processing params
@@ -81,89 +79,24 @@ lidar0_interval = 3 -- process every # frames
 lidar1_count = 0
 lidar1_interval = 3 -- process every # frames
 
-time_match = 0;
-time_total = 0;
+time_match = 0
+time_total = 0
 
 pre_pose = {0,0,0}
 
-
--- Setup metadata and tensors for a slam map
-local function setup_map( name )
-  local tbl = {}
-  -- Save the meta data for easy sending
-  tbl.meta = {}
-  tbl.meta.name = name
-  -- Type of compression
-  tbl.meta.c = 'jpeg'
-  -- Timestamp
-  tbl.meta.t = 0
-
-  -- Setup lidar object
-  -- Arguments: location, minRange, maxRange
-  -- minHeight, maxHeight, minIdx, maxIdx
-  if name == 'head' then
-    lidar0 = 
-    libLaser.new_lidar(
-      'head', 
-      minRange, maxRange, 
-      l0minHeight, l0maxHeight, 
-      l0minIdx, l0maxIdx )
-  else
-    lidar1 = 
-    libLaser.new_lidar(
-      'chest', 
-      minRange, maxRange, 
-      0,0, 
-      tbl.meta.fov_idx[1], tbl.meta.fov_idx[2] )
-  end
-
-  -- TODO: We don't need to keep all ranges...?
-  tbl.range = torch.FloatTensor(n_lidar_points):zero()
-
-  -- Subscribe to a lidar channel
-  tbl.lidar_ch  = simple_ipc.new_subscriber(name..'_lidar')
-
-  -- Find the offset for copying lidar readings into the torch object
-  tbl.offset_idx = tbl.meta.fov_idx[1] - 1
-  print('LIDAR OFFSET', name, tbl.offset_idx)
-  -- For streaming
-  tbl.needs_update = true
-
-  return tbl
-end
-
-------------------------------
--- Data copying helpers
--- Convert a pan angle_to_scanline to a column of the chest mesh image
-local function angle_to_scanline( meta, rad )
-  local start = meta.scanlines[1]
-  local stop  = meta.scanlines[2]
-  local res   = meta.resolution[1]
-  local ratio = (rad-start)/(stop-start)
-  -- Round
-  --local scanline = math.floor(ratio*res+.5)
-  local scanline = math.ceil(ratio*res)
-  -- Return a bounded value
-  return math.max( math.min(scanline, res), 1 )
-end
-------------------------------
-
-
+---------------------------------
+-- Callbacks for receiving lidar readings
 local function head_callback()
-
   -- Grab the data  
   local meta, has_more = head_lidar_ch:receive()
   local metadata = mp.unpack(meta)
-
   -- Grab the pitch angle (if off center, then maybe just escape)
   local angle = metadata.angle
   --head.meta.t = metadata.t
 
   -- Don't slam all the time
   lidar0_count = lidar0_count + 1;
-  if lidar0_count % lidar0_interval~=0 then
-    return
-  end
+  if lidar0_count%lidar0_interval~=0 then return end
 
   -- TODO: head_pitch
   if IS_WEBOTS then
@@ -270,9 +203,7 @@ local function head_callback()
   if Benchmark then
     print(string.format('SlamL0 took: \t\t%.2f ms',(t1-t0)*1000))
   end
-  
-  time_total = time_match + (t1-t0);
-  
+  time_total = time_match + (t1-t0)
 end
 
 
@@ -336,9 +267,9 @@ if true then return end
   -- Transform the points into the body frame
   ------------------
   -- Get the chest lidar current pose
-  local chest_roll = 0
+  local chest_roll  = 0
   local chest_pitch = 0
-  local chest_yaw = chest.scan_angles[scanline]
+  local chest_yaw  = chest.scan_angles[scanline]
   lidar1:transform(chest_roll, chest_pitch, chest_yaw)
   ------------------
 
@@ -363,7 +294,7 @@ end
 
 ------------------
 -- Start the timing
-local t = unix.time()
+local t = Body.get_time()
 local t_last = t
 local t_debug = 1 -- Print debug output every second
 ------------------
@@ -388,16 +319,7 @@ function slam.entry()
       'head', 
       minRange, maxRange, 
       l0minHeight, l0maxHeight, 
-      l0minIdx, l0maxIdx )
-    --[[
-    print('Init of head lidar:',
-      minRange, maxRange, 
-      l0minHeight, l0maxHeight, 
-      l0minIdx, l0maxIdx
-      )
-    print('ranges',lidar0.ranges:size(1))
-    os.exit()
-    --]]
+      l0minFOV, l0maxIdx )
   end
   if chest_lidar_ch then
     chest_lidar_ch.callback = chest_callback
@@ -406,7 +328,7 @@ function slam.entry()
       'chest', 
       minRange, maxRange, 
       l1minHeight, l1maxHeight, 
-      l1minIdx, l1maxIdx )
+      l1minFOV, l1maxIdx )
   end
 
   -- Set up omap messages sender on UDP

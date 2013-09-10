@@ -305,11 +305,13 @@ end
 ---------------------------
 -- Handle walk requests --
 ---------------------------
+--[[
 local walk_requests = {}
 -- Setting velocity
 walk_requests.some_request = function()
   print('some request')
 end
+--]]
 
 ---------------------------
 -- State machine methods --
@@ -380,6 +382,7 @@ function walk.update()
   ------------------------------------------
   -- Check for out of process events
   -- TODO: May not need this...
+  --[[
   local event, has_more
   repeat
     event, has_more = evts:receive(true)
@@ -389,6 +392,7 @@ function walk.update()
       if request then request() end
     end
   until not has_more
+  --]]
   ------------------------------------------
 
   -- SJ: Variable tStep support for walkkick

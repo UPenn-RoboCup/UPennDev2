@@ -642,7 +642,7 @@ if IS_WEBOTS then
 		1, -- Lidar pan
 	})
 	servo.rad_bias = vector.new({
-		0,0, -- head
+		0,-9.25, -- head
 		-90,-10,0,45,0,0,
 		0,0,0,0,0,0,
 		0,0,0,0,0,0,

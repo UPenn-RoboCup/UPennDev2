@@ -64,7 +64,7 @@ local lidar1 -- chest
 local l0minFOV = -135*Body.DEG_TO_RAD
 local l0maxFOV =  135*Body.DEG_TO_RAD
 local l1minFOV = -45*Body.DEG_TO_RAD
-local l1maxIdx =  45*Body.DEG_TO_RAD
+local l1maxFOV =  45*Body.DEG_TO_RAD
 local l0minHeight = -0.6 -- meters
 local l0maxHeight = 1.2
 -- We don't need height limits for chest lidar
@@ -319,7 +319,7 @@ function slam.entry()
       'head', 
       minRange, maxRange, 
       l0minHeight, l0maxHeight, 
-      l0minFOV, l0maxIdx )
+      l0minFOV, l0maxFOV )
   end
   if chest_lidar_ch then
     chest_lidar_ch.callback = chest_callback
@@ -328,7 +328,7 @@ function slam.entry()
       'chest', 
       minRange, maxRange, 
       l1minHeight, l1maxHeight, 
-      l1minFOV, l1maxIdx )
+      l1minFOV, l1maxFOV )
   end
 
   -- Set up omap messages sender on UDP

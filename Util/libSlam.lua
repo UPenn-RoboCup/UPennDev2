@@ -878,7 +878,10 @@ libSlam.processIMU = function( rpy, yawdot, t )
   IMU.yaw = rpy[3]
   IMU.dyaw = IMU.yaw - IMU.lastYaw
   dt = t - t_pre
-  IMU.yawdot = yawdot
+ -- IMU.yawdot = yawdot
+  --TODO: may not be better on real robot
+  -- Maybe filter the IMU data
+  IMU.yawdot = IMU.dyaw/dt
   --print('yawdot',yawdot)
   t_pre = t
   IMU.lastYaw = IMU.yaw

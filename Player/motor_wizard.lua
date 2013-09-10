@@ -33,6 +33,12 @@ local idx_to_dynamixel = {}
 local idx_to_ids  = {}
 local idx_to_vals = {}
 
+--------------------
+-- Initialize the dynamixels
+local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5A')
+local left_dynamixel  = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5B')
+local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
+
 --[[
 -- TODO: Battery (every second, update? via main routine...)
 local function update_battery()
@@ -52,7 +58,7 @@ end
 -- TODO: eliminate jcm, and use Body calls
 -- TODO: that might be bad for performance, though
 local update_read = function(self,data,register)
-  local t = Body.get_time()
+
   if type(data)~='table' then return end
   -- Update the shared memory
   for k,v in pairs(data) do
@@ -71,13 +77,13 @@ local update_read = function(self,data,register)
     if register=='position' then
       jcm.sensorPtr.position[idx] = Body.make_joint_radian( idx, v )
       -- Update the timestamp
-      jcm.treadPtr.position[idx] = t
+      jcm.treadPtr.position[idx] = self.t_read
     elseif register=='load' then
       if v>=1024 then v = v - 1024 end
       local load_ratio = v/10.24
       jcm.sensorPtr.load[idx] = load_ratio
       -- Update the timestamp
-      jcm.treadPtr.load[idx] = t
+      jcm.treadPtr.load[idx] = self.t_read
     elseif register=='battery' then
       -- Somehow make an estimate
     else
@@ -89,18 +95,12 @@ local update_read = function(self,data,register)
       end
       ptr[idx] = v
       -- Update the timestamp
-      jcm.treadPtr[register][idx] = t
+      jcm.treadPtr[register][idx] = self.t_read
     end
 
   end -- loop through data
 
 end -- read callback function
-
---------------------
--- Initialize the dynamixels
---local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5A')
---local left_dynamixel  = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5B')
-local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
 
 --------------------
 -- Check the dynamixels
@@ -164,7 +164,6 @@ signal.signal("SIGTERM", shutdown)
 local function entry()
 
   Body.entry()
-  -- Wipe the torque enable...
   
   jcm.set_actuator_torque_enable(jcm.get_actuator_torque_enable()*0)
   jcm.set_write_torque_enable(jcm.get_write_torque_enable()*0)
@@ -211,28 +210,49 @@ local function entry()
       io.write'Done!\n'
       io.flush()
     end
-    print(#dynamixel.mx_on_bus..' MX:',unpack(dynamixel.mx_on_bus))
-    print(#dynamixel.nx_on_bus..' NX:',unpack(dynamixel.nx_on_bus))
+    
+    -- Debug the chain a bit
+    local mx_table = {}
+    for _,id in ipairs(dynamixel.mx_on_bus) do
+      table.insert(mx_table,Body.jointNames[motor_to_joint[id]])
+    end
+    local nx_table = {}
+    for _,id in ipairs(dynamixel.nx_on_bus) do
+      table.insert(nx_table,Body.jointNames[motor_to_joint[id]])
+    end
+    print(util.color(dynamixel.name,'green'))
+    print(util.color(#dynamixel.mx_on_bus..' MX:','magenta'),
+      table.concat(mx_table,', '))
+    print(util.color(#dynamixel.nx_on_bus..' NX:','magenta'),
+      table.concat(nx_table,', '))
     
     -- TODO: Set the status return level on every startup?
     --local status = libDynamixel.set_nx_status_return_level(m,1,test_dynamixel)
     
     -- Perform a read to instantiate the motor commands and sensor positions
+    local status
     for _,id in ipairs(dynamixel.nx_on_bus) do
       local idx = motor_to_joint[id]
       
       -- Torque off the motor
-      libDynamixel.set_nx_torque_enable(id,0,dynamixel)
+      status = libDynamixel.set_nx_torque_enable(id,0,dynamixel)
+      assert(status, string.format('NX | %s: Did not torque off %s: %d',
+        dynamixel.name,Body.jointNames[idx],id) )
+      assert(status.error==0,
+        string.format("Torque enable error! %d", status.error) )
       dynamixel.t_command = Body.get_time()
 
       -- Read the NX motor positions
-      local pos_status = libDynamixel.get_nx_position(id,dynamixel)
-      assert(pos_status, string.format('%s: Did not find ID %s: %d',dynamixel.name,Body.jointNames[idx],id) )
+      status = libDynamixel.get_nx_position(id,dynamixel)
+      assert(status, string.format('NX | %s: No position for ID %s: %d',
+        dynamixel.name,Body.jointNames[idx],id) )
+      assert(status.error==0, 
+        string.format("Get position error! %d", status.error) )
       dynamixel.t_read = Body.get_time()
 
       -- Parse the value
-      local pos_parser = libDynamixel.byte_to_number[ #pos_status.parameter ]
-      local pos_val = pos_parser(unpack(pos_status.parameter))
+      local pos_parser = libDynamixel.byte_to_number[ #status.parameter ]
+      local pos_val = pos_parser(unpack(status.parameter))
       local rad = Body.make_joint_radian( idx, pos_val )
 
       -- Sync shared memory
@@ -245,9 +265,11 @@ local function entry()
       idx_to_vals[idx] = dynamixel.packet_vals
       
       -- Debug output
+      --[[
       print( util.color(Body.jointNames[idx],'yellow'), '\n',
         string.format('\t%d (%d) @ %.2f, step: %d',
         idx,id,rad*Body.RAD_TO_DEG,pos_val) )
+      --]]
 
     end -- NX position sync
     
@@ -256,17 +278,24 @@ local function entry()
       local idx = motor_to_joint[id]
       
       -- Torque off the motor
-      libDynamixel.set_mx_torque_enable(id,0,dynamixel)
+      status = libDynamixel.set_mx_torque_enable(id,0,dynamixel)
+      assert(status, string.format('MX | %s: Did not torque off %s: %d',
+        dynamixel.name,Body.jointNames[idx],id) )
+      assert(status.error==0,
+        string.format("Torque enable error! %d", status.error) )
       dynamixel.t_command = Body.get_time()
       
       -- Read the motor position
-      local pos_status = libDynamixel.get_mx_position(id,dynamixel)
-      assert(pos_status, string.format('%s: Did not find ID %s: %d',dynamixel.name,Body.jointNames[idx],id) )
+      status = libDynamixel.get_mx_position(id,dynamixel)
+      assert(status, string.format('MX | %s: No position for ID %s: %d',
+        dynamixel.name,Body.jointNames[idx],id) )
+      assert(status.error==0, 
+        string.format("Get position error! %d", status.error) )
       dynamixel.t_read = Body.get_time()
 
       -- Parse the value
-      local pos_parser = libDynamixel.byte_to_number[ #pos_status.parameter ]
-      local pos_val = pos_parser(unpack(pos_status.parameter))
+      local pos_parser = libDynamixel.byte_to_number[ #status.parameter ]
+      local pos_val = pos_parser(unpack(status.parameter))
       local rad = Body.make_joint_radian( idx, pos_val )
 
       -- Sync shared memory
@@ -279,9 +308,11 @@ local function entry()
       idx_to_vals[idx] = dynamixel.mx_packet_vals
       
       -- Debug output
+      --[[
       print( util.color(Body.jointNames[idx],'yellow'), '\n',
         string.format('\t%d (%d) @ %.2f, step: %d',
         idx,id,rad*Body.RAD_TO_DEG,pos_val) )
+      --]]
     end -- MX position sync
   end -- for each dynamixel chain
 end -- entry
@@ -349,7 +380,6 @@ local update_requests = function(t)
   for register,read_ptr in pairs(jcm.readPtr) do
     local get_func = libDynamixel['get_nx_'..register]
     local mx_get_func = libDynamixel['get_mx_'..register]
-    local t_ptr = jcm.trequestPtr[register]
     for idx=1,#read_ptr do
       is_read = read_ptr[idx]
       -- Check if we are to read each of the values
@@ -360,8 +390,6 @@ local update_requests = function(t)
         local d = idx_to_dynamixel[idx]
         if d and #d.requests==0 then
           table.insert( idx_to_ids[idx], joint_to_motor[idx] )
-          -- Update the request time
-          t_ptr[idx] = t
         end
       end
     end -- for each enable
@@ -416,7 +444,7 @@ local main = function()
     if t_diff>1 then
       local debug_tbl = {}
       table.insert(debug_tbl, string.format(
-        '\nMain loop: %7.2f Hz (LED: %d)',
+        'Main loop: %7.2f Hz (LED: %d)\n',
         main_cnt/t_diff,led_state))
       led_state = 1-led_state
       for _,d in ipairs(dynamixels) do
@@ -436,12 +464,14 @@ local main = function()
           string.format('%s chain %s',d.name, dstatus),
           status_color[dstatus]))
         table.insert(debug_tbl,string.format(
-          '\n\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',
+          '\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',
           t-d.t_read,t-d.t_command))
+        --[[
         table.insert(debug_tbl,string.format(
           '\n\t%d requests in the pipeline',#d.requests))
         table.insert(debug_tbl,string.format(
           '\n\t%d commands in the pipeline',#d.commands))
+        --]]
       end
       os.execute('clear')
       print( table.concat(debug_tbl,'\n') )

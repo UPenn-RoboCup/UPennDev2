@@ -399,6 +399,7 @@ for k,v in pairs( mx_registers ) do
     -- Grab any status returns
     if using_status_return and single then
       local status = get_status( bus.fd )
+      if not status then return end
       local value = byte_to_number[sz]( unpack(status.parameter) )
       return status, value
     end
@@ -719,8 +720,9 @@ libDynamixel.service = function( dynamixels, main )
             end
             -- Remember the read time
             dynamixel.t_read = t
-            -- Yield the table of motor values and the register name
-            has_data, t = coroutine.yield( values, register )
+            if dynamixel.callback then dynamixel:callback(values,register) end
+            -- Yield to the next process
+            has_data, t = coroutine.yield()
           end
         end -- if requested data
 
@@ -758,7 +760,7 @@ libDynamixel.service = function( dynamixels, main )
         assert(unix.read(i_fd)~=-1,'Unplugged?')
       elseif is_ready or #who_to_service.commands>0 or #who_to_service.requests>0 then
         -- Resume the thread
-        local status_code, param, reg = coroutine.resume(who_to_service.thread,is_ready,t)
+        local status_code = coroutine.resume(who_to_service.thread,is_ready,t)
         if not status_code then
           print( 'Dead dynamixel coroutine!', who_to_service.name, param )
           who_to_service:close()
@@ -768,9 +770,6 @@ libDynamixel.service = function( dynamixels, main )
             if fd==i_fd then i_to_remove = i end
           end
           table.remove(dynamixel_fds,i_to_remove)
-        end
-        if param and who_to_service.callback then
-          who_to_service:callback( param, reg )
         end
       end -- if resuming
     end -- pairs(ready)

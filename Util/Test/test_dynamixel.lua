@@ -2,16 +2,17 @@ dofile'../../include.lua'
 -- Libraries
 local unix = require 'unix'
 local libDynamixel = require'libDynamixel'
+local util = require'util'
 
 ----[[
 --local test_dynamixel = libDynamixel.new_bus()
 local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5A')
 local left_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5B')
 local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
-local test_dynamixel = spine_dynamixel
 
+-- Choose a chain
+local test_dynamixel = right_dynamixel
 assert(test_dynamixel)
-
 print('Using',test_dynamixel.ttyname)
 
 ----[[
@@ -19,27 +20,32 @@ local found = test_dynamixel:ping_probe()
 for _,m in ipairs(found) do print(string.format('\nFound ID %2d',m)) end
 --]]
 
-os.exit()
+--os.exit()
 
 --local status = libDynamixel.get_mx_max_torque(15,test_dynamixel)
 --print( libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter)) )
 
 
-
-local found = {14,16,18}
+found = found or {27,28}
+print('Inspecting',table.concat(found,','))
 for _,m in ipairs(found) do
   print(string.format('\nFound ID %2d',m))
   
-  --[[
+  ----[[
   local status = libDynamixel.get_nx_status_return_level(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
     print(string.format('Status return: %d',value))
-    if value==2 then
-      local status = libDynamixel.set_nx_status_return_level(m,1,test_dynamixel)
+    if value~=2 then
+      local status = libDynamixel.set_nx_status_return_level(m,2,test_dynamixel)
+      util.ptable(status)
     end
+  else
+    print('No status return??')
   end
+  --]]
 
+  --[[
   local status = libDynamixel.get_nx_delay(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
@@ -48,13 +54,17 @@ for _,m in ipairs(found) do
       local status = libDynamixel.set_nx_delay(m,0,test_dynamixel)
     end
   end
+  --]]
 
+  --[[
   local status = libDynamixel.get_nx_model_num(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
     print(string.format('Model Number: %d',value))
   end
+  --]]
   
+  --[[
   local status = libDynamixel.get_nx_firmware(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
@@ -62,11 +72,13 @@ for _,m in ipairs(found) do
   end
   --]]
   
+  --[[
   local status = libDynamixel.get_mx_position(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
     print(string.format('Position: %d',value))
   end
+  --]]
 
 end
 

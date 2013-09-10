@@ -27,7 +27,7 @@ local RAD_TO_DEG = 180/math.pi
 local Body = {}
 Body.DEG_TO_RAD = DEG_TO_RAD
 Body.RAD_TO_DEG = RAD_TO_DEG
-Body.get_time = unix.time
+local get_time = unix.time
 
 --------------------------------
 -- Shared memory layout
@@ -279,6 +279,7 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
         if idx2 then
           local up2date = true
           for i=idx,idx2 do
+            print('req,read',treq_ptr[i],tread_ptr[i])
             if treq_ptr[i]>tread_ptr[i] then up2date=false break end
           end
           return vector.new(pointer:table(idx,idx2)), up2date
@@ -323,12 +324,19 @@ end
 -- Body sensor read requests
 -- jcm should be the API compliance test
 for sensor, pointer in pairs(jcm.readPtr) do
+  local treq_ptr = jcm.trequestPtr[sensor]
   local req_key = 'request_'..sensor
   local req_func = function(idx)
+    local t = get_time()
+    print('treq',t)
     if type(idx)=='number' then
       pointer[idx] = 1
+      treq_ptr[idx] = t
     else
-      for _,i in ipairs(idx) do pointer[i] = 1 end
+      for _,i in ipairs(idx) do
+        pointer[i] = 1
+        treq_ptr[i] = t
+      end
     end
     return
 	end
@@ -622,7 +630,7 @@ if IS_WEBOTS then
   local jpeg       = require'jpeg'
   require'wcm'
   --local png        = require'png'
-  Body.get_time    = webots.wb_robot_get_time
+  get_time    = webots.wb_robot_get_time
   -- Setup the webots tags
   local tags = {}
   local lidar_timeStep = 25
@@ -958,7 +966,7 @@ if IS_WEBOTS then
 end -- webots check
 
 -- Exports for use in other functions
-
+Body.get_time = get_time
 -- Real THOR-OP (Cenatur uses ankles for wheels, maybe?)
 Body.indexHead = 1   -- Head: 1 2
 Body.nJointHead = 2

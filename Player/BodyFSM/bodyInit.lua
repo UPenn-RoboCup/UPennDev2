@@ -20,6 +20,12 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
+  
+  -- Torque on the motors...
+  Body.set_waist_torque_enable(1)
+  Body.set_head_torque_enable(1)
+  Body.set_larm_torque_enable(1)
+  Body.set_rarm_torque_enable(1)
 
   arm_ch:send'init'
   lidar_ch:send'pan'

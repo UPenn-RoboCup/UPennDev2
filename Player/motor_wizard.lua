@@ -444,8 +444,7 @@ local main = function()
     if t_diff>1 then
       local debug_tbl = {}
       table.insert(debug_tbl, string.format(
-        'Main loop: %7.2f Hz (LED: %d)\n',
-        main_cnt/t_diff,led_state))
+        'Main loop: %7.2f Hz\n', main_cnt/t_diff))
       led_state = 1-led_state
       for _,d in ipairs(dynamixels) do
         --[[

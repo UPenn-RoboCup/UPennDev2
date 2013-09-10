@@ -20,7 +20,6 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
-  Body.set_head_command_position( 0 )
   return 'done'
 end
 

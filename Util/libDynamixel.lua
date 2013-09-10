@@ -697,7 +697,7 @@ libDynamixel.service = function( dynamixels, main )
           --print('Expecting',nids)
           local register =request.reg
           local status_str = ''
-          while t<dynamixel.timeout and n_recv<nids do
+          while t<dynamixel.timeout do
             local new_status_str = unix.read( fd )
             assert(new_status_str~=-1,string.format('BAD READ: %s',dynamixel.name))
             -- What is the meaning of a non-read here?
@@ -721,6 +721,9 @@ libDynamixel.service = function( dynamixels, main )
             -- Remember the read time
             dynamixel.t_read = t
             if dynamixel.callback then dynamixel:callback(values,register) end
+            -- If done, then do not yield...
+            -- Then, we write a command to the FD more quickly
+            if n_recv==nids then break end
             -- Yield to the next process
             has_data, t = coroutine.yield()
           end

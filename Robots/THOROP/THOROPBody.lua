@@ -279,7 +279,6 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
         if idx2 then
           local up2date = true
           for i=idx,idx2 do
-            print('req,read',treq_ptr[i],tread_ptr[i])
             if treq_ptr[i]>tread_ptr[i] then up2date=false break end
           end
           return vector.new(pointer:table(idx,idx2)), up2date
@@ -328,12 +327,18 @@ for sensor, pointer in pairs(jcm.readPtr) do
   local req_key = 'request_'..sensor
   local req_func = function(idx)
     local t = get_time()
-    print('treq',t)
-    if type(idx)=='number' then
+    local qt = type(idx)
+    if qt=='number' then
       pointer[idx] = 1
       treq_ptr[idx] = t
-    else
+    elseif qt=='table' then
       for _,i in ipairs(idx) do
+        pointer[i] = 1
+        treq_ptr[i] = t
+      end
+    else
+      -- All joint request
+      for i=1,nJoint do
         pointer[i] = 1
         treq_ptr[i] = t
       end

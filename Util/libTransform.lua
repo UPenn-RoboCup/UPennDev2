@@ -2,6 +2,7 @@
 local torch = require'torch'
 torch.Tensor = torch.DoubleTensor
 local quaternion = require'quaternion'
+local util = require'util'
 
 -- TODO: Is this actually a good name?
 local libTransform = {}
@@ -60,17 +61,18 @@ libTransform.to_rpy = function( R )
   local y = math.atan2(R[2][1], R[1][1])
   local p = math.atan2(-R[3][1], math.sqrt(R[3][2]^2+R[3][3]^2))
   local r = math.atan2(R[3][2], R[3][3])
-  return vector.new{r,p,y}
+  return torch.Tensor{r,p,y}
 end
 
 -- This gives xyz,rpy, 
 -- so should be better than the to_rpy function...
 function libTransform.position6D(tr)
-  return vector.new({
-  tr[1][4],tr[2][4],tr[3][4],0,0,0})
-  p[4] = math.atan2(tr[3][2],tr[3][3])
-  p[5] = -math.asin(tr[3][1])
-  p[6] = math.atan2(tr[2][1],tr[1][1])
+  return torch.Tensor{
+  tr[1][4],tr[2][4],tr[3][4],
+  math.atan2(tr[3][2],tr[3][3]),
+  -math.asin(tr[3][1]),
+  math.atan2(tr[2][1],tr[1][1])
+  }
 end
 
 -- From Yida, with a resourse
@@ -177,7 +179,6 @@ end
 
 -- from 6d x,y,z,r,p,y
 function libTransform.transform6D(p)
-  local t = {}
 
   local cwx = math.cos(p[4])
   local swx = math.sin(p[4])
@@ -209,8 +210,11 @@ function libTransform.inv(a)
   local t = torch.eye(4)
   -- Rotation component transposed
   local r_t = a:sub(1,3,1,3):t()
+  t:sub(1,3,1,3):copy(r_t)
   -- Translation portion
-  t:sub(1,3,4,4):mv(r_t,a:sub(1,3,4,4)):mul(-1)
+  local p   = a:select(2,4):narrow(1,1,3)
+  local t_p = t:select(2,4):narrow(1,1,3)
+  t_p:mv(r_t,p):mul(-1)
   return t
 end
 

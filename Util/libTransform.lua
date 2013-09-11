@@ -46,11 +46,11 @@ libTransform.rotZ = function(t)
   return r
 end
 
-libTransform.trans = function(v)
+libTransform.trans = function(dx, dy, dz)
   local t = torch.eye(4)
-  t[1][4] = v[1]
-  t[2][4] = v[2]
-  t[3][4] = v[3]
+  t[1][4] = dx
+  t[2][4] = dy
+  t[3][4] = dz
   return t
 end
 
@@ -95,36 +95,37 @@ libTransform.from_rpy = function( rpy )
 end
 
 -- Rotation Matrix to quaternion
--- from Yida
-libTransform.to_quaternion = function(R)
+-- from Yida.  Adapted to take a transformation matrix
+libTransform.to_quaternion = function(t)
+  local offset = torch.Tensor{t[1][4],t[2][4],t[3][4]}
   local q = quaternion.new()
-  local tr = R[1][1] + R[2][2] + R[3][3]
+  local tr = t[1][1] + t[2][2] + t[3][3]
   if tr > 0 then
     local S = math.sqrt(tr + 1.0) * 2
     q[1] = 0.25 * S
-    q[2] = (R[3][2] - R[2][3]) / S
-    q[3] = (R[1][3] - R[3][1]) / S
-    q[4] = (R[2][1] - R[1][2]) / S
-  elseif R[1][1] > R[2][2] and R[1][1] > R[3][3] then
-    local S = math.sqrt(1.0 + R[1][1] - R[2][2] - R[3][3]) * 2
-    q[1] = (R[3][2] - R[2][3]) / S
+    q[2] = (t[3][2] - t[2][3]) / S
+    q[3] = (t[1][3] - t[3][1]) / S
+    q[4] = (t[2][1] - t[1][2]) / S
+  elseif t[1][1] > t[2][2] and t[1][1] > t[3][3] then
+    local S = math.sqrt(1.0 + t[1][1] - t[2][2] - t[3][3]) * 2
+    q[1] = (t[3][2] - t[2][3]) / S
     q[2] = 0.25 * S
-    q[3] = (R[1][2] + R[2][1]) / S 
-    q[4] = (R[1][3] + R[3][1]) / S
-  elseif R[2][2] > R[3][3] then
-    local S = math.sqrt(1.0 + R[2][2] - R[1][1] - R[3][3]) * 2
-    q[1] = (R[1][3] - R[3][1]) / S
-    q[2] = (R[1][2] + R[2][1]) / S 
+    q[3] = (t[1][2] + t[2][1]) / S 
+    q[4] = (t[1][3] + t[3][1]) / S
+  elseif t[2][2] > t[3][3] then
+    local S = math.sqrt(1.0 + t[2][2] - t[1][1] - t[3][3]) * 2
+    q[1] = (t[1][3] - t[3][1]) / S
+    q[2] = (t[1][2] + t[2][1]) / S 
     q[3] = 0.25 * S
-    q[4] = (R[2][3] + R[3][2]) / S
+    q[4] = (t[2][3] + t[3][2]) / S
   else
-    local S = math.sqrt(1.0 + R[3][3] - R[1][1] - R[2][2]) * 2
-    q[1] = (R[2][1] - R[1][2]) / S
-    q[2] = (R[1][3] + R[3][1]) / S 
-    q[3] = (R[2][3] + R[3][2]) / S
+    local S = math.sqrt(1.0 + t[3][3] - t[1][1] - t[2][2]) * 2
+    q[1] = (t[2][1] - t[1][2]) / S
+    q[2] = (t[1][3] + t[3][1]) / S 
+    q[3] = (t[2][3] + t[3][2]) / S
     q[4] = 0.25 * S
   end
-  return q
+  return q, offset
 end
 
 function libTransform.from_quaternion( q, root )
@@ -138,9 +139,7 @@ function libTransform.from_quaternion( q, root )
   t[3][1] = 2 * q[2] * q[4] - 2 * q[3] * q[1]
   t[3][2] = 2 * q[3] * q[4] + 2 * q[2] * q[1]
   t[3][3] = 1 - 2 * q[2] * q[2] - 2 * q[3] * q[3]
-  if root then
-    return torch.mm(libTransform.trans(root),t)
-  end
+  if root then return libTransform.trans(unpack(root))*t end
   return t
 end
 
@@ -183,11 +182,8 @@ function libTransform.from_dipole( dipole, root )
   local axis   = torch.cross(z_axis,dipole)
   local angle  = math.acos(z_axis:dot(dipole))
   local r = libTransform.from_angle_axis( angle, axis )
-  if root then
-    return libTransform.trans(root)*r
-  else
-    return r
-  end
+  if root then return libTransform.trans(unpack(root))*r end
+  return r
 end
 
 -- from 6d x,y,z,r,p,y

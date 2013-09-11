@@ -70,22 +70,6 @@ function Transform.trans(dx, dy, dz)
   return setmetatable(t, mt)
 end
 
--- From NSL
--- I think this is wrong...
---http://www.gregslabaugh.name/publications/euler.pdf
-
---[[
-function Transform.getEuler(t)
---returns euler angle (X,Y,Z) from rotation matrix
---Rotation sequence is Roll-Pitch-Yaw (rotY-rotX-rotZ)
-   local e=vector.zeros(3)
-   e[1]=-math.asin(t[3][2])
-   e[2]=-math.atan2(-t[3][1],t[3][3])
-   e[3]=-math.atan2(-t[1][2],t[2][2])
-   return e
-end
---]]
-
 function Transform.getRPY(t)
   -- http://planning.cs.uiuc.edu/node103.html
   -- returns [roll, pitch, yaw] vector
@@ -106,36 +90,53 @@ function Transform.position6D(tr)
 end
 
 -- Rotation Matrix to quaternion
--- from Yida
-Transform.to_quaternion = function( R )
+-- from Yida.  Adapted to take a transformation matrix
+Transform.to_quaternion = function( t )
+  local offset = vector.new{t[1][4],t[2][4],t[3][4]}
   local q = quaternion.new()
-  local tr = R[1][1] + R[2][2] + R[3][3]
+  local tr = t[1][1] + t[2][2] + t[3][3]
   if tr > 0 then
     local S = math.sqrt(tr + 1.0) * 2
     q[1] = 0.25 * S
-    q[2] = (R[3][2] - R[2][3]) / S
-    q[3] = (R[1][3] - R[3][1]) / S
-    q[4] = (R[2][1] - R[1][2]) / S
-  elseif R[1][1] > R[2][2] and R[1][1] > R[3][3] then
-    local S = math.sqrt(1.0 + R[1][1] - R[2][2] - R[3][3]) * 2
-    q[1] = (R[3][2] - R[2][3]) / S
+    q[2] = (t[3][2] - t[2][3]) / S
+    q[3] = (t[1][3] - t[3][1]) / S
+    q[4] = (t[2][1] - t[1][2]) / S
+  elseif t[1][1] > t[2][2] and t[1][1] > t[3][3] then
+    local S = math.sqrt(1.0 + t[1][1] - t[2][2] - t[3][3]) * 2
+    q[1] = (t[3][2] - t[2][3]) / S
     q[2] = 0.25 * S
-    q[3] = (R[1][2] + R[2][1]) / S 
-    q[4] = (R[1][3] + R[3][1]) / S
-  elseif R[2][2] > R[3][3] then
-    local S = math.sqrt(1.0 + R[2][2] - R[1][1] - R[3][3]) * 2
-    q[1] = (R[1][3] - R[3][1]) / S
-    q[2] = (R[1][2] + R[2][1]) / S 
+    q[3] = (t[1][2] + t[2][1]) / S 
+    q[4] = (t[1][3] + t[3][1]) / S
+  elseif t[2][2] > t[3][3] then
+    local S = math.sqrt(1.0 + t[2][2] - t[1][1] - t[3][3]) * 2
+    q[1] = (t[1][3] - t[3][1]) / S
+    q[2] = (t[1][2] + t[2][1]) / S 
     q[3] = 0.25 * S
-    q[4] = (R[2][3] + R[3][2]) / S
+    q[4] = (t[2][3] + t[3][2]) / S
   else
-    local S = math.sqrt(1.0 + R[3][3] - R[1][1] - R[2][2]) * 2
-    q[1] = (R[2][1] - R[1][2]) / S
-    q[2] = (R[1][3] + R[3][1]) / S 
-    q[3] = (R[2][3] + R[3][2]) / S
+    local S = math.sqrt(1.0 + t[3][3] - t[1][1] - t[2][2]) * 2
+    q[1] = (t[2][1] - t[1][2]) / S
+    q[2] = (t[1][3] + t[3][1]) / S 
+    q[3] = (t[2][3] + t[3][2]) / S
     q[4] = 0.25 * S
   end
-  return q
+  return q, offset
+end
+
+-- Can give the position
+Transform.from_quaternion = function(q,pos)
+  local t = Transform.eye()
+  t[1][1] = 1 - 2 * q[3] * q[3] - 2 * q[4] * q[4]
+  t[1][2] = 2 * q[2] * q[3] - 2 * q[4] * q[1]
+  t[1][3] = 2 * q[2] * q[4] + 2 * q[3] * q[1]
+  t[2][1] = 2 * q[2] * q[3] + 2 * q[4] * q[1]
+  t[2][2] = 1 - 2 * q[2] * q[2] - 2 * q[4] * q[4]
+  t[2][3] = 2 * q[3] * q[4] - 2 * q[2] * q[1]
+  t[3][1] = 2 * q[2] * q[4] - 2 * q[3] * q[1]
+  t[3][2] = 2 * q[3] * q[4] + 2 * q[2] * q[1]
+  t[3][3] = 1 - 2 * q[2] * q[2] - 2 * q[3] * q[3]
+  if pos then return Transform.trans(unpack(pos))*t end
+  return t
 end
 
 function Transform.transform6D(p)
@@ -197,7 +198,7 @@ end
 
 -- Use the 6D vector
 local function tostring(t, formatstr)
-  return tostring( Transform.position6D( t ) )
+  return tostring( Transform.position6D(t), formatstr )
 end
 
 mt.__mul = mul

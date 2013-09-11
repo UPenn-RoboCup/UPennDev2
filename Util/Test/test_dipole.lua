@@ -1,7 +1,13 @@
 dofile'../../include.lua'
 os.execute('clear')
 
-T = require'libTransform'
+try_torch = false
+if try_torch then
+  T = require'libTransform'
+else
+  T = require'Transform'
+end
+
 q = require'quaternion'
 v = require'vector'
 util = require'util'
@@ -12,18 +18,20 @@ tri = v.new{ .3, .1, .2 }
 -- form the dipole
 dipole = tri-x
 dipole_sz = v.norm(dipole)
-dipole_torch = torch.Tensor(dipole)
 dipole_norm = dipole / dipole_sz
-dipole_norm_torch = torch.Tensor(dipole_norm)
 
 -- Grab the various expressions of the dipole
-T_dipole = T.from_dipole( dipole_norm_torch, x )
---util.ptorch( T_dipole )
 q_dipole = q.from_dipole( dipole_norm )
 --print('Quaternion',q_dipole)
+if try_torch then
+  dipole_torch = torch.Tensor(dipole)
+  dipole_norm_torch = torch.Tensor(dipole_norm)
+  T_dipole = T.from_dipole( dipole_norm_torch, x )
+  --util.ptorch( T_dipole )
+end
 
 -- Debug
-print('Dipole',util.color(tostring(dipole),'blue'))
+print('Dipole',util.color(tostring(dipole),'blue'),'@',x)
 --[[
 print'========'
 print('Unit  ',util.color(tostring(dipole_norm),'green'))
@@ -53,6 +61,7 @@ local strata = .1
 -- from what side do we grip
 local angle_of_attack = math.pi/6
 -- percent along the object's axis
+-- (+1 and <0 are allowed, to an extent...)
 local climb = .5
 
 -- Calculated values (for visualization, too)
@@ -60,14 +69,14 @@ cathode = T.from_quaternion(q_dipole,x)
 print(util.color('cathode','magenta'))
 util.ptorch( T.position6D(cathode))
 --
-anode = cathode*T.trans{0,0,dipole_sz}
+anode = cathode*T.trans(0,0,dipole_sz)
 print(util.color('anode','yellow'))
 util.ptorch( T.position6D(anode))
 --
-centroid = cathode*T.trans{0,0,climb*dipole_sz}
+centroid = cathode*T.trans(0,0,climb*dipole_sz)
 print(util.color('centroid','green'))
 util.ptorch(T.position6D(centroid))
 -- 
-orbit = cathode*T.rotZ(angle_of_attack)*T.trans{strata,0,climb*dipole_sz}
+orbit = cathode*T.rotZ(angle_of_attack)*T.trans(strata,0,climb*dipole_sz)
 print(util.color('orbit','cyan'))
 util.ptorch(T.position6D(orbit))

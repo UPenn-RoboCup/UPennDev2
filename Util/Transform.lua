@@ -70,7 +70,7 @@ function Transform.trans(dx, dy, dz)
   return setmetatable(t, mt)
 end
 
-function Transform.getRPY(t)
+function Transform.to_rpy(t)
   -- http://planning.cs.uiuc.edu/node103.html
   -- returns [roll, pitch, yaw] vector
   local e = vector.zeros(3)
@@ -81,12 +81,12 @@ function Transform.getRPY(t)
 end
 
 function Transform.position6D(tr)
-  local p = vector.new({
-	tr[1][4],tr[2][4],tr[3][4],0,0,0})
-  p[4] = math.atan2(tr[3][2],tr[3][3])
-  p[5] = -math.asin(tr[3][1])
-  p[6] = math.atan2(tr[2][1],tr[1][1])
-  return p
+  return vector.new{
+  tr[1][4],tr[2][4],tr[3][4],
+  math.atan2(tr[3][2],tr[3][3]),
+  -math.asin(tr[3][1]),
+  math.atan2(tr[2][1],tr[1][1])
+  }
 end
 
 -- Rotation Matrix to quaternion

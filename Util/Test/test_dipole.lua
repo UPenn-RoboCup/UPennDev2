@@ -1,7 +1,7 @@
 dofile'../../include.lua'
 os.execute('clear')
 
-try_torch = false
+try_torch = true
 if try_torch then
   T = require'libTransform'
 else
@@ -56,9 +56,9 @@ util.ptorch(T.inv(T_q))
 -- Grip --
 ----------
 -- User controlled variables
--- girth of the object/grip
+-- girth of the object/grip (>0)
 local strata = .1 
--- from what side do we grip
+-- from what side do we grip (mod_angle)
 local angle_of_attack = math.pi/6
 -- percent along the object's axis
 -- (+1 and <0 are allowed, to an extent...)
@@ -66,17 +66,31 @@ local climb = .5
 
 -- Calculated values (for visualization, too)
 cathode = T.from_quaternion(q_dipole,x)
-print(util.color('cathode','magenta'))
+print(util.color('cathode','magenta')) -- x
 util.ptorch( T.position6D(cathode))
 --
 anode = cathode*T.trans(0,0,dipole_sz)
-print(util.color('anode','yellow'))
+print(util.color('anode','yellow')) -- triangle
 util.ptorch( T.position6D(anode))
 --
 centroid = cathode*T.trans(0,0,climb*dipole_sz)
-print(util.color('centroid','green'))
+print(util.color('centroid','green')) -- box
 util.ptorch(T.position6D(centroid))
 -- 
 orbit = cathode*T.rotZ(angle_of_attack)*T.trans(strata,0,climb*dipole_sz)
-print(util.color('orbit','cyan'))
+print(util.color('orbit','cyan')) -- circle
 util.ptorch(T.position6D(orbit))
+
+--------
+-- With overall robot
+--------
+-- Torso rotation
+torso = T.rotX(10*math.pi/180)*T.rotY(15*math.pi/180)*T.rotZ(5*math.pi/180)
+--print(torso)
+-- Global pose
+local pose = v.pose{15,25,43*math.pi/180}
+body = T.trans(pose.x,pose.y,0)*T.rotZ(pose.a)
+-- Overall robot
+robot = body * torso
+print(util.color('robot','red'))
+util.ptorch(T.position6D(robot))

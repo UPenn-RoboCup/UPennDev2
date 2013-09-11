@@ -128,7 +128,7 @@ libTransform.to_quaternion = function(R)
   return q
 end
 
-function libTransform.from_quaternion( q )
+function libTransform.from_quaternion( q, root )
   local t = torch.eye(4)
   t[1][1] = 1 - 2 * q[3] * q[3] - 2 * q[4] * q[4]
   t[1][2] = 2 * q[2] * q[3] - 2 * q[4] * q[1]
@@ -139,6 +139,9 @@ function libTransform.from_quaternion( q )
   t[3][1] = 2 * q[2] * q[4] - 2 * q[3] * q[1]
   t[3][2] = 2 * q[3] * q[4] + 2 * q[2] * q[1]
   t[3][3] = 1 - 2 * q[2] * q[2] - 2 * q[3] * q[3]
+  if root then
+    return torch.mm(libTransform.trans(root),t)
+  end
   return t
 end
 
@@ -166,8 +169,8 @@ end
 -- Assume dipole and root are torch objects...
 function libTransform.from_dipole( dipole, root )
   local z_axis = torch.Tensor{0,0,1}
-  local dot    = (dipole/torch.norm(dipole))*z_axis
-  local axis   = torch.cross(dipole,z_axis)
+  local dot    = torch.dot(dipole, z_axis)
+  local axis   = torch.cross(dipole, z_axis)
   local angle  = 2*math.acos(dot)
   local r = libTransform.from_angle_axis( angle, axis )
   if root then

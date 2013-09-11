@@ -91,10 +91,14 @@ function quaternion.from_angle_axis(angle,axis)
 end
 
 -- For the clicking of the object to pickup
+-- dipole must be normalized, first
 function quaternion.from_dipole( dipole )
   local z_axis = vector.new{0,0,1}
-  local axis = vector.cross(dipole,z_axis)
-  local dot = (dipole/vector.norm(dipole))*z_axis
+  local axis   = vector.cross(dipole,z_axis)
+  local angle  = math.acos(dipole * z_axis)
+  return quaternion.from_angle_axis(angle,axis)
+  --[[
+  local dot    = dipole * z_axis
   -- Forward-inverse identities
   -- http://mathworld.wolfram.com/InverseTrigonometricFunctions.html
   local fii = math.sqrt(1-dot^2)
@@ -104,6 +108,7 @@ function quaternion.from_dipole( dipole )
     fii*axis[2],
     fii*axis[3]
   }
+  --]]
 end
 
 function quaternion.angle_axis(q)

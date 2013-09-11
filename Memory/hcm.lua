@@ -68,5 +68,19 @@ shared_data.door.open_ang   = vector.zeros(1)
 -- 1: right
 shared_data.door.hand   = vector.zeros(1)
 
+-- Dipoles for arbitrary grabbing
+-- TODO: Use this in place of the wheel/door?
+shared_data.left = {}
+shared_data.left.cathode = vector.zeros(3)
+shared_data.left.anode = vector.zeros(3)
+-- strata (girth) / angle of attack / climb (a->c percentage)
+shared_data.left.grip = vector.zeros(3)
+----
+shared_data.right = {}
+shared_data.right.cathode = vector.zeros(3)
+shared_data.right.anode = vector.zeros(3)
+-- strata (girth) / angle of attack / climb (a->c percentage)
+shared_data.right.grip = vector.zeros(3)
+
 -- Call the initializer
 memory.init_shm_segment(..., shared_data, shared_data_sz)

@@ -29,8 +29,9 @@ use_udp=true
 local udp_depth, udp_color
 if use_udp then
   local udp = require'udp'
-  udp_depth = udp.new_sender('localhost',43230)
-  udp_color = udp.new_sender('localhost',43231)
+  print('Connected to ports',Config.net.rgbd_depth,Config.net.rgbd_color)
+  udp_depth = udp.new_sender('localhost',Config.net.rgbd_depth)
+  udp_color = udp.new_sender('localhost',Config.net.rgbd_color)
 end
 
 -- Set up the ZMQ sending
@@ -49,7 +50,7 @@ local t_debug = 1
 function shutdown()
   print'Shutting down the OpenNI device...'
   openni.shutdown()
-  error('Finished!')
+  os.exit()
 end
 signal.signal("SIGINT",  shutdown)
 signal.signal("SIGTERM", shutdown)
@@ -86,7 +87,8 @@ local t_last_depth_udp = Body.get_time()
 local function send_depth_udp(metadata)
   local net_settings = vcm.get_kinect_net_depth()
   -- Streaming
-  if net_settings[1]==0 then return end
+  local stream = net_settings[1]
+  if stream==0 then return end
   -- Compression
   local c_depth
   if net_settings[2]==1 then
@@ -100,8 +102,10 @@ local function send_depth_udp(metadata)
   local meta = mp.pack(metadata)
   -- Send over UDP
   local ret_d,err_d = udp_depth:send( meta..c_depth )
+  if err_d then print(err_d) end
   t_last_depth_udp = Body.get_time()
-  if net_settings[1]==1 then
+  -- Tidy
+  if stream==1 then
     net_settings[1] = 0
     vcm.set_kinect_net_depth(net_settings)
     return

@@ -70,7 +70,7 @@ end
 function quaternion.vector(q)
   assert( math.abs(q[1])<=1, 'Bad unit quaternion' )
   local alphaW = 2*math.acos(q[1])
-  local v = vector.new({0,0,0})
+  local v = vector.new{0,0,0}
   -- Avoid the divide by zero scenario
   if alphaW > 1e-6 then
     v[1] = q[2] / math.sin(alphaW/2) * alphaW
@@ -81,8 +81,9 @@ function quaternion.vector(q)
 end
 
 function quaternion.from_angle_axis(angle,axis)
-  axis = axis/vector.norm(axis)
-  local s = math.sin(angle/2)
+  local norm = vector.norm(axis)
+  if norm<1e-6 then return quaternion.new() end
+  local s = math.sin(angle/2)/norm
   return quaternion.new({
     math.cos(angle/2),
     s*axis[1],
@@ -98,21 +99,7 @@ function quaternion.from_dipole( dipole )
 --  local axis   = vector.cross(dipole,z_axis)
   local axis   = vector.cross(z_axis,dipole)
   local angle  = math.acos(dipole * z_axis)
-  print( util.color('AA from q','red'),angle*180/math.pi,axis)
-  print('dipole',dipole)
   return quaternion.from_angle_axis(angle,axis)
-  --[[
-  local dot    = dipole * z_axis
-  -- Forward-inverse identities
-  -- http://mathworld.wolfram.com/InverseTrigonometricFunctions.html
-  local fii = math.sqrt(1-dot^2)
-  return quaternion.new{
-    dot,
-    fii*axis[1],
-    fii*axis[2],
-    fii*axis[3]
-  }
-  --]]
 end
 
 function quaternion.angle_axis(q)

@@ -4,7 +4,7 @@ local Config = {}
 -- General parameters --
 ------------------------
 Config.PLATFORM_NAME = 'THOROP'
-Config.USE_LOCALHOST = true
+Config.USE_LOCALHOST = false
 
 -----------------------
 -- Device Interfaces --

@@ -16,7 +16,6 @@ assert(color_info.width==320,'Bad color resolution')
 local png  = require'png'
 local mp   = require'msgpack'
 local jpeg = require'jpeg'
-jpeg.set_quality( 80 )
 
 -- Access point
 local depth, color
@@ -29,9 +28,12 @@ use_udp=true
 local udp_depth, udp_color
 if use_udp then
   local udp = require'udp'
-  print('Connected to ports',Config.net.rgbd_depth,Config.net.rgbd_color)
-  udp_depth = udp.new_sender('localhost',Config.net.rgbd_depth)
-  udp_color = udp.new_sender('localhost',Config.net.rgbd_color)
+  local dport,cport = Config.net.rgbd_depth,Config.net.rgbd_color
+  local op_addr = Config.net.operator.wired
+  print('Connected to ports',dport,cport)
+  print('Operator:',op_addr)
+  udp_depth = udp.new_sender(op_addr,dport)
+  udp_color = udp.new_sender(op_addr,cport)
 end
 
 -- Set up the ZMQ sending
@@ -93,10 +95,14 @@ local function send_depth_udp(metadata)
   local c_depth
   if net_settings[2]==1 then
     metadata.c = 'jpeg'
-    c_depth = jpeg.compress_16(depth,depth_info.width,depth_info.height,4)
+    jpeg.set_quality( net_settings[3] )
+    local shift_amt = net_settings[4]
+    c_depth = jpeg.compress_16(depth,depth_info.width,depth_info.height,shift_amt)
   elseif net_settings[2]==2 then
-    metadata.c = 'png'
-    c_depth = png.compress(depth, depth_info.width,depth_info.height, 2)
+    print'Bad implementation of png!'
+    return
+    --metadata.c = 'png'
+    --c_depth = png.compress(depth, depth_info.width,depth_info.height, 2)
   end
   -- Metadata
   local meta = mp.pack(metadata)

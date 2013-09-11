@@ -73,9 +73,10 @@ shared.kinect.lut   = 262144
 -- Network Requests: [stream,compression,fps]
 -- Stream | 0: None, 1: Single Frame, 2: Stream
 -- Compression | 0: None, 1: JPEG, 2: PNG
--- Interval | Frames per second
-shared.kinect.net_color = vector.zeros(3)
-shared.kinect.net_depth = vector.zeros(3)
+-- Quality | JPEG quality from 0-100
+shared.kinect.net_color = vector.new{0,1,85}
+-- Shift Amount | (Depth only)
+shared.kinect.net_depth = vector.new{0,1,95,4}
 
 -- Customize the shared memory size, due to using userdata
 shsize.head_camera = shared.head_camera.image + shared.head_camera.lut + 2^16

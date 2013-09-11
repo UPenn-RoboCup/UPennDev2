@@ -2,7 +2,6 @@
 local torch = require'torch'
 torch.Tensor = torch.DoubleTensor
 local quaternion = require'quaternion'
-local util = require'util'
 
 -- TODO: Is this actually a good name?
 local libTransform = {}
@@ -145,8 +144,20 @@ function libTransform.from_quaternion( q, root )
   return t
 end
 
+function libTransform.to_angle_axis( tr )
+  local axis = torch.Tensor(3)
+  axis[1] = tr[3][2]-tr[2][3]
+  axis[2] = tr[1][3]-tr[3][1]
+  axis[3] = tr[2][1]-tr[1][2]
+  local r = torch.norm(axis)
+  local t = tr[1][1]+tr[2][2]+tr[3][3]
+  local angle = math.atan2(r,t-1)
+  return angle, axis
+end
+
 -- http://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
 function libTransform.from_angle_axis( angle, axis )
+  axis:div(axis:norm())
   local x = axis[1]
   local y = axis[2]
   local z = axis[3]
@@ -169,9 +180,8 @@ end
 -- Assume dipole and root are torch objects...
 function libTransform.from_dipole( dipole, root )
   local z_axis = torch.Tensor{0,0,1}
-  local dot    = torch.dot(dipole, z_axis)
-  local axis   = torch.cross(dipole, z_axis)
-  local angle  = 2*math.acos(dot)
+  local angle  = math.acos(torch.dot(dipole,z_axis))
+  local axis   = torch.cross(z_axis,dipole)
   local r = libTransform.from_angle_axis( angle, axis )
   if root then
     return torch.mm(libTransform.trans(root),r)

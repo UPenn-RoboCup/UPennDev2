@@ -81,6 +81,7 @@ function quaternion.vector(q)
 end
 
 function quaternion.from_angle_axis(angle,axis)
+  axis = axis/vector.norm(axis)
   local s = math.sin(angle/2)
   return quaternion.new({
     math.cos(angle/2),
@@ -94,8 +95,11 @@ end
 -- dipole must be normalized, first
 function quaternion.from_dipole( dipole )
   local z_axis = vector.new{0,0,1}
-  local axis   = vector.cross(dipole,z_axis)
+--  local axis   = vector.cross(dipole,z_axis)
+  local axis   = vector.cross(z_axis,dipole)
   local angle  = math.acos(dipole * z_axis)
+  print( util.color('AA from q','red'),angle*180/math.pi,axis)
+  print('dipole',dipole)
   return quaternion.from_angle_axis(angle,axis)
   --[[
   local dot    = dipole * z_axis

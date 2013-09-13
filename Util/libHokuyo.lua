@@ -6,6 +6,7 @@ local libHokuyo = {}
 local HokuyoPacket = require'HokuyoPacket'
 local stty = require'stty'
 local unix = require'unix'
+local tcp = require'tcp'
 
 --------------------
 -- libHokuyo constants
@@ -209,6 +210,56 @@ local set_baudrate = function(self, baud)
 	local cmd = 'SS'..string.format("%6d", baud)..'\n';
 	local res = write_command(self.fd, cmd, '04')
 end
+
+---------------------------
+-- Service multiple hokuyos over ethernet
+libHokuyo.new_hokuyo_net = function(host, port)
+
+	-- Open the tcp client
+  local fd = tcp.open(host, port, 1)
+  
+	-----------
+	-- Begin the Hokuyo object
+	local obj = {}
+
+	-----------
+	-- Set the TCP data
+	obj.fd = fd
+	obj.host = host 
+	obj.port = port
+	obj.close = function(self)
+		return unix.close(self.fd) == 0
+	end
+  
+	-----------
+	-- Set the methods for accessing the data
+	obj.stream_on = stream_on
+	obj.stream_off = stream_off
+	obj.get_scan = get_scan
+  obj.set_baudrate = set_baudrate
+  obj.get_sensor_params = get_sensor_params
+  obj.get_sensor_info = get_sensor_info
+  obj.callback = nil
+	-- TODO: Use sensor_params.scan_rate
+	obj.update_time = 1/40
+	-----------
+
+	-----------
+	-- Setup the Hokuyo properly
+  if not obj:stream_off() then
+    obj:close()
+    return nil
+  end
+--	obj:set_baudrate(baud)
+	obj.params = obj:get_sensor_params()
+	obj.info = obj:get_sensor_info()
+	-----------
+
+	-----------
+	-- Return the hokuyo object
+	return obj
+end
+
 
 ---------------------------
 -- Service multiple hokuyos

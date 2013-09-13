@@ -4,16 +4,18 @@ local unix = require 'unix'
 local libDynamixel = require'libDynamixel'
 local util = require'util'
 
---[[
-local new_dynamixel = libDynamixel.new_bus()
-local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5A')
-local left_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5B')
-local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
+----[[
+--local new_dynamixel = libDynamixel.new_bus()
+local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3ABW9A')
+local left_arm_and_spine  = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
+local spine_dynamixel = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
 --]]
+--[[
 local right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
 local left_arm_and_spine = libDynamixel.new_bus'/dev/ttyUSB1' --left arm
 local right_leg = libDynamixel.new_bus'/dev/ttyUSB2'
 local left_leg = libDynamixel.new_bus'/dev/ttyUSB3'
+--]]
 
 -- Choose a chain
 local test_dynamixel = left_arm_and_spine
@@ -22,17 +24,15 @@ print('Using',test_dynamixel.ttyname)
 
 --[[
 local found = test_dynamixel:ping_probe()
-for _,m in ipairs(found) do print(string.format('\nFound ID %2d',m)) end
---]]
+print('Inspecting',table.concat(found,','))
+----]]
+found = {2,4,6,8,10,12,14,29,30,32,34,36,37}
 
 --os.exit()
 
 --local status = libDynamixel.get_mx_max_torque(15,test_dynamixel)
 --print( libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter)) )
 
-
-found = found or {}
-print('Inspecting',table.concat(found,','))
 for _,m in ipairs(found) do
   print(string.format('\nFound ID %2d',m))
   
@@ -61,7 +61,7 @@ for _,m in ipairs(found) do
   end
   --]]
 
-  --[[
+  ----[[
   local status = libDynamixel.get_nx_model_num(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
@@ -69,7 +69,7 @@ for _,m in ipairs(found) do
   end
   --]]
   
-  --[[
+  ----[[
   local status = libDynamixel.get_nx_firmware(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
@@ -117,7 +117,8 @@ if status then
 end
 --]]
 
---]]
+
+--[[
 found = {2,4,6,8,10,12,14,30}--,32,34,36,37
 while true do
 os.execute('clear')
@@ -133,3 +134,4 @@ end
 print(table.concat(pos_tbl,'\n'))
 unix.usleep(1e5)
 end
+--]]

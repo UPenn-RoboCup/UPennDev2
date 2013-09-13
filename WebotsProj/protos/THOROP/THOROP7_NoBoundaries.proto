@@ -131,7 +131,7 @@ Supervisor {
     }
 
     DEF Right_shoulder_pitch Servo {
-      translation -0.216 -0.008 0
+      translation -0.233 -0.008 0
       rotation -1 0 0 0
       children [
         DEF Right_shoulder_pitch Transform {
@@ -148,18 +148,18 @@ Supervisor {
             DEF Right_shoulder_yaw Servo {
               children [
                 DEF Right_elbow_pitch Servo {
-                  translation 0 -0.246 0.03
+                  translation 0 -0.246 0.030
                   rotation -1 0 0 0.7854
                   children [
                     DEF Right_wrist_yaw Servo {
-                      translation 0 -0.216 -0.03
+                      translation 0 -0.190 -0.030
                       children [
                         DEF Right_wrist_roll Servo {
                           rotation 0 0 -1 0
                           children [
 ###ADDED WRISTYAW2 JOINT
                             DEF Right_wrist_yaw2 Servo {
-                              translation 0 -0.10 0
+                              translation 0 -0.130 0
                               rotation 0 1 0 0
                               children [
 #############
@@ -179,13 +179,13 @@ Supervisor {
 			          name "r_wrist_grip1"
 			          children[
 			            Transform{
-		                translation 0 -0.06 0
+		                translation 0 -0.04 0
                     children [
-                      Shape{geometry Box {size 0.02 0.12 0.02}}
+                      Shape{geometry Box {size 0.02 0.08 0.02}}
 			              ]
                   }
       			      Transform{
-                    translation -0.025 -0.12 0
+                    translation -0.025 -0.08 0
                     children [
                       Shape{geometry Box {size 0.05 0.02 0.02}}
 			              ]
@@ -194,11 +194,11 @@ Supervisor {
                 boundingObject Group{
                   children[
                     Transform {
-                      translation 0 -0.06 0
-                      children [Box {size 0.02 0.12 0.02}]
+                      translation 0 -0.04 0
+                      children [Box {size 0.02 0.08 0.02}]
                     }
 		                Transform {
-                      translation -0.025 -0.12 0
+                      translation -0.025 -0.08 0
                       children [Box {size 0.05 0.02 0.02}]
                     }
                   ]
@@ -211,13 +211,13 @@ Supervisor {
 			         name "r_wrist_grip2"
       		     children[
 	               Transform{
-                   translation 0 -0.06 0
+                   translation 0 -0.04 0
                    children [
-                     Shape{geometry Box {size 0.02 0.12 0.02}}
+                     Shape{geometry Box {size 0.02 0.08 0.02}}
      			         ]
                  }
           			 Transform{
-                   translation 0.025 -0.12 0
+                   translation 0.025 -0.08 0
                    children [
                      Shape{geometry Box {size 0.05 0.02 0.02}}
                    ]
@@ -226,11 +226,11 @@ Supervisor {
               boundingObject Group{
                 children[
                   Transform{
-                    translation 0 -0.06 0
-                    children [Box {size 0.02 0.12 0.02}]
+                    translation 0 -0.04 0
+                    children [Box {size 0.02 0.08 0.02}]
                   }
                   Transform{
-                    translation 0.025 -0.12 0
+                    translation 0.025 -0.08 0
                     children [Box {size 0.05 0.02 0.02}]
                   }
                 ]
@@ -243,27 +243,27 @@ Supervisor {
                name "r_wrist_grip3"
                children[
                  Transform{
-                   translation 0 -0.06 0
+                   translation 0 -0.04 0
                    children [
-                     Shape{geometry Box {size 0.02 0.12 0.02}}
+                     Shape{geometry Box {size 0.02 0.08 0.02}}
                    ]
                  }
                  Transform{
-                   translation 0.025 -0.12 0
+                   translation 0.025 -0.08 0
                    children [
-                     Shape{geometry Box {size 0.05 0.02 0.02}}
+                     Shape{geometry Box {size 0.05 0.04 0.02}}
                    ]
                  }
               ]
               boundingObject Group{
                 children[
                   Transform{
-                    translation 0 -0.06 0
-                    children [Box {size 0.02 0.12 0.02}]
+                    translation 0 -0.04 0
+                    children [Box {size 0.02 0.08 0.02}]
                   }
                   Transform{
-                    translation 0.025 -0.12 0
-                    children [Box {size 0.05 0.02 0.02}]
+                    translation 0.025 -0.08 0
+                    children [Box {size 0.05 0.04 0.02}]
                   }
                 ]
               }
@@ -286,9 +286,9 @@ Supervisor {
                           controlP 16
                         }
                         DEF Right_wrist2 Transform {
-                          translation 0 -0.05 0
+                          translation 0 -0.065 0
                           children [
-                            Shape{geometry Box {size 0.04 0.10 0.04}}
+                            Shape{geometry Box {size 0.04 0.130 0.04}}
                           ]
                         }                        
 ################
@@ -432,7 +432,7 @@ Supervisor {
       controlP 16
     }
     DEF Left_shoulder_pitch Servo {
-      translation 0.216 -0.008 0
+      translation 0.233 -0.008 0
       rotation 1 0 0 0
       children [
         DEF Left_shoulder_roll Servo {
@@ -445,14 +445,14 @@ Supervisor {
                   rotation 1 0 0 -0.7854
                   children [
                     DEF Left_wrist_yaw Servo {
-                      translation 0 -0.216 -0.03
+                      translation 0 -0.190 -0.03
                       children [
                         DEF Left_wrist_roll Servo {
                           rotation 0 0 -1 0
                           children [
 ###ADDED WRISTYAW2 JOINT
                             DEF Left_wrist_yaw2 Servo {
-                              translation 0 -0.10 0
+                              translation 0 -0.130 0
                               rotation 0 1 0 0
                               children [
 #############
@@ -472,13 +472,13 @@ Supervisor {
 					          name "l_wrist_grip1"
 					          children[
 					            Transform{
-                        translation 0 -0.06 0
+                        translation 0 -0.04 0
                         children [
-                          Shape{geometry Box {size 0.02 0.12 0.02}}
+                          Shape{geometry Box {size 0.02 0.08 0.02}}
           					    ]
                       }
 					            Transform{
-                        translation -0.025 -0.12 0
+                        translation -0.025 -0.08 0
                         children [
                           Shape{geometry Box {size 0.05 0.02 0.02}}
           					    ]
@@ -487,11 +487,11 @@ Supervisor {
                     boundingObject Group{
                       children[
                         Transform {
-                          translation 0 -0.06 0
-                          children [Box {size 0.02 0.12 0.02}]
+                          translation 0 -0.04 0
+                          children [Box {size 0.02 0.08 0.02}]
                         }
                         Transform {
-                          translation -0.025 -0.12 0
+                          translation -0.025 -0.08 0
                           children [Box {size 0.05 0.02 0.02}]
                         }
                       ]
@@ -504,13 +504,13 @@ Supervisor {
 					          name "l_wrist_grip2"
 					          children[
 					            Transform{
-                        translation 0 -0.06 0
+                        translation 0 -0.04 0
                         children [
-                          Shape{geometry Box {size 0.02 0.12 0.02}}
+                          Shape{geometry Box {size 0.02 0.08 0.02}}
            						  ]
                       }
 					            Transform{
-                        translation 0.025 -0.12 0
+                        translation 0.025 -0.08 0
                         children [
                           Shape{geometry Box {size 0.05 0.02 0.02}}
           					    ]
@@ -519,11 +519,11 @@ Supervisor {
                     boundingObject Group{
                       children[
                         Transform {
-                          translation 0 -0.06 0
-                            children [Box {size 0.02 0.12 0.02}]
+                          translation 0 -0.04 0
+                            children [Box {size 0.02 0.08 0.02}]
                         }
                         Transform {
-                          translation 0.025 -0.12 0
+                          translation 0.025 -0.08 0
                           children [Box {size 0.05 0.02 0.02}]
                         }
                       ]
@@ -536,13 +536,13 @@ Supervisor {
                     name "l_wrist_grip3"
                     children[
                       Transform{
-                        translation 0 -0.06 0
+                        translation 0 -0.04 0
                         children [
-                          Shape{geometry Box {size 0.02 0.12 0.02}}
+                          Shape{geometry Box {size 0.02 0.08 0.02}}
                         ]
                       }
                       Transform{
-                        translation -0.025 -0.12 0
+                        translation -0.025 -0.08 0
                         children [
                           Shape{geometry Box {size 0.05 0.02 0.02}}
                         ]
@@ -551,11 +551,11 @@ Supervisor {
                     boundingObject Group{
                       children[
                         Transform {
-                          translation 0 -0.06 0
-                          children [Box {size 0.02 0.12 0.02}]
+                          translation 0 -0.04 0
+                          children [Box {size 0.02 0.08 0.02}]
                         }
                         Transform {
-                          translation -0.025 -0.12 0
+                          translation -0.025 -0.08 0
                           children [Box {size 0.05 0.02 0.02}]
                         }
                       ]
@@ -579,9 +579,9 @@ Supervisor {
                           controlP 16
                         }
                         DEF Left_wrist2 Transform {
-                          translation 0 -0.05 0
+                          translation 0 -0.065 0
                           children [
-                            Shape{geometry Box {size 0.04 0.10 0.04}}
+                            Shape{geometry Box {size 0.04 0.130 0.04}}
                           ]
                         }                        
 ################

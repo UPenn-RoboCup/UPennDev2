@@ -120,17 +120,19 @@ local function stream_mesh(type)
   if net_settings[2]==1 then
     -- jpeg
     type.meta.c = 'jpeg'
-    c_mesh = jpeg.compress_gray(
-    type.mesh_byte:storage():pointer(),
-    type.mesh_byte:size(2),
-    type.mesh_byte:size(1) )
+    c_mesh = jpeg.compress_gray( type.mesh_byte:storage():pointer(),
+      type.mesh_byte:size(2), type.mesh_byte:size(1) )
   elseif net_settings[2]==2 then
     -- zlib
     type.meta.c = 'zlib'
     c_mesh = zlib.compress(
       type.mesh_byte:storage():pointer(),
-      type.mesh_byte:nElement()
-    )
+      type.mesh_byte:nElement() )
+  elseif net_settings[2]==3 then
+    -- png
+    type.meta.c = 'png'
+    c_mesh = png.compress(type.mesh_byte:storage():pointer(),
+      type.mesh_byte:size(2), type.mesh_byte:size(1), 1)
   else
     -- raw data?
     return

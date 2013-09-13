@@ -417,12 +417,13 @@ static int lua_update_rgbd(lua_State *L) {
 
   depth->readFrame( dframe );
   color->readFrame( cframe );
-  /*
+  
   lua_pushlightuserdata( L, (void*)(dframe->getData()) );
   lua_pushlightuserdata( L, (void*)(cframe->getData()) );
-  */
+  /*
   lua_pushlstring( L, (char*)(dframe->getData()), 320*240*2 );
   lua_pushlstring( L, (char*)(cframe->getData()), 320*240*3 );
+  */
 	
   return 2;
 }

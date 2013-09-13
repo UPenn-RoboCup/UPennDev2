@@ -38,7 +38,7 @@ shared.head_lidar.fov      = vector.new({-60,60})*DEG_TO_RAD
 shared.head_lidar.depths      = vector.new({.1,5})
 -- Network Requests: [stream,compression,fps]
 -- Stream | 0: None, 1: Single Frame, 2: Stream
--- Compression | 0: None, 1: JPEG, 2: zlib
+-- Compression | 0: None, 1: JPEG, 2: zlib, 3: PNG
 -- Interval | Frames per second
 shared.head_lidar.net      = vector.zeros(3)
 
@@ -58,7 +58,7 @@ shared.chest_lidar.fov      = vector.new({-60,60})*DEG_TO_RAD
 shared.chest_lidar.depths      = vector.new({.1,5})
 -- Network Requests: [stream,compression,fps]
 -- Stream | 0: None, 1: Single Frame, 2: Stream
--- Compression | 0: None, 1: JPEG, 2: zlib
+-- Compression | 0: None, 1: JPEG, 2: zlib, 3: PNG
 -- Interval | Frames per second
 shared.chest_lidar.net      = vector.zeros(3)
 
@@ -67,23 +67,20 @@ shared.chest_lidar.net      = vector.zeros(3)
 shared.kinect       = {}
 -- Timestamp of last acquisition
 shared.kinect.t     = vector.zeros(1)
--- RGB for the kinect
--- Look up table is 2^18 bytes
-shared.kinect.lut   = 262144
+-- when compressing to 0-255, care about points within these depths
+shared.kinect.depths   = vector.new({.5,2})
 -- Network Requests: [stream,compression,fps]
 -- Stream | 0: None, 1: Single Frame, 2: Stream
--- Compression | 0: None, 1: JPEG, 2: PNG
+-- Compression | 0: None, 1: JPEG, 2: PNG, 3: PNG
 -- Quality | JPEG quality from 0-100
 shared.kinect.net_color = vector.new{0,1,85}
 -- Shift Amount | (Depth only)
-shared.kinect.net_depth = vector.new{0,1,95,4}
+shared.kinect.net_depth = vector.new{0,1,95}
 
 -- Customize the shared memory size, due to using userdata
 shsize.head_camera = shared.head_camera.image + shared.head_camera.lut + 2^16
 shsize.head_lidar  = shared.head_lidar.scan + 2^16
 shsize.chest_lidar = shared.chest_lidar.scan + 2^16
-shsize.kinect      = shared.kinect.lut + 2^16
---shsize.kinect      = shared.kinect.color + shared.kinect.depth + shared.kinect.lut + 2^16
 
 ------------------------
 -- Ultrasound

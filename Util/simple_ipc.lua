@@ -33,14 +33,13 @@ simple_ipc.n_zmq_threads = 2
 simple_ipc.local_prefix = 'ipc:///tmp/'
 -- Set the intercomputer interface
 if simple_ipc.intercom_interface then
-  print( string.format(
+  local msg = string.format(
 	'Selecting (%s) as the inter-pc interface\nUsing address (%s)',
   simple_ipc.intercom_interface, simple_ipc.intercom_interface_ip)
-	)
   simple_ipc.intercom_prefix = 
 	'epgm://'..simple_ipc.intercom_interface_ip..';239.192.1.1:'
 else
-  print( 'There is no inter-pc interface, using TCP' )
+  local msg = 'There is no inter-pc interface, using TCP'
   simple_ipc.intercom_prefix = 'tcp://*:'
 end
 
@@ -54,7 +53,7 @@ simple_ipc.new_publisher = function( channel, inverted, addr, filter )
   elseif channel_type=="number" then
     channel_obj.name = simple_ipc.intercom_prefix..channel
   elseif channel_type=="table" and channel.name and channel.filter~=filter then
-    print('Copying '..channel.name..'!' )
+    --print('Copying '..channel.name..'!' )
     -- Copy and apply a different filter
     -- In this way, we do not rebind :)
     channel_obj.socket_handle = channel.socket_handle
@@ -67,7 +66,7 @@ simple_ipc.new_publisher = function( channel, inverted, addr, filter )
     return
   end
   assert(channel_obj.name)
-  print('Publishing on',channel_obj.name,'with filter',filter)
+  --print('Publishing on',channel_obj.name,'with filter',filter)
 
   channel_obj.context_handle = zmq.init( simple_ipc.n_zmq_threads )
   assert( channel_obj.context_handle )
@@ -125,7 +124,7 @@ simple_ipc.new_subscriber = function( channel, inverted, filter, addr )
   end
 
   assert(channel_obj.name)
-  print('Subscribing on',channel_obj.name)
+  --print('Subscribing on',channel_obj.name)
 
   channel_obj.context_handle = zmq.init( simple_ipc.n_zmq_threads )
   assert( channel_obj.context_handle )
@@ -182,7 +181,7 @@ simple_ipc.new_requester = function( channel, addr, filter )
     channel_obj.name = 
       simple_ipc.intercom_prefix:gsub('*',addr or 'localhost')..channel
   elseif channel_type=="table" and channel.name and channel.filter~=filter then
-    print('Copying',channel.name )
+    --print('Copying',channel.name )
     -- Copy and apply a different filter
     -- In this way, we do not rebind :)
     channel_obj.socket_handle = channel.socket_handle
@@ -195,7 +194,7 @@ simple_ipc.new_requester = function( channel, addr, filter )
     return
   end
   assert(channel_obj.name)
-  print('Requesting on',channel_obj.name,'with filter',filter)
+  --print('Requesting on',channel_obj.name,'with filter',filter)
 
   channel_obj.context_handle = zmq.init( simple_ipc.n_zmq_threads )
   assert( channel_obj.context_handle )
@@ -261,7 +260,7 @@ simple_ipc.new_replier = function( channel, addr )
   end
 
   assert(channel_obj.name)
-  print('Replying on',channel_obj.name)
+  --print('Replying on',channel_obj.name)
 
   channel_obj.context_handle = zmq.init( simple_ipc.n_zmq_threads )
   assert( channel_obj.context_handle )

@@ -2,6 +2,9 @@ dofile'../include.lua'
 local Body   = require'Body'
 local openni = require 'openni'
 local signal = require'signal'
+local carray = require'carray'
+local torch  = require'torch'
+torch.Tensor = torch.DoubleTensor
 require'vcm'
 
 local n_users = openni.startup()
@@ -47,7 +50,7 @@ end
 -- Set up timing debugging
 local cnt = 0;
 local t_last = Body.get_time()
-local t_debug = 1
+local t_debug = 5
 
 function shutdown()
   print'Shutting down the OpenNI device...'
@@ -108,6 +111,7 @@ local function send_depth_udp(metadata)
   local meta = mp.pack(metadata)
   -- Send over UDP
   local ret_d,err_d = udp_depth:send( meta..c_depth )
+  --print('sent',ret_d)
   if err_d then print(err_d) end
   t_last_depth_udp = Body.get_time()
   -- Tidy
@@ -123,6 +127,8 @@ while true do
 
   -- Acquire the Data
   depth, color = openni.update_rgbd()
+  local d_container = torch.ShortStorage(depth,320*240)
+
   -- Check the time of acquisition
   local t = Body.get_time()
   
@@ -134,8 +140,8 @@ while true do
   if use_zmq then
     local meta = mp.pack(meta)
     -- Send over ZMQ
-    rgbd_color_ch:send({meta,color})
-    rgbd_depth_ch:send({meta,depth})
+    rgbd_color_ch:send({meta,carray.byte(color,320*240*3)})
+    rgbd_depth_ch:send({meta,carray.short(depth,320*240)})
   end
 
   if use_udp then

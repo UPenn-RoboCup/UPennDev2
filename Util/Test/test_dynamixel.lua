@@ -4,18 +4,23 @@ local unix = require 'unix'
 local libDynamixel = require'libDynamixel'
 local util = require'util'
 
-----[[
---local test_dynamixel = libDynamixel.new_bus()
+--[[
+local new_dynamixel = libDynamixel.new_bus()
 local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5A')
 local left_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5B')
 local spine_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3AAV5C')
+--]]
+local right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
+local left_arm_and_spine = libDynamixel.new_bus'/dev/ttyUSB1' --left arm
+local right_leg = libDynamixel.new_bus'/dev/ttyUSB2'
+local left_leg = libDynamixel.new_bus'/dev/ttyUSB3'
 
 -- Choose a chain
-local test_dynamixel = right_dynamixel
+local test_dynamixel = left_arm_and_spine
 assert(test_dynamixel)
 print('Using',test_dynamixel.ttyname)
 
-----[[
+--[[
 local found = test_dynamixel:ping_probe()
 for _,m in ipairs(found) do print(string.format('\nFound ID %2d',m)) end
 --]]
@@ -26,12 +31,12 @@ for _,m in ipairs(found) do print(string.format('\nFound ID %2d',m)) end
 --print( libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter)) )
 
 
-found = found or {27,28}
+found = found or {}
 print('Inspecting',table.concat(found,','))
 for _,m in ipairs(found) do
   print(string.format('\nFound ID %2d',m))
   
-  ----[[
+  --[[
   local status = libDynamixel.get_nx_status_return_level(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
@@ -111,5 +116,20 @@ if status then
   end
 end
 --]]
-if true then return end
+
 --]]
+found = {2,4,6,8,10,12,14,30}--,32,34,36,37
+while true do
+os.execute('clear')
+print('Positions')
+local pos_tbl = {}
+for _,m in ipairs(found) do
+  local status = libDynamixel.get_nx_position(m,test_dynamixel)
+  if status then 
+    local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
+    table.insert( pos_tbl,string.format('ID %d: %d',m,value) )
+  end
+end
+print(table.concat(pos_tbl,'\n'))
+unix.usleep(1e5)
+end

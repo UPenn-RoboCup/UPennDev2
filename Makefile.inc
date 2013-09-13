@@ -14,7 +14,7 @@ CFLAGS=-O3 -fpic -fomit-frame-pointer
 LIBRT=-lrt
 SHLIBEXT=so
 USE_TORCH=1
-LUA_INC=
+LUA_INC=`pkg-config lua5.1 --cflags`
 INCLUDES=$(LUA_INC)
 
 # OS Specific overrides

@@ -544,7 +544,7 @@ end
 function libDynamixel.new_bus( ttyname, ttybaud )
   -------------------------------
   -- Find the device
-  local baud = ttybaud or 1000000;
+  local baud = ttybaud or 3000000;
   if not ttyname then
     local ttys = unix.readdir("/dev");
     for i=1,#ttys do

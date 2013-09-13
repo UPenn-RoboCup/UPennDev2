@@ -11,9 +11,11 @@ local n_users = openni.startup()
 assert(n_users==0,'Should not use skeletons')
 
 -- Verify stream
+local WIDTH, HEIGHT = 320, 240
+local DEPTH_NELEMENTS = WIDTH*HEIGHT
 local depth_info, color_info = openni.stream_info()
-assert(depth_info.width==320,'Bad depth resolution')
-assert(color_info.width==320,'Bad color resolution')
+assert(depth_info.width==WIDTH,'Bad depth resolution')
+assert(color_info.width==WIDTH,'Bad color resolution')
 
 -- Require some modules
 local png  = require'png'
@@ -22,6 +24,10 @@ local jpeg = require'jpeg'
 
 -- Access point
 local depth, color
+-- Double for computation effectiveness
+local depths_t = torch.Tensor(DEPTH_NELEMENTS):zero()
+-- Byte for range reduction
+local d_byte = torch.ByteTensor(DEPTH_NELEMENTS):zero()
 
 -- Settings
 --use_zmq=true
@@ -90,22 +96,51 @@ end
 
 local t_last_depth_udp = Body.get_time()
 local function send_depth_udp(metadata)
+
   local net_settings = vcm.get_kinect_net_depth()
   -- Streaming
   local stream = net_settings[1]
   if stream==0 then return end
+
+  -- Dynamic Range Compression
+  local container_t = torch.ShortTensor(torch.ShortStorage(depth,DEPTH_NELEMENTS))
+  -- Sensitivity range in meters
+  local depths = vcm.get_kinect_depths()
+  metadata.depths = depths
+  -- convert to millimeters
+  local near = depths[1]*1000
+  local far  = depths[2]*1000
+  -- Safety check
+  if near>=far then return end
+  -- reduce the range
+  depths_t:copy(container_t):add(-near):mul(255/(far-near))
+  -- Ensure that we are between 0 and 255
+  depths_t[torch.lt(depths_t,0)] = 0
+  depths_t[torch.gt(depths_t,255)] = 255
+  -- Copy to a byte for use in compression
+  d_byte:copy(depths_t)
   -- Compression
   local c_depth
   if net_settings[2]==1 then
     metadata.c = 'jpeg'
     jpeg.set_quality( net_settings[3] )
-    local shift_amt = net_settings[4]
-    c_depth = jpeg.compress_16(depth,depth_info.width,depth_info.height,shift_amt)
+    c_depth = jpeg.compress_gray(d_byte:storage():pointer(),
+      depth_info.width,depth_info.height)
   elseif net_settings[2]==2 then
-    print'Bad implementation of png!'
+    -- zlib
+    metadata.c = 'zlib'
+    c_mesh = zlib.compress(
+      d_byte:storage():pointer(),
+      d_byte:nElement()
+    )
+  elseif net_settings[2]==3 then
+    -- png
+    metadata.c = 'png'
+    c_depth = png.compress(d_byte:storage():pointer(),
+     depth_info.width, depth_info.height, 1)
+  else
+    -- raw data?
     return
-    --metadata.c = 'png'
-    --c_depth = png.compress(depth, depth_info.width,depth_info.height, 2)
   end
   -- Metadata
   local meta = mp.pack(metadata)
@@ -127,7 +162,6 @@ while true do
 
   -- Acquire the Data
   depth, color = openni.update_rgbd()
-  local d_container = torch.ShortStorage(depth,320*240)
 
   -- Check the time of acquisition
   local t = Body.get_time()
@@ -140,8 +174,8 @@ while true do
   if use_zmq then
     local meta = mp.pack(meta)
     -- Send over ZMQ
-    rgbd_color_ch:send({meta,carray.byte(color,320*240*3)})
-    rgbd_depth_ch:send({meta,carray.short(depth,320*240)})
+    rgbd_color_ch:send({meta,carray.byte(color,WIDTH*HEIGHT*3)})
+    rgbd_depth_ch:send({meta,carray.short(depth,WIDTH*HEIGHT)})
   end
 
   if use_udp then

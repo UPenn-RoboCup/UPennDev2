@@ -112,13 +112,33 @@ local function get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
     body_yaw = uRight[3] - uTorsoActual[3]
   end
   -- Ankle stabilization using gyro feedback
-  local gyro_roll0, gyro_pitch0, gyro_yaw0= unpack(Body.get_sensor_gyro())
+  local imu_roll0, imu_pitch0, imu_yaw0 = unpack(Body.get_sensor_imu())
+  --math.sin(imuPitch)*bodyHeight, -math.sin(imuRoll)*bodyHeight
+  local gyro_roll0, gyro_pitch0, gyro_yaw0 = 
+    unpack(Body.get_sensor_gyro())
   -- Get effective gyro angle considering body yaw offset
   -- Rotate the Roll and pitch about the intended body yaw
   local gyro_roll  = gyro_roll0  * math.cos(body_yaw) - gyro_pitch0 * math.sin(body_yaw)
   local gyro_pitch = gyro_pitch0 * math.cos(body_yaw) - gyro_roll0  * math.sin(body_yaw)
+
+
+  -- Torso feedback
+  --[[
+  local x_error = vector.zeros(2)
+  x_error[1] = util.procFunc(
+    x_err[1],
+    0.02, -- deadband
+    0.06 --limit
+  )
+  x_error[2] = util.procFunc(
+    x_err[2],
+    0.02, -- deadband
+    0.06 --limit
+  )
+  --]]
+
   -- Give these parameters
-  return gyro_roll, gyro_pitch, gyro_yaw
+  return gyro_roll, gyro_pitch, gyro_yaw0
 end
 -- Get leg joint delta angles from gyro feedback
 local function get_leg_feedback(phSingle,gyro_roll,gyro_pitch,gyro_yaw)

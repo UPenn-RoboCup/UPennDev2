@@ -1,8 +1,147 @@
 -- Torch/Lua Zero Moment Point Library
 -- (c) 2013 Stephen McGill, Seung-Joon Yi
 local vector = require'vector'
-local torch = require'torch'
+local torch  = require'torch'
 torch.Tensor = torch.DoubleTensor
+
+-- step_definition format
+--{ Supportfoot relstep zmpmod duration steptype }--
+local function generate_step_queue(solver,step_definition)
+  -- Make the step_queue table
+  solver.step_queue = {}
+  for _,step_def in ipairs(step_definition) do
+    local supportLeg = step_def[1]
+    local step_queue_element = {
+      supportLeg = supportLeg,
+      zaLeft  = vector.zeros(2),
+      zaRight = vector.zeros(2),
+      zmp_mod   = step_def[3],
+      duration  = step_def[4],
+      step_type = step_def[5] or 0
+    }
+    -- Form the Support Leg positions
+    if supportLeg==0 then
+      -- left support
+      step_queue_element.uRight = util.pose_global(step_def[2],uRightI)
+      step_queue_element.uLeft  = vector.pose(uLeftI)
+      --step_queue_element.zaRight = zaRight + vector.new(step_def[3]);
+    elseif supportLeg==1 then
+      -- right support
+      step_queue_element.uLeft  = util.pose_global(step_def[2],uLeftI)
+      step_queue_element.uRight = vector.pose(uRightI)
+      -- step_queue_element.zaLeft = zaLeft + vector.new(step_def[3]);
+    elseif supportLeg==2 then --DS
+      -- Double Support: Body height change
+      -- step_queue_element.zaRight = zaRight - vector.new(step_def[3]);
+      -- step_queue_element.zaLeft  = zaLeft  - vector.new(step_def[3]);
+    end
+    -- Insert the element
+    table.insert(solver.step_queue,step_queue_element)
+  end
+  -- Reset the queue_index
+  solver.step_queue_index = 1
+  -- Generate the zmp x and y buffers
+  solver.zmp_buffer = 1
+  solver.zmp_x = {
+    torch.Tensor(nPreview),
+    torch.Tensor(nPreview)
+  }
+  solver.zmp_y = {
+    torch.Tensor(nPreview),
+    torch.Tensor(nPreview)
+  }
+end
+
+local function update_step_queue(solver)
+  update_zmp_array(tStateUpdate+time_offset)
+  local idx = solver.step_queue_index
+  if new_step then
+    -- Update the index in our step queue
+    -- Do not acutally pop, for speed reasons?
+    idx = idx + 1
+    solver.step_queue_index = idx
+  end
+  -- Grab the next step - this is treated as the "final"
+  -- position for the preview state engine
+  local step_queue_element = solver.step_queue[idx]
+  local supportLeg = step_queue_element.supportLeg
+  -- Grab the new "final" support element
+  local uSupportF
+  if supportLeg==0 then
+    -- left support
+    uSupportF = util.pose_global({supportX, supportY, 0}, uLeftF)
+  elseif supportLeg==1 then
+    -- right support
+    uSupportF = util.pose_global({supportX, -supportY, 0}, uRightF)
+  else
+    -- double support
+    local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeftF);
+    local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRightF);
+    uSupportF = util.se2_interpolate(0.5,uLeftSupport,uRightSupport);
+  end
+
+  -- Update the preview elements
+  local x_buffers = solver.zmp_x
+  local y_buffers = solver.zmp_y
+  -- Grab the current buffer
+  local cur_buf = solver.zmp_buffer
+  local next_buf = 3-cur_buf
+  --
+  local cur_zmp_x  = x_buffers[cur_buf]
+  local next_xmp_x = x_buffers[next_buf]
+  local cur_zmp_y  = y_buffers[cur_buf]
+  local next_xmp_y = y_buffers[next_buf]
+  -- Copy over
+  next_zmp_x:narrow(1,1,nPreview-1):copy(cur_zmp_x:narrow(1,2,nPreview))
+  next_zmp_y:narrow(1,1,nPreview-1):copy(cur_zmp_y:narrow(1,2,nPreview))
+  -- Add the final element
+  next_zmp_x[nPreview] = uSupportF[1]
+  next_zmp_y[nPreview] = uSupportF[2]
+end
+
+local function compute_preview(solver)
+
+  --feedback_gain1 = 1;
+  feedback_gain1 = 0;
+
+  --  Update state variable
+  --  u = param_k1_px * x - param_k1* zmparray; --Control output
+  
+  -- x direction
+  x_closed = x[1][1]+x_err[1]*feedback_gain1;
+  local ux = param_k1_px[1][1] * x_closed +
+    param_k1_px[1][2] * x[2][1]+
+    param_k1_px[1][3] * x[3][1];
+    x[1][1]=x[1][1]+x_err[1]*feedback_gain2;
+
+  -- y direction
+  y_closed = x[1][2]+x_err[2]*feedback_gain1;
+  local uy =  param_k1_px[1][1] * y_closed+
+    param_k1_px[1][2] * x[2][2]+
+    param_k1_px[1][3] * x[3][2];
+  x[1][2]=x[1][2]+x_err[2]*feedback_gain2;
+
+  -- Dot product here
+  -- Select the first row, since we only care about 
+  -- the IMMEDIATE next step
+  local K1_row = solver.K1:select(1,1)
+  local zmp_x  = solver.zmp_x[solver.zmp_buffer]
+  local zmp_y  = solver.zmp_y[solver.zmp_buffer]
+  -- Grab the immediate control input
+  local u_x    = torch.dot(K1_row,zmp_x)
+  local u_y    = torch.dot(K1_row,zmp_y)
+  
+
+  feedback_gain2 = 0;
+
+  -- Update the state
+  -- x = param_a * x + param_b * u;
+  solver.preview_state = torch.mv(solver.A,solver.preview_state):add(
+    torch.mv( solver.B, torch.tensor{ux,uy} )
+  )
+  -- Yield the desired torso position
+  return vector.new( solver.preview_state:select(1,1) )
+end
 
 local function compute_preview( solver )
   -- Preview parameters
@@ -42,17 +181,16 @@ local function compute_preview( solver )
 
   -- Exports
   -- TODO: Make this more efficient
-  local K1 = -torch.inverse( pu_trans*pu + balancer ) * pu_trans 
-  local K1_px = K1 * px
+  solver.K1 = -torch.inverse( pu_trans*pu + balancer ) * pu_trans 
+  solver.K1_px = K1 * px
   -- Make the discrete control matrices
-  local A = torch.Tensor{
+  solver.A = torch.Tensor{
     {1,ts,ts_integrated},
     {0,1, ts},
     {0,0, 1}
   }
   -- TODO: why extra ts????
-  local B = torch.Tensor{ts_twice_integrated, ts_integrated, ts, ts}
-  return K1, K1_px, A, B
+  solver.B = torch.Tensor{ts_twice_integrated, ts_integrated, ts, ts}
 end
 
 -- Perform some math

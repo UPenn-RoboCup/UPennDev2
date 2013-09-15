@@ -1,6 +1,59 @@
 -- Torch/Lua Zero Moment Point Library
 -- (c) 2013 Stephen McGill, Seung-Joon Yi
 local vector = require'vector'
+local torch = require'torch'
+torch.Tensor = torch.DoubleTensor
+
+local function compute_preview( solver )
+  -- Preview parameters
+  local ts = 0.010 -- 10ms timestep
+  local preview_interval = 1.50 -- 1500ms
+  local nPreview = math.ceil(preview_interval / ts)
+  local r_q = 1e-6; -- balancing parameter for optimization
+  --
+  local tZMP  = solver.tZMP
+  -- Cache some common operations
+  local ts_integrated  = ts*ts/2
+  local ts_twice_integrated = ts^3
+  local tZMP_sq = tZMP*tZMP
+
+  -- Make the preview parameter matrices
+  local px  = torch.Tensor(nPreview,3)
+  local pu0 = torch.Tensor(nPreview)
+  local pu  = torch.Tensor(nPreview,nPreview):zero()
+  -- Form the parameter matrices
+  -- x[k] = [1 k*tStep k^2*tStep^2/2-tZMP^2 ]
+  for k=1,nPreview do
+    local px_row = px:select(1,k)
+    px_row[1] = 1
+    px_row[2] = k*ts
+    px_row[3] = k*k*ts_integrated - tZMP_sq
+    -- initial control
+    pu0[k] = (1+3*(k-1)+3*(k-1)^2)*ts_twice_integrated - ts*tZMP_sq
+    -- Triangular
+    local pu_row = pu:select(1,k)
+    for j=k,1,-1 do
+      pu_row[j] = pu0[k-j+1]
+    end
+  end
+  -- Cache the transpose
+  local pu_trans = pu:t()
+  local balancer = torch.eye(nPreview):mul(r_q)
+
+  -- Exports
+  -- TODO: Make this more efficient
+  local K1 = -torch.inverse( pu_trans*pu + balancer ) * pu_trans 
+  local K1_px = K1 * px
+  -- Make the discrete control matrices
+  local A = torch.Tensor{
+    {1,ts,ts_integrated},
+    {0,1, ts},
+    {0,0, 1}
+  }
+  -- TODO: why extra ts????
+  local B = torch.Tensor{ts_twice_integrated, ts_integrated, ts, ts}
+  return K1, K1_px, A, B
+end
 
 -- Perform some math
 local function solve( solver, z_support, z_start, z_finish, x1, x2 )

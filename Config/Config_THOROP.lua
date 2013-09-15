@@ -3,14 +3,14 @@ local Config = {}
 ------------------------
 -- General parameters --
 ------------------------
-Config.PLATFORM_NAME = 'THOROP'
+Config.PLATFORM_NAME = 'THOROP7'
 Config.USE_LOCALHOST = true
 
 -----------------------
 -- Device Interfaces --
 -----------------------
 Config.dev = {}
-Config.dev.body         = 'THOROPBody'
+Config.dev.body         = Config.PLATFORM_NAME..'Body'
 Config.dev.game_control = 'OPGameControl'
 Config.dev.team         = 'TeamNSL'
 Config.dev.kick         = 'NewNewKick'
@@ -105,12 +105,5 @@ Config.km.standup_back  = 'km_Charli_StandupFromBack.lua'
 --------------------------
 -- Temporary Overwrites --
 --------------------------
-if not IS_WEBOTS then
-  print('We are the centaur!')
-  IS_CENTAUR = true
-end
-if IS_CENTAUR then
-  Config.stance.enable_legs = false
-end
 
 return Config

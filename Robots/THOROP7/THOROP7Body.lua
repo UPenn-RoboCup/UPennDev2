@@ -94,23 +94,9 @@ for name,list in pairs(parts) do
 	for _,idx in ipairs(list) do inv_parts[idx]=name end
 end
 
--- Initial joint positions
-Body.initial_joints = vector.new({
-  0,0, -- Head
-  90,0,0,0,0,0,0, --LArm
-  0,0,0,0,0,0, --LLeg
-  0,0,0,0,0,0, --RLeg
-  90,0,0,0,0,0,0, --RArm
-  0,0, -- Waist
-  0,0,0, -- Left gripper
-  0,0,0, -- Right gripper
-  0, -- Lidar pan
-})*DEG_TO_RAD
-
 --------------------------------
 -- Servo parameters
 local servo = {}
-
 -- shm joint id to dynamixel motor id
 --SJ: based on actual THOR-OP
 servo.joint_to_motor={
@@ -124,8 +110,6 @@ servo.joint_to_motor={
   31,33,35, -- right gripper
   37, -- Lidar pan
 }
-
-
 
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
 
@@ -163,15 +147,15 @@ assert(#servo.steps==nJoint,'Bad servo steps!')
 -- TODO: Haven't checked for actual robot yet
 servo.direction = vector.new({
   1,1, -- Head
-  1,1,1,-1,1,1,1, --LArm 
+  1,-1,1,1,1,1,1, --LArm 
   1, 1,1,1,1,1, --LLeg
   1, 1,1,1,1,1, --RLeg
   -1,1,1,1, 1,1,1, --RArm
   1,1, -- Waist
   -- TODO: Check the gripper
-  1,-1,1, -- left gripper
+  1,1,-1, -- left gripper
   1,-1,1, -- right gripper
-  1, -- Lidar pan
+  -1, -- Lidar pan
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
 
@@ -179,7 +163,7 @@ assert(#servo.direction==nJoint,'Bad servo direction!')
 -- TODO: Offset in addition to bias?
 servo.rad_bias = vector.new({
 	0,-1.8, -- Head
-	-90,-90,-90,-45,90,0,0, --LArm
+	-90,90,0,45,90,0,0, --LArm
 	0,0,0,0,0,0, --LLeg
 	0,0,0,0,0,0, --RLeg
 	90,90,90,45,-90,0,0, --RArm

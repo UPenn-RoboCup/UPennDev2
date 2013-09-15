@@ -40,6 +40,9 @@ local function generate_step_queue(solver,step_definition)
   end
   -- Reset the queue_index
   solver.step_queue_index = 1
+end
+
+local function init_preview(solver,nPreview)
   -- Generate the zmp x and y buffers
   solver.zmp_buffer = 1
   solver.zmp_x = {
@@ -50,27 +53,52 @@ local function generate_step_queue(solver,step_definition)
     torch.Tensor(nPreview),
     torch.Tensor(nPreview)
   }
+  for i=1,nPreview do
+     zmpx[i]=uTorso[1]
+     zmpy[i]=uTorso[2]
+     --double support
+     supportLegs[i]=2
+     uLeftTargets[i]  = vector.pose{uLeft[1],uLeft[2],uLeft[3]}
+     uRightTargets[i] = vector.pose{uRight[1],uRight[2],uRight[3]}
+     phs[i]= 0
+  end
 end
 
-local function update_step_queue(solver)
+local function update_preview(solver, t)
   update_zmp_array(tStateUpdate+time_offset)
   local idx = solver.step_queue_index
-  if new_step then
+  local step_queue_element
+  -- Check if we are a new step
+  local phF = 0
+  local t_expire = t - solver.step_queue_time
+  if t_expire>0 then
     -- Update the index in our step queue
     -- Do not acutally pop, for speed reasons?
     idx = idx + 1
     solver.step_queue_index = idx
+    step_queue_element = solver.step_queue[idx]
+    -- Add the duration of this next step
+    solver.step_queue_time = t + step_queue_element.duration
+  else
+    -- Just grab the element
+    step_queue_element = solver.step_queue[idx]
+    phF = t_expire/step_queue_element.duration
   end
   -- Grab the next step - this is treated as the "final"
   -- position for the preview state engine
-  local step_queue_element = solver.step_queue[idx]
-  local supportLeg = step_queue_element.supportLeg
+  -- TODO: We can cache this element, since idx may not
+  -- change that often, and we can save some instructions
+  -- However - getting the current supportX/Y may have
+  -- good stability porperties (constant updating for reacting)
+  local uLeftF  = step_queue_element.uLeft
+  local uRightF = step_queue_element.uRight
+  local supportLegF = step_queue_element.supportLeg
   -- Grab the new "final" support element
   local uSupportF
-  if supportLeg==0 then
+  if supportLegF==0 then
     -- left support
     uSupportF = util.pose_global({supportX, supportY, 0}, uLeftF)
-  elseif supportLeg==1 then
+  elseif supportLegF==1 then
     -- right support
     uSupportF = util.pose_global({supportX, -supportY, 0}, uRightF)
   else
@@ -80,7 +108,7 @@ local function update_step_queue(solver)
     uSupportF = util.se2_interpolate(0.5,uLeftSupport,uRightSupport);
   end
 
-  -- Update the preview elements
+  -- Update the preview zmp elements
   local x_buffers = solver.zmp_x
   local y_buffers = solver.zmp_y
   -- Grab the current buffer
@@ -97,9 +125,30 @@ local function update_step_queue(solver)
   -- Add the final element
   next_zmp_x[nPreview] = uSupportF[1]
   next_zmp_y[nPreview] = uSupportF[2]
+
+  -- Efficient queue for other elements
+  -- http://www.lua.org/pil/11.4.html
+  local first = solve.preview_elements.first
+  local last  = solve.preview_elements.last
+  -- Wipe old elements
+  solver.preview_elements.phs[first]    = nil
+  solver.preview_elements.uLeft[first]  = nil
+  solver.preview_elements.uRight[first] = nil
+  solver.preview_elements.supportLeg[first] = nil
+  --
+  first = first + 1
+  last  = last  + 1
+  solver.preview_elements.first = first
+  solver.preview_elements.last  = last
+  --
+  solver.preview_elements.phs[last] = phF
+  solver.preview_elements.uLeft[last]  = uLeftF
+  solver.preview_elements.uRight[last] = uRightF
+  solver.preview_elements.supportLeg[last] = supportLegF
+  
 end
 
-local function compute_preview(solver)
+local function solve_preview(solver)
 
   --feedback_gain1 = 1;
   feedback_gain1 = 0;
@@ -131,7 +180,6 @@ local function compute_preview(solver)
   local u_x    = torch.dot(K1_row,zmp_x)
   local u_y    = torch.dot(K1_row,zmp_y)
   
-
   feedback_gain2 = 0;
 
   -- Update the state

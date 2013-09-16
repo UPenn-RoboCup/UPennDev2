@@ -46,34 +46,48 @@ local function init_preview(solver,nPreview)
   -- Generate the zmp x and y buffers
   solver.zmp_buffer = 1
   solver.zmp_x = {
-    torch.Tensor(nPreview),
-    torch.Tensor(nPreview)
+    torch.Tensor(nPreview):fill(uTorso[1]),
+    torch.Tensor(nPreview):fill(uTorso[1])
   }
   solver.zmp_y = {
-    torch.Tensor(nPreview),
-    torch.Tensor(nPreview)
+    torch.Tensor(nPreview):fill(uTorso[2]),
+    torch.Tensor(nPreview):fill(uTorso[2]),
   }
+  --
+  local phs = {}
+  local supportLegs   = {}
+  local uLeftTargets  = {}
+  local uRightTargets = {}
   for i=1,nPreview do
-     zmpx[i]=uTorso[1]
-     zmpy[i]=uTorso[2]
-     --double support
-     supportLegs[i]=2
-     uLeftTargets[i]  = vector.pose{uLeft[1],uLeft[2],uLeft[3]}
-     uRightTargets[i] = vector.pose{uRight[1],uRight[2],uRight[3]}
-     phs[i]= 0
+     -- double support
+    table.insert(phs,0)
+    table.insert(supportLegs,2)
+    table.insert(uLeftTargets,
+      vector.pose{uLeft[1],uLeft[2],uLeft[3]})
+    table.insert(uRightTargets,
+      vector.pose{uRight[1],uRight[2],uRight[3]})
   end
+  solver.preview_elements.first = 1
+  solver.preview_elements.last  = nPreview
+  solver.preview_elements.phs   = phs
+  solver.preview_elements.supportLegs = supportLegs
+  solver.preview_elements.uLeft  = uLeftTargets
+  solver.preview_elements.uRight = uRightTargets
 end
 
 local function update_preview(solver, t)
   update_zmp_array(tStateUpdate+time_offset)
   local idx = solver.step_queue_index
   local step_queue_element
-  -- Check if we are a new step
+  -- Initiate the step_queue time if this is the first step
+  if not solver.step_queue_time then
+    solver.step_queue_time = t + solver.step_queue[1].duration
+  end
   local phF = 0
-  local t_expire = t - solver.step_queue_time
-  if t_expire>0 then
+  -- Check if we are a new step
+  local t_expire = solver.step_queue_time - t
+  if t_expire<=0 then
     -- Update the index in our step queue
-    -- Do not acutally pop, for speed reasons?
     idx = idx + 1
     solver.step_queue_index = idx
     step_queue_element = solver.step_queue[idx]
@@ -82,14 +96,15 @@ local function update_preview(solver, t)
   else
     -- Just grab the element
     step_queue_element = solver.step_queue[idx]
-    phF = t_expire/step_queue_element.duration
+    if idx<#solver.step_queue then
+      -- not the last step in the queue
+      phF = 1-t_expire/step_queue_element.duration
+    end
   end
   -- Grab the next step - this is treated as the "final"
   -- position for the preview state engine
   -- TODO: We can cache this element, since idx may not
   -- change that often, and we can save some instructions
-  -- However - getting the current supportX/Y may have
-  -- good stability porperties (constant updating for reacting)
   local uLeftF  = step_queue_element.uLeft
   local uRightF = step_queue_element.uRight
   local supportLegF = step_queue_element.supportLeg
@@ -112,7 +127,7 @@ local function update_preview(solver, t)
   local x_buffers = solver.zmp_x
   local y_buffers = solver.zmp_y
   -- Grab the current buffer
-  local cur_buf = solver.zmp_buffer
+  local cur_buf  = solver.zmp_buffer
   local next_buf = 3-cur_buf
   --
   local cur_zmp_x  = x_buffers[cur_buf]
@@ -149,26 +164,38 @@ local function update_preview(solver, t)
 end
 
 local function solve_preview(solver)
-
+  -- 3x2 state matrix
+  -- x: torso, ?, ?
+  -- y: torso, ?, ?
+  local current_state = solver.preview_state
+  local feedback_gain1, feedback_gain2 = 0, 0
   --feedback_gain1 = 1;
-  feedback_gain1 = 0;
-
   --  Update state variable
-  --  u = param_k1_px * x - param_k1* zmparray; --Control output
-  
+  --  u = param_k1_px * x - param_k1* zmparray; --Control signal
+  -- Select the first row, since we only care about 
+  -- the IMMEDIATE next step
+  local K1_px_row = solver.K1_px:select(1,1)
   -- x direction
-  x_closed = x[1][1]+x_err[1]*feedback_gain1;
-  local ux = param_k1_px[1][1] * x_closed +
-    param_k1_px[1][2] * x[2][1]+
-    param_k1_px[1][3] * x[3][1];
-    x[1][1]=x[1][1]+x_err[1]*feedback_gain2;
+  --current_state[1][1] = current_state[1][1]+x_err[1]*feedback_gain1
+  --[[
+  local ux = 
+    K1_px_row[1] * current_state[1][1] +
+    K1_px_row[2] * current_state[2][1] +
+    K1_px_row[3] * current_state[3][1]
 
   -- y direction
-  y_closed = x[1][2]+x_err[2]*feedback_gain1;
-  local uy =  param_k1_px[1][1] * y_closed+
-    param_k1_px[1][2] * x[2][2]+
-    param_k1_px[1][3] * x[3][2];
+  --current_state[1][2] = current_state[1][2]+x_err[2]*feedback_gain1
+  local uy =
+    K1_px_row[1] * current_state[1][2] +
+    K1_px_row[2] * current_state[2][2] +
+    K1_px_row[3] * current_state[3][2]
+  --]]
+  -- The input signal
+  local u = torch.mm(K1_px_row,current_state)
+--[[
+  x[1][1]=x[1][1]+x_err[1]*feedback_gain2;
   x[1][2]=x[1][2]+x_err[2]*feedback_gain2;
+--]]
 
   -- Dot product here
   -- Select the first row, since we only care about 
@@ -179,16 +206,18 @@ local function solve_preview(solver)
   -- Grab the immediate control input
   local u_x    = torch.dot(K1_row,zmp_x)
   local u_y    = torch.dot(K1_row,zmp_y)
-  
-  feedback_gain2 = 0;
 
   -- Update the state
   -- x = param_a * x + param_b * u;
-  solver.preview_state = torch.mv(solver.A,solver.preview_state):add(
-    torch.mv( solver.B, torch.tensor{ux,uy} )
+  solver.preview_state = torch.mv(solver.A,current_state):add(
+    torch.mv( solver.B, u )
   )
-  -- Yield the desired torso position
-  return vector.new( solver.preview_state:select(1,1) )
+  -- Yield the desired torso pose
+  return vector.pose{
+    solver.preview_state[1][1],
+    solver.preview_state[1][2],
+    0 -- incorrect...
+  }
 end
 
 local function compute_preview( solver )

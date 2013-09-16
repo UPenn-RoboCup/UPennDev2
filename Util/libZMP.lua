@@ -169,38 +169,16 @@ local function solve_preview(solver)
   -- y: torso, ?, ?
   local current_state = solver.preview_state
   local feedback_gain1, feedback_gain2 = 0, 0
-  --feedback_gain1 = 1;
-  --  Update state variable
-  --  u = param_k1_px * x - param_k1* zmparray; --Control signal
+  --current_state[1][1] = current_state[1][1]+x_err[1]*feedback_gain1
+  --current_state[1][2] = current_state[1][2]+x_err[2]*feedback_gain1
+
+  -- Update control signal: how to get to our desired states
+  -- u = param_k1_px * x - param_k1* zmparray
   -- Select the first row, since we only care about 
   -- the IMMEDIATE next step
   local K1_px_row = solver.K1_px:select(1,1)
-  -- x direction
-  --current_state[1][1] = current_state[1][1]+x_err[1]*feedback_gain1
-  --[[
-  local ux = 
-    K1_px_row[1] * current_state[1][1] +
-    K1_px_row[2] * current_state[2][1] +
-    K1_px_row[3] * current_state[3][1]
-
-  -- y direction
-  --current_state[1][2] = current_state[1][2]+x_err[2]*feedback_gain1
-  local uy =
-    K1_px_row[1] * current_state[1][2] +
-    K1_px_row[2] * current_state[2][2] +
-    K1_px_row[3] * current_state[3][2]
-  --]]
-  -- The input signal
-  local u = torch.mm(K1_px_row,current_state)
---[[
-  x[1][1]=x[1][1]+x_err[1]*feedback_gain2;
-  x[1][2]=x[1][2]+x_err[2]*feedback_gain2;
---]]
-
-  -- Dot product here
-  -- Select the first row, since we only care about 
-  -- the IMMEDIATE next step
   local K1_row = solver.K1:select(1,1)
+  local u = torch.mm(K1_px_row,current_state)
   local zmp_x  = solver.zmp_x[solver.zmp_buffer]
   local zmp_y  = solver.zmp_y[solver.zmp_buffer]
   -- Grab the immediate control input
@@ -208,6 +186,10 @@ local function solve_preview(solver)
   local u_y    = torch.dot(K1_row,zmp_y)
 
   -- Update the state
+  --[[
+  x[1][1]=x[1][1]+x_err[1]*feedback_gain2;
+  x[1][2]=x[1][2]+x_err[2]*feedback_gain2;
+  --]]
   -- x = param_a * x + param_b * u;
   solver.preview_state = torch.mv(solver.A,current_state):add(
     torch.mv( solver.B, u )
@@ -220,12 +202,14 @@ local function solve_preview(solver)
   }
 end
 
-local function compute_preview( solver )
-  -- Preview parameters
-  local ts = 0.010 -- 10ms timestep
-  local preview_interval = 1.50 -- 1500ms
+-- preview_interval: How many seconds into the future should we preview?
+-- ts: At what granularity should we solver?
+local function compute_preview( solver, preview_interval )
+  -- Preview parameter defaults
+  preview_interval = preview_interval or 1.50 -- 1500ms
+  ts = ts or 0.010 -- 10ms timestep
   local nPreview = math.ceil(preview_interval / ts)
-  local r_q = 1e-6; -- balancing parameter for optimization
+  local r_q = 1e-6 -- balancing parameter for optimization
   --
   local tZMP  = solver.tZMP
   -- Cache some common operations
@@ -259,7 +243,7 @@ local function compute_preview( solver )
   -- Exports
   -- TODO: Make this more efficient
   solver.K1 = -torch.inverse( pu_trans*pu + balancer ) * pu_trans 
-  solver.K1_px = K1 * px
+  solver.K1_px = solver.K1 * px
   -- Make the discrete control matrices
   solver.A = torch.Tensor{
     {1,ts,ts_integrated},
@@ -372,17 +356,26 @@ local libZMP = {}
 -- Make a new solver with certain parameters
 -- You can update these paramters on the fly, of course
 libZMP.new_solver = function( params )
+  params = params or {}
 	local s = {}
-  s.tStep = params.tStep
-  s.tZMP  = params.tZMP
+  s.tStep = params.tStep or 1
+  s.tZMP  = params.tZMP or .25
   -- Starting and stopping phase of the trapezoidal
   -- transition from double support to single and back
+  -- Acquire trapezoidal parameters
   s.start_phase  = params.start_phase
   s.finish_phase = params.finish_phase
-  -- Add the functions
-  s.compute = compute
-  s.get_com = get_com
+  -- Trapezoidal ZMP
+  s.compute  = compute
+  s.get_com  = get_com
   s.get_foot = get_foot
+  -- ZMP Preview
+  s.compute_preview = compute_preview
+  s.init_preview    = init_preview
+  s.update_preview  = update_preview
+  s.solve_preview  = solve_preview
+  -- General
+  s.generate_step_queue = generate_step_queue
 	return s
 end
 

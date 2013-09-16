@@ -52,28 +52,24 @@ step_seq = {}
 gap0 = {0,0}
 gap1 = {0.05,0}
 supportX = 0
+supportY = 0.010
 footY = 0.035
--- Initial waiting period
-table.insert(step_seq, {
-  {-supportX+gap0[1], footY+gap0[2], 0}, --uLeft
-  {-supportX+gap0[1],-footY+gap0[2], 0}, --uRight
-  2, -- Right support
-  1, --duration
-})
--- First crossing
-table.insert(step_seq, {
-  {-supportX+gap1[1], footY+gap1[2], 0}, --uLeft
-  {-supportX+gap0[1],-footY+gap0[2], 0}, --uRight
-  1, -- Right support
-  0.8, --duration
-})
+uLeftI=vector.new{-supportX,footY,0}
+uRightI=vector.new{-supportX,-footY,0}
+-- DS step
+table.insert(step_seq, {2, {0,0,0},{0,0},0.10})
+-- LS step  
+table.insert(step_seq, {0, {0.06,0,0},{0,0},0.5})
+-- DS step
+table.insert(step_seq, {2, {0,0,0},{0,0},0.05})
+
 -- Generate the step queue
 print(util.color('Generating the step queue...','green'))
-s:generate_step_queue(step_seq)
+s:generate_step_queue(step_seq,uLeftI,uRightI)
 
 -- Update and solve:
 print(util.color('Updating the preview...','green'))
-s:update_preview( Body.get_time() )
+s:update_preview( Body.get_time(), supportX, supportY )
 
 for step=1,10 do
   print(util.color('Solving the preview for timestep...','green'),step)

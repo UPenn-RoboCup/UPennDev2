@@ -1,12 +1,14 @@
 -- Torch/Lua Zero Moment Point Library
 -- (c) 2013 Stephen McGill, Seung-Joon Yi
 local vector = require'vector'
+local util   = require'util'
 local torch  = require'torch'
 torch.Tensor = torch.DoubleTensor
 
 -- step_definition format
 --{ Supportfoot relstep zmpmod duration steptype }--
-local function generate_step_queue(solver,step_definition)
+-- Provide initial (relative) feet positions
+local function generate_step_queue(solver,step_definition,uLeftI,uRightI)
   -- Make the step_queue table
   solver.step_queue = {}
   for _,step_def in ipairs(step_definition) do
@@ -20,29 +22,33 @@ local function generate_step_queue(solver,step_definition)
       step_type = step_def[5] or 0
     }
     -- Form the Support Leg positions
+    -- Perform a table copy
     if supportLeg==0 then
       -- left support
       step_queue_element.uRight = util.pose_global(step_def[2],uRightI)
-      step_queue_element.uLeft  = vector.pose(uLeftI)
+      step_queue_element.uLeft  = vector.pose{unpack(uLeftI)}
       --step_queue_element.zaRight = zaRight + vector.new(step_def[3]);
     elseif supportLeg==1 then
       -- right support
       step_queue_element.uLeft  = util.pose_global(step_def[2],uLeftI)
-      step_queue_element.uRight = vector.pose(uRightI)
+      step_queue_element.uRight = vector.pose{unpack(uRightI)}
       -- step_queue_element.zaLeft = zaLeft + vector.new(step_def[3]);
     elseif supportLeg==2 then --DS
       -- Double Support: Body height change
+      step_queue_element.uLeft  = vector.pose{unpack(uLeftI)}
+      step_queue_element.uRight = vector.pose{unpack(uRightI)}
       -- step_queue_element.zaRight = zaRight - vector.new(step_def[3]);
       -- step_queue_element.zaLeft  = zaLeft  - vector.new(step_def[3]);
     end
     -- Insert the element
+    print('adding',step_queue_element.uRight)
     table.insert(solver.step_queue,step_queue_element)
   end
   -- Reset the queue_index
   solver.step_queue_index = 1
 end
 
-local function update_preview(solver, t)
+local function update_preview(solver, t, supportX, supportY)
   --update_zmp_array(tStateUpdate+time_offset)
   local idx = solver.step_queue_index
   local step_queue_element
@@ -85,48 +91,48 @@ local function update_preview(solver, t)
     uSupportF = util.pose_global({supportX, -supportY, 0}, uRightF)
   else
     -- double support
-    local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeftF);
-    local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRightF);
-    uSupportF = util.se2_interpolate(0.5,uLeftSupport,uRightSupport);
+    local uLeftSupport  = util.pose_global({supportX, supportY, 0}, uLeftF)
+    local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRightF)
+    uSupportF = util.se2_interpolate(0.5,uLeftSupport,uRightSupport)
   end
 
   -- Update the preview zmp elements
-  local x_buffers = solver.zmp_x
-  local y_buffers = solver.zmp_y
+  local preview = solver.preview
+  local nPreview = preview.nPreview
   -- Grab the current buffer
-  local cur_buf  = solver.zmp_buffer
+  local cur_buf  = preview.zmp_buffer
   local next_buf = 3-cur_buf
-  --
-  local cur_zmp_x  = x_buffers[cur_buf]
-  local next_xmp_x = x_buffers[next_buf]
-  local cur_zmp_y  = y_buffers[cur_buf]
-  local next_xmp_y = y_buffers[next_buf]
+  --print('n',#preview.zmp_x,cur_buf,next_buf,cur_zmp_x,)
+  local cur_zmp_x  = preview.zmp_x[cur_buf]
+  local next_zmp_x = preview.zmp_x[next_buf]
+  local cur_zmp_y  = preview.zmp_y[cur_buf]
+  local next_zmp_y = preview.zmp_y[next_buf]
   -- Copy over
-  next_zmp_x:narrow(1,1,nPreview-1):copy(cur_zmp_x:narrow(1,2,nPreview))
-  next_zmp_y:narrow(1,1,nPreview-1):copy(cur_zmp_y:narrow(1,2,nPreview))
+  next_zmp_x:narrow(1,1,nPreview-1):copy(cur_zmp_x:narrow(1,2,nPreview-1))
+  next_zmp_y:narrow(1,1,nPreview-1):copy(cur_zmp_y:narrow(1,2,nPreview-1))
   -- Add the final element
   next_zmp_x[nPreview] = uSupportF[1]
   next_zmp_y[nPreview] = uSupportF[2]
 
   -- Efficient queue for other elements
   -- http://www.lua.org/pil/11.4.html
-  local first = solve.preview.first
-  local last  = solve.preview.last
+  local first = preview.first
+  local last  = preview.last
   -- Wipe old elements
-  solver.preview.phs[first]    = nil
-  solver.preview.uLeft[first]  = nil
-  solver.preview.uRight[first] = nil
-  solver.preview.supportLeg[first] = nil
+  preview.phs[first]    = nil
+  preview.uLeft[first]  = nil
+  preview.uRight[first] = nil
+  preview.supportLegs[first] = nil
   --
   first = first + 1
   last  = last  + 1
-  solver.preview.first = first
-  solver.preview.last  = last
+  preview.first = first
+  preview.last  = last
   --
-  solver.preview.phs[last] = phF
-  solver.preview.uLeft[last]  = uLeftF
-  solver.preview.uRight[last] = uRightF
-  solver.preview.supportLeg[last] = supportLegF
+  preview.phs[last] = phF
+  preview.uLeft[last]  = uLeftF
+  preview.uRight[last] = uRightF
+  preview.supportLegs[last] = supportLegF
   
 end
 

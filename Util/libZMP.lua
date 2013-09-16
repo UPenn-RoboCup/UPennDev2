@@ -42,41 +42,8 @@ local function generate_step_queue(solver,step_definition)
   solver.step_queue_index = 1
 end
 
-local function init_preview(solver,nPreview)
-  -- Generate the zmp x and y buffers
-  solver.zmp_buffer = 1
-  solver.zmp_x = {
-    torch.Tensor(nPreview):fill(uTorso[1]),
-    torch.Tensor(nPreview):fill(uTorso[1])
-  }
-  solver.zmp_y = {
-    torch.Tensor(nPreview):fill(uTorso[2]),
-    torch.Tensor(nPreview):fill(uTorso[2]),
-  }
-  --
-  local phs = {}
-  local supportLegs   = {}
-  local uLeftTargets  = {}
-  local uRightTargets = {}
-  for i=1,nPreview do
-     -- double support
-    table.insert(phs,0)
-    table.insert(supportLegs,2)
-    table.insert(uLeftTargets,
-      vector.pose{uLeft[1],uLeft[2],uLeft[3]})
-    table.insert(uRightTargets,
-      vector.pose{uRight[1],uRight[2],uRight[3]})
-  end
-  solver.preview_elements.first = 1
-  solver.preview_elements.last  = nPreview
-  solver.preview_elements.phs   = phs
-  solver.preview_elements.supportLegs = supportLegs
-  solver.preview_elements.uLeft  = uLeftTargets
-  solver.preview_elements.uRight = uRightTargets
-end
-
 local function update_preview(solver, t)
-  update_zmp_array(tStateUpdate+time_offset)
+  --update_zmp_array(tStateUpdate+time_offset)
   local idx = solver.step_queue_index
   local step_queue_element
   -- Initiate the step_queue time if this is the first step
@@ -143,23 +110,23 @@ local function update_preview(solver, t)
 
   -- Efficient queue for other elements
   -- http://www.lua.org/pil/11.4.html
-  local first = solve.preview_elements.first
-  local last  = solve.preview_elements.last
+  local first = solve.preview.first
+  local last  = solve.preview.last
   -- Wipe old elements
-  solver.preview_elements.phs[first]    = nil
-  solver.preview_elements.uLeft[first]  = nil
-  solver.preview_elements.uRight[first] = nil
-  solver.preview_elements.supportLeg[first] = nil
+  solver.preview.phs[first]    = nil
+  solver.preview.uLeft[first]  = nil
+  solver.preview.uRight[first] = nil
+  solver.preview.supportLeg[first] = nil
   --
   first = first + 1
   last  = last  + 1
-  solver.preview_elements.first = first
-  solver.preview_elements.last  = last
+  solver.preview.first = first
+  solver.preview.last  = last
   --
-  solver.preview_elements.phs[last] = phF
-  solver.preview_elements.uLeft[last]  = uLeftF
-  solver.preview_elements.uRight[last] = uRightF
-  solver.preview_elements.supportLeg[last] = supportLegF
+  solver.preview.phs[last] = phF
+  solver.preview.uLeft[last]  = uLeftF
+  solver.preview.uRight[last] = uRightF
+  solver.preview.supportLeg[last] = supportLegF
   
 end
 
@@ -167,7 +134,8 @@ local function solve_preview(solver)
   -- 3x2 state matrix
   -- x: torso, ?, ?
   -- y: torso, ?, ?
-  local current_state = solver.preview_state
+  local preview = solver.preview
+  local current_state = preview.state
   local feedback_gain1, feedback_gain2 = 0, 0
   --current_state[1][1] = current_state[1][1]+x_err[1]*feedback_gain1
   --current_state[1][2] = current_state[1][2]+x_err[2]*feedback_gain1
@@ -176,14 +144,15 @@ local function solve_preview(solver)
   -- u = param_k1_px * x - param_k1* zmparray
   -- Select the first row, since we only care about 
   -- the IMMEDIATE next step
-  local K1_px_row = solver.K1_px:select(1,1)
-  local K1_row = solver.K1:select(1,1)
-  local u = torch.mm(K1_px_row,current_state)
-  local zmp_x  = solver.zmp_x[solver.zmp_buffer]
-  local zmp_y  = solver.zmp_y[solver.zmp_buffer]
+  local K1_px_row = preview.K1_px:select(1,1)
+  local K1_row = preview.K1:select(1,1)
+  -- TODO: Don't like these transposes
+  local u      = torch.mv(current_state:t(),K1_px_row)
+  local zmp_x  = preview.zmp_x[preview.zmp_buffer]
+  local zmp_y  = preview.zmp_y[preview.zmp_buffer]
   -- Grab the immediate control input
-  local u_x    = torch.dot(K1_row,zmp_x)
-  local u_y    = torch.dot(K1_row,zmp_y)
+  --local u_x    = torch.dot(K1_row,zmp_x)
+  --local u_y    = torch.dot(K1_row,zmp_y)
 
   -- Update the state
   --[[
@@ -191,15 +160,54 @@ local function solve_preview(solver)
   x[1][2]=x[1][2]+x_err[2]*feedback_gain2;
   --]]
   -- x = param_a * x + param_b * u;
-  solver.preview_state = torch.mv(solver.A,current_state):add(
-    torch.mv( solver.B, u )
+  preview.state = torch.mm(preview.A,current_state):add(
+    torch.ger( preview.B, u )
   )
   -- Yield the desired torso pose
   return vector.pose{
-    solver.preview_state[1][1],
-    solver.preview_state[1][2],
+    preview.state[1][1],
+    preview.state[1][2],
     0 -- incorrect...
   }
+end
+
+local function init_preview(solver,uTorso,uLeft,uRight)
+  assert(solver.preview,'Please precompute the preview engine!')
+  local nPreview = solver.preview.nPreview
+  -- Generate the zmp x and y buffers
+  solver.preview.zmp_buffer = 1
+  solver.preview.zmp_x = {
+    torch.Tensor(nPreview):fill(uTorso[1]),
+    torch.Tensor(nPreview):fill(uTorso[1])
+  }
+  solver.preview.zmp_y = {
+    torch.Tensor(nPreview):fill(uTorso[2]),
+    torch.Tensor(nPreview):fill(uTorso[2]),
+  }
+  --
+  local phs = {}
+  local supportLegs   = {}
+  local uLeftTargets  = {}
+  local uRightTargets = {}
+  for i=1,nPreview do
+     -- double support
+    table.insert(phs,0)
+    table.insert(supportLegs,2)
+    table.insert(uLeftTargets,
+      vector.pose{uLeft[1],uLeft[2],uLeft[3]})
+    table.insert(uRightTargets,
+      vector.pose{uRight[1],uRight[2],uRight[3]})
+  end
+  -- Save data to our solver
+  solver.preview.first = 1
+  solver.preview.last  = nPreview
+  solver.preview.phs   = phs
+  solver.preview.supportLegs = supportLegs
+  solver.preview.uLeft  = uLeftTargets
+  solver.preview.uRight = uRightTargets
+  -- Our first state:
+  solver.preview.state = torch.Tensor{{uTorso[1],uTorso[2]},{0,0},{0,0}}
+
 end
 
 -- preview_interval: How many seconds into the future should we preview?
@@ -241,17 +249,24 @@ local function compute_preview( solver, preview_interval )
   local balancer = torch.eye(nPreview):mul(r_q)
 
   -- Exports
+  solver.preview = {}
   -- TODO: Make this more efficient
-  solver.K1 = -torch.inverse( pu_trans*pu + balancer ) * pu_trans 
-  solver.K1_px = solver.K1 * px
+  local tmp = torch.mm(pu_trans,pu):add(balancer)
+  local K1 = -torch.inverse( tmp ) * pu_trans 
+  solver.preview.K1    = K1
+  solver.preview.K1_px = K1 * px
   -- Make the discrete control matrices
-  solver.A = torch.Tensor{
+  solver.preview.A = torch.Tensor{
     {1,ts,ts_integrated},
     {0,1, ts},
     {0,0, 1}
   }
   -- TODO: why extra ts????
-  solver.B = torch.Tensor{ts_twice_integrated, ts_integrated, ts, ts}
+  --solver.preview.B = torch.Tensor{ts_twice_integrated, ts_integrated, ts, ts}
+  -- Removing the extra ts for now...
+  solver.preview.B = torch.Tensor{ts_twice_integrated, ts_integrated, ts}
+  -- Save preview data
+  solver.preview.nPreview = nPreview
 end
 
 -- Perform some math

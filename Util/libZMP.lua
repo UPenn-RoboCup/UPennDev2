@@ -41,11 +41,11 @@ local function generate_step_queue(solver,step_definition,uLeftI,uRightI)
       -- step_queue_element.zaLeft  = zaLeft  - vector.new(step_def[3]);
     end
     -- Insert the element
-    print('adding',step_queue_element.uRight)
     table.insert(solver.step_queue,step_queue_element)
   end
   -- Reset the queue_index
   solver.step_queue_index = 1
+  solver.last_last = false
 end
 
 local function update_preview(solver, t, supportX, supportY)
@@ -60,6 +60,11 @@ local function update_preview(solver, t, supportX, supportY)
   -- Check if we are a new step
   local t_expire = solver.step_queue_time - t
   if t_expire<=0 then
+    solver.last_step = idx==#solver.step_queue
+    -- Check if any elements left in the queue
+    if solver.last_step then
+      return'done'
+    end
     -- Update the index in our step queue
     idx = idx + 1
     solver.step_queue_index = idx
@@ -69,7 +74,8 @@ local function update_preview(solver, t, supportX, supportY)
   else
     -- Just grab the element
     step_queue_element = solver.step_queue[idx]
-    if idx<#solver.step_queue then
+    last_step = idx==#solver.step_queue
+    if solver.last_step then
       -- not the last step in the queue
       phF = 1-t_expire/step_queue_element.duration
     end
@@ -97,22 +103,16 @@ local function update_preview(solver, t, supportX, supportY)
   end
 
   -- Update the preview zmp elements
-  local preview = solver.preview
+  local preview  = solver.preview
   local nPreview = preview.nPreview
-  -- Grab the current buffer
-  local cur_buf  = preview.zmp_buffer
-  local next_buf = 3-cur_buf
-  --print('n',#preview.zmp_x,cur_buf,next_buf,cur_zmp_x,)
-  local cur_zmp_x  = preview.zmp_x[cur_buf]
-  local next_zmp_x = preview.zmp_x[next_buf]
-  local cur_zmp_y  = preview.zmp_y[cur_buf]
-  local next_zmp_y = preview.zmp_y[next_buf]
-  -- Copy over
-  next_zmp_x:narrow(1,1,nPreview-1):copy(cur_zmp_x:narrow(1,2,nPreview-1))
-  next_zmp_y:narrow(1,1,nPreview-1):copy(cur_zmp_y:narrow(1,2,nPreview-1))
-  -- Add the final element
-  next_zmp_x[nPreview] = uSupportF[1]
-  next_zmp_y[nPreview] = uSupportF[2]
+  local zmp_x = solver.preview.zmp_x
+  local zmp_y = solver.preview.zmp_y
+  -- Shift over
+  zmp_x:storage():lshift()
+  zmp_y:storage():lshift()
+  -- Add the final elements
+  zmp_x[nPreview] = uSupportF[1]
+  zmp_y[nPreview] = uSupportF[2]
 
   -- Efficient queue for other elements
   -- http://www.lua.org/pil/11.4.html
@@ -129,11 +129,10 @@ local function update_preview(solver, t, supportX, supportY)
   preview.first = first
   preview.last  = last
   --
-  preview.phs[last] = phF
+  preview.phs[last]    = phF
   preview.uLeft[last]  = uLeftF
   preview.uRight[last] = uRightF
   preview.supportLegs[last] = supportLegF
-  
 end
 
 local function solve_preview(solver)
@@ -141,7 +140,7 @@ local function solve_preview(solver)
   -- x: torso, ?, ?
   -- y: torso, ?, ?
   local preview = solver.preview
-  local current_state = preview.state
+  local current_state = preview.state:clone()
   local feedback_gain1, feedback_gain2 = 0, 0
   --current_state[1][1] = current_state[1][1]+x_err[1]*feedback_gain1
   --current_state[1][2] = current_state[1][2]+x_err[2]*feedback_gain1
@@ -154,11 +153,11 @@ local function solve_preview(solver)
   local K1_row = preview.K1:select(1,1)
   -- TODO: Don't like these transposes
   local u      = torch.mv(current_state:t(),K1_px_row)
-  local zmp_x  = preview.zmp_x[preview.zmp_buffer]
-  local zmp_y  = preview.zmp_y[preview.zmp_buffer]
   -- Grab the immediate control input
-  --local u_x    = torch.dot(K1_row,zmp_x)
-  --local u_y    = torch.dot(K1_row,zmp_y)
+  local u_x    = torch.dot(K1_row,preview.zmp_x)
+  local u_y    = torch.dot(K1_row,preview.zmp_y)
+  u[1] = u[1] - u_x
+  u[2] = u[2] - u_y
 
   -- Update the state
   --[[
@@ -166,30 +165,17 @@ local function solve_preview(solver)
   x[1][2]=x[1][2]+x_err[2]*feedback_gain2;
   --]]
   -- x = param_a * x + param_b * u;
-  preview.state = torch.mm(preview.A,current_state):add(
+  preview.state:mm(preview.A,current_state):add(
     torch.ger( preview.B, u )
   )
-  -- Yield the desired torso pose
-  return vector.pose{
-    preview.state[1][1],
-    preview.state[1][2],
-    0 -- incorrect...
-  }
 end
 
 local function init_preview(solver,uTorso,uLeft,uRight)
   assert(solver.preview,'Please precompute the preview engine!')
   local nPreview = solver.preview.nPreview
-  -- Generate the zmp x and y buffers
-  solver.preview.zmp_buffer = 1
-  solver.preview.zmp_x = {
-    torch.Tensor(nPreview):fill(uTorso[1]),
-    torch.Tensor(nPreview):fill(uTorso[1])
-  }
-  solver.preview.zmp_y = {
-    torch.Tensor(nPreview):fill(uTorso[2]),
-    torch.Tensor(nPreview):fill(uTorso[2]),
-  }
+  -- Generate the x and y zmp trajectories
+  solver.preview.zmp_x = torch.Tensor(nPreview):fill(uTorso[1])
+  solver.preview.zmp_y = torch.Tensor(nPreview):fill(uTorso[2])
   --
   local phs = {}
   local supportLegs   = {}
@@ -273,6 +259,16 @@ local function compute_preview( solver, preview_interval )
   solver.preview.B = torch.Tensor{ts_twice_integrated, ts_integrated, ts}
   -- Save preview data
   solver.preview.nPreview = nPreview
+end
+
+local function get_preview_com(solver)
+  -- Yield the desired torso pose
+  local state_position = solver.preview.state:select(1,1)
+  local state_velocity = solver.preview.state:select(1,2)
+  local state_accel    = solver.preview.state:select(1,3)
+  return vector.pose{state_position[1],state_position[2],0},
+    vector.pose{state_velocity[1],state_velocity[2],0},
+    vector.pose{state_accel[1],state_accel[2],0}
 end
 
 -- Perform some math
@@ -394,7 +390,8 @@ libZMP.new_solver = function( params )
   s.compute_preview = compute_preview
   s.init_preview    = init_preview
   s.update_preview  = update_preview
-  s.solve_preview  = solve_preview
+  s.solve_preview   = solve_preview
+  s.get_preview_com = get_preview_com
   -- General
   s.generate_step_queue = generate_step_queue
 	return s

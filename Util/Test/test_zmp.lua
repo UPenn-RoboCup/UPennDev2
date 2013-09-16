@@ -23,9 +23,9 @@ print('KBytes:',collectgarbage('count')-base)
 
 -- Compute the preview segment
 print(util.color('Computing the preview...','green'))
-local t0 = unix.time()
+t0 = unix.time()
 s:compute_preview()
-local t1 = unix.time()
+t1 = unix.time()
 --util.ptorch(s.K1)
 print( util.color('Compute time (ms):','red'), (t1-t0)*1e3 )
 print('KBytes:',collectgarbage('count')-base)
@@ -34,11 +34,15 @@ print('KBytes:',collectgarbage('count')-base)
 --for k,v in pairs(s) do print(k,v) end
 
 -- Initialize the solver for a new run
-uTorso = vector.pose{.01,0,0}
-uLeft  = vector.pose{0,0.035,0}
-uRight = vector.pose{0,-.035,0}
+supportX = 0
+supportY = 0.010
+footY = 0.035
+uLeftI=vector.new{-supportX,footY,0}
+uRightI=vector.new{-supportX,-footY,0}
+uTorsoI = vector.pose{0,0,0}
+
 print(util.color('Initializing the preview...','green'))
-s:init_preview(uTorso,uLeft,uRight)
+s:init_preview(uTorsoI,uLeftI,uRightI)
 print(util.color('Preview state:','red'))
 util.ptorch(s.preview.state)
 print('KBytes:',collectgarbage('count')-base)
@@ -48,33 +52,37 @@ print('KBytes:',collectgarbage('count')-base)
 
 -- Provide a sample step sequence
 step_seq = {}
--- From the drc webots for making steps?
-gap0 = {0,0}
-gap1 = {0.05,0}
-supportX = 0
-supportY = 0.010
-footY = 0.035
-uLeftI=vector.new{-supportX,footY,0}
-uRightI=vector.new{-supportX,-footY,0}
 -- DS step
-table.insert(step_seq, {2, {0,0,0},{0,0},0.10})
+table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.10})
 -- LS step  
-table.insert(step_seq, {0, {0.06,0,0},{0,0},0.5})
+table.insert(step_seq, {0, {0.060,0,0}, {0,0}, 0.5})
 -- DS step
-table.insert(step_seq, {2, {0,0,0},{0,0},0.05})
+table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.05})
+seq_duration = 0
+for _,k in ipairs(step_seq) do
+  seq_duration = seq_duration + k[4]
+end
 
 -- Generate the step queue
 print(util.color('Generating the step queue...','green'))
 s:generate_step_queue(step_seq,uLeftI,uRightI)
 
 -- Update and solve:
-print(util.color('Updating the preview...','green'))
-s:update_preview( Body.get_time(), supportX, supportY )
-
-for step=1,10 do
-  print(util.color('Solving the preview for timestep...','green'),step)
+print(util.color('Update and solve the preview...','green'))
+t0 = unix.time()
+counter = 0
+while not done do
+  --print(util.color('Solving the preview for timestep...','green'),step)
+  done = s:update_preview( Body.get_time(), supportX, supportY )
   s:solve_preview()
+  local com = s:get_preview_com()
+  print('CoM',com)
+  counter = counter + 1
 end
+t1 = unix.time()
+t_diff = t1-t0
+print( util.color('Skew (%) & rate (Hz):','red'), 
+  (t_diff-seq_duration)/seq_duration*100, counter/t_diff )
 print(util.color('Preview state:','red'))
 util.ptorch(s.preview.state)
 print('KBytes:',collectgarbage('count')-base)

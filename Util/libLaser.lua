@@ -127,7 +127,7 @@ local function update_head( self, roll, pitch, yaw )
 
   -----------------------
   -- Height off the chest to the head
-  self.t_headOffset = libTransform.trans(torch.Tensor{0, 0, self.head_height})
+  self.t_headOffset = libTransform.trans(0, 0, self.head_height)
   -----------------------
 
   -----------------------
@@ -137,7 +137,7 @@ local function update_head( self, roll, pitch, yaw )
 
   -- Transformation from the holder to lidar
   self.t_lidarOffset = libTransform.trans( 
-  {self.lidar_offsetx, self.lidar_offsety, self.lidar_offsetz}
+  self.lidar_offsetx, self.lidar_offsety, self.lidar_offsetz
   )
 
   -----------------------
@@ -165,7 +165,7 @@ local function update_chest( self, roll, pitch, yaw )
 
   -- Translation from the body to lidar
   self.t_translation = libTransform.trans( 
-  {self.lidar_offsetx,self.lidar_offsety,self.lidar_offsetz}
+  self.lidar_offsetx,self.lidar_offsety,self.lidar_offsetz
   )
 
   -- Homogeneous transformaion from body to lidar

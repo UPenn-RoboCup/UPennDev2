@@ -137,7 +137,7 @@ static int lua_png_load(lua_State *L) {
   if (!fp)
     abort_("[read_png_file] File %s could not be opened for reading", file_name);
   int ret = fread(header, 1, 8, fp);
-  if (png_sig_cmp((const png_byte*)header, 0, 8))
+  if (png_sig_cmp((const png_bytep)header, 0, 8))
     abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
 
   /* initialize stuff */
@@ -201,7 +201,7 @@ static int lua_png_new(lua_State *L) {
   if (!fp)
     abort_("[read_png_file] File %s could not be opened for reading", file_name);
   int ret = fread(header, 1, 8, fp);
-  if (png_sig_cmp((const png_byte*)header, 0, 8))
+  if (png_sig_cmp((const png_bytep)header, 0, 8))
     abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
 
   /* initialize stuff */
@@ -567,7 +567,7 @@ static int lua_png_uncompress(lua_State *L) {
   state.buffer += 8;
   state.size += 8;
 
-  if (png_sig_cmp((const png_byte*)header, 0, 8))
+  if (png_sig_cmp((const png_bytep)header, 0, 8))
     abort_("[read_png_stream] stream is not recognized as a PNG file");
 
   /* initialize stuff */

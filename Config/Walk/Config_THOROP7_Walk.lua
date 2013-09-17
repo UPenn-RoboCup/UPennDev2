@@ -1,5 +1,4 @@
 local vector = require'vector'
-local vector = require'vector'
 local DEG_TO_RAD = math.pi/180
 
 local Config = {}

@@ -488,7 +488,7 @@ end -- anthropomorphic
 
 ----------------------
 -- Inverse Kinematics
-local Kinematics = require'THOROP7Kinematics'
+local Kinematics = require'THOROPKinematics'
 
 -- Check the error from a desired transform tr
 -- to a forwards kinematics of in IK solution q
@@ -766,8 +766,8 @@ if IS_WEBOTS then
 		tags.kinect = webots.wb_robot_get_device("kinect")
 		webots.wb_camera_enable(tags.kinect, timeStep)
 		--]]
-    -- TODO: Copy the lidar readings to shm on each iteration
-    
+    -- Head Camera
+    tags.head_camera = webots.wb_robot_get_device("Camera")
     -- Chest Lidar
     tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
     chest_lidar_wbt.meta.count = 0
@@ -781,10 +781,7 @@ if IS_WEBOTS then
       chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
     end
     if use_camera then
-      -- Head Camera
-      tags.head_camera = webots.wb_robot_get_device("Camera")
       webots.wb_camera_enable(tags.head_camera, camera_timeStep)
-      --head_camera_wbt.pointer = webots.wb_camera_get_image(tags.head_camera)
       head_camera_wbt.meta.count = 0
       head_camera_wbt.width = webots.wb_camera_get_width(tags.head_camera)
       head_camera_wbt.height = webots.wb_camera_get_height(tags.head_camera)
@@ -947,7 +944,6 @@ if IS_WEBOTS then
       if use_camera then
         print(util.color('Camera enabled!','yellow'))
         webots.wb_camera_enable(tags.head_camera, camera_timeStep)
-        head_camera_wbt.pointer = webots.wb_camera_get_range_image(tags.head_camera)
       else
         print(util.color('Camera disabled!','yellow'))
         webots.wb_camera_disable(tags.head_camera)

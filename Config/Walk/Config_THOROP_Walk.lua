@@ -91,8 +91,8 @@ walk.torsoX = 0.00
 walk.footY = 0.10
 walk.supportX = 0.03
 walk.supportY = 0.02
-walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40,0,0})
-walk.qRArm = math.pi/180*vector.new({110, -12, 0, -40,0,0})
+walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40,0,0, 0})
+walk.qRArm = math.pi/180*vector.new({110, -12, 0, -40,0,0, 0})
 
 walk.qLArmKick = math.pi/180*vector.new({110, 12, -0, -40,0,0})
 walk.qRArmKick = math.pi/180*vector.new({110, -12, 0, -40,0,0})

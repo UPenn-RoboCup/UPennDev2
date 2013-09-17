@@ -375,6 +375,7 @@ function slam.update()
 
   -- Streaming
   meta.shift = shiftdata
+  meta.pose_slam = {libSlam.SLAM.xOdom, libSlam.SLAM.yOdom, libSlam.SLAM.yawOdom}
   local meta = mp.pack(meta)
   local ret, err = omap_udp_ch:send( meta..c_map )
   if err then print('OMAP send error:',err,#c_map,#meta) end

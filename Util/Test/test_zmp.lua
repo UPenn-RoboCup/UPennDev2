@@ -44,16 +44,6 @@ print('KBytes:',collectgarbage('count')-base)
 -- Print out the new solver elements
 --for k,v in pairs(s) do print(k,v) end
 
--- Initialize the solver for a new run
-print(util.color('Initializing the preview...','green'))
-s:init_preview(uTorsoI,uLeftI,uRightI)
-print(util.color('Preview state:','red'))
-util.ptorch(s.preview.state)
-print('KBytes:',collectgarbage('count')-base)
--- Print out the new solver elements
---for k,v in pairs(s) do print(k,v) end
---for k,v in pairs(s.preview) do print(k,v) end
-
 -- Provide a sample step sequence
 step_seq = {}
 -- DS step
@@ -79,6 +69,17 @@ end
 print(util.color('Generating the step queue...','green'))
 s:generate_step_queue(step_seq,uLeftI,uRightI)
 
+-- Initialize the solver for a new run
+print(util.color('Initializing the preview...','green'))
+t = Body.get_time()
+s:init_preview(uTorsoI,uLeftI,uRightI,t)
+print(util.color('Preview state:','red'))
+util.ptorch(s.preview.state)
+print('KBytes:',collectgarbage('count')-base)
+-- Print out the new solver elements
+--for k,v in pairs(s) do print(k,v) end
+--for k,v in pairs(s.preview) do print(k,v) end
+
 -- Update and solve:
 f = io.open('com.tmp','w')
 print(util.color('Update and solve the preview...','green'))
@@ -86,14 +87,21 @@ t0 = unix.time()
 counter = 1
 while not done do
   --print(util.color('Solving the preview for timestep...','green'),step)
+  repeat
+    print('counter',counter)
+    t = Body.get_time()
+    done = s:update_preview( Body.get_time(), supportX, supportY )
+    s:solve_preview()
+  until t<=s.preview.clock or done
   unix.usleep(1e6/100)
-  done = s:update_preview( Body.get_time(), supportX, supportY )
-  s:solve_preview()
+  -- See where we will command our CoM
   com = s:get_preview_com()
-  print(counter,'CoM',com)
-  if com.y~=0 then
-    f:write(string.format('%f %f\n',com.x,com.y))
-    if math.abs(com.y)>1 then os.exit() end
+  print(s.step_queue_index,counter,'CoM',com)
+  f:write(string.format('%f %f\n',com.x,com.y))
+  --
+  if s.step_queue_index>4 then
+    f:close()
+    os.exit()
   end
   counter = counter + 1
 end

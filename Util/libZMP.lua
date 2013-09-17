@@ -57,14 +57,13 @@ local function update_preview(solver, t, supportX, supportY)
     solver.step_queue_time = t + solver.step_queue[1].duration
   end
   local phF = 0
+  --print('idx',idx)
   -- Check if we are a new step
   local t_expire = solver.step_queue_time - t
   if t_expire<=0 then
     solver.last_step = idx==#solver.step_queue
     -- Check if any elements left in the queue
-    if solver.last_step then
-      return'done'
-    end
+    if solver.last_step then return'done' end
     -- Update the index in our step queue
     idx = idx + 1
     solver.step_queue_index = idx

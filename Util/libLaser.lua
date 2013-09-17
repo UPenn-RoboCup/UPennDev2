@@ -4,7 +4,7 @@
 
 require 'torch'
 torch.Tensor = torch.DoubleTensor
-local libTrig = require 'libTrig'
+local libTransform = require 'libTransform'
 local Body = require'Body'
 local K = Body.Kinematics
 
@@ -116,9 +116,9 @@ local function update_head( self, roll, pitch, yaw )
 --TODO: parameters need to be updated
   -----------------------
   -- Rotation of the lidar
-  self.t_roll  = libTrig.rotx( roll )
-  self.t_pitch = libTrig.roty( pitch )
-  self.t_yaw   = libTrig.rotz( yaw )
+  self.t_roll  = libTransform.rotX( roll )
+  self.t_pitch = libTransform.rotY( pitch )
+  self.t_yaw   = libTransform.rotZ( yaw )
   self.t_rotation = torch.mm(torch.mm(self.t_roll, self.t_pitch), self.t_yaw)
   -----------------------
 
@@ -127,7 +127,7 @@ local function update_head( self, roll, pitch, yaw )
 
   -----------------------
   -- Height off the chest to the head
-  self.t_headOffset = libTrig.trans({0, 0, self.head_height})
+  self.t_headOffset = libTransform.trans(torch.Tensor{0, 0, self.head_height})
   -----------------------
 
   -----------------------
@@ -136,7 +136,7 @@ local function update_head( self, roll, pitch, yaw )
   -----------------------
 
   -- Transformation from the holder to lidar
-  self.t_lidarOffset = libTrig.trans( 
+  self.t_lidarOffset = libTransform.trans( 
   {self.lidar_offsetx, self.lidar_offsety, self.lidar_offsetz}
   )
 
@@ -151,9 +151,9 @@ end
 local function update_chest( self, roll, pitch, yaw )
   -----------------------
   -- Rotation of the lidar
-  self.t_roll  = libTrig.rotx( roll )
-  self.t_pitch = libTrig.roty( pitch )
-  self.t_yaw   = libTrig.rotz( yaw )
+  self.t_roll  = libTransform.rotX( roll )
+  self.t_pitch = libTransform.rotY( pitch )
+  self.t_yaw   = libTransform.rotZ( yaw )
   self.t_rotation = torch.mm(torch.mm(self.t_roll, self.t_pitch), self.t_yaw)
   -----------------------
 
@@ -164,12 +164,12 @@ local function update_chest( self, roll, pitch, yaw )
   self.lidar_offsetx = 0.04
 
   -- Translation from the body to lidar
-  self.t_translation = libTrig.trans( 
+  self.t_translation = libTransform.trans( 
   {self.lidar_offsetx,self.lidar_offsety,self.lidar_offsetz}
   )
 
   -- Homogeneous transformaion from body to lidar
-  self.T = torch.mm(torch.mm(self.t_rotation, self.t_translation), libTrig.rotx(-math.pi/2))
+  self.T = torch.mm(torch.mm(self.t_rotation, self.t_translation), libTransform.rotX(-math.pi/2))
 end
 
 

@@ -7,7 +7,7 @@ require 'unix'
 -- C Module for speed
 local slam = require('slam')
 -- Trig library
-local libTrig = require'libTrig'
+local libTransform = require'libTransform'
 
 -- Configuration
 -- TODO: Should be Config_Slam
@@ -258,11 +258,11 @@ libSlam.processL0 = function( lidar_points )
   -- Transform lidar points into the world frame
   ------------------------------------
   local tmp = torch.mm( 
-  libTrig.trans( {SLAM.x, SLAM.y, SLAM.z} ),
-  libTrig.rotz( SLAM.yaw ) 
+  libTransform.trans( {SLAM.x, SLAM.y, SLAM.z} ),
+  libTransform.rotz( SLAM.yaw ) 
   )
   local T = torch.mm( 
-  tmp, libTrig.trans( {0,0,0}
+  tmp, libTransform.trans( {0,0,0}
   ))
   -- Perform the multiply
   W:mm( Y, T:t() )
@@ -811,8 +811,8 @@ libSlam.processL1 = function( lidar_points )
   ------------------------------------
   -- Maybe not needed
   local T = torch.mm( 
-  libTrig.trans( {SLAM.x, SLAM.y, SLAM.z} ),
-  libTrig.rotz( SLAM.yaw )
+  libTransform.trans( {SLAM.x, SLAM.y, SLAM.z} ),
+  libTransform.rotz( SLAM.yaw )
   )
   local tmpG = torch.Tensor(G:size(1), 4)
   tmpG:mm( G, T:t() )

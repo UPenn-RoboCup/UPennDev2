@@ -3,7 +3,18 @@ util=require'util'
 unix=require'unix'
 vector=require'vector'
 Body=require'Body'
+carray = require'carray'
 os.execute'clear'
+
+-- OP parameters
+supportX = 0
+supportY = 0.010
+footY = 0.035
+uLeftI=vector.new{-supportX,footY,0}
+uRightI=vector.new{-supportX,-footY,0}
+uTorsoI = vector.pose{0,0,0}
+tZMP  = .165
+tStep = 0.25
 
 local base = collectgarbage('count')
 print(util.color('Opening libZMP','green'))
@@ -12,8 +23,8 @@ print('KBytes:',collectgarbage('count')-base)
 
 print(util.color('Opening a new libZMP solver','green'))
 s = libZMP.new_solver({
-  tStep=.25,
-  tZMP=.165,
+  tStep=tStep,
+  tZMP=tZMP,
   start_phase=.1,
   finish_phase=.9})
 print('KBytes:',collectgarbage('count')-base)
@@ -34,13 +45,6 @@ print('KBytes:',collectgarbage('count')-base)
 --for k,v in pairs(s) do print(k,v) end
 
 -- Initialize the solver for a new run
-supportX = 0
-supportY = 0.010
-footY = 0.035
-uLeftI=vector.new{-supportX,footY,0}
-uRightI=vector.new{-supportX,-footY,0}
-uTorsoI = vector.pose{0,0,0}
-
 print(util.color('Initializing the preview...','green'))
 s:init_preview(uTorsoI,uLeftI,uRightI)
 print(util.color('Preview state:','red'))
@@ -58,6 +62,14 @@ table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.10})
 table.insert(step_seq, {0, {0.060,0,0}, {0,0}, 0.5})
 -- DS step
 table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.05})
+-- More: Config/Walk/Config_WebotsOP_Walk.lua
+table.insert(step_seq, {1, {0,-0.01,0},{-0.01,-0.01},0.2,1})
+table.insert(step_seq, {1, {0.18,0,0},{-0.01,-0.01},1,2})
+table.insert(step_seq, {1, {-0.06,0.01,0},{-0.0,-0.02},0.1,3})
+table.insert(step_seq, {1, {0.0,0,0},{-0.01,-0.0},0.2,4})
+table.insert(step_seq, {2, {0,0,0},{0,0},0.10})
+table.insert(step_seq, {0, {0.06,0,0},{0,0},0.5})
+
 seq_duration = 0
 for _,k in ipairs(step_seq) do
   seq_duration = seq_duration + k[4]
@@ -68,18 +80,25 @@ print(util.color('Generating the step queue...','green'))
 s:generate_step_queue(step_seq,uLeftI,uRightI)
 
 -- Update and solve:
+f = io.open('com.tmp','w')
 print(util.color('Update and solve the preview...','green'))
 t0 = unix.time()
-counter = 0
+counter = 1
 while not done do
   --print(util.color('Solving the preview for timestep...','green'),step)
+  unix.usleep(1e6/100)
   done = s:update_preview( Body.get_time(), supportX, supportY )
   s:solve_preview()
-  local com = s:get_preview_com()
-  print('CoM',com)
+  com = s:get_preview_com()
+  print(counter,'CoM',com)
+  if com.y~=0 then
+    f:write(string.format('%f %f\n',com.x,com.y))
+    if math.abs(com.y)>1 then os.exit() end
+  end
   counter = counter + 1
 end
 t1 = unix.time()
+f:close()
 t_diff = t1-t0
 print( util.color('Skew (%) & rate (Hz):','red'), 
   (t_diff-seq_duration)/seq_duration*100, counter/t_diff )

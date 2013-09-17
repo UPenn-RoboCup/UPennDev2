@@ -31,43 +31,41 @@ local get_time = unix.time
 
 --------------------------------
 -- Shared memory layout
-
--- Real THOR-OP (Centaur uses ankles for wheels, maybe?)
 local indexHead = 1   -- Head: 1 2
 local nJointHead = 2
-local indexLArm = 3   --LArm: 3 4 5 6 7 8
-local nJointLArm = 6 		
-local indexLLeg = 9  --LLeg: 9 10 11 12 13 14
+local indexLArm = 3   --LArm: 3 4 5 6 7 8 9
+local nJointLArm = 7    
+local indexLLeg = 10  --LLeg: 10 11 12 13 14 15
 local nJointLLeg = 6
-local indexRLeg = 15  --RLeg: 15 16 17 18 19 20
+local indexRLeg = 16  --RLeg: 16 17 18 19 20 21
 local nJointRLeg = 6
-local indexRArm = 21  --RArm: 21 22 23 24 25 26
-local nJointRArm = 6
-local indexWaist = 27  --Waist: 27 28
+local indexRArm = 22  --RArm: 22 23 24 25 26 27 28
+local nJointRArm = 7
+local indexWaist = 29  --Waist: 29 30
 local nJointWaist = 2
 -- 6 Fingers for gripping
 -- 1 servo for lidar panning
-local indexLGrip = 29
+local indexLGrip = 31
 local nJointLGrip = 3
-local indexRGrip = 32
+local indexRGrip = 34
 local nJointRGrip = 3
 -- One motor for lidar panning
-local indexLidar = 35
+local indexLidar = 37
 local nJointLidar = 1
-local nJoint = 35
+local nJoint = 37
 
 local jointNames = {
 	"Neck","Head", -- Head
 	-- Left Arm
 	"ShoulderL", "ArmUpperL", "LeftShoulderYaw",
-	"ArmLowerL","LeftWristYaw","LeftWristRoll",
+	"ArmLowerL","LeftWristYaw","LeftWristRoll","LeftWristYaw2",
 	-- Left leg
 	"PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",
 	-- Right leg
 	"PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
 	--Right arm
 	"ShoulderR", "ArmUpperR", "RightShoulderYaw","ArmLowerR",
-	"RightWristYaw","RightWristRoll",
+	"RightWristYaw","RightWristRoll","RightWristYaw2",
 	-- Waist
 	"TorsoPitch","TorsoYaw",
 	-- Gripper
@@ -93,35 +91,19 @@ for name,list in pairs(parts) do
 	for _,idx in ipairs(list) do inv_parts[idx]=name end
 end
 
--- Initial joint positions
-Body.initial_joints = vector.new({
-	0,0, -- Head
-	90,0,0,0,0,0, --LArm
-	0,0,0,0,0,0, --LLeg
-	0,0,0,0,0,0, --RLeg
-	90,0,0,0,0,0, --RArm
-	0,0, -- Waist
-	0,0,0, -- Left gripper
-	0,0,0, -- Right gripper
-	0, -- Lidar pan
-})*DEG_TO_RAD
-
 --------------------------------
 -- Servo parameters
 local servo = {}
-
--- shm joint id to dynamixel motor id
 servo.joint_to_motor={
-	27,28,  --Head
-	1,3,5,7,9,11, --LArm
-	-- TODO: No legs!  Using fake id numbers for now
-	20,51,52,53,54,55, -- left wheel
-	19,61,62,63,64,65, -- right wheel
-	2,4,6,8,10,12,  --RArm
-	25,26,  -- Waist
-	14,16,18, -- left gripper
-	13,15,17, -- right gripper
-	36, -- Lidar pan
+  29,30,  --Head yaw/pitch
+  2,4,6,8,10,12,14, --LArm
+  16,18,20,22,24,26, -- left leg
+  15,17,19,21,23,25, -- right leg
+  1,3,5,7,9,11,13,  --RArm
+  27,28, --Waist yaw/pitch
+  32,34,36, -- left gripper
+  31,33,35, -- right gripper
+  37, -- Lidar pan
 }
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
 
@@ -143,71 +125,70 @@ end
 -- TODO: Use some loop based upon MX/NX
 -- TODO: some pros are different
 servo.steps = 2 * vector.new({
-	151875,151875, -- Head
-	251000,251000,251000,251000,151875,151875, --LArm
-	251000,251000,251000,251000,251000,251000, --LLeg
-	251000,251000,251000,251000,251000,251000, --RLeg
-	251000,251000,251000,251000,151875,151875, --RArm
-	251000,251000, -- Waist
-	2048,2048,2048, -- Left gripper
-	2048,2048,2048, -- Right gripper
-	2048, -- Lidar pan
+  151875,151875, -- Head
+  251000,251000,251000,251000,151875,151875,151875, --LArm
+  251000,251000,251000,251000,251000,251000, --LLeg
+  251000,251000,251000,251000,251000,251000, --RLeg
+  251000,251000,251000,251000,151875,151875,151875, --RArm
+  251000,251000, -- Waist
+  2048,2048,2048, -- Left gripper
+  2048,2048,2048, -- Right gripper
+  2048, -- Lidar pan
 })
 assert(#servo.steps==nJoint,'Bad servo steps!')
 
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
-	1,1, -- Head
-  1,1,1,-1,1,1, --LArm
-	-- TODO: No legs yet! Using fake directions for now
-	1, 1,1,1,1,1, --LLeg
-	1, 1,1,1,1,1, --RLeg
-	-1,1,1,1, 1,1, --RArm
-	1,1, -- Waist
-	-- TODO: Check the gripper
-	1,-1,1, -- left gripper
-	-1,1,-1, -- right gripper
-	1, -- Lidar pan
+  1,1, -- Head
+  1,-1,1,1,1,1,1, --LArm 
+  1, 1,1,1,1,1, --LLeg
+  1, 1,1,1,1,1, --RLeg
+  -1,1,1,1, 1,1,1, --RArm
+  1,1, -- Waist
+  1,1,-1, -- left gripper
+  1,-1,1, -- right gripper
+  -1, -- Lidar pan
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
 
 -- TODO: Offset in addition to bias?
 servo.rad_bias = vector.new({
-	0,-1.8, -- Head
-	-90,-90,-90,-45,90,0, --LArm
-	0,0,0,0,0,0, --LLeg
-	0,0,0,0,0,0, --RLeg
-	90,90,90,45,-90,0, --RArm
-	0,0, -- Waist
+  0,-1.8, -- Head
+  -90,90,0,45,90,0,0, --LArm
+  0,0,0,0,0,0, --LLeg
+  0,0,0,0,0,0, --RLeg
+  90,90,90,45,-90,0,0, --RArm
+  0,0, -- Waist
   0,0,0, -- left gripper
-  0,-80,0, -- right gripper -- TODO: Remount the finger...
-	0, -- Lidar pan
+  0,0,0, -- right gripper
+  0, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.rad_bias==nJoint,'Bad servo rad_bias!')
 
+--SJ: Arm servos should at least move up to 90 deg
 servo.min_rad = vector.new({
-	-60,-80, -- Head
-	-175,-5,-90,-145,-100,-80, --LArm
-	-175,-175,-175,-175,-175,-175, --LLeg
-	-175,-175,-175,-175,-175,-175, --RLeg
-	-175,-175,-180,-145,-100,-80, --RArm
-	-175,-175, -- Waist
+  -60,-80, -- Head
+  -175,-5,-90,-145,-100,-80,-80, --LArm
+  -175,-175,-175,-175,-175,-175, --LLeg
+  -175,-175,-175,-175,-175,-175, --RLeg
+  -175,-175,-180,-145,-100,-80,-80, --RArm
+  -175,-175, -- Waist
   -20,-20,-20, -- left gripper
   -20,-20,-20, -- right gripper
-	-60, -- Lidar pan
+  -60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 
 servo.max_rad = vector.new({
-	45,80, -- Head
-	160,150,180,0,100,80, --LArm
-	175,175,175,175,175,175, --LLeg
-	175,175,175,175,175,175, --RLeg
-	160,5,90,0,100,80, --RArm
-	175,175, -- Waist
+  45,80, -- Head
+  160,150,180,0,100,80,80, --LArm
+  175,175,175,175,175,175, --LLeg
+  175,175,175,175,175,175, --RLeg
+  160,5,90,0,100,80,80, --RArm
+  175,175, -- Waist
   10,10,10, -- left gripper
   10,10,10, -- right gripper
-	60, -- Lidar pan
+  60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
 
@@ -507,7 +488,7 @@ end -- anthropomorphic
 
 ----------------------
 -- Inverse Kinematics
-local Kinematics = require'THOROPKinematics'
+local Kinematics = require'THOROP7Kinematics'
 
 -- Check the error from a desired transform tr
 -- to a forwards kinematics of in IK solution q
@@ -641,53 +622,55 @@ if IS_WEBOTS then
   local lidar_timeStep = 25
   local camera_timeStep = 33
 
-	servo.direction = vector.new({
-		1,-1, -- Head
-		1,-1,-1,1,-1,1, --LArm
-		-- TODO: No legs yet!
-		-1,-1,-1,-1,1,1, --LLeg
-		-1,-1,1,1,-1,1, --LArm
-		-1,-1,-1,-1,-1,1, --RArm
-		-- TODO: Check the gripper
-		1,1, -- Waist
-		1,-1,1, -- left gripper
-		1,-1,-1, -- right gripper
-		1, -- Lidar pan
-	})
-	servo.rad_bias = vector.new({
-		0,-9.25, -- head
-		-90,-10,0,45,0,0,
-		0,0,0,0,0,0,
-		0,0,0,0,0,0,
-		-90,10,0,45,0,0,
-		0,0,
-		0,0,0,
-		0,0,0,
-		60,--30,
-	})*DEG_TO_RAD
+  servo.direction = vector.new({
+    1,-1, -- Head
+--    1,-1,-1,1,-1,1,-1, --LArm
+    1,-1,-1,1,-1,-1,-1, --LArm    
+    -- TODO: No legs yet!
+    -1,-1,-1,-1,1,1, --LLeg
+    -1,-1,1,1,-1,1, --LArm
+--    -1,-1,-1,-1,-1,1,-1, --RArm
+      -1,-1,-1,-1,-1,-1,-1, --RArm    
+    -- TODO: Check the gripper
+    1,1, -- Waist
+    -1,1,-1, -- left gripper
+    -1,1,1, -- right gripper
+    1, -- Lidar pan
+  })
+  servo.rad_bias = vector.new({
+    0,0, -- head
+    -90,-10,0,45,0,0,0,
+    0,0,0,0,0,0,
+    0,0,0,0,0,0,
+    -90,10,0,45,0,0,0,
+    0,0,
+    0,0,0,
+    0,0,0,
+    60,--30,
+  })*DEG_TO_RAD
   
   servo.min_rad = vector.new({
-  	-60,-80, -- Head
-  	-90,-5,-90,-140,-100,-80, --LArm
-  	-175,-175,-175,-175,-175,-175, --LLeg
-  	-175,-175,-175,-175,-175,-175, --RLeg
-  	-175,-170,-180,-140,-100,-80, --RArm
-  	-175,-175, -- Waist
-  	0,0,0, -- left gripper
-  	0,0,0, -- right gripper
-  	-60, -- Lidar pan
+    -60,-80, -- Head
+    -90,-5,-90,-140,-100,-80,-80, --LArm
+    -175,-175,-175,-175,-175,-175, --LLeg
+    -175,-175,-175,-175,-175,-175, --RLeg
+    -175,-170,-180,-140,-100,-80,-80, --RArm
+    -175,-175, -- Waist
+    0,0,0, -- left gripper
+    0,0,0, -- right gripper
+    -60, -- Lidar pan
   })*DEG_TO_RAD
   
   servo.max_rad = vector.new({
-  	45,80, -- Head
-  	160,150,180,0,100,80, --LArm
-  	175,175,175,175,175,175, --LLeg
-  	175,175,175,175,175,175, --RLeg
-  	160,5,90,0,100,80, --RArm
-  	175,175, -- Waist
-  	90,90,90, -- left gripper
-  	90,90,90, -- right gripper
-  	60, -- Lidar pan
+    45,80, -- Head
+    160,150,180,0,100,80,80, --LArm
+    175,175,175,175,175,175, --LLeg
+    175,175,175,175,175,175, --RLeg
+    160,5,90,0,100,80,80, --RArm
+    175,175, -- Waist
+    90,90,90, -- left gripper
+    90,90,90, -- right gripper
+    60, -- Lidar pan
   })*DEG_TO_RAD
   
   -- Webots body broadcasting
@@ -896,7 +879,6 @@ if IS_WEBOTS then
       local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
       jcm.sensorPtr.rpy[1],jcm.sensorPtr.rpy[2],jcm.sensorPtr.rpy[3] = 
         unpack(rpy)
-
       --[[
       print('rpy',unpack(rpy) )
       print('gps',unpack(gps) )
@@ -952,12 +934,23 @@ if IS_WEBOTS then
         print(util.color('LIDAR enabled!','yellow'))
         webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
         webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
-        head_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.head_lidar)
+        head_lidar_wbt.pointer  = webots.wb_camera_get_range_image(tags.head_lidar)
         chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
       else
         print(util.color('LIDAR disabled!','yellow'))
         webots.wb_camera_disable(tags.chest_lidar)
         webots.wb_camera_disable(tags.head_lidar)
+      end
+    elseif key_char_lower=='c' then
+      use_camera = not use_camera
+      -- Toggle camera
+      if use_camera then
+        print(util.color('Camera enabled!','yellow'))
+        webots.wb_camera_enable(tags.head_camera, camera_timeStep)
+        head_camera_wbt.pointer = webots.wb_camera_get_range_image(tags.head_camera)
+      else
+        print(util.color('Camera disabled!','yellow'))
+        webots.wb_camera_disable(tags.head_camera)
       end
     end
 
@@ -973,26 +966,26 @@ end -- webots check
 -- Exports for use in other functions
 Body.get_time = get_time
 -- Real THOR-OP (Cenatur uses ankles for wheels, maybe?)
-Body.indexHead = 1   -- Head: 1 2
-Body.nJointHead = 2
-Body.indexLArm = 3   --LArm: 5 6 7 8 9 10
-Body.nJointLArm = 6 		
-Body.indexLLeg = 9  --LLeg: 11 12 13 14 15 16
-Body.nJointLLeg = 6
-Body.indexRLeg = 15  --RLeg: 17 18 19 20 21 22
-Body.nJointRLeg = 6
-Body.indexRArm = 21  --RArm: 23 24 25 26 27 28
-Body.nJointRArm = 6
-Body.indexWaist = 27  --Waist: 3 4
-Body.nJointWaist = 2
+Body.indexHead = indexHead   -- Head: 1 2
+Body.nJointHead = nJointHead
+Body.indexLArm = indexLArm   --LArm: 5 6 7 8 9 10
+Body.nJointLArm = nJointLArm 		
+Body.indexLLeg = indexLLeg  --LLeg: 11 12 13 14 15 16
+Body.nJointLLeg = nJointLLeg
+Body.indexRLeg = indexRLeg  --RLeg: 17 18 19 20 21 22
+Body.nJointRLeg = nJointRLeg
+Body.indexRArm = indexRArm  --RArm: 23 24 25 26 27 28
+Body.nJointRArm = nJointRArm
+Body.indexWaist = indexWaist  --Waist: 3 4
+Body.nJointWaist = nJointWaist
 -- 6 Fingers for gripping
 -- 1 servo for lidar panning
-Body.indexLGrip = 29
-Body.nLGrip = 3
-Body.indexRGrip = 32
-Body.nRGrip = 3
-Body.indexLidar = 35
-Body.nJointLidar = 1
+Body.indexLGrip = indexLGrip
+Body.nLGrip = nLGrip
+Body.indexRGrip = indexRGrip
+Body.nRGrip = nRGrip
+Body.indexLidar = indexLidar
+Body.nJointLidar = nJointLidar
 Body.nJoint = nJoint
 Body.jointNames = jointNames
 Body.parts = parts

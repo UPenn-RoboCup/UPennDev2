@@ -14,7 +14,7 @@ CFLAGS=-O3 -fpic -fomit-frame-pointer
 LIBRT=-lrt
 SHLIBEXT=so
 USE_TORCH=1
-LUA_INC=`pkg-config lua5.1 --cflags`
+LUA_INC=
 INCLUDES=$(LUA_INC)
 
 # OS Specific overrides
@@ -25,6 +25,7 @@ ifeq ($(OSTYPE),darwin)
 else
   CFLAGS+= -mtune=native -march=native
   CXXFLAGS+= -mtune=native -march=native
+  LUA_INC=`pkg-config lua5.1 --cflags`
 endif
 
 # Verbose mode check

@@ -1,4 +1,5 @@
-#include "THOROP7Kinematics.h"
+#include "THOROPKinematics.h"
+/* 6 DOF */
 
 enum {LEG_LEFT = 0, LEG_RIGHT = 1};
 enum {ARM_LEFT = 0, ARM_RIGHT = 1};
@@ -21,7 +22,7 @@ void printVector(std::vector<double> v) {
 }
 
   std::vector<double>
-THOROP7_kinematics_forward_joints(const double *r)
+THOROP_kinematics_forward_joints(const double *r)
 {
   /* forward kinematics to convert servo positions to joint angles */
   std::vector<double> q(23);
@@ -34,7 +35,7 @@ THOROP7_kinematics_forward_joints(const double *r)
 //DH transform params: (alpha, a, theta, d)
 
   Transform
-THOROP7_kinematics_forward_head(const double *q)
+THOROP_kinematics_forward_head(const double *q)
 {
   Transform t;
   t = t.translateZ(neckOffsetZ)
@@ -44,7 +45,7 @@ THOROP7_kinematics_forward_head(const double *q)
   return t;
 }
   Transform
-THOROP7_kinematics_forward_l_arm(const double *q) 
+THOROP_kinematics_forward_l_arm(const double *q) 
 {
 //New FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
   Transform t;
@@ -65,7 +66,7 @@ THOROP7_kinematics_forward_l_arm(const double *q)
 
 
   Transform
-THOROP7_kinematics_forward_r_arm(const double *q) 
+THOROP_kinematics_forward_r_arm(const double *q) 
 {
 //New FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
   Transform t;
@@ -84,7 +85,7 @@ THOROP7_kinematics_forward_r_arm(const double *q)
 }
 
   Transform
-THOROP7_kinematics_forward_l_arm_7(const double *q) 
+THOROP_kinematics_forward_l_arm_7(const double *q) 
 {
 //FK for 7-dof arm (pitch-roll-yaw-pitch-yaw-roll-yaw)
   Transform t;
@@ -106,7 +107,7 @@ THOROP7_kinematics_forward_l_arm_7(const double *q)
 
 
   Transform
-THOROP7_kinematics_forward_r_arm_7(const double *q) 
+THOROP_kinematics_forward_r_arm_7(const double *q) 
 {
 //New FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
   Transform t;
@@ -128,7 +129,7 @@ THOROP7_kinematics_forward_r_arm_7(const double *q)
 }
 
   Transform
-THOROP7_kinematics_forward_l_leg(const double *q)
+THOROP_kinematics_forward_l_leg(const double *q)
 {
   Transform t;
   t = t.translateY(hipOffsetY).translateZ(-hipOffsetZ)
@@ -143,7 +144,7 @@ THOROP7_kinematics_forward_l_leg(const double *q)
 }
 
   Transform
-THOROP7_kinematics_forward_r_leg(const double *q)
+THOROP_kinematics_forward_r_leg(const double *q)
 {
   Transform t;
   t = t.translateY(-hipOffsetY).translateZ(-hipOffsetZ)
@@ -168,7 +169,7 @@ double actlength (double top[], double bot[])
 }
 
   std::vector<double>
-THOROP7_kinematics_inverse_joints(const double *q)  //dereks code to write
+THOROP_kinematics_inverse_joints(const double *q)  //dereks code to write
 {
   /* inverse kinematics to convert joint angles to servo positions */
   std::vector<double> r(23);
@@ -179,7 +180,7 @@ THOROP7_kinematics_inverse_joints(const double *q)  //dereks code to write
 }
 
   std::vector<double>
-THOROP7_kinematics_inverse_arm(Transform trArm, int arm, const double *qOrg)
+THOROP_kinematics_inverse_arm(Transform trArm, int arm, const double *qOrg)
 {
   //Closed-form inverse kinematics for THOR-OP 6DOF arm
   Transform t;
@@ -510,12 +511,12 @@ THOROP7_kinematics_inverse_arm(Transform trArm, int arm, const double *qOrg)
       if (armTransformC[2]<0) armTransformC[2] = 0;
 
       arm_transform_c=
-	THOROP7_kinematics_forward_l_arm(armTransformC); 
+	THOROP_kinematics_forward_l_arm(armTransformC); 
     }else{
       if (armTransformC[1]>0) armTransformC[1] = 0;
       if (armTransformC[2]>0) armTransformC[2] = 0;
       arm_transform_c=
-	THOROP7_kinematics_forward_r_arm(armTransformC); 
+	THOROP_kinematics_forward_r_arm(armTransformC); 
     }
 
     double x_err = trArm0[0] - arm_transform_c(0,3);
@@ -569,7 +570,7 @@ if (arm==ARM_LEFT)
 //Main purpose:  quadruped locomotion
 
   std::vector<double>
-THOROP7_kinematics_inverse_wrist(Transform trArm, 
+THOROP_kinematics_inverse_wrist(Transform trArm, 
 	double shoulderYaw, int arm)
 {
   //Closed-form inverse kinematics for THOR-OP 6DOF arm
@@ -692,7 +693,7 @@ THOROP7_kinematics_inverse_wrist(Transform trArm,
 
 
   std::vector<double>
-THOROP7_kinematics_inverse_arm_7(Transform trArm, int arm,double shoulderYaw) {
+THOROP_kinematics_inverse_arm_7(Transform trArm, int arm,double shoulderYaw) {
   // Closed-form inverse kinematics for THOR-OP 7DOF arm
   // (pitch-roll-yaw-pitch-yaw-roll-yaw)
   // Shoulder yaw angle is given
@@ -919,49 +920,49 @@ THOROP7_kinematics_inverse_arm_7(Transform trArm, int arm,double shoulderYaw) {
 
 
   std::vector<double>
-THOROP7_kinematics_inverse_l_arm(Transform trArm, const double *qOrg)
+THOROP_kinematics_inverse_l_arm(Transform trArm, const double *qOrg)
 {
-  return THOROP7_kinematics_inverse_arm(trArm, ARM_LEFT, qOrg);
+  return THOROP_kinematics_inverse_arm(trArm, ARM_LEFT, qOrg);
 }
 
   std::vector<double>
-THOROP7_kinematics_inverse_r_arm(Transform trArm, const double *qOrg)
+THOROP_kinematics_inverse_r_arm(Transform trArm, const double *qOrg)
 {
-  return THOROP7_kinematics_inverse_arm(trArm, ARM_RIGHT, qOrg);
+  return THOROP_kinematics_inverse_arm(trArm, ARM_RIGHT, qOrg);
 }
 
 
   std::vector<double>
-THOROP7_kinematics_inverse_l_arm_7(Transform trArm, double shoulderYaw)
+THOROP_kinematics_inverse_l_arm_7(Transform trArm, double shoulderYaw)
 {
-  return THOROP7_kinematics_inverse_arm_7(trArm, ARM_LEFT, shoulderYaw);
+  return THOROP_kinematics_inverse_arm_7(trArm, ARM_LEFT, shoulderYaw);
 }
 
   std::vector<double>
-THOROP7_kinematics_inverse_r_arm_7(Transform trArm, double shoulderYaw)
+THOROP_kinematics_inverse_r_arm_7(Transform trArm, double shoulderYaw)
 {
-  return THOROP7_kinematics_inverse_arm_7(trArm, ARM_RIGHT, shoulderYaw);
-}
-
-
-
-
-  std::vector<double>
-THOROP7_kinematics_inverse_l_wrist(Transform trArm, double shoulderYaw)
-{
-  return THOROP7_kinematics_inverse_wrist(trArm, shoulderYaw,ARM_LEFT);
-}
-
-  std::vector<double>
-THOROP7_kinematics_inverse_r_wrist(Transform trArm, double shoulderYaw)
-{
-  return THOROP7_kinematics_inverse_wrist(trArm, shoulderYaw, ARM_RIGHT);
+  return THOROP_kinematics_inverse_arm_7(trArm, ARM_RIGHT, shoulderYaw);
 }
 
 
 
+
   std::vector<double>
-THOROP7_kinematics_inverse_leg(Transform trLeg, int leg)
+THOROP_kinematics_inverse_l_wrist(Transform trArm, double shoulderYaw)
+{
+  return THOROP_kinematics_inverse_wrist(trArm, shoulderYaw,ARM_LEFT);
+}
+
+  std::vector<double>
+THOROP_kinematics_inverse_r_wrist(Transform trArm, double shoulderYaw)
+{
+  return THOROP_kinematics_inverse_wrist(trArm, shoulderYaw, ARM_RIGHT);
+}
+
+
+
+  std::vector<double>
+THOROP_kinematics_inverse_leg(Transform trLeg, int leg)
 {
   std::vector<double> qLeg(6);
   Transform trInvLeg = inv(trLeg);
@@ -1019,13 +1020,13 @@ THOROP7_kinematics_inverse_leg(Transform trLeg, int leg)
 }
 
   std::vector<double>
-THOROP7_kinematics_inverse_l_leg(Transform trLeg)
+THOROP_kinematics_inverse_l_leg(Transform trLeg)
 {
-  return THOROP7_kinematics_inverse_leg(trLeg, LEG_LEFT);
+  return THOROP_kinematics_inverse_leg(trLeg, LEG_LEFT);
 }
 
   std::vector<double>
-THOROP7_kinematics_inverse_r_leg(Transform trLeg)
+THOROP_kinematics_inverse_r_leg(Transform trLeg)
 {
-  return THOROP7_kinematics_inverse_leg(trLeg, LEG_RIGHT);
+  return THOROP_kinematics_inverse_leg(trLeg, LEG_RIGHT);
 }

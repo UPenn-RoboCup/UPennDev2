@@ -3,7 +3,7 @@ local Config = {}
 ------------------------
 -- General parameters --
 ------------------------
-Config.PLATFORM_NAME = 'THOROP7'
+Config.PLATFORM_NAME = 'THOROP'
 Config.USE_LOCALHOST = true
 
 -----------------------

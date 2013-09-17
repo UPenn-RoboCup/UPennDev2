@@ -104,8 +104,8 @@ local function update_preview(solver, t, supportX, supportY)
   -- Update the preview zmp elements
   local preview  = solver.preview
   local nPreview = preview.nPreview
-  local zmp_x = solver.preview.zmp_x
-  local zmp_y = solver.preview.zmp_y
+  local zmp_x = preview.zmp_x
+  local zmp_y = preview.zmp_y
   -- Shift over
   zmp_x:storage():lshift()
   zmp_y:storage():lshift()
@@ -167,14 +167,17 @@ local function solve_preview(solver)
   preview.state:mm(preview.A,current_state):add(
     torch.ger( preview.B, u )
   )
+  preview.clock = preview.clock + preview.ts
 end
 
-local function init_preview(solver,uTorso,uLeft,uRight)
-  assert(solver.preview,'Please precompute the preview engine!')
-  local nPreview = solver.preview.nPreview
+local function init_preview(solver,uTorso,uLeft,uRight,t)
+  local preview = solver.preview
+  assert(preview,'Please precompute the preview engine!')
+  
+  local nPreview = preview.nPreview
   -- Generate the x and y zmp trajectories
-  solver.preview.zmp_x = torch.Tensor(nPreview):fill(uTorso[1])
-  solver.preview.zmp_y = torch.Tensor(nPreview):fill(uTorso[2])
+  preview.zmp_x = torch.Tensor(nPreview):fill(uTorso[1])
+  preview.zmp_y = torch.Tensor(nPreview):fill(uTorso[2])
   --
   local phs = {}
   local supportLegs   = {}
@@ -184,21 +187,20 @@ local function init_preview(solver,uTorso,uLeft,uRight)
      -- double support
     table.insert(phs,0)
     table.insert(supportLegs,2)
-    table.insert(uLeftTargets,
-      vector.pose{uLeft[1],uLeft[2],uLeft[3]})
-    table.insert(uRightTargets,
-      vector.pose{uRight[1],uRight[2],uRight[3]})
+    table.insert(uLeftTargets,vector.pose{unpack(uLeft)})
+    table.insert(uRightTargets,vector.pose{unpack(uRight)})
   end
   -- Save data to our solver
-  solver.preview.first = 1
-  solver.preview.last  = nPreview
-  solver.preview.phs   = phs
-  solver.preview.supportLegs = supportLegs
-  solver.preview.uLeft  = uLeftTargets
-  solver.preview.uRight = uRightTargets
+  preview.first = 1
+  preview.last  = nPreview
+  preview.phs   = phs
+  preview.supportLegs = supportLegs
+  preview.uLeft  = uLeftTargets
+  preview.uRight = uRightTargets
   -- Our first state:
-  solver.preview.state = torch.Tensor{{uTorso[1],uTorso[2]},{0,0},{0,0}}
-
+  preview.state = torch.Tensor{{uTorso[1],uTorso[2]},{0,0},{0,0}}
+  -- Our preview clock
+  preview.clock = t
 end
 
 -- preview_interval: How many seconds into the future should we preview?
@@ -258,6 +260,7 @@ local function compute_preview( solver, preview_interval )
   solver.preview.B = torch.Tensor{ts_twice_integrated, ts_integrated, ts}
   -- Save preview data
   solver.preview.nPreview = nPreview
+  solver.preview.ts = ts
 end
 
 local function get_preview_com(solver)

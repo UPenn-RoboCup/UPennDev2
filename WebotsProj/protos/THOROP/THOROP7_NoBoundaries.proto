@@ -11,7 +11,7 @@ PROTO THOROP7_NoBoundaries [
   field SFString   controller "void"
   field SFString   controllerArgs ""
   field SFBool     synchronization TRUE
-  field SFString   name "THOROP"
+  field SFString   name "THOROP7"
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
   field SFInt32    cameraWidth 320
@@ -20,7 +20,7 @@ PROTO THOROP7_NoBoundaries [
 #  field SFInt32    channel 0
 ]
 {
-Supervisor {
+Robot {
   translation IS translation
   rotation IS rotation
   controller IS controller
@@ -53,15 +53,15 @@ Supervisor {
       ]
     }
     InertialUnit {
-      rotation 0 1 0 -1.5708
+      #rotation 0 1 0 -1.5708
       name "InertialUnit"
     }
     Compass {
-      rotation 0 1 0 -1.5708
+      #rotation 0 1 0 -1.5708
       name "Compass"
     }
     GPS {
-      rotation 0 1 0 -1.5708
+      #rotation 0 1 0 -1.5708
       name "GPS"
     }
     Accelerometer {

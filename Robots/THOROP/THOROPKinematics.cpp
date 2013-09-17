@@ -1,4 +1,5 @@
 #include "THOROPKinematics.h"
+/* 7 DOF */
 
 enum {LEG_LEFT = 0, LEG_RIGHT = 1};
 enum {ARM_LEFT = 0, ARM_RIGHT = 1};

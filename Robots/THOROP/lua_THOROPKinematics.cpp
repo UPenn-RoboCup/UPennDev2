@@ -1,5 +1,6 @@
 /* 
 (c) 2013 Seung Joon Yi
+7 DOF
 */
 
 #include <lua.hpp>
@@ -319,6 +320,7 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"forward_lleg", forward_l_leg},
 	{"forward_rleg", forward_r_leg},
 	{"forward_joints", forward_joints},
+  
 	{"lleg_torso", l_leg_torso},
 	{"torso_lleg", torso_l_leg},
 	{"rleg_torso", r_leg_torso},
@@ -326,9 +328,6 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"l_arm_torso", l_arm_torso},
 	{"torso_l_arm", torso_l_arm},
 	{"r_arm_torso", r_arm_torso},
-
-	{"l_arm_torso_7", l_arm_torso_7},
-	{"r_arm_torso_7", r_arm_torso_7},
 
 	{"torso_r_arm", torso_r_arm},
 	{"inverse_l_leg", inverse_l_leg},
@@ -338,12 +337,16 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"inverse_r_arm", inverse_r_arm},
 	{"inverse_arms", inverse_arms},
 
-	{"inverse_l_arm_7", inverse_l_arm_7},
-	{"inverse_r_arm_7", inverse_r_arm_7},
-
 	{"inverse_l_wrist", inverse_l_wrist},
 	{"inverse_r_wrist", inverse_r_wrist},
 	{"inverse_joints", inverse_joints},
+
+  /* 7 DOF specific */
+	{"l_arm_torso_7", l_arm_torso_7},
+	{"r_arm_torso_7", r_arm_torso_7},
+	{"inverse_l_arm_7", inverse_l_arm_7},
+	{"inverse_r_arm_7", inverse_r_arm_7},
+
 	{NULL, NULL}
 };
 
@@ -369,7 +372,6 @@ int luaopen_THOROPKinematics (lua_State *L) {
 #else
 	luaL_register(L, "Kinematics", kinematics_lib);
 #endif
-	lua_install_constants(L, kinematics_constants);
 	return 1;
 }
 

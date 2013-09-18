@@ -186,6 +186,8 @@ vector.new({0,-90,-90,-90,90,45,0})*DEG_TO_RAD, -- arms in front
 -- Arm speed limits
 arm.fast_limit = vector.new({30,30,30,45,60,60,60})*DEG_TO_RAD
 arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD
+arm.super_slow_limit = vector.new({5,5,5,10,15,15,15})*DEG_TO_RAD
+arm.slow_elbow_limit = vector.new({10,10,10,5,30,30,30})*DEG_TO_RAD
 
 ------------------------------------
 -- Associate with the table

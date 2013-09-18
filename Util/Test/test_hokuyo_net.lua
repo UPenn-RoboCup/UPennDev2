@@ -11,8 +11,8 @@ local tcp        = require'tcp'
 -- CHEST IS 192.168.0.10!
 -- Make the head .11
 -- TODO: Broadcast to find hokuyos?
-local chest_hokuyo = libHokuyo.new_hokuyo_net('192.168.0.10', 10940)
-local head_hokuyo = libHokuyo.new_hokuyo_net('192.168.0.11', 10940)
+local chest_hokuyo = libHokuyo.new_hokuyo(10)
+--local head_hokuyo = libHokuyo.new_hokuyo("/dev/cu.usbmodemfd121")
 
 -- Setup the Hokuyos array
 local hokuyos = {}

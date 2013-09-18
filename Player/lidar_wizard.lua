@@ -17,16 +17,9 @@ local libHokuyo  = require'libHokuyo'
 -- Setup the Hokuyos array
 local hokuyos = {}
 
--- Acquire Hokuyo data
--- TODO: OS stuff should be abstracted in libHokuyo
-if OPERATING_SYSTEM=='darwin' then
-  head_device  = "/dev/cu.usbmodemfd121"
-  chest_device = "/dev/cu.usbmodemfd111"
-end
-
 -- Initialize the Hokuyos
-local head_hokuyo  = libHokuyo.new_hokuyo(head_device)
-local chest_hokuyo = libHokuyo.new_hokuyo(chest_device)
+local head_hokuyo  = libHokuyo.new_hokuyo(11)
+local chest_hokuyo = libHokuyo.new_hokuyo(10)
 
 -- Head Hokuyo
 if head_hokuyo then

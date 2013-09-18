@@ -4,7 +4,7 @@
 --------------------------------
 
 -- Webots THOR-OP Body sensors
-local use_camera = false
+local use_camera = true
 local use_lidar  = false
 local use_pose   = true
 
@@ -903,13 +903,13 @@ if IS_WEBOTS then
       -- Save important metadata
       head_lidar_wbt.meta.t  = t
       head_lidar_wbt.meta.count  = head_lidar_wbt.meta.count  + 1
-      head_lidar_wbt.meta.angle = Body.get_head_position(2)
+      head_lidar_wbt.meta.hangle = Body.get_head_position()
       head_lidar_wbt.meta.rpy  = Body.get_sensor_rpy()
       head_lidar_wbt.meta.gyro = Body.get_sensor_gyro()
 
       chest_lidar_wbt.meta.t  = t
       chest_lidar_wbt.meta.count = chest_lidar_wbt.meta.count + 1
-      chest_lidar_wbt.meta.angle = Body.get_lidar_position(1)
+      chest_lidar_wbt.meta.pangle = Body.get_lidar_position(1)
       chest_lidar_wbt.meta.rpy  = Body.get_sensor_rpy()
       chest_lidar_wbt.meta.gyro = Body.get_sensor_gyro()
       -- Send the count on the channel so they know to process a new frame

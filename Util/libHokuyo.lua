@@ -213,10 +213,10 @@ end
 
 ---------------------------
 -- Service multiple hokuyos over ethernet
-libHokuyo.new_hokuyo_net = function(host, port)
-
+local new_hokuyo_net = function(host_id)
+  local host = string.format('192.168.0.%d',host_id)
 	-- Open the tcp client
-  local fd = tcp.open(host, port, 1)
+  local fd = tcp.open(host, 10940, 1)
   
 	-----------
 	-- Begin the Hokuyo object
@@ -263,7 +263,7 @@ end
 
 ---------------------------
 -- Service multiple hokuyos
-libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
+local new_hokuyo_usb = function(ttyname, serial, ttybaud )
   
   local baud = ttybaud or 115200
   
@@ -333,6 +333,13 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
 	-----------
 	-- Return the hokuyo object
 	return obj
+end
+
+libHokuyo.new_hokuyo = function(addr, ...)
+  if type(addr)=='number' then
+    return new_hokuyo_net(addr)
+  end
+  return new_hokuyo_usb(addr, ...)
 end
 
 ---------------------------

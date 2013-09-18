@@ -84,7 +84,10 @@ while true do
 	Body.update()
   
   -- Sleep a bit if not webots
-  if not IS_WEBOTS then unix.usleep(us_sleep) end
+  if not IS_WEBOTS then
+    unix.usleep(us_sleep)
+    io.flush(stdout)
+  end
   
 end
 Body.exit()

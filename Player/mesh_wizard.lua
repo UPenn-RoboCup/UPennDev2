@@ -169,7 +169,7 @@ local function chest_callback()
   -- Get raw data from shared memory
   local ranges = Body.get_chest_lidar()
   -- Insert into the correct column
-  local angle = metadata.angle
+  local angle = metadata.pangle
   local scanline = angle_to_scanline( chest.meta, angle )
   -- Only if a valid column is returned
   if scanline then
@@ -192,7 +192,7 @@ local function head_callback()
   -- Get raw data from shared memory
   local ranges = Body.get_head_lidar()
   -- Insert into the correct scanlin
-  local angle = metadata.angle
+  local angle = metadata.hangle[2]
   local scanline = angle_to_scanline( head.meta, angle )
   -- Only if a valid column is returned
   if scanline then

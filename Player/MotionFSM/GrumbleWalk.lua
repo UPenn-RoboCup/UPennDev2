@@ -47,6 +47,7 @@ local supportX = Config.walk.supportX
 local supportY = Config.walk.supportY
 local qLArm0   = Config.walk.qLArm
 local qRArm0   = Config.walk.qRArm
+print('qLArm0??', unpack(qLArm0))
 
 -- Hardness parameters
 local hardnessSupport = Config.walk.hardnessSupport or 0.7
@@ -112,7 +113,7 @@ local function get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
     body_yaw = uRight[3] - uTorsoActual[3]
   end
   -- Ankle stabilization using gyro feedback
-  local imu_roll0, imu_pitch0, imu_yaw0 = unpack(Body.get_sensor_imu())
+  --local imu_roll0, imu_pitch0, imu_yaw0 = unpack(Body.get_sensor_imu())
   --math.sin(imuPitch)*bodyHeight, -math.sin(imuRoll)*bodyHeight
   local gyro_roll0, gyro_pitch0, gyro_yaw0 = 
     unpack(Body.get_sensor_gyro())

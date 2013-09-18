@@ -258,12 +258,12 @@ libSlam.processL0 = function( lidar_points )
   -- Transform lidar points into the world frame
   ------------------------------------
   local tmp = torch.mm( 
-  libTransform.trans( {SLAM.x, SLAM.y, SLAM.z} ),
-  libTransform.rotz( SLAM.yaw ) 
+  libTransform.trans( SLAM.x, SLAM.y, SLAM.z ),
+  libTransform.rotZ( SLAM.yaw ) 
   )
   local T = torch.mm( 
-  tmp, libTransform.trans( {0,0,0}
-  ))
+  tmp, libTransform.trans( 0,0,0)
+  )
   -- Perform the multiply
   W:mm( Y, T:t() )
   if Benchmark then
@@ -811,8 +811,8 @@ libSlam.processL1 = function( lidar_points )
   ------------------------------------
   -- Maybe not needed
   local T = torch.mm( 
-  libTransform.trans( {SLAM.x, SLAM.y, SLAM.z} ),
-  libTransform.rotz( SLAM.yaw )
+  libTransform.trans( SLAM.x, SLAM.y, SLAM.z ),
+  libTransform.rotZ( SLAM.yaw )
   )
   local tmpG = torch.Tensor(G:size(1), 4)
   tmpG:mm( G, T:t() )

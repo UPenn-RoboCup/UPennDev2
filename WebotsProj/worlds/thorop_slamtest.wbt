@@ -29,7 +29,7 @@ DirectionalLight {
 DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
-THOROP_NoBoundaries {
+THOROP7_NoBoundaries {
   translation -0.4556 1.155 0.871319
   controller "thorop"
   controllerArgs "0 32"

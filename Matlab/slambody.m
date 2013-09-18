@@ -137,7 +137,7 @@ function ret=slambody()
         thor_omap = fliplr(thor_omap);
     else
         thor_omap = zlibUncompress(cmap);
-        thor_omap = thor_omap'; %necessary?
+        thor_omap = thor_omap';
     end
     thor_omapdata = data_unpacked.shift;
 
@@ -145,6 +145,9 @@ function ret=slambody()
 	  SLAM.omap.ymin = thor_omapdata.Ymin;
 	  SLAM.omap.xmax = thor_omapdata.Xmax;
 	  SLAM.omap.ymax = thor_omapdata.Ymax;
+      
+    pose_slam = data_unpacked.pose_slam;
+    SLAM.update_pose(SLAM.pose, pose_slam);
 
 %set(SLAM.image,'Cdata', thor_omap);
 

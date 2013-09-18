@@ -1,6 +1,4 @@
-local cwd = cwd or os.getenv('PWD')
-dofile(cwd..'/include.lua')
-
+dofile'../../include.lua'
 local Body       = require'Body'
 local signal     = require'signal'
 local carray     = require'carray'
@@ -8,9 +6,13 @@ local mp         = require'msgpack'
 local util       = require'util'
 local simple_ipc = require'simple_ipc'
 local libHokuyo  = require'libHokuyo'
-local tcp = require('tcp')
+local tcp        = require'tcp'
 
-local chest_hokuyo = libHokuyo.new_hokuyo_net('192.168.0.10', 10940);
+-- CHEST IS 192.168.0.10!
+-- Make the head .11
+-- TODO: Broadcast to find hokuyos?
+local chest_hokuyo = libHokuyo.new_hokuyo_net('192.168.0.10', 10940)
+local head_hokuyo = libHokuyo.new_hokuyo_net('192.168.0.11', 10940)
 
 -- Setup the Hokuyos array
 local hokuyos = {}
@@ -24,10 +26,34 @@ if chest_hokuyo then
   chest_hokuyo.callback = function(data)
     Body.set_chest_lidar( data )
     chest_hokuyo.count = chest_hokuyo.count + 1
+    
+    -- Midpoint printing
+    local array = carray.float(data)
+    chest_hokuyo.mid = array[540]
 
     local meta = {}
     meta.count  = chest_hokuyo.count
     meta.pangle = Body.get_lidar_command_position(1)
+    local ret = chest_lidar_ch:send( mp.pack(meta) )
+  end
+end
+
+if head_hokuyo then
+  head_hokuyo.name = 'Head'
+  head_hokuyo.count = 0
+  table.insert(hokuyos,head_hokuyo)
+  local chest_lidar_ch = simple_ipc.new_publisher'head_lidar'
+  head_hokuyo.callback = function(data)
+    Body.set_chest_lidar( data )
+    head_hokuyo.count = head_hokuyo.count + 1
+
+    -- Midpoint printing
+    local array = carray.float(data)
+    head_hokuyo.mid = array[540]
+
+    local meta = {}
+    meta.count  = head_hokuyo.count
+    meta.hangle = Body.get_head_command_position()
     local ret = chest_lidar_ch:send( mp.pack(meta) )
   end
 end
@@ -62,7 +88,8 @@ local main = function()
       debug_str = util.color(debug_str,'yellow')
       for i,h in ipairs(hokuyos) do
         debug_str = debug_str..string.format(
-        '\n\t%s Hokuyo was seen %5.3f seconds ago',h.name,t_now - h.t_last)
+        '\n\t%s Hokuyo was seen %5.3f seconds ago: %g m',
+        h.name,t_now - h.t_last,h.mid)
       end
       os.execute('clear')
       print(debug_str)

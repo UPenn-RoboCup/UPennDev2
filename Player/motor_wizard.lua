@@ -37,13 +37,15 @@ local idx_to_vals = {}
 local dynamixels = {}
 local chains = {}
 chains['Right Arm'] = {
-  ttyname = '/dev/cu.usbserial-FTT3ABW9A',
+  --ttyname = '/dev/cu.usbserial-FTT3ABW9A',
+  ttyname = '/dev/ttyUSB0',
   nx_ids  = {1,3,5,7,9,11,13},
   mx_ids  = {31,33,35},
-  active = false
+  active = true
 }
 chains['Left Arm'] = {
-  ttyname = '/dev/cu.usbserial-FTT3ABW9B',
+  --ttyname = '/dev/cu.usbserial-FTT3ABW9B',
+  ttyname = '/dev/ttyUSB1',
   nx_ids  = {2,4,6,8,10,12,14, --[[head]] 29,30 },
   mx_ids  = {32,34,36,   --[[lidar]] 37},
   active = true
@@ -295,6 +297,7 @@ local function entry()
   -- Check the dynamixels
   for key,chain in pairs(chains) do
     if chain.active then
+      print(chain.ttyname)
       local d = libDynamixel.new_bus(chain.ttyname)
       if d then
         d.callback = update_read

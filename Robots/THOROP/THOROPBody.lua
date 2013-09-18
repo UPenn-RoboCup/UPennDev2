@@ -143,7 +143,7 @@ servo.direction = vector.new({
   1,-1,1,1,1,1,1, --LArm 
   1, 1,1,1,1,1, --LLeg
   1, 1,1,1,1,1, --RLeg
-  -1,1,1,1, 1,1,1, --RArm
+  -1,-1,1,-1, 1,1,1, --RArm
   1,1, -- Waist
   1,1,-1, -- left gripper
   1,-1,1, -- right gripper
@@ -154,10 +154,10 @@ assert(#servo.direction==nJoint,'Bad servo direction!')
 -- TODO: Offset in addition to bias?
 servo.rad_bias = vector.new({
   0,-1.8, -- Head
-  -90,90,0,45,90,0,0, --LArm
+  -90,90,-90,45,90,0,0, --LArm
   0,0,0,0,0,0, --LLeg
   0,0,0,0,0,0, --RLeg
-  90,90,90,45,-90,0,0, --RArm
+  90,-90,90,-45,-90,0,0, --RArm
   0,0, -- Waist
   0,0,0, -- left gripper
   0,0,0, -- right gripper

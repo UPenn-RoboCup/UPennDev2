@@ -37,35 +37,30 @@ function memory.init_shm_segment(name, shared, shsize, tid, pid)
 
     for k,v in pairs(shared[shtable]) do
       shmPointer[k] = carray.cast(shmHandle:pointer(k))
-      
-      if type(v)=='string' then
+      local kind = type(v)
+      if kind=='string' then
         -- Get String
         fenv['get_'..shtable..'_'..k] = function()
             local bytes = shmHandle:get(k);
-            if bytes == nil then
-              return ''
-            else
-              for i=1,#bytes do
-                --Testing NaN
-                if not bytes[i]>0 then 
-                  print("NaN Detected at string!") return
-                end
-              end
-              return string.char(unpack(bytes));
+            if not bytes then return '' end
+            for i,b in ipairs(bytes) do
+              --Testing NaN
+              if not (b>0) then print("NaN in str!",b,i) return end
             end
+            return string.char(unpack(bytes));
           end
         -- Set string
         fenv['set_'..shtable..'_'..k] = function(val)
           return shmHandle:set(k, {string.byte(val, 1, string.len(val))});
         end
         
-      elseif type(v)=='number' then
+      elseif kind=='number' then
         -- Get userdata
         fenv['get_'..shtable..'_'..k] = function() return shmHandle:pointer(k) end
         -- Set userdata (Can accept a string for memcpy'ing the string)
         fenv['set_'..shtable..'_'..k] = function(val) return shmHandle:set(k, val, v) end
         
-      elseif type(v)=='table' then
+      elseif kind=='table' then
         -- setup accessors for a number/vector 
         fenv['get_'..shtable..'_'..k] = function()
           val = shmHandle:get(k)
@@ -79,7 +74,7 @@ function memory.init_shm_segment(name, shared, shsize, tid, pid)
 
       else
         -- unsupported type
-        error('Unsupported shm type '..type(v));
+        error('Unsupported shm type '..kind);
       end
     end
   end

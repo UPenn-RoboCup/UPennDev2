@@ -1,5 +1,5 @@
 local state = {}
-state._NAME = 'armInit'
+state._NAME = ...
 local Config  = require'Config'
 local Body    = require'Body'
 local util    = require'util'

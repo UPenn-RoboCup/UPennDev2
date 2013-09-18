@@ -29,7 +29,8 @@ local mode_msg = {
 }
 local n_modes = #mode_msg
 -- Arm with three fingers
-local max_joint = #Body.parts['LArm']+3
+local nArm = #Body.parts['LArm']
+local max_joint = nArm+#Body.parts['LGrip']
 
 -- Change in radians for each +/-
 local DEG_TO_RAD = math.pi/180
@@ -51,16 +52,16 @@ end
 local function joint_name()
 	local jName = 'Unknown'
 	if current_arm=='larm' then
-		if current_joint<7 then
+		if current_joint<=nArm then
 			jName = Body.jointNames[Body.indexLArm+current_joint-1]
 		else
-			jName = 'finger '..current_joint-6
+			jName = 'finger '..current_joint-nArm
 		end
 	elseif current_arm=='rarm' then
-		if current_joint<7 then
+		if current_joint<=nArm then
 			jName = Body.jointNames[Body.indexRArm+current_joint-1]
 		else
-			jName = 'finger '..current_joint-6
+			jName = 'finger '..current_joint-nArm
 		end
 	end
 	return jName
@@ -97,7 +98,7 @@ local function jangle_str(arm_name,arm_angles,finger_angles)
   end
   for i,v in ipairs(finger_angles) do
     text = text..' '
-    if i+6==current_joint then
+    if i+nArm==current_joint then
       if current_arm==arm_name:lower() then
         text = text..'*'
       else
@@ -208,7 +209,8 @@ local function process_character(key_code,key_char,key_char_lower)
     end
     -- Switch to that joint
     current_joint = switch_joint
-    print(util.color('Switched to','yellow'),current_arm,current_joint)
+    print( switch_msg() )
+    --print(util.color('Switched to','yellow'),current_arm,current_joint)
     return
   end
   
@@ -240,8 +242,7 @@ local function process_character(key_code,key_char,key_char_lower)
   
   -- +/- Increases and decreases
   local delta_joint = 1*math.pi/180
-  -- TODO: 6->7 joints
-  local delta_arm_joints = vector.zeros(6)
+  local delta_arm_joints = vector.zeros(nArm)
   local is_delta_joint = false
   if key_char=='-' then
     delta_arm_joints[current_joint] = -delta_joint

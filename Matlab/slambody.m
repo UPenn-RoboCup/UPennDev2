@@ -178,7 +178,7 @@ function ret=slambody()
     SLAM.pose=pose;
     pixel_pos = transform_pixelpos([pose(1) pose(2)]);
     %rotate 90 degre to match the display orientation
-    pos_transformed = rotz(icon_s, -pose(3)+pi/2) + repmat(pixel_pos,[3 1]);
+    pos_transformed = rotz(icon_s, pose(3)+pi/2) + repmat(pixel_pos,[3 1]);
 	  set(SLAM.pose_triangle,...
 			'XData',pos_transformed(:,1),'YData',pos_transformed(:,2) );
 
@@ -186,7 +186,7 @@ function ret=slambody()
 
     pixel_pos2 = transform_pixelpos([slam_pose(1) slam_pose(2)]);
     %rotate 90 degre to match the display orientation
-    pos_transformed2 = rotz(icon_s, -slam_pose(3)+pi/2) + repmat(pixel_pos2,[3 1]);
+    pos_transformed2 = rotz(icon_s, slam_pose(3)+pi/2) + repmat(pixel_pos2,[3 1]);
 
 	  set(SLAM.pose_triangle_slam,...
 			'XData',pos_transformed2(:,1),'YData',pos_transformed2(:,2) );

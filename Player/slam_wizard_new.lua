@@ -90,15 +90,15 @@ local function head_callback()
   -- Grab the data  
   local meta, has_more = head_lidar_ch:receive()
   local metadata = mp.unpack(meta)
-  -- Grab the pitch angle (if off center, then maybe just escape)
-  local angle = metadata.angle
+  -- Grab the pitch angle (TODO if off center, then maybe just escape)
+  local angle = metadata.hangle[2]
+  print('hangle??', angle)
   --head.meta.t = metadata.t
 
   -- Don't slam all the time
   lidar0_count = lidar0_count + 1;
   if lidar0_count%lidar0_interval~=0 then return end
 
-  -- TODO: head_pitch
   if IS_WEBOTS then
     -- Ground truth pose
     cur_pose = wcm.get_robot_pose()
@@ -168,7 +168,7 @@ local function head_callback()
   ranges:tensor( lidar0.ranges )
   
   -- TODO: Add the yaw from the head
-  local head_roll, head_pitch, head_yaw = 0, metadata.angle, 0 
+  local head_roll, head_pitch, head_yaw = 0, angle, 0 
   --print(string.format('\nHEAD PITCH:\t%.2f', head_pitch*180/math.pi))
   lidar0:transform( head_roll, head_pitch, head_yaw )
   ------------------
@@ -240,13 +240,12 @@ if true then return end
   local ranges = Body.get_chest_lidar()
   
     -- Insert into the correct column
-    local angle = metadata.angle
+    local angle = metadata.pangle
     local scanline = angle_to_scanline( chest.meta, angle )
     -- Only if a valid column is returned
     if scanline then
       -- Copy lidar readings to the torch object for fast modification
       ranges:tensor(
-        --chest.all_ranges:select(1, scanline),
         chest.range:select(1,1),
         chest.range:size(2),
         chest.offset_idx 

@@ -181,11 +181,12 @@ function ret=slambody()
     pos_transformed = rotz(icon_s, pose(3)+pi/2) + repmat(pixel_pos,[3 1]);
 	  set(SLAM.pose_triangle,...
 			'XData',pos_transformed(:,1),'YData',pos_transformed(:,2) );
+    
+    % Convert uint64 to double 
+    slam_pose = double(slam_pose);
 
-    if ~isfloat(slam_pose)
-        slam_pose = double(slam_pose);
-    end
-
+    % The y direction needs to be flipped
+    slam_pose(2) = -1*slam_pose(2);
     SLAM.slam_pose=slam_pose;
     
     pixel_pos2 = transform_pixelpos([slam_pose(1) slam_pose(2)]);
@@ -198,7 +199,7 @@ function ret=slambody()
 
 
     bbox_pos_transformed=[];
-    icon_bbox_transformed = rotz(icon_bbox, slam_pose(3)) + ...
+    icon_bbox_transformed = rotz(icon_bbox, -slam_pose(3)) + ...
 				repmat(SLAM.slam_pose(1:2), [size(icon_bbox,1) 1]);
     for i=1:size(icon_bbox,1)
        bbox_pos_transformed = [bbox_pos_transformed;

@@ -22,6 +22,7 @@ ifeq ($(OSTYPE),darwin)
   LIBRT=
   LD=ld -macosx_version_min 10.7
   LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup
+  LUA_INC= -I /usr/local/include/
 else
   CFLAGS+= -mtune=native -march=native
   CXXFLAGS+= -mtune=native -march=native

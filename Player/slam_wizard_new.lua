@@ -92,8 +92,6 @@ local function head_callback()
   local metadata = mp.unpack(meta)
   -- Grab the pitch angle (TODO if off center, then maybe just escape)
   local angle = metadata.hangle[2]
-  print('hangle??', angle)
-  --head.meta.t = metadata.t
 
   -- Don't slam all the time
   lidar0_count = lidar0_count + 1;
@@ -175,10 +173,8 @@ local function head_callback()
     
   -- Scan match
   local t0_processL0 = unix.time()
-  -- TODO: use head.meta.t for slam
-  -- TODO: use RPY from webots
   -- TODO: Just add the gyro values to the lidar metadata
-  print('RPY/Gyro',vector.new(metadata.rpy), metadata.gyro[3])
+  --print('RPY/Gyro',vector.new(metadata.rpy), metadata.gyro[3])
   libSlam.processIMU( metadata.rpy, metadata.gyro[3], metadata.t )
   libSlam.processL0( lidar0.points_xyz )
   local t1_processL0 = unix.time()

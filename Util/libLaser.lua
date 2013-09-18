@@ -25,9 +25,9 @@ local function transform(self, roll, pitch, yaw)
 
   --------------
   -- Easier access to data
-  local X  = self.points
-  local xs = X:select(2,1)
-  local ys = X:select(2,2)
+  local rawX  = self.points
+  local xs = rawX:select(2,1)
+  local ys = rawX:select(2,2)
   --------------
 
   --------------
@@ -41,20 +41,22 @@ local function transform(self, roll, pitch, yaw)
   --------------
 
   --------------
-  --[[ Prune based on the minimum and maximum ranges
-  self.nRanges = tutil.band_mask_key(
+  ---[[ Prune based on the minimum and maximum ranges
+  self.nRanges = slam.range_filter(
   self.ranges,
   self.minRange, self.maxRange,
   xs, ys
   )
   --]]
 
-  -- TODO: temporarily no pruning
-  self.nRanges = self.ranges:size(1)
+  print('\n Original # of ranges:', self.ranges:size(1))
+  print('nRanges:', self.nRanges, '\n\n')
+  
   if self.nRanges < 1 then
     return
   end
-  X:resize( self.nRanges, 4 )
+  --X:resize( self.nRanges, 4 )
+  X = rawX:sub(1, self.nRanges)
 
 
   --------------

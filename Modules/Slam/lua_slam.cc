@@ -3,8 +3,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "torch/luaT.h"
-#include "torch/TH/TH.h"
+#include <torch/luaT.h>
+#include <torch/TH/TH.h>
 #ifdef __cplusplus
 }
 #endif
@@ -46,7 +46,7 @@ int isContiguous(TT *self)
 	return 1;
 }
 
-/* Store the min and max vlaues of the map */
+/* Store the min and max values of the map */
 /* TODO: either make as a module, or pass as arguments. */
 /* TODO: multiple maps of various resolution? */
 double xmin, ymin, xmax, ymax;
@@ -64,7 +64,7 @@ int lua_set_boundaries(lua_State *L) {
 	return 0;
 }
 
-/* Set the seolution of the map */
+/* Set the resolution of the map */
 int lua_set_resolution(lua_State *L) {
 	res = luaL_checknumber(L, 1);
 	invRes = 1.0 / res;
@@ -986,7 +986,63 @@ int lua_decay_map(lua_State *L) {
 }
 
 
+/**************
+ * range_filter(key,min,max,value1,value2)
+ * This function removes, in memory, points outside of the min/max band
+ * Removes the points from both value1 and value2, but not key
+ * Does not perform a resize
+ * */
+int lua_range_filter(lua_State *L) {
+	int i,curIndex;
+	THFloatTensor * k_t = 
+		(THFloatTensor *) luaT_checkudata(L, 1, "torch.FloatTensor");
+	THArgCheck(k_t->nDimension == 1, 1, "Ranges should be 1 dimensional");
 
+	// The key must lie within min and max
+	const double min = luaL_checknumber(L,2);
+	const double max = luaL_checknumber(L,3);
+
+	/* 
+	Grab the Value tensors
+	Check that Key and Value tensors have the same number of elements 
+	*/
+	THDoubleTensor * v1_t = 
+		(THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
+	THArgCheck(v1_t->nDimension == 1, 4, "Data1 should be 1 dimensional");
+	const long nKeys = k_t->size[0];
+	const long nData1 = v1_t->size[0];
+	if(nKeys!=nData1)
+		return luaL_error(L, "Keys and Data1 dimension mismatch");
+
+	THDoubleTensor * v2_t = 
+		(THDoubleTensor *) luaT_checkudata(L, 5, "torch.DoubleTensor");
+	THArgCheck(v2_t->nDimension == 1, 5, "Data2 should be 1 dimensional");
+	const long nData2 = v2_t->size[0];
+	if(nKeys!=nData2)
+		return luaL_error(L, "Keys and Data2 dimension mismatch");
+
+	// Filter points with range outside of band
+	float* k_ptr = k_t->storage->data + k_t->storageOffset;
+	double* v1_ptr = v1_t->storage->data + v1_t->storageOffset;
+	double* v2_ptr = v2_t->storage->data + v2_t->storageOffset;
+	float tmpR;
+	for(i = 0, curIndex = 0; i<nKeys; i++){
+		tmpR = *(k_ptr + i);
+		if(tmpR>=min && tmpR<=max) {
+			//printf("%lf %lf %lf\n",key,min,max);
+			//fflush(stdout);
+			if(i!=curIndex){
+				v1_ptr[curIndex] = *(v1_ptr + i);
+				v2_ptr[curIndex] = *(v2_ptr + i);
+			}
+			curIndex++;
+		}
+	}
+	
+	// Return the new size of the array, without resizing
+	lua_pushinteger(L,curIndex+1);
+	return 1;
+}
 
 /************************************************************************/
 
@@ -1005,6 +1061,7 @@ static const struct luaL_Reg slam_lib [] = {
 	{"get_last_free_point",lua_find_last_free_point},
 	{"mask_points", lua_mask_points},
 	{"decay_map", lua_decay_map},
+	{"range_filter", lua_range_filter},
 	{NULL, NULL}
 };
 

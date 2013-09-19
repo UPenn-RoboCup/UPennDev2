@@ -337,7 +337,7 @@ libSlam.processL0 = function( lidar_points )
     
     ---------------------------------------------------------------
     -- !!!!!TODO: TUNE PARAMETERS TODO BETTER DECAY!!!!
-    slam.decay_map(OMAP.data, 0, 256, 0.95, 240)
+    --slam.decay_map(OMAP.data, 0, 256, 0.95, 240)
     ---------------------------------------------------------------
     
     

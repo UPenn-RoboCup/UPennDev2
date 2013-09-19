@@ -8,8 +8,8 @@ WorldInfo {
   FPS 10
 }
 Viewpoint {
-  orientation 0.010908 -0.897436 -0.441009 3.20121
-  position -0.454836 16.8274 -9.99111
+  orientation 0.0708981 -0.929137 -0.362874 3.51929
+  position 5.4893 10.382 -6.78346
 }
 Background {
   skyColor [
@@ -30,16 +30,18 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP7_NoBoundaries {
-  translation -0.4556 1.155 0.871319
+  translation -0.456933 1.1552 0.873745
+  rotation 0.883001 0.00115848 0.46937 0.00245978
   controller "thorop"
   controllerArgs "0 32"
+  cameraWindowPosition 0.276817 0.3
 }
 Wall {
-  translation -2.99566 0 2.85145
+  translation -3.17026 7.10543e-15 3.59512
   rotation 0 1 0 1.57
 }
 Wall {
-  translation -2.28522 -1.24345e-14 4.497
+  translation -1.87353 -3.55272e-15 5.24113
 }
 Wall {
   translation 0.109988 -1.13687e-13 3.6564

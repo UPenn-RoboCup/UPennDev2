@@ -993,7 +993,6 @@ int lua_decay_map(lua_State *L) {
  * Does not perform a resize
  * */
 int lua_range_filter(lua_State *L) {
-	int i,curIndex;
 	THFloatTensor * k_t = 
 		(THFloatTensor *) luaT_checkudata(L, 1, "torch.FloatTensor");
 	THArgCheck(k_t->nDimension == 1, 1, "Ranges should be 1 dimensional");
@@ -1024,16 +1023,19 @@ int lua_range_filter(lua_State *L) {
 	// Filter points with range outside of band
 	float* k_ptr = k_t->storage->data + k_t->storageOffset;
 	double* v1_ptr = v1_t->storage->data + v1_t->storageOffset;
+	long v1_stride = v1_t->stride[0];
 	double* v2_ptr = v2_t->storage->data + v2_t->storageOffset;
+	long v2_stride = v2_t->stride[0];
 	float tmpR;
+	int i,curIndex;
 	for(i = 0, curIndex = 0; i<nKeys; i++){
 		tmpR = *(k_ptr + i);
 		if(tmpR>=min && tmpR<=max) {
 			//printf("%lf %lf %lf\n",key,min,max);
 			//fflush(stdout);
 			if(i!=curIndex){
-				v1_ptr[curIndex] = *(v1_ptr + i);
-				v2_ptr[curIndex] = *(v2_ptr + i);
+				*(v1_ptr+curIndex*v1_stride) = *(v1_ptr + i*v1_stride );
+				*(v2_ptr+curIndex*v2_stride) = *(v2_ptr + i*v2_stride );
 			}
 			curIndex++;
 		}

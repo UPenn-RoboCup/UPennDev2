@@ -19,15 +19,14 @@ local function transform(self, roll, pitch, yaw)
   --------------
   -- TODO: this resize should be unnecessary
   -- Reset the range container size
-  self.ranges:resize( self.maxIdx - self.minIdx + 1 )
-  self.points:resize( self.maxIdx - self.minIdx + 1, 4 )
+  --self.ranges:resize( self.maxIdx - self.minIdx + 1 )
+  --self.points:resize( self.maxIdx - self.minIdx + 1, 4 )
   --------------
 
   --------------
   -- Easier access to data
-  local rawX  = self.points
-  local xs = rawX:select(2,1)
-  local ys = rawX:select(2,2)
+  local XY = torch.Tensor(self.ranges:size(1), 4):zero() 
+  XY:copy(self.points)
   --------------
 
   --------------
@@ -36,8 +35,9 @@ local function transform(self, roll, pitch, yaw)
   --print(string.format('\n\nSize of ranges: %d', self.ranges:size(1)))
   --print(string.format('Size of cosines: %d \n\n', self.cosines:size(1)))
   
-  xs:copy(self.ranges):cmul( self.cosines )
-  ys:copy(self.ranges):cmul( self.sines )
+  print('X size:', XY:size(1), 'points size:', self.points:size(1))
+  XY:select(2,1):copy(self.ranges):cmul( self.cosines )
+  XY:select(2,2):copy(self.ranges):cmul( self.sines )
   --------------
 
   --------------
@@ -45,18 +45,19 @@ local function transform(self, roll, pitch, yaw)
   self.nRanges = slam.range_filter(
   self.ranges,
   self.minRange, self.maxRange,
-  xs, ys
+  XY:select(2,1), XY:select(2,2)
   )
   --]]
 
   print('\n Original # of ranges:', self.ranges:size(1))
   print('nRanges:', self.nRanges, '\n\n')
+  --print(XY:select(2,1):stride()[1])
+  --print(self.ranges:stride()[1], self.ranges:stride():size())
   
   if self.nRanges < 1 then
     return
   end
-  --X:resize( self.nRanges, 4 )
-  X = rawX:sub(1, self.nRanges)
+  X = XY:resize( self.nRanges, 4 )
 
 
   --------------
@@ -80,15 +81,6 @@ local function transform(self, roll, pitch, yaw)
     self.nPoints = self.points_xyz:size(1)
 
   elseif self.location == 'chest' then
-    
-      -- Print for debugging
-    -- The raw readings are correct
-    --[[
-      for i=1, X:size(1) do
-          print(string.format('Ranges: \t %.2f, \t%.2f, \t%.2f', X[i][1], X[i][2], X[i][3]))
-      end
-    --]]
-    
     
     self:update_chest( roll, pitch, yaw )
     
@@ -198,7 +190,7 @@ function(location, minRange, maxRange, minHeight, maxHeight, minFOV, maxFOV)
   lidar.FOV    = maxFOV - minFOV
   lidar.N_POINTS = (lidar.maxIdx - lidar.minIdx)+1
 
-  -- Container for the anlges
+  -- Container for the anlges TODO: make sure size(1) = N_POINTS
   lidar.angles = torch.range(minFOV,maxFOV,.25*Body.DEG_TO_RAD)
   -- Make the point containers
   lidar.ranges = torch.FloatTensor( lidar.N_POINTS ):zero()

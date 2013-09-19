@@ -173,14 +173,26 @@ stance.dpLimitSit = vector.new({.1,.01,.06,.1,.3,.1})*2
 -- For the arm FSM
 local arm = {}
 arm.qLArmInit={
-vector.new({90,30,90,-15,-90,0,0})*DEG_TO_RAD, -- at sides
+--vector.new({90,30,90,-15,-90,0,0})*DEG_TO_RAD, -- at sides
+--vector.new({90,90,90,-90,-90,0,0})*DEG_TO_RAD, -- scarecrow
+--vector.new({0,90,90,-90,-90,-45,0})*DEG_TO_RAD,-- arms in front
+
+vector.new({90,15,0,-15,-90,0,0})*DEG_TO_RAD, -- at sides
 vector.new({90,90,90,-90,-90,0,0})*DEG_TO_RAD, -- scarecrow
 vector.new({0,90,90,-90,-90,-45,0})*DEG_TO_RAD,-- arms in front
+
+
+
 }
 arm.qRArmInit={
-vector.new({90,-30,-90,-15,90,0,0})*DEG_TO_RAD, -- at sides
+--vector.new({90,-30,-90,-15,90,0,0})*DEG_TO_RAD, -- at sides
+--vector.new({90,-90,-90,-90,90,0,0})*DEG_TO_RAD,  -- scarecrow
+--vector.new({0,-90,-90,-90,90,45,0})*DEG_TO_RAD, -- arms in front
+
+vector.new({90,-15,0,-15,90,0,0})*DEG_TO_RAD, -- at sides
 vector.new({90,-90,-90,-90,90,0,0})*DEG_TO_RAD,  -- scarecrow
 vector.new({0,-90,-90,-90,90,45,0})*DEG_TO_RAD, -- arms in front
+
 }
 
 -- Arm speed limits

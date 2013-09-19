@@ -12,6 +12,12 @@ local dqArmMax = Config.arm.slow_limit
 local dpArmMax = Config.arm.linear_slow_limit
 
 local t_debug = Body.get_time()
+
+--SJ: we should keep initial transform of the end effector
+--Otherwise it will drift when it hits singularity and stuck
+local trLArm0,trRArm0 
+local trLArm, trRArm
+
 local function update_joint(dt)
 
   -- Get the current joint positions (via commands)
@@ -38,6 +44,9 @@ local function update_joint(dt)
   qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
   qR_approach = Body.set_rarm_command_position( qR_approach )
 
+  trLArm = Body.get_forward_larm(qLArm);
+  trRArm = Body.get_forward_rarm(qRArm);
+
   -- Set our hcm in case of a mode switch
   hcm.set_joints_plarm( Body.get_forward_larm(qL_approach) )
   hcm.set_joints_prarm( Body.get_forward_rarm(qR_approach) )
@@ -48,9 +57,6 @@ local function update_ik(dt)
   -- Get the current joint positions (via commands)
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-
-  local trLArm = Body.get_forward_larm(qLArm);
-  local trRArm = Body.get_forward_rarm(qRArm);
   
   -- Get the desired IK position
   local trLArm_desired = hcm.get_joints_plarm()
@@ -73,10 +79,12 @@ local function update_ik(dt)
 
   -- If not possible, set to where we are
   if not qL_desired then
+    trLArmApproach = trLArm
     qL_desired = qLArm
     hcm.set_joints_plarm(trLArm)
   end
   if not qR_desired then
+    trRArmApproach = trRArm
     qR_desired = qRArm    
     hcm.set_joints_prarm(trRArm)
   end
@@ -94,6 +102,9 @@ local function update_ik(dt)
   hcm.set_joints_qlarm( qL_approach )
   hcm.set_joints_qrarm( qR_approach )
 
+  trLArm = trLArmApproach;
+  trRArm = trRArmApproach;
+
 end
 
 local update_mode = {
@@ -110,8 +121,10 @@ function state.entry()
   -- Get the current joint positions (via commands)
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-  local trLArm = Body.get_forward_larm(qLArm);
-  local trRArm = Body.get_forward_rarm(qRArm);
+  
+  trLArm = Body.get_forward_larm(qLArm);
+  trRArm = Body.get_forward_rarm(qRArm);
+
   -- Set hcm to be here
   hcm.set_joints_plarm( trLArm )
   hcm.set_joints_prarm( trRArm )

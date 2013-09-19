@@ -497,6 +497,11 @@ local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
   pos_tol = pos_tol or 0.001
   ang_tol = ang_tol or 1*DEG_TO_RAD
 
+
+  pos_tol = pos_tol or 0.001
+  ang_tol = ang_tol or 0.1*DEG_TO_RAD
+
+
 	local position_error = math.sqrt(
 	( tr_check[1]-tr[1] )^2 +
 	( tr_check[2]-tr[2] )^2 +

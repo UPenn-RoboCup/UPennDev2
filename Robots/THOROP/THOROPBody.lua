@@ -518,6 +518,7 @@ end
 -- Can we go from angle q to position p?
 Body.get_inverse_larm = function( qL, trL, pos_tol, ang_tol )
 	local qL_target = Kinematics.inverse_l_arm(trL, qL)
+  qL_target[7] = 0; --Fix for 7DOF functions
   local trL_check = Kinematics.l_arm_torso(qL_target)
 	if not check_ik_error( trL, trL_check, pos_tol, ang_tol ) then
     return
@@ -526,20 +527,37 @@ Body.get_inverse_larm = function( qL, trL, pos_tol, ang_tol )
 end
 Body.get_inverse_rarm = function( qR, trR, pos_tol, ang_tol )
   local qR_target = Kinematics.inverse_r_arm(trR, qR)
+  qR_target[7] = 0; --Fix for 7DOF functions
   local trR_check = Kinematics.r_arm_torso(qR_target)
   if not check_ik_error( trR, trR_check, pos_tol, ang_tol ) then
     return
   end
   return qR_target
 end
+
 -- Take in joint angles and output an {x,y,z,r,p,yaw} table
-Body.get_forward_larm = function()
-	local qLArm = Body.get_larm_position()
+
+-- SJ: Now separated into two functions to get rid of directly calling IK
+Body.get_forward_larm = function(qL)  
+  local pLArm = Kinematics.l_arm_torso( qL )
+  return pLArm
+end
+Body.get_forward_rarm = function(qR)  
+  local pRArm = Kinematics.r_arm_torso( qR )
+  return pRArm
+end
+
+-- SJ: sensed position can be noisy
+-- So we should use current command position instead
+Body.get_forward_larm_command = function()
+--	local qLArm = Body.get_larm_position()
+  local qLArm = Body.get_larm_command_position()
 	local pLArm = Kinematics.l_arm_torso( qLArm )
   return pLArm
 end
-Body.get_forward_rarm = function()
-	local qRArm = Body.get_rarm_position()
+Body.get_forward_rarm_command = function()
+--	local qRArm = Body.get_rarm_position()
+  local qRArm = Body.get_rarm_command_position()
 	local pRArm = Kinematics.r_arm_torso( qRArm )
   return pRArm
 end

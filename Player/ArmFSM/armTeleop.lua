@@ -9,6 +9,7 @@ require'hcm'
 
 -- Arm joints Angular velocity limits
 local dqArmMax = Config.arm.slow_limit
+local dpArmMax = Config.arm.linear_slow_limit
 
 local t_debug = Body.get_time()
 local function update_joint(dt)
@@ -38,8 +39,8 @@ local function update_joint(dt)
   qR_approach = Body.set_rarm_command_position( qR_approach )
 
   -- Set our hcm in case of a mode switch
-  hcm.set_joints_plarm( K.l_arm_torso(qL_approach) )
-  hcm.set_joints_prarm( K.r_arm_torso(qR_approach) )
+  hcm.set_joints_plarm( Body.get_forward_larm(qL_approach) )
+  hcm.set_joints_prarm( Body.get_forward_rarm(qR_approach) )
 end
 
 local function update_ik(dt)
@@ -48,30 +49,36 @@ local function update_ik(dt)
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
+  local trLArm = Body.get_forward_larm(qLArm);
+  local trRArm = Body.get_forward_rarm(qRArm);
+  
   -- Get the desired IK position
-  local trLArm = hcm.get_joints_plarm()
-  local trRArm = hcm.get_joints_prarm()
+  local trLArm_desired = hcm.get_joints_plarm()
+  local trRArm_desired = hcm.get_joints_prarm()
   if t_update-t_debug>1 then
     t_debug = t_update
     print('Teleop | Desired IK')
-    print(trLArm)
-    print(trRArm)
+    print(trLArm_desired)
+    print(trRArm_desired)
   end
 
+  --SJ: Added interpolation in cartesian space as well (unless movement will jerky)
+
+  local trLArmApproach, doneL = util.approachTol(trLArm, trLArm_desired, dpArmMax, dt )
+  local trRArmApproach, doneR = util.approachTol(trRArm, trRArm_desired, dpArmMax, dt )
+
   -- Check if this is possible
-  local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
-  local qR_desired = Body.get_inverse_rarm(qRArm,trRArm)
+  local qL_desired = Body.get_inverse_larm(qLArm,trLArmApproach)
+  local qR_desired = Body.get_inverse_rarm(qRArm,trRArmApproach)
 
   -- If not possible, set to where we are
   if not qL_desired then
     qL_desired = qLArm
-    pL = K.l_arm_torso(qL_desired)
-    hcm.set_joints_plarm(pL)
+    hcm.set_joints_plarm(trLArm)
   end
   if not qR_desired then
-    qR_desired = qRArm
-    pR = K.r_arm_torso(qR_desired)
-    hcm.set_joints_prarm(pR)
+    qR_desired = qRArm    
+    hcm.set_joints_prarm(trRArm)
   end
 
   -- Go to the allowable position
@@ -103,9 +110,11 @@ function state.entry()
   -- Get the current joint positions (via commands)
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
+  local trLArm = Body.get_forward_larm(qLArm);
+  local trRArm = Body.get_forward_rarm(qRArm);
   -- Set hcm to be here
-  hcm.set_joints_plarm( K.l_arm_torso(qLArm) )
-  hcm.set_joints_prarm( K.r_arm_torso(qRArm) )
+  hcm.set_joints_plarm( trLArm )
+  hcm.set_joints_prarm( trRArm )
   hcm.set_joints_qlarm( qLArm )
   hcm.set_joints_qrarm( qRArm )
 end

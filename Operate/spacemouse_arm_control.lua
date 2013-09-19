@@ -156,8 +156,8 @@ local function state_msg()
   local rfinger_en = Body.get_rgrip_torque_enable()
   
   -- Inverse Kinematics
-  local pL = Body.get_forward_larm()
-  local pR = Body.get_forward_rarm()
+  local pL = Body.get_forward_larm(larm)
+  local pR = Body.get_forward_rarm(rarm)
   
   -- Make the message
   local msg = colors.wrap('\nSpacemouse Wizard\n','blue')

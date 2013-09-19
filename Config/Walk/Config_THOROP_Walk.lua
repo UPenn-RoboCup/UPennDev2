@@ -189,6 +189,26 @@ arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD
 arm.super_slow_limit = vector.new({5,5,5,10,15,15,15})*DEG_TO_RAD
 arm.slow_elbow_limit = vector.new({10,10,10,5,30,30,30})*DEG_TO_RAD
 
+-- Linear movement speed limits
+arm.linear_slow_limit = vector.new({0.02,0.02,0.02,
+						15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
+
+
+
+if IS_WEBOTS then
+--HACK FOR WEBOTS--------------------------------------------------
+arm.fast_limit = vector.new({30,30,30,45,60,60,60})*DEG_TO_RAD*3
+arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD*3
+arm.super_slow_limit = vector.new({5,5,5,10,15,15,15})*DEG_TO_RAD*6
+arm.slow_elbow_limit = vector.new({10,10,10,5,30,30,30})*DEG_TO_RAD*6
+
+arm.linear_slow_limit = vector.new({0.02,0.02,0.02,
+						15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})*4
+
+end
+
+
+
 ------------------------------------
 -- Associate with the table
 Config.kneel   = kneel

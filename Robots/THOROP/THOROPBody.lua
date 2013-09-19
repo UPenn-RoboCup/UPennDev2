@@ -522,8 +522,24 @@ end
 
 -- Can we go from angle q to position p?
 Body.get_inverse_larm = function( qL, trL, pos_tol, ang_tol )
+
+--6DOF IK
+--
 	local qL_target = Kinematics.inverse_l_arm(trL, qL)
   qL_target[7] = 0; --Fix for 7DOF functions
+--
+
+--[[
+-- 7DOF IK
+-- TODO: fix 7-dof-IK library so that it considers current arm angles
+--  local qL_target = Kinematics.inverse_l_arm_7(trL, qL,lShoulderYaw)
+
+--TODO: finding optimal shoulderyaw angle
+  local lShoulderYaw = 45*DEG_TO_RAD
+  local qL_target = Kinematics.inverse_l_arm_7(trL, lShoulderYaw)
+--]]
+
+
   local trL_check = Kinematics.l_arm_torso(qL_target)
 	if not check_ik_error( trL, trL_check, pos_tol, ang_tol ) then
     return
@@ -531,8 +547,23 @@ Body.get_inverse_larm = function( qL, trL, pos_tol, ang_tol )
   return qL_target
 end
 Body.get_inverse_rarm = function( qR, trR, pos_tol, ang_tol )
+
+--6DOF IK
+--
   local qR_target = Kinematics.inverse_r_arm(trR, qR)
   qR_target[7] = 0; --Fix for 7DOF functions
+  --
+
+-- 7DOF IK
+--[[
+-- TODO: fix 7-dof-IK library so that it considers current arm angles
+-- local qR_target = Kinematics.inverse_r_arm_7(trR, qR,rShoulderYaw)
+
+--TODO: finding optimal shoulderyaw angle
+  local rShoulderYaw = -45*DEG_TO_RAD
+  local qR_target = Kinematics.inverse_r_arm_7(trR, rShoulderYaw)
+--]]
+
   local trR_check = Kinematics.r_arm_torso(qR_target)
   if not check_ik_error( trR, trR_check, pos_tol, ang_tol ) then
     return
@@ -543,12 +574,16 @@ end
 -- Take in joint angles and output an {x,y,z,r,p,yaw} table
 
 -- SJ: Now separated into two functions to get rid of directly calling IK
-Body.get_forward_larm = function(qL)  
-  local pLArm = Kinematics.l_arm_torso( qL )
+Body.get_forward_larm = function(qL)
+--  local pLArm = Kinematics.l_arm_torso( qL )
+  assert(#qL==7, "Arm FK requires 7 joints")
+  local pLArm = Kinematics.l_arm_torso_7( qL )
   return pLArm
 end
 Body.get_forward_rarm = function(qR)  
-  local pRArm = Kinematics.r_arm_torso( qR )
+--  local pRArm = Kinematics.r_arm_torso( qR )
+  assert(#qR==7, "Arm FK requires 7 joints")
+  local pRArm = Kinematics.r_arm_torso_7( qR )
   return pRArm
 end
 
@@ -557,16 +592,20 @@ end
 Body.get_forward_larm_command = function()
 --	local qLArm = Body.get_larm_position()
   local qLArm = Body.get_larm_command_position()
-	local pLArm = Kinematics.l_arm_torso( qLArm )
+	local pLArm = Kinematics.l_arm_torso_7( qLArm )
   return pLArm
 end
 Body.get_forward_rarm_command = function()
 --	local qRArm = Body.get_rarm_position()
   local qRArm = Body.get_rarm_command_position()
-	local pRArm = Kinematics.r_arm_torso( qRArm )
+	local pRArm = Kinematics.r_arm_torso_7( qRArm )
   return pRArm
 end
 
+
+
+--SJ: those functions are not used at all in whole codebase
+--[[
 -- Change the joints via IK
 Body.set_inverse_larm = function( dTrans )
   -- Perform FK to get current coordinates
@@ -597,6 +636,8 @@ Body.set_inverse_rarm = function( dTrans )
   -- Return true upon success
   return true
 end
+--]]
+
 
 -- TODO: Write functions to modify transform in directions
 
@@ -667,8 +708,9 @@ if IS_WEBOTS then
     0,0,0,0,0,0,
     -90,10,0,45,0,0,0,
     0,0,
-    0,0,0,
-    0,0,0,
+    --SJ: default is closed for fingers(webots)
+    -90,-90,-90,
+    -90,-90,-90,
     60,--30,
   })*DEG_TO_RAD
   

@@ -57,7 +57,19 @@ function state.entry()
   handle_yaw    = wheel[4]
   handle_pitch  = wheel[5]
   handle_radius = wheel[6]
-  -- Inner and outer radius
+  
+--SJ: Just in case
+  if handle_pos[1]==0 then
+    handle_pos={0.40,0,0.10}
+    handle_yaw=0
+    handle_pitch=0
+    handle_radius=0.10
+
+    hcm.set_wheel_model({handle_pos[1],handle_pos[2],handle_pos[3],
+                        handle_yaw,handle_pitch,handle_radius})
+  end
+
+-- Inner and outer radius
   handle_radius0 = handle_radius - 0.02
   handle_radius1 = handle_radius + 0.02
 

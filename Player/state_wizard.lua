@@ -8,6 +8,10 @@ local state_pub_ch = simple_ipc.new_publisher(Config.net.state)
 
 require'gcm'
 
+--SJ: This removes the output buffer 
+io.stdout:setvbuf("no")
+
+
 local state_machines = {}
 
 local status = {}

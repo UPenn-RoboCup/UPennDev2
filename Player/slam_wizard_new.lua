@@ -103,53 +103,7 @@ local function head_callback()
   elseif USE_SLAM_ODOM then
     --cur_pose = scm/blah:get_pose()
   end
-    
-  ---------------------------------
-  -- Reduce angle to [-pi, pi)
-  --[[ TODO: util.mod_angle()
-  cur_pose[3] = cur_pose[3] % (2*math.pi)
-  if (cur_pose[3]  >= math.pi) then
-    cur_pose[3]  = cur_pose[3]  - 2*math.pi
-  end
-  --]]
-  ---------------------------------
-  
-  --[[
-  ---------------------------------
-  -- Find out how much we have moved since last slamming
-  --pre_pose = pre_pose or cur_pose
-  local dx = cur_pose[1] - pre_pose[1]
-  local dy = cur_pose[2] - pre_pose[2]
-  local da =  cur_pose[3] - pre_pose[3]
-  -- Save the previous pose
-  pre_pose = cur_pose
-  ---------------------------------
-  
-  ---------------------------------
-  -- If we did not move much, or jumped, then do not update the odom
-  if math.abs(cur_pose[3])>1e-5 and math.abs(dx) < 0.5 and math.abs(dy)<0.5 and math.abs(da) < 0.2 then
-  --if odomFlag then
-    libSlam.SLAM.xOdom = libSlam.SLAM.xOdom + dx
-    libSlam.SLAM.yOdom = libSlam.SLAM.yOdom + dy
-    libSlam.SLAM.yawOdom = libSlam.SLAM.yawOdom + da -- util.mod_angle( libSlam.SLAM.yawOdom + da )
-    --print('good odom!!!!',dx,dy,da)
-  else
-    --print('bad odom!!!!',dx,dy,da)
-    --print('SLAM_before',libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom)
-  end
-  ---------------------------------
-  
-  ------------------------------------------------------
-  -- Do not slam when the head is moving
-  local head_roll,head_pitch,head_yaw = 0,neck[1],neck[2]
-  if realFlag ==1 and (math.abs(head_pitch)>math.pi/180 or math.abs(head_yaw)>math.pi/180) then
-    --print('bad head!!!!')
-    wcm:set_pose_slam({libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom})
-    return
-  end
-  ------------------------------------------------------
-  --]]
-  
+   
   ----------------
   -- Benchmark
   t0 = unix.time()
@@ -345,7 +299,7 @@ function slam.update()
   local meta = {}
   --TODO: get from vcm
   meta.c = 'jpeg'
-  --meta.c = 'zlib'
+  --meta.c = 'zlib' --TODO: issue
   if meta.c == 'zlib' then
     c_map = zlib.compress(
       libSlam.SMAP.data:storage():pointer(),

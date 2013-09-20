@@ -61,5 +61,12 @@ Config.km.standup_back  = 'km_Charli_StandupFromBack.lua'
 --------------------------
 -- Temporary Overwrites --
 --------------------------
+Config.camera = {}
+-- Head
+Config.camera.head = {}
+Config.camera.head.device = '/dev/video0'
+Config.camera.head.resolution = {640,360}
+Config.camera.head.fps = 30
+Config.camera.head.quality = 75
 
 return Config

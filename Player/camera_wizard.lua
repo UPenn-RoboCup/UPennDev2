@@ -8,8 +8,9 @@ local uvc        = require'uvc'
 local carray     = require'carray'
 local simple_ipc = require'simple_ipc'
 local jpeg       = require'jpeg'
-local udp        = require 'udp'
-local unix       = require 'unix'
+local udp        = require'udp'
+local mp         = require'msgpack'
+local unix       = require'unix'
 local wait_channels = {}
 local cameras = {}
 
@@ -25,6 +26,8 @@ if Config.camera.head then
   local camera_udp_ch = udp.new_sender(
     Config.net.operator.wireless, Config.net.head_camera);
   -- Create the callback functions
+  local meta = {}
+  meta.t = Body.get_time()
   local camera_poll = {}
   camera_poll.socket_handle = camera:descriptor()
   camera_poll.ts = Body.get_time()
@@ -32,9 +35,11 @@ if Config.camera.head then
   camera_poll.callback = function()
     local t_img = Body.get_time()
     local img, head_img_sz = camera:get_image()
+    local t_diff = t_img - camera_poll.ts
+    camera_poll.ts = t_img
+    camera_poll.count = camera_poll.count + 1
 
-    if camera_poll.count%(3*fps)==0 then
-      local t_now = Body.get_time()
+    if camera_poll.count%(5*fps)==0 then
       local t_diff = t_now - camera_poll.ts
       print(string.format('Head | %5.2f FPS', camera_poll.count/t_diff))
       camera_poll.count = 0
@@ -43,9 +48,12 @@ if Config.camera.head then
     camera_poll.count = camera_poll.count + 1
 
     -- Send over UDP
-    jpeg.set_quality( quality );
+    jpeg.set_quality( quality )
+    meta.t = t_img
+    meta.c = 'jpeg'
+    local metapack = mp.pack(meta)
     local jimg = jpeg.compress_yuyv(img,width,height)
-    local udp_ret, err = camera_udp_ch:send( jimg )
+    local udp_ret, err = camera_udp_ch:send( metapack..jimg )
     if err then print('camera udp error',err,#jimg) end
   end
   -- keep track

@@ -57,7 +57,7 @@ if chest_hokuyo then
 end
 
 -- Ensure that we shutdown the devices properly
-function shutdown()
+local function shutdown()
   print'Shutting down the Hokuyos...'
   for i,h in ipairs(hokuyos) do
     h:stream_off()

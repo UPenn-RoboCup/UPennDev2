@@ -17,7 +17,7 @@ addpath(genpath('.'))
 
 PORT_FEEDBACK  = 54329;
 PORT_HCAMERA   = 33333;
-PORT_LIDAR     = 33334;
+PORT_MESH      = 33344;
 PORT_LCAMERA   = 33335;
 PORT_RCAMERA   = 33336;
 PORT_SLAMMAP   = 22222; %43210;
@@ -44,7 +44,7 @@ head_jimg_fd  = udp_recv('new', PORT_HCAMERA);
 left_jimg_fd  = udp_recv('new', PORT_LCAMERA);
 right_jimg_fd = udp_recv('new', PORT_RCAMERA);
 omap_fd = udp_recv('new', PORT_SLAMMAP);
-mesh_fd = udp_recv('new', PORT_LIDAR);
+mesh_fd = udp_recv('new', PORT_MESH);
 feedback_fd = udp_recv('new', PORT_FEEDBACK);
 % hmap_fd = udp_recv('new', PORT_HEIGHTMAP);
 

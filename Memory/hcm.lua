@@ -21,6 +21,8 @@ shared_data.joints.qrarm  = vector.zeros( 6 )
 -- 3 finger joint angles
 shared_data.joints.qlgrip = vector.zeros( 3 )
 shared_data.joints.qrgrip = vector.zeros( 3 )
+
+shared_data.joints.shoulderangle = vector.zeros( 1 )
 -- Teleop mode
 -- 1: joint, 2: IK
 shared_data.joints.teleop = vector.ones( 1 )

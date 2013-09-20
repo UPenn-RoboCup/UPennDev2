@@ -8,10 +8,11 @@ local vector = require'vector'
 require'hcm'
 
 -- Arm joints Angular velocity limits
-local dqArmMax = vector.new({30,30,30,45,60,60})*Body.DEG_TO_RAD
+--local dqArmMax = Config.arm.slow_limit
+local dqArmMax = Config.arm.fast_limit
 -- Turning speed
 local dturnAngleMax = 3*math.pi/180 -- 3 deg per sec
-local turnAngleMax = 9*math.pi/180  -- 9 deg max
+local turnAngleMax = 60*math.pi/180  -- 60 deg max
 
 local turnAngle = 0
 local body_pos = {0,0,0}
@@ -101,6 +102,24 @@ function state.update()
   --local turnAngleCurrent = calculate_turn_angle(qLArm,qRArm)
   -- Get the target turning angle
   local turnAngleTarget = hcm.get_wheel_turnangle()
+
+  ----------------------------------------------------
+  --SJ: update wheel position online (for testing)
+  local wheel   = hcm.get_wheel_model()
+  handle_pos    = vector.slice(wheel,1,3)
+  handle_yaw    = wheel[4]
+  handle_pitch  = wheel[5]
+  handle_radius = wheel[6]
+  handle_radius1 = handle_radius + 0.02
+  ----------------------------------------------------
+
+
+
+
+
+
+
+
   -- Find out how much more we need to turn
   local turnAngleDiff = turnAngleTarget-turnAngleCurrent
   -- Do not allow too much movement
@@ -116,22 +135,51 @@ function state.update()
   -- Find our desired arm position
   local trLArm, trRArm = calculate_arm_position(turnAngleCommand)
   -- Get desired angles from current angles and target transform
-  local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
-  local qR_desired = Body.get_inverse_rarm(qLArm,trRArm)
+
+  local shoulderAngle   = hcm.get_joints_shoulderangle()
+
+  local qL_desired = Body.get_inverse_larm(qLArm,trLArm,shoulderAngle)
+  local qR_desired = Body.get_inverse_rarm(qLArm,trRArm,-shoulderAngle)
+
+
+  if not qL_desired then
+    print("Left arm stuck")
+  elseif not qR_desired then
+    print("Right arm stuck")
+    --We hit the IK limit. do nothing
+
+  else
+    --[[
+    print("LWrist:",qLArm[5]*180/math.pi,
+      qLArm[6]*180/math.pi,
+      qLArm[7]*180/math.pi)
+
+    print("RWrist:",qRArm[5]*180/math.pi,
+      qRArm[6]*180/math.pi,
+      qRArm[7]*180/math.pi)
+--]]
+    
 
   -- Go to the allowable position
-  local qL_approach, doneL
-  qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
-  Body.set_larm_command_position( qL_approach )
+  --
+    local qL_approach, doneL
+    qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
+    Body.set_larm_command_position( qL_approach )
   
-  local qR_approach, doneR
-  qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
-  Body.set_rarm_command_position( qR_approach )
+    local qR_approach, doneR
+    qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
+    Body.set_rarm_command_position( qR_approach )
+--
 
-  -- NOTE: This is kinda poor...
-  -- Should calculate from arm angles
-  turnAngleCurrent = turnAngleCommand
+--FOR TESTING ONLY (interpolation makes giltch)
+--Body.set_larm_command_position( qL_desired)
+--Body.set_rarm_command_position( qR_desired)
+    -- NOTE: This is kinda poor...
+    -- Should calculate from arm angles
+    turnAngleCurrent = turnAngleCommand
+  end
 
+  
 --[[
   if qL_desired==true and qR_desired==true then
     return'done'

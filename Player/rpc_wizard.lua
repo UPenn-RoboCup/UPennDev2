@@ -23,7 +23,8 @@ end
 
 --NOTE: Can do memory AND fsm event.  In that order
 local function process_rpc(rpc)
-  util.ptable(rpc)
+  -- for debugging
+  --util.ptable(rpc)
 
   local status, reply
   -- Shared memory modification
@@ -87,7 +88,7 @@ local function process_udp()
     local request = rpc_udp:receive()
     local rpc = mp.unpack(request)
     local reply = process_rpc(rpc)
-    print('Reply',reply)
+    --print('Reply',reply)
   end
 end
 

@@ -130,11 +130,11 @@ CHEST_LIDAR.posea=[];
         if LIDAR.mesh_img_display==0
             % head
             CONTROL.send_control_packet([],[],'vcm','head_lidar','depths',[.1,2]);
-            CONTROL.send_control_packet([],[],'vcm','head_lidar','net',[1,2,0]);
+            CONTROL.send_control_packet([],[],'vcm','head_lidar','net',[1,1,0]);
         else
             % chest
             CONTROL.send_control_packet([],[],'vcm','chest_lidar','depths',[.1,5]);
-            CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[1,2,0]);
+            CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[1,1,0]);
         end
     end
 

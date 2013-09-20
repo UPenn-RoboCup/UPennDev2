@@ -7,7 +7,6 @@ torch.Tensor = torch.DoubleTensor
 local libTransform = require 'libTransform'
 local Body = require'Body'
 local K = Body.Kinematics
-
 local libLaser = {}
 -- Using a Hokuyo only for now
 local READING_PER_DEGREE = 4

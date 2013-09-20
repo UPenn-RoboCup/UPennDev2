@@ -329,7 +329,7 @@ libSlam.processL0 = function( lidar_points )
 	decay_coeff = 0.95
       
     ---------------------------------------------------------------
-    slam.decay_map(localMap, thres, decay_coeff)
+    --slam.decay_map(localMap, thres, decay_coeff)
     ---------------------------------------------------------------
     
     OMAP.timestamp = unix.time();

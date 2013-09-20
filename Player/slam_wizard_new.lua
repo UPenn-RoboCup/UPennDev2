@@ -130,6 +130,7 @@ local function head_callback()
   -- TODO: Just add the gyro values to the lidar metadata
   --print('RPY/Gyro',vector.new(metadata.rpy), metadata.gyro[3])
   libSlam.processIMU( metadata.rpy, metadata.gyro[3], metadata.t )
+  libSlam.processOdometry({0,0,0}) --( Body.get_robot_odom() )
   libSlam.processL0( lidar0.points_xyz )
   local t1_processL0 = unix.time()
   --print( string.format('processL0 took: \t%.2f ms', (t1_processL0-t0_processL0)*1000) )

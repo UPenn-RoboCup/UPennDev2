@@ -15,13 +15,6 @@ end
 
 OPERATING_SYSTEM = io.popen('uname'):read('*a'):lower():gsub("%s+$", "")
 
--- Print out the globally available variables, when using include.lua
-print( 'Working Dir:', CWD )
-print( 'Home Dir:', HOME )
-print( 'Operating Sys:', OPERATING_SYSTEM )
-print( 'Webots:', IS_WEBOTS )
-
-
 -- include C modules to cpath
 -- getch.so is in Modules/getch/ (Modules/unix/unix.so -> Modules/?/?.so)
 package.cpath = HOME..'/Modules/?/?.so;'..package.cpath
@@ -49,5 +42,12 @@ package.cpath = HOME..'/Robots/'..Config.PLATFORM_NAME..'/?.so;'..package.cpath
 
 KEYFRAME_DIR = HOME.."/Player/Keyframes"
 
+-- Print out the globally available variables, when using include.lua
+--[[
+print( 'Working Dir:', CWD )
+print( 'Home Dir:', HOME )
+print( 'Operating Sys:', OPERATING_SYSTEM )
+print( 'Webots:', IS_WEBOTS )
 print( 'Platform:', Config.PLATFORM_NAME )
 print( 'Keyframes directory:', KEYFRAME_DIR )
+--]]

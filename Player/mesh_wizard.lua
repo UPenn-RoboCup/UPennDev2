@@ -122,6 +122,7 @@ local function prepare_mesh(type,near,far,method)
     -- raw data?
     return
   end
+  type.meta.depths = {near,far}
   return mp.pack(type.meta), c_mesh
 end
 
@@ -134,15 +135,15 @@ local function stream_mesh(type)
   -- Sensitivity range in meters
   -- Depths when compressing
   local depths = vcm['get_'..type.meta.name..'_lidar_depths']()
-  type.meta.depths = depths
-  local near = depths[1]
-  local far = depths[2]
 
   local metapack, c_mesh = prepare_mesh(
-    type,depths[1],depths[2],net_settings[2])
+    type,
+    depths[1],depths[2],
+    net_settings[2])
 
   --mesh_pub_ch:send( {meta, payload} )
   local ret, err = mesh_udp_ch:send( metapack..c_mesh )
+  if err then print('mesh udp',err) end
   if net_settings[1]==1 then
     net_settings[1] = 0
     vcm['set_'..type.meta.name..'_lidar_net'](net_settings)
@@ -261,7 +262,6 @@ function mesh.entry()
   mesh_tcp_ch = simple_ipc.new_replier(
     Config.net.reliable_mesh,'*')
   if mesh_tcp_ch then
-    print('add reliable')
     mesh_tcp_ch.callback = reliable_callback
     table.insert( wait_channels, mesh_tcp_ch )
   end
@@ -273,6 +273,7 @@ function mesh.entry()
   -- Send (unreliably) to users
   mesh_udp_ch = udp.new_sender(
     Config.net.operator.wireless, Config.net.mesh )
+  print('connection',Config.net.operator.wireless,Config.net.mesh)
 
   -- Prepare the polling
   channel_polls = simple_ipc.wait_on_channels( wait_channels )

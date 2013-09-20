@@ -81,9 +81,11 @@ int lua_update_map(lua_State *L) {
 	/* Get the map, which is a ByteTensor */
 	const THByteTensor * map_t =
 		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+#ifdef DEBUG
 	int is_con = isContiguous<THByteTensor>((THByteTensor *)map_t);
 	if (!is_con)
 		return luaL_error(L, "map_t input must be contiguous");
+#endif
 	uint8_t * map_tp = (uint8_t *)(map_t->storage->data + map_t->storageOffset);
 
 	/*
@@ -94,9 +96,11 @@ int lua_update_map(lua_State *L) {
 	/* Get the updating table */
 	const THDoubleTensor * update_t =
 		(THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
+#ifdef DEBUG
 	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)update_t);
 	if (!is_con)
 		return luaL_error(L, "update_t input must be contiguous");
+#endif
 	double * update_tp = (double *)(update_t->storage->data + update_t->storageOffset);
 
 
@@ -104,9 +108,11 @@ int lua_update_map(lua_State *L) {
 	const THDoubleTensor * ps_t =
 		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
 	const long nps  = ps_t->size[0];
+#ifdef DEBUG
 	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)ps_t);
 	if (!is_con)
 		return luaL_error(L, "ps_t input must be contiguous");
+#endif
 	//  double * ps_tp = (double *)(ps_t->storage->data + ps_t->storageOffset);
 
 	/* Grab the increment value */
@@ -172,9 +178,11 @@ int lua_update_hmap(lua_State *L) {
 	/* Get the map, which is a ByteTensor */
 	const THByteTensor * map_t =
 		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+#ifdef DEBUG
 	int is_con = isContiguous<THByteTensor>((THByteTensor *)map_t);
 	if (!is_con)
 		return luaL_error(L, "map_t input must be contiguous");
+#endif
 	uint8_t * map_tp = (uint8_t *)(map_t->storage->data + map_t->storageOffset);
 
 
@@ -182,9 +190,11 @@ int lua_update_hmap(lua_State *L) {
 	const THDoubleTensor * ps_t =
 		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
 	const long nps  = ps_t->size[0];
+#ifdef DEBUG
 	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)ps_t);
 	if (!is_con)
 		return luaL_error(L, "ps_t input must be contiguous");
+#endif
 	double * ps_tp = (double *)(ps_t->storage->data + ps_t->storageOffset);
 
 	/* Grab the height value */
@@ -231,25 +241,31 @@ int lua_update_smap(lua_State *L) {
 	/* Get the omap, which is a ByteTensor */
 	const THByteTensor * omap_t =
 		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+#ifdef DEBUG
 	int is_con = isContiguous<THByteTensor>((THByteTensor *)omap_t);
 	if (!is_con)
 		return luaL_error(L, "omap_t input must be contiguous");
+#endif
 	uint8_t * omap_tp = (uint8_t *)(omap_t->storage->data + omap_t->storageOffset);
 
 	/* Get the hmap, which is a ByteTensor */
 	const THByteTensor * hmap_t =
 		(THByteTensor *) luaT_checkudata(L, 2, "torch.ByteTensor");
+#ifdef DEBUG
 	is_con = isContiguous<THByteTensor>((THByteTensor *)hmap_t);
 	if (!is_con)
 		return luaL_error(L, "hmap_t input must be contiguous");
+#endif
 	uint8_t * hmap_tp = (uint8_t *)(hmap_t->storage->data + hmap_t->storageOffset);
 
 	/* Get the smap, which is a ByteTensor */
 	const THByteTensor * smap_t =
 		(THByteTensor *) luaT_checkudata(L, 3, "torch.ByteTensor");
+#ifdef DEBUG
 	is_con = isContiguous<THByteTensor>((THByteTensor *)smap_t);
 	if (!is_con)
 		return luaL_error(L, "smap_t input must be contiguous");
+#endif
 	uint8_t * smap_tp = (uint8_t *)(smap_t->storage->data + smap_t->storageOffset);
 
 	/* Get the size of maps */
@@ -545,9 +561,11 @@ int lua_binStats(lua_State *L)
 		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
 	const long nX  = prX->size[0];
 
+#ifdef DEBUG
 	int is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)prX);
 	if (!is_con)
 		return luaL_error(L, "prX input must be contiguous");
+#endif
 	prXp = (double *)(prX->storage->data + prX->storageOffset);
 
 	// #2 input: Heights from chest lidar
@@ -555,9 +573,11 @@ int lua_binStats(lua_State *L)
 		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
 	const long nY  = prY->size[0];
 
+#ifdef DEBUG
 	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)prY);
 	if (!is_con)
 		return luaL_error(L, "prY input must be contiguous");
+#endif
 	prYp = (double *)(prY->storage->data + prY->storageOffset);
 
 	// #3 input: Number of bins
@@ -566,17 +586,21 @@ int lua_binStats(lua_State *L)
 	// #4 input: Bin Table containing: "count", "mean", "max", "min", "std"
 	const THDoubleTensor * prT =
 		(THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
+#ifdef DEBUG
 	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)prT);
 	if (!is_con)
 		return luaL_error(L, "prT input must be contiguous");
+#endif
 	prTp = (double *)(prT->storage->data + prT->storageOffset);
 
 	// #5 input: Bins
 	const THDoubleTensor * prB =
 		(THDoubleTensor *) luaT_checkudata(L, 5, "torch.DoubleTensor");
+#ifdef DEBUG
 	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)prB);
 	if (!is_con)
 		return luaL_error(L, "prB input must be contiguous");
+#endif
 	prBp = (double *)(prB->storage->data + prB->storageOffset);
 
 	//fprintf(stdout, "nX, nY, n, BinTable, Bins: %ld \t %ld \t %d \t %ldx%ld \t %ldx%ld \n"
@@ -662,18 +686,22 @@ int lua_get_ground_points(lua_State *L) {
 	/* Get the torch to set */
 	const THDoubleTensor * ps_x =
 		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
+#ifdef DEBUG
 	int is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)ps_x);
 	if (!is_con)
 		return luaL_error(L, "ps_x input must be contiguous");
+#endif
 	double * ps_xp = (double *)(ps_x->storage->data + ps_x->storageOffset);
 
 	/* Grab the lidar points */
 	const THDoubleTensor * ps_t =
 		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
 	const long nps_t  = ps_t->size[0];
+#ifdef DEBUG
 	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)ps_t);
 	if (!is_con)
 		return luaL_error(L, "ps_t input must be contiguous");
+#endif
 	double * ps_tp = (double *)(ps_t->storage->data + ps_t->storageOffset);
 
 	/* Grab the total number of points to set */
@@ -717,18 +745,22 @@ int lua_get_height_points(lua_State *L) {
 	/* Get the torch to set */
 	const THDoubleTensor * ps_x =
 		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
+#ifdef DEBUG
 	int is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)ps_x);
 	if (!is_con)
 		return luaL_error(L, "ps_x input must be contiguous");
+#endif
 	double * ps_xp = (double *)(ps_x->storage->data + ps_x->storageOffset);
 
 	/* Grab the lidar points */
 	const THDoubleTensor * ps_t =
 		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
 	const long nps_t  = ps_t->size[0];
+#ifdef DEBUG
 	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)ps_t);
 	if (!is_con)
 		return luaL_error(L, "ps_t input must be contiguous");
+#endif
 	double * ps_tp = (double *)(ps_t->storage->data + ps_t->storageOffset);
 
 	/* Grab the minimum height of the height map */
@@ -789,9 +821,11 @@ int lua_mask_points(lua_State *L) {
 	const THDoubleTensor * c_t =
 		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
 	const long nps  = c_t->size[0];
+#ifdef DEBUG
 	int is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)c_t);
 	if (!is_con)
 		return luaL_error(L, "c_t input must be contiguous");
+#endif
 	double * c_tp = (double *)(c_t->storage->data + c_t->storageOffset);
 
 	/* Get zMaxmin */
@@ -800,9 +834,11 @@ int lua_mask_points(lua_State *L) {
 	const long nps_mm  = mm_t->size[0];
 	if (nps_mm!=nps)
 		luaL_error(L,"Wrong Number of elements in zMaxMin!");
+#ifdef DEBUG
 	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)mm_t);
 	if (!is_con)
 		return luaL_error(L, "mm_t input must be contiguous");
+#endif
 	double * mm_tp = (double *)(mm_t->storage->data + mm_t->storageOffset);
 
 	/* Get zMean */
@@ -811,9 +847,11 @@ int lua_mask_points(lua_State *L) {
 	const long nps_mean  = mean_t->size[0];
 	if (nps_mean!=nps)
 		luaL_error(L,"Wrong Number of elements in zMean!");
+#ifdef DEBUG
 	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)mean_t);
 	if (!is_con)
 		return luaL_error(L, "mean_t input must be contiguous");
+#endif
 	double * mean_tp = (double *)(mean_t->storage->data + mean_t->storageOffset);
 
 	/* Get xBin */
@@ -822,9 +860,11 @@ int lua_mask_points(lua_State *L) {
 	const long nps_xbin  = xbin_t->size[0];
 	if (nps_xbin!=nps)
 		luaL_error(L,"Wrong Number of elements in xBin!");
+#ifdef DEBUG
 	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)xbin_t);
 	if (!is_con)
 		return luaL_error(L, "xbin_t input must be contiguous");
+#endif
 	double * xbin_tp = (double *)(xbin_t->storage->data + xbin_t->storageOffset);
 
 	/* Get container for iGnd */
@@ -833,9 +873,11 @@ int lua_mask_points(lua_State *L) {
 	const long nps_gnd  = gnd_t->size[0];
 	if (nps_gnd!=nps)
 		luaL_error(L,"Wrong Number of elements in iGnd!");
+#ifdef DEBUG
 	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)gnd_t);
 	if (!is_con)
 		return luaL_error(L, "gnd_t input must be contiguous");
+#endif
 	double * gnd_tp = (double *)(gnd_t->storage->data + gnd_t->storageOffset);
 
 	/* Get container for iObs */
@@ -844,9 +886,11 @@ int lua_mask_points(lua_State *L) {
 	const long nps_obs  = obs_t->size[0];
 	if (nps_obs!=nps)
 		luaL_error(L,"Wrong Number of elements in iObs!");
+#ifdef DEBUG
 	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)obs_t);
 	if (!is_con)
 		return luaL_error(L, "obs_t input must be contiguous");
+#endif
 	double * obs_tp = (double *)(obs_t->storage->data + obs_t->storageOffset);
 
 	//#pragma omp parallel for
@@ -885,9 +929,11 @@ int lua_find_last_free_point(lua_State *L) {
 	const THDoubleTensor * ps_x =
 		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
 	const long nps  = ps_x->size[0];
+#ifdef DEBUG
 	int is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)ps_x);
 	if (!is_con)
 		return luaL_error(L, "ps_x input must be contiguous");
+#endif
 	double * ps_xp = (double *)(ps_x->storage->data + ps_x->storageOffset);
 
 	/* Grab the lidar points 
@@ -938,47 +984,43 @@ int lua_decay_map(lua_State *L) {
 	/* Get the torch that contains the map data */
 	const THByteTensor * ps_map =
 		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+#ifdef DEBUG
 	int is_con = isContiguous<THByteTensor>((THByteTensor *)ps_map);
 	if (!is_con)
 		return luaL_error(L, "ps_map input must be contiguous");
+#endif
 	ps_mapp = (uint8_t *)(ps_map->storage->data + ps_map->storageOffset);
 
 	const long nps_x  = ps_map->size[0];
 	const long nps_y  = ps_map->size[1];
+	
+	// const long map_stride = ps_map->stride[0];
+	// fprintf(stdout, "local map stride0: %d \n", map_stride);
 
-	/* Grab the minimum likelihood */
-	const double min_val = luaL_checknumber(L, 2);
-
-	/* Grab the maximum likelihood */
-	const double max_val = luaL_checknumber(L, 3);
+	/* Grab the threshold on likelihood */
+	const double thres = luaL_checknumber(L, 2);
 
 	/* Grab by how much to deacy the map */
-	const double dec = luaL_checknumber(L, 4);
-
-	/* Grab the top threshold on which you cut the likelihoods */
-	const double thres = luaL_checknumber(L, 5);
+	const double dec = luaL_checknumber(L, 3);
 
 	for( i=0; i<nps_x; i++ ) {
 		for ( j=0; j<nps_y; j++){
-			val = *(ps_mapp + i * nps_x + j);
+			// val = *(ps_mapp + i * nps_x + j);
+			val = *(ps_mapp + j);
 
-			/* If super certain */
-			if ( val>thres ){
-				ps_mapp[i * nps_x + j] = thres;
-				//fprintf(stdout, "after thres: %u \n", ps_mapp[i * nps_x + j]);
+			/* If super certain: remain at high level */
+			if ( val>=thres ){
+				// ps_mapp[i * nps_x + j] = thres;
+				*(ps_mapp+j) = thres;
 			}
 
-			/* If just a general point */
-			if ( val>min_val && val < max_val ) {
+			/* Decay */
+			else {
 				val = val * dec;
-				ps_mapp[i * nps_x + j] = val;
+				// ps_mapp[i * nps_x + j] = val;
+				*(ps_mapp+j) = val;
 			}
-
-			/* If super certain 
-				 if( val<min_val ){
-				 ps_mapp[i * nps_x + j] = min_val;
-				 }
-				 */
+			ps_mapp += ps_map->stride[0];
 		}
 	}
 

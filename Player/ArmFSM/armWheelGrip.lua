@@ -7,7 +7,7 @@ local vector = require'vector'
 require'hcm'
 
 -- Angular velocity limit
-local dqArmMax = vector.new({10,10,10,15,45,45})*Body.DEG_TO_RAD
+local dqArmMax = Config.arm.slow_limit
 
 local turnAngle = 0
 local body_pos = {0,0,0}
@@ -92,6 +92,38 @@ function state.update()
   -- Get desired angles from current angles and target transform
   local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
   local qR_desired = Body.get_inverse_rarm(qLArm,trRArm)
+
+--Hack here to initialize wrists correctly
+--[[
+if math.abs(qL_desired[5])>90*math.pi/180 then
+  qL_desired[5] = util.mod_angle(qL_desired[5]+math.pi)
+  qL_desired[6] = - qL_desired[6]
+  qL_desired[7] = util.mod_angle(qL_desired[7]+math.pi)
+end
+
+if math.abs(qR_desired[5])>90*math.pi/180 then
+  qR_desired[5] = util.mod_angle(qR_desired[5]+math.pi)
+  qR_desired[6] = - qR_desired[6]
+  qR_desired[7] = util.mod_angle(qR_desired[7]+math.pi)
+end
+--]]
+
+--[[
+    print("Larm:",
+      qLArm[1]*180/math.pi,
+      qLArm[2]*180/math.pi,
+      qLArm[3]*180/math.pi,
+      qLArm[4]*180/math.pi,
+      qLArm[5]*180/math.pi,
+      qLArm[6]*180/math.pi,
+      qLArm[7]*180/math.pi)
+--]]
+--[[
+    print("RWrist:",qRArm[5]*180/math.pi,
+      qRArm[6]*180/math.pi,
+      qRArm[7]*180/math.pi)
+--]]
+
   if not qL_desired then
     print('Left not possible')
     return'reset'

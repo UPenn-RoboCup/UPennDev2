@@ -30,9 +30,9 @@ local function update_joint(dt)
 
   if t_update-t_debug>1 then
     t_debug = t_update
-    print('Teleop | Desired joints')
-    print(qL_desired)
-    print(qR_desired)
+--    print('Teleop | Desired joints')
+--    print(qL_desired)
+--    print(qR_desired)
   end
 
   -- Go to the allowable position
@@ -63,9 +63,9 @@ local function update_ik(dt)
   local trRArm_desired = hcm.get_joints_prarm()
   if t_update-t_debug>1 then
     t_debug = t_update
-    print('Teleop | Desired IK')
-    print(trLArm_desired)
-    print(trRArm_desired)
+ --   print('Teleop | Desired IK')
+ --   print(trLArm_desired)
+ --   print(trRArm_desired)
   end
 
   --SJ: Added interpolation in cartesian space as well (unless movement will jerky)
@@ -79,11 +79,13 @@ local function update_ik(dt)
 
   -- If not possible, set to where we are
   if not qL_desired then
+    print("Left Stuck!!")
     trLArmApproach = trLArm
     qL_desired = qLArm
     hcm.set_joints_plarm(trLArm)
   end
   if not qR_desired then
+    print("Right Stuck!!")
     trRArmApproach = trRArm
     qR_desired = qRArm    
     hcm.set_joints_prarm(trRArm)
@@ -121,7 +123,7 @@ function state.entry()
   -- Get the current joint positions (via commands)
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-  
+
   trLArm = Body.get_forward_larm(qLArm);
   trRArm = Body.get_forward_rarm(qRArm);
 

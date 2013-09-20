@@ -177,8 +177,8 @@ arm.qLArmInit={
 --vector.new({90,90,90,-90,-90,0,0})*DEG_TO_RAD, -- scarecrow
 --vector.new({0,90,90,-90,-90,-45,0})*DEG_TO_RAD,-- arms in front
 
-vector.new({90,15,0,-15,-90,0,0})*DEG_TO_RAD, -- at sides
-vector.new({90,90,90,-90,-90,0,0})*DEG_TO_RAD, -- scarecrow
+vector.new({90,15,0,-15,-0,0,0})*DEG_TO_RAD, -- at sides
+vector.new({90,90,90,-90,-90,-0,0})*DEG_TO_RAD, -- scarecrow
 vector.new({0,90,90,-90,-90,-45,0})*DEG_TO_RAD,-- arms in front
 
 
@@ -189,7 +189,7 @@ arm.qRArmInit={
 --vector.new({90,-90,-90,-90,90,0,0})*DEG_TO_RAD,  -- scarecrow
 --vector.new({0,-90,-90,-90,90,45,0})*DEG_TO_RAD, -- arms in front
 
-vector.new({90,-15,0,-15,90,0,0})*DEG_TO_RAD, -- at sides
+vector.new({90,-15,0,-15,0,0,0})*DEG_TO_RAD, -- at sides
 vector.new({90,-90,-90,-90,90,0,0})*DEG_TO_RAD,  -- scarecrow
 vector.new({0,-90,-90,-90,90,45,0})*DEG_TO_RAD, -- arms in front
 

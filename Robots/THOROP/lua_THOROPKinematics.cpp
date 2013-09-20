@@ -374,6 +374,7 @@ int luaopen_THOROPKinematics (lua_State *L) {
 #else
 	luaL_register(L, "Kinematics", kinematics_lib);
 #endif
+	lua_install_constants(L, kinematics_constants);
 	return 1;
 }
 

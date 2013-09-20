@@ -168,10 +168,10 @@ assert(#servo.rad_bias==nJoint,'Bad servo rad_bias!')
 --SJ: Arm servos should at least move up to 90 deg
 servo.min_rad = vector.new({
   -60,-80, -- Head
-  -175,-5,-90,-145,-100,-80,-80, --LArm
+  -90,-5,-90,-140,      -180,-90,-135, --LArm
   -175,-175,-175,-175,-175,-175, --LLeg
   -175,-175,-175,-175,-175,-175, --RLeg
-  -175,-175,-180,-145,-100,-80,-80, --RArm
+  -175,-170,-180,-140,   -60,-90,-135, --RArm
   -175,-175, -- Waist
   -20,-20,-20, -- left gripper
   -20,-20,-20, -- right gripper
@@ -181,10 +181,10 @@ assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 
 servo.max_rad = vector.new({
   45,80, -- Head
-  160,150,180,0,100,80,80, --LArm
+  160,150,180,0,   60,90,135, --LArm
   175,175,175,175,175,175, --LLeg
   175,175,175,175,175,175, --RLeg
-  160,5,90,0,100,80,80, --RArm
+  160,5,90,0,     180,90,135, --RArm
   175,175, -- Waist
   10,10,10, -- left gripper
   10,10,10, -- right gripper

@@ -135,9 +135,11 @@ function state.update()
   -- Find our desired arm position
   local trLArm, trRArm = calculate_arm_position(turnAngleCommand)
   -- Get desired angles from current angles and target transform
-  local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
-  local qR_desired = Body.get_inverse_rarm(qLArm,trRArm)
 
+  local shoulderAngle   = hcm.get_joints_shoulderangle()
+
+  local qL_desired = Body.get_inverse_larm(qLArm,trLArm,shoulderAngle)
+  local qR_desired = Body.get_inverse_rarm(qLArm,trRArm,-shoulderAngle)
 
 
   if not qL_desired then

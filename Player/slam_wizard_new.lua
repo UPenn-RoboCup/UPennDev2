@@ -39,7 +39,8 @@ local udp_target = Config.net.operator.wireless
 jpeg.set_quality( 90 ) -- 90? other ?
 ---------------------------------
 local head_lidar_ch = simple_ipc.new_subscriber'head_lidar'
-local chest_lidar_ch = simple_ipc.new_subscriber'chest_lidar'
+--local chest_lidar_ch = simple_ipc.new_subscriber'chest_lidar'
+--TODO: needs tweaking to get chest lidar really helpful
 
 ---------------------------------
 -- Shared Memory
@@ -63,8 +64,8 @@ local lidar1 -- chest
 -- TODO: the following should be put in vcm 
 local l0minFOV = -135*Body.DEG_TO_RAD
 local l0maxFOV =  135*Body.DEG_TO_RAD
-local l1minFOV = -135*Body.DEG_TO_RAD  -- -45
-local l1maxFOV =  135*Body.DEG_TO_RAD  -- 45
+local l1minFOV = -45*Body.DEG_TO_RAD 
+local l1maxFOV =  45*Body.DEG_TO_RAD 
 local l0minHeight = -0.6 -- meters
 local l0maxHeight = 1.2
 -- We don't need height limits for chest lidar
@@ -192,7 +193,11 @@ local function chest_callback()
 	local ranges = Body.get_chest_lidar()
 	print('Lidar1 range size:', lidar1.ranges:size(1))
 	-- Copy of ranges for use in libLaser
-	ranges:tensor( lidar1.ranges )
+	ranges:tensor( 
+	lidar1.ranges,
+	lidar1.ranges:size(1)
+	--TODO: check if offset is needed here
+	)
   
   
   -- Transform the points into the body frame

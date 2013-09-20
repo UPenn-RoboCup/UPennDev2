@@ -8,6 +8,8 @@ require 'unix'
 local slam = require('slam')
 -- Trig library
 local libTransform = require'libTransform'
+-- Utilities
+local util = require'util'
 
 -- Configuration
 -- TODO: Should be Config_Slam
@@ -122,7 +124,9 @@ IMU.roll = 0
 IMU.pitch = 0
 IMU.yaw = 0
 IMU.dyaw = 0
+IMU.yawdot = 0
 IMU.lastYaw = 0
+IMU.t = 0
 libSlam.IMU = IMU
 
 ---------------------------
@@ -152,9 +156,8 @@ slam.set_boundaries( OMAP.xmin, OMAP.ymin, OMAP.xmax, OMAP.ymax )
 local scan_match_tune = {}
 local pass1 = {};
 -- Number of yaw positions to check
-pass1.nyaw = 1 --13 -- FIXME
+pass1.nyaw = 1
 pass1.dyaw = 0.5 * math.pi/180.0
--- At this resolution
 -- TODO: make this dependent on angular velocity / motion speed
 --if abs(tLidar0-tEncoders) < 0.1
 pass1.nxs  = 19  --21
@@ -299,16 +302,15 @@ libSlam.processL0 = function( lidar_points )
   
   local t0 = unix.time()  
   if SLAM.lidar0Cntr%20 == 0 then
-  --[[
-  --TODO: should use only a small window when exploring large-scale env
+  --TODO: Put the following part in C code?
   
     -- Get the map indicies for the robot
     xiCenter = math.ceil((SLAM.x - OMAP.xmin) * OMAP.invRes);
     yiCenter = math.ceil((SLAM.y - OMAP.ymin) * OMAP.invRes);
 
     -- Amount of the surrounding to decay
-    --windowSize = 30 * OMAP.invRes;
-    windowSize = 100 * OMAP.res;
+    windowSize = 2*OMAP.invRes;  -- 2 meters
+
     -- Get the surrounding's extreme indicies
     ximin = math.ceil(xiCenter - windowSize/2);
     ximax = ximin + windowSize - 1;
@@ -316,33 +318,20 @@ libSlam.processL0 = function( lidar_points )
     yimax = yimin + windowSize - 1;
 
     -- Clamp if the surrounding exceeds the map boundaries
-    if ximin < 1 then
-      ximin = 1;
-    end
-    if ximax > OMAP.sizex then
-      ximax = OMAP.sizex;
-    end
-    if yimin < 1 then
-      yimin = 1;
-    end
-    if yimax > OMAP.sizey then
-      yimax = OMAP.sizey;
-    end
+    if ximin < 1 then ximin = 1 end
+    if ximax > OMAP.sizex then ximax = OMAP.sizex end
+    if yimin < 1 then yimin = 1 end
+    if yimax > OMAP.sizey then yimax = OMAP.sizey end
 
     -- Perform the decay on the surroundings
-    --localMap = OMAP.data:sub( ximin,ximax,  yimin,yimax )
-  --]]
-  --print('I am here')
-    
-    
+    localMap = OMAP.data:sub( ximin,ximax,  yimin,yimax )	
+	thres = 240
+	decay_coeff = 0.95
+      
     ---------------------------------------------------------------
-    -- !!!!!TODO: TUNE PARAMETERS TODO BETTER DECAY!!!!
-    --slam.decay_map(OMAP.data, 0, 256, 0.95, 240)
+    slam.decay_map(localMap, thres, decay_coeff)
     ---------------------------------------------------------------
     
-    
-    -- Merge the small map back into the full map
-    --OMAP.data:sub( ximin,ximax,   yimin,yimax ):copy( localMap );
     OMAP.timestamp = unix.time();
   end
   
@@ -434,6 +423,8 @@ libSlam.scanMatchOne = function( Y )
   -- Reset the ranges based on the current odometry
   -- TODO: determine how much to search over the yaw space based on 
   -- the instantaneous angular velocity from the imu
+  pass1.dyaw = math.abs(IMU.dyaw)
+
   local xCand = pass1.xCand;
   local yCand = pass1.yCand;
   local aCand = pass1.aCand;
@@ -483,9 +474,7 @@ libSlam.scanMatchTwo = function( Y )
   -- TODO: determine how much to search over the yaw space based on 
   -- the instantaneous angular velocity from the imu
 
-  
-  pass2.dyaw = math.abs(IMU.yawdot* 0.5)
-  print('yawdot', IMU.yawdot)
+  pass2.dyaw = math.abs(IMU.dyaw)
 
   local xCand = pass2.xCand;
   local yCand = pass2.yCand;
@@ -543,7 +532,6 @@ libSlam.processL1 = function( lidar_points )
   
   local Y = lidar_points:clone()
 
-  -- Increment counter?
   -- TODO: Do we need this counter?
   SLAM.lidar1Cntr = SLAM.lidar1Cntr + 1
 
@@ -871,19 +859,28 @@ end
 ----------------------------------------------------
 -- Process the IMU data
 ----------------------------------------------------
-local t_pre = 0
-libSlam.processIMU = function( rpy, yawdot, t )
-  IMU.roll = rpy[1]
+libSlam.processIMU = function( rpy, yawdot, ts )
+	-- TODO: In the future, this funciton just do:
+		-- libSlam.SLAM.yaw:add(dyaw)
+		-- This is currently done in processLidar by:
+		-- pass1.aCand:add(IMU.dyaw)
+  IMU.roll = rpy[1]  --TODO: roll should be crucial
   IMU.pitch = rpy[2]
   IMU.yaw = rpy[3]
-  IMU.dyaw = IMU.yaw - IMU.lastYaw
-  dt = t - t_pre
- -- IMU.yawdot = yawdot
-  --TODO: may not be better on real robot
+  IMU.dyaw = util.mod_angle(IMU.yaw - IMU.lastYaw)
+
+  --TODO: yawdot is very large value, is it in DEG or something?
+  IMU.yawdot = yawdot
+  --IMU.dyaw = yawdot * (ts - IMU.t)
+
   -- Maybe filter the IMU data
-  IMU.yawdot = IMU.dyaw/dt
-  --print('yawdot',yawdot)
-  t_pre = t
+  tmpdyaw = util.mod_angle(IMU.yaw-IMU.lastYaw)
+  --IMU.yawdot = IMU.dyaw/(ts-IMU.t)
+  print('\nGYRO yawdot:', yawdot)
+  print('dyaw/dt:', tmpdyaw/(ts-IMU.t))
+  print('yawdot - dyaw/dt:', yawdot - tmpdyaw/(ts-IMU.t))
+  print('yawdot*dt - dyaw',yawdot*(ts-IMU.t)-tmpdyaw,'\n')
+  IMU.t = ts
   IMU.lastYaw = IMU.yaw
 end
 ----------------------------------------------------
@@ -892,66 +889,11 @@ end
 ----------------------------------------------------
 -- Process the Encoder data
 ----------------------------------------------------
-libSlam.processOdometry = function( encoder_lv, encoder_rv)
-    -- Input should be POSITION
-  
-  --print(string.format('\n\ninput vel: %.3f \t %.3f\n\n', encoder_lv, encoder_rv))
-  
-  --[[
-  -- The following is for situation where inputs are position
-  -- Compute the distance of motion for both wheels
-  local dl = (2*math.pi*cnts + encoder_l/180*math.pi) / 2 * Encoder.dia
-  local dr = (2*math.pi*cnts + encoder_r/180*math.pi) / 2 * Encoder.dia
-  
-  -- Record the current readings
-  Encoder.l = encoder_l
-  Encoder.r = encoder_r
-  Encoder.cnts  = cnts
-  --]]
-  
-  
-
-  -- The following is for situation where inputs are velocities
-    -- Compute the distance of motion for both wheels
-    local dt = unix.time() - Encoder.t_last
-  Encoder.t_last = unix.time()
-  local dl = encoder_lv*dt*Encoder.scaler / 2 * Encoder.dia
-    local dr = encoder_rv*dt*Encoder.scaler / 2 * Encoder.dia
-  local dtheta = 0
-  local dx = 0
-  local dy = 0
-  
-  -- Check dl, dr
-  if math.abs(dl - dr) < 0.0005 then
-    --print('MOVING FORWARD!!!')
-    dy = 0
-    dx = 0.5 * ( dl + dr)
-    dtheta = 0
-  else
-  
-    --TODO: use IMU for dtheta  
-    dtheta = math.atan2( (dr - dl), Encoder.baseline )
-    
-
-    --print(string.format('\n\n dt %.5f,\t dl: %.3f, \t dr: %.3f \n\n', dt, dl, dr))
-
-    -- Find the pivot point (distance off the left wheel center)
-    R = Encoder.baseline/2 + Encoder.baseline*dl/(dl-dr)
-
-    -- Compute changes in pose
-    dx = R * math.sin( dtheta )
-    dy = R * ( 1 - math.cos( dtheta ) )
-      
-  end
-  
-  --print(string.format('\n\n dtheta, %.10f, \t dx: %.3f, \t dy: %.3f \n\n', dtheta, dx, dy))
-  
-
-  -- Update odometry
-    SLAM.xOdom = SLAM.xOdom + dx
-    SLAM.yOdom = SLAM.yOdom + dy
-    SLAM.yawOdom = SLAM.yawOdom + dtheta
-  
+libSlam.processOdometry = function( torso_pose )
+  -- Input are changes in torso pose
+    SLAM.xOdom = SLAM.xOdom + torso_pose[1]
+    SLAM.yOdom = SLAM.yOdom + torso_pose[2]
+    SLAM.yawOdom = SLAM.yawOdom + torso_pose[3]
 end
 ----------------------------------------------------
 

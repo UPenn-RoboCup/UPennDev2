@@ -520,35 +520,100 @@ local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
 
 end
 
--- Can we go from angle q to position p?
-Body.get_inverse_larm = function( qL, trL, pos_tol, ang_tol )
-	local qL_target = Kinematics.inverse_l_arm(trL, qL)
+--6DOF IK
+Body.get_inverse_larm_6dof = function( qL, trL, pos_tol, ang_tol )
+  local qL_target = Kinematics.inverse_l_arm(trL, qL)
   qL_target[7] = 0; --Fix for 7DOF functions
-  local trL_check = Kinematics.l_arm_torso(qL_target)
-	if not check_ik_error( trL, trL_check, pos_tol, ang_tol ) then
+  if not check_ik_error( trL, trL_check, pos_tol, ang_tol ) then
     return
+  end
+  --Check range
+  for i=1,nJointLArm do
+    if qL_target[i]<servo.min_rad[indexLArm+i-1] or
+      qL_target[i]>servo.max_rad[indexLArm+i-1] then
+      return
+    end
   end
   return qL_target
 end
-Body.get_inverse_rarm = function( qR, trR, pos_tol, ang_tol )
+
+Body.get_inverse_rarm_6dof = function( qR, trR, pos_tol, ang_tol )
   local qR_target = Kinematics.inverse_r_arm(trR, qR)
   qR_target[7] = 0; --Fix for 7DOF functions
-  local trR_check = Kinematics.r_arm_torso(qR_target)
+  local trR_check = Kinematics.r_arm_torso_7(qR_target)
   if not check_ik_error( trR, trR_check, pos_tol, ang_tol ) then
     return
+  end
+  --Check range
+  for i=1,nJointRArm do
+    if qR_target[i]<servo.min_rad[indexRArm+i-1] or
+      qR_target[i]>servo.max_rad[indexRArm+i-1] then
+      return
+    end
   end
   return qR_target
 end
 
+
+-- Can we go from angle q to position p?
+Body.get_inverse_larm = function( qL, trL, pos_tol, ang_tol )
+--7DOF IK
+
+--TODO: finding optimal shoulderyaw angle
+  local lShoulderYaw = 45*DEG_TO_RAD
+  local qL_target = Kinematics.inverse_l_arm_7(trL,qL,lShoulderYaw)
+  local trL_check = Kinematics.l_arm_torso_7(qL_target)
+	if not check_ik_error( trL, trL_check, pos_tol, ang_tol ) then
+    return
+  end
+  --Check range
+  for i=1,nJointLArm do
+    if qL_target[i]<servo.min_rad[indexLArm+i-1] or
+      qL_target[i]>servo.max_rad[indexLArm+i-1] then
+      return
+    end
+  end
+  return qL_target
+end
+
+Body.get_inverse_rarm = function( qR, trR, pos_tol, ang_tol )
+--
+--TODO: finding optimal shoulderyaw angle
+  local rShoulderYaw = -45*DEG_TO_RAD
+  local qR_target = Kinematics.inverse_r_arm_7(trR, qR,rShoulderYaw)
+  local trR_check = Kinematics.r_arm_torso_7(qR_target)
+  if not check_ik_error( trR, trR_check, pos_tol, ang_tol ) then
+    return
+  end
+  --Check range
+  for i=1,nJointRArm do
+    if qR_target[i]<servo.min_rad[indexRArm+i-1] or
+      qR_target[i]>servo.max_rad[indexRArm+i-1] then
+      return
+    end
+  end
+  return qR_target
+--
+--  return Body.get_inverse_rarm_6dof(qR,trR,pos_tol,ang_tol)
+end
+
+
+
+
+
 -- Take in joint angles and output an {x,y,z,r,p,yaw} table
 
 -- SJ: Now separated into two functions to get rid of directly calling IK
-Body.get_forward_larm = function(qL)  
-  local pLArm = Kinematics.l_arm_torso( qL )
+Body.get_forward_larm = function(qL)
+--  local pLArm = Kinematics.l_arm_torso( qL )
+  assert(#qL==7, "Arm FK requires 7 joints")
+  local pLArm = Kinematics.l_arm_torso_7( qL )
   return pLArm
 end
 Body.get_forward_rarm = function(qR)  
-  local pRArm = Kinematics.r_arm_torso( qR )
+--  local pRArm = Kinematics.r_arm_torso( qR )
+  assert(#qR==7, "Arm FK requires 7 joints")
+  local pRArm = Kinematics.r_arm_torso_7( qR )
   return pRArm
 end
 
@@ -557,16 +622,20 @@ end
 Body.get_forward_larm_command = function()
 --	local qLArm = Body.get_larm_position()
   local qLArm = Body.get_larm_command_position()
-	local pLArm = Kinematics.l_arm_torso( qLArm )
+	local pLArm = Kinematics.l_arm_torso_7( qLArm )
   return pLArm
 end
 Body.get_forward_rarm_command = function()
 --	local qRArm = Body.get_rarm_position()
   local qRArm = Body.get_rarm_command_position()
-	local pRArm = Kinematics.r_arm_torso( qRArm )
+	local pRArm = Kinematics.r_arm_torso_7( qRArm )
   return pRArm
 end
 
+
+
+--SJ: those functions are not used at all in whole codebase
+--[[
 -- Change the joints via IK
 Body.set_inverse_larm = function( dTrans )
   -- Perform FK to get current coordinates
@@ -597,6 +666,8 @@ Body.set_inverse_rarm = function( dTrans )
   -- Return true upon success
   return true
 end
+--]]
+
 
 -- TODO: Write functions to modify transform in directions
 
@@ -667,17 +738,18 @@ if IS_WEBOTS then
     0,0,0,0,0,0,
     -90,10,0,45,0,0,0,
     0,0,
-    0,0,0,
-    0,0,0,
+    --SJ: default is closed for fingers(webots)
+    -90,-90,-90,
+    -90,-90,-90,
     60,--30,
   })*DEG_TO_RAD
   
   servo.min_rad = vector.new({
     -60,-80, -- Head
-    -90,-5,-90,-140,-100,-80,-80, --LArm
+    -90,-5,-90,-140,      -180,-90,-135, --LArm
     -175,-175,-175,-175,-175,-175, --LLeg
     -175,-175,-175,-175,-175,-175, --RLeg
-    -175,-170,-180,-140,-100,-80,-80, --RArm
+    -175,-170,-180,-140,   -60,-90,-135, --RArm
     -175,-175, -- Waist
     0,0,0, -- left gripper
     0,0,0, -- right gripper
@@ -686,10 +758,10 @@ if IS_WEBOTS then
   
   servo.max_rad = vector.new({
     45,80, -- Head
-    160,150,180,0,100,80,80, --LArm
+    160,150,180,0,   60,90,135, --LArm
     175,175,175,175,175,175, --LLeg
     175,175,175,175,175,175, --RLeg
-    160,5,90,0,100,80,80, --RArm
+    160,5,90,0,     180,90,135, --RArm
     175,175, -- Waist
     90,90,90, -- left gripper
     90,90,90, -- right gripper

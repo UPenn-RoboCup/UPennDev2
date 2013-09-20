@@ -30,9 +30,9 @@ local function update_joint(dt)
 
   if t_update-t_debug>1 then
     t_debug = t_update
-    print('Teleop | Desired joints')
-    print(qL_desired)
-    print(qR_desired)
+--    print('Teleop | Desired joints')
+--    print(qL_desired)
+--    print(qR_desired)
   end
 
   -- Go to the allowable position
@@ -63,10 +63,14 @@ local function update_ik(dt)
   local trRArm_desired = hcm.get_joints_prarm()
   if t_update-t_debug>1 then
     t_debug = t_update
-    print('Teleop | Desired IK')
-    print(trLArm_desired)
-    print(trRArm_desired)
+ --   print('Teleop | Desired IK')
+ --   print(trLArm_desired)
+ --   print(trRArm_desired)
   end
+
+  --Check if the current target position is approachable
+--  local qL_target = Body.get_inverse_larm(qLArm,trLArm_desired)
+--  local qR_target = Body.get_inverse_rarm(qRArm,trRArm_desired)
 
   --SJ: Added interpolation in cartesian space as well (unless movement will jerky)
 
@@ -79,23 +83,36 @@ local function update_ik(dt)
 
   -- If not possible, set to where we are
   if not qL_desired then
+    print("Left Stuck!!")
     trLArmApproach = trLArm
     qL_desired = qLArm
     hcm.set_joints_plarm(trLArm)
   end
   if not qR_desired then
+    print("Right Stuck!!")
     trRArmApproach = trRArm
     qR_desired = qRArm    
     hcm.set_joints_prarm(trRArm)
   end
 
+  
+
+
   -- Go to the allowable position
   local qL_approach, doneL
+--  qL_approach, doneL = util.approachTolRad( qLArm, qL_desired, dqArmMax, dt )
+
   qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
+
   qL_approach = Body.set_larm_command_position( qL_approach )
+
+  print(string.format("d: %.2f %.2f %.2f",
+      qL_desired[5], qL_desired[6], qL_desired[7] ))
+  print(string.format("c: %.2f %.2f %.2f",
+      qLArm[5], qLArm[6],qLArm[7] ))
   
   local qR_approach, doneR
-  qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
+  qR_approach, doneR = util.approachTolRad( qRArm, qR_desired, dqArmMax, dt )
   qR_approach = Body.set_rarm_command_position( qR_approach )
 
   -- Set our hcm in case of a mode switch
@@ -121,7 +138,7 @@ function state.entry()
   -- Get the current joint positions (via commands)
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-  
+
   trLArm = Body.get_forward_larm(qLArm);
   trRArm = Body.get_forward_rarm(qRArm);
 

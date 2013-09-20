@@ -210,9 +210,10 @@ static int inverse_r_arm(lua_State *L) {
 static int inverse_l_arm_7(lua_State *L) {
 	std::vector<double> qArm;
 	std::vector<double> pArm = lua_checkvector(L, 1);
+	std::vector<double> qArmOrg = lua_checkvector(L, 2);
 	Transform trArm = transform6D(&pArm[0]);
-	double shoulderYaw = luaL_optnumber(L, 2,0.0);
-	qArm = THOROP_kinematics_inverse_l_arm_7(trArm,shoulderYaw);
+	double shoulderYaw = luaL_optnumber(L, 3,0.0);
+	qArm = THOROP_kinematics_inverse_l_arm_7(trArm,&qArmOrg[0],shoulderYaw);
 	lua_pushvector(L, qArm);
 	return 1;
 }
@@ -220,9 +221,10 @@ static int inverse_l_arm_7(lua_State *L) {
 static int inverse_r_arm_7(lua_State *L) {
 	std::vector<double> qArm;
 	std::vector<double> pArm = lua_checkvector(L, 1);
+	std::vector<double> qArmOrg = lua_checkvector(L, 2);
 	Transform trArm = transform6D(&pArm[0]);
-	double shoulderYaw = luaL_optnumber(L, 2,0.0);
-	qArm = THOROP_kinematics_inverse_r_arm_7(trArm,shoulderYaw);
+	double shoulderYaw = luaL_optnumber(L, 3,0.0);
+	qArm = THOROP_kinematics_inverse_r_arm_7(trArm,&qArmOrg[0],shoulderYaw);
 	lua_pushvector(L, qArm);
 	return 1;
 }

@@ -102,6 +102,24 @@ function state.update()
   --local turnAngleCurrent = calculate_turn_angle(qLArm,qRArm)
   -- Get the target turning angle
   local turnAngleTarget = hcm.get_wheel_turnangle()
+
+  ----------------------------------------------------
+  --SJ: update wheel position online (for testing)
+  local wheel   = hcm.get_wheel_model()
+  handle_pos    = vector.slice(wheel,1,3)
+  handle_yaw    = wheel[4]
+  handle_pitch  = wheel[5]
+  handle_radius = wheel[6]
+  handle_radius1 = handle_radius + 0.02
+  ----------------------------------------------------
+
+
+
+
+
+
+
+
   -- Find out how much more we need to turn
   local turnAngleDiff = turnAngleTarget-turnAngleCurrent
   -- Do not allow too much movement

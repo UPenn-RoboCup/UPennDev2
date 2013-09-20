@@ -46,8 +46,12 @@ ret = CAMERA;
             udp_data = udp_recv('receive',fd);
             nBytes = nBytes + numel(udp_data);
         end
-        thor_camera_img = djpeg(udp_data);
-        set(CAMERA.head.image,'Cdata', thor_camera_img);
+        [metadata,offset] = msgpack('unpack',udp_data);
+        %disp(metadata)
+        cdepth = udp_data(offset+1:end);
+        if strncmp(char(metadata.c),'jpeg',3)==1
+            set(CAMERA.head.image,'Cdata', djpeg(cdepth));
+        end
     end
 
     function [nBytes] = update_left(fd)

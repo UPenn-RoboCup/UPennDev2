@@ -889,11 +889,11 @@ end
 ----------------------------------------------------
 -- Process the Encoder data
 ----------------------------------------------------
-libSlam.processOdometry = function( torso_pose )
+libSlam.processOdometry = function( torso_dpose )
   -- Input are changes in torso pose
-    SLAM.xOdom = SLAM.xOdom + torso_pose[1]
-    SLAM.yOdom = SLAM.yOdom + torso_pose[2]
-    SLAM.yawOdom = SLAM.yawOdom + torso_pose[3]
+    SLAM.xOdom = SLAM.xOdom + torso_dpose[1]
+    SLAM.yOdom = SLAM.yOdom + torso_dpose[2]
+    SLAM.yawOdom = SLAM.yawOdom + torso_dpose[3]
 end
 ----------------------------------------------------
 

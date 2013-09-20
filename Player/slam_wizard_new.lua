@@ -39,7 +39,7 @@ local udp_target = Config.net.operator.wireless
 jpeg.set_quality( 90 ) -- 90? other ?
 ---------------------------------
 local head_lidar_ch = simple_ipc.new_subscriber'head_lidar'
---local chest_lidar_ch = simple_ipc.new_subscriber'chest_lidar'
+local chest_lidar_ch = simple_ipc.new_subscriber'chest_lidar'
 
 ---------------------------------
 -- Shared Memory
@@ -63,8 +63,8 @@ local lidar1 -- chest
 -- TODO: the following should be put in vcm 
 local l0minFOV = -135*Body.DEG_TO_RAD
 local l0maxFOV =  135*Body.DEG_TO_RAD
-local l1minFOV = -45*Body.DEG_TO_RAD
-local l1maxFOV =  45*Body.DEG_TO_RAD
+local l1minFOV = -135*Body.DEG_TO_RAD  -- -45
+local l1maxFOV =  135*Body.DEG_TO_RAD  -- 45
 local l0minHeight = -0.6 -- meters
 local l0maxHeight = 1.2
 -- We don't need height limits for chest lidar
@@ -168,8 +168,6 @@ local function chest_callback()
   local meta, has_more = chest_lidar_ch:receive()
   local metadata = mp.unpack(meta)
 
-if true then return end
-
   -- Don't process every time
   lidar1_count = lidar1_count + 1;
   if lidar1_count%lidar1_interval~=0 then
@@ -189,42 +187,26 @@ if true then return end
   
     -- Get raw data from shared memory
   local ranges = Body.get_chest_lidar()
+  local angle = metadata.pangle  
   
-    -- Insert into the correct column
-    local angle = metadata.pangle
-    local scanline = angle_to_scanline( chest.meta, angle )
-    -- Only if a valid column is returned
-    if scanline then
-      -- Copy lidar readings to the torch object for fast modification
-      ranges:tensor(
-        chest.range:select(1,1),
-        chest.range:size(2),
-        chest.offset_idx 
-    )
-      -- Save the pan angle
-      chest.scan_angles[scanline] = angle
-      -- We've been updated
-      chest.needs_update = true
-      chest.meta.t     = metadata.t
-      
-      -- Converstion of ranges for use in libLaser
-      -- TODO: copy may be slow
-      --local single = torch.FloatTensor(1, chest.all_ranges:size(2)):zero()
-      --single:copy(chest.all_ranges:select(1, scanline))
-      lidar1.ranges:copy(chest.range:transpose(1,2))
-    end
+	local ranges = Body.get_chest_lidar()
+	print('Lidar1 range size:', lidar1.ranges:size(1))
+	-- Copy of ranges for use in libLaser
+	ranges:tensor( lidar1.ranges )
+  
   
   -- Transform the points into the body frame
   ------------------
   -- Get the chest lidar current pose
   local chest_roll  = 0
   local chest_pitch = 0
-  local chest_yaw  = chest.scan_angles[scanline]
+  local chest_yaw  = angle
   lidar1:transform(chest_roll, chest_pitch, chest_yaw)
   ------------------
 
   ------------------
   -- Perform Chest Lidar processing
+  -- print('CHEST LIDAR PROCESSING !!!!!!')
   t0_pL1 = unix.time()
   libSlam.processL1(lidar1.points_xyz)
   t1_pL1 = unix.time()
@@ -235,7 +217,6 @@ if true then return end
   end
   ------------------
   
-  -- TODO: Use odometry for lidar 0, too.
   pre_pose1 = pre_pose1 or cur_pose
   
 end

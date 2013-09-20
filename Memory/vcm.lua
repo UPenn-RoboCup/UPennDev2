@@ -49,8 +49,8 @@ shared.chest_lidar                 = {}
 shared.chest_lidar.scan            = 4*1081
 shared.chest_lidar.t               = vector.zeros(1)
 -- Radian endpoints for where the lidar is scanning
--- Last one is the resolution: scanlines per radian
-shared.chest_lidar.scanlines = vector.new({-50*DEG_TO_RAD,50*DEG_TO_RAD,10/DEG_TO_RAD})
+-- Last one is the resolution: scanlines per radian (we use scanlines per deg conversion)
+shared.chest_lidar.scanlines = vector.new({-50*DEG_TO_RAD,50*DEG_TO_RAD,5/DEG_TO_RAD})
 -- Care only about lidar readings within this field of view
 -- {Start angle, stop angle}
 shared.chest_lidar.fov      = vector.new({-60,60})*DEG_TO_RAD

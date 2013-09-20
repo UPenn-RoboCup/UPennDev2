@@ -2,11 +2,13 @@ dofile'include.lua'
 
 -- Important libraries in the global space
 local libs = {
+  'Config',
   'Body',
   'unix',
   'util',
   'vector',
-  'torch'
+  'torch',
+  'msgpack'
 }
 
 -- Load the libraries
@@ -40,6 +42,12 @@ for _,mem in ipairs(listing) do
     require(name)
   end
 end
+
+-- RPC engine
+rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
+
+-- Mesh requester
+mesh_req_ch = simple_ipc.new_requester(Config.net.reliable_mesh)
 
 print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
 print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )

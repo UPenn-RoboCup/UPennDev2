@@ -47,7 +47,6 @@ local supportX = Config.walk.supportX
 local supportY = Config.walk.supportY
 local qLArm0   = Config.walk.qLArm
 local qRArm0   = Config.walk.qRArm
-print('qLArm0??', unpack(qLArm0))
 
 -- Hardness parameters
 local hardnessSupport = Config.walk.hardnessSupport or 0.7

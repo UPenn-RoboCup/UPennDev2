@@ -57,7 +57,7 @@ function state.entry()
   handle_yaw    = wheel[4]
   handle_pitch  = wheel[5]
   handle_radius = wheel[6]
-  
+  print("Handle model:",wheel)
 --SJ: Just in case
   if handle_pos[1]==0 then
     handle_pos={0.40,0,0.10}

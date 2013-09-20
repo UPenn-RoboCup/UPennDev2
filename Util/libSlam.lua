@@ -24,6 +24,10 @@ local libSlam = {}
 local IMUflag = true 
 --local IMUflag = false 
 
+--Flag for testing on Real Robot:
+local IS_OP = false
+--local IS_OP = true
+
 -- Flag for benchmarking
 local Benchmark = false --true
 --local Benchmark = true
@@ -423,7 +427,9 @@ libSlam.scanMatchOne = function( Y )
   -- Reset the ranges based on the current odometry
   -- TODO: determine how much to search over the yaw space based on 
   -- the instantaneous angular velocity from the imu
-  pass1.dyaw = math.abs(IMU.dyaw)
+  if not IS_OP then
+    pass1.dyaw = math.abs(IMU.dyaw)
+  end
 
   local xCand = pass1.xCand;
   local yCand = pass1.yCand;
@@ -473,8 +479,9 @@ libSlam.scanMatchTwo = function( Y )
   -- Reset the ranges based on the current odometry
   -- TODO: determine how much to search over the yaw space based on 
   -- the instantaneous angular velocity from the imu
-
-  pass2.dyaw = math.abs(IMU.dyaw)
+  if not IS_OP then
+    pass2.dyaw = math.abs(IMU.dyaw)
+  end
 
   local xCand = pass2.xCand;
   local yCand = pass2.yCand;

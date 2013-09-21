@@ -710,7 +710,7 @@ if IS_WEBOTS then
   local udp        = require'udp'
   local jpeg       = require'jpeg'
   require'wcm'
-  --local png        = require'png'
+  local png        = require'png'
   get_time    = webots.wb_robot_get_time
   -- Setup the webots tags
   local tags = {}
@@ -803,8 +803,9 @@ if IS_WEBOTS then
         head_camera_wbt.height)
     end
     if not c_color then return end
-    local meta = mp.pack(head_camera_wbt.meta)
-    local ret_c,err_c = head_camera_wbt.channel:send( c_color )
+    local metapack = mp.pack(head_camera_wbt.meta)
+    local ret_c,err_c = head_camera_wbt.channel:send( metapack..c_color )
+
     if err_c then print('head cam',util.color(err_c,'red')) end
     if net_settings[1]==1 then
       net_settings[1] = 0

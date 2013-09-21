@@ -994,8 +994,7 @@ int lua_decay_map(lua_State *L) {
 	const long nps_x  = ps_map->size[0];
 	const long nps_y  = ps_map->size[1];
 	
-	// const long map_stride = ps_map->stride[0];
-	// fprintf(stdout, "local map stride0: %d \n", map_stride);
+	//fprintf(stdout, "local map stride0: %d \n", uint8_t(ps_map->stride[0]));
 
 	/* Grab the threshold on likelihood */
 	const double thres = luaL_checknumber(L, 2);
@@ -1020,7 +1019,8 @@ int lua_decay_map(lua_State *L) {
 				// ps_mapp[i * nps_x + j] = val;
 				*(ps_mapp+j) = val;
 			}
-			ps_mapp += ps_map->stride[0];
+			// TODO: this may resolve the address boundary issue
+			ps_mapp += uint8_t(ps_map->stride[0]);
 		}
 	}
 

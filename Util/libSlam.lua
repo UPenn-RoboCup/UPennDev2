@@ -24,6 +24,10 @@ local libSlam = {}
 local IMUflag = true 
 --local IMUflag = false 
 
+--Flag for testing on Real Robot:
+local IS_OP = false
+--local IS_OP = true
+
 -- Flag for benchmarking
 local Benchmark = false --true
 --local Benchmark = true
@@ -329,7 +333,7 @@ libSlam.processL0 = function( lidar_points )
 	decay_coeff = 0.95
       
     ---------------------------------------------------------------
-    --slam.decay_map(localMap, thres, decay_coeff)
+    slam.decay_map(localMap, thres, decay_coeff)
     ---------------------------------------------------------------
     
     OMAP.timestamp = unix.time();
@@ -423,7 +427,9 @@ libSlam.scanMatchOne = function( Y )
   -- Reset the ranges based on the current odometry
   -- TODO: determine how much to search over the yaw space based on 
   -- the instantaneous angular velocity from the imu
-  pass1.dyaw = math.abs(IMU.dyaw)
+  if not IS_OP then
+    pass1.dyaw = math.abs(IMU.dyaw)
+  end
 
   local xCand = pass1.xCand;
   local yCand = pass1.yCand;
@@ -473,8 +479,9 @@ libSlam.scanMatchTwo = function( Y )
   -- Reset the ranges based on the current odometry
   -- TODO: determine how much to search over the yaw space based on 
   -- the instantaneous angular velocity from the imu
-
-  pass2.dyaw = math.abs(IMU.dyaw)
+  if not IS_OP then
+    pass2.dyaw = math.abs(IMU.dyaw)
+  end
 
   local xCand = pass2.xCand;
   local yCand = pass2.yCand;
@@ -889,11 +896,11 @@ end
 ----------------------------------------------------
 -- Process the Encoder data
 ----------------------------------------------------
-libSlam.processOdometry = function( torso_pose )
+libSlam.processOdometry = function( torso_dpose )
   -- Input are changes in torso pose
-    SLAM.xOdom = SLAM.xOdom + torso_pose[1]
-    SLAM.yOdom = SLAM.yOdom + torso_pose[2]
-    SLAM.yawOdom = SLAM.yawOdom + torso_pose[3]
+    SLAM.xOdom = SLAM.xOdom + torso_dpose[1]
+    SLAM.yOdom = SLAM.yOdom + torso_dpose[2]
+    SLAM.yawOdom = SLAM.yawOdom + torso_dpose[3]
 end
 ----------------------------------------------------
 

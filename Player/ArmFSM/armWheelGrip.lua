@@ -91,7 +91,7 @@ function state.update()
   local trLArm, trRArm = calculate_arm_position(0)
   -- Get desired angles from current angles and target transform
   local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
-  local qR_desired = Body.get_inverse_rarm(qLArm,trRArm)
+  local qR_desired = Body.get_inverse_rarm(qRArm,trRArm)
 
 --Hack here to initialize wrists correctly
 --[[
@@ -135,11 +135,11 @@ end
 
   -- Go to the allowable position
   local qL_approach, doneL
-  qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
+  qL_approach, doneL = util.approachTolRad( qLArm, qL_desired, dqArmMax, dt )
   Body.set_larm_command_position( qL_approach )
   
   local qR_approach, doneR
-  qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
+  qR_approach, doneR = util.approachTolRad( qRArm, qR_desired, dqArmMax, dt )
   Body.set_rarm_command_position( qR_approach )
 
   -- TODO: Begin to grip by approaching the inner radius

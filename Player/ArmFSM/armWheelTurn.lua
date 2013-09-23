@@ -139,7 +139,7 @@ function state.update()
   local shoulderAngle   = hcm.get_joints_shoulderangle()
 
   local qL_desired = Body.get_inverse_larm(qLArm,trLArm,shoulderAngle)
-  local qR_desired = Body.get_inverse_rarm(qLArm,trRArm,-shoulderAngle)
+  local qR_desired = Body.get_inverse_rarm(qRArm,trRArm,-shoulderAngle)
 
 
   if not qL_desired then
@@ -147,27 +147,24 @@ function state.update()
   elseif not qR_desired then
     print("Right arm stuck")
     --We hit the IK limit. do nothing
-
   else
-    --[[
-    print("LWrist:",qLArm[5]*180/math.pi,
-      qLArm[6]*180/math.pi,
-      qLArm[7]*180/math.pi)
+    --
 
-    print("RWrist:",qRArm[5]*180/math.pi,
-      qRArm[6]*180/math.pi,
-      qRArm[7]*180/math.pi)
---]]
+
+
+--
     
 
   -- Go to the allowable position
   --
     local qL_approach, doneL
-    qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
+--    qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
+    qL_approach, doneL = util.approachTolRad( qLArm, qL_desired, dqArmMax, dt )
     Body.set_larm_command_position( qL_approach )
   
     local qR_approach, doneR
-    qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
+--    qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
+    qR_approach, doneR = util.approachTolRad( qRArm, qR_desired, dqArmMax, dt )    
     Body.set_rarm_command_position( qR_approach )
 --
 
@@ -177,6 +174,31 @@ function state.update()
     -- NOTE: This is kinda poor...
     -- Should calculate from arm angles
     turnAngleCurrent = turnAngleCommand
+
+
+
+
+    print(string.format("LW:%d %d %d T(%d %d %d) RW:%d %d %d T(%d %d %d)",
+      qL_approach[5]*180/math.pi,
+      qL_approach[6]*180/math.pi,
+      qL_approach[7]*180/math.pi,
+
+      qL_desired[5]*180/math.pi,
+      qL_desired[6]*180/math.pi,
+      qL_desired[7]*180/math.pi,
+
+      qR_approach[5]*180/math.pi,
+      qR_approach[6]*180/math.pi,
+      qR_approach[7]*180/math.pi,
+
+      qR_desired[5]*180/math.pi,
+      qR_desired[6]*180/math.pi,
+      qR_desired[7]*180/math.pi
+
+      ))
+
+
+
   end
 
   

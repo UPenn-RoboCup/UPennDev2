@@ -747,10 +747,15 @@ if IS_WEBOTS then
   
   servo.min_rad = vector.new({
     -60,-80, -- Head
-    -90,-5,-90,-140,      -180,-90,-135, --LArm
+--    -90,-5,-90,-140,      -180,-90,-135, --LArm
+    -90,-5,-90,-140,      -180,-90,-180, --LArm
+
+
     -175,-175,-175,-175,-175,-175, --LLeg
     -175,-175,-175,-175,-175,-175, --RLeg
-    -175,-170,-180,-140,   -60,-90,-135, --RArm
+--    -175,-170,-180,-140,   -60,-90,-135, --RArm
+    -175,-170,-180,-140,   -180,-90,-180, --RArm
+
     -175,-175, -- Waist
     0,0,0, -- left gripper
     0,0,0, -- right gripper
@@ -759,10 +764,15 @@ if IS_WEBOTS then
   
   servo.max_rad = vector.new({
     45,80, -- Head
-    160,150,180,0,   60,90,135, --LArm
+--    160,150,180,0,   60,90,135, --LArm
+    160,150,180,0,   180,90,180, --LArm
+
+
     175,175,175,175,175,175, --LLeg
     175,175,175,175,175,175, --RLeg
-    160,5,90,0,     180,90,135, --RArm
+--    160,5,90,0,     180,90,135, --RArm
+    160,5,90,0,     180,90,180, --RArm
+
     175,175, -- Waist
     90,90,90, -- left gripper
     90,90,90, -- right gripper
@@ -936,7 +946,16 @@ if IS_WEBOTS then
 			-- Only set in webots if Torque Enabled
 			if en>0 and jtag>0 then
         local pos = servo.direction[idx] * (new_pos + servo.rad_bias[idx])
-        webots.wb_servo_set_position(jtag, pos )
+        --SJ: Webots is STUPID so we should set direction correctly to prevent flip
+        local val = webots.wb_servo_get_position( jtag )
+
+        if pos>val+math.pi then 
+          webots.wb_servo_set_position(jtag, pos-2*math.pi )
+        elseif pos<val-math.pi then
+          webots.wb_servo_set_position(jtag, pos+2*math.pi )
+        else
+          webots.wb_servo_set_position(jtag, pos )
+        end
         jcm.twritePtr.command_position[idx] = t
       end
 		end --for

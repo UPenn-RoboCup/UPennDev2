@@ -81,6 +81,8 @@ local function update_ik(dt)
   local qL_desired = Body.get_inverse_larm(qLArm,trLArmApproach)
   local qR_desired = Body.get_inverse_rarm(qRArm,trRArmApproach)
 
+
+
   -- If not possible, set to where we are
   if not qL_desired then
     print("Left Stuck!!")
@@ -95,23 +97,40 @@ local function update_ik(dt)
     hcm.set_joints_prarm(trRArm)
   end
 
+print(string.format("CLW: %d %d %d"
+  ,qLArm[5]*180/math.pi
+  ,qLArm[6]*180/math.pi
+  ,qLArm[7]*180/math.pi
+
+  ))
+
+
+print(string.format("DLW: %d %d %d"
+  ,qL_desired[5]*180/math.pi
+  ,qL_desired[6]*180/math.pi
+  ,qL_desired[7]*180/math.pi
+
+  ))
   
 
 
   -- Go to the allowable position
   local qL_approach, doneL
 
-  qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
+  qL_approach, doneL = util.approachTolRad( qLArm, qL_desired, dqArmMax, dt )
 
   qL_approach = Body.set_larm_command_position( qL_approach )
+
+--[[
 
   print(string.format("d: %.2f %.2f %.2f",
       qL_desired[5], qL_desired[6], qL_desired[7] ))
   print(string.format("c: %.2f %.2f %.2f",
-      qLArm[5], qLArm[6],qLArm[7] ))
+          qLArm[5], qLArm[6],qLArm[7] ))
+  --]]
   
   local qR_approach, doneR
-  qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
+  qR_approach, doneR = util.approachTolRad( qRArm, qR_desired, dqArmMax, dt )
   qR_approach = Body.set_rarm_command_position( qR_approach )
 
   -- Set our hcm in case of a mode switch

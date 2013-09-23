@@ -41,7 +41,7 @@ chains['Right Arm'] = {
   ttyname = '/dev/ttyUSB0',
   nx_ids  = {1,3,5,7,9,11,13},
   mx_ids  = {31,33,35},
-  active = true
+  active = false
 }
 chains['Left Arm'] = {
   --ttyname = '/dev/cu.usbserial-FTT3ABW9B',
@@ -50,6 +50,10 @@ chains['Left Arm'] = {
   mx_ids  = {32,34,36,   --[[lidar]] 37},
   active = true
 }
+if OPERATING_SYSTEM=='darwin' then
+  chains['Left Arm'].ttyname = '/dev/cu.usbserial-FTT3ABW9B'
+  chains['Right Arm'].ttyname = '/dev/cu.usbserial-FTT3ABW9A'
+end
 
 --------------------
 -- Callback processing on data from a named register

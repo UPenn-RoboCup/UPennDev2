@@ -100,6 +100,7 @@ local function update_ik(dt)
 
   -- Go to the allowable position
   local qL_approach, doneL
+--  qL_approach, doneL = util.approachTolRad( qLArm, qL_desired, dqArmMax, dt )
 
   qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
 
@@ -111,7 +112,7 @@ local function update_ik(dt)
       qLArm[5], qLArm[6],qLArm[7] ))
   
   local qR_approach, doneR
-  qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
+  qR_approach, doneR = util.approachTolRad( qRArm, qR_desired, dqArmMax, dt )
   qR_approach = Body.set_rarm_command_position( qR_approach )
 
   -- Set our hcm in case of a mode switch

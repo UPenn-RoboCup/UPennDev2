@@ -6,30 +6,44 @@
 -- fsm module
 local fsm = require'fsm'
 
+--SJ: Simplified the arm FSMs
+
 -- Require the needed states
+
+--Default state, arm can be any position
 local armIdle = require'armIdle'
-local armInit = require'armInit'
--- From Init toward Ready
-local armInitReady = require'armInitReady'
-local armReady = require'armReady'
--- Instantiate a new state machine with an initial state
--- This will be returned to the user
-local sm = fsm.new(armIdle,armInit,armInitReady,armReady)
---
+
+--Default pose for walking (arm slightly spread)
+local armPose1 = require'armPose1'
+
+--Default pose for tele-op and handle grip
+local armPose2 = require'armPose2'
+
+--Move arm to pose 1
+local armChangetoPose1 = require'armChangetoPose1'
+
+--Move arm to pose 2
+local armChangetoPose2 = require'armChangetoPose2'
 
 -- Direct teleop override
 local armTeleop = require'armTeleop'
-sm:add_state(armTeleop)
 
 -- Wheel specific states
 local armWheelGrip = require'armWheelGrip'
 local armWheelTurn = require'armWheelTurn'
-sm:add_state(armWheelGrip)
-sm:add_state(armWheelTurn)
 
 -- Door specific states
 local armDoorGrip = require'armDoorGrip'
 --local armDoorTurn = require'armDoorTurn'
+
+local sm = fsm.new(armIdle);
+sm:add_state(armPose1)
+sm:add_state(armPose2)
+sm:add_state(armChangetoPose1)
+sm:add_state(armChangetoPose2)
+sm:add_state(armTeleop)
+sm:add_state(armWheelGrip)
+sm:add_state(armWheelTurn)
 sm:add_state(armDoorGrip)
 --sm:add_state(armDoorTurn)
 
@@ -43,63 +57,38 @@ sm:add_state(armDoorGrip)
 -- Fully autonomous, since the human can estimate the state?
 
 -- Setup the transitions for this FSM
-sm:set_transition(armIdle, 'init', armInit)
---
-sm:set_transition(armInit, 'done', armIdle, function()
-  -- When we are in the idle (init) state,
-  -- we are allowed to make some transitions
-  sm:set_transition(armIdle, 'ready', armInitReady)
-  -- The initial position is great for grabbing the door
-  sm:set_transition(armIdle, 'doorgrab', armDoorGrip)
-end)
---
-function armInitReady.epi.update()
-  -- Set the direction epi-state when armInitReady is done
-  if not armInitReady.epi.reverse then armInitReady.epi.reverse = false end
-  armInitReady.epi.reverse = not armInitReady.epi.reverse
-  if armInitReady.epi.reverse then
-    sm:set_transition(armInitReady, 'done', armInit)
-    -- Resetting armInitReady now means to go back to armReady
-    sm:set_transition(armInitReady, 'reset', armReady)
-  else
-    sm:set_transition(armInitReady, 'done', armReady)
-    -- Resetting armInitReady now means to go back to armReady
-    sm:set_transition(armInitReady, 'reset', armInit)
-  end
-end
-sm:set_transition(armInitReady, 'reset', armInit)
--- Stateful transitions
-sm:set_transition(armInitReady, 'done', armReady, armInitReady.epi.update)
---
-sm:set_transition(armReady, 'reset', armInitReady)
-sm:set_transition(armReady, 'done', armIdle, function()
-  -- When we are in the idle (ready) state,
-  -- we are allowed to make some transitions
-  sm:set_transition(armIdle, 'reset', armInitReady)
-  sm:set_transition(armIdle, 'ready', armReady)
-  -- Manipulation ability!
-  -- TODO: How to remove (prune) this functionality when back in init?
-  -- The ready position is great for teleop and wheel grabbing
-  -- It's a bit awkward for the door opening
-  sm:set_transition(armIdle, 'teleop', armTeleop)
-  sm:set_transition(armIdle, 'wheelgrab', armWheelGrip)
-  -- Cannot do anymore
-  sm:remove_transition(armIdle, 'doorgrab', armDoorGrip)
-end)
---
-sm:set_transition(armWheelGrip, 'reset', armReady)
+sm:set_transition(armIdle, 'init', armChangetoPose1)
+
+sm:set_transition(armChangetoPose1, 'done', armPose1)
+sm:set_transition(armChangetoPose2, 'done', armPose2)
+
+sm:set_transition(armPose1, 'ready', armChangetoPose2)
+sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
+
+sm:set_transition(armPose2, 'teleop', armTeleop)
+sm:set_transition(armPose2, 'wheelgrab', armWheelGrip)
+sm:set_transition(armPose2, 'reset', armChangetoPose1)
+
 sm:set_transition(armWheelGrip, 'done', armWheelTurn)
---
-sm:set_transition(armWheelTurn, 'reset', armReady)
---
+sm:set_transition(armWheelGrip, 'reset', armChangetoPose2)
+
+sm:set_transition(armWheelTurn, 'reset', armChangetoPose2)
+
 -- The initial arm pose is great for door gripping, 
 -- and should be the reset position
-sm:set_transition(armDoorGrip, 'reset', armInit)
+sm:set_transition(armDoorGrip, 'reset', armChangetoPose1)
 sm:set_transition(armDoorGrip, 'done',  armTeleop)
 -- TODO: This may not be the best
 -- We may wish to give ready and init
 -- TODO: make epi transitions for reset
-sm:set_transition(armTeleop, 'reset', armInit)
+sm:set_transition(armTeleop, 'reset', armChangetoPose2)
+
+
+
+
+
+
+
 
 -- Setup the FSM object
 local obj = {}

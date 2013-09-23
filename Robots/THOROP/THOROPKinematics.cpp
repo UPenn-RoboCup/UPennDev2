@@ -903,70 +903,42 @@ printf("shoulderpitch: %.1f",shoulderPitch*180/3.1415);
   wristYaw_a = atan2 (rotWrist(2,0)*swa,rotWrist(1,0)*swa);
   wristYaw2_a = atan2 (rotWrist(0,2)*swa,-rotWrist(0,1)*swa);
 
-  wristRoll_b = -acos(rotWrist(0,0)); //-pi to 0
+  //Filpped position
+  wristRoll_b = -wristRoll_a; //-pi to 0
   double swb = sin(wristRoll_b);
-  wristYaw_b = atan2 (rotWrist(2,0)*swb,rotWrist(1,0)*swb);
+  wristYaw_b = atan2 (rotWrist(2,0)*swb,rotWrist(1,0)*swb);  
   wristYaw2_b = atan2 (rotWrist(0,2)*swb,-rotWrist(0,1)*swb);
 
+
+  //singular point: just use current angles
   if(swa<0.00001){
-    //singular point: just use current angles
-    wristYaw_a = qOrg[4];
-    wristYaw_b = qOrg[4];
+    wristYaw_a = qOrg[4];    
     wristRoll_a = qOrg[5];
-    wristRoll_b = qOrg[5];
     wristYaw2_a = qOrg[6];
+    wristYaw_b = qOrg[4];
+    wristRoll_b = qOrg[5];
     wristYaw2_b = qOrg[6];
+    
   } 
 
 
-bool select_a = false;
-
-/*
-
-double yaw1max = 135*3.1415/180;
-double yaw1min = -45*3.1415/180;
-if(arm==ARM_LEFT){
-  if((wristYaw_a>-yaw1max)&&(wristYaw_a<-yaw1min)) select_a=true;
-}else{
-  select_a = true;
-  if((wristYaw_b>yaw1min)&&(wristYaw_b<yaw1max)) select_a=false;
-}
-
-if(arm==ARM_LEFT){
-    if (wristRoll_a>0){
-      select_a=true;      
-    }else{      
-    }
-
-  }else{
-    if (wristRoll_a<0){
-      select_a=true;      
-    }else{      
-    }
-  }
-
-
-select_a=true;//hack
-*/
-
-/*
-err1 = wristYaw_a-qOrg[4];
-err2 = wristYaw_b-qOrg[4];
-if (err1>3.14159265) err1-=2*3.14159265;
-if (err1<-3.14159265) err1+=2*3.14159265;
-if (err2>3.14159265) err2-=2*3.14159265;
-if (err2<-3.14159265) err2+=2*3.14159265;
-
-if (err1*err1<err2*err2) select_a=true;
-else select_a=false;
-*/
-
-
-if(arm==ARM_LEFT) select_a=true;
-else select_a = false;
 
 
 
+
+  
+  bool select_a = false;
+
+
+
+
+  double err_a = fmodf(qOrg[4] - wristYaw_a+5*PI, 2*PI) - PI;
+  double err_b = fmodf(qOrg[4] - wristYaw_b+5*PI, 2*PI) - PI;
+  if (err_a*err_a<err_b*err_b)   select_a=true;
+  
+
+//if(arm==ARM_LEFT) select_a=true;
+//else select_a = false;
 
 std::vector<double> qArm(7);
   qArm[0] = shoulderPitch;
@@ -983,6 +955,21 @@ if (select_a==true) {
   qArm[5] = wristRoll_b;
   qArm[6] = wristYaw2_b;
 }
+
+
+/*
+if(arm==ARM_LEFT) printf("LARM");
+else printf("RARM");
+printf(" Cur:%.1f %.1f %.1f\nCal_a: %f %.1f %.1f(err: %1.3f)  / Cal_b: %.1f %.1f %.1f(err:%.3f) Selected:%.1f\n",
+  qOrg[4]*180/PI, qOrg[5]*180/PI, qOrg[6]*180/PI, 
+  wristYaw_a*180/PI,wristRoll_a*180/PI,wristYaw2_a*180/PI,
+  err_a,
+  wristYaw_b*180/PI,wristRoll_b*180/PI,wristYaw2_b*180/PI,
+  err_b,
+   qArm[4]*180/PI
+   );
+*/
+
 
   return qArm;
 }

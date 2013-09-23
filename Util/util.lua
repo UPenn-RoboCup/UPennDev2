@@ -9,6 +9,7 @@ function util.mod_angle(a)
   return b
 end
 
+
 function util.sign(x)
   -- return sign of the number (-1, 0, 1)
   if x > 0 then return 1
@@ -104,6 +105,39 @@ function util.approachTol( values, targets, speedlimits, dt, tolerance )
   -- Return the next values to take and if we are within tolerance
   return values, within_tolerance
 end
+
+
+
+
+
+-- Tolerance approach to a radian value (to correct direction)
+-- Kinda like a gradient descent
+--SJ: modangle didnt work for whatever reason so just used math.mod
+
+
+function util.approachTolRad( values, targets, speedlimits, dt, tolerance )
+  tolerance = tolerance or 1e-6
+  -- Tolerance check (Asumme within tolerance)
+  local within_tolerance = true
+  -- Iterate through the limits of movements to approach
+  for i,speedlimit in ipairs(speedlimits) do
+    -- Target value minus present value
+    local delta = math.mod(targets[i]-values[i]+5*math.pi,2*math.pi)-math.pi
+    -- If any values is out of tolerance,
+    -- then we are not within tolerance
+    if math.abs(delta) > tolerance then
+      within_tolerance = false
+      -- Ensure that we do not move motors too quickly
+      delta = util.procFunc(delta,0,speedlimit*dt)
+      values[i] = math.mod(values[i]+delta+5*math.pi,2*math.pi)-math.pi
+    end
+  end
+  -- Return the next values to take and if we are within tolerance
+  return values, within_tolerance
+end
+
+
+
 
 function util.pose_global(pRelative, pose)
   local ca = math.cos(pose[3])

@@ -175,6 +175,8 @@ local function init_preview(solver,uTorso,uLeft,uRight,t)
   
   local nPreview = preview.nPreview
   -- Generate the x and y zmp trajectories
+  -- First, fill the first preview window with where we are
+  -- TODO: Splice in a previous preview, or something?
   preview.zmp_x = torch.Tensor(nPreview):fill(uTorso[1])
   preview.zmp_y = torch.Tensor(nPreview):fill(uTorso[2])
   --
@@ -183,7 +185,8 @@ local function init_preview(solver,uTorso,uLeft,uRight,t)
   local uLeftTargets  = {}
   local uRightTargets = {}
   for i=1,nPreview do
-     -- double support
+    -- double support to start
+    -- TODO: Take possibly a single support start?
     table.insert(phs,0)
     table.insert(supportLegs,2)
     table.insert(uLeftTargets,vector.pose{unpack(uLeft)})
@@ -253,10 +256,11 @@ local function compute_preview( solver, preview_interval, ts, save_file )
     {0,1, ts},
     {0,0, 1}
   })
-  -- TODO: why extra ts????
-  --solver.preview.B = torch.Tensor{ts_twice_integrated, ts_integrated, ts, ts}
-  -- Removing the extra ts for now...
-  solver.preview.B = torch.Tensor{ts_twice_integrated, ts_integrated, ts}
+  solver.preview.B = torch.Tensor({
+    ts_twice_integrated,
+    ts_integrated,
+    ts
+  })
   -- Save preview data
   solver.preview.nPreview = nPreview
   solver.preview.ts = ts
@@ -305,7 +309,7 @@ end
 -- Trapezoidal: / is start to support
 --              _ is through support
 --              \ is support to finish 
--- This computes internal paramters for a new step
+-- This computes internal parameters for a new step
 local function compute( self, uSupport, uStart, uFinish )
   local tStep = self.tStep
   local start_phase   = tStep*self.start_phase

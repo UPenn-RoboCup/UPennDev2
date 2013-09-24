@@ -15,9 +15,13 @@ uRightI=vector.new{-supportX,-footY,0}
 uTorsoI = vector.pose{0,0,0}
 tZMP  = .165
 tStep = 0.50
--- Provide a sample step sequence
+--
+preview_period = 1.5 --seconds ahead
+preview_res = .01
+preview_settle = 4*tZMP
+-- Provide a sample step sequence (Based on OP)
 step_seq = {}
-table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.10})
+--table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.10})
 -- LS step  
 table.insert(step_seq, {0, {0.060,0,0}, {0,0}, 0.5})
 -- DS step
@@ -27,8 +31,10 @@ table.insert(step_seq, {1, {0,-0.01,0},{-0.01,-0.01},0.2,1})
 table.insert(step_seq, {1, {0.18,0,0},{-0.01,-0.01},0.3,2})
 table.insert(step_seq, {1, {-0.06,0.01,0},{-0.0,-0.02},0.1,3})
 table.insert(step_seq, {1, {0.0,0,0},{-0.01,-0.0},0.2,4})
-table.insert(step_seq, {2, {0,0,0},{0,0},0.10})
+table.insert(step_seq, {2, {0,0,0},{0,0},1.10})
 table.insert(step_seq, {0, {0.06,0,0},{0,0},0.5})
+-- Finishing step: TODO: what is the best way to terminate?
+table.insert(step_seq, {2, {0,0,0},{0,0},preview_period+preview_settle})
 
 local base = collectgarbage('count')
 print(util.color('Opening libZMP','green'))
@@ -58,7 +64,7 @@ s:generate_step_queue(step_seq,uLeftI,uRightI)
 -- Compute the preview segment
 print(util.color('Computing the preview...','green'))
 t0 = unix.time()
-s:compute_preview(1.3,.01,'K1.raw')
+s:compute_preview(preview_period,preview_res,'K1.raw')
 t1 = unix.time()
 --util.ptorch(s.K1)
 print( util.color('Compute time (ms):','red'), (t1-t0)*1e3 )
@@ -104,13 +110,15 @@ while not done do
   f:write( tostring(zmp_data) )
   --
   -- Print debug
+  --[[
   print(s.step_queue_index,util.color('Solving the preview for timestep...','green'),counter)
   com = s:get_preview_com()
   print('CoM',com,s.preview.zmp_x[1],s.preview.zmp_y[1])
+  --]]
   --
   counter = counter + 1
   -- sleep a bit...
-  unix.usleep(1e6/100)
+  unix.usleep(1e6*preview_res)
 end
 t1 = unix.time()
 f:close()

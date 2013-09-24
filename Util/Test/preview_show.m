@@ -32,9 +32,11 @@ clf;
 plot(t,zmp_y,'r');
 hold on;
 plot(t,com_y,'b');
+xlim([0,t(end)])
 
 figure(3);
 clf;
 plot(t,zmp_x,'r');
 hold on;
 plot(t,com_x,'b');
+xlim([0,t(end)])

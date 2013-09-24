@@ -48,14 +48,15 @@ function state.update()
     trLArm = Body.get_forward_larm(qLArm);
     trRArm = Body.get_forward_rarm(qRArm);
 
+    
     -- Set our hcm in case of a mode switch
-    hcm.set_joints_plarm( Body.get_forward_larm(qL_approach) )
-    hcm.set_joints_prarm( Body.get_forward_rarm(qR_approach) )
+    hcm.set_joints_plarm( Body.get_forward_larm(qLArm) )
+    hcm.set_joints_prarm( Body.get_forward_rarm(qRArm) )
   else --IK based movement
     local trLArmTarget = hcm.get_joints_plarm()
     local trRArmTarget = hcm.get_joints_prarm()
-    local lShoulderYaw = hcm.get_joints_shoulderangle()
-    local rShoulderYaw = - lShoulderYaw;
+    local lShoulderYaw = hcm.get_joints_qlshoulderyaw()
+    local rShoulderYaw = hcm.get_joints_qrshoulderyaw()
     ret = movearm.setArmToPosition(
       trLArmTarget,
       trRArmTarget,

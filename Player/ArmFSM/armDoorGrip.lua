@@ -28,8 +28,8 @@ function state.entry()
     --open gripper
   Body.set_lgrip_percent(0)
   Body.set_rgrip_percent(0)
-  local lShoulderYaw = hcm.get_joints_shoulderangle()
-  local rShoulderYaw = - lShoulderYaw;
+  lShoulderYaw = hcm.get_joints_qlshoulderyaw()
+  rShoulderYaw = hcm.get_joints_qrshoulderyaw()
   stage = 1;
 end
 

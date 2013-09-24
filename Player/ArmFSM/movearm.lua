@@ -3,6 +3,7 @@ local Body   = require'Body'
 local T      = require'Transform'
 local util   = require'util'
 local vector = require'vector'
+require'hcm'
 
 -- Angular velocity limit
 local dqArmMax = Config.arm.slow_limit
@@ -42,9 +43,18 @@ function movearm.setArmToPosition(
   rShoulderYaw
   )
 
+  
   --Interpolate in 6D space 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
+
+  lShoulderYaw = qLArm[3]
+  rShoulderYaw = qRArm[3]
+
+
+--  lShoulderYaw = hcm.get_joints_qlshoulderyaw()
+--  rShoulderYaw = hcm.get_joints_qrshoulderyaw()
+
   local trLArm = Body.get_forward_larm(qLArm);
   local trRArm = Body.get_forward_rarm(qRArm);
 
@@ -55,14 +65,74 @@ function movearm.setArmToPosition(
   local qL_desired = Body.get_inverse_larm(qLArm,trLArmApproach, lShoulderYaw)
   local qR_desired = Body.get_inverse_rarm(qRArm,trRArmApproach, rShoulderYaw)
   
-  if not qL_desired then
-    print('Left not possible')
-    return -1;
+
+  qShoulderYawMax = 3.0*math.pi/180
+  --Adaptive shoulder yaw angle
+  local lShoulderYaw1 = math.min(0, lShoulderYaw+dt*qShoulderYawMax)
+  local lShoulderYaw2 = math.min(0, lShoulderYaw-dt*qShoulderYawMax)
+  local qL_desired1 = Body.get_inverse_larm(qLArm,trLArmApproach, lShoulderYaw1)
+  local qL_desired2 = Body.get_inverse_larm(qLArm,trLArmApproach, lShoulderYaw2)
+
+  local rShoulderYaw1 = math.max(0,rShoulderYaw+dt*qShoulderYawMax)
+  local rShoulderYaw2 = math.max(0,rShoulderYaw-dt*qShoulderYawMax)
+  local qR_desired1 = Body.get_inverse_rarm(qRArm,trRArmApproach, rShoulderYaw1)
+  local qR_desired2 = Body.get_inverse_rarm(qRArm,trRArmApproach, rShoulderYaw2)
+
+  local min_wrist_margin = 10*math.pi/180
+
+  local min_wrist_margin0 = 3*math.pi/180
+
+
+  if qL_desired and qR_desired then
+    --Check left wrist margin status
+    if qL_desired1 then
+      local wristRollMargin=math.min(math.abs(qL_desired[6]-math.pi/2), math.abs(qL_desired[6]+math.pi/2))
+      local wristRollMargin1=math.min(math.abs(qL_desired1[6]-math.pi/2), math.abs(qL_desired1[6]+math.pi/2))
+      local wristRollMargin2=0
+      if qL_desired2 then 
+        wristRollMargin2=math.min(math.abs(qL_desired2[6]-math.pi/2), math.abs(qL_desired2[6]+math.pi/2))
+      end
+      if wristRollMargin<min_wrist_margin then
+        if wristRollMargin2>wristRollMargin and wristRollMargin2>wristRollMargin1 then
+          qL_desired = qL_desired2;
+--        hcm.set_joints_qlshoulderyaw(lShoulderYaw2)
+          print("LSW:",lShoulderYaw2*180/math.pi)
+        elseif wristRollMargin1>wristRollMargin and wristRollMargin1>wristRollMargin2 then       
+          qL_desired = qL_desired1;
+--        hcm.set_joints_qlshoulderyaw(lShoulderYaw1)
+          print("LSW:",lShoulderYaw2*180/math.pi)
+        end
+      end
+    end
+
+    --Check right wrist margin status
+    if qR_desired1 then
+      local wristRollMargin=math.min(math.abs(qR_desired[6]-math.pi/2), math.abs(qR_desired[6]+math.pi/2))
+      local wristRollMargin1=math.min(math.abs(qR_desired1[6]-math.pi/2), math.abs(qR_desired1[6]+math.pi/2))
+      local wristRollMargin2=0
+      if qR_desired2 then 
+        wristRollMargin2=math.min(math.abs(qR_desired2[6]-math.pi/2), math.abs(qR_desired2[6]+math.pi/2))
+      end
+      if wristRollMargin<min_wrist_margin then
+        if wristRollMargin2>wristRollMargin and wristRollMargin2>wristRollMargin1 then
+          qR_desired = qR_desired2;
+          hcm.set_joints_qrshoulderyaw(rShoulderYaw2)
+          print("RSW:",rShoulderYaw2*180/math.pi)
+        elseif wristRollMargin1>wristRollMargin and wristRollMargin1>wristRollMargin2 then       
+          qR_desired = qR_desired1;
+          hcm.set_joints_qrshoulderyaw(rShoulderYaw1)
+          print("RSW:",rShoulderYaw1*180/math.pi)
+        end
+      end
+    end
+
   else
---     print("qLArmDesired:",unpack(vector.new(qL_desired)*180/math.pi))
-  end
-  if not qR_desired then
-    print('Right not possible')
+    if not qL_desired then
+      print('Left not possible')
+    end  
+    if not qR_desired then
+      print('Right not possible')
+    end
     return -1;
   end
 

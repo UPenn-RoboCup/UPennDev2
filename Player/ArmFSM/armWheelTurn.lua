@@ -54,9 +54,9 @@ function state.update()
   handle_radius = util.approachTol(handle_radius, handle_radius1,drHandleMax,dt)    
   turnAngle,doneA = util.approachTol(turnAngle,turnAngle1,dturnAngleMax, dt )
   
-  --TODO: use interpolation here too  
-  lShoulderYaw = hcm.get_joints_shoulderangle()
-  rShoulderYaw = - lShoulderYaw;
+  lShoulderYaw = hcm.get_joints_qlshoulderyaw()
+  rShoulderYaw = hcm.get_joints_qrshoulderyaw()
+
 
   ret = movearm.setArmToWheelPosition(
     handle_pos, handle_yaw, handle_pitch,

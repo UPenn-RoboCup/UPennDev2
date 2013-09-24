@@ -43,12 +43,12 @@ function state.entry()
   handle_radius1 = handle_radius + 0.08
 
   local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-  lShoulderYaw = qLArm[3];
-  rShoulderYaw = qRArm[3];
-   
-  --hack for now
-  hcm.set_joints_shoulderangle(lShoulderYaw)
+  local qRArm = Body.get_rarm_command_position()    
+  lShoulderYaw = qLArm[3]
+  rShoulderYaw = qRArm[3]
+  hcm.set_joints_qlshoulderyaw(lShoulderYaw)
+  hcm.set_joints_qrshoulderyaw(rShoulderYaw)
+
   stage = 1;
 end
 

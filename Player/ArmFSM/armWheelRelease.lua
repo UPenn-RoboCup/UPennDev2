@@ -32,8 +32,9 @@ function state.entry()
   handle_yaw    = wheel[4]
   handle_pitch  = wheel[5]
   handle_radius = wheel[6]
-  lShoulderYaw = hcm.get_joints_shoulderangle()
-  rShoulderYaw = - lShoulderYaw;
+
+  lShoulderYaw = hcm.get_joints_qlshoulderyaw()
+  rShoulderYaw = hcm.get_joints_qrshoulderyaw()
 
   --open gripper
   Body.set_lgrip_percent(0)

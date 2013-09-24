@@ -1109,4 +1109,10 @@ Body.make_joint_radian = make_joint_radian
 
 Body.Kinematics = Kinematics
 
+-- For supporting the THOR repo
+require'mcm'
+Body.set_walk_velocity = function(vel)
+mcm.set_walk_vel(vel)
+end
+
 return Body

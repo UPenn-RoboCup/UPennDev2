@@ -90,19 +90,20 @@ while not done do
   repeat
     print('counter',counter)
     t = Body.get_time()
-    done = s:update_preview( Body.get_time(), supportX, supportY )
+    done = s:update_preview( t, supportX, supportY )
     s:solve_preview()
   until t<=s.preview.clock or done
-  unix.usleep(1e6/100)
+  -- sleep a bit...
+  unix.usleep(1e6/120)
   -- See where we will command our CoM
   com = s:get_preview_com()
   print(s.step_queue_index,counter,'CoM',com)
-  f:write(string.format('%f %f\n',com.x,com.y))
+  --f:write(string.format('%f %f\n',com.x,com.y))
+  commy = s.preview.state:select(1,1)
+  --print('commy',com[1],com[2],com:isContiguous())
+  commy_data = carray.double(com:storage():pointer(), 2 )
+  f:write( tostring(commy_data) )
   --
-  if s.step_queue_index>4 then
-    f:close()
-    os.exit()
-  end
   counter = counter + 1
 end
 t1 = unix.time()

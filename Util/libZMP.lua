@@ -199,7 +199,7 @@ local function init_preview(solver,uTorso,uLeft,uRight,t)
   preview.uRight = uRightTargets
   -- Our first state:
   preview.state = torch.Tensor{{uTorso[1],uTorso[2]},{0,0},{0,0}}
-  -- Our preview clock
+  -- Our preview clock start time
   preview.clock = t
 end
 

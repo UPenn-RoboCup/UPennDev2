@@ -20,7 +20,7 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
-#include <iostream>
+//#include <iostream>
 #endif
 
 #define MT_NAME "carray_mt"
@@ -58,63 +58,55 @@ static int lua_carray_null(lua_State *L) {
   return 1;
 }
 
-// Template function to create new <char>, <int>, ... carray object
+// Template function to create new <char>, <int>, ... carray objects
 template<typename T, char name>
 static int lua_carray_new(lua_State *L) {
   structCArray *ud = (structCArray *)lua_newuserdata(L, sizeof(structCArray));
   ud->type = name;
-  
-  if (lua_type(L, 1) == LUA_TCDATA) {
-//    ud->size = luaL_optint(L, -2, 1);  // Get optional size argument
-    ud->size = lua_tointeger(L, 2);  // Get optional size argument
-    ud->own = 0; // Do not free memory when deleting
-    ud->ptr = (void *) lua_topointer(L, 1);
-  }
-  else if (lua_type(L, 1) == LUA_TLIGHTUSERDATA) { // Cast from pointer
-    ud->size = luaL_optint(L, 2, 1);  // Get optional size argument
-    ud->own = 0; // Do not free memory when deleting
-    ud->ptr = (void *) lua_topointer(L, 1);
-  }
-  else if (lua_type(L, 1) == LUA_TNUMBER) { // Allocate array with size
-    ud->size = lua_tointeger(L, 1);
-    ud->own = 1;
-    ud->ptr = new T[ud->size];
-    memset(ud->ptr, 0, sizeof(T)*ud->size);
-  }
-  else if (lua_type(L, 1) == LUA_TSTRING) { // Copy from string
-    size_t len;
-    const char *str = lua_tolstring(L, 1, &len);
-
-    ud->size = len/sizeof(T);
-    ud->own = 1;
-    char *p = new char[len];
-    ud->ptr = p;
-    memcpy(p, str, len);
-  }
-  else if (lua_type(L, 1) == LUA_TTABLE) { // Initialize with Lua table
-
+  // Cannot make variables inside switch/case
+  size_t len;
+  const char *str;
+  T *ptr;
+  //
+  switch(lua_type(L, 1)){
+    case LUA_TCDATA:
+    case LUA_TLIGHTUSERDATA:
+      ud->size = luaL_optint(L, 2, 1);  // Get optional size argument
+      ud->own = 0; // Do not free memory when deleting
+      ud->ptr = (void *) lua_topointer(L, 1);
+      break;
+    case LUA_TNUMBER:
+      ud->size = lua_tointeger(L, 1);
+      ud->own = 1;
+      ud->ptr = new T[ud->size];
+      memset(ud->ptr, 0, sizeof(T)*ud->size);
+      break;
+    case LUA_TSTRING:
+      str = lua_tolstring(L, 1, &len);
+      ud->size = len/sizeof(T);
+      ud->own = 1;
+      ud->ptr = new char[len];
+      memcpy(ud->ptr, str, len);
+      break;
+    case LUA_TTABLE:
 #if LUA_VERSION_NUM == 502
-    ud->size = lua_rawlen(L, 1);
+      ud->size = lua_rawlen(L, 1);
 #else
-    ud->size = lua_objlen(L, 1);
+      ud->size = lua_objlen(L, 1);
 #endif
-    ud->own = 1;
-    T *p = new T[ud->size];
-    ud->ptr = p;
-    for (int i = 0; i < ud->size; i++) {
-      lua_pushinteger(L, i+1);
-      lua_gettable(L, 1);
-      p[i] = lua_tonumber(L, -1);
-      lua_pop(L, 1); // previous value
-    }
+      ud->own = 1;
+      ptr = new T[ud->size];
+      for (int i = 0; i < ud->size; i++) {
+        lua_pushinteger(L, i+1);
+        lua_gettable(L, 1);
+        ptr[i] = lua_tonumber(L, -1);
+        lua_pop(L, 1); // previous value
+      }
+      ud->ptr = ptr;
+      break;
+    default:
+      return luaL_error(L, "Unknown initializer");
   }
-  else { // Allocate array with size
-    ud->size = 1;
-    ud->own = 1;
-    ud->ptr = new T[ud->size];
-    memset(ud->ptr, 0, sizeof(T)*ud->size);
-  }
-  
   luaL_getmetatable(L, MT_NAME);
   lua_setmetatable(L, -2);
   return 1;

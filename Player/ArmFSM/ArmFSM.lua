@@ -31,6 +31,7 @@ local armTeleop = require'armTeleop'
 -- Wheel specific states
 local armWheelGrip = require'armWheelGrip'
 local armWheelTurn = require'armWheelTurn'
+local armWheelRelease = require'armWheelRelease'
 
 -- Door specific states
 local armDoorGrip = require'armDoorGrip'
@@ -44,6 +45,7 @@ sm:add_state(armChangetoPose2)
 sm:add_state(armTeleop)
 sm:add_state(armWheelGrip)
 sm:add_state(armWheelTurn)
+sm:add_state(armWheelRelease)
 sm:add_state(armDoorGrip)
 --sm:add_state(armDoorTurn)
 
@@ -72,7 +74,9 @@ sm:set_transition(armPose2, 'reset', armChangetoPose1)
 sm:set_transition(armWheelGrip, 'done', armWheelTurn)
 sm:set_transition(armWheelGrip, 'reset', armChangetoPose2)
 
-sm:set_transition(armWheelTurn, 'reset', armChangetoPose2)
+sm:set_transition(armWheelTurn, 'reset', armWheelRelease)
+sm:set_transition(armWheelRelease, 'done', armChangetoPose2)
+
 
 -- The initial arm pose is great for door gripping, 
 -- and should be the reset position

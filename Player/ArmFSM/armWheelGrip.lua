@@ -1,48 +1,18 @@
 local state = {}
 state._NAME = ...
-local Body   = require'Body'
-local T      = require'Transform'
-local util   = require'util'
-local vector = require'vector'
 require'hcm'
+local vector = require'vector'
+local wheelrotate = require'wheelrotate'
 
 -- Angular velocity limit
-local dqArmMax = Config.arm.slow_limit
-
-local turnAngle = 0
-local body_pos = {0,0,0}
-local body_rpy = {0,0,0}
 
 local t_init = 5.0
 local t_grip = 5.0
-
-local handle_pos,handle_pitch,handle_yaw
-local handle_radius1,handle_radius0,handle_radius
-local trHandle, trGripL, trGripR, trBody, trLArm, trRArm
-local function calculate_arm_position(turnAngle)
-   local trHandle = T.eye()
-       * T.trans(handle_pos[1],handle_pos[2],handle_pos[3])
-       * T.rotZ(handle_yaw)
-       * T.rotY(handle_pitch)
-
-   local trGripL = trHandle
-       * T.rotX(turnAngle)
-       * T.trans(0,handle_radius1,0)
-       * T.rotZ(-math.pi/4)
-   local trGripR = trHandle
-       * T.rotX(turnAngle)
-       * T.trans(0,-handle_radius1,0)
-       * T.rotZ(math.pi/4)
-       
-   local trBody = T.eye()
-       * T.trans(body_pos[1],body_pos[2],body_pos[3])
-       * T.rotZ(body_rpy[3])
-       * T.rotY(body_rpy[2])
-       
-   local trLArm = T.position6D(T.inv(trBody)*trGripL)
-   local trRArm = T.position6D(T.inv(trBody)*trGripR)
-   return trLArm, trRArm
-end
+local handle_pos, handle_yaw, handle_pitch, handle_radius=0,0,0,0;
+local turnAngle = 0
+local lShoulderYaw = 0;
+local rShoulderYaw = 0;
+local stage = 1;
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -64,14 +34,28 @@ function state.entry()
     handle_yaw=0
     handle_pitch=0
     handle_radius=0.10
-
     hcm.set_wheel_model({handle_pos[1],handle_pos[2],handle_pos[3],
                         handle_yaw,handle_pitch,handle_radius})
   end
 
+  --open gripper
+  Body.set_lgrip_percent(0)
+  Body.set_rgrip_percent(0)
+
+
 -- Inner and outer radius
-  handle_radius0 = handle_radius - 0.02
-  handle_radius1 = handle_radius + 0.02
+  handle_radius0 = handle_radius 
+  handle_radius1 = handle_radius + 0.08
+
+  stage = 1;
+
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+  lShoulderYaw = qLArm[3];
+  rShoulderYaw = qRArm[3];
+   
+  --hack for now
+  hcm.set_joints_shoulderangle(lShoulderYaw)
 
 end
 
@@ -83,78 +67,29 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
-  
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-  
-  -- Calculate where we need to go  
-  local trLArm, trRArm = calculate_arm_position(0)
-  -- Get desired angles from current angles and target transform
-  local qL_desired = Body.get_inverse_larm(qLArm,trLArm)
-  local qR_desired = Body.get_inverse_rarm(qRArm,trRArm)
 
---Hack here to initialize wrists correctly
---[[
-if math.abs(qL_desired[5])>90*math.pi/180 then
-  qL_desired[5] = util.mod_angle(qL_desired[5]+math.pi)
-  qL_desired[6] = - qL_desired[6]
-  qL_desired[7] = util.mod_angle(qL_desired[7]+math.pi)
-end
-
-if math.abs(qR_desired[5])>90*math.pi/180 then
-  qR_desired[5] = util.mod_angle(qR_desired[5]+math.pi)
-  qR_desired[6] = - qR_desired[6]
-  qR_desired[7] = util.mod_angle(qR_desired[7]+math.pi)
-end
---]]
-
---[[
-    print("Larm:",
-      qLArm[1]*180/math.pi,
-      qLArm[2]*180/math.pi,
-      qLArm[3]*180/math.pi,
-      qLArm[4]*180/math.pi,
-      qLArm[5]*180/math.pi,
-      qLArm[6]*180/math.pi,
-      qLArm[7]*180/math.pi)
---]]
---[[
-    print("RWrist:",qRArm[5]*180/math.pi,
-      qRArm[6]*180/math.pi,
-      qRArm[7]*180/math.pi)
---]]
-
-  if not qL_desired then
-    print('Left not possible')
-    return'reset'
+  if stage==1 then
+    ret = wheelrotate.setArmToWheelPosition(
+      handle_pos, handle_yaw, handle_pitch,
+      handle_radius1, turnAngle,dt,
+      lShoulderYaw, rShoulderYaw)
+    if ret==1 then stage=stage+1; 
+    elseif ret==-1 then 
+      return'reset'
+    end
+  elseif stage==2 then
+    ret = wheelrotate.setArmToWheelPosition(
+      handle_pos, handle_yaw, handle_pitch,
+      handle_radius0, turnAngle,dt,
+      lShoulderYaw, rShoulderYaw)
+    if ret==-1 then     
+      return'reset'
+    elseif ret==1 then
+      Body.set_lgrip_percent(1)
+      Body.set_rgrip_percent(1)
+      return'done'
+    end  
   end
-  if not qR_desired then
-    print('Right not possible')
-    return'reset'
-  end
-
-  -- Go to the allowable position
-  local qL_approach, doneL
-  qL_approach, doneL = util.approachTolRad( qLArm, qL_desired, dqArmMax, dt )
-  Body.set_larm_command_position( qL_approach )
-  
-  local qR_approach, doneR
-  qR_approach, doneR = util.approachTolRad( qRArm, qR_desired, dqArmMax, dt )
-  Body.set_rarm_command_position( qR_approach )
-
-  -- TODO: Begin to grip by approaching the inner radius
-  --[[
-    ph = (t-t0)/t_grip
-    handle_radius = handle_radius0*(1-ph) + ph*handle_radius1
-  --]]
-
-  if doneL and doneR then
-    -- Close the fingers
-    Body.set_lgrip_percent(1)
-    Body.set_rgrip_percent(1)
-    return'done'
-  end
-  
 end
 
 function state.exit()

@@ -183,19 +183,23 @@ arm.qRArmInit={
  vector.new({0,-90,-90,-90,    90,45,0})*DEG_TO_RAD, -- arms in front
 }
 
---[[
+
 --New init motion utilizing 7DOF arm
 arm.qLArmInit={
  vector.new({90,15,0,-15,  -0,0,0})*DEG_TO_RAD, -- at sides
  vector.new({120,15,0,-90, -90,-0,0})*DEG_TO_RAD, -- scarecrow
- vector.new({120,15,20,-120,  -90,-45,0})*DEG_TO_RAD,-- arms in front
+
+ vector.new({110.5, 17.5, -24, -85.7, -30.2, -71.0,16.8})*DEG_TO_RAD,-- arms in front
 }
 arm.qRArmInit={
  vector.new({90,-15,0,-15,     0,0,0})*DEG_TO_RAD, -- at sides
  vector.new({120,-15,-0,-90,   90,0,0})*DEG_TO_RAD,  -- scarecrow
- vector.new({120,-15,-20,-120,    90,45,0})*DEG_TO_RAD, -- arms in front
+ --vector.new({120,-15,-20,-120,    90,45,0})*DEG_TO_RAD, -- arms in front
+
+ vector.new({110.5, -17.5, 24, -85.7, 30.2, 71.0,-16.8})*DEG_TO_RAD,-- arms in front
+
 }
---]]
+
 
 
 
@@ -219,11 +223,11 @@ if IS_WEBOTS then
 --HACK FOR WEBOTS--------------------------------------------------
 arm.fast_limit = vector.new({30,30,30,45,60,60,60})*DEG_TO_RAD*3
 arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD*3
-arm.super_slow_limit = vector.new({5,5,5,10,15,15,15})*DEG_TO_RAD*6
-arm.slow_elbow_limit = vector.new({10,10,10,5,30,30,30})*DEG_TO_RAD*6
+arm.super_slow_limit = vector.new({5,5,5,10,15,15,15})*DEG_TO_RAD*3
+arm.slow_elbow_limit = vector.new({10,10,10,5,30,30,30})*DEG_TO_RAD*3
 
 arm.linear_slow_limit = vector.new({0.02,0.02,0.02,
-						15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})*4
+						15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})*3
 
 
 end

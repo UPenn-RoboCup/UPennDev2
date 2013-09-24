@@ -50,6 +50,14 @@ function state.entry()
     qR_desired = {Config.arm.qRArmInit[3]}
   end
 
+--hack
+  total_stage = 1
+  qL_desired = {Config.arm.qLArmInit[3]}
+  qR_desired = {Config.arm.qRArmInit[3]}
+  
+
+
+
 end
 
 function move_arms(qLTarget, qRTarget,dt)

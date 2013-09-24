@@ -8,13 +8,27 @@ os.execute'clear'
 
 -- OP parameters
 supportX = 0
-supportY = 0.010
+supportY = 0.025
 footY = 0.035
 uLeftI=vector.new{-supportX,footY,0}
 uRightI=vector.new{-supportX,-footY,0}
 uTorsoI = vector.pose{0,0,0}
 tZMP  = .165
-tStep = 0.25
+tStep = 0.50
+-- Provide a sample step sequence
+step_seq = {}
+table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.10})
+-- LS step  
+table.insert(step_seq, {0, {0.060,0,0}, {0,0}, 0.5})
+-- DS step
+table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.05})
+-- More: Config/Walk/Config_WebotsOP_Walk.lua
+table.insert(step_seq, {1, {0,-0.01,0},{-0.01,-0.01},0.2,1})
+table.insert(step_seq, {1, {0.18,0,0},{-0.01,-0.01},0.3,2})
+table.insert(step_seq, {1, {-0.06,0.01,0},{-0.0,-0.02},0.1,3})
+table.insert(step_seq, {1, {0.0,0,0},{-0.01,-0.0},0.2,4})
+table.insert(step_seq, {2, {0,0,0},{0,0},0.10})
+table.insert(step_seq, {0, {0.06,0,0},{0,0},0.5})
 
 local base = collectgarbage('count')
 print(util.color('Opening libZMP','green'))
@@ -32,47 +46,31 @@ print('KBytes:',collectgarbage('count')-base)
 -- Print out the solver elements
 --for k,v in pairs(s) do print(k,v) end
 
--- Compute the preview segment
-print(util.color('Computing the preview...','green'))
-t0 = unix.time()
-s:compute_preview()
-t1 = unix.time()
---util.ptorch(s.K1)
-print( util.color('Compute time (ms):','red'), (t1-t0)*1e3 )
-print('KBytes:',collectgarbage('count')-base)
-
--- Print out the new solver elements
---for k,v in pairs(s) do print(k,v) end
-
--- Provide a sample step sequence
-step_seq = {}
--- DS step
-table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.10})
--- LS step  
-table.insert(step_seq, {0, {0.060,0,0}, {0,0}, 0.5})
--- DS step
-table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.05})
--- More: Config/Walk/Config_WebotsOP_Walk.lua
-table.insert(step_seq, {1, {0,-0.01,0},{-0.01,-0.01},0.2,1})
-table.insert(step_seq, {1, {0.18,0,0},{-0.01,-0.01},1,2})
-table.insert(step_seq, {1, {-0.06,0.01,0},{-0.0,-0.02},0.1,3})
-table.insert(step_seq, {1, {0.0,0,0},{-0.01,-0.0},0.2,4})
-table.insert(step_seq, {2, {0,0,0},{0,0},0.10})
-table.insert(step_seq, {0, {0.06,0,0},{0,0},0.5})
-
 seq_duration = 0
 for _,k in ipairs(step_seq) do
   seq_duration = seq_duration + k[4]
 end
 
 -- Generate the step queue
-print(util.color('Generating the step queue...','green'))
+print(util.color('Generating the step queue...','green'),seq_duration)
 s:generate_step_queue(step_seq,uLeftI,uRightI)
+
+-- Compute the preview segment
+print(util.color('Computing the preview...','green'))
+t0 = unix.time()
+s:compute_preview(1.3,.01,'K1.raw')
+t1 = unix.time()
+--util.ptorch(s.K1)
+print( util.color('Compute time (ms):','red'), (t1-t0)*1e3 )
+print('KBytes:',collectgarbage('count')-base)
+-- Print out the new solver elements
+--for k,v in pairs(s) do print(k,v) end
+--os.exit()
 
 -- Initialize the solver for a new run
 print(util.color('Initializing the preview...','green'))
-t = Body.get_time()
-s:init_preview(uTorsoI,uLeftI,uRightI,t)
+t0 = unix.time()
+s:init_preview(uTorsoI,uLeftI,uRightI,t0)
 print(util.color('Preview state:','red'))
 util.ptorch(s.preview.state)
 print('KBytes:',collectgarbage('count')-base)
@@ -81,30 +79,38 @@ print('KBytes:',collectgarbage('count')-base)
 --for k,v in pairs(s.preview) do print(k,v) end
 
 -- Update and solve:
-f = io.open('com.tmp','w')
+f = io.open('com_zmp.tmp','w')
 print(util.color('Update and solve the preview...','green'))
-t0 = unix.time()
 counter = 1
 while not done do
-  --print(util.color('Solving the preview for timestep...','green'),step)
   repeat
-    print('counter',counter)
-    t = Body.get_time()
+    t = unix.time()
     done = s:update_preview( t, supportX, supportY )
     s:solve_preview()
   until t<=s.preview.clock or done
-  -- sleep a bit...
-  unix.usleep(1e6/120)
-  -- See where we will command our CoM
-  com = s:get_preview_com()
-  print(s.step_queue_index,counter,'CoM',com)
-  --f:write(string.format('%f %f\n',com.x,com.y))
+  --
+  -- Record values
   commy = s.preview.state:select(1,1)
-  --print('commy',com[1],com[2],com:isContiguous())
-  commy_data = carray.double(com:storage():pointer(), 2 )
+  commy_data = carray.double(commy:storage():pointer(), 2 )
   f:write( tostring(commy_data) )
+  zmp_data = carray.double( s.preview.zmp_x:storage():pointer(), 1 )
+  f:write( tostring(zmp_data) )
+  zmp_data = carray.double( s.preview.zmp_y:storage():pointer(), 1 )
+  f:write( tostring(zmp_data) )
+  zmp_data = carray.double(1)
+  zmp_data[1] = s.step_queue_index
+  f:write( tostring(zmp_data) )
+  zmp_data[1] = t-t0
+  f:write( tostring(zmp_data) )
+  --
+  -- Print debug
+  print(s.step_queue_index,util.color('Solving the preview for timestep...','green'),counter)
+  com = s:get_preview_com()
+  print('CoM',com,s.preview.zmp_x[1],s.preview.zmp_y[1])
   --
   counter = counter + 1
+  -- sleep a bit...
+  unix.usleep(1e6/100)
 end
 t1 = unix.time()
 f:close()

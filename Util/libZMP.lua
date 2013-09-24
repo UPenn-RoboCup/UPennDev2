@@ -49,17 +49,21 @@ local function generate_step_queue(solver,step_definition,uLeftI,uRightI)
 end
 
 local function update_preview(solver, t, supportX, supportY)
-  --update_zmp_array(tStateUpdate+time_offset)
-  local idx = solver.step_queue_index
-  local step_queue_element
-  -- Initiate the step_queue time if this is the first step
+  local step_queue_element, t_expire
+  local idx, phF = solver.step_queue_index, 0
+  
   if not solver.step_queue_time then
-    solver.step_queue_time = t + solver.step_queue[1].duration
+    -- Initiate the step_queue time if this is the first step
+    local dur = solver.step_queue[1].duration
+    solver.step_queue_time = t + dur
+    t_expire = dur
+  else
+    t_expire = solver.step_queue_time - t
   end
-  local phF = 0
-  --print('idx',idx)
+
+  
+  
   -- Check if we are a new step
-  local t_expire = solver.step_queue_time - t
   if t_expire<=0 then
     solver.last_step = idx==#solver.step_queue
     -- Check if any elements left in the queue
@@ -123,9 +127,8 @@ local function update_preview(solver, t, supportX, supportY)
   preview.uRight[first] = nil
   preview.supportLegs[first] = nil
   --
-  first = first + 1
   last  = last  + 1
-  preview.first = first
+  preview.first = first + 1
   preview.last  = last
   --
   preview.phs[last]    = phF
@@ -159,14 +162,10 @@ local function solve_preview(solver)
   u[2] = u[2] - u_y
 
   -- Update the state
-  --[[
-  x[1][1]=x[1][1]+x_err[1]*feedback_gain2;
-  x[1][2]=x[1][2]+x_err[2]*feedback_gain2;
-  --]]
-  -- x = param_a * x + param_b * u;
   preview.state:mm(preview.A,current_state):add(
     torch.ger( preview.B, u )
   )
+  -- Update the clock
   preview.clock = preview.clock + preview.ts
 end
 
@@ -205,7 +204,7 @@ end
 
 -- preview_interval: How many seconds into the future should we preview?
 -- ts: At what granularity should we solver?
-local function compute_preview( solver, preview_interval )
+local function compute_preview( solver, preview_interval, ts, save_file )
   -- Preview parameter defaults
   preview_interval = preview_interval or 1.50 -- 1500ms
   ts = ts or 0.010 -- 10ms timestep
@@ -214,9 +213,9 @@ local function compute_preview( solver, preview_interval )
   --
   local tZMP  = solver.tZMP
   -- Cache some common operations
-  local ts_integrated  = ts*ts/2
-  local ts_twice_integrated = ts^3
-  local tZMP_sq = tZMP*tZMP
+  local ts_integrated  = (ts^2)/2
+  local ts_twice_integrated = ts^3/6
+  local tZMP_sq = tZMP^2
 
   -- Make the preview parameter matrices
   local px  = torch.Tensor(nPreview,3)
@@ -233,27 +232,27 @@ local function compute_preview( solver, preview_interval )
     pu0[k] = (1+3*(k-1)+3*(k-1)^2)*ts_twice_integrated - ts*tZMP_sq
     -- Triangular
     local pu_row = pu:select(1,k)
-    for j=k,1,-1 do
-      pu_row[j] = pu0[k-j+1]
-    end
+    for j=k,1,-1 do pu_row[j] = pu0[k-j+1] end
   end
-  -- Cache the transpose
-  local pu_trans = pu:t()
   local balancer = torch.eye(nPreview):mul(r_q)
 
   -- Exports
   solver.preview = {}
   -- TODO: Make this more efficient
-  local tmp = torch.mm(pu_trans,pu):add(balancer)
-  local K1 = -torch.inverse( tmp ) * pu_trans 
+  -- Cache the transpose
+  local pu_trans = pu:t()
+  local tmp =  torch.mm(pu_trans,pu):add(balancer)
+  local inv = torch.inverse( tmp )
+  local K1  = -torch.mm( inv, pu_trans )
+  
   solver.preview.K1    = K1
   solver.preview.K1_px = K1 * px
   -- Make the discrete control matrices
-  solver.preview.A = torch.Tensor{
+  solver.preview.A = torch.Tensor({
     {1,ts,ts_integrated},
     {0,1, ts},
     {0,0, 1}
-  }
+  })
   -- TODO: why extra ts????
   --solver.preview.B = torch.Tensor{ts_twice_integrated, ts_integrated, ts, ts}
   -- Removing the extra ts for now...
@@ -261,6 +260,13 @@ local function compute_preview( solver, preview_interval )
   -- Save preview data
   solver.preview.nPreview = nPreview
   solver.preview.ts = ts
+
+  if save_file then
+    local f = io.open(save_file,'w')
+    local data_str = tostring( carray.double(K1:storage():pointer(),K1:nElement()) )
+    f:write(data_str)
+    f:close()
+  end
 end
 
 local function get_preview_com(solver)

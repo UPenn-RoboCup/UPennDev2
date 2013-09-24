@@ -5,147 +5,8 @@ local Body   = require'Body'
 local K      = Body.Kinematics
 local T      = require'Transform'
 local util   = require'util'
+local movearm = require'movearm'
 require'hcm'
-
--- Arm joints Angular velocity limits
-local dqArmMax = Config.arm.slow_limit
-local dpArmMax = Config.arm.linear_slow_limit
-
-local t_debug = Body.get_time()
-
---SJ: we should keep initial transform of the end effector
---Otherwise it will drift when it hits singularity and stuck
-local trLArm0,trRArm0 
-local trLArm, trRArm
-
-local function update_joint(dt)
-
-  -- Get the current joint positions (via commands)
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-
-  -- Get the desired joints
-  local qL_desired = hcm.get_joints_qlarm()
-  local qR_desired = hcm.get_joints_qrarm()
-
-  if t_update-t_debug>1 then
-    t_debug = t_update
---    print('Teleop | Desired joints')
---    print(qL_desired)
---    print(qR_desired)
-  end
-
-  -- Go to the allowable position
-  local qL_approach, doneL
-  qL_approach, doneL = util.approachTol( qLArm, qL_desired, dqArmMax, dt )
-  qL_approach = Body.set_larm_command_position( qL_approach )
-  
-  local qR_approach, doneR
-  qR_approach, doneR = util.approachTol( qRArm, qR_desired, dqArmMax, dt )
-  qR_approach = Body.set_rarm_command_position( qR_approach )
-
-  trLArm = Body.get_forward_larm(qLArm);
-  trRArm = Body.get_forward_rarm(qRArm);
-
-  -- Set our hcm in case of a mode switch
-  hcm.set_joints_plarm( Body.get_forward_larm(qL_approach) )
-  hcm.set_joints_prarm( Body.get_forward_rarm(qR_approach) )
-end
-
-local function update_ik(dt)
-
-  -- Get the current joint positions (via commands)
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-  
-  -- Get the desired IK position
-  local trLArm_desired = hcm.get_joints_plarm()
-  local trRArm_desired = hcm.get_joints_prarm()
-  if t_update-t_debug>1 then
-    t_debug = t_update
- --   print('Teleop | Desired IK')
- --   print(trLArm_desired)
- --   print(trRArm_desired)
-  end
-
-  --Check if the current target position is approachable
---  local qL_target = Body.get_inverse_larm(qLArm,trLArm_desired)
---  local qR_target = Body.get_inverse_rarm(qRArm,trRArm_desired)
-
-  --SJ: Added interpolation in cartesian space as well (unless movement will jerky)
-
-  local trLArmApproach, doneL = util.approachTol(trLArm, trLArm_desired, dpArmMax, dt )
-  local trRArmApproach, doneR = util.approachTol(trRArm, trRArm_desired, dpArmMax, dt )
-
-  -- Check if this is possible
-  local qL_desired = Body.get_inverse_larm(qLArm,trLArmApproach)
-  local qR_desired = Body.get_inverse_rarm(qRArm,trRArmApproach)
-
-
-
-  -- If not possible, set to where we are
-  if not qL_desired then
-    print("Left Stuck!!")
-    trLArmApproach = trLArm
-    qL_desired = qLArm
-    hcm.set_joints_plarm(trLArm)
-  end
-  if not qR_desired then
-    print("Right Stuck!!")
-    trRArmApproach = trRArm
-    qR_desired = qRArm    
-    hcm.set_joints_prarm(trRArm)
-  end
-
-print(string.format("CLW: %d %d %d"
-  ,qLArm[5]*180/math.pi
-  ,qLArm[6]*180/math.pi
-  ,qLArm[7]*180/math.pi
-
-  ))
-
-
-print(string.format("DLW: %d %d %d"
-  ,qL_desired[5]*180/math.pi
-  ,qL_desired[6]*180/math.pi
-  ,qL_desired[7]*180/math.pi
-
-  ))
-  
-
-
-  -- Go to the allowable position
-  local qL_approach, doneL
-
-  qL_approach, doneL = util.approachTolRad( qLArm, qL_desired, dqArmMax, dt )
-
-  qL_approach = Body.set_larm_command_position( qL_approach )
-
---[[
-
-  print(string.format("d: %.2f %.2f %.2f",
-      qL_desired[5], qL_desired[6], qL_desired[7] ))
-  print(string.format("c: %.2f %.2f %.2f",
-          qLArm[5], qLArm[6],qLArm[7] ))
-  --]]
-  
-  local qR_approach, doneR
-  qR_approach, doneR = util.approachTolRad( qRArm, qR_desired, dqArmMax, dt )
-  qR_approach = Body.set_rarm_command_position( qR_approach )
-
-  -- Set our hcm in case of a mode switch
-  hcm.set_joints_qlarm( qL_approach )
-  hcm.set_joints_qrarm( qR_approach )
-
-  trLArm = trLArmApproach;
-  trRArm = trRArmApproach;
-
-end
-
-local update_mode = {
-  [1] = update_joint,
-  [2] = update_ik
-}
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -178,8 +39,49 @@ function state.update()
 
   -- Get the teleop mode
   local mode = hcm.get_joints_teleop()
-  return update_mode[mode](dt)
+  if mode==1 then
+    local qLArmTarget = hcm.get_joints_qlarm()
+    local qRArmTarget = hcm.get_joints_qrarm()
+    movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)
+    local qLArm = Body.get_larm_command_position()
+    local qRArm = Body.get_rarm_command_position()
+    trLArm = Body.get_forward_larm(qLArm);
+    trRArm = Body.get_forward_rarm(qRArm);
 
+    
+    -- Set our hcm in case of a mode switch
+    hcm.set_joints_plarm( Body.get_forward_larm(qLArm) )
+    hcm.set_joints_prarm( Body.get_forward_rarm(qRArm) )
+  else --IK based movement
+    local trLArmTarget = hcm.get_joints_plarm()
+    local trRArmTarget = hcm.get_joints_prarm()
+    local lShoulderYaw = hcm.get_joints_qlshoulderyaw()
+    local rShoulderYaw = hcm.get_joints_qrshoulderyaw()
+    ret = movearm.setArmToPosition(
+      trLArmTarget,
+      trRArmTarget,
+      dt,
+      lShoulderYaw,rShoulderYaw
+      )
+    if ret==-1 then
+      print("resetting")
+    --TODO  
+
+    end
+    local qLArm = Body.get_larm_command_position()
+    local qRArm = Body.get_rarm_command_position()
+    hcm.get_joints_qlarm(qLArm)
+    hcm.get_joints_qrarm(qRArm)
+
+print("trLArm:",
+  trLArmTarget[1],
+  trLArmTarget[2],
+  trLArmTarget[3],
+  trLArmTarget[4]*Body.RAD_TO_DEG,
+  trLArmTarget[5]*Body.RAD_TO_DEG,
+  trLArmTarget[6]*Body.RAD_TO_DEG)
+
+  end
 end
 
 function state.exit()

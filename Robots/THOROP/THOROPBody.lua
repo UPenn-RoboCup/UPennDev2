@@ -493,14 +493,9 @@ local Kinematics = require'THOROPKinematics'
 -- Check the error from a desired transform tr
 -- to a forwards kinematics of in IK solution q
 local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
-  -- Tolerate a 1mm error in distance
-  pos_tol = pos_tol or 0.001
-  ang_tol = ang_tol or 1*DEG_TO_RAD
-
-
+  -- Tolerate a 1mm error in distance  
   pos_tol = pos_tol or 0.001
   ang_tol = ang_tol or 0.1*DEG_TO_RAD
-
 
 	local position_error = math.sqrt(
 	( tr_check[1]-tr[1] )^2 +
@@ -516,6 +511,12 @@ local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
   local in_tolerance = true
 	if position_error>pos_tol then in_tolerance=false end
   if angle_error>ang_tol then in_tolerance=false end
+
+
+  if not in_tolerance then
+    print("pos err:",position_error)
+    print("angle err:",angle_error*DEG_TO_RAD)
+  end
 	return in_tolerance
 
 end

@@ -90,17 +90,29 @@ function util.approachTol( values, targets, speedlimits, dt, tolerance )
   -- Tolerance check (Asumme within tolerance)
   local within_tolerance = true
   -- Iterate through the limits of movements to approach
-  for i,speedlimit in ipairs(speedlimits) do
-    -- Target value minus present value
-    local delta = targets[i] - values[i]
-    -- If any values is out of tolerance,
-    -- then we are not within tolerance
-    if math.abs(delta) > tolerance then
-      within_tolerance = false
-      -- Ensure that we do not move motors too quickly
-      delta = util.procFunc(delta,0,speedlimit*dt)
-      values[i] = values[i]+delta
+  
+  --SJ: Now can be used for scalar
+  if type(values)=="table" then
+    for i,speedlimit in ipairs(speedlimits) do
+      -- Target value minus present value
+      local delta = targets[i] - values[i]
+      -- If any values is out of tolerance,
+      -- then we are not within tolerance
+      if math.abs(delta) > tolerance then
+        within_tolerance = false
+        -- Ensure that we do not move motors too quickly
+        delta = util.procFunc(delta,0,speedlimit*dt)
+        values[i] = values[i]+delta
+      end
     end
+  else
+    local delta = targets - values      
+      if math.abs(delta) > tolerance then
+        within_tolerance = false
+        -- Ensure that we do not move motors too quickly
+        delta = util.procFunc(delta,0,speedlimits*dt)
+        values = values+delta
+      end
   end
   -- Return the next values to take and if we are within tolerance
   return values, within_tolerance

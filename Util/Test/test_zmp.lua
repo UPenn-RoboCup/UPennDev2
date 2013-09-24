@@ -36,6 +36,37 @@ table.insert(step_seq, {0, {0.06,0,0},{0,0},0.5})
 -- Finishing step: TODO: what is the best way to terminate?
 table.insert(step_seq, {2, {0,0,0},{0,0},preview_period+preview_settle})
 
+
+-- THOR-OP parameters
+supportX = 0.03
+supportY = 0.02
+footY = 0.1
+uLeftI=vector.new{-supportX,footY,0}
+uRightI=vector.new{-supportX,-footY,0}
+uTorsoI = vector.pose{0,0,0}
+tZMP  = .325
+tStep = 0.8
+--
+preview_period = 1.5 --seconds ahead
+preview_res = .01
+preview_settle = 4*tZMP
+-- Provide a sample step sequence (Based on OP)
+step_seq = {}
+--table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.10})
+-- LS step  
+table.insert(step_seq, {0, {0.060,0,0}, {0,0}, 0.7})
+-- DS step
+table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.5})
+-- More: Config/Walk/Config_WebotsOP_Walk.lua
+table.insert(step_seq, {1, {0,-0.01,0},{-0.01,-0.01},0.5,1})
+table.insert(step_seq, {1, {0.18,0,0},{-0.01,-0.01},0.7,2})
+table.insert(step_seq, {1, {-0.06,0.01,0},{-0.0,-0.02},0.5,3})
+table.insert(step_seq, {1, {0.0,0,0},{-0.01,-0.0},0.5,4})
+table.insert(step_seq, {2, {0,0,0},{0,0},2.10})
+table.insert(step_seq, {0, {0.06,0,0},{0,0},0.7})
+-- Finishing step: TODO: what is the best way to terminate?
+table.insert(step_seq, {2, {0,0,0},{0,0},preview_period+preview_settle})
+
 local base = collectgarbage('count')
 print(util.color('Opening libZMP','green'))
 libZMP=require'libZMP'

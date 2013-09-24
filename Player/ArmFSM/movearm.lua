@@ -1,4 +1,4 @@
-local wheelrotate={}
+local movearm={}
 local Body   = require'Body'
 local T      = require'Transform'
 local util   = require'util'
@@ -13,40 +13,17 @@ local body_rpy = {0,0,0}
 local lShoulderYaw = 45*Body.DEG_TO_RAD;
 local rShoulderYaw = -45*Body.DEG_TO_RAD;
 
-function wheelrotate.setArmToWheelPosition(
-  handle_pos,
-  handle_yaw,
-  handle_pitch,
-  handle_radius,
-  turn_angle, 
+
+
+function movearm.setArmToPosition(
+  trLArmTarget,
+  trRArmTarget,
   dt,
   lShoulderYaw,
-  rShoulderYaw)
+  rShoulderYaw
+  )
 
-  --Calculate the hand transforms
-  local trHandle = T.eye()
-       * T.trans(handle_pos[1],handle_pos[2],handle_pos[3])
-       * T.rotZ(handle_yaw)
-       * T.rotY(handle_pitch)
-
-  local trGripL = trHandle
-       * T.rotX(turn_angle)
-       * T.trans(0,handle_radius,0)
-       * T.rotZ(-math.pi/4)
-  local trGripR = trHandle
-       * T.rotX(turn_angle)
-       * T.trans(0,-handle_radius,0)
-       * T.rotZ(math.pi/4)
-       
-  local trBody = T.eye()
-       * T.trans(body_pos[1],body_pos[2],body_pos[3])
-       * T.rotZ(body_rpy[3])
-       * T.rotY(body_rpy[2])
-       
-  local trLArmTarget = T.position6D(T.inv(trBody)*trGripL)
-  local trRArmTarget = T.position6D(T.inv(trBody)*trGripR)
-
-  --Now interpolate in 6D space 
+  --Interpolate in 6D space 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
   local trLArm = Body.get_forward_larm(qLArm);
@@ -87,4 +64,49 @@ function wheelrotate.setArmToWheelPosition(
   end
 end
 
-return wheelrotate
+
+
+
+
+function movearm.setArmToWheelPosition(
+  handle_pos,
+  handle_yaw,
+  handle_pitch,
+  handle_radius,
+  turn_angle, 
+  dt,
+  lShoulderYaw,
+  rShoulderYaw)
+
+  --Calculate the hand transforms
+  local trHandle = T.eye()
+       * T.trans(handle_pos[1],handle_pos[2],handle_pos[3])
+       * T.rotZ(handle_yaw)
+       * T.rotY(handle_pitch)
+
+  local trGripL = trHandle
+       * T.rotX(turn_angle)
+       * T.trans(0,handle_radius,0)
+       * T.rotZ(-math.pi/4)
+  local trGripR = trHandle
+       * T.rotX(turn_angle)
+       * T.trans(0,-handle_radius,0)
+       * T.rotZ(math.pi/4)
+       
+  local trBody = T.eye()
+       * T.trans(body_pos[1],body_pos[2],body_pos[3])
+       * T.rotZ(body_rpy[3])
+       * T.rotY(body_rpy[2])
+       
+  local trLArmTarget = T.position6D(T.inv(trBody)*trGripL)
+  local trRArmTarget = T.position6D(T.inv(trBody)*trGripR)
+
+  return movearm.setArmToPosition(
+    trLArmTarget,
+    trRArmTarget,
+    dt,
+    lShoulderYaw,
+    rShoulderYaw)
+end
+
+return movearm

@@ -8,15 +8,8 @@ state._NAME = ...
 local Body   = require'Body'
 local util   = require'util'
 local vector = require'vector'
-
-local t_entry, t_update, t_finish
-local timeout = 15.0
-
--- Goal position is arm Init, with hands in front, ready to manipulate
-
-local qL_desired = {}
-local qR_desired = {}
-
+local movearm = require'movearm'
+local t_entry, t_update
 
 -- Angular velocity limit
 local dqArmMax = Config.arm.slow_elbow_limit
@@ -29,50 +22,24 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-  t_finish = t
+
 
   -- Where are the arms right now?
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-  Body.set_larm_command_position(qLArm)
-  Body.set_rarm_command_position(qRArm)
 
-  move_stage = 1
-
-  --Is it forward motion or downward motion?
-  if qLArm[1]>60*Body.DEG_TO_RAD and qRArm[1]>60*Body.DEG_TO_RAD then
+  if qLArm[4]<-15*Body.DEG_TO_RAD and qRArm[4]<-15*Body.DEG_TO_RAD then
+    total_stage = 1
+    print("REV")
+    qL_desired = {Config.arm.qLArmInit[3]}
+    qR_desired = {Config.arm.qRArmInit[3]}
+  else
+    --Forward motion  
     total_stage = 2
     qL_desired = {Config.arm.qLArmInit[2], Config.arm.qLArmInit[3]}
     qR_desired = {Config.arm.qRArmInit[2], Config.arm.qRArmInit[3]}
-  else
-    total_stage = 1
-    qL_desired = {Config.arm.qLArmInit[3]}
-    qR_desired = {Config.arm.qRArmInit[3]}
   end
-
---hack
-  total_stage = 1
-  qL_desired = {Config.arm.qLArmInit[3]}
-  qR_desired = {Config.arm.qRArmInit[3]}
-  
-
-
-
-end
-
-function move_arms(qLTarget, qRTarget,dt)
-
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-  local qL_approach, doneL
-  qL_approach, doneL = util.approachTol( qLArm, qLTarget, dqArmMax, dt )
-  Body.set_larm_command_position( qL_approach )
-  
-  local qR_approach, doneR
-  qR_approach, doneR = util.approachTol( qRArm, qRTarget, dqArmMax, dt )
-  Body.set_rarm_command_position( qR_approach ) 
-  
-  return doneL and doneR
+  move_stage = 1
 end
 
 function state.update()
@@ -81,9 +48,9 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 --  print(state._NAME..' Update' )
-  -- Get the time of update
-  
-  if move_arms(qL_desired[move_stage],qR_desired[move_stage],dt) then 
+  -- Get the time of update  
+  if movearm.setArmJoints(qL_desired[move_stage],qR_desired[move_stage],
+      dt, dqArmMax)==1 then
     move_stage = move_stage+1;  
   end  
   if move_stage>total_stage then

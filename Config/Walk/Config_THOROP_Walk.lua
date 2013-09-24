@@ -186,24 +186,15 @@ arm.qRArmInit={
 
 --New init motion utilizing 7DOF arm
 arm.qLArmInit={
- vector.new({90,15,0,-15,  -0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({120,15,0,-90, -90,-0,0})*DEG_TO_RAD, -- scarecrow
-
+ vector.new({90,15,0,-5,  -0,0,0})*DEG_TO_RAD, -- at sides
+ vector.new({110.5, 17.5, 0, -85.7, -30.2,  0,16.8})*DEG_TO_RAD, -- scarecrow
  vector.new({110.5, 17.5, -24, -85.7, -30.2, -71.0,16.8})*DEG_TO_RAD,-- arms in front
 }
 arm.qRArmInit={
- vector.new({90,-15,0,-15,     0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({120,-15,-0,-90,   90,0,0})*DEG_TO_RAD,  -- scarecrow
- --vector.new({120,-15,-20,-120,    90,45,0})*DEG_TO_RAD, -- arms in front
-
+ vector.new({90,-15,0,-5,     0,0,0})*DEG_TO_RAD, -- at sides
+ vector.new({110.5, -17.5, 0, -85.7,  30.2,  0,-16.8})*DEG_TO_RAD,  -- scarecrow
  vector.new({110.5, -17.5, 24, -85.7, 30.2, 71.0,-16.8})*DEG_TO_RAD,-- arms in front
-
 }
-
-
-
-
-
 
 
 -- Arm speed limits

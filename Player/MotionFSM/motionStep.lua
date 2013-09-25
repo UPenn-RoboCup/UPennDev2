@@ -13,7 +13,6 @@ local zmp_solver
 require'mcm'
 -- Simple IPC for remote state triggers
 local simple_ipc = require'simple_ipc'
-local evts = simple_ipc.new_subscriber('Walk',true)
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step

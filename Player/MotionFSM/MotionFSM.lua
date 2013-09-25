@@ -9,12 +9,14 @@ local motionFall   = require'motionFall'
 local motionWalk   = require(Config.dev.walk)
 local motionStance = require'motionStance'
 local motionStep   = require'motionStep'
+local motionStepPreview   = require'motionStepPreview'
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
 local sm = fsm.new( motionIdle, motionStance, motionFall )
 sm:add_state(motionWalk)
 sm:add_state(motionStep)
+sm:add_state(motionStepPreview)
 
 -- Setup the transitions for this FSM
 sm:set_transition(motionIdle, 'stand', motionStance )
@@ -25,6 +27,7 @@ sm:set_transition(motionStance, 'done', motionIdle, function(exit_val)
   -- Initially, the walk event is disallowed, since we do not know our configuration
   sm:set_transition(motionIdle, 'walk', motionWalk )
   sm:set_transition(motionIdle, 'step', motionStep )
+  sm:set_transition(motionIdle, 'preview', motionStepPreview )
 end)
 --
 sm:set_transition(motionWalk, 'stand', motionStance, function(exit_val)
@@ -33,6 +36,8 @@ sm:set_transition(motionWalk, 'stand', motionStance, function(exit_val)
 end)
 
 sm:set_transition(motionStep, 'done', motionIdle )
+--
+sm:set_transition(motionStepPreview, 'done', motionIdle )
 
 
 

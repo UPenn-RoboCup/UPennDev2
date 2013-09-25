@@ -9,39 +9,43 @@ torch.Tensor = torch.DoubleTensor
 --{ Supportfoot relstep zmpmod duration steptype }--
 -- Provide initial (relative) feet positions
 local function generate_step_queue(solver,step_definition,uLeftI,uRightI)
+  -- Modify the initial point...
+  local uLeft  = vector.pose(unpack(uLeftI))
+  local uRight = vector.pose(unpack(uRightI))
+
   -- Make the step_queue table
   solver.step_queue = {}
   for _,step_def in ipairs(step_definition) do
     local supportLeg = step_def[1]
-    local step_queue_element = {
-      supportLeg = supportLeg,
-      zaLeft  = vector.zeros(2),
-      zaRight = vector.zeros(2),
-      zmp_mod   = step_def[3],
-      duration  = step_def[4],
-      step_type = step_def[5] or 0
-    }
     -- Form the Support Leg positions
     -- Perform a table copy
     if supportLeg==0 then
       -- left support
-      step_queue_element.uRight = util.pose_global(step_def[2],uRightI)
-      step_queue_element.uLeft  = vector.pose{unpack(uLeftI)}
+      uRight = util.pose_global(step_def[2],uRight)
+      --print('uRightI',uRightI,step_queue_element.uRight,vector.new(step_def[2]))
       --step_queue_element.zaRight = zaRight + vector.new(step_def[3]);
     elseif supportLeg==1 then
       -- right support
-      step_queue_element.uLeft  = util.pose_global(step_def[2],uLeftI)
-      step_queue_element.uRight = vector.pose{unpack(uRightI)}
+      uLeft  = util.pose_global(step_def[2],uLeft)
+      --print('uLeftI',uLeftI,step_queue_element.uLeft,vector.new(step_def[2]))
       -- step_queue_element.zaLeft = zaLeft + vector.new(step_def[3]);
     elseif supportLeg==2 then --DS
       -- Double Support: Body height change
-      step_queue_element.uLeft  = vector.pose{unpack(uLeftI)}
-      step_queue_element.uRight = vector.pose{unpack(uRightI)}
       -- step_queue_element.zaRight = zaRight - vector.new(step_def[3]);
       -- step_queue_element.zaLeft  = zaLeft  - vector.new(step_def[3]);
     end
     -- Insert the element
-    table.insert(solver.step_queue,step_queue_element)
+    table.insert(solver.step_queue,{
+      supportLeg = supportLeg,
+      uLeft      = vector.pose{unpack(uLeft)}, --copy the table
+      uRight     = vector.pose{unpack(uRight)},
+      zaLeft     = vector.zeros(2),
+      zaRight    = vector.zeros(2),
+      zmp_mod    = vector.new(step_def[3]),
+      duration   = step_def[4],
+      step_type  = step_def[5] or 0
+    })
+    --
   end
   -- Reset the queue_index
   solver.step_queue_index = 1
@@ -61,8 +65,6 @@ local function update_preview(solver, t, supportX, supportY)
     t_expire = solver.step_queue_time - t
   end
 
-  
-  
   -- Check if we are a new step
   if t_expire<=0 then
     solver.last_step = idx==#solver.step_queue
@@ -72,6 +74,9 @@ local function update_preview(solver, t, supportX, supportY)
     idx = idx + 1
     solver.step_queue_index = idx
     step_queue_element = solver.step_queue[idx]
+    print'====='
+    util.ptable(step_queue_element)
+    print'====='
     -- Add the duration of this next step
     solver.step_queue_time = t + step_queue_element.duration
   else
@@ -114,6 +119,7 @@ local function update_preview(solver, t, supportX, supportY)
   zmp_x:storage():lshift()
   zmp_y:storage():lshift()
   -- Add the final elements
+  --print('uSupportF',uSupportF[1],uSupportF[2])
   zmp_x[nPreview] = uSupportF[1]
   zmp_y[nPreview] = uSupportF[2]
 

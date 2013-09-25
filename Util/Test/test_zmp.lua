@@ -57,18 +57,18 @@ preview_settle = 4*tZMP
 -- Provide a sample step sequence (Based on OP)
 step_seq = {}
 -- LS step  
-table.insert(step_seq, {0, {0.060,0,0}, {0,0}, 3})
+table.insert(step_seq, {0, {0,0,0}, {0,0}, 3})
 -- DS step
-table.insert(step_seq, {2, {0,0,0}, {0,0}, 2})
+table.insert(step_seq, {2, {0.16,0,0}, {0,0}, 2})
 -- More: Config/Walk/Config_WebotsOP_Walk.lua
-table.insert(step_seq, {1, {0,-0.01,0},{-0.01,-0.01},3,1})
---table.insert(step_seq, {1, {0.18,0,0},{-0.01,-0.01},2,2})
+--table.insert(step_seq, {1, {0,-0.01,0},{-0.01,-0.01},3,1})
+table.insert(step_seq, {1, {0.18,0,0},{-0.01,-0.01},2,2})
 --table.insert(step_seq, {1, {-0.06,0.01,0},{-0.0,-0.02},2,3})
 --table.insert(step_seq, {1, {0.0,0,0},{-0.01,-0.0},2,4})
-table.insert(step_seq, {2, {0,0,0},{0,0},.2})
-table.insert(step_seq, {0, {0.06,0,0},{0,0},2})
+--table.insert(step_seq, {2, {0,0,0},{0,0},.2})
+--table.insert(step_seq, {0, {0.06,0,0},{0,0},2})
 -- Finishing step: TODO: what is the best way to terminate?
-table.insert(step_seq, {2, {0,0,0},{0,0},preview_period+preview_settle})
+table.insert(step_seq, {2, {0.18,0,0},{0,0},preview_period+preview_settle})
 --table.insert(step_seq, {2, {0,0,0},{0,0},preview_period+preview_settle+25})
 --]]
 

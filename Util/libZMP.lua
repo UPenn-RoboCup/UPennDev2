@@ -212,12 +212,12 @@ local function compute_preview( solver, preview_interval, ts, save_file )
   preview_interval = preview_interval or 1.50 -- 1500ms
   ts = ts or 0.010 -- 10ms timestep
   local nPreview = math.ceil(preview_interval / ts)
-  local r_q = 1e-6 -- balancing parameter for optimization
+  local r_q = 5e-5 -- balancing parameter for optimization
   --
   local tZMP  = solver.tZMP
   -- Cache some common operations
   local ts_integrated  = (ts^2)/2
-  local ts_twice_integrated = ts^3/6
+  local ts_twice_integrated = (ts^3)/6
   local tZMP_sq = tZMP^2
 
   -- Make the preview parameter matrices
@@ -245,6 +245,7 @@ local function compute_preview( solver, preview_interval, ts, save_file )
   -- Cache the transpose
   local pu_trans = pu:t()
   local tmp =  torch.mm(pu_trans,pu):add(balancer)
+  --print( 'singular?',torch.determinant(tmp) )
   local inv = torch.inverse( tmp )
   local K1  = -torch.mm( inv, pu_trans )
   

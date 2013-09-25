@@ -36,7 +36,7 @@ table.insert(step_seq, {0, {0.06,0,0},{0,0},0.5})
 -- Finishing step: TODO: what is the best way to terminate?
 table.insert(step_seq, {2, {0,0,0},{0,0},preview_period+preview_settle})
 
-
+----[[
 -- THOR-OP parameters
 supportX = 0.03
 supportY = 0.02
@@ -44,28 +44,33 @@ footY = 0.1
 uLeftI=vector.new{-supportX,footY,0}
 uRightI=vector.new{-supportX,-footY,0}
 uTorsoI = vector.pose{0,0,0}
-tZMP  = .325
+tZMP  = .35 -- related to the preview_res size!!!!
+--tZMP = math.sqrt(0.10)
+--tZMP = .3
+--tZMP = .2
 tStep = 0.8
 --
-preview_period = 1.5 --seconds ahead
-preview_res = .01
+preview_period = 1.6 --seconds ahead
+preview_res = .02
 preview_settle = 4*tZMP
+--
 -- Provide a sample step sequence (Based on OP)
 step_seq = {}
---table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.10})
 -- LS step  
-table.insert(step_seq, {0, {0.060,0,0}, {0,0}, 0.7})
+table.insert(step_seq, {0, {0.060,0,0}, {0,0}, 3})
 -- DS step
-table.insert(step_seq, {2, {0,0,0}, {0,0}, 0.5})
+table.insert(step_seq, {2, {0,0,0}, {0,0}, 2})
 -- More: Config/Walk/Config_WebotsOP_Walk.lua
-table.insert(step_seq, {1, {0,-0.01,0},{-0.01,-0.01},0.5,1})
-table.insert(step_seq, {1, {0.18,0,0},{-0.01,-0.01},0.7,2})
-table.insert(step_seq, {1, {-0.06,0.01,0},{-0.0,-0.02},0.5,3})
-table.insert(step_seq, {1, {0.0,0,0},{-0.01,-0.0},0.5,4})
-table.insert(step_seq, {2, {0,0,0},{0,0},2.10})
-table.insert(step_seq, {0, {0.06,0,0},{0,0},0.7})
+table.insert(step_seq, {1, {0,-0.01,0},{-0.01,-0.01},3,1})
+--table.insert(step_seq, {1, {0.18,0,0},{-0.01,-0.01},2,2})
+--table.insert(step_seq, {1, {-0.06,0.01,0},{-0.0,-0.02},2,3})
+--table.insert(step_seq, {1, {0.0,0,0},{-0.01,-0.0},2,4})
+table.insert(step_seq, {2, {0,0,0},{0,0},.2})
+table.insert(step_seq, {0, {0.06,0,0},{0,0},2})
 -- Finishing step: TODO: what is the best way to terminate?
 table.insert(step_seq, {2, {0,0,0},{0,0},preview_period+preview_settle})
+--table.insert(step_seq, {2, {0,0,0},{0,0},preview_period+preview_settle+25})
+--]]
 
 local base = collectgarbage('count')
 print(util.color('Opening libZMP','green'))
@@ -119,9 +124,10 @@ print('KBytes:',collectgarbage('count')-base)
 f = io.open('com_zmp.tmp','w')
 print(util.color('Update and solve the preview...','green'))
 counter = 1
+t = t0
 while not done do
   repeat
-    t = unix.time()
+    t = t+preview_res
     done = s:update_preview( t, supportX, supportY )
     s:solve_preview()
   until t<=s.preview.clock or done
@@ -149,7 +155,7 @@ while not done do
   --
   counter = counter + 1
   -- sleep a bit...
-  unix.usleep(1e6*preview_res)
+  --unix.usleep(1e6*preview_res)
 end
 t1 = unix.time()
 f:close()

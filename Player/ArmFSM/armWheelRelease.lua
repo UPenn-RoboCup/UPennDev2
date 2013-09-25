@@ -35,14 +35,14 @@ function state.entry()
 
   lShoulderYaw = hcm.get_joints_qlshoulderyaw()
   rShoulderYaw = hcm.get_joints_qrshoulderyaw()
-
+  
   --open gripper
   Body.set_lgrip_percent(0)
   Body.set_rgrip_percent(0)
 
 -- Inner and outer radius
   handle_radius0 = handle_radius 
-  handle_radius1 = handle_radius + 0.08
+  handle_radius1 = handle_radius + 0.04
 
   stage = 1;
 end
@@ -58,24 +58,25 @@ function state.update()
 
   if stage==1 then --return to arm side-by-side position
     turnAngle,doneA = util.approachTol(turnAngle,0,dturnAngleMax, dt )
+    --Adaptive shoulder yaw angle
     ret = movearm.setArmToWheelPosition(
       handle_pos, handle_yaw, handle_pitch,
-      handle_radius0, turnAngle,dt,
-      lShoulderYaw, rShoulderYaw)
+      handle_radius, turnAngle,dt)
     if ret==1 and doneA then stage=stage+1; 
     end
-  elseif stage==2 then --Now spread arms apart
+  elseif stage==2 then --Now spread arms apart       
     ret = movearm.setArmToWheelPosition(
       handle_pos, handle_yaw, handle_pitch,
-      handle_radius1, turnAngle,dt,
-      lShoulderYaw, rShoulderYaw)
+      handle_radius, turnAngle,dt,
+      qLArmTarget[3], qRArmTarget[3] )
+
     if ret==1 then stage=stage+1; end
   else --Now lower the arm to position #2 using IK
     ret = movearm.setArmToPosition(
       trLArmTarget,
       trRArmTarget,
       dt,
-      lShoulderYaw,rShoulderYaw
+      qLArmTarget[3], qRArmTarget[3] --Move shoulder yaw to initial position
       )
     if ret==1 then return'done'
     end  

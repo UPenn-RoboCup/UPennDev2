@@ -40,7 +40,7 @@ function state.entry()
 
   -- Inner and outer radius
   handle_radius0 = handle_radius 
-  handle_radius1 = handle_radius + 0.08
+  handle_radius1 = handle_radius + 0.04
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()    

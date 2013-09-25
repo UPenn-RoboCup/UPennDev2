@@ -512,13 +512,28 @@ local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
 	if position_error>pos_tol then in_tolerance=false end
   if angle_error>ang_tol then in_tolerance=false end
 
-
   if not in_tolerance then
-    print("pos err:",position_error)
-    print("angle err:",angle_error*DEG_TO_RAD)
+    print(string.format("tr0:%.2f %.2f %.2f %.2f %.2f %.2f tr:%.2f %.2f %.2f %.2f %.2f %.2f",
+    tr_check[1],
+    tr_check[2],
+    tr_check[3],
+    tr_check[4]*RAD_TO_DEG,
+    tr_check[5]*RAD_TO_DEG,
+    tr_check[6]*RAD_TO_DEG,
+    tr[1],
+    tr[2],
+    tr[3],
+    tr[4]*RAD_TO_DEG,
+    tr[5]*RAD_TO_DEG,
+    tr[6]*RAD_TO_DEG
+    ))
+    print(string.format("LArm: %.1f %.1f %.1f %.1f %.1f %.1f %.1f",unpack(
+      vector.new(Body.get_larm_command_position())*RAD_TO_DEG     ) ))
+    print(string.format("RArm: %.1f %.1f %.1f %.1f %.1f %.1f %.1f",unpack(
+      vector.new(Body.get_rarm_command_position())*RAD_TO_DEG     ) ))
+--    print(string.format("perr:%.4f aerr:%.2f",position_error, angle_error*Body.RAD_TO_DEG))
   end
 	return in_tolerance
-
 end
 
 --6DOF IK
@@ -526,12 +541,14 @@ Body.get_inverse_larm_6dof = function( qL, trL, pos_tol, ang_tol )
   local qL_target = Kinematics.inverse_l_arm(trL, qL)
   qL_target[7] = 0; --Fix for 7DOF functions
   if not check_ik_error( trL, trL_check, pos_tol, ang_tol ) then
+    print("unknown IK error")
     return
   end
   --Check range
   for i=1,nJointLArm do
     if qL_target[i]<servo.min_rad[indexLArm+i-1] or
       qL_target[i]>servo.max_rad[indexLArm+i-1] then
+      print("out of range",i,"at ",qL_target[i])
       return
     end
   end
@@ -543,12 +560,14 @@ Body.get_inverse_rarm_6dof = function( qR, trR, pos_tol, ang_tol )
   qR_target[7] = 0; --Fix for 7DOF functions
   local trR_check = Kinematics.r_arm_torso_7(qR_target)
   if not check_ik_error( trR, trR_check, pos_tol, ang_tol ) then
+    print("unknown IK error")
     return
   end
   --Check range
   for i=1,nJointRArm do
     if qR_target[i]<servo.min_rad[indexRArm+i-1] or
       qR_target[i]>servo.max_rad[indexRArm+i-1] then
+      print("out of range",i)
       return
     end
   end
@@ -565,16 +584,20 @@ Body.get_inverse_larm = function( qL, trL, lShoulderYaw, pos_tol, ang_tol )
   end
   local qL_target = Kinematics.inverse_l_arm_7(trL,qL,lShoulderYaw)
   local trL_check = Kinematics.l_arm_torso_7(qL_target)
-	if not check_ik_error( trL, trL_check, pos_tol, ang_tol ) then
-    return
-  end
-  --Check range
+--Check range
   for i=1,nJointLArm do
     if qL_target[i]<servo.min_rad[indexLArm+i-1] or
       qL_target[i]>servo.max_rad[indexLArm+i-1] then
+      print("out of range",i,"at ",qL_target[i]*RAD_TO_DEG)
       return
     end
   end
+
+	if not check_ik_error( trL, trL_check, pos_tol, ang_tol ) then
+    print("unknown IK error")
+    return
+  end
+  
   return qL_target
 end
 
@@ -584,16 +607,20 @@ Body.get_inverse_rarm = function( qR, trR, rShoulderYaw , pos_tol, ang_tol )
   end
   local qR_target = Kinematics.inverse_r_arm_7(trR, qR,rShoulderYaw)
   local trR_check = Kinematics.r_arm_torso_7(qR_target)
-  if not check_ik_error( trR, trR_check, pos_tol, ang_tol ) then
-    return
-  end
   --Check range
   for i=1,nJointRArm do
     if qR_target[i]<servo.min_rad[indexRArm+i-1] or
       qR_target[i]>servo.max_rad[indexRArm+i-1] then
+      print("out of range",i,"at ",qR_target[i]*RAD_TO_DEG)
       return
     end
   end
+
+  if not check_ik_error( trR, trR_check, pos_tol, ang_tol ) then
+    print("unknown IK error")
+    return
+  end
+
   return qR_target
 --
 --  return Body.get_inverse_rarm_6dof(qR,trR,pos_tol,ang_tol)
@@ -748,14 +775,11 @@ if IS_WEBOTS then
   
   servo.min_rad = vector.new({
     -60,-80, -- Head
---    -90,-5,-90,-140,      -180,-90,-135, --LArm
-    -90,-5,-90,-140,      -180,-90,-180, --LArm
 
-
+    -90,0,-90,-140,      -180,-87,-180, --LArm
     -175,-175,-175,-175,-175,-175, --LLeg
     -175,-175,-175,-175,-175,-175, --RLeg
---    -175,-170,-180,-140,   -60,-90,-135, --RArm
-    -175,-170,-180,-140,   -180,-90,-180, --RArm
+    -175,-170,-180,-140,   -180,-87,-180, --RArm
 
     -175,-175, -- Waist
     0,0,0, -- left gripper
@@ -765,14 +789,10 @@ if IS_WEBOTS then
   
   servo.max_rad = vector.new({
     45,80, -- Head
---    160,150,180,0,   60,90,135, --LArm
-    160,150,180,0,   180,90,180, --LArm
-
-
+    160,150,180,-25,   180,87,180, --LArm
     175,175,175,175,175,175, --LLeg
     175,175,175,175,175,175, --RLeg
---    160,5,90,0,     180,90,135, --RArm
-    160,5,90,0,     180,90,180, --RArm
+    160,-0,90,-25,     180,87,180, --RArm
 
     175,175, -- Waist
     90,90,90, -- left gripper

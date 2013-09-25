@@ -19,10 +19,12 @@ local armPose1 = require'armPose1'
 --Default pose for tele-op and handle grip
 local armPose2 = require'armPose2'
 
---Move arm to pose 1
+-- Move arm to pose 1
+-- TODO: from where??
 local armChangetoPose1 = require'armChangetoPose1'
 
---Move arm to pose 2
+-- Move arm to pose 2
+-- TODO: from where??
 local armChangetoPose2 = require'armChangetoPose2'
 
 -- Direct teleop override
@@ -87,13 +89,7 @@ sm:set_transition(armDoorGrip, 'done',  armTeleop)
 -- TODO: make epi transitions for reset
 sm:set_transition(armTeleop, 'reset', armChangetoPose2)
 
-
-
-
-
-
-
-
+----------------------------
 -- Setup the FSM object
 local obj = {}
 local util = require'util'

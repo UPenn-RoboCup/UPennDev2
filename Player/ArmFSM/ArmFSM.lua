@@ -19,12 +19,10 @@ local armPose1 = require'armPose1'
 --Default pose for tele-op and handle grip
 local armPose2 = require'armPose2'
 
--- Move arm to pose 1
--- TODO: from where??
+-- Move arm to pose 1 (from Idle, Pose2, doorgrip)
 local armChangetoPose1 = require'armChangetoPose1'
 
--- Move arm to pose 2
--- TODO: from where??
+-- Move arm to pose 2 (from teleop, wheelrelease)
 local armChangetoPose2 = require'armChangetoPose2'
 
 -- Direct teleop override
@@ -37,7 +35,7 @@ local armWheelRelease = require'armWheelRelease'
 
 -- Door specific states
 local armDoorGrip = require'armDoorGrip'
---local armDoorTurn = require'armDoorTurn'
+local armDoorTurn = require'armDoorTurn'
 
 local sm = fsm.new(armIdle);
 sm:add_state(armPose1)
@@ -49,7 +47,7 @@ sm:add_state(armWheelGrip)
 sm:add_state(armWheelTurn)
 sm:add_state(armWheelRelease)
 sm:add_state(armDoorGrip)
---sm:add_state(armDoorTurn)
+sm:add_state(armDoorTurn)
 
 ----------
 -- Event types
@@ -83,7 +81,8 @@ sm:set_transition(armWheelRelease, 'done', armChangetoPose2)
 -- The initial arm pose is great for door gripping, 
 -- and should be the reset position
 sm:set_transition(armDoorGrip, 'reset', armChangetoPose1)
-sm:set_transition(armDoorGrip, 'done',  armTeleop)
+sm:set_transition(armDoorGrip, 'done', armDoorTurn)
+
 -- TODO: This may not be the best
 -- We may wish to give ready and init
 -- TODO: make epi transitions for reset

@@ -157,7 +157,6 @@ function movearm.setArmToPositionAdapt(
   
   local lShoulderYaw1 = math.min(-5*math.pi/180, lShoulderYaw+dt*qShoulderYawMax )
   local lShoulderYaw2 = math.min(-5*math.pi/180, lShoulderYaw-dt*qShoulderYawMax )
-
   local qL_desired1 = Body.get_inverse_larm(qLArm,trLArmApproach, lShoulderYaw1)
   local qL_desired2 = Body.get_inverse_larm(qLArm,trLArmApproach, lShoulderYaw2)
 
@@ -165,6 +164,20 @@ function movearm.setArmToPositionAdapt(
   local rShoulderYaw2 = math.max(5*math.pi/180,rShoulderYaw-dt*qShoulderYawMax)
   local qR_desired1 = Body.get_inverse_rarm(qRArm,trRArmApproach, rShoulderYaw1)
   local qR_desired2 = Body.get_inverse_rarm(qRArm,trRArmApproach, rShoulderYaw2)
+
+--[[
+  --SJ: slightly harder check
+  if not qL_desired or not qL_desired1 or not qL_desired2 then
+    print('Left not possible')
+    return -1;
+  end
+  if not qR_desired or not qR_desired1 or not qR_desired2 then
+    print('Right not possible')
+    return -1;
+  end
+ --]]
+
+
 
   --Adjust shoulder angle if margin is less than this
   local min_wrist_margin = 10*math.pi/180
@@ -360,6 +373,34 @@ function movearm.setArmToWheelPosition(
       trRArmTarget,
       dt)
   end
+end
+
+function movearm.getDoorHandlePosition(
+  hinge_pos, 
+  door_r, --distance between hinge and the projection of grip position on the door
+          --positive value for right-hinged door, negative value for left-hinged door
+  door_yaw, --door angle, -pi/2~pi/2
+  grip_offset_x, --how much the actual grip positon offset from door surface
+  hand_rpy
+  )
+  --Default hand angle: facing up
+  hand_rpy = hand_rpy or {-90*Body.DEG_TO_RAD,0,0}
+    
+  local trHandle = T.eye()
+    * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])
+    * T.rotZ(door_yaw)
+    * T.trans(grip_offset_x, door_r, 0) 
+    * T.transform6D(
+      {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
+
+
+  local trBody = T.eye()
+       * T.trans(body_pos[1],body_pos[2],body_pos[3])
+       * T.rotZ(body_rpy[3])
+       * T.rotY(body_rpy[2])
+
+  local trTarget = T.position6D(T.inv(trBody)*trHandle)
+  return trTarget
 end
 
 return movearm

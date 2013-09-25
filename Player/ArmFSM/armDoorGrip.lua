@@ -18,6 +18,9 @@ local dqArmMax = Config.arm.slow_limit
 local dpArmMax = Config.arm.linear_slow_limit
 local dturnAngleMax = 3*math.pi/180 -- 3 deg per sec
 
+local dDoorAngleMax = 1*math.pi/180
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -34,6 +37,7 @@ function state.entry()
   rShoulderYaw = hcm.get_joints_qrshoulderyaw()
 
   stage = 1;
+  door_yaw = 0;
 end
 
 function state.update()
@@ -47,6 +51,21 @@ function state.update()
     {0.18,0.31, -0.15,
     -90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0})
 
+
+--Left hinged door
+  hinge_pos = vector.new({0.40,0.60,-0.15});
+  door_r = -0.30;
+  grip_offset_x = -0.05;
+  door_yaw_target = -30*Body.DEG_TO_RAD
+
+
+--[[
+  hinge_pos = vector.new({0.40,0.0,-0.15});
+  door_r = 0.30;
+  grip_offset_x = -0.05;
+--]]
+
+
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
@@ -56,8 +75,6 @@ function state.update()
   local qRArm = Body.get_rarm_command_position()
   local trRArm = Body.get_forward_rarm(qRArm)
   if stage==1 then --Set the arm to grip-ready pose
-
-    
     local qLArmTarget0 = vector.new({
       141.17, 10.91, -6.6, -91.96, -95.69,-48.45, -8.14})
       *Body.DEG_TO_RAD
@@ -70,30 +87,31 @@ function state.update()
     end
     ret = movearm.setArmJoints(qLArmTarget,qRArm,dt)
     if ret==1 then stage=stage+1; end
-  elseif stage==2 then --Move the arm forward using IK now 
-    local trLArmTarget2 = {0.35,0.30, -0.15,
-      -90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}
+  elseif stage==2 then --Move the arm forward using IK now     
+    hinge_pos2 = hinge_pos + vector.new({0,0,-0.05})
+    local trLArmTarget2 = movearm.getDoorHandlePosition(
+      hinge_pos2, door_r, 0, grip_offset_x)
     local trLArm = Body.get_forward_larm(qLArm)
-  
     ret = movearm.setArmToPositionAdapt(trLArmTarget2, trRArm, dt)
-
     if ret==1 then stage=stage+1; end
   elseif stage==3 then --Move the arm up to grip the handle
-    local trLArmTarget3 = {0.35,0.30, -0.10,
-      -90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}
+    hinge_pos3 = hinge_pos
+    local trLArmTarget3 = movearm.getDoorHandlePosition(
+      hinge_pos3, door_r, 0, grip_offset_x)
     ret = movearm.setArmToPositionAdapt(trLArmTarget3, trRArm, dt)
     if ret==1 then stage=stage+1; end
   elseif stage==4 then
     Body.set_lgrip_percent(1) --Close gripper
-    local trLArmTarget4 = {0.35,0.30, -0.13, --pull down
-      -90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}    
+    hinge_pos4 = hinge_pos + vector.new({0,0,-0.03})
+    local trLArmTarget4 = movearm.getDoorHandlePosition(
+      hinge_pos4, door_r, 0, grip_offset_x)
     ret = movearm.setArmToPositionAdapt(trLArmTarget4, trRArm, dt)      
-    if ret==1 then stage=stage+1; end
+    if ret==1 then 
+      return "done"      
+    end
   elseif stage==5 then
-    local trLArmTarget5 = {0.20,0.40, -0.13, --pull down
-      -90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}
-    ret = movearm.setArmToPositionAdapt(trLArmTarget5, trRArm, dt)      
-    if ret==1 then stage=stage+1; end
+   
+    if ret==1 and doneD then stage=stage+1; end    
 
     --]]
     --[[

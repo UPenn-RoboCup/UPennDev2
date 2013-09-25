@@ -23,12 +23,13 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  local wheel   = hcm.get_wheel_model()
-  turnAngle = hcm.get_wheel_turnangle()
+  local wheel   = hcm.get_wheel_model()    
   handle_pos    = vector.slice(wheel,1,3)
   handle_yaw    = wheel[4]
   handle_pitch  = wheel[5]
   handle_radius = wheel[6]
+  turnAngle = 0
+  hcm.set_wheel_turnangle(0)
 end
 
 function state.update()
@@ -42,26 +43,30 @@ function state.update()
 
   --Update handle model using interpolation
   local wheel   = hcm.get_wheel_model()
-  turnAngle1 = hcm.get_wheel_turnangle()
-  handle_pos1    = vector.slice(wheel,1,3)
-  handle_yaw1    = wheel[4]
-  handle_pitch1  = wheel[5]
-  handle_radius1 = wheel[6]
+  local turnAngle1 = hcm.get_wheel_turnangle()
+  local handle_pos1    = vector.slice(wheel,1,3)
+  local handle_yaw1    = wheel[4]
+  local handle_pitch1  = wheel[5]
+  local handle_radius1 = wheel[6]
 
-  handle_pos = util.approachTol(handle_pos, handle_pos1, dpHandleMax,dt)
-  handle_yaw = util.approachTol(handle_yaw,handle_yaw1, daHandleMax,dt)
-  handle_pitch = util.approachTol(handle_pitch,handle_pitch1, daHandleMax,dt)
-  handle_radius = util.approachTol(handle_radius, handle_radius1,drHandleMax,dt)    
-  turnAngle,doneA = util.approachTol(turnAngle,turnAngle1,dturnAngleMax, dt )
+  local handle_pos2 = util.approachTol(handle_pos, handle_pos1, dpHandleMax,dt)
+  local handle_yaw2 = util.approachTol(handle_yaw,handle_yaw1, daHandleMax,dt)
+  local handle_pitch2 = util.approachTol(handle_pitch,handle_pitch1, daHandleMax,dt)
+  local handle_radius2 = util.approachTol(handle_radius, handle_radius1,drHandleMax,dt)    
+  local turnAngle2,doneA = util.approachTol(turnAngle,turnAngle1,dturnAngleMax, dt )
   
-  lShoulderYaw = hcm.get_joints_qlshoulderyaw()
-  rShoulderYaw = hcm.get_joints_qrshoulderyaw()
-
-
+  --Adaptive shoulder yaw angle
   ret = movearm.setArmToWheelPosition(
-    handle_pos, handle_yaw, handle_pitch,
-    handle_radius, turnAngle,dt,
-    lShoulderYaw, rShoulderYaw)
+    handle_pos2, handle_yaw2, handle_pitch2,
+    handle_radius2, turnAngle2,dt)
+  if ret==-1 then
+    hcm.set_wheel_model({handle_pos[1],handle_pos[2],handle_pos[3],
+     handle_yaw,handle_pitch,handle_radius})
+    hcm.set_wheel_turnangle(turnAngle)    
+  else
+    handle_pos,handle_yaw,handle_pitch,handle_radius,turnAngle=
+      handle_pos2,handle_yaw2,handle_pitch2,handle_radius2,turnAngle2 
+  end
 end
 
 function state.exit()

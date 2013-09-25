@@ -197,6 +197,26 @@ arm.qRArmInit={
 }
 
 
+
+--New init motion utilizing 7DOF arm
+--Now the same as walking arm pose
+arm.qLArmInit={
+ vector.new({110,12,0,-40,  -0,0,0})*DEG_TO_RAD, -- at sides
+ vector.new({110.5, 17.5, 0, -85.7, -30.2,  0,16.8})*DEG_TO_RAD, -- scarecrow
+ vector.new({110.5, 17.5, -24, -85.7, -30.2, -71.0,16.8})*DEG_TO_RAD,-- arms in front
+}
+arm.qRArmInit={
+ vector.new({110,-12,0,-40,     0,0,0})*DEG_TO_RAD, -- at sides
+ vector.new({110.5, -17.5, 0, -85.7,  30.2,  0,-16.8})*DEG_TO_RAD,  -- scarecrow
+ vector.new({110.5, -17.5, 24, -85.7, 30.2, 71.0,-16.8})*DEG_TO_RAD,-- arms in front
+}
+
+
+
+
+
+
+
 -- Arm speed limits
 arm.fast_limit = vector.new({30,30,30,45,60,60,60})*DEG_TO_RAD
 arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD

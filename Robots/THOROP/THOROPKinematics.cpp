@@ -761,11 +761,14 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
 
   //Solve shoulder roll first
   //sin(shoulderRoll)*m[0][3] + cos(shoulderRoll)*m[1][3] = xWrist[1]
-  //(1-c2^2) m[0][3]^2 = (xWrist[1] - c2 m[1][3])^2
+  
   double a,b,c;
   double shoulderPitch, shoulderRoll;
   double err1,err2;
 
+
+/*
+//(1-c2^2) m[0][3]^2 = (xWrist[1] - c2 m[1][3])^2
   a = m(0,3)*m(0,3) + m(1,3)*m(1,3);
   b = -m(1,3)*xWrist[1];
   c = xWrist[1]*xWrist[1] - m(0,3)*m(0,3);
@@ -792,9 +795,6 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
       if (c21<0) err1 = 999; 
       if (c22<0) err2 = 999; 
 
-//printf("roll 1,2:%.2f %.2f\n",asin(s21)*180/PI, asin(s22)*180/PI);
-//printf("err:%f %f\n",err1,err2);
-
       if (err1<err2) shoulderRoll = acos(c21);
       else shoulderRoll = acos(c22);
     }else{ //right arm shoulderRoll: -pi to 0
@@ -811,6 +811,34 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
       else shoulderRoll = -acos(c22);
     }
   }
+*/
+
+//Solve for sin instead (now limited to -pi to pi)
+//sin(shoulderRoll)*m[0][3] + cos(shoulderRoll)*m[1][3] = xWrist[1]
+
+  a = m(0,3)*m(0,3) + m(1,3)*m(1,3);
+  b = -m(0,3)*xWrist[1];
+  c = xWrist[1]*xWrist[1] - m(1,3)*m(1,3);
+  if ((b*b-a*c<0)|| a==0 ) {//NaN handling
+    shoulderRoll = 0;
+  }
+  else {
+    double c21,c22,s21,s22;
+    s21= (-b+sqrt(b*b-a*c))/a;
+    s22= (-b-sqrt(b*b-a*c))/a;
+    if (s21 > 1) s21 = 1;
+    if (s21 < -1) s21 = -1;
+    if (s22 > 1) s22 = 1;
+    if (s22 < -1) s22 = -1;
+    double shoulderRoll1 = asin(s21);
+    double shoulderRoll2 = asin(s22);
+    err1 = s21*m(0,3)+cos(shoulderRoll1)*m(1,3)-xWrist[1];
+    err2 = s22*m(0,3)+cos(shoulderRoll2)*m(1,3)-xWrist[1];
+    if (err1*err1<err2*err2) shoulderRoll = shoulderRoll1;
+    else shoulderRoll = shoulderRoll2;
+  }
+
+
 
   //Now we know shoulder Roll and Yaw
   //Solve for shoulder Pitch

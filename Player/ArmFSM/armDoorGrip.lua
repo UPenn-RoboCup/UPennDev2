@@ -28,8 +28,11 @@ function state.entry()
     --open gripper
   Body.set_lgrip_percent(0)
   Body.set_rgrip_percent(0)
+
+
   lShoulderYaw = hcm.get_joints_qlshoulderyaw()
   rShoulderYaw = hcm.get_joints_qrshoulderyaw()
+
   stage = 1;
 end
 
@@ -37,6 +40,13 @@ function state.update()
 
 --  print(state._NAME..' Update' )
   -- Get the time of update
+
+  
+
+  local trLArmTarget = vector.new(
+    {0.18,0.31, -0.15,
+    -90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0})
+
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
@@ -44,44 +54,45 @@ function state.update()
   --if t-t_entry > timeout then return'timeout' end
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
+  local trRArm = Body.get_forward_rarm(qRArm)
   if stage==1 then --Set the arm to grip-ready pose
-    local trLArmTarget = {0.20,0.32, -0.15,
-    -90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}
-    local qLArmTarget = Body.get_inverse_larm(qLArm,trLArmTarget,lShoulderYaw)
+
+    
+    local qLArmTarget0 = vector.new({
+      141.17, 10.91, -6.6, -91.96, -95.69,-48.45, -8.14})
+      *Body.DEG_TO_RAD
+    local qLArmTarget = Body.get_inverse_larm(
+      qLArmTarget0
+      ,trLArmTarget,-6.6*Body.DEG_TO_RAD)
     if not qLArmTarget then
-      print("Left not possible!!!!")
+      print("Stage 1 Left not possible!!!!")
       return
     end
     ret = movearm.setArmJoints(qLArmTarget,qRArm,dt)
     if ret==1 then stage=stage+1; end
   elseif stage==2 then --Move the arm forward using IK now 
-    local trLArmTarget2 = {0.35,0.32, -0.15,
+    local trLArmTarget2 = {0.35,0.30, -0.15,
       -90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}
-    local trRArm = Body.get_forward_rarm(qRArm)
-    ret = movearm.setArmToPosition(trLArmTarget2, trRArm, dt, 
-      lShoulderYaw, rShoulderYaw)
+    local trLArm = Body.get_forward_larm(qLArm)
+  
+    ret = movearm.setArmToPositionAdapt(trLArmTarget2, trRArm, dt)
+
     if ret==1 then stage=stage+1; end
   elseif stage==3 then --Move the arm up to grip the handle
-    local trLArmTarget3 = {0.35,0.32, -0.05,
+    local trLArmTarget3 = {0.35,0.30, -0.10,
       -90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}
-    local trRArm = Body.get_forward_rarm(qRArm)
-    ret = movearm.setArmToPosition(trLArmTarget3, trRArm, dt, 
-      lShoulderYaw, rShoulderYaw)
+    ret = movearm.setArmToPositionAdapt(trLArmTarget3, trRArm, dt)
     if ret==1 then stage=stage+1; end
   elseif stage==4 then
     Body.set_lgrip_percent(1) --Close gripper
-    local trLArmTarget4 = {0.35,0.32, -0.10, --pull down
-      -90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}
-    local trRArm = Body.get_forward_rarm(qRArm)
-    ret = movearm.setArmToPosition(trLArmTarget4, trRArm, dt, 
-      lShoulderYaw, rShoulderYaw)
+    local trLArmTarget4 = {0.35,0.30, -0.13, --pull down
+      -90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}    
+    ret = movearm.setArmToPositionAdapt(trLArmTarget4, trRArm, dt)      
     if ret==1 then stage=stage+1; end
   elseif stage==5 then
-    local trLArmTarget4 = {0.20,0.40, -0.10, --pull down
+    local trLArmTarget5 = {0.20,0.40, -0.13, --pull down
       -90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}
-    local trRArm = Body.get_forward_rarm(qRArm)
-    ret = movearm.setArmToPosition(trLArmTarget4, trRArm, dt, 
-      lShoulderYaw, rShoulderYaw)
+    ret = movearm.setArmToPositionAdapt(trLArmTarget5, trRArm, dt)      
     if ret==1 then stage=stage+1; end
 
     --]]

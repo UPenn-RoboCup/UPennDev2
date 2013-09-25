@@ -5,6 +5,7 @@ local Body   = require'Body'
 local K      = Body.Kinematics
 local T      = require'Transform'
 local util   = require'util'
+local vector = require'vector'
 local movearm = require'movearm'
 require'hcm'
 
@@ -26,6 +27,12 @@ function state.entry()
   hcm.set_joints_prarm( trRArm )
   hcm.set_joints_qlarm( qLArm )
   hcm.set_joints_qrarm( qRArm )
+
+  local lShoulderYaw = qLArm[3]
+  local rShoulderYaw = qRArm[3]
+  hcm.set_joints_qlshoulderyaw(lShoulderYaw)
+  hcm.set_joints_qrshoulderyaw(rShoulderYaw)
+
 end
 
 function state.update()
@@ -37,18 +44,20 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
+
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+  trLArm = Body.get_forward_larm(qLArm);
+  trRArm = Body.get_forward_rarm(qRArm);
+
   -- Get the teleop mode
   local mode = hcm.get_joints_teleop()
+
   if mode==1 then
     local qLArmTarget = hcm.get_joints_qlarm()
     local qRArmTarget = hcm.get_joints_qrarm()
     movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)
-    local qLArm = Body.get_larm_command_position()
-    local qRArm = Body.get_rarm_command_position()
-    trLArm = Body.get_forward_larm(qLArm);
-    trRArm = Body.get_forward_rarm(qRArm);
-
-    
+   
     -- Set our hcm in case of a mode switch
     hcm.set_joints_plarm( Body.get_forward_larm(qLArm) )
     hcm.set_joints_prarm( Body.get_forward_rarm(qRArm) )
@@ -57,22 +66,24 @@ function state.update()
     local trRArmTarget = hcm.get_joints_prarm()
     local lShoulderYaw = hcm.get_joints_qlshoulderyaw()
     local rShoulderYaw = hcm.get_joints_qrshoulderyaw()
-    ret = movearm.setArmToPosition(
+    ret = movearm.setArmToPositionAdapt(
       trLArmTarget,
       trRArmTarget,
-      dt,
-      lShoulderYaw,rShoulderYaw
-      )
-    if ret==-1 then
-      print("resetting")
-    --TODO  
-
+      dt)    
+    if ret==-1 then            
+      --IK not reachable, reset to previous values
+      hcm.set_joints_qlshoulderyaw(qLArm[3])
+      hcm.set_joints_qrshoulderyaw(qRArm[3])      
+      hcm.set_joints_plarm(trLArm)
+      hcm.set_joints_prarm(trRArm)
+    else
+      local qLArm = Body.get_larm_command_position()
+      local qRArm = Body.get_rarm_command_position()
+      hcm.get_joints_qlarm(qLArm)
+      hcm.get_joints_qrarm(qRArm)
     end
-    local qLArm = Body.get_larm_command_position()
-    local qRArm = Body.get_rarm_command_position()
-    hcm.get_joints_qlarm(qLArm)
-    hcm.get_joints_qrarm(qRArm)
 
+--
 print("trLArm:",
   trLArmTarget[1],
   trLArmTarget[2],
@@ -81,6 +92,9 @@ print("trLArm:",
   trLArmTarget[5]*Body.RAD_TO_DEG,
   trLArmTarget[6]*Body.RAD_TO_DEG)
 
+print("qLArm:",
+  unpack(vector.new(qLArm)*Body.RAD_TO_DEG) ) 
+--
   end
 end
 

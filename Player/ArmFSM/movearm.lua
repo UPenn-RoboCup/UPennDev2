@@ -20,19 +20,26 @@ function movearm.setArmJoints(
   dt,
   dqArmLim
   )
-  if not dqArmLim then dqArmLim = dqArmMax; end
+  if not dqArmLim then dqArmLim = dqArmMax end
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
   local qL_approach, doneL2
   qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqArmLim, dt )
-  Body.set_larm_command_position( qL_approach )
   
   local qR_approach, doneR2
   qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqArmLim, dt )
-  Body.set_rarm_command_position( qR_approach )
-  if doneL2 and doneR2 then 
-    return 1;
-  end
+
+  local qL = Body.set_larm_command_position( qL_approach )
+  local qR = Body.set_rarm_command_position( qR_approach )
+
+  -- What if out of bounds for the joint angles?
+  -- Then, return a filtered target position (qL[i]~=qL_approach)
+  -- yields the index of the joint that is out-of-bounds
+  -- We should reset this particular joint in hcm, so the user cannot
+  -- move the joint into no man's land
+
+  -- When done, return true
+  if doneL2 and doneR2 then return 1 end
 end
 
 

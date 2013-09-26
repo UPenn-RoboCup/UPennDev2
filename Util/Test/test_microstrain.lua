@@ -16,29 +16,31 @@ if not imu then
   os.exit()
 end
 
-util.ptable(imu)
---[[
-print('READING')
-ret = unix.read(imu.fd)
-print('Ret',ret)
+--util.ptable(imu)
 
-ping = string.char(0x75 ,0x65 ,0x01 ,0x02 ,0x02 ,0x01 ,0xE0 ,0xC6)
-print(type(ping))
+-- Print info
+print('Opened Microstrain')
+print(table.concat(imu.info,'\n'))
 
-ret = unix.write(imu.fd,ping)
---unix.usleep(1e4)
-
-local ret_fd = unix.select( {imu.fd} )
-
-print('READING',ret_fd,imu.fd)
-ret = unix.read(imu.fd)
-stuff = {ret:byte(1,-1)}
---]]
---[[
-for i,b in ipairs(stuff) do
-  print( string.format('%d: %X',i,b) )
+-- Turn on the stream
+imu:ahrs_on()
+local cnt = 0
+while true do
+  local ret_fd = unix.select( {imu.fd} )
+  print('READING')
+  ret = unix.read(imu.fd)
+  print('Ret',#ret)
+  cnt = cnt+1
+  if cnt>5 then
+    imu:ahrs_off()
+    break
+  end
 end
---]]
+print('done!')
+
+-- test 1 sec timeout
+local ret_fd = unix.select( {imu.fd}, 1 )
+print('timeout!',ret_fd)
 
 imu:close()
 os.exit()

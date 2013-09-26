@@ -211,6 +211,17 @@ local set_baudrate = function(self, baud)
 	local res = write_command(self.fd, cmd, '04')
 end
 
+local function generate_packet(byte_array)
+  local checksum_byte1, checksum_byte2 = 0, 0
+  for _,val in ipairs(byte_array) do
+    checksum_byte1 = (checksum_byte1 + val)%256
+    checksum_byte2 = (checksum_byte2 + checksum_byte1)%256
+  end
+  table.insert(byte_array,checksum_byte1)
+  table.insert(byte_array,checksum_byte2)
+  return string.char( unpack(byte_array) )
+end
+
 ---------------------------
 -- Service multiple microstrains
 libMicrostrain.new_microstrain = function(ttyname, ttybaud )
@@ -282,20 +293,49 @@ libMicrostrain.new_microstrain = function(ttyname, ttybaud )
   res = unix.read(fd)
   assert(res,'No data!')
   response = {res:byte(1,-1)}
-  print('Info Response:',response[4])
-  print('packet 1:',response[5])
-  local pkt2_idx = 5+response[5] --4+resp[5]+1
-  local pk2_sz = response[pkt2_idx]-2 --less the two pkt identifier bytes
-  print('packet 2:',response[pkt2_idx])
-  local pkt2_payload_idx = pkt2_idx+2
-  local pkt2_payload = string.char(unpack(response,pkt2_payload_idx,pkt2_payload_idx+pk2_sz-1))
-  print(#pkt2_payload)
-  print(pkt2_payload)
+  local pkt1_idx = 5
+  local pkt1_sz  = response[5]
+  local pkt2_idx = 5+pkt1_sz --4+pkt1_sz+1
+  local pk2_sz   = response[pkt2_idx]
+  local firmware_version = 256*response[pkt2_idx+2]+response[pkt2_idx+3]
+  local information = string.char(unpack(response,pkt2_idx+4,pkt2_idx+pk2_sz-1))
+  local info = {firmware_version}
+  for k in information:gmatch('[^%s]+') do table.insert(info,k) end
+
+  -- Set the mode for reading data
+  -- 100Hz of gyro, imu, timestamp
+  -- Copy/paste from the docs
   --[[
-  for i,b in ipairs(response) do
-    print( string.format('%d: %X %c',i,b,b) )
-  end
+  local stream_fmt = { 0x75, 0x65, 0x0C, 0x0D, 0x0D, 0x08, 0x01, 0x03, 0x04, 0x00, 0x01, 0x05, 0x00, 0x01, 0x12, 0x00, 0x01}
+  -- Make the checksum and yield the string
+  local stream_fmt_cmd = generate_packet(stream_fmt)
+  ret = unix.write(fd,stream_fmt_cmd)
+  assert(ret==#stream_fmt_cmd,'Bad stream write!')
+  fd_id = unix.select( {fd}, TIMEOUT )
+  assert(fd_id==1,'Timeout!')
+  res = unix.read(fd)
+  assert(res,'No data!')
+  response = {res:byte(1,-1)}
+  --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
+
+  -- Save only once! Maybe in the eeprom, so lots of saving could be bad...
+  local save_fmt = { 0x75, 0x65, 0x0C, 0x04, 0x04, 0x08, 0x03, 0x00 }
+  -- Make the checksum and yield the string
+  local save_fmt_cmd = generate_packet(save_fmt)
+  ret = unix.write(fd,save_fmt_cmd)
+  assert(ret==#save_fmt_cmd,'Bad save write!')
+  fd_id = unix.select( {fd}, TIMEOUT )
+  assert(fd_id==1,'Timeout!')
+  res = unix.read(fd)
+  assert(res,'No data!')
+  response = {res:byte(1,-1)}
+  for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
   --]]
+  --]]
+
+  -- TODO: Use NAV or not?? This is the EKF filtered stuff... quaternion format...
+
+
 
 	-----------
 	-- Begin the Microstrain object
@@ -304,11 +344,38 @@ libMicrostrain.new_microstrain = function(ttyname, ttybaud )
 	-----------
 	-- Set the serial port data
 	obj.fd = fd
+  obj.info = info
 	obj.ttyname = ttyname
 	obj.baud = baud
 	obj.close = function(self)
 		return unix.close(self.fd) == 0
 	end
+  obj.ahrs_on = function(self)
+    -- Turn on the ahrs stream
+    local stream_enable = { 0x75, 0x65, 0x0C, 0x05, 0x05, 0x11, 0x01, 0x01, 0x01 }
+    local stream_enable_cmd = generate_packet(stream_enable)
+    ret = unix.write(self.fd,stream_enable_cmd)
+    assert(ret==#stream_enable_cmd,'Bad save write!')
+    fd_id = unix.select( {self.fd}, TIMEOUT )
+    assert(fd_id==1,'Timeout!')
+    res = unix.read(fd)
+    assert(res,'No data!')
+    response = {res:byte(1,-1)}
+    for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
+  end
+  obj.ahrs_off = function(self)
+    -- Turn off the ahrs stream
+    local stream_disable = { 0x75, 0x65, 0x0C, 0x05, 0x05, 0x11, 0x01, 0x01, 0x00 }
+    local stream_disable_cmd = generate_packet(stream_disable)
+    ret = unix.write(self.fd,stream_disable_cmd)
+    assert(ret==#stream_disable_cmd,'Bad save write!')
+    fd_id = unix.select( {self.fd}, TIMEOUT )
+    assert(fd_id==1,'Timeout!')
+    res = unix.read(fd)
+    assert(res,'No data!')
+    response = {res:byte(1,-1)}
+    for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
+  end
 
 	-----------
 	-- Return the microstrain object

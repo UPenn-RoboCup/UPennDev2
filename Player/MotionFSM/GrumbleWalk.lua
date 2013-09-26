@@ -378,6 +378,7 @@ function walk.entry()
   -- Initial step modification counter
   initial_step = 2
 
+--[[
   --Place arms in appropriate position at sides
   if upper_body_overridden==0 then
     Body.set_larm_command_position(qLArm0)
@@ -386,8 +387,7 @@ function walk.entry()
     Body.set_larm_hardness(hardnessArm)
     Body.set_rarm_hardness(hardnessArm)
   end
-  Body.set_waist_command_position(0)
-  Body.set_waist_hardness(1.0)
+--]]  
   mcm.set_walk_bipedal(1)
 
 end
@@ -528,12 +528,17 @@ function walk.update()
     Body.set_lleg_hardness(hardnessSwing)
     Body.set_rleg_hardness(hardnessSupport)
   end
+
+--SJ: disable arm movement for now  
+--[[  
   -- Add arm motion
   if upper_body_overridden==0 then
     local arm_feedback = get_arm_feedback(r,p,y)
     Body.set_larm_command_position(qLArm0+arm_feedback)
     Body.set_rarm_command_position(qRArm0+arm_feedback)
   end
+--]]
+
   ------------------------------------------
   -- Update the status in shared memory
   local uFoot = util.se2_interpolate(.5, uLeft, uRight)

@@ -1,9 +1,8 @@
 local state = {}
 state._NAME = ...
 
---motionStance: Let the robot keep standing while balanced
---Should be different from motionInit (which just inits the leg)
---For now let's use the same code
+--motionInit: initialize legs to correct position
+
 
 require'mcm'
 local Body       = require'Body'

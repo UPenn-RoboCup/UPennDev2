@@ -1,15 +1,15 @@
--- libHokuyo
+-- libMicrostrain
 -- (c) 2013 Stephen McGill, Yida Zhang
--- Hokuyo Library
+-- Microstrain Library
 
-local libHokuyo = {}
-local HokuyoPacket = require'HokuyoPacket'
+local libMicrostrain = {}
+--local MicrostrainPacket = require'MicrostrainPacket'
 local stty = require'stty'
 local unix = require'unix'
 local tcp = require'tcp'
 
 --------------------
--- libHokuyo constants
+-- libMicrostrain constants
 local HOKUYO_SCAN_REGULAR = 0
 local HOKUYO_2DIGITS = 2
 local HOKUYO_3DIGITS = 3
@@ -19,7 +19,7 @@ local N_SCAN_BYTES = 3372
 local TIMEOUT = 0.05 -- (uses select)
 
 -------------------------
--- Write a command to a hokuyo
+-- Write a command to a microstrain
 local write_command = function(fd, cmd, expected_response)
 	-- Should get one of these... '00', '02', '03', '04'
 	expected_response = expected_response or '00'
@@ -35,7 +35,7 @@ local write_command = function(fd, cmd, expected_response)
   local iCmd = nil
 	while not iCmd do
     
-		-- Read from the Hokuyo
+		-- Read from the Microstrain
 		-- Wait for the response
     local status, ready = unix.select( {fd}, TIMEOUT )
     -- Check the timeout
@@ -125,7 +125,7 @@ local get_scan = function(self)
 			end
 		end
 	end
-	return HokuyoPacket.parse(scan_str)
+	return MicrostrainPacket.parse(scan_str)
 end
 
 
@@ -165,12 +165,12 @@ local stream_on = function(self)
 end
 
 -------------------------
--- Get sensor parameters from the hokuyo
+-- Get sensor parameters from the microstrain
 local get_sensor_params = function(self)
 	local res = write_command( self.fd, 'PP\n' )
 
 	local sensor_params = {}
-	local params = HokuyoPacket.parse_info(res, 8)
+	local params = MicrostrainPacket.parse_info(res, 8)
   if not params then return nil end
 
 	sensor_params.model = params[1]
@@ -186,13 +186,13 @@ local get_sensor_params = function(self)
 end
 
 -------------------------
--- Get Hokuyo sensor information
+-- Get Microstrain sensor information
 local get_sensor_info = function(self)
 	local cmd = 'VV\n'
 	local res = write_command( self.fd, cmd )
 
 	local sensor_info = {}
-	local info = HokuyoPacket.parse_info(res, 5)
+	local info = MicrostrainPacket.parse_info(res, 5)
   
 	if not info then return nil end
   
@@ -205,73 +205,23 @@ local get_sensor_info = function(self)
 end
 
 ---------------------------
--- Set the Hokuyo baud rate
+-- Set the Microstrain baud rate
 local set_baudrate = function(self, baud)
 	local cmd = 'SS'..string.format("%6d", baud)..'\n';
 	local res = write_command(self.fd, cmd, '04')
 end
 
 ---------------------------
--- Service multiple hokuyos over ethernet
-local new_hokuyo_net = function(host_id)
-  local host = string.format('192.168.0.%d',host_id)
-	-- Open the tcp client
-  local fd = tcp.open(host, 10940, 1)
-  
-	-----------
-	-- Begin the Hokuyo object
-	local obj = {}
-
-	-----------
-	-- Set the TCP data
-	obj.fd = fd
-	obj.host = host 
-	obj.port = port
-	obj.close = function(self)
-		return unix.close(self.fd) == 0
-	end
-  
-	-----------
-	-- Set the methods for accessing the data
-	obj.stream_on = stream_on
-	obj.stream_off = stream_off
-	obj.get_scan = get_scan
-  obj.set_baudrate = set_baudrate
-  obj.get_sensor_params = get_sensor_params
-  obj.get_sensor_info = get_sensor_info
-  obj.callback = nil
-	-- TODO: Use sensor_params.scan_rate
-	obj.update_time = 1/40
-	-----------
-
-	-----------
-	-- Setup the Hokuyo properly
-  if not obj:stream_off() then
-    obj:close()
-    return nil
-  end
---	obj:set_baudrate(baud)
-	obj.params = obj:get_sensor_params()
-	obj.info = obj:get_sensor_info()
-	-----------
-
-	-----------
-	-- Return the hokuyo object
-	return obj
-end
-
-
----------------------------
--- Service multiple hokuyos
-local new_hokuyo_usb = function(ttyname, serial_number, ttybaud )
+-- Service multiple microstrains
+libMicrostrain.new_microstrain = function(ttyname, ttybaud )
   
   local baud = ttybaud or 115200
   
 	if not ttyname then
 		local ttys = unix.readdir("/dev");
-		for i=1,#ttys do
-			if ttys[i]:find("cu.usbmodem") or ttys[i]:find("ttyACM") then
-				ttyname = "/dev/"..ttys[i]
+		for _,tty in ipairs(ttys) do
+			if tty:find("cu.usbmodem") or tty:find("ttyACM") then
+				ttyname = "/dev/"..tty
         -- TODO: Test if in use
 				break
 			end
@@ -283,7 +233,7 @@ local new_hokuyo_usb = function(ttyname, serial_number, ttybaud )
 	local fd = unix.open( ttyname, unix.O_RDWR + unix.O_NOCTTY)
 	-- Check if opened correctly
 	if fd<3 then
-    -- DEBUG(string.format("Open: %s, (%d)\n", name, fd))
+    print(string.format("Open: %s, (%d)\n", name, fd))
 		return nil
 	end
   
@@ -293,8 +243,62 @@ local new_hokuyo_usb = function(ttyname, serial_number, ttybaud )
 	stty.serial(fd)
 	stty.speed(fd, baud)
 
+  -----------
+  -- Gut check: ping the device
+  local ping_cmd = 
+    string.char( 0x75, 0x65, 0x01, 0x02, 0x02, 0x01, 0xE0, 0xC6)
+  local ret = unix.write(fd,ping_cmd)
+  assert(ret==#ping_cmd,'Bad ping write!')
+  -- Wait until the device responds with data
+  local fd_id = unix.select( {fd}, TIMEOUT )
+  assert(fd_id==1,'Timeout!')
+  -- Grab the response
+  local res = unix.read(fd)
+  assert(res,'No data!')
+  local response = {res:byte(1,-1)}
+  --print('Ping Response:')
+  --for i,b in ipairs(response) do print( string.format('%d: %X',i,b) ) end
+
+  -- Set to idle
+  local idle_cmd = 
+    string.char( 0x75, 0x65, 0x01, 0x02, 0x02, 0x02, 0xE1, 0xC7 )
+  ret = unix.write(fd,idle_cmd)
+  assert(ret==#idle_cmd,'Bad idle write!')
+  fd_id = unix.select( {fd}, TIMEOUT )
+  assert(fd_id==1,'Timeout!')
+  res = unix.read(fd)
+  assert(res,'No data!')
+  response = {res:byte(1,-1)}
+  --print('Idle Response:')
+  --for i,b in ipairs(response) do print( string.format('%d: %X',i,b) ) end
+
+--7565 0102 0203 E2C8
+  local info_cmd = 
+    string.char( 0x75, 0x65, 0x01, 0x02, 0x02, 0x03, 0xE2, 0xC8 )
+  ret = unix.write(fd,info_cmd)
+  assert(ret==#info_cmd,'Bad info write!')
+  fd_id = unix.select( {fd}, TIMEOUT )
+  assert(fd_id==1,'Timeout!')
+  res = unix.read(fd)
+  assert(res,'No data!')
+  response = {res:byte(1,-1)}
+  print('Info Response:',response[4])
+  print('packet 1:',response[5])
+  local pkt2_idx = 5+response[5] --4+resp[5]+1
+  local pk2_sz = response[pkt2_idx]-2 --less the two pkt identifier bytes
+  print('packet 2:',response[pkt2_idx])
+  local pkt2_payload_idx = pkt2_idx+2
+  local pkt2_payload = string.char(unpack(response,pkt2_payload_idx,pkt2_payload_idx+pk2_sz-1))
+  print(#pkt2_payload)
+  print(pkt2_payload)
+  --[[
+  for i,b in ipairs(response) do
+    print( string.format('%d: %X %c',i,b,b) )
+  end
+  --]]
+
 	-----------
-	-- Begin the Hokuyo object
+	-- Begin the Microstrain object
 	local obj = {}
 
 	-----------
@@ -305,47 +309,16 @@ local new_hokuyo_usb = function(ttyname, serial_number, ttybaud )
 	obj.close = function(self)
 		return unix.close(self.fd) == 0
 	end
-  
-	-----------
-	-- Set the methods for accessing the data
-	obj.stream_on = stream_on
-	obj.stream_off = stream_off
-	obj.get_scan = get_scan
-  obj.set_baudrate = set_baudrate
-  obj.get_sensor_params = get_sensor_params
-  obj.get_sensor_info = get_sensor_info
-  obj.callback = nil
-	-- TODO: Use sensor_params.scan_rate
-	obj.update_time = 1/40
-	-----------
 
 	-----------
-	-- Setup the Hokuyo properly
-  if not obj:stream_off() then
-    obj:close()
-    return nil
-  end
-	obj:set_baudrate(baud)
-	obj.params = obj:get_sensor_params()
-	obj.info = obj:get_sensor_info()
-	-----------
-
-	-----------
-	-- Return the hokuyo object
+	-- Return the microstrain object
 	return obj
 end
 
-libHokuyo.new_hokuyo = function(addr, ...)
-  if type(addr)=='number' then
-    return new_hokuyo_net(addr)
-  end
-  return new_hokuyo_usb(addr, ...)
-end
-
 ---------------------------
--- Service multiple hokuyos
+-- Service multiple microstrains
 -- TODO: This seems pretty generic already - make it more so
-libHokuyo.service = function( hokuyos, main )
+libMicrostrain.service = function( microstrains, main )
   
   -- Enable the main function as a coroutine thread
   local main_thread = nil
@@ -353,28 +326,28 @@ libHokuyo.service = function( hokuyos, main )
     main_thread = coroutine.create( main )
   end
 
-	-- Start the streaming of each hokuyo
-  -- Instantiate the hokuyo coroutine thread
-  local hokuyo_fds = {}
-  local fd_to_hokuyo = {}
-  local fd_to_hokuyo_id = {}
-	for i,hokuyo in ipairs(hokuyos) do
-    fd_to_hokuyo[hokuyo.fd] = hokuyo
-    fd_to_hokuyo_id[hokuyo.fd] = i
-    table.insert(hokuyo_fds,hokuyo.fd)
-		hokuyo:stream_on()
-		hokuyo.t_last = unix.time()
-		hokuyo.thread = coroutine.create( 
+	-- Start the streaming of each microstrain
+  -- Instantiate the microstrain coroutine thread
+  local microstrain_fds = {}
+  local fd_to_microstrain = {}
+  local fd_to_microstrain_id = {}
+	for i,microstrain in ipairs(microstrains) do
+    fd_to_microstrain[microstrain.fd] = microstrain
+    fd_to_microstrain_id[microstrain.fd] = i
+    table.insert(microstrain_fds,microstrain.fd)
+		microstrain:stream_on()
+		microstrain.t_last = unix.time()
+		microstrain.thread = coroutine.create( 
 		function()
-      print('Starting coroutine for',hokuyo.info.serial_number)
+      print('Starting coroutine for',microstrain.info.serial_number)
       -- The coroutine should never end
       local scan_str = ''
 			while true do -- extract buffer
-        -- Grab the latest data from the hokuyo buffer
-				local scan_buf = unix.read(hokuyo.fd, N_SCAN_BYTES-#scan_str )
-        -- If no return, something maybe went awry with the hokuyo
+        -- Grab the latest data from the microstrain buffer
+				local scan_buf = unix.read(microstrain.fd, N_SCAN_BYTES-#scan_str )
+        -- If no return, something maybe went awry with the microstrain
         if not scan_buf then
-          print('BAD READ',type(scan_buf),hokuyo.info.serial_number)
+          print('BAD READ',type(scan_buf),microstrain.info.serial_number)
           return
         end
         if #scan_str==0 then
@@ -393,11 +366,11 @@ libHokuyo.service = function( hokuyos, main )
         -- Check if we are done
         if #scan_str>=N_SCAN_BYTES then
     			-- Return the scan string to be parsed
-          hokuyo.t_last = unix.time()
+          microstrain.t_last = unix.time()
     			coroutine.yield( scan_str )
           scan_str = ''
         else
-          -- Wait for the hokuyo buffer to fill again
+          -- Wait for the microstrain buffer to fill again
           coroutine.yield()
         end
       end -- while extract buffer
@@ -406,27 +379,27 @@ libHokuyo.service = function( hokuyos, main )
 		)
 	end
   
-  -- Loop while the hokuyos are alive
-	while #hokuyos>0 do
+  -- Loop while the microstrains are alive
+	while #microstrains>0 do
 
-    -- Perform Select on all hokuyos
-    local status, ready = unix.select( hokuyo_fds )
+    -- Perform Select on all microstrains
+    local status, ready = unix.select( microstrain_fds )
     for i,is_ready in pairs(ready) do
       if is_ready then
-        local who_to_service = fd_to_hokuyo[i]
+        local who_to_service = fd_to_microstrain[i]
         -- Resume the thread
         local status_code, param = coroutine.resume( who_to_service.thread )
         -- Check if there were errors in the coroutine
         if not status_code then
-          print('Dead hokuyo coroutine!',who_to_service.info.serial_number)
+          print('Dead microstrain coroutine!',who_to_service.info.serial_number)
           who_to_service:close()
-          local h_id = fd_to_hokuyo_id[i]
-          table.remove( hokuyos, h_id )
-          table.remove( hokuyo_fds, h_id )
+          local h_id = fd_to_microstrain_id[i]
+          table.remove( microstrains, h_id )
+          table.remove( microstrain_fds, h_id )
         end
         -- Process the callback
         if param and who_to_service.callback then
-          who_to_service.callback( HokuyoPacket.parse(param) )
+          who_to_service.callback( MicrostrainPacket.parse(param) )
         end
       end
     end
@@ -438,4 +411,4 @@ libHokuyo.service = function( hokuyos, main )
   print'Nothing left to service!'
 end
 
-return libHokuyo
+return libMicrostrain

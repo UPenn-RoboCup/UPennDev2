@@ -52,7 +52,7 @@ chains['Right Leg'] = {
   ttyname = '/dev/ttyUSB2',
   nx_ids  = {15,17,19,21,23,25, --[[waist pitch]]28},
   mx_ids  = {},
-  active = false
+  active = true
 }
 chains['Left Leg'] = {
   ttyname = '/dev/ttyUSB3',

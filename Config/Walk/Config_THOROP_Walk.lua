@@ -88,7 +88,7 @@ walk.bodyHeight = 1.15
 walk.bodyTilt = 0*math.pi/180
 -- footX is deprecated in favor of torsoX
 walk.torsoX = 0.00
-walk.footY = 0.10
+walk.footY = 0.120
 walk.supportX = 0.03
 walk.supportY = 0.02
 walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40,0,0, 0})
@@ -105,7 +105,7 @@ walk.hardnessArm = .1
 ------------------------------------
 walk.stepHeight = 0.052
 walk.tZMP = 0.30 --Com height 0.9
-walk.tStep = 0.8
+walk.tStep = 1.0
 walk.phSingle = {0.15,0.85}
 walk.phZmp = {0.15,0.85}
 

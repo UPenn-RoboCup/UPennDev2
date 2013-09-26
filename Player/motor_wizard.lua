@@ -50,15 +50,15 @@ chains['Left Arm'] = {
 }
 chains['Right Leg'] = {
   ttyname = '/dev/ttyUSB2',
-  nx_ids  = {15,17,19,21,23,25},
+  nx_ids  = {15,17,19,21,23,25, --[[waist pitch]]28},
   mx_ids  = {},
-  active = true
+  active = false
 }
 chains['Left Leg'] = {
   ttyname = '/dev/ttyUSB3',
-  nx_ids  = {16,18,20,22,24,26},
+  nx_ids  = {16,18,20,22,24,26, --[[waist]]27},
   mx_ids  = {},
-  active = false
+  active = true
 }
 if OPERATING_SYSTEM=='darwin' then
   chains['Right Arm'].ttyname = '/dev/cu.usbserial-FTT3ABW9A'

@@ -63,11 +63,12 @@ function state.update()
   if t-t_entry<t_readings then return end
 
   -- Zero the waist
+  --[[
   local qWaist = Body.get_waist_command_position()
   local qWaist_approach, doneWaist = 
     util.approachTol( qWaist, qWaist_desired, dqWaistLimit, dt )
   Body.set_waist_command_position(qWaist_approach)
-
+  --]]
   
   -- Acquire the joint positions of our legs
   if not started then

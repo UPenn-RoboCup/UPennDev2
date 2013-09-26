@@ -32,9 +32,22 @@ local function write_command(fd,cmd)
   assert(fd_id==1,'Timeout!')
   local res = unix.read(fd)
   assert(res,'No data!')
-  local response = {res:byte(1,-1)}
   --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
-  return response
+  return {res:byte(1,-1)}
+end
+
+local function get_information(fd)
+  local response = write_command(fd,{ 0x75, 0x65, 0x01, 0x02, 0x02, 0x03 })
+  -- Parse information
+  local pkt1_idx = 5
+  local pkt1_sz  = response[5]
+  local pkt2_idx = 5+pkt1_sz --4+pkt1_sz+1
+  local pk2_sz   = response[pkt2_idx]
+  local firmware_version = 256*response[pkt2_idx+2]+response[pkt2_idx+3]
+  local information = string.char(unpack(response,pkt2_idx+4,pkt2_idx+pk2_sz-1))
+  local info = {firmware_version}
+  for k in information:gmatch('[^%s]+') do table.insert(info,k) end
+  return info
 end
 
 ---------------------------
@@ -70,52 +83,10 @@ libMicrostrain.new_microstrain = function(ttyname, ttybaud )
 	stty.speed(fd, baud)
 
   -----------
-  -- Gut check: ping the device
-  local ping_cmd = 
-    string.char( 0x75, 0x65, 0x01, 0x02, 0x02, 0x01, 0xE0, 0xC6)
-  local ret = unix.write(fd,ping_cmd)
-  assert(ret==#ping_cmd,'Bad ping write!')
-  -- Wait until the device responds with data
-  local fd_id = unix.select( {fd}, TIMEOUT )
-  assert(fd_id==1,'Timeout!')
-  -- Grab the response
-  local res = unix.read(fd)
-  assert(res,'No data!')
-  local response = {res:byte(1,-1)}
-  --print('Ping Response:')
-  --for i,b in ipairs(response) do print( string.format('%d: %X',i,b) ) end
-
-  -- Set to idle
-  local idle_cmd = 
-    string.char( 0x75, 0x65, 0x01, 0x02, 0x02, 0x02, 0xE1, 0xC7 )
-  ret = unix.write(fd,idle_cmd)
-  assert(ret==#idle_cmd,'Bad idle write!')
-  fd_id = unix.select( {fd}, TIMEOUT )
-  assert(fd_id==1,'Timeout!')
-  res = unix.read(fd)
-  assert(res,'No data!')
-  response = {res:byte(1,-1)}
-  --print('Idle Response:')
-  --for i,b in ipairs(response) do print( string.format('%d: %X',i,b) ) end
-
---7565 0102 0203 E2C8
-  local info_cmd = 
-    string.char( 0x75, 0x65, 0x01, 0x02, 0x02, 0x03, 0xE2, 0xC8 )
-  ret = unix.write(fd,info_cmd)
-  assert(ret==#info_cmd,'Bad info write!')
-  fd_id = unix.select( {fd}, TIMEOUT )
-  assert(fd_id==1,'Timeout!')
-  res = unix.read(fd)
-  assert(res,'No data!')
-  response = {res:byte(1,-1)}
-  local pkt1_idx = 5
-  local pkt1_sz  = response[5]
-  local pkt2_idx = 5+pkt1_sz --4+pkt1_sz+1
-  local pk2_sz   = response[pkt2_idx]
-  local firmware_version = 256*response[pkt2_idx+2]+response[pkt2_idx+3]
-  local information = string.char(unpack(response,pkt2_idx+4,pkt2_idx+pk2_sz-1))
-  local info = {firmware_version}
-  for k in information:gmatch('[^%s]+') do table.insert(info,k) end
+  -- Ping the device
+  --write_command(fd,{ 0x75, 0x65, 0x01, 0x02, 0x02, 0x01 })
+  -- Set the device to idle
+  write_command(fd,{ 0x75, 0x65, 0x01, 0x02, 0x02, 0x02 })
 
   -- Set the mode for reading data
   -- 100Hz of gyro, imu, timestamp
@@ -157,7 +128,8 @@ libMicrostrain.new_microstrain = function(ttyname, ttybaud )
 	-----------
 	-- Set the serial port data
 	obj.fd = fd
-  obj.info = info
+  -- Get device information
+  obj.information = get_information(fd)
 	obj.ttyname = ttyname
 	obj.baud = baud
 	obj.close = function(self)

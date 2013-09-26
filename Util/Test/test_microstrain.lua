@@ -20,7 +20,7 @@ end
 
 -- Print info
 print('Opened Microstrain')
-print(table.concat(imu.info,'\n'))
+print(table.concat(imu.information,'\n'))
 
 -- Turn on the stream
 imu:ahrs_on()
@@ -28,8 +28,26 @@ local cnt = 0
 while true do
   local ret_fd = unix.select( {imu.fd} )
   print('READING')
-  ret = unix.read(imu.fd)
-  print('Ret',#ret)
+  res = unix.read(imu.fd)
+  assert(res)
+  local response = {string.byte(res,1,-1)}
+  for i,b in ipairs(response) do
+    print( string.format('%d: %02X %d',i,b,b) )
+  end
+
+  local acc_str = res:sub(7,18)
+  for i,b in ipairs{acc_str:byte(1,-1)} do
+    print( string.format('acc %d: %02X %d',i,b,b) )
+  end
+  local acc = carray.float( acc_str )
+  for i=1,#acc do
+    print('acc',acc[i])
+  end
+  local acc_rev = carray.float( acc_str:reverse() )
+  for i=1,#acc_rev do
+    print('acc_rev',acc_rev[i])
+  end
+
   cnt = cnt+1
   if cnt>5 then
     imu:ahrs_off()

@@ -169,12 +169,12 @@ assert(#servo.rad_bias==nJoint,'Bad servo rad_bias!')
 
 --SJ: Arm servos should at least move up to 90 deg
 servo.min_rad = vector.new({
-  -60,-80, -- Head
-  -90,-5,-90,-140,      -180,-90,-135, --LArm
+  -90,-80, -- Head
+  -90, 0, -90, -140,      -180,-87,-180, --LArm  
   -175,-175,-175,-175,-175,-175, --LLeg
   -175,-175,-175,-175,-175,-175, --RLeg
-  -175,-170,-180,-140,   -60,-90,-135, --RArm
-  -175,-175, -- Waist
+  -90,-87,-90,-140,       -180,-87,-180, --RArm
+  -90,-45, -- Waist
   -20,-20,-20, -- left gripper
   -20,-20,-20, -- right gripper
   -60, -- Lidar pan
@@ -182,12 +182,12 @@ servo.min_rad = vector.new({
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 
 servo.max_rad = vector.new({
-  45,80, -- Head
-  160,150,180,0,   60,90,135, --LArm
+  90,80, -- Head
+  160,87,90,-25,     180,87,180, --LArm  
   175,175,175,175,175,175, --LLeg
   175,175,175,175,175,175, --RLeg
-  160,5,90,0,     180,90,135, --RArm
-  175,175, -- Waist
+  160,-0,90,-25,     180,87,180, --RArm  
+  90,45, -- Waist
   10,10,10, -- left gripper
   10,10,10, -- right gripper
   60, -- Lidar pan
@@ -776,27 +776,28 @@ if IS_WEBOTS then
   })*DEG_TO_RAD
   
   servo.min_rad = vector.new({
-    -60,-80, -- Head
+    -90,-80, -- Head
 
-    -90,0,-90,-140,      -180,-87,-180, --LArm
+    -90, 0, -90, -140,      -180,-87,-180, --LArm
     -175,-175,-175,-175,-175,-175, --LLeg
     -175,-175,-175,-175,-175,-175, --RLeg
-    -175,-170,-180,-140,   -180,-87,-180, --RArm
+    -90,-87,-90,-140,       -180,-87,-180, --RArm
 
-    -175,-175, -- Waist
+    -90,-45, -- Waist
     0,0,0, -- left gripper
     0,0,0, -- right gripper
     -60, -- Lidar pan
   })*DEG_TO_RAD
   
   servo.max_rad = vector.new({
-    45,80, -- Head
-    160,150,180,-25,   180,87,180, --LArm
+    90, 80, -- Head
+
+    160,87,90,-25,     180,87,180, --LArm
     175,175,175,175,175,175, --LLeg
     175,175,175,175,175,175, --RLeg
     160,-0,90,-25,     180,87,180, --RArm
 
-    175,175, -- Waist
+    90,45, -- Waist
     90,90,90, -- left gripper
     90,90,90, -- right gripper
     60, -- Lidar pan

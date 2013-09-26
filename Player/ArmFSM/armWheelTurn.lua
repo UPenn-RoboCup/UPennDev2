@@ -59,7 +59,7 @@ function state.update()
   ret = movearm.setArmToWheelPosition(
     handle_pos2, handle_yaw2, handle_pitch2,
     handle_radius2, turnAngle2,dt)
-  if ret==-1 then
+  if ret==-1 then    
     hcm.set_wheel_model({handle_pos[1],handle_pos[2],handle_pos[3],
      handle_yaw,handle_pitch,handle_radius})
     hcm.set_wheel_turnangle(turnAngle)    

@@ -58,6 +58,39 @@ shared_data.wheel.turnangle = vector.zeros(1)
 
 -- Door Opening
 shared_data.door = {}
+
+--1 for left, 0 for right
+shared_data.door.hand=vector.ones(1)
+
+--Hinge XYZ pos from robot frame
+shared_data.door.hinge_pos = vector.new({0.45,0.90,-0.15})
+
+--Radius of the door from hinge to the gripping position
+--negavive value: left hinge, positive value: right hinge
+shared_data.door.r = vector.new({-0.60})
+
+--How much the handle sticks out from the door surface?
+shared_data.door.grip_offset_x = vector.new({-0.05})
+
+--The current angle of the door 
+shared_data.door.yaw = vector.zeros(1)
+
+--The target angle of the door 
+shared_data.door.yaw_target = vector.new({-20*math.pi/180})
+
+
+--[[
+--Right hand door with right edge
+shared_data.door.hand=vector.zeros(1)
+shared_data.door.hinge_pos = vector.new({0.45,-0.90,-0.15})
+shared_data.door.r = vector.new({0.60})
+shared_data.door.yaw_target = vector.new({20*math.pi/180})
+--]]
+
+
+
+
+--[[
 shared_data.door.hinge  = vector.new({.2,0,.1})
 -- What is the position of the handle axis
 -- What angle from the horizon is the handle
@@ -70,6 +103,7 @@ shared_data.door.open_ang   = vector.zeros(1)
 -- 0: left
 -- 1: right
 shared_data.door.hand   = vector.zeros(1)
+--]]
 
 -- Dipoles for arbitrary grabbing
 -- TODO: Use this in place of the wheel/door?

@@ -215,6 +215,21 @@ arm.qRArmInit={
 
 
 
+--SJ: nonzero shoulder yaw
+arm.qLArmInit={
+ vector.new({110,12,-3,-40,  -0,0,0})*DEG_TO_RAD, -- at sides
+ vector.new({110.5, 17.5, 0, -85.7, -30.2,  0,16.8})*DEG_TO_RAD, -- scarecrow
+ vector.new({110.5, 17.5, -24, -85.7, -30.2, -71.0,16.8})*DEG_TO_RAD,-- arms in front
+}
+arm.qRArmInit={
+ vector.new({110,-12,3,-40,     0,0,0})*DEG_TO_RAD, -- at sides
+ vector.new({110.5, -17.5, 0, -85.7,  30.2,  0,-16.8})*DEG_TO_RAD,  -- scarecrow
+ vector.new({110.5, -17.5, 24, -85.7, 30.2, 71.0,-16.8})*DEG_TO_RAD,-- arms in front
+}
+
+
+
+
 
 
 -- Arm speed limits

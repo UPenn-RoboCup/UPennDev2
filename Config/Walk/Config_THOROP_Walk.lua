@@ -2,6 +2,88 @@ local vector = require'vector'
 local DEG_TO_RAD = math.pi/180
 
 local Config = {}
+
+------------------------------------
+-- Walk Parameters
+local walk = {}
+
+------------------------------------
+-- Stance and velocity limit values
+------------------------------------
+-- NOTE: Large stride test (up to 300mm)
+walk.stanceLimitX = {-0.30,0.30}
+walk.stanceLimitY = {0.16,0.60}
+walk.stanceLimitA = {-10*math.pi/180,30*math.pi/180}
+-- TODO: Toe/heel overlap checking values
+--OP default stance width: 0.0375*2 = 0.075
+--Heel overlap At radian 0.15 at each foot = 0.05*sin(0.15)*2=0.015
+--Heel overlap At radian 0.30 at each foot = 0.05*sin(0.15)*2=0.030
+
+walk.velLimitX = {-.15,.15}
+walk.velLimitY = {-.08,.08}
+walk.velLimitA = {-.3,.3}
+walk.velDelta  = {0.05,0.03,0.3}
+
+------------------------------------
+-- Stance parameters
+------------------------------------
+walk.bodyHeight = 1.15
+walk.bodyTilt = 0*math.pi/180
+walk.footY = 0.120     -- body-center-to-ankle width
+walk.supportX = 0.00  -- ankle-to-foot-center offset 
+walk.torsoX = 0.00     -- com-to-body-center offset
+------------------------------------
+-- Gait parameters
+------------------------------------
+walk.tStep = 1.0
+walk.tZMP = 0.34       
+walk.supportY = 0.01   --ankle-to-foot-center offset
+walk.stepHeight = 0.052
+walk.phSingle = {0.15,0.85}
+walk.phZmp = {0.15,0.85}
+
+------------------------------------
+-- Compensation parameters
+------------------------------------
+walk.hardnessSupport = 1
+walk.hardnessSwing = 1
+walk.hipRollCompensation = 3*math.pi/180
+walk.supportModYInitial = -0.04 --Reduce initial body swing
+
+-----------------------------------------------------------
+--Imu feedback parameters, alpha / gain / deadband / max --
+-----------------------------------------------------------
+gyroFactor = 0.273*math.pi/180 * 300 / 1024 --dps to rad/s conversion
+-- We won't use gyro feedback on webots
+gyroFactorX = gyroFactor * 0
+gyroFactorY = gyroFactor * 0
+
+walk.ankleImuParamX={0.3,0.75*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
+walk.ankleImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
+
+walk.kneeImuParamX={0.3,1.5*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
+
+walk.hipImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
+
+-----------------------------------------------------------
+-- Stance parameters
+-----------------------------------------------------------
+
+
+local stance={}
+stance.enable_sit = false
+-- centaur has no legs
+stance.enable_legs = true
+
+stance.pLLeg = vector.new{-walk.supportX,  walk.footY, 0, 0,0,0}
+stance.pRLeg = vector.new{-walk.supportX, -walk.footY, 0, 0,0,0}
+stance.pTorso = vector.new{-walk.torsoX, 0, walk.bodyHeight, 
+  0,walk.bodyTilt,0}
+stance.qWaist = vector.zeros(2)
+
+stance.dpLimitStance = vector.new{.04, .03, .07, .4, .4, .4}
+stance.dqWaistLimit = 10*DEG_TO_RAD*vector.ones(2)
+
 ------------------------------------
 -- Kneeling parameters
 ------------------------------------
@@ -59,115 +141,6 @@ zmpstep.stepHeight = 0.10
 zmpstep.phSingle={0.1,0.9}
 zmpstep.hipRollCompensation = 3*math.pi/180
 --zmpstep.bodyHeight = 1.10 
-
-------------------------------------
--- Walk Parameters
-local walk = {}
-
-------------------------------------
--- Stance and velocity limit values
-------------------------------------
--- NOTE: Large stride test (up to 300mm)
-walk.stanceLimitX = {-0.60,0.60}
-walk.stanceLimitY = {0.16,0.60}
-walk.stanceLimitA = {-10*math.pi/180,30*math.pi/180}
--- TODO: Toe/heel overlap checking values
---OP default stance width: 0.0375*2 = 0.075
---Heel overlap At radian 0.15 at each foot = 0.05*sin(0.15)*2=0.015
---Heel overlap At radian 0.30 at each foot = 0.05*sin(0.15)*2=0.030
-
-walk.velLimitX = {-.20,.30}
-walk.velLimitY = {-.20,.20}
-walk.velLimitA = {-.3,.3}
-walk.velDelta  = {0.15,0.10,0.3}
-
-------------------------------------
--- Stance parameters
-------------------------------------
-walk.bodyHeight = 1.15
-walk.bodyTilt = 0*math.pi/180
--- footX is deprecated in favor of torsoX
-walk.torsoX = 0.00
-walk.footY = 0.120
-walk.supportX = 0.03
-walk.supportY = 0.02
-walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40,0,0, 0})
-walk.qRArm = math.pi/180*vector.new({110, -12, 0, -40,0,0, 0})
-
-walk.qLArmKick = math.pi/180*vector.new({110, 12, -0, -40,0,0})
-walk.qRArmKick = math.pi/180*vector.new({110, -12, 0, -40,0,0})
-
-walk.hardnessSupport = 1
-walk.hardnessSwing = 1
-walk.hardnessArm = .1
-------------------------------------
--- Gait parameters
-------------------------------------
-walk.stepHeight = 0.052
-walk.tZMP = 0.30 --Com height 0.9
-walk.tStep = 1.0
-walk.phSingle = {0.15,0.85}
-walk.phZmp = {0.15,0.85}
-
-------------------------------------
--- Compensation parameters
-------------------------------------
-walk.hipRollCompensation = 1*math.pi/180
-walk.ankleMod = vector.new({-1,0})/ 3*math.pi/180
-walk.supportModYInitial = -0.04 --Reduce initial body swing
-
------------------------------------------------------------
---Imu feedback parameters, alpha / gain / deadband / max --
------------------------------------------------------------
-gyroFactor = 0.273*math.pi/180 * 300 / 1024 --dps to rad/s conversion
--- We won't use gyro feedback on webots
-gyroFactorX = gyroFactor * 0
-gyroFactorY = gyroFactor * 0
---
-walk.ankleImuParamX={0.3,0.75*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
-walk.ankleImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
---
-walk.kneeImuParamX={0.3,1.5*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
---
-walk.hipImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
---
-walk.armImuParamX={1,10*gyroFactorX, 20*math.pi/180, 45*math.pi/180}
-walk.armImuParamY={1,10*gyroFactorY, 20*math.pi/180, 45*math.pi/180}
-
-------------------------------------
--- WalkKick parameters
-------------------------------------
-walk.walkKickDef={}
-
-------------------------------------
--- Sit/stand stance parameters
--- NOTE: Never sit down!
-
-local stance={}
-stance.enable_sit = false
--- centaur has no legs
-stance.enable_legs = true
-stance.delay = 80
-
-stance.hardnessLeg = 1
-stance.bodyHeightSit = 0.75
-stance.supportXSit = -0.00
-stance.bodyHeightDive = 0.65
-
---bodyInitial bodyTilt, 0 for webots
-stance.bodyTiltStance = 0*math.pi/180
--- Legs for stance
-stance.dpLimitStance = vector.new{.04, .03, .07, .4, .4, .4}
-stance.pLLeg = vector.new{-walk.supportX,walk.footY,0, 0,0,0}
-stance.pRLeg = vector.new{-walk.supportX, -walk.footY, 0, 0,0,0}
-stance.pTorso = vector.new{-walk.torsoX, 0, walk.bodyHeight, 
-  0,walk.bodyTilt,0}
--- Stance waist
-stance.dqWaistLimit = 10*DEG_TO_RAD*vector.ones(2)
-stance.qWaist = vector.zeros(2)
-
--- Sitting (NOTE: There is no sitting...)
-stance.dpLimitSit = vector.new({.1,.01,.06,.1,.3,.1})*2
 
 ------------------------------------
 -- For the arm FSM

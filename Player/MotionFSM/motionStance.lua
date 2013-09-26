@@ -70,7 +70,10 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
-   
+
+
+--Does nothing
+--[[
   -- Zero the waist  
   local qWaist = Body.get_waist_command_position()
   local qWaist_approach, doneWaist = 
@@ -95,6 +98,8 @@ function state.update()
   else
     return true
   end  
+--]]
+
 end
 
 function state.exit()

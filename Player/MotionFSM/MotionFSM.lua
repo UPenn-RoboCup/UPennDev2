@@ -54,9 +54,9 @@ sm:set_transition(motionStance, 'walk', motionWalk)
 sm:set_transition(motionStance, 'step', motionStep)
 sm:set_transition(motionStance, 'preview', motionStepPreview)
 
---Walk stop should be handled elsewise
+--Walk stop are handled by HCM variable
 --As it can stop walking mid-step
-sm:set_transition(motionWalk, 'stand', motionStance)
+sm:set_transition(motionWalk, 'done', motionStance)
 sm:set_transition(motionStep, 'done', motionStance)
 sm:set_transition(motionStepPreview, 'done', motionStance)
 
@@ -78,6 +78,10 @@ obj.update = function()
   if event then
   	print( util.color(obj._NAME..' Event:','green'),event)
   	sm:add_event(event)
+    --Hack here to handle stopping
+    if event=="stand" then
+      mcm.set_walk_stoprequest(1)      
+    end
   end
   -- TODO: If falling, maybe just call that update function?
   sm:update()

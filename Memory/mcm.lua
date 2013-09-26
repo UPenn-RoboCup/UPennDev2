@@ -25,6 +25,7 @@ shared.walk.supportX   = vector.zeros(1)
 shared.walk.supportY   = vector.zeros(1)
 shared.walk.vel        = vector.zeros(3)
 shared.walk.bipedal    = vector.zeros(1)
+shared.walk.stoprequest= vector.zeros(1)
 
 -- Motion Status
 shared.status = {}
@@ -34,6 +35,7 @@ shared.status.bodyOffset = vector.zeros(3)
 shared.status.falling    = vector.zeros(1)
 
 -- Foot support
+--SJ: they are bit misleading as they are different from 'support' positions
 shared.support = {}
 shared.support.uLeft_now   = vector.zeros(3)
 shared.support.uRight_now  = vector.zeros(3)
@@ -41,6 +43,13 @@ shared.support.uTorso_now  = vector.zeros(3)
 shared.support.uLeft_next  = vector.zeros(3)
 shared.support.uRight_next = vector.zeros(3)
 shared.support.uTorso_next = vector.zeros(3)
+
+--Current Foot and Torso Poses
+--Todo: 6D pose
+shared.poses={}
+shared.poses.uLeft = vector.zeros(3)
+shared.poses.uRight = vector.zeros(3)
+shared.poses.uTorso = vector.zeros(3)
 
 
 memory.init_shm_segment(..., shared, shsize)

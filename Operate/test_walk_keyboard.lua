@@ -68,6 +68,16 @@ local function process_character(key_code,key_char,key_char_lower)
   local event = char_to_event[key_char_lower]
   if event then
     print( event[1], util.color(event[2],'yellow') )
+    --Hack here to stop walking as well
+    if key_char_lower == '8' then
+      print ("stoprequest")
+      cmd = {}
+      cmd.shm = 'mcm'
+      cmd.segment = 'walk'
+      cmd.key = 'stoprequest'
+      cmd.val = 1
+      send_command(cmd)
+    end
     cmd = {}
     cmd.fsm = event[1]
     cmd.evt = event[2]

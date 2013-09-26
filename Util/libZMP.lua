@@ -22,12 +22,10 @@ local function generate_step_queue(solver,step_definition,uLeftI,uRightI)
     if supportLeg==0 then
       -- left support
       uRight = util.pose_global(step_def[2],uRight)
-      --print('uRightI',uRightI,step_queue_element.uRight,vector.new(step_def[2]))
       --step_queue_element.zaRight = zaRight + vector.new(step_def[3]);
     elseif supportLeg==1 then
       -- right support
       uLeft  = util.pose_global(step_def[2],uLeft)
-      --print('uLeftI',uLeftI,step_queue_element.uLeft,vector.new(step_def[2]))
       -- step_queue_element.zaLeft = zaLeft + vector.new(step_def[3]);
     elseif supportLeg==2 then --DS
       -- Double Support: Body height change

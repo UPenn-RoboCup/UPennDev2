@@ -37,22 +37,34 @@ local idx_to_vals = {}
 local dynamixels = {}
 local chains = {}
 chains['Right Arm'] = {
-  --ttyname = '/dev/cu.usbserial-FTT3ABW9A',
   ttyname = '/dev/ttyUSB0',
   nx_ids  = {1,3,5,7,9,11,13},
   mx_ids  = {31,33,35},
   active = false
 }
 chains['Left Arm'] = {
-  --ttyname = '/dev/cu.usbserial-FTT3ABW9B',
   ttyname = '/dev/ttyUSB1',
   nx_ids  = {2,4,6,8,10,12,14, --[[head]] 29,30 },
   mx_ids  = {32,34,36,   --[[lidar]] 37},
+  active = false
+}
+chains['Right Leg'] = {
+  ttyname = '/dev/ttyUSB2',
+  nx_ids  = {15,17,19,21,23,25},
+  mx_ids  = {},
   active = true
 }
+chains['Left Leg'] = {
+  ttyname = '/dev/ttyUSB3',
+  nx_ids  = {16,18,20,22,24,26},
+  mx_ids  = {},
+  active = false
+}
 if OPERATING_SYSTEM=='darwin' then
-  chains['Left Arm'].ttyname = '/dev/cu.usbserial-FTT3ABW9B'
   chains['Right Arm'].ttyname = '/dev/cu.usbserial-FTT3ABW9A'
+  chains['Left Arm'].ttyname  = '/dev/cu.usbserial-FTT3ABW9B'
+  chains['Right Leg'].ttyname = '/dev/cu.usbserial-FTT3ABW9C'
+  chains['Left Leg'].ttyname  = '/dev/cu.usbserial-FTT3ABW9D'
 end
 
 --------------------

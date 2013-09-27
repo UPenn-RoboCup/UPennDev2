@@ -173,8 +173,8 @@ libMicrostrain.service = function( microstrain, main )
         res = unix.read(microstrain.fd)
         assert(res,'Bad response!')
         coroutine.yield(
-          carray.float(res:sub(7,18):reverse()),
-          carray.float(res:sub(21,32):reverse())
+          carray.float(res:sub(7,18):reverse()), -- accelerometer
+          carray.float(res:sub(21,32):reverse()) -- gyro
           )
       end
     end
@@ -190,13 +190,14 @@ libMicrostrain.service = function( microstrain, main )
     local status, ready = unix.select( {microstrain.fd} )
     local status_code, acc, gyr = coroutine.resume( thread )
     -- Check if there were errors in the coroutine
-    if not status_code then
+    if status_code then
+      microstrain.callback(acc,gyr)
+    else
       print( util.color('Dead microstrain coroutine!','red'), acc)
       microstrain:ahrs_off()
       microstrain:close()
-    else
-      microstrain.callback(acc,gyr)
     end
+    -- Resume the main thread
     if main_thread then coroutine.resume( main_thread ) end
   until not status_code
 

@@ -44,10 +44,29 @@ signal.signal("SIGTERM", shutdown)
 
 -- Callback
 local function process_imu(acc,gyr)
-  print('Acc',acc[1],acc[2],acc[3])
-  print('Gyr',gyr[1],gyr[2],gyr[3])
+  --print('Acc',acc[1],acc[2],acc[3])
+  --print('Gyr',gyr[1],gyr[2],gyr[3])
+end
+
+-- Main thread
+local cnt = 0
+local t0 = unix.time()
+local t_debug = t0
+local print_rate = 2 --every 2 sec, print
+local function main()
+  while true do
+    local t = unix.time()
+    cnt = cnt+1
+    local t_diff = t-t_debug
+    if t_diff>print_rate then
+      print( string.format('FPS: %.1f',cnt/t_diff) )
+      t_debug = t
+      cnt = 0
+    end
+    coroutine.yield()
+  end
 end
 
 -- Service the microstrain
 imu.callback = process_imu
-libMicrostrain.service(imu)
+libMicrostrain.service(imu,main)

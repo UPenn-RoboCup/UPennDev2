@@ -13,6 +13,7 @@ local vector = require'vector'
 local util   = require'util'
 local simple_ipc = require'simple_ipc'
 local libMicrostrain = require'libMicrostrain'
+local vector = require'vector'
 
 local DEG_TO_RAD = Body.DEG_TO_RAD
 local RAD_TO_DEG = Body.RAD_TO_DEG
@@ -43,7 +44,9 @@ signal.signal("SIGINT",  shutdown)
 signal.signal("SIGTERM", shutdown)
 
 -- Callback
+local accel = vector.zeros(3)
 local function process_imu(acc,gyr)
+  accel = vector.new{acc[1],acc[2],acc[3]}
   --print('Acc',acc[1],acc[2],acc[3])
   --print('Gyr',gyr[1],gyr[2],gyr[3])
 end
@@ -60,6 +63,8 @@ local function main()
     local t_diff = t-t_debug
     if t_diff>print_rate then
       print( string.format('FPS: %.1f',cnt/t_diff) )
+      print(accel)
+      print(RAD_TO_DEG*math.atan2(accel[1],accel[2]))
       t_debug = t
       cnt = 0
     end

@@ -197,10 +197,10 @@ end
 local update_requests = function(t)
   -- Loop through the registers
   for register,read_ptr in pairs(jcm.readPtr) do
-    local get_func = libDynamixel['get_nx_'..register]
+    local get_func    = libDynamixel['get_nx_'..register]
     local mx_get_func = libDynamixel['get_mx_'..register]
     for idx=1,#read_ptr do
-      is_read = read_ptr[idx]
+      local is_read = read_ptr[idx]
       -- Check if we are to read each of the values
       if is_read>0 then
         -- Kill the reading

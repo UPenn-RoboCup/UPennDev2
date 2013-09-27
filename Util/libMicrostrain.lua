@@ -1,9 +1,8 @@
 -- libMicrostrain
--- (c) 2013 Stephen McGill, Yida Zhang
+-- (c) 2013 Stephen McGill
 -- Microstrain Library
 
 local libMicrostrain = {}
---local MicrostrainPacket = require'MicrostrainPacket'
 local stty = require'stty'
 local unix = require'unix'
 
@@ -57,7 +56,7 @@ libMicrostrain.new_microstrain = function(ttyname, ttybaud )
   local baud = ttybaud or 115200
   
 	if not ttyname then
-		local ttys = unix.readdir("/dev");
+		local ttys = unix.readdir("/dev")
 		for _,tty in ipairs(ttys) do
 			if tty:find("cu.usbmodem") or tty:find("ttyACM") then
 				ttyname = "/dev/"..tty

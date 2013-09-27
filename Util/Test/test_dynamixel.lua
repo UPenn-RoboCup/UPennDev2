@@ -3,12 +3,14 @@ dofile'../../include.lua'
 local unix = require 'unix'
 local libDynamixel = require'libDynamixel'
 local util = require'util'
+local carray = require'carray'
 
 ----[[
 --local new_dynamixel = libDynamixel.new_bus()
-local right_dynamixel = libDynamixel.new_bus('/dev/cu.usbserial-FTT3ABW9A')
+local right_arm = libDynamixel.new_bus('/dev/cu.usbserial-FTT3ABW9A')
 local left_arm_and_spine  = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
-local spine_dynamixel = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
+local right_leg = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
+local left_leg = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
 --]]
 --[[
 local right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
@@ -18,7 +20,7 @@ local left_leg = libDynamixel.new_bus'/dev/ttyUSB3'
 --]]
 
 -- Choose a chain
-local test_dynamixel = left_arm_and_spine
+local test_dynamixel = left_leg
 assert(test_dynamixel)
 print('Using',test_dynamixel.ttyname)
 
@@ -26,7 +28,10 @@ print('Using',test_dynamixel.ttyname)
 local found = test_dynamixel:ping_probe()
 print('Inspecting',table.concat(found,','))
 ----]]
-found = {2,4,6,8,10,12,14,29,30,32,34,36,37}
+--found = {2,4,6,8,10,12,14,29,30,32,34,36,37}
+--found = {29,30} --head
+--found = {16,18,20,22,24,26} --left leg
+found = {--[[24,]]26} --left ankle
 
 --os.exit()
 
@@ -36,46 +41,58 @@ found = {2,4,6,8,10,12,14,29,30,32,34,36,37}
 for _,m in ipairs(found) do
   print(string.format('\nFound ID %2d',m))
   
-  --[[
+  
   local status = libDynamixel.get_nx_status_return_level(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
     print(string.format('Status return: %d',value))
+    --[[
     if value~=2 then
       local status = libDynamixel.set_nx_status_return_level(m,2,test_dynamixel)
       util.ptable(status)
     end
-  else
-    print('No status return??')
+    --]]
   end
-  --]]
-
-  --[[
+  
+  
   local status = libDynamixel.get_nx_delay(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
     print(string.format('Delay: %d',value))
+    --[[
     if value==250 then
       local status = libDynamixel.set_nx_delay(m,0,test_dynamixel)
     end
+    --]]
   end
-  --]]
 
-  ----[[
   local status = libDynamixel.get_nx_model_num(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
     print(string.format('Model Number: %d',value))
   end
-  --]]
   
-  ----[[
   local status = libDynamixel.get_nx_firmware(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
     print(string.format('Firmware: %d',value))
   end
-  --]]
+
+  local status = libDynamixel.get_nx_homing_offset(m,test_dynamixel)
+  if status then 
+    local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
+    print(string.format('Homing Offset: %d',value))
+  end
+
+  local status = libDynamixel.get_nx_data(m,test_dynamixel)
+  if status then
+    local data = carray.short( string.char(unpack(status.parameter)) )
+    -- For motor 26: 
+    -- 1: pitch (labeled x on mini 58)
+    -- 3: roll (y)
+
+    print(util.color('External Data:','yellow'),data[1],data[2],data[3],data[4])
+  end
   
   --[[
   local status = libDynamixel.get_mx_position(m,test_dynamixel)
@@ -84,6 +101,30 @@ for _,m in ipairs(found) do
     print(string.format('Position: %d',value))
   end
   --]]
+
+end
+
+-- Poll ext data
+while true do
+
+  unix.usleep(2e5)
+  os.execute'clear'
+
+  -- TOUCH SENSORS
+  local status = libDynamixel.get_nx_data(22,test_dynamixel)
+  local knee_data = carray.short( string.char(unpack(status.parameter)) )
+  print(util.color('Knee Data:','yellow'),
+    knee_data[1],knee_data[2],knee_data[3],knee_data[4])
+
+  local status = libDynamixel.get_nx_data(24,test_dynamixel)
+  local ank_pitch_data = carray.short( string.char(unpack(status.parameter)) )
+  print(util.color('Pitch Data:','yellow'),
+    ank_pitch_data[1],ank_pitch_data[2],ank_pitch_data[3],ank_pitch_data[4])
+
+  local status = libDynamixel.get_nx_data(26,test_dynamixel)
+  local ank_roll_data = carray.short( string.char(unpack(status.parameter)) )
+  print(util.color('Roll Data:','yellow'),
+    ank_roll_data[1],ank_roll_data[2],ank_roll_data[3],ank_roll_data[4])
 
 end
 

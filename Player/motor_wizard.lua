@@ -40,13 +40,13 @@ chains['Right Arm'] = {
   ttyname = '/dev/ttyUSB0',
   nx_ids  = {1,3,5,7,9,11,13},
   mx_ids  = { --[[31,33,35]] },
-  active = false
+  active = true
 }
 chains['Left Arm'] = {
   ttyname = '/dev/ttyUSB1',
   nx_ids  = {2,4,6,8,10,12,14, --[[head]] 29,30 },
   mx_ids  = { --[[32,34,36,]]   --[[lidar]] 37},
-  active = false
+  active = true
 }
 chains['Right Leg'] = {
   ttyname = '/dev/ttyUSB2',

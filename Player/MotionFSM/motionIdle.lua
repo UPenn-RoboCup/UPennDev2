@@ -56,18 +56,18 @@ function state.update()
 
   -- Set our global idea of where our joints are
   -- Continuously read current leg position and write them to command position 
-  if updatedL then
+  --if updatedL then
     qLLeg = qL
     Body.request_lleg_position()
-  end
-  if updatedR then
+  --end
+  --if updatedR then
     qRLeg = qR
     Body.request_rleg_position()
-  end
-  if updatedW then
+  --end
+  --if updatedW then
     qWaist = qW
     Body.request_waist_position()
-  end
+  --end
 
 end
 

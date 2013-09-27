@@ -13,13 +13,16 @@ local shared_data_sz = {}
 
 ------------------------
 --  Read from the motors/other sensors
-shared_data.sensor               = {}
--- Position of joints is in radians from the zero position
-shared_data.sensor.position      = vector.zeros( nJoints )
+shared_data.sensor          = {}
+-- Position of joints in radians from the zero position
+shared_data.sensor.position = vector.zeros( nJoints )
 -- Velocity of joints is in radians per second
-shared_data.sensor.velocity      = vector.zeros( nJoints )
+shared_data.sensor.velocity = vector.zeros( nJoints )
 -- Load of joints is measured in percentage
-shared_data.sensor.load          = vector.zeros( nJoints )
+shared_data.sensor.load     = vector.zeros( nJoints )
+-- Foot pressure
+shared_data.sensor.lfoot_pressure = vector.zeros( 4 )
+shared_data.sensor.rfoot_pressure = vector.zeros( 4 )
 ------------------------
 -- Request reads from some motors
 -- 0: do not read

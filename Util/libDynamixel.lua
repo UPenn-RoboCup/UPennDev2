@@ -16,7 +16,8 @@ local READ_TIMEOUT = 0.075
 
 -- TODO: Make this a parameter to set externally
 -- TODO: This should be tuned based on the byte size written?
-local WRITE_TIMEOUT = 1/240 -- 120Hz timeout
+--local WRITE_TIMEOUT = 1/240 -- 120Hz timeout
+local WRITE_TIMEOUT = 1/150 -- 120Hz timeout
 --local WRITE_TIMEOUT = 1/120 -- 120Hz timeout
 --local WRITE_TIMEOUT = 1/60 -- 60Hz timeout
 --local WRITE_TIMEOUT = 0 -- Instant timeout

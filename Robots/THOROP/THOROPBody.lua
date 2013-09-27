@@ -276,7 +276,7 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
   	end
     Body[get_key] = get_func
     -- Do not set these as anthropomorphic
-    if sensor:find'pressure' then return end
+    --if sensor:find'pressure' then return end
     --------------------------------
     -- Anthropomorphic access to jcm
     -- TODO: Do not use string concatenation to call the get/set methods of Body
@@ -1138,7 +1138,7 @@ Body.Kinematics = Kinematics
 -- For supporting the THOR repo
 require'mcm'
 Body.set_walk_velocity = function(vel)
-mcm.set_walk_vel(vel)
+  mcm.set_walk_vel(vel)
 end
 
 return Body

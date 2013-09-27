@@ -21,7 +21,7 @@ require'jcm'
 
 local device_tty = '/dev/ttyACM0'
 if OPERATING_SYSTEM=='darwin' then
-  device_tty = '/dev/cu.usbmodem1421'
+  device_tty = '/dev/cu.usbmodem1411'
 end
 
 local imu = libMicrostrain.new_microstrain(
@@ -64,7 +64,7 @@ local function main()
     if t_diff>print_rate then
       print( string.format('FPS: %.1f',cnt/t_diff) )
       print(accel)
-      print(RAD_TO_DEG*math.atan2(accel[1],accel[2]))
+      print(RAD_TO_DEG*math.atan2(accel[2],-accel[1]))
       t_debug = t
       cnt = 0
     end

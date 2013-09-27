@@ -58,18 +58,18 @@ function state.update()
 
   if stage==1 then --return to arm side-by-side position
     turnAngle,doneA = util.approachTol(turnAngle,0,dturnAngleMax, dt )
-    --Adaptive shoulder yaw angle
+    --Adaptive shoulder yaw angle 
     ret = movearm.setArmToWheelPosition(
       handle_pos, handle_yaw, handle_pitch,
       handle_radius, turnAngle,dt)
     if ret==1 and doneA then stage=stage+1; 
     end
-  elseif stage==2 then --Now spread arms apart       
+  elseif stage==2 then --Now spread arms apart           
+    --return to target shoulder yaw angle
     ret = movearm.setArmToWheelPosition(
       handle_pos, handle_yaw, handle_pitch,
-      handle_radius, turnAngle,dt,
-      qLArmTarget[3], qRArmTarget[3] )
-
+      handle_radius1, turnAngle,dt,
+      qLArmTarget[3], qRArmTarget[3])
     if ret==1 then stage=stage+1; end
   else --Now lower the arm to position #2 using IK
     ret = movearm.setArmToPosition(

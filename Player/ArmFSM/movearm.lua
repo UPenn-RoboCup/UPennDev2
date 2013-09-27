@@ -55,21 +55,25 @@ function movearm.setArmToPosition(
   --Interpolate in 6D space 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
+  local yawDoneL = true;
+  local yawDoneR = true;
 
   if not lShoulderYaw then
     lShoulderYaw = qLArm[3]
-    rShoulderYaw = qRArm[3]
+    rShoulderYaw = qRArm[3]    
   else
     --Change arm yaw to target agle 
-    qShoulderYawMax = 1.0*math.pi/180
-    lShoulderYaw0 = hcm.get_joints_qlshoulderyaw()
-    rShoulderYaw0 = hcm.get_joints_qrshoulderyaw()
-    lShoulderYaw = util.approachTol(lShoulderYaw0,lShoulderYaw,qShoulderYawMax,dt)
-    rShoulderYaw = util.approachTol(rShoulderYaw0,rShoulderYaw,qShoulderYawMax,dt)
+    qShoulderYawMax = 5.0*math.pi/180
+    lShoulderYaw0 = qLArm[3]
+    rShoulderYaw0 = qRArm[3]        
+--    lShoulderYaw0 = hcm.get_joints_qlshoulderyaw()
+--    rShoulderYaw0 = hcm.get_joints_qrshoulderyaw()
+    lShoulderYaw, yawDoneL = util.approachTol(lShoulderYaw0,lShoulderYaw,qShoulderYawMax,dt)
+    rShoulderYaw, yawDoneR = util.approachTol(rShoulderYaw0,rShoulderYaw,qShoulderYawMax,dt)
   end
 
-  hcm.set_joints_qlshoulderyaw(lShoulderYaw)
-  hcm.set_joints_qrshoulderyaw(rShoulderYaw)
+--  hcm.set_joints_qlshoulderyaw(lShoulderYaw)
+--  hcm.set_joints_qrshoulderyaw(rShoulderYaw)
 
   local trLArm = Body.get_forward_larm(qLArm);
   local trRArm = Body.get_forward_rarm(qRArm);
@@ -91,7 +95,7 @@ function movearm.setArmToPosition(
     qR_approach, doneR2 = util.approachTolRad( qRArm, qR_desired, dqArmMax, dt )
     Body.set_rarm_command_position( qR_approach )
 
-    if doneL and doneR and doneL2 and doneR2 then
+    if doneL and doneR and doneL2 and doneR2 and yawDoneL and yawDoneR then
       --Approached the position
       return 1;
     else
@@ -167,6 +171,7 @@ function movearm.setArmToPositionAdapt(
 
 --[[
   --SJ: slightly harder check
+  --If any of the candidates fail, it returns fail
   if not qL_desired or not qL_desired1 or not qL_desired2 then
     print('Left not possible')
     return -1;
@@ -308,7 +313,8 @@ function movearm.setArmToPositionAdapt(
   qR_approach, doneR2 = util.approachTolRad( qRArm, qR_desired, dqArmMax, dt )
   Body.set_rarm_command_position( qR_approach )
 
-  if doneL and doneR and doneL2 and doneR2 and not shoulderYawChanged then
+--  if doneL and doneR and doneL2 and doneR2 and not shoulderYawChanged then
+  if doneL and doneR and doneL2 and doneR2 then
     --Approached the position
     return 1;
   else

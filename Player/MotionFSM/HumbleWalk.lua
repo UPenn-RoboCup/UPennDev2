@@ -1,4 +1,8 @@
---THOR-OP specific (FOR 6DOF ARM)
+--New, cleaned-up humblewalk 
+--Got rid of any non-used codes (including walkkick)
+--Arm movement is turned off (only handled by arm FSM)
+
+
 local walk = {}
 walk._NAME = ...
 
@@ -10,6 +14,7 @@ local util   = require'util'
 local libZMP = require'libZMP'
 local zmp_solver
 require'mcm'
+
 -- Simple IPC for remote state triggers
 local simple_ipc = require'simple_ipc'
 local evts = simple_ipc.new_subscriber('Walk',true)
@@ -45,13 +50,11 @@ local torsoX   = Config.walk.torsoX
 local footY    = Config.walk.footY
 local supportX = Config.walk.supportX
 local supportY = Config.walk.supportY
-local qLArm0   = Config.walk.qLArm
-local qRArm0   = Config.walk.qRArm
 
 -- Hardness parameters
 local hardnessSupport = Config.walk.hardnessSupport or 0.7
 local hardnessSwing   = Config.walk.hardnessSwing or 0.5
-local hardnessArm     = Config.walk.hardnessArm or 0.2
+
 
 --Gait parameters
 local stepHeight  = Config.walk.stepHeight
@@ -61,8 +64,7 @@ local ankleImuParamX = Config.walk.ankleImuParamX
 local ankleImuParamY = Config.walk.ankleImuParamY
 local kneeImuParamX  = Config.walk.kneeImuParamX
 local hipImuParamY   = Config.walk.hipImuParamY
-local armImuParamX   = Config.walk.armImuParamX
-local armImuParamY   = Config.walk.armImuParamY
+
 
 -- Compensation parameters
 local hipRollCompensation = Config.walk.hipRollCompensation
@@ -84,11 +86,9 @@ local velCurrent = vector.new{0, 0, 0}
 local ankleShift = vector.new{0, 0}
 local kneeShift  = 0
 local hipShift   = vector.new{0, 0}
-local armShift   = vector.new{0, 0}
 
 -- Still have an initial step for now
 local initial_step, iStep
-local upper_body_overridden = 0
 
 --------------------
 -- Local Functions
@@ -114,28 +114,11 @@ local function get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
   -- Ankle stabilization using gyro feedback
   --local imu_roll0, imu_pitch0, imu_yaw0 = unpack(Body.get_sensor_imu())
   --math.sin(imuPitch)*bodyHeight, -math.sin(imuRoll)*bodyHeight
-  local gyro_roll0, gyro_pitch0, gyro_yaw0 = 
-    unpack(Body.get_sensor_gyro())
+  local gyro_roll0, gyro_pitch0, gyro_yaw0 = unpack(Body.get_sensor_gyro())
   -- Get effective gyro angle considering body yaw offset
   -- Rotate the Roll and pitch about the intended body yaw
   local gyro_roll  = gyro_roll0  * math.cos(body_yaw) - gyro_pitch0 * math.sin(body_yaw)
   local gyro_pitch = gyro_pitch0 * math.cos(body_yaw) - gyro_roll0  * math.sin(body_yaw)
-
-
-  -- Torso feedback
-  --[[
-  local x_error = vector.zeros(2)
-  x_error[1] = util.procFunc(
-    x_err[1],
-    0.02, -- deadband
-    0.06 --limit
-  )
-  x_error[2] = util.procFunc(
-    x_err[2],
-    0.02, -- deadband
-    0.06 --limit
-  )
-  --]]
 
   -- Give these parameters
   return gyro_roll, gyro_pitch, gyro_yaw0
@@ -167,6 +150,11 @@ local function get_leg_feedback(phSingle,gyro_roll,gyro_pitch,gyro_yaw)
   -- Change compensation at the beginning of the phase (first 10%)
   -- Same sort of trapezoid at double->single->double support shape
   local phComp = 10 * math.min( phSingle, .1, 1-phSingle )
+
+  --SJ: if initial step, hipRoll shouldn't be compensated
+  if initial_step>0 then phComp = 0; end
+
+
   if supportLeg == 0 then
     -- Left support
     delta_legs[2] = hipShift[2] + hipRollCompensation*phComp
@@ -189,22 +177,6 @@ local function get_leg_feedback(phSingle,gyro_roll,gyro_pitch,gyro_yaw)
 
 end
 
-local function get_arm_feedback(gyro_roll,gyro_pitch,gyro_yaw)
-  -- Arm feedback amount in X/Y directions
-  local armShiftX=util.procFunc(gyro_pitch*armImuParamX[2],armImuParamX[3],armImuParamX[4])
-  local armShiftY=util.procFunc(gyro_roll*armImuParamY[2],armImuParamY[3],armImuParamY[4])
-  -- Arm shift is also filtered, and thus a global
-  armShift[1] = armShift[1]+armImuParamX[1]*(armShiftX-armShift[1])
-  armShift[2] = armShift[2]+armImuParamY[1]*(armShiftY-armShift[2])
-  -- Arm delta to apply to the joints
-  local delta_arms = vector.zeros(Body.nJointLArm)
-  -- First arm joint is roll
-  delta_arms[1] = armShift[1]
-  -- Second arm joint
-  delta_arms[2] = armShift[2]
-  -- TODO: Use IK to shift arms
-  return delta_arms
-end
 
 local function step_destination_left(vel, uLeft, uRight)
   local u0 = util.se2_interpolate(.5, uLeft, uRight)
@@ -214,7 +186,6 @@ local function step_destination_left(vel, uLeft, uRight)
   local uLeftPredict = util.pose_global(uLRFootOffset, u2)
   local uLeftRight = util.pose_relative(uLeftPredict, uRight)
   -- Do not pidgeon toe, cross feet:
-
   --Check toe and heel overlap
   local toeOverlap  = -footSizeX[1] * uLeftRight[3]
   local heelOverlap = -footSizeX[2] * uLeftRight[3]
@@ -222,7 +193,6 @@ local function step_destination_left(vel, uLeft, uRight)
   stanceLimitY2+math.max(toeOverlap,heelOverlap))
 
   --print("Toeoverlap Heeloverlap",toeOverlap,heelOverlap,limitY)
-
   uLeftRight[1] = math.min(math.max(uLeftRight[1], stanceLimitX[1]), stanceLimitX[2])
   uLeftRight[2] = math.min(math.max(uLeftRight[2], limitY),stanceLimitY[2])
   uLeftRight[3] = math.min(math.max(uLeftRight[3], stanceLimitA[1]), stanceLimitA[2])
@@ -355,14 +325,12 @@ function walk.entry()
     ['finish_phase'] = Config.walk.phSingle[2],
   })
 
-  -- SJ: now we always assume that we start walking with feet together
-  -- Because joint readings are not always available with darwins
-  -- TODO: Use shared memory readings, or calculate upon entry
-  -- (Re)Set our local variables to the current uFoot positions
-  local uTorso0 = vector.new({supportX, 0, 0})
+  --Read stored feet and torso poses 
+  local uTorso0 = mcm.get_poses_uTorso()  
+  local uLeft = mcm.get_poses_uLeft()
+  local uRight = mcm.get_poses_uRight()
+
   uTorso_now, uTorso_next = uTorso0, uTorso0
-  local uLeft  = util.pose_global(vector.new({-supportX, footY, 0}),uTorso_now)
-  local uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso_now)
   uLeft_now,  uLeft_next  = uLeft,  uLeft
   uRight_now, uRight_next = uRight, uRight
   
@@ -378,18 +346,8 @@ function walk.entry()
   -- Initial step modification counter
   initial_step = 2
 
---[[
-  --Place arms in appropriate position at sides
-  if upper_body_overridden==0 then
-    Body.set_larm_command_position(qLArm0)
-    Body.set_rarm_command_position(qRArm0)
-    -- TODO: hardness
-    Body.set_larm_hardness(hardnessArm)
-    Body.set_rarm_hardness(hardnessArm)
-  end
---]]  
   mcm.set_walk_bipedal(1)
-
+  mcm.set_walk_stoprequest(0) --cancel stop request flag
 end
 
 function walk.update()
@@ -419,6 +377,12 @@ function walk.update()
   -- Grab the phase of the current step
   local ph = (t-t_last_step)/zmp_solver.tStep
   if ph>1 then
+    --Should we stop now?
+    local stoprequest = mcm.get_walk_stoprequest()
+    print(stoprequest)
+    if stoprequest>0 then
+      return"done"
+    end
     -- TODO: reset the tStep, if variable
     -- can get it from mcm?
     -- Wrap around the phase
@@ -431,7 +395,7 @@ function walk.update()
     -- Update the velocity via a filter
     velCurrent = update_velocity(velCurrent)
       -- If our first step(s), then use zero velocity
-    if initial_step>0 then
+    if initial_step>0 then --Can be 2,1
       velCurrent = vector.new{0,0,0}
       initial_step = initial_step-1
     end
@@ -443,6 +407,12 @@ function walk.update()
     -- TODO: We can queue steps, rather than use on the fly calculations...
     -- That could be sent to the walk engine as via points...?
     uSupport, uLeft_next, uRight_next = calculate_step( uLeft_now, uRight_now, supportLeg, velCurrent )
+
+    if initial_step>0 then
+      uLeft_next = uLeft_now;
+      uRight_next = uRight_now;
+    end
+
     -- This is the next desired torso position
     --uTorso_next = step_torso( uLeft_now, uRight_now, 0.5 )
     uTorso_next = step_torso( uLeft_next, uRight_next, 0.5 )
@@ -529,16 +499,6 @@ function walk.update()
     Body.set_rleg_hardness(hardnessSupport)
   end
 
---SJ: disable arm movement for now  
---[[  
-  -- Add arm motion
-  if upper_body_overridden==0 then
-    local arm_feedback = get_arm_feedback(r,p,y)
-    Body.set_larm_command_position(qLArm0+arm_feedback)
-    Body.set_rarm_command_position(qRArm0+arm_feedback)
-  end
---]]
-
   ------------------------------------------
   -- Update the status in shared memory
   local uFoot = util.se2_interpolate(.5, uLeft, uRight)
@@ -551,6 +511,9 @@ function walk.update()
 end -- walk.update
 
 function walk.exit()
+  mcm.set_poses_uLeft(uLeft_next)
+  mcm.set_poses_uRight(uRight_next)
+  mcm.set_poses_uTorso(uTorso_next)
   print(walk._NAME..' Exit')
   -- TODO: Store things in shared memory?
 end

@@ -1,9 +1,8 @@
 local state = {}
 state._NAME = ...
 
---motionStance: Let the robot keep standing while balanced
---Should be different from motionInit (which just inits the leg)
---For now let's use the same code
+--motionInit: initialize legs to correct position
+
 
 require'mcm'
 local Body       = require'Body'
@@ -18,24 +17,18 @@ local t_settle   = 0.10
 -- NOTE: http://www.luafaq.org/#T1.37.1
 local t_entry, t_update, t_finish
 
-
-local pLLeg_desired, pRLeg_desired, pTorso_desired, pTorso
--- Desired Waist position and limits
-local qWaist_desired, dqWaistLimit
-local dpMaxDelta = Config.stance.dpLimitStance
-
-
-  -- Set the default waist
-local qWaist_desired = Config.stance.qWaist
-local dqWaistLimit   = Config.stance.dqWaistLimit
-
-  -- Set the desired legs
+  -- Set the desired leg and torso poses
 local pLLeg_desired = Config.stance.pLLeg
 local pRLeg_desired = Config.stance.pRLeg
-  -- Desired torso
-local  pTorso_desired = Config.stance.pTorso
+local pTorso_desired = Config.stance.pTorso
+  -- Set the desired waist
+local qWaist_desired = Config.stance.qWaist
 
+  -- Set movement speed limits
+local dpMaxDelta = Config.stance.dpLimitStance
+local dqWaistLimit   = Config.stance.dqWaistLimit
 
+local pTorso
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -70,10 +63,7 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
-
-
---Does nothing
---[[
+   
   -- Zero the waist  
   local qWaist = Body.get_waist_command_position()
   local qWaist_approach, doneWaist = 
@@ -98,8 +88,6 @@ function state.update()
   else
     return true
   end  
---]]
-
 end
 
 function state.exit()
@@ -109,6 +97,17 @@ function state.exit()
   -- Update current pose for use by the camera
   mcm.set_camera_bodyHeight(pTorso[3])
   mcm.set_camera_bodyTilt(pTorso[5])
+
+  local footY    = Config.walk.footY
+  local supportX = Config.walk.supportX
+
+  --Generate current 2D pose for feet and torso
+  local uTorso = vector.new({supportX, 0, 0})
+  local uLeft  = util.pose_global(vector.new({-supportX, footY, 0}),uTorso)
+  local uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso)
+  mcm.set_poses_uLeft(uLeft)  
+  mcm.set_poses_uRight(uRight)  
+  mcm.set_poses_uTorso(uTorso)  
 end
 
 return state

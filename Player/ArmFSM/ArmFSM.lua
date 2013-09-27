@@ -35,7 +35,8 @@ local armWheelRelease = require'armWheelRelease'
 
 -- Door specific states
 local armDoorGrip = require'armDoorGrip'
-local armDoorTurn = require'armDoorTurn'
+local armDoorRelease = require'armDoorRelease'
+
 
 local sm = fsm.new(armIdle);
 sm:add_state(armPose1)
@@ -47,7 +48,8 @@ sm:add_state(armWheelGrip)
 sm:add_state(armWheelTurn)
 sm:add_state(armWheelRelease)
 sm:add_state(armDoorGrip)
-sm:add_state(armDoorTurn)
+sm:add_state(armDoorRelease)
+
 
 ----------
 -- Event types
@@ -80,8 +82,9 @@ sm:set_transition(armWheelRelease, 'done', armChangetoPose2)
 
 -- The initial arm pose is great for door gripping, 
 -- and should be the reset position
-sm:set_transition(armDoorGrip, 'reset', armChangetoPose1)
-sm:set_transition(armDoorGrip, 'done', armDoorTurn)
+sm:set_transition(armDoorGrip, 'reset', armDoorRelease)
+
+sm:set_transition(armDoorRelease, 'done', armPose1)
 
 -- TODO: This may not be the best
 -- We may wish to give ready and init

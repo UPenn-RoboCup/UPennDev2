@@ -4,20 +4,27 @@ local Config = require'Config'
 local fsm = require'fsm'
 
 -- Require the needed states
-local motionIdle   = require'motionIdle'
-local motionFall   = require'motionFall'
-local motionWalk   = require(Config.dev.walk)
-local motionStance = require'motionStance'
-local motionStep   = require'motionStep'
-local motionStepPreview   = require'motionStepPreview'
+
+local motionIdle   = require'motionIdle' --Initial state, all legs torqued off
+local motionInit   = require'motionInit' --Torque on legs and go to initial leg position
+local motionStance = require'motionStance' --Robots stands still, balancing itself
+local motionWalk   = require(Config.dev.walk) --Reactive walking
+local motionStep   = require'motionStep'   --Stationary stepping
+local motionStepPreview   = require'motionStepPreview' --ZMP preview stepping
+
+--Our robot never fall!
+--local motionFall   = require'motionFall' 
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
-local sm = fsm.new( motionIdle, motionStance, motionFall )
+local sm = fsm.new( motionIdle, motionInit, motionStance)
+--, motionFall )
 sm:add_state(motionWalk)
 sm:add_state(motionStep)
 sm:add_state(motionStepPreview)
 
+
+--[[
 -- Setup the transitions for this FSM
 sm:set_transition(motionIdle, 'stand', motionStance )
 --
@@ -38,10 +45,20 @@ end)
 sm:set_transition(motionStep, 'done', motionIdle )
 --
 sm:set_transition(motionStepPreview, 'done', motionIdle )
+--]]
 
+sm:set_transition(motionIdle, 'stand', motionInit)
+sm:set_transition(motionInit, 'done', motionStance)
 
+sm:set_transition(motionStance, 'walk', motionWalk)
+sm:set_transition(motionStance, 'step', motionStep)
+sm:set_transition(motionStance, 'preview', motionStepPreview)
 
-
+--Walk stop are handled by HCM variable
+--As it can stop walking mid-step
+sm:set_transition(motionWalk, 'done', motionStance)
+sm:set_transition(motionStep, 'done', motionStance)
+sm:set_transition(motionStepPreview, 'done', motionStance)
 
 --------------------------
 -- Setup the FSM object --
@@ -61,6 +78,10 @@ obj.update = function()
   if event then
   	print( util.color(obj._NAME..' Event:','green'),event)
   	sm:add_event(event)
+    --Hack here to handle stopping
+    if event=="stand" then
+      mcm.set_walk_stoprequest(1)      
+    end
   end
   -- TODO: If falling, maybe just call that update function?
   sm:update()

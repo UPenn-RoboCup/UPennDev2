@@ -9,15 +9,12 @@
 const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);
 
+/*
 //From COM to neck joint
 const double neckOffsetZ = .144+0.027+0.114;//from webots value
 const double neckOffsetX = 0.023;//from webots value
 
-//COM assumed at the chestYaw joint
-//const double shoulderOffsetX = 0;
 const double shoulderOffsetX = 0;//From webots value
-//const double shoulderOffsetY = .219;
-
 const double shoulderOffsetY = .233;  //from actual robot
 const double shoulderOffsetZ = .144;
 
@@ -25,22 +22,44 @@ const double upperArmLength = .246;
 const double elbowOffsetX = .030; //Elbow offset
 const double lowerArmLength = .190; //From actual 7DOF robot
 
-//Longer wrist for 7DOF hand
-
-const double handOffsetX = 0.245; //From actual 7DOF robot
-const double handOffsetY = 0.030; //From actual 7DOF robot
-const double handOffsetZ = 0;
-
-//const double hipOffsetX = 0.01;
 const double hipOffsetX = -0.001;//From webots model
 const double hipOffsetY = 0.094;
-//const double hipOffsetZ = 0.372;
 const double hipOffsetZ = 0.384;//calculated from webots model
 
 const double thighLength = 0.379;
 const double tibiaLength = 0.380;
 const double footHeight = 0.04869;//calculated from webots model
 const double kneeOffsetX = 0.0;
+*/
+
+//================================================================
+//THOR-OP values
+
+const double neckOffsetZ = .170+.161; //Webots value
+const double neckOffsetX = 0;
+
+const double shoulderOffsetX = 0;      //Webots value
+const double shoulderOffsetY = 0.216; //Webots value
+const double shoulderOffsetZ = 0.162; //Webots value
+
+const double upperArmLength = .246;
+const double elbowOffsetX =   .030; 
+const double lowerArmLength = .190; //Measured from robot
+
+const double handOffsetX = 0.245; //Measured from robot
+const double handOffsetY = 0.030; //Measured from robot
+const double handOffsetZ = 0;
+
+const double hipOffsetX = 0;
+const double hipOffsetY = 0.072;
+const double hipOffsetZ = 0.270; //Webots value
+
+const double thighLength = 0.30;
+const double tibiaLength = 0.30;
+const double kneeOffsetX = 0.03;
+const double footHeight = 0.118;
+
+//=================================================================
 
 const double dThigh = sqrt(thighLength*thighLength+kneeOffsetX*kneeOffsetX);
 const double aThigh = atan(kneeOffsetX/thighLength);

@@ -65,6 +65,7 @@ shared_data.door.hand=vector.ones(1)
 
 --Hinge XYZ pos from robot frame
 shared_data.door.hinge_pos = vector.new({0.45,0.90,-0.15})
+shared_data.door.hinge_pos = vector.new({0.45,0.85,-0.15})
 
 --Radius of the door from hinge to the gripping position
 --negavive value: left hinge, positive value: right hinge

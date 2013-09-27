@@ -22,7 +22,6 @@ function state.entry()
   t_update = t_entry
   
   -- Torque on the motors...
-  Body.set_waist_torque_enable(1)
   Body.set_head_torque_enable(1)
   Body.set_larm_torque_enable(1)
   Body.set_rarm_torque_enable(1)

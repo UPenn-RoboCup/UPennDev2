@@ -11,7 +11,7 @@ local walk = {}
 -- Stance and velocity limit values
 ------------------------------------
 -- NOTE: Large stride test (up to 300mm)
-walk.stanceLimitX = {-0.30,0.30}
+walk.stanceLimitX = {-0.50,0.50}
 walk.stanceLimitY = {0.16,0.60}
 walk.stanceLimitA = {-10*math.pi/180,30*math.pi/180}
 -- TODO: Toe/heel overlap checking values
@@ -24,23 +24,45 @@ walk.velLimitY = {-.08,.08}
 walk.velLimitA = {-.3,.3}
 walk.velDelta  = {0.05,0.03,0.3}
 
+
+walk.velLimitX = {-.30,.30}
+
 ------------------------------------
 -- Stance parameters
 ------------------------------------
-walk.bodyHeight = 1.15
+walk.bodyHeight = 0.95
 walk.bodyTilt = 0*math.pi/180
-walk.footY = 0.120     -- body-center-to-ankle width
-walk.supportX = 0.00  -- ankle-to-foot-center offset 
-walk.torsoX = 0.00     -- com-to-body-center offset
+walk.supportX = 0.02  -- ankle-to-foot-center offset 
+walk.supportY = 0.01  -- ankle-to-foot-center offset
+
+walk.footY  = 0.095   -- body-center-to-ankle width
+walk.torsoX = 0.00    -- com-to-body-center offset
 ------------------------------------
 -- Gait parameters
 ------------------------------------
-walk.tStep = 1.0
-walk.tZMP = 0.34       
-walk.supportY = 0.01   --ankle-to-foot-center offset
-walk.stepHeight = 0.052
+walk.tStep = 0.8
+walk.tZMP = 0.33
+walk.stepHeight = 0.04
 walk.phSingle = {0.15,0.85}
 walk.phZmp = {0.15,0.85}
+
+walk.phSingle = {0.2,0.8}
+walk.phZmp = {0.2,0.8}
+
+----Working with webots--------
+walk.phSingle = {0.25,0.75}
+walk.phZmp = {0.25,0.75}
+walk.tZMP = 0.35
+walk.tStep = 1.0
+-------------------------------
+
+----Also working in webots---------------
+walk.tStep = 0.8
+walk.phSingle = {0.2,0.8}
+walk.phZmp = {0.2,0.8}
+
+walk.stepHeight = 0.05
+-------------------------------
 
 ------------------------------------
 -- Compensation parameters
@@ -48,7 +70,7 @@ walk.phZmp = {0.15,0.85}
 walk.hardnessSupport = 1
 walk.hardnessSwing = 1
 --walk.hipRollCompensation = 3*math.pi/180
-walk.hipRollCompensation = 2.5*math.pi/180
+walk.hipRollCompensation = 1*math.pi/180
 walk.supportModYInitial = -0.04 --Reduce initial body swing
 
 -----------------------------------------------------------
@@ -147,50 +169,6 @@ zmpstep.hipRollCompensation = 3*math.pi/180
 -- For the arm FSM
 local arm = {}
 arm.qLArmInit={
- vector.new({90,15,0,-15,  -0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({90,90,90,-90, -90,-0,0})*DEG_TO_RAD, -- scarecrow
- vector.new({0,90,90,-90,  -90,-45,0})*DEG_TO_RAD,-- arms in front
-}
-arm.qRArmInit={
- vector.new({90,-15,0,-15,     0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({90,-90,-90,-90,   90,0,0})*DEG_TO_RAD,  -- scarecrow
- vector.new({0,-90,-90,-90,    90,45,0})*DEG_TO_RAD, -- arms in front
-}
-
-
---New init motion utilizing 7DOF arm
-arm.qLArmInit={
- vector.new({90,15,0,-5,  -0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({110.5, 17.5, 0, -85.7, -30.2,  0,16.8})*DEG_TO_RAD, -- scarecrow
- vector.new({110.5, 17.5, -24, -85.7, -30.2, -71.0,16.8})*DEG_TO_RAD,-- arms in front
-}
-arm.qRArmInit={
- vector.new({90,-15,0,-5,     0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({110.5, -17.5, 0, -85.7,  30.2,  0,-16.8})*DEG_TO_RAD,  -- scarecrow
- vector.new({110.5, -17.5, 24, -85.7, 30.2, 71.0,-16.8})*DEG_TO_RAD,-- arms in front
-}
-
-
-
---New init motion utilizing 7DOF arm
---Now the same as walking arm pose
-arm.qLArmInit={
- vector.new({110,12,0,-40,  -0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({110.5, 17.5, 0, -85.7, -30.2,  0,16.8})*DEG_TO_RAD, -- scarecrow
- vector.new({110.5, 17.5, -24, -85.7, -30.2, -71.0,16.8})*DEG_TO_RAD,-- arms in front
-}
-arm.qRArmInit={
- vector.new({110,-12,0,-40,     0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({110.5, -17.5, 0, -85.7,  30.2,  0,-16.8})*DEG_TO_RAD,  -- scarecrow
- vector.new({110.5, -17.5, 24, -85.7, 30.2, 71.0,-16.8})*DEG_TO_RAD,-- arms in front
-}
-
-
-
-
-
---SJ: nonzero shoulder yaw
-arm.qLArmInit={
  vector.new({110,12,-3,-40,  -0,0,0})*DEG_TO_RAD, -- at sides
  vector.new({110.5, 17.5, 0, -85.7, -30.2,  0,16.8})*DEG_TO_RAD, -- scarecrow
  vector.new({110.5, 17.5, -24, -85.7, -30.2, -71.0,16.8})*DEG_TO_RAD,-- arms in front
@@ -202,6 +180,21 @@ arm.qRArmInit={
 }
 
 
+--[[
+
+--Now ROCKY pose!
+arm.qLArmInit={
+ vector.new({90,0,-0,-160,  -90,-20,90})*DEG_TO_RAD, -- at sides
+ vector.new({110.5, 17.5, 0, -85.7, -30.2,  0,16.8})*DEG_TO_RAD, -- scarecrow
+ vector.new({110.5, 17.5, -24, -85.7, -30.2, -71.0,16.8})*DEG_TO_RAD,-- arms in front
+}
+arm.qRArmInit={
+ vector.new({90,-0,0,-160,     90,20,-90})*DEG_TO_RAD, -- at sides
+ vector.new({110.5, -17.5, 0, -85.7,  30.2,  0,-16.8})*DEG_TO_RAD,  -- scarecrow
+ vector.new({110.5, -17.5, 24, -85.7, 30.2, 71.0,-16.8})*DEG_TO_RAD,-- arms in front
+}
+
+--]]
 
 
 

@@ -155,7 +155,7 @@ assert(#servo.direction==nJoint,'Bad servo direction!')
 
 -- TODO: Offset in addition to bias?
 servo.rad_bias = vector.new({
-  0,-1.8, -- Head
+  0,0, -- Head
   -90,90,-90,45,90,0,0, --LArm
   0,0,0,-45,0,0, --LLeg
   0,0,0,45,0,0, --RLeg
@@ -254,9 +254,8 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
   local tread_ptr = jcm.treadPtr[sensor]
   local treq_ptr  = jcm.trequestPtr[sensor]
   local get_key  = 'get_sensor_'..sensor
-  local get_func
   if tread_ptr then
-  	get_func = function(idx,idx2)
+  	local get_func = function(idx,idx2)
   		if idx then
         -- Return the values from idx to idx2
         if idx2 then
@@ -273,11 +272,26 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
       for i=1,nJoint do
         if treq_ptr[i]>tread_ptr[i] then up2date=false break end
       end
-  		return vector.new(pointer:table()),up2date
+  		return vector.new(pointer:table()), up2date
   	end
+    Body[get_key] = get_func
+    -- Do not set these as anthropomorphic
+    if sensor:find'pressure' then return end
+    --------------------------------
+    -- Anthropomorphic access to jcm
+    -- TODO: Do not use string concatenation to call the get/set methods of Body
+    for part,jlist in pairs( parts ) do
+      local a = jlist[1]
+      local b = jlist[#jlist]
+      Body['get_'..part:lower()..'_'..sensor] = function(idx)
+        if idx then return get_func(jlist[idx]) end
+        return get_func(a,b)
+      end -- Get
+    end -- anthropomorphic
+    --------------------------------
   else
-    -- Override for non-dynamixel sensors
-    get_func = function(idx,idx2)
+    -- Override for non-dynamixel (non-anthropomorphic) sensors
+    local get_func = function(idx,idx2)
       if idx then
         -- Return the values from idx to idx2
         if idx2 then return vector.new(pointer:table(idx,idx2)) end 
@@ -286,20 +300,8 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
       -- If no idx is supplied, then return the values of all joints
       return vector.new(pointer:table())
     end
-  end
-  Body[get_key] = get_func
-  --------------------------------
-  -- Anthropomorphic access to jcm
-  -- TODO: Do not use string concatenation to call the get/set methods of Body
-  for part,jlist in pairs( parts ) do
-  	local a = jlist[1]
-  	local b = jlist[#jlist]
-  	Body['get_'..part:lower()..'_'..sensor] = function(idx)
-  		if idx then return get_func(jlist[idx]) end
-  		return get_func(a,b)
-  	end -- Get
-  end -- anthropomorphic
-  --------------------------------
+    Body[get_key] = get_func
+  end -- if treadptr
 end
 
 ----------------------

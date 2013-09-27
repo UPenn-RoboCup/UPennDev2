@@ -385,6 +385,30 @@ local function get_foot(self,ph)
   return xf, zf, phSingle
 end
 
+local function get_foot_square(self,ph)
+  --SJ: Square wave walk pattern
+  local phSingle = math.min( math.max(ph-self.start_phase, 0)/(self.finish_phase-self.start_phase), 1)
+
+  local phase1 = 0.2;
+  local phase2 = 0.7;
+
+  if phSingle<phase1 then --Lifting phase
+    ph1 = phSingle / phase1
+    xf = 0;
+    zf = ph1;
+  elseif phSingle<phase2 then
+    ph1 = (phSingle-phase1) / (phase2-phase1)
+    xf = ph1;
+    zf = 1;
+  else
+    ph1 = (phSingle-phase2) / (1-phase2)    
+    xf = 1;
+    zf = (1-ph1)
+  end
+  return xf,zf,phSingle
+end
+
+
 -- Begin the library code
 local libZMP = {}
 -- Make a new solver with certain parameters
@@ -403,6 +427,7 @@ libZMP.new_solver = function( params )
   s.compute  = compute
   s.get_com  = get_com
   s.get_foot = get_foot
+  s.get_foot_square = get_foot_square  
   -- ZMP Preview
   s.compute_preview = compute_preview
   s.init_preview    = init_preview

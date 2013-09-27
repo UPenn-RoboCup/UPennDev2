@@ -2,7 +2,6 @@
 --Got rid of any non-used codes (including walkkick)
 --Arm movement is turned off (only handled by arm FSM)
 
-
 local walk = {}
 walk._NAME = ...
 
@@ -11,9 +10,11 @@ local K      = Body.Kinematics
 local vector = require'vector'
 local unix   = require'unix'
 local util   = require'util'
+local moveleg = require'moveleg'
 local libZMP = require'libZMP'
 local zmp_solver
 require'mcm'
+
 
 -- Simple IPC for remote state triggers
 local simple_ipc = require'simple_ipc'
@@ -28,14 +29,6 @@ local t_entry, t_update, t_last_step
 -- These are set one and read everywhere.
 -- Used for conveinence
 ----------------------------------------------------------
--- Stance limits used in step_destination_* functions
-local stanceLimitX = Config.walk.stanceLimitX or {-0.10 , 0.10}
-local stanceLimitY = Config.walk.stanceLimitY or {0.09 , 0.20}
-local stanceLimitA = Config.walk.stanceLimitA or {-0*math.pi/180, 40*math.pi/180}
--- Toe/heel overlap checking values
-local footSizeX = Config.walk.footSizeX or {-0.05,0.05}
-local stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015
-local stanceLimitY2 = 2* Config.walk.footY-stanceLimitMarginY
 
 -- Velocity limits used in update_velocity function
 local velLimitX = Config.walk.velLimitX or {-.06, .08}
@@ -48,30 +41,9 @@ local vaFactor  = Config.walk.vaFactor or 0.6
 local bodyTilt = Config.walk.bodyTilt or 0
 local torsoX   = Config.walk.torsoX
 local footY    = Config.walk.footY
-local supportX = Config.walk.supportX
-local supportY = Config.walk.supportY
-
--- Hardness parameters
-local hardnessSupport = Config.walk.hardnessSupport or 0.7
-local hardnessSwing   = Config.walk.hardnessSwing or 0.5
-
 
 --Gait parameters
 local stepHeight  = Config.walk.stepHeight
-
--- Gyro stabilization parameters
-local ankleImuParamX = Config.walk.ankleImuParamX
-local ankleImuParamY = Config.walk.ankleImuParamY
-local kneeImuParamX  = Config.walk.kneeImuParamX
-local hipImuParamY   = Config.walk.hipImuParamY
-
-
--- Compensation parameters
-local hipRollCompensation = Config.walk.hipRollCompensation
--- Initial body swing 
-local supportModYInitial = Config.walk.supportModYInitial or 0
--- Helper
-local uLRFootOffset = vector.new({0,footY,0})
 
 ----------------------------------------------------------
 -- Walk state variables
@@ -93,16 +65,7 @@ local initial_step, iStep
 --------------------
 -- Local Functions
 --------------------
--- Take footsteps, and convert to a torso position
-local function step_torso( uLeft, uRight, shiftFactor )
-  -- shiftFactor: How much should we shift final Torso pose?
-  local u0 = util.se2_interpolate(.5, uLeft, uRight)
-  -- NOTE: supportX and supportY are globals
-  local uLeftSupport  = util.pose_global({supportX,  supportY, 0}, uLeft )
-  local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight)
-  local uTorso = util.se2_interpolate(shiftFactor, uLeftSupport, uRightSupport)
-  return uTorso
-end
+
 -- Get and massage gyro readings
 local function get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
   local body_yaw
@@ -122,105 +85,6 @@ local function get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
 
   -- Give these parameters
   return gyro_roll, gyro_pitch, gyro_yaw0
-end
--- Get leg joint delta angles from gyro feedback
-local function get_leg_feedback(phSingle,gyro_roll,gyro_pitch,gyro_yaw)
-
-  -- Ankle feedback
-  local ankleShiftX = util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4])
-  local ankleShiftY = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])
-  -- Ankle shift is filtered... thus a global
-  ankleShift[1] = ankleShift[1]+ankleImuParamX[1]*(ankleShiftX-ankleShift[1])
-  ankleShift[2] = ankleShift[2]+ankleImuParamY[1]*(ankleShiftY-ankleShift[2])
-
-  -- Knee feedback
-  local kneeShiftX = util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4])
-  kneeShift = kneeShift+kneeImuParamX[1]*(kneeShiftX-kneeShift)
-  
-  -- Hip feedback
-  local hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
-  hipShift[2]=hipShift[2]+hipImuParamY[1]*(hipShiftY-hipShift[2])
-
-  --TODO: Toe/heel lifting
-  local toeTipCompensation = 0
-
-  local delta_legs = vector.zeros(Body.nJointLLeg+Body.nJointRLeg)
-  -- Change compensation in the beginning of the phase (first 10%)
-  -- Saturate compensation afterwards
-  -- Change compensation at the beginning of the phase (first 10%)
-  -- Same sort of trapezoid at double->single->double support shape
-  local phComp = 10 * math.min( phSingle, .1, 1-phSingle )
-
-  --SJ: if initial step, hipRoll shouldn't be compensated
-  if initial_step>0 then phComp = 0; end
-
-
-  if supportLeg == 0 then
-    -- Left support
-    delta_legs[2] = hipShift[2] + hipRollCompensation*phComp
-    delta_legs[4] = kneeShift
-    delta_legs[5] = ankleShift[1]
-    delta_legs[6] = ankleShift[2]
-    -- right toe tip swing
-    delta_legs[11] = toeTipCompensation*phComp--Lifting toetip
-  else
-    -- Right support
-    delta_legs[8]  = hipShift[2] - hipRollCompensation*phComp
-    delta_legs[10] = kneeShift
-    delta_legs[11] = ankleShift[1]
-    delta_legs[12] = ankleShift[2]
-    -- left toe tip swing
-    delta_legs[5] = toeTipCompensation*phComp--Lifting toetip
-  end
-
-  return delta_legs
-
-end
-
-
-local function step_destination_left(vel, uLeft, uRight)
-  local u0 = util.se2_interpolate(.5, uLeft, uRight)
-  -- Determine nominal midpoint position 1.5 steps in future
-  local u1 = util.pose_global(vel, u0)
-  local u2 = util.pose_global(.5*vel, u1)
-  local uLeftPredict = util.pose_global(uLRFootOffset, u2)
-  local uLeftRight = util.pose_relative(uLeftPredict, uRight)
-  -- Do not pidgeon toe, cross feet:
-  --Check toe and heel overlap
-  local toeOverlap  = -footSizeX[1] * uLeftRight[3]
-  local heelOverlap = -footSizeX[2] * uLeftRight[3]
-  local limitY = math.max(stanceLimitY[1],
-  stanceLimitY2+math.max(toeOverlap,heelOverlap))
-
-  --print("Toeoverlap Heeloverlap",toeOverlap,heelOverlap,limitY)
-  uLeftRight[1] = math.min(math.max(uLeftRight[1], stanceLimitX[1]), stanceLimitX[2])
-  uLeftRight[2] = math.min(math.max(uLeftRight[2], limitY),stanceLimitY[2])
-  uLeftRight[3] = math.min(math.max(uLeftRight[3], stanceLimitA[1]), stanceLimitA[2])
-
-  return util.pose_global(uLeftRight, uRight)
-end
-
-local function step_destination_right(vel, uLeft, uRight)
-  local u0 = util.se2_interpolate(.5, uLeft, uRight)
-  -- Determine nominal midpoint position 1.5 steps in future
-  local u1 = util.pose_global(vel, u0)
-  local u2 = util.pose_global(.5*vel, u1)
-  local uRightPredict = util.pose_global(-1*uLRFootOffset, u2)
-  local uRightLeft = util.pose_relative(uRightPredict, uLeft)
-  -- Do not pidgeon toe, cross feet:
-
-  --Check toe and heel overlap
-  local toeOverlap  = footSizeX[1] * uRightLeft[3]
-  local heelOverlap = footSizeX[2] * uRightLeft[3]
-  local limitY = math.max(stanceLimitY[1], stanceLimitY2+math.max(toeOverlap,heelOverlap))
-
-  --print("Toeoverlap Heeloverlap",toeOverlap,heelOverlap,limitY)
-
-  uRightLeft[1] = math.min(math.max(uRightLeft[1], stanceLimitX[1]), stanceLimitX[2])
-  uRightLeft[2] = math.min(math.max(uRightLeft[2], -stanceLimitY[2]), -limitY)
-  uRightLeft[3] = math.min(math.max(uRightLeft[3], -stanceLimitA[2]), -stanceLimitA[1])
-
-  return util.pose_global(uRightLeft, uLeft)
 end
 
 local function update_velocity(velCurrent)
@@ -247,49 +111,6 @@ local function update_velocity(velCurrent)
   velDiff[3] = util.procFunc(velDiff[3],0,velDelta[3])
   -- Update the current velocity command
   return velCurrent + velDiff
-end
--- Return the next support position and next foot positions
-local function calculate_step( uLeft_now, uRight_now, supportLeg, uBody_diff )
-  if supportLeg == 0 then
-    -- Left support
-    -- Find the left support point
-    local uSupport = util.pose_global({supportX, supportY, 0}, uLeft_now)
-    -- Find the right foot destination
-    local uRight_next = step_destination_right(uBody_diff, uLeft_now, uRight_now)
-    return uSupport, uLeft_now, uRight_next
-  else
-    -- Right support
-    -- Find the right support point
-    local uSupport = util.pose_global({supportX, -supportY, 0}, uRight_now)
-    -- Find the left foot destination
-    local uLeft_next = step_destination_left(uBody_diff, uLeft_now, uRight_now)
-    return uSupport, uLeft_next, uRight_now
-  end
-end
-
-local function support_modification( uTorso )
-  --Support Point modulation for walkkick
-  local supportMod = {0,0,0}
-  if supportLeg == 0 then
-    -- left
-    supportMod[2]=supportModYInitial
-    local uLeftTorso = util.pose_relative(uLeft_now,uTorso_now)
-    local uTorsoModded = util.pose_global(
-    vector.new({supportMod[1],supportMod[2],0}),uTorso)
-    local uLeftModded = util.pose_global (uLeftTorso,uTorsoModded) 
-    local uSupport = util.pose_global({supportX, supportY, 0},uLeftModded)
-    return uSupport
-  else
-    -- right
-    supportMod[2]=-supportModYInitial
-    -- Find where the right foot is relative to the torso
-    local uRightTorso = util.pose_relative(uRight_now,uTorso_now)
-    -- If we use a first step support modification
-    local uTorsoModded = util.pose_global(supportMod,uTorso)
-    local uRightModded = util.pose_global(uRightTorso,uTorsoModded) 
-    local uSupport = util.pose_global({supportX, -supportY, 0}, uRightModded)
-    return uSupport
-  end
 end
 
 ---------------------------
@@ -406,19 +227,19 @@ function walk.update()
     local uSupport
     -- TODO: We can queue steps, rather than use on the fly calculations...
     -- That could be sent to the walk engine as via points...?
-    uSupport, uLeft_next, uRight_next = calculate_step( uLeft_now, uRight_now, supportLeg, velCurrent )
+    uSupport, uLeft_next, uRight_next = 
+      moveleg.calculate_next_step( uLeft_now, uRight_now, supportLeg, velCurrent )
 
     if initial_step>0 then
       uLeft_next = uLeft_now;
       uRight_next = uRight_now;
     end
 
-    -- This is the next desired torso position
-    --uTorso_next = step_torso( uLeft_now, uRight_now, 0.5 )
-    uTorso_next = step_torso( uLeft_next, uRight_next, 0.5 )
-    if initial_step>0 then
-      -- Adjustable initial step body swing
-      uSupport = support_modification(uTorso_next)
+    -- This is the next desired torso position    
+    uTorso_next = moveleg.calculate_next_torso( uLeft_next, uRight_next, supportLeg, 0.5 )
+    if initial_step>0 then --support should be closer to center for initial step
+      --1 for no swing, 0 for full swing
+      uSupport = util.se2_interpolate(0.3,uSupport,uTorso_next)      
     end
     -- Compute coefficients for this step to 
     -- guide the legs and torso through the phase
@@ -469,39 +290,24 @@ function walk.update()
   --com[3] = .5*(uLeft[3] + uRight[3])
   -- Linear speed turning
   uTorso[3] = ph*(uLeft_next[3]+uRight_next[3])/2 + (1-ph)*(uLeft_now[3]+uRight_now[3])/2
-  
+
   -- The reference frame is from the right foot, so reframe the torso
   local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   -- Grab gyro feedback for these joint angles
   local r,p,y = get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
 
-  -- Calculate the next desired torso position
-  local pTorso = vector.new({supportX, 0, Config.walk.bodyHeight, 0,bodyTilt,0})
-  -- The position of the torso, in Transform format is here
-  pTorso[1], pTorso[2] = uTorsoActual[1], uTorsoActual[2] 
-  -- Add the default angle of the torso in RPY format
-  pTorso[4], pTorso[5],pTorso[6] = 0, bodyTilt, 0
-  -- The yaw angle should include the default body angle and the yaw swing of the torso
-  pTorso[6] = pTorso[6] + uTorsoActual[3]
+  local delta_legs
+  delta_legs, ankleShift, kneeShift, hipShift = moveleg.get_leg_compensation(
+      supportLeg,phSingle,{r,p,y}, ankleShift, kneeShift, hipShift, initial_step)
 
-  -- Find the transform of the legs, from the torso information
+  -- Set the current torso and feet transforms
+  local pTorso = vector.new({
+    uTorsoActual[1], uTorsoActual[2], Config.walk.bodyHeight,0,bodyTilt,uTorsoActual[3]})
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3]
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3]
-  -- Solve the IK for these transforms
-  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg)
-  -- Make the motion commands for the legs
-  local leg_feedback = get_leg_feedback(phSingle,r,p,y)
-  qLegs = qLegs + leg_feedback
-  -- Send the leg commands
-  Body.set_lleg_command_position(qLegs)
-  if supportLeg==0 then
-    Body.set_lleg_hardness(hardnessSupport)
-    Body.set_rleg_hardness(hardnessSwing)
-  else
-    Body.set_lleg_hardness(hardnessSwing)
-    Body.set_rleg_hardness(hardnessSupport)
-  end
-
+  
+  moveleg.set_leg_positions(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)  
+  
   ------------------------------------------
   -- Update the status in shared memory
   local uFoot = util.se2_interpolate(.5, uLeft, uRight)

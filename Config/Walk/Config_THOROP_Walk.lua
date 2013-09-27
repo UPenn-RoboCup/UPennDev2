@@ -47,7 +47,8 @@ walk.phZmp = {0.15,0.85}
 ------------------------------------
 walk.hardnessSupport = 1
 walk.hardnessSwing = 1
-walk.hipRollCompensation = 3*math.pi/180
+--walk.hipRollCompensation = 3*math.pi/180
+walk.hipRollCompensation = 2.5*math.pi/180
 walk.supportModYInitial = -0.04 --Reduce initial body swing
 
 -----------------------------------------------------------

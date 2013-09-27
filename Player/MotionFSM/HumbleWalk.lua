@@ -150,6 +150,11 @@ local function get_leg_feedback(phSingle,gyro_roll,gyro_pitch,gyro_yaw)
   -- Change compensation at the beginning of the phase (first 10%)
   -- Same sort of trapezoid at double->single->double support shape
   local phComp = 10 * math.min( phSingle, .1, 1-phSingle )
+
+  --SJ: if initial step, hipRoll shouldn't be compensated
+  if initial_step>0 then phComp = 0; end
+
+
   if supportLeg == 0 then
     -- Left support
     delta_legs[2] = hipShift[2] + hipRollCompensation*phComp

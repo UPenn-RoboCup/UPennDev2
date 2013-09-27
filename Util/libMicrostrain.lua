@@ -72,7 +72,7 @@ libMicrostrain.new_microstrain = function(ttyname, ttybaud )
 	local fd = unix.open( ttyname, unix.O_RDWR + unix.O_NOCTTY)
 	-- Check if opened correctly
 	if fd<3 then
-    print(string.format("Open: %s, (%d)\n", name, fd))
+    print(string.format("Open: %s, (%d)\n", ttyname, fd))
 		return nil
 	end
   
@@ -157,97 +157,49 @@ end
 ---------------------------
 -- Service multiple microstrains
 -- TODO: This seems pretty generic already - make it more so
-libMicrostrain.service = function( microstrains, main )
+libMicrostrain.service = function( microstrain, main )
+  -- Ensure a callback
+  assert(type(microstrain.callback)=='function','Need a callback!')
   
   -- Enable the main function as a coroutine thread
-  local main_thread = nil
-  if main then
+  local main_thread
+  if type(main)=='function' then
     main_thread = coroutine.create( main )
   end
 
-	-- Start the streaming of each microstrain
-  -- Instantiate the microstrain coroutine thread
-  local microstrain_fds = {}
-  local fd_to_microstrain = {}
-  local fd_to_microstrain_id = {}
-	for i,microstrain in ipairs(microstrains) do
-    fd_to_microstrain[microstrain.fd] = microstrain
-    fd_to_microstrain_id[microstrain.fd] = i
-    table.insert(microstrain_fds,microstrain.fd)
-		microstrain:stream_on()
-		microstrain.t_last = unix.time()
-		microstrain.thread = coroutine.create( 
-		function()
-      print('Starting coroutine for',microstrain.info.serial_number)
-      -- The coroutine should never end
-      local scan_str = ''
-			while true do -- extract buffer
-        -- Grab the latest data from the microstrain buffer
-				local scan_buf = unix.read(microstrain.fd, N_SCAN_BYTES-#scan_str )
-        -- If no return, something maybe went awry with the microstrain
-        if not scan_buf then
-          print('BAD READ',type(scan_buf),microstrain.info.serial_number)
-          return
-        end
-        if #scan_str==0 then
-          -- This is where the start of the packet is
-          local idx = scan_buf:find('99b')
-          -- If we do not find the preamble of the scan, ignore read
-          if idx then
-            -- The scan string starts at the index of 99b
-            -- TODO: Read the documentation for why
-            scan_str = scan_buf:sub(idx)
-          end
-        else
-          -- Append it to the scan string
-					scan_str = scan_str..scan_buf
-        end
-        -- Check if we are done
-        if #scan_str>=N_SCAN_BYTES then
-    			-- Return the scan string to be parsed
-          microstrain.t_last = unix.time()
-    			coroutine.yield( scan_str )
-          scan_str = ''
-        else
-          -- Wait for the microstrain buffer to fill again
-          coroutine.yield()
-        end
-      end -- while extract buffer
-
-		end -- coroutine function
-		)
-	end
-  
-  -- Loop while the microstrains are alive
-	while #microstrains>0 do
-
-    -- Perform Select on all microstrains
-    local status, ready = unix.select( microstrain_fds )
-    for i,is_ready in pairs(ready) do
-      if is_ready then
-        local who_to_service = fd_to_microstrain[i]
-        -- Resume the thread
-        local status_code, param = coroutine.resume( who_to_service.thread )
-        -- Check if there were errors in the coroutine
-        if not status_code then
-          print('Dead microstrain coroutine!',who_to_service.info.serial_number)
-          who_to_service:close()
-          local h_id = fd_to_microstrain_id[i]
-          table.remove( microstrains, h_id )
-          table.remove( microstrain_fds, h_id )
-        end
-        -- Process the callback
-        if param and who_to_service.callback then
-          who_to_service.callback( MicrostrainPacket.parse(param) )
-        end
+  local thread = coroutine.create( 
+    function()
+      while true do
+        res = unix.read(microstrain.fd)
+        assert(res,'Bad response!')
+        coroutine.yield(
+          carray.float(res:sub(7,18):reverse()),
+          carray.float(res:sub(21,32):reverse())
+          )
       end
     end
-    -- Process the main thread
-    if main_thread then
-      coroutine.resume( main_thread )
+  )
+  assert(thread,'Could not create thread')
+  --print('thread!',thread,coroutine.status(thread))
+
+  -- Turn on streaming
+  microstrain:ahrs_on()
+
+  -- Loop while the microstrain is alive
+	repeat
+    local status, ready = unix.select( {microstrain.fd} )
+    local status_code, acc, gyr = coroutine.resume( thread )
+    -- Check if there were errors in the coroutine
+    if not status_code then
+      print( util.color('Dead microstrain coroutine!','red'), acc)
+      microstrain:ahrs_off()
+      microstrain:close()
+    else
+      microstrain.callback(acc,gyr)
     end
-	end -- while servicing
-  print'Nothing left to service!'
+    if main_thread then coroutine.resume( main_thread ) end
+  until not status_code
+
 end
 
 return libMicrostrain

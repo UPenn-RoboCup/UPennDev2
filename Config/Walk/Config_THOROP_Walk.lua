@@ -29,15 +29,15 @@ walk.velDelta  = {0.05,0.03,0.3}
 ------------------------------------
 walk.bodyHeight = 1.15
 walk.bodyTilt = 0*math.pi/180
-walk.footY = 0.120     -- body-center-to-ankle width
-walk.supportX = 0.00  -- ankle-to-foot-center offset 
-walk.torsoX = 0.00     -- com-to-body-center offset
+walk.supportX = 0.03  -- ankle-to-foot-center offset 
+walk.supportY = 0.03  -- ankle-to-foot-center offset
+walk.footY  = 0.120   -- body-center-to-ankle width
+walk.torsoX = 0.00    -- com-to-body-center offset
 ------------------------------------
 -- Gait parameters
 ------------------------------------
 walk.tStep = 1.0
 walk.tZMP = 0.34       
-walk.supportY = 0.01   --ankle-to-foot-center offset
 walk.stepHeight = 0.052
 walk.phSingle = {0.15,0.85}
 walk.phZmp = {0.15,0.85}

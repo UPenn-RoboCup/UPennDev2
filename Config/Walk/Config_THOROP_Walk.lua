@@ -11,7 +11,7 @@ local walk = {}
 -- Stance and velocity limit values
 ------------------------------------
 -- NOTE: Large stride test (up to 300mm)
-walk.stanceLimitX = {-0.30,0.30}
+walk.stanceLimitX = {-0.50,0.50}
 walk.stanceLimitY = {0.16,0.60}
 walk.stanceLimitA = {-10*math.pi/180,30*math.pi/180}
 -- TODO: Toe/heel overlap checking values
@@ -23,6 +23,9 @@ walk.velLimitX = {-.15,.15}
 walk.velLimitY = {-.08,.08}
 walk.velLimitA = {-.3,.3}
 walk.velDelta  = {0.05,0.03,0.3}
+
+
+walk.velLimitX = {-.30,.30}
 
 ------------------------------------
 -- Stance parameters
@@ -166,50 +169,6 @@ zmpstep.hipRollCompensation = 3*math.pi/180
 -- For the arm FSM
 local arm = {}
 arm.qLArmInit={
- vector.new({90,15,0,-15,  -0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({90,90,90,-90, -90,-0,0})*DEG_TO_RAD, -- scarecrow
- vector.new({0,90,90,-90,  -90,-45,0})*DEG_TO_RAD,-- arms in front
-}
-arm.qRArmInit={
- vector.new({90,-15,0,-15,     0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({90,-90,-90,-90,   90,0,0})*DEG_TO_RAD,  -- scarecrow
- vector.new({0,-90,-90,-90,    90,45,0})*DEG_TO_RAD, -- arms in front
-}
-
-
---New init motion utilizing 7DOF arm
-arm.qLArmInit={
- vector.new({90,15,0,-5,  -0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({110.5, 17.5, 0, -85.7, -30.2,  0,16.8})*DEG_TO_RAD, -- scarecrow
- vector.new({110.5, 17.5, -24, -85.7, -30.2, -71.0,16.8})*DEG_TO_RAD,-- arms in front
-}
-arm.qRArmInit={
- vector.new({90,-15,0,-5,     0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({110.5, -17.5, 0, -85.7,  30.2,  0,-16.8})*DEG_TO_RAD,  -- scarecrow
- vector.new({110.5, -17.5, 24, -85.7, 30.2, 71.0,-16.8})*DEG_TO_RAD,-- arms in front
-}
-
-
-
---New init motion utilizing 7DOF arm
---Now the same as walking arm pose
-arm.qLArmInit={
- vector.new({110,12,0,-40,  -0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({110.5, 17.5, 0, -85.7, -30.2,  0,16.8})*DEG_TO_RAD, -- scarecrow
- vector.new({110.5, 17.5, -24, -85.7, -30.2, -71.0,16.8})*DEG_TO_RAD,-- arms in front
-}
-arm.qRArmInit={
- vector.new({110,-12,0,-40,     0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({110.5, -17.5, 0, -85.7,  30.2,  0,-16.8})*DEG_TO_RAD,  -- scarecrow
- vector.new({110.5, -17.5, 24, -85.7, 30.2, 71.0,-16.8})*DEG_TO_RAD,-- arms in front
-}
-
-
-
-
-
---SJ: nonzero shoulder yaw
-arm.qLArmInit={
  vector.new({110,12,-3,-40,  -0,0,0})*DEG_TO_RAD, -- at sides
  vector.new({110.5, 17.5, 0, -85.7, -30.2,  0,16.8})*DEG_TO_RAD, -- scarecrow
  vector.new({110.5, 17.5, -24, -85.7, -30.2, -71.0,16.8})*DEG_TO_RAD,-- arms in front
@@ -221,7 +180,7 @@ arm.qRArmInit={
 }
 
 
-
+--[[
 
 --Now ROCKY pose!
 arm.qLArmInit={
@@ -235,7 +194,7 @@ arm.qRArmInit={
  vector.new({110.5, -17.5, 24, -85.7, 30.2, 71.0,-16.8})*DEG_TO_RAD,-- arms in front
 }
 
-
+--]]
 
 
 

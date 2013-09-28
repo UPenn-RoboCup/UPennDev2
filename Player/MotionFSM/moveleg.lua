@@ -9,6 +9,15 @@ local vector = require'vector'
 -- So that we can reuse them for different controllers
 -- Should we move it into util?
 
+
+
+-- Velocity limits used in update_velocity function
+local velLimitX = Config.walk.velLimitX or {-.06, .08}
+local velLimitY = Config.walk.velLimitY or {-.06, .06}
+local velLimitA = Config.walk.velLimitA or {-.4, .4}
+local velDelta  = Config.walk.velDelta or {.03,.015,.15}
+local vaFactor  = Config.walk.vaFactor or 0.6
+
 -- Foothold Generation parameters ---------------------------------------
 local stanceLimitX = Config.walk.stanceLimitX or {-0.10 , 0.10}
 local stanceLimitY = Config.walk.stanceLimitY or {0.09 , 0.20}
@@ -36,6 +45,34 @@ local hipRollCompensation = Config.walk.hipRollCompensation
 -- Leg hardness parameters
 local hardnessSupport = Config.walk.hardnessSupport or 0.7
 local hardnessSwing   = Config.walk.hardnessSwing or 0.5
+
+
+function moveleg.update_velocity(velCurrent)
+  -- Grab from the shared memory the desired walking speed
+  local vx,vy,va = unpack(mcm.get_walk_vel())
+  --Filter the commanded speed
+  vx = math.min(math.max(vx,velLimitX[1]),velLimitX[2])
+  vy = math.min(math.max(vy,velLimitY[1]),velLimitY[2])
+  va = math.min(math.max(va,velLimitA[1]),velLimitA[2])
+  -- Find the magnitude of the velocity
+  local stepMag = math.sqrt(vx^2+vy^2)
+  --Slow down when turning
+  local vFactor   = 1-math.abs(va)/vaFactor
+  local magFactor = math.min(velLimitX[2]*vFactor,stepMag)/(stepMag+0.000001)
+  -- Limit the forwards and backwards velocity
+  vx = math.min(math.max(vx*magFactor,velLimitX[1]),velLimitX[2])
+  vy = math.min(math.max(vy*magFactor,velLimitY[1]),velLimitY[2])
+  va = math.min(math.max(va,velLimitA[1]),velLimitA[2])
+  -- Check the change in the velocity
+  local velDiff = vector.new({vx,vy,va}) - velCurrent
+  -- Limit the maximum velocity change PER STEP
+  velDiff[1] = util.procFunc(velDiff[1],0,velDelta[1])
+  velDiff[2] = util.procFunc(velDiff[2],0,velDelta[2])
+  velDiff[3] = util.procFunc(velDiff[3],0,velDelta[3])
+  -- Update the current velocity command
+  return velCurrent + velDiff
+end
+
 
 function moveleg.calculate_next_step(uLeft_now, uRight_now, supportLeg, uBody_diff)
   if supportLeg == 0 then    -- Left support
@@ -118,6 +155,28 @@ function moveleg.step_destination_right(vel, uLeft, uRight)
   return util.pose_global(uRightLeft, uLeft)
 end
 
+function moveleg.get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
+  local body_yaw
+  if supportLeg == 0 then  -- Left support
+    body_yaw = uLeft[3]  - uTorsoActual[3]
+  else
+    body_yaw = uRight[3] - uTorsoActual[3]
+  end
+  -- Ankle stabilization using gyro feedback
+  --local imu_roll0, imu_pitch0, imu_yaw0 = unpack(Body.get_sensor_imu())
+  --math.sin(imuPitch)*bodyHeight, -math.sin(imuRoll)*bodyHeight
+  local gyro_roll0, gyro_pitch0, gyro_yaw0 = unpack(Body.get_sensor_gyro())
+  -- Get effective gyro angle considering body yaw offset
+  -- Rotate the Roll and pitch about the intended body yaw
+  local gyro_roll  = gyro_roll0  * math.cos(body_yaw) - gyro_pitch0 * math.sin(body_yaw)
+  local gyro_pitch = gyro_pitch0 * math.cos(body_yaw) - gyro_roll0  * math.sin(body_yaw)
+
+  -- Give these parameters
+  return {gyro_roll, gyro_pitch, gyro_yaw0}
+end
+
+
+
 function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,
     ankleShift, kneeShift, hipShift, initial_step)
   local gyro_pitch = gyro_rpy[2]
@@ -187,6 +246,42 @@ function moveleg.set_leg_positions(pLLeg, pRLeg, pTorso, supportLeg, delta_legs)
     Body.set_rleg_hardness(hardnessSupport)
   end
 end
+
+function moveleg.get_foot(ph,start_phase,finish_phase)
+  -- Computes relative x, z motion of foot during single support phase
+  -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0
+  -- phSingle is 100% @ finish_phase, and 0% at start_phase
+  -- It just ignores the double support phase so we know how long we've been in single support
+  local phSingle = math.min( math.max(ph-start_phase, 0)/(finish_phase-start_phase), 1)
+  local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
+  local xf = .5*(1-math.cos(math.pi*phSingleSkew))
+  local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
+  -- xf and zf and percentages, it seems
+  return xf, zf, phSingle
+end
+
+function moveleg.get_foot_square(ph,start_phase,finish_phase)
+  --SJ: Square wave walk pattern
+  local phSingle = math.min( math.max(ph-start_phase, 0)/(finish_phase-start_phase), 1)
+  local phase1 = 0.2;
+  local phase2 = 0.7;
+
+  if phSingle<phase1 then --Lifting phase
+    ph1 = phSingle / phase1
+    xf = 0;
+    zf = ph1;
+  elseif phSingle<phase2 then
+    ph1 = (phSingle-phase1) / (phase2-phase1)
+    xf = ph1;
+    zf = 1;
+  else
+    ph1 = (phSingle-phase2) / (1-phase2)    
+    xf = 1;
+    zf = (1-ph1)
+  end
+  return xf,zf,phSingle
+end
+
 
 return moveleg
 

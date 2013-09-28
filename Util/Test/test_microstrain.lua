@@ -11,7 +11,7 @@ local vector = require'vector'
 local RAD_TO_DEG = Body.RAD_TO_DEG
 
 local imu = libMicrostrain.new_microstrain(
-  '/dev/cu.usbmodem1421', 115200 )
+  '/dev/cu.usbmodem1421', 921600 )
 
 if not imu then
   print('No imu present!')
@@ -29,7 +29,7 @@ print(table.concat(imu.information,'\n'))
 --os.exit()
 
 -- Change the baud rate to fastest for this session
---libMicrostrain.change_baud(imu)
+libMicrostrain.change_baud(imu)
 --os.exit()
 
 -- Turn on the stream

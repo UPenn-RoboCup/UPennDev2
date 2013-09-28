@@ -1,15 +1,4 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
-#ifdef __cplusplus
-}
-#endif
-
+#include <lua.hpp>
 #include "SerialDevice.hpp"
 #include <stdint.h>
 #include <vector>
@@ -215,7 +204,7 @@ static const struct luaL_reg Serial_lib [] = {
 };
 
 extern "C"
-int luaopen_Serial(lua_State *L) {
+int luaopen_serial(lua_State *L) {
   luaL_register(L, "Serial", Serial_lib);
   return 1;
 }

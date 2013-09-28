@@ -5,22 +5,22 @@ local libDynamixel = require'libDynamixel'
 local util = require'util'
 local carray = require'carray'
 
-----[[
 --local new_dynamixel = libDynamixel.new_bus()
-local right_arm = libDynamixel.new_bus('/dev/cu.usbserial-FTT3ABW9A')
-local left_arm_and_spine  = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
-local right_leg = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
-local left_leg = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
---]]
---[[
+
 local right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
-local left_arm_and_spine = libDynamixel.new_bus'/dev/ttyUSB1' --left arm
+local left_arm  = libDynamixel.new_bus'/dev/ttyUSB1'
 local right_leg = libDynamixel.new_bus'/dev/ttyUSB2'
-local left_leg = libDynamixel.new_bus'/dev/ttyUSB3'
---]]
+local left_leg  = libDynamixel.new_bus'/dev/ttyUSB3'
+
+if OPERATING_SYSTEM=='darwin' then
+  right_arm = libDynamixel.new_bus('/dev/cu.usbserial-FTT3ABW9A')
+  left_arm  = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
+  right_leg = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
+  left_leg  = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
+end
 
 -- Choose a chain
-local test_dynamixel = left_leg
+local test_dynamixel = right_leg
 assert(test_dynamixel)
 print('Using',test_dynamixel.ttyname)
 
@@ -30,8 +30,10 @@ print('Inspecting',table.concat(found,','))
 ----]]
 --found = {2,4,6,8,10,12,14,29,30,32,34,36,37}
 --found = {29,30} --head
---found = {16,18,20,22,24,26} --left leg
-found = {--[[24,]]26} --left ankle
+found = {16,18,20,22,24,26} --left leg
+--found = {--[[24,]]26} --left ankle
+
+found = {15,17,19,21,23,25} --right leg
 
 --os.exit()
 
@@ -53,7 +55,6 @@ for _,m in ipairs(found) do
     end
     --]]
   end
-  
   
   local status = libDynamixel.get_nx_delay(m,test_dynamixel)
   if status then 
@@ -84,6 +85,22 @@ for _,m in ipairs(found) do
     print(string.format('Homing Offset: %d',value))
   end
 
+  local status = libDynamixel.get_nx_position_p(m,test_dynamixel)
+  if status then 
+    local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
+    print(string.format('P: %d',value))
+  end
+  local status = libDynamixel.get_nx_position_i(m,test_dynamixel)
+  if status then 
+    local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
+    print(string.format('I: %d',value))
+  end
+  local status = libDynamixel.get_nx_position_d(m,test_dynamixel)
+  if status then 
+    local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
+    print(string.format('D: %d',value))
+  end
+
   local status = libDynamixel.get_nx_data(m,test_dynamixel)
   if status then
     local data = carray.short( string.char(unpack(status.parameter)) )
@@ -103,6 +120,11 @@ for _,m in ipairs(found) do
   --]]
 
 end
+
+-- SET the PID values
+--local status = libDynamixel.set_nx_position_p(found,64,test_dynamixel)
+
+os.exit()
 
 -- Poll ext data
 while true do

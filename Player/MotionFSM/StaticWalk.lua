@@ -27,8 +27,8 @@ local footY    = Config.walk.footY
 
 --Gait parameters
 local stepHeight  = Config.walk.stepHeight
-
-----------------------------------------------------------
+local tStep = Config.walk.tStep
+---------------------------------------------------------
 -- Walk state variables
 -- These are continuously updated on each update
 ----------------------------------------------------------
@@ -77,11 +77,6 @@ function walk.entry()
   uTorso_now, uTorso_next = uTorso0, uTorso0
   uLeft_now,  uLeft_next  = uLeft,  uLeft
   uRight_now, uRight_next = uRight, uRight
-
-tStep = 4.0
-tStep = 8.0
-
-tStep = 16.0
 
   t_last_step = Body.get_time()-tStep
 
@@ -183,7 +178,7 @@ function walk.update()
   local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   --------------------------------------------------------------------
   
-  phFootSingle1 = 0.45
+  phFootSingle1 = 0.3
   phFootSingle2 = 0.7
   local xFoot, zFoot, phSingle = moveleg.get_foot_square(
       ph,phFootSingle1,phFootSingle2)  

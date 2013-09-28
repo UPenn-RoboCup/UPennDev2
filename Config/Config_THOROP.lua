@@ -13,8 +13,11 @@ Config.dev.body         = Config.PLATFORM_NAME..'Body'
 Config.dev.game_control = 'OPGameControl'
 Config.dev.team         = 'TeamNSL'
 Config.dev.kick         = 'NewNewKick'
-Config.dev.walk         = 'GrumbleWalk'
+
+--Config.dev.walk         = 'GrumbleWalk'
 Config.dev.walk         = 'HumbleWalk'
+--Config.dev.walk         = 'StaticWalk'
+
 Config.dev.crawl        = 'ScrambleCrawl'
 Config.dev.largestep    = 'ZMPStepStair'
 Config.dev.gender       = 'boy'

@@ -216,7 +216,7 @@ function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,
     delta_legs[2] = hipShift[2] + hipRollCompensation*phComp
     delta_legs[4] = kneeShift
     delta_legs[5] = ankleShift[1]
-    delta_legs[6] = ankleShift[2]
+    delta_legs[6] = ankleShift[2]*phComp
     -- right toe tip swing
     delta_legs[11] = toeTipCompensation*phComp--Lifting toetip
   elseif supportLeg==1 then    
@@ -224,7 +224,7 @@ function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,
     delta_legs[8]  = hipShift[2] - hipRollCompensation*phComp
     delta_legs[10] = kneeShift
     delta_legs[11] = ankleShift[1]
-    delta_legs[12] = ankleShift[2]
+    delta_legs[12] = ankleShift[2]*phComp
     -- left toe tip swing
     delta_legs[5] = toeTipCompensation*phComp--Lifting toetip
   else 
@@ -235,6 +235,9 @@ function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,
     delta_legs[10] = kneeShift
     delta_legs[11] = ankleShift[1]
   end
+
+  print('Ankle shift',vector.new(ankleShift) )
+
   return delta_legs, ankleShift, kneeShift, hipShift
 end
 

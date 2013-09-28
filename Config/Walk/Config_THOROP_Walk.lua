@@ -59,14 +59,15 @@ walk.tStep = 1.0
 -------------------------------
 
 ----Also working in webots---------------
---[[
+--
 walk.tStep = 0.8
 walk.phSingle = {0.2,0.8}
 walk.phZmp = {0.2,0.8}
---]]
+--
 
 walk.stepHeight = 0.05
 -------------------------------
+
 
 ------------------------------------
 -- Compensation parameters
@@ -79,12 +80,34 @@ walk.supportModYInitial = -0.04 --Reduce initial body swing
 
 
 -- slow/static
-walk.tStep = 1.0
 walk.supportY = 0.04
 walk.bodyHeight = 0.950
 walk.supportX = 0.01
 walk.hipRollCompensation = 3*math.pi/180
 walk.stepHeight = 0.02
+
+
+walk.tZMP = 0.30
+walk.footY  = 0.12
+walk.supportY = 0.02
+walk.supportX = 0.02
+walk.stepHeight = 0.025
+
+
+walk.hipRollCompensation = 1*math.pi/180
+walk.hipRollCompensation = 0
+
+
+--[[
+--FOR STATIC WALKING
+
+walk.hipRollCompensation = 2*math.pi/180
+walk.stepHeight = 0.03
+walk.bodyHeight = 0.93
+walk.supportY = 0.035 
+walk.footY  = 0.095
+walk.tStep = 12
+--]]
 
 -----------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max --
@@ -107,14 +130,55 @@ walk.hipImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
 
 --Param for actual robot
 
+gyroFactorX = 0.2
+gyroFactorY = 0.2
+
+walk.ankleImuParamX={
+  0.3, 0.75*gyroFactorX, 
+  1*math.pi/180, 5*math.pi/180
+}
+walk.kneeImuParamX={
+  0.3,1.5*gyroFactorX,
+  1*math.pi/180, 5*math.pi/180
+}
+--walk.kneeImuParamX={0.3,0*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
+
+walk.ankleImuParamY = {
+  0.3, 0.75*gyroFactorY,
+  2*math.pi/180, 5*math.pi/180
+}
+walk.hipImuParamY   = {
+  0.3, 0.5*gyroFactorY,
+  2*math.pi/180, 5*math.pi/180
+}
+
+--[[
+walk.footY    = 0.09
+--walk.tStep    = 0.9
+-- From robotis
+walk.phSingle = {0.125,0.875}
+walk.phZmp    = {0.125,0.875}
+walk.bodyHeight = 0.980
+
 gyroFactorX = 0.1
 gyroFactorY = 0.1
-
-walk.ankleImuParamX={0.3,0.75*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
-walk.kneeImuParamX={0.3,1.5*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
-walk.ankleImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
-walk.hipImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
-
+walk.ankleImuParamX={
+  0.3, 0.9*gyroFactorX, 
+  1*math.pi/180, 5*math.pi/180
+}
+walk.kneeImuParamX={
+  0.3,.3*gyroFactorX,
+  1*math.pi/180, 5*math.pi/180
+}
+walk.ankleImuParamY = {
+  0.3,1.0*gyroFactorY,
+  0*math.pi/180, 5*math.pi/180
+}
+walk.hipImuParamY = {
+  0.3, 0.5*gyroFactorY,
+  0*math.pi/180, 5*math.pi/180
+}
+--]]
 -----------------------------------------------------------
 -- Stance parameters
 -----------------------------------------------------------

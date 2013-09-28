@@ -376,10 +376,12 @@ function walk.entry()
   -- Because joint readings are not always available with darwins
   -- TODO: Use shared memory readings, or calculate upon entry
   -- (Re)Set our local variables to the current uFoot positions
-  local uTorso0 = vector.new({supportX, 0, 0})
+
+  local uTorso0 = mcm.get_poses_uTorso()  
+  local uLeft = mcm.get_poses_uLeft()
+  local uRight = mcm.get_poses_uRight()
+
   uTorso_now, uTorso_next = uTorso0, uTorso0
-  local uLeft  = util.pose_global(vector.new({-supportX, footY, 0}),uTorso_now)
-  local uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso_now)
   uLeft_now,  uLeft_next  = uLeft,  uLeft
   uRight_now, uRight_next = uRight, uRight
   
@@ -498,6 +500,11 @@ end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')
+
+  mcm.set_poses_uLeft(uLeft_next)
+  mcm.set_poses_uRight(uRight_next)
+  mcm.set_poses_uTorso(uTorso_next)
+
   -- TODO: Store things in shared memory?
 end
 

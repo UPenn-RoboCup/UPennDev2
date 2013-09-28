@@ -998,9 +998,11 @@ if IS_WEBOTS then
 
 		-- Gyro data (verified)
 		local gyro = webots.wb_gyro_get_values(tags.gyro)
-    jcm.sensorPtr.gyro[1] = (gyro[1]-512)/0.273
-    jcm.sensorPtr.gyro[2] = (gyro[2]-512)/0.273
-    jcm.sensorPtr.gyro[3] = (gyro[3]-512)/0.273
+
+    jcm.sensorPtr.gyro[1] = -(gyro[1]-512)/512*39.24
+    jcm.sensorPtr.gyro[2] = -(gyro[2]-512)/512*39.24
+    jcm.sensorPtr.gyro[3] = (gyro[3]-512)/512*39.24
+
 
     -- Debugging:
     --print('Gyro:',Body.get_sensor_gyro())

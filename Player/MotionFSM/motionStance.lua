@@ -1,114 +1,97 @@
+--Stance state is basically a Walk controller
+--Without any torso or feet update
+--We share the leg joint generation / balancing code 
+--with walk controllers
+
 local state = {}
 state._NAME = ...
 
---motionStance: Let the robot keep standing while balanced
---Should be different from motionInit (which just inits the leg)
---For now let's use the same code
-
+local Body   = require'Body'
+local K      = Body.Kinematics
+local vector = require'vector'
+local unix   = require'unix'
+local util   = require'util'
+local moveleg = require'moveleg'
 require'mcm'
-local Body       = require'Body'
-local K          = Body.Kinematics
-local util       = require'util'
-local vector     = require'vector'
-local timeout    = 20.0
-local t_readings = 0.20
-local t_settle   = 0.10
--- Declare local so as not to pollute the global namespace
--- This is 5.1 and 5.2 compatible
--- NOTE: http://www.luafaq.org/#T1.37.1
-local t_entry, t_update, t_finish
 
+-- Simple IPC for remote state triggers
+local simple_ipc = require'simple_ipc'
+local evts = simple_ipc.new_subscriber('Walk',true)
 
-local pLLeg_desired, pRLeg_desired, pTorso_desired, pTorso
--- Desired Waist position and limits
-local qWaist_desired, dqWaistLimit
-local dpMaxDelta = Config.stance.dpLimitStance
+-- Keep track of important times
+local t_entry, t_update, t_last_step
 
+-- Stance parameters
+local bodyTilt = Config.walk.bodyTilt or 0
+local torsoX   = Config.walk.torsoX
+local footY    = Config.walk.footY
 
-  -- Set the default waist
-local qWaist_desired = Config.stance.qWaist
-local dqWaistLimit   = Config.stance.dqWaistLimit
+--Gait parameters
+local stepHeight  = Config.walk.stepHeight
 
-  -- Set the desired legs
-local pLLeg_desired = Config.stance.pLLeg
-local pRLeg_desired = Config.stance.pRLeg
-  -- Desired torso
-local  pTorso_desired = Config.stance.pTorso
+----------------------------------------------------------
+-- Walk state variables
+-- These are continuously updated on each update
+----------------------------------------------------------
+-- Save the velocity between update cycles
+local velCurrent = vector.new{0, 0, 0}
 
+-- Save gyro stabilization variables between update cycles
+-- They are filtered.  TODO: Use dt in the filters
+local ankleShift = vector.new{0, 0}
+local kneeShift  = 0
+local hipShift   = vector.new{0, 0}
 
+-- Still have an initial step for now
+local initial_step, iStep
 
+---------------------------
+-- State machine methods --
+---------------------------
 function state.entry()
   print(state._NAME..' Entry' )
-
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-  t_finish = t_entry
   
-  --SJ: Now we only use commanded positions
-  --As the actual values are read at motionIdle state
-  local qLLeg = Body.get_lleg_command_position()
-  local qRLeg = Body.get_rleg_command_position()
-    
-  -- How far away from the torso are the legs currently?
-  local dpLLeg = K.torso_lleg(qLLeg)
-  local dpRLeg = K.torso_rleg(qRLeg)
-  
-  local pTorsoL = pLLeg_desired + dpLLeg
-  local pTorsoR = pRLeg_desired + dpRLeg
-  pTorso = (pTorsoL+pTorsoR)/2
+  mcm.set_walk_bipedal(1)
 end
 
----
---Set actuator commands to resting position, as gotten from joint encoders.
 function state.update()
-  
   -- Get the time of update
-  local t  = Body.get_time()
-  local dt = t - t_update
+  local t = Body.get_time()
+  local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
-  --if t-t_entry > timeout then return'timeout' end
 
+  --Read stored feet and torso poses 
+  local uTorso = mcm.get_poses_uTorso()  
+  local uLeft = mcm.get_poses_uLeft()
+  local uRight = mcm.get_poses_uRight()
+  local zLeft,zRight = 0,0
+  supportLeg = 2; --Double support
 
---Does nothing
---[[
-  -- Zero the waist  
-  local qWaist = Body.get_waist_command_position()
-  local qWaist_approach, doneWaist = 
-    util.approachTol( qWaist, qWaist_desired, dqWaistLimit, dt )
-  Body.set_waist_command_position(qWaist_approach)
+  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
+  -- Grab gyro feedback for these joint angles
+  local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
+  local delta_legs
+  delta_legs, ankleShift, kneeShift, hipShift = moveleg.get_leg_compensation(
+      supportLeg,0,gyro_rpy, ankleShift, kneeShift, hipShift, 0)
 
-  -- Ensure that we do not move motors too quickly
-  local pTorso_approach, doneTorso = 
-    util.approachTol( pTorso, pTorso_desired, dpMaxDelta, dt )
-  -- If not yet within tolerance, then update the last known finish time
-
-  if not doneTorso or not doneWaist then t_finish = t end --do we need this?
-  
-  -- Command the body
-  -- TODO: Should we approach these positions?
-  local qLegs = Kinematics.inverse_legs( pLLeg_desired, pRLeg_desired, pTorso_approach, 0 )
-
-  if Config.stance.enable_legs then
-    Body.set_lleg_command_position( qLegs )  
-    -- Once in tolerance, let the robot settle
-    if t-t_finish>t_settle then return'done' end
-  else
-    return true
-  end  
---]]
-
-end
+  local pTorso = vector.new({
+        uTorsoActual[1], uTorsoActual[2], Config.walk.bodyHeight,
+        0,bodyTilt,uTorsoActual[3]})
+  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
+  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
+    
+  moveleg.set_leg_positions(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)  
+    
+end -- walk.update
 
 function state.exit()
-  print(state._NAME..' Exit.  Time elapsed:',t_finish-t_entry )
-  -- now on feet
-  mcm.set_walk_bipedal(1)
-  -- Update current pose for use by the camera
-  mcm.set_camera_bodyHeight(pTorso[3])
-  mcm.set_camera_bodyTilt(pTorso[5])
+  print(state._NAME..' Exit')
+  -- TODO: Store things in shared memory?
 end
 
 return state

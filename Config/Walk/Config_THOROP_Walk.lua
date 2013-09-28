@@ -89,6 +89,7 @@ walk.stepHeight = 0.02
 -----------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max --
 -----------------------------------------------------------
+--[[
 gyroFactor = 0.273*math.pi/180 * 300 / 1024 --dps to rad/s conversion
 -- We won't use gyro feedback on webots
 gyroFactorX = gyroFactor * 0
@@ -99,6 +100,19 @@ walk.ankleImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
 
 walk.kneeImuParamX={0.3,1.5*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
 
+walk.hipImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
+--]]
+
+
+
+--Param for actual robot
+
+gyroFactorX = 0.1
+gyroFactorY = 0.1
+
+walk.ankleImuParamX={0.3,0.75*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
+walk.kneeImuParamX={0.3,1.5*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
+walk.ankleImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
 walk.hipImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
 
 -----------------------------------------------------------

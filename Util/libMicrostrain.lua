@@ -31,7 +31,6 @@ local function write_command(fd,cmd)
   assert(fd_id==1,'Timeout!')
   local res = unix.read(fd)
   assert(res,'No data!')
-  --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
   return {res:byte(1,-1)}
 end
 
@@ -47,6 +46,47 @@ local function get_information(fd)
   local info = {firmware_version}
   for k in information:gmatch('[^%s]+') do table.insert(info,k) end
   return info
+end
+
+libMicrostrain.configure = function(microstrain)
+  -- Set the mode for reading data
+  -- 100Hz of gyro & rpy
+
+  --[[
+  local stream_fmt = { 0x75, 0x65, 0x0C, 0x0D, 0x0D, 0x08, -- New AHRS format
+    0x01, 0x03, -- Set 3 messages
+    0x04, 0x00, 0x01, -- Accelerometer
+    0x05, 0x00, 0x01, -- Gyro
+    0x0C, 0x00, 0x01 -- Euler Angles
+  }
+  --]]
+  -- New AHRS format
+  local stream_fmt = { 0x75, 0x65, 0x0C,
+    0x0A, -- Command length
+    0x0A, 0x08, -- Length and command description
+    0x01, 0x02, -- Set 2 messages
+    0x05, 0x00, 0x01, -- Gyro Message @ 100Hz
+    0x0C, 0x00, 0x01 -- Euler Angles Message @ 100Hz
+  }
+  local response = write_command(microstrain.fd,stream_fmt)
+  --[[
+  for k,v in ipairs(response) do
+    print(string.format('%d: %02X',k,v))
+  end
+  --]]
+
+  -- Save only once! Maybe in the eeprom, so lots of saving could be bad...
+  local save_fmt = { 0x75, 0x65, 0x0C,
+    0x04, -- Command length
+    0x04, 0x08, -- Packet length
+    0x03, 0x00 -- 3 to perform the save
+  }
+  local response = write_command(microstrain.fd,save_fmt)
+  --[[
+  for k,v in ipairs(response) do
+    print(string.format('%d: %02X',k,v))
+  end
+  --]]
 end
 
 ---------------------------
@@ -86,37 +126,6 @@ libMicrostrain.new_microstrain = function(ttyname, ttybaud )
   --write_command(fd,{ 0x75, 0x65, 0x01, 0x02, 0x02, 0x01 })
   -- Set the device to idle
   write_command(fd,{ 0x75, 0x65, 0x01, 0x02, 0x02, 0x02 })
-
-  -- Set the mode for reading data
-  -- 100Hz of gyro, imu, timestamp
-  -- Copy/paste from the docs
-  --[[
-  local stream_fmt = { 0x75, 0x65, 0x0C, 0x0D, 0x0D, 0x08, 0x01, 0x03, 0x04, 0x00, 0x01, 0x05, 0x00, 0x01, 0x12, 0x00, 0x01}
-  -- Make the checksum and yield the string
-  local stream_fmt_cmd = generate_packet(stream_fmt)
-  ret = unix.write(fd,stream_fmt_cmd)
-  assert(ret==#stream_fmt_cmd,'Bad stream write!')
-  fd_id = unix.select( {fd}, TIMEOUT )
-  assert(fd_id==1,'Timeout!')
-  res = unix.read(fd)
-  assert(res,'No data!')
-  response = {res:byte(1,-1)}
-  --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
-
-  -- Save only once! Maybe in the eeprom, so lots of saving could be bad...
-  local save_fmt = { 0x75, 0x65, 0x0C, 0x04, 0x04, 0x08, 0x03, 0x00 }
-  -- Make the checksum and yield the string
-  local save_fmt_cmd = generate_packet(save_fmt)
-  ret = unix.write(fd,save_fmt_cmd)
-  assert(ret==#save_fmt_cmd,'Bad save write!')
-  fd_id = unix.select( {fd}, TIMEOUT )
-  assert(fd_id==1,'Timeout!')
-  res = unix.read(fd)
-  assert(res,'No data!')
-  response = {res:byte(1,-1)}
-  for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
-  --]]
-  --]]
 
   -- TODO: Use NAV or not?? This is the EKF filtered stuff... quaternion format...
 

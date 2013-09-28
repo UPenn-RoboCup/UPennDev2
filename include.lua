@@ -43,7 +43,7 @@ package.cpath = HOME..'/Robots/'..Config.PLATFORM_NAME..'/?.so;'..package.cpath
 KEYFRAME_DIR = HOME.."/Player/Keyframes"
 
 -- Print out the globally available variables, when using include.lua
-----[[
+--[[
 print( 'Working Dir:', CWD )
 print( 'Home Dir:', HOME )
 print( 'Operating Sys:', OPERATING_SYSTEM )

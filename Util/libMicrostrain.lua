@@ -65,9 +65,11 @@ libMicrostrain.change_baud = function (microstrain)
 
   -- Write the command
   local response = write_command(microstrain.fd,baud_cmd)
+  --[[
   for k,v in ipairs(response) do
     print(string.format('%d: %02X',k,v))
   end
+  --]]
 
   -- Close
   microstrain:close()
@@ -79,7 +81,7 @@ libMicrostrain.change_baud = function (microstrain)
 
   -- Ping the microstrain
   local response = write_command(microstrain.fd,ping_cmd)
-  ----[[
+  --[[
   for k,v in ipairs(response) do
     print(string.format('%d: %02X',k,v))
   end
@@ -194,6 +196,9 @@ end
 libMicrostrain.service = function( microstrain, main )
   -- Ensure a callback
   assert(type(microstrain.callback)=='function','Need a callback!')
+
+  -- Go as fast as possible
+  libMicrostrain.change_baud(microstrain)
   
   -- Enable the main function as a coroutine thread
   local main_thread

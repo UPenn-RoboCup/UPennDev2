@@ -24,8 +24,7 @@ if OPERATING_SYSTEM=='darwin' then
   device_tty = '/dev/cu.usbmodem1421'
 end
 
-local imu = libMicrostrain.new_microstrain(
-  device_tty, 115200 )
+local imu = libMicrostrain.new_microstrain(device_tty)
 assert(imu,'Could not open IMU.')
 
 -- Print info
@@ -46,8 +45,17 @@ signal.signal("SIGTERM", shutdown)
 -- Callback
 local accel = vector.zeros(3)
 local function process_imu(gyro,rpy)
-  jcm.set_sensor_rpy(rpy:table())
-  jcm.set_sensor_gyro(gyro:table())
+  -- Perform the remapping and place into jcm
+  jcm.set_sensor_gyro({
+    -gyro[2],
+    gyro[3],
+    -gyro[1]
+    })
+  jcm.set_sensor_rpy({
+    -rpy[2],
+    rpy[3],
+    -rpy[1]
+    })
 end
 
 -- Main thread
@@ -62,8 +70,6 @@ local function main()
     local t_diff = t-t_debug
     if t_diff>print_rate then
       print( string.format('FPS: %.1f',cnt/t_diff) )
-      print(accel)
-      print(RAD_TO_DEG*math.atan2(accel[2],-accel[1]))
       t_debug = t
       cnt = 0
     end

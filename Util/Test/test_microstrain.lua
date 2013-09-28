@@ -29,7 +29,7 @@ print(table.concat(imu.information,'\n'))
 --os.exit()
 
 -- Change the baud rate to fastest for this session
-libMicrostrain.change_baud(imu)
+--libMicrostrain.change_baud(imu)
 --os.exit()
 
 -- Turn on the stream

@@ -16,7 +16,8 @@ local READ_TIMEOUT = 0.075
 
 -- TODO: Make this a parameter to set externally
 -- TODO: This should be tuned based on the byte size written?
-local WRITE_TIMEOUT = 1/240 -- 120Hz timeout
+--local WRITE_TIMEOUT = 1/240 -- 120Hz timeout
+local WRITE_TIMEOUT = 1/150 -- 120Hz timeout
 --local WRITE_TIMEOUT = 1/120 -- 120Hz timeout
 --local WRITE_TIMEOUT = 1/60 -- 60Hz timeout
 --local WRITE_TIMEOUT = 0 -- Instant timeout
@@ -119,6 +120,7 @@ local nx_registers = {
   -- Mode 2: Position Control
   -- Mode 3: position-Velocity Control
   ['mode'] = {string.char(0x0B,0x00),1},
+  ['homing_offset'] = {string.char(13,0x00),4},
   
   -- Limits
   ['max_temperature'] = {string.char(0x15,0x00,1)},
@@ -173,6 +175,14 @@ local nx_registers = {
   ['load'] = {string.char(0x6B,0x02),2},
   ['voltage'] = {string.char(0x6F,0x02),2},
   ['temperature'] = {string.char(0x71,0x02),1},
+
+  -- External Data
+  ['data1'] = {string.char(0x72,0x02),2},
+  ['data2'] = {string.char(0x74,0x02),2},
+  ['data3'] = {string.char(0x76,0x02),2},
+  ['data4'] = {string.char(0x78,0x02),2},
+  --
+  ['data']  = {string.char(0x72,0x02),8},
   
   -- Status return
   ['status_return_level'] = {string.char(0x7B,0x03),1},
@@ -346,12 +356,11 @@ end
 --------------------
 -- Get NX functions
 for k,v in pairs( nx_registers ) do
+  local addr = v[1]
+  local sz   = v[2]
   libDynamixel['get_nx_'..k] = function( motor_ids, bus )
-    local addr = v[1]
-    local sz = v[2]
-    
     -- Construct the instruction (single or sync)
-    local instruction = nil
+    local instruction
     local nids = 1
     if type(motor_ids)=='number' then
       -- Single motor
@@ -360,18 +369,14 @@ for k,v in pairs( nx_registers ) do
       instruction = DP2.sync_read(string.char(unpack(motor_ids)), addr, sz)
       nids = #motor_ids
     end
-    
+    -- If no pre-existing bus is specified, just return the instruction
     if not bus then return instruction end
-    
     -- Clear old status packets
     repeat buf = unix.read(bus.fd) until not buf
-    
     -- Write the instruction to the bus 
     local ret = unix.write(bus.fd, instruction)
-    
     -- Grab the status of the register
     return get_status( bus.fd, nids )
-    
   end --function
 end
 

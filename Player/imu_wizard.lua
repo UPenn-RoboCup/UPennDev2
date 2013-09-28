@@ -45,10 +45,9 @@ signal.signal("SIGTERM", shutdown)
 
 -- Callback
 local accel = vector.zeros(3)
-local function process_imu(acc,gyr)
-  accel = vector.new{acc[1],acc[2],acc[3]}
-  --print('Acc',acc[1],acc[2],acc[3])
-  --print('Gyr',gyr[1],gyr[2],gyr[3])
+local function process_imu(gyro,rpy)
+  jcm.set_sensor_rpy(rpy:table())
+  jcm.set_sensor_gyro(gyro:table())
 end
 
 -- Main thread
@@ -64,7 +63,7 @@ local function main()
     if t_diff>print_rate then
       print( string.format('FPS: %.1f',cnt/t_diff) )
       print(accel)
-      print(RAD_TO_DEG*math.atan2(accel[1],accel[2]))
+      print(RAD_TO_DEG*math.atan2(accel[2],-accel[1]))
       t_debug = t
       cnt = 0
     end

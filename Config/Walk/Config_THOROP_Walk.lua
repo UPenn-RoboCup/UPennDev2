@@ -33,6 +33,8 @@ walk.velLimitX = {-.30,.30}
 walk.bodyHeight = 0.95
 walk.bodyTilt = 0*math.pi/180
 walk.supportX = 0.02  -- ankle-to-foot-center offset 
+walk.supportX = 0.00  -- ankle-to-foot-center offset 
+
 walk.supportY = 0.01  -- ankle-to-foot-center offset
 
 walk.footY  = 0.095   -- body-center-to-ankle width
@@ -57,9 +59,11 @@ walk.tStep = 1.0
 -------------------------------
 
 ----Also working in webots---------------
+--[[
 walk.tStep = 0.8
 walk.phSingle = {0.2,0.8}
 walk.phZmp = {0.2,0.8}
+--]]
 
 walk.stepHeight = 0.05
 -------------------------------
@@ -72,6 +76,15 @@ walk.hardnessSwing = 1
 --walk.hipRollCompensation = 3*math.pi/180
 walk.hipRollCompensation = 1*math.pi/180
 walk.supportModYInitial = -0.04 --Reduce initial body swing
+
+
+-- slow/static
+walk.tStep = 1.0
+walk.supportY = 0.04
+walk.bodyHeight = 0.950
+walk.supportX = 0.01
+walk.hipRollCompensation = 3*math.pi/180
+walk.stepHeight = 0.02
 
 -----------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max --

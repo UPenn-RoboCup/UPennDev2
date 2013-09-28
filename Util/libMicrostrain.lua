@@ -8,6 +8,8 @@ local unix = require'unix'
 
 -- Reading properties
 local TIMEOUT = 0.05 -- (uses select)
+local ping_cmd = { 0x75, 0x65, 0x01, 0x02, 0x02, 0x01 }
+local idle_cmd = { 0x75, 0x65, 0x01, 0x02, 0x02, 0x02 }
 
 -- Checksum formation (slow, but speed is unneeded)
 local function generate_packet(byte_array)
@@ -31,7 +33,6 @@ local function write_command(fd,cmd)
   assert(fd_id==1,'Timeout!')
   local res = unix.read(fd)
   assert(res,'No data!')
-  --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
   return {res:byte(1,-1)}
 end
 
@@ -47,6 +48,70 @@ local function get_information(fd)
   local info = {firmware_version}
   for k in information:gmatch('[^%s]+') do table.insert(info,k) end
   return info
+end
+
+-- Go to high speed baud
+libMicrostrain.change_baud = function (microstrain)
+  local baud = 921600 -- 921600 only for now...
+  local baud_cmd = { 0x75, 0x65, 0x0C,
+    0x07, -- Command length
+    0x07, 0x40, -- Length and command description
+    0x01, -- USE this setting (not saved at boot, tho...)
+    0x00, 0x0E, 0x10, 0x00
+  }
+
+  -- Set the device to idle
+  local response = write_command(microstrain.fd,idle_cmd)
+
+  -- Write the command
+  local response = write_command(microstrain.fd,baud_cmd)
+  
+  -- Change serial port settings
+  stty.speed(microstrain.fd, baud)
+
+  -- Update the object
+  microstrain.baud = baud
+
+  -- Ping the microstrain
+  local response = write_command(microstrain.fd,ping_cmd)
+  ----[[
+  for k,v in ipairs(response) do
+    print(string.format('%d: %02X',k,v))
+  end
+  --]]
+end
+
+libMicrostrain.configure = function(microstrain)
+  -- Set the mode for reading data
+  -- 100Hz of gyro & rpy
+
+  -- New AHRS format
+  local stream_fmt = { 0x75, 0x65, 0x0C,
+    0x0A, -- Command length
+    0x0A, 0x08, -- Length and command description
+    0x01, 0x02, -- Set 2 messages
+    0x05, 0x00, 0x01, -- Gyro Message @ 100Hz
+    0x0C, 0x00, 0x01 -- Euler Angles Message @ 100Hz
+  }
+  local response = write_command(microstrain.fd,stream_fmt)
+  --[[
+  for k,v in ipairs(response) do
+    print(string.format('%d: %02X',k,v))
+  end
+  --]]
+
+  -- Save only once! Maybe in the eeprom, so lots of saving could be bad...
+  local save_fmt = { 0x75, 0x65, 0x0C,
+    0x04, -- Command length
+    0x04, 0x08, -- Packet length
+    0x03, 0x00 -- 3 to perform the save
+  }
+  local response = write_command(microstrain.fd,save_fmt)
+  --[[
+  for k,v in ipairs(response) do
+    print(string.format('%d: %02X',k,v))
+  end
+  --]]
 end
 
 ---------------------------
@@ -82,43 +147,8 @@ libMicrostrain.new_microstrain = function(ttyname, ttybaud )
 	stty.speed(fd, baud)
 
   -----------
-  -- Ping the device
-  --write_command(fd,{ 0x75, 0x65, 0x01, 0x02, 0x02, 0x01 })
   -- Set the device to idle
-  write_command(fd,{ 0x75, 0x65, 0x01, 0x02, 0x02, 0x02 })
-
-  -- Set the mode for reading data
-  -- 100Hz of gyro, imu, timestamp
-  -- Copy/paste from the docs
-  --[[
-  local stream_fmt = { 0x75, 0x65, 0x0C, 0x0D, 0x0D, 0x08, 0x01, 0x03, 0x04, 0x00, 0x01, 0x05, 0x00, 0x01, 0x12, 0x00, 0x01}
-  -- Make the checksum and yield the string
-  local stream_fmt_cmd = generate_packet(stream_fmt)
-  ret = unix.write(fd,stream_fmt_cmd)
-  assert(ret==#stream_fmt_cmd,'Bad stream write!')
-  fd_id = unix.select( {fd}, TIMEOUT )
-  assert(fd_id==1,'Timeout!')
-  res = unix.read(fd)
-  assert(res,'No data!')
-  response = {res:byte(1,-1)}
-  --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
-
-  -- Save only once! Maybe in the eeprom, so lots of saving could be bad...
-  local save_fmt = { 0x75, 0x65, 0x0C, 0x04, 0x04, 0x08, 0x03, 0x00 }
-  -- Make the checksum and yield the string
-  local save_fmt_cmd = generate_packet(save_fmt)
-  ret = unix.write(fd,save_fmt_cmd)
-  assert(ret==#save_fmt_cmd,'Bad save write!')
-  fd_id = unix.select( {fd}, TIMEOUT )
-  assert(fd_id==1,'Timeout!')
-  res = unix.read(fd)
-  assert(res,'No data!')
-  response = {res:byte(1,-1)}
-  for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
-  --]]
-  --]]
-
-  -- TODO: Use NAV or not?? This is the EKF filtered stuff... quaternion format...
+  write_command(fd,idle_cmd)
 
 	-----------
 	-- Begin the Microstrain object
@@ -172,8 +202,8 @@ libMicrostrain.service = function( microstrain, main )
         res = unix.read(microstrain.fd)
         assert(res,'Bad response!')
         coroutine.yield(
-          carray.float(res:sub(7,18):reverse()), -- accelerometer
-          carray.float(res:sub(21,32):reverse()) -- gyro
+          carray.float(res:sub(7,18):reverse()), -- gyro
+          carray.float(res:sub(21,32):reverse()) -- rpy
           )
       end
     end

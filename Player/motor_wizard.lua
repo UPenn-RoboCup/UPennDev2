@@ -40,13 +40,13 @@ chains['Right Arm'] = {
   ttyname = '/dev/ttyUSB0',
   nx_ids  = {1,3,5,7,9,11,13},
   mx_ids  = { --[[31,33,35]] },
-  active = false
+  active = true
 }
 chains['Left Arm'] = {
   ttyname = '/dev/ttyUSB1',
   nx_ids  = {2,4,6,8,10,12,14, --[[head]] 29,30 },
   mx_ids  = { --[[32,34,36,]]   --[[lidar]] 37},
-  active = false
+  active = true
 }
 chains['Right Leg'] = {
   ttyname = '/dev/ttyUSB2',
@@ -197,10 +197,10 @@ end
 local update_requests = function(t)
   -- Loop through the registers
   for register,read_ptr in pairs(jcm.readPtr) do
-    local get_func = libDynamixel['get_nx_'..register]
+    local get_func    = libDynamixel['get_nx_'..register]
     local mx_get_func = libDynamixel['get_mx_'..register]
     for idx=1,#read_ptr do
-      is_read = read_ptr[idx]
+      local is_read = read_ptr[idx]
       -- Check if we are to read each of the values
       if is_read>0 then
         -- Kill the reading

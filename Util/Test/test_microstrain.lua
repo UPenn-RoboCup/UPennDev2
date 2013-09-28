@@ -8,6 +8,8 @@ local simple_ipc = require'simple_ipc'
 local libMicrostrain  = require'libMicrostrain'
 local vector = require'vector'
 
+local RAD_TO_DEG = Body.RAD_TO_DEG
+
 local imu = libMicrostrain.new_microstrain(
   '/dev/cu.usbmodem1421', 115200 )
 
@@ -26,6 +28,10 @@ print(table.concat(imu.information,'\n'))
 --libMicrostrain.configure(imu)
 --os.exit()
 
+-- Change the baud rate to fastest for this session
+--libMicrostrain.change_baud(imu)
+--os.exit()
+
 -- Turn on the stream
 imu:ahrs_on()
 local cnt = 0
@@ -40,10 +46,10 @@ while true do
   local gyro = carray.float( gyr_str:reverse() )
   print( string.format('GYRO: %g %g %g',unpack(gyro:table())))
 
-  local rpy_str = res:sub(7,18)
+  local rpy_str = res:sub(21,32)
   local rpy = carray.float( rpy_str:reverse() )
   rpy = vector.new( rpy:table() )
-  print( 'RPY:', rpy )
+  print( 'RPY:', rpy*RAD_TO_DEG )
 --[[
   local acc_str = res:sub(7,18)
   for i,b in ipairs{acc_str:byte(1,-1)} do

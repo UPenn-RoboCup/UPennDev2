@@ -123,11 +123,15 @@ static int lua_stty_serial(lua_State *L) {
 
 static int lua_stty_speed(lua_State *L) {
 	int fd = lua_tofd(L, 1);
-	int speed = luaL_checkint(L,2);
+	unsigned int speed = luaL_checkint(L,2);
 
 #ifdef __APPLE__
-	if (ioctl(fd, IOSSIOSPEED, &speed) == -1)
-		return luaL_error(L, "Could not set speed.");
+	speed_t sp = speed;
+	if (ioctl(fd, IOSSIOSPEED, &sp) == -1){
+		//fprintf( stdout, "Error %d calling ioctl. %d\n", errno, speed);
+		//fflush(stdout);
+		return luaL_error(L, "Could not set apple speed.");
+	}
 #else
 	// Default termios interface
 	struct termios tio;
@@ -135,7 +139,7 @@ static int lua_stty_speed(lua_State *L) {
 		return luaL_error(L, "Could not get termios");
 	}
 	if (cfsetspeed(&tio, speed) != 0) {
-		return luaL_error(L, "Could not set speed");
+		return luaL_error(L, "Could not set termios speed");
 	}
 	if (tcsetattr(fd, TCSANOW, &tio) != 0) {
 		return luaL_error(L, "Could not set termios");

@@ -21,7 +21,7 @@ require'jcm'
 
 local device_tty = '/dev/ttyACM0'
 if OPERATING_SYSTEM=='darwin' then
-  device_tty = '/dev/cu.usbmodem1411'
+  device_tty = '/dev/cu.usbmodem1421'
 end
 
 local imu = libMicrostrain.new_microstrain(
@@ -45,10 +45,9 @@ signal.signal("SIGTERM", shutdown)
 
 -- Callback
 local accel = vector.zeros(3)
-local function process_imu(acc,gyr)
-  accel = vector.new{acc[1],acc[2],acc[3]}
-  --print('Acc',acc[1],acc[2],acc[3])
-  --print('Gyr',gyr[1],gyr[2],gyr[3])
+local function process_imu(gyro,rpy)
+  jcm.set_sensor_rpy(rpy:table())
+  jcm.set_sensor_gyro(gyro:table())
 end
 
 -- Main thread

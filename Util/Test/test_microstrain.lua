@@ -11,7 +11,7 @@ local vector = require'vector'
 local RAD_TO_DEG = Body.RAD_TO_DEG
 
 local imu = libMicrostrain.new_microstrain(
-  '/dev/cu.usbmodem1421', 115200 )
+  '/dev/cu.usbmodem1421', 921600 )
 
 if not imu then
   print('No imu present!')

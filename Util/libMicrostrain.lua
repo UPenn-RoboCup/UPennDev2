@@ -65,16 +65,23 @@ libMicrostrain.change_baud = function (microstrain)
 
   -- Write the command
   local response = write_command(microstrain.fd,baud_cmd)
-  
-  -- Change serial port settings
-  stty.speed(microstrain.fd, baud)
+  --[[
+  for k,v in ipairs(response) do
+    print(string.format('%d: %02X',k,v))
+  end
+  --]]
 
-  -- Update the object
-  microstrain.baud = baud
+  -- Close
+  microstrain:close()
+
+  unix.usleep(1e6)
+
+  -- Open with new baud
+  libMicrostrain.new_microstrain(microstrain.ttyname,baud,microstrain)
 
   -- Ping the microstrain
   local response = write_command(microstrain.fd,ping_cmd)
-  ----[[
+  --[[
   for k,v in ipairs(response) do
     print(string.format('%d: %02X',k,v))
   end
@@ -116,7 +123,7 @@ end
 
 ---------------------------
 -- Service multiple microstrains
-libMicrostrain.new_microstrain = function(ttyname, ttybaud )
+libMicrostrain.new_microstrain = function(ttyname, ttybaud, obj )
   
   local baud = ttybaud or 115200
   
@@ -152,7 +159,7 @@ libMicrostrain.new_microstrain = function(ttyname, ttybaud )
 
 	-----------
 	-- Begin the Microstrain object
-	local obj = {}
+	local obj = obj or {}
 
 	-----------
 	-- Set the serial port data
@@ -189,6 +196,9 @@ end
 libMicrostrain.service = function( microstrain, main )
   -- Ensure a callback
   assert(type(microstrain.callback)=='function','Need a callback!')
+
+  -- Go as fast as possible
+  libMicrostrain.change_baud(microstrain)
   
   -- Enable the main function as a coroutine thread
   local main_thread

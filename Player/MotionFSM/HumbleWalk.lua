@@ -194,8 +194,12 @@ function walk.update()
   -- Where does zmp think the torso should be?
   local uTorso = zmp_solver:get_com(ph)
   -- Where does zmp think the swing foot should be?
-  local xFoot, zFoot, phSingle = zmp_solver:get_foot(ph)  
-  --local xFoot, zFoot, phSingle = zmp_solver:get_foot_square(ph)  
+  local xFoot, zFoot, phSingle
+  if Config.walk.foot_traj==1 then
+    xFoot, zFoot, phSingle = zmp_solver:get_foot(ph)  
+  else
+    xFoot, zFoot, phSingle = zmp_solver:get_foot_square(ph)  
+  end  
 
   --Don't lift foot at initial step
   if initial_step>0 then

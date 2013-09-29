@@ -16,6 +16,8 @@ Config.dev.kick         = 'NewNewKick'
 
 --Config.dev.walk         = 'GrumbleWalk'
 Config.dev.walk         = 'HumbleWalk'
+
+
 --Config.dev.walk         = 'StaticWalk'
 
 Config.dev.crawl        = 'ScrambleCrawl'

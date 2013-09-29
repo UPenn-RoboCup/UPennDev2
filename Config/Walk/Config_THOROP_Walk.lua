@@ -23,20 +23,13 @@ walk.velLimitX = {-.15,.15}
 walk.velLimitY = {-.08,.08}
 walk.velLimitA = {-.3,.3}
 walk.velDelta  = {0.05,0.03,0.3}
-
-
-walk.velLimitX = {-.30,.30}
-
 ------------------------------------
 -- Stance parameters
 ------------------------------------
 walk.bodyHeight = 0.95
 walk.bodyTilt = 0*math.pi/180
 walk.supportX = 0.02  -- ankle-to-foot-center offset 
-walk.supportX = 0.00  -- ankle-to-foot-center offset 
-
 walk.supportY = 0.01  -- ankle-to-foot-center offset
-
 walk.footY  = 0.095   -- body-center-to-ankle width
 walk.torsoX = 0.00    -- com-to-body-center offset
 ------------------------------------
@@ -45,29 +38,8 @@ walk.torsoX = 0.00    -- com-to-body-center offset
 walk.tStep = 0.8
 walk.tZMP = 0.33
 walk.stepHeight = 0.04
-walk.phSingle = {0.15,0.85}
-walk.phZmp = {0.15,0.85}
-
 walk.phSingle = {0.2,0.8}
 walk.phZmp = {0.2,0.8}
-
-----Working with webots--------
-walk.phSingle = {0.25,0.75}
-walk.phZmp = {0.25,0.75}
-walk.tZMP = 0.35
-walk.tStep = 1.0
--------------------------------
-
-----Also working in webots---------------
---
-walk.tStep = 0.8
-walk.phSingle = {0.2,0.8}
-walk.phZmp = {0.2,0.8}
---
-
-walk.stepHeight = 0.05
--------------------------------
-
 
 ------------------------------------
 -- Compensation parameters
@@ -78,7 +50,6 @@ walk.hardnessSwing = 1
 walk.hipRollCompensation = 1*math.pi/180
 walk.supportModYInitial = -0.04 --Reduce initial body swing
 
-
 -- slow/static
 walk.supportY = 0.04
 walk.bodyHeight = 0.950
@@ -86,99 +57,64 @@ walk.supportX = 0.01
 walk.hipRollCompensation = 3*math.pi/180
 walk.stepHeight = 0.02
 
-
 walk.tZMP = 0.30
-walk.footY  = 0.12
+walk.footY  = 0.10
 walk.supportY = 0.02
 walk.supportX = 0.02
 walk.stepHeight = 0.025
 
-
 walk.hipRollCompensation = 1*math.pi/180
-walk.hipRollCompensation = 0
-
-
---[[
---FOR STATIC WALKING
-
-walk.hipRollCompensation = 2*math.pi/180
-walk.stepHeight = 0.03
-walk.bodyHeight = 0.93
-walk.supportY = 0.035 
-walk.footY  = 0.095
-walk.tStep = 12
---]]
-
------------------------------------------------------------
---Imu feedback parameters, alpha / gain / deadband / max --
------------------------------------------------------------
---[[
-gyroFactor = 0.273*math.pi/180 * 300 / 1024 --dps to rad/s conversion
--- We won't use gyro feedback on webots
-gyroFactorX = gyroFactor * 0
-gyroFactorY = gyroFactor * 0
-
-walk.ankleImuParamX={0.3,0.75*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
-walk.ankleImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
-
-walk.kneeImuParamX={0.3,1.5*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
-
-walk.hipImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180}
---]]
-
-
 
 --Param for actual robot
-
 gyroFactorX = 0.2
 gyroFactorY = 0.2
+walk.ankleImuParamX={0.3, 0.75*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
+walk.kneeImuParamX={0.3,1.5*gyroFactorX, 1*math.pi/180, 5*math.pi/180}
+walk.ankleImuParamY = {0.3, 0.75*gyroFactorY, 2*math.pi/180, 5*math.pi/180}
+walk.hipImuParamY   = { 0.3, 0.5*gyroFactorY, 2*math.pi/180, 5*math.pi/180}
 
-walk.ankleImuParamX={
-  0.3, 0.75*gyroFactorX, 
-  1*math.pi/180, 5*math.pi/180
-}
-walk.kneeImuParamX={
-  0.3,1.5*gyroFactorX,
-  1*math.pi/180, 5*math.pi/180
-}
---walk.kneeImuParamX={0.3,0*gyroFactorX, 0*math.pi/180, 5*math.pi/180}
+walk.foot_traj = 1;
 
-walk.ankleImuParamY = {
-  0.3, 0.75*gyroFactorY,
-  2*math.pi/180, 5*math.pi/180
-}
-walk.hipImuParamY   = {
-  0.3, 0.5*gyroFactorY,
-  2*math.pi/180, 5*math.pi/180
-}
 
---[[
-walk.footY    = 0.09
---walk.tStep    = 0.9
--- From robotis
-walk.phSingle = {0.125,0.875}
-walk.phZmp    = {0.125,0.875}
-walk.bodyHeight = 0.980
+if IS_WEBOTS then
+  --Webots parameters
 
-gyroFactorX = 0.1
-gyroFactorY = 0.1
-walk.ankleImuParamX={
-  0.3, 0.9*gyroFactorX, 
-  1*math.pi/180, 5*math.pi/180
-}
-walk.kneeImuParamX={
-  0.3,.3*gyroFactorX,
-  1*math.pi/180, 5*math.pi/180
-}
-walk.ankleImuParamY = {
-  0.3,1.0*gyroFactorY,
-  0*math.pi/180, 5*math.pi/180
-}
-walk.hipImuParamY = {
-  0.3, 0.5*gyroFactorY,
-  0*math.pi/180, 5*math.pi/180
-}
---]]
+  walk.tStep = 0.8
+  walk.phSingle = {0.2,0.8}
+  walk.phZmp = {0.2,0.8}
+  walk.stepHeight = 0.05
+
+
+--Robotis style walk
+  walk.tStep = 0.45
+  walk.phSingle = {0.125,0.875}
+  walk.phZmp = {0.125,0.875}
+  walk.stepHeight = 0.03
+
+  gyroFactorX = 0.1
+  gyroFactorY = 0.1
+  walk.ankleImuParamX={0.3, 0.9*gyroFactorX, 1*math.pi/180, 5*math.pi/180}
+  walk.kneeImuParamX={0.3,  0.3*gyroFactorX,1*math.pi/180, 5*math.pi/180}
+  walk.ankleImuParamY = {0.3,1.0*gyroFactorY, 1*math.pi/180, 5*math.pi/180}
+  walk.hipImuParamY = {0.3,  0.5*gyroFactorY, 1*math.pi/180, 5*math.pi/180}
+
+  walk.foot_traj = 2; --square step
+
+else
+
+  --[[
+    --FOR STATIC WALKING
+    walk.hipRollCompensation = 2*math.pi/180
+    walk.stepHeight = 0.03
+    walk.bodyHeight = 0.93
+    walk.supportY = 0.035 
+    walk.footY  = 0.095
+    walk.tStep = 12
+  --]]
+
+end
+
+
 -----------------------------------------------------------
 -- Stance parameters
 -----------------------------------------------------------
@@ -186,13 +122,11 @@ walk.hipImuParamY = {
 
 local stance={}
 stance.enable_sit = false
--- centaur has no legs
-stance.enable_legs = true
+stance.enable_legs = true   -- centaur has no legs
 
 stance.pLLeg = vector.new{-walk.supportX,  walk.footY, 0, 0,0,0}
 stance.pRLeg = vector.new{-walk.supportX, -walk.footY, 0, 0,0,0}
-stance.pTorso = vector.new{-walk.torsoX, 0, walk.bodyHeight, 
-  0,walk.bodyTilt,0}
+stance.pTorso = vector.new{-walk.torsoX, 0, walk.bodyHeight, 0,walk.bodyTilt,0}
 stance.qWaist = vector.zeros(2)
 
 stance.dpLimitStance = vector.new{.04, .03, .07, .4, .4, .4}

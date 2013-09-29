@@ -236,7 +236,7 @@ function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,
     delta_legs[11] = ankleShift[1]
   end
 
-  print('Ankle shift',vector.new(ankleShift) )
+--  print('Ankle shift',vector.new(ankleShift)*Body.RAD_TO_DEG )
 
   return delta_legs, ankleShift, kneeShift, hipShift
 end

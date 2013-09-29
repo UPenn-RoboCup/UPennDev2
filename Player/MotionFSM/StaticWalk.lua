@@ -1,6 +1,5 @@
---New, cleaned-up humblewalk 
---Got rid of any non-used codes (including walkkick)
---Arm movement is turned off (only handled by arm FSM)
+--New staticwalk
+
 
 local walk = {}
 walk._NAME = ...
@@ -78,14 +77,11 @@ function walk.entry()
   uLeft_now,  uLeft_next  = uLeft,  uLeft
   uRight_now, uRight_next = uRight, uRight
 
-  t_last_step = Body.get_time()-tStep
+  t_last_step = Body.get_time()-tStep --for starting the next step right now
 
-  -- Initialize the step index
-  iStep = 1
-  -- Initial step modification counter
-  initial_step = 2
-  initial_step = 0 --not needed for static walk
-
+  iStep = 1   -- Initialize the step index  
+  initial_step = 0 -- We don't need this for static walk
+  
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
 end
@@ -97,33 +93,12 @@ function walk.update()
   -- Save this at the last update time
   t_update = t
 
-  ------------------------------------------
-  -- Check for out of process events
-  -- TODO: May not need this...
-  --[[
-  local event, has_more
-  repeat
-    event, has_more = evts:receive(true)
-    if type(event)=='string' then
-      local request = walk_requests[event]
-      --print( util.color('Walk Event:','green'),event)
-      if request then request() end
-    end
-  until not has_more
-  --]]
-  ------------------------------------------
-  
-
+  --SJ: walk events are simply handled via SHM 
+  local stoprequest = mcm.get_walk_stoprequest()
 
   local ph = (t-t_last_step)/tStep
-  if ph>1 then
-    --Should we stop now?
-    local stoprequest = mcm.get_walk_stoprequest()
-    print(stoprequest)
-    if stoprequest>0 then
-      return"done"
-    end
- 
+  if ph>1 then  
+    if stoprequest>0 then return"done" end --Should we stop now?
     ph = ph % 1
     iStep = iStep + 1  -- Increment the step index    
     supportLeg = iStep % 2 -- supportLeg: 0 for left support, 1 for right support

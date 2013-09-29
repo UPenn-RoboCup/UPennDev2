@@ -28,7 +28,7 @@ local footY    = Config.walk.footY
 
 --Gait parameters
 local stepHeight  = Config.walk.stepHeight
-
+local bodyHeight_next
 ----------------------------------------------------------
 -- Walk state variables
 -- These are continuously updated on each update
@@ -55,7 +55,8 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   
-  mcm.set_walk_bipedal(1)
+  mcm.set_walk_bipedal(1)  
+  bodyHeight_next = mcm.get_status_bodyHeight()  
 end
 
 function state.update()
@@ -72,9 +73,20 @@ function state.update()
 
   --Adjust body height
   local bodyHeight_now = mcm.get_status_bodyHeight()  
-  local bodyHeight = util.approachTol( bodyHeight_now, 
-    Config.walk.bodyHeight, Config.stance.dHeight, t_diff )
-  
+  local bodyHeight_target = hcm.get_motion_bodyHeightTarget()
+
+
+
+  bodyHeight_target = math.min(Config.walk.bodyHeight,
+    math.max(Config.stance.sitHeight, bodyHeight_target))
+
+bodyHeight_target = 0.70; --Hack
+
+bodyHeight_target = 0.47; --Full kneel down
+
+  bodyHeight_next = util.approachTol( bodyHeight_now, 
+    bodyHeight_target, Config.stance.dHeight, t_diff )
+
   local zLeft,zRight = 0,0
   supportLeg = 2; --Double support
 
@@ -86,17 +98,17 @@ function state.update()
       supportLeg,0,gyro_rpy, ankleShift, kneeShift, hipShift, 0)
 
   local pTorso = vector.new({
-        uTorsoActual[1], uTorsoActual[2], bodyHeight,
+        uTorsoActual[1], uTorsoActual[2], bodyHeight_next,
         0,bodyTilt,uTorsoActual[3]})
   local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
   local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
     
   moveleg.set_leg_positions(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)  
-  mcm.set_status_bodyHeight(bodyHeight)  
+  mcm.set_status_bodyHeight(bodyHeight_next)    
 end -- walk.update
 
 function state.exit()
-  mcm.set_status_bodyHeight(Config.walk.bodyHeight)
+  
   print(state._NAME..' Exit')
   -- TODO: Store things in shared memory?
 end

@@ -47,6 +47,12 @@ shared_data.motion.waypoint_frame = vector.zeros(1)
 shared_data.motion.follow_mode = vector.ones(1)
 
 
+shared_data.motion.bodyHeightTarget = vector.ones(1)
+
+
+
+
+
 -------------------------------
 -- Task specific information --
 -------------------------------

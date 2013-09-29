@@ -7,7 +7,8 @@ local fsm = require'fsm'
 
 local motionIdle   = require'motionIdle' --Initial state, all legs torqued off
 local motionInit   = require'motionInit' --Torque on legs and go to initial leg position
-local motionStance = require'motionStance' --Robots stands still, balancing itself
+local motionStance = require'motionStance' --Robots stands still, balancing itself, ready for walk again
+local motionSit    = require'motionSit' --Robots changes the body height for manipulation
 local motionWalk   = require(Config.dev.walk) --Reactive walking
 local motionStep   = require'motionStep'   --Stationary stepping
 local motionStepPreview   = require'motionStepPreview' --ZMP preview stepping
@@ -22,7 +23,7 @@ local sm = fsm.new( motionIdle, motionInit, motionStance)
 sm:add_state(motionWalk)
 sm:add_state(motionStep)
 sm:add_state(motionStepPreview)
-
+sm:add_state(motionSit)
 
 --[[
 -- Setup the transitions for this FSM
@@ -51,8 +52,11 @@ sm:set_transition(motionIdle, 'stand', motionInit)
 sm:set_transition(motionInit, 'done', motionStance)
 
 sm:set_transition(motionStance, 'walk', motionWalk)
+sm:set_transition(motionStance, 'sit', motionSit)
 sm:set_transition(motionStance, 'step', motionStep)
 sm:set_transition(motionStance, 'preview', motionStepPreview)
+
+sm:set_transition(motionSit, 'stand', motionStance)
 
 --Walk stop are handled by HCM variable
 --As it can stop walking mid-step

@@ -5,6 +5,7 @@ state._NAME = ...
 
 
 require'mcm'
+require'hcm'
 local Body       = require'Body'
 local K          = Body.Kinematics
 local util       = require'util'
@@ -104,10 +105,13 @@ function state.exit()
   --Generate current 2D pose for feet and torso
   local uTorso = vector.new({supportX, 0, 0})
   local uLeft  = util.pose_global(vector.new({-supportX, footY, 0}),uTorso)
-  local uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso)
-  mcm.set_poses_uLeft(uLeft)  
-  mcm.set_poses_uRight(uRight)  
-  mcm.set_poses_uTorso(uTorso)  
+  local uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso)    
+  mcm.set_status_uLeft(uLeft)
+  mcm.set_status_uRight(uRight)
+  mcm.set_status_uTorso(uTorso)
+
+  mcm.set_status_bodyHeight(Config.walk.bodyHeight)
+  hcm.set_motion_bodyHeightTarget(Config.walk.bodyHeight)  
 end
 
 return state

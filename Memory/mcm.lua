@@ -34,6 +34,14 @@ shared.status.odometry   = vector.zeros(3)
 shared.status.bodyOffset = vector.zeros(3)
 shared.status.falling    = vector.zeros(1)
 
+shared.status.bodyHeight = vector.zeros(1) --for sit/standup
+--Current Foot and Torso Poses
+--TODO: extend to 6D poses
+shared.status.uLeft = vector.zeros(3)
+shared.status.uRight = vector.zeros(3)
+shared.status.uTorso = vector.zeros(3)
+
+
 -- Foot support
 --SJ: they are bit misleading as they are different from 'support' positions
 shared.support = {}
@@ -44,12 +52,7 @@ shared.support.uLeft_next  = vector.zeros(3)
 shared.support.uRight_next = vector.zeros(3)
 shared.support.uTorso_next = vector.zeros(3)
 
---Current Foot and Torso Poses
---Todo: 6D pose
-shared.poses={}
-shared.poses.uLeft = vector.zeros(3)
-shared.poses.uRight = vector.zeros(3)
-shared.poses.uTorso = vector.zeros(3)
+
 
 
 memory.init_shm_segment(..., shared, shsize)

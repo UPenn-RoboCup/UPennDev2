@@ -132,6 +132,10 @@ stance.qWaist = vector.zeros(2)
 stance.dpLimitStance = vector.new{.04, .03, .07, .4, .4, .4}
 stance.dqWaistLimit = 10*DEG_TO_RAD*vector.ones(2)
 
+stance.sitHeight = 0.70
+stance.dHeight = 0.04 --4cm per sec
+
+
 ------------------------------------
 -- Kneeling parameters
 ------------------------------------

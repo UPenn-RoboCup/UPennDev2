@@ -62,9 +62,9 @@ function walk.entry()
   mcm.set_walk_vel(velCurrent)
 
   --Read stored feet and torso poses 
-  local uTorso0 = mcm.get_poses_uTorso()  
-  local uLeft = mcm.get_poses_uLeft()
-  local uRight = mcm.get_poses_uRight()
+  local uTorso0 = mcm.get_status_uTorso()  
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
 
   uTorso_now, uTorso_next = uTorso0, uTorso0
   uLeft_now,  uLeft_next  = uLeft,  uLeft
@@ -212,9 +212,9 @@ function walk.update()
 end -- walk.update
 
 function walk.exit()
-  mcm.set_poses_uLeft(uLeft_next)
-  mcm.set_poses_uRight(uRight_next)
-  mcm.set_poses_uTorso(uTorso_next)
+  mcm.set_status_uLeft(uLeft_next)
+  mcm.set_status_uRight(uRight_next)
+  mcm.set_status_uTorso(uTorso_next)
   print(walk._NAME..' Exit')
   -- TODO: Store things in shared memory?
 end

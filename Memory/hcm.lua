@@ -96,22 +96,16 @@ shared_data.door.yaw_target = vector.new({20*math.pi/180})
 --]]
 
 
+shared_data.tool={}
+shared_data.tool.pos = vector.new({0.45,0.30,-0.15})
 
 
---[[
-shared_data.door.hinge  = vector.new({.2,0,.1})
--- What is the position of the handle axis
--- What angle from the horizon is the handle
--- What is the length of the handle
--- {axis_x,axis_y,axis_z, angle, length}
-shared_data.door.handle = vector.zeros( 6 )
--- How much to open the door
-shared_data.door.open_ang   = vector.zeros(1)
--- Which hand opens the door?
--- 0: left
--- 1: right
-shared_data.door.hand   = vector.zeros(1)
---]]
+
+
+
+
+
+
 
 -- Dipoles for arbitrary grabbing
 -- TODO: Use this in place of the wheel/door?

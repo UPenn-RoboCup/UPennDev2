@@ -94,17 +94,17 @@ static int forward_r_arm(lua_State *L) {
 	return 1;
 }
 
-static int forward_l_wrist(lua_State *L) {
+static int l_wrist_torso(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
 	Transform t = THOROP_kinematics_forward_l_wrist(&q[0]);
-	lua_pushtransform(L, t);
+	lua_pushvector(L, position6D(t));	
 	return 1;
 }
 
-static int forward_r_wrist(lua_State *L) {
+static int r_wrist_torso(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
 	Transform t = THOROP_kinematics_forward_r_wrist(&q[0]);
-	lua_pushtransform(L, t);
+	lua_pushvector(L, position6D(t));	
 	return 1;
 }
 
@@ -286,6 +286,7 @@ static int inverse_r_wrist(lua_State *L) {
 	Transform trArm = transform6D(&pArm[0]);
 	double shoulderYaw = luaL_optnumber(L, 3,0.0);
 	qArm = THOROP_kinematics_inverse_r_wrist(trArm,&qArmOrg[0],shoulderYaw);
+	lua_pushvector(L, qArm);
 	return 1;
 }
 
@@ -363,8 +364,8 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"inverse_r_arm_7", inverse_r_arm_7},
 
   /* Wrist specific */
-    {"forward_lwrist", forward_l_wrist},
-	{"forward_rwrist", forward_r_wrist},
+    {"l_wrist_torso", l_wrist_torso},
+	{"r_wrist_torso", r_wrist_torso},
 	{"inverse_l_wrist", inverse_l_wrist},
 	{"inverse_r_wrist", inverse_r_wrist},
 

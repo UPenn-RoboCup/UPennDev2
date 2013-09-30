@@ -654,15 +654,41 @@ end
 Body.get_forward_lwrist = function(qL)
 --  local pLArm = Kinematics.l_arm_torso( qL )
   assert(#qL==7, "Arm FK requires 7 joints")
-  local pLArm = Kinematics.l_arm_torso_7( qL )
+  local pLArm = Kinematics.l_wrist_torso( qL )
   return pLArm
 end
 Body.get_forward_rwrist = function(qR)  
 --  local pRArm = Kinematics.r_arm_torso( qR )
   assert(#qR==7, "Arm FK requires 7 joints")
-  local pRArm = Kinematics.r_arm_torso_7( qR )
+  local pRArm = Kinematics.r_wrist_torso( qR )
   return pRArm
 end
+
+
+Body.get_inverse_rwrist = function( qR, trR, rShoulderYaw , pos_tol, ang_tol )
+  if not rShoulderYaw then rShoulderYaw = qR[3] end
+  local qR_target = Kinematics.inverse_r_wrist(trR, qR,rShoulderYaw)
+  return qR_target
+end
+
+Body.get_inverse_lwrist = function( qL, trL, lShoulderYaw , pos_tol, ang_tol )
+  if not lShoulderYaw then lShoulderYaw = qL[3] end
+  local qL_target = Kinematics.inverse_l_wrist(trL, qL,lShoulderYaw)
+  return qL_target
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

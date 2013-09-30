@@ -23,6 +23,25 @@ local dqArmMax = Config.arm.slow_elbow_limit
 
 local move_stage=1
 
+
+qLOrg = Config.arm.qLArmInit[1]
+
+--[[
+print("qOrg:",qLOrg)
+trHand = Body.get_forward_larm(qLOrg)
+print("LHand pos:",unpack(trHand))
+qInv1 = Body.get_inverse_larm(qLOrg,trHand)
+print("\nqInv1:",unpack(qInv1))
+
+
+trWrist = Body.get_forward_lwrist(qLOrg)
+print("LWrist pos:",unpack(trWrist))
+qInv = Body.get_inverse_lwrist(qLOrg,trWrist)
+print("\nqInv:",unpack(qInv))
+--]]
+
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry

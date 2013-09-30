@@ -726,8 +726,8 @@ THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, 
   // Shoulder yaw angle is given
 
   Transform t;
-
   //Getting rid of hand, shoulder offsets
+
   if (arm==ARM_LEFT){
     t=t.translateZ(-shoulderOffsetZ)
     .translateY(-shoulderOffsetY)

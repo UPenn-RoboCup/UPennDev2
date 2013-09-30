@@ -10,7 +10,7 @@ function state.entry()
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
-  Body.set_head_command_position( 0 )
+  Body.set_head_command_position( {0,0} )
 end
 
 function state.update()

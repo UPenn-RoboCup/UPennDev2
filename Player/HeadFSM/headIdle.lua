@@ -13,10 +13,10 @@ function state.entry()
   t_update = t_entry
 
   -- Torque OFF the motors
-  Body.set_head_torque_enable(0)
+  --Body.set_head_torque_enable(0)
 
   -- Initialize our joint positions estimate
-  qHead  = Body.get_head_command_position()
+  qHead = Body.get_head_command_position()
 
   -- Request new readings
   Body.request_head_position()

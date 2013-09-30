@@ -149,8 +149,7 @@ local function stream_mesh(type)
     vcm['set_'..type.meta.name..'_lidar_net'](net_settings)
   end
   --[[
-  print(err or string.format('Sent a %d by %d %g kB %s packet from %g to %g.', 
-      dim[2], dim[1], ret/1024, type.meta.name, near, far))
+  print(err or string.format('Sent a %g kB packet.', ret/1024))
   --]]
 end
 
@@ -272,8 +271,9 @@ function mesh.entry()
 
   -- Send (unreliably) to users
   mesh_udp_ch = udp.new_sender(
-    Config.net.operator.wireless, Config.net.mesh )
-  print('connection',Config.net.operator.wireless,Config.net.mesh)
+    Config.net.operator.wired, Config.net.mesh )
+  print('Connected to Operator:',
+    Config.net.operator.wired,Config.net.mesh)
 
   -- Prepare the polling
   channel_polls = simple_ipc.wait_on_channels( wait_channels )

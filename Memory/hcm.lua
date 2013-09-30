@@ -97,7 +97,7 @@ shared_data.door.yaw_target = vector.new({20*math.pi/180})
 
 
 shared_data.tool={}
-shared_data.tool.pos = vector.new({0.45,0.30,-0.15})
+shared_data.tool.pos = vector.new({0.45,0.15,-0.05})
 
 
 

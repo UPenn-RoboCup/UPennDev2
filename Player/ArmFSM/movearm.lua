@@ -66,14 +66,9 @@ function movearm.setArmToPosition(
     qShoulderYawMax = 5.0*math.pi/180
     lShoulderYaw0 = qLArm[3]
     rShoulderYaw0 = qRArm[3]        
---    lShoulderYaw0 = hcm.get_joints_qlshoulderyaw()
---    rShoulderYaw0 = hcm.get_joints_qrshoulderyaw()
     lShoulderYaw, yawDoneL = util.approachTol(lShoulderYaw0,lShoulderYaw,qShoulderYawMax,dt)
     rShoulderYaw, yawDoneR = util.approachTol(rShoulderYaw0,rShoulderYaw,qShoulderYawMax,dt)
   end
-
---  hcm.set_joints_qlshoulderyaw(lShoulderYaw)
---  hcm.set_joints_qrshoulderyaw(rShoulderYaw)
 
   local trLArm = Body.get_forward_larm(qLArm);
   local trRArm = Body.get_forward_rarm(qRArm);
@@ -109,9 +104,57 @@ function movearm.setArmToPosition(
       print('Right not possible')
     end
     return -1;
+  end  
+end
+
+
+function movearm.setWristPosition(
+  trLWristTarget,
+  trRWristTarget,
+  dt,
+  lShoulderYaw,
+  rShoulderYaw 
+  )
+  
+  --Interpolate in 6D space 
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+  if not lShoulderYaw then
+    lShoulderYaw = qLArm[3]
+    rShoulderYaw = qRArm[3]    
   end
 
+  qShoulderYawMax = 5.0*math.pi/180
+  lShoulderYaw = util.approachTol(qLArm[3],lShoulderYaw,qShoulderYawMax,dt)
+  rShoulderYaw = util.approachTol(qRArm[3],rShoulderYaw,qShoulderYawMax,dt)
+
+  local trLWrist = Body.get_forward_lwrist(qLArm);
+  local trRWrist = Body.get_forward_rwrist(qRArm);
   
+  local trLWristApproach, doneL = util.approachTol(trLWrist, trLWristTarget, dpArmMax, dt )
+  local trRWristApproach, doneR = util.approachTol(trRWrist, trRWristTarget, dpArmMax, dt )
+
+  -- Get desired angles from current angles and target transform
+  local qL_desired = Body.get_inverse_lwrist(qLArm,trLWristApproach, lShoulderYaw)
+  local qR_desired = Body.get_inverse_rwrist(qRArm,trRWristApproach, rShoulderYaw)  
+  
+  if qL_desired and qR_desired then
+    local qL_approach, doneL
+    qL_approach, doneL = util.approachTolRad( qLArm, qL_desired, dqArmMax, dt )
+    Body.set_larm_command_position( qL_approach )
+  
+    local qR_approach, doneR
+    qR_approach, doneR = util.approachTolRad( qRArm, qR_desired, dqArmMax, dt )
+    Body.set_rarm_command_position( qR_approach )
+    if doneL and doneR then
+      return 1;
+    else      
+      return 0;
+    end
+  else    
+    print("ERROR WITH WRIST IK")
+    return -1;
+  end  
 end
 
 

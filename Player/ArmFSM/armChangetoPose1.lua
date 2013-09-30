@@ -22,24 +22,7 @@ local qR_desired = {}
 local dqArmMax = Config.arm.slow_elbow_limit
 
 local move_stage=1
-
-
 qLOrg = Config.arm.qLArmInit[1]
-
---[[
-print("qOrg:",qLOrg)
-trHand = Body.get_forward_larm(qLOrg)
-print("LHand pos:",unpack(trHand))
-qInv1 = Body.get_inverse_larm(qLOrg,trHand)
-print("\nqInv1:",unpack(qInv1))
-
-
-trWrist = Body.get_forward_lwrist(qLOrg)
-print("LWrist pos:",unpack(trWrist))
-qInv = Body.get_inverse_lwrist(qLOrg,trWrist)
-print("\nqInv:",unpack(qInv))
---]]
-
 
 
 function state.entry()
@@ -86,6 +69,12 @@ function state.update()
 end
 
 function state.exit()
+
+  local qLArm = Body.get_larm_command_position()
+  trWrist = Body.get_forward_lwrist(qLArm)
+  print("LWrist pos:",unpack(trWrist))
+  
+
   print(state._NAME..' Exit' )
 end
 

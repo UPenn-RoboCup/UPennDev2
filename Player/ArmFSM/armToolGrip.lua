@@ -10,6 +10,8 @@ local dpArmMax = Config.arm.linear_slow_limit
 local stage = 1;
 
 local qLArm, qRArm, trLArm, trRArm, trTarget
+local tool_pos,tool_pos_target
+
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -27,6 +29,12 @@ function state.entry()
   trLArm = Body.get_forward_larm(qLArm);
   trRArm = Body.get_forward_rarm(qRArm)  
 
+  tool_pos = hcm.get_tool_pos()
+  tool_pos_target = hcm.get_tool_pos()
+
+
+--tool_pos = {0.40,0.10,-0.05}
+
   stage = 1;  
 end
 
@@ -43,14 +51,8 @@ function state.update()
   trRArm = Body.get_forward_rarm(qRArm)
 
 
-print(unpack(trLArm))
-
-
-  --Read the pickup position from shm
-  tool_pos = hcm.get_tool_pos()
-
---Start pos: (0.25 0.19 -0.14)
-  tool_pos={0.45,0.15,-0.05}
+--print(unpack(trLArm))
+ 
 
   if stage==1 then 
     trLArm[1],trLArm[2],trLArm[3] = tool_pos[1],tool_pos[2]+0.05,tool_pos[3]
@@ -62,6 +64,22 @@ print(unpack(trLArm))
     if ret==1 then stage=stage+1; end
   else
     Body.set_lgrip_percent(1)
+
+  --Read the pickup position from shm
+  --TODO
+  --[[
+    --Now we can move the gripped tool around (teleop style)
+    tool_approach = util.approachTol(tool_pos,tool_pos_target,{0.1,0.1,0.1},dt)
+    trLArm[1],trLArm[2],trLArm[3] = tool_approach[1],tool_approach[2],tool_approach[3]
+    local ret = movearm.setArmToPositionAdapt(trLArm,trRArm,dt)    
+    if ret==-1 then --we cannot move to the direction, clear the hcm
+
+
+    else
+      tool_pos = tool_pos1
+    end    
+--]]      
+
   end
 end
 

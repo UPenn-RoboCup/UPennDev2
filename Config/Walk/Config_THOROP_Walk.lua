@@ -129,8 +129,11 @@ stance.pRLeg = vector.new{-walk.supportX, -walk.footY, 0, 0,0,0}
 stance.pTorso = vector.new{-walk.torsoX, 0, walk.bodyHeight, 0,walk.bodyTilt,0}
 stance.qWaist = vector.zeros(2)
 
-stance.dpLimitStance = vector.new{.04, .03, .07, .4, .4, .4}
 stance.dqWaistLimit = 10*DEG_TO_RAD*vector.ones(2)
+--stance.dpLimitStance = vector.new{.04, .03, .07, .4, .4, .4}
+stance.dpLimitStance = vector.new{.04, .03, .03, .4, .4, .4}
+stance.dqLegLimit = vector.new{10,10,45,90,45,10}*DEG_TO_RAD
+--stance.dqLegLimit = vector.new{10,10,20,40,20,10}*DEG_TO_RAD
 
 stance.sitHeight = 0.70
 stance.dHeight = 0.04 --4cm per sec

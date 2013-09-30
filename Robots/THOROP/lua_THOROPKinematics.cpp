@@ -201,25 +201,6 @@ static int inverse_joints(lua_State *L)
 	return 1;
 }
 
-static int inverse_l_arm(lua_State *L) {
-	std::vector<double> qArm;
-	std::vector<double> pArm = lua_checkvector(L, 1);
-	Transform trArm = transform6D(&pArm[0]);
-	std::vector<double> qArmOrg = lua_checkvector(L, 2);
-	qArm = THOROP_kinematics_inverse_l_arm(trArm,&qArmOrg[0]);
-	lua_pushvector(L, qArm);
-	return 1;
-}
-
-static int inverse_r_arm(lua_State *L) {
-	std::vector<double> qArm;
-	std::vector<double> pArm = lua_checkvector(L, 1);
-	Transform trArm = transform6D(&pArm[0]);
-	std::vector<double> qArmOrg = lua_checkvector(L, 2);
-	qArm = THOROP_kinematics_inverse_r_arm(trArm,&qArmOrg[0]);
-	lua_pushvector(L, qArm);
-	return 1;
-}
 
 static int inverse_l_arm_7(lua_State *L) {
 	std::vector<double> qArm;
@@ -243,29 +224,6 @@ static int inverse_r_arm_7(lua_State *L) {
 	return 1;
 }
 
-static int inverse_arms(lua_State *L) {
-	std::vector<double> qLArm(12), qRArm;
-	std::vector<double> pLArm = lua_checkvector(L, 1);
-	std::vector<double> pRArm = lua_checkvector(L, 2);
-	std::vector<double> pTorso = lua_checkvector(L, 3);
-
-	std::vector<double> qLArmOrg = lua_checkvector(L, 4);
-	std::vector<double> qRArmOrg = lua_checkvector(L, 5);
-
-
-	Transform trLArm = transform6D(&pLArm[0]);
-	Transform trRArm = transform6D(&pRArm[0]);
-	Transform trTorso = transform6D(&pTorso[0]);
-	Transform trTorso_LArm = inv(trTorso)*trLArm;
-	Transform trTorso_RArm = inv(trTorso)*trRArm;
-
-	qLArm = THOROP_kinematics_inverse_l_arm(trTorso_LArm,&qLArmOrg[0]);
-	qRArm = THOROP_kinematics_inverse_r_arm(trTorso_RArm,&qRArmOrg[0]);
-	qLArm.insert(qLArm.end(), qRArm.begin(), qRArm.end());
-
-	lua_pushvector(L, qLArm);
-	return 1;
-}
 
 //Added for crawling
 static int inverse_l_wrist(lua_State *L) {
@@ -351,10 +309,7 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"inverse_l_leg", inverse_l_leg},
 	{"inverse_r_leg", inverse_r_leg},
 	{"inverse_legs", inverse_legs},
-	{"inverse_l_arm", inverse_l_arm},
-	{"inverse_r_arm", inverse_r_arm},
-	{"inverse_arms", inverse_arms},
-	
+		
 	{"inverse_joints", inverse_joints},
 
   /* 7 DOF specific */

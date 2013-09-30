@@ -13,8 +13,8 @@ local t_entry, t_update
 
 -- Angular velocity limit
 local dqArmMax = Config.arm.slow_elbow_limit
-
-local move_stage=1
+local total_stage,stage
+local pLWrist, pRWrist, pLWristTarget, pRWristTarget, lShoulderTarget, rShoulderTarget
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -22,7 +22,6 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-
 
   -- Where are the arms right now?
   local qLArm = Body.get_larm_command_position()
@@ -39,7 +38,30 @@ function state.entry()
     qL_desired = {Config.arm.qLArmInit[2], Config.arm.qLArmInit[3]}
     qR_desired = {Config.arm.qRArmInit[2], Config.arm.qRArmInit[3]}
   end
-  move_stage = 1
+  
+
+
+--[[
+--NEW IK based control
+  pLWrist = Body.get_forward_lwrist(qLArm)
+  pRWrist = Body.get_forward_lwrist(qLArm)  
+ 
+
+--------------------------------------------
+  pLWristTarget = {-.0,.35,-.05,0,0,0}
+  pRWristTarget = {-.0,-.35,-.05,0,0,0}
+  lShoulderYawTarget = -24*Body.DEG_TO_RAD
+  rShoulderYawTarget = 24*Body.DEG_TO_RAD
+--------------------------------------------
+
+--Take 2
+  pLWristTarget = {.05,.32,-.05,0,0,0}
+  pRWristTarget = {.05,-.32,-.05,0,0,0}
+  lShoulderYawTarget = -12*Body.DEG_TO_RAD
+  rShoulderYawTarget = 12*Body.DEG_TO_RAD
+--]]
+  
+  stage = 1
 end
 
 function state.update()
@@ -49,16 +71,41 @@ function state.update()
   t_update = t
 --  print(state._NAME..' Update' )
   -- Get the time of update  
-  if movearm.setArmJoints(qL_desired[move_stage],qR_desired[move_stage],
+--
+  if movearm.setArmJoints(qL_desired[stage],qR_desired[stage],
       dt, dqArmMax)==1 then
-    move_stage = move_stage+1;  
+    stage = stage+1;  
   end  
-  if move_stage>total_stage then
+  if stage>total_stage then
     return "done";  
   end
+
+
+--Wrist IK based movement
+--[[
+  if stage==1 then   --Straighten wrist
+    local qLArm = Body.get_larm_command_position()
+    local qRArm = Body.get_rarm_command_position()
+    ret = movearm.setArmJoints(
+      {qLArm[1],qLArm[2],qLArm[3],qLArm[4],0,0,0},
+      {qRArm[1],qRArm[2],qRArm[3],qRArm[4],0,0,0},
+      dt)
+    if ret==1 then stage = stage + 1 end
+  elseif stage==2 then --Move arms to the sides    
+    ret = movearm.setWristPosition(
+      pLWristTarget, pRWristTarget,dt, lShoulderYawTarget,rShoulderYawTarget)
+    if ret==1 then stage = stage + 1 end
+  elseif stage==3 then
+    return"done";
+  end
+  --]]
+
 end
 
 function state.exit()
+  local qLArm = Body.get_larm_command_position()
+  trWrist = Body.get_forward_lwrist(qLArm)
+  print("LWrist pos:",unpack(trWrist))
   print(state._NAME..' Exit' )
 end
 

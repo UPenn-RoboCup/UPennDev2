@@ -129,6 +129,38 @@ THOROP_kinematics_forward_r_arm_7(const double *q)
 }
 
   Transform
+THOROP_kinematics_forward_l_wrist(const double *q) 
+{
+//FK for 7-dof arm (pitch-roll-yaw-pitch-yaw-roll-yaw)
+  Transform t;
+  t = t.translateY(shoulderOffsetY)
+    .translateZ(shoulderOffsetZ)
+    .mDH(-PI/2, 0, q[0], 0)
+    .mDH(PI/2, 0, PI/2+q[1], 0)
+    .mDH(PI/2, 0, PI/2+q[2], upperArmLength)
+    .mDH(PI/2, elbowOffsetX, q[3], 0)
+    .mDH(-PI/2, -elbowOffsetX, -PI/2+q[4], lowerArmLength);    
+  return t;
+}
+
+
+  Transform
+THOROP_kinematics_forward_r_wrist(const double *q) 
+{
+//New FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
+  Transform t;
+  t = t.translateY(-shoulderOffsetY)
+    .translateZ(shoulderOffsetZ)
+    .mDH(-PI/2, 0, q[0], 0)
+    .mDH(PI/2, 0, PI/2+q[1], 0)
+    .mDH(PI/2, 0, PI/2+q[2], upperArmLength)
+    .mDH(PI/2, elbowOffsetX, q[3], 0)
+    .mDH(-PI/2, -elbowOffsetX, -PI/2+q[4], lowerArmLength);    
+  return t;
+}
+
+
+  Transform
 THOROP_kinematics_forward_l_leg(const double *q)
 {
   Transform t;
@@ -688,6 +720,121 @@ THOROP_kinematics_inverse_wrist(Transform trArm,
 
 
 
+  std::vector<double>
+THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, double shoulderYaw) {
+  //calculate soulder and elbow angle given wrist POSITION
+  // Shoulder yaw angle is given
+
+  Transform t;
+
+  //Getting rid of hand, shoulder offsets
+  if (arm==ARM_LEFT){
+    t=t.translateZ(-shoulderOffsetZ)
+    .translateY(-shoulderOffsetY)
+    .translateY(-shoulderOffsetX)
+  *trWrist;
+  }else{
+    t=t.translateZ(-shoulderOffsetZ)
+    .translateY(shoulderOffsetY)
+    .translateY(shoulderOffsetX)
+  *trWrist;
+  }
+
+//---------------------------------------------------------------------------
+// Calculating elbow pitch from shoulder-wrist distance
+//---------------------------------------------------------------------------
+     
+  double xWrist[3];
+  for (int i = 0; i < 3; i++) xWrist[i]=0;
+  t.apply(xWrist);
+
+  double dWrist = xWrist[0]*xWrist[0]+xWrist[1]*xWrist[1]+xWrist[2]*xWrist[2];
+  double cElbow = .5*(dWrist-dUpperArm*dUpperArm-dLowerArm*dLowerArm)/(dUpperArm*dLowerArm);
+  if (cElbow > 1) cElbow = 1;
+  if (cElbow < -1) cElbow = -1;
+
+  // SJ: Robot can have TWO elbow pitch values (near elbowPitch==0)
+  // We are only using the smaller one (arm more bent) 
+  double elbowPitch = -acos(cElbow)-aUpperArm-aLowerArm;  
+
+//---------------------------------------------------------------------------
+// Calculate arm shoulder pitch and roll given the wrist position
+//---------------------------------------------------------------------------
+
+  //Transform m: from shoulder yaw to wrist 
+  Transform m;
+  m=m.rotateX(shoulderYaw)
+     .translateX(upperArmLength)
+     .translateZ(elbowOffsetX)
+     .rotateY(elbowPitch)
+     .translateZ(-elbowOffsetX)
+     .translateX(lowerArmLength);
+  //Now we solve the equation
+  //RotY(shoulderPitch)*RotZ(ShoulderRoll)*m*(0 0 0 1)T = xWrist
+  
+  //Solve shoulder roll first
+  //sin(shoulderRoll)*m[0][3] + cos(shoulderRoll)*m[1][3] = xWrist[1]
+  //Solve for sin (roll limited to -pi/2 to pi/2)
+  
+  double a,b,c;
+  double shoulderPitch, shoulderRoll;
+  double err1,err2;
+
+  a = m(0,3)*m(0,3) + m(1,3)*m(1,3);
+  b = -m(0,3)*xWrist[1];
+  c = xWrist[1]*xWrist[1] - m(1,3)*m(1,3);
+  if ((b*b-a*c<0)|| a==0 ) {//NaN handling
+    shoulderRoll = 0;
+  }
+  else {
+    double c21,c22,s21,s22;
+    s21= (-b+sqrt(b*b-a*c))/a;
+    s22= (-b-sqrt(b*b-a*c))/a;
+    if (s21 > 1) s21 = 1;
+    if (s21 < -1) s21 = -1;
+    if (s22 > 1) s22 = 1;
+    if (s22 < -1) s22 = -1;
+    double shoulderRoll1 = asin(s21);
+    double shoulderRoll2 = asin(s22);
+    err1 = s21*m(0,3)+cos(shoulderRoll1)*m(1,3)-xWrist[1];
+    err2 = s22*m(0,3)+cos(shoulderRoll2)*m(1,3)-xWrist[1];
+    if (err1*err1<err2*err2) shoulderRoll = shoulderRoll1;
+    else shoulderRoll = shoulderRoll2;
+  }
+
+//Now we know shoulder Roll and Yaw
+//Solve for shoulder Pitch
+//Eq 1: c1(c2*m[0][3]-s2*m[1][3])+s1*m[2][3] = xWrist[0]
+//Eq 2: -s1(c2*m[0][3]-s2*m[1][3])+c1*m[2][3] = xWrist[2]
+//OR
+// s1*t1 + c1*m[2][3] = xWrist[2]
+// -c1*t1 + s1*m[2][3] = xWrist[0]
+  // c1 = (m[2][3] xWrist[2] - t1 xWrist[0])/ (m[2][3]^2 - t1^2 )
+  // s1 = (m[2][3] xWrist[0] + t1 xWrist[2])/ (m[2][3]^2 + t1^2 )
+
+  double s2 = sin(shoulderRoll);
+  double c2 = cos(shoulderRoll);
+  double t1 = -c2 * m(0,3) + s2 * m(1,3);
+ 
+  double c1 = (m(2,3)*xWrist[2]-t1*xWrist[0]) /(m(2,3)*m(2,3) + t1*t1);
+  double s1 = (m(2,3)*xWrist[0]+t1*xWrist[2]) /(m(2,3)*m(2,3) + t1*t1);
+
+  shoulderPitch = atan2(s1,c1);
+
+  //return joint angles
+  std::vector<double> qArm(7);
+  qArm[0] = shoulderPitch;
+  qArm[1] = shoulderRoll;
+  qArm[2] = shoulderYaw;
+  qArm[3] = elbowPitch;
+
+  qArm[4] = qOrg[4];
+  qArm[5] = qOrg[5];
+  qArm[6] = qOrg[6];
+
+  return qArm;
+}
+
 
 
 
@@ -727,6 +874,7 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
 
 //---------------------------------------------------------------------------
 // Calculating elbow pitch from shoulder-wrist distance
+//---------------------------------------------------------------------------
 
   double xWrist[3];
   for (int i = 0; i < 3; i++) xWrist[i]=0;
@@ -739,8 +887,7 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
 
   // SJ: Robot can have TWO elbow pitch values (near elbowPitch==0)
   // We are only using the smaller one (arm more bent) 
-  double elbowPitch = -acos(cElbow)-aUpperArm-aLowerArm;
-  //printf("Elbow pitch: %.2f \n",elbowPitch*180/PI);
+  double elbowPitch = -acos(cElbow)-aUpperArm-aLowerArm;  
 
 //---------------------------------------------------------------------------
 // Calculate arm shoulder pitch and roll given the wrist position
@@ -756,65 +903,14 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
      .translateX(lowerArmLength);
   //Now we solve the equation
   //RotY(shoulderPitch)*RotZ(ShoulderRoll)*m*(0 0 0 1)T = xWrist
-  //shoulderPitch range: -pi/2 to pi
-  //shoulderRoll range: 0-pi for LARM, -pi - 0 for RARM
-
+  
   //Solve shoulder roll first
   //sin(shoulderRoll)*m[0][3] + cos(shoulderRoll)*m[1][3] = xWrist[1]
+  //Solve for sin (roll limited to -pi/2 to pi/2)
   
   double a,b,c;
   double shoulderPitch, shoulderRoll;
   double err1,err2;
-
-
-/*
-//(1-c2^2) m[0][3]^2 = (xWrist[1] - c2 m[1][3])^2
-  a = m(0,3)*m(0,3) + m(1,3)*m(1,3);
-  b = -m(1,3)*xWrist[1];
-  c = xWrist[1]*xWrist[1] - m(0,3)*m(0,3);
-
-  if ((b*b-a*c<0)|| a==0 ) {//NaN handling
-    shoulderRoll = 0;
-  }
-  else {
-    double c21,c22,s21,s22;
-    c21= (-b+sqrt(b*b-a*c))/a;
-    c22= (-b-sqrt(b*b-a*c))/a;
-    if (c21 > 1) c21 = 1;
-    if (c21 < -1) c21 = -1;
-    if (c22 > 1) c22 = 1;
-    if (c22 < -1) c22 = -1;
-
-    if (arm==ARM_LEFT){ //left arm shoulderRoll: 0 to pi
-      s21 = sqrt(1-c21*c21);
-      s22 = sqrt(1-c22*c22);
-      err1 = fabs(s21*m(0,3) + c21*m(1,3)-xWrist[1]);
-      err2 = fabs(s22*m(0,3) + c22*m(1,3)-xWrist[1]);
-
-      //Checks if the shoulderRoll is between 0 to pi/2
-      if (c21<0) err1 = 999; 
-      if (c22<0) err2 = 999; 
-
-      if (err1<err2) shoulderRoll = acos(c21);
-      else shoulderRoll = acos(c22);
-    }else{ //right arm shoulderRoll: -pi to 0
-
-      s21 = -sqrt(1-c21*c21);
-      s22 = -sqrt(1-c22*c22);
-      err1 = fabs(s21*m(0,3) + c21*m(1,3)-xWrist[1]);
-      err2 = fabs(s22*m(0,3) + c22*m(1,3)-xWrist[1]);
-      //Checks if the shoulderRole is between 0 to pi/2
-      if (c21<0) err1 = 999; 
-      if (c22<0) err2 = 999; 
-
-      if (err1<err2) shoulderRoll = -acos(c21);
-      else shoulderRoll = -acos(c22);
-    }
-  }
-*/
-
-//Solve for sin instead (now limited to -pi to pi)
-//sin(shoulderRoll)*m[0][3] + cos(shoulderRoll)*m[1][3] = xWrist[1]
 
   a = m(0,3)*m(0,3) + m(1,3)*m(1,3);
   b = -m(0,3)*xWrist[1];
@@ -838,63 +934,25 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
     else shoulderRoll = shoulderRoll2;
   }
 
-
-
-  //Now we know shoulder Roll and Yaw
-  //Solve for shoulder Pitch
-  //Eq 1: c1(c2*m[0][3]-s2*m[1][3])+s1*m[2][3] = xWrist[0]
-  //Eq 2: -s1(c2*m[0][3]-s2*m[1][3])+c1*m[2][3] = xWrist[2]
-
-  //OR
-  // s1*t1 + c1*m[2][3] = xWrist[2]
-  // -c1*t1 + s1*m[2][3] = xWrist[0]
+//Now we know shoulder Roll and Yaw
+//Solve for shoulder Pitch
+//Eq 1: c1(c2*m[0][3]-s2*m[1][3])+s1*m[2][3] = xWrist[0]
+//Eq 2: -s1(c2*m[0][3]-s2*m[1][3])+c1*m[2][3] = xWrist[2]
+//OR
+// s1*t1 + c1*m[2][3] = xWrist[2]
+// -c1*t1 + s1*m[2][3] = xWrist[0]
+  // c1 = (m[2][3] xWrist[2] - t1 xWrist[0])/ (m[2][3]^2 - t1^2 )
+  // s1 = (m[2][3] xWrist[0] + t1 xWrist[2])/ (m[2][3]^2 + t1^2 )
 
   double s2 = sin(shoulderRoll);
   double c2 = cos(shoulderRoll);
   double t1 = -c2 * m(0,3) + s2 * m(1,3);
-
-  // New direct solution:
-  
-  // c1 = (m[2][3] xWrist[2] - t1 xWrist[0])/ (m[2][3]^2 - t1^2 )
-  // s1 = (m[2][3] xWrist[0] + t1 xWrist[2])/ (m[2][3]^2 + t1^2 )
-
+ 
   double c1 = (m(2,3)*xWrist[2]-t1*xWrist[0]) /(m(2,3)*m(2,3) + t1*t1);
   double s1 = (m(2,3)*xWrist[0]+t1*xWrist[2]) /(m(2,3)*m(2,3) + t1*t1);
 
-//printf("s %.2f c %.2f\n",s1,c1);
-
   shoulderPitch = atan2(s1,c1);
-/*
 
-//Old solution (only -pi/2 to pi/2)  
-   a = m(2,3)*m(2,3)+t1*t1;
-   b = - xWrist[2]*t1;
-   c = xWrist[2]*xWrist[2]-m(2,3)*m(2,3);
-
-   if ((b*b-a*c<0)|| a==0 ) {//NaN handling
-     shoulderPitch = 0;
-   }else{
-     double c11,c12,s11,s12;
-     //Shoulder pitch range: -pi/ to pi/
-     s11= (-b+sqrt(b*b-a*c))/a;
-     s12= (-b-sqrt(b*b-a*c))/a;
-     if (s11 > 1) s11 = 1;
-     if (s11 < -1) s11 = -1;
-     if (s12 > 1) s12 = 1;
-     if (s12 < -1) s12 = -1;
-     c11 = sqrt(1-s11*s11);
-     c12 = sqrt(1-s12*s12);
- 
-     err1 = fabs(s11* t1 + c11 * m(2,3) - xWrist[2]);
-     err2 = fabs(s12* t1 + c12 * m(2,3) - xWrist[2]);
-
-     if (err1<err2) shoulderPitch = asin(s11);
-     else shoulderPitch = asin(s12);
-
-
-printf("shoulderpitch: %.1f",shoulderPitch*180/3.1415);
-   }
-*/
 //---------------------------------------------------------------------------
 // Now we know shoulder pich, roll, yaw and elbow pitch
 // Calc the final transform for the wrist based on rotation alone
@@ -937,7 +995,6 @@ printf("shoulderpitch: %.1f",shoulderPitch*180/3.1415);
   wristYaw_b = atan2 (rotWrist(2,0)*swb,rotWrist(1,0)*swb);  
   wristYaw2_b = atan2 (rotWrist(0,2)*swb,-rotWrist(0,1)*swb);
 
-
   //singular point: just use current angles
   if(swa<0.00001){
     wristYaw_a = qOrg[4];    
@@ -946,59 +1003,29 @@ printf("shoulderpitch: %.1f",shoulderPitch*180/3.1415);
     wristYaw_b = qOrg[4];
     wristRoll_b = qOrg[5];
     wristYaw2_b = qOrg[6];
-    
   } 
 
-
-
-
-
-
-  
+  //Select the closest solution to current joint angle  
   bool select_a = false;
-
-
-
-
   double err_a = fmodf(qOrg[4] - wristYaw_a+5*PI, 2*PI) - PI;
   double err_b = fmodf(qOrg[4] - wristYaw_b+5*PI, 2*PI) - PI;
   if (err_a*err_a<err_b*err_b)   select_a=true;
   
-
-//if(arm==ARM_LEFT) select_a=true;
-//else select_a = false;
-
-std::vector<double> qArm(7);
+  std::vector<double> qArm(7);
   qArm[0] = shoulderPitch;
   qArm[1] = shoulderRoll;
   qArm[2] = shoulderYaw;
   qArm[3] = elbowPitch;
 
-if (select_a==true) {
-  qArm[4] = wristYaw_a;
-  qArm[5] = wristRoll_a;
-  qArm[6] = wristYaw2_a;
-}else{
-  qArm[4] = wristYaw_b;
-  qArm[5] = wristRoll_b;
-  qArm[6] = wristYaw2_b;
-}
-
-
-/*
-if(arm==ARM_LEFT) printf("LARM");
-else printf("RARM");
-printf(" Cur:%.1f %.1f %.1f\nCal_a: %f %.1f %.1f(err: %1.3f)  / Cal_b: %.1f %.1f %.1f(err:%.3f) Selected:%.1f\n",
-  qOrg[4]*180/PI, qOrg[5]*180/PI, qOrg[6]*180/PI, 
-  wristYaw_a*180/PI,wristRoll_a*180/PI,wristYaw2_a*180/PI,
-  err_a,
-  wristYaw_b*180/PI,wristRoll_b*180/PI,wristYaw2_b*180/PI,
-  err_b,
-   qArm[4]*180/PI
-   );
-*/
-
-
+  if (select_a==true) {
+    qArm[4] = wristYaw_a;
+    qArm[5] = wristRoll_a;
+    qArm[6] = wristYaw2_a;
+  }else{
+    qArm[4] = wristYaw_b;
+    qArm[5] = wristRoll_b;
+    qArm[6] = wristYaw2_b;
+  }
   return qArm;
 }
 
@@ -1032,15 +1059,15 @@ THOROP_kinematics_inverse_r_arm_7(Transform trArm, const double *qOrg,double sho
 
 
   std::vector<double>
-THOROP_kinematics_inverse_l_wrist(Transform trArm, double shoulderYaw)
+THOROP_kinematics_inverse_l_wrist(Transform trWrist, const double *qOrg, double shoulderYaw)
 {
-  return THOROP_kinematics_inverse_wrist(trArm, shoulderYaw,ARM_LEFT);
+  return THOROP_kinematics_inverse_wrist(trWrist, ARM_LEFT, qOrg, shoulderYaw);
 }
 
   std::vector<double>
-THOROP_kinematics_inverse_r_wrist(Transform trArm, double shoulderYaw)
+THOROP_kinematics_inverse_r_wrist(Transform trWrist,const double *qOrg, double shoulderYaw)
 {
-  return THOROP_kinematics_inverse_wrist(trArm, shoulderYaw, ARM_RIGHT);
+  return THOROP_kinematics_inverse_wrist(trWrist, ARM_RIGHT, qOrg, shoulderYaw);
 }
 
 

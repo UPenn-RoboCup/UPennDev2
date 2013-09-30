@@ -94,6 +94,20 @@ static int forward_r_arm(lua_State *L) {
 	return 1;
 }
 
+static int forward_l_wrist(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	Transform t = THOROP_kinematics_forward_l_wrist(&q[0]);
+	lua_pushtransform(L, t);
+	return 1;
+}
+
+static int forward_r_wrist(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	Transform t = THOROP_kinematics_forward_r_wrist(&q[0]);
+	lua_pushtransform(L, t);
+	return 1;
+}
+
 static int forward_l_leg(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
 	Transform t = THOROP_kinematics_forward_l_leg(&q[0]);
@@ -257,9 +271,10 @@ static int inverse_arms(lua_State *L) {
 static int inverse_l_wrist(lua_State *L) {
 	std::vector<double> qArm;
 	std::vector<double> pArm = lua_checkvector(L, 1);
-	double shoulderYaw = luaL_optnumber(L, 2,0.0);
+	std::vector<double> qArmOrg = lua_checkvector(L, 2);
 	Transform trArm = transform6D(&pArm[0]);
-	qArm = THOROP_kinematics_inverse_l_wrist(trArm,shoulderYaw);
+	double shoulderYaw = luaL_optnumber(L, 3,0.0);
+	qArm = THOROP_kinematics_inverse_l_wrist(trArm,&qArmOrg[0],shoulderYaw);
 	lua_pushvector(L, qArm);
 	return 1;
 }
@@ -267,10 +282,10 @@ static int inverse_l_wrist(lua_State *L) {
 static int inverse_r_wrist(lua_State *L) {
 	std::vector<double> qArm;
 	std::vector<double> pArm = lua_checkvector(L, 1);
-	double shoulderYaw = luaL_optnumber(L, 2,0.0);
+	std::vector<double> qArmOrg = lua_checkvector(L, 2);
 	Transform trArm = transform6D(&pArm[0]);
-	qArm = THOROP_kinematics_inverse_r_wrist(trArm,shoulderYaw);
-	lua_pushvector(L, qArm);
+	double shoulderYaw = luaL_optnumber(L, 3,0.0);
+	qArm = THOROP_kinematics_inverse_r_wrist(trArm,&qArmOrg[0],shoulderYaw);
 	return 1;
 }
 
@@ -338,9 +353,7 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"inverse_l_arm", inverse_l_arm},
 	{"inverse_r_arm", inverse_r_arm},
 	{"inverse_arms", inverse_arms},
-
-	{"inverse_l_wrist", inverse_l_wrist},
-	{"inverse_r_wrist", inverse_r_wrist},
+	
 	{"inverse_joints", inverse_joints},
 
   /* 7 DOF specific */
@@ -348,6 +361,12 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"r_arm_torso_7", r_arm_torso_7},
 	{"inverse_l_arm_7", inverse_l_arm_7},
 	{"inverse_r_arm_7", inverse_r_arm_7},
+
+  /* Wrist specific */
+    {"forward_lwrist", forward_l_wrist},
+	{"forward_rwrist", forward_r_wrist},
+	{"inverse_l_wrist", inverse_l_wrist},
+	{"inverse_r_wrist", inverse_r_wrist},
 
 	{NULL, NULL}
 };

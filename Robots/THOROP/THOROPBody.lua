@@ -650,6 +650,25 @@ Body.get_forward_rarm = function(qR)
   return pRArm
 end
 
+--Return the WRIST position (to test self collision)
+Body.get_forward_lwrist = function(qL)
+--  local pLArm = Kinematics.l_arm_torso( qL )
+  assert(#qL==7, "Arm FK requires 7 joints")
+  local pLArm = Kinematics.l_arm_torso_7( qL )
+  return pLArm
+end
+Body.get_forward_rwrist = function(qR)  
+--  local pRArm = Kinematics.r_arm_torso( qR )
+  assert(#qR==7, "Arm FK requires 7 joints")
+  local pRArm = Kinematics.r_arm_torso_7( qR )
+  return pRArm
+end
+
+
+
+
+
+
 -- SJ: sensed position can be noisy
 -- So we should use current command position instead
 Body.get_forward_larm_command = function()

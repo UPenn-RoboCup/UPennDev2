@@ -73,6 +73,7 @@ shared.kinect.depths   = vector.new({.5,2})
 -- Stream | 0: None, 1: Single Frame, 2: Stream
 -- Compression | 0: None, 1: JPEG, 2: PNG, 3: PNG
 -- Quality | JPEG quality from 0-100
+-- Rate | FPS (5,10,15,30, etc.)
 shared.kinect.net_color = vector.new{0,1,85}
 -- Shift Amount | (Depth only)
 shared.kinect.net_depth = vector.new{0,1,95}

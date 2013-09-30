@@ -27,9 +27,10 @@ PORT_HEIGHTMAP = 22223; %43230;
 PORT_RELIABLE_RPC = 55555; %for UI events
 PORT_UNRELIABLE_RPC = 55556; %for UI events
 
-WIRED_IP    = '192.168.123.22';
-WIRELESS_IP = '192.168.1.22';
-ROBOT_IP    = '127.0.0.1';
+WIRED_IP    = '192.168.123.25';
+WIRELESS_IP = '192.168.1.25';
+LOCALHOST    = '127.0.0.1';
+WIRED_IP    = '192.168.123.25';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -95,7 +95,7 @@ end
 -- Servo parameters
 local servo = {}
 servo.joint_to_motor={
-  29,30,  --Head yaw/pitch
+  30,29,  --Head yaw/pitch
   2,4,6,8,10,12,14, --LArm
   16,18,20,22,24,26, -- left leg
   15,17,19,21,23,25, -- right leg

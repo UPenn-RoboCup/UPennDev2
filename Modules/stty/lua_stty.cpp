@@ -145,22 +145,41 @@ static int lua_stty_speed(lua_State *L) {
 		return luaL_error(L, "Could not set termios");
 	}
 
-	// For linux:
-	// TODO: Why is this commented?
-	/*
-	   struct serial_struct serinfo;
-	   int ret = ioctl(fd, TIOCGSERIAL, &serinfo);
-	   if (ret < 0)
-	   return luaL_error(L, "Could not get serial info.");
-	   else if (ret == 0) {
-	   serinfo.flags &= ~ASYNC_SPD_MASK;
-	   serinfo.flags |= ASYNC_SPD_CUST;
-	   serinfo.custom_divisor = serinfo.baud_base/((float)speed);
-	   if (ioctl(fd, TIOCSSERIAL, &serinfo) < 0)
-	   return luaL_error(L, "Could not set serial info.");
+	// custom divisor
+	struct serial_struct serinfo;
+	int ret = ioctl(fd, TIOCGSERIAL, &serinfo);
+	if (ret < 0){
+		return luaL_error(L, "Could not get serial info.");
+	}
 
-	   }
-	 */
+	if (ret == 0) {
+		serinfo.flags &= ~ASYNC_SPD_MASK;
+		serinfo.flags |= ASYNC_SPD_CUST;
+		serinfo.custom_divisor = serinfo.baud_base/((float)speed);
+		if (ioctl(fd, TIOCSSERIAL, &serinfo) < 0){
+			return luaL_error(L, "Could not set serial info.");
+		}
+	}
+
+	/*
+	// robotis code
+	ss.custom_divisor = (ss.baud_base + (speed / 2)) / speed;
+	int closest_speed = ss.baud_base / ss.custom_divisor;
+
+	if(closest_speed < speed * 98 / 100 || closest_speed > speed * 102 / 100)
+	{
+		if(DEBUG_PRINT == true)
+			printf(" Cannot set speed to %d, closest is %d \n", speed, closest_speed);
+		return false;
+	}
+
+	if(ioctl(SocketFD, TIOCSSERIAL, &ss) < 0)
+	{
+		if(DEBUG_PRINT == true)
+			printf(" TIOCSSERIAL failed!\n");
+		return false;
+	}
+	*/
 #endif
 
 	return 0;

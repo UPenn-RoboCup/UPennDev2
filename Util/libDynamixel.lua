@@ -666,9 +666,11 @@ libDynamixel.service = function( dynamixels, main )
           local command = table.remove(dynamixel.commands,1)
           n_cmd_left = n_cmd_left - 1
           -- flush out old things in the buffer
-          stty.flush(fd)
+          local flush_ret = stty.flush(fd)
           -- write the new command
           local cmd_ret = unix.write( fd, command )
+          -- possibly need a drain? Robotis does not
+          local flush_ret = stty.drain(fd)
           assert(#command==cmd_ret,
             string.format('BAD INST WRITE: %s',dynamixel.name))
           n_cmd_bytes = n_cmd_bytes+cmd_ret

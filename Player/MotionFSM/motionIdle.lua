@@ -25,15 +25,15 @@ function state.entry()
   Body.set_lleg_torque_enable(0)
   Body.set_rleg_torque_enable(0)
 
-  -- Initialize our joint positions estimate
-  qLLeg  = Body.get_lleg_command_position()
-  qRLeg  = Body.get_rleg_command_position()
-  qWaist = Body.get_waist_command_position()
-
   -- Request new readings
   Body.request_lleg_position()
   Body.request_rleg_position()
   Body.request_waist_position()
+
+  -- Commanded at first
+  qLLeg = Body.get_lleg_command_position()
+  qRLeg = Body.get_rleg_command_position()
+  qWaist = Body.get_waist_command_position()
 
 end
 
@@ -50,24 +50,14 @@ function state.update()
 
   -- Grab our position if available
   local updatedL, updatedR, updatedW
-  qL, updatedL = Body.get_lleg_position()
-  qR, updatedR = Body.get_rleg_position()
-  qW, updatedW = Body.get_waist_position()
+  qLLeg, updatedL = Body.get_lleg_position()
+  qRLeg, updatedR = Body.get_rleg_position()
+  qWaist, updatedW = Body.get_waist_position()
 
-  -- Set our global idea of where our joints are
-  -- Continuously read current leg position and write them to command position 
-  --if updatedL then
-    qLLeg = qL
-    Body.request_lleg_position()
-  --end
-  --if updatedR then
-    qRLeg = qR
-    Body.request_rleg_position()
-  --end
-  --if updatedW then
-    qWaist = qW
-    Body.request_waist_position()
-  --end
+  -- Constantly request
+  Body.request_lleg_position()
+  Body.request_rleg_position()
+  Body.request_waist_position()
 
 end
 
@@ -80,6 +70,7 @@ function state.exit()
   Body.set_rleg_torque_enable(1)
 
   -- Wait 10 milliseconds for motors to turn on
+  -- TODO: Should be in dcm
   unix.usleep(1e4)
 
   -- Set the commanded position

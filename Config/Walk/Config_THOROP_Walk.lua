@@ -114,6 +114,13 @@ else
 
 end
 
+--Robotis default walk parameters
+
+walk.bodyHeight = 0.9285318
+walk.supportX = 0.0515184
+walk.footY = 0.1095
+walk.bodyTilt = 11*math.pi/180
+------------------------------------
 
 -----------------------------------------------------------
 -- Stance parameters

@@ -252,7 +252,7 @@ static int lua_stty_flush(lua_State *L) {
 
 // wait until the write has finished
 static int lua_stty_drain(lua_State *L) {
-	lua_pushinteger( L, tcdrain(luaL_checkinteger(L, 1) );
+	lua_pushinteger( L, tcdrain(luaL_checkinteger(L, 1) ) );
 	return 1;
 }
 

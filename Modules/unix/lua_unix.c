@@ -187,6 +187,8 @@ static int lua_writefd(lua_State *L) {
     ret += write(fd, buf, len);
   }
 
+  // TODO: flush immediately?
+
   lua_pushinteger(L, ret);
   return 1;
 }

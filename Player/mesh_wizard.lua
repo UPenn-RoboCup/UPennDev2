@@ -42,13 +42,13 @@ local function setup_mesh( name )
   -- Actuator endpoints
   -- In radians, specifices the actuator scanline angle endpoints
   -- The third number is the scanline density (scanlines/radian)
-  tbl.meta.scanlines = vcm['get_'..name..'_lidar_scanlines']()
+  tbl.meta.scanlines = vcm['get_'..name..'_scanlines']()
   -- Field of view endpoints of the lidar ranges
   -- -135 to 135 degrees for Hokuyo
   -- This is in RADIANS, though
-  tbl.meta.fov = vcm['get_'..name..'_lidar_fov']()
+  tbl.meta.fov = vcm['get_'..name..'_fov']()
   -- Depths when compressing
-  tbl.meta.depths = vcm['get_'..name..'_lidar_depths']()
+  tbl.meta.depths = vcm['get_'..name..'_depths']()
   tbl.meta.name = name
   -- Type of compression
   tbl.meta.c = 'jpeg'
@@ -74,7 +74,7 @@ local function setup_mesh( name )
   -- TODO: Save the exact actuator angles?
   tbl.scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
   -- Subscribe to a lidar channel
-  tbl.lidar_ch  = simple_ipc.new_subscriber(name..'_lidar')
+  tbl.lidar_ch  = simple_ipc.new_subscriber(name)
   -- Find the offset for copying lidar readings into the mesh
   -- if fov is from -135 to 135 degrees, then offset_idx is zero
   -- if fov is from 0 to 135 degrees, then offset_idx is 540
@@ -129,12 +129,12 @@ end
 -- type is head or chest table
 local function stream_mesh(type)
   -- Network streaming settings
-  local net_settings = vcm['get_'..type.meta.name..'_lidar_net']()
+  local net_settings = vcm['get_'..type.meta.name..'_net']()
   -- Streaming
   if net_settings[1]==0 then return end
   -- Sensitivity range in meters
   -- Depths when compressing
-  local depths = vcm['get_'..type.meta.name..'_lidar_depths']()
+  local depths = vcm['get_'..type.meta.name..'_depths']()
 
   local metapack, c_mesh = prepare_mesh(
     type,
@@ -146,7 +146,7 @@ local function stream_mesh(type)
   if err then print('mesh udp',err) end
   if net_settings[1]==1 then
     net_settings[1] = 0
-    vcm['set_'..type.meta.name..'_lidar_net'](net_settings)
+    vcm['set_'..type.meta.name..'_net'](net_settings)
   end
   --[[
   print(err or string.format('Sent a %g kB packet.', ret/1024))
@@ -241,10 +241,10 @@ local mesh = {}
 -- Entry function
 function mesh.entry()
   -- Setup the data structures for each mesh
-  chest = setup_mesh'chest'
-  mesh_lookup['chest'] = chest
-  head  = setup_mesh'head'
-  mesh_lookup['head'] = head
+  chest = setup_mesh'chest_lidar'
+  mesh_lookup['chest_lidar'] = chest
+  head  = setup_mesh'head_lidar'
+  mesh_lookup['head_lidar'] = head
 
   -- Poll the lidar readings with zeromq
   local wait_channels = {}

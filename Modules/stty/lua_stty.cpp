@@ -146,6 +146,7 @@ static int lua_stty_speed(lua_State *L) {
 	}
 
 	// For linux:
+	// TODO: Why is this commented?
 	/*
 	   struct serial_struct serinfo;
 	   int ret = ioctl(fd, TIOCGSERIAL, &serinfo);
@@ -243,6 +244,18 @@ static int lua_stty_clocal(lua_State *L) {
 	return 0;
 }
 
+// just flush the output
+static int lua_stty_flush(lua_State *L) {
+	lua_pushinteger( L, tcflush(luaL_checkinteger(L, 1), TCIOFLUSH) );
+	return 1;
+}
+
+// wait until the write has finished
+static int lua_stty_drain(lua_State *L) {
+	lua_pushinteger( L, tcdrain(luaL_checkinteger(L, 1) );
+	return 1;
+}
+
 static const struct luaL_Reg stty_lib [] = {
 	{"raw", lua_stty_raw},
 	{"sane", lua_stty_sane},
@@ -252,6 +265,8 @@ static const struct luaL_Reg stty_lib [] = {
 	{"time", lua_stty_time},
 	{"echo", lua_stty_echo},
 	{"clocal", lua_stty_clocal},
+	{"flush", lua_stty_flush},
+	{"drain", lua_stty_drain},
 	{NULL, NULL}
 };
 

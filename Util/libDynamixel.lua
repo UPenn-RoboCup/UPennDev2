@@ -343,6 +343,7 @@ for k,v in pairs( nx_registers ) do
       local clr = unix.read(bus.fd)
 
       -- Write the instruction to the bus 
+      stty.flush(bus.fd)
       local ret = unix.write(bus.fd, instruction)
       
       -- Grab any status returns
@@ -374,6 +375,7 @@ for k,v in pairs( nx_registers ) do
     -- Clear old status packets
     repeat buf = unix.read(bus.fd) until not buf
     -- Write the instruction to the bus 
+    stty.flush(bus.fd)
     local ret = unix.write(bus.fd, instruction)
     -- Grab the status of the register
     return get_status( bus.fd, nids )
@@ -400,6 +402,7 @@ for k,v in pairs( mx_registers ) do
     if not bus then return instruction end
 
     -- Write the instruction to the bus
+    stty.flush(bus.fd)
     local ret = unix.write(bus.fd, instruction)
     
     -- Grab any status returns
@@ -437,6 +440,7 @@ for k,v in pairs( mx_registers ) do
     local clear = unix.read( bus.fd )
     
     -- Write the instruction to the bus 
+    stty.flush(bus.fd)
     local ret = unix.write( bus.fd, instruction)
     
     -- Grab the status of the register
@@ -471,7 +475,8 @@ for k,v in pairs( rx_registers ) do
     
     if not bus then return instruction end
 
-    -- Write the instruction to the bus 
+    -- Write the instruction to the bus
+    stty.flush(bus.fd)
     local ret = unix.write(bus.fd, instruction)
     
     -- Grab any status returns
@@ -501,6 +506,7 @@ for k,v in pairs( rx_registers ) do
     local clear = unix.read(bus.fd)
     
     -- Write the instruction to the bus 
+    stty.flush(bus.fd)
     local ret = unix.write(bus.fd, instruction)
     
     -- Grab the status of the register
@@ -523,6 +529,7 @@ libDynamixel.send_ping = function( id, protocol, bus, twait )
   end
   if not bus then return instruction end
 
+  stty.flush(bus.fd)
   local ret    = unix.write(bus.fd, instruction)
   local status = get_status( bus.fd, 1, protocol, twait )
   if status then return status end
@@ -658,6 +665,9 @@ libDynamixel.service = function( dynamixels, main )
           -- Pop a command
           local command = table.remove(dynamixel.commands,1)
           n_cmd_left = n_cmd_left - 1
+          -- flush out old things in the buffer
+          stty.flush(fd)
+          -- write the new command
           local cmd_ret = unix.write( fd, command )
           assert(#command==cmd_ret,
             string.format('BAD INST WRITE: %s',dynamixel.name))
@@ -687,6 +697,7 @@ libDynamixel.service = function( dynamixels, main )
           n_req_left = n_req_left - 1
           -- Write the read request command to the chain
           local inst = request.inst
+          stty.flush(fd)
           local req_ret = unix.write(fd, inst)
           -- If -1 returned, the bus may be detached - throw an error
           assert(req_ret==#inst,

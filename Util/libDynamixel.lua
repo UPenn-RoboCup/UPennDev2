@@ -750,6 +750,7 @@ libDynamixel.service = function( dynamixels, main )
 
         -- Nothing happened... why?
         if not did_command and not did_request then
+          error("NO MAN'S LAND",dynamixel.name)
           has_data, t = coroutine.yield()
         end
 

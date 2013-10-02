@@ -56,13 +56,13 @@ shared_data.actuator                  = {}
 -- Position of joints is in radians from the zero position
 shared_data.actuator.command_position = vector.zeros( nJoints )
 -- Velocity of joints is in radians from the zero position
-shared_data.actuator.command_velocity = vector.zeros( nJoints )
+shared_data.actuator.command_velocity = 17000*vector.ones( nJoints )
 -- Velocity of joints is in radians from the zero position
 shared_data.actuator.command_acceleration = 64*vector.ones( nJoints )
 -- Torque enable of joints is 0 or 1
 shared_data.actuator.torque_enable    = vector.zeros( nJoints )
 -- Hardness of joints is legacy, but offers a simple abstraction of pid gains
-shared_data.actuator.hardness         = vector.zeros( nJoints )
+shared_data.actuator.position_p       = 64*vector.ones( nJoints )
 
 ------------------------
 -- Request writes to some motors

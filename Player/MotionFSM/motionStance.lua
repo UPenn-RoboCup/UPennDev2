@@ -94,6 +94,9 @@ function state.update()
   Body.set_rleg_command_acceleration({200,200,200,200,200,200})
   Body.set_lleg_command_acceleration({200,200,200,200,200,200})
 
+  Body.set_rleg_position_p({64,64,64,64,64,64})
+  Body.set_lleg_position_p({64,64,64,64,64,64})
+
   moveleg.set_leg_positions(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)  
   mcm.set_status_bodyHeight(bodyHeight)  
 end -- walk.update

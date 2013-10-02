@@ -125,19 +125,21 @@ end
 
 -- type is head or chest table
 local function stream_mesh(type)
+  local get_name = 'get_'..type.meta.name
   -- Network streaming settings
-  local net_settings = vcm['get_'..type.meta.name..'_net']()
+  local net_settings = vcm[get_name..'_net']()
   -- Streaming
   if net_settings[1]==0 then return end
   -- Sensitivity range in meters
   -- Depths when compressing
-  local depths = vcm['get_'..type.meta.name..'_depths']()
+  local depths = vcm[get_name..'_depths']()
 
   local metapack, c_mesh = prepare_mesh(
     type,
     depths[1],depths[2],
     net_settings[2])
 
+  -- Sending to other processes
   --mesh_pub_ch:send( {meta, payload} )
   local ret, err = mesh_udp_ch:send( metapack..c_mesh )
   if err then print('mesh udp',err) end
@@ -159,8 +161,8 @@ local function angle_to_scanline( meta, rad )
   local res   = meta.resolution[1]
   local ratio = (rad-start)/(stop-start)
   -- Round
-  --local scanline = math.floor(ratio*res+.5)
-  local scanline = math.ceil(ratio*res)
+  local scanline = math.floor(ratio*res+.5)
+  --local scanline = math.ceil(ratio*res)
   -- Return a bounded value
   return math.max( math.min(scanline, res), 1 )
 end
@@ -216,7 +218,7 @@ local function reliable_callback()
   repeat
     request, has_more = mesh_tcp_ch:receive()
     request = mp.unpack(request)
-    --util.ptable(request)
+    util.ptable(request)
     local metapack, c_mesh = prepare_mesh(
       mesh_lookup[request.type],
       request.near or 0,request.far or 5,
@@ -254,7 +256,7 @@ function mesh.entry()
     mesh_lookup['chest_lidar'] = chest
     -- Subscribe to a lidar channel
     local ch = simple_ipc.new_subscriber('chest_lidar')
-    chest.lidar_ch.callback = chest_callback
+    ch.callback = chest_callback
     table.insert( wait_channels, ch )
     chest.lidar_ch  = ch
   end

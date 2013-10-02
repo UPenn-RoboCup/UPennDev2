@@ -61,7 +61,15 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-  if stage==1 then
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()    
+  if stage==1 then --Change wrist
+    qL = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0,0,0,-45*Body.DEG_TO_RAD})
+    qR = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0,0,0,45*Body.DEG_TO_RAD})
+    if movearm.setArmJoints(qL, qR, dt, dqArmMax)==1 then
+      stage=stage+1; 
+    end
+  elseif stage==2 then
     ret = movearm.setArmToWheelPosition(
       handle_pos, handle_yaw, handle_pitch,
       handle_radius1, turnAngle,dt,
@@ -69,7 +77,7 @@ function state.update()
     if ret==1 then stage=stage+1; 
     elseif ret==-1 then return'reset'
     end
-  elseif stage==2 then
+  elseif stage==3 then
     ret = movearm.setArmToWheelPosition(
       handle_pos, handle_yaw, handle_pitch,
       handle_radius0, turnAngle,dt,

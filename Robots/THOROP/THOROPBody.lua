@@ -677,7 +677,10 @@ Body.get_inverse_lwrist = function( qL, trL, lShoulderYaw , pos_tol, ang_tol )
   return qL_target
 end
 
-
+Body.get_inverse_arm_given_wrist = function( q, tr)
+  local q_target = Kinematics.inverse_arm_given_wrist(tr,q)
+  return q_target
+end
 
 
 

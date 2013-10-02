@@ -59,8 +59,6 @@ function state.entry()
   lShoulderYawTarget = -12*Body.DEG_TO_RAD
   rShoulderYawTarget = 12*Body.DEG_TO_RAD
 
-  
-
 end
 
 function state.update()
@@ -84,11 +82,13 @@ function state.update()
 --Wrist IK based movement
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
+  dqWristMax=vector.new({0,0,0,0,
+       10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD})
   if stage==1 then   --Straighten wrist    
     ret = movearm.setArmJoints(
       {qLArm[1],qLArm[2],qLArm[3],qLArm[4],0,0,0},
       {qRArm[1],qRArm[2],qRArm[3],qRArm[4],0,0,0},
-      dt)
+      dt,dqWristMax)
     if ret==1 then stage = stage + 1 end
   elseif stage==2 then --Move arms to the sides        
     ret = movearm.setWristPosition(

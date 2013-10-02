@@ -23,31 +23,18 @@ function state.entry()
   handle_radius = wheel[6]
   print("Handle model:",wheel)
 
---SJ: Temporary testing values
---------------------------------------------------------------------
-  handle_pos={0.41,0,-0.04}
-  handle_yaw=0
-  handle_pitch=0
-  handle_radius=0.14
-  hcm.set_wheel_model({handle_pos[1],handle_pos[2],handle_pos[3],
-                        handle_yaw,handle_pitch,handle_radius}) 
----------------------------------------------------------------------
-
-
   --open gripper
   Body.set_lgrip_percent(0)
   Body.set_rgrip_percent(0)
 
   -- Inner and outer radius
   handle_radius0 = handle_radius 
-  handle_radius1 = handle_radius + 0.04
+  handle_radius1 = handle_radius + 0.08
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()    
   lShoulderYaw = qLArm[3]
-  rShoulderYaw = qRArm[3]
-  hcm.set_joints_qlshoulderyaw(lShoulderYaw)
-  hcm.set_joints_qrshoulderyaw(rShoulderYaw)
+  rShoulderYaw = qRArm[3]  
 
   stage = 1;
 end
@@ -63,25 +50,39 @@ function state.update()
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()    
-  if stage==1 then --Change wrist
-    qL = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0,0,0,-45*Body.DEG_TO_RAD})
-    qR = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0,0,0,45*Body.DEG_TO_RAD})
-    if movearm.setArmJoints(qL, qR, dt, dqArmMax)==1 then
-      stage=stage+1; 
-    end
+  if stage==1 then --Change wrist    
+    dqWristMax=vector.new({0,0,0,0,
+       10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD})
+    qL = Body.get_inverse_arm_given_wrist( qLArm,       {0,0,0,0,0,-45*Body.DEG_TO_RAD})
+    qR = Body.get_inverse_arm_given_wrist( qRArm,       {0,0,0,0,0,45*Body.DEG_TO_RAD})
+    if movearm.setArmJoints(qL, qR, dt, dqWristMax)==1 then
+      stage=stage+1;       
+    end        
   elseif stage==2 then
+    --[[
     ret = movearm.setArmToWheelPosition(
       handle_pos, handle_yaw, handle_pitch,
       handle_radius1, turnAngle,dt,
       lShoulderYaw, rShoulderYaw)
-    if ret==1 then stage=stage+1; 
-    elseif ret==-1 then return'reset'
+--]]
+    handle_pos_temp={handle_pos[1],handle_pos[2],-0.10}
+
+    ret = movearm.setArmToWheelPosition(
+      handle_pos_temp, handle_yaw, handle_pitch,
+      handle_radius1, turnAngle,dt)    
+    if ret==1 then stage=stage+1;     
     end
   elseif stage==3 then
     ret = movearm.setArmToWheelPosition(
       handle_pos, handle_yaw, handle_pitch,
-      handle_radius0, turnAngle,dt,
-      lShoulderYaw, rShoulderYaw)
+      handle_radius1, turnAngle,dt)    
+    if ret==1 then stage=stage+1;     
+    end
+  elseif stage==4 then
+    ret = movearm.setArmToWheelPosition(
+      handle_pos, handle_yaw, handle_pitch,
+      handle_radius0, turnAngle,dt)
+--    ,      lShoulderYaw, rShoulderYaw)
     if ret==-1 then return'reset'
     elseif ret==1 then
       Body.set_lgrip_percent(1)

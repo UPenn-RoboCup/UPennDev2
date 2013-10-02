@@ -12,13 +12,12 @@ local unix = require'unix'
 local stty = require'stty'
 local using_status_return = true
 -- 75ms default timeout
-local READ_TIMEOUT = 0.075
+local READ_TIMEOUT = .0075
 
 -- TODO: Make this a parameter to set externally
 -- TODO: This should be tuned based on the byte size written?
-local WRITE_TIMEOUT = 1/240 -- 120Hz timeout
---local WRITE_TIMEOUT = 1/150 -- 120Hz timeout
---local WRITE_TIMEOUT = 1/120 -- 120Hz timeout
+--local WRITE_TIMEOUT = 1/250 -- 250Hz timeout
+local WRITE_TIMEOUT = 1/125 -- 120Hz timeout
 --local WRITE_TIMEOUT = 1/60 -- 60Hz timeout
 --local WRITE_TIMEOUT = 0 -- Instant timeout
 
@@ -333,6 +332,7 @@ for k,v in pairs( nx_registers ) do
     if single then
       instruction = nx_single_write[sz](motor_ids, addr, values)
     else
+--      print('sync writing')
       local msg = sync_write[sz](motor_ids, addr, values)
       instruction = DP2.sync_write(addr, sz, string.char(unpack(msg)))
     end
@@ -613,6 +613,7 @@ function libDynamixel.new_bus( ttyname, ttybaud )
   -- Read/write properties
   obj.t_read = 0
   obj.t_command = 0
+  obj.t_diff = 0
   obj.commands = {}
   obj.requests = {}
   obj.is_syncing = true
@@ -651,43 +652,54 @@ libDynamixel.service = function( dynamixels, main )
       -- Make a read all NX command
       local DP = DP2
       
+      local did_command = false
+      local did_request = false
       -- The coroutine should never end
       local fd = dynamixel.fd
       -- Update the time after every yield
       while true do -- read/write loop
+
+        -- See what we got
+        has_data, t = coroutine.yield()
 
         --------------------
         -- Sync write an command in the queue
         dynamixel.is_reading = false
         local n_cmd_bytes = 0
         local n_cmd_left = #dynamixel.commands
+        did_command = false
+
         while n_cmd_left>0 do
           -- Pop a command
           local command = table.remove(dynamixel.commands,1)
           n_cmd_left = n_cmd_left - 1
           -- flush out old things in the buffer
+          local tt0 = unix.time()
           local flush_ret = stty.flush(fd)
           -- write the new command
           local cmd_ret = unix.write( fd, command )
           -- possibly need a drain? Robotis does not
           local flush_ret = stty.drain(fd)
+          local tt1 = unix.time()
+          
           assert(#command==cmd_ret,
             string.format('BAD INST WRITE: %s',dynamixel.name))
           n_cmd_bytes = n_cmd_bytes+cmd_ret
           -- What if there was data on the bus... that is in the non-sync read
           -- It would be an error status
-        end -- If sent command
-        local did_command = false
-        if n_cmd_bytes>0 then
-          --print('wrote',n_cmd_bytes)
+          dynamixel.t_diff = t-dynamixel.t_command
+
+--          print(string.format('tts: %.2f t_diff: %.2f',(tt1-tt0)*1000, dynamixel.t_diff*1000))
           dynamixel.t_command = t
           did_command = true
-          has_data, t = coroutine.yield()
-        end
-
+          -- sleep a little
+          if n_cmd_left>0 then unix.usleep(1e3) end
+          --print('wrote',cmd_ret)
+        end -- If sent command
+        
         --------------------
         -- Request data from the chain
-        local did_request = false
+        did_request = false
         local n_req_left = #dynamixel.requests
         while n_req_left>0 do
           dynamixel.is_reading = true
@@ -707,7 +719,7 @@ libDynamixel.service = function( dynamixels, main )
           -- Set a timeout for this request
           dynamixel.timeout = t + READ_TIMEOUT
           -- Yield for others on their FDs
-          has_data, t = coroutine.yield()
+          
           -- Accrue values from the status packets
           local values = {}
           local pkts = {}
@@ -715,12 +727,17 @@ libDynamixel.service = function( dynamixels, main )
           local n_recv = 0
           --print('Expecting',nids)
           local register =request.reg
-          local status_str = ''
-          while t<dynamixel.timeout do
-            local new_status_str = unix.read( fd )
+          status_str = ''
+          repeat
+            did_request = true
+            local new_status_str, t = coroutine.yield()
             assert(new_status_str~=-1,string.format('BAD READ: %s',dynamixel.name))
             -- What is the meaning of a non-read here?
-            assert(status_str, string.format('NO READ: %s',dynamixel.name))
+            if not new_status_str then
+              --print('READ TIMEOUT',n_recv,nids,dynamixel.name)
+              break
+            end
+            --assert(new_status_str, string.format('NO READ: %s',dynamixel.name))
             -- Process the status string into a packet
             pkts, status_str = DP.input( status_str..new_status_str )
             n_recv = n_recv + #pkts
@@ -744,18 +761,13 @@ libDynamixel.service = function( dynamixels, main )
             -- Then, we write a command to the FD more quickly
             if n_recv==nids then break end
             -- Yield to the next process
-            has_data, t = coroutine.yield()
-          end
+          until false
         end -- if requested data
-
-        -- Nothing happened... why?
-        if not did_command and not did_request then
-          error("NO MAN'S LAND",dynamixel.name)
-          has_data, t = coroutine.yield()
-        end
+        dynamixel.is_reading = false
 
       end -- read/write loop
     end) -- coroutine function
+    coroutine.resume(dynamixel.thread,false,unix.time() )
   end
   
   -- While servicing the dynamixel fds
@@ -763,27 +775,41 @@ libDynamixel.service = function( dynamixels, main )
     --------------------
     -- Perform select on all dynamixels
     local status, ready = unix.select( dynamixel_fds, WRITE_TIMEOUT )
+    --unix.usleep(WRITE_TIMEOUT)
     local t = unix.time()
+
+    --util.ptable(ready)
+    --print(status)
     --------------------
     -- Loop through the dynamixel chains
     for i_fd,is_ready in pairs(ready) do
-      -- Grab the dynamixel chain
-      local who_to_service = fd_to_dynamixel[i_fd]
+    -- Grab the dynamixel chain
+    local who_to_service = fd_to_dynamixel[i_fd]
+    --for i_fd,who_to_service in pairs(fd_to_dynamixel) do
+      
+      -- Grab data
+      local str = unix.read(i_fd)
+
       --[[
-      if #who_to_service.commands>0 then
-        print('n_commands',#who_to_service.commands)
-      end
+      local flush_ret = stty.flush(i_fd)
+      -- write the new command
+      local cmd_ret = unix.write( i_fd, who_to_service.commands )
+      -- possibly need a drain? Robotis does not
+      local flush_ret = stty.drain(i_fd)
       --]]
       -- Check if the Dynamixel has information available
-      if not is_ready and who_to_service.is_reading and t<who_to_service.timeout then
+      if who_to_service.is_reading and (not str) and (t<who_to_service.timeout) then
+        --print('waiting...')
         -- do not resume, since we are waiting on the data
-      elseif is_ready and not who_to_service.is_reading then
+      elseif (not who_to_service.is_reading) and str then
         -- We also have nothing to send...
         -- Non-block saving a leftovers (if any)
         assert(unix.read(i_fd)~=-1,'Unplugged?')
-      elseif is_ready or #who_to_service.commands>0 or #who_to_service.requests>0 then
+      elseif (str or (#who_to_service.commands>0) or (#who_to_service.requests>0)) then
+--        print(status,'n_commands, n_requests',#who_to_service.commands,#who_to_service.requests,who_to_service.is_reading)
+        --if str then print('read',#str) end
         -- Resume the thread
-        local status_code = coroutine.resume(who_to_service.thread,is_ready,t)
+        local status_code, param = coroutine.resume(who_to_service.thread,str,t)
         if not status_code then
           print( 'Dead dynamixel coroutine!', who_to_service.name, param )
           who_to_service:close()
@@ -795,6 +821,7 @@ libDynamixel.service = function( dynamixels, main )
           table.remove(dynamixel_fds,i_to_remove)
         end
       end -- if resuming
+--]]
     end -- pairs(ready)
     
     --------------------

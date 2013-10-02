@@ -46,13 +46,13 @@ chains['Left Arm'] = {
   ttyname = '/dev/ttyUSB1',
   nx_ids  = {2,4,6,8,10,12,14, --[[head]] 29,30 },
   mx_ids  = { --[[32,34,36,]]   --[[lidar]] 37},
-  active = true
+  active = false
 }
 chains['Right Leg'] = {
   ttyname = '/dev/ttyUSB2',
   nx_ids  = {15,17,19,21,23,25, --[[waist pitch]]28},
   mx_ids  = {},
-  active = false
+  active = true
 }
 chains['Left Leg'] = {
   ttyname = '/dev/ttyUSB3',
@@ -153,12 +153,16 @@ local update_commands = function(t)
         write_ptr[idx]=0
         -- Add the write instruction to the chain
         local d = idx_to_dynamixel[idx]
-        if d and #d.commands==0 then
+        --if d and #d.commands==0 then
+        if d then
           table.insert( idx_to_ids[idx], joint_to_motor[idx] )
+          --print(register,idx,'setting',idx_to_vals[idx], val_ptr[idx])
           if register=='command_position' then
             -- Convert from radians to steps for set command_position
             table.insert( idx_to_vals[idx], Body.make_joint_step(idx,val_ptr[idx]) )
           else
+            if register=='command_velocity' then
+            end
             table.insert( idx_to_vals[idx], val_ptr[idx] )
           end
           -- Update the write time

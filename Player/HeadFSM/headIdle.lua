@@ -48,7 +48,7 @@ function state.exit()
   print(state._NAME..' Exit' )
 
   -- Torque on the motor
-  Body.set_head_torque_enable(1)
+  Body.set_head_torque_enable({0,1})
 end
 
 return state

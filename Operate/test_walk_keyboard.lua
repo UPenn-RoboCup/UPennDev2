@@ -14,7 +14,8 @@ local getch = require'getch'
 local mp    = require'msgpack'
 local util  = require'util'
 local vector  = require'vector'
-local Body  = require'Body'
+local Body  = require(Config.dev.body)
+--TODO: actually jues require 'Body'??
 -- Keypresses for walking
 local simple_ipc = require'simple_ipc'
 --local motion_events = simple_ipc.new_publisher('fsm_motion',true)
@@ -90,17 +91,17 @@ local function process_character(key_code,key_char,key_char_lower)
   if vel_adjustment then
     print( util.color('Inc vel by','yellow'), vel_adjustment )
     cmd = {}
-    cmd.shm = 'mcm' 
-    cmd.segment = 'walk'
-    cmd.key = 'vel'
+    cmd.shm = 'hcm' 
+    cmd.segment = 'motion'
+    cmd.key = 'velocity'
     cmd.delta = vel_adjustment
     return send_command(cmd)
   elseif key_char_lower=='k' then
     print( util.color('Zero Velocity','yellow'))
     cmd = {}
-    cmd.shm = 'mcm'
-    cmd.segment = 'walk'
-    cmd.key = 'vel'
+    cmd.shm = 'hcm'
+    cmd.segment = 'motion'
+    cmd.key = 'velocity'
     cmd.val = {0, 0, 0}
     return send_command(cmd)
   end

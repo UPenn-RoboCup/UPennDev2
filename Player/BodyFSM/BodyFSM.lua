@@ -28,6 +28,7 @@ sm:set_transition( bodyFollow, 'done',   bodyInit )
 --
 sm:set_transition( bodyInit,   'teleop', bodyTeleop )
 sm:set_transition( bodyTeleop, 'done',   bodyInit   )
+sm:set_transition( bodyTeleop, 'init',   bodyInit   )
 sm:set_transition( bodyTeleop, 'follow', bodyFollow )
 
 

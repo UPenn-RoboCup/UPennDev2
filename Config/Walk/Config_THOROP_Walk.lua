@@ -112,24 +112,21 @@ else
     walk.tStep = 12
   --]]
 
-end
-
 --Robotis default walk parameters
 
-walk.bodyHeight = 0.9285318
-walk.supportX = 0.0515184
-walk.footY = 0.1095
-walk.bodyTilt = 11*math.pi/180
+  walk.bodyHeight = 0.9285318
+  walk.supportX = 0.0515184
+  walk.footY = 0.1095
+  walk.bodyTilt = 11*math.pi/180
 
-gyroFactorX = 490.23/(251000/180)*0
-gyroFactorY = 490.23/(251000/180)*0
-walk.ankleImuParamX={1, 0.9*gyroFactorX,  0*math.pi/180, 5*math.pi/180}
-walk.kneeImuParamX= {1, 0.3*gyroFactorX,    0*math.pi/180, 5*math.pi/180}
-walk.ankleImuParamY={1, 1.0*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
-walk.hipImuParamY  ={1, 0.5*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
+  gyroFactorX = 490.23/(251000/180)*0
+  gyroFactorY = 490.23/(251000/180)*0
+  walk.ankleImuParamX={1, 0.9*gyroFactorX,  0*math.pi/180, 5*math.pi/180}
+  walk.kneeImuParamX= {1, 0.3*gyroFactorX,    0*math.pi/180, 5*math.pi/180}
+  walk.ankleImuParamY={1, 1.0*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
+  walk.hipImuParamY  ={1, 0.5*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
 
-
-------------------------------------
+ ------------------------------------
 
 --Robotis style walk
   walk.tStep = 0.45
@@ -137,10 +134,12 @@ walk.hipImuParamY  ={1, 0.5*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
   walk.phZmp = {0.15,0.85}
   walk.stepHeight = 0.04
 
-walk.supportX = 0.01
-walk.supportY = 0.03
+  walk.supportX = 0.01
+  walk.supportY = 0.03
+  walk.tZMP = 0.28
 
-walk.tZMP = 0.28
+end
+
 -----------------------------------------------------------
 -- Stance parameters
 -----------------------------------------------------------

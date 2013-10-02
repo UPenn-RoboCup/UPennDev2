@@ -248,8 +248,15 @@ static int inverse_r_wrist(lua_State *L) {
 	return 1;
 }
 
-
-
+static int inverse_arm_given_wrist(lua_State *L) {
+	std::vector<double> qArm;
+	std::vector<double> pArm = lua_checkvector(L, 1);
+	std::vector<double> qArmOrg = lua_checkvector(L, 2);
+	Transform trArm = transform6D(&pArm[0]);	
+	qArm = THOROP_kinematics_inverse_arm_given_wrist(trArm,&qArmOrg[0]);
+	lua_pushvector(L, qArm);
+	return 1;
+}
 
 static int inverse_l_leg(lua_State *L) {
 	std::vector<double> qLeg;
@@ -323,6 +330,9 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"r_wrist_torso", r_wrist_torso},
 	{"inverse_l_wrist", inverse_l_wrist},
 	{"inverse_r_wrist", inverse_r_wrist},
+
+	{"inverse_arm_given_wrist", inverse_arm_given_wrist},
+
 
 	{NULL, NULL}
 };

@@ -25,6 +25,20 @@ local move_stage=1
 qLOrg = Config.arm.qLArmInit[1]
 
 
+
+--IK based home position
+pLWristTarget = {-.0,.30,-.22,0,0,0}
+pRWristTarget = {-.0,-.30,-.22,0,0,0}
+lShoulderYawTarget = -5*Body.DEG_TO_RAD
+rShoulderYawTarget = 5*Body.DEG_TO_RAD
+
+pLWristTarget = {-.0,.30,-.24,0,0,0}
+pRWristTarget = {-.0,-.30,-.24,0,0,0}
+
+  
+
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -50,6 +64,8 @@ function state.entry()
     qR_desired = {Config.arm.qRArmInit[1]}    
   end
   move_stage = 1
+
+  stage = 1
 end
 
 function state.update()
@@ -59,6 +75,8 @@ function state.update()
   t_update = t
 --  print(state._NAME..' Update' )
   -- Get the time of update  
+
+ --[[ 
   if movearm.setArmJoints(qL_desired[move_stage],qR_desired[move_stage],
       dt, dqArmMax)==1 then
     move_stage = move_stage+1;  
@@ -66,6 +84,29 @@ function state.update()
   if move_stage>total_stage then
     return "done";  
   end
+--]]
+
+
+
+--Wrist IK based movement
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+  if stage==1 then   --Straighten wrist    
+    ret = movearm.setArmJoints(
+      {qLArm[1],qLArm[2],qLArm[3],qLArm[4],0,0,0},
+      {qRArm[1],qRArm[2],qRArm[3],qRArm[4],0,0,0},
+      dt)
+    if ret==1 then stage = stage + 1 end
+  elseif stage==2 then --Move arms to the sides            
+    ret = movearm.setWristPosition(
+      pLWristTarget, pRWristTarget,dt, lShoulderYawTarget,rShoulderYawTarget)
+    if ret==1 then return"done";
+    end
+  end
+--
+
+
+
 end
 
 function state.exit()

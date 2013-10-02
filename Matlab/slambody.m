@@ -134,7 +134,6 @@ function ret=slambody()
     cmap = udp_data(offset+1:end);
     if strncmp(char(data_unpacked.c),'jpeg',3)==1
         thor_omap = djpeg(cmap);
-        thor_omap = fliplr(thor_omap);
     else
         thor_omap = zlibUncompress(cmap);
         thor_omap = thor_omap';
@@ -178,7 +177,7 @@ function ret=slambody()
     SLAM.pose=pose;
     pixel_pos = transform_pixelpos([pose(1) pose(2)]);
     %rotate 90 degre to match the display orientation
-    pos_transformed = rotz(icon_s, pose(3)+pi/2) + repmat(pixel_pos,[3 1]);
+    pos_transformed = rotz(icon_s, -pose(3)+pi/2) + repmat(pixel_pos,[3 1]);
 	  set(SLAM.pose_triangle,...
 			'XData',pos_transformed(:,1),'YData',pos_transformed(:,2) );
     
@@ -186,12 +185,11 @@ function ret=slambody()
     slam_pose = double(slam_pose);
 
     % The y direction needs to be flipped
-    slam_pose(2) = -1*slam_pose(2);
     SLAM.slam_pose=slam_pose;
     
     pixel_pos2 = transform_pixelpos([slam_pose(1) slam_pose(2)]);
     %rotate 90 degre to match the display orientation
-    pos_transformed2 = rotz(icon_s, slam_pose(3)+pi/2) + repmat(pixel_pos2,[3 1]);
+    pos_transformed2 = rotz(icon_s, -slam_pose(3)+pi/2) + repmat(pixel_pos2,[3 1]);
 
 	  set(SLAM.pose_triangle_slam,...
 			'XData',pos_transformed2(:,1),'YData',pos_transformed2(:,2) );
@@ -199,7 +197,7 @@ function ret=slambody()
 
 
     bbox_pos_transformed=[];
-    icon_bbox_transformed = rotz(icon_bbox, -slam_pose(3)) + ...
+    icon_bbox_transformed = rotz(icon_bbox, slam_pose(3)) + ...
 				repmat(SLAM.slam_pose(1:2), [size(icon_bbox,1) 1]);
     for i=1:size(icon_bbox,1)
        bbox_pos_transformed = [bbox_pos_transformed;
@@ -257,7 +255,17 @@ function ret=slambody()
     set( SLAM.wayline, 'YData', [] );
   end
   function ret=get_waypoints()
-    ret=SLAM.waypoints_xy;
+    % Add 'dummy' target yaw
+    yaws = [];
+    if size(SLAM.waypoints_xy,1) > 1
+        dys = SLAM.waypoints_xy(2:end,2) - SLAM.waypoints_xy(1:end-1,2);
+        dxs = SLAM.waypoints_xy(2:end,1) - SLAM.waypoints_xy(1:end-1,1);
+        yaws = atan2(dys, dxs);
+    end
+    first_yaw = atan2(SLAM.waypoints_xy(1,2) - SLAM.slam_pose(2),...
+        SLAM.waypoints_xy(1,1) - SLAM.slam_pose(1));
+    yaws = [first_yaw ;yaws];
+    ret=[SLAM.waypoints_xy yaws];
   end
   function add_waypoint(h_omap, ~, flags)
 

@@ -35,20 +35,21 @@ local mesh_lookup = {}
 jpeg.set_quality( 95 )
 
 -- Setup metadata and tensors for a lidar mesh
-local function setup_mesh( name )
-  local tbl = {}
+local function setup_mesh( name, tbl )
+  tbl = tbl or {}
   -- Save the meta data for easy sending
   tbl.meta = {}
   -- Actuator endpoints
-  -- In radians, specifices the actuator scanline angle endpoints
+  -- In radians, specifies the actuator scanline angle endpoints
   -- The third number is the scanline density (scanlines/radian)
-  tbl.meta.scanlines = vcm['get_'..name..'_scanlines']()
+  local get_name = 'get_'..name
+  tbl.meta.scanlines = vcm[get_name..'_scanlines']()
   -- Field of view endpoints of the lidar ranges
   -- -135 to 135 degrees for Hokuyo
   -- This is in RADIANS, though
-  tbl.meta.fov = vcm['get_'..name..'_fov']()
+  tbl.meta.fov = vcm[get_name..'_fov']()
   -- Depths when compressing
-  tbl.meta.depths = vcm['get_'..name..'_depths']()
+  tbl.meta.depths = vcm[get_name..'_depths']()
   tbl.meta.name = name
   -- Type of compression
   tbl.meta.c = 'jpeg'
@@ -73,14 +74,10 @@ local function setup_mesh( name )
   tbl.mesh_adj  = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
   -- TODO: Save the exact actuator angles?
   tbl.scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
-  -- Subscribe to a lidar channel
-  tbl.lidar_ch  = simple_ipc.new_subscriber(name)
   -- Find the offset for copying lidar readings into the mesh
   -- if fov is from -135 to 135 degrees, then offset_idx is zero
   -- if fov is from 0 to 135 degrees, then offset_idx is 540
   tbl.offset_idx = math.floor((1081-fov_resolution)/2)
-  -- For streaming
-  tbl.needs_update = true
   return tbl
 end
 
@@ -189,7 +186,6 @@ local function chest_callback()
     -- Save the pan angle
     chest.scan_angles[scanline] = angle
     -- We've been updated
-    chest.needs_update = true
     chest.meta.t     = metadata.t
   end
 end
@@ -211,7 +207,6 @@ local function head_callback()
       head.offset_idx )
     -- Save the pan angle
     head.scan_angles[scanline] = angle
-    head.needs_update = true
     head.meta.t = metadata.t
   end
 end
@@ -224,11 +219,12 @@ local function reliable_callback()
     --util.ptable(request)
     local metapack, c_mesh = prepare_mesh(
       mesh_lookup[request.type],
-      request.near,request.far,
-      request.c)
+      request.near or 0,request.far or 5,
+      request.c or 2)
     -- NOTE: The zmq channel is REP/REQ
     -- Reply with the result of the request
     local ret = mesh_tcp_ch:send( {metapack, c_mesh} )
+    print('ret rel',ret)
   until not has_more
 end
 
@@ -242,19 +238,25 @@ local mesh = {}
 function mesh.entry()
   -- Setup the data structures for each mesh
   chest = setup_mesh'chest_lidar'
-  mesh_lookup['chest_lidar'] = chest
   head  = setup_mesh'head_lidar'
-  mesh_lookup['head_lidar'] = head
 
   -- Poll the lidar readings with zeromq
   local wait_channels = {}
-  if head.lidar_ch then
-    head.lidar_ch.callback = head_callback
-    table.insert( wait_channels, head.lidar_ch )
+  if head then
+    mesh_lookup['head_lidar'] = head
+    -- Subscribe to a lidar channel
+    local ch = simple_ipc.new_subscriber('head_lidar')
+    ch.callback = head_callback
+    table.insert( wait_channels, ch )
+    head.lidar_ch  = ch
   end
-  if chest.lidar_ch then
+  if chest then
+    mesh_lookup['chest_lidar'] = chest
+    -- Subscribe to a lidar channel
+    local ch = simple_ipc.new_subscriber('chest_lidar')
     chest.lidar_ch.callback = chest_callback
-    table.insert( wait_channels, chest.lidar_ch )
+    table.insert( wait_channels, ch )
+    chest.lidar_ch  = ch
   end
 
   -- Reliable request/reply
@@ -281,10 +283,20 @@ end
 
 function mesh.update()
   local npoll = channel_polls:poll(channel_timeout)
-  --print('here',npoll,head.needs_update,chest.needs_update)
   -- Stream the current mesh
   stream_mesh(head)
   stream_mesh(chest)
+  -- Check if we must update our torch data
+  if head.meta.scanlines ~= vcm.get_head_lidar_scanlines() or
+    head.meta.fov ~= vcm.get_head_lidar_fov()
+    then
+    setup_mesh('head_lidar',head)
+  end
+  if chest.meta.scanlines ~= vcm.get_chest_lidar_scanlines() or
+    chest.meta.fov ~= vcm.get_chest_lidar_fov()
+    then
+    setup_mesh('chest_lidar',chest)
+  end  
 end
 
 function mesh.exit()

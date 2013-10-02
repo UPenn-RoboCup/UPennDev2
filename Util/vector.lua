@@ -78,6 +78,13 @@ local function unm(v1)
   return mulnum(v1, -1)
 end
 
+local function eq(v1,v2)
+  for i,v in ipairs(v1) do
+    if v~=v2[i] then return false end
+  end
+  return true
+end
+
 local function div(v1, v2)
   if type(v2) == "number" then
     return divnum(v1, v2)
@@ -148,6 +155,7 @@ local function pose(t)
 end
 
 -- Regular vector
+mt.__eq  = eq
 mt.__add = add
 mt.__sub = sub
 mt.__mul = mul

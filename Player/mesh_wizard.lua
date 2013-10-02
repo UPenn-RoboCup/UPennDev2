@@ -77,7 +77,9 @@ local function setup_mesh( name, tbl )
   -- Find the offset for copying lidar readings into the mesh
   -- if fov is from -135 to 135 degrees, then offset_idx is zero
   -- if fov is from 0 to 135 degrees, then offset_idx is 540
-  tbl.offset_idx = math.floor((1081-fov_resolution)/2)
+  local fov_offset = 540+math.ceil( reading_per_radian*tbl.meta.fov[1] )
+  tbl.offset_idx   = math.floor(fov_offset)
+  --print('fov offset',name,fov_offset,tbl.offset_idx,fov_resolution)
   return tbl
 end
 
@@ -262,8 +264,7 @@ function mesh.entry()
   end
 
   -- Reliable request/reply
-  mesh_tcp_ch = simple_ipc.new_replier(
-    Config.net.reliable_mesh,'*')
+  --mesh_tcp_ch = simple_ipc.new_replier(Config.net.reliable_mesh,'*')
   if mesh_tcp_ch then
     mesh_tcp_ch.callback = reliable_callback
     table.insert( wait_channels, mesh_tcp_ch )

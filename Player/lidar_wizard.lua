@@ -92,7 +92,7 @@ local main = function()
       debug_str = util.color(debug_str,'yellow')
       for i,h in ipairs(hokuyos) do
         debug_str = debug_str..string.format(
-        '\n\t%s Hokuyo was seen %5.3f seconds ago',h.name,t_now - h.t_last)
+        '\n\t%s Hokuyo:\t%5.1fHz\t%4.1f ms ago',h.name, 1/h.t_diff, (t_now-h.t_last)*1000)
       end
       os.execute('clear')
       print(debug_str)

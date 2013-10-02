@@ -43,7 +43,7 @@ function state.update()
 end
 
 function state.exit()
-  print(_NAME..' Exit' ) 
+  print(state._NAME..' Exit' ) 
   mcm.set_walk_vel({0,0,0})
   -- Also reset the human input
   hcm.set_motion_velocity({0,0,0})

@@ -155,6 +155,7 @@ static int lua_stty_speed(lua_State *L) {
 	if (ret == 0) {
 		serinfo.flags &= ~ASYNC_SPD_MASK;
 		serinfo.flags |= ASYNC_SPD_CUST;
+		serinfo.flags |= ASYNC_LOW_LATENCY; // ftdi latency
 		serinfo.custom_divisor = serinfo.baud_base/((float)speed);
 		if (ioctl(fd, TIOCSSERIAL, &serinfo) < 0){
 			return luaL_error(L, "Could not set serial info.");

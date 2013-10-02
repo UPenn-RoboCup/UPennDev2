@@ -116,12 +116,17 @@ local function head_callback()
   -- TODO: May try to put into the lidar message itself
   -- which is useful for a separate computer to perform slam
   local ranges = Body.get_head_lidar()
-  print('lidar sizes',#ranges,lidar0.ranges:size(1))
+  --print('lidar sizes',#ranges,lidar0.ranges:size(1))
   -- Copy of ranges for use in libLaser
   ranges:tensor( lidar0.ranges )
   
   -- TODO: Add the yaw from the head
-  local head_roll, head_pitch, head_yaw = 0, angle, 0 
+  if IS_WEBOTS then
+  	head_roll = -math.pi
+  else
+  	head_roll = 0
+  end
+  local head_pitch, head_yaw = angle, 0 
   --print(string.format('\nHEAD PITCH:\t%.2f', head_pitch*180/math.pi))
   lidar0:transform( head_roll, head_pitch, head_yaw )
   ------------------
@@ -137,7 +142,7 @@ local function head_callback()
   --print( string.format('processL0 took: \t%.2f ms', (t1_processL0-t0_processL0)*1000) )
   ------------------
   
-  --wcm:set_pose_slam({libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom})
+  --wcm.set_slam_pose({libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom})
 
   ------------------
   --[[ For real robot
@@ -191,7 +196,7 @@ local function chest_callback()
   local angle = metadata.pangle  
   
 	local ranges = Body.get_chest_lidar()
-	print('Lidar1 range size:', lidar1.ranges:size(1))
+	--print('Lidar1 range size:', lidar1.ranges:size(1))
 	-- Copy of ranges for use in libLaser
 	ranges:tensor( 
 	lidar1.ranges,

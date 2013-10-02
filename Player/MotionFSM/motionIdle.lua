@@ -69,17 +69,6 @@ function state.exit()
   Body.set_lleg_torque_enable(1)
   Body.set_rleg_torque_enable(1)
 
-  -- Wait 10 milliseconds for motors to turn on
-  -- TODO: Should be in dcm
-  unix.usleep(1e4)
-
-  -- Set the commanded position
-  ----[[
-  Body.set_lleg_command_position(qLLeg)
-  Body.set_rleg_command_position(qRLeg)
-  Body.set_waist_command_position(qWaist)
-  --]]
-
 end
 
 return state

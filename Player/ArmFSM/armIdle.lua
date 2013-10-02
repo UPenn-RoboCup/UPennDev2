@@ -53,13 +53,6 @@ function state.exit()
   print(state._NAME..' Exit' )
   Body.set_larm_torque_enable(1)
   Body.set_rarm_torque_enable(1)
-  -- Wait 10 milliseconds for motors to turn on
-  -- TODO: Should be handled in the dcm
-  unix.usleep(1e4)
-  --Set the commanded position
-  Body.set_larm_command_position(qLArm)
-  Body.set_rarm_command_position(qRArm)
-
 end
 
 return state

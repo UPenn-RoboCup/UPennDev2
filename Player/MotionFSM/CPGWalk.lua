@@ -280,8 +280,14 @@ function walk.update()
     velCurrent = moveleg.update_velocity(velCurrent)     -- Update the velocity via a filter
   end
   
+  local gyro_rpy = Body.get_sensor_gyro()
 
-  delta_legs = vector.new({0,0,0,0,0,0,0,0,0,0,0,0})
+  delta_legs, ankleShift, kneeShift, hipShift = moveleg.get_leg_compensation(
+      3,0,
+      gyro_rpy, 
+      ankleShift, kneeShift, hipShift, 
+      0)
+  
   pLLeg, pRLeg = calculate_torso_movement(ph*tStep)
 
   local pTorso = {supportX_converted,0,bodyHeight_converted,   0,hip_pitch_offset,0}

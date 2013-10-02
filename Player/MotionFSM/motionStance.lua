@@ -91,6 +91,9 @@ function state.update()
   local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
   local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
     
+  Body.set_rleg_command_acceleration({200,200,200,200,200,200})
+  Body.set_lleg_command_acceleration({200,200,200,200,200,200})
+
   moveleg.set_leg_positions(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)  
   mcm.set_status_bodyHeight(bodyHeight)  
 end -- walk.update

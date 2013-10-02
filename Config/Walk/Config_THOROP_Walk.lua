@@ -120,6 +120,16 @@ walk.bodyHeight = 0.9285318
 walk.supportX = 0.0515184
 walk.footY = 0.1095
 walk.bodyTilt = 11*math.pi/180
+
+gyroFactorX = 490.23/(251000/180)*0
+gyroFactorY = 490.23/(251000/180)*0
+walk.ankleImuParamX={1, 0.9*gyroFactorX,  0*math.pi/180, 5*math.pi/180}
+walk.kneeImuParamX= {1, 0.3*gyroFactorX,    0*math.pi/180, 5*math.pi/180}
+walk.ankleImuParamY={1, 1.0*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
+walk.hipImuParamY  ={1, 0.5*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
+--]]
+
+
 ------------------------------------
 
 -----------------------------------------------------------

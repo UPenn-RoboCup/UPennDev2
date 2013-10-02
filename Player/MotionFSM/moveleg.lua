@@ -171,6 +171,7 @@ function moveleg.get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
   local gyro_roll  = gyro_roll0  * math.cos(body_yaw) - gyro_pitch0 * math.sin(body_yaw)
   local gyro_pitch = gyro_pitch0 * math.cos(body_yaw) - gyro_roll0  * math.sin(body_yaw)
 
+
   -- Give these parameters
   return {gyro_roll, gyro_pitch, gyro_yaw0}
 end
@@ -227,13 +228,15 @@ function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,
     delta_legs[12] = ankleShift[2]*phComp
     -- left toe tip swing
     delta_legs[5] = toeTipCompensation*phComp--Lifting toetip
-  else 
+  elseif supportLeg==2 then 
     -- Double support
     delta_legs[4] = kneeShift
     delta_legs[5] = ankleShift[1]
     
     delta_legs[10] = kneeShift
     delta_legs[11] = ankleShift[1]
+  else --Robotis style
+
   end
 
 --  print('Ankle shift',vector.new(ankleShift)*Body.RAD_TO_DEG )
@@ -245,6 +248,8 @@ function moveleg.set_leg_positions(pLLeg, pRLeg, pTorso, supportLeg, delta_legs)
   local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg)
   qLegs = qLegs + delta_legs
   Body.set_lleg_command_position(qLegs)
+
+  --[[
   if supportLeg==0 then
     Body.set_lleg_hardness(hardnessSupport)
     Body.set_rleg_hardness(hardnessSwing)
@@ -255,6 +260,7 @@ function moveleg.set_leg_positions(pLLeg, pRLeg, pTorso, supportLeg, delta_legs)
     Body.set_lleg_hardness(hardnessSupport)
     Body.set_rleg_hardness(hardnessSupport)
   end
+  --]]
 end
 
 function moveleg.get_foot(ph,start_phase,finish_phase)

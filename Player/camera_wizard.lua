@@ -24,7 +24,7 @@ if Config.camera.head then
     dev, width, height, 'yuyv', 1, fps)
   print('Opened',camera,Config.net.operator.wireless, Config.net.head_camera)
   local camera_udp_ch = udp.new_sender(
-    Config.net.operator.wireless, Config.net.head_camera);
+    Config.net.operator.wired, Config.net.head_camera);
   -- Create the callback functions
   local meta = {}
   meta.t = Body.get_time()

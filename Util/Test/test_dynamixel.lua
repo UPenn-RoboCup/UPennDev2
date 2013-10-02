@@ -101,6 +101,18 @@ for _,m in ipairs(found) do
     print(string.format('D: %d',value))
   end
 
+  local status = libDynamixel.get_nx_command_velocity(m,test_dynamixel)
+  if status then 
+    local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
+    print(string.format('Command Vel: %d',value))
+  end
+
+  local status = libDynamixel.get_nx_command_acceleration(m,test_dynamixel)
+  if status then 
+    local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
+    print(string.format('Command Acc: %d',value))
+  end
+
   local status = libDynamixel.get_nx_data(m,test_dynamixel)
   if status then
     local data = carray.short( string.char(unpack(status.parameter)) )

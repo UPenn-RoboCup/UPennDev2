@@ -276,7 +276,12 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
   	end
     Body[get_key] = get_func
     -- Do not set these as anthropomorphic
-    --if sensor:find'pressure' then return end
+    -- overwrite if foot
+    if sensor:find'foot' then
+      Body[get_key] = function()
+        return vector.new(pointer:table()), treq_ptr[1]<tread_ptr[1]
+      end
+    end
     --------------------------------
     -- Anthropomorphic access to jcm
     -- TODO: Do not use string concatenation to call the get/set methods of Body

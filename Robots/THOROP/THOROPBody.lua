@@ -1070,20 +1070,16 @@ if IS_WEBOTS then
     jcm.sensorPtr.gyro[2] = -(gyro[2]-512)/512*39.24
     jcm.sensorPtr.gyro[3] = (gyro[3]-512)/512*39.24
 
-
-    local fsr_l = {
-      webots.wb_touch_sensor_get_value(tags.l_ul_fsr),
-      webots.wb_touch_sensor_get_value(tags.l_ur_fsr),
-      webots.wb_touch_sensor_get_value(tags.l_ll_fsr),
-      webots.wb_touch_sensor_get_value(tags.l_lr_fsr)
-        }
-
-    local fsr_r = {
-      webots.wb_touch_sensor_get_value(tags.r_ul_fsr),
-      webots.wb_touch_sensor_get_value(tags.r_ur_fsr),
-      webots.wb_touch_sensor_get_value(tags.r_ll_fsr),
-      webots.wb_touch_sensor_get_value(tags.r_lr_fsr)
-        }
+    -- FSR forces
+    jcm.sensorPtr.lfoot[1] = webots.wb_touch_sensor_get_value(tags.l_ul_fsr)
+    jcm.sensorPtr.lfoot[2] = webots.wb_touch_sensor_get_value(tags.l_ur_fsr)
+    jcm.sensorPtr.lfoot[3] = webots.wb_touch_sensor_get_value(tags.l_ll_fsr)
+    jcm.sensorPtr.lfoot[4] = webots.wb_touch_sensor_get_value(tags.l_lr_fsr)
+    --
+    jcm.sensorPtr.rfoot[1] = webots.wb_touch_sensor_get_value(tags.r_ul_fsr)
+    jcm.sensorPtr.rfoot[2] = webots.wb_touch_sensor_get_value(tags.r_ur_fsr)
+    jcm.sensorPtr.rfoot[3] = webots.wb_touch_sensor_get_value(tags.r_ll_fsr)
+    jcm.sensorPtr.rfoot[4] = webots.wb_touch_sensor_get_value(tags.r_lr_fsr)
   
 --[[
     print("FSRL:",unpack(fsr_l))

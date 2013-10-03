@@ -20,7 +20,7 @@ shared_data.sensor.position = vector.zeros( nJoints )
 shared_data.sensor.velocity = vector.zeros( nJoints )
 -- Load of joints is measured in percentage
 shared_data.sensor.load     = vector.zeros( nJoints )
--- Foot sensors (pressure,force,torque)
+-- Foot sensors (force,torque,pressure)
 shared_data.sensor.lfoot = vector.zeros( 12 )
 shared_data.sensor.rfoot = vector.zeros( 12 )
 --[[

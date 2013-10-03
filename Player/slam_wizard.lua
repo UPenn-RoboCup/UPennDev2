@@ -6,18 +6,17 @@
 -- Set the path for the libraries
 dofile'../include.lua'
 local Config = require'Config'
--- TODO: make sure Body works with gazebo, too
 local Body = require'Body'
 require 'unix'
 
 -- Set the Debugging mode
 local debugging = true
 local Benchmark = false --true
-
 -- Set the real-robot mode
 local realFlag = 1
 local deg2rad = math.pi/180
-IS_WEBOTS = true
+-- Flag for webots
+local IS_WEBOTS = true
 
 ---------------------------------
 -- Libraries
@@ -47,6 +46,18 @@ local head_lidar_ch = simple_ipc.new_subscriber'head_lidar'
 require'wcm'
 ---------------------------------
 
+---------------------------------
+-- Logging set up
+-- Flag for logging
+local logfile = ''
+local is_logging = true
+--local is_logging = false
+if is_logging then
+  filetime = os.date('%m.%d.%Y.%H.%M')
+  logfile = io.open('SlamLogs/'..filetime..'.log','w')
+end
+local replay = true
+---------------------------------
 
 -- Output Channels
 local omap_udp_ch
@@ -91,6 +102,8 @@ local function head_callback()
   -- Grab the data  
   local meta, has_more = head_lidar_ch:receive()
   local metadata = mp.unpack(meta)
+  
+ 
   -- Grab the pitch angle (TODO if off center, then maybe just escape)
   local angle = metadata.hangle[2]
 
@@ -118,8 +131,20 @@ local function head_callback()
   local ranges = Body.get_head_lidar()
   --print('lidar sizes',#ranges,lidar0.ranges:size(1))
   -- Copy of ranges for use in libLaser
-  ranges:tensor( lidar0.ranges )
-  
+  if replay then
+  	torch = require'torch'
+    lidar0.ranges = torch.FloatTensor(metadata.ranges)
+  else
+    ranges:tensor( lidar0.ranges )
+  end
+
+  -- Take log if needed
+  if is_logging then
+  	-- carray cannot be logged
+  	metadata.ranges = lidar0.ranges
+  	logfile:write( mp.pack(metadata) )
+  end
+ 
   -- TODO: Add the yaw from the head
   if IS_WEBOTS then
   	head_roll = -math.pi
@@ -344,4 +369,5 @@ slam.entry()
 while true do slam.update() end
 slam.exit()
 
+logfile:close()
 return slam

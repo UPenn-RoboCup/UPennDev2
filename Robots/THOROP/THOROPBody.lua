@@ -460,26 +460,7 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
   --------------------------------
 end
 
--- TODO: should be in body or a Grip module?
--- Grip module may have more advanced techniques...
--- More gripper functions
--- TODO: Use body actuator access to JCM
-Body.set_lgrip_percent = function( percent )
-	percent = math.min(math.max(percent,0),1)
-	-- Convex combo
-	for idx=indexLGrip,indexLGrip+nJointLGrip-1 do
-		local radian = (1-percent)*servo.min_rad[idx] + percent*servo.max_rad[idx]
-		jcm.actuatorPtr.command_position[idx] = radian
-	end
-end
-Body.set_rgrip_percent = function( percent )
-	percent = math.min(math.max(percent,0),1)
-	-- Convex combo
-	for idx=indexRGrip,indexRGrip+nJointRGrip-1 do
-		local radian = (1-percent) * servo.min_rad[idx] + percent*servo.max_rad[idx]
-		jcm.actuatorPtr.command_position[idx] = radian
-	end
-end
+
 
 --------------------------------
 -- TODO: Hardness

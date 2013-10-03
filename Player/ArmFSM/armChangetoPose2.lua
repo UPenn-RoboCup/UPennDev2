@@ -16,6 +16,12 @@ local dqArmMax = Config.arm.slow_elbow_limit
 local total_stage,stage
 local pLWrist, pRWrist, pLWristTarget, pRWristTarget, lShoulderTarget, rShoulderTarget
 
+local pLWristTarget = {.05,.32,-.05,0,0,0}
+local pRWristTarget = {.05,-.32,-.05,0,0,0}
+local lShoulderYawTarget = -12*Body.DEG_TO_RAD
+local rShoulderYawTarget = 12*Body.DEG_TO_RAD
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -45,20 +51,6 @@ function state.entry()
 --NEW IK based control
   pLWrist = Body.get_forward_lwrist(qLArm)
   pRWrist = Body.get_forward_lwrist(qLArm)  
-
---------------------------------------------
-  pLWristTarget = {-.0,.35,-.05,0,0,0}
-  pRWristTarget = {-.0,-.35,-.05,0,0,0}
-  lShoulderYawTarget = -24*Body.DEG_TO_RAD
-  rShoulderYawTarget = 24*Body.DEG_TO_RAD
---------------------------------------------
-
---Take 2
-  pLWristTarget = {.05,.32,-.05,0,0,0}
-  pRWristTarget = {.05,-.32,-.05,0,0,0}
-  lShoulderYawTarget = -12*Body.DEG_TO_RAD
-  rShoulderYawTarget = 12*Body.DEG_TO_RAD
-
 end
 
 function state.update()

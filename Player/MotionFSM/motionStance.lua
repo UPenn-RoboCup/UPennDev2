@@ -21,29 +21,9 @@ local evts = simple_ipc.new_subscriber('Walk',true)
 -- Keep track of important times
 local t_entry, t_update, t_last_step
 
--- Stance parameters
-local bodyTilt = Config.walk.bodyTilt or 0
-local torsoX   = Config.walk.torsoX
-local footY    = Config.walk.footY
-
---Gait parameters
-local stepHeight  = Config.walk.stepHeight
-
-----------------------------------------------------------
--- Walk state variables
--- These are continuously updated on each update
-----------------------------------------------------------
--- Save the velocity between update cycles
-local velCurrent = vector.new{0, 0, 0}
-
 -- Save gyro stabilization variables between update cycles
 -- They are filtered.  TODO: Use dt in the filters
-local ankleShift = vector.new{0, 0}
-local kneeShift  = 0
-local hipShift   = vector.new{0, 0}
-
--- Still have an initial step for now
-local initial_step, iStep
+local angleShift = vector.new{0,0,0,0}
 
 ---------------------------
 -- State machine methods --
@@ -77,20 +57,7 @@ function state.update()
   
   local zLeft,zRight = 0,0
   supportLeg = 2; --Double support
-
-  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
-  -- Grab gyro feedback for these joint angles
-  local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
-  local delta_legs
-  delta_legs, ankleShift, kneeShift, hipShift = moveleg.get_leg_compensation(
-      supportLeg,0,gyro_rpy, ankleShift, kneeShift, hipShift, 0)
-
-  local pTorso = vector.new({
-        uTorsoActual[1], uTorsoActual[2], bodyHeight,
-        0,bodyTilt,uTorsoActual[3]})
-  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
-  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
-    
+  
   Body.set_rleg_command_acceleration({200,200,200,200,200,200})
   Body.set_lleg_command_acceleration({200,200,200,200,200,200})
 
@@ -101,7 +68,17 @@ function state.update()
   Body.request_lfoot()
   Body.request_rfoot()
 
-  moveleg.set_leg_positions(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)  
+
+-- Grab gyro feedback for these joint angles
+  local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
+  local delta_legs, angleShift = moveleg.get_leg_compensation(
+      supportLeg,0,gyro_rpy, angleShift, 0)
+
+  moveleg.set_leg_positions(uTorso,uLeft,uRight,
+    Config.walk.bodyHeight - bodyHeight,
+    Config.walk.bodyHeight - bodyHeight,    
+    supportLeg,delta_legs)
+  
   mcm.set_status_bodyHeight(bodyHeight)  
 end -- walk.update
 

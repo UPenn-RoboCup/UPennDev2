@@ -38,9 +38,7 @@ local velCurrent = vector.new{0, 0, 0}
 
 -- Save gyro stabilization variables between update cycles
 -- They are filtered.  TODO: Use dt in the filters
-local ankleShift = vector.new{0, 0}
-local kneeShift  = 0
-local hipShift   = vector.new{0, 0}
+local angleShift = vector.new{0,0,0,0}
 
 -- Still have an initial step for now
 local initial_step, iStep
@@ -278,16 +276,13 @@ function walk.update()
     ph = ph % 1
     if stoprequest>0 then return"done" end --Should we stop now?
     velCurrent = moveleg.update_velocity(velCurrent)     -- Update the velocity via a filter
+
+    print(velCurrent)
   end
   
   local gyro_rpy = Body.get_sensor_gyro()
-
-  delta_legs, ankleShift, kneeShift, hipShift = moveleg.get_leg_compensation(
-      3,0,
-      gyro_rpy, 
-      ankleShift, kneeShift, hipShift, 
-      0)
-  
+  delta_legs, angleShift = moveleg.get_leg_compensation(3,0,gyro_rpy, angleShift,0)
+   
   pLLeg, pRLeg = calculate_torso_movement(ph*tStep)
 
   local pTorso = {supportX_converted,0,bodyHeight_converted,   0,hip_pitch_offset,0}
@@ -295,58 +290,9 @@ function walk.update()
   pRLeg[3] = pRLeg[3] - footz0;
   supportLeg = 2
 
-  moveleg.set_leg_positions(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)  
+  moveleg.set_leg_transforms(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)  
 
 
---[[
-  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
-  --------------------------------------------------------------------
-  phFootSingle1 = 0.3
-  phFootSingle2 = 0.7
-  local xFoot, zFoot, phSingle = moveleg.get_foot_square(
-      ph,phFootSingle1,phFootSingle2)  
-  --Don't lift foot at initial step
-  if initial_step>0 then zFoot = 0  end
-
-  -- Begin to solve for our leg positions  
-  local uLeft, uRight, zLeft, zRight
-  if supportLeg == 0 then
-    -- Left support
-    uLeft = uLeft_now 
-    uRight = util.se2_interpolate(xFoot, uRight_now, uRight_next)
-    zLeft = 0
-    zRight =  stepHeight*zFoot
-  else
-    -- Right support
-    uRight = uRight_now 
-    uLeft = util.se2_interpolate(xFoot, uLeft_now, uLeft_next)
-    zLeft =  stepHeight*zFoot    
-    zRight = 0
-  end
-
-  -- Grab gyro feedback for these joint angles
-  local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
-  local delta_legs
-  delta_legs, ankleShift, kneeShift, hipShift = moveleg.get_leg_compensation(
-      supportLeg,phSingle,gyro_rpy, ankleShift, kneeShift, hipShift, initial_step)
-
-  local pTorso = vector.new({
-        uTorsoActual[1], uTorsoActual[2], Config.walk.bodyHeight,
-        0,bodyTilt,uTorsoActual[3]})
-  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
-  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
-    
-  moveleg.set_leg_positions(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)  
-  
-  ------------------------------------------
-  -- Update the status in shared memory
-  local uFoot = util.se2_interpolate(.5, uLeft, uRight)
-  mcm.set_status_odometry( uFoot )
-  --util.pose_relative(uFoot, u0) for relative odometry to point u0
-  local bodyOffset = util.pose_relative(uTorso, uFoot)
-  mcm.set_status_bodyOffset( bodyOffset )
-  ------------------------------------------
-  --]]
 end -- walk.update
 
 function walk.exit()

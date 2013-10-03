@@ -276,7 +276,12 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
   	end
     Body[get_key] = get_func
     -- Do not set these as anthropomorphic
-    --if sensor:find'pressure' then return end
+    -- overwrite if foot
+    if sensor:find'foot' then
+      Body[get_key] = function()
+        return vector.new(pointer:table()), treq_ptr[1]<tread_ptr[1]
+      end
+    end
     --------------------------------
     -- Anthropomorphic access to jcm
     -- TODO: Do not use string concatenation to call the get/set methods of Body
@@ -331,17 +336,27 @@ for sensor, pointer in pairs(jcm.readPtr) do
     return
 	end
   Body[req_key] = req_func
+  -- overwrite if foot
+  if sensor:find'foot' then
+    Body[req_key] = function()
+      pointer[1] = 1
+      treq_ptr[1] = get_time()
+    end
+  end
   ---------------------
-  -- Anthropomorphic --
-  for part,jlist in pairs( parts ) do
-  	local a = jlist[1]
-  	local b = jlist[#jlist]
-    local read_key = 'read_'..sensor
-  	Body['request_'..part:lower()..'_'..sensor] = function(idx)
-  		if idx then return req_func(jlist[idx]) end
-  		return req_func(jlist)
-  	end -- Set
-  end -- anthropomorphic
+  if not sensor:find'foot' then
+    -- Anthropomorphic --
+    for part,jlist in pairs( parts ) do
+    	local a = jlist[1]
+    	local b = jlist[#jlist]
+      local read_key = 'read_'..sensor
+    	Body['request_'..part:lower()..'_'..sensor] = function(idx)
+    		if idx then return req_func(jlist[idx]) end
+    		return req_func(jlist)
+    	end -- Set
+    end -- anthropomorphic
+  ----------------------
+  end
   ----------------------
 end
 

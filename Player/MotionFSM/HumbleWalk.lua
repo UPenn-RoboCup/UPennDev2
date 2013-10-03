@@ -15,6 +15,9 @@ local libZMP = require'libZMP'
 local zmp_solver
 require'mcm'
 
+-- logging
+local LOG_F_SENSOR
+
 -- Simple IPC for remote state triggers
 local simple_ipc = require'simple_ipc'
 local evts = simple_ipc.new_subscriber('Walk',true)
@@ -90,6 +93,11 @@ function walk.entry()
 
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
+
+  -- log file
+  LOG_F_SENSOR = io.open('feet.log','w')
+  local log_entry = string.format('t ph supportLeg values\n')
+  LOG_F_SENSOR:write(log_entry)
 end
 
 function walk.update()
@@ -209,6 +217,16 @@ function walk.update()
   mcm.set_status_bodyOffset( bodyOffset )
   ------------------------------------------
 
+  -- Grab the sensor values
+  local lfoot = Body.get_sensor_lfoot()
+  local rfoot = Body.get_sensor_rfoot()
+  -- ask for the foot sensor values
+  Body.request_lfoot()
+  Body.request_rfoot()
+  -- write the log
+  local log_entry = string.format('%f %f %d %s\n',t,ph,supportLeg,table.concat(lfoot,' '))
+  LOG_F_SENSOR:write(log_entry)
+
 end -- walk.update
 
 function walk.exit()
@@ -217,6 +235,8 @@ function walk.exit()
   mcm.set_status_uTorso(uTorso_next)
   print(walk._NAME..' Exit')
   -- TODO: Store things in shared memory?
+  -- stop logging
+  LOG_F_SENSOR:close()
 end
 
 return walk

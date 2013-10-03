@@ -97,6 +97,10 @@ function state.update()
   Body.set_rleg_position_p({64,64,64,64,64,64})
   Body.set_lleg_position_p({64,64,64,64,64,64})
 
+  -- ask for the foot sensor values
+  Body.request_lfoot()
+  Body.request_rfoot()
+
   moveleg.set_leg_positions(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)  
   mcm.set_status_bodyHeight(bodyHeight)  
 end -- walk.update

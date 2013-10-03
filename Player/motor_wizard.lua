@@ -92,9 +92,11 @@ local update_read = function(self,data,register)
     
     -- Specific handling of register types
     if register=='position' then
-      ptr[idx] = Body.make_joint_radian( idx, v )
-      -- Update the timestamp
-      tptr[idx] = self.t_read
+      if type(v)==number then
+        ptr[idx] = Body.make_joint_radian( idx, v )
+        -- Update the timestamp
+        tptr[idx] = self.t_read
+      end
     elseif register=='load' then
       if v>=1024 then v = v - 1024 end
       local load_ratio = v/10.24
@@ -104,22 +106,24 @@ local update_read = function(self,data,register)
     elseif register=='rfoot' then
       local offset = (k-23)*2
       local data = carray.short( string.char(unpack(v)) )
-      ptr[offset+1] = 3.3*data[1]/4096 -- volts
-      ptr[offset+2] = 3.3*data[2]/4096 -- volts
-      ptr[offset+3] = 3.3*data[3]/4096 -- volts
-      ptr[offset+4] = 3.3*data[4]/4096 -- volts
-      print(util.color('R External Data:','yellow'),data[1],data[2],data[3],data[4])
-      -- Update the timestamp
-      tptr[1] = self.t_read
+      if #data==4 and offset>=0 and offset<=4 then
+        ptr[offset+1] = 3.3*data[1]/4096 -- volts
+        ptr[offset+2] = 3.3*data[2]/4096 -- volts
+        ptr[offset+3] = 3.3*data[3]/4096 -- volts
+        ptr[offset+4] = 3.3*data[4]/4096 -- volts
+        -- Update the timestamp
+        tptr[1] = self.t_read
+      end
     elseif register=='lfoot' then
       local offset = (k-24)*2
       local data = carray.short( string.char(unpack(v)) )
-      ptr[offset+1] = 3.3*data[1]/4096 -- volts
-      ptr[offset+2] = 3.3*data[2]/4096 -- volts
-      ptr[offset+3] = 3.3*data[3]/4096 -- volts
-      ptr[offset+4] = 3.3*data[4]/4096 -- volts
-      print(util.color('L External Data:','yellow'),data[1],data[2],data[3],data[4])
-      tptr[1] = self.t_read
+      if #data==4 and offset>=0 and offset<=4 then
+        ptr[offset+1] = 3.3*data[1]/4096 -- volts
+        ptr[offset+2] = 3.3*data[2]/4096 -- volts
+        ptr[offset+3] = 3.3*data[3]/4096 -- volts
+        ptr[offset+4] = 3.3*data[4]/4096 -- volts
+        tptr[1] = self.t_read
+      end
     else
       ptr[idx] = v
       -- Update the timestamp
@@ -138,7 +142,7 @@ function shutdown()
   for d_id,d in ipairs(dynamixels) do
     -- Torque off motors
     libDynamixel.set_mx_torque_enable( d.mx_on_bus, 0, d )
-    --libDynamixel.set_nx_torque_enable( d.nx_on_bus, 0, d )
+    libDynamixel.set_nx_torque_enable( d.nx_on_bus, 0, d )
 
     -- TODO: Save the torque enable states to SHM
     -- Close the fd

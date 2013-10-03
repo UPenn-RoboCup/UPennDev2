@@ -132,10 +132,13 @@ if IS_WEBOTS then
   walk.velLimitX = {-.20,.20}
   walk.velLimitY = {-.15,.15}
 
-
-
-
-
+ --[[
+ walk.phZmp = {0.10,0.90}
+ walk.phSingle = {0.15,0.85}
+ walk.tStep = 30
+ walk.hipRollCompensation = 10*math.pi/180
+ --]]
+ 
 
 else
 

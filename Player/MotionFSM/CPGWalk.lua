@@ -2,21 +2,14 @@
 -- Central pattern generator walk based on robotis walk code
 --------------------------------------------------------
 
-
 local walk = {}
 walk._NAME = ...
 
 local Body   = require'Body'
-local K      = Body.Kinematics
 local vector = require'vector'
-local unix   = require'unix'
 local util   = require'util'
 local moveleg = require'moveleg'
 require'mcm'
-
--- Simple IPC for remote state triggers
-local simple_ipc = require'simple_ipc'
-local evts = simple_ipc.new_subscriber('Walk',true)
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
@@ -276,14 +269,14 @@ function walk.update()
     ph = ph % 1
     if stoprequest>0 then return"done" end --Should we stop now?
     velCurrent = moveleg.update_velocity(velCurrent)     -- Update the velocity via a filter
-
     print(velCurrent)
   end
-  
-  local gyro_rpy = Body.get_sensor_gyro()
-  delta_legs, angleShift = moveleg.get_leg_compensation(3,0,gyro_rpy, angleShift,0)
-   
+
   pLLeg, pRLeg = calculate_torso_movement(ph*tStep)
+  
+
+  local gyro_rpy = Body.get_sensor_gyro()
+  delta_legs, angleShift = moveleg.get_leg_compensation(3,0,gyro_rpy, angleShift)
 
   local pTorso = {supportX_converted,0,bodyHeight_converted,   0,hip_pitch_offset,0}
   pLLeg[3] = pLLeg[3] - footz0;
@@ -291,8 +284,6 @@ function walk.update()
   supportLeg = 2
 
   moveleg.set_leg_transforms(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)  
-
-
 end -- walk.update
 
 function walk.exit()

@@ -8,7 +8,7 @@ local vector = require'vector'
 local unix   = require'unix'
 local util   = require'util'
 local vector = require'vector'
-local libZMP = require'libZMP'
+local libZMP = require'libReactiveZMP'
 local zmp_solver
 require'mcm'
 -- Simple IPC for remote state triggers

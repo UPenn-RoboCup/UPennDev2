@@ -2,7 +2,7 @@ local state = {}
 state._NAME = ...
 
 local Body = require'Body'
-local libZMP = require'libZMP'
+local libZMP = require'libPreviewZMP'
 local t_entry, t_update, t_finish
 local timeout = 10.0
 

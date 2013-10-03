@@ -747,12 +747,17 @@ libDynamixel.service = function( dynamixels, main )
               local status = DP.parse_status_packet( pkt )
               local read_parser = byte_to_number[ #status.parameter ]
               -- Check if there is a parser
+              --[[
               assert(read_parser, 
               string.format('Status error for %s from %d: %d (%d)',
               register,status.id,status.error,#status.parameter) )
-              -- Convert the value into a number from bytes
-              local value = read_parser( unpack(status.parameter) )
-              values[status.id] = value
+              --]]
+              -- Convert the value into a number from bytes if a parser exists!
+              if read_parser then
+                values[status.id] = read_parser( unpack(status.parameter) )
+              else
+                values[status.id] = status.parameter
+              end
             end
             -- Remember the read time
             dynamixel.t_read = t

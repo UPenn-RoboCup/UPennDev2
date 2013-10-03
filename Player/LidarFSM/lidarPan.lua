@@ -69,6 +69,8 @@ function lidarPan.update()
   ph = math.max( math.min(ph, 1), 0 )
   -- Set the desired angle of the lidar tilt
   local rad = min_pan + ph*mag_pan
+  -- Request the position of the motor
+  Body.request_lidar_position()
   Body.set_lidar_command_position( {rad} )
 end
 

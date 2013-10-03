@@ -466,9 +466,6 @@ Body.set_rgrip_percent = function( percent )
 	end
 end
 
-
-
-
 --------------------------------
 -- TODO: Hardness
 Body['set_actuator_hardness'] = function(val,idx)

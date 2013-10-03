@@ -35,6 +35,7 @@ if head_hokuyo then
     local meta = {}
     meta.count  = head_hokuyo.count
     meta.hangle = Body.get_head_command_position()
+    --meta.hangle = Body.get_head_position()
     meta.rpy  = {0,0,0}
     meta.gyro = {0,0,0}
     meta.t = Body.get_time()
@@ -54,7 +55,8 @@ if chest_hokuyo then
 
     local meta = {}
     meta.count  = chest_hokuyo.count
-    meta.pangle = Body.get_lidar_command_position(1)
+    --meta.pangle = Body.get_lidar_command_position(1)
+    meta.pangle = Body.get_lidar_position(1)
     meta.rpy = {0,0,0}
     meta.t = Body.get_time()
     meta.gyro = {0,0,0}
@@ -92,7 +94,7 @@ local main = function()
       debug_str = util.color(debug_str,'yellow')
       for i,h in ipairs(hokuyos) do
         debug_str = debug_str..string.format(
-        '\n\t%s Hokuyo was seen %5.3f seconds ago',h.name,t_now - h.t_last)
+        '\n\t%s Hokuyo:\t%5.1fHz\t%4.1f ms ago',h.name, 1/h.t_diff, (t_now-h.t_last)*1000)
       end
       os.execute('clear')
       print(debug_str)

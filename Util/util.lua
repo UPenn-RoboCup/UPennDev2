@@ -120,6 +120,37 @@ end
 
 
 
+-- Tolerance approach to a vector
+-- Kinda like a gradient descent
+
+--SJ: This approaches to the DIRECTION of the target position
+
+function util.approachTolTransform( values, targets, linearvellimit, dt, tolerance )
+  tolerance = tolerance or 1e-6
+  -- Tolerance check (Asumme within tolerance)
+  local within_tolerance = true
+  -- Iterate through the limits of movements to approach
+  
+  local cur_pos = vector.slice(values,1,3)  
+  local target_pos = vector.slice(targets,1,3)  
+  local delta = target_pos - cur_pos
+  local mag_delta = math.sqrt(delta[1]*delta[1] + delta[2]*delta[2] + delta[3]*delta[3])
+  
+  if math.abs(mag_delta)>tolerance then
+    movement = math.min(mag_delta, linearvellimit*dt)
+    values[1] = values[1] + delta[1]/mag_delta * movement 
+    values[2] = values[2] + delta[2]/mag_delta * movement 
+    values[3] = values[3] + delta[3]/mag_delta * movement 
+    within_tolerance = false
+  end
+  
+  --TODO: angle approach too?
+  
+  -- Return the next values to take and if we are within tolerance
+  return values, within_tolerance
+end
+
+
 
 
 -- Tolerance approach to a radian value (to correct direction)

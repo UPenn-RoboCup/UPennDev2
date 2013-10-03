@@ -276,7 +276,12 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
   	end
     Body[get_key] = get_func
     -- Do not set these as anthropomorphic
-    --if sensor:find'pressure' then return end
+    -- overwrite if foot
+    if sensor:find'foot' then
+      Body[get_key] = function()
+        return vector.new(pointer:table()), treq_ptr[1]<tread_ptr[1]
+      end
+    end
     --------------------------------
     -- Anthropomorphic access to jcm
     -- TODO: Do not use string concatenation to call the get/set methods of Body
@@ -331,17 +336,27 @@ for sensor, pointer in pairs(jcm.readPtr) do
     return
 	end
   Body[req_key] = req_func
+  -- overwrite if foot
+  if sensor:find'foot' then
+    Body[req_key] = function()
+      pointer[1] = 1
+      treq_ptr[1] = get_time()
+    end
+  end
   ---------------------
-  -- Anthropomorphic --
-  for part,jlist in pairs( parts ) do
-  	local a = jlist[1]
-  	local b = jlist[#jlist]
-    local read_key = 'read_'..sensor
-  	Body['request_'..part:lower()..'_'..sensor] = function(idx)
-  		if idx then return req_func(jlist[idx]) end
-  		return req_func(jlist)
-  	end -- Set
-  end -- anthropomorphic
+  if not sensor:find'foot' then
+    -- Anthropomorphic --
+    for part,jlist in pairs( parts ) do
+    	local a = jlist[1]
+    	local b = jlist[#jlist]
+      local read_key = 'read_'..sensor
+    	Body['request_'..part:lower()..'_'..sensor] = function(idx)
+    		if idx then return req_func(jlist[idx]) end
+    		return req_func(jlist)
+    	end -- Set
+    end -- anthropomorphic
+  ----------------------
+  end
   ----------------------
 end
 
@@ -579,10 +594,7 @@ end
 -- Can we go from angle q to position p?
 Body.get_inverse_larm = function( qL, trL, lShoulderYaw, pos_tol, ang_tol )
 --7DOF IK
-
-  if not lShoulderYaw then 
-    lShoulderYaw = 45*DEG_TO_RAD    
-  end
+  if not lShoulderYaw then lShoulderYaw = qL[3]  end
   local qL_target = Kinematics.inverse_l_arm_7(trL,qL,lShoulderYaw)
   local trL_check = Kinematics.l_arm_torso_7(qL_target)
 --Check range
@@ -602,10 +614,8 @@ Body.get_inverse_larm = function( qL, trL, lShoulderYaw, pos_tol, ang_tol )
   return qL_target
 end
 
-Body.get_inverse_rarm = function( qR, trR, rShoulderYaw , pos_tol, ang_tol )
-  if not rShoulderYaw then 
-    rShoulderYaw = -45*DEG_TO_RAD    
-  end
+Body.get_inverse_rarm = function( qR, trR, rShoulderYaw , pos_tol, ang_tol )  
+  if not rShoulderYaw then rShoulderYaw = qR[3] end
   local qR_target = Kinematics.inverse_r_arm_7(trR, qR,rShoulderYaw)
   local trR_check = Kinematics.r_arm_torso_7(qR_target)
   --Check range
@@ -965,6 +975,28 @@ if IS_WEBOTS then
       head_camera_wbt.height = webots.wb_camera_get_height(tags.head_camera)
     end
 
+    --FSR sensors
+    tags.l_ul_fsr = webots.wb_robot_get_device("L_UL_FSR")
+    tags.l_ur_fsr = webots.wb_robot_get_device("L_UR_FSR")
+    tags.l_ll_fsr = webots.wb_robot_get_device("L_LL_FSR")    
+    tags.l_lr_fsr = webots.wb_robot_get_device("L_LR_FSR")    
+
+    webots.wb_touch_sensor_enable(tags.l_ul_fsr, timeStep)
+    webots.wb_touch_sensor_enable(tags.l_ur_fsr, timeStep)
+    webots.wb_touch_sensor_enable(tags.l_ll_fsr, timeStep)
+    webots.wb_touch_sensor_enable(tags.l_lr_fsr, timeStep)
+
+    tags.r_ul_fsr = webots.wb_robot_get_device("R_UL_FSR")
+    tags.r_ur_fsr = webots.wb_robot_get_device("R_UR_FSR")
+    tags.r_ll_fsr = webots.wb_robot_get_device("R_LL_FSR")    
+    tags.r_lr_fsr = webots.wb_robot_get_device("R_LR_FSR")    
+
+    webots.wb_touch_sensor_enable(tags.r_ul_fsr, timeStep)
+    webots.wb_touch_sensor_enable(tags.r_ur_fsr, timeStep)
+    webots.wb_touch_sensor_enable(tags.r_ll_fsr, timeStep)
+    webots.wb_touch_sensor_enable(tags.r_lr_fsr, timeStep)
+
+
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
 		Body.timeStep = timeStep
@@ -1047,6 +1079,22 @@ if IS_WEBOTS then
     jcm.sensorPtr.gyro[1] = -(gyro[1]-512)/512*39.24
     jcm.sensorPtr.gyro[2] = -(gyro[2]-512)/512*39.24
     jcm.sensorPtr.gyro[3] = (gyro[3]-512)/512*39.24
+
+    -- FSR forces
+    jcm.sensorPtr.lfoot[1] = webots.wb_touch_sensor_get_value(tags.l_ul_fsr)
+    jcm.sensorPtr.lfoot[2] = webots.wb_touch_sensor_get_value(tags.l_ur_fsr)
+    jcm.sensorPtr.lfoot[3] = webots.wb_touch_sensor_get_value(tags.l_ll_fsr)
+    jcm.sensorPtr.lfoot[4] = webots.wb_touch_sensor_get_value(tags.l_lr_fsr)
+    --
+    jcm.sensorPtr.rfoot[1] = webots.wb_touch_sensor_get_value(tags.r_ul_fsr)
+    jcm.sensorPtr.rfoot[2] = webots.wb_touch_sensor_get_value(tags.r_ur_fsr)
+    jcm.sensorPtr.rfoot[3] = webots.wb_touch_sensor_get_value(tags.r_ll_fsr)
+    jcm.sensorPtr.rfoot[4] = webots.wb_touch_sensor_get_value(tags.r_lr_fsr)
+  
+--[[
+    print("FSRL:",unpack(fsr_l))
+    print("FSRR:",unpack(fsr_r))
+ --]]
 
 
     -- Debugging:

@@ -32,16 +32,66 @@ function movearm.setArmJoints(
   local qL = Body.set_larm_command_position( qL_approach )
   local qR = Body.set_rarm_command_position( qR_approach )
 
-  -- What if out of bounds for the joint angles?
-  -- Then, return a filtered target position (qL[i]~=qL_approach)
-  -- yields the index of the joint that is out-of-bounds
-  -- We should reset this particular joint in hcm, so the user cannot
-  -- move the joint into no man's land
-
-  -- When done, return true
   if doneL2 and doneR2 then return 1 end
 end
 
+function movearm.setWristPosition(
+  trLWristTarget,
+  trRWristTarget,
+  dt,
+  lShoulderYaw,
+  rShoulderYaw 
+  )
+  
+  --Interpolate in 6D space 
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+  if not lShoulderYaw then
+    lShoulderYaw = qLArm[3]
+    rShoulderYaw = qRArm[3]    
+  end
+
+  qShoulderYawMax = 5.0*math.pi/180
+  velWristMax = Config.arm.linear_wrist_limit
+  lShoulderYaw = util.approachTol(qLArm[3],lShoulderYaw,qShoulderYawMax,dt)
+  rShoulderYaw = util.approachTol(qRArm[3],rShoulderYaw,qShoulderYawMax,dt)
+
+  local trLWrist = Body.get_forward_lwrist(qLArm);
+  local trRWrist = Body.get_forward_rwrist(qRArm);
+  
+  local trLWristApproach, doneL = util.approachTol(trLWrist, trLWristTarget, dpArmMax, dt )
+  local trRWristApproach, doneR = util.approachTol(trRWrist, trRWristTarget, dpArmMax, dt )
+
+--[[
+  local trLWristApproach, doneL = util.approachTolTransform(
+        trLWrist, trLWristTarget, velWristMax, dt )
+  local trRWristApproach, doneR = util.approachTolTransform(
+        trRWrist, trRWristTarget, velWristMax, dt )
+--]]
+
+
+  -- Get desired angles from current angles and target transform
+  local qL_desired = Body.get_inverse_lwrist(qLArm,trLWristApproach, lShoulderYaw)
+  local qR_desired = Body.get_inverse_rwrist(qRArm,trRWristApproach, rShoulderYaw)  
+  
+  if qL_desired and qR_desired then
+    local qL_approach, doneL
+    qL_approach, doneL = util.approachTolRad( qLArm, qL_desired, dqArmMax, dt )
+    Body.set_larm_command_position( qL_approach )
+  
+    local qR_approach, doneR
+    qR_approach, doneR = util.approachTolRad( qRArm, qR_desired, dqArmMax, dt )
+    Body.set_rarm_command_position( qR_approach )
+    if doneL and doneR then
+      return 1;
+    else      
+      return 0;
+    end
+  else    
+    print("ERROR WITH WRIST IK")
+    return -1;
+  end  
+end
 
 --Manual set of shoulder yaw angle
 function movearm.setArmToPosition(
@@ -59,9 +109,11 @@ function movearm.setArmToPosition(
   local yawDoneR = true;
 
   if not lShoulderYaw then
+    --Adaptive movement
     lShoulderYaw = qLArm[3]
     rShoulderYaw = qRArm[3]    
   else
+    --Manual yaw movement
     --Change arm yaw to target agle 
     qShoulderYawMax = 5.0*math.pi/180
     lShoulderYaw0 = qLArm[3]
@@ -108,66 +160,28 @@ function movearm.setArmToPosition(
 end
 
 
-function movearm.setWristPosition(
-  trLWristTarget,
-  trRWristTarget,
-  dt,
-  lShoulderYaw,
-  rShoulderYaw 
-  )
-  
-  --Interpolate in 6D space 
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-  if not lShoulderYaw then
-    lShoulderYaw = qLArm[3]
-    rShoulderYaw = qRArm[3]    
+function movearm.get_jointangle_margin(
+  arm, qArm)
+  local jointangle_margin
+  if not qArm then --Joint angle out of bounds
+    return -math.huge 
+  elseif arm==1 then --Left arm
+    jointangle_margin = math.min(
+      math.abs(qArm[6]-math.pi/2),
+      math.abs(qArm[6]+math.pi/2),
+      math.abs(qArm[2]-math.pi/2),
+      math.abs(qArm[2])
+      )
+  else --Right arm
+    jointangle_margin = math.min(
+      math.abs(qArm[6]-math.pi/2),
+      math.abs(qArm[6]+math.pi/2),
+      math.abs(qArm[2]+math.pi/2),
+      math.abs(qArm[2]) 
+      )
   end
-
-  qShoulderYawMax = 5.0*math.pi/180
-  lShoulderYaw = util.approachTol(qLArm[3],lShoulderYaw,qShoulderYawMax,dt)
-  rShoulderYaw = util.approachTol(qRArm[3],rShoulderYaw,qShoulderYawMax,dt)
-
-  local trLWrist = Body.get_forward_lwrist(qLArm);
-  local trRWrist = Body.get_forward_rwrist(qRArm);
-  
-  local trLWristApproach, doneL = util.approachTol(trLWrist, trLWristTarget, dpArmMax, dt )
-  local trRWristApproach, doneR = util.approachTol(trRWrist, trRWristTarget, dpArmMax, dt )
-
-  -- Get desired angles from current angles and target transform
-  local qL_desired = Body.get_inverse_lwrist(qLArm,trLWristApproach, lShoulderYaw)
-  local qR_desired = Body.get_inverse_rwrist(qRArm,trRWristApproach, rShoulderYaw)  
-  
-  if qL_desired and qR_desired then
-    local qL_approach, doneL
-    qL_approach, doneL = util.approachTolRad( qLArm, qL_desired, dqArmMax, dt )
-    Body.set_larm_command_position( qL_approach )
-  
-    local qR_approach, doneR
-    qR_approach, doneR = util.approachTolRad( qRArm, qR_desired, dqArmMax, dt )
-    Body.set_rarm_command_position( qR_approach )
-    if doneL and doneR then
-      return 1;
-    else      
-      return 0;
-    end
-  else    
-    print("ERROR WITH WRIST IK")
-    return -1;
-  end  
+  return jointangle_margin
 end
-
-
-
-
-
-
-
-
-
-
-
-
 
 function movearm.setArmToPositionAdapt(
   trLArmTarget,
@@ -182,9 +196,6 @@ function movearm.setArmToPositionAdapt(
   lShoulderYaw = qLArm[3]
   rShoulderYaw = qRArm[3]
 
---  lShoulderYaw = hcm.get_joints_qlshoulderyaw()
---  rShoulderYaw = hcm.get_joints_qrshoulderyaw()
-
   local trLArm = Body.get_forward_larm(qLArm);
   local trRArm = Body.get_forward_rarm(qRArm);
 
@@ -194,7 +205,6 @@ function movearm.setArmToPositionAdapt(
   -- Get desired angles from current angles and target transform
   local qL_desired = Body.get_inverse_larm(qLArm,trLArmApproach, lShoulderYaw)
   local qR_desired = Body.get_inverse_rarm(qRArm,trRArmApproach, rShoulderYaw)
-  
 
   qShoulderYawMax = 5.0*math.pi/180
   --Adaptive shoulder yaw angle
@@ -237,101 +247,60 @@ function movearm.setArmToPositionAdapt(
   if qL_desired and qR_desired then
     local shoulderYawChanged = false;
     --Check left wrist margin status
-    if qL_desired1 then
-      local wristRollMargin=math.min(
-        math.abs(qL_desired[6]-math.pi/2),
-        math.abs(qL_desired[6]+math.pi/2),
-        math.abs(qL_desired[2]-math.pi/2),
-        math.abs(qL_desired[2])
-        )
-      local wristRollMargin1=math.min(
-        math.abs(qL_desired1[6]-math.pi/2),
-        math.abs(qL_desired1[6]+math.pi/2),
-        math.abs(qL_desired1[2]-math.pi/2),
-        math.abs(qL_desired1[2])
-        )
-      local wristRollMargin2=-math.huge
-      if qL_desired2 then 
-        wristRollMargin2=math.min(
-        math.abs(qL_desired2[6]-math.pi/2),
-        math.abs(qL_desired2[6]+math.pi/2),
-        math.abs(qL_desired2[2]-math.pi/2),
-        math.abs(qL_desired2[2])
-        )
+    local wristRollMargin = movearm.get_jointangle_margin(1, qL_desired)
+    local wristRollMargin1 = movearm.get_jointangle_margin(1, qL_desired1)
+    local wristRollMargin2 = movearm.get_jointangle_margin(1, qL_desired2)            
+
+    if wristRollMargin<min_wrist_margin then
+      if wristRollMargin2>wristRollMargin and wristRollMargin2>wristRollMargin1 then
+        qL_desired = qL_desired2
+        lShoulderYaw = lShoulderYaw2
+        shoulderYawChanged = true;
+      elseif wristRollMargin1>wristRollMargin and wristRollMargin1>wristRollMargin2 then       
+        qL_desired = qL_desired1;
+        lShoulderYaw = lShoulderYaw1          
+        shoulderYawChanged = true;
       end
-      if wristRollMargin<min_wrist_margin then
-        if wristRollMargin2>wristRollMargin and wristRollMargin2>wristRollMargin1 then
-          qL_desired = qL_desired2
-          lShoulderYaw = lShoulderYaw2
-          shoulderYawChanged = true;
-        elseif wristRollMargin1>wristRollMargin and wristRollMargin1>wristRollMargin2 then       
-          qL_desired = qL_desired1;
-          lShoulderYaw = lShoulderYaw1          
-          shoulderYawChanged = true;
-        end
-      elseif wristRollMargin>min_wrist_margin1 then
-        if math.abs(lShoulderYawOrg-lShoulderYaw1)<math.abs(lShoulderYawOrg-lShoulderYaw2) and
-           math.abs(lShoulderYawOrg-lShoulderYaw1)<math.abs(lShoulderYawOrg-lShoulderYaw) then
-          qL_desired = qL_desired1;
-          lShoulderYaw = lShoulderYaw1          
-          shoulderYawChanged = true;
-        elseif math.abs(lShoulderYawOrg-lShoulderYaw2)<math.abs(lShoulderYawOrg-lShoulderYaw1) and
-           math.abs(lShoulderYawOrg-lShoulderYaw2)<math.abs(lShoulderYawOrg-lShoulderYaw) then
-          qL_desired = qL_desired2;
-          lShoulderYaw = lShoulderYaw2          
-          shoulderYawChanged = true;
-        end
+    elseif wristRollMargin>min_wrist_margin1 then
+      if math.abs(lShoulderYawOrg-lShoulderYaw1)<math.abs(lShoulderYawOrg-lShoulderYaw2) and
+         math.abs(lShoulderYawOrg-lShoulderYaw1)<math.abs(lShoulderYawOrg-lShoulderYaw) then
+        qL_desired = qL_desired1;
+        lShoulderYaw = lShoulderYaw1          
+        shoulderYawChanged = true;
+      elseif math.abs(lShoulderYawOrg-lShoulderYaw2)<math.abs(lShoulderYawOrg-lShoulderYaw1) and
+         math.abs(lShoulderYawOrg-lShoulderYaw2)<math.abs(lShoulderYawOrg-lShoulderYaw) then
+        qL_desired = qL_desired2;
+        lShoulderYaw = lShoulderYaw2          
+        shoulderYawChanged = true;
       end
     end
 
     --Check right wrist margin status
-    if qR_desired1 then
-      local wristRollMargin=math.min(
-        math.abs(qR_desired[6]-math.pi/2),
-        math.abs(qR_desired[6]+math.pi/2),
-        math.abs(qR_desired[2]+math.pi/2),
-        math.abs(qR_desired[2])
-        )
-      local wristRollMargin1=math.min(
-        math.abs(qR_desired1[6]-math.pi/2),
-        math.abs(qR_desired1[6]+math.pi/2),
-        math.abs(qR_desired1[2]+math.pi/2),
-        math.abs(qR_desired1[2])
-        )
-      local wristRollMargin2=-math.huge
-      if qR_desired2 then 
-        wristRollMargin2=math.min(
-        math.abs(qR_desired2[6]-math.pi/2),
-        math.abs(qR_desired2[6]+math.pi/2),
-        math.abs(qR_desired2[2]+math.pi/2),
-        math.abs(qR_desired2[2])
-        )
+    local wristRollMargin = movearm.get_jointangle_margin(0, qR_desired)
+    local wristRollMargin1 = movearm.get_jointangle_margin(0, qR_desired1)
+    local wristRollMargin2 = movearm.get_jointangle_margin(0, qR_desired2)            
+
+    if wristRollMargin<min_wrist_margin then
+      if wristRollMargin2>wristRollMargin and wristRollMargin2>wristRollMargin1 then
+        qR_desired = qR_desired2;
+        shoulderYawChanged = true;
+      elseif wristRollMargin1>wristRollMargin and wristRollMargin1>wristRollMargin2 then       
+        qR_desired = qR_desired1;
+        shoulderYawChanged = true;
       end
-      if wristRollMargin<min_wrist_margin then
-        if wristRollMargin2>wristRollMargin and wristRollMargin2>wristRollMargin1 then
-          qR_desired = qR_desired2;
-          hcm.set_joints_qrshoulderyaw(rShoulderYaw2)
-          shoulderYawChanged = true;
-        elseif wristRollMargin1>wristRollMargin and wristRollMargin1>wristRollMargin2 then       
-          qR_desired = qR_desired1;
-          hcm.set_joints_qrshoulderyaw(rShoulderYaw1)
-          shoulderYawChanged = true;
-        end
-      elseif wristRollMargin>min_wrist_margin1 then
-        if math.abs(rShoulderYawOrg-rShoulderYaw1)<math.abs(rShoulderYawOrg-rShoulderYaw2) and
-           math.abs(rShoulderYawOrg-rShoulderYaw1)<math.abs(rShoulderYawOrg-rShoulderYaw) then
-          qR_desired = qR_desired1;
-          rShoulderYaw = rShoulderYaw1          
-          shoulderYawChanged = true;
-        elseif math.abs(rShoulderYawOrg-rShoulderYaw2)<math.abs(rShoulderYawOrg-rShoulderYaw1) and
-           math.abs(rShoulderYawOrg-rShoulderYaw2)<math.abs(rShoulderYawOrg-rShoulderYaw) then
-          qR_desired = qR_desired2;
-          rShoulderYaw = rShoulderYaw2          
-          shoulderYawChanged = true;
-        end
+    elseif wristRollMargin>min_wrist_margin1 then
+      if math.abs(rShoulderYawOrg-rShoulderYaw1)<math.abs(rShoulderYawOrg-rShoulderYaw2) and
+         math.abs(rShoulderYawOrg-rShoulderYaw1)<math.abs(rShoulderYawOrg-rShoulderYaw) then
+        qR_desired = qR_desired1;
+        rShoulderYaw = rShoulderYaw1          
+        shoulderYawChanged = true;
+      elseif math.abs(rShoulderYawOrg-rShoulderYaw2)<math.abs(rShoulderYawOrg-rShoulderYaw1) and
+         math.abs(rShoulderYawOrg-rShoulderYaw2)<math.abs(rShoulderYawOrg-rShoulderYaw) then
+        qR_desired = qR_desired2;
+        rShoulderYaw = rShoulderYaw2          
+        shoulderYawChanged = true;
       end
     end
-
     if shoulderYawChanged then
 --      print("ShoulderYaw:",lShoulderYaw*180/math.pi,rShoulderYaw*180/math.pi)          
     end
@@ -364,12 +333,10 @@ function movearm.setArmToPositionAdapt(
     return 0;
   end
 
-  
-
   hcm.set_joints_qlshoulderyaw(lShoulderYaw)
   hcm.set_joints_qrshoulderyaw(rShoulderYaw)
-
 end
+
 
 
 
@@ -384,9 +351,37 @@ function movearm.setArmToWheelPosition(
   dt,
   lShoulderYaw,
   rShoulderYaw)
- 
 
-  --Calculate the hand transforms
+  local trLArmTarget, trRArmTarget = movearm.getArmWheelPosition(
+    handle_pos,
+    handle_yaw,
+    handle_pitch,
+    handle_radius,
+    turn_angle
+    )
+
+  if lShoulderYaw then
+    return movearm.setArmToPosition(
+      trLArmTarget,
+      trRArmTarget,
+      dt,
+      lShoulderYaw,
+      rShoulderYaw)
+  else
+    return movearm.setArmToPositionAdapt(
+      trLArmTarget,
+      trRArmTarget,
+      dt)
+  end
+end
+
+
+
+
+function movearm.getArmWheelPosition(handle_pos, 
+     handle_yaw,  handle_pitch,  handle_radius,  turn_angle  )
+
+--Calculate the hand transforms
   local trHandle = T.eye()
        * T.trans(handle_pos[1],handle_pos[2],handle_pos[3])
        * T.rotZ(handle_yaw)
@@ -405,23 +400,11 @@ function movearm.setArmToWheelPosition(
        * T.trans(body_pos[1],body_pos[2],body_pos[3])
        * T.rotZ(body_rpy[3])
        * T.rotY(body_rpy[2])
-       
+
   local trLArmTarget = T.position6D(T.inv(trBody)*trGripL)
   local trRArmTarget = T.position6D(T.inv(trBody)*trGripR)
 
-  if lShoulderYaw then
-    return movearm.setArmToPosition(
-      trLArmTarget,
-      trRArmTarget,
-      dt,
-      lShoulderYaw,
-      rShoulderYaw)
-  else
-    return movearm.setArmToPositionAdapt(
-      trLArmTarget,
-      trRArmTarget,
-      dt)
-  end
+  return trLArmTarget, trRArmTarget
 end
 
 function movearm.getDoorHandlePosition(

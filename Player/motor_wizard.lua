@@ -79,9 +79,11 @@ local update_read = function(self,data,register)
   for k,v in pairs(data) do
     -- k is the motor id
     -- v is the register value
+    local ptr = jcm.sensorPtr[register]
+    assert(ptr,'Register is not in jcm!'..tostring(register))
     -- Find the humanoid joint
     local idx = motor_to_joint[k]
-
+    local tptr = jcm.treadPtr[register]
     -- Debug
     --[[
     print(string.format('%s: %s %s is %g',
@@ -90,30 +92,42 @@ local update_read = function(self,data,register)
     
     -- Specific handling of register types
     if register=='position' then
-      jcm.sensorPtr.position[idx] = Body.make_joint_radian( idx, v )
-      -- Update the timestamp
-      jcm.treadPtr.position[idx] = self.t_read
+      if type(v)==number then
+        ptr[idx] = Body.make_joint_radian( idx, v )
+        -- Update the timestamp
+        tptr[idx] = self.t_read
+      end
     elseif register=='load' then
       if v>=1024 then v = v - 1024 end
       local load_ratio = v/10.24
-      jcm.sensorPtr.load[idx] = load_ratio
+      ptr[idx] = load_ratio
       -- Update the timestamp
-      jcm.treadPtr.load[idx] = self.t_read
-    elseif register=='battery' then
-      -- Somehow make an estimate
-    elseif register:find'foot' then
+      tptr[idx] = self.t_read
+    elseif register=='rfoot' then
+      local offset = (k-23)*2
       local data = carray.short( string.char(unpack(v)) )
-      print(util.color('External Data:','yellow'),data[1],data[2],data[3],data[4])
-    else
-      -- Update the read timestamps in shared memory
-      local ptr = jcm.sensorPtr[register]
-      if not ptr then
-        print('Register is not in jcm',register)
-        return
+      if #data==4 and offset>=0 and offset<=4 then
+        ptr[offset+1] = 3.3*data[1]/4096 -- volts
+        ptr[offset+2] = 3.3*data[2]/4096 -- volts
+        ptr[offset+3] = 3.3*data[3]/4096 -- volts
+        ptr[offset+4] = 3.3*data[4]/4096 -- volts
+        -- Update the timestamp
+        tptr[1] = self.t_read
       end
+    elseif register=='lfoot' then
+      local offset = (k-24)*2
+      local data = carray.short( string.char(unpack(v)) )
+      if #data==4 and offset>=0 and offset<=4 then
+        ptr[offset+1] = 3.3*data[1]/4096 -- volts
+        ptr[offset+2] = 3.3*data[2]/4096 -- volts
+        ptr[offset+3] = 3.3*data[3]/4096 -- volts
+        ptr[offset+4] = 3.3*data[4]/4096 -- volts
+        tptr[1] = self.t_read
+      end
+    else
       ptr[idx] = v
       -- Update the timestamp
-      jcm.treadPtr[register][idx] = self.t_read
+      tptr[idx] = self.t_read
     end
 
   end -- loop through data
@@ -128,7 +142,7 @@ function shutdown()
   for d_id,d in ipairs(dynamixels) do
     -- Torque off motors
     libDynamixel.set_mx_torque_enable( d.mx_on_bus, 0, d )
-    --libDynamixel.set_nx_torque_enable( d.nx_on_bus, 0, d )
+    libDynamixel.set_nx_torque_enable( d.nx_on_bus, 0, d )
 
     -- TODO: Save the torque enable states to SHM
     -- Close the fd
@@ -255,7 +269,7 @@ local ext_read = {
     table.insert( motor_to_dynamixel[24].requests, {
       nids = 3,
       reg  = 'lfoot',
-      inst = libDynamixel.get_nx_data({22,24,26})
+      inst = libDynamixel.get_nx_data({24,26})
     })
   end,
   rfoot = function()
@@ -263,7 +277,7 @@ local ext_read = {
     table.insert( motor_to_dynamixel[23].requests, {
       nids = 3,
       reg  = 'rfoot',
-      inst = libDynamixel.get_nx_data({21,23,25})
+      inst = libDynamixel.get_nx_data({23,25})
     })
   end
 }

@@ -42,7 +42,7 @@ function state.entry()
 
 -- Inner and outer radius
   handle_radius0 = handle_radius 
-  handle_radius1 = handle_radius + 0.04
+  handle_radius1 = handle_radius + 0.08
 
   stage = 1;
 end
@@ -64,20 +64,31 @@ function state.update()
       handle_radius, turnAngle,dt)
     if ret==1 and doneA then stage=stage+1; 
     end
-  elseif stage==2 then --Now spread arms apart           
-    --return to target shoulder yaw angle
+  elseif stage==2 then --Now spread arms apart               
     ret = movearm.setArmToWheelPosition(
       handle_pos, handle_yaw, handle_pitch,
-      handle_radius1, turnAngle,dt,
-      qLArmTarget[3], qRArmTarget[3])
-    if ret==1 then stage=stage+1; end
-  else --Now lower the arm to position #2 using IK
-    ret = movearm.setArmToPosition(
-      trLArmTarget,
-      trRArmTarget,
-      dt,
-      qLArmTarget[3], qRArmTarget[3] --Move shoulder yaw to initial position
+      handle_radius1, turnAngle,dt
       )
+
+    if ret==1 then stage=stage+1; end
+  elseif stage==3 then
+    
+    handle_pos_temp={handle_pos[1],handle_pos[2],-0.10}
+    ret = movearm.setArmToWheelPosition(
+      handle_pos_temp, handle_yaw, handle_pitch,
+      handle_radius1, turnAngle,dt
+      )
+    if ret==1 then stage=stage+1; end
+  else
+    --Straighten wrist
+    local qLArm = Body.get_larm_command_position()
+    local qRArm = Body.get_rarm_command_position()
+    dqWristMax=vector.new({0,0,0,0,
+       10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD})
+    ret = movearm.setArmJoints(
+      {qLArm[1],qLArm[2],qLArm[3],qLArm[4],0,0,0},
+      {qRArm[1],qRArm[2],qRArm[3],qRArm[4],0,0,0},
+      dt,dqWristMax)
     if ret==1 then return'done'
     end  
   end

@@ -60,7 +60,8 @@ shared_data.motion.bodyHeightTarget = vector.ones(1)
 shared_data.wheel = {}
 -- This has all values: the right way, since one rpc call
 -- {handlepos(3) handleyaw handlepitch handleradius}
-shared_data.wheel.model = vector.zeros(6)
+shared_data.wheel.model = vector.new({0.41,0,-0.04,
+										0,0,0.14})
 shared_data.wheel.turnangle = vector.zeros(1)
 
 -- Door Opening

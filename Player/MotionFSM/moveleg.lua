@@ -32,6 +32,7 @@ local stanceLimitY2 = 2* Config.walk.footY-stanceLimitMarginY
 local footY    = Config.walk.footY
 local supportX = Config.walk.supportX
 local supportY = Config.walk.supportY
+local torsoX    = Config.walk.torsoX
 
 -- Gyro stabilization parameters
 local ankleImuParamX = Config.walk.ankleImuParamX
@@ -49,7 +50,9 @@ local hardnessSwing   = Config.walk.hardnessSwing or 0.5
 
 function moveleg.update_velocity(velCurrent)
   -- Grab from the shared memory the desired walking speed
-  local vx,vy,va = unpack(mcm.get_walk_vel())
+--  local vx,vy,va = unpack(mcm.get_walk_vel())
+  local vx,vy,va = unpack(hcm.get_motion_velocity())
+
   --Filter the commanded speed
   vx = math.min(math.max(vx,velLimitX[1]),velLimitX[2])
   vy = math.min(math.max(vy,velLimitY[1]),velLimitY[2])
@@ -69,8 +72,41 @@ function moveleg.update_velocity(velCurrent)
   velDiff[1] = util.procFunc(velDiff[1],0,velDelta[1])
   velDiff[2] = util.procFunc(velDiff[2],0,velDelta[2])
   velDiff[3] = util.procFunc(velDiff[3],0,velDelta[3])
+
   -- Update the current velocity command
   return velCurrent + velDiff
+end
+
+function moveleg.advance_step(uLeft, uRight,uTorso,iStep,velCurrent,enable_initial_step)
+  
+
+  supportLeg = iStep % 2 -- supportLeg: 0 for left support, 1 for right support
+  --Zero velocity at the initial steps
+  -- iStep:2 for 1st step, 3 for 2st step
+
+  if not enable_initial_step then iStep = 5 end --don't do initial step thing
+  if iStep<=3 then velCurrent = vector.new{0,0,0} end
+  local uLeft_now, uRight_now, uTorso_now = uLeft, uRight, uTorso
+  local uSupport, uLeft_next, uRight_next = 
+    moveleg.calculate_next_step( uLeft, uRight, supportLeg, velCurrent )
+  if iStep<=3  then uLeft_next = uLeft_now;uRight_next = uRight_now;end
+
+  -- This is the next desired torso position    
+  uTorso_next = moveleg.calculate_next_torso( uLeft_next, uRight_next, supportLeg, 0.5 )
+  if enable_intial_step and iStep<=3 then
+    --support should be closer to center for initial step
+    uSupport = util.se2_interpolate(0.3,uSupport,uTorso_next)      
+  end  
+  -- Save some step-by-step data to shared memory
+  mcm.set_status_velocity(velCurrent)
+  mcm.set_support_uLeft_now(  uLeft_now )
+  mcm.set_support_uRight_now( uRight_now )
+  mcm.set_support_uTorso_now( uTorso_now )
+  mcm.set_support_uLeft_next(  uLeft_next )
+  mcm.set_support_uRight_next( uRight_next )
+  mcm.set_support_uTorso_next( uTorso_next )
+
+  return uLeft_now,uRight_now,uTorso_now, uLeft_next,uRight_next,uTorso_next, uSupport
 end
 
 
@@ -179,7 +215,7 @@ end
 
 
 function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,
-    ankleShift, kneeShift, hipShift, initial_step)
+    angleShift, initial_step)
   local gyro_pitch = gyro_rpy[2]
   local gyro_roll = gyro_rpy[1]
 
@@ -188,16 +224,16 @@ function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,
   local ankleShiftY = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])
 
   -- Ankle shift is filtered... thus a global
-  ankleShift[1] = ankleShift[1] + ankleImuParamX[1]*(ankleShiftX-ankleShift[1])
-  ankleShift[2] = ankleShift[2] + ankleImuParamY[1]*(ankleShiftY-ankleShift[2])
+  angleShift[1] = angleShift[1] + ankleImuParamX[1]*(ankleShiftX-angleShift[1])
+  angleShift[2] = angleShift[2] + ankleImuParamY[1]*(ankleShiftY-angleShift[2])
 
   -- Knee feedback
   local kneeShiftX = util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4])
-  kneeShift = kneeShift + kneeImuParamX[1]*(kneeShiftX-kneeShift)
+  angleShift[3] = angleShift[3] + kneeImuParamX[1]*(kneeShiftX-angleShift[3])
   
   -- Hip feedback
   local hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
-  hipShift[2] = hipShift[2]+hipImuParamY[1]*(hipShiftY-hipShift[2])
+  angleShift[4] = angleShift[4]+hipImuParamY[1]*(hipShiftY-angleShift[4])
 
   --TODO: Toe/heel lifting
   local toeTipCompensation = 0
@@ -214,54 +250,64 @@ function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,
 
   if supportLeg == 0 then
     -- Left support
-    delta_legs[2] = hipShift[2] + hipRollCompensation*phComp
-    delta_legs[4] = kneeShift
-    delta_legs[5] = ankleShift[1]
-    delta_legs[6] = ankleShift[2]*phComp
+    delta_legs[2] = angleShift[4] + hipRollCompensation*phComp
+    delta_legs[4] = angleShift[3]
+    delta_legs[5] = angleShift[1]
+    delta_legs[6] = angleShift[2]*phComp
     -- right toe tip swing
     delta_legs[11] = toeTipCompensation*phComp--Lifting toetip
   elseif supportLeg==1 then    
     -- Right support
-    delta_legs[8]  = hipShift[2] - hipRollCompensation*phComp
-    delta_legs[10] = kneeShift
-    delta_legs[11] = ankleShift[1]
-    delta_legs[12] = ankleShift[2]*phComp
+    delta_legs[8]  = angleShift[4] - hipRollCompensation*phComp
+    delta_legs[10] = angleShift[3]
+    delta_legs[11] = angleShift[1]
+    delta_legs[12] = angleShift[2]*phComp
     -- left toe tip swing
     delta_legs[5] = toeTipCompensation*phComp--Lifting toetip
   elseif supportLeg==2 then 
     -- Double support
-    delta_legs[4] = kneeShift
-    delta_legs[5] = ankleShift[1]
+    delta_legs[4] = angleShift[3]
+    delta_legs[5] = angleShift[1]
     
-    delta_legs[10] = kneeShift
-    delta_legs[11] = ankleShift[1]
+    delta_legs[10] = angleShift[3]
+    delta_legs[11] = angleShift[1]
   else --Robotis style
 
   end
 
 --  print('Ankle shift',vector.new(ankleShift)*Body.RAD_TO_DEG )
 
-  return delta_legs, ankleShift, kneeShift, hipShift
+  return delta_legs, angleShift
 end
 
-function moveleg.set_leg_positions(pLLeg, pRLeg, pTorso, supportLeg, delta_legs)
+function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,supportLeg,delta_legs)
+  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
+  local pTorso = vector.new({
+        uTorsoActual[1], uTorsoActual[2], Config.walk.bodyHeight,
+        0,Config.walk.bodyTilt,uTorsoActual[3]})
+  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
+  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
   local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg)
   qLegs = qLegs + delta_legs
   Body.set_lleg_command_position(qLegs)
 
-  --[[
-  if supportLeg==0 then
-    Body.set_lleg_hardness(hardnessSupport)
-    Body.set_rleg_hardness(hardnessSwing)
-  elseif supportLeg==1 then
-    Body.set_lleg_hardness(hardnessSwing)
-    Body.set_rleg_hardness(hardnessSupport)
-  elseif supportLeg==2 then --Double-support phase (for standing still)
-    Body.set_lleg_hardness(hardnessSupport)
-    Body.set_rleg_hardness(hardnessSupport)
-  end
-  --]]
+  ------------------------------------------
+  -- Update the status in shared memory
+  local uFoot = util.se2_interpolate(.5, uLeft, uRight)
+  mcm.set_status_odometry( uFoot )
+  --util.pose_relative(uFoot, u0) for relative odometry to point u0
+  local bodyOffset = util.pose_relative(uTorso, uFoot)
+  mcm.set_status_bodyOffset( bodyOffset )
+  ------------------------------------------
 end
+
+function moveleg.set_leg_transforms(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)
+  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg)
+  qLegs = qLegs + delta_legs
+  Body.set_lleg_command_position(qLegs)
+end  
+
+
 
 function moveleg.get_foot(ph,start_phase,finish_phase)
   -- Computes relative x, z motion of foot during single support phase

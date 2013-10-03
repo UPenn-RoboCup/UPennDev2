@@ -579,10 +579,7 @@ end
 -- Can we go from angle q to position p?
 Body.get_inverse_larm = function( qL, trL, lShoulderYaw, pos_tol, ang_tol )
 --7DOF IK
-
-  if not lShoulderYaw then 
-    lShoulderYaw = 45*DEG_TO_RAD    
-  end
+  if not lShoulderYaw then lShoulderYaw = qL[3]  end
   local qL_target = Kinematics.inverse_l_arm_7(trL,qL,lShoulderYaw)
   local trL_check = Kinematics.l_arm_torso_7(qL_target)
 --Check range
@@ -602,10 +599,8 @@ Body.get_inverse_larm = function( qL, trL, lShoulderYaw, pos_tol, ang_tol )
   return qL_target
 end
 
-Body.get_inverse_rarm = function( qR, trR, rShoulderYaw , pos_tol, ang_tol )
-  if not rShoulderYaw then 
-    rShoulderYaw = -45*DEG_TO_RAD    
-  end
+Body.get_inverse_rarm = function( qR, trR, rShoulderYaw , pos_tol, ang_tol )  
+  if not rShoulderYaw then rShoulderYaw = qR[3] end
   local qR_target = Kinematics.inverse_r_arm_7(trR, qR,rShoulderYaw)
   local trR_check = Kinematics.r_arm_torso_7(qR_target)
   --Check range

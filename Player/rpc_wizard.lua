@@ -31,26 +31,24 @@ local function process_rpc(rpc)
   local shm = rpc.shm
   if shm then
     local mem = _G[shm]
-    if type(mem)~='table' then
-      return 'Bad shm'
-    end
+    if type(mem)~='table' then return'Invalid memory' end
     if rpc.val then
       -- Set memory
-      local method = 'set_'..rpc.segment..'_'..rpc.key
+      local method = string.format('set_%s_%s',rpc.segment,rpc.key)
       local func = mem[method]
       -- Use a protected call
       status, reply = pcall(func,rpc.val)
     elseif rpc.delta then
       -- Increment/Decrement memory
-      local method = rpc.segment..'_'..rpc.key
-      local func = mem['get_'..method]
+      local method = string.format('_%s_%s',rpc.segment,rpc.key)
+      local func = mem['get'..method]
       status, cur = pcall(func)
-      func = mem['set_'..method]
+      func = mem['set'..method]
       local up = vector.new(cur)+vector.new(rpc.delta)
       status, reply = pcall(func,up)
     else
       -- Get memory
-      local method = 'get_'..rpc.segment..'_'..rpc.key
+      local method = string.format('get_%s_%s',rpc.segment,rpc.key)
       local func = mem[method]
       -- Use a protected call
       status, reply = pcall(func)
@@ -59,13 +57,17 @@ local function process_rpc(rpc)
 
   -- State machine events
   local fsm = rpc.fsm
-  if fsm then
+  if fsm and type(fsm.evt)=='string' then
     local ch = fsm_channels[fsm]
-    if ch and type(rpc.evt)=='string' then
-      reply = ch:send(rpc.evt)
-    else
-      reply = 'bad fsm rpc call'
+    --
+    if ch then
+      if rpc.special then
+        ch:send{rpc.evt,rpc.special}
+      else
+        ch:send(rpc.evt)
+      end
     end
+    --
   end
 
   return reply

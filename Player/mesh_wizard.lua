@@ -257,7 +257,7 @@ function mesh.entry()
   if chest then
     mesh_lookup['chest_lidar'] = chest
     -- Subscribe to a lidar channel
-    local ch = simple_ipc.new_subscriber('chest_lidar')
+    local ch = simple_ipc.new_subscriber'chest_lidar'
     ch.callback = chest_callback
     table.insert( wait_channels, ch )
     chest.lidar_ch  = ch

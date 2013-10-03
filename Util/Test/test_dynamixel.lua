@@ -20,7 +20,7 @@ if OPERATING_SYSTEM=='darwin' then
 end
 
 -- Choose a chain
-local test_dynamixel = right_leg
+local test_dynamixel = left_leg
 assert(test_dynamixel)
 print('Using',test_dynamixel.ttyname)
 
@@ -30,10 +30,10 @@ print('Inspecting',table.concat(found,','))
 ----]]
 --found = {2,4,6,8,10,12,14,29,30,32,34,36,37}
 --found = {29,30} --head
-found = {16,18,20,22,24,26} --left leg
---found = {--[[24,]]26} --left ankle
+--found = {16,18,20,22,24,26} --left leg
+found = {22,24,26} --left ankle/knee
 
-found = {15,17,19,21,23,25} --right leg
+--found = {15,17,19,21,23,25} --right leg
 
 --os.exit()
 
@@ -113,16 +113,25 @@ for _,m in ipairs(found) do
     print(string.format('Command Acc: %d',value))
   end
 
-  local status = libDynamixel.get_nx_data(m,test_dynamixel)
-  if status then
-    local data = carray.short( string.char(unpack(status.parameter)) )
-    -- For motor 26: 
-    -- 1: pitch (labeled x on mini 58)
-    -- 3: roll (y)
-
-    print(util.color('External Data:','yellow'),data[1],data[2],data[3],data[4])
+  local t0 = unix.time()
+  cnt = 0
+  while true do
+    local status = libDynamixel.get_nx_data(24,test_dynamixel)
+    if status then
+      cnt = cnt+1
+      -- For motor 26: 
+      -- 1: pitch (labeled x on mini 58)
+      -- 3: roll (y)
+      if cnt%10==0 then
+        local data = carray.short( string.char(unpack(status.parameter)) )
+        print(util.color('External Data:','yellow'),data[1],data[2],data[3],data[4])
+      end
+    end
+    status = nil
   end
-  
+  local t1 = unix.time()
+  print('Rate:',cnt/(t1-t0),'Hz')
+
   --[[
   local status = libDynamixel.get_mx_position(m,test_dynamixel)
   if status then 

@@ -328,6 +328,8 @@ local new_hokuyo_usb = function(ttyname, serial_number, ttybaud )
 	obj:set_baudrate(baud)
 	obj.params = obj:get_sensor_params()
 	obj.info = obj:get_sensor_info()
+  obj.t_diff = 0
+  obj.t_last = 0
 	-----------
 
 	-----------
@@ -393,7 +395,9 @@ libHokuyo.service = function( hokuyos, main )
         -- Check if we are done
         if #scan_str>=N_SCAN_BYTES then
     			-- Return the scan string to be parsed
-          hokuyo.t_last = unix.time()
+          local t = unix.time()
+          hokuyo.t_diff = t-hokuyo.t_last
+          hokuyo.t_last = t
     			coroutine.yield( scan_str )
           scan_str = ''
         else

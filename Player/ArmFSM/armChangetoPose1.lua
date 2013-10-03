@@ -27,16 +27,11 @@ qLOrg = Config.arm.qLArmInit[1]
 
 
 --IK based home position
-pLWristTarget = {-.0,.30,-.22,0,0,0}
-pRWristTarget = {-.0,-.30,-.22,0,0,0}
-lShoulderYawTarget = -5*Body.DEG_TO_RAD
-rShoulderYawTarget = 5*Body.DEG_TO_RAD
 
-pLWristTarget = {-.0,.30,-.24,0,0,0}
-pRWristTarget = {-.0,-.30,-.24,0,0,0}
-
-  
-
+local lShoulderYawTarget = -5*Body.DEG_TO_RAD
+local rShoulderYawTarget = 5*Body.DEG_TO_RAD
+local pLWristTarget = {-.0,.30,-.24,0,0,0}
+local pRWristTarget = {-.0,-.30,-.24,0,0,0}
 
 
 function state.entry()

@@ -35,20 +35,21 @@ local mesh_lookup = {}
 jpeg.set_quality( 95 )
 
 -- Setup metadata and tensors for a lidar mesh
-local function setup_mesh( name )
-  local tbl = {}
+local function setup_mesh( name, tbl )
+  tbl = tbl or {}
   -- Save the meta data for easy sending
   tbl.meta = {}
   -- Actuator endpoints
-  -- In radians, specifices the actuator scanline angle endpoints
+  -- In radians, specifies the actuator scanline angle endpoints
   -- The third number is the scanline density (scanlines/radian)
-  tbl.meta.scanlines = vcm['get_'..name..'_scanlines']()
+  local get_name = 'get_'..name
+  tbl.meta.scanlines = vcm[get_name..'_scanlines']()
   -- Field of view endpoints of the lidar ranges
   -- -135 to 135 degrees for Hokuyo
   -- This is in RADIANS, though
-  tbl.meta.fov = vcm['get_'..name..'_fov']()
+  tbl.meta.fov = vcm[get_name..'_fov']()
   -- Depths when compressing
-  tbl.meta.depths = vcm['get_'..name..'_depths']()
+  tbl.meta.depths = vcm[get_name..'_depths']()
   tbl.meta.name = name
   -- Type of compression
   tbl.meta.c = 'jpeg'
@@ -73,14 +74,12 @@ local function setup_mesh( name )
   tbl.mesh_adj  = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
   -- TODO: Save the exact actuator angles?
   tbl.scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
-  -- Subscribe to a lidar channel
-  tbl.lidar_ch  = simple_ipc.new_subscriber(name)
   -- Find the offset for copying lidar readings into the mesh
   -- if fov is from -135 to 135 degrees, then offset_idx is zero
   -- if fov is from 0 to 135 degrees, then offset_idx is 540
-  tbl.offset_idx = math.floor((1081-fov_resolution)/2)
-  -- For streaming
-  tbl.needs_update = true
+  local fov_offset = 540+math.ceil( reading_per_radian*tbl.meta.fov[1] )
+  tbl.offset_idx   = math.floor(fov_offset)
+  --print('fov offset',name,fov_offset,tbl.offset_idx,fov_resolution)
   return tbl
 end
 
@@ -128,19 +127,21 @@ end
 
 -- type is head or chest table
 local function stream_mesh(type)
+  local get_name = 'get_'..type.meta.name
   -- Network streaming settings
-  local net_settings = vcm['get_'..type.meta.name..'_net']()
+  local net_settings = vcm[get_name..'_net']()
   -- Streaming
   if net_settings[1]==0 then return end
   -- Sensitivity range in meters
   -- Depths when compressing
-  local depths = vcm['get_'..type.meta.name..'_depths']()
+  local depths = vcm[get_name..'_depths']()
 
   local metapack, c_mesh = prepare_mesh(
     type,
     depths[1],depths[2],
     net_settings[2])
 
+  -- Sending to other processes
   --mesh_pub_ch:send( {meta, payload} )
   local ret, err = mesh_udp_ch:send( metapack..c_mesh )
   if err then print('mesh udp',err) end
@@ -162,8 +163,8 @@ local function angle_to_scanline( meta, rad )
   local res   = meta.resolution[1]
   local ratio = (rad-start)/(stop-start)
   -- Round
-  --local scanline = math.floor(ratio*res+.5)
-  local scanline = math.ceil(ratio*res)
+  local scanline = math.floor(ratio*res+.5)
+  --local scanline = math.ceil(ratio*res)
   -- Return a bounded value
   return math.max( math.min(scanline, res), 1 )
 end
@@ -189,7 +190,6 @@ local function chest_callback()
     -- Save the pan angle
     chest.scan_angles[scanline] = angle
     -- We've been updated
-    chest.needs_update = true
     chest.meta.t     = metadata.t
   end
 end
@@ -211,7 +211,6 @@ local function head_callback()
       head.offset_idx )
     -- Save the pan angle
     head.scan_angles[scanline] = angle
-    head.needs_update = true
     head.meta.t = metadata.t
   end
 end
@@ -221,14 +220,15 @@ local function reliable_callback()
   repeat
     request, has_more = mesh_tcp_ch:receive()
     request = mp.unpack(request)
-    --util.ptable(request)
+    util.ptable(request)
     local metapack, c_mesh = prepare_mesh(
       mesh_lookup[request.type],
-      request.near,request.far,
-      request.c)
+      request.near or 0,request.far or 5,
+      request.c or 2)
     -- NOTE: The zmq channel is REP/REQ
     -- Reply with the result of the request
     local ret = mesh_tcp_ch:send( {metapack, c_mesh} )
+    print('ret rel',ret)
   until not has_more
 end
 
@@ -242,24 +242,29 @@ local mesh = {}
 function mesh.entry()
   -- Setup the data structures for each mesh
   chest = setup_mesh'chest_lidar'
-  mesh_lookup['chest_lidar'] = chest
   head  = setup_mesh'head_lidar'
-  mesh_lookup['head_lidar'] = head
 
   -- Poll the lidar readings with zeromq
   local wait_channels = {}
-  if head.lidar_ch then
-    head.lidar_ch.callback = head_callback
-    table.insert( wait_channels, head.lidar_ch )
+  if head then
+    mesh_lookup['head_lidar'] = head
+    -- Subscribe to a lidar channel
+    local ch = simple_ipc.new_subscriber('head_lidar')
+    ch.callback = head_callback
+    table.insert( wait_channels, ch )
+    head.lidar_ch  = ch
   end
-  if chest.lidar_ch then
-    chest.lidar_ch.callback = chest_callback
-    table.insert( wait_channels, chest.lidar_ch )
+  if chest then
+    mesh_lookup['chest_lidar'] = chest
+    -- Subscribe to a lidar channel
+    local ch = simple_ipc.new_subscriber('chest_lidar')
+    ch.callback = chest_callback
+    table.insert( wait_channels, ch )
+    chest.lidar_ch  = ch
   end
 
   -- Reliable request/reply
-  mesh_tcp_ch = simple_ipc.new_replier(
-    Config.net.reliable_mesh,'*')
+  --mesh_tcp_ch = simple_ipc.new_replier(Config.net.reliable_mesh,'*')
   if mesh_tcp_ch then
     mesh_tcp_ch.callback = reliable_callback
     table.insert( wait_channels, mesh_tcp_ch )
@@ -281,10 +286,20 @@ end
 
 function mesh.update()
   local npoll = channel_polls:poll(channel_timeout)
-  --print('here',npoll,head.needs_update,chest.needs_update)
   -- Stream the current mesh
   stream_mesh(head)
   stream_mesh(chest)
+  -- Check if we must update our torch data
+  if head.meta.scanlines ~= vcm.get_head_lidar_scanlines() or
+    head.meta.fov ~= vcm.get_head_lidar_fov()
+    then
+    setup_mesh('head_lidar',head)
+  end
+  if chest.meta.scanlines ~= vcm.get_chest_lidar_scanlines() or
+    chest.meta.fov ~= vcm.get_chest_lidar_fov()
+    then
+    setup_mesh('chest_lidar',chest)
+  end  
 end
 
 function mesh.exit()

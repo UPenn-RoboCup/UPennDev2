@@ -52,6 +52,7 @@ function movearm.setWristPosition(
   end
 
   qShoulderYawMax = 5.0*math.pi/180
+  velWristMax = Config.arm.linear_wrist_limit
   lShoulderYaw = util.approachTol(qLArm[3],lShoulderYaw,qShoulderYawMax,dt)
   rShoulderYaw = util.approachTol(qRArm[3],rShoulderYaw,qShoulderYawMax,dt)
 
@@ -60,6 +61,14 @@ function movearm.setWristPosition(
   
   local trLWristApproach, doneL = util.approachTol(trLWrist, trLWristTarget, dpArmMax, dt )
   local trRWristApproach, doneR = util.approachTol(trRWrist, trRWristTarget, dpArmMax, dt )
+
+--[[
+  local trLWristApproach, doneL = util.approachTolTransform(
+        trLWrist, trLWristTarget, velWristMax, dt )
+  local trRWristApproach, doneR = util.approachTolTransform(
+        trRWrist, trRWristTarget, velWristMax, dt )
+--]]
+
 
   -- Get desired angles from current angles and target transform
   local qL_desired = Body.get_inverse_lwrist(qLArm,trLWristApproach, lShoulderYaw)

@@ -20,9 +20,16 @@ shared_data.sensor.position = vector.zeros( nJoints )
 shared_data.sensor.velocity = vector.zeros( nJoints )
 -- Load of joints is measured in percentage
 shared_data.sensor.load     = vector.zeros( nJoints )
--- Foot pressure
-shared_data.sensor.lfoot_pressure = vector.zeros( 4 )
-shared_data.sensor.rfoot_pressure = vector.zeros( 4 )
+-- Foot sensors (strain gauges; should be just 6, not quite 8...)
+-- 8 is because 2 motors, with 4 ext data each
+shared_data.sensor.lfoot = vector.zeros( 8 )
+shared_data.sensor.rfoot = vector.zeros( 8 )
+--[[
+shared_data.sensor.lfoot_torque   = vector.zeros( 4 )
+shared_data.sensor.rfoot_torque   = vector.zeros( 4 )
+shared_data.sensor.lfoot_force    = vector.zeros( 4 )
+shared_data.sensor.rfoot_force    = vector.zeros( 4 )
+--]]
 ------------------------
 -- Request reads from some motors
 -- 0: do not read
@@ -34,9 +41,15 @@ shared_data.tread = {}
 -- Timestamps of the last request
 shared_data.trequest = {}
 for k,v in pairs(shared_data.sensor) do
-  shared_data.read[k] = v
-  shared_data.tread[k] = v
-  shared_data.trequest[k] = v
+  if k:find'foot' then
+    shared_data.read[k]     = vector.zeros(1)
+    shared_data.tread[k]    = vector.zeros(1)
+    shared_data.trequest[k] = vector.zeros(1)
+  else
+    shared_data.read[k] = v
+    shared_data.tread[k] = v
+    shared_data.trequest[k] = v
+  end
 end
 
 -- These should not be tied in with the motor readings,

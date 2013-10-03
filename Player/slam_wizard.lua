@@ -50,13 +50,19 @@ require'wcm'
 -- Logging set up
 -- Flag for logging
 local logfile = ''
-local is_logging = true
---local is_logging = false
+local is_logging = false
+if arg[1] == '-l' then
+	is_logging = true
+end
 if is_logging then
   filetime = os.date('%m.%d.%Y.%H.%M')
   logfile = io.open('SlamLogs/'..filetime..'.log','w')
 end
-local replay = true
+-- Replay flag
+local replay = false
+if arg[1] == '-r' then
+	replay = true
+end
 ---------------------------------
 
 -- Output Channels

@@ -101,8 +101,8 @@ servo.joint_to_motor={
   15,17,19,21,23,25, -- right leg
   1,3,5,7,9,11,13,  --RArm
   27,28, --Waist yaw/pitch
-  32,34,36, -- left gripper
-  31,33,35, -- right gripper
+  32,34,36, -- left gripper (thumb, index, big&not_thumb)
+  31,33,35, -- right gripper (thumb, index, big&not_thumb)
   37, -- Lidar pan
 }
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
@@ -148,7 +148,7 @@ servo.direction = vector.new({
   -1,-1,1,-1, 1,1,1, --RArm
   1,1, -- Waist
   1,1,-1, -- left gripper
-  1,-1,1, -- right gripper
+  1,1,-1, -- right gripper
   -1, -- Lidar pan
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
@@ -175,8 +175,8 @@ servo.min_rad = vector.new({
   -175,-175,-175,-175,-175,-175, --RLeg
   -90,-87,-90,-140,       -180,-87,-180, --RArm
   -90,-45, -- Waist
-  -20,-20,-20, -- left gripper
-  -20,-20,-20, -- right gripper
+  -32,-12,-12, -- left gripper
+  -12,-32,-32, -- right gripper
   -60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
@@ -188,8 +188,8 @@ servo.max_rad = vector.new({
   175,175,175,175,175,175, --RLeg
   160,-0,90,-25,     180,87,180, --RArm  
   90,45, -- Waist
-  10,10,10, -- left gripper
-  10,10,10, -- right gripper
+  12,32,32, -- left gripper
+  32,12,12, -- right gripper
   60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')

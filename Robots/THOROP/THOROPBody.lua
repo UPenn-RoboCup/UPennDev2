@@ -968,6 +968,28 @@ if IS_WEBOTS then
       head_camera_wbt.height = webots.wb_camera_get_height(tags.head_camera)
     end
 
+    --FSR sensors
+    tags.l_ul_fsr = webots.wb_robot_get_device("L_UL_FSR")
+    tags.l_ur_fsr = webots.wb_robot_get_device("L_UR_FSR")
+    tags.l_ll_fsr = webots.wb_robot_get_device("L_LL_FSR")    
+    tags.l_lr_fsr = webots.wb_robot_get_device("L_LR_FSR")    
+
+    webots.wb_touch_sensor_enable(tags.l_ul_fsr, timeStep)
+    webots.wb_touch_sensor_enable(tags.l_ur_fsr, timeStep)
+    webots.wb_touch_sensor_enable(tags.l_ll_fsr, timeStep)
+    webots.wb_touch_sensor_enable(tags.l_lr_fsr, timeStep)
+
+    tags.r_ul_fsr = webots.wb_robot_get_device("R_UL_FSR")
+    tags.r_ur_fsr = webots.wb_robot_get_device("R_UR_FSR")
+    tags.r_ll_fsr = webots.wb_robot_get_device("R_LL_FSR")    
+    tags.r_lr_fsr = webots.wb_robot_get_device("R_LR_FSR")    
+
+    webots.wb_touch_sensor_enable(tags.r_ul_fsr, timeStep)
+    webots.wb_touch_sensor_enable(tags.r_ur_fsr, timeStep)
+    webots.wb_touch_sensor_enable(tags.r_ll_fsr, timeStep)
+    webots.wb_touch_sensor_enable(tags.r_lr_fsr, timeStep)
+
+
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
 		Body.timeStep = timeStep
@@ -1050,6 +1072,26 @@ if IS_WEBOTS then
     jcm.sensorPtr.gyro[1] = -(gyro[1]-512)/512*39.24
     jcm.sensorPtr.gyro[2] = -(gyro[2]-512)/512*39.24
     jcm.sensorPtr.gyro[3] = (gyro[3]-512)/512*39.24
+
+
+    local fsr_l = {
+      webots.wb_touch_sensor_get_value(tags.l_ul_fsr),
+      webots.wb_touch_sensor_get_value(tags.l_ur_fsr),
+      webots.wb_touch_sensor_get_value(tags.l_ll_fsr),
+      webots.wb_touch_sensor_get_value(tags.l_lr_fsr)
+        }
+
+    local fsr_r = {
+      webots.wb_touch_sensor_get_value(tags.r_ul_fsr),
+      webots.wb_touch_sensor_get_value(tags.r_ur_fsr),
+      webots.wb_touch_sensor_get_value(tags.r_ll_fsr),
+      webots.wb_touch_sensor_get_value(tags.r_lr_fsr)
+        }
+  
+--[[
+    print("FSRL:",unpack(fsr_l))
+    print("FSRR:",unpack(fsr_r))
+ --]]
 
 
     -- Debugging:

@@ -11,7 +11,7 @@ local Body = require'Body'
 -- local tmp_list = assert(io.popen('./ls'..dataStamp..'*', 'r'))
 -- local logfile_iter = tmp_list:lines()
 
-local logfile = io.open('10.03.2013.11.15.log', 'r')
+local logfile = io.open('10.03.2013.12.40.log', 'r')
 local log_str = logfile:read('*a')
 logfile:close()
 local data_unpacker = mp.unpacker(log_str)
@@ -25,8 +25,6 @@ local tsleep = 1/40 * 1e6
 
 local meta_tbl = data_unpacker:unpack()
 while meta_tbl do
-	print(type(meta_tbl.ranges))
-	Body.set_head_lidar( meta_tbl.ranges )
 	head_lidar_ch:send( mp.pack(meta_tbl) )
 	meta_tbl = data_unpacker:unpack()
 

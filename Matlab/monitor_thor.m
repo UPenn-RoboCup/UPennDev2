@@ -20,8 +20,8 @@ PORT_HCAMERA   = 33333;
 PORT_MESH      = 33344;
 PORT_LCAMERA   = 33335;
 PORT_RCAMERA   = 33336;
-PORT_SLAMMAP   = 22222; %43210;
-PORT_HEIGHTMAP = 22223; %43230;
+PORT_SLAMMAP   = 22222;
+PORT_HEIGHTMAP = 22223;
 
 %Data sent to robots
 PORT_RELIABLE_RPC = 55555; %for UI events
@@ -102,7 +102,7 @@ callback_names{s_mesh+1} = 'Mesh Image';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sending commands to the robot
-CONTROL.udp_send_id = udp_send( 'init', ROBOT_IP, PORT_UNRELIABLE_RPC );
+CONTROL.udp_send_id = udp_send( 'init', LOCALHOST, PORT_UNRELIABLE_RPC );
 %CONTROL.zmq_send_id = zmq( 'publish', 'tcp', ROBOT_IP, PORT_RELIABLE_RPC )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

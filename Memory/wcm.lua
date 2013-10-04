@@ -10,9 +10,12 @@ local shared = {}
 local shsize = {}
 
 shared.robot = {}
--- SLAM pose
+-- Webot pose
 shared.robot.pose = vector.zeros(3)
 
+-- SLAM pose
+shared.slam = {}
+shared.slam.pose = vector.zeros(3)
 --[[
 shared.robot.team_ball = vector.zeros(3);
 shared.robot.team_ball_score = vector.zeros(1);

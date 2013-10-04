@@ -10,7 +10,6 @@ local Body = require'Body'
 require 'unix'
 
 -- Set the Debugging mode
-local debugging = true
 local Benchmark = false --true
 -- Set the real-robot mode
 local realFlag = 1
@@ -270,13 +269,6 @@ local t = Body.get_time()
 local t_last = t
 local t_debug = 1 -- Print debug output every second
 ------------------
-
-------------------
--- No debugging messages
--- Only the callback will be made
-if not debugging then channel_polls:start() end
-------------------
-
 
 local slam = {}
 

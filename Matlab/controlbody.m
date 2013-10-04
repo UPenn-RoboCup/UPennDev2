@@ -14,7 +14,7 @@ CONTROL.setup_model_controls = @setup_model_controls;
 CONTROL.setup_body_controls = @setup_body_controls;
 CONTROL.setup_head_controls = @setup_head_controls;
 CONTROL.setup_arm_controls = @setup_arm_controls;
-CONTROL.setup_fd = @setup_fd;
+CONTROL.setup_wp_controls = @setup_wp_controls;
 
 CONTROL.send_control_packet=@send_control_packet;
 
@@ -28,6 +28,8 @@ ret = CONTROL;
 
     function body_control(h,~,evt)
         if strcmp(evt,'follow')
+            % Set waypoints to shared memory
+            set_waypoints(2);
             send_control_packet( 'BodyFSM', 'follow' );
         else
             send_control_packet( 'BodyFSM', evt );
@@ -107,34 +109,41 @@ ret = CONTROL;
         set(b5,'CallBack',{@arm_control,'teleop'});
     end
 
-%{
-    function body_control(h,~,flags)
+%
+    function set_waypoints(flags)
         if flags==1
-            %	    send_control_packet('body','stop');
-            send_control_packet('body','teleop');
+            send_control_packet('BodyFSM','teleop');
         elseif flags==2
             waypoint=SLAM.get_waypoints();
+            disp(waypoint)
+%             % add the dummy yaw
+%             waypoint = cat(2, waypoint, zeros(size(waypoint,1), 1));
             if numel(waypoint)>0
                 waypoint_num = size(waypoint,1);
-                send_control_packet('body','navigate',reshape(waypoint,[1 2*waypoint_num]));
+                send_control_packet([], [],...
+                    'hcm', 'motion', 'waypoints',...
+                    reshape(waypoint,[1 3*waypoint_num]));
+                send_control_packet([], [],...
+                    'hcm', 'motion', 'nwaypoints', waypoint_num);
+                send_control_packet([], [],...
+                    'hcm', 'motion', 'waypoint_frame', 1); %global
             end
-        elseif flags==3
-            disp('Single point approach')
-            targetpos = LIDAR.get_single_approach();
-            if numel(targetpos)>0
-                send_control_packet('body','navigate',targetpos);
-            end
-        elseif flags==4  % Two-position approach
-            disp('Two point approach')
-            wp=LIDAR.get_double_approach();
-            if numel(wp)>0
-                send_control_packet('body','navigate',wp);
-            end
+%         elseif flags==3
+%             disp('Single point approach')
+%             targetpos = LIDAR.get_single_approach();
+%             if numel(targetpos)>0
+%                 send_control_packet('BodyFSM','navigate',targetpos);
+%             end
+%         elseif flags==4  % Two-position approach
+%             disp('Two point approach')
+%             wp=LIDAR.get_double_approach();
+%             if numel(wp)>0
+%                 send_control_packet('BodyFSM','navigate',wp);
+%             end
         end
         SLAM.clear_waypoint();
     end
 %}
-
 
 
     function send_control_packet( fsmtype, event, shared, segment, key, data )

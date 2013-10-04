@@ -1,6 +1,6 @@
 local state = {}
 state._NAME = ...
-local Body   = require'Body'
+local Body   = require(Config.dev.body)
 local util   = require'util'
 local vector = require'vector'
 
@@ -12,7 +12,7 @@ require'wcm'
 
 -- FSM coordination
 local simple_ipc = require'simple_ipc'
-local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
+local motion_ch = simple_ipc.new_publisher(Config.dev.motion,true)
 
 local t_entry, t_update, t_exit
 local nwaypoints, wp_id
@@ -123,10 +123,13 @@ function state.entry()
   t_update = t_entry
   
   -- Grab the pose
-  local pose = wcm.get_robot_pose()
+  --local pose = wcm.get_robot_pose()
+  local pose = wcm.get_slam_pose()
 
   -- Grab the waypoints
   nwaypoints = hcm.get_motion_nwaypoints()
+  print('# of waypoints:', nwaypoints)
+  print('waypoints', unpack(hcm.get_motion_waypoints()))
   local raw_waypoints = vector.slice(hcm.get_motion_waypoints(),1,3*nwaypoints)
 
   -- Check the frame of reference
@@ -149,13 +152,14 @@ function state.entry()
   wp_id = 1
 
   -- Zero the velocity
-  mcm.set_walk_vel{0,0,0}
+  Body.set_walk_velocity({0,0,0})
 
   -- Begin walking
   motion_ch:send'walk'
   
 end
 
+local cnt = 0
 function state.update()
   --print(state._NAME..' Update' ) 
   -- Get the time of update
@@ -173,7 +177,12 @@ function state.update()
   local wp = waypoints[wp_id]
 
   -- Grab the current pose
-  local pose = vector.pose(wcm.get_robot_pose())
+  cnt = cnt + 1
+  --local pose = vector.pose(wcm.get_robot_pose())
+  local pose = vector.pose(wcm.get_slam_pose())
+  if cnt % 20 == 0 then
+    print('Robot pose:', unpack(pose) )
+  end
 
   -- Set with relative coordinates
   local rel_wp = util.pose_relative(wp,pose)
@@ -192,8 +201,7 @@ function state.update()
   local vel, at_waypoint = up(pose,wp,rel_wp)
 
   -- Update the velocity
-  mcm.set_walk_vel(vel)
-  --mcm.set_walk_vel{0,0,0}
+  Body.set_walk_velocity(vel)
 
   -- Check if we are at the waypoint
   if at_waypoint then
@@ -205,7 +213,7 @@ end
 function state.exit()
   print(state._NAME..' Exit' )
   -- Zero the velocity
-  mcm.set_walk_vel{0,0,0}
+  Body.set_walk_velocity(vel)
 end
 
 return state

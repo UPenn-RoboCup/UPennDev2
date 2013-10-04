@@ -5,6 +5,88 @@ local util   = require'util'
 local torch  = require'torch'
 torch.Tensor = torch.DoubleTensor
 
+--We maintain Two queue for preview duration
+
+--ZMP position queue : uSupport
+--Step status queue : uLeft_now, uRight_now, uLeft_next,uRight_next,supportLeg
+
+
+--Initialize a stationary preview queue
+local function init_preview_queue(self,uLeft,uRight,t)
+  local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
+  local uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
+  self.preview_queue={}
+  self.preview_queue_zmpx={}
+  self.preview_queue_zmpy={}
+  for i=1,self.preview_steps do
+    local preview_item = {}    
+    preview_item.uLeft_now = uLeft
+    preview_item.uLeft_next = uLeft
+    preview_item.uRight_now = uRight
+    preview_item.uRight_next = uRight
+    preview_item.supportLeg = 2 --Double support
+
+    self.preview_queue[i] = preview_item
+    self.preview_queue_zmpx[i] = uSupport[1]
+    self.preview_queue_zmpy[i] = uSupport[2]
+  end
+  self.t_last_step = t
+  self.t_step_duration = 0
+end
+
+local function update_preview_queue(self,t)
+  table.remove(self.preview_queue,1)
+  table.remove(self.preview_queue_zmpx,1)
+  table.remove(self.preview_queue_zmpy,1)
+
+  local last_preview_item = self.preview_queue[#self.preview_queue]
+  local last_preview_zmpx = self.preview_queue_zmpx[#self.preview_queue]
+  local last_preview_zmpy = self.preview_queue_zmpy[#self.preview_queue]
+
+  if self.t_last_step+self.t_step_duration >=t then
+    --Old step
+    table.insert(self.preview_queue,last_preview_item)
+    table.insert(self.preview_queue_zmpx,last_preview_zmpx)
+    table.insert(self.preview_queue_zmpx,last_preview_zmpy)
+  else --New step
+    local supportLeg
+    local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
+    if last_preview_item.supportLeg==2 then 
+      supportLeg = 0 
+    else
+      supportLeg = 1-last_preview_item.supportLeg
+    end
+    uLeft_now, uRight_now, uTorso_now, uLeft_next,
+      uRight_next, uTorso_next, uSupport =
+        step_planner:get_next_step_velocity(
+          last_preview_item.uLeft_next,
+          last_preview_item.uRight_next,
+          step_planner.get_torso(last_preview_item.uLeft_next,last_preview_item.uRight_next),
+          supportLeg,false)
+    local new_preview_item = {}
+    new_preview_item.uLeft_now = uLeft_now
+    new_preview_item.uLeft_next = uLeft_next
+    new_preview_item.uRight_now = uRight_now
+    new_preview_item.uRight_next = uRight_next
+    new_preview_item.supportLeg = supportLeg
+
+    table.insert(self.preview_queue,new_preview_item)
+    table.insert(self.preview_queue_zmpx,uSupport[1])
+    table.insert(self.preview_queue_zmpy,uSupport[2])
+  end
+end
+
+
+
+
+
+
+
+
+
+
+
+
 -- step_definition format
 --{ Supportfoot relstep zmpmod duration steptype }--
 -- Provide initial (relative) feet positions
@@ -287,127 +369,6 @@ local function get_preview_com(solver)
     vector.pose{state_velocity[1],state_velocity[2],0},
     vector.pose{state_accel[1],state_accel[2],0}
 end
-
--- Perform some math
-local function solve( solver, z_support, z_start, z_finish, x1, x2 )
-  local tStep = solver.tStep
-  local tZMP = solver.tZMP
-  local T1 = tStep*solver.start_phase
-  local T2 = tStep*solver.finish_phase
-  --[[
-  Solves ZMP equation:
-  x(t) = z(t) + aP*exp(t/tZMP) + aN*exp(-t/tZMP) - tZMP*mi*sinh((t-Ti)/tZMP)
-  where the ZMP point is piecewise linear:
-  z(0) = z_start, z(T1 < t < T2) = z_support, z(tStep) = z_finish
-  --]]
-  local m1 = (z_support-z_start)/T1
-  local m2 = -(z_support-z_finish)/(tStep-T2)
-  local c1 = x1-z_start  + tZMP*m1*math.sinh(-T1/tZMP)
-  local c2 = x2-z_finish + tZMP*m2*math.sinh((tStep-T2)/tZMP)
-  local expTStep = math.exp(tStep/tZMP)
-  local aP = (c2 - c1/expTStep)/(expTStep-1/expTStep)
-  local aN = (c1*expTStep - c2)/(expTStep-1/expTStep)
-  return aP, aN
-end
-
--- Torso goes from uStart to uFinish through uSupport
--- Trapezoidal: / is start to support
---              _ is through support
---              \ is support to finish 
--- This computes internal parameters for a new step
-local function compute( self, uSupport, uStart, uFinish )
-  local tStep = self.tStep
-  local start_phase   = tStep*self.start_phase
-  local finish_phase  = tStep*(1-self.finish_phase)
-  local support_from_start  = uSupport - uStart
-  local finish_from_support = uFinish - uSupport
-  -- Compute ZMP coefficients
-  -- Solve for the x direction
-  self.m1X = support_from_start[1]  / start_phase
-  self.m2X = finish_from_support[1] / finish_phase
-  self.aXP, self.aXN = solve( self,
-    uSupport[1],
-    uStart[1], uFinish[1],
-    uStart[1], uFinish[1]
-  )
-  -- Solve for the y direction
-  self.m1Y = support_from_start[2]  / start_phase
-  self.m2Y = finish_from_support[2] / finish_phase
-  self.aYP, self.aYN = solve( self,
-    uSupport[2],
-    uStart[2], uFinish[2],
-    uStart[2], uFinish[2]
-  )
-  -- Save the torso points
-  self.uSupport = uSupport
-  self.uStart   = uStart
-  self.uFinish  = uFinish
-end
-
--- Finds the necessary COM for stability, given the current uSupport
--- Must call compute upon a new step, or CoM is groundless...
-local function get_com( self, ph )
-  local tStep = self.tStep
-  local tZMP  = self.tZMP
-  local expT = math.exp( ph * tStep/tZMP )
-  -- Initial Center of mass is for single support
-  -- Angle *should* be unused at this point
-  local com = self.uSupport + vector.new{
-    self.aXP*expT + self.aXN/expT,
-    self.aYP*expT + self.aYN/expT,
-    0
-  }
-  -- Check if we are in double<->single transition zone
-  if ph < self.start_phase then
-    local start_time = tStep*( ph - self.start_phase )
-    -- From double to single
-    com[1] = com[1] + self.m1X*start_time - tZMP*self.m1X*math.sinh(start_time/tZMP)
-    com[2] = com[2] + self.m1Y*start_time - tZMP*self.m1Y*math.sinh(start_time/tZMP)
-  elseif ph > self.finish_phase then
-    local finish_time = tStep*(ph-self.finish_phase)
-    -- From single to double
-    com[1] = com[1] + self.m2X*finish_time - tZMP*self.m2X*math.sinh(finish_time/tZMP)
-    com[2] = com[2] + self.m2Y*finish_time - tZMP*self.m2Y*math.sinh(finish_time/tZMP)
-  end
-  return com
-end
-
-local function get_foot(self,ph)
-  -- Computes relative x, z motion of foot during single support phase
-  -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0
-  -- phSingle is 100% @ finish_phase, and 0% at start_phase
-  -- It just ignores the double support phase so we know how long we've been in single support
-  local phSingle = math.min( math.max(ph-self.start_phase, 0)/(self.finish_phase-self.start_phase), 1)
-  local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
-  local xf = .5*(1-math.cos(math.pi*phSingleSkew))
-  local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
-  -- xf and zf and percentages, it seems
-  return xf, zf, phSingle
-end
-
-local function get_foot_square(self,ph)
-  --SJ: Square wave walk pattern
-  local phSingle = math.min( math.max(ph-self.start_phase, 0)/(self.finish_phase-self.start_phase), 1)
-
-  local phase1 = 0.2;
-  local phase2 = 0.7;
-
-  if phSingle<phase1 then --Lifting phase
-    ph1 = phSingle / phase1
-    xf = 0;
-    zf = ph1;
-  elseif phSingle<phase2 then
-    ph1 = (phSingle-phase1) / (phase2-phase1)
-    xf = ph1;
-    zf = 1;
-  else
-    ph1 = (phSingle-phase2) / (1-phase2)    
-    xf = 1;
-    zf = (1-ph1)
-  end
-  return xf,zf,phSingle
-end
-
 
 -- Begin the library code
 local libZMP = {}

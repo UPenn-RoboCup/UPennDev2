@@ -65,8 +65,8 @@ ret = CONTROL;
     end
 
     function setup_lidarbody_controls(b1,b2, lmb1,lmb2,lmb3,lmb4,lmb5)
-        set(b1,'CallBack',{LIDAR.set_meshtype,1});
-        set(b2,'CallBack',{LIDAR.set_meshtype,2});
+        set(b1,'CallBack',{LIDAR.set_meshtype,0});
+        set(b2,'CallBack',{LIDAR.set_meshtype,1});
         
         set(lmb1,'CallBack',{LIDAR.set_zoomlevel,1});
         set(lmb2,'CallBack',{LIDAR.set_zoomlevel,2});

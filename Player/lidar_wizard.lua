@@ -36,8 +36,8 @@ if head_hokuyo then
     meta.count  = head_hokuyo.count
     meta.hangle = Body.get_head_command_position()
     --meta.hangle = Body.get_head_position()
-    meta.rpy  = {0,0,0}  --Body.get_sensor_rpy()
-    meta.gyro = {0,0,0}  --Body.get_sensor_gyro()
+    meta.rpy  = Body.get_sensor_rpy()
+    meta.gyro = Body.get_sensor_gyro()
     meta.t = Body.get_time()
     local ret = head_lidar_ch:send( mp.pack(meta) )
   end

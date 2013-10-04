@@ -7,13 +7,6 @@ local vector = require'vector'
 
 -- SJ: Shared library for 2D leg trajectory generation
 -- So that we can reuse them for different controllers
--- Should we move it into util?
-
-
-
-
-
-
 
 local footY    = Config.walk.footY
 local supportX = Config.walk.supportX
@@ -28,51 +21,6 @@ local hipImuParamY   = Config.walk.hipImuParamY
 
 -- Hip sag compensation parameters
 local hipRollCompensation = Config.walk.hipRollCompensation
-
--- Leg hardness parameters
-local hardnessSupport = Config.walk.hardnessSupport or 0.7
-local hardnessSwing   = Config.walk.hardnessSwing or 0.5
-
-
-
-
-function moveleg.advance_step(uLeft, uRight,uTorso,iStep,velCurrent,enable_initial_step)
-  --[[
-  supportLeg = iStep % 2 -- supportLeg: 0 for left support, 1 for right support
-  --Zero velocity at the initial steps
-  -- iStep:2 for 1st step, 3 for 2st step
-  initial_step = false
-  if not enable_initial_step then iStep = 5 
-  elseif iStep<=3 then initial_step = true end
-
-
-  local uLeft_now, uRight_now, uTorso_now = uLeft, uRight, uTorso
-  local uSupport, uLeft_next, uRight_next = 
-    moveleg.calculate_next_step( uLeft, uRight, supportLeg, velCurrent )
-
-
-  local uSupport,uLeft_next,uRight_next,uTorso_next = 
---TODOTODOTODO
-
-  uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
-      libStep.get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step)
- 
-
-
-
-  -- Save some step-by-step data to shared memory
-  mcm.set_status_velocity(velCurrent)
-  mcm.set_support_uLeft_now(  uLeft_now )
-  mcm.set_support_uRight_now( uRight_now )
-  mcm.set_support_uTorso_now( uTorso_now )
-  mcm.set_support_uLeft_next(  uLeft_next )
-  mcm.set_support_uRight_next( uRight_next )
-  mcm.set_support_uTorso_next( uTorso_next )
-
-  return uLeft_now,uRight_now,uTorso_now, uLeft_next,uRight_next,uTorso_next, uSupport
---]]  
-end
-
 
 function moveleg.get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
   local body_yaw

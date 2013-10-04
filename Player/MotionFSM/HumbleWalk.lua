@@ -24,9 +24,6 @@ local t_entry, t_update, t_last_step
 local tStep = Config.walk.tStep
 local stepHeight  = Config.walk.stepHeight
 
--- Save the velocity between update cycles
-local velCurrent = vector.new{0, 0, 0}
-
 -- Save gyro stabilization variables between update cycles
 -- They are filtered.  TODO: Use dt in the filters
 local angleShift = vector.new{0,0,0,0}
@@ -50,19 +47,8 @@ function walk.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-
-  -- Reset our velocity
-  velCurrent = vector.new{0,0,0}
-  mcm.set_walk_vel(velCurrent)
-
-  --Read stored feet and torso poses 
-  local uTorso0 = mcm.get_status_uTorso()  
-  local uLeft = mcm.get_status_uLeft()
-  local uRight = mcm.get_status_uRight()
-
-  uTorso_now, uTorso_next = uTorso0, uTorso0
-  uLeft_now,  uLeft_next  = uLeft,  uLeft
-  uRight_now, uRight_next = uRight, uRight
+ 
+  mcm.set_walk_vel({0,0,0})--reset target speed
 
   -- Initiate the ZMP solver
   zmp_solver = libReactiveZMP.new_solver({
@@ -71,8 +57,10 @@ function walk.entry()
     ['start_phase']  = Config.walk.phSingle[1],
     ['finish_phase'] = Config.walk.phSingle[2],
   })
-   
+
   step_planner = libStep.new_planner()
+  uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
+      step_planner:init_stance()
 
   --Now we advance a step at next update  
   t_last_step = Body.get_time() - tStep 
@@ -104,12 +92,12 @@ function walk.update()
     ph = ph % 1
     iStep = iStep + 1  -- Increment the step index  
     supportLeg = iStep % 2 -- supportLeg: 0 for left support, 1 for right support
-
-    initial_step = false
+    local initial_step = false
     if iStep<=3 then initial_step = true end
 
-    step_planner:update_velocity()
-      
+    step_planner:update_velocity(hcm.get_motion_velocity())
+
+    --Calculate next step and torso positions based on velocity      
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step)
 
@@ -117,7 +105,7 @@ function walk.update()
     zmp_solver:compute( uSupport, uTorso_now, uTorso_next )
     t_last_step = Body.get_time() -- Update t_last_step
 
-    print( util.color('Walk velocity','blue'), string.format("%g, %g, %g",unpack(velCurrent)) )
+    print( util.color('Walk velocity','blue'), string.format("%g, %g, %g",unpack(step_planner.velCurrent)) )
   end
 
   local uTorso = zmp_solver:get_com(ph)
@@ -152,10 +140,8 @@ function walk.update()
 end -- walk.update
 
 function walk.exit()
-  mcm.set_status_uLeft(uLeft_next)
-  mcm.set_status_uRight(uRight_next)
-  mcm.set_status_uTorso(uTorso_next)
   print(walk._NAME..' Exit')
+  step_planner:save_stance(uLeft_next,uRight_next,uTorso_next)
   -- TODO: Store things in shared memory?
   -- stop logging
   if is_logging then

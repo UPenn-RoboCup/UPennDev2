@@ -96,11 +96,13 @@ function walk.update()
     if iStep<=3 then initial_step = true end
 
     --step_planner:update_velocity(hcm.get_motion_velocity())
-    step_planner:update_velocity(mcm.get_walk_vel())
+    velCurrent = step_planner:update_velocity(mcm.get_walk_vel())
 
     --Calculate next step and torso positions based on velocity      
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step)
+
+
 
     -- Compute the ZMP coefficients for the next step
     zmp_solver:compute( uSupport, uTorso_now, uTorso_next )

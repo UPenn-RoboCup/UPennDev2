@@ -271,8 +271,15 @@ libSlam.processL0 = function( lidar_points )
   local T = torch.mm( 
   tmp, libTransform.trans( 0,0,0)
   )
+  --[[ Compensate the torso pitch
+  local World2Body = torch.mm(
+  T, libTransform.rotY( Config.walk.bodyTilt  )
+  ) 
   -- Perform the multiply
+  W:mm( Y, World2Body:t() )
+  --]]
   W:mm( Y, T:t() )
+
   if Benchmark then
     print(string.format('lidar points transform update takes: \t\t%.5f ms', (unix.time()-scan_t)*1000) )
     scan_t = unix.time();
@@ -518,7 +525,7 @@ libSlam.scanMatchTwo = function( Y )
   SLAM.x = xCand[ixmax]
   SLAM.y = yCand[iymax]
   SLAM.yaw = aCand[iamax];
-  print('Match2', (unix.time()-t_m0)*1000,'ms' )
+  --print('Match2', (unix.time()-t_m0)*1000,'ms' )
   return hmax;
 end
 
@@ -883,10 +890,12 @@ libSlam.processIMU = function( rpy, yawdot, ts )
   -- Maybe filter the IMU data
   tmpdyaw = util.mod_angle(IMU.yaw-IMU.lastYaw)
   --IMU.yawdot = IMU.dyaw/(ts-IMU.t)
+--[[
   print('\nGYRO yawdot:', yawdot)
   print('dyaw/dt:', tmpdyaw/(ts-IMU.t))
   print('yawdot - dyaw/dt:', yawdot - tmpdyaw/(ts-IMU.t))
   print('yawdot*dt - dyaw',yawdot*(ts-IMU.t)-tmpdyaw,'\n')
+--]]
   IMU.t = ts
   IMU.lastYaw = IMU.yaw
 end

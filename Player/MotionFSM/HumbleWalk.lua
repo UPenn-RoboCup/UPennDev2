@@ -136,13 +136,11 @@ function walk.update()
     local log_entry = string.format('%f %f %d %s\n',t,ph,supportLeg,table.concat(lfoot,' '))
     LOG_F_SENSOR:write(log_entry)
   end
-
 end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')
   step_planner:save_stance(uLeft_next,uRight_next,uTorso_next)
-  -- TODO: Store things in shared memory?
   -- stop logging
   if is_logging then
     LOG_F_SENSOR:close()

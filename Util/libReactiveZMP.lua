@@ -29,6 +29,7 @@ local function solve( solver, z_support, z_start, z_finish, x1, x2 )
   return aP, aN
 end
 
+
 -- Torso goes from uStart to uFinish through uSupport
 -- Trapezoidal: / is start to support
 --              _ is through support
@@ -91,6 +92,11 @@ local function get_com( self, ph )
   return com
 end
 
+local function set_param(self,tStep,tZmp)
+  if tStep then self.tStep = tStep end
+  if tZmp then self.tZmp = tZmp end
+end
+
 -- Begin the library code
 local libReaciveZMP = {}
 -- Make a new solver with certain parameters
@@ -99,16 +105,16 @@ local libReaciveZMP = {}
 libReaciveZMP.new_solver = function( params )
   params = params or {}
 	local s = {}
-  s.tStep = params.tStep or 1
-  s.tZMP  = params.tZMP or .25
-  -- Starting and stopping phase of the trapezoidal
-  -- transition from double support to single and back
-  -- Acquire trapezoidal parameters
-  s.start_phase  = params.start_phase
-  s.finish_phase = params.finish_phase
-  -- Trapezoidal ZMP
+  s.tStep = params.tStep or Config.walk.tStep
+  s.tZMP  = params.tZMP or Config.walk.tZmp
+
+  -- Trapezoidal ZMP parameters
+  s.start_phase  = Config.walk.phZmp[1]
+  s.finish_phase = Config.walk.phZmp[1]
+  
   s.compute  = compute
   s.get_com  = get_com
+  s.set_param = set_param
 	return s
 end
 

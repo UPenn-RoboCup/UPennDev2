@@ -27,6 +27,7 @@ local supportX = Config.walk.supportX
 local supportY = Config.walk.supportY
 local torsoX    = Config.walk.torsoX
 
+
 local function update_velocity(self,vel)  
   -- Grab from the shared memory the desired walking speed
   local vx,vy,va = unpack(vel)
@@ -94,6 +95,40 @@ local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, su
     end  
   end
   return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport 
+end
+
+local function step_enque(self,uFoot,supportLeg,tStep)
+  local step = {}
+  step.uFoot = uFoot
+  step.supportLeg = supportLeg
+  step.tStep = tStep
+  table.insert(self.stepqueue,step)
+end
+
+local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initialStep)  
+  if #self.stepqueue==0 then return end
+
+  local uLeft_next, uRight_next, uTorso_next = uLeft_now, uRight_now, uTorso_now
+  local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
+  local uSupport
+
+  local current_step =table.remove(self.stepqueue) 
+  supportLeg = current_step.supportLeg
+  if supportLeg==0 then --Left support
+    uSupport = uLSupport
+    uRight_next = util.pose_global(current_step.uFoot,uTorso_now)
+    local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
+    uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
+  elseif supportLeg==1 then
+    uSupport = uRSupport
+    uLeft_next =  util.pose_global(current_step.uFoot,uTorso_now)
+    local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
+    uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
+  else --Double support
+    uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
+  end 
+
+  return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport, supportLeg, current_step.tStep
 end
 
 local function get_supports(uLeft,uRight)  
@@ -164,17 +199,16 @@ libStep.new_planner = function (params)
   s.update_velocity = update_velocity
   s.get_next_step_velocity = get_next_step_velocity
 
+  s.step_enque = step_enque
+  s.get_next_step_queue = get_next_step_queue
+
   --Functions #2
   s.get_supports = get_supports
   s.step_destination_left = step_destination_left
   s.step_destination_right = step_destination_right
 
   s.init_stance = init_stance
-  s.save_stance = save_stance
-
-  s.get_next_step_queue = calculate_next_step_queue
-  s.advance_step_from_queue = advance_step_from_queue
-
+  s.save_stance = save_stance 
   return s
 end
 

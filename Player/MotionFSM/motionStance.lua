@@ -70,7 +70,7 @@ function state.update()
 
 
 -- Grab gyro feedback for these joint angles
-  local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
+  local gyro_rpy = Body.get_sensor_gyro()
   local delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,0,gyro_rpy, angleShift)
 
   moveleg.set_leg_positions(uTorso,uLeft,uRight,

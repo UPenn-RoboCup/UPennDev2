@@ -95,7 +95,8 @@ function walk.update()
     local initial_step = false
     if iStep<=3 then initial_step = true end
 
-    step_planner:update_velocity(hcm.get_motion_velocity())
+    --step_planner:update_velocity(hcm.get_motion_velocity())
+    step_planner:update_velocity(mcm.get_walk_vel())
 
     --Calculate next step and torso positions based on velocity      
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =

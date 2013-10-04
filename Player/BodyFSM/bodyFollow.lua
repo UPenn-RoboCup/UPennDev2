@@ -1,6 +1,6 @@
 local state = {}
 state._NAME = ...
-local Body   = require(Config.dev.body)
+local Body   = require'Body'
 local util   = require'util'
 local vector = require'vector'
 
@@ -12,7 +12,7 @@ require'wcm'
 
 -- FSM coordination
 local simple_ipc = require'simple_ipc'
-local motion_ch = simple_ipc.new_publisher(Config.dev.motion,true)
+local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
 
 local t_entry, t_update, t_exit
 local nwaypoints, wp_id
@@ -152,7 +152,7 @@ function state.entry()
   wp_id = 1
 
   -- Zero the velocity
-  Body.set_walk_velocity({0,0,0})
+  mcm.set_walk_vel({0,0,0})
 
   -- Begin walking
   motion_ch:send'walk'
@@ -201,7 +201,7 @@ function state.update()
   local vel, at_waypoint = up(pose,wp,rel_wp)
 
   -- Update the velocity
-  Body.set_walk_velocity(vel)
+  mcm.set_walk_vel(vel)
 
   -- Check if we are at the waypoint
   if at_waypoint then
@@ -213,7 +213,7 @@ end
 function state.exit()
   print(state._NAME..' Exit' )
   -- Zero the velocity
-  Body.set_walk_velocity(vel)
+  mcm.set_walk_vel{0,0,0}
 end
 
 return state

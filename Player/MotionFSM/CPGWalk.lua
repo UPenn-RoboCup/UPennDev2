@@ -9,6 +9,8 @@ local Body   = require'Body'
 local vector = require'vector'
 local util   = require'util'
 local moveleg = require'moveleg'
+local libStep = require'libStep'
+local step_planner
 require'mcm'
 
 -- Keep track of important times
@@ -111,7 +113,8 @@ local function init_params()
   swing_pelvis = offset_pelvis*0.35
 end
 
-local function update_params()
+local function update_params(velCurrent)
+  print(velCurrent)
   mag_X = velCurrent[1]
   dMag_X = 0
   mag_Y = velCurrent[2]/2  
@@ -149,8 +152,6 @@ local function calculate_torso_movement(t)
     pelvis_offset_l = 0
     pelvis_offset_r = 0
   elseif t<t_SSP_end_L then --Single support phase, Right support
-
-  update_params()
     x_move_l = get_movement(t, pt_X, dPt_X ,t_SSP_start_L, mag_X, dMag_X)
     y_move_l = get_movement(t, pt_Y, dPt_Y ,t_SSP_start_L, mag_Y, dMag_Y)
     z_move_l = get_movement(t, pt_Z, dPt_Z ,t_SSP_start_L, mag_Z, dMag_Z)
@@ -229,7 +230,8 @@ function walk.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  -- Reset our velocity
+
+  step_planner = libStep.new_planner()
   velCurrent = vector.new{0,0,0}
   mcm.set_walk_vel(velCurrent)
 
@@ -251,7 +253,7 @@ function walk.entry()
   mcm.set_walk_stoprequest(0) --cancel stop request flag
 
   init_params()
-  update_params()
+  update_params(velCurrent)
 end
 
 function walk.update()
@@ -268,13 +270,12 @@ function walk.update()
   if ph>1 then
     ph = ph % 1
     if stoprequest>0 then return"done" end --Should we stop now?
-    velCurrent = moveleg.update_velocity(velCurrent)     -- Update the velocity via a filter
-    print(velCurrent)
+    step_planner:update_velocity(mcm.get_walk_vel())
+    update_params(step_planner.velCurrent)    
   end
 
   pLLeg, pRLeg = calculate_torso_movement(ph*tStep)
   
-
   local gyro_rpy = Body.get_sensor_gyro()
   delta_legs, angleShift = moveleg.get_leg_compensation(3,0,gyro_rpy, angleShift)
 

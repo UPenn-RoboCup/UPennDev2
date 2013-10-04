@@ -90,17 +90,17 @@ local function process_character(key_code,key_char,key_char_lower)
   if vel_adjustment then
     print( util.color('Inc vel by','yellow'), vel_adjustment )
     cmd = {}
-    cmd.shm = 'hcm' 
-    cmd.segment = 'motion'
-    cmd.key = 'velocity'
+    cmd.shm = 'mcm' 
+    cmd.segment = 'walk'
+    cmd.key = 'vel'
     cmd.delta = vel_adjustment
     return send_command(cmd)
   elseif key_char_lower=='k' then
     print( util.color('Zero Velocity','yellow'))
     cmd = {}
-    cmd.shm = 'hcm'
-    cmd.segment = 'motion'
-    cmd.key = 'velocity'
+    cmd.shm = 'mcm'
+    cmd.segment = 'walk'
+    cmd.key = 'vel'
     cmd.val = {0, 0, 0}
     return send_command(cmd)
   end

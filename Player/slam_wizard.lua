@@ -120,7 +120,7 @@ local function head_callback()
     -- Ground truth pose
     cur_pose = wcm.get_robot_pose()
   elseif USE_SLAM_ODOM then
-    --cur_pose = scm/blah:get_pose()
+    cur_pose = wcm.get_slam_pose()
   end
    
   ----------------
@@ -172,7 +172,7 @@ local function head_callback()
   --print( string.format('processL0 took: \t%.2f ms', (t1_processL0-t0_processL0)*1000) )
   ------------------
   
-  --wcm.set_slam_pose({libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom})
+  wcm.set_slam_pose({libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom})
 
   ------------------
   --[[ For real robot

@@ -11,23 +11,9 @@ local vector = require'vector'
 
 
 
--- Velocity limits used in update_velocity function
-local velLimitX = Config.walk.velLimitX or {-.06, .08}
-local velLimitY = Config.walk.velLimitY or {-.06, .06}
-local velLimitA = Config.walk.velLimitA or {-.4, .4}
-local velDelta  = Config.walk.velDelta or {.03,.015,.15}
-local vaFactor  = Config.walk.vaFactor or 0.6
 
--- Foothold Generation parameters ---------------------------------------
-local stanceLimitX = Config.walk.stanceLimitX or {-0.10 , 0.10}
-local stanceLimitY = Config.walk.stanceLimitY or {0.09 , 0.20}
-local stanceLimitA = Config.walk.stanceLimitA or {-0*math.pi/180, 40*math.pi/180}
 
--- Toe/heel overlap checking values
-local footSizeX = Config.walk.footSizeX or {-0.05,0.05}
-local stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015
-local stanceLimitY2 = 2* Config.walk.footY-stanceLimitMarginY
--------------------------------------------------------------------------
+
 
 local footY    = Config.walk.footY
 local supportX = Config.walk.supportX
@@ -48,55 +34,32 @@ local hardnessSupport = Config.walk.hardnessSupport or 0.7
 local hardnessSwing   = Config.walk.hardnessSwing or 0.5
 
 
-function moveleg.update_velocity(velCurrent)
-  -- Grab from the shared memory the desired walking speed
---  local vx,vy,va = unpack(mcm.get_walk_vel())
-  local vx,vy,va = unpack(hcm.get_motion_velocity())
 
-  --Filter the commanded speed
-  vx = math.min(math.max(vx,velLimitX[1]),velLimitX[2])
-  vy = math.min(math.max(vy,velLimitY[1]),velLimitY[2])
-  va = math.min(math.max(va,velLimitA[1]),velLimitA[2])
-  -- Find the magnitude of the velocity
-  local stepMag = math.sqrt(vx^2+vy^2)
-  --Slow down when turning
-  local vFactor   = 1-math.abs(va)/vaFactor
-  local magFactor = math.min(velLimitX[2]*vFactor,stepMag)/(stepMag+0.000001)
-  -- Limit the forwards and backwards velocity
-  vx = math.min(math.max(vx*magFactor,velLimitX[1]),velLimitX[2])
-  vy = math.min(math.max(vy*magFactor,velLimitY[1]),velLimitY[2])
-  va = math.min(math.max(va,velLimitA[1]),velLimitA[2])
-  -- Check the change in the velocity
-  local velDiff = vector.new({vx,vy,va}) - velCurrent
-  -- Limit the maximum velocity change PER STEP
-  velDiff[1] = util.procFunc(velDiff[1],0,velDelta[1])
-  velDiff[2] = util.procFunc(velDiff[2],0,velDelta[2])
-  velDiff[3] = util.procFunc(velDiff[3],0,velDelta[3])
-
-  -- Update the current velocity command
-  return velCurrent + velDiff
-end
 
 function moveleg.advance_step(uLeft, uRight,uTorso,iStep,velCurrent,enable_initial_step)
-  
-
+  --[[
   supportLeg = iStep % 2 -- supportLeg: 0 for left support, 1 for right support
   --Zero velocity at the initial steps
   -- iStep:2 for 1st step, 3 for 2st step
+  initial_step = false
+  if not enable_initial_step then iStep = 5 
+  elseif iStep<=3 then initial_step = true end
 
-  if not enable_initial_step then iStep = 5 end --don't do initial step thing
-  if iStep<=3 then velCurrent = vector.new{0,0,0} end
+
   local uLeft_now, uRight_now, uTorso_now = uLeft, uRight, uTorso
   local uSupport, uLeft_next, uRight_next = 
     moveleg.calculate_next_step( uLeft, uRight, supportLeg, velCurrent )
-  if iStep<=3  then uLeft_next = uLeft_now;uRight_next = uRight_now;end
 
-  -- This is the next desired torso position    
-  uTorso_next = moveleg.calculate_next_torso( uLeft_next, uRight_next, supportLeg, 0.5 )
-  if enable_intial_step and iStep<=3 then
-    --support should be closer to center for initial step
-    uSupport = util.se2_interpolate(0.3,uSupport,uTorso_next)      
-  end  
+
+  local uSupport,uLeft_next,uRight_next,uTorso_next = 
+--TODOTODOTODO
+
+  uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
+      libStep.get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step)
+ 
+
+
+
   -- Save some step-by-step data to shared memory
   mcm.set_status_velocity(velCurrent)
   mcm.set_support_uLeft_now(  uLeft_now )
@@ -107,89 +70,9 @@ function moveleg.advance_step(uLeft, uRight,uTorso,iStep,velCurrent,enable_initi
   mcm.set_support_uTorso_next( uTorso_next )
 
   return uLeft_now,uRight_now,uTorso_now, uLeft_next,uRight_next,uTorso_next, uSupport
+--]]  
 end
 
-
-function moveleg.calculate_next_step(uLeft_now, uRight_now, supportLeg, uBody_diff)
-  if supportLeg == 0 then    -- Left support
-    -- Find the left support point
-    local uSupport = util.pose_global({supportX, supportY, 0}, uLeft_now)
-    -- Find the right foot destination
-    local uRight_next = moveleg.step_destination_right(uBody_diff, uLeft_now, uRight_now)
-    return uSupport, uLeft_now, uRight_next
-  else    -- Right support
-    -- Find the right support point
-    local uSupport = util.pose_global({supportX, -supportY, 0}, uRight_now)
-    -- Find the left foot destination
-    local uLeft_next = moveleg.step_destination_left(uBody_diff, uLeft_now, uRight_now)
-    return uSupport, uLeft_next, uRight_now
-  end
-end
-
-function moveleg.calculate_next_torso(uLeft_next,uRight_next,supportLeg, shiftFactor)
-  -- shiftFactor: How much should we shift final Torso pose?
-  local u0 = util.se2_interpolate(.5, uLeft_next, uRight_next)
-  -- NOTE: supportX and supportY are globals
-  local uLeftSupport  = util.pose_global({supportX,  supportY, 0}, uLeft_next )
-  local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight_next)
-  if supportLeg==0 then --Left support
-    local uTorso_next = util.se2_interpolate(shiftFactor, uLeftSupport, uRightSupport)
-    return uTorso_next
-  else
-    local uTorso_next = util.se2_interpolate(shiftFactor, uRightSupport, uLeftSupport)
-    return uTorso_next
-  end
-end
-
-
-function moveleg.step_destination_left(vel, uLeft, uRight)
-  local uLRFootOffset = vector.new({0,footY,0})
-
-  local u0 = util.se2_interpolate(.5, uLeft, uRight)
-  -- Determine nominal midpoint position 1.5 steps in future
-  local u1 = util.pose_global(vel, u0)
-  local u2 = util.pose_global(.5*vel, u1)
-  local uLeftPredict = util.pose_global(uLRFootOffset, u2)
-  local uLeftRight = util.pose_relative(uLeftPredict, uRight)
-  -- Do not pidgeon toe, cross feet:
-  --Check toe and heel overlap
-  local toeOverlap  = -footSizeX[1] * uLeftRight[3]
-  local heelOverlap = -footSizeX[2] * uLeftRight[3]
-  local limitY = math.max(stanceLimitY[1],
-  stanceLimitY2+math.max(toeOverlap,heelOverlap))
-
-  --print("Toeoverlap Heeloverlap",toeOverlap,heelOverlap,limitY)
-  uLeftRight[1] = math.min(math.max(uLeftRight[1], stanceLimitX[1]), stanceLimitX[2])
-  uLeftRight[2] = math.min(math.max(uLeftRight[2], limitY),stanceLimitY[2])
-  uLeftRight[3] = math.min(math.max(uLeftRight[3], stanceLimitA[1]), stanceLimitA[2])
-
-  return util.pose_global(uLeftRight, uRight)
-end
-
-function moveleg.step_destination_right(vel, uLeft, uRight)
-  local uLRFootOffset = vector.new({0,footY,0})
-
-  local u0 = util.se2_interpolate(.5, uLeft, uRight)
-  -- Determine nominal midpoint position 1.5 steps in future
-  local u1 = util.pose_global(vel, u0)
-  local u2 = util.pose_global(.5*vel, u1)
-  local uRightPredict = util.pose_global(-1*uLRFootOffset, u2)
-  local uRightLeft = util.pose_relative(uRightPredict, uLeft)
-  -- Do not pidgeon toe, cross feet:
-
-  --Check toe and heel overlap
-  local toeOverlap  = footSizeX[1] * uRightLeft[3]
-  local heelOverlap = footSizeX[2] * uRightLeft[3]
-  local limitY = math.max(stanceLimitY[1], stanceLimitY2+math.max(toeOverlap,heelOverlap))
-
-  --print("Toeoverlap Heeloverlap",toeOverlap,heelOverlap,limitY)
-
-  uRightLeft[1] = math.min(math.max(uRightLeft[1], stanceLimitX[1]), stanceLimitX[2])
-  uRightLeft[2] = math.min(math.max(uRightLeft[2], -stanceLimitY[2]), -limitY)
-  uRightLeft[3] = math.min(math.max(uRightLeft[3], -stanceLimitA[2]), -stanceLimitA[1])
-
-  return util.pose_global(uRightLeft, uLeft)
-end
 
 function moveleg.get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
   local body_yaw
@@ -328,14 +211,6 @@ function moveleg.foot_trajectory_square(phSingle,uStart,uEnd,stepHeight)
   local zFoot = stepHeight * zf
   return uFoot, zFoot
 end
-
-
-
-
-
-
-
-
 
 function moveleg.get_foot(ph,start_phase,finish_phase)
   -- Computes relative x, z motion of foot during single support phase

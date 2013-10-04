@@ -11,6 +11,10 @@ local util   = require'util'
 local moveleg = require'moveleg'
 local libReactiveZMP = require'libReactiveZMP'
 local zmp_solver
+
+local libStep = require'libStep'
+local step_planner
+
 require'mcm'
 
 -- Keep track of important times
@@ -68,6 +72,8 @@ function walk.entry()
     ['finish_phase'] = Config.walk.phSingle[2],
   })
    
+  step_planner = libStep.new_planner()
+
   --Now we advance a step at next update  
   t_last_step = Body.get_time() - tStep 
 
@@ -98,10 +104,14 @@ function walk.update()
     ph = ph % 1
     iStep = iStep + 1  -- Increment the step index  
     supportLeg = iStep % 2 -- supportLeg: 0 for left support, 1 for right support
-    velCurrent = moveleg.update_velocity(velCurrent)     -- Update the velocity via a filter
-  
-    uLeft_now,uRight_now,uTorso_now, uLeft_next,uRight_next,uTorso_next, uSupport=
-      moveleg.advance_step(uLeft_next,uRight_next,uTorso_next,iStep,velCurrent,true)
+
+    initial_step = false
+    if iStep<=3 then initial_step = true end
+
+    step_planner:update_velocity()
+      
+    uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
+      step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step)
 
     -- Compute the ZMP coefficients for the next step
     zmp_solver:compute( uSupport, uTorso_now, uTorso_next )

@@ -140,6 +140,10 @@ if IS_WEBOTS then
  --]]
  
 
+
+
+
+
 else
 
   --[[
@@ -159,25 +163,82 @@ else
   walk.footY = 0.1095
   walk.bodyTilt = 11*math.pi/180
 
-  gyroFactorX = 490.23/(251000/180)*0
-  gyroFactorY = 490.23/(251000/180)*0
+  gyroFactorX = 490.23/(251000/180)*0.2
+  gyroFactorY = 490.23/(251000/180)*0.2
+
+  gyroFactorX = 490.23/(251000/180)*0.5
+
+
   walk.ankleImuParamX={1, 0.9*gyroFactorX,  0*math.pi/180, 5*math.pi/180}
-  walk.kneeImuParamX= {1, 0.3*gyroFactorX,    0*math.pi/180, 5*math.pi/180}
+  walk.kneeImuParamX= {1, -0.3*gyroFactorX,  0*math.pi/180, 5*math.pi/180}
   walk.ankleImuParamY={1, 1.0*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
   walk.hipImuParamY  ={1, 0.5*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
+
+
+
+
+  walk.ankleImuParamX={1, 0.9*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
+  walk.kneeImuParamX= {1, -0.3*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
+
+
+
+
+
+  walk.ankleImuParamY={1, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
+  walk.hipImuParamY  ={1, 0.5*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
+
+  gyroFactorY = 490.23/(251000/180)*0.5
+--testing
+  walk.ankleImuParamY={1, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
+  walk.hipImuParamY  ={1, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
+
 
  ------------------------------------
 
 --Robotis style walk
   walk.tStep = 0.45
-  walk.phSingle = {0.15,0.85}
-  walk.phZmp = {0.15,0.85}
+  walk.phSingle = {0.125,0.875}
+  walk.phZmp = {0.125,0.875}
   walk.stepHeight = 0.04
 
   walk.supportX = 0.01
-  walk.supportY = 0.03
-  walk.tZMP = 0.28
 
+  walk.tZMP = 0.30
+
+--------------------------------------------
+-- Humblewalk testing
+-- This works kinda well with robotis feedback
+  walk.tZMP = 0.30  --0.90m COM height
+  walk.supportX = 0.03
+  walk.supportY = 0.03
+  walk.hipRollCompensation = 1*math.pi/180
+---------------------------------------------
+
+  walk.tZMP = 0.28 --0.80m COM height
+  walk.supportY = 0.00
+  walk.supportX = 0.04
+
+--[[
+--------------------------------------------
+--Slow walk test
+--Kinda stable with rollCompensation 
+  walk.tZMP = 0.26 
+  walk.tStep = 0.70
+  walk.supportY = 0.04
+  walk.phSingle = {0.2,0.8}
+  walk.hipRollCompensation = 3*math.pi/180
+--------------------------------------------
+--]]
+
+
+--[[
+-------------------------------------------
+--Even slower walk test
+--Kinda stable too
+walk.tStep = 1.0 
+
+--------------------------------------------
+--]]
 end
 
 

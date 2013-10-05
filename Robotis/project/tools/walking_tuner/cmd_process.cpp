@@ -247,7 +247,8 @@ void DrawScreen()
 	int old_col = Col;
 	int old_row = Row;
 
-	system("clear");
+//Hack
+//	system("clear");
 	GoToCursor(0, 0);
 
 	// Display menu

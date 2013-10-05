@@ -59,6 +59,21 @@ function state.entry()
 
   stage = 1
 
+  for i=1,10 do
+  Body.set_lleg_command_velocity({500,500,500,500,500,500})
+  unix.usleep(1e6*0.01);
+
+  Body.set_rleg_command_velocity({500,500,500,500,500,500})
+  unix.usleep(1e6*0.01);  
+
+  Body.set_rleg_command_acceleration({50,50,50,50,50,50})
+  unix.usleep(1e6*0.01);
+
+  Body.set_lleg_command_acceleration({50,50,50,50,50,50})
+  unix.usleep(1e6*0.01);
+  end
+
+
 end
 
 ---

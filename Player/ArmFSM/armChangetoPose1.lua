@@ -34,6 +34,13 @@ local pLWristTarget = {-.0,.30,-.24,0,0,0}
 local pRWristTarget = {-.0,-.30,-.24,0,0,0}
 
 
+--higher
+local pLWristTarget = {-.02,.30,-.20,0,0,0}
+local pRWristTarget = {-.02,-.30,-.20,0,0,0}
+
+
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry

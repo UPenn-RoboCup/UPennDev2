@@ -15,6 +15,7 @@
 #include "motion/PRO54.h"
 //#include "motion/motionstatus.h"
 #include "motion/kinematics.h"
+ #include <unistd.h>
 
 using namespace Thor;
 
@@ -660,6 +661,10 @@ void Walking::Process()
 		double rlGyroErr = MotionStatus::RL_GYRO;
 		double fbGyroErr = MotionStatus::FB_GYRO;
 
+
+        printf("Gyro FB:%f\n",fbGyroErr);
+
+
 		outValue[1] += (int)(dir[1] * rlGyroErr * BALANCE_HIP_ROLL_GAIN*490.23); // R_HIP_ROLL
         outValue[7] += (int)(dir[7] * rlGyroErr * BALANCE_HIP_ROLL_GAIN*490.23); // L_HIP_ROLL
 
@@ -672,6 +677,7 @@ void Walking::Process()
 		outValue[4] -= (int)(dir[4] * fbGyroErr * BALANCE_ANKLE_PITCH_GAIN*490.23); // R_ANKLE_PITCH
         outValue[10] -= (int)(dir[10] * fbGyroErr * BALANCE_ANKLE_PITCH_GAIN*490.23); // L_ANKLE_PITCH
 
+        printf("AnklePitch:%d\n",outValue[4]);
     }
 
     //fprintf(stderr,"%d, %d\n" ,outValue[1], outValue[5]);

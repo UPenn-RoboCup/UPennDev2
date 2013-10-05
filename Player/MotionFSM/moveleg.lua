@@ -93,10 +93,18 @@ function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,
     delta_legs[10] = angleShift[3]
     delta_legs[11] = angleShift[1]
   else --Robotis style
+    delta_legs[2] = angleShift[4]
+    delta_legs[4] = angleShift[3]
+    delta_legs[5] = angleShift[1]
+    delta_legs[6] = angleShift[2]  
 
+    delta_legs[8]  = angleShift[4]
+    delta_legs[10] = angleShift[3]
+    delta_legs[11] = angleShift[1]
+    delta_legs[12] = angleShift[2]    
   end
 
---  print('Ankle shift',vector.new(ankleShift)*Body.RAD_TO_DEG )
+--  print('Ankle shift',angleShift[1]*Body.RAD_TO_DEG )
 
   return delta_legs, angleShift
 end

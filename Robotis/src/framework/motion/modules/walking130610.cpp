@@ -15,6 +15,7 @@
 #include "motion/PRO54.h"
 //#include "motion/motionstatus.h"
 #include "motion/kinematics.h"
+#include <unistd.h> 
 
 using namespace Thor;
 

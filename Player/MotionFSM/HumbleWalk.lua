@@ -125,16 +125,29 @@ function walk.update()
 
   -- Grab gyro feedback for these joint angles
   local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
-  delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,phSingle,gyro_rpy, angleShift)
+
+
+
+  --Robotis-style simple feedback
+  --SJ: This is actually better :D
+  delta_legs, angleShift = moveleg.get_leg_compensation(3,phSingle,gyro_rpy, angleShift)
+
+
+  --Old feedback
+  --delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,phSingle,gyro_rpy, angleShift)
+
+  
+
   moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
 
-  -- Grab the sensor values
-  local lfoot = Body.get_sensor_lfoot()
-  local rfoot = Body.get_sensor_rfoot()
-  -- ask for the foot sensor values
-  Body.request_lfoot()
-  Body.request_rfoot()
   if is_logging then
+-- Grab the sensor values
+    local lfoot = Body.get_sensor_lfoot()
+    local rfoot = Body.get_sensor_rfoot()
+    -- ask for the foot sensor values
+  
+    Body.request_lfoot()
+    Body.request_rfoot()
     -- write the log
     local log_entry = string.format('%f %f %d %s\n',t,ph,supportLeg,table.concat(lfoot,' '))
     LOG_F_SENSOR:write(log_entry)

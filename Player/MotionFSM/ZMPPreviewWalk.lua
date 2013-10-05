@@ -30,13 +30,10 @@ local angleShift = vector.new{0,0,0,0}
 
 local iStep
 
-is_logging = false -- logging
-local LOG_F_SENSOR
-
 -- What foot trajectory are we using?
 local foot_traj_func  
-if Config.walk.foot_traj==1 then foot_traj_func = moveleg.foot_trajectory_base
-else foot_traj_func = moveleg.foot_trajectory_square end
+foot_traj_func = moveleg.foot_trajectory_base
+--foot_traj_func = moveleg.foot_trajectory_square
 
 ---------------------------
 -- State machine methods --
@@ -69,12 +66,7 @@ function walk.entry()
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
 
-  -- log file
-  if is_logging then
-    LOG_F_SENSOR = io.open('feet.log','w')
-    local log_entry = string.format('t ph supportLeg values\n')
-    LOG_F_SENSOR:write(log_entry)
-  end
+  
 end
 
 function walk.update()
@@ -131,32 +123,18 @@ function walk.update()
 
   --Robotis-style simple feedback
   --SJ: This is actually better :D
-  delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,phSingle,gyro_rpy, angleShift)
- 
+    delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,phSingle,gyro_rpy, angleShift)
+
+
+  
 
   moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
-
-  if is_logging then
--- Grab the sensor values
-    local lfoot = Body.get_sensor_lfoot()
-    local rfoot = Body.get_sensor_rfoot()
-    -- ask for the foot sensor values
-  
-    Body.request_lfoot()
-    Body.request_rfoot()
-    -- write the log
-    local log_entry = string.format('%f %f %d %s\n',t,ph,supportLeg,table.concat(lfoot,' '))
-    LOG_F_SENSOR:write(log_entry)
-  end
 end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')
   step_planner:save_stance(uLeft_next,uRight_next,uTorso_next)
   -- stop logging
-  if is_logging then
-    LOG_F_SENSOR:close()
-  end
 end
 
 return walk

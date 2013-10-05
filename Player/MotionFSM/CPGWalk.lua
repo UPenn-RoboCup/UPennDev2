@@ -140,6 +140,7 @@ local function calculate_torso_movement(t)
   z_swap = wsin(t, pt_swap_Z, dPt_swap_Z, mag_swap_Z, dMag_swap_Z);
   
   if (t<t_SSP_start_L) then --Double support phase
+--    print("DS")
     x_move_l = get_movement(t_SSP_start_L, pt_X, dPt_X, t_SSP_start_L,mag_X, dMag_X)
     y_move_l = get_movement(t_SSP_start_L, pt_Y, dPt_Y, t_SSP_start_L,mag_Y, dMag_Y)
     z_move_l = get_movement(t_SSP_start_L, pt_Z, dPt_Z, t_SSP_start_L,mag_Z, dMag_Z)
@@ -152,6 +153,7 @@ local function calculate_torso_movement(t)
     pelvis_offset_l = 0
     pelvis_offset_r = 0
   elseif t<t_SSP_end_L then --Single support phase, Right support
+--  print("RS_SS")
     x_move_l = get_movement(t, pt_X, dPt_X ,t_SSP_start_L, mag_X, dMag_X)
     y_move_l = get_movement(t, pt_Y, dPt_Y ,t_SSP_start_L, mag_Y, dMag_Y)
     z_move_l = get_movement(t, pt_Z, dPt_Z ,t_SSP_start_L, mag_Z, dMag_Z)
@@ -165,6 +167,7 @@ local function calculate_torso_movement(t)
     pelvis_offset_l = get_movement(t, pt_Z, dPt_Z ,t_SSP_start_L, swing_pelvis/2, swing_pelvis/2)
     pelvis_offset_r = get_movement(t, pt_Z, dPt_Z ,t_SSP_start_L, -offset_pelvis/2, -offset_pelvis/2)
   elseif t<t_SSP_start_R then --Double support phase
+--    print("DS")    
     x_move_l = get_movement(t_SSP_end_L, pt_X, dPt_X, t_SSP_start_L,mag_X, dMag_X)
     y_move_l = get_movement(t_SSP_end_L, pt_Y, dPt_Y, t_SSP_start_L,mag_Y, dMag_Y)
     z_move_l = get_movement(t_SSP_end_L, pt_Z, dPt_Z, t_SSP_start_L,mag_Z, dMag_Z)
@@ -177,22 +180,24 @@ local function calculate_torso_movement(t)
     pelvis_offset_l = 0
     pelvis_offset_r = 0
   elseif t<t_SSP_end_R then  --Single support phase, Left support
-    x_move_l = get_movement(t, pt_X, dPt_X ,t_SSP_start_R+math.pi, mag_X, dMag_X)
-    y_move_l = get_movement(t, pt_Y, dPt_Y ,t_SSP_start_R+math.pi, mag_Y, dMag_Y)
-    z_move_l = get_movement(t_SSP_end_L, pt_Z, dPt_Z ,t_SSP_start_L, mag_Z, dMag_Z)
-    c_move_l = get_movement(t, pt_A, dPt_A ,t_SSP_start_R+math.pi, mag_A, dMag_A)
+--  print("LS_SS")
+    x_move_l = get_movement(t,           pt_X, dPt_X ,t_SSP_start_R+math.pi, mag_X, dMag_X)
+    y_move_l = get_movement(t,           pt_Y, dPt_Y ,t_SSP_start_R+math.pi, mag_Y, dMag_Y)
+    z_move_l = get_movement(t_SSP_end_L, pt_Z, dPt_Z ,t_SSP_start_L,         mag_Z, dMag_Z)
+    c_move_l = get_movement(t,           pt_A, dPt_A ,t_SSP_start_R+math.pi, mag_A, dMag_A)
 
-    x_move_r = get_movement(t, pt_X, dPt_X ,t_SSP_start_R+math.pi, -mag_X, -dMag_X)
-    y_move_r = get_movement(t, pt_Y, dPt_Y ,t_SSP_start_R+math.pi, -mag_Y, -dMag_Y)
-    z_move_r = get_movement(t, pt_Z, dPt_Z ,t_SSP_start_R, mag_Z, dMag_Z)
-    c_move_r = get_movement(t, pt_A, dPt_A ,t_SSP_start_R+math.pi, -mag_A, -dMag_A)
+    x_move_r = get_movement(t,           pt_X, dPt_X ,t_SSP_start_R+math.pi, -mag_X, -dMag_X)
+    y_move_r = get_movement(t,           pt_Y, dPt_Y ,t_SSP_start_R+math.pi, -mag_Y, -dMag_Y)
+    z_move_r = get_movement(t,           pt_Z, dPt_Z ,t_SSP_start_R, mag_Z, dMag_Z)
+    c_move_r = get_movement(t,           pt_A, dPt_A ,t_SSP_start_R+math.pi, -mag_A, -dMag_A)
 
     pelvis_offset_l = get_movement(t, pt_Z, dPt_Z ,t_SSP_start_R, offset_pelvis/2, offset_pelvis/2)
     pelvis_offset_r = get_movement(t, pt_Z, dPt_Z ,t_SSP_start_R, -swing_pelvis/2, -swing_pelvis/2)
   else --Double support phase
+--    print("DS")
     x_move_l = get_movement(t_SSP_end_R, pt_X, dPt_X, t_SSP_start_R+math.pi,mag_X, dMag_X)
     y_move_l = get_movement(t_SSP_end_R, pt_Y, dPt_Y, t_SSP_start_R+math.pi,mag_Y, dMag_Y)
-    z_move_l = get_movement(t_SSP_end_L, pt_Z, dPt_Z, t_SSP_start_L,mag_Z, dMag_Z)
+    z_move_l = get_movement(t_SSP_end_L, pt_Z, dPt_Z, t_SSP_start_L,        mag_Z, dMag_Z)
     c_move_l = get_movement(t_SSP_end_R, pt_A, dPt_A, t_SSP_start_R+math.pi,mag_A, dMag_A)
 
     x_move_r = get_movement(t_SSP_end_R, pt_X, dPt_X, t_SSP_start_R+math.pi,-mag_X, -dMag_X)
@@ -272,6 +277,7 @@ function walk.update()
     if stoprequest>0 then return"done" end --Should we stop now?
     step_planner:update_velocity(mcm.get_walk_vel())
     update_params(step_planner.velCurrent)    
+    t_last_step = t
   end
 
   pLLeg, pRLeg = calculate_torso_movement(ph*tStep)

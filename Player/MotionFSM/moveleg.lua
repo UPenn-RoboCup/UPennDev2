@@ -45,8 +45,7 @@ end
 
 
 
-function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,
-    angleShift)
+function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,angleShift)
   local gyro_pitch = gyro_rpy[2]
   local gyro_roll = gyro_rpy[1]
 
@@ -108,6 +107,59 @@ function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,
 
   return delta_legs, angleShift
 end
+
+--Robotis style simple feedback
+function moveleg.get_leg_compensation_simple(supportLeg, phSingle, gyro_rpy,angleShift)
+  local gyro_pitch = gyro_rpy[2]
+  local gyro_roll = gyro_rpy[1]
+
+  -- Ankle feedback
+  local ankleShiftX = util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4])
+  local ankleShiftY = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])
+
+  -- Ankle shift is filtered... thus a global
+  angleShift[1] = angleShift[1] + ankleImuParamX[1]*(ankleShiftX-angleShift[1])
+  angleShift[2] = angleShift[2] + ankleImuParamY[1]*(ankleShiftY-angleShift[2])
+
+  -- Knee feedback
+  local kneeShiftX = util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4])
+  angleShift[3] = angleShift[3] + kneeImuParamX[1]*(kneeShiftX-angleShift[3])
+  
+  -- Hip feedback
+  local hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
+  angleShift[4] = angleShift[4]+hipImuParamY[1]*(hipShiftY-angleShift[4])
+  
+  local delta_legs = vector.zeros(Body.nJointLLeg+Body.nJointRLeg)
+  -- Change compensation in the beginning of the phase (first 10%)
+  -- Saturate compensation afterwards
+  -- Change compensation at the beginning of the phase (first 10%)
+  -- Same sort of trapezoid at double->single->double support shape
+  local phComp = 10 * math.min( phSingle, .1, 1-phSingle )
+
+  delta_legs[4] = angleShift[3]
+  delta_legs[5] = angleShift[1]
+
+  delta_legs[10] = angleShift[3]
+  delta_legs[11] = angleShift[1]
+
+  if supportLeg == 0 then -- Left support
+    delta_legs[2] = angleShift[4]
+    delta_legs[2] = delta_legs[2] + hipRollCompensation*phComp
+    delta_legs[6] = angleShift[2]  
+  elseif supportLeg==1 then    -- Right support
+    delta_legs[8]  = angleShift[4]    
+    delta_legs[8]  = delta_legs[8] - hipRollCompensation*phComp
+    delta_legs[12] = angleShift[2]        
+  elseif supportLeg==2 then 
+
+  end
+
+--  print('Ankle shift',angleShift[1]*Body.RAD_TO_DEG )
+
+  return delta_legs, angleShift
+end
+
+
 
 function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
   local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)

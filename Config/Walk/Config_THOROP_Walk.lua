@@ -44,25 +44,7 @@ walk.phZmp = {0.2,0.8}
 ------------------------------------
 -- Compensation parameters
 ------------------------------------
-walk.hardnessSupport = 1
-walk.hardnessSwing = 1
 --walk.hipRollCompensation = 3*math.pi/180
-walk.hipRollCompensation = 1*math.pi/180
-walk.supportModYInitial = -0.04 --Reduce initial body swing
-
--- slow/static
-walk.supportY = 0.04
-walk.bodyHeight = 0.950
-walk.supportX = 0.01
-walk.hipRollCompensation = 3*math.pi/180
-walk.stepHeight = 0.02
-
-walk.tZMP = 0.30
-walk.footY  = 0.10
-walk.supportY = 0.02
-walk.supportX = 0.02
-walk.stepHeight = 0.025
-
 walk.hipRollCompensation = 1*math.pi/180
 
 --Param for actual robot
@@ -78,18 +60,18 @@ walk.foot_traj = 1;
 
 if IS_WEBOTS then
   --Webots parameters
-
+--[[
   walk.tStep = 0.8
   walk.phSingle = {0.2,0.8}
   walk.phZmp = {0.2,0.8}
   walk.stepHeight = 0.05
-
+--]]
 
 --Robotis style walk
   walk.tStep = 0.45
   walk.phSingle = {0.125,0.875}
   walk.phZmp = {0.125,0.875}
-  walk.stepHeight = 0.03
+  walk.stepHeight = 0.04
 
   gyroFactorX = 0.1
   gyroFactorY = 0.1
@@ -99,10 +81,6 @@ if IS_WEBOTS then
   walk.hipImuParamY = {0.3,  0.5*gyroFactorY, 1*math.pi/180, 5*math.pi/180}
 
   walk.foot_traj = 2; --square step
-
-
-
-
 
   --Robotis style walk
   walk.bodyHeight = 0.9285318
@@ -132,91 +110,48 @@ if IS_WEBOTS then
   walk.velLimitX = {-.20,.20}
   walk.velLimitY = {-.15,.15}
 
- --[[
- walk.phZmp = {0.10,0.90}
- walk.phSingle = {0.15,0.85}
- walk.tStep = 30
- walk.hipRollCompensation = 10*math.pi/180
- --]]
- 
 
-
-
-
+--ZMP preview walk test
 
 else
 
-  --[[
-    --FOR STATIC WALKING
-    walk.hipRollCompensation = 2*math.pi/180
-    walk.stepHeight = 0.03
-    walk.bodyHeight = 0.93
-    walk.supportY = 0.035 
-    walk.footY  = 0.095
-    walk.tStep = 12
-  --]]
+  walk.foot_traj = 1; --curved step
+  walk.foot_traj = 2; --square step
 
 --Robotis default walk parameters
-
   walk.bodyHeight = 0.9285318
   walk.supportX = 0.0515184
   walk.footY = 0.1095
   walk.bodyTilt = 11*math.pi/180
 
-  gyroFactorX = 490.23/(251000/180)*0.2
-  gyroFactorY = 490.23/(251000/180)*0.2
-
   gyroFactorX = 490.23/(251000/180)*0.5
-
-
-  walk.ankleImuParamX={1, 0.9*gyroFactorX,  0*math.pi/180, 5*math.pi/180}
-  walk.kneeImuParamX= {1, -0.3*gyroFactorX,  0*math.pi/180, 5*math.pi/180}
-  walk.ankleImuParamY={1, 1.0*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
-  walk.hipImuParamY  ={1, 0.5*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
-
-
-
-
+  gyroFactorY = 490.23/(251000/180)*0.5
   walk.ankleImuParamX={1, 0.9*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
   walk.kneeImuParamX= {1, -0.3*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
-
-
-
-
-
-  walk.ankleImuParamY={1, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
-  walk.hipImuParamY  ={1, 0.5*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
-
-  gyroFactorY = 490.23/(251000/180)*0.5
---testing
   walk.ankleImuParamY={1, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
   walk.hipImuParamY  ={1, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
-
-
  ------------------------------------
 
---Robotis style walk
+--Robotis style walk w/ humblewalk
   walk.tStep = 0.45
   walk.phSingle = {0.125,0.875}
   walk.phZmp = {0.125,0.875}
   walk.stepHeight = 0.04
 
-  walk.supportX = 0.01
-
-  walk.tZMP = 0.30
-
 --------------------------------------------
--- Humblewalk testing
--- This works kinda well with robotis feedback
+-- This works kinda well
   walk.tZMP = 0.30  --0.90m COM height
   walk.supportX = 0.03
   walk.supportY = 0.03
   walk.hipRollCompensation = 1*math.pi/180
----------------------------------------------
+--------------------------------------------
 
+--------------------------------------------
+--Also works kinda well
   walk.tZMP = 0.28 --0.80m COM height
-  walk.supportY = 0.00
   walk.supportX = 0.04
+  walk.supportY = 0.00
+  ------------------------------------------
 
 --[[
 --------------------------------------------

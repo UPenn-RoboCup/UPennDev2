@@ -1,0 +1,252 @@
+-- ZMP Preview library
+-- Using the old lua matrix library (for now)
+-- (c) 2013 Stephen McGill, Seung-Joon Yi
+local vector = require'vector'
+local util   = require'util'
+local matrix = require('matrix_zmp')
+require'mcm'
+
+--We maintain Two queue for preview duration
+
+--ZMP position queue : uSupport
+--Step status queue : uLeft_now, uRight_now, uLeft_next,uRight_next,supportLeg
+
+
+--Initialize a stationary preview queue
+local function init_preview_queue(self,uLeft,uRight,uTorso,t,step_planner)
+  local uLSupport,uRSupport = step_planner.get_supports(uLeft_now,uRight_now)
+  local uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
+
+  self.x = matrix:new{{uTorso[1],uTorso[2]},{0,0},{0,0}}
+  
+  self.preview_interval = self.preview_steps * self.preview_tStep
+
+  self.preview_queue={}
+  self.preview_queue_zmpx={}
+  self.preview_queue_zmpy={}
+  for i=1,self.preview_steps do
+    local preview_item = {}    
+    preview_item.uLeft_now = uLeft
+    preview_item.uLeft_next = uLeft
+    preview_item.uRight_now = uRight
+    preview_item.uRight_next = uRight
+    preview_item.supportLeg = 2 --Double support
+    preview_item.tStart = t
+    preview_item.tEnd = t + self.preview_interval
+
+    self.preview_queue[i] = preview_item
+    self.preview_queue_zmpx[i] = uSupport[1]
+    self.preview_queue_zmpy[i] = uSupport[2]
+  end  
+end
+
+local function get_current_step_info(self,t)
+  local current_info = self.preview_queue[1]
+  local ph = 0
+  if current_info.supportLeg<2 then
+    ph =  (t-current_info.tStart)/
+          (current_info.tEnd-current_info.tStart)
+  end
+  return 
+    current_info.uLeft_now,
+    current_info.uRight_now,
+    current_info.uLeft_next,
+    current_info.uRight_next,    
+    current_info.supportLeg,
+    ph
+end
+
+local function update_preview_queue_velocity(self,step_planner,t)
+  table.remove(self.preview_queue,1)
+  table.remove(self.preview_queue_zmpx,1)
+  table.remove(self.preview_queue_zmpy,1)
+
+  local last_preview_item = self.preview_queue[#self.preview_queue]
+  local last_preview_zmpx = self.preview_queue_zmpx[#self.preview_queue]
+  local last_preview_zmpy = self.preview_queue_zmpy[#self.preview_queue]
+
+
+  if last_preview_item.tEnd >= t + self.preview_interval then
+    --Old step
+    table.insert(self.preview_queue,last_preview_item)
+    table.insert(self.preview_queue_zmpx,last_preview_zmpx)
+    table.insert(self.preview_queue_zmpy,last_preview_zmpy)
+  else --New step
+    local supportLeg
+    local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
+    if last_preview_item.supportLeg==2 then 
+      supportLeg = 0 
+    else
+      supportLeg = 1-last_preview_item.supportLeg
+    end
+    step_planner:update_velocity(mcm.get_walk_vel())
+    uLeft_now, uRight_now, uTorso_now, uLeft_next,
+      uRight_next, uTorso_next, uSupport = step_planner:get_next_step_velocity(
+        last_preview_item.uLeft_next,
+        last_preview_item.uRight_next,
+        step_planner.get_torso(
+          last_preview_item.uLeft_next,last_preview_item.uRight_next),
+        supportLeg,false)
+    local new_preview_item = {}
+    new_preview_item.uLeft_now = uLeft_now
+    new_preview_item.uLeft_next = uLeft_next
+    new_preview_item.uRight_now = uRight_now
+    new_preview_item.uRight_next = uRight_next
+    new_preview_item.supportLeg = supportLeg
+    new_preview_item.tStart = last_preview_item.tEnd
+    new_preview_item.tEnd = last_preview_item.tEnd + self.tStep
+
+    table.insert(self.preview_queue,new_preview_item)
+    table.insert(self.preview_queue_zmpx,uSupport[1])
+    table.insert(self.preview_queue_zmpy,uSupport[2])
+  end
+end
+
+local function update_state(self)
+
+--  Update state variable
+--  u = param_k1_px * x - param_k1* zmparray; --Control output
+--  x = param_a * x + param_b * u;
+  local x = self.x
+  local ux =  self.param_k1_px[1][1] * x[1][1]+
+              self.param_k1_px[1][2] * x[2][1]+
+              self.param_k1_px[1][3] * x[3][1]
+
+  local uy =  self.param_k1_px[1][1] * x[1][2]+
+              self.param_k1_px[1][2] * x[2][2]+
+              self.param_k1_px[1][3] * x[3][2]
+
+  for i=1,self.preview_steps do
+    ux = ux - self.param_k1[1][i]*self.preview_queue_zmpx[i]
+    uy = uy - self.param_k1[1][i]*self.preview_queue_zmpy[i]
+  end
+  local x_next = self.param_a*x + self.param_b * matrix:new({{ux,uy}})
+  self.x = x_next
+  return vector.new({x_next[1][1],x_next[1][2]}) --Torso XY
+end
+
+
+local function precompute(self)
+  ------------------------------------
+  --We only need following parameters
+  -- param_k1_px : 1x3
+  -- param_k1 : 1xnPreview 
+  -- param_a : 3x3
+  -- param_b : 4x1
+--[[
+  if Config.zmpstep.params then
+    param_k1_px = matrix:new({Config.zmpstep.param_k1_px});
+    param_k1 = matrix:new({Config.zmpstep.param_k1});
+    param_a = matrix:new(Config.zmpstep.param_a);
+    param_b = matrix.transpose(matrix:new({Config.zmpstep.param_b}));
+
+   print("param_k1_px:",matrix.size(param_k1_px))
+   print("param_k1:",matrix.size(param_k1))
+   print("param_a:",matrix.size(param_a))
+   print("param_b:",matrix.size(param_b))
+
+  else
+--]]    
+
+  local timeStep = self.preview_tStep
+  local tZmp = self.tZmp
+  local nPreview = self.preview_steps
+  local r_q = self.r_q
+
+  local px,pu0,pu = {}, {}, {}
+  for i=1, nPreview do
+    px[i]={1, i*timeStep, i*i*timeStep*timeStep/2 - tZmp*tZmp}
+    pu0[i]=(1+3*(i-1)+3*(i-1)^2)/6 *timeStep^3 - timeStep*tZmp*tZmp
+    pu[i]={}
+    for j=1, nPreview do pu[i][j]=0 end
+    for j0=1,i do
+      j = i+1-j0
+      pu[i][j]=pu0[i-j+1]
+    end
+  end
+  local param_pu = matrix:new(pu)
+  local param_px = matrix:new(px)
+  local param_pu_trans = matrix.transpose(param_pu)
+  local param_a=matrix {{1,timeStep,timeStep^2/2},{0,1,timeStep},{0,0,1}}
+  local param_b=matrix.transpose({{timeStep^3/6, timeStep^2/2, timeStep,timeStep}})
+  local param_eye = matrix:new(nPreview,"I")
+  local param_k=-matrix.invert(
+      (param_pu_trans * param_pu) + (r_q*param_eye)
+      )* param_pu_trans
+  local k1={};
+  k1[1]={};
+  for i=1,nPreview do k1[1][i]=param_k[1][i] end
+  local param_k1 = matrix:new(k1)
+  local param_k1_px = param_k1 * param_px
+
+  self.param_k1_px = param_k1_px
+  self.param_k1 = param_k1
+  self.param_a = param_a
+  self.param_b = param_b
+
+-- param_k1_px : 1x3
+-- param_k1 : 1xnPreview 
+-- param_a : 3x3
+-- param_b : 4x1
+-- print out zmp preview params
+
+--[[
+ outfile=assert(io.open("zmpparams.lua","w")); 
+ data=''
+ data=data..string.format("zmpstep.params = true;\n")
+ data=data..string.format("zmpstep.param_k1_px={%f,%f,%f}\n",
+   param_k1_px[1][1],param_k1_px[1][2],param_k1_px[1][3]);
+ data=data..string.format("zmpstep.param_a={\n");
+ for i=1,3 do
+   data=data..string.format("  {%f,%f,%f},\n",
+param_a[i][1],param_a[i][2],param_a[i][3]);
+ end
+ data=data..string.format("}\n");
+ data=data..string.format("zmpstep.param_b={%f,%f,%f,%f}\n",
+   param_b[1][1],param_b[2][1],param_b[3][1],param_b[4][1]);
+ data=data..string.format("zmpstep.param_k1={\n    ");
+ 
+ for i=1,nPreview do
+   data=data..string.format("%f,",param_k1[1][i]);
+   if i%5==0 then   data=data.."\n    " ;end
+ end
+ data=data..string.format("}\n");
+ outfile:write(data);
+ outfile:flush();
+ outfile:close();
+--]]
+end
+
+-- Begin the library code
+local libZMP = {}
+-- Make a new solver with certain parameters
+-- You can update these paramters on the fly, of course
+libZMP.new_solver = function( params )
+  params = params or {}
+	local s = {}
+
+  s.preview_interval = 1.50 --1.5sec preview
+  s.preview_tStep = 0.010 --10ms
+  s.preview_steps = s.preview_interval / s.preview_tStep
+  
+  s.r_q = 10^-6
+
+  s.x = matrix:new{{0,0},{0,0},{0,0}}
+  s.preview_queue={}
+  s.preview_queue_zmpx={}
+  s.preview_queue_zmpy={}
+
+  s.tStep = params.tStep or 1 --Walk tStep
+  s.tZmp  = params.tZMP or .25
+  
+
+  s.init_preview_queue = init_preview_queue
+  s.get_current_step_info = get_current_step_info
+  s.update_preview_queue_velocity = update_preview_queue_velocity
+  s.update_state = update_state
+  s.precompute = precompute
+  
+	return s
+end
+
+return libZMP

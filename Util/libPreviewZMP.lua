@@ -5,6 +5,7 @@ local util   = require'util'
 local torch  = require'torch'
 torch.Tensor = torch.DoubleTensor
 
+--[[
 --We maintain Two queue for preview duration
 
 --ZMP position queue : uSupport
@@ -76,10 +77,13 @@ local function update_preview_queue(self,t)
   end
 end
 
+local function get_com(self)
 
 
+end
 
 
+--]]
 
 
 
@@ -129,7 +133,7 @@ local function generate_step_queue(solver,step_definition,uLeftI,uRightI)
   end
   -- Reset the queue_index
   solver.step_queue_index = 1
-  solver.last_last = false
+  solver.last_last = false  
 end
 
 local function update_preview(solver, t, supportX, supportY)
@@ -256,6 +260,7 @@ local function solve_preview(solver)
 end
 
 local function init_preview(solver,uTorso,uLeft,uRight,t)
+  print("INITSTART")
   local preview = solver.preview
   assert(preview,'Please precompute the preview engine!')
   
@@ -294,6 +299,9 @@ end
 -- preview_interval: How many seconds into the future should we preview?
 -- ts: At what granularity should we solver?
 local function compute_preview( solver, preview_interval, ts, save_file )
+  
+print("INITSTART")
+
   -- Preview parameter defaults
   preview_interval = preview_interval or 1.50 -- 1500ms
   ts = ts or 0.010 -- 10ms timestep
@@ -358,6 +366,9 @@ local function compute_preview( solver, preview_interval, ts, save_file )
     f:write(data_str)
     f:close()
   end
+
+
+  print("computed")
 end
 
 local function get_preview_com(solver)

@@ -92,6 +92,32 @@ local function get_com( self, ph )
   return com
 end
 
+local function get_com_vel(self,ph)
+  local tStep = self.tStep
+  local tZMP  = self.tZMP
+  local expT = math.exp( ph * tStep/tZMP )
+  -- Initial Center of mass is for single support
+  -- Angle *should* be unused at this point
+  local com_vel = vector.new{
+    (self.aXP*expT  - self.aXN/expT) / tZMP,
+    (self.aYP*expT -  self.aYN/expT) / tZMP,
+    0
+  }
+  -- Check if we are in double<->single transition zone
+  if ph < self.start_phase then
+    local start_time = tStep*( ph - self.start_phase )
+    -- From double to single
+    com_vel[1] = com_vel[1] + self.m1X*(1 - math.cosh(start_time/tZMP))
+    com_vel[2] = com_vel[2] + self.m1Y*(1 - math.cosh(start_time/tZMP))
+  elseif ph > self.finish_phase then
+    local finish_time = tStep*(ph-self.finish_phase)
+    -- From single to double
+    com_vel[1] = com_vel[1] + self.m2X*(1 - math.cosh(finish_time/tZMP))
+    com_vel[2] = com_vel[2] + self.m2Y*(1 - math.cosh(finish_time/tZMP))
+  end
+  return com_vel
+end
+
 local function set_param(self,tStep,tZmp)
   if tStep then self.tStep = tStep end
   if tZmp then self.tZmp = tZmp end
@@ -114,6 +140,7 @@ libReaciveZMP.new_solver = function( params )
   
   s.compute  = compute
   s.get_com  = get_com
+  s.get_com_vel  = get_com_vel
   s.set_param = set_param
 	return s
 end

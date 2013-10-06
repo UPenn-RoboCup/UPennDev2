@@ -102,8 +102,6 @@ function walk.update()
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step)
 
-
-
     -- Compute the ZMP coefficients for the next step
     zmp_solver:compute( uSupport, uTorso_now, uTorso_next )
     t_last_step = Body.get_time() -- Update t_last_step
@@ -152,7 +150,14 @@ end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')
+
+  --Get the final COM velocity
+  local uTorsoVel = zmp_solver:get_com_vel(1)
+  print("Torso vel:",uTorsoVel[1],uTorsoVel[2])
+
   step_planner:save_stance(uLeft_next,uRight_next,uTorso_next)
+  mcm.set_status_uTorsoVel(uTorsoVel)
+
   -- stop logging
   if is_logging then
     LOG_F_SENSOR:close()

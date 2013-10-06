@@ -141,6 +141,8 @@ function state.exit()
   mcm.set_status_uRight(uRight)
   mcm.set_status_uTorso(uTorso)
 
+  mcm.set_status_uTorsoVel(vector.new{0,0,0})
+
   mcm.set_status_bodyHeight(Config.walk.bodyHeight)
   hcm.set_motion_bodyHeightTarget(Config.walk.bodyHeight)  
 end

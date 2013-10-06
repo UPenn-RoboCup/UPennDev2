@@ -5,7 +5,7 @@ local vector = require'vector'
 local util   = require'util'
 local matrix = require('matrix_zmp')
 require'mcm'
-
+require'Config'
 --We maintain Two queue for preview duration
 
 --ZMP position queue : uSupport
@@ -176,8 +176,6 @@ local function update_preview_queue_steps(self,step_planner,t)
 end
 
 
-
-
 local function update_state(self)
 
 --  Update state variable
@@ -212,7 +210,31 @@ local function can_stop(self)
   end  
 end
 
+local function save_param(self)
+  local outfile=assert(io.open("zmpparams.lua","w")); 
+  local data=''
+  data=data..string.format("zmpstep.params = true;\n")
+  data=data..string.format("zmpstep.param_k1_px={%f,%f,%f}\n",
+   self.param_k1_px[1][1],self.param_k1_px[1][2],self.param_k1_px[1][3]);
+  data=data..string.format("zmpstep.param_a={\n");
+  for i=1,3 do
+    data=data..string.format("  {%f,%f,%f},\n",
+  self.param_a[i][1],self.param_a[i][2],self.param_a[i][3]);
+  end
+  data=data..string.format("}\n");
+  data=data..string.format("zmpstep.param_b={%f,%f,%f,%f}\n",
+    self.param_b[1][1],self.param_b[2][1],self.param_b[3][1],self.param_b[4][1]);
+  data=data..string.format("zmpstep.param_k1={\n    ");
 
+  for i=1,self.preview_steps do
+    data=data..string.format("%f,",self.param_k1[1][i]);
+    if i%5==0 then   data=data.."\n    " ;end
+  end
+  data=data..string.format("}\n");
+  outfile:write(data);
+  outfile:flush();
+  outfile:close();
+end
 
 local function precompute(self)
   ------------------------------------
@@ -221,88 +243,54 @@ local function precompute(self)
   -- param_k1 : 1xnPreview 
   -- param_a : 3x3
   -- param_b : 4x1
---[[
+  ------------------------------------
   if Config.zmpstep.params then
-    param_k1_px = matrix:new({Config.zmpstep.param_k1_px});
-    param_k1 = matrix:new({Config.zmpstep.param_k1});
-    param_a = matrix:new(Config.zmpstep.param_a);
-    param_b = matrix.transpose(matrix:new({Config.zmpstep.param_b}));
-
-   print("param_k1_px:",matrix.size(param_k1_px))
-   print("param_k1:",matrix.size(param_k1))
-   print("param_a:",matrix.size(param_a))
-   print("param_b:",matrix.size(param_b))
-
+    self.param_k1_px = matrix:new({Config.zmpstep.param_k1_px});
+    self.param_k1 = matrix:new({Config.zmpstep.param_k1});
+    self.param_a = matrix:new(Config.zmpstep.param_a);
+    self.param_b = matrix.transpose(matrix:new({Config.zmpstep.param_b}));
+    print("ZMP parameters loaded")
   else
---]]    
+    print("Generating ZMP parameters")
+    local timeStep = self.preview_tStep
+    local tZmp = self.tZmp
+    local nPreview = self.preview_steps
+    local r_q = self.r_q
 
-  local timeStep = self.preview_tStep
-  local tZmp = self.tZmp
-  local nPreview = self.preview_steps
-  local r_q = self.r_q
-
-  local px,pu0,pu = {}, {}, {}
-  for i=1, nPreview do
-    px[i]={1, i*timeStep, i*i*timeStep*timeStep/2 - tZmp*tZmp}
-    pu0[i]=(1+3*(i-1)+3*(i-1)^2)/6 *timeStep^3 - timeStep*tZmp*tZmp
-    pu[i]={}
-    for j=1, nPreview do pu[i][j]=0 end
-    for j0=1,i do
-      j = i+1-j0
-      pu[i][j]=pu0[i-j+1]
+    local px,pu0,pu = {}, {}, {}
+    for i=1, nPreview do
+      px[i]={1, i*timeStep, i*i*timeStep*timeStep/2 - tZmp*tZmp}
+      pu0[i]=(1+3*(i-1)+3*(i-1)^2)/6 *timeStep^3 - timeStep*tZmp*tZmp
+      pu[i]={}
+      for j=1, nPreview do pu[i][j]=0 end
+      for j0=1,i do
+        j = i+1-j0
+        pu[i][j]=pu0[i-j+1]
+      end
     end
+    local param_pu = matrix:new(pu)
+    local param_px = matrix:new(px)
+    local param_pu_trans = matrix.transpose(param_pu)
+    local param_a=matrix {{1,timeStep,timeStep^2/2},{0,1,timeStep},{0,0,1}}
+    local param_b=matrix.transpose({{timeStep^3/6, timeStep^2/2, timeStep,timeStep}})
+    local param_eye = matrix:new(nPreview,"I")
+    local param_k=-matrix.invert(
+        (param_pu_trans * param_pu) + (r_q*param_eye)
+        )* param_pu_trans
+    local k1={};
+    k1[1]={};
+    for i=1,nPreview do k1[1][i]=param_k[1][i] end
+    local param_k1 = matrix:new(k1)
+    local param_k1_px = param_k1 * param_px
+
+    self.param_k1_px = param_k1_px
+    self.param_k1 = param_k1
+    self.param_a = param_a
+    self.param_b = param_b
+
+    self:save_param()
+    print("ZMP parameters saved")
   end
-  local param_pu = matrix:new(pu)
-  local param_px = matrix:new(px)
-  local param_pu_trans = matrix.transpose(param_pu)
-  local param_a=matrix {{1,timeStep,timeStep^2/2},{0,1,timeStep},{0,0,1}}
-  local param_b=matrix.transpose({{timeStep^3/6, timeStep^2/2, timeStep,timeStep}})
-  local param_eye = matrix:new(nPreview,"I")
-  local param_k=-matrix.invert(
-      (param_pu_trans * param_pu) + (r_q*param_eye)
-      )* param_pu_trans
-  local k1={};
-  k1[1]={};
-  for i=1,nPreview do k1[1][i]=param_k[1][i] end
-  local param_k1 = matrix:new(k1)
-  local param_k1_px = param_k1 * param_px
-
-  self.param_k1_px = param_k1_px
-  self.param_k1 = param_k1
-  self.param_a = param_a
-  self.param_b = param_b
-
--- param_k1_px : 1x3
--- param_k1 : 1xnPreview 
--- param_a : 3x3
--- param_b : 4x1
--- print out zmp preview params
-
---[[
- outfile=assert(io.open("zmpparams.lua","w")); 
- data=''
- data=data..string.format("zmpstep.params = true;\n")
- data=data..string.format("zmpstep.param_k1_px={%f,%f,%f}\n",
-   param_k1_px[1][1],param_k1_px[1][2],param_k1_px[1][3]);
- data=data..string.format("zmpstep.param_a={\n");
- for i=1,3 do
-   data=data..string.format("  {%f,%f,%f},\n",
-param_a[i][1],param_a[i][2],param_a[i][3]);
- end
- data=data..string.format("}\n");
- data=data..string.format("zmpstep.param_b={%f,%f,%f,%f}\n",
-   param_b[1][1],param_b[2][1],param_b[3][1],param_b[4][1]);
- data=data..string.format("zmpstep.param_k1={\n    ");
- 
- for i=1,nPreview do
-   data=data..string.format("%f,",param_k1[1][i]);
-   if i%5==0 then   data=data.."\n    " ;end
- end
- data=data..string.format("}\n");
- outfile:write(data);
- outfile:flush();
- outfile:close();
---]]
 end
 
 -- Begin the library code
@@ -313,11 +301,10 @@ libZMP.new_solver = function( params )
   params = params or {}
 	local s = {}
 
-  s.preview_interval = 1.50 --1.5sec preview
-  s.preview_tStep = 0.010 --10ms
-  s.preview_steps = s.preview_interval / s.preview_tStep
-  
-  s.r_q = 10^-6
+  s.preview_interval = Config.zmpstep.preview_interval
+  s.preview_tStep = Config.zmpstep.preview_tStep
+  s.preview_steps = s.preview_interval / s.preview_tStep  
+  s.r_q = Config.zmpstep.param_r_q
 
   s.x = matrix:new{{0,0},{0,0},{0,0}}
   s.preview_queue={}
@@ -334,6 +321,8 @@ libZMP.new_solver = function( params )
   s.update_preview_queue_steps = update_preview_queue_steps
   s.update_state = update_state
   s.precompute = precompute
+  s.save_param = save_param
+
   s.can_stop = can_stop
   
 	return s

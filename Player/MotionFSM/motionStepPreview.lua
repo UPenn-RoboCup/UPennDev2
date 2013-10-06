@@ -93,6 +93,11 @@ function walk.update()
   local discrete_updated = false
   local com_pos
 
+  --TODO: should better check step queue items
+  if #step_planner.stepqueue==0 and zmp_solver:can_stop() then
+    return "done"
+  end
+
   while t_discrete<t do
     --Get step information
     uLeft_now, uRight_now, uLeft_next, uRight_next,
@@ -121,6 +126,7 @@ function walk.update()
     elseif supportLeg == 2 then --Double support
 
     end
+    step_planner:save_stance(uLeft,uRight,uTorso)  
 
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )

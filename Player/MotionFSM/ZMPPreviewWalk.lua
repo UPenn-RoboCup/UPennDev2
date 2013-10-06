@@ -30,8 +30,8 @@ local stepHeight  = Config.walk.stepHeight
 local angleShift = vector.new{0,0,0,0}
 
 -- What foot trajectory are we using?
-local foot_traj_func  = moveleg.foot_trajectory_base
---local foot_traj_func = moveleg.foot_trajectory_square
+--local foot_traj_func  = moveleg.foot_trajectory_base
+local foot_traj_func = moveleg.foot_trajectory_square
 
 local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local iStep, iStep_new

@@ -54,7 +54,7 @@ if arg[1] == '-l' then
 	is_logging = true
 end
 if is_logging then
-  filetime = os.date('%m.%d.%Y.%H.%M')
+  filetime = os.date('%m.%d.%Y.%H.%M.%S')
   logfile = io.open('SlamLogs/'..filetime..'.log','w')
 end
 -- Replay flag
@@ -165,6 +165,7 @@ local function head_callback()
   local t0_processL0 = unix.time()
   -- TODO: Just add the gyro values to the lidar metadata
   --print('RPY/Gyro',vector.new(metadata.rpy), metadata.gyro[3])
+  metadata.rpy[3] = metadata.rpy[3] + 90/180*math.pi
   libSlam.processIMU( metadata.rpy, metadata.gyro[3], metadata.t )
   libSlam.processOdometry({0,0,0}) --( Body.get_robot_odom() )
   libSlam.processL0( lidar0.points_xyz )

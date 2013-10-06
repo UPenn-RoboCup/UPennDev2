@@ -29,12 +29,12 @@ local stepHeight  = Config.walk.stepHeight
 -- They are filtered.  TODO: Use dt in the filters
 local angleShift = vector.new{0,0,0,0}
 
-local iStep
-
 -- What foot trajectory are we using?
-local foot_traj_func  
-foot_traj_func = moveleg.foot_trajectory_base
---foot_traj_func = moveleg.foot_trajectory_square
+local foot_traj_func  = moveleg.foot_trajectory_base
+--local foot_traj_func = moveleg.foot_trajectory_square
+
+local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
+local iStep, iStep_new
 local t, t_discrete
 
 ---------------------------
@@ -50,22 +50,19 @@ function walk.entry()
   mcm.set_walk_vel({0,0,0})--reset target speed
 
   tStep = Config.walk.tStep
-
   -- Initiate the ZMP solver
   zmp_solver = libZMP.new_solver({
     ['tStep'] = Config.walk.tStep,
     ['tZMP']  = Config.walk.tZMP,    
   })
   zmp_solver:precompute()
-
   step_planner = libStep.new_planner()
 
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
       step_planner:init_stance()
 
   zmp_solver:init_preview_queue(uLeft_now,uRight_now, uTorso_now, Body.get_time(), step_planner)
-  
-  iStep = 1   -- Initialize the step index  
+   
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
 
@@ -75,20 +72,25 @@ end
 
 function walk.update()
   -- Get the time of update
-
   local t = Body.get_time()
   local t_diff = t - t_update
   t_update = t   -- Save this at the last update time
+  local stoprequest = mcm.get_walk_stoprequest()
   local discrete_updated = false
   local com_pos
 
-  while t_discrete<t do
+  --Check if the torso stopped to move
+  if stoprequest>0 and zmp_solver:can_stop() then
+    return "done"
+  end
+
+  while t_discrete<t do    
     --Get step information
     uLeft_now, uRight_now, uLeft_next, uRight_next,
-      supportLeg, ph = zmp_solver:get_current_step_info(t_discrete)
-    --Get the current COM position
-    com_pos = zmp_solver:update_state()
-    zmp_solver:update_preview_queue_velocity(step_planner,t_discrete)
+      supportLeg, ph, iStep_new = zmp_solver:get_current_step_info(t_discrete)
+    com_pos = zmp_solver:update_state() --Get the current COM position
+
+    zmp_solver:update_preview_queue_velocity(step_planner,t_discrete, stoprequest)
     t_discrete = t_discrete + zmp_solver.preview_tStep
     discrete_updated = true
   end
@@ -105,6 +107,8 @@ function walk.update()
     else    -- Right support    
       uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    
     end
+    step_planner:save_stance(uLeft,uRight,uTorso)  
+
 
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )

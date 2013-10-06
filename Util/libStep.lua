@@ -142,7 +142,7 @@ local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initi
   return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport, supportLeg, current_step.tStep
 end
 
-local function get_supports(uLeft,uRight)  
+local function get_supports(uLeft,uRight)    
   local uLSupport = util.pose_global({supportX, supportY, 0}, uLeft)
   local uRSupport = util.pose_global({supportX, -supportY, 0}, uRight)
   return uLSupport,uRSupport

@@ -177,6 +177,8 @@ walk.tStep = 1.0
 end
 
 
+--SJ:block walking test
+--walk.stepHeight = 0.20
 
 -----------------------------------------------------------
 -- Stance parameters

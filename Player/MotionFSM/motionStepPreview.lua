@@ -31,8 +31,8 @@ local iStep
 
 -- What foot trajectory are we using?
 local foot_traj_func  
-foot_traj_func = moveleg.foot_trajectory_base
---foot_traj_func = moveleg.foot_trajectory_square
+--foot_traj_func = moveleg.foot_trajectory_base
+foot_traj_func = moveleg.foot_trajectory_square
 local t, t_discrete
 
 ---------------------------
@@ -66,7 +66,7 @@ function walk.entry()
   iStep = 1   -- Initialize the step index  
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
-
+--[[
 
   step_planner:step_enque({0.05,-Config.walk.footY,0},0,0.5) --LS  
   step_planner:step_enque({},2,0.5) --DS  
@@ -79,6 +79,11 @@ function walk.entry()
   step_planner:step_enque({0.15,-Config.walk.footY,0},0,1.5) --LS
   step_planner:step_enque({},2,1) --DS  
   step_planner:step_enque({0.15,Config.walk.footY,0},1,1.5) --RS
+--]]
+
+  step_planner:step_enque({0.20,-Config.walk.footY,0},0,8) --LS  
+  step_planner:step_enque({},2,4) --DS  
+  step_planner:step_enque({0.10,Config.walk.footY,0},1,4) --RS
 
   t = Body.get_time()
   t_discrete = t
@@ -93,10 +98,12 @@ function walk.update()
   local discrete_updated = false
   local com_pos
 
+--[[
   --TODO: should better check step queue items
   if #step_planner.stepqueue==0 and zmp_solver:can_stop() then
     return "done"
   end
+  --]]
 
   while t_discrete<t do
     --Get step information

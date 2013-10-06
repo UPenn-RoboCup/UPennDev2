@@ -47,7 +47,9 @@ jcm.set_sensor_gyro({0,0,0})
 jcm.set_sensor_rpy({0,0,0})
 
 local function process_imu(rpy,gyro)
+--SJ: SOMETHING'S WEIRD HERE
   -- Perform the remapping and place into jcm
+--[[
   jcm.set_sensor_rpy({
     rpy[3],
     -rpy[2],
@@ -57,6 +59,14 @@ local function process_imu(rpy,gyro)
     gyro[2],
     gyro[3],
     -gyro[1]
+    })
+--]]
+
+  jcm.set_sensor_rpy({0,0,0})
+  jcm.set_sensor_gyro({
+    rpy[2],
+    rpy[3],
+    -rpy[1]
     })
 
 end

@@ -1,5 +1,6 @@
 local state = {}
 state._NAME = ...
+local vector = require'vector' 
 
 local Body = require'Body'
 local t_entry, t_update, t_finish
@@ -46,6 +47,8 @@ function state.update()
   -- Always request the angles
   Body.request_larm_position()
   Body.request_rarm_position()
+
+--  print("LArm jangle:",vector.new(qLArm)*Body.RAD_TO_DEG)
 
 end
 

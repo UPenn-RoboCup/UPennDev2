@@ -15,7 +15,7 @@ local Benchmark = false --true
 local realFlag = 1
 local deg2rad = math.pi/180
 -- Flag for webots
-local IS_WEBOTS = true
+local IS_WEBOTS = false
 
 ---------------------------------
 -- Libraries
@@ -104,6 +104,7 @@ pre_pose = {0,0,0}
 ---------------------------------
 -- Callbacks for receiving lidar readings
 local function head_callback()
+  --print('HEAD CALLBACK')
   -- Grab the data  
   local meta, has_more = head_lidar_ch:receive()
   local metadata = mp.unpack(meta)
@@ -116,12 +117,14 @@ local function head_callback()
   lidar0_count = lidar0_count + 1;
   if lidar0_count%lidar0_interval~=0 then return end
 
+	--[[
   if IS_WEBOTS then
     -- Ground truth pose
     cur_pose = wcm.get_robot_pose()
   elseif USE_SLAM_ODOM then
     cur_pose = wcm.get_slam_pose()
   end
+	--]]
    
   ----------------
   -- Benchmark
@@ -165,7 +168,11 @@ local function head_callback()
   local t0_processL0 = unix.time()
   -- TODO: Just add the gyro values to the lidar metadata
   --print('RPY/Gyro',vector.new(metadata.rpy), metadata.gyro[3])
-  metadata.rpy[3] = metadata.rpy[3] + 90/180*math.pi
+	
+	-- YAW has offset from real robot
+	if not IS_WEBOTS then
+  	metadata.rpy[3] = metadata.rpy[3] + 110/180*math.pi
+	end
   libSlam.processIMU( metadata.rpy, metadata.gyro[3], metadata.t )
   libSlam.processOdometry({0,0,0}) --( Body.get_robot_odom() )
   libSlam.processL0( lidar0.points_xyz )
@@ -304,6 +311,7 @@ end
 local cnt = 0
 
 function slam.update()
+  
   ------------------
   -- Merge maps
   ------------------

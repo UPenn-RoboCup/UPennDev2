@@ -1,11 +1,11 @@
--- Torch/Lua Zero Moment Point Library
+-- ZMP Preview library
+-- Using the old lua matrix library (for now)
 -- (c) 2013 Stephen McGill, Seung-Joon Yi
 local vector = require'vector'
 local util   = require'util'
-local torch  = require'torch'
-torch.Tensor = torch.DoubleTensor
+local matrix = require('matrix_zmp')
+require'mcm'
 
---[[
 --We maintain Two queue for preview duration
 
 --ZMP position queue : uSupport
@@ -13,9 +13,14 @@ torch.Tensor = torch.DoubleTensor
 
 
 --Initialize a stationary preview queue
-local function init_preview_queue(self,uLeft,uRight,t)
-  local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
+local function init_preview_queue(self,uLeft,uRight,uTorso,t,step_planner)
+  local uLSupport,uRSupport = step_planner.get_supports(uLeft_now,uRight_now)
   local uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
+
+  self.x = matrix:new{{uTorso[1],uTorso[2]},{0,0},{0,0}}
+  
+  self.preview_interval = self.preview_steps * self.preview_tStep
+
   self.preview_queue={}
   self.preview_queue_zmpx={}
   self.preview_queue_zmpy={}
@@ -26,16 +31,32 @@ local function init_preview_queue(self,uLeft,uRight,t)
     preview_item.uRight_now = uRight
     preview_item.uRight_next = uRight
     preview_item.supportLeg = 2 --Double support
+    preview_item.tStart = t
+    preview_item.tEnd = t + self.preview_interval
 
     self.preview_queue[i] = preview_item
     self.preview_queue_zmpx[i] = uSupport[1]
     self.preview_queue_zmpy[i] = uSupport[2]
-  end
-  self.t_last_step = t
-  self.t_step_duration = 0
+  end  
 end
 
-local function update_preview_queue(self,t)
+local function get_current_step_info(self,t)
+  local current_info = self.preview_queue[1]
+  local ph = 0
+  if current_info.supportLeg<2 then
+    ph =  (t-current_info.tStart)/
+          (current_info.tEnd-current_info.tStart)
+  end
+  return 
+    current_info.uLeft_now,
+    current_info.uRight_now,
+    current_info.uLeft_next,
+    current_info.uRight_next,    
+    current_info.supportLeg,
+    ph
+end
+
+local function update_preview_queue_velocity(self,step_planner,t)
   table.remove(self.preview_queue,1)
   table.remove(self.preview_queue_zmpx,1)
   table.remove(self.preview_queue_zmpy,1)
@@ -44,11 +65,12 @@ local function update_preview_queue(self,t)
   local last_preview_zmpx = self.preview_queue_zmpx[#self.preview_queue]
   local last_preview_zmpy = self.preview_queue_zmpy[#self.preview_queue]
 
-  if self.t_last_step+self.t_step_duration >=t then
+
+  if last_preview_item.tEnd >= t + self.preview_interval then
     --Old step
     table.insert(self.preview_queue,last_preview_item)
     table.insert(self.preview_queue_zmpx,last_preview_zmpx)
-    table.insert(self.preview_queue_zmpx,last_preview_zmpy)
+    table.insert(self.preview_queue_zmpy,last_preview_zmpy)
   else --New step
     local supportLeg
     local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
@@ -57,19 +79,22 @@ local function update_preview_queue(self,t)
     else
       supportLeg = 1-last_preview_item.supportLeg
     end
+    step_planner:update_velocity(mcm.get_walk_vel())
     uLeft_now, uRight_now, uTorso_now, uLeft_next,
-      uRight_next, uTorso_next, uSupport =
-        step_planner:get_next_step_velocity(
-          last_preview_item.uLeft_next,
-          last_preview_item.uRight_next,
-          step_planner.get_torso(last_preview_item.uLeft_next,last_preview_item.uRight_next),
-          supportLeg,false)
+      uRight_next, uTorso_next, uSupport = step_planner:get_next_step_velocity(
+        last_preview_item.uLeft_next,
+        last_preview_item.uRight_next,
+        step_planner.get_torso(
+          last_preview_item.uLeft_next,last_preview_item.uRight_next),
+        supportLeg,false)
     local new_preview_item = {}
     new_preview_item.uLeft_now = uLeft_now
     new_preview_item.uLeft_next = uLeft_next
     new_preview_item.uRight_now = uRight_now
     new_preview_item.uRight_next = uRight_next
     new_preview_item.supportLeg = supportLeg
+    new_preview_item.tStart = last_preview_item.tEnd
+    new_preview_item.tEnd = last_preview_item.tEnd + self.tStep
 
     table.insert(self.preview_queue,new_preview_item)
     table.insert(self.preview_queue_zmpx,uSupport[1])
@@ -77,308 +102,183 @@ local function update_preview_queue(self,t)
   end
 end
 
-local function get_com(self)
+local function update_preview_queue_steps(self,step_planner,t)
 
+  table.remove(self.preview_queue,1)
+  table.remove(self.preview_queue_zmpx,1)
+  table.remove(self.preview_queue_zmpy,1)
 
+  local last_preview_item = self.preview_queue[#self.preview_queue]
+  local last_preview_zmpx = self.preview_queue_zmpx[#self.preview_queue]
+  local last_preview_zmpy = self.preview_queue_zmpy[#self.preview_queue]
+
+  if last_preview_item.tEnd >= t + self.preview_interval then
+    --Old step
+    table.insert(self.preview_queue,last_preview_item)
+    table.insert(self.preview_queue_zmpx,last_preview_zmpx)
+    table.insert(self.preview_queue_zmpy,last_preview_zmpy)
+  else --New step
+    local supportLeg, tStep, uSupport
+    local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
+    
+
+    uLeft_now, uRight_now, uTorso_now, 
+      uLeft_next, uRight_next, uTorso_next,
+      uSupport, supportLeg, tStep = step_planner:get_next_step_queue(
+        last_preview_item.uLeft_next,
+        last_preview_item.uRight_next,
+        step_planner.get_torso(
+          last_preview_item.uLeft_next,last_preview_item.uRight_next)
+        )
+
+    local new_preview_item = {}
+    if not uLeft_now then --No more footsteps            
+      new_preview_item.uLeft_now = last_preview_item.uLeft_next
+      new_preview_item.uLeft_next = last_preview_item.uLeft_next
+      new_preview_item.uRight_now = last_preview_item.uRight_next
+      new_preview_item.uRight_next = last_preview_item.uRight_next
+      new_preview_item.supportLeg = 2 --Double support
+      new_preview_item.tStart = last_preview_item.tEnd
+      new_preview_item.tEnd = last_preview_item.tEnd + self.preview_tStep
+
+      uSupport = step_planner.get_torso(
+          last_preview_item.uLeft_next,last_preview_item.uRight_next)
+          
+    else
+      --New footstep
+      new_preview_item.uLeft_now = uLeft_now
+      new_preview_item.uLeft_next = uLeft_next
+      new_preview_item.uRight_now = uRight_now
+      new_preview_item.uRight_next = uRight_next
+      new_preview_item.supportLeg = supportLeg
+      new_preview_item.tStart = last_preview_item.tEnd
+      new_preview_item.tEnd = last_preview_item.tEnd + tStep
+    end
+ 
+    
+
+    table.insert(self.preview_queue,new_preview_item)
+    table.insert(self.preview_queue_zmpx,uSupport[1])
+    table.insert(self.preview_queue_zmpy,uSupport[2])
+  end
 end
 
 
+
+
+local function update_state(self)
+
+--  Update state variable
+--  u = param_k1_px * x - param_k1* zmparray; --Control output
+--  x = param_a * x + param_b * u;
+  local x = self.x
+  local ux =  self.param_k1_px[1][1] * x[1][1]+
+              self.param_k1_px[1][2] * x[2][1]+
+              self.param_k1_px[1][3] * x[3][1]
+
+  local uy =  self.param_k1_px[1][1] * x[1][2]+
+              self.param_k1_px[1][2] * x[2][2]+
+              self.param_k1_px[1][3] * x[3][2]
+
+  for i=1,self.preview_steps do
+    ux = ux - self.param_k1[1][i]*self.preview_queue_zmpx[i]
+    uy = uy - self.param_k1[1][i]*self.preview_queue_zmpy[i]
+  end
+  local x_next = self.param_a*x + self.param_b * matrix:new({{ux,uy}})
+  self.x = x_next
+  return vector.new({x_next[1][1],x_next[1][2]}) --Torso XY
+end
+
+
+local function precompute(self)
+  ------------------------------------
+  --We only need following parameters
+  -- param_k1_px : 1x3
+  -- param_k1 : 1xnPreview 
+  -- param_a : 3x3
+  -- param_b : 4x1
+--[[
+  if Config.zmpstep.params then
+    param_k1_px = matrix:new({Config.zmpstep.param_k1_px});
+    param_k1 = matrix:new({Config.zmpstep.param_k1});
+    param_a = matrix:new(Config.zmpstep.param_a);
+    param_b = matrix.transpose(matrix:new({Config.zmpstep.param_b}));
+
+   print("param_k1_px:",matrix.size(param_k1_px))
+   print("param_k1:",matrix.size(param_k1))
+   print("param_a:",matrix.size(param_a))
+   print("param_b:",matrix.size(param_b))
+
+  else
+--]]    
+
+  local timeStep = self.preview_tStep
+  local tZmp = self.tZmp
+  local nPreview = self.preview_steps
+  local r_q = self.r_q
+
+  local px,pu0,pu = {}, {}, {}
+  for i=1, nPreview do
+    px[i]={1, i*timeStep, i*i*timeStep*timeStep/2 - tZmp*tZmp}
+    pu0[i]=(1+3*(i-1)+3*(i-1)^2)/6 *timeStep^3 - timeStep*tZmp*tZmp
+    pu[i]={}
+    for j=1, nPreview do pu[i][j]=0 end
+    for j0=1,i do
+      j = i+1-j0
+      pu[i][j]=pu0[i-j+1]
+    end
+  end
+  local param_pu = matrix:new(pu)
+  local param_px = matrix:new(px)
+  local param_pu_trans = matrix.transpose(param_pu)
+  local param_a=matrix {{1,timeStep,timeStep^2/2},{0,1,timeStep},{0,0,1}}
+  local param_b=matrix.transpose({{timeStep^3/6, timeStep^2/2, timeStep,timeStep}})
+  local param_eye = matrix:new(nPreview,"I")
+  local param_k=-matrix.invert(
+      (param_pu_trans * param_pu) + (r_q*param_eye)
+      )* param_pu_trans
+  local k1={};
+  k1[1]={};
+  for i=1,nPreview do k1[1][i]=param_k[1][i] end
+  local param_k1 = matrix:new(k1)
+  local param_k1_px = param_k1 * param_px
+
+  self.param_k1_px = param_k1_px
+  self.param_k1 = param_k1
+  self.param_a = param_a
+  self.param_b = param_b
+
+-- param_k1_px : 1x3
+-- param_k1 : 1xnPreview 
+-- param_a : 3x3
+-- param_b : 4x1
+-- print out zmp preview params
+
+--[[
+ outfile=assert(io.open("zmpparams.lua","w")); 
+ data=''
+ data=data..string.format("zmpstep.params = true;\n")
+ data=data..string.format("zmpstep.param_k1_px={%f,%f,%f}\n",
+   param_k1_px[1][1],param_k1_px[1][2],param_k1_px[1][3]);
+ data=data..string.format("zmpstep.param_a={\n");
+ for i=1,3 do
+   data=data..string.format("  {%f,%f,%f},\n",
+param_a[i][1],param_a[i][2],param_a[i][3]);
+ end
+ data=data..string.format("}\n");
+ data=data..string.format("zmpstep.param_b={%f,%f,%f,%f}\n",
+   param_b[1][1],param_b[2][1],param_b[3][1],param_b[4][1]);
+ data=data..string.format("zmpstep.param_k1={\n    ");
+ 
+ for i=1,nPreview do
+   data=data..string.format("%f,",param_k1[1][i]);
+   if i%5==0 then   data=data.."\n    " ;end
+ end
+ data=data..string.format("}\n");
+ outfile:write(data);
+ outfile:flush();
+ outfile:close();
 --]]
-
-
-
-
-
-
-
--- step_definition format
---{ Supportfoot relstep zmpmod duration steptype }--
--- Provide initial (relative) feet positions
-local function generate_step_queue(solver,step_definition,uLeftI,uRightI)
-  -- Modify the initial point...
-  local uLeft  = vector.pose(unpack(uLeftI))
-  local uRight = vector.pose(unpack(uRightI))
-
-  -- Make the step_queue table
-  solver.step_queue = {}
-  for _,step_def in ipairs(step_definition) do
-    local supportLeg = step_def[1]
-    -- Form the Support Leg positions
-    -- Perform a table copy
-    if supportLeg==0 then
-      -- left support
-      uRight = util.pose_global(step_def[2],uRight)
-      --step_queue_element.zaRight = zaRight + vector.new(step_def[3]);
-    elseif supportLeg==1 then
-      -- right support
-      uLeft  = util.pose_global(step_def[2],uLeft)
-      -- step_queue_element.zaLeft = zaLeft + vector.new(step_def[3]);
-    elseif supportLeg==2 then --DS
-      -- Double Support: Body height change
-      -- step_queue_element.zaRight = zaRight - vector.new(step_def[3]);
-      -- step_queue_element.zaLeft  = zaLeft  - vector.new(step_def[3]);
-    end
-    -- Insert the element
-    table.insert(solver.step_queue,{
-      supportLeg = supportLeg,
-      uLeft      = vector.pose{unpack(uLeft)}, --copy the table
-      uRight     = vector.pose{unpack(uRight)},
-      zaLeft     = vector.zeros(2),
-      zaRight    = vector.zeros(2),
-      zmp_mod    = vector.new(step_def[3]),
-      duration   = step_def[4],
-      step_type  = step_def[5] or 0
-    })
-    --
-  end
-  -- Reset the queue_index
-  solver.step_queue_index = 1
-  solver.last_last = false  
-end
-
-local function update_preview(solver, t, supportX, supportY)
-  local step_queue_element, t_expire
-  local idx, phF = solver.step_queue_index, 0
-  
-  if not solver.step_queue_time then
-    -- Initiate the step_queue time if this is the first step
-    local dur = solver.step_queue[1].duration
-    solver.step_queue_time = t + dur
-    t_expire = dur
-  else
-    t_expire = solver.step_queue_time - t
-  end
-
-  -- Check if we are a new step
-  if t_expire<=0 then
-    solver.last_step = idx==#solver.step_queue
-    -- Check if any elements left in the queue
-    if solver.last_step then return'done' end
-    -- Update the index in our step queue
-    idx = idx + 1
-    solver.step_queue_index = idx
-    step_queue_element = solver.step_queue[idx]
-    print'====='
-    util.ptable(step_queue_element)
-    print'====='
-    -- Add the duration of this next step
-    solver.step_queue_time = t + step_queue_element.duration
-  else
-    -- Just grab the element
-    step_queue_element = solver.step_queue[idx]
-    last_step = idx==#solver.step_queue
-    if solver.last_step then
-      -- not the last step in the queue
-      phF = 1-t_expire/step_queue_element.duration
-    end
-  end
-  -- Grab the next step - this is treated as the "final"
-  -- position for the preview state engine
-  -- TODO: We can cache this element, since idx may not
-  -- change that often, and we can save some instructions
-  local uLeftF  = step_queue_element.uLeft
-  local uRightF = step_queue_element.uRight
-  local supportLegF = step_queue_element.supportLeg
-  -- Grab the new "final" support element
-  local uSupportF
-  if supportLegF==0 then
-    -- left support
-    uSupportF = util.pose_global({supportX, supportY, 0}, uLeftF)
-  elseif supportLegF==1 then
-    -- right support
-    uSupportF = util.pose_global({supportX, -supportY, 0}, uRightF)
-  else
-    -- double support
-    local uLeftSupport  = util.pose_global({supportX, supportY, 0}, uLeftF)
-    local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRightF)
-    uSupportF = util.se2_interpolate(0.5,uLeftSupport,uRightSupport)
-  end
-
-  -- Update the preview zmp elements
-  local preview  = solver.preview
-  local nPreview = preview.nPreview
-  local zmp_x = preview.zmp_x
-  local zmp_y = preview.zmp_y
-  -- Shift over
-  zmp_x:storage():lshift()
-  zmp_y:storage():lshift()
-  -- Add the final elements
-  --print('uSupportF',uSupportF[1],uSupportF[2])
-  zmp_x[nPreview] = uSupportF[1]
-  zmp_y[nPreview] = uSupportF[2]
-
-  -- Efficient queue for other elements
-  -- http://www.lua.org/pil/11.4.html
-  local first = preview.first
-  local last  = preview.last
-  -- Wipe old elements
-  preview.phs[first]    = nil
-  preview.uLeft[first]  = nil
-  preview.uRight[first] = nil
-  preview.supportLegs[first] = nil
-  --
-  last  = last  + 1
-  preview.first = first + 1
-  preview.last  = last
-  --
-  preview.phs[last]    = phF
-  preview.uLeft[last]  = uLeftF
-  preview.uRight[last] = uRightF
-  preview.supportLegs[last] = supportLegF
-end
-
-local function solve_preview(solver)
-  -- 3x2 state matrix
-  -- x: torso, ?, ?
-  -- y: torso, ?, ?
-  local preview = solver.preview
-  local current_state = preview.state:clone()
-  local feedback_gain1, feedback_gain2 = 0, 0
-  --current_state[1][1] = current_state[1][1]+x_err[1]*feedback_gain1
-  --current_state[1][2] = current_state[1][2]+x_err[2]*feedback_gain1
-
-  -- Update control signal: how to get to our desired states
-  -- u = param_k1_px * x - param_k1* zmparray
-  -- Select the first row, since we only care about 
-  -- the IMMEDIATE next step
-  local K1_px_row = preview.K1_px:select(1,1)
-  local K1_row = preview.K1:select(1,1)
-  -- TODO: Don't like these transposes
-  local u      = torch.mv(current_state:t(),K1_px_row)
-  -- Grab the immediate control input
-  local u_x    = torch.dot(K1_row,preview.zmp_x)
-  local u_y    = torch.dot(K1_row,preview.zmp_y)
-  u[1] = u[1] - u_x
-  u[2] = u[2] - u_y
-
-  -- Update the state
-  preview.state:mm(preview.A,current_state):add(
-    torch.ger( preview.B, u )
-  )
-  -- Update the clock
-  preview.clock = preview.clock + preview.ts
-end
-
-local function init_preview(solver,uTorso,uLeft,uRight,t)
-  print("INITSTART")
-  local preview = solver.preview
-  assert(preview,'Please precompute the preview engine!')
-  
-  local nPreview = preview.nPreview
-  -- Generate the x and y zmp trajectories
-  -- First, fill the first preview window with where we are
-  -- TODO: Splice in a previous preview, or something?
-  preview.zmp_x = torch.Tensor(nPreview):fill(uTorso[1])
-  preview.zmp_y = torch.Tensor(nPreview):fill(uTorso[2])
-  --
-  local phs = {}
-  local supportLegs   = {}
-  local uLeftTargets  = {}
-  local uRightTargets = {}
-  for i=1,nPreview do
-    -- double support to start
-    -- TODO: Take possibly a single support start?
-    table.insert(phs,0)
-    table.insert(supportLegs,2)
-    table.insert(uLeftTargets,vector.pose{unpack(uLeft)})
-    table.insert(uRightTargets,vector.pose{unpack(uRight)})
-  end
-  -- Save data to our solver
-  preview.first = 1
-  preview.last  = nPreview
-  preview.phs   = phs
-  preview.supportLegs = supportLegs
-  preview.uLeft  = uLeftTargets
-  preview.uRight = uRightTargets
-  -- Our first state:
-  preview.state = torch.Tensor{{uTorso[1],uTorso[2]},{0,0},{0,0}}
-  -- Our preview clock start time
-  preview.clock = t
-end
-
--- preview_interval: How many seconds into the future should we preview?
--- ts: At what granularity should we solver?
-local function compute_preview( solver, preview_interval, ts, save_file )
-  
-print("INITSTART")
-
-  -- Preview parameter defaults
-  preview_interval = preview_interval or 1.50 -- 1500ms
-  ts = ts or 0.010 -- 10ms timestep
-  local nPreview = math.ceil(preview_interval / ts)
-  local r_q = 5e-5 -- balancing parameter for optimization
-  --
-  local tZMP  = solver.tZMP
-  -- Cache some common operations
-  local ts_integrated  = (ts^2)/2
-  local ts_twice_integrated = (ts^3)/6
-  local tZMP_sq = tZMP^2
-
-  -- Make the preview parameter matrices
-  local px  = torch.Tensor(nPreview,3)
-  local pu0 = torch.Tensor(nPreview)
-  local pu  = torch.Tensor(nPreview,nPreview):zero()
-  -- Form the parameter matrices
-  -- x[k] = [1 k*tStep k^2*tStep^2/2-tZMP^2 ]
-  for k=1,nPreview do
-    local px_row = px:select(1,k)
-    px_row[1] = 1
-    px_row[2] = k*ts
-    px_row[3] = k*k*ts_integrated - tZMP_sq
-    -- initial control
-    pu0[k] = (1+3*(k-1)+3*(k-1)^2)*ts_twice_integrated - ts*tZMP_sq
-    -- Triangular
-    local pu_row = pu:select(1,k)
-    for j=k,1,-1 do pu_row[j] = pu0[k-j+1] end
-  end
-  local balancer = torch.eye(nPreview):mul(r_q)
-
-  -- Exports
-  solver.preview = {}
-  -- TODO: Make this more efficient
-  -- Cache the transpose
-  local pu_trans = pu:t()
-  local tmp =  torch.mm(pu_trans,pu):add(balancer)
-  --print( 'singular?',torch.determinant(tmp) )
-  local inv = torch.inverse( tmp )
-  local K1  = -torch.mm( inv, pu_trans )
-  
-  solver.preview.K1    = K1
-  solver.preview.K1_px = K1 * px
-  -- Make the discrete control matrices
-  solver.preview.A = torch.Tensor({
-    {1,ts,ts_integrated},
-    {0,1, ts},
-    {0,0, 1}
-  })
-  solver.preview.B = torch.Tensor({
-    ts_twice_integrated,
-    ts_integrated,
-    ts
-  })
-  -- Save preview data
-  solver.preview.nPreview = nPreview
-  solver.preview.ts = ts
-
-  if save_file then
-    local f = io.open(save_file,'w')
-    local data_str = tostring( carray.double(K1:storage():pointer(),K1:nElement()) )
-    f:write(data_str)
-    f:close()
-  end
-
-
-  print("computed")
-end
-
-local function get_preview_com(solver)
-  -- Yield the desired torso pose
-  local state_position = solver.preview.state:select(1,1)
-  local state_velocity = solver.preview.state:select(1,2)
-  local state_accel    = solver.preview.state:select(1,3)
-  return vector.pose{state_position[1],state_position[2],0},
-    vector.pose{state_velocity[1],state_velocity[2],0},
-    vector.pose{state_accel[1],state_accel[2],0}
 end
 
 -- Begin the library code
@@ -388,26 +288,29 @@ local libZMP = {}
 libZMP.new_solver = function( params )
   params = params or {}
 	local s = {}
-  s.tStep = params.tStep or 1
-  s.tZMP  = params.tZMP or .25
-  -- Starting and stopping phase of the trapezoidal
-  -- transition from double support to single and back
-  -- Acquire trapezoidal parameters
-  s.start_phase  = params.start_phase
-  s.finish_phase = params.finish_phase
-  -- Trapezoidal ZMP
-  s.compute  = compute
-  s.get_com  = get_com
-  s.get_foot = get_foot
-  s.get_foot_square = get_foot_square  
-  -- ZMP Preview
-  s.compute_preview = compute_preview
-  s.init_preview    = init_preview
-  s.update_preview  = update_preview
-  s.solve_preview   = solve_preview
-  s.get_preview_com = get_preview_com
-  -- General
-  s.generate_step_queue = generate_step_queue
+
+  s.preview_interval = 1.50 --1.5sec preview
+  s.preview_tStep = 0.010 --10ms
+  s.preview_steps = s.preview_interval / s.preview_tStep
+  
+  s.r_q = 10^-6
+
+  s.x = matrix:new{{0,0},{0,0},{0,0}}
+  s.preview_queue={}
+  s.preview_queue_zmpx={}
+  s.preview_queue_zmpy={}
+
+  s.tStep = params.tStep or 1 --Walk tStep
+  s.tZmp  = params.tZMP or .25
+  
+
+  s.init_preview_queue = init_preview_queue
+  s.get_current_step_info = get_current_step_info
+  s.update_preview_queue_velocity = update_preview_queue_velocity
+  s.update_preview_queue_steps = update_preview_queue_steps
+  s.update_state = update_state
+  s.precompute = precompute
+  
 	return s
 end
 

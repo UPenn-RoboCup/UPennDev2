@@ -8,7 +8,7 @@ local Body   = require'Body'
 local vector = require'vector'
 local util   = require'util'
 local moveleg = require'moveleg'
-local libZMP = require'libPreviewZMP2'
+local libZMP = require'libPreviewZMP'
 local zmp_solver
 
 local libStep = require'libStep'
@@ -67,6 +67,19 @@ function walk.entry()
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
 
+
+  step_planner:step_enque({0.05,-Config.walk.footY,0},0,0.5) --LS  
+  step_planner:step_enque({},2,0.5) --DS  
+  step_planner:step_enque({0.05,Config.walk.footY,0},1,0.5) --RS
+  step_planner:step_enque({},2,0.5) --DS  
+  step_planner:step_enque({0.10,-Config.walk.footY,0},0,1) --LS
+  step_planner:step_enque({},2,1) --DS  
+  step_planner:step_enque({0.10,Config.walk.footY,0},1,1) --RS
+  step_planner:step_enque({},2,1) --DS  
+  step_planner:step_enque({0.15,-Config.walk.footY,0},0,1.5) --LS
+  step_planner:step_enque({},2,1) --DS  
+  step_planner:step_enque({0.15,Config.walk.footY,0},1,1.5) --RS
+
   t = Body.get_time()
   t_discrete = t
 end
@@ -86,7 +99,10 @@ function walk.update()
       supportLeg, ph = zmp_solver:get_current_step_info(t_discrete)
     --Get the current COM position
     com_pos = zmp_solver:update_state()
-    zmp_solver:update_preview_queue_velocity(step_planner,t_discrete)
+--    zmp_solver:update_preview_queue_velocity(step_planner,t_discrete)
+
+    zmp_solver:update_preview_queue_steps(step_planner,t_discrete)
+
     t_discrete = t_discrete + zmp_solver.preview_tStep
     discrete_updated = true
   end
@@ -100,8 +116,10 @@ function walk.update()
     local uLeft, uRight, zLeft, zRight = uLeft_now, uRight_now, 0,0
     if supportLeg == 0 then  -- Left support    
       uRight,zRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight)    
-    else    -- Right support    
+    elseif supportLeg==1 then    -- Right support    
       uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    
+    elseif supportLeg == 2 then --Double support
+
     end
 
   -- Grab gyro feedback for these joint angles

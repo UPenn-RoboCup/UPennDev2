@@ -123,7 +123,7 @@ local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initi
   local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
   local uSupport
 
-  local current_step =table.remove(self.stepqueue) 
+  local current_step =table.remove(self.stepqueue,1) 
   supportLeg = current_step.supportLeg
   if supportLeg==0 then --Left support
     uSupport = util.pose_global(current_step.zmpMod,uLSupport)

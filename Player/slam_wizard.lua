@@ -46,21 +46,19 @@ require'wcm'
 ---------------------------------
 
 ---------------------------------
--- Logging set up
+-- Logging and Replaying set up
 -- Flag for logging
 local logfile = ''
-local is_logging = false
-if arg[1] == '-l' then
-	is_logging = true
-end
+local is_logging = ( arg[1] == '-l' )
 if is_logging then
   filetime = os.date('%m.%d.%Y.%H.%M.%S')
-  logfile = io.open('SlamLogs/'..filetime..'.log','w')
+  logfile = io.open('logfiles/'..filetime..'.log','w')
 end
 -- Replay flag
-local replay = false
-if arg[1] == '-r' then
-	replay = true
+local replay = ( arg[1] == '-r' )
+-- Flag for webots
+if is_logging or replay then
+  IS_WEBOTS = false
 end
 ---------------------------------
 

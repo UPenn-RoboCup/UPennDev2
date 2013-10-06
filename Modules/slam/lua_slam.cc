@@ -1004,23 +1004,20 @@ int lua_decay_map(lua_State *L) {
 
 	for( i=0; i<nps_x; i++ ) {
 		for ( j=0; j<nps_y; j++){
-			// val = *(ps_mapp + i * nps_x + j);
-			val = *(ps_mapp + j);
+			val = *(ps_mapp + i * nps_y + j);
 
 			/* If super certain: remain at high level */
 			if ( val>=thres ){
-				// ps_mapp[i * nps_x + j] = thres;
-				*(ps_mapp+j) = thres;
+				ps_mapp[i * nps_y + j] = thres;
+				// *(ps_mapp+j) = thres;
 			}
 
 			/* Decay */
 			else {
 				val = val * dec;
-				// ps_mapp[i * nps_x + j] = val;
-				*(ps_mapp+j) = val;
+				ps_mapp[i * nps_y + j] = val;
+				// *(ps_mapp+j) = val;
 			}
-			// TODO: this may resolve the address boundary issue
-			ps_mapp += uint8_t(ps_map->stride[0]);
 		}
 	}
 

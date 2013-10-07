@@ -1,5 +1,5 @@
 function update_mesh(lidar_type)
-  global POSE HEAD_LIDAR CHEST_LIDAR
+  global POSE HEAD_LIDAR CHEST_LIDAR SLAM
   
   % Make sure the ranges matrix is in such a fashion
   % that scanlines are verticle
@@ -52,7 +52,7 @@ t0 = tic;
   connect_th = tan(85*pi/180);
 
   max_dist = lidar.lidarrange * 0.9;
-  ground_height = -0.7;
+  ground_height = -0.9;
   max_height = 1.0;
 
 
@@ -77,7 +77,23 @@ t0 = tic;
 
   vertx = verts(:,1)*ca - verts(:,2)*sa + POSE.pose_slam(1);
   verty = verts(:,1)*sa + verts(:,2)*ca + POSE.pose_slam(2);
-  vert_transformed = [vertx verty verts(:,3)];
+  vertz = verts(:,3);
+  
+%   % Yaw
+%   ca = cos(SLAM.slam_pose(3));
+%   sa = sin(SLAM.slam_pose(3));
+%   vertx = verts(:,1)*ca - verts(:,2)*sa + SLAM.slam_pose(1);
+%   verty = verts(:,1)*sa + verts(:,2)*ca + SLAM.slam_pose(2);
+%   vertz = verts(:,3);
+%   
+%   % Roll
+%   ca = cos(SLAM.torso_tilt);
+%   sa = sin(SLAM.torso_tilt);
+%   vertx = vertx*ca + vertz*sa;
+%   vertz = -vertx*sa + vertz*ca;
+  
+  vert_transformed = [vertx verty vertz];
+
 
   faces=faces(:,1:facecount)';
   cdatas=cdatas(:,1:facecount)';
@@ -91,14 +107,6 @@ t0 = tic;
       CHEST_LIDAR.faces = faces;
       CHEST_LIDAR.cdatas = cdatas;
   end
-%   lidar.verts = vert_transformed;
-%   lidar.faces = faces;
-%   lidar.cdatas = cdatas;
-%   if lidar_type==0 
-%     HEAD_LIDAR = lidar;
-%   else
-%     CHEST_LIDAR = lidar;
-%   end
 
 tPassed=  toc(t0);
 end

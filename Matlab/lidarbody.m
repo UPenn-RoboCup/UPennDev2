@@ -13,6 +13,7 @@ LIDAR.set_zoomlevel = @set_zoomlevel;
 % Which mesh to display: 0-HEAD, 1-CHEST
 % Chest lidar default
 LIDAR.meshtype = 1;
+LIDAR.mesh_cnt = 0;
 
 % 0: Show head
 % 1: Show chest
@@ -112,6 +113,7 @@ CHEST_LIDAR.posea=[];
             set(LIDAR.h,'Vertices',HEAD_LIDAR.verts);
             set(LIDAR.h,'FaceVertexCData',HEAD_LIDAR.cdatas);
         else
+            CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[2,1,0]);
             set(LIDAR.h,'Faces',CHEST_LIDAR.faces);
             set(LIDAR.h,'Vertices',CHEST_LIDAR.verts);
             set(LIDAR.h,'FaceVertexCData',CHEST_LIDAR.cdatas);
@@ -185,7 +187,9 @@ CHEST_LIDAR.posea=[];
             % Update the figures
                 draw_depth_image();
                 update_mesh(0);
-                update_mesh_display();
+                if mod(LIDAR.mesh_cnt, 10) == 0
+                    update_mesh_display();
+                end
         else
             % Save data
             CHEST_LIDAR.ranges = depth_img';
@@ -193,12 +197,12 @@ CHEST_LIDAR.posea=[];
             CHEST_LIDAR.scanline_angles = scanline_angles;
             CHEST_LIDAR.depths = double(metadata.depths);
             % Update the figures
-%             if LIDAR.depth_img_display==1
                 draw_depth_image();
                 % Update mesh image
                 update_mesh(1);
-                update_mesh_display();
-%             end
+                if mod(LIDAR.mesh_cnt, 10) == 0
+                    update_mesh_display();
+                end
         end
         
         % end of update

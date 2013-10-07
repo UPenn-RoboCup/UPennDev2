@@ -99,30 +99,27 @@ end
 local function update_head( self, roll, pitch, yaw )
 --TODO: parameters need to be updated
   -----------------------
-  -- Rotation of the lidar
+  -- Rotation of the head
   self.t_roll  = libTransform.rotX( roll )
   self.t_pitch = libTransform.rotY( pitch )
   self.t_yaw   = libTransform.rotZ( yaw )
   self.t_rotation = torch.mm(torch.mm(self.t_roll, self.t_pitch), self.t_yaw)
   -----------------------
 
+  -----------------------
+  -- Transformation from the chest(body) to the head
   self.head_height = K.neckOffsetZ
-  self.lidar_offestz = 0.10 --FIXME
-
-  -----------------------
-  -- Height off the chest to the head
   self.t_headOffset = libTransform.trans(0, 0, self.head_height)
-  -----------------------
-
-  -----------------------
-  -- Transformation from the chest to the head
   self.t_body2head = torch.mm( self.t_headOffset, self.t_rotation )
-  -----------------------
+  -----------------------	
 
-  -- Transformation from the holder to lidar
-  self.t_lidarOffset = libTransform.trans( 
+  -----------------------
+	-- Transformation from head to lidar
+  self.lidar_offestz = 0.10 --FIXME
+	self.t_lidarOffset = libTransform.trans( 
   self.lidar_offsetx, self.lidar_offsety, self.lidar_offsetz
   )
+  -----------------------
 
   -----------------------
   -- Transformation from the body to the lidar

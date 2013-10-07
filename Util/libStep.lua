@@ -119,27 +119,60 @@ local function step_enque(self,uFoot,supportLeg,tStep, zmpMod)
   table.insert(self.stepqueue,step)
 end
 
-local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initialStep)  
+local function step_enque_trapezoid(self,uFoot,supportLeg, tDoubleSupport, tStep,zmpMod)
+  --DS step with changing ZMP
+  local step_ds = {}
+  step_ds.is_trapezoid = true
+  step_ds.supportLeg = 2 --Double Support
+  step_ds.tStep = tDoubleSupport
+  step_ds.zmpMod = vector.new({0,0,0})
+  table.insert(self.stepqueue,step_ds)
+
+  --SS step with stationary ZMP
+  local step_ss = {}
+  step_ss.uFoot = uFoot
+  step_ss.supportLeg = supportLeg
+  step_ss.tStep = tStep
+  step_ss.zmpMod = zmpMod or vector.new({0,0,0})
+  table.insert(self.stepqueue,step_ss)
+end
+
+
+local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initialStep, uSupport_now)  
   if #self.stepqueue==0 then return end
 
   local uLeft_next, uRight_next, uTorso_next = uLeft_now, uRight_now, uTorso_now
   local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
-  local uSupport
-
+  local uSupport, uSupport_next
   local current_step =table.remove(self.stepqueue,1) 
   supportLeg = current_step.supportLeg
+
+  --Foot position based step positions
   if supportLeg==0 then --Left support
     uSupport = util.pose_global(current_step.zmpMod,uLSupport)
-    uRight_next = util.pose_global(current_step.uFoot,uTorso_now)
+    uRight_next = util.pose_global(current_step.uFoot,uRight_now)
     local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
     uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
-  elseif supportLeg==1 then
+  elseif supportLeg==1 then    
     uSupport = util.pose_global(current_step.zmpMod,uRSupport)
-    uLeft_next =  util.pose_global(current_step.uFoot,uTorso_now)
+    uLeft_next =  util.pose_global(current_step.uFoot,uLeft_now)
     local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
     uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
   else --Double support
-    uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
+    if current_step.is_trapezoid and uSupport_now then --Moving Support
+      local next_step = self.stepqueue[1]      
+      if next_step.supportLeg==0 then
+        uSupport_next = util.pose_global(next_step.zmpMod,uLSupport)
+      elseif next_step.supportLeg==1 then
+        uSupport_next = util.pose_global(next_step.zmpMod,uRSupport)
+      else
+        uSupport_next = util.se2_interpolate(0.5, uLSupport, uRSupport)  
+      end
+      uSupport = {uSupport_now, uSupport_next} --initial and final support positions
+    else
+      --Constant Support
+      uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
+    end
   end 
 
   return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport, supportLeg, current_step.tStep
@@ -221,6 +254,7 @@ libStep.new_planner = function (params)
   s.get_next_step_velocity = get_next_step_velocity
 
   s.step_enque = step_enque
+  s.step_enque_trapezoid = step_enque_trapezoid
   s.get_next_step_queue = get_next_step_queue
 
   --Functions #2

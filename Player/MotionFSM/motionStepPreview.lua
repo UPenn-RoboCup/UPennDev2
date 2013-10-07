@@ -35,6 +35,8 @@ local foot_traj_func
 foot_traj_func = moveleg.foot_trajectory_square
 local t, t_discrete
 
+local debugdata
+local t0
 ---------------------------
 -- State machine methods --
 ---------------------------
@@ -61,31 +63,44 @@ function walk.entry()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
       step_planner:init_stance()
 
+print("initial xpos:",uLeft_now[1],uTorso_now[1],uRight_now[1])
+
   zmp_solver:init_preview_queue(uLeft_now,uRight_now, uTorso_now, Body.get_time(), step_planner)
   
   iStep = 1   -- Initialize the step index  
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
---[[
 
-  step_planner:step_enque({0.05,-Config.walk.footY,0},0,0.5) --LS  
-  step_planner:step_enque({},2,0.5) --DS  
-  step_planner:step_enque({0.05,Config.walk.footY,0},1,0.5) --RS
-  step_planner:step_enque({},2,0.5) --DS  
-  step_planner:step_enque({0.10,-Config.walk.footY,0},0,1) --LS
-  step_planner:step_enque({},2,1) --DS  
-  step_planner:step_enque({0.10,Config.walk.footY,0},1,1) --RS
-  step_planner:step_enque({},2,1) --DS  
-  step_planner:step_enque({0.15,-Config.walk.footY,0},0,1.5) --LS
-  step_planner:step_enque({},2,1) --DS  
-  step_planner:step_enque({0.15,Config.walk.footY,0},1,1.5) --RS
+--[[
+  step_planner:step_enque({0.25,0,0},0,3) --LS  
+  step_planner:step_enque({},2,3) --DS  
+  step_planner:step_enque({0.50,0,0},1,3) --RS
+  step_planner:step_enque({},2,3) --DS  
+  step_planner:step_enque({0.25,0,0},0,3) --LS  
 --]]
 
-  step_planner:step_enque({0.10,-Config.walk.footY,0},0,3) --LS  
+--[[
+  step_planner:step_enque({0.25,0,0},0,4, {0,0.0,0}) --LS  
   step_planner:step_enque({},2,3) --DS  
-  step_planner:step_enque({0.05,Config.walk.footY,0},1,3) --RS
+  step_planner:step_enque({0.50,0,0},1,8, {0,-0.02,0}) --RS
+  step_planner:step_enque({},2,3) --DS  
+  step_planner:step_enque({0.25,0,0},0,4, {0,0.0,0}) --LS  
+--]]
+
+--Enque a DS - SS pair
+--                                        tDoubleSupport tStep
+
+  step_planner:step_enque_trapezoid({0.0,0,0},0,  3, 4, {0,0.0,0}) --LS  
+  step_planner:step_enque_trapezoid({0.0,0,0},1,  6, 4, {0,0.0,0}) --RS  
+  step_planner:step_enque_trapezoid({0.0,0,0},0,  6, 4, {0,0.0,0}) --LS  
+  step_planner:step_enque_trapezoid({},2,          3, 3, {0,0.0,0}) --DS  
+
+  
+
 
   t = Body.get_time()
+  t0 = t
+  debugdata=''
   t_discrete = t
 end
 
@@ -108,13 +123,21 @@ function walk.update()
     end
   
     --Get the current COM position
-    com_pos = zmp_solver:update_state()
+    com_pos,zmp_pos = zmp_solver:update_state()
 --    zmp_solver:update_preview_queue_velocity(step_planner,t_discrete)
+
+    --time zmp com
+    debugdata=debugdata..string.format("%f,%f,%f\n",
+      t_discrete-t0,
+      zmp_pos[2],
+      com_pos[2])
 
     zmp_solver:update_preview_queue_steps(step_planner,t_discrete)
 
     t_discrete = t_discrete + zmp_solver.preview_tStep
     discrete_updated = true
+   
+
   end
 
   if discrete_updated then
@@ -139,11 +162,19 @@ function walk.update()
 
     --Move legs
     moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
+   
+
   end
 
 end -- walk.update
 
 function walk.exit()
+
+
+  local debugfile=assert(io.open("debugdata.txt","w")); 
+  debugfile:write(debugdata);
+  debugfile:flush();
+  debugfile:close();
   print(walk._NAME..' Exit')  
 end
 

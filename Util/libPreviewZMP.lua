@@ -53,7 +53,8 @@ local function get_current_step_info(self,t)
     current_info.uLeft_next,
     current_info.uRight_next,    
     current_info.supportLeg,
-    ph
+    ph,
+    current_info.ended
 end
 
 local function update_preview_queue_velocity(self,step_planner,t,stoprequest)
@@ -154,6 +155,8 @@ local function update_preview_queue_steps(self,step_planner,t)
       new_preview_item.supportLeg = 2 --Double support
       new_preview_item.tStart = last_preview_item.tEnd
       new_preview_item.tEnd = last_preview_item.tEnd + self.preview_tStep
+
+      new_preview_item.ended = true
 
       uSupport = step_planner.get_torso(
           last_preview_item.uLeft_next,last_preview_item.uRight_next)

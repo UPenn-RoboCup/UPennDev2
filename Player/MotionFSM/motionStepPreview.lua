@@ -81,9 +81,9 @@ function walk.entry()
   step_planner:step_enque({0.15,Config.walk.footY,0},1,1.5) --RS
 --]]
 
-  step_planner:step_enque({0.20,-Config.walk.footY,0},0,8) --LS  
-  step_planner:step_enque({},2,4) --DS  
-  step_planner:step_enque({0.10,Config.walk.footY,0},1,4) --RS
+  step_planner:step_enque({0.10,-Config.walk.footY,0},0,3) --LS  
+  step_planner:step_enque({},2,3) --DS  
+  step_planner:step_enque({0.05,Config.walk.footY,0},1,3) --RS
 
   t = Body.get_time()
   t_discrete = t
@@ -98,17 +98,15 @@ function walk.update()
   local discrete_updated = false
   local com_pos
 
---[[
-  --TODO: should better check step queue items
-  if #step_planner.stepqueue==0 and zmp_solver:can_stop() then
-    return "done"
-  end
-  --]]
-
   while t_discrete<t do
     --Get step information
     uLeft_now, uRight_now, uLeft_next, uRight_next,
-      supportLeg, ph = zmp_solver:get_current_step_info(t_discrete)
+      supportLeg, ph, ended = zmp_solver:get_current_step_info(t_discrete)
+
+    if ended and zmp_solver:can_stop() then
+      return "done"
+    end
+  
     --Get the current COM position
     com_pos = zmp_solver:update_state()
 --    zmp_solver:update_preview_queue_velocity(step_planner,t_discrete)

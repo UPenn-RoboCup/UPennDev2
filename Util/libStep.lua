@@ -29,6 +29,7 @@ local torsoX    = Config.walk.torsoX
 
 ------------------------------------------------------------------------
 
+local velocityBias = vector.new(Config.walk.velocityBias or {0,0,0})
 
 local function update_velocity(self,vel)  
   -- Grab from the shared memory the desired walking speed
@@ -78,6 +79,8 @@ local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, su
   local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
   local uSupport
 
+  local velWalk = self.velCurrent + velocityBias
+
   if initialStep then
     if supportLeg == 0 then    -- Left support      
       uSupport = util.se2_interpolate(0.3,uLSupport,uTorso_next)      
@@ -87,12 +90,12 @@ local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, su
   else
     if supportLeg == 0 then    -- Left support
       uSupport = uLSupport
-      uRight_next = self.step_destination_right(self.velCurrent, uLeft_now, uRight_now)    
+      uRight_next = self.step_destination_right(velWalk, uLeft_now, uRight_now)    
       local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
       uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
     else    -- Right support
       uSupport = uRSupport
-      uLeft_next = self.step_destination_left(self.velCurrent, uLeft_now, uRight_now)    
+      uLeft_next = self.step_destination_left(velWalk, uLeft_now, uRight_now)    
       local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
       uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
     end  

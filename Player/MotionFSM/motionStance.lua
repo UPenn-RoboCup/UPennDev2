@@ -82,7 +82,7 @@ function state.update()
     torsoMag = 0
   end
   if torsoMag>0 then
-    print(torsoMag)
+--    print(torsoMag)
   end
   if velTorso>0 then
     uTorso[1] = uTorso[1] + torsoMag * uTorsoVel[1]/velTorso
@@ -96,45 +96,32 @@ function state.update()
   
   local zLeft,zRight = 0,0
   supportLeg = 2; --Double support
-  
+--[[ 
   -- ask for the foot sensor values
   Body.request_lfoot()
   Body.request_rfoot()
+  --]]
 
 -- Grab gyro feedback for these joint angles
   local gyro_rpy = Body.get_sensor_gyro()
   local delta_legs
-  delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,0,gyro_rpy, angleShift)
+ -- delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,0,gyro_rpy, angleShift)
+delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,0,gyro_rpy, angleShift)
 
+--print(angleShift[1],angleShift[2])
   moveleg.set_leg_positions(uTorso,uLeft,uRight,
     Config.walk.bodyHeight - bodyHeight,
     Config.walk.bodyHeight - bodyHeight,    
     delta_legs)
 
   mcm.set_status_bodyHeight(bodyHeight)  
+
+  mcm.set_status_uTorsoVel({0,0,0})
 end -- walk.update
 
 function state.exit()
 
-  for i=1,10 do
-  Body.set_lleg_command_velocity({17000,17000,17000,17000,17000,17000})
-  unix.usleep(1e6*0.01);
 
-  Body.set_rleg_command_velocity({17000,17000,17000,17000,17000,17000})
-  unix.usleep(1e6*0.01);  
-
-  Body.set_rleg_command_acceleration({200,200,200,200,200,200})
-  unix.usleep(1e6*0.01);
-
-  Body.set_lleg_command_acceleration({200,200,200,200,200,200})
-  unix.usleep(1e6*0.01);
-
-  Body.set_rleg_position_p({64,64,64,64,64,64})
-  unix.usleep(1e6*0.01);
-
-  Body.set_lleg_position_p({64,64,64,64,64,64})
-  unix.usleep(1e6*0.01);
-  end
 
   mcm.set_status_bodyHeight(Config.walk.bodyHeight)
   print(state._NAME..' Exit')

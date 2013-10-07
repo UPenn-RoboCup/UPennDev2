@@ -29,7 +29,7 @@ local torsoX    = Config.walk.torsoX
 
 ------------------------------------------------------------------------
 
-local velocityBias = vector.new(walk.velocityBias or {0,0,0})
+local velocityBias = vector.new(Config.walk.velocityBias or {0,0,0})
 
 local function update_velocity(self,vel)  
   -- Grab from the shared memory the desired walking speed

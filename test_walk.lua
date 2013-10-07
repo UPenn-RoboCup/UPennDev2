@@ -92,8 +92,8 @@ local char_to_vel = {
 }
 
 local char_to_wheel = {
-  ['['] = vector.new({-1*Body.DEG_TO_RAD}),
-  [']'] = vector.new({1*Body.DEG_TO_RAD}),
+  ['['] = -1*Body.DEG_TO_RAD,
+  [']'] = 1*Body.DEG_TO_RAD,
 }
 
 local function send_command_to_ch(channel, cmd_string)

@@ -81,9 +81,9 @@ function walk.entry()
   step_planner:step_enque({0.15,Config.walk.footY,0},1,1.5) --RS
 --]]
 
-  step_planner:step_enque({0.20,-Config.walk.footY,0},0,8) --LS  
+  step_planner:step_enque({0.10,-Config.walk.footY,0},0,4) --LS  
   step_planner:step_enque({},2,4) --DS  
-  step_planner:step_enque({0.10,Config.walk.footY,0},1,4) --RS
+  step_planner:step_enque({0.05,Config.walk.footY,0},1,4) --RS
 
   t = Body.get_time()
   t_discrete = t

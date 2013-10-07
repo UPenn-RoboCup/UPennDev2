@@ -30,6 +30,13 @@ local dpMaxDelta = Config.stance.dpLimitStance
 local dqWaistLimit   = Config.stance.dqWaistLimit
 local dqLegLimit = Config.stance.dqLegLimit
 
+
+--local dqLegLimit = vector.new{10,10,10,10,10,10}*Body.DEG_TO_RAD
+
+dpMaxDelta = vector.new{.04, .03, .03, .4, .1, .4}
+
+
+
 local pTorso, qLLeg, qRLeg
 
 stage = 1
@@ -58,19 +65,21 @@ function state.entry()
 
 
   stage = 1
-
   for i=1,10 do
-  Body.set_lleg_command_velocity({500,500,500,500,500,500})
-  unix.usleep(1e6*0.01);
+    Body.set_waist_command_velocity({500,500})
+    unix.usleep(1e6*0.01);
 
-  Body.set_rleg_command_velocity({500,500,500,500,500,500})
-  unix.usleep(1e6*0.01);  
+    Body.set_lleg_command_velocity({500,500,500,500,500,500})
+    unix.usleep(1e6*0.01);
 
-  Body.set_rleg_command_acceleration({50,50,50,50,50,50})
-  unix.usleep(1e6*0.01);
+    Body.set_rleg_command_velocity({500,500,500,500,500,500})
+    unix.usleep(1e6*0.01);  
 
-  Body.set_lleg_command_acceleration({50,50,50,50,50,50})
-  unix.usleep(1e6*0.01);
+    Body.set_rleg_command_acceleration({50,50,50,50,50,50})
+    unix.usleep(1e6*0.01);
+
+    Body.set_lleg_command_acceleration({50,50,50,50,50,50})
+    unix.usleep(1e6*0.01);
   end
 
 
@@ -146,24 +155,24 @@ function state.exit()
   mcm.set_status_bodyHeight(Config.walk.bodyHeight)
   hcm.set_motion_bodyHeightTarget(Config.walk.bodyHeight)  
 
-    for i=1,10 do
-  Body.set_lleg_command_velocity({17000,17000,17000,17000,17000,17000})
-  unix.usleep(1e6*0.01);
+  for i=1,10 do
+    Body.set_lleg_command_velocity({17000,17000,17000,17000,17000,17000})
+    unix.usleep(1e6*0.01);
 
-  Body.set_rleg_command_velocity({17000,17000,17000,17000,17000,17000})
-  unix.usleep(1e6*0.01);  
+    Body.set_rleg_command_velocity({17000,17000,17000,17000,17000,17000})
+    unix.usleep(1e6*0.01);  
 
-  Body.set_rleg_command_acceleration({200,200,200,200,200,200})
-  unix.usleep(1e6*0.01);
+    Body.set_rleg_command_acceleration({200,200,200,200,200,200})
+    unix.usleep(1e6*0.01);
 
-  Body.set_lleg_command_acceleration({200,200,200,200,200,200})
-  unix.usleep(1e6*0.01);
+    Body.set_lleg_command_acceleration({200,200,200,200,200,200})
+    unix.usleep(1e6*0.01);
 
-  Body.set_rleg_position_p({64,64,64,64,64,64})
-  unix.usleep(1e6*0.01);
+    Body.set_rleg_position_p({64,64,64,64,64,64})
+    unix.usleep(1e6*0.01);
 
-  Body.set_lleg_position_p({64,64,64,64,64,64})
-  unix.usleep(1e6*0.01);
+    Body.set_lleg_position_p({64,64,64,64,64,64})
+    unix.usleep(1e6*0.01);
   end
   
 end

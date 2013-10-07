@@ -201,6 +201,18 @@ local function update_preview_queue_steps(self,step_planner,t)
   end
 end
 
+local function trim_preview_queue(self,step_planner,t0)
+  --Trim initial nPreview-1 entries of preview queue
+  --So that we can start motion without delay
+  local t_discrete = t0
+  for i=1,self.preview_steps-1 do
+    self:update_preview_queue_steps(step_planner,t_discrete)
+    t_discrete = t_discrete + self.preview_tStep
+  end
+  return (self.preview_steps-1)*self.preview_tStep --return how much we have to shift the time
+end
+
+
 
 local function update_state(self)
 
@@ -351,6 +363,7 @@ libZMP.new_solver = function( params )
   s.update_state = update_state
   s.precompute = precompute
   s.save_param = save_param
+  s.trim_preview_queue = trim_preview_queue
 
   s.can_stop = can_stop
   

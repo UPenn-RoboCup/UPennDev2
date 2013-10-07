@@ -40,6 +40,11 @@ local pRWristTarget = {-.02,-.30,-.20,0,0,0}
 
 
 
+local pLWristTarget = {.04,.30,-.20,0,0,0}
+local pRWristTarget = {.04,-.30,-.20,0,0,0}
+
+
+
 
 function state.entry()
   print(state._NAME..' Entry' )

@@ -112,6 +112,8 @@ function state.update()
     delta_legs)
 
   mcm.set_status_bodyHeight(bodyHeight)  
+
+  mcm.set_status_uTorsoVel({0,0,0})
 end -- walk.update
 
 function state.exit()

@@ -142,6 +142,11 @@ function moveleg.get_leg_compensation_simple(supportLeg, phSingle, gyro_rpy,angl
   delta_legs[10] = angleShift[3]
   delta_legs[11] = angleShift[1]
 
+ delta_legs[2] = angleShift[4]
+ delta_legs[6] = angleShift[2]  
+  delta_legs[8]  = angleShift[4]    
+  delta_legs[12] = angleShift[2]      
+  --[[
   if supportLeg == 0 then -- Left support
     delta_legs[2] = angleShift[4]
     delta_legs[2] = delta_legs[2] + hipRollCompensation*phComp
@@ -153,6 +158,7 @@ function moveleg.get_leg_compensation_simple(supportLeg, phSingle, gyro_rpy,angl
   elseif supportLeg==2 then 
 
   end
+  --]]
 
 --  print('Ankle shift',angleShift[1]*Body.RAD_TO_DEG )
 

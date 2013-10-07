@@ -145,6 +145,27 @@ function state.exit()
 
   mcm.set_status_bodyHeight(Config.walk.bodyHeight)
   hcm.set_motion_bodyHeightTarget(Config.walk.bodyHeight)  
+
+    for i=1,10 do
+  Body.set_lleg_command_velocity({17000,17000,17000,17000,17000,17000})
+  unix.usleep(1e6*0.01);
+
+  Body.set_rleg_command_velocity({17000,17000,17000,17000,17000,17000})
+  unix.usleep(1e6*0.01);  
+
+  Body.set_rleg_command_acceleration({200,200,200,200,200,200})
+  unix.usleep(1e6*0.01);
+
+  Body.set_lleg_command_acceleration({200,200,200,200,200,200})
+  unix.usleep(1e6*0.01);
+
+  Body.set_rleg_position_p({64,64,64,64,64,64})
+  unix.usleep(1e6*0.01);
+
+  Body.set_lleg_position_p({64,64,64,64,64,64})
+  unix.usleep(1e6*0.01);
+  end
+  
 end
 
 return state

@@ -1,43 +1,85 @@
------------------------------------------------------------------
--- Keyboard Wizard
--- Listens to keyboard input to control the arm joints
--- (c) Stephen McGill, 2013
----------------------------------
-
 dofile'include.lua'
---local is_debug = true
 
--- Libraries
-local Config  = require'Config'
-local unix  = require'unix'
-local getch = require'getch'
-local mp    = require'msgpack'
-local util  = require'util'
-local vector  = require'vector'
-local Body  = require(Config.dev.body)
---TODO: actually jues require 'Body'??
--- Keypresses for walking
+-- Important libraries in the global space
+local libs = {
+  'Config',
+  'Body',
+  'unix',
+  'util',
+  'vector',
+  'torch',
+  'getch',
+  'msgpack'
+}
+
+-- Load the libraries
+for _,lib in ipairs(libs) do _G[lib] = require(lib) end
+if torch then torch.Tensor = torch.DoubleTensor end
+
+-- FSM communicationg
+local listing = unix.readdir(HOME..'/Player')
+-- Add all FSM directories that are in Player
 local simple_ipc = require'simple_ipc'
---local motion_events = simple_ipc.new_publisher('fsm_motion',true)
-local rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
+local fsm_ch_vars = {}
+for _,sm in ipairs(listing) do
+  local found = sm:find'FSM'
+  if found then
+    -- make GameFSM to game_ch
+    local name = sm:sub(1,found-1):lower()..'_ch'
+    table.insert(fsm_ch_vars,name)
+    -- Put into the global space
+    _G[name] = simple_ipc.new_publisher(sm,true)
+  end
+end
+
+-- Shared memory
+local listing = unix.readdir(HOME..'/Memory')
+local shm_vars = {}
+for _,mem in ipairs(listing) do
+  local found, found_end = mem:find'cm'
+  if found then
+    local name = mem:sub(1,found_end)
+    table.insert(shm_vars,name)
+    require(name)
+  end
+end
+
+-- RPC engine
+rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
+
+-- Mesh requester
+mesh_req_ch = simple_ipc.new_requester(Config.net.reliable_mesh)
+
+-- Useful constants
+DEG_TO_RAD = Body.DEG_TO_RAD
+RAD_TO_DEG = Body.RAD_TO_DEG
+
+print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
+print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
+
+
+local channels = {
+  ['motion_ch'] = motion_ch,
+  ['arm_ch'] = arm_ch,
+}
+
 
 -- Events for the FSMs
 local char_to_event = {
-  ['7'] = {'MotionFSM','sit'},
-  ['8'] = {'MotionFSM','stand'},
-  ['9'] = {'MotionFSM','walk'},
-  ['p'] = {'MotionFSM','step'},
-  ['t'] = {'MotionFSM','preview'},
+  ['7'] = {'motion_ch','sit'},
+  ['8'] = {'motion_ch','stand'},
+  ['9'] = {'motion_ch','walk'},
+  ['t'] = {'motion_ch','preview'},
   --
-  ['a'] = {'ArmFSM','init'},
-  ['s'] = {'ArmFSM','reset'},
-  ['r'] = {'ArmFSM','ready'},
+  ['a'] = {'arm_ch','init'},
+  ['s'] = {'arm_ch','reset'},
+  ['r'] = {'arm_ch','ready'},
   --
-  ['x'] = {'ArmFSM','teleop'},
+  ['x'] = {'arm_ch','teleop'},
   --
-  ['w'] = {'ArmFSM','wheelgrab'},
+  ['w'] = {'arm_ch','wheelgrab'},
   --
-  ['d'] = {'ArmFSM','doorgrab'},
+  ['d'] = {'arm_ch','doorgrab'},
 }
 
 local char_to_vel = {
@@ -50,15 +92,18 @@ local char_to_vel = {
 }
 
 local char_to_wheel = {
-  ['['] = vector.new({-1*Body.DEG_TO_RAD}),
-  [']'] = vector.new({1*Body.DEG_TO_RAD}),
+  ['['] = -1*Body.DEG_TO_RAD,
+  [']'] = 1*Body.DEG_TO_RAD,
 }
 
-local function send_command(cmd)
+local function send_command_to_ch(channel, cmd_string)
   -- Default case is to send the command and receive a reply
-  local ret   = rpc_ch:send(mp.pack(cmd))
-  local reply = rpc_ch:receive()
-  return mp.unpack(reply)
+--  local ret   = channel:send(msgpack.pack(cmd))
+--  local reply = channel:receive()
+--  return msgpack.unpack(reply)
+print(cmd_string)
+  local ret   = channel:send(cmd_string)
+  return
 end
 
 local function process_character(key_code,key_char,key_char_lower)
@@ -67,21 +112,8 @@ local function process_character(key_code,key_char,key_char_lower)
   -- Send motion fsm events
   local event = char_to_event[key_char_lower]
   if event then
-    print( event[1], util.color(event[2],'yellow') )
-    --Hack here to stop walking as well
-    if key_char_lower == '8' then
-      print ("stoprequest")
-      cmd = {}
-      cmd.shm = 'mcm'
-      cmd.segment = 'walk'
-      cmd.key = 'stoprequest'
-      cmd.val = 1
-      send_command(cmd)
-    end
-    cmd = {}
-    cmd.fsm = event[1]
-    cmd.evt = event[2]
-    return send_command(cmd)
+    print( event[1], util.color(event[2],'yellow') )    
+    return send_command_to_ch(channels[event[1]],event[2])
   end
 
   -- Adjust the velocity
@@ -89,42 +121,30 @@ local function process_character(key_code,key_char,key_char_lower)
   local vel_adjustment = char_to_vel[key_char_lower]
   if vel_adjustment then
     print( util.color('Inc vel by','yellow'), vel_adjustment )
-    cmd = {}
-    cmd.shm = 'mcm' 
-    cmd.segment = 'walk'
-    cmd.key = 'vel'
-    cmd.delta = vel_adjustment
-    return send_command(cmd)
+    local walk_vel_prev = mcm.get_walk_vel()
+    local walk_vel_new = vector.new(walk_vel_prev)+vector.new(vel_adjustment)
+    mcm.set_walk_vel(walk_vel_new)
+    return
   elseif key_char_lower=='k' then
     print( util.color('Zero Velocity','yellow'))
-    cmd = {}
-    cmd.shm = 'mcm'
-    cmd.segment = 'walk'
-    cmd.key = 'vel'
-    cmd.val = {0, 0, 0}
-    return send_command(cmd)
+    mcm.set_walk_vel({0,0,0})
+    return
   end
 
   -- Adjust the wheel angle
   local wheel_adj = char_to_wheel[key_char_lower]
   if wheel_adj then
     print( util.color('Turn wheel','yellow'), wheel_adj )
-    cmd = {}
-    cmd.shm = 'hcm'
-    cmd.segment = 'wheel'
-    cmd.key = 'turnangle'
-    cmd.delta = wheel_adj
-    return send_command(cmd)
+    local turnAngle = hcm.get_wheel_turnangle() + wheel_adj
+    hcm.set_wheel_turnangle(turnAngle)
+    return
   elseif key_char_lower=='\\' then
-    print( util.color('Center the wheel','yellow') )
-    cmd = {}
-    cmd.shm = 'hcm'
-    cmd.segment = 'wheel'
-    cmd.key = 'turnangle'
-    cmd.val = {0}
-    return send_command(cmd)
+    print( util.color('Center the wheel','yellow') )    
+    hcm.set_wheel_turnangle(0)
+    return
   end
 
+--[[
   -- TODO: smarter range setting
   -- For now, care about things from 10cm to 1m in front
   local near, far = 0.10, 1
@@ -160,12 +180,15 @@ local function process_character(key_code,key_char,key_char_lower)
     cmd.val = {1,2,0} --zlib
     return send_command(cmd)
   end
-
+  --]]
 end
+
+
+
 
 ------------
 -- Start processing
-os.execute("clear")
+--os.execute("clear")
 io.flush()
 local t0 = unix.time()
 while true do
@@ -183,7 +206,7 @@ while true do
   local t_diff = t-t0
   t0 = t
   local fps = 1/t_diff
-  
+ 
   -- Print is_debugging message
   if is_debug then
     print( string.format('\nKeyboard | Code: %d, Char: %s, Lower: %s',

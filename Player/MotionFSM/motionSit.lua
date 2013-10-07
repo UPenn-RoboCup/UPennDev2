@@ -60,7 +60,9 @@ function state.update()
   bodyHeight_target = math.min(Config.walk.bodyHeight,
     math.max(Config.stance.sitHeight, bodyHeight_target))
 
-bodyHeight_target = 0.47; --Full kneel down
+--bodyHeight_target = 0.47; --Full kneel down
+
+bodyHeight_target = 0.60; --Little bit for safety
 
   local bodyHeight = util.approachTol( bodyHeight_now, 
     bodyHeight_target, Config.stance.dHeight, t_diff )
@@ -71,13 +73,12 @@ bodyHeight_target = 0.47; --Full kneel down
 
   -- Grab gyro feedback for these joint angles
   local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
-  delta_legs, angleShift = moveleg.get_leg_compensation(
-      supportLeg,0,gyro_rpy, angleShift, 0)
+  delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,0,gyro_rpy, angleShift)
 
   moveleg.set_leg_positions(uTorso,uLeft,uRight,
     Config.walk.bodyHeight - bodyHeight,
     Config.walk.bodyHeight - bodyHeight,
-    supportLeg,delta_legs)
+    delta_legs)
 
   mcm.set_status_bodyHeight(bodyHeight)    
 end -- walk.update

@@ -24,6 +24,7 @@ sm:add_state(bodyFollow)
 sm:set_transition( bodyIdle, 'init', bodyInit )
 --
 sm:set_transition( bodyInit,   'follow', bodyFollow )
+sm:set_transition( bodyFollow, 'init',   bodyInit )
 sm:set_transition( bodyFollow, 'done',   bodyInit )
 --
 sm:set_transition( bodyInit,   'teleop', bodyTeleop )

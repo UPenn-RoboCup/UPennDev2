@@ -41,6 +41,9 @@ shared.status.uLeft = vector.zeros(3)
 shared.status.uRight = vector.zeros(3)
 shared.status.uTorso = vector.zeros(3)
 
+--We store the torso velocity (to handle stopping)
+shared.status.uTorsoVel = vector.zeros(3)
+
 
 -- Foot support
 --SJ: they are bit misleading as they are different from 'support' positions

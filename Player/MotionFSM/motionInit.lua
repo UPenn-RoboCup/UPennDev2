@@ -59,6 +59,21 @@ function state.entry()
 
   stage = 1
 
+  for i=1,10 do
+  Body.set_lleg_command_velocity({500,500,500,500,500,500})
+  unix.usleep(1e6*0.01);
+
+  Body.set_rleg_command_velocity({500,500,500,500,500,500})
+  unix.usleep(1e6*0.01);  
+
+  Body.set_rleg_command_acceleration({50,50,50,50,50,50})
+  unix.usleep(1e6*0.01);
+
+  Body.set_lleg_command_acceleration({50,50,50,50,50,50})
+  unix.usleep(1e6*0.01);
+  end
+
+
 end
 
 ---
@@ -126,8 +141,31 @@ function state.exit()
   mcm.set_status_uRight(uRight)
   mcm.set_status_uTorso(uTorso)
 
+  mcm.set_status_uTorsoVel(vector.new{0,0,0})
+
   mcm.set_status_bodyHeight(Config.walk.bodyHeight)
   hcm.set_motion_bodyHeightTarget(Config.walk.bodyHeight)  
+
+    for i=1,10 do
+  Body.set_lleg_command_velocity({17000,17000,17000,17000,17000,17000})
+  unix.usleep(1e6*0.01);
+
+  Body.set_rleg_command_velocity({17000,17000,17000,17000,17000,17000})
+  unix.usleep(1e6*0.01);  
+
+  Body.set_rleg_command_acceleration({200,200,200,200,200,200})
+  unix.usleep(1e6*0.01);
+
+  Body.set_lleg_command_acceleration({200,200,200,200,200,200})
+  unix.usleep(1e6*0.01);
+
+  Body.set_rleg_position_p({64,64,64,64,64,64})
+  unix.usleep(1e6*0.01);
+
+  Body.set_lleg_position_p({64,64,64,64,64,64})
+  unix.usleep(1e6*0.01);
+  end
+  
 end
 
 return state

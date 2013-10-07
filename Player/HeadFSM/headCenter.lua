@@ -10,7 +10,8 @@ function state.entry()
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
-  Body.set_head_command_position( {0,-0.25} )
+  --TODO: need to compensate the torso pose
+  Body.set_head_command_position( {0,-Config.walk.bodyTilt-0.05} )
 end
 
 function state.update()
@@ -20,6 +21,7 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
+  print(unpack(Body.get_head_command_position()))
   return 'done'
 end
 

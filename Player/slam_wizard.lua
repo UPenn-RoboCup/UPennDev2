@@ -10,7 +10,6 @@ local Body = require'Body'
 require 'unix'
 
 -- Set the Debugging mode
-local debugging = true
 local Benchmark = false --true
 -- Set the real-robot mode
 local realFlag = 1
@@ -47,21 +46,19 @@ require'wcm'
 ---------------------------------
 
 ---------------------------------
--- Logging set up
+-- Logging and Replaying set up
 -- Flag for logging
 local logfile = ''
-local is_logging = false
-if arg[1] == '-l' then
-	is_logging = true
-end
+local is_logging = ( arg[1] == '-l' )
 if is_logging then
-  filetime = os.date('%m.%d.%Y.%H.%M')
-  logfile = io.open('SlamLogs/'..filetime..'.log','w')
+  filetime = os.date('%m.%d.%Y.%H.%M.%S')
+  logfile = io.open('logfiles/'..filetime..'.log','w')
 end
 -- Replay flag
-local replay = false
-if arg[1] == '-r' then
-	replay = true
+local replay = ( arg[1] == '-r' )
+-- Flag for webots
+if is_logging or replay then
+  IS_WEBOTS = false
 end
 ---------------------------------
 
@@ -105,6 +102,7 @@ pre_pose = {0,0,0}
 ---------------------------------
 -- Callbacks for receiving lidar readings
 local function head_callback()
+  --print('HEAD CALLBACK')
   -- Grab the data  
   local meta, has_more = head_lidar_ch:receive()
   local metadata = mp.unpack(meta)
@@ -117,12 +115,14 @@ local function head_callback()
   lidar0_count = lidar0_count + 1;
   if lidar0_count%lidar0_interval~=0 then return end
 
+	--[[
   if IS_WEBOTS then
     -- Ground truth pose
     cur_pose = wcm.get_robot_pose()
   elseif USE_SLAM_ODOM then
-    --cur_pose = scm/blah:get_pose()
+    cur_pose = wcm.get_slam_pose()
   end
+	--]]
    
   ----------------
   -- Benchmark
@@ -146,7 +146,7 @@ local function head_callback()
 
   -- Take log if needed
   if is_logging then
-  	-- carray cannot be logged
+  	-- torch is easier to be logged...
   	metadata.ranges = lidar0.ranges
   	logfile:write( mp.pack(metadata) )
   end
@@ -159,13 +159,21 @@ local function head_callback()
   end
   local head_pitch, head_yaw = angle, 0 
   --print(string.format('\nHEAD PITCH:\t%.2f', head_pitch*180/math.pi))
-  lidar0:transform( head_roll, head_pitch, head_yaw )
+  lidar0:transform( head_roll, head_pitch, head_yaw)
   ------------------
     
   -- Scan match
   local t0_processL0 = unix.time()
-  -- TODO: Just add the gyro values to the lidar metadata
   --print('RPY/Gyro',vector.new(metadata.rpy), metadata.gyro[3])
+	
+	-- YAW has offset from real robot
+	if not IS_WEBOTS then
+  	metadata.rpy[3] = metadata.rpy[3] + 110/180*math.pi
+	end
+
+	-- If ROLL is too big then skip
+	if math.abs(metadata.gyro[1]) > 0.45 then return end
+
   libSlam.processIMU( metadata.rpy, metadata.gyro[3], metadata.t )
   libSlam.processOdometry({0,0,0}) --( Body.get_robot_odom() )
   libSlam.processL0( lidar0.points_xyz )
@@ -173,7 +181,7 @@ local function head_callback()
   --print( string.format('processL0 took: \t%.2f ms', (t1_processL0-t0_processL0)*1000) )
   ------------------
   
-  --wcm.set_slam_pose({libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom})
+  wcm.set_slam_pose({libSlam.SLAM.xOdom,libSlam.SLAM.yOdom,libSlam.SLAM.yawOdom})
 
   ------------------
   --[[ For real robot
@@ -271,13 +279,6 @@ local t_last = t
 local t_debug = 1 -- Print debug output every second
 ------------------
 
-------------------
--- No debugging messages
--- Only the callback will be made
-if not debugging then channel_polls:start() end
-------------------
-
-
 local slam = {}
 
 function slam.entry()
@@ -311,6 +312,7 @@ end
 local cnt = 0
 
 function slam.update()
+  
   ------------------
   -- Merge maps
   ------------------
@@ -348,6 +350,7 @@ function slam.update()
   -- Streaming
   meta.shift = shiftdata
   meta.pose_slam = {libSlam.SLAM.xOdom, libSlam.SLAM.yOdom, libSlam.SLAM.yawOdom}
+  meta.torso_tilt = Config.walk.bodyTilt
   local meta = mp.pack(meta)
   local ret, err = omap_udp_ch:send( meta..c_map )
   if err then print('OMAP send error:',err,#c_map,#meta) end

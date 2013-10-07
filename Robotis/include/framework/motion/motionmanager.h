@@ -23,7 +23,7 @@
 #include "framework/motion/MX28.h"
 #include "framework/minIni.h"
 #include "framework/sensor/forcetorquesensor/forcetorquesensor.h"
-
+#include <unistd.h>
 #define OFFSET_SECTION "Offset"
 #define INVALID_VALUE   0X40000000
 

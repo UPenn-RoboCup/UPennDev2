@@ -10,13 +10,14 @@ LIDAR.get_double_approach = @get_double_approach;
 LIDAR.clear_points = @clear_points;
 LIDAR.set_zoomlevel = @set_zoomlevel;
 
-% Which mesh to display
+% Which mesh to display: 0-HEAD, 1-CHEST
 % Chest lidar default
-LIDAR.meshtype = 2;
+LIDAR.meshtype = 1;
+LIDAR.mesh_cnt = 0;
 
 % 0: Show head
 % 1: Show chest
-LIDAR.mesh_img_display = 0;
+LIDAR.depth_img_display = 0;
 % points draw on this handle
 LIDAR.clicked_points  = []; % 2d
 LIDAR.selected_points = []; % 3d
@@ -71,20 +72,20 @@ CHEST_LIDAR.posex=[];
 CHEST_LIDAR.posey=[];
 CHEST_LIDAR.posea=[];
 
-    function init(a1,a_mesh)
+    function init(a_depth,a_mesh)
         %maximum size for 3d mesh
         
         %% Setup the image figure
-        if a1~=0
-            LIDAR.p_img = a1;
-            axes(a1);
+        if a_depth~=0
+            LIDAR.p_img = a_depth;
+            axes(a_depth);
             % Default to head lidar
             LIDAR.h_img = imagesc( HEAD_LIDAR.ranges );
             set(LIDAR.p_img,'xtick',[],'ytick',[])
             colormap('JET')
             set(LIDAR.h_img, 'ButtonDownFcn', @select_3d );
             hold on;
-            LIDAR.pointdraw = plot(a1,0,0,'g.');
+            LIDAR.pointdraw = plot(a_depth,0,0,'g.');
             set(LIDAR.pointdraw, 'MarkerSize', 40 );
             hold off;
         end
@@ -101,13 +102,18 @@ CHEST_LIDAR.posea=[];
         end
     end
 
-    function set_meshtype(h,~,meshtype)
+    function set_meshtype(~, ~, meshtype)
         LIDAR.meshtype = meshtype;
-        if meshtype==1
+        update_mesh_display();
+    end
+
+    function update_mesh_display()
+        if LIDAR.meshtype==0
             set(LIDAR.h,'Faces',HEAD_LIDAR.faces);
             set(LIDAR.h,'Vertices',HEAD_LIDAR.verts);
             set(LIDAR.h,'FaceVertexCData',HEAD_LIDAR.cdatas);
         else
+            CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[2,1,0]);
             set(LIDAR.h,'Faces',CHEST_LIDAR.faces);
             set(LIDAR.h,'Vertices',CHEST_LIDAR.verts);
             set(LIDAR.h,'FaceVertexCData',CHEST_LIDAR.cdatas);
@@ -115,19 +121,19 @@ CHEST_LIDAR.posea=[];
     end
 
     function set_img_display(h,~,val)
-        LIDAR.mesh_img_display = 1-LIDAR.mesh_img_display;
-        if LIDAR.mesh_img_display==0
+        LIDAR.depth_img_display = 1-LIDAR.depth_img_display;
+        if LIDAR.depth_img_display==0
             % Set the string to the next mesh (not current)
             set(h,'String','Chest');
         else
             set(h,'String','Head');
         end
         clear_points();
-        draw_mesh_image();
+        draw_depth_image();
     end
 
     function get_depth_img(h,~)
-        if LIDAR.mesh_img_display==0
+        if LIDAR.depth_img_display==0
             % head
             CONTROL.send_control_packet([],[],'vcm','head_lidar','depths',[.1,2]);
             CONTROL.send_control_packet([],[],'vcm','head_lidar','net',[1,1,0]);
@@ -138,9 +144,9 @@ CHEST_LIDAR.posea=[];
         end
     end
 
-    function draw_mesh_image()
+    function draw_depth_image()
         % Draw the data
-        if LIDAR.mesh_img_display==0
+        if LIDAR.depth_img_display==0
             set(LIDAR.h_img,'Cdata', HEAD_LIDAR.ranges);
             set(LIDAR.p_img, 'XLim', [1 size(HEAD_LIDAR.ranges,2)]);
             set(LIDAR.p_img, 'YLim', [1 size(HEAD_LIDAR.ranges,1)]);
@@ -150,7 +156,7 @@ CHEST_LIDAR.posea=[];
             set(LIDAR.p_img, 'YLim', [1 size(CHEST_LIDAR.ranges,1)]);
         end
     end
-
+        
     function [nBytes] = update(fd)
         t0 = tic;
         nBytes = 0;
@@ -178,22 +184,27 @@ CHEST_LIDAR.posea=[];
             HEAD_LIDAR.fov_angles = fov_angles;
             HEAD_LIDAR.scanline_angles = scanline_angles;
             HEAD_LIDAR.depths = double(metadata.depths);
-            % Update the figure
-            if LIDAR.mesh_img_display==0
-                draw_mesh_image()
-            end
+            % Update the figures
+                draw_depth_image();
+                update_mesh(0);
+                if mod(LIDAR.mesh_cnt, 10) == 0
+                    update_mesh_display();
+                end
         else
             % Save data
             CHEST_LIDAR.ranges = depth_img';
             CHEST_LIDAR.fov_angles = fov_angles;
             CHEST_LIDAR.scanline_angles = scanline_angles;
             CHEST_LIDAR.depths = double(metadata.depths);
-            % Update the figure
-            if LIDAR.mesh_img_display==1
-                draw_mesh_image()
-            end
+            % Update the figures
+                draw_depth_image();
+                % Update mesh image
+                update_mesh(1);
+                if mod(LIDAR.mesh_cnt, 10) == 0
+                    update_mesh_display();
+                end
         end
-
+        
         % end of update
         tPassed = toc(t0);
         fprintf('Update lidar: %f seconds.\n',tPassed);
@@ -312,7 +323,7 @@ CHEST_LIDAR.posea=[];
             set(LIDAR.pointdraw,'YData',LIDAR.clicked_points(:,2));
         
         % if head
-        if LIDAR.mesh_img_display==0
+        if LIDAR.depth_img_display==0
             % Round the index to an integer
             fov_angle_index = round( posxy(1) );
             scanline_index  = round( posxy(2) );

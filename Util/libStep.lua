@@ -1,14 +1,169 @@
 -- Torch/Lua Walk step generator
 -- (c) 2013 Stephen McGill, Seung-Joon Yi
 local vector = require'vector'
-local libStep = {}
+local util = require'util'
+require'mcm'
+
+-- Velocity limits used in update_velocity function
+local velLimitX = Config.walk.velLimitX or {-.06, .08}
+local velLimitY = Config.walk.velLimitY or {-.06, .06}
+local velLimitA = Config.walk.velLimitA or {-.4, .4}
+local velDelta  = Config.walk.velDelta or {.03,.015,.15}
+local vaFactor  = Config.walk.vaFactor or 0.6
+
+-- Foothold Generation parameters ---------------------------------------
+local stanceLimitX = Config.walk.stanceLimitX or {-0.10 , 0.10}
+local stanceLimitY = Config.walk.stanceLimitY or {0.09 , 0.20}
+local stanceLimitA = Config.walk.stanceLimitA or {-0*math.pi/180, 40*math.pi/180}
+
+-- Toe/heel overlap checking values
+local footSizeX = Config.walk.footSizeX or {-0.05,0.05}
+local stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015
+local stanceLimitY2 = 2* Config.walk.footY-stanceLimitMarginY
+-------------------------------------------------------------------------
+
+local footY    = Config.walk.footY
+local supportX = Config.walk.supportX
+local supportY = Config.walk.supportY
+local torsoX    = Config.walk.torsoX
+
+------------------------------------------------------------------------
+
+local velocityBias = vector.new(Config.walk.velocityBias or {0,0,0})
+
+local function update_velocity(self,vel)  
+  -- Grab from the shared memory the desired walking speed
+  local vx,vy,va = unpack(vel)
+--  local vx,vy,va = unpack(hcm.get_motion_velocity())
+
+  --Filter the commanded speed
+  vx = math.min(math.max(vx,velLimitX[1]),velLimitX[2])
+  vy = math.min(math.max(vy,velLimitY[1]),velLimitY[2])
+  va = math.min(math.max(va,velLimitA[1]),velLimitA[2])
+  -- Find the magnitude of the velocity
+  local stepMag = math.sqrt(vx^2+vy^2)
+  --Slow down when turning
+  local vFactor   = 1-math.abs(va)/vaFactor
+  local magFactor = math.min(velLimitX[2]*vFactor,stepMag)/(stepMag+0.000001)
+  -- Limit the forwards and backwards velocity
+  vx = math.min(math.max(vx*magFactor,velLimitX[1]),velLimitX[2])
+  vy = math.min(math.max(vy*magFactor,velLimitY[1]),velLimitY[2])
+  va = math.min(math.max(va,velLimitA[1]),velLimitA[2])
+  -- Check the change in the velocity
+  local velDiff = vector.new({vx,vy,va}) - self.velCurrent
+  -- Limit the maximum velocity change PER STEP
+  velDiff[1] = util.procFunc(velDiff[1],0,velDelta[1])
+  velDiff[2] = util.procFunc(velDiff[2],0,velDelta[2])
+  velDiff[3] = util.procFunc(velDiff[3],0,velDelta[3])
+
+  -- Update the current velocity command
+  self.velCurrent = self.velCurrent+velDiff    
+  return self.velCurrent
+end
+
+local function init_stance(self)
+  local uTorso = mcm.get_status_uTorso()  
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  return uLeft,uRight,uTorso,uLeft,uRight,uTorso
+end
+
+local function save_stance(self,uLeft,uRight,uTorso)
+  mcm.set_status_uLeft(uLeft)
+  mcm.set_status_uRight(uRight)
+  mcm.set_status_uTorso(uTorso)
+end
+
+local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, supportLeg, initialStep)  
+  local uLeft_next, uRight_next, uTorso_next = uLeft_now, uRight_now, uTorso_now
+  local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
+  local uSupport
+
+  local velWalk = self.velCurrent + velocityBias
+
+  if initialStep then
+    if supportLeg == 0 then    -- Left support      
+      uSupport = util.se2_interpolate(0.3,uLSupport,uTorso_next)      
+    else    -- Right support      
+      uSupport = util.se2_interpolate(0.3,uRSupport,uTorso_next)      
+    end  
+  else
+    if supportLeg == 0 then    -- Left support
+      uSupport = uLSupport
+      uRight_next = self.step_destination_right(velWalk, uLeft_now, uRight_now)    
+      local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
+      uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
+    else    -- Right support
+      uSupport = uRSupport
+      uLeft_next = self.step_destination_left(velWalk, uLeft_now, uRight_now)    
+      local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
+      uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
+    end  
+  end
+  return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport 
+end
+
+
+--------------------------------------------------------------
+--
+-- Step queue: future foothold informations
+--
+--------------------------------------------------------------
+
+local function step_enque(self,uFoot,supportLeg,tStep, zmpMod)
+  local step = {}
+  step.uFoot = uFoot
+  step.supportLeg = supportLeg
+  step.tStep = tStep
+  step.zmpMod = zmpMod or vector.new({0,0,0})
+  table.insert(self.stepqueue,step)
+end
+
+local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initialStep)  
+  if #self.stepqueue==0 then return end
+
+  local uLeft_next, uRight_next, uTorso_next = uLeft_now, uRight_now, uTorso_now
+  local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
+  local uSupport
+
+  local current_step =table.remove(self.stepqueue,1) 
+  supportLeg = current_step.supportLeg
+  if supportLeg==0 then --Left support
+    uSupport = util.pose_global(current_step.zmpMod,uLSupport)
+    uRight_next = util.pose_global(current_step.uFoot,uTorso_now)
+    local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
+    uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
+  elseif supportLeg==1 then
+    uSupport = util.pose_global(current_step.zmpMod,uRSupport)
+    uLeft_next =  util.pose_global(current_step.uFoot,uTorso_now)
+    local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
+    uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
+  else --Double support
+    uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
+  end 
+
+  return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport, supportLeg, current_step.tStep
+end
+
+local function get_supports(uLeft,uRight)    
+  local uLSupport = util.pose_global({supportX, supportY, 0}, uLeft)
+  local uRSupport = util.pose_global({supportX, -supportY, 0}, uRight)
+  return uLSupport,uRSupport
+end
+
+local function get_torso(uLeft,uRight)
+  local uLSupport = util.pose_global({supportX, supportY, 0}, uLeft)
+  local uRSupport = util.pose_global({supportX, -supportY, 0}, uRight)
+  local uTorso = util.se2_interpolate(0.5, uLSupport, uRSupport)
+  return uTorso
+end
 
 local function step_destination_left(vel, uLeft, uRight)
   local u0 = util.se2_interpolate(.5, uLeft, uRight)
   -- Determine nominal midpoint position 1.5 steps in future
   local u1 = util.pose_global(vel, u0)
   local u2 = util.pose_global(.5*vel, u1)
-  local uLeftPredict = util.pose_global(uLRFootOffset, u2)
+  local uLeftPredict = util.pose_global({0,footY,0}, u2)
   local uLeftRight = util.pose_relative(uLeftPredict, uRight)
   -- Do not pidgeon toe, cross feet:
 
@@ -32,7 +187,7 @@ local function step_destination_right(vel, uLeft, uRight)
   -- Determine nominal midpoint position 1.5 steps in future
   local u1 = util.pose_global(vel, u0)
   local u2 = util.pose_global(.5*vel, u1)
-  local uRightPredict = util.pose_global(-1*uLRFootOffset, u2)
+  local uRightPredict = util.pose_global({0,-footY,0}, u2)
   local uRightLeft = util.pose_relative(uRightPredict, uLeft)
   -- Do not pidgeon toe, cross feet:
 
@@ -50,6 +205,33 @@ local function step_destination_right(vel, uLeft, uRight)
   return util.pose_global(uRightLeft, uLeft)
 end
 
-local 
+
+
+local libStep={}
+
+libStep.new_planner = function (params)
+  params = params or {}
+  local s = {}
+  --member variables
+  s.stepqueue = {}
+  s.velCurrent = vector.new({0,0,0})
+  
+  --Functions
+  s.update_velocity = update_velocity
+  s.get_next_step_velocity = get_next_step_velocity
+
+  s.step_enque = step_enque
+  s.get_next_step_queue = get_next_step_queue
+
+  --Functions #2
+  s.get_supports = get_supports
+  s.get_torso = get_torso
+  s.step_destination_left = step_destination_left
+  s.step_destination_right = step_destination_right
+
+  s.init_stance = init_stance
+  s.save_stance = save_stance 
+  return s
+end
 
 return libStep

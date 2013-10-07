@@ -46,17 +46,28 @@ local accel = vector.zeros(3)
 jcm.set_sensor_gyro({0,0,0})
 jcm.set_sensor_rpy({0,0,0})
 
-local function process_imu(rpy,gyro)
+local function process_imu(gyro,rpy)
+--SJ: SOMETHING'S WEIRD HERE
   -- Perform the remapping and place into jcm
+
+--[[
   jcm.set_sensor_rpy({
+    rpy[2],
     rpy[3],
-    -rpy[2],
     -rpy[1]
     })
   jcm.set_sensor_gyro({
     gyro[2],
     gyro[3],
     -gyro[1]
+    })
+--]]
+
+
+  jcm.set_sensor_gyro({
+    rpy[2],
+    rpy[3],
+    -rpy[1]
     })
 
 end

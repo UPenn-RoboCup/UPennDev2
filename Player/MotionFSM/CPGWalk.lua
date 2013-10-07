@@ -2,21 +2,16 @@
 -- Central pattern generator walk based on robotis walk code
 --------------------------------------------------------
 
-
 local walk = {}
 walk._NAME = ...
 
 local Body   = require'Body'
-local K      = Body.Kinematics
 local vector = require'vector'
-local unix   = require'unix'
 local util   = require'util'
 local moveleg = require'moveleg'
+local libStep = require'libStep'
+local step_planner
 require'mcm'
-
--- Simple IPC for remote state triggers
-local simple_ipc = require'simple_ipc'
-local evts = simple_ipc.new_subscriber('Walk',true)
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
@@ -118,7 +113,8 @@ local function init_params()
   swing_pelvis = offset_pelvis*0.35
 end
 
-local function update_params()
+local function update_params(velCurrent)
+  print(velCurrent)
   mag_X = velCurrent[1]
   dMag_X = 0
   mag_Y = velCurrent[2]/2  
@@ -144,6 +140,7 @@ local function calculate_torso_movement(t)
   z_swap = wsin(t, pt_swap_Z, dPt_swap_Z, mag_swap_Z, dMag_swap_Z);
   
   if (t<t_SSP_start_L) then --Double support phase
+--    print("DS")
     x_move_l = get_movement(t_SSP_start_L, pt_X, dPt_X, t_SSP_start_L,mag_X, dMag_X)
     y_move_l = get_movement(t_SSP_start_L, pt_Y, dPt_Y, t_SSP_start_L,mag_Y, dMag_Y)
     z_move_l = get_movement(t_SSP_start_L, pt_Z, dPt_Z, t_SSP_start_L,mag_Z, dMag_Z)
@@ -156,8 +153,7 @@ local function calculate_torso_movement(t)
     pelvis_offset_l = 0
     pelvis_offset_r = 0
   elseif t<t_SSP_end_L then --Single support phase, Right support
-
-  update_params()
+--  print("RS_SS")
     x_move_l = get_movement(t, pt_X, dPt_X ,t_SSP_start_L, mag_X, dMag_X)
     y_move_l = get_movement(t, pt_Y, dPt_Y ,t_SSP_start_L, mag_Y, dMag_Y)
     z_move_l = get_movement(t, pt_Z, dPt_Z ,t_SSP_start_L, mag_Z, dMag_Z)
@@ -171,6 +167,7 @@ local function calculate_torso_movement(t)
     pelvis_offset_l = get_movement(t, pt_Z, dPt_Z ,t_SSP_start_L, swing_pelvis/2, swing_pelvis/2)
     pelvis_offset_r = get_movement(t, pt_Z, dPt_Z ,t_SSP_start_L, -offset_pelvis/2, -offset_pelvis/2)
   elseif t<t_SSP_start_R then --Double support phase
+--    print("DS")    
     x_move_l = get_movement(t_SSP_end_L, pt_X, dPt_X, t_SSP_start_L,mag_X, dMag_X)
     y_move_l = get_movement(t_SSP_end_L, pt_Y, dPt_Y, t_SSP_start_L,mag_Y, dMag_Y)
     z_move_l = get_movement(t_SSP_end_L, pt_Z, dPt_Z, t_SSP_start_L,mag_Z, dMag_Z)
@@ -183,22 +180,24 @@ local function calculate_torso_movement(t)
     pelvis_offset_l = 0
     pelvis_offset_r = 0
   elseif t<t_SSP_end_R then  --Single support phase, Left support
-    x_move_l = get_movement(t, pt_X, dPt_X ,t_SSP_start_R+math.pi, mag_X, dMag_X)
-    y_move_l = get_movement(t, pt_Y, dPt_Y ,t_SSP_start_R+math.pi, mag_Y, dMag_Y)
-    z_move_l = get_movement(t_SSP_end_L, pt_Z, dPt_Z ,t_SSP_start_L, mag_Z, dMag_Z)
-    c_move_l = get_movement(t, pt_A, dPt_A ,t_SSP_start_R+math.pi, mag_A, dMag_A)
+--  print("LS_SS")
+    x_move_l = get_movement(t,           pt_X, dPt_X ,t_SSP_start_R+math.pi, mag_X, dMag_X)
+    y_move_l = get_movement(t,           pt_Y, dPt_Y ,t_SSP_start_R+math.pi, mag_Y, dMag_Y)
+    z_move_l = get_movement(t_SSP_end_L, pt_Z, dPt_Z ,t_SSP_start_L,         mag_Z, dMag_Z)
+    c_move_l = get_movement(t,           pt_A, dPt_A ,t_SSP_start_R+math.pi, mag_A, dMag_A)
 
-    x_move_r = get_movement(t, pt_X, dPt_X ,t_SSP_start_R+math.pi, -mag_X, -dMag_X)
-    y_move_r = get_movement(t, pt_Y, dPt_Y ,t_SSP_start_R+math.pi, -mag_Y, -dMag_Y)
-    z_move_r = get_movement(t, pt_Z, dPt_Z ,t_SSP_start_R, mag_Z, dMag_Z)
-    c_move_r = get_movement(t, pt_A, dPt_A ,t_SSP_start_R+math.pi, -mag_A, -dMag_A)
+    x_move_r = get_movement(t,           pt_X, dPt_X ,t_SSP_start_R+math.pi, -mag_X, -dMag_X)
+    y_move_r = get_movement(t,           pt_Y, dPt_Y ,t_SSP_start_R+math.pi, -mag_Y, -dMag_Y)
+    z_move_r = get_movement(t,           pt_Z, dPt_Z ,t_SSP_start_R, mag_Z, dMag_Z)
+    c_move_r = get_movement(t,           pt_A, dPt_A ,t_SSP_start_R+math.pi, -mag_A, -dMag_A)
 
     pelvis_offset_l = get_movement(t, pt_Z, dPt_Z ,t_SSP_start_R, offset_pelvis/2, offset_pelvis/2)
     pelvis_offset_r = get_movement(t, pt_Z, dPt_Z ,t_SSP_start_R, -swing_pelvis/2, -swing_pelvis/2)
   else --Double support phase
+--    print("DS")
     x_move_l = get_movement(t_SSP_end_R, pt_X, dPt_X, t_SSP_start_R+math.pi,mag_X, dMag_X)
     y_move_l = get_movement(t_SSP_end_R, pt_Y, dPt_Y, t_SSP_start_R+math.pi,mag_Y, dMag_Y)
-    z_move_l = get_movement(t_SSP_end_L, pt_Z, dPt_Z, t_SSP_start_L,mag_Z, dMag_Z)
+    z_move_l = get_movement(t_SSP_end_L, pt_Z, dPt_Z, t_SSP_start_L,        mag_Z, dMag_Z)
     c_move_l = get_movement(t_SSP_end_R, pt_A, dPt_A, t_SSP_start_R+math.pi,mag_A, dMag_A)
 
     x_move_r = get_movement(t_SSP_end_R, pt_X, dPt_X, t_SSP_start_R+math.pi,-mag_X, -dMag_X)
@@ -236,7 +235,8 @@ function walk.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  -- Reset our velocity
+
+  step_planner = libStep.new_planner()
   velCurrent = vector.new{0,0,0}
   mcm.set_walk_vel(velCurrent)
 
@@ -258,7 +258,7 @@ function walk.entry()
   mcm.set_walk_stoprequest(0) --cancel stop request flag
 
   init_params()
-  update_params()
+  update_params(velCurrent)
 end
 
 function walk.update()
@@ -275,15 +275,15 @@ function walk.update()
   if ph>1 then
     ph = ph % 1
     if stoprequest>0 then return"done" end --Should we stop now?
-    velCurrent = moveleg.update_velocity(velCurrent)     -- Update the velocity via a filter
-
-    print(velCurrent)
+    step_planner:update_velocity(mcm.get_walk_vel())
+    update_params(step_planner.velCurrent)    
+    t_last_step = t
   end
+
+  pLLeg, pRLeg = calculate_torso_movement(ph*tStep)
   
   local gyro_rpy = Body.get_sensor_gyro()
-  delta_legs, angleShift = moveleg.get_leg_compensation(3,0,gyro_rpy, angleShift,0)
-   
-  pLLeg, pRLeg = calculate_torso_movement(ph*tStep)
+  delta_legs, angleShift = moveleg.get_leg_compensation(3,0,gyro_rpy, angleShift)
 
   local pTorso = {supportX_converted,0,bodyHeight_converted,   0,hip_pitch_offset,0}
   pLLeg[3] = pLLeg[3] - footz0;
@@ -291,8 +291,6 @@ function walk.update()
   supportLeg = 2
 
   moveleg.set_leg_transforms(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)  
-
-
 end -- walk.update
 
 function walk.exit()

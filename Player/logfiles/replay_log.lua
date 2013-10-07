@@ -7,11 +7,7 @@ local mp = require'msgpack'
 local Body = require'Body'
 
 -- Load log files
--- local dataStamp = '10.03.2013'
--- local tmp_list = assert(io.popen('./ls'..dataStamp..'*', 'r'))
--- local logfile_iter = tmp_list:lines()
-
-local logfile = io.open('10.03.2013.12.40.log', 'r')
+local logfile = io.open(arg[1], 'r')
 local log_str = logfile:read('*a')
 logfile:close()
 local data_unpacker = mp.unpacker(log_str)

@@ -15,14 +15,6 @@ local N_READINGS = 1081
 local HALFWAY_READING = 541
 
 local function transform(self, roll, pitch, yaw)
-  --------------
-  -- TODO: this resize should be unnecessary
-  -- Reset the range container size
-  --self.ranges:resize( self.maxIdx - self.minIdx + 1 )
-  --self.points:resize( self.maxIdx - self.minIdx + 1, 4 )
-  --------------
-
-  --------------
   -- Easier access to data
   local XY = torch.Tensor(self.ranges:size(1), 4):zero() 
   XY:copy(self.points)
@@ -34,22 +26,21 @@ local function transform(self, roll, pitch, yaw)
   --print(string.format('\n\nSize of ranges: %d', self.ranges:size(1)))
   --print(string.format('Size of cosines: %d \n\n', self.cosines:size(1)))
   
-  print('X size:', XY:size(1), 'points size:', self.points:size(1))
+  --print('X size:', XY:size(1), 'points size:', self.points:size(1))
   XY:select(2,1):copy(self.ranges):cmul( self.cosines )
   XY:select(2,2):copy(self.ranges):cmul( self.sines )
   --------------
 
   --------------
-  ---[[ Prune based on the minimum and maximum ranges
+  -- Prune based on the minimum and maximum ranges
   self.nRanges = slam.range_filter(
   self.ranges,
   self.minRange, self.maxRange,
   XY:select(2,1), XY:select(2,2)
   )
-  --]]
 
-  print('\n Original # of ranges:', self.ranges:size(1))
-  print('nRanges:', self.nRanges, '\n\n')
+  --print('\n Original # of ranges:', self.ranges:size(1))
+  --print('nRanges:', self.nRanges, '\n\n')
   --print(XY:select(2,1):stride()[1])
   --print(self.ranges:stride()[1], self.ranges:stride():size())
   
@@ -108,30 +99,27 @@ end
 local function update_head( self, roll, pitch, yaw )
 --TODO: parameters need to be updated
   -----------------------
-  -- Rotation of the lidar
+  -- Rotation of the head
   self.t_roll  = libTransform.rotX( roll )
   self.t_pitch = libTransform.rotY( pitch )
   self.t_yaw   = libTransform.rotZ( yaw )
   self.t_rotation = torch.mm(torch.mm(self.t_roll, self.t_pitch), self.t_yaw)
   -----------------------
 
+  -----------------------
+  -- Transformation from the chest(body) to the head
   self.head_height = K.neckOffsetZ
-  self.lidar_offestz = 0.10 --FIXME
-
-  -----------------------
-  -- Height off the chest to the head
   self.t_headOffset = libTransform.trans(0, 0, self.head_height)
-  -----------------------
-
-  -----------------------
-  -- Transformation from the chest to the head
   self.t_body2head = torch.mm( self.t_headOffset, self.t_rotation )
-  -----------------------
+  -----------------------	
 
-  -- Transformation from the holder to lidar
-  self.t_lidarOffset = libTransform.trans( 
+  -----------------------
+	-- Transformation from head to lidar
+  self.lidar_offestz = 0.10 --FIXME
+	self.t_lidarOffset = libTransform.trans( 
   self.lidar_offsetx, self.lidar_offsety, self.lidar_offsetz
   )
+  -----------------------
 
   -----------------------
   -- Transformation from the body to the lidar

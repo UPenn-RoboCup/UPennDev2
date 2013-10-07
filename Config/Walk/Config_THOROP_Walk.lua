@@ -44,25 +44,7 @@ walk.phZmp = {0.2,0.8}
 ------------------------------------
 -- Compensation parameters
 ------------------------------------
-walk.hardnessSupport = 1
-walk.hardnessSwing = 1
 --walk.hipRollCompensation = 3*math.pi/180
-walk.hipRollCompensation = 1*math.pi/180
-walk.supportModYInitial = -0.04 --Reduce initial body swing
-
--- slow/static
-walk.supportY = 0.04
-walk.bodyHeight = 0.950
-walk.supportX = 0.01
-walk.hipRollCompensation = 3*math.pi/180
-walk.stepHeight = 0.02
-
-walk.tZMP = 0.30
-walk.footY  = 0.10
-walk.supportY = 0.02
-walk.supportX = 0.02
-walk.stepHeight = 0.025
-
 walk.hipRollCompensation = 1*math.pi/180
 
 --Param for actual robot
@@ -78,18 +60,18 @@ walk.foot_traj = 1;
 
 if IS_WEBOTS then
   --Webots parameters
-
+--[[
   walk.tStep = 0.8
   walk.phSingle = {0.2,0.8}
   walk.phZmp = {0.2,0.8}
   walk.stepHeight = 0.05
-
+--]]
 
 --Robotis style walk
   walk.tStep = 0.45
   walk.phSingle = {0.125,0.875}
   walk.phZmp = {0.125,0.875}
-  walk.stepHeight = 0.03
+  walk.stepHeight = 0.04
 
   gyroFactorX = 0.1
   gyroFactorY = 0.1
@@ -99,10 +81,6 @@ if IS_WEBOTS then
   walk.hipImuParamY = {0.3,  0.5*gyroFactorY, 1*math.pi/180, 5*math.pi/180}
 
   walk.foot_traj = 2; --square step
-
-
-
-
 
   --Robotis style walk
   walk.bodyHeight = 0.9285318
@@ -133,51 +111,78 @@ if IS_WEBOTS then
   walk.velLimitY = {-.15,.15}
 
 
-
-
-
+--ZMP preview walk test
 
 else
 
-  --[[
-    --FOR STATIC WALKING
-    walk.hipRollCompensation = 2*math.pi/180
-    walk.stepHeight = 0.03
-    walk.bodyHeight = 0.93
-    walk.supportY = 0.035 
-    walk.footY  = 0.095
-    walk.tStep = 12
-  --]]
+  walk.foot_traj = 1; --curved step
+  walk.foot_traj = 2; --square step
 
 --Robotis default walk parameters
-
   walk.bodyHeight = 0.9285318
   walk.supportX = 0.0515184
   walk.footY = 0.1095
   walk.bodyTilt = 11*math.pi/180
 
-  gyroFactorX = 490.23/(251000/180)*0
-  gyroFactorY = 490.23/(251000/180)*0
-  walk.ankleImuParamX={1, 0.9*gyroFactorX,  0*math.pi/180, 5*math.pi/180}
-  walk.kneeImuParamX= {1, 0.3*gyroFactorX,    0*math.pi/180, 5*math.pi/180}
-  walk.ankleImuParamY={1, 1.0*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
-  walk.hipImuParamY  ={1, 0.5*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
-
+  gyroFactorX = 490.23/(251000/180)*0.5
+  gyroFactorY = 490.23/(251000/180)*0.5
+  walk.ankleImuParamX={1, 0.9*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
+  walk.kneeImuParamX= {1, -0.3*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
+  walk.ankleImuParamY={1, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
+  walk.hipImuParamY  ={1, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
  ------------------------------------
 
---Robotis style walk
+--Robotis style walk w/ humblewalk
   walk.tStep = 0.45
-  walk.phSingle = {0.15,0.85}
-  walk.phZmp = {0.15,0.85}
+  walk.phSingle = {0.125,0.875}
+  walk.phZmp = {0.125,0.875}
   walk.stepHeight = 0.04
 
-  walk.supportX = 0.01
+--------------------------------------------
+-- This works kinda well
+  walk.tZMP = 0.30  --0.90m COM height
+  walk.supportX = 0.03
   walk.supportY = 0.03
-  walk.tZMP = 0.28
+  walk.hipRollCompensation = 1*math.pi/180
+--------------------------------------------
 
+--------------------------------------------
+--Also works kinda well
+  walk.tZMP = 0.28 --0.80m COM height
+  walk.supportX = 0.04
+  walk.supportY = 0.00
+  ------------------------------------------
+
+  --To get rid of drifting
+  walk.velocityBias = {0.005,0,0}
+
+
+--[[
+--------------------------------------------
+--Slow walk test
+--Kinda stable with rollCompensation 
+  walk.tZMP = 0.26 
+  walk.tStep = 0.70
+  walk.supportY = 0.04
+  walk.phSingle = {0.2,0.8}
+  walk.hipRollCompensation = 3*math.pi/180
+--------------------------------------------
+--]]
+
+
+--[[
+-------------------------------------------
+--Even slower walk test
+--Kinda stable too
+walk.tStep = 1.0 
+
+--------------------------------------------
+--]]
 end
 
 
+--SJ:block walking test
+--walk.stepHeight = 0.20
 
 -----------------------------------------------------------
 -- Stance parameters
@@ -251,15 +256,87 @@ kneel.torsoX = -(kneel.armX + kneel.legX)/2
 -- ZMP preview stepping values
 ------------------------------------
 local zmpstep = {}
-zmpstep.bodyHeight = 0.98 
-zmpstep.bodyTilt = 0
-zmpstep.tZMP = 0.28 
-zmpstep.supportX = 0.02
-zmpstep.supportY = 0.0
-zmpstep.stepHeight = 0.10
-zmpstep.phSingle={0.1,0.9}
-zmpstep.hipRollCompensation = 3*math.pi/180
---zmpstep.bodyHeight = 1.10 
+
+--SJ: now we use walk parmas to generate these
+zmpstep.param_r_q = 10^-6
+zmpstep.preview_tStep = 0.010 --10ms
+zmpstep.preview_interval = 3.0 --3s needed for slow step (with tStep ~3s)
+
+
+
+
+zmpstep.params = true;
+zmpstep.param_k1_px={-658.671153,-380.924007,-58.508050}
+zmpstep.param_a={
+  {1.000000,0.010000,0.000050},
+  {0.000000,1.000000,0.010000},
+  {0.000000,0.000000,1.000000},
+}
+zmpstep.param_b={0.000000,0.000050,0.010000,0.010000}
+zmpstep.param_k1={
+    340.070737,134.153746,39.047358,-4.448725,-23.922221,
+    -32.228652,-35.358018,-36.100850,-35.756685,-34.930251,
+    -33.902510,-32.803574,-31.693279,-30.598743,-29.531862,
+    -28.497465,-27.497113,-26.530866,-25.598111,-24.697942,
+    -23.829341,-22.991254,-22.182635,-21.402459,-20.649732,
+    -19.923489,-19.222799,-18.546764,-17.894516,-17.265217,
+    -16.658060,-16.072265,-15.507080,-14.961780,-14.435666,
+    -13.928060,-13.438313,-12.965795,-12.509900,-12.070043,
+    -11.645660,-11.236205,-10.841154,-10.459999,-10.092252,
+    -9.737440,-9.395109,-9.064819,-8.746146,-8.438681,
+    -8.142031,-7.855815,-7.579664,-7.313226,-7.056159,
+    -6.808132,-6.568828,-6.337940,-6.115171,-5.900236,
+    -5.692859,-5.492775,-5.299727,-5.113467,-4.933756,
+    -4.760364,-4.593069,-4.431657,-4.275920,-4.125658,
+    -3.980679,-3.840798,-3.705835,-3.575616,-3.449976,
+    -3.328753,-3.211791,-3.098941,-2.990058,-2.885003,
+    -2.783640,-2.685841,-2.591480,-2.500435,-2.412591,
+    -2.327834,-2.246057,-2.167154,-2.091024,-2.017570,
+    -1.946697,-1.878316,-1.812337,-1.748678,-1.687255,
+    -1.627991,-1.570810,-1.515639,-1.462406,-1.411044,
+    -1.361486,-1.313670,-1.267535,-1.223020,-1.180070,
+    -1.138628,-1.098643,-1.060063,-1.022838,-0.986921,
+    -0.952266,-0.918829,-0.886566,-0.855437,-0.825401,
+    -0.796421,-0.768458,-0.741478,-0.715446,-0.690328,
+    -0.666093,-0.642708,-0.620146,-0.598375,-0.577370,
+    -0.557102,-0.537546,-0.518677,-0.500471,-0.482905,
+    -0.465955,-0.449600,-0.433820,-0.418594,-0.403903,
+    -0.389728,-0.376051,-0.362853,-0.350120,-0.337833,
+    -0.325978,-0.314540,-0.303503,-0.292853,-0.282578,
+    -0.272663,-0.263097,-0.253866,-0.244959,-0.236366,
+    -0.228074,-0.220073,-0.212353,-0.204904,-0.197717,
+    -0.190782,-0.184090,-0.177633,-0.171403,-0.165392,
+    -0.159592,-0.153996,-0.148595,-0.143385,-0.138357,
+    -0.133506,-0.128826,-0.124309,-0.119951,-0.115746,
+    -0.111689,-0.107774,-0.103997,-0.100352,-0.096835,
+    -0.093441,-0.090167,-0.087007,-0.083959,-0.081017,
+    -0.078179,-0.075440,-0.072797,-0.070248,-0.067787,
+    -0.065413,-0.063122,-0.060912,-0.058779,-0.056721,
+    -0.054735,-0.052819,-0.050970,-0.049186,-0.047464,
+    -0.045803,-0.044200,-0.042653,-0.041160,-0.039720,
+    -0.038330,-0.036989,-0.035694,-0.034445,-0.033240,
+    -0.032077,-0.030954,-0.029871,-0.028825,-0.027816,
+    -0.026843,-0.025903,-0.024995,-0.024120,-0.023275,
+    -0.022459,-0.021671,-0.020911,-0.020177,-0.019469,
+    -0.018784,-0.018124,-0.017486,-0.016870,-0.016275,
+    -0.015700,-0.015145,-0.014609,-0.014091,-0.013590,
+    -0.013106,-0.012638,-0.012186,-0.011749,-0.011326,
+    -0.010917,-0.010521,-0.010138,-0.009767,-0.009408,
+    -0.009060,-0.008723,-0.008396,-0.008080,-0.007772,
+    -0.007474,-0.007184,-0.006902,-0.006629,-0.006362,
+    -0.006103,-0.005850,-0.005604,-0.005364,-0.005129,
+    -0.004900,-0.004675,-0.004455,-0.004240,-0.004028,
+    -0.003820,-0.003616,-0.003414,-0.003215,-0.003018,
+    -0.002824,-0.002631,-0.002440,-0.002250,-0.002060,
+    -0.001871,-0.001683,-0.001494,-0.001304,-0.001114,
+    -0.000923,-0.000730,-0.000536,-0.000339,-0.000140,
+    0.000062,0.000267,0.000476,0.000689,0.000906,
+    0.001127,0.001352,0.001581,0.001811,0.002038,
+    0.002250,0.002423,0.002503,0.002378,0.001801,
+    0.000246,-0.003418,-0.011621,-0.029573,-0.068458,
+    }
+
+
 
 ------------------------------------
 -- For the arm FSM

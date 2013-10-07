@@ -6,8 +6,8 @@ LIBRT= $(shell [ `uname` != "Darwin" ] && echo "-lrt")
 
 TARGETS= \
 time mexshm getch \
-udp_recv udp_send cjpeg djpeg \
-msgpack zmq ImageProc Planner tcpopen \
+udp_recv udp_send cjpeg djpeg\
+msgpack zmq ImageProc Planner tcpopen lidartrans\
 serialize deserialize zlibCompress zlibUncompress
 .PHONY: all clean
 	

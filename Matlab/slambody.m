@@ -73,6 +73,7 @@ function ret=slambody()
 
   SLAM.pose=[0 0 0];
   SLAM.slam_pose=[0 0 0];
+  SLAM.torso_tilt = 0;
   SLAM.zoom_level = 0;
   SLAM.d_size = 200;
 
@@ -146,6 +147,7 @@ function ret=slambody()
 	  SLAM.omap.ymax = thor_omapdata.Ymax;
       
     pose_slam = data_unpacked.pose_slam;
+    SLAM.torso_tilt = data_unpacked.torso_tilt;
     SLAM.update_pose(SLAM.pose, pose_slam);
 
 %set(SLAM.image,'Cdata', thor_omap);
@@ -178,8 +180,8 @@ function ret=slambody()
     pixel_pos = transform_pixelpos([pose(1) pose(2)]);
     %rotate 90 degre to match the display orientation
     pos_transformed = rotz(icon_s, -pose(3)+pi/2) + repmat(pixel_pos,[3 1]);
-	  set(SLAM.pose_triangle,...
-			'XData',pos_transformed(:,1),'YData',pos_transformed(:,2) );
+% 	  set(SLAM.pose_triangle,...
+% 			'XData',pos_transformed(:,1),'YData',pos_transformed(:,2) );
     
     % Convert uint64 to double 
     slam_pose = double(slam_pose);

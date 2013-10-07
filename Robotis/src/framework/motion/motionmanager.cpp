@@ -10,7 +10,7 @@
 #include <string.h>
 #include <math.h>
 #include "motion/motionmanager.h"
-
+#include <unistd.h>
 using namespace Thor;
 
 MotionManager* MotionManager::UniqueInstance = new MotionManager();

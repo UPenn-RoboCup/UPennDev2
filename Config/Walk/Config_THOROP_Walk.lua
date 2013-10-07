@@ -153,6 +153,10 @@ else
   walk.supportY = 0.00
   ------------------------------------------
 
+  --To get rid of drifting
+  walk.velocityBias = {0.005,0,0}
+
+
 --[[
 --------------------------------------------
 --Slow walk test

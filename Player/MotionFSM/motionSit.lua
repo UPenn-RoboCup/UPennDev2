@@ -60,7 +60,9 @@ function state.update()
   bodyHeight_target = math.min(Config.walk.bodyHeight,
     math.max(Config.stance.sitHeight, bodyHeight_target))
 
-bodyHeight_target = 0.47; --Full kneel down
+--bodyHeight_target = 0.47; --Full kneel down
+
+bodyHeight_target = 0.60; --Little bit for safety
 
   local bodyHeight = util.approachTol( bodyHeight_now, 
     bodyHeight_target, Config.stance.dHeight, t_diff )

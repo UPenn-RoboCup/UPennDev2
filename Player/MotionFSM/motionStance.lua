@@ -82,7 +82,7 @@ function state.update()
     torsoMag = 0
   end
   if torsoMag>0 then
-    print(torsoMag)
+--    print(torsoMag)
   end
   if velTorso>0 then
     uTorso[1] = uTorso[1] + torsoMag * uTorsoVel[1]/velTorso

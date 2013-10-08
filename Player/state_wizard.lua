@@ -87,15 +87,13 @@ while true do
 
   -- Update the body (mostly needed for webots)
 	Body.update()
-
-  -- debug stuff
-  --print('write ptr',jcm.get_write_command_position())
   
   -- Sleep a bit if not webots
   if not IS_WEBOTS then
     local t_loop = unix.time()-t
     --io.flush(stdout)
-    unix.usleep(us_sleep-t_loop*1e6)
+    --unix.usleep(us_sleep-t_loop*1e6)
+    unix.usleep(us_sleep)
   end
   
 end

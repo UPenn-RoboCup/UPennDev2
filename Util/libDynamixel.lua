@@ -16,10 +16,10 @@ local READ_TIMEOUT = 0.005
 
 -- TODO: Make this a parameter to set externally
 -- TODO: This should be tuned based on the byte size written?
---local WRITE_TIMEOUT = 1/200 -- 250Hz timeout
---local WRITE_TIMEOUT = 1/130 -- 250Hz timeout
+local WRITE_TIMEOUT = 1/200 -- 250Hz timeout
+--local WRITE_TIMEOUT = 1/150 -- 250Hz timeout
 --local WRITE_TIMEOUT = 1/125 -- 120Hz timeout
-local WRITE_TIMEOUT = 1/120 -- 60Hz timeout
+--local WRITE_TIMEOUT = 1/120 -- 60Hz timeout
 --local WRITE_TIMEOUT = 0 -- Instant timeout
 
 --------------------
@@ -612,10 +612,11 @@ function libDynamixel.new_bus( ttyname, ttybaud )
   
   -------------------
   -- Read/write properties
-  dynamixel.t_cmd = 0
-  dynamixel.t_read = 0
-  dynamixel.t_diff_cmd = 0
-  dynamixel.t_diff_read = 0
+  obj.t_cmd = 0
+  obj.t_read = 0
+  obj.t_diff_cmd = 0
+  obj.t_diff_read = 0
+  obj.t_waiting = 0
   --
   obj.commands = {}
   obj.requests = {}
@@ -650,7 +651,7 @@ libDynamixel.service = function( dynamixels, main )
     table.insert(dynamixel_fds,dynamixel.fd)
     fd_to_dynamixel[dynamixel.fd] = dynamixel
     dynamixel.thread = coroutine.create(
-    function(has_data,t)
+    function(data_str,t)
       -- time is the parameter
       -- Make a read all NX command
       local DP = DP2
@@ -660,51 +661,45 @@ libDynamixel.service = function( dynamixels, main )
       -- The coroutine should never end
       local fd = dynamixel.fd
       -- Update the time after every yield
-      while true do -- read/write loop
+      -- See what we got
+      data_str, t = coroutine.yield(0)
 
-        -- See what we got
-        has_data, t = coroutine.yield()
+      while true do -- read/write loop
 
         --------------------
         -- Sync write an command in the queue
         dynamixel.is_reading = false
-        local n_cmd_bytes = 0
-        local n_cmd_left = #dynamixel.commands
-        did_command = false
+        --print(type(dynamixel.commands))
+        --util.ptable(dynamixel.commands)
+        for r,cmd in pairs(dynamixel.commands) do
 
-        while n_cmd_left>0 do
-          -- Pop a command
-          local command = table.remove(dynamixel.commands,1)
-          n_cmd_left = n_cmd_left - 1
+          --util.ptable(cmd)
           -- flush out old things in the buffer
-          local tt0 = unix.time()
           local flush_ret = stty.flush(fd)
           -- write the new command
-          local cmd_ret = unix.write( fd, command )
+          local t_write = unix.time()
+          local cmd_ret = unix.write( fd, cmd.pkt )
           -- possibly need a drain? Robotis does not
           local flush_ret = stty.drain(fd)
-          local tt1 = unix.time()
-          
-          assert(#command==cmd_ret,
-            string.format('BAD INST WRITE: %s',dynamixel.name))
-          n_cmd_bytes = n_cmd_bytes+cmd_ret
+          -- save the time
+          local t_cmd = unix.time()
+          dynamixel.t_diff_cmd = t_cmd-dynamixel.t_cmd
+          dynamixel.t_cmd = t_cmd
+          -- check if it wrote
+          assert(#cmd.pkt==cmd_ret, string.format('BAD INST WRITE: %s %d',dynamixel.name,cmd_ret))
           -- What if there was data on the bus... that is in the non-sync read
           -- It would be an error status
-          dynamixel.t_diff = t-dynamixel.t_command
-
---          print(string.format('tts: %.2f t_diff: %.2f',(tt1-tt0)*1000, dynamixel.t_diff*1000))
-          dynamixel.t_command = t
-          dynamixel.t_write_next = t+WRITE_TIMEOUT
-          did_command = true
-          -- sleep a little
-          if n_cmd_left>0 then unix.usleep(1e3) end
-          --print('wrote',cmd_ret)
+          -- run the callback
+          cmd.callback(t,cmd.reg)
+          -- yield time remaining
+          data_str, t = coroutine.yield( math.max(WRITE_TIMEOUT-(t_cmd-t_write),0) )
         end -- If sent command
-        
+
         --------------------
         -- Request data from the chain
         did_request = false
         local n_req_left = #dynamixel.requests
+        n_req_left=0 --hack for now
         while n_req_left>0 do
           dynamixel.is_reading = true
           -- Non-block saving a leftovers (if any)
@@ -717,7 +712,6 @@ libDynamixel.service = function( dynamixels, main )
           local inst = request.inst
           stty.flush(fd)
           local req_ret = unix.write(fd, inst)
-          dynamixel.t_write_next = t+WRITE_TIMEOUT
           -- If -1 returned, the bus may be detached - throw an error
           assert(req_ret==#inst,
             string.format('BAD READ REQ on %s',dynamixel.name))
@@ -730,12 +724,13 @@ libDynamixel.service = function( dynamixels, main )
           local pkts = {}
           local nids = request.nids
           local n_recv = 0
+          local new_status_str
           --print('Expecting',nids)
-          local register =request.reg
+          local register = request.reg
           status_str = ''
           repeat
             did_request = true
-            local new_status_str, t = coroutine.yield()
+            new_status_str, t = coroutine.yield(READ_TIMEOUT)
             assert(new_status_str~=-1,string.format('BAD READ: %s',dynamixel.name))
             -- What is the meaning of a non-read here?
             if not new_status_str then
@@ -777,9 +772,13 @@ libDynamixel.service = function( dynamixels, main )
         end -- if requested data
         dynamixel.is_reading = false
 
+        -- Get right back into the game
+        data_str, t = coroutine.yield(0)
+
       end -- read/write loop
     end) -- coroutine function
-    coroutine.resume(dynamixel.thread,false,unix.time() )
+    dynamixel.status, dynamixel.t_waiting = coroutine.resume(dynamixel.thread,false,unix.time() )
+    dynamixel.t_waiting = dynamixel.t_waiting+unix.time()
   end
   
   local select_timeout = WRITE_TIMEOUT
@@ -788,72 +787,92 @@ libDynamixel.service = function( dynamixels, main )
     --------------------
     -- Perform select on all dynamixels
     local t00 = unix.time()
-    --math.max(select_timeout,WRITE_TIMEOUT/5)
     local status, ready = unix.select( dynamixel_fds, select_timeout )
     --unix.usleep(WRITE_TIMEOUT)
     local t = unix.time()
     --print('sleep',t-t00)
+    local old_to = select_timeout
     select_timeout = WRITE_TIMEOUT
 
     --util.ptable(ready)
     --print(status)
+
     --------------------
     -- Loop through the dynamixel chains
-    for i_fd,is_ready in pairs(ready) do
+    --for i_fd,is_ready in pairs(ready) do
     -- Grab the dynamixel chain
-    local who_to_service = fd_to_dynamixel[i_fd]
-    --for i_fd,who_to_service in pairs(fd_to_dynamixel) do
-      
+    --local who_to_service = fd_to_dynamixel[i_fd]
+    for i_fd,who_to_service in pairs(fd_to_dynamixel) do
+      --local is_ready = ready[i_fd]
+
       -- Grab data
       local str = unix.read(i_fd)
-      local status_code, param = true, true
+      local status_code, param = true, 0
+--[[
+      print(who_to_service.name,'ncmd',
+        #who_to_service.commands,#who_to_service.requests,
+        type(str))
+--]]
+
       -- Check if the Dynamixel has information available
-      if who_to_service.is_reading and (not str) and (t<who_to_service.timeout) then
-        -- print('waiting...',who_to_service.name)
+      if who_to_service.is_reading and (not str) and who_to_service.t_waiting>t then
+        print('waiting...',who_to_service.name)
         -- do not resume, since we are waiting on the data
       elseif (not who_to_service.is_reading) and str then
         -- We also have nothing to send...
+        print('what???',str)
         -- Non-block saving a leftovers (if any)
         assert(unix.read(i_fd)~=-1,'Unplugged?')
       elseif str then
         status_code, param = coroutine.resume(who_to_service.thread,str,t)
-      elseif (str or (#who_to_service.commands>0) or (#who_to_service.requests>0)) then
-        --print(status,'n_commands, n_requests',#who_to_service.commands,#who_to_service.requests,who_to_service.is_reading)
-        --if str then print('read',#str) end
+        assert(status_code,'dead chain '..who_to_service.name)
+        who_to_service.t_waiting = param+t
+      elseif (#who_to_service.commands>0) or (#who_to_service.requests>0) then
         -- Resume the thread if not too soon
-        local t_diff_next = who_to_service.t_write_next-t
-        --print('nxt time',t_diff_next)
+        local t_diff_next = who_to_service.t_waiting-t
+        --print('Resuming...',who_to_service.name,t_diff_next)
         if t_diff_next<=0 then
+          --print('Resuming...',who_to_service.name,t_diff_next)
           status_code, param = coroutine.resume(who_to_service.thread,str,t)
-        else
-          select_timeout = math.min(select_timeout,t_diff_next)
+          assert(status_code,'dead chain '..who_to_service.name..param)
+          who_to_service.t_waiting = param+t      
         end
       end -- if resuming
+      --print('waiting',who_to_service.t_waiting-t)
 
+--[[
       -- If a bad status code
-      if not status_code then
-        print( 'Dead dynamixel coroutine!', who_to_service.name, param )
-        who_to_service:close()
-        who_to_service.message = param
-        local i_to_remove = 0
-        for i,fd in ipairs(dynamixel_fds) do
-          if fd==i_fd then i_to_remove = i end
-        end
-        table.remove(dynamixel_fds,i_to_remove)
+          if not status_code then
+            print( 'Dead dynamixel coroutine!', who_to_service.name, param )
+            who_to_service:close()
+            who_to_service.message = param
+            local i_to_remove = 0
+            for i,fd in ipairs(dynamixel_fds) do
+              if fd==i_fd then i_to_remove = i end
+            end
+            table.remove(dynamixel_fds,i_to_remove)
+          end
+          --]]
+
+      -- Update the timeout
+      select_timeout = math.min(select_timeout,who_to_service.t_waiting-t)
+      select_timeout = math.max(0,select_timeout)
+      if select_timeout>0 then
+        print('select_timeout',select_timeout)
       end
+
 --]]
     end -- pairs(ready)
     
     --------------------
     -- Process the main thread after each coroutine yields
     -- This main loop should update the dynamixel chain commands
-    if main_thread then
-      local status_code, main_param = coroutine.resume( main_thread )
-      if not status_code then 
-        print('Dead main coroutine!',main_param)
-        main_thread = nil
-      end
+    local status_code, main_param = coroutine.resume( main_thread )
+    if not status_code then 
+      print('Dead main coroutine!',main_param)
+      main_thread = nil
     end
+    io.flush(stdout)
     
   end -- while servicing
   print'Nothing left to service!'
@@ -864,7 +883,7 @@ libDynamixel.straight_service = function( dynamixel, main )
   -------------
   -- WRITING --
   -------------
-  for _,cmd in pairs(dynamixel.commands) do
+  for i,cmd in pairs(dynamixel.commands) do
     -- flush out old things in the buffer
     local flush_ret = stty.flush(fd)
     -- write the new command
@@ -881,9 +900,11 @@ libDynamixel.straight_service = function( dynamixel, main )
       string.format('BAD INST WRITE: %s',dynamixel.name))
     -- Sleep for the next write
     --print('write time in ms',(t_cmd-t_write)*1000 )
-    --unix.usleep( (WRITE_TIMEOUT-(t_cmd-t_write))*1e6 )
+    if i<#dynamixel.commands then
+      --print('here',i,#cmd)
+      unix.usleep( (WRITE_TIMEOUT-(t_cmd-t_write))*1e6 )
+    end
   end -- If sent command
-  dynamixel.commands = {}
 
   -------------
   -- READING --
@@ -941,7 +962,6 @@ libDynamixel.straight_service = function( dynamixel, main )
     dynamixel.t_diff_read = t_request-dynamixel.t_read
     dynamixel.t_read = t_request
   end -- if requested data
-  dynamixel.requests = {}
   --]]
 
 end

@@ -161,6 +161,13 @@ signal.signal("SIGTERM", shutdown)
 -- Update the commands to write to the robot
 -- TODO: What if too many commands?
 local update_commands = function(t)
+
+  for _,d in ipairs(dynamixels) do
+    for i,_ in ipairs(d.commands) do
+      d.commands[i] = nil
+    end
+  end
+
   -- Loop through the registers
   for register,write_ptr in pairs(jcm.writePtr) do
     local set_func    = libDynamixel['set_nx_'..register]
@@ -170,7 +177,8 @@ local update_commands = function(t)
     local twrites     = jcm['get_twrite_'..register]()
     -- go through each value
     for idx,is_write in ipairs(is_writes) do
-      if (is_write~=0 or register=='command_position') and idx_to_dynamixel[idx] then
+      if is_write>0 and idx_to_dynamixel[idx] then
+      --if (is_write~=0 or register=='command_position') and idx_to_dynamixel[idx] then
       --if register=='command_position' and idx_to_dynamixel[idx] then
         -- Add the write instruction to the chain
         table.insert( idx_to_ids[idx], joint_to_motor[idx] )
@@ -178,6 +186,7 @@ local update_commands = function(t)
           -- Convert from radians to steps for set command_position
           table.insert( idx_to_vals[idx], Body.make_joint_step(idx,wr_values[idx]) )
         else
+          --print('reg',register,is_write)
           table.insert( idx_to_vals[idx], wr_values[idx] )
         end
         -- Update the write time for this particular motor
@@ -187,10 +196,24 @@ local update_commands = function(t)
     -- Make the request for this register on each chain
     for _,d in ipairs(dynamixels) do
       if #d.packet_ids>0 and set_func then
-        --print('making packet!',#d.packet_ids)
+        --print('making packet!',#d.packet_ids,register)
         -- Make the NX request
+        local my_ids = {}
+        for i,id in ipairs(d.packet_ids) do my_ids[i] = motor_to_joint[id] end
         table.insert( d.commands, 
-          set_func(d.packet_ids,d.packet_vals) )
+          {pkt=set_func(d.packet_ids,d.packet_vals),
+          reg = register,
+            callback = function(t,reg)
+            --print('cb',reg,#my_ids)
+              for _,idx in pairs(my_ids) do
+                is_writes[idx] = 0
+                twrites[idx]   = t
+              end
+              -- Save the writes
+              jcm['set_write_'..reg](is_writes)
+              jcm['set_twrite_'..reg](twrites)
+            end
+          })
         -- reset
         for i,_ in ipairs(d.packet_ids) do
           d.packet_ids[i]  = nil
@@ -200,8 +223,23 @@ local update_commands = function(t)
       ----[[
       if #d.mx_packet_ids>0 and mx_set_func then
         -- Make the MX request
+        local my_ids = {}
+        for i,id in ipairs(d.mx_packet_ids) do my_ids[i] = motor_to_joint[id] end
+        local my_reg = register
         table.insert( d.commands, 
-          mx_set_func(d.mx_packet_ids,d.mx_packet_vals) )
+          {
+          pkt=mx_set_func(d.mx_packet_ids,d.mx_packet_vals),
+          reg = register,
+          callback = function(t,reg)
+              for _,idx in pairs(my_ids) do
+                is_writes[idx] = 0
+                twrites[idx] = t
+              end
+              -- Save the writes
+              jcm['set_write_'..my_reg](is_writes)
+              jcm['set_twrite_'..my_reg](twrites)
+            end
+        })
         for i,_ in ipairs(d.mx_packet_ids) do
           d.mx_packet_ids[i]  = nil
           d.mx_packet_vals[i] = nil
@@ -209,9 +247,6 @@ local update_commands = function(t)
       end -- if mx
       --]]
     end -- for making commands for the chains
-    -- Save the twrite and write enable
-    jcm['set_write_'..register](is_writes*0)
-    jcm['set_twrite_'..register](twrites)
   end -- for each register
 end
 
@@ -260,7 +295,9 @@ local function normal_read(register,read_ptr)
         for i,_ in ipairs(d.mx_packet_ids) do d.mx_packet_ids[i]  = nil end
       end
     end -- if #req==0
+    d.requests = {}
   end -- for making commands for the chains
+
 end
 
 local lfoot_inst = {

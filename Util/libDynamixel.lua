@@ -671,7 +671,7 @@ libDynamixel.service = function( dynamixels, main )
         dynamixel.is_reading = false
         --print(type(dynamixel.commands))
         --util.ptable(dynamixel.commands)
-        for r,cmd in pairs(dynamixel.commands) do
+        for _,cmd in ipairs(dynamixel.commands) do
 
           --util.ptable(cmd)
           -- flush out old things in the buffer
@@ -697,24 +697,17 @@ libDynamixel.service = function( dynamixels, main )
 
         --------------------
         -- Request data from the chain
-        did_request = false
-        local n_req_left = #dynamixel.requests
-        n_req_left=0 --hack for now
-        while n_req_left>0 do
+        for _,request in ipairs(dynamixel.requests) do
           dynamixel.is_reading = true
           -- Non-block saving a leftovers (if any)
           local leftovers = unix.read(fd)
           assert(leftovers~=-1, 'BAD Clearing READ')
-          -- Pop a request
-          local request = table.remove(dynamixel.requests,1)
-          n_req_left = n_req_left - 1
           -- Write the read request command to the chain
           local inst = request.inst
           stty.flush(fd)
           local req_ret = unix.write(fd, inst)
           -- If -1 returned, the bus may be detached - throw an error
-          assert(req_ret==#inst,
-            string.format('BAD READ REQ on %s',dynamixel.name))
+          assert(req_ret==#inst,string.format('BAD READ REQ on %s',dynamixel.name))
           -- Set a timeout for this request
           dynamixel.timeout = t + READ_TIMEOUT
           -- Yield for others on their FDs
@@ -746,12 +739,6 @@ libDynamixel.service = function( dynamixels, main )
             for _,pkt in ipairs(pkts) do
               local status = DP.parse_status_packet( pkt )
               local read_parser = byte_to_number[ #status.parameter ]
-              -- Check if there is a parser
-              --[[
-              assert(read_parser, 
-              string.format('Status error for %s from %d: %d (%d)',
-              register,status.id,status.error,#status.parameter) )
-              --]]
               -- Convert the value into a number from bytes if a parser exists!
               if read_parser then
                 values[status.id] = read_parser( unpack(status.parameter) )
@@ -760,15 +747,11 @@ libDynamixel.service = function( dynamixels, main )
               end
             end
             -- Remember the read time
-            --dynamixel.t_diff_read = t-dynamixel.t_read
+            dynamixel.t_diff_read = t-dynamixel.t_read
             dynamixel.t_read = t
 
             if dynamixel.callback then dynamixel:callback(values,register) end
-            -- If done, then do not yield...
-            -- Then, we write a command to the FD more quickly
-            if n_recv==nids then break end
-            -- Yield to the next process
-          until false
+          until n_recv==nids
         end -- if requested data
         dynamixel.is_reading = false
 
@@ -816,7 +799,7 @@ libDynamixel.service = function( dynamixels, main )
 
       -- Check if the Dynamixel has information available
       if who_to_service.is_reading and (not str) and who_to_service.t_waiting>t then
-        print('waiting...',who_to_service.name)
+        --print('waiting...',who_to_service.name)
         -- do not resume, since we are waiting on the data
       elseif (not who_to_service.is_reading) and str then
         -- We also have nothing to send...
@@ -857,9 +840,7 @@ libDynamixel.service = function( dynamixels, main )
       -- Update the timeout
       select_timeout = math.min(select_timeout,who_to_service.t_waiting-t)
       select_timeout = math.max(0,select_timeout)
-      if select_timeout>0 then
-        print('select_timeout',select_timeout)
-      end
+      --if select_timeout>0 then print('select_timeout',select_timeout) end
 
 --]]
     end -- pairs(ready)

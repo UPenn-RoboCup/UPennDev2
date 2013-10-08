@@ -75,7 +75,7 @@ end
 -- TODO: eliminate jcm, and use Body calls
 -- TODO: that might be bad for performance, though
 local update_read = function(self,data,register)
-
+  --print('digesting data...',register)
   if type(data)~='table' then return end
   -- Update the shared memory
   for k,v in pairs(data) do
@@ -204,7 +204,7 @@ local update_commands = function(t)
           {pkt=set_func(d.packet_ids,d.packet_vals),
           reg = register,
             callback = function(t,reg)
-            --print('cb',reg,#my_ids)
+              --print('cb',reg,#my_ids)
               for _,idx in pairs(my_ids) do
                 is_writes[idx] = 0
                 twrites[idx]   = t
@@ -231,6 +231,7 @@ local update_commands = function(t)
           pkt=mx_set_func(d.mx_packet_ids,d.mx_packet_vals),
           reg = register,
           callback = function(t,reg)
+              --print('cb',reg,#my_ids)
               for _,idx in pairs(my_ids) do
                 is_writes[idx] = 0
                 twrites[idx] = t
@@ -295,7 +296,6 @@ local function normal_read(register,read_ptr)
         for i,_ in ipairs(d.mx_packet_ids) do d.mx_packet_ids[i]  = nil end
       end
     end -- if #req==0
-    d.requests = {}
   end -- for making commands for the chains
 
 end
@@ -314,6 +314,11 @@ local rfoot_inst = {
 
 -- Update the read every so often
 local update_requests = function(t)
+  for _,d in ipairs(dynamixels) do
+    for i,_ in ipairs(d.commands) do
+      d.requests[i] = nil
+    end
+  end
   -- Loop through the registers
   for register,read_ptr in pairs(jcm.readPtr) do
     if register:find'foot' then
@@ -322,8 +327,8 @@ local update_requests = function(t)
         -- add inst to the right chain
         local lfoot_chain = motor_to_dynamixel[24]
         local rfoot_chain = motor_to_dynamixel[23]
-        if lfoot_chain then table.insert(lfoot_chain,lfoot_inst) end
-        if rfoot_chain then table.insert(rfoot_chain,rfoot_inst) end
+        if lfoot_chain then table.insert(d.requests,lfoot_inst) end
+        if rfoot_chain then table.insert(d.requests,rfoot_inst) end
       end
     else
       normal_read(register,read_ptr)
@@ -547,7 +552,7 @@ local update = function()
   for _,d in ipairs(dynamixels) do
     if d.name=='Left Leg' then
       --print('ncmd',#d.commands)
-      print('latency',d.name,1/d.t_diff_cmd)
+      --print('latency',d.name,1/d.t_diff_cmd)
     end
   end
   if t-t_debug>1 then

@@ -52,7 +52,7 @@ t0 = tic;
   connect_th = tan(85*pi/180);
 
   max_dist = lidar.lidarrange * 0.9;
-  ground_height = -0.9;
+  ground_height = -0.75;
   max_height = 1.0;
 
 
@@ -71,6 +71,8 @@ t0 = tic;
 
 
   %include pose for drawing patches
+  % Would it make more sense to have the 
+  % 3D mesh in body frame rather than world frame?
 
   ca=cos(POSE.pose_slam(3));
   sa=sin(POSE.pose_slam(3));
@@ -86,11 +88,11 @@ t0 = tic;
 %   verty = verts(:,1)*sa + verts(:,2)*ca + SLAM.slam_pose(2);
 %   vertz = verts(:,3);
 %   
-%   % Roll
-%   ca = cos(SLAM.torso_tilt);
-%   sa = sin(SLAM.torso_tilt);
-%   vertx = vertx*ca + vertz*sa;
-%   vertz = -vertx*sa + vertz*ca;
+  % Pitch
+  ca = cos(SLAM.torso_tilt);
+  sa = sin(SLAM.torso_tilt);
+  vertx = vertx*ca + vertz*sa;
+  vertz = -vertx*sa + vertz*ca;
   
   vert_transformed = [vertx verty vertz];
 

@@ -104,6 +104,16 @@ CHEST_LIDAR.posea=[];
 
     function set_meshtype(~, ~, meshtype)
         LIDAR.meshtype = meshtype;
+        % Only use chest lidar for mesh
+        if meshtype == 1
+          deg2rad = pi/180;
+          CONTROL.send_control_packet([],[],...
+              'vcm','chest_lidar','scanlines',[-45*deg2rad, 45*deg2rad, 1/deg2rad]);
+          CONTROL.send_control_packet([],[],'vcm','chest_lidar','depths',[.1,5]);
+          CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[2,2,40]);
+          % LIDAR update rate: 40 Hz
+        end
+
         update_mesh_display();
     end
 
@@ -113,7 +123,6 @@ CHEST_LIDAR.posea=[];
             set(LIDAR.h,'Vertices',HEAD_LIDAR.verts);
             set(LIDAR.h,'FaceVertexCData',HEAD_LIDAR.cdatas);
         else
-            CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[2,1,0]);
             set(LIDAR.h,'Faces',CHEST_LIDAR.faces);
             set(LIDAR.h,'Vertices',CHEST_LIDAR.verts);
             set(LIDAR.h,'FaceVertexCData',CHEST_LIDAR.cdatas);
@@ -135,10 +144,15 @@ CHEST_LIDAR.posea=[];
     function get_depth_img(h,~)
         if LIDAR.depth_img_display==0
             % head
+            deg2rad = pi/180;
+            CONTROL.send_control_packet([],[],...
+              'vcm','head_lidar','scanlines',[0*deg2rad, 45*deg2rad, 5/deg2rad]);
+            
             CONTROL.send_control_packet([],[],'vcm','head_lidar','depths',[.1,2]);
             CONTROL.send_control_packet([],[],'vcm','head_lidar','net',[1,1,0]);
         else
             % chest
+            CONTROL.chest_depth = true;
             CONTROL.send_control_packet([],[],'vcm','chest_lidar','depths',[.1,5]);
             CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[1,1,0]);
         end
@@ -187,27 +201,30 @@ CHEST_LIDAR.posea=[];
             % Update the figures
                 draw_depth_image();
                 update_mesh(0);
-                if mod(LIDAR.mesh_cnt, 10) == 0
+%                 if mod(LIDAR.mesh_cnt, 10) == 0
                     update_mesh_display();
-                end
+%                 end
         else
+            LIDAR.mesh_cnt = LIDAR.mesh_cnt + 1;
             % Save data
             CHEST_LIDAR.ranges = depth_img';
             CHEST_LIDAR.fov_angles = fov_angles;
             CHEST_LIDAR.scanline_angles = scanline_angles;
             CHEST_LIDAR.depths = double(metadata.depths);
-            % Update the figures
+            % Update depth image
+            if LIDAR.depth_img_display == 1
                 draw_depth_image();
-                % Update mesh image
-                update_mesh(1);
-                if mod(LIDAR.mesh_cnt, 10) == 0
-                    update_mesh_display();
-                end
+            end
+            % Update mesh image
+            update_mesh(1);
+            if mod(LIDAR.mesh_cnt, 20) == 0
+                update_mesh_display();
+            end
         end
         
         % end of update
         tPassed = toc(t0);
-        fprintf('Update lidar: %f seconds.\n',tPassed);
+%         fprintf('Update lidar: %f seconds.\n',tPassed);
     end
 
 

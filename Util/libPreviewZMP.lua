@@ -54,7 +54,8 @@ local function get_current_step_info(self,t)
     current_info.uRight_next,    
     current_info.supportLeg,
     ph,
-    current_info.ended
+    current_info.ended,
+    current_info.stepParams
 end
 
 local function update_preview_queue_velocity(self,step_planner,t,stoprequest)
@@ -149,12 +150,12 @@ local function update_preview_queue_steps(self,step_planner,t)
       table.insert(self.preview_queue_zmpy,last_preview_zmpy)
     end
   else --New step
-    local supportLeg, tStep, uSupport
+    local supportLeg, tStep, uSupport, stepParams
     local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 
     uLeft_now, uRight_now, uTorso_now, 
       uLeft_next, uRight_next, uTorso_next,
-      uSupport, supportLeg, tStep = step_planner:get_next_step_queue(
+      uSupport, supportLeg, tStep, stepParams = step_planner:get_next_step_queue(
         last_preview_item.uLeft_next,
         last_preview_item.uRight_next,
         step_planner.get_torso(
@@ -184,6 +185,7 @@ local function update_preview_queue_steps(self,step_planner,t)
       new_preview_item.supportLeg = supportLeg
       new_preview_item.tStart = last_preview_item.tEnd
       new_preview_item.tEnd = last_preview_item.tEnd + tStep
+      new_preview_item.stepParams = stepParams
 
       if(#uSupport==2) then --Moving support
         new_preview_item.uSupports = uSupport

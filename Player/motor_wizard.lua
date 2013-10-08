@@ -163,32 +163,24 @@ signal.signal("SIGTERM", shutdown)
 local update_commands = function(t)
   -- Loop through the registers
   for register,write_ptr in pairs(jcm.writePtr) do
-    local val_ptr     = jcm.actuatorPtr[register]
     local set_func    = libDynamixel['set_nx_'..register]
     local mx_set_func = libDynamixel['set_mx_'..register]
-    local t_ptr = jcm.twritePtr[register]
+    local wr_values   = jcm['get_actuator_'..register]()
+    local is_writes   = jcm['get_write_'..register]()
+    local twrites     = jcm['get_twrite_'..register]()
     -- go through each value
-    for idx=1,#write_ptr do
-      is_write = write_ptr[idx]
-      if is_write>0 then
-        write_ptr[idx]=0
+    for idx,is_write in ipairs(is_writes) do
+      if is_write~=0 and idx_to_dynamixel[idx] then
         -- Add the write instruction to the chain
-        local d = idx_to_dynamixel[idx]
-        --if d and #d.commands==0 then
-        if d then
-          table.insert( idx_to_ids[idx], joint_to_motor[idx] )
-          --print(register,idx,'setting',idx_to_vals[idx], val_ptr[idx])
-          if register=='command_position' then
-            -- Convert from radians to steps for set command_position
-            table.insert( idx_to_vals[idx], Body.make_joint_step(idx,val_ptr[idx]) )
-          else
-            if register=='command_velocity' then
-            end
-            table.insert( idx_to_vals[idx], val_ptr[idx] )
-          end
-          -- Update the write time
-          t_ptr[idx] = t
+        table.insert( idx_to_ids[idx], joint_to_motor[idx] )
+        if register=='command_position' then
+          -- Convert from radians to steps for set command_position
+          table.insert( idx_to_vals[idx], Body.make_joint_step(idx,wr_values[idx]) )
+        else
+          table.insert( idx_to_vals[idx], val_ptr[idx] )
         end
+        -- Update the write time for this particular motor
+        twrites[idx] = t
       end
     end -- for each enable
     -- Make the request for this register on each chain
@@ -214,6 +206,9 @@ local update_commands = function(t)
         end
       end -- if mx
     end -- for making commands for the chains
+    -- Save the twrite and write enable
+    jcm['set_write_'..register](is_writes*0)
+    jcm['set_twrite_'..register](twrites)
   end -- for each register
 end
 
@@ -226,11 +221,10 @@ local function normal_read(register,read_ptr)
     local is_read = read_ptr[idx]
     -- Check if we are to read each of the values
     if is_read>0 then
-      -- Kill the reading
-      read_ptr[idx] = 0
       -- Add the read instruction to the chain
       local d = idx_to_dynamixel[idx]
       if d and #d.requests==0 then
+        read_ptr[idx] = 0
         table.insert( idx_to_ids[idx], joint_to_motor[idx] )
       end
     end
@@ -265,30 +259,17 @@ local function normal_read(register,read_ptr)
   end -- for making commands for the chains
 end
 
-local ext_read = {
-  lfoot = function()
-    -- TODO: Assuming that left feet are all on the same chain
-    local reqs = motor_to_dynamixel[24].requests
-    if reqs then
-      table.insert( reqs, {
+local lfoot_inst = {
         nids = 2,
         reg  = 'lfoot',
         inst = libDynamixel.get_nx_data({24,26})
-      })
-    end
-  end,
-  rfoot = function()
-    -- TODO: Assuming that left feet are all on the same chain
-    local reqs = motor_to_dynamixel[23].requests
-    if reqs then
-      table.insert( motor_to_dynamixel[23].requests, {
+      }
+
+local rfoot_inst = {
         nids = 2,
         reg  = 'rfoot',
         inst = libDynamixel.get_nx_data({23,25})
-      })
-    end
-  end
-}
+      }
 
 -- Update the read every so often
 local update_requests = function(t)
@@ -297,8 +278,11 @@ local update_requests = function(t)
     if register:find'foot' then
       if read_ptr[1] == 1 then
         read_ptr[1] = 0
-        local func = ext_read[register]
-        if func then func() end
+        -- add inst to the right chain
+        local lfoot_chain = motor_to_dynamixel[24]
+        local rfoot_chain = motor_to_dynamixel[23]
+        if lfoot_chain then table.insert(lfoot_chain,lfoot_inst) end
+        if rfoot_chain then table.insert(rfoot_chain,rfoot_inst) end
       end
     else
       normal_read(register,read_ptr)
@@ -307,76 +291,14 @@ local update_requests = function(t)
 end --function
 
 --------------------
--- Begin the main routine
-local led_state = 0
-local main = function()
-  local main_cnt = 0
-  local t0 = Body.get_time()
-  
-  -- Enter the coroutine
-  while true do
-    local t = Body.get_time()
-    
-    -- Set commands for next sync write
-    update_commands(t)
-    update_requests(t)
-
-    for _,d in ipairs(dynamixels) do
-      print('latency',d.name,1/d.t_diff)
-    end
-
-    
-    -- Show debugging information and blink the LED
-    main_cnt = main_cnt + 1
-    local t_diff = t - t0
-    if t_diff>1 then
-      local debug_tbl = {}
-      table.insert(debug_tbl, string.format(
-        'Main loop: %7.2f Hz\n', main_cnt/t_diff))
-      led_state = 1-led_state
-      for _,d in ipairs(dynamixels) do
-        --[[
-        -- Blink the led
-        local sync_led_cmd = 
-          libDynamixel.set_mx_led( d.mx_on_bus, led_state )
-        local sync_led_red_cmd = 
-          libDynamixel.set_nx_led_red( d.nx_on_bus, 255*led_state )
-        table.insert( d.commands, sync_led_cmd )
-        table.insert( d.commands, sync_led_red_cmd )
-        --]]
-
-        -- Append debugging information
-        local dstatus = coroutine.status(d.thread)
-        table.insert(debug_tbl, util.color(
-          string.format('%s chain %s',d.name, dstatus),
-          status_color[dstatus]))
-        table.insert(debug_tbl,string.format(
-          '\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',
-          t-d.t_read,t-d.t_command))
-        --[[
-        table.insert(debug_tbl,string.format(
-          '\n\t%d requests in the pipeline',#d.requests))
-        table.insert(debug_tbl,string.format(
-          '\n\t%d commands in the pipeline',#d.commands))
-        --]]
-      end
-      --os.execute('clear')
-      print( table.concat(debug_tbl,'\n') )
-      t0 = t
-      main_cnt = 0
-    end
-    
-    -- Do not yield anything for now
-    coroutine.yield()
-    
-  end
-end
-
---------------------
 -- Dynamixel chain setup
 -- Identify the MX/NX motor types on the chain
 -- TODO: Verify with Body that the ids have the right motor type
+local t_entry, t_update, t_finish = 0,0,0
 local function entry()
+  t_entry = Body.get_time()
+  t_update = t_entry
+  t_finish = t_entry
 
   --------------------
   -- Check the dynamixels
@@ -564,10 +486,78 @@ local function entry()
 end -- entry
 
 --------------------
+-- Begin the main routine
+local update_cnt = 0
+local t_debug = 0
+local update = function()
+  
+  -- Get the time of update
+  local t  = Body.get_time()
+  local dt = t - t_update
+  -- Save this at the last update time
+  t_update = t
+  update_cnt = update_cnt + 1
+  
+  -- Set commands for next sync write/read
+  update_commands(t)
+  update_requests(t)
+
+  -- Debugging
+  --for _,d in ipairs(dynamixels) do print('latency',d.name,1/d.t_diff) end
+  if t_debug-t>1 then
+    t_debug = t
+    update_cnt = 0
+    local debug_tbl = {}
+    table.insert(debug_tbl, string.format(
+      'Main loop: %7.2f Hz\n', main_cnt/t_diff))
+    for _,d in ipairs(dynamixels) do
+      -- Append debugging information
+      table.insert(debug_tbl,string.format(
+        '\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',
+        t-d.t_read,t-d.t_command))
+    end
+    --os.execute('clear')
+    print( table.concat(debug_tbl,'\n') )
+  end
+    
+end
+
+    --[[
+    local dstatus = coroutine.status(d.thread)
+    table.insert(debug_tbl, util.color(
+      string.format('%s chain %s',d.name, dstatus),
+      status_color[dstatus]))
+    --]]
+
+--------------------
 -- Start the service loop
 entry()
 print()
 assert(#dynamixels>0,"No dynamixel buses!")
 assert(nMotors>0,"No dynamixel motors found!")
 print( string.format('Servicing %d dynamixel chains',#dynamixels) )
-libDynamixel.service( dynamixels, main )
+--[[
+libDynamixel.service( dynamixels, function()
+  while true do
+    update()
+    -- Do not yield anything for now
+    coroutine.yield()
+  end
+end )
+--]]
+
+-- Write at 200Hz
+local WRITE_TIMEOUT = 1/200
+-- NOTE: Reading performance is BAD here, since
+-- one read blocks ALL chains
+while true do
+  local t = unix.time()
+  libDynamixel.straight_service(dynamixels[4])
+  libDynamixel.straight_service(dynamixels[3])
+  libDynamixel.straight_service(dynamixels[2])
+  libDynamixel.straight_service(dynamixels[1])
+  local t_loop = unix.time()-t
+  if t_loop<0.001 then
+    unix.usleep(1e6*(WRITE_TIMEOUT-t_loop))
+  end
+end

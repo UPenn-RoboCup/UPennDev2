@@ -612,11 +612,11 @@ function libDynamixel.new_bus( ttyname, ttybaud )
   
   -------------------
   -- Read/write properties
-  obj.t_read = 0
-  obj.t_command = 0
-  obj.t_diff = 0
-  obj.t_diff_read = 0
-  obj.t_write_next = 0
+  dynamixel.t_cmd = 0
+  dynamixel.t_read = 0
+  dynamixel.t_diff_cmd = 0
+  dynamixel.t_diff_read = 0
+  --
   obj.commands = {}
   obj.requests = {}
   obj.is_syncing = true
@@ -860,18 +860,7 @@ libDynamixel.service = function( dynamixels, main )
 end
 
 libDynamixel.straight_service = function( dynamixel, main )
-
-  -- make debugging vars
-  dynamixel.t_cmd = 0
-  dynamixel.t_read = 0
-  dynamixel.t_diff_cmd = 0
-  dynamixel.t_diff_read = 0
-
-  local t0 = unix.time()
   local fd = dynamixel.fd
-  while true do
-    local t = unix.time()
-
   -------------
   -- WRITING --
   -------------
@@ -954,18 +943,6 @@ libDynamixel.straight_service = function( dynamixel, main )
   end -- if requested data
   dynamixel.requests = {}
   --]]
-
-  ----------
-  -- MAIN --
-  ----------
-  if main then main() end
-
-  local t_loop = unix.time()-t
-  if t_loop<0.001 then
-    unix.usleep(1e6*(WRITE_TIMEOUT-t_loop))
-  end
-
-  end -- forever
 
 end
 

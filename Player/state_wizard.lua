@@ -7,6 +7,7 @@ local simple_ipc   = require'simple_ipc'
 local state_pub_ch = simple_ipc.new_publisher(Config.net.state)
 
 require'gcm'
+require'jcm'
 
 --SJ: This removes the output buffer 
 io.stdout:setvbuf("no")
@@ -37,7 +38,7 @@ for _,sm in ipairs(Config.fsm.enabled) do
 end
 
 -- Update rate (if not webots)
-local fps = 120
+local fps = 200
 local us_sleep = 1e6 / fps
 
 -- Start the state machines
@@ -86,11 +87,15 @@ while true do
 
   -- Update the body (mostly needed for webots)
 	Body.update()
+
+  -- debug stuff
+  --print('write ptr',jcm.get_write_command_position())
   
   -- Sleep a bit if not webots
   if not IS_WEBOTS then
-    unix.usleep(us_sleep)
-    io.flush(stdout)
+    local t_loop = unix.time()-t
+    --io.flush(stdout)
+    unix.usleep(us_sleep-t_loop*1e6)
   end
   
 end

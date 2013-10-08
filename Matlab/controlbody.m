@@ -23,6 +23,12 @@ CONTROL.udp_send_id = -1;
 ret = CONTROL;
 
     function head_control(h,~,evt)
+        deg2rad = pi/180;
+        if strcmp(evt,'stepscan')
+            CONTROL.send_control_packet([],[],...
+            'vcm','head_lidar','scanlines',[0*deg2rad, 60*deg2rad, 5/deg2rad]);
+            send_control_packet('HeadFSM', 'tiltscan');
+        end
         send_control_packet('HeadFSM',evt);
     end
 
@@ -95,9 +101,9 @@ ret = CONTROL;
         CONTROL.head.qscan = b3;
         CONTROL.head.scan = b4;
         set(b1,'CallBack',{@head_control,'reset'});
-        set(b2,'CallBack',{@head_control,'teleop'});
+        set(b2,'CallBack',{@head_control,'center'});
         set(b3,'CallBack',{@head_control,'tiltscan'});
-        set(b4,'CallBack',{@head_control,'center'});
+        set(b4,'CallBack',{@head_control,'stepscan'});
     end
 
     function setup_arm_controls(b1,b2,b3,b4,b5)

@@ -108,8 +108,13 @@ local function head_callback()
   local metadata = mp.unpack(meta)
   
  
-  -- Grab the pitch angle (TODO if off center, then maybe just escape)
+  -- Grab the pitch angle
   local angle = metadata.hangle[2]
+  
+  -- If off center too much, do not slam
+  if math.abs(angle) > 10*Body.DEG_TO_RAD then
+  	return
+  end
 
   -- Don't slam all the time
   lidar0_count = lidar0_count + 1;

@@ -144,10 +144,6 @@ CHEST_LIDAR.posea=[];
     function get_depth_img(h,~)
         if LIDAR.depth_img_display==0
             % head
-            deg2rad = pi/180;
-            CONTROL.send_control_packet([],[],...
-              'vcm','head_lidar','scanlines',[0*deg2rad, 45*deg2rad, 5/deg2rad]);
-            
             CONTROL.send_control_packet([],[],'vcm','head_lidar','depths',[.1,2]);
             CONTROL.send_control_packet([],[],'vcm','head_lidar','net',[1,1,0]);
         else
@@ -199,11 +195,9 @@ CHEST_LIDAR.posea=[];
             HEAD_LIDAR.scanline_angles = scanline_angles;
             HEAD_LIDAR.depths = double(metadata.depths);
             % Update the figures
-                draw_depth_image();
-                update_mesh(0);
-%                 if mod(LIDAR.mesh_cnt, 10) == 0
-                    update_mesh_display();
-%                 end
+            draw_depth_image();
+            update_mesh(0);
+            update_mesh_display();
         else
             LIDAR.mesh_cnt = LIDAR.mesh_cnt + 1;
             % Save data
@@ -212,12 +206,10 @@ CHEST_LIDAR.posea=[];
             CHEST_LIDAR.scanline_angles = scanline_angles;
             CHEST_LIDAR.depths = double(metadata.depths);
             % Update depth image
-            if LIDAR.depth_img_display == 1
-                draw_depth_image();
-            end
+            draw_depth_image();
             % Update mesh image
             update_mesh(1);
-            if mod(LIDAR.mesh_cnt, 20) == 0
+            if mod(LIDAR.mesh_cnt, 10) == 0
                 update_mesh_display();
             end
         end

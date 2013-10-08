@@ -54,7 +54,8 @@ local function get_current_step_info(self,t)
     current_info.uRight_next,    
     current_info.supportLeg,
     ph,
-    current_info.ended
+    current_info.ended,
+    current_info.stepParams
 end
 
 local function update_preview_queue_velocity(self,step_planner,t,stoprequest)
@@ -118,6 +119,7 @@ local function update_preview_queue_velocity(self,step_planner,t,stoprequest)
 end
 
 local function update_preview_queue_steps(self,step_planner,t)
+  local t_future = t + self.preview_interval
 
   table.remove(self.preview_queue,1)
   table.remove(self.preview_queue_zmpx,1)
@@ -127,25 +129,40 @@ local function update_preview_queue_steps(self,step_planner,t)
   local last_preview_zmpx = self.preview_queue_zmpx[#self.preview_queue]
   local last_preview_zmpy = self.preview_queue_zmpy[#self.preview_queue]
 
-  if last_preview_item.tEnd >= t + self.preview_interval then
+  if last_preview_item.tEnd >= t_future then
     --Old step
-    table.insert(self.preview_queue,last_preview_item)
-    table.insert(self.preview_queue_zmpx,last_preview_zmpx)
-    table.insert(self.preview_queue_zmpy,last_preview_zmpy)
+    if last_preview_item.uSupports then --moving support
+      table.insert(self.preview_queue,last_preview_item)
+
+      local ph = (t_future -last_preview_item.tStart)/
+                (last_preview_item.tEnd-last_preview_item.tStart)
+      table.insert(self.preview_queue_zmpx,
+        last_preview_item.uSupports[1][1]*(1-ph)+
+        last_preview_item.uSupports[2][1]*ph 
+        )
+      table.insert(self.preview_queue_zmpy,
+        last_preview_item.uSupports[1][2]*(1-ph)+
+        last_preview_item.uSupports[2][2]*ph 
+        )
+    else --fixed support
+      table.insert(self.preview_queue,last_preview_item)
+      table.insert(self.preview_queue_zmpx,last_preview_zmpx)
+      table.insert(self.preview_queue_zmpy,last_preview_zmpy)
+    end
   else --New step
-    local supportLeg, tStep, uSupport
+    local supportLeg, tStep, uSupport, stepParams
     local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
-    
 
     uLeft_now, uRight_now, uTorso_now, 
       uLeft_next, uRight_next, uTorso_next,
-      uSupport, supportLeg, tStep = step_planner:get_next_step_queue(
+      uSupport, supportLeg, tStep, stepParams = step_planner:get_next_step_queue(
         last_preview_item.uLeft_next,
         last_preview_item.uRight_next,
         step_planner.get_torso(
-          last_preview_item.uLeft_next,last_preview_item.uRight_next)
+          last_preview_item.uLeft_next,last_preview_item.uRight_next),
+        false, --initial_step
+        {last_preview_zmpx,last_preview_zmpy,0} --uSupport_now
         )
-
     local new_preview_item = {}
     if not uLeft_now then --No more footsteps            
       new_preview_item.uLeft_now = last_preview_item.uLeft_next
@@ -155,9 +172,7 @@ local function update_preview_queue_steps(self,step_planner,t)
       new_preview_item.supportLeg = 2 --Double support
       new_preview_item.tStart = last_preview_item.tEnd
       new_preview_item.tEnd = last_preview_item.tEnd + self.preview_tStep
-
       new_preview_item.ended = true
-
       uSupport = step_planner.get_torso(
           last_preview_item.uLeft_next,last_preview_item.uRight_next)
           
@@ -170,13 +185,35 @@ local function update_preview_queue_steps(self,step_planner,t)
       new_preview_item.supportLeg = supportLeg
       new_preview_item.tStart = last_preview_item.tEnd
       new_preview_item.tEnd = last_preview_item.tEnd + tStep
+      new_preview_item.stepParams = stepParams
+
+      if(#uSupport==2) then --Moving support
+        new_preview_item.uSupports = uSupport
+      end
     end
- 
+
     table.insert(self.preview_queue,new_preview_item)
-    table.insert(self.preview_queue_zmpx,uSupport[1])
-    table.insert(self.preview_queue_zmpy,uSupport[2])
+    if new_preview_item.uSupports then --Moving support
+      table.insert(self.preview_queue_zmpx,uSupport[1][1])
+      table.insert(self.preview_queue_zmpy,uSupport[1][2])
+    else --Fixed support
+      table.insert(self.preview_queue_zmpx,uSupport[1])
+      table.insert(self.preview_queue_zmpy,uSupport[2])
+    end
   end
 end
+
+local function trim_preview_queue(self,step_planner,t0)
+  --Trim initial nPreview-1 entries of preview queue
+  --So that we can start motion without delay
+  local t_discrete = t0
+  for i=1,self.preview_steps-1 do
+    self:update_preview_queue_steps(step_planner,t_discrete)
+    t_discrete = t_discrete + self.preview_tStep
+  end
+  return (self.preview_steps-1)*self.preview_tStep --return how much we have to shift the time
+end
+
 
 
 local function update_state(self)
@@ -199,7 +236,10 @@ local function update_state(self)
   end
   local x_next = self.param_a*x + self.param_b * matrix:new({{ux,uy}})
   self.x = x_next
-  return vector.new({x_next[1][1],x_next[1][2]}) --Torso XY
+--  return vector.new({x_next[1][1],x_next[1][2]}) --Torso XY
+
+  return {x_next[1][1],x_next[1][2]}, --COM
+          {self.preview_queue_zmpx[1],self.preview_queue_zmpy[1]} --ZMP
 end
 
 local function can_stop(self)
@@ -325,6 +365,7 @@ libZMP.new_solver = function( params )
   s.update_state = update_state
   s.precompute = precompute
   s.save_param = save_param
+  s.trim_preview_queue = trim_preview_queue
 
   s.can_stop = can_stop
   

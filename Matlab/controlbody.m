@@ -75,10 +75,11 @@ ret = CONTROL;
         set(lmb5,'CallBack',{LIDAR.get_depth_img});
     end
 
-    function setup_model_controls(b1,b2,b3)
+    function setup_model_controls(b1,b2,b3, b4)
         set(b1,'CallBack',MODELS.wheel_calc);
         set(b2,'CallBack',MODELS.door_calc);
         set(b3,'CallBack',MODELS.tool_calc);
+        set(b4,'CallBack',MODELS.step_calc);
     end
 
     function setup_body_controls(b1,b2,b3,b4)

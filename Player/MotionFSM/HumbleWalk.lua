@@ -97,10 +97,10 @@ function walk.update()
 
     --step_planner:update_velocity(hcm.get_motion_velocity())
     velCurrent = step_planner:update_velocity(mcm.get_walk_vel())
-
     --Calculate next step and torso positions based on velocity      
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step)
+
 
     -- Compute the ZMP coefficients for the next step
     zmp_solver:compute( uSupport, uTorso_now, uTorso_next )
@@ -127,10 +127,8 @@ function walk.update()
   --Old feedback
   --delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,phSingle,gyro_rpy, angleShift)
 
-  --Robotis-style simple feedback
-  --SJ: This is actually better :D
+  --Robotis-style simple feedback (which seems to be better :[])
   delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,phSingle,gyro_rpy, angleShift)
- 
 
   moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
 

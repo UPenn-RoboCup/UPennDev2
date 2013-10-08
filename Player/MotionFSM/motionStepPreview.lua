@@ -23,6 +23,8 @@ local t_entry, t_update, t_last_step
 local tStep
 local stepHeight  = Config.walk.stepHeight
 
+local zLeft,zRight --Step landing heights
+
 -- Save gyro stabilization variables between update cycles
 -- They are filtered.  TODO: Use dt in the filters
 local angleShift = vector.new{0,0,0,0}
@@ -32,9 +34,12 @@ local iStep
 -- What foot trajectory are we using?
 local foot_traj_func  
 --foot_traj_func = moveleg.foot_trajectory_base
-foot_traj_func = moveleg.foot_trajectory_square
+--foot_traj_func = moveleg.foot_trajectory_square
+foot_traj_func = moveleg.foot_trajectory_square_stair
 local t, t_discrete
 
+local debugdata
+local t0
 ---------------------------
 -- State machine methods --
 ---------------------------
@@ -58,6 +63,7 @@ function walk.entry()
 
   step_planner = libStep.new_planner()
 
+  zLeft, zRight = 0,0
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
       step_planner:init_stance()
 
@@ -66,32 +72,45 @@ function walk.entry()
   iStep = 1   -- Initialize the step index  
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
+
 --[[
 
-  step_planner:step_enque({0.05,-Config.walk.footY,0},0,0.5) --LS  
-  step_planner:step_enque({},2,0.5) --DS  
-  step_planner:step_enque({0.05,Config.walk.footY,0},1,0.5) --RS
-  step_planner:step_enque({},2,0.5) --DS  
-  step_planner:step_enque({0.10,-Config.walk.footY,0},0,1) --LS
-  step_planner:step_enque({},2,1) --DS  
-  step_planner:step_enque({0.10,Config.walk.footY,0},1,1) --RS
-  step_planner:step_enque({},2,1) --DS  
-  step_planner:step_enque({0.15,-Config.walk.footY,0},0,1.5) --LS
-  step_planner:step_enque({},2,1) --DS  
-  step_planner:step_enque({0.15,Config.walk.footY,0},1,1.5) --RS
+--Enque a DS - SS pair
+--                                        tDoubleSupport tStep
+  step_planner:step_enque_trapezoid({0.0,0,0},0,  3, 4, {0,0.0,0}) --LS  
+  step_planner:step_enque_trapezoid({0.0,0,0},1,  6, 4, {0,0.0,0}) --RS  
+  step_planner:step_enque_trapezoid({0.0,0,0},0,  6, 4, {0,0.0,0}) --LS  
+  step_planner:step_enque_trapezoid({},2,         3, 3, {0,0.0,0}) --DS  
 --]]
 
-  step_planner:step_enque({0.10,-Config.walk.footY,0},0,3) --LS  
-  step_planner:step_enque({},2,3) --DS  
-  step_planner:step_enque({0.05,Config.walk.footY,0},1,3) --RS
+--[[
+  step_planner:step_enque_trapezoid({0.20,0,0},0,  3, 4, {0,0.0,0}) --LS  
+  step_planner:step_enque_trapezoid({0.40,0,0},1,  6, 4, {0,0.0,0}) --RS  
+  step_planner:step_enque_trapezoid({0.20,0,0},0,  6, 4, {0,0.0,0}) --LS  
+  step_planner:step_enque_trapezoid({},2,         3, 3, {0,0.0,0}) --DS  
+--]]
+
+--Stepping over cinderblock
+
+  step_planner:step_enque({},2,                    0.5,    {0,0.0,0}) --DS  
+  step_planner:step_enque_trapezoid({0.27,0,0},0,  0.5, 2, {0,0.0,0}, {0,0.20,0.15}) --LS  
+  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0,0.20,0.15}) --RS  
+  step_planner:step_enque_trapezoid({0.27,0,0},0,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --LS  
+  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --RS  
+  step_planner:step_enque_trapezoid({},2,         0.5, 2,  {0,0.0,0}) --DS  
+
 
   t = Body.get_time()
-  t_discrete = t
+  time_discrete_shift = zmp_solver:trim_preview_queue(step_planner,t )  
+  t_discrete = t 
+  t0 = t
+
+  debugdata=''
+ 
 end
 
 function walk.update()
   -- Get the time of update
-
   local t = Body.get_time()
   local t_diff = t - t_update
   t_update = t   -- Save this at the last update time
@@ -99,22 +118,21 @@ function walk.update()
   local com_pos
 
   while t_discrete<t do
-    --Get step information
-    uLeft_now, uRight_now, uLeft_next, uRight_next,
-      supportLeg, ph, ended = zmp_solver:get_current_step_info(t_discrete)
-
-    if ended and zmp_solver:can_stop() then
-      return "done"
-    end
-  
-    --Get the current COM position
-    com_pos = zmp_solver:update_state()
---    zmp_solver:update_preview_queue_velocity(step_planner,t_discrete)
-
-    zmp_solver:update_preview_queue_steps(step_planner,t_discrete)
-
+    zmp_solver:update_preview_queue_steps(step_planner,t_discrete + time_discrete_shift)
     t_discrete = t_discrete + zmp_solver.preview_tStep
     discrete_updated = true
+
+    --Get step information
+    uLeft_now, uRight_now, uLeft_next, uRight_next,
+      supportLeg, ph, ended, walkParam = zmp_solver:get_current_step_info(t_discrete + time_discrete_shift)
+
+    if ended and zmp_solver:can_stop() then return "done"  end
+  
+    --Get the current COM position
+    com_pos,zmp_pos = zmp_solver:update_state()
+
+    --time zmp com
+    debugdata=debugdata..string.format("%f,%f,%f\n",t_discrete-t0, zmp_pos[2], com_pos[2])
   end
 
   if discrete_updated then
@@ -123,15 +141,20 @@ function walk.update()
 
     --Calculate Leg poses 
     local phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
-    local uLeft, uRight, zLeft, zRight = uLeft_now, uRight_now, 0,0
+    local uLeft, uRight = uLeft_now, uRight_now
+    
     if supportLeg == 0 then  -- Left support    
-      uRight,zRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight)    
+      uRight,zRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
+      if walkParam then print(unpack(walkParam))end
     elseif supportLeg==1 then    -- Right support    
-      uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    
+      uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)    
+      if walkParam then print(unpack(walkParam))end
     elseif supportLeg == 2 then --Double support
-
     end
     step_planner:save_stance(uLeft,uRight,uTorso)  
+
+
+
 
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
@@ -140,10 +163,13 @@ function walk.update()
     --Move legs
     moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
   end
-
 end -- walk.update
 
 function walk.exit()
+  local debugfile=assert(io.open("debugdata.txt","w")); 
+  debugfile:write(debugdata);
+  debugfile:flush();
+  debugfile:close();
   print(walk._NAME..' Exit')  
 end
 

@@ -62,7 +62,7 @@ function state.update()
 
 --bodyHeight_target = 0.47; --Full kneel down
 
-bodyHeight_target = 0.60; --Little bit for safety
+bodyHeight_target = 0.60; --Little bit higher for safety
 
   local bodyHeight = util.approachTol( bodyHeight_now, 
     bodyHeight_target, Config.stance.dHeight, t_diff )
@@ -73,6 +73,8 @@ bodyHeight_target = 0.60; --Little bit for safety
 
   -- Grab gyro feedback for these joint angles
   local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
+
+  --TODO: it may be better to kill gyro feedback while sitting/standing
   delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,0,gyro_rpy, angleShift)
 
   moveleg.set_leg_positions(uTorso,uLeft,uRight,

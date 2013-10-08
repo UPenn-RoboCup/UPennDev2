@@ -18,7 +18,7 @@ local function update_pan_params()
   -- Grab the desired resolution (number of columns)
   local res = math.abs(e[3]*(max_pan-min_pan))
   -- Complete the scan at this rate
-  ph_speed = 40 / math.ceil(res) -- 40 Hz update of the LIDAR
+  ph_speed = 40 / math.ceil(res) -- could be a little faster than 40 Hz
 end
 
 -- Take a given radian and back convert to find the current phase

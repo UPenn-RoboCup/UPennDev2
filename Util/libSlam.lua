@@ -160,21 +160,13 @@ slam.set_boundaries( OMAP.xmin, OMAP.ymin, OMAP.xmax, OMAP.ymax )
 local scan_match_tune = {}
 local pass1 = {};
 -- Number of yaw positions to check
-pass1.nyaw = 1
-pass1.dyaw = 0.5 * math.pi/180.0
--- TODO: make this dependent on angular velocity / motion speed
---if abs(tLidar0-tEncoders) < 0.1
-pass1.nxs  = 19  --21
-pass1.nys  = 19
+pass1.nyaw = 3
+pass1.dyaw = 0.02 * math.pi/180.0
+pass1.nxs  = 31  --19
+pass1.nys  = 31
 -- resolution of the candidate poses
-pass1.dx  = 0.05 --0.025
-pass1.dy  = 0.05 --0.025
---else
---  nxs1  = 11;
---  nys1  = 11;
---  dx1   = 0.05;
---  dy1   = 0.05;
---end
+pass1.dx  = 0.02 --0.05
+pass1.dy  = 0.02 --0.05
 
 -- Create the candidate locations in each dimension
 pass1.xCand = torch.range(-1*math.floor(pass1.nxs/2), math.floor(pass1.nxs/2) )
@@ -218,6 +210,10 @@ libSlam.processL0 = function( lidar_points )
   Y:copy(lidar_points)
   W:resize( Y:size(1), 4 )
 
+  -- Before matching, should first compensate roll (and pitch?)
+  local t_roll = libTransform.rotX( IMU.roll )
+  local newY = torch.mm( Y, t_roll:t() )
+
   -- Increment counter
   SLAM.lidar0Cntr = SLAM.lidar0Cntr + 1
 
@@ -229,10 +225,8 @@ libSlam.processL0 = function( lidar_points )
   -- if(SLAM.odomChanged > 0)
   local hmax = 0
   if true then
-    ----[[
-    hmax = libSlam.scanMatchOne( Y )
-    hmax = libSlam.scanMatchTwo( Y )
-    --]]
+    hmax = libSlam.scanMatchOne( newY )
+    hmax = libSlam.scanMatchTwo( newY )
     
     -- If no good fits, then use pure odometry readings
     if hmax < 500 then  -- 500
@@ -269,15 +263,9 @@ libSlam.processL0 = function( lidar_points )
   libTransform.rotZ( SLAM.yaw ) 
   )
   local T = torch.mm( 
-  tmp, libTransform.trans( 0,0,0)
+  tmp, libTransform.trans(0,0,0)
   )
-  --[[ Compensate the torso pitch
-  local World2Body = torch.mm(
-  T, libTransform.rotY( Config.walk.bodyTilt  )
-  ) 
-  -- Perform the multiply
-  W:mm( Y, World2Body:t() )
-  --]]
+
   W:mm( Y, T:t() )
 
   if Benchmark then
@@ -337,7 +325,7 @@ libSlam.processL0 = function( lidar_points )
     -- Perform the decay on the surroundings
     localMap = OMAP.data:sub( ximin,ximax,  yimin,yimax )	
 	thres = 240
-	decay_coeff = 0.95
+	decay_coeff = 0.8
       
     ---------------------------------------------------------------
     slam.decay_map(localMap, thres, decay_coeff)
@@ -881,11 +869,10 @@ libSlam.processIMU = function( rpy, yawdot, ts )
   IMU.roll = rpy[1]  --TODO: roll should be crucial
   IMU.pitch = rpy[2]
   IMU.yaw = rpy[3]
-  IMU.dyaw = util.mod_angle(IMU.yaw - IMU.lastYaw)
+  --IMU.dyaw = util.mod_angle(IMU.yaw - IMU.lastYaw)
 
-  --TODO: yawdot is very large value, is it in DEG or something?
   IMU.yawdot = yawdot
-  --IMU.dyaw = yawdot * (ts - IMU.t)
+  IMU.dyaw = yawdot * (ts - IMU.t)
 
   -- Maybe filter the IMU data
   tmpdyaw = util.mod_angle(IMU.yaw-IMU.lastYaw)

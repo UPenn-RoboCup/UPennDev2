@@ -1,5 +1,5 @@
 function ret = lidarbody()
-global HEAD_LIDAR CHEST_LIDAR LIDAR H_FIGURE DEBUGMON POSE CONTROL
+global HEAD_LIDAR CHEST_LIDAR LIDAR H_FIGURE DEBUGMON POSE SLAM CONTROL
 LIDAR.init = @init;
 LIDAR.update = @update;
 LIDAR.set_meshtype = @set_meshtype;
@@ -263,10 +263,18 @@ CHEST_LIDAR.posea=[];
     end
 
     function targetpos = transform_global(relpos)
-        pose = POSE.pose_slam;
+        %pose = POSE.pose_slam;
+        pose = SLAM.slam_pose;
         targetpos=[];
         targetpos(1) =pose(1) + cos(pose(3)) * relpos(1) - sin(pose(3))*relpos(2);
         targetpos(2) =pose(2) + sin(pose(3)) * relpos(1) + cos(pose(3))*relpos(2);
+        targetpos(3) = relpos(3);
+        
+        % Body Tilt
+        ca = cos(SLAM.torso_tilt);
+        sa = sin(SLAM.torso_tilt);
+        targetpos(1) = targetpos(1)*ca + targetpos(3)*sa;
+        targetpos(3) = -targetpos(1)*sa + targetpos(3)*ca;
     end
 
     function targetpos = get_single_approach()
@@ -286,17 +294,19 @@ CHEST_LIDAR.posea=[];
         points3d = LIDAR.selected_points;
         targetwp=[];
         if numel(points3d)>=2*3
-            leftrelpos = points3d(size(points3d,1)-1, 1:2);
-            rightrelpos = points3d(size(points3d,1), 1:2);
-            
+            % 3D
+            leftrelpos = points3d(size(points3d,1)-1, :);
+            rightrelpos = points3d(size(points3d,1), :);
+             
             if leftrelpos(1)>0.30 && rightrelpos(1)>0.30
                 leftpos = transform_global(leftrelpos);
                 rightpos = transform_global(rightrelpos);
-                centerpos = (leftpos+rightpos)/2;
+                centerpos = (leftrelpos + rightrelpos)/2;
+                centerpos(1) = max(0, centerpos(1) - 0.3);
                 angle = atan2(leftpos(2)-rightpos(2),leftpos(1)-rightpos(1)) - pi/2;
-                targetpose= centerpos;
-                %Waypoint generation for target pose
+                targetwp = [centerpos(1), centerpos(2), angle];
                 
+                %{
                 r1 = - 0.60;
                 r2 = - 0.30;
                 
@@ -304,12 +314,11 @@ CHEST_LIDAR.posea=[];
                 targetpose1 = targetpose + [r1*cos(angle) r1*sin(angle)]
                 targetpose2 = targetpose + [r2*cos(angle) r2*sin(angle)]
                 targetwp =  reshape(  [targetpose1;targetpose2] ,[1 4]) ;
+                %}
             end
         end
         LIDAR.clear_points();
     end
-
-
 
     function select_3d(~, ~, flags)
         

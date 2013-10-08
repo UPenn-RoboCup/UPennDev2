@@ -112,7 +112,8 @@ local function head_callback()
   local angle = metadata.hangle[2]
   
   -- If off center too much, do not slam
-  if math.abs(angle) > 10*Body.DEG_TO_RAD then
+  local headcenter = -Config.walk.bodyTilt-0.05
+  if math.abs(angle-headcenter) > 10*Body.DEG_TO_RAD then
   	return
   end
 

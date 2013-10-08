@@ -52,7 +52,7 @@ t0 = tic;
   connect_th = tan(85*pi/180);
 
   max_dist = lidar.lidarrange * 0.9;
-  ground_height = -0.75;
+  ground_height = -0.7;
   max_height = 1.0;
 
 

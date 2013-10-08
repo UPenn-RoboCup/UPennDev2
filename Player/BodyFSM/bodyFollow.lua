@@ -188,9 +188,9 @@ function state.update()
   local rel_wp = util.pose_relative(wp,pose)
 
   -- Debug
-  --[[
+  ---[[
   print('pose',pose)
-  print('wayp',wp)
+  --print('wayp',wp)
   print('rela',rel_wp)
   --]]
 

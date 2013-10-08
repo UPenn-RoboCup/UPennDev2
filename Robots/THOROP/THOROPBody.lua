@@ -767,6 +767,9 @@ end
 Body.exit = function()
 end
 
+
+
+
 ----------------------
 -- Webots compatibility
 if IS_WEBOTS then
@@ -1073,8 +1076,8 @@ if IS_WEBOTS then
     jcm.sensorPtr.rfoot[4] = webots.wb_touch_sensor_get_value(tags.r_lr_fsr)
   
 --[[
-    print("FSRL:",unpack(fsr_l))
-    print("FSRR:",unpack(fsr_r))
+    print("FSRL:",unpack(jcm.get_sensor_lfoot()))
+    print("FSRR:",unpack(jcm.get_sensor_rfoot()))
  --]]
 
 
@@ -1172,10 +1175,38 @@ if IS_WEBOTS then
 
 	Body.exit = function()
 	end
-
 	Body.tags = tags
 
-end -- webots check
+  --Touchdown check for webots
+  --Use FSR sensors
+
+  local FSR_threshold = 200
+  Body.get_lfoot_touched = function()
+    local LFSR = jcm.get-sensor_lfoot()  
+    if (LFSR[1]+LFSR[2]+LFSR[3]+LFSR[4])>FSR_threshold then
+      return true
+    else
+      return false
+    end
+  end
+  Body.get_rfoot_touched = function()
+    local RFSR = jcm.get-sensor_rfoot()    
+    if (RFSR[1]+RFSR[2]+RFSR[3]+RFSR[4])>FSR_threshold then
+      return true
+    else
+      return false
+    end
+  end
+else -- webots check
+  --Touchdown check for actual robot
+  --Force torque sensor based
+  Body.get_lfoot_touched = function()
+    return false 
+  end
+  Body.get_rfoot_touched = function()
+    return false 
+  end
+end 
 
 -- Exports for use in other functions
 Body.get_time = get_time

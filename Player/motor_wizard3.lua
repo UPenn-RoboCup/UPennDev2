@@ -40,15 +40,13 @@ local chains = {}
 chains['Right Arm'] = {
   ttyname = '/dev/ttyUSB0',
   nx_ids  = {1,3,5,7,9,11,13},
-  mx_ids  = { --[[31,33,35]] }, --no hands
-  --mx_ids  = { 31,33,35 },
-  active = true
+  mx_ids  = { --[[31,33,35]] },
+  active = false
 }
 chains['Left Arm'] = {
   ttyname = '/dev/ttyUSB1',
   nx_ids  = {2,4,6,8,10,12,14, --[[head]] 29,30 },
-  mx_ids  = { --[[32,34,36,]]   --[[lidar]] 37}, -- no hands
-  --mx_ids  = { 32,34,36,   --[[lidar]] 37},
+  mx_ids  = { --[[32,34,36,]]   --[[lidar]] 37},
   active = true
 }
 chains['Right Leg'] = {
@@ -82,19 +80,19 @@ local update_read = function(self,data,register)
     -- k is the motor id
     -- v is the register value
     local ptr = jcm.sensorPtr[register]
-    assert(ptr,'Register is not in jcm! '..tostring(register))
+    assert(ptr,'Register is not in jcm!'..tostring(register))
     -- Find the humanoid joint
-    local idx  = motor_to_joint[k]
+    local idx = motor_to_joint[k]
     local tptr = jcm.treadPtr[register]
     -- Debug
     --[[
     print(string.format('%s: %s %s is %g',
-    self.name,jointNames[idx],register,v),self.t_read)
+    self.name,jointNames[idx],register,v))
     --]]
+    
     -- Specific handling of register types
     if register=='position' then
-      --print('type',type(v))
-      if type(v)=='number' then
+      if type(v)==number then
         ptr[idx] = Body.make_joint_radian( idx, v )
         -- Update the timestamp
         tptr[idx] = self.t_read
@@ -171,11 +169,11 @@ local update_commands = function(t)
     for idx=1,#write_ptr do
       is_write = write_ptr[idx]
       if is_write>0 then
-        write_ptr[idx]=0
         -- Add the write instruction to the chain
         local d = idx_to_dynamixel[idx]
         --if d and #d.commands==0 then
         if d then
+          write_ptr[idx]=0
           table.insert( idx_to_ids[idx], joint_to_motor[idx] )
           --print(register,idx,'setting',idx_to_vals[idx], val_ptr[idx])
           if register=='command_position' then
@@ -226,11 +224,11 @@ local function normal_read(register,read_ptr)
     local is_read = read_ptr[idx]
     -- Check if we are to read each of the values
     if is_read>0 then
-      -- Kill the reading
-      read_ptr[idx] = 0
       -- Add the read instruction to the chain
       local d = idx_to_dynamixel[idx]
       if d and #d.requests==0 then
+        -- Kill the reading
+        read_ptr[idx] = 0
         table.insert( idx_to_ids[idx], joint_to_motor[idx] )
       end
     end
@@ -268,9 +266,9 @@ end
 local ext_read = {
   lfoot = function()
     -- TODO: Assuming that left feet are all on the same chain
-    local reqs = motor_to_dynamixel[24].requests
+    local reqs = motor_to_dynamixel[24]
     if reqs then
-      table.insert( reqs, {
+      table.insert( reqs.requests, {
         nids = 2,
         reg  = 'lfoot',
         inst = libDynamixel.get_nx_data({24,26})
@@ -279,9 +277,9 @@ local ext_read = {
   end,
   rfoot = function()
     -- TODO: Assuming that left feet are all on the same chain
-    local reqs = motor_to_dynamixel[23].requests
+    local reqs = motor_to_dynamixel[23]
     if reqs then
-      table.insert( motor_to_dynamixel[23].requests, {
+      table.insert( reqs.requests, {
         nids = 2,
         reg  = 'rfoot',
         inst = libDynamixel.get_nx_data({23,25})
@@ -322,7 +320,7 @@ local main = function()
     update_requests(t)
 
     for _,d in ipairs(dynamixels) do
-      print('latency',d.name,1/d.t_diff)
+      print('latency',d.name,1/d.t_diff_cmd)
     end
 
     
@@ -346,10 +344,6 @@ local main = function()
         --]]
 
         -- Append debugging information
-        local dstatus = coroutine.status(d.thread)
-        table.insert(debug_tbl, util.color(
-          string.format('%s chain %s',d.name, dstatus),
-          status_color[dstatus]))
         table.insert(debug_tbl,string.format(
           '\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',
           t-d.t_read,t-d.t_command))
@@ -367,7 +361,8 @@ local main = function()
     end
     
     -- Do not yield anything for now
-    coroutine.yield()
+    --coroutine.yield()
+    return
     
   end
 end
@@ -570,4 +565,5 @@ print()
 assert(#dynamixels>0,"No dynamixel buses!")
 assert(nMotors>0,"No dynamixel motors found!")
 print( string.format('Servicing %d dynamixel chains',#dynamixels) )
-libDynamixel.service( dynamixels, main )
+--libDynamixel.service( dynamixels, main )
+libDynamixel.straight_service(dynamixels[1], main)

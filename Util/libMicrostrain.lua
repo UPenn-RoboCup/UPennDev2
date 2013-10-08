@@ -64,20 +64,12 @@ libMicrostrain.change_baud = function (microstrain)
   local response = write_command(microstrain.fd,idle_cmd)
 
   -- Write the command
-  local response = write_command(microstrain.fd,baud_cmd)
-  --[[
-  for k,v in ipairs(response) do
-    print(string.format('%d: %02X',k,v))
-  end
-  --]]
-
-  -- Close
-  microstrain:close()
-
-  unix.usleep(1e6)
-
+  --local response = write_command(microstrain.fd,baud_cmd)
+  --for k,v in ipairs(response) do print(string.format('%d: %02X',k,v)) end
+  --microstrain:close()
+  --unix.usleep(1e6)
   -- Open with new baud
-  libMicrostrain.new_microstrain(microstrain.ttyname,baud,microstrain)
+  --libMicrostrain.new_microstrain(microstrain.ttyname,baud,microstrain)
 
   -- Ping the microstrain
   local response = write_command(microstrain.fd,ping_cmd)
@@ -88,7 +80,7 @@ libMicrostrain.change_baud = function (microstrain)
   --]]
 end
 
-libMicrostrain.configure = function(microstrain)
+libMicrostrain.configure = function(microstrain,do_permanent)
   -- Set the mode for reading data
   -- 100Hz of gyro & rpy
 
@@ -107,18 +99,20 @@ libMicrostrain.configure = function(microstrain)
   end
   --]]
 
-  -- Save only once! Maybe in the eeprom, so lots of saving could be bad...
-  local save_fmt = { 0x75, 0x65, 0x0C,
-    0x04, -- Command length
-    0x04, 0x08, -- Packet length
-    0x03, 0x00 -- 3 to perform the save
-  }
-  local response = write_command(microstrain.fd,save_fmt)
-  --[[
-  for k,v in ipairs(response) do
-    print(string.format('%d: %02X',k,v))
+  if do_permanent then
+    -- Save only once! Maybe in the eeprom, so lots of saving could be bad...
+    local save_fmt = { 0x75, 0x65, 0x0C,
+      0x04, -- Command length
+      0x04, 0x08, -- Packet length
+      0x03, 0x00 -- 3 to perform the save
+    }
+    local response = write_command(microstrain.fd,save_fmt)
+    --[[
+    for k,v in ipairs(response) do
+      print(string.format('%d: %02X',k,v))
+    end
+    --]]
   end
-  --]]
 end
 
 ---------------------------
@@ -199,6 +193,9 @@ libMicrostrain.service = function( microstrain, main )
 
   -- Go as fast as possible
   libMicrostrain.change_baud(microstrain)
+
+  -- Configure to have the right format
+  libMicrostrain.configure(microstrain)
   
   -- Enable the main function as a coroutine thread
   local main_thread
@@ -209,8 +206,9 @@ libMicrostrain.service = function( microstrain, main )
   local thread = coroutine.create( 
     function()
       while true do
+        local ret = unix.select({microstrain.fd})
         res = unix.read(microstrain.fd)
-        assert(res,'Bad response!')
+        assert(res,'Bad response!'..type(ret))
         coroutine.yield(
           carray.float(res:sub(7,18):reverse()), -- gyro
           carray.float(res:sub(21,32):reverse()) -- rpy
@@ -232,7 +230,7 @@ libMicrostrain.service = function( microstrain, main )
     if status_code then
       microstrain.callback(acc,gyr)
     else
-      print( util.color('Dead microstrain coroutine!','red'), acc)
+      print( 'Dead microstrain coroutine!', acc)
       microstrain:ahrs_off()
       microstrain:close()
     end

@@ -145,6 +145,7 @@ static int lua_stty_speed(lua_State *L) {
 		return luaL_error(L, "Could not set termios");
 	}
 
+/*
 	// custom divisor
 	struct serial_struct serinfo;
 	int ret = ioctl(fd, TIOCGSERIAL, &serinfo);
@@ -158,12 +159,14 @@ static int lua_stty_speed(lua_State *L) {
 		serinfo.flags |= ASYNC_LOW_LATENCY; // ftdi latency
 		serinfo.custom_divisor = serinfo.baud_base/((float)speed);
 		if (ioctl(fd, TIOCSSERIAL, &serinfo) < 0){
+			//fprintf(stdout,"BAD STTY: %d\n",errno);
 			return luaL_error(L, "Could not set serial info.");
 		}
 	}
-
+*/
 	/*
 	// robotis code
+	// http://stackoverflow.com/questions/4968529/how-to-set-baud-rate-to-307200-on-linux
 	ss.custom_divisor = (ss.baud_base + (speed / 2)) / speed;
 	int closest_speed = ss.baud_base / ss.custom_divisor;
 

@@ -41,13 +41,13 @@ chains['Right Arm'] = {
   ttyname = '/dev/ttyUSB0',
   nx_ids  = {1,3,5,7,9,11,13},
   mx_ids  = { --[[31,33,35]] },
-  active = true
+  active = false
 }
 chains['Left Arm'] = {
   ttyname = '/dev/ttyUSB1',
   nx_ids  = {2,4,6,8,10,12,14, --[[head]] 29,30 },
   mx_ids  = { --[[32,34,36,]]   --[[lidar]] 37},
-  active = true
+  active = false
 }
 chains['Right Leg'] = {
   ttyname = '/dev/ttyUSB2',
@@ -59,7 +59,7 @@ chains['Left Leg'] = {
   ttyname = '/dev/ttyUSB3',
   nx_ids  = {16,18,20,22,24,26, --[[waist]]27},
   mx_ids  = {},
-  active = true
+  active = false
 }
 if OPERATING_SYSTEM=='darwin' then
   chains['Right Arm'].ttyname = '/dev/cu.usbserial-FTT3ABW9A'
@@ -169,11 +169,11 @@ local update_commands = function(t)
     for idx=1,#write_ptr do
       is_write = write_ptr[idx]
       if is_write>0 then
-        write_ptr[idx]=0
         -- Add the write instruction to the chain
         local d = idx_to_dynamixel[idx]
         --if d and #d.commands==0 then
         if d then
+          write_ptr[idx]=0
           table.insert( idx_to_ids[idx], joint_to_motor[idx] )
           --print(register,idx,'setting',idx_to_vals[idx], val_ptr[idx])
           if register=='command_position' then
@@ -224,11 +224,11 @@ local function normal_read(register,read_ptr)
     local is_read = read_ptr[idx]
     -- Check if we are to read each of the values
     if is_read>0 then
-      -- Kill the reading
-      read_ptr[idx] = 0
       -- Add the read instruction to the chain
       local d = idx_to_dynamixel[idx]
       if d and #d.requests==0 then
+        -- Kill the reading
+        read_ptr[idx] = 0
         table.insert( idx_to_ids[idx], joint_to_motor[idx] )
       end
     end
@@ -266,9 +266,9 @@ end
 local ext_read = {
   lfoot = function()
     -- TODO: Assuming that left feet are all on the same chain
-    local reqs = motor_to_dynamixel[24].requests
+    local reqs = motor_to_dynamixel[24]
     if reqs then
-      table.insert( reqs, {
+      table.insert( reqs.requests, {
         nids = 2,
         reg  = 'lfoot',
         inst = libDynamixel.get_nx_data({24,26})
@@ -277,9 +277,9 @@ local ext_read = {
   end,
   rfoot = function()
     -- TODO: Assuming that left feet are all on the same chain
-    local reqs = motor_to_dynamixel[23].requests
+    local reqs = motor_to_dynamixel[23]
     if reqs then
-      table.insert( motor_to_dynamixel[23].requests, {
+      table.insert( reqs.requests, {
         nids = 2,
         reg  = 'rfoot',
         inst = libDynamixel.get_nx_data({23,25})
@@ -307,67 +307,53 @@ end --function
 --------------------
 -- Begin the main routine
 local led_state = 0
+local main_cnt = 0
+local t00 = unix.time()
+local worst_write, worst_read = 0, 0
 local main = function()
-  local main_cnt = 0
-  local t0 = Body.get_time()
-  
+
   -- Enter the coroutine
-  while true do
-    local t = Body.get_time()
-    
-    -- Set commands for next sync write
-    update_commands(t)
-    update_requests(t)
 
-    for _,d in ipairs(dynamixels) do
-      print('latency',d.name,1/d.t_diff)
-    end
+  local tt = unix.time()
+  
+  -- Set commands for next sync write
+  update_commands(t)
+  update_requests(t)
 
-    
-    -- Show debugging information and blink the LED
-    main_cnt = main_cnt + 1
-    local t_diff = t - t0
-    if t_diff>1 then
-      local debug_tbl = {}
-      table.insert(debug_tbl, string.format(
-        'Main loop: %7.2f Hz\n', main_cnt/t_diff))
-      led_state = 1-led_state
-      for _,d in ipairs(dynamixels) do
-        --[[
-        -- Blink the led
-        local sync_led_cmd = 
-          libDynamixel.set_mx_led( d.mx_on_bus, led_state )
-        local sync_led_red_cmd = 
-          libDynamixel.set_nx_led_red( d.nx_on_bus, 255*led_state )
-        table.insert( d.commands, sync_led_cmd )
-        table.insert( d.commands, sync_led_red_cmd )
-        --]]
-
-        -- Append debugging information
-        local dstatus = coroutine.status(d.thread)
-        table.insert(debug_tbl, util.color(
-          string.format('%s chain %s',d.name, dstatus),
-          status_color[dstatus]))
-        table.insert(debug_tbl,string.format(
-          '\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',
-          t-d.t_read,t-d.t_command))
-        --[[
-        table.insert(debug_tbl,string.format(
-          '\n\t%d requests in the pipeline',#d.requests))
-        table.insert(debug_tbl,string.format(
-          '\n\t%d commands in the pipeline',#d.commands))
-        --]]
-      end
-      --os.execute('clear')
-      print( table.concat(debug_tbl,'\n') )
-      t0 = t
-      main_cnt = 0
-    end
-    
-    -- Do not yield anything for now
-    coroutine.yield()
-    
+  for _,d in ipairs(dynamixels) do
+    worst_write = math.max(worst_write,d.t_diff_cmd)
+    worst_read = math.max(worst_read,d.t_diff_read)
+    --print('latency',d.name,1/d.t_diff_cmd)
   end
+
+  
+  -- Show debugging information and blink the LED
+  main_cnt = main_cnt + 1
+  local t_diff = tt - t00
+  --print(t_diff)
+  if t_diff>1 then
+    local debug_tbl = {}
+    table.insert(debug_tbl, string.format(
+      'Main loop: %7.2f Hz\n', main_cnt/t_diff))
+    led_state = 1-led_state
+    for _,d in ipairs(dynamixels) do
+      -- Append debugging information
+      --table.insert(debug_tbl,string.format(
+--        '\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',
+        --t-d.t_read,t-d.t_command))
+      table.insert(debug_tbl,string.format(
+        '\tWorst Read: %.3f, Worst Write: %.3f',
+        worst_read,worst_write
+        ))
+      worst_read = 0
+      worst_write = 0
+    end
+    os.execute('clear')
+    print( table.concat(debug_tbl,'\n') )
+    t00 = tt
+    main_cnt = 0
+  end
+
 end
 
 --------------------
@@ -568,4 +554,5 @@ print()
 assert(#dynamixels>0,"No dynamixel buses!")
 assert(nMotors>0,"No dynamixel motors found!")
 print( string.format('Servicing %d dynamixel chains',#dynamixels) )
-libDynamixel.service( dynamixels, main )
+--libDynamixel.service( dynamixels, main )
+libDynamixel.straight_service(dynamixels[1], main)

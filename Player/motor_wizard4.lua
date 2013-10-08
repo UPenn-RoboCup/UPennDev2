@@ -47,19 +47,19 @@ chains['Left Arm'] = {
   ttyname = '/dev/ttyUSB1',
   nx_ids  = {2,4,6,8,10,12,14, --[[head]] 29,30 },
   mx_ids  = { --[[32,34,36,]]   --[[lidar]] 37},
-  active = true
+  active = false
 }
 chains['Right Leg'] = {
   ttyname = '/dev/ttyUSB2',
   nx_ids  = {15,17,19,21,23,25, --[[waist pitch]]28},
   mx_ids  = {},
-  active = true
+  active = false
 }
 chains['Left Leg'] = {
   ttyname = '/dev/ttyUSB3',
   nx_ids  = {16,18,20,22,24,26, --[[waist]]27},
   mx_ids  = {},
-  active = true
+  active = false
 }
 if OPERATING_SYSTEM=='darwin' then
   chains['Right Arm'].ttyname = '/dev/cu.usbserial-FTT3ABW9A'
@@ -169,11 +169,11 @@ local update_commands = function(t)
     for idx=1,#write_ptr do
       is_write = write_ptr[idx]
       if is_write>0 then
-        write_ptr[idx]=0
         -- Add the write instruction to the chain
         local d = idx_to_dynamixel[idx]
         --if d and #d.commands==0 then
         if d then
+          write_ptr[idx]=0
           table.insert( idx_to_ids[idx], joint_to_motor[idx] )
           --print(register,idx,'setting',idx_to_vals[idx], val_ptr[idx])
           if register=='command_position' then
@@ -224,11 +224,11 @@ local function normal_read(register,read_ptr)
     local is_read = read_ptr[idx]
     -- Check if we are to read each of the values
     if is_read>0 then
-      -- Kill the reading
-      read_ptr[idx] = 0
       -- Add the read instruction to the chain
       local d = idx_to_dynamixel[idx]
       if d and #d.requests==0 then
+        -- Kill the reading
+        read_ptr[idx] = 0
         table.insert( idx_to_ids[idx], joint_to_motor[idx] )
       end
     end
@@ -266,9 +266,9 @@ end
 local ext_read = {
   lfoot = function()
     -- TODO: Assuming that left feet are all on the same chain
-    local reqs = motor_to_dynamixel[24].requests
+    local reqs = motor_to_dynamixel[24]
     if reqs then
-      table.insert( reqs, {
+      table.insert( reqs.requests, {
         nids = 2,
         reg  = 'lfoot',
         inst = libDynamixel.get_nx_data({24,26})
@@ -277,9 +277,9 @@ local ext_read = {
   end,
   rfoot = function()
     -- TODO: Assuming that left feet are all on the same chain
-    local reqs = motor_to_dynamixel[23].requests
+    local reqs = motor_to_dynamixel[23]
     if reqs then
-      table.insert( motor_to_dynamixel[23].requests, {
+      table.insert( reqs.requests, {
         nids = 2,
         reg  = 'rfoot',
         inst = libDynamixel.get_nx_data({23,25})
@@ -320,7 +320,7 @@ local main = function()
     update_requests(t)
 
     for _,d in ipairs(dynamixels) do
-      print('latency',d.name,1/d.t_diff)
+      print('latency',d.name,1/d.t_diff_cmd)
     end
 
     
@@ -344,10 +344,6 @@ local main = function()
         --]]
 
         -- Append debugging information
-        local dstatus = coroutine.status(d.thread)
-        table.insert(debug_tbl, util.color(
-          string.format('%s chain %s',d.name, dstatus),
-          status_color[dstatus]))
         table.insert(debug_tbl,string.format(
           '\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',
           t-d.t_read,t-d.t_command))
@@ -365,7 +361,8 @@ local main = function()
     end
     
     -- Do not yield anything for now
-    coroutine.yield()
+    --coroutine.yield()
+    return
     
   end
 end
@@ -568,4 +565,5 @@ print()
 assert(#dynamixels>0,"No dynamixel buses!")
 assert(nMotors>0,"No dynamixel motors found!")
 print( string.format('Servicing %d dynamixel chains',#dynamixels) )
-libDynamixel.service( dynamixels, main )
+--libDynamixel.service( dynamixels, main )
+libDynamixel.straight_service(dynamixels[1], main)

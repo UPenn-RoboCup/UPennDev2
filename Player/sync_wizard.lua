@@ -75,7 +75,7 @@ end
 -- TODO: eliminate jcm, and use Body calls
 -- TODO: that might be bad for performance, though
 local update_read = function(self,data,register)
-  --print('digesting data...',register)
+  print('digesting data...',register)
   if type(data)~='table' then return end
   -- Update the shared memory
   for k,v in pairs(data) do
@@ -271,7 +271,6 @@ local function normal_read(register,read_ptr)
   
   -- Make the request for this register on each chain
   for _,d in ipairs(dynamixels) do
-    --d.requests = {}
     if #d.requests==0 then
       local nids = #d.packet_ids
       if nids>0 then
@@ -314,11 +313,6 @@ local rfoot_inst = {
 
 -- Update the read every so often
 local update_requests = function(t)
-  for _,d in ipairs(dynamixels) do
-    for i,_ in ipairs(d.commands) do
-      d.requests[i] = nil
-    end
-  end
   -- Loop through the registers
   for register,read_ptr in pairs(jcm.readPtr) do
     if register:find'foot' then
@@ -327,8 +321,8 @@ local update_requests = function(t)
         -- add inst to the right chain
         local lfoot_chain = motor_to_dynamixel[24]
         local rfoot_chain = motor_to_dynamixel[23]
-        if lfoot_chain then table.insert(d.requests,lfoot_inst) end
-        if rfoot_chain then table.insert(d.requests,rfoot_inst) end
+        if lfoot_chain then table.insert(lfoot_chain.requests,lfoot_inst) end
+        if rfoot_chain then table.insert(rfoot_chain.requests,rfoot_inst) end
       end
     else
       normal_read(register,read_ptr)
@@ -535,6 +529,7 @@ end -- entry
 -- Begin the main routine
 local update_cnt = 0
 local t_debug = 0
+local bad_lat = 0
 local update = function()
   
   -- Get the time of update
@@ -552,6 +547,7 @@ local update = function()
   for _,d in ipairs(dynamixels) do
     if d.name=='Left Leg' then
       --print('ncmd',#d.commands)
+      bad_lat = math.max(bad_lat,d.t_diff_cmd)
       --print('latency',d.name,1/d.t_diff_cmd)
     end
   end
@@ -563,15 +559,17 @@ local update = function()
       'Main loop: %7.2f Hz\n', update_cnt/(t-t_debug) ))
     for _,d in ipairs(dynamixels) do
       -- Append debugging information
+      table.insert(debug_tbl,d.name)
       table.insert(debug_tbl,string.format(
         '\tRead: %4.2f seconds ago\tWrite: %4.2f seconds ago',
         t-d.t_read,t-d.t_cmd))
       table.insert(debug_tbl,string.format(
-        '\tRead Rate: %.3f s\tWrite Rate: %.3f s',
-        d.t_diff_read,d.t_diff_cmd))
+        '\tRead Rate: %.3f s\tWrite Rate: %.3f s, BAD LAT: %f ms',
+        d.t_diff_read,d.t_diff_cmd, bad_lat*1000))
     end
     --os.execute('clear')
     print( table.concat(debug_tbl,'\n') )
+    bad_lat = 0
   end
     
 end
@@ -596,7 +594,7 @@ libDynamixel.service( dynamixels, function()
   while true do
     update()
     -- Do not yield anything for now
-    coroutine.yield()
+    coroutine.yield('good')
   end
 end )
 --]]

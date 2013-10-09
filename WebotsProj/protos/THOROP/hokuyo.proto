@@ -3878,7 +3878,7 @@ Camera {
   type "range-finder"
   spherical TRUE
   near 0.1
-  maxRange 30
+  maxRange 5
   pixelSize 0
   rangeNoise IS noise
 }

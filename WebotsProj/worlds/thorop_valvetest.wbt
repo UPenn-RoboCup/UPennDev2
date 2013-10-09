@@ -30,35 +30,18 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP7_NoBoundaries {
-  translation -0.0732995 1.15535 0.00374813
-  rotation -0.000302509 0.999999 0.00130804 1.57002
+  translation 0 1.15535 0
+  rotation 0 1 0 1.57
   controller "thorop"
   controllerArgs "0 32"
 }
 Solid {
-  translation 0.316526 1 0
+  translation 0.45 1.03 0
   rotation 0 0 1 0
   children [
-    SteeringWheelSmall {
+    ValveDRC {
     }
   ]
   locked TRUE
 }
-Solid {
-  translation 0.3 1.2 1
-  rotation 0 0 1 0
-  children [
-    SteeringWheelSmall {
-    }
-  ]
-  locked TRUE
-}
-Solid {
-  translation 0.3 1.2 2
-  rotation 0 0 1 -0.5
-  children [
-    SteeringWheelSmall {
-    }
-  ]
-  locked TRUE
-}
+

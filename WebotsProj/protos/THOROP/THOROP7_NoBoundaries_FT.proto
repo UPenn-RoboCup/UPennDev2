@@ -5,7 +5,7 @@
 # 2013/7
 #############################################
 
-PROTO THOROP7_NoBoundaries_2 [
+PROTO THOROP7_NoBoundaries [
   field SFVec3f    translation 0 1 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
@@ -783,22 +783,79 @@ Robot {
                                 DEF Right_ankle_roll Servo {
                                   rotation 0 0 1 0
                                   children [
-                                    DEF R_FSR TouchSensor {
-                                      translation 0 -0.118 0.018                                        
-                                      name "R_FSR"
-                                      boundingObject Box {size 0.145 0.012 0.26}
+                                    DEF R_LR_FSR TouchSensor {
+                                      translation -0.04 -0.118 -0.06
+                                      rotation 1 0 0 1.5708
+                                      name "R_LR_FSR"
+                                      boundingObject Sphere {
+                                        radius 0.001
+                                      }
                                       physics Physics {
                                         density -1
                                         mass 0.0001
                                       }
                                       type "force"
-                                    }                                    
+                                    }
+                                    DEF R_LL_FSR TouchSensor {
+                                      translation 0.04 -0.118 -0.06
+                                      rotation 1 0 0 1.5708
+                                      name "R_LL_FSR"
+                                      boundingObject Sphere {
+                                        radius 0.001
+                                      }
+                                      physics Physics {
+                                        density -1
+                                        mass 0.0001
+                                      }
+                                      type "force"
+                                    }
+                                    DEF R_UR_FSR TouchSensor {
+                                      translation -0.04 -0.118 0.1
+                                      rotation 1 0 0 1.5708
+                                      name "R_UR_FSR"
+                                      boundingObject Sphere {
+                                        radius 0.001
+                                      }
+                                      physics Physics {
+                                        density -1
+                                        mass 0.0001
+                                      }
+                                      type "force"
+                                    }
+                                    DEF R_UL_FSR TouchSensor {
+                                      translation 0.04 -0.118 0.1
+                                      rotation 1 0 0 1.5708
+                                      name "R_UL_FSR"
+                                      boundingObject Sphere {
+                                        radius 0.001
+                                      }
+                                      physics Physics {
+                                        density -1
+                                        mass 0.0001
+                                      }
+                                      type "force"
+                                    }
                                     DEF Foot Transform {
                                       scale 0.001 0.001 0.001
                                       children [
                                         FOOT{}
                                       ]
-                                    }                                    
+                                    }
+                                    DEF Right_ankle_force TouchSensor {
+                                      translation 0 -0.09 0
+                                      name "RAnkle_force"
+                                      boundingObject Transform {
+                                        translation 0 -0.003 0.0177
+                                        children [
+                                          Box {
+                                            size 0.147 0.05 0.262
+                                          }
+                                        ]
+                                      }
+                                      physics Physics {
+                                      }
+                                      type "force-3d"
+                                    }
                                     DEF Right_ankle_yaw Servo {
                                       translation 0 -0.09 0
                                       name "right_ankle_yaw"
@@ -999,10 +1056,53 @@ Robot {
                                 DEF Left_ankle_roll Servo {
                                   rotation 0 0 1 0
                                   children [
-                                    DEF L_FSR TouchSensor {
-                                      translation 0 -0.118 -0.018                                        
-                                      name "L_FSR"
-                                      boundingObject Box {size 0.145 0.012 0.26}
+                                    DEF L_LR_FSR TouchSensor {
+                                      translation -0.04 -0.118 -0.06
+                                      rotation 1 0 0 1.5708
+                                      name "L_LR_FSR"
+                                      boundingObject Sphere {
+                                        radius 0.001
+                                      }
+                                      physics Physics {
+                                        density -1
+                                        mass 0.0001
+                                      }
+                                      type "force"
+                                    }
+                                    DEF L_LL_FSR TouchSensor {
+                                      translation 0.04 -0.118 -0.06
+                                      rotation 1 0 0 1.5708
+                                      name "L_LL_FSR"
+                                      boundingObject Sphere {
+                                        radius 0.001
+                                      }
+                                      physics Physics {
+                                        density -1
+                                        mass 0.0001
+                                      }
+                                      type "force"
+                                    }
+                                    DEF L_UR_FSR TouchSensor {
+                                      translation -0.04 -0.118 0.1
+                                      rotation 1 0 0 1.5708
+                                      name "L_UR_FSR"
+                                      contactMaterial "force"
+                                      boundingObject Sphere {
+                                        radius 0.001
+                                      }
+                                      physics Physics {
+                                        density -1
+                                        mass 0.0001
+                                      }
+                                      type "force"
+                                    }
+                                    DEF L_UL_FSR TouchSensor {
+                                      translation 0.04 -0.118 0.1
+                                      rotation 1 0 0 1.5708
+                                      name "L_UL_FSR"
+                                      boundingObject Sphere {
+                                        radius 0.001
+                                      }
                                       physics Physics {
                                         density -1
                                         mass 0.0001
@@ -1014,6 +1114,21 @@ Robot {
                                       children [
                                         FOOT{}
                                       ]
+                                    }
+                                    DEF Left_ankle_force TouchSensor {
+                                      translation 0 -0.09 0
+                                      name "LAnkle_force"
+                                      boundingObject Transform {
+                                        translation 0 -0.003 0.018
+                                        children [
+                                          Box {
+                                            size 0.147 0.05 0.262
+                                          }
+                                        ]
+                                      }
+                                      physics Physics {
+                                      }
+                                      type "force-3d"
                                     }
                                     DEF left_ankle_yaw Servo {
                                       translation 0 -0.09 0

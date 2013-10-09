@@ -5,7 +5,8 @@
 
 -- Webots THOR-OP Body sensors
 local use_camera = true
-local use_lidar  = false
+local use_lidar_head  = false
+local use_lidar_chest  = false
 local use_pose   = true
 
 -- Shared memory for the joints
@@ -804,8 +805,6 @@ if IS_WEBOTS then
   get_time    = webots.wb_robot_get_time
   -- Setup the webots tags
   local tags = {}
-  local lidar_timeStep = 25
-  local camera_timeStep = 33
 
   servo.direction = vector.new({
     1,-1, -- Head
@@ -908,6 +907,14 @@ if IS_WEBOTS then
     end
   end --update_head_camera
   
+  
+    local timeStep = webots.wb_robot_get_basic_time_step()
+
+--    local lidar_timeStep = 25
+--    local camera_timeStep = 33
+  -- Lidar and camera timestep should be SLOWER than the webots timestep
+  local lidar_timeStep = math.max(25, timeStep)
+  local camera_timeStep = math.max(33,timeStep)
 
 	Body.entry = function()
     
@@ -918,7 +925,8 @@ if IS_WEBOTS then
 		webots.wb_robot_init()
 
 		-- Grab the update time
-		local timeStep = webots.wb_robot_get_basic_time_step()
+		
+    local timeStep = webots.wb_robot_get_basic_time_step()
 
     -- Enable the keyboard 100ms
     webots.wb_robot_keyboard_enable( 100 )
@@ -965,12 +973,15 @@ if IS_WEBOTS then
     -- Head Lidar
     tags.head_lidar  = webots.wb_robot_get_device("HeadLidar")
     head_lidar_wbt.meta.count = 0
-    if use_lidar then
-      webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
-      webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
-      head_lidar_wbt.pointer  = webots.wb_camera_get_range_image(tags.head_lidar)
+    if use_lidar_chest then
+      webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)            
       chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
     end
+    if use_lidar_head then      
+      webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
+      head_lidar_wbt.pointer  = webots.wb_camera_get_range_image(tags.head_lidar)      
+    end
+
     if use_camera then
       webots.wb_camera_enable(tags.head_camera, camera_timeStep)
       head_camera_wbt.meta.count = 0
@@ -978,6 +989,7 @@ if IS_WEBOTS then
       head_camera_wbt.height = webots.wb_camera_get_height(tags.head_camera)
     end
 
+--[[
     --FSR sensors
     tags.l_ul_fsr = webots.wb_robot_get_device("L_UL_FSR")
     tags.l_ur_fsr = webots.wb_robot_get_device("L_UR_FSR")
@@ -999,6 +1011,12 @@ if IS_WEBOTS then
     webots.wb_touch_sensor_enable(tags.r_ll_fsr, timeStep)
     webots.wb_touch_sensor_enable(tags.r_lr_fsr, timeStep)
 
+
+--]]
+    tags.l_fsr = webots.wb_robot_get_device("L_FSR")
+    tags.r_fsr = webots.wb_robot_get_device("R_FSR")
+    webots.wb_touch_sensor_enable(tags.l_fsr, timeStep)
+    webots.wb_touch_sensor_enable(tags.r_fsr, timeStep)
 
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
@@ -1084,6 +1102,7 @@ if IS_WEBOTS then
     jcm.sensorPtr.gyro[3] = (gyro[3]-512)/512*39.24
 
     -- FSR forces
+    --[[
     jcm.sensorPtr.lfoot[1] = webots.wb_touch_sensor_get_value(tags.l_ul_fsr)
     jcm.sensorPtr.lfoot[2] = webots.wb_touch_sensor_get_value(tags.l_ur_fsr)
     jcm.sensorPtr.lfoot[3] = webots.wb_touch_sensor_get_value(tags.l_ll_fsr)
@@ -1093,7 +1112,14 @@ if IS_WEBOTS then
     jcm.sensorPtr.rfoot[2] = webots.wb_touch_sensor_get_value(tags.r_ur_fsr)
     jcm.sensorPtr.rfoot[3] = webots.wb_touch_sensor_get_value(tags.r_ll_fsr)
     jcm.sensorPtr.rfoot[4] = webots.wb_touch_sensor_get_value(tags.r_lr_fsr)
-  
+    --]]
+
+    jcm.sensorPtr.lfoot[1] = webots.wb_touch_sensor_get_value(tags.l_fsr)*4
+    
+    --
+    jcm.sensorPtr.rfoot[1] = webots.wb_touch_sensor_get_value(tags.r_fsr)*4
+    
+
 --[[
     print("FSRL:",unpack(jcm.get_sensor_lfoot()))
     print("FSRR:",unpack(jcm.get_sensor_rfoot()))
@@ -1137,23 +1163,26 @@ if IS_WEBOTS then
 		end
     
     -- Set lidar data into shared memory
-    if use_lidar then
-      Body.set_chest_lidar(chest_lidar_wbt.pointer)
+    if use_lidar_head then
       Body.set_head_lidar(head_lidar_wbt.pointer)
-      -- Save important metadata
+
       head_lidar_wbt.meta.t  = t
       head_lidar_wbt.meta.count  = head_lidar_wbt.meta.count  + 1
       head_lidar_wbt.meta.hangle = Body.get_head_position()
       head_lidar_wbt.meta.rpy  = Body.get_sensor_rpy()
       head_lidar_wbt.meta.gyro = Body.get_sensor_gyro()
-
+      -- Send the count on the channel so they know to process a new frame
+      head_lidar_wbt.channel:send(  mp.pack(head_lidar_wbt.meta)  )
+    end
+    if use_lidar_chest then
+      Body.set_chest_lidar(chest_lidar_wbt.pointer)
+      -- Save important metadata
       chest_lidar_wbt.meta.t  = t
       chest_lidar_wbt.meta.count = chest_lidar_wbt.meta.count + 1
       chest_lidar_wbt.meta.pangle = Body.get_lidar_position(1)
       chest_lidar_wbt.meta.rpy  = Body.get_sensor_rpy()
       chest_lidar_wbt.meta.gyro = Body.get_sensor_gyro()
       -- Send the count on the channel so they know to process a new frame
-      head_lidar_wbt.channel:send(  mp.pack(head_lidar_wbt.meta)  )
       chest_lidar_wbt.channel:send( mp.pack(chest_lidar_wbt.meta) )
     end
     if use_camera then
@@ -1164,19 +1193,27 @@ if IS_WEBOTS then
     local key_code = webots.wb_robot_keyboard_get_key()
     local key_char = string.char(key_code)
     local key_char_lower = string.lower(key_char)
-    if key_char_lower=='l' then
-      use_lidar = not use_lidar
+    if key_char_lower=='k' then
+      use_lidar_head = not use_lidar_head
       -- Toggle lidar
-      if use_lidar then
-        print(util.color('LIDAR enabled!','yellow'))
-        webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
+      if use_lidar_head then
+        print(util.color('HEAD LIDAR enabled!','yellow'))        
         webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
-        head_lidar_wbt.pointer  = webots.wb_camera_get_range_image(tags.head_lidar)
+        head_lidar_wbt.pointer  = webots.wb_camera_get_range_image(tags.head_lidar)        
+      else
+        print(util.color('HEAD LIDAR disabled!','yellow'))        
+        webots.wb_camera_disable(tags.head_lidar)
+      end
+    elseif key_char_lower=='l' then
+      use_lidar_chest = not use_lidar_chest
+      -- Toggle lidar
+      if use_lidar_chest then
+        print(util.color('CHEST LIDAR enabled!','yellow'))
+        webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
         chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
       else
-        print(util.color('LIDAR disabled!','yellow'))
-        webots.wb_camera_disable(tags.chest_lidar)
-        webots.wb_camera_disable(tags.head_lidar)
+        print(util.color('CHEST LIDAR disabled!','yellow'))
+        webots.wb_camera_disable(tags.chest_lidar)        
       end
     elseif key_char_lower=='c' then
       use_camera = not use_camera

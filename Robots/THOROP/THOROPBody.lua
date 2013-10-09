@@ -764,7 +764,7 @@ end
 local dynamixels = {}
 local dynamixel_fds = {}
 Body.entry = function()
-  if OPERATING_SYSTEM=='darwin' then
+  if OPERATING_SYSTEM~='darwin' then
     dynamixels.right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
     dynamixels['left_arm'] = libDynamixel.new_bus'/dev/ttyUSB1'
     dynamixels['right_leg'] = libDynamixel.new_bus'/dev/ttyUSB2'
@@ -779,21 +779,23 @@ Body.entry = function()
   dynamixels.right_arm.nx_ids =
     {1,3,5,7,9,11,13}
   dynamixels.left_arm.nx_ids =
-    {2,4,6,8,10,12,14, --[[head]] 29,30 },
+    {2,4,6,8,10,12,14, --[[head]] 29,30 }
   dynamixels.right_leg.nx_ids = 
-    {15,17,19,21,23,25, --[[waist pitch]]28},
+    {15,17,19,21,23,25, --[[waist pitch]]28}
   dynamixels.left_leg.nx_ids =
-    {16,18,20,22,24,26, --[[waist]]27},
+    {16,18,20,22,24,26, --[[waist]]27}
   --
   --dynamixels.right_arm.mx_ids = { --[[31,33,35]] },
-  dynamixels.left_arm.mx_ids  = { --[[32,34,36,]] --[[lidar]] 37},
+  dynamixels.left_arm.mx_ids =
+    { --[[32,34,36,]] --[[lidar]] 37}
   --
 
   --
-  for i,d in pairs(dynamixels) do
-    dynamixel_fds[i] = d.fd
+  for _,d in pairs(dynamixels) do
+    table.insert(dynamixel_fds,d.fd)
     dynamixels[d.fd] = d
   end
+  --
 end
 
 local process_register_read = {
@@ -973,6 +975,15 @@ Body.update = function()
 
 end
 Body.exit = function()
+  for k,d in pairs(dynamixels) do
+    -- Torque off motors
+    libDynamixel.set_nx_torque_enable( d.nx_on_bus, 0, d )
+    libDynamixel.set_mx_torque_enable( d.mx_on_bus, 0, d )
+    -- Close the fd
+    d:close()
+    -- Print helpful message
+    print('Closed',k)
+  end
 end
 
 

@@ -811,6 +811,8 @@ Body.entry = function()
   --
   microstrain:ahrs_on()
   table.insert(dynamixel_fds,microstrain.fd)
+  microstrain.t_diff = 0
+  microstrain.t_read = 0
   --
 end
 
@@ -821,19 +823,19 @@ local process_register_read = {
   end,
   rfoot = function(idx,val,t)
     local offset = idx-20
-    print('got rfoot!',offset,idx)
+    --print('got rfoot!',offset,idx)
     local data = carray.short( string.char(unpack(val)) )
     for i=1,#data do
-      jcm.sensorPtr.rfoot[offset+i] = 3.3*data[i]/4096
+      jcm.sensorPtr.rfoot[offset+i] = 3.3*data[i]/4096-1.65
     end
-    jcm.treadPtr.rfoot[1]  = t
+    jcm.treadPtr.rfoot[1] = t
   end,
   lfoot = function(idx,val,t)
     local offset = idx-14
-    print('got lfoot!',offset,idx)
+    --print('got lfoot!',offset,idx)
     local data = carray.short( string.char(unpack(val)) )
     for i=1,#data do
-      jcm.sensorPtr.lfoot[offset+i] = 3.3*data[i]/4096
+      jcm.sensorPtr.lfoot[offset+i] = 3.3*data[i]/4096-1.65
     end
     jcm.treadPtr.lfoot[1]  = t
   end,
@@ -857,15 +859,20 @@ local function process_fd(ready_fd)
     jcm.set_sensor_rpy{  rpy[2], rpy[3], -rpy[1]}
     jcm.set_sensor_gyro{gyro[2],gyro[3],-gyro[1]}
     -- done reading
+    local t_read = unix.time()
+    microstrain.t_diff = t_read - microstrain.t_read
+    microstrain.t_read = t_read
+    --print('microstrain rate',1/microstrain.t_diff)
     return false
   end
   --print('reading from',d.ttyname)
+  if d.n_expect_read<=0 or not d.read_register then return false end
   -- assume dynamixel
   local status_packets
   d.str = d.str..buf
   status_packets, d.str = DP2.input( d.str )
   d.n_expect_read = d.n_expect_read - #status_packets
---  print('Got',#d.str,#status_packets,d.n_expect_read,d.ttyname)
+  --print('Got',#d.str,#status_packets,d.n_expect_read,d.ttyname)
   local values = {}
   for _,s in ipairs(status_packets) do
     local status = DP2.parse_status_packet( s )
@@ -882,7 +889,9 @@ local function process_fd(ready_fd)
     if f then
       f(idx,val,unix.time())
     else
-      jcm.sensorPtr[register][idx] = val
+      --print('d.read_register',d.read_register)
+      jcm.sensorPtr[d.read_register][idx] = val
+      jcm.treadPtr[d.read_register][idx]  = unix.time()
     end
     --
   end
@@ -1039,7 +1048,7 @@ Body.update = function()
       end
     end
     -- Await the responses of these packets
-    local READ_TIMEOUT = 8e-3 --8ms
+    local READ_TIMEOUT = 12e-3 --8ms
     local still_recv = true
     while still_recv do
       still_recv = false

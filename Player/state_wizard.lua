@@ -87,20 +87,13 @@ while true do
 
   -- Update the body (mostly needed for webots)
 	Body.update()
-  
-  -- Sleep a bit if not webots
-  if not IS_WEBOTS then
-    local t_loop = unix.time()-t
-    --io.flush(stdout)
-    --unix.usleep(us_sleep-t_loop*1e6)
-    unix.usleep(us_sleep)
-  end
 
   -- Debugging
   if t-t_debug>1 then
     os.execute('clear')
     t_debug = t
     local debug_tbl = {}
+    table.insert(debug_tbl,util.color('======= Inertial','yellow'))
     table.insert(debug_tbl,string.format(
       'RPY:  %s', tostring(Body.get_sensor_rpy())
       ))
@@ -121,7 +114,24 @@ while true do
     table.insert(debug_tbl,string.format(
       'RLeg: %s', tostring(Body.get_rleg_command_position())
       ))
+    table.insert(debug_tbl,util.color('======= Pressure','yellow'))
+    table.insert(debug_tbl,string.format(
+      'LLeg: %s', tostring(Body.get_sensor_lfoot())
+      ))
+    table.insert(debug_tbl,string.format(
+      'RLeg: %s', tostring(Body.get_sensor_rfoot())
+      ))
     print(table.concat(debug_tbl,'\n'))
+  end
+
+  -- Sleep a bit if not webots
+  if not IS_WEBOTS then
+    local t_loop = unix.time()-t
+    --io.flush(stdout)
+    local t_sleep = us_sleep-t_loop*1e6
+    --print('sleepy',t_sleep)
+    if t_sleep>0 then unix.usleep(t_sleep) end
+    --unix.usleep(us_sleep)
   end
   
 end

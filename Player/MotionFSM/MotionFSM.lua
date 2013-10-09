@@ -69,11 +69,13 @@ sm:set_transition(motionStepPreview, 'done', motionStance)
 -- Msgpacked special events
 local mp = require'msgpack'
 local special_evts = {
+--[[
   preview = function(extra)
     local feet = mp.unpack(extra)
     --print('feet',unpack(feet))
     --motionStepPreview.make_step_queue(feet)
   end,
+--]]  
   stand = function()
     mcm.set_walk_stoprequest(1)
   end

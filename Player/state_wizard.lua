@@ -48,6 +48,7 @@ local t_debug = t0
 --------------------
 -- Clean Shutdown function
 function shutdown()
+  Body.exit()
   print'Shutting down the state machines...'
   for _,my_fsm in pairs(state_machines) do
     my_fsm.exit()

@@ -47,7 +47,7 @@ const double elbowOffsetX =   .030;
 const double lowerArmLength = .190; //Measured from robot
 
 const double handOffsetX = 0.245; //Measured from robot
-const double handOffsetY = 0.030; //Measured from robot
+const double handOffsetY = 0.035; //Measured from robot
 const double handOffsetZ = 0;
 
 const double hipOffsetX = 0;

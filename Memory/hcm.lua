@@ -60,8 +60,31 @@ shared_data.motion.bodyHeightTarget = vector.ones(1)
 shared_data.wheel = {}
 -- This has all values: the right way, since one rpc call
 -- {handlepos(3) handleyaw handlepitch handleradius}
-shared_data.wheel.model = vector.new({0.41,0,-0.04,
-										0,0,0.14})
+--posxyz pitch yaw radius
+--shared_data.wheel.model = vector.new({0.41,0,-0.04,
+--										0,0,0.14})
+
+--shared_data.wheel.model = vector.new({0.41,0,-0.04,
+--										0, -11*math.pi/180, 0.10})
+
+shared_data.wheel.model = vector.new({0.41,0,0.11,
+										0, -11*math.pi/180, 0.10})
+
+
+shared_data.wheel.model = vector.new({0.41,0,1.02-0.988,
+										0,  -11*math.pi/180, 0.10})
+
+local x0,z0 = 0.41, 1.02-0.928
+local tiltAngle = -11*math.pi/180
+
+shared_data.wheel.model = vector.new({x0*math.cos(tiltAngle)+z0*math.sin(tiltAngle),
+									  0,
+									  -x0*math.sin(tiltAngle)+z0*math.cos(tiltAngle) ,
+										0,  tiltAngle, 0.1})
+
+
+
+
 shared_data.wheel.turnangle = vector.zeros(1)
 
 -- Door Opening

@@ -4,6 +4,7 @@
 # Converted and augmented by SJ
 # 2013/7
 #############################################
+#TODO: Change Finger Dimensions
 
 PROTO THOROP7_NoBoundaries [
   field SFVec3f    translation 0 1 0

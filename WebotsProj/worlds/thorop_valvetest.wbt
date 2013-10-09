@@ -4,8 +4,8 @@ WorldInfo {
     "Valve operating test for DRC"
   ]
   title "valvetest"
-  basicTimeStep 25
-  FPS 10
+  basicTimeStep 40
+  FPS 15
 }
 Viewpoint {
   orientation -0.11228 0.937512 0.329341 2.50243

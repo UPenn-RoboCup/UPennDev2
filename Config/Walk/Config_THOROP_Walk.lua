@@ -383,6 +383,23 @@ arm.linear_slow_limit = vector.new({0.02,0.02,0.02,
 						15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
 
 
+
+--Pose 1 wrist position
+arm.pLWristTarget1 = {.04,.30,-.20,0,0,0}
+arm.pRWristTarget1 = {.04,-.30,-.20,0,0,0}
+arm.lShoulderYawTarget1 = -5*DEG_TO_RAD
+arm.rShoulderYawTarget1 = 5*DEG_TO_RAD
+
+--Pose 2 wrist position
+arm.pLWristTarget2 = {.05,.38,-.05,0,0,0}
+arm.pRWristTarget2 = {.05,-.38,-.05,0,0,0}
+arm.lShoulderYawTarget2 = -20*DEG_TO_RAD
+arm.rShoulderYawTarget2 = 20*DEG_TO_RAD
+
+
+
+
+
 --
 if IS_WEBOTS then
 

@@ -51,32 +51,23 @@ function state.update()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()    
 
-
---[[
-
-  if stage==1 then --Change wrist    
+  if stage==1 then --Change wrist        
     dqWristMax=vector.new({0,0,0,0,
-       10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD})
-    qL = Body.get_inverse_arm_given_wrist( qLArm,       {0,0,0,0,0,-45*Body.DEG_TO_RAD})
-    qR = Body.get_inverse_arm_given_wrist( qRArm,       {0,0,0,0,0,45*Body.DEG_TO_RAD})
+       30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD})
+    qL = Body.get_inverse_arm_given_wrist( qLArm,       {0,0,0,0,-Config.walk.bodyTilt,-45*Body.DEG_TO_RAD})
+    qR = Body.get_inverse_arm_given_wrist( qRArm,       {0,0,0,0,-Config.walk.bodyTilt,45*Body.DEG_TO_RAD})
     if movearm.setArmJoints(qL, qR, dt, dqWristMax)==1 then
       stage=stage+1;       
     end        
-  elseif stage==2 then
-    handle_pos_temp={handle_pos[1],handle_pos[2],-0.10}
-
-    ret = movearm.setArmToWheelPosition(
-      handle_pos_temp, handle_yaw, handle_pitch,
-      handle_radius1, turnAngle,dt)    
     if ret==1 then stage=stage+1;     
     end
-  elseif stage==3 then
+  elseif stage==2 then
     ret = movearm.setArmToWheelPosition(
       handle_pos, handle_yaw, handle_pitch,
       handle_radius1, turnAngle,dt)    
     if ret==1 then stage=stage+1;     
     end
-  elseif stage==4 then
+  elseif stage==3 then
     ret = movearm.setArmToWheelPosition(
       handle_pos, handle_yaw, handle_pitch,
       handle_radius0, turnAngle,dt)
@@ -87,45 +78,6 @@ function state.update()
       return'done'
     end  
   end
---]]
-  if stage==1 then --Change wrist    
-    trLArmTarget, trRArmTarget = movearm.getArmWheelPosition(
-      handle_pos, handle_yaw,  handle_pitch,  handle_radius1,  turnAngle  )
-
-    local qLTarget = Body.get_inverse_larm(qLArm,trLArmTarget)
-    local qRTarget = Body.get_inverse_rarm(qRArm,trRArmTarget)
-    pLWristTarget = Body.get_forward_lwrist(qLTarget)
-    pRWristTarget = Body.get_forward_rwrist(qRTarget)
---
-    lShoulderYawTarget = -24*Body.DEG_TO_RAD
-    rShoulderYawTarget = 24*Body.DEG_TO_RAD
-
-    ret = movearm.setWristPosition(pLWristTarget, pRWristTarget,dt,
-      lShoulderYawTarget, rShoulderYawTarget)  
---      
---    ret = movearm.setWristPosition(pLWristTarget, pRWristTarget,dt)  
-    if ret==1 then stage = stage + 1 end
-  elseif stage==2 then
-    --Set wrist angle
-    dqWristMax=vector.new({0,0,0,0,
-       10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD})
-    qL = Body.get_inverse_arm_given_wrist( qLArm,       {0,0,0,0,0,-45*Body.DEG_TO_RAD})
-    qR = Body.get_inverse_arm_given_wrist( qRArm,       {0,0,0,0,0,45*Body.DEG_TO_RAD})
-    if movearm.setArmJoints(qL, qR, dt, dqWristMax)==1 then
-      stage=stage+1;       
-    end        
-  elseif stage==3 then
-    --Narrow grip
-    ret = movearm.setArmToWheelPosition(
-      handle_pos, handle_yaw, handle_pitch,
-      handle_radius0, turnAngle,dt)
-    if ret==1 then
-      Body.set_lgrip_percent(1)
-      Body.set_rgrip_percent(1)
-      return'done'
-    end
-  end
-
 end
 
 function state.exit()

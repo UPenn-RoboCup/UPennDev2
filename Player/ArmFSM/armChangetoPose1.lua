@@ -27,22 +27,10 @@ qLOrg = Config.arm.qLArmInit[1]
 
 
 --IK based home position
-
-local lShoulderYawTarget = -5*Body.DEG_TO_RAD
-local rShoulderYawTarget = 5*Body.DEG_TO_RAD
-local pLWristTarget = {-.0,.30,-.24,0,0,0}
-local pRWristTarget = {-.0,-.30,-.24,0,0,0}
-
-
---higher
-local pLWristTarget = {-.02,.30,-.20,0,0,0}
-local pRWristTarget = {-.02,-.30,-.20,0,0,0}
-
-
-
-local pLWristTarget = {.04,.30,-.20,0,0,0}
-local pRWristTarget = {.04,-.30,-.20,0,0,0}
-
+local pLWristTarget = Config.arm.pLWristTarget1
+local pRWristTarget = Config.arm.pRWristTarget1
+local lShoulderYawTarget = Config.arm.lShoulderYawTarget1
+local rShoulderYawTarget = Config.arm.rShoulderYawTarget1
 
 
 

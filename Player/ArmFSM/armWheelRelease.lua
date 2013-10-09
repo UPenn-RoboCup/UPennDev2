@@ -45,6 +45,11 @@ function state.entry()
   handle_radius1 = handle_radius + 0.08
 
   stage = 1;
+
+  local pLWristTarget = Config.arm.pLWristTarget2
+  handle_pos_temp = {0.20, 0, -0.05 }
+
+
 end
 
 function state.update()
@@ -71,9 +76,8 @@ function state.update()
       )
 
     if ret==1 then stage=stage+1; end
-  elseif stage==3 then
-    
-    handle_pos_temp={handle_pos[1],handle_pos[2],-0.10}
+  elseif stage==3 then  --Lower arms    
+--    handle_pos_temp={handle_pos[1]-0.08,handle_pos[2],-0.10}
     ret = movearm.setArmToWheelPosition(
       handle_pos_temp, handle_yaw, handle_pitch,
       handle_radius1, turnAngle,dt

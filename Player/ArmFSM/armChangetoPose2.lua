@@ -16,10 +16,11 @@ local dqArmMax = Config.arm.slow_elbow_limit
 local total_stage,stage
 local pLWrist, pRWrist, pLWristTarget, pRWristTarget, lShoulderTarget, rShoulderTarget
 
-local pLWristTarget = {.05,.32,-.05,0,0,0}
-local pRWristTarget = {.05,-.32,-.05,0,0,0}
-local lShoulderYawTarget = -12*Body.DEG_TO_RAD
-local rShoulderYawTarget = 12*Body.DEG_TO_RAD
+--IK based home position
+local pLWristTarget = Config.arm.pLWristTarget2
+local pRWristTarget = Config.arm.pRWristTarget2
+local lShoulderYawTarget = Config.arm.lShoulderYawTarget2
+local rShoulderYawTarget = Config.arm.rShoulderYawTarget2
 
 
 function state.entry()
@@ -75,17 +76,18 @@ function state.update()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
   dqWristMax=vector.new({0,0,0,0,
-       10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD})
-  if stage==1 then   --Straighten wrist    
-    ret = movearm.setArmJoints(
+       30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD})
+  if stage==1 then   --Move arms to the sides        
+    ret = movearm.setWristPosition(
+      pLWristTarget, pRWristTarget,dt, lShoulderYawTarget,rShoulderYawTarget)
+    if ret==1 then stage = stage + 1 end  
+  elseif stage==2 then   --Straighten wrist    
+  ret = movearm.setArmJoints(
       {qLArm[1],qLArm[2],qLArm[3],qLArm[4],0,0,0},
       {qRArm[1],qRArm[2],qRArm[3],qRArm[4],0,0,0},
       dt,dqWristMax)
     if ret==1 then stage = stage + 1 end
-  elseif stage==2 then --Move arms to the sides        
-    ret = movearm.setWristPosition(
-      pLWristTarget, pRWristTarget,dt, lShoulderYawTarget,rShoulderYawTarget)
-    if ret==1 then stage = stage + 1 end
+
   elseif stage==3 then  
 
     return"done";

@@ -199,8 +199,12 @@ function movearm.setArmToPositionAdapt(
   local trLArm = Body.get_forward_larm(qLArm);
   local trRArm = Body.get_forward_rarm(qRArm);
 
-  local trLArmApproach, doneL = util.approachTol(trLArm, trLArmTarget, dpArmMax, dt )
-  local trRArmApproach, doneR = util.approachTol(trRArm, trRArmTarget, dpArmMax, dt )
+--  local trLArmApproach, doneL = util.approachTol(trLArm, trLArmTarget, dpArmMax, dt )
+--  local trRArmApproach, doneR = util.approachTol(trRArm, trRArmTarget, dpArmMax, dt )
+
+  local trLArmApproach, doneL = util.approachTolTransform(trLArm, trLArmTarget, dpArmMax, dt )
+  local trRArmApproach, doneR = util.approachTolTransform(trRArm, trRArmTarget, dpArmMax, dt )
+
 
   -- Get desired angles from current angles and target transform
   local qL_desired = Body.get_inverse_larm(qLArm,trLArmApproach, lShoulderYaw)
@@ -302,7 +306,7 @@ function movearm.setArmToPositionAdapt(
       end
     end
     if shoulderYawChanged then
---      print("ShoulderYaw:",lShoulderYaw*180/math.pi,rShoulderYaw*180/math.pi)          
+      print("ShoulderYaw:",lShoulderYaw*180/math.pi,rShoulderYaw*180/math.pi)          
     end
   end
 
@@ -387,12 +391,16 @@ function movearm.getArmWheelPosition(handle_pos,
        * T.rotZ(handle_yaw)
        * T.rotY(handle_pitch)
 
+  local gripOffset = -30*math.pi/180
+
+  local gripOffset = 0*math.pi/180
+
   local trGripL = trHandle
-       * T.rotX(turn_angle)
+       * T.rotX(turn_angle + gripOffset)
        * T.trans(0,handle_radius,0)
        * T.rotZ(-math.pi/4)
   local trGripR = trHandle
-       * T.rotX(turn_angle)
+       * T.rotX(turn_angle - gripOffset)
        * T.trans(0,-handle_radius,0)
        * T.rotZ(math.pi/4)
        

@@ -1000,7 +1000,7 @@ Robot {
                                   rotation 0 0 1 0
                                   children [
                                     DEF L_FSR TouchSensor {
-                                      translation 0 -0.118 -0.018                                        
+                                      translation 0 -0.118 0.018                                        
                                       name "L_FSR"
                                       boundingObject Box {size 0.145 0.012 0.26}
                                       physics Physics {

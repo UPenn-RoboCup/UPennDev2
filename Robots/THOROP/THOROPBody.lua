@@ -21,6 +21,7 @@ local Transform    = require'Transform'
 local util         = require'util'
 -- For the real body
 local libDynamixel   = require'libDynamixel'
+local DP2 = libDynamixel.DP2
 local libMicrostrain = require'libMicrostrain'
 
 local DEG_TO_RAD = math.pi/180
@@ -766,6 +767,7 @@ end
 -- More standard api functions
 local dynamixels = {}
 local dynamixel_fds = {}
+local fd_dynamixels = {}
 local microstrain
 Body.entry = function()
   if OPERATING_SYSTEM~='darwin' then
@@ -799,7 +801,7 @@ Body.entry = function()
   --
   for _,d in pairs(dynamixels) do
     table.insert(dynamixel_fds,d.fd)
-    dynamixels[d.fd] = d
+    fd_dynamixels[d.fd] = d
   end
 
   --
@@ -810,7 +812,7 @@ end
 
 local process_register_read = {
   position = function(idx,val)
-    jcm.sensorPtr.position[idx] = Body.make_joint_radian( idx, v )
+    jcm.sensorPtr.position[idx] = Body.make_joint_radian( idx, val )
   end,
   rfoot = function(idx,v)
     local offset = (idx-23)*2
@@ -834,7 +836,7 @@ local process_register_read = {
 }
 
 local function process_fd(ready_fd)
-  local d = dynamixels[ready_fd]
+  local d   = fd_dynamixels[ready_fd]
   local buf = unix.read(ready_fd)
   assert(buf,'no read in process fd')
   --
@@ -847,15 +849,17 @@ local function process_fd(ready_fd)
     -- done reading
     return false
   end
+  --print('reading from',d.ttyname)
   -- assume dynamixel
   local status_packets
   d.str = d.str..buf
   status_packets, d.str = DP2.input( d.str )
   d.n_expect_read = d.n_expect_read - #status_packets
+--  print('Got',#d.str,#status_packets,d.n_expect_read,d.ttyname)
   local values = {}
   for _,s in ipairs(status_packets) do
     local status = DP2.parse_status_packet( s )
-    local read_parser = byte_to_number[ #status.parameter ]
+    local read_parser = libDynamixel.byte_to_number[ #status.parameter ]
     local idx = motor_to_joint[status.id]
     local val
     if read_parser then
@@ -873,7 +877,7 @@ local function process_fd(ready_fd)
     --
   end
   -- return if still reading
-  return #d.n_expect_read>0
+  return d.n_expect_read>0
 end
 
 Body.update = function()
@@ -886,30 +890,31 @@ Body.update = function()
   end
 
   -- Loop through the registers
-  for register,write_ptr in pairs(jcm.writePtr) do
+  for register,is_writes in pairs(jcm.writePtr) do
     --
     local set_func    = libDynamixel['set_nx_'..register]
     local mx_set_func = libDynamixel['set_mx_'..register]
     --
     local wr_values   = jcm['get_actuator_'..register]()
-    local is_writes   = jcm['get_write_'..register]()
+    --local is_writes   = jcm['get_write_'..register]()
     --
     -- Instantiate the commands for the chains
     for _,d in pairs(dynamixels) do
-      local cmd_idxs = {}
+      local cmd_ids = {}
       local cmd_vals = {}
       for _,id in ipairs(d.nx_ids) do
         local idx = motor_to_joint[id]
-        --
         if is_writes[idx]>0 then
-          table.insert(cmd_idxs,idx)
+          is_writes[idx]=0
+          table.insert(cmd_ids,id)
           table.insert(cmd_vals,wr_values[idx])
         end
       end
       -- make the pkts
-      if #cmd_idxs>0 then
+      if #cmd_ids>0 then
+        --print('writing',register,vector.new(cmd_ids))
         table.insert(d.cmd_pkts,
-          set_func(cmd_idxs,cmd_vals)
+          set_func(cmd_ids,cmd_vals)
         )
       end
       --
@@ -925,19 +930,21 @@ Body.update = function()
       local get_func    = libDynamixel['get_nx_'..register]
       local mx_get_func = libDynamixel['get_mx_'..register]
       --local is_reads    = jcm['get_read_'..register]()
+      --util.ptable(dynamixels)
       for _,d in pairs(dynamixels) do
-        local read_idxs = {}
+        local read_ids = {}
         for _,id in ipairs(d.nx_ids) do
           local idx = motor_to_joint[id]
           --
           if is_reads[idx]>0 then
-            table.insert(read_idxs,idx)
+            is_reads[idx]=0
+            table.insert(read_ids,id)
           end
         end
         -- mk pkt
-        if #read_idxs>0 then
-          table.insert(d.read_pkts,{get_func(read_idxs),register})
-          d.n_expect_read = d.n_expect_read + #read_idxs
+        if #read_ids>0 then
+          table.insert(d.read_pkts,{get_func(read_ids),register})
+          d.n_expect_read = d.n_expect_read + #read_ids
         end
       end
     end
@@ -945,6 +952,7 @@ Body.update = function()
 
   -- Execute packet sending
   -- Send the commands first
+  --[[
   local done = true
   repeat -- round robin repeat
     done = true
@@ -960,15 +968,20 @@ Body.update = function()
         local flush_ret = stty.flush(fd)
         -- write the new command
         local t_write = unix.time()
-        local cmd_ret = unix.write( fd, cmd )
+        local cmd_ret = unix.write( fd, pkt )
         -- possibly need a drain? Robotis does not
         local flush_ret = stty.drain(fd)
         -- check if now done
-        if #d.cmd_pkts>0 then done = false end
+        if #d.cmd_pkts>0 then
+          unix.usleep(1e3)
+          done = false
+        end
       end
     end
   until done
+  --]]
 
+----[[
   -- Send the requests next
   local done = true
   repeat -- round robin repeat
@@ -1008,7 +1021,7 @@ Body.update = function()
       end -- for each ready_fd
     end
   until done
-
+--]]
 end
 Body.exit = function()
   for k,d in pairs(dynamixels) do

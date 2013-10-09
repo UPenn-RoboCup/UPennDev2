@@ -38,7 +38,7 @@ for _,sm in ipairs(Config.fsm.enabled) do
 end
 
 -- Update rate (if not webots)
-local fps = 200
+local fps = 120
 local us_sleep = 1e6 / fps
 
 -- Start the state machines
@@ -105,6 +105,12 @@ while true do
       ))
     table.insert(debug_tbl,string.format(
       'Gyro: %s', tostring(Body.get_sensor_gyro())
+      ))
+    table.insert(debug_tbl,string.format(
+      'LLeg: %s', tostring(Body.get_lleg_position())
+      ))
+    table.insert(debug_tbl,string.format(
+      'RLeg: %s', tostring(Body.get_rleg_position())
       ))
     print(table.concat(debug_tbl,'\n'))
   end

@@ -8,6 +8,7 @@ local util = require'util'
 local libDynamixel = {}
 local DP1 = require'DynamixelPacket1' -- 1.0 protocol
 local DP2 = require'DynamixelPacket2' -- 2.0 protocol
+libDynamixel.DP2 = DP2
 local unix = require'unix'
 local stty = require'stty'
 local using_status_return = true

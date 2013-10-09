@@ -89,6 +89,7 @@ while true do
 	Body.update()
 
   -- Debugging
+  --[[
   if t-t_debug>1 then
     os.execute('clear')
     t_debug = t
@@ -123,7 +124,8 @@ while true do
       ))
     print(table.concat(debug_tbl,'\n'))
   end
-
+  --]]
+  
   -- Sleep a bit if not webots
   if not IS_WEBOTS then
     local t_loop = unix.time()-t

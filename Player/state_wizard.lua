@@ -96,6 +96,18 @@ while true do
     --unix.usleep(us_sleep-t_loop*1e6)
     unix.usleep(us_sleep)
   end
+
+  -- Debugging
+  if t-t_debug>1 then
+    local debug_tbl = {}
+    table.insert(debug_tbl,string.format(
+      'RPY:  %s', tostring(Body.get_sensor_rpy())
+      ))
+    table.insert(debug_tbl,string.format(
+      'Gyro: %s', tostring(Body.get_sensor_gyro())
+      ))
+    print(table.concat(debug_tbl,'\n'))
+  end
   
 end
 Body.exit()

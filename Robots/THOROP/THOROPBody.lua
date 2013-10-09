@@ -768,6 +768,7 @@ end
 local dynamixels = {}
 local dynamixel_fds = {}
 local fd_dynamixels = {}
+local motor_dynamixels = {}
 local microstrain
 Body.entry = function()
   if OPERATING_SYSTEM~='darwin' then
@@ -802,6 +803,9 @@ Body.entry = function()
   for _,d in pairs(dynamixels) do
     table.insert(dynamixel_fds,d.fd)
     fd_dynamixels[d.fd] = d
+    for _,id in ipairs(d.nx_ids) do
+      motor_dynamixels[id]=d
+    end
   end
 
   --
@@ -816,7 +820,8 @@ local process_register_read = {
     jcm.treadPtr.position[idx]  = t
   end,
   rfoot = function(idx,val,t)
-    local offset = (idx-23)*2
+    local offset = idx-20
+    print('got rfoot!',offset,idx)
     local data = carray.short( string.char(unpack(val)) )
     for i=1,#data do
       jcm.sensorPtr.rfoot[offset+i] = 3.3*data[i]/4096
@@ -824,7 +829,8 @@ local process_register_read = {
     jcm.treadPtr.rfoot[1]  = t
   end,
   lfoot = function(idx,val,t)
-    local offset = (idx-24)*2
+    local offset = idx-14
+    print('got lfoot!',offset,idx)
     local data = carray.short( string.char(unpack(val)) )
     for i=1,#data do
       jcm.sensorPtr.lfoot[offset+i] = 3.3*data[i]/4096
@@ -931,8 +937,24 @@ Body.update = function()
   --
   for register,is_reads in pairs(jcm.readPtr) do
 
-    if register:find'foot' then
-
+    if register=='lfoot' then
+      if is_reads[1]>0 then
+        is_reads[1]=0
+        local d = motor_dynamixels[24]
+        table.insert(d.read_pkts,{
+          libDynamixel.get_nx_data{24,26},
+          'lfoot'})
+        d.n_expect_read = d.n_expect_read + 2
+      end
+    elseif register=='rfoot' then
+      if is_reads[1]>0 then
+        is_reads[1]=0
+        local d = motor_dynamixels[23]
+        table.insert(d.read_pkts,{
+          libDynamixel.get_nx_data{23,25},
+          'rfoot'})
+        d.n_expect_read = d.n_expect_read + 2
+      end
     else
       local get_func    = libDynamixel['get_nx_'..register]
       local mx_get_func = libDynamixel['get_mx_'..register]
@@ -950,6 +972,7 @@ Body.update = function()
         end
         -- mk pkt
         if #read_ids>0 then
+          --print('mk',register)
           table.insert(d.read_pkts,{get_func(read_ids),register})
           d.n_expect_read = d.n_expect_read + #read_ids
         end

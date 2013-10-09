@@ -160,10 +160,10 @@ slam.set_boundaries( OMAP.xmin, OMAP.ymin, OMAP.xmax, OMAP.ymax )
 local scan_match_tune = {}
 local pass1 = {};
 -- Number of yaw positions to check
-pass1.nyaw = 3
+pass1.nyaw = 1
 pass1.dyaw = 0.02 * math.pi/180.0
-pass1.nxs  = 31  --19
-pass1.nys  = 31
+pass1.nxs  = 27 --31  --19
+pass1.nys  = 27 --31
 -- resolution of the candidate poses
 pass1.dx  = 0.02 --0.05
 pass1.dy  = 0.02 --0.05
@@ -209,10 +209,13 @@ libSlam.processL0 = function( lidar_points )
   Y:resize( lidar_points:size(1), 4 )
   Y:copy(lidar_points)
   W:resize( Y:size(1), 4 )
+  local newY = Y
 
-  -- Before matching, should first compensate roll (and pitch?)
-  local t_roll = libTransform.rotX( IMU.roll )
-  local newY = torch.mm( Y, t_roll:t() )
+  if IS_OP then
+    -- Before matching, should first compensate roll (and pitch?)
+    local t_roll = libTransform.rotX( IMU.roll )
+    local newY = torch.mm( Y, t_roll:t() )
+  end
 
   -- Increment counter
   SLAM.lidar0Cntr = SLAM.lidar0Cntr + 1
@@ -866,17 +869,21 @@ libSlam.processIMU = function( rpy, yawdot, ts )
 		-- libSlam.SLAM.yaw:add(dyaw)
 		-- This is currently done in processLidar by:
 		-- pass1.aCand:add(IMU.dyaw)
-  IMU.roll = rpy[1]  --TODO: roll should be crucial
+  IMU.roll = rpy[1]  
   IMU.pitch = rpy[2]
   IMU.yaw = rpy[3]
-  --IMU.dyaw = util.mod_angle(IMU.yaw - IMU.lastYaw)
 
   IMU.yawdot = yawdot
   IMU.dyaw = yawdot * (ts - IMU.t)
+  --[[
+  if not IS_OP then
+    IMU.dyaw = util.mod_angle(IMU.yaw - IMU.lastYaw)
+    IMU.yawdot = IMU.dyaw/(ts-IMU.t)
+  end
+  --]]
 
   -- Maybe filter the IMU data
-  tmpdyaw = util.mod_angle(IMU.yaw-IMU.lastYaw)
-  --IMU.yawdot = IMU.dyaw/(ts-IMU.t)
+
 --[[
   print('\nGYRO yawdot:', yawdot)
   print('dyaw/dt:', tmpdyaw/(ts-IMU.t))

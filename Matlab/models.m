@@ -220,9 +220,65 @@ MODELS.waypoints = [];
     end
 
     %% Step Calculations
-    function data = step_calc()
-        %blah
-        data = 'blah';
+    function data = step_calc(h,~)
+      data=[];
+	  points3d = LIDAR.selected_points;
+	  LIDAR.clear_points();
+
+	  MODELS.ooi = 'step'
+	  disp('Step calculation...');
+	    
+      % Get the step first
+	  npoints = size(points3d,1);
+
+	  % If no points, then just set this as the object of interest
+	  if npoints == 0
+          %CONTROL.send_control_packet('GameFSM',MODELS.ooi);
+		  return
+	  end
+
+      % We just do one step each time for now
+      % TODO: three points for foot pitch and roll
+        if npoints ~= 1
+          return;
+        end
+
+      footpos = points3d(1,:);
+      footpos_global = LIDAR.transform_global(footpos);
+      disp(footpos);
+
+      % Check the distance
+      % TODO: tune the threshold
+      if footpos(1) > .25 || footpos(1) < 0.10
+          % x distance in meters
+          disp('WARNING: Block is too far or too close!');
+          disp(footpos);
+          return;
+      end
+      
+      % Check the height
+      % TODO: tune the threshold
+      % TODO: ground height is quite noisy. Should be in LIDAR or SLAM
+      ground_height = -0.75;
+      step_height = footpos_global(3) - ground_height;
+      if step_height > .2 || step_height< -.05
+          % x distance in meters
+          disp('WARNING: Block is too high! Or it is a pit!');
+          disp(step_height);
+          return;
+      end
+      
+      % Check the y position
+      % TODO: check which foot to use (currently assueme RIGHT)
+      if footpos(2) > 0.2+0.2 || footpos(2)<0.2
+          disp('WARNING: Improper foothold!');
+          disp(footpos);
+          return;
+      end
+
+        % TODO: send this data to the robot
+%         GAMEFSM or MOTIONFSM 
+ 
     end
 
 ret = MODELS;

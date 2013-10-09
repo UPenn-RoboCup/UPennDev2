@@ -20,7 +20,10 @@ local vector       = require'vector'
 local quaternion   = require'quaternion'
 local Transform    = require'Transform'
 local util         = require'util'
-local libDynamixel = require'libDynamixel'
+-- For the real body
+local libDynamixel   = require'libDynamixel'
+local DP2 = libDynamixel.DP2
+local libMicrostrain = require'libMicrostrain'
 
 local DEG_TO_RAD = math.pi/180
 local RAD_TO_DEG = 180/math.pi
@@ -102,8 +105,8 @@ servo.joint_to_motor={
   15,17,19,21,23,25, -- right leg
   1,3,5,7,9,11,13,  --RArm
   27,28, --Waist yaw/pitch
-  32,34,36, -- left gripper
-  31,33,35, -- right gripper
+  32,34,36, -- left gripper (thumb, index, big&not_thumb)
+  31,33,35, -- right gripper (thumb, index, big&not_thumb)
   37, -- Lidar pan
 }
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
@@ -117,10 +120,11 @@ for name,list in pairs(parts) do
 end
 
 -- Make the reverse map
-servo.motor_to_joint={}
+local motor_to_joint = {}
 for j,m in ipairs(servo.joint_to_motor) do
-	servo.motor_to_joint[m] = j
+	motor_to_joint[m] = j
 end
+servo.motor_to_joint = motor_to_joint
 
 --http://support.robotis.com/en/product/dynamixel_pro/control_table.htm#Actuator_Address_611
 -- TODO: Use some loop based upon MX/NX
@@ -149,7 +153,7 @@ servo.direction = vector.new({
   -1,-1,1,-1, 1,1,1, --RArm
   1,1, -- Waist
   1,1,-1, -- left gripper
-  1,-1,1, -- right gripper
+  1,1,-1, -- right gripper
   -1, -- Lidar pan
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
@@ -176,8 +180,8 @@ servo.min_rad = vector.new({
   -175,-175,-175,-175,-175,-175, --RLeg
   -90,-87,-90,-140,       -180,-87,-180, --RArm
   -90,-45, -- Waist
-  -20,-20,-20, -- left gripper
-  -20,-20,-20, -- right gripper
+  -32,-12,-12, -- left gripper
+  -12,-32,-32, -- right gripper
   -60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
@@ -189,8 +193,8 @@ servo.max_rad = vector.new({
   175,175,175,175,175,175, --RLeg
   160,-0,90,-25,     180,87,180, --RArm  
   90,45, -- Waist
-  10,10,10, -- left gripper
-  10,10,10, -- right gripper
+  12,32,32, -- left gripper
+  32,12,12, -- right gripper
   60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
@@ -370,6 +374,7 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
   local write_ptr = jcm.writePtr[actuator]
   
 	 local set_func = function(val,idx)
+   --print('setting a write')
     if type(val)=='number' then
       if type(idx)=='number' then
         pointer[idx]   = val
@@ -461,26 +466,7 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
   --------------------------------
 end
 
--- TODO: should be in body or a Grip module?
--- Grip module may have more advanced techniques...
--- More gripper functions
--- TODO: Use body actuator access to JCM
-Body.set_lgrip_percent = function( percent )
-	percent = math.min(math.max(percent,0),1)
-	-- Convex combo
-	for idx=indexLGrip,indexLGrip+nJointLGrip-1 do
-		local radian = (1-percent)*servo.min_rad[idx] + percent*servo.max_rad[idx]
-		jcm.actuatorPtr.command_position[idx] = radian
-	end
-end
-Body.set_rgrip_percent = function( percent )
-	percent = math.min(math.max(percent,0),1)
-	-- Convex combo
-	for idx=indexRGrip,indexRGrip+nJointRGrip-1 do
-		local radian = (1-percent) * servo.min_rad[idx] + percent*servo.max_rad[idx]
-		jcm.actuatorPtr.command_position[idx] = radian
-	end
-end
+
 
 --------------------------------
 -- TODO: Hardness
@@ -780,11 +766,321 @@ end
 
 ----------------------
 -- More standard api functions
+local dynamixels = {}
+local dynamixel_fds = {}
+local fd_dynamixels = {}
+local motor_dynamixels = {}
+local microstrain
 Body.entry = function()
+  if OPERATING_SYSTEM~='darwin' then
+    dynamixels.right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
+    dynamixels['left_arm'] = libDynamixel.new_bus'/dev/ttyUSB1'
+    dynamixels['right_leg'] = libDynamixel.new_bus'/dev/ttyUSB2'
+    dynamixels['left_leg'] = libDynamixel.new_bus'/dev/ttyUSB3'
+    microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
+  else
+    dynamixels.right_arm = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9A'
+    dynamixels['left_arm'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
+    dynamixels['right_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
+    dynamixels['left_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
+    microstrain = libMicrostrain.new_microstrain'/dev/cu.usbmodem1421'
+  end
+  -- motor ids
+  dynamixels.right_arm.nx_ids =
+    {1,3,5,7,9,11,13}
+  dynamixels.left_arm.nx_ids =
+    {2,4,6,8,10,12,14, --[[head]] 29,30 }
+  dynamixels.right_leg.nx_ids = 
+    {15,17,19,21,23,25, --[[waist pitch]]28}
+  dynamixels.left_leg.nx_ids =
+    {16,18,20,22,24,26, --[[waist]]27}
+  --
+  --dynamixels.right_arm.mx_ids = { --[[31,33,35]] },
+  dynamixels.left_arm.mx_ids =
+    { --[[32,34,36,]] --[[lidar]] 37}
+  --
+
+  --
+  for _,d in pairs(dynamixels) do
+    table.insert(dynamixel_fds,d.fd)
+    fd_dynamixels[d.fd] = d
+    for _,id in ipairs(d.nx_ids) do
+      motor_dynamixels[id]=d
+    end
+  end
+
+  --
+  microstrain:ahrs_on()
+  table.insert(dynamixel_fds,microstrain.fd)
+  microstrain.t_diff = 0
+  microstrain.t_read = 0
+  --
 end
+
+local process_register_read = {
+  position = function(idx,val,t)
+    jcm.sensorPtr.position[idx] = Body.make_joint_radian( idx, val )
+    jcm.treadPtr.position[idx]  = t
+  end,
+  rfoot = function(idx,val,t)
+    local offset = idx-20
+    --print('got rfoot!',offset,idx)
+    local data = carray.short( string.char(unpack(val)) )
+    for i=1,#data do
+      jcm.sensorPtr.rfoot[offset+i] = 3.3*data[i]/4096-1.65
+    end
+    jcm.treadPtr.rfoot[1] = t
+  end,
+  lfoot = function(idx,val,t)
+    local offset = idx-14
+    --print('got lfoot!',offset,idx)
+    local data = carray.short( string.char(unpack(val)) )
+    for i=1,#data do
+      jcm.sensorPtr.lfoot[offset+i] = 3.3*data[i]/4096-1.65
+    end
+    jcm.treadPtr.lfoot[1]  = t
+  end,
+  load = function(idx,v,t)
+    if v>=1024 then v = v - 1024 end
+    local load_ratio = v/10.24
+    jcm.sensorPtr.load[idx] = load_ratio
+    jcm.treadPtr.load[idx]  = t
+  end
+}
+
+local function process_fd(ready_fd)
+  local d   = fd_dynamixels[ready_fd]
+  local buf = unix.read(ready_fd)
+  assert(buf,'no read in process fd')
+  --
+  if not d then -- assume microstrain
+    local gyro = carray.float(buf:sub( 7,18):reverse())
+    local rpy  = carray.float(buf:sub(21,32):reverse())
+    -- set to memory
+    jcm.set_sensor_rpy{  rpy[2], rpy[3], -rpy[1]}
+    jcm.set_sensor_gyro{gyro[2],gyro[3],-gyro[1]}
+    -- done reading
+    local t_read = unix.time()
+    microstrain.t_diff = t_read - microstrain.t_read
+    microstrain.t_read = t_read
+    --print('microstrain rate',1/microstrain.t_diff)
+    return false
+  end
+  --print('reading from',d.ttyname)
+  if d.n_expect_read<=0 or not d.read_register then return false end
+  -- assume dynamixel
+  local status_packets
+  d.str = d.str..buf
+  status_packets, d.str = DP2.input( d.str )
+  d.n_expect_read = d.n_expect_read - #status_packets
+  --print('Got',#d.str,#status_packets,d.n_expect_read,d.ttyname)
+  local values = {}
+  for _,s in ipairs(status_packets) do
+    local status = DP2.parse_status_packet( s )
+    local read_parser = libDynamixel.byte_to_number[ #status.parameter ]
+    local idx = motor_to_joint[status.id]
+    local val
+    if read_parser then
+      val = read_parser( unpack(status.parameter) )
+    else
+      val = status.parameter
+    end
+    -- set into shm
+    local f = process_register_read[d.read_register]
+    if f then
+      f(idx,val,unix.time())
+    else
+      --print('d.read_register',d.read_register)
+      jcm.sensorPtr[d.read_register][idx] = val
+      jcm.treadPtr[d.read_register][idx]  = unix.time()
+    end
+    --
+  end
+  -- return if still reading
+  return d.n_expect_read>0
+end
+
 Body.update = function()
+
+  for _,d in pairs(dynamixels) do
+    --util.ptable(d)
+    d.cmd_pkts = {}
+    d.read_pkts = {}
+    d.n_expect_read = 0
+    d.read_register = nil
+  end
+
+  -- Loop through the registers
+  for register,is_writes in pairs(jcm.writePtr) do
+    --
+    local set_func    = libDynamixel['set_nx_'..register]
+    local mx_set_func = libDynamixel['set_mx_'..register]
+    --
+    local wr_values   = jcm['get_actuator_'..register]()
+    --local is_writes   = jcm['get_write_'..register]()
+    --
+    -- Instantiate the commands for the chains
+    for _,d in pairs(dynamixels) do
+      local cmd_ids = {}
+      local cmd_vals = {}
+      for _,id in ipairs(d.nx_ids) do
+        local idx = motor_to_joint[id]
+        if is_writes[idx]>0 then
+          is_writes[idx]=0
+          table.insert(cmd_ids,id)
+          if register=='command_position' then
+            table.insert(cmd_vals,Body.make_joint_step(idx,wr_values[idx]))
+          else
+            table.insert(cmd_vals,wr_values[idx])
+          end
+        end
+      end
+      -- make the pkts
+      if #cmd_ids>0 then
+        --print('writing',register,'\n',vector.new(cmd_ids),'\n',vector.new(cmd_vals))
+        table.insert(d.cmd_pkts, set_func(cmd_ids,cmd_vals) )
+      end
+      --
+    end
+    --
+  end
+  --
+  for register,is_reads in pairs(jcm.readPtr) do
+
+    if register=='lfoot' then
+      if is_reads[1]>0 then
+        is_reads[1]=0
+        local d = motor_dynamixels[24]
+        table.insert(d.read_pkts,{
+          libDynamixel.get_nx_data{24,26},
+          'lfoot'})
+        d.n_expect_read = d.n_expect_read + 2
+      end
+    elseif register=='rfoot' then
+      if is_reads[1]>0 then
+        is_reads[1]=0
+        local d = motor_dynamixels[23]
+        table.insert(d.read_pkts,{
+          libDynamixel.get_nx_data{23,25},
+          'rfoot'})
+        d.n_expect_read = d.n_expect_read + 2
+      end
+    else
+      local get_func    = libDynamixel['get_nx_'..register]
+      local mx_get_func = libDynamixel['get_mx_'..register]
+      --local is_reads    = jcm['get_read_'..register]()
+      --util.ptable(dynamixels)
+      for _,d in pairs(dynamixels) do
+        local read_ids = {}
+        for _,id in ipairs(d.nx_ids) do
+          local idx = motor_to_joint[id]
+          --
+          if is_reads[idx]>0 then
+            is_reads[idx]=0
+            table.insert(read_ids,id)
+          end
+        end
+        -- mk pkt
+        if #read_ids>0 then
+          --print('mk',register)
+          table.insert(d.read_pkts,{get_func(read_ids),register})
+          d.n_expect_read = d.n_expect_read + #read_ids
+        end
+      end
+    end
+  end
+
+  -- Execute packet sending
+  -- Send the commands first
+  ----[[
+  local done = true
+  repeat -- round robin repeat
+    done = true
+    for _,d in pairs(dynamixels) do
+      local fd = d.fd
+      -- grab a packet
+      local pkt = table.remove(d.cmd_pkts)
+      -- ensure that the pkt exists
+      if pkt then
+        -- remove leftover reads
+        --local leftovers = unix.read(fd)
+        -- flush previous writes
+        local flush_ret = stty.flush(fd)
+        -- write the new command
+        local cmd_ret = unix.write( fd, pkt )
+        -- possibly need a drain? Robotis does not
+        local flush_ret = stty.drain(fd)
+        local t_cmd  = unix.time()
+        d.t_diff_cmd = t_cmd - d.t_cmd
+        d.t_cmd      = t_cmd
+        --print('tdiff_cmd',d.ttyname,d.t_diff_cmd*1000)
+        -- check if now done
+        if #d.cmd_pkts>0 then
+          unix.usleep(1e3)
+          done = false
+        end
+      end
+    end
+  until done
+  --]]
+
+----[[
+  -- Send the requests next
+  local done = true
+  repeat -- round robin repeat
+    done = true
+    for _,d in pairs(dynamixels) do
+      local fd = d.fd
+      d.str = ''
+      -- grab a packet
+      local pkt = table.remove(d.read_pkts)
+      -- ensure that the pkt exists
+      if pkt then
+        d.read_register = pkt[2]
+        -- flush previous stuff
+        local flush_ret = stty.flush(fd)
+        -- write the new command
+        local t_write = unix.time()
+        local cmd_ret = unix.write( fd, pkt[1] )
+        -- possibly need a drain? Robotis does not
+        local flush_ret = stty.drain(fd)
+        -- check if now done
+        if #d.cmd_pkts>0 then done = false end
+      end
+    end
+    -- Await the responses of these packets
+    local READ_TIMEOUT = 12e-3 --8ms
+    local still_recv = true
+    while still_recv do
+      still_recv = false
+      local status, ready = unix.select(dynamixel_fds,READ_TIMEOUT)
+      -- if a timeout, then return
+      if status==0 then print('read timeout') break end
+      for ready_fd, is_ready in pairs(ready) do
+        -- for items that are ready
+        if is_ready then
+          still_recv = process_fd(ready_fd)
+        end
+      end -- for each ready_fd
+    end
+  until done
+--]]
 end
 Body.exit = function()
+  for k,d in pairs(dynamixels) do
+    -- Torque off motors
+    libDynamixel.set_nx_torque_enable( d.nx_ids, 0, d )
+    if d.mx_ids then
+      libDynamixel.set_mx_torque_enable( d.mx_ids, 0, d )
+    end
+    -- Close the fd
+    d:close()
+    -- Print helpful message
+    print('Closed',k)
+  end
+  -- close imu
+  microstrain:ahrs_off()
+  microstrain:close()
 end
 
 

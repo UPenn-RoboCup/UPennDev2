@@ -7,6 +7,7 @@ local simple_ipc   = require'simple_ipc'
 local state_pub_ch = simple_ipc.new_publisher(Config.net.state)
 
 require'gcm'
+require'jcm'
 
 --SJ: This removes the output buffer 
 io.stdout:setvbuf("no")
@@ -37,7 +38,7 @@ for _,sm in ipairs(Config.fsm.enabled) do
 end
 
 -- Update rate (if not webots)
-local fps = 120
+local fps = 250
 local us_sleep = 1e6 / fps
 
 -- Start the state machines
@@ -47,6 +48,7 @@ local t_debug = t0
 --------------------
 -- Clean Shutdown function
 function shutdown()
+  Body.exit()
   print'Shutting down the state machines...'
   for _,my_fsm in pairs(state_machines) do
     my_fsm.exit()
@@ -71,7 +73,6 @@ end
 
 while true do
   local t = Body.get_time()
-  local t_diff = t-t_debug
   
   -- Update each state machine
   for _,my_fsm in pairs(state_machines) do
@@ -86,11 +87,51 @@ while true do
 
   -- Update the body (mostly needed for webots)
 	Body.update()
-  
+
+  -- Debugging
+  if t-t_debug>1 then
+    os.execute('clear')
+    t_debug = t
+    local debug_tbl = {}
+    table.insert(debug_tbl,util.color('======= Inertial','yellow'))
+    table.insert(debug_tbl,string.format(
+      'RPY:  %s', tostring(Body.get_sensor_rpy())
+      ))
+    table.insert(debug_tbl,string.format(
+      'Gyro: %s', tostring(Body.get_sensor_gyro())
+      ))
+    table.insert(debug_tbl,util.color('======= Position','yellow'))
+    table.insert(debug_tbl,string.format(
+      'LLeg: %s', tostring(Body.get_lleg_position())
+      ))
+    table.insert(debug_tbl,string.format(
+      'RLeg: %s', tostring(Body.get_rleg_position())
+      ))
+    table.insert(debug_tbl,util.color('======= Command','yellow'))
+    table.insert(debug_tbl,string.format(
+      'LLeg: %s', tostring(Body.get_lleg_command_position())
+      ))
+    table.insert(debug_tbl,string.format(
+      'RLeg: %s', tostring(Body.get_rleg_command_position())
+      ))
+    table.insert(debug_tbl,util.color('======= Pressure','yellow'))
+    table.insert(debug_tbl,string.format(
+      'LLeg: %s', tostring(Body.get_sensor_lfoot())
+      ))
+    table.insert(debug_tbl,string.format(
+      'RLeg: %s', tostring(Body.get_sensor_rfoot())
+      ))
+    print(table.concat(debug_tbl,'\n'))
+  end
+
   -- Sleep a bit if not webots
   if not IS_WEBOTS then
-    unix.usleep(us_sleep)
-    io.flush(stdout)
+    local t_loop = unix.time()-t
+    --io.flush(stdout)
+    local t_sleep = us_sleep-t_loop*1e6
+    --print('sleepy',t_sleep)
+    if t_sleep>0 then unix.usleep(t_sleep) end
+    --unix.usleep(us_sleep)
   end
   
 end

@@ -64,30 +64,51 @@ sm:set_transition(motionWalk, 'done', motionStance)
 sm:set_transition(motionStep, 'done', motionStance)
 sm:set_transition(motionStepPreview, 'done', motionStance)
 
+-- Add "special events" like 'footstep' that set
+-- a variable number of footsteps (not suitable for shm)
+-- Msgpacked special events
+local mp = require'msgpack'
+local special_evts = {
+  preview = function(extra)
+    local feet = mp.unpack(extra)
+    --print('feet',unpack(feet))
+    --motionStepPreview.make_step_queue(feet)
+  end,
+  stand = function()
+    mcm.set_walk_stoprequest(1)
+  end
+}
 --------------------------
 -- Setup the FSM object --
 --------------------------
 local obj = {}
+obj._NAME = ...
 local util = require'util'
 -- Simple IPC for remote state triggers
 local simple_ipc = require'simple_ipc'
 local evts = simple_ipc.new_subscriber(...,true)
-obj._NAME = ...
+local debug_str = util.color(obj._NAME..' Event:','green')
+local special_evts = special_evts or {}
 obj.entry = function()
   sm:entry()
 end
 obj.update = function()
-  -- Check for out of process events in non-blocking
+  -- Check for out of process events in non-blocking fashion
   local event, has_more = evts:receive(true)
   if event then
-  	print( util.color(obj._NAME..' Event:','green'),event)
-  	sm:add_event(event)
-    --Hack here to handle stopping
-    if event=="stand" then
-      mcm.set_walk_stoprequest(1)      
+    local debug_tbl = {debug_str,event}
+    if has_more then
+      extra = evts:receive(true)
+      table.insert(debug_tbl,'Extra')
     end
+    local special = special_evts[event]
+    if special then
+      special(extra)
+      table.insert(debug_tbl,'Special!')
+    end
+    print(table.concat(debug_tbl,' '))
+    sm:add_event(event)
   end
-  -- TODO: If falling, maybe just call that update function?
   sm:update()
 end
 obj.exit = function()

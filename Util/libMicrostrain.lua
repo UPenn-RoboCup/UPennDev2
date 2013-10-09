@@ -150,6 +150,8 @@ libMicrostrain.new_microstrain = function(ttyname, ttybaud, obj )
   -----------
   -- Set the device to idle
   write_command(fd,idle_cmd)
+  unix.usleep(1e5)
+  write_command(fd,idle_cmd)
 
 	-----------
 	-- Begin the Microstrain object

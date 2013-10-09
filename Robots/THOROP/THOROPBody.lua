@@ -783,7 +783,7 @@ Body.entry = function()
     dynamixels['left_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
     microstrain = libMicrostrain.new_microstrain'/dev/cu.usbmodem1421'
   end
-  --
+  -- motor ids
   dynamixels.right_arm.nx_ids =
     {1,3,5,7,9,11,13}
   dynamixels.left_arm.nx_ids =
@@ -811,27 +811,31 @@ Body.entry = function()
 end
 
 local process_register_read = {
-  position = function(idx,val)
+  position = function(idx,val,t)
     jcm.sensorPtr.position[idx] = Body.make_joint_radian( idx, val )
+    jcm.treadPtr.position[idx]  = t
   end,
-  rfoot = function(idx,v)
+  rfoot = function(idx,val,t)
     local offset = (idx-23)*2
-    local data = carray.short( string.char(unpack(v)) )
+    local data = carray.short( string.char(unpack(val)) )
     for i=1,#data do
       jcm.sensorPtr.rfoot[offset+i] = 3.3*data[i]/4096
     end
+    jcm.treadPtr.rfoot[1]  = t
   end,
-  lfoot = function(idx,v)
+  lfoot = function(idx,val,t)
     local offset = (idx-24)*2
-    local data = carray.short( string.char(unpack(v)) )
+    local data = carray.short( string.char(unpack(val)) )
     for i=1,#data do
       jcm.sensorPtr.lfoot[offset+i] = 3.3*data[i]/4096
     end
+    jcm.treadPtr.lfoot[1]  = t
   end,
-  load = function(idx,v)
+  load = function(idx,v,t)
     if v>=1024 then v = v - 1024 end
     local load_ratio = v/10.24
     jcm.sensorPtr.load[idx] = load_ratio
+    jcm.treadPtr.load[idx]  = t
   end
 }
 
@@ -870,7 +874,7 @@ local function process_fd(ready_fd)
     -- set into shm
     local f = process_register_read[d.read_register]
     if f then
-      f(idx,val)
+      f(idx,val,unix.time())
     else
       jcm.sensorPtr[register][idx] = val
     end
@@ -883,6 +887,7 @@ end
 Body.update = function()
 
   for _,d in pairs(dynamixels) do
+    --util.ptable(d)
     d.cmd_pkts = {}
     d.read_pkts = {}
     d.n_expect_read = 0
@@ -907,15 +912,17 @@ Body.update = function()
         if is_writes[idx]>0 then
           is_writes[idx]=0
           table.insert(cmd_ids,id)
-          table.insert(cmd_vals,wr_values[idx])
+          if register=='command_position' then
+            table.insert(cmd_vals,Body.make_joint_step(idx,wr_values[idx]))
+          else
+            table.insert(cmd_vals,wr_values[idx])
+          end
         end
       end
       -- make the pkts
       if #cmd_ids>0 then
-        --print('writing',register,vector.new(cmd_ids))
-        table.insert(d.cmd_pkts,
-          set_func(cmd_ids,cmd_vals)
-        )
+        --print('writing',register,'\n',vector.new(cmd_ids),'\n',vector.new(cmd_vals))
+        table.insert(d.cmd_pkts, set_func(cmd_ids,cmd_vals) )
       end
       --
     end
@@ -952,7 +959,7 @@ Body.update = function()
 
   -- Execute packet sending
   -- Send the commands first
-  --[[
+  ----[[
   local done = true
   repeat -- round robin repeat
     done = true
@@ -963,14 +970,17 @@ Body.update = function()
       -- ensure that the pkt exists
       if pkt then
         -- remove leftover reads
-        local leftovers = unix.read(fd)
+        --local leftovers = unix.read(fd)
         -- flush previous writes
         local flush_ret = stty.flush(fd)
         -- write the new command
-        local t_write = unix.time()
         local cmd_ret = unix.write( fd, pkt )
         -- possibly need a drain? Robotis does not
         local flush_ret = stty.drain(fd)
+        local t_cmd  = unix.time()
+        d.t_diff_cmd = t_cmd - d.t_cmd
+        d.t_cmd      = t_cmd
+        --print('tdiff_cmd',d.ttyname,d.t_diff_cmd*1000)
         -- check if now done
         if #d.cmd_pkts>0 then
           unix.usleep(1e3)
@@ -1012,7 +1022,7 @@ Body.update = function()
       still_recv = false
       local status, ready = unix.select(dynamixel_fds,READ_TIMEOUT)
       -- if a timeout, then return
-      if status==0 then break end
+      if status==0 then print('read timeout') break end
       for ready_fd, is_ready in pairs(ready) do
         -- for items that are ready
         if is_ready then

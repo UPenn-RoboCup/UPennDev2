@@ -98,6 +98,7 @@ while true do
 
   -- Debugging
   if t-t_debug>1 then
+    os.execute('clear')
     t_debug = t
     local debug_tbl = {}
     table.insert(debug_tbl,string.format(
@@ -106,11 +107,19 @@ while true do
     table.insert(debug_tbl,string.format(
       'Gyro: %s', tostring(Body.get_sensor_gyro())
       ))
+    table.insert(debug_tbl,util.color('======= Position','yellow'))
     table.insert(debug_tbl,string.format(
       'LLeg: %s', tostring(Body.get_lleg_position())
       ))
     table.insert(debug_tbl,string.format(
       'RLeg: %s', tostring(Body.get_rleg_position())
+      ))
+    table.insert(debug_tbl,util.color('======= Command','yellow'))
+    table.insert(debug_tbl,string.format(
+      'LLeg: %s', tostring(Body.get_lleg_command_position())
+      ))
+    table.insert(debug_tbl,string.format(
+      'RLeg: %s', tostring(Body.get_rleg_command_position())
       ))
     print(table.concat(debug_tbl,'\n'))
   end

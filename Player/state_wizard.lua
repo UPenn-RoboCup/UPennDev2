@@ -73,7 +73,6 @@ end
 
 while true do
   local t = Body.get_time()
-  local t_diff = t-t_debug
   
   -- Update each state machine
   for _,my_fsm in pairs(state_machines) do
@@ -99,6 +98,7 @@ while true do
 
   -- Debugging
   if t-t_debug>1 then
+    t_debug = t
     local debug_tbl = {}
     table.insert(debug_tbl,string.format(
       'RPY:  %s', tostring(Body.get_sensor_rpy())

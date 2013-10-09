@@ -118,10 +118,11 @@ for name,list in pairs(parts) do
 end
 
 -- Make the reverse map
-servo.motor_to_joint={}
+local motor_to_joint = {}
 for j,m in ipairs(servo.joint_to_motor) do
-	servo.motor_to_joint[m] = j
+	motor_to_joint[m] = j
 end
+servo.motor_to_joint = motor_to_joint
 
 --http://support.robotis.com/en/product/dynamixel_pro/control_table.htm#Actuator_Address_611
 -- TODO: Use some loop based upon MX/NX
@@ -889,29 +890,20 @@ Body.update = function()
     --
     local set_func    = libDynamixel['set_nx_'..register]
     local mx_set_func = libDynamixel['set_mx_'..register]
-    local get_func    = libDynamixel['get_nx_'..register]
-    local mx_get_func = libDynamixel['get_mx_'..register]
     --
     local wr_values   = jcm['get_actuator_'..register]()
     local is_writes   = jcm['get_write_'..register]()
-    --
-    local is_reads    = jcm['get_read_'..register]()
     --
     -- Instantiate the commands for the chains
     for _,d in pairs(dynamixels) do
       local cmd_idxs = {}
       local cmd_vals = {}
-      local read_idxs = {}
       for _,id in ipairs(d.nx_ids) do
         local idx = motor_to_joint[id]
         --
         if is_writes[idx]>0 then
           table.insert(cmd_idxs,idx)
           table.insert(cmd_vals,wr_values[idx])
-        end
-        --
-        if is_reads[idx]>0 then
-          table.insert(read_idxs,idx)
         end
       end
       -- make the pkts
@@ -920,13 +912,35 @@ Body.update = function()
           set_func(cmd_idxs,cmd_vals)
         )
       end
-      if #read_idxs>0 then
-        table.insert(d.read_pkts,{set_func(read_idxs),register})
-        d.n_expect_read = d.n_expect_read + #read_idxs
-      end
       --
     end
     --
+  end
+  --
+  for register,is_reads in pairs(jcm.readPtr) do
+
+    if register:find'foot' then
+
+    else
+      local get_func    = libDynamixel['get_nx_'..register]
+      local mx_get_func = libDynamixel['get_mx_'..register]
+      --local is_reads    = jcm['get_read_'..register]()
+      for _,d in pairs(dynamixels) do
+        local read_idxs = {}
+        for _,id in ipairs(d.nx_ids) do
+          local idx = motor_to_joint[id]
+          --
+          if is_reads[idx]>0 then
+            table.insert(read_idxs,idx)
+          end
+        end
+        -- mk pkt
+        if #read_idxs>0 then
+          table.insert(d.read_pkts,{get_func(read_idxs),register})
+          d.n_expect_read = d.n_expect_read + #read_idxs
+        end
+      end
+    end
   end
 
   -- Execute packet sending
@@ -935,6 +949,7 @@ Body.update = function()
   repeat -- round robin repeat
     done = true
     for _,d in pairs(dynamixels) do
+      local fd = d.fd
       -- grab a packet
       local pkt = table.remove(d.cmd_pkts)
       -- ensure that the pkt exists
@@ -959,6 +974,7 @@ Body.update = function()
   repeat -- round robin repeat
     done = true
     for _,d in pairs(dynamixels) do
+      local fd = d.fd
       d.str = ''
       -- grab a packet
       local pkt = table.remove(d.read_pkts)
@@ -997,8 +1013,10 @@ end
 Body.exit = function()
   for k,d in pairs(dynamixels) do
     -- Torque off motors
-    libDynamixel.set_nx_torque_enable( d.nx_on_bus, 0, d )
-    libDynamixel.set_mx_torque_enable( d.mx_on_bus, 0, d )
+    libDynamixel.set_nx_torque_enable( d.nx_ids, 0, d )
+    if d.mx_ids then
+      libDynamixel.set_mx_torque_enable( d.mx_ids, 0, d )
+    end
     -- Close the fd
     d:close()
     -- Print helpful message

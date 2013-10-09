@@ -721,7 +721,7 @@ libDynamixel.service = function( dynamixels, main )
           local new_status_str
           --print('Expecting',nids)
           local reg = request.reg
-          print('reg',reg,#dynamixel.requests)
+          --print('reg',reg,#dynamixel.requests)
           status_str = ''
           repeat
             did_request = true

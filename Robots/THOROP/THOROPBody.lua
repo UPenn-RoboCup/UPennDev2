@@ -369,6 +369,7 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
   local write_ptr = jcm.writePtr[actuator]
   
 	 local set_func = function(val,idx)
+   --print('setting a write')
     if type(val)=='number' then
       if type(idx)=='number' then
         pointer[idx]   = val
@@ -760,9 +761,216 @@ end
 
 ----------------------
 -- More standard api functions
+local dynamixels = {}
+local dynamixel_fds = {}
 Body.entry = function()
+  if OPERATING_SYSTEM=='darwin' then
+    dynamixels.right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
+    dynamixels['left_arm'] = libDynamixel.new_bus'/dev/ttyUSB1'
+    dynamixels['right_leg'] = libDynamixel.new_bus'/dev/ttyUSB2'
+    dynamixels['left_leg'] = libDynamixel.new_bus'/dev/ttyUSB3'
+  else
+    dynamixels.right_arm = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9A'
+    dynamixels['left_arm'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
+    dynamixels['right_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
+    dynamixels['left_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
+  end
+  --
+  dynamixels.right_arm.nx_ids =
+    {1,3,5,7,9,11,13}
+  dynamixels.left_arm.nx_ids =
+    {2,4,6,8,10,12,14, --[[head]] 29,30 },
+  dynamixels.right_leg.nx_ids = 
+    {15,17,19,21,23,25, --[[waist pitch]]28},
+  dynamixels.left_leg.nx_ids =
+    {16,18,20,22,24,26, --[[waist]]27},
+  --
+  --dynamixels.right_arm.mx_ids = { --[[31,33,35]] },
+  dynamixels.left_arm.mx_ids  = { --[[32,34,36,]] --[[lidar]] 37},
+  --
+
+  --
+  for i,d in pairs(dynamixels) do
+    dynamixel_fds[i] = d.fd
+    dynamixels[d.fd] = d
+  end
 end
+
+local process_register_read = {
+  position = function(idx,val)
+    jcm.sensorPtr.position[idx] = Body.make_joint_radian( idx, v )
+  end,
+  rfoot = function(idx,v)
+    local offset = (idx-23)*2
+    local data = carray.short( string.char(unpack(v)) )
+    for i=1,#data do
+      jcm.sensorPtr.rfoot[offset+i] = 3.3*data[i]/4096
+    end
+  end,
+  lfoot = function(idx,v)
+    local offset = (idx-24)*2
+    local data = carray.short( string.char(unpack(v)) )
+    for i=1,#data do
+      jcm.sensorPtr.lfoot[offset+i] = 3.3*data[i]/4096
+    end
+  end,
+  load = function(idx,v)
+    if v>=1024 then v = v - 1024 end
+    local load_ratio = v/10.24
+    jcm.sensorPtr.load[idx] = load_ratio
+  end
+}
+
+local function process_fd(ready_fd)
+  local status_packets
+  local d = dynamixels[ready_fd]
+  local buf = unix.read(ready_fd)
+  assert(buf,'no read in process fd')
+  d.str = d.str..buf
+  status_packets, d.str = DP.input( d.str )
+  d.n_expect_read = d.n_expect_read - #status_packets
+  local values = {}
+  for _,s in ipairs(status_packets) do
+    local status = DP.parse_status_packet( s )
+    local read_parser = byte_to_number[ #status.parameter ]
+    local idx = motor_to_joint[status.id]
+    local val
+    if read_parser then
+      val = read_parser( unpack(status.parameter) )
+    else
+      val = status.parameter
+    end
+    -- set into shm
+    local f = process_register_read[d.read_register]
+    if f then
+      f(idx,val)
+    else
+      jcm.sensorPtr[register][idx] = val
+    end
+    --
+  end
+  -- return if still reading
+  return #d.n_expect_read>0
+end
+
 Body.update = function()
+
+  for _,d in pairs(dynamixels) do
+    d.cmd_pkts = {}
+    d.read_pkts = {}
+    d.n_expect_read = 0
+    d.read_register = nil
+  end
+
+  -- Loop through the registers
+  for register,write_ptr in pairs(jcm.writePtr) do
+    --
+    local set_func    = libDynamixel['set_nx_'..register]
+    local mx_set_func = libDynamixel['set_mx_'..register]
+    local get_func    = libDynamixel['get_nx_'..register]
+    local mx_get_func = libDynamixel['get_mx_'..register]
+    --
+    local wr_values   = jcm['get_actuator_'..register]()
+    local is_writes   = jcm['get_write_'..register]()
+    --
+    local is_reads    = jcm['get_read_'..register]()
+    --
+    -- Instantiate the commands for the chains
+    for _,d in pairs(dynamixels) do
+      local cmd_idxs = {}
+      local cmd_vals = {}
+      local read_idxs = {}
+      for _,id in ipairs(d.nx_ids) do
+        local idx = motor_to_joint[id]
+        --
+        if is_writes[idx]>0 then
+          table.insert(cmd_idxs,idx)
+          table.insert(cmd_vals,wr_values[idx])
+        end
+        --
+        if is_reads[idx]>0 then
+          table.insert(read_idxs,idx)
+        end
+      end
+      -- make the pkts
+      if #cmd_idxs>0 then
+        table.insert(d.cmd_pkts,
+          set_func(cmd_idxs,cmd_vals)
+        )
+      end
+      if #read_idxs>0 then
+        table.insert(d.read_pkts,{set_func(read_idxs),register})
+        d.n_expect_read = d.n_expect_read + #read_idxs
+      end
+      --
+    end
+    --
+  end
+
+  -- Execute packet sending
+  -- Send the commands first
+  local done = true
+  repeat -- round robin repeat
+    done = true
+    for _,d in pairs(dynamixels) do
+      -- grab a packet
+      local pkt = table.remove(d.cmd_pkts)
+      -- ensure that the pkt exists
+      if pkt then
+        -- remove leftover reads
+        local leftovers = unix.read(fd)
+        -- flush previous writes
+        local flush_ret = stty.flush(fd)
+        -- write the new command
+        local t_write = unix.time()
+        local cmd_ret = unix.write( fd, cmd )
+        -- possibly need a drain? Robotis does not
+        local flush_ret = stty.drain(fd)
+        -- check if now done
+        if #d.cmd_pkts>0 then done = false end
+      end
+    end
+  until done
+
+  -- Send the requests next
+  local done = true
+  repeat -- round robin repeat
+    done = true
+    for _,d in pairs(dynamixels) do
+      d.str = ''
+      -- grab a packet
+      local pkt = table.remove(d.read_pkts)
+      -- ensure that the pkt exists
+      if pkt then
+        d.read_register = pkt[2]
+        -- flush previous stuff
+        local flush_ret = stty.flush(fd)
+        -- write the new command
+        local t_write = unix.time()
+        local cmd_ret = unix.write( fd, pkt[1] )
+        -- possibly need a drain? Robotis does not
+        local flush_ret = stty.drain(fd)
+        -- check if now done
+        if #d.cmd_pkts>0 then done = false end
+      end
+    end
+    -- Await the responses of these packets
+    local READ_TIMEOUT = 8e-3 --8ms
+    local still_recv = true
+    while still_recv do
+      still_recv = false
+      local status, ready = unix.select(dynamixel_fds,READ_TIMEOUT)
+      -- if a timeout, then return
+      if status==0 then break end
+      for ready_fd, is_ready in pairs(ready) do
+        -- for items that are ready
+        if is_ready then
+          still_recv = process_fd(ready_fd)
+        end
+      end -- for each ready_fd
+    end
+  until done
+
 end
 Body.exit = function()
 end

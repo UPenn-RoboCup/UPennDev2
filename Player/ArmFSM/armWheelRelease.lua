@@ -47,7 +47,7 @@ function state.entry()
   stage = 1;
 
   local pLWristTarget = Config.arm.pLWristTarget2
-  handle_pos_temp = {0.20, 0, -0.05 }
+  handle_pos_temp = {0.20, 0, -0.09 }
 
 
 end
@@ -88,7 +88,7 @@ function state.update()
     local qLArm = Body.get_larm_command_position()
     local qRArm = Body.get_rarm_command_position()
     dqWristMax=vector.new({0,0,0,0,
-       10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD})
+       15*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD})
     ret = movearm.setArmJoints(
       {qLArm[1],qLArm[2],qLArm[3],qLArm[4],0,0,0},
       {qRArm[1],qRArm[2],qRArm[3],qRArm[4],0,0,0},

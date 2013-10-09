@@ -53,7 +53,7 @@ function state.update()
 
   if stage==1 then --Change wrist        
     dqWristMax=vector.new({0,0,0,0,
-       30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD})
+       15*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD})
     qL = Body.get_inverse_arm_given_wrist( qLArm,       {0,0,0,0,-Config.walk.bodyTilt,-45*Body.DEG_TO_RAD})
     qR = Body.get_inverse_arm_given_wrist( qRArm,       {0,0,0,0,-Config.walk.bodyTilt,45*Body.DEG_TO_RAD})
     if movearm.setArmJoints(qL, qR, dt, dqWristMax)==1 then

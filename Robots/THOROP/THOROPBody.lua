@@ -78,7 +78,14 @@ local jointNames = {
 	-- lidar movement
 	"ChestLidarPan",
 }
+
+local passiveJointNames = {
+  "l_wrist_grip1_2","l_wrist_grip2_2","l_wrist_grip3_2",
+  "r_wrist_grip1_2","r_wrist_grip2_2","r_wrist_grip3_2",
+}
+
 assert(nJoint==#jointNames,'bad jointNames!')
+
 local parts = {
 	['Head']=vector.count(indexHead,nJointHead),
 	['LArm']=vector.count(indexLArm,nJointLArm),
@@ -1120,8 +1127,10 @@ if IS_WEBOTS then
       -1,-1,-1,-1,-1,-1,-1, --RArm    
     -- TODO: Check the gripper
     1,1, -- Waist
-    -1,1,-1, -- left gripper
+--  -1,1,-1, -- left gripper
+    1,-1,-1, -- left gripper    
     -1,1,1, -- right gripper
+
     1, -- Lidar pan
   })
   servo.rad_bias = vector.new({
@@ -1146,8 +1155,10 @@ if IS_WEBOTS then
     -90,-87,-90,-160,       -180,-87,-180, --RArm
 
     -90,-45, -- Waist
-    0,0,0, -- left gripper
-    0,0,0, -- right gripper
+
+    45,45,45, -- left gripper
+    45,45,45, -- right gripper
+
     -60, -- Lidar pan
   })*DEG_TO_RAD
   
@@ -1160,8 +1171,15 @@ if IS_WEBOTS then
     160,-0,90,-25,     180,87,180, --RArm
 
     90,45, -- Waist
-    90,90,90, -- left gripper
-    90,90,90, -- right gripper
+
+--    90,90,90, -- left gripper
+--    90,90,90, -- right gripper
+    80,80,80,
+    80,80,80,    
+
+
+    
+    
     60, -- Lidar pan
   })*DEG_TO_RAD
   
@@ -1244,6 +1262,19 @@ if IS_WEBOTS then
 				print(v,'not found')
 			end
 		end
+
+
+    tags.passive_joints = {}
+    for i,v in ipairs(passiveJointNames) do
+      tags.passive_joints[i] = webots.wb_robot_get_device(v)
+      if tags.passive_joints[i]>0 then
+        webots.wb_servo_enable_position(tags.passive_joints[i], timeStep)
+      else
+        print(v,'not found')
+      end
+    end
+
+
 		-- Add Sensor Tags
 		-- Accelerometer
 		tags.accelerometer = webots.wb_robot_get_device("Accelerometer")
@@ -1422,6 +1453,17 @@ if IS_WEBOTS then
     --
     jcm.sensorPtr.rfoot[1] = webots.wb_touch_sensor_get_value(tags.r_fsr)*4
     
+
+    --Passive joint handling (2nd digit for figners)    
+    local passive_jangle_offsets = {
+      math.pi/4,-math.pi/4,-math.pi/4,-math.pi/4,math.pi/4,math.pi/4
+    }
+    local passive_jangle_factor = 1.3;
+    for i=1,6 do
+      local ang_orig = webots.wb_servo_get_position(tags.joints[i+Body.indexLGrip-1])
+      webots.wb_servo_set_position(tags.passive_joints[i],
+        (ang_orig + passive_jangle_offsets[i]) * passive_jangle_factor  )
+    end
 
 --[[
     print("FSRL:",unpack(jcm.get_sensor_lfoot()))

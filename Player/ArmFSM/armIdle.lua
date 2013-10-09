@@ -28,6 +28,9 @@ function state.entry()
   qLArm = Body.get_larm_command_position()
   qRArm = Body.get_rarm_command_position()
 
+  Body.set_lgrip_percent(0.7)
+  Body.set_rgrip_percent(0.7)
+
 end
 
 function state.update()
@@ -49,7 +52,7 @@ function state.update()
   Body.request_rarm_position()
 
 --  print("LArm jangle:",vector.new(qLArm)*Body.RAD_TO_DEG)
-
+  
 end
 
 function state.exit()

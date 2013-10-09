@@ -19,7 +19,9 @@ local vector       = require'vector'
 local quaternion   = require'quaternion'
 local Transform    = require'Transform'
 local util         = require'util'
-local libDynamixel = require'libDynamixel'
+-- For the real body
+local libDynamixel   = require'libDynamixel'
+local libMicrostrain = require'libMicrostrain'
 
 local DEG_TO_RAD = math.pi/180
 local RAD_TO_DEG = 180/math.pi
@@ -847,11 +849,11 @@ local function process_fd(ready_fd)
   -- assume dynamixel
   local status_packets
   d.str = d.str..buf
-  status_packets, d.str = DP.input( d.str )
+  status_packets, d.str = DP2.input( d.str )
   d.n_expect_read = d.n_expect_read - #status_packets
   local values = {}
   for _,s in ipairs(status_packets) do
-    local status = DP.parse_status_packet( s )
+    local status = DP2.parse_status_packet( s )
     local read_parser = byte_to_number[ #status.parameter ]
     local idx = motor_to_joint[status.id]
     local val

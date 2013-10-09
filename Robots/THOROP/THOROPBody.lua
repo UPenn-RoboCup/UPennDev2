@@ -763,17 +763,20 @@ end
 -- More standard api functions
 local dynamixels = {}
 local dynamixel_fds = {}
+local microstrain
 Body.entry = function()
   if OPERATING_SYSTEM~='darwin' then
     dynamixels.right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
     dynamixels['left_arm'] = libDynamixel.new_bus'/dev/ttyUSB1'
     dynamixels['right_leg'] = libDynamixel.new_bus'/dev/ttyUSB2'
     dynamixels['left_leg'] = libDynamixel.new_bus'/dev/ttyUSB3'
+    microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
   else
     dynamixels.right_arm = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9A'
     dynamixels['left_arm'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
     dynamixels['right_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
     dynamixels['left_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
+    microstrain = libMicrostrain.new_microstrain'/dev/cu.usbmodem1421'
   end
   --
   dynamixels.right_arm.nx_ids =
@@ -795,6 +798,10 @@ Body.entry = function()
     table.insert(dynamixel_fds,d.fd)
     dynamixels[d.fd] = d
   end
+
+  --
+  microstrain:ahrs_on()
+  table.insert(dynamixel_fds,microstrain.fd)
   --
 end
 
@@ -824,10 +831,21 @@ local process_register_read = {
 }
 
 local function process_fd(ready_fd)
-  local status_packets
   local d = dynamixels[ready_fd]
   local buf = unix.read(ready_fd)
   assert(buf,'no read in process fd')
+  --
+  if not d then -- assume microstrain
+    local gyro = carray.float(buf:sub( 7,18):reverse())
+    local rpy  = carray.float(buf:sub(21,32):reverse())
+    -- set to memory
+    jcm.set_sensor_rpy{  rpy[2], rpy[3], -rpy[1]}
+    jcm.set_sensor_gyro{gyro[2],gyro[3],-gyro[1]}
+    -- done reading
+    return false
+  end
+  -- assume dynamixel
+  local status_packets
   d.str = d.str..buf
   status_packets, d.str = DP.input( d.str )
   d.n_expect_read = d.n_expect_read - #status_packets
@@ -984,6 +1002,9 @@ Body.exit = function()
     -- Print helpful message
     print('Closed',k)
   end
+  -- close imu
+  microstrain:ahrs_off()
+  microstrain:close()
 end
 
 

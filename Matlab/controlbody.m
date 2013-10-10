@@ -66,9 +66,10 @@ ret = CONTROL;
         send_control_packet('MotionFSM',evt);
     end
 
-    function setup_slambody_controls(b1,b2)
+    function setup_slambody_controls(b1,b2,b3)
         set(b1,'CallBack',{SLAM.set_zoomlevel,1});
         set(b2,'CallBack',{SLAM.set_zoomlevel,2});
+        set(b3,'CallBack', SLAM.clear_waypoint);
     end
 
     function setup_robotbody_controls(b1,b2,b3,b4)
@@ -160,6 +161,9 @@ ret = CONTROL;
         elseif flags==4
             disp('Two point approach')
             wp = LIDAR.get_double_approach();
+            if numel(wp) == 0
+                wp = SLAM.get_double_approach();
+            end
             if numel(wp)>0
                 send_control_packet([], [],...
                     'hcm', 'motion', 'waypoints',...

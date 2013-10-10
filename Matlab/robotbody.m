@@ -11,9 +11,10 @@ function ret = robotbody()
   OFFSET_HAND = [0.113 0.053 0];
 
   BODY=[];
-  BODY.basesize = [0.40 0.40 0.20];
-  BODY.lbodysize = [0.10 0.10 0.70];
+  
+  
   BODY.ubodysize = [0.20 0.40 0.180];
+  BODY.lbodysize = [0.10 0.10 0.270];
   BODY.shouldersize = [0.08 0.14 0.14];
   BODY.uarmsize = [0.25 0.08 0.08];
   BODY.larmsize = [0.25 0.08 0.08];
@@ -21,18 +22,29 @@ function ret = robotbody()
   BODY.fingersize = [0.08 0.03 0.03];
   BODY.headsize = [0.15 0.10 0.15];
 
+  BODY.ulegsize = [0.10 0.10 0.30]
+  BODY.llegsize = [0.10 0.10 0.30]
+  BODY.footsize = [0.26 0.145 0.03]
+
+
   BODY.waistoffset = [0 0 0.35];
   BODY.neckoffset = [0 0 0.40];
-  BODY.lshoulderoffset = [0 0.259 0.144];
-  BODY.rshoulderoffset = [0 -0.259 0.144];
+  BODY.lshoulderoffset = [0 0.216 0.162];
+  BODY.rshoulderoffset = [0 -0.216 0.162];
   BODY.uarmoffset = [0.246 0 0.03];
   BODY.larmoffset = [0.242 0 -0.03];
   BODY.lfingeroffset = [0.08 -0.03 0];
   BODY.rfingeroffset = [0.08 0.03 0];
   BODY.finger2offset = [0.08 0.0 0];
 
-  BODY.basecom = [0 0 -0.35];
+  BODY.lhipoffset = [0 0.072 -0.270]
+  BODY.rhipoffset = [0 -0.072 -0.270]
+  BODY.kneeoffset = [-0.03 0 -0.30]
+  BODY.ankleoffset = [0.03 0 -0.30]
+  
+  
   BODY.ubodycom = [0 0 0.09];
+  BODY.lbodycom = [0 0 -0.135];
   BODY.headcom = [0 0 0];
 
   BODY.uarmcom = [0.12 0 0];
@@ -41,10 +53,18 @@ function ret = robotbody()
 
   BODY.fingercom = [0.05 0 0];
 
+  BODY.ulegcom = [0 0 -0.15];
+  BODY.llegcom = [0.03 0 -0.15];
+  BODY.footcom = [0.018 0 -0.015];
+
   BODY.neckangle=[0,0];
   BODY.waistangle=[0,0];
   BODY.larmangle=[0,0,0,0,0,0];
   BODY.rarmangle=[0,0,0,0,0,0];
+
+  BODY.llegangle=[0,0,0,0,0,0];
+  BODY.rlegangle=[0,0,0,0,0,0];
+
   BODY.lfingerangle = 0;
   BODY.rfingerangle = 1;
 
@@ -167,11 +187,10 @@ function ret = robotbody()
   function plot_parts()
     BODY.vert_num = 0;
     BODY.face_num = 0;
-    plot_part(BODY.basesize, BODY.basecom, BODY.TrLBody);
-    plot_part(BODY.lbodysize, [0 0 0], BODY.TrLBody);
+    
+    plot_part(BODY.lbodysize, BODY.lbodycom, BODY.TrLBody);
     plot_part(BODY.ubodysize, BODY.ubodycom, BODY.TrUBody);
     plot_part(BODY.headsize, BODY.headcom, BODY.TrHead);
-
 
     plot_part(BODY.shouldersize, [0 0 0], BODY.TrLShoulder);
     plot_part(BODY.uarmsize, BODY.uarmcom, BODY.TrLUArm);
@@ -193,6 +212,15 @@ function ret = robotbody()
     plot_part(BODY.fingersize, BODY.fingercom, BODY.TrRFinger12);
     plot_part(BODY.fingersize, BODY.fingercom, BODY.TrRFinger22);
 
+    plot_part(BODY.ulegsize, BODY.ulegcom, BODY.TrRULeg);
+    plot_part(BODY.ulegsize, BODY.ulegcom, BODY.TrLULeg);
+
+    plot_part(BODY.llegsize, BODY.llegcom, BODY.TrRLLeg);
+    plot_part(BODY.llegsize, BODY.llegcom, BODY.TrLLLeg);
+
+    plot_part(BODY.footsize, BODY.footcom, BODY.TrRFoot);
+    plot_part(BODY.footsize, BODY.footcom, BODY.TrLFoot);
+
     set(BODY.h,'Vertices',BODY.verts(1:BODY.vert_num,:));
     set(BODY.h,'Faces',BODY.faces(1:BODY.face_num,:));
     set(BODY.h,'FaceVertexCData',BODY.cdatas);
@@ -212,12 +240,24 @@ function ret = robotbody()
     rfingerangle1 = pi/3 - pi/6*BODY.rfingerangle;
     rfingerangle2 = - pi/3*BODY.rfingerangle;
 
-    BODY.TrLBody = eye(4)*trans([pose(1) pose(2) -0.35])*rotZ(pose(3));
+    BODY.TrLBody = eye(4)*trans([pose(1) pose(2) 0])*rotZ(pose(3));
 
-    BODY.TrUBody = BODY.TrLBody*trans(BODY.waistoffset)*...
-		rotZ(BODY.waistangle(1))*rotY(BODY.waistangle(2));
+    BODY.TrLULeg = BODY.TrLBody*trans(BODY.lhipoffset)*...
+      rotZ(BODY.llegangle(1))*rotX(BODY.llegangle(2))*rotY(BODY.llegangle(3));
+    BODY.TrLLLeg = BODY.TrLULeg*trans(BODY.kneeoffset)*rotY(BODY.llegangle(4));
+    BODY.TrLFoot = BODY.TrLLLeg*trans(BODY.ankleoffset)*...
+      rotY(BODY.llegangle(5))*rotX(BODY.llegangle(6));
+
+    BODY.TrRULeg = BODY.TrLBody*trans(BODY.rhipoffset)*...
+      rotZ(BODY.rlegangle(1))*rotX(BODY.rlegangle(2))*rotY(BODY.rlegangle(3));
+    BODY.TrRLLeg = BODY.TrRULeg*trans(BODY.kneeoffset)*rotY(BODY.rlegangle(4));
+    BODY.TrRFoot = BODY.TrRLLeg*trans(BODY.ankleoffset)*...
+      rotY(BODY.rlegangle(5))*rotX(BODY.rlegangle(6));
+
+
+    BODY.TrUBody = BODY.TrLBody*rotZ(BODY.waistangle(1))*rotY(BODY.waistangle(2));
     BODY.TrHead = BODY.TrUBody*trans(BODY.neckoffset)*...
-		rotZ(BODY.neckangle(1))*rotY(BODY.neckangle(2));
+    rotZ(BODY.neckangle(1))*rotY(BODY.neckangle(2));
 
 
     BODY.TrLShoulder = BODY.TrUBody*trans(BODY.lshoulderoffset)*...

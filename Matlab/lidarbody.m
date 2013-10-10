@@ -175,6 +175,14 @@ CHEST_LIDAR.posea=[];
             nBytes = nBytes + numel(udp_data);
         end
         [metadata,offset] = msgpack('unpack',udp_data);
+
+        %SJ: metadata.depths is cell array with ubuntu
+
+        if iscell(metadata.depths)
+          metadata.depths = cell2mat(metadata.depths)
+        end
+
+
         %disp(metadata)
         cdepth = udp_data(offset+1:end);
         if strncmp(char(metadata.c),'jpeg',3)==1
@@ -185,6 +193,7 @@ CHEST_LIDAR.posea=[];
             depth_img = depth_img';
         end
         % Calculate the angles
+
         fov_angles = metadata.fov(1) : .25*(pi/180) : metadata.fov(2);
         scanline_angles = metadata.scanlines(1) : 1/metadata.scanlines(3) : metadata.scanlines(2);
         
@@ -204,6 +213,7 @@ CHEST_LIDAR.posea=[];
             CHEST_LIDAR.ranges = depth_img';
             CHEST_LIDAR.fov_angles = fov_angles;
             CHEST_LIDAR.scanline_angles = scanline_angles;
+
             CHEST_LIDAR.depths = double(metadata.depths);
             % Update depth image
             draw_depth_image();

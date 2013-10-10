@@ -21,6 +21,15 @@ for _,sm in ipairs(Config.fsm.enabled) do
   fsm_channels[sm] = simple_ipc.new_publisher(sm,true)
 end
 
+local function trim_string(str)
+  --SJ: with ubuntu, string may contain a byte 0 padding at the end  
+   if str:byte(#str)==0 then
+     str=string.sub(str,1,#str-1)      
+   end
+   return str
+end
+
+
 --NOTE: Can do memory AND fsm event.  In that order
 local function process_rpc(rpc)
   -- for debugging
@@ -58,13 +67,27 @@ local function process_rpc(rpc)
   -- State machine events
   local fsm = rpc.fsm
   if fsm and type(rpc.evt)=='string' then
-    local ch = fsm_channels[fsm]
-    --
+  
+--[[
+    for i,sm in pairs(fsm_channels) do
+      print("Comparing:",i," vs ",fsm)
+      print("size:",#i,#fsm)
+      if i==fsm then
+        print("Matching channel found")
+      end
+    end
+--]]
+
+--[[
+    print("\nAll channels:")
+    util.ptable(fsm_channels)        
+--]]    
+    local ch = fsm_channels[trim_string(fsm)]
     if ch then
       if rpc.special then
-        ch:send{rpc.evt,rpc.special}
+        ch:send{trim_string(rpc.evt),rpc.special}
       else
-        ch:send(rpc.evt)
+        ch:send(trim_string(rpc.evt))
       end
     end
     --

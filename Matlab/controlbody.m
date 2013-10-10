@@ -42,6 +42,9 @@ ret = CONTROL;
             set_waypoints(2);
             send_control_packet( 'HeadFSM', 'center');
             send_control_packet( 'BodyFSM', 'follow' );
+        elseif strcmp(evt, 'sidedone')
+            send_control_packet([], [],...
+                'hcm', 'motion', 'sideways_status', 1);
         else
             send_control_packet( 'BodyFSM', evt );
         end
@@ -93,12 +96,13 @@ ret = CONTROL;
         set(b4,'CallBack',MODELS.step_calc);
     end
 
-    function setup_body_controls(b1,b2,b3,b4,b5)
+    function setup_body_controls(b1,b2,b3,b4,b5,b6)
         set(b1,'CallBack',{@body_control,'init'});
         set(b2,'CallBack',{@body_control,'approach'});
         set(b3,'CallBack',{@body_control,'navigate'});
         set(b4,'CallBack',{@body_control,'teleop'});
         set(b5,'CallBack',{@body_control,'sideways'});
+        set(b6,'CallBack',{@body_control,'sidedone'});
     end
 
     function setup_head_controls(b1,b2,b3,b4)

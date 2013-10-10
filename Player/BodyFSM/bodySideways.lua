@@ -37,7 +37,7 @@ local function turn_in_place(pose,wp,rel_wp)
 	-- TODO: may need vx, vy to deal with offsets in x, y when turning
 	vStep[1], vStep[2] = 0, 0
 	-- We only let the robot to turn CLOCKWISE for this task
-	vStep[3] = math.min( .05*util.sign(rel_wp.a), 0.25*rel_wp.a )
+	vStep[3] = math.min( .08*util.sign(rel_wp.a), 0.25*rel_wp.a )
   return vStep, false
 end
 
@@ -64,8 +64,9 @@ function state.entry()
 	
 	print('Angle to turn:', dYaw)
 	
-  -- Zero the velocity
+  -- Initialization
 	phase = 1
+	hcm.set_motion_sideways_status(0)
   mcm.set_walk_vel({0,0,0})
 
   -- Begin walking
@@ -91,6 +92,7 @@ function state.update()
 	  --local pose = vector.pose(wcm.get_robot_pose())
 	  local pose = vector.pose(wcm.get_slam_pose())
 	  if cnt % 20 == 0 then
+	  	print('phase:', phase)
 	    print('Robot pose:', unpack(pose) )
 	  end
 
@@ -98,7 +100,7 @@ function state.update()
 	  local rel_wp = util.pose_relative(targetPose,pose)
 
 	  -- Debug
-	  ---[[
+	  --[[
 	  print('pose',pose)
 	  --print('wayp',wp)
 	  print('rela',rel_wp)
@@ -114,7 +116,6 @@ function state.update()
 	  -- Check if we are at the waypoint
 	  if at_waypoint then
 	    phase = phase + 1
-		  t_start = Body.get_time()
 	  end
 	
 	elseif phase == 2 then
@@ -122,11 +123,11 @@ function state.update()
 		-- 2. hcm so that human decides when to stop?
 		-- 3. Check slam pose?
 		
-		-- Use dumb 1 just for testing
-		if Body.get_time() - t_start < 10 then
-			mcm.set_walk_vel({0, -0.02, 0})
+		-- Currently use hcm
+		if hcm.get_motion_sideways_status() == 0 then
+			mcm.set_walk_vel({0, -0.025, 0})
 		else
-			mcm.set_wal_vel({0,0,0})
+			mcm.set_walk_vel({0,0,0})
 			phase = phase + 1
 		end
 		

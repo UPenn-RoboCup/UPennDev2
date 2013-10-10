@@ -85,6 +85,9 @@ local l0maxHeight = 1.2
 -- We don't need height limits for chest lidar
 local minRange = 0.15 -- meters
 local maxRange = 28
+if IS_WEBOTS then
+  maxRange = 9.5
+end
 
 ---------------------------------
 -- Lidar processing params

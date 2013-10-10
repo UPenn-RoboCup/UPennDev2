@@ -34,7 +34,7 @@ sm:set_transition( bodyInit,   'teleop', bodyTeleop )
 sm:set_transition( bodyTeleop, 'done',   bodyInit   )
 sm:set_transition( bodyTeleop, 'init',   bodyInit   )
 sm:set_transition( bodyTeleop, 'follow', bodyFollow )
--
+--
 sm:set_transition( bodyInit,   'sideways', bodySideways )
 sm:set_transition( bodySideways, 'init',   bodyInit )
 sm:set_transition( bodySideways, 'done',   bodyInit )

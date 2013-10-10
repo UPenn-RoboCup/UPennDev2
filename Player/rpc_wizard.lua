@@ -57,7 +57,7 @@ local function process_rpc(rpc)
 
   -- State machine events
   local fsm = rpc.fsm
-  if fsm and type(fsm.evt)=='string' then
+  if fsm and type(rpc.evt)=='string' then
     local ch = fsm_channels[fsm]
     --
     if ch then

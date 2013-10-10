@@ -39,7 +39,7 @@ local function turn_in_place(pose,wp,rel_wp)
   end
 
 	if math.abs(rel_wp.a) < spin_threshold then
-		retun {0,0,0}, true
+		return {0,0,0}, true
 	end
 	
 	-- TODO: may need vx, vy to deal with offsets in x, y when turning

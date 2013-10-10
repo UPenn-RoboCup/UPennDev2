@@ -29,15 +29,7 @@ local spin_threshold = 2*math.pi/180
 
 
 local function turn_in_place(pose,wp,rel_wp)
-  if rel_dist<dist_threshold then
-    --print('dist in thresh')
-    -- if not the last waypoint, then we are done with this waypoint
-    if wp_id<nwaypoints then return {0,0,0}, true end
-    -- else, we DO need to end with the right orientation
-    if math.abs(rel_wp.a)<angle_threshold then return {0,0,0}, true end
-    vStep[3] = .05*util.sign(rel_wp.a)
-  end
-
+  local vStep = vector.zeros(3)
 	if math.abs(rel_wp.a) < spin_threshold then
 		return {0,0,0}, true
 	end
@@ -122,6 +114,7 @@ function state.update()
 	  -- Check if we are at the waypoint
 	  if at_waypoint then
 	    phase = phase + 1
+		  t_start = Body.get_time()
 	  end
 	
 	elseif phase == 2 then
@@ -130,8 +123,7 @@ function state.update()
 		-- 3. Check slam pose?
 		
 		-- Use dumb 1 just for testing
-		t_start = unix.time()
-		if unix.time - t_start < 5 then
+		if Body.get_time() - t_start < 10 then
 			mcm.set_walk_vel({0, -0.02, 0})
 		else
 			mcm.set_wal_vel({0,0,0})

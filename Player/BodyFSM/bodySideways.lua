@@ -28,7 +28,7 @@ local angle_threshold = 2*math.pi/180
 local spin_threshold = 2*math.pi/180
 
 
-local function turn_in_place(pose,wp,rel_wp)
+local function turn_in_place( rel_wp )
   local vStep = vector.zeros(3)
 	if math.abs(rel_wp.a) < spin_threshold then
 		return {0,0,0}, true
@@ -41,6 +41,18 @@ local function turn_in_place(pose,wp,rel_wp)
   return vStep, false
 end
 
+local function move_sideways( rel_wp )
+  local vStep = vector.zeros(3)
+	if math.abs(rel_wp.y) < dist_threshold then
+		return {0,0,0}, true
+	end
+	
+	-- TODO: may need vx, vy to deal with offsets in x, y when turning
+	vStep[1], vStep[3] = 0, 0
+	-- We only let the robot to turn CLOCKWISE for this task
+	vStep[2] = math.max( .025*util.sign(rel_wp.y), 0.25*rel_wp.y )
+  return vStep, false
+end
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -83,32 +95,28 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+	cnt = cnt + 1
+  if cnt % 30 == 0 then
+	  local pose = vector.pose(wcm.get_slam_pose())
+	  local rel_wp = util.pose_relative(targetPose,pose)
+	   print('phase:', phase)
+	   print('Robot pose:', unpack(pose) )
+	   print('Relative pose:', rel_wp.x, rel_wp.y, rel_wp.a)
+	 end
+
 	if phase == 1 then
 		-- Grab target pose
 	  if not targetPose then return'error' end
 
 	  -- Grab the current pose
-	  cnt = cnt + 1
 	  --local pose = vector.pose(wcm.get_robot_pose())
 	  local pose = vector.pose(wcm.get_slam_pose())
-	  if cnt % 20 == 0 then
-	  	print('phase:', phase)
-	    print('Robot pose:', unpack(pose) )
-	  end
-
 	  -- Set with relative coordinates
 	  local rel_wp = util.pose_relative(targetPose,pose)
 
-	  -- Debug
-	  --[[
-	  print('pose',pose)
-	  --print('wayp',wp)
-	  print('rela',rel_wp)
-	  --]]
-
 	  -- Turn in place
 		-- Use step rather than walk might be better?
-	  local vel, at_waypoint = turn_in_place(pose,wp,rel_wp)
+	  local vel, at_waypoint = turn_in_place(rel_wp)
 
 	  -- Update the velocity
 	  mcm.set_walk_vel(vel)
@@ -116,6 +124,10 @@ function state.update()
 	  -- Check if we are at the waypoint
 	  if at_waypoint then
 	    phase = phase + 1
+	    -- Set up new target pose (in Global)
+	    local pose = wcm.get_slam_pose()
+	    local target_vec = util.pose_global({0,-1,0}, pose)
+	    targetPose = vector.new({target_vec.x, target_vec.y, target_vec.a})
 	  end
 	
 	elseif phase == 2 then
@@ -123,16 +135,30 @@ function state.update()
 		-- 2. hcm so that human decides when to stop?
 		-- 3. Check slam pose?
 		
-		-- Currently use hcm
+		--[[ If use hcm
 		if hcm.get_motion_sideways_status() == 0 then
 			mcm.set_walk_vel({0, -0.025, 0})
 		else
 			mcm.set_walk_vel({0,0,0})
 			phase = phase + 1
 		end
+		--]]
+
+		-- If use slam pose for autonomous stopping
+	  local pose = vector.pose(wcm.get_slam_pose())
+	  local rel_wp = util.pose_relative(targetPose,pose)
+
+		local vel, at_waypoint = move_sideways( rel_wp )
+		
+	  -- Update the velocity
+	  mcm.set_walk_vel(vel)
+
+	  -- Check if we are at the waypoint
+	  if at_waypoint then
+	    phase = phase + 1
+	  end
 		
 	elseif phase == 3 then
-		-- TODO:Turn back to face the forward direction
 			return 'done'
 	end
 

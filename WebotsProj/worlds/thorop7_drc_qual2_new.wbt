@@ -1,0 +1,163 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Default world for the THOR-OP"
+  ]
+  title "blocktest"
+  basicTimeStep 10
+  FPS 15
+}
+Viewpoint {
+  orientation 0.0641794 0.964178 0.257373 3.5875
+  position -4.74658 11.431 -12.2097
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR MetricFloor {
+  color 0.95 0.95 0.95
+}
+THOROP7_NoBoundaries {
+  translation 0 1.155 -0.2
+  controller "thorop"
+  controllerArgs "0 32"
+}
+DEF GROUND0 Solid {
+  translation 0 -0.074 -0.1
+  children [
+    Shape {
+      appearance DEF GroundAppearance Appearance {
+        material Material {
+          diffuseColor 1 0 0
+          emissiveColor 0.201961 0.201961 0.201961
+        }
+      }
+      geometry DEF GroundBox Box {
+        size 2.4 0.15 0.2
+      }
+    }
+  ]
+  locked TRUE
+}
+DEF DOOR1 Solid {
+  translation 0.6064 1 1.2
+  children [
+    Shape {
+      appearance DEF GroundAppearance Appearance {
+        material Material {
+          diffuseColor 0.2 0.2 0.2
+          emissiveColor 0.201961 0.201961 0.201961
+        }
+      }
+      geometry DEF GroundBox Box {
+        size 0.4 2 0.2
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.4 2 0.2
+      }
+    ]
+  }
+  locked TRUE
+}
+DEF DOOR2 Solid {
+  translation -0.6064 1 1.2
+  children [
+    Shape {
+      appearance DEF GroundAppearance Appearance {
+        material Material {
+          diffuseColor 0.2 0.2 0.2
+          emissiveColor 0.201961 0.201961 0.201961
+        }
+      }
+      geometry DEF GroundBox Box {
+        size 0.4 2 0.2
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.4 2 0.2
+      }
+    ]
+  }
+  locked TRUE
+}
+DEF DOOR3 Solid {
+  translation 0.9064 1 0.7
+  children [
+    Shape {
+      appearance DEF GroundAppearance Appearance {
+        material Material {
+          diffuseColor 0.2 0.2 0.2
+          emissiveColor 0.201961 0.201961 0.201961
+        }
+      }
+      geometry DEF GroundBox Box {
+        size 0.2 2 1.2
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.2 2 1.2
+      }
+    ]
+  }
+  locked TRUE
+}
+DEF GROUND2 Solid {
+  translation 0 -0.074 2.5
+  children [
+    Shape {
+      appearance DEF GroundAppearance Appearance {
+        material Material {
+          diffuseColor 0 1 0
+          emissiveColor 0.201961 0.201961 0.201961
+        }
+      }
+      geometry DEF GroundBox Box {
+        size 2.4 0.15 0.2
+      }
+    }
+  ]
+  locked TRUE
+}
+Wall {
+  translation -4.29148 -3.33955e-13 2.04706
+  rotation 0 1 0 1.57
+}
+Wall {
+  translation -2.96816 -1.77636e-15 3.63798
+}
+Wall {
+  translation -0.783811 -1.11911e-13 6.50227
+}
+Wall {
+  translation 2.18046 1.06581e-14 -0.627327
+  rotation 0 1 0 1.57
+}
+Wall {
+  translation 2.073 -1.13687e-13 6.49429
+}
+Wall {
+  translation 3.37932 0.3 4.58869
+  rotation 0 1 0 1.57
+}

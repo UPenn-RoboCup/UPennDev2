@@ -59,6 +59,15 @@ function state.update()
   Body.request_rleg_position()
   Body.request_waist_position()
 
+
+  qLLeg = Body.get_lleg_position()
+  qRLeg = Body.get_rleg_position()
+
+
+  Body.set_lleg_command_position(qLLeg)  
+  Body.set_rleg_command_position(qRLeg)
+
+
 end
 
 function state.exit()

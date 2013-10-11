@@ -134,8 +134,6 @@ ret = CONTROL;
         elseif flags==2
             waypoint=SLAM.get_waypoints();
             disp(waypoint)
-%             % add the dummy yaw
-%             waypoint = cat(2, waypoint, zeros(size(waypoint,1), 1));
             if numel(waypoint)>0
                 waypoint_num = size(waypoint,1);
                 send_control_packet([], [],...
@@ -176,7 +174,6 @@ ret = CONTROL;
         end
         SLAM.clear_waypoint();
     end
-%}
 
 
     function send_control_packet( fsmtype, event, shared, segment, key, data )

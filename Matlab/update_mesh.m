@@ -28,7 +28,7 @@ t0 = tic;
   end
   
   % Scanline angles should be a column vector
-%   lidarangles = lidarangles';
+  % lidarangles = lidarangles';
 
   %Calculate actual ranges
   range_actual = double(lidar.ranges)/ 256 * lidar.lidarrange;
@@ -55,20 +55,17 @@ t0 = tic;
   ground_height = -0.7;
   max_height = 1.0;
 
-
-
   if lidar_type==0
     [verts faces cdatas facecount]=lidartrans('headmesh',...
      fov_angles_skipped, lidarangles_skipped, range_skipped, ...
-     connect_th, max_dist, ground_height, max_height);
+     connect_th, max_dist, ground_height, max_height, lidar.rpy);
   else
     [verts faces cdatas facecount]=lidartrans('chestmesh',...
      fov_angles_skipped, lidarangles_skipped, range_skipped, ...
-     connect_th, max_dist, ground_height, max_height);
+     connect_th, max_dist, ground_height, max_height, lidar.rpy);
   end
+
   verts=verts';
-
-
 
   %include pose for drawing patches
   % Would it make more sense to have the 
@@ -80,22 +77,8 @@ t0 = tic;
   vertx = verts(:,1)*ca - verts(:,2)*sa + POSE.pose_slam(1);
   verty = verts(:,1)*sa + verts(:,2)*ca + POSE.pose_slam(2);
   vertz = verts(:,3);
-  
-%   % Yaw
-%   ca = cos(SLAM.slam_pose(3));
-%   sa = sin(SLAM.slam_pose(3));
-%   vertx = verts(:,1)*ca - verts(:,2)*sa + SLAM.slam_pose(1);
-%   verty = verts(:,1)*sa + verts(:,2)*ca + SLAM.slam_pose(2);
-%   vertz = verts(:,3);
-%   
-  % Pitch
-  ca = cos(SLAM.torso_tilt);
-  sa = sin(SLAM.torso_tilt);
-  vertx = vertx*ca + vertz*sa;
-  vertz = -vertx*sa + vertz*ca;
-  
-  vert_transformed = [vertx verty vertz];
 
+  vert_transformed = [vertx verty vertz];
 
   faces=faces(:,1:facecount)';
   cdatas=cdatas(:,1:facecount)';

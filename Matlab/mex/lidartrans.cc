@@ -38,27 +38,41 @@ typedef unsigned int uint32;
 
 
 
-void get_head_projection(float* rayend, float rayAngle, float lidarAngle, float range){
+void get_head_projection(float* rayend, float rayAngle, float lidarAngle, float range, float pitch){
+  float cp = cos(pitch);
+  float sp = sin(pitch);
   float ca = cos(lidarAngle);
   float sa = sin(lidarAngle);
   float dx = range*cos(rayAngle);
   float dy = range*sin(rayAngle);
   float dz = LIDAR_HEIGHT;
-  rayend[0] = ca*dx + sa*dz;
+
+  float temp_x= ca*dx + sa*dz;  
+  float temp_z = -sa*dx + ca*dz + NECK_HEIGHT;
+  //rotate in Y axis to fix pitch
+  rayend[0] = cp*temp_x + sp*temp_z;
   rayend[1] = dy;
-  rayend[2] = -sa*dx + ca*dz + NECK_HEIGHT;
+  rayend[2] = -sp*temp_x + cp*temp_z;
 }
 
-void get_chest_projection(float* rayend, float rayAngle, float lidarAngle, float range){
+void get_chest_projection(float* rayend, float rayAngle, float lidarAngle, float range, float pitch){
 //printf("lidarangle %f chestangle %f range %f\n",lidarAngle,chestAngle,range);
+  float cp = cos(pitch);
+  float sp = sin(pitch);
+
   float ca = cos(lidarAngle);
   float sa = sin(lidarAngle);
 
   float dx = CHEST_LIDAR_OFFSET_X + range*cos(rayAngle);
   float dz = range*sin(-rayAngle);
-  rayend[0] = ca*dx + CHEST_LIDAR_JOINT_X;
+
+  float temp_x= ca*dx + CHEST_LIDAR_JOINT_X;  
+  float temp_z = dz+CHEST_LIDAR_HEIGHT;
+
+  //rotate in Y axis to fix pitch
+  rayend[0] = cp*temp_x + sp*temp_z;
   rayend[1] = sa*dx;
-  rayend[2] = dz+CHEST_LIDAR_HEIGHT;
+  rayend[2] = -sp*temp_x + cp*temp_z;
 
 }
 
@@ -70,7 +84,7 @@ mxArray* mex_get_head_projection(int nrhs, const mxArray *prhs[]){
   float range = mxGetScalar(prhs[2]);
 
   float rayend[3];
-  get_head_projection(rayend, lidarAngle, neckAngle, range);
+  get_head_projection(rayend, lidarAngle, neckAngle, range, 0);
 
   mxArray* ret = mxCreateDoubleMatrix(1,3, mxREAL);
   double * retPtr = mxGetPr(ret);
@@ -86,7 +100,7 @@ mxArray* mex_get_chest_projection(int nrhs, const mxArray *prhs[]){
   float lidarAngle = mxGetScalar(prhs[1]);
   float range = mxGetScalar(prhs[2]);
   float rayend[3];
-  get_chest_projection(rayend, rayAngle, lidarAngle, range);
+  get_chest_projection(rayend, rayAngle, lidarAngle, range,0);
 
   mxArray* ret = mxCreateDoubleMatrix(1,3, mxREAL);
 
@@ -160,10 +174,10 @@ void mex_get_map(mxArray* ret[], int nrhs, const mxArray *prhs[], int lidarType)
         float temp[3];
 	if (lidarType>0){
           get_chest_projection(temp, rayAngle_ptr[i], lidarAngle_ptr[j],
-		range_ptr[i+j*m_range]);
+		range_ptr[i+j*m_range],0);
         }else{
           get_head_projection(temp, rayAngle_ptr[i], lidarAngle_ptr[j],
-		range_ptr[i+j*m_range]);
+		range_ptr[i+j*m_range],0);
         }
 
         retX_ptr[i+j*m_range] = temp[0];
@@ -240,6 +254,9 @@ void mex_get_mesh(mxArray* ret[], int nrhs, const mxArray *prhs[], int lidartype
     double ground_height = mxGetScalar(prhs[5]);
     double max_height = mxGetScalar(prhs[6]);
 
+    //RPY angles
+    double* rpy_ptr =  mxGetPr(prhs[7]);
+
     if ((m_range!=m_ray) || (n_range!=n_lidar))
       mexErrMsgTxt("Input dimension mismatch");
 
@@ -262,9 +279,9 @@ void mex_get_mesh(mxArray* ret[], int nrhs, const mxArray *prhs[], int lidartype
         int vert_index = i+j*m_range;
         float temp[3];
        	if (lidartype==0)
-          get_head_projection(temp, rayAngle_ptr[i], lidarAngle_ptr[j],	range_ptr[vert_index]);
+          get_head_projection(temp, rayAngle_ptr[i], lidarAngle_ptr[j],	range_ptr[vert_index],  rpy_ptr[1]);
         else
-          get_chest_projection(temp, rayAngle_ptr[i], lidarAngle_ptr[j],		range_ptr[vert_index]);
+          get_chest_projection(temp, rayAngle_ptr[i], lidarAngle_ptr[j], range_ptr[vert_index], rpy_ptr[1]);
         //Set vertex xyz positions
         vert_ptr[vert_index*3] = temp[0];
         vert_ptr[vert_index*3+1] = temp[1];

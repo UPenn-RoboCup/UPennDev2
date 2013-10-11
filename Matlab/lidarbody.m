@@ -182,7 +182,6 @@ CHEST_LIDAR.posea=[];
           metadata.depths = cell2mat(metadata.depths)
         end
 
-
         %disp(metadata)
         cdepth = udp_data(offset+1:end);
         if strncmp(char(metadata.c),'jpeg',3)==1
@@ -203,6 +202,7 @@ CHEST_LIDAR.posea=[];
             HEAD_LIDAR.fov_angles = fov_angles;
             HEAD_LIDAR.scanline_angles = scanline_angles;
             HEAD_LIDAR.depths = double(metadata.depths);
+            HEAD_LIDAR.rpy = metadata.rpy;
             % Update the figures
             draw_depth_image();
             update_mesh(0);
@@ -213,8 +213,8 @@ CHEST_LIDAR.posea=[];
             CHEST_LIDAR.ranges = depth_img';
             CHEST_LIDAR.fov_angles = fov_angles;
             CHEST_LIDAR.scanline_angles = scanline_angles;
-
             CHEST_LIDAR.depths = double(metadata.depths);
+            CHEST_LIDAR.rpy = metadata.rpy;
             % Update depth image
             draw_depth_image();
             % Update mesh image
@@ -356,7 +356,7 @@ CHEST_LIDAR.posea=[];
             fov_angle_index = round( posxy(1) );
             scanline_index  = round( posxy(2) );
             % grab the range
-            range = HEAD_LIDAR.ranges(scanline_index,fov_angle_index)
+            range = HEAD_LIDAR.ranges(scanline_index,fov_angle_index);
             range = double(range)/255 * (HEAD_LIDAR.depths(2)-HEAD_LIDAR.depths(1));
             range = range + HEAD_LIDAR.depths(1);
             fov_angle_selected = -1*HEAD_LIDAR.fov_angles(fov_angle_index);
@@ -383,7 +383,7 @@ CHEST_LIDAR.posea=[];
             scanline_index  = round( posxy(1) );
             % grab the range
             range = CHEST_LIDAR.ranges(fov_angle_index,scanline_index);
-            range = double(range)/255 * (CHEST_LIDAR.depths(2)-CHEST_LIDAR.depths(1))
+            range = double(range)/255 * (CHEST_LIDAR.depths(2)-CHEST_LIDAR.depths(1));
             range = range + CHEST_LIDAR.depths(1);
             % Grab the correct angles
             fov_angle_selected = -1*CHEST_LIDAR.fov_angles(fov_angle_index)

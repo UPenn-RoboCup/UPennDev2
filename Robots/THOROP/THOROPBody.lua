@@ -1513,8 +1513,11 @@ if IS_WEBOTS then
       local pose    = vector.pose{gps[3], gps[1], angle}
       wcm.set_robot_pose( pose )
       local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
+
+      --SJ: we need to remap rpy for webots
       jcm.sensorPtr.rpy[1],jcm.sensorPtr.rpy[2],jcm.sensorPtr.rpy[3] = 
-        unpack(rpy)
+        rpy[2],rpy[1],-rpy[3]
+
       --[[
       print('rpy',unpack(rpy) )
       print('gps',unpack(gps) )

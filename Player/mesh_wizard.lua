@@ -120,7 +120,7 @@ local function prepare_mesh(type,near,far,method)
   else
     -- raw data?
     return
-  end
+  end  
   type.meta.depths = {near,far}
   return mp.pack(type.meta), c_mesh
 end
@@ -205,6 +205,7 @@ local function chest_callback()
         chest.offset_idx )      
       chest.scan_angles[line] = angle -- Save the pan angle
   end
+  chest.meta.rpy = metadata.rpy --Save the body tilt info
   -- We've been updated
   chest.meta.t = metadata.t
 end
@@ -243,6 +244,7 @@ local function head_callback()
         head.offset_idx )      
       head.scan_angles[line] = angle -- Save the pan angle
   end
+  head.meta.rpy = metadata.rpy --Save the body tilt info
   -- We've been updated
   head.meta.t = metadata.t
 end

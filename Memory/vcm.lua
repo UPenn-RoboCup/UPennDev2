@@ -20,8 +20,7 @@ shared.head_camera.image = 2*160*120
 -- Look up table is 262144 bytes
 shared.head_camera.lut   = 262144
 shared.head_camera.t     = vector.zeros(1)
---shared.head_camera.net = vector.zeros(3)
-shared.head_camera.net = vector.new({2,1,0})--to enable camera streaming
+shared.head_camera.net = vector.zeros(3)
 
 ------------------------
 --  Head LIDAR

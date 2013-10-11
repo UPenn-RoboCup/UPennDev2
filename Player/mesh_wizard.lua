@@ -14,6 +14,7 @@ torch.Tensor     = torch.DoubleTensor
 local Body       = require'Body'
 local util       = require'util'
 local jpeg       = require'jpeg'
+local png        = require'png'
 local zlib       = require'zlib'
 local util       = require'util'
 local mp         = require'msgpack'
@@ -83,7 +84,7 @@ local function setup_mesh( name, tbl )
   return tbl
 end
 
-local function prepare_mesh(type,near,far,method)
+local function prepare_mesh(type,near,far,method, quality)
   -- Safety check
   if near>=far then return end
   if not type then return end
@@ -104,6 +105,7 @@ local function prepare_mesh(type,near,far,method)
   if method==1 then
     -- jpeg
     type.meta.c = 'jpeg'
+    jpeg.set_quality( quality )
     c_mesh = jpeg.compress_gray( type.mesh_byte:storage():pointer(),
       dim[2], dim[1] )
   elseif method==2 then
@@ -139,14 +141,22 @@ local function stream_mesh(type)
   local metapack, c_mesh = prepare_mesh(
     type,
     depths[1],depths[2],
-    net_settings[2])
+    -- Compression type & quality
+    net_settings[2],net_settings[3])
 
   -- Sending to other processes
+  
   --mesh_pub_ch:send( {meta, payload} )
-  local ret, err = mesh_udp_ch:send( metapack..c_mesh )
-  if err then print('mesh udp',err) end
+  
   if net_settings[1]==1 then
     net_settings[1] = 0
+    local ret, err = mesh_udp_ch:send( metapack..c_mesh )
+    if err then print('mesh udp',err) end
+    vcm['set_'..type.meta.name..'_net'](net_settings)
+  elseif net_settings[1]==3 then
+    -- Reliable single frame
+    net_settings[1] = 0
+    local ret = mesh_tcp_ch:send{metapack,c_mesh}
     vcm['set_'..type.meta.name..'_net'](net_settings)
   end
   --[[
@@ -215,23 +225,6 @@ local function head_callback()
   end
 end
 
-local function reliable_callback()
-  local request, has_more
-  repeat
-    request, has_more = mesh_tcp_ch:receive()
-    request = mp.unpack(request)
-    util.ptable(request)
-    local metapack, c_mesh = prepare_mesh(
-      mesh_lookup[request.type],
-      request.near or 0,request.far or 5,
-      request.c or 2)
-    -- NOTE: The zmq channel is REP/REQ
-    -- Reply with the result of the request
-    local ret = mesh_tcp_ch:send( {metapack, c_mesh} )
-    print('ret rel',ret)
-  until not has_more
-end
-
 ------------------
 -- Main routine --
 ------------------
@@ -263,12 +256,9 @@ function mesh.entry()
     chest.lidar_ch  = ch
   end
 
-  -- Reliable request/reply
-  --mesh_tcp_ch = simple_ipc.new_replier(Config.net.reliable_mesh,'*')
-  if mesh_tcp_ch then
-    mesh_tcp_ch.callback = reliable_callback
-    table.insert( wait_channels, mesh_tcp_ch )
-  end
+  -- Reliable tcp sending
+  mesh_tcp_ch = simple_ipc.new_publisher(
+    Config.net.reliable_mesh,false,'*') --Config.net.operator.wired
 
   -- Send mesh messages on interprocess to other processes
   -- TODO: Not used yet

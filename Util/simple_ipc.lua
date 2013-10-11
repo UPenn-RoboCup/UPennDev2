@@ -51,7 +51,7 @@ simple_ipc.new_publisher = function( channel, inverted, addr, filter )
   if channel_type=="string" then
     channel_obj.name = simple_ipc.local_prefix..channel
   elseif channel_type=="number" then
-    channel_obj.name = simple_ipc.intercom_prefix..channel
+    channel_obj.name = simple_ipc.intercom_prefix:gsub('*',addr or 'localhost')..channel
   elseif channel_type=="table" and channel.name and channel.filter~=filter then
     --print('Copying '..channel.name..'!' )
     -- Copy and apply a different filter

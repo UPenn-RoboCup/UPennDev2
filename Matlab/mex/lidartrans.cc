@@ -158,7 +158,7 @@ void mex_get_map(mxArray* ret[], int nrhs, const mxArray *prhs[], int lidarType)
     if ((m_range!=m_ray) || (n_range!=n_lidar))
       mexErrMsgTxt("Input dimension mismatch");
 
-    printf("range:%d %d\n",m_range,n_range);
+//    printf("range:%d %d\n",m_range,n_range);
 
     mxArray* retX = mxCreateDoubleMatrix(m_range,n_range, mxREAL);
     mxArray* retY = mxCreateDoubleMatrix(m_range,n_range, mxREAL);
@@ -260,7 +260,7 @@ void mex_get_mesh(mxArray* ret[], int nrhs, const mxArray *prhs[], int lidartype
     if ((m_range!=m_ray) || (n_range!=n_lidar))
       mexErrMsgTxt("Input dimension mismatch");
 
-    printf("range:%d %d\n",m_range,n_range);
+//    printf("range:%d %d\n",m_range,n_range);
 
     int max_face_no = (m_range-1)*(n_range-1)*2;
     int max_vert_no = m_range*n_range;

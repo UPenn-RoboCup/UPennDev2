@@ -11,7 +11,9 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   --TODO: need to compensate the torso pose
-  Body.set_head_command_position( {0,-Config.walk.bodyTilt-0.05} )
+--  Body.set_head_command_position( {0,-Config.walk.bodyTilt-0.05} )
+  
+  Body.set_head_command_position( {0,-Config.walk.bodyTilt} )
 end
 
 function state.update()

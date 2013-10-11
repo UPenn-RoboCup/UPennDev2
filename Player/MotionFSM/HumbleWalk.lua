@@ -62,6 +62,9 @@ function walk.entry()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
       step_planner:init_stance()
 
+  --Reset odometry varialbe
+  Body.init_odometry(uTorso_now)
+
   --Now we advance a step at next update  
   t_last_step = Body.get_time() - tStep 
 
@@ -144,6 +147,10 @@ function walk.update()
     local log_entry = string.format('%f %f %d %s\n',t,ph,supportLeg,table.concat(lfoot,' '))
     LOG_F_SENSOR:write(log_entry)
   end
+
+  --Update the odometry variable
+  Body.update_odometry(uTorso)
+  --print("odometry pose:",unpack(wcm.get_robot_pose_odom()))
 end -- walk.update
 
 function walk.exit()

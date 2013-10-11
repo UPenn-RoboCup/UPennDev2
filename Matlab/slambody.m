@@ -132,7 +132,9 @@ function ret=slambody()
     %data_unpacked = msgpack('unpack',udp_data);
     [data_unpacked, offset] = msgpack('unpack',udp_data);
     % new streaming
-%     disp(data_unpacked)
+% disp(data_unpacked)
+
+
     cmap = udp_data(offset+1:end);
     if strncmp(char(data_unpacked.c),'jpeg',3)==1
         thor_omap = djpeg(cmap);
@@ -154,7 +156,6 @@ function ret=slambody()
 %set(SLAM.image,'Cdata', thor_omap);
 
 %now RGB color
-
 
     cmap_rgb = [];
     cmap_rgb(:,:,1) = redmap(thor_omap+1);

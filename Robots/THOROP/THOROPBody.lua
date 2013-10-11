@@ -2,6 +2,7 @@
 -- Body abstraction for THOR-OP
 -- (c) 2013 Stephen McGill, Seung-Joon Yi
 --------------------------------
+local mp         = require'msgpack'
 local udp        = require'udp'
 
 
@@ -17,6 +18,8 @@ local use_joint_feedback = false
 require'jcm'
 -- Shared memory for vision of the world
 require'vcm'
+-- Shared memory for world 
+require'wcm'
 
 -- Utilities
 local unix         = require'unix'
@@ -1102,13 +1105,14 @@ Body.exit = function()
 end
 
 
-function init_jangle_feedback()
+function init_status_feedback()
   feedback_udp_ch = udp.new_sender(Config.net.operator.wired,Config.net.feedback)
   print('Connected to Operator:',
     Config.net.operator.wired,Config.net.feedback)
 end
 
-local function send_jangle_feedback()
+--SJ: we need to consolidate status feedback somewhere
+local function send_status_feedback()
   local data={};
   data.larmangle = Body.get_larm_command_position()
   data.rarmangle = Body.get_rarm_command_position()
@@ -1118,12 +1122,19 @@ local function send_jangle_feedback()
   data.rlegangle = Body.get_rleg_command_position()
   data.lgrip =  Body.get_lgrip_command_position()
   data.rgrip =  Body.get_rgrip_command_position()
+
+  --Pose information
+  data.pose =  {0,0,0}
+  data.pose_odom =  wcm.get_robot_pose_odom()
+  data.pose_slam =  wcm.get_slam_pose()
+  data.battery =  0
+
   local datapacked = mp.pack(data);
   
   local ret,err = feedback_udp_ch:send( datapacked)
   if err then print('feedback udp',err) end
 end
-init_jangle_feedback()
+init_status_feedback()
 
 
 ----------------------
@@ -1132,11 +1143,8 @@ if IS_WEBOTS then
   -- TODO: fix the min/max/bias for the grippers
   local Config     = require'Config'
 	local webots     = require'webots'
-  local simple_ipc = require'simple_ipc'
-  local mp         = require'msgpack'
-  local udp        = require'udp'
-  local jpeg       = require'jpeg'
-  require'wcm'
+  local simple_ipc = require'simple_ipc'  
+  local jpeg       = require'jpeg'  
   local png        = require'png'
   get_time    = webots.wb_robot_get_time
   local t_last_keypressed = get_time()
@@ -1347,9 +1355,6 @@ if IS_WEBOTS then
       head_camera_wbt.width = webots.wb_camera_get_width(tags.head_camera)
       head_camera_wbt.height = webots.wb_camera_get_height(tags.head_camera)
     end
-    if use_joint_feedback then
-      send_jangle_feedback() --for webots, just send every frame
-    end
 
 --[[
     --FSR sensors
@@ -1527,6 +1532,10 @@ if IS_WEBOTS then
       --]]
     end
 
+    if use_joint_feedback then
+      send_status_feedback() --for webots, just send every frame
+    end
+
 		-- Update the sensor readings of the joint positions
 		-- TODO: If a joint is not found?
 		for idx, jtag in ipairs(tags.joints) do
@@ -1696,6 +1705,34 @@ Body.Kinematics = Kinematics
 require'mcm'
 Body.set_walk_velocity = function(vel)
   mcm.set_walk_vel(vel)
+end
+
+Body.init_odometry = function(uTorso)
+  wcm.set_robot_utorso0(uTorso)
+  wcm.set_robot_utorso1(uTorso)  
+end
+
+--This function should be called by motion state
+Body.update_odometry = function(uTorso)
+  local uTorso1 = wcm.get_robot_utorso1()  
+
+  --update odometry pose  
+  local odometry_step = util.pose_relative(uTorso,uTorso1)
+  local pose_odom0 = wcm.get_robot_pose_odom()
+  local pose_odom = util.pose_global(odometry_step, pose_odom0)
+  wcm.set_robot_pose_odom(pose_odom)
+
+  --updae odometry variable
+  wcm.set_robot_utorso1(uTorso)
+end
+
+--This function should be called by slam wizard (slower rate than state update)
+Body.get_odometry = function()
+  local uTorso0 = wcm.get_robot_utorso0()
+  local uTorso1 = wcm.get_robot_utorso1()  
+
+  wcm.set_robot_utorso0(uTorso0) --reset initial position
+  return util.pose_relative(uTorso1,uTorso0)
 end
 
 return Body

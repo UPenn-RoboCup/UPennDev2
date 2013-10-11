@@ -13,9 +13,19 @@ shared.robot = {}
 -- Webot pose
 shared.robot.pose = vector.zeros(3)
 
+--Odometry 
+shared.robot.utorso0 = vector.zeros(3)
+shared.robot.utorso1 = vector.zeros(3)
+
+--Odometry pose
+shared.robot.pose_odom = vector.zeros(3)
+
 -- SLAM pose
 shared.slam = {}
 shared.slam.pose = vector.zeros(3)
+
+
+
 --[[
 shared.robot.team_ball = vector.zeros(3);
 shared.robot.team_ball_score = vector.zeros(1);

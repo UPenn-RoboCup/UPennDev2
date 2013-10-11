@@ -184,7 +184,10 @@ local function head_callback()
 	if math.abs(metadata.gyro[1]) > 0.45 then return end
 
   libSlam.processIMU( metadata.rpy, metadata.gyro[3], metadata.t )
-  libSlam.processOdometry({0,0,0}) --( Body.get_robot_odom() )
+
+  local odometry = {0,0,0}
+--  local odometry = Body.get_odometry()  
+  libSlam.processOdometry(odometry) --( Body.get_robot_odom() )
   libSlam.processL0( lidar0.points_xyz )
   local t1_processL0 = unix.time()
   --print( string.format('processL0 took: \t%.2f ms', (t1_processL0-t0_processL0)*1000) )
@@ -359,6 +362,7 @@ function slam.update()
   -- Streaming
   meta.shift = shiftdata
   meta.pose_slam = {libSlam.SLAM.xOdom, libSlam.SLAM.yOdom, libSlam.SLAM.yawOdom}
+  meta.pose_odom = wcm.get_robot_pose_odom()
   meta.torso_tilt = Config.walk.bodyTilt
   local meta = mp.pack(meta)
   local ret, err = omap_udp_ch:send( meta..c_map )

@@ -65,8 +65,8 @@ function ret = robotbody()
   BODY.llegangle=[0,0,0,0,0,0];
   BODY.rlegangle=[0,0,0,0,0,0];
 
-  BODY.lfingerangle = 0;
-  BODY.rfingerangle = 1;
+  BODY.lfingerangle = [0 0 0];
+  BODY.rfingerangle = [0 0 0];
 
   BODY.verts=zeros(200,3);
   BODY.faces=zeros(200,3);
@@ -231,14 +231,14 @@ function ret = robotbody()
 
 
   function calculate_transforms()
-%		pose = POSE.pose;
-		pose = POSE.pose_slam;
+		pose = POSE.pose_odom;
+%		pose = POSE.pose_slam;
 
-    lfingerangle1 = pi/3 - pi/6*BODY.lfingerangle;
-    lfingerangle2 = - pi/3*BODY.lfingerangle;
+    lfingerangle1 = BODY.lfingerangle(1);
+    lfingerangle2 = BODY.lfingerangle(2);
 
-    rfingerangle1 = pi/3 - pi/6*BODY.rfingerangle;
-    rfingerangle2 = - pi/3*BODY.rfingerangle;
+    rfingerangle1 = BODY.rfingerangle(1);
+    rfingerangle2 = BODY.rfingerangle(2);
 
     BODY.TrLBody = eye(4)*trans([pose(1) pose(2) 0])*rotZ(pose(3));
 
@@ -309,23 +309,26 @@ function ret = robotbody()
     set(a,'XGrid','on')
     set(a,'YGrid','on')
 
-    update_angles([0 0],[0 0],[0 0 0 0 0 0],[0 0 0 0 0 0],[0 0]);
+    calculate_transforms();
+    plot_parts();    
   end
 
   function setup_controls(b1,b2,b3,b4)
 
   end
 
-  function update_angles(waistangle, neckangle, larmangle, rarmangle, grippers)
-    BODY.waistangle=double(waistangle);
-    BODY.neckangle=double(neckangle);
-    BODY.larmangle=double(larmangle);
-    BODY.rarmangle=double(rarmangle);
+  function update_angles(data)
+    BODY.waistangle=double(data.waistangle);
+    BODY.neckangle=double(data.neckangle);
+    BODY.larmangle=double(data.larmangle);
+    BODY.rarmangle=double(data.rarmangle);
+    BODY.llegangle=double(data.llegangle);
+    BODY.rlegangle=double(data.rlegangle);
+    BODY.lfingerangle = double(data.lgrip);
+    BODY.rfingerangle = double(data.rgrip);
 
-    fingerangle = double(grippers);
-    BODY.lfingerangle = fingerangle(1);
-    BODY.rfingerangle = fingerangle(2);
-
+    BODY.pose_odom = data.pose_odom;
+    BODY.pose_slam = data.pose_slam;
     calculate_transforms();
     plot_parts();
   end
@@ -337,19 +340,14 @@ function ret = robotbody()
       nBytes = nBytes + numel(udp_data);
     end
     data = msgpack('unpack',udp_data);
-    update_angles(clean_cell(data.waistangle)...
-                ,clean_cell(data.neckangle)...
-                ,clean_cell(data.larmangle)...
-                ,clean_cell(data.rarmangle)...
-								,clean_cell(data.grippers) );
+    update_angles(data)    
     POSE.data = data;
-		POSE.pose_odom = double(clean_cell(data.pose_odom));
-		POSE.pose_slam = double(clean_cell(data.pose_slam));
-		POSE.pose = double(clean_cell(data.pose));
+		POSE.pose_odom = double(data.pose_odom);
+		POSE.pose_slam = double(data.pose_slam);
+		POSE.pose = double(data.pose);
     POSE.battery = double(data.battery);
 
     SLAM.update_pose(POSE.pose,POSE.pose_slam);
-
   end
 
   ret= BODY;

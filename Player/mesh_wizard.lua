@@ -180,18 +180,33 @@ local function chest_callback()
   -- Insert into the correct column
   local angle = metadata.pangle
   local scanline = angle_to_scanline( chest.meta, angle )
-  -- Only if a valid column is returned
-  if scanline then
-    -- Copy lidar readings to the torch object for fast modification
-    ranges:tensor(
-      chest.mesh:select(1,scanline),
-      chest.mesh:size(2),
-      chest.offset_idx )
-    -- Save the pan angle
-    chest.scan_angles[scanline] = angle
-    -- We've been updated
-    chest.meta.t     = metadata.t
+  if not scanline then return end -- Only if a valid column is returned
+
+  --SJ: If lidar moves faster than the mesh scanline resolution, we need to fill the gap  
+  local scanlines = {}
+  if chest.last_scanline then
+    if scanline>chest.last_scanline then
+      for i=chest.last_scanline+1,scanline do 
+        table.insert(scanlines,i)
+      end
+    elseif scanline<chest.last_scanline then
+      for i=scanline,chest.last_scanline-1 do 
+        table.insert(scanlines,i)
+      end
+    else return end --Duplicate scanline: don't update
+  else
+    table.insert(scanlines,scanline) --First scanline. Just add one line
   end
+  chest.last_scanline = scanline
+  for i,line in ipairs(scanlines) do
+      ranges:tensor( -- Copy lidar readings to the torch object for fast modification
+        chest.mesh:select(1,line),
+        chest.mesh:size(2),
+        chest.offset_idx )      
+      chest.scan_angles[line] = angle -- Save the pan angle
+  end
+  -- We've been updated
+  chest.meta.t = metadata.t
 end
 
 local function head_callback()
@@ -202,17 +217,34 @@ local function head_callback()
   -- Insert into the correct scanlin
   local angle = metadata.hangle[2]
   local scanline = angle_to_scanline( head.meta, angle )
-  -- Only if a valid column is returned
-  if scanline then
-    -- Copy lidar readings to the torch object for fast modification
-    ranges:tensor(
-      head.mesh:select(1,scanline), -- scanline
-      head.mesh:size(2),
-      head.offset_idx )
-    -- Save the pan angle
-    head.scan_angles[scanline] = angle
-    head.meta.t = metadata.t
+
+  if not scanline then return end -- Only if a valid column is returned
+
+  --SJ: If lidar moves faster than the mesh scanline resolution, we need to fill the gap  
+  local scanlines = {}
+  if head.last_scanline then
+    if scanline>head.last_scanline then
+      for i=head.last_scanline+1,scanline do 
+        table.insert(scanlines,i)
+      end
+    elseif scanline<head.last_scanline then
+      for i=scanline,head.last_scanline-1 do 
+        table.insert(scanlines,i)
+      end
+    else return end --Duplicate scanline: don't update
+  else
+    table.insert(scanlines,scanline) --First scanline. Just add one line
   end
+  head.last_scanline = scanline
+  for i,line in ipairs(scanlines) do
+      ranges:tensor( -- Copy lidar readings to the torch object for fast modification
+        head.mesh:select(1,line),
+        head.mesh:size(2),
+        head.offset_idx )      
+      head.scan_angles[line] = angle -- Save the pan angle
+  end
+  -- We've been updated
+  head.meta.t = metadata.t
 end
 
 local function reliable_callback()

@@ -2,12 +2,16 @@
 -- Body abstraction for THOR-OP
 -- (c) 2013 Stephen McGill, Seung-Joon Yi
 --------------------------------
+local udp        = require'udp'
+
 
 -- Webots THOR-OP Body sensors
 local use_camera = true
 local use_lidar_head  = false
 local use_lidar_chest  = false
 local use_pose   = true
+local use_joint_feedback = false
+
 
 -- Shared memory for the joints
 require'jcm'
@@ -1098,6 +1102,28 @@ Body.exit = function()
 end
 
 
+function init_jangle_feedback()
+  feedback_udp_ch = udp.new_sender(Config.net.operator.wired,Config.net.feedback)
+  print('Connected to Operator:',
+    Config.net.operator.wired,Config.net.feedback)
+end
+
+local function send_jangle_feedback()
+  local data={};
+  data.larmangle = Body.get_larm_command_position()
+  data.rarmangle = Body.get_rarm_command_position()
+  data.waistangle = Body.get_waist_command_position()
+  data.neckangle = Body.get_head_command_position()
+  data.llegangle = Body.get_lleg_command_position()
+  data.rlegangle = Body.get_rleg_command_position()
+  data.lgrip =  Body.get_lgrip_command_position()
+  data.rgrip =  Body.get_rgrip_command_position()
+  local datapacked = mp.pack(data);
+  
+  local ret,err = feedback_udp_ch:send( datapacked)
+  if err then print('feedback udp',err) end
+end
+init_jangle_feedback()
 
 
 ----------------------
@@ -1113,6 +1139,7 @@ if IS_WEBOTS then
   require'wcm'
   local png        = require'png'
   get_time    = webots.wb_robot_get_time
+  local t_last_keypressed = get_time()
   -- Setup the webots tags
   local tags = {}
 
@@ -1171,15 +1198,9 @@ if IS_WEBOTS then
     160,-0,90,-25,     180,87,180, --RArm
 
     90,45, -- Waist
-
---    90,90,90, -- left gripper
---    90,90,90, -- right gripper
     80,80,80,
     80,80,80,    
-
-
-    
-    
+   
     60, -- Lidar pan
   })*DEG_TO_RAD
   
@@ -1191,6 +1212,7 @@ if IS_WEBOTS then
   chest_lidar_wbt = {}
   chest_lidar_wbt.meta = {}
   chest_lidar_wbt.channel = simple_ipc.new_publisher'chest_lidar'
+
   local head_camera_wbt, update_head_camera
   -- camera
   head_camera_wbt = {}
@@ -1319,12 +1341,14 @@ if IS_WEBOTS then
       webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
       head_lidar_wbt.pointer  = webots.wb_camera_get_range_image(tags.head_lidar)      
     end
-
     if use_camera then
       webots.wb_camera_enable(tags.head_camera, camera_timeStep)
       head_camera_wbt.meta.count = 0
       head_camera_wbt.width = webots.wb_camera_get_width(tags.head_camera)
       head_camera_wbt.height = webots.wb_camera_get_height(tags.head_camera)
+    end
+    if use_joint_feedback then
+      send_jangle_feedback() --for webots, just send every frame
     end
 
 --[[
@@ -1542,7 +1566,13 @@ if IS_WEBOTS then
     local key_code = webots.wb_robot_keyboard_get_key()
     local key_char = string.char(key_code)
     local key_char_lower = string.lower(key_char)
+
+    --avoid auto-repeat
+    local t = get_time()
+    if (t-t_last_keypressed)<1 then return end
+
     if key_char_lower=='k' then
+      t_last_keypressed = t
       use_lidar_head = not use_lidar_head
       -- Toggle lidar
       if use_lidar_head then
@@ -1554,6 +1584,7 @@ if IS_WEBOTS then
         webots.wb_camera_disable(tags.head_lidar)
       end
     elseif key_char_lower=='l' then
+      t_last_keypressed = t
       use_lidar_chest = not use_lidar_chest
       -- Toggle lidar
       if use_lidar_chest then
@@ -1565,17 +1596,28 @@ if IS_WEBOTS then
         webots.wb_camera_disable(tags.chest_lidar)        
       end
     elseif key_char_lower=='c' then
+      t_last_keypressed = t
       use_camera = not use_camera
       -- Toggle camera
       if use_camera then
         print(util.color('Camera enabled!','yellow'))
+        vcm.set_head_camera_net({2,1,0})--to enable camera streaming
         webots.wb_camera_enable(tags.head_camera, camera_timeStep)
       else
         print(util.color('Camera disabled!','yellow'))
+        vcm.set_head_camera_net({0,0,0})--to enable camera streaming
         webots.wb_camera_disable(tags.head_camera)
       end
+    elseif key_char_lower=='j' then
+      t_last_keypressed = t
+      use_joint_feedback = not use_joint_feedback
+      -- Toggle camera
+      if use_joint_feedback then
+        print(util.color('Joint feedback enabled!','yellow'))                
+      else
+        print(util.color('Joint feedback disabled!','yellow'))                        
+      end
     end
-
 	end -- function
 
 	Body.exit = function()

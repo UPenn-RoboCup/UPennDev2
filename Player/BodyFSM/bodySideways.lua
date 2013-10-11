@@ -131,20 +131,7 @@ function state.update()
 	  end
 	
 	elseif phase == 2 then
-		-- 1. just move for a fixed period of time blindly?
-		-- 2. hcm so that human decides when to stop?
-		-- 3. Check slam pose?
-		
-		--[[ If use hcm
-		if hcm.get_motion_sideways_status() == 0 then
-			mcm.set_walk_vel({0, -0.025, 0})
-		else
-			mcm.set_walk_vel({0,0,0})
-			phase = phase + 1
-		end
-		--]]
-
-		-- If use slam pose for autonomous stopping
+	  -- Move sideways
 	  local pose = vector.pose(wcm.get_slam_pose())
 	  local rel_wp = util.pose_relative(targetPose,pose)
 
@@ -154,7 +141,8 @@ function state.update()
 	  mcm.set_walk_vel(vel)
 
 	  -- Check if we are at the waypoint
-	  if at_waypoint then
+	  -- Or human gives stop command
+	  if at_waypoint or hcm.get_motion_sideways_status() == 1 then
 	    phase = phase + 1
 	  end
 		

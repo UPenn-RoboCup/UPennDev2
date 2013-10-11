@@ -21,10 +21,28 @@ for _,sm in ipairs(Config.fsm.enabled) do
   fsm_channels[sm] = simple_ipc.new_publisher(sm,true)
 end
 
+local function trim_string(str)
+  if not str then return end
+  if type(str)~='string'then return str end
+
+  --SJ: with ubuntu, every string contains a byte 0 padding at the end  
+   if str:byte(#str)==0 then
+     str=string.sub(str,1,#str-1)      
+   end
+   return str
+end
+
+
 --NOTE: Can do memory AND fsm event.  In that order
 local function process_rpc(rpc)
   -- for debugging
   util.ptable(rpc)
+  rpc.fsm = trim_string(rpc.fsm)
+  rpc.shm = trim_string(rpc.shm)
+  rpc.evt = trim_string(rpc.evt)
+  rpc.segment = trim_string(rpc.segment)
+  rpc.key = trim_string(rpc.key)
+  rpc.special = trim_string(rpc.special)
 
   local status, reply
   -- Shared memory modification
@@ -37,6 +55,7 @@ local function process_rpc(rpc)
       local method = string.format('set_%s_%s',rpc.segment,rpc.key)
       local func = mem[method]
       -- Use a protected call
+      print(method)
       status, reply = pcall(func,rpc.val)
     elseif rpc.delta then
       -- Increment/Decrement memory
@@ -58,13 +77,28 @@ local function process_rpc(rpc)
   -- State machine events
   local fsm = rpc.fsm
   if fsm and type(rpc.evt)=='string' then
+  
+--[[
+    for i,sm in pairs(fsm_channels) do
+      print("Comparing:",i," vs ",fsm)
+      print("size:",#i,#fsm)
+      if i==fsm then
+        print("Matching channel found")
+      end
+    end
+--]]
+
+--[[
+    print("\nAll channels:")
+    util.ptable(fsm_channels)        
+--]]    
     local ch = fsm_channels[fsm]
-    --
     if ch then
       if rpc.special then
         ch:send{rpc.evt,rpc.special}
       else
         ch:send(rpc.evt)
+        print("sent")
       end
     end
     --

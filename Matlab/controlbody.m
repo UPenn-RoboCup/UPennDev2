@@ -42,6 +42,9 @@ ret = CONTROL;
             set_waypoints(2);
             send_control_packet( 'HeadFSM', 'center');
             send_control_packet( 'BodyFSM', 'follow' );
+        elseif strcmp(evt, 'sidedone')
+            send_control_packet([], [],...
+                'hcm', 'motion', 'sideways_status', 1);
         else
             send_control_packet( 'BodyFSM', evt );
         end
@@ -63,9 +66,10 @@ ret = CONTROL;
         send_control_packet('MotionFSM',evt);
     end
 
-    function setup_slambody_controls(b1,b2)
+    function setup_slambody_controls(b1,b2,b3)
         set(b1,'CallBack',{SLAM.set_zoomlevel,1});
         set(b2,'CallBack',{SLAM.set_zoomlevel,2});
+        set(b3,'CallBack', SLAM.clear_waypoint);
     end
 
     function setup_robotbody_controls(b1,b2,b3,b4)
@@ -93,11 +97,13 @@ ret = CONTROL;
         set(b4,'CallBack',MODELS.step_calc);
     end
 
-    function setup_body_controls(b1,b2,b3,b4)
+    function setup_body_controls(b1,b2,b3,b4,b5,b6)
         set(b1,'CallBack',{@body_control,'init'});
         set(b2,'CallBack',{@body_control,'approach'});
         set(b3,'CallBack',{@body_control,'navigate'});
         set(b4,'CallBack',{@body_control,'teleop'});
+        set(b5,'CallBack',{@body_control,'sideways'});
+        set(b6,'CallBack',{@body_control,'sidedone'});
     end
 
     function setup_head_controls(b1,b2,b3,b4)
@@ -128,8 +134,6 @@ ret = CONTROL;
         elseif flags==2
             waypoint=SLAM.get_waypoints();
             disp(waypoint)
-%             % add the dummy yaw
-%             waypoint = cat(2, waypoint, zeros(size(waypoint,1), 1));
             if numel(waypoint)>0
                 waypoint_num = size(waypoint,1);
                 send_control_packet([], [],...
@@ -155,6 +159,9 @@ ret = CONTROL;
         elseif flags==4
             disp('Two point approach')
             wp = LIDAR.get_double_approach();
+            if numel(wp) == 0
+                wp = SLAM.get_double_approach();
+            end
             if numel(wp)>0
                 send_control_packet([], [],...
                     'hcm', 'motion', 'waypoints',...
@@ -167,7 +174,6 @@ ret = CONTROL;
         end
         SLAM.clear_waypoint();
     end
-%}
 
 
     function send_control_packet( fsmtype, event, shared, segment, key, data )

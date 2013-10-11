@@ -45,6 +45,9 @@ shared_data.motion.waypoint_frame = vector.zeros(1)
 -- following mode
 -- 1: simple, 2: robocup
 shared_data.motion.follow_mode = vector.ones(1)
+-- Sideways status
+shared_data.motion.sideways_status = vector.zeros(1)
+
 
 
 shared_data.motion.bodyHeightTarget = vector.ones(1)

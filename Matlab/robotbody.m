@@ -22,9 +22,9 @@ function ret = robotbody()
   BODY.fingersize = [0.08 0.03 0.03];
   BODY.headsize = [0.15 0.10 0.15];
 
-  BODY.ulegsize = [0.10 0.10 0.30]
-  BODY.llegsize = [0.10 0.10 0.30]
-  BODY.footsize = [0.26 0.145 0.03]
+  BODY.ulegsize = [0.10 0.10 0.30];
+  BODY.llegsize = [0.10 0.10 0.30];
+  BODY.footsize = [0.26 0.145 0.03];
 
 
   BODY.waistoffset = [0 0 0.35];
@@ -37,10 +37,10 @@ function ret = robotbody()
   BODY.rfingeroffset = [0.08 0.03 0];
   BODY.finger2offset = [0.08 0.0 0];
 
-  BODY.lhipoffset = [0 0.072 -0.270]
-  BODY.rhipoffset = [0 -0.072 -0.270]
-  BODY.kneeoffset = [-0.03 0 -0.30]
-  BODY.ankleoffset = [0.03 0 -0.30]
+  BODY.lhipoffset = [0 0.072 -0.270];
+  BODY.rhipoffset = [0 -0.072 -0.270];
+  BODY.kneeoffset = [-0.03 0 -0.30];
+  BODY.ankleoffset = [0.03 0 -0.30];
   
   
   BODY.ubodycom = [0 0 0.09];

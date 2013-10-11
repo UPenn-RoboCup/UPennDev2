@@ -4,7 +4,10 @@ local util = require'util'
 local mp   = require'msgpack'
 local signal = require'signal'
 local simple_ipc   = require'simple_ipc'
+local udp        = require'udp'
+
 local state_pub_ch = simple_ipc.new_publisher(Config.net.state)
+local feedback_udp_ch
 
 require'gcm'
 require'jcm'
@@ -69,6 +72,28 @@ for _,my_fsm in pairs(state_machines) do
   local s = {cur_state_name,nil}
   status[my_fsm._NAME] = s
   local ret = state_pub_ch:send( mp.pack(status) )
+end
+
+function feedback_init()
+  feedback_udp_ch = udp.new_sender(
+    Config.net.operator.wired, Config.net.feedback )
+  print('Connected to Operator:',
+    Config.net.operator.wired,Config.net.feedback)
+end
+
+function send_feedback_udp()
+  local data={};
+  data.larmangle = Body.get_larm_position()
+  data.rarmangle = Body.get_rarm_position()
+  data.waistangle = Body.get_waist_position()
+  data.neckangle = Body.get_neck_position()
+  data.llegangle = Body.get_lleg_position()
+  data.rlegangle = Body.get_rleg_position()
+  data.grippers =  {0,0}
+  local datapacked = mp.pack(data);
+
+  local ret, err = feedback_udp_ch:send(datapacked);
+  if err then print('feedback udp',err) end
 end
 
 while true do

@@ -45,12 +45,14 @@ ret = CAMERA;
         while udp_recv('getQueueSize',fd) > 0
             udp_data = udp_recv('receive',fd);
             nBytes = nBytes + numel(udp_data);
-        end
+        end        
         [metadata,offset] = msgpack('unpack',udp_data);
-        %disp(metadata)
-        cdepth = udp_data(offset+1:end);
+%        disp(metadata)
+        cdepth = udp_data(offset+1:end);        
         if strncmp(char(metadata.c),'jpeg',3)==1
-            set(CAMERA.head.image,'Cdata', djpeg(cdepth));
+          set(CAMERA.head.image,'Cdata', djpeg(cdepth));
+          set(CAMERA.head.a,'XLim',[1 metadata.width])
+          set(CAMERA.head.a,'YLim',[1 metadata.height])
         end
     end
 

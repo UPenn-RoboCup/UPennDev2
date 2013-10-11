@@ -1197,7 +1197,7 @@ if IS_WEBOTS then
   head_camera_wbt.meta = {}
   --head_camera_wbt.channel = simple_ipc.new_publisher'head_cam'
   head_camera_wbt.channel = udp.new_sender(Config.net.operator.wired,Config.net.head_camera)
-  update_head_camera = function()
+  update_head_camera = function()  
     local metadata = {}
     metadata.t = Body.get_time()
     local net_settings = vcm.get_head_camera_net()
@@ -1209,15 +1209,19 @@ if IS_WEBOTS then
         webots.to_rgb(tags.head_camera),
         head_camera_wbt.width,
         head_camera_wbt.height)
+      metadata.width = head_camera_wbt.width
+      metadata.height = head_camera_wbt.height
     elseif net_settings[2]==2 then
       metadata.c = 'png'
       c_color = png.compress(
         webots.to_rgb(tags.head_camera),
         head_camera_wbt.width,
         head_camera_wbt.height)
+      metadata.width = head_camera_wbt.width
+      metadata.height = head_camera_wbt.height
     end
     if not c_color then return end
-    local metapack = mp.pack(head_camera_wbt.meta)
+    local metapack = mp.pack(metadata)
     local ret_c,err_c = head_camera_wbt.channel:send( metapack..c_color )
 
     if err_c then print('head cam',util.color(err_c,'red')) end

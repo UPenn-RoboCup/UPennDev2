@@ -5,7 +5,7 @@ local state = {}
 state._NAME = ...
 
 local min_tilt, max_tilt, mid_tilt, mag_tilt
-local t_entry, t_update, ph_speed, ph, forward
+local t_entry, t_update, ph_speed, ph, forward, pre_dir
 
 -- Update the parameters
 local function update_tilt_params()
@@ -45,7 +45,7 @@ function state.entry()
   -- Ascertain the phase, from the current position of the lidar
   --local cur_angle = Body.get_head_position()[2]
   --ph, forward = radians_to_ph( cur_angle )
-  ph, forward = 0, true
+  ph, forward, pre_dir = 0, true, true
 end
 
 function state.update()
@@ -62,6 +62,12 @@ function state.update()
   
   -- Update the direction
   forward = (forward and ph<1) or ph<=0
+  -- If direction changes, send a mesh image
+  if not (forward == pre_dir) then
+  	-- Single frame; zlib
+  	vcm.set_head_lidar_net({1, 2, 0})
+  	pre_dir = forward
+  end
   -- Update the phase of the tilt
   if forward then
     ph = ph + t_diff * ph_speed

@@ -177,7 +177,6 @@ CHEST_LIDAR.posea=[];
         [metadata,offset] = msgpack('unpack',udp_data);
 
         %SJ: metadata.depths is cell array with ubuntu
-
         if iscell(metadata.depths)
           metadata.depths = cell2mat(metadata.depths)
         end
@@ -191,6 +190,16 @@ CHEST_LIDAR.posea=[];
             depth_img = reshape(depth_img,[metadata.resolution(2) metadata.resolution(1)]);
             depth_img = depth_img';
         end
+
+        %Extract pose information
+        cpose_upperbyte = metadata.c_pose_upperbyte;
+        cpose_lowerbyte = metadata.c_pose_lowerbyte;
+        pose_data = (double(zlibUncompress(cpose_upperbyte))*256+...
+                    double(zlibUncompress(cpose_lowerbyte))-32768) / 256;
+        pose_data = reshape(pose_data,[3 metadata.resolution(1)]);
+
+
+
         % Calculate the angles
 
         fov_angles = metadata.fov(1) : .25*(pi/180) : metadata.fov(2);
@@ -203,6 +212,7 @@ CHEST_LIDAR.posea=[];
             HEAD_LIDAR.scanline_angles = scanline_angles;
             HEAD_LIDAR.depths = double(metadata.depths);
             HEAD_LIDAR.rpy = metadata.rpy;
+            HEAD_LIDAR.poses = pose_data;
             % Update the figures
             draw_depth_image();
             update_mesh(0);
@@ -215,6 +225,7 @@ CHEST_LIDAR.posea=[];
             CHEST_LIDAR.scanline_angles = scanline_angles;
             CHEST_LIDAR.depths = double(metadata.depths);
             CHEST_LIDAR.rpy = metadata.rpy;
+            CHEST_LIDAR.poses = pose_data;
             % Update depth image
             draw_depth_image();
             % Update mesh image

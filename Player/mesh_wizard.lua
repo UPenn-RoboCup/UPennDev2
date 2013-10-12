@@ -55,6 +55,7 @@ local function setup_mesh( name, tbl )
   tbl.meta.c = 'jpeg'
   -- Timestamp
   tbl.meta.t = Body.get_time()
+  tbl.meta.rpy = {0,0,0}
 
   -- Find the resolutions
   local scan_resolution = tbl.meta.scanlines[3]
@@ -77,6 +78,12 @@ local function setup_mesh( name, tbl )
   -- Find the offset for copying lidar readings into the mesh
   -- if fov is from -135 to 135 degrees, then offset_idx is zero
   -- if fov is from 0 to 135 degrees, then offset_idx is 540
+
+  --We save robot pose for every frame
+  --Otherwise the mesh will broken if the robot moves around  
+  tbl.pose_upperbyte = torch.ByteTensor( scan_resolution, 3 ):zero()
+  tbl.pose_lowerbyte = torch.ByteTensor( scan_resolution, 3 ):zero()
+
   local fov_offset = 540+math.ceil( reading_per_radian*tbl.meta.fov[1] )
   tbl.offset_idx   = math.floor(fov_offset)
   --print('fov offset',name,fov_offset,tbl.offset_idx,fov_resolution)
@@ -99,7 +106,7 @@ local function prepare_mesh(type,near,far,method)
   type.mesh_byte:copy( adjusted_range )
   
   -- Compression
-  local c_mesh
+  local c_mesh 
   local dim = type.mesh_byte:size()
   if method==1 then
     -- jpeg
@@ -120,8 +127,22 @@ local function prepare_mesh(type,near,far,method)
   else
     -- raw data?
     return
-  end  
+  end
+  
   type.meta.depths = {near,far}
+
+  local c_pose_upperbyte, c_pose_lowerbyte
+  c_pose_upperbyte = zlib.compress(
+    type.pose_upperbyte:storage():pointer(),
+    type.pose_upperbyte:nElement() )
+
+  c_pose_lowerbyte = zlib.compress(
+    type.pose_lowerbyte:storage():pointer(),
+    type.pose_lowerbyte:nElement() )
+
+  type.meta.c_pose_upperbyte = c_pose_upperbyte
+  type.meta.c_pose_lowerbyte = c_pose_lowerbyte
+
   return mp.pack(type.meta), c_mesh
 end
 
@@ -143,7 +164,7 @@ local function stream_mesh(type)
 
   -- Sending to other processes
   --mesh_pub_ch:send( {meta, payload} )
-  local ret, err = mesh_udp_ch:send( metapack..c_mesh )
+  local ret, err = mesh_udp_ch:send( metapack..c_mesh)
   if err then print('mesh udp',err) end
   if net_settings[1]==1 then
     net_settings[1] = 0
@@ -168,6 +189,16 @@ local function angle_to_scanline( meta, rad )
   -- Return a bounded value
   return math.max( math.min(scanline, res), 1 )
 end
+
+--Convert a float number into two bytes
+--We assume that the number is -127 to 128 
+local function float_to_twobyte(num)
+  local lowerbyte,upperbyte;
+  num = (num*256)
+  num = num + 32768;
+  return math.floor(num/256), math.mod(num,256)
+end
+
 
 ------------------------------
 -- Lidar Callback functions --
@@ -198,13 +229,25 @@ local function chest_callback()
     table.insert(scanlines,scanline) --First scanline. Just add one line
   end
   chest.last_scanline = scanline
+
+  --TODO: use slam+odometry
+  local pose = wcm.get_robot_pose_odom()
   for i,line in ipairs(scanlines) do
       ranges:tensor( -- Copy lidar readings to the torch object for fast modification
         chest.mesh:select(1,line),
         chest.mesh:size(2),
         chest.offset_idx )      
       chest.scan_angles[line] = angle -- Save the pan angle
-  end
+
+      chest.pose_upperbyte[line][1],
+        chest.pose_lowerbyte[line][1]= float_to_twobyte(pose[1])
+      chest.pose_upperbyte[line][2],
+        chest.pose_lowerbyte[line][2]= float_to_twobyte(pose[2])
+      chest.pose_upperbyte[line][3],
+        chest.pose_lowerbyte[line][3]= float_to_twobyte(pose[3])       
+
+  end  
+
   chest.meta.rpy = metadata.rpy --Save the body tilt info
   -- We've been updated
   chest.meta.t = metadata.t
@@ -237,12 +280,19 @@ local function head_callback()
     table.insert(scanlines,scanline) --First scanline. Just add one line
   end
   head.last_scanline = scanline
+
+  --TODO: use slam+odometry
+  local pose = wcm.get_robot_pose_odom()
   for i,line in ipairs(scanlines) do
       ranges:tensor( -- Copy lidar readings to the torch object for fast modification
         head.mesh:select(1,line),
         head.mesh:size(2),
         head.offset_idx )      
       head.scan_angles[line] = angle -- Save the pan angle
+
+      head.posex[line] = pose[1]
+      head.posey[line] = pose[2]
+      head.posea[line] = pose[3]     
   end
   head.meta.rpy = metadata.rpy --Save the body tilt info
   -- We've been updated

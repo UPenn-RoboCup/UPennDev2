@@ -55,6 +55,7 @@ t0 = tic;
   ground_height = -0.7;
   max_height = 1.0;
 
+%{
   if lidar_type==0
     [verts faces cdatas facecount]=lidartrans('headmesh',...
      fov_angles_skipped, lidarangles_skipped, range_skipped, ...
@@ -77,8 +78,26 @@ t0 = tic;
   vertx = verts(:,1)*ca - verts(:,2)*sa + POSE.pose_slam(1);
   verty = verts(:,1)*sa + verts(:,2)*ca + POSE.pose_slam(2);
   vertz = verts(:,3);
-
+ 
   vert_transformed = [vertx verty vertz];
+%}
+
+
+  if lidar_type==0
+    [verts faces cdatas facecount]=lidartrans('headmeshglobal',...
+     fov_angles_skipped, lidarangles_skipped, range_skipped, ...
+     connect_th, max_dist, ground_height, max_height, lidar.rpy,...
+      lidar.poses(1,:),lidar.poses(2,:),lidar.poses(3,:));
+  else
+    [verts faces cdatas facecount]=lidartrans('chestmeshglobal',...
+     fov_angles_skipped, lidarangles_skipped, range_skipped, ...
+     connect_th, max_dist, ground_height, max_height, lidar.rpy,...
+      lidar.poses(1,:),lidar.poses(2,:),lidar.poses(3,:));
+     
+  end
+  
+  vert_transformed = verts';
+
 
   faces=faces(:,1:facecount)';
   cdatas=cdatas(:,1:facecount)';
@@ -92,6 +111,12 @@ t0 = tic;
       CHEST_LIDAR.faces = faces;
       CHEST_LIDAR.cdatas = cdatas;
   end
+
+
+
+
+
+
 
 tPassed=  toc(t0);
 end

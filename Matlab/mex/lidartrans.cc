@@ -231,6 +231,188 @@ void smooth_mesh(double* ret_ptr, double* range_ptr,
 }
 
 
+void mex_get_mesh_global(mxArray* ret[], int nrhs, const mxArray *prhs[], int lidartype){
+    int i,j;
+    double* rayAngle_ptr = mxGetPr(prhs[0]);
+    int n_ray = mxGetN(prhs[0]);
+    int m_ray = mxGetM(prhs[0]);
+
+    //lidar pan angles 
+    double* lidarAngle_ptr = mxGetPr(prhs[1]);
+    int m_lidar = mxGetM(prhs[1]);
+    int n_lidar = mxGetN(prhs[1]);
+
+    //Ranges
+    double* range_ptr =  mxGetPr(prhs[2]);
+    int m_range = mxGetM(prhs[2]);
+    int n_range = mxGetN(prhs[2]);
+
+    double connect_threshold = mxGetScalar(prhs[3]);
+    double cut_threshold = mxGetScalar(prhs[4]);
+    double ground_height = mxGetScalar(prhs[5]);
+    double max_height = mxGetScalar(prhs[6]);
+
+    //RPY angles
+    double* rpy_ptr =  mxGetPr(prhs[7]);
+
+    //pose xya 
+    double* posex_ptr =  mxGetPr(prhs[8]);
+    double* posey_ptr =  mxGetPr(prhs[9]);
+    double* posea_ptr =  mxGetPr(prhs[10]);
+
+//  printf("Pose size:%d\n",mxGetN(prhs[8]));
+//  printf("m: %d n:%d\n",m_range,n_range);
+
+    if ((m_range!=m_ray) || (n_range!=n_lidar))
+      mexErrMsgTxt("Input dimension mismatch");
+
+//    printf("range:%d %d\n",m_range,n_range);
+
+    int max_face_no = (m_range-1)*(n_range-1)*2;
+    int max_vert_no = m_range*n_range;
+
+    mxArray* face = mxCreateDoubleMatrix(3,max_face_no, mxREAL);
+    mxArray* vert = mxCreateDoubleMatrix(3,max_vert_no, mxREAL);
+    mxArray* cdata = mxCreateDoubleMatrix(3,max_face_no, mxREAL);
+
+    double* face_ptr = mxGetPr(face);
+    double* vert_ptr = mxGetPr(vert);
+    double* cdata_ptr = mxGetPr(cdata);
+
+    //Initialize vertex matrix
+    for (i=0;i<m_range;i++)
+      for (j=0;j<n_range;j++){
+        int vert_index = i+j*m_range;
+        float temp[3];
+        float temp2[3];
+        if (lidartype==0)
+          get_head_projection(temp, rayAngle_ptr[i], lidarAngle_ptr[j], range_ptr[vert_index],  rpy_ptr[1]);
+        else
+          get_chest_projection(temp, rayAngle_ptr[i], lidarAngle_ptr[j], range_ptr[vert_index], rpy_ptr[1]);
+
+/*
+        //Set vertex xyz positions
+        vert_ptr[vert_index*3] = temp[0];
+        vert_ptr[vert_index*3+1] = temp[1];
+        vert_ptr[vert_index*3+2] = temp[2];
+*/        
+
+        float ca = cos(posea_ptr[j]);
+        float sa = sin(posea_ptr[j]);
+        temp2[0] = temp[0]*ca - temp[1]*sa + posex_ptr[j];
+        temp2[1] = temp[0]*sa + temp[1]*ca + posey_ptr[j];
+
+        vert_ptr[vert_index*3] = temp2[0];
+        vert_ptr[vert_index*3+1] = temp2[1];
+        vert_ptr[vert_index*3+2] = temp[2];
+
+    }
+
+    //Add mesh matrix
+    int face_count = 0;
+    for (i=1;i<m_range;i++)
+      for (j=1;j<n_range;j++){
+        int mesh_connected1 = 1;
+        int mesh_connected2 = 1;
+
+        int vert_index_tl = (i-1)+ m_range * (j-1);
+        int vert_index_tr = (i-1)+ m_range * (j) ;
+        int vert_index_bl = (i)+  m_range * (j-1) ;
+        int vert_index_br = (i)+  m_range * (j)  ;
+
+        float dist_tl = range_ptr[vert_index_tl];
+        float dist_tr = range_ptr[vert_index_tr];
+        float dist_bl = range_ptr[vert_index_bl];
+        float dist_br = range_ptr[vert_index_br];
+
+        float ray_dist = (rayAngle_ptr[i]-rayAngle_ptr[i-1]) * range_ptr[vert_index_tl];
+        float lidar_dist = (lidarAngle_ptr[j]-lidarAngle_ptr[j-1])* range_ptr[vert_index_tl];
+
+        float dist_err1 = fabs(dist_tl-dist_tr);
+        float dist_err2 = fabs(dist_tl-dist_bl);
+        float dist_err3 = fabs(dist_tr-dist_br);
+        float dist_err4 = fabs(dist_bl-dist_br);
+
+  //connect threshold: tangent of the angle
+
+  float dist_th = 0.05;
+  float dist_min = 0.10;
+
+  //Check top left triangle
+        if ((dist_err1>dist_th)&&(dist_err1>lidar_dist * connect_threshold)) mesh_connected1 = 0;
+        if ((dist_err2>dist_th)&&(dist_err2>ray_dist * connect_threshold)) mesh_connected1 = 0;
+        if ((dist_tl<dist_min)||(dist_tl>cut_threshold))  mesh_connected1 = 0;
+
+  //Check bottom right triangle
+        if ((dist_err4>dist_th)&&(dist_err4 > lidar_dist * connect_threshold)) mesh_connected2 = 0;
+        if ((dist_err3>dist_th)&&(dist_err3 > ray_dist * connect_threshold)) mesh_connected2 = 0;
+        if ((dist_br<dist_min)||(dist_br>cut_threshold))  mesh_connected2 = 0;
+
+        float z_height1= vert_ptr[vert_index_tl*3+2];
+        float z_height2= vert_ptr[vert_index_br*3+2];
+
+        if (z_height1>max_height) mesh_connected1=0;
+        if (z_height2>max_height) mesh_connected2=0;
+
+  //Matlab index start with 1
+        if (mesh_connected1>0) {
+      face_ptr[face_count*3] = vert_index_tl+1;
+      face_ptr[face_count*3+1] = vert_index_tr+1;
+        face_ptr[face_count*3+2] = vert_index_bl+1;
+            if (z_height1>ground_height) {
+              cdata_ptr[face_count*3+0] = 0.9;
+              cdata_ptr[face_count*3+1] = 0.3;
+              cdata_ptr[face_count*3+2] = 0.3;
+            }else{
+              cdata_ptr[face_count*3+0] = 0.5;
+              cdata_ptr[face_count*3+1] = 0.5;
+              cdata_ptr[face_count*3+2] = 0.5;
+      }
+      face_count = face_count + 1;
+  }
+        if (mesh_connected2>0) {
+      face_ptr[face_count*3] = vert_index_tr+1;
+      face_ptr[face_count*3+1] = vert_index_br+1;
+        face_ptr[face_count*3+2] = vert_index_bl+1;
+            if (z_height2>ground_height) {
+              cdata_ptr[face_count*3+0] = 0.9;
+              cdata_ptr[face_count*3+1] = 0.3;
+              cdata_ptr[face_count*3+2] = 0.3;
+            }else{
+              cdata_ptr[face_count*3+0] = 0.5;
+              cdata_ptr[face_count*3+1] = 0.5;
+              cdata_ptr[face_count*3+2] = 0.5;
+      }
+      face_count = face_count + 1;
+  }
+    }
+
+    mxArray* m_face_count = mxCreateDoubleMatrix(1,1, mxREAL);
+    double* face_count_ptr = mxGetPr(m_face_count);
+    face_count_ptr[0]=face_count;
+
+    ret[0] = vert;
+    ret[1] = face;
+    ret[2] = cdata;
+    ret[3] = m_face_count;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void mex_get_mesh(mxArray* ret[], int nrhs, const mxArray *prhs[], int lidartype){
@@ -402,6 +584,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mex_get_mesh(plhs,nrhs-1,prhs+1, 1);
   }else if (strcmp(fname, "headmesh") == 0) {
     mex_get_mesh(plhs,nrhs-1,prhs+1, 0);
+  }else if (strcmp(fname, "chestmeshglobal") == 0) {
+    mex_get_mesh_global(plhs,nrhs-1,prhs+1, 1);
+  }else if (strcmp(fname, "headmeshglobal") == 0) {
+    mex_get_mesh_global(plhs,nrhs-1,prhs+1, 0);  
   } else 
     mexErrMsgTxt("Unknown function argument");
 

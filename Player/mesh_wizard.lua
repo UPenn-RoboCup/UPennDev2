@@ -290,9 +290,12 @@ local function head_callback()
         head.offset_idx )      
       head.scan_angles[line] = angle -- Save the pan angle
 
-      head.posex[line] = pose[1]
-      head.posey[line] = pose[2]
-      head.posea[line] = pose[3]     
+      head.pose_upperbyte[line][1],
+        head.pose_lowerbyte[line][1]= float_to_twobyte(pose[1])
+      head.pose_upperbyte[line][2],
+        head.pose_lowerbyte[line][2]= float_to_twobyte(pose[2])
+      head.pose_upperbyte[line][3],
+        head.pose_lowerbyte[line][3]= float_to_twobyte(pose[3])       
   end
   head.meta.rpy = metadata.rpy --Save the body tilt info
   -- We've been updated

@@ -52,36 +52,9 @@ t0 = tic;
   connect_th = tan(85*pi/180);
 
   max_dist = lidar.lidarrange * 0.9;
-  ground_height = -0.7;
-  max_height = 1.0;
-
-%{
-  if lidar_type==0
-    [verts faces cdatas facecount]=lidartrans('headmesh',...
-     fov_angles_skipped, lidarangles_skipped, range_skipped, ...
-     connect_th, max_dist, ground_height, max_height, lidar.rpy);
-  else
-    [verts faces cdatas facecount]=lidartrans('chestmesh',...
-     fov_angles_skipped, lidarangles_skipped, range_skipped, ...
-     connect_th, max_dist, ground_height, max_height, lidar.rpy);
-  end
-
-  verts=verts';
-
-  %include pose for drawing patches
-  % Would it make more sense to have the 
-  % 3D mesh in body frame rather than world frame?
-
-  ca=cos(POSE.pose_slam(3));
-  sa=sin(POSE.pose_slam(3));
-
-  vertx = verts(:,1)*ca - verts(:,2)*sa + POSE.pose_slam(1);
-  verty = verts(:,1)*sa + verts(:,2)*ca + POSE.pose_slam(2);
-  vertz = verts(:,3);
- 
-  vert_transformed = [vertx verty vertz];
-%}
-
+  
+  ground_height = -POSE.body_height + 0.1;
+  max_height = -POSE.body_height + 2.0;
 
   if lidar_type==0
     [verts faces cdatas facecount]=lidartrans('headmeshglobal',...
@@ -93,11 +66,11 @@ t0 = tic;
      fov_angles_skipped, lidarangles_skipped, range_skipped, ...
      connect_th, max_dist, ground_height, max_height, lidar.rpy,...
       lidar.poses(1,:),lidar.poses(2,:),lidar.poses(3,:));
-     
   end
-  
-  vert_transformed = verts';
 
+  verts = verts';
+  verts(:,3)= verts(:,3)+ POSE.body_height;
+  vert_transformed = verts;
 
   faces=faces(:,1:facecount)';
   cdatas=cdatas(:,1:facecount)';
@@ -111,12 +84,6 @@ t0 = tic;
       CHEST_LIDAR.faces = faces;
       CHEST_LIDAR.cdatas = cdatas;
   end
-
-
-
-
-
-
 
 tPassed=  toc(t0);
 end

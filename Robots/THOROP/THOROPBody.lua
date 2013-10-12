@@ -1127,6 +1127,8 @@ local function send_status_feedback()
   data.pose =  {0,0,0}
   data.pose_odom =  wcm.get_robot_pose_odom()
   data.pose_slam =  wcm.get_slam_pose()
+  data.rpy = Body.get_sensor_rpy()
+  data.body_height = mcm.get_camera_bodyHeight()
   data.battery =  0
 
   local datapacked = mp.pack(data);

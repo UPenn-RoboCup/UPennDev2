@@ -86,6 +86,9 @@ function ret = robotbody()
   POSE.pose_slam = [ 0 0 0];
   POSE.battery = 0;
 
+  POSE.body_height = 0;
+  POSE.rpy = [0 0 0];
+
   function set_viewpoint(h,~,flags)
     BODY.viewpoint = flags;
     calculate_transforms();
@@ -94,12 +97,11 @@ function ret = robotbody()
 
   function update_viewpoint()
     flags = BODY.viewpoint;
-    pose = POSE.pose_slam;
-%    robot_pos = [POSE.pose(1) POSE.pose(2) 1];
+    pose = POSE.pose_odom;
+%   pose = POSE.pose_slam;
   
-    robot_pos = [pose(1) pose(2) 1];
+    robot_pos = [pose(1) pose(2) POSE.body_height];
     pose_dir = [cos(pose(3)) sin(pose(3))];
-
 
     cam_dist1 = 20;
 
@@ -240,7 +242,7 @@ function ret = robotbody()
     rfingerangle1 = BODY.rfingerangle(1);
     rfingerangle2 = BODY.rfingerangle(2);
 
-    BODY.TrLBody = eye(4)*trans([pose(1) pose(2) 0])*rotZ(pose(3));
+    BODY.TrLBody = eye(4)*trans([pose(1) pose(2) POSE.body_height])*rotZ(pose(3))*rotY(POSE.rpy(2));
 
     BODY.TrLULeg = BODY.TrLBody*trans(BODY.lhipoffset)*...
       rotZ(BODY.llegangle(1))*rotX(BODY.llegangle(2))*rotY(BODY.llegangle(3));
@@ -328,7 +330,8 @@ function ret = robotbody()
     BODY.rfingerangle = double(data.rgrip);
 
     BODY.pose_odom = data.pose_odom;
-    BODY.pose_slam = data.pose_slam;
+    BODY.pose_slam = data.pose_slam;POSE.rpy = double(data.rpy);
+    POSE.body_height = double(data.body_height);
     calculate_transforms();
     plot_parts();
   end
@@ -340,13 +343,14 @@ function ret = robotbody()
       nBytes = nBytes + numel(udp_data);
     end
     data = msgpack('unpack',udp_data);
-    update_angles(data)    
+    update_angles(data);    
     POSE.data = data;
 		POSE.pose_odom = double(data.pose_odom);
 		POSE.pose_slam = double(data.pose_slam);
 		POSE.pose = double(data.pose);
     POSE.battery = double(data.battery);
-
+    POSE.rpy = double(data.rpy);
+    POSE.body_height = double(data.body_height);
     SLAM.update_pose(POSE.pose,POSE.pose_slam);
   end
 

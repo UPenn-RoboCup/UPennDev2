@@ -1748,7 +1748,7 @@ Body.get_odometry = function()
   local uTorso0 = wcm.get_robot_utorso0()
   local uTorso1 = wcm.get_robot_utorso1()  
 
-  wcm.set_robot_utorso0(uTorso0) --reset initial position
+  wcm.set_robot_utorso0(uTorso1) --reset initial position
   return util.pose_relative(uTorso1,uTorso0)
 end
 

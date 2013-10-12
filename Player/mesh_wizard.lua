@@ -61,14 +61,23 @@ local function setup_mesh( name, tbl )
   local scan_resolution = tbl.meta.scanlines[3]
     * math.abs(tbl.meta.scanlines[2]-tbl.meta.scanlines[1])
   scan_resolution = math.ceil(scan_resolution)
-  local reading_per_radian = 1 / (.25*math.pi/180)
+
+  local lidar_sensor_fov = vcm[get_name..'_sensor_fov']()
+  local lidar_sensor_width = vcm[get_name..'_sensor_width']()
+  
+--  local reading_per_radian = 1 / (.25*math.pi/180)
+  local reading_per_radian = 
+    (lidar_sensor_width-1)/lidar_sensor_fov;
+
+  tbl.meta.reading_per_radian = reading_per_radian
+  
   local fov_resolution = reading_per_radian
     * math.abs(tbl.meta.fov[2]-tbl.meta.fov[1])
   fov_resolution = math.ceil(fov_resolution)
 
   -- Resolution
   tbl.meta.resolution = {scan_resolution,fov_resolution}
-
+print("Resolution:",scan_resolution,fov_resolution)
   -- TODO: Be able to resize these
   tbl.mesh_byte = torch.ByteTensor( scan_resolution, fov_resolution ):zero()
   tbl.mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
@@ -84,7 +93,8 @@ local function setup_mesh( name, tbl )
   tbl.pose_upperbyte = torch.ByteTensor( scan_resolution, 3 ):zero()
   tbl.pose_lowerbyte = torch.ByteTensor( scan_resolution, 3 ):zero()
 
-  local fov_offset = 540+math.ceil( reading_per_radian*tbl.meta.fov[1] )
+--  local fov_offset = 540+math.ceil( reading_per_radian*tbl.meta.fov[1] )
+  local fov_offset = (lidar_sensor_width-1)/2+math.ceil( reading_per_radian*tbl.meta.fov[1] )
   tbl.offset_idx   = math.floor(fov_offset)
   --print('fov offset',name,fov_offset,tbl.offset_idx,fov_resolution)
   return tbl
@@ -261,7 +271,6 @@ local function head_callback()
   -- Insert into the correct scanlin
   local angle = metadata.hangle[2]
   local scanline = angle_to_scanline( head.meta, angle )
-
   if not scanline then return end -- Only if a valid column is returned
 
   --SJ: If lidar moves faster than the mesh scanline resolution, we need to fill the gap  

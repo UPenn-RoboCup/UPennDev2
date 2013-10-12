@@ -42,6 +42,12 @@ shared.head_lidar.depths      = vector.new({.1,5})
 -- Interval | Frames per second
 shared.head_lidar.net      = vector.zeros(3)
 
+--SJ: we may skip readings to speed up (webots, for example)
+shared.head_lidar.sensor_fov = vector.new({math.pi*270/180})
+shared.head_lidar.sensor_width = vector.new({1081})
+
+--we use this to offset the reading range
+shared.head_lidar.offset_angle = 0
 ------------------------
 --  Chest LIDAR
 shared.chest_lidar                 = {}
@@ -61,6 +67,13 @@ shared.chest_lidar.depths      = vector.new({.1,5})
 -- Compression | 0: None, 1: JPEG, 2: zlib, 3: PNG
 -- Interval | Frames per second
 shared.chest_lidar.net      = vector.zeros(3)
+
+--SJ: we may skip readings to speed up (webots, for example)
+shared.chest_lidar.sensor_fov = vector.new({math.pi*270/180})
+shared.chest_lidar.sensor_width = vector.new({1081})
+
+--we use this to offset the reading range
+shared.chest_lidar.offset_angle = 0
 
 ------------------------
 --  Kinect

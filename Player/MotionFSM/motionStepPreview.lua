@@ -91,13 +91,25 @@ function walk.entry()
 --]]
 
 --Stepping over cinderblock
-
+--Works with 10ms timestep
+--[[
   step_planner:step_enque({},2,                    0.5,    {0,0.0,0}) --DS  
   step_planner:step_enque_trapezoid({0.27,0,0},0,  0.5, 2, {0,0.0,0}, {0,0.20,0.15}) --LS  
   step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0,0.20,0.15}) --RS  
   step_planner:step_enque_trapezoid({0.27,0,0},0,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --LS  
   step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --RS  
   step_planner:step_enque_trapezoid({},2,         0.5, 2,  {0,0.0,0}) --DS  
+--]]
+
+--little slower motion for 40ms world
+
+  step_planner:step_enque({},2,                    2,    {0,0.0,0}) --DS  
+  step_planner:step_enque_trapezoid({0.27,0,0},0,  0.5, 1, {0,-0.01,0}, {0,0.20,0.15}) --LS  
+  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.02,0}, {0,0.20,0.15}) --RS  
+  step_planner:step_enque_trapezoid({0.27,0,0},0,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --LS  
+  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --RS  
+  step_planner:step_enque_trapezoid({},2,         0.5, 2,  {0,0.0,0}) --DS  
+
 
 
   t = Body.get_time()

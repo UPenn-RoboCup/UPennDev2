@@ -161,7 +161,9 @@ CHEST_LIDAR.posea=[];
             set(LIDAR.p_img, 'XLim', [1 size(HEAD_LIDAR.ranges,2)]);
             set(LIDAR.p_img, 'YLim', [1 size(HEAD_LIDAR.ranges,1)]);
         else
-            set(LIDAR.h_img,'Cdata', CHEST_LIDAR.ranges);
+            %Chest lidar image is flipped
+
+            set(LIDAR.h_img,'Cdata', fliplr(CHEST_LIDAR.ranges));
             set(LIDAR.p_img, 'XLim', [1 size(CHEST_LIDAR.ranges,2)]);
             set(LIDAR.p_img, 'YLim', [1 size(CHEST_LIDAR.ranges,1)]);
         end
@@ -198,11 +200,8 @@ CHEST_LIDAR.posea=[];
                     double(zlibUncompress(cpose_lowerbyte))-32768) / 256;
         pose_data = reshape(pose_data,[3 metadata.resolution(1)]);
 
-
-
-        % Calculate the angles
-
-        fov_angles = metadata.fov(1) : .25*(pi/180) : metadata.fov(2);
+        % Calculate the angles (now support variable resolution for sensor)
+        fov_angles = metadata.fov(1) : 1/metadata.reading_per_radian : metadata.fov(2);
         scanline_angles = metadata.scanlines(1) : 1/metadata.scanlines(3) : metadata.scanlines(2);
         
         if strncmp(char(metadata.name),'head',3)==1

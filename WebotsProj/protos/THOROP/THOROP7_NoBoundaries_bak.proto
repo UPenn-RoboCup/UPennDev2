@@ -94,10 +94,16 @@ Robot {
         Solid{
           rotation 0 0 1 1.57
 	        children [
-            hokuyo_thor_chest{
-              name "ChestLidar"
-              width 541
-             }            
+            solid{
+              rotation 0 0 1 0
+              children[
+                hokuyo_thor_chest{name "ChestLidar"}
+              ]
+              physics Physics{
+                density -1
+              mass 0.1
+          } 
+            }
           ]
           physics Physics{
 					  density -1

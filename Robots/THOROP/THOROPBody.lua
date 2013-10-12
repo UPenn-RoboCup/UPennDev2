@@ -1358,6 +1358,12 @@ if IS_WEBOTS then
       head_camera_wbt.height = webots.wb_camera_get_height(tags.head_camera)
     end
 
+    --Set lidar resolutions in vcm
+    vcm.set_head_lidar_sensor_fov(webots.wb_camera_get_fov(tags.head_lidar))
+    vcm.set_head_lidar_sensor_width(webots.wb_camera_get_width(tags.head_lidar))
+    vcm.set_chest_lidar_sensor_fov(webots.wb_camera_get_fov(tags.chest_lidar))
+    vcm.set_chest_lidar_sensor_width(webots.wb_camera_get_width(tags.chest_lidar))    
+
 --[[
     --FSR sensors
     tags.l_ul_fsr = webots.wb_robot_get_device("L_UL_FSR")
@@ -1549,6 +1555,7 @@ if IS_WEBOTS then
 			end
 		end
     
+    
     -- Set lidar data into shared memory
     if use_lidar_head then
       Body.set_head_lidar(head_lidar_wbt.pointer)
@@ -1558,6 +1565,7 @@ if IS_WEBOTS then
       head_lidar_wbt.meta.hangle = Body.get_head_position()
       head_lidar_wbt.meta.rpy  = Body.get_sensor_rpy()
       head_lidar_wbt.meta.gyro = Body.get_sensor_gyro()
+
       -- Send the count on the channel so they know to process a new frame
       head_lidar_wbt.channel:send(  mp.pack(head_lidar_wbt.meta)  )
     end
@@ -1569,9 +1577,16 @@ if IS_WEBOTS then
       chest_lidar_wbt.meta.pangle = Body.get_lidar_position(1)
       chest_lidar_wbt.meta.rpy  = Body.get_sensor_rpy()
       chest_lidar_wbt.meta.gyro = Body.get_sensor_gyro()
+
+      chest_lidar_wbt.meta.fov = webots.wb_camera_get_fov(tags.chest_lidar)
+      chest_lidar_wbt.meta.width = webots.wb_camera_get_width(tags.chest_lidar)
+
       -- Send the count on the channel so they know to process a new frame
       chest_lidar_wbt.channel:send( mp.pack(chest_lidar_wbt.meta) )
     end
+    
+
+
     if use_camera then
       update_head_camera()
     end --use_camera

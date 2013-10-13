@@ -11,6 +11,9 @@ local shsize = {}
 
 shared.robot = {}
 -- Webot pose
+shared.robot.pose_gps = vector.zeros(3)
+
+--Combined pose (either odom only / slam only / combined)
 shared.robot.pose = vector.zeros(3)
 
 --Odometry 

@@ -1124,7 +1124,7 @@ local function send_status_feedback()
   data.rgrip =  Body.get_rgrip_command_position()
 
   --Pose information
-  data.pose =  wcm.get_robot_pose_odom()
+  data.pose =  wcm.get_robot_pose()    
   data.pose_odom =  wcm.get_robot_pose_odom()
   data.pose_slam =  wcm.get_slam_pose()
   data.rpy = Body.get_sensor_rpy()
@@ -1524,7 +1524,9 @@ if IS_WEBOTS then
       local compass = webots.wb_compass_get_values(tags.compass)
       local angle   = math.atan2( compass[3], compass[1] )
       local pose    = vector.pose{gps[3], gps[1], angle}
-      wcm.set_robot_pose( pose )
+      --wcm.set_robot_pose( pose )
+      wcm.set_robot_pose_gps( pose )
+
       local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
 
       --SJ: we need to remap rpy for webots
@@ -1738,6 +1740,13 @@ Body.update_odometry = function(uTorso)
   local pose_odom0 = wcm.get_robot_pose_odom()
   local pose_odom = util.pose_global(odometry_step, pose_odom0)
   wcm.set_robot_pose_odom(pose_odom)
+
+  local odom_mode = wcm.get_robot_odom_mode();  
+  if odom_mode==0 then    
+    wcm.set_robot_pose(pose_odom)    
+  else
+    wcm.set_robot_pose(wcm.get_slam_pose())
+  end
 
   --updae odometry variable
   wcm.set_robot_utorso1(uTorso)

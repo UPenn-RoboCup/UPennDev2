@@ -162,6 +162,7 @@ local function stream_mesh(type)
   -- Network streaming settings
   local net_settings = vcm[get_name..'_net']()
   -- Streaming
+
   if net_settings[1]==0 then return end
   -- Sensitivity range in meters
   -- Depths when compressing
@@ -242,9 +243,8 @@ local function chest_callback()
     table.insert(scanlines,scanline) --First scanline. Just add one line
   end
   chest.last_scanline = scanline
-
-  --TODO: use slam+odometry
-  local pose = wcm.get_robot_pose_odom()
+  
+  local pose = wcm.get_robot_pose()
   for i,line in ipairs(scanlines) do
       ranges:tensor( -- Copy lidar readings to the torch object for fast modification
         chest.mesh:select(1,line),
@@ -263,7 +263,7 @@ local function chest_callback()
 
   chest.meta.rpy = metadata.rpy --Save the body tilt info
   -- We've been updated
-  chest.meta.t = metadata.t
+  chest.meta.t = metadata.t  
 end
 
 local function head_callback()
@@ -293,8 +293,7 @@ local function head_callback()
   end
   head.last_scanline = scanline
 
-  --TODO: use slam+odometry
-  local pose = wcm.get_robot_pose_odom()
+  local pose = wcm.get_robot_pose()
   for i,line in ipairs(scanlines) do
       ranges:tensor( -- Copy lidar readings to the torch object for fast modification
         head.mesh:select(1,line),
@@ -385,7 +384,7 @@ end
 
 function mesh.update()
   local npoll = channel_polls:poll(channel_timeout)
-  -- Stream the current mesh
+  -- Stream the current mesh  
   stream_mesh(head)
   stream_mesh(chest)
   -- Check if we must update our torch data

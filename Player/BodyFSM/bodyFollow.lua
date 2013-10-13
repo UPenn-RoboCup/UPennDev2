@@ -122,10 +122,16 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   
+  -- Grab the odom mode
+  local odom_mode = wcm.get_robot_odom_mode()
+  if odom_mode ~= 0 then
+  	USE_ODOM_ONLY = false
+  end
+
   -- Grab the pose
   local pose = {0,0,0}
   if USE_ODOM_ONLY then
-    pose = wcm.get_robot_pose()
+    pose = wcm.get_robot_pose_odom()
   else
     pose = wcm.get_slam_pose()
   end

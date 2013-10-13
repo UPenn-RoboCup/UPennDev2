@@ -17,7 +17,6 @@ local deg2rad = math.pi/180
 -- Flags
 local IS_WEBOTS = true
 local USE_ODOM = true
---local USE_ODOM = false
 
 ---------------------------------
 -- Libraries
@@ -178,14 +177,19 @@ local function head_callback()
 	-- If ROLL is too big then skip
 	if math.abs(metadata.gyro[1]) > 0.45 then return end
 
+  -- Process IMU
   libSlam.processIMU( metadata.rpy, metadata.gyro[3], metadata.t )
-  if USE_ODOM then
+  -- Process Odom if needed
+  if wcm.get_robot_odom_mode() == 2 then
     libSlam.processOdometry( Body.get_odometry() )
   end
+  --[[ Print for debugging
   local pose_odom = wcm.get_robot_pose_odom()
   local dpose = Body.get_odometry()
-  --print('ODOMETRY:', unpack(pose_odom))
-  --print('dPose:', dpose.x, dpose.y, dpose.a)
+  print('ODOMETRY:', unpack(pose_odom))
+  print('dPose:', dpose.x, dpose.y, dpose.a)
+  --]]
+  -- Process lidar
   libSlam.processL0( lidar0.points_xyz )
   local t1_processL0 = unix.time()
   --print( string.format('processL0 took: \t%.2f ms', (t1_processL0-t0_processL0)*1000) )
@@ -229,12 +233,6 @@ local function chest_callback()
     return
   end
     
-  if IS_WEBOTS then
-    cur_pose = wcm.get_robot_pose() -- Ground truth pose
-  elseif USE_SLAM_ODOM then
-    --cur_pose = scm/blah:get_pose()
-  end
-
   ------------------
   -- Copy received data to the lidar object
   -- Transform the points into the body frame and
@@ -292,6 +290,11 @@ local t_debug = 1 -- Print debug output every second
 local slam = {}
 
 function slam.entry()
+  -- Determine which odom to use
+  -- 1: only slam
+  -- 2: slam + odom
+  wcm.set_robot_odom_mode(2)
+
   -- Reset odometry and slam pose
   wcm.set_slam_pose({0,0,0})
 
@@ -377,8 +380,9 @@ function slam.update()
   if cnt % 40 == 0 then
     print(string.format('\nSLAM pose:%6.2f %6.2f %6.2f', 
       libSlam.SLAM.xOdom, libSlam.SLAM.yOdom, libSlam.SLAM.yawOdom))
-    print(string.format('SLAM+Odom pose:%6.2f %6.2f %6.2f', 
-      libSlam.SLAM.x, libSlam.SLAM.y, libSlam.SLAM.yaw))
+      local odom = wcm.get_robot_pose_odom()
+    print(string.format('Pure Odom pose:%6.2f %6.2f %6.2f', 
+      odom[1], odom[2], odom[3]))
   end
   ------------------
 end

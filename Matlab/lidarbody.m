@@ -1,5 +1,5 @@
 function ret = lidarbody()
-global HEAD_LIDAR CHEST_LIDAR LIDAR H_FIGURE DEBUGMON POSE SLAM CONTROL
+global HEAD_LIDAR CHEST_LIDAR LIDAR H_FIGURE DEBUGMON POSE SLAM CONTROL WAYPOINTS
 LIDAR.init = @init;
 LIDAR.update = @update;
 LIDAR.set_meshtype = @set_meshtype;
@@ -9,6 +9,9 @@ LIDAR.get_single_approach = @get_single_approach;
 LIDAR.get_double_approach = @get_double_approach;
 LIDAR.clear_points = @clear_points;
 LIDAR.set_zoomlevel = @set_zoomlevel;
+
+LIDAR.update_waypoints = @update_waypoints;
+
 
 % Which mesh to display: 0-HEAD, 1-CHEST
 % Chest lidar default
@@ -36,8 +39,21 @@ wdim_mesh=361;
 hdim_mesh=60;
 
 HEAD_LIDAR=[];
+%SJ: DOUBLE CHECK THOSE VALUES, THEY ARE TOTALLY OFF!!
 HEAD_LIDAR.off_axis_height = 0.01; % 1cm off axis
 HEAD_LIDAR.neck_height = 0.30;
+
+%%%%% THEY ARE WEBOTS VALUES
+%HEAD_LIDAR.off_axis_height = 0.10; % 1cm off axis
+%HEAD_LIDAR.neck_height = 0.331; %based on webots
+
+
+%%%%for whatever reason, correct values does not work
+HEAD_LIDAR.off_axis_height = 0.01;
+HEAD_LIDAR.neck_height = 0.331; %based on webots
+
+
+
 HEAD_LIDAR.type = 0;
 HEAD_LIDAR.ranges=zeros(wdim_mesh,hdim_mesh);
 HEAD_LIDAR.range_actual=ones(wdim_mesh,hdim_mesh);
@@ -98,7 +114,12 @@ CHEST_LIDAR.posea=[];
                 'AmbientStrength',0.4,'SpecularStrength',0.9 );
             set(a_mesh,'xtick',[],'ytick',[], 'ztick',[])
             light('Position',[-3 1 3]);
-            lighting flat
+            lighting flat            
+            set(LIDAR.h, 'ButtonDownFcn', @select_3d_mesh);
+
+            hold on;
+              LIDAR.wayline = plot3(a_mesh,0,0,0,'g*-' );
+            hold off;
         end
     end
 
@@ -424,9 +445,54 @@ CHEST_LIDAR.posea=[];
         end % head/chest
         LIDAR.selected_points = [LIDAR.selected_points; global_point(1:3)'];
         disp_str = sprintf('Selected (%.3f %.3f %.3f)', ...
-                global_point(1),global_point(2),global_point(3) );
+            global_point(1),global_point(2),global_point(3) );
         DEBUGMON.addtext(disp_str);
     end % select_3d
+
+    function select_3d_mesh(~, ~, flags)
+        clicktype = get(H_FIGURE,'selectionType');
+        if strcmp(clicktype,'alt')>0
+            point = get(gca,'CurrentPoint');
+            posxy = [point(1,1) point(1,2)];
+            zoom_in(posxy);
+            return;
+        end
+        points = get(gca,'CurrentPoint'); % This returns two 3D points that is pependicular to the selected position
+        %Calculate the intersection with the surface z=0
+        k = points(2,3)/(points(2,3)-points(1,3));        
+        point_intersect = points(1,1:2)*k + points(2,1:2)*(1-k);                
+        point_intersect %This is the new x-y position in LOCAL coordinates
+        WAYPOINTS.add_waypoint(point_intersect(1:2));
+    end
+
+    function update_waypoints(waypoints)    
+        if size(waypoints,1)==0
+            set( LIDAR.wayline, 'XData', [] );
+            set( LIDAR.wayline, 'YData', [] );
+            set( LIDAR.wayline, 'ZData', [] );            
+        else
+            waypoints=[POSE.pose(1) POSE.pose(2);waypoints];        
+            set( LIDAR.wayline, 'XData', waypoints(:,1) );
+            set( LIDAR.wayline, 'YData', waypoints(:,2) );
+            set( LIDAR.wayline, 'ZData', 0.1*ones(size(waypoints(:,1))));            
+        end
+    end
+
+    function ret=pose_global(pRelative, pose)
+      ca = cos(pose(3));
+      sa = sin(pose(3));
+      ret = [pose(1) + ca*pRelative(1)-sa*pRelative(2),...
+            pose(2) + sa*pRelative(1)+ca*pRelative(2),...
+            pose(3) + pRelative(3)];
+    end
+
+    function ret=pose_relative(pGlobal, pose)
+      ca = cos(pose(3));
+      sa = sin(pose(3));
+      p = pGlobal-pose;
+      ret=[ca*p(1)+sa*p(2) -sa*p(1)+ca*p(2) p(3)];
+    end
+
 
 ret = LIDAR;
 end

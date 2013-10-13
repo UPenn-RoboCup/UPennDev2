@@ -42,12 +42,13 @@ function state.entry()
 
 -- Inner and outer radius
   handle_radius0 = handle_radius 
-  handle_radius1 = handle_radius + 0.08
+  handle_radius1 = handle_radius + 0.04
 
   stage = 1;
 
   local pLWristTarget = Config.arm.pLWristTarget2
-  handle_pos_temp = {0.20, 0, -0.09 }
+  handle_pos0 = {0.24,0,-0.10} --waist position
+  handle_pos1 = {handle_pos[1],0,-0.10} --front
 
 
 end
@@ -77,9 +78,14 @@ function state.update()
 
     if ret==1 then stage=stage+1; end
   elseif stage==3 then  --Lower arms    
---    handle_pos_temp={handle_pos[1]-0.08,handle_pos[2],-0.10}
     ret = movearm.setArmToWheelPosition(
-      handle_pos_temp, handle_yaw, handle_pitch,
+      handle_pos1, handle_yaw, handle_pitch,
+      handle_radius1, turnAngle,dt
+      )
+    if ret==1 then stage=stage+1; end
+  elseif stage==4 then  --Lower arms    
+    ret = movearm.setArmToWheelPosition(
+      handle_pos0, handle_yaw, handle_pitch,
       handle_radius1, turnAngle,dt
       )
     if ret==1 then stage=stage+1; end

@@ -1,5 +1,5 @@
 function ret=slambody()
-  global SLAM POSE
+  global SLAM POSE WAYPOINTS
 
   icon_scale = 40;
   icon_s = [0.25 0; -0.125 0.1; -0.125 -0.1]*icon_scale;
@@ -44,12 +44,6 @@ function ret=slambody()
 	greenmap(i) = 1;
   end
 
-
-
-
-
-
-
   SLAM.waypoints_pixel=[];
   SLAM.waypoints_xy=[];
 
@@ -58,6 +52,10 @@ function ret=slambody()
   SLAM.add_waypoint = @add_waypoint;
   SLAM.get_waypoints = @get_waypoints;
   SLAM.get_double_approach = @get_double_approach;
+
+
+  SLAM.update_waypoints = @update_waypoints;
+
 
   SLAM.clear_waypoint = @clear_waypoint;
   SLAM.start_movement = @start_movement;
@@ -237,8 +235,7 @@ function ret=slambody()
   end
 
   function xy = transform_pos(pixelpos)
-   %converts pixel pos to x,y pos in actual pose
-
+    %converts pixel pos to x,y pos in actual pose
     xmag =(SLAM.omap.map_xsiz-1)/2;
     ymag =(SLAM.omap.map_ysiz-1)/2;
     centerpos = [xmag+1 ymag+1];
@@ -249,74 +246,34 @@ function ret=slambody()
 								(SLAM.omap.ymax + SLAM.omap.ymin)/2 ];
     xy = centerxy + (pixelpos - centerpos)./[xscale yscale];
     xy = [xy(2) xy(1)];
-
-
   end
 
-  function clear_waypoint(h,~)
-    SLAM.waypoints_pixel=[];
-    SLAM.waypoints_xy=[];
-    set( SLAM.wayline, 'XData', [] );
-    set( SLAM.wayline, 'YData', [] );
-  end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%new functions
 
-  function ret=get_waypoints()
-    yaws = [];
-    if size(SLAM.waypoints_xy,1) > 1
-        dys = SLAM.waypoints_xy(2:end,2) - SLAM.waypoints_xy(1:end-1,2);
-        dxs = SLAM.waypoints_xy(2:end,1) - SLAM.waypoints_xy(1:end-1,1);
-        yaws = atan2(dys, dxs);  %TODO: mod this angle
+  function update_waypoints(waypoints)   
+    if size(waypoints,1)==0
+       SLAM.waypoints_pixel=[];
+       set( SLAM.wayline, 'XData', [] );
+       set( SLAM.wayline, 'YData', [] ); 
+    else
+      waypoints=[SLAM.slam_pose(1) SLAM.slam_pose(2);waypoints];
+      SLAM.waypoints_pixel=[];
+      for i=1:size(waypoints,1)
+        SLAM.waypoints_pixel=[SLAM.waypoints_pixel;
+          transform_pixelpos(waypoints(i,:))];
+      end
+      set( SLAM.wayline, 'XData', SLAM.waypoints_pixel(:,1) );
+      set( SLAM.wayline, 'YData', SLAM.waypoints_pixel(:,2) );
     end
-    first_yaw = atan2(SLAM.waypoints_xy(1,2) - SLAM.slam_pose(2),...
-        SLAM.waypoints_xy(1,1) - SLAM.slam_pose(1));
-    yaws = [first_yaw ;yaws];
-    ret=[SLAM.waypoints_xy yaws];
   end
 
   function add_waypoint(h_omap, ~, flags)
-
     % Add a waypoint
     point = get(gca,'CurrentPoint');
     posx = point(1,1); posy = point(1,2);
-
     xy = transform_pos([posx posy]);
-
-    %Initial point start from current pose
-    if size(SLAM.waypoints_pixel,2)==0
-%      pose = SLAM.pose;
-      pose = SLAM.slam_pose;
-      pixel_pos = transform_pixelpos([pose(1) pose(2)]);
-      SLAM.waypoints_pixel=pixel_pos;
-    end
-
-    SLAM.waypoints_pixel=[SLAM.waypoints_pixel;[posx,posy]];
-    SLAM.waypoints_xy=[SLAM.waypoints_xy;xy]; 
-    set( SLAM.wayline, 'XData', SLAM.waypoints_pixel(:,1) );
-    set( SLAM.wayline, 'YData', SLAM.waypoints_pixel(:,2) );
-    % Prep the command to send
-
-    fprintf('Adding waypoint %.2f, %.2f\n',xy(1),xy(2));
-    drawnow;
+    WAYPOINTS.add_waypoint(xy)
   end
-
-    function targetwp = get_double_approach()
-        points2d = SLAM.waypoints_xy;
-        targetwp=[];
-        if numel(points2d)==4
-            % 3D
-            leftpos = points2d(1, :);
-            rightpos = points2d(2, :);
-
-            if leftpos(1)>0.30 && rightpos(1)>0.30
-                centerpos = (leftpos + rightpos)/2;
-                centerpos(1) = centerpos(1) - 0.3;
-                centerpos(2) = centerpos(2) - 0.05; % TODO: tune
-                angle = atan2(leftpos(2)-rightpos(2),leftpos(1)-rightpos(1))-pi/2;
-                targetwp = [centerpos(1), centerpos(2), angle];
-            end
-        end
-        SLAM.clear_waypoint();
-    end
-
 
 end

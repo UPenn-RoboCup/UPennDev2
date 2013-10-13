@@ -1,5 +1,5 @@
 function ret = controlbody()
-global CONTROL SLAM BODY LIDAR POSE MODELS
+global CONTROL SLAM BODY LIDAR POSE MODELS WAYPOINTS
 
 CONTROL=[];
 
@@ -69,7 +69,7 @@ ret = CONTROL;
     function setup_slambody_controls(b1,b2,b3)
         set(b1,'CallBack',{SLAM.set_zoomlevel,1});
         set(b2,'CallBack',{SLAM.set_zoomlevel,2});
-        set(b3,'CallBack', SLAM.clear_waypoint);
+        set(b3,'CallBack',{WAYPOINTS.clear_waypoints});
     end
 
     function setup_robotbody_controls(b1,b2,b3,b4)
@@ -132,7 +132,8 @@ ret = CONTROL;
         if flags==1
             send_control_packet('BodyFSM','teleop');
         elseif flags==2
-            waypoint=SLAM.get_waypoints();
+            %waypoint=SLAM.get_waypoints();
+            waypoint = WAYPOINTS.get_waypoints();            
             disp(waypoint)
             if numel(waypoint)>0
                 waypoint_num = size(waypoint,1);
@@ -160,10 +161,10 @@ ret = CONTROL;
             disp('Two point approach')
             wp = LIDAR.get_double_approach();
             if numel(wp) == 0
-                wp = SLAM.get_double_approach();
+              wp = WAYPOINTS.get_double_approach();
             end
             if numel(wp)>0
-                send_control_packet([], [],...
+              send_control_packet([], [],...
                     'hcm', 'motion', 'waypoints',...
                     reshape(wp,[1 3]));
                 send_control_packet([], [],...
@@ -172,7 +173,8 @@ ret = CONTROL;
                     'hcm', 'motion', 'waypoint_frame', 1); %Global
             end
         end
-        SLAM.clear_waypoint();
+        %leave it for a bit for testing
+        %SLAM.clear_waypoint();
     end
 
 

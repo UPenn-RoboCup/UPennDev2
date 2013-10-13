@@ -625,7 +625,7 @@ Body.get_inverse_larm = function( qL, trL, lShoulderYaw, pos_tol, ang_tol )
   for i=1,nJointLArm do
     if qL_target[i]<servo.min_rad[indexLArm+i-1] or
       qL_target[i]>servo.max_rad[indexLArm+i-1] then
-      print("out of range",i,"at ",qL_target[i]*RAD_TO_DEG)
+--      print("out of range",i,"at ",qL_target[i]*RAD_TO_DEG)
       return
     end
   end
@@ -646,7 +646,7 @@ Body.get_inverse_rarm = function( qR, trR, rShoulderYaw , pos_tol, ang_tol )
   for i=1,nJointRArm do
     if qR_target[i]<servo.min_rad[indexRArm+i-1] or
       qR_target[i]>servo.max_rad[indexRArm+i-1] then
-      print("out of range",i,"at ",qR_target[i]*RAD_TO_DEG)
+--      print("out of range",i,"at ",qR_target[i]*RAD_TO_DEG)
       return
     end
   end
@@ -1124,7 +1124,7 @@ local function send_status_feedback()
   data.rgrip =  Body.get_rgrip_command_position()
 
   --Pose information
-  data.pose =  {0,0,0}
+  data.pose =  wcm.get_robot_pose_odom()
   data.pose_odom =  wcm.get_robot_pose_odom()
   data.pose_slam =  wcm.get_slam_pose()
   data.rpy = Body.get_sensor_rpy()
@@ -1134,7 +1134,7 @@ local function send_status_feedback()
   local datapacked = mp.pack(data);
   
   local ret,err = feedback_udp_ch:send( datapacked)
-  if err then print('feedback udp',err) end
+  --if err then print('feedback udp',err) end
 end
 init_status_feedback()
 

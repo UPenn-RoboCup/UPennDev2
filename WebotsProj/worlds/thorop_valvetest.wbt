@@ -36,7 +36,8 @@ THOROP7_NoBoundaries {
   controllerArgs "0 32"
 }
 Solid {
-  translation 0.45 1.03 0
+  #translation 0.45 1.03 0
+  translation 0.45 0.93 0
   rotation 0 0 1 0
   children [
     ValveDRC {

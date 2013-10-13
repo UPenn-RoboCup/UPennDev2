@@ -6,7 +6,7 @@
 function [] = setup_gui()
 warning off;
 global H_FIGURE;
-global CAMERA LIDAR BODY SLAM NETMON CONTROL HMAP DEBUGMON
+global CAMERA LIDAR BODY SLAM NETMON CONTROL HMAP DEBUGMON WAYPOINTS
 
 camera_sq_sz = .5;
 buffer = 0.01;
@@ -74,7 +74,11 @@ H_DMAP_AXES = axes('Parent', H_FIGURE, ...
     'XTick', [], 'YTick', [], 'Units', 'Normalized', ...
     'Position', [THIRD_COL SECOND_ROW THIRD_COL_W SECOND_ROW_H]);
 
+WAYPOINTS = waypointbody();
+
 % Robot visualization
+
+
 
 BODY = robotbody();
 BODY.init(H_MESH_AXES);

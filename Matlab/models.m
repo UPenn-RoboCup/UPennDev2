@@ -154,7 +154,7 @@ MODELS.waypoints = [];
 	    points3d = LIDAR.selected_points;
 	    LIDAR.clear_points();
 
-	    MODELS.ooi = 'wheel'
+	    MODELS.ooi = 'wheel';
 
 	    npoints = size(points3d,1);
 
@@ -176,6 +176,7 @@ MODELS.waypoints = [];
 
 		% Find the center of the wheel
 		handlepos = (leftrelpos+rightrelpos) / 2;
+
 		if handlepos(1) > 1 || handlepos(1) < 0.10
 		    % x distance in meters
 		    disp('Handle is too far or too close!');
@@ -185,6 +186,9 @@ MODELS.waypoints = [];
 
 		% Find the radius of the wheel
 		handleradius = norm(leftrelpos-rightrelpos)/2;
+		%hack to fix for valve grip radius
+		handleradius = handleradius + 0.02; 
+
 		if handleradius>1 || handleradius<0.10
 		    % radius in meters
 		    disp('Radius is too big or too small!');
@@ -202,7 +206,7 @@ MODELS.waypoints = [];
         	toprelpos(1)-handlepos(1),...
             toprelpos(3)-handlepos(3) );
         % TODO: pitch checks
-        
+
         % Debug message
         wheel_str = sprintf(...
             'Pos %.2f %.2f %.2f\nY %.1f P %.1f Rad %.2f',...

@@ -96,7 +96,8 @@ Robot {
 	        children [
             hokuyo_thor_chest{
               name "ChestLidar"
-              width 541
+              width 361
+              fov 3.14159
              }            
           ]
           physics Physics{

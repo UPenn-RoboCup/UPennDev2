@@ -96,10 +96,9 @@ function ret = robotbody()
   end
 
   function update_viewpoint()
-    flags = BODY.viewpoint;
-    pose = POSE.pose_odom;
-%   pose = POSE.pose_slam;
-  
+    flags = BODY.viewpoint;    
+    pose = POSE.pose;
+      
     robot_pos = [pose(1) pose(2) POSE.body_height];
     pose_dir = [cos(pose(3)) sin(pose(3))];
 
@@ -233,8 +232,7 @@ function ret = robotbody()
 
 
   function calculate_transforms()
-		pose = POSE.pose_odom;
-%		pose = POSE.pose_slam;
+		pose = POSE.pose;
 
     lfingerangle1 = BODY.lfingerangle(1);
     lfingerangle2 = BODY.lfingerangle(2);
@@ -352,6 +350,7 @@ function ret = robotbody()
     POSE.rpy = double(data.rpy);
     POSE.body_height = double(data.body_height);
     SLAM.update_pose(POSE.pose,POSE.pose_slam);
+    
   end
 
   ret= BODY;

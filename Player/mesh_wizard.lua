@@ -77,7 +77,7 @@ local function setup_mesh( name, tbl )
 
   -- Resolution
   tbl.meta.resolution = {scan_resolution,fov_resolution}
-print("Resolution:",scan_resolution,fov_resolution)
+  print("Resolution:",scan_resolution,fov_resolution)
   -- TODO: Be able to resize these
   tbl.mesh_byte = torch.ByteTensor( scan_resolution, fov_resolution ):zero()
   tbl.mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
@@ -224,13 +224,16 @@ local function chest_callback()
   if not scanline then return end -- Only if a valid column is returned
 
   --SJ: If lidar moves faster than the mesh scanline resolution, we need to fill the gap  
+  --TODO: boundary lines may not be written at all, making glitches
   local scanlines = {}
   if chest.last_scanline then
     if scanline>chest.last_scanline then
+      chest.last_dir = 1
       for i=chest.last_scanline+1,scanline do 
         table.insert(scanlines,i)
       end
     elseif scanline<chest.last_scanline then
+      chest.last_dir = -1
       for i=scanline,chest.last_scanline-1 do 
         table.insert(scanlines,i)
       end

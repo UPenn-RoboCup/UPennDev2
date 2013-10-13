@@ -127,13 +127,19 @@ function walk.update()
   -- Grab gyro feedback for these joint angles
   local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
 
-  --Old feedback
-  --delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,phSingle,gyro_rpy, angleShift)
-
   --Robotis-style simple feedback (which seems to be better :[])
-  delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,phSingle,gyro_rpy, angleShift)
+--  delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,phSingle,gyro_rpy, angleShift)
+
+--Old feedback
+  delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,phSingle,gyro_rpy, angleShift)
 
   moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
+
+--For external monitoring
+  local uZMP = zmp_solver:get_zmp(ph)
+  mcm.set_status_uTorso(uTorso)
+  mcm.set_status_uZMP(uZMP)
+  mcm.set_status_t(t)
 
   if is_logging then
 -- Grab the sensor values

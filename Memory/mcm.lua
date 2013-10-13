@@ -44,6 +44,11 @@ shared.status.uTorso = vector.zeros(3)
 --We store the torso velocity (to handle stopping)
 shared.status.uTorsoVel = vector.zeros(3)
 
+--ZMP is stored here for external monitoring
+shared.status.uZMP = vector.zeros(3)
+
+--Current time
+shared.status.t = vector.zeros(1)
 
 -- Foot support
 --SJ: they are bit misleading as they are different from 'support' positions

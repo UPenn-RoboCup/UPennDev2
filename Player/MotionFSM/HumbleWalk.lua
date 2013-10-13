@@ -71,12 +71,26 @@ function walk.entry()
   iStep = 1   -- Initialize the step index  
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
+  mcm.set_walk_steprequest(0) --cancel stop request flag
 
   -- log file
   if is_logging then
     LOG_F_SENSOR = io.open('feet.log','w')
     local log_entry = string.format('t ph supportLeg values\n')
     LOG_F_SENSOR:write(log_entry)
+  end
+
+  --Check the initial torso velocity
+  local uTorsoVel = mcm.get_status_uTorsoVel()
+  local velTorso = math.sqrt(uTorsoVel[1]*uTorsoVel[1]+
+                          uTorsoVel[2]*uTorsoVel[2])
+
+  if velTorso>0.01 then
+    if uTorsoVel[2]>0 then --Torso moving to left
+      iStep = 3; --This skips the initial step handling
+    else
+      iStep = 4; --This skips the initial step handling
+    end
   end
 end
 
@@ -92,9 +106,18 @@ function walk.update()
     --Should we stop now?
     local stoprequest = mcm.get_walk_stoprequest()
     if stoprequest>0 then return"done"   end
+ 
+
     ph = ph % 1
     iStep = iStep + 1  -- Increment the step index  
     supportLeg = iStep % 2 -- supportLeg: 0 for left support, 1 for right support
+
+    local steprequest = mcm.get_walk_steprequest()
+    local step_supportLeg = mcm.get_walk_step_supportleg()
+    if steprequest>0 and supportLeg ==step_supportLeg then
+      return "done_step"
+    end
+
     local initial_step = false
     if iStep<=3 then initial_step = true end
 

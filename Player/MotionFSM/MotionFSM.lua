@@ -12,7 +12,7 @@ local motionSit    = require'motionSit' --Robots changes the body height for man
 local motionWalk   = require(Config.dev.walk) --Reactive walking
 local motionStep   = require'motionStep'   --Stationary stepping
 local motionStepPreview   = require'motionStepPreview' --ZMP preview stepping
-
+local motionStepNonstop = require'motionStepNonstop'
 --Our robot never fall!
 --local motionFall   = require'motionFall' 
 
@@ -22,6 +22,7 @@ local sm = fsm.new( motionIdle, motionInit, motionStance)
 --, motionFall )
 sm:add_state(motionWalk)
 sm:add_state(motionStep)
+sm:add_state(motionStepNonstop)
 sm:add_state(motionStepPreview)
 sm:add_state(motionSit)
 
@@ -64,6 +65,12 @@ sm:set_transition(motionWalk, 'done', motionStance)
 sm:set_transition(motionStep, 'done', motionStance)
 sm:set_transition(motionStepPreview, 'done', motionStance)
 
+
+sm:set_transition(motionWalk, 'done_step', motionStepNonstop)
+sm:set_transition(motionStepNonstop, 'done', motionStance)
+sm:set_transition(motionStepNonstop, 'towalk', motionWalk)
+
+
 -- Add "special events" like 'footstep' that set
 -- a variable number of footsteps (not suitable for shm)
 -- Msgpacked special events
@@ -78,6 +85,9 @@ local special_evts = {
 --]]  
   stand = function()
     mcm.set_walk_stoprequest(1)
+  end,
+  stepnonstop = function()
+    mcm.set_walk_steprequest(1)
   end
 }
 --------------------------

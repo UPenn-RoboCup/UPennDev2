@@ -27,6 +27,11 @@ shared.walk.vel        = vector.zeros(3)
 shared.walk.bipedal    = vector.zeros(1)
 shared.walk.stoprequest= vector.zeros(1)
 
+-- Walk-step transition
+shared.walk.steprequest= vector.zeros(1)
+shared.walk.step_supportleg= vector.zeros(1)
+
+
 -- Motion Status
 shared.status = {}
 shared.status.velocity   = vector.zeros(3)

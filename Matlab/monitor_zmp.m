@@ -1,5 +1,5 @@
 addpath(genpath('.'));
-close all
+clf
 clear all
 
 a=shm('mcmStatus01sj');
@@ -13,8 +13,6 @@ vel_x=[];
 zmp_y=[];
 com_y=[];
 vel_y=[];
-
-figure();
 
 f_handle_1 = subplot(2,1,1);
 p_handle_1 = plot(0,0,'r',0,0,'g',0,0,'b');
@@ -31,11 +29,39 @@ t_dur = 3.0;
 x_mag = 1.0;
 y_mag = 0.3;
 
+t_old = 0;
+t_nonupdate_count = 0;
+should_clear = false;
 
 while 1 
   zmp_current = a.get_uZMP();
   com_current = a.get_uTorso();
   t_current = a.get_t();
+
+  if t_current==t_old 
+  	t_nonupdate_count = t_nonupdate_count+1;
+  	if t_nonupdate_count>500 %Auto reset after 5s
+  		should_clear = true;  		
+	end
+  else
+	t_nonupdate_count = 0;
+	if should_clear
+	  	should_clear=false;
+
+	  	t=[];
+		zmp_x=[];
+		com_x=[];
+		vel_x=[];
+
+		zmp_y=[];
+		com_y=[];
+		vel_y=[];
+
+	  end
+  end
+
+  
+  t_old = t_current;
 
   walk_vel = a2.get_vel();
 

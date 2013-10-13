@@ -19,11 +19,14 @@ shared.robot.utorso1 = vector.zeros(3)
 
 --Odometry pose
 shared.robot.pose_odom = vector.zeros(3)
+-- 0: only odom
+-- 1: only slam
+-- 2: slam + odom
+shared.robot.odom_mode = vector.zeros(1)
 
 -- SLAM pose
 shared.slam = {}
 shared.slam.pose = vector.zeros(3)
-
 
 
 --[[

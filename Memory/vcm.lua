@@ -80,6 +80,13 @@ shared.chest_lidar.sensor_width = vector.new({1081})
 shared.chest_lidar.offset_angle = 0
 
 ------------------------
+--  Slam map
+-- Compression format:
+-- 0: jpeg   1: zlib
+shared.omap = {}
+shared.omap.format = vector.zeros(1) 
+
+------------------------
 --  Kinect
 shared.kinect       = {}
 -- Timestamp of last acquisition

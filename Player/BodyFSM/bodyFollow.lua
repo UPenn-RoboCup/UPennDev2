@@ -7,8 +7,8 @@ local vector = require'vector'
 -- Get the human guided approach
 require'hcm'
 -- Get the robot guided approach
--- wcm is needed for pose, too
 require'wcm'
+local USE_ODOM_ONLY = true
 
 -- FSM coordination
 local simple_ipc = require'simple_ipc'
@@ -122,9 +122,19 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   
+  -- Grab the odom mode
+  local odom_mode = wcm.get_robot_odom_mode()
+  if odom_mode ~= 0 then
+  	USE_ODOM_ONLY = false
+  end
+
   -- Grab the pose
-  --local pose = wcm.get_robot_pose()
-  local pose = wcm.get_slam_pose()
+  local pose = {0,0,0}
+  if USE_ODOM_ONLY then
+    pose = wcm.get_robot_pose_odom()
+  else
+    pose = wcm.get_slam_pose()
+  end
 
   -- Grab the waypoints
   nwaypoints = hcm.get_motion_nwaypoints()
@@ -178,8 +188,11 @@ function state.update()
 
   -- Grab the current pose
   cnt = cnt + 1
-  --local pose = vector.pose(wcm.get_robot_pose())
-  local pose = vector.pose(wcm.get_slam_pose())
+  if USE_ODOM_ONLY then
+     pose = vector.pose(wcm.get_robot_pose_odom())
+  else
+     pose = vector.pose(wcm.get_slam_pose())
+  end
   if cnt % 20 == 0 then
     print('Robot pose:', unpack(pose) )
   end

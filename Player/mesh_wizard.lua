@@ -227,23 +227,42 @@ local function chest_callback()
   --SJ: If lidar moves faster than the mesh scanline resolution, we need to fill the gap  
   --TODO: boundary lines may not be written at all, making glitches
   local scanlines = {}
+  prev_dir =  vcm.get_chest_lidar_last_scan_dir()
+  
+  
+
   if chest.last_scanline then
     if scanline>chest.last_scanline then
-      chest.last_dir = 1
-      for i=chest.last_scanline+1,scanline do 
-        table.insert(scanlines,i)
+      new_dir = 1
+      if prev_dir==1 then
+        for i=chest.last_scanline+1,scanline do table.insert(scanlines,i) end
+      else
+        --Fill the boundary
+        print("Flip: 1 to ",chest.last_scanline,scanline)
+        for i = 1, math.max(chest.last_scanline-1, scanline) do table.insert(scanlines,i) end        
       end
     elseif scanline<chest.last_scanline then
-      chest.last_dir = -1
-      for i=scanline,chest.last_scanline-1 do 
-        table.insert(scanlines,i)
+      new_dir = -1
+      if prev_dir==-1 then
+        for i=scanline,chest.last_scanline-1 do table.insert(scanlines,i)  end
+      else
+        --Fill the boundary
+        print("Flip:",chest.last_scanline,scanline,"to",chest.meta.resolution[1])        
+        for i = math.min(chest.last_scanline+1, scanline), chest.meta.resolution[1] do
+          table.insert(scanlines,i) 
+        end
+        
       end
     else return end --Duplicate scanline: don't update
   else
     table.insert(scanlines,scanline) --First scanline. Just add one line
   end
-  chest.last_scanline = scanline
-  
+  chest.last_scanline = scanline  
+
+  --print("prev:",prev_dir, "new:",new_dir, chest.last_scanline)
+  vcm.set_chest_lidar_last_scan_dir(new_dir)
+
+
   local pose = wcm.get_robot_pose()
   for i,line in ipairs(scanlines) do
       ranges:tensor( -- Copy lidar readings to the torch object for fast modification

@@ -115,6 +115,7 @@ CHEST_LIDAR.posea=[];
             set(a_mesh,'xtick',[],'ytick',[], 'ztick',[])
             light('Position',[-3 1 3]);
             lighting flat            
+            set(LIDAR.p, 'ButtonDownFcn', @select_3d_mesh);
             set(LIDAR.h, 'ButtonDownFcn', @select_3d_mesh);
 
             hold on;

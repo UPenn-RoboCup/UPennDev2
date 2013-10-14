@@ -419,6 +419,7 @@ arm.linear_wrist_limit = 0.05
 
 
 --FOR testing (for conference)
+--[[
 walk.tStep = 0.80
 walk.supportY = 0.03
 walk.tZMP = 0.33
@@ -433,7 +434,7 @@ walk.ankleImuParamY[1]=0
 walk.hipImuParamY[1]=0
 
 walk.accTorso = 1.5 --fast stop
-
+--]]
 
 
 ------------------------------------

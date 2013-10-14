@@ -157,10 +157,10 @@ function walk.update()
     
     if supportLeg == 0 then  -- Left support    
       uRight,zRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
-      if walkParam then print(unpack(walkParam))end
+--      if walkParam then print(unpack(walkParam))end
     elseif supportLeg==1 then    -- Right support    
       uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)    
-      if walkParam then print(unpack(walkParam))end
+--      if walkParam then print(unpack(walkParam))end
     elseif supportLeg == 2 then --Double support
     end
     step_planner:save_stance(uLeft,uRight,uTorso)  

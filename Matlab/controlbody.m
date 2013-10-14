@@ -45,7 +45,11 @@ ret = CONTROL;
         elseif strcmp(evt, 'sidedone')
             send_control_packet([], [],...
                 'hcm', 'motion', 'sideways_status', 1);
+        elseif strcmp(evt, 'stepover')            
+            %should define motion fsm as well
+            send_control_packet( 'MotionFSM', 'preview' );        
         else
+
             send_control_packet( 'BodyFSM', evt );
         end
     end
@@ -97,13 +101,14 @@ ret = CONTROL;
         set(b4,'CallBack',MODELS.step_calc);
     end
 
-    function setup_body_controls(b1,b2,b3,b4,b5,b6)
+    function setup_body_controls(b1,b2,b3,b4,b5,b6,b7)
         set(b1,'CallBack',{@body_control,'init'});
         set(b2,'CallBack',{@body_control,'approach'});
         set(b3,'CallBack',{@body_control,'navigate'});
         set(b4,'CallBack',{@body_control,'teleop'});
         set(b5,'CallBack',{@body_control,'sideways'});
         set(b6,'CallBack',{@body_control,'sidedone'});
+        set(b7,'CallBack',{@body_control,'stepover'});
     end
 
     function setup_head_controls(b1,b2,b3,b4)

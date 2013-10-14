@@ -181,6 +181,14 @@ walk.tStep = 1.0
 end
 
 
+--Slowed down walk (to match actual robot)
+walk.velLimitX = {-.05,.05}
+walk.velLimitY = {-.04,.04}
+walk.velLimitA = {-.2,.2}
+walk.velDelta  = {0.025,0.02,0.1}
+
+
+
 --SJ:block walking test
 --walk.stepHeight = 0.20
 

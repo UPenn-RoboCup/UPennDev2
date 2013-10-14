@@ -62,7 +62,9 @@ function state.entry()
   t_update = t_entry
   
   -- Grab the pose
-  local pose = wcm.get_slam_pose()
+  --local pose = wcm.get_slam_pose()
+
+  local pose = wcm.get_robot_pose();
 
   -- Grab the angles to turn in place
 	-- 3 ways: 1) Default: 90 degree, 2) hcm? 3) COST FUNCTION?

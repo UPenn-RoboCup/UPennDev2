@@ -91,20 +91,20 @@ local function setup_mesh( name, tbl )
   tbl.scan_poses = torch.DoubleTensor( scan_resolution, 3 ):zero()
 
   -- Find the offset for copying lidar readings into the mesh
-  -- if fov is from -135 to 135 degrees, then offset_idx is zero
-  -- if fov is from 0 to 135 degrees, then offset_idx is 540
-
---  local fov_offset = 540+math.ceil( reading_per_radian*tbl.meta.fov[1] )
+  -- if fov is from -fov/2 to fov/2 degrees, then offset_idx is zero
+  -- if fov is from 0 to fov/2 degrees, then offset_idx is sensor_width/2
   local fov_offset = (lidar_sensor_width-1)/2+math.ceil( reading_per_radian*tbl.meta.fov[1] )
   tbl.offset_idx   = math.floor(fov_offset)
-  --print('fov offset',name,fov_offset,tbl.offset_idx,fov_resolution)
   return tbl
 end
 
-local function prepare_mesh(type,near,far,method, quality)
+local function prepare_mesh(type,depths,net_settings)
   -- Safety check
+  local near, far = unpack(depths)
   if near>=far then return end
-  if not type then return end
+  if not mesh then return end
+
+  local stream, method, quality, use_pose = unpack(net_settings)
 
   -- Enhance the dynamic range of the mesh image
   local adjusted_range = type.mesh_adj
@@ -143,50 +143,43 @@ local function prepare_mesh(type,near,far,method, quality)
   -- Depth data is compressed to a certain range
   type.meta.depths = {near,far}
 
-  -- Do we wish to also send the pose data?
-  local c_pose_upperbyte, c_pose_lowerbyte
-  c_pose_upperbyte = zlib.compress(
-    type.pose_upperbyte:storage():pointer(),
-    type.pose_upperbyte:nElement() )
-
-  c_pose_lowerbyte = zlib.compress(
-    type.pose_lowerbyte:storage():pointer(),
-    type.pose_lowerbyte:nElement() )
-
-  type.meta.c_pose_upperbyte = c_pose_upperbyte
-  type.meta.c_pose_lowerbyte = c_pose_lowerbyte
+  -- Do we wish to also send the pose data for each scan?
+  if use_pose==1 then
+    type.meta.c_pose = zlib.compress(
+      type.scan_poses:storage():pointer(),
+      type.scan_poses:nElement()
+    )
+  end
 
   return mp.pack(type.meta), c_mesh
 end
 
--- type is head or chest table
-local function stream_mesh(type)
-  local get_name = 'get_'..type.meta.name
+-- mesh is head or chest table
+local function stream_mesh(mesh)
+  local get_name = 'get_'..mesh.meta.name
   -- Network streaming settings
   local net_settings = vcm[get_name..'_net']()
-  -- Streaming
-
+  -- Streaming?
   if net_settings[1]==0 then return end
   -- Sensitivity range in meters
   -- Depths when compressing
   local depths = vcm[get_name..'_depths']()
 
   local metapack, c_mesh = prepare_mesh(
-    type,
-    depths[1],depths[2],
-    -- Compression type & quality
-    net_settings[2],net_settings[3])
+    mesh,
+    depths,
+    net_settings)
   
 	if net_settings[1]==1 then
     net_settings[1] = 0
     local ret, err = mesh_udp_ch:send( metapack..c_mesh )
     if err then print('mesh udp',err) end
-    vcm['set_'..type.meta.name..'_net'](net_settings)
+    vcm['set_'..mesh.meta.name..'_net'](net_settings)
   elseif net_settings[1]==3 then
     -- Reliable single frame
     net_settings[1] = 0
     local ret = mesh_tcp_ch:send{metapack,c_mesh}
-    vcm['set_'..type.meta.name..'_net'](net_settings)
+    vcm['set_'..mesh.meta.name..'_net'](net_settings)
   end
   --[[
   print(err or string.format('Sent a %g kB packet.', ret/1024))

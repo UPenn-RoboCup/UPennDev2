@@ -1565,30 +1565,28 @@ if IS_WEBOTS then
     -- Set lidar data into shared memory
     if use_lidar_head then
       Body.set_head_lidar(head_lidar_wbt.pointer)
-
-      head_lidar_wbt.meta.t  = t
-      head_lidar_wbt.meta.count  = head_lidar_wbt.meta.count  + 1
-      head_lidar_wbt.meta.hangle = Body.get_head_position()
-      head_lidar_wbt.meta.rpy  = Body.get_sensor_rpy()
-      head_lidar_wbt.meta.gyro = Body.get_sensor_gyro()
-
+      local meta = head_lidar_wbt.meta
+      meta.t = t
+      meta.count  = head_lidar_wbt.meta.count  + 1
+      meta.hangle = Body.get_head_position()
+      meta.rpy  = Body.get_sensor_rpy()
+      meta.gyro = Body.get_sensor_gyro()
+      meta.pose = wcm.get_robot_pose()
       -- Send the count on the channel so they know to process a new frame
       head_lidar_wbt.channel:send(  mp.pack(head_lidar_wbt.meta)  )
     end
     if use_lidar_chest then
       Body.set_chest_lidar(chest_lidar_wbt.pointer)
+      local meta = chest_lidar_wbt.meta
       -- Save important metadata
-      chest_lidar_wbt.meta.t  = t
-      chest_lidar_wbt.meta.count = chest_lidar_wbt.meta.count + 1
-      chest_lidar_wbt.meta.pangle = Body.get_lidar_position(1)
-      chest_lidar_wbt.meta.rpy  = Body.get_sensor_rpy()
-      chest_lidar_wbt.meta.gyro = Body.get_sensor_gyro()
-
-      chest_lidar_wbt.meta.fov = webots.wb_camera_get_fov(tags.chest_lidar)
-      chest_lidar_wbt.meta.width = webots.wb_camera_get_width(tags.chest_lidar)
-
+      meta.t = t
+      meta.count = chest_lidar_wbt.meta.count + 1
+      meta.pangle = Body.get_lidar_position(1)
+      meta.rpy  = Body.get_sensor_rpy()
+      meta.gyro = Body.get_sensor_gyro()
+      meta.pose = wcm.get_robot_pose()
       -- Send the count on the channel so they know to process a new frame
-      chest_lidar_wbt.channel:send( mp.pack(chest_lidar_wbt.meta) )
+      chest_lidar_wbt.channel:send( mp.pack(meta) )
     end
     
 

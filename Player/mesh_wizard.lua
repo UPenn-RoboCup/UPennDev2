@@ -2,7 +2,7 @@
 -- Combined Lidar manager for Team THOR
 -- Reads and sends raw lidar data
 -- As well as accumulate them as a map
--- and send to UDP
+-- and send to UDP/TCP
 -- (c) Stephen McGill, Seung Joon Yi, 2013
 ---------------------------------
 
@@ -79,21 +79,20 @@ local function setup_mesh( name, tbl )
 
   -- Resolution
   tbl.meta.resolution = {scan_resolution,fov_resolution}
-  
-  -- TODO: Be able to resize these
-  tbl.mesh_byte = torch.ByteTensor( scan_resolution, fov_resolution ):zero()
+  -- In memory mesh
   tbl.mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
+  -- Mesh buffers for compressing and sending to the user
+  tbl.mesh_byte = torch.ByteTensor( scan_resolution, fov_resolution ):zero()
   tbl.mesh_adj  = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
-  -- TODO: Save the exact actuator angles?
+  -- Save the exact actuator angles of every scan
   tbl.scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
+  -- Save the exact pose of every scan
+  -- TODO: Save the whole whole rotation?
+  tbl.scan_poses = torch.DoubleTensor( scan_resolution, 3 ):zero()
+
   -- Find the offset for copying lidar readings into the mesh
   -- if fov is from -135 to 135 degrees, then offset_idx is zero
   -- if fov is from 0 to 135 degrees, then offset_idx is 540
-
-  --We save robot pose for every frame
-  --Otherwise the mesh will broken if the robot moves around  
-  tbl.pose_upperbyte = torch.ByteTensor( scan_resolution, 3 ):zero()
-  tbl.pose_lowerbyte = torch.ByteTensor( scan_resolution, 3 ):zero()
 
 --  local fov_offset = 540+math.ceil( reading_per_radian*tbl.meta.fov[1] )
   local fov_offset = (lidar_sensor_width-1)/2+math.ceil( reading_per_radian*tbl.meta.fov[1] )
@@ -141,9 +140,10 @@ local function prepare_mesh(type,near,far,method, quality)
     -- raw data?
     return
   end
-  
+  -- Depth data is compressed to a certain range
   type.meta.depths = {near,far}
 
+  -- Do we wish to also send the pose data?
   local c_pose_upperbyte, c_pose_lowerbyte
   c_pose_upperbyte = zlib.compress(
     type.pose_upperbyte:storage():pointer(),
@@ -176,13 +176,6 @@ local function stream_mesh(type)
     depths[1],depths[2],
     -- Compression type & quality
     net_settings[2],net_settings[3])
-
-  -- Sending to other processes
-  --mesh_pub_ch:send( {meta, payload} )
- 
-	-- Check for errors
-  local ret, err = mesh_udp_ch:send( metapack..c_mesh)
-  if err then print('mesh udp',err) end
   
 	if net_settings[1]==1 then
     net_settings[1] = 0
@@ -203,16 +196,53 @@ end
 ------------------------------
 -- Data copying helpers
 -- Convert a pan angle to a column of the chest mesh image
-local function angle_to_scanline( meta, rad )
+local function angle_to_scanlines( lidar, rad )
+  -- Grab the most recent scanline saved in the mesh
+  local prev_scanline = lidar.current_scanline
+  -- Get the most recent direction the lidar was moving
+  local prev_direction = lidar.current_direction
+  -- Get the metadata for calculations
+  local meta  = lidar.meta
   local start = meta.scanlines[1]
   local stop  = meta.scanlines[2]
   local res   = meta.resolution[1]
   local ratio = (rad-start)/(stop-start)
   -- Round
   local scanline = math.floor(ratio*res+.5)
-  --local scanline = math.ceil(ratio*res)
   -- Return a bounded value
-  return math.max( math.min(scanline, res), 1 )
+  scanline = math.max( math.min(scanline, res), 1 )
+  -- Grab the direction
+  local diff_scanline = scanline-prev_scanline
+  local direction = util.sign(diff_scanline)
+  -- If not moving, assume we are staying in the previous direction
+  direction = (direction~=0 and direction) or prev_direction
+
+  -- Save in our table
+  lidar.current_scanline  = scanline
+  -- Save the directions
+  lidar.current_direction = direction
+
+  -- Find the set of scanlines for copying the lidar reading
+  local scanlines = {}
+  if direction==prev_direction then
+    -- fill all lines between previous and now
+    for s=prev_scanline+1,scanline,direction do
+      table.insert(scanlines,s)
+    end
+  else
+    -- Changed directions!
+    -- Populate the borders, too
+    if direction>0 then
+      -- going away from 1 to end
+      for s=math.min(chest.last_scanline+1,scanline),res do table.insert(scanlines,i) end
+    else
+      -- going away from end to 1
+      for s=1,math.max(chest.last_scanline-1,scanline) do table.insert(scanlines,i) end        
+    end
+  end
+
+  -- Return for populating
+  return scanlines
 end
 
 --Convert a float number into two bytes
@@ -233,72 +263,29 @@ local function chest_callback()
   local metadata = mp.unpack(meta)
   -- Get raw data from shared memory
   local ranges = Body.get_chest_lidar()
+  -- Save the body pose info
+  local pose = metadata.pose
   -- Insert into the correct column
   local angle = metadata.pangle
-  local scanline = angle_to_scanline( chest.meta, angle )
-  if not scanline then return end -- Only if a valid column is returned
-
-  --SJ: If lidar moves faster than the mesh scanline resolution, we need to fill the gap  
-  --TODO: boundary lines may not be written at all, making glitches
-  local scanlines = {}
-  prev_dir =  vcm.get_chest_lidar_last_scan_dir()
-  
-  
-
-  if chest.last_scanline then
-    if scanline>chest.last_scanline then
-      new_dir = 1
-      if prev_dir==1 then
-        for i=chest.last_scanline+1,scanline do table.insert(scanlines,i) end
-      else
-        --Fill the boundary
-        print("Flip: 1 to ",chest.last_scanline,scanline)
-        for i = 1, math.max(chest.last_scanline-1, scanline) do table.insert(scanlines,i) end        
-      end
-    elseif scanline<chest.last_scanline then
-      new_dir = -1
-      if prev_dir==-1 then
-        for i=scanline,chest.last_scanline-1 do table.insert(scanlines,i)  end
-      else
-        --Fill the boundary
-        print("Flip:",chest.last_scanline,scanline,"to",chest.meta.resolution[1])        
-        for i = math.min(chest.last_scanline+1, scanline), chest.meta.resolution[1] do
-          table.insert(scanlines,i) 
-        end
-        
-      end
-    else return end --Duplicate scanline: don't update
-  else
-    table.insert(scanlines,scanline) --First scanline. Just add one line
-  end
-  chest.last_scanline = scanline  
-
-  --print("prev:",prev_dir, "new:",new_dir, chest.last_scanline)
-  vcm.set_chest_lidar_last_scan_dir(new_dir)
-
-
-  local pose = wcm.get_robot_pose()
-  for i,line in ipairs(scanlines) do
+  local scanlines = angle_to_scanlines( chest, angle )
+  -- Update each outdated scanline in the mesh
+  for _,line in ipairs(scanlines) do
 		-- Copy lidar readings to the torch object for fast modification
-      ranges:tensor( 
-				chest.mesh:select(1,line),
-        chest.mesh:size(2),
-        chest.offset_idx )
-			-- Save the pan angle
-			chest.scan_angles[line] = angle 
-
-      chest.pose_upperbyte[line][1],
-        chest.pose_lowerbyte[line][1]= float_to_twobyte(pose[1])
-      chest.pose_upperbyte[line][2],
-        chest.pose_lowerbyte[line][2]= float_to_twobyte(pose[2])
-      chest.pose_upperbyte[line][3],
-        chest.pose_lowerbyte[line][3]= float_to_twobyte(pose[3])       
-
-  end  
-
-  chest.meta.rpy = metadata.rpy --Save the body tilt info
-  -- We've been updated
-  chest.meta.t = metadata.t  
+    ranges:tensor( 
+			chest.mesh:select(1,line),
+      chest.mesh:size(2),
+      chest.offset_idx )
+		-- Save the pan angle
+		chest.scan_angles[line] = angle
+    -- Save the pose
+    local chest_pose = chest.scan_poses:select(1,line)
+    chest_pose[1],chest_pose[2],chest_pose[3] = unpack(pose)
+  end
+  -- Save the body tilt info
+  -- TODO: bodyHeight as well?
+  chest.meta.rpy = metadata.rpy
+  -- We've been updated at this timestamp
+  chest.meta.t = metadata.t
 end
 
 local function head_callback()
@@ -306,44 +293,26 @@ local function head_callback()
   local metadata = mp.unpack(meta)
   -- Get raw data from shared memory
   local ranges = Body.get_head_lidar()
+  -- Save the body pose info
+  local pose = metadata.pose
   -- Insert into the correct scanlin
   local angle = metadata.hangle[2]
-  local scanline = angle_to_scanline( head.meta, angle )
-  if not scanline then return end -- Only if a valid column is returned
-
-  --SJ: If lidar moves faster than the mesh scanline resolution, we need to fill the gap  
-  local scanlines = {}
-  if head.last_scanline then
-    if scanline>head.last_scanline then
-      for i=head.last_scanline+1,scanline do 
-        table.insert(scanlines,i)
-      end
-    elseif scanline<head.last_scanline then
-      for i=scanline,head.last_scanline-1 do 
-        table.insert(scanlines,i)
-      end
-    else return end --Duplicate scanline: don't update
-  else
-    table.insert(scanlines,scanline) --First scanline. Just add one line
+  local scanlines = angle_to_scanlines( head, angle )
+  -- Update each outdated scanline in the mesh
+  for _,line in ipairs(scanlines) do
+    ranges:tensor( -- Copy lidar readings to the torch object for fast modification
+      head.mesh:select(1,line),
+      head.mesh:size(2),
+      head.offset_idx )      
+    -- Save the pan angle
+    head.scan_angles[line] = angle
+    -- Save the pose
+    local head_pose = head.scan_poses:select(1,line)
+    head_pose[1],head_pose[2],head_pose[3] = unpack(pose)      
   end
-  head.last_scanline = scanline
-
-  local pose = wcm.get_robot_pose()
-  for i,line in ipairs(scanlines) do
-      ranges:tensor( -- Copy lidar readings to the torch object for fast modification
-        head.mesh:select(1,line),
-        head.mesh:size(2),
-        head.offset_idx )      
-      head.scan_angles[line] = angle -- Save the pan angle
-
-      head.pose_upperbyte[line][1],
-        head.pose_lowerbyte[line][1]= float_to_twobyte(pose[1])
-      head.pose_upperbyte[line][2],
-        head.pose_lowerbyte[line][2]= float_to_twobyte(pose[2])
-      head.pose_upperbyte[line][3],
-        head.pose_lowerbyte[line][3]= float_to_twobyte(pose[3])       
-  end
-  head.meta.rpy = metadata.rpy --Save the body tilt info
+  -- Save the body tilt info
+  -- TODO: bodyHeight as well?
+  head.meta.rpy = metadata.rpy
   -- We've been updated
   head.meta.t = metadata.t
 end

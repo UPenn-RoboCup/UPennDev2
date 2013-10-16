@@ -41,6 +41,7 @@ if head_hokuyo then
     meta.hangle = Body.get_head_command_position()
     --meta.hangle = Body.get_head_position()
     meta.rpy  = Body.get_sensor_rpy()
+    meta.pose = wcm.get_robot_pose()
     meta.gyro = Body.get_sensor_gyro()
     meta.t = Body.get_time()
     local ret = head_lidar_ch:send( mp.pack(meta) )
@@ -62,6 +63,7 @@ if chest_hokuyo then
     --meta.pangle = Body.get_lidar_command_position(1)
     meta.pangle = Body.get_lidar_position(1)
     meta.rpy = {0,0,0}
+    meta.pose = wcm.get_robot_pose()
     meta.t = Body.get_time()
     meta.gyro = {0,0,0}
     local ret = chest_lidar_ch:send( mp.pack(meta) )

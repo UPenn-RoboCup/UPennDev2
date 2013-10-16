@@ -47,8 +47,6 @@ t0 = tic;
   lidarangles_skipped = lidarangles(:, 1:xskip:size(lidarangles,2));
   range_skipped =range_actual(1:yskip:size(range_actual,1),1:xskip:size(range_actual,2));
 
-  connect_th = tan(70*pi/180);
-  connect_th = tan(80*pi/180);
   connect_th = tan(85*pi/180);
 
   max_dist = lidar.lidarrange * 0.9;

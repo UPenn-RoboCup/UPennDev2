@@ -98,60 +98,67 @@ local function setup_mesh( name, tbl )
   return tbl
 end
 
-local function prepare_mesh(type,depths,net_settings)
+local function prepare_mesh(mesh,depths,net_settings)
   -- Safety check
   local near, far = unpack(depths)
-  if near>=far then return end
-  if not mesh then return end
+  if near>=far then
+		print('near ',near,' far ',far,'mixed')
+		return
+	end
+  if not mesh then
+		print('nil mesh')
+		return
+	end
 
   local stream, method, quality, use_pose = unpack(net_settings)
 
   -- Enhance the dynamic range of the mesh image
-  local adjusted_range = type.mesh_adj
-  adjusted_range:copy(type.mesh):add( -near )
+  local adjusted_range = mesh.mesh_adj
+  adjusted_range:copy(mesh.mesh):add( -near )
   adjusted_range:mul( 255/(far-near) )
     
   -- Ensure that we are between 0 and 255
+	local mesh_byte = mesh.mesh_byte
   adjusted_range[torch.lt(adjusted_range,0)] = 0
   adjusted_range[torch.gt(adjusted_range,255)] = 255
-  type.mesh_byte:copy( adjusted_range )
+  mesh_byte:copy( adjusted_range )
   
   -- Compression
   local c_mesh 
-  local dim = type.mesh_byte:size()
+  local dim = mesh_byte:size()
   if method==1 then
     -- jpeg
-    type.meta.c = 'jpeg'
+    mesh.meta.c = 'jpeg'
     jpeg.set_quality( quality )
-    c_mesh = jpeg.compress_gray( type.mesh_byte:storage():pointer(),
+    c_mesh = jpeg.compress_gray( mesh_byte:storage():pointer(),
       dim[2], dim[1] )
   elseif method==2 then
     -- zlib
-    type.meta.c = 'zlib'
+    mesh.meta.c = 'zlib'
     c_mesh = zlib.compress(
-      type.mesh_byte:storage():pointer(),
-      type.mesh_byte:nElement() )
+      mesh_byte:storage():pointer(),
+      mesh_byte:nElement() )
   elseif method==3 then
     -- png
-    type.meta.c = 'png'
-    c_mesh = png.compress(type.mesh_byte:storage():pointer(),
+    mesh.meta.c = 'png'
+    c_mesh = png.compress(mesh_byte:storage():pointer(),
       dim[2], dim[1], 1)
   else
     -- raw data?
     return
   end
   -- Depth data is compressed to a certain range
-  type.meta.depths = {near,far}
+  mesh.meta.depths = {near,far}
 
   -- Do we wish to also send the pose data for each scan?
   if use_pose==1 then
-    type.meta.c_pose = zlib.compress(
-      type.scan_poses:storage():pointer(),
-      type.scan_poses:nElement()
+    mesh.meta.c_pose = zlib.compress(
+      mesh.scan_poses:storage():pointer(),
+      mesh.scan_poses:nElement()
     )
   end
 
-  return mp.pack(type.meta), c_mesh
+  return mp.pack(mesh.meta), c_mesh
 end
 
 -- mesh is head or chest table
@@ -161,6 +168,10 @@ local function stream_mesh(mesh)
   local net_settings = vcm[get_name..'_net']()
   -- Streaming?
   if net_settings[1]==0 then return end
+
+
+	print'sending mesh!'
+
   -- Sensitivity range in meters
   -- Depths when compressing
   local depths = vcm[get_name..'_depths']()
@@ -204,10 +215,13 @@ local function angle_to_scanlines( lidar, rad )
   local scanline = math.floor(ratio*res+.5)
   -- Return a bounded value
   scanline = math.max( math.min(scanline, res), 1 )
+	-- Initialize if no previous scanline
+	if not prev_scanline then prev_scanline=scanline end
   -- Grab the direction
-  local diff_scanline = scanline-prev_scanline
+  local diff_scanline = scanline - prev_scanline
   local direction = util.sign(diff_scanline)
   -- If not moving, assume we are staying in the previous direction
+	if not prev_direction then prev_direction=0 end
   direction = (direction~=0 and direction) or prev_direction
 
   -- Save in our table
@@ -337,7 +351,7 @@ function mesh.entry()
 
   -- Send mesh messages on interprocess to other processes
   -- TODO: Not used yet
-  mesh_pub_ch = simple_ipc.new_publisher'mesh'
+  --mesh_pub_ch = simple_ipc.new_publisher'mesh'
 
   -- Send (unreliably) to users
   mesh_udp_ch = udp.new_sender(

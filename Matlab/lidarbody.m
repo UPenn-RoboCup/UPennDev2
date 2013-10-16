@@ -216,7 +216,7 @@ CHEST_LIDAR.posea=[];
         end
 
         % Extract pose information
-        cpose = double(zlibUncompress(metadata.c_pose));
+        pose_data = double(zlibUncompress(metadata.c_pose));
         pose_data = reshape(pose_data,[3 metadata.resolution(1)]);
 
         % Calculate the angles (now support variable resolution for sensor)
@@ -255,7 +255,7 @@ CHEST_LIDAR.posea=[];
         
         % end of update
         tPassed = toc(t0);
-%         fprintf('Update lidar: %f seconds.\n',tPassed);
+        fprintf('Update lidar: %f seconds.\n',tPassed);
     end
 
 

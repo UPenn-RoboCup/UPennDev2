@@ -238,16 +238,6 @@ local function angle_to_scanlines( lidar, rad )
   return scanlines
 end
 
---Convert a float number into two bytes
---We assume that the number is -127 to 128 
-local function float_to_twobyte(num)
-  local lowerbyte,upperbyte;
-  num = (num*256)
-  num = num + 32768;
-  return math.floor(num/256), math.mod(num,256)
-end
-
-
 ------------------------------
 -- Lidar Callback functions --
 ------------------------------

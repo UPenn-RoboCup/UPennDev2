@@ -178,6 +178,10 @@ local function stream_mesh(type)
 
   -- Sending to other processes
   --mesh_pub_ch:send( {meta, payload} )
+  -- Testing
+  --mesh_pub_ch:send( metapack..c_mesh )
+  --print('type of cmesh', type(c_mesh))
+  mesh_pub_ch:send( {metapack, mp.pack(c_mesh)} )
  
 	-- Check for errors
   local ret, err = mesh_udp_ch:send( metapack..c_mesh)

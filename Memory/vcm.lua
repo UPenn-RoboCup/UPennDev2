@@ -48,12 +48,8 @@ shared.head_lidar.depths      = vector.new({.1,5})
 -- Rate | FPS (5,10,15,30, etc.)
 shared.head_lidar.net      = vector.zeros(3)
 
---We use this to detect whether the lidar hit the pan boundary
-shared.head_lidar.last_scan_dir = vector.zeros(1)
-
---SJ: we may skip readings to speed up (webots, for example)
-shared.head_lidar.sensor_fov = vector.new({math.pi*270/180})
-shared.head_lidar.sensor_width = vector.new({1081})
+-- LIDAR parameters: FOV and number of readings
+shared.head_lidar.sensor_params = vector.new({math.pi*270/180, 1081})
 
 --we use this to offset the reading range
 shared.head_lidar.offset_angle = 0
@@ -80,12 +76,8 @@ shared.chest_lidar.depths      = vector.new({.1,5})
 -- Rate | FPS (5,10,15,30, etc.)
 shared.chest_lidar.net      = vector.zeros(3)
 
---SJ: we may skip readings to speed up (webots, for example)
-shared.chest_lidar.sensor_fov = vector.new({math.pi*270/180})
-shared.chest_lidar.sensor_width = vector.new({1081})
-
---We use this to detect whether the lidar hit the pan boundary
-shared.chest_lidar.last_scan_dir = vector.zeros(1)
+-- LIDAR parameters: FOV and number of readings
+shared.chest_lidar.sensor_params = vector.new({math.pi*270/180, 1081})
 
 --we use this to offset the reading range
 shared.chest_lidar.offset_angle = 0

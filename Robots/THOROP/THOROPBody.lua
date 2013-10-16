@@ -1358,11 +1358,15 @@ if IS_WEBOTS then
       head_camera_wbt.height = webots.wb_camera_get_height(tags.head_camera)
     end
 
-    --Set lidar resolutions in vcm
-    vcm.set_head_lidar_sensor_fov(webots.wb_camera_get_fov(tags.head_lidar))
-    vcm.set_head_lidar_sensor_width(webots.wb_camera_get_width(tags.head_lidar))
-    vcm.set_chest_lidar_sensor_fov(webots.wb_camera_get_fov(tags.chest_lidar))
-    vcm.set_chest_lidar_sensor_width(webots.wb_camera_get_width(tags.chest_lidar))    
+    -- Update the Sensor Parameters in shared memory
+    vcm.set_head_lidar_sensor_params({
+      webots.wb_camera_get_fov(tags.head_lidar),
+      webots.wb_camera_get_width(tags.head_lidar)
+    })
+    vcm.set_chest_lidar_sensor_params({
+      webots.wb_camera_get_fov(tags.chest_lidar),
+      webots.wb_camera_get_width(tags.chest_lidar)
+    })
 
 --[[
     --FSR sensors

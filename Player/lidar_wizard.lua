@@ -23,6 +23,10 @@ local chest_hokuyo = libHokuyo.new_hokuyo(10)
 
 -- Head Hokuyo
 if head_hokuyo then
+
+  -- Update shared memory
+  vcm.set_head_lidar_sensor_params{270*Body.DEG_TO_RAD, 1081}
+
   head_hokuyo.name = 'Head'
   head_hokuyo.count = 0
   local head_lidar_ch = simple_ipc.new_publisher'head_lidar'

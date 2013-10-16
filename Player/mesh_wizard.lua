@@ -63,10 +63,11 @@ local function setup_mesh( name, tbl )
     * math.abs(tbl.meta.scanlines[2]-tbl.meta.scanlines[1])
   scan_resolution = math.ceil(scan_resolution)
 
-  local lidar_sensor_fov = vcm[get_name..'_sensor_fov']()
-  local lidar_sensor_width = vcm[get_name..'_sensor_width']()
+  -- Grab the sensor paramters
+  local lidar_sensor_fov, lidar_sensor_width = 
+    unpack(vcm[get_name..'_sensor_params']())
   
---  local reading_per_radian = 1 / (.25*math.pi/180)
+  -- Set our resolution
   local reading_per_radian = 
     (lidar_sensor_width-1)/lidar_sensor_fov;
 
@@ -78,7 +79,7 @@ local function setup_mesh( name, tbl )
 
   -- Resolution
   tbl.meta.resolution = {scan_resolution,fov_resolution}
-  print("Resolution:",scan_resolution,fov_resolution)
+  
   -- TODO: Be able to resize these
   tbl.mesh_byte = torch.ByteTensor( scan_resolution, fov_resolution ):zero()
   tbl.mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
@@ -406,11 +407,13 @@ function mesh.update()
     head.meta.fov ~= vcm.get_head_lidar_fov()
     then
     setup_mesh('head_lidar',head)
+    print("Head Resolution:",unpack(head.resolution))
   end
   if chest.meta.scanlines ~= vcm.get_chest_lidar_scanlines() or
     chest.meta.fov ~= vcm.get_chest_lidar_fov()
     then
     setup_mesh('chest_lidar',chest)
+    print("Chest Resolution:",unpack(chest.resolution))
   end  
 end
 

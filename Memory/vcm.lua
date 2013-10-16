@@ -25,7 +25,7 @@ shared.head_camera.t     = vector.zeros(1)
 -- Compression | 0: None, 1: JPEG, 2: PNG, 3: PNG
 -- Quality | JPEG quality from 0-100
 -- Rate | FPS (5,10,15,30, etc.)
-shared.head_camera.net = vector.new({2,1,0})
+shared.head_camera.net = vector.new({2,1,90})
 
 ------------------------
 --  Head LIDAR
@@ -45,8 +45,8 @@ shared.head_lidar.depths      = vector.new({.1,5})
 -- Stream | 0: None, 1: Single Frame, 2: Stream, 3: Single Reliable Frame
 -- Compression | 0: None, 1: JPEG, 2: PNG, 3: PNG
 -- Quality | JPEG quality from 0-100
--- Rate | FPS (5,10,15,30, etc.)
-shared.head_lidar.net      = vector.zeros(3)
+-- Rate | FPS (5,10,15,30, etc.) --TODO: do we need this?
+shared.head_lidar.net      = vector.new({0,0,90})
 
 --We use this to detect whether the lidar hit the pan boundary
 shared.head_lidar.last_scan_dir = vector.zeros(1)

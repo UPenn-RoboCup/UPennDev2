@@ -65,7 +65,7 @@ function state.update()
   -- If direction changes, send a mesh image
   if not (forward == pre_dir) then
   	-- Single frame; zlib
-  	vcm.set_head_lidar_net({1, 2, 0})
+  	vcm.set_head_lidar_net({1, 2, 95})
   	pre_dir = forward
   end
   -- Update the phase of the tilt

@@ -169,9 +169,6 @@ local function stream_mesh(mesh)
   -- Streaming?
   if net_settings[1]==0 then return end
 
-
-	print'sending mesh!'
-
   -- Sensitivity range in meters
   -- Depths when compressing
   local depths = vcm[get_name..'_depths']()
@@ -297,8 +294,9 @@ local function head_callback()
   local scanlines = angle_to_scanlines( head, angle )
   -- Update each outdated scanline in the mesh
   for _,line in ipairs(scanlines) do
-    ranges:tensor( -- Copy lidar readings to the torch object for fast modification
-      head.mesh:select(1,line),
+		-- Copy lidar readings to the torch object for fast modification
+    ranges:tensor(
+			head.mesh:select(1,line),
       head.mesh:size(2),
       head.offset_idx )      
     -- Save the pan angle

@@ -82,6 +82,6 @@ t0 = tic;
       CHEST_LIDAR.faces = faces;
       CHEST_LIDAR.cdatas = cdatas;
   end
-
-tPassed=  toc(t0);
+  
+tPassed = toc(t0);
 end

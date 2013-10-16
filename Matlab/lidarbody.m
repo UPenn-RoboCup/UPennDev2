@@ -248,9 +248,9 @@ CHEST_LIDAR.posea=[];
             draw_depth_image();
             % Update mesh image
             update_mesh(1);
-            if mod(LIDAR.mesh_cnt, 10) == 0
+            %if mod(LIDAR.mesh_cnt, 10) == 0
                 update_mesh_display();
-            end
+            %end
         end
         
         % end of update

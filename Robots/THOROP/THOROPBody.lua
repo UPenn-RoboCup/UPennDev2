@@ -1107,7 +1107,7 @@ end
 
 function init_status_feedback()
   feedback_udp_ch = udp.new_sender(Config.net.operator.wired,Config.net.feedback)
-  print('Connected to Operator:',
+  print('Status feedback Connected to Operator:',
     Config.net.operator.wired,Config.net.feedback)
 end
 
@@ -1131,10 +1131,8 @@ local function send_status_feedback()
   data.body_height = mcm.get_camera_bodyHeight()
   data.battery =  0
 
-  local datapacked = mp.pack(data);
-  
-  local ret,err = feedback_udp_ch:send( datapacked)
-  --if err then print('feedback udp',err) end
+  local ret,err = feedback_udp_ch:send( mp.pack(data) )
+  if err then print('feedback udp',err) end
 end
 init_status_feedback()
 
@@ -1623,7 +1621,8 @@ if IS_WEBOTS then
       if use_lidar_chest then
         print(util.color('CHEST LIDAR enabled!','yellow'))
         webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
-        chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
+        chest_lidar_wbt.pointer =
+					webots.wb_camera_get_range_image(tags.chest_lidar)
       else
         print(util.color('CHEST LIDAR disabled!','yellow'))
         webots.wb_camera_disable(tags.chest_lidar)        
@@ -1646,9 +1645,9 @@ if IS_WEBOTS then
       use_joint_feedback = not use_joint_feedback
       -- Toggle camera
       if use_joint_feedback then
-        print(util.color('Joint feedback enabled!','yellow'))                
+        print(util.color('Joint feedback enabled!','yellow'))
       else
-        print(util.color('Joint feedback disabled!','yellow'))                        
+        print(util.color('Joint feedback disabled!','yellow'))
       end
     end
 	end -- function

@@ -29,6 +29,10 @@ function state.entry()
   lidar_ch:send'pan'
   head_ch:send'center'
   motion_ch:send'stand'
+
+  --Reset pose
+  wcm.set_robot_pose_odom({0,0,0})
+  wcm.set_robot_pose({0,0,0})
 end
 
 function state.update()

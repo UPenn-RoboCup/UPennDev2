@@ -306,7 +306,7 @@ function movearm.setArmToPositionAdapt(
       end
     end
     if shoulderYawChanged then
-      print("ShoulderYaw:",lShoulderYaw*180/math.pi,rShoulderYaw*180/math.pi)          
+--      print("ShoulderYaw:",lShoulderYaw*180/math.pi,rShoulderYaw*180/math.pi)          
     end
   end
 
@@ -399,8 +399,15 @@ function movearm.getArmWheelPosition(handle_pos,
        * T.rotX(turn_angle + gripOffset)
        * T.trans(0,handle_radius,0)
        * T.rotZ(-math.pi/4)
+
+--[[       
   local trGripR = trHandle
        * T.rotX(turn_angle - gripOffset)
+       * T.trans(0,-handle_radius,0)
+       * T.rotZ(math.pi/4)
+--]]       
+local trGripR = trHandle
+       * T.rotX(0 - gripOffset)
        * T.trans(0,-handle_radius,0)
        * T.rotZ(math.pi/4)
        

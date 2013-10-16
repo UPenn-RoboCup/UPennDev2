@@ -1,5 +1,5 @@
 --Step controller based on preview ZMP walking
-
+require'Config'
 
 local walk = {}
 walk._NAME = ...
@@ -73,44 +73,43 @@ function walk.entry()
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
 
---[[
+  --initialize torso velocity correctly
+  local torsoVel = mcm.get_status_uTorsoVel()
+  zmp_solver.x[2][1] = torsoVel[1]
+  zmp_solver.x[2][2] = torsoVel[2]
+      
 
---Enque a DS - SS pair
---                                        tDoubleSupport tStep
-  step_planner:step_enque_trapezoid({0.0,0,0},0,  3, 4, {0,0.0,0}) --LS  
-  step_planner:step_enque_trapezoid({0.0,0,0},1,  6, 4, {0,0.0,0}) --RS  
-  step_planner:step_enque_trapezoid({0.0,0,0},0,  6, 4, {0,0.0,0}) --LS  
-  step_planner:step_enque_trapezoid({},2,         3, 3, {0,0.0,0}) --DS  
---]]
-
---[[
-  step_planner:step_enque_trapezoid({0.20,0,0},0,  3, 4, {0,0.0,0}) --LS  
-  step_planner:step_enque_trapezoid({0.40,0,0},1,  6, 4, {0,0.0,0}) --RS  
-  step_planner:step_enque_trapezoid({0.20,0,0},0,  6, 4, {0,0.0,0}) --LS  
-  step_planner:step_enque_trapezoid({},2,         3, 3, {0,0.0,0}) --DS  
---]]
-
---Stepping over cinderblock
---Works with 10ms timestep
---[[
-  step_planner:step_enque({},2,                    0.5,    {0,0.0,0}) --DS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  0.5, 2, {0,0.0,0}, {0,0.20,0.15}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0,0.20,0.15}) --RS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --RS  
-  step_planner:step_enque_trapezoid({},2,         0.5, 2,  {0,0.0,0}) --DS  
---]]
 
 --little slower motion for 40ms world
 
-  step_planner:step_enque({},2,                    2,    {0,0.0,0}) --DS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  0.5, 1, {0,-0.01,0}, {0,0.20,0.15}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.02,0}, {0,0.20,0.15}) --RS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --RS  
-  step_planner:step_enque_trapezoid({},2,         0.5, 2,  {0,0.0,0}) --DS  
+  step_planner:step_enque_trapezoid({0.27,0,0},0,  0.5, 1, {0,-0.05,0}, {0,0.05,0}) --LS  
+  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 1,   {0,0.05,0}, {0,0.05,0}) --RS  
+--  step_planner:step_enque_trapezoid({},2,         0.5, 0.01,  {0,0.0,0}) --DS  
 
 
+
+
+  local tS0 = Config.walk.phZmp[1]*Config.walk.tStep
+  local tS1 = (Config.walk.phZmp[2]-Config.walk.phZmp[1])*Config.walk.tStep
+  local tS2 = (1-Config.walk.phZmp[2])*Config.walk.tStep
+
+  step_planner:step_enque_trapezoid({0,0,0},0,  tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --LS  
+  step_planner:step_enque_trapezoid({0,0,0},1,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --RS  
+
+  step_planner:step_enque_trapezoid({0,0,0},0,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0},true) --RS  
+  step_planner:step_enque_trapezoid({0,0,0},1,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --RS  
+
+  step_planner:step_enque_trapezoid({0,0,0},0,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --RS  
+  step_planner:step_enque_trapezoid({0,0,0},1,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --RS  
+
+  step_planner:step_enque_trapezoid({0,0,0},0,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --RS  
+  step_planner:step_enque_trapezoid({0,0,0},1,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --RS  
+
+  step_planner:step_enque_trapezoid({0,0,0},0,  tS2+tS0, tS1, {0,0.0,0}, {0,0.05,0}) --RS  
+  step_planner:step_enque_trapezoid({0,0,0},1,  tS2+tS0, tS1, {0,0.0,0}, {0,0.05,0}) --RS  
+
+  step_planner:step_enque_trapezoid({0,0,0},2,  tS2, 0.0001, {0,0.0,0}, {0,0.05,0}) --RS  
+    
 
   t = Body.get_time()
   time_discrete_shift = zmp_solver:trim_preview_queue(step_planner,t )  
@@ -136,7 +135,14 @@ function walk.update()
 
     --Get step information
     uLeft_now, uRight_now, uLeft_next, uRight_next,
-      supportLeg, ph, ended, walkParam = zmp_solver:get_current_step_info(t_discrete + time_discrete_shift)
+      supportLeg, ph, ended, walkParam, is_last = zmp_solver:get_current_step_info(t_discrete + time_discrete_shift)
+
+    if is_last and ph>0.5 then      
+      local com_vel=zmp_solver.x[2]
+      print("Torso velocity:", unpack(com_vel))
+      mcm.set_status_uTorsoVel({com_vel[1],com_vel[2],0})
+      return "towalk"      
+    end
 
     if ended and zmp_solver:can_stop() then return "done"  end
   
@@ -174,6 +180,12 @@ function walk.update()
 
     --Move legs
     moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
+
+      --For external monitoring
+    local uZMP = zmp_solver:get_zmp()
+    mcm.set_status_uTorso(uTorso)
+    mcm.set_status_uZMP(uZMP)
+    mcm.set_status_t(t)
   end
 end -- walk.update
 

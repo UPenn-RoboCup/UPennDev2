@@ -59,6 +59,10 @@ local char_to_wheelmodel={
   ['u'] = vector.new({0, 0, 0.01,  0,0,0}),
   ['m'] = vector.new({0, 0, -0.01, 0,0,0}),
 
+  ['y'] = vector.new({0, 0, 0,  0,math.pi/180,0}),
+  ['n'] = vector.new({0, 0, 0, 0,-math.pi/180,0}),
+
+
   ['='] = vector.new({0, 0, 0, 0,0, -0.01}),
   ['-'] = vector.new({0, 0, 0, 0,0, 0.01}),
 

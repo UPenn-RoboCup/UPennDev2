@@ -120,13 +120,14 @@ local function step_enque(self,uFoot,supportLeg,tStep, zmpMod, stepParams)
   table.insert(self.stepqueue,step)
 end
 
-local function step_enque_trapezoid(self,uFoot,supportLeg, tDoubleSupport, tStep, zmpMod, stepParams)
+local function step_enque_trapezoid(self,uFoot,supportLeg, tDoubleSupport, tStep, zmpMod, stepParams, is_last)
   --DS step with changing ZMP
   local step_ds = {}
   step_ds.is_trapezoid = true
   step_ds.supportLeg = 2 --Double Support
   step_ds.tStep = tDoubleSupport
   step_ds.zmpMod = vector.new({0,0,0})
+  step_ds.is_last = is_last --transition signal
   table.insert(self.stepqueue,step_ds)
 
   --SS step with stationary ZMP
@@ -135,7 +136,7 @@ local function step_enque_trapezoid(self,uFoot,supportLeg, tDoubleSupport, tStep
   step_ss.supportLeg = supportLeg
   step_ss.tStep = tStep
   step_ss.zmpMod = zmpMod or vector.new({0,0,0})
-  step_ss.stepParams = stepParams
+  step_ss.stepParams = stepParams  
   table.insert(self.stepqueue,step_ss)
 end
 
@@ -176,8 +177,9 @@ local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initi
     end
   end 
   return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next,
-         uSupport, supportLeg, current_step.tStep, current_step.stepParams
+         uSupport, supportLeg, current_step.tStep, current_step.stepParams, current_step.is_last
 end
+
 
 local function get_supports(uLeft,uRight)    
   local uLSupport = util.pose_global({supportX, supportY, 0}, uLeft)

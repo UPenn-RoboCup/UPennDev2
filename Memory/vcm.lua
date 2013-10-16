@@ -48,6 +48,15 @@ shared.head_lidar.depths      = vector.new({.1,5})
 -- Rate | FPS (5,10,15,30, etc.)
 shared.head_lidar.net      = vector.zeros(3)
 
+--We use this to detect whether the lidar hit the pan boundary
+shared.head_lidar.last_scan_dir = vector.zeros(1)
+
+--SJ: we may skip readings to speed up (webots, for example)
+shared.head_lidar.sensor_fov = vector.new({math.pi*270/180})
+shared.head_lidar.sensor_width = vector.new({1081})
+
+--we use this to offset the reading range
+shared.head_lidar.offset_angle = 0
 ------------------------
 --  Chest LIDAR
 shared.chest_lidar                 = {}
@@ -59,7 +68,9 @@ shared.chest_lidar.t               = vector.zeros(1)
 shared.chest_lidar.scanlines = vector.new({-50*DEG_TO_RAD,50*DEG_TO_RAD,5/DEG_TO_RAD})
 -- Care only about lidar readings within this field of view
 -- {Start angle, stop angle}
-shared.chest_lidar.fov      = vector.new({-60,60})*DEG_TO_RAD
+--shared.chest_lidar.fov      = vector.new({-60,60})*DEG_TO_RAD
+shared.chest_lidar.fov      = vector.new({-40,80})*DEG_TO_RAD
+
 -- when compressing to 0-255, care about points within these depths
 shared.chest_lidar.depths      = vector.new({.1,5})
 -- Network Requests: [stream,compression,quality,fps]
@@ -68,6 +79,23 @@ shared.chest_lidar.depths      = vector.new({.1,5})
 -- Quality | JPEG quality from 0-100
 -- Rate | FPS (5,10,15,30, etc.)
 shared.chest_lidar.net      = vector.zeros(3)
+
+--SJ: we may skip readings to speed up (webots, for example)
+shared.chest_lidar.sensor_fov = vector.new({math.pi*270/180})
+shared.chest_lidar.sensor_width = vector.new({1081})
+
+--We use this to detect whether the lidar hit the pan boundary
+shared.chest_lidar.last_scan_dir = vector.zeros(1)
+
+--we use this to offset the reading range
+shared.chest_lidar.offset_angle = 0
+
+------------------------
+--  Slam map
+-- Compression format:
+-- 0: jpeg   1: zlib
+shared.omap = {}
+shared.omap.format = vector.zeros(1) 
 
 ------------------------
 --  Kinect

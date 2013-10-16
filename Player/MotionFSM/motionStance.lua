@@ -28,7 +28,7 @@ local angleShift = vector.new{0,0,0,0}
 local uTorsoVel, velTorso
 local tTorso0, tTorso1
 
-local accTorso = 0.5 --This works fine for now
+local accTorso = Config.walk.accTorso or 0.5 --This works fine for now
 
 
 ---------------------------

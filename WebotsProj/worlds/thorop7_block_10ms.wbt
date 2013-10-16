@@ -4,7 +4,7 @@ WorldInfo {
     "Default world for the THOR-OP"
   ]
   title "blocktest"
-  basicTimeStep 40
+  basicTimeStep 10
   FPS 15
 }
 Viewpoint {

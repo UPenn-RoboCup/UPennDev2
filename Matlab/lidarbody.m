@@ -1,5 +1,5 @@
 function ret = lidarbody()
-global HEAD_LIDAR CHEST_LIDAR LIDAR H_FIGURE DEBUGMON POSE SLAM CONTROL
+global HEAD_LIDAR CHEST_LIDAR LIDAR H_FIGURE DEBUGMON POSE SLAM CONTROL WAYPOINTS
 LIDAR.init = @init;
 LIDAR.update = @update;
 LIDAR.set_meshtype = @set_meshtype;
@@ -9,6 +9,9 @@ LIDAR.get_single_approach = @get_single_approach;
 LIDAR.get_double_approach = @get_double_approach;
 LIDAR.clear_points = @clear_points;
 LIDAR.set_zoomlevel = @set_zoomlevel;
+
+LIDAR.update_waypoints = @update_waypoints;
+
 
 % Which mesh to display: 0-HEAD, 1-CHEST
 % Chest lidar default
@@ -36,8 +39,21 @@ wdim_mesh=361;
 hdim_mesh=60;
 
 HEAD_LIDAR=[];
+%SJ: DOUBLE CHECK THOSE VALUES, THEY ARE TOTALLY OFF!!
 HEAD_LIDAR.off_axis_height = 0.01; % 1cm off axis
 HEAD_LIDAR.neck_height = 0.30;
+
+%%%%% THEY ARE WEBOTS VALUES
+%HEAD_LIDAR.off_axis_height = 0.10; % 1cm off axis
+%HEAD_LIDAR.neck_height = 0.331; %based on webots
+
+
+%%%%for whatever reason, correct values does not work
+HEAD_LIDAR.off_axis_height = 0.01;
+HEAD_LIDAR.neck_height = 0.331; %based on webots
+
+
+
 HEAD_LIDAR.type = 0;
 HEAD_LIDAR.ranges=zeros(wdim_mesh,hdim_mesh);
 HEAD_LIDAR.range_actual=ones(wdim_mesh,hdim_mesh);
@@ -98,7 +114,13 @@ CHEST_LIDAR.posea=[];
                 'AmbientStrength',0.4,'SpecularStrength',0.9 );
             set(a_mesh,'xtick',[],'ytick',[], 'ztick',[])
             light('Position',[-3 1 3]);
-            lighting flat
+            lighting flat            
+            set(LIDAR.p, 'ButtonDownFcn', @select_3d_mesh);
+            set(LIDAR.h, 'ButtonDownFcn', @select_3d_mesh);
+
+            hold on;
+              LIDAR.wayline = plot3(a_mesh,0,0,0,'g*-' );
+            hold off;
         end
     end
 
@@ -161,7 +183,9 @@ CHEST_LIDAR.posea=[];
             set(LIDAR.p_img, 'XLim', [1 size(HEAD_LIDAR.ranges,2)]);
             set(LIDAR.p_img, 'YLim', [1 size(HEAD_LIDAR.ranges,1)]);
         else
-            set(LIDAR.h_img,'Cdata', CHEST_LIDAR.ranges);
+            %Chest lidar image is flipped
+
+            set(LIDAR.h_img,'Cdata', fliplr(CHEST_LIDAR.ranges));
             set(LIDAR.p_img, 'XLim', [1 size(CHEST_LIDAR.ranges,2)]);
             set(LIDAR.p_img, 'YLim', [1 size(CHEST_LIDAR.ranges,1)]);
         end
@@ -177,11 +201,9 @@ CHEST_LIDAR.posea=[];
         [metadata,offset] = msgpack('unpack',udp_data);
 
         %SJ: metadata.depths is cell array with ubuntu
-
         if iscell(metadata.depths)
           metadata.depths = cell2mat(metadata.depths)
         end
-
 
         %disp(metadata)
         cdepth = udp_data(offset+1:end);
@@ -192,9 +214,16 @@ CHEST_LIDAR.posea=[];
             depth_img = reshape(depth_img,[metadata.resolution(2) metadata.resolution(1)]);
             depth_img = depth_img';
         end
-        % Calculate the angles
 
-        fov_angles = metadata.fov(1) : .25*(pi/180) : metadata.fov(2);
+        %Extract pose information
+        cpose_upperbyte = metadata.c_pose_upperbyte;
+        cpose_lowerbyte = metadata.c_pose_lowerbyte;
+        pose_data = (double(zlibUncompress(cpose_upperbyte))*256+...
+                    double(zlibUncompress(cpose_lowerbyte))-32768) / 256;
+        pose_data = reshape(pose_data,[3 metadata.resolution(1)]);
+
+        % Calculate the angles (now support variable resolution for sensor)
+        fov_angles = metadata.fov(1) : 1/metadata.reading_per_radian : metadata.fov(2);
         scanline_angles = metadata.scanlines(1) : 1/metadata.scanlines(3) : metadata.scanlines(2);
         
         if strncmp(char(metadata.name),'head',3)==1
@@ -203,6 +232,8 @@ CHEST_LIDAR.posea=[];
             HEAD_LIDAR.fov_angles = fov_angles;
             HEAD_LIDAR.scanline_angles = scanline_angles;
             HEAD_LIDAR.depths = double(metadata.depths);
+            HEAD_LIDAR.rpy = metadata.rpy;
+            HEAD_LIDAR.poses = pose_data;
             % Update the figures
             draw_depth_image();
             update_mesh(0);
@@ -213,8 +244,9 @@ CHEST_LIDAR.posea=[];
             CHEST_LIDAR.ranges = depth_img';
             CHEST_LIDAR.fov_angles = fov_angles;
             CHEST_LIDAR.scanline_angles = scanline_angles;
-
             CHEST_LIDAR.depths = double(metadata.depths);
+            CHEST_LIDAR.rpy = metadata.rpy;
+            CHEST_LIDAR.poses = pose_data;
             % Update depth image
             draw_depth_image();
             % Update mesh image
@@ -356,7 +388,7 @@ CHEST_LIDAR.posea=[];
             fov_angle_index = round( posxy(1) );
             scanline_index  = round( posxy(2) );
             % grab the range
-            range = HEAD_LIDAR.ranges(scanline_index,fov_angle_index)
+            range = HEAD_LIDAR.ranges(scanline_index,fov_angle_index);
             range = double(range)/255 * (HEAD_LIDAR.depths(2)-HEAD_LIDAR.depths(1));
             range = range + HEAD_LIDAR.depths(1);
             fov_angle_selected = -1*HEAD_LIDAR.fov_angles(fov_angle_index);
@@ -383,7 +415,7 @@ CHEST_LIDAR.posea=[];
             scanline_index  = round( posxy(1) );
             % grab the range
             range = CHEST_LIDAR.ranges(fov_angle_index,scanline_index);
-            range = double(range)/255 * (CHEST_LIDAR.depths(2)-CHEST_LIDAR.depths(1))
+            range = double(range)/255 * (CHEST_LIDAR.depths(2)-CHEST_LIDAR.depths(1));
             range = range + CHEST_LIDAR.depths(1);
             % Grab the correct angles
             fov_angle_selected = -1*CHEST_LIDAR.fov_angles(fov_angle_index)
@@ -414,9 +446,54 @@ CHEST_LIDAR.posea=[];
         end % head/chest
         LIDAR.selected_points = [LIDAR.selected_points; global_point(1:3)'];
         disp_str = sprintf('Selected (%.3f %.3f %.3f)', ...
-                global_point(1),global_point(2),global_point(3) );
+            global_point(1),global_point(2),global_point(3) );
         DEBUGMON.addtext(disp_str);
     end % select_3d
+
+    function select_3d_mesh(~, ~, flags)
+        clicktype = get(H_FIGURE,'selectionType');
+        if strcmp(clicktype,'alt')>0
+            point = get(gca,'CurrentPoint');
+            posxy = [point(1,1) point(1,2)];
+            zoom_in(posxy);
+            return;
+        end
+        points = get(gca,'CurrentPoint'); % This returns two 3D points that is pependicular to the selected position
+        %Calculate the intersection with the surface z=0
+        k = points(2,3)/(points(2,3)-points(1,3));        
+        point_intersect = points(1,1:2)*k + points(2,1:2)*(1-k);                
+        point_intersect %This is the new x-y position in LOCAL coordinates
+        WAYPOINTS.add_waypoint(point_intersect(1:2));
+    end
+
+    function update_waypoints(waypoints)    
+        if size(waypoints,1)==0
+            set( LIDAR.wayline, 'XData', [] );
+            set( LIDAR.wayline, 'YData', [] );
+            set( LIDAR.wayline, 'ZData', [] );            
+        else
+            waypoints=[POSE.pose(1) POSE.pose(2);waypoints];        
+            set( LIDAR.wayline, 'XData', waypoints(:,1) );
+            set( LIDAR.wayline, 'YData', waypoints(:,2) );
+            set( LIDAR.wayline, 'ZData', 0.1*ones(size(waypoints(:,1))));            
+        end
+    end
+
+    function ret=pose_global(pRelative, pose)
+      ca = cos(pose(3));
+      sa = sin(pose(3));
+      ret = [pose(1) + ca*pRelative(1)-sa*pRelative(2),...
+            pose(2) + sa*pRelative(1)+ca*pRelative(2),...
+            pose(3) + pRelative(3)];
+    end
+
+    function ret=pose_relative(pGlobal, pose)
+      ca = cos(pose(3));
+      sa = sin(pose(3));
+      p = pGlobal-pose;
+      ret=[ca*p(1)+sa*p(2) -sa*p(1)+ca*p(2) p(3)];
+    end
+
 
 ret = LIDAR;
 end

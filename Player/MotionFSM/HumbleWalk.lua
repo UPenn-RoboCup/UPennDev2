@@ -62,18 +62,35 @@ function walk.entry()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
       step_planner:init_stance()
 
+  --Reset odometry varialbe
+  Body.init_odometry(uTorso_now)
+
   --Now we advance a step at next update  
   t_last_step = Body.get_time() - tStep 
 
   iStep = 1   -- Initialize the step index  
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
+  mcm.set_walk_steprequest(0) --cancel stop request flag
 
   -- log file
   if is_logging then
     LOG_F_SENSOR = io.open('feet.log','w')
     local log_entry = string.format('t ph supportLeg values\n')
     LOG_F_SENSOR:write(log_entry)
+  end
+
+  --Check the initial torso velocity
+  local uTorsoVel = mcm.get_status_uTorsoVel()
+  local velTorso = math.sqrt(uTorsoVel[1]*uTorsoVel[1]+
+                          uTorsoVel[2]*uTorsoVel[2])
+
+  if velTorso>0.01 then
+    if uTorsoVel[2]>0 then --Torso moving to left
+      iStep = 3; --This skips the initial step handling
+    else
+      iStep = 4; --This skips the initial step handling
+    end
   end
 end
 
@@ -89,9 +106,18 @@ function walk.update()
     --Should we stop now?
     local stoprequest = mcm.get_walk_stoprequest()
     if stoprequest>0 then return"done"   end
+ 
+
     ph = ph % 1
     iStep = iStep + 1  -- Increment the step index  
     supportLeg = iStep % 2 -- supportLeg: 0 for left support, 1 for right support
+
+    local steprequest = mcm.get_walk_steprequest()
+    local step_supportLeg = mcm.get_walk_step_supportleg()
+    if steprequest>0 and supportLeg ==step_supportLeg then
+      return "done_step"
+    end
+
     local initial_step = false
     if iStep<=3 then initial_step = true end
 
@@ -124,13 +150,19 @@ function walk.update()
   -- Grab gyro feedback for these joint angles
   local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
 
-  --Old feedback
-  --delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,phSingle,gyro_rpy, angleShift)
-
   --Robotis-style simple feedback (which seems to be better :[])
-  delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,phSingle,gyro_rpy, angleShift)
+--  delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,phSingle,gyro_rpy, angleShift)
+
+--Old feedback
+  delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,phSingle,gyro_rpy, angleShift)
 
   moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
+
+--For external monitoring
+  local uZMP = zmp_solver:get_zmp(ph)
+  mcm.set_status_uTorso(uTorso)
+  mcm.set_status_uZMP(uZMP)
+  mcm.set_status_t(t)
 
   if is_logging then
 -- Grab the sensor values
@@ -144,6 +176,10 @@ function walk.update()
     local log_entry = string.format('%f %f %d %s\n',t,ph,supportLeg,table.concat(lfoot,' '))
     LOG_F_SENSOR:write(log_entry)
   end
+
+  --Update the odometry variable
+  Body.update_odometry(uTorso)
+  --print("odometry pose:",unpack(wcm.get_robot_pose_odom()))
 end -- walk.update
 
 function walk.exit()

@@ -32,6 +32,8 @@ function state.entry()
   hcm.set_wheel_turnangle(0)
 end
 
+local t_debug = Body.get_time()
+
 function state.update()
 --  print(state._NAME..' Update' )
   -- Get the time of update
@@ -67,6 +69,16 @@ function state.update()
     handle_pos,handle_yaw,handle_pitch,handle_radius,turnAngle=
       handle_pos2,handle_yaw2,handle_pitch2,handle_radius2,turnAngle2 
   end
+
+  if t-t_debug>2.0 then
+    print(string.format("handle: pos(%.2f,%.2f,%.2f),yaw %.2f, tilt %.2f, rad %.2f, angle %.2f",
+    handle_pos[1],handle_pos[2],handle_pos[3],
+    handle_yaw*Body.RAD_TO_DEG,handle_pitch*Body.RAD_TO_DEG,handle_radius,turnAngle*Body.RAD_TO_DEG
+        ))
+
+    t_debug = t
+  end
+
 end
 
 function state.exit()

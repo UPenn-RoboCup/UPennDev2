@@ -27,6 +27,11 @@ shared.walk.vel        = vector.zeros(3)
 shared.walk.bipedal    = vector.zeros(1)
 shared.walk.stoprequest= vector.zeros(1)
 
+-- Walk-step transition
+shared.walk.steprequest= vector.zeros(1)
+shared.walk.step_supportleg= vector.zeros(1)
+
+
 -- Motion Status
 shared.status = {}
 shared.status.velocity   = vector.zeros(3)
@@ -44,6 +49,11 @@ shared.status.uTorso = vector.zeros(3)
 --We store the torso velocity (to handle stopping)
 shared.status.uTorsoVel = vector.zeros(3)
 
+--ZMP is stored here for external monitoring
+shared.status.uZMP = vector.zeros(3)
+
+--Current time
+shared.status.t = vector.zeros(1)
 
 -- Foot support
 --SJ: they are bit misleading as they are different from 'support' positions

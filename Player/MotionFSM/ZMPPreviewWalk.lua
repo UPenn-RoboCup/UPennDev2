@@ -30,8 +30,9 @@ local stepHeight  = Config.walk.stepHeight
 local angleShift = vector.new{0,0,0,0}
 
 -- What foot trajectory are we using?
-local foot_traj_func  = moveleg.foot_trajectory_base
---local foot_traj_func = moveleg.foot_trajectory_square
+local foot_traj_func  
+if Config.walk.foot_traj==1 then foot_traj_func = moveleg.foot_trajectory_base
+else foot_traj_func = moveleg.foot_trajectory_square end
 
 local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local iStep, iStep_new
@@ -116,6 +117,12 @@ function walk.update()
 
     --Move legs
     moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
+
+  --For external monitoring
+    local uZMP = zmp_solver:get_zmp()
+    mcm.set_status_uTorso(uTorso)
+    mcm.set_status_uZMP(uZMP)
+    mcm.set_status_t(t)
   end
 
 end -- walk.update

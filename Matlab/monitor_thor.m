@@ -27,10 +27,10 @@ PORT_HEIGHTMAP = 22223;
 PORT_RELIABLE_RPC = 55555; %for UI events
 PORT_UNRELIABLE_RPC = 55556; %for UI events
 
-WIRED_IP    = '192.168.123.25';
-WIRELESS_IP = '192.168.1.25';
+WIRED_IP     = '192.168.123.25';
+WIRELESS_IP  = '192.168.1.25';
 LOCALHOST    = '127.0.0.1';
-ROBOT_IP    = '192.168.123.25';
+ROBOT_IP     = LOCALHOST;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -102,8 +102,8 @@ callback_names{s_mesh+1} = 'Mesh Image';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sending commands to the robot
-CONTROL.udp_send_id = udp_send( 'init', LOCALHOST, PORT_UNRELIABLE_RPC );
-%CONTROL.zmq_send_id = zmq( 'publish', 'tcp', ROBOT_IP, PORT_RELIABLE_RPC )
+%CONTROL.udp_send_id = udp_send( 'init', LOCALHOST, PORT_UNRELIABLE_RPC );
+CONTROL.zmq_send_id = zmq( 'publish', 'tcp', ROBOT_IP, PORT_RELIABLE_RPC );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

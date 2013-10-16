@@ -64,6 +64,21 @@ local function compute( self, uSupport, uStart, uFinish )
   self.uFinish  = uFinish
 end
 
+local function get_zmp( self, ph )
+  local tStep = self.tStep
+  local zmp = self.uSupport+vector.new({0,0,0})
+  if ph < self.start_phase then
+    local start_time = tStep*( ph - self.start_phase )
+    zmp[1] = zmp[1] + self.m1X*start_time
+    zmp[2] = zmp[2] + self.m1Y*start_time    
+  elseif ph > self.finish_phase then
+    local finish_time = tStep*(ph-self.finish_phase)
+    zmp[1] = zmp[1] + self.m2X*finish_time
+    zmp[2] = zmp[2] + self.m2Y*finish_time
+  end
+  return zmp  
+end
+
 -- Finds the necessary COM for stability, given the current uSupport
 -- Must call compute upon a new step, or CoM is groundless...
 local function get_com( self, ph )
@@ -136,11 +151,12 @@ libReaciveZMP.new_solver = function( params )
 
   -- Trapezoidal ZMP parameters
   s.start_phase  = Config.walk.phZmp[1]
-  s.finish_phase = Config.walk.phZmp[1]
+  s.finish_phase = Config.walk.phZmp[2]
   
   s.compute  = compute
   s.get_com  = get_com
   s.get_com_vel  = get_com_vel
+  s.get_zmp  = get_zmp
   s.set_param = set_param
 	return s
 end

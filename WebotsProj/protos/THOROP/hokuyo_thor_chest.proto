@@ -5,14 +5,17 @@
 #  - resolution : 1080 * 0.25 [deg]
 #  - dimension : 0.06 x 0.087 x 0.06 [m]
 #  - weight : 0.37 [kg]
+#
+ 
 
-PROTO hokuyo [
+
+PROTO hokuyo_thor_chest [
   field SFVec3f translation 0 0 0
   field SFRotation rotation  0 1 0 3.14
   field SFString name "UTM-30LX"
   field SFFloat noise 0.0
-  field SFFloat fieldOfView 4.71238
-  field SFFloat maxRange 30
+  field SFFloat fieldOfView 4.71238  
+  field SFFloat maxRange 30  
   field SFInt32 width 1081
 ]
 {

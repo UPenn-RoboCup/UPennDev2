@@ -14,8 +14,9 @@ local Benchmark = false --true
 -- Set the real-robot mode
 local realFlag = 1
 local deg2rad = math.pi/180
--- Flag for webots
+-- Flags
 local IS_WEBOTS = true
+local USE_ODOM = true
 
 ---------------------------------
 -- Libraries
@@ -117,6 +118,8 @@ local function head_callback()
   -- If off center too much, do not slam
   local headcenter = -Config.walk.bodyTilt-0.05
   if math.abs(angle-headcenter) > 10*Body.DEG_TO_RAD then
+  	-- Just use odometry
+  	wcm.set_slam_pose( wcm.get_robot_pose_odom() )
   	return
   end
 
@@ -124,15 +127,6 @@ local function head_callback()
   lidar0_count = lidar0_count + 1;
   if lidar0_count%lidar0_interval~=0 then return end
 
-	--[[
-  if IS_WEBOTS then
-    -- Ground truth pose
-    cur_pose = wcm.get_robot_pose()
-  elseif USE_SLAM_ODOM then
-    cur_pose = wcm.get_slam_pose()
-  end
-	--]]
-   
   ----------------
   -- Benchmark
   t0 = unix.time()
@@ -183,8 +177,19 @@ local function head_callback()
 	-- If ROLL is too big then skip
 	if math.abs(metadata.gyro[1]) > 0.45 then return end
 
+  -- Process IMU
   libSlam.processIMU( metadata.rpy, metadata.gyro[3], metadata.t )
-  libSlam.processOdometry({0,0,0}) --( Body.get_robot_odom() )
+  -- Process Odom if needed
+  if wcm.get_robot_odom_mode() == 2 then
+    libSlam.processOdometry( Body.get_odometry() )
+  end
+  --[[ Print for debugging
+  local pose_odom = wcm.get_robot_pose_odom()
+  local dpose = Body.get_odometry()
+  print('ODOMETRY:', unpack(pose_odom))
+  print('dPose:', dpose.x, dpose.y, dpose.a)
+  --]]
+  -- Process lidar
   libSlam.processL0( lidar0.points_xyz )
   local t1_processL0 = unix.time()
   --print( string.format('processL0 took: \t%.2f ms', (t1_processL0-t0_processL0)*1000) )
@@ -228,12 +233,6 @@ local function chest_callback()
     return
   end
     
-  if IS_WEBOTS then
-    cur_pose = wcm.get_robot_pose() -- Ground truth pose
-  elseif USE_SLAM_ODOM then
-    --cur_pose = scm/blah:get_pose()
-  end
-
   ------------------
   -- Copy received data to the lidar object
   -- Transform the points into the body frame and
@@ -291,6 +290,13 @@ local t_debug = 1 -- Print debug output every second
 local slam = {}
 
 function slam.entry()
+  -- Determine which odom to use
+  -- 1: only slam
+  -- 2: slam + odom
+  wcm.set_robot_odom_mode(2)
+
+  -- Reset odometry and slam pose
+  wcm.set_slam_pose({0,0,0})
 
   -- Poll lidar readings
   local wait_channels = {}
@@ -331,15 +337,16 @@ function slam.update()
   -- Compress and send the SLAM map and pose over UDP
   local c_map
   local meta = {}
-  --TODO: get from vcm
-  meta.c = 'jpeg'
+  local compression = vcm.get_omap_format()
   --meta.c = 'zlib' --TODO: issue
-  if meta.c == 'zlib' then
+  if compression == 1 then
+  	meta.c = 'zlib'
     c_map = zlib.compress(
       libSlam.SMAP.data:storage():pointer(),
       libSlam.SMAP.data:nElement()
     )
-  elseif meta.c == 'jpeg' then  
+  elseif compression == 0 then  
+    meta.c = 'jpeg'
     c_map = jpeg.compress_gray(
       libSlam.SMAP.data:storage():pointer(),
       libSlam.MAPS.sizex,
@@ -373,8 +380,9 @@ function slam.update()
   if cnt % 40 == 0 then
     print(string.format('\nSLAM pose:%6.2f %6.2f %6.2f', 
       libSlam.SLAM.xOdom, libSlam.SLAM.yOdom, libSlam.SLAM.yawOdom))
-    print(string.format('Scan Match pose:%6.2f %6.2f %6.2f', 
-      libSlam.SLAM.x, libSlam.SLAM.y, libSlam.SLAM.yaw))
+      local odom = wcm.get_robot_pose_odom()
+    print(string.format('Pure Odom pose:%6.2f %6.2f %6.2f', 
+      odom[1], odom[2], odom[3]))
   end
   ------------------
 end

@@ -56,19 +56,29 @@ local function setup_mesh( name, tbl )
   tbl.meta.c = 'jpeg'
   -- Timestamp
   tbl.meta.t = Body.get_time()
+  tbl.meta.rpy = {0,0,0}
 
   -- Find the resolutions
   local scan_resolution = tbl.meta.scanlines[3]
     * math.abs(tbl.meta.scanlines[2]-tbl.meta.scanlines[1])
   scan_resolution = math.ceil(scan_resolution)
-  local reading_per_radian = 1 / (.25*math.pi/180)
+
+  local lidar_sensor_fov = vcm[get_name..'_sensor_fov']()
+  local lidar_sensor_width = vcm[get_name..'_sensor_width']()
+  
+--  local reading_per_radian = 1 / (.25*math.pi/180)
+  local reading_per_radian = 
+    (lidar_sensor_width-1)/lidar_sensor_fov;
+
+  tbl.meta.reading_per_radian = reading_per_radian
+  
   local fov_resolution = reading_per_radian
     * math.abs(tbl.meta.fov[2]-tbl.meta.fov[1])
   fov_resolution = math.ceil(fov_resolution)
 
   -- Resolution
   tbl.meta.resolution = {scan_resolution,fov_resolution}
-
+  print("Resolution:",scan_resolution,fov_resolution)
   -- TODO: Be able to resize these
   tbl.mesh_byte = torch.ByteTensor( scan_resolution, fov_resolution ):zero()
   tbl.mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
@@ -78,7 +88,14 @@ local function setup_mesh( name, tbl )
   -- Find the offset for copying lidar readings into the mesh
   -- if fov is from -135 to 135 degrees, then offset_idx is zero
   -- if fov is from 0 to 135 degrees, then offset_idx is 540
-  local fov_offset = 540+math.ceil( reading_per_radian*tbl.meta.fov[1] )
+
+  --We save robot pose for every frame
+  --Otherwise the mesh will broken if the robot moves around  
+  tbl.pose_upperbyte = torch.ByteTensor( scan_resolution, 3 ):zero()
+  tbl.pose_lowerbyte = torch.ByteTensor( scan_resolution, 3 ):zero()
+
+--  local fov_offset = 540+math.ceil( reading_per_radian*tbl.meta.fov[1] )
+  local fov_offset = (lidar_sensor_width-1)/2+math.ceil( reading_per_radian*tbl.meta.fov[1] )
   tbl.offset_idx   = math.floor(fov_offset)
   --print('fov offset',name,fov_offset,tbl.offset_idx,fov_resolution)
   return tbl
@@ -100,7 +117,7 @@ local function prepare_mesh(type,near,far,method, quality)
   type.mesh_byte:copy( adjusted_range )
   
   -- Compression
-  local c_mesh
+  local c_mesh 
   local dim = type.mesh_byte:size()
   if method==1 then
     -- jpeg
@@ -123,7 +140,21 @@ local function prepare_mesh(type,near,far,method, quality)
     -- raw data?
     return
   end
+  
   type.meta.depths = {near,far}
+
+  local c_pose_upperbyte, c_pose_lowerbyte
+  c_pose_upperbyte = zlib.compress(
+    type.pose_upperbyte:storage():pointer(),
+    type.pose_upperbyte:nElement() )
+
+  c_pose_lowerbyte = zlib.compress(
+    type.pose_lowerbyte:storage():pointer(),
+    type.pose_lowerbyte:nElement() )
+
+  type.meta.c_pose_upperbyte = c_pose_upperbyte
+  type.meta.c_pose_lowerbyte = c_pose_lowerbyte
+
   return mp.pack(type.meta), c_mesh
 end
 
@@ -133,6 +164,7 @@ local function stream_mesh(type)
   -- Network streaming settings
   local net_settings = vcm[get_name..'_net']()
   -- Streaming
+
   if net_settings[1]==0 then return end
   -- Sensitivity range in meters
   -- Depths when compressing
@@ -145,10 +177,13 @@ local function stream_mesh(type)
     net_settings[2],net_settings[3])
 
   -- Sending to other processes
-  
   --mesh_pub_ch:send( {meta, payload} )
+ 
+	-- Check for errors
+  local ret, err = mesh_udp_ch:send( metapack..c_mesh)
+  if err then print('mesh udp',err) end
   
-  if net_settings[1]==1 then
+	if net_settings[1]==1 then
     net_settings[1] = 0
     local ret, err = mesh_udp_ch:send( metapack..c_mesh )
     if err then print('mesh udp',err) end
@@ -179,6 +214,16 @@ local function angle_to_scanline( meta, rad )
   return math.max( math.min(scanline, res), 1 )
 end
 
+--Convert a float number into two bytes
+--We assume that the number is -127 to 128 
+local function float_to_twobyte(num)
+  local lowerbyte,upperbyte;
+  num = (num*256)
+  num = num + 32768;
+  return math.floor(num/256), math.mod(num,256)
+end
+
+
 ------------------------------
 -- Lidar Callback functions --
 ------------------------------
@@ -190,18 +235,69 @@ local function chest_callback()
   -- Insert into the correct column
   local angle = metadata.pangle
   local scanline = angle_to_scanline( chest.meta, angle )
-  -- Only if a valid column is returned
-  if scanline then
-    -- Copy lidar readings to the torch object for fast modification
-    ranges:tensor(
-      chest.mesh:select(1,scanline),
-      chest.mesh:size(2),
-      chest.offset_idx )
-    -- Save the pan angle
-    chest.scan_angles[scanline] = angle
-    -- We've been updated
-    chest.meta.t     = metadata.t
+  if not scanline then return end -- Only if a valid column is returned
+
+  --SJ: If lidar moves faster than the mesh scanline resolution, we need to fill the gap  
+  --TODO: boundary lines may not be written at all, making glitches
+  local scanlines = {}
+  prev_dir =  vcm.get_chest_lidar_last_scan_dir()
+  
+  
+
+  if chest.last_scanline then
+    if scanline>chest.last_scanline then
+      new_dir = 1
+      if prev_dir==1 then
+        for i=chest.last_scanline+1,scanline do table.insert(scanlines,i) end
+      else
+        --Fill the boundary
+        print("Flip: 1 to ",chest.last_scanline,scanline)
+        for i = 1, math.max(chest.last_scanline-1, scanline) do table.insert(scanlines,i) end        
+      end
+    elseif scanline<chest.last_scanline then
+      new_dir = -1
+      if prev_dir==-1 then
+        for i=scanline,chest.last_scanline-1 do table.insert(scanlines,i)  end
+      else
+        --Fill the boundary
+        print("Flip:",chest.last_scanline,scanline,"to",chest.meta.resolution[1])        
+        for i = math.min(chest.last_scanline+1, scanline), chest.meta.resolution[1] do
+          table.insert(scanlines,i) 
+        end
+        
+      end
+    else return end --Duplicate scanline: don't update
+  else
+    table.insert(scanlines,scanline) --First scanline. Just add one line
   end
+  chest.last_scanline = scanline  
+
+  --print("prev:",prev_dir, "new:",new_dir, chest.last_scanline)
+  vcm.set_chest_lidar_last_scan_dir(new_dir)
+
+
+  local pose = wcm.get_robot_pose()
+  for i,line in ipairs(scanlines) do
+		-- Copy lidar readings to the torch object for fast modification
+      ranges:tensor( 
+				chest.mesh:select(1,line),
+        chest.mesh:size(2),
+        chest.offset_idx )
+			-- Save the pan angle
+			chest.scan_angles[line] = angle 
+
+      chest.pose_upperbyte[line][1],
+        chest.pose_lowerbyte[line][1]= float_to_twobyte(pose[1])
+      chest.pose_upperbyte[line][2],
+        chest.pose_lowerbyte[line][2]= float_to_twobyte(pose[2])
+      chest.pose_upperbyte[line][3],
+        chest.pose_lowerbyte[line][3]= float_to_twobyte(pose[3])       
+
+  end  
+
+  chest.meta.rpy = metadata.rpy --Save the body tilt info
+  -- We've been updated
+  chest.meta.t = metadata.t  
 end
 
 local function head_callback()
@@ -212,17 +308,43 @@ local function head_callback()
   -- Insert into the correct scanlin
   local angle = metadata.hangle[2]
   local scanline = angle_to_scanline( head.meta, angle )
-  -- Only if a valid column is returned
-  if scanline then
-    -- Copy lidar readings to the torch object for fast modification
-    ranges:tensor(
-      head.mesh:select(1,scanline), -- scanline
-      head.mesh:size(2),
-      head.offset_idx )
-    -- Save the pan angle
-    head.scan_angles[scanline] = angle
-    head.meta.t = metadata.t
+  if not scanline then return end -- Only if a valid column is returned
+
+  --SJ: If lidar moves faster than the mesh scanline resolution, we need to fill the gap  
+  local scanlines = {}
+  if head.last_scanline then
+    if scanline>head.last_scanline then
+      for i=head.last_scanline+1,scanline do 
+        table.insert(scanlines,i)
+      end
+    elseif scanline<head.last_scanline then
+      for i=scanline,head.last_scanline-1 do 
+        table.insert(scanlines,i)
+      end
+    else return end --Duplicate scanline: don't update
+  else
+    table.insert(scanlines,scanline) --First scanline. Just add one line
   end
+  head.last_scanline = scanline
+
+  local pose = wcm.get_robot_pose()
+  for i,line in ipairs(scanlines) do
+      ranges:tensor( -- Copy lidar readings to the torch object for fast modification
+        head.mesh:select(1,line),
+        head.mesh:size(2),
+        head.offset_idx )      
+      head.scan_angles[line] = angle -- Save the pan angle
+
+      head.pose_upperbyte[line][1],
+        head.pose_lowerbyte[line][1]= float_to_twobyte(pose[1])
+      head.pose_upperbyte[line][2],
+        head.pose_lowerbyte[line][2]= float_to_twobyte(pose[2])
+      head.pose_upperbyte[line][3],
+        head.pose_lowerbyte[line][3]= float_to_twobyte(pose[3])       
+  end
+  head.meta.rpy = metadata.rpy --Save the body tilt info
+  -- We've been updated
+  head.meta.t = metadata.t
 end
 
 ------------------
@@ -276,7 +398,7 @@ end
 
 function mesh.update()
   local npoll = channel_polls:poll(channel_timeout)
-  -- Stream the current mesh
+  -- Stream the current mesh  
   stream_mesh(head)
   stream_mesh(chest)
   -- Check if we must update our torch data

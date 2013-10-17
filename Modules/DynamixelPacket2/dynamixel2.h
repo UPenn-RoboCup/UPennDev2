@@ -104,9 +104,13 @@ extern "C" {
 	int dynamixel_input(DynamixelPacket *pkt, uint8_t c, int n);
 
 	// Add for Version 2.0 checksum	
-	uint16_t dynamixel_crc( uint16_t crc_accum, 
-	const unsigned char *data_blk_ptr, 
-	uint16_t data_blk_size );
+	uint16_t dynamixel_crc(
+		uint16_t crc_accum, 
+		const unsigned char *data_blk_ptr, 
+		uint16_t data_blk_size
+	);
+
+	uint16_t dynamixel_checksum(DynamixelPacket *pkt);
   
 #ifdef __cplusplus
 }

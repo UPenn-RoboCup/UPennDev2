@@ -131,8 +131,9 @@ static int lua_dynamixel_instruction_sync_write(lua_State *L) {
 }
 
 static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
-  size_t i, nids, nparameter;
-  uint16_t pkt_sz;
+  size_t i, d, id, nids, nparameter, data_len;
+  uint16_t pkt_sz, addr;
+  uint8_t *params, *data;
 
   // Make sure we are dealing with a table of values
   luaL_checktype(L, 1, LUA_TTABLE);
@@ -144,7 +145,9 @@ static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
 #endif
 
   // setup the packet size
-  pkt_sz = 0;
+  pkt_sz = 0, nparameter = 0;
+  // save the pointer
+  params = inst_pkt.parameter;
 
   // add the header as always
   inst_pkt.header1 = DYNAMIXEL_PACKET_HEADER;
@@ -155,11 +158,6 @@ static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
   inst_pkt.id = DYNAMIXEL_BROADCAST_ID;
   // add the instruction
   inst_pkt.instruction = INST_BULK_WRITE;
-  // 
-  for (i = 0; i < nparameter; i++)
-    inst_pkt.parameter[i] = parameter[i];
-  
-  return &inst_pkt;
 
   for (i = 1; i<=nids; i++) {
     // first, grab the table
@@ -167,31 +165,35 @@ static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
     // Now get the next 4 elements of this table...
     // id
     lua_rawgeti(L,1,1); 
-    uint8_t id = lua_tointeger(lua_State *L, 1, size_t *len);
+    id = lua_tointeger(L, 1);
     lua_pop(L, 1);
     // addr
     lua_rawgeti(L,1,2); 
-    uint16_t addr = lua_tointeger(lua_State *L, 1, size_t *len);
+    addr = lua_tointeger(L, 1);
     lua_pop(L, 1);
-    // length
+    // data (constructed using word_to_byte, dword_to_byte, etc.)
     lua_rawgeti(L,1,3);
-    uint16_t ndata = lua_tointeger(lua_State *L, 1, size_t *len);
-    lua_pop(L, 1);
-    // data
-    lua_rawgeti(L,1,4);
-    const char * str = lua_tolstring(lua_State *L, 1, size_t *len);
+    data = (uint8_t *)lua_tolstring(L, 1, &data_len);
     lua_pop(L, 1);
     
     // Do something with the data
-    inst_pkt.parameter[i] = parameter[i];
+    *(params++) = id;
+    *(params++) = addr & 0x00FF;
+    *(params++) = (addr>>8) & 0x00FF;
+    *(params++) = data_len & 0x00FF;
+    *(params++) = (data_len>>8) & 0x00FF;
+    for(d=0; d<data_len; d++)
+      *(params++) = data[d];
+    // Save the total number of parameters
+    inst_pkt.length += (5+data_len);
 
-    // pop off the table
+    // pop off the table of this instruction
     lua_pop(L, 1);
   }
 
   // set the length at the end
   inst_pkt.length = nparameter + 3; // 2 checksum + 1 instruction byte
-  inst_pkt.len[0] = inst_pkt.length & 0x00FF; // low btye
+  inst_pkt.len[0] = inst_pkt.length & 0x00FF; // low byte
   inst_pkt.len[1] = (inst_pkt.length>>8) & 0x00FF; // high byte
 
   // Place checksum after parameters:
@@ -199,7 +201,7 @@ static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
   inst_pkt.parameter[nparameter]   = inst_pkt.checksum & 0x00FF;
   inst_pkt.parameter[nparameter+1] = (inst_pkt.checksum>>8) & 0x00FF;
 
-  return lua_pushpacket(L, p);
+  return lua_pushpacket(L, &inst_pkt);
 }
 
 static int lua_dynamixel_instruction_read_data(lua_State *L) {

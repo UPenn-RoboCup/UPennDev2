@@ -21,22 +21,23 @@ local vector = require'vector'
 local libLaser = require'libLaser'
 ---------------------------------
 
+-- TODO: use args to decide which data we want to log
 ---------------------------------
 -- Set up listeners
 local head_lidar_ch = simple_ipc.new_subscriber'head_lidar'
 --local chest_lidar_ch = simple_ipc.new_subscriber'chest_lidar'
 --
-local mesh_ch = simple_ipc.new_subscriber'mesh'
+--local mesh_ch = simple_ipc.new_subscriber'mesh'
 --
-local camera_ch = simple_ipc.new_subscriber'camera'
+--local camera_ch = simple_ipc.new_subscriber'camera'
 
--- TODO: log IMU (although all above have rpy included)
--- TODO: joints
 -- TODO: contact sensor
+-- TODO: hcm inputs
 
 ---------------------------------
 -- Shared Memory
-require'wcm'
+require'jcm'
+require'hcm'
 ---------------------------------
 
 ---------------------------------
@@ -144,6 +145,52 @@ local function camera_callback()
   logfile:write( meta )
 end
 
+------------------------------------------------------
+-- Logger for imu
+------------------------------------------------------
+local function imu_logger()
+	-- Grab the data
+	local imu = {}
+	imu.name = 'imu'
+  imu.t = Body.get_time()
+  -- TODO: use shm instead of body?
+  imu.rpy = Body.get_sensor_rpy()
+  imu.gyro = Body.get_sensor_gyro()
+
+  -- Write log file
+  logfile:write( mp.pack(imu) )
+end
+
+------------------------------------------------------
+-- Logger for sensed joint position and velocity
+------------------------------------------------------
+local function joint_sensor_logger()
+	-- Grab the data
+	local joint = {}
+	joint.name = 'sensor'
+  joint.t = Body.get_time()
+  joint.pos = jcm.get_sensor_position()
+  joint.vel = jcm.get_sensor_velocity()
+
+  -- Write log file
+  logfile:write( mp.pack(joint) )
+end
+
+------------------------------------------------------
+-- Logger for commanded joint position and velocity
+------------------------------------------------------
+local function joint_actuator_logger()
+	-- Grab the data
+	local joint = {}
+	joint.name = 'actuator'
+  joint.t = Body.get_time()
+  joint.pos = jcm.get_actuator_command_position()
+  joint.vel = jcm.get_actuator_command_velocity()
+
+  -- Write log file
+  logfile:write( mp.pack(joint) )
+end
+
 
 local log = {}
 
@@ -184,16 +231,17 @@ function log.entry()
   channel_polls = simple_ipc.wait_on_channels( wait_channels )
 end
 
-local cnt = 0
-
 function log.update()
   
   ------------------
-  -- Perform the poll (Slam Processing)
+  -- Perform the poll
   local npoll = channel_polls:poll(channel_timeout)
-  local t = unix.time()
-  cnt = cnt+1
   ------------------
+
+  imu_logger()
+  joint_sensor_logger()
+  joint_actuator_logger()
+  --hcm_logger()
 end
 
 function log.exit()

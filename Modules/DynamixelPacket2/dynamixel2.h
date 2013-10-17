@@ -5,12 +5,10 @@ Stephen G. McGill copyright 2013 <smcgill3@seas.upenn.edu>
 CODE FROM ROBOTIS IS USED IN SELECT PORTIONS
 */
 
-#ifndef __DYNAMIXEL_H
-#define __DYNAMIXEL_H
+#ifndef __DYNAMIXEL2_H
+#define __DYNAMIXEL2_H
 
-#include <stdlib.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -85,29 +83,22 @@ extern "C" {
 	uint8_t data[], 
 	uint8_t n); // n is 1/2/4 for byte/word/dword
 	
-	// Sync Read/Write
-	// Read from ANY id/addr combo:
-	// id1 addr15 and id2 addr 25 in ONE sync read
-	// TODO: verify this is possible, and implement
+	// Sync Read
 	DynamixelPacket *dynamixel_instruction_sync_read(
 	uint8_t address_l, uint8_t address_h,
 	uint16_t len,
-	uint8_t id[], uint8_t nids);
+	uint8_t* id, uint8_t nids);
 
-	// Only sync write to one common address?
-	// TODO: Verify
+	// Only sync write to one common address
 	DynamixelPacket *dynamixel_instruction_sync_write(
 		uint8_t address_h, uint8_t address_l,
 	uint16_t len,
-	uint8_t data[], uint8_t n);
+	uint8_t* data,
+	uint8_t n);
 	
 	// Other instructions
 	DynamixelPacket *dynamixel_instruction_ping(int id);
 	DynamixelPacket *dynamixel_instruction_reset(int id);
-
-	//added for bulk read
-	DynamixelPacket *dynamixel_instruction_bulk_read_data(
-		uint8_t id_cm730, uint8_t id[], uint8_t address, uint8_t len, uint8_t n);
   
 	// State machine to process incoming packets
 	int dynamixel_input(DynamixelPacket *pkt, uint8_t c, int n);

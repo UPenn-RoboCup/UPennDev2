@@ -5,7 +5,10 @@ Stephen G. McGill copyright 2013 <smcgill3@seas.upenn.edu>
 CODE FROM ROBOTIS IS USED IN SELECT PORTIONS
 */
 
-#include "dynamixel.h"
+#include "dynamixel2.h"
+
+// Avilable for use in the lua code, for bulk write
+static DynamixelPacket inst_pkt;
 
 // Modified ever so slightly from Robotis' code
 static uint16_t crc_table[256] = {0x0000,
@@ -114,24 +117,23 @@ DynamixelPacket *dynamixel_instruction(uint8_t id,
 uint8_t inst,
 uint8_t *parameter,
 uint8_t nparameter ) {
-	static DynamixelPacket pkt;
 	int i;
-	pkt.header1 = DYNAMIXEL_PACKET_HEADER;
-	pkt.header2 = DYNAMIXEL_PACKET_HEADER_2;
-	pkt.header3 = DYNAMIXEL_PACKET_HEADER_3;
-	pkt.stuffing = DYNAMIXEL_PACKET_STUFFING; // TODO: understand this more
-	pkt.id = id;
-	pkt.length = nparameter + 3; // 2 checksum + 1 instruction byte
-	pkt.len[0] = pkt.length & 0x00FF; // low btye
-	pkt.len[1] = (pkt.length>>8) & 0x00FF; // high byte
-	pkt.instruction = inst;
+	inst_pkt.header1 = DYNAMIXEL_PACKET_HEADER;
+	inst_pkt.header2 = DYNAMIXEL_PACKET_HEADER_2;
+	inst_pkt.header3 = DYNAMIXEL_PACKET_HEADER_3;
+	inst_pkt.stuffing = DYNAMIXEL_PACKET_STUFFING; // TODO: understand this more
+	inst_pkt.id = id;
+	inst_pkt.length = nparameter + 3; // 2 checksum + 1 instruction byte
+	inst_pkt.len[0] = inst_pkt.length & 0x00FF; // low btye
+	inst_pkt.len[1] = (inst_pkt.length>>8) & 0x00FF; // high byte
+	inst_pkt.instruction = inst;
 	for (i = 0; i < nparameter; i++)
-		pkt.parameter[i] = parameter[i];
-	pkt.checksum = dynamixel_checksum( &pkt );
+		inst_pkt.parameter[i] = parameter[i];
+	inst_pkt.checksum = dynamixel_checksum( &inst_pkt );
 	// Place checksum after parameters:
-	pkt.parameter[nparameter]   = pkt.checksum & 0x00FF;
-	pkt.parameter[nparameter+1] = (pkt.checksum>>8) & 0x00FF;
-	return &pkt;
+	inst_pkt.parameter[nparameter]   = inst_pkt.checksum & 0x00FF;
+	inst_pkt.parameter[nparameter+1] = (inst_pkt.checksum>>8) & 0x00FF;
+	return &inst_pkt;
 }
 
 DynamixelPacket *dynamixel_instruction_write_data(uint8_t id,
@@ -179,8 +181,11 @@ uint16_t n) {
 	return dynamixel_instruction(id, inst, parameter, nparameter);
 }
 
-// Input is array of ids, and address to read, and the length to read
-// TODO: This (may) constrain the bulk_read, but should be OK for our uses
+/* Input:
+ * array of ids
+ * address to read
+ * length to read
+ */
 DynamixelPacket *dynamixel_instruction_sync_read(
 uint8_t address_l, uint8_t address_h, uint16_t len,
 	uint8_t ids[], uint8_t nids){
@@ -203,11 +208,11 @@ uint8_t address_l, uint8_t address_h, uint16_t len,
 
 DynamixelPacket *dynamixel_instruction_ping(int id) {
 	uint8_t inst = INST_PING;
-	return dynamixel_instruction(id, inst, NULL, 0);
+	return dynamixel_instruction(id, inst, 0, 0);
 }
 
 DynamixelPacket *dynamixel_instruction_reset(int id) {
 	uint8_t inst = INST_RESET;
-	return dynamixel_instruction(id, inst, NULL, 0);
+	return dynamixel_instruction(id, inst, 0, 0);
 }
 

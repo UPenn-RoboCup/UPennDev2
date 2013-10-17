@@ -3,8 +3,10 @@ Lua module to provide process dynamixel packets
 Daniel D. Lee copyright 2010 <ddlee@seas.upenn.edu>
 Stephen G. McGill copyright 2013 <smcgill3@seas.upenn.edu>
 */
-#include "dynamixel.h"
-#include <lua.hpp>
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+#include "dynamixel2.h"
 
 const char* errtable[] = {
 "Input Voltage Error",
@@ -16,6 +18,8 @@ const char* errtable[] = {
 "Instruction Error",
 "Motor status Error"
 };
+
+extern DynamixelPacket inst_pkt;
 
 // Error decoder
 static int lua_dynamixel_error(lua_State *L) {
@@ -123,6 +127,78 @@ static int lua_dynamixel_instruction_sync_write(lua_State *L) {
   const char *str = luaL_checklstring(L, 3, &nstr);
   DynamixelPacket *p = dynamixel_instruction_sync_write
     (addr[0], addr[1], len, (uint8_t *)str, nstr);
+  return lua_pushpacket(L, p);
+}
+
+static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
+  size_t i, nids, nparameter;
+  uint16_t pkt_sz;
+
+  // Make sure we are dealing with a table of values
+  luaL_checktype(L, 1, LUA_TTABLE);
+
+#if LUA_VERSION_NUM == 502
+  nids = lua_rawlen(L, 1);
+#else
+  nids = lua_objlen(L, 1);
+#endif
+
+  // setup the packet size
+  pkt_sz = 0;
+
+  // add the header as always
+  inst_pkt.header1 = DYNAMIXEL_PACKET_HEADER;
+  inst_pkt.header2 = DYNAMIXEL_PACKET_HEADER_2;
+  inst_pkt.header3 = DYNAMIXEL_PACKET_HEADER_3;
+  inst_pkt.stuffing = DYNAMIXEL_PACKET_STUFFING;
+  // broadcasting to many IDs
+  inst_pkt.id = DYNAMIXEL_BROADCAST_ID;
+  // add the instruction
+  inst_pkt.instruction = INST_BULK_WRITE;
+  // 
+  for (i = 0; i < nparameter; i++)
+    inst_pkt.parameter[i] = parameter[i];
+  
+  return &inst_pkt;
+
+  for (i = 1; i<=nids; i++) {
+    // first, grab the table
+    lua_rawgeti(L,1,i);
+    // Now get the next 4 elements of this table...
+    // id
+    lua_rawgeti(L,1,1); 
+    uint8_t id = lua_tointeger(lua_State *L, 1, size_t *len);
+    lua_pop(L, 1);
+    // addr
+    lua_rawgeti(L,1,2); 
+    uint16_t addr = lua_tointeger(lua_State *L, 1, size_t *len);
+    lua_pop(L, 1);
+    // length
+    lua_rawgeti(L,1,3);
+    uint16_t ndata = lua_tointeger(lua_State *L, 1, size_t *len);
+    lua_pop(L, 1);
+    // data
+    lua_rawgeti(L,1,4);
+    const char * str = lua_tolstring(lua_State *L, 1, size_t *len);
+    lua_pop(L, 1);
+    
+    // Do something with the data
+    inst_pkt.parameter[i] = parameter[i];
+
+    // pop off the table
+    lua_pop(L, 1);
+  }
+
+  // set the length at the end
+  inst_pkt.length = nparameter + 3; // 2 checksum + 1 instruction byte
+  inst_pkt.len[0] = inst_pkt.length & 0x00FF; // low btye
+  inst_pkt.len[1] = (inst_pkt.length>>8) & 0x00FF; // high byte
+
+  // Place checksum after parameters:
+  inst_pkt.checksum = dynamixel_checksum( &inst_pkt );
+  inst_pkt.parameter[nparameter]   = inst_pkt.checksum & 0x00FF;
+  inst_pkt.parameter[nparameter+1] = (inst_pkt.checksum>>8) & 0x00FF;
+
   return lua_pushpacket(L, p);
 }
 
@@ -264,6 +340,7 @@ static const struct luaL_reg dynamixelpacket_functions[] = {
   {"read_data", lua_dynamixel_instruction_read_data},
   {"sync_write", lua_dynamixel_instruction_sync_write},
   {"sync_read",  lua_dynamixel_instruction_sync_read},
+  {"bulk_write", lua_dynamixel_instruction_bulk_write},
   {"word_to_byte", lua_dynamixel_word_to_byte},
   {"dword_to_byte", lua_dynamixel_dword_to_byte},
   {"byte_to_word", lua_dynamixel_byte_to_word},
@@ -281,16 +358,12 @@ static const struct luaL_reg dynamixelpacket_methods[] = {
 extern "C"
 #endif
 int luaopen_DynamixelPacket2 (lua_State *L) {
-  /* Metatables are same for 1 and 2 - probably bad... */
-  luaL_newmetatable(L, "dynamixelpacket_mt");
 
-  // OO access: mt.__index = mt
-  // Not compatible with array access
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-
-  luaL_register(L, NULL, dynamixelpacket_methods);
+#if LUA_VERSION_NUM == 502
+  luaL_newlib( L, dynamixelpacket_functions);
+#else
   luaL_register(L, "DynamixelPacket2", dynamixelpacket_functions);
+#endif
 
   return 1;
 }

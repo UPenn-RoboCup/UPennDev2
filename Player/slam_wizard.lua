@@ -117,7 +117,8 @@ local function head_callback()
   
   -- If off center too much, do not slam
   local headcenter = -Config.walk.bodyTilt-0.05
-  if math.abs(angle-headcenter) > 10*Body.DEG_TO_RAD then
+  if math.abs(angle-headcenter) > 10*Body.DEG_TO_RAD and not replay then
+  	--print('AM HERE')
   	-- Just use odometry
   	wcm.set_slam_pose( wcm.get_robot_pose_odom() )
   	return

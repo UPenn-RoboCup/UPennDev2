@@ -25,7 +25,7 @@ shared.head_camera.t     = vector.zeros(1)
 -- Compression | 0: None, 1: JPEG, 2: zlib, 3: PNG
 -- Quality | JPEG quality from 0-100
 -- Rate | FPS (5,10,15,30, etc.)
-shared.head_camera.net = vector.new({2,1,0})
+shared.head_camera.net = vector.new({2,1,90})
 
 ------------------------
 --  Head LIDAR
@@ -48,7 +48,7 @@ shared.head_lidar.depths      = vector.new({.1,5})
 -- Compression | 0: None, 1: JPEG, 2: zlib, 3: PNG
 -- Quality | JPEG quality from 0-100
 -- Pose | Send per-scanline pose information (0: no, 1: yes)
-shared.head_lidar.net      = vector.zeros(4)
+shared.head_lidar.net      = vector.new{0,1,90,1}
 
 ------------------------
 --  Chest LIDAR
@@ -70,7 +70,7 @@ shared.chest_lidar.depths      = vector.new({.1,5})
 -- Compression | 0: None, 1: JPEG, 2: zlib, 3: PNG
 -- Quality | JPEG quality from 0-100
 -- Pose | Send per-scanline pose information (0: no, 1: yes)
-shared.chest_lidar.net      = vector.zeros(4)
+shared.chest_lidar.net      = vector.new{0,1,90,1}
 
 -- LIDAR parameters: FOV and number of readings
 shared.chest_lidar.sensor_params = vector.new({270*DEG_TO_RAD, 1081})

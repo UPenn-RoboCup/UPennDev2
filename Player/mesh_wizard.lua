@@ -101,77 +101,89 @@ local function setup_mesh( name, tbl )
   return tbl
 end
 
-local function prepare_mesh(type,near,far,method, quality)
+local function prepare_mesh(lidarname,near,far,method, quality)
+	print(lidarname.meta.c)
   -- Safety check
   if near>=far then return end
-  if not type then return end
+  if not lidarname then return end
 
   -- Enhance the dynamic range of the mesh image
-  local adjusted_range = type.mesh_adj
-  adjusted_range:copy(type.mesh):add( -near )
+  local adjusted_range = lidarname.mesh_adj
+  adjusted_range:copy(lidarname.mesh):add( -near )
   adjusted_range:mul( 255/(far-near) )
     
   -- Ensure that we are between 0 and 255
   adjusted_range[torch.lt(adjusted_range,0)] = 0
   adjusted_range[torch.gt(adjusted_range,255)] = 255
-  type.mesh_byte:copy( adjusted_range )
+  lidarname.mesh_byte:copy( adjusted_range )
   
   -- Compression
   local c_mesh 
-  local dim = type.mesh_byte:size()
+  local dim = lidarname.mesh_byte:size()
   if method==1 then
     -- jpeg
-    type.meta.c = 'jpeg'
+    lidarname.meta.c = 'jpeg'
     jpeg.set_quality( quality )
-    c_mesh = jpeg.compress_gray( type.mesh_byte:storage():pointer(),
+    c_mesh = jpeg.compress_gray( lidarname.mesh_byte:storage():pointer(),
       dim[2], dim[1] )
   elseif method==2 then
     -- zlib
-    type.meta.c = 'zlib'
+    lidarname.meta.c = 'zlib'
     c_mesh = zlib.compress(
-      type.mesh_byte:storage():pointer(),
-      type.mesh_byte:nElement() )
+      lidarname.mesh_byte:storage():pointer(),
+      lidarname.mesh_byte:nElement() )
   elseif method==3 then
     -- png
-    type.meta.c = 'png'
-    c_mesh = png.compress(type.mesh_byte:storage():pointer(),
+    lidarname.meta.c = 'png'
+    c_mesh = png.compress(lidarname.mesh_byte:storage():pointer(),
       dim[2], dim[1], 1)
   else
     -- raw data?
     return
   end
   
-  type.meta.depths = {near,far}
+  lidarname.meta.depths = {near,far}
 
   local c_pose_upperbyte, c_pose_lowerbyte
   c_pose_upperbyte = zlib.compress(
-    type.pose_upperbyte:storage():pointer(),
-    type.pose_upperbyte:nElement() )
+    lidarname.pose_upperbyte:storage():pointer(),
+    lidarname.pose_upperbyte:nElement() )
 
   c_pose_lowerbyte = zlib.compress(
-    type.pose_lowerbyte:storage():pointer(),
-    type.pose_lowerbyte:nElement() )
+    lidarname.pose_lowerbyte:storage():pointer(),
+    lidarname.pose_lowerbyte:nElement() )
 
-  type.meta.c_pose_upperbyte = c_pose_upperbyte
-  type.meta.c_pose_lowerbyte = c_pose_lowerbyte
+  lidarname.meta.c_pose_upperbyte = c_pose_upperbyte
+  lidarname.meta.c_pose_lowerbyte = c_pose_lowerbyte
 
-  return mp.pack(type.meta), c_mesh
+	print(type(mp.pack(lidarname.meta)))
+  return mp.pack(lidarname.meta), c_mesh
 end
 
 -- type is head or chest table
-local function stream_mesh(type)
-  local get_name = 'get_'..type.meta.name
+local function stream_mesh(lidarname)
+  local get_name = 'get_'..lidarname.meta.name
   -- Network streaming settings
   local net_settings = vcm[get_name..'_net']()
   -- Streaming
+
+	--[[ TODO: JUST A WORKAROUND
+	local vector = require'vector'
+	if lidarname.meta.name == 'head_lidar' then
+		net_settings = vector.new({1,1,90})
+	else
+		net_settings = vector.new({2,1,90})
+	end
+	--]]
 
   if net_settings[1]==0 then return end
   -- Sensitivity range in meters
   -- Depths when compressing
   local depths = vcm[get_name..'_depths']()
 
+	print(unpack(net_settings))
   local metapack, c_mesh = prepare_mesh(
-    type,
+    lidarname,
     depths[1],depths[2],
     -- Compression type & quality
     net_settings[2],net_settings[3])
@@ -179,8 +191,6 @@ local function stream_mesh(type)
   -- Sending to other processes
   --mesh_pub_ch:send( {meta, payload} )
   -- Testing
-  --mesh_pub_ch:send( metapack..c_mesh )
-  --print('type of cmesh', type(c_mesh))
   mesh_pub_ch:send( {metapack, mp.pack(c_mesh)} )
  
 	-- Check for errors
@@ -191,12 +201,12 @@ local function stream_mesh(type)
     net_settings[1] = 0
     local ret, err = mesh_udp_ch:send( metapack..c_mesh )
     if err then print('mesh udp',err) end
-    vcm['set_'..type.meta.name..'_net'](net_settings)
+    vcm['set_'..lidarname.meta.name..'_net'](net_settings)
   elseif net_settings[1]==3 then
     -- Reliable single frame
     net_settings[1] = 0
     local ret = mesh_tcp_ch:send{metapack,c_mesh}
-    vcm['set_'..type.meta.name..'_net'](net_settings)
+    vcm['set_'..lidarname.meta.name..'_net'](net_settings)
   end
   --[[
   print(err or string.format('Sent a %g kB packet.', ret/1024))

@@ -28,7 +28,7 @@ local head_lidar_ch = simple_ipc.new_subscriber'head_lidar'
 --
 local mesh_ch = simple_ipc.new_subscriber'mesh'
 --
---local camera_ch = simple_ipc.new_subscriber'camera'
+local camera_ch = simple_ipc.new_subscriber'camera'
 
 -- TODO: log IMU (although all above have rpy included)
 -- TODO: joints
@@ -125,6 +125,7 @@ end
 -- Mesh callback
 ------------------------------------------------------
 local function mesh_callback()
+	--print('logging mesh!!')
 	-- Grab the data
 	local meta, has_more = mesh_ch:receive()
 

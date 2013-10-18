@@ -400,17 +400,18 @@ function movearm.getArmWheelPosition(handle_pos,
        * T.trans(0,handle_radius,0)
        * T.rotZ(-math.pi/4)
 
---[[       
+
   local trGripR = trHandle
-       * T.rotX(turn_angle - gripOffset)
+       * T.rotX(-turn_angle - gripOffset)
        * T.trans(0,-handle_radius,0)
        * T.rotZ(math.pi/4)
---]]       
+       
+--[[
 local trGripR = trHandle
        * T.rotX(0 - gripOffset)
        * T.trans(0,-handle_radius,0)
        * T.rotZ(math.pi/4)
-       
+--]]       
   local trBody = T.eye()
        * T.trans(body_pos[1],body_pos[2],body_pos[3])
        * T.rotZ(body_rpy[3])

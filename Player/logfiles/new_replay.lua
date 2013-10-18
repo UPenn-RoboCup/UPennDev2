@@ -13,6 +13,7 @@ local Body = require'Body'
 -- Shared memory
 require'jcm'
 require'wcm'
+require'vcm'
 ------------------
 
 -- Load log files
@@ -59,7 +60,7 @@ end
 
 
 -- Sleep time
-local tsleep = 1/100 * 1e6
+local tsleep = 1/20 * 1e6
 
 local meta_tbl, has_more = data_unpacker:unpack()
 while meta_tbl do
@@ -68,6 +69,8 @@ while meta_tbl do
     print('which channel', meta_tbl.name)
     if meta_tbl.name == 'headlidar' then
       --print('AM HERE')
+      --print('type?',type(meta_tbl.ranges))
+      vcm.set_head_lidar_scan( meta_tbl.ranges )
       head_lidar_ch:send( mp.pack(meta_tbl) )
     elseif meta_tbl.name == 'chestlidar' then
       chest_lidar_ch:send( mp.pack(meta_tbl) )

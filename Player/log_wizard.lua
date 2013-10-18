@@ -28,6 +28,7 @@ local libLaser = require'libLaser'
 -- Shared Memory
 require'jcm'
 require'hcm'
+require'vcm'
 ---------------------------------
 
 ---------------------------------
@@ -67,7 +68,11 @@ local function head_callback()
   local meta, has_more = head_lidar_ch:receive()
   local metadata = mp.unpack(meta)
    	
+	metadata.name = 'headlidar'
   -- Get raw data from shared memory
+  metadata.ranges = vcm.get_head_lidar_scan()
+
+  --[[
   -- TODO: May try to put into the lidar message itself
   -- which is useful for a separate computer to perform slam
   local ranges = Body.get_head_lidar()
@@ -77,8 +82,9 @@ local function head_callback()
 
   -- Take log
 	-- torch is easier to be logged...
-	metadata.name = 'headlidar'
 	metadata.ranges = hlidar.ranges
+	--]]
+
 	logfile:write( mp.pack(metadata) )
  
 end
@@ -248,12 +254,13 @@ function log.entry()
 end
 
 function log.update()
+--[[
   imu_logger()
   joint_sensor_logger()
   joint_actuator_logger()
   fsr_logger()
   --hcm_logger()
-
+--]]
   ------------------
   -- Perform the poll
   local npoll = channel_polls:poll(channel_timeout)

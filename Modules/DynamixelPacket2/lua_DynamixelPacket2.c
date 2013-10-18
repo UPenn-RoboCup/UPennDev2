@@ -160,20 +160,21 @@ static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
   inst_pkt.instruction = INST_BULK_WRITE;
 
   for (i = 1; i<=nids; i++) {
-    // first, grab the table
+    // first, put the table on the top of the stack
     lua_rawgeti(L,1,i);
-    // Now get the next 4 elements of this table...
+    // put each element of this table on the top of the stack
     // id
-    lua_rawgeti(L,1,1); 
-    id = lua_tointeger(L, 1);
+    lua_rawgeti(L,-1,1); 
+    id = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     // addr
-    lua_rawgeti(L,1,2); 
-    addr = lua_tointeger(L, 1);
+    lua_rawgeti(L,-1,2); 
+    addr = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     // data (constructed using word_to_byte, dword_to_byte, etc.)
-    lua_rawgeti(L,1,3);
-    data = (uint8_t *)lua_tolstring(L, 1, &data_len);
+    lua_rawgeti(L,-1,3);
+    if( lua_isstring(L,-1)==0 ) return luaL_error(L,"Data must be a string!");
+    data = (uint8_t *)lua_tolstring(L, -1, &data_len);
     lua_pop(L, 1);
     
     // Do something with the data

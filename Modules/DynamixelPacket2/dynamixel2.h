@@ -104,7 +104,7 @@ extern "C" {
   /* Bulk */
   void dynamixel_instruction_init_bulk_write();
   void dynamixel_instruction_add_bulk_write(
-    uint8_t id,uint16_t addr,uint8_t *data, size_t data_len
+    uint8_t id, uint16_t addr, uint8_t reg_sz, int32_t val
   );
   DynamixelPacket *dynamixel_instruction_finalize_bulk_write();
   

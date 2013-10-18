@@ -129,9 +129,9 @@ static int lua_dynamixel_instruction_sync_write(lua_State *L) {
 }
 
 static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
-  size_t i, data_len;
-  uint16_t addr, nids;
-  uint8_t *params, *data, id;
+  uint16_t i, addr, nids;
+  uint8_t id, reg_sz;
+  int32_t val;
 
   // Make sure we are dealing with a table of values
   luaL_checktype(L, 1, LUA_TTABLE);
@@ -155,14 +155,17 @@ static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
     lua_rawgeti(L,-1,2); 
     addr = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    // data (constructed using word_to_byte, dword_to_byte, etc.)
-    lua_rawgeti(L,-1,3);
-    if( lua_isstring(L,-1)==0 ) return luaL_error(L,"Data must be a string!");
-    data = (uint8_t *)lua_tolstring(L, -1, &data_len);
+    // register size
+    lua_rawgeti(L,-1,3); 
+    reg_sz = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    // data value, as an integer
+    lua_rawgeti(L,-1,4);
+    val = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     
     // Do something with the data
-    dynamixel_instruction_add_bulk_write(id,addr,data,data_len);
+    dynamixel_instruction_add_bulk_write(id,addr,reg_sz,val);
 
     // pop off the table of this instruction
     lua_pop(L, 1);

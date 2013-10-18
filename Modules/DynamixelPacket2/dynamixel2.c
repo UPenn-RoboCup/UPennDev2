@@ -220,7 +220,7 @@ void dynamixel_instruction_init_bulk_write(){
 }
 
 void dynamixel_instruction_add_bulk_write(
-  uint8_t id,uint16_t addr,uint8_t *data, size_t data_len
+  uint8_t id, uint16_t addr, uint8_t reg_sz, int32_t val
 ){
   /* save the pointer to the current parameters */
   uint8_t *params;
@@ -230,16 +230,29 @@ void dynamixel_instruction_add_bulk_write(
   *(params)   = id;
   *(params+1) = addr & 0x00FF;
   *(params+2) = (addr>>8) & 0x00FF;
-  *(params+3) = data_len & 0x00FF;
-  *(params+4) = (data_len>>8) & 0x00FF;
-  params += 5;
+  *(params+3) = reg_sz & 0x00FF;
+  *(params+4) = (reg_sz>>8) & 0x00FF;
   /* Add the raw data */
-  for(d=0; d<data_len; d++){
-    *params = data[d];
-    params++;
+  switch(reg_sz){
+    case 1:
+      *(params+5) = val & 0xFF;
+      params += 6;
+      break;
+    case 2:
+      *(params+5) = val & 0xFF;
+      *(params+6) = (val >> 8) & 0xFF;
+      params += 7;
+      break;
+    case 4:
+      *(params+5) = val & 0xFF;
+      *(params+6) = (val >> 8) & 0xFF;
+      *(params+7) = (val >> 16) & 0xFF;
+      *(params+8) = (val >> 24) & 0xFF;
+      params += 9;
+      break;
   }
   /* Save the current length of the packet */
-  inst_pkt.length += (5+data_len);
+  inst_pkt.length += (5+reg_sz);
 }
 
 DynamixelPacket *dynamixel_instruction_finalize_bulk_write(){

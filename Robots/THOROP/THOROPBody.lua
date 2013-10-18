@@ -934,10 +934,80 @@ local function process_fd(ready_fd)
   return d.n_expect_read>0
 end
 
+local function add_nx_sync_write(d, is_writes, wr_values, register)
+  local cmd_ids, cmd_vals = {}, {}
+  for _,id in ipairs(d.nx_ids) do
+    local idx = motor_to_joint[id]
+    if is_writes[idx]>0 then
+      is_writes[idx]=0
+      table.insert(cmd_ids,id)
+      if register=='command_position' then
+        table.insert(cmd_vals,Body.make_joint_step(idx,wr_values[idx]))
+      else
+        table.insert(cmd_vals,wr_values[idx])
+      end
+    end
+  end
+  -- If nothing to write
+  if #cmd_ids==0 then return end
+  -- Add the packet to this chain
+  table.insert(d.cmd_pkts,libDynamixel['set_nx_'..register](cmd_ids,cmd_vals))
+end
+
+local function add_mxnx_bulk_write(d, is_writes, wr_values, register)
+  -- Just sync write to NX's if no MX on the chain
+  if not d.mx_ids then return add_nx_sync_write(d, is_writes, wr_values) end
+  
+  -- Run through the MX motors
+  local mx_cmd_ids, mx_cmd_vals = {}, {}
+  for _,id in ipairs(d.mx_ids) do
+    local idx = motor_to_joint[id]
+    if is_writes[idx]>0 then
+      is_writes[idx]=0
+      table.insert(mx_cmd_ids,id)
+      if register=='command_position' then
+        table.insert(mx_cmd_vals,Body.make_joint_step(idx,wr_values[idx]))
+      else
+        table.insert(mx_cmd_vals,wr_values[idx])
+      end
+    end
+  end
+  -- If nothing to the MX motors, then sync write NX
+  if #mx_cmd_ids==0 then return add_nx_sync_write(d, is_writes, wr_values) end
+  
+  -- Add the NX portion
+  local nx_cmd_ids, nx_cmd_vals = {}, {}
+  for _,id in ipairs(d.nx_ids) do
+    local idx = motor_to_joint[id]
+    if is_writes[idx]>0 then
+      is_writes[idx]=0
+      table.insert(nx_cmd_ids,id)
+      if register=='command_position' then
+        table.insert(nx_cmd_vals,Body.make_joint_step(idx,wr_values[idx]))
+      else
+        table.insert(nx_cmd_vals,wr_values[idx])
+      end
+    end
+  end
+  
+  -- If no NX, then sync write the MX motors
+  if #nx_cmd_ids==0 then
+    table.insert(d.cmd_pkts,
+      libDynamixel['set_mx_'..register](mx_cmd_ids,mx_cmd_vals))
+    return
+  end
+  
+  -- Do the bulk write
+  local bulk_pkt = libDynamixel.mx_nx_bulk_write(
+    register, mx_cmd_ids, mx_cmd_vals, nx_cmd_ids, nx_cmd_vals
+  )
+  table.insert(d.cmd_pkts,bulk_pkt)
+  
+end
+
 Body.update = function()
 
   for _,d in pairs(dynamixels) do
-    --util.ptable(d)
     d.cmd_pkts = {}
     d.read_pkts = {}
     d.n_expect_read = 0
@@ -952,50 +1022,10 @@ Body.update = function()
   -- layout properly
   for register,is_writes in pairs(jcm.writePtr) do
     --
-    local wr_values   = jcm['get_actuator_'..register]()
-    --
-    local nx_set_func    = libDynamixel['set_nx_'..register]
-    local nx_reg  = libDynamixel.nx_registers[register]
-    local nx_addr = nx_reg[1]
-    local nx_sz   = nx_reg[2]
-    --
-    local mx_set_func = libDynamixel['set_mx_'..register]
-    local mx_reg  = libDynamixel.mx_registers[register]
-    local mx_addr = mx_reg[1]
-    local mx_sz   = mx_reg[2]
-
-    -- Instantiate the commands for the chains
+    local wr_values = jcm['get_actuator_'..register]()
+    -- Add instruction packets to the chains
     for _,d in pairs(dynamixels) do
-      local cmd_ids  = {}
-      local cmd_vals = {}
-      for _,id in ipairs(d.nx_ids) do
-        local idx = motor_to_joint[id]
-        if is_writes[idx]>0 then
-          is_writes[idx]=0
-          table.insert(cmd_ids,id)
-          if register=='command_position' then
-            table.insert(cmd_vals,Body.make_joint_step(idx,wr_values[idx]))
-          else
-            table.insert(cmd_vals,wr_values[idx])
-          end
-        end
-      end
-      -- make the pkts
-      --print('writing',register,'\n',vector.new(cmd_ids),'\n',vector.new(cmd_vals))
-      if #cmd_ids>0 then
-        if d.mx_ids then
-          -- Bulk packet to send to MX motors as well
-          local bulk_pkt = {}
-          for i,id in ipairs(cmd_ids) do
-            table.insert(bulk_pkt,{id,nx_addr,cmd_vals[i],})
-          end
-        else
-          -- Just sync write to NX as usual
-          table.insert(d.cmd_pkts, nx_set_func(cmd_ids,cmd_vals) )
-        end
-        --
-      end
-      --
+      add_mxnx_bulk_write(d, is_writes, wr_values, register)
     end
     --
   end

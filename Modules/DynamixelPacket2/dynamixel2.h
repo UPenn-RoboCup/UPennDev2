@@ -9,7 +9,7 @@ CODE FROM ROBOTIS IS USED IN SELECT PORTIONS
 #define __DYNAMIXEL2_H
 
 #include <stdint.h>
-#include <unistd.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {

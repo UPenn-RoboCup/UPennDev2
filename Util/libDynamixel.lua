@@ -356,6 +356,26 @@ for k,v in pairs( nx_registers ) do
   end --function
 end
 
+libDynamixel.mx_nx_bulk_write = 
+function( register, mx_ids, mx_vals, nx_ids, nx_vals, bus)
+  -- Form the bulk packet
+  local bulk_pkt = {}
+  -- Add the MX motors
+  local mx_reg  = libDynamixel.mx_registers[register]
+  local mx_addr = mx_reg[1]
+  local mx_sz   = mx_reg[2]
+  for i,id in ipairs(mx_ids) do
+    table.insert( bulk_pkt, {id,mx_addr,mx_sz,mx_vals[i]} )
+  end
+  -- Add the NX motors
+  local nx_reg  = libDynamixel.nx_registers[register]
+  local nx_addr = nx_reg[1]
+  local nx_sz   = nx_reg[2]
+  for i,id in ipairs(mx_cmd_ids) do
+    table.insert( bulk_pkt, {id,nx_addr,nx_sz,nx_vals[i]} )
+  end
+end
+
 --------------------
 -- Get NX functions
 for k,v in pairs( nx_registers ) do

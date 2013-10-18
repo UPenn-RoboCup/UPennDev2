@@ -185,17 +185,16 @@ local function stream_mesh(mesh)
     local ret, err = mesh_udp_ch:send( metapack..c_mesh )
     if err then print('mesh udp',err) end
     vcm['set_'..mesh.meta.name..'_net'](net_settings)
-		print('sent unreliable!')
-		util.ptable(mesh.meta)
+		print('Mesh | sent unreliable!',mesh.meta.t)
   elseif net_settings[1]==3 then
     -- Reliable single frame
     net_settings[1] = 0
     local ret = mesh_tcp_ch:send{metapack,c_mesh}
     vcm['set_'..mesh.meta.name..'_net'](net_settings)
-		print('sent reliable!')
-		util.ptable(mesh.meta)
+		print('Mesh | sent reliable!',mesh.meta.t)
   end
   --[[
+  util.ptable(mesh.meta)
   print(err or string.format('Sent a %g kB packet.', ret/1024))
   --]]
 end
@@ -205,7 +204,7 @@ end
 -- Convert a pan angle to a column of the chest mesh image
 local function angle_to_scanlines( lidar, rad )
   -- Get the most recent direction the lidar was moving
-  local prev_direction = lidar.current_direction
+  local prev_scanline = lidar.current_scanline
   -- Get the metadata for calculations
   local meta  = lidar.meta
   local start = meta.scanlines[1]
@@ -222,7 +221,7 @@ local function angle_to_scanlines( lidar, rad )
   -- If not moving, assume we are staying in the previous direction
 	if not prev_scanline then return {scanline} end
   -- Grab the most recent scanline saved in the mesh
-  local prev_scanline = lidar.current_scanline
+  local prev_direction = lidar.current_direction
   if not prev_direction then
     lidar.current_direction = 0
     return {scanline}
@@ -235,14 +234,12 @@ local function angle_to_scanlines( lidar, rad )
   else
     direction = util.sign(diff_scanline)
   end
-  
   -- Save the directions
   lidar.current_direction = direction
 
   -- Find the set of scanlines for copying the lidar reading
   local scanlines = {}
   if direction==prev_direction then
-    print('here',prev_scanline,scanline,direction)
     -- fill all lines between previous and now
     for s=prev_scanline+1,scanline,direction do table.insert(scanlines,s) end
   else
@@ -250,11 +247,11 @@ local function angle_to_scanlines( lidar, rad )
     -- Populate the borders, too
     if direction>0 then
       -- going away from 1 to end
-      local start_line = math.min(chest.last_scanline+1,scanline)
+      local start_line = math.min(prev_scanline+1,scanline)
       for s=start_line,res do table.insert(scanlines,i) end
     else
       -- going away from end to 1
-      local end_line = math.max(chest.last_scanline-1,scanline)
+      local end_line = math.max(prev_scanline-1,scanline)
       for s=1,end_line do table.insert(scanlines,i) end        
     end
   end

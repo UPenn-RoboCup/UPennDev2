@@ -74,7 +74,12 @@ while meta_tbl do
     elseif meta_tbl.name == 'chest_lidar' or
             meta_tbl.name == 'head_lidar' then
       -- Deal with c_mesh
-      c_mesh = data_unpacker:unpack()
+      local c_mesh = data_unpacker:unpack()
+      -- For some reason there are empty table stored
+      while type(c_mesh) == 'table' do
+      	print('WARNING: got c_mesh as table',unpack(c_mesh))
+        c_mesh = data_unpacker:unpack()
+      end
       mesh_udp_ch:send( mp.pack(meta_tbl)..c_mesh )
 	    unix.usleep(tsleep)
     elseif meta_tbl.name == 'hcam' then

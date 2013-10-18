@@ -400,17 +400,18 @@ function movearm.getArmWheelPosition(handle_pos,
        * T.trans(0,handle_radius,0)
        * T.rotZ(-math.pi/4)
 
---[[       
+
   local trGripR = trHandle
-       * T.rotX(turn_angle - gripOffset)
+       * T.rotX(-turn_angle - gripOffset)
        * T.trans(0,-handle_radius,0)
        * T.rotZ(math.pi/4)
---]]       
+       
+--[[
 local trGripR = trHandle
        * T.rotX(0 - gripOffset)
        * T.trans(0,-handle_radius,0)
        * T.rotZ(math.pi/4)
-       
+--]]       
   local trBody = T.eye()
        * T.trans(body_pos[1],body_pos[2],body_pos[3])
        * T.rotZ(body_rpy[3])
@@ -427,14 +428,32 @@ function movearm.getDoorHandlePosition(
   door_r, --distance between hinge and the projection of grip position on the door
           --positive value for right-hinged door, negative value for left-hinged door
   door_yaw, --door angle, -pi/2~pi/2
-  grip_offset_x, --how much the actual grip positon offset from door surface
+  grip_offset_x, --how much the actual grip positon offset from door surface  
   hand_rpy
   )
-  --Default hand angle: facing up
-  hand_rpy = hand_rpy or {-90*Body.DEG_TO_RAD,0,0}
+
+  door_tilt = -10*Body.DEG_TO_RAD
+  door_tilt = 0
+
+  if type(hand_rpy)=='number' then --scalar value: hand type (0 for left, 1 for right)
+    if hand_rpy==1 then --left hand  
+--      hand_rpy = {-90*Body.DEG_TO_RAD,0,0} --Default hand angle: facing up
+      hand_rpy = {-90*Body.DEG_TO_RAD-door_tilt,0,0} --Default hand angle: facing up
+    else
+      hand_rpy = {90*Body.DEG_TO_RAD+door_tilt,0,0} --Default hand angle: facing up
+
+
+      hand_rpy = {90*Body.DEG_TO_RAD+door_tilt,-15*Body.DEG_TO_RAD,0} --Default hand angle: facing up
+    end
+  end
+  
     
+  
+
+
   local trHandle = T.eye()
     * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])
+    * T.rotY(door_tilt)
     * T.rotZ(door_yaw)
     * T.trans(grip_offset_x, door_r, 0) 
     * T.transform6D(
@@ -443,8 +462,8 @@ function movearm.getDoorHandlePosition(
 
   local trBody = T.eye()
        * T.trans(body_pos[1],body_pos[2],body_pos[3])
-       * T.rotZ(body_rpy[3])
-       * T.rotY(body_rpy[2])
+--       * T.rotZ(body_rpy[3])
+--       * T.rotY(body_rpy[2])
 
   local trTarget = T.position6D(T.inv(trBody)*trHandle)
   return trTarget

@@ -22,7 +22,7 @@ ifeq ($(OSTYPE),darwin)
   LIBRT=
   LD=ld -macosx_version_min 10.7
   LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup
-  LUA_INC= -I /usr/local/include/
+  LUA_INC= -I/usr/local/include/
 else
   CFLAGS+= -mtune=native -march=native
   CXXFLAGS+= -mtune=native -march=native
@@ -55,7 +55,7 @@ all none: $(LIBNAME)
 	$(V)$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
 	$(V)printf '\t%b %b\n' $(CCCOLOR)CC$(ENDCOLOR) $(SRCCOLOR)$@$(ENDCOLOR);
-	$(V)$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	$(V)$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	$(V)printf '\t%b %b\n' $(LINKCOLOR)LINK$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR);
 	$(V)$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(EXTRA_LINK) $(LIBOPTS)

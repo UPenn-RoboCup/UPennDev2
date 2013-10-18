@@ -2,9 +2,10 @@
   Lua module to provide process dynamixel packets
 */
 
-#include "dynamixel.h"
-#include <lua.hpp>
-#include <stdint.h>
+#include "dynamixel1.h"
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
 
 const char* errtable[] = {
 "Input Voltage Error",

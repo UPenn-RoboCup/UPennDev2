@@ -1,6 +1,9 @@
 #ifndef __DYNAMIXEL_H
 #define __DYNAMIXEL_H
 
+#include <stdint.h>
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -1,5 +1,4 @@
-#include "dynamixel.h"
-#include <stdlib.h>
+#include "dynamixel1.h"
 
 uchar dynamixel_checksum(DynamixelPacket *pkt) {
   uchar checksum = 0;

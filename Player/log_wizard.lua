@@ -70,9 +70,9 @@ local function head_callback()
    	
 	metadata.name = 'headlidar'
   -- Get raw data from shared memory
-  metadata.ranges = vcm.get_head_lidar_scan()
+  --metadata.ranges = vcm.get_head_lidar_scan()
 
-  --[[
+  ---[[
   -- TODO: May try to put into the lidar message itself
   -- which is useful for a separate computer to perform slam
   local ranges = Body.get_head_lidar()
@@ -254,7 +254,7 @@ function log.entry()
 end
 
 function log.update()
---[[
+---[[
   imu_logger()
   joint_sensor_logger()
   joint_actuator_logger()

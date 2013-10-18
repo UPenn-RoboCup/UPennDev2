@@ -21,30 +21,19 @@ local vector = require'vector'
 local libLaser = require'libLaser'
 ---------------------------------
 
----------------------------------
--- Set up listeners
-local head_lidar_ch = simple_ipc.new_subscriber'head_lidar'
---local chest_lidar_ch = simple_ipc.new_subscriber'chest_lidar'
---
-local mesh_ch = simple_ipc.new_subscriber'mesh'
---
-local camera_ch = simple_ipc.new_subscriber'camera'
-
--- TODO: log IMU (although all above have rpy included)
--- TODO: joints
 -- TODO: contact sensor
+-- TODO: hcm inputs
 
 ---------------------------------
 -- Shared Memory
-require'wcm'
+require'jcm'
+require'hcm'
+require'vcm'
 ---------------------------------
 
 ---------------------------------
 -- Logging and Replaying set up
--- Flag for logging
 local logfile = ''
-filetime = os.date('%m.%d.%Y.%H.%M.%S')
-logfile = io.open('logfiles/'..filetime..'.log','w')
 ---------------------------------
 
 -- Input Channels
@@ -57,7 +46,6 @@ local clidar -- chest
 
 ---------------------------------
 -- Filter Parameters
--- TODO: the following should be put in vcm 
 local l0minFOV = -135*Body.DEG_TO_RAD
 local l0maxFOV =  135*Body.DEG_TO_RAD
 local l1minFOV = -45*Body.DEG_TO_RAD 
@@ -80,7 +68,11 @@ local function head_callback()
   local meta, has_more = head_lidar_ch:receive()
   local metadata = mp.unpack(meta)
    	
+	metadata.name = 'headlidar'
   -- Get raw data from shared memory
+  --metadata.ranges = vcm.get_head_lidar_scan()
+
+  ---[[
   -- TODO: May try to put into the lidar message itself
   -- which is useful for a separate computer to perform slam
   local ranges = Body.get_head_lidar()
@@ -90,8 +82,9 @@ local function head_callback()
 
   -- Take log
 	-- torch is easier to be logged...
-	metadata.name = 'headlidar'
 	metadata.ranges = hlidar.ranges
+	--]]
+
 	logfile:write( mp.pack(metadata) )
  
 end
@@ -144,11 +137,87 @@ local function camera_callback()
   logfile:write( meta )
 end
 
+------------------------------------------------------
+-- Logger for imu
+------------------------------------------------------
+local function imu_logger()
+	-- Grab the data
+	local imu = {}
+	imu.name = 'imu'
+  imu.t = Body.get_time()
+  -- TODO: use shm instead of body?
+  imu.rpy = Body.get_sensor_rpy()
+  imu.gyro = Body.get_sensor_gyro()
+
+  -- Write log file
+  logfile:write( mp.pack(imu) )
+end
+
+------------------------------------------------------
+-- Logger for sensed joint position and velocity
+------------------------------------------------------
+local function joint_sensor_logger()
+	-- Grab the data
+	local joint = {}
+	joint.name = 'sensor'
+  joint.t = Body.get_time()
+  joint.pos = jcm.get_sensor_position()
+  joint.vel = jcm.get_sensor_velocity()
+
+  -- Write log file
+  logfile:write( mp.pack(joint) )
+end
+
+------------------------------------------------------
+-- Logger for commanded joint position and velocity
+------------------------------------------------------
+local function joint_actuator_logger()
+	-- Grab the data
+	local joint = {}
+	joint.name = 'actuator'
+  joint.t = Body.get_time()
+  joint.pos = jcm.get_actuator_command_position()
+  joint.vel = jcm.get_actuator_command_velocity()
+
+  -- Write log file
+  logfile:write( mp.pack(joint) )
+end
+
+------------------------------------------------------
+-- Logger for FSR sensor
+------------------------------------------------------
+local function fsr_logger()
+  local fsr = {}
+  fsr.name = 'fsr'
+  fsr.lfoot = jcm.get_sensor_lfoot()
+  fsr.rfoot = jcm.get_sensor_rfoot()
+  -- Write
+  logfile:write( mp.pack(fsr) )
+end
+
+
 
 local log = {}
 
 function log.entry()
-
+	-- Set up log file
+	filetime = os.date('%m.%d.%Y.%H.%M.%S')
+	logfile = io.open('logfiles/'..filetime..'.log','w')
+	
+	
+	-- Set up listeners
+	for _,name in pairs(arg) do
+		if name == 'head' then
+			head_lidar_ch = simple_ipc.new_subscriber'head_lidar'
+		elseif name == 'chest' then
+			chest_lidar_ch = simple_ipc.new_subscriber'chest_lidar'
+		elseif name == 'mesh' then
+			mesh_ch = simple_ipc.new_subscriber'mesh'
+		elseif name == 'camera' then
+			camera_ch = simple_ipc.new_subscriber'camera'
+		end
+	end
+				
   -- Poll lidar readings
   local wait_channels = {}
   if head_lidar_ch then
@@ -184,15 +253,17 @@ function log.entry()
   channel_polls = simple_ipc.wait_on_channels( wait_channels )
 end
 
-local cnt = 0
-
 function log.update()
-  
+---[[
+  imu_logger()
+  joint_sensor_logger()
+  joint_actuator_logger()
+  fsr_logger()
+  --hcm_logger()
+--]]
   ------------------
-  -- Perform the poll (Slam Processing)
+  -- Perform the poll
   local npoll = channel_polls:poll(channel_timeout)
-  local t = unix.time()
-  cnt = cnt+1
   ------------------
 end
 
@@ -205,5 +276,4 @@ log.entry()
 while true do log.update() end
 log.exit()
 
-logfile:close()
 return log

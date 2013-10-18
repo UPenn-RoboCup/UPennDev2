@@ -374,6 +374,8 @@ function( register, mx_ids, mx_vals, nx_ids, nx_vals, bus)
   for i,id in ipairs(mx_cmd_ids) do
     table.insert( bulk_pkt, {id,nx_addr,nx_sz,nx_vals[i]} )
   end
+  -- Form and return the packet
+  return DP2.bulk_write(bulk_pkt)
 end
 
 --------------------

@@ -879,7 +879,10 @@ Robot {
                                   rotation 0 0 1 0
                                   children [
                                     DEF R_FSR TouchSensor {
-                                      translation 0 -0.118 0.018                                        
+
+                             translation 0 -0.1115 0.018                                    
+#                           translation 0 -0.118 0.018                                        
+
                                       name "R_FSR"
                                       boundingObject Box {size 0.145 0.012 0.26}
                                       physics Physics {
@@ -912,16 +915,16 @@ Robot {
                                     }
                                   ]
                                   name "FootR"
-                                  boundingObject Group {
-                                    children [
-                                      Transform {
-                                        translation 0 -0.1115 0.018
-                                        children [
-                                          Box {
-                                            size 0.145 0.012 0.26
-                                          }
-                                        ]
-                                      }
+#                                  boundingObject Group {
+#                                    children [
+#                                      Transform {
+#                                        translation 0 -0.1115 0.018
+#                                        children [
+#                                          Box {
+#                                            size 0.145 0.012 0.26
+#                                          }
+#                                        ]
+#                                      }
 #                                      Transform {
 #                                        translation 0 -0.04 -0.013
 #                                        children [
@@ -930,8 +933,8 @@ Robot {
 #                                          }
 #                                        ]
 #                                      }
-                                    ]
-                                  }
+#                                    ]
+#                                  }
                                   physics Physics {
                                     density -1
                                     mass 0.6
@@ -1095,9 +1098,10 @@ Robot {
                                   rotation 0 0 1 0
                                   children [
                                     DEF L_FSR TouchSensor {
-                                      translation 0 -0.118 0.018                                        
+                             translation 0 -0.1115 0.018                                                                        
+#                                  translation 0 -0.118 0.018                                        
                                       name "L_FSR"
-                                      boundingObject Box {size 0.145 0.012 0.26}
+                                      boundingObject Box {size 0.145 0.012 0.26}                                      
                                       physics Physics {
                                         density -1
                                         mass 0.0001
@@ -1113,30 +1117,30 @@ Robot {
                                     DEF left_ankle_yaw Servo {
                                       translation 0 -0.09 0
                                       name "left_ankle_yaw"
-                                      boundingObject Transform {
-                                        translation 0 -0.003 0.018
-                                        children [
-                                          Box {
-                                            size 0.147 0.05 0.262
-                                          }
-                                        ]
-                                      }
+#                                      boundingObject Transform {
+#                                        translation 0 -0.003 0.018
+#                                        children [
+#                                          Box {
+#                                            size 0.147 0.05 0.262
+#                                          }
+#                                        ]
+#                                      }
                                       physics Physics {
                                       }
                                       maxForce 100
                                     }
                                   ]
                                   name "FootL"
-                                  boundingObject Group {
-                                    children [
-                                      Transform {
-                                        translation 0 -0.1115 0.018
-                                        children [
-                                          Box {
-                                            size 0.145 0.012 0.26
-                                          }
-                                        ]
-                                      }
+#                                  boundingObject Group {
+#                                    children [
+#                                      Transform {
+#                                        translation 0 -0.1115 0.018
+#                                        children [
+#                                          Box {
+#                                            size 0.145 0.012 0.26
+#                                          }
+#                                        ]
+#                                      }
 #                                      Transform {
 #                                        translation 0 -0.04 -0.013
 #                                        children [
@@ -1145,8 +1149,8 @@ Robot {
 #                                          }
 #                                        ]
 #                                      }
-                                    ]
-                                  }
+#                                   ]
+#                                  }
                                   physics Physics {
                                     density -1
                                     mass 0.6

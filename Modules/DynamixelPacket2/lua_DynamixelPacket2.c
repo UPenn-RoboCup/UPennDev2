@@ -19,8 +19,6 @@ const char* errtable[] = {
 "Motor status Error"
 };
 
-extern DynamixelPacket inst_pkt;
-
 // Error decoder
 static int lua_dynamixel_error(lua_State *L) {
   size_t nerrbits;
@@ -131,6 +129,7 @@ static int lua_dynamixel_instruction_sync_write(lua_State *L) {
 }
 
 static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
+	static DynamixelPacket inst_pkt;
   size_t i, d, id, nids, nparameter, data_len;
   uint16_t pkt_sz, addr;
   uint8_t *params, *data;

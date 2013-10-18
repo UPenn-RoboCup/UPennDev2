@@ -59,7 +59,7 @@ end
 
 
 -- Sleep time
-local tsleep = 1/40 * 1e6
+local tsleep = 1/100 * 1e6
 
 local meta_tbl, has_more = data_unpacker:unpack()
 while meta_tbl do
@@ -95,6 +95,9 @@ while meta_tbl do
     elseif meta_tbl.name == 'actuator' then
       jcm.set_actuator_command_position( meta_tbl.pos )
       jcm.set_actuator_command_velocity( meta_tbl.vel )
+    elseif meta_tbl.name == 'fsr' then
+      jcm.set_sensor_lfoot( meta_tbl.lfoot )
+      jcm.set_sensor_rfoot( meta_tbl.rfoot )
     else
       print('Unknown logging data')
     end

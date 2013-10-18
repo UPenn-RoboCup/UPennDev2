@@ -177,6 +177,19 @@ local function joint_actuator_logger()
   logfile:write( mp.pack(joint) )
 end
 
+------------------------------------------------------
+-- Logger for FSR sensor
+------------------------------------------------------
+local function fsr_logger()
+  local fsr = {}
+  fsr.name = 'fsr'
+  fsr.lfoot = jcm.get_sensor_lfoot()
+  fsr.rfoot = jcm.get_sensor_rfoot()
+  -- Write
+  logfile:write( mp.pack(fsr) )
+end
+
+
 
 local log = {}
 
@@ -238,6 +251,7 @@ function log.update()
   imu_logger()
   joint_sensor_logger()
   joint_actuator_logger()
+  fsr_logger()
   --hcm_logger()
 
   ------------------

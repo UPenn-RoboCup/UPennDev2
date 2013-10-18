@@ -816,19 +816,32 @@ Body.entry = function()
   dynamixels.left_leg.nx_ids =
     {16,18,20,22,24,26, --[[waist]]27}
   --
-  --dynamixels.right_arm.mx_ids = { --[[31,33,35]] },
+  dynamixels.right_arm.mx_ids =
+    { 31,33,35 }
   dynamixels.left_arm.mx_ids =
-    { --[[32,34,36,]] --[[lidar]] 37}
+    { 32,34,36, --[[lidar]] 37}
   --
 
   --
   for _,d in pairs(dynamixels) do
     table.insert(dynamixel_fds,d.fd)
     fd_dynamixels[d.fd] = d
+    -- make the 'all ids' list and the motor->chain mapping
+    --d.all_ids = {}
+    -- NX
     for _,id in ipairs(d.nx_ids) do
+      --table.insert(d.all_ids,id)
       motor_dynamixels[id]=d
     end
+    -- MX
+    if d.mx_ids then
+      for _,id in ipairs(d.mx_ids) do
+        --table.insert(d.all_ids,id)
+        motor_dynamixels[id]=d
+      end
+    end
   end
+  -- looping through each chain
 
   --
   microstrain:ahrs_on()
@@ -932,17 +945,28 @@ Body.update = function()
   end
 
   -- Loop through the registers
+  -- TODO: Indirect addressesing so we
+  -- would need to only send ONE packet with
+  -- all PID, cmd_position, etc.
+  -- BUT it is important to design indirect address
+  -- layout properly
   for register,is_writes in pairs(jcm.writePtr) do
     --
-    local set_func    = libDynamixel['set_nx_'..register]
-    local mx_set_func = libDynamixel['set_mx_'..register]
-    --
     local wr_values   = jcm['get_actuator_'..register]()
-    --local is_writes   = jcm['get_write_'..register]()
     --
+    local nx_set_func    = libDynamixel['set_nx_'..register]
+    local nx_reg  = libDynamixel.nx_registers[register]
+    local nx_addr = nx_reg[1]
+    local nx_sz   = nx_reg[2]
+    --
+    local mx_set_func = libDynamixel['set_mx_'..register]
+    local mx_reg  = libDynamixel.mx_registers[register]
+    local mx_addr = mx_reg[1]
+    local mx_sz   = mx_reg[2]
+
     -- Instantiate the commands for the chains
     for _,d in pairs(dynamixels) do
-      local cmd_ids = {}
+      local cmd_ids  = {}
       local cmd_vals = {}
       for _,id in ipairs(d.nx_ids) do
         local idx = motor_to_joint[id]
@@ -957,9 +981,19 @@ Body.update = function()
         end
       end
       -- make the pkts
+      --print('writing',register,'\n',vector.new(cmd_ids),'\n',vector.new(cmd_vals))
       if #cmd_ids>0 then
-        --print('writing',register,'\n',vector.new(cmd_ids),'\n',vector.new(cmd_vals))
-        table.insert(d.cmd_pkts, set_func(cmd_ids,cmd_vals) )
+        if d.mx_ids then
+          -- Bulk packet to send to MX motors as well
+          local bulk_pkt = {}
+          for i,id in ipairs(cmd_ids) do
+            table.insert(bulk_pkt,{id,nx_addr,cmd_vals[i],})
+          end
+        else
+          -- Just sync write to NX as usual
+          table.insert(d.cmd_pkts, nx_set_func(cmd_ids,cmd_vals) )
+        end
+        --
       end
       --
     end

@@ -165,6 +165,7 @@ static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
     // put each element of this table on the top of the stack
     // id
     lua_rawgeti(L,-1,1); 
+    // the ID is now on the top of the stack
     id = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     // addr

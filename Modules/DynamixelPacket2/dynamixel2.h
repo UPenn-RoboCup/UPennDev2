@@ -9,6 +9,7 @@ CODE FROM ROBOTIS IS USED IN SELECT PORTIONS
 #define __DYNAMIXEL2_H
 
 #include <stdint.h>
+#include <unistd.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -100,7 +101,14 @@ extern "C" {
 	DynamixelPacket *dynamixel_instruction_ping(int id);
 	DynamixelPacket *dynamixel_instruction_reset(int id);
   
-	// State machine to process incoming packets
+  /* Bulk */
+  void dynamixel_instruction_init_bulk_write();
+  void dynamixel_instruction_add_bulk_write(
+    uint8_t id,uint16_t addr,uint8_t *data, size_t data_len
+  );
+  DynamixelPacket *dynamixel_instruction_finalize_bulk_write();
+  
+	/* State machine to process incoming packets */
 	int dynamixel_input(DynamixelPacket *pkt, uint8_t c, int n);
 
 	// Add for Version 2.0 checksum	

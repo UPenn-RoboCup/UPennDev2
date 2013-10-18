@@ -206,6 +206,60 @@ uint8_t address_l, uint8_t address_h, uint16_t len,
 	return dynamixel_instruction(id, inst, parameter, nparameter);
 }
 
+void dynamixel_instruction_init_bulk_write(){
+  /* add the header as always */
+  inst_pkt.header1 = DYNAMIXEL_PACKET_HEADER;
+  inst_pkt.header2 = DYNAMIXEL_PACKET_HEADER_2;
+  inst_pkt.header3 = DYNAMIXEL_PACKET_HEADER_3;
+  inst_pkt.stuffing = DYNAMIXEL_PACKET_STUFFING;
+  /* broadcasting to many IDs */
+  inst_pkt.id = DYNAMIXEL_BROADCAST_ID;
+  /* add the instruction */
+  inst_pkt.instruction = INST_BULK_WRITE;
+  inst_pkt.length = 0;
+}
+
+void dynamixel_instruction_add_bulk_write(
+  uint8_t id,uint16_t addr,uint8_t *data, size_t data_len
+){
+  /* save the pointer to the current parameters */
+  uint8_t *params;
+  uint16_t d;
+  params = inst_pkt.parameter + inst_pkt.length;
+  /* Add the packet */
+  *(params)   = id;
+  *(params+1) = addr & 0x00FF;
+  *(params+2) = (addr>>8) & 0x00FF;
+  *(params+3) = data_len & 0x00FF;
+  *(params+4) = (data_len>>8) & 0x00FF;
+  params += 5;
+  /* Add the raw data */
+  for(d=0; d<data_len; d++){
+    *params = data[d];
+    params++;
+  }
+  /* Save the current length of the packet */
+  inst_pkt.length += (5+data_len);
+}
+
+DynamixelPacket *dynamixel_instruction_finalize_bulk_write(){
+  uint16_t nparameter = inst_pkt.length;
+  
+  /* set the length at the end */
+  inst_pkt.length += 3; // 2 checksum + 1 instruction byte
+  inst_pkt.len[0] = inst_pkt.length & 0x00FF; // low byte
+  inst_pkt.len[1] = (inst_pkt.length>>8) & 0x00FF; // high byte
+
+  /* Place checksum after parameters */
+  inst_pkt.checksum = dynamixel_checksum( &inst_pkt );
+  inst_pkt.parameter[nparameter]   = inst_pkt.checksum & 0x00FF;
+  inst_pkt.parameter[nparameter+1] = (inst_pkt.checksum>>8) & 0x00FF;
+
+  /* Give the pointer to the instruction */
+	return &inst_pkt;
+  
+}
+
 DynamixelPacket *dynamixel_instruction_ping(int id) {
 	uint8_t inst = INST_PING;
 	return dynamixel_instruction(id, inst, 0, 0);

@@ -129,10 +129,9 @@ static int lua_dynamixel_instruction_sync_write(lua_State *L) {
 }
 
 static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
-	static DynamixelPacket inst_pkt;
-  size_t i, d, id, nids, nparameter, data_len;
-  uint16_t pkt_sz, addr;
-  uint8_t *params, *data;
+  size_t i, data_len;
+  uint16_t addr, nids;
+  uint8_t *params, *data, id;
 
   // Make sure we are dealing with a table of values
   luaL_checktype(L, 1, LUA_TTABLE);
@@ -142,21 +141,6 @@ static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
 #else
   nids = lua_objlen(L, 1);
 #endif
-
-  // setup the packet size
-  pkt_sz = 0, nparameter = 0;
-  // save the pointer
-  params = inst_pkt.parameter;
-
-  // add the header as always
-  inst_pkt.header1 = DYNAMIXEL_PACKET_HEADER;
-  inst_pkt.header2 = DYNAMIXEL_PACKET_HEADER_2;
-  inst_pkt.header3 = DYNAMIXEL_PACKET_HEADER_3;
-  inst_pkt.stuffing = DYNAMIXEL_PACKET_STUFFING;
-  // broadcasting to many IDs
-  inst_pkt.id = DYNAMIXEL_BROADCAST_ID;
-  // add the instruction
-  inst_pkt.instruction = INST_BULK_WRITE;
 
   for (i = 1; i<=nids; i++) {
     // first, put the table on the top of the stack
@@ -178,31 +162,15 @@ static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
     lua_pop(L, 1);
     
     // Do something with the data
-    *(params++) = id;
-    *(params++) = addr & 0x00FF;
-    *(params++) = (addr>>8) & 0x00FF;
-    *(params++) = data_len & 0x00FF;
-    *(params++) = (data_len>>8) & 0x00FF;
-    for(d=0; d<data_len; d++)
-      *(params++) = data[d];
-    // Save the total number of parameters
-    inst_pkt.length += (5+data_len);
+    dynamixel_instruction_add_bulk_write(id,addr,data,data_len);
 
     // pop off the table of this instruction
     lua_pop(L, 1);
   }
 
-  // set the length at the end
-  inst_pkt.length = nparameter + 3; // 2 checksum + 1 instruction byte
-  inst_pkt.len[0] = inst_pkt.length & 0x00FF; // low byte
-  inst_pkt.len[1] = (inst_pkt.length>>8) & 0x00FF; // high byte
+  DynamixelPacket *p = dynamixel_instruction_finalize_bulk_write();
 
-  // Place checksum after parameters:
-  inst_pkt.checksum = dynamixel_checksum( &inst_pkt );
-  inst_pkt.parameter[nparameter]   = inst_pkt.checksum & 0x00FF;
-  inst_pkt.parameter[nparameter+1] = (inst_pkt.checksum>>8) & 0x00FF;
-
-  return lua_pushpacket(L, &inst_pkt);
+  return lua_pushpacket(L, p);
 }
 
 static int lua_dynamixel_instruction_read_data(lua_State *L) {

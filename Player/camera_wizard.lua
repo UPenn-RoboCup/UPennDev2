@@ -22,7 +22,7 @@ if Config.camera.head then
   local width, height  = unpack(Config.camera.head.resolution)
   local camera = uvc.init(
     dev, width, height, 'yuyv', 1, fps)
-  print('Opened',camera,Config.net.operator.wireless, Config.net.head_camera)
+  print('Opened',camera,Config.net.operator.wired, Config.net.head_camera)
   local camera_udp_ch = udp.new_sender(
     Config.net.operator.wired, Config.net.head_camera);
   -- Create the callback functions
@@ -51,9 +51,21 @@ if Config.camera.head then
     jpeg.set_quality( quality )
     meta.t = t_img
     meta.c = 'jpeg'
+		meta.width = 500
+		meta.height = 360
     local metapack = mp.pack(meta)
     local jimg = jpeg.compress_yuyv(img,width,height)
     local udp_ret, err = camera_udp_ch:send( metapack..jimg )
+
+		-------------------
+		-- for logging
+		if not cam_pub_ch then
+			cam_pub_ch = simple_ipc.new_publisher'camera'
+		end
+		meta.name = 'hcam'
+		cam_pub_ch:send( {mp.pack(meta), mp.pack(jimg)} )
+		-------------------
+
     if err then print('camera udp error',err,#jimg) end
   end
   -- keep track

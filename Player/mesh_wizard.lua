@@ -66,6 +66,8 @@ local function setup_mesh( name, tbl )
   -- Grab the sensor paramters
   local lidar_sensor_fov, lidar_sensor_width = 
     unpack(vcm[get_name..'_sensor_params']())
+    
+  print('Mesh |',name,lidar_sensor_fov, lidar_sensor_width)
   
   -- Set our resolution
   local reading_per_radian = 
@@ -183,11 +185,15 @@ local function stream_mesh(mesh)
     local ret, err = mesh_udp_ch:send( metapack..c_mesh )
     if err then print('mesh udp',err) end
     vcm['set_'..mesh.meta.name..'_net'](net_settings)
+		print('sent unreliable!')
+		util.ptable(mesh.meta)
   elseif net_settings[1]==3 then
     -- Reliable single frame
     net_settings[1] = 0
     local ret = mesh_tcp_ch:send{metapack,c_mesh}
     vcm['set_'..mesh.meta.name..'_net'](net_settings)
+		print('sent reliable!')
+		util.ptable(mesh.meta)
   end
   --[[
   print(err or string.format('Sent a %g kB packet.', ret/1024))
@@ -198,8 +204,6 @@ end
 -- Data copying helpers
 -- Convert a pan angle to a column of the chest mesh image
 local function angle_to_scanlines( lidar, rad )
-  -- Grab the most recent scanline saved in the mesh
-  local prev_scanline = lidar.current_scanline
   -- Get the most recent direction the lidar was moving
   local prev_direction = lidar.current_direction
   -- Get the metadata for calculations
@@ -212,36 +216,46 @@ local function angle_to_scanlines( lidar, rad )
   local scanline = math.floor(ratio*res+.5)
   -- Return a bounded value
   scanline = math.max( math.min(scanline, res), 1 )
-	-- Initialize if no previous scanline
-	if not prev_scanline then prev_scanline=scanline end
-  -- Grab the direction
-  local diff_scanline = scanline - prev_scanline
-  local direction = util.sign(diff_scanline)
-  -- If not moving, assume we are staying in the previous direction
-	if not prev_direction then prev_direction=0 end
-  direction = (direction~=0 and direction) or prev_direction
-
   -- Save in our table
   lidar.current_scanline  = scanline
+	-- Initialize if no previous scanline
+  -- If not moving, assume we are staying in the previous direction
+	if not prev_scanline then return {scanline} end
+  -- Grab the most recent scanline saved in the mesh
+  local prev_scanline = lidar.current_scanline
+  if not prev_direction then
+    lidar.current_direction = 0
+    return {scanline}
+  end
+  -- Grab the direction
+  local direction
+  local diff_scanline = scanline - prev_scanline
+  if diff_scanline==0 then
+    direction = prev_direction
+  else
+    direction = util.sign(diff_scanline)
+  end
+  
   -- Save the directions
   lidar.current_direction = direction
 
   -- Find the set of scanlines for copying the lidar reading
   local scanlines = {}
   if direction==prev_direction then
+    print('here',prev_scanline,scanline,direction)
     -- fill all lines between previous and now
-    for s=prev_scanline+1,scanline,direction do
-      table.insert(scanlines,s)
-    end
+    for s=prev_scanline+1,scanline,direction do table.insert(scanlines,s) end
   else
     -- Changed directions!
     -- Populate the borders, too
     if direction>0 then
       -- going away from 1 to end
-      for s=math.min(chest.last_scanline+1,scanline),res do table.insert(scanlines,i) end
+      local start_line = math.min(chest.last_scanline+1,scanline)
+      for s=start_line,res do table.insert(scanlines,i) end
     else
       -- going away from end to 1
-      for s=1,math.max(chest.last_scanline-1,scanline) do table.insert(scanlines,i) end        
+      local end_line = math.max(chest.last_scanline-1,scanline)
+      for s=1,end_line do table.insert(scanlines,i) end        
     end
   end
 
@@ -363,7 +377,7 @@ end
 
 function mesh.update()
   local npoll = channel_polls:poll(channel_timeout)
-  -- Stream the current mesh  
+  -- Stream the current mesh
   stream_mesh(head)
   stream_mesh(chest)
   -- Check if we must update our torch data
@@ -383,7 +397,6 @@ end
 
 function mesh.exit()
 end
-
 mesh.entry()
 while true do mesh.update() end
 mesh.exit()

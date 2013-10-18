@@ -1106,8 +1106,9 @@ end
 
 
 function init_status_feedback()
-  feedback_udp_ch = udp.new_sender(Config.net.operator.wired,Config.net.feedback)
-  print('Status feedback Connected to Operator:',
+  feedback_udp_ch =
+		udp.new_sender(Config.net.operator.wired,Config.net.feedback)
+  print('Body | Status feedback Connected to Operator:',
     Config.net.operator.wired,Config.net.feedback)
 end
 
@@ -1134,7 +1135,8 @@ local function send_status_feedback()
   local ret,err = feedback_udp_ch:send( mp.pack(data) )
   if err then print('feedback udp',err) end
 end
-init_status_feedback()
+
+if use_joint_feedback then init_status_feedback() end
 
 
 ----------------------

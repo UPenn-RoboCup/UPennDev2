@@ -96,8 +96,7 @@ elseif stage==3 then
       handle_radius0, turnAngle,dt)
     if ret==-1 then return'reset'
     elseif ret==1 then
-      Body.set_lgrip_percent(1)
-      Body.set_rgrip_percent(1)
+
       return'done'
     end  
   end

@@ -32,6 +32,7 @@ local armTeleop = require'armTeleop'
 local armWheelGrip = require'armWheelGrip'
 local armWheelTurn = require'armWheelTurn'
 local armWheelRelease = require'armWheelRelease'
+local armWheelTurnValve = require'armWheelTurnValve'
 
 -- Door specific states
 local armDoorGrip = require'armDoorGrip'
@@ -48,6 +49,7 @@ sm:add_state(armChangetoPose2)
 sm:add_state(armTeleop)
 sm:add_state(armWheelGrip)
 sm:add_state(armWheelTurn)
+sm:add_state(armWheelTurnValve)
 sm:add_state(armWheelRelease)
 sm:add_state(armDoorGrip)
 sm:add_state(armDoorRelease)
@@ -77,11 +79,16 @@ sm:set_transition(armPose2, 'reset', armChangetoPose1)
 sm:set_transition(armPose2, 'toolgrab', armToolGrip)
 
 
-sm:set_transition(armWheelGrip, 'done', armWheelTurn)
+--sm:set_transition(armWheelGrip, 'done', armWheelTurn)
+sm:set_transition(armWheelGrip, 'done', armWheelTurnValve)
+
 sm:set_transition(armWheelGrip, 'reset', armChangetoPose2)
 
 sm:set_transition(armWheelTurn, 'reset', armWheelRelease)
 sm:set_transition(armWheelRelease, 'done', armChangetoPose2)
+
+sm:set_transition(armWheelTurnValve, 'done', armWheelRelease)
+sm:set_transition(armWheelTurnValve, 'reset', armWheelRelease)
 
 --TODO: should use IK to get back?
 sm:set_transition(armToolGrip, 'reset', armChangetoPose2)

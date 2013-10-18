@@ -8,6 +8,7 @@ local simple_ipc = require'simple_ipc'
 local udp = require'udp'
 local rpc_zmq = simple_ipc.new_replier(Config.net.reliable_rpc,'*')
 local rpc_udp = udp.new_receiver( Config.net.unreliable_rpc )
+print('RPC | Receiving on',Config.net.reliable_rpc)
 
 -- TODO: Require all necessary modules
 require'vcm'
@@ -22,8 +23,7 @@ for _,sm in ipairs(Config.fsm.enabled) do
 end
 
 local function trim_string(str)
-  if not str then return end
-  if type(str)~='string'then return str end
+  if type(str)~='string' then return str end
 
   --SJ: with ubuntu, every string contains a byte 0 padding at the end  
    if str:byte(#str)==0 then
@@ -77,21 +77,6 @@ local function process_rpc(rpc)
   -- State machine events
   local fsm = rpc.fsm
   if fsm and type(rpc.evt)=='string' then
-  
---[[
-    for i,sm in pairs(fsm_channels) do
-      print("Comparing:",i," vs ",fsm)
-      print("size:",#i,#fsm)
-      if i==fsm then
-        print("Matching channel found")
-      end
-    end
---]]
-
---[[
-    print("\nAll channels:")
-    util.ptable(fsm_channels)        
---]]    
     local ch = fsm_channels[fsm]
     if ch then
       if rpc.special then

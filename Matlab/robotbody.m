@@ -350,7 +350,6 @@ function ret = robotbody()
     POSE.rpy = double(data.rpy);
     POSE.body_height = double(data.body_height);
     SLAM.update_pose(POSE.pose,POSE.pose_slam);
-    
   end
 
   ret= BODY;

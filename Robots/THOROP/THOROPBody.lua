@@ -1140,8 +1140,9 @@ end
 
 
 function init_status_feedback()
-  feedback_udp_ch = udp.new_sender(Config.net.operator.wired,Config.net.feedback)
-  print('Connected to Operator:',
+  feedback_udp_ch =
+		udp.new_sender(Config.net.operator.wired,Config.net.feedback)
+  print('Body | Status feedback Connected to Operator:',
     Config.net.operator.wired,Config.net.feedback)
 end
 
@@ -1165,12 +1166,11 @@ local function send_status_feedback()
   data.body_height = mcm.get_camera_bodyHeight()
   data.battery =  0
 
-  local datapacked = mp.pack(data);
-  
-  local ret,err = feedback_udp_ch:send( datapacked)
-  --if err then print('feedback udp',err) end
+  local ret,err = feedback_udp_ch:send( mp.pack(data) )
+  if err then print('feedback udp',err) end
 end
-init_status_feedback()
+
+if use_joint_feedback then init_status_feedback() end
 
 
 ----------------------
@@ -1392,11 +1392,15 @@ if IS_WEBOTS then
       head_camera_wbt.height = webots.wb_camera_get_height(tags.head_camera)
     end
 
-    --Set lidar resolutions in vcm
-    vcm.set_head_lidar_sensor_fov(webots.wb_camera_get_fov(tags.head_lidar))
-    vcm.set_head_lidar_sensor_width(webots.wb_camera_get_width(tags.head_lidar))
-    vcm.set_chest_lidar_sensor_fov(webots.wb_camera_get_fov(tags.chest_lidar))
-    vcm.set_chest_lidar_sensor_width(webots.wb_camera_get_width(tags.chest_lidar))    
+    -- Update the Sensor Parameters in shared memory
+    vcm.set_head_lidar_sensor_params({
+      webots.wb_camera_get_fov(tags.head_lidar),
+      webots.wb_camera_get_width(tags.head_lidar)
+    })
+    vcm.set_chest_lidar_sensor_params({
+      webots.wb_camera_get_fov(tags.chest_lidar),
+      webots.wb_camera_get_width(tags.chest_lidar)
+    })
 
 --[[
     --FSR sensors
@@ -1595,30 +1599,28 @@ if IS_WEBOTS then
     -- Set lidar data into shared memory
     if use_lidar_head then
       Body.set_head_lidar(head_lidar_wbt.pointer)
-
-      head_lidar_wbt.meta.t  = t
-      head_lidar_wbt.meta.count  = head_lidar_wbt.meta.count  + 1
-      head_lidar_wbt.meta.hangle = Body.get_head_position()
-      head_lidar_wbt.meta.rpy  = Body.get_sensor_rpy()
-      head_lidar_wbt.meta.gyro = Body.get_sensor_gyro()
-
+      local meta = head_lidar_wbt.meta
+      meta.t = t
+      meta.count  = head_lidar_wbt.meta.count  + 1
+      meta.hangle = Body.get_head_position()
+      meta.rpy  = Body.get_sensor_rpy()
+      meta.gyro = Body.get_sensor_gyro()
+      meta.pose = wcm.get_robot_pose()
       -- Send the count on the channel so they know to process a new frame
       head_lidar_wbt.channel:send(  mp.pack(head_lidar_wbt.meta)  )
     end
     if use_lidar_chest then
       Body.set_chest_lidar(chest_lidar_wbt.pointer)
+      local meta = chest_lidar_wbt.meta
       -- Save important metadata
-      chest_lidar_wbt.meta.t  = t
-      chest_lidar_wbt.meta.count = chest_lidar_wbt.meta.count + 1
-      chest_lidar_wbt.meta.pangle = Body.get_lidar_position(1)
-      chest_lidar_wbt.meta.rpy  = Body.get_sensor_rpy()
-      chest_lidar_wbt.meta.gyro = Body.get_sensor_gyro()
-
-      chest_lidar_wbt.meta.fov = webots.wb_camera_get_fov(tags.chest_lidar)
-      chest_lidar_wbt.meta.width = webots.wb_camera_get_width(tags.chest_lidar)
-
+      meta.t = t
+      meta.count = chest_lidar_wbt.meta.count + 1
+      meta.pangle = Body.get_lidar_position(1)
+      meta.rpy  = Body.get_sensor_rpy()
+      meta.gyro = Body.get_sensor_gyro()
+      meta.pose = wcm.get_robot_pose()
       -- Send the count on the channel so they know to process a new frame
-      chest_lidar_wbt.channel:send( mp.pack(chest_lidar_wbt.meta) )
+      chest_lidar_wbt.channel:send( mp.pack(meta) )
     end
     
 
@@ -1655,7 +1657,8 @@ if IS_WEBOTS then
       if use_lidar_chest then
         print(util.color('CHEST LIDAR enabled!','yellow'))
         webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
-        chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
+        chest_lidar_wbt.pointer =
+					webots.wb_camera_get_range_image(tags.chest_lidar)
       else
         print(util.color('CHEST LIDAR disabled!','yellow'))
         webots.wb_camera_disable(tags.chest_lidar)        
@@ -1678,9 +1681,9 @@ if IS_WEBOTS then
       use_joint_feedback = not use_joint_feedback
       -- Toggle camera
       if use_joint_feedback then
-        print(util.color('Joint feedback enabled!','yellow'))                
+        print(util.color('Joint feedback enabled!','yellow'))
       else
-        print(util.color('Joint feedback disabled!','yellow'))                        
+        print(util.color('Joint feedback disabled!','yellow'))
       end
     end
 	end -- function

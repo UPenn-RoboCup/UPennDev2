@@ -215,11 +215,8 @@ CHEST_LIDAR.posea=[];
             depth_img = depth_img';
         end
 
-        %Extract pose information
-        cpose_upperbyte = metadata.c_pose_upperbyte;
-        cpose_lowerbyte = metadata.c_pose_lowerbyte;
-        pose_data = (double(zlibUncompress(cpose_upperbyte))*256+...
-                    double(zlibUncompress(cpose_lowerbyte))-32768) / 256;
+        % Extract pose information
+        pose_data = double(zlibUncompress(metadata.c_pose));
         pose_data = reshape(pose_data,[3 metadata.resolution(1)]);
 
         % Calculate the angles (now support variable resolution for sensor)
@@ -251,14 +248,14 @@ CHEST_LIDAR.posea=[];
             draw_depth_image();
             % Update mesh image
             update_mesh(1);
-            if mod(LIDAR.mesh_cnt, 10) == 0
+            %if mod(LIDAR.mesh_cnt, 10) == 0
                 update_mesh_display();
-            end
+            %end
         end
         
         % end of update
         tPassed = toc(t0);
-%         fprintf('Update lidar: %f seconds.\n',tPassed);
+        fprintf('Update lidar: %f seconds.\n',tPassed);
     end
 
 

@@ -1108,10 +1108,11 @@ Body.update = function()
         local t_cmd  = unix.time()
         d.t_diff_cmd = t_cmd - d.t_cmd
         d.t_cmd      = t_cmd
-        --print('tdiff_cmd',d.ttyname,d.t_diff_cmd*1000)
+        --if d.t_diff_cmd*1000>11 then print('BAD tdiff_cmd (ms)',d.ttyname,d.t_diff_cmd*1000) end
         -- check if now done
         if #d.cmd_pkts>0 then
-          unix.usleep(1e3)
+          --print'sleepy'
+          unix.usleep(1e4)
           done = false
         end
       end

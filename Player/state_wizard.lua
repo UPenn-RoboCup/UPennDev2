@@ -40,7 +40,7 @@ for _,sm in ipairs(Config.fsm.enabled) do
 end
 
 -- Update rate (if not webots)
-local fps = 250
+local fps = 120
 local us_sleep = 1e6 / fps
 
 -- Start the state machines

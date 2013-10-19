@@ -61,8 +61,8 @@ function state.entry()
   move_stage = 1
 
   stage = 1
-  Body.set_lgrip_percent(1)
-  Body.set_rgrip_percent(1)
+  Body.set_lgrip_percent(.7)
+  Body.set_rgrip_percent(.7)
 end
 
 function state.update()

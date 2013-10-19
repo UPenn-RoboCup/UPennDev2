@@ -490,18 +490,38 @@ end
 Body.set_lgrip_percent = function( percent )
   percent = math.min(math.max(percent,0),1)
   -- Convex combo
-  for idx=indexLGrip,indexLGrip+nJointLGrip-1 do
-    local radian = (1-percent)*servo.min_rad[idx] + percent*servo.max_rad[idx]
-    jcm.actuatorPtr.command_position[idx] = radian
-  end
+  local thumb = indexLGrip
+  local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
+  jcm.actuatorPtr.command_position[thumb] = radian
+  jcm.writePtr.command_position[thumb] = 1
+  --
+  local index = indexLGrip+1
+  local radian = (percent)*servo.min_rad[index] + (1-percent)*servo.max_rad[index]
+  jcm.actuatorPtr.command_position[index] = radian
+  jcm.writePtr.command_position[index] = 1
+  --
+  local ring = indexLGrip+2
+  local radian = (percent)*servo.min_rad[ring] + (1-percent)*servo.max_rad[ring]
+  jcm.actuatorPtr.command_position[ring] = radian
+  jcm.writePtr.command_position[ring] = 1
+
 end
 Body.set_rgrip_percent = function( percent )
-  percent = math.min(math.max(percent,0),1)
   -- Convex combo
-  for idx=indexRGrip,indexRGrip+nJointRGrip-1 do
-    local radian = (1-percent) * servo.min_rad[idx] + percent*servo.max_rad[idx]
-    jcm.actuatorPtr.command_position[idx] = radian
-  end
+  local thumb = indexRGrip
+  local radian = percent*servo.min_rad[thumb] + (1-percent)*servo.max_rad[thumb]
+  jcm.actuatorPtr.command_position[thumb] = radian
+  jcm.writePtr.command_position[thumb] = 1
+  --
+  local index = indexRGrip+1
+  local radian = (1-percent)*servo.min_rad[index] + percent*servo.max_rad[index]
+  jcm.actuatorPtr.command_position[index] = radian
+  jcm.writePtr.command_position[index] = 1
+  --
+  local ring = indexRGrip+2
+  local radian = (1-percent)*servo.min_rad[ring] + percent*servo.max_rad[ring]
+  jcm.actuatorPtr.command_position[ring] = radian
+  jcm.writePtr.command_position[ring] = 1
 end
 
 

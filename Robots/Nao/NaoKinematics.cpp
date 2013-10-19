@@ -1,4 +1,4 @@
-#include "naoKinematics.h"
+#include "NaoKinematics.h"
 #include "Transform.h"
 #include <math.h>
 #include <stdio.h>

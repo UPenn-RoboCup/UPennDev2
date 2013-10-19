@@ -5,20 +5,8 @@
   g++ -arch i386 -o luaNaoKinematics.dylib -bundle -undefined dynamic_lookup luaNaoKinematics.cc naoKinematics.cc Transform.cc -lm
 */
 
-#include "naoKinematics.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
-#ifdef __cplusplus
-}
-#endif
-
+#include "NaoKinematics.h"
+#include <lua.hpp>
 
 static void lua_pushvector(lua_State *L, std::vector<double> v) {
   int n = v.size();

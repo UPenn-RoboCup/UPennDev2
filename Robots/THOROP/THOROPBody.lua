@@ -1136,7 +1136,7 @@ Body.update = function()
         -- flush previous stuff
         local flush_ret = stty.flush(fd)
         -- write the new command
-        local t_write = unix.time()
+        --local t_write = unix.time()
         local cmd_ret = unix.write( fd, pkt[1] )
         -- possibly need a drain? Robotis does not
         local flush_ret = stty.drain(fd)

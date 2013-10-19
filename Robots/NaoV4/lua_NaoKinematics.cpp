@@ -5,7 +5,7 @@
   g++ -arch i386 -o luaNaoKinematics.dylib -bundle -undefined dynamic_lookup luaNaoKinematics.cc naoKinematics.cc Transform.cc -lm
 */
 
-#include "naoKinematics.h"
+#include "NaoKinematics.h"
 
 #ifdef __cplusplus
 extern "C" {

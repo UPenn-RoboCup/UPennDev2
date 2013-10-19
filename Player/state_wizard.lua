@@ -9,12 +9,15 @@ local udp        = require'udp'
 local state_pub_ch = simple_ipc.new_publisher(Config.net.state)
 
 require'gcm'
+require'wcm'
 require'jcm'
+require'mcm'
 
 --SJ: This removes the output buffer 
 io.stdout:setvbuf("no")
 
-
+local use_joint_feedback = true
+local needs_broadcast = true
 local state_machines = {}
 
 local status = {}
@@ -62,6 +65,36 @@ end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
+local feedback_udp_ch
+local function send_status_feedback()
+  local data={};
+  data.larmangle = Body.get_larm_command_position()
+  data.rarmangle = Body.get_rarm_command_position()
+  data.waistangle = Body.get_waist_command_position()
+  data.neckangle = Body.get_head_command_position()
+  data.llegangle = Body.get_lleg_command_position()
+  data.rlegangle = Body.get_rleg_command_position()
+  data.lgrip =  Body.get_lgrip_command_position()
+  data.rgrip =  Body.get_rgrip_command_position()
+
+  --Pose information
+  data.pose =  wcm.get_robot_pose()    
+  data.pose_odom =  wcm.get_robot_pose_odom()
+  data.pose_slam =  wcm.get_slam_pose()
+  data.rpy = Body.get_sensor_rpy()
+  data.body_height = mcm.get_camera_bodyHeight()
+  data.battery =  0
+
+  local ret,err = feedback_udp_ch:send( mp.pack(data) )
+  if err then print('feedback udp',err) end
+end
+if use_joint_feedback then
+  feedback_udp_ch =
+    udp.new_sender(Config.net.operator.wired,Config.net.feedback)
+  print('Body | Status feedback Connected to Operator:',
+    Config.net.operator.wired,Config.net.feedback)
+end
+
 -- Perform inialization
 Body.entry()
 for _,my_fsm in pairs(state_machines) do
@@ -91,52 +124,18 @@ while true do
   -- Update the body (mostly needed for webots)
 	Body.update()
 
-  -- Debugging
-  --[[
-  if t-t_debug>1 then
-    os.execute('clear')
+  -- Send the joint state feedback
+  if IS_WEBOTS or t-t_debug>1 then
+    -- Webots debugs every step
     t_debug = t
-    local debug_tbl = {}
-    table.insert(debug_tbl,util.color('======= Inertial','yellow'))
-    table.insert(debug_tbl,string.format(
-      'RPY:  %s', tostring(Body.get_sensor_rpy())
-      ))
-    table.insert(debug_tbl,string.format(
-      'Gyro: %s', tostring(Body.get_sensor_gyro())
-      ))
-    table.insert(debug_tbl,util.color('======= Position','yellow'))
-    table.insert(debug_tbl,string.format(
-      'LLeg: %s', tostring(Body.get_lleg_position())
-      ))
-    table.insert(debug_tbl,string.format(
-      'RLeg: %s', tostring(Body.get_rleg_position())
-      ))
-    table.insert(debug_tbl,util.color('======= Command','yellow'))
-    table.insert(debug_tbl,string.format(
-      'LLeg: %s', tostring(Body.get_lleg_command_position())
-      ))
-    table.insert(debug_tbl,string.format(
-      'RLeg: %s', tostring(Body.get_rleg_command_position())
-      ))
-    table.insert(debug_tbl,util.color('======= Pressure','yellow'))
-    table.insert(debug_tbl,string.format(
-      'LLeg: %s', tostring(Body.get_sensor_lfoot())
-      ))
-    table.insert(debug_tbl,string.format(
-      'RLeg: %s', tostring(Body.get_sensor_rfoot())
-      ))
-    print(table.concat(debug_tbl,'\n'))
+    send_status_feedback()
   end
-  --]]
   
   -- Sleep a bit if not webots
   if not IS_WEBOTS then
     local t_loop = unix.time()-t
-    --io.flush(stdout)
     local t_sleep = us_sleep-t_loop*1e6
-    --print('sleepy',t_sleep)
     if t_sleep>0 then unix.usleep(t_sleep) end
-    --unix.usleep(us_sleep)
   end
   
 end

@@ -216,14 +216,14 @@ local function angle_to_scanlines( lidar, rad )
   -- Return a bounded value
   scanline = math.max( math.min(scanline, res), 1 )
   -- Save in our table
-  lidar.current_scanline  = scanline
+  lidar.current_scanline = scanline
 	-- Initialize if no previous scanline
   -- If not moving, assume we are staying in the previous direction
 	if not prev_scanline then return {scanline} end
   -- Grab the most recent scanline saved in the mesh
   local prev_direction = lidar.current_direction
   if not prev_direction then
-    lidar.current_direction = 0
+    lidar.current_direction = 1
     return {scanline}
   end
   -- Grab the direction

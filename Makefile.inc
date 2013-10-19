@@ -9,8 +9,8 @@ LD=g++
 LIBOPTS=
 LDFLAGS=-shared -fpic -fomit-frame-pointer
 STRIP=strip
-CXXFLAGS=-O3 -fpic -fomit-frame-pointer
-CFLAGS=-O3 -fpic -fomit-frame-pointer
+CXXFLAGS=-O3 -fpic -fomit-frame-pointer -std=c++03 -pedantic
+CFLAGS=-O3 -fpic -fomit-frame-pointer -pedantic
 LIBRT=-lrt
 SHLIBEXT=so
 USE_TORCH=1

@@ -20,7 +20,7 @@ if OPERATING_SYSTEM=='darwin' then
 end
 
 -- Choose a chain
-local test_dynamixel = left_leg
+local test_dynamixel = left_arm
 assert(test_dynamixel)
 print('Using',test_dynamixel.ttyname)
 
@@ -31,18 +31,70 @@ print('Inspecting',table.concat(found,','))
 --found = {2,4,6,8,10,12,14,29,30,32,34,36,37}
 --found = {29,30} --head
 --found = {16,18,20,22,24,26} --left leg
-found = {22,24,26} --left ankle/knee
+--found = {22,24,26} --left ankle/knee
+
+found = {29,30,37} --head and lidar
+
+mx_ids  = {37}
+nx_ids  = {29,30}
+-- off
+mx_vals = {0}
+nx_vals = {0,0}
+-- on
+--mx_vals = {1}
+--nx_vals = {250,250}
+register = 'led'
+
+-- on
+--mx_vals = {1}
+--nx_vals = {1,1}
+register = 'torque_enable'
+
+local inst = libDynamixel.mx_nx_bulk_write(
+  register, mx_ids, mx_vals, nx_ids, nx_vals
+)
+
+print('bulk',type(inst))
+print( string.byte(inst,1,-1) )
+
+----[[
+libDynamixel.mx_nx_bulk_write(
+  register, mx_ids, mx_vals, nx_ids, nx_vals, test_dynamixel
+)
+--]]
+
+--[[
+local mx_inst = libDynamixel.set_mx_led(37,1)
+print()
+print('mx',type(mx_inst))
+print( string.byte(mx_inst,1,-1) )
+local mx_status = libDynamixel.set_mx_led(37,1, test_dynamixel)
+if mx_status then
+  util.ptable(mx_status)
+end
+--]]
+
+--libDynamixel.set_nx_led_green({29,30},{250,250}, test_dynamixel)
+--libDynamixel.set_nx_led_green({29,30},{0,0}, test_dynamixel)
 
 --found = {15,17,19,21,23,25} --right leg
 
---os.exit()
+os.exit()
 
 --local status = libDynamixel.get_mx_max_torque(15,test_dynamixel)
 --print( libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter)) )
 
 for _,m in ipairs(found) do
   print(string.format('\nFound ID %2d',m))
-  
+
+  local model
+  local status = libDynamixel.get_nx_model_num(m,test_dynamixel)
+  if status then
+    util.ptable(status)
+    local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
+    model = libDynamixel.model_num_lookup[value]
+    print(string.format('Model Number: %d',value),model)
+  end
   
   local status = libDynamixel.get_nx_status_return_level(m,test_dynamixel)
   if status then 
@@ -66,12 +118,6 @@ for _,m in ipairs(found) do
     end
     --]]
   end
-
-  local status = libDynamixel.get_nx_model_num(m,test_dynamixel)
-  if status then 
-    local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
-    print(string.format('Model Number: %d',value))
-  end
   
   local status = libDynamixel.get_nx_firmware(m,test_dynamixel)
   if status then 
@@ -79,6 +125,7 @@ for _,m in ipairs(found) do
     print(string.format('Firmware: %d',value))
   end
 
+--[[
   local status = libDynamixel.get_nx_homing_offset(m,test_dynamixel)
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
@@ -112,7 +159,8 @@ for _,m in ipairs(found) do
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
     print(string.format('Command Acc: %d',value))
   end
-
+--]]
+--[[
   local t0 = unix.time()
   cnt = 0
   while true do
@@ -131,6 +179,7 @@ for _,m in ipairs(found) do
   end
   local t1 = unix.time()
   print('Rate:',cnt/(t1-t0),'Hz')
+--]]
 
   --[[
   local status = libDynamixel.get_mx_position(m,test_dynamixel)

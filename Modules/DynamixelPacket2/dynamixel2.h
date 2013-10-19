@@ -51,15 +51,15 @@ extern "C" {
 #define MAXNUM_TXPARAM      (65535)
 #define MAXNUM_RXPARAM      (65535)
 
-	// Packet Struct
+	/* Packet Struct */
 	typedef struct DynamixelPacket {
 		uint8_t header1;
 		uint8_t header2;
 		uint8_t header3;
 		uint8_t stuffing;
 		uint8_t id;
-		uint8_t len[2]; // length does not include first 7 bytes
-		// DONE HEADER
+		uint8_t len[2]; /* length does not include first 7 bytes */
+		/* DONE HEADER */
 		uint8_t instruction; // or error for status packets
 		uint8_t parameter[MAXNUM_TXPARAM]; // reserve for maximum packet size
 		
@@ -76,11 +76,11 @@ extern "C" {
 	// Single Read/Write
 	// Read across multiple addresses
 	DynamixelPacket *dynamixel_instruction_read_data(uint8_t id,
-	uint8_t address_h, uint8_t address_l,
+	uint8_t address_l, uint8_t address_h,
 	uint16_t n);
 	// Write only one address
 	DynamixelPacket *dynamixel_instruction_write_data(uint8_t id,
-	uint8_t address_h, uint8_t address_l,
+	uint8_t address_l, uint8_t address_h,
 	uint8_t data[], 
 	uint8_t n); // n is 1/2/4 for byte/word/dword
 	
@@ -92,10 +92,11 @@ extern "C" {
 
 	// Only sync write to one common address
 	DynamixelPacket *dynamixel_instruction_sync_write(
-		uint8_t address_h, uint8_t address_l,
-	uint16_t len,
-	uint8_t* data,
-	uint8_t n);
+		uint8_t address_l, uint8_t address_h,
+		uint16_t len,
+		uint8_t* data,
+		uint8_t n
+	);
 	
 	// Other instructions
 	DynamixelPacket *dynamixel_instruction_ping(int id);
@@ -104,7 +105,7 @@ extern "C" {
   /* Bulk */
   void dynamixel_instruction_init_bulk_write();
   void dynamixel_instruction_add_bulk_write(
-    uint8_t id, uint16_t addr, uint8_t reg_sz, int32_t val
+    uint8_t id, uint8_t address_l, uint8_t address_h, uint8_t reg_sz, int32_t val
   );
   DynamixelPacket *dynamixel_instruction_finalize_bulk_write();
   

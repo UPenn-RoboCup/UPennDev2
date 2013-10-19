@@ -62,6 +62,14 @@ local rx_registers = {
 }
 libDynamixel.rx_registers = rx_registers
 
+libDynamixel.model_num_lookup = {
+  [-14336] = 'H42-20-S300-R',
+  [1] = 'H54-100-S500-R',
+  [1] = 'H54-200-S500-R',
+  [1] = 'L54-60-S300-R',
+  [29] = 'MX-28R'
+}
+
 -- MX
 -- http://support.robotis.com/en/product/dynamixel/mx_series/mx-28.htm
 -- Convention: {string.char( ADDR_LOW_BYTE, ADDR_HIGH_BYTE ), n_bytes_of_value}
@@ -165,6 +173,7 @@ local nx_registers = {
   ['current_i'] = {string.char(0x36,0x02),2},
 
   -- LED lighting
+  ['led'] = {string.char(0x33,0x02),1}, -- legacy support (red)
   ['led_red'] = {string.char(0x33,0x02),1},
   ['led_green'] = {string.char(0x34,0x02),1},
   ['led_blue'] = {string.char(0x35,0x02),1},
@@ -364,6 +373,7 @@ function( register, mx_ids, mx_vals, nx_ids, nx_vals, bus)
   local mx_reg  = libDynamixel.mx_registers[register]
   local mx_addr = mx_reg[1]
   local mx_sz   = mx_reg[2]
+  print('mx_sz',mx_sz)
   for i,id in ipairs(mx_ids) do
     table.insert( bulk_pkt, {id,mx_addr,mx_sz,mx_vals[i]} )
   end
@@ -371,11 +381,22 @@ function( register, mx_ids, mx_vals, nx_ids, nx_vals, bus)
   local nx_reg  = libDynamixel.nx_registers[register]
   local nx_addr = nx_reg[1]
   local nx_sz   = nx_reg[2]
-  for i,id in ipairs(mx_cmd_ids) do
+  print('nx_sz',nx_sz)
+  for i,id in ipairs(nx_ids) do
     table.insert( bulk_pkt, {id,nx_addr,nx_sz,nx_vals[i]} )
   end
   -- Form and return the packet
-  return DP2.bulk_write(bulk_pkt)
+  local instruction = DP2.bulk_write(bulk_pkt)
+
+  if not bus then return instruction end
+
+  -- Clear the reading
+  local clr = unix.read(bus.fd)
+
+  -- Write the instruction to the bus 
+  stty.flush(bus.fd)
+  local ret = unix.write(bus.fd, instruction)
+
 end
 
 --------------------

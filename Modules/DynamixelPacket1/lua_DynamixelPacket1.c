@@ -20,16 +20,14 @@ const char* errtable[] = {
 
 // Error decoder
 static int lua_dynamixel_error(lua_State *L) {
-	size_t nerrbits;
+	size_t nerrbits, i;
 	const char *errbits_ptr = luaL_checklstring(L, 1, &nerrbits);
 	// TODO: check that only one byte was given
-	//uint8_t errbits = (uint8_t)(*errbits_ptr);
 	char errbits = *errbits_ptr;
-	uint8_t errmask = 0x01;
-	uint8_t nerr = 0;
+	uint8_t errmask = 0x01, nerr = 0;
 	
 	lua_newtable(L);
-	for (int i = 0; i < 8; i++) {
+	for (i = 0; i < 8; i++) {
 		if (errbits & errmask){
 			lua_pushstring(L, errtable[i]);
 			lua_rawseti(L, -2, ++nerr);
@@ -123,11 +121,11 @@ static int lua_dynamixel_input(lua_State *L) {
   int nPacket = luaL_optinteger(L, 2, 1)-1;
 
   DynamixelPacket pkt;
-  int ret = 0;
-  int offset = 0;
+  int ret = 0, offset = 0, i;
+
   /* Packet Table */
   lua_newtable(L);
-  for (int i = 0; i < nstr; i++) {
+  for (i = 0; i < nstr; i++) {
     /* Try to find a packet */
     nPacket = dynamixel_input(&pkt, str[i], nPacket);
     if (nPacket < 0){
@@ -145,9 +143,8 @@ static int lua_dynamixel_input(lua_State *L) {
 }
 
 static int lua_dynamixel_byte_to_word(lua_State *L) {
-  int n = lua_gettop(L);
-  int ret = 0;
-  for (int i = 1; i < n; i += 2) {
+  int n = lua_gettop(L), ret = 0, i;
+  for (i = 1; i < n; i += 2) {
     unsigned short byteLow = luaL_checkint(L, i);
     unsigned short byteHigh = luaL_checkint(L, i+1);
     unsigned short word = (byteHigh << 8) + byteLow;
@@ -158,9 +155,8 @@ static int lua_dynamixel_byte_to_word(lua_State *L) {
 }
 
 static int lua_dynamixel_word_to_byte(lua_State *L) {
-  int n = lua_gettop(L);
-  int ret = 0;
-  for (int i = 1; i <= n; i++) {
+  int n = lua_gettop(L), ret = 0, i;
+  for (i = 1; i <= n; i++) {
     unsigned short word = luaL_checkint(L, i);
     unsigned short byteLow = word & 0x00FF;
     lua_pushnumber(L, byteLow);

@@ -220,7 +220,7 @@ void dynamixel_instruction_init_bulk_write(){
 }
 
 void dynamixel_instruction_add_bulk_write(
-  uint8_t id, uint16_t addr, uint8_t reg_sz, int32_t val
+  uint8_t id, uint8_t address_l, uint8_t address_h, uint8_t reg_sz, int32_t val
 ){
   /* save the pointer to the current parameters */
   uint8_t *params;
@@ -228,8 +228,8 @@ void dynamixel_instruction_add_bulk_write(
   params = inst_pkt.parameter + inst_pkt.length;
   /* Add the packet */
   *(params)   = id;
-  *(params+1) = addr & 0x00FF;
-  *(params+2) = (addr>>8) & 0x00FF;
+  *(params+1) = address_l;
+  *(params+2) = address_h;
   *(params+3) = reg_sz & 0x00FF;
   *(params+4) = (reg_sz>>8) & 0x00FF;
   /* Add the raw data */

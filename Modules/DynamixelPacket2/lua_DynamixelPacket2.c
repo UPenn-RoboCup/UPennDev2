@@ -26,11 +26,10 @@ static int lua_dynamixel_error(lua_State *L) {
   // TODO: check that only one byte was given
   //uint8_t errbits = (uint8_t)(*errbits_ptr);
   char errbits = *errbits_ptr;
-  uint8_t errmask = 0x01;
-  uint8_t nerr = 0;
+  uint8_t errmask = 0x01, nerr = 0, i;
   
   lua_newtable(L);
-  for (int i = 0; i < 8; i++) {
+  for (i = 0; i < 8; i++) {
     if (errbits & errmask){
       lua_pushstring(L, errtable[i]);
       lua_rawseti(L, -2, ++nerr);
@@ -129,9 +128,10 @@ static int lua_dynamixel_instruction_sync_write(lua_State *L) {
 }
 
 static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
-  uint16_t i, addr, nids;
-  uint8_t id, reg_sz;
+  uint16_t i, nids;
+  uint8_t id, reg_sz, *addr;
   int32_t val;
+  size_t naddr;
 
   // Make sure we are dealing with a table of values
   luaL_checktype(L, 1, LUA_TTABLE);
@@ -142,22 +142,66 @@ static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
   nids = lua_objlen(L, 1);
 #endif
 
+dynamixel_instruction_init_bulk_write();
+
+/*
+  int tp;
+*/
   for (i = 1; i<=nids; i++) {
     // first, put the table on the top of the stack
     lua_rawgeti(L,1,i);
     // put each element of this table on the top of the stack
     // id
+    
+    /*
+    tp = lua_type(L, -1);
+    printf( "%d: %s\n", tp, lua_typename(L,tp) );
+    */
+
     lua_rawgeti(L,-1,1); 
+
+    /*
+    tp = lua_type(L, -1);
+    printf( "%d: %s\n", tp, lua_typename(L,tp) );
+    */
+
     // the ID is now on the top of the stack
     id = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
+
+    /*
+    printf("ID: %d\n",id);
+    */
+
     // addr
     lua_rawgeti(L,-1,2); 
-    addr = luaL_checkinteger(L, -1);
+
+/*
+    tp = lua_type(L, -1);
+    printf( "%d: %s\n", tp, lua_typename(L,tp) );
+*/
+
+    // TODO: ensure that naddr==2
+    addr = (uint8_t*)luaL_checklstring(L, -1, &naddr);
+
+    /*
+    printf("Address: %d %d\n", addr[0], addr[1] );
+    */
+
     lua_pop(L, 1);
     // register size
     lua_rawgeti(L,-1,3); 
+
+/*
+    tp = lua_type(L, -1);
+    printf( "%d: %s\n", tp, lua_typename(L,tp) );
+*/
+
     reg_sz = luaL_checkinteger(L, -1);
+/*
+    printf("Reg sz: %d\n", reg_sz);
+*/
+
     lua_pop(L, 1);
     // data value, as an integer
     lua_rawgeti(L,-1,4);
@@ -165,7 +209,7 @@ static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
     lua_pop(L, 1);
     
     // Do something with the data
-    dynamixel_instruction_add_bulk_write(id,addr,reg_sz,val);
+    dynamixel_instruction_add_bulk_write(id,addr[0],addr[1],reg_sz,val);
 
     // pop off the table of this instruction
     lua_pop(L, 1);
@@ -207,11 +251,10 @@ static int lua_dynamixel_input(lua_State *L) {
   int nPacket = luaL_optinteger(L, 2, 1)-1;
 
   DynamixelPacket pkt;
-  int ret = 0;
-  int offset = 0;
+  int ret = 0, offset = 0, i;
   /* Packet Table */
   lua_newtable(L);
-  for (int i = 0; i < nstr; i++) {
+  for (i = 0; i < nstr; i++) {
     /* Try to find a packet */
     nPacket = dynamixel_input(&pkt, str[i], nPacket);
     if (nPacket < 0){
@@ -229,11 +272,10 @@ static int lua_dynamixel_input(lua_State *L) {
 }
 
 static int lua_dynamixel_word_to_byte(lua_State *L) {
-  int n = lua_gettop(L);
-  int ret = 0;
+  int n = lua_gettop(L), ret = 0, i;
   int16_t word;
   uint16_t byteLow, byteHigh;
-  for (int i = 1; i <= n; i++) {
+  for (i = 1; i <= n; i++) {
     word = luaL_checkint(L, i);
     byteLow  = (word & 0x00FF);
     byteHigh = ((uint16_t)(word & 0xFF00))>>8;
@@ -245,11 +287,10 @@ static int lua_dynamixel_word_to_byte(lua_State *L) {
 }
 
 static int lua_dynamixel_dword_to_byte(lua_State *L) {
-  int n = lua_gettop(L);
-  int ret = 0;
+  int n = lua_gettop(L), ret = 0, i;
   int32_t dword;
   uint32_t byteLow, byteHigh, byteHigher, byteHighest;
-  for (int i = 1; i <= n; i++) {
+  for (i = 1; i <= n; i++) {
     dword = luaL_checkint(L, i);
     //printf("DWORD | %d: %16.8X\n", dword, dword);
     byteLow     = (dword & 0x000000FF);
@@ -266,11 +307,10 @@ static int lua_dynamixel_dword_to_byte(lua_State *L) {
 }
 
 static int lua_dynamixel_byte_to_word(lua_State *L) {
-  int n = lua_gettop(L);
-  int ret = 0;
+  int n = lua_gettop(L), ret = 0, i;
   int16_t word;
   uint16_t byteLow, byteHigh;
-  for (int i = 1; i < n; i += 2) {
+  for (i = 1; i < n; i += 2) {
     byteLow = luaL_checkint(L, i);
     byteHigh = luaL_checkint(L, i+1);
     word = (int16_t)((byteHigh<<8)&0xFF00) + (int16_t)byteLow;
@@ -282,10 +322,9 @@ static int lua_dynamixel_byte_to_word(lua_State *L) {
 }
 
 static int lua_dynamixel_byte_to_dword(lua_State *L) {
-  int n = lua_gettop(L);
-  int ret = 0;
+  int n = lua_gettop(L), ret = 0, i;
   uint32_t dword, byteLow, byteHigh, byteHigher, byteHighest;
-  for (int i = 1; i < n; i += 4) {
+  for (i = 1; i < n; i += 4) {
     byteLow = luaL_checkint(L, i);
     byteHigh = luaL_checkint(L, i+1);
     byteHigher = luaL_checkint(L, i+2);

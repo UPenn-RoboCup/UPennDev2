@@ -956,7 +956,9 @@ end
 
 local function add_mxnx_bulk_write(d, is_writes, wr_values, register)
   -- Just sync write to NX's if no MX on the chain
-  if not d.mx_ids then return add_nx_sync_write(d, is_writes, wr_values) end
+  if not d.mx_ids or not libDynamixel.mx_registers[register] then
+    return add_nx_sync_write(d, is_writes, wr_values, register)
+  end
   
   -- Run through the MX motors
   local mx_cmd_ids, mx_cmd_vals = {}, {}
@@ -973,7 +975,14 @@ local function add_mxnx_bulk_write(d, is_writes, wr_values, register)
     end
   end
   -- If nothing to the MX motors, then sync write NX
-  if #mx_cmd_ids==0 then return add_nx_sync_write(d, is_writes, wr_values) end
+  if #mx_cmd_ids==0 then return add_nx_sync_write(d, is_writes, wr_values, register) end
+
+  -- Since bulk does not work with MX...
+  -- Add the MX sync
+  table.insert(d.cmd_pkts,libDynamixel['set_mx_'..register](mx_cmd_ids,mx_cmd_vals))
+  return add_nx_sync_write(d, is_writes, wr_values, register)
+
+--[[
   
   -- Add the NX portion
   local nx_cmd_ids, nx_cmd_vals = {}, {}
@@ -1002,6 +1011,7 @@ local function add_mxnx_bulk_write(d, is_writes, wr_values, register)
     register, mx_cmd_ids, mx_cmd_vals, nx_cmd_ids, nx_cmd_vals
   )
   table.insert(d.cmd_pkts,bulk_pkt)
+--]]
   
 end
 

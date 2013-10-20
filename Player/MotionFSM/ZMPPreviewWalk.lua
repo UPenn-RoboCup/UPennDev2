@@ -66,6 +66,7 @@ function walk.entry()
    
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
+  mcm.set_walk_ismoving(1) --declare that we are moving
 
   t = Body.get_time()
   t_discrete = t
@@ -129,6 +130,7 @@ end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')  
+  mcm.set_walk_ismoving(0) --We stopped moving
 end
 
 return walk

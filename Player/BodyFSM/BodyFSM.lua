@@ -14,13 +14,16 @@ local bodyInit = require'bodyInit'
 local sm = fsm.new(bodyIdle,bodyInit)
 
 local bodyTeleop = require'bodyTeleop'
-sm:add_state(bodyTeleop)
-
 local bodyFollow = require'bodyFollow'
-sm:add_state(bodyFollow)
-
 local bodySideways = require'bodySideways'
+local bodyStepOver = require'bodyStepOver'
+local bodyStepPlan = require'bodyStepPlan'
+
+sm:add_state(bodyTeleop)
+sm:add_state(bodyFollow)
 sm:add_state(bodySideways)
+sm:add_state(bodyStepOver)
+sm:add_state(bodyStepPlan)
 
 -- Setup the transitions for this FSM
 --
@@ -38,6 +41,12 @@ sm:set_transition( bodyTeleop, 'follow', bodyFollow )
 sm:set_transition( bodyInit,   'sideways', bodySideways )
 sm:set_transition( bodySideways, 'init',   bodyInit )
 sm:set_transition( bodySideways, 'done',   bodyInit )
+
+sm:set_transition( bodyInit,   'stepover', bodyStepOver )
+sm:set_transition( bodyStepOver,   'done', bodyInit )
+
+sm:set_transition( bodyInit,   'stepplan', bodyStepPlan )
+sm:set_transition( bodyStepPlan,   'done', bodyInit )
 
 
 --------------------------

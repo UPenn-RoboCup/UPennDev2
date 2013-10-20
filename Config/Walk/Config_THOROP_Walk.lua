@@ -173,31 +173,6 @@ walk.phZmp = {0.2,0.8}
 walk.hipRollCompensation = 3*math.pi/180
 --]]
 
-
-
-
-
---[[
---------------------------------------------
---Slow walk test
---Kinda stable with rollCompensation 
-  walk.tZMP = 0.26 
-  walk.tStep = 0.70
-  walk.supportY = 0.04
-  walk.phSingle = {0.2,0.8}
-  walk.hipRollCompensation = 3*math.pi/180
---------------------------------------------
---]]
-
-
---[[
--------------------------------------------
---Even slower walk test
---Kinda stable too
-walk.tStep = 1.0 
-
---------------------------------------------
---]]
 end
 
 

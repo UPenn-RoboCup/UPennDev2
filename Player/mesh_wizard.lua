@@ -382,13 +382,13 @@ function mesh.update()
     head.meta.fov ~= vcm.get_head_lidar_fov()
     then
     setup_mesh('head_lidar',head)
-    print("Head Resolution:",unpack(head.resolution))
+    print("Head Resolution:",unpack(head.meta.resolution))
   end
   if chest.meta.scanlines ~= vcm.get_chest_lidar_scanlines() or
     chest.meta.fov ~= vcm.get_chest_lidar_fov()
     then
     setup_mesh('chest_lidar',chest)
-    print("Chest Resolution:",unpack(chest.resolution))
+    print("Chest Resolution:",unpack(chest.meta.resolution))
   end  
 end
 

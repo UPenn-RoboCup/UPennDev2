@@ -17,12 +17,14 @@ local drHandleMax = 0.01
 local daHandleMax = 3*math.pi/180 
 local dturnAngleMax = 6*math.pi/180 -- 3 deg per sec
 
+
 --local dturnAngleMax = 15*math.pi/180 -- 3 deg per sec
 
 
 local turn_state = 1
 local turnAngleTarget0 = 10*math.pi/180
-local turnAngleTarget1 = -55*math.pi/180
+--local turnAngleTarget1 = -55*math.pi/180
+local turnAngleTarget1 = -35*math.pi/180
 
 local gripL,gripR = 0,0
 
@@ -70,17 +72,17 @@ function state.update()
   local turnAngle2,doneA
   local doneL,doneR
   if turn_state%4==1 then
-    gripL,doneL = util.approachTol(gripL,1,2,dt)
-    gripR,doneR = util.approachTol(gripR,0,2,dt)    
-    Body.set_lgrip_percent(gripL)
-    Body.set_rgrip_percent(gripR)    
+    gripL,doneL = util.approachTol(gripL,0,2,dt)
+    gripR,doneR = util.approachTol(gripR,1,2,dt)    
+    Body.set_lgrip_percent(gripL*0.8)
+    Body.set_rgrip_percent(gripR*0.8)    
   elseif turn_state%4==2 then
     turnAngle2,doneA = util.approachTol(turnAngle1,turnAngleTarget0,dturnAngleMax, dt )
   elseif turn_state%4==3 then
-    gripL,doneL = util.approachTol(gripL,0,2,dt)
-    gripR,doneR = util.approachTol(gripR,1,2,dt)    
-    Body.set_lgrip_percent(gripL)
-    Body.set_rgrip_percent(gripR)    
+    gripL,doneL = util.approachTol(gripL,1,2,dt)
+    gripR,doneR = util.approachTol(gripR,0,2,dt)    
+    Body.set_lgrip_percent(gripL*0.8)
+    Body.set_rgrip_percent(gripR*0.8)    
   elseif turn_state%4==0 then    
     turnAngle2,doneA = util.approachTol(turnAngle1,turnAngleTarget1,dturnAngleMax, dt )
   end

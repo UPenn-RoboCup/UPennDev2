@@ -2,17 +2,13 @@
 -- Body abstraction for THOR-OP
 -- (c) 2013 Stephen McGill, Seung-Joon Yi
 --------------------------------
-local mp         = require'msgpack'
-local udp        = require'udp'
-
 
 -- Webots THOR-OP Body sensors
 local use_camera = true
 local use_lidar_head  = false
 local use_lidar_chest  = false
 local use_pose   = true
-local use_joint_feedback = false
-
+--local use_joint_feedback = false
 
 -- Shared memory for the joints
 require'jcm'
@@ -1199,41 +1195,6 @@ Body.exit = function()
   microstrain:close()
 end
 
-
-function init_status_feedback()
-  feedback_udp_ch =
-		udp.new_sender(Config.net.operator.wired,Config.net.feedback)
-  print('Body | Status feedback Connected to Operator:',
-    Config.net.operator.wired,Config.net.feedback)
-end
-
---SJ: we need to consolidate status feedback somewhere
-local function send_status_feedback()
-  local data={};
-  data.larmangle = Body.get_larm_command_position()
-  data.rarmangle = Body.get_rarm_command_position()
-  data.waistangle = Body.get_waist_command_position()
-  data.neckangle = Body.get_head_command_position()
-  data.llegangle = Body.get_lleg_command_position()
-  data.rlegangle = Body.get_rleg_command_position()
-  data.lgrip =  Body.get_lgrip_command_position()
-  data.rgrip =  Body.get_rgrip_command_position()
-
-  --Pose information
-  data.pose =  wcm.get_robot_pose()    
-  data.pose_odom =  wcm.get_robot_pose_odom()
-  data.pose_slam =  wcm.get_slam_pose()
-  data.rpy = Body.get_sensor_rpy()
-  data.body_height = mcm.get_camera_bodyHeight()
-  data.battery =  0
-
-  local ret,err = feedback_udp_ch:send( mp.pack(data) )
-  if err then print('feedback udp',err) end
-end
-
-if use_joint_feedback then init_status_feedback() end
-
-
 ----------------------
 -- Webots compatibility
 if IS_WEBOTS then
@@ -1243,6 +1204,8 @@ if IS_WEBOTS then
   local simple_ipc = require'simple_ipc'  
   local jpeg       = require'jpeg'  
   local png        = require'png'
+  local udp        = require'udp'
+  local mp         = require'msgpack'
   get_time    = webots.wb_robot_get_time
   local t_last_keypressed = get_time()
   -- Setup the webots tags
@@ -1641,10 +1604,6 @@ if IS_WEBOTS then
       --]]
     end
 
-    if use_joint_feedback then
-      send_status_feedback() --for webots, just send every frame
-    end
-
 		-- Update the sensor readings of the joint positions
 		-- TODO: If a joint is not found?
 		for idx, jtag in ipairs(tags.joints) do
@@ -1737,6 +1696,7 @@ if IS_WEBOTS then
         vcm.set_head_camera_net({0,0,0})--to enable camera streaming
         webots.wb_camera_disable(tags.head_camera)
       end
+    --[[
     elseif key_char_lower=='j' then
       t_last_keypressed = t
       use_joint_feedback = not use_joint_feedback
@@ -1746,6 +1706,7 @@ if IS_WEBOTS then
       else
         print(util.color('Joint feedback disabled!','yellow'))
       end
+    --]]
     end
 	end -- function
 

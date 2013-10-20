@@ -77,13 +77,13 @@ shared_data.wheel.model = vector.new({0.41,0,0.11,
 shared_data.wheel.model = vector.new({0.41,0,1.02-0.988,
 										0,  -11*math.pi/180, 0.10})
 
-local x0,z0 = 0.41, 1.02-0.928
+local x0,z0 = 0.41, 1.02-0.928 + 0.02 
 local tiltAngle = -11*math.pi/180
 
 shared_data.wheel.model = vector.new({x0*math.cos(tiltAngle)+z0*math.sin(tiltAngle),
 									  0,
 									  -x0*math.sin(tiltAngle)+z0*math.cos(tiltAngle) ,
-										0,  tiltAngle, 0.1})
+										0,  tiltAngle, 0.18})
 
 
 

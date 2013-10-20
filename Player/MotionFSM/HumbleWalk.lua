@@ -153,8 +153,8 @@ function walk.update()
   --Robotis-style simple feedback (which seems to be better :[])
 --  delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,phSingle,gyro_rpy, angleShift)
 
---Old feedback
-  delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,phSingle,gyro_rpy, angleShift)
+--Old feedback with different compensation
+  delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,ph,gyro_rpy, angleShift)
 
   moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
 

@@ -105,7 +105,7 @@ function walk.update()
     local uLeft, uRight, zLeft, zRight = uLeft_now, uRight_now, 0,0
     if supportLeg == 0 then  -- Left support    
       uRight,zRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight)    
-    else    -- Right support    
+    elseif supportLeg==1 then   -- Right support    
       uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    
     end
     step_planner:save_stance(uLeft,uRight,uTorso)  
@@ -113,7 +113,7 @@ function walk.update()
 
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
-    delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,phSingle,gyro_rpy, angleShift)
+    delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,ph,gyro_rpy, angleShift)
 
     --Move legs
     moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)

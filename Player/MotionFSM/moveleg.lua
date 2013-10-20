@@ -45,7 +45,7 @@ end
 
 
 
-function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,angleShift)
+function moveleg.get_leg_compensation(supportLeg, ph, gyro_rpy,angleShift)
   local gyro_pitch = gyro_rpy[2]
   local gyro_roll = gyro_rpy[1]
 
@@ -70,7 +70,13 @@ function moveleg.get_leg_compensation(supportLeg, phSingle, gyro_rpy,angleShift)
   -- Saturate compensation afterwards
   -- Change compensation at the beginning of the phase (first 10%)
   -- Same sort of trapezoid at double->single->double support shape
-  local phComp = 10 * math.min( phSingle, .1, 1-phSingle )
+
+  --SJ: now we apply the compensation during DS too
+  local phComp1 = 0.1
+  local phComp2 = 0.9
+  local phSingleComp = math.min( math.max(ph-phComp1, 0)/(phComp2-phComp1), 1)
+
+  local phComp = 10 * math.min( phSingleComp, .1, 1-phSingleComp)
 
   if supportLeg == 0 then
     -- Left support

@@ -157,6 +157,26 @@ else
   walk.velocityBias = {0.005,0,0}
 
 
+--Slow walk
+walk.tStep = 0.80
+walk.supportY = 0.04
+walk.tZMP = 0.33
+walk.phSingle = {0.15,0.85}
+walk.phZmp = {0.15,0.85}
+walk.hipRollCompensation = 3*math.pi/180
+
+--[[
+--Extremely slow walk
+walk.tStep = 2.0
+walk.phSingle = {0.2,.8}
+walk.phZmp = {0.2,0.8}
+walk.hipRollCompensation = 3*math.pi/180
+--]]
+
+
+
+
+
 --[[
 --------------------------------------------
 --Slow walk test

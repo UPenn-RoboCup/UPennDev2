@@ -111,7 +111,8 @@ function state.exit()
   local qLArm = Body.get_larm_command_position()
   trWrist = Body.get_forward_lwrist(qLArm)
   print("LWrist pos:",unpack(trWrist))
-  
+  Body.set_lgrip_percent(0.9)
+  Body.set_rgrip_percent(0.9)
 
   print(state._NAME..' Exit' )
 end

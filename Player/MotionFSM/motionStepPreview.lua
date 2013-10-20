@@ -103,14 +103,33 @@ function walk.entry()
 
 --little slower motion for 40ms world
 
+--[[
   step_planner:step_enque({},2,                    2,    {0,0.0,0}) --DS  
   step_planner:step_enque_trapezoid({0.27,0,0},0,  0.5, 1, {0,-0.01,0}, {0,0.20,0.15}) --LS  
   step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.02,0}, {0,0.20,0.15}) --RS  
   step_planner:step_enque_trapezoid({0.27,0,0},0,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --LS  
   step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --RS  
   step_planner:step_enque_trapezoid({},2,         0.5, 2,  {0,0.0,0}) --DS  
+--]]
+
+--[[
+  step_planner:step_enque({},2,                    2,    {0,0.0,0}) --DS  
+  step_planner:step_enque_trapezoid({0.27,0,0},0,  2, 4, {0,-0.0,0}, {0,0.10,0.0}) --LS  
+  step_planner:step_enque_trapezoid({0.27,0,0},1,  3, 6,   {0,0.0,0}, {0,0.10,0.0}) --RS  
+  step_planner:step_enque_trapezoid({0.27,0,0},0,  3, 6,   {0,0.0,0}, {0.0,0.10,0.0}) --LS  
+  step_planner:step_enque_trapezoid({0.27,0,0},1,  3, 6,   {0,0.0,0}, {0.0,0.10,0.0}) --RS  
+  step_planner:step_enque_trapezoid({},2,         2, 4,  {0,0.0,0}) --DS  
+--]]
 
 
+--Step on the block and stop there
+  step_planner:step_enque({},2,                    2,    {0,0.0,0}) --DS  
+  step_planner:step_enque_trapezoid({0.27,0,0},0,  3, 6, {0,-0.0,0}, {0,0.20,0.15}) --LS  
+  step_planner:step_enque_trapezoid({0.27,0,0},1,  3, 6,   {0,0.0,0}, {0,0.20,0.15}) --RS  
+  step_planner:step_enque_trapezoid({},2,         2, 0,  {0,0.0,0}) --DS  
+  step_planner:step_enque_trapezoid({0.27,0,0},0,  2, 4,   {0,0.0,0}, {0.15,0.20,0.0}) --LS  
+  step_planner:step_enque_trapezoid({0.27,0,0},1,  3, 6,   {0,0.0,0}, {0.15,0.20,0.0}) --RS  
+  step_planner:step_enque_trapezoid({},2,         2, 4,  {0,0.0,0}) --DS  
 
   t = Body.get_time()
   time_discrete_shift = zmp_solver:trim_preview_queue(step_planner,t )  
@@ -170,7 +189,8 @@ function walk.update()
 
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
-    delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,phSingle,gyro_rpy, angleShift)
+
+    delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,ph,gyro_rpy, angleShift)
 
     --Move legs
     moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)

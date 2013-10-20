@@ -22,6 +22,60 @@ local step_planner
 local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local supportLeg
 
+
+
+local function calculate_footsteps()
+  local step_queue
+
+--For webots with 10ms
+
+  step_queue={
+    {{0,0,0},2,  0.5, 0.5,   {0,0.0,0},  {0, 0, 0}},
+    {{0.27,0,0},0,  0.5, 2,     {0,-0.0,0}, {0,0.20,0.15}},   --LS
+    {{0.27,0,0},1,  1,   2,     {0,0.0,0},  {0,0.20,0.15}},    --RS
+    {{0,0, 0,} ,2,  1,   2,     {0,0.0,0},  {0, 0, 0}},          --DS
+    {{0.27,0,0} ,0,  1,   2,     {0,0.0,0},  {0.15,0.20,0.0}},--LS
+    {{0.27,0,0},1,  1,   2,     {0,0.0,0},  {0.15,0.20,0.0}},--RS
+    {{0,0,0,},  2,  0.5, 2,     {0,0.0,0},  {0, 0, 0}},                  --DS
+  }
+  
+--For actual robot
+--[[
+  step_queue={
+    {{0,0,0}   ,2,  2, 2, {0,0.0,0}, {0,0,0}},
+    {{0.27,0,0},0,  3, 6, {0,-0.0,0}, {0,0.20,0.15}},   --LS
+    {{0.27,0,0},1,  3, 6, {0,0.0,0},  {0,0.20,0.15}},    --RS
+    {{},2,          2, 0,  {0,0.0,0}},                  --DS
+    {{0.27,0,0},0,  3, 6,   {0,0.0,0}, {0.15,0.20,0.0}},--LS
+    {{0.27,0,0},1,  3, 6,   {0,0.0,0}, {0.15,0.20,0.0}},--RS
+    {{0,0,0}   ,2,  2, 2, {0,0.0,0}, {0,0,0}}
+  }
+--]]
+--Write to SHM
+  local maxSteps = 40
+  step_queue_vector = vector.zeros(12*maxSteps)
+  for i=1,#step_queue do    
+    local offset = (i-1)*12;
+    step_queue_vector[offset+1] = step_queue[i][1][1]
+    step_queue_vector[offset+2] = step_queue[i][1][2]
+    step_queue_vector[offset+3] = step_queue[i][1][3]
+
+    step_queue_vector[offset+4] = step_queue[i][2]
+    step_queue_vector[offset+5] = step_queue[i][3]
+    step_queue_vector[offset+6] = step_queue[i][4]    
+
+    step_queue_vector[offset+7] = step_queue[i][5][1]
+    step_queue_vector[offset+8] = step_queue[i][5][2]
+    step_queue_vector[offset+9] = step_queue[i][5][3]
+
+    step_queue_vector[offset+10] = step_queue[i][6][1]
+    step_queue_vector[offset+11] = step_queue[i][6][2]
+    step_queue_vector[offset+12] = step_queue[i][6][3]
+  end
+  hcm.set_motion_footholds(step_queue_vector)
+  hcm.set_motion_nfootholds(#step_queue)  
+end
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -33,36 +87,6 @@ function state.entry()
   motion_ch:send'preview'  
 end
 
-function calculate_footsteps()
-  local step_queue
-
---For webots with 10ms
-
-  step_queue={
-    {{},2,          0.5, 0.5,   {0,0.0,0}},
-    {{0.27,0,0},0,  0.5, 2,     {0,-0.0,0}, {0,0.20,0.15}},   --LS
-    {{0.27,0,0},1,  1,   2,     {0,0.0,0},  {0,0.20,0.15}},    --RS
-    {{},2,          1,   2,     {0,0.0,0}},                  --DS
-    {{0.27,0,0},0,  1,   2,     {0,0.0,0}, {0.15,0.20,0.0}},--LS
-    {{0.27,0,0},1,  1,   2,     {0,0.0,0}, {0.15,0.20,0.0}},--RS
-    {{},2,          0.5, 2,     {0,0.0,0}},                  --DS
-  }
-  
---For actual robot
---[[
-  step_queue={
-    {{},2,                  2,  2,    {0,0.0,0}},
-    {{0.27,0,0},0,  3, 6, {0,-0.0,0}, {0,0.20,0.15}},   --LS
-    {{0.27,0,0},1,  3, 6, {0,0.0,0},  {0,0.20,0.15}},    --RS
-    {{},2,          2, 0,  {0,0.0,0}},                  --DS
-    {{0.27,0,0},0,  3, 6,   {0,0.0,0}, {0.15,0.20,0.0}},--LS
-    {{0.27,0,0},1,  3, 6,   {0,0.0,0}, {0.15,0.20,0.0}},--RS
-    {{},2,          2, 4,  {0,0.0,0}},                  --DS
-  }
---]]
-end
-
-
 function state.update()
   --print(state._NAME..' Update' ) 
   -- Get the time of update
@@ -71,7 +95,7 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  if mcm.get_walk_ismoving()>0 then
+  if mcm.get_walk_ismoving()==0 then
     return 'done'
   end
 end

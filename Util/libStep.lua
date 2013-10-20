@@ -74,7 +74,7 @@ local function save_stance(self,uLeft,uRight,uTorso)
   mcm.set_status_uTorso(uTorso)
 end
 
-local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, supportLeg, initialStep)  
+local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, supportLeg, initialStep,lastStep)  
   local uLeft_next, uRight_next, uTorso_next = uLeft_now, uRight_now, uTorso_now
   local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
   local uSupport
@@ -90,12 +90,12 @@ local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, su
   else
     if supportLeg == 0 then    -- Left support
       uSupport = uLSupport
-      uRight_next = self.step_destination_right(velWalk, uLeft_now, uRight_now)    
+      uRight_next = self.step_destination_right(velWalk, uLeft_now, uRight_now,lastStep)    
       local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
       uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
     else    -- Right support
       uSupport = uRSupport
-      uLeft_next = self.step_destination_left(velWalk, uLeft_now, uRight_now)    
+      uLeft_next = self.step_destination_left(velWalk, uLeft_now, uRight_now,lastStep)    
       local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
       uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
     end  
@@ -194,7 +194,12 @@ local function get_torso(uLeft,uRight)
   return uTorso
 end
 
-local function step_destination_left(vel, uLeft, uRight)
+local function step_destination_left(vel, uLeft, uRight, lastStep)
+  if lastStep then
+    local uLeftNext = util.pose_global({0, 2*footY,0},uRight)
+    return uLeftNext
+  end
+
   local u0 = util.se2_interpolate(.5, uLeft, uRight)
   -- Determine nominal midpoint position 1.5 steps in future
   local u1 = util.pose_global(vel, u0)
@@ -218,7 +223,11 @@ local function step_destination_left(vel, uLeft, uRight)
   return util.pose_global(uLeftRight, uRight)
 end
 
-local function step_destination_right(vel, uLeft, uRight)
+local function step_destination_right(vel, uLeft, uRight,lastStep)
+  if lastStep then
+    local uRightNext = util.pose_global({0, -2*footY,0},uLeft)
+    return uRightNext
+  end
   local u0 = util.se2_interpolate(.5, uLeft, uRight)
   -- Determine nominal midpoint position 1.5 steps in future
   local u1 = util.pose_global(vel, u0)

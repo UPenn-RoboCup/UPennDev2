@@ -72,64 +72,23 @@ function walk.entry()
   iStep = 1   -- Initialize the step index  
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
+  mcm.set_walk_ismoving(1) --We started moving
 
-  --
+  --SHM BASED
+  local nFootHolds = hcm.get_motion_nfootholds()
+  local footQueue = hcm.get_motion_footholds()
+  print("step #:",nFootHolds)
 
-
-
-
---[[
-
---Enque a DS - SS pair
---                                        tDoubleSupport tStep
-  step_planner:step_enque_trapezoid({0.0,0,0},0,  3, 4, {0,0.0,0}) --LS  
-  step_planner:step_enque_trapezoid({0.0,0,0},1,  6, 4, {0,0.0,0}) --RS  
-  step_planner:step_enque_trapezoid({0.0,0,0},0,  6, 4, {0,0.0,0}) --LS  
-  step_planner:step_enque_trapezoid({},2,         3, 3, {0,0.0,0}) --DS  
---]]
-
-
---Stepping over cinderblock
---Works with 10ms timestep
---[[
-  step_planner:step_enque({},2,                    0.5,    {0,0.0,0}) --DS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  0.5, 2, {0,0.0,0}, {0,0.20,0.15}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0,0.20,0.15}) --RS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --RS  
-  step_planner:step_enque_trapezoid({},2,         0.5, 2,  {0,0.0,0}) --DS  
---]]
-
-
---For actual robot
-
---Step on the block and stop there
-  step_planner:step_enque({},2,                    2,    {0,0.0,0}) --DS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  3, 6, {0,-0.0,0}, {0,0.20,0.15}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  3, 6,   {0,0.0,0}, {0,0.20,0.15}) --RS  
-  step_planner:step_enque_trapezoid({},2,          2, 0,  {0,0.0,0}) --DS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  3, 6,   {0,0.0,0}, {0.15,0.20,0.0}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  3, 6,   {0,0.0,0}, {0.15,0.20,0.0}) --RS  
-  step_planner:step_enque_trapezoid({},2,          2, 4,  {0,0.0,0}) --DS  
-
-
---[[
---Plain step forward
-  step_planner:step_enque({},2,                    2,    {0,0.0,0}) --DS  
-  step_planner:step_enque_trapezoid({0.05,0,0},0,  0.1, 0.6, {0,0.0,0},{0,0.05,0.0}) --LS  
-  step_planner:step_enque_trapezoid({0.10,0,0},1,  0.2, 0.6, {0,0.0,0},{0,0.05,0.0}) --RS  
-  step_planner:step_enque_trapezoid({0.05,0,0},0,  0.2, 0.6, {0,0.0,0},{0,0.05,0.0}) --LS  
-  step_planner:step_enque_trapezoid({},2,         0.1, 3, {0,0.0,0}) --DS  
---]]
-
-
-
-
-
-
-
-
-
+  for i=1,nFootHolds do
+    local offset = (i-1)*12;
+    local foot_movement = {footQueue[offset+1],footQueue[offset+2],footQueue[offset+3]}
+    local supportLeg = footQueue[offset+4]
+    local t1 = footQueue[offset+5]
+    local t2 = footQueue[offset+6]
+    local zmp_mod = {footQueue[offset+7],footQueue[offset+8],footQueue[offset+9]}
+    local footparam = {footQueue[offset+10],footQueue[offset+11],footQueue[offset+12]}
+    step_planner:step_enque_trapezoid(foot_movement, supportLeg, t1,t2,zmp_mod,footparam)
+  end
 
   t = Body.get_time()
   time_discrete_shift = zmp_solver:trim_preview_queue(step_planner,t )  
@@ -205,6 +164,7 @@ function walk.exit()
   debugfile:flush();
   debugfile:close();
   print(walk._NAME..' Exit')  
+  mcm.set_walk_ismoving(0) --We stopped moving
 end
 
 return walk

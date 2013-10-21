@@ -18,7 +18,7 @@ local libHokuyo  = require'libHokuyo'
 local hokuyos = {}
 
 -- Initialize the Hokuyos
-local head_hokuyo  = libHokuyo.new_hokuyo(11)
+--local head_hokuyo  = libHokuyo.new_hokuyo(11)
 local chest_hokuyo = libHokuyo.new_hokuyo(10)
 
 -- Head Hokuyo

@@ -77,7 +77,7 @@ function moveleg.get_leg_compensation(supportLeg, ph, gyro_rpy,angleShift)
   local phSingleComp = math.min( math.max(ph-phComp1, 0)/(phComp2-phComp1), 1)
 
   local phComp = 10 * math.min( phSingleComp, .1, 1-phSingleComp)
-
+--[[
   if supportLeg == 0 then
     -- Left support
     delta_legs[2] = angleShift[4] + hipRollCompensation*phComp
@@ -108,6 +108,27 @@ function moveleg.get_leg_compensation(supportLeg, ph, gyro_rpy,angleShift)
     delta_legs[11] = angleShift[1]
     delta_legs[12] = angleShift[2]    
   end
+--]]
+
+if supportLeg == 0 then
+    -- Left support
+  delta_legs[2] = angleShift[4] + hipRollCompensation*phComp
+elseif supportLeg==1 then    
+    -- Right support
+  delta_legs[8]  = angleShift[4] - hipRollCompensation*phComp
+else
+  delta_legs[2] = angleShift[4]
+  delta_legs[8]  = angleShift[4]    
+end    
+
+delta_legs[4] = angleShift[3]
+delta_legs[5] = angleShift[1]
+delta_legs[6] = angleShift[2]  
+
+delta_legs[10] = angleShift[3]
+delta_legs[11] = angleShift[1]
+delta_legs[12] = angleShift[2]    
+  
 
 --  print('Ankle shift',angleShift[1]*Body.RAD_TO_DEG )
 

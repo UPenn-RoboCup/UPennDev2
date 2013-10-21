@@ -36,7 +36,7 @@ local function calculate_footsteps()
   local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
   local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
   
-  step_queue[1] = {{0,0,0},2, 1,1,{0,0,0},{0,0,0}}
+  step_queue[1] = {{0,0,0},2, 0.1,1,0.1,{0,0,0},{0,0,0}}
   local step_queue_count = 1;
 
 
@@ -58,38 +58,41 @@ local function calculate_footsteps()
     else
       leg_movement = util.pose_relative(uLeft_next,uLeft_now)  
     end
-    if i==1 then
-      new_step={leg_movement, supportLeg, tSlope1, Config.walk.tStep-tSlope1-tSlope2,
-           {0,0,0},{0,Config.walk.stepHeight,0}}
-    else
-      new_step={leg_movement, supportLeg, tSlope1+tSlope2, Config.walk.tStep-tSlope1-tSlope2,
-            {0,0,0},{0,Config.walk.stepHeight,0}}
-    end
+    new_step={leg_movement, 
+              supportLeg, 
+              tSlope1, 
+              Config.walk.tStep-tSlope1-tSlope2,
+              tSlope2,
+              {0,0,0},
+              {0,Config.walk.stepHeight,0}}
+    
     step_queue[step_queue_count]=new_step
   end
 
-  step_queue[step_queue_count+1] = {{0,0,0},2, tSlope2,2,{0,0,0},{0,0,0}}
+  step_queue[step_queue_count+1] = {{0,0,0},2,  0.1,1,0.1,{0,0,0},{0,0,0}}
 
   --Write to the SHM
   local maxSteps = 40
   step_queue_vector = vector.zeros(12*maxSteps)
   for i=1,#step_queue do    
-    local offset = (i-1)*12;
+    local offset = (i-1)*13;
     step_queue_vector[offset+1] = step_queue[i][1][1]
     step_queue_vector[offset+2] = step_queue[i][1][2]
     step_queue_vector[offset+3] = step_queue[i][1][3]
 
     step_queue_vector[offset+4] = step_queue[i][2]
+
     step_queue_vector[offset+5] = step_queue[i][3]
     step_queue_vector[offset+6] = step_queue[i][4]    
+    step_queue_vector[offset+7] = step_queue[i][5]    
 
-    step_queue_vector[offset+7] = step_queue[i][5][1]
-    step_queue_vector[offset+8] = step_queue[i][5][2]
-    step_queue_vector[offset+9] = step_queue[i][5][3]
+    step_queue_vector[offset+8] = step_queue[i][6][1]
+    step_queue_vector[offset+9] = step_queue[i][6][2]
+    step_queue_vector[offset+10] = step_queue[i][6][3]
 
-    step_queue_vector[offset+10] = step_queue[i][6][1]
-    step_queue_vector[offset+11] = step_queue[i][6][2]
-    step_queue_vector[offset+12] = step_queue[i][6][3]
+    step_queue_vector[offset+11] = step_queue[i][7][1]
+    step_queue_vector[offset+12] = step_queue[i][7][2]
+    step_queue_vector[offset+13] = step_queue[i][7][3]
   end
   hcm.set_motion_footholds(step_queue_vector)
   hcm.set_motion_nfootholds(#step_queue)

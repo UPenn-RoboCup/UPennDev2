@@ -80,14 +80,15 @@ function walk.entry()
   print("step #:",nFootHolds)
 
   for i=1,nFootHolds do
-    local offset = (i-1)*12;
+    local offset = (i-1)*13;
     local foot_movement = {footQueue[offset+1],footQueue[offset+2],footQueue[offset+3]}
     local supportLeg = footQueue[offset+4]
-    local t1 = footQueue[offset+5]
-    local t2 = footQueue[offset+6]
-    local zmp_mod = {footQueue[offset+7],footQueue[offset+8],footQueue[offset+9]}
-    local footparam = {footQueue[offset+10],footQueue[offset+11],footQueue[offset+12]}
-    step_planner:step_enque_trapezoid(foot_movement, supportLeg, t1,t2,zmp_mod,footparam)
+    local t0 = footQueue[offset+5]
+    local t1 = footQueue[offset+6]
+    local t2 = footQueue[offset+7]
+    local zmp_mod = {footQueue[offset+8],footQueue[offset+9],footQueue[offset+10]}
+    local footparam = {footQueue[offset+11],footQueue[offset+12],footQueue[offset+13]}    
+    step_planner:step_enque_trapezoid(foot_movement, supportLeg, t0,t1,t2,zmp_mod,footparam)
   end
 
   t = Body.get_time()

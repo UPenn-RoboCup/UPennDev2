@@ -111,7 +111,20 @@ if IS_WEBOTS then
   walk.velLimitY = {-.15,.15}
 
 
---ZMP preview walk test
+
+--Slow walk
+walk.tStep = 0.80
+walk.supportY = 0.04
+walk.tZMP = 0.33
+walk.phSingle = {0.15,0.85}
+walk.phZmp = {0.15,0.85}
+walk.hipRollCompensation = 3*math.pi/180
+
+--For webots
+walk.supportY = 0.03
+walk.tZMP = 0.28
+walk.hipRollCompensation = 1*math.pi/180 --less compensation for webots
+
 
 else
 

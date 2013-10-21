@@ -120,9 +120,7 @@ function walk.update()
   
     --Get the current COM position
     com_pos,zmp_pos = zmp_solver:update_state()
-
-    --time zmp com
-    debugdata=debugdata..string.format("%f,%f,%f\n",t_discrete-t0, zmp_pos[2], com_pos[2])
+  
   end
 
   if discrete_updated then
@@ -143,10 +141,12 @@ function walk.update()
     end
     step_planner:save_stance(uLeft,uRight,uTorso)  
 
+    local uZMP = zmp_solver:get_zmp()
+    mcm.set_status_uTorso(uTorso)
+    mcm.set_status_uZMP(uZMP)
+    mcm.set_status_t(t)
 
-
-
-print(unpack(uTorso),unpack(uLeft),unpack(uRight))
+--print(unpack(uTorso),unpack(uLeft),unpack(uRight))
 
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
@@ -159,10 +159,6 @@ print(unpack(uTorso),unpack(uLeft),unpack(uRight))
 end -- walk.update
 
 function walk.exit()
-  local debugfile=assert(io.open("debugdata.txt","w")); 
-  debugfile:write(debugdata);
-  debugfile:flush();
-  debugfile:close();
   print(walk._NAME..' Exit')  
   mcm.set_walk_ismoving(0) --We stopped moving
 end

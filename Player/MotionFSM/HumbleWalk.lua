@@ -71,8 +71,7 @@ function walk.entry()
   iStep = 1   -- Initialize the step index  
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
-  mcm.set_walk_steprequest(0) --cancel stop request flag
-
+  mcm.set_walk_ismoving(1) --We started moving
   -- log file
   if is_logging then
     LOG_F_SENSOR = io.open('feet.log','w')

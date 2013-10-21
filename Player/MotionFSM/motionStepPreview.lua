@@ -33,9 +33,9 @@ local iStep
 
 -- What foot trajectory are we using?
 local foot_traj_func  
---foot_traj_func = moveleg.foot_trajectory_base
+foot_traj_func = moveleg.foot_trajectory_base
 --foot_traj_func = moveleg.foot_trajectory_square
-foot_traj_func = moveleg.foot_trajectory_square_stair
+--foot_traj_func = moveleg.foot_trajectory_square_stair
 local t, t_discrete
 
 local debugdata
@@ -72,64 +72,24 @@ function walk.entry()
   iStep = 1   -- Initialize the step index  
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
+  mcm.set_walk_ismoving(1) --We started moving
 
---[[
+  --SHM BASED
+  local nFootHolds = hcm.get_motion_nfootholds()
+  local footQueue = hcm.get_motion_footholds()
+  print("step #:",nFootHolds)
 
---Enque a DS - SS pair
---                                        tDoubleSupport tStep
-  step_planner:step_enque_trapezoid({0.0,0,0},0,  3, 4, {0,0.0,0}) --LS  
-  step_planner:step_enque_trapezoid({0.0,0,0},1,  6, 4, {0,0.0,0}) --RS  
-  step_planner:step_enque_trapezoid({0.0,0,0},0,  6, 4, {0,0.0,0}) --LS  
-  step_planner:step_enque_trapezoid({},2,         3, 3, {0,0.0,0}) --DS  
---]]
-
---[[
-  step_planner:step_enque_trapezoid({0.20,0,0},0,  3, 4, {0,0.0,0}) --LS  
-  step_planner:step_enque_trapezoid({0.40,0,0},1,  6, 4, {0,0.0,0}) --RS  
-  step_planner:step_enque_trapezoid({0.20,0,0},0,  6, 4, {0,0.0,0}) --LS  
-  step_planner:step_enque_trapezoid({},2,         3, 3, {0,0.0,0}) --DS  
---]]
-
---Stepping over cinderblock
---Works with 10ms timestep
---[[
-  step_planner:step_enque({},2,                    0.5,    {0,0.0,0}) --DS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  0.5, 2, {0,0.0,0}, {0,0.20,0.15}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0,0.20,0.15}) --RS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --RS  
-  step_planner:step_enque_trapezoid({},2,         0.5, 2,  {0,0.0,0}) --DS  
---]]
-
---little slower motion for 40ms world
-
---[[
-  step_planner:step_enque({},2,                    2,    {0,0.0,0}) --DS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  0.5, 1, {0,-0.01,0}, {0,0.20,0.15}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.02,0}, {0,0.20,0.15}) --RS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 2,   {0,0.0,0}, {0.15,0.20,0.0}) --RS  
-  step_planner:step_enque_trapezoid({},2,         0.5, 2,  {0,0.0,0}) --DS  
---]]
-
---[[
-  step_planner:step_enque({},2,                    2,    {0,0.0,0}) --DS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  2, 4, {0,-0.0,0}, {0,0.10,0.0}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  3, 6,   {0,0.0,0}, {0,0.10,0.0}) --RS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  3, 6,   {0,0.0,0}, {0.0,0.10,0.0}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  3, 6,   {0,0.0,0}, {0.0,0.10,0.0}) --RS  
-  step_planner:step_enque_trapezoid({},2,         2, 4,  {0,0.0,0}) --DS  
---]]
-
-
---Step on the block and stop there
-  step_planner:step_enque({},2,                    2,    {0,0.0,0}) --DS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  3, 6, {0,-0.0,0}, {0,0.20,0.15}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  3, 6,   {0,0.0,0}, {0,0.20,0.15}) --RS  
-  step_planner:step_enque_trapezoid({},2,         2, 0,  {0,0.0,0}) --DS  
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  2, 4,   {0,0.0,0}, {0.15,0.20,0.0}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  3, 6,   {0,0.0,0}, {0.15,0.20,0.0}) --RS  
-  step_planner:step_enque_trapezoid({},2,         2, 4,  {0,0.0,0}) --DS  
+  for i=1,nFootHolds do
+    local offset = (i-1)*13;
+    local foot_movement = {footQueue[offset+1],footQueue[offset+2],footQueue[offset+3]}
+    local supportLeg = footQueue[offset+4]
+    local t0 = footQueue[offset+5]
+    local t1 = footQueue[offset+6]
+    local t2 = footQueue[offset+7]
+    local zmp_mod = {footQueue[offset+8],footQueue[offset+9],footQueue[offset+10]}
+    local footparam = {footQueue[offset+11],footQueue[offset+12],footQueue[offset+13]}    
+    step_planner:step_enque_trapezoid(foot_movement, supportLeg, t0,t1,t2,zmp_mod,footparam)
+  end
 
   t = Body.get_time()
   time_discrete_shift = zmp_solver:trim_preview_queue(step_planner,t )  
@@ -161,9 +121,7 @@ function walk.update()
   
     --Get the current COM position
     com_pos,zmp_pos = zmp_solver:update_state()
-
-    --time zmp com
-    debugdata=debugdata..string.format("%f,%f,%f\n",t_discrete-t0, zmp_pos[2], com_pos[2])
+  
   end
 
   if discrete_updated then
@@ -184,8 +142,12 @@ function walk.update()
     end
     step_planner:save_stance(uLeft,uRight,uTorso)  
 
+    local uZMP = zmp_solver:get_zmp()
+    mcm.set_status_uTorso(uTorso)
+    mcm.set_status_uZMP(uZMP)
+    mcm.set_status_t(t)
 
-
+--print(unpack(uTorso),unpack(uLeft),unpack(uRight))
 
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
@@ -198,11 +160,8 @@ function walk.update()
 end -- walk.update
 
 function walk.exit()
-  local debugfile=assert(io.open("debugdata.txt","w")); 
-  debugfile:write(debugdata);
-  debugfile:flush();
-  debugfile:close();
   print(walk._NAME..' Exit')  
+  mcm.set_walk_ismoving(0) --We stopped moving
 end
 
 return walk

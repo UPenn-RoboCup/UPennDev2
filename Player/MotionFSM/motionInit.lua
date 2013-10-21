@@ -173,6 +173,7 @@ function state.exit()
       unix.usleep(1e6*0.01);
     end
   end
+  mcm.set_walk_ismoving(0) --We are stopped
 end
 
 return state

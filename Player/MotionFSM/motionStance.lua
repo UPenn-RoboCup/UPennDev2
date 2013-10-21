@@ -63,6 +63,8 @@ function state.update()
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
 
+--We disable this for now
+--[[
 -- Soft stopping of torso
 -- Bang-bang strategy
 -- x'' = -a for 0<t<t0,  x'' = a for t0<t<t1
@@ -88,6 +90,9 @@ function state.update()
     uTorso[1] = uTorso[1] + torsoMag * uTorsoVel[1]/velTorso
     uTorso[2] = uTorso[2] + torsoMag * uTorsoVel[2]/velTorso
   end
+--]]
+
+  mcm.set_walk_ismoving(0) --We stopped moving
 
   --Adjust body height
   local bodyHeight_now = mcm.get_status_bodyHeight()  

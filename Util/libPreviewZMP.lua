@@ -178,34 +178,45 @@ local function update_preview_queue_steps(self,step_planner,t)
   local last_preview_zmpx = self.preview_queue_zmpx[#self.preview_queue]
   local last_preview_zmpy = self.preview_queue_zmpy[#self.preview_queue]
 
-  if last_preview_item.tEnd >= t_future then
-    --Old step
-    if last_preview_item.uSupports then --moving support
-      table.insert(self.preview_queue,last_preview_item)
+  if last_preview_item.tEnd >= t_future then --Old step
 
-      local ph = (t_future -last_preview_item.tStart)/
-                (last_preview_item.tEnd-last_preview_item.tStart)
-      table.insert(self.preview_queue_zmpx,
-        last_preview_item.uSupports[1][1]*(1-ph)+
-        last_preview_item.uSupports[2][1]*ph 
-        )
-      table.insert(self.preview_queue_zmpy,
-        last_preview_item.uSupports[1][2]*(1-ph)+
-        last_preview_item.uSupports[2][2]*ph 
-        )
+    if last_preview_item.trapezoidparams then --moving support
+      local trapezoidparams = last_preview_item.trapezoidparams
+      table.insert(self.preview_queue,last_preview_item)
+      local t_passed = t_future - last_preview_item.tStart
+      if t_passed < trapezoidparams[1] then
+        local uSupportCurrent = util.se2_interpolate(
+          t_passed/trapezoidparams[1],
+          last_preview_item.uSupport0,
+          last_preview_item.uSupport1
+          )
+        table.insert(self.preview_queue_zmpx,uSupportCurrent[1])
+        table.insert(self.preview_queue_zmpy,uSupportCurrent[2])
+      elseif t_passed < trapezoidparams[1]+trapezoidparams[2] then
+        table.insert(self.preview_queue_zmpx,last_preview_item.uSupport1[1])
+        table.insert(self.preview_queue_zmpy,last_preview_item.uSupport1[2])
+      else
+        local uSupportCurrent = util.se2_interpolate(
+          (t_passed-trapezoidparams[1]-trapezoidparams[2])/trapezoidparams[3],
+          last_preview_item.uSupport1,
+          last_preview_item.uSupport2
+          )
+        table.insert(self.preview_queue_zmpx,uSupportCurrent[1])
+        table.insert(self.preview_queue_zmpy,uSupportCurrent[2])
+      end
     else --fixed support
       table.insert(self.preview_queue,last_preview_item)
       table.insert(self.preview_queue_zmpx,last_preview_zmpx)
       table.insert(self.preview_queue_zmpy,last_preview_zmpy)
     end
   else --New step
-    local supportLeg, tStep, uSupport, stepParams
+    local supportLeg, tStep, uSupport, stepParams, trapezoidparams
     local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 
-    uLeft_now, uRight_now, uTorso_now, 
+      uLeft_now, uRight_now, uTorso_now, 
       uLeft_next, uRight_next, uTorso_next,
       uSupport, supportLeg, tStep, 
-      stepParams, is_last
+      stepParams, is_last, trapezoidparams
             = step_planner:get_next_step_queue(
             last_preview_item.uLeft_next,
             last_preview_item.uRight_next,
@@ -239,15 +250,18 @@ local function update_preview_queue_steps(self,step_planner,t)
       new_preview_item.stepParams = stepParams
       new_preview_item.is_last = is_last
 
-      if(#uSupport==2) then --Moving support
-        new_preview_item.uSupports = uSupport
-      end
+      if trapezoidparams then
+        new_preview_item.uSupport0 = uTorso_now
+        new_preview_item.uSupport1 = uSupport
+        new_preview_item.uSupport2 = uTorso_next
+        new_preview_item.trapezoidparams = trapezoidparams        
+      end      
     end
 
     table.insert(self.preview_queue,new_preview_item)
-    if new_preview_item.uSupports then --Moving support
-      table.insert(self.preview_queue_zmpx,uSupport[1][1])
-      table.insert(self.preview_queue_zmpy,uSupport[1][2])
+    if new_preview_item.trapezoidparams then --moving support      
+      table.insert(self.preview_queue_zmpx,uTorso_now[1])
+      table.insert(self.preview_queue_zmpy,uTorso_now[2])
     else --Fixed support
       table.insert(self.preview_queue_zmpx,uSupport[1])
       table.insert(self.preview_queue_zmpy,uSupport[2])

@@ -7,6 +7,10 @@ local memory = require'memory'
 local nJoints = 40
 local maxWaypoints = 4
 
+
+local maxSteps = 40
+
+
 local shared_data = {}
 local shared_data_sz = {}
 
@@ -33,6 +37,15 @@ shared_data.motion = {}
 shared_data.motion.velocity = vector.zeros(3)
 -- Emergency stop of motion
 shared_data.motion.estop = vector.zeros(1)
+
+--Footsteps
+--{[rx ry ra supportLeg t0 t1 t2 zmpmodx zmpmody zmpmoda stepparam1 stepparam2 stepparam3]}
+shared_data.motion.footholds  = vector.zeros(13*maxSteps)
+shared_data.motion.nfootholds = vector.zeros(1)
+
+
+
+
 -- Waypoints
 -- {[x y a][x y a][x y a][x y a]...}
 shared_data.motion.waypoints  = vector.zeros(3*maxWaypoints)

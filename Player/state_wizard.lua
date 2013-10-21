@@ -86,7 +86,7 @@ local function send_status_feedback()
   data.battery =  0
 
   local ret,err = feedback_udp_ch:send( mp.pack(data) )
-  if err then print('feedback udp',err) end
+--  if err then print('feedback udp',err) end
 end
 if use_joint_feedback then
   feedback_udp_ch =

@@ -26,6 +26,7 @@ shared.walk.supportY   = vector.zeros(1)
 shared.walk.vel        = vector.zeros(3)
 shared.walk.bipedal    = vector.zeros(1)
 shared.walk.stoprequest= vector.zeros(1)
+shared.walk.ismoving= vector.zeros(1)
 
 -- Walk-step transition
 shared.walk.steprequest= vector.zeros(1)

@@ -60,16 +60,27 @@ print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
 
 local channels = {
   ['motion_ch'] = motion_ch,
+  ['body_ch'] = body_ch,
   ['arm_ch'] = arm_ch,
 }
 
 
 -- Events for the FSMs
 local char_to_event = {
+  ['1'] = {'body_ch','init'},
+
+
   ['7'] = {'motion_ch','sit'},
   ['8'] = {'motion_ch','stand'},
   ['9'] = {'motion_ch','walk'},
-  ['t'] = {'motion_ch','preview'},
+
+--  ['t'] = {'body_ch','stepover'},
+  ['2'] = {'body_ch','stepplan'},
+  ['3'] = {'body_ch','stepplan2'},
+  ['4'] = {'body_ch','stepplan3'},
+  ['5'] = {'body_ch','stepplan4'},
+
+
   --
   ['a'] = {'arm_ch','init'},
   ['s'] = {'arm_ch','reset'},

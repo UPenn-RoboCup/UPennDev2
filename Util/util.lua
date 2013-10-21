@@ -199,7 +199,11 @@ function util.pose_global(pRelative, pose)
   local sa = math.sin(pose[3])
   return vector.pose{pose[1] + ca*pRelative[1] - sa*pRelative[2],
                     pose[2] + sa*pRelative[1] + ca*pRelative[2],
-                    util.mod_angle(pose[3] + pRelative[3])}
+--                    util.mod_angle(pose[3] + pRelative[3])}
+                    pose[3] + pRelative[3]}
+
+--SJ: Using modangle here makes the yaw angle jump which kills walk 
+
 end
 
 function util.pose_relative(pGlobal, pose)

@@ -74,7 +74,7 @@ local function save_stance(self,uLeft,uRight,uTorso)
   mcm.set_status_uTorso(uTorso)
 end
 
-local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, supportLeg, initialStep)  
+local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, supportLeg, initialStep,lastStep)  
   local uLeft_next, uRight_next, uTorso_next = uLeft_now, uRight_now, uTorso_now
   local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
   local uSupport
@@ -90,12 +90,12 @@ local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, su
   else
     if supportLeg == 0 then    -- Left support
       uSupport = uLSupport
-      uRight_next = self.step_destination_right(velWalk, uLeft_now, uRight_now)    
+      uRight_next = self.step_destination_right(velWalk, uLeft_now, uRight_now,lastStep)    
       local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
       uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
     else    -- Right support
       uSupport = uRSupport
-      uLeft_next = self.step_destination_left(velWalk, uLeft_now, uRight_now)    
+      uLeft_next = self.step_destination_left(velWalk, uLeft_now, uRight_now,lastStep)    
       local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
       uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
     end  
@@ -120,8 +120,9 @@ local function step_enque(self,uFoot,supportLeg,tStep, zmpMod, stepParams)
   table.insert(self.stepqueue,step)
 end
 
-local function step_enque_trapezoid(self,uFoot,supportLeg, tDoubleSupport, tStep, zmpMod, stepParams, is_last)
-  --DS step with changing ZMP
+local function step_enque_trapezoid(self,uFoot,supportLeg, t0,t1,t2, zmpMod, stepParams, is_last)
+
+--[[
   local step_ds = {}
   step_ds.is_trapezoid = true
   step_ds.supportLeg = 2 --Double Support
@@ -138,6 +139,20 @@ local function step_enque_trapezoid(self,uFoot,supportLeg, tDoubleSupport, tStep
   step_ss.zmpMod = zmpMod or vector.new({0,0,0})
   step_ss.stepParams = stepParams  
   table.insert(self.stepqueue,step_ss)
+--]]
+  local step={}
+  step.is_trapezoid = true
+  step.uFoot = uFoot
+  step.supportLeg = supportLeg
+  step.tStep = t0+t1+t2
+  step.t0 = t0
+  step.t1 = t1
+  step.t2 = t2
+  step.zmpMod = zmpMod or vector.new({0,0,0})
+  step.stepParams = stepParams  
+  step.is_last = is_last --transition signal
+  table.insert(self.stepqueue,step)
+
 end
 
 
@@ -160,24 +175,19 @@ local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initi
     uLeft_next =  util.pose_global(current_step.uFoot,uLeft_now)
     local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
     uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
-  else --Double support
-    if current_step.is_trapezoid and uSupport_now then --Moving Support
-      local next_step = self.stepqueue[1]      
-      if next_step.supportLeg==0 then
-        uSupport_next = util.pose_global(next_step.zmpMod,uLSupport)
-      elseif next_step.supportLeg==1 then
-        uSupport_next = util.pose_global(next_step.zmpMod,uRSupport)
-      else
-        uSupport_next = util.se2_interpolate(0.5, uLSupport, uRSupport)  
-      end
-      uSupport = {uSupport_now, uSupport_next} --initial and final support positions
-    else
-      --Constant Support
-      uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
-    end
-  end 
+  else --Double support    
+    uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
+  end
+  local trapezoidparams={}
+  if current_step.is_trapezoid then
+    trapezoidparams[1]=current_step.t0
+    trapezoidparams[2]=current_step.t1
+    trapezoidparams[3]=current_step.t2
+  end
+
   return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next,
-         uSupport, supportLeg, current_step.tStep, current_step.stepParams, current_step.is_last
+         uSupport, supportLeg, current_step.tStep, current_step.stepParams, current_step.is_last,
+         trapezoidparams
 end
 
 
@@ -194,7 +204,12 @@ local function get_torso(uLeft,uRight)
   return uTorso
 end
 
-local function step_destination_left(vel, uLeft, uRight)
+local function step_destination_left(vel, uLeft, uRight, lastStep)
+  if lastStep then
+    local uLeftNext = util.pose_global({0, 2*footY,0},uRight)
+    return uLeftNext
+  end
+
   local u0 = util.se2_interpolate(.5, uLeft, uRight)
   -- Determine nominal midpoint position 1.5 steps in future
   local u1 = util.pose_global(vel, u0)
@@ -218,7 +233,11 @@ local function step_destination_left(vel, uLeft, uRight)
   return util.pose_global(uLeftRight, uRight)
 end
 
-local function step_destination_right(vel, uLeft, uRight)
+local function step_destination_right(vel, uLeft, uRight,lastStep)
+  if lastStep then
+    local uRightNext = util.pose_global({0, -2*footY,0},uLeft)
+    return uRightNext
+  end
   local u0 = util.se2_interpolate(.5, uLeft, uRight)
   -- Determine nominal midpoint position 1.5 steps in future
   local u1 = util.pose_global(vel, u0)

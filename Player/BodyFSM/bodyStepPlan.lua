@@ -38,17 +38,20 @@ local function calculate_footsteps()
   
   step_queue[1] = {{0,0,0},2, 0.1,1,0.1,{0,0,0},{0,0,0}}
   local step_queue_count = 1;
+  local num_steps = 6
 
-
-  for i=1,10 do
-    step_planner.velCurrent = vector.new({0.05,0,0})
-
+  for i=1,num_steps  do
+    if i==1 then
+      step_planner.velCurrent = vector.new({0.0,0,0})
+    else
+      step_planner.velCurrent = vector.new({0.05,0,0})
+    end
     local new_step
     supportLeg = 1-supportLeg
     step_queue_count = step_queue_count + 1
     initial_step = false
     last_step = false
-    if i==10 then last_step = true end
+    if i==num_steps then last_step = true end
 
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step,last_step)

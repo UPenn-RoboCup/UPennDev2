@@ -14,10 +14,19 @@ local timeout = 15.0
 
 -- Goal position is arm Init, with hands in front, ready to manipulate
 
+--[[
 local qLArmTarget = 
  vector.new({90, 0, 0, -160, -90, -20,0})*Body.DEG_TO_RAD-- arms in front
 local qRArmTarget =
  vector.new({90, 0, 0, -160, 90, 20,-0})*Body.DEG_TO_RAD-- arms in front
+--]]
+
+
+local qLArmTarget = 
+ vector.new({90, 0, 0, -160, -0, -20,0})*Body.DEG_TO_RAD-- arms in front
+local qRArmTarget =
+ vector.new({90, 0, 0, -160, 0, 20,-0})*Body.DEG_TO_RAD-- arms in front
+
 
 
 function state.entry()

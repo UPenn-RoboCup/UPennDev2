@@ -8,9 +8,8 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-fieldOfView 0.785398
-orientation -0.00245117 0.999951 0.00957769 1.70529
-position 2.88249 0.829765 2.01347
+  orientation -0.00245117 0.999951 0.00957769 1.70529
+  position 5.43415 1.34521 1.53043
 }
 Background {
   skyColor [
@@ -27,18 +26,15 @@ DirectionalLight {
   direction 0.5 -0.5 0.5
   intensity 0.5
 }
-DEF FLOOR MetricFloor{
+DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
-  locked TRUE
 }
-#THOROP7 {
 THOROP7_NoBoundaries {
-  translation 0 1.155 1.71
+  translation 2.06869e-05 1.1548 1.71791
+  rotation 0.999998 8.12951e-05 -0.00205051 0.00932753
   controller "thorop"
-  controllerArgs "0 32" 
+  controllerArgs "0 32"
 }
-
-
 DEF GROUND Solid {
   translation 0 0.075 2
   children [
@@ -50,14 +46,14 @@ DEF GROUND Solid {
         }
       }
       geometry DEF GroundBox Box {
-        size 5 0.15 0.20
+        size 5 0.15 0.2
       }
     }
   ]
   boundingObject Transform {
     children [
       Box {
-        size 5 0.15 0.20
+        size 5 0.15 0.2
       }
     ]
   }

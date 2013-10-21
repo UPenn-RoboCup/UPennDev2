@@ -74,7 +74,7 @@ local char_to_event = {
   ['8'] = {'motion_ch','stand'},
   ['9'] = {'motion_ch','walk'},
 
---  ['t'] = {'body_ch','stepover'},
+  ['t'] = {'body_ch','stepover'},
   ['2'] = {'body_ch','stepplan'},
   ['3'] = {'body_ch','stepplan2'},
   ['4'] = {'body_ch','stepplan3'},

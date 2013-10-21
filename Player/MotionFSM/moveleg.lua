@@ -292,13 +292,6 @@ function moveleg.foot_trajectory_square_stair_2(phSingle,uStart,uEnd, stepHeight
   local zHeight0, zHeight1= 0,0,0
 
 
-
-  
-
-
-
-
-
   if walkParam then    
     zHeight0, zHeight1 = walkParam[1],walkParam[3]
     stepHeight = walkParam[2]      
@@ -311,38 +304,41 @@ function moveleg.foot_trajectory_square_stair_2(phSingle,uStart,uEnd, stepHeight
     --New linear speed foot movement
 
     local dTotal = d0+d1+d2; --Total foot movement distance
-    local phase0 = 0.03 / dTotal; --initial 5cm: lifting phase 1
-    local phase1 = d0 / dTotal; --Lifting phase
-    local phase2 = d0+d1 / dTotal; --Movement phase
-    local phase3 = (dTotal-0.03) / dTotal; --Lowering phase
-    local phase4 = 1                       --Final stepdown phase
+    local phase0 = d0 / dTotal;    --Lifting phase
+    local phase1 = d0+d1 / dTotal; --Movement phase
+    local phase2 = 1               --Final stepdown phase
 
 --print("Phases:",phase0,phase1,phase2,phase3)
 
-    if phSingle<phase0 then --Initial lifting phase
-      local ph1 = phSingle/phase0
-      xf,zf = 0, ph1*ph1*0.2;
-      zFoot = zHeight0 + (stepHeight-zHeight0) * zf
-    elseif phSingle<phase1 then --lifting phase      
-      local ph1 = (phSingle-phase0)/(phase1-phase0)
-      xf,zf = 0, 0.2+ph1*0.8;
-      zFoot = zHeight0 + (stepHeight-zHeight0) * zf
-    elseif phSingle<phase2 then --moving phase      
-      local ph1 = (phSingle-phase1)/(phase2-phase1)
-      xf,zf = ph1, 1
-      zFoot = stepHeight
-    elseif phSingle<phase3 then --landing phase      
-      local ph1 = (phSingle-phase2)/(phase3-phase2)
-      xf,zf = 1, 1-ph1*0.8
-      zFoot = zHeight1 + (stepHeight-zHeight1) * zf
+    --Slow lifting/landing 
+    --TODO
+--[[
+    local liftFactor = 1.5;
+    local landFactor = 2.0;
+    local phSingle2
+    if phSingle<phase0 then
+      phSingle2 = phSingle / liftFactor
+    elseif phSingle<phase1 then
+      phSingle2 = phSingle / liftFactor    
     else
-      local ph1 = (phSingle-phase3)/(phase4-phase3)
-      xf,zf = 1, 0.2*(1-ph1)*(1-ph1)
+      phSingle2 = 1- (1-phSingle)/landFactor
+    end  
+--]]
+    local phSingle2 = phSingle
+
+    if phSingle<phase0 then --Lifting phase
+      local ph1 = phSingle2/phase0
+      xf,zf = 0, ph1;
+      zFoot = zHeight0 + (stepHeight-zHeight0) * zf
+    elseif phSingle<phase1 then --Movement phase
+      local ph1 = (phSingle2-phase0)/(phase1-phase0)
+      xf,zf = ph1, 1      
+      zFoot = stepHeight
+    else --landing phase      
+      local ph1 = (phSingle2-phase1)/(phase2-phase1)
+      xf,zf = 1, 1-ph1      
       zFoot = zHeight1 + (stepHeight-zHeight1) * zf
     end
-
-
-
 
   else
     if phSingle<phase1 then --Lifting phase

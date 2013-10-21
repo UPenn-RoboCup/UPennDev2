@@ -18,12 +18,18 @@ local bodyFollow = require'bodyFollow'
 local bodySideways = require'bodySideways'
 local bodyStepOver = require'bodyStepOver'
 local bodyStepPlan = require'bodyStepPlan'
+local bodyStepPlan2 = require'bodyStepPlan2' --90 deg turn
+local bodyStepPlan3 = require'bodyStepPlan3' --sidestep
+local bodyStepPlan4 = require'bodyStepPlan4' --minus 90 deg turn
 
 sm:add_state(bodyTeleop)
 sm:add_state(bodyFollow)
 sm:add_state(bodySideways)
 sm:add_state(bodyStepOver)
 sm:add_state(bodyStepPlan)
+sm:add_state(bodyStepPlan2)
+sm:add_state(bodyStepPlan3)
+sm:add_state(bodyStepPlan4)
 
 -- Setup the transitions for this FSM
 --
@@ -47,6 +53,14 @@ sm:set_transition( bodyStepOver,   'done', bodyInit )
 
 sm:set_transition( bodyInit,   'stepplan', bodyStepPlan )
 sm:set_transition( bodyStepPlan,   'done', bodyInit )
+
+sm:set_transition( bodyInit,   'stepplan2', bodyStepPlan2 )
+sm:set_transition( bodyInit,   'stepplan3', bodyStepPlan3 )
+sm:set_transition( bodyInit,   'stepplan4', bodyStepPlan4 )
+
+sm:set_transition( bodyStepPlan2,   'done', bodyInit )
+sm:set_transition( bodyStepPlan3,   'done', bodyInit )
+sm:set_transition( bodyStepPlan4,   'done', bodyInit )
 
 
 --------------------------

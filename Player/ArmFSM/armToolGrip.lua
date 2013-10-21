@@ -12,6 +12,7 @@ local stage = 1;
 local qLArm, qRArm, trLArm, trRArm, trTarget
 local tool_pos,tool_pos_target
 
+local qLArmTarget0, qRArmTarget0
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -33,6 +34,14 @@ function state.entry()
   tool_pos_target = hcm.get_tool_pos()
 
 
+  local trLArmTarget = vector.new({0.18,0.31, -0.15,
+    0*Body.DEG_TO_RAD,-15*Body.DEG_TO_RAD,0})
+  local trRArmTarget = vector.new({0.18,-0.31, -0.15,
+      0*Body.DEG_TO_RAD,-15*Body.DEG_TO_RAD,0})
+  qLArmTarget0 = Body.get_inverse_larm(qLArm,trLArmTarget,-6.6*Body.DEG_TO_RAD)
+  qRArmTarget0 = Body.get_inverse_rarm(qRArm,trRArmTarget,6.6*Body.DEG_TO_RAD)
+
+
 --tool_pos = {0.40,0.10,-0.05}
 
   stage = 1;  
@@ -50,11 +59,19 @@ function state.update()
   trLArm = Body.get_forward_larm(qLArm)
   trRArm = Body.get_forward_rarm(qRArm)
 
+  print(trLArm[4],trLArm[5],trLArm[6])
 
 --print(unpack(trLArm))
  
 
   if stage==1 then 
+    ret = movearm.setArmJoints(qLArmTarget0,qRArm,dt,
+        {30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,
+        30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD}
+        )
+    if ret==1 then stage=stage+1; end
+  elseif stage==2 then
+    print("222")
     trLArm[1],trLArm[2],trLArm[3] = tool_pos[1],tool_pos[2]+0.05,tool_pos[3]
     local ret = movearm.setArmToPositionAdapt(trLArm,trRArm,dt)    
     if ret==1 then stage=stage+1; end

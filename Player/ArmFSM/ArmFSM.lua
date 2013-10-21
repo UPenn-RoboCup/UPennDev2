@@ -28,6 +28,8 @@ local armChangetoPose2 = require'armChangetoPose2'
 -- Direct teleop override
 local armTeleop = require'armTeleop'
 
+local armRocky = require'armRocky'
+
 -- Wheel specific states
 local armWheelGrip = require'armWheelGrip'
 local armWheelTurn = require'armWheelTurn'
@@ -55,6 +57,8 @@ sm:add_state(armDoorGrip)
 sm:add_state(armDoorRelease)
 sm:add_state(armToolGrip)
 
+sm:add_state(armRocky)
+
 ----------
 -- Event types
 ----------
@@ -65,7 +69,10 @@ sm:add_state(armToolGrip)
 -- Fully autonomous, since the human can estimate the state?
 
 -- Setup the transitions for this FSM
-sm:set_transition(armIdle, 'init', armChangetoPose1)
+--sm:set_transition(armIdle, 'init', armChangetoPose1)
+
+
+sm:set_transition(armIdle, 'init', armRocky)
 
 sm:set_transition(armChangetoPose1, 'done', armPose1)
 sm:set_transition(armChangetoPose2, 'done', armPose2)

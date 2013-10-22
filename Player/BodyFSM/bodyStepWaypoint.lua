@@ -43,13 +43,20 @@ local function robocup_follow( pose, target_pose)
   -- calculate walk step velocity based on ball position
   local vStep = vector.zeros(3)
   -- TODO: Adjust these constants
-  vStep[1] = .60 * rel_pose[1]
-  vStep[2] = .75 * rel_pose[2]
+  vStep[1] = .25 * rel_pose[1]
+  vStep[2] = .25 * rel_pose[2]
   
   -- Reduce speed based on how far away from the waypoint we are
   local scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1)
   vStep = scale * vStep
-  vStep[3] = util.procFunc(0.25*aTurn,0,.15)
+
+--[[
+  if rel_dist>0.5 then
+    vStep[3] = util.procFunc(0.25*aTurn,0,.15)
+  end
+--]]
+  vStep[3] = .05*util.sign(rel_pose[3])
+
 
   -- If we are close to the waypoint and have the right angle threshold, we are fine
   -- TODO: Only with the last point do we care about the angle
@@ -64,12 +71,13 @@ local function robocup_follow( pose, target_pose)
   end
   return vStep, false
 end
-
 local function calculate_footsteps()
   step_planner = libStep.new_planner()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
       step_planner:init_stance()
   supportLeg = 0
+
+  local pose_initial = {uTorso_now[1],uTorso_now[2],uTorso_now[3]}
 
   local target_pose_global = util.pose_global(target_pose,uTorso_now)
 
@@ -121,6 +129,15 @@ local function calculate_footsteps()
     
     step_queue[step_queue_count]=new_step
   end
+
+  local pose_end = {uTorso_next[1],uTorso_next[2],uTorso_next[3]}
+
+  print("Target relative pose:",unpack(target_pose))
+  print("Actual relative pose:",unpack(
+    util.pose_relative(pose_end,pose_initial)
+    ))
+
+
 
   step_queue[step_queue_count+1] = {{0,0,0},2,  0.1,1,0.1,{0,0,0},{0,0,0}}
 

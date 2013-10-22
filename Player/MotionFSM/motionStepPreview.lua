@@ -74,6 +74,8 @@ function walk.entry()
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
   mcm.set_walk_ismoving(1) --We started moving
+  --Reset odometry varialbe
+  Body.init_odometry(uTorso_now)  
 
   --SHM BASED
   local nFootHolds = hcm.get_motion_nfootholds()
@@ -142,6 +144,9 @@ function walk.update()
     elseif supportLeg == 2 then --Double support
     end
     step_planner:save_stance(uLeft,uRight,uTorso)  
+
+    --Update the odometry variable
+    Body.update_odometry(uTorso)
 
     local uZMP = zmp_solver:get_zmp()
     mcm.set_status_uTorso(uTorso)

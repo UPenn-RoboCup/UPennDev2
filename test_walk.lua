@@ -80,6 +80,8 @@ local char_to_event = {
   ['4'] = {'body_ch','stepplan3'},
   ['5'] = {'body_ch','stepplan4'},
 
+  ['6'] = {'body_ch','follow'},
+
 
   --
   ['a'] = {'arm_ch','init'},

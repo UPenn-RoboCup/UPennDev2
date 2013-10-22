@@ -172,7 +172,8 @@ CHEST_LIDAR.posea=[];
             % chest
             CONTROL.chest_depth = true;
             CONTROL.send_control_packet([],[],'vcm','chest_lidar','depths',[.1,5]);
-            CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[1,1,95,1]);
+            %CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[1,1,95,1]);
+            CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[2,1,95,1]);
         end
     end
 
@@ -216,8 +217,21 @@ CHEST_LIDAR.posea=[];
         end
 
         % Extract pose information
-        pose_data = double(zlibUncompress(metadata.c_pose));
-        pose_data = reshape(pose_data,[3 metadata.resolution(1)]);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% TODO: zlib only packs uint8 integers (0-255)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%        pose_data = double(zlibUncompress(metadata.c_pose));
+%        pose_data = reshape(pose_data,[3 metadata.resolution(1)]);
+
+%temporarily using CURRENT pose for all lines instead (will result in mesh smearing)
+pose_data = POSE.pose'*ones(1,metadata.resolution(1));
+
+
+
+
+
+
 
         % Calculate the angles (now support variable resolution for sensor)
         fov_angles = metadata.fov(1) : 1/metadata.reading_per_radian : metadata.fov(2);
@@ -255,7 +269,7 @@ CHEST_LIDAR.posea=[];
         
         % end of update
         tPassed = toc(t0);
-        fprintf('Update lidar: %f seconds.\n',tPassed);
+%        fprintf('Update lidar: %f seconds.\n',tPassed);
     end
 
 
@@ -459,7 +473,8 @@ CHEST_LIDAR.posea=[];
         %Calculate the intersection with the surface z=0
         k = points(2,3)/(points(2,3)-points(1,3));        
         point_intersect = points(1,1:2)*k + points(2,1:2)*(1-k);                
-        point_intersect %This is the new x-y position in LOCAL coordinates
+        
+        point_intersect %This is the new x-y position in GLOBAL coordinates
         WAYPOINTS.add_waypoint(point_intersect(1:2));
     end
 

@@ -171,13 +171,6 @@ local function stream_mesh(mesh)
   -- Streaming?
   if net_settings[1]==0 then return end
 
-  -- Check if the panning is over (for interval streaming)
-  if net_settings[1]==2 then
-    if mesh.current_direction == mesh.prev_direction then
-      return  
-    end
-  end
-
   -- Sensitivity range in meters
   -- Depths when compressing
   local depths = vcm[get_name..'_depths']()
@@ -187,17 +180,12 @@ local function stream_mesh(mesh)
     depths,
     net_settings)
   
-	if net_settings[1]==1 then --Single sending
+	if net_settings[1]==1 then
     net_settings[1] = 0
     local ret, err = mesh_udp_ch:send( metapack..c_mesh )
     if err then print('mesh udp',err) end
     vcm['set_'..mesh.meta.name..'_net'](net_settings)
 		print('Mesh | sent unreliable!',mesh.meta.t)
-  elseif net_settings[1]==2 then --Interval streaming
-    local ret, err = mesh_udp_ch:send( metapack..c_mesh )
-    if err then print('mesh udp',err) end
-    vcm['set_'..mesh.meta.name..'_net'](net_settings)
-    print('Mesh | sent unreliable!',mesh.meta.t)
   elseif net_settings[1]==3 then
     -- Reliable single frame
     net_settings[1] = 0
@@ -248,7 +236,6 @@ local function angle_to_scanlines( lidar, rad )
   end
   -- Save the directions
   lidar.current_direction = direction
-  lidar.prev_direction = prev_direction
 
   -- Find the set of scanlines for copying the lidar reading
   local scanlines = {}

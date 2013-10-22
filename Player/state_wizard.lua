@@ -125,8 +125,7 @@ while true do
 	Body.update()
 
   -- Send the joint state feedback
-  if IS_WEBOTS or t-t_debug>1 then
-    -- Webots debugs every step
+  if IS_WEBOTS or t-t_debug>0.1 then    
     t_debug = t
     send_status_feedback()
   end

@@ -44,6 +44,9 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
+  --TODO: Check whether all FSMs have done initialzing 
+  return 'done'
+
 end
 
 function state.exit()

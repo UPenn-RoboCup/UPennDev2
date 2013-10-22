@@ -93,7 +93,7 @@ local function calculate_footsteps()
   
   while step_queue_count<max_step_count and not arrived do
     if not arrived then
-      if i==1 then
+      if step_queue_count==1 then
         step_planner.velCurrent = vector.new({0.0,0,0})
       else
         step_planner.velCurrent,arrived = robocup_follow(uTorso_now,target_pose)
@@ -141,7 +141,7 @@ local function calculate_footsteps()
 
   --Write to the SHM
   local maxSteps = 40
-  step_queue_vector = vector.zeros(12*maxSteps)
+  step_queue_vector = vector.zeros(13*maxSteps)
   for i=1,#step_queue do    
     local offset = (i-1)*13;
     step_queue_vector[offset+1] = step_queue[i][1][1]

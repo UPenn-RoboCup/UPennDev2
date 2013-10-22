@@ -55,7 +55,7 @@ local function robocup_follow( pose, target_pose)
     vStep[3] = util.procFunc(0.25*aTurn,0,.15)
   end
 --]]
-  vStep[3] = .05*util.sign(rel_pose[3])
+  vStep[3] = math.min(0.15, math.max(-0.15, .25 * rel_pose[3]))
 
 
   -- If we are close to the waypoint and have the right angle threshold, we are fine
@@ -79,8 +79,6 @@ local function calculate_footsteps()
 
   local pose_initial = {uTorso_now[1],uTorso_now[2],uTorso_now[3]}
 
-  local target_pose_global = util.pose_global(target_pose,uTorso_now)
-
   local step_queue={}
 
   local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
@@ -98,7 +96,7 @@ local function calculate_footsteps()
       if i==1 then
         step_planner.velCurrent = vector.new({0.0,0,0})
       else
-        step_planner.velCurrent,arrived = robocup_follow(uTorso_now,target_pose_global)
+        step_planner.velCurrent,arrived = robocup_follow(uTorso_now,target_pose)
       end
     else
       step_planner.velCurrent = vector.new({0.0,0,0})

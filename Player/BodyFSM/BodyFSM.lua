@@ -41,13 +41,30 @@ sm:add_state(bodyStepWaypoint)
 -- Setup the transitions for this FSM
 --
 sm:set_transition( bodyIdle, 'init', bodyInit )
---
+sm:set_transition( bodyInit, 'done', bodyIdle )
+
+sm:set_transition( bodyIdle,   'follow', bodyStepWaypoint )
+sm:set_transition( bodyStepWaypoint,   'done', bodyIdle )
+
+sm:set_transition( bodyIdle,   'stepover', bodyStepOver )
+sm:set_transition( bodyStepOver,   'done', bodyIdle )
+
+--For testing
+sm:set_transition( bodyIdle,   'stepplan', bodyStepPlan )
+sm:set_transition( bodyIdle,   'stepplan2', bodyStepPlan2 )
+sm:set_transition( bodyIdle,   'stepplan3', bodyStepPlan3 )
+sm:set_transition( bodyIdle,   'stepplan4', bodyStepPlan4 )
+sm:set_transition( bodyStepPlan,   'done', bodyIdle )
+sm:set_transition( bodyStepPlan2,   'done', bodyIdle )
+sm:set_transition( bodyStepPlan3,   'done', bodyIdle )
+sm:set_transition( bodyStepPlan4,   'done', bodyIdle )
+
+--[[
 --sm:set_transition( bodyInit,   'follow', bodyFollow )
-sm:set_transition( bodyInit,   'follow', bodyStepWaypoint )
-sm:set_transition( bodyFollow, 'init',   bodyInit )
-sm:set_transition( bodyFollow, 'done',   bodyInit )
+--sm:set_transition( bodyFollow, 'init',   bodyInit )
+--sm:set_transition( bodyFollow, 'done',   bodyIdle )
 --
-sm:set_transition( bodyInit,   'teleop', bodyTeleop )
+sm:set_transition( bodyIdle,   'teleop', bodyTeleop )
 sm:set_transition( bodyTeleop, 'done',   bodyInit   )
 sm:set_transition( bodyTeleop, 'init',   bodyInit   )
 sm:set_transition( bodyTeleop, 'follow', bodyFollow )
@@ -56,21 +73,9 @@ sm:set_transition( bodyInit,   'sideways', bodySideways )
 sm:set_transition( bodySideways, 'init',   bodyInit )
 sm:set_transition( bodySideways, 'done',   bodyInit )
 
-sm:set_transition( bodyInit,   'stepover', bodyStepOver )
-sm:set_transition( bodyStepOver,   'done', bodyInit )
+--]]
 
-sm:set_transition( bodyInit,   'stepplan', bodyStepPlan )
-sm:set_transition( bodyStepPlan,   'done', bodyInit )
 
-sm:set_transition( bodyInit,   'stepplan2', bodyStepPlan2 )
-sm:set_transition( bodyInit,   'stepplan3', bodyStepPlan3 )
-sm:set_transition( bodyInit,   'stepplan4', bodyStepPlan4 )
-
-sm:set_transition( bodyStepPlan2,   'done', bodyInit )
-sm:set_transition( bodyStepPlan3,   'done', bodyInit )
-sm:set_transition( bodyStepPlan4,   'done', bodyInit )
-
-sm:set_transition( bodyStepWaypoint,   'done', bodyInit )
 
 --------------------------
 -- Setup the FSM object --

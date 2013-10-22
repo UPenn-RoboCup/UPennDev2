@@ -70,13 +70,16 @@ sm:add_state(armRocky)
 
 -- Setup the transitions for this FSM
 sm:set_transition(armIdle, 'init', armChangetoPose1)
---sm:set_transition(armIdle, 'init', armRocky)
 
 sm:set_transition(armChangetoPose1, 'done', armPose1)
 sm:set_transition(armChangetoPose2, 'done', armPose2)
 
 sm:set_transition(armPose1, 'ready', armChangetoPose2)
+sm:set_transition(armPose1, 'rocky', armRocky)
 sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
+
+
+sm:set_transition(armRocky, 'reset', armChangetoPose2)
 
 sm:set_transition(armPose2, 'teleop', armTeleop)
 sm:set_transition(armPose2, 'wheelgrab', armWheelGrip)

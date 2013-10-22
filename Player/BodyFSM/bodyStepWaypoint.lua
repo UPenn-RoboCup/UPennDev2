@@ -55,7 +55,7 @@ local function robocup_follow( pose, target_pose)
     vStep[3] = util.procFunc(0.25*aTurn,0,.15)
   end
 --]]
-  vStep[3] = .05*util.sign(rel_pose[3])
+  vStep[3] = math.min(0.15, math.max(-0.15, .25 * rel_pose[3]))
 
 
   -- If we are close to the waypoint and have the right angle threshold, we are fine

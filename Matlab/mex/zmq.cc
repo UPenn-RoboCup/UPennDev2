@@ -90,7 +90,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		mexPrintf("ZMQMEX: Binding to {%s}.\n", zmq_channel);
 		if( (sockets[socket_cnt]=zmq_socket(ctx, ZMQ_PUB))==NULL)
 			mexErrMsgTxt("Could not create socket!");
-		rc = zmq_bind( sockets[socket_cnt], zmq_channel );
+		rc = zmq_connect( sockets[socket_cnt], zmq_channel );
 		if(rc!=0)
 			mexErrMsgTxt("Could not bind to socket!");
 		poll_items[socket_cnt].socket = sockets[socket_cnt];

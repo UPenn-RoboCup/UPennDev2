@@ -474,7 +474,12 @@ pose_data = POSE.pose'*ones(1,metadata.resolution(1));
         k = points(2,3)/(points(2,3)-points(1,3));        
         point_intersect = points(1,1:2)*k + points(2,1:2)*(1-k);                
         
-        point_intersect %This is the new x-y position in GLOBAL coordinates
+        %point_intersect %This is the new x-y position in GLOBAL coordinates
+
+
+
+        point_intersect_local = pose_relative([point_intersect 0],POSE.pose)
+
         WAYPOINTS.add_waypoint(point_intersect(1:2));
     end
 

@@ -50,11 +50,11 @@ function ret=waypointbody()
           leftpos = points2d(1, :);
           rightpos = points2d(2, :);
           if leftpos(1)>0.30 && rightpos(1)>0.30
-              centerpos = (leftpos + rightpos)/2;
-              centerpos(1) = centerpos(1) - 0.3;
-              centerpos(2) = centerpos(2) - 0.05; % TODO: tune
+              centerpos = (leftpos + rightpos)/2;              
               angle = atan2(leftpos(2)-rightpos(2),leftpos(1)-rightpos(1))-pi/2;
               targetwp = [centerpos(1), centerpos(2), angle];
+              Xoffset=-0.47;
+              targetwp = [targetwp(1)+cos(angle)*Xoffset targetwp(2)+sin(angle)*Xoffset angle];
           end
       end      
   end

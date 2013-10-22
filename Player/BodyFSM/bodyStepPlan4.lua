@@ -40,7 +40,7 @@ local function calculate_footsteps()
   local step_queue_count = 1;
 
 
-  for i=1,10 do
+  for i=1,2 do
     step_planner.velCurrent = vector.new({0.0,0,-0.1})
 
     local new_step

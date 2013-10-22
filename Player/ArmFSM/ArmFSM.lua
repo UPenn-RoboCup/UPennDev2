@@ -69,10 +69,8 @@ sm:add_state(armRocky)
 -- Fully autonomous, since the human can estimate the state?
 
 -- Setup the transitions for this FSM
---sm:set_transition(armIdle, 'init', armChangetoPose1)
-
-
-sm:set_transition(armIdle, 'init', armRocky)
+sm:set_transition(armIdle, 'init', armChangetoPose1)
+--sm:set_transition(armIdle, 'init', armRocky)
 
 sm:set_transition(armChangetoPose1, 'done', armPose1)
 sm:set_transition(armChangetoPose2, 'done', armPose2)

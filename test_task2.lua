@@ -74,14 +74,15 @@ local char_to_event = {
   ['8'] = {'motion_ch','stand'},
   ['9'] = {'motion_ch','walk'},
 
-  ['t'] = {'body_ch','stepover'},
-  ['2'] = {'body_ch','stepplan'},
-  ['3'] = {'body_ch','stepplan2'},
-  ['4'] = {'body_ch','stepplan3'},
-  ['5'] = {'body_ch','stepplan4'},
+--  ['t'] = {'body_ch','stepover'},
+  ['w'] = {'body_ch','stepplan'},
+  ['a'] = {'body_ch','stepplan2'},
+  ['d'] = {'body_ch','stepplan3'},
+--  ['5'] = {'body_ch','stepplan4'},
 
 
   --
+--[[
   ['a'] = {'arm_ch','init'},
   ['s'] = {'arm_ch','reset'},
   ['r'] = {'arm_ch','ready'},
@@ -91,6 +92,7 @@ local char_to_event = {
   ['w'] = {'arm_ch','wheelgrab'},
   --
   ['d'] = {'arm_ch','doorgrab'},
+--]]
 }
 
 local char_to_vel = {

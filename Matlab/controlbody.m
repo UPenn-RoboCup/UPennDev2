@@ -47,7 +47,7 @@ ret = CONTROL;
                 'hcm', 'motion', 'sideways_status', 1);
         elseif strcmp(evt, 'stepover')            
             %should define motion fsm as well
-            send_control_packet( 'MotionFSM', 'preview' );        
+            send_control_packet( 'BodyFSM', 'stepover' );        
         else
 
             send_control_packet( 'BodyFSM', evt );

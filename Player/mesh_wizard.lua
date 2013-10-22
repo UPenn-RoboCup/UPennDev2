@@ -266,6 +266,14 @@ end
 local function chest_callback()
   local meta, has_more = chest.lidar_ch:receive()
   local metadata = mp.unpack(meta)
+  
+  if chest.meta.scanlines ~= vcm.get_chest_lidar_scanlines() or
+    chest.meta.fov ~= vcm.get_chest_lidar_fov()
+    then
+    setup_mesh('chest_lidar',chest)
+    print("Chest Resolution:",unpack(chest.meta.resolution))
+  end
+  
   -- Get raw data from shared memory
   local ranges = Body.get_chest_lidar()
   -- Save the body pose info
@@ -296,6 +304,16 @@ end
 local function head_callback()
   local meta, has_more = head.lidar_ch:receive()
   local metadata = mp.unpack(meta)
+  
+  -- Check if we must update our torch data
+  if head.meta.scanlines ~= vcm.get_head_lidar_scanlines() or
+    head.meta.fov ~= vcm.get_head_lidar_fov()
+    then
+    setup_mesh('head_lidar',head)
+    print("Head Resolution:",unpack(head.meta.resolution))
+  end
+  
+  
   -- Get raw data from shared memory
   local ranges = Body.get_head_lidar()
   -- Save the body pose info
@@ -376,20 +394,7 @@ function mesh.update()
   local npoll = channel_polls:poll(channel_timeout)
   -- Stream the current mesh
   stream_mesh(head)
-  stream_mesh(chest)
-  -- Check if we must update our torch data
-  if head.meta.scanlines ~= vcm.get_head_lidar_scanlines() or
-    head.meta.fov ~= vcm.get_head_lidar_fov()
-    then
-    setup_mesh('head_lidar',head)
-    print("Head Resolution:",unpack(head.meta.resolution))
-  end
-  if chest.meta.scanlines ~= vcm.get_chest_lidar_scanlines() or
-    chest.meta.fov ~= vcm.get_chest_lidar_fov()
-    then
-    setup_mesh('chest_lidar',chest)
-    print("Chest Resolution:",unpack(chest.meta.resolution))
-  end  
+  stream_mesh(chest) 
 end
 
 function mesh.exit()

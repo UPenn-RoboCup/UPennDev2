@@ -81,6 +81,11 @@ local function setup_mesh( name, tbl )
 
   -- Resolution
   tbl.meta.resolution = {scan_resolution,fov_resolution}
+  
+  -- Pose information
+  tbl.meta.pose = {}
+  for i=1,scan_resolution do tbl.meta.pose[i] = {0,0,0} end
+  
   -- In memory mesh
   tbl.mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
   -- Mesh buffers for compressing and sending to the user
@@ -90,7 +95,9 @@ local function setup_mesh( name, tbl )
   tbl.scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
   -- Save the exact pose of every scan
   -- TODO: Save the whole whole rotation?
-  tbl.scan_poses = torch.DoubleTensor( scan_resolution, 3 ):zero()
+  --tbl.scan_poses = torch.FloatTensor( scan_resolution, 3 ):zero()
+  -- metadata to point here
+  --tbl.meta.poses = torch.FloatTensor( tbl.scan_poses:storage() )
 
   -- Find the offset for copying lidar readings into the mesh
   -- if fov is from -fov/2 to fov/2 degrees, then offset_idx is zero
@@ -151,14 +158,6 @@ local function prepare_mesh(mesh,depths,net_settings)
   end
   -- Depth data is compressed to a certain range
   mesh.meta.depths = {near,far}
-
-  -- Do we wish to also send the pose data for each scan?
-  if use_pose==1 then
-    mesh.meta.c_pose = zlib.compress(
-      mesh.scan_poses:storage():pointer(),
-      mesh.scan_poses:nElement()
-    )
-  end
 
   return mp.pack(mesh.meta), c_mesh
 end
@@ -304,8 +303,11 @@ local function chest_callback()
 		-- Save the pan angle
 		chest.scan_angles[line] = angle
     -- Save the pose
+    --[[
     local chest_pose = chest.scan_poses:select(1,line)
     chest_pose[1],chest_pose[2],chest_pose[3] = unpack(pose)
+    --]]
+    chest.meta.pose[line] = {unpack(pose)}
   end
   -- Save the body tilt info
   -- TODO: bodyHeight as well?

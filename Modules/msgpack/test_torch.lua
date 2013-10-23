@@ -1,17 +1,16 @@
 package.cpath = '../unix/?.so;'..package.cpath
 package.path = '../../Util/?.lua;'..package.path
+require'unix'
 local torch = require 'torch'
 local util = require 'util'
 local msgpack = require 'msgpack'
 
 torch.Tensor = torch.DoubleTensor
-local aa = torch.rand(100, 100, 100)
+local aa = torch.rand(10000)
+print(aa[1])
 t0 = unix.time()
-array_str = msgpack.pack(aa)
-print('table pack 100x100x100 torch tensor:', unix.time() - t0, #array_str)
-t0 = unix.time()
-raw_str = msgpack.pack(aa, 'raw')
-print('raw pack 100x100x100 torch tensor:', unix.time() - t0, #raw_str)
+raw_str = msgpack.pack(aa)
+print('raw pack 10000 torch tensor:', unix.time() - t0, #raw_str)
 
 t0 = unix.time()
 table_str = msgpack.pack(torch.Tensor({100, 100, 100}))
@@ -20,5 +19,8 @@ print('table unpack:', unix.time() - t0)
 --util.ptable(tbl)
 
 t0 = unix.time()
-th = msgpack.unpack(table_str, 'torch', 'double')
+t_rand = msgpack.unpack(raw_str, 'torch', 'double')
+t_tbl  = msgpack.unpack(table_str, 'torch', 'double')
 print('torch unpack:', unix.time() - t0)
+
+print(t_rand[1])

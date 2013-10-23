@@ -18,15 +18,21 @@ function ret=waypointbody()
   end
 
   function add_waypoint(xy)
+    disp('ADDED');
+    xy
     WAYPOINTS.waypoints_xy=[WAYPOINTS.waypoints_xy;xy];
-    SLAM.update_waypoints(WAYPOINTS.waypoints_xy);
+    if isfield(SLAM,'update_waypoints')  
+      SLAM.update_waypoints(WAYPOINTS.waypoints_xy);
+    end
     LIDAR.update_waypoints(WAYPOINTS.waypoints_xy);
     fprintf('Adding waypoint %.2f, %.2f\n',xy(1),xy(2));
   end
 
   function clear_waypoints(h_omap, ~, flags)
-    WAYPOINTS.waypoints_xy=[];  
-    SLAM.update_waypoints([]);
+    WAYPOINTS.waypoints_xy=[];
+    if isfield(SLAM,'update_waypoints')  
+      SLAM.update_waypoints([]);
+    end
     LIDAR.update_waypoints([]);
   end
 

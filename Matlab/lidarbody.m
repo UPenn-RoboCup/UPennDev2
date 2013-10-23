@@ -1,5 +1,6 @@
 function ret = lidarbody()
 global HEAD_LIDAR CHEST_LIDAR LIDAR H_FIGURE DEBUGMON POSE SLAM CONTROL WAYPOINTS
+global CURSOR
 LIDAR.init = @init;
 LIDAR.update = @update;
 LIDAR.set_meshtype = @set_meshtype;
@@ -11,6 +12,7 @@ LIDAR.clear_points = @clear_points;
 LIDAR.set_zoomlevel = @set_zoomlevel;
 
 LIDAR.update_waypoints = @update_waypoints;
+LIDAR.rotate_view = @rotate_view;
 
 
 % Which mesh to display: 0-HEAD, 1-CHEST
@@ -115,9 +117,9 @@ CHEST_LIDAR.posea=[];
             set(a_mesh,'xtick',[],'ytick',[], 'ztick',[])
             light('Position',[-3 1 3]);
             lighting flat            
-            set(LIDAR.p, 'ButtonDownFcn', @select_3d_mesh);
-            set(LIDAR.h, 'ButtonDownFcn', @select_3d_mesh);
-
+            set(LIDAR.p, 'ButtonDownFcn', @button_down);
+            set(LIDAR.h, 'ButtonDownFcn', @button_down);
+      
             hold on;
               LIDAR.wayline = plot3(a_mesh,0,0,0,'g*-' );
             hold off;
@@ -225,11 +227,8 @@ CHEST_LIDAR.posea=[];
 %        pose_data = reshape(pose_data,[3 metadata.resolution(1)]);
 
 %temporarily using CURRENT pose for all lines instead (will result in mesh smearing)
+
 pose_data = POSE.pose'*ones(1,metadata.resolution(1));
-
-
-
-
 
 
 
@@ -253,6 +252,7 @@ pose_data = POSE.pose'*ones(1,metadata.resolution(1));
             LIDAR.mesh_cnt = LIDAR.mesh_cnt + 1;
             % Save data
             CHEST_LIDAR.ranges = depth_img';
+%'            
             CHEST_LIDAR.fov_angles = fov_angles;
             CHEST_LIDAR.scanline_angles = scanline_angles;
             CHEST_LIDAR.depths = double(metadata.depths);
@@ -458,29 +458,32 @@ pose_data = POSE.pose'*ones(1,metadata.resolution(1));
         LIDAR.selected_points = [LIDAR.selected_points; global_point(1:3)'];
         disp_str = sprintf('Selected (%.3f %.3f %.3f)', ...
             global_point(1),global_point(2),global_point(3) );
+%'            
         DEBUGMON.addtext(disp_str);
     end % select_3d
 
-    function select_3d_mesh(~, ~, flags)
-        clicktype = get(H_FIGURE,'selectionType');
-        if strcmp(clicktype,'alt')>0
-            point = get(gca,'CurrentPoint');
-            posxy = [point(1,1) point(1,2)];
-            zoom_in(posxy);
-            return;
-        end
+    function select_3d_mesh()
+        clicktype = get(H_FIGURE,'selectionType');        
         points = get(gca,'CurrentPoint'); % This returns two 3D points that is pependicular to the selected position
         %Calculate the intersection with the surface z=0
         k = points(2,3)/(points(2,3)-points(1,3));        
         point_intersect = points(1,1:2)*k + points(2,1:2)*(1-k);                
-        
-        %point_intersect %This is the new x-y position in GLOBAL coordinates
-
-
-
+     %point_intersect %This is the new x-y position in GLOBAL coordinates
         point_intersect_local = pose_relative([point_intersect 0],POSE.pose)
-
         WAYPOINTS.add_waypoint(point_intersect(1:2));
+    end
+
+    function button_down(~,~,flags)
+      clicktype = get(H_FIGURE,'selectionType');
+      if strcmp(clicktype,'alt')>0
+        CURSOR.button_alt = 1; %We use this for turning mesh around
+      else
+        select_3d_mesh();
+      end
+    end
+
+    function rotate_view(movement)
+        movement
     end
 
     function update_waypoints(waypoints)    

@@ -38,32 +38,18 @@ ROBOT_IP     = LOCALHOST;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Setup the figure
 global POSE CAMERA LIDAR BODY SLAM NETMON CONTROL HMAP
-setup_gui();
+setup_gui2();
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Open the UDP Receivers
 head_jimg_fd  = udp_recv('new', PORT_HCAMERA);
-left_jimg_fd  = udp_recv('new', PORT_LCAMERA);
-right_jimg_fd = udp_recv('new', PORT_RCAMERA);
-omap_fd = udp_recv('new', PORT_SLAMMAP);
 mesh_fd = udp_recv('new', PORT_MESH);
 feedback_fd = udp_recv('new', PORT_FEEDBACK);
-% hmap_fd = udp_recv('new', PORT_HEIGHTMAP);
 
 %% UDP/ZMQ Polling
 s_head_jimg = zmq( 'fd', head_jimg_fd );
-s_left_jimg = zmq( 'fd', left_jimg_fd );
-s_right_jimg = zmq( 'fd', right_jimg_fd );
-s_omap = zmq( 'fd', omap_fd );
-s_feedback = zmq( 'fd', feedback_fd );
 s_mesh = zmq( 'fd', mesh_fd );
-% s_hmap = zmq( 'fd', hmap_fd );
-
-%% Listen to Interaction devices over zmq
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%s_controller = zmq( 'subscribe', 'ipc', 'controller' );
-%s_skeleton   = zmq( 'subscribe', 'ipc', 'skeleton' );
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+s_feedback = zmq( 'fd', feedback_fd );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Set up the network callbacks
@@ -71,13 +57,8 @@ s_mesh = zmq( 'fd', mesh_fd );
 % TODO: maybe chagne this in the mex file?
 s_callbacks = {};
 s_callbacks{s_head_jimg+1} = CAMERA.update_head;
-s_callbacks{s_left_jimg+1} = CAMERA.update_left;
-s_callbacks{s_right_jimg+1} = CAMERA.update_right;
-s_callbacks{s_omap+1} = SLAM.update_omap;
 s_callbacks{s_feedback+1} = BODY.update;
 s_callbacks{s_mesh+1} = LIDAR.update;
-% s_callbacks{s_hmap+1} = HMAP.update_hmap;
-
 
 % Monitor these callbacks in the network monitor
 NETMON.num_callbacks = numel(s_callbacks);
@@ -91,20 +72,14 @@ for i=1:numel(s_callbacks)
     callback_names{i} = 'Unknown';
 end
 callback_names{s_head_jimg+1} = 'Head Camera';
-callback_names{s_left_jimg+1} = 'Left Hand Camera';
-callback_names{s_right_jimg+1} = 'Right Hand Camera';
-callback_names{s_omap+1} = 'Occupancy Map';
-%callback_names{s_controller+1} = 'Teleop';
 callback_names{s_feedback+1} = 'Feedback';
 callback_names{s_mesh+1} = 'Mesh Image';
-% callback_names{s_hmap+1} = 'Height Map';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sending commands to the robot
 CONTROL.udp_send_id = udp_send( 'init', ROBOT_IP, PORT_UNRELIABLE_RPC );
-%CONTROL.zmq_send_id = zmq( 'publish', 'tcp', ROBOT_IP, PORT_RELIABLE_RPC );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,43 +1,20 @@
 function ret=camerabody()
-global CAMERA
+    global CAMERA
+    cam=[];
+    
+    cam.width = 640;
+    cam.height = 360;    
+    cam.init = @init;
+    cam.update_head = @update_head;   
 
-CAMERA.head=[];
-CAMERA.left=[];
-CAMERA.right=[];
-
-CAMERA.head.width = 640;
-CAMERA.head.height = 360;
-CAMERA.left.width = 320;
-CAMERA.left.height = 240;
-CAMERA.right.width = 320;
-CAMERA.right.height = 240;
-
-CAMERA.init = @init;
-CAMERA.update_head = @update_head;
-CAMERA.update_left = @update_left;
-CAMERA.update_right = @update_right;
-
-ret = CAMERA;
+    ret = cam;
 
     function init(a1,a2,a3)
-        CAMERA.head.a = a1;
-        CAMERA.left.a = a2;
-        CAMERA.right.a = a3;
-        
-        set(a1,'XLim',.5+[0 CAMERA.head.width]);
-        set(a1,'YLim',.5+[0 CAMERA.head.height]);
-        set(a2,'XLim',.5+[0 CAMERA.left.width]);
-        set(a2,'YLim',.5+[0 CAMERA.left.height]);
-        set(a3,'XLim',.5+[0 CAMERA.right.width]);
-        set(a3,'YLim',.5+[0 CAMERA.right.height]);
-        
-        CAMERA.head.image = image('Parent', CAMERA.head.a,'CData',[]);
-        CAMERA.left.image = image('Parent', CAMERA.left.a,'CData',[]);
-        CAMERA.right.image = image('Parent', CAMERA.right.a,'CData',[]);
-        
-        set(CAMERA.head.a, 'ButtonDownFcn', @camera_look);
-        set(CAMERA.left.a, 'ButtonDownFcn', @camera_look);
-        set(CAMERA.right.a, 'ButtonDownFcn', @camera_look);
+        CAMERA.a = a1;
+        set(a1,'XLim',.5+[0 CAMERA.width]);
+        set(a1,'YLim',.5+[0 CAMERA.height]);
+        CAMERA.image = image('Parent', CAMERA.a,'CData',[]);                
+        set(CAMERA.a, 'ButtonDownFcn', @camera_look);        
     end
 
     function [nBytes] = update_head(fd)
@@ -47,53 +24,15 @@ ret = CAMERA;
             nBytes = nBytes + numel(udp_data);
         end        
         [metadata,offset] = msgpack('unpack',udp_data);
-%        disp(metadata)
         cdepth = udp_data(offset+1:end);        
         if strncmp(char(metadata.c),'jpeg',3)==1
-          set(CAMERA.head.image,'Cdata', djpeg(cdepth));
-          set(CAMERA.head.a,'XLim',[1 metadata.width])
-          set(CAMERA.head.a,'YLim',[1 metadata.height])
+          set(CAMERA.image,'Cdata', djpeg(cdepth));
+          set(CAMERA.a,'XLim',[1 metadata.width])
+          set(CAMERA.a,'YLim',[1 metadata.height])
         end
     end
 
-    function [nBytes] = update_left(fd)
-        nBytes = 0;
-        while udp_recv('getQueueSize',fd) > 0
-            udp_data = udp_recv('receive',fd);
-            nBytes = nBytes + numel(udp_data);
-        end
-        if numel( udp_data ) > 60
-            data = add_jpeg_header(udp_data');
-            
-            thor_camera_img = djpeg(data);
-            set(CAMERA.left.image,'Cdata', thor_camera_img);
-        end
-    end
-
-    function [nBytes] = update_right(fd)
-        nBytes = 0;
-        while udp_recv('getQueueSize',fd) > 0
-            udp_data = udp_recv('receive',fd);
-            nBytes = nBytes + numel(udp_data);
-        end
-        if numel( udp_data ) > 60
-            data = add_jpeg_header(udp_data');
-            
-            thor_camera_img = djpeg(data);
-            set(CAMERA.right.image,'Cdata', thor_camera_img);
-        end
-    end
-
-    function camera_look(h_omap, ~, flags)
-        if h_omap==CAMERA.head.a
-            disp('center gaze')
-        elseif h_omap==CAMERA.left.a
-            disp('left gaze')
-        elseif h_omap==CAMERA.right.a
-            disp('right gaze')
-        else
-            return
-        end
+    function camera_look(h_omap, ~, flags)       
         
         %% Configuration variables
         h_fov = 60;

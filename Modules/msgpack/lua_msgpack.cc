@@ -21,15 +21,21 @@
 #include <lua.hpp>
 
 #ifdef TORCH
+
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
+
 #include <torch/luaT.h>
 #include <torch/TH/TH.h>
+
 #ifdef __cplusplus
 }
 #endif
+
+#endif
+
+#ifdef DEBUG
 #include <iostream>
 #endif
 
@@ -42,6 +48,17 @@ extern "C"
 #include <msgpack.h>
 
 #define MT_NAME "msgpack_mt"
+
+#ifdef TORCH
+/* Keep pointers to Torch objects */
+static THByteTensor * b_t;
+static THCharTensor * c_t;
+static THShortTensor * s_t;
+static THIntTensor * i_t;
+static THLongTensor * l_t;
+static THFloatTensor * f_t;
+static THDoubleTensor * d_t;
+#endif
 
 typedef struct {
   const char *str;
@@ -300,149 +317,55 @@ static int lua_msgpack_pack_function(lua_State *L, int index, msgpack_packer *pk
   return 1;
 }
 
-#ifdef TORCH
-template<typename TT>
-static int isContiguous(TT *self)
-{
-  long z = 1;
-  int d;
-  for(d = self->nDimension-1; d >= 0; d--)
-  {
-    if(self->size[d] != 1)
-    {
-      if(self->stride[d] == z)
-        z *= self->size[d];
-      else
-        return 0;
-    }
-  }
-  return 1;
-}
-
-template<typename T, typename TT, char name>
-static int lua_msgpack_pack_torch(lua_State *L, TT* tensorp, msgpack_packer *pk, const char * opt) {
-  THArgCheck(tensorp->nDimension <= 4, 1, "Tensor must have less then four dimensions");
-  void * ptr = NULL;
-  int size = 1, cnt = 0;
-  for (cnt = 0; cnt < tensorp->nDimension; cnt++) {
-    size *= tensorp->size[cnt];
-  }
-
-  ptr = (T *)malloc(size * sizeof(T));
-
-  int is_con = isContiguous<TT>(tensorp);
-  size_t offset = tensorp->storageOffset;
-  void * src_data = tensorp->storage->data + offset;
-  if (is_con) {
-    memcpy(ptr, src_data, size * sizeof(T));
-  } else {
-    switch (tensorp->nDimension) {
-      case 1:
-        for (int x0 = 0; x0 < tensorp->size[0]; x0++) {
-          ((T *)ptr)[x0] = THTensor_fastGet1d(tensorp, x0);
-        }
-        break;
-      case 2:
-        for (int x1 = 0; x1 < tensorp->size[1]; x1++)
-          for (int x0 = 0; x0 < tensorp->size[0]; x0++) {
-            ((T *)ptr)[x1 * tensorp->size[0] + x0] = THTensor_fastGet2d(tensorp, x0, x1);
-          }
-        break;
-      case 3:
-        for (int x2 = 0; x2 < tensorp->size[2]; x2++)
-          for (int x1 = 0; x1 < tensorp->size[1]; x1++)
-            for (int x0 = 0; x0 < tensorp->size[0]; x0++) {
-              ((T *)ptr)[x2 * tensorp->size[1] * tensorp->size[0] + x1 * tensorp->size[0] + x0] = 
-                THTensor_fastGet3d(tensorp, x0, x1, x2);
-            }
-        break;
-      case 4:
-        for (int x3 = 0; x3 < tensorp->size[3]; x3++)
-          for (int x2 = 0; x2 < tensorp->size[2]; x2++)
-            for (int x1 = 0; x1 < tensorp->size[1]; x1++)
-              for (int x0 = 0; x0 < tensorp->size[0]; x0++) {
-                ((T *)ptr)[x3 * tensorp->size[2] * tensorp->size[1] * tensorp->size[2] + 
-                  x2 * tensorp->size[1] * tensorp->size[0] + x1 * tensorp->size[0] + x0] = 
-                  THTensor_fastGet4d(tensorp, x0, x1, x2, x3);
-              }
-        break;
-      default:
-        break;
-    }
-  }
-
-  if (!strcmp(opt, "raw")) {
-    msgpack_pack_raw(pk, size * sizeof(T));
-    msgpack_pack_raw_body(pk, ptr, size * sizeof(T));
-  } else {
-    msgpack_pack_array(pk, size);
-    for (int cnt = 0; cnt < size; cnt++) {
-      switch (name) {
-        case 'd':
-          msgpack_pack_double(pk, ((T *)ptr)[cnt]);
-          break;
-        case 'f':
-          msgpack_pack_float(pk, ((T *)ptr)[cnt]);
-          break;
-        case 'c':
-          msgpack_pack_fix_int8(pk, ((T *)ptr)[cnt]);
-          break;
-        case 'u':
-          msgpack_pack_fix_uint8(pk, ((T *)ptr)[cnt]);
-          break;
-        case 'i':
-          msgpack_pack_int(pk, ((T *)ptr)[cnt]);
-          break;
-        case 's':
-          msgpack_pack_short(pk, ((T *)ptr)[cnt]);
-          break;
-        case 'l':
-          msgpack_pack_long(pk, ((T *)ptr)[cnt]);
-          break;
-        default:
-          break;
-      }
-    }
-  }
-  free((T *)ptr);
-  return 1;
-}
-#endif
-
 static int lua_msgpack_pack_userdata(lua_State *L, int index, msgpack_packer *pk, const char * opt) {
-/*  printf("lua userdata type packing not implemented, return nil\n");
- */
+/* printf("lua userdata type packing not implemented, return nil\n"); */
 #ifdef TORCH
   const char *torch_name = luaT_typename(L, index);
-  void *tensorp = NULL;
-  if (!strcmp(torch_name, "torch.DoubleTensor")) {
-    tensorp = luaT_checkudata(L, index, torch_name);
-    lua_msgpack_pack_torch<double, THDoubleTensor, 'd'>(L, (THDoubleTensor *)tensorp, pk, opt); 
-  } else if (!strcmp(torch_name, "torch.FloatTensor")) {
-    tensorp = luaT_checkudata(L, index, torch_name);
-    lua_msgpack_pack_torch<float, THFloatTensor, 'f'>(L, (THFloatTensor *)tensorp, pk, opt); 
-  } else if (!strcmp(torch_name, "torch.ByteTensor")) {
-    tensorp = luaT_checkudata(L, index, torch_name);
-    lua_msgpack_pack_torch<unsigned char, THByteTensor, 'u'>(L, (THByteTensor *)tensorp, pk, opt); 
-  } else if (!strcmp(torch_name, "torch.CharTensor")) {
-    tensorp = luaT_checkudata(L, index, torch_name);
-    lua_msgpack_pack_torch<char, THCharTensor, 'c'>(L, (THCharTensor *)tensorp, pk, opt); 
-  } else if (!strcmp(torch_name, "torch.ShortTensor")) {
-    tensorp = luaT_checkudata(L, index, torch_name);
-    lua_msgpack_pack_torch<short, THShortTensor, 's'>(L, (THShortTensor *)tensorp, pk, opt); 
-  } else if (!strcmp(torch_name, "torch.IntTensor")) {
-    tensorp = luaT_checkudata(L, index, torch_name);
-    lua_msgpack_pack_torch<int, THIntTensor, 'i'>(L, (THIntTensor *)tensorp, pk, opt); 
-  } else if (!strcmp(torch_name, "torch.LongTensor")) {
-    tensorp = luaT_checkudata(L, index, torch_name);
-    lua_msgpack_pack_torch<long, THLongTensor, 'l'>(L, (THLongTensor *)tensorp, pk, opt); 
-  } else {
-    msgpack_pack_nil(pk);
-    luaL_error(L, "unknown Torch Tensor type ");
+  // just use byte tensor - should be fine
+  THByteTensor *tensorp  = (THByteTensor *)luaT_checkudata(L, index, torch_name);
+  THArgCheck(tensorp->nDimension==1, 1, "Tensor must have only one dimension.");
+  
+  // find how many bytes
+  size_t nbytes = tensorp->size[0];
+  // switch on the type
+  switch(torch_name[6]){
+    case 'B':
+      nbytes*=sizeof(unsigned char);
+      break;
+    case 'C':
+      nbytes*=sizeof(char);
+      break;
+    case 'S':
+      nbytes*=sizeof(short);
+      break;
+    case 'L':
+      nbytes*=sizeof(long);
+      break;
+    case 'I':
+    case 'U':
+      nbytes*=sizeof(int);
+      break;
+    case 'F':
+      nbytes*=sizeof(float);
+      break;
+    case 'D':
+      nbytes*=sizeof(double);
+      break;
+    default:
+      return luaL_error(L, "unknown Torch Tensor type ");
   }
 
-#endif
+  // set the raw header in msgpack
+  msgpack_pack_raw(pk, nbytes);
+  // find the torch data
+  void * src_data = tensorp->storage->data + tensorp->storageOffset;
+  // pack the data as raw
+  msgpack_pack_raw_body(pk, src_data, nbytes);
   return 1;
+#else
+  return luaL_error(L, "unknown Torch Tensor type ");
+#endif
+  
 }
 
 static int lua_msgpack_pack_thread(lua_State *L, int index, msgpack_packer *pk, const char * opt) {

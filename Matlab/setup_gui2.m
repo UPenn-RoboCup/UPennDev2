@@ -6,43 +6,7 @@
 function [] = setup_gui()
     warning off;
     global H_FIGURE;
-    global CAMERA LIDAR BODY SLAM NETMON CONTROL HMAP DEBUGMON WAYPOINTS
-
-    camera_sq_sz = .5;
-    buffer = 0.01;
-
-    FIRST_COL  = 0 + buffer/2;
-    SECOND_COL = (1-camera_sq_sz)/2 + buffer/2;
-    THIRD_COL  = 1-(1-camera_sq_sz)/2 + buffer/2;
-
-    FIRST_ROW = 1-camera_sq_sz/2 + buffer/2;
-    SECOND_ROW_CAM = 1-camera_sq_sz + buffer/2;
-    THIRD_ROW_CAM = 0 + buffer/2;
-
-    FIRST_COL_W = (1-camera_sq_sz)/2 - buffer;
-    SECOND_COL_W = camera_sq_sz - buffer;
-    THIRD_COL_W = (1-camera_sq_sz)/2 - buffer;
-
-    FIRST_ROW_H = camera_sq_sz/2 - buffer;
-    SECOND_ROW_H = camera_sq_sz/2 - buffer;
-    THIRD_ROW_H = 1-camera_sq_sz - buffer;
-
-    sz1 = 0.3;
-    sz2 = 0.76;
-
-    FIRST_ROW = 1-sz1 + buffer/2;
-    SECOND_ROW = 1-sz2 + buffer/2;
-    THIRD_ROW = 0 + buffer/2;
-
-    FIRST_ROW_H = sz1 - buffer;
-    SECOND_ROW_H = (sz2-sz1) - buffer;
-    THIRD_ROW_H = 1-(sz2) - buffer;
-
-
-
-
-
-
+    global CAMERA LIDAR BODY SLAM NETMON CONTROL HMAP DEBUGMON WAYPOINTS CURSOR
 
     %% Setup the main figure
     f = figure(1);
@@ -58,21 +22,30 @@ function [] = setup_gui()
         'position',[1 1 800 450], ...
         'doublebuffer','off' );
 
-    % 	'KeyPressFcn',@KeyResponse);
-    %'position',[1 1 1600 900], ...
-
     CONTROL = controlbody();
     WAYPOINTS = waypointbody();
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    % Head Camera
+    
+    HCAMERA_AXES = axes('Parent', H_FIGURE, ...
+        'YDir', 'reverse','XTick', [],'YTick', [], 'Units', 'Normalized', ...
+        'Position', [0.7 0.65 0.3 0.35]);
+
+    CAMERA = camerabody();
+    CAMERA.init(HCAMERA_AXES);
+        
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     H_MESH_AXES = axes('Parent', H_FIGURE, ...
         'XTick', [], 'YTick', [], 'Units', 'Normalized', ...
-        'Position', [SECOND_COL+0.05 0.17 SECOND_COL_W-0.10 0.3]);
+        'Position', [0.05 0.25 0.5 0.5]);
 
     H_DMAP_AXES = axes('Parent', H_FIGURE, ...
         'XTick', [], 'YTick', [], 'Units', 'Normalized', ...
-        'Position', [THIRD_COL SECOND_ROW THIRD_COL_W SECOND_ROW_H]);
+        'Position', [0.7 0.10 0.3 0.55]);
 
     % Robot visualization
 
@@ -81,19 +54,22 @@ function [] = setup_gui()
 
     rb1=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'View 1', 'Units', 'Normalized', ...
-        'Position', [SECOND_COL SECOND_ROW_CAM-0.06 0.05 0.04] );
+        'Position', [0 0.95 0.1 0.05] );
 
     rb2=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'View 2', 'Units', 'Normalized', ...
-        'Position', [SECOND_COL SECOND_ROW_CAM-0.10 0.05 0.04] );
+        'Position', [0.1 0.95 0.1 0.05] );
 
     rb3=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'View 3', 'Units', 'Normalized', ...
-        'Position', [SECOND_COL SECOND_ROW_CAM-0.14 0.05 0.04] );
+        'Position', [0.2 0.95 0.1 0.05] );
 
     rb4=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'View 4', 'Units', 'Normalized', ...
-        'Position', [SECOND_COL SECOND_ROW_CAM-0.18 0.05 0.04] );
+        'Position', [0.3 0.95 0.1 0.05] );
+    rb5=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', 'Show Robot', 'Units', 'Normalized', ...
+        'Position', [0.4 0.95 0.1 0.05] );
 
     set(rb1,'CallBack',{BODY.set_viewpoint,1});
     set(rb2,'CallBack',{BODY.set_viewpoint,2});
@@ -101,21 +77,32 @@ function [] = setup_gui()
     set(rb4,'CallBack',{BODY.set_viewpoint,4});
 
 
-    % 3d mesh controls
 
+    % 3d mesh controls
     LIDAR = lidarbody();
     LIDAR.init(H_DMAP_AXES,H_MESH_AXES);
 
     lb1=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Head LIDAR', 'Units', 'Normalized', ...
-        'Position', [SECOND_COL SECOND_ROW_CAM-0.26 0.05 0.04] );
-
+        'Position', [0.6 0.95 0.1 0.05] );
     lb2=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Chest LIDAR', 'Units', 'Normalized', ...
-        'Position', [SECOND_COL SECOND_ROW_CAM-0.30 0.05 0.04] );
+        'Position', [0.6 0.9 0.1 0.05] );
+    sb3=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', 'Clear', 'Units', 'Normalized', ...        
+        'Position', [0.6 0.85 0.1 0.05] );    
+
+    sb4=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', 'Range 1', 'Units', 'Normalized', ...        
+        'Position', [0.6 0.8 0.1 0.05] );    
+
+    set(lb1,'CallBack',{LIDAR.set_meshtype,0});
+    set(lb2,'CallBack',{LIDAR.set_meshtype,1});
+    set(sb3,'CallBack',{WAYPOINTS.clear_waypoints});
 
     %depth map controls
 
+%{
     lmb1 = uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', '+', 'Units', 'Normalized', ...
         'Position', [THIRD_COL+0.00 SECOND_ROW-0.05 0.02 0.04]);
@@ -138,72 +125,23 @@ function [] = setup_gui()
         'FontSize', 14, ...
         'Position', [THIRD_COL+0.00 SECOND_ROW-0.15 0.04 0.04]);
 
-    set(lb1,'CallBack',{LIDAR.set_meshtype,0});
-    set(lb2,'CallBack',{LIDAR.set_meshtype,1});
     set(lmb1,'CallBack',{LIDAR.set_zoomlevel,1});
     set(lmb2,'CallBack',{LIDAR.set_zoomlevel,2});
     set(lmb3,'CallBack',{LIDAR.clear_points});
     set(lmb4,'CallBack',{LIDAR.set_img_display});
     set(lmb5,'CallBack',{LIDAR.get_depth_img});
 
-    % Various calculations
+%}
+   
 
-    MODELS = models();
 
-    lc1 = uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
-        'String', 'Wheel', 'Units', 'Normalized', ...
-        'FontSize', 14, ...
-        'Position', [THIRD_COL-0.05 SECOND_ROW_CAM-0.05 0.04 0.04]);
-    lc2 = uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
-        'String', 'Door', 'Units', 'Normalized', ...
-        'FontSize', 14, ...
-        'Position', [THIRD_COL-0.05 SECOND_ROW_CAM-0.09 0.04 0.04]);
-    lc3 = uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
-        'String', 'Tool', 'Units', 'Normalized', ...
-        'FontSize', 14, ...
-        'Position', [THIRD_COL-0.05 SECOND_ROW_CAM-0.13 0.04 0.04]);
-
-    lc4 = uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
-        'String', 'Step', 'Units', 'Normalized', ...
-        'FontSize', 14, ...
-        'Position', [THIRD_COL-0.05 SECOND_ROW_CAM-0.17 0.04 0.04]);
-
-    set(lc1,'CallBack',MODELS.wheel_calc);
-    set(lc2,'CallBack',MODELS.door_calc);
-    set(lc3,'CallBack',MODELS.tool_calc);
-    set(lc4,'CallBack',MODELS.step_calc);
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    % Head Camera
-    
-    HCAMERA_AXES = axes('Parent', H_FIGURE, ...
-        'YDir', 'reverse','XTick', [],'YTick', [], 'Units', 'Normalized', ...
-        'Position', [SECOND_COL SECOND_ROW_CAM SECOND_COL_W camera_sq_sz-buffer]);
-    
-    % Left hand camera
-    
-    LCAMERA_AXES = axes('Parent', H_FIGURE, ...
-        'XTick', [], 'YTick', [], 'Units', 'Normalized', ...
-        'Position', [FIRST_COL FIRST_ROW FIRST_COL_W FIRST_ROW_H]);
-    
-    % Right hand camera
-    RCAMERA_AXES = axes('Parent', H_FIGURE, ...
-        'XTick', [], 'YTick', [], 'Units', 'Normalized', ...
-        'Position', [THIRD_COL FIRST_ROW THIRD_COL_W FIRST_ROW_H]);
-    
-    CAMERA = camerabody();
-    CAMERA.init(HCAMERA_AXES,LCAMERA_AXES,RCAMERA_AXES);
-    
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+%{    
     % SLAM image
     H_SLAM_AXES = axes('Parent', H_FIGURE, ...
         'XDir','reverse', 'XTick', [], 'YTick', [],'Units', 'Normalized', ...
         'Position', [FIRST_COL SECOND_ROW FIRST_COL_W SECOND_ROW_H]);
     
-    SLAM  = slambody();
+    SLAM = slambody();
     SLAM.init( H_SLAM_AXES);
     
     sb1=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
@@ -213,15 +151,13 @@ function [] = setup_gui()
     sb2=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', '-', 'Units', 'Normalized', ...
         'Position', [SECOND_COL-0.03 SECOND_ROW-0.05 0.02 0.04]);
-   
-    sb3=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
-        'String', 'Clear', 'Units', 'Normalized', ...
-        'Position', [SECOND_COL-0.05 SECOND_ROW-0.09 0.04 0.04]);
 
     set(sb1,'CallBack',{SLAM.set_zoomlevel,1});
     set(sb2,'CallBack',{SLAM.set_zoomlevel,2});
-    set(sb3,'CallBack',{WAYPOINTS.clear_waypoints});
+  %}
+
     
+  
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
@@ -229,20 +165,14 @@ function [] = setup_gui()
     
     NETMON = netmonbody();
 
+    H_NETWORK_TEXT = uicontrol('Style','text','Units','Normalized',...
+           'Position', [0.4 0.1 0.2 0.05] );        
     H_NETWORK_AXES = axes('Parent', H_FIGURE, ...
         'XTick', [], 'YTick', [], 'Units', 'Normalized', ...
-        'Position', [SECOND_COL-0.065 0.005 0.18 0.080]);
-    
-    H_NETWORK_TEXT = uicontrol('Style','text','Units','Normalized',...
-        'Position', [SECOND_COL-0.065 0.085 0.18 0.02]);
-    
+        'Position', [0.4 0 0.2 0.1] );            
     H_DEBUG_TEXT = uicontrol('Style','text','Units','Normalized',...
-        'Position', [SECOND_COL-0.065+0.18 0.005 0.11 0.10]);
-    
-    
+        'Position', [0.6 0 0.1 0.05] );   
     NETMON.init(H_NETWORK_AXES,H_NETWORK_TEXT);
-    
-    
     
     DEBUGMON = debugbody();
     DEBUGMON.init(H_DEBUG_TEXT);
@@ -250,65 +180,41 @@ function [] = setup_gui()
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% Body FSM control
     %%
+
     b1=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Init', ...
         'FontSize', 14, ...
         'Units', 'Normalized', ...
-        'Position', [0.01 SECOND_ROW-0.06 0.09 0.06]);
-
-    b4=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
-        'String', 'Teleop', ...
-        'FontSize', 14, ...
-        'Units', 'Normalized', ...
-        'Position', [0.10 SECOND_ROW-0.06 0.09 0.06] ...
-        );
-
+        'Position', [0 0 0.1 0.05] );    
     b2=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Approach', ...
         'FontSize', 14, ...
         'Units', 'Normalized', ...
-        'Position', [0.01 SECOND_ROW-0.12 0.09 0.06] ...
-        );
-
-    b7=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'Position', [0.1 0 0.1 0.05] );            
+    b3=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Stepover', ...
         'FontSize', 14, ...
         'Units', 'Normalized', ...
-        'Position', [0.10 SECOND_ROW-0.12 0.09 0.06] ...
-        );
-
-    b3=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'Position', [0.2 0 0.1 0.05] );            
+    b4=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Navigate', ...
         'FontSize', 14, ...
         'Units', 'Normalized', ...
-        'Position', [0.01 SECOND_ROW-0.18 0.18 0.06] ...
-        );
-    b5=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
-        'String', 'Sideways', ...
-        'FontSize', 14, ...
-        'Units', 'Normalized', ...
-        'Position', [0.01 SECOND_ROW-0.24 0.09 0.06] ...
-        );
-    b6=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
-        'String', 'Sideways Done', ...
-        'FontSize', 14, ...
-        'Units', 'Normalized', ...
-        'Position', [0.10 SECOND_ROW-0.24 0.09 0.06] ...
-        );
+        'Position', [0.3 0 0.1 0.05] );    
 
     set(b1,'CallBack',{CONTROL.body_control,'init'});   
-    set(b2,'CallBack',{CONTROL.body_control,'approach'});
-    set(b3,'CallBack',{CONTROL.body_control,'navigate'});
-    set(b4,'CallBack',{CONTROL.body_control,'teleop'});
-    set(b5,'CallBack',{CONTROL.body_control,'sideways'});
-    set(b6,'CallBack',{CONTROL.body_control,'sidedone'});
-    set(b7,'CallBack',{CONTROL.body_control,'stepover'});
+    set(b2,'CallBack',{CONTROL.body_control,'approach'});    
+    set(b3,'CallBack',{CONTROL.body_control,'stepover'});
+    set(b4,'CallBack',{CONTROL.body_control,'navigate'});        
 
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% Head FSM control
     %%
     
+
+%{
+
     h1=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Head Fixed', ...
         'FontSize', 14, ...
@@ -337,45 +243,101 @@ function [] = setup_gui()
     set(h2,'CallBack',{CONTROL.head_control,'center'});
     set(h3,'CallBack',{CONTROL.head_control,'tiltscan'});
     set(h4,'CallBack',{CONTROL.head_control,'stepscan'});
+%}
+
+
+
+
+ % Various calculations
+
+    MODELS = models();
+
+    lc1 = uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', 'Wheel', 'Units', 'Normalized', ...
+        'FontSize', 14, ...
+        'Position', [0.8,0.05,0.1,0.05]);
+    lc2 = uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', 'Door', 'Units', 'Normalized', ...
+        'FontSize', 14, ...
+        'Position', [0.9,0.05,0.1,0.05]);
+    set(lc1,'CallBack',MODELS.wheel_calc);
+    set(lc2,'CallBack',MODELS.door_calc);
+
+%{
+    lc3 = uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', 'Tool', 'Units', 'Normalized', ...
+        'FontSize', 14, ...
+        'Position', [THIRD_COL-0.05 SECOND_ROW_CAM-0.13 0.04 0.04]);
+
+    lc4 = uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', 'Step', 'Units', 'Normalized', ...
+        'FontSize', 14, ...
+        'Position', [THIRD_COL-0.05 SECOND_ROW_CAM-0.17 0.04 0.04]);
+    set(lc3,'CallBack',MODELS.tool_calc);
+    set(lc4,'CallBack',MODELS.step_calc);
+%}
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% Arm state machine control
     
-    ARM_CONTROL_ROW = SECOND_ROW;
     a1=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Init', ...
         'FontSize', 14, ...
         'Units', 'Normalized', ...
-        'Position', [THIRD_COL+.05 ARM_CONTROL_ROW-0.06 0.05 0.06]);
+        'Position', [0.7,0.05,0.1,0.05]);
     
     a2=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Ready', ...
         'FontSize', 14, ...
         'Units', 'Normalized', ...
-        'Position', [THIRD_COL+.1 ARM_CONTROL_ROW-0.06 0.05 0.06]);
+        'Position', [0.7,0,0.1,0.05]);
 
     a3=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Reset', ...
         'FontSize', 14, ...
         'Units', 'Normalized', ...
-        'Position', [THIRD_COL+.15 ARM_CONTROL_ROW-0.06 0.05 0.06]);
-    % grabbing
+        'Position', [0.8,0,0.1,0.05]);
+    
     a4=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Grab', ...
         'FontSize', 14, ...
         'Units', 'Normalized', ...
-        'Position', [THIRD_COL+.05 ARM_CONTROL_ROW-0.12 0.05 0.06]);
+        'Position', [0.9,0,0.1,0.05]);
+
+%{    
     a5=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Teleop', ...
         'FontSize', 14, ...
         'Units', 'Normalized', ...
         'Position', [THIRD_COL+.1 ARM_CONTROL_ROW-0.12 0.05 0.06]);
-    
+%}  
         
     set(a1,'CallBack',{CONTROL.arm_control,'init'});
     set(a2,'CallBack',{CONTROL.arm_control,'ready'});
     set(a3,'CallBack',{CONTROL.arm_control,'reset'});
     set(a4,'CallBack',{CONTROL.arm_control,'grab'});
-    set(a5,'CallBack',{CONTROL.arm_control,'teleop'});
+%    set(a5,'CallBack',{CONTROL.arm_control,'teleop'});
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %Drag handling
+    CURSOR=[];
+    CURSOR.button_alt= 0;
+    CURSOR.last_pos = get (gcf, 'CurrentPoint');
+    CURSOR.movement = [0 0];
+
+    function mouseMove(obj,evt)
+        C = get (gcf, 'CurrentPoint');
+        if CURSOR.button_alt==1             
+            CURSOR.movement = C-CURSOR.last_pos;           
+            cmv=CURSOR.movement
+            
+        end
+        CURSOR.last_pos = C;
+    end    
+
+    function mouseRelease(obj,evt)
+        CURSOR.button_alt = 0;
+    end
+    set(gcf, 'WindowButtonMotionFcn', @mouseMove);
+    set(gcf, 'WindowButtonUpFcn',     @mouseRelease);
 end

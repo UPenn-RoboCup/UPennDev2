@@ -349,7 +349,9 @@ function ret = robotbody()
     POSE.battery = double(data.battery);
     POSE.rpy = double(data.rpy);
     POSE.body_height = double(data.body_height);
-    SLAM.update_pose(POSE.pose,POSE.pose_slam);
+    if isfield(SLAM,'update_pose')
+      SLAM.update_pose(POSE.pose,POSE.pose_slam);
+    end
   end
 
   ret= BODY;

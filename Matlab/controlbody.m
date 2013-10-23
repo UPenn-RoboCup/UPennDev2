@@ -6,18 +6,11 @@ CONTROL=[];
 CONTROL.body=[];
 CONTROL.head=[];
 CONTROL.arm=[];
-CONTROL.setup_slambody_controls = @setup_slambody_controls;
-CONTROL.setup_robotbody_controls = @setup_robotbody_controls;
-CONTROL.setup_lidarbody_controls = @setup_lidarbody_controls;
-CONTROL.setup_model_controls = @setup_model_controls;
 
-CONTROL.setup_body_controls = @setup_body_controls;
-CONTROL.setup_head_controls = @setup_head_controls;
-CONTROL.setup_arm_controls = @setup_arm_controls;
-CONTROL.setup_wp_controls = @setup_wp_controls;
-
+CONTROL.body_control = @body_control;
+CONTROL.head_control = @head_control;
+CONTROL.arm_control = @arm_control;
 CONTROL.send_control_packet=@send_control_packet;
-
 
 CONTROL.udp_send_id = -1;
 ret = CONTROL;
@@ -70,69 +63,6 @@ ret = CONTROL;
         send_control_packet('MotionFSM',evt);
     end
 
-    function setup_slambody_controls(b1,b2,b3)
-        set(b1,'CallBack',{SLAM.set_zoomlevel,1});
-        set(b2,'CallBack',{SLAM.set_zoomlevel,2});
-        set(b3,'CallBack',{WAYPOINTS.clear_waypoints});
-    end
-
-    function setup_robotbody_controls(b1,b2,b3,b4)
-        set(b1,'CallBack',{BODY.set_viewpoint,1});
-        set(b2,'CallBack',{BODY.set_viewpoint,2});
-        set(b3,'CallBack',{BODY.set_viewpoint,3});
-        set(b4,'CallBack',{BODY.set_viewpoint,4});
-    end
-
-    function setup_lidarbody_controls(b1,b2, lmb1,lmb2,lmb3,lmb4,lmb5)
-        set(b1,'CallBack',{LIDAR.set_meshtype,0});
-        set(b2,'CallBack',{LIDAR.set_meshtype,1});
-        
-        set(lmb1,'CallBack',{LIDAR.set_zoomlevel,1});
-        set(lmb2,'CallBack',{LIDAR.set_zoomlevel,2});
-        set(lmb3,'CallBack',{LIDAR.clear_points});
-        set(lmb4,'CallBack',{LIDAR.set_img_display});
-        set(lmb5,'CallBack',{LIDAR.get_depth_img});
-    end
-
-    function setup_model_controls(b1,b2,b3, b4)
-        set(b1,'CallBack',MODELS.wheel_calc);
-        set(b2,'CallBack',MODELS.door_calc);
-        set(b3,'CallBack',MODELS.tool_calc);
-        set(b4,'CallBack',MODELS.step_calc);
-    end
-
-    function setup_body_controls(b1,b2,b3,b4,b5,b6,b7)
-        set(b1,'CallBack',{@body_control,'init'});
-        set(b2,'CallBack',{@body_control,'approach'});
-        set(b3,'CallBack',{@body_control,'navigate'});
-        set(b4,'CallBack',{@body_control,'teleop'});
-        set(b5,'CallBack',{@body_control,'sideways'});
-        set(b6,'CallBack',{@body_control,'sidedone'});
-        set(b7,'CallBack',{@body_control,'stepover'});
-    end
-
-    function setup_head_controls(b1,b2,b3,b4)
-        CONTROL.head.fixed = b1;
-        CONTROL.head.freelook = b2;
-        CONTROL.head.qscan = b3;
-        CONTROL.head.scan = b4;
-        set(b1,'CallBack',{@head_control,'reset'});
-        set(b2,'CallBack',{@head_control,'center'});
-        set(b3,'CallBack',{@head_control,'tiltscan'});
-        set(b4,'CallBack',{@head_control,'stepscan'});
-    end
-
-    function setup_arm_controls(b1,b2,b3,b4,b5)
-        % standard
-        set(b1,'CallBack',{@arm_control,'init'});
-        set(b2,'CallBack',{@arm_control,'ready'});
-        set(b3,'CallBack',{@arm_control,'reset'});
-        % grab
-        set(b4,'CallBack',{@arm_control,'grab'});
-        set(b5,'CallBack',{@arm_control,'teleop'});
-    end
-
-%
     function set_waypoints(flags)
         if flags==1
             send_control_packet('BodyFSM','teleop');
@@ -178,13 +108,10 @@ ret = CONTROL;
                     'hcm', 'motion', 'waypoint_frame', 1); %Global
             end
         end
-        %leave it for a bit for testing
-        %SLAM.clear_waypoint();
     end
 
 
     function send_control_packet( fsmtype, event, shared, segment, key, data )
-        
         disp('Sending a control packet')
         
         senddata=[];

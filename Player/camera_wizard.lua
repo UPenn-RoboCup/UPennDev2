@@ -10,6 +10,7 @@ local jpeg       = require'jpeg'
 local udp        = require'udp'
 local mp         = require'msgpack'
 local unix       = require'unix'
+local util       = require'util'
 -- Track the cameras
 local wait_channels = {}
 local cameras = {}
@@ -17,21 +18,23 @@ local cameras = {}
 -- Use wired
 local operator = Config.net.operator.wired
 
-local function setup_camera(cam,name)
+local function setup_camera(cam,name,net)
   -- Get the config values
-  local dev     = cam.head.device
-  local fps     = cam.head.fps
-  local quality = cam.head.quality
-  local width, height = unpack(Config.camera.head.resolution)
+  local dev     = cam.device
+  local fps     = cam.fps
+  local quality = cam.quality
+  local width, height = unpack(cam.resolution)
+  local format = cam.format
   -- Save the metadata
   local meta = {}
   meta.t = unix.time()
+  meta.count = 0
   meta.name = name..'_camera'
   meta.width = width
   meta.height = height
   
   -- Open the camera
-  local dev = uvc.init(dev, width, height, 'yuyv', 1, fps)
+  local dev = uvc.init(dev, width, height, format, 1, fps)
   -- Open the local channel for logging
   local cam_pub_ch = simple_ipc.new_publisher(meta.name)
   -- Open the unreliable network channel
@@ -43,35 +46,53 @@ local function setup_camera(cam,name)
   camera.dev  = dev
   camera.pub  = cam_pub_ch
   camera.udp  = camera_udp_ch
+  camera.quality = cam.quality
+  camera.format = format
   return camera
 end
 
 -- Open each of the cameras
-for name,cam in pairs(Config.cameras) do
+for name,cam in pairs(Config.camera) do
+
+  -- Debug
+  print(util.color('Setting up','green'),name)
+
   local net = Config.net.camera[name]
   -- Open the camera
   local camera = setup_camera(cam,name,net)
   -- Create the camera callback function
   local camera_poll = {}
-  camera_poll.socket_handle = camera:descriptor()
+  camera_poll.socket_handle = camera.dev:descriptor()
   camera_poll.ts = unix.time()
   camera_poll.count = 0
   camera_poll.callback = function()
-    local img, head_img_sz = camera:get_image()
+    local img, head_img_sz = camera.dev:get_image()
+--print(img,head_img_sz)
     -- Update the metadata
     camera.meta.t = unix.time()
     camera.meta.c = 'jpeg'
     camera.meta.count = camera.meta.count + 1
-    local metapack = mp.pack(meta)
+    local metapack = mp.pack(camera.meta)
     -- Compress the image
-    jpeg.set_quality( quality )
-    local jimg = jpeg.compress_yuyv(img,width,height)
+    local c_img
+    if camera.format=='yuyv' then
+      jpeg.set_quality( camera.quality )
+      c_img = jpeg.compress_yuyv(img,camera.meta.width,camera.meta.height)
+    else
+      c_img = tostring(carray.char(img,head_img_sz))
+      print('c_img',camera.meta.name,camera.format,#c_img)
+    end
     -- Send over UDP
-    local udp_ret, err = camera_udp_ch:send( metapack..jimg )
+    local udp_ret, err = camera.udp:send( metapack..c_img )
     if err then print(camera.meta.name,'udp error',err) end
     -- Send to the local channel for logging
-    cam_pub_ch:send( {mp.pack(meta), jimg} )
+    camera.pub:send( {mp.pack(meta), c_img} )
   end
+
+  -- Debug
+  print(util.color('=======','yellow'))
+  util.ptable(camera.meta)
+
   -- Keep track of this camera
   table.insert(wait_channels,camera_poll)
   table.insert(cameras,camera)
@@ -81,9 +102,9 @@ end
 local signal = require 'signal'
 local function shutdown()
   print'Shutting down the Cameras...'
-  for name,cam in pairs(cameras) do
+  for _,cam in ipairs(cameras) do
     cam.dev:close()
-    print('Closed camera',name)
+    print('Closed camera',cam.meta.name)
   end
   os.exit()
 end
@@ -105,6 +126,6 @@ while true do
   local t_diff = t-t_debug
   if t_diff>DEBUG_INTERVAL then
     t_debug = t
-    print'debug...'
+    --print'debug...'
   end
 end

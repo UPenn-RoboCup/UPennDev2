@@ -77,10 +77,12 @@ int v4l2_query_ctrl(v4l2_device * vdev, unsigned int addr_begin,
             else
                 fprintf(stderr, "Could not query control %d\n", queryctrl.id);
         }
+/*
         fprintf(stdout, "queryctrl: \"%s\" 0x%x %d %d %d\n", 
                 queryctrl.name, queryctrl.id, queryctrl.minimum, 
 		queryctrl.maximum, queryctrl.default_value);
         fflush(stdout);
+*/
 
         switch (queryctrl.type) {
             case V4L2_CTRL_TYPE_MENU:
@@ -149,7 +151,9 @@ int v4l2_init_mmap(v4l2_device * vdev) {
                         buf.m.offset);
         if (vdev->buffer[i] == MAP_FAILED)
             return v4l2_error("mmap");
+/*
     fprintf(stdout, "buffer length %d\n", vdev->buf_len[i]);
+*/
     }
 
     return 0;
@@ -191,7 +195,7 @@ int v4l2_init(v4l2_device * vdev) {
         return v4l2_error("No video capture device");
     if (!(video_cap.capabilities & V4L2_CAP_STREAMING))
         return v4l2_error("No capture streaming");
-    
+
     /* Get current format */
     struct v4l2_format video_fmt;
     video_fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -210,12 +214,15 @@ int v4l2_init(v4l2_device * vdev) {
         video_fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_UYVY; /* iSight */
     else {
         video_fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+/*
         fprintf(stderr, "unknown pixelformat, use YUYV in default");
+*/
     }
     video_fmt.fmt.pix.field       = V4L2_FIELD_NONE;
     if (xioctl(vdev->fd, VIDIOC_S_FMT, &video_fmt) == -1)
         return v4l2_error("VIDIOC_S_FMT: Fail Set Format");
 
+/*
     fprintf(stdout, "Current Format\n");
     fprintf(stdout, "+------------+\n");
     fprintf(stdout, "width: %u\n", video_fmt.fmt.pix.width);
@@ -223,8 +230,8 @@ int v4l2_init(v4l2_device * vdev) {
     fprintf(stdout, "pixel format: %u\n", video_fmt.fmt.pix.pixelformat);
     fprintf(stdout, "pixel field: %u\n", video_fmt.fmt.pix.field);
     fflush(stdout);
-
     fprintf(stdout, "start querying\n");
+*/
     /* base control */
     v4l2_query_ctrl(vdev, V4L2_CID_BASE, V4L2_CID_LASTP1 + 100);
     /* camera class control */
@@ -233,14 +240,15 @@ int v4l2_init(v4l2_device * vdev) {
     v4l2_query_ctrl(vdev, V4L2_CID_PRIVATE_BASE, V4L2_CID_PRIVATE_BASE + 100);
 
     /* set desired frame rate */
+/*
     fprintf(stdout, "setting frame rate...\n");
     fflush(stdout);
+*/
     struct v4l2_streamparm streamparm;
     streamparm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     if (xioctl(vdev->fd, VIDIOC_G_PARM, &streamparm) == -1) {
       return v4l2_error("failed to get stream parameters");
     }
-    
 
     /* Nao driver requires set default frame rate to (1/0) not (1/30) */
     streamparm.parm.capture.timeperframe.numerator = vdev->fps_num;
@@ -248,10 +256,12 @@ int v4l2_init(v4l2_device * vdev) {
     if (xioctl(vdev->fd, VIDIOC_S_PARM, &streamparm) == -1) {
       return v4l2_error("failed to set frame rate");
     }
+/*
     fprintf(stdout, "frame rate: %d/%d\n", 
 		streamparm.parm.capture.timeperframe.numerator,
                 streamparm.parm.capture.timeperframe.denominator);
     fflush(stdout);
+*/
 
     /* Initialize memory map */
     v4l2_init_mmap(vdev);
@@ -271,7 +281,9 @@ int v4l2_stream_on(v4l2_device * vdev) {
     }
 
     enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+/*
     printf("fd %d stream on\n", vdev->fd);
+*/
     if (xioctl(vdev->fd, VIDIOC_STREAMON, &type) == -1)
         return v4l2_error("VIDIOC_STREAMON");
     return 0;
@@ -291,7 +303,7 @@ int v4l2_get_ctrl(v4l2_device * vdev, const char *name, int *value) {
         fprintf(stderr, "Unknown control '%s'\n", name);
         return -1;
     }
-    
+
     struct v4l2_control ctrl;
     ctrl.id = ictrl->id;
     int ret = xioctl(vdev->fd, VIDIOC_G_CTRL, &ctrl);
@@ -301,14 +313,15 @@ int v4l2_get_ctrl(v4l2_device * vdev, const char *name, int *value) {
 
 int v4l2_set_ctrl(v4l2_device * vdev, const char *name, int value) {
     struct v4l2_queryctrl *ictrl = 
-		(struct v4l2_queryctrl *)get_query_node(vdev->ctrl_map, name);
+      (struct v4l2_queryctrl *)get_query_node(vdev->ctrl_map, name);
     if (ictrl == NULL) {
         fprintf(stderr, "Unknown control '%s'\n", name);
         return -1;
     }
     int v4l2_cid_base=0x00980900;
-
+/*
     fprintf(stderr, "Setting ctrl %s, id %d\n", name,ictrl->id-v4l2_cid_base);
+*/
     struct v4l2_control ctrl;
     ctrl.id = ictrl->id;
     ctrl.value = value;

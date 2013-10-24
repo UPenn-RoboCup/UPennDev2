@@ -70,15 +70,19 @@ Config.camera = {}
 -- Head
 Config.camera.head = {}
 Config.camera.head.device = '/dev/video0'
-Config.camera.head.resolution = {640,360}
+Config.camera.head.resolution = {320,180}
+--Config.camera.head.resolution = {640,360}
+Config.camera.head.format = 'yuyv'
 Config.camera.head.fps = 30
 Config.camera.head.quality = 75
 
 -- LWrist (deprecated)
 Config.camera.lwrist = {}
 Config.camera.lwrist.device = '/dev/video1'
-Config.camera.lwrist.resolution = {640,480}
-Config.camera.lwrist.fps = 30
+Config.camera.lwrist.resolution = {320,240}
+Config.camera.lwrist.format = 'yuyv'
+--Config.camera.lwrist.format = 'mjpeg'
+Config.camera.lwrist.fps = 15
 Config.camera.lwrist.quality = 75
 
 return Config

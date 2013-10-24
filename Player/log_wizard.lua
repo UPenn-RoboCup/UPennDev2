@@ -130,8 +130,10 @@ end
 -- Camera callback
 ------------------------------------------------------
 local function camera_callback()
-	-- Grab the data
+	-- Grab the metadata
 	local meta, has_more = camera_ch:receive()
+  -- Grab the compressed image
+	local img, has_more = camera_ch:receive()
 
   -- Write log file
   logfile:write( meta )
@@ -196,7 +198,6 @@ local function fsr_logger()
 end
 
 
-
 local log = {}
 
 function log.entry()
@@ -214,7 +215,7 @@ function log.entry()
 		elseif name == 'mesh' then
 			mesh_ch = simple_ipc.new_subscriber'mesh'
 		elseif name == 'camera' then
-			camera_ch = simple_ipc.new_subscriber'camera'
+			camera_ch = simple_ipc.new_subscriber'head_camera'
 		end
 	end
 				

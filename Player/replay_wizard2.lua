@@ -40,7 +40,7 @@ local devs = {
     if not meta then return end
     local c_img = tbl.raw_file:read(meta.sz)
     -- send along the channel
-    tbl.pub:send{meta,c_img}
+    tbl.pub:send{mp.pack(meta),c_img}
     return meta
   end,
   lwrist_camera = function()
@@ -49,7 +49,7 @@ local devs = {
     if not meta then return end
     local c_img = tbl.raw_file:read(meta.sz)
     -- send along the channel
-    tbl.pub:send{meta,c_img}
+    tbl.pub:send{mp.pack(meta),c_img}
     return meta
   end
 }
@@ -90,13 +90,12 @@ function log.update()
     local meta = l.update()
     if meta then
       done = false
-    else
       util.ptable(meta)
       print(util.color('=====','yellow'))
     end
   end
-  print()
   if done then shutdown() end
+  print()
 end
 
 function log.exit()

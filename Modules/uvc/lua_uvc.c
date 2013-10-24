@@ -62,10 +62,10 @@ static int lua_uvc_init(lua_State *L) {
     ud->width = luaL_optint(L, 2, WIDTH);
     ud->height = luaL_optint(L, 3, HEIGHT);
     ud->pixelformat = luaL_optstring(L, 4, "yuyv");
-    /* default 30 fps */ 
+    /* default 30 fps */
     ud->fps_num = luaL_optint(L, 5, 1);
     ud->fps_denum = luaL_optint(L, 6, 30);
-    
+
     ud->init = 0;
     ud->count = 0;
     ud->ctrl_map = NULL;
@@ -81,8 +81,10 @@ static int lua_uvc_init(lua_State *L) {
         v4l2_stream_on(ud);
     } else
         luaL_error(L, "Could not open video device");
+/*
     fprintf(stdout, "open video device %d\n", ud->fd);
     fflush(stdout);
+*/
 
     luaL_getmetatable(L, MT_NAME);
     lua_setmetatable(L, -2);

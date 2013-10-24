@@ -10,6 +10,7 @@ local Body = require'Body'
 require 'unix'
 local simple_ipc = require'simple_ipc'
 local util = require'util'
+local mp = require'msgpack'
 
 ---------------------------------
 -- Shared Memory
@@ -26,9 +27,9 @@ local log_dir = 'Log/'
 local open_logfile = function(dev_name,only_meta)
   -- Set up log file
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
-  local raw_filename  = string.format('%s/%s_%s_raw.log',log_dir,dev_name,filetime)
+  local meta_filename = string.format('%s/%s_%s_meta.log',log_dir,dev_name,filetime)
   if not only_meta then
-    local meta_filename = string.format('%s/%s_%s_meta.log',log_dir,dev_name,filetime)
+    local raw_filename  = string.format('%s/%s_%s_raw.log',log_dir,dev_name,filetime)
     return io.open(meta_filename,'w'), io.open(raw_filename,'w')
   else
     return io.open(meta_filename,'w')

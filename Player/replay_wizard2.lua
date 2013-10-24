@@ -9,6 +9,7 @@ local Body = require'Body'
 require 'unix'
 local simple_ipc = require'simple_ipc'
 local util = require'util'
+local mp = require'msgpack'
 
 ---------------------------------
 -- Shared Memory
@@ -29,110 +30,6 @@ local open_logfile = function(dev_name)
   return io.open(filename,'r')
 end
 
----------------------------------
--- Input Channels
-local channel_polls
--- 100Hz joint recording
-local channel_timeout = 10 -- ms
-
-------------------------------------------------------
--- Camera callbacks
-------------------------------------------------------
-local function head_camera_cb()
-	-- Grab the metadata
-	local meta, has_more = head_camera.sub:receive()
-  -- Grab the compressed image
-	local img,  has_more = head_camera.sub:receive()
-  -- Write log file
-  head_camera.file:write( meta )
-  head_camera.file:write( img )
-end
---
-local function lwrist_camera_cb()
-	-- Grab the metadata
-	local meta, has_more = lwrist_camera.sub:receive()
-  -- Grab the compressed image
-	local img,  has_more = lwrist_camera.sub:receive()
-  -- Write log file
-  lwrist_camera.file:write( meta )
-  lwrist_camera.file:write( img )
-end
-
-------------------------------------------------------
--- Logger for imu
-------------------------------------------------------
-local function imu_logger()
-	-- Grab the data
-	local imu = {}
-	imu.name = 'imu'
-  imu.t = Body.get_time()
-  -- TODO: use shm instead of body?
-  imu.rpy = Body.get_sensor_rpy()
-  imu.gyro = Body.get_sensor_gyro()
-
-  -- Write log file
-  logfile:write( mp.pack(imu) )
-end
-
-------------------------------------------------------
--- Logger for sensed joint position and velocity
-------------------------------------------------------
-local function joint_sensor_logger()
-	-- Grab the data
-	local joint = {}
-	joint.name = 'sensor'
-  joint.t = Body.get_time()
-  joint.pos = jcm.get_sensor_position()
-  joint.vel = jcm.get_sensor_velocity()
-
-  -- Write log file
-  logfile:write( mp.pack(joint) )
-end
-
-------------------------------------------------------
--- Logger for commanded joint position and velocity
-------------------------------------------------------
-local function joint_actuator_logger()
-	-- Grab the data
-	local joint = {}
-	joint.name = 'actuator'
-  joint.t = Body.get_time()
-  joint.pos = jcm.get_actuator_command_position()
-  joint.vel = jcm.get_actuator_command_velocity()
-
-  -- Write log file
-  logfile:write( mp.pack(joint) )
-end
-
-------------------------------------------------------
--- Logger for FSR sensor
-------------------------------------------------------
-local function fsr_logger()
-  local fsr = {}
-  fsr.name = 'fsr'
-  fsr.lfoot = jcm.get_sensor_lfoot()
-  fsr.rfoot = jcm.get_sensor_rfoot()
-  -- Write
-  logfile:write( mp.pack(fsr) )
-end
-
-local setup_log = {
-  head_camera = function()
-    head_camera = {}
-    head_camera.sub = simple_ipc.new_subscriber'head_camera'
-    head_camera.sub.callback = head_camera_cb
-    table.insert( wait_channels, head_camera.sub )
-    return head_camera
-  end,
-  lwrist_camera = function()
-    lwrist_camera = {}
-    lwrist_camera.sub = simple_ipc.new_subscriber'lwrist_camera'
-    lwrist_camera.sub.callback = lwrist_camera_cb
-    table.insert( wait_channels, lwrist_camera )
-    return lwrist_camera
-  end
-}
-
 -- Close the camera properly upon Ctrl-C
 local signal = require 'signal'
 local function shutdown()
@@ -146,35 +43,46 @@ end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
+local devs = {
+  head_camera = function()
+    -- read the metadata
+    local data = head_camera.meta_unpacker:unpack()
+    util.ptable(data)
+    -- read the c_img
+  end
+}
+local logs = {}
+local unloggers = {}
 function log.entry()
 	
 	-- Set up listeners based on the input arguments
-	for _,name in ipairs(arg) do
-    local setup = setup_log[name]
-    if type(setup)=='function' then
-      local logger = setup()
-      logger.file = open_logfile(name)
-      logger.name = name
-      tbale.insert(loggers,logger)
+	for _,filename in ipairs(arg) do
+    -- Only take meta file names
+    local e = filename:find('_%d')
+    local dev = filename:sub(1,e)
+    local updater = devs[dev]
+    if type(updater)=='function' then
+      local tbl = {}
+      tbl.name = dev
+      local f = io.open(filename,'r')
+      -- read the whole chunk into memory and then close the descriptor
+      local str = f:read('*all')
+      tbl.meta_unpacker = mp.unpacker(str)
+      f:close()
+      local raw_file = filename:gsub('meta','raw')
+      -- Do not read the raw file a priori
+      tbl.raw_file = io.open(raw_file,'r')
+      tbl.update = updater
+      table.insert(unloggers,tbl)
     end
 	end
-  
-  -- Set up the channels
-  channel_polls = simple_ipc.wait_on_channels( wait_channels )
+
 end
 
 function log.update()
-  ------------------
-  -- Perform the poll
-  local npoll = channel_polls:poll(channel_timeout)
-  ------------------
-  -- Log things not on the poll at a fixed 100Hz rate
-  --[[
-  imu_logger()
-  joint_sensor_logger()
-  joint_actuator_logger()
-  fsr_logger()
-  --]]
+  for _,l in pairs(unloggers) do
+    unloggers.update()
+  end
 end
 
 function log.exit()

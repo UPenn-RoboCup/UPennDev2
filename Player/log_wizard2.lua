@@ -26,8 +26,9 @@ local log_dir = 'Log/'
 local open_logfile = function(dev_name)
   -- Set up log file
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
-  local filename = string.format('%s/%s_%s.log',log_dir,dev_name,filetime)
-  return io.open(filename,'w')  
+  local raw_filename  = string.format('%s/%s_%s_raw.log',log_dir,dev_name,filetime)
+  local meta_filename = string.format('%s/%s_%s_meta.log',log_dir,dev_name,filetime)
+  return io.open(meta_filename,'w'), io.open(raw_filename,'w')
 end
 
 ---------------------------------
@@ -46,8 +47,8 @@ local function head_camera_cb()
   -- Grab the compressed image
 	local img,  has_more = head_camera.sub:receive()
   -- Write log file
-  head_camera.file:write( meta )
-  head_camera.file:write( img )
+  head_camera.meta_file:write( meta )
+  head_camera.raw_file:write( img )
 end
 --
 local function lwrist_camera_cb()
@@ -157,7 +158,7 @@ function log.entry()
     local setup = setup_log[name]
     if type(setup)=='function' then
       local logger = setup()
-      logger.file = open_logfile(name)
+      logger.meta_file, logger.raw_file = open_logfile(name)
       logger.name = name
       table.insert(loggers,logger)
     end

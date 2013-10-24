@@ -1,6 +1,6 @@
 ---------------------------------
 -- Logging manager for Team THOR
--- (c) Stephen McGill 2013
+-- (c) Stephen McGill, Qin He 2013
 ---------------------------------
 
 -- Set the path for the libraries
@@ -10,6 +10,7 @@ local Body = require'Body'
 require 'unix'
 local simple_ipc = require'simple_ipc'
 local util = require'util'
+local mp = require'msgpack'
 
 ---------------------------------
 -- Shared Memory
@@ -23,12 +24,16 @@ local head_camera, lwrist_camera, joint_positions
 -- Logging and Replaying set up
 local loggers = {}
 local log_dir = 'Log/'
-local open_logfile = function(dev_name)
+local open_logfile = function(dev_name,only_meta)
   -- Set up log file
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
-  local raw_filename  = string.format('%s/%s_%s_raw.log',log_dir,dev_name,filetime)
   local meta_filename = string.format('%s/%s_%s_meta.log',log_dir,dev_name,filetime)
-  return io.open(meta_filename,'w'), io.open(raw_filename,'w')
+  if not only_meta then
+    local raw_filename  = string.format('%s/%s_%s_raw.log',log_dir,dev_name,filetime)
+    return io.open(meta_filename,'w'), io.open(raw_filename,'w')
+  else
+    return io.open(meta_filename,'w')
+  end
 end
 
 ---------------------------------
@@ -62,61 +67,24 @@ local function lwrist_camera_cb()
 end
 
 ------------------------------------------------------
--- Logger for imu
+-- Logger for the body
 ------------------------------------------------------
-local function imu_logger()
+local body_log_file
+local function body_logger()
 	-- Grab the data
-	local imu = {}
-	imu.name = 'imu'
-  imu.t = Body.get_time()
-  -- TODO: use shm instead of body?
-  imu.rpy = Body.get_sensor_rpy()
-  imu.gyro = Body.get_sensor_gyro()
+	local body = {}
+  body.t = Body.get_time()
+  body.command_position = jcm.get_actuator_command_position()
+  body.twrite = jcm.get_twrite_command_position()
+  body.position = jcm.get_sensor_position()
+  body.tread = jcm.get_tread_position()
+  body.rpy  = Body.get_sensor_rpy()
+  body.gyro = Body.get_sensor_gyro()
+  body.lfoot = jcm.get_sensor_lfoot()
+  body.rfoot = jcm.get_sensor_rfoot()
 
   -- Write log file
-  logfile:write( mp.pack(imu) )
-end
-
-------------------------------------------------------
--- Logger for sensed joint position and velocity
-------------------------------------------------------
-local function joint_sensor_logger()
-	-- Grab the data
-	local joint = {}
-	joint.name = 'sensor'
-  joint.t = Body.get_time()
-  joint.pos = jcm.get_sensor_position()
-  joint.vel = jcm.get_sensor_velocity()
-
-  -- Write log file
-  logfile:write( mp.pack(joint) )
-end
-
-------------------------------------------------------
--- Logger for commanded joint position and velocity
-------------------------------------------------------
-local function joint_actuator_logger()
-	-- Grab the data
-	local joint = {}
-	joint.name = 'actuator'
-  joint.t = Body.get_time()
-  joint.pos = jcm.get_actuator_command_position()
-  joint.vel = jcm.get_actuator_command_velocity()
-
-  -- Write log file
-  logfile:write( mp.pack(joint) )
-end
-
-------------------------------------------------------
--- Logger for FSR sensor
-------------------------------------------------------
-local function fsr_logger()
-  local fsr = {}
-  fsr.name = 'fsr'
-  fsr.lfoot = jcm.get_sensor_lfoot()
-  fsr.rfoot = jcm.get_sensor_rfoot()
-  -- Write
-  logfile:write( mp.pack(fsr) )
+  body_log_file:write( mp.pack(body) )
 end
 
 local setup_log = {
@@ -145,6 +113,7 @@ local function shutdown()
     logger.raw_file:close()
     print('Closed log',logger.name)
   end
+  body_log_file:close()
   print'Done!'
   os.exit()
 end
@@ -165,6 +134,9 @@ function log.entry()
     end
 	end
   
+  -- Body file open
+  body_log_file = open_logfile('body',true)
+  
   -- Set up the channels
   channel_polls = simple_ipc.wait_on_channels( wait_channels )
 end
@@ -178,13 +150,10 @@ function log.update()
   local npoll = channel_polls:poll(channel_timeout)
   local t = unix.time()
   ------------------
-  -- Log things not on the poll at a fixed 100Hz rate
-  --[[
-  imu_logger()
-  joint_sensor_logger()
-  joint_actuator_logger()
-  fsr_logger()
-  --]]
+  -- Log body at fixed 100Hz rate (always)
+  body_logger()
+  
+  -- Debug how long we've been logging
   local t_diff = t-t_debug
   if t_diff>DEBUG_INTERVAL then
     t_debug = t

@@ -21,3 +21,10 @@ for i=1:numel(objs)
     drawnow;
 end
 fclose(fid);
+
+%% Aquire the body joint angles
+fid = fopen('~/Dropbox/Domenico/body_10.24.2013.17.46.16_meta.log');
+msg = fread(fid,inf,'*uchar');
+fclose(fid);
+jobjs = msgpack('unpacker', msg);
+clear msg;

@@ -35,6 +35,7 @@ end
 local channel_polls
 -- 100Hz joint recording
 local channel_timeout = 10 -- ms
+local wait_channels = {}
 
 ------------------------------------------------------
 -- Camera callbacks
@@ -137,16 +138,18 @@ local setup_log = {
 -- Close the camera properly upon Ctrl-C
 local signal = require 'signal'
 local function shutdown()
-  print'Shutting down the Cameras...'
+  print'Shutting down the Log files...'
   for _,logger in ipairs(loggers) do
     logger.file:close()
     print('Closed log',logger.name)
   end
+  print'Done!'
   os.exit()
 end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
+local log = {}
 function log.entry()
 	
 	-- Set up listeners based on the input arguments
@@ -156,7 +159,7 @@ function log.entry()
       local logger = setup()
       logger.file = open_logfile(name)
       logger.name = name
-      tbale.insert(loggers,logger)
+      table.insert(loggers,logger)
     end
 	end
   
@@ -164,10 +167,14 @@ function log.entry()
   channel_polls = simple_ipc.wait_on_channels( wait_channels )
 end
 
+local t0 = unix.time()
+local t_debug = unix.time()
+local DEBUG_INTERVAL = 1
 function log.update()
   ------------------
   -- Perform the poll
   local npoll = channel_polls:poll(channel_timeout)
+  local t = unix.time()
   ------------------
   -- Log things not on the poll at a fixed 100Hz rate
   --[[
@@ -176,6 +183,11 @@ function log.update()
   joint_actuator_logger()
   fsr_logger()
   --]]
+  local t_diff = t-t_debug
+  if t_diff>DEBUG_INTERVAL then
+    t_debug = t
+    print(string.format('%d seconds of logs...',t-t0))
+  end
 end
 
 function log.exit()
@@ -187,3 +199,5 @@ print'Beginning to log...'
 log.entry()
 while true do log.update() end
 log.exit()
+
+return log

@@ -1256,9 +1256,12 @@ if IS_WEBOTS then
     -90,-87,-90,-160,       -180,-87,-180, --RArm
     -90,-45, -- Waist
 
---    45,45,45, -- left gripper
-    45,45,45, -- left gripper    
-    45,45,45, -- right gripper
+
+--    45,45,45, -- left gripper    
+--    45,45,45, -- right gripper
+
+    80,80,80,
+    80,80,80,    
 
     -60, -- Lidar pan
   })*DEG_TO_RAD
@@ -1272,9 +1275,9 @@ if IS_WEBOTS then
     160,-0,90,0,     180,87,180, --RArm
 
     90,45, -- Waist
---    80,80,80,    
-    80,80,80,
-    80,80,80,    
+
+    45,45,45,
+    45,45,45,    
    
     60, -- Lidar pan
   })*DEG_TO_RAD

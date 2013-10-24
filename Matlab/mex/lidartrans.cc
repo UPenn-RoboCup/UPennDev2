@@ -31,7 +31,7 @@
 #define NECK_HEIGHT 0.30
 #define CHEST_LIDAR_HEIGHT 0.10
 #define CHEST_LIDAR_JOINT_X 0.05
-#define CHEST_LIDAR_OFFSET_X 0.05
+#define CHEST_LIDAR_OFFSET_X 0.0
 
 typedef unsigned char uint8;
 typedef unsigned int uint32;

@@ -80,11 +80,7 @@ Robot {
       ]
     }
     DEF Chest_Lidar_yaw Servo {
-      #Lidar center distance is 0.055
-      #So chest lidar offset: (0,-0,10,0,05)
-      
-
-      translation 0 -0.045 0.05
+      translation 0 -0.05 0.10
       rotation 0 1 0 -1.046 #60 deg
       children [
         Solid{
@@ -142,12 +138,13 @@ Robot {
           children [RIGHT_SHOULDER_PITCH{}]
         }
         DEF Right_shoulder_roll Servo {
-          rotation 0 0 -1 0
+          rotation 0 0 -1 0.17
           children [
             DEF Right_shoulder_yaw Servo {
               children [
                 DEF Right_elbow_pitch Servo {
                   translation 0 -0.246 0.030
+#                  rotation -1 0 0 0.7854
                   rotation -1 0 0 0
                   children [
                     DEF Right_wrist_yaw Servo {
@@ -199,7 +196,7 @@ Robot {
                         }                  
                       ]
                    }
-                   physics Physics {mass 0.1}
+                   physics Physics {}
                  }
       			    ]
                 boundingObject Group{
@@ -210,7 +207,7 @@ Robot {
                     }		               
                   ]
                }
-               physics Physics {mass 0.1}
+               physics Physics {}
              }
 						 DEF r_wrist_grip2 Servo{ #index finger for gripper
 		           translation 0 -0.105 0.010
@@ -240,7 +237,7 @@ Robot {
                       }                  
                     ]
                   }
-                  physics Physics {mass 0.1}
+                  physics Physics {}
                 }
 
 
@@ -253,7 +250,7 @@ Robot {
                   }                  
                 ]
               }
-              physics Physics {mass 0.1}
+              physics Physics {}
             }
              DEF r_wrist_grip3 Servo{ #Third finger for gripper
                translation 0 -0.105 -0.010
@@ -283,7 +280,7 @@ Robot {
                       }                  
                     ]
                   }
-                  physics Physics {mass 0.1}
+                  physics Physics {}
                }
               ]
               boundingObject Group{
@@ -294,7 +291,7 @@ Robot {
                   }                  
                 ]
               }
-              physics Physics {mass 0.1}
+              physics Physics {}
            }
 
 
@@ -306,7 +303,8 @@ Robot {
                           name "RightWristYaw2"
                           physics Physics {
                             density -1
-                            mass 0.1                            
+                            mass 0.4
+                            centerOfMass 0 -0.1 0
                           }
                           maxForce 40
                           controlP 16
@@ -323,8 +321,8 @@ Robot {
                           name "RightWristRoll"
                           physics Physics {
                             density -1
-                            mass 2.89
-                            centerOfMass 0 -0.146 -0.0039
+                            mass 0.4
+                            centerOfMass 0 -0.1 0
                           }
                           maxForce 40
                           controlP 16
@@ -335,10 +333,9 @@ Robot {
                         }
                       ]
                       name "RightWristYaw"
-                      physics Physics { #Fixed
+                      physics Physics {
                         density -1
-                        mass 0.81
-                        centerOfMass 0 -0.0464 0.00
+                        mass 0.2
                       }
                       maxForce 40
                       controlP 16
@@ -353,8 +350,8 @@ Robot {
                   name "ArmLowerR"
                   physics Physics {
                     density -1
-                    mass 0.13     #Fixed
-                    centerOfMass 0 -0.0351 -0.03
+                    mass 0.5
+                    centerOfMass 0 -0.09 -0.02
                   }
                   maxForce 100
                   controlP 16
@@ -367,10 +364,10 @@ Robot {
                 }
               ]
               name "RightShoulderYaw"
-              physics Physics { #Fixed
+              physics Physics {
                 density -1
-                mass 2.89
-                centerOfMass 0 -0.1027 0.008
+                mass 0.8
+                centerOfMass 0 -0.15 0.01
               }
               maxForce 100
               controlP 16
@@ -382,16 +379,16 @@ Robot {
             }
           ]
           name "ArmUpperR"
-          physics Physics { #RshoulderRoll
+          physics Physics {
             density -1
-            mass 0.1
+            mass 0.3
           }
           maxForce 100
           controlP 16
         }
       ]
       name "ShoulderR"
-      physics Physics { #RshoulderPitch 
+      physics Physics {
         density -1
         mass 0.1
       }
@@ -403,13 +400,13 @@ Robot {
       rotation 1 0 0 0
       children [
         DEF Left_shoulder_roll Servo {
-          rotation 0 0 -1 0
+          rotation 0 0 -1 -0.17
           children [
             DEF Left_shoulder_yaw Servo {
               children [
                 DEF Left_elbow_pitch Servo {
                   translation 0 -0.246 0.03
-                  rotation 1 0 0 0
+                  rotation 1 0 0 -0.7854
                   children [
                     DEF Left_wrist_yaw Servo {
                       translation 0 -0.190 -0.03
@@ -461,7 +458,7 @@ Robot {
                         }                  
                       ]
                    }
-                   physics Physics {mass 0.1}
+                   physics Physics {}
                  }
 
                 ]
@@ -473,7 +470,7 @@ Robot {
                     }                  
                   ]
                }
-               physics Physics {mass 0.1}
+               physics Physics {}
              }
              DEF l_wrist_grip2 Servo{ #index finger for gripper
                translation 0 -0.105 0.010
@@ -503,7 +500,7 @@ Robot {
                       }                  
                     ]
                   }
-                  physics Physics {mass 0.1}
+                  physics Physics {}
                 }
               ]
               boundingObject Group{
@@ -514,7 +511,7 @@ Robot {
                   }                  
                 ]
               }
-              physics Physics {mass 0.1}
+              physics Physics {}
             }
              DEF l_wrist_grip3 Servo{ #Third finger for gripper
                translation 0 -0.105 -0.010
@@ -544,7 +541,7 @@ Robot {
                       }                  
                     ]
                   }
-                  physics Physics {mass 0.1}
+                  physics Physics {}
                }
               ]
               boundingObject Group{
@@ -555,7 +552,7 @@ Robot {
                   }                  
                 ]
               }
-              physics Physics {mass 0.1}
+              physics Physics {}
            }
 
 
@@ -566,7 +563,8 @@ Robot {
                           name "LeftWristYaw2"
                           physics Physics {
                             density -1
-                            mass 0.1                            
+                            mass 0.4
+                            centerOfMass 0 -0.1 0
                           }
                           maxForce 40
                           controlP 16
@@ -587,8 +585,8 @@ Robot {
                           name "LeftWristRoll"
                           physics Physics {
                             density -1
-                            mass 2.89
-                            centerOfMass 0 -0.146 -0.0039
+                            mass 0.4
+                            centerOfMass 0 -0.1 0
                           }
                           maxForce 40
                           controlP 16
@@ -599,10 +597,9 @@ Robot {
                         }
                       ]
                       name "LeftWristYaw"
-                      physics Physics { #Fixed
+                      physics Physics {
                         density -1
-                        mass 0.81
-                        centerOfMass 0 -0.0464 0.00
+                        mass 0.2
                       }
                       maxForce 40
                       controlP 16
@@ -616,8 +613,8 @@ Robot {
                   name "ArmLowerL"
                   physics Physics {
                     density -1
-                    mass 0.13     #Fixed
-                    centerOfMass 0 -0.0351 -0.03
+                    mass 0.5
+                    centerOfMass 0 -0.09 -0.02
                   }
                   maxForce 100
                   controlP 16
@@ -629,10 +626,10 @@ Robot {
                 }
               ]
               name "LeftShoulderYaw"
-              physics Physics { #Fixed
+              physics Physics {
                 density -1
-                mass 2.89
-                centerOfMass 0 -0.1027 0.008
+                mass 0.8
+                centerOfMass 0 -0.15 0.01
               }
               maxForce 100
               controlP 16
@@ -644,9 +641,9 @@ Robot {
             }
           ]
           name "ArmUpperL"
-          physics Physics { #RshoulderRoll
+          physics Physics {
             density -1
-            mass 0.1
+            mass 0.3
           }
           maxForce 100
           controlP 16
@@ -659,7 +656,7 @@ Robot {
         }
       ]
       name "ShoulderL"
-      physics Physics { #LshoulderPitch 
+      physics Physics {
         density -1
         mass 0.1
       }
@@ -671,9 +668,7 @@ Robot {
       rotation -1 0 0 0
       children [
         DEF Torso_yaw Servo {
-#          translation 0 -0.038 0
-# Updated based on latest document
-          translation 0 -0.033 0
+          translation 0 -0.038 0
           children [
             DEF Pelvis Transform {
               translation 0 -0.0875 0
@@ -738,8 +733,8 @@ Robot {
                                   name "FootR"
                                   physics Physics {
                                     density -1
-                                    mass 1.74
-                                    centerOfMass 0 -0.0429 -0.0048
+                                    mass 0.6
+                                    centerOfMass -0.01 -0.07 0.02
                                   }
                                   maxForce 100
                                   controlP 16
@@ -752,7 +747,7 @@ Robot {
                               name "AnkleR"
                               physics Physics {
                                 density -1
-                                mass 0.1
+                                mass 0.2
                               }
                               maxForce 200
                               controlP 16
@@ -761,8 +756,8 @@ Robot {
                           name "LegLowerR"
                           physics Physics {
                             density -1
-                            mass 2.24
-                            centerOfMass -0.0313 -0.1796 0.0374
+                            mass 1.1
+                            centerOfMass -0.01 -0.16 0
                           }
                           maxForce 200
                           controlP 16
@@ -771,8 +766,8 @@ Robot {
                       name "LegUpperR"
                       physics Physics {
                         density -1
-                        mass 4.28
-                        centerOfMass -0.0211 -0.1241 -0.0082
+                        mass 1.1
+                        centerOfMass -0.01 -0.18 0
                       }
                       maxForce 200
                       controlP 16
@@ -785,7 +780,7 @@ Robot {
                   name "PelvR"
                   physics Physics {
                     density -1
-                    mass 0.1
+                    mass 0.3
                   }
                   maxForce 100
                   controlP 16
@@ -799,7 +794,8 @@ Robot {
               name "PelvYR"
               physics Physics {
                 density -1
-                mass 0.01
+                mass 0.05
+                centerOfMass 0 0.03 -0.02
               }
               maxForce 100
               controlP 16
@@ -858,8 +854,8 @@ Robot {
                                   name "FootL"
                                   physics Physics {
                                     density -1
-                                    mass 1.74
-                                    centerOfMass 0 -0.0429 -0.0048
+                                    mass 0.6
+                                    centerOfMass 0.01 -0.07 0.02
                                   }
                                   maxForce 100
                                   controlP 16
@@ -872,27 +868,27 @@ Robot {
                               name "AnkleL"
                               physics Physics {
                                 density -1
-                                mass 0.1
+                                mass 0.2
                               }
                               maxForce 200
                               controlP 16
                             }
                           ]
                           name "LegLowerL"
-                          physics Physics { #Lower leg
+                          physics Physics {
                             density -1
-                            mass 2.24
-                            centerOfMass 0.0313 -0.1796 0.0374
+                            mass 1.1
+                            centerOfMass 0.01 -0.16 0
                           }
                           maxForce 200
                           controlP 16
                         }
                       ]
                       name "LegUpperL"
-                      physics Physics { #Upper leg
+                      physics Physics {
                         density -1
-                        mass 4.28
-                        centerOfMass 0.0211 -0.1241 -0.0082
+                        mass 1.1
+                        centerOfMass 0.01 -0.18 0
                       }
                       maxForce 200
                       controlP 16
@@ -903,9 +899,9 @@ Robot {
                     }
                   ]
                   name "PelvL"
-                  physics Physics { #Left hip roll
+                  physics Physics {
                     density -1
-                    mass 0.1
+                    mass 0.3
                   }
                   maxForce 100
                   controlP 16
@@ -917,9 +913,10 @@ Robot {
                 }
               ]
               name "PelvYL"
-              physics Physics { #Left Hip Yaw
+              physics Physics {
                 density -1
-                mass 0.1                
+                mass 0.05
+                centerOfMass 0 0.03 -0.02
               }
               maxForce 100
               controlP 16
@@ -928,8 +925,7 @@ Robot {
           name "TorsoYaw"
           physics Physics {
             density -1
-            mass 8.0
-            centerOfMass 0 -0.1208 -0.0264            
+            mass 0.6
           }
           maxForce 100
           controlP 16
@@ -1004,8 +1000,7 @@ Robot {
   name "THOROP_Robotis"
   physics Physics {
     density -1
-    mass 9.21
-    centerOfMass 0 0.1557 -0.0208
+    mass 1
   }
   controller "void"
 }

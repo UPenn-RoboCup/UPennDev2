@@ -57,8 +57,8 @@ local function lwrist_camera_cb()
   -- Grab the compressed image
 	local img,  has_more = lwrist_camera.sub:receive()
   -- Write log file
-  lwrist_camera.file:write( meta )
-  lwrist_camera.file:write( img )
+  lwrist_camera.meta_file:write( meta )
+  lwrist_camera.raw_file:write( img )
 end
 
 ------------------------------------------------------
@@ -131,7 +131,7 @@ local setup_log = {
     lwrist_camera = {}
     lwrist_camera.sub = simple_ipc.new_subscriber'lwrist_camera'
     lwrist_camera.sub.callback = lwrist_camera_cb
-    table.insert( wait_channels, lwrist_camera )
+    table.insert( wait_channels, lwrist_camera.sub )
     return lwrist_camera
   end
 }

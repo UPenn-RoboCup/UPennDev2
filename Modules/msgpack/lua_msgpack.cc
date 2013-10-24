@@ -394,7 +394,7 @@ static int lua_msgpack_pack(lua_State *L) {
 
 static int lua_msgpack_unpack(lua_State *L) {
   size_t size;
-  const char *str = lua_tolstring(L, 1, &size);
+  const char *str  = lua_tolstring(L, 1, &size);
   const char * opt = luaL_optstring(L, 2, "");
 
   /* deserializes it. */
@@ -435,14 +435,13 @@ static int lua_msgpack_newunpacker(lua_State *L) {
 }
 
 static int lua_msgpack_unpacker(lua_State *L) {
-  int re = 0;
   structUnpacker *ud = lua_checkunpacker(L, 1);
   const char *opt = luaL_optstring(L, 2, "");
   bool ret = msgpack_unpacker_next(ud->pac, ud->msg);
   if (ret) {
     msgpack_object obj = ud->msg->data;
 		/* TODO: Push the encoded data as well as the decoded data */
-    re = (*unPackMap[obj.type])(L, obj, opt);
+    int re = (*unPackMap[obj.type])(L, obj, opt);
   } else lua_pushnil(L);
   return 1;
 }

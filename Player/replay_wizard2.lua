@@ -5,7 +5,6 @@
 
 -- Set the path for the libraries
 dofile'../include.lua'
-local Config = require'Config'
 local Body = require'Body'
 require 'unix'
 local simple_ipc = require'simple_ipc'
@@ -27,7 +26,7 @@ local open_logfile = function(dev_name)
   -- Set up log file
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
   local filename = string.format('%s/%s_%s.log',log_dir,dev_name,filetime)
-  return io.open(filename,'w')  
+  return io.open(filename,'r')
 end
 
 ---------------------------------

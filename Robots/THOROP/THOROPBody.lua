@@ -1222,22 +1222,28 @@ if IS_WEBOTS then
       -1,-1,-1,-1,-1,-1,-1, --RArm    
     -- TODO: Check the gripper
     1,1, -- Waist
---  -1,1,-1, -- left gripper
-    1,-1,-1, -- left gripper    
-    -1,1,1, -- right gripper
+
+    -1,-1,-1, -- left gripper    
+--    -1,1,1, -- right gripper
+    -1,-1,-1, -- right gripper
 
     1, -- Lidar pan
   })
   servo.rad_bias = vector.new({
     0,0, -- head
-    -90,-10,0,45,0,0,0,
+    -90,-10,0,0,0,0,0,
     0,0,0,0,0,0,
     0,0,0,0,0,0,
-    -90,10,0,45,0,0,0,
+    -90,10,0,0,0,0,0,
     0,0,
     --SJ: default is closed for fingers(webots)
-    -90,-90,-90,
-    -90,-90,-90,
+
+--    -45,-90,-90,    
+--    -90,-45,-45,
+
+    -35,-90,-90,    
+    -90,-35,-35,
+
     60,--30,
   })*DEG_TO_RAD
   
@@ -1248,10 +1254,10 @@ if IS_WEBOTS then
     -175,-175,-175,-175,-175,-175, --LLeg
     -175,-175,-175,-175,-175,-175, --RLeg
     -90,-87,-90,-160,       -180,-87,-180, --RArm
-
     -90,-45, -- Waist
 
-    45,45,45, -- left gripper
+--    45,45,45, -- left gripper
+    45,45,45, -- left gripper    
     45,45,45, -- right gripper
 
     -60, -- Lidar pan
@@ -1260,18 +1266,28 @@ if IS_WEBOTS then
   servo.max_rad = vector.new({
     90, 80, -- Head
 
-    160,87,90,-25,     180,87,180, --LArm
+    160,87,90,0,     180,87,180, --LArm
     175,175,175,175,175,175, --LLeg
     175,175,175,175,175,175, --RLeg
-    160,-0,90,-25,     180,87,180, --RArm
+    160,-0,90,0,     180,87,180, --RArm
 
     90,45, -- Waist
+--    80,80,80,    
     80,80,80,
     80,80,80,    
    
     60, -- Lidar pan
   })*DEG_TO_RAD
   
+
+
+
+
+
+
+
+
+
   -- Webots body broadcasting
   local chest_lidar_wbt, head_lidar_wbt
   head_lidar_wbt = {}

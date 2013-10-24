@@ -12,8 +12,8 @@ Config.USE_LOCALHOST = USE_LOCALHOST
 Config.net = {}
 -- Robot IP addresses
 Config.net.robot = {
-['wired']    = '192.168.123.25',
-['wireless'] = '192.168.1.25',
+['wired']    = '192.168.123.26',
+['wireless'] = '192.168.1.26',
 }
 
 -- Remote Operator IP addresses
@@ -49,10 +49,12 @@ Config.net.unreliable_rpc = 55556
 --
 Config.net.team           = 44444
 Config.net.state          = 44445
+-- TODO: Need reliable camera
+Config.net.camera = {}
+Config.net.camera.head    = 33333
+Config.net.camera.lwrist  = 33334
+Config.net.camera.rwrist  = 33335
 --
-Config.net.head_camera    = 33333
-Config.net.left_camera    = 33334
-Config.net.right_camera   = 33335
 Config.net.mesh           = 33344
 Config.net.reliable_mesh  = 33345
 Config.net.rgbd_depth     = 33346

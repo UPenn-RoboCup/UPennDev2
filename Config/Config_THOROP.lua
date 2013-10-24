@@ -74,4 +74,11 @@ Config.camera.head.resolution = {640,360}
 Config.camera.head.fps = 30
 Config.camera.head.quality = 75
 
+-- LWrist (deprecated)
+Config.camera.lwrist = {}
+Config.camera.lwrist.device = '/dev/video1'
+Config.camera.lwrist.resolution = {640,480}
+Config.camera.lwrist.fps = 30
+Config.camera.lwrist.quality = 75
+
 return Config

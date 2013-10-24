@@ -5,7 +5,7 @@
 # 2013/7
 #############################################
 #CHANGES: More optimized lidar setup
-
+#10/23: updated with correct mass properties and dimensions
 
 PROTO THOROP7_NoBoundaries [
   field SFVec3f    translation 0 1 0
@@ -19,7 +19,6 @@ PROTO THOROP7_NoBoundaries [
   field SFInt32    cameraWidth 320
   field SFInt32    cameraHeight 240
 	field SFFloat    cameraFov 1.0472
-#  field SFInt32    channel 0
 ]
 {
 Robot {
@@ -54,16 +53,13 @@ Robot {
         CHEST{}
       ]
     }
-    InertialUnit {
-      #rotation 0 1 0 -1.5708
+    InertialUnit {      
       name "InertialUnit"
     }
     Compass {
-      #rotation 0 1 0 -1.5708
       name "Compass"
     }
     GPS {
-      #rotation 0 1 0 -1.5708
       name "GPS"
     }
     Accelerometer {
@@ -84,13 +80,9 @@ Robot {
       ]
     }
     DEF Chest_Lidar_yaw Servo {
-      translation 0 -0.05 0.1
+      translation 0 -0.05 0.10
       rotation 0 1 0 -1.046 #60 deg
-      #rotation 0 1 0 1.046 #60 deg
-      #rotation 0 1 0 2.094 #120 deg
-      #rotation 0 1 0 -2.094 #-120 deg
       children [
-
         Solid{
           rotation 0 0 1 1.57
 	        children [
@@ -136,25 +128,23 @@ Robot {
     }
 
     DEF Right_shoulder_pitch Servo {
-      translation -0.233 -0.008 0
+      translation -0.234 -0.008 0
       rotation -1 0 0 0
       children [
         DEF Right_shoulder_pitch Transform {
           translation 0.05 0 0
           rotation 0 0 1 -1.5708
           scale 0.001 0.001 0.001
-          children [
-            RIGHT_SHOULDER_PITCH{}
-          ]
+          children [RIGHT_SHOULDER_PITCH{}]
         }
         DEF Right_shoulder_roll Servo {
-          rotation 0 0 -1 0.17
+          rotation 0 0 -1 0
           children [
             DEF Right_shoulder_yaw Servo {
               children [
                 DEF Right_elbow_pitch Servo {
                   translation 0 -0.246 0.030
-                  rotation -1 0 0 0.7854
+                  rotation -1 0 0 0
                   children [
                     DEF Right_wrist_yaw Servo {
                       translation 0 -0.190 -0.030
@@ -174,9 +164,7 @@ Robot {
 
               Transform{   #Palm
                 translation 0 -0.055 0
-                children [
-                  Shape{geometry Box {size 0.05 0.110 0.02}}
-                ]
+                children [Shape{geometry Box {size 0.05 0.110 0.02}}]
               }
 			        DEF r_wrist_grip1 Servo{ #Thumb finger for gripper
       			    translation 0.03 -0.08 0
@@ -185,9 +173,7 @@ Robot {
 			          children[
 			            Transform{
 		                translation 0 -0.025 0
-                    children [
-                      Shape{geometry Box {size 0.01 0.05 0.02}}
-			              ]
+                    children [Shape{geometry Box {size 0.01 0.05 0.02}}]
                   }
                   #2nd digit for the thumb
 
@@ -198,9 +184,7 @@ Robot {
                     children[
                       Transform{
                         translation 0 -0.0225 0
-                        children [
-                          Shape{geometry Box {size 0.01 0.045 0.02}}
-                        ]
+                        children [Shape{geometry Box {size 0.01 0.045 0.02}}]
                       }
                     ]
                     boundingObject Group{
@@ -211,9 +195,8 @@ Robot {
                         }                  
                       ]
                    }
-                   physics Physics {}
+                   physics Physics {mass 0.1}
                  }
-
       			    ]
                 boundingObject Group{
                   children[
@@ -223,7 +206,7 @@ Robot {
                     }		               
                   ]
                }
-               physics Physics {}
+               physics Physics {mass 0.1}
              }
 						 DEF r_wrist_grip2 Servo{ #index finger for gripper
 		           translation 0 -0.105 0.010
@@ -232,9 +215,7 @@ Robot {
       		     children[
 	               Transform{
                    translation 0 -0.025 0
-                   children [
-                     Shape{geometry Box {size 0.01 0.05 0.015}}
-     			         ]
+                   children [Shape{geometry Box {size 0.01 0.05 0.015}}]
                  }
                 #2nd digit of index finger
                  DEF r_wrist_grip2_2 Servo{ 
@@ -244,9 +225,7 @@ Robot {
                    children[
                      Transform{
                        translation 0 -0.0225 0
-                       children [
-                         Shape{geometry Box {size 0.01 0.045 0.015}}
-                       ]
+                       children [Shape{geometry Box {size 0.01 0.045 0.015}}]
                      }                 
                   ]
                   boundingObject Group{
@@ -257,7 +236,7 @@ Robot {
                       }                  
                     ]
                   }
-                  physics Physics {}
+                  physics Physics {mass 0.1}
                 }
 
 
@@ -270,7 +249,7 @@ Robot {
                   }                  
                 ]
               }
-              physics Physics {}
+              physics Physics {mass 0.1}
             }
              DEF r_wrist_grip3 Servo{ #Third finger for gripper
                translation 0 -0.105 -0.010
@@ -279,9 +258,7 @@ Robot {
                children[
                  Transform{
                    translation 0 -0.025 0
-                   children [
-                     Shape{geometry Box {size 0.01 0.05 0.03}}
-                   ]
+                   children [Shape{geometry Box {size 0.01 0.05 0.03}}]
                  }
                  #2nd digit for Third finger for gripper
                  DEF r_wrist_grip3_2 Servo{ 
@@ -291,9 +268,7 @@ Robot {
                    children[
                      Transform{
                        translation 0 -0.02255 0
-                       children [
-                         Shape{geometry Box {size 0.01 0.045 0.03}}
-                       ]
+                       children [Shape{geometry Box {size 0.01 0.045 0.03}}]
                      }
                   ]
                   boundingObject Group{
@@ -304,10 +279,8 @@ Robot {
                       }                  
                     ]
                   }
-                  physics Physics {}
+                  physics Physics {mass 0.1}
                }
-
-
               ]
               boundingObject Group{
                 children[
@@ -317,7 +290,7 @@ Robot {
                   }                  
                 ]
               }
-              physics Physics {}
+              physics Physics {mass 0.1}
            }
 
 
@@ -329,17 +302,14 @@ Robot {
                           name "RightWristYaw2"
                           physics Physics {
                             density -1
-                            mass 0.4
-                            centerOfMass 0 -0.1 0
+                            mass 0.1                            
                           }
                           maxForce 40
                           controlP 16
                         }
                         DEF Right_wrist2 Transform {
                           translation 0 -0.065 0
-                          children [
-                            Shape{geometry Box {size 0.04 0.130 0.04}}
-                          ]
+                          children [Shape{geometry Box {size 0.04 0.130 0.04}}]
                         }                        
 ################
 ##WRISTYAW2 JOINT END
@@ -349,30 +319,22 @@ Robot {
                           name "RightWristRoll"
                           physics Physics {
                             density -1
-                            mass 0.4
-                            centerOfMass 0 -0.1 0
+                            mass 2.89
+                            centerOfMass 0 -0.146 -0.0039
                           }
                           maxForce 40
                           controlP 16
                         }
                         DEF Right_wrist Transform {
                           scale 0.001 0.001 0.001
-                          children [
-                            RIGHT_WRIST{}
-                          ]
+                          children [RIGHT_WRIST{}]
                         }
                       ]
                       name "RightWristYaw"
-#                      boundingObject Transform {
-#                        children [
-#                          Box {
-#                            size 0.05 0.05 0.1
-#                          }
-#                        ]
-#                      }
-                      physics Physics {
+                      physics Physics { #Fixed
                         density -1
-                        mass 0.2
+                        mass 0.81
+                        centerOfMass 0 -0.0464 0.00
                       }
                       maxForce 40
                       controlP 16
@@ -381,36 +343,14 @@ Robot {
                       translation 0 0 -0.03
                       rotation 0 1 0 3.14159
                       scale 0.001 0.001 0.001
-                      children [
-                        RIGHT_ELBOW{}
-                      ]
+                      children [RIGHT_ELBOW{}]
                     }
                   ]
                   name "ArmLowerR"
-#                  boundingObject Group {
-#                     children [
-#                      Transform {
-#                        rotation 1 0 0 0.7854
-#                        children [
-#                          Box {
-#                            size 0.13 0.065 0.065
-#                          }
-#                        ]
-#                      }
-#                      Transform {
-#                        translation 0 -0.115 -0.03
-#                        children [
-#                          Box {
-#                            size 0.055 0.16 0.055
-#                          }
-#                        ]
-#                      }
-#                    ]
-#                  }
                   physics Physics {
                     density -1
-                    mass 0.5
-                    centerOfMass 0 -0.09 -0.02
+                    mass 0.13     #Fixed
+                    centerOfMass 0 -0.0351 -0.03
                   }
                   maxForce 100
                   controlP 16
@@ -419,24 +359,14 @@ Robot {
                   translation 0 -0.027 0
                   rotation 0 1 0 3.14159
                   scale 0.001 0.001 0.001
-                  children [
-                    RIGHT_ARM{}
-                  ]
+                  children [RIGHT_ARM{}]
                 }
               ]
               name "RightShoulderYaw"
-#              boundingObject Transform {
-#                translation 0 -0.13 0
-#                children [
-#                  Box {
-#                    size 0.07 0.22 0.07
-#                  }
-#                ]
-#              }
-              physics Physics {
+              physics Physics { #Fixed
                 density -1
-                mass 0.8
-                centerOfMass 0 -0.15 0.01
+                mass 2.89
+                centerOfMass 0 -0.1027 0.008
               }
               maxForce 100
               controlP 16
@@ -444,37 +374,20 @@ Robot {
             DEF Right_shoulder_roll Transform {
               translation 0 0 0.024
               scale 0.001 0.001 0.001
-              children [
-                RIGHT_SHOULDER_ROLL{}
-              ]
+              children [RIGHT_SHOULDER_ROLL{}]
             }
           ]
           name "ArmUpperR"
-#          boundingObject Transform {
-#            children [
-#              Box {
-#                size 0.06 0.06 0.13
-#              }
-#            ]
-#          }
-          physics Physics {
+          physics Physics { #RshoulderRoll
             density -1
-            mass 0.3
+            mass 0.1
           }
           maxForce 100
           controlP 16
         }
       ]
       name "ShoulderR"
-#      boundingObject Transform {
-#        translation 0.01 0 0
-#        children [
-#          Box {
-#            size 0.085 0.066 0.15
-#          }
-#        ]
-#      }
-      physics Physics {
+      physics Physics { #RshoulderPitch 
         density -1
         mass 0.1
       }
@@ -486,13 +399,13 @@ Robot {
       rotation 1 0 0 0
       children [
         DEF Left_shoulder_roll Servo {
-          rotation 0 0 -1 -0.17
+          rotation 0 0 -1 0
           children [
             DEF Left_shoulder_yaw Servo {
               children [
                 DEF Left_elbow_pitch Servo {
                   translation 0 -0.246 0.03
-                  rotation 1 0 0 -0.7854
+                  rotation 1 0 0 0
                   children [
                     DEF Left_wrist_yaw Servo {
                       translation 0 -0.190 -0.03
@@ -513,9 +426,7 @@ Robot {
 
               Transform{   #Palm
                 translation 0 -0.055 0
-                children [
-                  Shape{geometry Box {size 0.05 0.110 0.02}}
-                ]
+                children [Shape{geometry Box {size 0.05 0.110 0.02}}]
               }
               DEF l_wrist_grip1 Servo{ #Thumb finger for gripper
                 translation -0.03 -0.08 0
@@ -524,9 +435,7 @@ Robot {
                 children[
                   Transform{
                     translation 0 -0.025 0
-                    children [
-                      Shape{geometry Box {size 0.01 0.05 0.02}}
-                    ]
+                    children [Shape{geometry Box {size 0.01 0.05 0.02}}]
                   }
                   #2nd digit for the thumb
 
@@ -537,9 +446,7 @@ Robot {
                     children[
                       Transform{
                         translation 0 -0.0225 0
-                        children [
-                          Shape{geometry Box {size 0.01 0.045 0.02}}
-                        ]
+                        children [Shape{geometry Box {size 0.01 0.045 0.02}}]
                       }
                     ]
                     boundingObject Group{
@@ -550,7 +457,7 @@ Robot {
                         }                  
                       ]
                    }
-                   physics Physics {}
+                   physics Physics {mass 0.1}
                  }
 
                 ]
@@ -562,7 +469,7 @@ Robot {
                     }                  
                   ]
                }
-               physics Physics {}
+               physics Physics {mass 0.1}
              }
              DEF l_wrist_grip2 Servo{ #index finger for gripper
                translation 0 -0.105 0.010
@@ -571,9 +478,7 @@ Robot {
                children[
                  Transform{
                    translation 0 -0.025 0
-                   children [
-                     Shape{geometry Box {size 0.01 0.05 0.015}}
-                   ]
+                   children [Shape{geometry Box {size 0.01 0.05 0.015}}]
                  }
                 #2nd digit of index finger
                  DEF l_wrist_grip2_2 Servo{ 
@@ -583,9 +488,7 @@ Robot {
                    children[
                      Transform{
                        translation 0 -0.0225 0
-                       children [
-                         Shape{geometry Box {size 0.01 0.045 0.015}}
-                       ]
+                       children [Shape{geometry Box {size 0.01 0.045 0.015}}]
                      }                 
                   ]
                   boundingObject Group{
@@ -596,10 +499,8 @@ Robot {
                       }                  
                     ]
                   }
-                  physics Physics {}
+                  physics Physics {mass 0.1}
                 }
-
-
               ]
               boundingObject Group{
                 children[
@@ -609,7 +510,7 @@ Robot {
                   }                  
                 ]
               }
-              physics Physics {}
+              physics Physics {mass 0.1}
             }
              DEF l_wrist_grip3 Servo{ #Third finger for gripper
                translation 0 -0.105 -0.010
@@ -618,9 +519,7 @@ Robot {
                children[
                  Transform{
                    translation 0 -0.025 0
-                   children [
-                     Shape{geometry Box {size 0.01 0.05 0.03}}
-                   ]
+                   children [Shape{geometry Box {size 0.01 0.05 0.03}}]
                  }
                  #2nd digit for Third finger for gripper
                  DEF l_wrist_grip3_2 Servo{ 
@@ -630,9 +529,7 @@ Robot {
                    children[
                      Transform{
                        translation 0 -0.02255 0
-                       children [
-                         Shape{geometry Box {size 0.01 0.045 0.03}}
-                       ]
+                       children [Shape{geometry Box {size 0.01 0.045 0.03}}]
                      }
                   ]
                   boundingObject Group{
@@ -643,10 +540,8 @@ Robot {
                       }                  
                     ]
                   }
-                  physics Physics {}
+                  physics Physics {mass 0.1}
                }
-
-
               ]
               boundingObject Group{
                 children[
@@ -656,7 +551,7 @@ Robot {
                   }                  
                 ]
               }
-              physics Physics {}
+              physics Physics {mass 0.1}
            }
 
 
@@ -667,8 +562,7 @@ Robot {
                           name "LeftWristYaw2"
                           physics Physics {
                             density -1
-                            mass 0.4
-                            centerOfMass 0 -0.1 0
+                            mass 0.1                            
                           }
                           maxForce 40
                           controlP 16
@@ -683,37 +577,28 @@ Robot {
 ##WRISTYAW2 JOINT END
 #################      
 
-
                           ]
 
 
                           name "LeftWristRoll"
                           physics Physics {
                             density -1
-                            mass 0.4
-                            centerOfMass 0 -0.1 0
+                            mass 2.89
+                            centerOfMass 0 -0.146 -0.0039
                           }
                           maxForce 40
                           controlP 16
                         }
                         DEF Right_wrist Transform {
                           scale 0.001 0.001 0.001
-                          children [
-                             RIGHT_WRIST{}
-                          ]
+                          children [RIGHT_WRIST{}]
                         }
                       ]
                       name "LeftWristYaw"
-#                      boundingObject Transform {
-#                        children [
-#                          Box {
-#                            size 0.05 0.05 0.1
-#                          }
-#                        ]
-#                      }
-                      physics Physics {
+                      physics Physics { #Fixed
                         density -1
-                        mass 0.2
+                        mass 0.81
+                        centerOfMass 0 -0.0464 0.00
                       }
                       maxForce 40
                       controlP 16
@@ -721,36 +606,14 @@ Robot {
                     DEF Left_elbow Transform {
                       translation 0 0 -0.03
                       scale 0.001 0.001 0.001
-                      children [
-                        LEFT_ELBOW{}
-                      ]
+                      children [LEFT_ELBOW{}]
                     }
                   ]
                   name "ArmLowerL"
-#                  boundingObject Group {
-#                    children [
-#                      Transform {
-#                        rotation 1 0 0 0.7854
-#                        children [
-#                          Box {
-#                            size 0.13 0.065 0.065
-#                          }
-#                        ]
-#                      }
-#                      Transform {
-#                        translation 0 -0.115 -0.03
-#                        children [
-#                          Box {
-#                            size 0.055 0.16 0.055
-#                          }
-#                        ]
-#                      }
-#                    ]
-#                  }
                   physics Physics {
                     density -1
-                    mass 0.5
-                    centerOfMass 0 -0.09 -0.02
+                    mass 0.13     #Fixed
+                    centerOfMass 0 -0.0351 -0.03
                   }
                   maxForce 100
                   controlP 16
@@ -758,24 +621,14 @@ Robot {
                 DEF Left_arm Transform {
                   translation 0 -0.027 0
                   scale 0.001 0.001 0.001
-                  children [
-                    LEFT_ARM{}
-                  ]
+                  children [LEFT_ARM{}]
                 }
               ]
               name "LeftShoulderYaw"
-#              boundingObject Transform {
-#                translation 0 -0.13 0
-#                children [
-#                  Box {
-#                    size 0.07 0.22 0.07
-#                  }
-#                ]
-#              }
-              physics Physics {
+              physics Physics { #Fixed
                 density -1
-                mass 0.8
-                centerOfMass 0 -0.15 0.01
+                mass 2.89
+                centerOfMass 0 -0.1027 0.008
               }
               maxForce 100
               controlP 16
@@ -783,22 +636,13 @@ Robot {
             DEF Right_shoulder_roll Transform {
               translation 0 0 0.024
               scale 0.001 0.001 0.001
-              children [
-	        RIGHT_SHOULDER_ROLL{}
-              ]
+              children [RIGHT_SHOULDER_ROLL{}]
             }
           ]
           name "ArmUpperL"
-#          boundingObject Transform {
-#            children [
-#              Box {
-#                size 0.06 0.06 0.13
-#              }
-#            ]
-#          }
-          physics Physics {
+          physics Physics { #RshoulderRoll
             density -1
-            mass 0.3
+            mass 0.1
           }
           maxForce 100
           controlP 16
@@ -807,21 +651,11 @@ Robot {
           translation -0.05 0 0
           rotation 0 0 1 1.5708
           scale 0.001 0.001 0.001
-          children [
-            LEFT_SHOULDER_PITCH{}
-          ]
+          children [LEFT_SHOULDER_PITCH{}]
         }
       ]
       name "ShoulderL"
-#      boundingObject Transform {
-#        translation -0.01 0 0
-#        children [
-#          Box {
-#            size 0.085 0.066 0.15
-#          }
-#        ]
-#      }
-      physics Physics {
+      physics Physics { #LshoulderPitch 
         density -1
         mass 0.1
       }
@@ -833,14 +667,14 @@ Robot {
       rotation -1 0 0 0
       children [
         DEF Torso_yaw Servo {
-          translation 0 -0.038 0
+#          translation 0 -0.038 0
+# Updated based on latest document
+          translation 0 -0.033 0
           children [
             DEF Pelvis Transform {
               translation 0 -0.0875 0
               scale 0.001 0.001 0.001
-              children [
-                PELVIS{}
-              ]
+              children [PELVIS{}]
             }
             DEF Right_hip_yaw Servo {
               translation -0.072 -0.232 0
@@ -855,9 +689,7 @@ Robot {
                         DEF R_thigh Transform {
                           rotation 0 1 0 3.14159
                           scale 0.001 0.001 0.001
-                          children [
-                            R_THIGH{}
-                          ]
+                          children [R_THIGH{}]
                         }
                         DEF Right_knee_pitch Servo {
                           translation 0 -0.3 -0.03
@@ -867,9 +699,7 @@ Robot {
                               translation 0 0 0.03
                               rotation 0 1 0 3.14159
                               scale 0.001 0.001 0.001
-                              children [
-                                R_LEG{}
-                              ]
+                              children [R_LEG{}]
                             }
                             DEF Right_ankle_pitch Servo {
                               translation 0 -0.3 0.03
@@ -879,10 +709,7 @@ Robot {
                                   rotation 0 0 1 0
                                   children [
                                     DEF R_FSR TouchSensor {
-
-                             translation 0 -0.1115 0.018                                    
-#                           translation 0 -0.118 0.018                                        
-
+                                      translation 0 -0.1115 0.018                                    
                                       name "R_FSR"
                                       boundingObject Box {size 0.145 0.012 0.26}
                                       physics Physics {
@@ -893,21 +720,11 @@ Robot {
                                     }                                    
                                     DEF Foot Transform {
                                       scale 0.001 0.001 0.001
-                                      children [
-                                        FOOT{}
-                                      ]
+                                      children [FOOT{}]
                                     }                                    
                                     DEF Right_ankle_yaw Servo {
                                       translation 0 -0.09 0
                                       name "right_ankle_yaw"
-#                                      boundingObject Transform {
-#                                        translation 0 -0.003 0.0177
-#                                        children [
-#                                          Box {
-#                                            size 0.147 0.05 0.262
-#                                          }
-#                                        ]
-#                                      }
                                       physics Physics {
                                       }
                                       maxForce 100
@@ -915,125 +732,56 @@ Robot {
                                     }
                                   ]
                                   name "FootR"
-#                                  boundingObject Group {
-#                                    children [
-#                                      Transform {
-#                                        translation 0 -0.1115 0.018
-#                                        children [
-#                                          Box {
-#                                            size 0.145 0.012 0.26
-#                                          }
-#                                        ]
-#                                      }
-#                                      Transform {
-#                                        translation 0 -0.04 -0.013
-#                                        children [
-#                                          Box {
-#                                            size 0.066 0.14 0.13
-#                                          }
-#                                        ]
-#                                      }
-#                                    ]
-#                                  }
                                   physics Physics {
                                     density -1
-                                    mass 0.6
-                                    centerOfMass -0.01 -0.07 0.02
+                                    mass 1.74
+                                    centerOfMass 0 -0.0429 -0.0048
                                   }
                                   maxForce 100
                                   controlP 16
                                 }
                                 DEF Left_ankle Transform {
                                   scale 0.001 0.001 0.001
-                                  children [
-                                    LEFT_ANKLE{}
-                                  ]
+                                  children [LEFT_ANKLE{}]
                                 }
                               ]
                               name "AnkleR"
-#                              boundingObject Transform {
-#                                translation 0 0 -0.012
-#                                children [
-#                                  Box {
-#                                    size 0.06 0.06 0.12
-#                                  }
-#                                ]
-#                              }
                               physics Physics {
                                 density -1
-                                mass 0.2
+                                mass 0.1
                               }
                               maxForce 200
                               controlP 16
                             }
                           ]
                           name "LegLowerR"
-#                          boundingObject Transform {
-#                            translation -0.025 -0.192 0.043
-#                            children [
-#                              Box {
-#                                size 0.144 0.35 0.085
-#                              }
-#                            ]
-#                          }
                           physics Physics {
                             density -1
-                            mass 1.1
-                            centerOfMass -0.01 -0.16 0
+                            mass 2.24
+                            centerOfMass -0.0313 -0.1796 0.0374
                           }
                           maxForce 200
                           controlP 16
                         }
                       ]
                       name "LegUpperR"
-#                      boundingObject Group {
-#                        children [
-#                          Transform {
-#                            translation -0.025 -0.145 0.012
-#                            children [
-#                              Box {
-#                                size 0.144 0.355 0.085
-#                              }
-#                            ]
-#                          }
-#                          Transform {
-#                            translation -0.025 -0.3 -0.025
-#                            rotation 1 0 0 0.7854
-#                            children [
-#                              Box {
-#                                size 0.144 0.066 0.066
-#                              }
-#                            ]
-#                          }
-#                        ]
-#                      }
                       physics Physics {
                         density -1
-                        mass 1.1
-                        centerOfMass -0.01 -0.18 0
+                        mass 4.28
+                        centerOfMass -0.0211 -0.1241 -0.0082
                       }
                       maxForce 200
                       controlP 16
                     }
                     DEF Right_hip_roll Transform {
                       scale 0.001 0.001 0.001
-                      children [
-                        RIGHT_HIP_ROLL{}
-                      ]
+                      children [RIGHT_HIP_ROLL{}]
                     }
                   ]
                   name "PelvR"
-#                  boundingObject Transform {
-#                    translation 0 0 -0.03
-#                    children [
-#                      Box {
-#                        size 0.07 0.07 0.14
-#                      }
-#                    ]
-#                  }
                   physics Physics {
                     density -1
-                    mass 0.3
+                    mass 0.1
                   }
                   maxForce 100
                   controlP 16
@@ -1041,24 +789,13 @@ Robot {
                 DEF Right_hip_yaw Transform {
                   translation 0 0.063 0
                   scale 0.001 0.001 0.001
-                  children [
-                    LEFT_HIP_YAW{}
-                  ]
+                  children [LEFT_HIP_YAW{}]
                 }
               ]
               name "PelvYR"
-#              boundingObject Transform {
-#                translation 0 0.02 -0.025
-#                children [
-#                  Box {
-#                    size 0.065 0.1 0.15
-#                  }
-#                ]
-#              }
               physics Physics {
                 density -1
-                mass 0.05
-                centerOfMass 0 0.03 -0.02
+                mass 0.01
               }
               maxForce 100
               controlP 16
@@ -1075,9 +812,7 @@ Robot {
                       children [
                         DEF L_thigh Transform {
                           scale 0.001 0.001 0.001
-                          children [
-                            L_THIGH{}
-                          ]
+                          children [L_THIGH{}]
                         }
                         DEF Left_knee_pitch Servo {
                           translation 0 -0.3 -0.03
@@ -1086,9 +821,7 @@ Robot {
                             DEF L_leg Transform {
                               translation 0 0 0.03
                               scale 0.001 0.001 0.001
-                              children [
-                                L_LEG{}
-                              ]
+                              children [L_LEG{}]
                             }
                             DEF Left_ankle_pitch Servo {
                               translation 0 -0.3 0.03
@@ -1098,8 +831,7 @@ Robot {
                                   rotation 0 0 1 0
                                   children [
                                     DEF L_FSR TouchSensor {
-                             translation 0 -0.1115 0.018                                                                        
-#                                  translation 0 -0.118 0.018                                        
+                                    translation 0 -0.1115 0.018                                                                        
                                       name "L_FSR"
                                       boundingObject Box {size 0.145 0.012 0.26}                                      
                                       physics Physics {
@@ -1110,146 +842,66 @@ Robot {
                                     }
                                     DEF Foot Transform {
                                       scale 0.001 0.001 0.001
-                                      children [
-                                        FOOT{}
-                                      ]
+                                      children [FOOT{}]
                                     }
                                     DEF left_ankle_yaw Servo {
                                       translation 0 -0.09 0
                                       name "left_ankle_yaw"
-#                                      boundingObject Transform {
-#                                        translation 0 -0.003 0.018
-#                                        children [
-#                                          Box {
-#                                            size 0.147 0.05 0.262
-#                                          }
-#                                        ]
-#                                      }
-                                      physics Physics {
-                                      }
+                                      physics Physics {}
                                       maxForce 100
                                     }
                                   ]
                                   name "FootL"
-#                                  boundingObject Group {
-#                                    children [
-#                                      Transform {
-#                                        translation 0 -0.1115 0.018
-#                                        children [
-#                                          Box {
-#                                            size 0.145 0.012 0.26
-#                                          }
-#                                        ]
-#                                      }
-#                                      Transform {
-#                                        translation 0 -0.04 -0.013
-#                                        children [
-#                                          Box {
-#                                            size 0.066 0.14 0.13
-#                                          }
-#                                        ]
-#                                      }
-#                                   ]
-#                                  }
                                   physics Physics {
                                     density -1
-                                    mass 0.6
-                                    centerOfMass 0.01 -0.07 0.02
+                                    mass 1.74
+                                    centerOfMass 0 -0.0429 -0.0048
                                   }
                                   maxForce 100
                                   controlP 16
                                 }
                                 DEF Left_ankle Transform {
                                   scale 0.001 0.001 0.001
-                                  children [
-                                    LEFT_ANKLE{}
-                                  ]
+                                  children [LEFT_ANKLE{}]
                                 }
                               ]
                               name "AnkleL"
-#                              boundingObject Transform {
-#                                translation 0 0 -0.012
-#                                children [
-#                                  Box {
-#                                    size 0.06 0.06 0.12
-#                                  }
-#                                ]
-#                              }
                               physics Physics {
                                 density -1
-                                mass 0.2
+                                mass 0.1
                               }
                               maxForce 200
                               controlP 16
                             }
                           ]
                           name "LegLowerL"
-#                          boundingObject Transform {
-#                            translation 0.025 -0.192 0.043
-#                            children [
-#                              Box {
-#                                size 0.144 0.35 0.085
-#                              }
-#                            ]
-#                          }
-                          physics Physics {
+                          physics Physics { #Lower leg
                             density -1
-                            mass 1.1
-                            centerOfMass 0.01 -0.16 0
+                            mass 2.24
+                            centerOfMass 0.0313 -0.1796 0.0374
                           }
                           maxForce 200
                           controlP 16
                         }
                       ]
                       name "LegUpperL"
-#                      boundingObject Group {
-#                        children [
-#                          Transform {
-#                            translation 0.025 -0.145 0.012
-#                            children [
-#                              Box {
-#                                size 0.144 0.355 0.085
-#                              }
-#                            ]
-#                          }
-#                          Transform {
-#                            translation 0.025 -0.3 -0.025
-#                            rotation 1 0 0 0.7854
-#                            children [
-#                              Box {
-#                                size 0.144 0.066 0.066
-#                              }
-#                            ]
-#                          }
-#                        ]
-#                      }
-                      physics Physics {
+                      physics Physics { #Upper leg
                         density -1
-                        mass 1.1
-                        centerOfMass 0.01 -0.18 0
+                        mass 4.28
+                        centerOfMass 0.0211 -0.1241 -0.0082
                       }
                       maxForce 200
                       controlP 16
                     }
                     DEF Right_hip_roll Transform {
                       scale 0.001 0.001 0.001
-                      children [
-                        RIGHT_HIP_ROLL{}
-                      ]
+                      children [RIGHT_HIP_ROLL{}]
                     }
                   ]
                   name "PelvL"
-#                  boundingObject Transform {
-#                    translation 0 0 -0.03
-#                    children [
-#                      Box {
-#                        size 0.07 0.07 0.14
-#                      }
-#                    ]
-#                  }
-                  physics Physics {
+                  physics Physics { #Left hip roll
                     density -1
-                    mass 0.3
+                    mass 0.1
                   }
                   maxForce 100
                   controlP 16
@@ -1257,41 +909,23 @@ Robot {
                 DEF Left_hip_yaw Transform {
                   translation 0 0.063 0
                   scale 0.001 0.001 0.001
-                  children [
-                     LEFT_HIP_YAW{}
-                  ]
+                  children [LEFT_HIP_YAW{}]
                 }
               ]
               name "PelvYL"
-#              boundingObject Transform {
-#                translation 0 0.02 -0.025
-#                children [
-#                  Box {
-#                    size 0.065 0.1 0.15
-#                  }
-#                ]
-#              }
-              physics Physics {
+              physics Physics { #Left Hip Yaw
                 density -1
-                mass 0.05
-                centerOfMass 0 0.03 -0.02
+                mass 0.1                
               }
               maxForce 100
               controlP 16
             }
           ]
           name "TorsoYaw"
-#          boundingObject Transform {
-#            translation 0 -0.092 -0.011
-#            children [
-#              Box {
-#                size 0.23 0.149 0.21
-#              }
-#            ]
-#          }
           physics Physics {
             density -1
-            mass 0.6
+            mass 8.0
+            centerOfMass 0 -0.1208 -0.0264            
           }
           maxForce 100
           controlP 16
@@ -1300,19 +934,10 @@ Robot {
           translation 0 -0.038 0
           rotation 1 0 0 0
           scale 0.001 0.001 0.001
-          children [
-            TORSO_PITCH_SERVO{}
-          ]
+          children [TORSO_PITCH_SERVO{}]
         }
       ]
       name "TorsoPitch"
-#      boundingObject Transform {
-#        children [
-#          Box {
-#            size 0.15 0.09 0.08
-#          }
-#        ]
-#      }
       physics Physics {
         density -1
         mass 0.2
@@ -1326,9 +951,7 @@ Robot {
         DEF Neck Transform {
           translation 0 0.05 0
           scale 0.001 0.001 0.001
-          children [
-           NECK{}
-          ]
+          children [NECK{}]
         }
         DEF Head_pitch Servo {
           translation 0 0.161 0
@@ -1336,7 +959,6 @@ Robot {
           children [
             hokuyo{
 						  rotation 0 1 0 3.14159
-#              translation 0 0.072 0.0785
               translation 0 0.1 0
               name "HeadLidar"
 						}
@@ -1353,20 +975,10 @@ Robot {
             }
             DEF CAM Transform {
               scale 0.001 0.001 0.001
-              children [
-                   CAM{}
-              ]
+              children [CAM{}]
             }
           ]
           name "Head"
-#          boundingObject Transform {
-#            translation 0 0 0.01
-#            children [
-#              Box {
-#                size 0.1 0.18 0.16
-#              }
-#            ]
-#          }
           physics Physics {
             density -1
             mass 0.2
@@ -1376,14 +988,6 @@ Robot {
         }
       ]
       name "Neck"
-#      boundingObject Transform {
-#        translation 0 0.06 0
-#        children [
-#          Box {
-#            size 0.04 0.125 0.04
-#          }
-#        ]
-#      }
       physics Physics {
         density -1
         mass 0.1
@@ -1394,17 +998,10 @@ Robot {
     }
   ]
   name "THOROP_Robotis"
-#  boundingObject Transform {
-#    translation 0 -0.04 -0.029
-#    children [
-#      Box {
-#        size 0.35 0.23 0.32
-#      }
-#    ]
-#  }
   physics Physics {
     density -1
-    mass 1
+    mass 9.21
+    centerOfMass 0 0.1557 -0.0208
   }
   controller "void"
 }

@@ -16,7 +16,7 @@ require'mcm'
 --SJ: This removes the output buffer 
 io.stdout:setvbuf("no")
 
-local use_joint_feedback = true
+local use_joint_feedback = false
 local needs_broadcast = true
 local state_machines = {}
 
@@ -125,7 +125,8 @@ while true do
 	Body.update()
 
   -- Send the joint state feedback
-  if IS_WEBOTS or t-t_debug>0.1 then    
+  if use_joint_feedback and (IS_WEBOTS or t-t_debug>1)  then
+    -- Webots debugs every step
     t_debug = t
     send_status_feedback()
   end

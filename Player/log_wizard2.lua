@@ -29,6 +29,7 @@ local libLaser = require'libLaser'
 require'jcm'
 require'hcm'
 require'vcm'
+local head_camera, lwrist_camera
 ---------------------------------
 
 ---------------------------------
@@ -138,14 +139,14 @@ end
 ------------------------------------------------------
 -- Camera callback
 ------------------------------------------------------
-local function camera_callback()
+local function head_camera_cb()
 	-- Grab the metadata
-	local meta, has_more = camera_ch:receive()
+	local meta, has_more = head_camera.sub:receive()
   -- Grab the compressed image
-	local img,  has_more = camera_ch:receive()
-
+	local img,  has_more = head_camera.sub:receive()
   -- Write log file
-  logfile:write( meta )
+  head_camera.file:write( meta )
+  head_camera.file:write( img )
 end
 
 ------------------------------------------------------
@@ -209,7 +210,6 @@ end
 
 local log = {}
 
-local head_camera, lwrist_camera
 local setup_log = {
   head_camera = function()
     head_camera = {}
@@ -217,7 +217,7 @@ local setup_log = {
     head_camera.sub.callback = head_camera_cb
     table.insert( wait_channels, head_camera.sub )
     return head_camera
-  end
+  end,
   lwrist_camera = function()
     lwrist_camera = {}
     lwrist_camera.sub = simple_ipc.new_subscriber'lwrist_camera'
@@ -261,6 +261,7 @@ function log.exit()
 end
 
 -- Main loop
+print'Beginning to log...'
 log.entry()
 while true do log.update() end
 log.exit()

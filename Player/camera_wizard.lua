@@ -67,12 +67,6 @@ for name,cam in pairs(Config.camera) do
   camera_poll.count = 0
   camera_poll.callback = function()
     local img, head_img_sz = camera.dev:get_image()
---print(img,head_img_sz)
-    -- Update the metadata
-    camera.meta.t = unix.time()
-    camera.meta.c = 'jpeg'
-    camera.meta.count = camera.meta.count + 1
-    local metapack = mp.pack(camera.meta)
     -- Compress the image
     local c_img
     if camera.format=='yuyv' then
@@ -82,6 +76,14 @@ for name,cam in pairs(Config.camera) do
       c_img = tostring(carray.char(img,head_img_sz))
       print('c_img',camera.meta.name,camera.format,#c_img)
     end
+
+    -- Update the metadata
+    camera.meta.t = unix.time()
+    camera.meta.c = 'jpeg'
+    camera.meta.count = camera.meta.count + 1
+    camera.meta.sz = #c_img
+    local metapack = mp.pack(camera.meta)
+
     -- Send over UDP
     local udp_ret, err = camera.udp:send( metapack..c_img )
     if err then print(camera.meta.name,'udp error',err) end

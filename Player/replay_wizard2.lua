@@ -10,6 +10,8 @@ require 'unix'
 local simple_ipc = require'simple_ipc'
 local util = require'util'
 local mp = require'msgpack'
+local jpeg = require'jpeg'
+local unloggers = {}
 
 ---------------------------------
 -- Shared Memory
@@ -33,10 +35,10 @@ end
 -- Close the camera properly upon Ctrl-C
 local signal = require 'signal'
 local function shutdown()
-  print'Shutting down the Cameras...'
-  for _,logger in ipairs(loggers) do
-    logger.file:close()
-    print('Closed log',logger.name)
+  print'Shutting down the unloggers...'
+  for name,unlogger in pairs(unloggers) do
+    unlogger.raw_file:close()
+    print('Closed log',name)
   end
   os.exit()
 end
@@ -46,43 +48,66 @@ signal.signal("SIGTERM", shutdown)
 local devs = {
   head_camera = function()
     -- read the metadata
-    local data = head_camera.meta_unpacker:unpack()
-    util.ptable(data)
+    local meta = unloggers.head_camera.meta_unpacker:unpack()
+    if not meta then return end
+    -- print the metadata
+    util.ptable(meta)
     -- read the c_img
+    local c_img = unloggers.head_camera.raw_file:read(meta.sz)
+    -- Save the c_img, for now... should just replay on the channel...
+    print('raw:', #c_img)
+    local jimg = jpeg.uncompress(c_img)
+    print('jpeg',jimg:width(),jimg:height())
+    print(util.color('\n=========\n','green'))
+
+    return meta
   end
 }
-local logs = {}
-local unloggers = {}
+local log = {}
+local log_prefix = 'Log/'
 function log.entry()
 	
 	-- Set up listeners based on the input arguments
 	for _,filename in ipairs(arg) do
     -- Only take meta file names
     local e = filename:find('_%d')
-    local dev = filename:sub(1,e)
+    local dev = filename:sub(1,e-1)
     local updater = devs[dev]
     if type(updater)=='function' then
       local tbl = {}
       tbl.name = dev
-      local f = io.open(filename,'r')
+local fname = log_prefix..filename
+      local f = io.open(fname,'r')
       -- read the whole chunk into memory and then close the descriptor
       local str = f:read('*all')
-      tbl.meta_unpacker = mp.unpacker(str)
       f:close()
+--local res, off = mp.unpack(str)
+--print('norm',res,off)
+      local up = mp.unpacker(str)
+--local stuff = up:unpack()
+--print('stuff',stuff,fname)
+
+      tbl.meta_unpacker = up
+--print('unpacker',tbl.meta_unpacker,#str)
+--os.exit()
       local raw_file = filename:gsub('meta','raw')
       -- Do not read the raw file a priori
-      tbl.raw_file = io.open(raw_file,'r')
+      tbl.raw_file = io.open(log_prefix..raw_file,'r')
       tbl.update = updater
-      table.insert(unloggers,tbl)
+      unloggers[dev]=tbl
     end
 	end
 
 end
 
 function log.update()
-  for _,l in pairs(unloggers) do
-    unloggers.update()
+  local done = true
+  for name,l in pairs(unloggers) do
+    local has_data = l.update()
+    print('has_data',has_data)
+    if has_data then done = false end
   end
+  if done then shutdown() end
 end
 
 function log.exit()

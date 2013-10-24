@@ -141,7 +141,8 @@ local signal = require 'signal'
 local function shutdown()
   print'Shutting down the Log files...'
   for _,logger in ipairs(loggers) do
-    logger.file:close()
+    logger.meta_file:close()
+    logger.raw_file:close()
     print('Closed log',logger.name)
   end
   print'Done!'

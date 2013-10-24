@@ -88,7 +88,7 @@ for name,cam in pairs(Config.camera) do
     local udp_ret, err = camera.udp:send( metapack..c_img )
     if err then print(camera.meta.name,'udp error',err) end
     -- Send to the local channel for logging
-    camera.pub:send( {mp.pack(meta), c_img} )
+    camera.pub:send( {metapack, c_img} )
   end
 
   -- Debug

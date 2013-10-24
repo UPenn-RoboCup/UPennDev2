@@ -258,16 +258,29 @@ static int inverse_arm_given_wrist(lua_State *L) {
 	return 1;
 }
 
-static int com_l_arm(lua_State *L) {
-	std::vector<double> q = lua_checkvector(L, 1);
-	std::vector<double> r = THOROP_kinematics_com_arm(&q[0],1);
+static int com_upperbody(lua_State *L) {
+	std::vector<double> qWaist = lua_checkvector(L, 1);
+	std::vector<double> qLArm = lua_checkvector(L, 2);
+	std::vector<double> qRArm = lua_checkvector(L, 3);
+	double bodyPitch = luaL_optnumber(L, 4,0.0);
+	std::vector<double> r = THOROP_kinematics_com_upperbody(
+		&qWaist[0],&qLArm[0],&qRArm[0],bodyPitch);
 	lua_pushvector(L, r);
 	return 1;
 }
 
-static int com_r_arm(lua_State *L) {
-	std::vector<double> q = lua_checkvector(L, 1);
-	std::vector<double> r = THOROP_kinematics_com_arm(&q[0],0);
+static int calculate_support_torque(lua_State *L) {
+	std::vector<double> qWaist = lua_checkvector(L, 1);
+	std::vector<double> qLArm = lua_checkvector(L, 2);
+	std::vector<double> qRArm = lua_checkvector(L, 3);
+	std::vector<double> qLLeg = lua_checkvector(L, 4);
+	std::vector<double> qRLeg = lua_checkvector(L, 5);
+	double bodyPitch = luaL_optnumber(L, 6,0.0);
+	int supportLeg = (int) luaL_optnumber(L, 7,0.0);
+
+	std::vector<double> r = THOROP_kinematics_calculate_support_torque(
+		&qWaist[0],&qLArm[0],&qRArm[0],&qLLeg[0],&qRLeg[0],
+		bodyPitch,supportLeg);
 	lua_pushvector(L, r);
 	return 1;
 }
@@ -349,10 +362,9 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"inverse_arm_given_wrist", inverse_arm_given_wrist},
 
  /* COM calculation */
-
-    {"com_l_arm", com_l_arm},
-	{"com_r_arm", com_r_arm},
-
+    
+	{"com_upperbody", com_upperbody},
+	{"calculate_support_torque", calculate_support_torque},
 
 	{NULL, NULL}
 };

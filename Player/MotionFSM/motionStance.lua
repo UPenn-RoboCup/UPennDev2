@@ -59,6 +59,15 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+
+  local qWaist = Body.get_waist_command_position()
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()    
+  local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm)
+
+  --Quasi-static balancing
+
+
   local uTorso = mcm.get_status_uTorso()  
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()

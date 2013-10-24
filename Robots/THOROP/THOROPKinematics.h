@@ -9,42 +9,18 @@
 const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);
 
-/*
-//From COM to neck joint
-const double neckOffsetZ = .144+0.027+0.114;//from webots value
-const double neckOffsetX = 0.023;//from webots value
+//THOR-OP values, based on robotis document, and double-checked with actual robot
 
-const double shoulderOffsetX = 0;//From webots value
-const double shoulderOffsetY = .233;  //from actual robot
-const double shoulderOffsetZ = .144;
-
-const double upperArmLength = .246;
-const double elbowOffsetX = .030; //Elbow offset
-const double lowerArmLength = .190; //From actual 7DOF robot
-
-const double hipOffsetX = -0.001;//From webots model
-const double hipOffsetY = 0.094;
-const double hipOffsetZ = 0.384;//calculated from webots model
-
-const double thighLength = 0.379;
-const double tibiaLength = 0.380;
-const double footHeight = 0.04869;//calculated from webots model
-const double kneeOffsetX = 0.0;
-*/
-
-//================================================================
-//THOR-OP values
-
-const double neckOffsetZ = .170+.161; //Webots value
+const double neckOffsetZ = .165+.161; //Webots value
 const double neckOffsetX = 0;
 
-const double shoulderOffsetX = 0;      //Webots value
-const double shoulderOffsetY = 0.216; //Webots value
-const double shoulderOffsetZ = 0.162; //Webots value
+const double shoulderOffsetX = 0;    
+const double shoulderOffsetY = 0.234;
+const double shoulderOffsetZ = 0.165;
 
 const double upperArmLength = .246;
 const double elbowOffsetX =   .030; 
-const double lowerArmLength = .190; //Measured from robot
+const double lowerArmLength = .186; 
 
 const double handOffsetX = 0.245; //Measured from robot
 const double handOffsetY = 0.035; //Measured from robot
@@ -52,12 +28,12 @@ const double handOffsetZ = 0;
 
 const double hipOffsetX = 0;
 const double hipOffsetY = 0.072;
-const double hipOffsetZ = 0.270; //Webots value
+const double hipOffsetZ = 0.282; 
 
 const double thighLength = 0.30;
 const double tibiaLength = 0.30;
 const double kneeOffsetX = 0.03;
-const double footHeight = 0.118;
+const double footHeight = 0.118; // Webots value
 
 //=================================================================
 
@@ -80,7 +56,11 @@ const double mElbow = 0.13;
 const double mLowerArm = 0.81;
 const double mWrist = 0.97;
 const double mPelvis = 8.0;
-const double mTOrso = 9.21;
+const double mTorso = 9.21;
+
+const double mUpperLeg = 4.28;
+const double mLowerLeg = 2.24;
+const double mFoot = 1.74;
 
 const double comUpperArmX = 0.1027;
 const double comUpperArmZ = -0.008;
@@ -100,11 +80,16 @@ const double comPelvisX = -0.0264;
 const double comPelvisZ = -0.1208;
 
 
+const double comUpperLegX = -0.0082;
+const double comUpperLegY = 0.0211;
+const double comUpperLegZ = -0.124;;
 
+const double comLowerLegX = 0.0074;
+const double comLowerLegY = -0.0313;
+const double comLowerLegZ = -0.1796;
 
-
-
-
+const double comFootX = -0.0048;
+const double comFootZ = -0.0429;
 
 
 
@@ -146,5 +131,11 @@ std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg);
 std::vector<double> THOROP_kinematics_inverse_l_leg(const Transform trLeg);
 std::vector<double> THOROP_kinematics_inverse_joints(const double *q);
 
-std::vector<double> THOROP_kinematics_com_arm(const double *q, int is_left);  
+std::vector<double> THOROP_kinematics_com_upperbody(const double *qWaist,const double *qLArm,const double *qRArm, double bodyPitch); 
+std::vector<double> THOROP_kinematics_com_leg(const double *q, double bodyPitch, int is_left);  
+std::vector<double> THOROP_kinematics_calculate_support_torque(
+	const double *qWaist,  const double *qLArm,  const double *qRArm,
+  	const double *qLLeg,  const double *qRLeg,  double bodyPitch,   int supportLeg); 
+
+
 #endif

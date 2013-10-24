@@ -400,8 +400,12 @@ arm.linear_slow_limit = vector.new({0.02,0.02,0.02,
 
 
 --Pose 1 wrist position
-arm.pLWristTarget1 = {.04,.30,-.20,0,0,0}
-arm.pRWristTarget1 = {.04,-.30,-.20,0,0,0}
+--arm.pLWristTarget1 = {.04,.30,-.20,0,0,0}
+--arm.pRWristTarget1 = {.04,-.30,-.20,0,0,0}
+
+--Wider
+arm.pLWristTarget1 = {.04,.40,-.10,0,0,0}
+arm.pRWristTarget1 = {.04,-.40,-.10,0,0,0}
 arm.lShoulderYawTarget1 = -5*DEG_TO_RAD
 arm.rShoulderYawTarget1 = 5*DEG_TO_RAD
 
@@ -433,6 +437,17 @@ end
 
 arm.linear_wrist_limit = 0.05
 
+
+if IS_WEBOTS then
+  --For low-torque deflection testing
+
+  walk.hipRollCompensation = 0*math.pi/180
+  walk.ankleImuParamX={0, 0.9*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
+  walk.kneeImuParamX= {0, -0.3*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
+  walk.ankleImuParamY={0, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
+  walk.hipImuParamY  ={0, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
+
+end
 
 --FOR testing (for conference)
 --[[

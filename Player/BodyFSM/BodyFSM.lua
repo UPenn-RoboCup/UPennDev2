@@ -24,6 +24,7 @@ local bodyStepPlan = require'bodyStepPlan'
 local bodyStepPlan2 = require'bodyStepPlan2' --90 deg turn
 local bodyStepPlan3 = require'bodyStepPlan3' --sidestep
 local bodyStepPlan4 = require'bodyStepPlan4' --minus 90 deg turn
+local bodyStepTest = require'bodyStepTest' --minus 90 deg turn
 
 local bodyStepWaypoint = require'bodyStepWaypoint'
 
@@ -35,6 +36,7 @@ sm:add_state(bodyStepPlan)
 sm:add_state(bodyStepPlan2)
 sm:add_state(bodyStepPlan3)
 sm:add_state(bodyStepPlan4)
+sm:add_state(bodyStepTest)
 
 sm:add_state(bodyStepWaypoint)
 
@@ -54,10 +56,12 @@ sm:set_transition( bodyIdle,   'stepplan', bodyStepPlan )
 sm:set_transition( bodyIdle,   'stepplan2', bodyStepPlan2 )
 sm:set_transition( bodyIdle,   'stepplan3', bodyStepPlan3 )
 sm:set_transition( bodyIdle,   'stepplan4', bodyStepPlan4 )
+sm:set_transition( bodyIdle,   'steptest', bodyStepTest )
 sm:set_transition( bodyStepPlan,   'done', bodyIdle )
 sm:set_transition( bodyStepPlan2,   'done', bodyIdle )
 sm:set_transition( bodyStepPlan3,   'done', bodyIdle )
 sm:set_transition( bodyStepPlan4,   'done', bodyIdle )
+sm:set_transition( bodyStepTest,   'done', bodyIdle )
 
 --[[
 --sm:set_transition( bodyInit,   'follow', bodyFollow )

@@ -326,11 +326,11 @@ function moveleg.foot_trajectory_square_stair_2(phSingle,uStart,uEnd, stepHeight
 --]]
     local phSingle2 = phSingle
 
-    if phSingle<phase0 then --Lifting phase
+    if phSingle2<phase0 then --Lifting phase
       local ph1 = phSingle2/phase0
       xf,zf = 0, ph1;
       zFoot = zHeight0 + (stepHeight-zHeight0) * zf
-    elseif phSingle<phase1 then --Movement phase
+    elseif phSingle2<phase1 then --Movement phase
       local ph1 = (phSingle2-phase0)/(phase1-phase0)
       xf,zf = ph1, 1      
       zFoot = stepHeight

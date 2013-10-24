@@ -8,7 +8,7 @@
 #10/23: updated with correct mass properties and dimensions
 #10/24: fixed joint positions according to actual robot
 
-PROTO THOROP7_NoBoundaries [
+PROTO THOROP7_NoBoundaries_Lowtorque [
   field SFVec3f    translation 0 1 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
@@ -20,6 +20,7 @@ PROTO THOROP7_NoBoundaries [
   field SFInt32    cameraWidth 320
   field SFInt32    cameraHeight 240
 	field SFFloat    cameraFov 1.0472
+  field SFFloat    pGain 16
 ]
 {
 Robot {
@@ -310,7 +311,7 @@ Robot {
                             mass 0.1                            
                           }
                           maxForce 40
-                          controlP 16
+                          controlP IS pGain
                         }
                         DEF Right_wrist2 Transform {
                           translation 0 -0.065 0
@@ -328,7 +329,7 @@ Robot {
                             centerOfMass 0 -0.146 -0.0039
                           }
                           maxForce 40
-                          controlP 16
+                          controlP IS pGain
                         }
                         DEF Right_wrist Transform {
                           scale 0.001 0.001 0.001
@@ -342,7 +343,7 @@ Robot {
                         centerOfMass 0 -0.0464 0.00
                       }
                       maxForce 40
-                      controlP 16
+                      controlP IS pGain
                     }
                     DEF Right_elbow Transform {
                       translation 0 0 -0.03
@@ -358,7 +359,7 @@ Robot {
                     centerOfMass 0 -0.0351 -0.03
                   }
                   maxForce 100
-                  controlP 16
+                  controlP IS pGain
                 }
                 DEF Right_arm Transform {
                   translation 0 -0.027 0
@@ -374,7 +375,7 @@ Robot {
                 centerOfMass 0 -0.1027 0.008
               }
               maxForce 100
-              controlP 16
+              controlP IS pGain
             }
             DEF Right_shoulder_roll Transform {
               translation 0 0 0.024
@@ -388,7 +389,7 @@ Robot {
             mass 0.1
           }
           maxForce 100
-          controlP 16
+          controlP IS pGain
         }
       ]
       name "ShoulderR"
@@ -397,7 +398,7 @@ Robot {
         mass 0.1
       }
       maxForce 100
-      controlP 16
+      controlP IS pGain
     }
     DEF Left_shoulder_pitch Servo {
       translation 0.233 -0.008 0
@@ -570,7 +571,7 @@ Robot {
                             mass 0.1                            
                           }
                           maxForce 40
-                          controlP 16
+                          controlP IS pGain
                         }
                         DEF Left_wrist2 Transform {
                           translation 0 -0.065 0
@@ -592,7 +593,7 @@ Robot {
                             centerOfMass 0 -0.146 -0.0039
                           }
                           maxForce 40
-                          controlP 16
+                          controlP IS pGain
                         }
                         DEF Right_wrist Transform {
                           scale 0.001 0.001 0.001
@@ -606,7 +607,7 @@ Robot {
                         centerOfMass 0 -0.0464 0.00
                       }
                       maxForce 40
-                      controlP 16
+                      controlP IS pGain
                     }
                     DEF Left_elbow Transform {
                       translation 0 0 -0.03
@@ -621,7 +622,7 @@ Robot {
                     centerOfMass 0 -0.0351 -0.03
                   }
                   maxForce 100
-                  controlP 16
+                  controlP IS pGain
                 }
                 DEF Left_arm Transform {
                   translation 0 -0.027 0
@@ -636,7 +637,7 @@ Robot {
                 centerOfMass 0 -0.1027 0.008
               }
               maxForce 100
-              controlP 16
+              controlP IS pGain
             }
             DEF Right_shoulder_roll Transform {
               translation 0 0 0.024
@@ -650,7 +651,7 @@ Robot {
             mass 0.1
           }
           maxForce 100
-          controlP 16
+          controlP IS pGain
         }
         DEF Left_shoulder_pitch Transform {
           translation -0.05 0 0
@@ -665,7 +666,7 @@ Robot {
         mass 0.1
       }
       maxForce 100
-      controlP 16
+      controlP IS pGain
     }
     DEF Torso_pitch Servo {
       translation 0 -0.17 0
@@ -733,7 +734,7 @@ Robot {
                                       physics Physics {
                                       }
                                       maxForce 100
-                                      controlP 16
+                                      controlP IS pGain
                                     }
                                   ]
                                   name "FootR"
@@ -743,7 +744,7 @@ Robot {
                                     centerOfMass 0 -0.0429 -0.0048
                                   }
                                   maxForce 100
-                                  controlP 16
+                                  controlP IS pGain
                                 }
                                 DEF Left_ankle Transform {
                                   scale 0.001 0.001 0.001
@@ -756,7 +757,7 @@ Robot {
                                 mass 0.1
                               }
                               maxForce 200
-                              controlP 16
+                              controlP IS pGain
                             }
                           ]
                           name "LegLowerR"
@@ -766,7 +767,7 @@ Robot {
                             centerOfMass -0.0313 -0.1796 0.0374
                           }
                           maxForce 200
-                          controlP 16
+                          controlP IS pGain
                         }
                       ]
                       name "LegUpperR"
@@ -776,7 +777,7 @@ Robot {
                         centerOfMass -0.0211 -0.1241 -0.0082
                       }
                       maxForce 200
-                      controlP 16
+                      controlP IS pGain
                     }
                     DEF Right_hip_roll Transform {
                       scale 0.001 0.001 0.001
@@ -789,7 +790,7 @@ Robot {
                     mass 0.1
                   }
                   maxForce 100
-                  controlP 16
+                  controlP IS pGain
                 }
                 DEF Right_hip_yaw Transform {
                   translation 0 0.063 0
@@ -803,7 +804,7 @@ Robot {
                 mass 0.01
               }
               maxForce 100
-              controlP 16
+              controlP IS pGain
             }
             DEF Left_hip_yaw Servo {
               translation 0.072 -0.232 0
@@ -863,7 +864,7 @@ Robot {
                                     centerOfMass 0 -0.0429 -0.0048
                                   }
                                   maxForce 100
-                                  controlP 16
+                                  controlP IS pGain
                                 }
                                 DEF Left_ankle Transform {
                                   scale 0.001 0.001 0.001
@@ -876,7 +877,7 @@ Robot {
                                 mass 0.1
                               }
                               maxForce 200
-                              controlP 16
+                              controlP IS pGain
                             }
                           ]
                           name "LegLowerL"
@@ -886,7 +887,7 @@ Robot {
                             centerOfMass 0.0313 -0.1796 0.0374
                           }
                           maxForce 200
-                          controlP 16
+                          controlP IS pGain
                         }
                       ]
                       name "LegUpperL"
@@ -896,7 +897,7 @@ Robot {
                         centerOfMass 0.0211 -0.1241 -0.0082
                       }
                       maxForce 200
-                      controlP 16
+                      controlP IS pGain
                     }
                     DEF Right_hip_roll Transform {
                       scale 0.001 0.001 0.001
@@ -909,7 +910,7 @@ Robot {
                     mass 0.1
                   }
                   maxForce 100
-                  controlP 16
+                  controlP IS pGain
                 }
                 DEF Left_hip_yaw Transform {
                   translation 0 0.063 0
@@ -923,7 +924,7 @@ Robot {
                 mass 0.1                
               }
               maxForce 100
-              controlP 16
+              controlP IS pGain
             }
           ]
           name "TorsoYaw"
@@ -933,7 +934,7 @@ Robot {
             centerOfMass 0 -0.1208 -0.0264            
           }
           maxForce 100
-          controlP 16
+          controlP IS pGain
         }
         DEF Torso_pitch_servo Transform {
           translation 0 -0.038 0
@@ -948,7 +949,7 @@ Robot {
         mass 0.2
       }
       maxForce 200
-      controlP 16
+      controlP IS pGain
     }
     DEF Neck_yaw Servo {
       rotation 0 -1 0 0
@@ -999,7 +1000,7 @@ Robot {
         centerOfMass 0 0.06 0
       }
       maxForce 40
-      controlP 16
+      controlP IS pGain
     }
   ]
   name "THOROP_Robotis"

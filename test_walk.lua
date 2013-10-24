@@ -78,7 +78,7 @@ local char_to_event = {
   ['2'] = {'body_ch','stepplan'},
   ['3'] = {'body_ch','stepplan2'},
   ['4'] = {'body_ch','stepplan3'},
-  ['5'] = {'body_ch','stepplan4'},
+  ['5'] = {'body_ch','steptest'},
 
   ['6'] = {'body_ch','follow'},
 

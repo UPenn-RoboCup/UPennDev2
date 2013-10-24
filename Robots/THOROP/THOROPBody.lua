@@ -1730,11 +1730,15 @@ if IS_WEBOTS then
 
 
 --COM testing
+    local qWaist = Body.get_waist_command_position()
     local qLArm = Body.get_larm_command_position()
     local qRArm = Body.get_rarm_command_position()
+    
+    local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm)
 
-    local comLArm = Kinematics.com_l_arm(qLArm)
-    local comRArm = Kinematics.com_r_arm(qRArm)
+--    print("Com:",unpack(com))
+
+
 --[[
     print("COML:",unpack(comLArm))
     print("COMR:",unpack(comRArm))

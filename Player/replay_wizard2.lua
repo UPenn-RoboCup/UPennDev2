@@ -59,7 +59,21 @@ local devs = {
     local jimg = jpeg.uncompress(c_img)
     print('jpeg',jimg:width(),jimg:height())
     print(util.color('\n=========\n','green'))
-
+    return meta
+  end,
+  lwrist_camera = function()
+    -- read the metadata
+    local meta = unloggers.lwrist_camera.meta_unpacker:unpack()
+    if not meta then return end
+    -- print the metadata
+    util.ptable(meta)
+    -- read the c_img
+    local c_img = unloggers.lwrist_camera.raw_file:read(meta.sz)
+    -- Save the c_img, for now... should just replay on the channel...
+    print('lraw:', #c_img)
+    local jimg = jpeg.uncompress(c_img)
+    print('ljpeg',jimg:width(),jimg:height())
+    print(util.color('\n=========\n','green'))
     return meta
   end
 }

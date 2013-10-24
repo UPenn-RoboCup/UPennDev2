@@ -1727,6 +1727,25 @@ if IS_WEBOTS then
       end
     --]]
     end
+
+
+--COM testing
+    local qLArm = Body.get_larm_command_position()
+    local qRArm = Body.get_rarm_command_position()
+
+    local comLArm = Kinematics.com_l_arm(qLArm)
+    local comRArm = Kinematics.com_r_arm(qRArm)
+--[[
+    print("COML:",unpack(comLArm))
+    print("COMR:",unpack(comRArm))
+--]]
+
+
+
+
+
+
+
 	end -- function
 
 	Body.exit = function()

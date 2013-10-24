@@ -72,6 +72,45 @@ const double aUpperArm = atan(elbowOffsetX/upperArmLength);
 const double aLowerArm = atan(elbowOffsetX/lowerArmLength);
 
 
+//=================================================================
+//Those values are used to calculate the multi-body COM of the robot
+
+const double mUpperArm = 2.89;
+const double mElbow = 0.13;
+const double mLowerArm = 0.81;
+const double mWrist = 0.97;
+const double mPelvis = 8.0;
+const double mTOrso = 9.21;
+
+const double comUpperArmX = 0.1027;
+const double comUpperArmZ = -0.008;
+
+const double comElbowX = 0.0159;
+const double comElbowZ = 0.0030;
+
+const double comLowerArmX = 0.0464;
+
+const double comWristX = 0.146;
+const double comWristZ = -0.0039;
+
+const double comTorsoX = -0.0208;
+const double comTorsoZ = 0.1557;
+
+const double comPelvisX = -0.0264;
+const double comPelvisZ = -0.1208;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const double servoOffset[] = {
   0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -107,4 +146,5 @@ std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg);
 std::vector<double> THOROP_kinematics_inverse_l_leg(const Transform trLeg);
 std::vector<double> THOROP_kinematics_inverse_joints(const double *q);
 
+std::vector<double> THOROP_kinematics_com_arm(const double *q, int is_left);  
 #endif

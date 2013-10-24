@@ -63,8 +63,6 @@ THOROP_kinematics_forward_l_arm(const double *q)
   return t;
 }
 
-
-
   Transform
 THOROP_kinematics_forward_r_arm(const double *q) 
 {
@@ -188,6 +186,64 @@ THOROP_kinematics_forward_r_leg(const double *q)
     .mDH(-PI/2, 0, q[5], 0)
     .rotateZ(PI).rotateY(-PI/2).translateZ(-footHeight);
   return t;
+}
+
+//Get the COM and total mass of the left arm given the joint angles
+
+  std::vector<double>
+THOROP_kinematics_com_arm(const double *q, int is_left)  
+{
+  /* inverse kinematics to convert joint angles to servo positions */
+  std::vector<double> r(4);
+
+  Transform t0,t1,t2,t3,t4;
+
+  if (is_left>0) t0 = t0.translateY(shoulderOffsetY);        
+  else t0 = t0.translateY(-shoulderOffsetY);
+  
+  t0 = t0.translateZ(shoulderOffsetZ)
+        .rotateY(q[0])
+        .rotateX(q[1])
+        .rotateZ(q[2]);
+
+  t1 = t0.translateX(comUpperArmX).translateZ(comUpperArmZ);
+
+  t0 = t0.translateX(upperArmLength)
+         .translateZ(elbowOffsetX)
+         .rotateY(q[3]);
+
+  t2 = t0.translateX(comElbowX).translateZ(comElbowZ);
+
+  t0 = t0.translateZ(-elbowOffsetX)
+         .rotateX(q[4]);         
+  
+  t3 = t0.translateX(comLowerArmX);
+
+  t0 = t0.translateX(lowerArmLength)          
+         .rotateZ(q[5])
+         .rotateX(q[6]);
+
+  t4 = t0.translateX(comWristX)
+          .translateZ(comWristZ);
+
+  r[0] = mUpperArm * t1(0,3) +
+         mElbow * t2(0,3) +
+         mLowerArm * t3(0,3)+
+         mWrist * t4(0,3);
+
+  r[1] = mUpperArm * t1(1,3)+
+         mElbow * t2(1,3)+
+         mLowerArm * t3(1,3)+
+         mWrist * t4(1,3);
+
+  r[2] = mUpperArm * t1(2,3)+
+         mElbow * t2(2,3)+
+         mLowerArm * t3(2,3)+
+         mWrist * t4(2,3);
+  
+  r[3] = mUpperArm + mElbow + mLowerArm + mWrist;
+  
+  return r;
 }
 
 double actlength (double top[], double bot[])

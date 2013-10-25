@@ -1305,7 +1305,8 @@ if IS_WEBOTS then
   head_camera_wbt = {}
   head_camera_wbt.meta = {}
   --head_camera_wbt.channel = simple_ipc.new_publisher'head_cam'
-  head_camera_wbt.channel = udp.new_sender(Config.net.operator.wired,Config.net.head_camera)
+  --head_camera_wbt.channel = udp.new_sender(Config.net.operator.wired,Config.net.head_camera)
+  head_camera_wbt.channel = udp.new_sender(Config.net.operator.wired,Config.net.camera.head)
   update_head_camera = function()  
     local metadata = {}
     metadata.t = Body.get_time()

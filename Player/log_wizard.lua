@@ -37,6 +37,7 @@ end
 
 ---------------------------------
 -- Input Channels
+local pulse_sub   = simple_ipc.new_subscriber'pulse'
 local channel_polls
 -- 100Hz joint recording
 local channel_timeout = 10 -- ms
@@ -72,7 +73,8 @@ local body_log_file
 local function body_logger()
 	-- Grab the data
 	local body = {}
-  body.t = Body.get_time()
+  --Body.get_time()
+  body.t = tonumber(pulse_sub:receive())
   body.command_position = jcm.get_actuator_command_position()
   body.twrite = jcm.get_twrite_command_position()
   body.position = jcm.get_sensor_position()
@@ -133,8 +135,10 @@ function log.entry()
     end
 	end
   
-  -- Body file open
-  body_log_file = open_logfile('body',true)
+  -- Body logging on a pulse from state_wizard's Body.update()
+  body_log_file     = open_logfile('body',true)
+  pulse_subcallback = body_logger
+  table.insert( wait_channels, pulse_sub )
   
   -- Set up the channels
   channel_polls = simple_ipc.wait_on_channels( wait_channels )
@@ -148,9 +152,6 @@ function log.update()
   -- Perform the poll
   local npoll = channel_polls:poll(channel_timeout)
   local t = unix.time()
-  ------------------
-  -- Log body at fixed 100Hz rate (always)
-  body_logger()
   
   -- Debug how long we've been logging
   local t_diff = t-t_debug

@@ -2,10 +2,8 @@
 -- Torch/Lua Zero Moment Point Library
 -- (c) 2013 Stephen McGill, Seung-Joon Yi
 local vector = require'vector'
-local util   = require'util'
 local torch  = require'torch'
 torch.Tensor = torch.DoubleTensor
-
 
 -- Perform some math
 local function solve( solver, z_support, z_start, z_finish, x1, x2 )

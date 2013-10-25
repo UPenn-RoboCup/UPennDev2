@@ -31,8 +31,10 @@ clear msg;
 pos = zeros(numel(jobjs),numel(jobjs{1}.position) );
 cmd = zeros(numel(jobjs),numel(jobjs{1}.command_position) );
 ts  = zeros(numel(jobjs),1);
+trds  = zeros(numel(jobjs),1);
 for i=1:numel(jobjs)
     jobj = jobjs{i};
+    trds(i)  = jobjs{i}.tread(1);
     ts(i)    = jobjs{i}.t;
     pos(i,:) = jobjs{i}.position;
     cmd(i,:) = jobjs{i}.command_position;

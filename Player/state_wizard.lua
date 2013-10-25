@@ -7,6 +7,7 @@ local simple_ipc   = require'simple_ipc'
 local udp        = require'udp'
 
 local state_pub_ch = simple_ipc.new_publisher(Config.net.state)
+local pulse_ch = simple_ipc.new_publisher'pulse'
 
 require'gcm'
 require'wcm'
@@ -99,6 +100,9 @@ while true do
   
   -- Update the body (mostly needed for webots)
 	Body.update()
+  
+  -- Send the tick tock at the end of a cycle
+  pulse_ch:send(tostring(t))
   
   -- Sleep a bit if not webots
   if not IS_WEBOTS then

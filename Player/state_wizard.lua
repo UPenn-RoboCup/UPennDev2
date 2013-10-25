@@ -3,8 +3,9 @@ local Body = require'Body'
 local util = require'util'
 local mp   = require'msgpack'
 local signal = require'signal'
-local simple_ipc   = require'simple_ipc'
+local simple_ipc = require'simple_ipc'
 local udp        = require'udp'
+local vector     = require'vector'
 
 local state_pub_ch = simple_ipc.new_publisher(Config.net.state)
 local pulse_ch = simple_ipc.new_publisher'pulse'

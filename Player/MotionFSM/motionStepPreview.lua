@@ -187,22 +187,22 @@ function walk.update()
     Body.request_rleg_position()
     local rpy = Body.get_sensor_rpy()
 
-    print("Roll L: ",
-      (qLLeg[2]-qLLegCommand[2])*Body.RAD_TO_DEG,
-      (qLLeg[6]-qLLegCommand[6])*Body.RAD_TO_DEG,
-      " R: ",       
-      (qRLeg[2]-qRLegCommand[2])*Body.RAD_TO_DEG,
-      (qRLeg[6]-qRLegCommand[6])*Body.RAD_TO_DEG,
-      " IMU: ",
-      rpy[1]*Body.RAD_TO_DEG
-      )
     debugdata=debugdata..
-    string.format("%f,%f,%f,%f, %f\n",
-      (qLLeg[2]-qLLegCommand[2])*Body.RAD_TO_DEG,
-      (qLLeg[6]-qLLegCommand[6])*Body.RAD_TO_DEG,
-      (qRLeg[2]-qRLegCommand[2])*Body.RAD_TO_DEG,
-      (qRLeg[6]-qRLegCommand[6])*Body.RAD_TO_DEG,
-      rpy[1]*Body.RAD_TO_DEG
+    string.format("%f,%f,%f,%f,%f,  %f,%f,%f,%f,%f,  %f,%f\n",      
+      qRLeg[2]*Body.RAD_TO_DEG,
+      qRLeg[3]*Body.RAD_TO_DEG,
+      qRLeg[4]*Body.RAD_TO_DEG,
+      qRLeg[5]*Body.RAD_TO_DEG,
+      qRLeg[6]*Body.RAD_TO_DEG,
+
+      qRLegCommand[2]*Body.RAD_TO_DEG,
+      qRLegCommand[3]*Body.RAD_TO_DEG,
+      qRLegCommand[4]*Body.RAD_TO_DEG,
+      qRLegCommand[5]*Body.RAD_TO_DEG,
+      qRLegCommand[6]*Body.RAD_TO_DEG,                 
+      
+      rpy[1]*Body.RAD_TO_DEG,
+      rpy[2]*Body.RAD_TO_DEG      
       )
   end
 
@@ -218,6 +218,7 @@ function walk.exit()
     debugfile:flush();
     debugfile:close();  
   end
+  print("DONE")
 end
 
 return walk

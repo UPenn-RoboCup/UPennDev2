@@ -435,10 +435,15 @@ arm.linear_slow_limit = vector.new({0.02,0.02,0.02,
 end
 --
 
+
+
+
+
+
 arm.linear_wrist_limit = 0.05
 
-
-if IS_WEBOTS then
+--Flex testing
+--if IS_WEBOTS then
   --For low-torque deflection testing
 
   walk.hipRollCompensation = 0*math.pi/180
@@ -447,7 +452,7 @@ if IS_WEBOTS then
   walk.ankleImuParamY={0, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
   walk.hipImuParamY  ={0, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
 
-end
+--end
 
 --FOR testing (for conference)
 --[[

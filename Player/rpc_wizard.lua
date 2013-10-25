@@ -113,10 +113,42 @@ local function process_udp()
   end
 end
 
+-- Send body feedback
+local feedback_udp_ch =
+  udp.new_sender(Config.net.operator.wired, Config.net.feedback)
+local function send_status_feedback()
+  local data={};
+  data.larmangle  = Body.get_larm_command_position()
+  data.rarmangle  = Body.get_rarm_command_position()
+  data.waistangle = Body.get_waist_command_position()
+  data.neckangle  = Body.get_head_command_position()
+  data.llegangle  = Body.get_lleg_command_position()
+  data.rlegangle  = Body.get_rleg_command_position()
+  data.lgrip = Body.get_lgrip_command_position()
+  data.rgrip = Body.get_rgrip_command_position()
+
+  --Pose information
+  data.pose =  wcm.get_robot_pose()    
+  data.pose_odom =  wcm.get_robot_pose_odom()
+  data.pose_slam =  wcm.get_slam_pose()
+  data.rpy = Body.get_sensor_rpy()
+  data.body_height = mcm.get_camera_bodyHeight()
+  data.battery =  0
+
+  local ret,err = feedback_udp_ch:send( mp.pack(data) )
+--  if err then print('feedback udp',err) end
+end
+
 rpc_zmq.callback = process_zmq
 local rpc_udp_poll = {}
 rpc_udp_poll.socket_handle = rpc_udp:descriptor()
 rpc_udp_poll.callback = process_udp
 local wait_channels = {rpc_zmq,rpc_udp_poll}
 local channel_poll = simple_ipc.wait_on_channels( wait_channels );
-channel_poll:start()
+--channel_poll:start()
+local channel_timeout = 500 -- 2Hz joint feedback
+while true do
+  local npoll = channel_polls:poll(channel_timeout)
+  -- Send the feedback 
+  send_status_feedback()
+end

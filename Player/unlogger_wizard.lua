@@ -54,7 +54,6 @@ local devs = {
   end
 }
 local log = {}
-local log_prefix = 'Log/'
 function log.entry()
 	
 	-- Set up listeners based on the input arguments
@@ -66,7 +65,7 @@ function log.entry()
     if type(updater)=='function' then
       local tbl = {}
       tbl.name = dev
-      local fname = log_prefix..filename
+      local fname = LOG_DIR..filename
       local f = io.open(fname,'r')
       -- read the whole chunk into memory and then close the descriptor
       local str = f:read('*all')
@@ -75,7 +74,7 @@ function log.entry()
       tbl.meta_unpacker = up
       local raw_file = filename:gsub('meta','raw')
       -- Do not read the raw file a priori
-      tbl.raw_file = io.open(log_prefix..raw_file,'r')
+      tbl.raw_file = io.open(LOG_DIR..raw_file,'r')
       tbl.update = updater
       tbl.pub = simple_ipc.new_publisher(dev)
       unloggers[dev]=tbl

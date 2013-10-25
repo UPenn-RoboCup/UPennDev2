@@ -41,6 +41,7 @@ package.path  = HOME..'/Robots/'..Config.PLATFORM_NAME..'/?.lua;'..package.path
 package.cpath = HOME..'/Robots/'..Config.PLATFORM_NAME..'/?.so;'..package.cpath
 
 KEYFRAME_DIR = HOME.."/Player/Keyframes"
+LOG_DIR = HOME.."/Logs/"
 
 -- Print out the globally available variables, when using include.lua
 --[[

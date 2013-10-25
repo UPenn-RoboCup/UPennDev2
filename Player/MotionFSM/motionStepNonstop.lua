@@ -38,7 +38,6 @@ local foot_traj_func
 foot_traj_func = moveleg.foot_trajectory_square_stair
 local t, t_discrete
 
-local debugdata
 local t0
 ---------------------------
 -- State machine methods --
@@ -115,8 +114,6 @@ function walk.entry()
   time_discrete_shift = zmp_solver:trim_preview_queue(step_planner,t )  
   t_discrete = t 
   t0 = t
-
-  debugdata=''
  
 end
 
@@ -149,8 +146,6 @@ function walk.update()
     --Get the current COM position
     com_pos,zmp_pos = zmp_solver:update_state()
 
-    --time zmp com
-    debugdata=debugdata..string.format("%f,%f,%f\n",t_discrete-t0, zmp_pos[2], com_pos[2])
   end
 
   if discrete_updated then
@@ -171,9 +166,6 @@ function walk.update()
     end
     step_planner:save_stance(uLeft,uRight,uTorso)  
 
-
-
-
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
     delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,phSingle,gyro_rpy, angleShift)
@@ -190,10 +182,6 @@ function walk.update()
 end -- walk.update
 
 function walk.exit()
-  local debugfile=assert(io.open("debugdata.txt","w")); 
-  debugfile:write(debugdata);
-  debugfile:flush();
-  debugfile:close();
   print(walk._NAME..' Exit')  
 end
 

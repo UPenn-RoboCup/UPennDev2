@@ -1,6 +1,6 @@
 ---------------------------------
 -- Logging manager for Team THOR
--- (c) Qin He, 2013
+-- (c) Stephen McGill, Qin He 2013
 ---------------------------------
 
 -- Set the path for the libraries
@@ -8,271 +8,164 @@ dofile'../include.lua'
 local Config = require'Config'
 local Body = require'Body'
 require 'unix'
-
----------------------------------
--- Libraries
 local simple_ipc = require'simple_ipc'
-local carray = require'carray'
-local mp = require'msgpack'
-local jpeg = require'jpeg'
-local zlib = require'zlib'
 local util = require'util'
-local vector = require'vector'
-local libLaser = require'libLaser'
----------------------------------
-
--- TODO: contact sensor
--- TODO: hcm inputs
+local mp = require'msgpack'
 
 ---------------------------------
 -- Shared Memory
 require'jcm'
 require'hcm'
 require'vcm'
+local head_camera, lwrist_camera, joint_positions
 ---------------------------------
 
 ---------------------------------
 -- Logging and Replaying set up
-local logfile = ''
----------------------------------
+local loggers = {}
+local open_logfile = function(dev_name,only_meta)
+  -- Set up log file
+  local filetime = os.date('%m.%d.%Y.%H.%M.%S')
+  local meta_filename = string.format('%s/%s_%s_meta.log',LOG_DIR,dev_name,filetime)
+  if not only_meta then
+    local raw_filename  = string.format('%s/%s_%s_raw.log',LOG_DIR,dev_name,filetime)
+    return io.open(meta_filename,'w'), io.open(raw_filename,'w')
+  else
+    return io.open(meta_filename,'w')
+  end
+end
 
+---------------------------------
 -- Input Channels
 local channel_polls
-local channel_timeout = 100 -- ms
-
--- Lidar objects
-local hlidar -- head
-local clidar -- chest
-
----------------------------------
--- Filter Parameters
-local l0minFOV = -135*Body.DEG_TO_RAD
-local l0maxFOV =  135*Body.DEG_TO_RAD
-local l1minFOV = -45*Body.DEG_TO_RAD 
-local l1maxFOV =  45*Body.DEG_TO_RAD 
-local l0minHeight = -0.6 -- meters
-local l0maxHeight = 1.2
--- We don't need height limits for chest lidar
-local minRange = 0.15 -- meters
-local maxRange = 28
-if IS_WEBOTS then
-  maxRange = 9.5
-end
-
-
----------------------------------
--- Callbacks for receiving lidar readings
-local function head_callback()
-  --print('HEAD CALLBACK')
-  -- Grab the data  
-  local meta, has_more = head_lidar_ch:receive()
-  local metadata = mp.unpack(meta)
-   	
-	metadata.name = 'headlidar'
-  -- Get raw data from shared memory
-  --metadata.ranges = vcm.get_head_lidar_scan()
-
-  ---[[
-  -- TODO: May try to put into the lidar message itself
-  -- which is useful for a separate computer to perform slam
-  local ranges = Body.get_head_lidar()
-  --print('lidar sizes',#ranges,hlidar.ranges:size(1))
-  -- Copy of ranges for use in libLaser
-  ranges:tensor( hlidar.ranges )
-
-  -- Take log
-	-- torch is easier to be logged...
-	metadata.ranges = hlidar.ranges
-	--]]
-
-	logfile:write( mp.pack(metadata) )
- 
-end
-
-
+-- 100Hz joint recording
+local channel_timeout = 10 -- ms
+local wait_channels = {}
 
 ------------------------------------------------------
--- Chest lidar callback
+-- Camera callbacks
 ------------------------------------------------------
-local function chest_callback()
-
-  -- Grab the data
-  local meta, has_more = chest_lidar_ch:receive()
-  local metadata = mp.unpack(meta)
-
-	-- Get raw data from shared memory
-	local ranges = Body.get_chest_lidar()
-	--print('Lidar1 range size:', clidar.ranges:size(1))
-	-- Copy of ranges for use in libLaser
-	ranges:tensor( clidar.ranges )
-  
-  -- Take log
-	-- torch is easier to be logged...
-	metadata.name = 'chestlidar'
-	metadata.ranges = clidar.ranges
-	logfile:write( mp.pack(metadata) )
-  
-end
-
-------------------------------------------------------
--- Mesh callback
-------------------------------------------------------
-local function mesh_callback()
-	--print('logging mesh!!')
-	-- Grab the data
-	local meta, has_more = mesh_ch:receive()
-
-  -- Write log file
-  logfile:write( meta )
-end
-
-------------------------------------------------------
--- Camera callback
-------------------------------------------------------
-local function camera_callback()
+local function head_camera_cb()
 	-- Grab the metadata
-	local meta, has_more = camera_ch:receive()
+	local meta, has_more = head_camera.sub:receive()
   -- Grab the compressed image
-	local img, has_more = camera_ch:receive()
-
+	local img,  has_more = head_camera.sub:receive()
   -- Write log file
-  logfile:write( meta )
+  head_camera.meta_file:write( meta )
+  head_camera.raw_file:write( img )
+end
+--
+local function lwrist_camera_cb()
+	-- Grab the metadata
+	local meta, has_more = lwrist_camera.sub:receive()
+  -- Grab the compressed image
+	local img,  has_more = lwrist_camera.sub:receive()
+  -- Write log file
+  lwrist_camera.meta_file:write( meta )
+  lwrist_camera.raw_file:write( img )
 end
 
 ------------------------------------------------------
--- Logger for imu
+-- Logger for the body
 ------------------------------------------------------
-local function imu_logger()
+local body_log_file
+local function body_logger()
 	-- Grab the data
-	local imu = {}
-	imu.name = 'imu'
-  imu.t = Body.get_time()
-  -- TODO: use shm instead of body?
-  imu.rpy = Body.get_sensor_rpy()
-  imu.gyro = Body.get_sensor_gyro()
+	local body = {}
+  body.t = Body.get_time()
+  body.command_position = jcm.get_actuator_command_position()
+  body.twrite = jcm.get_twrite_command_position()
+  body.position = jcm.get_sensor_position()
+  body.tread = jcm.get_tread_position()
+  body.rpy  = Body.get_sensor_rpy()
+  body.gyro = Body.get_sensor_gyro()
+  body.lfoot = jcm.get_sensor_lfoot()
+  body.rfoot = jcm.get_sensor_rfoot()
 
   -- Write log file
-  logfile:write( mp.pack(imu) )
+  body_log_file:write( mp.pack(body) )
 end
 
-------------------------------------------------------
--- Logger for sensed joint position and velocity
-------------------------------------------------------
-local function joint_sensor_logger()
-	-- Grab the data
-	local joint = {}
-	joint.name = 'sensor'
-  joint.t = Body.get_time()
-  joint.pos = jcm.get_sensor_position()
-  joint.vel = jcm.get_sensor_velocity()
+local setup_log = {
+  head_camera = function()
+    head_camera = {}
+    head_camera.sub = simple_ipc.new_subscriber'head_camera'
+    head_camera.sub.callback = head_camera_cb
+    table.insert( wait_channels, head_camera.sub )
+    return head_camera
+  end,
+  lwrist_camera = function()
+    lwrist_camera = {}
+    lwrist_camera.sub = simple_ipc.new_subscriber'lwrist_camera'
+    lwrist_camera.sub.callback = lwrist_camera_cb
+    table.insert( wait_channels, lwrist_camera.sub )
+    return lwrist_camera
+  end
+}
 
-  -- Write log file
-  logfile:write( mp.pack(joint) )
+-- Close the camera properly upon Ctrl-C
+local signal = require 'signal'
+local function shutdown()
+  print'Shutting down the Log files...'
+  for _,logger in ipairs(loggers) do
+    logger.meta_file:close()
+    logger.raw_file:close()
+    print('Closed log',logger.name)
+  end
+  body_log_file:close()
+  print'Done!'
+  os.exit()
 end
-
-------------------------------------------------------
--- Logger for commanded joint position and velocity
-------------------------------------------------------
-local function joint_actuator_logger()
-	-- Grab the data
-	local joint = {}
-	joint.name = 'actuator'
-  joint.t = Body.get_time()
-  joint.pos = jcm.get_actuator_command_position()
-  joint.vel = jcm.get_actuator_command_velocity()
-
-  -- Write log file
-  logfile:write( mp.pack(joint) )
-end
-
-------------------------------------------------------
--- Logger for FSR sensor
-------------------------------------------------------
-local function fsr_logger()
-  local fsr = {}
-  fsr.name = 'fsr'
-  fsr.lfoot = jcm.get_sensor_lfoot()
-  fsr.rfoot = jcm.get_sensor_rfoot()
-  -- Write
-  logfile:write( mp.pack(fsr) )
-end
-
+signal.signal("SIGINT", shutdown)
+signal.signal("SIGTERM", shutdown)
 
 local log = {}
-
 function log.entry()
-	-- Set up log file
-	filetime = os.date('%m.%d.%Y.%H.%M.%S')
-	logfile = io.open('logfiles/'..filetime..'.log','w')
 	
-	
-	-- Set up listeners
-	for _,name in pairs(arg) do
-		if name == 'head' then
-			head_lidar_ch = simple_ipc.new_subscriber'head_lidar'
-		elseif name == 'chest' then
-			chest_lidar_ch = simple_ipc.new_subscriber'chest_lidar'
-		elseif name == 'mesh' then
-			mesh_ch = simple_ipc.new_subscriber'mesh'
-		elseif name == 'camera' then
-			camera_ch = simple_ipc.new_subscriber'head_camera'
-		end
+	-- Set up listeners based on the input arguments
+	for _,name in ipairs(arg) do
+    local setup = setup_log[name]
+    if type(setup)=='function' then
+      local logger = setup()
+      logger.meta_file, logger.raw_file = open_logfile(name)
+      logger.name = name
+      table.insert(loggers,logger)
+    end
 	end
-				
-  -- Poll lidar readings
-  local wait_channels = {}
-  if head_lidar_ch then
-    head_lidar_ch.callback = head_callback
-    table.insert( wait_channels, head_lidar_ch )
-    hlidar = libLaser.new_lidar(
-      'head', 
-      minRange, maxRange, 
-      l0minHeight, l0maxHeight, 
-      l0minFOV, l0maxFOV )
-  end
-  if chest_lidar_ch then
-    chest_lidar_ch.callback = chest_callback
-    table.insert( wait_channels, chest_lidar_ch )
-    clidar = libLaser.new_lidar(
-      'chest', 
-      minRange, maxRange, 
-      l1minHeight, l1maxHeight, 
-      l1minFOV, l1maxFOV )
-  end
-
-  if mesh_ch then
-    mesh_ch.callback = mesh_callback
-    table.insert( wait_channels, mesh_ch )
-  end
-
-  if camera_ch then
-    camera_ch.callback = camera_callback
-    table.insert( wait_channels, camera_ch )
-  end
   
-  --Set up the channels
+  -- Body file open
+  body_log_file = open_logfile('body',true)
+  
+  -- Set up the channels
   channel_polls = simple_ipc.wait_on_channels( wait_channels )
 end
 
+local t0 = unix.time()
+local t_debug = unix.time()
+local DEBUG_INTERVAL = 1
 function log.update()
----[[
-  imu_logger()
-  joint_sensor_logger()
-  joint_actuator_logger()
-  fsr_logger()
-  --hcm_logger()
---]]
   ------------------
   -- Perform the poll
   local npoll = channel_polls:poll(channel_timeout)
+  local t = unix.time()
   ------------------
+  -- Log body at fixed 100Hz rate (always)
+  body_logger()
+  
+  -- Debug how long we've been logging
+  local t_diff = t-t_debug
+  if t_diff>DEBUG_INTERVAL then
+    t_debug = t
+    print(string.format('%d seconds of logs...',t-t0))
+  end
 end
 
 function log.exit()
-	logfile:close()
+	shutdown()
 end
 
 -- Main loop
+print'Beginning to log...'
 log.entry()
 while true do log.update() end
 log.exit()

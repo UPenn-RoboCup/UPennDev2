@@ -41,6 +41,13 @@ local t, t_discrete
 
 local debugdata
 local t0
+
+local read_test = false;
+local read_test = true;
+
+
+
+
 ---------------------------
 -- State machine methods --
 ---------------------------
@@ -101,6 +108,10 @@ function walk.entry()
 
   debugdata=''
  
+  if read_test then
+    Body.request_lleg_position()
+    Body.request_rleg_position()
+  end
 end
 
 function walk.update()
@@ -163,11 +174,50 @@ function walk.update()
     --Move legs
     moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
   end
+
+  if read_test then
+
+    local qLLeg = Body.get_lleg_position()
+    local qRLeg = Body.get_rleg_position()
+
+    local qLLegCommand = Body.get_lleg_command_position()
+    local qRLegCommand = Body.get_rleg_command_position()
+
+    Body.request_lleg_position()
+    Body.request_rleg_position()
+    local rpy = Body.get_sensor_rpy()
+
+    print("Roll L: ",
+      (qLLeg[2]-qLLegCommand[2])*Body.RAD_TO_DEG,
+      (qLLeg[6]-qLLegCommand[6])*Body.RAD_TO_DEG,
+      " R: ",       
+      (qRLeg[2]-qRLegCommand[2])*Body.RAD_TO_DEG,
+      (qRLeg[6]-qRLegCommand[6])*Body.RAD_TO_DEG,
+      " IMU: ",
+      rpy[1]*Body.RAD_TO_DEG
+      )
+    debugdata=debugdata..
+    string.format("%f,%f,%f,%f, %f\n",
+      (qLLeg[2]-qLLegCommand[2])*Body.RAD_TO_DEG,
+      (qLLeg[6]-qLLegCommand[6])*Body.RAD_TO_DEG,
+      (qRLeg[2]-qRLegCommand[2])*Body.RAD_TO_DEG,
+      (qRLeg[6]-qRLegCommand[6])*Body.RAD_TO_DEG,
+      rpy[1]*Body.RAD_TO_DEG
+      )
+  end
+
 end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')  
   mcm.set_walk_ismoving(0) --We stopped moving
+
+  if read_test then
+    local debugfile=assert(io.open("debugdata.txt","w")); 
+    debugfile:write(debugdata);
+    debugfile:flush();
+    debugfile:close();  
+  end
 end
 
 return walk

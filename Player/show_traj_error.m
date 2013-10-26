@@ -9,7 +9,7 @@ function show_traj_error(traj)
   
   plot(t,traj(:,2)-traj(:,7),'g', t,traj(:,6)-traj(:,11),'b', ...
       t,traj(:,2)-traj(:,7)+traj(:,6)-traj(:,11),'r--',  ...
-      t,traj(:,12),'r');
+      t,traj(:,12) +traj(:,7)+traj(:,11),'r');
   legend('Hip Roll Error','Ankle Roll Error', 'Total Roll Error', 'IMU Roll Error');
   
   
@@ -24,7 +24,7 @@ function show_traj_error(traj)
   
   plot(t,traj(:,3)-traj(:,8),'g', t,traj(:,4)-traj(:,9),'b', t,traj(:,5)-traj(:,10),'k',...      
       t,traj(:,3)+traj(:,4)+traj(:,5)-traj(:,8)-traj(:,9)-traj(:,10),'r--',  ...
-      t,traj(:,13)-10,'r');
+      t,traj(:,13)  +traj(:,8)+traj(:,9)+traj(:,10),'r');
   legend('Hip Pitch Error','Knee Pitch Error', 'Ankle Pitch Error', 'Total Pitch Error', 'IMU Pitch Error');
   
   t_siz = size(t,1)
@@ -33,7 +33,7 @@ function show_traj_error(traj)
   size(t_delay)
   
   subplot(3,1,3);
-  plot(t,t_delay*1000)
+  plot([1:t_siz],t_delay*1000)
   legend('tStep')
   
   drawnow;

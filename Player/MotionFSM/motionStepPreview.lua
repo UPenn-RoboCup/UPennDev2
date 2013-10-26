@@ -188,7 +188,8 @@ function walk.update()
     local rpy = Body.get_sensor_rpy()
 
     debugdata=debugdata..
-    string.format("%f,%f,%f,%f,%f,  %f,%f,%f,%f,%f,  %f,%f\n",      
+    string.format("%f,  %f,%f,%f,%f,%f,  %f,%f,%f,%f,%f,  %f,%f,  %f,%f,%f,%f,%f,  %f,%f,%f,%f,%f\n",      
+      t-t0,
       qRLeg[2]*Body.RAD_TO_DEG,
       qRLeg[3]*Body.RAD_TO_DEG,
       qRLeg[4]*Body.RAD_TO_DEG,
@@ -202,7 +203,19 @@ function walk.update()
       qRLegCommand[6]*Body.RAD_TO_DEG,                 
       
       rpy[1]*Body.RAD_TO_DEG,
-      rpy[2]*Body.RAD_TO_DEG      
+      rpy[2]*Body.RAD_TO_DEG,      
+
+      qLLeg[2]*Body.RAD_TO_DEG,
+      qLLeg[3]*Body.RAD_TO_DEG,
+      qLLeg[4]*Body.RAD_TO_DEG,
+      qLLeg[5]*Body.RAD_TO_DEG,
+      qLLeg[6]*Body.RAD_TO_DEG,
+
+      qLLegCommand[2]*Body.RAD_TO_DEG,
+      qLLegCommand[3]*Body.RAD_TO_DEG,
+      qLLegCommand[4]*Body.RAD_TO_DEG,
+      qLLegCommand[5]*Body.RAD_TO_DEG,
+      qLLegCommand[6]*Body.RAD_TO_DEG               
       )
   end
 

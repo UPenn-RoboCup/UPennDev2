@@ -169,7 +169,13 @@ function walk.update()
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
 
-    delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,ph,gyro_rpy, angleShift)
+    --delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,ph,gyro_rpy, angleShift)
+
+    delta_legs, angleShift = moveleg.get_leg_compensation_new(
+      supportLeg,
+--      ph,
+      phSingle,
+      gyro_rpy, angleShift)
 
     --Move legs
     moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)

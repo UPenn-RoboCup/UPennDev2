@@ -173,8 +173,8 @@ function walk.update()
 
     delta_legs, angleShift = moveleg.get_leg_compensation_new(
       supportLeg,
---      ph,
-      phSingle,
+      ph,
+--      phSingle,
       gyro_rpy, angleShift)
 
     --Move legs

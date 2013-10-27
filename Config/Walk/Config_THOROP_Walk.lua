@@ -445,33 +445,40 @@ arm.linear_wrist_limit = 0.05
 --Flex testing
 --if IS_WEBOTS then
   --For low-torque deflection testing
-
-  walk.hipRollCompensation = 0*math.pi/180
+--[[
   walk.ankleImuParamX={0, 0.9*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
   walk.kneeImuParamX= {0, -0.3*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
   walk.ankleImuParamY={0, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
   walk.hipImuParamY  ={0, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
-
+--]]
 --end
 
 
 --Compensation testing values
 walk.hipRollCompensation = 1*math.pi/180
 walk.ankleRollCompensation = 1.2*math.pi/180
-walk.kneePitchCompensation = 0.5*math.pi/180
-walk.hipPitchCompensation = 1*math.pi/180
-walk.anklePitchCompensation = 1*math.pi/180
+walk.hipPitchCompensation = -1.0*math.pi/180
+walk.kneePitchCompensation = 1.0*math.pi/180
+walk.anklePitchCompensation = 1.5*math.pi/180
+
+
+--No compensation testing
+--[[
+walk.hipRollCompensation = 0*math.pi/180
+walk.ankleRollCompensation = 0*math.pi/180
+walk.hipPitchCompensation = 0*math.pi/180
+walk.kneePitchCompensation = 0*math.pi/180
+walk.anklePitchCompensation = 0*math.pi/180
+--]]
+
+
+
+
+
 
 walk.phComp = {0.1,0.9}
 walk.phCompSlope = 0.2
 
---No compensation testing
---[[
-walk.hipRollCompensation = 0
-walk.ankleRollCompensation = 0
-walk.kneePitchCompensation = 0
-walk.hipPitchCompensation = 0
---]]
 
 
 walk.leg_p_gain = 16

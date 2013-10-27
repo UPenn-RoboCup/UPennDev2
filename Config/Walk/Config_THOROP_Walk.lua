@@ -454,6 +454,20 @@ arm.linear_wrist_limit = 0.05
 
 --end
 
+
+--Compensation testing values
+walk.hipRollCompensation = 1.5*math.pi/180
+walk.ankleRollCompensation = 1.5*math.pi/180
+
+
+
+
+
+
+
+
+
+
 --FOR testing (for conference)
 --[[
 walk.tStep = 0.80

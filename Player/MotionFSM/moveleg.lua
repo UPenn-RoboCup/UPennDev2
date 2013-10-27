@@ -21,6 +21,9 @@ local hipImuParamY   = Config.walk.hipImuParamY
 
 -- Hip sag compensation parameters
 local hipRollCompensation = Config.walk.hipRollCompensation
+local ankleRollCompensation = Config.walk.ankleRollCompensation
+
+
 
 function moveleg.get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
   local body_yaw
@@ -134,6 +137,8 @@ delta_legs[12] = angleShift[2]
 
   return delta_legs, angleShift
 end
+
+
 
 --Robotis style simple feedback
 function moveleg.get_leg_compensation_simple(supportLeg, phSingle, gyro_rpy,angleShift)
@@ -416,6 +421,102 @@ function moveleg.get_foot_square(ph,start_phase,finish_phase)
     zf = (1-ph1)
   end
   return xf,zf,phSingle
+end
+
+
+
+function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift)
+
+--New compensation code to cancelout backlash on ALL leg joints 
+
+
+  local gyro_pitch = gyro_rpy[2]
+  local gyro_roll = gyro_rpy[1]
+
+  -- Ankle feedback
+  local ankleShiftX = util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4])
+  local ankleShiftY = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])
+
+  -- Ankle shift is filtered... thus a global
+  angleShift[1] = angleShift[1] + ankleImuParamX[1]*(ankleShiftX-angleShift[1])
+  angleShift[2] = angleShift[2] + ankleImuParamY[1]*(ankleShiftY-angleShift[2])
+
+  -- Knee feedback
+  local kneeShiftX = util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4])
+  angleShift[3] = angleShift[3] + kneeImuParamX[1]*(kneeShiftX-angleShift[3])
+  
+  -- Hip feedback
+  local hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
+  angleShift[4] = angleShift[4]+hipImuParamY[1]*(hipShiftY-angleShift[4])
+  
+  local delta_legs = vector.zeros(Body.nJointLLeg+Body.nJointRLeg)
+  -- Change compensation in the beginning of the phase (first 10%)
+  -- Saturate compensation afterwards
+  -- Change compensation at the beginning of the phase (first 10%)
+  -- Same sort of trapezoid at double->single->double support shape
+
+  --SJ: now we apply the compensation during DS too
+  local phComp1 = 0.1
+  local phComp2 = 0.9
+  local phSingleComp = math.min( math.max(ph-phComp1, 0)/(phComp2-phComp1), 1)
+
+  local phComp = 10 * math.min( phSingleComp, .1, 1-phSingleComp)
+
+
+  local leftRollCompensation = 0;
+  local rightRollCompensation = 0;
+  local leftPitchCompensation = 0;
+  local rightPitchCompensation = 0;
+
+
+  local kneePitchCompensation = 1*math.pi/180
+  local hipPitchCompensation = 1*math.pi/180
+
+
+  --Now we apply compensation for default
+  --And remove it only for the leg in flight
+
+  delta_legs[2] = angleShift[4] + hipRollCompensation
+  delta_legs[6] = angleShift[2] + ankleRollCompensation
+  delta_legs[8]  = angleShift[4] - hipRollCompensation
+  delta_legs[12] = angleShift[2] - ankleRollCompensation
+
+  if supportLeg == 0 then -- Left support    
+    --[[
+    delta_legs[2] = angleShift[4] + hipRollCompensation*phComp
+    delta_legs[6] = angleShift[2] + ankleRollCompensation*phComp 
+    --]]
+
+    delta_legs[8]  = delta_legs[8]+ hipRollCompensation*phComp
+    delta_legs[12] = delta_legs[12] + ankleRollCompensation*phComp        
+
+  elseif supportLeg==1 then  -- Right support
+
+    delta_legs[2]  = delta_legs[2]- hipRollCompensation*phComp
+    delta_legs[6] = delta_legs[6] - ankleRollCompensation*phComp        
+
+    --[[
+    delta_legs[8]  = angleShift[4] - hipRollCompensation*phComp
+    delta_legs[12] = angleShift[2] - ankleRollCompensation*phComp    
+    --]]
+  else                       --Double support              
+--[[    
+    delta_legs[2] = angleShift[4]
+    delta_legs[6] = angleShift[2]  
+
+    delta_legs[8]  = angleShift[4]    
+    delta_legs[12] = angleShift[2]    
+--]]    
+  end    
+
+  delta_legs[3] = - hipPitchCompensation
+  delta_legs[4] = angleShift[3] - kneePitchCompensation
+  delta_legs[5] = angleShift[1]
+  delta_legs[9] = -hipPitchCompensation
+  delta_legs[10] = angleShift[3] - kneePitchCompensation
+  delta_legs[11] = angleShift[1]
+
+  return delta_legs, angleShift
 end
 
 

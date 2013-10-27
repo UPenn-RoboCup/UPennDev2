@@ -509,11 +509,12 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift)
 --]]    
   end    
 
-  delta_legs[3] = - hipPitchCompensation
-  delta_legs[4] = angleShift[3] - kneePitchCompensation
+--  delta_legs[3] = - hipPitchCompensation
+--  delta_legs[4] = angleShift[3] - kneePitchCompensation
   delta_legs[5] = angleShift[1]
-  delta_legs[9] = -hipPitchCompensation
-  delta_legs[10] = angleShift[3] - kneePitchCompensation
+
+--  delta_legs[9] = -hipPitchCompensation
+--  delta_legs[10] = angleShift[3] - kneePitchCompensation
   delta_legs[11] = angleShift[1]
 
   return delta_legs, angleShift

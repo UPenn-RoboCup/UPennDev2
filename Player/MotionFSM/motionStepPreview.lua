@@ -234,7 +234,10 @@ function walk.exit()
   mcm.set_walk_ismoving(0) --We stopped moving
 
   if read_test then
-    local debugfile=assert(io.open("debugdata.txt","w")); 
+--    local debugfile=assert(io.open("Logs/debugdata.txt","w")); 
+
+    local savefile = string.format("Log/debugdata_%s",os.date());
+    local debugfile=assert(io.open(savefile,"w")); 
     debugfile:write(debugdata);
     debugfile:flush();
     debugfile:close();  

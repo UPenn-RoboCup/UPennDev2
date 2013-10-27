@@ -460,7 +460,7 @@ walk.hipRollCompensation = 2*math.pi/180
 walk.ankleRollCompensation = 1*math.pi/180
 
 walk.leg_p_gain = 16
-walk.leg_p_gain = 64
+--walk.leg_p_gain = 64
 
 
 

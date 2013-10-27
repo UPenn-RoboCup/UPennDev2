@@ -22,6 +22,8 @@ local hipImuParamY   = Config.walk.hipImuParamY
 -- Hip sag compensation parameters
 local hipRollCompensation = Config.walk.hipRollCompensation
 local ankleRollCompensation = Config.walk.ankleRollCompensation
+local kneePitchCompensation = Config.walk.kneePitchCompensation
+local hipPitchCompensation = Config.walk.hipPitchCompensation
 
 
 
@@ -469,8 +471,6 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift)
   local rightPitchCompensation = 0;
 
 
-  local kneePitchCompensation = 1*math.pi/180
-  local hipPitchCompensation = 1*math.pi/180
 
 
   --Now we apply compensation for default
@@ -500,21 +500,14 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift)
     delta_legs[12] = angleShift[2] - ankleRollCompensation*phComp    
     --]]
   else                       --Double support              
---[[    
-    delta_legs[2] = angleShift[4]
-    delta_legs[6] = angleShift[2]  
-
-    delta_legs[8]  = angleShift[4]    
-    delta_legs[12] = angleShift[2]    
---]]    
   end    
 
---  delta_legs[3] = - hipPitchCompensation
---  delta_legs[4] = angleShift[3] - kneePitchCompensation
+  delta_legs[3] = - hipPitchCompensation
+  delta_legs[4] = angleShift[3] - kneePitchCompensation
   delta_legs[5] = angleShift[1]
 
---  delta_legs[9] = -hipPitchCompensation
---  delta_legs[10] = angleShift[3] - kneePitchCompensation
+  delta_legs[9] = -hipPitchCompensation
+  delta_legs[10] = angleShift[3] - kneePitchCompensation
   delta_legs[11] = angleShift[1]
 
   return delta_legs, angleShift

@@ -470,6 +470,7 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift)
 
 
   local kneePitchCompensation = 1*math.pi/180
+  local hipPitchCompensation = 1*math.pi/180
 
 
   --Now we apply compensation for default
@@ -486,13 +487,13 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift)
     delta_legs[6] = angleShift[2] + ankleRollCompensation*phComp 
     --]]
 
-    delta_legs[8]  = angleShift[4] + hipRollCompensation*phComp
-    delta_legs[12] = angleShift[2] + ankleRollCompensation*phComp        
+    delta_legs[8]  = delta_legs[8]+ hipRollCompensation*phComp
+    delta_legs[12] = delta_legs[12] + ankleRollCompensation*phComp        
 
   elseif supportLeg==1 then  -- Right support
 
-    delta_legs[2] = angleShift[4] - hipRollCompensation*phComp
-    delta_legs[6] = angleShift[2] - ankleRollCompensation*phComp 
+    delta_legs[2]  = delta_legs[2]- hipRollCompensation*phComp
+    delta_legs[6] = delta_legs[6] - ankleRollCompensation*phComp        
 
     --[[
     delta_legs[8]  = angleShift[4] - hipRollCompensation*phComp
@@ -508,8 +509,10 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift)
 --]]    
   end    
 
+  delta_legs[3] = - hipPitchCompensation
   delta_legs[4] = angleShift[3] - kneePitchCompensation
   delta_legs[5] = angleShift[1]
+  delta_legs[9] = -hipPitchCompensation
   delta_legs[10] = angleShift[3] - kneePitchCompensation
   delta_legs[11] = angleShift[1]
 

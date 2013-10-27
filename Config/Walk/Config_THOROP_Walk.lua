@@ -456,9 +456,11 @@ arm.linear_wrist_limit = 0.05
 
 
 --Compensation testing values
-walk.hipRollCompensation = 1.5*math.pi/180
-walk.ankleRollCompensation = 1.5*math.pi/180
+walk.hipRollCompensation = 2*math.pi/180
+walk.ankleRollCompensation = 1*math.pi/180
 
+walk.leg_p_gain = 16
+walk.leg_p_gain = 64
 
 
 

@@ -179,6 +179,23 @@ function walk.update()
   --Update the odometry variable
   Body.update_odometry(uTorso)
   --print("odometry pose:",unpack(wcm.get_robot_pose_odom()))
+
+
+
+  --COM testing
+
+  local qWaist = Body.get_waist_command_position()
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+  local qLLeg = Body.get_lleg_command_position()
+  local  qRLeg = Body.get_rleg_command_position()
+  
+  Body.Kinematics.calculate_support_torque(
+      qWaist,qLArm,qRArm,qLLeg,qRLeg,
+      Config.walk.bodyTilt,
+      supportLeg  
+      )
+
 end -- walk.update
 
 function walk.exit()

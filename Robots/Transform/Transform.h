@@ -27,6 +27,7 @@ public:
 
 Transform operator* (const Transform &t1, const Transform &t2);
 Transform inv (const Transform &t1);
+Transform trcopy (const Transform &t1);
 Transform transform6D(const double p[6]);
 std::vector<double> position6D(const Transform &t1);
 

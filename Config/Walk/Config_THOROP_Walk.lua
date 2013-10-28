@@ -367,26 +367,6 @@ arm.qRArmInit={
  vector.new({110.5, -17.5, 24, -85.7, 30.2, 71.0,-16.8})*DEG_TO_RAD,-- arms in front
 }
 
-
---[[
-
---Now ROCKY pose!
-arm.qLArmInit={
- vector.new({90,0,-0,-160,  -90,-20,90})*DEG_TO_RAD, -- at sides
- vector.new({110.5, 17.5, 0, -85.7, -30.2,  0,16.8})*DEG_TO_RAD, -- scarecrow
- vector.new({110.5, 17.5, -24, -85.7, -30.2, -71.0,16.8})*DEG_TO_RAD,-- arms in front
-}
-arm.qRArmInit={
- vector.new({90,-0,0,-160,     90,20,-90})*DEG_TO_RAD, -- at sides
- vector.new({110.5, -17.5, 0, -85.7,  30.2,  0,-16.8})*DEG_TO_RAD,  -- scarecrow
- vector.new({110.5, -17.5, 24, -85.7, 30.2, 71.0,-16.8})*DEG_TO_RAD,-- arms in front
-}
-
---]]
-
-
-
-
 -- Arm speed limits
 arm.fast_limit = vector.new({30,30,30,45,60,60,60})*DEG_TO_RAD
 arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD
@@ -396,8 +376,6 @@ arm.slow_elbow_limit = vector.new({10,10,10,5,30,30,30})*DEG_TO_RAD
 -- Linear movement speed limits
 arm.linear_slow_limit = vector.new({0.02,0.02,0.02,
 						15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
-
-
 
 --Pose 1 wrist position
 --arm.pLWristTarget1 = {.04,.30,-.20,0,0,0}
@@ -414,29 +392,6 @@ arm.pLWristTarget2 = {.05,.38,-.05,0,0,0}
 arm.pRWristTarget2 = {.05,-.38,-.05,0,0,0}
 arm.lShoulderYawTarget2 = -20*DEG_TO_RAD
 arm.rShoulderYawTarget2 = 20*DEG_TO_RAD
-
-
-
-
-
---
-if IS_WEBOTS then
-
---HACK FOR WEBOTS--------------------------------------------------
-arm.fast_limit = vector.new({30,30,30,45,60,60,60})*DEG_TO_RAD*3
-arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD*3
-arm.super_slow_limit = vector.new({5,5,5,10,15,15,15})*DEG_TO_RAD*3
-arm.slow_elbow_limit = vector.new({10,10,10,5,30,30,30})*DEG_TO_RAD*3
-
-arm.linear_slow_limit = vector.new({0.02,0.02,0.02,
-						15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})*3
-
-
-end
---
-
-
-
 
 
 
@@ -472,24 +427,29 @@ walk.anklePitchCompensation = 0*math.pi/180
 --]]
 
 
-
-
-
-
 walk.phComp = {0.1,0.9}
 walk.phCompSlope = 0.2
-
-
 
 walk.leg_p_gain = 16
 walk.leg_p_gain = 64
 
+if IS_WEBOTS then
+  --Faster limit for webots
+  arm.fast_limit = vector.new({30,30,30,45,60,60,60})*DEG_TO_RAD*3
+  arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD*3
+  arm.super_slow_limit = vector.new({5,5,5,10,15,15,15})*DEG_TO_RAD*3
+  arm.slow_elbow_limit = vector.new({10,10,10,5,30,30,30})*DEG_TO_RAD*3
 
+  arm.linear_slow_limit = vector.new({0.02,0.02,0.02,
+              15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})*3
 
-
-
-
-
+  --No compensation for webots
+  walk.hipRollCompensation = 0*math.pi/180
+  walk.ankleRollCompensation = 0*math.pi/180
+  walk.hipPitchCompensation = 0*math.pi/180
+  walk.kneePitchCompensation = 0*math.pi/180
+  walk.anklePitchCompensation = 0*math.pi/180
+end
 
 
 --FOR testing (for conference)

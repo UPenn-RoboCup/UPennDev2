@@ -428,7 +428,7 @@ end
 
 
 
-function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift)
+function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,supportRatio)
 
 --New compensation code to cancelout backlash on ALL leg joints 
 
@@ -453,11 +453,20 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift)
   angleShift[4] = angleShift[4]+hipImuParamY[1]*(hipShiftY-angleShift[4])
   
   local delta_legs = vector.zeros(Body.nJointLLeg+Body.nJointRLeg)
-  -- Change compensation in the beginning of the phase (first 10%)
-  -- Saturate compensation afterwards
-  -- Change compensation at the beginning of the phase (first 10%)
-  -- Same sort of trapezoid at double->single->double support shape
 
+  --How much do we need to apply the compensation?
+  local supportRatioRight = supportRatio;
+  local supportRatioLeft = 1-supportRatio;
+--  supportRatioLeft = math.max(0,supportRatioLeft*4-3);
+--  supportRatioRight = math.max(0,supportRatioRight*4-3);
+
+  supportRatioLeft = math.max(0,supportRatioLeft*2-1);
+  supportRatioRight = math.max(0,supportRatioRight*2-1);
+
+
+
+--print("SR:",supportRatio,supportRatioLeft,supportRatioRight)
+--[[
   --SJ: now we apply the compensation during DS too
   local phComp1 = Config.walk.phComp[1]
   local phComp2 = Config.walk.phComp[2]
@@ -466,54 +475,25 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift)
   local phSingleComp = math.min( math.max(ph-phComp1, 0)/(phComp2-phComp1), 1)
   local phComp = math.min( phSingleComp/phCompSlope, 1, 
                           (1-phSingleComp)/phCompSlope)
-
-  local leftRollCompensation = 0;
-  local rightRollCompensation = 0;
-  local leftPitchCompensation = 0;
-  local rightPitchCompensation = 0;
-
-
-
+  supportRatioLeft, supportRatioRight = 0,0
   if supportLeg == 0 then -- Left support    
-    delta_legs[2] = angleShift[4] + hipRollCompensation*phComp
-    delta_legs[6] = angleShift[2] + ankleRollCompensation*phComp
+    supportRatioLeft = phComp;
+  elseif supportLeg==1 then
+    supportRatioRight = phComp;
+  end
+--]]
 
-    delta_legs[3] = - hipPitchCompensation*phComp
-    delta_legs[4] = angleShift[3] - kneePitchCompensation*phComp
+    delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft
+    delta_legs[3] = - hipPitchCompensation*supportRatioLeft
+    delta_legs[4] = angleShift[3] - kneePitchCompensation*supportRatioLeft
+    delta_legs[5] = angleShift[1] - anklePitchCompensation*supportRatioLeft
+    delta_legs[6] = angleShift[2] + ankleRollCompensation*supportRatioLeft
 
-    delta_legs[5] = angleShift[1] - anklePitchCompensation*phComp
-    delta_legs[11] = angleShift[1]
-
-  --  delta_legs[8]  = delta_legs[8]+ hipRollCompensation*phComp
-  --  delta_legs[12] = delta_legs[12] + ankleRollCompensation*phComp        
-
-    delta_legs[8]  = angleShift[4] 
-    delta_legs[12] = angleShift[2] 
-
-
-  elseif supportLeg==1 then  -- Right support
-    delta_legs[2] = angleShift[4] 
-    delta_legs[6] = angleShift[2] 
-
-    delta_legs[8]  = angleShift[4] - hipRollCompensation
+    delta_legs[8]  = angleShift[4] - hipRollCompensation*supportRatioRight
+    delta_legs[9] = -hipPitchCompensation*supportRatioRight
+    delta_legs[10] = angleShift[3] - kneePitchCompensation*supportRatioRight
+    delta_legs[11] = angleShift[1] - anklePitchCompensation*supportRatioRight
     delta_legs[12] = angleShift[2] - ankleRollCompensation
-
-    delta_legs[9] = -hipPitchCompensation*phComp
-    delta_legs[10] = angleShift[3] - kneePitchCompensation*phComp
-
-    delta_legs[5] = angleShift[1] 
-    delta_legs[11] = angleShift[1] - anklePitchCompensation*phComp
-
-
-
-  --  delta_legs[2]  = delta_legs[2]- hipRollCompensation*phComp
-  --  delta_legs[6] = delta_legs[6] - ankleRollCompensation*phComp        
-
-  else                       --Double support              
-    delta_legs[5] = angleShift[1]
-    delta_legs[11] = angleShift[1]
-  end    
-
 
   return delta_legs, angleShift
 end

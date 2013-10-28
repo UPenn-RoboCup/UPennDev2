@@ -33,9 +33,9 @@ local iStep
 
 -- What foot trajectory are we using?
 local foot_traj_func  
-foot_traj_func = moveleg.foot_trajectory_base
+--foot_traj_func = moveleg.foot_trajectory_base
 --foot_traj_func = moveleg.foot_trajectory_square
---foot_traj_func = moveleg.foot_trajectory_square_stair
+foot_traj_func = moveleg.foot_trajectory_square_stair
 --foot_traj_func = moveleg.foot_trajectory_square_stair_2
 
 
@@ -168,6 +168,20 @@ function walk.update()
     mcm.set_status_uZMP(uZMP)
     mcm.set_status_t(t)
 
+
+    --Calculate how close the ZMP is to each foot
+    local uLeftSupport,uRightSupport = 
+      step_planner.get_supports(uLeft,uRight)
+    local dZmpL = math.sqrt(
+      (uZMP[1]-uLeftSupport[1])^2+
+      (uZMP[2]-uLeftSupport[2])^2);
+
+    local dZmpR = math.sqrt(
+      (uZMP[1]-uRightSupport[1])^2+
+      (uZMP[2]-uRightSupport[2])^2);
+
+    local supportRatio = dZmpL/(dZmpL+dZmpR);
+
 --print(unpack(uTorso),unpack(uLeft),unpack(uRight))
 
   -- Grab gyro feedback for these joint angles
@@ -178,8 +192,9 @@ function walk.update()
     delta_legs, angleShift = moveleg.get_leg_compensation_new(
       supportLeg,
       ph,
---      phSingle,
-      gyro_rpy, angleShift)
+      gyro_rpy, 
+      angleShift,
+      supportRatio)
 
     --Move legs
     moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)

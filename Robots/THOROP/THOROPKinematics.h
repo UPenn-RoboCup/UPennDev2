@@ -135,7 +135,9 @@ std::vector<double> THOROP_kinematics_com_upperbody(const double *qWaist,const d
 std::vector<double> THOROP_kinematics_com_leg(const double *q, double bodyPitch, int is_left);  
 std::vector<double> THOROP_kinematics_calculate_support_torque(
 	const double *qWaist,  const double *qLArm,  const double *qRArm,
-  	const double *qLLeg,  const double *qRLeg,  double bodyPitch,   int supportLeg); 
+  	const double *qLLeg,  const double *qRLeg,  
+  	double bodyPitch,   int supportLeg,
+  	const double *uTorsoAcc); 
 
 
 #endif

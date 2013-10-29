@@ -378,12 +378,13 @@ arm.linear_slow_limit = vector.new({0.02,0.02,0.02,
 						15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
 
 --Pose 1 wrist position
---arm.pLWristTarget1 = {.04,.30,-.20,0,0,0}
---arm.pRWristTarget1 = {.04,-.30,-.20,0,0,0}
+arm.pLWristTarget1 = {.04,.30,-.20,0,0,0}
+arm.pRWristTarget1 = {.04,-.30,-.20,0,0,0}
 
---Wider
-arm.pLWristTarget1 = {.04,.40,-.10,0,0,0}
-arm.pRWristTarget1 = {.04,-.40,-.10,0,0,0}
+--lil higher and back
+arm.pLWristTarget1 = {.00,.30,-.15,0,0,0}
+arm.pRWristTarget1 = {.00,-.30,-.15,0,0,0}
+
 arm.lShoulderYawTarget1 = -5*DEG_TO_RAD
 arm.rShoulderYawTarget1 = 5*DEG_TO_RAD
 
@@ -392,49 +393,11 @@ arm.pLWristTarget2 = {.05,.38,-.05,0,0,0}
 arm.pRWristTarget2 = {.05,-.38,-.05,0,0,0}
 arm.lShoulderYawTarget2 = -20*DEG_TO_RAD
 arm.rShoulderYawTarget2 = 20*DEG_TO_RAD
-
-
-
 arm.linear_wrist_limit = 0.05
 
---Flex testing
---if IS_WEBOTS then
-  --For low-torque deflection testing
---[[
-  walk.ankleImuParamX={0, 0.9*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
-  walk.kneeImuParamX= {0, -0.3*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
-  walk.ankleImuParamY={0, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
-  walk.hipImuParamY  ={0, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
---]]
---end
-
-
---Compensation testing values
-walk.hipRollCompensation = 1*math.pi/180
-walk.ankleRollCompensation = 1.2*math.pi/180
-walk.hipPitchCompensation = -1.0*math.pi/180
-walk.kneePitchCompensation = 1.0*math.pi/180
-walk.anklePitchCompensation = 1.5*math.pi/180
-
-
---No compensation testing
---[[
-walk.hipRollCompensation = 0*math.pi/180
-walk.ankleRollCompensation = 0*math.pi/180
-walk.hipPitchCompensation = 0*math.pi/180
-walk.kneePitchCompensation = 0*math.pi/180
-walk.anklePitchCompensation = 0*math.pi/180
---]]
-
-
-walk.phComp = {0.1,0.9}
-walk.phCompSlope = 0.2
-
-walk.leg_p_gain = 16
-walk.leg_p_gain = 64
-
 if IS_WEBOTS then
-  --Faster limit for webots
+
+    --Faster limit for webots
   arm.fast_limit = vector.new({30,30,30,45,60,60,60})*DEG_TO_RAD*3
   arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD*3
   arm.super_slow_limit = vector.new({5,5,5,10,15,15,15})*DEG_TO_RAD*3
@@ -443,13 +406,46 @@ if IS_WEBOTS then
   arm.linear_slow_limit = vector.new({0.02,0.02,0.02,
               15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})*3
 
-  --No compensation for webots
+  --For low-torque deflection testing
+--[[
+  walk.ankleImuParamX={0, 0.9*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
+  walk.kneeImuParamX= {0, -0.3*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
+  walk.ankleImuParamY={0, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
+  walk.hipImuParamY  ={0, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
+--]]
+  walk.hipRollCompensation = 1*math.pi/180
+  walk.ankleRollCompensation = 1.2*math.pi/180
+  walk.hipPitchCompensation = 0*math.pi/180
+  walk.kneePitchCompensation = 0*math.pi/180
+  walk.anklePitchCompensation = 0*math.pi/180
+  walk.phComp = {0.1,0.9}
+  walk.phCompSlope = 0.2
+else
+
+
+  --Compensation testing values
+  walk.hipRollCompensation = 1*math.pi/180
+  walk.ankleRollCompensation = 1.2*math.pi/180
+  walk.hipPitchCompensation = -1.0*math.pi/180
+  walk.kneePitchCompensation = 1.0*math.pi/180
+  walk.anklePitchCompensation = 1.5*math.pi/180
+
+  --No compensation testing
+  --[[
   walk.hipRollCompensation = 0*math.pi/180
   walk.ankleRollCompensation = 0*math.pi/180
   walk.hipPitchCompensation = 0*math.pi/180
   walk.kneePitchCompensation = 0*math.pi/180
   walk.anklePitchCompensation = 0*math.pi/180
+  --]]
+  walk.phComp = {0.1,0.9}
+  walk.phCompSlope = 0.2
 end
+
+
+
+walk.leg_p_gain = 64
+
 
 
 --FOR testing (for conference)

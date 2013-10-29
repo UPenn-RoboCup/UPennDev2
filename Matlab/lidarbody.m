@@ -14,10 +14,13 @@ LIDAR.set_zoomlevel = @set_zoomlevel;
 LIDAR.update_waypoints = @update_waypoints;
 LIDAR.rotate_view = @rotate_view;
 
+LIDAR.set_pan_speed=@set_pan_speed;
+LIDAR.set_lidar_range=@set_lidar_range;
+
+
 
 % Which mesh to display: 0-HEAD, 1-CHEST
-% Chest lidar default
-LIDAR.meshtype = 1;
+LIDAR.meshtype = 1; % Chest lidar default
 LIDAR.mesh_cnt = 0;
 
 % 0: Show head
@@ -35,6 +38,7 @@ LIDAR.xmag =0;
 LIDAR.ymag =0;
 
 LIDAR.last_posxy = [];
+LIDAR.depth_range = [.1 5];
 
 
 wdim_mesh=361;
@@ -177,6 +181,17 @@ CHEST_LIDAR.posea=[];
             %CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[1,1,95,1]);
             CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[2,1,95,1]);
         end
+    end
+
+    function set_lidar_range(h,~,range)
+        CONTROL.send_control_packet([],[],'vcm','chest_lidar','depths',range);
+        LIDAR.depth_range = range;
+    end
+
+    function set_pan_speed(h,~,panspeed)
+        CONTROL.send_control_packet([],[],'vcm','chest_lidar','scanlines',...
+            [-60*pi/180,60*pi/180,panspeed/(pi/180)]);        
+        CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[2,1,95,1]);
     end
 
     function draw_depth_image()

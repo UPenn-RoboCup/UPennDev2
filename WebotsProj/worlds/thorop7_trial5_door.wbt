@@ -8,8 +8,8 @@ WorldInfo {
   FPS 10
 }
 Viewpoint {
-  orientation -0.00441061 -0.99999 0.000499027 2.00475
-  position -7.34334 1.01632 -2.41309
+  orientation -0.517411 -0.694872 -0.499439 1.9071
+  position -5.02396 9.61537 0.220351
 }
 Background {
   skyColor [
@@ -29,12 +29,12 @@ DirectionalLight {
 DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
-THOROP7_NoBoundaries_Lowtorque {
-  translation -0.456933 1.1552 0.873745
-  rotation 0.883001 0.00115848 0.46937 0.00245978
+THOROP7_NoBoundaries {
+  translation -4.08062 1.1552 0.559847
+  rotation 0 1 0 1.57
   controller "thorop"
   controllerArgs "0 32"
-  cameraWindowPosition 0.316609 0.300752
+  cameraWindowPosition 0.316609 0.300752  
 }
 DEF GROUND Solid {
   translation 0 0 1.5
@@ -60,17 +60,14 @@ DEF GROUND Solid {
   }
   locked TRUE
 }
-
 SingleDoorCommonPush {
   translation -2.4 0 0.6
   rotation 0 1 0 1.57
 }
-
 SingleDoorEntree {
   translation 0 0 0.6
   rotation 0 1 0 1.57
 }
-
 SingleDoorEntreeWeighted {
   translation 2.4 0 0.6
   rotation 0 1 0 1.57

@@ -16,11 +16,12 @@ require'mcm'
 --SJ: This removes the output buffer 
 io.stdout:setvbuf("no")
 
-local use_joint_feedback = false
+local use_joint_feedback = true
 local needs_broadcast = true
 local state_machines = {}
-
 local status = {}
+
+
 
 -- TODO: Make coroutines for each FSM
 -- TODO: Or other way of handling state machine failure
@@ -49,6 +50,7 @@ local us_sleep = 1e6 / fps
 -- Start the state machines
 local t0 = Body.get_time()
 local t_debug = t0
+local t_last_error = -math.huge
 
 --------------------
 -- Clean Shutdown function
@@ -66,7 +68,7 @@ signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
 local feedback_udp_ch
-local function send_status_feedback()
+local function send_status_feedback(t)
   local data={};
   data.larmangle = Body.get_larm_command_position()
   data.rarmangle = Body.get_rarm_command_position()
@@ -86,7 +88,12 @@ local function send_status_feedback()
   data.battery =  0
 
   local ret,err = feedback_udp_ch:send( mp.pack(data) )
---  if err then print('feedback udp',err) end
+  if err then --Don't flood error messages
+    if t-t_last_error>5 then 
+      print('feedback udp',util.color(err,'red')) 
+      t_last_error = t    
+    end
+  end
 end
 if use_joint_feedback then
   feedback_udp_ch =
@@ -128,7 +135,7 @@ while true do
   if use_joint_feedback and (IS_WEBOTS or t-t_debug>1)  then
     -- Webots debugs every step
     t_debug = t
-    send_status_feedback()
+    send_status_feedback(t)
   end
   
   -- Sleep a bit if not webots

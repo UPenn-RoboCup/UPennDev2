@@ -82,23 +82,60 @@ function [] = setup_gui()
     LIDAR = lidarbody();
     LIDAR.init(H_DMAP_AXES,H_MESH_AXES);
 
+%{
     lb1=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Head LIDAR', 'Units', 'Normalized', ...
         'Position', [0.6 0.95 0.1 0.05] );
     lb2=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Chest LIDAR', 'Units', 'Normalized', ...
         'Position', [0.6 0.9 0.1 0.05] );
-    sb3=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
-        'String', 'Clear', 'Units', 'Normalized', ...        
-        'Position', [0.6 0.85 0.1 0.05] );    
-
-    sb4=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
-        'String', 'Range 1', 'Units', 'Normalized', ...        
-        'Position', [0.6 0.8 0.1 0.05] );    
 
     set(lb1,'CallBack',{LIDAR.set_meshtype,0});
     set(lb2,'CallBack',{LIDAR.set_meshtype,1});
-    set(sb3,'CallBack',{WAYPOINTS.clear_waypoints});
+
+%}
+    sb1=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', '2.5m', 'Units', 'Normalized', ...        
+        'Position', [0.6 0.85 0.1 0.05] );    
+
+    sb2=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', '5m', 'Units', 'Normalized', ...        
+        'Position', [0.6 0.80 0.1 0.05] );    
+
+    sb3=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', '10m', 'Units', 'Normalized', ...        
+        'Position', [0.6 0.75 0.1 0.05] );    
+
+
+    sb4=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', '1X Pan', 'Units', 'Normalized', ...        
+        'Position', [0.6 0.70 0.1 0.05] );    
+
+    sb5=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', '2X Pan', 'Units', 'Normalized', ...        
+        'Position', [0.6 0.65 0.1 0.05] );    
+
+    sb6=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', '4X Pan', 'Units', 'Normalized', ...        
+        'Position', [0.6 0.60 0.1 0.05] );    
+
+
+    sb7=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
+        'String', 'Clear', 'Units', 'Normalized', ...        
+        'Position', [0.6 0.05 0.1 0.1] );    
+
+
+    
+
+    set(sb1,'CallBack',{LIDAR.set_lidar_range,[.1 2.5]});
+    set(sb2,'CallBack',{LIDAR.set_lidar_range,[.1 5]});
+    set(sb3,'CallBack',{LIDAR.set_lidar_range,[.1 10]});
+
+    set(sb4,'CallBack',{LIDAR.set_pan_speed,4});
+    set(sb5,'CallBack',{LIDAR.set_pan_speed,2});
+    set(sb6,'CallBack',{LIDAR.set_pan_speed,1});
+
+    set(sb7,'CallBack',{WAYPOINTS.clear_waypoints});
 
     %depth map controls
 
@@ -322,6 +359,9 @@ function [] = setup_gui()
     %Drag handling
     CURSOR=[];
     CURSOR.button_alt= 0;
+
+    CURSOR.button_alt_mesh= 0;
+    CURSOR.button_alt_camera= 0;
     CURSOR.last_pos = get (gcf, 'CurrentPoint');
     CURSOR.movement = [0 0];
 
@@ -329,14 +369,15 @@ function [] = setup_gui()
         C = get (gcf, 'CurrentPoint');
         if CURSOR.button_alt==1             
             CURSOR.movement = C-CURSOR.last_pos;           
-            cmv=CURSOR.movement
-            
+            cmv=CURSOR.movement            
         end
         CURSOR.last_pos = C;
     end    
 
     function mouseRelease(obj,evt)
         CURSOR.button_alt = 0;
+        CURSOR.button_alt_mesh= 0;
+        CURSOR.button_alt_camera= 0;
     end
     set(gcf, 'WindowButtonMotionFcn', @mouseMove);
     set(gcf, 'WindowButtonUpFcn',     @mouseRelease);

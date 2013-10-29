@@ -1208,6 +1208,8 @@ if IS_WEBOTS then
   local mp         = require'msgpack'
   get_time    = webots.wb_robot_get_time
   local t_last_keypressed = get_time()
+
+  local t_last_error =  -math.huge
   -- Setup the webots tags
   local tags = {}
 
@@ -1334,7 +1336,10 @@ if IS_WEBOTS then
     local metapack = mp.pack(metadata)
     local ret_c,err_c = head_camera_wbt.channel:send( metapack..c_color )
 
-    if err_c then print('head cam',util.color(err_c,'red')) end
+    if err_c and metadata.t-t_last_error>5 then --Don't flood error message
+      print('head cam',util.color(err_c,'red')) 
+      t_last_error = metadata.t
+    end
     if net_settings[1]==1 then
       net_settings[1] = 0
       vcm.set_head_camera_net(net_settings)

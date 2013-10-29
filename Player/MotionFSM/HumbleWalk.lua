@@ -149,19 +149,60 @@ function walk.update()
   -- Grab gyro feedback for these joint angles
   local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
 
-  --Robotis-style simple feedback (which seems to be better :[])
---  delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,phSingle,gyro_rpy, angleShift)
-
---Old feedback with different compensation
-  delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,ph,gyro_rpy, angleShift)
-
-  moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
-
+  
 --For external monitoring
   local uZMP = zmp_solver:get_zmp(ph)
   mcm.set_status_uTorso(uTorso)
   mcm.set_status_uZMP(uZMP)
   mcm.set_status_t(t)
+
+
+
+
+
+
+--Robotis-style simple feedback (which seems to be better :[])
+--  delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,phSingle,gyro_rpy, angleShift)
+
+--Old feedback with different compensation
+--  delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,ph,gyro_rpy, angleShift)
+
+
+  --Calculate how close the ZMP is to each foot
+  local uLeftSupport,uRightSupport = 
+    step_planner.get_supports(uLeft,uRight)
+  local dZmpL = math.sqrt(
+    (uZMP[1]-uLeftSupport[1])^2+
+    (uZMP[2]-uLeftSupport[2])^2);
+
+  local dZmpR = math.sqrt(
+    (uZMP[1]-uRightSupport[1])^2+
+      (uZMP[2]-uRightSupport[2])^2);
+
+  local supportRatio = dZmpL/(dZmpL+dZmpR);
+
+  delta_legs, angleShift = moveleg.get_leg_compensation_new(
+      supportLeg,
+      ph,
+      gyro_rpy, 
+      angleShift,
+      supportRatio)
+
+
+
+
+  moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
+
+
+
+
+
+
+
+
+
+
+
 
   if is_logging then
 -- Grab the sensor values
@@ -179,6 +220,27 @@ function walk.update()
   --Update the odometry variable
   Body.update_odometry(uTorso)
   --print("odometry pose:",unpack(wcm.get_robot_pose_odom()))
+
+--[[
+  --COM testing
+  local qWaist = Body.get_waist_command_position()
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+  local qLLeg = Body.get_lleg_command_position()
+  local  qRLeg = Body.get_rleg_command_position()
+  uTorsoAcc = {
+    (uTorso[1]-uZMP[1])/Config.walk.tZMP/Config.walk.tZMP,
+    (uTorso[2]-uZMP[2])/Config.walk.tZMP/Config.walk.tZMP
+  }
+  Body.Kinematics.calculate_support_torque(
+      qWaist,qLArm,qRArm,qLLeg,qRLeg,
+      Config.walk.bodyTilt,
+      supportLeg,
+      uTorsoAcc
+      )
+--]]
+
+
 end -- walk.update
 
 function walk.exit()

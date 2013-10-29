@@ -142,6 +142,17 @@ Transform inv (const Transform &t1) {
   return t;
 }
 
+Transform trcopy (const Transform &t1) {
+  Transform t;
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {      
+      t(i,j) = t1(i,j);      
+    }
+  }
+  return t;
+}
+
+
 Transform transform6D(const double p[6]) {
   Transform t;
   //  t = t.translate(p[0],p[1],p[2]).rotateZ(p[5]).rotateY(p[4]).rotateX(p[3]);

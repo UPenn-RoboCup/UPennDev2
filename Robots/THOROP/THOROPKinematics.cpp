@@ -188,7 +188,6 @@ THOROP_kinematics_forward_r_leg(const double *q)
   return t;
 }
 
-
 //Get the COM and total mass of the upper body
 
   std::vector<double>
@@ -212,49 +211,52 @@ THOROP_kinematics_com_upperbody(
             tLUArmCOM, tLElbowCOM, tLLArmCOM, tLWristCOM,
             tRUArmCOM, tRElbowCOM, tRLArmCOM, tRWristCOM;
   
-  tPelvis = tPelvis.rotateY(bodyPitch);
+  tPelvis = tPelvis
+    .rotateY(bodyPitch);
 
-  tTorso = tPelvis.rotateZ(qWaist[0]).rotateY(qWaist[1]);
+  tTorso = trcopy(tPelvis)
+    .rotateZ(qWaist[0])
+    .rotateY(qWaist[1]);
 
-  tLShoulder = tTorso
+  tLShoulder = trcopy(tTorso)
     .translateY(shoulderOffsetY)
     .translateZ(shoulderOffsetZ)        
     .rotateY(qLArm[0])
     .rotateX(qLArm[1])
     .rotateZ(qLArm[2]);
 
-  tLElbow = tLShoulder
+  tLElbow = trcopy(tLShoulder)
     .translateX(upperArmLength)
     .translateZ(elbowOffsetX)
     .rotateY(qLArm[3]);
   
-  tLWrist = tLElbow
+  tLWrist = trcopy(tLElbow)
     .translateZ(-elbowOffsetX)
     .rotateX(qLArm[4]);         
   
-  tLHand = tLWrist
+  tLHand = trcopy(tLWrist)
     .translateX(lowerArmLength)          
     .rotateZ(qLArm[5])
     .rotateX(qLArm[6]);
 
 
-  tRShoulder = tTorso
+  tRShoulder = trcopy(tTorso)
     .translateY(-shoulderOffsetY)
     .translateZ(shoulderOffsetZ)        
     .rotateY(qRArm[0])
     .rotateX(qRArm[1])
     .rotateZ(qRArm[2]);
 
-  tRElbow = tRShoulder
+  tRElbow = trcopy(tRShoulder)
     .translateX(upperArmLength)
     .translateZ(elbowOffsetX)
     .rotateY(qRArm[3]);    
 
-  tRWrist = tRElbow
+  tRWrist = trcopy(tRElbow)
     .translateZ(-elbowOffsetX)
     .rotateX(qRArm[4]);            
 
-  tRHand = tRWrist
+  tRHand = trcopy(tRWrist)
     .translateX(lowerArmLength)          
     .rotateZ(qRArm[5])
     .rotateX(qRArm[6]);
@@ -283,6 +285,7 @@ THOROP_kinematics_com_upperbody(
     .translateZ(comWristZ);
 
 
+
   tRUArmCOM = tRShoulder
     .translateX(comUpperArmX)
     .translateZ(comUpperArmZ);
@@ -297,7 +300,6 @@ THOROP_kinematics_com_upperbody(
   tRWristCOM = tRHand
     .translateX(comWristX)
     .translateZ(comWristZ);    
-
 
   r[0] = 
          mPelvis * tPelvisCOM(0,3) +
@@ -338,24 +340,26 @@ THOROP_kinematics_com_leg(const double *q, double bodyPitch, int is_left)
  
   tPelvis = tPelvis.rotateY(bodyPitch);
 
-  if (is_left>0) tHip = tPelvis
-    .translateY(hipOffsetY)
-    .translateZ(hipOffsetZ);
-  else tHip = tPelvis
-    .translateY(-hipOffsetY)
-    .translateZ(hipOffsetZ);
+  if (is_left>0) 
+    tHip = trcopy(tPelvis)
+        .translateY(hipOffsetY)
+        .translateZ(hipOffsetZ);
+  else 
+    tHip = trcopy(tPelvis)
+        .translateY(-hipOffsetY)
+        .translateZ(hipOffsetZ);
   
   tHip = tHip
         .rotateZ(q[0])
         .rotateX(q[1])
         .rotateY(q[2]);
 
-  tKnee = tHip
+  tKnee = trcopy(tHip)
         .translateX(kneeOffsetX)
         .translateZ(-thighLength)        
         .rotateY(q[3]);
 
-  tAnkle = tKnee
+  tAnkle = trcopy(tKnee)
         .translateX(-kneeOffsetX)
         .translateZ(-tibiaLength)        
         .rotateY(q[4])
@@ -364,12 +368,12 @@ THOROP_kinematics_com_leg(const double *q, double bodyPitch, int is_left)
   tULegCOM = tHip
         .translateX(comUpperLegX)
         .translateY(comUpperLegY)
-        .translateY(comUpperLegZ);
+        .translateZ(comUpperLegZ);
 
   tLLegCOM = tKnee
         .translateX(comLowerLegX)
         .translateY(comLowerLegY)
-        .translateY(comLowerLegZ);
+        .translateZ(comLowerLegZ);
 
   tFootCOM = tAnkle
         .translateX(comFootX)
@@ -400,7 +404,9 @@ THOROP_kinematics_calculate_support_torque(
   const double *qLLeg,
   const double *qRLeg,
   double bodyPitch,
-   int supportLeg){
+  int supportLeg,
+  const double *uTorsoAcc
+   ){
 
   Transform tPelvis, tHip;
 
@@ -412,12 +418,23 @@ THOROP_kinematics_calculate_support_torque(
   std::vector<double> rel_com_knee(4);
   std::vector<double> rel_com_ankle(4);
 
+
   com_upperbody = THOROP_kinematics_com_upperbody(qWaist, qLArm, qRArm,bodyPitch);
   com_left_leg = THOROP_kinematics_com_leg(qLLeg,bodyPitch,1);
   com_right_leg = THOROP_kinematics_com_leg(qRLeg,bodyPitch,0);
 
   tPelvis = tPelvis.rotateY(bodyPitch);
 
+/*
+  printf("left_leg com: %.3f %.3f %.3f",
+    com_left_leg[0]/com_left_leg[3],
+    com_left_leg[1]/com_left_leg[3],
+    com_left_leg[2]/com_left_leg[3]);
+  printf("right_leg com: %.3f %.3f %.3f",
+    com_right_leg[0]/com_right_leg[3],
+    com_right_leg[1]/com_right_leg[3],
+    com_right_leg[2]/com_right_leg[3]);
+*/
 
   if (supportLeg==0){ //left support
     //Add the moment of the free leg to the torso
@@ -426,7 +443,7 @@ THOROP_kinematics_calculate_support_torque(
     com_upperbody[2] = com_upperbody[2] + com_right_leg[2];
     com_upperbody[3] = com_upperbody[3] + com_right_leg[3];    
 
-    tHip = tPelvis.translateY(hipOffsetY).translateZ(-hipOffsetZ);
+    tHip = trcopy(tPelvis).translateY(hipOffsetY).translateZ(-hipOffsetZ);
 
   }else{
     //Add the moment of the free leg to the torso
@@ -435,32 +452,72 @@ THOROP_kinematics_calculate_support_torque(
     com_upperbody[2] = com_upperbody[2] + com_left_leg[2];
     com_upperbody[3] = com_upperbody[3] + com_left_leg[3];    
 
-    tHip = tPelvis.translateY(-hipOffsetY).translateZ(-hipOffsetZ);
+    tHip = trcopy(tPelvis).translateY(-hipOffsetY).translateZ(-hipOffsetZ);
   }
-
 
   //Get the relative COM position at the support hip joint
   rel_com_hip[0] = com_upperbody[0]/com_upperbody[3] - tHip(0,3);
   rel_com_hip[1] = com_upperbody[1]/com_upperbody[3] - tHip(1,3);
   rel_com_hip[2] = com_upperbody[2]/com_upperbody[3] - tHip(2,3);
 
-  //re-apply bodyTilt transform to get the correct compensation values
+/*
+  printf("COM pos from support hip joint: %.2f %.2f %.2f",
+    rel_com_hip[0],
+    rel_com_hip[1],
+    rel_com_hip[2]
+    );
+*/
 
   Transform tRelCOMHip;
   tRelCOMHip = tRelCOMHip
         .translateX(rel_com_hip[0])
-        .translateX(rel_com_hip[1])
-        .translateX(rel_com_hip[2]);
-
-  double upperbody_force = 9.8 * com_upperbody[3];    
-  double torque_x = tRelCOMHip(0,3)*upperbody_force;     
-  double torque_y = tRelCOMHip(1,3)*upperbody_force;
-
-
-  printf("Hip torque: %.2f %.2f",torque_x,torque_y);
-
+        .translateY(rel_com_hip[1])
+        .translateZ(rel_com_hip[2]);
 
   //Calculate the moment at the support hip joint
+
+  std::vector<double> upperbody_force(3);
+
+  upperbody_force[0] = uTorsoAcc[0] * com_upperbody[3];
+  upperbody_force[1] = uTorsoAcc[1] * com_upperbody[3];
+  upperbody_force[2] = -9.8 * com_upperbody[3];
+
+  //Now tilt the force back
+
+  double tilted_force_x = 
+    cos(bodyPitch)*upperbody_force[0]
+    -sin(bodyPitch)*upperbody_force[2];
+  double tilted_force_y = upperbody_force[1];
+  double tilted_force_z = 
+    sin(bodyPitch)*upperbody_force[0]+
+    cos(bodyPitch)*upperbody_force[2];
+
+  double tilted_rel_com_hip_x = 
+    cos(bodyPitch)*rel_com_hip[0]
+    -sin(bodyPitch)*rel_com_hip[2];
+  double tilted_rel_com_hip_y = rel_com_hip[1];
+  double tilted_rel_com_hip_z = 
+    sin(bodyPitch)*rel_com_hip[0]+
+    cos(bodyPitch)*rel_com_hip[2];
+
+
+  double torque_x = tilted_rel_com_hip_z * tilted_force_x  
+                  + tilted_rel_com_hip_x * tilted_force_z;  
+
+  double torque_y = tilted_rel_com_hip_z * tilted_force_y
+                  + tilted_rel_com_hip_y * tilted_force_z;  
+
+  printf("Mass torque: %.3f",+ tilted_rel_com_hip_y * tilted_force_z);
+  printf("Acc torque: %.3f",+ tilted_rel_com_hip_z * tilted_force_y);
+
+
+//printf("Total free mass: %.2f ",com_upperbody[3]);
+
+  printf("Hip torque: X %.3f Y %.3f\n",torque_x,torque_y);
+
+
+  std::vector<double> r(4);
+  return r;
 }
 
 

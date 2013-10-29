@@ -68,10 +68,8 @@ function state.update()
 --
 
   --Right hand testing with webots
-  door_hand = 0;
-  hinge_pos = vector.new({0.45,-0.85,-0.15})
-  hinge_pos = vector.new({0.45,-0.85,0})
-
+  door_hand = 0;  
+  hinge_pos = vector.new({0.45,-0.95,0})
   door_r = 0.60
   grip_offset_x = -0.05
   door_yaw_target = 30*math.pi/180

@@ -224,8 +224,19 @@ local function angle_to_scanlines( lidar, rad )
   local ratio = (rad-start)/(stop-start)
   -- Round
   local scanline = math.floor(ratio*res+.5)
+
   -- Return a bounded value
   scanline = math.max( math.min(scanline, res), 1 )
+
+  --SJ: I have no idea why, but this fixes the scanline tilting problem
+  if lidar.current_direction then
+    if lidar.current_direction<0 then        
+      scanline = math.max(1,scanline-1)
+    else
+      scanline = math.min(res,scanline+1)
+    end
+  end
+
   -- Save in our table
   lidar.current_scanline = scanline
 	-- Initialize if no previous scanline
@@ -283,6 +294,7 @@ local function chest_callback()
     chest.meta.fov ~= vcm.get_chest_lidar_fov()
     then
     setup_mesh('chest_lidar',chest)
+    chest.current_scanline=nil --We need to clear this
     print("Chest Resolution:",unpack(chest.meta.resolution))
   end
   

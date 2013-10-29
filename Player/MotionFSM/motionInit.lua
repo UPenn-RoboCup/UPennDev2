@@ -80,6 +80,9 @@ function state.entry()
     end
   end
 
+  Body.request_lleg_position()
+  Body.request_rleg_position()
+
 end
 
 ---
@@ -111,21 +114,30 @@ function state.update()
   local qLLegTarget = vector.slice(qLegsTarget,1,6)
   local qRLegTarget = vector.slice(qLegsTarget,7,12)
 
-  qLLeg,doneL = util.approachTol(qLLeg,qLLegTarget, dqLegLimit, dt )
-  qRLeg,doneR = util.approachTol(qRLeg,qRLegTarget, dqLegLimit, dt )
+  qLLegMove,doneL = util.approachTol(qLLeg,qLLegTarget, dqLegLimit, dt )
+  qRLegMove,doneR = util.approachTol(qRLeg,qRLegTarget, dqLegLimit, dt )
 
-  if Config.stance.enable_legs then
---
-    Body.set_lleg_command_position( qLLeg )  
-    Body.set_rleg_command_position( qRLeg )  
-    if t-t_finish>t_settle and doneL and doneR then return'done' end        
---[[
-    Body.set_lleg_command_position( qLegsTarget )  
-    if t-t_finish>t_settle then return'done' end    
---]]    
-  else
-    return true
-  end  
+  Body.set_lleg_command_position(qLLegMove)
+  Body.set_rleg_command_position(qRLegMove)
+
+  local qLLegActual = Body.get_lleg_position()
+  local qRLegActual = Body.get_rleg_position()
+  local qLLegCommand = Body.get_lleg_command_position()
+  local qRLegCommand = Body.get_rleg_command_position()
+
+  Body.request_lleg_position()
+  Body.request_rleg_position()
+
+  local err = 0;
+  for i=1,4 do --hack: skip ankle angles for now
+    err = err + math.abs(qLLegActual[i]- qLLegCommand[i])
+    err = err + math.abs(qRLegActual[i]- qRLegCommand[i])
+  end
+
+  --print("err: ",err, doneL,doneR)
+
+  local err_th = 1*Body.DEG_TO_RAD
+  if err<err_th and t-t_finish>t_settle and doneL and doneR then return'done' end        
 end
 
 function state.exit()
@@ -152,6 +164,8 @@ function state.exit()
   mcm.set_status_bodyHeight(Config.walk.bodyHeight)
   hcm.set_motion_bodyHeightTarget(Config.walk.bodyHeight)  
 
+  local pg = Config.walk.leg_p_gain or 64
+
   if not IS_WEBOTS then
     for i=1,10 do
       Body.set_lleg_command_velocity({17000,17000,17000,17000,17000,17000})
@@ -166,10 +180,10 @@ function state.exit()
       Body.set_lleg_command_acceleration({200,200,200,200,200,200})
       unix.usleep(1e6*0.01);
 
-      Body.set_rleg_position_p({64,64,64,64,64,64})
+      Body.set_rleg_position_p({pg,pg,pg,pg,pg,pg})
       unix.usleep(1e6*0.01);
 
-      Body.set_lleg_position_p({64,64,64,64,64,64})
+      Body.set_lleg_position_p({pg,pg,pg,pg,pg,pg})
       unix.usleep(1e6*0.01);
     end
   end

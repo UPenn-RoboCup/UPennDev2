@@ -277,10 +277,11 @@ static int calculate_support_torque(lua_State *L) {
 	std::vector<double> qRLeg = lua_checkvector(L, 5);
 	double bodyPitch = luaL_optnumber(L, 6,0.0);
 	int supportLeg = (int) luaL_optnumber(L, 7,0.0);
+	std::vector<double> uTorsoAcc = lua_checkvector(L, 8);
 
 	std::vector<double> r = THOROP_kinematics_calculate_support_torque(
 		&qWaist[0],&qLArm[0],&qRArm[0],&qLLeg[0],&qRLeg[0],
-		bodyPitch,supportLeg);
+		bodyPitch,supportLeg,&uTorsoAcc[0]);
 	lua_pushvector(L, r);
 	return 1;
 }

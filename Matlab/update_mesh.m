@@ -5,10 +5,12 @@ function update_mesh(lidar_type)
   % that scanlines are verticle
   if lidar_type==0 
     lidar = HEAD_LIDAR;
-    lidar.ranges = lidar.ranges';
+    lidar.ranges = lidar.ranges';    %'
   else
     lidar = CHEST_LIDAR;
   end
+
+lidardepths = lidar.depths;
 
   lidar.lidarrange = lidar.depths(2)-lidar.depths(1);
 
@@ -18,7 +20,7 @@ t0 = tic;
   % Ensure the dimensions match
   nrays = size(lidar.ranges, 1);
   nscanlines = size(lidar.ranges, 2);
-  lidar.fov_angles = lidar.fov_angles(1:nrays)';
+  lidar.fov_angles = lidar.fov_angles(1:nrays)'; %'
   lidar.scanline_angles = lidar.scanline_angles(1:nscanlines);
   
   if iscell(lidar.scanline_angles)
@@ -28,12 +30,15 @@ t0 = tic;
   end
   
   % Scanline angles should be a column vector
-  % lidarangles = lidarangles';
+  % lidarangles = lidarangles'; %'
 
   %Calculate actual ranges
-  range_actual = double(lidar.ranges)/ 256 * lidar.lidarrange;
-  range_actual = posz_filter(range_actual, 0.8, 0.10); %%%%%????
+  range_actual = double(lidar.ranges)/ 256 * lidar.lidarrange + lidar.depths(1);
+
+  %Smooth the ranges 
+  range_actual = posz_filter(range_actual, 0.8, 0.10); 
   range_actual = posz_filter(range_actual, 0.8, 0.10);
+  
   lidar.range_actual = range_actual;
 
   % Skip rays to speed up
@@ -43,6 +48,14 @@ t0 = tic;
   xskip=1;
   yskip=1;
 
+%FOV angles mean the angles within a single laser scan
+%LIDAR angles mean the angle of lidar movement
+
+  [lidar.fov_angles(1) lidar.fov_angles(size(lidar.fov_angles,1))]  
+  [lidarangles(1) lidarangles(size(lidarangles,2))]
+
+
+
   fov_angles_skipped = lidar.fov_angles(1:yskip:size(lidar.fov_angles,1), :);
   lidarangles_skipped = lidarangles(:, 1:xskip:size(lidarangles,2));
   range_skipped =range_actual(1:yskip:size(range_actual,1),1:xskip:size(range_actual,2));
@@ -51,11 +64,7 @@ t0 = tic;
 
   max_dist = lidar.lidarrange * 0.9;
   
-  ground_height = -POSE.body_height + 0.1;
-
-%hack 
-  ground_height = -POSE.body_height + 0.2;
-
+  ground_height = -POSE.body_height + 0.05;
 
   max_height = -POSE.body_height + 2.0;
 
@@ -71,12 +80,12 @@ t0 = tic;
       lidar.poses(1,:),lidar.poses(2,:),lidar.poses(3,:));
   end
 
-  verts = verts';
+  verts = verts'; %'
   verts(:,3)= verts(:,3)+ POSE.body_height;
   vert_transformed = verts;
 
-  faces=faces(:,1:facecount)';
-  cdatas=cdatas(:,1:facecount)';
+  faces=faces(:,1:facecount)';    %'
+  cdatas=cdatas(:,1:facecount)';  %'
   
   if lidar_type == 0
       HEAD_LIDAR.verts = vert_transformed;

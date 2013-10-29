@@ -2,7 +2,9 @@ local Body = require'Body'
 local t_entry, t_update
 local state = {}
 state._NAME = ...
-require('hcm')
+require'hcm'
+
+local util = require('util')
 
 function state.entry()
   print(state._NAME..' Entry' ) 
@@ -20,19 +22,24 @@ function state.update()
   -- print(_NAME..' Update' )
   -- Get the time of update
   local t = Body.get_time()
-  local t_diff = t - t_update
+  local dt = t - t_update
   -- Save this at the last update time
   t_update = t 
 
-  local neck0 = hcm:get_control_head_movement()
-  local neck = {neck0[1]*60*RAD, neck0[2]*60*RAD}
-  Body.set_neck_target_position(neck)
+  local neckAngleTarget = hcm.get_motion_headangle()
+--  print(unpack(neckAngleTarget))
+  local dqNeckLimit = {30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD};
+
+  local qNeck = Body.get_head_command_position()
+  local qNeck_approach, doneNeck = 
+    util.approachTol( qNeck, neckAngleTarget, dqNeckLimit, dt )
+  Body.set_head_command_position(qNeck_approach)
+
+  
 
 end
 
-function state.exit()
-  -- TODO: What does this do?
-  lcm:set_head_lidar_panning(0)
+function state.exit()  
   print(state._NAME..' Exit' )
 end
 

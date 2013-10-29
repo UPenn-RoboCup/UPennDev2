@@ -81,6 +81,21 @@ local function setup_mesh( name, tbl )
 
   -- Resolution
   tbl.meta.resolution = {scan_resolution,fov_resolution}
+  
+  -- Pose information
+--  tbl.meta.pose = {}
+--  for i=1,scan_resolution do tbl.meta.pose[i] = {0,0,0} end
+  tbl.meta.posex = {}
+  tbl.meta.posey = {}
+  tbl.meta.posez = {}
+  for i=1,scan_resolution do 
+    tbl.meta.posex[i],
+    tbl.meta.posey[i],
+    tbl.meta.posez[i]=0,0,0
+  end
+
+
+  
   -- In memory mesh
   tbl.mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
   -- Mesh buffers for compressing and sending to the user
@@ -90,7 +105,9 @@ local function setup_mesh( name, tbl )
   tbl.scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
   -- Save the exact pose of every scan
   -- TODO: Save the whole whole rotation?
-  tbl.scan_poses = torch.DoubleTensor( scan_resolution, 3 ):zero()
+  --tbl.scan_poses = torch.FloatTensor( scan_resolution, 3 ):zero()
+  -- metadata to point here
+  --tbl.meta.poses = torch.FloatTensor( tbl.scan_poses:storage() )
 
   -- Find the offset for copying lidar readings into the mesh
   -- if fov is from -fov/2 to fov/2 degrees, then offset_idx is zero
@@ -152,14 +169,6 @@ local function prepare_mesh(mesh,depths,net_settings)
   -- Depth data is compressed to a certain range
   mesh.meta.depths = {near,far}
 
-  -- Do we wish to also send the pose data for each scan?
-  if use_pose==1 then
-    mesh.meta.c_pose = zlib.compress(
-      mesh.scan_poses:storage():pointer(),
-      mesh.scan_poses:nElement()
-    )
-  end
-
   return mp.pack(mesh.meta), c_mesh
 end
 
@@ -171,6 +180,13 @@ local function stream_mesh(mesh)
   -- Streaming?
   if net_settings[1]==0 then return end
 
+  -- Check if the panning is over (for interval streaming)
+  if net_settings[1]==2 then
+    if mesh.current_direction == mesh.prev_direction then
+      return  
+    end
+  end
+
   -- Sensitivity range in meters
   -- Depths when compressing
   local depths = vcm[get_name..'_depths']()
@@ -180,12 +196,17 @@ local function stream_mesh(mesh)
     depths,
     net_settings)
   
-	if net_settings[1]==1 then
+	if net_settings[1]==1 then --Single sending
     net_settings[1] = 0
     local ret, err = mesh_udp_ch:send( metapack..c_mesh )
     if err then print('mesh udp',err) end
     vcm['set_'..mesh.meta.name..'_net'](net_settings)
 		print('Mesh | sent unreliable!',mesh.meta.t)
+  elseif net_settings[1]==2 then --Interval streaming
+    local ret, err = mesh_udp_ch:send( metapack..c_mesh )
+    if err then print('mesh udp',err) end
+    vcm['set_'..mesh.meta.name..'_net'](net_settings)
+    print('Mesh | sent unreliable!',mesh.meta.t)
   elseif net_settings[1]==3 then
     -- Reliable single frame
     net_settings[1] = 0
@@ -213,8 +234,19 @@ local function angle_to_scanlines( lidar, rad )
   local ratio = (rad-start)/(stop-start)
   -- Round
   local scanline = math.floor(ratio*res+.5)
+
   -- Return a bounded value
   scanline = math.max( math.min(scanline, res), 1 )
+
+  --SJ: I have no idea why, but this fixes the scanline tilting problem
+  if lidar.current_direction then
+    if lidar.current_direction<0 then        
+      scanline = math.max(1,scanline-1)
+    else
+      scanline = math.min(res,scanline+1)
+    end
+  end
+
   -- Save in our table
   lidar.current_scanline = scanline
 	-- Initialize if no previous scanline
@@ -236,6 +268,7 @@ local function angle_to_scanlines( lidar, rad )
   end
   -- Save the directions
   lidar.current_direction = direction
+  lidar.prev_direction = prev_direction
 
   -- Find the set of scanlines for copying the lidar reading
   local scanlines = {}
@@ -266,6 +299,15 @@ end
 local function chest_callback()
   local meta, has_more = chest.lidar_ch:receive()
   local metadata = mp.unpack(meta)
+  
+  if chest.meta.scanlines ~= vcm.get_chest_lidar_scanlines() or
+    chest.meta.fov ~= vcm.get_chest_lidar_fov()
+    then
+    setup_mesh('chest_lidar',chest)
+    chest.current_scanline=nil --We need to clear this
+    print("Chest Resolution:",unpack(chest.meta.resolution))
+  end
+  
   -- Get raw data from shared memory
   local ranges = Body.get_chest_lidar()
   -- Save the body pose info
@@ -283,8 +325,17 @@ local function chest_callback()
 		-- Save the pan angle
 		chest.scan_angles[line] = angle
     -- Save the pose
+    --[[
     local chest_pose = chest.scan_poses:select(1,line)
     chest_pose[1],chest_pose[2],chest_pose[3] = unpack(pose)
+    --]]
+--    chest.meta.pose[line] = {unpack(pose)}
+
+    chest.meta.posex[line],
+    chest.meta.posey[line],
+    chest.meta.posez[line]=
+    pose[1],pose[2],pose[3]
+
   end
   -- Save the body tilt info
   -- TODO: bodyHeight as well?
@@ -296,6 +347,16 @@ end
 local function head_callback()
   local meta, has_more = head.lidar_ch:receive()
   local metadata = mp.unpack(meta)
+  
+  -- Check if we must update our torch data
+  if head.meta.scanlines ~= vcm.get_head_lidar_scanlines() or
+    head.meta.fov ~= vcm.get_head_lidar_fov()
+    then
+    setup_mesh('head_lidar',head)
+    print("Head Resolution:",unpack(head.meta.resolution))
+  end
+  
+  
   -- Get raw data from shared memory
   local ranges = Body.get_head_lidar()
   -- Save the body pose info
@@ -376,20 +437,7 @@ function mesh.update()
   local npoll = channel_polls:poll(channel_timeout)
   -- Stream the current mesh
   stream_mesh(head)
-  stream_mesh(chest)
-  -- Check if we must update our torch data
-  if head.meta.scanlines ~= vcm.get_head_lidar_scanlines() or
-    head.meta.fov ~= vcm.get_head_lidar_fov()
-    then
-    setup_mesh('head_lidar',head)
-    print("Head Resolution:",unpack(head.meta.resolution))
-  end
-  if chest.meta.scanlines ~= vcm.get_chest_lidar_scanlines() or
-    chest.meta.fov ~= vcm.get_chest_lidar_fov()
-    then
-    setup_mesh('chest_lidar',chest)
-    print("Chest Resolution:",unpack(chest.meta.resolution))
-  end  
+  stream_mesh(chest) 
 end
 
 function mesh.exit()

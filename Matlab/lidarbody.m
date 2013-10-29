@@ -216,6 +216,7 @@ CHEST_LIDAR.posea=[];
             udp_data = udp_recv('receive',fd);
             nBytes = nBytes + numel(udp_data);
         end
+
         [metadata,offset] = msgpack('unpack',udp_data);
 
         %SJ: metadata.depths is cell array with ubuntu
@@ -240,13 +241,15 @@ CHEST_LIDAR.posea=[];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %        pose_data = double(zlibUncompress(metadata.c_pose));
 %        pose_data = reshape(pose_data,[3 metadata.resolution(1)]);
-
-%temporarily using CURRENT pose for all lines instead (will result in mesh smearing)
-
-pose_data = POSE.pose'*ones(1,metadata.resolution(1));
-
-
-
+%'
+        if isfield(metadata,'posex')
+            %%THIS REQUIRES MESH_WIZARD2
+            pose_data = [metadata.posex;metadata.posey;metadata.posez];
+        else
+            %temporarily using CURRENT pose for all lines instead (will result in mesh smearing)
+            pose_data = POSE.pose'*ones(1,metadata.resolution(1));
+        end
+        
         % Calculate the angles (now support variable resolution for sensor)
         fov_angles = metadata.fov(1) : 1/metadata.reading_per_radian : metadata.fov(2);
         scanline_angles = metadata.scanlines(1) : 1/metadata.scanlines(3) : metadata.scanlines(2);

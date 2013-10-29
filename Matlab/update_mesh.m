@@ -64,7 +64,7 @@ t0 = tic;
 
   max_dist = lidar.lidarrange * 0.9;
   
-  ground_height = -POSE.body_height + 0.1;
+  ground_height = -POSE.body_height + 0.05;
 
   max_height = -POSE.body_height + 2.0;
 

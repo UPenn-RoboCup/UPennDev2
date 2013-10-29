@@ -51,8 +51,8 @@ t0 = tic;
 %FOV angles mean the angles within a single laser scan
 %LIDAR angles mean the angle of lidar movement
 
-  [lidar.fov_angles(1) lidar.fov_angles(size(lidar.fov_angles,1))]  
-  [lidarangles(1) lidarangles(size(lidarangles,2))]
+%  [lidar.fov_angles(1) lidar.fov_angles(size(lidar.fov_angles,1))]  
+%  [lidarangles(1) lidarangles(size(lidarangles,2))]
 
 
 

@@ -1,98 +1,95 @@
 function ret = lidarbody()
-global HEAD_LIDAR CHEST_LIDAR LIDAR H_FIGURE DEBUGMON POSE SLAM CONTROL WAYPOINTS
-global CURSOR
-LIDAR.init = @init;
-LIDAR.update = @update;
-LIDAR.set_meshtype = @set_meshtype;
-LIDAR.set_img_display = @set_img_display;
-LIDAR.get_depth_img = @get_depth_img;
-LIDAR.get_single_approach = @get_single_approach;
-LIDAR.get_double_approach = @get_double_approach;
-LIDAR.clear_points = @clear_points;
-LIDAR.set_zoomlevel = @set_zoomlevel;
+    global HEAD_LIDAR CHEST_LIDAR LIDAR H_FIGURE DEBUGMON POSE SLAM CONTROL WAYPOINTS
+    global CURSOR
+    LIDAR.init = @init;
+    LIDAR.update = @update;
+    LIDAR.set_meshtype = @set_meshtype;
+    LIDAR.set_img_display = @set_img_display;
+    LIDAR.get_depth_img = @get_depth_img;
+    LIDAR.clear_points = @clear_points;
+    LIDAR.set_zoomlevel = @set_zoomlevel;
 
-LIDAR.update_waypoints = @update_waypoints;
-LIDAR.rotate_view = @rotate_view;
+    LIDAR.update_waypoints = @update_waypoints;
+    LIDAR.rotate_view = @rotate_view;
 
-LIDAR.set_pan_speed=@set_pan_speed;
-LIDAR.set_lidar_range=@set_lidar_range;
+    LIDAR.set_pan_speed=@set_pan_speed;
+    LIDAR.set_lidar_range=@set_lidar_range;
 
 
 
-% Which mesh to display: 0-HEAD, 1-CHEST
-LIDAR.meshtype = 1; % Chest lidar default
-LIDAR.mesh_cnt = 0;
+    % Which mesh to display: 0-HEAD, 1-CHEST
+    LIDAR.meshtype = 1; % Chest lidar default
+    LIDAR.mesh_cnt = 0;
 
-% 0: Show head
-% 1: Show chest
-LIDAR.depth_img_display = 0;
-% points draw on this handle
-LIDAR.clicked_points  = []; % 2d
-LIDAR.selected_points = []; % 3d
-LIDAR.pointdraw = 0;
+    % 0: Show head 1: Show chest
+    LIDAR.depth_img_display = 1; %Chest lidar default
+    % points draw on this handle
+    LIDAR.clicked_points  = []; % 2d
+    LIDAR.selected_points = []; % 3d
+    LIDAR.pointdraw = 0;
 
-%depth map size and zooming
-LIDAR.xsize = 0;
-LIDAR.ysize = 0;
-LIDAR.xmag =0;
-LIDAR.ymag =0;
+    %depth map size and zooming
+    LIDAR.xsize = 0;
+    LIDAR.ysize = 0;
+    LIDAR.xmag =0;
+    LIDAR.ymag =0;
 
-LIDAR.last_posxy = [];
-LIDAR.depth_range = [.1 5];
-
-
-wdim_mesh=361;
-hdim_mesh=60;
-
-HEAD_LIDAR=[];
-%SJ: DOUBLE CHECK THOSE VALUES, THEY ARE TOTALLY OFF!!
-HEAD_LIDAR.off_axis_height = 0.01; % 1cm off axis
-HEAD_LIDAR.neck_height = 0.30;
-
-%%%%% THEY ARE WEBOTS VALUES
-%HEAD_LIDAR.off_axis_height = 0.10; % 1cm off axis
-%HEAD_LIDAR.neck_height = 0.331; %based on webots
+    LIDAR.last_posxy = [];
+    LIDAR.depth_range = [.1 5];
 
 
-%%%%for whatever reason, correct values does not work
-HEAD_LIDAR.off_axis_height = 0.01;
-HEAD_LIDAR.neck_height = 0.331; %based on webots
+    wdim_mesh=361;
+    hdim_mesh=60;
+
+    HEAD_LIDAR=[];
+    %SJ: DOUBLE CHECK THOSE VALUES, THEY ARE TOTALLY OFF!!
+    HEAD_LIDAR.off_axis_height = 0.01; % 1cm off axis
+    HEAD_LIDAR.neck_height = 0.30;
+
+    %%%%% THEY ARE WEBOTS VALUES
+    %HEAD_LIDAR.off_axis_height = 0.10; % 1cm off axis
+    %HEAD_LIDAR.neck_height = 0.331; %based on webots
+
+
+    %%%%for whatever reason, correct values does not work
+    HEAD_LIDAR.off_axis_height = 0.01;
+    HEAD_LIDAR.neck_height = 0.331; %based on webots
 
 
 
-HEAD_LIDAR.type = 0;
-HEAD_LIDAR.ranges=zeros(wdim_mesh,hdim_mesh);
-HEAD_LIDAR.range_actual=ones(wdim_mesh,hdim_mesh);
+    HEAD_LIDAR.type = 0;
+    HEAD_LIDAR.ranges=zeros(wdim_mesh,hdim_mesh);
+    HEAD_LIDAR.range_actual=ones(wdim_mesh,hdim_mesh);
 
-HEAD_LIDAR.lidarangles={};
-HEAD_LIDAR.spineangles=[];
-HEAD_LIDAR.verts=[];
-HEAD_LIDAR.faces=[];
-HEAD_LIDAR.cdatas=[];
-HEAD_LIDAR.lidarrange = 1;
-HEAD_LIDAR.selected_points =[];
+    HEAD_LIDAR.lidarangles={};
+    HEAD_LIDAR.spineangles=[];
+    HEAD_LIDAR.verts=[];
+    HEAD_LIDAR.faces=[];
+    HEAD_LIDAR.cdatas=[];
+    HEAD_LIDAR.lidarrange = 1;
+    HEAD_LIDAR.selected_points =[];
 
-HEAD_LIDAR.posex=[];
-HEAD_LIDAR.posey=[];
-HEAD_LIDAR.posea=[];
+    HEAD_LIDAR.posex=[];
+    HEAD_LIDAR.posey=[];
+    HEAD_LIDAR.posea=[];
 
 
-CHEST_LIDAR=[];
-CHEST_LIDAR.off_axis_depth = 0.05;
-CHEST_LIDAR.chest_depth  = 0.05;
-CHEST_LIDAR.chest_height = 0.10;
-CHEST_LIDAR.type = 1;
-CHEST_LIDAR.ranges=zeros(wdim_mesh,hdim_mesh);
-CHEST_LIDAR.lidarangles={};
-CHEST_LIDAR.spineangles=[];
-CHEST_LIDAR.verts=[];
-CHEST_LIDAR.faces=[];
-CHEST_LIDAR.cdatas=[];
-CHEST_LIDAR.lidarrange = 1;
+    CHEST_LIDAR=[];
+    CHEST_LIDAR.off_axis_depth = 0.05;
+    CHEST_LIDAR.chest_depth  = 0.05;
+    CHEST_LIDAR.chest_height = 0.10;
+    CHEST_LIDAR.type = 1;
+    CHEST_LIDAR.ranges=zeros(wdim_mesh,hdim_mesh);
+    CHEST_LIDAR.lidarangles={};
+    CHEST_LIDAR.spineangles=[];
+    CHEST_LIDAR.verts=[];
+    CHEST_LIDAR.faces=[];
+    CHEST_LIDAR.cdatas=[];
+    CHEST_LIDAR.lidarrange = 1;
 
-CHEST_LIDAR.posex=[];
-CHEST_LIDAR.posey=[];
-CHEST_LIDAR.posea=[];
+    CHEST_LIDAR.posex=[];
+    CHEST_LIDAR.posey=[];
+    CHEST_LIDAR.posea=[];
 
     function init(a_depth,a_mesh)
         %maximum size for 3d mesh
@@ -195,14 +192,14 @@ CHEST_LIDAR.posea=[];
     end
 
     function draw_depth_image()
-        % Draw the data
+        % Draw the data       
+
         if LIDAR.depth_img_display==0
             set(LIDAR.h_img,'Cdata', HEAD_LIDAR.ranges);
             set(LIDAR.p_img, 'XLim', [1 size(HEAD_LIDAR.ranges,2)]);
             set(LIDAR.p_img, 'YLim', [1 size(HEAD_LIDAR.ranges,1)]);
         else
-            %Chest lidar image is flipped
-
+            %Chest lidar image is flipped horizontally
             set(LIDAR.h_img,'Cdata', fliplr(CHEST_LIDAR.ranges));
             set(LIDAR.p_img, 'XLim', [1 size(CHEST_LIDAR.ranges,2)]);
             set(LIDAR.p_img, 'YLim', [1 size(CHEST_LIDAR.ranges,1)]);
@@ -231,17 +228,11 @@ CHEST_LIDAR.posea=[];
         else
             depth_img = zlibUncompress(cdepth);
             depth_img = reshape(depth_img,[metadata.resolution(2) metadata.resolution(1)]);
-            depth_img = depth_img';
+            depth_img = depth_img'; %'
         end
 
-        % Extract pose information
+        % Extract pose information 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% TODO: zlib only packs uint8 integers (0-255)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%        pose_data = double(zlibUncompress(metadata.c_pose));
-%        pose_data = reshape(pose_data,[3 metadata.resolution(1)]);
-%'
         if isfield(metadata,'posex')
             %%THIS REQUIRES MESH_WIZARD2
             pose_data = [metadata.posex;metadata.posey;metadata.posez];
@@ -269,25 +260,22 @@ CHEST_LIDAR.posea=[];
         else
             LIDAR.mesh_cnt = LIDAR.mesh_cnt + 1;
             % Save data
-            CHEST_LIDAR.ranges = depth_img';
-%'            
+            CHEST_LIDAR.ranges = depth_img'; %'            
             CHEST_LIDAR.fov_angles = fov_angles;
             CHEST_LIDAR.scanline_angles = scanline_angles;
             CHEST_LIDAR.depths = double(metadata.depths);
             CHEST_LIDAR.rpy = metadata.rpy;
             CHEST_LIDAR.poses = pose_data;
-            % Update depth image
+            % Update depth image            
             draw_depth_image();
             % Update mesh image
             update_mesh(1);
-            %if mod(LIDAR.mesh_cnt, 10) == 0
-                update_mesh_display();
-            %end
+            update_mesh_display();
         end
         
         % end of update
         tPassed = toc(t0);
-%        fprintf('Update lidar: %f seconds.\n',tPassed);
+        fprintf('Update lidar: %f seconds.\n',tPassed);
     end
 
 
@@ -348,51 +336,7 @@ CHEST_LIDAR.posea=[];
         targetpos(3) = -targetpos(1)*sa + targetpos(3)*ca;
     end
 
-    function targetpos = get_single_approach()
-        points3d = LIDAR.selected_points;
-        targetpos=[];
-        if numel(points3d)>0
-            targetrelpos = [points3d(size(points3d,1),1) 0];
-            if targetrelpos(1) > 0.50
-                targetrelpos(1) = max(0,targetrelpos(1)-0.50);
-                targetpos = transform_global(targetrelpos);
-            end
-        end
-        LIDAR.clear_points();
-    end
-
-    function targetwp = get_double_approach()
-        points3d = LIDAR.selected_points;
-        targetwp=[];
-        if numel(points3d)>=2*3
-            % 3D
-            leftrelpos = points3d(size(points3d,1)-1, :);
-            rightrelpos = points3d(size(points3d,1), :);
-             
-            if leftrelpos(1)>0.30 && rightrelpos(1)>0.30
-                leftpos = transform_global(leftrelpos);
-                rightpos = transform_global(rightrelpos);
-                centerpos = (leftrelpos + rightrelpos)/2;
-                centerpos(1) = max(0, centerpos(1) - 0.3);
-                angle = atan2(leftpos(2)-rightpos(2),leftpos(1)-rightpos(1)) - pi/2;
-                targetwp = [centerpos(1), centerpos(2), angle];
-                
-                %{
-                r1 = - 0.60;
-                r2 = - 0.30;
-                
-                curpose = POSE.pose
-                targetpose1 = targetpose + [r1*cos(angle) r1*sin(angle)]
-                targetpose2 = targetpose + [r2*cos(angle) r2*sin(angle)]
-                targetwp =  reshape(  [targetpose1;targetpose2] ,[1 4]) ;
-                %}
-            end
-        end
-        LIDAR.clear_points();
-    end
-
-    function select_3d(~, ~, flags)
-        
+    function select_3d(~, ~, flags)        
         clicktype = get(H_FIGURE,'selectionType');
         if strcmp(clicktype,'alt')>0
             point = get(gca,'CurrentPoint');
@@ -438,45 +382,44 @@ CHEST_LIDAR.posea=[];
             global_point = local_to_global * local_point;
             global_point(3) = global_point(3) + HEAD_LIDAR.neck_height;
             
-        else
+        else           
+
             % Round the index to an integer
             fov_angle_index = round( posxy(2) );
             scanline_index  = round( posxy(1) );
+
+            %SJ: Chest lidar depth image is flipped horizontally
+            scanline_index  = size(CHEST_LIDAR.ranges,2) - scanline_index + 1;
+
             % grab the range
             range = CHEST_LIDAR.ranges(fov_angle_index,scanline_index);
             range = double(range)/255 * (CHEST_LIDAR.depths(2)-CHEST_LIDAR.depths(1));
             range = range + CHEST_LIDAR.depths(1);
+
             % Grab the correct angles
-            fov_angle_selected = -1*CHEST_LIDAR.fov_angles(fov_angle_index)
+            fov_angle_selected = -1*CHEST_LIDAR.fov_angles(fov_angle_index);
             scanline_angle_selected = -1*CHEST_LIDAR.scanline_angles(scanline_index);
-            % TODO: Average nearby neighbor ranges
-            %{
-            global_point = lidartrans(...
-                'headproject', ...
-                fov_angle_selected, ...
-                scanline_angle_selected, ...
-                range);
-            %}
             
-            local_point = [ ...
-            range*cos(fov_angle_selected)+CHEST_LIDAR.off_axis_depth; ...
-            0
-            range*sin(fov_angle_selected); ...
-            0
-            ];
-            local_to_global = eye(4);
-            local_to_global(1,1) = cos(scanline_angle_selected);
-            local_to_global(2,2) = cos(scanline_angle_selected);
-            local_to_global(1,2) = sin(scanline_angle_selected);
-            local_to_global(2,1) = -sin(scanline_angle_selected);
-            global_point = local_to_global * local_point;
-            global_point(1) = global_point(1) + CHEST_LIDAR.chest_depth;
-            global_point(3) = global_point(3) + CHEST_LIDAR.chest_height;
+            %SJ: it is misleading as the selected point ls LOCAL from robot upper body frame
+            global_point=chestproject(fov_angle_selected, scanline_angle_selected, range)
+
+            %Get REAL global point (for navigation and etc)
+
+            real_global_tr=...
+                translate([POSE.pose(1);POSE.pose(2);POSE.body_height])*...
+                rotZ(POSE.pose(3))*...
+                rotY(CHEST_LIDAR.rpy(2))*...
+                translate(global_point);
+            real_global_point = real_global_tr(1:3,4)';   %'
+
         end % head/chest
-        LIDAR.selected_points = [LIDAR.selected_points; global_point(1:3)'];
-        disp_str = sprintf('Selected (%.3f %.3f %.3f)', ...
-            global_point(1),global_point(2),global_point(3) );
-%'            
+
+        WAYPOINTS.add_waypoint(real_global_point(1:2));
+
+        LIDAR.selected_points = [LIDAR.selected_points; global_point(1:3)']; %'
+        disp_str = sprintf('Selected (%.3f %.3f %.3f)', ... 
+            global_point(1),global_point(2),global_point(3) ); 
+        disp(disp_str)
         DEBUGMON.addtext(disp_str);
     end % select_3d
 
@@ -509,12 +452,26 @@ CHEST_LIDAR.posea=[];
             set( LIDAR.wayline, 'XData', [] );
             set( LIDAR.wayline, 'YData', [] );
             set( LIDAR.wayline, 'ZData', [] );            
+
+            LIDAR.clicked_points = [];
+            set(LIDAR.pointdraw,'XData',[]);
+            set(LIDAR.pointdraw,'YData',[]);
         else
+            waypointsiz = size(waypoints)
             waypoints=[POSE.pose(1) POSE.pose(2);waypoints];        
             set( LIDAR.wayline, 'XData', waypoints(:,1) );
             set( LIDAR.wayline, 'YData', waypoints(:,2) );
             set( LIDAR.wayline, 'ZData', 0.1*ones(size(waypoints(:,1))));            
         end
+    end
+
+    function ret=chestproject(fov_angle, scanline_angle, range)
+      x0 = cos(fov_angle)*range+CHEST_LIDAR.off_axis_depth;
+      z0 = sin(fov_angle)*range; 
+      cx = x0*cos(scanline_angle) + CHEST_LIDAR.chest_depth;
+      cy = -x0*sin(scanline_angle);
+      cz = z0 + CHEST_LIDAR.chest_height;
+      ret = [cx;cy;cz];
     end
 
     function ret=pose_global(pRelative, pose)
@@ -532,6 +489,19 @@ CHEST_LIDAR.posea=[];
       ret=[ca*p(1)+sa*p(2) -sa*p(1)+ca*p(2) p(3)];
     end
 
+    function ret = translate(pos)
+       ret=[1 0 0 pos(1);0 1 0 pos(2);0 0 1 pos(3);0 0 0 1];
+    end
+
+    function ret = rotY(angle)
+      ca=cos(angle); sa=sin(angle);
+      ret = [ca 0 sa 0; 0 1 0 0; -sa 0 ca 0; 0 0 0 1];
+    end
+
+    function ret = rotZ(angle)
+      ca=cos(angle); sa=sin(angle);
+      ret = [ca -sa 0 0;sa ca 0 0; 0 0 1 0; 0 0 0 1];
+  end
 
 ret = LIDAR;
 end

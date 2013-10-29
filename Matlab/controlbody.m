@@ -82,7 +82,9 @@ ret = CONTROL;
             end
         elseif flags==3
             disp('Single point approach')
-            targetpos = LIDAR.get_single_approach();
+            %targetpos = LIDAR.get_single_approach();
+            targetpos = WAYPOINTS.get_single_approach();
+
             if numel(targetpos)>0
                 send_control_packet([], [],...
                     'hcm', 'motion', 'waypoints',...
@@ -94,7 +96,8 @@ ret = CONTROL;
             end
         elseif flags==4
             disp('Two point approach')
-            wp = LIDAR.get_double_approach();
+            %wp = LIDAR.get_double_approach();
+            wp = WAYPOINTS.get_double_approach();
             if numel(wp) == 0
               wp = WAYPOINTS.get_double_approach();
             end

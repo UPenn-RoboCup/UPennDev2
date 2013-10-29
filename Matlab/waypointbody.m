@@ -36,7 +36,7 @@ function ret=waypointbody()
     LIDAR.update_waypoints([]);
   end
 
-  function ret = get_waypoints()
+  function ret = get_waypoints()  
     yaws = [];
     if size(WAYPOINTS.waypoints_xy,1)>1
       dys = WAYPOINTS.waypoints_xy(2:end,2) - WAYPOINTS.waypoints_xy(1:end-1,2);
@@ -49,19 +49,17 @@ function ret=waypointbody()
     ret=[WAYPOINTS.waypoints_xy yaws];
   end
 
-  function targetwp = get_double_approach()
+  function targetwp = get_double_approach()    
       points2d = WAYPOINTS.waypoints_xy;
       targetwp=[];
       if numel(points2d)==4
           leftpos = points2d(1, :);
           rightpos = points2d(2, :);
-          if leftpos(1)>0.30 && rightpos(1)>0.30
-              centerpos = (leftpos + rightpos)/2;              
-              angle = atan2(leftpos(2)-rightpos(2),leftpos(1)-rightpos(1))-pi/2;
-              targetwp = [centerpos(1), centerpos(2), angle];
-              Xoffset=-0.47;
-              targetwp = [targetwp(1)+cos(angle)*Xoffset targetwp(2)+sin(angle)*Xoffset angle];
-          end
+          centerpos = (leftpos + rightpos)/2;              
+          angle = atan2(leftpos(2)-rightpos(2),leftpos(1)-rightpos(1))-pi/2;
+          targetwp = [centerpos(1), centerpos(2), angle];
+          Xoffset=-0.33;
+          targetwp = [targetwp(1)+cos(angle)*Xoffset targetwp(2)+sin(angle)*Xoffset angle];
       end      
   end
 end

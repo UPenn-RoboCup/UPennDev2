@@ -1,11 +1,13 @@
 function ret=camerabody()
-    global CAMERA
+    global CAMERA CONTROL CURSOR
     cam=[];
     
     cam.width = 640;
     cam.height = 360;    
     cam.init = @init;
     cam.update_head = @update_head;   
+    cam.mouselook=[0 0];
+    cam.rotate_view = @rotate_view;
 
     ret = cam;
 
@@ -14,7 +16,8 @@ function ret=camerabody()
         set(a1,'XLim',.5+[0 CAMERA.width]);
         set(a1,'YLim',.5+[0 CAMERA.height]);
         CAMERA.image = image('Parent', CAMERA.a,'CData',[]);                
-        set(CAMERA.a, 'ButtonDownFcn', @camera_look);        
+        set(CAMERA.a, 'ButtonDownFcn', @button_down);
+        set(CAMERA.image, 'ButtonDownFcn', @button_down);
     end
 
     function [nBytes] = update_head(fd)
@@ -32,6 +35,26 @@ function ret=camerabody()
         end
     end
 
+    function rotate_view(movement)
+        CAMERA.mouselook = CAMERA.mouselook + [movement(1) -movement(2)]/180*pi;
+        CAMERA.mouselook(2) = min(pi/2,max(-pi/2,CAMERA.mouselook(2)));
+        CONTROL.send_control_packet([], [],...
+              'hcm', 'motion', 'headangle', CAMERA.mouselook);
+    end
+
+    function button_down(obj,~,flags)
+      clicktype = get(gcf,'selectionType');
+      if strcmp(clicktype,'alt')>0 
+        CURSOR.button_alt_camera = 1; %We use this for turning mesh around
+        CONTROL.send_control_packet( 'HeadFSM', 'teleop');
+      else %Left click - reset heading
+        CAMERA.mouselook=[0 0];
+        CONTROL.send_control_packet( 'HeadFSM', 'center');
+      end
+    
+    end
+end
+%{
     function camera_look(h_omap, ~, flags)       
         
         %% Configuration variables
@@ -61,4 +84,4 @@ function ret=camerabody()
         
         % Send the command
     end
-end
+%} 

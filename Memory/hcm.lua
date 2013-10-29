@@ -38,6 +38,12 @@ shared_data.motion.velocity = vector.zeros(3)
 -- Emergency stop of motion
 shared_data.motion.estop = vector.zeros(1)
 
+
+--Head look angle
+shared_data.motion.headangle = vector.zeros(2)
+
+
+
 --Footsteps
 --{[rx ry ra supportLeg t0 t1 t2 zmpmodx zmpmody zmpmoda stepparam1 stepparam2 stepparam3]}
 shared_data.motion.footholds  = vector.zeros(13*maxSteps)

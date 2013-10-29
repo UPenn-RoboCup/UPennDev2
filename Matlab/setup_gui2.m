@@ -75,6 +75,7 @@ function [] = setup_gui()
     set(rb2,'CallBack',{BODY.set_viewpoint,2});
     set(rb3,'CallBack',{BODY.set_viewpoint,3});
     set(rb4,'CallBack',{BODY.set_viewpoint,4});
+    set(rb5,'CallBack',{BODY.toggle_robot});
 
 
 
@@ -121,14 +122,14 @@ function [] = setup_gui()
 
     sb7=uicontrol('Parent', H_FIGURE, 'Style', 'pushbutton', ...
         'String', 'Clear', 'Units', 'Normalized', ...        
-        'Position', [0.6 0.05 0.1 0.1] );    
+        'Position', [0.6 0.0 0.1 0.1] );    
 
 
     
 
     set(sb1,'CallBack',{LIDAR.set_lidar_range,[.1 2.5]});
-    set(sb2,'CallBack',{LIDAR.set_lidar_range,[.1 5]});
-    set(sb3,'CallBack',{LIDAR.set_lidar_range,[.1 10]});
+    set(sb2,'CallBack',{LIDAR.set_lidar_range,[0.25 5]});
+    set(sb3,'CallBack',{LIDAR.set_lidar_range,[0.5 10]});
 
     set(sb4,'CallBack',{LIDAR.set_pan_speed,4});
     set(sb5,'CallBack',{LIDAR.set_pan_speed,2});
@@ -206,10 +207,11 @@ function [] = setup_gui()
     H_NETWORK_AXES = axes('Parent', H_FIGURE, ...
         'XTick', [], 'YTick', [], 'Units', 'Normalized', ...
         'Position', [0.4 0 0.2 0.1] );            
-    H_DEBUG_TEXT = uicontrol('Style','text','Units','Normalized',...
-        'Position', [0.6 0 0.1 0.05] );   
     NETMON.init(H_NETWORK_AXES,H_NETWORK_TEXT);
-    
+
+
+    H_DEBUG_TEXT = uicontrol('Style','text','Units','Normalized',...
+        'Position', [0.6 0.1 0.1 0.4] );   
     DEBUGMON = debugbody();
     DEBUGMON.init(H_DEBUG_TEXT);
     
@@ -356,8 +358,7 @@ function [] = setup_gui()
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     %Drag handling
-    CURSOR=[];
-    CURSOR.button_alt= 0;
+    CURSOR=[];    
 
     CURSOR.button_alt_mesh= 0;
     CURSOR.button_alt_camera= 0;
@@ -366,15 +367,18 @@ function [] = setup_gui()
 
     function mouseMove(obj,evt)
         C = get (gcf, 'CurrentPoint');
-        if CURSOR.button_alt==1             
-            CURSOR.movement = C-CURSOR.last_pos;           
-            cmv=CURSOR.movement            
+        CURSOR.movement = C-CURSOR.last_pos;
+
+        if CURSOR.button_alt_mesh==1             
+            BODY.rotate_view(CURSOR.movement);
+        elseif CURSOR.button_alt_camera==1
+            CAMERA.rotate_view(CURSOR.movement);
         end
         CURSOR.last_pos = C;
     end    
 
     function mouseRelease(obj,evt)
-        CURSOR.button_alt = 0;
+        
         CURSOR.button_alt_mesh= 0;
         CURSOR.button_alt_camera= 0;
     end

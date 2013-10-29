@@ -80,6 +80,11 @@ function ret = robotbody()
   BODY.init = @init;
   BODY.set_viewpoint = @set_viewpoint;
 
+  BODY.rotate_view = @rotate_view;
+  BODY.toggle_robot = @toggle_robot;
+  BODY.mouselook = [0 0];
+  BODY.draw_robot = 1;
+
   POSE = [];
   POSE.pose = [ 0 0 0];
   POSE.pose_odom = [ 0 0 0];
@@ -93,22 +98,36 @@ function ret = robotbody()
     BODY.viewpoint = flags;
     calculate_transforms();
     plot_parts();
+    BODY.mouselook= [0 0];
+  end
+  
+  function rotate_view(movement)
+    BODY.mouselook = BODY.mouselook + [movement(1) -movement(2)]/180*pi;
+  end
+
+  function toggle_robot(~,~)
+    BODY.draw_robot = 1-BODY.draw_robot;
   end
 
   function update_viewpoint()
     flags = BODY.viewpoint;    
     pose = POSE.pose;
+
+    look_angle = [0 pose(3)]+ BODY.mouselook;
+    look_angle(2) = min(pi/2,max(-pi/2,look_angle(2)));
       
     robot_pos = [pose(1) pose(2) POSE.body_height];
-    pose_dir = [cos(pose(3)) sin(pose(3))];
+    pose_dir = [cos(look_angle(2))*cos(look_angle(1)),...
+                cos(look_angle(2))*sin(look_angle(1)),...
+                sin(look_angle(2))];
 
     cam_dist1 = 20;
 
     if flags==1 
 
-      set(BODY.p,'CameraTarget',robot_pos+ 2.5*[pose_dir -0.5]);
+      set(BODY.p,'CameraTarget',robot_pos+ 2.5*pose_dir);
       set(BODY.p,'CameraPosition',...
-				robot_pos +2.5*[pose_dir -0.5]+ 20*[-cos(pose(3)) -sin(pose(3)) 0.7]);
+				robot_pos +2.5*pose_dir+ -20*pose_dir);
       set(BODY.p,'XLim',[-3 3]+pose(1));
       set(BODY.p,'YLim',[-3 3]+pose(2));
       set(BODY.p,'ZLim',[-1 2]);
@@ -116,8 +135,8 @@ function ret = robotbody()
 
 
     elseif flags==2 
-      set(BODY.p,'CameraTarget',robot_pos + 2*[pose_dir 0] );
-      set(BODY.p,'CameraPosition',robot_pos + 2*[pose_dir 0] + 18*[-1 -1 1]);
+      set(BODY.p,'CameraTarget',robot_pos + 2*pose_dir );
+      set(BODY.p,'CameraPosition',robot_pos + 2*pose_dir + 18*[-1 -1 1]);
       set(BODY.p,'XLim',[-3 3]+pose(1)+2.5*pose_dir(1));
       set(BODY.p,'YLim',[-3 3]+pose(2)+2.5*pose_dir(2));
       set(BODY.p,'ZLim',[-1 2]);
@@ -125,9 +144,9 @@ function ret = robotbody()
 
 
     elseif flags==3 %top view
-      set(BODY.p,'CameraTarget',robot_pos+ 1.2*[pose_dir 0]);
+      set(BODY.p,'CameraTarget',robot_pos+ 1.2*pose_dir);
       set(BODY.p,'CameraPosition',...
-				robot_pos -2*[pose_dir 0]+[0 0 20]);
+				robot_pos -2*pose_dir+[0 0 20]);
       set(BODY.p,'XLim',[-2.2 2.2]+pose(1));
       set(BODY.p,'YLim',[-2.2 2.2]+pose(2));
       set(BODY.p,'ZLim',[-1 2]);
@@ -135,18 +154,9 @@ function ret = robotbody()
 
 
     elseif flags==4 %fist person view from head
-%{
-      set(BODY.p,'CameraTarget',robot_pos+ 1*[pose_dir 0]);
-      set(BODY.p,'CameraPosition',...
-				robot_pos + 2*[-cos(pose(3)) -sin(pose(3)) 5]);
-      set(BODY.p,'XLim',[-0.5 1.5]+pose(1));
-      set(BODY.p,'YLim',[-1 1]+pose(2));
-      set(BODY.p,'ZLim',[-1 2]);
-%}
-
       camva(BODY.p,70)
-      set(BODY.p,'CameraTarget',robot_pos + 2*[pose_dir 0] + [0 0 0] );
-      set(BODY.p,'CameraPosition',robot_pos + 0.2*[pose_dir 0]+ [0 0 0]);
+      set(BODY.p,'CameraTarget',robot_pos + 2*pose_dir + [0 0 0] );
+      set(BODY.p,'CameraPosition',robot_pos + 0.2*pose_dir+ [0 0 0]);
       set(BODY.p,'XLim',[-3 3]+pose(1)+2.5*pose_dir(1));
       set(BODY.p,'YLim',[-3 3]+pose(2)+2.5*pose_dir(2));
       set(BODY.p,'ZLim',[-1 2]);
@@ -189,42 +199,48 @@ function ret = robotbody()
     BODY.vert_num = 0;
     BODY.face_num = 0;
     
-    plot_part(BODY.lbodysize, BODY.lbodycom, BODY.TrLBody);
-    plot_part(BODY.ubodysize, BODY.ubodycom, BODY.TrUBody);
-    plot_part(BODY.headsize, BODY.headcom, BODY.TrHead);
+    if BODY.draw_robot>0 
+      plot_part(BODY.lbodysize, BODY.lbodycom, BODY.TrLBody);
+      plot_part(BODY.ubodysize, BODY.ubodycom, BODY.TrUBody);
+      plot_part(BODY.headsize, BODY.headcom, BODY.TrHead);
 
-    plot_part(BODY.shouldersize, [0 0 0], BODY.TrLShoulder);
-    plot_part(BODY.uarmsize, BODY.uarmcom, BODY.TrLUArm);
-    plot_part(BODY.larmsize, BODY.larmcom, BODY.TrLLArm);
-    plot_part(BODY.shouldersize, [0 0 0],  BODY.TrRShoulder);
-    plot_part(BODY.uarmsize, BODY.uarmcom, BODY.TrRUArm);
-    plot_part(BODY.larmsize, BODY.larmcom, BODY.TrRLArm);
+      plot_part(BODY.shouldersize, [0 0 0], BODY.TrLShoulder);
+      plot_part(BODY.uarmsize, BODY.uarmcom, BODY.TrLUArm);
+      plot_part(BODY.larmsize, BODY.larmcom, BODY.TrLLArm);
+      plot_part(BODY.shouldersize, [0 0 0],  BODY.TrRShoulder);
+      plot_part(BODY.uarmsize, BODY.uarmcom, BODY.TrRUArm);
+      plot_part(BODY.larmsize, BODY.larmcom, BODY.TrRLArm);
 
-    plot_part(BODY.wristsize, BODY.wristcom, BODY.TrLWrist);
-    plot_part(BODY.wristsize, BODY.wristcom, BODY.TrRWrist);
+      plot_part(BODY.wristsize, BODY.wristcom, BODY.TrLWrist);
+      plot_part(BODY.wristsize, BODY.wristcom, BODY.TrRWrist);
 
-    plot_part(BODY.fingersize, BODY.fingercom, BODY.TrLFinger11);
-    plot_part(BODY.fingersize, BODY.fingercom, BODY.TrLFinger21);
-    plot_part(BODY.fingersize, BODY.fingercom, BODY.TrLFinger12);
-    plot_part(BODY.fingersize, BODY.fingercom, BODY.TrLFinger22);
+      plot_part(BODY.fingersize, BODY.fingercom, BODY.TrLFinger11);
+      plot_part(BODY.fingersize, BODY.fingercom, BODY.TrLFinger21);
+      plot_part(BODY.fingersize, BODY.fingercom, BODY.TrLFinger12);
+      plot_part(BODY.fingersize, BODY.fingercom, BODY.TrLFinger22);
 
-    plot_part(BODY.fingersize, BODY.fingercom, BODY.TrRFinger11);
-    plot_part(BODY.fingersize, BODY.fingercom, BODY.TrRFinger21);
-    plot_part(BODY.fingersize, BODY.fingercom, BODY.TrRFinger12);
-    plot_part(BODY.fingersize, BODY.fingercom, BODY.TrRFinger22);
+      plot_part(BODY.fingersize, BODY.fingercom, BODY.TrRFinger11);
+      plot_part(BODY.fingersize, BODY.fingercom, BODY.TrRFinger21);
+      plot_part(BODY.fingersize, BODY.fingercom, BODY.TrRFinger12);
+      plot_part(BODY.fingersize, BODY.fingercom, BODY.TrRFinger22);
 
-    plot_part(BODY.ulegsize, BODY.ulegcom, BODY.TrRULeg);
-    plot_part(BODY.ulegsize, BODY.ulegcom, BODY.TrLULeg);
+      plot_part(BODY.ulegsize, BODY.ulegcom, BODY.TrRULeg);
+      plot_part(BODY.ulegsize, BODY.ulegcom, BODY.TrLULeg);
 
-    plot_part(BODY.llegsize, BODY.llegcom, BODY.TrRLLeg);
-    plot_part(BODY.llegsize, BODY.llegcom, BODY.TrLLLeg);
+      plot_part(BODY.llegsize, BODY.llegcom, BODY.TrRLLeg);
+      plot_part(BODY.llegsize, BODY.llegcom, BODY.TrLLLeg);
 
-    plot_part(BODY.footsize, BODY.footcom, BODY.TrRFoot);
-    plot_part(BODY.footsize, BODY.footcom, BODY.TrLFoot);
+      plot_part(BODY.footsize, BODY.footcom, BODY.TrRFoot);
+      plot_part(BODY.footsize, BODY.footcom, BODY.TrLFoot);
 
-    set(BODY.h,'Vertices',BODY.verts(1:BODY.vert_num,:));
-    set(BODY.h,'Faces',BODY.faces(1:BODY.face_num,:));
-    set(BODY.h,'FaceVertexCData',BODY.cdatas);
+      set(BODY.h,'Vertices',BODY.verts(1:BODY.vert_num,:));
+      set(BODY.h,'Faces',BODY.faces(1:BODY.face_num,:));
+      set(BODY.h,'FaceVertexCData',BODY.cdatas);
+    else
+      set(BODY.h,'Vertices',[]);
+      set(BODY.h,'Faces',[]);
+      set(BODY.h,'FaceVertexCData',[]);
+    end
 
     update_viewpoint();
 

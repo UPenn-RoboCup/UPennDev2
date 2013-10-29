@@ -73,5 +73,5 @@ SingleDoorEntree {
 
 SingleDoorEntreeWeighted {
   translation 2.4 0 0.6
-  rotation 0 1 0 -1.57
+  rotation 0 1 0 1.57
 }

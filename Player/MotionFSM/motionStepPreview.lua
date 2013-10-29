@@ -46,8 +46,9 @@ local t, t_discrete
 local debugdata
 local t0
 
-local read_test = false;
---local read_test = true;
+local read_test = false
+--local read_test = true
+local debug_on = false
 
 
 
@@ -200,22 +201,21 @@ function walk.update()
     moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
   end
 
-  local qLLeg, qRLeg
-  if read_test then
-    qLLeg = Body.get_lleg_position()
-    qRLeg = Body.get_rleg_position()
-    Body.request_lleg_position()
-    Body.request_rleg_position()
-  else
-    qLLeg = Body.get_lleg_command_position()
-    qRLeg = Body.get_rleg_command_position()
-  end
+  if debug_on then
 
+    local qLLeg, qRLeg
+    if read_test then
+      qLLeg = Body.get_lleg_position()
+      qRLeg = Body.get_rleg_position()
+      Body.request_lleg_position()
+      Body.request_rleg_position()
+    else
+      qLLeg = Body.get_lleg_command_position()
+      qRLeg = Body.get_rleg_command_position()
+    end
     local qLLegCommand = Body.get_lleg_command_position()
     local qRLegCommand = Body.get_rleg_command_position()
-
     local rpy = Body.get_sensor_rpy()
-
     debugdata=debugdata..
     string.format("%f,  %f,%f,%f,%f,%f,  %f,%f,%f,%f,%f,  %f,%f,  %f,%f,%f,%f,%f,  %f,%f,%f,%f,%f\n",      
       t-t0,
@@ -247,22 +247,19 @@ function walk.update()
       qLLegCommand[6]*Body.RAD_TO_DEG               
       )
       print("Roll: ",rpy[1]*Body.RAD_TO_DEG," Pitch:",rpy[2]*Body.RAD_TO_DEG)
-
---  end
-
+  end
 end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')  
   mcm.set_walk_ismoving(0) --We stopped moving
-
---  if read_test then
+  if debug_on then
     local savefile = string.format("Log/debugdata_%s",os.date());
     local debugfile=assert(io.open(savefile,"w")); 
     debugfile:write(debugdata);
     debugfile:flush();
     debugfile:close();  
---  end
+  end
   print("DONE")
 end
 

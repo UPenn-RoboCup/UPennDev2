@@ -1731,12 +1731,13 @@ if IS_WEBOTS then
 
 
 --COM testing
+--[[
     local qWaist = Body.get_waist_command_position()
     local qLArm = Body.get_larm_command_position()
     local qRArm = Body.get_rarm_command_position()
     local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,
         Config.walk.bodyTilt)
-
+--]]
 --[[
     print(string.format("ubody Com:%.3f %.3f %.3f mass:%.3f",
       com[1]/com[4],com[2]/com[4],com[3]/com[4], com[4]))

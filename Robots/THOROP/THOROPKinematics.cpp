@@ -404,8 +404,9 @@ THOROP_kinematics_calculate_support_torque(
   const double *qLLeg,
   const double *qRLeg,
   double bodyPitch,
-   int supportLeg){
-
+  int supportLeg,
+  const double *uTorsoAcc
+   ){
 
   Transform tPelvis, tHip;
 
@@ -474,9 +475,41 @@ THOROP_kinematics_calculate_support_torque(
         .translateZ(rel_com_hip[2]);
 
   //Calculate the moment at the support hip joint
-  double upperbody_force = 9.8 * com_upperbody[3];    
-  double torque_x = (tRelCOMHip(0,3)*cos(bodyPitch)+tRelCOMHip(2,3)*sin(bodyPitch))*upperbody_force;     
-  double torque_y = tRelCOMHip(1,3)*cos(bodyPitch)*upperbody_force;
+
+  std::vector<double> upperbody_force(3);
+
+  upperbody_force[0] = uTorsoAcc[0] * com_upperbody[3];
+  upperbody_force[1] = uTorsoAcc[1] * com_upperbody[3];
+  upperbody_force[2] = -9.8 * com_upperbody[3];
+
+  //Now tilt the force back
+
+  double tilted_force_x = 
+    cos(bodyPitch)*upperbody_force[0]
+    -sin(bodyPitch)*upperbody_force[2];
+  double tilted_force_y = upperbody_force[1];
+  double tilted_force_z = 
+    sin(bodyPitch)*upperbody_force[0]+
+    cos(bodyPitch)*upperbody_force[2];
+
+  double tilted_rel_com_hip_x = 
+    cos(bodyPitch)*rel_com_hip[0]
+    -sin(bodyPitch)*rel_com_hip[2];
+  double tilted_rel_com_hip_y = rel_com_hip[1];
+  double tilted_rel_com_hip_z = 
+    sin(bodyPitch)*rel_com_hip[0]+
+    cos(bodyPitch)*rel_com_hip[2];
+
+
+  double torque_x = tilted_rel_com_hip_z * tilted_force_x  
+                  + tilted_rel_com_hip_x * tilted_force_z;  
+
+  double torque_y = tilted_rel_com_hip_z * tilted_force_y
+                  + tilted_rel_com_hip_y * tilted_force_z;  
+
+  printf("Mass torque: %.3f",+ tilted_rel_com_hip_y * tilted_force_z);
+  printf("Acc torque: %.3f",+ tilted_rel_com_hip_z * tilted_force_y);
+
 
 //printf("Total free mass: %.2f ",com_upperbody[3]);
 

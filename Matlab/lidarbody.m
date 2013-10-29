@@ -9,12 +9,10 @@ function ret = lidarbody()
     LIDAR.clear_points = @clear_points;
     LIDAR.set_zoomlevel = @set_zoomlevel;
 
-    LIDAR.update_waypoints = @update_waypoints;
-    LIDAR.rotate_view = @rotate_view;
+    LIDAR.update_waypoints = @update_waypoints;    
 
     LIDAR.set_pan_speed=@set_pan_speed;
     LIDAR.set_lidar_range=@set_lidar_range;
-
 
 
     % Which mesh to display: 0-HEAD, 1-CHEST
@@ -123,6 +121,7 @@ function ret = lidarbody()
       
             hold on;
               LIDAR.wayline = plot3(a_mesh,0,0,0,'g*-' );
+              set(LIDAR.wayline,'XData',[]);
             hold off;
         end
     end
@@ -275,7 +274,7 @@ function ret = lidarbody()
         
         % end of update
         tPassed = toc(t0);
-        fprintf('Update lidar: %f seconds.\n',tPassed);
+        %fprintf('Update lidar: %f seconds.\n',tPassed);
     end
 
 
@@ -437,14 +436,10 @@ function ret = lidarbody()
     function button_down(~,~,flags)
       clicktype = get(H_FIGURE,'selectionType');
       if strcmp(clicktype,'alt')>0
-        CURSOR.button_alt = 1; %We use this for turning mesh around
+        CURSOR.button_alt_mesh = 1; %We use this for turning mesh around
       else
         select_3d_mesh();
       end
-    end
-
-    function rotate_view(movement)
-        movement
     end
 
     function update_waypoints(waypoints)    

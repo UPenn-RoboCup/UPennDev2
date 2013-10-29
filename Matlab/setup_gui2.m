@@ -75,6 +75,7 @@ function [] = setup_gui()
     set(rb2,'CallBack',{BODY.set_viewpoint,2});
     set(rb3,'CallBack',{BODY.set_viewpoint,3});
     set(rb4,'CallBack',{BODY.set_viewpoint,4});
+    set(rb5,'CallBack',{BODY.toggle_robot});
 
 
 
@@ -357,8 +358,7 @@ function [] = setup_gui()
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     %Drag handling
-    CURSOR=[];
-    CURSOR.button_alt= 0;
+    CURSOR=[];    
 
     CURSOR.button_alt_mesh= 0;
     CURSOR.button_alt_camera= 0;
@@ -367,15 +367,18 @@ function [] = setup_gui()
 
     function mouseMove(obj,evt)
         C = get (gcf, 'CurrentPoint');
-        if CURSOR.button_alt==1             
-            CURSOR.movement = C-CURSOR.last_pos;           
-            cmv=CURSOR.movement            
+        CURSOR.movement = C-CURSOR.last_pos;
+
+        if CURSOR.button_alt_mesh==1             
+            BODY.rotate_view(CURSOR.movement);
+        elseif CURSOR.button_alt_camera==1
+            CAMERA.rotate_view(CURSOR.movement);
         end
         CURSOR.last_pos = C;
     end    
 
     function mouseRelease(obj,evt)
-        CURSOR.button_alt = 0;
+        
         CURSOR.button_alt_mesh= 0;
         CURSOR.button_alt_camera= 0;
     end

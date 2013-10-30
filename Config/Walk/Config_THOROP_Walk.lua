@@ -383,8 +383,8 @@ arm.pLWristTarget1 = {.04,.30,-.20,0,0,0}
 arm.pRWristTarget1 = {.04,-.30,-.20,0,0,0}
 
 --lil higher and back
-arm.pLWristTarget1 = {.00,.30,-.15,0,0,0}
-arm.pRWristTarget1 = {.00,-.30,-.15,0,0,0}
+--arm.pLWristTarget1 = {.00,.30,-.15,0,0,0}
+--arm.pRWristTarget1 = {.00,-.30,-.15,0,0,0}
 
 arm.lShoulderYawTarget1 = -5*DEG_TO_RAD
 arm.rShoulderYawTarget1 = 5*DEG_TO_RAD

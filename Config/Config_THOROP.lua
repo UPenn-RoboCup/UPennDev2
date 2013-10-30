@@ -77,6 +77,7 @@ Config.camera.head.fps = 30
 Config.camera.head.quality = 75
 
 -- LWrist (deprecated)
+--[[
 Config.camera.lwrist = {}
 Config.camera.lwrist.device = '/dev/video1'
 Config.camera.lwrist.resolution = {320,240}
@@ -84,5 +85,6 @@ Config.camera.lwrist.format = 'yuyv'
 --Config.camera.lwrist.format = 'mjpeg'
 Config.camera.lwrist.fps = 15
 Config.camera.lwrist.quality = 75
+--]]
 
 return Config

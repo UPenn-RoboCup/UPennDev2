@@ -61,7 +61,10 @@ shared.chest_lidar.t               = vector.zeros(1)
 shared.chest_lidar.scanlines = vector.new({-50*DEG_TO_RAD,50*DEG_TO_RAD,5/DEG_TO_RAD})
 -- Care only about lidar readings within this field of view
 -- {Start angle, stop angle}
-shared.chest_lidar.fov      = vector.new({-40,80})*DEG_TO_RAD
+--shared.chest_lidar.fov      = vector.new({-40,80})*DEG_TO_RAD
+
+
+shared.chest_lidar.fov      = vector.new({-60,80})*DEG_TO_RAD
 
 -- when compressing to 0-255, care about points within these depths
 shared.chest_lidar.depths      = vector.new({.1,5})

@@ -72,15 +72,22 @@ function state.update()
   local turnAngle2,doneA
   local doneL,doneR
   if turn_state%4==1 then
-    gripL,doneL = util.approachTol(gripL,0,2,dt)
-    gripR,doneR = util.approachTol(gripR,1,2,dt)    
+    --Grip first and then release the other hand
+    gripR,doneR = util.approachTol(gripR,1,2,dt)
+    doneL = false
+    if doneR then
+      gripL,doneL = util.approachTol(gripL,0,2,dt)
+    end
     Body.set_lgrip_percent(gripL*0.8)
     Body.set_rgrip_percent(gripR*0.8)    
   elseif turn_state%4==2 then
     turnAngle2,doneA = util.approachTol(turnAngle1,turnAngleTarget0,dturnAngleMax, dt )
   elseif turn_state%4==3 then
+    doneR = false
     gripL,doneL = util.approachTol(gripL,1,2,dt)
-    gripR,doneR = util.approachTol(gripR,0,2,dt)    
+    if doneL then
+      gripR,doneR = util.approachTol(gripR,0,2,dt)
+    end    
     Body.set_lgrip_percent(gripL*0.8)
     Body.set_rgrip_percent(gripR*0.8)    
   elseif turn_state%4==0 then    

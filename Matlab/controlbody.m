@@ -29,11 +29,11 @@ ret = CONTROL;
         if strcmp(evt,'approach')
             % Set waypoints to shared memory
             set_waypoints(4);
-            send_control_packet( 'HeadFSM', 'center');
+            %send_control_packet( 'HeadFSM', 'center');
             send_control_packet( 'BodyFSM', 'follow' );
         elseif strcmp(evt, 'navigate')
             set_waypoints(2);
-            send_control_packet( 'HeadFSM', 'center');
+            %send_control_packet( 'HeadFSM', 'center');
             send_control_packet( 'BodyFSM', 'follow' );
         elseif strcmp(evt, 'sidedone')
             send_control_packet([], [],...

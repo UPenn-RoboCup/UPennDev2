@@ -67,7 +67,8 @@ Solid {
   translation 0 1.03 0.45
   rotation 0 1 0 1.57
   children [
-    ValveDRC {
+#    ValveDRC {
+    SteeringWheelSmall {
     }
   ]
   locked TRUE

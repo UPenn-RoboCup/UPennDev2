@@ -11,6 +11,9 @@ function ret=waypointbody()
   WAYPOINTS.get_double_approach = @get_double_approach;
   WAYPOINTS.clear_waypoints = @clear_waypoints;
 
+  WAYPOINTS.approach_offset=[-0.30 0 0];
+  WAYPOINTS.set_approach_offset = @set_approach_offset;
+
   ret = WAYPOINTS;
 
   function init(h_text)
@@ -36,6 +39,10 @@ function ret=waypointbody()
     LIDAR.update_waypoints([]);
   end
 
+  function set_approach_offset(~,~,offset)
+    WAYPOINTS.approach_offset=offset;
+  end
+
   function ret = get_waypoints()  
     yaws = [];
     if size(WAYPOINTS.waypoints_xy,1)>1
@@ -57,9 +64,19 @@ function ret=waypointbody()
           rightpos = points2d(2, :);
           centerpos = (leftpos + rightpos)/2;              
           angle = atan2(leftpos(2)-rightpos(2),leftpos(1)-rightpos(1))-pi/2;
-          targetwp = [centerpos(1), centerpos(2), angle];
-          Xoffset=-0.33;
-          targetwp = [targetwp(1)+cos(angle)*Xoffset targetwp(2)+sin(angle)*Xoffset angle];
+          targetwp = [centerpos(1), centerpos(2), angle];          
+          targetwp = pose_global(...
+            WAYPOINTS.approach_offset, [targetwp(1) targetwp(2) angle]  );
+
+          %[targetwp(1)+cos(angle)*Xoffset targetwp(2)+sin(angle)*Xoffset angle];
       end      
   end
+
+  function ret=pose_global(pRelative, pose)
+      ca = cos(pose(3));
+      sa = sin(pose(3));
+      ret = [pose(1) + ca*pRelative(1)-sa*pRelative(2),...
+            pose(2) + sa*pRelative(1)+ca*pRelative(2),...
+            pose(3) + pRelative(3)];
+    end
 end

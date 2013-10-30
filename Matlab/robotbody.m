@@ -273,7 +273,7 @@ function ret = robotbody()
 
     BODY.TrUBody = BODY.TrLBody*rotZ(BODY.waistangle(1))*rotY(BODY.waistangle(2));
     BODY.TrHead = BODY.TrUBody*trans(BODY.neckoffset)*...
-    rotZ(BODY.neckangle(1))*rotY(BODY.neckangle(2));
+    rotZ(-BODY.neckangle(1))*rotY(BODY.neckangle(2));
 
 
     BODY.TrLShoulder = BODY.TrUBody*trans(BODY.lshoulderoffset)*...
@@ -283,6 +283,7 @@ function ret = robotbody()
 		rotY(BODY.larmangle(4));
     BODY.TrLWrist = BODY.TrLLArm*trans(BODY.larmoffset)*...
 			rotX(BODY.larmangle(5))*rotZ(BODY.larmangle(6));
+      %{
     BODY.TrLFinger11 = BODY.TrLWrist*trans(BODY.lfingeroffset)*...
 			rotZ(lfingerangle1-pi/4);
     BODY.TrLFinger12 = BODY.TrLFinger11*trans(BODY.finger2offset)*...
@@ -291,6 +292,21 @@ function ret = robotbody()
 			rotZ(-lfingerangle1-pi/4);
     BODY.TrLFinger22 = BODY.TrLFinger21*trans(BODY.finger2offset)*...
 			rotZ(-lfingerangle2);
+%}
+[lfingerangle1*180/pi lfingerangle2*180/pi]
+
+
+    BODY.TrLFinger11 = BODY.TrLWrist*trans(BODY.lfingeroffset)*...
+      rotZ(-lfingerangle1-pi/4);
+    BODY.TrLFinger12 = BODY.TrLFinger11*trans(BODY.finger2offset)*...
+      rotZ(-lfingerangle2);
+
+    BODY.TrLFinger21 = BODY.TrLWrist*trans(BODY.lfingeroffset)*...
+      rotZ(lfingerangle1-pi/4);
+    BODY.TrLFinger22 = BODY.TrLFinger21*trans(BODY.finger2offset)*...
+      rotZ(lfingerangle2);
+
+
 
     BODY.TrRShoulder = BODY.TrUBody*trans(BODY.rshoulderoffset)*...
 		rotY(BODY.rarmangle(1))*rotZ(BODY.rarmangle(2)) ;

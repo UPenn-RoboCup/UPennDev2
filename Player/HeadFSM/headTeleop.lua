@@ -28,7 +28,7 @@ function state.update()
 
   local neckAngleTarget = hcm.get_motion_headangle()
 --  print(unpack(neckAngleTarget))
-  local dqNeckLimit = {30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD};
+  local dqNeckLimit = {45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD};
 
   local qNeck = Body.get_head_command_position()
   local qNeck_approach, doneNeck = 

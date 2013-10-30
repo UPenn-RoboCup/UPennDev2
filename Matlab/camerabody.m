@@ -36,7 +36,8 @@ function ret=camerabody()
     end
 
     function rotate_view(movement)
-        CAMERA.mouselook = CAMERA.mouselook + [movement(1) -movement(2)]/180*pi;
+        CAMERA.mouselook = CAMERA.mouselook + ...
+            [movement(1) -movement(2)]*0.5/180*pi;
         CAMERA.mouselook(2) = min(pi/2,max(-pi/2,CAMERA.mouselook(2)));
         CONTROL.send_control_packet([], [],...
               'hcm', 'motion', 'headangle', CAMERA.mouselook);

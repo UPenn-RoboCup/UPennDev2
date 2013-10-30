@@ -103,7 +103,8 @@ if IS_WEBOTS then
   walk.phZmp = {0.15,0.85}
   walk.stepHeight = 0.04
 
-  walk.supportX = 0.0515
+  --walk.supportX = 0.0515
+  walk.supportX = 0.01
   walk.supportY = 0.03
   walk.tZMP = 0.28
 
@@ -191,7 +192,7 @@ end
 
 --Slowed down walk (to match actual robot)
 walk.velLimitX = {-.05,.05}
-walk.velLimitY = {-.04,.04}
+walk.velLimitY = {-.025,.025}
 walk.velLimitA = {-.2,.2}
 walk.velDelta  = {0.025,0.02,0.1}
 

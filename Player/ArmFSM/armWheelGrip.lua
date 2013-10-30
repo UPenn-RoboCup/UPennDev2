@@ -22,10 +22,10 @@ function state.entry()
   handle_yaw    = wheel[4]
   handle_pitch  = wheel[5]
   handle_radius = wheel[6]
-  print("Handle pos: ",unpack(handle_pos))
-  print("Handle tilt:",handle_pitch*Body.RAD_TO_DEG)
-  print("Handle yaw:",handle_yaw*Body.RAD_TO_DEG)
-  print("Handle radius:",handle_radius)
+  print("Handle pos (m): ",unpack(handle_pos))
+  print("Handle tilt (deg):",handle_pitch*Body.RAD_TO_DEG)
+  print("Handle yaw (deg):",handle_yaw*Body.RAD_TO_DEG)
+  print("Handle radius (m):",handle_radius)
 
   --open gripper
   Body.set_lgrip_percent(0)

@@ -71,8 +71,8 @@ s_mesh = zmq( 'fd', mesh_fd );
 % TODO: maybe chagne this in the mex file?
 s_callbacks = {};
 s_callbacks{s_head_jimg+1} = CAMERA.update_head;
-s_callbacks{s_left_jimg+1} = CAMERA.update_left;
-s_callbacks{s_right_jimg+1} = CAMERA.update_right;
+%s_callbacks{s_left_jimg+1} = CAMERA.update_left;
+%s_callbacks{s_right_jimg+1} = CAMERA.update_right;
 s_callbacks{s_omap+1} = SLAM.update_omap;
 s_callbacks{s_feedback+1} = BODY.update;
 s_callbacks{s_mesh+1} = LIDAR.update;

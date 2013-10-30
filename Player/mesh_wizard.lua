@@ -83,8 +83,18 @@ local function setup_mesh( name, tbl )
   tbl.meta.resolution = {scan_resolution,fov_resolution}
   
   -- Pose information
-  tbl.meta.pose = {}
-  for i=1,scan_resolution do tbl.meta.pose[i] = {0,0,0} end
+--  tbl.meta.pose = {}
+--  for i=1,scan_resolution do tbl.meta.pose[i] = {0,0,0} end
+  tbl.meta.posex = {}
+  tbl.meta.posey = {}
+  tbl.meta.posez = {}
+  for i=1,scan_resolution do 
+    tbl.meta.posex[i],
+    tbl.meta.posey[i],
+    tbl.meta.posez[i]=0,0,0
+  end
+
+
   
   -- In memory mesh
   tbl.mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
@@ -319,7 +329,13 @@ local function chest_callback()
     local chest_pose = chest.scan_poses:select(1,line)
     chest_pose[1],chest_pose[2],chest_pose[3] = unpack(pose)
     --]]
-    chest.meta.pose[line] = {unpack(pose)}
+--    chest.meta.pose[line] = {unpack(pose)}
+
+    chest.meta.posex[line],
+    chest.meta.posey[line],
+    chest.meta.posez[line]=
+    pose[1],pose[2],pose[3]
+
   end
   -- Save the body tilt info
   -- TODO: bodyHeight as well?

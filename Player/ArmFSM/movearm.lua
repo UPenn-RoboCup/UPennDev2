@@ -115,7 +115,14 @@ function movearm.setArmToPosition(
   else
     --Manual yaw movement
     --Change arm yaw to target agle 
-    qShoulderYawMax = 5.0*math.pi/180
+--    qShoulderYawMax = 5.0*math.pi/180
+
+    qShoulderYawMax = 10.0*math.pi/180
+
+
+
+
+
     lShoulderYaw0 = qLArm[3]
     rShoulderYaw0 = qRArm[3]        
     lShoulderYaw, yawDoneL = util.approachTol(lShoulderYaw0,lShoulderYaw,qShoulderYawMax,dt)
@@ -468,5 +475,47 @@ function movearm.getDoorHandlePosition(
   local trTarget = T.position6D(T.inv(trBody)*trHandle)
   return trTarget
 end
+
+function movearm.getToolPosition(
+  tool_pos,
+  approach_dist,
+  hand_rpy,
+  approach_dir
+  )
+
+  if type(hand_rpy)=='number' then --scalar value: hand type (0 for left, 1 for right)
+    if hand_rpy==1 then --left hand  
+      hand_rpy = {0,-11*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}      
+      approach_dir = {0,1,0}
+    else
+      hand_rpy = {90*Body.DEG_TO_RAD,-11*Body.DEG_TO_RAD,0} --Default hand angle: facing up
+      approach_dir = {-0.707,0,-0.707}
+
+
+      hand_rpy = {90*Body.DEG_TO_RAD,-11*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD} --Default hand angle: facing up
+      approach_dir = {-0.5,-0.5,-0.5}
+
+
+    end
+  end
+
+  local trTool = T.eye()    
+    * T.trans(tool_pos[1]+approach_dir[1]*approach_dist,
+            tool_pos[2]+approach_dir[2]*approach_dist,
+            tool_pos[3]+approach_dir[3]*approach_dist)
+    
+    * T.rotY(hand_rpy[2])
+    * T.rotZ(hand_rpy[3])
+    * T.rotX(hand_rpy[1])
+    
+    
+
+  local trBody = T.eye()
+       * T.trans(body_pos[1],body_pos[2],body_pos[3])
+
+  local trTarget = T.position6D(T.inv(trBody)*trTool)
+  return trTarget
+end
+
 
 return movearm

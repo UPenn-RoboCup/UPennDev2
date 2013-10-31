@@ -187,7 +187,8 @@ function ret = lidarbody()
     function set_pan_speed(h,~,panspeed)
         CONTROL.send_control_packet([],[],'vcm','chest_lidar','scanlines',...
             [-60*pi/180,60*pi/180,panspeed/(pi/180)]);        
-        CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[2,1,95,1]);
+%        CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[2,1,95,1]);
+        CONTROL.send_control_packet([],[],'vcm','chest_lidar','net',[2,2,95,1]);
     end
 
     function draw_depth_image()
@@ -215,9 +216,10 @@ function ret = lidarbody()
 
         [metadata,offset] = msgpack('unpack',udp_data);
 
+
         %SJ: metadata.depths is cell array with ubuntu
         if iscell(metadata.depths)
-          metadata.depths = cell2mat(metadata.depths)
+          metadata.depths = cell2mat(metadata.depths);
         end
 
         %disp(metadata)
@@ -275,6 +277,7 @@ function ret = lidarbody()
         % end of update
         tPassed = toc(t0);
         %fprintf('Update lidar: %f seconds.\n',tPassed);
+
     end
 
 
@@ -400,7 +403,7 @@ function ret = lidarbody()
             scanline_angle_selected = -1*CHEST_LIDAR.scanline_angles(scanline_index);
             
             %SJ: it is misleading as the selected point ls LOCAL from robot upper body frame
-            global_point=chestproject(fov_angle_selected, scanline_angle_selected, range)
+            global_point=chestproject(fov_angle_selected, scanline_angle_selected, range);
 
             %Get REAL global point (for navigation and etc)
 
@@ -416,6 +419,9 @@ function ret = lidarbody()
         WAYPOINTS.add_waypoint(real_global_point(1:2));
 
         LIDAR.selected_points = [LIDAR.selected_points; global_point(1:3)']; %'
+
+
+        LIDAR.selected_points
         disp_str = sprintf('Selected (%.3f %.3f %.3f)', ... 
             global_point(1),global_point(2),global_point(3) ); 
         disp(disp_str)
@@ -451,6 +457,7 @@ function ret = lidarbody()
             LIDAR.clicked_points = [];
             set(LIDAR.pointdraw,'XData',[]);
             set(LIDAR.pointdraw,'YData',[]);
+            LIDAR.selected_points = [];
         else
             waypointsiz = size(waypoints)
             waypoints=[POSE.pose(1) POSE.pose(2);waypoints];        

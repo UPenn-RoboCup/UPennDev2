@@ -34,6 +34,10 @@ local wheel_model = vector.new({
 hcm.set_wheel_model(wheel_model)
 --]] 
   
+  --This works for valvetest
+  hcm.set_wheel_model(
+    {0.36,0.00,0.09,   0, -11*Body.DEG_TO_RAD,0.20})
+
   -- Let's store wheel data here
   local wheel   = hcm.get_wheel_model()
   handle_pos    = vector.slice(wheel,1,3)
@@ -61,6 +65,9 @@ hcm.set_wheel_model(wheel_model)
   handle_pos0 = {0.24,0,-0.10} --waist position
   handle_pos1 = {handle_pos[1],0,-0.10} --front
   
+  turnAngle = 0
+  hcm.set_wheel_turnangle(0)
+
 
   stage = 1;
 end

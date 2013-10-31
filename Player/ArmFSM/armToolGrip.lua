@@ -13,6 +13,7 @@ local qLArm, qRArm, trLArm, trRArm, trTarget
 local tool_pos,tool_pos_target
 
 local qLArmTarget0, qRArmTarget0
+local trLArmTarget,trRArmTarget
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -33,19 +34,26 @@ function state.entry()
   tool_pos = hcm.get_tool_pos()
   tool_pos_target = hcm.get_tool_pos()
 
+  
+  
 
-  local trLArmTarget = vector.new({0.18,0.31, -0.15,
-    0*Body.DEG_TO_RAD,-15*Body.DEG_TO_RAD,0})
-  local trRArmTarget = vector.new({0.18,-0.31, -0.15,
-      0*Body.DEG_TO_RAD,-15*Body.DEG_TO_RAD,0})
-  qLArmTarget0 = Body.get_inverse_larm(qLArm,trLArmTarget,-6.6*Body.DEG_TO_RAD)
-  qRArmTarget0 = Body.get_inverse_rarm(qRArm,trRArmTarget,6.6*Body.DEG_TO_RAD)
+  
+
+  tool_pos_left = hcm.get_tool_pos()
+  tool_pos_left=vector.new({0.45,0.0,0.10})
+  
+  tool_pos_right0=vector.new({0.45,-0.25,0.15})
+  tool_pos_right=vector.new({0.45,-0.10,0.15})
 
 
---tool_pos = {0.40,0.10,-0.05}
-
+  tool_pos_left2=vector.new({0.35,0.0,0.15})
+  tool_pos_right2=vector.new({0.35,-0.10,0.20})
   stage = 1;  
 end
+
+local qJointVelTool = 
+  {30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,
+   30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD}
 
 function state.update()
   --  print(state._NAME..' Update' )
@@ -59,44 +67,54 @@ function state.update()
   trLArm = Body.get_forward_larm(qLArm)
   trRArm = Body.get_forward_rarm(qRArm)
 
-  print(trLArm[4],trLArm[5],trLArm[6])
-
---print(unpack(trLArm))
- 
-
   if stage==1 then 
-    ret = movearm.setArmJoints(qLArmTarget0,qRArm,dt,
-        {30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,
-        30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD}
-        )
-    if ret==1 then stage=stage+1; end
+      stage=stage+1; 
+  
   elseif stage==2 then
-    print("222")
-    trLArm[1],trLArm[2],trLArm[3] = tool_pos[1],tool_pos[2]+0.05,tool_pos[3]
-    local ret = movearm.setArmToPositionAdapt(trLArm,trRArm,dt)    
-    if ret==1 then stage=stage+1; end
-  elseif stage==2 then
-    trLArm[1],trLArm[2],trLArm[3] = tool_pos[1],tool_pos[2],tool_pos[3]
-    local ret = movearm.setArmToPositionAdapt(trLArm,trRArm,dt)    
-    if ret==1 then stage=stage+1; end
-  else
-    Body.set_lgrip_percent(1)
-
-  --Read the pickup position from shm
-  --TODO
-  --[[
-    --Now we can move the gripped tool around (teleop style)
-    tool_approach = util.approachTol(tool_pos,tool_pos_target,{0.1,0.1,0.1},dt)
-    trLArm[1],trLArm[2],trLArm[3] = tool_approach[1],tool_approach[2],tool_approach[3]
-    local ret = movearm.setArmToPositionAdapt(trLArm,trRArm,dt)    
-    if ret==-1 then --we cannot move to the direction, clear the hcm
-
-
-    else
-      tool_pos = tool_pos1
-    end    
---]]      
-
+    local trLArmTarget = movearm.getToolPosition(tool_pos_left,0.08,1)    
+    local trLArmApproach, doneL = util.approachTolTransform(trLArm, trLArmTarget, dpArmMax, dt)    
+    local ret = movearm.setArmToPosition(trLArmApproach,trRArm,dt,
+    --qLArm[3],qRArm[3]) 
+    45*math.pi/180,qRArm[3])
+    if ret==1 and doneL then stage=stage+1; end
+  elseif stage==3 then
+    local trLArmTarget = movearm.getToolPosition(tool_pos_left,0,1)    
+    local trLArmApproach, doneL = util.approachTolTransform(trLArm, trLArmTarget, dpArmMax, dt)
+    local ret = movearm.setArmToPosition(trLArmApproach,trRArm,dt,
+    45*math.pi/180,qRArm[3])
+    if ret==1 and doneL then 
+      
+      stage=stage+1; 
+    end
+  elseif stage==4 then
+    local trRArmTarget = movearm.getToolPosition(tool_pos_right0,0.08,0)    
+    local trRArmApproach, doneL = util.approachTolTransform(trRArm, trRArmTarget, dpArmMax, dt)    
+    local ret = movearm.setArmToPosition(trLArm,trRArmApproach,dt,    
+    45*math.pi/180,-45*math.pi/180)
+    if ret==1 and doneL then stage=stage+1; end
+  elseif stage==5 then
+    local trRArmTarget = movearm.getToolPosition(tool_pos_right,0.08,0)    
+    local trRArmApproach, doneR = util.approachTolTransform(trRArm, trRArmTarget, dpArmMax, dt)    
+    local ret = movearm.setArmToPosition(trLArm,trRArmApproach,dt,    
+    45*math.pi/180,-45*math.pi/180)
+    if ret==1 and doneR then stage=stage+1; end
+  elseif stage==6 then
+    local trRArmTarget = movearm.getToolPosition(tool_pos_right,0,0)    
+    local trRArmApproach, doneR = util.approachTolTransform(trRArm, trRArmTarget, dpArmMax, dt)    
+    local ret = movearm.setArmToPosition(trLArm,trRArmApproach,dt,    
+    45*math.pi/180,-45*math.pi/180)
+    if ret==1 and doneR then 
+      Body.set_lgrip_percent(1)
+      Body.set_rgrip_percent(1)
+      stage=stage+1; 
+    end
+  elseif stage==7 then
+    local trLArmTarget = movearm.getToolPosition(tool_pos_left2,0,1)    
+    local trRArmTarget = movearm.getToolPosition(tool_pos_right2,0,0)    
+    local trLArmApproach, doneL = util.approachTolTransform(trLArm, trLArmTarget, dpArmMax, dt)
+    local trRArmApproach, doneR = util.approachTolTransform(trRArm, trRArmTarget, dpArmMax, dt)    
+    local ret = movearm.setArmToPosition(trLArm,trRArmApproach,dt,    
+      45*math.pi/180,-45*math.pi/180)
   end
 end
 

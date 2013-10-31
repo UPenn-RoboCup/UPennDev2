@@ -30,7 +30,7 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP7_NoBoundaries {
-  translation -0.10 1.15535 0.05
+  translation 0 1.15535 0.20
   rotation 0 1 0 0
   controller "thorop"
   controllerArgs "0 32"
@@ -59,7 +59,7 @@ translation 0 .75 1
 
 
 DEF MY_DRILL Solid {
-  translation -0.1 1.0 0.55
+  translation -0.1 1.0 0.6
   children [    
     Shape {
       appearance Appearance {
@@ -76,7 +76,7 @@ DEF MY_DRILL Solid {
   ]
   physics Physics {
       density -1
-      mass 2
+      mass 1.0
   }
   boundingObject Transform {
     translation 0 0 0

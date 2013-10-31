@@ -93,6 +93,9 @@ local char_to_event = {
   ['w'] = {'arm_ch','wheelgrab'},
   --
   ['d'] = {'arm_ch','doorgrab'},
+
+  ['c'] = {'arm_ch','toolgrab'},
+
 }
 
 local char_to_vel = {
@@ -157,43 +160,6 @@ local function process_character(key_code,key_char,key_char_lower)
     return
   end
 
---[[
-  -- TODO: smarter range setting
-  -- For now, care about things from 10cm to 1m in front
-  local near, far = 0.10, 1
-  if key_char_lower=='v' then
-    print( util.color('Request Head Mesh','yellow') )
-    cmd = {}
-    cmd.shm = 'vcm'
-    cmd.segment = 'head_lidar'
-    cmd.key = 'depths'
-    cmd.val = {near,far}
-    send_command(cmd)
-    cmd = {}
-    cmd.shm = 'vcm'
-    cmd.segment = 'head_lidar'
-    cmd.key = 'net'
-    --cmd.val = {1,1,0} --jpeg
-    cmd.val = {1,2,0} --zlib
-    return send_command(cmd)
-  elseif key_char_lower=='c' then
-    print( util.color('Request Chest Mesh','yellow') )
-    cmd = {}
-    cmd.shm = 'vcm'
-    cmd.segment = 'chest_lidar'
-    cmd.key = 'depths'
-    cmd.val = {near,far}
-    send_command(cmd)
-
-    cmd = {}
-    cmd.shm = 'vcm'
-    cmd.segment = 'chest_lidar'
-    cmd.key = 'net'
-    --cmd.val = {1,1,0} --jpeg
-    cmd.val = {1,2,0} --zlib
-    return send_command(cmd)
-  end
-  --]]
 end
 
 

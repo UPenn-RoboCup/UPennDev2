@@ -84,8 +84,8 @@ sm:set_transition(armRocky, 'reset', armChangetoPose2)
 sm:set_transition(armPose2, 'teleop', armTeleop)
 sm:set_transition(armPose2, 'wheelgrab', armWheelGrip)
 sm:set_transition(armPose2, 'reset', armChangetoPose1)
-sm:set_transition(armPose2, 'toolgrab', armToolGrip)
 
+sm:set_transition(armPose2, 'toolgrab', armToolGrip)
 
 --sm:set_transition(armWheelGrip, 'done', armWheelTurn)
 sm:set_transition(armWheelGrip, 'done', armWheelTurnValve)

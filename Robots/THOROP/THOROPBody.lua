@@ -5,9 +5,10 @@
 
 -- Webots THOR-OP Body sensors
 local use_camera = true
-local use_lidar_head  = false
-local use_lidar_chest  = false
+local use_lidar_chest  = true
 local use_pose   = true
+local use_lidar_chest  = false
+local use_lidar_head  = false
 --local use_joint_feedback = false
 
 -- Shared memory for the joints
@@ -1233,10 +1234,10 @@ if IS_WEBOTS then
   })
   servo.rad_bias = vector.new({
     0,0, -- head
-    -90,-10,0,0,0,0,0,
+    -90,0,0,0,0,0,0,
     0,0,0,0,0,0,
     0,0,0,0,0,0,
-    -90,10,0,0,0,0,0,
+    -90,0,0,0,0,0,0,
     0,0,
     --SJ: default is closed for fingers(webots)
 

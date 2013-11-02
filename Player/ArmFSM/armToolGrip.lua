@@ -34,32 +34,26 @@ function state.entry()
   trLArm = Body.get_forward_larm(qLArm);
   trRArm = Body.get_forward_rarm(qRArm)  
 
-  tool_pos = hcm.get_tool_pos()
-  tool_pos_target = hcm.get_tool_pos()
-  
-  tool_pos_left = hcm.get_tool_pos()
-  tool_pos_left=vector.new({0.45,0.0,0.10})
-  
+   
+  --tool_pos_left = hcm.get_tool_pos()
+  tool_pos_left=vector.new({0.45,0.0,0.10})  
   tool_pos_right0=vector.new({0.45,-0.25,0.15})
   tool_pos_right=vector.new({0.45,-0.10,0.15})
 
-
-  tool_pos_left2=vector.new({0.35,0.0,0.15})
-  tool_pos_right2=vector.new({0.35,-0.10,0.20})
   stage = 1;  
-
-
 
   trLArmTarget0 = trLArm
   trLArmTarget1 = movearm.getToolPosition(tool_pos_left,0.08,1)    
   trLArmTarget2 = movearm.getToolPosition(tool_pos_left,0,1)    
-  LArmPlan1,qLArm1 = arm_planner:plan_arm_linear(qLArm, trLArmTarget1, 1)  
-  LArmPlan2,qLArm2 = arm_planner:plan_arm_linear(qLArm1, trLArmTarget2, 1)
-  
-
+  print("Planning LArmPlan1")
+  LArmPlan1,qLArm1 = arm_planner:plan_arm(qLArm, trLArmTarget1, 1)  
+  print("Planning LArmPlan2")
+  LArmPlan2,qLArm2 = arm_planner:plan_arm(qLArm1, trLArmTarget2, 1)
 
   arm_planner:init_trajectory(LArmPlan1,t_entry)
 end
+
+local gripL, gripR = 0,0
 
 local qJointVelTool = 
   {30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,
@@ -80,31 +74,28 @@ function state.update()
 
   if stage==1 then
     local qLArmTarget = arm_planner:playback_trajectory(t)
-    if qLArmTarget then
-      movearm.setArmJoints(qLArmTarget,qRArm,dt)
-    else stage = stage+1 end
-  else
-
-  end
-
-  --[[
-
-  if stage==1 then 
-      stage=stage+1;   
-  elseif stage==2 then  
-    local trLArmApproach, doneL = util.approachTolTransform(trLArm, trLArmTarget1, dpArmMax, dt)    
-    local ret = movearm.setArmToPosition(trLArmApproach,trRArm,dt,
-    --qLArm[3],qRArm[3]) 
-    45*math.pi/180,qRArm[3])
-    if ret==1 and doneL then stage=stage+1; end
-  elseif stage==3 then    
-    local trLArmApproach, doneL = util.approachTolTransform(trLArm, trLArmTarget2, dpArmMax, dt)
-    local ret = movearm.setArmToPosition(trLArmApproach,trRArm,dt,
-    45*math.pi/180,qRArm[3])
-    if ret==1 and doneL then 
-      
-      stage=stage+1; 
+    if qLArmTarget then movearm.setArmJoints(qLArmTarget,qRArm,dt)
+    else 
+      stage = stage+1 
+      arm_planner:init_trajectory(LArmPlan2,t)
     end
+  elseif stage==2 then
+    local qLArmTarget = arm_planner:playback_trajectory(t)
+    if qLArmTarget then movearm.setArmJoints(qLArmTarget,qRArm,dt)
+    else 
+      stage = stage+1 
+    end
+  elseif stage==3 then
+    gripL,doneL = util.approachTol(gripL,1,2,dt)
+    Body.set_lgrip_percent(gripL*0.8)
+    Body.set_rgrip_percent(gripR*0.8)    
+    if doneL then
+      stage=stage+1
+    end
+  end
+    
+
+--[[
   elseif stage==4 then
     local trRArmTarget = movearm.getToolPosition(tool_pos_right0,0.08,0)    
     local trRArmApproach, doneL = util.approachTolTransform(trRArm, trRArmTarget, dpArmMax, dt)    
@@ -123,8 +114,7 @@ function state.update()
     local ret = movearm.setArmToPosition(trLArm,trRArmApproach,dt,    
     45*math.pi/180,-45*math.pi/180)
     if ret==1 and doneR then 
-      Body.set_lgrip_percent(1)
-      Body.set_rgrip_percent(1)
+    
       stage=stage+1; 
     end
   elseif stage==7 then

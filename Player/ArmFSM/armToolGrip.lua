@@ -15,6 +15,9 @@ local tool_pos,tool_pos_target
 local qLArmTarget0, qRArmTarget0
 local trLArmTarget,trRArmTarget
 
+local libArmPlan = require 'libArmPlan'
+arm_planner = libArmPlan.new_planner()
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -33,12 +36,7 @@ function state.entry()
 
   tool_pos = hcm.get_tool_pos()
   tool_pos_target = hcm.get_tool_pos()
-
   
-  
-
-  
-
   tool_pos_left = hcm.get_tool_pos()
   tool_pos_left=vector.new({0.45,0.0,0.10})
   
@@ -49,6 +47,18 @@ function state.entry()
   tool_pos_left2=vector.new({0.35,0.0,0.15})
   tool_pos_right2=vector.new({0.35,-0.10,0.20})
   stage = 1;  
+
+
+
+  trLArmTarget0 = trLArm
+  trLArmTarget1 = movearm.getToolPosition(tool_pos_left,0.08,1)    
+  trLArmTarget2 = movearm.getToolPosition(tool_pos_left,0,1)    
+  LArmPlan1,qLArm1 = arm_planner:plan_arm_linear(qLArm, trLArmTarget1, 1)  
+  LArmPlan2,qLArm2 = arm_planner:plan_arm_linear(qLArm1, trLArmTarget2, 1)
+  
+
+
+  arm_planner:init_trajectory(LArmPlan1,t_entry)
 end
 
 local qJointVelTool = 
@@ -67,19 +77,28 @@ function state.update()
   trLArm = Body.get_forward_larm(qLArm)
   trRArm = Body.get_forward_rarm(qRArm)
 
+
+  if stage==1 then
+    local qLArmTarget = arm_planner:playback_trajectory(t)
+    if qLArmTarget then
+      movearm.setArmJoints(qLArmTarget,qRArm,dt)
+    else stage = stage+1 end
+  else
+
+  end
+
+  --[[
+
   if stage==1 then 
-      stage=stage+1; 
-  
-  elseif stage==2 then
-    local trLArmTarget = movearm.getToolPosition(tool_pos_left,0.08,1)    
-    local trLArmApproach, doneL = util.approachTolTransform(trLArm, trLArmTarget, dpArmMax, dt)    
+      stage=stage+1;   
+  elseif stage==2 then  
+    local trLArmApproach, doneL = util.approachTolTransform(trLArm, trLArmTarget1, dpArmMax, dt)    
     local ret = movearm.setArmToPosition(trLArmApproach,trRArm,dt,
     --qLArm[3],qRArm[3]) 
     45*math.pi/180,qRArm[3])
     if ret==1 and doneL then stage=stage+1; end
-  elseif stage==3 then
-    local trLArmTarget = movearm.getToolPosition(tool_pos_left,0,1)    
-    local trLArmApproach, doneL = util.approachTolTransform(trLArm, trLArmTarget, dpArmMax, dt)
+  elseif stage==3 then    
+    local trLArmApproach, doneL = util.approachTolTransform(trLArm, trLArmTarget2, dpArmMax, dt)
     local ret = movearm.setArmToPosition(trLArmApproach,trRArm,dt,
     45*math.pi/180,qRArm[3])
     if ret==1 and doneL then 
@@ -116,6 +135,8 @@ function state.update()
     local ret = movearm.setArmToPosition(trLArm,trRArmApproach,dt,    
       45*math.pi/180,-45*math.pi/180)
   end
+
+  --]]
 end
 
 function state.exit()  

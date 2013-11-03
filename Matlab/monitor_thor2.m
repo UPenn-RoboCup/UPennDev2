@@ -124,7 +124,7 @@ while 1
         % Update the title
         netmon_count =netmon_count+1;
         if mod(netmon_count,netmon_interval)==0
-            NETMON.redraw(1/t_diff,POSE.battery);
+            NETMON.redraw(1/t_diff,POSE.battery, POSE.rpy);
         end
         % Update timing
         counter = 0;

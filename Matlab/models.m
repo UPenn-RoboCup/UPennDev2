@@ -88,70 +88,54 @@ MODELS.waypoints = [];
 
 	%%%%%%%%%%%%
 	%% Tool calculations
-	function data = tool_calc(h,~,val)
+	function data = tool_calc(h,~,val)	
 		data=[];
 	    points3d = LIDAR.selected_points;
 	    LIDAR.clear_points();
+	    MODELS.ooi = 'tool';
+	    npoints = size(points3d,1);
 
-	    disp('Wheel calculation...');
-	    if numel(points3d)<3*3
+	    % If no points, then just set this as the object of interest
+		if npoints == 0 
+			return
+		end
+
+	    disp('Tool calculation...');
+	    % Need at least three points to determine the circle
+	    if npoints<2
 	    	return
 	    end
 
-		% NOTE: Assume a left right top clicking order!!
-		leftrelpos  = points3d(size(points3d,1)-2, :);
-		rightrelpos = points3d(size(points3d,1)-1, :);
-		toprelpos   = points3d(size(points3d,1),   :);
+		% top and bottom clicking order
+		
+		toprelpos = points3d(npoints-1, :);
+		bottomrelpos   = points3d(npoints,   :);
 
 		% Find the center of the wheel
-		handlepos = (leftrelpos+rightrelpos) / 2;
-		if handlepos(1) > 1 || handlepos(1) < 0.10
-		    % x distance in meters
-		    disp('Handle is too far or too close!');
-		    disp(handlepos);
-		    return;
-		end
-
-		% Find the radius of the wheel
-		handleradius = norm(leftrelpos-rightrelpos)/2;
-		if handleradius>1 || handleradius<0.10
-		    % radius in meters
-		    disp('Radius is too big or too small!');
-		    disp(handleradius);
-		    return;
-		end
-
-        handleyaw = atan2(...
-            leftrelpos(2)-rightrelpos(2), ...
-            leftrelpos(1)-rightrelpos(1)) ...
-            - pi/2;
-        % TODO: yaw checks
-
-        handlepitch = atan2( ...
-        	toprelpos(1)-handlepos(1),...
-            toprelpos(3)-handlepos(3) );
-        % TODO: pitch checks
+		grippos = (toprelpos+bottomrelpos)/2;
+		        
+        grippitch = atan2( ...
+        	toprelpos(1)-bottomrelpos(1),...
+            toprelpos(3)-bottomrelpos(3));
         
         % Debug message
-        wheel_str = sprintf(...
-            'Pos %.2f %.2f %.2f\nY %.1f P %.1f Rad %.2f',...
-            handlepos(1),handlepos(2),handlepos(3),...
-            handleyaw*180/pi,handlepitch*180/pi,handleradius );
-        DEBUGMON.addtext(wheel_str);
-        
-        % Overwrite wheel estimate?
-        % TODO: use two separate wheel estimates?
-        % TODO: send this data to the robot
-        LIDAR.wheel_model = [handlepos handleyaw handlepitch handleradius];
-        CONTROL.send_control_packet([],[],'hcm','wheel','model',LIDAR.wheel_model);
-        % TODO: Draw another point on there, with the actual wheel center?
-	end
+        tool_str = sprintf(...
+            'Pos %.2f %.2f %.2f\nP %.1f',...
+            grippos(1),grippos(2),grippos(3),...
+            grippitch*180/pi);
+        DEBUGMON.addtext(tool_str);
+                
+        tool = [grippos grippitch];        
+        CONTROL.send_control_packet('GameFSM',MODELS.ooi,'hcm','tool','model', tool );
+    end
 
 		%%%%%%%%%%%%
 	%% Wheel calculations
 	function data = wheel_calc(h,~,val)
 		data=[];
 	    points3d = LIDAR.selected_points;
+
+
 	    LIDAR.clear_points();
 
 	    MODELS.ooi = 'wheel';

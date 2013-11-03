@@ -4,12 +4,12 @@ WorldInfo {
     "Valve operating test for DRC"
   ]
   title "valvetest"
-  basicTimeStep 40
+  basicTimeStep 10
   FPS 15
 }
 Viewpoint {
-  orientation -0.11228 0.937512 0.329341 2.50243
-  position 1.24891 2.75241 -1.83492
+  orientation 0.536832 0.632371 0.558497 4.22195
+  position -0.0190634 3.79828 0.0647076
 }
 Background {
   skyColor [
@@ -30,19 +30,17 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP7_NoBoundaries {
-  translation 0 1.15535 0
+  translation 0 1.15535 -0.03
   rotation 0 1 0 1.57
   controller "thorop"
   controllerArgs "0 32"
 }
 Solid {
-  #translation 0.45 1.03 0
-  translation 0.45 0.93 0
+  translation 0.38 0.93 0
   rotation 0 0 1 0
   children [
-    ValveDRC {
+    SteeringWheelSmall {
     }
   ]
   locked TRUE
 }
-

@@ -283,6 +283,9 @@ function ret = robotbody()
 		rotY(BODY.larmangle(4));
     BODY.TrLWrist = BODY.TrLLArm*trans(BODY.larmoffset)*...
 			rotX(BODY.larmangle(5))*rotZ(BODY.larmangle(6));
+
+
+%TODO: FIX FINGERS      
       %{
     BODY.TrLFinger11 = BODY.TrLWrist*trans(BODY.lfingeroffset)*...
 			rotZ(lfingerangle1-pi/4);
@@ -293,7 +296,7 @@ function ret = robotbody()
     BODY.TrLFinger22 = BODY.TrLFinger21*trans(BODY.finger2offset)*...
 			rotZ(-lfingerangle2);
 %}
-[lfingerangle1*180/pi lfingerangle2*180/pi]
+%[lfingerangle1*180/pi lfingerangle2*180/pi]
 
 
     BODY.TrLFinger11 = BODY.TrLWrist*trans(BODY.lfingeroffset)*...

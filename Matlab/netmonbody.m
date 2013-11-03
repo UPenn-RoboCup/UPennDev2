@@ -43,13 +43,13 @@ function ret=netmonbody()
     ret = sum(NETMON.recent_usage(1,:));
   end
 
-  function redraw(fps,battery)
+  function redraw(fps,battery, rpy)
     t_diff = toc(NETMON.tLastDraw);
     rate = NETMON.get_total_recent_usage() / t_diff/1024;
 	  set( NETMON.line, {'YDATA'}, num2cell( NETMON.recent_usage, 1 )' );
     set( NETMON.h_text, 'string', ...
-			sprintf('%2.0f FPS | %4.0f kB/s  %.2f V\n',...
-      fps, rate, battery ));
+			sprintf('%2.0f FPS | %4.0f kB/s  %.2f V\n Roll: %.1f Pitch: %.1f',...
+      fps, rate, battery, rpy(1)*180/pi,rpy(2)*180/pi ));
     NETMON.recent_usage = circshift(NETMON.recent_usage,1);
     NETMON.recent_usage(1,:) = 0;
     NETMON.tLastDraw = tic;

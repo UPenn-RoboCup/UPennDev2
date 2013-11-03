@@ -1,4 +1,8 @@
 function update_mesh(lidar_type)
+
+
+
+
   global POSE HEAD_LIDAR CHEST_LIDAR SLAM
   
   % Make sure the ranges matrix is in such a fashion
@@ -51,8 +55,8 @@ t0 = tic;
 %FOV angles mean the angles within a single laser scan
 %LIDAR angles mean the angle of lidar movement
 
-%  [lidar.fov_angles(1) lidar.fov_angles(size(lidar.fov_angles,1))]  
-%  [lidarangles(1) lidarangles(size(lidarangles,2))]
+%%[lidar.fov_angles(1) lidar.fov_angles(size(lidar.fov_angles,1))]  
+%%[lidarangles(1) lidarangles(size(lidarangles,2))]
 
 
 
@@ -98,4 +102,5 @@ t0 = tic;
   end
   
 tPassed = toc(t0);
+
 end

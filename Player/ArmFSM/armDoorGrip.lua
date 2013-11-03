@@ -32,6 +32,8 @@ local qRArmTarget = Body.get_inverse_rarm(qRArmTarget0,trRArmTarget,6.6*Body.DEG
 --print("qRArmTarget:",unpack(qRArmTarget))
 
 --qRArmTarget = qRArmTarget0
+print("DOOR QTarget0:",qLArmTarget0[5]*Body.RAD_TO_DEG)
+print("DOOR QTarget:",qLArmTarget[5]*Body.RAD_TO_DEG)
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -97,7 +99,6 @@ function state.update()
       ret = movearm.setArmJoints(qLArm,qRArmTarget,dt,
         {10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,
         30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD}
-
         )
     end
     if ret==1 then stage=stage+1; end

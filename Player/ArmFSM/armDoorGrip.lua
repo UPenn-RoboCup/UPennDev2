@@ -16,24 +16,8 @@ local door_hand = 0
 local handle_clearance = vector.new({0,0,-0.05})
 local handle_pulldown = vector.new({0,0,-0.03})
 
---Initial arm pose 
-local trLArmTarget = vector.new({0.18,0.31, -0.15,-90*Body.DEG_TO_RAD,-15*Body.DEG_TO_RAD,0})
-local qLArmTarget0 = vector.new({138,13.7,-6.6,-84.4,-97.1,-52.4,-9.7})*Body.DEG_TO_RAD
-local qLArmTarget = Body.get_inverse_larm(qLArmTarget0,trLArmTarget,-6.6*Body.DEG_TO_RAD)
+local qLArmTarget, qRArmTarget
 
---not working with rarm now... should be fixed
-local trRArmTarget = vector.new({0.18,-0.31, -0.15,90*Body.DEG_TO_RAD,-15*Body.DEG_TO_RAD,0})
-local qRArmTarget0 = vector.new({138,-13.7,6.6,-84.4,97.1,52.4,9.7})*Body.DEG_TO_RAD
-
---local trRArm = Body.get_forward_rarm(qRArmTarget0)
---print("TrRARm:",unpack(trRArm))
-
-local qRArmTarget = Body.get_inverse_rarm(qRArmTarget0,trRArmTarget,6.6*Body.DEG_TO_RAD)
---print("qRArmTarget:",unpack(qRArmTarget))
-
---qRArmTarget = qRArmTarget0
-print("DOOR QTarget0:",qLArmTarget0[5]*Body.RAD_TO_DEG)
-print("DOOR QTarget:",qLArmTarget[5]*Body.RAD_TO_DEG)
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -56,6 +40,27 @@ function state.entry()
   door_yaw = 0
 
   stage = 1;  
+
+
+  --Initial arm pose 
+  local trLArmTarget = vector.new({0.18,0.31, -0.15,-90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0})
+  local qLArmTarget0 = vector.new({138,13.7,-6.6,-84.4,-97.1,-52.4,-9.7})*Body.DEG_TO_RAD
+
+
+  --not working with rarm now... should be fixed
+  local trRArmTarget = vector.new({0.18,-0.31, -0.15,90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0})
+  local qRArmTarget0 = vector.new({138,-13.7,6.6,-84.4,97.1,52.4,9.7})*Body.DEG_TO_RAD
+
+  --local trRArm = Body.get_forward_rarm(qRArmTarget0)
+  --print("TrRARm:",unpack(trRArm))
+
+  qLArmTarget = Body.get_inverse_larm(qLArmTarget0,trLArmTarget,-6.6*Body.DEG_TO_RAD)
+  qRArmTarget = Body.get_inverse_rarm(qRArmTarget0,trRArmTarget,6.6*Body.DEG_TO_RAD)
+
+
+  print("LRArmTarget:",unpack(qLArmTarget))
+  print("qRArmTarget:",unpack(qRArmTarget))
+
 end
 
 function state.update()

@@ -448,9 +448,6 @@ function movearm.getDoorHandlePosition(
       hand_rpy = {-90*Body.DEG_TO_RAD-door_tilt,0,0} --Default hand angle: facing up
     else
       hand_rpy = {90*Body.DEG_TO_RAD+door_tilt,0,0} --Default hand angle: facing up
-
-
-      hand_rpy = {90*Body.DEG_TO_RAD+door_tilt,-15*Body.DEG_TO_RAD,0} --Default hand angle: facing up
     end
   end
   
@@ -485,14 +482,14 @@ function movearm.getToolPosition(
 
   if type(hand_rpy)=='number' then --scalar value: hand type (0 for left, 1 for right)
     if hand_rpy==1 then --left hand  
-      hand_rpy = {0,-11*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}      
+      hand_rpy = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}      
       approach_dir = {0,1,0}
     else
-      hand_rpy = {90*Body.DEG_TO_RAD,-11*Body.DEG_TO_RAD,0} --Default hand angle: facing up
+      hand_rpy = {90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0} --Default hand angle: facing up
       approach_dir = {-0.707,0,-0.707}
 
 
-      hand_rpy = {90*Body.DEG_TO_RAD,-11*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD} --Default hand angle: facing up
+      hand_rpy = {90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD} --Default hand angle: facing up
       approach_dir = {-0.5,-0.5,-0.5}
 
 

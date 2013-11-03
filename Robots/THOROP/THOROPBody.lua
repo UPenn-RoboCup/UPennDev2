@@ -669,8 +669,16 @@ Body.get_inverse_larm = function( qL, trL, lShoulderYaw, bodyTilt, qWaist)
       bodyTilt or mcm.get_camera_bodyTilt(), qWaist or Body.get_waist_command_position())
   local trL_check = Kinematics.l_arm_torso_7( qL_target,
       bodyTilt or mcm.get_camera_bodyTilt(), qWaist or Body.get_waist_command_position())
+--[[
+  print("LARM IK SOLVING")
+  print("bodyTilt:",(bodyTilt or mcm.get_camera_bodyTilt()) * 180/math.pi)
+  print("qWaist:",unpack(qWaist or Body.get_waist_command_position() ))
+  print("qL:",unpack(vector.new(qL_target)*180/math.pi))
+  print("trL:",unpack(trL))
+  print("trL2:",unpack(trL_check))
+--]]
   if not check_larm_bounds(qL_target) then return end
-  if not check_ik_error( trL, trL_check) then return end  
+  if not check_ik_error( trL, trL_check) then return end   
   return qL_target
 end
 

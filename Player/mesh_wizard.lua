@@ -304,7 +304,7 @@ local function chest_callback()
     chest.meta.fov ~= vcm.get_chest_lidar_fov()
     then
     setup_mesh('chest_lidar',chest)
-    chest.current_scanline=nil --We need to clear this
+    chest.current_scanline = nil --We need to clear this
     print("Chest Resolution:",unpack(chest.meta.resolution))
   end
   

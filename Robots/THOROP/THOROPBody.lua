@@ -1543,7 +1543,6 @@ if IS_WEBOTS then
 			end
 		end
     
-    
     -- Set lidar data into shared memory
     if use_lidar_head then
       Body.set_head_lidar(head_lidar_wbt.pointer)

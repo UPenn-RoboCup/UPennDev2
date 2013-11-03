@@ -114,6 +114,7 @@ local function process_udp()
 end
 
 -- Send body feedback
+local Body = require'Body'
 local feedback_udp_ch =
   udp.new_sender(Config.net.operator.wired, Config.net.feedback)
 local function send_status_feedback()
@@ -148,7 +149,7 @@ local channel_poll = simple_ipc.wait_on_channels( wait_channels );
 --channel_poll:start()
 local channel_timeout = 500 -- 2Hz joint feedback
 while true do
-  local npoll = channel_polls:poll(channel_timeout)
+  local npoll = channel_poll:poll(channel_timeout)
   -- Send the feedback 
   send_status_feedback()
 end

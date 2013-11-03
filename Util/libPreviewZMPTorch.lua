@@ -5,92 +5,6 @@ local util   = require'util'
 local torch  = require'torch'
 torch.Tensor = torch.DoubleTensor
 
---[[
---We maintain Two queue for preview duration
-
---ZMP position queue : uSupport
---Step status queue : uLeft_now, uRight_now, uLeft_next,uRight_next,supportLeg
-
-
---Initialize a stationary preview queue
-local function init_preview_queue(self,uLeft,uRight,t)
-  local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
-  local uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
-  self.preview_queue={}
-  self.preview_queue_zmpx={}
-  self.preview_queue_zmpy={}
-  for i=1,self.preview_steps do
-    local preview_item = {}    
-    preview_item.uLeft_now = uLeft
-    preview_item.uLeft_next = uLeft
-    preview_item.uRight_now = uRight
-    preview_item.uRight_next = uRight
-    preview_item.supportLeg = 2 --Double support
-
-    self.preview_queue[i] = preview_item
-    self.preview_queue_zmpx[i] = uSupport[1]
-    self.preview_queue_zmpy[i] = uSupport[2]
-  end
-  self.t_last_step = t
-  self.t_step_duration = 0
-end
-
-local function update_preview_queue(self,t)
-  table.remove(self.preview_queue,1)
-  table.remove(self.preview_queue_zmpx,1)
-  table.remove(self.preview_queue_zmpy,1)
-
-  local last_preview_item = self.preview_queue[#self.preview_queue]
-  local last_preview_zmpx = self.preview_queue_zmpx[#self.preview_queue]
-  local last_preview_zmpy = self.preview_queue_zmpy[#self.preview_queue]
-
-  if self.t_last_step+self.t_step_duration >=t then
-    --Old step
-    table.insert(self.preview_queue,last_preview_item)
-    table.insert(self.preview_queue_zmpx,last_preview_zmpx)
-    table.insert(self.preview_queue_zmpx,last_preview_zmpy)
-  else --New step
-    local supportLeg
-    local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
-    if last_preview_item.supportLeg==2 then 
-      supportLeg = 0 
-    else
-      supportLeg = 1-last_preview_item.supportLeg
-    end
-    uLeft_now, uRight_now, uTorso_now, uLeft_next,
-      uRight_next, uTorso_next, uSupport =
-        step_planner:get_next_step_velocity(
-          last_preview_item.uLeft_next,
-          last_preview_item.uRight_next,
-          step_planner.get_torso(last_preview_item.uLeft_next,last_preview_item.uRight_next),
-          supportLeg,false)
-    local new_preview_item = {}
-    new_preview_item.uLeft_now = uLeft_now
-    new_preview_item.uLeft_next = uLeft_next
-    new_preview_item.uRight_now = uRight_now
-    new_preview_item.uRight_next = uRight_next
-    new_preview_item.supportLeg = supportLeg
-
-    table.insert(self.preview_queue,new_preview_item)
-    table.insert(self.preview_queue_zmpx,uSupport[1])
-    table.insert(self.preview_queue_zmpy,uSupport[2])
-  end
-end
-
-local function get_com(self)
-
-
-end
-
-
---]]
-
-
-
-
-
-
-
 -- step_definition format
 --{ Supportfoot relstep zmpmod duration steptype }--
 -- Provide initial (relative) feet positions
@@ -158,9 +72,11 @@ local function update_preview(solver, t, supportX, supportY)
     idx = idx + 1
     solver.step_queue_index = idx
     step_queue_element = solver.step_queue[idx]
+    --[[
     print'====='
     util.ptable(step_queue_element)
     print'====='
+    --]]
     -- Add the duration of this next step
     solver.step_queue_time = t + step_queue_element.duration
   else
@@ -260,7 +176,6 @@ local function solve_preview(solver)
 end
 
 local function init_preview(solver,uTorso,uLeft,uRight,t)
-  print("INITSTART")
   local preview = solver.preview
   assert(preview,'Please precompute the preview engine!')
   
@@ -300,8 +215,6 @@ end
 -- ts: At what granularity should we solver?
 local function compute_preview( solver, preview_interval, ts, save_file )
   
-print("INITSTART")
-
   -- Preview parameter defaults
   preview_interval = preview_interval or 1.50 -- 1500ms
   ts = ts or 0.010 -- 10ms timestep

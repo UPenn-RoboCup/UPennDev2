@@ -570,6 +570,7 @@ local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
   if angle_error>ang_tol then in_tolerance=false end
 
   if not in_tolerance then
+    print("IK ERROR")
     print(string.format("tr0:%.2f %.2f %.2f %.2f %.2f %.2f tr:%.2f %.2f %.2f %.2f %.2f %.2f",
     tr_check[1],
     tr_check[2],
@@ -588,6 +589,7 @@ local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
       vector.new(Body.get_larm_command_position())*RAD_TO_DEG     ) ))
     print(string.format("RArm: %.1f %.1f %.1f %.1f %.1f %.1f %.1f",unpack(
       vector.new(Body.get_rarm_command_position())*RAD_TO_DEG     ) ))
+    print()
 --    print(string.format("perr:%.4f aerr:%.2f",position_error, angle_error*Body.RAD_TO_DEG))
   end
 	return in_tolerance

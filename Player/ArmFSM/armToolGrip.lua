@@ -36,21 +36,50 @@ function state.entry()
 
    
   --tool_pos_left = hcm.get_tool_pos()
-  tool_pos_left=vector.new({0.45,0.0,0.10})  
-  tool_pos_right0=vector.new({0.45,-0.25,0.15})
-  tool_pos_right=vector.new({0.45,-0.10,0.15})
+  
+
+  tool_pos_left=vector.new({0.55,0.02,0.05})  
+
+  tool_pos_left1=tool_pos_left + vector.new({0,0,0.05})
+
+  tool_pos_left2=vector.new({0.35,0.05,tool_pos_left[3]+0.05})  
+
+  tool_pos_left3=vector.new({0.35,0.05,-0.05})  
+
+
 
   stage = 1;  
 
   trLArmTarget0 = trLArm
   trLArmTarget1 = movearm.getToolPosition(tool_pos_left,0.08,1)    
   trLArmTarget2 = movearm.getToolPosition(tool_pos_left,0,1)    
+  trLArmTarget3 = movearm.getToolPosition(tool_pos_left1,0,1)    
+  trLArmTarget4 = movearm.getToolPosition(tool_pos_left2,0,1)    
+  trLArmTarget5 = movearm.getToolPosition(tool_pos_left3,0,1)    
+
   print("Planning LArmPlan1")
   LArmPlan1,qLArm1 = arm_planner:plan_arm(qLArm, trLArmTarget1, 1)  
   print("Planning LArmPlan2")
-  LArmPlan2,qLArm2 = arm_planner:plan_arm(qLArm1, trLArmTarget2, 1)
+  LArmPlan2,qLArm1 = arm_planner:plan_arm(qLArm1, trLArmTarget2, 1)
+  print("Planning LArmPlan3")
+  LArmPlan3,qLArm1 = arm_planner:plan_arm(qLArm1, trLArmTarget3, 1)
+  print("Planning LArmPlan4")
+  LArmPlan4,qLArm1 = arm_planner:plan_arm(qLArm1, trLArmTarget4, 1)
+  print("Planning LArmPlan5")
+  LArmPlan5,qLArm1 = arm_planner:plan_arm(qLArm1, trLArmTarget5, 1)
 
   arm_planner:init_trajectory(LArmPlan1,t_entry)
+
+
+  print("Testing two-arm planning")
+  LAP1, RAP1, qLArm1, qRArm1 = arm_planner:plan_double_arm(qLArm,qRArm,trLArmTarget1,trRArm)
+
+  --Test two arm planning
+
+
+
+
+
 end
 
 local gripL, gripR = 0,0
@@ -91,42 +120,29 @@ function state.update()
     Body.set_rgrip_percent(gripR*0.8)    
     if doneL then
       stage=stage+1
+      arm_planner:init_trajectory(LArmPlan3,t)
     end
-  end
-    
-
---[[
   elseif stage==4 then
-    local trRArmTarget = movearm.getToolPosition(tool_pos_right0,0.08,0)    
-    local trRArmApproach, doneL = util.approachTolTransform(trRArm, trRArmTarget, dpArmMax, dt)    
-    local ret = movearm.setArmToPosition(trLArm,trRArmApproach,dt,    
-    45*math.pi/180,-45*math.pi/180)
-    if ret==1 and doneL then stage=stage+1; end
-  elseif stage==5 then
-    local trRArmTarget = movearm.getToolPosition(tool_pos_right,0.08,0)    
-    local trRArmApproach, doneR = util.approachTolTransform(trRArm, trRArmTarget, dpArmMax, dt)    
-    local ret = movearm.setArmToPosition(trLArm,trRArmApproach,dt,    
-    45*math.pi/180,-45*math.pi/180)
-    if ret==1 and doneR then stage=stage+1; end
-  elseif stage==6 then
-    local trRArmTarget = movearm.getToolPosition(tool_pos_right,0,0)    
-    local trRArmApproach, doneR = util.approachTolTransform(trRArm, trRArmTarget, dpArmMax, dt)    
-    local ret = movearm.setArmToPosition(trLArm,trRArmApproach,dt,    
-    45*math.pi/180,-45*math.pi/180)
-    if ret==1 and doneR then 
-    
-      stage=stage+1; 
+    local qLArmTarget = arm_planner:playback_trajectory(t)
+    if qLArmTarget then movearm.setArmJoints(qLArmTarget,qRArm,dt)
+    else 
+      stage = stage+1  
+      arm_planner:init_trajectory(LArmPlan4,t)
     end
-  elseif stage==7 then
-    local trLArmTarget = movearm.getToolPosition(tool_pos_left2,0,1)    
-    local trRArmTarget = movearm.getToolPosition(tool_pos_right2,0,0)    
-    local trLArmApproach, doneL = util.approachTolTransform(trLArm, trLArmTarget, dpArmMax, dt)
-    local trRArmApproach, doneR = util.approachTolTransform(trRArm, trRArmTarget, dpArmMax, dt)    
-    local ret = movearm.setArmToPosition(trLArm,trRArmApproach,dt,    
-      45*math.pi/180,-45*math.pi/180)
+  elseif stage==5 then
+    local qLArmTarget = arm_planner:playback_trajectory(t)
+    if qLArmTarget then movearm.setArmJoints(qLArmTarget,qRArm,dt)
+    else 
+      stage = stage+1  
+      arm_planner:init_trajectory(LArmPlan5,t)
+    end
+  elseif stage==6 then
+    local qLArmTarget = arm_planner:playback_trajectory(t)
+    if qLArmTarget then movearm.setArmJoints(qLArmTarget,qRArm,dt)
+    else 
+      stage = stage+1        
+    end
   end
-
-  --]]
 end
 
 function state.exit()  

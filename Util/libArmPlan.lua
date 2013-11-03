@@ -122,6 +122,11 @@ local function plan_arm(self,qArm0, trArm1, isLeft)
   end
 end
 
+local function set_hand_mass(self,mLeftHand, mRightHand)
+  self.mLeftHand = mLeftHand
+  self.mRightHand = mRightHand
+end
+
 local function get_torso_compensation(qLArm,qRArm,massL,massR)
   local qWaist = {0,0}--TODO: will we use waist position as well?
   local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,
@@ -129,12 +134,13 @@ local function get_torso_compensation(qLArm,qRArm,massL,massR)
   return {-com[1]/com[4],-com[2]/com[4]}
 end
 
-local function plan_double_arm(self,qLArm0,qRArm0, trLArm1, trRArm1, massL, massR)
+local function plan_double_arm(self,qLArm0,qRArm0, trLArm1, trRArm1)
   if not qLArm0 or not qRArm0 then return nil end
-  massL, massR = massL or 0 , massR or 0
+
+  local massL, massR = self.mLeftHand, self.mRightHand
 
   local t0 = unix.time()
-  local done, failed = false, false
+  local doneL, doneR, failed = false, false, false
   local trLArm = Body.get_forward_larm(qLArm0)
   local trRArm = Body.get_forward_rarm(qRArm0)
   
@@ -147,39 +153,31 @@ local function plan_double_arm(self,qLArm0,qRArm0, trLArm1, trRArm1, massL, mass
   local qLArmQueue,qRArmQueue,uTorsoCompensation={},{},{}
   local qArmCount = 1
   
-  while not doneL and not doneR and not failed do        
+  while (not doneL or not doneR) and not failed do        
     trLArmNext, doneL = self.get_next_transform(trLArm,trLArm1,dpArmMax,dt_step)
     trRArmNext, doneR = self.get_next_transform(trRArm,trRArm1,dpArmMax,dt_step)
-    qLArmNext = self:search_shoulder_angle(qLArm,trLArmNext,1, yawMag)
-    qRArmNext = self:search_shoulder_angle(qRArm,trRArmNext,0, yawMag)
 
-    if not qLArmNext or not qRArmNext then failed = true 
+    --We use previous joint angle to calculate the COM movement to compensate
+    local com_compensation = self.get_torso_compensation(
+        qLArm,qRArm,massL,massR)
+    local vec_compensation = vector.new({
+          -com_compensation[1],-com_compensation[2],0,0,0,0})
+
+--    print("com compensation:",unpack(com_compensation))
+--    vec_compensation = vector.zeros(6)
+    local trLArmCompensated = vector.new(trLArmNext) + vec_compensation
+    local trRArmCompensated = vector.new(trRArmNext) + vec_compensation
+
+    qLArmNext = self:search_shoulder_angle(qLArm,trLArmCompensated,1, yawMag)
+    qRArmNext = self:search_shoulder_angle(qRArm,trRArmCompensated,0, yawMag)
+
+    if not qLArmNext or not qRArmNext then 
+      failed = true 
+      print("failure")
     else      
-      --TODO: check joint velocity and adjust timestep
+      qLArmQueue[qArmCount] = {qLArmNext,dt_step}
+      qRArmQueue[qArmCount] = {qRArmNext,dt_step}
 
-      --Calculate COM to apply compensation to arm positions
-      local com_compensation = self.get_torso_compensation(
-        qLArmNext,qRArmNext,massL,massR)
-      local vec_compensation = vector.new({
-          -com_compensation[1]*math.cos(Config.walk.bodyTilt),
-          -com_compensation[2],
-          -com_compensation[1]*math.sin(Config.walk.bodyTilt),
-          0,0,0})
-
-      local trLArmCompensated = vector.new(trLArmNext) + vec_compensation
-      local trRArmCompensated = vector.new(trRArmNext) + vec_compensation
-      qLArmCompensated = self:search_shoulder_angle(qLArm,trLArmCompensated,1, yawMag)
-      qRArmCompensated = self:search_shoulder_angle(qRArm,trRArmCompensated,0, yawMag)
-      if not qLArmCompensated or not qRArmCompensated then 
-        failed = true 
-        break
-      end
-      
---      qLArmQueue[qArmCount] = {qLArmNext,dt_step}
---      qRArmQueue[qArmCount] = {qRArmNext,dt_step}
-
-      qLArmQueue[qArmCount] = {qLArmCompensated,dt_step}
-      qRArmQueue[qArmCount] = {qRArmCompensated,dt_step}
       uTorsoCompensation[qArmCount] = com_compensation
 
       qLArm,qRArm,trLArm,trRArm = qLArmNext, qRArmNext, trLArmNext, trRArmNext
@@ -192,9 +190,9 @@ local function plan_double_arm(self,qLArm0,qRArm0, trLArm1, trRArm1, massL, mass
   if failed then 
     print("Plan failure at",self.print_transform(trArmNext))
     print("Arm angle:",unpack(vector.new(qArm)*180/math.pi))
-    return qArmQueue,qArm
+    return qLArmQueue,qRArmQueue, qLArm, qRArm, uTorsoCompensation
   else
-    return qArmQueue, qArm
+    return qLArmQueue,qRArmQueue, qLArm, qRArm, uTorsoCompensation
   end
 end
 
@@ -259,6 +257,9 @@ libArmPlan.new_planner = function (params)
   s.armQueue = {}
   s.armQueuePlaybackCount = 1
   s.armQueuePlayStartTime = 0
+  s.mLeftHand = 0
+  s.mRightHand = 0
+
 
   --member functions
   s.plan_arm = plan_arm
@@ -268,6 +269,7 @@ libArmPlan.new_planner = function (params)
   s.search_shoulder_angle = search_shoulder_angle
   s.get_next_transform = get_next_transform
   s.get_torso_compensation = get_torso_compensation
+  s.set_hand_mass = set_hand_mass
 
   s.init_trajectory = init_trajectory
   s.playback_trajectory = playback_trajectory

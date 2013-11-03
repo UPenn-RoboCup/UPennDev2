@@ -38,6 +38,13 @@ hcm.set_wheel_model(wheel_model)
   hcm.set_wheel_model(
     {0.36,0.00,0.09,   0, -11*Body.DEG_TO_RAD,0.20})
 
+
+  --New world model for new IK
+  hcm.set_wheel_model(
+    {0.36,0.00,0.02,   0, 0*Body.DEG_TO_RAD,0.20})
+
+
+
   -- Let's store wheel data here
   local wheel   = hcm.get_wheel_model()
   handle_pos    = vector.slice(wheel,1,3)

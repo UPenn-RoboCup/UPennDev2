@@ -44,6 +44,7 @@ THOROP_kinematics_forward_head(const double *q)
     .rotateX(PI/2).rotateY(PI/2);
   return t;
 }
+/*
   Transform
 THOROP_kinematics_forward_l_arm(const double *q) 
 {
@@ -81,9 +82,9 @@ THOROP_kinematics_forward_r_arm(const double *q)
     .translateZ(handOffsetZ);
   return t;
 }
-
+*/
   Transform
-THOROP_kinematics_forward_l_arm_7(const double *q) 
+THOROP_kinematics_forward_l_arm_7(const double *q, double bodyPitch, const double *qWaist) 
 {
 //FK for 7-dof arm (pitch-roll-yaw-pitch-yaw-roll-yaw)
   Transform t;
@@ -105,7 +106,7 @@ THOROP_kinematics_forward_l_arm_7(const double *q)
 
 
   Transform
-THOROP_kinematics_forward_r_arm_7(const double *q) 
+THOROP_kinematics_forward_r_arm_7(const double *q, double bodyPitch, const double *qWaist)  
 {
 //New FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
   Transform t;
@@ -127,7 +128,7 @@ THOROP_kinematics_forward_r_arm_7(const double *q)
 }
 
   Transform
-THOROP_kinematics_forward_l_wrist(const double *q) 
+THOROP_kinematics_forward_l_wrist(const double *q, double bodyPitch, const double *qWaist) 
 {
 //FK for 7-dof arm (pitch-roll-yaw-pitch-yaw-roll-yaw)
   Transform t;
@@ -143,7 +144,7 @@ THOROP_kinematics_forward_l_wrist(const double *q)
 
 
   Transform
-THOROP_kinematics_forward_r_wrist(const double *q) 
+THOROP_kinematics_forward_r_wrist(const double *q, double bodyPitch, const double *qWaist) 
 {
 //New FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
   Transform t;
@@ -547,7 +548,7 @@ THOROP_kinematics_inverse_joints(const double *q)  //dereks code to write
 
 
   std::vector<double>
-THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, double shoulderYaw) {
+THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist) {
   //calculate soulder and elbow angle given wrist POSITION
   // Shoulder yaw angle is given
 
@@ -663,7 +664,8 @@ THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, 
 
 
 std::vector<double>
-THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg) {
+THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg, double bodyPitch, const double *qWaist) 
+{
   //Calculate the wrist angle given the wrist position and the target transform 
   Transform trArmRot; //Only the rotation part of trArm
   trArmRot = trArmRot*trArm
@@ -740,7 +742,8 @@ THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg) {
 
 
   std::vector<double>
-THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, double shoulderYaw) {
+THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist) 
+{
   // Closed-form inverse kinematics for THOR-OP 7DOF arm
   // (pitch-roll-yaw-pitch-yaw-roll-yaw)
   // Shoulder yaw angle is given
@@ -939,27 +942,27 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
 
 
   std::vector<double>
-THOROP_kinematics_inverse_l_arm_7(Transform trArm, const double *qOrg, double shoulderYaw)
+THOROP_kinematics_inverse_l_arm_7(Transform trArm, const double *qOrg, double shoulderYaw , double bodyPitch, const double *qWaist) 
 {
-  return THOROP_kinematics_inverse_arm_7(trArm, ARM_LEFT, qOrg, shoulderYaw);
+  return THOROP_kinematics_inverse_arm_7(trArm, ARM_LEFT, qOrg, shoulderYaw, bodyPitch, qWaist);
 }
 
   std::vector<double>
-THOROP_kinematics_inverse_r_arm_7(Transform trArm, const double *qOrg,double shoulderYaw)
+THOROP_kinematics_inverse_r_arm_7(Transform trArm, const double *qOrg,double shoulderYaw, double bodyPitch, const double *qWaist) 
 {
-  return THOROP_kinematics_inverse_arm_7(trArm, ARM_RIGHT, qOrg, shoulderYaw);
+  return THOROP_kinematics_inverse_arm_7(trArm, ARM_RIGHT, qOrg, shoulderYaw, bodyPitch, qWaist);
 }
 
   std::vector<double>
-THOROP_kinematics_inverse_l_wrist(Transform trWrist, const double *qOrg, double shoulderYaw)
+THOROP_kinematics_inverse_l_wrist(Transform trWrist, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist) 
 {
-  return THOROP_kinematics_inverse_wrist(trWrist, ARM_LEFT, qOrg, shoulderYaw);
+  return THOROP_kinematics_inverse_wrist(trWrist, ARM_LEFT, qOrg, shoulderYaw, bodyPitch, qWaist);
 }
 
   std::vector<double>
-THOROP_kinematics_inverse_r_wrist(Transform trWrist,const double *qOrg, double shoulderYaw)
+THOROP_kinematics_inverse_r_wrist(Transform trWrist,const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist) 
 {
-  return THOROP_kinematics_inverse_wrist(trWrist, ARM_RIGHT, qOrg, shoulderYaw);
+  return THOROP_kinematics_inverse_wrist(trWrist, ARM_RIGHT, qOrg, shoulderYaw, bodyPitch, qWaist);
 }
 
 

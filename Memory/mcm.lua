@@ -9,7 +9,9 @@ local vector = require'vector'
 local shared = {}
 local shsize = {}
 
--- For the vision system
+-- For the vision system 
+-- Now FK / IK use this too! 
+
 shared.camera = {}
 shared.camera.bodyTilt   = vector.zeros(1)
 shared.camera.bodyHeight = vector.zeros(1)

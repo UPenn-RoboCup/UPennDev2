@@ -109,8 +109,8 @@ local function plan_arm(self,qArm0, trArm1, isLeft)
       local qArmMovement = vector.new(qArmNext) - vector.new(qArm);
       local max_movement = 0
       for i=1,7 do
-        if math.abs(qArmMovement[i])>max_movement then
-          max_movement = math.abs(qArmMovement[i])
+        if math.abs(util.mod_angle(qArmMovement[i]))>max_movement then
+          max_movement = math.abs(util.mod_angle(qArmMovement[i]))
         end
       end
       local jointVelLimit = 10*math.pi/180
@@ -270,8 +270,10 @@ local function playback_trajectory(self,t)
          --Now  t should be between playstarttime and playendtime
       local ph = (t-self.armQueuePlayStartTime)/ 
                 (self.armQueuePlayEndTime-self.armQueuePlayStartTime)
---  print("ph:",ph," count",self.armQueuePlaybackCount)
-      local qArm = (1-ph)*self.qArmStart + ph*self.qArmEnd
+      local qArm={}
+      for i=1,7 do
+        qArm[i] = self.qArmStart[i] + ph * (util.mod_angle(self.qArmEnd[i]-self.qArmStart[i]))
+      end
 
       return qArm
   end

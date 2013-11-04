@@ -274,8 +274,12 @@ static int com_upperbody(lua_State *L) {
 	std::vector<double> qLArm = lua_checkvector(L, 2);
 	std::vector<double> qRArm = lua_checkvector(L, 3);
 	double bodyPitch = luaL_optnumber(L, 4,0.0);
+	double mLHand = luaL_optnumber(L, 5,0.0);
+	double mRHand = luaL_optnumber(L, 6,0.0);
+
+
 	std::vector<double> r = THOROP_kinematics_com_upperbody(
-		&qWaist[0],&qLArm[0],&qRArm[0],bodyPitch);
+		&qWaist[0],&qLArm[0],&qRArm[0],bodyPitch, mLHand, mRHand);
 	lua_pushvector(L, r);
 	return 1;
 }
@@ -289,10 +293,13 @@ static int calculate_support_torque(lua_State *L) {
 	double bodyPitch = luaL_optnumber(L, 6,0.0);
 	int supportLeg = (int) luaL_optnumber(L, 7,0.0);
 	std::vector<double> uTorsoAcc = lua_checkvector(L, 8);
+	double mLHand = luaL_optnumber(L, 9,0.0);
+	double mRHand = luaL_optnumber(L, 10,0.0);
+
 
 	std::vector<double> r = THOROP_kinematics_calculate_support_torque(
 		&qWaist[0],&qLArm[0],&qRArm[0],&qLLeg[0],&qRLeg[0],
-		bodyPitch,supportLeg,&uTorsoAcc[0]);
+		bodyPitch,supportLeg,&uTorsoAcc[0], mLHand, mRHand);
 	lua_pushvector(L, r);
 	return 1;
 }

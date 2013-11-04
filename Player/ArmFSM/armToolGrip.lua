@@ -49,7 +49,8 @@ function state.entry()
 --  trLArmTarget0 = trLArm
   trLArmTarget1 = movearm.getToolPosition(tool_pos_left,0.08,1)    
   trLArmTarget2 = movearm.getToolPosition(tool_pos_left,0,1)    
-  trLArmTarget3 = movearm.getToolPosition(tool_pos_left1,0,1)    
+
+  trLArmTarget3 = movearm.getToolPosition(tool_pos_left1,0,1)   --lift up 
   trLArmTarget4 = movearm.getToolPosition(tool_pos_left2,0,1)    
   trLArmTarget5 = movearm.getToolPosition(tool_pos_left3,0,1)    
 
@@ -66,15 +67,17 @@ function state.entry()
 
   
   
---[[
-
-  print("Testing two-arm planning")
-  LAP1, RAP1, qLArm1, qRArm1, uTorsoComp1 = arm_planner:plan_double_arm(qLArm0,qRArm0,trLArmTarget1,trRArm0)
-  LAP2, RAP2, qLArm2, qRArm2, uTorsoComp2 = arm_planner:plan_double_arm(qLArm1,qRArm1,trLArmTarget2,trRArm0)
-  LAP3, RAP3, qLArm3, qRArm3, uTorsoComp3 = arm_planner:plan_double_arm(qLArm2,qRArm2,trLArmTarget3,trRArm0)
-  LAP4, RAP4, qLArm4, qRArm4, uTorsoComp4 = arm_planner:plan_double_arm(qLArm3,qRArm3,trLArmTarget4,trRArm0)
---]]
   --Test two arm planning
+  print("Testing two-arm planning")
+  arm_planner:set_hand_mass(0,0)
+  LAP1, RAP1, uTP1, qLArm1, qRArm1, uTorsoComp1 = arm_planner:plan_double_arm(qLArm0,qRArm0,trLArmTarget1,trRArm0, {0,0})
+  LAP2, RAP2, uTP2, qLArm1, qRArm1, uTorsoComp1 = arm_planner:plan_double_arm(qLArm1,qRArm1,trLArmTarget2,trRArm0, uTorsoComp1)
+
+  arm_planner:set_hand_mass(2.0,0)
+  LAP3, RAP3, uTP3, qLArm1, qRArm1, uTorsoComp1 = arm_planner:plan_double_arm(qLArm1,qRArm1,trLArmTarget3,trRArm0, uTorsoComp1)
+  LAP4, RAP4, uTP4, qLArm1, qRArm1, uTorsoComp1 = arm_planner:plan_double_arm(qLArm1,qRArm1,trLArmTarget4,trRArm0, uTorsoComp1)
+
+
 
 
 

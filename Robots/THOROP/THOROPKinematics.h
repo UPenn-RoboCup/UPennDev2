@@ -133,13 +133,13 @@ std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg);
 std::vector<double> THOROP_kinematics_inverse_l_leg(const Transform trLeg);
 std::vector<double> THOROP_kinematics_inverse_joints(const double *q);
 
-std::vector<double> THOROP_kinematics_com_upperbody(const double *qWaist,const double *qLArm,const double *qRArm, double bodyPitch); 
+std::vector<double> THOROP_kinematics_com_upperbody(const double *qWaist,const double *qLArm,const double *qRArm, double bodyPitch, double mLHand, double mRHand); 
 std::vector<double> THOROP_kinematics_com_leg(const double *q, double bodyPitch, int is_left);  
 std::vector<double> THOROP_kinematics_calculate_support_torque(
 	const double *qWaist,  const double *qLArm,  const double *qRArm,
   	const double *qLLeg,  const double *qRLeg,  
   	double bodyPitch,   int supportLeg,
-  	const double *uTorsoAcc); 
+  	const double *uTorsoAcc, double mLHand, double mRHand); 
 
 
 #endif

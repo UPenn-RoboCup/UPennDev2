@@ -89,12 +89,25 @@ local function get_next_transform(trArm, trArmTarget, dpArmMax,dt_step)
   return util.approachTolTransform(trArm, trArmTarget, dpArmMax, dt_step )
 end
 
+local function check_arm_joint_velocity(qArm0, qArm1, dt,velLimit)
+  --Slow down the total movement time based on joint velocity limit
+  velLimit = velLimit or vector.new({10,10,10,10,30,10,30})*Body.DEG_TO_RAD 
+  local qArmMovement = vector.new(qArm1) - vector.new(qArm0);
+  local max_movement_ratio = 1
+  for i=1,7 do
+    local movement_ratio = math.abs(util.mod_angle(qArmMovement[i]))
+      /(velLimit[i]*dt)
+    max_movement_ratio = math.max(max_movement_ratio,movement_ratio)
+  end
+  return max_movement_ratio
+end
 
 local function plan_arm(self,qArm0, trArm1, isLeft)
   if not qArm0 then return nil end
   local t0 = unix.time()
   local done, failed = false, false
-  local trArm
+  local qArm = qArm0;
+  local trArm, trArmNext, qArmNext    
   if isLeft>0 then trArm = Body.get_forward_larm(qArm0)
   else trArm = Body.get_forward_rarm(qArm0)   end
 --[[  
@@ -102,44 +115,23 @@ local function plan_arm(self,qArm0, trArm1, isLeft)
   print("Target tr:",self.print_transform(trArm1))
   print("Current jangle:",self.print_jangle(qArm0))
 --]]
-  local trArmQueue = {}
 
   local dpArmMax = vector.new(Config.arm.linear_slow_limit)
   local dt_step = 0.01
-
   local dt_step = 0.1
-
   local dt_step = 0.5
-
   local yawMag = dt_step * 10*math.pi/180
-
-  local qArm = qArm0;
-  local trArmNext, qArmNext
-
+  
+  --Insert initial arm transform to the queue
   local qArmQueue={{qArm,dt_step}}
   local qArmCount = 2
-  
+
   while not done and not failed do        
     trArmNext, done = self.get_next_transform(trArm,trArm1,dpArmMax,dt_step)
     qArmNext = self:search_shoulder_angle(qArm,trArmNext,isLeft, yawMag)
     if not qArmNext then failed = true 
-    else
---[[      
-      print()
-      print("Tr:",self.print_transform(trArmNext))
-      print("Jangle:",self.print_jangle(qArmNext))
---]]
-      --TODO: check joint velocity and adjust timestep
-      local qArmMovement = vector.new(qArmNext) - vector.new(qArm);
-      local max_movement_ratio = 1
-
-      local jointVelLimit = vector.new({10,10,10,10,30,10,30})*Body.DEG_TO_RAD
-      for i=1,7 do
-        local movement_ratio = math.abs(util.mod_angle(qArmMovement[i]))
-          /(jointVelLimit[i]*dt_step)
-        max_movement_ratio = math.max(max_movement_ratio,movement_ratio)
-      end
---      if max_movement_ratio>1 then print("SLOWEDDOWN, ratio:",max_movement_ratio) end
+    else      
+      local max_movement_ratio = check_arm_joint_velocity(qArm, qArmNext, dt_step)
       local dt_step_current = dt_step * max_movement_ratio
       qArmQueue[qArmCount] = {qArmNext,dt_step_current}
       qArmCount = qArmCount + 1
@@ -171,9 +163,9 @@ local function get_torso_compensation(qLArm,qRArm,massL,massR)
   return {-com[1]/com[4],-com[2]/com[4]}
 end
 
-local function plan_double_arm(self,qLArm0,qRArm0, trLArm1, trRArm1)
 
 
+local function plan_double_arm(self,qLArm0,qRArm0,trLArm1, trRArm1, uTorsoComp0)
 -- Now we compensate for the COM movement
 -- if we reach out, we have to move torso back to compensate
 -- and then we need to reach out further to compensate for that movement
@@ -187,53 +179,62 @@ local function plan_double_arm(self,qLArm0,qRArm0, trLArm1, trRArm1)
 
   local t0 = unix.time()
   local doneL, doneR, failed = false, false, false
+  local qLArm,qRArm = qLArm0 , qRArm0
   local trLArm = Body.get_forward_larm(qLArm0)
   local trRArm = Body.get_forward_rarm(qRArm0)
-  
-  local dpArmMax = Config.arm.linear_slow_limit
-  local dt_step = 0.01
-  local dt_step = 0.1
+  local trLArmNext, trRArmNext, qLArmNext, qRArmNext
 
+  local dpArmMax = Config.arm.linear_slow_limit  
+  local dt_step = 0.5
   local yawMag = dt_step * 10*math.pi/180
 
-  local qLArm,qRArm = qLArm0 , qRArm0
-  local trLArmNext, trRArmNext, qLArmNext, qRArmNext, trLArmCompensated, trRArmCompensated
-  local qLArmQueue,qRArmQueue,uTorsoCompensation={},{},{}
-  local qArmCount = 1
+  --Insert initial arm transform to the queue
+  local qLArmQueue,qRArmQueue, uTorsoCompQueue = {{qLArm0,dt_step}}, {{qRArm0,dt_step}}, {uTorsoComp0}
+  local qArmCount = 2
+
+  local uTorsoComp = uTorsoComp0
   
   while (not doneL or not doneR) and not failed do        
     trLArmNext, doneL = self.get_next_transform(trLArm,trLArm1,dpArmMax,dt_step)
     trRArmNext, doneR = self.get_next_transform(trRArm,trRArm1,dpArmMax,dt_step)
 
-    --We use previous joint angle to calculate the COM movement to compensate
-    local com_compensation = self.get_torso_compensation(
-        qLArm,qRArm,massL,massR)
-    local vec_compensation = vector.new({
-          -com_compensation[1],-com_compensation[2],0,0,0,0})
-
---    print("com compensation:",unpack(com_compensation))
---    vec_compensation = vector.zeros(6)
-    trLArmCompensated = vector.new(trLArmNext) + vec_compensation
-    trRArmCompensated = vector.new(trRArmNext) + vec_compensation
-
+    --We use this for COM calculation
     qLArmNext = self:search_shoulder_angle(qLArm,trLArmNext,1, yawMag)
     qRArmNext = self:search_shoulder_angle(qRArm,trRArmNext,0, yawMag)
 
-    qLArmCompensated = self:search_shoulder_angle(qLArm,trLArmCompensated,1, yawMag)
-    qRArmCompensated = self:search_shoulder_angle(qRArm,trRArmCompensated,0, yawMag)
+    local vec_comp = vector.new({-uTorsoComp[1],-uTorsoComp[2],0,0,0,0})
+--    print("com compensation:",unpack(uTorsoComp))
+--    vec_compensation = vector.zeros(6)
+    local trLArmNextComp = vector.new(trLArmNext) + vec_comp
+    local trRArmNextComp = vector.new(trRArmNext) + vec_comp
+    
+    --Actual arm angle considering the torso compensation
+    local qLArmNextComp = self:search_shoulder_angle(qLArm,trLArmNextComp,1, yawMag)
+    local qRArmNextComp = self:search_shoulder_angle(qRArm,trRArmNextComp,0, yawMag)
 
-    if not qLArmCompensated or not qRArmCompensated then 
-      if not qLArmCompensated then print("LEFT ERROR") end
-      if not qRArmCompensated then print ("RIGHT ERROR") end
-      failed = true 
-      print("failure")
+    if not qLArmNextComp or not qRArmNextComp then 
+      if not qLArmNextComp then print("LEFT ERROR") end
+      if not qRArmNextComp then print ("RIGHT ERROR") end
+      failed = true       
     else      
-      qLArmQueue[qArmCount] = {qLArmNext,dt_step}
-      qRArmQueue[qArmCount] = {qRArmNext,dt_step}
+      print(string.format("Com comp: %.3f %.3f",unpack(uTorsoComp)))
 
-      uTorsoCompensation[qArmCount] = com_compensation
+      local max_movement_ratioL = check_arm_joint_velocity(qLArm, qRArmNextComp, dt_step)
+      local max_movement_ratioR = check_arm_joint_velocity(qRArm, qRArmNextComp, dt_step)
+      local dt_step_current = dt_step * math.max(max_movement_ratioL,max_movement_ratioR)
+      
+      qLArmQueue[qArmCount] = {qLArmNextComp,dt_step_current}
+      qRArmQueue[qArmCount] = {qRArmNextComp,dt_step_current}
 
-      qLArm,qRArm,trLArm,trRArm = qLArmNext, qRArmNext, trLArmNext, trRArmNext
+--      qLArmQueue[qArmCount] = {qLArmNext,dt_step_current}
+--      qRArmQueue[qArmCount] = {qRArmNext,dt_step_current}
+
+      --update the compensation value for next step      
+      --TODO: move compensation slowly      
+      uTorsoCompNext = self.get_torso_compensation(qLArmNext,qRArmNext,massL,massR)
+      uTorsoCompQueue[qArmCount] = uTorsoCompNext
+
+      qLArm,qRArm,trLArm,trRArm, uTorsoComp = qLArmNext, qRArmNext, trLArmNext, trRArmNext, uTorsoCompNext
       qArmCount = qArmCount + 1
     end
   end
@@ -244,9 +245,9 @@ local function plan_double_arm(self,qLArm0,qRArm0, trLArm1, trRArm1)
     print("Plan failure at",self.print_transform(trLArmNext))
     print("Plan failure at",self.print_transform(trLArmCompensated))
     print("Arm angle:",unpack(vector.new(qArm)*180/math.pi))
-    return qLArmQueue,qRArmQueue, qLArmNext, qRArmNext, uTorsoCompensation
+    return qLArmQueue,qRArmQueue, uTorsoCompQueue, qLArmNext, qRArmNext, uTorsoCompNext
   else
-    return qLArmQueue,qRArmQueue, qLArmNext, qRArmNext, uTorsoCompensation
+    return qLArmQueue,qRArmQueue, uTorsoCompQueue, qLArmNext, qRArmNext, uTorsoCompNext
   end
 end
 
@@ -301,7 +302,6 @@ local function playback_trajectory(self,t)
 
       return qArm
   end
-
 end
 
 
@@ -329,6 +329,7 @@ libArmPlan.new_planner = function (params)
   s.get_next_transform = get_next_transform
   s.get_torso_compensation = get_torso_compensation
   s.set_hand_mass = set_hand_mass
+  s.check_arm_joint_velocity = check_arm_joint_velocity
 
   s.init_trajectory = init_trajectory
   s.playback_trajectory = playback_trajectory

@@ -208,7 +208,9 @@ THOROP_kinematics_com_upperbody(
     const double *qWaist,
     const double *qLArm,
     const double *qRArm,
-    double bodyPitch)  
+    double bodyPitch,
+    double mLHand,
+    double mRHand)  
 {
   /* inverse kinematics to convert joint angles to servo positions */
   std::vector<double> r(4);
@@ -221,8 +223,8 @@ THOROP_kinematics_com_upperbody(
             tRShoulder, tRElbow, tRWrist, tRHand,
 
             tPelvisCOM, tTorsoCOM,
-            tLUArmCOM, tLElbowCOM, tLLArmCOM, tLWristCOM,
-            tRUArmCOM, tRElbowCOM, tRLArmCOM, tRWristCOM;
+            tLUArmCOM, tLElbowCOM, tLLArmCOM, tLWristCOM, tLHandCOM,
+            tRUArmCOM, tRElbowCOM, tRLArmCOM, tRWristCOM, tRHandCOM;
   
   tPelvis = tPelvis
     .rotateY(bodyPitch);
@@ -293,9 +295,13 @@ THOROP_kinematics_com_upperbody(
   tLLArmCOM = tLWrist
     .translateX(comLowerArmX);
   
-  tLWristCOM = tLHand
+  tLWristCOM = trcopy(tLHand)
     .translateX(comWristX)
     .translateZ(comWristZ);
+
+  tLHandCOM = tLHand
+    .translateX(handOffsetX)
+    .translateY(-handOffsetY);
 
 
 
@@ -310,9 +316,15 @@ THOROP_kinematics_com_upperbody(
   tRLArmCOM = tRWrist
     .translateX(comLowerArmX);
 
-  tRWristCOM = tRHand
+  tRWristCOM = trcopy(tRHand)
     .translateX(comWristX)
     .translateZ(comWristZ);    
+
+  tRHandCOM = tRHand
+    .translateX(handOffsetX)
+    .translateY(handOffsetY);    
+
+
 
   r[0] = 
          mPelvis * tPelvisCOM(0,3) +
@@ -320,23 +332,29 @@ THOROP_kinematics_com_upperbody(
          mUpperArm * (tLUArmCOM(0,3) + tRUArmCOM(0,3))+
          mElbow * (tLElbowCOM(0,3) + tRElbowCOM(0,3))+
          mLowerArm * (tLLArmCOM(0,3)+ tRLArmCOM(0,3))+
-         mWrist * (tLWristCOM(0,3) + tRWristCOM(0,3));
+         mWrist * (tLWristCOM(0,3) + tRWristCOM(0,3))+
+         mLHand * tLHandCOM(0,3) + 
+         mRHand * tRHandCOM(0,3);
 
   r[1] = mPelvis * tPelvisCOM(1,3) +
          mTorso * tTorsoCOM(1,3) +
          mUpperArm * (tLUArmCOM(1,3) + tRUArmCOM(1,3))+
          mElbow * (tLElbowCOM(1,3) + tRElbowCOM(1,3))+
          mLowerArm * (tLLArmCOM(1,3)+ tRLArmCOM(1,3))+
-         mWrist * (tLWristCOM(1,3) + tRWristCOM(1,3));
+         mWrist * (tLWristCOM(1,3) + tRWristCOM(1,3))+
+         mLHand * tLHandCOM(1,3) + 
+         mRHand * tRHandCOM(1,3);
 
   r[2] = mPelvis * tPelvisCOM(2,3) +
          mTorso * tTorsoCOM(2,3) +
          mUpperArm * (tLUArmCOM(2,3) + tRUArmCOM(2,3))+
          mElbow * (tLElbowCOM(2,3) + tRElbowCOM(2,3))+
          mLowerArm * (tLLArmCOM(2,3)+ tRLArmCOM(2,3))+
-         mWrist * (tLWristCOM(2,3) + tRWristCOM(2,3));
+         mWrist * (tLWristCOM(2,3) + tRWristCOM(2,3))+
+         mLHand * tLHandCOM(2,3) + 
+         mRHand * tRHandCOM(2,3);
 
-  r[3] = mPelvis + mTorso + 2* (mUpperArm + mElbow + mLowerArm + mWrist);
+  r[3] = mPelvis + mTorso + 2* (mUpperArm + mElbow + mLowerArm + mWrist) + mLHand + mRHand;
 
   return r;
 }
@@ -418,7 +436,9 @@ THOROP_kinematics_calculate_support_torque(
   const double *qRLeg,
   double bodyPitch,
   int supportLeg,
-  const double *uTorsoAcc
+  const double *uTorsoAcc,
+  double mLHand,
+  double mRHand
    ){
 
   Transform tPelvis, tHip;
@@ -432,7 +452,7 @@ THOROP_kinematics_calculate_support_torque(
   std::vector<double> rel_com_ankle(4);
 
 
-  com_upperbody = THOROP_kinematics_com_upperbody(qWaist, qLArm, qRArm,bodyPitch);
+  com_upperbody = THOROP_kinematics_com_upperbody(qWaist, qLArm, qRArm,bodyPitch, mLHand, mRHand);
   com_left_leg = THOROP_kinematics_com_leg(qLLeg,bodyPitch,1);
   com_right_leg = THOROP_kinematics_com_leg(qRLeg,bodyPitch,0);
 

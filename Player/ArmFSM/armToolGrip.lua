@@ -9,7 +9,7 @@ local dqArmMax = Config.arm.slow_limit
 local dpArmMax = Config.arm.linear_slow_limit
 local stage = 1;
 
-local qLArm, qRArm, trLArm, trRArm, trTarget
+local qLArm, qRArm, qLArm0, qRArm0, trLArm, trRArm, trTarget
 local tool_pos,tool_pos_target
 
 local qLArmTarget0, qRArmTarget0
@@ -31,26 +31,20 @@ function state.entry()
 
   qLArm = Body.get_larm_command_position()
   qRArm = Body.get_rarm_command_position()
-  trLArm = Body.get_forward_larm(qLArm);
-  trRArm = Body.get_forward_rarm(qRArm)  
 
-   
-  --tool_pos_left = hcm.get_tool_pos()
+  qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, 0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD})
+  qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, 0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD})
   
-
+  local trLArm0 = Body.get_forward_larm(qLArm0)
+  local trRArm0 = Body.get_forward_rarm(qRArm0)  
+ 
+  --tool_pos_left = hcm.get_tool_pos()
   tool_pos_left=vector.new({0.55,0.02,0.05})  
-
   tool_pos_left1=tool_pos_left + vector.new({0,0,0.05})
-
   tool_pos_left2=vector.new({0.35,0.05,tool_pos_left[3]+0.05})  
-
   tool_pos_left3=vector.new({0.35,0.05,-0.05})  
 
-
-
-  stage = 1;  
-
-  trLArmTarget0 = trLArm
+--  trLArmTarget0 = trLArm
   trLArmTarget1 = movearm.getToolPosition(tool_pos_left,0.08,1)    
   trLArmTarget2 = movearm.getToolPosition(tool_pos_left,0,1)    
   trLArmTarget3 = movearm.getToolPosition(tool_pos_left1,0,1)    
@@ -58,7 +52,7 @@ function state.entry()
   trLArmTarget5 = movearm.getToolPosition(tool_pos_left3,0,1)    
 
   print("Planning LArmPlan1")
-  LArmPlan1,qLArm1 = arm_planner:plan_arm(qLArm, trLArmTarget1, 1)  
+  LArmPlan1,qLArm1 = arm_planner:plan_arm(qLArm0, trLArmTarget1, 1)  
   print("Planning LArmPlan2")
   LArmPlan2,qLArm1 = arm_planner:plan_arm(qLArm1, trLArmTarget2, 1)
   print("Planning LArmPlan3")
@@ -72,21 +66,23 @@ function state.entry()
 
 
   print("Testing two-arm planning")
-  LAP1, RAP1, qLArm1, qRArm1 = arm_planner:plan_double_arm(qLArm,qRArm,trLArmTarget1,trRArm)
+  LAP1, RAP1, qLArm1, qRArm1, uTorsoComp1 = arm_planner:plan_double_arm(qLArm0,qRArm0,trLArmTarget1,trRArm0)
+  LAP2, RAP2, qLArm2, qRArm2, uTorsoComp2 = arm_planner:plan_double_arm(qLArm1,qRArm1,trLArmTarget2,trRArm0)
+  LAP3, RAP3, qLArm3, qRArm3, uTorsoComp3 = arm_planner:plan_double_arm(qLArm2,qRArm2,trLArmTarget3,trRArm0)
+  LAP4, RAP4, qLArm4, qRArm4, uTorsoComp4 = arm_planner:plan_double_arm(qLArm3,qRArm3,trLArmTarget4,trRArm0)
 
   --Test two arm planning
 
 
 
-
-
+  stage = 0;  
 end
 
 local gripL, gripR = 0,0
 
 local qJointVelTool = 
-  {30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,
-   30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD}
+  {10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,
+   30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,}
 
 function state.update()
   --  print(state._NAME..' Update' )
@@ -96,12 +92,12 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
   qLArm = Body.get_larm_command_position()
-  qRArm = Body.get_rarm_command_position()
-  trLArm = Body.get_forward_larm(qLArm)
-  trRArm = Body.get_forward_rarm(qRArm)
+  qRArm = Body.get_rarm_command_position()  
 
-
-  if stage==1 then
+  if stage==0 then --Rotate wrist
+    ret = movearm.setArmJoints(qLArm0, qRArm0 ,dt, qJointVelTool)
+    if ret==1 then stage=stage+1 end
+  elseif stage==1 then
     local qLArmTarget = arm_planner:playback_trajectory(t)
     if qLArmTarget then movearm.setArmJoints(qLArmTarget,qRArm,dt)
     else 

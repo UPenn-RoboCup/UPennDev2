@@ -569,7 +569,8 @@ local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
 	if position_error>pos_tol then in_tolerance=false end
   if angle_error>ang_tol then in_tolerance=false end
 
-  if not in_tolerance then
+--  if not in_tolerance then
+if false then
     print("IK ERROR")
     print(string.format("tr0:%.2f %.2f %.2f %.2f %.2f %.2f tr:%.2f %.2f %.2f %.2f %.2f %.2f",
     tr_check[1],

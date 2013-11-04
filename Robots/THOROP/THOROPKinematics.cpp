@@ -699,79 +699,6 @@ THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, 
 }
 
 
-std::vector<double>
-THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg, double bodyPitch, const double *qWaist) 
-{
-  //Calculate the wrist angle given the wrist position and the target transform 
-  Transform trArmRot; //Only the rotation part of trArm
-  trArmRot = trArmRot*trArm
-     .translateZ(-trArm(2,3))
-     .translateY(-trArm(1,3))
-     .translateX(-trArm(0,3));     
-
-  //Shoulder to wrist transform  
-  Transform tInvRot;
-  tInvRot = tInvRot
-  .rotateY(-qOrg[3])
-  .rotateX(-qOrg[2])
-  .rotateZ(-qOrg[1])
-  .rotateY(-qOrg[0]);
-
-  //Now we solve  
-  // tRot * RotX(wristYaw)*RotZ(wristRoll)*RotX(wristYaw2) = trArmRot
-  // or inv(tRot) * trArmRot = RotX RotZ RotX
-
-//  Transform rotWrist = inv(tRot) * trArmRot;
-  Transform rotWrist = tInvRot * trArmRot;   
-
-  double wristYaw_a, wristRoll_a, wristYaw2_a,
-        wristYaw_b, wristRoll_b, wristYaw2_b;
-
-  //Two solutions
-  wristRoll_a = acos(rotWrist(0,0)); //0 to pi
-  double swa = sin(wristRoll_a);
-  wristYaw_a = atan2 (rotWrist(2,0)*swa,rotWrist(1,0)*swa);
-  wristYaw2_a = atan2 (rotWrist(0,2)*swa,-rotWrist(0,1)*swa);
-
-  //Filpped position
-  wristRoll_b = -wristRoll_a; //-pi to 0
-  double swb = sin(wristRoll_b);
-  wristYaw_b = atan2 (rotWrist(2,0)*swb,rotWrist(1,0)*swb);  
-  wristYaw2_b = atan2 (rotWrist(0,2)*swb,-rotWrist(0,1)*swb);
-
-  //singular point: just use current angles
-  if(swa<0.00001){
-    wristYaw_a = qOrg[4];    
-    wristRoll_a = qOrg[5];
-    wristYaw2_a = qOrg[6];
-    wristYaw_b = qOrg[4];
-    wristRoll_b = qOrg[5];
-    wristYaw2_b = qOrg[6];
-  } 
-
-  //Select the closest solution to current joint angle  
-  bool select_a = false;
-  double err_a = fmodf(qOrg[4] - wristYaw_a+5*PI, 2*PI) - PI;
-  double err_b = fmodf(qOrg[4] - wristYaw_b+5*PI, 2*PI) - PI;
-  if (err_a*err_a<err_b*err_b)   select_a=true;
-  
-  std::vector<double> qArm(7);
-  qArm[0] = qOrg[0];
-  qArm[1] = qOrg[1];
-  qArm[2] = qOrg[2];
-  qArm[3] = qOrg[3];
-
-  if (select_a==true) {
-    qArm[4] = wristYaw_a;
-    qArm[5] = wristRoll_a;
-    qArm[6] = wristYaw2_a;
-  }else{
-    qArm[4] = wristYaw_b;
-    qArm[5] = wristRoll_b;
-    qArm[6] = wristYaw2_b;
-  }
-  return qArm;
-}
 
 
 
@@ -988,6 +915,92 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
   qArm[1] = shoulderRoll;
   qArm[2] = shoulderYaw;
   qArm[3] = elbowPitch;
+
+  if (select_a==true) {
+    qArm[4] = wristYaw_a;
+    qArm[5] = wristRoll_a;
+    qArm[6] = wristYaw2_a;
+  }else{
+    qArm[4] = wristYaw_b;
+    qArm[5] = wristRoll_b;
+    qArm[6] = wristYaw2_b;
+  }
+  return qArm;
+}
+
+
+std::vector<double>
+THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg, double bodyPitch, const double *qWaist) 
+{
+  //Calculate the wrist angle given the wrist position and the target transform 
+
+printf("qWaist: %f %f\n",qWaist[0],qWaist[1]);
+printf("bodyPitch: %f \n",bodyPitch);
+
+  Transform trArmRot; //Only the rotation part of trArm
+
+  trArmRot = trArmRot
+      .rotateY(-qWaist[1])
+      .rotateZ(-qWaist[0])
+      .rotateY(-bodyPitch)
+      *trArm
+     .translateZ(-trArm(2,3))
+     .translateY(-trArm(1,3))
+     .translateX(-trArm(0,3));     
+
+  //Pelvis to wrist transform  
+  Transform tInvRot;
+  tInvRot = tInvRot
+  .rotateY(-qOrg[3])
+  .rotateX(-qOrg[2])
+  .rotateZ(-qOrg[1])
+  .rotateY(-qOrg[0]);
+  
+
+
+  //Now we solve  
+  // tRot * RotX(wristYaw)*RotZ(wristRoll)*RotX(wristYaw2) = trArmRot
+  // or inv(tRot) * trArmRot = RotX RotZ RotX
+
+//  Transform rotWrist = inv(tRot) * trArmRot;
+  Transform rotWrist = tInvRot * trArmRot;   
+
+  double wristYaw_a, wristRoll_a, wristYaw2_a,
+        wristYaw_b, wristRoll_b, wristYaw2_b;
+
+  //Two solutions
+  wristRoll_a = acos(rotWrist(0,0)); //0 to pi
+  double swa = sin(wristRoll_a);
+  wristYaw_a = atan2 (rotWrist(2,0)*swa,rotWrist(1,0)*swa);
+  wristYaw2_a = atan2 (rotWrist(0,2)*swa,-rotWrist(0,1)*swa);
+
+  //Filpped position
+  wristRoll_b = -wristRoll_a; //-pi to 0
+  double swb = sin(wristRoll_b);
+  wristYaw_b = atan2 (rotWrist(2,0)*swb,rotWrist(1,0)*swb);  
+  wristYaw2_b = atan2 (rotWrist(0,2)*swb,-rotWrist(0,1)*swb);
+
+  //singular point: just use current angles
+  if(swa<0.00001){
+    wristYaw_a = qOrg[4];    
+    wristRoll_a = qOrg[5];
+    wristYaw2_a = qOrg[6];
+    wristYaw_b = qOrg[4];
+    wristRoll_b = qOrg[5];
+    wristYaw2_b = qOrg[6];
+  } 
+
+  //Select the closest solution to current joint angle  
+  bool select_a = false;
+  double err_a = fmodf(qOrg[4] - wristYaw_a+5*PI, 2*PI) - PI;
+  double err_b = fmodf(qOrg[4] - wristYaw_b+5*PI, 2*PI) - PI;
+  if (err_a*err_a<err_b*err_b)   select_a=true;
+  
+  std::vector<double> qArm(7);
+  qArm[0] = qOrg[0];
+  qArm[1] = qOrg[1];
+  qArm[2] = qOrg[2];
+  qArm[3] = qOrg[3];
 
   if (select_a==true) {
     qArm[4] = wristYaw_a;

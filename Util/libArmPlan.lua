@@ -87,8 +87,11 @@ local function plan_arm(self,qArm0, trArm1, isLeft)
 
   local trArmQueue = {}
 
-  local dpArmMax = Config.arm.linear_slow_limit
+  local dpArmMax = vector.new(Config.arm.linear_slow_limit)
   local dt_step = 0.01
+
+  local dt_step = 0.1
+
   local yawMag = dt_step * 10*math.pi/180
 
   local qArm = qArm0;
@@ -104,7 +107,19 @@ local function plan_arm(self,qArm0, trArm1, isLeft)
     else
       --TODO: check joint velocity and adjust timestep
       local qArmMovement = vector.new(qArmNext) - vector.new(qArm);
-      qArmQueue[qArmCount] = {qArmNext,dt_step}
+      local max_movement = 0
+      for i=1,7 do
+        if math.abs(qArmMovement[i])>max_movement then
+          max_movement = math.abs(qArmMovement[i])
+        end
+      end
+      local jointVelLimit = 10*math.pi/180
+      local dt_step_current = dt_step
+      if max_movement > dt_step * jointVelLimit then
+        dt_step_current = max_movement / jointVelLimit
+      end
+
+      qArmQueue[qArmCount] = {qArmNext,dt_step_current}
       qArmCount = qArmCount + 1
       qArm = qArmNext
       trArm = trArmNext      
@@ -112,7 +127,7 @@ local function plan_arm(self,qArm0, trArm1, isLeft)
   end
 
   local t1 = unix.time()  
-  print("Plan time:",t1-t0)
+  print(string.format("%d steps planned, %.2f ms elapsed:", qArmCount,(t1-t0)*1000 ))
   if failed then 
     print("Plan failure at",self.print_transform(trArmNext))
     print("Arm angle:",unpack(vector.new(qArm)*180/math.pi))
@@ -135,6 +150,15 @@ local function get_torso_compensation(qLArm,qRArm,massL,massR)
 end
 
 local function plan_double_arm(self,qLArm0,qRArm0, trLArm1, trRArm1)
+
+
+-- Now we compensate for the COM movement
+-- if we reach out, we have to move torso back to compensate
+-- and then we need to reach out further to compensate for that movement
+-- Here qLArm and qRArm values are the values BEFORE compensation
+-- qLArmQueue and qRArmQueue uses the compensated arm positions
+
+
   if not qLArm0 or not qRArm0 then return nil end
 
   local massL, massR = self.mLeftHand, self.mRightHand
@@ -146,10 +170,12 @@ local function plan_double_arm(self,qLArm0,qRArm0, trLArm1, trRArm1)
   
   local dpArmMax = Config.arm.linear_slow_limit
   local dt_step = 0.01
+  local dt_step = 0.1
+
   local yawMag = dt_step * 10*math.pi/180
 
   local qLArm,qRArm = qLArm0 , qRArm0
-  local trLArmNext, trRArmNext, qLArmNext, qRArmNext
+  local trLArmNext, trRArmNext, qLArmNext, qRArmNext, trLArmCompensated, trRArmCompensated
   local qLArmQueue,qRArmQueue,uTorsoCompensation={},{},{}
   local qArmCount = 1
   
@@ -165,13 +191,18 @@ local function plan_double_arm(self,qLArm0,qRArm0, trLArm1, trRArm1)
 
 --    print("com compensation:",unpack(com_compensation))
 --    vec_compensation = vector.zeros(6)
-    local trLArmCompensated = vector.new(trLArmNext) + vec_compensation
-    local trRArmCompensated = vector.new(trRArmNext) + vec_compensation
+    trLArmCompensated = vector.new(trLArmNext) + vec_compensation
+    trRArmCompensated = vector.new(trRArmNext) + vec_compensation
 
-    qLArmNext = self:search_shoulder_angle(qLArm,trLArmCompensated,1, yawMag)
-    qRArmNext = self:search_shoulder_angle(qRArm,trRArmCompensated,0, yawMag)
+    qLArmNext = self:search_shoulder_angle(qLArm,trLArmNext,1, yawMag)
+    qRArmNext = self:search_shoulder_angle(qRArm,trRArmNext,0, yawMag)
 
-    if not qLArmNext or not qRArmNext then 
+    qLArmCompensated = self:search_shoulder_angle(qLArm,trLArmCompensated,1, yawMag)
+    qRArmCompensated = self:search_shoulder_angle(qRArm,trRArmCompensated,0, yawMag)
+
+    if not qLArmCompensated or not qRArmCompensated then 
+      if not qLArmCompensated then print("LEFT ERROR") end
+      if not qRArmCompensated then print ("RIGHT ERROR") end
       failed = true 
       print("failure")
     else      
@@ -186,13 +217,14 @@ local function plan_double_arm(self,qLArm0,qRArm0, trLArm1, trRArm1)
   end
 
   local t1 = unix.time()  
-  print("Plan time:",t1-t0)
+  print(string.format("%d steps planned, %.2f ms elapsed:",qArmCount,(t1-t0)*1000 ))
   if failed then 
-    print("Plan failure at",self.print_transform(trArmNext))
+    print("Plan failure at",self.print_transform(trLArmNext))
+    print("Plan failure at",self.print_transform(trLArmCompensated))
     print("Arm angle:",unpack(vector.new(qArm)*180/math.pi))
-    return qLArmQueue,qRArmQueue, qLArm, qRArm, uTorsoCompensation
+    return qLArmQueue,qRArmQueue, qLArmNext, qRArmNext, uTorsoCompensation
   else
-    return qLArmQueue,qRArmQueue, qLArm, qRArm, uTorsoCompensation
+    return qLArmQueue,qRArmQueue, qLArmNext, qRArmNext, uTorsoCompensation
   end
 end
 

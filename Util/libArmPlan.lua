@@ -18,6 +18,21 @@ local function print_transform(tr)
   return str
 end
 
+local function print_jangle(q)
+  local str= string.format("%d %d %d %d %d %d %d",    
+    q[1]*180/math.pi,
+    q[2]*180/math.pi,
+    q[3]*180/math.pi,
+    q[4]*180/math.pi,
+    q[5]*180/math.pi,
+    q[6]*180/math.pi,
+    q[7]*180/math.pi
+    )
+  return str
+end
+
+
+
 local function calculate_margin(qArm,isLeft)
   local jointangle_margin
   if not qArm then return -math.huge 
@@ -82,9 +97,11 @@ local function plan_arm(self,qArm0, trArm1, isLeft)
   local trArm
   if isLeft>0 then trArm = Body.get_forward_larm(qArm0)
   else trArm = Body.get_forward_rarm(qArm0)   end
-  print("Current:",self.print_transform(trArm))
-  print("Target:",self.print_transform(trArm1))
-
+--[[  
+  print("Current tr:",self.print_transform(trArm))
+  print("Target tr:",self.print_transform(trArm1))
+  print("Current jangle:",self.print_jangle(qArm0))
+--]]
   local trArmQueue = {}
 
   local dpArmMax = vector.new(Config.arm.linear_slow_limit)
@@ -92,33 +109,38 @@ local function plan_arm(self,qArm0, trArm1, isLeft)
 
   local dt_step = 0.1
 
+  local dt_step = 0.5
+
   local yawMag = dt_step * 10*math.pi/180
 
   local qArm = qArm0;
   local trArmNext, qArmNext
 
-  local qArmQueue={}
-  local qArmCount = 1
+  local qArmQueue={{qArm,dt_step}}
+  local qArmCount = 2
   
   while not done and not failed do        
     trArmNext, done = self.get_next_transform(trArm,trArm1,dpArmMax,dt_step)
     qArmNext = self:search_shoulder_angle(qArm,trArmNext,isLeft, yawMag)
     if not qArmNext then failed = true 
     else
+--[[      
+      print()
+      print("Tr:",self.print_transform(trArmNext))
+      print("Jangle:",self.print_jangle(qArmNext))
+--]]
       --TODO: check joint velocity and adjust timestep
       local qArmMovement = vector.new(qArmNext) - vector.new(qArm);
-      local max_movement = 0
-      for i=1,7 do
-        if math.abs(util.mod_angle(qArmMovement[i]))>max_movement then
-          max_movement = math.abs(util.mod_angle(qArmMovement[i]))
-        end
-      end
-      local jointVelLimit = 10*math.pi/180
-      local dt_step_current = dt_step
-      if max_movement > dt_step * jointVelLimit then
-        dt_step_current = max_movement / jointVelLimit
-      end
+      local max_movement_ratio = 1
 
+      local jointVelLimit = vector.new({10,10,10,10,30,10,30})*Body.DEG_TO_RAD
+      for i=1,7 do
+        local movement_ratio = math.abs(util.mod_angle(qArmMovement[i]))
+          /(jointVelLimit[i]*dt_step)
+        max_movement_ratio = math.max(max_movement_ratio,movement_ratio)
+      end
+--      if max_movement_ratio>1 then print("SLOWEDDOWN, ratio:",max_movement_ratio) end
+      local dt_step_current = dt_step * max_movement_ratio
       qArmQueue[qArmCount] = {qArmNext,dt_step_current}
       qArmCount = qArmCount + 1
       qArm = qArmNext
@@ -248,16 +270,15 @@ local function playback_trajectory(self,t)
   else
      --Skip keyframes if needed
       while t>self.armQueuePlayEndTime do        
+--        print("skipping frame")
         self.armQueuePlaybackCount = self.armQueuePlaybackCount +1        
-
-        --Update the frame start time
-        self.armQueuePlayStartTime = self.armQueuePlayEndTime
-
         if #self.armQueue < self.armQueuePlaybackCount then
           --Passed the end of the queue. return the last joint angle
           return self.armQueue[#self.armQueue][1]
         end
 
+        --Update the frame start time
+        self.armQueuePlayStartTime = self.armQueuePlayEndTime
         --Update the frame end time
         self.armQueuePlayEndTime = self.armQueuePlayStartTime + 
             self.armQueue[self.armQueuePlaybackCount][2]
@@ -270,10 +291,13 @@ local function playback_trajectory(self,t)
          --Now  t should be between playstarttime and playendtime
       local ph = (t-self.armQueuePlayStartTime)/ 
                 (self.armQueuePlayEndTime-self.armQueuePlayStartTime)
+     
       local qArm={}
       for i=1,7 do
         qArm[i] = self.qArmStart[i] + ph * (util.mod_angle(self.qArmEnd[i]-self.qArmStart[i]))
       end
+
+--      print("Count, ph:",self.armQueuePlaybackCount, ph)
 
       return qArm
   end
@@ -299,6 +323,7 @@ libArmPlan.new_planner = function (params)
   s.plan_arm = plan_arm
   s.plan_double_arm = plan_double_arm
   s.print_transform = print_transform
+  s.print_jangle = print_jangle
   s.calculate_margin = calculate_margin
   s.search_shoulder_angle = search_shoulder_angle
   s.get_next_transform = get_next_transform

@@ -18,6 +18,8 @@ local trLArmTarget,trRArmTarget
 local libArmPlan = require 'libArmPlan'
 arm_planner = libArmPlan.new_planner()
 
+local debugdata
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -41,8 +43,8 @@ function state.entry()
   --tool_pos_left = hcm.get_tool_pos()
   tool_pos_left=vector.new({0.55,0.02,0.05})  
   tool_pos_left1=tool_pos_left + vector.new({0,0,0.05})
-  tool_pos_left2=vector.new({0.35,0.05,tool_pos_left[3]+0.05})  
-  tool_pos_left3=vector.new({0.35,0.05,-0.05})  
+  tool_pos_left2=vector.new({0.35,0.05,tool_pos_left1[3]})  
+  tool_pos_left3=vector.new({0.30,0.10,-0.10})  
 
 --  trLArmTarget0 = trLArm
   trLArmTarget1 = movearm.getToolPosition(tool_pos_left,0.08,1)    
@@ -62,20 +64,22 @@ function state.entry()
   print("Planning LArmPlan5")
   LArmPlan5,qLArm1 = arm_planner:plan_arm(qLArm1, trLArmTarget5, 1)
 
-  arm_planner:init_trajectory(LArmPlan1,t_entry)
-
+  
+  
+--[[
 
   print("Testing two-arm planning")
   LAP1, RAP1, qLArm1, qRArm1, uTorsoComp1 = arm_planner:plan_double_arm(qLArm0,qRArm0,trLArmTarget1,trRArm0)
   LAP2, RAP2, qLArm2, qRArm2, uTorsoComp2 = arm_planner:plan_double_arm(qLArm1,qRArm1,trLArmTarget2,trRArm0)
   LAP3, RAP3, qLArm3, qRArm3, uTorsoComp3 = arm_planner:plan_double_arm(qLArm2,qRArm2,trLArmTarget3,trRArm0)
   LAP4, RAP4, qLArm4, qRArm4, uTorsoComp4 = arm_planner:plan_double_arm(qLArm3,qRArm3,trLArmTarget4,trRArm0)
-
+--]]
   --Test two arm planning
 
 
 
   stage = 0;  
+  debugdata=''
 end
 
 local gripL, gripR = 0,0
@@ -94,9 +98,37 @@ function state.update()
   qLArm = Body.get_larm_command_position()
   qRArm = Body.get_rarm_command_position()  
 
+  local trLArm = Body.get_forward_larm(qLArm)
+
+
+  debugdata=debugdata..
+    string.format("%f,  %f,%f,%f,%f,%f,%f,%f,  %f,%f,%f,%f,%f,%f\n",
+    t-t_entry, 
+    qLArm[1],
+    qLArm[2],
+    qLArm[3],
+    qLArm[4],
+    qLArm[5],
+    qLArm[6],
+    qLArm[7],
+
+    trLArm[1],
+    trLArm[2],
+    trLArm[3],
+    trLArm[4],
+    trLArm[5],
+    trLArm[6]
+    )
+
+
+--  if stage==2 then return end
+
   if stage==0 then --Rotate wrist
     ret = movearm.setArmJoints(qLArm0, qRArm0 ,dt, qJointVelTool)
-    if ret==1 then stage=stage+1 end
+    if ret==1 then 
+      arm_planner:init_trajectory(LArmPlan1,t)
+      stage=stage+1 
+    end
   elseif stage==1 then
     local qLArmTarget = arm_planner:playback_trajectory(t)
     if qLArmTarget then movearm.setArmJoints(qLArmTarget,qRArm,dt)
@@ -142,6 +174,14 @@ function state.update()
 end
 
 function state.exit()  
+
+
+  local savefile = string.format("Log/debugdata_%s",os.date());
+  local debugfile=assert(io.open(savefile,"w")); 
+  debugfile:write(debugdata);
+  debugfile:flush();
+  debugfile:close();  
+
   Body.set_lgrip_percent(0)
   Body.set_rgrip_percent(0)
   print(state._NAME..' Exit' )

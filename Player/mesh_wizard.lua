@@ -94,8 +94,6 @@ local function setup_mesh( name, tbl )
     tbl.meta.posez[i]=0,0,0
   end
 
-
-  
   -- In memory mesh
   tbl.mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
   -- Mesh buffers for compressing and sending to the user
@@ -181,10 +179,8 @@ local function stream_mesh(mesh)
   if net_settings[1]==0 then return end
 
   -- Check if the panning is over (for interval streaming)
-  if net_settings[1]==2 then
-    if mesh.current_direction == mesh.prev_direction then
-      return  
-    end
+  if net_settings[1]==2 or net_settings[1]==4 then
+    if mesh.current_direction == mesh.prev_direction then return end
   end
 
   -- Sensitivity range in meters
@@ -196,23 +192,30 @@ local function stream_mesh(mesh)
     depths,
     net_settings)
   
-	if net_settings[1]==1 then --Single sending
+	if net_settings[1]==1 then
+    -- Unreliable Single sending
     net_settings[1] = 0
     local ret, err = mesh_udp_ch:send( metapack..c_mesh )
     if err then print('mesh udp',err) end
     vcm['set_'..mesh.meta.name..'_net'](net_settings)
-		print('Mesh | sent unreliable!',mesh.meta.t)
-  elseif net_settings[1]==2 then --Interval streaming
+		print('Mesh | sent single unreliable!',mesh.meta.t)
+  elseif net_settings[1]==2 then
+    -- Unreliable Interval streaming
     local ret, err = mesh_udp_ch:send( metapack..c_mesh )
     if err then print('mesh udp',err) end
     vcm['set_'..mesh.meta.name..'_net'](net_settings)
-    print('Mesh | sent unreliable!',mesh.meta.t)
+    print('Mesh | sent interval unreliable!',mesh.meta.t)
   elseif net_settings[1]==3 then
     -- Reliable single frame
     net_settings[1] = 0
     local ret = mesh_tcp_ch:send{metapack,c_mesh}
     vcm['set_'..mesh.meta.name..'_net'](net_settings)
-		print('Mesh | sent reliable!',mesh.meta.t)
+		print('Mesh | sent single reliable!',mesh.meta.t)
+  elseif net_settings[1]==4 then
+    -- Reliable Interval streaming
+    local ret = mesh_tcp_ch:send{metapack,c_mesh}
+    vcm['set_'..mesh.meta.name..'_net'](net_settings)
+		print('Mesh | sent interval reliable!',mesh.meta.t)
   end
   --[[
   util.ptable(mesh.meta)

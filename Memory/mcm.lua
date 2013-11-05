@@ -9,12 +9,13 @@ local vector = require'vector'
 local shared = {}
 local shsize = {}
 
--- For the vision system 
--- Now FK / IK use this too! 
+-- Storing current stance info
+shared.stance = {}
+shared.stance.bodyTilt   = vector.zeros(1)
+shared.stance.bodyHeight = vector.zeros(1)
+shared.stance.bodyHeightTarget = vector.zeros(1)
+shared.stance.uTorsoComp = vector.zeros(2) --For quasi-static balancing
 
-shared.camera = {}
-shared.camera.bodyTilt   = vector.zeros(1)
-shared.camera.bodyHeight = vector.zeros(1)
 
 -- Walk Parameters
 shared.walk = {}
@@ -30,8 +31,12 @@ shared.walk.bipedal    = vector.zeros(1)
 shared.walk.stoprequest= vector.zeros(1)
 shared.walk.ismoving= vector.zeros(1)
 
---For quasi-static balancing
-shared.walk.uTorsoComp = vector.zeros(2) 
+
+
+
+
+
+
 
 -- Walk-step transition
 shared.walk.steprequest= vector.zeros(1)
@@ -44,9 +49,6 @@ shared.status.velocity   = vector.zeros(3)
 shared.status.odometry   = vector.zeros(3)
 shared.status.bodyOffset = vector.zeros(3)
 shared.status.falling    = vector.zeros(1)
-
-shared.status.bodyHeight = vector.zeros(1) --for sit/standup
-
 
 --Current Foot and Torso Poses
 --TODO: extend to 6D poses
@@ -73,6 +75,16 @@ shared.support.uLeft_next  = vector.zeros(3)
 shared.support.uRight_next = vector.zeros(3)
 shared.support.uTorso_next = vector.zeros(3)
 
+
+
+
+local maxSteps = 40
+shared.step = {}
+
+--Footsteps queue
+--{[rx ry ra supportLeg t0 t1 t2 zmpmodx zmpmody zmpmoda stepparam1 stepparam2 stepparam3]}
+shared.step.footholds  = vector.zeros(13*maxSteps)
+shared.step.nfootholds = vector.zeros(1)
 
 
 

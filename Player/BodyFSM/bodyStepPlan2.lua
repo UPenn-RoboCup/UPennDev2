@@ -11,6 +11,8 @@ require'hcm'
 -- Get the robot guided approach
 require'wcm'
 
+require'mcm'
+
 -- FSM coordination
 local simple_ipc = require'simple_ipc'
 local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
@@ -98,8 +100,8 @@ local function calculate_footsteps()
     step_queue_vector[offset+12] = step_queue[i][7][2]
     step_queue_vector[offset+13] = step_queue[i][7][3]
   end
-  hcm.set_motion_footholds(step_queue_vector)
-  hcm.set_motion_nfootholds(#step_queue)
+  mcm.set_step_footholds(step_queue_vector)
+  mcm.set_step_nfootholds(#step_queue)
 end
 
 
@@ -116,34 +118,6 @@ function state.entry()
   local pose = {0,0,0}
   pose = wcm.get_robot_pose();
 
-
---[[
-
-  -- Grab the waypoints
-  nwaypoints = hcm.get_motion_nwaypoints()
-  print('# of waypoints:', nwaypoints)
-  print('waypoints', unpack(hcm.get_motion_waypoints()))
-  local raw_waypoints = vector.slice(hcm.get_motion_waypoints(),1,3*nwaypoints)
-
-  -- Check the frame of reference
-  local waypoint_frame = hcm.get_motion_waypoint_frame()
-
-  local idx = 1
-  for w=1,nwaypoints do
-    local waypoint = vector.slice(raw_waypoints,idx,idx+2)
-    if waypoint_frame==0 then
-      -- If a relative frame, then convert to the global frame
-      waypoint = util.pose_global(waypoint, pose)
-    end
-    -- Add to the waypoints table
-    waypoints[w] = waypoint
-    -- Increment the index
-    idx = idx + 3
-  end
-
-  -- Start with the first waypoint
-  wp_id = 1
---]]  
   calculate_footsteps()
   motion_ch:send'preview'  
 end

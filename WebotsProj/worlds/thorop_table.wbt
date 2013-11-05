@@ -31,7 +31,7 @@ DEF FLOOR MetricFloor {
 }
 THOROP7_NoBoundaries {
 #  translation -0.1 1.15535 0.05
-  translation -0.1 1.15535 -0.05
+  translation -0.1 1.15535 -0.03
   controller "thorop"
   controllerArgs "0 32"
 }
@@ -92,7 +92,7 @@ DEF MY_DRILL Solid {
   }
   physics Physics {
     density -1
-    mass 2
+    mass 3
   }
 }
 DEF WALL_TO_BREAK Solid {

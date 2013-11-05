@@ -156,11 +156,23 @@ local function set_hand_mass(self,mLeftHand, mRightHand)
   self.mRightHand = mRightHand
 end
 
-local function get_torso_compensation(qLArm,qRArm,massL,massR)
+local function reset_torso_comp(self,qLArm,qRArm)
+  local qWaist = {0,0}--TODO: will we use waist position as well?
+  local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,
+        Config.walk.bodyTilt, 0,0)
+  self.torsoCompBias = {-com[1]/com[4],-com[2]/com[4]}
+end
+
+
+local function get_torso_compensation(self,qLArm,qRArm,massL,massR)
   local qWaist = {0,0}--TODO: will we use waist position as well?
   local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,
         Config.walk.bodyTilt, massL, massR)
-  return {-com[1]/com[4],-com[2]/com[4]}
+
+
+--  return {0,0}
+
+  return {-com[1]/com[4]-self.torsoCompBias[1],-com[2]/com[4]-self.torsoCompBias[2]}
 end
 
 
@@ -202,16 +214,16 @@ print("Object mass:",massL, massR)
 
   local uTorsoCompNext
   
-  while (not doneL or not doneR) and not failed do        
+  while (not doneL or not doneR) and not failed and not torsoCompDone do        
     trLArmNext, doneL = self.get_next_transform(trLArm,trLArm1,dpArmMax,dt_step)
     trRArmNext, doneR = self.get_next_transform(trRArm,trRArm1,dpArmMax,dt_step)
 
     --We use this for COM calculation
     qLArmNext = self:search_shoulder_angle(qLArm,trLArmNext,1, yawMag)
     qRArmNext = self:search_shoulder_angle(qRArm,trRArmNext,0, yawMag)
-
     vec_comp = vector.new({-uTorsoComp[1],-uTorsoComp[2],0,0,0,0})
---    print("com compensation:",unpack(uTorsoComp))
+
+    local torsoCompDone = true
 
     local trLArmNextComp = vector.new(trLArmNext) + vec_comp
     local trRArmNextComp = vector.new(trRArmNext) + vec_comp
@@ -238,17 +250,9 @@ print("Object mass:",massL, massR)
 --      qRArmQueue[qArmCount] = {qRArmNext,dt_step_current}
 
       --update the compensation value for next step      
-      --TODO: move compensation slowly      
-      --uTorsoCompNext = self.get_torso_compensation(qLArmNext,qRArmNext,massL,massR)
-
-      uTorsoCompNextTarget = self.get_torso_compensation(qLArmNext,qRArmNext,massL,massR)
-
-
-      --Hack
---      uTorsoCompNextTarget={0,0}
-      local velTorsoComp = {0.01,0.01} --5mm per sec
-
-      uTorsoCompNext = util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
+      uTorsoCompNextTarget = self:get_torso_compensation(qLArmNext,qRArmNext,massL,massR)
+      local velTorsoComp = {0.005,0.005} --5mm per sec
+      uTorsoCompNext, torsoCompDone = util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
       uTorsoCompQueue[qArmCount] = {uTorsoCompNext[1],uTorsoCompNext[2]}
 
 --      print(string.format("Com comp: %.3f %.3f",unpack(uTorsoCompNext)))
@@ -406,7 +410,7 @@ local function playback_trajectory_double(self,t)
       uTorsoComp[1],uTorsoComp[2] ))
 --]]
     movearm.setArmJoints(qLArm,qRArm,dt)
-    mcm.set_walk_uTorsoComp(uTorsoComp)
+    mcm.set_stance_uTorsoComp(uTorsoComp)
     return qLArm, qRArm, uTorsoComp
   end
 end
@@ -425,6 +429,7 @@ libArmPlan.new_planner = function (params)
   s.armQueuePlayStartTime = 0
   s.mLeftHand = 0
   s.mRightHand = 0
+  s.torsoCompBias = {0,0}
 
   s.leftArmQueue={}
   s.rightArmQueue={}
@@ -444,6 +449,7 @@ libArmPlan.new_planner = function (params)
   s.get_torso_compensation = get_torso_compensation
   s.set_hand_mass = set_hand_mass
   s.check_arm_joint_velocity = check_arm_joint_velocity
+  s.reset_torso_comp = reset_torso_comp
 
   s.init_trajectory = init_trajectory
   s.playback_trajectory = playback_trajectory

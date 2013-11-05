@@ -54,15 +54,15 @@ function state.update()
   local uRight = mcm.get_status_uRight()
 
   --Adjust body height
-  local bodyHeight_now = mcm.get_status_bodyHeight()  
-  local bodyHeight_target = hcm.get_motion_bodyHeightTarget()
+  local bodyHeight_now = mcm.get_stance_bodyHeight()  
+  local bodyHeight_target = mcm.get_stance_bodyHeightTarget()
 
   bodyHeight_target = math.min(Config.walk.bodyHeight,
     math.max(Config.stance.sitHeight, bodyHeight_target))
 
 --bodyHeight_target = 0.47; --Full kneel down
 
-bodyHeight_target = 0.60; --Little bit higher for safety
+  bodyHeight_target = 0.60; --Little bit higher for safety
 
   local bodyHeight = util.approachTol( bodyHeight_now, 
     bodyHeight_target, Config.stance.dHeight, t_diff )
@@ -82,7 +82,7 @@ bodyHeight_target = 0.60; --Little bit higher for safety
     Config.walk.bodyHeight - bodyHeight,
     delta_legs)
 
-  mcm.set_status_bodyHeight(bodyHeight)    
+  mcm.set_stance_bodyHeight(bodyHeight)    
 end -- walk.update
 
 function state.exit()

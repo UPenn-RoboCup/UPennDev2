@@ -145,8 +145,8 @@ function state.exit()
   -- now on feet
   mcm.set_walk_bipedal(1)
   -- Update current pose for use by the camera
-  mcm.set_camera_bodyHeight(pTorso[3])
-  mcm.set_camera_bodyTilt(pTorso[5])
+  mcm.set_stance_bodyHeight(pTorso[3])
+  mcm.set_stance_bodyTilt(pTorso[5])
 
   local footY    = Config.walk.footY
   local supportX = Config.walk.supportX
@@ -158,12 +158,14 @@ function state.exit()
   mcm.set_status_uLeft(uLeft)
   mcm.set_status_uRight(uRight)
   mcm.set_status_uTorso(uTorso)
-
   mcm.set_status_uTorsoVel(vector.new{0,0,0})
 
-  mcm.set_status_bodyHeight(Config.walk.bodyHeight)
-  hcm.set_motion_bodyHeightTarget(Config.walk.bodyHeight)  
-  mcm.set_walk_uTorsoComp({0,0})
+  mcm.set_stance_bodyHeight(Config.walk.bodyHeight)
+  mcm.set_stance_bodyHeightTarget(Config.walk.bodyHeight)  
+
+  mcm.set_stance_uTorsoComp({0,0})
+
+  
   local pg = Config.walk.leg_p_gain or 64
 
   if not IS_WEBOTS then

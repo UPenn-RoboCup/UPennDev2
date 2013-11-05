@@ -11,6 +11,10 @@ require'hcm'
 -- Get the robot guided approach
 require'wcm'
 
+require'mcm'
+
+
+
 -- FSM coordination
 local simple_ipc = require'simple_ipc'
 local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
@@ -162,8 +166,8 @@ local function calculate_footsteps()
     step_queue_vector[offset+12] = step_queue[i][7][2]
     step_queue_vector[offset+13] = step_queue[i][7][3]
   end
-  hcm.set_motion_footholds(step_queue_vector)
-  hcm.set_motion_nfootholds(#step_queue)
+  mcm.set_step_footholds(step_queue_vector)
+  mcm.set_step_nfootholds(#step_queue)
 end
 
 

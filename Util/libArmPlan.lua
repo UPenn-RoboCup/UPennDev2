@@ -410,7 +410,7 @@ local function playback_trajectory_double(self,t)
       uTorsoComp[1],uTorsoComp[2] ))
 --]]
     movearm.setArmJoints(qLArm,qRArm,dt)
-    mcm.set_walk_uTorsoComp(uTorsoComp)
+    mcm.set_stance_uTorsoComp(uTorsoComp)
     return qLArm, qRArm, uTorsoComp
   end
 end

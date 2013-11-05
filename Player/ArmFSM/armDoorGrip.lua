@@ -39,15 +39,18 @@ function state.entry()
   Body.set_lgrip_percent(0)
   Body.set_rgrip_percent(0)
   --Read door model from shm
-  hinge_pos = hcm.get_door_hinge_pos()  
-  door_r = hcm.get_door_r()
-  grip_offset_x = hcm.get_door_grip_offset_x()  
-  door_yaw = hcm.get_door_yaw()
-  door_hand = hcm.get_door_hand()
-  
-  door_yaw_target = hcm.get_door_yaw_target()  
-  door_yaw = 0
 
+  local door_model = hcm.get_door_model()
+  door_hand = door_model[1]  
+  hinge_pos = vector.slice(door_model,2,4)  
+  door_r = door_model[5]
+  grip_offset_x = door_model[6]
+  door_yaw = hcm.get_door_yaw()    
+  door_yaw_target = hcm.get_door_yaw_target()  
+
+  
+
+  door_yaw = 0
   stage = 1;  
 
   local qLArm = Body.get_larm_command_position()
@@ -79,11 +82,7 @@ function state.entry()
 
   --Right hand testing with webots
   door_hand = 0;  --0 for right, 1 for left
-  hinge_pos = vector.new({0.45,-0.95,-0.10})
-  hinge_pos = vector.new({0.45,-0.95,-0.05})
-
   hinge_pos = vector.new({0.55,-0.95,-0.05})
-
   door_r = 0.60
   grip_offset_x = -0.05
   door_yaw_target = 30*math.pi/180

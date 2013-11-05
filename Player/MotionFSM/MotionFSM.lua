@@ -13,6 +13,8 @@ local motionWalk   = require(Config.dev.walk) --Reactive walking
 local motionStep   = require'motionStep'   --Stationary stepping
 local motionStepPreview   = require'motionStepPreview' --ZMP preview stepping
 local motionStepNonstop = require'motionStepNonstop'
+
+
 --Our robot never fall!
 --local motionFall   = require'motionFall' 
 
@@ -26,28 +28,9 @@ sm:add_state(motionStepNonstop)
 sm:add_state(motionStepPreview)
 sm:add_state(motionSit)
 
---[[
--- Setup the transitions for this FSM
-sm:set_transition(motionIdle, 'stand', motionStance )
---
-sm:set_transition(motionStance, 'done', motionIdle, function(exit_val)
-  -- Stance exit value should be some foot positions...
-  -- These foot positions *should* be in shared memory though
-  -- Initially, the walk event is disallowed, since we do not know our configuration
-  sm:set_transition(motionIdle, 'walk', motionWalk )
-  sm:set_transition(motionIdle, 'step', motionStep )
-  sm:set_transition(motionIdle, 'preview', motionStepPreview )
-end)
---
-sm:set_transition(motionWalk, 'stand', motionStance, function(exit_val)
-  -- Walk exit value should be some foot positions...
-  -- These foot positions *should* be in shared memory though
-end)
 
-sm:set_transition(motionStep, 'done', motionIdle )
---
-sm:set_transition(motionStepPreview, 'done', motionIdle )
---]]
+
+
 
 sm:set_transition(motionIdle, 'stand', motionInit)
 sm:set_transition(motionInit, 'done', motionStance)

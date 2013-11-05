@@ -90,8 +90,8 @@ function walk.entry()
   Body.init_odometry(uTorso_now)  
 
   --SHM BASED
-  local nFootHolds = hcm.get_motion_nfootholds()
-  local footQueue = hcm.get_motion_footholds()
+  local nFootHolds = mcm.get_step_nfootholds()
+  local footQueue = mcm.get_step_footholds()
   print("step #:",nFootHolds)
 
   for i=1,nFootHolds do

@@ -104,7 +104,7 @@ function state.update()
   mcm.set_walk_ismoving(0) --We stopped moving
 
   --Adjust body height
-  local bodyHeight_now = mcm.get_status_bodyHeight()  
+  local bodyHeight_now = mcm.get_stance_bodyHeight()  
   local bodyHeight = util.approachTol( bodyHeight_now, 
     Config.walk.bodyHeight, Config.stance.dHeight, t_diff )
   
@@ -120,12 +120,12 @@ function state.update()
   local gyro_rpy = Body.get_sensor_gyro()
   local delta_legs
  -- delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,0,gyro_rpy, angleShift)
-delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,0,gyro_rpy, angleShift)
+  delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,0,gyro_rpy, angleShift)
 
 --print(angleShift[1],angleShift[2])
 
 --Compensation for arm / objects
-  local uTorsoComp = mcm.get_walk_uTorsoComp()
+  local uTorsoComp = mcm.get_stance_uTorsoComp()
 
 
 --[[
@@ -151,7 +151,7 @@ delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,0,gyro_r
     Config.walk.bodyHeight - bodyHeight,    
     delta_legs)
 
-  mcm.set_status_bodyHeight(bodyHeight)  
+  mcm.set_stance_bodyHeight(bodyHeight)  
 
   mcm.set_status_uTorsoVel({0,0,0})
 end -- walk.update

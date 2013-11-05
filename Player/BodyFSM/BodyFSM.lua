@@ -13,12 +13,6 @@ local bodyInit = require'bodyInit'
 -- This will be returned to the user
 local sm = fsm.new(bodyIdle,bodyInit)
 
-local bodyTeleop = require'bodyTeleop'
-local bodyFollow = require'bodyFollow'
-
-
-
-local bodySideways = require'bodySideways'
 local bodyStepOver = require'bodyStepOver'
 local bodyStepPlan = require'bodyStepPlan'
 local bodyStepPlan2 = require'bodyStepPlan2' --90 deg turn
@@ -28,9 +22,7 @@ local bodyStepTest = require'bodyStepTest' --minus 90 deg turn
 
 local bodyStepWaypoint = require'bodyStepWaypoint'
 
-sm:add_state(bodyTeleop)
-sm:add_state(bodyFollow)
-sm:add_state(bodySideways)
+
 sm:add_state(bodyStepOver)
 sm:add_state(bodyStepPlan)
 sm:add_state(bodyStepPlan2)
@@ -62,23 +54,6 @@ sm:set_transition( bodyStepPlan2,   'done', bodyIdle )
 sm:set_transition( bodyStepPlan3,   'done', bodyIdle )
 sm:set_transition( bodyStepPlan4,   'done', bodyIdle )
 sm:set_transition( bodyStepTest,   'done', bodyIdle )
-
---[[
---sm:set_transition( bodyInit,   'follow', bodyFollow )
---sm:set_transition( bodyFollow, 'init',   bodyInit )
---sm:set_transition( bodyFollow, 'done',   bodyIdle )
---
-sm:set_transition( bodyIdle,   'teleop', bodyTeleop )
-sm:set_transition( bodyTeleop, 'done',   bodyInit   )
-sm:set_transition( bodyTeleop, 'init',   bodyInit   )
-sm:set_transition( bodyTeleop, 'follow', bodyFollow )
---
-sm:set_transition( bodyInit,   'sideways', bodySideways )
-sm:set_transition( bodySideways, 'init',   bodyInit )
-sm:set_transition( bodySideways, 'done',   bodyInit )
-
---]]
-
 
 
 --------------------------

@@ -15,35 +15,11 @@ function state.entry()
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-
---temporary hack for the ankle 
-
---[[
-local x0,z0 = 0.41, 1.02-0.928 + 0.04
-local rpy = Body.get_sensor_rpy()
-local bodyTilt = -rpy[2]
-bodyTilt = bodyTilt - 3*math.pi/180; --to account for bodytilt ing front
-
-local wheel_model = vector.new({
-        x0*math.cos(bodyTilt) + z0*math.sin(bodyTilt),
-        0,
-        -x0*math.sin(bodyTilt)+z0*math.cos(bodyTilt),
-        0,  
-        bodyTilt,
-        0.20})
-hcm.set_wheel_model(wheel_model)
---]] 
   
   --This works for valvetest
-  hcm.set_wheel_model(
-    {0.36,0.00,0.09,   0, -11*Body.DEG_TO_RAD,0.20})
-
-
   --New world model for new IK
   hcm.set_wheel_model(
     {0.36,0.00,0.02,   0, 0*Body.DEG_TO_RAD,0.20})
-
-
 
   -- Let's store wheel data here
   local wheel   = hcm.get_wheel_model()

@@ -38,7 +38,7 @@ function state.entry()
   t_update = t_entry
   
   mcm.set_walk_bipedal(1)  
-  bodyHeight_next = mcm.get_status_bodyHeight()  
+  bodyHeight_next = mcm.get_stance_bodyHeight()  
 end
 
 function state.update()

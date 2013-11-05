@@ -7,6 +7,7 @@ local simple_ipc = require'simple_ipc'
 -- TODO: Use the Config file for the ports
 local udp = require'udp'
 local rpc_zmq = simple_ipc.new_replier(Config.net.reliable_rpc,'*')
+unix.usleep(1e5)
 local rpc_udp = udp.new_receiver( Config.net.unreliable_rpc )
 print('RPC | Receiving on',Config.net.reliable_rpc)
 
@@ -133,7 +134,7 @@ local function send_status_feedback()
   data.pose_odom =  wcm.get_robot_pose_odom()
   data.pose_slam =  wcm.get_slam_pose()
   data.rpy = Body.get_sensor_rpy()
-  data.body_height = mcm.get_camera_bodyHeight()
+  data.body_height = mcm.get_stance_bodyHeight()
   data.battery =  0
 
   local ret,err = feedback_udp_ch:send( mp.pack(data) )
@@ -147,7 +148,9 @@ rpc_udp_poll.callback = process_udp
 local wait_channels = {rpc_zmq,rpc_udp_poll}
 local channel_poll = simple_ipc.wait_on_channels( wait_channels );
 --channel_poll:start()
-local channel_timeout = 500 -- 2Hz joint feedback
+--local channel_timeout = 500 -- 2Hz joint feedback
+
+local channel_timeout = 50 -- 2Hz joint feedback
 while true do
   local npoll = channel_poll:poll(channel_timeout)
   -- Send the feedback 

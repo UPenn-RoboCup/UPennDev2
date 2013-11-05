@@ -160,7 +160,7 @@ function state.exit()
 
 
 
-  mcm.set_status_bodyHeight(Config.walk.bodyHeight)
+  mcm.set_stance_bodyHeight(Config.walk.bodyHeight)
   print(state._NAME..' Exit')
   -- TODO: Store things in shared memory?
 end

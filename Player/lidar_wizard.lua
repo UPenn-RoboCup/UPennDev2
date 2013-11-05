@@ -62,10 +62,10 @@ if chest_hokuyo then
     meta.count  = chest_hokuyo.count
     meta.pangle = Body.get_lidar_command_position(1)
     --meta.pangle = Body.get_lidar_position(1)
-    meta.rpy = {0,0,0}
+    meta.rpy = Body.get_sensor_rpy()
     meta.pose = wcm.get_robot_pose()
     meta.t = Body.get_time()
-    meta.gyro = {0,0,0}
+    meta.gyro = Body.get_sensor_gyro()
     local ret = chest_lidar_ch:send( mp.pack(meta) )
   end
 end

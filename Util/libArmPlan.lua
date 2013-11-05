@@ -180,6 +180,8 @@ local function plan_double_arm(self,qLArm0,qRArm0,trLArm1, trRArm1, uTorsoComp0)
   local t0 = unix.time()
   local doneL, doneR, failed = false, false, false
   local qLArm,qRArm = qLArm0 , qRArm0
+  local qLArmComp, qRArmComp = qLArm0, qRArm0
+
   local trLArm = Body.get_forward_larm(qLArm0)
   local trRArm = Body.get_forward_rarm(qRArm0)
   local trLArmNext, trRArmNext, qLArmNext, qRArmNext
@@ -204,7 +206,9 @@ local function plan_double_arm(self,qLArm0,qRArm0,trLArm1, trRArm1, uTorsoComp0)
 
     local vec_comp = vector.new({-uTorsoComp[1],-uTorsoComp[2],0,0,0,0})
 --    print("com compensation:",unpack(uTorsoComp))
---    vec_compensation = vector.zeros(6)
+
+
+
     local trLArmNextComp = vector.new(trLArmNext) + vec_comp
     local trRArmNextComp = vector.new(trRArmNext) + vec_comp
     
@@ -217,12 +221,12 @@ local function plan_double_arm(self,qLArm0,qRArm0,trLArm1, trRArm1, uTorsoComp0)
       if not qRArmNextComp then print ("RIGHT ERROR") end
       failed = true       
     else      
-      print(string.format("Com comp: %.3f %.3f",unpack(uTorsoComp)))
-
-      local max_movement_ratioL = check_arm_joint_velocity(qLArm, qRArmNextComp, dt_step)
-      local max_movement_ratioR = check_arm_joint_velocity(qRArm, qRArmNextComp, dt_step)
-      local dt_step_current = dt_step * math.max(max_movement_ratioL,max_movement_ratioR)
       
+
+      local max_movement_ratioL = check_arm_joint_velocity(qLArmComp, qLArmNextComp, dt_step)
+      local max_movement_ratioR = check_arm_joint_velocity(qRArmComp, qRArmNextComp, dt_step)
+      local dt_step_current = dt_step * math.max(max_movement_ratioL,max_movement_ratioR)
+
       qLArmQueue[qArmCount] = {qLArmNextComp,dt_step_current}
       qRArmQueue[qArmCount] = {qRArmNextComp,dt_step_current}
 
@@ -231,10 +235,22 @@ local function plan_double_arm(self,qLArm0,qRArm0,trLArm1, trRArm1, uTorsoComp0)
 
       --update the compensation value for next step      
       --TODO: move compensation slowly      
-      uTorsoCompNext = self.get_torso_compensation(qLArmNext,qRArmNext,massL,massR)
-      uTorsoCompQueue[qArmCount] = uTorsoCompNext
+      --uTorsoCompNext = self.get_torso_compensation(qLArmNext,qRArmNext,massL,massR)
+
+      uTorsoCompNextTarget = self.get_torso_compensation(qLArmNext,qRArmNext,massL,massR)
+
+
+      --Hack
+--      uTorsoCompNextTarget={0,0}
+      local velTorsoComp = {0.005,0.005} --5mm per sec
+
+      uTorsoCompNext = util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
+      uTorsoCompQueue[qArmCount] = {uTorsoCompNext[1],uTorsoCompNext[2]}
+
+--      print(string.format("Com comp: %.3f %.3f",unpack(uTorsoCompNext)))
 
       qLArm,qRArm,trLArm,trRArm, uTorsoComp = qLArmNext, qRArmNext, trLArmNext, trRArmNext, uTorsoCompNext
+      qLArmComp,qRArmComp = qLArmNextComp, qRArmNextComp
       qArmCount = qArmCount + 1
     end
   end
@@ -255,54 +271,103 @@ end
 
 local function init_trajectory(self,armQueue, t0)
   self.armQueue = armQueue
-
   self.armQueuePlayStartTime = t0
   self.armQueuePlayEndTime = t0 + armQueue[1][2]
   self.qArmStart = armQueue[1][1]
   self.qArmEnd = armQueue[1][1]
+  self.armQueuePlaybackCount = 1
+end
+
+local function init_trajectory_double(self,LArmQueue,RArmQueue,torsoCompQueue,t0)
+  self.leftArmQueue = LArmQueue
+  self.rightArmQueue = RArmQueue
+  self.torsoCompQueue = torsoCompQueue
+
+  self.armQueuePlayStartTime = t0
+  self.armQueuePlayEndTime = t0 + LArmQueue[1][2]
+
+  self.qLArmStart = LArmQueue[1][1]
+  self.qLArmEnd = LArmQueue[1][1]
+  self.qRArmStart = RArmQueue[1][1]
+  self.qRArmEnd = RArmQueue[1][1]
+  self.uTorsoCompStart=vector.new(torsoCompQueue[1])
+  self.uTorsoCompEnd=vector.new(torsoCompQueue[1])
 
   self.armQueuePlaybackCount = 1
-
 end
+
+
+
 
 local function playback_trajectory(self,t)
   if #self.armQueue < self.armQueuePlaybackCount then
     return nil
   else
-     --Skip keyframes if needed
-      while t>self.armQueuePlayEndTime do        
---        print("skipping frame")
-        self.armQueuePlaybackCount = self.armQueuePlaybackCount +1        
-        if #self.armQueue < self.armQueuePlaybackCount then
-          --Passed the end of the queue. return the last joint angle
-          return self.armQueue[#self.armQueue][1]
-        end
-
-        --Update the frame start time
-        self.armQueuePlayStartTime = self.armQueuePlayEndTime
-        --Update the frame end time
-        self.armQueuePlayEndTime = self.armQueuePlayStartTime + 
-            self.armQueue[self.armQueuePlaybackCount][2]
-
-        --Update initial and final joint angle
-        self.qArmStart = vector.new(self.armQueue[self.armQueuePlaybackCount-1][1])
-        self.qArmEnd = vector.new(self.armQueue[self.armQueuePlaybackCount][1])
+   --Skip keyframes if needed
+    while t>self.armQueuePlayEndTime do        
+      self.armQueuePlaybackCount = self.armQueuePlaybackCount +1        
+      if #self.armQueue < self.armQueuePlaybackCount then
+        --Passed the end of the queue. return the last joint angle
+        return self.armQueue[#self.armQueue][1]
       end
-
-         --Now  t should be between playstarttime and playendtime
-      local ph = (t-self.armQueuePlayStartTime)/ 
-                (self.armQueuePlayEndTime-self.armQueuePlayStartTime)
-     
-      local qArm={}
-      for i=1,7 do
-        qArm[i] = self.qArmStart[i] + ph * (util.mod_angle(self.qArmEnd[i]-self.qArmStart[i]))
-      end
-
---      print("Count, ph:",self.armQueuePlaybackCount, ph)
-
-      return qArm
+      --Update the frame start and end time
+      self.armQueuePlayStartTime = self.armQueuePlayEndTime        
+      self.armQueuePlayEndTime = self.armQueuePlayStartTime + 
+          self.armQueue[self.armQueuePlaybackCount][2]
+      --Update initial and final joint angle
+      self.qArmStart = vector.new(self.armQueue[self.armQueuePlaybackCount-1][1])
+      self.qArmEnd = vector.new(self.armQueue[self.armQueuePlaybackCount][1])
+    end
+    local ph = (t-self.armQueuePlayStartTime)/ 
+              (self.armQueuePlayEndTime-self.armQueuePlayStartTime)
+    local qArm={}
+    for i=1,7 do
+      qArm[i] = self.qArmStart[i] + ph * (util.mod_angle(self.qArmEnd[i]-self.qArmStart[i]))
+    end
+    return qArm
   end
 end
+
+local function playback_trajectory_double(self,t)
+  if #self.leftArmQueue < self.armQueuePlaybackCount then
+    return nil
+  else
+   --Skip keyframes if needed
+    while t>self.armQueuePlayEndTime do        
+      self.armQueuePlaybackCount = self.armQueuePlaybackCount +1        
+      if #self.leftArmQueue < self.armQueuePlaybackCount then
+        --Passed the end of the queue. return the last joint angle
+        return 
+          self.leftArmQueue[#self.leftArmQueue][1],
+          self.rightArmQueue[#self.leftArmQueue][1],
+          self.torsoCompQueue[#self.leftArmQueue]
+      end
+      --Update the frame start and end time
+      self.armQueuePlayStartTime = self.armQueuePlayEndTime        
+      self.armQueuePlayEndTime = self.armQueuePlayStartTime + 
+          self.leftArmQueue[self.armQueuePlaybackCount][2]
+      --Update initial and final joint angle
+      self.qLArmStart = vector.new(self.leftArmQueue[self.armQueuePlaybackCount-1][1])
+      self.qLArmEnd = vector.new(self.leftArmQueue[self.armQueuePlaybackCount][1])
+      self.qRArmStart = vector.new(self.rightArmQueue[self.armQueuePlaybackCount-1][1])
+      self.qRArmEnd = vector.new(self.rightArmQueue[self.armQueuePlaybackCount][1])
+      self.uTorsoCompStart = vector.new(self.torsoCompQueue[self.armQueuePlaybackCount-1])
+      self.uTorsoCompEnd = vector.new(self.torsoCompQueue[self.armQueuePlaybackCount])
+
+    end
+    local ph = (t-self.armQueuePlayStartTime)/ 
+              (self.armQueuePlayEndTime-self.armQueuePlayStartTime)
+    local qLArm,qRArm={},{}
+    for i=1,7 do
+      qLArm[i] = self.qLArmStart[i] + ph * (util.mod_angle(self.qLArmEnd[i]-self.qLArmStart[i]))
+      qRArm[i] = self.qRArmStart[i] + ph * (util.mod_angle(self.qRArmEnd[i]-self.qRArmStart[i]))
+    end
+    local uTorsoComp = (1-ph)*self.uTorsoCompStart + ph*self.uTorsoCompEnd
+    
+    return qLArm, qRArm, uTorsoComp
+  end
+end
+
 
 
 local libArmPlan={}
@@ -317,6 +382,12 @@ libArmPlan.new_planner = function (params)
   s.armQueuePlayStartTime = 0
   s.mLeftHand = 0
   s.mRightHand = 0
+
+  s.leftArmQueue={}
+  s.rightArmQueue={}
+  s.torsoCompQueue={}
+
+
 
 
   --member functions
@@ -333,6 +404,9 @@ libArmPlan.new_planner = function (params)
 
   s.init_trajectory = init_trajectory
   s.playback_trajectory = playback_trajectory
+
+  s.init_trajectory_double = init_trajectory_double
+  s.playback_trajectory_double = playback_trajectory_double
   return s
 end
 

@@ -42,6 +42,8 @@ function state.entry()
  
   --tool_pos_left = hcm.get_tool_pos()
   tool_pos_left=vector.new({0.55,0.02,0.05})  
+  
+
   tool_pos_left1=tool_pos_left + vector.new({0,0,0.05})
   tool_pos_left2=vector.new({0.35,0.05,tool_pos_left1[3]})  
   tool_pos_left3=vector.new({0.30,0.10,-0.10})  
@@ -53,6 +55,13 @@ function state.entry()
   trLArmTarget3 = movearm.getToolPosition(tool_pos_left1,0,1)   --lift up 
   trLArmTarget4 = movearm.getToolPosition(tool_pos_left2,0,1)    
   trLArmTarget5 = movearm.getToolPosition(tool_pos_left3,0,1)    
+
+
+  --This sets torso compensation bias
+  --So that it becomes zero with initial arm configuration
+  arm_planner:reset_torso_comp(qLArm, qRArm)
+
+
 
   print("Planning LArmPlan1")
   LArmPlan1,qLArm1 = arm_planner:plan_arm(qLArm0, trLArmTarget1, 1)  
@@ -69,15 +78,21 @@ function state.entry()
   
   --Test two arm planning
   print("Testing two-arm planning")
-  arm_planner:set_hand_mass(0,0)
+  arm_planner:set_hand_mass(0,0)    
   print("Planning LArmPlan1")
   LAP1, RAP1, uTP1, qLArm1, qRArm1, qLArmComp1, qRArmComp1, uTorsoComp1 = 
   arm_planner:plan_double_arm(qLArm0,qRArm0,qLArm0, qRArm0, trLArmTarget1,trRArm0, {0,0})
   print("Planning LArmPlan2")
+
+
+
+  
+
   LAP2, RAP2, uTP2, qLArm1, qRArm1, qLArmComp1, qRArmComp1, uTorsoComp1 = 
   arm_planner:plan_double_arm(qLArm1,qRArm1,qLArmComp1, qRArmComp1, trLArmTarget2,trRArm0, uTorsoComp1)
 
-  arm_planner:set_hand_mass(2,0)
+  arm_planner:set_hand_mass(3,0)
+  
   --arm_planner:set_hand_mass(0,0)
 
 

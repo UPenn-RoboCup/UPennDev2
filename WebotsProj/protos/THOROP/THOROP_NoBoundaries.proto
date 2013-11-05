@@ -138,7 +138,7 @@ Robot {
       rotation -1 0 0 0
       children [
         DEF Right_shoulder_pitch Transform {
-          translation 0.05 0 0
+          translation 0.050 0 0
           rotation 0 0 1 -1.5708
           scale 0.001 0.001 0.001
           children [
@@ -564,7 +564,7 @@ Robot {
                           maxForce 40
                           controlP 16
                         }
-                        DEF Right_wrist Transform {
+                        DEF Left_wrist Transform {
                           scale 0.001 0.001 0.001
                           children [
                              RIGHT_WRIST{}
@@ -648,7 +648,7 @@ Robot {
               maxForce 100
               controlP 16
             }
-            DEF Right_shoulder_roll Transform {
+            DEF Left_shoulder_roll Transform {
               translation 0 0 0.024
               scale 0.001 0.001 0.001
               children [
@@ -1303,12 +1303,13 @@ Robot {
       rotation 0 -1 0 0
       children [
         DEF Neck Transform {
-          translation 0 0.05 0
+          translation 0 0.050 0
           scale 0.001 0.001 0.001
           children [
            NECK{}
           ]
         }
+        # Sibling of neck
         DEF Head_pitch Servo {
           translation 0 0.161 0
           rotation -1 0 0 -0.17

@@ -30,6 +30,9 @@ shared.walk.bipedal    = vector.zeros(1)
 shared.walk.stoprequest= vector.zeros(1)
 shared.walk.ismoving= vector.zeros(1)
 
+--For quasi-static balancing
+shared.walk.uTorsoComp = vector.zeros(2) 
+
 -- Walk-step transition
 shared.walk.steprequest= vector.zeros(1)
 shared.walk.step_supportleg= vector.zeros(1)
@@ -43,6 +46,8 @@ shared.status.bodyOffset = vector.zeros(3)
 shared.status.falling    = vector.zeros(1)
 
 shared.status.bodyHeight = vector.zeros(1) --for sit/standup
+
+
 --Current Foot and Torso Poses
 --TODO: extend to 6D poses
 shared.status.uLeft = vector.zeros(3)

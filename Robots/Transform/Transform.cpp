@@ -144,8 +144,8 @@ Transform inv (const Transform &t1) {
 
 Transform trcopy (const Transform &t1) {
   Transform t;
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {      
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {      
       t(i,j) = t1(i,j);      
     }
   }

@@ -212,6 +212,12 @@ THOROP_kinematics_com_upperbody(
     double mLHand,
     double mRHand)  
 {
+
+
+
+//SJ: THEY ARE MESSED UP
+
+
   /* inverse kinematics to convert joint angles to servo positions */
   std::vector<double> r(4);
 
@@ -237,8 +243,8 @@ THOROP_kinematics_com_upperbody(
     .translateY(shoulderOffsetY)
     .translateZ(shoulderOffsetZ)        
     .rotateY(qLArm[0])
-    .rotateX(qLArm[1])
-    .rotateZ(qLArm[2]);
+    .rotateZ(qLArm[1])
+    .rotateX(qLArm[2]);
 
   tLElbow = trcopy(tLShoulder)
     .translateX(upperArmLength)
@@ -259,8 +265,8 @@ THOROP_kinematics_com_upperbody(
     .translateY(-shoulderOffsetY)
     .translateZ(shoulderOffsetZ)        
     .rotateY(qRArm[0])
-    .rotateX(qRArm[1])
-    .rotateZ(qRArm[2]);
+    .rotateZ(qRArm[1])
+    .rotateX(qRArm[2]);
 
   tRElbow = trcopy(tRShoulder)
     .translateX(upperArmLength)
@@ -275,6 +281,18 @@ THOROP_kinematics_com_upperbody(
     .translateX(lowerArmLength)          
     .rotateZ(qRArm[5])
     .rotateX(qRArm[6]);
+
+
+
+
+
+
+
+
+
+
+
+
 
   tPelvisCOM = tPelvis
     .translateX(comPelvisX)
@@ -323,6 +341,8 @@ THOROP_kinematics_com_upperbody(
   tRHandCOM = tRHand
     .translateX(handOffsetX)
     .translateY(handOffsetY);    
+
+
 
 
 

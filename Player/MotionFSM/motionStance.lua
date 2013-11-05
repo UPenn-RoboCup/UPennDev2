@@ -63,7 +63,7 @@ function state.update()
   local qWaist = Body.get_waist_command_position()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()    
-  local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm)
+--  local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm)
 
   --Quasi-static balancing
 
@@ -123,7 +123,30 @@ function state.update()
 delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,0,gyro_rpy, angleShift)
 
 --print(angleShift[1],angleShift[2])
-  moveleg.set_leg_positions(uTorso,uLeft,uRight,
+
+--Compensation for arm / objects
+  local uTorsoComp = mcm.get_walk_uTorsoComp()
+
+
+--[[
+  local qWaist = Body.get_waist_command_position()
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+  local massL = 5
+  local massR = 0
+
+  local com = K.com_upperbody(qWaist,qLArm,qRArm,
+        Config.walk.bodyTilt, massL, massR)
+  print("Com pos:", com[1]/com[4], com[2]/com[4])
+  print("Torso compensation:",unpack(uTorsoComp))
+--]]
+ 
+
+  local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
+
+
+--  moveleg.set_leg_positions(uTorso,uLeft,uRight,
+  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
     Config.walk.bodyHeight - bodyHeight,
     Config.walk.bodyHeight - bodyHeight,    
     delta_legs)

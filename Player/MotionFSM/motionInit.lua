@@ -163,7 +163,7 @@ function state.exit()
 
   mcm.set_status_bodyHeight(Config.walk.bodyHeight)
   hcm.set_motion_bodyHeightTarget(Config.walk.bodyHeight)  
-
+  mcm.set_walk_uTorsoComp({0,0})
   local pg = Config.walk.leg_p_gain or 64
 
   if not IS_WEBOTS then

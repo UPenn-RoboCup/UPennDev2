@@ -1,0 +1,38 @@
+#
+#  DARPA Trials Debris: Wide Boards
+#  heqin@seas.upenn.edu
+#
+
+
+PROTO DebrisWideBoard [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+]
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+	  Shape {
+	     appearance DEF POS_APP Appearance {
+	       material Material {
+	         diffuseColor 1 1 0.5
+	         specularColor 0 0 0
+	       }
+	     }
+	     geometry Box { size 1.2192 0.0381 0.1397 }
+	  }			
+  ]
+	
+	physics Physics {
+		mass 2
+	}
+	
+  boundingObject Group {
+		children[
+			Box { size 1.2192 0.0381 0.1397 }
+		]
+  }  
+  #locked TRUE
+}
+}

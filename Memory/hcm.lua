@@ -4,7 +4,7 @@
 --------------------------------
 local vector = require'vector'
 local memory = require'memory'
-
+local maxWaypoints = 10
 
 
 local shared_data = {}

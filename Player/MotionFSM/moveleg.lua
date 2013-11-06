@@ -223,7 +223,11 @@ function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
   ------------------------------------------
 end
 
-function moveleg.set_leg_positions_kneel(uTorso,uLeft,uRight, dt)
+function moveleg.set_leg_positions_kneel(dt)
+  local uTorso = mcm.get_status_uTorso()
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+
   local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   
   local bodyHeightVel = 0.01

@@ -12,6 +12,8 @@ local vector = require'vector'
 local unix   = require'unix'
 local util   = require'util'
 local moveleg = require'moveleg'
+local libStep = require'libStep'
+local step_planner = libStep:new_planner()
 require'mcm'
 
 
@@ -30,13 +32,12 @@ local stage
 
 local velBodyTilt = 2*math.pi/180
 local velWaist = {3*Body.DEG_TO_RAD, 0}
-local velTorso = {0.01,0,0}
+local velTorso = {0.01,0.01,0}
 local velHeight = 0.03
-  
-local bodyTiltSit = -10*math.pi/180
-local bodyHeightSit = 0.55; 
-local uTorsoKneel = {0.10,0,0}
-local qWaistTarget = {45*Body.DEG_TO_RAD,0,0}
+ 
+local uTorsoTarget
+
+local qWaistTarget = {0,0}
 
 ---------------------------
 -- State machine methods --
@@ -49,9 +50,13 @@ function state.entry()
   t_update = t_entry
   
   mcm.set_walk_bipedal(1)  
-  
-  uTorso0 = mcm.get_status_uTorso()  
-  uTorsoComp = {0,0,0}
+
+
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  uTorsoTarget = step_planner.get_torso(uLeft,uRight)
+  uTorsoTarget[3] = (uLeft[3] + uRight[3])/2
+
   stage = 1
 end
 
@@ -66,15 +71,22 @@ function state.update()
   local uTorso = mcm.get_status_uTorso()  
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
-
-  --Adjust body height
-
   local bodyTiltNow = mcm.get_stance_bodyTilt()  
   local bodyHeightNow = mcm.get_stance_bodyHeight()  
 
   if stage==1 then
-    local bodyTilt,tiltDone = util.approachTol(bodyTiltNow, bodyTiltSit, velBodyTilt, t_diff )
-    local bodyHeight,heightDone = util.approachTol(bodyHeightNow, bodyHeightSit, velHeight, t_diff )
+    local qWaist = Body.get_waist_command_position()
+    local qWaist, waistDone = util.approachTol( qWaist, qWaistTarget, velWaist, t_diff )
+    Body.set_waist_command_position(qWaist)
+    if waistDone then stage = stage+1 end
+  elseif stage==2 then
+    uTorso,torsoDone = util.approachTol(uTorso,uTorsoTarget,velTorso,t_diff)
+    mcm.set_status_uTorso(uTorso)  
+    moveleg.set_leg_positions_kneel(t_diff)    
+    if torsoDone then stage = stage+1 end
+  elseif stage==3 then
+    local bodyTilt,tiltDone = util.approachTol(bodyTiltNow, Config.walk.bodyTilt, velBodyTilt, t_diff )
+    local bodyHeight,heightDone = util.approachTol(bodyHeightNow, Config.walk.bodyHeight, velHeight, t_diff )
     mcm.set_stance_bodyTilt(bodyTilt)
     mcm.set_stance_bodyHeight(bodyHeight)
  
@@ -83,19 +95,7 @@ function state.update()
     delta_legs, angleShift = moveleg.get_leg_compensation(2,0,gyro_rpy, angleShift)
     moveleg.set_leg_positions(uTorso,uLeft,uRight, 0,0, delta_legs)
 
-    if tiltDone and heightDone then stage = stage+1  end
-  elseif stage==2 then
-    local bodyTilt, tiltDone = util.approachTol( bodyTiltNow, 0, velBodyTilt, t_diff )
-    mcm.set_stance_bodyTilt(bodyTilt)    
-    uTorsoComp,torsoDone = util.approachTol(uTorsoComp,uTorsoKneel,velTorso,t_diff)
-    mcm.set_status_uTorso(util.pose_global(uTorsoComp,uTorso0))  
-    moveleg.set_leg_positions_kneel(t_diff)    
-    if tiltDone and torsoDone then stage = stage+1 end
-  elseif stage==3 then
-
-    local qWaist = Body.get_waist_command_position()
-    local qWaist, waistDone = util.approachTol( qWaist, qWaistTarget, velWaist, t_diff )
-    Body.set_waist_command_position(qWaist)
+    if tiltDone and heightDone then return "done" end
   end
  
 end 

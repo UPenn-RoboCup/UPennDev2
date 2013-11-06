@@ -9,6 +9,7 @@ local motionIdle   = require'motionIdle' --Initial state, all legs torqued off
 local motionInit   = require'motionInit' --Torque on legs and go to initial leg position
 local motionStance = require'motionStance' --Robots stands still, balancing itself, ready for walk again
 local motionSit    = require'motionSit' --Robots changes the body height for manipulation
+local motionUnSit  = require'motionUnSit' --Robots changes the body height for manipulation
 local motionWalk   = require(Config.dev.walk) --Reactive walking
 local motionStep   = require'motionStep'   --Stationary stepping
 local motionStepPreview   = require'motionStepPreview' --ZMP preview stepping
@@ -27,9 +28,7 @@ sm:add_state(motionStep)
 sm:add_state(motionStepNonstop)
 sm:add_state(motionStepPreview)
 sm:add_state(motionSit)
-
-
-
+sm:add_state(motionUnSit)
 
 
 sm:set_transition(motionIdle, 'stand', motionInit)
@@ -40,7 +39,8 @@ sm:set_transition(motionStance, 'sit', motionSit)
 sm:set_transition(motionStance, 'step', motionStep)
 sm:set_transition(motionStance, 'preview', motionStepPreview)
 
-sm:set_transition(motionSit, 'stand', motionStance)
+sm:set_transition(motionSit, 'stand', motionUnSit)
+sm:set_transition(motionUnSit, 'done', motionStance)
 
 --Walk stop are handled by HCM variable
 --As it can stop walking mid-step

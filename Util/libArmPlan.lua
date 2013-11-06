@@ -166,13 +166,14 @@ end
 
 local function get_torso_compensation(self,qLArm,qRArm,massL,massR)
   local qWaist = {0,0}--TODO: will we use waist position as well?
-  local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,
-        Config.walk.bodyTilt, massL, massR)
 
-
---  return {0,0}
-
-  return {-com[1]/com[4]-self.torsoCompBias[1],-com[2]/com[4]-self.torsoCompBias[2]}
+  if mcm.get_status_iskneeling()==1 then
+    return {0,0}
+  else  
+    local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,
+       Config.walk.bodyTilt, massL, massR)
+    return {-com[1]/com[4]-self.torsoCompBias[1],-com[2]/com[4]-self.torsoCompBias[2]}
+  end
 end
 
 

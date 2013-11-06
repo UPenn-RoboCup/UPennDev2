@@ -30,7 +30,7 @@ local stage
 
 
 
-local velBodyTilt = 2*math.pi/180
+local velBodyTilt = 5*math.pi/180
 local velWaist = {3*Body.DEG_TO_RAD, 0}
 local velTorso = {0.01,0.01,0}
 local velHeight = 0.03
@@ -38,6 +38,7 @@ local velHeight = 0.03
 local uTorsoTarget
 
 local qWaistTarget = {0,0}
+local bodyTiltSit = -10*math.pi/180
 
 ---------------------------
 -- State machine methods --
@@ -80,6 +81,8 @@ function state.update()
     Body.set_waist_command_position(qWaist)
     if waistDone then stage = stage+1 end
   elseif stage==2 then
+    local bodyTilt,tiltDone = util.approachTol(bodyTiltNow, bodyTiltSit, velBodyTilt, t_diff )
+    mcm.set_stance_bodyTilt(bodyTilt)
     uTorso,torsoDone = util.approachTol(uTorso,uTorsoTarget,velTorso,t_diff)
     mcm.set_status_uTorso(uTorso)  
     moveleg.set_leg_positions_kneel(t_diff)    
@@ -88,8 +91,8 @@ function state.update()
     local bodyTilt,tiltDone = util.approachTol(bodyTiltNow, Config.walk.bodyTilt, velBodyTilt, t_diff )
     local bodyHeight,heightDone = util.approachTol(bodyHeightNow, Config.walk.bodyHeight, velHeight, t_diff )
     mcm.set_stance_bodyTilt(bodyTilt)
-    mcm.set_stance_bodyHeight(bodyHeight)
- 
+    mcm.set_stance_bodyHeight(bodyHeight)    
+    mcm.set_status_iskneeling(0)
      --TODO: it may be better to kill gyro feedback while sitting/standing
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
     delta_legs, angleShift = moveleg.get_leg_compensation(2,0,gyro_rpy, angleShift)

@@ -32,12 +32,6 @@ shared.walk.stoprequest= vector.zeros(1)
 shared.walk.ismoving= vector.zeros(1)
 
 
-
-
-
-
-
-
 -- Walk-step transition
 shared.walk.steprequest= vector.zeros(1)
 shared.walk.step_supportleg= vector.zeros(1)
@@ -61,6 +55,9 @@ shared.status.uTorsoVel = vector.zeros(3)
 
 --ZMP is stored here for external monitoring
 shared.status.uZMP = vector.zeros(3)
+
+--If we are kneeling, we don't need quasistatic balancing
+shared.status.iskneeling    = vector.zeros(1)
 
 --Current time
 shared.status.t = vector.zeros(1)

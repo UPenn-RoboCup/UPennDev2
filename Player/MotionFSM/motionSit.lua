@@ -28,15 +28,20 @@ local stage
 
 
 
-local velBodyTilt = 2*math.pi/180
+local velBodyTilt = 5*math.pi/180
 local velWaist = {3*Body.DEG_TO_RAD, 0}
-local velTorso = {0.01,0,0}
+local velTorso = {0.01,0.01,0}
 local velHeight = 0.03
+
+local velBodyTilt2 = 1*math.pi/180
   
 local bodyTiltSit = -10*math.pi/180
 local bodyHeightSit = 0.55; 
-local uTorsoKneel = {0.10,0,0}
-local qWaistTarget = {45*Body.DEG_TO_RAD,0,0}
+
+local uTorsoKneel = {0.15,0,0}
+local bodyTiltKneel = Config.walk.bodyTilt
+--local qWaistTarget = {45*Body.DEG_TO_RAD,0,0}
+local qWaistTarget = {0*Body.DEG_TO_RAD,0,0}
 
 ---------------------------
 -- State machine methods --
@@ -85,7 +90,8 @@ function state.update()
 
     if tiltDone and heightDone then stage = stage+1  end
   elseif stage==2 then
-    local bodyTilt, tiltDone = util.approachTol( bodyTiltNow, 0, velBodyTilt, t_diff )
+    mcm.set_status_iskneeling(1)
+    local bodyTilt, tiltDone = util.approachTol( bodyTiltNow, bodyTiltKneel, velBodyTilt2, t_diff )
     mcm.set_stance_bodyTilt(bodyTilt)    
     uTorsoComp,torsoDone = util.approachTol(uTorsoComp,uTorsoKneel,velTorso,t_diff)
     mcm.set_status_uTorso(util.pose_global(uTorsoComp,uTorso0))  

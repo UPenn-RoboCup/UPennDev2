@@ -30,7 +30,7 @@ local stage
 
 local velBodyTilt = 5*math.pi/180
 local velWaist = {3*Body.DEG_TO_RAD, 0}
-local velTorso = {0.01,0.01,0}
+local velTorso = {0.03,0.03,0}
 local velHeight = 0.03
 
 local velBodyTilt2 = 1*math.pi/180

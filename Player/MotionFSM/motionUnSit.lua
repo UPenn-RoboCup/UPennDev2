@@ -32,7 +32,7 @@ local stage
 
 local velBodyTilt = 5*math.pi/180
 local velWaist = {3*Body.DEG_TO_RAD, 0}
-local velTorso = {0.01,0.01,0}
+local velTorso = {0.02,0.02,0}
 local velHeight = 0.03
  
 local uTorsoTarget

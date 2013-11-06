@@ -167,7 +167,8 @@ end
 local function get_torso_compensation(self,qLArm,qRArm,massL,massR)
   local qWaist = {0,0}--TODO: will we use waist position as well?
 
-  if mcm.get_status_iskneeling()==1 then
+  if mcm.get_status_iskneeling()==1 or 
+    Config.stance.enable_torso_compensation==0 then
     return {0,0}
   else  
     local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,

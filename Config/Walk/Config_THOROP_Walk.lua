@@ -225,6 +225,11 @@ stance.sitHeight = 0.70
 stance.dHeight = 0.04 --4cm per sec
 
 
+
+--Should we move torso back for compensation?
+stance.enable_torso_compensation = 1
+
+
 ------------------------------------
 -- Kneeling parameters
 ------------------------------------

@@ -63,6 +63,8 @@ function state.entry()
   local pTorsoR = pRLeg_desired + dpRLeg
   pTorso = (pTorsoL+pTorsoR)/2
 
+  mcm.set_stance_bodyHeight(pTorso[3])
+  mcm.set_stance_bodyTilt(pTorso[5])
 
   stage = 1
   if not IS_WEBOTS then
@@ -133,11 +135,11 @@ function state.update()
     err = err + math.abs(qLLegActual[i]- qLLegCommand[i])
     err = err + math.abs(qRLegActual[i]- qRLegCommand[i])
   end
-
   --print("err: ",err, doneL,doneR)
 
   local err_th = 1*Body.DEG_TO_RAD
-  if err<err_th and t-t_finish>t_settle and doneL and doneR then return'done' end        
+  
+  if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end        
 end
 
 function state.exit()

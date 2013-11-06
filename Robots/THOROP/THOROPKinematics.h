@@ -142,4 +142,6 @@ std::vector<double> THOROP_kinematics_calculate_support_torque(
   	const double *uTorsoAcc, double mLHand, double mRHand); 
 
 
+double THOROP_kinematics_calculate_knee_height(const double *q); 
+
 #endif

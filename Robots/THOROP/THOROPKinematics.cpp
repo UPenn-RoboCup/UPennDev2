@@ -1139,6 +1139,24 @@ THOROP_kinematics_inverse_leg(Transform trLeg, int leg)
   return qLeg;
 }
 
+double 
+THOROP_kinematics_calculate_knee_height(const double *q){
+//We calculate the knee height assuming the foot is on the ground
+
+
+  Transform trKnee; //Only the rotation part of trArm
+
+  trKnee = trKnee
+     .translateZ(footHeight)
+     .rotateX(-q[5])
+     .rotateY(-q[4])
+     .translateZ(tibiaLength)
+     .translateX(kneeOffsetX);
+  
+  return  trKnee(2,3);
+} 
+
+
   std::vector<double>
 THOROP_kinematics_inverse_l_leg(Transform trLeg)
 {

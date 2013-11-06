@@ -304,6 +304,14 @@ static int calculate_support_torque(lua_State *L) {
 	return 1;
 }
 
+static int calculate_knee_height(lua_State *L) {
+	std::vector<double> qLeg = lua_checkvector(L, 1);
+	double trKnee = THOROP_kinematics_calculate_knee_height(&qLeg[0]);
+	lua_pushnumber(L, trKnee);
+	return 1;
+}
+
+
 
 static int inverse_l_leg(lua_State *L) {
 	std::vector<double> qLeg;
@@ -359,6 +367,8 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"inverse_l_leg", inverse_l_leg},
 	{"inverse_r_leg", inverse_r_leg},
 	{"inverse_legs", inverse_legs},
+
+	{"calculate_knee_height",calculate_knee_height},
 		
 	{"inverse_joints", inverse_joints},
 

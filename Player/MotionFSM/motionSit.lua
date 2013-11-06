@@ -27,6 +27,11 @@ local bodyHeight_next
 -- They are filtered.  TODO: Use dt in the filters
 local angleShift = vector.new{0,0,0,0}
 
+local uTorso0, uTorsoComp, uTorsoKneel
+local stage
+
+local velBodyTilt = 2*math.pi/180
+
 ---------------------------
 -- State machine methods --
 ---------------------------
@@ -39,6 +44,16 @@ function state.entry()
   
   mcm.set_walk_bipedal(1)  
   bodyHeight_next = mcm.get_stance_bodyHeight()  
+
+  stage = 1
+
+  local uTorso = mcm.get_status_uTorso()  
+  uTorso0 = uTorso
+  uTorsoComp = {0,0,0}
+  velWaist = {3*Body.DEG_TO_RAD, 0}
+  
+  uTorsoKneel = {0.10,0,0}
+  qWaistTarget = {45*Body.DEG_TO_RAD,0,0}
 end
 
 function state.update()
@@ -54,35 +69,52 @@ function state.update()
   local uRight = mcm.get_status_uRight()
 
   --Adjust body height
-  local bodyHeight_now = mcm.get_stance_bodyHeight()  
-  local bodyHeight_target = mcm.get_stance_bodyHeightTarget()
 
-  bodyHeight_target = math.min(Config.walk.bodyHeight,
-    math.max(Config.stance.sitHeight, bodyHeight_target))
+  local bodyTiltNow = mcm.get_stance_bodyTilt()  
+  local bodyHeightNow = mcm.get_stance_bodyHeight()  
 
---bodyHeight_target = 0.47; --Full kneel down
+  if stage==1 then
+    local bodyTilt_target = -10*math.pi/180
+    bodyHeight_target = 0.55; 
+    
 
-  bodyHeight_target = 0.60; --Little bit higher for safety
+     local bodyTilt, tiltDone = util.approachTol( bodyTiltNow, 
+      bodyTilt_target, velBodyTilt, t_diff )
+    local bodyHeight, heightDone = util.approachTol( bodyHeightNow, 
+      bodyHeight_target, Config.stance.dHeight, t_diff )
 
-  local bodyHeight = util.approachTol( bodyHeight_now, 
-    bodyHeight_target, Config.stance.dHeight, t_diff )
+    mcm.set_stance_bodyTilt(bodyTilt)
+    mcm.set_stance_bodyHeight(bodyHeight)
 
-  local zLeft,zRight = 0,0
-  supportLeg = 2; --Double support
+    local zLeft,zRight = 0,0
+    supportLeg = 2; --Double support
 
+    -- Grab gyro feedback for these joint angles
+    local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
 
-  -- Grab gyro feedback for these joint angles
-  local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
+    --TODO: it may be better to kill gyro feedback while sitting/standing
+    delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,0,gyro_rpy, angleShift)
 
-  --TODO: it may be better to kill gyro feedback while sitting/standing
-  delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,0,gyro_rpy, angleShift)
+    moveleg.set_leg_positions(uTorso,uLeft,uRight, 0,0, delta_legs)
+    if tiltDone and heightDone then stage = stage+1  end
+  elseif stage==2 then
+    local bodyTilt, tiltDone = util.approachTol( bodyTiltNow, 0, velBodyTilt, t_diff )
+    mcm.set_stance_bodyTilt(bodyTilt)    
+    uTorsoComp,torsoDone = util.approachTol(uTorsoComp,uTorsoKneel,{0.01,0,0},t_diff)
+    moveleg.set_leg_positions_kneel(
+      util.pose_global(uTorsoComp,uTorso0),uLeft,uRight, t_diff)
+    if tiltDone and torsoDone then stage = stage+1 end
+  elseif stage==3 then
+    local qWaist = Body.get_waist_command_position()
+    local qWaist, waistDone = util.approachTol( qWaist, qWaistTarget, velWaist, t_diff )
 
-  moveleg.set_leg_positions(uTorso,uLeft,uRight,
-    Config.walk.bodyHeight - bodyHeight,
-    Config.walk.bodyHeight - bodyHeight,
-    delta_legs)
+    Body.set_waist_command_position(qWaist)
+  end
+ 
 
-  mcm.set_stance_bodyHeight(bodyHeight)    
+  
+
+ 
 end -- walk.update
 
 function state.exit()

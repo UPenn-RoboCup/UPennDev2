@@ -5,6 +5,7 @@
 local vector = require'vector'
 local memory = require'memory'
 local maxWaypoints = 10
+local DEG_TO_RAD = math.pi/180
 
 
 local shared_data = {}
@@ -63,7 +64,7 @@ shared_data.motion.waypoint_frame = vector.zeros(1)
 shared_data.wheel = {}
 -- This has all values: the right way, since one rpc call
 -- {handlepos(3) handleyaw handlepitch handleradius}
-shared_data.wheel.model = vector.new({0.36,0.00,0.02, 0, 0*Body.DEG_TO_RAD,0.20})
+shared_data.wheel.model = vector.new({0.36,0.00,0.02, 0, 0*DEG_TO_RAD,0.20})
 -- Target angle of wheel
 shared_data.wheel.turnangle = vector.zeros(1)
 
@@ -85,7 +86,7 @@ shared_data.door.yaw_target = vector.new({-20*math.pi/180}) --The target angle o
 -- Drill gripping
 shared_data.tool={}
 -- posxyz(3), yawangle
-shared_data.tool.model = vector.new({0.45,0.15,-0.05,  0*Body.DEG_TO_RAD})
+shared_data.tool.model = vector.new({0.45,0.15,-0.05,  0*DEG_TO_RAD})
 
 
 

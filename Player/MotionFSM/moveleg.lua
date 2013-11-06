@@ -205,8 +205,8 @@ end
 function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
   local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   local pTorso = vector.new({
-        uTorsoActual[1], uTorsoActual[2], Config.walk.bodyHeight,
-        0,Config.walk.bodyTilt,uTorsoActual[3]})
+        uTorsoActual[1], uTorsoActual[2], mcm.get_stance_bodyHeight(),
+        0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
   local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
   local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
   local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
@@ -222,6 +222,68 @@ function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
   mcm.set_status_bodyOffset( bodyOffset )
   ------------------------------------------
 end
+
+function moveleg.set_leg_positions_kneel(uTorso,uLeft,uRight, dt)
+  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
+  
+  local bodyHeightVel = 0.01
+
+  local bodyHeight0 = mcm.get_stance_bodyHeight()
+  local bodyHeight1 = mcm.get_stance_bodyHeight() + dt*bodyHeightVel
+  local bodyHeight2 = mcm.get_stance_bodyHeight() - dt*bodyHeightVel
+
+  local pTorso0 = vector.new({
+        uTorsoActual[1], uTorsoActual[2], bodyHeight0,
+        0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
+
+  local pTorso1 = vector.new({
+        uTorsoActual[1], uTorsoActual[2], bodyHeight1,
+        0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
+
+  local pTorso2 = vector.new({
+        uTorsoActual[1], uTorsoActual[2], bodyHeight2,
+        0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
+
+
+  local pLLeg = vector.new({uLeft[1],uLeft[2],0,0,0,uLeft[3]})
+  local pRLeg = vector.new({uRight[1],uRight[2],0,0,0,uRight[3]})
+
+  local qLegs0 = K.inverse_legs(pLLeg, pRLeg, pTorso0)  
+  local qLegs1 = K.inverse_legs(pLLeg, pRLeg, pTorso1)  
+  local qLegs2 = K.inverse_legs(pLLeg, pRLeg, pTorso2)  
+
+  local kneePadding = 0.03
+
+  local kneeHeight0 = K.calculate_knee_height(vector.slice(qLegs0,1,6)) - kneePadding
+  local kneeHeight1 = K.calculate_knee_height(vector.slice(qLegs1,1,6)) - kneePadding
+  local kneeHeight2 = K.calculate_knee_height(vector.slice(qLegs2,1,6)) - kneePadding
+
+  if kneeHeight0>0 then
+    if kneeHeight2>0 and kneeHeight2<kneeHeight0 then
+      mcm.set_stance_bodyHeight(bodyHeight2)
+      Body.set_lleg_command_position(qLegs2)
+    else
+      Body.set_lleg_command_position(qLegs0)
+    end
+  else
+    if kneeHeight1<0 and kneeHeight1>kneeHeight0 then
+      mcm.set_stance_bodyHeight(bodyHeight1)
+      Body.set_lleg_command_position(qLegs1)
+    else
+      Body.set_lleg_command_position(qLegs0)
+    end
+  end
+
+  ------------------------------------------
+  -- Update the status in shared memory
+  local uFoot = util.se2_interpolate(.5, uLeft, uRight)
+  mcm.set_status_odometry( uFoot )
+  --util.pose_relative(uFoot, u0) for relative odometry to point u0
+  local bodyOffset = util.pose_relative(uTorso, uFoot)
+  mcm.set_status_bodyOffset( bodyOffset )
+  ------------------------------------------
+end
+
 
 function moveleg.set_leg_transforms(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)
   local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg)

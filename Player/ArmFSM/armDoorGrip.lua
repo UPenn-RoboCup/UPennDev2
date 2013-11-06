@@ -50,8 +50,6 @@ function state.entry()
   door_yaw = hcm.get_door_yaw()    
   door_yaw_target = hcm.get_door_yaw_target()  
 
-  
-
   door_yaw = 0
   stage = 1;  
 
@@ -59,46 +57,35 @@ function state.entry()
   local qRArm = Body.get_rarm_command_position()
 
   local rhand_rpy0 = {90*Body.DEG_TO_RAD,0,0}
-  local lhand_rpy0 = {90*Body.DEG_TO_RAD,0,0}
+  local lhand_rpy0 = {-90*Body.DEG_TO_RAD,0,0}
   qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
 
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
-
-
-  --Initial arm pose 
-  
-  local trLArmTarget0 = vector.new({0.18,0.31, -0.15,-90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0})
-  local trRArmTarget0 = vector.new({0.18,-0.31, -0.15,90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0})
   
 
-  --local trRArm = Body.get_forward_rarm(qRArmTarget0)
-  --print("TrRARm:",unpack(trRArm))
+  --Left hand testing
 
+  --[[
+  door_hand = 1
+  hinge_pos = vector.new({0.55,0.95,-0.05})
+  door_r = -0.60
+  grip_offset_x = -0.05
+  door_yaw_target = -30*math.pi/180
+  --]]
 
-
-
-  qLArmTarget0 = Body.get_inverse_larm(qLArm,trLArmTarget0,-shoulderYaw)
-  qRArmTarget0 = Body.get_inverse_rarm(qRArm,trRArmTarget0,shoulderYaw)
-
-  qLArmTarget0[6] = qLArm[6] --Don't turn wrist roll at first
-  qRArmTarget0[6] = qRArm[6] --Don't turn wrist roll at first
-
-  qLArmTarget1 = Body.get_inverse_larm(qLArm,trLArmTarget0,-shoulderYaw)
-  qRArmTarget1 = Body.get_inverse_rarm(qRArm,trRArmTarget0,shoulderYaw)
-
-  door_yaw_target = hcm.get_door_yaw_target()
-
-
-  --Right hand testing with webots
-  door_hand = 0;  --0 for right, 1 for left
+  --Right hand testing 
+  door_hand = 0  --0 for right, 1 for left
   hinge_pos = vector.new({0.55,-0.95,-0.05})
   door_r = 0.60
   grip_offset_x = -0.05
   door_yaw_target = 30*math.pi/180
-  --  
+  
 
+
+
+--[[
   local trArmTarget0, qArm
   if door_hand==0 then --Right hand
     trArmTarget0 = vector.new({0.18,-0.31, -0.15,90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0})
@@ -140,7 +127,7 @@ function state.entry()
   print("Planning ArmPlan4")
   ArmPlan4,qArm4 = arm_planner:plan_arm(qArm3, trArmTarget3, door_hand)  
 
-
+--]]
 end
 
 
@@ -175,10 +162,12 @@ function state.update()
   else
     local trArmTarget={}    
 
-
-
-    if stage==2 then
-      trArmTarget = vector.new(trRArm0) + vector.new({0,0,-0.15,0,0,0})
+    if stage==2 then  --Lower arm a bit
+      if door_hand==1 then 
+        trArmTarget = vector.new(trLArm0) + vector.new({0,0,-0.15,0,0,0})
+      else
+        trArmTarget = vector.new(trRArm0) + vector.new({0,0,-0.15,0,0,0})
+      end
 
     elseif stage==3 then --Move the arm forward using IK now     
       trArmTarget= movearm.getDoorHandlePosition(

@@ -9,6 +9,10 @@ local lShoulderYaw, rShoulderYaw = 0,0
 local stage = 1;
 local handle_pos_temp
 
+local qJointVelInit = 
+  {30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,
+   30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,}
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -16,6 +20,28 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   
+  --open gripper
+  Body.set_lgrip_percent(0)
+  Body.set_rgrip_percent(0)
+
+  --Initial hand angle
+  qLArm = Body.get_larm_command_position()
+  qRArm = Body.get_rarm_command_position()
+
+  local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}
+  local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD}
+
+  qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
+  qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
+
+
+
+
+
+
+
+
+
   --This works for valvetest
   --New world model for new IK
   hcm.set_wheel_model(
@@ -32,9 +58,7 @@ function state.entry()
   print("Handle yaw (deg):",handle_yaw*Body.RAD_TO_DEG)
   print("Handle radius (m):",handle_radius)
 
-  --open gripper
-  Body.set_lgrip_percent(0)
-  Body.set_rgrip_percent(0)
+  
 
   -- Inner and outer radius
   handle_radius0 = handle_radius 
@@ -68,18 +92,8 @@ function state.update()
   local qRArm = Body.get_rarm_command_position()    
 
   if stage==1 then --Change wrist        
---[[    
-    dqWristMax=vector.new({0,0,0,0,
-       15*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD})
-    qL = Body.get_inverse_arm_given_wrist( qLArm,       {0,0,0,0,-Config.walk.bodyTilt,-45*Body.DEG_TO_RAD})
-    qR = Body.get_inverse_arm_given_wrist( qRArm,       {0,0,0,0,-Config.walk.bodyTilt,45*Body.DEG_TO_RAD})
-    ret= movearm.setArmJoints(qL, qR, dt, dqWristMax)
-    
-    if ret==1 then stage=stage+1;     
-    end
---]]
-
-    stage=stage+1    
+    ret = movearm.setArmJoints(qLArm0, qRArm0 ,dt, qJointVelInit)
+    if ret==1 then stage=stage+1 end    
   elseif stage==2 then    
     ret = movearm.setArmToWheelPosition(
       handle_pos0, handle_yaw, handle_pitch,

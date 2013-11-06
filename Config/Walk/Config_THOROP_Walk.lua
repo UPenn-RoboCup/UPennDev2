@@ -138,6 +138,9 @@ else
   walk.footY = 0.1095
   walk.bodyTilt = 11*math.pi/180
 
+
+
+
   gyroFactorX = 490.23/(251000/180)*0.5
   gyroFactorY = 490.23/(251000/180)*0.5
   walk.ankleImuParamX={1, 0.9*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
@@ -188,6 +191,9 @@ walk.hipRollCompensation = 3*math.pi/180
 --]]
 
 end
+
+--TEMPORARY HACK FOR PERCEPTION TESTING
+walk.bodyTilt = 0*math.pi/180
 
 
 --Slowed down walk (to match actual robot)

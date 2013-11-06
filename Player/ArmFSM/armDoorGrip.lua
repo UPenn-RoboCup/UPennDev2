@@ -26,7 +26,9 @@ local velJointInit =  {10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,
 local shoulderYaw = -6.6*Body.DEG_TO_RAD
 
 
-
+local qJointVelInit = 
+  {30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,
+   30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,}
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -55,6 +57,15 @@ function state.entry()
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
+
+  local rhand_rpy0 = {90*Body.DEG_TO_RAD,0,0}
+  local lhand_rpy0 = {90*Body.DEG_TO_RAD,0,0}
+  qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
+  qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
+
+  trLArm0 = Body.get_forward_larm(qLArm0)
+  trRArm0 = Body.get_forward_rarm(qRArm0)  
+
 
   --Initial arm pose 
   
@@ -130,11 +141,6 @@ function state.entry()
   ArmPlan4,qArm4 = arm_planner:plan_arm(qArm3, trArmTarget3, door_hand)  
 
 
-
-
-
-
-
 end
 
 
@@ -157,37 +163,41 @@ function state.update()
   local trRArm = Body.get_forward_rarm(qRArm)  
 
 
-
   if stage==1 then --Set the arm to grip-ready pose    
     --Turn yaw angles first
-    if door_hand==1 then ret = movearm.setArmJoints(qLArmTarget0,qRArm,dt) --Left hand      
-    else ret = movearm.setArmJoints(qLArm,qRArmTarget0,dt) end
-    if ret==1 then stage=stage+1; end
-  elseif stage==2 then --Now turn wrist roll angle    
-    if door_hand==1 then ret = movearm.setArmJoints(qLArmTarget1,qRArm,dt) --Left hand      
-    else ret = movearm.setArmJoints(qLArm,qRArmTarget1,dt) end    
-    if ret==1 then stage=stage+1; end
+    if door_hand==1 then 
+      ret = movearm.setArmJoints(qLArm0,qRArm,dt, qJointVelInit) --Left hand      
+    else 
+    --  ret = movearm.setArmJoints(qLArm,qRArmTarget0,dt) 
+      ret = movearm.setArmJoints(qLArm,qRArm0,dt, qJointVelInit) 
+    end
+    if ret==1 then stage=stage+1; end  
   else
     local trArmTarget={}    
-    if stage==2 then --Move the arm forward using IK now     
+
+
+
+    if stage==2 then
+      trArmTarget = vector.new(trRArm0) + vector.new({0,0,-0.15,0,0,0})
+
+    elseif stage==3 then --Move the arm forward using IK now     
       trArmTarget= movearm.getDoorHandlePosition(
         hinge_pos+handle_clearance, door_r, door_yaw, grip_offset_x, door_hand)
-    elseif stage==3 then --Move the arm up to grip the handle    
+    elseif stage==4 then --Move the arm up to grip the handle    
       trArmTarget = movearm.getDoorHandlePosition(
         hinge_pos, door_r, door_yaw, grip_offset_x,door_hand)
-    elseif stage==4 then --Close gripper and pull down the lever
+    elseif stage==5 then --Close gripper and pull down the lever
       trArmTarget = movearm.getDoorHandlePosition(
         hinge_pos + handle_pulldown, door_r, door_yaw, grip_offset_x, door_hand)
       if door_hand==1 then  Body.set_lgrip_percent(1) 
       else Body.set_rgrip_percent(1) end
-    elseif stage==5 then --open the door            
+    elseif stage==6 then --open the door            
       door_yaw1,doneD = util.approachTol(door_yaw,door_yaw_target, 
       dDoorAngleMax,dt)    
       trArmTarget = movearm.getDoorHandlePosition(
         hinge_pos + handle_pulldown, door_r, door_yaw1, grip_offset_x, door_hand)
-    elseif stage==6 then
+    elseif stage==7 then
       return
-
     end
 
     if door_hand==1 then --Left hand
@@ -198,9 +208,8 @@ function state.update()
       ret = movearm.setArmToPositionAdapt(trLArm, trArmTarget, dt, -shoulderYaw, shoulderYaw)
     end        
 
-    if stage==5 then
-      if ret==-1 then       
-        hcm.set_door_yaw_target(door_yaw)   
+    if stage==6 then
+      if ret==-1 then               
         print("Final angle:",door_yaw*180/math.pi)         
         stage = stage+ 1
       else
@@ -208,7 +217,6 @@ function state.update()
       end
     elseif ret==1 then  stage=stage+1
     end
-
   end    
 end
 

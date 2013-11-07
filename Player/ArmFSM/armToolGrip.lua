@@ -48,10 +48,10 @@ function state.entry()
   local trRArm0 = Body.get_forward_rarm(qRArm0)  
  
   --tool_pos_left = hcm.get_tool_pos()
-  tool_pos_left=vector.new({0.55,0.02,0.05})  
+  --tool_pos_left=vector.new({0.55,0.02,0.05})  
 
   --with 0 bodytilt, robot has slightly shorter reach
---  tool_pos_left=vector.new({0.51,0.02,0.05})  
+  tool_pos_left=vector.new({0.51,0.02,0.05})  
   tool_yaw = 0 --TODO
 
 
@@ -96,6 +96,14 @@ function state.entry()
   stage = 0;  
   debugdata=''
   uTorsoCompTarget = {0,0}
+
+
+  mcm.set_arm_qlarm(end_arm_sequence2[1])
+  mcm.set_arm_qrarm(end_arm_sequence2[2])        
+  mcm.set_arm_qlarmcomp(end_arm_sequence2[3])
+  mcm.set_arm_qrarmcomp(end_arm_sequence2[4])
+
+
 end
 
 
@@ -131,11 +139,8 @@ function state.update()
     end
   elseif stage==3 then
     if arm_planner:play_arm_sequence(t) then    
-      stage = stage+1
-      mcm.set_arm_qlarm(qLArm1)
-      mcm.set_arm_qrarm(qRArm1)        
-      mcm.set_arm_qlarmcomp(qLArmComp1)
-      mcm.set_arm_qrarmcomp(qRArmComp1)
+      print("SEQUENCE DONE")
+      stage = stage+1      
     end    
   end
 

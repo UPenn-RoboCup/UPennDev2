@@ -50,8 +50,6 @@ function state.entry()
   trLArmTarget4 = movearm.getToolPosition(tool_pos_left3,0,1)    
   trLArmTarget5 = movearm.getToolPosition(tool_pos_left4,0,1)    
 
-  
-
   local qLArm0 = mcm.get_arm_qlarm()
   local qRArm0 = mcm.get_arm_qrarm()        
 

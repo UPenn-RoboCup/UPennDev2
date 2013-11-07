@@ -210,7 +210,7 @@ walk.velDelta  = {0.025,0.02,0.1}
 
 --TEMPORARY HACK FOR PERCEPTION TESTING
 walk.bodyTilt = 11*math.pi/180
---walk.bodyTilt = 0*math.pi/180
+walk.bodyTilt = 0*math.pi/180
 
 
 
@@ -239,9 +239,9 @@ stance.sitHeight = 0.70
 stance.dHeight = 0.04 --4cm per sec
 
 --Should we move torso back for compensation?
-stance.enable_torso_compensation = 1
+--stance.enable_torso_compensation = 1
 
---stance.enable_torso_compensation = 0
+stance.enable_torso_compensation = 0
 
 ------------------------------------
 -- Kneeling parameters

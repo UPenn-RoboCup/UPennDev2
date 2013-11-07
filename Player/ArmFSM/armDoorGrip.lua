@@ -7,7 +7,7 @@ local movearm = require'movearm'
 
 local dqArmMax = Config.arm.slow_limit
 local dpArmMax = Config.arm.linear_slow_limit
-local dDoorAngleMax = 3*math.pi/180
+local dDoorAngleMax = 1*math.pi/180
 
 local stage = 1;
 local hinge_pos={}
@@ -208,57 +208,42 @@ function state.update()
     --  ret = movearm.setArmJoints(qLArm,qRArmTarget0,dt) 
       ret = movearm.setArmJoints(qLArm,qRArm1,dt, Config.arm.joint_init_limit) 
     end
-    if ret==1 then stage=stage+1 end  
-  else   
-    if stage==2 then  --Lower arm a bit      
-      --[[
-      if door_hand==1 then 
-        trArmTarget = vector.new(trLArm0) + vector.new({0,0,-0.10,0,0,0})
-      else
-        trArmTarget = vector.new(trRArm0) + vector.new({0,0,-0.10,0,0,0})
-      end
-      update_arm(dt)
-      --]]
-    elseif stage==3 then --Move the arm forward using IK now     
-      trArmTarget= movearm.getDoorHandlePosition(
-        hinge_pos+handle_clearance, door_r, door_yaw, grip_offset_x, door_hand)
-      update_arm(dt)
-    elseif stage==4 then --Move the arm up to grip the handle    
-      trArmTarget = movearm.getDoorHandlePosition(
-        hinge_pos, door_r, door_yaw, grip_offset_x,door_hand)
-      update_arm(dt)
-    elseif stage==5 then --Close gripper       
+    if ret==1 then stage=stage+1 end    
+  elseif stage==3 then --Move the arm forward using IK now     
+    trArmTarget= movearm.getDoorHandlePosition(
+      hinge_pos+handle_clearance, door_r, door_yaw, grip_offset_x, door_hand)
+    update_arm(dt)
+  elseif stage==4 then --Move the arm up to grip the handle    
+    trArmTarget = movearm.getDoorHandlePosition(
+      hinge_pos, door_r, door_yaw, grip_offset_x,door_hand)
+    update_arm(dt)
+  elseif stage==5 then --Close gripper       
+    grip,gripDone = util.approachTol(grip,0.8,2,dt)      
+    if door_hand==1 then  Body.set_lgrip_percent(grip) 
+    else Body.set_rgrip_percent(grip) end
+    if gripDone then stage = stage+1 end
+  elseif stage==6 then --Pull down the lever
+    trArmTarget = movearm.getDoorHandlePosition(
+      hinge_pos + handle_pulldown, door_r, door_yaw, grip_offset_x, door_hand)
+    update_arm(dt)
+  elseif stage==7 then --open the door            
+    door_yaw1,doneD = util.approachTol(door_yaw,door_yaw_target, dDoorAngleMax,dt)    
 
-      grip,gripDone = util.approachTol(grip,0.8,2,dt)      
-      if door_hand==1 then  Body.set_lgrip_percent(grip) 
-      else Body.set_rgrip_percent(grip) end
-      if gripDone then stage = stage+1 end
-
-    elseif stage==6 then --Pull down the lever
-      trArmTarget = movearm.getDoorHandlePosition(
-        hinge_pos + handle_pulldown, door_r, door_yaw, grip_offset_x, door_hand)
-      update_arm(dt)
-    elseif stage==7 then --open the door            
-      door_yaw1,doneD = util.approachTol(door_yaw,door_yaw_target, 
-      dDoorAngleMax,dt)    
-      trArmTarget = movearm.getDoorHandlePosition(
-        hinge_pos + handle_pulldown, door_r, door_yaw1, grip_offset_x, door_hand)    
-      update_arm(dt)
-    else
-      return
-    end
-
+    print(door_yaw*180/math.pi)
+    trArmTarget = movearm.getDoorHandlePosition(
+      hinge_pos + handle_pulldown, door_r, door_yaw1, grip_offset_x, door_hand)    
     
-
-    if stage==7 then
-      if ret==-1 then               
+    if ret==-1 then               
         print("Final angle:",door_yaw*180/math.pi)         
         stage = stage+ 1        
       else
         door_yaw = door_yaw1;
+        update_arm(dt)
       end    
-    end
-  end    
+  else
+    return
+  end
+ 
 end
 
 function state.exit()  

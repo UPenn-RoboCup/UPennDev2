@@ -240,7 +240,11 @@ end
 -- Used when sending packets and working with actuator commands
 local radian_clamp = function( idx, radian )
   --print('clamp...',idx,radian,servo.min_rad[idx],servo.max_rad[idx])
-  return math.min(math.max(radian, servo.min_rad[idx]), servo.max_rad[idx])
+  if servo.max_rad[idx] == 180*DEG_TO_RAD and servo.min_rad[idx]==-180*DEG_TO_RAD then    
+    return radian
+  else
+    return math.min(math.max(radian, servo.min_rad[idx]), servo.max_rad[idx])
+  end
 end
 
 -- Radian to step, using offsets and biases

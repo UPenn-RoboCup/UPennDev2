@@ -34,8 +34,13 @@ function state.entry()
   qLArm = Body.get_larm_command_position()
   qRArm = Body.get_rarm_command_position()
 
-  qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, 0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD})
-  qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, 0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD})
+  --Initial hand angle
+
+  local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}
+  local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD}
+
+  qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
+  qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
   
   local trLArm0 = Body.get_forward_larm(qLArm0)
   local trRArm0 = Body.get_forward_rarm(qRArm0)  
@@ -48,10 +53,8 @@ function state.entry()
   tool_pos_left2=vector.new({0.35,0.05,tool_pos_left1[3]})  
   tool_pos_left3=vector.new({0.30,0.10,-0.10})  
 
---  trLArmTarget0 = trLArm
   trLArmTarget1 = movearm.getToolPosition(tool_pos_left,0.08,1)    
   trLArmTarget2 = movearm.getToolPosition(tool_pos_left,0,1)    
-
   trLArmTarget3 = movearm.getToolPosition(tool_pos_left1,0,1)   --lift up 
   trLArmTarget4 = movearm.getToolPosition(tool_pos_left2,0,1)    
   trLArmTarget5 = movearm.getToolPosition(tool_pos_left3,0,1)    
@@ -61,8 +64,7 @@ function state.entry()
   --So that it becomes zero with initial arm configuration
   arm_planner:reset_torso_comp(qLArm, qRArm)
 
-
-
+--[[
   print("Planning LArmPlan1")
   LArmPlan1,qLArm1 = arm_planner:plan_arm(qLArm0, trLArmTarget1, 1)  
   print("Planning LArmPlan2")
@@ -73,29 +75,21 @@ function state.entry()
   LArmPlan4,qLArm1 = arm_planner:plan_arm(qLArm1, trLArmTarget4, 1)
   print("Planning LArmPlan5")
   LArmPlan5,qLArm1 = arm_planner:plan_arm(qLArm1, trLArmTarget5, 1)
-
+--]]
   
   
   --Test two arm planning
   print("Testing two-arm planning")
   arm_planner:set_hand_mass(0,0)    
-  print("Planning LArmPlan1")
+  
   LAP1, RAP1, uTP1, qLArm1, qRArm1, qLArmComp1, qRArmComp1, uTorsoComp1 = 
   arm_planner:plan_double_arm(qLArm0,qRArm0,qLArm0, qRArm0, trLArmTarget1,trRArm0, {0,0})
-  print("Planning LArmPlan2")
-
-
-
   
-
   LAP2, RAP2, uTP2, qLArm1, qRArm1, qLArmComp1, qRArmComp1, uTorsoComp1 = 
   arm_planner:plan_double_arm(qLArm1,qRArm1,qLArmComp1, qRArmComp1, trLArmTarget2,trRArm0, uTorsoComp1)
 
-  arm_planner:set_hand_mass(3,0)
-  
-  --arm_planner:set_hand_mass(0,0)
-
-
+  arm_planner:set_hand_mass(3,0) --we pickup the drill, so set left hand weight accordingly
+    
   LAP3, RAP3, uTP3, qLArm1, qRArm1, qLArmComp1, qRArmComp1, uTorsoComp1 = 
     arm_planner:plan_double_arm(qLArm1,qRArm1,qLArmComp1, qRArmComp1, trLArmTarget3,trRArm0, uTorsoComp1)
 
@@ -106,8 +100,6 @@ function state.entry()
     arm_planner:plan_double_arm(qLArm1,qRArm1,qLArmComp1, qRArmComp1, trLArmTarget5,trRArm0, uTorsoComp1)
 
 
-
-
   stage = 0;  
   debugdata=''
   uTorsoCompTarget = {0,0}
@@ -116,8 +108,8 @@ end
 local gripL, gripR = 0,0
 
 local qJointVelTool = 
-  {10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,
-   30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,}
+  {30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,
+   30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,}
 
 function state.update()
   --  print(state._NAME..' Update' )
@@ -239,17 +231,6 @@ function state.update()
       stage = stage+1        
     end    
   end
-
-
-
-
-
-
-
-
-
-
-
 
 end
 

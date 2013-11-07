@@ -76,7 +76,7 @@ sm:set_transition(armChangetoPose2, 'done', armPose2)
 
 sm:set_transition(armPose1, 'ready', armChangetoPose2)
 sm:set_transition(armPose1, 'rocky', armRocky)
-sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
+
 
 
 sm:set_transition(armRocky, 'reset', armChangetoPose2)
@@ -86,6 +86,7 @@ sm:set_transition(armPose2, 'wheelgrab', armWheelGrip)
 sm:set_transition(armPose2, 'reset', armChangetoPose1)
 
 sm:set_transition(armPose2, 'toolgrab', armToolGrip)
+sm:set_transition(armPose2, 'doorgrab', armDoorGrip)
 
 --sm:set_transition(armWheelGrip, 'done', armWheelTurn)
 sm:set_transition(armWheelGrip, 'done', armWheelTurnValve)

@@ -535,7 +535,22 @@ local function play_arm_sequence(self,t)
   return false
 end
 
+local function save_boundary_condition(self,arm_end)
+  mcm.set_arm_qlarm(arm_end[1])
+  mcm.set_arm_qrarm(arm_end[2])        
+  mcm.set_arm_qlarmcomp(arm_end[3])
+  mcm.set_arm_qrarmcomp(arm_end[4])
+end
 
+local function load_boundary_condition(self)
+  local qLArm=mcm.get_arm_qlarm()
+  local qRArm=mcm.get_arm_qrarm()        
+  local qLArmComp=mcm.get_arm_qlarmcomp()
+  local qRArmComp=mcm.get_arm_qrarmcomp()
+  local uTorsoComp = mcm.get_stance_uTorsoComp()
+  local init_cond = {qLArm,qRArm,qLArmComp,qRArmComp,uTorsoComp}
+  return init_cond
+end
 
 
 local libArmPlan={}
@@ -581,6 +596,9 @@ libArmPlan.new_planner = function (params)
   s.plan_arm_sequence = plan_arm_sequence
   s.init_arm_sequence = init_arm_sequence
   s.play_arm_sequence = play_arm_sequence
+
+  s.save_boundary_condition=save_boundary_condition
+  s.load_boundary_condition=load_boundary_condition
   return s
 end
 

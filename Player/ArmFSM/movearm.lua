@@ -29,6 +29,17 @@ function movearm.setArmJoints(
   local qR_approach, doneR2
   qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqArmLim, dt )
 
+  --Dynamixel is STUPID so we should check for the direction
+  local qLOld = Body.get_larm_command_position()
+  local qROld = Body.get_rarm_command_position()
+
+  for i=1,7 do
+    local qL_increment = util.mod_angle(qL_approach[i]-qLOld[i])
+    qL_approach[i] = qLOld[i] + qL_increment
+    local qR_increment = util.mod_angle(qR_approach[i]-qROld[i])
+    qR_approach[i] = qROld[i] + qR_increment
+  end
+
   local qL = Body.set_larm_command_position( qL_approach )
   local qR = Body.set_rarm_command_position( qR_approach )
 

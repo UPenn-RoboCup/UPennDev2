@@ -51,7 +51,7 @@ function state.entry()
   tool_pos_left=vector.new({0.55,0.02,0.05})  
 
   --with 0 bodytilt, robot has slightly shorter reach
-  tool_pos_left=vector.new({0.51,0.02,0.05})  
+--  tool_pos_left=vector.new({0.51,0.02,0.05})  
   tool_yaw = 0 --TODO
 
 
@@ -72,28 +72,26 @@ function state.entry()
   --So that it becomes zero with initial arm configuration
   arm_planner:reset_torso_comp(qLArm0, qRArm0)
 
-  
-  --Test two arm planning
-  print("Testing two-arm planning")
-  arm_planner:set_hand_mass(0,0)    
-  
-  LAP1, RAP1, uTP1, qLArm1, qRArm1, qLArmComp1, qRArmComp1, uTorsoComp1 = 
-  arm_planner:plan_double_arm(qLArm0,qRArm0,qLArm0, qRArm0, trLArmTarget1,trRArm0, {0,0})
-  
-  LAP2, RAP2, uTP2, qLArm1, qRArm1, qLArmComp1, qRArmComp1, uTorsoComp1 = 
-  arm_planner:plan_double_arm(qLArm1,qRArm1,qLArmComp1, qRArmComp1, trLArmTarget2,trRArm0, uTorsoComp1)
+  local arm_sequence1 = {
+    init={qLArm0,qRArm0,qLArm0, qRArm0, {0,0}},
+    mass={0,0},
+    armseq={
+      {trLArmTarget1, trRArm0},
+      {trLArmTarget2, trRArm0},
+    }
+  }
+  arm_plan1, end_arm_sequence1 = arm_planner:plan_arm_sequence(arm_sequence1)
 
-  arm_planner:set_hand_mass(3,0) --we pickup the drill, so set left hand weight accordingly
-    
-  LAP3, RAP3, uTP3, qLArm1, qRArm1, qLArmComp1, qRArmComp1, uTorsoComp1 = 
-    arm_planner:plan_double_arm(qLArm1,qRArm1,qLArmComp1, qRArmComp1, trLArmTarget3,trRArm0, uTorsoComp1)
-
-  LAP4, RAP4, uTP4, qLArm1, qRArm1, qLArmComp1, qRArmComp1, uTorsoComp1 = 
-    arm_planner:plan_double_arm(qLArm1,qRArm1,qLArmComp1, qRArmComp1, trLArmTarget4,trRArm0, uTorsoComp1)
-
-  LAP5, RAP5, uTP5, qLArm1, qRArm1, qLArmComp1, qRArmComp1, uTorsoComp1 = 
-    arm_planner:plan_double_arm(qLArm1,qRArm1,qLArmComp1, qRArmComp1, trLArmTarget5,trRArm0, uTorsoComp1)
-
+  local arm_sequence2 = {
+    init=end_arm_sequence1,
+    mass={3,0},
+    armseq={
+      {trLArmTarget3, trRArm0},
+      {trLArmTarget4, trRArm0},
+      {trLArmTarget5, trRArm0},
+    }
+  }
+  arm_plan2,end_arm_sequence2 = arm_planner:plan_arm_sequence(arm_sequence2)
 
   stage = 0;  
   debugdata=''
@@ -109,67 +107,35 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  if not LAP5 then --Plan failed. escape
+  if not arm_plan2 then --Plan failed. escape
     return "planfail"
   end
 
-  --if t-t_entry > timeout then return'timeout' end
-  qLArm = Body.get_larm_command_position()
-  qRArm = Body.get_rarm_command_position()  
-
-  local trLArm = Body.get_forward_larm(qLArm)
-
-
---[[
-  debugdata=debugdata..
-    string.format("%f,  %f,%f,%f,%f,%f,%f,%f,  %f,%f,%f,%f,%f,%f\n",
-    t-t_entry, 
-    qLArm[1],qLArm[2],qLArm[3], qLArm[4], qLArm[5], qLArm[6], qLArm[7],
-    trLArm[1], trLArm[2], trLArm[3], trLArm[4], trLArm[5], trLArm[6])
---]]
-
-
   if stage==0 then --Rotate wrist
     ret = movearm.setArmJoints(qLArm0, qRArm0 ,dt, Config.arm.joint_init_limit)
-    if ret==1 then 
-      arm_planner:init_trajectory_double(LAP1, RAP1, uTP1 ,t)
+    if ret==1 then     
+      arm_planner:init_arm_sequence(arm_plan1,t)
       stage=stage+1 
     end
   elseif stage==1 then
-    local qLArmTarget, qRArmTarget, uTorsoCompTarget = arm_planner:playback_trajectory_double(t)
-    if not qLArmTarget then       
-      stage = stage+1       
-      arm_planner:init_trajectory_double(LAP2, RAP2, uTP2 ,t)
+    if arm_planner:play_arm_sequence(t) then    
+      stage = stage+1             
     end
-  elseif stage==2 then
-    local qLArmTarget, qRArmTarget, uTorsoCompTarget = arm_planner:playback_trajectory_double(t)
-    if not qLArmTarget then 
-      stage = stage+1 
-    end
-  elseif stage==3 then
+  elseif stage==2 then    
     gripL,doneL = util.approachTol(gripL,1,2,dt)
     Body.set_lgrip_percent(gripL*0.8)
     Body.set_rgrip_percent(gripR*0.8)    
     if doneL then
       stage=stage+1
-      arm_planner:init_trajectory_double(LAP3, RAP3, uTP3 ,t)      
+      arm_planner:init_arm_sequence(arm_plan2,t)
     end
-  elseif stage==4 then
-    local qLArmTarget, qRArmTarget, uTorsoCompTarget = arm_planner:playback_trajectory_double(t)
-    if not qLArmTarget then 
-      stage = stage+1  
-      arm_planner:init_trajectory_double(LAP4, RAP4, uTP4 ,t)      
-    end
-  elseif stage==5 then
-    local qLArmTarget, qRArmTarget, uTorsoCompTarget = arm_planner:playback_trajectory_double(t)
-    if not qLArmTarget then 
-      stage = stage+1  
-      arm_planner:init_trajectory_double(LAP5, RAP5, uTP5 ,t)      
-    end
-  elseif stage==6 then    
-    local qLArmTarget, qRArmTarget, uTorsoCompTarget = arm_planner:playback_trajectory_double(t)
-    if not qLArmTarget then 
-      stage = stage+1        
+  elseif stage==3 then
+    if arm_planner:play_arm_sequence(t) then    
+      stage = stage+1
+      mcm.set_arm_qlarm(qLArm1)
+      mcm.set_arm_qrarm(qRArm1)        
+      mcm.set_arm_qlarmcomp(qLArmComp1)
+      mcm.set_arm_qrarmcomp(qRArmComp1)
     end    
   end
 
@@ -185,8 +151,7 @@ function state.exit()
   debugfile:close();  
 --]]
 
-  Body.set_lgrip_percent(0)
-  Body.set_rgrip_percent(0)
+
   print(state._NAME..' Exit' )
 end
 

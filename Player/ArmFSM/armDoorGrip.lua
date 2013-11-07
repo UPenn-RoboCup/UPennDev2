@@ -218,7 +218,7 @@ function state.update()
       hinge_pos, door_r, door_yaw, grip_offset_x,door_hand)
     update_arm(dt)
   elseif stage==5 then --Close gripper       
-    grip,gripDone = util.approachTol(grip,0.8,2,dt)      
+    grip,gripDone = util.approachTol(grip,1,2,dt)      
     if door_hand==1 then  Body.set_lgrip_percent(grip) 
     else Body.set_rgrip_percent(grip) end
     if gripDone then stage = stage+1 end

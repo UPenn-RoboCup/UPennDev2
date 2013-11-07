@@ -16,6 +16,18 @@ shared.stance.bodyHeight = vector.zeros(1)
 shared.stance.bodyHeightTarget = vector.zeros(1)
 shared.stance.uTorsoComp = vector.zeros(2) --For quasi-static balancing
 
+--Arm info
+
+shared.arm = {}
+--Target arm position (w/o compensation)
+shared.arm.qlarm = vector.zeros(7)
+shared.arm.qrarm = vector.zeros(7)
+
+--Torso-Compensated arm position
+shared.arm.qlarmcomp = vector.zeros(7)
+shared.arm.qrarmcomp = vector.zeros(7)
+
+
 
 -- Walk Parameters
 shared.walk = {}
@@ -35,6 +47,10 @@ shared.walk.ismoving= vector.zeros(1)
 -- Walk-step transition
 shared.walk.steprequest= vector.zeros(1)
 shared.walk.step_supportleg= vector.zeros(1)
+
+
+
+
 
 
 -- Motion Status

@@ -210,7 +210,7 @@ walk.velDelta  = {0.025,0.02,0.1}
 
 --TEMPORARY HACK FOR PERCEPTION TESTING
 walk.bodyTilt = 11*math.pi/180
-walk.bodyTilt = 0*math.pi/180
+--walk.bodyTilt = 0*math.pi/180
 
 
 
@@ -395,11 +395,16 @@ arm.super_slow_limit = vector.new({5,5,5,10,15,15,15})*DEG_TO_RAD
 arm.slow_elbow_limit = vector.new({10,10,10,5,30,30,30})*DEG_TO_RAD
 
 -- Linear movement speed limits
-arm.linear_slow_limit = vector.new({0.02,0.02,0.02,
-						15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
+arm.linear_slow_limit = vector.new({0.02,0.02,0.02, 15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
 
 -- Use this for wrist initialization
 arm.joint_init_limit=vector.new({30,30,30,30,30,30,30}) *DEG_TO_RAD
+
+-- Use this for planned arm movement
+arm.joint_vel_limit_plan = vector.new({10,10,10,10,30,10,30}) *DEG_TO_RAD
+
+
+
 
 
 
@@ -424,13 +429,23 @@ arm.linear_wrist_limit = 0.05
 if IS_WEBOTS then
 
     --Faster limit for webots
-  arm.fast_limit = vector.new({30,30,30,45,60,60,60})*DEG_TO_RAD*3
-  arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD*3
-  arm.super_slow_limit = vector.new({5,5,5,10,15,15,15})*DEG_TO_RAD*3
-  arm.slow_elbow_limit = vector.new({10,10,10,5,30,30,30})*DEG_TO_RAD*3
+  arm.fast_limit = arm.fast_limit*3
+  arm.slow_limit = arm.slow_limit*3
+  arm.super_slow_limit = arm.super_slow_limit*3
+  arm.slow_elbow_limit = arm.slow_elbow_limit*3
 
-  arm.linear_slow_limit = vector.new({0.02,0.02,0.02,
-              15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})*3
+  -- Linear movement speed limits
+  arm.linear_slow_limit = arm.linear_slow_limit*3
+
+  -- Use this for wrist initialization
+  arm.joint_init_limit=arm.joint_init_limit*3
+
+  -- Use this for planned arm movement
+  arm.joint_vel_limit_plan = arm.joint_vel_limit_plan*3
+
+
+
+
 
   --For low-torque deflection testing
 --[[

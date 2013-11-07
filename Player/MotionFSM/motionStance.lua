@@ -142,10 +142,8 @@ function state.update()
 --]]
  
 
-  local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
-
-
---  moveleg.set_leg_positions(uTorso,uLeft,uRight,
+  local uTorsoCompensated = util.pose_global(
+    {uTorsoComp[1],uTorsoComp[2],0},uTorso)
   mcm.set_stance_bodyHeight(bodyHeight)  
   moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
     0,0,delta_legs)

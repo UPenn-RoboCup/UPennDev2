@@ -42,6 +42,7 @@ local armDoorRelease = require'armDoorRelease'
 
 -- Tool specific states
 local armToolGrip = require'armToolGrip'
+local armToolChop = require'armToolChop'
 
 local sm = fsm.new(armIdle);
 sm:add_state(armPose1)
@@ -56,6 +57,7 @@ sm:add_state(armWheelRelease)
 sm:add_state(armDoorGrip)
 sm:add_state(armDoorRelease)
 sm:add_state(armToolGrip)
+sm:add_state(armToolChop)
 
 sm:add_state(armRocky)
 
@@ -78,6 +80,9 @@ sm:set_transition(armPose1, 'ready', armChangetoPose2)
 sm:set_transition(armPose1, 'rocky', armRocky)
 
 
+sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
+
+
 
 sm:set_transition(armRocky, 'reset', armChangetoPose2)
 
@@ -86,7 +91,7 @@ sm:set_transition(armPose2, 'wheelgrab', armWheelGrip)
 sm:set_transition(armPose2, 'reset', armChangetoPose1)
 
 sm:set_transition(armPose2, 'toolgrab', armToolGrip)
-sm:set_transition(armPose2, 'doorgrab', armDoorGrip)
+--sm:set_transition(armPose2, 'doorgrab', armDoorGrip)
 
 --sm:set_transition(armWheelGrip, 'done', armWheelTurn)
 sm:set_transition(armWheelGrip, 'done', armWheelTurnValve)
@@ -99,14 +104,18 @@ sm:set_transition(armWheelRelease, 'done', armChangetoPose2)
 sm:set_transition(armWheelTurnValve, 'done', armWheelRelease)
 sm:set_transition(armWheelTurnValve, 'reset', armWheelRelease)
 
+
+
 --TODO: should use IK to get back?
 sm:set_transition(armToolGrip, 'reset', armChangetoPose2)
-
+sm:set_transition(armToolGrip, 'planfail', armPose2)
+sm:set_transition(armToolGrip, 'toolgrab', armToolChop)
 
 -- The initial arm pose is great for door gripping, 
 -- and should be the reset position
 sm:set_transition(armDoorGrip, 'reset', armDoorRelease)
-sm:set_transition(armDoorRelease, 'done', armPose1)
+sm:set_transition(armDoorGrip, 'planfail', armPose1)
+sm:set_transition(armDoorRelease, 'done', armChangetoPose1)
 
 -- TODO: This may not be the best
 -- We may wish to give ready and init

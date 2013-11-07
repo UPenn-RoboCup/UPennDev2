@@ -18,6 +18,8 @@ local trLArmTarget,trRArmTarget
 local libArmPlan = require 'libArmPlan'
 arm_planner = libArmPlan.new_planner()
 
+local gripL, gripR = 0,0
+
 local debugdata
 
 function state.entry()
@@ -47,11 +49,17 @@ function state.entry()
  
   --tool_pos_left = hcm.get_tool_pos()
   tool_pos_left=vector.new({0.55,0.02,0.05})  
-  
+
+  --with 0 bodytilt, robot has slightly shorter reach
+  tool_pos_left=vector.new({0.51,0.02,0.05})  
+  tool_yaw = 0 --TODO
+
+
+
 
   tool_pos_left1=tool_pos_left + vector.new({0,0,0.05})
   tool_pos_left2=vector.new({0.35,0.05,tool_pos_left1[3]})  
-  tool_pos_left3=vector.new({0.30,0.10,-0.10})  
+  tool_pos_left3=vector.new({0.20,0.0,-0.10})  
 
   trLArmTarget1 = movearm.getToolPosition(tool_pos_left,0.08,1)    
   trLArmTarget2 = movearm.getToolPosition(tool_pos_left,0,1)    
@@ -62,21 +70,8 @@ function state.entry()
 
   --This sets torso compensation bias
   --So that it becomes zero with initial arm configuration
-  arm_planner:reset_torso_comp(qLArm, qRArm)
+  arm_planner:reset_torso_comp(qLArm0, qRArm0)
 
---[[
-  print("Planning LArmPlan1")
-  LArmPlan1,qLArm1 = arm_planner:plan_arm(qLArm0, trLArmTarget1, 1)  
-  print("Planning LArmPlan2")
-  LArmPlan2,qLArm1 = arm_planner:plan_arm(qLArm1, trLArmTarget2, 1)
-  print("Planning LArmPlan3")
-  LArmPlan3,qLArm1 = arm_planner:plan_arm(qLArm1, trLArmTarget3, 1)
-  print("Planning LArmPlan4")
-  LArmPlan4,qLArm1 = arm_planner:plan_arm(qLArm1, trLArmTarget4, 1)
-  print("Planning LArmPlan5")
-  LArmPlan5,qLArm1 = arm_planner:plan_arm(qLArm1, trLArmTarget5, 1)
---]]
-  
   
   --Test two arm planning
   print("Testing two-arm planning")
@@ -105,11 +100,7 @@ function state.entry()
   uTorsoCompTarget = {0,0}
 end
 
-local gripL, gripR = 0,0
 
-local qJointVelTool = 
-  {30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,
-   30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,}
 
 function state.update()
   --  print(state._NAME..' Update' )
@@ -117,6 +108,11 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
+
+  if not LAP5 then --Plan failed. escape
+    return "planfail"
+  end
+
   --if t-t_entry > timeout then return'timeout' end
   qLArm = Body.get_larm_command_position()
   qRArm = Body.get_rarm_command_position()  
@@ -133,63 +129,8 @@ function state.update()
 --]]
 
 
---[[
-
-
   if stage==0 then --Rotate wrist
-    ret = movearm.setArmJoints(qLArm0, qRArm0 ,dt, qJointVelTool)
-    if ret==1 then 
-      arm_planner:init_trajectory(LArmPlan1,t)
-      stage=stage+1 
-    end
-  elseif stage==1 then
-    local qLArmTarget = arm_planner:playback_trajectory(t)
-    if qLArmTarget then movearm.setArmJoints(qLArmTarget,qRArm,dt)
-    else       
-      stage = stage+1       
-      arm_planner:init_trajectory(LArmPlan2,t)
-    end
-  elseif stage==2 then
-    local qLArmTarget = arm_planner:playback_trajectory(t)
-    if qLArmTarget then movearm.setArmJoints(qLArmTarget,qRArm,dt)
-    else 
-      stage = stage+1 
-    end
-  elseif stage==3 then
-    gripL,doneL = util.approachTol(gripL,1,2,dt)
-    Body.set_lgrip_percent(gripL*0.8)
-    Body.set_rgrip_percent(gripR*0.8)    
-    if doneL then
-      stage=stage+1
-      arm_planner:init_trajectory(LArmPlan3,t)
-    end
-  elseif stage==4 then
-    local qLArmTarget = arm_planner:playback_trajectory(t)
-    if qLArmTarget then movearm.setArmJoints(qLArmTarget,qRArm,dt)
-    else 
-      stage = stage+1  
-      arm_planner:init_trajectory(LArmPlan4,t)
-    end
-  elseif stage==5 then
-    local qLArmTarget = arm_planner:playback_trajectory(t)
-    if qLArmTarget then movearm.setArmJoints(qLArmTarget,qRArm,dt)
-    else 
-      stage = stage+1  
-      arm_planner:init_trajectory(LArmPlan5,t)
-    end
-  elseif stage==6 then
-    local qLArmTarget = arm_planner:playback_trajectory(t)
-    if qLArmTarget then movearm.setArmJoints(qLArmTarget,qRArm,dt)
-    else 
-      stage = stage+1        
-    end
-  end
---]]
-
-
-
-  if stage==0 then --Rotate wrist
-    ret = movearm.setArmJoints(qLArm0, qRArm0 ,dt, qJointVelTool)
+    ret = movearm.setArmJoints(qLArm0, qRArm0 ,dt, Config.arm.joint_init_limit)
     if ret==1 then 
       arm_planner:init_trajectory_double(LAP1, RAP1, uTP1 ,t)
       stage=stage+1 

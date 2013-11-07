@@ -11,6 +11,7 @@ local movearm = require'movearm'
 
 
 local function print_transform(tr)
+  if not tr then return end
   local str= string.format("%.2f %.2f %.2f (%.1f %.1f %.1f)",
     tr[1],tr[2],tr[3],
     tr[4]*180/math.pi,tr[5]*180/math.pi,tr[6]*180/math.pi
@@ -186,8 +187,7 @@ local function plan_double_arm(self,qLArm0,qRArm0,qLArmComp0, qRArmComp0, trLArm
 -- Here qLArm and qRArm values are the values BEFORE compensation
 -- qLArmQueue and qRArmQueue uses the compensated arm positions
 
-
-  if not qLArm0 or not qRArm0 then return nil end
+  if not qLArm0 or not qRArm0 then return end
 
   local massL, massR = self.mLeftHand, self.mRightHand
 print("Object mass:",massL, massR)
@@ -271,7 +271,8 @@ print("Object mass:",massL, massR)
     print("Plan failure at",self.print_transform(trLArmNext))
     print("Plan failure at",self.print_transform(trLArmCompensated))
     print("Arm angle:",unpack(vector.new(qArm)*180/math.pi))
-    return qLArmQueue,qRArmQueue, uTorsoCompQueue, qLArmNext, qRArmNext, qLArmComp, qRArmComp, uTorsoCompNext
+    return
+    --return qLArmQueue,qRArmQueue, uTorsoCompQueue, qLArmNext, qRArmNext, qLArmComp, qRArmComp, uTorsoCompNext
   else
 
     return qLArmQueue,qRArmQueue, uTorsoCompQueue, qLArmNext, qRArmNext, qLArmComp, qRArmComp, uTorsoCompNext

@@ -29,22 +29,7 @@ function state.update()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()  
 
-  if stage==1 then
-    --Elbow stretch first 
-    local qLArmTarget = Body.get_larm_command_position()
-    local qRArmTarget = Body.get_rarm_command_position()
-    qLArmTarget[4] = Config.arm.qLArmInit[1][4]
-    qRArmTarget[4] = Config.arm.qRArmInit[1][4]
-    qLArmTarget[6] = Config.arm.qLArmInit[1][4]
-    qRArmTarget[6] = Config.arm.qRArmInit[1][6]
-    ret = movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)
-    if ret==1 then stage = stage+1; end
-  elseif stage==2 then
-    local qLArmTarget = Config.arm.qLArmInit[1]
-    local qRArmTarget = Config.arm.qRArmInit[1]
-    ret = movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)
-    if ret==1 then return "done"; end
-  end
+  return "done"; 
 end
 
 function state.exit()

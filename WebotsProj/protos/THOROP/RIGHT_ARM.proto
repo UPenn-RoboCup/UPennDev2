@@ -1,6 +1,9 @@
-PROTO RIGHT_ARM []
+PROTO RIGHT_ARM [
+field SFVec3f scale 1 1 1
+]
 {
 Transform {
+  scale IS scale
  children [
 
 

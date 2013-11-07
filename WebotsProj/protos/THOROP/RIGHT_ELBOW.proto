@@ -1,6 +1,9 @@
-PROTO RIGHT_ELBOW []
+PROTO RIGHT_ELBOW [
+field SFVec3f scale 1 1 1
+]
 {
 Transform {
+  scale IS scale
  children [
 
                               Shape {

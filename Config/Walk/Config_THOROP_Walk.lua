@@ -210,7 +210,7 @@ local stance={}
 
 --TEMPORARY HACK FOR PERCEPTION TESTING
 walk.bodyTilt = 11*math.pi/180
-walk.bodyTilt = 0*math.pi/180
+--walk.bodyTilt = 0*math.pi/180
 
 --Should we move torso back for compensation?
 stance.enable_torso_compensation = 1
@@ -472,13 +472,13 @@ else
   walk.anklePitchCompensation = 1.5*math.pi/180
 
   --No compensation testing
-  --[[
-  walk.hipRollCompensation = 0*math.pi/180
+  --
+  walk.hipRollCompensation = 3*math.pi/180
   walk.ankleRollCompensation = 0*math.pi/180
   walk.hipPitchCompensation = 0*math.pi/180
   walk.kneePitchCompensation = 0*math.pi/180
   walk.anklePitchCompensation = 0*math.pi/180
-  --]]
+  --
   walk.phComp = {0.1,0.9}
   walk.phCompSlope = 0.2
 end

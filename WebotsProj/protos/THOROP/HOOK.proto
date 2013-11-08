@@ -37,7 +37,6 @@ Solid {
 			     geometry Box { size 0.06 0.02 0.02 }
 			  }	
 			]
-			physics Physics { mass 0.01 }
 			
 			boundingObject Group {
 				children[ Box { size 0.06 0.02 0.02 } ]
@@ -47,7 +46,6 @@ Solid {
 				
   ]
 	
-	physics Physics { mass 0.02 }
 	
   boundingObject Group {
 		children[ Box { size 0.02 0.12 0.02 } ]

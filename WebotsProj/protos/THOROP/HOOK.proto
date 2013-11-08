@@ -1,0 +1,57 @@
+#
+#  THOR-OP proto: hook
+#  heqin@seas.upenn.edu
+#
+
+
+PROTO HOOK [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+]
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+	  Shape {
+	     appearance DEF POS_APP Appearance {
+	       material Material {
+	         diffuseColor 1 1 0.5
+	         specularColor 0 0 0
+	       }
+	     }
+	     geometry Box { size 0.02 0.12 0.02 }
+	  }	
+		
+		DEF HOOK_2 Solid {
+		  translation -0.03 -0.05 0
+		  rotation IS rotation
+		  children [
+			  Shape {
+			     appearance DEF POS_APP Appearance {
+			       material Material {
+			         diffuseColor 1 1 0.5
+			         specularColor 0 0 0
+			       }
+			     }
+			     geometry Box { size 0.06 0.02 0.02 }
+			  }	
+			]
+			physics Physics { mass 0.01 }
+			
+			boundingObject Group {
+				children[ Box { size 0.04 0.02 0.02 } ]
+			}  
+			
+		}
+				
+  ]
+	
+	physics Physics { mass 0.02 }
+	
+  boundingObject Group {
+		children[ Box { size 0.02 0.12 0.02 } ]
+  }  
+  locked TRUE
+}
+}

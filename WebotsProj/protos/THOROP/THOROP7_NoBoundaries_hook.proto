@@ -183,43 +183,9 @@ Robot {
 								children[
 									Transform{
 						      	translation -0.06 -0.06 0
-						     		children [
-											Shape{
-												appearance Appearance {
-													material Material {	diffuseColor 0.5 0.5 1 }
-												}
-												geometry Box {size 0.02 0.12 0.02}
-											}
-										]									
+						     		children [ HOOK{} ]									
 									}
-									
-									DEF r_hook_2 Transform {
-										translation -0.08 -0.11 0
-										children[
-											Shape{
-												appearance Appearance {
-													material Material {	diffuseColor 0.5 0.5 1 }
-												}
-												geometry Box {size 0.04 0.02 0.02}
-											}
-										]
-	                   boundingObject Group{
-	                     children[
-	                       Transform {
-	                         children [Box {size 0.04 0.02 0.02}]
-	                       }                  
-	                     ]
-	                  }
-									}
-                  boundingObject Group{
-                     children[
-                       Transform {
-                         translation 0 0 0
-                         children [Box {size 0.04 0.12 0.02}]
-                       }                  
-                     ]
-                  }
-								]
+								]									
 							}
 #RHOOK_END							
 							
@@ -485,54 +451,20 @@ Robot {
                 translation 0 -0.055 0
                 children [Shape{geometry Box {size 0.05 0.110 0.02}}]
               }
-# LHOOK
-							DEF r_hook Solid {
+# RHOOK
+							DEF l_hook Solid {
 								translation -0.03 -0.08 0
-								rotation 0 0 1 0 
-								name "r_hook_1"
+								rotation 0 1 0 3.141592 
+								name "l_hook_1"
 								children[
 									Transform{
-						      	translation 0.06 -0.06 0
-						     		children [
-											Shape{
-												appearance Appearance {
-													material Material {	diffuseColor 0.5 0.5 1 }
-												}
-												geometry Box {size 0.02 0.12 0.02}
-											}
-										]									
-									}
-									
-									DEF r_hook_2 Transform {
-										translation 0.08 -0.11 0
-										children[
-											Shape{
-												appearance Appearance {
-													material Material {	diffuseColor 0.5 0.5 1 }
-												}
-												geometry Box {size 0.04 0.02 0.02}
-											}
-										]
-	                   boundingObject Group{
-	                     children[
-	                       Transform {
-	                         children [Box {size 0.04 0.02 0.02}]
-	                       }                  
-	                     ]
-	                  }
-									}
-                  boundingObject Group{
-                     children[
-                       Transform {
-                         translation 0 0 0
-                         children [Box {size 0.04 0.12 0.02}]
-                       }                  
-                     ]
-                  }
-								]
+						      	translation -0.06 -0.06 0
+						     		children [ HOOK{} ]									
+									}		
+								]							
 							}
-#LHOOK_END							
-              DEF l_wrist_grip1 Servo{ #Thumb finger for gripper
+#RHOOK_END	             
+						DEF l_wrist_grip1 Servo{ #Thumb finger for gripper
                 translation -0.03 -0.08 0
                 rotation 0 0 1 -0.78
                 name "l_wrist_grip1"

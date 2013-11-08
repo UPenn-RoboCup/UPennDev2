@@ -197,6 +197,7 @@ local function plan_double_arm_linear(self,qLArm0,qRArm0,qLArmComp0, qRArmComp0,
       qRArmQueue[qArmCount] = {qRArmNextComp,dt_step_current}
 
       --update the compensation value for next step      
+
       uTorsoCompNextTarget = self:get_torso_compensation(qLArmNext,qRArmNext,massL,massR)
       local velTorsoComp = {0.005,0.005} --5mm per sec
       uTorsoCompNext, torsoCompDone = util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
@@ -241,6 +242,7 @@ local function plan_arm_sequence(self,arm_seq)
         arm_seq.armseq[i][1],
         arm_seq.armseq[i][2],
         uTorsoComp)
+    if not LAP then return end --failure
     qLArm, qRArm, qLArmComp, qRArmComp,uTorsoComp = 
       qLArm1,qRArm1,qLArmComp1,qRArmComp1,uTorsoComp1
     for j=1,#LAP do
@@ -259,6 +261,7 @@ local function plan_arm_sequence(self,arm_seq)
 end
 
 local function init_arm_sequence(self,arm_plan,t0)
+  if not arm_plan then return end
   self.leftArmQueue = arm_plan.LAP
   self.rightArmQueue = arm_plan.RAP
   self.torsoCompQueue = arm_plan.uTP
@@ -305,10 +308,12 @@ local function play_arm_sequence(self,t)
       self.uTorsoCompStart = vector.new(self.torsoCompQueue[self.armQueuePlaybackCount-1])
       self.uTorsoCompEnd = vector.new(self.torsoCompQueue[self.armQueuePlaybackCount])
 --
-      print(string.format("====================\nK=%d, uTOrsoComp: %.3f %.3f to %.3f %.3f",
+      print(string.format("%d uTC: %.3f %.3f to %.3f %.3f, t=%.2f",
         self.armQueuePlaybackCount,
         self.uTorsoCompStart[1],self.uTorsoCompStart[2],
-        self.uTorsoCompEnd[1],self.uTorsoCompEnd[2] ))
+        self.uTorsoCompEnd[1],self.uTorsoCompEnd[2],
+        self.armQueuePlayEndTime - self.armQueuePlayStartTime 
+         ))
 --
       local trLArm0 = Body.get_forward_larm(self.qLArmStart)
       local trLArm1 = Body.get_forward_larm(self.qLArmEnd)

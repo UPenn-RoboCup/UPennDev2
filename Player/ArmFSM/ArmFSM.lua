@@ -99,7 +99,8 @@ sm:set_transition(armWheelGrip, 'done', armWheelTurnValve)
 sm:set_transition(armWheelGrip, 'reset', armChangetoPose2)
 
 sm:set_transition(armWheelTurn, 'reset', armWheelRelease)
-sm:set_transition(armWheelRelease, 'done', armChangetoPose2)
+--sm:set_transition(armWheelRelease, 'done', armChangetoPose2)
+sm:set_transition(armWheelRelease, 'done', armChangetoPose1)
 
 sm:set_transition(armWheelTurnValve, 'done', armWheelRelease)
 sm:set_transition(armWheelTurnValve, 'reset', armWheelRelease)
@@ -107,7 +108,10 @@ sm:set_transition(armWheelTurnValve, 'reset', armWheelRelease)
 
 
 --TODO: should use IK to get back?
-sm:set_transition(armToolGrip, 'reset', armChangetoPose2)
+--sm:set_transition(armToolGrip, 'reset', armChangetoPose2)
+
+sm:set_transition(armToolGrip, 'reset', armChangetoPose1)
+
 sm:set_transition(armToolGrip, 'planfail', armPose2)
 sm:set_transition(armToolGrip, 'toolgrab', armToolChop)
 

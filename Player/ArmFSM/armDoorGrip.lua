@@ -26,6 +26,7 @@ local qLArmTarget, qRArmTarget
 
 local shoulderYaw = -6.6*Body.DEG_TO_RAD
 
+local plan_failed = false
 
 
 local trArmTarget    
@@ -60,7 +61,6 @@ function state.entry()
 
   local trLArm = Body.get_forward_larm(qLArm)
   local trRArm = Body.get_forward_rarm(qRArm)  
-  
 
   --First init jangles (wrist straight)
   local rhand_rpy0 = {90*Body.DEG_TO_RAD,0,0}
@@ -81,6 +81,9 @@ function state.entry()
   --Right hand pull testing 
   door_hand = 0  --0 for right, 1 for left
   hinge_pos = vector.new({0.55,-1.21,0.01})
+
+  hinge_pos = vector.new({0.55,-1.0,0.01})
+
   door_r = 0.86
   grip_offset_x = -0.05
   door_yaw=0
@@ -94,7 +97,8 @@ function state.entry()
   grip_offset_x = -0.05
   door_yaw_target = -30*math.pi/180
 --]]
-  
+
+
   local trRArmTarget1 = movearm.getDoorHandlePosition(hinge_pos+handle_clearance, door_r, door_yaw, grip_offset_x, door_hand)
   local trRArmTarget2 = movearm.getDoorHandlePosition(hinge_pos, door_r, door_yaw, grip_offset_x,door_hand)
   local trRArmTarget3 = movearm.getDoorHandlePosition(hinge_pos+handle_pulldown, door_r, door_yaw, grip_offset_x,door_hand)
@@ -117,14 +121,14 @@ function state.entry()
     }
   }
   arm_plan1, arm_end1 = arm_planner:plan_arm_sequence(arm_sequence1)
-
+  if not arm_plan1 then plan_failed = true end
 end
 
 
 function state.update()
 --  print(state._NAME..' Update' )
   -- Get the time of update
-  
+  if plan_failed then return "planfail" end
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time

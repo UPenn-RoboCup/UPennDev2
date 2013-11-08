@@ -31,7 +31,7 @@ DEF FLOOR MetricFloor{
   locked TRUE
 }
 #THOROP7 {
-THOROP7_NoBoundaries {
+THOROP7_NoBoundaries_hook {
   translation 0 1.155 0
   controller "thorop"
   controllerArgs "0 32" 

@@ -206,12 +206,15 @@ walk.velDelta  = {0.025,0.02,0.1}
 --SJ:block walking test
 --walk.stepHeight = 0.20
 
-
+local stance={}
 
 --TEMPORARY HACK FOR PERCEPTION TESTING
 walk.bodyTilt = 11*math.pi/180
 walk.bodyTilt = 0*math.pi/180
 
+--Should we move torso back for compensation?
+stance.enable_torso_compensation = 1
+--stance.enable_torso_compensation = 0
 
 
 
@@ -220,7 +223,7 @@ walk.bodyTilt = 0*math.pi/180
 -----------------------------------------------------------
 
 
-local stance={}
+
 stance.enable_sit = false
 stance.enable_legs = true   -- centaur has no legs
 
@@ -238,10 +241,7 @@ stance.dqLegLimit = vector.new{10,10,45,90,45,10}*DEG_TO_RAD
 stance.sitHeight = 0.70
 stance.dHeight = 0.04 --4cm per sec
 
---Should we move torso back for compensation?
---stance.enable_torso_compensation = 1
 
-stance.enable_torso_compensation = 0
 
 ------------------------------------
 -- Kneeling parameters

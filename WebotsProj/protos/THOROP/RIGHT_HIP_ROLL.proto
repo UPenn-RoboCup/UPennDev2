@@ -1,6 +1,9 @@
-PROTO RIGHT_HIP_ROLL []
+PROTO RIGHT_HIP_ROLL [
+field SFVec3f scale 1 1 1
+]
 {
 Transform {
+  scale IS scale
  children [
 
                         Shape {

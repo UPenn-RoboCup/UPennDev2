@@ -1,3 +1,4 @@
+#VRML_SIM V7.3.0 utf8
 #############################################
 # THOR-OP webots prototype file
 # Based on Robotis wbt
@@ -49,7 +50,7 @@ Robot {
     DEF Chest Transform {
       scale 0.001 0.001 0.001
       children [
-        CHEST{}
+        CHEST{name "Chest"}
       ]
     }
     InertialUnit {

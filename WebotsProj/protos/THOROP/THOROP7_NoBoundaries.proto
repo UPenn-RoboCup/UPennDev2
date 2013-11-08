@@ -1,3 +1,4 @@
+#VRML_SIM V7.3.0 utf8
 #############################################
 # THOR-OP webots prototype file
 # Based on Robotis wbt
@@ -97,7 +98,7 @@ Robot {
             hokuyo_thor_chest{
               name "ChestLidar"
               width 361
-              fov 3.14159
+              #fieldOfView 3.14159
              }            
           ]
           physics Physics{

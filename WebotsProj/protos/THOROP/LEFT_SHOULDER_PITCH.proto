@@ -1,6 +1,9 @@
-PROTO LEFT_SHOULDER_PITCH []
+PROTO LEFT_SHOULDER_PITCH [
+field SFVec3f scale 1 1 1
+]
 {
 Transform {
+  scale IS scale
  children [
             Shape {
               appearance Appearance {

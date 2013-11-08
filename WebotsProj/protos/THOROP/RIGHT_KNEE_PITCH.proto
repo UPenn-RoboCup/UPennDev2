@@ -1,6 +1,8 @@
-PROTO RIGHT_KNEE_PITCH []
+PROTO RIGHT_KNEE_PITCH [field SFVec3f scale 1 1 1
+]
 {
 Transform {
+  scale IS scale
  children [
                   
                                 Shape {

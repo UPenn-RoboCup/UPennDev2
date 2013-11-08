@@ -1,3 +1,4 @@
+#VRML_SIM V7.3.0 utf8
 # Model of Hokuyo UTM-30LX (range-finder device).
 # specs:
 #  - field : 270 [deg]
@@ -14,7 +15,7 @@ PROTO hokuyo_thor_chest [
   field SFRotation rotation  0 1 0 3.14
   field SFString name "UTM-30LX"
   field SFFloat noise 0.0
-  field SFFloat fieldOfView 4.71238  
+  field SFFloat fieldOfView 4.71238
   field SFFloat maxRange 30  
   field SFInt32 width 1081
 ]

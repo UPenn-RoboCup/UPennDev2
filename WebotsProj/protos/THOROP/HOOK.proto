@@ -40,7 +40,7 @@ Solid {
 			physics Physics { mass 0.01 }
 			
 			boundingObject Group {
-				children[ Box { size 0.04 0.02 0.02 } ]
+				children[ Box { size 0.06 0.02 0.02 } ]
 			}  
 			
 		}

@@ -2,13 +2,14 @@
 # Seung-Joon Yi
 # Feb 2013
 
-PROTO ValveDRC [
+PROTO ValveDRCMedium [
   field SFVec3f translation 0 0.0325 0
   field SFRotation rotation 0 1 0 0
   field SFColor color 1.0 0.54 0.08
 
-  field SFFloat radius 0.0125
-  field SFFloat height 0.07
+  field SFFloat radius 0.03175
+#  field SFFloat height 0.12
+  field SFFloat height 0.18
   field SFFloat mass 0.35
 
   field SFVec3f centerOfMass 0 -0.0001 0
@@ -20,11 +21,11 @@ PROTO ValveDRC [
   Servo {
     maxForce 0
     staticFriction 0.1
-    name "ValveDRC"
+    name "SteeringWheel"
     rotation 1 0 0 0
     children [
       Transform{
-        translation 0 0.0875 0
+        translation 0 0.2 0
         rotation 1 0 0 1.57
         children[ 
           DEF WHEEL_SEGMENT_SHAPE Shape {
@@ -40,48 +41,48 @@ PROTO ValveDRC [
               radius IS radius
               height IS height
             }
-	        }
+	  }
         ]
       }
 
       Transform{
-        translation 0 -0.0875 0
+        translation 0 -0.2 0
         rotation 1 0 0 1.57
         children[USE WHEEL_SEGMENT_SHAPE]
       }
 
       Transform{
-        translation 0 0 0.0875
+        translation 0 0 0.2
         rotation 1 0 0 0
         children[USE WHEEL_SEGMENT_SHAPE]
       }
 
       Transform{
-        translation 0 0 -0.0875
+        translation 0 0 -0.2
         rotation 1 0 0 0
         children[USE WHEEL_SEGMENT_SHAPE]
       }
 
       Transform{
-        translation 0 -0.0619 0.0619
+        translation 0 -0.142 0.142
         rotation 1 0 0 0.785
         children[USE WHEEL_SEGMENT_SHAPE]
       }
 
       Transform{
-        translation 0 0.0619 -0.0619
+        translation 0 0.142 -0.142
         rotation 1 0 0 0.785
         children[USE WHEEL_SEGMENT_SHAPE]
       }
 
       Transform{
-        translation 0 0.0619 0.0619
+        translation 0 0.142 0.142
         rotation 1 0 0 -0.785
         children[USE WHEEL_SEGMENT_SHAPE]
       }
 
       Transform{
-        translation 0 -0.0619 -0.0619
+        translation 0 -0.142 -0.142
         rotation 1 0 0 -0.785
         children[USE WHEEL_SEGMENT_SHAPE]
       }
@@ -92,8 +93,8 @@ PROTO ValveDRC [
         DEF CROSSBAR_SEGMENT_SHAPE Shape {
             appearance USE SEGMENT_APP
             geometry Cylinder {
-              radius IS radius
-              height 0.175
+              radius 0.0125
+              height 0.36
             }
           }
         ]
@@ -109,69 +110,68 @@ PROTO ValveDRC [
 
 
 
+
+
     ]
     boundingObject Group{
       children [
 	Transform{
-          translation 0 0.0875 0
+          translation 0 0.2 0
           rotation 1 0 0 1.57
           children[USE WHEEL_SEGMENT_SHAPE]
         }
 
-      Transform{
-        translation 0 -0.0875 0
-        rotation 1 0 0 1.57
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
-
-      Transform{
-        translation 0 0 0.0875
-        rotation 1 0 0 0
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
-
-      Transform{
-        translation 0 0 -0.0875
-        rotation 1 0 0 0
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
-
-      Transform{
-        translation 0 -0.0619 0.0619
-        rotation 1 0 0 0.785
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
-
-      Transform{
-        translation 0 0.0619 -0.0619
-        rotation 1 0 0 0.785
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
-
-      Transform{
-        translation 0 0.0619 0.0619
-        rotation 1 0 0 -0.785
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
-
-      Transform{
-        translation 0 -0.0619 -0.0619
-        rotation 1 0 0 -0.785
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
+	Transform{
+          translation 0 -0.2 0
+          rotation 1 0 0 1.57
+          children[USE WHEEL_SEGMENT_SHAPE]
+        }
 
 
-      Transform{        
-        rotation 1 0 0 0
-        children[USE CROSSBAR_SEGMENT_SHAPE]
-      }
+        Transform{
+          translation 0 0 0.2
+          rotation 1 0 0 0
+          children[USE WHEEL_SEGMENT_SHAPE]
+        }
 
-      Transform{        
-        rotation 1 0 0 1.57
-        children[USE CROSSBAR_SEGMENT_SHAPE]
-      }
+        Transform{
+          translation 0 0 -0.2
+          rotation 1 0 0 0
+          children[USE WHEEL_SEGMENT_SHAPE]
+        }
 
+        Transform{
+          translation 0 -0.142 0.142
+          rotation 1 0 0 0.785
+          children[USE WHEEL_SEGMENT_SHAPE]
+        }
 
+        Transform{
+          translation 0 0.142 -0.142
+          rotation 1 0 0 0.785
+          children[USE WHEEL_SEGMENT_SHAPE]
+        }
+
+        Transform{
+          translation 0 0.142 0.142
+          rotation 1 0 0 -0.785
+          children[USE WHEEL_SEGMENT_SHAPE]
+        }
+
+        Transform{
+          translation 0 -0.142 -0.142
+          rotation 1 0 0 -0.785
+          children[USE WHEEL_SEGMENT_SHAPE]
+        }
+
+        Transform{        
+          rotation 1 0 0 1.57
+          children[USE CROSSBAR_SEGMENT_SHAPE]
+        }
+        Transform{        
+          rotation 1 0 0 0
+          children[USE CROSSBAR_SEGMENT_SHAPE]
+        }
 
 
       ]

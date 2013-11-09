@@ -23,10 +23,8 @@ function movearm.setArmJoints(
   if not dqArmLim then dqArmLim = dqArmMax end
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-  local qL_approach, doneL2
-  qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqArmLim, dt )
-  
-  local qR_approach, doneR2
+  local qL_approach, doneL2, qR_approach, doneR2
+  qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqArmLim, dt )  
   qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqArmLim, dt )
 
   --Dynamixel is STUPID so we should check for the direction
@@ -35,14 +33,13 @@ function movearm.setArmJoints(
 
   for i=1,7 do
     local qL_increment = util.mod_angle(qL_approach[i]-qLOld[i])
-    qL_approach[i] = qLOld[i] + qL_increment
     local qR_increment = util.mod_angle(qR_approach[i]-qROld[i])
+    qL_approach[i] = qLOld[i] + qL_increment
     qR_approach[i] = qROld[i] + qR_increment
   end
 
   local qL = Body.set_larm_command_position( qL_approach )
   local qR = Body.set_rarm_command_position( qR_approach )
-
   if doneL2 and doneR2 then return 1 end
 end
 
@@ -130,10 +127,6 @@ function movearm.setArmToPosition(
 
     qShoulderYawMax = 10.0*math.pi/180
 
-
-
-
-
     lShoulderYaw0 = qLArm[3]
     rShoulderYaw0 = qRArm[3]        
     lShoulderYaw, yawDoneL = util.approachTol(lShoulderYaw0,lShoulderYaw,qShoulderYawMax,dt)
@@ -217,12 +210,8 @@ function movearm.setArmToPositionAdapt(
   local trLArm = Body.get_forward_larm(qLArm);
   local trRArm = Body.get_forward_rarm(qRArm);
 
---  local trLArmApproach, doneL = util.approachTol(trLArm, trLArmTarget, dpArmMax, dt )
---  local trRArmApproach, doneR = util.approachTol(trRArm, trRArmTarget, dpArmMax, dt )
-
   local trLArmApproach, doneL = util.approachTolTransform(trLArm, trLArmTarget, dpArmMax, dt )
   local trRArmApproach, doneR = util.approachTolTransform(trRArm, trRArmTarget, dpArmMax, dt )
-
 
   -- Get desired angles from current angles and target transform
   local qL_desired = Body.get_inverse_larm(qLArm,trLArmApproach, lShoulderYaw)
@@ -232,7 +221,6 @@ function movearm.setArmToPositionAdapt(
   --Adaptive shoulder yaw angle
   lShoulderYawOrg = -24*math.pi/180;
   rShoulderYawOrg = 24*math.pi/180;
-
   
   local lShoulderYaw1 = math.min(-5*math.pi/180, lShoulderYaw+dt*qShoulderYawMax )
   local lShoulderYaw2 = math.min(-5*math.pi/180, lShoulderYaw-dt*qShoulderYawMax )
@@ -256,8 +244,6 @@ function movearm.setArmToPositionAdapt(
     return -1;
   end
  --]]
-
-
 
   --Adjust shoulder angle if margin is less than this
   local min_wrist_margin = 10*math.pi/180
@@ -329,12 +315,8 @@ function movearm.setArmToPositionAdapt(
   end
 
   if not qL_desired or not qR_desired then
-    if not qL_desired then
-      print('Left not possible')
-    end  
-    if not qR_desired then
-      print('Right not possible')
-    end
+    if not qL_desired then print('Left not possible')  end  
+    if not qR_desired then print('Right not possible') end
     return -1;
   end
 
@@ -347,9 +329,7 @@ function movearm.setArmToPositionAdapt(
   qR_approach, doneR2 = util.approachTolRad( qRArm, qR_desired, dqArmMax, dt )
   Body.set_rarm_command_position( qR_approach )
 
---  if doneL and doneR and doneL2 and doneR2 and not shoulderYawChanged then
-  if doneL and doneR and doneL2 and doneR2 then
-    --Approached the position
+  if doneL and doneR and doneL2 and doneR2 then --Approached the position
     return 1;
   else
     return 0;
@@ -358,11 +338,6 @@ function movearm.setArmToPositionAdapt(
   hcm.set_joints_qlshoulderyaw(lShoulderYaw)
   hcm.set_joints_qrshoulderyaw(rShoulderYaw)
 end
-
-
-
-
-
 
 function movearm.setArmToWheelPosition(
   handle_pos,
@@ -373,7 +348,6 @@ function movearm.setArmToWheelPosition(
   dt,
   lShoulderYaw,
   rShoulderYaw)
-
   local trLArmTarget, trRArmTarget = movearm.getArmWheelPosition(
     handle_pos,
     handle_yaw,
@@ -381,7 +355,6 @@ function movearm.setArmToWheelPosition(
     handle_radius,
     turn_angle
     )
-
   if lShoulderYaw then
     return movearm.setArmToPosition(
       trLArmTarget,
@@ -403,41 +376,26 @@ end
 function movearm.getArmWheelPosition(handle_pos, 
      handle_yaw,  handle_pitch,  handle_radius,  turn_angle  )
 
---Calculate the hand transforms
+  --Calculate the hand transforms
   local trHandle = T.eye()
        * T.trans(handle_pos[1],handle_pos[2],handle_pos[3])
        * T.rotZ(handle_yaw)
        * T.rotY(handle_pitch)
-
-  local gripOffset = -30*math.pi/180
-
   local gripOffset = 0*math.pi/180
-
   local trGripL = trHandle
        * T.rotX(turn_angle + gripOffset)
        * T.trans(0,handle_radius,0)
        * T.rotZ(-math.pi/4)
-
-
   local trGripR = trHandle
        * T.rotX(-turn_angle - gripOffset)
        * T.trans(0,-handle_radius,0)
        * T.rotZ(math.pi/4)
-       
---[[
-local trGripR = trHandle
-       * T.rotX(0 - gripOffset)
-       * T.trans(0,-handle_radius,0)
-       * T.rotZ(math.pi/4)
---]]       
   local trBody = T.eye()
        * T.trans(body_pos[1],body_pos[2],body_pos[3])
        * T.rotZ(body_rpy[3])
        * T.rotY(body_rpy[2])
-
   local trLArmTarget = T.position6D(T.inv(trBody)*trGripL)
   local trRArmTarget = T.position6D(T.inv(trBody)*trGripR)
-
   return trLArmTarget, trRArmTarget
 end
 
@@ -449,25 +407,19 @@ function movearm.getDoorHandlePosition(
   grip_offset_x, --how much the actual grip positon offset from door surface  
   hand_rpy
   )
-  local grip_angle = -15*Body.DEG_TO_RAD
-  local grip_angle = -0*Body.DEG_TO_RAD
-
   if type(hand_rpy)=='number' then --scalar value: hand type (0 for left, 1 for right)
     if hand_rpy==1 then --left hand  
       hand_rpy = {-90*Body.DEG_TO_RAD,0,0} --Default hand angle: facing up
     else
---      hand_rpy = {90*Body.DEG_TO_RAD,0,0} --Default hand angle: facing up
-      hand_rpy = {90*Body.DEG_TO_RAD,grip_angle,0} --Default hand angle: facing up
+      hand_rpy = {90*Body.DEG_TO_RAD,0,0} --Default hand angle: facing up
     end
   end
-  
   local trHandle = T.eye()
     * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])    
     * T.rotZ(door_yaw)
     * T.trans(grip_offset_x, door_r, 0) 
     * T.transform6D(
       {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
-  
   local trTarget = T.position6D(trHandle)
   return trTarget
 end
@@ -478,7 +430,6 @@ function movearm.getToolPosition(
   hand_rpy,
   approach_dir
   )
-
   if type(hand_rpy)=='number' then --scalar value: hand type (0 for left, 1 for right)
     if hand_rpy==1 then --left hand  
       hand_rpy = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}      
@@ -488,16 +439,13 @@ function movearm.getToolPosition(
       approach_dir = {-0.5,-0.5,-0.5}
     end
   end
-
   local trTool = T.eye()    
     * T.trans(tool_pos[1]+approach_dir[1]*approach_dist,
             tool_pos[2]+approach_dir[2]*approach_dist,
             tool_pos[3]+approach_dir[3]*approach_dist)
-    
     * T.rotY(hand_rpy[2])
     * T.rotZ(hand_rpy[3])
     * T.rotX(hand_rpy[1])
-
   local trTarget = T.position6D(trTool)
   return trTarget
 end

@@ -44,6 +44,8 @@ local armDoorRelease = require'armDoorRelease'
 local armToolGrip = require'armToolGrip'
 local armToolChop = require'armToolChop'
 
+local armDebrisGrip = require'armDebrisGrip'
+
 local sm = fsm.new(armIdle);
 sm:add_state(armPose1)
 sm:add_state(armPose2)
@@ -58,7 +60,7 @@ sm:add_state(armDoorGrip)
 sm:add_state(armDoorRelease)
 sm:add_state(armToolGrip)
 sm:add_state(armToolChop)
-
+sm:add_state(armDebrisGrip)
 sm:add_state(armRocky)
 
 ----------
@@ -91,6 +93,9 @@ sm:set_transition(armPose2, 'wheelgrab', armWheelGrip)
 sm:set_transition(armPose2, 'reset', armChangetoPose1)
 
 sm:set_transition(armPose2, 'toolgrab', armToolGrip)
+sm:set_transition(armPose2, 'debrisgrab', armDebrisGrip)
+
+
 --sm:set_transition(armPose2, 'doorgrab', armDoorGrip)
 
 --sm:set_transition(armWheelGrip, 'done', armWheelTurn)

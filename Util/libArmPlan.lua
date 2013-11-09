@@ -37,6 +37,10 @@ end
 local function calculate_margin(qArm,isLeft)
   local jointangle_margin
   if not qArm then return -math.huge 
+
+
+--
+
   elseif isLeft==1 then --Left arm
     jointangle_margin = math.min(
       --Shoulder Roll: 
@@ -58,15 +62,41 @@ local function calculate_margin(qArm,isLeft)
       math.abs(qArm[6]+math.pi/2)      
       )
   end
+-- 
+
+--[[
+  elseif isLeft==1 then --Left arm
+    jointangle_margin = math.min(
+  
+      --Wrist Roll
+      math.abs(qArm[6]-math.pi/2),
+      math.abs(qArm[6]+math.pi/2)      
+      )
+  else --Right arm
+    jointangle_margin = math.min(
+  
+      --Wrist Roll
+      math.abs(qArm[6]-math.pi/2),
+      math.abs(qArm[6]+math.pi/2)      
+      )
+  end
+--]]
+
   return jointangle_margin
 end
 
 local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag)
   local step = 1
+
+  --finer search
+  --local step = 0.5
+
   local margins={} 
 
   local max_margin = -math.huge
   local qArmMaxMargin
+
+
 
   for div = -1,1,step do
     local qShoulderYaw = qArm[3] + div * yawMag
@@ -77,18 +107,31 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag)
      qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qShoulderYaw)
     end
     local margin = self.calculate_margin(qArmNext,isLeft)
+
+--print("Margin",qShoulderYaw,": ",margin)
+
     if margin>max_margin then
       qArmMaxMargin = qArmNext
-      margin = max_margin
+      max_margin = margin
     end
   end
+
+--print("shoulderYaw with Maxmargin:",qArmMaxMargin[3])
+
+  if not qArmMaxMargin then
+    print("CANNOT FIND CORRECT SHOULDER ANGLE")
+    print("trNext:",unpack(trArmNext))
+  end
+
   return qArmMaxMargin
 end
 
-local function get_next_transform(trArm, trArmTarget, dpArmMax,dt_step)
-  --TODO: singularity rejection  
+local function get_next_transform(trArm, trArmTarget, dpArmMax,dt_step)  
   return util.approachTolTransform(trArm, trArmTarget, dpArmMax, dt_step )
 end
+
+
+
 
 local function check_arm_joint_velocity(qArm0, qArm1, dt,velLimit)
   --Slow down the total movement time based on joint velocity limit
@@ -121,9 +164,9 @@ local function get_torso_compensation(self,qLArm,qRArm,massL,massR)
   if mcm.get_status_iskneeling()==1 or 
     Config.stance.enable_torso_compensation==0 then
     return {0,0}
-  else  
+  else      
     local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,
-       Config.walk.bodyTilt, massL, massR)
+       mcm.get_stance_bodyTilt(), massL, massR)
     return {-com[1]/com[4]-self.torsoCompBias[1],-com[2]/com[4]-self.torsoCompBias[2]}
   end
 end

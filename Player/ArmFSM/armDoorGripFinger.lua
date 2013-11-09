@@ -7,8 +7,6 @@ local movearm = require'movearm'
 local libArmPlan = require 'libArmPlan'
 local arm_planner = libArmPlan.new_planner()
 
---Door opening state using HOOK
-
 
 
 local dqArmMax = Config.arm.slow_limit
@@ -21,7 +19,7 @@ local door_r,grip_offset_x,door_yaw,door_yaw1=0,0,0,0
 local door_hand = 0
 
 local handle_clearance = vector.new({0,0,-0.05})
-local handle_pullup = vector.new({0,0,0.05})
+local handle_pulldown = vector.new({0,0,-0.03})
 
 local qLArmTarget, qRArmTarget
 
@@ -41,9 +39,9 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  --close gripper
-  Body.set_lgrip_percent(0.8)
-  Body.set_rgrip_percent(0.8)
+  --open gripper
+  Body.set_lgrip_percent(0)
+  Body.set_rgrip_percent(0)
   --Read door model from shm
 
   local door_model = hcm.get_door_model()
@@ -55,7 +53,7 @@ function state.entry()
   door_yaw_target = hcm.get_door_yaw_target()  
 
   door_yaw = 0
-
+  stage = 1;  
   grip = 0
 
   local qLArm = Body.get_larm_command_position()
@@ -65,12 +63,7 @@ function state.entry()
   local trRArm = Body.get_forward_rarm(qRArm)  
 
   --First init jangles (wrist straight)
-  local lhand_rpy0 = {90*Body.DEG_TO_RAD,0,0}
-
-  local rhand_rpy0 = {-90*Body.DEG_TO_RAD,0,0}
-
-
-
+  local rhand_rpy0 = {90*Body.DEG_TO_RAD,0,0}
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
   qRArm0[6] = 0,0
 
@@ -88,8 +81,8 @@ function state.entry()
   --Right hand pull testing 
   door_hand = 0  --0 for right, 1 for left
   hinge_pos = vector.new({0.55,-1.21,0.01})
---  hinge_pos = vector.new({0.55,-1.21,-0.05})
-  
+
+  hinge_pos = vector.new({0.55,-1.0,0.01})
 
   door_r = 0.86
   grip_offset_x = -0.05
@@ -105,7 +98,7 @@ function state.entry()
   door_yaw_target = -30*math.pi/180
 --]]
 
---[[
+
   local trRArmTarget1 = movearm.getDoorHandlePosition(hinge_pos+handle_clearance, door_r, door_yaw, grip_offset_x, door_hand)
   local trRArmTarget2 = movearm.getDoorHandlePosition(hinge_pos, door_r, door_yaw, grip_offset_x,door_hand)
   local trRArmTarget3 = movearm.getDoorHandlePosition(hinge_pos+handle_pulldown, door_r, door_yaw, grip_offset_x,door_hand)
@@ -114,30 +107,6 @@ function state.entry()
     hinge_pos+handle_pulldown, door_r, door_yaw+10*Body.DEG_TO_RAD, grip_offset_x,door_hand)
   local trRArmTarget5 = movearm.getDoorHandlePosition(
     hinge_pos+handle_pulldown, door_r, door_yaw+20*Body.DEG_TO_RAD, grip_offset_x,door_hand)
---]]
-
-  local trRArmTarget1 = movearm.getDoorHandlePosition(hinge_pos+handle_clearance, door_r, door_yaw, grip_offset_x, rhand_rpy0)
-  local trRArmTarget2 = movearm.getDoorHandlePosition(hinge_pos+handle_pullup, door_r, door_yaw, grip_offset_x, rhand_rpy0)
-  local trRArmTarget3 = movearm.getDoorHandlePosition(
-    hinge_pos+handle_pullup, door_r, door_yaw+5*Body.DEG_TO_RAD, grip_offset_x, rhand_rpy0)
-
-
-  trRArmTarget3[5]=0
-  trRArmTarget3[6]=0
-
-  local trRArmTarget4 = movearm.getDoorHandlePosition(
-    hinge_pos+handle_pullup, door_r, door_yaw+10*Body.DEG_TO_RAD, grip_offset_x, rhand_rpy0)
-
---[[
-  trRArmTarget4[5]=0
-  trRArmTarget4[6]=0
---]]
-
-  local trRArmTarget5 = movearm.getDoorHandlePosition(
-    hinge_pos+handle_pullup, door_r, door_yaw+15*Body.DEG_TO_RAD, grip_offset_x, rhand_rpy0)
-  trRArmTarget5[5]=0
-  trRArmTarget5[6]=0
-
 
   arm_planner:reset_torso_comp(qLArm1, qRArm1)
   local arm_sequence1 = {
@@ -147,13 +116,12 @@ function state.entry()
       {trLArm1, trRArmTarget1},
       {trLArm1, trRArmTarget2},
       {trLArm1, trRArmTarget3},
---      {trLArm1, trRArmTarget4},  
---      {trLArm1, trRArmTarget5},  
+      {trLArm1, trRArmTarget4},
+      {trLArm1, trRArmTarget5},
     }
   }
   arm_plan1, arm_end1 = arm_planner:plan_arm_sequence(arm_sequence1)
   if not arm_plan1 then plan_failed = true end
-  stage = 1;  
 end
 
 

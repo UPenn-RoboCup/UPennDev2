@@ -29,7 +29,7 @@ DirectionalLight {
 DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
-THOROP7_NoBoundaries_Lowtorque {
+THOROP7_NoBoundaries {
   translation 0.00116303 1.14556 -0.011146
   rotation 0.999718 0.000372474 -0.0237626 -0.00640278
   controller "thorop"

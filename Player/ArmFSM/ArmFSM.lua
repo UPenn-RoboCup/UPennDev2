@@ -42,6 +42,7 @@ local armDoorRelease = require'armDoorRelease'
 
 -- Tool specific states
 local armToolGrip = require'armToolGrip'
+local armToolHold = require'armToolHold'
 local armToolChop = require'armToolChop'
 
 local armDebrisGrip = require'armDebrisGrip'
@@ -58,8 +59,11 @@ sm:add_state(armWheelTurnValve)
 sm:add_state(armWheelRelease)
 sm:add_state(armDoorGrip)
 sm:add_state(armDoorRelease)
+
 sm:add_state(armToolGrip)
+sm:add_state(armToolHold)
 sm:add_state(armToolChop)
+
 sm:add_state(armDebrisGrip)
 sm:add_state(armRocky)
 
@@ -117,8 +121,10 @@ sm:set_transition(armWheelTurnValve, 'reset', armWheelRelease)
 
 sm:set_transition(armToolGrip, 'reset', armChangetoPose1)
 
-sm:set_transition(armToolGrip, 'planfail', armPose2)
-sm:set_transition(armToolGrip, 'toolgrab', armToolChop)
+
+sm:set_transition(armToolGrip, 'done', armToolHold)
+sm:set_transition(armToolHold, 'toolgrab', armToolChop)
+
 
 -- The initial arm pose is great for door gripping, 
 -- and should be the reset position

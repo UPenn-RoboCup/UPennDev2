@@ -95,7 +95,6 @@ local char_to_event = {
   ['d'] = {'arm_ch','doorgrab'},
 
   ['c'] = {'arm_ch','toolgrab'},
-
 }
 
 local char_to_vel = {
@@ -111,6 +110,15 @@ local char_to_wheel = {
   ['['] = -1*Body.DEG_TO_RAD,
   [']'] = 1*Body.DEG_TO_RAD,
 }
+
+local char_to_state = {
+  ['='] = 1,
+  ['-'] = -1,
+}
+
+
+
+
 
 local function send_command_to_ch(channel, cmd_string)
   -- Default case is to send the command and receive a reply
@@ -157,6 +165,13 @@ local function process_character(key_code,key_char,key_char_lower)
   elseif key_char_lower=='\\' then
     print( util.color('Center the wheel','yellow') )    
     hcm.set_wheel_turnangle(0)
+    return
+  end
+
+  local state_adj = char_to_state[key_char_lower]
+  if state_adj then
+    print( util.color('State advance','yellow'), state_adj )
+    hcm.set_state_proceed(state_adj)
     return
   end
 

@@ -21,7 +21,7 @@ PROTO THOROP7_NoBoundaries_hook [
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
   field SFInt32    cameraWidth 320
-  field SFInt32    cameraHeight 240
+  field SFInt32    cameraHeight 180
 	field SFFloat    cameraFov 1.0472
 ]
 {

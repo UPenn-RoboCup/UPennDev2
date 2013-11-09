@@ -6,6 +6,9 @@ require'hcm'
 
 local util = require('util')
 
+-- Neck limits
+local dqNeckLimit = {45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD}
+
 function state.entry()
   print(state._NAME..' Entry' ) 
   -- When entry was previously called
@@ -13,9 +16,8 @@ function state.entry()
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
-
-  -- TODO: What does this do?
-  --lcm:set_head_lidar_panning(0)
+  -- Reset the human position
+  hcm.set_motion_headangle(Body.get_head_command_position())
 end
 
 function state.update()
@@ -26,16 +28,17 @@ function state.update()
   -- Save this at the last update time
   t_update = t 
 
+  -- Grab the target
   local neckAngleTarget = hcm.get_motion_headangle()
---  print(unpack(neckAngleTarget))
-  local dqNeckLimit = {45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD};
-
+  --print('Neck angle',unpack(neckAngleTarget))
+  -- Grab where we are
   local qNeck = Body.get_head_command_position()
+  -- Go!
   local qNeck_approach, doneNeck = 
     util.approachTol( qNeck, neckAngleTarget, dqNeckLimit, dt )
+    
+  -- Update the motors
   Body.set_head_command_position(qNeck_approach)
-
-  
 
 end
 

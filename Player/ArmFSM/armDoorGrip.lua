@@ -21,7 +21,7 @@ local door_r,grip_offset_x,door_yaw,door_yaw1=0,0,0,0
 local door_hand = 0
 
 local handle_clearance = vector.new({0,0,-0.05})
-local handle_pullup = vector.new({0,0,0.05})
+local handle_pullup = vector.new({0,0,0.08})
 
 local qLArmTarget, qRArmTarget
 
@@ -88,6 +88,9 @@ function state.entry()
   --Right hand pull testing 
   door_hand = 0  --0 for right, 1 for left
   hinge_pos = vector.new({0.55,-1.21,0.01})
+
+  hinge_pos = vector.new({0.55,-1.21,-0.10})
+
 --  hinge_pos = vector.new({0.55,-1.21,-0.05})
   
 

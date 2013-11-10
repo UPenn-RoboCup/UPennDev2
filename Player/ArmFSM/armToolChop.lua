@@ -131,8 +131,7 @@ function state.update()
       local arm_seq = {      
         mass={3,0},
         armseq={
-          {trLArmTarget1, trRArm0},
-          {trLArmTarget2, trRArm0},
+          {trLArmTarget1, trRArm0},          
         }
       }
       if arm_planner:plan_arm_sequence(arm_seq) then stage = "undrillposition" end

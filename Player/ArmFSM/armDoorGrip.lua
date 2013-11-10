@@ -23,13 +23,16 @@ local door_hand = 0
 local handle_clearance = vector.new({0,0,-0.05})
 local handle_pullup = vector.new({0,0,0.08})
 
-local qLArmTarget, qRArmTarget
+
 
 
 local shoulderYaw = -6.6*Body.DEG_TO_RAD
 
 local plan_failed = false
 
+
+local trLArm1, trRArm1
+local lhand_rpy0, rhand_rpy0
 
 local trArmTarget    
 local trLArm, trRArm
@@ -65,9 +68,8 @@ function state.entry()
   local trRArm = Body.get_forward_rarm(qRArm)  
 
   --First init jangles (wrist straight)
-  local lhand_rpy0 = {90*Body.DEG_TO_RAD,0,0}
-
-  local rhand_rpy0 = {-90*Body.DEG_TO_RAD,0,0}
+  lhand_rpy0 = {90*Body.DEG_TO_RAD,0,0}
+  rhand_rpy0 = {-90*Body.DEG_TO_RAD,0,0}
 
 
 
@@ -119,15 +121,7 @@ function state.entry()
     hinge_pos+handle_pulldown, door_r, door_yaw+20*Body.DEG_TO_RAD, grip_offset_x,door_hand)
 --]]
 
-  local trRArmTarget1 = movearm.getDoorHandlePosition(hinge_pos+handle_clearance, door_r, door_yaw, grip_offset_x, rhand_rpy0)
-  local trRArmTarget2 = movearm.getDoorHandlePosition(hinge_pos+handle_pullup, door_r, door_yaw, grip_offset_x, rhand_rpy0)
-  local trRArmTarget3 = movearm.getDoorHandlePosition(
-    hinge_pos+handle_pullup, door_r, door_yaw+5*Body.DEG_TO_RAD, grip_offset_x, rhand_rpy0)
-
-
-  trRArmTarget3[5]=0
-  trRArmTarget3[6]=0
-
+  
   local trRArmTarget4 = movearm.getDoorHandlePosition(
     hinge_pos+handle_pullup, door_r, door_yaw+10*Body.DEG_TO_RAD, grip_offset_x, rhand_rpy0)
 
@@ -143,20 +137,9 @@ function state.entry()
 
 
   arm_planner:reset_torso_comp(qLArm1, qRArm1)
-  local arm_sequence1 = {
-    init={qLArm1,qRArm1,qLArm1, qRArm1, {0,0}},
-    mass={0,0},
-    armseq={
-      {trLArm1, trRArmTarget1},
-      {trLArm1, trRArmTarget2},
-      {trLArm1, trRArmTarget3},
---      {trLArm1, trRArmTarget4},  
---      {trLArm1, trRArmTarget5},  
-    }
-  }
-  arm_plan1, arm_end1 = arm_planner:plan_arm_sequence(arm_sequence1)
-  if not arm_plan1 then plan_failed = true end
-  stage = 1;  
+  arm_planner:save_boundary_condition({qLArm1, qRArm1, qLArm1, qRArm1, {0,0}})
+  
+   stage = 1;  
 end
 
 
@@ -181,7 +164,24 @@ function state.update()
     ret = movearm.setArmJoints(qLArm,qRArm1,dt, Config.arm.joint_init_limit)     
     if ret==1 then 
       stage=stage+1 
-      arm_planner:init_arm_sequence(arm_plan1,t)
+
+      local trRArmTarget1 = movearm.getDoorHandlePosition(hinge_pos+handle_clearance, door_r, door_yaw, grip_offset_x, rhand_rpy0)
+      local trRArmTarget2 = movearm.getDoorHandlePosition(hinge_pos+handle_pullup, door_r, door_yaw, grip_offset_x, rhand_rpy0)
+      local trRArmTarget3 = movearm.getDoorHandlePosition(
+        hinge_pos+handle_pullup, door_r, door_yaw+5*Body.DEG_TO_RAD, grip_offset_x, rhand_rpy0)
+
+      trRArmTarget3[5]=0
+      trRArmTarget3[6]=0
+
+      local arm_sequence1 = {    
+        mass={0,0},
+        armseq={
+          {trLArm1, trRArmTarget1},
+          {trLArm1, trRArmTarget2},
+          {trLArm1, trRArmTarget3},
+        }
+      }
+      if arm_planner:plan_arm_sequence(arm_sequence1) then stage = 3  end
     end    
   elseif stage==3 then --Move the arm forward using IK now     
     if arm_planner:play_arm_sequence(t) then    

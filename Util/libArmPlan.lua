@@ -227,7 +227,7 @@ local function plan_double_arm_linear(self,qLArm0,qRArm0,qLArmComp0, qRArmComp0,
     local qLArmNextComp = self:search_shoulder_angle(qLArmComp,trLArmNextComp,1, yawMag)
     local qRArmNextComp = self:search_shoulder_angle(qRArmComp,trRArmNextComp,0, yawMag)
 
-    if not qLArmNextComp or not qRArmNextComp then 
+    if not qLArmNextComp or not qRArmNextComp or not qLArmNext or not qRArmNext then 
       if not qLArmNextComp then print("LEFT ERROR") end
       if not qRArmNextComp then print ("RIGHT ERROR") end
       failed = true       
@@ -267,15 +267,13 @@ local function plan_double_arm_linear(self,qLArm0,qRArm0,qLArmComp0, qRArmComp0,
 end
 
 local function plan_arm_sequence(self,arm_seq)
-  local qLArm = arm_seq.init[1]
-  local qRArm = arm_seq.init[2]
-  local qLArmComp = arm_seq.init[3]
-  local qRArmComp = arm_seq.init[4]
-  local uTorsoComp = arm_seq.init[5]
+  --This function plans for arm sequence
+  --and initializes the playback if it is possible
+  self.mLeftHand,self.mRightHand = arm_seq.mass[1], arm_seq.mass[2]
+  init_cond = self:load_boundary_condition()
+  local qLArm,qRArm,qLArmComp,qRArmComp,uTorsoComp = unpack(init_cond)
   local LAPs, RAPs, uTPs = {},{},{}
   local counter = 1
-  self.mLeftHand = arm_seq.mass[1]
-  self.mRightHand = arm_seq.mass[2]
 
   for i=1,#arm_seq.armseq do
     local LAP, RAP, uTP, qLArm1, qRArm1, qLArmComp1, qRArmComp1, uTorsoComp1
@@ -285,7 +283,10 @@ local function plan_arm_sequence(self,arm_seq)
         arm_seq.armseq[i][1],
         arm_seq.armseq[i][2],
         uTorsoComp)
-    if not LAP then return end --failure
+    if not LAP then 
+      print("Arm plan failure!!!")
+      return 
+    end --failure
     qLArm, qRArm, qLArmComp, qRArmComp,uTorsoComp = 
       qLArm1,qRArm1,qLArmComp1,qRArmComp1,uTorsoComp1
     for j=1,#LAP do
@@ -297,8 +298,12 @@ local function plan_arm_sequence(self,arm_seq)
   local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs}
   local end_cond={qLArm,qRArm,qLArmComp,qRArmComp,uTorsoComp}
   if qLArm then --plan success
-    return arm_plan,end_cond
+    --return arm_plan,end_cond
+    self:save_boundary_condition(end_cond)
+    self:init_arm_sequence(arm_plan,Body.get_time())
+    return true
   else --failure
+    print("Arm plan failure!!!")
     return
   end
 end
@@ -422,6 +427,10 @@ libArmPlan.new_planner = function (params)
   s.leftArmQueue={}
   s.rightArmQueue={}
   s.torsoCompQueue={}
+
+  s.init_cond = {}
+  s.current_plan = {}
+  s.current_endcond = {}
 
   --member functions
   s.print_transform = print_transform

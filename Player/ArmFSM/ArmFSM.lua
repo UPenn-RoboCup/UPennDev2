@@ -121,9 +121,9 @@ sm:set_transition(armWheelTurnValve, 'reset', armWheelRelease)
 
 sm:set_transition(armToolGrip, 'reset', armChangetoPose1)
 
-
 sm:set_transition(armToolGrip, 'done', armToolHold)
 sm:set_transition(armToolHold, 'toolgrab', armToolChop)
+sm:set_transition(armToolChop, 'done', armToolHold)
 
 
 -- The initial arm pose is great for door gripping, 

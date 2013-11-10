@@ -7,19 +7,15 @@ local movearm = require'movearm'
 local libArmPlan = require 'libArmPlan'
 local arm_planner = libArmPlan.new_planner()
 
-local gripL, gripR = 0,0
-local stage = 1;
-local debugdata
-local plan_failed = false
-
 local qLArm0,qRArm0, trLArm0, trRArm0
 
 --Initial hand angle
 local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}
 local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD}
 
-local current_arm_plan, current_arm_endcond
-
+local gripL, gripR = 0,0
+local stage
+local debugdata
 
 local function get_tool_tr(tooloffset, handrpy)
   local tool_model = hcm.get_tool_model()
@@ -51,74 +47,57 @@ function state.entry()
  
   hcm.set_tool_model({0.55,0.02,0.05,  0*Body.DEG_TO_RAD}) --for webots with bodyTilt
   --hcm.set_tool_model({0.51,0.02,0.05,  0*Body.DEG_TO_RAD}) 
- 
-  local trLArmTarget1 = get_tool_tr({0,0.08,0}, lhand_rpy0)
-  local trLArmTarget2 = get_tool_tr({0,0,0}, lhand_rpy0)
-
-  --This sets torso compensation bias
-  --So that it becomes zero with initial arm configuration
+   
+  --This sets torso compensation bias so that it becomes zero with initial arm configuration
   arm_planner:reset_torso_comp(qLArm0, qRArm0)
+  arm_planner:save_boundary_condition({qLArm0, qRArm0, qLArm0, qRArm0, {0,0}})
 
-  local arm_sequence1 = {
-    init={qLArm0,qRArm0,qLArm0, qRArm0, {0,0}},
-    mass={0,0},
-    armseq={
-      {trLArmTarget1, trRArm0},
-      {trLArmTarget2, trRArm0},
-    }
-  }
-  current_arm_plan, current_arm_endcond = arm_planner:plan_arm_sequence(arm_sequence1)
-
-  stage = 1;  
+  stage = "wristrotate";  
   debugdata=''   
 end
-
 
 function state.update()
   --  print(state._NAME..' Update' )
   local t  = Body.get_time()
   local dt = t - t_update
-  -- Save this at the last update time
-  t_update = t
-  if plan_failed then return "planfail" end
+  t_update = t   -- Save this at the last update time
+  
+----------------------------------------------------------
+--Forward motions
+----------------------------------------------------------
 
-  if stage==1 then --Rotate wrist angles
+  if stage=="wristrotate" then --Rotate wrist angles
     ret = movearm.setArmJoints(qLArm0, qRArm0 ,dt, Config.arm.joint_init_limit)
-    if ret==1 then     
-      arm_planner:init_arm_sequence(current_arm_plan,t)
-      stage=stage+1 
+    if ret==1 then stage="initialwait"  end
+  elseif stage=="initialwait" then
+    if hcm.get_state_proceed()==1 then 
+      local trLArmTarget1 = get_tool_tr({0,0.08,0}, lhand_rpy0)
+      local trLArmTarget2 = get_tool_tr({0,0,0}, lhand_rpy0)
+      local arm_seq = {
+        mass={0,0},
+        armseq={
+          {trLArmTarget1, trRArm0},
+          {trLArmTarget2, trRArm0},
+        }
+      }
+      if arm_planner:plan_arm_sequence(arm_seq) then stage = "reachout" end
     end
-
-  elseif stage==2 then --Move arm to the gripping position
-    if arm_planner:play_arm_sequence(t) then    
-      stage = stage+1             
+  elseif stage=="reachout" then --Move arm to the gripping position
+    if arm_planner:play_arm_sequence(t) then stage = "reachwait" end
+  elseif stage=="reachwait" then --Wait for proceed confirmation
+    if hcm.get_state_proceed()==1 then stage = "grab"
+    elseif hcm.get_state_proceed() == -1 then stage = "unreachout" 
     end
-
-  elseif stage==3 then --Wait for proceed confirmation
-    if hcm.get_state_proceed()==1 then
-      hcm.set_state_proceed(0)
-      stage = stage+1
-
-    elseif hcm.get_state_proceed() == -1 then
-      hcm.set_state_proceed(0)
-      stage = -2 --negative stage number means we are going backward
-    end
-
-  elseif stage==4 then --Grip the object   
+  elseif stage=="grab" then --Grip the object   
     gripL,doneL = util.approachTol(gripL,1,2,dt)
     Body.set_lgrip_percent(gripL*0.8)
     Body.set_rgrip_percent(gripR*0.8)    
     if doneL then
-      if hcm.get_state_proceed()==1 then
-        hcm.set_state_proceed(0)
-        stage=stage+1
-
-
+      if hcm.get_state_proceed()==1 then        
         local trLArmTarget3 = get_tool_tr({0,0,0.05}, lhand_rpy0)
         local trLArmTarget4 = get_tool_tr({-0.20,0,0.05}, lhand_rpy0)
         local trLArmTarget5 = {0.20,0.0,-0.10, unpack(lhand_rpy0)}
-        local arm_sequence2 = {
-          init=current_arm_endcond,
+        local arm_seq = {          
           mass={3,0},
           armseq={
             {trLArmTarget3, trRArm0},
@@ -126,23 +105,51 @@ function state.update()
             {trLArmTarget5, trRArm0},
           }
         }
-        current_arm_plan, current_arm_endcond = arm_planner:plan_arm_sequence(arm_sequence2)
-
-        arm_planner:init_arm_sequence(current_arm_plan,t)
-      end
+        if arm_planner:plan_arm_sequence(arm_seq) then stage = "pull" end
+      elseif hcm.get_state_proceed()==-1 then stage="ungrab" end
     end
-  elseif stage==5 then --Move arm back to holding position
+  elseif stage=="pull" then --Move arm back to holding position
     if arm_planner:play_arm_sequence(t) then    
-      stage = stage+1
+      stage = "pulldone"
       print("SEQUENCE DONE")
       return"done"      
     end      
+
+----------------------------------------------------------
+--Backward motions motions
+----------------------------------------------------------
+
+  elseif stage=="ungrab" then --Ungrip the object
+    gripL,doneL = util.approachTol(gripL,0,2,dt)
+    Body.set_lgrip_percent(gripL*0.8)
+    Body.set_rgrip_percent(gripR*0.8)    
+    if doneL then
+      if hcm.get_state_proceed()==1 then stage= "grab"
+      elseif hcm.get_state_proceed()==-1 then stage = "unreachout"
+      end
+    end
+  elseif stage=="unreachout" then
+    local trLArmTarget1 = get_tool_tr({0,0.08,0}, lhand_rpy0)
+    local trLArmTarget2 = get_tool_tr({0,0,0}, lhand_rpy0)
+    local arm_seq = {      
+      mass={0,0},
+      armseq={
+        {trLArmTarget2, trRArm0},
+        {trLArmTarget1, trRArm0},        
+        {trLArm0, trRArm0},        
+      }
+    }
+    if arm_planner:plan_arm_sequence(arm_seq) then stage = "unreachoutmove" end
+  elseif stage=="unreachoutmove" then 
+    if arm_planner:play_arm_sequence(t) then stage = "initialwait" end
   end
+
+  hcm.set_state_proceed(0)
 end
 
 function state.exit()  
   --Store boundary conditions for future state
-  arm_planner:save_boundary_condition(current_arm_endcond)
+  --arm_planner:save_boundary_condition(current_arm_endcond)
   print(state._NAME..' Exit' )
 end
 

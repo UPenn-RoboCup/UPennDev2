@@ -40,10 +40,6 @@ function state.entry()
   --Initial arm joint angles after rotating wrist
   qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
-
-  --Target hand position (for idle hand)
-  trLArm0 = {0.10,0.24,-0.10, unpack(lhand_rpy0)}
-  trRArm0 = {0.10,-0.24,-0.10, unpack(rhand_rpy0)}
  
   hcm.set_tool_model({0.55,0.02,0.05,  0*Body.DEG_TO_RAD}) --for webots with bodyTilt
   --hcm.set_tool_model({0.51,0.02,0.05,  0*Body.DEG_TO_RAD}) 
@@ -68,7 +64,20 @@ function state.update()
 
   if stage=="wristrotate" then --Rotate wrist angles
     ret = movearm.setArmJoints(qLArm0, qRArm0 ,dt, Config.arm.joint_init_limit)
-    if ret==1 then stage="initialwait"  end
+    if ret==1 then 
+      --Both hands around waist
+      trLArm0 = {0.10,0.24,-0.10, unpack(lhand_rpy0)}
+      trRArm0 = {0.10,-0.24,-0.10, unpack(rhand_rpy0)}
+      local arm_seq = {
+        mass={0,0},
+        armseq={
+          {trLArm0, trRArm0},          
+        }
+      }
+      if arm_planner:plan_arm_sequence(arm_seq) then stage = "armup" end
+    end
+  elseif stage=="armup" then
+    if arm_planner:play_arm_sequence(t) then stage = "initialwait" end
   elseif stage=="initialwait" then
     if hcm.get_state_proceed()==1 then 
       local trLArmTarget1 = get_tool_tr({0,0.08,0}, lhand_rpy0)

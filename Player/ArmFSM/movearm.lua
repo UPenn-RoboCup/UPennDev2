@@ -14,32 +14,25 @@ local body_rpy = {0,0,0}
 local lShoulderYaw = -45*Body.DEG_TO_RAD;
 local rShoulderYaw = 45*Body.DEG_TO_RAD;
 
-function movearm.setArmJoints(
-  qLArmTarget,
-  qRArmTarget,
-  dt,
-  dqArmLim
-  )
+function movearm.setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim)
   if not dqArmLim then dqArmLim = dqArmMax end
+
   local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-  local qL_approach, doneL2, qR_approach, doneR2
-  qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqArmLim, dt )  
-  qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqArmLim, dt )
+  local qRArm = Body.get_rarm_command_position()  
+ 
+  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqArmLim, dt )  
+  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqArmLim, dt )
 
-  --Dynamixel is STUPID so we should check for the direction
-  local qLOld = Body.get_larm_command_position()
-  local qROld = Body.get_rarm_command_position()
-
+  --Dynamixel is STUPID so we should manually check for the direction
   for i=1,7 do
-    local qL_increment = util.mod_angle(qL_approach[i]-qLOld[i])
-    local qR_increment = util.mod_angle(qR_approach[i]-qROld[i])
-    qL_approach[i] = qLOld[i] + qL_increment
-    qR_approach[i] = qROld[i] + qR_increment
+    local qL_increment = util.mod_angle(qL_approach[i]-qLArm[i])
+    local qR_increment = util.mod_angle(qR_approach[i]-qRArm[i])
+    qL_approach[i] = qLArm[i] + qL_increment
+    qR_approach[i] = qRArm[i] + qR_increment
   end
 
-  local qL = Body.set_larm_command_position( qL_approach )
-  local qR = Body.set_rarm_command_position( qR_approach )
+  Body.set_larm_command_position( qL_approach )
+  Body.set_rarm_command_position( qR_approach )
   if doneL2 and doneR2 then return 1 end
 end
 
@@ -400,53 +393,65 @@ function movearm.getArmWheelPosition(handle_pos,
 end
 
 function movearm.getDoorHandlePosition(
-  hinge_pos, 
-  door_r, --distance between hinge and the projection of grip position on the door
-          --positive value for right-hinged door, negative value for left-hinged door
-  door_yaw, --door angle, -pi/2~pi/2
-  grip_offset_x, --how much the actual grip positon offset from door surface  
-  hand_rpy
+  pos_offset,
+  knob_roll,
+  door_yaw
   )
-  if type(hand_rpy)=='number' then --scalar value: hand type (0 for left, 1 for right)
-    if hand_rpy==1 then --left hand  
-      hand_rpy = {-90*Body.DEG_TO_RAD,0,0} --Default hand angle: facing up
-    else
-      hand_rpy = {90*Body.DEG_TO_RAD,0,0} --Default hand angle: facing up
-    end
-  end
+  local door_model = hcm.get_door_model()  
+  local hinge_pos = vector.slice(door_model,1,3) + vector.new(pos_offset)  
+  local door_r = door_model[4]
+  local grip_offset_x = door_model[5]
+  local knob_offset_y = door_model[6]
+
+  local rhand_rpy0 = {-90*Body.DEG_TO_RAD,0,0}
+
+  local rhand_rpy0 = {-90*Body.DEG_TO_RAD,-10*Body.DEG_TO_RAD,0}
+
+
+  local hand_rpy = rhand_rpy0
+
+  local right_hook_offset = {0.05,-0.10,0}
+  local right_hook_offset = {0,0,0}
+
+--print("knob roll:",knob_roll*180/math.pi)
+
+--[[
   local trHandle = T.eye()
     * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])    
     * T.rotZ(door_yaw)
-    * T.trans(grip_offset_x, door_r, 0) 
+    * T.trans(grip_offset_x, door_r+knob_offset_y, 0) 
+    * T.rotX(knob_roll)
+    * T.trans(0,-knob_offset_y, 0) 
     * T.transform6D(
       {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
-  local trTarget = T.position6D(trHandle)
-  return trTarget
-end
+    * T.trans(
+        -right_hook_offset[1],
+        -right_hook_offset[2],
+        -right_hook_offset[3])
 
-function movearm.getToolPosition(
-  tool_pos,
-  approach_dist,
-  hand_rpy,
-  approach_dir
-  )
-  if type(hand_rpy)=='number' then --scalar value: hand type (0 for left, 1 for right)
-    if hand_rpy==1 then --left hand  
-      hand_rpy = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}      
-      approach_dir = {0,1,0}
-    else
-      hand_rpy = {90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD} --Default hand angle: facing up
-      approach_dir = {-0.5,-0.5,-0.5}
-    end
-  end
-  local trTool = T.eye()    
-    * T.trans(tool_pos[1]+approach_dir[1]*approach_dist,
-            tool_pos[2]+approach_dir[2]*approach_dist,
-            tool_pos[3]+approach_dir[3]*approach_dist)
-    * T.rotY(hand_rpy[2])
-    * T.rotZ(hand_rpy[3])
-    * T.rotX(hand_rpy[1])
-  local trTarget = T.position6D(trTool)
+--]]
+--This one has zero hand yaw
+
+  local trHandle = T.eye()
+    * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])    
+    * T.rotZ(door_yaw)
+    * T.trans(grip_offset_x, door_r+knob_offset_y, 0)     
+    * T.rotX(knob_roll)
+    * T.trans(0,-knob_offset_y, 0) 
+
+    * T.rotX(-knob_roll)
+    * T.rotZ(-door_yaw)
+    * T.rotX(knob_roll)
+
+    * T.transform6D(
+      {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
+    * T.trans(
+        -right_hook_offset[1],
+        -right_hook_offset[2],
+        -right_hook_offset[3])
+--
+
+  local trTarget = T.position6D(trHandle)
   return trTarget
 end
 

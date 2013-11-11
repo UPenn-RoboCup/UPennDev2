@@ -77,11 +77,11 @@ shared_data.wheel.turnangle = vector.zeros(1)
 -- Door Opening
 shared_data.door = {}
 --door_hand, hinge_xyz(3), door_r, grip_offset_x
-shared_data.door.model = vector.new({
-	1, --door_hand, 1 for left, 0 for right
+shared_data.door.model = vector.new({	
 	0.45,0.85,-0.15, --Hinge XYZ pos from robot frame
 	-0.60, --Door radius, negative - left hinge, positive - right hinge
 	-0.05, --The X offset of the door handle (from door surface)
+	0.05, --The Y offset of the knob axis (from gripping pos)
 	})
 shared_data.door.yaw = vector.zeros(1) --The current angle of the door
 shared_data.door.yaw_target = vector.new({-20*math.pi/180}) --The target angle of the door 

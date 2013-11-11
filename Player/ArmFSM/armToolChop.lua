@@ -34,31 +34,8 @@ function state.entry()
   trLArm0 = Body.get_forward_larm(init_cond[1])
   trRArm0 = Body.get_forward_rarm(init_cond[2]) 
 
-    
-  local tool_pos_left0=vector.new({0.20,0.0,-0.10})  
-  local tool_pos_left1=vector.new({0.25,0.0,0.0})  
-
-  local tool_pos_left2=vector.new({0.40,0.0,0.0})  
-  local tool_pos_left3=vector.new({0.40,0.17,0.0})  
-  local tool_pos_left4=vector.new({0.40,0,0.20})  
-  local tool_pos_left5=vector.new({0.40,-0.13,0.0})  
-  local tool_pos_left6=vector.new({0.40,0,0.0})  
-
-
-  local trLArmTarget1 = movearm.getToolPosition(tool_pos_left0,0,1)    
-  local trLArmTarget2 = movearm.getToolPosition(tool_pos_left1,0,1)    
-  local trLArmTarget3 = movearm.getToolPosition(tool_pos_left2,0,1)    
-  local trLArmTarget4 = movearm.getToolPosition(tool_pos_left3,0,1)    
-  local trLArmTarget5 = movearm.getToolPosition(tool_pos_left4,0,1)    
-  local trLArmTarget6 = movearm.getToolPosition(tool_pos_left5,0,1)    
-  local trLArmTarget7 = movearm.getToolPosition(tool_pos_left6,0,1)    
-
-
-
-  if not arm_plan1 then plan_failed = true end
-  
   stage = "drillout"
-
+  hcm.set_state_proceed(1)
 end
 
 function state.update()

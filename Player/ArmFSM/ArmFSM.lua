@@ -16,7 +16,7 @@ local armIdle = require'armIdle'
 --Default pose for walking (arm slightly spread)
 local armPose1 = require'armPose1'
 
---Default pose for tele-op and handle grip
+--Default pose for kneeling (arm higher not to touch the ground)
 local armPose2 = require'armPose2'
 
 -- Move arm to pose 1 (from Idle, Pose2, doorgrip)
@@ -47,6 +47,14 @@ local armToolChop = require'armToolChop'
 
 local armDebrisGrip = require'armDebrisGrip'
 
+
+
+local armSupportDoor = require'armSupportDoor'
+
+
+
+
+
 local sm = fsm.new(armIdle);
 sm:add_state(armPose1)
 sm:add_state(armPose2)
@@ -67,6 +75,8 @@ sm:add_state(armToolChop)
 sm:add_state(armDebrisGrip)
 sm:add_state(armRocky)
 
+sm:add_state(armSupportDoor)
+
 ----------
 -- Event types
 ----------
@@ -82,21 +92,18 @@ sm:set_transition(armIdle, 'init', armChangetoPose1)
 sm:set_transition(armChangetoPose1, 'done', armPose1)
 sm:set_transition(armChangetoPose2, 'done', armPose2)
 
-sm:set_transition(armPose1, 'ready', armChangetoPose2)
+--sm:set_transition(armPose1, 'ready', armChangetoPose2)
 sm:set_transition(armPose1, 'rocky', armRocky)
-
-
 sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
+sm:set_transition(armPose1, 'toolgrab', armToolGrip)
+sm:set_transition(armPose1, 'wheelgrab', armWheelGrip)
 
 
+sm:set_transition(armRocky, 'reset', armChangetoPose1)
 
-sm:set_transition(armRocky, 'reset', armChangetoPose2)
+--sm:set_transition(armPose2, 'toolgrab', armToolGrip)
 
-sm:set_transition(armPose2, 'teleop', armTeleop)
-sm:set_transition(armPose2, 'wheelgrab', armWheelGrip)
-sm:set_transition(armPose2, 'reset', armChangetoPose1)
 
-sm:set_transition(armPose2, 'toolgrab', armToolGrip)
 sm:set_transition(armPose2, 'debrisgrab', armDebrisGrip)
 
 
@@ -104,23 +111,19 @@ sm:set_transition(armPose2, 'debrisgrab', armDebrisGrip)
 
 --sm:set_transition(armWheelGrip, 'done', armWheelTurn)
 sm:set_transition(armWheelGrip, 'done', armWheelTurnValve)
-
 sm:set_transition(armWheelGrip, 'reset', armChangetoPose2)
-
 sm:set_transition(armWheelTurn, 'reset', armWheelRelease)
---sm:set_transition(armWheelRelease, 'done', armChangetoPose2)
-sm:set_transition(armWheelRelease, 'done', armChangetoPose1)
+
 
 sm:set_transition(armWheelTurnValve, 'done', armWheelRelease)
 sm:set_transition(armWheelTurnValve, 'reset', armWheelRelease)
-
+sm:set_transition(armWheelRelease, 'done', armChangetoPose1)
 
 
 --TODO: should use IK to get back?
 --sm:set_transition(armToolGrip, 'reset', armChangetoPose2)
 
 sm:set_transition(armToolGrip, 'reset', armChangetoPose1)
-
 sm:set_transition(armToolGrip, 'done', armToolHold)
 sm:set_transition(armToolHold, 'toolgrab', armToolChop)
 sm:set_transition(armToolChop, 'done', armToolHold)

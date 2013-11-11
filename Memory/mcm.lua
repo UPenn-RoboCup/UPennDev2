@@ -75,6 +75,9 @@ shared.status.uZMP = vector.zeros(3)
 --If we are kneeling, we don't need quasistatic balancing
 shared.status.iskneeling    = vector.zeros(1)
 
+--If we are in wide stance, we don't use lateral quasistatic balancing 
+shared.status.iswidestance    = vector.zeros(1)
+
 --Current time
 shared.status.t = vector.zeros(1)
 

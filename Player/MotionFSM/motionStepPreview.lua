@@ -89,6 +89,11 @@ function walk.entry()
   --Reset odometry varialbe
   Body.init_odometry(uTorso_now)  
 
+
+
+print("Init Y:",uLeft_now[2],uTorso_now[2],uRight_now[2])
+
+
   --SHM BASED
   local nFootHolds = mcm.get_step_nfootholds()
   local footQueue = mcm.get_step_footholds()
@@ -204,6 +209,7 @@ function walk.update()
 
     moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
       zLeft,zRight,delta_legs)    
+print("Y:",uLeft[2],uTorso[2],uRight[2])
   end
 
   if debug_on then
@@ -256,6 +262,10 @@ function walk.update()
 end -- walk.update
 
 function walk.exit()
+
+
+
+
   print(walk._NAME..' Exit')  
   mcm.set_walk_ismoving(0) --We stopped moving
   if debug_on then

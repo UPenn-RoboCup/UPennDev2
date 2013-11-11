@@ -45,6 +45,18 @@ local armToolGrip = require'armToolGrip'
 local armToolHold = require'armToolHold'
 local armToolChop = require'armToolChop'
 
+-- Small circular valve turning (one hand turning)
+local armSmallValveGrip = require'armSmallValveGrip'
+
+-- Large circular valve turning (two hand turning)
+local armLargeValveGrip = require'armLargeValveGrip'
+
+-- bar valve turning
+local armBarValveGrip = require'armBarValveGrip'
+
+
+
+
 local armDebrisGrip = require'armDebrisGrip'
 
 
@@ -72,6 +84,11 @@ sm:add_state(armToolGrip)
 sm:add_state(armToolHold)
 sm:add_state(armToolChop)
 
+sm:add_state(armSmallValveGrip)
+sm:add_state(armLargeValveGrip)
+sm:add_state(armBarValveGrip)
+
+
 sm:add_state(armDebrisGrip)
 sm:add_state(armRocky)
 
@@ -97,6 +114,16 @@ sm:set_transition(armPose1, 'rocky', armRocky)
 sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
 sm:set_transition(armPose1, 'toolgrab', armToolGrip)
 sm:set_transition(armPose1, 'wheelgrab', armWheelGrip)
+
+
+sm:set_transition(armPose1, 'smallvalvegrab', armSmallValveGrip)
+sm:set_transition(armPose1, 'largevalvegrab', armLargeValveGrip)
+sm:set_transition(armPose1, 'barvalvegrab', armBarValveGrip)
+
+
+sm:set_transition(armSmallValveGrip, 'done', armChangetoPose1)
+sm:set_transition(armLargeValveGrip, 'done', armChangetoPose1)
+sm:set_transition(armBarValveGrip, 'done', armChangetoPose1)
 
 
 sm:set_transition(armRocky, 'reset', armChangetoPose1)

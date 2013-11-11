@@ -87,7 +87,7 @@ local char_to_event = {
   --
   ['a'] = {'arm_ch','init'},
   ['s'] = {'arm_ch','reset'},
-  ['r'] = {'arm_ch','smallvalvegrab'},
+  ['r'] = {'arm_ch','ready'},
   --
   ['x'] = {'arm_ch','teleop'},
   --

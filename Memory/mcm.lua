@@ -27,6 +27,8 @@ shared.arm.qrarm = vector.zeros(7)
 shared.arm.qlarmcomp = vector.zeros(7)
 shared.arm.qrarmcomp = vector.zeros(7)
 
+--hand offset X and Y (for hook)
+shared.arm.handoffset = vector.new(Config.arm.handoffset.gripper)
 
 
 -- Walk Parameters

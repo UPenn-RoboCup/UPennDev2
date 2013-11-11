@@ -630,26 +630,34 @@ end
 -- SJ: Now separated into two functions to get rid of directly calling IK
 Body.get_forward_larm = function(qL, bodyTilt, qWaist)
   local pLArm = Kinematics.l_arm_torso_7( qL, 
-      bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
+    bodyTilt or mcm.get_stance_bodyTilt(), 
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_handoffset()[1],mcm.get_arm_handoffset()[2]
+    )
   return pLArm
 end
 
 Body.get_forward_rarm = function(qR, bodyTilt, qWaist)
   local pRArm = Kinematics.r_arm_torso_7( qR,
-    bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
+    bodyTilt or mcm.get_stance_bodyTilt(),
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_handoffset()[1],mcm.get_arm_handoffset()[2]
+    )
   return pRArm
 end
 
 --Return the WRIST position (to test self collision)
 Body.get_forward_lwrist = function(qL, bodyTilt, qWaist)
   local pLArm = Kinematics.l_wrist_torso( qL, 
-      bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
+      bodyTilt or mcm.get_stance_bodyTilt(), 
+      qWaist or Body.get_waist_command_position())
   return pLArm
 end
 
 Body.get_forward_rwrist = function(qR, bodyTilt, qWaist)  
   local pRArm = Kinematics.r_wrist_torso( qR, 
-      bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
+      bodyTilt or mcm.get_stance_bodyTilt(), 
+      qWaist or Body.get_waist_command_position())
   return pRArm
 end
 
@@ -672,11 +680,20 @@ Body.get_inverse_arm_given_wrist = function( q, tr, bodyTilt, qWaist)
 end
 
 Body.get_inverse_larm = function( qL, trL, lShoulderYaw, bodyTilt, qWaist)  
-  local qL_target = Kinematics.inverse_l_arm_7(trL,qL,lShoulderYaw or qL[3],
-      bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
+  local qL_target = Kinematics.inverse_l_arm_7(
+    trL,qL,
+    lShoulderYaw or qL[3],
+    bodyTilt or mcm.get_stance_bodyTilt(), 
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_handoffset()[1],mcm.get_arm_handoffset()[2]
+    )
   
-  local trL_check = Kinematics.l_arm_torso_7( qL_target,
-      bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
+  local trL_check = Kinematics.l_arm_torso_7( 
+    qL_target,
+    bodyTilt or mcm.get_stance_bodyTilt(), 
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_handoffset()[1],mcm.get_arm_handoffset()[2]
+    )
 --[[
   print("LARM IK SOLVING")
   print("bodyTilt:",(bodyTilt or mcm.get_camera_bodyTilt()) * 180/math.pi)
@@ -691,10 +708,19 @@ Body.get_inverse_larm = function( qL, trL, lShoulderYaw, bodyTilt, qWaist)
 end
 
 Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)    
-  local qR_target = Kinematics.inverse_r_arm_7(trR, qR,rShoulderYaw or qR[3], 
-      bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
-  local trR_check = Kinematics.r_arm_torso_7( qR_target,
-      bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
+  local qR_target = Kinematics.inverse_r_arm_7(
+    trR, qR,
+    rShoulderYaw or qR[3], 
+    bodyTilt or mcm.get_stance_bodyTilt(),
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_handoffset()[1],mcm.get_arm_handoffset()[2]
+    )
+  local trR_check = Kinematics.r_arm_torso_7( 
+    qR_target,
+    bodyTilt or mcm.get_stance_bodyTilt(), 
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_handoffset()[1],mcm.get_arm_handoffset()[2]
+    )
   if not check_rarm_bounds(qR_target) then return end  
   if not check_ik_error( trR, trR_check) then return end
   return qR_target

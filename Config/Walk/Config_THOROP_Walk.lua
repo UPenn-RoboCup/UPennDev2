@@ -217,6 +217,8 @@ stance.enable_torso_compensation = 1
 --stance.enable_torso_compensation = 0
 
 
+--Temporary testing
+--walk.bodyHeight = 0.97 --5cm higher
 
 -----------------------------------------------------------
 -- Stance parameters
@@ -375,6 +377,24 @@ zmpstep.param_k1={
 ------------------------------------
 -- For the arm FSM
 local arm = {}
+
+--Default gripper
+arm.handoffset={}
+arm.handoffset.gripper = {0.245,0.035,0}
+
+--Single hook (for door)
+arm.handoffset.outerhook = {0.285,-0.065,0}
+
+--Two rod (for valve)
+arm.handoffset.chopstick = {0.285,0,0}
+
+
+
+
+
+
+
+
 arm.qLArmInit={
  vector.new({110,12,-3,-40,  -0,0,0})*DEG_TO_RAD, -- at sides
  vector.new({110.5, 17.5, 0, -85.7, -30.2,  0,16.8})*DEG_TO_RAD, -- scarecrow

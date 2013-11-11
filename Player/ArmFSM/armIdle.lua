@@ -5,6 +5,7 @@ local vector = require'vector'
 local Body = require'Body'
 local t_entry, t_update, t_finish
 local timeout = 10.0
+require'mcm'
 
 local qLArm, qRArm
 
@@ -33,6 +34,8 @@ function state.entry()
 
   Body.request_larm_position()
   Body.request_rarm_position()
+
+   mcm.set_arm_handoffset(Config.arm.handoffset.gripper)
 end
 
 function state.update()

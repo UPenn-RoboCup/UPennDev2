@@ -1,6 +1,7 @@
 local state = {}
 state._NAME = ...
 require'hcm'
+require'mcm'
 local vector = require'vector'
 local util   = require'util'
 local movearm = require'movearm'
@@ -31,6 +32,8 @@ function state.entry()
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
+
+  mcm.set_arm_handoffset(Config.arm.handoffset.gripper)
 
   Body.set_lgrip_percent(0)
 

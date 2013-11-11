@@ -26,12 +26,13 @@ function state.entry()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
   
-  qLArm0 = qLArm
+  qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
+  --qLArm0 = qLArm
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
   
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
-
+print("trRArm0:",unpack(trRArm0))
 
   arm_planner:reset_torso_comp(qLArm0, qRArm0)
   arm_planner:save_boundary_condition({qLArm0, qRArm0, qLArm0, qRArm0, {0,0}})
@@ -52,25 +53,46 @@ function state.update()
 
   if stage=="wristturn" then --Turn yaw angles first
     if movearm.setArmJoints(qLArm0,qRArm0,dt, Config.arm.joint_init_limit) ==1 then       
-      local trRArmTarget1 = {0.20,-0.24,-0.10, unpack(rhand_rpy0)}
-      local trRArmTarget2 = {0.30,-0.10, 0.10, unpack(rhand_rpy0)}
+      --initial; 0.285 -0.265 -0.2
+
+      local trRArmTarget1 = {0.50,-0.265, -0.10, unpack(rhand_rpy0)}      
+      local trRArmTarget2 = {0.45,-0.25, 0.30, unpack(rhand_rpy0)}
+      local trRArmTarget3 = {0.40,-0.25, 0.45, unpack(rhand_rpy0)}
+      local trRArmTarget4 = {0.40,-0.22, 0.57, unpack(rhand_rpy0)}
+
       local arm_seq = {
         mass={0,0},
-        armseq={
+        armseq={          
           {trLArm0, trRArmTarget1},
           {trLArm0, trRArmTarget2},
+          {trLArm0, trRArmTarget3},
+          {trLArm0, trRArmTarget4},
         }
       }
       if arm_planner:plan_arm_sequence(arm_seq) then stage = "armup" end      
     end
   elseif stage=="armup" then       
     if arm_planner:play_arm_sequence(t) then 
-      stage="armposition"
+      stage="armreadyposition"
     end
-  elseif stage=="armposition" then --Move the arm forward using IK now     
-    
+  elseif stage=="armreadyposition" then --Move the arm forward using IK now     
+    if hcm.get_state_proceed(0)==1 then
+      local trRArmTarget1 = {0.40,-0.30, 0.05, unpack(rhand_rpy0)}
+      local arm_seq = {
+        mass={0,0},
+        armseq={
+          {trLArm0, trRArmTarget1},          
+        }
+      }
+      if arm_planner:plan_arm_sequence(arm_seq) then stage = "arminsert" end      
+    end
+  elseif stage=="arminsert" then       
+    if arm_planner:play_arm_sequence(t) then 
+      stage="armretract"
+    end
   end
  
+ hcm.set_state_proceed(0)
 end
 
 function state.exit()  

@@ -21,10 +21,9 @@ shared.head_camera       = {}
 --shared.head_camera.lut   = 262144
 shared.head_camera.t     = vector.zeros(1)
 -- Network Requests: [stream,compression,quality,fps]
--- Stream | 0: None, 1: Single Frame, 2: Stream, 3: Single Reliable Frame
--- Compression | 0: None, 1: JPEG, 2: zlib, 3: PNG
+-- Stream | 0: None, 1: Single Frame, 2: Stream, 3: Single Reliable Frame 4: Reliable Stream
+-- Compression | 0: None, 1: JPEG, 3: PNG
 -- Quality | JPEG quality from 0-100
--- Rate | FPS (5,10,15,30, etc.)
 shared.head_camera.net = vector.new({2,1,90})
 
 ------------------------

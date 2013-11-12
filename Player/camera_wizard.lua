@@ -76,11 +76,11 @@ for name,cam in pairs(Config.camera) do
     local net_settings = vcm.get_head_camera_net()
     local stream, method, quality = unpack(net_settings)
     camera.quality = quality
+    local img, head_img_sz = camera.dev:get_image()
 
     -- No streaming, so no computation
     if stream==0 and not logging then return end
     
-    local img, head_img_sz = camera.dev:get_image()
     -- Compress the image (ignore the 'method' for now - just jpeg)
     local c_img
     if camera.format=='yuyv' then

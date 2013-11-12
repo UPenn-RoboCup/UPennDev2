@@ -214,7 +214,7 @@ walk.bodyTilt = 11*math.pi/180
 
 --Should we move torso back for compensation?
 stance.enable_torso_compensation = 1
---stance.enable_torso_compensation = 0
+stance.enable_torso_compensation = 0
 
 
 --Temporary testing

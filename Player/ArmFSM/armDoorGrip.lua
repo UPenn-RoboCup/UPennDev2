@@ -16,6 +16,8 @@ local stage
 
 local qLArmInit0,qRArmInit0,qLArmInit1,qRArmInit1
 
+local trLArmCurrent, trRArmCurrent
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -74,6 +76,9 @@ function state.update()
   --if t-t_entry > timeout then return'timeout' end
   
   local door_yaw = hcm.get_door_yaw()
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+
 
   if stage=="wristyawturn" then --Turn yaw angles first
     if movearm.setArmJoints(qLArm0,qRArm0,dt, Config.arm.joint_init_limit) ==1 then 
@@ -94,18 +99,51 @@ function state.update()
     end    
   elseif stage=="knobhook" then --Move the arm forward using IK now     
     if arm_planner:play_arm_sequence(t) then 
-      local dooropen_seq = {
-        {{{0,0,0},0*Body.DEG_TO_RAD,0}, {{0,0,0},-30*Body.DEG_TO_RAD,0} },
---        {{{0,0,0},-30*Body.DEG_TO_RAD,0}, {{0,0,0},-30*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD} }        
-        {{{0,0,0},-30*Body.DEG_TO_RAD,0}, {{0,0,0},-30*Body.DEG_TO_RAD,20*Body.DEG_TO_RAD} }        
+      local dooropen_seq = 
+        {
+          {
+            {{0,0,0},0*Body.DEG_TO_RAD,0,0}, {{0,0,0},-30*Body.DEG_TO_RAD,0,0} 
+          },
 
-      }
+          {
+            {{0,0,0},-30*Body.DEG_TO_RAD,0,0}, {{0,0,0},-30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,0}
+          }        
+         }
       if arm_planner:plan_open_door_sequence(dooropen_seq) then stage = "dooropen"  end
     end
   elseif stage=="dooropen" then --Move the arm forward using IK now     
-    if arm_planner:play_arm_sequence(t) then stage = "opendone" end
+    if arm_planner:play_arm_sequence(t) then 
+      
+      local dooropen_seq =         
+        {
+          {
+            {{0,0,0},-30*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,0}, 
+            {{0,0,0},  0*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,0},            
+          },
+
+          {
+            {{0,0,0},0*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD}, 
+--            {{0,0,0},0*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,-30*Body.DEG_TO_RAD},            
+            {{0,0,0},0*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,-50*Body.DEG_TO_RAD},                        
+          },
+        }
+      if arm_planner:plan_open_door_sequence(dooropen_seq) then stage = "dooropen2"  end
+    end
+  elseif stage=="dooropen2" then --Move the arm forward using IK now     
+    if arm_planner:play_arm_sequence(t) then 
+        local dooropen_seq =         
+        {
+          {
+            {{0,0,0},0*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,-50*Body.DEG_TO_RAD},                                  
+            {{0,0,0},0*Body.DEG_TO_RAD,40*Body.DEG_TO_RAD,-60*Body.DEG_TO_RAD}, 
+          },
+        }
+      if arm_planner:plan_open_door_sequence(dooropen_seq) then stage = "dooropen3"  end
+    end
+  elseif stage=="dooropen3" then --Move the arm forward using IK now     
+    if arm_planner:play_arm_sequence(t) then 
+    end
   end
- 
 end
 
 function state.exit()  

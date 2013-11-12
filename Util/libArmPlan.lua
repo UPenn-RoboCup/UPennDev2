@@ -43,7 +43,7 @@ local function calculate_margin(qArm,isLeft)
   return jointangle_margin
 end
 
-local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag)
+local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, waistYaw)
   local step = 1
   local margins={} 
   local max_margin = -math.huge
@@ -51,8 +51,10 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag)
   for div = -1,1,step do
     local qShoulderYaw = qArm[3] + div * yawMag
     local qArmNext
-    if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, qShoulderYaw)
-    else qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qShoulderYaw) 
+    if isLeft>0 then qArmNext = Body.get_inverse_larm(
+      qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)
+    else qArmNext = Body.get_inverse_rarm(
+      qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), waistYaw) 
     end
     local margin = self.calculate_margin(qArmNext,isLeft)
     if margin>max_margin then
@@ -108,7 +110,7 @@ local function get_torso_compensation(self,qLArm,qRArm,massL,massR)
   end
 end
 
-local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step)
+local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, waistYaw)
 
   local velTorsoComp = {0.005,0.005} --5mm per sec
   local velYaw = 10*math.pi/180
@@ -118,8 +120,9 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step)
 
   local yawMag = dt_step * velYaw
 
-  local qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag)
-  local qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag)
+  local qLArmNext, qRArmNext = qLArm, qRArm
+  if self.locked[1]==0 then qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, {waistYaw,0}) end
+  if self.locked[2]==0 then qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, {waistYaw,0}) end
 
   if not qLArmNext or not qRArmNext then
     print("ARM PLANNING ERROR")
@@ -190,6 +193,8 @@ local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)
       qLArmQueue[qArmCount] = {new_cond[3],dt_step_current}
       qRArmQueue[qArmCount] = {new_cond[4],dt_step_current}
       uTorsoCompQueue[qArmCount] = {new_cond[5][1],new_cond[5][2]}
+
+      
     end
     current_cond = new_cond
     qArmCount = qArmCount + 1
@@ -208,7 +213,7 @@ end
 
 local function plan_opendoor(self, init_cond, doorparam0, doorparam1)  
   if not init_cond then return end
-  local done1, done2, done3, failed = false, false, false
+  local done1, done2, done3, done4, failed = false, false, false, false, false
   local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]}}
   local trLArm, trRArm = Body.get_forward_larm(init_cond[1]), Body.get_forward_rarm(init_cond[2])
   
@@ -216,6 +221,7 @@ local function plan_opendoor(self, init_cond, doorparam0, doorparam1)
   local dt_step0 = 0.5
   local dt_step = 0.5
   local qLArmQueue,qRArmQueue, uTorsoCompQueue = {{init_cond[3],dt_step0}}, {{init_cond[4],dt_step0}}, {init_cond[5]}
+  local qWaistQueue={init_cond[6] or Body.get_waist_command_position()[1]}
   local qArmCount = 2
 
   local dpArmMax = Config.arm.linear_slow_limit  
@@ -225,29 +231,28 @@ local function plan_opendoor(self, init_cond, doorparam0, doorparam1)
   local dpDoorMax = vector.slice(Config.arm.linear_slow_limit,1,3)
   local dqDoorRollMax = 5*Body.DEG_TO_RAD
   local dqDoorYawMax = 2*Body.DEG_TO_RAD
+  local dqWaistYawMax = 2*Body.DEG_TO_RAD
 
 
   local t0 = unix.time()  
-  while not (done1 and done2 and done3 and torsoCompDone) and not failed do
---[[
-    print("p1:",unpack(doorparam[1]),"/",unpack(doorparam1[1]) )
-    print("p2:",doorparam[2],doorparam1[2])
-    print("p3:",doorparam[3],doorparam1[3])
-local trRArmCurrent = Body.get_forward_rarm(current_cond[2])
-local trRArmCompCurrent = Body.get_forward_rarm(current_cond[4])
-print("trRArm:",self.print_transform(trRArmCurrent))
-print("trRArmComp:",self.print_transform(trRArmCompCurrent))
---]]
+  while not (done1 and done2 and done3 and done4 and torsoCompDone) and not failed do
     doorparam[1], done1 = util.approachTol(doorparam[1],doorparam1[1], dpDoorMax,dt_step)
     doorparam[2], done2 = util.approachTol(doorparam[2],doorparam1[2], dqDoorRollMax,dt_step)
     doorparam[3], done3 = util.approachTol(doorparam[3],doorparam1[3], dqDoorYawMax,dt_step)
 
+    if doorparam[4] then
+      doorparam[4], done4 = util.approachTol(doorparam[4],doorparam1[4], dqWaistYawMax,dt_step)
+    else
+      done4 = true
+    end
+
     local trLArmNext = trLArm
     local trRArmNext = movearm.getDoorHandlePosition(doorparam[1],doorparam[2],doorparam[3])  
---print("TR:",self.print_transform(trRArmNext))
+    local waistNext = doorparam[4] or Body.get_waist_command_position()[1]
+
     local new_cond, dt_step_current
     new_cond, dt_step_current, torsoCompDone = 
-      self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step)
+      self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step, waistNext)
     if not new_cond then 
       print("FAIL")
       failed = true       
@@ -255,6 +260,7 @@ print("trRArmComp:",self.print_transform(trRArmCompCurrent))
       qLArmQueue[qArmCount] = {new_cond[3],dt_step_current}
       qRArmQueue[qArmCount] = {new_cond[4],dt_step_current}
       uTorsoCompQueue[qArmCount] = {new_cond[5][1],new_cond[5][2]}
+      qWaistQueue[qArmCount] = waistNext 
     end
     current_cond = new_cond
     qArmCount = qArmCount + 1
@@ -267,7 +273,7 @@ print("trRArmComp:",self.print_transform(trRArmCompCurrent))
     print("Arm angle:",unpack(vector.new(qArm)*180/math.pi))
     return
   else      
-    return qLArmQueue,qRArmQueue, uTorsoCompQueue, current_cond
+    return qLArmQueue,qRArmQueue, uTorsoCompQueue, current_cond, qWaistQueue
   end
 end
 
@@ -275,16 +281,17 @@ end
 
 local function plan_open_door_sequence(self,doorparam)
   local init_cond = self:load_boundary_condition()
-  local LAPs, RAPs, uTPs = {},{},{}
+  local LAPs, RAPs, uTPs, WPs = {},{},{},{}
   local counter = 1
-
+--TODO: include waist position to initial/end conditions
   for i=1,#doorparam do
-    local LAP, RAP, uTP, end_cond  = self:plan_opendoor(
+    local LAP, RAP, uTP, end_cond, WP  = self:plan_opendoor(
       init_cond,doorparam[i][1],doorparam[i][2])
     if not LAP then return end
     init_cond = end_cond
     for j=1,#LAP do
-      LAPs[counter],RAPs[counter],uTPs[counter]= LAP[j],RAP[j],uTP[j]
+      LAPs[counter],RAPs[counter],uTPs[counter],WPs[counter]= 
+        LAP[j],RAP[j],uTP[j],WP[j]
       counter = counter+1
     end
   end
@@ -293,7 +300,7 @@ local function plan_open_door_sequence(self,doorparam)
     print("Arm plan success")
 --  for i=1,#RAPs do print(i,":",self.print_jangle(RAPs[i][1] )) end
     self:save_boundary_condition(init_cond)
-    local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs}
+    local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs, WP=WPs}
     self:init_arm_sequence(arm_plan,Body.get_time())
     return true
   else --failure
@@ -336,6 +343,7 @@ local function init_arm_sequence(self,arm_plan,t0)
   self.leftArmQueue = arm_plan.LAP
   self.rightArmQueue = arm_plan.RAP
   self.torsoCompQueue = arm_plan.uTP
+  
 
   self.t_last = t0
   self.armQueuePlayStartTime = t0
@@ -347,6 +355,15 @@ local function init_arm_sequence(self,arm_plan,t0)
   self.qRArmEnd = self.rightArmQueue[1][1]
   self.uTorsoCompStart=vector.new(self.torsoCompQueue[1])
   self.uTorsoCompEnd=vector.new(self.torsoCompQueue[1])
+
+  if arm_plan.WP then
+    self.waistQueue = arm_plan.WP
+    self.waistStart = self.waistQueue[1]
+    self.waistEnd = self.waistQueue[1]
+  else
+    self.waistQueue = nil
+  end
+
   self.armQueuePlaybackCount = 1
 
   self:print_segment_info() 
@@ -392,11 +409,16 @@ local function play_arm_sequence(self,t)
       self.uTorsoCompStart = vector.new(self.torsoCompQueue[self.armQueuePlaybackCount-1])
       self.uTorsoCompEnd = vector.new(self.torsoCompQueue[self.armQueuePlaybackCount])
 
+      if self.waistQueue then
+        self.waistStart = self.waistQueue[self.armQueuePlaybackCount-1]
+        self.waistEnd = self.waistQueue[self.armQueuePlaybackCount]
+      end
+
       self:print_segment_info()      
     end
     local ph = (t-self.armQueuePlayStartTime)/ 
               (self.armQueuePlayEndTime-self.armQueuePlayStartTime)
-    local qLArm,qRArm={},{}
+    local qLArm,qRArm,qWaist={},{}
     for i=1,7 do
       qLArm[i] = self.qLArmStart[i] + ph * (util.mod_angle(self.qLArmEnd[i]-self.qLArmStart[i]))
       qRArm[i] = self.qRArmStart[i] + ph * (util.mod_angle(self.qRArmEnd[i]-self.qRArmStart[i]))
@@ -404,7 +426,12 @@ local function play_arm_sequence(self,t)
     local uTorsoComp = (1-ph)*self.uTorsoCompStart + ph*self.uTorsoCompEnd
 
     movearm.setArmJoints(qLArm,qRArm,dt)
+    
     mcm.set_stance_uTorsoComp(uTorsoComp)    
+    if self.waistQueue then
+      qWaist = self.waistStart + ph * (self.waistEnd - self.waistStart)
+      Body.set_waist_command_position({qWaist,0})
+    end
   end
   return false
 end
@@ -439,11 +466,16 @@ libArmPlan.new_planner = function (params)
   s.armQueuePlayStartTime = 0
   s.mLeftHand = 0
   s.mRightHand = 0
+  s.locked = {0,0}
+
   s.torsoCompBias = {0,0}
+
+
 
   s.leftArmQueue={}
   s.rightArmQueue={}
   s.torsoCompQueue={}
+  s.waistQueue={}
 
   s.init_cond = {}
   s.current_plan = {}

@@ -28,6 +28,8 @@ local armChangetoPose2 = require'armChangetoPose2'
 -- Direct teleop override
 local armTeleop = require'armTeleop'
 
+local armIKTest = require'armIKTest'
+
 local armRocky = require'armRocky'
 
 -- Wheel specific states
@@ -94,6 +96,7 @@ sm:add_state(armRocky)
 
 sm:add_state(armSupportDoor)
 
+sm:add_state(armIKTest)
 ----------
 -- Event types
 ----------
@@ -110,7 +113,12 @@ sm:set_transition(armChangetoPose1, 'done', armPose1)
 sm:set_transition(armChangetoPose2, 'done', armPose2)
 
 --sm:set_transition(armPose1, 'ready', armChangetoPose2)
-sm:set_transition(armPose1, 'teleop', armTeleop)
+--sm:set_transition(armPose1, 'teleop', armTeleop)
+sm:set_transition(armPose1, 'teleop', armIKTest)
+
+
+
+
 sm:set_transition(armPose1, 'rocky', armRocky)
 sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
 sm:set_transition(armPose1, 'toolgrab', armToolGrip)

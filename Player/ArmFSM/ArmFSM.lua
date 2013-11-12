@@ -147,7 +147,7 @@ sm:set_transition(armPose2, 'debrisgrab', armDebrisGrip)
 
 --sm:set_transition(armWheelGrip, 'done', armWheelTurn)
 sm:set_transition(armWheelGrip, 'done', armWheelTurnValve)
-sm:set_transition(armWheelGrip, 'reset', armChangetoPose2)
+sm:set_transition(armWheelGrip, 'reset', armChangetoPose1)
 sm:set_transition(armWheelTurn, 'reset', armWheelRelease)
 
 

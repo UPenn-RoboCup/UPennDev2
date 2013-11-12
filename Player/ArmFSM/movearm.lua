@@ -406,7 +406,7 @@ function movearm.getDoorHandlePosition(
 
   local rhand_rpy0 = {-90*Body.DEG_TO_RAD,0,0}
 
-  local rhand_rpy0 = {-90*Body.DEG_TO_RAD,-10*Body.DEG_TO_RAD,0}
+  local rhand_rpy0 = {-90*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD,0}
 
 
   local hand_rpy = rhand_rpy0
@@ -433,6 +433,11 @@ function movearm.getDoorHandlePosition(
 --]]
 --This one has zero hand yaw
 
+  local hand_yaw = door_yaw
+  if door_yaw>10*Body.DEG_TO_RAD then
+    hand_yaw = door_yaw-(door_yaw-10*Body.DEG_TO_RAD)*2.5 
+  end
+
   local trHandle = T.eye()
     * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])    
     * T.rotZ(door_yaw)
@@ -441,15 +446,13 @@ function movearm.getDoorHandlePosition(
     * T.trans(0,-knob_offset_y, 0) 
 
     * T.rotX(-knob_roll)
-    * T.rotZ(-door_yaw)
+--    * T.rotZ(-door_yaw)
+    * T.rotZ(hand_yaw-door_yaw)
     * T.rotX(knob_roll)
 
     * T.transform6D(
       {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
-    * T.trans(
-        -right_hook_offset[1],
-        -right_hook_offset[2],
-        -right_hook_offset[3])
+    
 --
 
   local trTarget = T.position6D(trHandle)

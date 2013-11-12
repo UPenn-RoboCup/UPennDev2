@@ -11,14 +11,16 @@ local udp        = require'udp'
 local mp         = require'msgpack'
 local unix       = require'unix'
 local util       = require'util'
+require'vcm'
 -- Track the cameras
 local wait_channels = {}
 local cameras = {}
 
 -- Use wired
 local operator = Config.net.operator.wired
+local logging = false
 
-local function setup_camera(cam,name,net)
+local function setup_camera(cam,name,udp_port,tcp_port)
   -- Get the config values
   local dev     = cam.device
   local fps     = cam.fps
@@ -38,7 +40,9 @@ local function setup_camera(cam,name,net)
   -- Open the local channel for logging
   local cam_pub_ch = simple_ipc.new_publisher(meta.name)
   -- Open the unreliable network channel
-  local camera_udp_ch = udp.new_sender(operator, net)
+  local camera_udp_ch = udp.new_sender(operator, udp_port)
+  -- Open the reliable network channel
+  local camera_tcp_ch = simple_ipc.new_publisher(tcp_port,false,'*')
   
   -- Export
   local camera = {}
@@ -46,6 +50,7 @@ local function setup_camera(cam,name,net)
   camera.dev  = dev
   camera.pub  = cam_pub_ch
   camera.udp  = camera_udp_ch
+  camera.tcp  = camera_tcp_ch
   camera.quality = cam.quality
   camera.format = format
   return camera
@@ -57,24 +62,34 @@ for name,cam in pairs(Config.camera) do
   -- Debug
   print(util.color('Setting up','green'),name)
 
-  local net = Config.net.camera[name]
+  local udp_net = Config.net.camera[name]
+  local tcp_net = Config.net.reliable_camera[name]
   -- Open the camera
-  local camera = setup_camera(cam,name,net)
+  local camera = setup_camera(cam,name,udp_net,tcp_net)
   -- Create the camera callback function
   local camera_poll = {}
   camera_poll.socket_handle = camera.dev:descriptor()
   camera_poll.ts = unix.time()
   camera_poll.count = 0
   camera_poll.callback = function()
+    -- Grab the net settings to see if we should actually send this frame
+    local net_settings = vcm.get_head_camera_net()
+    local stream, method, quality = unpack(net_settings)
+    camera.quality = quality
     local img, head_img_sz = camera.dev:get_image()
-    -- Compress the image
+
+    -- No streaming, so no computation
+    if stream==0 and not logging then return end
+    
+    -- Compress the image (ignore the 'method' for now - just jpeg)
     local c_img
     if camera.format=='yuyv' then
+      -- yuyv
       jpeg.set_quality( camera.quality )
       c_img = jpeg.compress_yuyv(img,camera.meta.width,camera.meta.height)
     else
+      -- mjpeg
       c_img = tostring(carray.char(img,head_img_sz))
-      print('c_img',camera.meta.name,camera.format,#c_img)
     end
 
     -- Update the metadata
@@ -83,12 +98,29 @@ for name,cam in pairs(Config.camera) do
     camera.meta.count = camera.meta.count + 1
     camera.meta.sz = #c_img
     local metapack = mp.pack(camera.meta)
+    
+    -- Send for logger
+    if logging then camera.pub:send( {metapack, c_img} ) end
+    
+    -- If no network streaming, then return
+    if stream==0 then return end
 
-    -- Send over UDP
-    local udp_ret, err = camera.udp:send( metapack..c_img )
-    if err then print(camera.meta.name,'udp error',err) end
-    -- Send to the local channel for logging
-    camera.pub:send( {metapack, c_img} )
+    -- Send over the network
+    if stream==1 or stream==2 then
+      -- Send over UDP
+      local udp_ret, err = camera.udp:send( metapack..c_img )
+      if err then print(camera.meta.name,'udp error',err) end
+    elseif stream==3 or stream==4 then
+      -- Send over TCP
+      local ret = camera.tcp:send{metapack,c_img}
+    end
+    
+    -- Turn off single frame
+    if stream==1 or stream==3 then
+      net_settings[1] = 0
+      vcm['set_'..camera.meta.name..'_net'](net_settings)
+    end
+    
   end
 
   -- Debug
@@ -122,12 +154,11 @@ local channel_timeout = 1e3 --ms, means 1 sec timeout = 1e3
 local t_debug = unix.time()
 local DEBUG_INTERVAL = 1
 
+-- Begin to poll
 while true do
   local npoll = channel_poll:poll(channel_timeout)
   local t = unix.time()
+  -- Debug messages if desired
   local t_diff = t-t_debug
-  if t_diff>DEBUG_INTERVAL then
-    t_debug = t
-    --print'debug...'
-  end
+  if t_diff>DEBUG_INTERVAL then t_debug = t end
 end

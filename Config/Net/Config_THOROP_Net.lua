@@ -49,11 +49,14 @@ Config.net.unreliable_rpc = 55556
 --
 Config.net.team           = 44444
 Config.net.state          = 44445
--- TODO: Need reliable camera
+--
 Config.net.camera = {}
 Config.net.camera.head    = 33333
-Config.net.camera.lwrist  = 33334
-Config.net.camera.rwrist  = 33335
+Config.net.camera.lwrist  = 33335
+--
+Config.net.reliable_camera = {}
+Config.net.reliable_camera.head    = 33334
+Config.net.reliable_camera.lwrist  = 33336
 --
 Config.net.mesh           = 33344
 Config.net.reliable_mesh  = 33345

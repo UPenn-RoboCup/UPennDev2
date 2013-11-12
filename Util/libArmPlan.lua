@@ -180,7 +180,7 @@ local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)
   local torsoCompDone = false
 
   local t0 = unix.time()  
-  while (not doneL or not doneR) and not failed and not torsoCompDone do        
+  while not (doneL and doneR and torsoCompDone) and not failed  do        
     trLArmNext, doneL = self.get_next_transform(trLArm,trLArm1,dpArmMax,dt_step)
     trRArmNext, doneR = self.get_next_transform(trRArm,trRArm1,dpArmMax,dt_step)
     local new_cond, dt_step_current
@@ -192,9 +192,7 @@ local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)
     else
       qLArmQueue[qArmCount] = {new_cond[3],dt_step_current}
       qRArmQueue[qArmCount] = {new_cond[4],dt_step_current}
-      uTorsoCompQueue[qArmCount] = {new_cond[5][1],new_cond[5][2]}
-
-      
+      uTorsoCompQueue[qArmCount] = {new_cond[5][1],new_cond[5][2]}      
     end
     current_cond = new_cond
     qArmCount = qArmCount + 1
@@ -211,12 +209,12 @@ local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)
   end
 end
 
-local function plan_opendoor(self, init_cond, doorparam0, doorparam1)  
+local function plan_opendoor(self, init_cond, init_doorparam, doorparam)  
   if not init_cond then return end
   local done1, done2, done3, done4, failed = false, false, false, false, false
   local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]}}
   local trLArm, trRArm = Body.get_forward_larm(init_cond[1]), Body.get_forward_rarm(init_cond[2])
-  
+ 
   --Insert initial arm joint angle to the queue
   local dt_step0 = 0.5
   local dt_step = 0.5
@@ -225,36 +223,38 @@ local function plan_opendoor(self, init_cond, doorparam0, doorparam1)
   local qArmCount = 2
 
   local dpArmMax = Config.arm.linear_slow_limit  
-  local torsoCompDone = false
-  local doorparam = doorparam0
+  local torsoCompDone = false  
 
   local dpDoorMax = vector.slice(Config.arm.linear_slow_limit,1,3)
   local dqDoorRollMax = 5*Body.DEG_TO_RAD
   local dqDoorYawMax = 2*Body.DEG_TO_RAD
-  local dqWaistYawMax = 2*Body.DEG_TO_RAD
-
+  local dqWaistYawMax = 3*Body.DEG_TO_RAD
 
   local t0 = unix.time()  
-  while not (done1 and done2 and done3 and done4 and torsoCompDone) and not failed do
-    doorparam[1], done1 = util.approachTol(doorparam[1],doorparam1[1], dpDoorMax,dt_step)
-    doorparam[2], done2 = util.approachTol(doorparam[2],doorparam1[2], dqDoorRollMax,dt_step)
-    doorparam[3], done3 = util.approachTol(doorparam[3],doorparam1[3], dqDoorYawMax,dt_step)
 
-    if doorparam[4] then
-      doorparam[4], done4 = util.approachTol(doorparam[4],doorparam1[4], dqWaistYawMax,dt_step)
-    else
-      done4 = true
-    end
+  doorparam[4] = doorparam[4] or init_doorparam[4]
+  
+  local current_doorparam={
+    {init_doorparam[1][1],init_doorparam[1][2],init_doorparam[1][3]},
+    init_doorparam[2],init_doorparam[3],init_doorparam[4]
+  }
+
+  while not (done1 and done2 and done3 and done4 and torsoCompDone) and not failed do
+    current_doorparam[1], done1 = util.approachTol(current_doorparam[1],doorparam[1], dpDoorMax,dt_step)
+    current_doorparam[2], done2 = util.approachTol(current_doorparam[2],doorparam[2], dqDoorRollMax,dt_step)
+    current_doorparam[3], done3 = util.approachTol(current_doorparam[3],doorparam[3], dqDoorYawMax,dt_step)
+    current_doorparam[4], done4 = util.approachTol(current_doorparam[4],doorparam[4], dqWaistYawMax,dt_step)
+    waistNext = current_doorparam[4]
+    
 
     local trLArmNext = trLArm
-    local trRArmNext = movearm.getDoorHandlePosition(doorparam[1],doorparam[2],doorparam[3])  
-    local waistNext = doorparam[4] or Body.get_waist_command_position()[1]
-
+    local trRArmNext = movearm.getDoorHandlePosition(current_doorparam[1],current_doorparam[2],current_doorparam[3])
+    
     local new_cond, dt_step_current
     new_cond, dt_step_current, torsoCompDone = 
       self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step, waistNext)
     if not new_cond then 
-      print("FAIL")
+      print("FAIL at:",doorparam[3]*180/math.pi)
       failed = true       
     else
       qLArmQueue[qArmCount] = {new_cond[3],dt_step_current}
@@ -273,7 +273,7 @@ local function plan_opendoor(self, init_cond, doorparam0, doorparam1)
     print("Arm angle:",unpack(vector.new(qArm)*180/math.pi))
     return
   else      
-    return qLArmQueue,qRArmQueue, uTorsoCompQueue, current_cond, qWaistQueue
+    return qLArmQueue,qRArmQueue, uTorsoCompQueue, qWaistQueue, current_cond, current_doorparam
   end
 end
 
@@ -283,12 +283,13 @@ local function plan_open_door_sequence(self,doorparam)
   local init_cond = self:load_boundary_condition()
   local LAPs, RAPs, uTPs, WPs = {},{},{},{}
   local counter = 1
---TODO: include waist position to initial/end conditions
+
   for i=1,#doorparam do
-    local LAP, RAP, uTP, end_cond, WP  = self:plan_opendoor(
-      init_cond,doorparam[i][1],doorparam[i][2])
+    local LAP, RAP, uTP, WP, end_cond, end_doorparam  = self:plan_opendoor(
+      init_cond, self.init_doorparam, doorparam[i])
     if not LAP then return end
     init_cond = end_cond
+    self.init_doorparam = end_doorparam
     for j=1,#LAP do
       LAPs[counter],RAPs[counter],uTPs[counter],WPs[counter]= 
         LAP[j],RAP[j],uTP[j],WP[j]
@@ -312,7 +313,9 @@ end
 local function plan_arm_sequence(self,arm_seq)
   --This function plans for a arm sequence using multiple arm target positions
   --and initializes the playback if it is possible
-  self.mLeftHand,self.mRightHand = arm_seq.mass[1], arm_seq.mass[2]
+  if arm_seq.mass then 
+    self.mLeftHand,self.mRightHand = arm_seq.mass[1], arm_seq.mass[2]
+  end
   local init_cond = self:load_boundary_condition()
   local LAPs, RAPs, uTPs = {},{},{}
   local counter = 1
@@ -453,6 +456,9 @@ local function load_boundary_condition(self)
   return init_cond
 end
 
+local function save_doorparam(self,doorparam)
+  self.init_doorparam=doorparam
+end
 
 local libArmPlan={}
 
@@ -481,6 +487,8 @@ libArmPlan.new_planner = function (params)
   s.current_plan = {}
   s.current_endcond = {}
 
+  s.init_doorparam = {}
+
   --member functions
   s.print_transform = print_transform
   s.print_jangle = print_jangle
@@ -505,6 +513,8 @@ libArmPlan.new_planner = function (params)
 
   s.save_boundary_condition=save_boundary_condition
   s.load_boundary_condition=load_boundary_condition
+
+  s.save_doorparam = save_doorparam
 
   return s
 end

@@ -17,6 +17,17 @@ shared_data.state={}
 shared_data.state.proceed = vector.zeros(0)
 
 
+--This variable is used for target transform based tele-op and fine tuning
+shared_data.hands={}
+
+--This variable should contain CURRENT hand transforms
+shared_data.hands.left_tr = vector.zeros(6)
+shared_data.hands.right_tr = vector.zeros(6)
+
+--This variable should contain TARGET hand transforms
+shared_data.hands.left_tr_target = vector.zeros(6)
+shared_data.hands.right_tr_target = vector.zeros(6)
+
 
 -- Desired joint properties
 shared_data.joints = {}

@@ -11,6 +11,7 @@ local udp        = require'udp'
 local mp         = require'msgpack'
 local unix       = require'unix'
 local util       = require'util'
+require'vcm'
 -- Track the cameras
 local wait_channels = {}
 local cameras = {}
@@ -73,7 +74,8 @@ for name,cam in pairs(Config.camera) do
   camera_poll.callback = function()
     -- Grab the net settings to see if we should actually send this frame
     local net_settings = vcm.get_head_camera_net()
-    local stream, method, camera.quality = unpack(net_settings)
+    local stream, method, quality = unpack(net_settings)
+    camera.quality = quality
 
     -- No streaming, so no computation
     if stream==0 and not logging then return end
@@ -110,7 +112,7 @@ for name,cam in pairs(Config.camera) do
       if err then print(camera.meta.name,'udp error',err) end
     elseif stream==3 or stream==4 then
       -- Send over TCP
-      local ret = mesh_tcp_ch:send{metapack,c_img}
+      local ret = camera.tcp:send{metapack,c_img}
     end
     
     -- Turn off single frame

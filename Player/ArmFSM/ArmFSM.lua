@@ -110,6 +110,7 @@ sm:set_transition(armChangetoPose1, 'done', armPose1)
 sm:set_transition(armChangetoPose2, 'done', armPose2)
 
 --sm:set_transition(armPose1, 'ready', armChangetoPose2)
+sm:set_transition(armPose1, 'teleop', armTeleop)
 sm:set_transition(armPose1, 'rocky', armRocky)
 sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
 sm:set_transition(armPose1, 'toolgrab', armToolGrip)

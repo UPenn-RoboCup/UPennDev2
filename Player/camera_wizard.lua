@@ -76,7 +76,7 @@ for name,cam in pairs(Config.camera) do
     local stream, method, camera.quality = unpack(net_settings)
 
     -- No streaming, so no computation
-    if stream==0 then return end
+    if stream==0 and not logging then return end
     
     local img, head_img_sz = camera.dev:get_image()
     -- Compress the image (ignore the 'method' for now - just jpeg)
@@ -96,6 +96,12 @@ for name,cam in pairs(Config.camera) do
     camera.meta.count = camera.meta.count + 1
     camera.meta.sz = #c_img
     local metapack = mp.pack(camera.meta)
+    
+    -- Send for logger
+    if logging then camera.pub:send( {metapack, c_img} ) end
+    
+    -- If no network streaming, then return
+    if stream==0 then return end
 
     -- Send over the network
     if stream==1 or stream==2 then
@@ -106,9 +112,6 @@ for name,cam in pairs(Config.camera) do
       -- Send over TCP
       local ret = mesh_tcp_ch:send{metapack,c_img}
     end
-    
-    -- Send for logger
-    if logging then camera.pub:send( {metapack, c_img} ) end
     
     -- Turn off single frame
     if stream==1 or stream==3 then

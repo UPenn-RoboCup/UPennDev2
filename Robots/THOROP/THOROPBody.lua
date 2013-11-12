@@ -75,7 +75,7 @@ local jointNames = {
 	"ShoulderR", "ArmUpperR", "RightShoulderYaw","ArmLowerR",
 	"RightWristYaw","RightWristRoll","RightWristYaw2",
 	-- Waist
-	"TorsoPitch","TorsoYaw",
+	"TorsoYaw","TorsoPitch",
 	-- Gripper
 	"l_wrist_grip1","l_wrist_grip2","l_wrist_grip3",
 	"r_wrist_grip1","r_wrist_grip2","r_wrist_grip3",
@@ -1168,7 +1168,7 @@ if IS_WEBOTS then
 --    -1,-1,-1,-1,-1,1,-1, --RArm
       -1,-1,-1,-1,-1,-1,-1, --RArm    
     -- TODO: Check the gripper
-    1,1, -- Waist
+    -1,1, -- Waist
 
     -1,-1,-1, -- left gripper    
 --    -1,1,1, -- right gripper

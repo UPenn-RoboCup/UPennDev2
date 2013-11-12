@@ -18,6 +18,10 @@ local qLArmInit0,qRArmInit0,qLArmInit1,qRArmInit1
 
 local trLArmCurrent, trRArmCurrent
 
+local trLArmRelease = {0,0,0,   90*Body.DEG_TO_RAD,0,0}
+local trRArmRelease = {0,0,0,   -90*Body.DEG_TO_RAD,65*Body.DEG_TO_RAD,0}
+--local trRArmRelease = {0,0,0,   0*Body.DEG_TO_RAD,65*Body.DEG_TO_RAD,0}
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -29,18 +33,24 @@ function state.entry()
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
+  arm_planner:reset_torso_comp(qLArm, qRArm)
+  arm_planner:save_boundary_condition({qLArm, qRArm, qLArm, qRArm, {0,0}})  
 
-  --First init jangles (wrist roll straight)
   qLArm0 = qLArm
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
-  qRArm0[6] = 0,0
+  trLArm0 = Body.get_forward_larm(qLArm0)
+  trRArm0 = Body.get_forward_rarm(qRArm0)  
 
-  --Second init angles (bent wrist roll)
-  qLArm1 = qLArm
-  qRArm1 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
+  
+  local wrist_seq = { armseq={ {trLArm0,trRArm0}} }
+  if arm_planner:plan_wrist_sequence(wrist_seq) then
+    stage = "wristyawturn"    
+  end
 
-  trLArm1 = Body.get_forward_larm(qLArm1)
-  trRArm1 = Body.get_forward_rarm(qRArm1)  
+
+--  arm_planner:reset_torso_comp(qLArm1, qRArm1)
+--  arm_planner:save_boundary_condition({qLArm1, qRArm1, qLArm1, qRArm1, {0,0}})
+
 
 --The door we have: hinge height 93.98
 --door r: 86.36
@@ -59,10 +69,7 @@ function state.entry()
     grip_offset_x,
     knob_offset_y})
   hcm.set_door_yaw(0)
-
-  arm_planner:reset_torso_comp(qLArm1, qRArm1)
-  arm_planner:save_boundary_condition({qLArm1, qRArm1, qLArm1, qRArm1, {0,0}})
-  stage = "wristyawturn";  
+  
 end
 
 
@@ -80,24 +87,19 @@ function state.update()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
-
   if stage=="wristyawturn" then --Turn yaw angles first
-    if movearm.setArmJoints(qLArm0,qRArm0,dt, Config.arm.joint_init_limit) ==1 then 
-      stage = "wristrollturn"
-    end
-  elseif stage=="wristrollturn" then       
-    if movearm.setArmJoints(qLArm1,qRArm1,dt, Config.arm.joint_init_limit) ==1 then
+    if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then
         local trRArmTarget1 = movearm.getDoorHandlePosition(handle_clearance, 0, door_yaw, rhand_rpy0)
-        local arm_seq = {armseq={{trLArm1, trRArmTarget1}} }
+        local arm_seq = {armseq={{trLArm0, trRArmTarget1}} }
         if arm_planner:plan_arm_sequence(arm_seq) then stage = "placehook"  end
       end
-    end    
+    end  
   elseif stage=="placehook" then --Move the arm forward using IK now       
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then --Put the hook on
         local trRArmTarget2 = movearm.getDoorHandlePosition({0,0,0}, 0, door_yaw, rhand_rpy0)
-        local arm_seq = {armseq={{trLArm1, trRArmTarget2}} }
+        local arm_seq = {armseq={{trLArm0, trRArmTarget2}} }
         if arm_planner:plan_arm_sequence(arm_seq) then stage = "hookknob"  end
       end
     end
@@ -112,7 +114,7 @@ function state.update()
         if arm_planner:plan_open_door_sequence(dooropen_seq) then stage = "opendoor"  end
       elseif hcm.get_state_proceed()==-1 then --Lower the hook
         local trRArmTarget2 = movearm.getDoorHandlePosition(handle_clearance, 0, door_yaw, rhand_rpy0)
-        local arm_seq = {armseq={{trLArm1, trRArmTarget2}} }
+        local arm_seq = {armseq={{trLArm0, trRArmTarget2}} }
         if arm_planner:plan_arm_sequence(arm_seq) then stage = "placehook"  end
       end
     end
@@ -125,16 +127,37 @@ function state.update()
         if arm_planner:plan_open_door_sequence(dooropen_seq) then stage = "opendoor2"  end  
       end
     end
-  elseif stage=="opendoor2" then --Move the arm forward using IK now     
+  elseif stage=="opendoor2" then 
     if arm_planner:play_arm_sequence(t) then 
-      local trRArmTarget1 = movearm.getDoorHandlePosition(
-          {0,0,-0.10}, 0, 30*Body.DEG_TO_RAD, rhand_rpy0)      
-      local arm_seq = {armseq={{trLArm1, trRArmTarget1}} }
-      if arm_planner:plan_arm_sequence(arm_seq) then stage = "hookrelease"  end
+      if hcm.get_state_proceed()==1 then
+        local trRArmTarget1 = movearm.getDoorHandlePosition(
+            {0,0,-0.10}, 0, 30*Body.DEG_TO_RAD, rhand_rpy0)      
+        local arm_seq = {armseq={{trLArm0, trRArmTarget1}} }
+        if arm_planner:plan_arm_sequence(arm_seq) then stage = "hookrelease"  end
+      end
     end
-  elseif stage=="hookrelease" then --Move the arm forward using IK now     
+  elseif stage=="hookrelease" then 
     if arm_planner:play_arm_sequence(t) then 
-     
+      local wrist_seq = {  armseq={{trLArm0, trRArmRelease}}  }
+      if arm_planner:plan_wrist_sequence(wrist_seq) then   
+        stage = "wristreset"
+      end
+    end
+  elseif stage=="wristreset" then
+    if arm_planner:play_arm_sequence(t) then 
+      local trRArmTarget = Body.get_forward_rarm(qRArm)
+      print(unpack(trRArmTarget))
+      local arm_seq = {
+        armseq={
+          {trLArm0, trRArmTarget + vector.new({0,0.05,0, 0,0,0})},
+          {trLArm0, trRArmTarget + vector.new({0.20,0.05,0.15, 0,0,0})}
+        } 
+      }
+      if arm_planner:plan_arm_sequence(arm_seq) then stage = "armmoveback" end
+    end
+  elseif stage=="armmoveback" then
+    if arm_planner:play_arm_sequence(t) then 
+      stage="armpushdoor"
     end
   end
   hcm.set_state_proceed(0)

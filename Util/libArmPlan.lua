@@ -124,14 +124,11 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   if self.locked[1]==0 then qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, {waistYaw,0}) end
   if self.locked[2]==0 then qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, {waistYaw,0}) end
 
-  if not qLArmNext or not qRArmNext then
-    print("ARM PLANNING ERROR")
+  if not qLArmNext or not qRArmNext then print("ARM PLANNING ERROR")
     return 
   end
 
-  local trLArmnext, trRArmNext = 
-    Body.get_forward_larm(qLArmNext),Body.get_forward_rarm(qRArmNext)
-
+  local trLArmNext, trRArmNext = Body.get_forward_larm(qLArmNext),Body.get_forward_rarm(qRArmNext)
   local vec_comp = vector.new({-uTorsoComp[1],-uTorsoComp[2],0,0,0,0})
   local trLArmNextComp = vector.new(trLArmNext) + vec_comp
   local trRArmNextComp = vector.new(trRArmNext) + vec_comp
@@ -147,7 +144,7 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
     local max_movement_ratioL = check_arm_joint_velocity(qLArmComp, qLArmNextComp, dt_step)
     local max_movement_ratioR = check_arm_joint_velocity(qRArmComp, qRArmNextComp, dt_step)
     local dt_step_current = dt_step * math.max(max_movement_ratioL,max_movement_ratioR)
-
+    --TODO: WAIST 
     local uTorsoCompNextTarget = self:get_torso_compensation(qLArmNext,qRArmNext,massL,massR)
     local uTorsoCompNext, torsoCompDone = util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
 
@@ -169,7 +166,7 @@ local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)
   --SJ: stupid reference issue if we directly use the init_cond
   local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]}}
   local trLArm, trRArm = Body.get_forward_larm(init_cond[1]), Body.get_forward_rarm(init_cond[2])
-  
+
   --Insert initial arm joint angle to the queue
   local dt_step0 = 0.5
   local dt_step = 0.5
@@ -178,6 +175,7 @@ local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)
 
   local dpArmMax = Config.arm.linear_slow_limit  
   local torsoCompDone = false
+  local trLArmNext, trRArmNext
 
   local t0 = unix.time()  
   while not (doneL and doneR and torsoCompDone) and not failed  do        
@@ -208,6 +206,63 @@ local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)
     return qLArmQueue,qRArmQueue, uTorsoCompQueue, current_cond
   end
 end
+
+
+
+local function plan_double_wrist(self, init_cond, trLArm1, trRArm1)  
+--We fix the wrist position and just rotate the wrist 
+  if not init_cond then return end
+  local doneL, doneR, failed = false, false, false
+
+  --SJ: stupid reference issue if we directly use the init_cond
+  local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]}}
+  local trLArm, trRArm = Body.get_forward_larm(init_cond[1]), Body.get_forward_rarm(init_cond[2])
+  local qLArm0, qRArm0 = init_cond[1],init_cond[2]
+
+  --Insert initial arm joint angle to the queue
+  local dt_step0 = 0.5
+  local dt_step = 0.5
+  local qLArmQueue,qRArmQueue, uTorsoCompQueue = {{init_cond[3],dt_step0}}, {{init_cond[4],dt_step0}}, {init_cond[5]}
+  local qArmCount = 2
+
+--  local dpArmMax = Config.arm.linear_slow_limit  
+  local dpArmMax = {100,100,100, 15*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD}
+
+  local torsoCompDone = false
+  local trLArmNext, trRArmNext
+
+  local t0 = unix.time()  
+  while not (doneL and doneR and torsoCompDone) and not failed  do   
+    trLArmNext,doneL = util.approachTolTransform(trLArm, trLArm1, dpArmMax, dt_step )
+    trRArmNext,doneR = util.approachTolTransform(trRArm, trRArm1, dpArmMax, dt_step )
+    local qLArmTemp = Body.get_inverse_arm_given_wrist( qLArm0, trLArmNext)
+    local qRArmTemp = Body.get_inverse_arm_given_wrist( qRArm0, trRArmNext)
+    trLArmNext = Body.get_forward_larm(qLArmTemp)
+    trRArmNext = Body.get_forward_rarm(qRArmTemp)  
+
+    local new_cond, dt_step_current
+    new_cond, dt_step_current, torsoCompDone = 
+      self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step)
+    if not new_cond then failed = true       
+    else
+      qLArmQueue[qArmCount] = {new_cond[3],dt_step_current}
+      qRArmQueue[qArmCount] = {new_cond[4],dt_step_current}
+      uTorsoCompQueue[qArmCount] = {new_cond[5][1],new_cond[5][2]}      
+    end
+    current_cond = new_cond
+    qArmCount = qArmCount + 1
+  end
+  local t1 = unix.time()  
+  print(string.format("%d steps planned, %.2f ms elapsed:",qArmCount,(t1-t0)*1000 ))
+  if failed then 
+    print("Plan failure at",self.print_transform(trLArmNext))
+    print("Arm angle:",unpack(vector.new(qArm)*180/math.pi))
+    return
+  else      
+    return qLArmQueue,qRArmQueue, uTorsoCompQueue, current_cond
+  end
+end
+
 
 local function plan_opendoor(self, init_cond, init_doorparam, doorparam)  
   if not init_cond then return end
@@ -246,7 +301,6 @@ local function plan_opendoor(self, init_cond, init_doorparam, doorparam)
     current_doorparam[4], done4 = util.approachTol(current_doorparam[4],doorparam[4], dqWaistYawMax,dt_step)
     waistNext = current_doorparam[4]
     
-
     local trLArmNext = trLArm
     local trRArmNext = movearm.getDoorHandlePosition(current_doorparam[1],current_doorparam[2],current_doorparam[3])
     
@@ -276,6 +330,12 @@ local function plan_opendoor(self, init_cond, init_doorparam, doorparam)
     return qLArmQueue,qRArmQueue, uTorsoCompQueue, qWaistQueue, current_cond, current_doorparam
   end
 end
+
+
+
+
+
+
 
 
 
@@ -322,6 +382,31 @@ local function plan_arm_sequence(self,arm_seq)
 
   for i=1,#arm_seq.armseq do
     local LAP, RAP, uTP, end_cond  = self:plan_double_arm_linear(
+      init_cond,arm_seq.armseq[i][1],arm_seq.armseq[i][2])
+    if not LAP then return end
+    init_cond = end_cond
+    for j=1,#LAP do
+      LAPs[counter],RAPs[counter],uTPs[counter]= LAP[j],RAP[j],uTP[j]
+      counter = counter+1
+    end
+  end
+  if init_cond then --plan success    
+    self:save_boundary_condition(init_cond)
+    local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs}
+    self:init_arm_sequence(arm_plan,Body.get_time())
+    return true
+  else --failure
+    print("Arm plan failure!!!")
+    return
+  end
+end
+
+local function plan_wrist_sequence(self,arm_seq)
+  local init_cond = self:load_boundary_condition()
+  local LAPs, RAPs, uTPs = {},{},{}
+  local counter = 1
+  for i=1,#arm_seq.armseq do
+    local LAP, RAP, uTP, end_cond  = self:plan_double_wrist(
       init_cond,arm_seq.armseq[i][1],arm_seq.armseq[i][2])
     if not LAP then return end
     init_cond = end_cond
@@ -510,6 +595,9 @@ libArmPlan.new_planner = function (params)
 
   s.plan_open_door_sequence = plan_open_door_sequence
   s.plan_opendoor = plan_opendoor
+
+  s.plan_wrist_sequence = plan_wrist_sequence
+  s.plan_double_wrist = plan_double_wrist
 
   s.save_boundary_condition=save_boundary_condition
   s.load_boundary_condition=load_boundary_condition

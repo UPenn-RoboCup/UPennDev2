@@ -113,8 +113,8 @@ sm:set_transition(armChangetoPose1, 'done', armPose1)
 sm:set_transition(armChangetoPose2, 'done', armPose2)
 
 --sm:set_transition(armPose1, 'ready', armChangetoPose2)
---sm:set_transition(armPose1, 'teleop', armTeleop)
-sm:set_transition(armPose1, 'teleop', armIKTest)
+sm:set_transition(armPose1, 'teleop', armTeleop)
+--sm:set_transition(armPose1, 'teleop', armIKTest)
 
 
 
@@ -174,7 +174,7 @@ sm:set_transition(armDoorRelease, 'done', armChangetoPose1)
 -- TODO: This may not be the best
 -- We may wish to give ready and init
 -- TODO: make epi transitions for reset
-sm:set_transition(armTeleop, 'reset', armChangetoPose2)
+sm:set_transition(armTeleop, 'reset', armChangetoPose1)
 
 --------------------------
 -- Setup the FSM object --

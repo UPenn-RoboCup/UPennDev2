@@ -45,7 +45,12 @@ function state.entry()
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
  
   hcm.set_tool_model({0.55,0.02,0.05,  0*Body.DEG_TO_RAD}) --for webots with bodyTilt
-  --hcm.set_tool_model({0.51,0.02,0.05,  0*Body.DEG_TO_RAD}) 
+
+  
+hcm.set_tool_model({0.50,0.02,0.05,  0*Body.DEG_TO_RAD}) --for webots with bodyTilt
+
+
+--  hcm.set_tool_model({0.51,0.02,0.05,  0*Body.DEG_TO_RAD}) 
    
   --This sets torso compensation bias so that it becomes zero with initial arm configuration
   arm_planner:reset_torso_comp(qLArm0, qRArm0)
@@ -106,7 +111,8 @@ function state.update()
     Body.set_rgrip_percent(gripR*0.8)    
     if doneL then
       if hcm.get_state_proceed()==1 then        
-        local trLArmTarget3 = get_tool_tr({0,0,0.05}, lhand_rpy0)
+--        local trLArmTarget3 = get_tool_tr({0,0,0.05}, lhand_rpy0)
+        local trLArmTarget3 = get_tool_tr({0,0,0.03}, lhand_rpy0)
         local trLArmTarget4 = get_tool_tr({-0.20,0,0.05}, lhand_rpy0)
         local trLArmTarget5 = {0.20,0.0,-0.10, unpack(lhand_rpy0)}
         local arm_seq = {          

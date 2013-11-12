@@ -25,6 +25,12 @@ function state.entry()
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
+
+  arm_planner:reset_torso_comp(qLArm, qRArm)
+  arm_planner:save_boundary_condition({qLArm, qRArm, qLArm, qRArm, {0,0}})
+
+  trLArm = Body.get_forward_larm(qLArm)
+  print(unpack(vector.new(trLArm)*Body.RAD_TO_DEG))
   
   qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})  
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
@@ -36,10 +42,11 @@ function state.entry()
   hcm.set_hands_right_tr(trRArm0)
   hcm.set_hands_left_tr_target(trLArm0)
   hcm.set_hands_right_tr_target(trRArm0)
-
-  arm_planner:reset_torso_comp(qLArm0, qRArm0)
-  arm_planner:save_boundary_condition({qLArm0, qRArm0, qLArm0, qRArm0, {0,0}})
-  stage = "wristturn";  
+    
+  local wrist_seq = {  armseq={{trLArm0, trRArm0}}  }
+  if arm_planner:plan_wrist_sequence(wrist_seq) then   
+    stage = "wristturn"
+  end
 end
 
 
@@ -54,8 +61,13 @@ function state.update()
   --if t-t_entry > timeout then return'timeout' end
   
   if stage=="wristturn" then --Turn yaw angles first
+--[[    
     if movearm.setArmJoints(qLArm0,qRArm0,dt, Config.arm.joint_init_limit) ==1 then       
       stage = "teleopwait"      
+    end
+--]]
+    if arm_planner:play_arm_sequence(t) then 
+      stage="teleopwait"
     end
   elseif stage=="teleopwait" then       
     if hcm.get_state_proceed(0)==2 then --teleop signal

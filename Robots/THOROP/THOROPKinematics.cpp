@@ -974,8 +974,8 @@ THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg, d
 {
   //Calculate the wrist angle given the wrist position and the target transform 
 
-printf("qWaist: %f %f\n",qWaist[0],qWaist[1]);
-printf("bodyPitch: %f \n",bodyPitch);
+//printf("qWaist: %f %f\n",qWaist[0],qWaist[1]);
+//printf("bodyPitch: %f \n",bodyPitch);
 
   Transform trArmRot; //Only the rotation part of trArm
 

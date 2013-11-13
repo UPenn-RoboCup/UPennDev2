@@ -11,7 +11,7 @@ local arm_planner = libArmPlan.new_planner()
 local handle_clearance = vector.new({0,0,-0.05})
 local lhand_rpy0 = {90*Body.DEG_TO_RAD,0,0}
 local rhand_rpy0 = {-90*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD,0}
-local trLArm1, trRArm1
+local trLArm0, trRArm0, trLArm1, trRArm1
 local stage
 
 local rollTarget = -45*Body.DEG_TO_RAD
@@ -24,6 +24,9 @@ local trLArmCurrent, trRArmCurrent
 
 local trLArmRelease = {0,0,0,   90*Body.DEG_TO_RAD,0,0}
 local trRArmRelease = {0,0,0,   -90*Body.DEG_TO_RAD,65*Body.DEG_TO_RAD,0}
+
+local trRArmForward = {0,0,0,   -90*Body.DEG_TO_RAD,35*Body.DEG_TO_RAD,0}
+
 --local trRArmRelease = {0,0,0,   0*Body.DEG_TO_RAD,65*Body.DEG_TO_RAD,0}
 
 local debugdata
@@ -44,21 +47,22 @@ function state.entry()
   arm_planner:reset_torso_comp(qLArm, qRArm)
   arm_planner:save_boundary_condition({qLArm, qRArm, qLArm, qRArm, {0,0}})  
 
---  qLArm0 = qLArm
-  qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
-  qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
+  qLArm0 = qLArm
+  qRArm0 = qRArm
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
 
+--  qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
+  qLArm1 = qLArm
+  qRArm1 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
+  trLArm1 = Body.get_forward_larm(qLArm1)
+  trRArm1 = Body.get_forward_rarm(qRArm1)  
 
-print("XXX")
-print(unpack(vector.new(qLArm0)*180/math.pi))
-print(unpack(vector.new(qRArm0)*180/math.pi))
 
+  --arm_planner:set_shoulder_yaw_target(qLArm[3],nil) --Lock left shoulder yaw
 
-  arm_planner:set_shoulder_yaw_target(qLArm[3],nil) --Lock left shoulder yaw
-
-  local wrist_seq = { armseq={ {trLArm0,trRArm0}} }
+  arm_planner:set_shoulder_yaw_target(qLArm0[3],nil) --Lock left shoulder yaw
+  local wrist_seq = { armseq={ {trLArm1,trRArm1}} }
   if arm_planner:plan_wrist_sequence(wrist_seq) then
     stage = "wristyawturn"    
   end
@@ -105,17 +109,22 @@ function state.update()
 
   if stage=="wristyawturn" then --Turn yaw angles first
     if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed()==1 then
+      if hcm.get_state_proceed()==1 then        
+        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil) --Lock left shoulder yaw
         local trRArmTarget1 = movearm.getDoorHandlePosition(handle_clearance, 0, door_yaw, rhand_rpy0)
-        local arm_seq = {armseq={{trLArm0, trRArmTarget1}} }
+        local arm_seq = {armseq={{trLArm1, trRArmTarget1}} }
         if arm_planner:plan_arm_sequence(arm_seq) then stage = "placehook"  end
+      elseif hcm.get_state_proceed()==-1 then
+        arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
+        local wrist_seq = { armseq={ {trLArm0,trRArm0}} }
+        if arm_planner:plan_wrist_sequence(wrist_seq) then stage = "armbacktoinitpos" end   
       end
     end  
   elseif stage=="placehook" then --Move the arm forward using IK now       
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then --Put the hook on
         local trRArmTarget2 = movearm.getDoorHandlePosition({0,0,0}, 0, door_yaw, rhand_rpy0)
-        local arm_seq = {armseq={{trLArm0, trRArmTarget2}} }
+        local arm_seq = {armseq={{trLArm1, trRArmTarget2}} }
         if arm_planner:plan_arm_sequence(arm_seq) then stage = "hookknob"  end
       elseif hcm.get_state_proceed()==2 then --adjust hook position
         local trRArmCurrent = hcm.get_hands_right_tr()
@@ -128,9 +137,12 @@ function state.update()
         hcm.set_door_model(door_model)
 
         local trRArmTarget1 = movearm.getDoorHandlePosition(handle_clearance, 0, door_yaw, rhand_rpy0)
-        local arm_seq = {armseq={{trLArm0, trRArmTarget1}} }
+        local arm_seq = {armseq={{trLArm1, trRArmTarget1}} }
         if arm_planner:plan_arm_sequence(arm_seq) then stage = "placehook"  end
-
+      elseif hcm.get_state_proceed()==-1 then
+        arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])--Lock both shoulder yaw
+        local arm_seq = {armseq={{trLArm1, trRArm1}} }
+        if arm_planner:plan_arm_sequence(arm_seq) then stage = "wristyawturn" end
       end
     end
   elseif stage=="hookknob" then --Move the arm forward using IK now       
@@ -144,7 +156,7 @@ function state.update()
         if arm_planner:plan_open_door_sequence(dooropen_seq) then stage = "opendoor"  end
       elseif hcm.get_state_proceed()==-1 then --Lower the hook
         local trRArmTarget2 = movearm.getDoorHandlePosition(handle_clearance, 0, door_yaw, rhand_rpy0)
-        local arm_seq = {armseq={{trLArm0, trRArmTarget2}} }
+        local arm_seq = {armseq={{trLArm1, trRArmTarget2}} }
         if arm_planner:plan_arm_sequence(arm_seq) then stage = "placehook"  end
       end
     end
@@ -167,41 +179,52 @@ function state.update()
   elseif stage=="opendoor2" then 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then
-        local trRArmTarget1 = movearm.getDoorHandlePosition(
-            {0,0,-0.10}, 0, yawTarget, rhand_rpy0)      
-        local arm_seq = {armseq={{trLArm0, trRArmTarget1}} }
+        local trRArmTarget1 = movearm.getDoorHandlePosition({0,0,-0.10}, 0, yawTarget, rhand_rpy0)      
+        local arm_seq = {armseq={{trLArm1, trRArmTarget1}} }
         if arm_planner:plan_arm_sequence(arm_seq) then stage = "hookrelease"  end
       end
     end
   elseif stage=="hookrelease" then 
     if arm_planner:play_arm_sequence(t) then 
-      local wrist_seq = {  armseq={{trLArm0, trRArmRelease}}  }
-      if arm_planner:plan_wrist_sequence(wrist_seq) then   
-        stage = "wristreset"
-      end
+      local wrist_seq = {  armseq={{trLArm1, trRArmRelease}}  }
+      if arm_planner:plan_wrist_sequence(wrist_seq) then stage = "hookrollback"  end
     end
-  elseif stage=="wristreset" then
+  elseif stage=="hookrollback" then
     if arm_planner:play_arm_sequence(t) then 
       local trRArmTarget = Body.get_forward_rarm(qRArm)
-      print(unpack(trRArmTarget))
---      arm_planner:set_shoulder_yaw_target(-5*Body.DEG_TO_RAD, 5*Body.DET_TO_RAD) 
-      arm_planner:set_shoulder_yaw_target(-5*Body.DEG_TO_RAD, 1*Body.DEG_TO_RAD) 
       trRArmTarget[2] = -0.25;      
-
+--      print(unpack(trRArmTarget))
+      arm_planner:set_shoulder_yaw_target(-5*Body.DEG_TO_RAD, 1*Body.DEG_TO_RAD) 
       local arm_seq = {
-        armseq={
-          {trLArm0, trRArmTarget},
-          {trLArm0, trRArmTarget+ vector.new({0.30,0,0.05, 0,0,0})},
---          {trLArm0, trRArmTarget + vector.new({0.10,0,0.10, 0,0,0})}
+        armseq={ {trLArm1, trRArmTarget}, {trLArm1, trRArmTarget+ vector.new({0.15,0,0.05, 0,0,0})},
         } 
       }
-      if arm_planner:plan_arm_sequence(arm_seq) then stage = "armmoveback" end
+      if arm_planner:plan_arm_sequence(arm_seq) then stage = "armmoveside" end
     end
-  elseif stage=="armmoveback" then
+  elseif stage=="armmoveside" then
     if arm_planner:play_arm_sequence(t) then 
-      stage="armpushdoor"
+      local wrist_seq = {  armseq={{trLArm1, trRArmForward}}  }
+      if arm_planner:plan_wrist_sequence(wrist_seq) then stage = "hookforward"  end      
+    end    
+  elseif stage=="hookforward" then
+    if arm_planner:play_arm_sequence(t) then 
+      if hcm.get_state_proceed()==1 then
+        --arm_planner:set_shoulder_yaw_target(-5*Body.DEG_TO_RAD, 5*Body.DEG_TO_RAD) 
+        local trRArmTarget = Body.get_forward_rarm(qRArm)
+        local arm_seq = {
+          armseq={ {trLArm1, trRArmTarget}, {trLArm1, trRArmTarget+ vector.new({0,-0.20,0,  0,0,0})},
+          } 
+        }
+        if arm_planner:plan_arm_sequence(arm_seq) then stage = "hookside" end
+      end
     end
+  elseif stage=="hookside" then
+    if arm_planner:play_arm_sequence(t) then 
+    end
+  elseif stage=="armbacktoinitpos" then
+    if arm_planner:play_arm_sequence(t) then return "done" end
   end
+
   debugdata = debugdata..string.format("%.3f,  %.3f,%.3f,%.3f\n",
     t-t_entry,
     qRArm[5]*Body.RAD_TO_DEG,

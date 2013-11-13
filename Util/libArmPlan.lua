@@ -60,31 +60,26 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, waistYa
 
   --Calculte the margin for current shoulder yaw angle
   local qArmMaxMargin, qArmNext
+  local max_margin = -math.huge  
+
   if isLeft>0 then 
     local shoulderYawTarget = self.shoulder_yaw_target_left
     if shoulderYawTarget then
       local shoulderYaw = util.approachTol(qArm[3],shoulderYawTarget, yawMag, 1)
-      qArmNext = Body.get_inverse_larm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)
-      if qArmNext then 
-        return qArmNext 
-      end
+      local qArmNext = Body.get_inverse_larm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)      
+      if qArmNext then return qArmNext end
+      print("No solution with current shoulder angle")
     end
-    qArmNext = Body.get_inverse_larm(qArm,trArmNext, qArm[3], mcm.get_stance_bodyTilt(), waistYaw)
   else 
     local shoulderYawTarget = self.shoulder_yaw_target_right    
     if shoulderYawTarget then
       local shoulderYaw = util.approachTol(qArm[3],shoulderYawTarget, yawMag, 1)
-      qArmNext = Body.get_inverse_rarm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)
-      if qArmNext then 
-        return qArmNext 
-      end
+      local qArmNext = Body.get_inverse_rarm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)
+      if qArmNext then return qArmNext end
+      print("No solution with current shoulder angle")
     end
-    qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qArm[3], mcm.get_stance_bodyTilt(), waistYaw) 
   end
-
-  local max_margin = self.calculate_margin(qArmNext,isLeft)
-  qArmMaxMargin = qArmNext
-
+ 
   for div = -1,1,step do
     local qShoulderYaw = qArm[3] + div * yawMag
     local qArmNext
@@ -146,8 +141,8 @@ end
 
 local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, waistYaw)
 
-  local velTorsoComp = {0.005,0.005} --5mm per sec
-  local velYaw = 10*math.pi/180
+  local velTorsoComp = Config.arm.plan.velTorsoComp
+  local velYaw = Config.arm.plan.velYaw
   --local velYaw = 20*math.pi/180
 
   local massL, massR = self.mLeftHand, self.mRightHand

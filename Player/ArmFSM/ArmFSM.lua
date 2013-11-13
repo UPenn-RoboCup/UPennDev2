@@ -169,6 +169,7 @@ sm:set_transition(armToolChop, 'done', armToolHold)
 -- and should be the reset position
 sm:set_transition(armDoorGrip, 'reset', armDoorRelease)
 sm:set_transition(armDoorGrip, 'planfail', armPose1)
+sm:set_transition(armDoorGrip, 'done', armChangetoPose1)
 sm:set_transition(armDoorRelease, 'done', armChangetoPose1)
 
 -- TODO: This may not be the best

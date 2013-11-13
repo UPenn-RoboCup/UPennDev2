@@ -30,8 +30,11 @@ local function calculate_margin(qArm,isLeft)
       math.abs(qArm[2]-math.pi/2),       --Shoulder Roll 
       math.abs(qArm[2]),
       math.abs(qArm[6]-math.pi/2),        --Wrist Roll
-      math.abs(qArm[6]+math.pi/2)      
+      math.abs(qArm[6]+math.pi/2)            
       )
+    if math.abs(qArm[6]) < 10*math.pi/180 then
+      jointangle_margin = math.min(jointangle_margin,math.abs(qArm[6])) 
+    end
   else --Right arm
     jointangle_margin = math.min(
       math.abs(qArm[2]+math.pi/2),       --Shoulder Roll
@@ -39,6 +42,9 @@ local function calculate_margin(qArm,isLeft)
       math.abs(qArm[6]-math.pi/2), --Wrist Roll
       math.abs(qArm[6]+math.pi/2)      
       )
+    if math.abs(qArm[6]) < 10*math.pi/180 then
+      jointangle_margin = math.min(jointangle_margin,math.abs(qArm[6])) 
+    end
   end
 
   --Clamp the margin

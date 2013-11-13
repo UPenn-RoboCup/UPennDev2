@@ -50,22 +50,30 @@ function state.entry()
   qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
   trLArm0 = Body.get_forward_larm(qLArm0)
---  trRArm0 = Body.get_forward_rarm(qRArm0)  
   trRArm0 = Body.get_forward_rarm(qRArm)  
+
+print("XXX")
+print(unpack(vector.new(qLArm0)*180/math.pi))
+print(unpack(vector.new(qRArm0)*180/math.pi))
 
 
   arm_planner:set_shoulder_yaw_target(nil,qRArm[3]) --Lock right shoulder yaw
 
-
   local wrist_seq = { armseq={ {trLArm0,trRArm0}} }
-  if arm_planner:plan_wrist_sequence(wrist_seq) then
-    stage = "wristyawturn"    
-  end  
+  if arm_planner:plan_wrist_sequence(wrist_seq) then stage = "wristyawturn" end  
 
   hcm.set_tool_model({0.52,0.02,0.00,  0*Body.DEG_TO_RAD}) --for webots with bodyTilt
 
   debugdata=''   
 end
+
+local function update_model()
+  local trLArmTarget = hcm.get_hands_left_tr_target()
+  local tool_model = hcm.get_tool_model()
+  tool_model[1],tool_model[2],tool_model[3] = trLArmTarget[1],trLArmTarget[2],trLArmTarget[3]
+  hcm.set_tool_model(tool_model)
+end
+
 
 function state.update()
   --  print(state._NAME..' Update' )
@@ -89,41 +97,32 @@ function state.update()
     end
   elseif stage=="armup" then
     if arm_planner:play_arm_sequence(t) then stage = "initialwait" end
+
   elseif stage=="initialwait" then
-    gripL,doneL = util.approachTol(gripL,0,2,dt)
+    gripL,doneL = util.approachTol(gripL,0,2,dt)  --Open gripper
     Body.set_lgrip_percent(gripL*0.8)
-    if doneL and hcm.get_state_proceed()==1 then 
-      local trLArmTarget1 = get_tool_tr({0,0.08,0}, lhand_rpy0)
-      local trLArmTarget2 = get_tool_tr({0,0,0}, lhand_rpy0)
-      local arm_seq = {        
-        armseq={
-          {trLArmTarget1, trRArm0},
-          {trLArmTarget2, trRArm0},
-        }
-      }
-      if arm_planner:plan_arm_sequence(arm_seq) then stage = "reachout" end
+    if doneL then
+      if hcm.get_state_proceed()==1 then 
+        local trLArmTarget1 = get_tool_tr({0,0.08,0}, lhand_rpy0)
+        local trLArmTarget2 = get_tool_tr({0,0,0}, lhand_rpy0)
+        local arm_seq = {armseq={{trLArmTarget1, trRArm0}, {trLArmTarget2, trRArm0} } }
+        if arm_planner:plan_arm_sequence(arm_seq) then stage = "reachout" end
+      end
     end 
   elseif stage=="reachout" then --Move arm to the gripping position
-    if arm_planner:play_arm_sequence(t) then stage = "reachwait" end
-  elseif stage=="reachwait" then --Wait for proceed confirmation
-    if hcm.get_state_proceed()==1 then stage = "grab"
-    elseif hcm.get_state_proceed() == -1 then stage = "unreachout" 
-    elseif hcm.get_state_proceed() == 2 then --Model modification
-
-      local trLArmTarget = hcm.get_hands_left_tr_target()
-      local tool_model = hcm.get_tool_model()
-      tool_model[1],tool_model[2],tool_model[3] = 
-        trLArmTarget[1],trLArmTarget[2],trLArmTarget[3]
-      hcm.set_tool_model(tool_model)
-
-      local trLArmTarget2 = get_tool_tr({0,0,0}, lhand_rpy0)
-      local arm_seq = {armseq={ {trLArmTarget2, trRArm0}}}
-      if arm_planner:plan_arm_sequence(arm_seq) then stage = "reachout" end
+    if arm_planner:play_arm_sequence(t) then 
+      if hcm.get_state_proceed()==1 then stage = "grab"
+      elseif hcm.get_state_proceed() == -1 then stage = "unreachout" 
+      elseif hcm.get_state_proceed() == 2 then --Model modification
+        update_model()        
+        local trLArmTarget2 = get_tool_tr({0,0,0}, lhand_rpy0)
+        local arm_seq = {armseq={ {trLArmTarget2, trRArm0}}}
+        if arm_planner:plan_arm_sequence(arm_seq) then stage = "reachout" end
+      end
     end
   elseif stage=="grab" then --Grip the object   
     gripL,doneL = util.approachTol(gripL,1,2,dt)
     Body.set_lgrip_percent(gripL*0.8)
-    Body.set_rgrip_percent(gripR*0.8)    
     if doneL then
       local trLArmTarget2 = get_tool_tr({0,0,0}, lhand_rpy0)
       local arm_seq = {          
@@ -165,9 +164,12 @@ function state.update()
     Body.set_lgrip_percent(gripL*0.8)
     Body.set_rgrip_percent(gripR*0.8)    
     if doneL then
-      if hcm.get_state_proceed()==1 then stage= "grab"
-      elseif hcm.get_state_proceed()==-1 then stage = "unreachout"
-      end
+      local trLArmTarget2 = get_tool_tr({0,0,0}, lhand_rpy0)
+      local arm_seq = {          
+        mass={0,0}, --TODO: this is not working right now          
+        armseq={ {trLArmTarget2, trRArm0} }
+        }      
+      if arm_planner:plan_arm_sequence(arm_seq) then stage = "reachout" end
     end
   elseif stage=="unreachout" then
     local trLArmTarget1 = get_tool_tr({0,0.08,0}, lhand_rpy0)

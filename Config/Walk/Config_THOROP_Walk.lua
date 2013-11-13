@@ -410,8 +410,10 @@ arm.plan.velWrist = {100,100,100, 15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD}
 arm.plan.velDoorRoll = 10*DEG_TO_RAD
 arm.plan.velDoorYaw = 2*DEG_TO_RAD
 
+arm.plan.velTorsoComp = {0.005,0.005} --5mm per sec
+arm.plan.velTorsoComp = {0.02,0.01} --5mm per sec
 
-
+arm.plan.velYaw = 10*math.pi/180
 
 
 -----------------------------------------------------------------------
@@ -457,6 +459,10 @@ arm.pRWristTarget1 = {.04,-.30,-.20,0,0,0}
 --lil higher and back
 --arm.pLWristTarget1 = {.00,.30,-.15,0,0,0}
 --arm.pRWristTarget1 = {.00,-.30,-.15,0,0,0}
+
+arm.pLWristTarget1 = {-.0,.30,-.20,0,0,0}
+arm.pRWristTarget1 = {-.0,-.30,-.20,0,0,0}
+
 
 arm.lShoulderYawTarget1 = -5*DEG_TO_RAD
 arm.rShoulderYawTarget1 = 5*DEG_TO_RAD

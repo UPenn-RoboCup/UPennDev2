@@ -50,6 +50,12 @@ function state.entry()
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
 
+
+print("XXX")
+print(unpack(vector.new(qLArm0)*180/math.pi))
+print(unpack(vector.new(qRArm0)*180/math.pi))
+
+
   arm_planner:set_shoulder_yaw_target(qLArm[3],nil) --Lock left shoulder yaw
 
   local wrist_seq = { armseq={ {trLArm0,trRArm0}} }

@@ -29,8 +29,9 @@ function state.entry()
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
+  local qRArm = Body.get_rarm_command_position()
   
-  arm_planner:lock_shoulder_yaw({0,1}) --right shoulder lock
+  arm_planner:set_shoulder_yaw_target(nil,qRArm[3]) --Lock right shoulder yaw
   local init_cond = arm_planner:load_boundary_condition()
   trLArm0 = Body.get_forward_larm(init_cond[1])
   trRArm0 = Body.get_forward_rarm(init_cond[2]) 

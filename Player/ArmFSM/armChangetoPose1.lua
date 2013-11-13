@@ -62,8 +62,10 @@ function state.update()
     if ret==1 then stage = stage + 1 end
   elseif stage==2 then
     ret = movearm.setArmJoints(
-      {qLArm[1],qLArm[2],qLArm[3],qLArm[4],0,0,0},
-      {qRArm[1],qRArm[2],qRArm[3],qRArm[4],0,0,0},
+      {qLArm[1],qLArm[2],qLArm[3],qLArm[4],
+          81*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD,9*Body.DEG_TO_RAD},
+      {qRArm[1],qRArm[2],qRArm[3],qRArm[4],
+          -81*Body.DEG_TO_RAD,-15*Body.DEG_TO_RAD,9*Body.DEG_TO_RAD},
       dt,Config.arm.joint_init_limit)
     if ret==1 then stage = stage + 1 end
   elseif stage==3 then --Move arms to the sides            

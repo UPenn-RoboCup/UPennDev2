@@ -45,6 +45,10 @@ end
 
 local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, waistYaw)
   local step = 1
+
+  local step = 0.5
+
+
   local margins={} 
   local max_margin = -math.huge
   local qArmMaxMargin
@@ -186,14 +190,15 @@ local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)
       self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step)
     if not new_cond then 
       print("FAIL")
-      failed = true       
+      --TODO: We can just skip singularities
+      failed = true    
     else
       qLArmQueue[qArmCount] = {new_cond[3],dt_step_current}
       qRArmQueue[qArmCount] = {new_cond[4],dt_step_current}
       uTorsoCompQueue[qArmCount] = {new_cond[5][1],new_cond[5][2]}      
-    end
-    current_cond = new_cond
-    qArmCount = qArmCount + 1
+      current_cond = new_cond
+      qArmCount = qArmCount + 1
+    end    
   end
 
   local t1 = unix.time()  
@@ -513,9 +518,23 @@ local function play_arm_sequence(self,t)
     end
     local uTorsoComp = (1-ph)*self.uTorsoCompStart + ph*self.uTorsoCompEnd
 
+
+    --Update transform information
+    local trLArmComp = Body.get_forward_larm(qLArm)
+    local trRArmComp = Body.get_forward_rarm(qRArm)
+    local trLArm = vector.new(trLArmComp)+
+              vector.new({uTorsoComp[1],uTorsoComp[2],0, 0,0,0})
+    local trRArm = vector.new(trRArmComp)+
+              vector.new({uTorsoComp[1],uTorsoComp[2],0, 0,0,0})
+    hcm.set_hands_left_tr(trLArm)
+    hcm.set_hands_right_tr(trRArm)
+    hcm.set_hands_left_tr_target(trLArm)
+    hcm.set_hands_right_tr_target(trRArm)
+
+    --Move joints
     movearm.setArmJoints(qLArm,qRArm,dt)
-    
     mcm.set_stance_uTorsoComp(uTorsoComp)    
+
     if self.waistQueue then
       qWaist = self.waistStart + ph * (self.waistEnd - self.waistStart)
       Body.set_waist_command_position({qWaist,0})

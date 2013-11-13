@@ -18,6 +18,9 @@ local gripL, gripR = 0,0
 local stage
 local debugdata
 
+
+local trLArm0, trRArm0
+
 local function get_tool_tr(tooloffset, handrpy)
   local tool_model = hcm.get_tool_model()
   local hand_pos = vector.slice(tool_model,1,3) + vector.new(tooloffset)  
@@ -40,23 +43,25 @@ function state.entry()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
+--This sets torso compensation bias so that it becomes zero with initial arm configuration
+  arm_planner:reset_torso_comp(qLArm, qRArm)
+  arm_planner:save_boundary_condition({qLArm, qRArm, qLArm, qRArm, {0,0}})  
+
+  
   --Initial arm joint angles after rotating wrist
   qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
- 
-  hcm.set_tool_model({0.55,0.02,0.05,  0*Body.DEG_TO_RAD}) --for webots with bodyTilt
+  trLArm0 = Body.get_forward_larm(qLArm0)
+--  trRArm0 = Body.get_forward_rarm(qRArm0)  
+  trRArm0 = Body.get_forward_rarm(qRArm)  
 
-  
-hcm.set_tool_model({0.50,0.02,0.05,  0*Body.DEG_TO_RAD}) --for webots with bodyTilt
+  local wrist_seq = { armseq={ {trLArm0,trRArm0}} }
+  if arm_planner:plan_wrist_sequence(wrist_seq) then
+    stage = "wristyawturn"    
+  end  
 
+  hcm.set_tool_model({0.52,0.02,0.00,  0*Body.DEG_TO_RAD}) --for webots with bodyTilt
 
---  hcm.set_tool_model({0.51,0.02,0.05,  0*Body.DEG_TO_RAD}) 
-   
-  --This sets torso compensation bias so that it becomes zero with initial arm configuration
-  arm_planner:reset_torso_comp(qLArm0, qRArm0)
-  arm_planner:save_boundary_condition({qLArm0, qRArm0, qLArm0, qRArm0, {0,0}})
-
-  stage = "wristrotate";  
   debugdata=''   
 end
 
@@ -70,17 +75,13 @@ function state.update()
 --Forward motions
 ----------------------------------------------------------
 
-  if stage=="wristrotate" then --Rotate wrist angles
-    ret = movearm.setArmJoints(qLArm0, qRArm0 ,dt, Config.arm.joint_init_limit)
-    if ret==1 then 
-      --Both hands around waist
-      trLArm0 = {0.10,0.24,-0.10, unpack(lhand_rpy0)}
-      trRArm0 = {0.10,-0.24,-0.10, unpack(rhand_rpy0)}
+  if stage=="wristyawturn" then --Turn yaw angles first
+    if arm_planner:play_arm_sequence(t) then       
+      trLArmTarget1 = {0.25,0.20,-0.05, unpack(lhand_rpy0)}
+      trLArmTarget2 = {0.25,0.20, -0.03, unpack(lhand_rpy0)}
       local arm_seq = {
         mass={0,0},
-        armseq={
-          {trLArm0, trRArm0},          
-        }
+        armseq={{trLArmTarget1, trRArm0},{trLArmTarget2, trRArm0}}
       }
       if arm_planner:plan_arm_sequence(arm_seq) then stage = "armup" end
     end
@@ -90,20 +91,30 @@ function state.update()
     if hcm.get_state_proceed()==1 then 
       local trLArmTarget1 = get_tool_tr({0,0.08,0}, lhand_rpy0)
       local trLArmTarget2 = get_tool_tr({0,0,0}, lhand_rpy0)
-      local arm_seq = {
-        mass={0,0},
+      local arm_seq = {        
         armseq={
           {trLArmTarget1, trRArm0},
           {trLArmTarget2, trRArm0},
         }
       }
       if arm_planner:plan_arm_sequence(arm_seq) then stage = "reachout" end
-    end
+    end 
   elseif stage=="reachout" then --Move arm to the gripping position
     if arm_planner:play_arm_sequence(t) then stage = "reachwait" end
   elseif stage=="reachwait" then --Wait for proceed confirmation
     if hcm.get_state_proceed()==1 then stage = "grab"
     elseif hcm.get_state_proceed() == -1 then stage = "unreachout" 
+    elseif hcm.get_state_proceed() == 2 then --Model modification
+
+      local trLArmTarget = hcm.get_hands_left_tr_target()
+      local tool_model = hcm.get_tool_model()
+      tool_model[1],tool_model[2],tool_model[3] = 
+        trLArmTarget[1],trLArmTarget[2],trLArmTarget[3]
+      hcm.set_tool_model(tool_model)
+
+      local trLArmTarget2 = get_tool_tr({0,0,0}, lhand_rpy0)
+      local arm_seq = {armseq={ {trLArmTarget2, trRArm0}}}
+      if arm_planner:plan_arm_sequence(arm_seq) then stage = "reachout" end
     end
   elseif stage=="grab" then --Grip the object   
     gripL,doneL = util.approachTol(gripL,1,2,dt)
@@ -111,12 +122,11 @@ function state.update()
     Body.set_rgrip_percent(gripR*0.8)    
     if doneL then
       if hcm.get_state_proceed()==1 then        
---        local trLArmTarget3 = get_tool_tr({0,0,0.05}, lhand_rpy0)
-        local trLArmTarget3 = get_tool_tr({0,0,0.03}, lhand_rpy0)
+        local trLArmTarget3 = get_tool_tr({0,0,0.05}, lhand_rpy0)
         local trLArmTarget4 = get_tool_tr({-0.20,0,0.05}, lhand_rpy0)
         local trLArmTarget5 = {0.20,0.0,-0.10, unpack(lhand_rpy0)}
         local arm_seq = {          
-          mass={3,0},
+          mass={2,0}, --TODO: this is not working right now          
           armseq={
             {trLArmTarget3, trRArm0},
             {trLArmTarget4, trRArm0},

@@ -20,7 +20,7 @@ if OPERATING_SYSTEM=='darwin' then
 end
 
 -- Choose a chain
-local test_dynamixel = left_arm
+local test_dynamixel = right_arm
 assert(test_dynamixel)
 print('Using',test_dynamixel.ttyname)
 
@@ -33,6 +33,7 @@ print('Inspecting',table.concat(found,','))
 --found = {16,18,20,22,24,26} --left leg
 --found = {22,24,26} --left ankle/knee
 
+--[[
 found = {29,30,37} --head and lidar
 
 mx_ids  = {37}
@@ -57,13 +58,11 @@ local inst = libDynamixel.mx_nx_bulk_write(
 print('bulk',type(inst))
 print( string.byte(inst,1,-1) )
 
-----[[
-libDynamixel.mx_nx_bulk_write(
-  register, mx_ids, mx_vals, nx_ids, nx_vals, test_dynamixel
-)
---]]
 
---[[
+libDynamixel.mx_nx_bulk_write( register, mx_ids, mx_vals, nx_ids, nx_vals, test_dynamixel)
+
+
+
 local mx_inst = libDynamixel.set_mx_led(37,1)
 print()
 print('mx',type(mx_inst))
@@ -72,14 +71,16 @@ local mx_status = libDynamixel.set_mx_led(37,1, test_dynamixel)
 if mx_status then
   util.ptable(mx_status)
 end
---]]
+
 
 --libDynamixel.set_nx_led_green({29,30},{250,250}, test_dynamixel)
 --libDynamixel.set_nx_led_green({29,30},{0,0}, test_dynamixel)
+--]]
 
 --found = {15,17,19,21,23,25} --right leg
+found = {9,13} --right arm yaws
 
-os.exit()
+--os.exit()
 
 --local status = libDynamixel.get_mx_max_torque(15,test_dynamixel)
 --print( libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter)) )
@@ -123,6 +124,12 @@ for _,m in ipairs(found) do
   if status then 
     local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
     print(string.format('Firmware: %d',value))
+  end
+
+  local status = libDynamixel.get_nx_mode(m,test_dynamixel)
+  if status then
+    local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
+    print(string.format('Mode: %d',value))
   end
 
 --[[

@@ -22,8 +22,6 @@ local qR_desired = {}
 local dqArmMax = Config.arm.slow_elbow_limit
 
 local move_stage=1
-qLOrg = Config.arm.qLArmInit[1]
-
 
 
 --IK based home position

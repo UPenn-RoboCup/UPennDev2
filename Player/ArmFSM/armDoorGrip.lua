@@ -22,6 +22,8 @@ local trLArmRelease = {0,0,0,   90*Body.DEG_TO_RAD,0,0}
 local trRArmRelease = {0,0,0,   -90*Body.DEG_TO_RAD,65*Body.DEG_TO_RAD,0}
 --local trRArmRelease = {0,0,0,   0*Body.DEG_TO_RAD,65*Body.DEG_TO_RAD,0}
 
+local debugdata
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -71,7 +73,7 @@ function state.entry()
     grip_offset_x,
     knob_offset_y})
   hcm.set_door_yaw(0)
-  
+  debugdata=''
 end
 
 
@@ -176,11 +178,28 @@ function state.update()
       stage="armpushdoor"
     end
   end
+  debugdata = debugdata..string.format("%.3f,  %.3f,%.3f,%.3f\n",
+    t-t_entry,
+    qRArm[5]*Body.RAD_TO_DEG,
+    qRArm[6]*Body.RAD_TO_DEG,
+    qRArm[7]*Body.RAD_TO_DEG
+    )
   hcm.set_state_proceed(0)
 end
 
+local function flush_debugdata()
+  local savefile = string.format("Log/debugdata_%s",os.date());
+  local debugfile=assert(io.open(savefile,"w")); 
+  debugfile:write(debugdata);
+  debugfile:flush();
+  debugfile:close();  
+end
+
 function state.exit()  
+  flush_debugdata()
   print(state._NAME..' Exit' )
 end
+
+
 
 return state

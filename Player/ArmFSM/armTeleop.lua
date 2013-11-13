@@ -72,6 +72,12 @@ function state.update()
       stage="teleopwait"
     end
   elseif stage=="teleopwait" then       
+
+  local qLArm = Body.get_larm_command_position()
+  print(unpack(vector.new(qLArm)*Body.RAD_TO_DEG))
+
+
+
     if hcm.get_state_proceed(0)==2 then --teleop signal
       local trLArmTarget=  hcm.get_hands_left_tr_target()
       local trRArmTarget=  hcm.get_hands_right_tr_target()

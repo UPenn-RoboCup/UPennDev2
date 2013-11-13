@@ -39,6 +39,8 @@ function state.entry()
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
+  -- -5 and 5 degrees default
+
   arm_planner:reset_torso_comp(qLArm, qRArm)
   arm_planner:save_boundary_condition({qLArm, qRArm, qLArm, qRArm, {0,0}})  
 
@@ -48,7 +50,7 @@ function state.entry()
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
 
-  arm_planner:lock_shoulder_yaw({1,0}) --left shoulder lock
+  arm_planner:set_shoulder_yaw_target(qLArm[3],nil) --Lock left shoulder yaw
 
   local wrist_seq = { armseq={ {trLArm0,trRArm0}} }
   if arm_planner:plan_wrist_sequence(wrist_seq) then
@@ -176,10 +178,15 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       local trRArmTarget = Body.get_forward_rarm(qRArm)
       print(unpack(trRArmTarget))
+--      arm_planner:set_shoulder_yaw_target(-5*Body.DEG_TO_RAD, 5*Body.DET_TO_RAD) 
+      arm_planner:set_shoulder_yaw_target(-5*Body.DEG_TO_RAD, 1*Body.DEG_TO_RAD) 
+      trRArmTarget[2] = -0.25;      
+
       local arm_seq = {
         armseq={
-          {trLArm0, trRArmTarget + vector.new({0,0.05,0, 0,0,0})},
-          {trLArm0, trRArmTarget + vector.new({0.20,0.05,0.15, 0,0,0})}
+          {trLArm0, trRArmTarget},
+          {trLArm0, trRArmTarget+ vector.new({0.30,0,0.05, 0,0,0})},
+--          {trLArm0, trRArmTarget + vector.new({0.10,0,0.10, 0,0,0})}
         } 
       }
       if arm_planner:plan_arm_sequence(arm_seq) then stage = "armmoveback" end

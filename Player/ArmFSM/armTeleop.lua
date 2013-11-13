@@ -30,6 +30,7 @@ function state.entry()
   arm_planner:save_boundary_condition({qLArm, qRArm, qLArm, qRArm, {0,0}})
 
   arm_planner:lock_shoulder_yaw({0,0}) 
+  arm_planner:set_shoulder_yaw_target(qLArm[3],nil)
 
   trLArm = Body.get_forward_larm(qLArm)
   print(unpack(vector.new(trLArm)*Body.RAD_TO_DEG))

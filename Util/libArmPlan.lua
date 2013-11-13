@@ -54,13 +54,30 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, waistYa
 
   --Calculte the margin for current shoulder yaw angle
   local qArmMaxMargin, qArmNext
-  if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, qArm[3], mcm.get_stance_bodyTilt(), waistYaw)
-  else qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qArm[3], mcm.get_stance_bodyTilt(), waistYaw) end
+  if isLeft>0 then 
+    local shoulderYawTarget = self.shoulder_yaw_target_left
+    if shoulderYawTarget then
+      local shoulderYaw = util.approachTol(qArm[3],shoulderYawTarget, yawMag, 1)
+      qArmNext = Body.get_inverse_larm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)
+      if qArmNext then 
+        return qArmNext 
+      end
+    end
+    qArmNext = Body.get_inverse_larm(qArm,trArmNext, qArm[3], mcm.get_stance_bodyTilt(), waistYaw)
+  else 
+    local shoulderYawTarget = self.shoulder_yaw_target_right    
+    if shoulderYawTarget then
+      local shoulderYaw = util.approachTol(qArm[3],shoulderYawTarget, yawMag, 1)
+      qArmNext = Body.get_inverse_rarm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)
+      if qArmNext then 
+        return qArmNext 
+      end
+    end
+    qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qArm[3], mcm.get_stance_bodyTilt(), waistYaw) 
+  end
+
   local max_margin = self.calculate_margin(qArmNext,isLeft)
   qArmMaxMargin = qArmNext
-
-  if isLeft>0 and self.shoulder_yaw_locked[1]>0 then return qArmMaxMargin end
-  if isLeft==0 and self.shoulder_yaw_locked[2]>0 then return qArmMaxMargin end
 
   for div = -1,1,step do
     local qShoulderYaw = qArm[3] + div * yawMag
@@ -572,8 +589,9 @@ local function save_doorparam(self,doorparam)
   self.init_doorparam=doorparam
 end
 
-local function lock_shoulder_yaw(self,islocked)
-  self.shoulder_yaw_locked = islocked
+local function set_shoulder_yaw_target(self,left,right)
+  self.shoulder_yaw_target_left = left
+  self.shoulder_yaw_target_right = right
 end
 
 local libArmPlan={}
@@ -588,7 +606,8 @@ libArmPlan.new_planner = function (params)
   s.armQueuePlayStartTime = 0
   s.mLeftHand = 0
   s.mRightHand = 0
-  s.shoulder_yaw_locked = {0,0}
+  s.shoulder_yaw_target_left = nil
+  s.shoulder_yaw_target_right = nil
 
   s.torsoCompBias = {0,0}
 
@@ -633,8 +652,8 @@ libArmPlan.new_planner = function (params)
   s.save_boundary_condition=save_boundary_condition
   s.load_boundary_condition=load_boundary_condition
 
-  s.save_doorparam = save_doorparam
-  s.lock_shoulder_yaw = lock_shoulder_yaw
+  s.save_doorparam = save_doorparam  
+  s.set_shoulder_yaw_target = set_shoulder_yaw_target
 
   return s
 end

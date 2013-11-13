@@ -53,7 +53,9 @@ function state.entry()
 --  trRArm0 = Body.get_forward_rarm(qRArm0)  
   trRArm0 = Body.get_forward_rarm(qRArm)  
 
-  arm_planner:lock_shoulder_yaw({0,1}) --right shoulder lock
+
+  arm_planner:set_shoulder_yaw_target(nil,qRArm[3]) --Lock right shoulder yaw
+
 
   local wrist_seq = { armseq={ {trLArm0,trRArm0}} }
   if arm_planner:plan_wrist_sequence(wrist_seq) then

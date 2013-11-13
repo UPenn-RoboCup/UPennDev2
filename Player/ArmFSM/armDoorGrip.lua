@@ -36,12 +36,14 @@ function state.entry()
   arm_planner:reset_torso_comp(qLArm, qRArm)
   arm_planner:save_boundary_condition({qLArm, qRArm, qLArm, qRArm, {0,0}})  
 
-  qLArm0 = qLArm
+--  qLArm0 = qLArm
+  qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
 
-  
+  arm_planner:lock_shoulder_yaw({1,0}) --left shoulder lock
+
   local wrist_seq = { armseq={ {trLArm0,trRArm0}} }
   if arm_planner:plan_wrist_sequence(wrist_seq) then
     stage = "wristyawturn"    
@@ -101,6 +103,20 @@ function state.update()
         local trRArmTarget2 = movearm.getDoorHandlePosition({0,0,0}, 0, door_yaw, rhand_rpy0)
         local arm_seq = {armseq={{trLArm0, trRArmTarget2}} }
         if arm_planner:plan_arm_sequence(arm_seq) then stage = "hookknob"  end
+      elseif hcm.get_state_proceed()==2 then --adjust hook position
+        local trRArmCurrent = hcm.get_hands_right_tr()
+        local trRArmTarget = hcm.get_hands_right_tr_target()
+        local door_model = hcm.get_door_model()
+        door_model[1],door_model[2],door_model[3] = 
+          trRArmTarget[1] - trRArmCurrent[1] + door_model[1],
+          trRArmTarget[2] - trRArmCurrent[2] + door_model[2],
+          trRArmTarget[3] - trRArmCurrent[3] + door_model[3]
+        hcm.set_door_model(door_model)
+
+        local trRArmTarget1 = movearm.getDoorHandlePosition(handle_clearance, 0, door_yaw, rhand_rpy0)
+        local arm_seq = {armseq={{trLArm0, trRArmTarget1}} }
+        if arm_planner:plan_arm_sequence(arm_seq) then stage = "placehook"  end
+
       end
     end
   elseif stage=="hookknob" then --Move the arm forward using IK now       

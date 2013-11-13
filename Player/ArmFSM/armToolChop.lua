@@ -30,10 +30,11 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   
+  arm_planner:lock_shoulder_yaw({0,1}) --right shoulder lock
   local init_cond = arm_planner:load_boundary_condition()
   trLArm0 = Body.get_forward_larm(init_cond[1])
   trRArm0 = Body.get_forward_rarm(init_cond[2]) 
-
+  
   stage = "drillout"
   hcm.set_state_proceed(1)
 end

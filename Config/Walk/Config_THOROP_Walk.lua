@@ -390,6 +390,8 @@ arm.handoffset.chopstick = {0.285,0,0}
 
 arm.plan={}
 
+
+
 arm.plan.max_margin = math.pi/6
 --arm.plan.max_margin = math.pi
 
@@ -404,6 +406,9 @@ arm.plan.dt_step = 0.2
 arm.plan.search_step = 1
 --arm.plan.search_step = .25
 
+arm.plan.velWrist = {100,100,100, 15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD}
+arm.plan.velDoorRoll = 10*DEG_TO_RAD
+arm.plan.velDoorYaw = 2*DEG_TO_RAD
 
 
 

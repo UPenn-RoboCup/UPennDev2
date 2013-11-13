@@ -131,10 +131,10 @@ local function process_character(key_code,key_char,key_char_lower)
   
   local armtr = char_to_armtr[key_char_lower]
   if armtr then
-    local left_tr = hcm.get_hands_left_tr()
-    local left_tr_target_new = vector.new(left_tr)+ vector.new(armtr)
-    print( util.color('Tr:','yellow'), left_tr_target_new )        
-    hcm.set_hands_left_tr_target(left_tr_target_new)
+    local right_tr = hcm.get_hands_right_tr()
+    local right_tr_target_new = vector.new(right_tr)+ vector.new(armtr)
+    print( util.color('Tr:','yellow'), right_tr_target_new )        
+    hcm.set_hands_right_tr_target(right_tr_target_new)
     hcm.set_state_proceed(2) --notify target transform change
     return
   end

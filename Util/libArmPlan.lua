@@ -59,6 +59,9 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, waistYa
   local max_margin = self.calculate_margin(qArmNext,isLeft)
   qArmMaxMargin = qArmNext
 
+  if isLeft>0 and self.shoulder_yaw_locked[1]>0 then return qArmMaxMargin end
+  if isLeft==0 and self.shoulder_yaw_locked[2]>0 then return qArmMaxMargin end
+
   for div = -1,1,step do
     local qShoulderYaw = qArm[3] + div * yawMag
     local qArmNext
@@ -130,8 +133,8 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   local yawMag = dt_step * velYaw
 
   local qLArmNext, qRArmNext = qLArm, qRArm
-  if self.locked[1]==0 then qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, {waistYaw,0}) end
-  if self.locked[2]==0 then qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, {waistYaw,0}) end
+  qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, {waistYaw,0})
+  qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, {waistYaw,0})
 
   if not qLArmNext or not qRArmNext then print("ARM PLANNING ERROR")
     return 
@@ -236,7 +239,7 @@ local function plan_double_wrist(self, init_cond, trLArm1, trRArm1)
   local qArmCount = 2
 
 --  local dpArmMax = Config.arm.linear_slow_limit  
-  local dpArmMax = {100,100,100, 15*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD}
+  local dpArmMax = Config.arm.plan.velWrist
 
   local torsoCompDone = false
   local trLArmNext, trRArmNext
@@ -291,8 +294,8 @@ local function plan_opendoor(self, init_cond, init_doorparam, doorparam)
   local torsoCompDone = false  
 
   local dpDoorMax = vector.slice(Config.arm.linear_slow_limit,1,3)
-  local dqDoorRollMax = 5*Body.DEG_TO_RAD
-  local dqDoorYawMax = 2*Body.DEG_TO_RAD
+  local dqDoorRollMax = Config.arm.plan.velDoorRoll
+  local dqDoorYawMax = Config.arm.plan.velDoorYaw
   local dqWaistYawMax = 3*Body.DEG_TO_RAD
 
   local t0 = unix.time()  
@@ -569,6 +572,10 @@ local function save_doorparam(self,doorparam)
   self.init_doorparam=doorparam
 end
 
+local function lock_shoulder_yaw(self,islocked)
+  self.shoulder_yaw_locked = islocked
+end
+
 local libArmPlan={}
 
 libArmPlan.new_planner = function (params)
@@ -581,7 +588,7 @@ libArmPlan.new_planner = function (params)
   s.armQueuePlayStartTime = 0
   s.mLeftHand = 0
   s.mRightHand = 0
-  s.locked = {0,0}
+  s.shoulder_yaw_locked = {0,0}
 
   s.torsoCompBias = {0,0}
 
@@ -627,6 +634,7 @@ libArmPlan.new_planner = function (params)
   s.load_boundary_condition=load_boundary_condition
 
   s.save_doorparam = save_doorparam
+  s.lock_shoulder_yaw = lock_shoulder_yaw
 
   return s
 end

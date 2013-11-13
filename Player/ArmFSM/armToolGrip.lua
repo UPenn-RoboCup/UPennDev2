@@ -14,7 +14,7 @@ local qLArm0,qRArm0, trLArm0, trRArm0
 local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}
 local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD}
 
-local gripL, gripR = 0,0
+local gripL, gripR = 1,1
 local stage
 local debugdata
 
@@ -38,8 +38,6 @@ function state.entry()
 
   mcm.set_arm_handoffset(Config.arm.handoffset.gripper)
 
-  Body.set_lgrip_percent(0)
-
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
@@ -54,6 +52,8 @@ function state.entry()
   trLArm0 = Body.get_forward_larm(qLArm0)
 --  trRArm0 = Body.get_forward_rarm(qRArm0)  
   trRArm0 = Body.get_forward_rarm(qRArm)  
+
+  arm_planner:lock_shoulder_yaw({0,1}) --right shoulder lock
 
   local wrist_seq = { armseq={ {trLArm0,trRArm0}} }
   if arm_planner:plan_wrist_sequence(wrist_seq) then
@@ -88,7 +88,9 @@ function state.update()
   elseif stage=="armup" then
     if arm_planner:play_arm_sequence(t) then stage = "initialwait" end
   elseif stage=="initialwait" then
-    if hcm.get_state_proceed()==1 then 
+    gripL,doneL = util.approachTol(gripL,0,2,dt)
+    Body.set_lgrip_percent(gripL*0.8)
+    if doneL and hcm.get_state_proceed()==1 then 
       local trLArmTarget1 = get_tool_tr({0,0.08,0}, lhand_rpy0)
       local trLArmTarget2 = get_tool_tr({0,0,0}, lhand_rpy0)
       local arm_seq = {        

@@ -40,33 +40,37 @@ local function calculate_margin(qArm,isLeft)
       math.abs(qArm[6]+math.pi/2)      
       )
   end
+
+  --Clamp the margin
+  jointangle_margin = math.min(
+    Config.arm.plan.max_margin,
+    jointangle_margin)
+
   return jointangle_margin
 end
 
 local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, waistYaw)
-  local step = 1
+  local step = Config.arm.plan.search_step
 
-  local step = 0.5
+  --Calculte the margin for current shoulder yaw angle
+  local qArmMaxMargin, qArmNext
+  if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, qArm[3], mcm.get_stance_bodyTilt(), waistYaw)
+  else qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qArm[3], mcm.get_stance_bodyTilt(), waistYaw) end
+  local max_margin = self.calculate_margin(qArmNext,isLeft)
+  qArmMaxMargin = qArmNext
 
-
-  local margins={} 
-  local max_margin = -math.huge
-  local qArmMaxMargin
   for div = -1,1,step do
     local qShoulderYaw = qArm[3] + div * yawMag
     local qArmNext
-    if isLeft>0 then qArmNext = Body.get_inverse_larm(
-      qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)
-    else qArmNext = Body.get_inverse_rarm(
-      qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), waistYaw) 
-    end
+    if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)
+    else qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), waistYaw) end
     local margin = self.calculate_margin(qArmNext,isLeft)
     if margin>max_margin then
       qArmMaxMargin = qArmNext
       max_margin = margin
     end
   end
-  if not qArmMaxMargin then
+  if max_margin<0 then
     print("CANNOT FIND CORRECT SHOULDER ANGLE")
     print("trNext:",unpack(trArmNext))
   end
@@ -118,6 +122,7 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
 
   local velTorsoComp = {0.005,0.005} --5mm per sec
   local velYaw = 10*math.pi/180
+  --local velYaw = 20*math.pi/180
 
   local massL, massR = self.mLeftHand, self.mRightHand
   local qLArm,qRArm, qLArmComp , qRArmComp, uTorsoComp = unpack(init_cond)
@@ -172,8 +177,8 @@ local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)
   local trLArm, trRArm = Body.get_forward_larm(init_cond[1]), Body.get_forward_rarm(init_cond[2])
 
   --Insert initial arm joint angle to the queue
-  local dt_step0 = 0.5
-  local dt_step = 0.5
+  local dt_step0 = Config.arm.plan.dt_step0
+  local dt_step = Config.arm.plan.dt_step
   local qLArmQueue,qRArmQueue, uTorsoCompQueue = {{init_cond[3],dt_step0}}, {{init_cond[4],dt_step0}}, {init_cond[5]}
   local qArmCount = 2
 
@@ -225,8 +230,8 @@ local function plan_double_wrist(self, init_cond, trLArm1, trRArm1)
   local qLArm0, qRArm0 = init_cond[1],init_cond[2]
 
   --Insert initial arm joint angle to the queue
-  local dt_step0 = 0.5
-  local dt_step = 0.5
+  local dt_step0 = Config.arm.plan.dt_step0
+  local dt_step = Config.arm.plan.dt_step
   local qLArmQueue,qRArmQueue, uTorsoCompQueue = {{init_cond[3],dt_step0}}, {{init_cond[4],dt_step0}}, {init_cond[5]}
   local qArmCount = 2
 
@@ -276,8 +281,8 @@ local function plan_opendoor(self, init_cond, init_doorparam, doorparam)
   local trLArm, trRArm = Body.get_forward_larm(init_cond[1]), Body.get_forward_rarm(init_cond[2])
  
   --Insert initial arm joint angle to the queue
-  local dt_step0 = 0.5
-  local dt_step = 0.5
+  local dt_step0 = Config.arm.plan.dt_step0
+  local dt_step = Config.arm.plan.dt_step
   local qLArmQueue,qRArmQueue, uTorsoCompQueue = {{init_cond[3],dt_step0}}, {{init_cond[4],dt_step0}}, {init_cond[5]}
   local qWaistQueue={init_cond[6] or Body.get_waist_command_position()[1]}
   local qArmCount = 2

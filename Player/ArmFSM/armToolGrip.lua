@@ -121,6 +121,15 @@ function state.update()
     Body.set_lgrip_percent(gripL*0.8)
     Body.set_rgrip_percent(gripR*0.8)    
     if doneL then
+      local trLArmTarget2 = get_tool_tr({0,0,0}, lhand_rpy0)
+      local arm_seq = {          
+        mass={1,0}, --TODO: this is not working right now          
+        armseq={ {trLArmTarget2, trRArm0} }
+        }      
+      if arm_planner:plan_arm_sequence(arm_seq) then stage = "torsobalance" end
+    end
+  elseif stage=="torsobalance" then
+    if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        
         local trLArmTarget3 = get_tool_tr({0,0,0.05}, lhand_rpy0)
         local trLArmTarget4 = get_tool_tr({-0.20,0,0.05}, lhand_rpy0)

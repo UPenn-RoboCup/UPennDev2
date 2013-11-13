@@ -388,9 +388,21 @@ arm.handoffset.outerhook = {0.285,-0.065,0}
 --Two rod (for valve)
 arm.handoffset.chopstick = {0.285,0,0}
 
+arm.plan={}
+
+arm.plan.max_margin = math.pi/6
+--arm.plan.max_margin = math.pi
+
+arm.plan.dt_step0 = 0.5
+arm.plan.dt_step = 0.5
 
 
+arm.plan.dt_step0 = 0.1
+arm.plan.dt_step = 0.2
 
+
+arm.plan.search_step = 1
+--arm.plan.search_step = .25
 
 
 

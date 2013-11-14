@@ -40,7 +40,6 @@ local armWheelTurnValve = require'armWheelTurnValve'
 
 -- Door specific states
 local armDoorGrip = require'armDoorGrip'
-local armDoorRelease = require'armDoorRelease'
 
 -- Tool specific states
 local armToolGrip = require'armToolGrip'
@@ -80,7 +79,7 @@ sm:add_state(armWheelTurn)
 sm:add_state(armWheelTurnValve)
 sm:add_state(armWheelRelease)
 sm:add_state(armDoorGrip)
-sm:add_state(armDoorRelease)
+
 
 sm:add_state(armToolGrip)
 sm:add_state(armToolHold)
@@ -130,7 +129,7 @@ sm:set_transition(armPose1, 'largevalvegrab', armLargeValveGrip)
 sm:set_transition(armPose1, 'barvalvegrab', armBarValveGrip)
 
 
-sm:set_transition(armSmallValveGrip, 'done', armChangetoPose1)
+sm:set_transition(armSmallValveGrip, 'done', armPose1)
 sm:set_transition(armLargeValveGrip, 'done', armChangetoPose1)
 sm:set_transition(armBarValveGrip, 'done', armChangetoPose1)
 
@@ -167,10 +166,9 @@ sm:set_transition(armToolChop, 'done', armToolHold)
 
 -- The initial arm pose is great for door gripping, 
 -- and should be the reset position
-sm:set_transition(armDoorGrip, 'reset', armDoorRelease)
-sm:set_transition(armDoorGrip, 'planfail', armPose1)
+
 sm:set_transition(armDoorGrip, 'done', armPose1)
-sm:set_transition(armDoorRelease, 'done', armChangetoPose1)
+
 
 -- TODO: This may not be the best
 -- We may wish to give ready and init

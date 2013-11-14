@@ -59,6 +59,7 @@ local rx_registers = {
   ['position'] = {36,2},
   ['battery'] = {42,2},
   ['temperature'] = {43,1},
+  everything = {36,8},
 }
 libDynamixel.rx_registers = rx_registers
 
@@ -290,9 +291,7 @@ sync_write[2] = sync_write_word
 sync_write[4] = sync_write_dword
 
 local byte_to_number = {}
-byte_to_number[1] = function(byte)
-  return byte
-end
+byte_to_number[1] = function(byte) return byte end
 byte_to_number[2] = DP2.byte_to_word
 byte_to_number[4] = DP2.byte_to_dword
 libDynamixel.byte_to_number = byte_to_number
@@ -536,29 +535,33 @@ end
 --------------------
 -- Get RX functions
 for k,v in pairs( rx_registers ) do
-  libDynamixel['get_rx_'..k] = function( motor_ids, bus )
+  libDynamixel['get_rx_'..k] = function( motor_id, bus )
     local addr = v[1]
     local sz = v[2]
-    
-    -- Construct the instruction (single or sync)
-    local instruction = nil
-    -- Single motor
-    instruction = DP1.read_data(motor_id, addr, sz)
-
+    -- Single motor at a time for reading
+    local instruction = DP1.read_data(motor_id, addr, sz)
     if not bus then return instruction end
-    
     -- Clear old status packets
     local clear = unix.read(bus.fd)
-    
     -- Write the instruction to the bus 
     stty.flush(bus.fd)
     local ret = unix.write(bus.fd, instruction)
-    
     -- Grab the status of the register
     local status = get_status( bus.fd, 1, 1 )
-    local value = byte_to_number[sz]( unpack(status[1].parameter) )
+    local value
+    if sz==8 then
+      -- Everything!
+      value = {}
+      for i=1,3 do
+        local j = i*2
+        value[i] = byte_to_number[2]( unpack(status[1].parameter,j-1,j) )
+      end
+      value[4] = status[1].parameter[7]
+      value[5] = status[1].parameter[8]
+    else
+      value = byte_to_number[sz]( unpack(status[1].parameter) )
+    end
     return status, value
-    
   end --function
 end
 

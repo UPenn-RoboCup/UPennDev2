@@ -250,14 +250,16 @@ function state.update()
     end
   elseif stage=="hookside" then
     if arm_planner:play_arm_sequence(t) then 
-      arm_planner:set_shoulder_yaw_target(-5*Body.DEG_TO_RAD, nil) 
-      local arm_seq = {
+      if hcm.get_state_proceed()==1 then
+        arm_planner:set_shoulder_yaw_target(-5*Body.DEG_TO_RAD, nil) 
+        local arm_seq = {
           armseq={ 
             {trLArm1, trRArm0},
           } 
         }
         if arm_planner:plan_arm_sequence(arm_seq) then stage = "armbacktoinitpos" end
-    end    
+      end    
+    end
   elseif stage=="armbacktoinitpos" then
     if arm_planner:play_arm_sequence(t) then return "done" end
   end

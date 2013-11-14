@@ -218,7 +218,7 @@ stance.enable_torso_compensation = 1
 
 
 --Temporary testing
-walk.bodyHeight = 0.99 --5cm higher
+--walk.bodyHeight = 0.99 --5cm higher
 
 -----------------------------------------------------------
 -- Stance parameters

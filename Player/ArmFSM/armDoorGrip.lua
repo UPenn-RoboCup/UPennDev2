@@ -28,7 +28,7 @@ local trLArmCurrent, trRArmCurrent
 local trLArmRelease = {0,0,0,   90*Body.DEG_TO_RAD,0,0}
 local trRArmRelease = {0,0,0,   -90*Body.DEG_TO_RAD,65*Body.DEG_TO_RAD,0}
 
-local trRArmForward = {0,0,0,   -90*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD,0}
+local trRArmForward = {0,0,0,   -90*Body.DEG_TO_RAD,25*Body.DEG_TO_RAD,0}
 
 --local trRArmRelease = {0,0,0,   0*Body.DEG_TO_RAD,65*Body.DEG_TO_RAD,0}
 
@@ -210,7 +210,8 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       local trRArmTarget = Body.get_forward_rarm(qRArm)
       trRArmTarget[2] = -0.25;
-      arm_planner:set_shoulder_yaw_target(-5*Body.DEG_TO_RAD, 1*Body.DEG_TO_RAD) 
+      arm_planner:set_shoulder_yaw_target(-5*Body.DEG_TO_RAD, 5*Body.DEG_TO_RAD) 
+--      arm_planner:set_shoulder_yaw_target(-5*Body.DEG_TO_RAD, nil) 
       local arm_seq = {
         armseq={ {trLArm1, trRArmTarget},
                  {trLArm1, trRArmTarget+ vector.new({0.15,0,0.05, 0,0,0})

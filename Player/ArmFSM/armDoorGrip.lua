@@ -28,7 +28,7 @@ local trLArmCurrent, trRArmCurrent
 local trLArmRelease = {0,0,0,   90*Body.DEG_TO_RAD,0,0}
 local trRArmRelease = {0,0,0,   -90*Body.DEG_TO_RAD,65*Body.DEG_TO_RAD,0}
 
-local trRArmForward = {0,0,0,   -90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}
+local trRArmForward = {0,0,0,   -90*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD,0}
 
 --local trRArmRelease = {0,0,0,   0*Body.DEG_TO_RAD,65*Body.DEG_TO_RAD,0}
 
@@ -232,7 +232,7 @@ function state.update()
         local arm_seq = {
           armseq={ 
             {trLArm1, trRArmTarget}, 
-            {trLArm1, trRArmTarget+ vector.new({0,-0.20,0,  0,0,0})},
+            {trLArm1, trRArmTarget+ vector.new({0,-0.10,0,  0,0,0})},
             {trLArm1, trRArm0}, 
           } 
         }

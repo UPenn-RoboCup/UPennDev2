@@ -321,11 +321,13 @@ local function plan_opendoor(self, init_cond, init_doorparam, doorparam)
   }
 
   while not (done1 and done2 and done3 and done4 and torsoCompDone) and not failed do
-    current_doorparam[1], done1 = util.approachTol(current_doorparam[1],doorparam[1], dpDoorMax,dt_step)
-    current_doorparam[2], done2 = util.approachTol(current_doorparam[2],doorparam[2], dqDoorRollMax,dt_step)
-    current_doorparam[3], done3 = util.approachTol(current_doorparam[3],doorparam[3], dqDoorYawMax,dt_step)
-    current_doorparam[4], done4 = util.approachTol(current_doorparam[4],doorparam[4], dqWaistYawMax,dt_step)
+    new_doorparam={}
+    new_doorparam[1], done1 = util.approachTol(current_doorparam[1],doorparam[1], dpDoorMax,dt_step)
+    new_doorparam[2], done2 = util.approachTol(current_doorparam[2],doorparam[2], dqDoorRollMax,dt_step)
+    new_doorparam[3], done3 = util.approachTol(current_doorparam[3],doorparam[3], dqDoorYawMax,dt_step)
+    new_doorparam[4], done4 = util.approachTol(current_doorparam[4],doorparam[4], dqWaistYawMax,dt_step)    
     waistNext = current_doorparam[4]
+
     
     local trLArmNext = trLArm
     local trRArmNext = movearm.getDoorHandlePosition(current_doorparam[1],current_doorparam[2],current_doorparam[3])
@@ -334,14 +336,21 @@ local function plan_opendoor(self, init_cond, init_doorparam, doorparam)
     new_cond, dt_step_current, torsoCompDone = 
       self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step, waistNext)
     if not new_cond then 
-      print("FAIL at:",doorparam[3]*180/math.pi)
+      print(string.format("Dooropen fail at doorRoll %.3f , doorYaw %.3f",
+        current_doorparam[2]*180/math.pi,current_doorparam[3]*180/math.pi ))
       failed = true       
+
+      --Just return current trajectory
+      return qLArmQueue,qRArmQueue, uTorsoCompQueue, qWaistQueue, current_cond, current_doorparam
+
     else
+      current_doorparam=new_doorparam
       qLArmQueue[qArmCount] = {new_cond[3],dt_step_current}
       qRArmQueue[qArmCount] = {new_cond[4],dt_step_current}
       uTorsoCompQueue[qArmCount] = {new_cond[5][1],new_cond[5][2]}
       qWaistQueue[qArmCount] = waistNext 
     end
+
     current_cond = new_cond
     qArmCount = qArmCount + 1
   end
@@ -484,13 +493,14 @@ local function init_arm_sequence(self,arm_plan,t0)
 end
 
 local function print_segment_info(self)
-  print(string.format("%d uTC: %.3f %.3f to %.3f %.3f, t=%.2f",
+  if debug_on then
+    print(string.format("%d uTC: %.3f %.3f to %.3f %.3f, t=%.2f",
     self.armQueuePlaybackCount,
     self.uTorsoCompStart[1],self.uTorsoCompStart[2],
     self.uTorsoCompEnd[1],self.uTorsoCompEnd[2],
     self.armQueuePlayEndTime - self.armQueuePlayStartTime 
      ))
-
+  end
 
 --  print("RArm:",self.print_jangle(self.qRArmStart))
 end

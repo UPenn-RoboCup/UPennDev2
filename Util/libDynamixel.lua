@@ -548,18 +548,21 @@ for k,v in pairs( rx_registers ) do
     local ret = unix.write(bus.fd, instruction)
     -- Grab the status of the register
     local status = get_status( bus.fd, 1, 1 )
+--print('Status',status)
+--util.ptable(status)
+--util.ptable(status.parameter)
     local value
-    if sz==8 then
+    if #status.parameter==8 then
       -- Everything!
       value = {}
       for i=1,3 do
         local j = i*2
-        value[i] = byte_to_number[2]( unpack(status[1].parameter,j-1,j) )
+        value[i] = byte_to_number[2]( unpack(status.parameter,j-1,j) )
       end
-      value[4] = status[1].parameter[7]
-      value[5] = status[1].parameter[8]
+      value[4] = status.parameter[7]
+      value[5] = status.parameter[8]
     else
-      value = byte_to_number[sz]( unpack(status[1].parameter) )
+      value = byte_to_number[sz]( unpack(status.parameter) )
     end
     return status, value
   end --function

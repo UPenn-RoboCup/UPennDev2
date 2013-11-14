@@ -215,7 +215,7 @@ local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)
     new_cond, dt_step_current, torsoCompDone = 
       self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step)
     if not new_cond then 
-      print("FAIL")
+      print("Plan failure at",self.print_transform(trLArmNext))    
       --TODO: We can just skip singularities
       failed = true    
     else
@@ -229,13 +229,8 @@ local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)
 
   local t1 = unix.time()  
   print(string.format("%d steps planned, %.2f ms elapsed:",qArmCount,(t1-t0)*1000 ))
-  if failed then 
-    print("Plan failure at",self.print_transform(trLArmNext))
-    print("Arm angle:",unpack(vector.new(qArm)*180/math.pi))
-    return
-  else      
-    return qLArmQueue,qRArmQueue, uTorsoCompQueue, current_cond
-  end
+  if failed then return
+  else return qLArmQueue,qRArmQueue, uTorsoCompQueue, current_cond end
 end
 
 

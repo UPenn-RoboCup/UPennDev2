@@ -154,6 +154,11 @@ function state.update()
         if arm_planner:plan_arm_sequence(arm_seq) then stage = "reachout" end
       end
     end
+    local qLArm = Body.get_larm_command_position()
+    print(string.format("Wrist: %.3f %.3f %.3f",
+      qLArm[5]*Body.RAD_TO_DEG,
+      qLArm[6]*Body.RAD_TO_DEG,
+      qLArm[7]*Body.RAD_TO_DEG))
   elseif stage=="grab" then --Grip the object   
     gripL,doneL = util.approachTol(gripL,1,2,dt)
     Body.set_lgrip_percent(gripL*0.8)

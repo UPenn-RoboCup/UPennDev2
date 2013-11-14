@@ -177,14 +177,16 @@ function util.approachTolRad( values, targets, speedlimits, dt, tolerance )
   -- Iterate through the limits of movements to approach
   for i,speedlimit in ipairs(speedlimits) do
     -- Target value minus present value
-    local delta = math.mod(targets[i]-values[i]+5*math.pi,2*math.pi)-math.pi
+    local delta = util.mod_angle(targets[i]-values[i])
+--    local delta = math.mod(targets[i]-values[i]+5*math.pi,2*math.pi)-math.pi
     -- If any values is out of tolerance,
     -- then we are not within tolerance
     if math.abs(delta) > tolerance then
       within_tolerance = false
       -- Ensure that we do not move motors too quickly
       delta = util.procFunc(delta,0,speedlimit*dt)
-      values[i] = math.mod(values[i]+delta+5*math.pi,2*math.pi)-math.pi
+--      values[i] = math.mod(values[i]+delta+5*math.pi,2*math.pi)-math.pi
+      values[i] = values[i] + delta
     end
   end
   -- Return the next values to take and if we are within tolerance

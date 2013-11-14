@@ -62,28 +62,44 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, waistYa
   local qArmMaxMargin, qArmNext
   local max_margin = -math.huge  
 
+  local debugmsg=false
+
   if isLeft>0 then 
     local shoulderYawTarget = self.shoulder_yaw_target_left
     if shoulderYawTarget then
       local shoulderYaw = util.approachTol(qArm[3],shoulderYawTarget, yawMag, 1)
-      local qArmNext = Body.get_inverse_larm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)      
-      local margin = self.calculate_margin(qArmNext,isLeft)
-      if margin>1*Body.DEG_TO_RAD then return qArmNext end
-      print("No solution with current shoulder angle")
+      local qArmNext = Body.get_inverse_larm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)            
+      return qArmNext
+
+--[[
+      if qArmNext and math.abs(qArmNext[6])>3*Body.DEG_TO_RAD then return qArmNext end
+      print("LEFT")
+      print("Current shoulderyaw:",qArm[3]*180/math.pi)
+      print("Target shoulderyaw:",shoulderYaw*180/math.pi)
+      print("yawMag:",yawMag*180/math.pi)
+      debugmsg=true
+      --]]
     end
   else 
     local shoulderYawTarget = self.shoulder_yaw_target_right    
     if shoulderYawTarget then
       local shoulderYaw = util.approachTol(qArm[3],shoulderYawTarget, yawMag, 1)
       local qArmNext = Body.get_inverse_rarm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)
-      local margin = self.calculate_margin(qArmNext,isLeft)
-      if margin>1*Body.DEG_TO_RAD then return qArmNext end
-      print("No solution with current shoulder angle")
+      return qArmNext
+      --[[
+      if qArmNext and math.abs(qArmNext[6])>3*Body.DEG_TO_RAD then return qArmNext end
+      print("RIGHT")
+      print("Current shoulderyaw:",qArm[3]*180/math.pi)
+      print("Target shoulderyaw:",shoulderYaw*180/math.pi)      
+      print("yawMag:",yawMag*180/math.pi)
+      debugmsg=true
+      --]]
     end
   end
  
   for div = -1,1,step do
     local qShoulderYaw = qArm[3] + div * yawMag
+    if debugmsg then print("CHECKING SHOULDERYAW ",qShoulderYaw*180/math.pi) end
     local qArmNext
     if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)
     else qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), waistYaw) end
@@ -96,8 +112,11 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, waistYa
   if max_margin<0 then
     print("CANNOT FIND CORRECT SHOULDER ANGLE")
     print("trNext:",unpack(trArmNext))
+    return
+  else
+    if debugmsg then print("arm found with shoulderangle",qArmMaxMargin[3]*180/math.pi) end
+    return qArmMaxMargin
   end
-  return qArmMaxMargin
 end
 
 local function get_next_transform(trArm, trArmTarget, dpArmMax,dt_step)  

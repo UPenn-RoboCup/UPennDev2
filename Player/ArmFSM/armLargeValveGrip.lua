@@ -119,6 +119,7 @@ function state.update()
   elseif stage=="pregrip" then 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then --teleop signal
+        arm_planner:save_valveparam({0,0,0,0})
         local trLArmTarget, trRArmTarget = movearm.getLargeValvePosition(0,0,0,0)
         local arm_seq = {armseq={{trLArmTarget, trRArmTarget}}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
@@ -132,15 +133,13 @@ function state.update()
   elseif stage=="inposition" then 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then --teleop signal
-        arm_planner:save_valveparam({0,0,0,0})
-
         local valve_seq={
           {0,0,-0.08,0}, 
           {-45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD,-0.08,0}, 
           {-45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD,0,-0.08},
           {5*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD, 0,-0.08},
           {5*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD, -0.08,0},           
-          {0,0,-0.08,0}, 
+          {0,0,-0.08,0},           
         }
         if arm_planner:plan_valve_sequence(valve_seq) then stage="inposition" end
       elseif hcm.get_state_proceed()==-1 then 

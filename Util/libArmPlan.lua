@@ -434,7 +434,7 @@ local function plan_valve(self, init_cond, init_param, param)
       --Just return current trajectory
       return qLArmQueue,qRArmQueue, uTorsoCompQueue, qWaistQueue, current_cond, current_doorparam
     else
-      current_param=new_param
+      current_param=new_param      
       qLArmQueue[qArmCount] = {new_cond[3],dt_step_current}
       qRArmQueue[qArmCount] = {new_cond[4],dt_step_current}
       uTorsoCompQueue[qArmCount] = {new_cond[5][1],new_cond[5][2]}
@@ -497,7 +497,7 @@ local function plan_valve_sequence(self,valveparam)
   local init_cond = self:load_boundary_condition()
   local LAPs, RAPs, uTPs, WPs = {},{},{},{}
   local counter = 1
-
+  
   for i=1,#valveparam do
     local LAP, RAP, uTP, WP, end_cond, end_valveparam  = 
       self:plan_valve(init_cond, self.init_valveparam, valveparam[i])

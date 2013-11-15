@@ -63,13 +63,13 @@ local nJointWaist = 2
 -- 6 Fingers for gripping
 -- 1 servo for lidar panning
 local indexLGrip = 31
-local nJointLGrip = 3
-local indexRGrip = 34
-local nJointRGrip = 3
+local nJointLGrip = 1
+local indexRGrip = 32
+local nJointRGrip = 1
 -- One motor for lidar panning
-local indexLidar = 37
+local indexLidar = 33
 local nJointLidar = 1
-local nJoint = 37
+local nJoint = 33
 
 local jointNames = {
 	"Neck","Head", -- Head
@@ -86,8 +86,9 @@ local jointNames = {
 	-- Waist
 	"TorsoYaw","TorsoPitch",
 	-- Gripper
-	"l_wrist_grip1","l_wrist_grip2","l_wrist_grip3",
-	"r_wrist_grip1","r_wrist_grip2","r_wrist_grip3",
+--	"l_wrist_grip1","l_wrist_grip2","l_wrist_grip3",
+--	"r_wrist_grip1","r_wrist_grip2","r_wrist_grip3",
+"l_grip", "r_grip",
 	-- lidar movement
 	"ChestLidarPan",
 }
@@ -125,8 +126,9 @@ servo.joint_to_motor={
   15,17,19,21,23,25, -- right leg
   1,3,5,7,9,11,13,  --RArm
   27,28, --Waist yaw/pitch
-  32,34,36, -- left gripper (thumb, index, big&not_thumb)
-  31,33,35, -- right gripper (thumb, index, big&not_thumb)
+--  32,34,36, -- left gripper (thumb, index, big&not_thumb)
+--  31,33,35, -- right gripper (thumb, index, big&not_thumb)
+  64,65, --left, right grippers
   37, -- Lidar pan
 }
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
@@ -156,8 +158,9 @@ servo.steps = 2 * vector.new({
   251000,251000,251000,251000,251000,251000, --RLeg
   251000,251000,251000,251000,151875,151875,151875, --RArm
   251000,251000, -- Waist
-  2048,2048,2048, -- Left gripper
-  2048,2048,2048, -- Right gripper
+--  2048,2048,2048, -- Left gripper
+--  2048,2048,2048, -- Right gripper
+  2048, 2048, -- left/right
   2048, -- Lidar pan
 })
 assert(#servo.steps==nJoint,'Bad servo steps!')
@@ -172,8 +175,9 @@ servo.direction = vector.new({
   ------
   -1,-1,1,-1, 1,1,1, --RArm
   1,1, -- Waist
-  1,1,-1, -- left gripper
-  1,1,-1, -- right gripper
+--  1,1,-1, -- left gripper
+--  1,1,-1, -- right gripper
+1,1, -- lgrip,rgrip
   -1, -- Lidar pan
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
@@ -186,8 +190,9 @@ servo.rad_bias = vector.new({
   0,0,0,45,0,0, --RLeg
   90,-90,90,-45,-90,0,0, --RArm
   0,0, -- Waist
-  0,0,0, -- left gripper
-  0,0,0, -- right gripper
+--  0,0,0, -- left gripper
+--  0,0,0, -- right gripper
+0,0,
   0, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.rad_bias==nJoint,'Bad servo rad_bias!')
@@ -200,8 +205,9 @@ servo.min_rad = vector.new({
   -175,-175,-175,-175,-175,-175, --RLeg
   -90,-87,-90,-160,       -180,-87,-180, --RArm
   -90,-45, -- Waist
-  -32,-12,-12, -- left gripper
-  -12,-32,-32, -- right gripper
+--  -32,-12,-12, -- left gripper
+--  -12,-32,-32, -- right gripper
+-90, -90,
   -60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
@@ -213,14 +219,18 @@ servo.max_rad = vector.new({
   175,175,175,175,175,175, --RLeg
   160,-0,90,-25,     180,87,180, --RArm  
   90,45, -- Waist
-  12,32,32, -- left gripper
-  32,12,12, -- right gripper
+--  12,32,32, -- left gripper
+--  32,12,12, -- right gripper
+0,0,
   60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
 
 -- Convienence tables to go between steps and radians
 servo.moveRange = 360 * DEG_TO_RAD * vector.ones(nJoint)
+-- EX106 is different
+servo.moveRange[indexLGrip] = 250.92 * DEG_TO_RAD
+servo.moveRange[indexRGrip] = 250.92 * DEG_TO_RAD
 -- Step<-->Radian ratios
 servo.to_radians = vector.zeros(nJoint)
 servo.to_steps = vector.zeros(nJoint)

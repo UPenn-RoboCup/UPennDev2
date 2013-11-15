@@ -526,7 +526,7 @@ for k,v in pairs( rx_registers ) do
     -- Grab any status returns
     if using_status_return and single then
       local status = get_status( bus.fd, 1 )
-      return status[1]
+      return status
     end
     
   end --function
@@ -548,19 +548,26 @@ for k,v in pairs( rx_registers ) do
     local ret = unix.write(bus.fd, instruction)
     -- Grab the status of the register
     local status = get_status( bus.fd, 1, 1 )
---print('Status',status)
---util.ptable(status)
---util.ptable(status.parameter)
+    -- If not data from the chain
+    if not status then return end
     local value
     if #status.parameter==8 then
       -- Everything!
       value = {}
-      for i=1,3 do
-        local j = i*2
-        value[i] = byte_to_number[2]( unpack(status.parameter,j-1,j) )
-      end
-      value[4] = status.parameter[7]
-      value[5] = status.parameter[8]
+      -- In steps
+      value.position = byte_to_number[2]( unpack(status.parameter,1,2) )
+      local speed = byte_to_number[2]( unpack(status.parameter,3,4) )
+      if speed>=1024 then speed = 1024-speed end
+      -- To Radians per second
+      value.speed = (speed * math.pi) / 270
+      local load  = byte_to_number[2]( unpack(status.parameter,5,6) )
+      if load>=1024 then load = 1024-load end
+      -- To percent
+      value.load = load / 10.24
+      -- To Volts
+      value.voltage = status.parameter[7] / 10
+      -- Is Celsius already
+      value.temperature = status.parameter[8]
     else
       value = byte_to_number[sz]( unpack(status.parameter) )
     end

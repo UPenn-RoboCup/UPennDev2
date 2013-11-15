@@ -8,6 +8,7 @@ local fsm = require'fsm'
 local motionIdle   = require'motionIdle' --Initial state, all legs torqued off
 local motionInit   = require'motionInit' --Torque on legs and go to initial leg position
 local motionStance = require'motionStance' --Robots stands still, balancing itself, ready for walk again
+local motionHeightReturn = require'motionHeightReturn' --Robots stands still, balancing itself, ready for walk again
 local motionSit    = require'motionSit' --Robots changes the body height for manipulation
 local motionUnSit  = require'motionUnSit' --Robots changes the body height for manipulation
 local motionWalk   = require(Config.dev.walk) --Reactive walking
@@ -29,15 +30,29 @@ sm:add_state(motionStepNonstop)
 sm:add_state(motionStepPreview)
 sm:add_state(motionSit)
 sm:add_state(motionUnSit)
+sm:add_state(motionHeightReturn)
 
 
 sm:set_transition(motionIdle, 'stand', motionInit)
 sm:set_transition(motionInit, 'done', motionStance)
 
-sm:set_transition(motionStance, 'walk', motionWalk)
+
+--motionstance change bodyheight to target height
+--And it does balancing and torso compensation as well
 sm:set_transition(motionStance, 'sit', motionSit)
-sm:set_transition(motionStance, 'step', motionStep)
-sm:set_transition(motionStance, 'preview', motionStepPreview)
+
+--for step, we change back to initial bodyheight and start stepping
+sm:set_transition(motionStance, 'preview', motionHeightReturn)
+sm:set_transition(motionHeightReturn, 'done', motionStepPreview)
+
+
+--We don't use regular walk any more
+--sm:set_transition(motionStance, 'step', motionStep)
+
+--We keep this for webots only
+if IS_WEBOTS then
+  sm:set_transition(motionStance, 'walk', motionWalk)
+end
 
 sm:set_transition(motionSit, 'stand', motionUnSit)
 sm:set_transition(motionUnSit, 'done', motionStance)
@@ -49,7 +64,8 @@ sm:set_transition(motionStep, 'done', motionStance)
 sm:set_transition(motionStepPreview, 'done', motionStance)
 
 
-sm:set_transition(motionWalk, 'done_step', motionStepNonstop)
+--We don't use non-stopping transition here
+--sm:set_transition(motionWalk, 'done_step', motionStepNonstop)
 sm:set_transition(motionStepNonstop, 'done', motionStance)
 sm:set_transition(motionStepNonstop, 'towalk', motionWalk)
 

@@ -146,9 +146,12 @@ function state.exit()
   print(state._NAME..' Exit.  Time elapsed:',t_finish-t_entry )
   -- now on feet
   mcm.set_walk_bipedal(1)
-  -- Update current pose for use by the camera
+
+  -- Update current pose
   mcm.set_stance_bodyHeight(pTorso[3])
   mcm.set_stance_bodyTilt(pTorso[5])
+  hcm.set_motion_bodyHeightTarget(pTorso[3])
+
 
   local footY    = Config.walk.footY
   local supportX = Config.walk.supportX
@@ -164,6 +167,8 @@ function state.exit()
 
   mcm.set_stance_bodyHeight(Config.walk.bodyHeight)
   mcm.set_stance_bodyHeightTarget(Config.walk.bodyHeight)  
+
+  
 
   mcm.set_stance_uTorsoComp({0,0})
   mcm.set_status_iskneeling(0)

@@ -1,5 +1,6 @@
---Arm movement planner
---2013/11 SJ
+-- libArmPlan
+-- (c) 2013 Seung-Joon Yi
+-- Arm movement planner
 
 local vector = require'vector'
 local util = require'util'
@@ -390,6 +391,74 @@ end
 
 
 
+local function plan_valve(self, init_cond, init_param, param)  
+  if not init_cond then return end
+  local done1, done2, done3, done4, failed = false, false, false, false, false
+  local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]}}
+  local trLArm, trRArm = Body.get_forward_larm(init_cond[1]), Body.get_forward_rarm(init_cond[2])
+ 
+  --Insert initial arm joint angle to the queue
+  local dt_step0 = Config.arm.plan.dt_step0
+  local dt_step = Config.arm.plan.dt_step
+  local qLArmQueue,qRArmQueue, uTorsoCompQueue = {{init_cond[3],dt_step0}}, {{init_cond[4],dt_step0}}, {init_cond[5]}
+  local qWaistQueue={init_cond[6] or Body.get_waist_command_position()[1]}
+  local qArmCount = 2
+
+  local torsoCompDone = false  
+  local t0 = unix.time()  
+
+  local current_param={unpack(init_param)}
+  local vel_param={3*Body.DEG_TO_RAD, 3*Body.DEG_TO_RAD, 0.02, 0.02}
+  
+  while not (done1 and done2 and done3 and done4 and torsoCompDone) and not failed do
+    new_param={}
+    new_param[1], done1 = util.approachTol(current_param[1],param[1], vel_param[1],dt_step)
+    new_param[2], done2 = util.approachTol(current_param[2],param[2], vel_param[2],dt_step)
+    new_param[3], done3 = util.approachTol(current_param[3],param[3], vel_param[3],dt_step)
+    new_param[4], done4 = util.approachTol(current_param[4],param[4], vel_param[4],dt_step)
+    waistNext = qWaistQueue[1] --don't change waist
+    
+    local trLArmNext, trRArmNext = 
+      movearm.getLargeValvePosition(unpack(new_param))
+    
+    local new_cond, dt_step_current
+    new_cond, dt_step_current, torsoCompDone = 
+      self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step, waistNext)
+    if not new_cond then 
+      print(string.format("Valve fail at angle L%.3f R%.3f, offset L%.3f R%.3f",
+        new_param[1]*Body.RAD_TO_DEG,
+        new_param[2]*Body.RAD_TO_DEG,
+        new_param[3],
+        new_param[4]))
+      failed = true       
+
+      --Just return current trajectory
+      return qLArmQueue,qRArmQueue, uTorsoCompQueue, qWaistQueue, current_cond, current_doorparam
+    else
+      current_param=new_param      
+      qLArmQueue[qArmCount] = {new_cond[3],dt_step_current}
+      qRArmQueue[qArmCount] = {new_cond[4],dt_step_current}
+      uTorsoCompQueue[qArmCount] = {new_cond[5][1],new_cond[5][2]}
+      qWaistQueue[qArmCount] = waistNext 
+    end
+    current_cond = new_cond
+    qArmCount = qArmCount + 1
+  end
+
+  local t1 = unix.time()  
+  print(string.format("%d steps planned, %.2f ms elapsed:",qArmCount,(t1-t0)*1000 ))
+  if failed then 
+    print("Plan failure at",self.print_transform(trLArmNext))
+    print("Arm angle:",unpack(vector.new(qArm)*180/math.pi))
+    return
+  else      
+    return qLArmQueue,qRArmQueue, uTorsoCompQueue, qWaistQueue, current_cond, current_param
+  end
+end
+
+
+
+
 
 
 
@@ -415,7 +484,6 @@ local function plan_open_door_sequence(self,doorparam)
 
   if init_cond then --plan success    
     print("Arm plan success")
---  for i=1,#RAPs do print(i,":",self.print_jangle(RAPs[i][1] )) end
     self:save_boundary_condition(init_cond)
     local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs, WP=WPs}
     self:init_arm_sequence(arm_plan,Body.get_time())
@@ -425,6 +493,37 @@ local function plan_open_door_sequence(self,doorparam)
     return
   end
 end
+
+local function plan_valve_sequence(self,valveparam)
+  local init_cond = self:load_boundary_condition()
+  local LAPs, RAPs, uTPs, WPs = {},{},{},{}
+  local counter = 1
+  
+  for i=1,#valveparam do
+    local LAP, RAP, uTP, WP, end_cond, end_valveparam  = 
+      self:plan_valve(init_cond, self.init_valveparam, valveparam[i])
+    if not LAP then return end
+    init_cond = end_cond
+    self.init_valveparam = end_valveparam
+    for j=1,#LAP do
+      LAPs[counter],RAPs[counter],uTPs[counter],WPs[counter]= 
+        LAP[j],RAP[j],uTP[j],WP[j]
+      counter = counter+1
+    end
+  end
+  
+  if init_cond then --plan success    
+    print("Arm plan success")
+    self:save_boundary_condition(init_cond)
+    local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs, WP=WPs}
+    self:init_arm_sequence(arm_plan,Body.get_time())
+    return true
+  else --failure
+    print("Arm plan failure!!!")
+    return
+  end
+end
+
 
 local function plan_arm_sequence(self,arm_seq)
   --This function plans for a arm sequence using multiple arm target positions
@@ -616,6 +715,10 @@ local function save_doorparam(self,doorparam)
   self.init_doorparam=doorparam
 end
 
+local function save_valveparam(self,valveparam)
+  self.init_valveparam=valveparam
+end
+
 local function set_shoulder_yaw_target(self,left,right)
   self.shoulder_yaw_target_left = left
   self.shoulder_yaw_target_right = right
@@ -650,6 +753,7 @@ libArmPlan.new_planner = function (params)
   s.current_endcond = {}
 
   s.init_doorparam = {}
+  s.init_valveparam = {0,0,0,0}
 
   --member functions
   s.print_transform = print_transform
@@ -673,14 +777,19 @@ libArmPlan.new_planner = function (params)
   s.plan_open_door_sequence = plan_open_door_sequence
   s.plan_opendoor = plan_opendoor
 
+  s.plan_valve_sequence = plan_valve_sequence
+  s.plan_valve = plan_valve
+
   s.plan_wrist_sequence = plan_wrist_sequence
   s.plan_double_wrist = plan_double_wrist
+
+
 
   s.save_boundary_condition=save_boundary_condition
   s.load_boundary_condition=load_boundary_condition
 
   s.save_doorparam = save_doorparam  
-  s.save_wheelparam = save_wheelparam
+  s.save_valveparam = save_valveparam
   s.set_shoulder_yaw_target = set_shoulder_yaw_target
 
   return s

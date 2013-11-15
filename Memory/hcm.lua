@@ -57,9 +57,11 @@ shared_data.motion.velocity = vector.zeros(3)
 -- Emergency stop of motion
 shared_data.motion.estop = vector.zeros(1)
 
-
 --Head look angle
 shared_data.motion.headangle = vector.zeros(2)
+
+--Body height Target
+shared_data.motion.bodyHeightTarget = vector.zeros(1)
 
 
 -- Waypoints
@@ -76,7 +78,7 @@ shared_data.motion.waypoint_frame = vector.zeros(1)
 -------------------------------
 -- Task specific information --
 -------------------------------
--- Wheel/Valve
+-- Wheel/Large Valve
 shared_data.wheel = {}
 -- This has all values: the right way, since one rpc call
 -- {handlepos(3) handleyaw handlepitch handleradius}

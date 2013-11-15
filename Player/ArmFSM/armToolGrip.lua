@@ -57,7 +57,9 @@ function state.entry()
   trLArm1 = Body.get_forward_larm(qLArm1)
   trRArm1 = Body.get_forward_rarm(qRArm1)  
 
-hcm.set_tool_model({0.52,0.02,0.00,  0*Body.DEG_TO_RAD}) --for webots with bodyTilt
+--for webots with bodyTilt
+-- Commenting out, so that the human must provide input
+--hcm.set_tool_model({0.52,0.02,0.00,  0*Body.DEG_TO_RAD}) 
 
 
 print("XXX")

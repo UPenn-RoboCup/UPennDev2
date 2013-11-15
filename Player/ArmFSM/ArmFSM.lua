@@ -135,9 +135,10 @@ sm:set_transition(armToolGripRight, 'done', armPose1)
 sm:set_transition(armToolGripRight, 'hold', armToolHoldRight)
 
 sm:set_transition(armToolHold, 'toolgrab', armToolChop)
-sm:set_transition(armToolHoldRight, 'toolgrab', armToolChopRight)
-
 sm:set_transition(armToolChop, 'done', armToolHold)
+
+sm:set_transition(armToolHoldRight, 'toolgrab', armToolChopRight)
+sm:set_transition(armToolChopRight, 'done', armToolHoldRight)
 
 sm:set_transition(armDoorGrip, 'done', armPose1)
 sm:set_transition(armDebrisGrip, 'done', armPose1)

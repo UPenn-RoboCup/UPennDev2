@@ -43,7 +43,8 @@ function state.entry()
 
   mcm.set_arm_handoffset(Config.arm.handoffset.chopstick)
 
-  hcm.set_smallvalve_model({0.50,0.25,0.02,-20*Body.DEG_TO_RAD, 90*Body.DEG_TO_RAD})  
+  -- Make the human provide the input
+  --hcm.set_smallvalve_model({0.50,0.25,0.02,-20*Body.DEG_TO_RAD, 90*Body.DEG_TO_RAD})  
 
   getTargetTransform() --This updates lhand_rpy0 and lhand_rpy1
 

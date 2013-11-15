@@ -88,12 +88,23 @@ shared_data.wheel.turnangle = vector.zeros(1)
 
 
 --Small valve (which requires one handed operation)
-
 shared_data.smallvalve = {}
 -- This has all values: the right way, since one rpc call
 -- {pos(3) roll_start roll_end}
 shared_data.smallvalve.model = vector.new({0.50,0.25,0.02,
 			 -20*DEG_TO_RAD, 90*DEG_TO_RAD})
+
+
+--Debris model
+shared_data.debris = {}
+-- {pos(3) yaw}
+shared_data.debris.model = vector.new({0.50,0.25,0.02, 0})
+
+
+
+
+
+
 
 
 

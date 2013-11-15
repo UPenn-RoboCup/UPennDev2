@@ -154,11 +154,13 @@ function state.update()
         if arm_planner:plan_arm_sequence(arm_seq) then stage = "reachout" end
       end
     end
+--[[    
     local qLArm = Body.get_larm_command_position()
     print(string.format("Wrist: %.3f %.3f %.3f",
       qLArm[5]*Body.RAD_TO_DEG,
       qLArm[6]*Body.RAD_TO_DEG,
       qLArm[7]*Body.RAD_TO_DEG))
+--]]      
   elseif stage=="grab" then --Grip the object   
     gripL,doneL = util.approachTol(gripL,1,2,dt)
     Body.set_lgrip_percent(gripL*0.8)
@@ -174,20 +176,36 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        
         local trLArmTarget3 = get_tool_tr({0,0,0.05}, lhand_rpy0)
+        local arm_seq = {          
+          mass={2,0}, --TODO: this is not working right now          
+          armseq={ {trLArmTarget3, trRArm0} }
+        }
+        if arm_planner:plan_arm_sequence(arm_seq) then stage = "lift" end
+      elseif hcm.get_state_proceed()==-1 then stage="ungrab" end
+    end
+  elseif stage=="lift" then
+    if arm_planner:play_arm_sequence(t) then    
+      if hcm.get_state_proceed()==1 then        
         local trLArmTarget4 = get_tool_tr({-0.20,0,0.05}, lhand_rpy0)
         local trLArmTarget5 = {0.20,0.0,-0.10, unpack(lhand_rpy0)}
         local arm_seq = {          
           mass={2,0}, --TODO: this is not working right now          
           armseq={
-            {trLArmTarget3, trRArm0},
             {trLArmTarget4, trRArm0},
             {trLArmTarget5, trRArm0},
           }
         }
-        if arm_planner:plan_arm_sequence(arm_seq) then stage = "pull" end
-      elseif hcm.get_state_proceed()==-1 then stage="ungrab" end
+        if arm_planner:plan_arm_sequence(arm_seq) then stage = "liftpull" end
+      elseif hcm.get_state_proceed()==-1 then 
+        local trLArmTarget3 = get_tool_tr({0,0,0}, lhand_rpy0)
+        local arm_seq = {          
+          mass={1,0}, --TODO: this is not working right now          
+          armseq={ {trLArmTarget3, trRArm0} }
+        }
+        if arm_planner:plan_arm_sequence(arm_seq) then stage = "torsobalance" end
+      end
     end
-  elseif stage=="pull" then --Move arm back to holding position
+  elseif stage=="liftpull" then --Move arm back to holding position
     if arm_planner:play_arm_sequence(t) then    
       stage = "pulldone"
       print("SEQUENCE DONE")

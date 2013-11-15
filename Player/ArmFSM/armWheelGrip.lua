@@ -20,6 +20,8 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   
+  mcm.set_arm_handoffset(Config.arm.handoffset.gripper)
+
   --open gripper
   Body.set_lgrip_percent(0)
   Body.set_rgrip_percent(0)
@@ -33,14 +35,6 @@ function state.entry()
 
   qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
-
-
-
-
-
-
-
-
 
   --This works for valvetest
   --New world model for new IK

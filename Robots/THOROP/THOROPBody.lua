@@ -4,11 +4,20 @@
 --------------------------------
 
 -- Webots THOR-OP Body sensors
+
 local use_camera = true
 local use_lidar_chest  = true
 local use_pose   = true
 local use_lidar_chest  = false
 local use_lidar_head  = false
+
+--Turn off camera for default for webots
+--This makes body crash if we turn it on again...
+
+if IS_WEBOTS then use_camera = false end
+
+
+
 --local use_joint_feedback = false
 
 -- Shared memory for the joints
@@ -1379,12 +1388,16 @@ if IS_WEBOTS then
       webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
       head_lidar_wbt.pointer  = webots.wb_camera_get_range_image(tags.head_lidar)      
     end
+
+
     if use_camera then
       webots.wb_camera_enable(tags.head_camera, camera_timeStep)
       head_camera_wbt.meta.count = 0
       head_camera_wbt.width = webots.wb_camera_get_width(tags.head_camera)
       head_camera_wbt.height = webots.wb_camera_get_height(tags.head_camera)
     end
+
+
 
     -- Update the Sensor Parameters in shared memory
     vcm.set_head_lidar_sensor_params({

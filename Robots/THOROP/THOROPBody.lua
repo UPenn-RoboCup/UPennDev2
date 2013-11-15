@@ -798,11 +798,14 @@ Body.entry = function()
     {15,17,19,21,23,25, --[[waist pitch]]28}
   dynamixels.left_leg.nx_ids =
     {16,18,20,22,24,26, --[[waist]]27}
-  --
+  --[[
   dynamixels.right_arm.mx_ids =
     { 31,33,35 }
-  dynamixels.left_arm.mx_ids =
-    { 32,34,36, --[[lidar]] 37}
+  --]]
+  dynamixels.left_arm.mx_ids = {
+    --32,34,36, 
+    37, --[[lidar]]
+   }
   --
 
   --
@@ -945,6 +948,7 @@ local function add_mxnx_bulk_write(d, is_writes, wr_values, register)
   
   -- Run through the MX motors
   local mx_cmd_ids, mx_cmd_vals = {}, {}
+if d.mx_ids then
   for _,id in ipairs(d.mx_ids) do
     local idx = motor_to_joint[id]
     if is_writes[idx]>0 then
@@ -957,6 +961,7 @@ local function add_mxnx_bulk_write(d, is_writes, wr_values, register)
       end
     end
   end
+end
   -- If nothing to the MX motors, then sync write NX
   if #mx_cmd_ids==0 then return add_nx_sync_write(d, is_writes, wr_values, register) end
 

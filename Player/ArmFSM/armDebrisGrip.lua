@@ -67,8 +67,10 @@ function state.entry()
   arm_planner:save_boundary_condition({qLArm0, qRArm0, qLArm0, qRArm0, {0,0}})
 
   arm_planner:set_shoulder_yaw_target(nil,qRArm0[3]) --Lock right shoulder yaw
-  local wrist_seq = { armseq={ {trLArm1,trRArm0}} }
-  if arm_planner:plan_wrist_sequence(wrist_seq) then stage = "wristturn" end  
+
+  local wrist_seq = {{'wrist',trLArm1,nil}}
+  if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristturn" end  
+
   hcm.set_state_proceed(1)
 end
 
@@ -103,15 +105,12 @@ function state.update()
         print("Current:",arm_planner.print_transform(trLArm))
         local trLArmTarget1 = {0.35,0.25, -0.10, unpack(lhand_rpy0)}      
         local trLArmTarget2 = {0.35,0.25, 0.0, unpack(lhand_rpy0)}
-        local arm_seq = {
-          mass={0,0},
-          armseq={ {trLArmTarget1,trRArm0 }, {trLArmTarget2, trRArm0 }}
-        }
-        if arm_planner:plan_arm_sequence(arm_seq) then stage = "armfront" end      
+        local arm_seq = {{'move',trLArmTarget1, nil},{'move',trLArmTarget2, nil }}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armfront" end      
       elseif hcm.get_state_proceed()==-1 then
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
-        local wrist_seq = {  armseq={ {trLArm0,trRArm0 }}}    
-        if arm_planner:plan_wrist_sequence(wrist_seq) then stage = "armbacktoinitpos" end      
+        local wrist_seq = {{'wrist',trLArm0,nil}}
+        if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armbacktoinitpos" end      
       end
     end
   elseif stage=="armfront" then       
@@ -122,12 +121,12 @@ function state.update()
         local trLArmTarget1 = getTargetTransform()
         trLArmTarget1[1] = 0.35
         local trLArmTarget2 = getTargetTransform({-0.08,0,0})        
-        local arm_seq = { armseq={ {trLArmTarget1,trRArm0 }, {trLArmTarget2, trRArm0 }}}
-        if arm_planner:plan_arm_sequence(arm_seq) then stage = "armposition" end      
+        local arm_seq = {{'move',trLArmTarget1,nil },{'move',trLArmTarget2,nil }}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armposition" end      
       elseif hcm.get_state_proceed()==-1 then
         local trLArmTarget1 = {0.35,0.25, -0.10, unpack(lhand_rpy0)}      
-        local arm_seq = {armseq={ {trLArmTarget1,trRArm0 },{trLArm1,trRArm0 } }}
-        if arm_planner:plan_arm_sequence(arm_seq) then stage = "wristturn" end              
+        local arm_seq = {{'move',trLArmTarget1,nil },{'move',trLArm1,nil }}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "wristturn" end              
       end
     end
   elseif stage=="armposition" then --Move the arm forward using IK now  
@@ -137,17 +136,17 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed(0)==1 then
         local trLArmTarget1 = getTargetTransform()
-        local arm_seq = { armseq={ {trLArmTarget1,trRArm0 } }}
-        if arm_planner:plan_arm_sequence(arm_seq) then stage = "armpositiongrab" end
+        local arm_seq = {{'move',trLArmTarget1,nil }}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armpositiongrab" end
       elseif hcm.get_state_proceed(0)==2 then --modification
         update_model()
-        local trLArmTarget2 = getTargetTransform({-0.08,0,0})        
-        local arm_seq = { armseq={ {trLArmTarget2, trRArm0 }}}
-        if arm_planner:plan_arm_sequence(arm_seq) then stage = "armposition" end      
+        local trLArmTarget1 = getTargetTransform({-0.08,0,0})        
+        local arm_seq = {{'move',trLArmTarget1,nil }}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armposition" end      
       elseif hcm.get_state_proceed(0)==-1 then --go back to center position        
         local trLArmTarget1 = {0.35,0.25, 0.0, unpack(lhand_rpy0)}
-        local arm_seq = { armseq={ {trLArmTarget1,trRArm0 }}}
-        if arm_planner:plan_arm_sequence(arm_seq) then stage = "armfront" end      
+        local arm_seq = {{'move',trLArmTarget1,nil }}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armfront" end      
       end
     end
   elseif stage=="armpositiongrab" then           
@@ -159,32 +158,44 @@ function state.update()
       elseif hcm.get_state_proceed()==2 then   
         update_model()
         local trLArmTarget2 = getTargetTransform()        
-        local arm_seq = { armseq={ {trLArmTarget2, trRArm0 }}}
-        if arm_planner:plan_arm_sequence(arm_seq) then stage = "armpositiongrab" end      
+        local arm_seq = {{'move',trLArmTarget2,nil}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armpositiongrab" end      
       elseif hcm.get_state_proceed(0)==-1 then 
         local trLArmTarget2 = getTargetTransform({-0.08,0,0})
         trLArmTarget2[1] = math.max(0.35,trLArmTarget2[1])
-        local arm_seq = { armseq={ {trLArmTarget2, trRArm0 }}}
-        if arm_planner:plan_arm_sequence(arm_seq) then stage = "armposition" end      
+        local arm_seq = {{'move',trLArmTarget2, nil}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armposition" end      
       end
     end
   elseif stage=="grab" then           
     gripL,doneL = util.approachTol(gripL,1,2,dt) --close gripper
     Body.set_lgrip_percent(gripL*0.8)   
+ 
     if doneL then 
       if hcm.get_state_proceed(0)==1 then
-
+        local trLArmTarget = getTargetTransform({-0.20,0,0})        
+        local arm_seq = {{trLArmTarget, nil}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grabpull" end      
       elseif hcm.get_state_proceed(0)==2 then
         update_model()
         local trLArmTarget2 = getTargetTransform()        
-        local arm_seq = { armseq={ {trLArmTarget2, trRArm0 }}}
-        if arm_planner:plan_arm_sequence(arm_seq) then stage = "grabmove" end      
+        local arm_seq = {{'move',trLArmTarget2, nil}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grabmove" end      
       elseif hcm.get_state_proceed(0)==-1 then 
         stage="armpositiongrab"
       end
     end
   elseif stage=="grabmove" then           
     if arm_planner:play_arm_sequence(t) then stage="grab" end    
+  elseif stage=="grabpull" then               
+    if arm_planner:play_arm_sequence(t) then
+      if hcm.get_state_proceed(0)==-1 then 
+        local trLArmTarget2 = getTargetTransform({-0.08,0,0})
+        trLArmTarget2[1] = math.max(0.35,trLArmTarget2[1])
+        local arm_seq = {{trLArmTarget2, nil}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grabmove" end      
+      end
+    end
   elseif stage=="armbacktoinitpos" then  
     if arm_planner:play_arm_sequence(t) then      
       return "done"

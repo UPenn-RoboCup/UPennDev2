@@ -537,7 +537,9 @@ local function plan_arm_sequence(self,arm_seq)
   for i=1,#arm_seq.armseq do
     local LAP, RAP, uTP, end_cond  = self:plan_double_arm_linear(
       init_cond,arm_seq.armseq[i][1],arm_seq.armseq[i][2])
-    if not LAP then return end
+    if not LAP then 
+print("ESCAPE HERE")
+      return end
     init_cond = end_cond
     for j=1,#LAP do
       LAPs[counter],RAPs[counter],uTPs[counter]= LAP[j],RAP[j],uTP[j]
@@ -575,10 +577,58 @@ local function plan_wrist_sequence(self,arm_seq)
     self:init_arm_sequence(arm_plan,Body.get_time())
     return true
   else --failure
-    print("Arm plan failure!!!")
+    print("Arm plan failureXXXXXXXXXXXXx")
     return
   end
 end
+
+local function plan_arm_sequence2(self,arm_seq)
+  --This function plans for a arm sequence using multiple arm target positions
+  --and initializes the playback if it is possible
+  
+--  {
+--    {'move', trLArm, trRArm}  : move arm transform to target
+--    {'wrist', trLArm, trRArm} : rotate wrist to target transform
+--  }
+
+  local init_cond = self:load_boundary_condition()
+  local LAPs, RAPs, uTPs = {},{},{}
+  local counter = 1
+
+  for i=1,#arm_seq do
+    local trLArm = Body.get_forward_larm(init_cond[1])
+    local trRArm = Body.get_forward_rarm(init_cond[2])
+    if arm_seq[i][1] =='move' then
+      local LAP, RAP, uTP, end_cond  = self:plan_double_arm_linear(
+        init_cond,arm_seq[i][2] or trLArm,arm_seq[i][3] or trRArm)
+      if not LAP then return end
+      init_cond = end_cond
+      for j=1,#LAP do
+        LAPs[counter],RAPs[counter],uTPs[counter]= LAP[j],RAP[j],uTP[j]
+        counter = counter+1
+      end
+    elseif arm_seq[i][1] =='wrist' then
+      local LAP, RAP, uTP, end_cond  = self:plan_double_wrist(
+        init_cond,arm_seq[i][2] or trLArm,arm_seq[i][3] or trRArm)
+      if not LAP then return end
+      init_cond = end_cond
+      for j=1,#LAP do
+        LAPs[counter],RAPs[counter],uTPs[counter]= LAP[j],RAP[j],uTP[j]
+        counter = counter+1
+      end
+    end
+  end
+  
+  self:save_boundary_condition(init_cond)
+  local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs}
+  self:init_arm_sequence(arm_plan,Body.get_time())
+  return true  
+end
+
+
+
+
+
 
 local function init_arm_sequence(self,arm_plan,t0)
   if not arm_plan then return end
@@ -782,7 +832,7 @@ libArmPlan.new_planner = function (params)
   s.plan_wrist_sequence = plan_wrist_sequence
   s.plan_double_wrist = plan_double_wrist
 
-
+  s.plan_arm_sequence2 = plan_arm_sequence2
 
   s.save_boundary_condition=save_boundary_condition
   s.load_boundary_condition=load_boundary_condition

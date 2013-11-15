@@ -111,10 +111,6 @@ local char_to_state = {
   ['-'] = -1,  
 }
 
-
-
-
-
 local function send_command_to_ch(channel, cmd_string)
   -- Default case is to send the command and receive a reply
 --  local ret   = channel:send(msgpack.pack(cmd))

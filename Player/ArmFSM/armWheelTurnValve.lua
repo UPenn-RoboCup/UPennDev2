@@ -46,6 +46,7 @@ function state.entry()
   turnAngle = 0
   hcm.set_wheel_turnangle(0)
   turn_state = 1
+  hcm.set_state_proceed(0)
 end
 
 local t_debug = Body.get_time()
@@ -127,7 +128,7 @@ function state.update()
     if doneL and doneR then turn_state = turn_state+1 end
   end
 
-
+  if hcm.get_state_proceed()==-1 then return "done" end
 end
 
 function state.exit()

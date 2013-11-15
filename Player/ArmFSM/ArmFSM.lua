@@ -136,7 +136,6 @@ sm:set_transition(armWheelGrip, 'reset', armInit)
 sm:set_transition(armWheelTurn, 'reset', armWheelRelease)
 
 sm:set_transition(armWheelTurnValve, 'done', armWheelRelease)
-sm:set_transition(armWheelTurnValve, 'reset', armWheelRelease)
 sm:set_transition(armWheelRelease, 'done', armInit)
 -----------------------------------------------------------------
 

@@ -551,8 +551,7 @@ for k,v in pairs( rx_registers ) do
     -- If not data from the chain
     if not status then return end
     local value
-    --if #status.parameter==8 then
-    if sz==8 then
+    if sz==8 and #status.parameter==8 then
       -- Everything!
       value = {}
       -- In steps
@@ -570,7 +569,7 @@ for k,v in pairs( rx_registers ) do
       -- Is Celsius already
       value.temperature = status.parameter[8]
     else
-      value = byte_to_number[sz]( unpack(status.parameter) )
+      value = byte_to_number[#status.parameter]( unpack(status.parameter) )
     end
     return status, value
   end --function

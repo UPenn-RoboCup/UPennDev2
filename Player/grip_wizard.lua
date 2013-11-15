@@ -38,7 +38,7 @@ while true do
   local s, lall = lD.get_rx_everything(lclaw_id,usb2dyn)
 
   -- TODO: Put everything into shared memory
-  if lall then
+  if type(lall)=='table' then
     t_read = unix.time()
     jcm.sensorPtr.position[lclaw_joint] = 
       Body.make_joint_radian(lclaw_joint,lall.position)
@@ -56,6 +56,8 @@ while true do
     print('Time diff:',t_read_diff)
     util.ptable(lall)
     print()
+  elseif type(lall)=='number' then
+    print('lall',lall)
   end
 
   -- Wait for the rate

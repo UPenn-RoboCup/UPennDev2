@@ -76,7 +76,9 @@ for _,my_fsm in pairs(state_machines) do
   local cur_state_name = cur_state._NAME
   local s = {cur_state_name,nil}
   status[my_fsm._NAME] = s
-  local ret = state_pub_ch:send( mp.pack(status) )
+  if broadcast_en then
+    local ret = state_pub_ch:send( mp.pack(status) )
+  end
 end
 
 -- Joint reading... seems that we are always reading????

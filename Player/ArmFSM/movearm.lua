@@ -403,35 +403,8 @@ function movearm.getDoorHandlePosition(
   local grip_offset_x = door_model[5]
   local knob_offset_y = door_model[6]
  
-
-  local rhand_rpy0 = {-90*Body.DEG_TO_RAD,0,0}
-
   local rhand_rpy0 = {-90*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD,0}
-
-
   local hand_rpy = rhand_rpy0
-
-  local right_hook_offset = {0.05,-0.10,0}
-  local right_hook_offset = {0,0,0}
-
---print("knob roll:",knob_roll*180/math.pi)
-
---[[
-  local trHandle = T.eye()
-    * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])    
-    * T.rotZ(door_yaw)
-    * T.trans(grip_offset_x, door_r+knob_offset_y, 0) 
-    * T.rotX(knob_roll)
-    * T.trans(0,-knob_offset_y, 0) 
-    * T.transform6D(
-      {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
-    * T.trans(
-        -right_hook_offset[1],
-        -right_hook_offset[2],
-        -right_hook_offset[3])
-
---]]
---This one has zero hand yaw
 
   local hand_yaw = door_yaw
   if door_yaw>10*Body.DEG_TO_RAD then
@@ -444,20 +417,56 @@ function movearm.getDoorHandlePosition(
     * T.trans(grip_offset_x, door_r+knob_offset_y, 0)     
     * T.rotX(knob_roll)
     * T.trans(0,-knob_offset_y, 0) 
-
     * T.rotX(-knob_roll)
---    * T.rotZ(-door_yaw)
     * T.rotZ(hand_yaw-door_yaw)
     * T.rotX(knob_roll)
-
     * T.transform6D(
       {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
-    
---
 
   local trTarget = T.position6D(trHandle)
   return trTarget
 end
 
+function movearm.getLargeValvePosition(
+  turn_angleL,
+  turn_angleR,
+  offsetL,
+  offsetR
+  )
+
+  local wheel   = hcm.get_wheel_model()
+  local handle_pos    = vector.slice(wheel,1,3)
+  local handle_yaw    = wheel[4]
+  local handle_pitch  = 0 --we assume zero pitch 
+  local handle_radius = wheel[6] 
+
+  local lhand_rpy = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}
+  local rhand_rpy = {0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD}
+
+  local lhand_rpy = {0,0*Body.DEG_TO_RAD, -10*Body.DEG_TO_RAD}
+  local rhand_rpy = {0,0*Body.DEG_TO_RAD, 10*Body.DEG_TO_RAD}
+
+
+
+  --Calculate the hand transforms
+  local trHandle = T.eye()
+       * T.trans(handle_pos[1],handle_pos[2],handle_pos[3])
+       * T.rotZ(handle_yaw)       
+  
+  local trGripL = trHandle
+       * T.rotX(turn_angleL)
+       * T.trans(0,handle_radius,0)
+       * T.transform6D(
+          {0,0,0,lhand_rpy[1],lhand_rpy[2],lhand_rpy[3]})  
+       * T.trans(offsetL,0,0)
+
+  local trGripR = trHandle
+       * T.rotX(turn_angleR)
+       * T.trans(0,-handle_radius,0)
+       * T.transform6D(
+          {0,0,0,rhand_rpy[1],rhand_rpy[2],rhand_rpy[3]})  
+       * T.trans(offsetR,0,0)       
+  return T.position6D(trGripL), T.position6D(trGripR)
+end
 
 return movearm

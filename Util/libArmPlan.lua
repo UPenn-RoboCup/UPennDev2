@@ -1,5 +1,6 @@
---Arm movement planner
---2013/11 SJ
+-- libArmPlan
+-- (c) 2013 Seung-Joon Yi
+-- Arm movement planner
 
 local vector = require'vector'
 local util = require'util'

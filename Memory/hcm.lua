@@ -76,7 +76,7 @@ shared_data.motion.waypoint_frame = vector.zeros(1)
 -------------------------------
 -- Task specific information --
 -------------------------------
--- Wheel/Valve
+-- Wheel/Large Valve
 shared_data.wheel = {}
 -- This has all values: the right way, since one rpc call
 -- {handlepos(3) handleyaw handlepitch handleradius}

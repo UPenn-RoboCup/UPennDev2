@@ -52,9 +52,9 @@ function state.entry()
   trLArm1 = Body.get_forward_larm(qLArm1)
   trRArm1 = Body.get_forward_rarm(qRArm1)  
 
-  hcm.set_wheel_model({0.36,0.0,0.02,0,0,0.20})
-
-  hcm.set_wheel_model({0.50,0.0,0.02,0,0,0.18})
+  -- Make the human provide the input
+--  hcm.set_wheel_model({0.36,0.0,0.02,0,0,0.20})
+--  hcm.set_wheel_model({0.50,0.0,0.02,0,0,0.18})
 
   local wrist_seq = {  armseq={{trLArm1, trRArm1}}  }
   if arm_planner:plan_wrist_sequence(wrist_seq) then   

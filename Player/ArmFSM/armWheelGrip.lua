@@ -101,7 +101,7 @@ function state.update()
     Body.set_lgrip_percent(gripL*0.8)
     Body.set_rgrip_percent(gripR*0.8)
     if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed(0)==1 then 
+      if hcm.get_state_proceed()==1 then 
         local trLArmTarget={0.25,0.15,-0.15, unpack(lhand_rpy0)}
         local trRArmTarget={0.25,-0.15,-0.15, unpack(rhand_rpy0)}
         local arm_seq = {
@@ -109,6 +109,10 @@ function state.update()
           armseq={{trLArmTarget, trRArmTarget}}
         }
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armwide" end
+      elseif hcm.get_state_proceed()==-1 then 
+        arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
+        local wrist_seq = {  armseq={{trLArm0, trRArm0}}  }
+        if arm_planner:plan_wrist_sequence(wrist_seq) then stage = "armbacktoinitpos" end
       end
     end
   elseif stage=="armwide" then    
@@ -117,18 +121,18 @@ function state.update()
     Body.set_lgrip_percent(gripL*0.8)
     Body.set_rgrip_percent(gripR*0.8)
     if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed(0)==1 then 
+      if hcm.get_state_proceed()==1 then 
         local trLArmTarget, trRArmTarget = getArmWheelPosition(0.08,0,0)
         local arm_seq = {armseq={{trLArmTarget, trRArmTarget}}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
-      elseif hcm.get_state_proceed(0)==-1 then         
+      elseif hcm.get_state_proceed()==-1 then         
         local arm_seq = {armseq={{trLArm1, trRArm1}}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="wristturn" end
       end
     end
   elseif stage=="pregrip" then 
     if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed(0)==1 then --teleop signal
+      if hcm.get_state_proceed()==1 then --teleop signal
         local trLArmTarget, trRArmTarget = getArmWheelPosition(0,0,0)
         local arm_seq = {armseq={{trLArmTarget, trRArmTarget}}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
@@ -141,9 +145,9 @@ function state.update()
     end
   elseif stage=="inposition" then 
     if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed(0)==1 then --teleop signal
+      if hcm.get_state_proceed()==1 then --teleop signal
         stage="grip"      
-      elseif hcm.get_state_proceed(0)==-1 then --teleop signal
+      elseif hcm.get_state_proceed()==-1 then --teleop signal
         local trLArmTarget, trRArmTarget = getArmWheelPosition(0.08,0,0)
         local arm_seq = {armseq={{trLArmTarget, trRArmTarget}}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
@@ -154,6 +158,8 @@ function state.update()
     gripR,doneL = util.approachTol(gripR,1,2,dt)  --Close gripper
     Body.set_lgrip_percent(gripL*0.8)
     Body.set_rgrip_percent(gripR*0.8)
+  elseif stage=="armbacktoinitpos" then 
+    if arm_planner:play_arm_sequence(t) then return "done" end
   end
   hcm.set_state_proceed(0)
 end

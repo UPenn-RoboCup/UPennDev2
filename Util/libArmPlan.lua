@@ -680,6 +680,7 @@ libArmPlan.new_planner = function (params)
   s.load_boundary_condition=load_boundary_condition
 
   s.save_doorparam = save_doorparam  
+  s.save_wheelparam = save_wheelparam
   s.set_shoulder_yaw_target = set_shoulder_yaw_target
 
   return s

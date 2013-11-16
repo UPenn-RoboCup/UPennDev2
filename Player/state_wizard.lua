@@ -1,3 +1,7 @@
+---------------------------------
+-- State Machine Manager for Team THOR
+-- (c) Stephen McGill
+---------------------------------
 dofile'include.lua'
 local Body = require'Body'
 local util = require'util'

@@ -128,7 +128,7 @@ servo.joint_to_motor={
   27,28, --Waist yaw/pitch
 --  32,34,36, -- left gripper (thumb, index, big&not_thumb)
 --  31,33,35, -- right gripper (thumb, index, big&not_thumb)
-  64,65, --left, right grippers
+  63,64, --left, right grippers
   37, -- Lidar pan
 }
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')

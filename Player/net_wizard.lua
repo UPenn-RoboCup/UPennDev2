@@ -1,3 +1,8 @@
+---------------------------------
+-- Network Monitor for Team THOR
+-- (c) Stephen McGill
+---------------------------------
+
 dofile'include.lua'
 require'unix'
 

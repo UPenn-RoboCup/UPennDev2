@@ -204,7 +204,7 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   end
 end
 
-local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)  
+local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1, fix_wrist)  
 -- Now we compensate for the COM movement
 -- if we reach out, we have to move torso back to compensate
 -- and then we need to reach out further to compensate for that movement
@@ -217,6 +217,7 @@ local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)
   --SJ: stupid reference issue if we directly use the init_cond
   local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]}}
   local trLArm, trRArm = Body.get_forward_larm(init_cond[1]), Body.get_forward_rarm(init_cond[2])
+  local qLArm0, qRArm0 = init_cond[1],init_cond[2]
 
   --Insert initial arm joint angle to the queue
   local dt_step0 = Config.arm.plan.dt_step0
@@ -225,13 +226,22 @@ local function plan_double_arm_linear(self, init_cond, trLArm1, trRArm1)
   local qArmCount = 2
 
   local dpArmMax = Config.arm.linear_slow_limit  
+  if fix_wrist then dpArmMax = Config.arm.plan.velWrist  end
   local torsoCompDone = false
   local trLArmNext, trRArmNext
 
   local t0 = unix.time()  
   while not (doneL and doneR and torsoCompDone) and not failed  do        
-    trLArmNext, doneL = self.get_next_transform(trLArm,trLArm1,dpArmMax,dt_step)
-    trRArmNext, doneR = self.get_next_transform(trRArm,trRArm1,dpArmMax,dt_step)
+    trLArmNext,doneL = util.approachTolTransform(trLArm, trLArm1, dpArmMax, dt_step )
+    trRArmNext,doneR = util.approachTolTransform(trRArm, trRArm1, dpArmMax, dt_step )
+
+    if fix_wrist then
+      local qLArmTemp = Body.get_inverse_arm_given_wrist( qLArm0, trLArmNext)
+      local qRArmTemp = Body.get_inverse_arm_given_wrist( qRArm0, trRArmNext)
+      trLArmNext = Body.get_forward_larm(qLArmTemp)
+      trRArmNext = Body.get_forward_rarm(qRArmTemp)  
+    end
+
     local new_cond, dt_step_current
     new_cond, dt_step_current, torsoCompDone = 
       self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step)
@@ -598,25 +608,20 @@ local function plan_arm_sequence2(self,arm_seq)
   for i=1,#arm_seq do
     local trLArm = Body.get_forward_larm(init_cond[1])
     local trRArm = Body.get_forward_rarm(init_cond[2])
+    local LAP, RAP, uTP, end_cond
     if arm_seq[i][1] =='move' then
-      local LAP, RAP, uTP, end_cond  = self:plan_double_arm_linear(
+      LAP, RAP, uTP, end_cond  = self:plan_double_arm_linear(
         init_cond,arm_seq[i][2] or trLArm,arm_seq[i][3] or trRArm)
-      if not LAP then return end
-      init_cond = end_cond
-      for j=1,#LAP do
-        LAPs[counter],RAPs[counter],uTPs[counter]= LAP[j],RAP[j],uTP[j]
-        counter = counter+1
-      end
     elseif arm_seq[i][1] =='wrist' then
-      local LAP, RAP, uTP, end_cond  = self:plan_double_wrist(
-        init_cond,arm_seq[i][2] or trLArm,arm_seq[i][3] or trRArm)
-      if not LAP then return end
-      init_cond = end_cond
-      for j=1,#LAP do
-        LAPs[counter],RAPs[counter],uTPs[counter]= LAP[j],RAP[j],uTP[j]
-        counter = counter+1
-      end
+      LAP, RAP, uTP, end_cond  = self:plan_double_arm_linear(
+        init_cond,arm_seq[i][2] or trLArm,arm_seq[i][3] or trRArm, true)
     end
+    if not LAP then return end
+    init_cond = end_cond
+    for j=1,#LAP do
+      LAPs[counter],RAPs[counter],uTPs[counter]= LAP[j],RAP[j],uTP[j]
+      counter = counter+1
+    end    
   end
   
   self:save_boundary_condition(init_cond)

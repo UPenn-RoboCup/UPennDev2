@@ -68,8 +68,8 @@ print("trRArm0:",arm_planner.print_transform(trLArm0))
   arm_planner:save_boundary_condition({qLArm0, qRArm0, qLArm0, qRArm0, {0,0}})
 
   arm_planner:set_shoulder_yaw_target(nil,qRArm0[3]) --Lock right shoulder yaw
-  local wrist_seq = { armseq={ {trLArm1,trRArm0}} }
-  if arm_planner:plan_wrist_sequence(wrist_seq) then stage = "wristturn" end  
+  local wrist_seq = {{'wrist',trLArm1,nil}}
+  if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristturn" end  
   hcm.set_state_proceed(1)
 end
 

@@ -113,8 +113,8 @@ sm:set_transition(armPose1, 'teleop', armTeleop)
 
 
 sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
---sm:set_transition(armPose1, 'toolgrab', armToolGrip)
-sm:set_transition(armPose1, 'toolgrab', armToolGripRight)
+sm:set_transition(armPose1, 'toolgrab', armToolGrip)
+--sm:set_transition(armPose1, 'toolgrab', armToolGripRight)
 
 
 sm:set_transition(armPose1, 'wheelgrab', armWheelGrip)

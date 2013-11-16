@@ -569,7 +569,9 @@ for k,v in pairs( rx_registers ) do
       -- Is Celsius already
       value.temperature = status.parameter[8]
     else
-      value = byte_to_number[#status.parameter]( unpack(status.parameter) )
+      local ff = byte_to_number[#status.parameter]
+      if not ff then return end
+      value = ff( unpack(status.parameter) )
     end
     return status, value
   end --function

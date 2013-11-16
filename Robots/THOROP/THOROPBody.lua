@@ -839,6 +839,7 @@ end
 
 local process_register_read = {
   position = function(idx,val,t)
+    if type(val)~='number' then return end
     jcm.sensorPtr.position[idx] = Body.make_joint_radian( idx, val )
     jcm.treadPtr.position[idx]  = t
   end,

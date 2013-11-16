@@ -220,6 +220,15 @@ stance.enable_torso_compensation = 1
 --Temporary testing
 --walk.bodyHeight = 0.99 --5cm higher
 
+
+--For testing kneeling down
+  walk.footY = 0.09
+
+
+
+
+
+
 -----------------------------------------------------------
 -- Stance parameters
 -----------------------------------------------------------

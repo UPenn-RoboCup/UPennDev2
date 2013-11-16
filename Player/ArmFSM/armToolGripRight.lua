@@ -14,7 +14,7 @@ local qLArm0,qRArm0, trLArm0, trRArm0, trLArm1, trARArm1
 local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}
 local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD}
 
-local gripL, gripR = 1,1
+local gripL, gripR = .8,.8
 local stage
 local debugdata
 

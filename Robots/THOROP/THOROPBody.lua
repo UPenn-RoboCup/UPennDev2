@@ -229,8 +229,8 @@ assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
 -- Convienence tables to go between steps and radians
 servo.moveRange = 360 * DEG_TO_RAD * vector.ones(nJoint)
 -- EX106 is different
-servo.moveRange[indexLGrip] = 250.92 * DEG_TO_RAD
-servo.moveRange[indexRGrip] = 250.92 * DEG_TO_RAD
+--servo.moveRange[indexLGrip] = 250.92 * DEG_TO_RAD
+--servo.moveRange[indexRGrip] = 250.92 * DEG_TO_RAD
 -- Step<-->Radian ratios
 servo.to_radians = vector.zeros(nJoint)
 servo.to_steps = vector.zeros(nJoint)
@@ -531,7 +531,7 @@ Body.set_rgrip_percent = function( percent )
   percent = math.min(math.max(percent,0),1)
   --  
   local thumb = indexRGrip
-  local radian = percent*servo.min_rad[thumb] + (1-percent)*servo.max_rad[thumb]
+  local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
   jcm.actuatorPtr.command_position[thumb] = radian
   jcm.writePtr.command_position[thumb] = 1
   --[[

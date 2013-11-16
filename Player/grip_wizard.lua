@@ -8,15 +8,16 @@ require'jcm'
 require'unix'
 local Body = require'Body'
 local lD = require'libDynamixel'
-local usb2dyn = lD.new_bus('/dev/ttyUSB4',1e6)
+local usb2dyn = lD.new_bus('/dev/ttyUSB4',2e6)
 local util = require'util'
 
 local rclaw_id = 64
 local rclaw_joint = Body.indexRGrip
-local LOOP_RATE_HZ = 60
-local LOOP_SEC = 1/60
+local LOOP_RATE_HZ = 100
+local LOOP_SEC = 1/LOOP_RATE_HZ
 
 local t0 = unix.time()
+local t_debug = t0
 -- Loop forever
 while true do
   local t = unix.time()
@@ -54,16 +55,19 @@ while true do
     --
     local t_read_diff = t_read - (t_read_last or t0)
     t_read_last = t_read
-    -- Debug printing
-    print('Time diff:',t_read_diff)
-    util.ptable(lall)
-    print()
+    if t-t_debug>1 then
+      -- Debug printing
+      print('Time diff:',t_read_diff)
+      util.ptable(lall)
+      print()
+      t_debug=t
+    end
   elseif type(lall)=='number' then
     print('Error?',lall)
   end
 
   -- Wait for the rate
   local t_loop = unix.time()
-  local t_wait = 1e6*(LOOP_SEC - t_loop)
+  local t_wait = 1e6*math.min(math.max(LOOP_SEC-t_loop,LOOP_SEC),0)
   unix.usleep(t_wait)
 end

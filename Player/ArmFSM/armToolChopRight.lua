@@ -58,7 +58,24 @@ local function update_model()
 end
 
 
+
+
 local stage
+local cut_no=1
+
+local function update_cutpos()
+  cut_no = (cut_no+1)%3
+  if cut_no==2 then
+    hcm.set_tool_cutpos1({0.45,0.0,0.45, 0})
+    hcm.set_tool_cutpos2({0.45,0.13,0, 0})    
+  elseif cut_no==0 then
+    hcm.set_tool_cutpos1({0.45,0.13,0, 0})    
+    hcm.set_tool_cutpos2({0.45,-0.17,0, 0})
+  else
+    hcm.set_tool_cutpos1({0.45,-0.17,0, 0})
+    hcm.set_tool_cutpos2({0.45,0.0,0.45, 0})
+  end
+end
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -81,11 +98,11 @@ function state.entry()
   stage = "drillout"
   hcm.set_state_proceed(1)
 
-  hcm.set_tool_cutpos1({0.40,-0.17,0, 0})
-  hcm.set_tool_cutpos2({0.40,0.13,0, 0})
 
-   hcm.set_tool_cutpos1({0.45,-0.17,0, 0})
-  hcm.set_tool_cutpos2({0.45,0.13,0, 0})
+  hcm.set_tool_cutpos1({0.45,-0.17,0, 0})
+  hcm.set_tool_cutpos2({0.45,0.0,0.45, 0})
+
+
 end
 
 function state.update()
@@ -138,7 +155,10 @@ function state.update()
       if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillposition" end      
     end
   elseif stage=="drillcut" then
-    if arm_planner:play_arm_sequence(t) then stage = "drillpositionwait" end
+    if arm_planner:play_arm_sequence(t) then 
+      update_cutpos()
+      stage = "drillpositionwait" 
+    end
   elseif stage=="undrillposition" then
     if arm_planner:play_arm_sequence(t) then stage = "drilloutwait" end
   elseif stage=="undrillout" then

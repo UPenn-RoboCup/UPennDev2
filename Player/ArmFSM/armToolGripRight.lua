@@ -36,10 +36,12 @@ local function update_model()
   local trRArmTarget = hcm.get_hands_right_tr_target()
   local trRArm = hcm.get_hands_right_tr()
   local tool_model = hcm.get_tool_model()
-  tool_model[1],tool_model[2],tool_model[3] = 
+  tool_model[1],tool_model[2],tool_model[3], tool_model[4] = 
   tool_model[1] + trRArmTarget[1] - trRArm[1],
   tool_model[2] + trRArmTarget[2] - trRArm[2],
-  tool_model[3] + trRArmTarget[3] - trRArm[3]
+  tool_model[3] + trRArmTarget[3] - trRArm[3],
+  tool_model[4] + util.mod_angle(trRArmTarget[6] - trRArm[6])
+
   hcm.set_tool_model(tool_model)
 end
 
@@ -189,6 +191,11 @@ function state.update()
         arm_planner:set_hand_mass(0,1)   
         local arm_seq = {{'move',nil,trRArmTarget3}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "torsobalance" end
+      elseif hcm.get_state_proceed() == 2 then --Model modification
+        update_model()        
+        local trRArmTarget2 = get_tool_tr(0,0,0.05)
+        local arm_seq = {{'move',nil,trRArmTarget2}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end
       end
     end
   elseif stage=="liftpull" then --Move arm back to holding position

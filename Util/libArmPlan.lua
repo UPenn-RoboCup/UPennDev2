@@ -199,7 +199,7 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
     local uTorsoCompNextTarget = self:get_torso_compensation(qLArmNext,qRArmNext,massL,massR)
     local uTorsoCompNext, torsoCompDone = util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
 
-    local new_cond = {qLArmNext, qRArmNext, qLArmNextComp, qRArmNextComp, uTorsoCompNext}
+    local new_cond = {qLArmNext, qRArmNext, qLArmNextComp, qRArmNextComp, uTorsoCompNext, waistYaw}
     return new_cond, dt_step_current, torsoCompDone    
   end
 end
@@ -466,10 +466,115 @@ local function plan_valve(self, init_cond, init_param, param)
 end
 
 
+local function plan_unified(self, plantype, init_cond, init_param, target_param)
+  --param: {trLArm,trRArm} for move
+  --param: {trLArm,trRArm} for wrist
 
 
+  if not init_cond then return end
+  local done, failed = false, false, false
+
+  local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]},
+     init_cond[6] or Body.get_waist_command_position()[1] }
+  local trLArm, trRArm = Body.get_forward_larm(init_cond[1]), Body.get_forward_rarm(init_cond[2])
+  local qLArm0, qRArm0 = init_cond[1],init_cond[2]
+
+  --Insert initial arm joint angle to the queue
+  local dt_step0 = Config.arm.plan.dt_step0
+  local dt_step = Config.arm.plan.dt_step
+  local qLArmQueue,qRArmQueue, uTorsoCompQueue = {{init_cond[3],dt_step0}}, {{init_cond[4],dt_step0}}, {init_cond[5]}
+  local qWaistQueue={current_cond[6]}
+
+  local current_param={unpack(init_param)}
+  local qArmCount = 2
+
+  local dpArmMax = Config.arm.linear_slow_limit  
+  if plantype=="move" then
+
+  elseif plantype=="wrist" then
+    dpArmMax = Config.arm.plan.velWrist  
+  elseif plantype=="door" then
+    target_param[4] = target_param[4] or current_cond[6]
+  end
 
 
+  --for door
+  local dpDoorMax = vector.slice(Config.arm.linear_slow_limit,1,3)
+  local dqDoorRollMax = Config.arm.plan.velDoorRoll
+  local dqDoorYawMax = Config.arm.plan.velDoorYaw
+  local dqWaistYawMax = 3*Body.DEG_TO_RAD
+  local vel_param={dpDoorMax, dqDoorRollMax, dqDoorYawMax, dqWaistYawMax}
+
+  
+  local done, torsoCompDone = false, false
+  local trLArmNext, trRArmNext, waistNext
+  local new_param = {}
+
+  local t0 = unix.time()  
+
+  while not done and not failed  do        
+    if plantype=="move" then
+      trLArmNext,doneL = util.approachTolTransform(trLArm, target_param[1], dpArmMax, dt_step )
+      trRArmNext,doneR = util.approachTolTransform(trRArm, target_param[2], dpArmMax, dt_step )
+      waistNext = current_cond[6]
+      done = doneL and doneR
+    elseif plantype=="wrist" then
+print("wrist")      
+
+
+print("CurrentL:",self.print_transform(trLArm))
+print("CurrentR:",self.print_transform(trRArm))
+print("Target1:",self.print_transform(target_param[1]))
+print("Target2:",self.print_transform(target_param[2]))
+
+      trLArmNext,doneL = util.approachTolTransform(trLArm, target_param[1], dpArmMax, dt_step )      
+      trRArmNext,doneR = util.approachTolTransform(trRArm, target_param[2], dpArmMax, dt_step )
+
+      self.print_transform(trRArmNext) 
+      waistNext = current_cond[6]
+      local qLArmTemp = Body.get_inverse_arm_given_wrist( qLArm0, trLArmNext)
+      local qRArmTemp = Body.get_inverse_arm_given_wrist( qRArm0, trRArmNext)
+      trLArmNext = Body.get_forward_larm(qLArmTemp)
+      trRArmNext = Body.get_forward_rarm(qRArmTemp)  
+      done = doneL and doneR
+    elseif plantype=="door" then
+      local done1,done2,done3,done4      
+      new_param[1], done1 = util.approachTol(current_param[1],target_param[1], vel_param[1],dt_step)
+      new_param[2], done2 = util.approachTol(current_param[2],target_param[2], vel_param[2],dt_step)
+       new_param[3], done3 = util.approachTol(current_param[3],target_param[3], vel_param[3],dt_step)
+      new_param[4], done4 = util.approachTol(current_param[4],target_param[4], vel_param[4],dt_step)
+      done = done1 and done2 and done3 and done4
+      trLArmNext = trLArm
+      trRArmNext = movearm.getDoorHandlePosition(current_param[1],current_param[2],current_param[3])      
+      waistNext = new_param[4]
+    end
+
+    local new_cond, dt_step_current
+    new_cond, dt_step_current, torsoCompDone = 
+      self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step, waistNext)
+
+    done = done and torsoCompDone
+    if not new_cond then 
+      print("Plan failure at",self.print_transform(trLArmNext))    
+      --TODO: We can just skip singularities
+      failed = true    
+    else
+      trLArm, trRArm = trLArmNext, trRArmNext
+      qLArmQueue[qArmCount] = {new_cond[3],dt_step_current}
+      qRArmQueue[qArmCount] = {new_cond[4],dt_step_current}
+      qWaistQueue[qArmCount] = waistNext 
+      uTorsoCompQueue[qArmCount] = {new_cond[5][1],new_cond[5][2]}      
+      current_cond = new_cond
+      current_param = new_param
+      qArmCount = qArmCount + 1
+    end    
+  end
+
+  local t1 = unix.time()  
+  print(string.format("%d steps planned, %.2f ms elapsed:",qArmCount,(t1-t0)*1000 ))
+  if failed then return
+  else return qLArmQueue,qRArmQueue, uTorsoCompQueue, qWaistQueue, current_cond, current_param end
+end
 
 
 
@@ -599,35 +704,47 @@ local function plan_arm_sequence2(self,arm_seq)
 --  {
 --    {'move', trLArm, trRArm}  : move arm transform to target
 --    {'wrist', trLArm, trRArm} : rotate wrist to target transform
+--    {'valve', }      
 --  }
 
   local init_cond = self:load_boundary_condition()
-  local LAPs, RAPs, uTPs = {},{},{}
+  local LAPs, RAPs, uTPs, WPs = {},{},{},{}
   local counter = 1
 
   for i=1,#arm_seq do
     local trLArm = Body.get_forward_larm(init_cond[1])
     local trRArm = Body.get_forward_rarm(init_cond[2])
-    local LAP, RAP, uTP, end_cond
+    local LAP, RAP, uTP,end_cond
+    local WP, end_doorparam --for door
     if arm_seq[i][1] =='move' then
-      LAP, RAP, uTP, end_cond  = self:plan_double_arm_linear(
-        init_cond,arm_seq[i][2] or trLArm,arm_seq[i][3] or trRArm)
+      LAP, RAP, uTP, WP, end_cond  = self:plan_unified('move',
+        init_cond,
+        {trLArm,trRArm},{arm_seq[i][2] or trLArm,arm_seq[i][3] or trRArm} )
     elseif arm_seq[i][1] =='wrist' then
-      LAP, RAP, uTP, end_cond  = self:plan_double_arm_linear(
-        init_cond,arm_seq[i][2] or trLArm,arm_seq[i][3] or trRArm, true)
+      LAP, RAP, uTP, WP, end_cond  = self:plan_unified('wrist',
+        init_cond,
+        {trLArm,trRArm},{arm_seq[i][2] or trLArm,arm_seq[i][3] or trRArm} )
+    elseif arm_seq[i][1] =='door' then
+      LAP, RAP, uTP, WP, end_cond, end_doorparam  = self:plan_unified('door',
+        init_cond, 
+        self.init_doorparam, 
+        vector.slice(arm_seq[i],2,#arm_seq[i]) )
     end
     if not LAP then return end
-    init_cond = end_cond
+    init_cond = end_cond    
+    if end_doorparam then self.init_doorparam = end_doorparam end
+    
     for j=1,#LAP do
-      LAPs[counter],RAPs[counter],uTPs[counter]= LAP[j],RAP[j],uTP[j]
+      LAPs[counter],RAPs[counter],uTPs[counter],WPs[counter]= 
+        LAP[j],RAP[j],uTP[j],WP[j]
       counter = counter+1
-    end    
+    end
   end
-  
+
   self:save_boundary_condition(init_cond)
-  local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs}
+  local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs, WP=WPs}
   self:init_arm_sequence(arm_plan,Body.get_time())
-  return true  
+  return true
 end
 
 
@@ -836,6 +953,7 @@ libArmPlan.new_planner = function (params)
 
   s.plan_wrist_sequence = plan_wrist_sequence
   s.plan_double_wrist = plan_double_wrist
+  s.plan_unified = plan_unified
 
   s.plan_arm_sequence2 = plan_arm_sequence2
 

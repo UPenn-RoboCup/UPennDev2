@@ -406,7 +406,8 @@ arm.plan.dt_step = 0.2
 arm.plan.search_step = 1
 --arm.plan.search_step = .25
 
-arm.plan.velWrist = {100,100,100, 15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD}
+arm.plan.velWrist = {100000,100000,100000, 
+                      15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD}
 arm.plan.velDoorRoll = 10*DEG_TO_RAD
 arm.plan.velDoorYaw = 2*DEG_TO_RAD
 

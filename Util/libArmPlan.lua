@@ -488,15 +488,15 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   local current_param={unpack(init_param)}
   local qArmCount = 2
 
-  local dpArmMax = Config.arm.linear_slow_limit  
+  
   if plantype=="move" then
-
   elseif plantype=="wrist" then
-    dpArmMax = Config.arm.plan.velWrist  
   elseif plantype=="door" then
     target_param[4] = target_param[4] or current_cond[6]
   end
 
+  local dpArmMax = Config.arm.linear_slow_limit  
+  local dpWristMax = Config.arm.plan.velWrist  
 
   --for door
   local dpDoorMax = vector.slice(Config.arm.linear_slow_limit,1,3)
@@ -519,24 +519,15 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       waistNext = current_cond[6]
       done = doneL and doneR
     elseif plantype=="wrist" then
-print("wrist")      
-
-
-print("CurrentL:",self.print_transform(trLArm))
-print("CurrentR:",self.print_transform(trRArm))
-print("Target1:",self.print_transform(target_param[1]))
-print("Target2:",self.print_transform(target_param[2]))
-
-      trLArmNext,doneL = util.approachTolTransform(trLArm, target_param[1], dpArmMax, dt_step )      
-      trRArmNext,doneR = util.approachTolTransform(trRArm, target_param[2], dpArmMax, dt_step )
-
-      self.print_transform(trRArmNext) 
+      trLArmNext,doneL = util.approachTolWristTransform(trLArm, target_param[1], dpWristMax, dt_step )      
+      trRArmNext,doneR = util.approachTolWristTransform(trRArm, target_param[2], dpWristMax, dt_step )
+      done = doneL and doneR
       waistNext = current_cond[6]
       local qLArmTemp = Body.get_inverse_arm_given_wrist( qLArm0, trLArmNext)
       local qRArmTemp = Body.get_inverse_arm_given_wrist( qRArm0, trRArmNext)
       trLArmNext = Body.get_forward_larm(qLArmTemp)
       trRArmNext = Body.get_forward_rarm(qRArmTemp)  
-      done = doneL and doneR
+
     elseif plantype=="door" then
       local done1,done2,done3,done4      
       new_param[1], done1 = util.approachTol(current_param[1],target_param[1], vel_param[1],dt_step)
@@ -549,8 +540,7 @@ print("Target2:",self.print_transform(target_param[2]))
       waistNext = new_param[4]
     end
 
-    local new_cond, dt_step_current
-    new_cond, dt_step_current, torsoCompDone = 
+    local new_cond, dt_step_current, torsoCompDone=    
       self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step, waistNext)
 
     done = done and torsoCompDone
@@ -721,9 +711,12 @@ local function plan_arm_sequence2(self,arm_seq)
         init_cond,
         {trLArm,trRArm},{arm_seq[i][2] or trLArm,arm_seq[i][3] or trRArm} )
     elseif arm_seq[i][1] =='wrist' then
+
       LAP, RAP, uTP, WP, end_cond  = self:plan_unified('wrist',
         init_cond,
-        {trLArm,trRArm},{arm_seq[i][2] or trLArm,arm_seq[i][3] or trRArm} )
+        {trLArm,trRArm},
+        {arm_seq[i][2] or trLArm,  arm_seq[i][3] or trRArm} )
+
     elseif arm_seq[i][1] =='door' then
       LAP, RAP, uTP, WP, end_cond, end_doorparam  = self:plan_unified('door',
         init_cond, 

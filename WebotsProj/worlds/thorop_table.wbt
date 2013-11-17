@@ -8,8 +8,8 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-  orientation -0.111858 0.976077 0.186445 2.04567
-  position 2.10539 1.86756 -0.382091
+  orientation 0.344291 0.920017 0.187168 5.18095
+  position -2.38619 2.10955 1.37923
 }
 Background {
   skyColor [
@@ -30,7 +30,6 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP7_NoBoundaries {
-#  translation -0.1 1.15535 0.05
   translation -0.1 1.15535 -0.03
   controller "thorop"
   controllerArgs "0 32"

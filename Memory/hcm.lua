@@ -131,9 +131,10 @@ shared_data.tool={}
 shared_data.tool.model = vector.new({0.45,0.15,-0.05,  0*DEG_TO_RAD})
 
 -- The positions to start and end cutting
-shared_data.tool.cutpos1 = vector.new({0.40,0.17,0})
-shared_data.tool.cutpos2 = vector.new({0.40,-0.13,0})
-
+shared_data.tool.cutpos1 = vector.new({0.40,0.17,0, 0})
+shared_data.tool.cutpos2 = vector.new({0.40,-0.13,0, 0})
+shared_data.tool.cutpos3 = vector.new({0.40,-0.13,0, 0})
+shared_data.tool.yaw = vector.zeros(1)
 
 
 -- Dipoles for arbitrary grabbing

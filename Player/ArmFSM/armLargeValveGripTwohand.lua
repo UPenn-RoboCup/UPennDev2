@@ -9,19 +9,12 @@ local arm_planner = libArmPlan.new_planner()
 local T      = require'Transform'
 
 --Initial hand angle
-local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}
-local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD}
-
-
 local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, -30*Body.DEG_TO_RAD}
 local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 30*Body.DEG_TO_RAD}
 
 local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRarm0
 local stage
 local gripL, gripR = 1,1
-
-local qLArmInit0,qRArmInit0
-
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -52,14 +45,10 @@ function state.entry()
   trLArm1 = Body.get_forward_larm(qLArm1)
   trRArm1 = Body.get_forward_rarm(qRArm1)  
 
-  hcm.set_wheel_model({0.36,0.0,0.02,0,0,0.20})
-
   hcm.set_wheel_model({0.50,0.0,0.02,0,0,0.18})
 
-  local wrist_seq = {  armseq={{trLArm1, trRArm1}}  }
-  if arm_planner:plan_wrist_sequence(wrist_seq) then   
-    stage = "wristturn"
-  end
+  local wrist_seq = {{'wrist',trLArm1, trRArm1}}
+  if arm_planner:plan_arm_sequence(wrist_seq) then stage = "wristturn" end
 end
 
 
@@ -83,20 +72,14 @@ function state.update()
     Body.set_rgrip_percent(gripR*0.8)
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
---        local trLArmTarget={0.25,0.20,-0.15, unpack(lhand_rpy0)}
---        local trRArmTarget={0.25,-0.20,-0.15, unpack(rhand_rpy0)}
-
         local trLArmTarget={0.35,0.20,-0.15, unpack(lhand_rpy0)}
         local trRArmTarget={0.35,-0.20,-0.15, unpack(rhand_rpy0)}
-        local arm_seq = {
-          mass={0,0},
-          armseq={{trLArmTarget, trRArmTarget}}
-        }
+        local arm_seq = {{'move',trLArmTarget, trRArmTarget}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armwide" end
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
-        local wrist_seq = {  armseq={{trLArm0, trRArm0}}  }
-        if arm_planner:plan_wrist_sequence(wrist_seq) then stage = "armbacktoinitpos" end
+        local wrist_seq = {{'wrist',trLArm0, trRArm0}}
+        if arm_planner:plan_arm_sequence(wrist_seq) then stage = "armbacktoinitpos" end
       end
     end
   elseif stage=="armwide" then        
@@ -105,14 +88,12 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
         local trLArmTarget, trRArmTarget = movearm.getLargeValvePosition(0,0,-0.08,-0.08)
-
         print("TrL:",arm_planner.print_transform(trLArmTarget))
         print("TrR:",arm_planner.print_transform(trRArmTarget))
-
-        local arm_seq = {armseq={{trLArmTarget, trRArmTarget}}}
+        local arm_seq = {{'move',trLArmTarget, trRArmTarget}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       elseif hcm.get_state_proceed()==-1 then         
-        local arm_seq = {armseq={{trLArm1, trRArm1}}}
+        local arm_seq = {{'move',trLArm1, trRArm1}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="wristturn" end
       end
     end
@@ -121,18 +102,19 @@ function state.update()
       if hcm.get_state_proceed()==1 then --teleop signal
         arm_planner:save_valveparam({0,0,0,0})
         local trLArmTarget, trRArmTarget = movearm.getLargeValvePosition(0,0,0,0)
-        local arm_seq = {armseq={{trLArmTarget, trRArmTarget}}}
+        local arm_seq = {{'move',trLArmTarget, trRArmTarget}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
       elseif hcm.get_state_proceed(0)==-1 then
         local trLArmTarget={0.25,0.15,-0.15, unpack(lhand_rpy0)}
         local trRArmTarget={0.25,-0.15,-0.15, unpack(rhand_rpy0)}
-        local arm_seq = {armseq={{trLArmTarget, trRArmTarget}}}
+        local arm_seq = {{'move',trLArmTarget, trRArmTarget}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armwide" end
       end
     end
   elseif stage=="inposition" then 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then --teleop signal
+        --[[
         local valve_seq={
           {0,0,-0.08,0}, 
           {-45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD,-0.08,0}, 
@@ -142,9 +124,21 @@ function state.update()
           {0,0,-0.08,0},           
         }
         if arm_planner:plan_valve_sequence(valve_seq) then stage="inposition" end
+        --]]
+        local valve_seq={
+          {'valvetwoarm',0,0,-0.08,0}, 
+          {'valvetwoarm',-45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD,-0.08,0}, 
+          {'valvetwoarm',-45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD,0,-0.08},
+          {'valvetwoarm',5*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD, 0,-0.08},
+          {'valvetwoarm',5*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD, -0.08,0},           
+          {'valvetwoarm',0,0,-0.08,0},           
+        }
+        if arm_planner:plan_arm_sequence(valve_seq) then stage="inposition" end
+
+
       elseif hcm.get_state_proceed()==-1 then 
         local trLArmTarget, trRArmTarget = movearm.getLargeValvePosition(0,0,-0.05,-0.05)
-        local arm_seq = {armseq={{trLArmTarget, trRArmTarget}}}
+        local arm_seq = {{'move',trLArmTarget, trRArmTarget}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       end
     end

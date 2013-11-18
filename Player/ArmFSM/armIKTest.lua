@@ -9,8 +9,8 @@ local arm_planner = libArmPlan.new_planner()
 
 --Door opening state using HOOK
 local handle_clearance = vector.new({0,0,-0.05})
-local lhand_rpy0 = {0*Body.DEG_TO_RAD,0,0}
-local rhand_rpy0 = {-0*Body.DEG_TO_RAD,0,0}
+local lhand_rpy0 = {90*Body.DEG_TO_RAD,0,0}
+local rhand_rpy0 = {-90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}
 local trLArm1, trRArm1
 local stage
 
@@ -72,8 +72,10 @@ function state.update()
       qWaist = Body.get_waist_command_position()
       qWaist = util.approachTol(
         qWaist,
-        vector.new({20*Body.DEG_TO_RAD,0}),
-        vector.new({1*Body.DEG_TO_RAD,0}),
+--        vector.new({20*Body.DEG_TO_RAD,0}),
+--        vector.new({1*Body.DEG_TO_RAD,0}),
+        vector.new({0,79*Body.DEG_TO_RAD}),
+        vector.new({0,5*Body.DEG_TO_RAD}),
         dt)
       Body.set_waist_command_position(qWaist)
 
@@ -81,8 +83,10 @@ function state.update()
       qWaist = Body.get_waist_command_position()
       qWaist = util.approachTol(
         qWaist,
-        vector.new({-20*Body.DEG_TO_RAD,0}),
-        vector.new({1*Body.DEG_TO_RAD,0}),
+--        vector.new({-20*Body.DEG_TO_RAD,0}),
+--        vector.new({1*Body.DEG_TO_RAD,0}),
+        vector.new({0,-20*Body.DEG_TO_RAD}),
+        vector.new({0,1*Body.DEG_TO_RAD}),        
         dt)
       Body.set_waist_command_position(qWaist)
 

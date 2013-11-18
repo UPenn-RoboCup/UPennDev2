@@ -10,8 +10,9 @@ local arm_planner = libArmPlan.new_planner()
 --SJ: Now we assume we have STRAIGHT gripper
 
 
-local lhand_rpy0 = {90*Body.DEG_TO_RAD,90*Body.DEG_TO_RAD,0}
-local rhand_rpy0 = {-90*Body.DEG_TO_RAD,-90*Body.DEG_TO_RAD,0}
+local lhand_rpy0 = {90*Body.DEG_TO_RAD,89*Body.DEG_TO_RAD,0}
+local rhand_rpy0 = {-90*Body.DEG_TO_RAD,89*Body.DEG_TO_RAD,0}
+
 
 local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRArm0
 local stage

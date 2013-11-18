@@ -137,7 +137,7 @@ local function set_hand_mass(self,mLeftHand, mRightHand)
 end
 
 local function reset_torso_comp(self,qLArm,qRArm)
-  local qWaist = {0,0}--TODO: will we use waist position as well?
+  local qWaist = Body.get_waist_command_position()
   local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,
         mcm.get_stance_bodyTilt(), 0,0)        
   self.torsoCompBias = {-com[1]/com[4],-com[2]/com[4]}
@@ -145,7 +145,7 @@ end
 
 
 local function get_torso_compensation(self,qLArm,qRArm,massL,massR)
-  local qWaist = {0,0}--TODO: will we use waist position as well?
+  local qWaist = Body.get_waist_command_position() --TODO: dynamic waist movement
   if mcm.get_status_iskneeling()==1 or 
     Config.stance.enable_torso_compensation==0 then
     return {0,0}
@@ -168,8 +168,8 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   local yawMag = dt_step * velYaw
 
   local qLArmNext, qRArmNext = qLArm, qRArm
-  qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, {waistYaw,0})
-  qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, {waistYaw,0})
+  qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
+  qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
 
   if not qLArmNext or not qRArmNext then print("ARM PLANNING ERROR")
     return 
@@ -534,7 +534,7 @@ local function play_arm_sequence(self,t)
 
     if self.waistQueue then
       qWaist = self.waistStart + ph * (self.waistEnd - self.waistStart)
-      Body.set_waist_command_position({qWaist,0})
+      Body.set_waist_command_position({qWaist,Body.get_waist_command_position()[2]})
     end
   end
   return false

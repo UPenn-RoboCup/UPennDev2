@@ -77,9 +77,13 @@ local char_to_event = {
   ['6'] = {'arm_ch','debrisgrab'},
   ['7'] = {'arm_ch','teleop'},
 
-  ['8'] = {'motion_ch','sit'},
-  ['9'] = {'motion_ch','stand'},
-  ['0'] = {'motion_ch','walk'},
+  ['8'] = {'arm_ch','rocky'},
+
+
+
+--  ['8'] = {'motion_ch','sit'},
+--  ['9'] = {'motion_ch','stand'},
+--  ['0'] = {'motion_ch','walk'},
  
 }
 

@@ -22,6 +22,7 @@ local t_debug = t0
 while true do
   local t = unix.time()
 
+----[[
   -- Check if torque enabled or not
   if Body.get_rgrip_torque_enable(1)==1 then
     -- Left Command Position
@@ -32,6 +33,12 @@ while true do
   else
     lD.set_rx_torque_enable(rclaw_id,0,usb2dyn)
   end
+--]]
+----[[
+lD.set_rx_command_torque(rclaw_id,0,usb2dyn)
+unix.usleep(1e3)
+lD.set_rx_torque_mode(rclaw_id,1,usb2dyn)
+--]]
 
   -- Wait a millisecond for the motor to be ready for the read command
   unix.usleep(1e3)

@@ -59,6 +59,9 @@ local rx_registers = {
   ['position'] = {36,2},
   ['battery'] = {42,2},
   ['temperature'] = {43,1},
+  torque_mode = {70,1},
+  command_torque = {71,2},
+  command_acceleration = {73,1},
   everything = {36,8},
 }
 libDynamixel.rx_registers = rx_registers

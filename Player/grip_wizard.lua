@@ -6,39 +6,54 @@
 dofile'include.lua'
 require'jcm'
 require'unix'
+local util = require'util'
 local Body = require'Body'
 local lD = require'libDynamixel'
+
+-- Open the bus
+local baud = 2e6
 local usb2dyn = lD.new_bus('/dev/ttyUSB4',2e6)
-local util = require'util'
 
 local rclaw_id = 64
 local rclaw_joint = Body.indexRGrip
 local LOOP_RATE_HZ = 100
 local LOOP_SEC = 1/LOOP_RATE_HZ
 
+-- Use position mode to start
+local is_torque_mode = false
+lD.set_rx_torque_mode(rclaw_id,0,usb2dyn)
+lD.set_rx_torque_enable(rclaw_id,0,usb2dyn)
+
 local t0 = unix.time()
 local t_debug = t0
 -- Loop forever
 while true do
   local t = unix.time()
-
-----[[
-  -- Check if torque enabled or not
-  if Body.get_rgrip_torque_enable(1)==1 then
-    -- Left Command Position
-    -- A command auto torque enables the motor
+  
+  -- In position mode
+  if jcm.gripper.torque_mode[2]==0 then
+    -- Make sure we are in the right mode
+    while is_torque_mode do
+      lD.set_rx_torque_mode(rclaw_id,0,usb2dyn)
+      unix.usleep(1e2)
+      is_torque_mode = lD.get_rx_torque_mode(rclaw_id,1,usb2dyn)==0
+    end
+    -- Open the hand with a position
     local rclaw = Body.get_rgrip_command_position(1)
     local rstep = Body.make_joint_step(Body.indexRGrip,rclaw)
     lD.set_rx_command_position(rclaw_id,rstep,usb2dyn)
   else
-    lD.set_rx_torque_enable(rclaw_id,0,usb2dyn)
+    -- Make sure we are in the torque mode
+    while not is_torque_mode do
+      lD.set_rx_torque_mode(rclaw_id,1,usb2dyn)
+      unix.usleep(1e2)
+      is_torque_mode = lD.get_rx_torque_mode(rclaw_id,1,usb2dyn)==1
+    end
+    -- Grab the torque from the user
+    local r_tq_step = Body.get_rgrip_command_torque_step()
+    -- Close the hand with a certain force (0 is no force)
+    lD.set_rx_command_torque(rclaw_id,r_tq_step,usb2dyn)
   end
---]]
-----[[
-lD.set_rx_command_torque(rclaw_id,0,usb2dyn)
-unix.usleep(1e3)
-lD.set_rx_torque_mode(rclaw_id,1,usb2dyn)
---]]
 
   -- Wait a millisecond for the motor to be ready for the read command
   unix.usleep(1e3)

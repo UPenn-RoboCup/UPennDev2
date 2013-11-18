@@ -497,36 +497,52 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
       return val
   	end -- Set
   end -- anthropomorphic
+  
+  -- Overwrite torque_enable
+  if actuator=='command_torque' then
+    Body['set_'..part:lower()..'_'..actuator] = function(val,i) end
+    Body['get_'..part:lower()..'_'..actuator] = function(val,i) end
+    Body[set_key] = function() end
+    Body[get_key] = function() end
+  end
+  
   --------------------------------
 end
 
+-- For torque control (no reading from the motor just yet)
+Body.set_rgrip_command_torque = function(val)
+  -- Set the command_torque
+  jcm.gripper.command_torque[2] = val
+  -- Set the command_torque
+  jcm.gripper.torque_mode[2] = 1
+end
 
---SJ: I reverted them back
+-- For torque control (no reading from the motor just yet)
+Body.get_rgrip_command_torque_step = function()
+  local val = jcm.gripper.command_torque[2]
+  -- Val is in mA; 4.5 mA increments for the 
+  val = math.floor(val / 4.5)
+  -- Not too large/small
+  val = util.procFunc(val,0,1023)
+  if val<0 then val=1024-val end
+  -- Return the value and the mode
+  return val, jcm.gripper.torque_mode[2]
+end
 
--- TODO: should be in body or a Grip module?
--- Grip module may have more advanced techniques...
--- More gripper functions
--- TODO: Use body actuator access to JCM
-Body.set_lgrip_percent = function( percent )
+-- For position control
+Body.set_lgrip_percent = function( percent, is_torque )
+  local thumb = indexLGrip
   percent = math.min(math.max(percent,0),1)
   -- Convex combo
-  local thumb = indexLGrip
   local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
   jcm.actuatorPtr.command_position[thumb] = radian
   jcm.writePtr.command_position[thumb] = 1
-  --[[
-  local index = indexLGrip+1
-  local radian = (percent)*servo.min_rad[index] + (1-percent)*servo.max_rad[index]
-  jcm.actuatorPtr.command_position[index] = radian
-  jcm.writePtr.command_position[index] = 1
-  --
-  local ring = indexLGrip+2
-  local radian = (percent)*servo.min_rad[ring] + (1-percent)*servo.max_rad[ring]
-  jcm.actuatorPtr.command_position[ring] = radian
-  jcm.writePtr.command_position[ring] = 1
-  --]]
+  -- Set the command_torque to position
+  jcm.gripper.torque_mode[1] = 0
+  -- Set the command_torque to zero
+  jcm.gripper.command_torque[1] = 0
 end
-Body.set_rgrip_percent = function( percent )
+Body.set_rgrip_percent = function( percent, is_torque )
   -- Convex combo
   percent = math.min(math.max(percent,0),1)
   --  
@@ -534,17 +550,10 @@ Body.set_rgrip_percent = function( percent )
   local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
   jcm.actuatorPtr.command_position[thumb] = radian
   jcm.writePtr.command_position[thumb] = 1
-  --[[
-  local index = indexRGrip+1
-  local radian = (1-percent)*servo.min_rad[index] + percent*servo.max_rad[index]
-  jcm.actuatorPtr.command_position[index] = radian
-  jcm.writePtr.command_position[index] = 1
-  --
-  local ring = indexRGrip+2
-  local radian = (1-percent)*servo.min_rad[ring] + percent*servo.max_rad[ring]
-  jcm.actuatorPtr.command_position[ring] = radian
-  jcm.writePtr.command_position[ring] = 1
-  --]]
+  -- Set the command_torque
+  jcm.gripper.torque_mode[2] = 0
+  -- Set the command_torque to zero
+  jcm.gripper.command_torque[2] = 0
 end
 
 
@@ -942,6 +951,9 @@ local function add_nx_sync_write(d, is_writes, wr_values, register)
 end
 
 local function add_mxnx_bulk_write(d, is_writes, wr_values, register)
+  -- No command_torque
+  if register=='command_torque' then return end
+  
   -- Just sync write to NX's if no MX on the chain
   if not d.mx_ids or not libDynamixel.mx_registers[register] then
     return add_nx_sync_write(d, is_writes, wr_values, register)
@@ -1049,6 +1061,8 @@ Body.update = function()
           'rfoot'})
         d.n_expect_read = d.n_expect_read + 2
       end
+    elseif register=='command_torque' then
+      -- No command_torque
     else
       local get_func    = libDynamixel['get_nx_'..register]
       local mx_get_func = libDynamixel['get_mx_'..register]

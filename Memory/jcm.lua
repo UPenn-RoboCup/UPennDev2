@@ -92,6 +92,12 @@ for k,v in pairs(shared_data.actuator) do
   shared_data.twrite[k] = v
 end
 
+-- Gripper only data Left, Right
+-- Torque of joints is in mA (just for the gripper)
+shared_data.gripper.command_torque = vector.zeros( 2 )
+-- 0: Position mode, 1: torque mode
+shared_data.gripper.torque_mode = vector.zeros( 2 )
+
 ------------------------
 -- Call the initializer
 memory.init_shm_segment(..., shared_data, shared_data_sz)

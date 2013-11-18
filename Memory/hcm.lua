@@ -78,13 +78,18 @@ shared_data.motion.waypoint_frame = vector.zeros(1)
 -------------------------------
 -- Task specific information --
 -------------------------------
--- Wheel/Large Valve
+
+
+
+-------------------------------------------------------------------
+-- OLD VALVE MODEL (which can have nonzero yaw and pitch)
 shared_data.wheel = {}
 -- This has all values: the right way, since one rpc call
 -- {handlepos(3) handleyaw handlepitch handleradius}
 shared_data.wheel.model = vector.new({0.36,0.00,0.02, 0, 0*DEG_TO_RAD,0.20})
 -- Target angle of wheel
 shared_data.wheel.turnangle = vector.zeros(1)
+-------------------------------------------------------------------
 
 
 
@@ -95,6 +100,13 @@ shared_data.smallvalve = {}
 -- {pos(3) roll_start roll_end}
 shared_data.smallvalve.model = vector.new({0.50,0.25,0.02,
 			 -20*DEG_TO_RAD, 90*DEG_TO_RAD})
+
+--Large valve (which requires one handed operation)
+shared_data.largevalve={}
+--We assume the valve has zero pitch and yaw
+-- {pos(3) radius roll_start roll_end}
+shared_data.largevalve.model = vector.new({0.55,0.15,0.02,
+	0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD})
 
 
 --Debris model

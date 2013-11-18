@@ -34,11 +34,7 @@ function state.entry()
 
   arm_planner:reset_torso_comp(qLArm, qRArm)
   arm_planner:save_boundary_condition({qLArm, qRArm, qLArm, qRArm, {0,0}})
-  
   arm_planner:set_shoulder_yaw_target(nil,nil)
-
-  trLArm = Body.get_forward_larm(qLArm)
-  print(unpack(vector.new(trLArm)*Body.RAD_TO_DEG))
   
   qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})  
   qRArm1 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
@@ -51,10 +47,8 @@ function state.entry()
   hcm.set_hands_left_tr_target(trLArm1)
   hcm.set_hands_right_tr_target(trRArm1)
     
-  local wrist_seq = {  armseq={{trLArm1, trRArm1}}  }
-  if arm_planner:plan_wrist_sequence(wrist_seq) then   
-    stage = "wristturn"
-  end
+  local wrist_seq = {{'wrist',trLArm1, trRArm1}}
+  if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristturn" end
 end
 
 
@@ -69,41 +63,23 @@ function state.update()
   --if t-t_entry > timeout then return'timeout' end
   
   if stage=="wristturn" then --Turn yaw angles first
---[[    
-    if movearm.setArmJoints(qLArm0,qRArm0,dt, Config.arm.joint_init_limit) ==1 then       
-      stage = "teleopwait"      
-    end
---]]
-    if arm_planner:play_arm_sequence(t) then 
-      stage="teleopwait"
-    end
+    if arm_planner:play_arm_sequence(t) then stage="teleopwait" end
   elseif stage=="teleopwait" then       
-
-
-
     if hcm.get_state_proceed(0)==2 then --teleop signal
-
       local qLArm = Body.get_larm_command_position()
       print(unpack(vector.new(qLArm)*Body.RAD_TO_DEG))
-
       local trLArmTarget=  hcm.get_hands_left_tr_target()
       local trRArmTarget=  hcm.get_hands_right_tr_target()
-      local arm_seq = {
-        mass={0,0},
-        armseq={
-          {trLArmTarget, trRArmTarget},          
-        }
-      }
-      if arm_planner:plan_arm_sequence(arm_seq) then 
+      local arm_seq = {{'move',trLArmTarget, trRArmTarget}}      
+      if arm_planner:plan_arm_sequence2(arm_seq) then 
         stage="teleopmove" 
         hcm.set_hands_left_tr(trLArmTarget)
         hcm.set_hands_right_tr(trRArmTarget)
-      else        
       end
     elseif hcm.get_state_proceed(0)== -1 then 
       arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
-      local arm_seq = {armseq={{trLArm1, trRArm1}} }
-      if arm_planner:plan_arm_sequence(arm_seq) then stage="armposreset" end
+      local arm_seq = {{'move',trLArm1, trRArm1}}
+      if arm_planner:plan_arm_sequence2(arm_seq) then stage="armposreset" end
     end
   elseif stage=="teleopmove" then 
     if arm_planner:play_arm_sequence(t) then 
@@ -111,8 +87,8 @@ function state.update()
     end
   elseif stage=="armposreset" then 
     if arm_planner:play_arm_sequence(t) then 
-      local wrist_seq = {armseq={{trLArm0, trRArm0}} }
-      if arm_planner:plan_wrist_sequence(wrist_seq) then stage="wristreset" end
+      local wrist_seq = {{'wrist',trLArm0, trRArm0}}
+      if arm_planner:plan_arm_sequence2(wrist_seq) then stage="wristreset" end
     end
   elseif stage=="wristreset" then 
     if arm_planner:play_arm_sequence(t) then return "done" end

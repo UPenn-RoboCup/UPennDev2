@@ -27,11 +27,6 @@ local armIKTest = require'armIKTest'
 
 local armRocky = require'armRocky'
 
--- Wheel specific states
-local armWheelGrip = require'armWheelGrip'
-local armWheelTurn = require'armWheelTurn'
-local armWheelRelease = require'armWheelRelease'
-local armWheelTurnValve = require'armWheelTurnValve'
 
 -- Door specific states
 local armDoorGrip = require'armDoorGrip'
@@ -41,15 +36,14 @@ local armToolGrip = require'armToolGrip'
 local armToolHold = require'armToolHold'
 local armToolChop = require'armToolChop'
 
-local armToolGripRight = require'armToolGripRight'
-local armToolHoldRight = require'armToolHoldRight'
-local armToolChopRight = require'armToolChopRight'
-
 -- Small circular valve turning (one hand turning)
 local armSmallValveGrip = require'armSmallValveGrip'
 
--- Large circular valve turning (two hand turning)
+-- Large circular valve turning (one hand turning)
 local armLargeValveGrip = require'armLargeValveGrip'
+
+-- Large circular valve turning (two hand turning)
+local armLargeValveGripTwohand = require'armLargeValveGripTwohand'
 
 -- bar valve turning
 local armBarValveGrip = require'armBarValveGrip'
@@ -71,22 +65,15 @@ local sm = fsm.new(armIdle);
 sm:add_state(armInit)
 sm:add_state(armPose1)
 sm:add_state(armTeleop)
-sm:add_state(armWheelGrip)
-sm:add_state(armWheelTurn)
-sm:add_state(armWheelTurnValve)
-sm:add_state(armWheelRelease)
 sm:add_state(armDoorGrip)
 
 sm:add_state(armToolGrip)
 sm:add_state(armToolHold)
 sm:add_state(armToolChop)
 
-sm:add_state(armToolGripRight)
-sm:add_state(armToolHoldRight)
-sm:add_state(armToolChopRight)
-
 sm:add_state(armSmallValveGrip)
 sm:add_state(armLargeValveGrip)
+sm:add_state(armLargeValveGripTwohand)
 sm:add_state(armBarValveGrip)
 sm:add_state(armDebrisGrip)
 
@@ -113,49 +100,31 @@ sm:set_transition(armPose1, 'teleop', armTeleop)
 
 
 sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
---sm:set_transition(armPose1, 'toolgrab', armToolGrip)
-sm:set_transition(armPose1, 'toolgrab', armToolGripRight)
-
-
-sm:set_transition(armPose1, 'wheelgrab', armWheelGrip)
+sm:set_transition(armPose1, 'toolgrab', armToolGrip)
 sm:set_transition(armPose1, 'debrisgrab', armDebrisGrip)
 sm:set_transition(armPose1, 'smallvalvegrab', armSmallValveGrip)
 sm:set_transition(armPose1, 'largevalvegrab', armLargeValveGrip)
+--sm:set_transition(armPose1, 'largevalvegrab', armLargeValveGripTwohand)
 sm:set_transition(armPose1, 'barvalvegrab', armBarValveGrip)
 
 
 sm:set_transition(armSmallValveGrip, 'done', armPose1)
 sm:set_transition(armLargeValveGrip, 'done', armPose1)
+sm:set_transition(armLargeValveGripTwohand, 'done', armPose1)
 sm:set_transition(armBarValveGrip, 'done', armPose1)
 
 sm:set_transition(armToolGrip, 'done', armPose1)
 sm:set_transition(armToolGrip, 'hold', armToolHold)
-
-sm:set_transition(armToolGripRight, 'done', armPose1)
-sm:set_transition(armToolGripRight, 'hold', armToolHoldRight)
-
 sm:set_transition(armToolHold, 'toolgrab', armToolChop)
 sm:set_transition(armToolChop, 'done', armToolHold)
 
-sm:set_transition(armToolHoldRight, 'toolgrab', armToolChopRight)
-sm:set_transition(armToolChopRight, 'done', armToolHoldRight)
+
+
 
 sm:set_transition(armDoorGrip, 'done', armPose1)
 sm:set_transition(armDebrisGrip, 'done', armPose1)
 sm:set_transition(armTeleop, 'done', armPose1)
 
-
-
-
------------------------------------------------------------------
---OLD states...
-sm:set_transition(armWheelGrip, 'done', armWheelTurnValve)
-sm:set_transition(armWheelGrip, 'reset', armInit)
-sm:set_transition(armWheelTurn, 'reset', armWheelRelease)
-
-sm:set_transition(armWheelTurnValve, 'done', armWheelRelease)
-sm:set_transition(armWheelRelease, 'done', armInit)
------------------------------------------------------------------
 
 --depreciated
 sm:set_transition(armPose1, 'rocky', armRocky)

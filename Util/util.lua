@@ -162,6 +162,27 @@ function util.approachTolTransform( values, targets, vellimit, dt, tolerance )
   return values, within_tolerance
 end
 
+function util.approachTolWristTransform( values, targets, vellimit, dt, tolerance )
+  tolerance = tolerance or 1e-6
+  -- Tolerance check (Asumme within tolerance)
+  local within_tolerance = true
+  -- Iterate through the limits of movements to approach
+  
+  for i=4,6 do --Transform 
+    -- Target value minus present value
+    local delta = targets[i] - values[i]    
+    if math.abs(delta) > tolerance then
+      within_tolerance = false
+      -- Ensure that we do not move motors too quickly
+      delta = util.procFunc(delta,0,vellimit[i]*dt)
+      values[i] = values[i]+delta
+    end    
+  end
+  
+  -- Return the next values to take and if we are within tolerance
+  return values, within_tolerance
+end
+
 
 
 

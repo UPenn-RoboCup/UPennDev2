@@ -200,11 +200,11 @@ function state.update()
   elseif stage=="hookrelease" then 
     arm_planner:set_shoulder_yaw_target(-5*Body.DEG_TO_RAD, nil) 
     if arm_planner:play_arm_sequence(t) then 
---      local wrist_seq = {{'wrist',nil, trRArmRelease}} --THIS has trouble
---      if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "hookrollback"  end
+      local wrist_seq = {{'wrist',nil, trRArmRelease}} --THIS has trouble
+      if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "hookrollback"  end
 
-      local wrist_seq = {armseq={{trLArm0, trRArmRelease}}} --THIS has trouble
-      if arm_planner:plan_wrist_sequence(wrist_seq) then stage = "hookrollback"  end
+--      local wrist_seq = {armseq={{trLArm0, trRArmRelease}}} --THIS has trouble
+--      if arm_planner:plan_wrist_sequence(wrist_seq) then stage = "hookrollback"  end
 
     end
   elseif stage=="hookrollback" then
@@ -227,11 +227,11 @@ function state.update()
   elseif stage=="hookforward" then
     if arm_planner:play_arm_sequence(t) then 
       
---      local wrist_seq = {{'wrist',trLArm1, {0,0,0,unpack(rhand_rpy0)}  }}
---      if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armmoveside"  end      
+      local wrist_seq = {{'wrist',trLArm1, {0,0,0,unpack(rhand_rpy0)}  }}
+      if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armmoveside"  end      
 
-      local wrist_seq = {armseq={{trLArm0,{0,0,0,unpack(rhand_rpy0)}    }}} --THIS has trouble
-      if arm_planner:plan_wrist_sequence(wrist_seq) then stage = "hookrollback"  end
+--      local wrist_seq = {armseq={{trLArm0,{0,0,0,unpack(rhand_rpy0)}    }}} --THIS has trouble
+      --if arm_planner:plan_wrist_sequenc(wrist_seq) then stage = "hookrollback"  end
 
 
 

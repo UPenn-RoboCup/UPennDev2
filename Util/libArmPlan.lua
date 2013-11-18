@@ -243,9 +243,13 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
     local velInsert = 0.02
     vel_param={velTurnAngle,velTurnAngle,velInsert,velInsert}
   elseif plantype=="valveonearm" then
-    local velTurnAngle = 3*Body.DEG_TO_RAD
-    local velInsert = 0.02
-    vel_param={velTurnAngle,velTurnAngle}
+    local velInsert = 0.01
+    local velTurnAngle = 6*Body.DEG_TO_RAD
+    vel_param={velTurnAngle,velInsert}
+  elseif plantype=="barvalve" then    
+    local velInsert = 0.01
+    local velTurnAngle = 6*Body.DEG_TO_RAD
+    vel_param={velTurnAngle,velTurnAngle,velInsert}
   end
   
   local done, torsoCompDone = false, false
@@ -299,6 +303,19 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
         trLArmNext, trRArmNext =  movearm.getLargeValvePositionSingle(unpack(new_param)), trRArm
       else
         trLArmNext, trRArmNext =  trLArm, movearm.getLargeValvePositionSingle(unpack(new_param))
+      end
+      waistNext = current_cond[6]
+    elseif plantype =="barvalve" then
+      new_param[1], done1 = util.approachTol(current_param[1],target_param[1], vel_param[1],dt_step)
+      new_param[2], done2 = util.approachTol(current_param[2],target_param[2], vel_param[2],dt_step)
+      new_param[3], done3 = util.approachTol(current_param[3],target_param[3], vel_param[3],dt_step)
+      new_param[4] = target_param[4]      
+      done = done1 and done2 and done3
+
+      if new_param[4]>0 then --left arm      
+        trLArmNext, trRArmNext =  movearm.getBarValvePositionSingle(unpack(new_param)), trRArm
+      else
+        trLArmNext, trRArmNext =  trLArm, movearm.getBarValvePositionSingle(unpack(new_param))
       end
       waistNext = current_cond[6]
 
@@ -376,6 +393,12 @@ local function plan_arm_sequence2(self,arm_seq)
 
     elseif arm_seq[i][1] =='valveonearm' then
       LAP, RAP, uTP, WP, end_cond, end_valveparam  = self:plan_unified('valveonearm',
+        init_cond, 
+        self.init_valveparam, 
+        vector.slice(arm_seq[i],2,#arm_seq[i]) )      
+
+    elseif arm_seq[i][1] =='barvalve' then
+      LAP, RAP, uTP, WP, end_cond, end_valveparam  = self:plan_unified('barvalve',
         init_cond, 
         self.init_valveparam, 
         vector.slice(arm_seq[i],2,#arm_seq[i]) )      

@@ -109,6 +109,12 @@ shared_data.largevalve.model = vector.new({0.55,0.15,0.02,
 	0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD})
 
 
+shared_data.barvalve={}
+--pos(3) radius turnangle wristangle
+shared_data.barvalve.model = vector.new({0.55,0.20,0.02,
+   0.05, 0, 70*Body.DEG_TO_RAD })
+
+
 --Debris model
 shared_data.debris = {}
 -- {pos(3) yaw}

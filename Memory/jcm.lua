@@ -93,6 +93,7 @@ for k,v in pairs(shared_data.actuator) do
 end
 
 -- Gripper only data Left, Right
+shared_data.gripper = {}
 -- Torque of joints is in mA (just for the gripper)
 shared_data.gripper.command_torque = vector.zeros( 2 )
 -- 0: Position mode, 1: torque mode

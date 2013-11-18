@@ -31,12 +31,17 @@ while true do
   local t = unix.time()
   
   -- In position mode
-  if jcm.gripper.torque_mode[2]==0 then
+  if jcm.gripperPtr.torque_mode[2]==0 then
     -- Make sure we are in the right mode
     while is_torque_mode do
       lD.set_rx_torque_mode(rclaw_id,0,usb2dyn)
       unix.usleep(1e2)
-      is_torque_mode = lD.get_rx_torque_mode(rclaw_id,1,usb2dyn)==0
+      local status = lD.get_rx_torque_mode(rclaw_id,usb2dyn)
+      if status then
+        local read_parser = lD.byte_to_number[ #status.parameter ]
+        value = read_parser( unpack(status.parameter) )
+        is_torque_mode = value==1
+      end
     end
     -- Open the hand with a position
     local rclaw = Body.get_rgrip_command_position(1)
@@ -47,7 +52,12 @@ while true do
     while not is_torque_mode do
       lD.set_rx_torque_mode(rclaw_id,1,usb2dyn)
       unix.usleep(1e2)
-      is_torque_mode = lD.get_rx_torque_mode(rclaw_id,1,usb2dyn)==1
+      local status = lD.get_rx_torque_mode(rclaw_id,usb2dyn)
+      if status then
+        local read_parser = lD.byte_to_number[ #status.parameter ]
+        value = read_parser( unpack(status.parameter) )
+        is_torque_mode = value==1
+      end
     end
     -- Grab the torque from the user
     local r_tq_step = Body.get_rgrip_command_torque_step()

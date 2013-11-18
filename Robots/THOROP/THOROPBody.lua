@@ -512,21 +512,21 @@ end
 -- For torque control (no reading from the motor just yet)
 Body.set_rgrip_command_torque = function(val)
   -- Set the command_torque
-  jcm.gripper.command_torque[2] = val
+  jcm.gripperPtr.command_torque[2] = val
   -- Set the command_torque
-  jcm.gripper.torque_mode[2] = 1
+  jcm.gripperPtr.torque_mode[2] = 1
 end
 
 -- For torque control (no reading from the motor just yet)
 Body.get_rgrip_command_torque_step = function()
-  local val = jcm.gripper.command_torque[2]
+  local val = jcm.gripperPtr.command_torque[2]
   -- Val is in mA; 4.5 mA increments for the 
   val = math.floor(val / 4.5)
   -- Not too large/small
   val = util.procFunc(val,0,1023)
   if val<0 then val=1024-val end
   -- Return the value and the mode
-  return val, jcm.gripper.torque_mode[2]
+  return val, jcm.gripperPtr.torque_mode[2]
 end
 
 -- For position control
@@ -538,9 +538,9 @@ Body.set_lgrip_percent = function( percent, is_torque )
   jcm.actuatorPtr.command_position[thumb] = radian
   jcm.writePtr.command_position[thumb] = 1
   -- Set the command_torque to position
-  jcm.gripper.torque_mode[1] = 0
+  jcm.gripperPtr.torque_mode[1] = 0
   -- Set the command_torque to zero
-  jcm.gripper.command_torque[1] = 0
+  jcm.gripperPtr.command_torque[1] = 0
 end
 Body.set_rgrip_percent = function( percent, is_torque )
   -- Convex combo
@@ -551,9 +551,9 @@ Body.set_rgrip_percent = function( percent, is_torque )
   jcm.actuatorPtr.command_position[thumb] = radian
   jcm.writePtr.command_position[thumb] = 1
   -- Set the command_torque
-  jcm.gripper.torque_mode[2] = 0
+  jcm.gripperPtr.torque_mode[2] = 0
   -- Set the command_torque to zero
-  jcm.gripper.command_torque[2] = 0
+  jcm.gripperPtr.command_torque[2] = 0
 end
 
 

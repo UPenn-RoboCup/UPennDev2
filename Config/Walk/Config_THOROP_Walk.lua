@@ -10,83 +10,30 @@ local walk = {}
 ------------------------------------
 -- Stance and velocity limit values
 ------------------------------------
--- NOTE: Large stride test (up to 300mm)
 walk.stanceLimitX = {-0.50,0.50}
 walk.stanceLimitY = {0.16,0.60}
 walk.stanceLimitA = {-10*math.pi/180,30*math.pi/180}
--- TODO: Toe/heel overlap checking values
---OP default stance width: 0.0375*2 = 0.075
---Heel overlap At radian 0.15 at each foot = 0.05*sin(0.15)*2=0.015
---Heel overlap At radian 0.30 at each foot = 0.05*sin(0.15)*2=0.030
+walk.leg_p_gain = 64
 
-walk.velLimitX = {-.15,.15}
-walk.velLimitY = {-.08,.08}
-walk.velLimitA = {-.3,.3}
-walk.velDelta  = {0.05,0.03,0.3}
-------------------------------------
--- Stance parameters
-------------------------------------
-walk.bodyHeight = 0.95
-walk.bodyTilt = 0*math.pi/180
-walk.supportX = 0.02  -- ankle-to-foot-center offset 
-walk.supportY = 0.01  -- ankle-to-foot-center offset
-walk.footY  = 0.095   -- body-center-to-ankle width
-walk.torsoX = 0.00    -- com-to-body-center offset
-------------------------------------
--- Gait parameters
-------------------------------------
-walk.tStep = 0.8
-walk.tZMP = 0.33
-walk.stepHeight = 0.04
-walk.phSingle = {0.2,0.8}
-walk.phZmp = {0.2,0.8}
-
-------------------------------------
--- Compensation parameters
-------------------------------------
---walk.hipRollCompensation = 3*math.pi/180
-walk.hipRollCompensation = 1*math.pi/180
-
---Param for actual robot
-gyroFactorX = 0.2
-gyroFactorY = 0.2
-walk.ankleImuParamX={0.3, 0.75*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
-walk.kneeImuParamX={0.3,1.5*gyroFactorX, 1*math.pi/180, 5*math.pi/180}
-walk.ankleImuParamY = {0.3, 0.75*gyroFactorY, 2*math.pi/180, 5*math.pi/180}
-walk.hipImuParamY   = { 0.3, 0.5*gyroFactorY, 2*math.pi/180, 5*math.pi/180}
-
-walk.foot_traj = 1;
-
-
-if IS_WEBOTS then
-  --Webots parameters
---[[
-  walk.tStep = 0.8
-  walk.phSingle = {0.2,0.8}
-  walk.phZmp = {0.2,0.8}
-  walk.stepHeight = 0.05
---]]
-
---Robotis style walk
-  walk.tStep = 0.45
-  walk.phSingle = {0.125,0.875}
-  walk.phZmp = {0.125,0.875}
-  walk.stepHeight = 0.04
-
-  gyroFactorX = 0.1
-  gyroFactorY = 0.1
-  walk.ankleImuParamX={0.3, 0.9*gyroFactorX, 1*math.pi/180, 5*math.pi/180}
-  walk.kneeImuParamX={0.3,  0.3*gyroFactorX,1*math.pi/180, 5*math.pi/180}
-  walk.ankleImuParamY = {0.3,1.0*gyroFactorY, 1*math.pi/180, 5*math.pi/180}
-  walk.hipImuParamY = {0.3,  0.5*gyroFactorY, 1*math.pi/180, 5*math.pi/180}
-
+if IS_WEBOTS then  
   walk.foot_traj = 2; --square step
 
   --Robotis style walk
-  walk.bodyHeight = 0.9285318
-  walk.supportX = 0.0515184
-  walk.footY = 0.1095
+  walk.bodyHeight = 0.9285318 
   walk.bodyTilt = 11*math.pi/180
+  walk.footY = 0.1095
+  walk.torsoX = 0.00    -- com-to-body-center offset
+
+  walk.stepHeight = 0.04
+  walk.supportX = 0.01
+  walk.supportY = 0.03
+  walk.tZMP = 0.28
+
+  walk.tStep = 0.80
+  walk.supportY = 0.03
+  walk.tZMP = 0.28
+  walk.phSingle = {0.15,0.85}
+  walk.phZmp = {0.15,0.85}
 
   gyroFactorX = 490.23/(251000/180)*0
   gyroFactorY = 490.23/(251000/180)*0
@@ -95,215 +42,105 @@ if IS_WEBOTS then
   walk.ankleImuParamY={1, 1.0*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
   walk.hipImuParamY  ={1, 0.5*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
 
- ------------------------------------
-
---Robotis style walk
-  walk.tStep = 0.45
-  walk.phSingle = {0.15,0.85}
-  walk.phZmp = {0.15,0.85}
-  walk.stepHeight = 0.04
-
-  --walk.supportX = 0.0515
-  walk.supportX = 0.01
-  walk.supportY = 0.03
-  walk.tZMP = 0.28
-
-  walk.velLimitX = {-.20,.20}
-  walk.velLimitY = {-.15,.15}
-
-
-
---Slow walk
-walk.tStep = 0.80
-walk.supportY = 0.04
-walk.tZMP = 0.33
-walk.phSingle = {0.15,0.85}
-walk.phZmp = {0.15,0.85}
-walk.hipRollCompensation = 3*math.pi/180
-
---For webots
-walk.supportY = 0.03
-walk.tZMP = 0.28
-walk.hipRollCompensation = 1*math.pi/180 --less compensation for webots
-
-
+  walk.hipRollCompensation = 1*math.pi/180
+  walk.ankleRollCompensation = 1.2*math.pi/180
+  walk.hipPitchCompensation = 0*math.pi/180
+  walk.kneePitchCompensation = 0*math.pi/180
+  walk.anklePitchCompensation = 0*math.pi/180
+  walk.phComp = {0.1,0.9}
+  walk.phCompSlope = 0.2
+ 
+  
+  walk.velLimitX = {-.05,.05}
+  walk.velLimitY = {-.025,.025}
+  walk.velLimitA = {-.2,.2}
+  walk.velDelta  = {0.025,0.02,0.1}
 else
-
-  walk.foot_traj = 1; --curved step
-  walk.foot_traj = 2; --square step
+------------------------------------
+-- Stance parameters
+------------------------------------
 
 --Robotis default walk parameters
   walk.bodyHeight = 0.9285318
-  walk.supportX = 0.0515184
+--  walk.supportX = 0.0515184
   walk.footY = 0.1095
   walk.bodyTilt = 11*math.pi/180
+  walk.torsoX = 0.00    -- com-to-body-center offset
 
-
-
-
+------------------------------------
+-- Gait parameters
+------------------------------------
+  walk.tStep = 0.80
+  walk.tZMP = 0.33
+  walk.stepHeight = 0.04  
+  walk.phSingle = {0.15,0.85}
+  walk.phZmp = {0.15,0.85}
+  walk.supportX = 0.03
+  walk.supportY = 0.04  
+------------------------------------
+-- Compensation parameters
+------------------------------------
   gyroFactorX = 490.23/(251000/180)*0.5
   gyroFactorY = 490.23/(251000/180)*0.5
   walk.ankleImuParamX={1, 0.9*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
   walk.kneeImuParamX= {1, -0.3*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
   walk.ankleImuParamY={1, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
   walk.hipImuParamY  ={1, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
+
+  --Compensation testing values
+  --[[
+  walk.hipRollCompensation = 1*math.pi/180
+  walk.ankleRollCompensation = 1.2*math.pi/180
+  walk.hipPitchCompensation = -1.0*math.pi/180
+  walk.kneePitchCompensation = 1.0*math.pi/180
+  walk.anklePitchCompensation = 1.5*math.pi/180
+  --]]
+
+  walk.hipRollCompensation = 3*math.pi/180
+  walk.ankleRollCompensation = 0*math.pi/180
+  walk.hipPitchCompensation = 0*math.pi/180
+  walk.kneePitchCompensation = 0*math.pi/180
+  walk.anklePitchCompensation = 0*math.pi/180
+  --
+  walk.phComp = {0.1,0.9}
+  walk.phCompSlope = 0.2
  ------------------------------------
 
---Robotis style walk w/ humblewalk
-  walk.tStep = 0.45
-  walk.phSingle = {0.125,0.875}
-  walk.phZmp = {0.125,0.875}
-  walk.stepHeight = 0.04
-
---------------------------------------------
--- This works kinda well
-  walk.tZMP = 0.30  --0.90m COM height
-  walk.supportX = 0.03
-  walk.supportY = 0.03
-  walk.hipRollCompensation = 1*math.pi/180
---------------------------------------------
-
---------------------------------------------
---Also works kinda well
-  walk.tZMP = 0.28 --0.80m COM height
-  walk.supportX = 0.04
-  walk.supportY = 0.00
-  ------------------------------------------
+  walk.foot_traj = 1; --curved step
+  walk.foot_traj = 2; --square step
 
   --To get rid of drifting
-  walk.velocityBias = {0.005,0,0}
-
-
---Slow walk
-walk.tStep = 0.80
-walk.supportY = 0.04
-walk.tZMP = 0.33
-walk.phSingle = {0.15,0.85}
-walk.phZmp = {0.15,0.85}
-walk.hipRollCompensation = 3*math.pi/180
-
---[[
---Extremely slow walk
-walk.tStep = 2.0
-walk.phSingle = {0.2,.8}
-walk.phZmp = {0.2,0.8}
-walk.hipRollCompensation = 3*math.pi/180
---]]
-
+  walk.velocityBias = {0.005,0,0}  
+  walk.velLimitX = {-.05,.05}
+  walk.velLimitY = {-.025,.025}
+  walk.velLimitA = {-.2,.2}
+  walk.velDelta  = {0.025,0.02,0.1}
 end
 
-
-
-
---Slowed down walk (to match actual robot)
-walk.velLimitX = {-.05,.05}
-walk.velLimitY = {-.025,.025}
-walk.velLimitA = {-.2,.2}
-walk.velDelta  = {0.025,0.02,0.1}
-
-
-
---SJ:block walking test
---walk.stepHeight = 0.20
+-----------------------------------------------------------
+-- Stance parameters
+-----------------------------------------------------------
 
 local stance={}
 
 --TEMPORARY HACK FOR PERCEPTION TESTING
-walk.bodyTilt = 11*math.pi/180
 --walk.bodyTilt = 0*math.pi/180
 
 --Should we move torso back for compensation?
 stance.enable_torso_compensation = 1
 --stance.enable_torso_compensation = 0
 
-
---Temporary testing
---walk.bodyHeight = 0.99 --5cm higher
-
-
---For testing kneeling down
-  walk.footY = 0.09
-
-
-
-
-
-
------------------------------------------------------------
--- Stance parameters
------------------------------------------------------------
-
-
-
 stance.enable_sit = false
 stance.enable_legs = true   -- centaur has no legs
---[[
-stance.pLLeg = vector.new{-walk.supportX,  walk.footY, 0, 0,0,0}
-stance.pRLeg = vector.new{-walk.supportX, -walk.footY, 0, 0,0,0}
-stance.pTorso = vector.new{-walk.torsoX, 0, walk.bodyHeight, 0,walk.bodyTilt,0}
---]]
 stance.qWaist = vector.zeros(2)
 
 stance.dqWaistLimit = 10*DEG_TO_RAD*vector.ones(2)
---stance.dpLimitStance = vector.new{.04, .03, .07, .4, .4, .4}
 stance.dpLimitStance = vector.new{.04, .03, .03, .4, .4, .4}
 stance.dqLegLimit = vector.new{10,10,45,90,45,10}*DEG_TO_RAD
 
+stance.sitHeight = 0.75
+stance.dHeight = 0.01 --4cm per sec
 
-stance.sitHeight = 0.70
-stance.dHeight = 0.04 --4cm per sec
-
-
-
-
-
-
-
-
-
-------------------------------------
--- Kneeling parameters
-------------------------------------
-local kneel = {}
-kneel.bodyHeight = 0.45
-kneel.bodyTilt = 90*math.pi/180
-
-kneel.ph1Single = 0.2
-kneel.ph2Single = 0.8
-kneel.tZMP = 0.22
-
-kneel.tStep = 0.50
-kneel.stepHeight = 0.15
-
-kneel.velLimitX = {-.10,.20}
-kneel.velLimitY = {-.5,.5}
-kneel.velLimitA = {-.2,.2}
-
-kneel.armX = 0.35
-kneel.armY = 0.296
-kneel.armZ = 0.078
-kneel.LArmRPY = {-math.pi/2,0,0}
-kneel.RArmRPY = {math.pi/2,0,0}
-kneel.legX = -0.395
-kneel.legY = 0.210
---only used for kneel down 
-kneel.qLArm0 = {0.43,0.26,0.09,-1.15,-1.57,-1.57}
-
--- For wrist-walking 
-kneel.armX = 0.26
-kneel.armZ = 0.02
--- High step testing
-kneel.stepHeight = 0.20
-kneel.armX = 0.21
-
---[[
---Higher step testing
-kneel.tStep = 1
-kneel.ph1Single = 0.1
-kneel.ph2Single = 0.9
---]]
-
-kneel.torsoX = -(kneel.armX + kneel.legX)/2
 
 ------------------------------------
 -- ZMP preview stepping values
@@ -314,9 +151,6 @@ local zmpstep = {}
 zmpstep.param_r_q = 10^-6
 zmpstep.preview_tStep = 0.010 --10ms
 zmpstep.preview_interval = 3.0 --3s needed for slow step (with tStep ~3s)
-
-
-
 
 zmpstep.params = true;
 zmpstep.param_k1_px={-576.304158,-389.290169,-68.684425}
@@ -394,66 +228,38 @@ zmpstep.param_k1={
 -- For the arm FSM
 local arm = {}
 
---Default gripper
+
+--Gripper end position offsets (Y is inside)
 arm.handoffset={}
-arm.handoffset.gripper = {0.245,0.035,0}
+arm.handoffset.gripper = {0.245,0.035,0} --Default gripper
+arm.handoffset.outerhook = {0.285,-0.065,0} --Single hook (for door)
+arm.handoffset.chopstick = {0.285,0,0} --Two rod (for valve)
 
---Single hook (for door)
-arm.handoffset.outerhook = {0.285,-0.065,0}
-
---Two rod (for valve)
-arm.handoffset.chopstick = {0.285,0,0}
-
+--Arm planner variables
 arm.plan={}
-
-
-
 arm.plan.max_margin = math.pi/6
 --arm.plan.max_margin = math.pi
-
-arm.plan.dt_step0 = 0.5
-arm.plan.dt_step = 0.5
-
-
+--arm.plan.dt_step0 = 0.5
+--arm.plan.dt_step = 0.5
 arm.plan.dt_step0 = 0.1
 arm.plan.dt_step = 0.2
-
-
 arm.plan.search_step = 1
 --arm.plan.search_step = .25
 
-arm.plan.velWrist = {100000,100000,100000, 
-                      15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD}
+arm.plan.velWrist = {100000,100000,100000, 15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD}
 arm.plan.velDoorRoll = 10*DEG_TO_RAD
 arm.plan.velDoorYaw = 2*DEG_TO_RAD
-
-arm.plan.velTorsoComp = {0.005,0.005} --5mm per sec
+--arm.plan.velTorsoComp = {0.005,0.005} --5mm per sec
 arm.plan.velTorsoComp = {0.02,0.01} --5mm per sec
-
 arm.plan.velYaw = 10*math.pi/180
 
 
------------------------------------------------------------------------
--- THey are not used anymore
-arm.qLArmInit={
- vector.new({110,12,-3,-40,  -0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({110.5, 17.5, 0, -85.7, -30.2,  0,16.8})*DEG_TO_RAD, -- scarecrow
- vector.new({110.5, 17.5, -24, -85.7, -30.2, -71.0,16.8})*DEG_TO_RAD,-- arms in front
-}
-arm.qRArmInit={
- vector.new({110,-12,3,-40,     0,0,0})*DEG_TO_RAD, -- at sides
- vector.new({110.5, -17.5, 0, -85.7,  30.2,  0,-16.8})*DEG_TO_RAD,  -- scarecrow
- vector.new({110.5, -17.5, 24, -85.7, 30.2, 71.0,-16.8})*DEG_TO_RAD,-- arms in front
-}
-
------------------------------------------------------------------------
 
 
 -- Arm speed limits
-arm.fast_limit = vector.new({30,30,30,45,60,60,60})*DEG_TO_RAD
+
 arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD
-arm.super_slow_limit = vector.new({5,5,5,10,15,15,15})*DEG_TO_RAD
-arm.slow_elbow_limit = vector.new({10,10,10,5,30,30,30})*DEG_TO_RAD
+arm.slow_elbow_limit = vector.new({10,10,10,5,30,30,30})*DEG_TO_RAD --Used for armInit
 
 -- Linear movement speed limits
 arm.linear_slow_limit = vector.new({0.02,0.02,0.02, 15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
@@ -464,9 +270,7 @@ arm.joint_init_limit=vector.new({30,30,30,30,30,30,30}) *DEG_TO_RAD
 -- Use this for planned arm movement
 arm.joint_vel_limit_plan = vector.new({10,10,10,10,30,10,30}) *DEG_TO_RAD
 
-
-
-
+arm.linear_wrist_limit = 0.05
 
 
 --Pose 1 wrist position
@@ -476,125 +280,20 @@ arm.pRWristTarget1 = {-.0,-.30,-.20,0,0,0}
 arm.lShoulderYawTarget1 = -5*DEG_TO_RAD
 arm.rShoulderYawTarget1 = 5*DEG_TO_RAD
 
-
-arm.qLArmPose1 = vector.new({
-  118.96025904076,
-  9.0742631178663,
-  -5,
-  -81.120944928286,
-  81,
-  14.999999999986, 
-  9
-  })*DEG_TO_RAD
-
-arm.qRArmPose1 = vector.new({
-  118.96025904076,
-  -9.0742631178663,
-  5,
-  -81.120944928286,
-  -81,
-  -14.999999999986, 
-  9
-  })*DEG_TO_RAD
-
-
-
-
-
-
-
---Pose 2 wrist position
-arm.pLWristTarget2 = {.05,.38,-.05,0,0,0}
-arm.pRWristTarget2 = {.05,-.38,-.05,0,0,0}
-arm.lShoulderYawTarget2 = -20*DEG_TO_RAD
-arm.rShoulderYawTarget2 = 20*DEG_TO_RAD
-arm.linear_wrist_limit = 0.05
+arm.qLArmPose1 = vector.new({118.96025904076,9.0742631178663,-5,-81.120944928286,81,14.999999999986, 9})*DEG_TO_RAD
+arm.qRArmPose1 = vector.new({118.96025904076,-9.0742631178663,5,-81.120944928286,-81,-14.999999999986, 9})*DEG_TO_RAD
 
 if IS_WEBOTS then
-
-    --Faster limit for webots
-  arm.fast_limit = arm.fast_limit*3
+  --Faster limit for webots
   arm.slow_limit = arm.slow_limit*3
-  arm.super_slow_limit = arm.super_slow_limit*3
   arm.slow_elbow_limit = arm.slow_elbow_limit*3
-
-  -- Linear movement speed limits
   arm.linear_slow_limit = arm.linear_slow_limit*3
-
-  -- Use this for wrist initialization
   arm.joint_init_limit=arm.joint_init_limit*3
-
-  -- Use this for planned arm movement
   arm.joint_vel_limit_plan = arm.joint_vel_limit_plan*3
-
-
-
-
-
-  --For low-torque deflection testing
---[[
-  walk.ankleImuParamX={0, 0.9*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
-  walk.kneeImuParamX= {0, -0.3*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
-  walk.ankleImuParamY={0, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
-  walk.hipImuParamY  ={0, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
---]]
-  walk.hipRollCompensation = 1*math.pi/180
-  walk.ankleRollCompensation = 1.2*math.pi/180
-  walk.hipPitchCompensation = 0*math.pi/180
-  walk.kneePitchCompensation = 0*math.pi/180
-  walk.anklePitchCompensation = 0*math.pi/180
-  walk.phComp = {0.1,0.9}
-  walk.phCompSlope = 0.2
-else
-
-
-  --Compensation testing values
-  walk.hipRollCompensation = 1*math.pi/180
-  walk.ankleRollCompensation = 1.2*math.pi/180
-  walk.hipPitchCompensation = -1.0*math.pi/180
-  walk.kneePitchCompensation = 1.0*math.pi/180
-  walk.anklePitchCompensation = 1.5*math.pi/180
-
-  --No compensation testing
-  --
-  walk.hipRollCompensation = 3*math.pi/180
-  walk.ankleRollCompensation = 0*math.pi/180
-  walk.hipPitchCompensation = 0*math.pi/180
-  walk.kneePitchCompensation = 0*math.pi/180
-  walk.anklePitchCompensation = 0*math.pi/180
-  --
-  walk.phComp = {0.1,0.9}
-  walk.phCompSlope = 0.2
 end
-
-
-
-walk.leg_p_gain = 64
-
-
-
---FOR testing (for conference)
---[[
-walk.tStep = 0.80
-walk.supportY = 0.03
-walk.tZMP = 0.33
-
-walk.velLimitX = {-.30,.30}
-walk.velDelta  = {0.15,0.03,0.3}
-
---shut down feedback
-walk.ankleImuParamX[1]=0
-walk.kneeImuParamX[1]=0
-walk.ankleImuParamY[1]=0
-walk.hipImuParamY[1]=0
-
-walk.accTorso = 1.5 --fast stop
---]]
-
 
 ------------------------------------
 -- Associate with the table
-Config.kneel   = kneel
 Config.walk    = walk
 Config.arm     = arm
 Config.stance  = stance

@@ -8,6 +8,8 @@ require'mcm'
 local movearm = require'movearm'
 
 --debug_on = true
+debug_on = false
+debug_on_2 = false
 
 local function print_transform(tr)
   if not tr then return end
@@ -344,11 +346,13 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   end
 
   local t1 = unix.time()  
-  print(string.format("%d steps planned, %.2f ms elapsed:",qArmCount,(t1-t0)*1000 ))
-  print("trLArm:",self.print_transform( Body.get_forward_larm( qLArmQueue[1][1]  ) ))
-  print("trRArm:",self.print_transform( Body.get_forward_rarm( qRArmQueue[1][1]  )))
-  print(string.format("TorsoComp: %.3f %.3f",uTorsoCompQueue[1][1],uTorsoCompQueue[1][2]) )
-
+  
+  if debug_on_2 then
+    print(string.format("%d steps planned, %.2f ms elapsed:",qArmCount,(t1-t0)*1000 ))
+    print("trLArm:",self.print_transform( Body.get_forward_larm( qLArmQueue[1][1]  ) ))
+    print("trRArm:",self.print_transform( Body.get_forward_rarm( qRArmQueue[1][1]  )))
+    print(string.format("TorsoComp: %.3f %.3f",uTorsoCompQueue[1][1],uTorsoCompQueue[1][2]) )
+  end
 
 
   if failed then return
@@ -444,7 +448,7 @@ local function init_arm_sequence(self,arm_plan,t0)
   self.rightArmQueue = arm_plan.RAP
   self.torsoCompQueue = arm_plan.uTP
   
-
+--[[
   self.t_last = t0
   self.armQueuePlayStartTime = t0
   self.armQueuePlayEndTime = t0 + self.leftArmQueue[1][2]
@@ -463,8 +467,30 @@ local function init_arm_sequence(self,arm_plan,t0)
   else
     self.waistQueue = nil
   end
-
   self.armQueuePlaybackCount = 1
+--]]
+
+
+  self.t_last = t0
+  self.armQueuePlayStartTime = t0
+  self.armQueuePlayEndTime = t0 + self.leftArmQueue[2][2]
+
+  self.qLArmStart = self.leftArmQueue[1][1]
+  self.qLArmEnd = self.leftArmQueue[2][1]
+  self.qRArmStart = self.rightArmQueue[1][1]
+  self.qRArmEnd = self.rightArmQueue[2][1]
+  self.uTorsoCompStart=vector.new(self.torsoCompQueue[1])
+  self.uTorsoCompEnd=vector.new(self.torsoCompQueue[2])
+
+  if arm_plan.WP then
+    self.waistQueue = arm_plan.WP
+    self.waistStart = self.waistQueue[1]
+    self.waistEnd = self.waistQueue[2]
+  else
+    self.waistQueue = nil
+  end
+  self.armQueuePlaybackCount = 2
+
 
   self:print_segment_info() 
 end

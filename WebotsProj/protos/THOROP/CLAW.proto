@@ -1,0 +1,70 @@
+#
+#  THOR-OP proto: claw
+#  heqin@seas.upenn.edu
+#
+
+
+PROTO CLAW [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+]
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+	  Shape {
+	     appearance Appearance {
+	       material Material {
+	         diffuseColor 1 1 0.5
+	         specularColor 0 0 0
+	       }
+	     }
+	     geometry Box { size 0.114 0.02 0.05 } # NEED TO MEASURE
+	  }	
+		
+		DEF CLAW_2 Solid {
+		  translation -0.057 -0.08255 0
+		  rotation IS rotation
+		  children [
+			  Shape {
+			     appearance Appearance {
+			       material Material {
+			         diffuseColor 1 1 0.5
+			         specularColor 0 0 0
+			       }
+			     }
+			     geometry Box { size 0.02 0.1651 0.05 }
+			  }	
+			]			
+			boundingObject Group {
+				children[ Box { size 0.02 0.1651 0.05 } ]
+			}  			
+		}
+
+		DEF CLAW_3 Solid {
+		  translation 0.057 -0.08255 0
+		  rotation IS rotation
+		  children [
+			  Shape {
+			     appearance Appearance {
+			       material Material {
+			         diffuseColor 1 1 0.5
+			         specularColor 0 0 0
+			       }
+			     }
+			     geometry Box { size 0.02 0.1651 0.05 }
+			  }	
+			]			
+			boundingObject Group {
+				children[ Box { size 0.02 0.1651 0.05 } ]
+			}  			
+		}
+				
+  ]	
+  boundingObject Group {
+		children[ Box { size 0.114 0.02 0.05  } ]
+  }  
+  locked TRUE
+}
+}

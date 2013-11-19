@@ -404,12 +404,23 @@ function movearm.getDoorHandlePosition(
   local knob_offset_y = door_model[6]
  
   local rhand_rpy0 = {-90*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD,0}
+
+--  local rhand_rpy0 = {-90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}
+
   local hand_rpy = rhand_rpy0
 
   local hand_yaw = door_yaw
   if door_yaw>10*Body.DEG_TO_RAD then
     hand_yaw = door_yaw-(door_yaw-10*Body.DEG_TO_RAD)*2.5 
   end
+
+
+--[[
+  local hand_yaw = 0
+  if door_yaw>10*Body.DEG_TO_RAD then
+    hand_yaw = -(door_yaw-10*Body.DEG_TO_RAD)*1.5 
+  end
+--]]
 
   local trHandle = T.eye()
     * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])    
@@ -426,6 +437,25 @@ function movearm.getDoorHandlePosition(
   local trTarget = T.position6D(trHandle)
   return trTarget
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 --Use two chopstick hand
 function movearm.getLargeValvePosition(

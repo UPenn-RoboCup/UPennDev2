@@ -7,6 +7,8 @@ require'mcm'
 local movearm = require'movearm'
 
 --debug_on = true
+debug_on = false
+debug_on_2 = false
 
 local function print_transform(tr)
   if not tr then return end
@@ -343,11 +345,13 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   end
 
   local t1 = unix.time()  
-  print(string.format("%d steps planned, %.2f ms elapsed:",qArmCount,(t1-t0)*1000 ))
-  print("trLArm:",self.print_transform( Body.get_forward_larm( qLArmQueue[1][1]  ) ))
-  print("trRArm:",self.print_transform( Body.get_forward_rarm( qRArmQueue[1][1]  )))
-  print(string.format("TorsoComp: %.3f %.3f",uTorsoCompQueue[1][1],uTorsoCompQueue[1][2]) )
-
+  
+  if debug_on_2 then
+    print(string.format("%d steps planned, %.2f ms elapsed:",qArmCount,(t1-t0)*1000 ))
+    print("trLArm:",self.print_transform( Body.get_forward_larm( qLArmQueue[1][1]  ) ))
+    print("trRArm:",self.print_transform( Body.get_forward_rarm( qRArmQueue[1][1]  )))
+    print(string.format("TorsoComp: %.3f %.3f",uTorsoCompQueue[1][1],uTorsoCompQueue[1][2]) )
+  end
 
 
   if failed then return

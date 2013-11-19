@@ -447,7 +447,7 @@ local function init_arm_sequence(self,arm_plan,t0)
   self.rightArmQueue = arm_plan.RAP
   self.torsoCompQueue = arm_plan.uTP
   
-
+--[[
   self.t_last = t0
   self.armQueuePlayStartTime = t0
   self.armQueuePlayEndTime = t0 + self.leftArmQueue[1][2]
@@ -466,8 +466,30 @@ local function init_arm_sequence(self,arm_plan,t0)
   else
     self.waistQueue = nil
   end
-
   self.armQueuePlaybackCount = 1
+--]]
+
+
+  self.t_last = t0
+  self.armQueuePlayStartTime = t0
+  self.armQueuePlayEndTime = t0 + self.leftArmQueue[2][2]
+
+  self.qLArmStart = self.leftArmQueue[1][1]
+  self.qLArmEnd = self.leftArmQueue[2][1]
+  self.qRArmStart = self.rightArmQueue[1][1]
+  self.qRArmEnd = self.rightArmQueue[2][1]
+  self.uTorsoCompStart=vector.new(self.torsoCompQueue[1])
+  self.uTorsoCompEnd=vector.new(self.torsoCompQueue[2])
+
+  if arm_plan.WP then
+    self.waistQueue = arm_plan.WP
+    self.waistStart = self.waistQueue[1]
+    self.waistEnd = self.waistQueue[2]
+  else
+    self.waistQueue = nil
+  end
+  self.armQueuePlaybackCount = 2
+
 
   self:print_segment_info() 
 end

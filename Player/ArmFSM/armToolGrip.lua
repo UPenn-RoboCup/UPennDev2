@@ -97,6 +97,10 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t   -- Save this at the last update time
+
+  local cur_cond = arm_planner:load_boundary_condition()
+  local trLArm = Body.get_forward_larm(cur_cond[1])
+  local trRArm = Body.get_forward_rarm(cur_cond[2])  
   
 ----------------------------------------------------------
 --Forward motions
@@ -110,9 +114,24 @@ function state.update()
     Body.set_rgrip_percent(gripR*0.8)
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
+
+
+        print("trLArm:",arm_planner.print_transform(trLArm))
+        print("trRArm:",arm_planner.print_transform(trRArm))
+
         arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)
         trRArmTarget1 = get_hand_tr(0.30,-0.20,-0.10)
         trRArmTarget2 = get_hand_tr(0.35,-0.20,0.05)
+
+
+--For long hand
+        trRArmTarget1 = get_hand_tr(0.30,-0.15,-0.20)
+        trRArmTarget2 = get_hand_tr(0.35,-0.15,-0.05)
+        --trRArmTarget2 = get_hand_tr(0.35,-0.20,0.05)
+
+
+
+
         local arm_seq = {{'move',nil,trRArmTarget1},{'move',nil,trRArmTarget2}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
       elseif hcm.get_state_proceed()==-1 then 

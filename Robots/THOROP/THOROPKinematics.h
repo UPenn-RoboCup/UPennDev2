@@ -20,7 +20,10 @@ const double shoulderOffsetZ = 0.165;
 
 const double upperArmLength = .246;
 const double elbowOffsetX =   .030; 
-const double lowerArmLength = .186; 
+
+
+const double lowerArmLength = .186; //Default 7DOF arm
+//const double lowerArmLength = .250; //LONGARM model
 
 const double handOffsetX = 0.245; //Measured from robot
 const double handOffsetY = 0.035; //Measured from robot

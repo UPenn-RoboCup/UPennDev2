@@ -57,12 +57,13 @@ local armDebrisGrip = require'armDebrisGrip'
 
 local armSupportDoor = require'armSupportDoor'
 
-
+local armForceReset = require'armForceReset'
 
 
 
 local sm = fsm.new(armIdle);
 sm:add_state(armInit)
+sm:add_state(armForceReset)
 sm:add_state(armPose1)
 sm:add_state(armTeleop)
 sm:add_state(armDoorGrip)
@@ -94,8 +95,9 @@ sm:add_state(armIKTest)
 -- Setup the transitions for this FSM
 sm:set_transition(armIdle, 'init', armInit)
 sm:set_transition(armInit, 'done', armPose1)
-sm:set_transition(armPose1, 'teleop', armTeleop)
---sm:set_transition(armPose1, 'teleop', armIKTest)
+--sm:set_transition(armPose1, 'teleop', armTeleop)
+sm:set_transition(armPose1, 'teleop', armIKTest)
+sm:set_transition(armIKTest, 'teleop', armTeleop)
 
 
 
@@ -124,6 +126,26 @@ sm:set_transition(armToolChop, 'done', armToolHold)
 sm:set_transition(armDoorGrip, 'done', armPose1)
 sm:set_transition(armDebrisGrip, 'done', armPose1)
 sm:set_transition(armTeleop, 'done', armPose1)
+
+
+
+--Force reset states is used for offline testing only
+sm:set_transition(armSmallValveGrip, 'forcereset', armForceReset)
+sm:set_transition(armLargeValveGrip, 'forcereset', armForceReset)
+sm:set_transition(armBarValveGrip, 'forcereset', armForceReset)
+sm:set_transition(armToolGrip, 'forcereset', armForceReset)
+sm:set_transition(armToolHold, 'forcereset', armForceReset)
+sm:set_transition(armDoorGrip, 'forcereset', armForceReset)
+sm:set_transition(armDebrisGrip, 'forcereset', armForceReset)
+
+sm:set_transition(armForceReset, 'done', armPose1)
+
+
+
+
+
+
+
 
 
 --depreciated

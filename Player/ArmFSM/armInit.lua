@@ -71,8 +71,7 @@ function state.update()
   elseif stage==3 then --Move arms to the sides            
     ret = movearm.setWristPosition(
       pLWristTarget, pRWristTarget,dt, lShoulderYawTarget,rShoulderYawTarget)
-    if ret==1 then return"done";
-    end
+    if ret==1 then return"done"  end
   end
 
 end
@@ -80,8 +79,14 @@ end
 function state.exit()
 
   local qLArm = Body.get_larm_command_position()
-  trWrist = Body.get_forward_lwrist(qLArm)
-  print("LWrist pos:",unpack(trWrist))
+  local qRArm = Body.get_rarm_command_position()
+
+  print("qL:",unpack(vector.new(qLArm)*180/math.pi   ))
+  print("qR:",unpack(vector.new(qRArm)*180/math.pi   ))
+
+
+
+  
   Body.set_lgrip_percent(0.9)
   Body.set_rgrip_percent(0.9)
 

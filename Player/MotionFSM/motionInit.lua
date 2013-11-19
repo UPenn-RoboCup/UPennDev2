@@ -19,9 +19,11 @@ local t_settle   = 0.10
 local t_entry, t_update, t_finish
 
   -- Set the desired leg and torso poses
-local pLLeg_desired = Config.stance.pLLeg
-local pRLeg_desired = Config.stance.pRLeg
-local pTorso_desired = Config.stance.pTorso
+local pLLeg_desired = vector.new{-Config.walk.supportX,  Config.walk.footY, 0, 0,0,0}
+local pRLeg_desired = vector.new{-Config.walk.supportX,  -Config.walk.footY, 0, 0,0,0}
+local pTorso_desired = vector.new{-Config.walk.torsoX, 0, Config.walk.bodyHeight, 0,Config.walk.bodyTilt,0}
+
+
   -- Set the desired waist
 local qWaist_desired = Config.stance.qWaist
 
@@ -99,10 +101,12 @@ function state.update()
   --if t-t_entry > timeout then return'timeout' end
    
   -- Zero the waist  
+
   local qWaist = Body.get_waist_command_position()
   local qWaist_approach, doneWaist = 
     util.approachTol( qWaist, qWaist_desired, dqWaistLimit, dt )
   Body.set_waist_command_position(qWaist_approach)
+ 
 
   -- Ensure that we do not move motors too quickly
   local pTorso_approach, doneTorso = 

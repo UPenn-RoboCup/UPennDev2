@@ -485,7 +485,6 @@ function movearm.getLargeValvePositionSingle(
   local trHandle = T.eye()
        * T.trans(handle_pos[1],handle_pos[2],handle_pos[3])
        * T.rotZ(handle_yaw)       
-
   if is_left>0 then
     local trGripL = trHandle
        * T.rotX(turn_angle)
@@ -503,6 +502,42 @@ function movearm.getLargeValvePositionSingle(
        * T.trans(offset,0,0) 
      return T.position6D(trGripR)      
   end
+end
+
+
+--Use LEFT chopstick hand
+function movearm.getBarValvePositionSingle(
+  turn_angle,
+  wrist_angle,
+  offset
+  )
+
+  local wheel = hcm.get_barvalve_model()
+  local handle_pos = vector.slice(wheel,1,3)
+  local handle_radius = wheel[4]
+
+
+  --we assume zero yaw and pitch 
+  local handle_yaw    = 0
+  local handle_pitch  = 0 
+  
+  --We assume verticle, downward valve as zero turnangle (and vertial chopsticks)
+  local hand_rpy = {0,0*Body.DEG_TO_RAD, 0*Body.DEG_TO_RAD}
+
+  --Calculate the hand transforms
+  local trHandle = T.eye()
+       * T.trans(handle_pos[1],handle_pos[2],handle_pos[3])
+       * T.rotZ(handle_yaw)       
+  
+  local trGripL = trHandle
+       * T.rotX(turn_angle)
+       * T.trans(0,0,-handle_radius)
+       * T.rotX(wrist_angle)
+       * T.transform6D(
+          {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
+       * T.trans(offset,0,0)
+  return T.position6D(trGripL)
+  
 end
 
 

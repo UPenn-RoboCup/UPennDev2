@@ -7,6 +7,7 @@ local util = require'util'
 require'mcm'
 local movearm = require'movearm'
 
+--debug_on = true
 
 local function print_transform(tr)
   if not tr then return end
@@ -138,7 +139,7 @@ local function set_hand_mass(self,mLeftHand, mRightHand)
 end
 
 local function reset_torso_comp(self,qLArm,qRArm)
-  local qWaist = {0,0}--TODO: will we use waist position as well?
+  local qWaist = Body.get_waist_command_position()
   local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,
         mcm.get_stance_bodyTilt(), 0,0)        
   self.torsoCompBias = {-com[1]/com[4],-com[2]/com[4]}
@@ -146,7 +147,7 @@ end
 
 
 local function get_torso_compensation(self,qLArm,qRArm,massL,massR)
-  local qWaist = {0,0}--TODO: will we use waist position as well?
+  local qWaist = Body.get_waist_command_position() --TODO: dynamic waist movement
   if mcm.get_status_iskneeling()==1 or 
     Config.stance.enable_torso_compensation==0 then
     return {0,0}
@@ -169,8 +170,8 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   local yawMag = dt_step * velYaw
 
   local qLArmNext, qRArmNext = qLArm, qRArm
-  qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, {waistYaw,0})
-  qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, {waistYaw,0})
+  qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
+  qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
 
   if not qLArmNext or not qRArmNext then print("ARM PLANNING ERROR")
     return 
@@ -244,9 +245,13 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
     local velInsert = 0.02
     vel_param={velTurnAngle,velTurnAngle,velInsert,velInsert}
   elseif plantype=="valveonearm" then
-    local velTurnAngle = 3*Body.DEG_TO_RAD
-    local velInsert = 0.02
-    vel_param={velTurnAngle,velTurnAngle}
+    local velInsert = 0.01
+    local velTurnAngle = 6*Body.DEG_TO_RAD
+    vel_param={velTurnAngle,velInsert}
+  elseif plantype=="barvalve" then    
+    local velInsert = 0.01
+    local velTurnAngle = 6*Body.DEG_TO_RAD
+    vel_param={velTurnAngle,velTurnAngle,velInsert}
   end
   
   local done, torsoCompDone = false, false
@@ -302,6 +307,19 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
         trLArmNext, trRArmNext =  trLArm, movearm.getLargeValvePositionSingle(unpack(new_param))
       end
       waistNext = current_cond[6]
+    elseif plantype =="barvalve" then
+      new_param[1], done1 = util.approachTol(current_param[1],target_param[1], vel_param[1],dt_step)
+      new_param[2], done2 = util.approachTol(current_param[2],target_param[2], vel_param[2],dt_step)
+      new_param[3], done3 = util.approachTol(current_param[3],target_param[3], vel_param[3],dt_step)
+      new_param[4] = target_param[4]      
+      done = done1 and done2 and done3
+
+      if new_param[4]>0 then --left arm      
+        trLArmNext, trRArmNext =  movearm.getBarValvePositionSingle(unpack(new_param)), trRArm
+      else
+        trLArmNext, trRArmNext =  trLArm, movearm.getBarValvePositionSingle(unpack(new_param))
+      end
+      waistNext = current_cond[6]
 
     end
 
@@ -327,6 +345,12 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
   local t1 = unix.time()  
   print(string.format("%d steps planned, %.2f ms elapsed:",qArmCount,(t1-t0)*1000 ))
+  print("trLArm:",self.print_transform( Body.get_forward_larm( qLArmQueue[1][1]  ) ))
+  print("trRArm:",self.print_transform( Body.get_forward_rarm( qRArmQueue[1][1]  )))
+  print(string.format("TorsoComp: %.3f %.3f",uTorsoCompQueue[1][1],uTorsoCompQueue[1][2]) )
+
+
+
   if failed then return
   else return qLArmQueue,qRArmQueue, uTorsoCompQueue, qWaistQueue, current_cond, current_param end
 end
@@ -381,8 +405,17 @@ local function plan_arm_sequence2(self,arm_seq)
         self.init_valveparam, 
         vector.slice(arm_seq[i],2,#arm_seq[i]) )      
 
+    elseif arm_seq[i][1] =='barvalve' then
+      LAP, RAP, uTP, WP, end_cond, end_valveparam  = self:plan_unified('barvalve',
+        init_cond, 
+        self.init_valveparam, 
+        vector.slice(arm_seq[i],2,#arm_seq[i]) )      
+
     end
-    if not LAP then return end
+    if not LAP then 
+      hcm.set_state_success(-1) --Report plan failure
+      return 
+    end
     init_cond = end_cond    
     if end_doorparam then self.init_doorparam = end_doorparam end
     if end_valveparam then self.init_valveparam = end_valveparam end
@@ -512,7 +545,7 @@ local function play_arm_sequence(self,t)
 
     if self.waistQueue then
       qWaist = self.waistStart + ph * (self.waistEnd - self.waistStart)
-      Body.set_waist_command_position({qWaist,0})
+      Body.set_waist_command_position({qWaist,Body.get_waist_command_position()[2]})
     end
   end
   return false

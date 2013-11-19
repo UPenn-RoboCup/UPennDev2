@@ -50,6 +50,9 @@ function state.entry()
   hcm.set_largevalve_model({0.55,0.20,0.02, 
     0.13, -60*Body.DEG_TO_RAD, 60*Body.DEG_TO_RAD })
 
+  hcm.set_state_tstartactual(unix.time()) 
+  hcm.set_state_tstartrobot(Body.get_time())
+
   local wrist_seq = {{'wrist',trLArm1, nil}}
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "wristturn" end
 end
@@ -156,6 +159,7 @@ function state.update()
     end
   elseif stage=="valveturn" then 
     if arm_planner:play_arm_sequence(t) then 
+      hcm.set_state_success(1) --Report success
       stage="inposition"
     end
   elseif stage=="armbacktoinitpos" then 
@@ -164,7 +168,7 @@ function state.update()
   hcm.set_state_proceed(0)
 end
 
-function state.exit()  
+function state.exit()    
   print(state._NAME..' Exit' )
 end
 

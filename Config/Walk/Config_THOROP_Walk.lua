@@ -237,20 +237,27 @@ stance.enable_torso_compensation = 1
 
 stance.enable_sit = false
 stance.enable_legs = true   -- centaur has no legs
-
+--[[
 stance.pLLeg = vector.new{-walk.supportX,  walk.footY, 0, 0,0,0}
 stance.pRLeg = vector.new{-walk.supportX, -walk.footY, 0, 0,0,0}
 stance.pTorso = vector.new{-walk.torsoX, 0, walk.bodyHeight, 0,walk.bodyTilt,0}
+--]]
 stance.qWaist = vector.zeros(2)
 
 stance.dqWaistLimit = 10*DEG_TO_RAD*vector.ones(2)
 --stance.dpLimitStance = vector.new{.04, .03, .07, .4, .4, .4}
 stance.dpLimitStance = vector.new{.04, .03, .03, .4, .4, .4}
 stance.dqLegLimit = vector.new{10,10,45,90,45,10}*DEG_TO_RAD
---stance.dqLegLimit = vector.new{10,10,20,40,20,10}*DEG_TO_RAD
+
 
 stance.sitHeight = 0.70
 stance.dHeight = 0.04 --4cm per sec
+
+
+
+
+
+
 
 
 
@@ -463,19 +470,38 @@ arm.joint_vel_limit_plan = vector.new({10,10,10,10,30,10,30}) *DEG_TO_RAD
 
 
 --Pose 1 wrist position
-arm.pLWristTarget1 = {.04,.30,-.20,0,0,0}
-arm.pRWristTarget1 = {.04,-.30,-.20,0,0,0}
-
---lil higher and back
---arm.pLWristTarget1 = {.00,.30,-.15,0,0,0}
---arm.pRWristTarget1 = {.00,-.30,-.15,0,0,0}
-
 arm.pLWristTarget1 = {-.0,.30,-.20,0,0,0}
 arm.pRWristTarget1 = {-.0,-.30,-.20,0,0,0}
 
-
 arm.lShoulderYawTarget1 = -5*DEG_TO_RAD
 arm.rShoulderYawTarget1 = 5*DEG_TO_RAD
+
+
+arm.qLArmPose1 = vector.new({
+  118.96025904076,
+  9.0742631178663,
+  -5,
+  -81.120944928286,
+  81,
+  14.999999999986, 
+  9
+  })*DEG_TO_RAD
+
+arm.qRArmPose1 = vector.new({
+  118.96025904076,
+  -9.0742631178663,
+  5,
+  -81.120944928286,
+  -81,
+  -14.999999999986, 
+  9
+  })*DEG_TO_RAD
+
+
+
+
+
+
 
 --Pose 2 wrist position
 arm.pLWristTarget2 = {.05,.38,-.05,0,0,0}

@@ -11,25 +11,25 @@ local arm_planner = libArmPlan.new_planner()
 local qLArm0,qRArm0, trLArm0, trRArm0, trLArm1, trARArm1
 
 --Initial hand angle
-local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}
-local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD}
+local lhand_rpy0 = Config.armfsm.toolgrip.lhand_rpy
+local rhand_rpy0 = Config.armfsm.toolgrip.rhand_rpy
 
 local gripL, gripR = 1,1
 local stage
 local debugdata
 
-local function get_tool_tr(tooloffsetx,tooloffsety,tooloffsetz)
+local function get_tool_tr(tooloffset)
   local handrpy = rhand_rpy0
   local tool_model = hcm.get_tool_model()
   local hand_pos = vector.slice(tool_model,1,3) + 
-    vector.new({tooloffsetx,tooloffsety,tooloffsetz})  
+    vector.new({tooloffset[1],tooloffset[2],tooloffset[3]})  
   local tool_tr = {hand_pos[1],hand_pos[2],hand_pos[3],
                     handrpy[1],handrpy[2],handrpy[3] + tool_model[4]}
   return tool_tr
 end
 
-local function get_hand_tr(posx,posy,posz)
-  return {posx,posy,posz, unpack(rhand_rpy0)}
+local function get_hand_tr(pos)
+  return {pos[1],pos[2],pos[3], unpack(rhand_rpy0)}
 end
 
 local function update_model()
@@ -114,24 +114,12 @@ function state.update()
     Body.set_rgrip_percent(gripR*0.8)
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
-
-
         print("trLArm:",arm_planner.print_transform(trLArm))
         print("trRArm:",arm_planner.print_transform(trRArm))
 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)
-        trRArmTarget1 = get_hand_tr(0.30,-0.20,-0.10)
-        trRArmTarget2 = get_hand_tr(0.35,-0.20,0.05)
-
-
---For long hand
-        trRArmTarget1 = get_hand_tr(0.30,-0.15,-0.20)
-        trRArmTarget2 = get_hand_tr(0.35,-0.15,-0.05)
-        --trRArmTarget2 = get_hand_tr(0.35,-0.20,0.05)
-
-
-
-
+        trRArmTarget1 = get_hand_tr(Config.armfsm.toolgrip.arminit[2])
+        trRArmTarget2 = get_hand_tr(Config.armfsm.toolgrip.arminit[3])
         local arm_seq = {{'move',nil,trRArmTarget1},{'move',nil,trRArmTarget2}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
       elseif hcm.get_state_proceed()==-1 then 
@@ -150,12 +138,12 @@ function state.update()
     if doneL then
       if hcm.get_state_proceed()==1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)
-        local trRArmTarget1 = get_tool_tr(-0.08,0,0)        
+        local trRArmTarget1 = get_tool_tr(Config.armfsm.toolgrip.tool_clearance)        
         local arm_seq = {{'move',nil, trRArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) --Lock right shoulder yaw
-        trRArmTarget1 = get_hand_tr(0.25,-0.20,-0.05)
+        trRArmTarget1 = get_hand_tr(Config.armfsm.toolgrip.arminit[1])
         local arm_seq = {{'move',nil,trRArmTarget1},{'move',nil,trRArm1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "wristyawturn" end  
       end
@@ -163,20 +151,20 @@ function state.update()
   elseif stage=="reachout" then --Move arm to the gripping position
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-        local trRArmTarget2 = get_tool_tr(0,0,0)        
+        local trRArmTarget2 = get_tool_tr({0,0,0})        
         local arm_seq = {{'move',nil, trRArmTarget2}}     
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "touchtool" end        
       elseif hcm.get_state_proceed() == -1 then         
-        local trRArmTarget1 = get_tool_tr(-0.08,0,0)
-        local trRArmTarget2 = get_hand_tr(0.35,-0.20, trRArmTarget1[3])
-        local trRArmTarget3 = get_hand_tr(0.25,-0.20,-0.05)
+        local trRArmTarget1 = get_tool_tr(Config.armfsm.toolgrip.tool_clearnace)        
+        local trRArmTarget2 = get_hand_tr(Config.armfsm.toolgrip.arminit[3])
+        local trRArmTarget3 = get_hand_tr(Config.armfsm.toolgrip.arminit[2])
         local arm_seq={{'move',nil,trRArmTarget1},{'move',nil,trRArmTarget2},{'move',nil,trRArmTarget3}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
       elseif hcm.get_state_proceed() == 2 then --Model modification
         update_model()        
-        local trRArmTarget2 = get_tool_tr(-0.08,0,0)
         arm_planner:set_hand_mass(0,0)
-        local arm_seq = {{'move',nil,trRArmTarget2}}
+        local trRArmTarget1 = get_tool_tr(Config.armfsm.toolgrip.tool_clearance)
+        local arm_seq = {{'move',nil,trRArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end
       end
     end
@@ -184,43 +172,38 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
         arm_planner:set_hand_mass(0,1)
-        local trRArmTarget2 = get_tool_tr(0,0,0)
+        local trRArmTarget2 = get_tool_tr({0,0,0})
         local arm_seq = {{'move',nil,trRArmTarget2}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grab" end
       elseif hcm.get_state_proceed() == -1 then 
         arm_planner:set_hand_mass(0,0)
-        local trRArmTarget1 = get_tool_tr(-0.08,0,0)        
+        local trRArmTarget1 = get_tool_tr(Config.armfsm.toolgrip.tool_clearnce)
         local arm_seq = {{'move',nil, trRArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end
       elseif hcm.get_state_proceed() == 2 then 
         arm_planner:set_hand_mass(0,0)
         update_model()        
-        local trRArmTarget2 = get_tool_tr(0,0,0)
-        arm_planner:set_hand_mass(0,0)
+        local trRArmTarget2 = get_tool_tr({0,0,0})        
         local arm_seq = {{'move',nil,trRArmTarget2}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "touchtool" end
       end
     end
 
   elseif stage=="grab" then --Grip the object   
-    gripL,doneL = util.approachTol(gripL,1,2,dt)
     gripR,doneR = util.approachTol(gripR,1,2,dt)
---    Body.set_lgrip_percent(gripL*0.8)
     Body.set_rgrip_percent(gripR*0.8)
---    if doneL then
     if doneR then stage = "torsobalance" end
   elseif stage=="torsobalance" then
     if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        
-        local trRArmTarget3 = get_tool_tr(0,0,0.05)
         arm_planner:set_hand_mass(0,2)   
+        local trRArmTarget3 = get_tool_tr(Config.armfsm.toolgrip.tool_liftup)
         local arm_seq = {{'move',nil, trRArmTarget3}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end
       elseif hcm.get_state_proceed()==-1 then stage="ungrab" 
-
       elseif hcm.get_state_proceed() == 2 then --Model modification
         update_model()        
-        local trRArmTarget2 = get_tool_tr(0,0,0)
+        local trRArmTarget2 = get_tool_tr({0,0,0})
         local arm_seq = {{'move',nil,trRArmTarget2}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "torsobalance" end
       end
@@ -228,19 +211,19 @@ function state.update()
   elseif stage=="lift" then
     if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        
-        local trRArmTarget4 = get_tool_tr(-0.20,0,0.05)
-        local trRArmTarget5 = get_hand_tr(0.20,0.0,-0.10)
+        local trRArmTarget4 = get_tool_tr(Config.armfsm.toolgrip.tool_liftuppull)
+        local trRArmTarget5 = get_hand_tr(Config.armfsm.toolgrip.armhold[1])
         arm_planner:set_hand_mass(0,2)   
         local arm_seq = {{'move',nil,trRArmTarget4},{'move',nil,trRArmTarget5}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "liftpull" end
       elseif hcm.get_state_proceed()==-1 then 
-        local trRArmTarget3 = get_tool_tr(0,0,0)
         arm_planner:set_hand_mass(0,1)   
+        local trRArmTarget3 = get_tool_tr({0,0,0})
         local arm_seq = {{'move',nil,trRArmTarget3}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "torsobalance" end
       elseif hcm.get_state_proceed() == 2 then --Model modification
         update_model()        
-        local trRArmTarget2 = get_tool_tr(0,0,0.05)
+        local trRArmTarget2 = get_tool_tr(Config.armfsm.toolgrip.tool_liftup)
         local arm_seq = {{'move',nil,trRArmTarget2}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end
       end
@@ -264,7 +247,7 @@ function state.update()
 --    if doneL then
     if doneR then
       arm_planner:set_hand_mass(0,0)   
-      local trRArmTarget2 = get_tool_tr(0,0,0)
+      local trRArmTarget2 = get_tool_tr({0,0,0})
       local arm_seq = {{'move',nil, trRArmTarget2}}
       if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end
     end  

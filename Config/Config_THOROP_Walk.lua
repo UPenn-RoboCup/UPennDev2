@@ -224,78 +224,10 @@ zmpstep.param_k1={
     }
 
 
-------------------------------------
--- For the arm FSM
-local arm = {}
-
-
---Gripper end position offsets (Y is inside)
-arm.handoffset={}
-arm.handoffset.gripper = {0.245,0.035,0} --Default gripper
-arm.handoffset.outerhook = {0.285,-0.065,0} --Single hook (for door)
-arm.handoffset.chopstick = {0.285,0,0} --Two rod (for valve)
-
---Arm planner variables
-arm.plan={}
-arm.plan.max_margin = math.pi/6
---arm.plan.max_margin = math.pi
---arm.plan.dt_step0 = 0.5
---arm.plan.dt_step = 0.5
-arm.plan.dt_step0 = 0.1
-arm.plan.dt_step = 0.2
-arm.plan.search_step = 1
---arm.plan.search_step = .25
-
-arm.plan.velWrist = {100000,100000,100000, 15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD}
-arm.plan.velDoorRoll = 10*DEG_TO_RAD
-arm.plan.velDoorYaw = 2*DEG_TO_RAD
---arm.plan.velTorsoComp = {0.005,0.005} --5mm per sec
-arm.plan.velTorsoComp = {0.02,0.01} --5mm per sec
-arm.plan.velYaw = 10*math.pi/180
-
-
-
-
--- Arm speed limits
-
-arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD
-arm.slow_elbow_limit = vector.new({10,10,10,5,30,30,30})*DEG_TO_RAD --Used for armInit
-
--- Linear movement speed limits
-arm.linear_slow_limit = vector.new({0.02,0.02,0.02, 15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
-
--- Use this for wrist initialization
-arm.joint_init_limit=vector.new({30,30,30,30,30,30,30}) *DEG_TO_RAD
-
--- Use this for planned arm movement
-arm.joint_vel_limit_plan = vector.new({10,10,10,10,30,10,30}) *DEG_TO_RAD
-
-arm.linear_wrist_limit = 0.05
-
-
---Pose 1 wrist position
-arm.pLWristTarget1 = {-.0,.30,-.20,0,0,0}
-arm.pRWristTarget1 = {-.0,-.30,-.20,0,0,0}
-
-arm.lShoulderYawTarget1 = -5*DEG_TO_RAD
-arm.rShoulderYawTarget1 = 5*DEG_TO_RAD
-
-arm.qLArmPose1 = vector.new({118.96025904076,9.0742631178663,-5,-81.120944928286,81,14.999999999986, 9})*DEG_TO_RAD
-arm.qRArmPose1 = vector.new({118.96025904076,-9.0742631178663,5,-81.120944928286,-81,-14.999999999986, 9})*DEG_TO_RAD
-
-if IS_WEBOTS then
-  --Faster limit for webots
-  arm.slow_limit = arm.slow_limit*3
-  arm.slow_elbow_limit = arm.slow_elbow_limit*3
-  arm.linear_slow_limit = arm.linear_slow_limit*3
-  arm.joint_init_limit=arm.joint_init_limit*3
-  arm.joint_vel_limit_plan = arm.joint_vel_limit_plan*3
-end
 
 ------------------------------------
 -- Associate with the table
 Config.walk    = walk
-Config.arm     = arm
 Config.stance  = stance
 Config.zmpstep = zmpstep
 

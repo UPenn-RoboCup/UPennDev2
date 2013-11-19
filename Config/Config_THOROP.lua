@@ -49,9 +49,15 @@ end
 local exo = {}
 exo.Walk = 'Walk'
 exo.Net  = 'Net'
+exo.FSM  = 'Manipulation' --added
+
 -- Load each exogenous Config file
+
+
 for k,v in pairs(exo) do
-  local exo_name = k..'/Config_'..Config.PLATFORM_NAME..'_'..v
+-- SJ:Now we just put all config files in /Config folder
+--  local exo_name = k..'/Config_'..Config.PLATFORM_NAME..'_'..v
+  local exo_name = '/Config_'..Config.PLATFORM_NAME..'_'..v
   local exo_config = require(exo_name)
   for kk,vv in pairs(exo_config) do Config[kk] = vv end
 end

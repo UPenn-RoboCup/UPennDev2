@@ -16,7 +16,6 @@ local shared_data_sz = {}
 shared_data.state={}
 shared_data.state.proceed = vector.zeros(0)
 
-
 --This variable is used for target transform based tele-op and fine tuning
 shared_data.hands={}
 
@@ -168,6 +167,24 @@ shared_data.right.cathode = vector.zeros(3)
 shared_data.right.anode = vector.zeros(3)
 -- strata (girth) / angle of attack / climb (a->c percentage)
 shared_data.right.grip = vector.zeros(3)
+
+
+
+--These variables are only used for offline testing of arm states
+shared_data.state.success = vector.zeros(0)
+shared_data.state.tstartrobot = vector.zeros(0)
+shared_data.state.tstartactual = vector.zeros(0)
+
+
+
+
+
+
+
+
+
+
+
 
 -- Call the initializer
 memory.init_shm_segment(..., shared_data, shared_data_sz)

@@ -15,6 +15,7 @@ local trLArm1, trRArm1
 local stage
 
 local qLArmInit0,qRArmInit0
+local qLArm0, qRArm0
 local qWaist
 
 function state.entry()
@@ -24,12 +25,12 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-  
+  qLArm0 = Body.get_larm_command_position()
+  qRArm0 = Body.get_rarm_command_position()
+  --[[
   qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})  
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
-  
+  --]]
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
 

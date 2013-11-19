@@ -81,6 +81,9 @@ function state.entry()
     knob_offset_y})
   hcm.set_door_yaw(0)
   debugdata=''
+
+  hcm.set_state_tstartactual(unix.time()) 
+  hcm.set_state_tstartrobot(Body.get_time())
 end
 
 local function update_model()
@@ -91,6 +94,10 @@ local function update_model()
     trRArmTarget[1] - trRArmCurrent[1] + door_model[1],
     trRArmTarget[2] - trRArmCurrent[2] + door_model[2],
     trRArmTarget[3] - trRArmCurrent[3] + door_model[3]
+
+  print(string.format("Door model update: hinge %.3f %.3f %.3f",
+    door_model[1],door_model[2],door_model[3]))
+
   hcm.set_door_model(door_model)
 end
 
@@ -284,6 +291,7 @@ local function flush_debugdata()
 end
 
 function state.exit()  
+  hcm.set_state_success(1) --Report success
 --  flush_debugdata()
   print(state._NAME..' Exit' )
 end

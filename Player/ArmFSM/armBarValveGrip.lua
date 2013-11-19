@@ -49,6 +49,9 @@ function state.entry()
 
   hcm.set_barvalve_model({0.55,0.20,0.02,   0.05, 0, 70*Body.DEG_TO_RAD })
 
+  hcm.set_state_tstartactual(unix.time()) 
+  hcm.set_state_tstartrobot(Body.get_time())
+
   local wrist_seq = {{'wrist',trLArm1, nil}}
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "wristturn" end
 end
@@ -158,6 +161,7 @@ function state.update()
     end
   elseif stage=="valveturn" then 
     if arm_planner:play_arm_sequence(t) then 
+      hcm.set_state_success(1) --Report success
       stage="pregrip"
     end
   elseif stage=="armbacktoinitpos" then 

@@ -16,6 +16,8 @@ local use_lidar_head  = false
 
 if IS_WEBOTS then use_camera = false end
 
+if IS_TESTING then use_camera = false end
+
 
 
 --local use_joint_feedback = false
@@ -1151,7 +1153,60 @@ end
 
 ----------------------
 -- Webots compatibility
-if IS_WEBOTS then
+
+
+if IS_TESTING then
+  print("TESTING")
+  local Config     = require'Config'  
+  local simple_ipc = require'simple_ipc'  
+  local jpeg       = require'jpeg'  
+  local png        = require'png'
+  local udp        = require'udp'
+  local mp         = require'msgpack'
+  Body.entry = function ()
+  end
+  Body.update = function()
+
+
+
+    local t = Body.get_time()
+
+    local rad = jcm.get_actuator_command_position()
+    jcm.set_sensor_position(rad)
+    
+  end
+  Body.exit=function()
+  end
+  get_time = function()
+    return global_clock
+  end
+
+  servo.min_rad = vector.new({
+    -90,-80, -- Head
+    -90, 0, -90, -160,      -180,-87,-180, --LArm
+    -175,-175,-175,-175,-175,-175, --LLeg
+    -175,-175,-175,-175,-175,-175, --RLeg
+    -90,-87,-90,-160,       -180,-87,-180, --RArm
+    -90,-45, -- Waist
+    80,80,80,
+    80,80,80,    
+
+    -60, -- Lidar pan
+  })*DEG_TO_RAD
+  
+  servo.max_rad = vector.new({
+    90, 80, -- Head
+    160,87,90,0,     180,87,180, --LArm
+    175,175,175,175,175,175, --LLeg
+    175,175,175,175,175,175, --RLeg
+    160,-0,90,0,     180,87,180, --RArm
+    90,79, -- Waist
+    45,45,45,
+    45,45,45,    
+    60, -- Lidar pan
+  })*DEG_TO_RAD
+
+elseif IS_WEBOTS then
   -- TODO: fix the min/max/bias for the grippers
   local Config     = require'Config'
 	local webots     = require'webots'
@@ -1169,18 +1224,13 @@ if IS_WEBOTS then
 
   servo.direction = vector.new({
     1,-1, -- Head
---    1,-1,-1,1,-1,1,-1, --LArm
     1,-1,-1,1,-1,-1,-1, --LArm    
-    -- TODO: No legs yet!
     -1,-1,-1,-1,1,1, --LLeg
     -1,-1,1,1,-1,1, --LArm
---    -1,-1,-1,-1,-1,1,-1, --RArm
-      -1,-1,-1,-1,-1,-1,-1, --RArm    
+    -1,-1,-1,-1,-1,-1,-1, --RArm    
     -- TODO: Check the gripper
     -1,1, -- Waist
-
     -1,-1,-1, -- left gripper    
---    -1,1,1, -- right gripper
     -1,-1,-1, -- right gripper
 
     1, -- Lidar pan
@@ -1192,29 +1242,18 @@ if IS_WEBOTS then
     0,0,0,0,0,0,
     -90,0,0,0,0,0,0,
     0,0,
-    --SJ: default is closed for fingers(webots)
-
---    -45,-90,-90,    
---    -90,-45,-45,
-
     -35,-90,-90,    
     -90,-35,-35,
-
-    60,--30,
+    60,
   })*DEG_TO_RAD
   
   servo.min_rad = vector.new({
     -90,-80, -- Head
-
     -90, 0, -90, -160,      -180,-87,-180, --LArm
     -175,-175,-175,-175,-175,-175, --LLeg
     -175,-175,-175,-175,-175,-175, --RLeg
     -90,-87,-90,-160,       -180,-87,-180, --RArm
---    -90,-45, -- Waist
-    -180,-45, -- Waist
-
-
-
+    -90,-45, -- Waist
     80,80,80,
     80,80,80,    
 
@@ -1223,18 +1262,13 @@ if IS_WEBOTS then
   
   servo.max_rad = vector.new({
     90, 80, -- Head
-
     160,87,90,0,     180,87,180, --LArm
     175,175,175,175,175,175, --LLeg
     175,175,175,175,175,175, --RLeg
     160,-0,90,0,     180,87,180, --RArm
-
---    90,45, -- Waist
-    180,79, -- Waist
-
+    90,79, -- Waist
     45,45,45,
     45,45,45,    
-   
     60, -- Lidar pan
   })*DEG_TO_RAD
   
@@ -1755,6 +1789,7 @@ else -- webots check
     return false 
   end
 end 
+
 
 -- Exports for use in other functions
 Body.get_time = get_time

@@ -82,7 +82,14 @@ function state.entry()
 
 hcm.set_tool_model({0.52,-0.02,0.00,  0*Body.DEG_TO_RAD})
 
+
+hcm.set_tool_model({0.49,-0.02,0.00,  0*Body.DEG_TO_RAD})
+
   debugdata=''   
+
+  hcm.set_state_tstartactual(unix.time())
+  hcm.set_state_tstartrobot(Body.get_time())
+
 end
 
 function state.update()
@@ -250,6 +257,7 @@ function state.update()
 end
 
 function state.exit()  
+  hcm.set_state_success(1) --Report success
   --Store boundary conditions for future state
   --arm_planner:save_boundary_condition(current_arm_endcond)
   print(state._NAME..' Exit' )

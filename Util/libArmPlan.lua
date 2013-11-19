@@ -6,6 +6,7 @@ local util = require'util'
 require'mcm'
 local movearm = require'movearm'
 
+--debug_on = true
 
 local function print_transform(tr)
   if not tr then return end
@@ -343,6 +344,12 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
   local t1 = unix.time()  
   print(string.format("%d steps planned, %.2f ms elapsed:",qArmCount,(t1-t0)*1000 ))
+  print("trLArm:",self.print_transform( Body.get_forward_larm( qLArmQueue[1][1]  ) ))
+  print("trRArm:",self.print_transform( Body.get_forward_rarm( qRArmQueue[1][1]  )))
+  print(string.format("TorsoComp: %.3f %.3f",uTorsoCompQueue[1][1],uTorsoCompQueue[1][2]) )
+
+
+
   if failed then return
   else return qLArmQueue,qRArmQueue, uTorsoCompQueue, qWaistQueue, current_cond, current_param end
 end
@@ -404,7 +411,10 @@ local function plan_arm_sequence2(self,arm_seq)
         vector.slice(arm_seq[i],2,#arm_seq[i]) )      
 
     end
-    if not LAP then return end
+    if not LAP then 
+      hcm.set_state_success(-1) --Report plan failure
+      return 
+    end
     init_cond = end_cond    
     if end_doorparam then self.init_doorparam = end_doorparam end
     if end_valveparam then self.init_valveparam = end_valveparam end

@@ -156,7 +156,10 @@ function state.update()
         local trLArmTarget3 = getTargetTransform({-0.08,0,0},lhand_rpy0)
         local arm_seq = {
           {'move',trLArmTarget1,nil},{'move',trLArmTarget2,nil},{'move',trLArmTarget3,nil}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armposition" end
+        if arm_planner:plan_arm_sequence2(arm_seq) then 
+          hcm.set_state_success(1) --Report success  
+          stage = "armposition" 
+        end
       elseif hcm.get_state_proceed(0)==2 then   
         update_model()
         local trLArmTarget2 = getTargetTransform()        

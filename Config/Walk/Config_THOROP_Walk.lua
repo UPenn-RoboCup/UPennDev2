@@ -461,19 +461,38 @@ arm.joint_vel_limit_plan = vector.new({10,10,10,10,30,10,30}) *DEG_TO_RAD
 
 
 --Pose 1 wrist position
-arm.pLWristTarget1 = {.04,.30,-.20,0,0,0}
-arm.pRWristTarget1 = {.04,-.30,-.20,0,0,0}
-
---lil higher and back
---arm.pLWristTarget1 = {.00,.30,-.15,0,0,0}
---arm.pRWristTarget1 = {.00,-.30,-.15,0,0,0}
-
 arm.pLWristTarget1 = {-.0,.30,-.20,0,0,0}
 arm.pRWristTarget1 = {-.0,-.30,-.20,0,0,0}
 
-
 arm.lShoulderYawTarget1 = -5*DEG_TO_RAD
 arm.rShoulderYawTarget1 = 5*DEG_TO_RAD
+
+
+arm.qLArmPose1 = vector.new({
+  118.96025904076,
+  9.0742631178663,
+  -5,
+  -81.120944928286,
+  81,
+  14.999999999986, 
+  9
+  })*DEG_TO_RAD
+
+arm.qRArmPose1 = vector.new({
+  118.96025904076,
+  -9.0742631178663,
+  5,
+  -81.120944928286,
+  -81,
+  -14.999999999986, 
+  9
+  })*DEG_TO_RAD
+
+
+
+
+
+
 
 --Pose 2 wrist position
 arm.pLWristTarget2 = {.05,.38,-.05,0,0,0}

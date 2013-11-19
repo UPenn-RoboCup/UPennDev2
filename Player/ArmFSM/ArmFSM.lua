@@ -57,12 +57,13 @@ local armDebrisGrip = require'armDebrisGrip'
 
 local armSupportDoor = require'armSupportDoor'
 
-
+local armForceReset = require'armForceReset'
 
 
 
 local sm = fsm.new(armIdle);
 sm:add_state(armInit)
+sm:add_state(armForceReset)
 sm:add_state(armPose1)
 sm:add_state(armTeleop)
 sm:add_state(armDoorGrip)
@@ -125,6 +126,26 @@ sm:set_transition(armToolChop, 'done', armToolHold)
 sm:set_transition(armDoorGrip, 'done', armPose1)
 sm:set_transition(armDebrisGrip, 'done', armPose1)
 sm:set_transition(armTeleop, 'done', armPose1)
+
+
+
+--Force reset states is used for offline testing only
+sm:set_transition(armSmallValveGrip, 'forcereset', armForceReset)
+sm:set_transition(armLargeValveGrip, 'forcereset', armForceReset)
+sm:set_transition(armBarValveGrip, 'forcereset', armForceReset)
+sm:set_transition(armToolGrip, 'forcereset', armForceReset)
+sm:set_transition(armToolHold, 'forcereset', armForceReset)
+sm:set_transition(armDoorGrip, 'forcereset', armForceReset)
+sm:set_transition(armDebrisGrip, 'forcereset', armForceReset)
+
+sm:set_transition(armForceReset, 'done', armPose1)
+
+
+
+
+
+
+
 
 
 --depreciated

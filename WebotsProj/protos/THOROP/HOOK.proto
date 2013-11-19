@@ -10,7 +10,7 @@ PROTO HOOK [
 ]
 {
 Solid {
-  translation IS translation
+  translation 0 -0.079 0
   rotation IS rotation
   children [
 	  Shape {
@@ -20,7 +20,7 @@ Solid {
 	         specularColor 0 0 0
 	       }
 	     }
-	     geometry Box { size 0.02 0.158 0.02 }
+	     geometry Box { size 0.015 0.158 0.015 }
 	  }	
 		
 		DEF HOOK_2 Solid {
@@ -34,12 +34,12 @@ Solid {
 			         specularColor 0 0 0
 			       }
 			     }
-			     geometry Box { size 0.06 0.02 0.02 }
+			     geometry Box { size 0.06 0.015 0.015 }
 			  }	
 			]
 			
 			boundingObject Group {
-				children[ Box { size 0.06 0.02 0.02 } ]
+				children[ Box { size 0.06 0.015 0.015 } ]
 			}  
 			
 		}
@@ -48,7 +48,7 @@ Solid {
 	
 	
   boundingObject Group {
-		children[ Box { size 0.02 0.158 0.02 } ]
+		children[ Box { size 0.015 0.158 0.015 } ]
   }  
   locked TRUE
 }

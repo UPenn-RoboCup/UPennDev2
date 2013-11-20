@@ -11,7 +11,13 @@ local arm = {}
 --Gripper end position offsets (Y is inside)
 arm.handoffset={}
 arm.handoffset.gripper = {0.245,0.035,0} --Default gripper
-arm.handoffset.outerhook = {0.285,-0.065,0} --Single hook (for door)
+
+--For older hook
+--arm.handoffset.outerhook = {0.285,-0.065,0} --Single hook (for door)
+
+--For new hook
+arm.handoffset.outerhook = {0.285,0,0.065} --Single hook (for door)
+
 arm.handoffset.chopstick = {0.285,0,0} --Two rod (for valve)
 
 --Arm planner variables
@@ -61,8 +67,17 @@ arm.joint_vel_limit_plan = arm.joint_vel_limit_plan * speed_factor
 --Pose 1 wrist position
 arm.pLWristTarget0 = {-.0,.30,-.20,0,0,0}
 arm.pRWristTarget0 = {-.0,-.30,-.20,0,0,0}
+
+--For old hook
+--[[
 arm.lrpy0 = vector.new({0,0,0,90,30,0})*DEG_TO_RAD
 arm.rrpy0 = vector.new({0,0,0,-90,30,0})*DEG_TO_RAD
+--]]
+
+--For new hook
+arm.lrpy0 = vector.new({0,0,0,0,30,0})*DEG_TO_RAD
+arm.rrpy0 = vector.new({0,0,0,-0,30,0})*DEG_TO_RAD
+
 arm.lShoulderYaw0 = -5*DEG_TO_RAD
 arm.rShoulderYaw0 = 5*DEG_TO_RAD
 
@@ -115,6 +130,34 @@ armfsm.toolchop.drill_clearance = {-0.05,0,0}
 ------   Door pull open
 ---------------------------------------------------------------
 armfsm.dooropen={}
+
+--[[
+armfsm.dooropen.rhand_rpy={-90*DEG_TO_RAD,-5*DEG_TO_RAD,0}
+armfsm.dooropen.rhand_rpy_release={-90*DEG_TO_RAD,45*DEG_TO_RAD,0}
+armfsm.dooropen.rhand_rpy_forward={-90*DEG_TO_RAD,5*DEG_TO_RAD,10*DEG_TO_RAD}
+armfsm.dooropen.rhand_rpy_sidepush={-0*DEG_TO_RAD,0*DEG_TO_RAD,0*DEG_TO_RAD}
+--]]
+
+
+--With top-mounted hook------------------------------------------------------
+arm.handoffset.outerhook = {0.285,0,0.065} --Single hook (for door)
+armfsm.dooropen.rhand_rpy={0*DEG_TO_RAD,-5*DEG_TO_RAD,0}
+armfsm.dooropen.rhand_rpy_release={0*DEG_TO_RAD,45*DEG_TO_RAD,0}
+armfsm.dooropen.rhand_rpy_forward={0*DEG_TO_RAD,5*DEG_TO_RAD,10*DEG_TO_RAD}
+armfsm.dooropen.rhand_rpy_sidepush={90*DEG_TO_RAD,0*DEG_TO_RAD,0*DEG_TO_RAD}
+------------------------------------------------------
+
+
+
+
+
+
+armfsm.dooropen.handle_clearance = vector.new({0,0,-0.05})
+
+armfsm.dooropen.rollTarget = -45*DEG_TO_RAD
+armfsm.dooropen.yawTargetInitial = 8*DEG_TO_RAD
+armfsm.dooropen.yawTarget = 30*DEG_TO_RAD
+
 armfsm.dooropen.velDoorRoll = 10*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velDoorYaw = 2*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velWaistYaw = 3*DEG_TO_RAD * speed_factor
@@ -124,26 +167,18 @@ armfsm.dooropen.velWaistYaw = 3*DEG_TO_RAD * speed_factor
 ---------------------------------------------------------------
 armfsm.doorpush={}
 
----------------------------------------------------------------
-------   Two-armed large valve turning (with chopstick)
----------------------------------------------------------------
-armfsm.valvetwoarm = {}
-armfsm.valvetwoarm.velTurnAngle = 3*DEG_TO_RAD * speed_factor
-armfsm.valvetwoarm.velInsert = 0.02 * speed_factor
+
+
 
 ---------------------------------------------------------------
-------   Valve turning with single hand w/chopstick
+------   Circular valve turning with single hand w/chopstick
 ---------------------------------------------------------------
 armfsm.valveonearm = {}
 
-armfsm.valveonearm.arminit={
-  {0.35,0.30,-0.15, 0,0,0}
-}
-
+armfsm.valveonearm.arminit={{0.35,0.30,-0.15, 0,0,0}}
 
 armfsm.valveonearm.velTurnAngle = 6*DEG_TO_RAD * speed_factor
 armfsm.valveonearm.velInsert = 0.01 * speed_factor
-
 armfsm.valveonearm.clearance = -0.08
 
 ---------------------------------------------------------------
@@ -152,6 +187,16 @@ armfsm.valveonearm.clearance = -0.08
 armfsm.valvebar = {}
 armfsm.valvebar.velTurnAngle = 6*DEG_TO_RAD * speed_factor
 armfsm.valvebar.velInsert = 0.01 * speed_factor
+
+
+---------------------------------------------------------------
+------   Two-armed large valve turning (with chopstick)
+---------------------------------------------------------------
+armfsm.valvetwoarm = {}
+armfsm.valvetwoarm.velTurnAngle = 3*DEG_TO_RAD * speed_factor
+armfsm.valvetwoarm.velInsert = 0.02 * speed_factor
+
+
 
 
 

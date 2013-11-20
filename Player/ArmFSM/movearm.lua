@@ -72,12 +72,8 @@ function movearm.getDoorHandlePosition(
   local door_r = door_model[4]
   local grip_offset_x = door_model[5]
   local knob_offset_y = door_model[6]
- 
-  local rhand_rpy0 = {-90*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD,0}
 
---  local rhand_rpy0 = {-90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}
-
-  local hand_rpy = rhand_rpy0
+  local hand_rpy = Config.armfsm.dooropen.rhand_rpy
 
   local hand_yaw = door_yaw
   if door_yaw>10*Body.DEG_TO_RAD then

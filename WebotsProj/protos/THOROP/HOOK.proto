@@ -12,7 +12,6 @@ PROTO HOOK [
 Solid {
   translation 0 -0.079 0
   rotation IS rotation
-  #rotation 0 0 1 0.2
   children [
 	  Shape {
 	     appearance DEF POS_APP Appearance {
@@ -38,13 +37,14 @@ Solid {
 			     geometry Box { size 0.04 0.015 0.015 }
 			  }	
 			]
-			
+		  physics Physics{mass 0.02}	
 			boundingObject Group {
 				children[ Box { size 0.04 0.015 0.015 } ]
 			}  
 		}
   ]
 	
+	physics Physics{mass 0.05}	
   boundingObject Group {
 		children[ Box { size 0.015 0.158 0.015 } ]
   }  

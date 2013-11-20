@@ -10,8 +10,10 @@
 #10/24: fixed joint positions according to actual robot
 #10/30: fixed lidar offset
 #11/5: re-enabled low leg bounding box (for kneeling)
+#SJ: changed hook direction
 
-PROTO THOROP7_NoBoundaries_newhand [
+
+PROTO THOROP7_NoBoundaries_LongBothHook [
   field SFVec3f    translation 0 1 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
@@ -156,7 +158,7 @@ Robot {
                   rotation -1 0 0 0
                   children [
                     DEF Right_wrist_yaw Servo {
-                       translation 0 -0.186 -0.030
+                       translation 0 -0.25 -0.030
                       children [
                         DEF Right_wrist_roll Servo {
                           rotation 0 0 -1 0
@@ -172,8 +174,8 @@ Robot {
 # RGRIP START
 
               Transform{   #Palm 
-                translation 0 -0.03 0.015
-                children [Shape{geometry Box {size 0.083 0.06 0.06}}]
+                translation 0 -0.03 0
+                children [Shape{geometry Box {size 0.083 0.06 0.08}}]
               }
 			        DEF r_wrist_grip1 Servo{ #Thumb finger for gripper
       			    translation 0.02 -0.065 0
@@ -241,7 +243,7 @@ Robot {
 	
 						 DEF r_wrist_grip2 Servo{ # Trigger finger
 		           translation -0.01 -0.06 0.015
-     		       rotation 0 0 1 -0.5
+     		       rotation 0 0 1 0
 			         name "r_wrist_grip2"
       		     children[
 	               Transform{
@@ -323,13 +325,13 @@ Robot {
               }
               physics Physics {mass 0.05}
             }
-						
 						DEF r_hook_2 Solid{ #Hook part
-							translation -0.025 -0.06 0.03
+							#translation -0.025 -0.06 0.03
+              translation 0 -0.06 0.06
 							rotation 0 1 0 1.57
 							children[HOOK{}]
 						}
-
+						
 
 # RGRIP END
 ######################################################################
@@ -379,8 +381,7 @@ Robot {
                     DEF Right_elbow Transform {
                       translation 0 0 -0.03
                       rotation 0 1 0 3.14159
-                      scale 0.001 0.001 0.001
-                      children [RIGHT_ELBOW{}]
+                      children [RIGHT_ELBOW_LONG{}]
                     }
                   ]
                   name "ArmLowerR"
@@ -445,7 +446,7 @@ Robot {
                   rotation 1 0 0 0
                   children [
                     DEF Left_wrist_yaw Servo {
-                      translation 0 -0.186 -0.03
+                      translation 0 -0.25 -0.03
                       children [
                         DEF Left_wrist_roll Servo {
                           rotation 0 0 -1 0
@@ -460,8 +461,7 @@ Robot {
 
 ######################################################################
 # LGRIP START
-
-
+						
               Transform{   #Palm 
                 translation 0 -0.03 0.015
                 children [Shape{geometry Box {size 0.083 0.06 0.06}}]
@@ -572,7 +572,8 @@ Robot {
               physics Physics {mass 0.05}
             }
 						DEF l_hook_2 Solid{ #Hook part
-							translation 0.025 -0.06 0.03
+							#translation 0.025 -0.06 0.03
+               translation 0 -0.06 0.06
 							rotation 0 1 0 1.57
 							children[HOOK{}]
 						}
@@ -628,8 +629,7 @@ Robot {
                     }
                     DEF Left_elbow Transform {
                       translation 0 0 -0.03
-                      scale 0.001 0.001 0.001
-                      children [LEFT_ELBOW{}]
+                      children [RIGHT_ELBOW_LONG{}]
                     }
                   ]
                   name "ArmLowerL"

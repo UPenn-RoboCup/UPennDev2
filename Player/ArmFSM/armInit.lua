@@ -41,10 +41,8 @@ function state.entry()
     Config.arm.pRWristTarget0,
     Config.arm.rShoulderAngleYaw0)
 
-  qLArmTarget = Body.get_inverse_arm_given_wrist(
-    qLWrist, Config.arm.lrpy0)
-  qRArmTarget = Body.get_inverse_arm_given_wrist(
-    qRWrist, Config.arm.rrpy0)
+  qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)
+  qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
 
   if not IS_WEBOTS then
     for i=1,10 do      

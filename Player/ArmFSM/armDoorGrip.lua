@@ -54,18 +54,8 @@ function state.entry()
   arm_planner:set_shoulder_yaw_target(qLArm0[3],nil) --Lock left shoulder yaw
   local wrist_seq = {{'wrist',nil,trRArm1}}
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn"end
-
---The door we have: hinge height 93.98
---door r: 86.36
-
-  local hinge_pos = vector.new({0.59,-1.15,0.01})
-  local door_r = 0.86
-  local grip_offset_x = -0.05
-  local knob_offset_y = 0.08
-  
-  hcm.set_door_model({
-    hinge_pos[1],hinge_pos[2],hinge_pos[3],
-    door_r, grip_offset_x, knob_offset_y})
+ 
+  hcm.set_door_model(Config.armfsm.dooropen.default_model)
   hcm.set_door_yaw(0)
   debugdata=''
 
@@ -108,6 +98,9 @@ function state.update()
       if hcm.get_state_proceed()==1 then        
         arm_planner:set_shoulder_yaw_target(qLArm0[3],nil) --Lock left shoulder yaw
         local trRArmTarget1 = movearm.getDoorHandlePosition(handle_clearance, 0, door_yaw, rhand_rpy0)
+
+        print("trRArm:",arm_planner.print_transform(trRArmTarget1))
+
         local arm_seq = {{'move',nil, trRArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "placehook"  end
       elseif hcm.get_state_proceed()==-1 then

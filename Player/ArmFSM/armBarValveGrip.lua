@@ -17,6 +17,10 @@ local gripL, gripR = 1,1
 local stage
 
 
+local handtightangle0 = Config.armfsm.valvebar.handtightangle0
+local clearance = Config.armfsm.valvebar.clearance
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -47,7 +51,8 @@ function state.entry()
 
   arm_planner:set_shoulder_yaw_target(nil,qRArm0[3])--unlock left shoulder
 
-  hcm.set_barvalve_model({0.55,0.20,0.02,   0.05, 0, 70*Body.DEG_TO_RAD })
+--  hcm.set_barvalve_model({0.55,0.20,0.07,   0.05, 0, 70*Body.DEG_TO_RAD })
+  hcm.set_barvalve_model(Config.armfsm.valvebar.default_model)
 
   hcm.set_state_tstartactual(unix.time()) 
   hcm.set_state_tstartrobot(Body.get_time())
@@ -90,7 +95,7 @@ function state.update()
 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-        local trLArmTarget={0.35,0.30,-0.15, unpack(rhand_rpy0)}
+        local trLArmTarget=Config.armfsm.valvebar.arminit[1]
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armready" end
       elseif hcm.get_state_proceed()==-1 then 
@@ -102,7 +107,7 @@ function state.update()
   elseif stage=="armready" then        
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-        local trLArmTarget = movearm.getBarValvePositionSingle(0,45*Body.DEG_TO_RAD,-0.08)
+        local trLArmTarget = movearm.getBarValvePositionSingle(0,handtightangle0,clearance)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       elseif hcm.get_state_proceed()==-1 then               
@@ -115,7 +120,7 @@ function state.update()
       if hcm.get_state_proceed()==1 then --teleop signal
         local valve_model = hcm.get_barvalve_model()
         local turn_angle1 = valve_model[5]        
-        local trLArmTarget = movearm.getBarValvePositionSingle(turn_angle1,45*Body.DEG_TO_RAD,0)
+        local trLArmTarget = movearm.getBarValvePositionSingle(turn_angle1,handtightangle0,0)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
       elseif hcm.get_state_proceed(0)==-1 then
@@ -125,7 +130,7 @@ function state.update()
       elseif hcm.get_state_proceed(0)==2 then      
       print("update")  
         update_model()
-        local trLArmTarget = movearm.getBarValvePositionSingle(0,45*Body.DEG_TO_RAD,-0.08)
+        local trLArmTarget = movearm.getBarValvePositionSingle(0,handtightangle0,clearance) 
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       end
@@ -137,13 +142,13 @@ function state.update()
         local turn_angle1 = valve_model[5]
         local turn_angle2 = valve_model[5] + math.pi/2
         local wrist_angle = valve_model[6]
-        arm_planner:save_valveparam({turn_angle1,45*Body.DEG_TO_RAD,0,1})
+        arm_planner:save_valveparam({turn_angle1,handtightangle0,0,1})
         local valve_seq={          
           {'barvalve',turn_angle1,wrist_angle,0,1},
           {'barvalve',turn_angle2,wrist_angle,0,1},
-          {'barvalve',turn_angle2,45*Body.DEG_TO_RAD,0,1},
-          {'barvalve',turn_angle2,45*Body.DEG_TO_RAD,-0.08,1},
-          {'barvalve',turn_angle1,45*Body.DEG_TO_RAD,-0.08,1},
+          {'barvalve',turn_angle2,handtightangle0,0,1},
+          {'barvalve',turn_angle2,handtightangle0,clearance,1},
+          {'barvalve',turn_angle1,handtightangle0,clearance,1},
         }
         if arm_planner:plan_arm_sequence(valve_seq) then stage="valveturn" end
       elseif hcm.get_state_proceed()==-1 then 
@@ -154,7 +159,7 @@ function state.update()
 --]]        
       elseif hcm.get_state_proceed()==2 then --teleop signal
         update_model()
-        local trLArmTarget = movearm.getBarValvePositionSingle(0,45*Body.DEG_TO_RAD,0)
+        local trLArmTarget = movearm.getBarValvePositionSingle(0,handtightangle0,0)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
       end

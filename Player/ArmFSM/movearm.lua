@@ -69,17 +69,16 @@ function movearm.getDoorHandlePosition(
   )
   local door_model = hcm.get_door_model()  
   local hinge_pos = vector.slice(door_model,1,3) + vector.new(pos_offset)  
+
   local door_r = door_model[4]
   local grip_offset_x = door_model[5]
   local knob_offset_y = door_model[6]
 
   local hand_rpy = Config.armfsm.dooropen.rhand_rpy
-
   local hand_yaw = door_yaw
   if door_yaw>10*Body.DEG_TO_RAD then
     hand_yaw = door_yaw-(door_yaw-10*Body.DEG_TO_RAD)*2.5 
   end
-
 
 --[[
   local hand_yaw = 0
@@ -101,6 +100,7 @@ function movearm.getDoorHandlePosition(
       {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
 
   local trTarget = T.position6D(trHandle)
+--  print("trTarget:",unpack(trTarget))
   return trTarget
 end
 

@@ -1,0 +1,45 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Valve operating test for DRC"
+  ]
+  title "valvetest"
+  basicTimeStep 40
+  FPS 15
+}
+Viewpoint {
+  orientation 0.566901 0.815504 0.116513 5.7372
+  position -1.54322 1.60837 1.45118
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR MetricFloor {
+  color 0.95 0.95 0.95
+}
+THOROP7_NoBoundaries_newhand {
+#THOROP7_NoBoundaries {
+#THOROP7_NoBoundaries_hook {
+#THOROP7_NoBoundaries_Temp {
+  translation 0.01 1.155739 0.04
+  rotation 0 1 0 1.57
+  controller "thorop"
+  controllerArgs "0 32"
+}
+
+SingleDoorEntree {
+  translation 0.685298 0 0.6
+  rotation 0 1 0 1.57
+}

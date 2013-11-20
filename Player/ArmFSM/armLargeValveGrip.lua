@@ -17,6 +17,9 @@ local gripL, gripR = 1,1
 local stage
 
 
+
+local angle1, angle2
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -57,7 +60,7 @@ function state.entry()
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "wristturn" end
 end
 
-function update_model()
+local function update_model()
   local trLArmTarget = hcm.get_hands_left_tr_target()
   local trLArm = hcm.get_hands_left_tr()
   local valve_model = hcm.get_largevalve_model()
@@ -66,6 +69,10 @@ function update_model()
     valve_model[2] + trLArmTarget[2]-trLArm[2],
     valve_model[3] + trLArmTarget[3]-trLArm[3]
   hcm.set_largevalve_model(valve_model)
+
+
+
+  angle1, angle2 = valve_model[5], valve_model[6]
 end
 
 
@@ -91,7 +98,7 @@ function state.update()
 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-        local trLArmTarget={0.35,0.30,-0.15, unpack(rhand_rpy0)}
+        local trLArmTarget=Config.armfsm.valveonearm.arminit[1]
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armready" end
       elseif hcm.get_state_proceed()==-1 then 
@@ -103,7 +110,8 @@ function state.update()
   elseif stage=="armready" then        
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-        local trLArmTarget = movearm.getLargeValvePositionSingle(0,-0.08, 1)
+        update_model()
+        local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,Config.armfsm.valveonearm.clearance, 1)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       elseif hcm.get_state_proceed()==-1 then               
@@ -113,46 +121,42 @@ function state.update()
     end
   elseif stage=="pregrip" then 
     if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed()==1 then --teleop signal
-        arm_planner:save_valveparam({0,0,1,0})
-        local trLArmTarget = movearm.getLargeValvePositionSingle(0,0,1)
+      if hcm.get_state_proceed()==1 then --teleop signal        
+        
+        local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,0,1)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
       elseif hcm.get_state_proceed(0)==-1 then
-        local trLArmTarget={0.35,0.30,-0.15, unpack(lhand_rpy0)}        
+        local trLArmTarget=Config.armfsm.valveonearm.arminit[1]
         local arm_seq = {{'move',trLArmTarget,nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armready" end
       elseif hcm.get_state_proceed(0)==2 then      
-      print("update")  
+        print("update")  
         update_model()
-        local trLArmTarget = movearm.getLargeValvePositionSingle(0,-0.08, 1)
+        local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,Config.armfsm.valveonearm.clearance, 1)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       end
     end
   elseif stage=="inposition" then 
     if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed()==1 then --teleop signal
-        local valve_model = hcm.get_largevalve_model()
-        local angle1, angle2 = valve_model[5], valve_model[6]
+      if hcm.get_state_proceed()==1 then 
+        arm_planner:save_valveparam({angle1,0,1,0})
         local valve_seq={          
-          {'valveonearm',0,0,1,0},           
-          {'valveonearm',angle1,0,1,0}, 
-          {'valveonearm',angle1,-0.08,1,0},
-          {'valveonearm',angle2,-0.08,1,0},
           {'valveonearm',angle2,0,1,0},
-          {'valveonearm',0     ,0,1,0},           
-          {'valveonearm',0,     -0.08,1,0},           
-
+          {'valveonearm',angle2,Config.armfsm.valveonearm.clearance,1,0},          
+          {'valveonearm',angle1,Config.armfsm.valveonearm.clearance,1,0},          
         }
         if arm_planner:plan_arm_sequence(valve_seq) then stage="valveturn" end
       elseif hcm.get_state_proceed()==-1 then 
-        local trLArmTarget, trRArmTarget = movearm.getLargeValvePositionSingle(0,-0.08,1,0)
+        local trLArmTarget, trRArmTarget = movearm.getLargeValvePositionSingle(
+          0,Config.armfsm.valveonearm.clearance,1,0)
         local arm_seq = {{'move',trLArmTarget, trRArmTarget}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       elseif hcm.get_state_proceed()==2 then --teleop signal
+        print("update")
         update_model()
-        local trLArmTarget = movearm.getLargeValvePositionSingle(0,0, 1)
+        local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,0,1)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
       end
@@ -160,7 +164,7 @@ function state.update()
   elseif stage=="valveturn" then 
     if arm_planner:play_arm_sequence(t) then 
       hcm.set_state_success(1) --Report success
-      stage="inposition"
+      stage="pregrip"
     end
   elseif stage=="armbacktoinitpos" then 
     if arm_planner:play_arm_sequence(t) then return "done" end

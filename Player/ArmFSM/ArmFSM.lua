@@ -106,7 +106,7 @@ sm:set_transition(armPose1, 'toolgrab', armToolGrip)
 sm:set_transition(armPose1, 'debrisgrab', armDebrisGrip)
 sm:set_transition(armPose1, 'smallvalvegrab', armSmallValveGrip)
 sm:set_transition(armPose1, 'largevalvegrab', armLargeValveGrip)
---sm:set_transition(armPose1, 'largevalvegrab', armLargeValveGripTwohand)
+sm:set_transition(armPose1, 'largevalvetwograb', armLargeValveGripTwohand)
 sm:set_transition(armPose1, 'barvalvegrab', armBarValveGrip)
 
 

@@ -48,6 +48,5 @@ Solid {
   boundingObject Group {
 		children[ Box { size 0.015 0.158 0.015 } ]
   }  
-  locked TRUE
 }
 }

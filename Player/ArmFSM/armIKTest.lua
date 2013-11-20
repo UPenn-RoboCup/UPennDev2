@@ -56,7 +56,7 @@ function state.update()
   --if t-t_entry > timeout then return'timeout' end
   
   if stage=="wristturn" then --Turn yaw angles first
-    if movearm.setArmJoints(qLArm0,qRArm0,dt, Config.arm.joint_init_limit) ==1 then       
+    if movearm.setArmJoints(qLArm0,qRArm0,dt, Config.arm.slow_limit) ==1 then       
       stage = "teleopwait"      
     end
   elseif stage=="teleopwait" then       

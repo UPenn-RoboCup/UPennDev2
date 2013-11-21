@@ -15,8 +15,13 @@ local trLArm1, trRArm1
 local stage
 
 local qLArmInit0,qRArmInit0
-local qLArm0, qRArm0
+local qLArm0, qRArm0, qLArmComp, qRArmComp
 local qWaist
+
+
+local uTorsoComp0
+
+local comactual
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -25,8 +30,12 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  qLArm0 = Body.get_larm_command_position()
-  qRArm0 = Body.get_rarm_command_position()
+  qLArm0 = mcm.get_arm_qlarm()
+  qRArm0 = mcm.get_arm_qrarm()
+
+  qLArmComp = mcm.get_arm_qlarm()
+  qRArmComp = mcm.get_arm_qrarm()
+
   --[[
   qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})  
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
@@ -39,8 +48,20 @@ function state.entry()
   hcm.set_hands_left_tr_target(trLArm0)
   hcm.set_hands_right_tr_target(trRArm0)
 
-  arm_planner:reset_torso_comp(qLArm0, qRArm0)
-  arm_planner:save_boundary_condition({qLArm0, qRArm0, qLArm0, qRArm0, {0,0}})
+  local qWaist = Body.get_waist_command_position()
+  local com = Kinematics.com_upperbody(qWaist,qLArm0,qRArm0,
+        mcm.get_stance_bodyTilt(), 0,0)        
+  uTorsoComp0 = {-com[1]/com[4],-com[2]/com[4]}
+
+print("bodyTilt:",mcm.get_stance_bodyTilt())
+print("qLArm:",unpack(qLArm0))
+print("UTorsoComp0:",unpack(uTorsoComp0))
+print("armplanner:",unpack(mcm.get_stance_uTorsoCompBias() ) )
+
+--  arm_planner:reset_torso_comp(qLArm0, qRArm0)
+--  arm_planner:save_boundary_condition({qLArm0, qRArm0, qLArm0, qRArm0, {0,0}})
+
+
   stage = "wristturn";  
 end
 
@@ -60,37 +81,60 @@ function state.update()
       stage = "teleopwait"      
     end
   elseif stage=="teleopwait" then       
-    
-    local qLArm = Body.get_larm_command_position()
-    local qRArm = Body.get_rarm_command_position()
-
-    local qLArm1 = Body.get_inverse_larm(qLArm,trLArm0)
-    local qRArm1 = Body.get_inverse_rarm(qRArm,trRArm0)
-
-    movearm.setArmJoints(qLArm1,qRArm1,dt)
-
+        
     if hcm.get_state_proceed()==1 then
       qWaist = Body.get_waist_command_position()
-      qWaist = util.approachTol(
+      local qWaist, done1 = util.approachTol(
         qWaist,
---        vector.new({20*Body.DEG_TO_RAD,0}),
---        vector.new({1*Body.DEG_TO_RAD,0}),
-        vector.new({0,79*Body.DEG_TO_RAD}),
-        vector.new({0,5*Body.DEG_TO_RAD}),
+
+--        vector.new({0,79*Body.DEG_TO_RAD}),
+        vector.new({0,19*Body.DEG_TO_RAD}),
+--        vector.new({0,79*Body.DEG_TO_RAD}),
+
+        vector.new({0,10*Body.DEG_TO_RAD}),
         dt)
       Body.set_waist_command_position(qWaist)
+
+      --New qArm0 considering rotated waist
+      local qLArmNew = Body.get_inverse_larm(qLArm0,trLArm0)
+      local qRArmNew = Body.get_inverse_rarm(qRArm0,trRArm0)
+
+      local com = Kinematics.com_upperbody(qWaist,qLArmNew,qRArmNew,mcm.get_stance_bodyTilt(), 0,0)        
+      local uTorsoComp = {-com[1]/com[4],-com[2]/com[4]}      
+      local uTorsoCompX = uTorsoComp[1]-uTorsoComp0[1]
+      local uTorsoCompY = uTorsoComp[2]-uTorsoComp0[2]
+      mcm.set_stance_uTorsoComp({uTorsoCompX, uTorsoCompY})
+      qLArmComp = Body.get_inverse_larm(qLArm0,trLArm0+ vector.new({-uTorsoCompX, -uTorsoCompY,0, 0,0,0}),
+        qLArm0[3], mcm.get_stance_bodyTilt(), qWaist)
+      qRArmComp = Body.get_inverse_rarm(qRArm0,trRArm0+ vector.new({-uTorsoCompX, -uTorsoCompY,0, 0,0,0}),
+          qRArm0[3], mcm.get_stance_bodyTilt(), qWaist)
+      local done2 = movearm.setArmJoints(qLArmComp,qRArmComp,dt)
+      arm_planner:save_boundary_condition({qLArmNew, qRArmNew, qLArmComp, qRArmComp, 
+        {uTorsoCompX,uTorsoCompY}})
+
 
     elseif hcm.get_state_proceed()==-1 then
       qWaist = Body.get_waist_command_position()
-      qWaist = util.approachTol(
+      local qWaist = util.approachTol(
         qWaist,
 --        vector.new({-20*Body.DEG_TO_RAD,0}),
---        vector.new({1*Body.DEG_TO_RAD,0}),
-        vector.new({0,-20*Body.DEG_TO_RAD}),
-        vector.new({0,1*Body.DEG_TO_RAD}),        
+--        vector.new({1*B=dy.DEG_TO_RAD,0}),
+        vector.new({0,0*Body.DEG_TO_RAD}),
+        vector.new({0,5*Body.DEG_TO_RAD}),        
         dt)
       Body.set_waist_command_position(qWaist)
 
+      local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,mcm.get_stance_bodyTilt(), 0,0)        
+      local uTorsoComp = {-com[1]/com[4],-com[2]/com[4]}
+      local uTorsoCompX = uTorsoComp[1]-uTorsoComp0[1]
+      local uTorsoCompY = uTorsoComp[2]-uTorsoComp0[2]
+      mcm.set_stance_uTorsoComp({uTorsoCompX, uTorsoCompY})
+
+      qLArmComp = Body.get_inverse_larm(qLArm,trLArm0+ vector.new({-uTorsoCompX, -uTorsoCompY,0, 0,0,0}) )
+      qRArmComp = Body.get_inverse_rarm(qRArm,trRArm0+ vector.new({-uTorsoCompX, -uTorsoCompY,0, 0,0,0}) )
+       
+      local done2 = movearm.setArmJoints(qLArmComp,qRArmComp,dt)
+comactual= {com[1]/com[4],com[2]/com[4]}
     end
   elseif stage=="teleopmove" then 
     if arm_planner:play_arm_sequence(t) then 

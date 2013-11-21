@@ -97,8 +97,7 @@ sm:set_transition(armIdle, 'init', armInit)
 sm:set_transition(armInit, 'done', armPose1)
 --sm:set_transition(armPose1, 'teleop', armTeleop)
 sm:set_transition(armPose1, 'teleop', armIKTest)
-sm:set_transition(armIKTest, 'teleop', armTeleop)
-
+sm:set_transition(armIKTest, 'teleop', armPose1)
 
 
 sm:set_transition(armPose1, 'doorgrab', armDoorGrip)

@@ -69,12 +69,7 @@ function state.entry()
   trLArm1 = Body.get_forward_larm(qLArm1)
   trRArm1 = Body.get_forward_rarm(qRArm1)  
 
-  --This sets torso compensation bias so that it becomes zero with initial arm configuration
-  arm_planner:reset_torso_comp(qLArm0, qRArm0)
-  arm_planner:save_boundary_condition({qLArm0, qRArm0, qLArm0, qRArm0, {0,0}})  
   arm_planner:set_hand_mass(0,0)
-
-
   arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) --Lock left hand
   local wrist_seq = {{'wrist',nil,trRArm1}}
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn" end  
@@ -114,8 +109,8 @@ function state.update()
     Body.set_rgrip_percent(gripR*0.8)
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
-        print("trLArm:",arm_planner.print_transform(trLArm))
-        print("trRArm:",arm_planner.print_transform(trRArm))
+--        print("trLArm:",arm_planner.print_transform(trLArm))
+--        print("trRArm:",arm_planner.print_transform(trRArm))
 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)
         trRArmTarget1 = get_hand_tr(Config.armfsm.toolgrip.arminit[2])

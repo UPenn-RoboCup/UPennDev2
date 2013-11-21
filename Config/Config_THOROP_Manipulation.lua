@@ -55,6 +55,8 @@ if IS_WEBOTS then
 end
 
 
+
+
 arm.wrist_turn_limit = arm.wrist_turn_limit * speed_factor
 arm.shoulder_yaw_limit = arm.shoulder_yaw_limit * speed_factor
 arm.torso_comp_limit = arm.torso_comp_limit * speed_factor
@@ -173,7 +175,7 @@ armfsm.dooropen.yawTarget = 25*DEG_TO_RAD
 
 
 --for long arm
-
+--
 armfsm.dooropen.default_model = {
   0.58,-1.20,0.09,  --Hinge pos
   0.86,             --Door width (hinge to knob axle)
@@ -181,7 +183,7 @@ armfsm.dooropen.default_model = {
   0.08,             --Knob Y offset (from knob axle)
 }
 armfsm.dooropen.yawTarget = 45*DEG_TO_RAD
-
+--
 
 
 

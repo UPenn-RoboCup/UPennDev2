@@ -37,9 +37,6 @@ function state.entry()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
-  arm_planner:reset_torso_comp(qLArm, qRArm)
-  arm_planner:save_boundary_condition({qLArm, qRArm, qLArm, qRArm, {0,0}})  
-
   qLArm0 = qLArm
   qRArm0 = qRArm
   trLArm0 = Body.get_forward_larm(qLArm0)

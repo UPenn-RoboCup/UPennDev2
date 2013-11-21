@@ -15,6 +15,7 @@ shared.stance.bodyTilt   = vector.zeros(1)
 shared.stance.bodyHeight = vector.zeros(1)
 shared.stance.bodyHeightTarget = vector.zeros(1)
 shared.stance.uTorsoComp = vector.zeros(2) --For quasi-static balancing
+shared.stance.uTorsoCompBias = vector.zeros(2)
 
 --Arm info
 

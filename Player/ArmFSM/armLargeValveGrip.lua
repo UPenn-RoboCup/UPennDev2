@@ -37,11 +37,7 @@ function state.entry()
   
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
-
-  arm_planner:reset_torso_comp(qLArm, qRArm)
-  arm_planner:save_boundary_condition({qLArm, qRArm, qLArm, qRArm, {0,0}})
-  
-  
+ 
   qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})  
   qRArm1 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
   

@@ -11,7 +11,7 @@
 #10/30: fixed lidar offset
 #11/5: re-enabled low leg bounding box (for kneeling)
 
-PROTO THOROP7_NoBoundaries_hook [
+PROTO THOROP7_NoBoundaries_LongOldGripper [
   field SFVec3f    translation 0 1 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
@@ -22,7 +22,7 @@ PROTO THOROP7_NoBoundaries_hook [
   field SFFloat    cameraPixelSize 1.0
   field SFInt32    cameraWidth 320
   field SFInt32    cameraHeight 180
-	field SFFloat    cameraFov 1.0472
+        field SFFloat    cameraFov 1.0472
 ]
 {
 Robot {
@@ -94,7 +94,7 @@ Robot {
         Solid{
           translation 0 0 0.01 #lidar chest offset
           rotation 0 0 1 1.57
-	        children [
+                children [
             hokuyo_thor_chest{
               name "ChestLidar"
               width 361
@@ -102,9 +102,9 @@ Robot {
              }            
           ]
           physics Physics{
-					  density -1
-				    mass 0.1
-				  } 
+                                          density -1
+                                    mass 0.1
+                                  } 
         }
       ]
       name "ChestLidarPan"
@@ -156,7 +156,7 @@ Robot {
                   rotation -1 0 0 0
                   children [
                     DEF Right_wrist_yaw Servo {
-                       translation 0 -0.186 -0.030
+                       translation 0 -0.25 -0.030
                       children [
                         DEF Right_wrist_roll Servo {
                           rotation 0 0 -1 0
@@ -175,27 +175,13 @@ Robot {
                 translation 0 -0.055 0
                 children [Shape{geometry Box {size 0.05 0.110 0.02}}]
               }
-# RHOOK
-							DEF r_hook Solid {
-								translation 0.03 -0.08 0
-								rotation 0 0 1 0 
-								name "r_hook_1"
-								children[
-									Transform{
-						      	translation -0.06 0.06 0
-						     		children [ HOOK{} ]									
-									}
-								]									
-							}
-#RHOOK_END							
-							
-			        DEF r_wrist_grip1 Servo{ #Thumb finger for gripper
-      			    translation 0.03 -0.08 0
-			          rotation 0 0 1 0.78
-			          name "r_wrist_grip1"
-			          children[
-			            Transform{
-		                translation 0 -0.025 0
+                                DEF r_wrist_grip1 Servo{ #Thumb finger for gripper
+                                  translation 0.03 -0.08 0
+                                  rotation 0 0 1 0.78
+                                  name "r_wrist_grip1"
+                                  children[
+                                    Transform{
+                                translation 0 -0.025 0
                     children [Shape{geometry Box {size 0.01 0.05 0.02}}]
                   }
                   #2nd digit for the thumb
@@ -220,23 +206,23 @@ Robot {
                    }
                    physics Physics {mass 0.1}
                  }
-      			    ]
+                                  ]
                 boundingObject Group{
                   children[
                     Transform {
                       translation 0 -0.025 0
                       children [Box {size 0.01 0.05 0.02}]
-                    }		               
+                    }                               
                   ]
                }
                physics Physics {mass 0.1}
              }
-						 DEF r_wrist_grip2 Servo{ #index finger for gripper
-		           translation 0 -0.105 0.010
-     		       rotation 0 0 1 0.78
-			         name "r_wrist_grip2"
-      		     children[
-	               Transform{
+                                                 DEF r_wrist_grip2 Servo{ #index finger for gripper
+                           translation 0 -0.105 0.010
+                            rotation 0 0 1 0.78
+                                 name "r_wrist_grip2"
+                           children[
+                       Transform{
                    translation 0 -0.025 0
                    children [Shape{geometry Box {size 0.01 0.05 0.015}}]
                  }
@@ -263,7 +249,7 @@ Robot {
                 }
 
 
-		          ]
+                          ]
               boundingObject Group{
                 children[
                   Transform{
@@ -350,7 +336,7 @@ Robot {
                         }
                         DEF Right_wrist Transform {
                           scale 0.001 0.001 0.001
-                          children [RIGHT_WRIST{}]
+                          children [RIGHT_WRIST{}] 
                         }
                       ]
                       name "RightWristYaw"
@@ -363,10 +349,9 @@ Robot {
                       controlP 16
                     }
                     DEF Right_elbow Transform {
-                      translation 0 0 -0.03
-                      rotation 0 1 0 3.14159
-                      scale 0.001 0.001 0.001
-                      children [RIGHT_ELBOW{}]
+                                                                                        translation 0 0 -0.03
+                                                                                        rotation 0 1 0 3.14159
+                                                                                        children[ RIGHT_ELBOW_LONG{} ]
                     }
                   ]
                   name "ArmLowerR"
@@ -431,7 +416,7 @@ Robot {
                   rotation 1 0 0 0
                   children [
                     DEF Left_wrist_yaw Servo {
-                      translation 0 -0.186 -0.03
+                      translation 0 -0.25 -0.03
                       children [
                         DEF Left_wrist_roll Servo {
                           rotation 0 0 -1 0
@@ -451,20 +436,7 @@ Robot {
                 translation 0 -0.055 0
                 children [Shape{geometry Box {size 0.05 0.110 0.02}}]
               }
-# RHOOK
-							DEF l_hook Solid {
-								translation -0.03 -0.08 0
-								rotation 0 1 0 3.141592 
-								name "l_hook_1"
-								children[
-									Transform{
-						      	translation -0.06 0.06 0
-						     		children [ HOOK{} ]									
-									}		
-								]							
-							}
-#RHOOK_END	             
-						DEF l_wrist_grip1 Servo{ #Thumb finger for gripper
+              DEF l_wrist_grip1 Servo{ #Thumb finger for gripper
                 translation -0.03 -0.08 0
                 rotation 0 0 1 -0.78
                 name "l_wrist_grip1"
@@ -641,8 +613,7 @@ Robot {
                     }
                     DEF Left_elbow Transform {
                       translation 0 0 -0.03
-                      scale 0.001 0.001 0.001
-                      children [LEFT_ELBOW{}]
+                      children [RIGHT_ELBOW_LONG{}]
                     }
                   ]
                   name "ArmLowerL"
@@ -1010,12 +981,12 @@ Robot {
           rotation -1 0 0 -0.17
           children [
             hokuyo{
-						  rotation 0 1 0 3.14159
+                                                  rotation 0 1 0 3.14159
               translation 0 0.1 0
               name "HeadLidar"
-						}
+                                                }
             Camera {
-						  rotation 0 1 0 3.14159
+                                                  rotation 0 1 0 3.14159
               translation 0 0.072 0.0785
               name "Camera"
               windowPosition IS cameraWindowPosition

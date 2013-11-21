@@ -98,6 +98,10 @@ armfsm.toolgrip = {}
 armfsm.toolgrip.lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
 armfsm.toolgrip.rhand_rpy = {0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
 
+--xyz, yaw
+armfsm.toolgrip.default_model = {
+  0.49,-0.02,0.00,  0*DEG_TO_RAD}
+
 armfsm.toolgrip.arminit={
   {0.25,-0.10,-0.05},  
   {0.30,-0.10,-0.10},
@@ -119,6 +123,39 @@ armfsm.toolchop.arminit={
 }
 armfsm.toolchop.drill_clearance = {-0.05,0,0}
 
+
+
+---------------------------------------------------------------
+------   Hose pickup
+---------------------------------------------------------------
+armfsm.hosegrip = {}
+armfsm.hosegrip.lhand_rpy = {90*DEG_TO_RAD,60*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.hosegrip.rhand_rpy = {-90*DEG_TO_RAD,60*DEG_TO_RAD, 0*DEG_TO_RAD}
+
+--xyz
+armfsm.hosegrip.default_model = {
+  0.35,-0.26, -0.25, 0}
+
+armfsm.hosegrip.arminit={
+  {0.25,-0.10,-0.05},  
+
+  {0.30,-0.29,-0.25},
+  {0.32,-0.29,-0.09},  
+
+}
+
+armfsm.hosegrip.clearance={0,0,0.08}
+armfsm.hosegrip.liftup = {0,0,0.05}
+armfsm.hosegrip.liftuppull = {-0.20,0,0.05}
+armfsm.hosegrip.armhold={0.20,-0.30,-0.10}
+
+
+
+
+
+
+
+
 ---------------------------------------------------------------
 ------   Door pull open
 ---------------------------------------------------------------
@@ -131,14 +168,6 @@ armfsm.dooropen.default_model = {
   0.08,             --Knob Y offset (from knob axle)
 }
 
---[[
---for old hook
-armfsm.dooropen.rhand_rpy={-90*DEG_TO_RAD,-5*DEG_TO_RAD,0}
-armfsm.dooropen.rhand_rpy_release={-90*DEG_TO_RAD,45*DEG_TO_RAD,0}
-armfsm.dooropen.rhand_rpy_forward={-90*DEG_TO_RAD,5*DEG_TO_RAD,10*DEG_TO_RAD}
-armfsm.dooropen.rhand_rpy_sidepush={-0*DEG_TO_RAD,0*DEG_TO_RAD,0*DEG_TO_RAD}
---]]
-
 --With top-mounted hook------------------------------------------------------
 armfsm.dooropen.rhand_rpy={0*DEG_TO_RAD,-5*DEG_TO_RAD,0}
 armfsm.dooropen.rhand_rpy_release={0*DEG_TO_RAD,45*DEG_TO_RAD,0}
@@ -146,19 +175,14 @@ armfsm.dooropen.rhand_rpy_forward={0*DEG_TO_RAD,5*DEG_TO_RAD,10*DEG_TO_RAD}
 armfsm.dooropen.rhand_rpy_sidepush={90*DEG_TO_RAD,0*DEG_TO_RAD,0*DEG_TO_RAD}
 ------------------------------------------------------
 
-armfsm.dooropen.handle_clearance = vector.new({0,0,-0.05})
-
-armfsm.dooropen.rollTarget = -45*DEG_TO_RAD
+armfsm.dooropen.handle_clearance = vector.new({0,0,0.05})
+armfsm.dooropen.rollTarget = 45*DEG_TO_RAD
 armfsm.dooropen.yawTargetInitial = 8*DEG_TO_RAD
 armfsm.dooropen.yawTarget = 30*DEG_TO_RAD
 
 armfsm.dooropen.velDoorRoll = 10*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velDoorYaw = 2*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velWaistYaw = 3*DEG_TO_RAD * speed_factor
-
---hook down instead of up
-armfsm.dooropen.handle_clearance = vector.new({0,0,0.05})
-armfsm.dooropen.rollTarget = 45*DEG_TO_RAD
 
 -------------------------------------------------------------
 --More angle for higher knob
@@ -172,10 +196,7 @@ armfsm.dooropen.default_model = {
 armfsm.dooropen.yawTarget = 25*DEG_TO_RAD
 ---------------------------------------------------------------
 
-
-
 --for long arm
---
 armfsm.dooropen.default_model = {
   0.58,-1.20,0.09,  --Hinge pos
   0.86,             --Door width (hinge to knob axle)
@@ -184,13 +205,6 @@ armfsm.dooropen.default_model = {
 }
 armfsm.dooropen.yawTarget = 45*DEG_TO_RAD
 --
-
-
-
-
-
-
-
 
 
 ---------------------------------------------------------------
@@ -202,18 +216,28 @@ armfsm.doorpush={}
 ------   Circular valve turning with single hand w/chopstick
 ---------------------------------------------------------------
 armfsm.valveonearm = {}
+
+--Axel XYZ, radius, valve angle 1, valve angle 2
+armfsm.valveonearm.default_model_small= 
+  {0.55,0.30,0.07, 
+    0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+
+armfsm.valveonearm.default_model_large= 
+  {0.55,0.20,0.07,   
+    0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+
 armfsm.valveonearm.arminit={{0.35,0.30,-0.15, 0,0,0}}
+armfsm.valveonearm.clearance = -0.08
 
 armfsm.valveonearm.velTurnAngle = 6*DEG_TO_RAD * speed_factor
 armfsm.valveonearm.velInsert = 0.01 * speed_factor
-armfsm.valveonearm.clearance = -0.08
-
 ---------------------------------------------------------------
 ------   Bar valve turning with single hand w/ chopstick
 ---------------------------------------------------------------
 armfsm.valvebar = {}
-armfsm.valvebar.default_model= {0.55,0.20,0.07,   0.05, 0, 70*DEG_TO_RAD }
 --Axel XYZ, radius, valve angle, hand fit angle
+armfsm.valvebar.default_model= {0.55,0.20,0.07,   
+  0.05, 0, 70*DEG_TO_RAD }
 
 armfsm.valvebar.arminit={{0.35,0.30,-0.15, 0,0,0}}
 armfsm.valvebar.handtightangle0 = 45*DEG_TO_RAD
@@ -221,15 +245,14 @@ armfsm.valvebar.clearance = -0.08
 
 armfsm.valvebar.velTurnAngle = 6*DEG_TO_RAD * speed_factor
 armfsm.valvebar.velInsert = 0.01 * speed_factor
-
 ---------------------------------------------------------------
 ------   Two-armed large valve turning (with chopstick)
 ---------------------------------------------------------------
 armfsm.valvetwoarm = {0.55,0.20,0.07,   0.05, 0, 70*DEG_TO_RAD }
+
 --Axel XYZ, radius, valve angle, hand fit angle
 armfsm.valvetwoarm.velTurnAngle = 3*DEG_TO_RAD * speed_factor
 armfsm.valvetwoarm.velInsert = 0.02 * speed_factor
-
 ------------------------------------
 -- Associate with the table
 Config.walk    = walk

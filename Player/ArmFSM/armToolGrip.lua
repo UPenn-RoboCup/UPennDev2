@@ -73,12 +73,9 @@ function state.entry()
   arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) --Lock left hand
   local wrist_seq = {{'wrist',nil,trRArm1}}
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn" end  
+
+    hcm.set_tool_model(Config.armfsm.toolgrip.default_model)
   hcm.set_state_proceed(1)
-
-hcm.set_tool_model({0.52,-0.02,0.00,  0*Body.DEG_TO_RAD})
-
-
-hcm.set_tool_model({0.49,-0.02,0.00,  0*Body.DEG_TO_RAD})
 
   debugdata=''   
 

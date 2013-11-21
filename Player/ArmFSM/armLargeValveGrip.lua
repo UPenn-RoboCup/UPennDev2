@@ -46,8 +46,7 @@ function state.entry()
 
   arm_planner:set_shoulder_yaw_target(nil,qRArm0[3])--unlock left shoulder
 
-  hcm.set_largevalve_model({0.55,0.20,0.07, 
-    0.13, -60*Body.DEG_TO_RAD, 60*Body.DEG_TO_RAD })
+  hcm.set_largevalve_model(Config.armfsm.valveonearm.default_model_large)
 
   hcm.set_state_tstartactual(unix.time()) 
   hcm.set_state_tstartrobot(Body.get_time())

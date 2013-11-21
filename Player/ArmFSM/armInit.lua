@@ -76,6 +76,10 @@ function state.update()
 end
 
 function state.exit()
+  local libArmPlan = require 'libArmPlan'
+  local arm_planner = libArmPlan.new_planner()
+  --print("qLArm:",unpack(qLArmTarget))
+  arm_planner:reset_torso_comp(qLArmTarget,qRArmTarget)
 
   if not IS_WEBOTS then
     for i=1,10 do      

@@ -33,9 +33,6 @@ function state.entry()
   
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
-
-  arm_planner:reset_torso_comp(qLArm, qRArm)
-  arm_planner:save_boundary_condition({qLArm, qRArm, qLArm, qRArm, {0,0}})
   
   arm_planner:set_shoulder_yaw_target(nil,nil)
   

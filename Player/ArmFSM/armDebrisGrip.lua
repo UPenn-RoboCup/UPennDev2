@@ -14,6 +14,8 @@ local lhand_rpy0 = {90*Body.DEG_TO_RAD,89*Body.DEG_TO_RAD,0}
 local rhand_rpy0 = {-90*Body.DEG_TO_RAD,89*Body.DEG_TO_RAD,0}
 
 
+local lhand_rpy0 = {90*Body.DEG_TO_RAD,89.5*Body.DEG_TO_RAD,0}
+
 local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRArm0
 local stage
 
@@ -46,7 +48,12 @@ function state.entry()
   --TODO
   mcm.set_arm_handoffset(Config.arm.handoffset.chopstick)
 
-  hcm.set_debris_model({0.50,0.25,0.02,    0})  
+  hcm.set_debris_model({0.35,0.35,-0.45,    0})  --45cm height
+
+
+  hcm.set_debris_model({0.35,0.35,-0.30,    0})  --45cm height
+
+
   getTargetTransform() --This sets hand rpy angle using hcm
 
   local qLArm = Body.get_larm_command_position()
@@ -63,10 +70,7 @@ function state.entry()
 
   trLArm1 = Body.get_forward_larm(qLArm1)
   trRArm1 = Body.get_forward_rarm(qRArm1)  
-
-  arm_planner:reset_torso_comp(qLArm0, qRArm0)
-  arm_planner:save_boundary_condition({qLArm0, qRArm0, qLArm0, qRArm0, {0,0}})
-
+  
   arm_planner:set_shoulder_yaw_target(nil,qRArm0[3]) --Lock right shoulder yaw
 
   local wrist_seq = {{'wrist',trLArm1,nil}}
@@ -104,9 +108,8 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then           
       if hcm.get_state_proceed()==1 then
         print("Current:",arm_planner.print_transform(trLArm))
-        local trLArmTarget1 = {0.35,0.25, -0.10, unpack(lhand_rpy0)}      
-        local trLArmTarget2 = {0.35,0.25, 0.0, unpack(lhand_rpy0)}
-        local arm_seq = {{'move',trLArmTarget1, nil},{'move',trLArmTarget2, nil }}
+        local trLArmTarget1 = {0.30,0.25, -0.30, unpack(lhand_rpy0)}              
+        local arm_seq = {{'move',trLArmTarget1, nil}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armfront" end      
       elseif hcm.get_state_proceed()==-1 then
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
@@ -119,13 +122,13 @@ function state.update()
     Body.set_lgrip_percent(gripL*0.8)   
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then
-        local trLArmTarget1 = getTargetTransform()
+        local trLArmTarget1 = getTargetTransform({0,0,0.08})
         trLArmTarget1[1] = 0.35
-        local trLArmTarget2 = getTargetTransform({-0.08,0,0})        
+        local trLArmTarget2 = getTargetTransform({0,0,0.08})        
         local arm_seq = {{'move',trLArmTarget1,nil },{'move',trLArmTarget2,nil }}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armposition" end      
       elseif hcm.get_state_proceed()==-1 then
-        local trLArmTarget1 = {0.35,0.25, -0.10, unpack(lhand_rpy0)}      
+        local trLArmTarget1 = {0.30,0.25, -0.30, unpack(lhand_rpy0)}      
         local arm_seq = {{'move',trLArmTarget1,nil },{'move',trLArm1,nil }}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "wristturn" end              
       end
@@ -135,13 +138,13 @@ function state.update()
     Body.set_lgrip_percent(gripL*0.8)   
 
     if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed(0)==1 then
+      if hcm.get_state_proceed()==1 then
         local trLArmTarget1 = getTargetTransform()
         local arm_seq = {{'move',trLArmTarget1,nil }}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armpositiongrab" end
       elseif hcm.get_state_proceed(0)==2 then --modification
         update_model()
-        local trLArmTarget1 = getTargetTransform({-0.08,0,0})        
+        local trLArmTarget1 = getTargetTransform({0,0,0.08})        
         local arm_seq = {{'move',trLArmTarget1,nil }}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armposition" end      
       elseif hcm.get_state_proceed(0)==-1 then --go back to center position        
@@ -162,7 +165,7 @@ function state.update()
         local arm_seq = {{'move',trLArmTarget2,nil}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armpositiongrab" end      
       elseif hcm.get_state_proceed(0)==-1 then 
-        local trLArmTarget2 = getTargetTransform({-0.08,0,0})
+        local trLArmTarget2 = getTargetTransform({0,0,0.08})
         trLArmTarget2[1] = math.max(0.35,trLArmTarget2[1])
         local arm_seq = {{'move',trLArmTarget2, nil}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armposition" end      
@@ -174,7 +177,7 @@ function state.update()
  
     if doneL then 
       if hcm.get_state_proceed(0)==1 then
-        local trLArmTarget = getTargetTransform({-0.20,0,0})        
+        local trLArmTarget = getTargetTransform({0,0,0.08})        
         local arm_seq = {{trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grabpull" end      
       elseif hcm.get_state_proceed(0)==2 then

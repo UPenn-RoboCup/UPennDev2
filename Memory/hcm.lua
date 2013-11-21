@@ -121,6 +121,9 @@ shared_data.debris.model = vector.new({0.50,0.25,0.02, 0})
 
 
 
+--Hose model
+shared_data.hose = {}
+shared_data.hose.model = vector.new({0.35,-0.25,0.0, 0})
 
 
 

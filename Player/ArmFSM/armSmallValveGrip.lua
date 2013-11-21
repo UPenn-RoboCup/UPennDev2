@@ -37,10 +37,6 @@ function state.entry()
   
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
-
-  arm_planner:reset_torso_comp(qLArm, qRArm)
-  arm_planner:save_boundary_condition({qLArm, qRArm, qLArm, qRArm, {0,0}})
-  
   
   qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})  
   qRArm1 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
@@ -50,8 +46,7 @@ function state.entry()
 
   arm_planner:set_shoulder_yaw_target(nil,qRArm0[3])--unlock left shoulder
 
-  hcm.set_largevalve_model({0.55,0.30,0.07, 
-    0, -60*Body.DEG_TO_RAD, 60*Body.DEG_TO_RAD })
+  hcm.set_largevalve_model(Config.armfsm.valveonearm.default_model_small)
 
   hcm.set_state_tstartactual(unix.time()) 
   hcm.set_state_tstartrobot(Body.get_time())

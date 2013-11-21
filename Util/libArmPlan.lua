@@ -55,7 +55,9 @@ local function calculate_margin(qArm,isLeft)
   return jointangle_margin
 end
 
-local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, waistYaw)
+local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
+
+
   local step = Config.arm.plan.search_step
 
   --Calculte the margin for current shoulder yaw angle
@@ -67,14 +69,14 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, waistYa
     local shoulderYawTarget = self.shoulder_yaw_target_left
     if shoulderYawTarget then
       local shoulderYaw = util.approachTol(qArm[3],shoulderYawTarget, yawMag, 1)
-      local qArmNext = Body.get_inverse_larm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)            
+      local qArmNext = Body.get_inverse_larm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), qWaist)            
       return qArmNext
     end
   else 
     local shoulderYawTarget = self.shoulder_yaw_target_right    
     if shoulderYawTarget then
       local shoulderYaw = util.approachTol(qArm[3],shoulderYawTarget, yawMag, 1)
-      local qArmNext = Body.get_inverse_rarm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)
+      local qArmNext = Body.get_inverse_rarm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), qWaist)
       return qArmNext
     end
   end
@@ -83,8 +85,8 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, waistYa
     local qShoulderYaw = qArm[3] + div * yawMag
     if debugmsg then print("CHECKING SHOULDERYAW ",qShoulderYaw*180/math.pi) end
     local qArmNext
-    if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), waistYaw)
-    else qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), waistYaw) end
+    if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist)
+    else qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist) end
     local margin = self.calculate_margin(qArmNext,isLeft)
     if margin>max_margin then
       qArmMaxMargin = qArmNext
@@ -118,9 +120,19 @@ end
 
 local function reset_torso_comp(self,qLArm,qRArm)
   local qWaist = Body.get_waist_command_position()
-  local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,
-        mcm.get_stance_bodyTilt(), 0,0)        
+
+  local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm, 
+         mcm.get_stance_bodyTilt(), 0,0)
+
+--hack
+  --local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm, 
+--         Config.walk.bodyTilt, 0,0)
+
+
   self.torsoCompBias = {-com[1]/com[4],-com[2]/com[4]}
+
+  mcm.set_stance_uTorsoCompBias(self.torsoCompBias)  
+  self:save_boundary_condition({qLArm,qRArm,qLArm,qRArm,{0.0}})
 end
 
 local function get_torso_compensation(self,qLArm,qRArm,massL,massR)
@@ -129,7 +141,9 @@ local function get_torso_compensation(self,qLArm,qRArm,massL,massR)
     return {0,0}
   else      
     local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,mcm.get_stance_bodyTilt(), massL, massR)
-    return {-com[1]/com[4]-self.torsoCompBias[1],-com[2]/com[4]-self.torsoCompBias[2]}
+    local uTorsoCompBias = mcm.get_stance_uTorsoCompBias()
+    local uTorsoCompNew = {-com[1]/com[4]-uTorsoCompBias[1],-com[2]/com[4]-uTorsoCompBias[2]}
+    return uTorsoCompNew
   end
 end
 
@@ -155,8 +169,8 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   local trRArmNextComp = vector.new(trRArmNext) + vec_comp
     
   --Actual arm angle considering the torso compensation
-  local qLArmNextComp = self:search_shoulder_angle(qLArmComp,trLArmNextComp,1, yawMag)
-  local qRArmNextComp = self:search_shoulder_angle(qRArmComp,trRArmNextComp,0, yawMag)
+  local qLArmNextComp = self:search_shoulder_angle(qLArmComp,trLArmNextComp,1, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
+  local qRArmNextComp = self:search_shoulder_angle(qRArmComp,trRArmNextComp,0, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
 
   if not qLArmNextComp or not qRArmNextComp or not qLArmNext or not qRArmNext then 
     print("ARM PLANNING ERROR")

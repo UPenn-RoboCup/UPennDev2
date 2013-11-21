@@ -182,7 +182,7 @@ Robot {
 								name "r_hook_1"
 								children[
 									Transform{
-						      	translation -0.06 -0.06 0
+						      	translation -0.06 0.06 0
 						     		children [ HOOK{} ]									
 									}
 								]									
@@ -458,7 +458,7 @@ Robot {
 								name "l_hook_1"
 								children[
 									Transform{
-						      	translation -0.06 -0.06 0
+						      	translation -0.06 0.06 0
 						     		children [ HOOK{} ]									
 									}		
 								]							

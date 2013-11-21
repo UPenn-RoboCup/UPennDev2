@@ -37,16 +37,17 @@ Solid {
 			     geometry Box { size 0.04 0.015 0.015 }
 			  }	
 			]
-		  physics Physics{mass 0.02}	
+		  #physics Physics{mass 0.02}	
 			boundingObject Group {
 				children[ Box { size 0.04 0.015 0.015 } ]
 			}  
 		}
   ]
 	
-	physics Physics{mass 0.05}	
+	#physics Physics{mass 0.05}	
   boundingObject Group {
 		children[ Box { size 0.015 0.158 0.015 } ]
   }  
+#locked TRUE
 }
 }

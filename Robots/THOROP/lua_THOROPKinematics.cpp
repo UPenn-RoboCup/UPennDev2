@@ -119,9 +119,11 @@ static int l_arm_torso_7(lua_State *L) {
 	//Now we can use custom hand x/y offset (for claws)
 	double handOffsetXNew = luaL_optnumber(L, 4,handOffsetX);
 	double handOffsetYNew = luaL_optnumber(L, 5,handOffsetY);
+	double handOffsetZNew = luaL_optnumber(L, 6,handOffsetZ);
+	
 
 	Transform t = THOROP_kinematics_forward_l_arm_7(&q[0],bodyPitch,&qWaist[0],
-		handOffsetXNew, handOffsetYNew);
+		handOffsetXNew, handOffsetYNew, handOffsetZNew);
 	lua_pushvector(L, position6D(t));
 	return 1;
 }
@@ -134,9 +136,11 @@ static int r_arm_torso_7(lua_State *L) {
 	//Now we can use custom hand x/y offset (for claws)
 	double handOffsetXNew = luaL_optnumber(L, 4,handOffsetX);
 	double handOffsetYNew = luaL_optnumber(L, 5,handOffsetY);
+	double handOffsetZNew = luaL_optnumber(L, 6,handOffsetZ);
+	
 
 	Transform t = THOROP_kinematics_forward_r_arm_7(&q[0],bodyPitch,&qWaist[0], 
-		handOffsetXNew, handOffsetYNew);
+		handOffsetXNew, handOffsetYNew, handOffsetZNew);
 	lua_pushvector(L, position6D(t));
 	return 1;
 }
@@ -144,7 +148,7 @@ static int r_arm_torso_7(lua_State *L) {
 static int l_wrist_torso(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
 	double bodyPitch = luaL_optnumber(L, 2,0.0);
-	std::vector<double> qWaist = lua_checkvector(L, 3);
+	std::vector<double> qWaist = lua_checkvector(L, 3);	
 
 	Transform t = THOROP_kinematics_forward_l_wrist(&q[0],bodyPitch,&qWaist[0]);
 	lua_pushvector(L, position6D(t));	
@@ -155,6 +159,7 @@ static int r_wrist_torso(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
 	double bodyPitch = luaL_optnumber(L, 2,0.0);
 	std::vector<double> qWaist = lua_checkvector(L, 3);
+	
 
 	Transform t = THOROP_kinematics_forward_r_wrist(&q[0],bodyPitch,&qWaist[0]);
 	lua_pushvector(L, position6D(t));	
@@ -173,10 +178,13 @@ static int inverse_l_arm_7(lua_State *L) {
 	//Now we can use custom hand x/y offset (for claws)
 	double handOffsetXNew = luaL_optnumber(L, 6,handOffsetX);
 	double handOffsetYNew = luaL_optnumber(L, 7,handOffsetY);
+	double handOffsetZNew = luaL_optnumber(L, 8,handOffsetZ);
+	
+
 
 	Transform trArm = transform6D(&pArm[0]);		
 	qArm = THOROP_kinematics_inverse_l_arm_7(trArm,&qArmOrg[0],shoulderYaw,bodyPitch,&qWaist[0],
-		handOffsetXNew, handOffsetYNew);
+		handOffsetXNew, handOffsetYNew, handOffsetZNew);
 	lua_pushvector(L, qArm);
 	return 1;
 }
@@ -189,13 +197,15 @@ static int inverse_r_arm_7(lua_State *L) {
 	double bodyPitch = luaL_optnumber(L, 4,0.0);
 	std::vector<double> qWaist = lua_checkvector(L, 5);
 
-//Now we can use custom hand x/y offset (for claws)
+//Now we can use custom hand x/y/z offset (for claws)
 	double handOffsetXNew = luaL_optnumber(L, 6,handOffsetX);
 	double handOffsetYNew = luaL_optnumber(L, 7,handOffsetY);
+	double handOffsetZNew = luaL_optnumber(L, 8,handOffsetZ);
+	
 
 	Transform trArm = transform6D(&pArm[0]);
 	qArm = THOROP_kinematics_inverse_r_arm_7(trArm,&qArmOrg[0],shoulderYaw,bodyPitch,&qWaist[0],
-		handOffsetXNew, handOffsetYNew);
+		handOffsetXNew, handOffsetYNew, handOffsetZNew);
 	lua_pushvector(L, qArm);
 	return 1;
 }
@@ -208,6 +218,7 @@ static int inverse_l_wrist(lua_State *L) {
 	double shoulderYaw = luaL_optnumber(L, 3,0.0);
 	double bodyPitch = luaL_optnumber(L, 4,0.0);
 	std::vector<double> qWaist = lua_checkvector(L, 5);
+	
 
 	Transform trArm = transform6D(&pArm[0]);
 	qArm = THOROP_kinematics_inverse_l_wrist(trArm,&qArmOrg[0],shoulderYaw,bodyPitch,&qWaist[0]);
@@ -222,6 +233,7 @@ static int inverse_r_wrist(lua_State *L) {
 	double shoulderYaw = luaL_optnumber(L, 3,0.0);
 	double bodyPitch = luaL_optnumber(L, 4,0.0);
 	std::vector<double> qWaist = lua_checkvector(L, 5);
+	
 
 	Transform trArm = transform6D(&pArm[0]);
 	qArm = THOROP_kinematics_inverse_r_wrist(trArm,&qArmOrg[0],shoulderYaw,bodyPitch,&qWaist[0]);
@@ -235,6 +247,7 @@ static int inverse_arm_given_wrist(lua_State *L) {
 	std::vector<double> qArmOrg = lua_checkvector(L, 2);
 	double bodyPitch = luaL_optnumber(L, 3,0.0);
 	std::vector<double> qWaist = lua_checkvector(L, 4);
+
 
 	Transform trArm = transform6D(&pArm[0]);	
 	qArm = THOROP_kinematics_inverse_arm_given_wrist(trArm,&qArmOrg[0],bodyPitch,&qWaist[0]);

@@ -24,9 +24,8 @@ Solid {
 	  }					
   ]
 	
-  boundingObject Group {
-		children[ Box { size 0.05 0.25 0.05 } ]
-  }  
-  locked TRUE
+  #boundingObject Group {
+	#	children[ Box { size 0.05 0.25 0.05 } ]
+  #}  
 }
 }

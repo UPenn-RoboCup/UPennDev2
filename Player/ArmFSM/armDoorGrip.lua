@@ -8,34 +8,21 @@ local libArmPlan = require 'libArmPlan'
 local arm_planner = libArmPlan.new_planner()
 
 --Door opening state using HOOK
-local handle_clearance = vector.new({0,0,-0.05})
-local lhand_rpy0 = {90*Body.DEG_TO_RAD,0,0}
-local rhand_rpy0 = {-90*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD,0}
+
+local rhand_rpy0 = Config.armfsm.dooropen.rhand_rpy
+local trRArmRelease = {0,0,0,unpack(Config.armfsm.dooropen.rhand_rpy_release)}
+local trRArmForward = {0,0,0,unpack(Config.armfsm.dooropen.rhand_rpy_forward)}
+local trRArmSidePush = {0,0,0,unpack(Config.armfsm.dooropen.rhand_rpy_sidepush)}
+
+local handle_clearance = Config.armfsm.dooropen.handle_clearance
+local rollTarget = Config.armfsm.dooropen.rollTarget
+local yawTargetInitial = Config.armfsm.dooropen.yawTargetInitial
+local yawTarget = Config.armfsm.dooropen.yawTarget
+
+
 local trLArm0, trRArm0, trLArm1, trRArm1
 local stage
 
-local rollTarget = -45*Body.DEG_TO_RAD
-local yawTargetInitial = 8*Body.DEG_TO_RAD
-
-local yawTarget = 40*Body.DEG_TO_RAD
-local yawTarget = 30*Body.DEG_TO_RAD
-
-
-local qLArmInit0,qRArmInit0,qLArmInit1,qRArmInit1
-
-local trLArmCurrent, trRArmCurrent
-
-local trLArmRelease = {0,0,0,   90*Body.DEG_TO_RAD,0,0}
-local trRArmRelease = {0,0,0,   -90*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD,0}
-
-local trRArmForward = {0,0,0,   -90*Body.DEG_TO_RAD,5*Body.DEG_TO_RAD,10*Body.DEG_TO_RAD}
-
-local trRArmSidePush = {0,0,0,   -0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD}
-
-
-
-
---local trRArmRelease = {0,0,0,   0*Body.DEG_TO_RAD,65*Body.DEG_TO_RAD,0}
 
 local debugdata
 
@@ -47,10 +34,8 @@ function state.entry()
   t_update = t_entry
 
   mcm.set_arm_handoffset(Config.arm.handoffset.outerhook)
-
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-  
 
   arm_planner:reset_torso_comp(qLArm, qRArm)
   arm_planner:save_boundary_condition({qLArm, qRArm, qLArm, qRArm, {0,0}})  
@@ -60,7 +45,6 @@ function state.entry()
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
 
---  qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
   qLArm1 = qLArm
   qRArm1 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
   trLArm1 = Body.get_forward_larm(qLArm1)
@@ -70,20 +54,8 @@ function state.entry()
   arm_planner:set_shoulder_yaw_target(qLArm0[3],nil) --Lock left shoulder yaw
   local wrist_seq = {{'wrist',nil,trRArm1}}
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn"end
-
---The door we have: hinge height 93.98
---door r: 86.36
-
-  local hinge_pos = vector.new({0.59,-1.15,0.01})
-  local door_r = 0.86
-  local grip_offset_x = -0.05
-  local knob_offset_y = 0.08
-  
-  hcm.set_door_model({
-    hinge_pos[1],hinge_pos[2],hinge_pos[3],
-    door_r,
-    grip_offset_x,
-    knob_offset_y})
+ 
+  hcm.set_door_model(Config.armfsm.dooropen.default_model)
   hcm.set_door_yaw(0)
   debugdata=''
 
@@ -126,6 +98,9 @@ function state.update()
       if hcm.get_state_proceed()==1 then        
         arm_planner:set_shoulder_yaw_target(qLArm0[3],nil) --Lock left shoulder yaw
         local trRArmTarget1 = movearm.getDoorHandlePosition(handle_clearance, 0, door_yaw, rhand_rpy0)
+
+        print("trRArm:",arm_planner.print_transform(trRArmTarget1))
+
         local arm_seq = {{'move',nil, trRArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "placehook"  end
       elseif hcm.get_state_proceed()==-1 then

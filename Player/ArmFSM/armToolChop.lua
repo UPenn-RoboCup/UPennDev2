@@ -68,14 +68,14 @@ local cut_no=1
 local function update_cutpos()
   cut_no = (cut_no+1)%3
   if cut_no==2 then
-    hcm.set_tool_cutpos1({0.45,0.075, 0.15, 0})
-    hcm.set_tool_cutpos2({0.45,0.075,    0,   0})    
+    hcm.set_tool_cutpos1({0.45,0.08, 0.2892, 0})
+    hcm.set_tool_cutpos2({0.45,0.08, -0.1172,   0})    
   elseif cut_no==0 then
-    hcm.set_tool_cutpos1({0.45,0.075,0,   0})    
-    hcm.set_tool_cutpos2({0.45,-0.075,0,   0})
+    hcm.set_tool_cutpos1({0.45,0.08,-0.1172,   0})    
+    hcm.set_tool_cutpos2({0.45,-0.08,-0.1172,   0})
   else
-    hcm.set_tool_cutpos1({0.45,-0.075,0, 0})
-    hcm.set_tool_cutpos2({0.45,0.075,0.15, 0})
+    hcm.set_tool_cutpos1({0.45,-0.08,-0.1172, 0})
+    hcm.set_tool_cutpos2({0.45,0.08,0.2892, 0})
   end
 end
 
@@ -94,12 +94,13 @@ function state.entry()
   --arm_planner:set_shoulder_yaw_target(nil,qRArm[3]) --Lock right shoulder yaw
   arm_planner:set_shoulder_yaw_target(qLArm[3],nil) --Lock right shoulder yaw
   local init_cond = arm_planner:load_boundary_condition()
+  arm_planner:set_hand_mass(0,2)
   trLArm0 = Body.get_forward_larm(init_cond[1])
   trRArm0 = Body.get_forward_rarm(init_cond[2]) 
   
   stage = "drillout"
   update_cutpos()
-  hcm.set_state_proceed(1)
+--  hcm.set_state_proceed(1)
 end
 
 function state.update()

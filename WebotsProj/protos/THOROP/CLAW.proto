@@ -20,7 +20,7 @@ Solid {
 	         specularColor 0 0 0
 	       }
 	     }
-	     geometry Box { size 0.114 0.02 0.05 } # NEED TO MEASURE
+	     geometry Box { size 0.12 0.02 0.05 } # NEED TO MEASURE
 	  }	
 		
 		DEF CLAW_2 Solid {
@@ -34,11 +34,12 @@ Solid {
 			         specularColor 0 0 0
 			       }
 			     }
-			     geometry Box { size 0.02 0.1651 0.05 }
+			     geometry Box { size 0.02 0.1651 0.03 }
 			  }	
 			]			
+			#physics Physics{mass 0.05}
 			boundingObject Group {
-				children[ Box { size 0.02 0.1651 0.05 } ]
+				children[ Box { size 0.02 0.1651 0.03 } ]
 			}  			
 		}
 
@@ -53,18 +54,19 @@ Solid {
 			         specularColor 0 0 0
 			       }
 			     }
-			     geometry Box { size 0.02 0.1651 0.05 }
+			     geometry Box { size 0.02 0.1651 0.03 }
 			  }	
 			]			
+			#physics Physics{mass 0.05}
 			boundingObject Group {
-				children[ Box { size 0.02 0.1651 0.05 } ]
+				children[ Box { size 0.02 0.1651 0.03 } ]
 			}  			
 		}
-				
   ]	
+  #physics Physics{mass 0.05}
   boundingObject Group {
-		children[ Box { size 0.114 0.02 0.05  } ]
+		children[ Box { size 0.12 0.02 0.05  } ]
   }  
-  locked TRUE
+  #locked TRUE
 }
 }

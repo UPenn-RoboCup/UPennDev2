@@ -150,7 +150,7 @@ sm:set_transition(armForceReset, 'done', armPose1)
 
 --depreciated
 sm:set_transition(armPose1, 'rocky', armRocky)
-sm:set_transition(armRocky, 'reset', armInit) 
+sm:set_transition(armRocky, 'rocky', armInit) 
 
 --------------------------
 -- Setup the FSM object --

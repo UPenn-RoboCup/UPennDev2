@@ -61,8 +61,8 @@ if chest_hokuyo then
     local meta = {}
     meta.count  = chest_hokuyo.count
     -- Use the measured position for better accuracy
-    meta.pangle = Body.get_lidar_position(1)
-    --meta.pangle = Body.get_lidar_command_position(1)
+    --meta.pangle = Body.get_lidar_position(1)
+    meta.pangle = Body.get_lidar_command_position(1)
     meta.rpy = Body.get_sensor_rpy()
     meta.pose = wcm.get_robot_pose()
     meta.t = Body.get_time()

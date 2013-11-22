@@ -104,6 +104,103 @@ function movearm.getDoorHandlePosition(
   return trTarget
 end
 
+function movearm.getDoorLeftHandlePosition(
+--Push open only (use left arm chopsticks)
+  pos_offset,
+  knob_roll,
+  door_yaw
+  )
+  local door_model = hcm.get_door_model()  
+  local hinge_pos = vector.slice(door_model,1,3) + vector.new(pos_offset)  
+
+  local door_r = door_model[4]
+  local grip_offset_x = door_model[5]
+  
+  local hand_rpy = Config.armfsm.dooropen.rhand_rpy
+  local hand_yaw = door_yaw
+  if door_yaw>10*Body.DEG_TO_RAD then
+    hand_yaw = door_yaw-(door_yaw-10*Body.DEG_TO_RAD)*2.5 
+  end
+
+  local trHandle = T.eye()
+    * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])    
+    * T.rotZ(door_yaw)
+    * T.trans(door_r, 0)         
+    * T.rotZ(hand_yaw-door_yaw)
+    * T.rotX(knob_roll)
+    * T.transform6D(
+      {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
+
+  local trTarget = T.position6D(trHandle)
+--  print("trTarget:",unpack(trTarget))
+  return trTarget
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function movearm.getDoorEdgePosition(
+  pos_offset,
+  door_yaw
+  )
+  local door_model = hcm.get_door_model()  
+  local hinge_pos = vector.slice(door_model,1,3) + vector.new(pos_offset)  
+  hinge_pos[3] = hinge_pos[3] + Config.armfsm.dooredge.hinge_offset_z
+  local door_r = door_model[4]
+
+  local hand_offset_x = Config.armfsm.dooredge.hand_offset_x
+  local edge_offset_x = Config.armfsm.dooredge.edge_offset_x
+  local edge_offset_y = Config.armfsm.dooredge.edge_offset_y
+ 
+  local hand_rpy = Config.armfsm.dooredge.rhand_rpy
+  local hand_yaw = - (door_yaw - 25*Body.DEG_TO_RAD)
+
+  if door_yaw>25*Body.DEG_TO_RAD then
+    hand_yaw = math.min(hand_yaw * 2, 90*Body.DEG_TO_RAD)
+  end
+
+
+--  local hand_offset_x = 0.10
+
+  local trHandle = T.eye()
+    * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])    
+    * T.rotZ(door_yaw)
+    * T.trans(edge_offset_x, door_r+edge_offset_y, 0)             
+    * T.rotZ(hand_yaw-door_yaw)    
+    * T.transform6D(
+      {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
+    * T.trans(hand_offset_x,0,0)
+
+  local trTarget = T.position6D(trHandle)
+  return trTarget
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

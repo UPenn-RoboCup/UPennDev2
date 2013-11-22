@@ -75,7 +75,10 @@ local char_to_event = {
   ['5'] = {'arm_ch','barvalvegrab'},
   ['6'] = {'arm_ch','largevalvegrab'},
   ['7'] = {'arm_ch','debrisgrab'},
-  ['8'] = {'arm_ch','largevalvetwograb'},
+
+
+
+--  ['8'] = {'arm_ch','largevalvetwograb'},
 
 
 --  ['9'] = {'arm_ch','teleop'},

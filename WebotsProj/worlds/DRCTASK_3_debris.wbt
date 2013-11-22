@@ -1,0 +1,86 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Default world for the THOR-OP"
+  ]
+  title "handletest"
+  basicTimeStep 10
+  FPS 10
+}
+Viewpoint {
+  orientation -0.0502859 0.976269 0.210642 2.65161
+  position 1.54356 2.80065 -3.78671
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR MetricFloor {
+  color 0.95 0.95 0.95
+}
+THOROP7_NoBoundaries {
+  translation -7.45478e-05 1.14956 -0.502682
+  rotation 0.998956 0.00208863 -0.0456245 -0.00156913
+  controller "thorop"
+  controllerArgs "0 32"
+  cameraWindowPosition 0.649891 0.313283
+}
+PartialWalls {
+  translation 0.5 0 1.5
+  rotation 0 1 0 -1.5708
+}
+PartialWalls {
+  translation -0.5 0 1.5
+  rotation 0 1 0 -1.5708
+}
+DebrisTruss {
+  translation 0.0119133 0.148765 1.59679
+  rotation -0.052307 0.952284 0.300698 -0.00734181
+}
+DebrisLongPost {
+  translation 0.251584 0.499509 1.05665
+  rotation -0.707106 9.24953e-07 0.707108 8.09111e-12
+}
+DebrisLongPost {
+  translation -0.221036 0.499509 1.05201
+  rotation 0.707107 1.38285e-10 -0.707107 3.09163e-08
+}
+DebrisLongPost {
+  translation 0.113348 0.4517 1.86863
+  rotation -0.287442 0.917256 -0.275713 -1.65895
+}
+DebrisLongPost {
+  translation -0.0965741 0.431718 1.6925
+  rotation 0.0104992 0.0058753 0.999928 -0.622802
+}
+DebrisBoard {
+  translation -0.00199826 0.632088 1.47685
+  rotation 0.26534 0.964029 0.0155741 -0.00230135
+}
+DebrisBoard {
+  translation 0.356603 0.3664 0.968956
+  rotation -0.285439 0.915127 -0.284723 1.66095
+}
+DebrisBoard {
+  translation -0.338781 0.370683 0.982025
+  rotation -0.289563 0.91234 -0.289462 1.65822
+}
+DebrisBoard {
+  translation 0.0247208 0.429263 0.925107
+  rotation -0.172997 0.984908 -0.00538043 0.00242253
+}
+DebrisBoard {
+  translation -0.0351014 0.0819488 0.477347
+  rotation -0.999619 0.0225635 0.0158879 0.614394
+}

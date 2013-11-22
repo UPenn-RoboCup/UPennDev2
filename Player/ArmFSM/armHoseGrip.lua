@@ -71,6 +71,7 @@ function state.entry()
 
   arm_planner:set_hand_mass(0,0)
   arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) --Lock left hand
+
   local wrist_seq = {{'wrist',nil,trRArm1}}
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn" end  
   hcm.set_state_proceed(1)
@@ -140,7 +141,7 @@ function state.update()
       elseif hcm.get_state_proceed() == 2 then --Model modification
         update_model()        
         arm_planner:set_hand_mass(0,0)
-        local trRArmTarget1 = get_model_tr(Config.armfsm.toolgrip.tool_clearance)
+        local trRArmTarget1 = get_model_tr(Config.armfsm.hosegrip.clearance)        
         local arm_seq = {{'move',nil,trRArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end
       end
@@ -154,7 +155,7 @@ function state.update()
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grab" end
       elseif hcm.get_state_proceed() == -1 then 
         arm_planner:set_hand_mass(0,0)
-        local trRArmTarget1 = get_model_tr(Config.armfsm.toolgrip.tool_clearance)
+        local trRArmTarget1 = get_model_tr(Config.armfsm.hosegrip.clearance)        
         local arm_seq = {{'move',nil, trRArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end
       elseif hcm.get_state_proceed() == 2 then 
@@ -172,9 +173,8 @@ function state.update()
     if doneR then stage = "torsobalance" end
   elseif stage=="torsobalance" then
     if arm_planner:play_arm_sequence(t) then    
-      if hcm.get_state_proceed()==1 then        
-        arm_planner:set_hand_mass(0,2)   
-        local trRArmTarget3 = get_model_tr(Config.armfsm.toolgrip.tool_liftup)
+      if hcm.get_state_proceed()==1 then                
+        local trRArmTarget3 = get_model_tr(Config.armfsm.hosegrip.liftup)
         local arm_seq = {{'move',nil, trRArmTarget3}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end
       elseif hcm.get_state_proceed()==-1 then stage="ungrab" 
@@ -188,9 +188,8 @@ function state.update()
   elseif stage=="lift" then
     if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        
-        local trRArmTarget4 = get_model_tr(Config.armfsm.toolgrip.tool_liftuppull)
-        local trRArmTarget5 = get_hand_tr(Config.armfsm.toolgrip.armhold[1])
-        arm_planner:set_hand_mass(0,2)   
+        local trRArmTarget4 = get_hand_tr(Config.armfsm.hosegrip.armhold[1])        
+        local trRArmTarget5 = get_hand_tr(Config.armfsm.hosegrip.armhold[2])        
         local arm_seq = {{'move',nil,trRArmTarget4},{'move',nil,trRArmTarget5}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "liftpull" end
       elseif hcm.get_state_proceed()==-1 then 
@@ -200,7 +199,7 @@ function state.update()
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "torsobalance" end
       elseif hcm.get_state_proceed() == 2 then --Model modification
         update_model()        
-        local trRArmTarget2 = get_model_tr(Config.armfsm.toolgrip.tool_liftup)
+        local trRArmTarget2 = get_model_tr(Config.armfsm.hosegrip.liftup)
         local arm_seq = {{'move',nil,trRArmTarget2}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end
       end

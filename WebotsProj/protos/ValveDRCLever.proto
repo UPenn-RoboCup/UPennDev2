@@ -45,14 +45,14 @@ PROTO ValveDRCLever [
       }
 
       Transform{        
-        translation 0 -0.05 0
+        translation 0 -0.075 0
         rotation 1 0 0 0
         children[
         DEF CROSSBAR_SEGMENT_SHAPE Shape {
             appearance USE SEGMENT_APP
             geometry Cylinder {
               radius IS radius
-              height 0.10
+              height 0.15
             }
           }
         ]

@@ -1,10 +1,10 @@
 #
-#  DARPA Trials Debris: Wide Boards
+#  DARPA Trials Debris: Long Post
 #  heqin@seas.upenn.edu
 #
 
 
-PROTO DebrisWideBoard [
+PROTO DebrisLongPost [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
 ]
@@ -20,17 +20,17 @@ Solid {
 	         specularColor 0 0 0
 	       }
 	     }
-	     geometry Box { size 1.2192 0.0381 0.1397 }
+	     geometry Box { size 0.0889 1  0.0889 }
 	  }			
   ]
 	
 	physics Physics {
-		mass 2
+		mass 4   # TODO: will this be lighter?
 	}
 	
   boundingObject Group {
 		children[
-			Box { size 1.2192 0.0381 0.1397 }
+			Box { size 0.0889 1 0.0889 }
 		]
   }  
   #locked TRUE

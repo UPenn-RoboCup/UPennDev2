@@ -133,25 +133,26 @@ armfsm.toolchop.drill_clearance = {-0.05,0,0}
 ------   Hose pickup
 ---------------------------------------------------------------
 armfsm.hosegrip = {}
-armfsm.hosegrip.lhand_rpy = {90*DEG_TO_RAD,60*DEG_TO_RAD, 0*DEG_TO_RAD}
-armfsm.hosegrip.rhand_rpy = {-90*DEG_TO_RAD,60*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.hosegrip.lhand_rpy = {90*DEG_TO_RAD,5*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.hosegrip.rhand_rpy = {-90*DEG_TO_RAD,5*DEG_TO_RAD, 0*DEG_TO_RAD}
 
 --xyz
 armfsm.hosegrip.default_model = {
-  0.35,-0.26, -0.25, 0}
+  0.50,-0.29, -0.15, 0}
 
 armfsm.hosegrip.arminit={
   {0.25,-0.10,-0.05},  
-
-  {0.30,-0.29,-0.25},
-  {0.32,-0.29,-0.09},  
-
+  {0.40,-0.29,-0.25},
+  {0.40,-0.29,0.05},  
 }
-
+armfsm.hosegrip.armhold={
+  {0.40,-0.29,0.05},  
+  {0.40,-0.29,-0.25},    
+}
 armfsm.hosegrip.clearance={0,0,0.08}
-armfsm.hosegrip.liftup = {0,0,0.05}
-armfsm.hosegrip.liftuppull = {-0.20,0,0.05}
-armfsm.hosegrip.armhold={0.20,-0.30,-0.10}
+armfsm.hosegrip.liftup = {0,0,0.08}
+
+
 
 
 

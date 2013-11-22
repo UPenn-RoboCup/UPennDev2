@@ -4,7 +4,7 @@ WorldInfo {
     "Valve operating test for DRC"
   ]
   title "valvetest"
-  basicTimeStep 10
+  basicTimeStep 40
   FPS 15
 }
 Viewpoint {
@@ -30,14 +30,14 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP7_NoBoundaries {
-  translation 0 1.15535 -0.03
+  translation -1 1.15535 0
   rotation 0 1 0 1.57
   controller "thorop"
   controllerArgs "0 32"
 }
 
 Solid {
-  translation 0.38 1.524 0.5
+  translation 0.38 1 0.5
   rotation 0 0 1 0
   children [
     ValveDRCLever {
@@ -47,7 +47,7 @@ Solid {
 }
 
 Solid {
-  translation 0.38 1.2192 0
+  translation 0.38 1 0
   rotation 0 0 1 0
   children [
     ValveDRCMedium {
@@ -57,7 +57,7 @@ Solid {
 }
 
 Solid {
-  translation 0.38 0.93 1
+  translation 0.38 1 1
   rotation 0 0 1 0
   children [
     ValveDRC {

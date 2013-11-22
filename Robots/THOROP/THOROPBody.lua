@@ -62,16 +62,16 @@ local indexRArm = 22  --RArm: 22 23 24 25 26 27 28
 local nJointRArm = 7
 local indexWaist = 29  --Waist: 29 30
 local nJointWaist = 2
--- 6 Fingers for gripping
+-- 4 Servos for gripping
 -- 1 servo for lidar panning
 local indexLGrip = 31
-local nJointLGrip = 1
-local indexRGrip = 32
-local nJointRGrip = 1
+local nJointLGrip = 2 --1
+local indexRGrip = 33
+local nJointRGrip = 2 --1
 -- One motor for lidar panning
-local indexLidar = 33
+local indexLidar = 35 --33
 local nJointLidar = 1
-local nJoint = 33
+local nJoint = 35 --33
 
 local jointNames = {
 	"Neck","Head", -- Head
@@ -90,7 +90,9 @@ local jointNames = {
 	-- Gripper
 --	"l_wrist_grip1","l_wrist_grip2","l_wrist_grip3",
 --	"r_wrist_grip1","r_wrist_grip2","r_wrist_grip3",
-"l_grip", "r_grip",
+--"l_grip", "r_grip",
+"l_grip", "l_trigger", 
+"r_grip", "r_trigger",
 	-- lidar movement
 	"ChestLidarPan",
 }
@@ -130,7 +132,10 @@ servo.joint_to_motor={
   27,28, --Waist yaw/pitch
 --  32,34,36, -- left gripper (thumb, index, big&not_thumb)
 --  31,33,35, -- right gripper (thumb, index, big&not_thumb)
-  63,64, --left, right grippers
+  32,34, -- left gripper (thumb, index, big&not_thumb)
+  31,33, -- right gripper (thumb, index, big&not_thumb)
+
+--  63,64, --left, right grippers
   37, -- Lidar pan
 }
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
@@ -160,9 +165,9 @@ servo.steps = 2 * vector.new({
   251000,251000,251000,251000,251000,251000, --RLeg
   251000,251000,251000,251000,151875,151875,151875, --RArm
   251000,251000, -- Waist
---  2048,2048,2048, -- Left gripper
---  2048,2048,2048, -- Right gripper
-  2048, 2048, -- left/right
+  2048,2048, -- Left gripper
+  2048,2048, -- Right gripper
+--  2048, 2048, -- left/right
   2048, -- Lidar pan
 })
 assert(#servo.steps==nJoint,'Bad servo steps!')
@@ -177,9 +182,9 @@ servo.direction = vector.new({
   ------
   -1,-1,1,-1, 1,1,1, --RArm
   1,1, -- Waist
---  1,1,-1, -- left gripper
---  1,1,-1, -- right gripper
-1,1, -- lgrip,rgrip
+  1,1, -- left gripper TODO
+  1,1, -- right gripper TODO
+--1,1, -- lgrip,rgrip
   -1, -- Lidar pan
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
@@ -192,9 +197,9 @@ servo.rad_bias = vector.new({
   0,0,0,45,0,0, --RLeg
   90,-90,90,-45,-90,0,0, --RArm
   0,0, -- Waist
---  0,0,0, -- left gripper
---  0,0,0, -- right gripper
-0,0,
+  0,0, -- left gripper
+  0,0, -- right gripper
+--0,0,
   0, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.rad_bias==nJoint,'Bad servo rad_bias!')
@@ -210,6 +215,7 @@ servo.min_rad = vector.new({
 --  -32,-12,-12, -- left gripper
 --  -12,-32,-32, -- right gripper
 -90, -90,
+-90, -90,
   -60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
@@ -223,6 +229,7 @@ servo.max_rad = vector.new({
   90,45, -- Waist
 --  12,32,32, -- left gripper
 --  32,12,12, -- right gripper
+20,20,
 20,20,
   60, -- Lidar pan
 })*DEG_TO_RAD
@@ -1263,8 +1270,8 @@ elseif IS_WEBOTS then
     -1,-1,-1,-1,-1,-1,-1, --RArm    
     -- TODO: Check the gripper
     -1,1, -- Waist
-    -1,-1,-1, -- left gripper    
-    -1,-1,-1, -- right gripper
+    -1,-1, -- left gripper    
+    -1,-1, -- right gripper
 
     1, -- Lidar pan
   })
@@ -1275,8 +1282,8 @@ elseif IS_WEBOTS then
     0,0,0,0,0,0,
     -90,0,0,0,0,0,0,
     0,0,
-    -35,-90,-90,    
-    -90,-35,-35,
+    -35,-90,    
+    -90,-35,
     60,
   })*DEG_TO_RAD
   
@@ -1287,8 +1294,8 @@ elseif IS_WEBOTS then
     -175,-175,-175,-175,-175,-175, --RLeg
     -90,-87,-90,-160,       -180,-87,-180, --RArm
     -90,-45, -- Waist
-    80,80,80,
-    80,80,80,    
+    80,80,
+    80,80,    
 
     -60, -- Lidar pan
   })*DEG_TO_RAD
@@ -1300,8 +1307,8 @@ elseif IS_WEBOTS then
     175,175,175,175,175,175, --RLeg
     160,-0,90,0,     180,87,180, --RArm
     90,79, -- Waist
-    45,45,45,
-    45,45,45,    
+    45,45,
+    45,45,    
     60, -- Lidar pan
   })*DEG_TO_RAD
   
@@ -1405,6 +1412,7 @@ elseif IS_WEBOTS then
 
 
     tags.passive_joints = {}
+    --[[
     for i,v in ipairs(passiveJointNames) do
       tags.passive_joints[i] = webots.wb_robot_get_device(v)
       if tags.passive_joints[i]>0 then
@@ -1413,6 +1421,7 @@ elseif IS_WEBOTS then
         print(v,'not found')
       end
     end
+    --]]
 
 
 		-- Add Sensor Tags
@@ -1608,15 +1617,15 @@ elseif IS_WEBOTS then
     
 
     --Passive joint handling (2nd digit for figners)    
-    local passive_jangle_offsets = {
-      math.pi/4,-math.pi/4,-math.pi/4,-math.pi/4,math.pi/4,math.pi/4
-    }
-    local passive_jangle_factor = 1.3;
-    for i=1,6 do
-      local ang_orig = webots.wb_servo_get_position(tags.joints[i+Body.indexLGrip-1])
-      webots.wb_servo_set_position(tags.passive_joints[i],
-        (ang_orig + passive_jangle_offsets[i]) * passive_jangle_factor  )
-    end
+    -- local passive_jangle_offsets = {
+    --   math.pi/4,-math.pi/4,-math.pi/4,-math.pi/4,math.pi/4,math.pi/4
+    -- }
+    -- local passive_jangle_factor = 1.3;
+    -- for i=1,6 do
+    --   local ang_orig = webots.wb_servo_get_position(tags.joints[i+Body.indexLGrip-1])
+    --   --webots.wb_servo_set_position(tags.passive_joints[i],
+    --   --  (ang_orig + passive_jangle_offsets[i]) * passive_jangle_factor  )
+    -- end
 
 --[[
     print("FSRL:",unpack(jcm.get_sensor_lfoot()))

@@ -1,10 +1,10 @@
 #
-#  DARPA Trials Debris: Boards
+#  DARPA Trials Debris: Fake Truss
 #  heqin@seas.upenn.edu
 #
 
 
-PROTO DebrisBoard [
+PROTO DebrisTruss [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
 ]
@@ -20,19 +20,19 @@ Solid {
 	         specularColor 0 0 0
 	       }
 	     }
-	     geometry Box { size 1.2192 0.0381 0.0889 }
+	     geometry Box { size 0.3 0.3  1.5 }
 	  }			
   ]
 	
 	physics Physics {
-		mass 2.2
+		mass 4   # TODO: will this be lighter?
 	}
 	
   boundingObject Group {
 		children[
-			Box { size 1.2192 0.05 0.0889 }
+			Box { size 0.3 0.3  1.5 }
 		]
   }  
-#  locked TRUE
+  #locked TRUE
 }
 }

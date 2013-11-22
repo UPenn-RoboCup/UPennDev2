@@ -158,9 +158,7 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
   qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
 
-  if not qLArmNext or not qRArmNext then print("ARM PLANNING ERROR")
-    return 
-  end
+  if not qLArmNext or not qRArmNext then return end
 
   local trLArmNext, trRArmNext = Body.get_forward_larm(qLArmNext),Body.get_forward_rarm(qRArmNext)
   local vec_comp = vector.new({-uTorsoComp[1],-uTorsoComp[2],0,0,0,0})
@@ -171,9 +169,7 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   local qLArmNextComp = self:search_shoulder_angle(qLArmComp,trLArmNextComp,1, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
   local qRArmNextComp = self:search_shoulder_angle(qRArmComp,trRArmNextComp,0, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
 
-  if not qLArmNextComp or not qRArmNextComp or not qLArmNext or not qRArmNext then 
-    print("ARM PLANNING ERROR")
-    return 
+  if not qLArmNextComp or not qRArmNextComp or not qLArmNext or not qRArmNext then return 
   else
     local max_movement_ratioL = check_arm_joint_velocity(qLArmComp, qLArmNextComp, dt_step)
     local max_movement_ratioR = check_arm_joint_velocity(qRArmComp, qRArmNextComp, dt_step)
@@ -218,12 +214,18 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   elseif plantype=="wrist" then
   elseif plantype=="door" then
     target_param[4] = target_param[4] or current_cond[6]
-
     local dpDoorMax = vector.slice(Config.arm.linear_slow_limit,1,3)
     local dqDoorRollMax = Config.armfsm.dooropen.velDoorRoll
     local dqDoorYawMax = Config.armfsm.dooropen.velDoorYaw
     local dqWaistYawMax = Config.armfsm.dooropen.velWaistYaw
     vel_param={dpDoorMax, dqDoorRollMax, dqDoorYawMax, dqWaistYawMax}
+
+  elseif plantype=="dooredge" then
+    target_param[4] = target_param[4] or current_cond[6]
+    local dpDoorMax = vector.slice(Config.arm.linear_slow_limit,1,3)
+    local dqDoorYawMax = Config.armfsm.dooropen.velDoorYaw
+    local dqWaistYawMax = Config.armfsm.dooropen.velWaistYaw
+    vel_param={dpDoorMax, dqDoorYawMax, dqWaistYawMax}
 
   elseif plantype=="valvetwoarm" then
     vel_param={
@@ -274,6 +276,17 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       trLArmNext = trLArm
       trRArmNext = movearm.getDoorHandlePosition(current_param[1],current_param[2],current_param[3])      
       waistNext = new_param[4]
+
+    elseif plantype=="dooredge" then
+      local done1,done2,done3,done4      
+      new_param[1], done1 = util.approachTol(current_param[1],target_param[1], vel_param[1],dt_step)
+      new_param[2], done2 = util.approachTol(current_param[2],target_param[2], vel_param[2],dt_step)
+      new_param[3], done3 = util.approachTol(current_param[3],target_param[3], vel_param[3],dt_step)
+      done = done1 and done2 and done3 
+      trLArmNext = trLArm
+      trRArmNext = movearm.getDoorEdgePosition(current_param[1],current_param[2])
+      waistNext = new_param[3]
+
     elseif plantype =="valvetwoarm" then
       new_param[1], done1 = util.approachTol(current_param[1],target_param[1], vel_param[1],dt_step)
       new_param[2], done2 = util.approachTol(current_param[2],target_param[2], vel_param[2],dt_step)
@@ -316,8 +329,11 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
     done = done and torsoCompDone
     if not new_cond then 
-      print("Plan failure at",self.print_transform(trLArmNext))    
-      --TODO: We can just skip singularities
+      if plantype=="door" then
+        print("door fail, yaw:",current_param[3]*Body.RAD_TO_DEG)
+      elseif plantype=="dooredge" then
+        print("dooredge fail, yaw:",current_param[2]*Body.RAD_TO_DEG)
+      end
       failed = true    
     else
       trLArm, trRArm = trLArmNext, trRArmNext
@@ -379,6 +395,12 @@ local function plan_arm_sequence2(self,arm_seq)
 
     elseif arm_seq[i][1] =='door' then
       LAP, RAP, uTP, WP, end_cond, end_doorparam  = self:plan_unified('door',
+        init_cond, 
+        self.init_doorparam, 
+        vector.slice(arm_seq[i],2,#arm_seq[i]) )
+
+    elseif arm_seq[i][1] =='dooredge' then
+      LAP, RAP, uTP, WP, end_cond, end_doorparam  = self:plan_unified('dooredge',
         init_cond, 
         self.init_doorparam, 
         vector.slice(arm_seq[i],2,#arm_seq[i]) )

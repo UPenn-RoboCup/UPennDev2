@@ -762,14 +762,6 @@ Robot {
                             }
                           ]
                           name "LegLowerR"
-                          boundingObject Transform {
-                            translation -0.025 -0.192 0.043
-                            children [
-                              Box {
-                                size 0.144 0.35 0.085
-                              }
-                            ]
-                          }
                           physics Physics {
                             density -1
                             mass 2.24
@@ -889,15 +881,7 @@ Robot {
                               controlP 16
                             }
                           ]
-                          name "LegLowerL"
-                           boundingObject Transform {
-                            translation 0.025 -0.192 0.043
-                            children [
-                              Box {
-                                size 0.144 0.35 0.085
-                              }
-                            ]
-                          }                                 
+                          name "LegLowerL"                                                            
                           physics Physics { #Lower leg
                             density -1
                             mass 2.24

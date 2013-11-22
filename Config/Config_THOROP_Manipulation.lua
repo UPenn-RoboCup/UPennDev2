@@ -1,6 +1,10 @@
 local vector = require'vector'
 local DEG_TO_RAD = math.pi/180
 
+local IS_LONGARM = true
+local IS_LONGARM = false
+
+
 local Config = {}
 
 ------------------------------------
@@ -171,6 +175,12 @@ armfsm.dooropen.default_model = {
 --With top-mounted hook------------------------------------------------------
 armfsm.dooropen.rhand_rpy={0*DEG_TO_RAD,-5*DEG_TO_RAD,0}
 armfsm.dooropen.rhand_rpy_release={0*DEG_TO_RAD,45*DEG_TO_RAD,0}
+
+armfsm.dooropen.rhand_rpy_release={0*DEG_TO_RAD,-30*DEG_TO_RAD,-80*DEG_TO_RAD}
+armfsm.dooropen.rhand_rpy_release2={0*DEG_TO_RAD,70*DEG_TO_RAD,-80*DEG_TO_RAD}
+
+armfsm.dooropen.rhand_rpy_release3={0*DEG_TO_RAD,85*DEG_TO_RAD,0*DEG_TO_RAD}
+
 armfsm.dooropen.rhand_rpy_forward={0*DEG_TO_RAD,5*DEG_TO_RAD,10*DEG_TO_RAD}
 armfsm.dooropen.rhand_rpy_sidepush={90*DEG_TO_RAD,0*DEG_TO_RAD,0*DEG_TO_RAD}
 ------------------------------------------------------
@@ -194,23 +204,58 @@ armfsm.dooropen.default_model = {
   0.08,             --Knob Y offset (from knob axle)
 }
 armfsm.dooropen.yawTarget = 25*DEG_TO_RAD
----------------------------------------------------------------
 
---for long arm
-armfsm.dooropen.default_model = {
-  0.58,-1.20,0.09,  --Hinge pos
-  0.86,             --Door width (hinge to knob axle)
-  -0.05,            --Knob X offset from door
-  0.08,             --Knob Y offset (from knob axle)
-}
-armfsm.dooropen.yawTarget = 45*DEG_TO_RAD
---
+
+
+
+
+
+--swing open phase after unlock the door 
+  
+armfsm.dooredge={}
+armfsm.dooredge.hinge_offset_z = -0.26 --how low do we touch?
+
+armfsm.dooredge.hand_offset_x = 0.20
+armfsm.dooredge.edge_offset_x = 0.05
+armfsm.dooredge.edge_offset_y = 0.05
+
+armfsm.dooredge.rhand_rpy={90*DEG_TO_RAD,45*DEG_TO_RAD,0}
+armfsm.dooredge.edge_clearance = vector.new({0,0.05,0})
+
+armfsm.dooredge.door_yaw1 = 15*DEG_TO_RAD --start angle
+armfsm.dooredge.door_yaw2 = 50*DEG_TO_RAD --end angle
 
 
 ---------------------------------------------------------------
 ------   Door push open
 ---------------------------------------------------------------
 armfsm.doorpush={}
+
+armfsm.doorpush.default_model = {
+  0.40,-1.23,0.09,  --Hinge pos
+  0.86,             --Door width (hinge to knob axle)
+  -0.05,            --Knob X offset from door
+  0.08,             --Knob Y offset (from knob axle)
+}
+
+armfsm.doorpush.yawTargetInitial = -8*DEG_TO_RAD
+armfsm.doorpush.yawTarget = -10*DEG_TO_RAD
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ---------------------------------------------------------------
 ------   Circular valve turning with single hand w/chopstick
@@ -253,6 +298,46 @@ armfsm.valvetwoarm = {0.55,0.20,0.07,   0.05, 0, 70*DEG_TO_RAD }
 --Axel XYZ, radius, valve angle, hand fit angle
 armfsm.valvetwoarm.velTurnAngle = 3*DEG_TO_RAD * speed_factor
 armfsm.valvetwoarm.velInsert = 0.02 * speed_factor
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------
+---- FOR LONG ARM (25cm)
+--------------------------------------------------------------------------
+
+if IS_LONGARM then
+
+armfsm.dooropen.default_model = {
+  0.58,-1.20,0.09,  --Hinge pos
+  0.86,             --Door width (hinge to knob axle)
+  -0.05,            --Knob X offset from door
+  0.08,             --Knob Y offset (from knob axle)
+}
+armfsm.dooropen.yawTarget = 45*DEG_TO_RAD
+
+
+armfsm.dooredge.hinge_offset_z = -0.29 
+armfsm.dooredge.door_yaw1 = 15*DEG_TO_RAD
+armfsm.dooredge.door_yaw2 = 55*DEG_TO_RAD
+
+
+end
+
+
+
+
+
+
+
+
+
+
 ------------------------------------
 -- Associate with the table
 Config.walk    = walk

@@ -25,11 +25,15 @@ local armTeleop = require'armTeleop'
 
 local armIKTest = require'armIKTest'
 
+local armTest = require'armTest'
+
+
 local armRocky = require'armRocky'
 
 
 -- Door specific states
 local armDoorGrip = require'armDoorGrip'
+local armPushDoorGrip = require'armPushDoorGrip'
 
 -- Tool specific states
 local armToolGrip = require'armToolGrip'
@@ -71,6 +75,7 @@ sm:add_state(armForceReset)
 sm:add_state(armPose1)
 sm:add_state(armTeleop)
 sm:add_state(armDoorGrip)
+sm:add_state(armPushDoorGrip)
 
 sm:add_state(armToolGrip)
 sm:add_state(armToolHold)
@@ -91,6 +96,7 @@ sm:add_state(armRocky)
 sm:add_state(armSupportDoor)
 
 sm:add_state(armIKTest)
+sm:add_state(armTest)
 ----------
 -- Event types
 ----------
@@ -109,6 +115,7 @@ sm:set_transition(armIKTest, 'teleop', armPose1)
 
 
 sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
+sm:set_transition(armPose1, 'pushdoorgrab', armPushDoorGrip)
 sm:set_transition(armPose1, 'toolgrab', armToolGrip)
 sm:set_transition(armPose1, 'debrisgrab', armDebrisGrip)
 sm:set_transition(armPose1, 'smallvalvegrab', armSmallValveGrip)
@@ -116,6 +123,8 @@ sm:set_transition(armPose1, 'largevalvegrab', armLargeValveGrip)
 sm:set_transition(armPose1, 'largevalvetwograb', armLargeValveGripTwohand)
 sm:set_transition(armPose1, 'barvalvegrab', armBarValveGrip)
 sm:set_transition(armPose1, 'hosegrab', armHoseGrip)
+
+sm:set_transition(armPose1, 'test', armTest)
 
 
 sm:set_transition(armSmallValveGrip, 'done', armPose1)

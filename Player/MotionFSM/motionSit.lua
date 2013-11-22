@@ -36,7 +36,7 @@ local velHeight = 0.03
 local velBodyTilt2 = 1*math.pi/180
   
 local bodyTiltSit = -10*math.pi/180
-local bodyHeightSit = 0.55; 
+local bodyHeightSit = 0.60; 
 
 local uTorsoKneel = {0.15,0,0}
 local bodyTiltKneel = Config.walk.bodyTilt

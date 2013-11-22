@@ -59,6 +59,10 @@ local rx_registers = {
   ['position'] = {36,2},
   ['battery'] = {42,2},
   ['temperature'] = {43,1},
+  torque_mode = {70,1},
+  command_torque = {71,2},
+  command_acceleration = {73,1},
+  everything = {36,8},
 }
 libDynamixel.rx_registers = rx_registers
 
@@ -290,9 +294,7 @@ sync_write[2] = sync_write_word
 sync_write[4] = sync_write_dword
 
 local byte_to_number = {}
-byte_to_number[1] = function(byte)
-  return byte
-end
+byte_to_number[1] = function(byte) return byte end
 byte_to_number[2] = DP2.byte_to_word
 byte_to_number[4] = DP2.byte_to_dword
 libDynamixel.byte_to_number = byte_to_number
@@ -527,7 +529,7 @@ for k,v in pairs( rx_registers ) do
     -- Grab any status returns
     if using_status_return and single then
       local status = get_status( bus.fd, 1 )
-      return status[1]
+      return status
     end
     
   end --function
@@ -536,29 +538,45 @@ end
 --------------------
 -- Get RX functions
 for k,v in pairs( rx_registers ) do
-  libDynamixel['get_rx_'..k] = function( motor_ids, bus )
+  libDynamixel['get_rx_'..k] = function( motor_id, bus )
     local addr = v[1]
     local sz = v[2]
-    
-    -- Construct the instruction (single or sync)
-    local instruction = nil
-    -- Single motor
-    instruction = DP1.read_data(motor_id, addr, sz)
-
+    -- Single motor at a time for reading
+    local instruction = DP1.read_data(motor_id, addr, sz)
     if not bus then return instruction end
-    
     -- Clear old status packets
     local clear = unix.read(bus.fd)
-    
     -- Write the instruction to the bus 
     stty.flush(bus.fd)
     local ret = unix.write(bus.fd, instruction)
-    
     -- Grab the status of the register
     local status = get_status( bus.fd, 1, 1 )
-    local value = byte_to_number[sz]( unpack(status[1].parameter) )
+    -- If not data from the chain
+    if not status then return end
+    local value
+    if sz==8 and #status.parameter==8 then
+      -- Everything!
+      value = {}
+      -- In steps
+      value.position = byte_to_number[2]( unpack(status.parameter,1,2) )
+      local speed = byte_to_number[2]( unpack(status.parameter,3,4) )
+      if speed>=1024 then speed = 1024-speed end
+      -- To Radians per second
+      value.speed = (speed * math.pi) / 270
+      local load  = byte_to_number[2]( unpack(status.parameter,5,6) )
+      if load>=1024 then load = 1024-load end
+      -- To percent
+      value.load = load / 10.24
+      -- To Volts
+      value.voltage = status.parameter[7] / 10
+      -- Is Celsius already
+      value.temperature = status.parameter[8]
+    else
+      local ff = byte_to_number[#status.parameter]
+      if not ff then return end
+      value = ff( unpack(status.parameter) )
+    end
     return status, value
-    
   end --function
 end
 

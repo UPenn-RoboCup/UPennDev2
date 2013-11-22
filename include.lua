@@ -13,6 +13,9 @@ if HOME:find'Webots' ~= nil then
   IS_WEBOTS = true
 end
 
+-- SJ: This removes the output buffer
+io.stdout:setvbuf("no")
+
 OPERATING_SYSTEM = io.popen('uname'):read('*a'):lower():gsub("%s+$", "")
 
 -- include C modules to cpath

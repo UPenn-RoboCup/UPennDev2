@@ -8,12 +8,13 @@ local libs = {
   'util',
   'vector',
   'torch',
-  'msgpack'
 }
 
 -- Load the libraries
 for _,lib in ipairs(libs) do _G[lib] = require(lib) end
 if torch then torch.Tensor = torch.DoubleTensor end
+-- mp
+mp = require'msgpack'
 
 -- FSM communicationg
 local listing = unix.readdir(HOME..'/Player')

@@ -1,3 +1,7 @@
+---------------------------------
+-- State Machine Manager for Team THOR
+-- (c) Stephen McGill
+---------------------------------
 dofile'include.lua'
 local Body = require'Body'
 local util = require'util'
@@ -7,16 +11,18 @@ local simple_ipc = require'simple_ipc'
 local udp        = require'udp'
 local vector     = require'vector'
 
-local state_pub_ch = simple_ipc.new_publisher(Config.net.state)
+-- Not using this right now...
+local broadcast_en = false
+local state_pub_ch
+if broadcast_en then
+  state_pub_ch = simple_ipc.new_publisher(Config.net.state)
+end
 local pulse_ch = simple_ipc.new_publisher'pulse'
 
 require'gcm'
 require'wcm'
 require'jcm'
 require'mcm'
-
---SJ: This removes the output buffer 
-io.stdout:setvbuf("no")
 
 local needs_broadcast = true
 local state_machines = {}
@@ -74,36 +80,39 @@ for _,my_fsm in pairs(state_machines) do
   local cur_state_name = cur_state._NAME
   local s = {cur_state_name,nil}
   status[my_fsm._NAME] = s
-  local ret = state_pub_ch:send( mp.pack(status) )
+  if broadcast_en then
+    local ret = state_pub_ch:send( mp.pack(status) )
+  end
 end
 
+-- Joint reading... seems that we are always reading????
 local all_joint_read = vector.ones(#jcm.get_read_position())
-local function set_read_all()
-  jcm.set_read_position(all_joint_read)
-end
+
+-- Pulse
+local pulse_tbl = {t=0}
+
 while true do
   local t = Body.get_time()
   
   -- Update each state machine
-  for _,my_fsm in pairs(state_machines) do
-    local event = my_fsm.update()
-  end
+  for _,my_fsm in pairs(state_machines) do local event = my_fsm.update() end
 
-  -- Broadcast state changes
-  if needs_broadcast then
+  -- Broadcast state changes... why...? Need the stage as well?
+  if broadcast_en and needs_broadcast then
     needs_broadcast = false
     -- Broadcast over UDP/TCP/IPC
     local ret = state_pub_ch:send( mp.pack(status) )
   end
   
   -- Always read from all the motors
-  set_read_all()
+  jcm.set_read_position(all_joint_read)
   
   -- Update the body (mostly needed for webots)
 	Body.update()
   
   -- Send the tick tock at the end of a cycle
-  pulse_ch:send(tostring(t))
+  pulse_tbl.t = t
+  pulse_ch:send(mp.pack(pulse_tbl))
   
   -- Sleep a bit if not webots
   if not IS_WEBOTS then

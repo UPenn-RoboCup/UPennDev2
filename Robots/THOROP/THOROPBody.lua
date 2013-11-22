@@ -62,16 +62,16 @@ local indexRArm = 22  --RArm: 22 23 24 25 26 27 28
 local nJointRArm = 7
 local indexWaist = 29  --Waist: 29 30
 local nJointWaist = 2
--- 6 Fingers for gripping
+-- 4 Servos for gripping
 -- 1 servo for lidar panning
 local indexLGrip = 31
-local nJointLGrip = 3
-local indexRGrip = 34
-local nJointRGrip = 3
+local nJointLGrip = 2 --1
+local indexRGrip = 33
+local nJointRGrip = 2 --1
 -- One motor for lidar panning
-local indexLidar = 37
+local indexLidar = 35 --33
 local nJointLidar = 1
-local nJoint = 37
+local nJoint = 35 --33
 
 local jointNames = {
 	"Neck","Head", -- Head
@@ -88,8 +88,11 @@ local jointNames = {
 	-- Waist
 	"TorsoYaw","TorsoPitch",
 	-- Gripper
-	"l_wrist_grip1","l_wrist_grip2","l_wrist_grip3",
-	"r_wrist_grip1","r_wrist_grip2","r_wrist_grip3",
+--	"l_wrist_grip1","l_wrist_grip2","l_wrist_grip3",
+--	"r_wrist_grip1","r_wrist_grip2","r_wrist_grip3",
+--"l_grip", "r_grip",
+"l_grip", "l_trigger", 
+"r_grip", "r_trigger",
 	-- lidar movement
 	"ChestLidarPan",
 }
@@ -127,8 +130,12 @@ servo.joint_to_motor={
   15,17,19,21,23,25, -- right leg
   1,3,5,7,9,11,13,  --RArm
   27,28, --Waist yaw/pitch
-  32,34,36, -- left gripper (thumb, index, big&not_thumb)
-  31,33,35, -- right gripper (thumb, index, big&not_thumb)
+--  32,34,36, -- left gripper (thumb, index, big&not_thumb)
+--  31,33,35, -- right gripper (thumb, index, big&not_thumb)
+  32,34, -- left gripper (thumb, index, big&not_thumb)
+  31,33, -- right gripper (thumb, index, big&not_thumb)
+
+--  63,64, --left, right grippers
   37, -- Lidar pan
 }
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
@@ -158,8 +165,9 @@ servo.steps = 2 * vector.new({
   251000,251000,251000,251000,251000,251000, --RLeg
   251000,251000,251000,251000,151875,151875,151875, --RArm
   251000,251000, -- Waist
-  2048,2048,2048, -- Left gripper
-  2048,2048,2048, -- Right gripper
+  2048,2048, -- Left gripper
+  2048,2048, -- Right gripper
+--  2048, 2048, -- left/right
   2048, -- Lidar pan
 })
 assert(#servo.steps==nJoint,'Bad servo steps!')
@@ -174,8 +182,9 @@ servo.direction = vector.new({
   ------
   -1,-1,1,-1, 1,1,1, --RArm
   1,1, -- Waist
-  1,1,-1, -- left gripper
-  1,1,-1, -- right gripper
+  1,1, -- left gripper TODO
+  1,1, -- right gripper TODO
+--1,1, -- lgrip,rgrip
   -1, -- Lidar pan
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
@@ -188,8 +197,9 @@ servo.rad_bias = vector.new({
   0,0,0,45,0,0, --RLeg
   90,-90,90,-45,-90,0,0, --RArm
   0,0, -- Waist
-  0,0,0, -- left gripper
-  0,0,0, -- right gripper
+  0,0, -- left gripper
+  0,0, -- right gripper
+--0,0,
   0, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.rad_bias==nJoint,'Bad servo rad_bias!')
@@ -202,8 +212,10 @@ servo.min_rad = vector.new({
   -175,-175,-175,-175,-175,-175, --RLeg
   -90,-87,-90,-160,       -180,-87,-180, --RArm
   -90,-45, -- Waist
-  -32,-12,-12, -- left gripper
-  -12,-32,-32, -- right gripper
+--  -32,-12,-12, -- left gripper
+--  -12,-32,-32, -- right gripper
+-90, -90,
+-90, -90,
   -60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
@@ -215,14 +227,19 @@ servo.max_rad = vector.new({
   175,175,175,175,175,175, --RLeg
   160,-0,90,-25,     180,87,180, --RArm  
   90,45, -- Waist
-  12,32,32, -- left gripper
-  32,12,12, -- right gripper
+--  12,32,32, -- left gripper
+--  32,12,12, -- right gripper
+20,20,
+20,20,
   60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
 
 -- Convienence tables to go between steps and radians
 servo.moveRange = 360 * DEG_TO_RAD * vector.ones(nJoint)
+-- EX106 is different
+--servo.moveRange[indexLGrip] = 250.92 * DEG_TO_RAD
+--servo.moveRange[indexRGrip] = 250.92 * DEG_TO_RAD
 -- Step<-->Radian ratios
 servo.to_radians = vector.zeros(nJoint)
 servo.to_steps = vector.zeros(nJoint)
@@ -489,51 +506,63 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
       return val
   	end -- Set
   end -- anthropomorphic
+  
+  -- Overwrite torque_enable
+  if actuator=='command_torque' then
+    Body['set_'..part:lower()..'_'..actuator] = function(val,i) end
+    Body['get_'..part:lower()..'_'..actuator] = function(val,i) end
+    Body[set_key] = function() end
+    Body[get_key] = function() end
+  end
+  
   --------------------------------
 end
 
+-- For torque control (no reading from the motor just yet)
+Body.set_rgrip_command_torque = function(val)
+  -- Set the command_torque
+  jcm.gripperPtr.command_torque[2] = val
+  -- Set the command_torque
+  jcm.gripperPtr.torque_mode[2] = 1
+end
 
---SJ: I reverted them back
+-- For torque control (no reading from the motor just yet)
+Body.get_rgrip_command_torque_step = function()
+  local val = jcm.gripperPtr.command_torque[2]
+  -- Val is in mA; 4.5 mA increments for the 
+  val = math.floor(val / 4.5)
+  -- Not too large/small
+  val = util.procFunc(val,0,1023)
+  if val<0 then val=1024-val end
+  -- Return the value and the mode
+  return val, jcm.gripperPtr.torque_mode[2]
+end
 
--- TODO: should be in body or a Grip module?
--- Grip module may have more advanced techniques...
--- More gripper functions
--- TODO: Use body actuator access to JCM
-Body.set_lgrip_percent = function( percent )
+-- For position control
+Body.set_lgrip_percent = function( percent, is_torque )
+  local thumb = indexLGrip
   percent = math.min(math.max(percent,0),1)
   -- Convex combo
-  local thumb = indexLGrip
   local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
   jcm.actuatorPtr.command_position[thumb] = radian
   jcm.writePtr.command_position[thumb] = 1
-  --
-  local index = indexLGrip+1
-  local radian = (percent)*servo.min_rad[index] + (1-percent)*servo.max_rad[index]
-  jcm.actuatorPtr.command_position[index] = radian
-  jcm.writePtr.command_position[index] = 1
-  --
-  local ring = indexLGrip+2
-  local radian = (percent)*servo.min_rad[ring] + (1-percent)*servo.max_rad[ring]
-  jcm.actuatorPtr.command_position[ring] = radian
-  jcm.writePtr.command_position[ring] = 1
-
+  -- Set the command_torque to position
+  jcm.gripperPtr.torque_mode[1] = 0
+  -- Set the command_torque to zero
+  jcm.gripperPtr.command_torque[1] = 0
 end
-Body.set_rgrip_percent = function( percent )
+Body.set_rgrip_percent = function( percent, is_torque )
   -- Convex combo
+  percent = math.min(math.max(percent,0),1)
+  --  
   local thumb = indexRGrip
-  local radian = percent*servo.min_rad[thumb] + (1-percent)*servo.max_rad[thumb]
+  local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
   jcm.actuatorPtr.command_position[thumb] = radian
   jcm.writePtr.command_position[thumb] = 1
-  --
-  local index = indexRGrip+1
-  local radian = (1-percent)*servo.min_rad[index] + percent*servo.max_rad[index]
-  jcm.actuatorPtr.command_position[index] = radian
-  jcm.writePtr.command_position[index] = 1
-  --
-  local ring = indexRGrip+2
-  local radian = (1-percent)*servo.min_rad[ring] + percent*servo.max_rad[ring]
-  jcm.actuatorPtr.command_position[ring] = radian
-  jcm.writePtr.command_position[ring] = 1
+  -- Set the command_torque
+  jcm.gripperPtr.torque_mode[2] = 0
+  -- Set the command_torque to zero
+  jcm.gripperPtr.command_torque[2] = 0
 end
 
 
@@ -797,11 +826,14 @@ Body.entry = function()
     {15,17,19,21,23,25, --[[waist pitch]]28}
   dynamixels.left_leg.nx_ids =
     {16,18,20,22,24,26, --[[waist]]27}
-  --
+  --[[
   dynamixels.right_arm.mx_ids =
     { 31,33,35 }
-  dynamixels.left_arm.mx_ids =
-    { 32,34,36, --[[lidar]] 37}
+  --]]
+  dynamixels.left_arm.mx_ids = {
+    --32,34,36, 
+    37, --[[lidar]]
+   }
   --
 
   --
@@ -835,6 +867,7 @@ end
 
 local process_register_read = {
   position = function(idx,val,t)
+    if type(val)~='number' then return end
     jcm.sensorPtr.position[idx] = Body.make_joint_radian( idx, val )
     jcm.treadPtr.position[idx]  = t
   end,
@@ -937,6 +970,9 @@ local function add_nx_sync_write(d, is_writes, wr_values, register)
 end
 
 local function add_mxnx_bulk_write(d, is_writes, wr_values, register)
+  -- No command_torque
+  if register=='command_torque' then return end
+  
   -- Just sync write to NX's if no MX on the chain
   if not d.mx_ids or not libDynamixel.mx_registers[register] then
     return add_nx_sync_write(d, is_writes, wr_values, register)
@@ -944,6 +980,7 @@ local function add_mxnx_bulk_write(d, is_writes, wr_values, register)
   
   -- Run through the MX motors
   local mx_cmd_ids, mx_cmd_vals = {}, {}
+if d.mx_ids then
   for _,id in ipairs(d.mx_ids) do
     local idx = motor_to_joint[id]
     if is_writes[idx]>0 then
@@ -956,6 +993,7 @@ local function add_mxnx_bulk_write(d, is_writes, wr_values, register)
       end
     end
   end
+end
   -- If nothing to the MX motors, then sync write NX
   if #mx_cmd_ids==0 then return add_nx_sync_write(d, is_writes, wr_values, register) end
 
@@ -1042,6 +1080,8 @@ Body.update = function()
           'rfoot'})
         d.n_expect_read = d.n_expect_read + 2
       end
+    elseif register=='command_torque' then
+      -- No command_torque
     else
       local get_func    = libDynamixel['get_nx_'..register]
       local mx_get_func = libDynamixel['get_mx_'..register]
@@ -1240,8 +1280,8 @@ elseif IS_WEBOTS then
     -1,-1,-1,-1,-1,-1,-1, --RArm    
     -- TODO: Check the gripper
     -1,1, -- Waist
-    -1,-1,-1, -- left gripper    
-    -1,-1,-1, -- right gripper
+    -1,-1, -- left gripper    
+    -1,-1, -- right gripper
 
     1, -- Lidar pan
   })
@@ -1252,8 +1292,8 @@ elseif IS_WEBOTS then
     0,0,0,0,0,0,
     -90,0,0,0,0,0,0,
     0,0,
-    -35,-90,-90,    
-    -90,-35,-35,
+    -35,-90,    
+    -90,-35,
     60,
   })*DEG_TO_RAD
   
@@ -1264,8 +1304,8 @@ elseif IS_WEBOTS then
     -175,-175,-175,-175,-175,-175, --RLeg
     -90,-87,-90,-160,       -180,-87,-180, --RArm
     -90,-45, -- Waist
-    80,80,80,
-    80,80,80,    
+    80,80,
+    80,80,    
 
     -60, -- Lidar pan
   })*DEG_TO_RAD
@@ -1277,8 +1317,8 @@ elseif IS_WEBOTS then
     175,175,175,175,175,175, --RLeg
     160,-0,90,0,     180,87,180, --RArm
     90,79, -- Waist
-    45,45,45,
-    45,45,45,    
+    45,45,
+    45,45,    
     60, -- Lidar pan
   })*DEG_TO_RAD
   
@@ -1382,6 +1422,7 @@ elseif IS_WEBOTS then
 
 
     tags.passive_joints = {}
+    --[[
     for i,v in ipairs(passiveJointNames) do
       tags.passive_joints[i] = webots.wb_robot_get_device(v)
       if tags.passive_joints[i]>0 then
@@ -1390,6 +1431,7 @@ elseif IS_WEBOTS then
         print(v,'not found')
       end
     end
+    --]]
 
 
 		-- Add Sensor Tags
@@ -1585,15 +1627,15 @@ elseif IS_WEBOTS then
     
 
     --Passive joint handling (2nd digit for figners)    
-    local passive_jangle_offsets = {
-      math.pi/4,-math.pi/4,-math.pi/4,-math.pi/4,math.pi/4,math.pi/4
-    }
-    local passive_jangle_factor = 1.3;
-    for i=1,6 do
-      local ang_orig = webots.wb_servo_get_position(tags.joints[i+Body.indexLGrip-1])
-      webots.wb_servo_set_position(tags.passive_joints[i],
-        (ang_orig + passive_jangle_offsets[i]) * passive_jangle_factor  )
-    end
+    -- local passive_jangle_offsets = {
+    --   math.pi/4,-math.pi/4,-math.pi/4,-math.pi/4,math.pi/4,math.pi/4
+    -- }
+    -- local passive_jangle_factor = 1.3;
+    -- for i=1,6 do
+    --   local ang_orig = webots.wb_servo_get_position(tags.joints[i+Body.indexLGrip-1])
+    --   --webots.wb_servo_set_position(tags.passive_joints[i],
+    --   --  (ang_orig + passive_jangle_offsets[i]) * passive_jangle_factor  )
+    -- end
 
 --[[
     print("FSRL:",unpack(jcm.get_sensor_lfoot()))

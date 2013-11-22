@@ -20,6 +20,9 @@ shared_data.sensor.position = vector.zeros( nJoints )
 shared_data.sensor.velocity = vector.zeros( nJoints )
 -- Load of joints is measured in percentage
 shared_data.sensor.load     = vector.zeros( nJoints )
+-- Temperature of joints is measured in Celsius
+shared_data.sensor.temperature  = vector.zeros( nJoints )
+
 -- Foot sensors (strain gauges; should be just 6, not quite 8...)
 -- 8 is because 2 motors, with 4 ext data each
 shared_data.sensor.lfoot = vector.zeros( 8 )
@@ -88,6 +91,13 @@ for k,v in pairs(shared_data.actuator) do
   shared_data.write[k] = v
   shared_data.twrite[k] = v
 end
+
+-- Gripper only data Left, Right
+shared_data.gripper = {}
+-- Torque of joints is in mA (just for the gripper)
+shared_data.gripper.command_torque = vector.zeros( 2 )
+-- 0: Position mode, 1: torque mode
+shared_data.gripper.torque_mode = vector.zeros( 2 )
 
 ------------------------
 -- Call the initializer

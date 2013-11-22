@@ -1,6 +1,6 @@
 -- Tune this parameter if being used for testing
 local USE_LOCALHOST = false
---local USE_LOCALHOST = true
+local USE_LOCALHOST = true
 
 local Config = {}
 Config.USE_LOCALHOST = USE_LOCALHOST

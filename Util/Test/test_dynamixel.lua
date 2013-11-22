@@ -11,6 +11,7 @@ local right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
 local left_arm  = libDynamixel.new_bus'/dev/ttyUSB1'
 local right_leg = libDynamixel.new_bus'/dev/ttyUSB2'
 local left_leg  = libDynamixel.new_bus'/dev/ttyUSB3'
+local grippers  = libDynamixel.new_bus('/dev/ttyUSB4',1000000)
 
 if OPERATING_SYSTEM=='darwin' then
   right_arm = libDynamixel.new_bus('/dev/cu.usbserial-FTT3ABW9A')
@@ -20,9 +21,23 @@ if OPERATING_SYSTEM=='darwin' then
 end
 
 -- Choose a chain
-local test_dynamixel = right_arm
+local test_dynamixel = grippers
 assert(test_dynamixel)
 print('Using',test_dynamixel.ttyname)
+
+local found = test_dynamixel:ping_probe(1)
+print('Inspecting',table.concat(found,','))
+
+-- Change ID 19 to 64
+local status = libDynamixel.get_rx_id(19,test_dynamixel)
+print('status',status)
+if status then
+local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
+print('Value:',value)
+local status = libDynamixel.set_rx_id(19,64,test_dynamixel)
+end
+
+os.exit()
 
 --[[
 local found = test_dynamixel:ping_probe()

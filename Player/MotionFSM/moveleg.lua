@@ -256,7 +256,7 @@ function moveleg.set_leg_positions_kneel(dt)
   local qLegs1 = K.inverse_legs(pLLeg, pRLeg, pTorso1)  
   local qLegs2 = K.inverse_legs(pLLeg, pRLeg, pTorso2)  
 
-  local kneePadding = 0.03
+  local kneePadding = 0.08
 
   local kneeHeight0 = K.calculate_knee_height(vector.slice(qLegs0,1,6)) - kneePadding
   local kneeHeight1 = K.calculate_knee_height(vector.slice(qLegs1,1,6)) - kneePadding

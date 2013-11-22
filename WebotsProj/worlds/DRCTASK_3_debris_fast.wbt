@@ -4,7 +4,7 @@ WorldInfo {
     "Default world for the THOR-OP"
   ]
   title "handletest"
-  basicTimeStep 25
+  basicTimeStep 40
   FPS 10
 }
 Viewpoint {
@@ -30,8 +30,8 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP7_NoBoundaries {
-  translation 0.00106188 1.14516 -0.0107433
-  rotation 0.999186 0.000519014 -0.0403267 -0.00597237
+  translation 0.0 1.15535 -0.5
+  rotation 0 1 0 0
   controller "thorop"
   controllerArgs "0 32"
   cameraWindowPosition 0.399113 0.225564

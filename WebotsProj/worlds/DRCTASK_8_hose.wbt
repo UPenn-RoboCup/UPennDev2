@@ -4,12 +4,12 @@ WorldInfo {
     "Valve operating test for DRC"
   ]
   title "valvetest"
-  basicTimeStep 40
+  basicTimeStep 10
   FPS 15
 }
 Viewpoint {
-  orientation 0.344291 0.920017 0.187168 5.18095
-  position -2.38619 2.10955 1.37923
+  orientation -0.0894026 0.957813 0.273131 2.5093
+  position 1.16511 4.44209 -3.96653
 }
 Background {
   skyColor [
@@ -30,43 +30,79 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP7_NoBoundaries {
-  translation -0.1 1.15535 -0.03
+  translation -0.5 1.15535 -1
   controller "thorop"
   controllerArgs "0 32"
 }
+
+
 DEF MY_TABLE Solid {
-  translation 0 0.75 1
+  translation 0 0.45 1
   children [
     Transform {
       children [
         Shape {
           geometry Box {
-            size 0.5 0.05 1
+            size 0.2 1 1
           }
         }
       ]
-    }
-    Transform {
-      translation 0 -0.4 0
-      children [
-        Shape {
-          geometry Box {
-            size 0.075 0.75 0.075
-          }
-        }
-      ]
-    }
+    }    
   ]
   boundingObject Transform {
     children [
       Box {
-        size 0.5 0.05 1
+         size 0.2 1 1
       }
     ]
   }
 }
+
+DEF MY_WYE Solid {
+  translation -6 0.5 0
+  children [
+    Transform {
+      children [
+        Shape {
+          geometry Box {
+            size 0.4 1 0.4
+          }
+        }
+      ]
+    }    
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+         size 0.4 1 0.4
+      }
+    ]
+  }
+}
+
+Solid {
+  translation -5.8 0.90 0
+  rotation 0 0 1 1.57
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.9
+          diffuseColor 0.9 0.2 0.2
+        }
+      }
+      geometry Cylinder {
+        height 0.08
+        radius 0.08
+      }
+    }
+  ]
+}
+
+
 DEF MY_DRILL Solid {
-  translation -0.1 1 0.55
+  translation 0 1 0.55
+  rotation 0 0 1 1.57
   children [
     Shape {
       appearance Appearance {
@@ -95,7 +131,7 @@ DEF MY_DRILL Solid {
   }
 }
 DEF WALL_TO_BREAK Solid {
-  translation -1.5 1 1.5
+  translation -3.5 1 1.5
   children [
     Shape {
       appearance Appearance {
@@ -103,15 +139,34 @@ DEF WALL_TO_BREAK Solid {
         }
       }
       geometry Box {
-        size 4 2 0.1
+        size 8 2 0.01
       }
     }
   ]
   boundingObject Transform {
     children [
       Box {
-        size 4 2 0.1
+        size 8 2 0.01
       }
     ]
   }
 }
+
+DEF PATH Solid {
+  translation -3.5 0 0
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.1
+          diffuseColor 0.2 0.2 0.5
+        }
+      }
+      geometry Box {
+        size 8 0.01 1
+      }
+    }
+  ]  
+}
+
+

@@ -175,10 +175,10 @@ Robot {
                 translation 0 -0.03 0
                 children [Shape{geometry Box {size 0.083 0.06 0.1}}]
               }
-			        DEF r_wrist_grip1 Servo{ # Trigger finger
+			        DEF r_grip Servo{ # Trigger finger
       			    translation 0.02 -0.06 0.03
 			          rotation 0 0 1 0
-			          name "r_wrist_grip1"
+			          name "r_grip"
 	      		     children[
 		               Transform{
 	                   translation 0 -0.04 0
@@ -219,10 +219,10 @@ Robot {
 								
              }
 	
-						 DEF r_wrist_grip2 Servo{ # Grip fingers
+						 DEF r_trigger Servo{ # Grip fingers
 		           translation -0.01 -0.06 0
      		       rotation 0 0 1 0
-			         name "r_wrist_grip2"
+			         name "r_trigger"
 			          children[
 			            Transform{
 		                translation 0 -0.025 0
@@ -459,10 +459,10 @@ Robot {
                 translation 0 -0.03 0
                 children [Shape{geometry Box {size 0.083 0.06 0.1}}]
               }
-			        DEF l_wrist_grip1 Servo{ # Trigger finger
+			        DEF l_grip Servo{ # Trigger finger
       			    translation -0.02 -0.06 0.03
 			          rotation 0 0 1 0
-			          name "l_wrist_grip1"
+			          name "l_grip"
 	      		     children[
 		               Transform{
 	                   translation 0 -0.04 0
@@ -503,10 +503,10 @@ Robot {
 								
              }
 	
-						 DEF l_wrist_grip2 Servo{ # Grip fingers
+						 DEF l_trigger Servo{ # Grip fingers
 		           translation 0.01 -0.06 0
      		       rotation 0 0 1 0
-			         name "l_wrist_grip2"
+			         name "l_trigger"
 			          children[
 			            Transform{
 		                translation 0 -0.025 0

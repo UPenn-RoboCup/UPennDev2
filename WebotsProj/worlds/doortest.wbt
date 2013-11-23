@@ -3,13 +3,13 @@ WorldInfo {
   info [
     "Valve operating test for DRC"
   ]
-  title "valvetest"
+  title "doortest"
   basicTimeStep 40
   FPS 15
 }
 Viewpoint {
-  orientation 0.536832 0.632371 0.558497 4.22195
-  position -0.0190634 3.79828 0.0647076
+  orientation 0.0391553 0.997453 0.0596119 4.19266
+  position -6.74538 2.04378 -2.498
 }
 Background {
   skyColor [
@@ -30,40 +30,21 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP7_NoBoundaries_ShortClawHook {
-  translation -1 1.15535 0
+#THOROP7_NoBoundaries_ShortGripperOnly {
+  translation -0.728457 1.15535 0.0282865  
   rotation 0 1 0 1.57
   controller "thorop"
   controllerArgs "0 32"
 }
-
-Solid {
-  translation 0.38 1 0.5
-  rotation 0 0 1 0
-  children [
-    ValveDRCLever {
-    }
-  ]
-  locked TRUE
+SingleDoorCommonPush {
+  translation -2.4 0 0.6
+  rotation 0 1 0 1.57
 }
-
-Solid {
-  translation 0.38 1 0
-  rotation 0 0 1 0
-  children [
-    ValveDRCMedium {
-    }
-  ]
-  locked TRUE
+SingleDoorEntree {
+  translation 0 0 0.6
+  rotation 0 1 0 1.57
 }
-
-Solid {
-  translation 0.38 1 1
-  rotation 0 0 1 0
-  children [
-    ValveDRC {
-    }
-  ]
-  locked TRUE
+SingleDoorEntreeWeighted {
+  translation 2.4 0 0.6
+  rotation 0 1 0 1.57
 }
-
-

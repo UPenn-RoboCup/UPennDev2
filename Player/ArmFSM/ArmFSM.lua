@@ -141,11 +141,11 @@ sm:set_transition(armHoseGrip, 'done', armPose1)
 sm:set_transition(armHoseGrip, 'hold', armHoseHold)
 --sm:set_transition(armHoseHold, 'toolgrab', armToolChop)
 
-
-
 sm:set_transition(armDoorGrip, 'done', armPose1)
+sm:set_transition(armPushDoorGrip, 'done', armPose1)
 sm:set_transition(armDebrisGrip, 'done', armPose1)
 sm:set_transition(armTeleop, 'done', armPose1)
+sm:set_transition(armTest, 'done', armPose1)
 
 
 

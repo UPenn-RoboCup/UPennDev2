@@ -9,45 +9,22 @@ PROTO HOOK [
   field SFRotation rotation 0 1 0 0
 ]
 {
-Solid {
-  translation 0 -0.079 0
-  rotation IS rotation
-  children [
-	  Shape {
-	     appearance DEF POS_APP Appearance {
-	       material Material {
-	         diffuseColor 1 1 0.5
-	         specularColor 0 0 0
-	       }
-	     }
-	     geometry Box { size 0.015 0.158 0.015 }
-	  }	
-		
+  Solid {
+    translation 0 -0.079 0	  
+    rotation IS rotation
+	  children [
+	    Shape {geometry Box { size 0.015 0.158 0.015 }}	
 		DEF HOOK_2 Solid {
 		  translation -0.02 -0.07 0
 		  rotation IS rotation
 		  children [
-			  Shape {
-			     appearance DEF POS_APP Appearance {
-			       material Material {
-			         diffuseColor 1 1 0.5
-			         specularColor 0 0 0
-			       }
-			     }
-			     geometry Box { size 0.04 0.015 0.015 }
-			  }	
-			]
-		  #physics Physics{mass 0.02}	
-			boundingObject Group {
-				children[ Box { size 0.04 0.015 0.015 } ]
-			}  
+		    Shape {geometry Box { size 0.04 0.015 0.015 }}	
+		  ]
+		  physics Physics{mass 0.01}	
+		  boundingObject Box { size 0.04 0.015 0.015 } 
 		}
-  ]
-	
-	#physics Physics{mass 0.05}	
-  boundingObject Group {
-		children[ Box { size 0.015 0.158 0.015 } ]
-  }  
-#locked TRUE
-}
+	  ]
+	  physics Physics{mass 0.01}	
+	  boundingObject Box { size 0.015 0.158 0.015 } 
+	}
 }

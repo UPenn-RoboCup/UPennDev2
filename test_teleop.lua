@@ -85,7 +85,7 @@ local char_to_event = {
 
 
 --  ['9'] = {'arm_ch','teleop'},
---  ['0'] = {'arm_ch','rocky'},
+  ['r'] = {'arm_ch','rocky'},
 
   ['9'] = {'arm_ch','test'},
   ['0'] = {'arm_ch','hosegrab'},

@@ -18,6 +18,7 @@ local trRArmRelease3 = {0,0,0,unpack(Config.armfsm.dooropen.rhand_rpy_release3)}
 local trRArmForward = {0,0,0,unpack(Config.armfsm.dooropen.rhand_rpy_forward)}
 local trRArmSidePush = {0,0,0,unpack(Config.armfsm.dooropen.rhand_rpy_sidepush)}
 
+local handle_clearance0 = Config.armfsm.dooropen.handle_clearance0
 local handle_clearance = Config.armfsm.dooropen.handle_clearance
 local rollTarget = Config.armfsm.dooropen.rollTarget
 local yawTargetInitial = Config.armfsm.dooropen.yawTargetInitial
@@ -99,11 +100,14 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then        
         arm_planner:set_shoulder_yaw_target(qLArm0[3],nil) --Lock left shoulder yaw
-        local trRArmTarget1 = movearm.getDoorHandlePosition(handle_clearance, 0, door_yaw, rhand_rpy0)
 
-        print("trRArm:",arm_planner.print_transform(trRArmTarget1))
 
-        local arm_seq = {{'move',nil, trRArmTarget1}}
+
+        local trRArmTarget1 = movearm.getDoorHandlePosition(handle_clearance0, 0, door_yaw, rhand_rpy0)
+        local trRArmTarget2 = movearm.getDoorHandlePosition(handle_clearance, 0, door_yaw, rhand_rpy0)
+        --print("trRArm:",arm_planner.print_transform(trRArmTarget1))
+
+        local arm_seq = {{'move',nil, trRArmTarget1},{'move',nil, trRArmTarget2}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "placehook"  end
       elseif hcm.get_state_proceed()==-1 then
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])

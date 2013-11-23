@@ -57,17 +57,18 @@ function state.entry()
 end
 
 local function update_model()
-  --[[
+  
   local trLArmTarget = hcm.get_hands_left_tr_target()
   local trLArm = hcm.get_hands_left_tr()
-  local valve_model = hcm.get_largevalve_model()
-  valve_model[1],valve_model[2],valve_model[3]=
-    valve_model[1] + trLArmTarget[1]-trLArm[1],
-    valve_model[2] + trLArmTarget[2]-trLArm[2],
-    valve_model[3] + trLArmTarget[3]-trLArm[3]
-  hcm.set_door_model(Config.armfsm.doorpush.default_model)
-  hcm.set_door_yaw(0)
-  --]]
+  local door_model = hcm.get_door_model()
+  door_model[1],door_model[2],door_model[3]=
+    door_model[1] + trLArmTarget[1]-trLArm[1],
+    door_model[2] + trLArmTarget[2]-trLArm[2],
+    door_model[3] + trLArmTarget[3]-trLArm[3]
+  hcm.set_door_model(door_model)
+
+  print(string.format("Door model update: hinge %.3f %.3f %.3f",
+    door_model[1],door_model[2],door_model[3]))
 end
 
 
@@ -140,17 +141,18 @@ function state.update()
           {'doorleft',{0,0,0},angle2,0},
           {'doorleft',{0,0,0},angle2,Config.armfsm.doorpush.yawTargetInitial},
           {'doorleft',{0,0,0},0,Config.armfsm.doorpush.yawTargetInitial},
+          {'doorleft',{0,0,0},0,0},
         }
         if arm_planner:plan_arm_sequence(arm_seq) then stage="dooropen" end
       elseif hcm.get_state_proceed()==-1 then 
-        local trLArmTarget, trRArmTarget = movearm.getLargeValvePositionSingle(
-          0,Config.armfsm.valveonearm.clearance,1,0)
-        local arm_seq = {{'move',trLArmTarget, trRArmTarget}}
+        local trLArmTarget = movearm.
+          getDoorLeftHandlePosition(Config.armfsm.doorpush.clearance,0,0)
+        local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       elseif hcm.get_state_proceed()==2 then --teleop signal
         print("update")
         update_model()
-        local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,0,1)
+        local trLArmTarget = movearm.getDoorLeftHandlePosition({0,0,0},0,0)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
       end
@@ -158,7 +160,7 @@ function state.update()
   elseif stage=="dooropen" then 
     if arm_planner:play_arm_sequence(t) then 
       hcm.set_state_success(1) --Report success
-      stage="pregrip"
+      stage="inposition"      
     end
   elseif stage=="armbacktoinitpos" then 
     if arm_planner:play_arm_sequence(t) then return "done" end

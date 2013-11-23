@@ -719,7 +719,8 @@ Body.get_forward_larm = function(qL, bodyTilt, qWaist)
   local pLArm = Kinematics.l_arm_torso_7( qL, 
     bodyTilt or mcm.get_stance_bodyTilt(), 
     qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_handoffset()[1],mcm.get_arm_handoffset()[2],mcm.get_arm_handoffset()[3]
+    mcm.get_arm_lhandoffset()[1],mcm.get_arm_lhandoffset()[2],
+    mcm.get_arm_lhandoffset()[3]
     )
   return pLArm
 end
@@ -728,7 +729,8 @@ Body.get_forward_rarm = function(qR, bodyTilt, qWaist)
   local pRArm = Kinematics.r_arm_torso_7( qR,
     bodyTilt or mcm.get_stance_bodyTilt(),
     qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_handoffset()[1],mcm.get_arm_handoffset()[2],mcm.get_arm_handoffset()[3]
+    mcm.get_arm_rhandoffset()[1],mcm.get_arm_rhandoffset()[2],
+    mcm.get_arm_rhandoffset()[3]
     )
   return pRArm
 end
@@ -772,14 +774,18 @@ Body.get_inverse_larm = function( qL, trL, lShoulderYaw, bodyTilt, qWaist)
     lShoulderYaw or qL[3],
     bodyTilt or mcm.get_stance_bodyTilt(), 
     qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_handoffset()[1],mcm.get_arm_handoffset()[2],mcm.get_arm_handoffset()[3]
+    mcm.get_arm_lhandoffset()[1],
+    mcm.get_arm_lhandoffset()[2],
+    mcm.get_arm_lhandoffset()[3]
     )
   
   local trL_check = Kinematics.l_arm_torso_7( 
     qL_target,
     bodyTilt or mcm.get_stance_bodyTilt(), 
     qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_handoffset()[1],mcm.get_arm_handoffset()[2],mcm.get_arm_handoffset()[3]
+    mcm.get_arm_lhandoffset()[1],
+    mcm.get_arm_lhandoffset()[2],
+    mcm.get_arm_lhandoffset()[3]
     )
 --[[
   print("LARM IK SOLVING")
@@ -800,13 +806,17 @@ Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)
     rShoulderYaw or qR[3], 
     bodyTilt or mcm.get_stance_bodyTilt(),
     qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_handoffset()[1],mcm.get_arm_handoffset()[2],mcm.get_arm_handoffset()[3]
+    mcm.get_arm_rhandoffset()[1],
+    mcm.get_arm_rhandoffset()[2],
+    mcm.get_arm_rhandoffset()[3]
     )
   local trR_check = Kinematics.r_arm_torso_7( 
     qR_target,
     bodyTilt or mcm.get_stance_bodyTilt(), 
     qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_handoffset()[1],mcm.get_arm_handoffset()[2],mcm.get_arm_handoffset()[3]
+    mcm.get_arm_rhandoffset()[1],
+    mcm.get_arm_rhandoffset()[2],
+    mcm.get_arm_rhandoffset()[3]
     )
   if not check_rarm_bounds(qR_target) then return end  
   if not check_ik_error( trR, trR_check) then return end

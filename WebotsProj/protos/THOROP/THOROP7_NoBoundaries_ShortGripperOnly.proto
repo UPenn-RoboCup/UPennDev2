@@ -10,6 +10,8 @@
 #10/24: fixed joint positions according to actual robot
 #10/30: fixed lidar offset
 #11/5: re-enabled low leg bounding box (for kneeling)
+#11/22: get rid of head lidar, some boundingboxes
+
 
 PROTO THOROP7_NoBoundaries_ShortGripperOnly [
   field SFVec3f    translation 0 1 0
@@ -809,14 +811,6 @@ Robot {
                             }
                           ]
                           name "LegLowerR"
-                          boundingObject Transform {
-                            translation -0.025 -0.192 0.043
-                            children [
-                              Box {
-                                size 0.144 0.35 0.085
-                              }
-                            ]
-                          }
                           physics Physics {
                             density -1
                             mass 2.24
@@ -937,14 +931,6 @@ Robot {
                             }
                           ]
                           name "LegLowerL"
-                           boundingObject Transform {
-                            translation 0.025 -0.192 0.043
-                            children [
-                              Box {
-                                size 0.144 0.35 0.085
-                              }
-                            ]
-                          }                                 
                           physics Physics { #Lower leg
                             density -1
                             mass 2.24
@@ -1027,11 +1013,11 @@ Robot {
           translation 0 0.161 0
           rotation -1 0 0 -0.17
           children [
-            hokuyo{
-						  rotation 0 1 0 3.14159
-              translation 0 0.1 0
-              name "HeadLidar"
-						}
+#            hokuyo{
+#						  rotation 0 1 0 3.14159
+#              translation 0 0.1 0
+#              name "HeadLidar"
+#						}
             Camera {
 						  rotation 0 1 0 3.14159
               translation 0 0.072 0.0785

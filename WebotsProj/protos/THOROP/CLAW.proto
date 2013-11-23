@@ -34,12 +34,23 @@ Solid {
 			         specularColor 0 0 0
 			       }
 			     }
-			     geometry Box { size 0.02 0.1651 0.03 }
+					 geometry Cylinder{
+					 	bottom FALSE
+						top FALSE
+						height 0.1651
+						radius 0.01
+					 }
 			  }	
 			]			
-			#physics Physics{mass 0.05}
 			boundingObject Group {
-				children[ Box { size 0.02 0.1651 0.03 } ]
+				children[ 
+					Cylinder{
+					 	bottom FALSE
+						top FALSE
+						height 0.1651
+						radius 0.01
+					 }
+				]
 			}  			
 		}
 
@@ -54,19 +65,28 @@ Solid {
 			         specularColor 0 0 0
 			       }
 			     }
-			     geometry Box { size 0.02 0.1651 0.03 }
+					 geometry Cylinder{
+					 	bottom FALSE
+						top FALSE
+						height 0.1651
+						radius 0.01
+					 }
 			  }	
 			]			
-			#physics Physics{mass 0.05}
 			boundingObject Group {
-				children[ Box { size 0.02 0.1651 0.03 } ]
+				children[ 
+					Cylinder{
+					 	bottom FALSE
+						top FALSE
+						height 0.1651
+						radius 0.01
+					 }
+				]
 			}  			
 		}
   ]	
-  #physics Physics{mass 0.05}
   boundingObject Group {
 		children[ Box { size 0.12 0.02 0.05  } ]
   }  
-  #locked TRUE
 }
 }

@@ -327,6 +327,7 @@ Robot {
 						
               DEF r_claw Solid{
                 translation 0 -0.02 0
+								rotation 0 1 0 1.57
                 children [ CLAW{} ]
               }
 
@@ -615,6 +616,7 @@ Robot {
 						
               DEF l_claw Solid{
                 translation 0 -0.02 0
+								rotation 0 1 0 1.57
                 children [ CLAW{} ]
               }
 

@@ -25,9 +25,9 @@ function state.entry()
   t_finish = t
 
   stage = 1
+
   Body.set_lgrip_percent(.7)
   Body.set_rgrip_percent(.7)
-
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()

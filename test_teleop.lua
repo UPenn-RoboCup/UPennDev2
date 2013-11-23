@@ -71,14 +71,17 @@ local char_to_event = {
 
   ['2'] = {'arm_ch','toolgrab'},
   ['3'] = {'arm_ch','doorgrab'},
-  ['4'] = {'arm_ch','smallvalvegrab'},
-  ['5'] = {'arm_ch','barvalvegrab'},
-  ['6'] = {'arm_ch','largevalvegrab'},
-  ['7'] = {'arm_ch','debrisgrab'},
+  ['4'] = {'arm_ch','pushdoorgrab'},
 
 
 
---  ['8'] = {'arm_ch','largevalvetwograb'},
+  ['5'] = {'arm_ch','smallvalvegrab'},
+  ['6'] = {'arm_ch','barvalvegrab'},
+  ['7'] = {'arm_ch','largevalvegrab'},
+  ['8'] = {'arm_ch','debrisgrab'},
+
+
+
 
 
 --  ['9'] = {'arm_ch','teleop'},
@@ -87,9 +90,8 @@ local char_to_event = {
   ['9'] = {'arm_ch','test'},
   ['0'] = {'arm_ch','hosegrab'},
 
-  ['t'] = {'arm_ch','pushdoorgrab'},
 
-
+--  ['8'] = {'arm_ch','largevalvetwograb'},
 
 --  ['8'] = {'motion_ch','sit'},
 --  ['9'] = {'motion_ch','stand'},

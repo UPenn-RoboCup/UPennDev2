@@ -53,7 +53,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  mcm.set_arm_handoffset(Config.arm.handoffset.gripper)
+  mcm.set_arm_rhandoffset(Config.arm.handoffset.gripper)
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()

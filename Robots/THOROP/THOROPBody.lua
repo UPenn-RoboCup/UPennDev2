@@ -13,7 +13,6 @@ local use_lidar_head  = false
 
 --Turn off camera for default for webots
 --This makes body crash if we turn it on again...
-
 if IS_WEBOTS then use_camera = false end
 
 if IS_TESTING then use_camera = false end
@@ -1511,17 +1510,20 @@ elseif IS_WEBOTS then
     tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
     chest_lidar_wbt.meta.count = 0
     -- Head Lidar
-    tags.head_lidar  = webots.wb_robot_get_device("HeadLidar")
-    head_lidar_wbt.meta.count = 0
     if use_lidar_chest then
       webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)            
       chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
     end
+
+--[[
+
+    tags.head_lidar  = webots.wb_robot_get_device("HeadLidar")
+    head_lidar_wbt.meta.count = 0
     if use_lidar_head then      
       webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
       head_lidar_wbt.pointer  = webots.wb_camera_get_range_image(tags.head_lidar)      
     end
-
+--]]
 
     if use_camera then
       webots.wb_camera_enable(tags.head_camera, camera_timeStep)
@@ -1533,10 +1535,12 @@ elseif IS_WEBOTS then
 
 
     -- Update the Sensor Parameters in shared memory
+--[[    
     vcm.set_head_lidar_sensor_params({
       webots.wb_camera_get_fov(tags.head_lidar),
       webots.wb_camera_get_width(tags.head_lidar)
     })
+--]]    
     vcm.set_chest_lidar_sensor_params({
       webots.wb_camera_get_fov(tags.chest_lidar),
       webots.wb_camera_get_width(tags.chest_lidar)
@@ -1774,6 +1778,7 @@ elseif IS_WEBOTS then
     if (t-t_last_keypressed)<1 then return end
 
     if key_char_lower=='k' then
+--[[      
       t_last_keypressed = t
       use_lidar_head = not use_lidar_head
       -- Toggle lidar
@@ -1785,6 +1790,7 @@ elseif IS_WEBOTS then
         print(util.color('HEAD LIDAR disabled!','yellow'))        
         webots.wb_camera_disable(tags.head_lidar)
       end
+--]]      
     elseif key_char_lower=='l' then
       t_last_keypressed = t
       use_lidar_chest = not use_lidar_chest

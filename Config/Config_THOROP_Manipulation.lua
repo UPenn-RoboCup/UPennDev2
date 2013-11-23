@@ -233,11 +233,15 @@ armfsm.dooredge.door_yaw2 = 50*DEG_TO_RAD --end angle
 armfsm.doorpush={}
 
 armfsm.doorpush.default_model = {
-  0.40,-1.23,0.09,  --Hinge pos
+  0.50,-0.50,0.09,  --Hinge pos
   0.86,             --Door width (hinge to knob axle)
   -0.05,            --Knob X offset from door
   0.08,             --Knob Y offset (from knob axle)
 }
+
+armfsm.doorpush.roll1 = 0*DEG_TO_RAD
+armfsm.doorpush.roll2 = 135*DEG_TO_RAD
+armfsm.doorpush.clearance = {-0.08,0,0}
 
 armfsm.doorpush.yawTargetInitial = -8*DEG_TO_RAD
 armfsm.doorpush.yawTarget = -10*DEG_TO_RAD
@@ -269,7 +273,7 @@ armfsm.valveonearm.default_model_small=
     0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
 armfsm.valveonearm.default_model_large= 
-  {0.55,0.20,0.07,   
+  {0.55,0.27,0.07,   
     0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
 armfsm.valveonearm.arminit={{0.35,0.30,-0.15, 0,0,0}}
@@ -299,13 +303,6 @@ armfsm.valvetwoarm = {0.55,0.20,0.07,   0.05, 0, 70*DEG_TO_RAD }
 --Axel XYZ, radius, valve angle, hand fit angle
 armfsm.valvetwoarm.velTurnAngle = 3*DEG_TO_RAD * speed_factor
 armfsm.valvetwoarm.velInsert = 0.02 * speed_factor
-
-
-
-
-
-
-
 
 
 --------------------------------------------------------------------------

@@ -27,7 +27,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  mcm.set_arm_handoffset(Config.arm.handoffset.chopstick)
+  mcm.set_arm_lhandoffset(Config.arm.handoffset.chopstick)
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
@@ -65,7 +65,7 @@ local function update_model()
     valve_model[3] + trLArmTarget[3]-trLArm[3]
   hcm.set_largevalve_model(valve_model)
 
-
+  print("Valve update: pos ",valve_model[1],valve_model[2],valve_model[3])
 
   angle1, angle2 = valve_model[5], valve_model[6]
 end

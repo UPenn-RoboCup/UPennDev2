@@ -18,7 +18,7 @@ local stage
 
 
 
-local angle1, angle2
+local angle1, angle2 = armfsm.doorpush.roll1, armfsm.doorpush.roll2
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -27,7 +27,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  mcm.set_arm_handoffset(Config.arm.handoffset.chopstick)
+  mcm.set_arm_lhandoffset(Config.arm.handoffset.chopstick)
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
@@ -46,7 +46,8 @@ function state.entry()
 
   arm_planner:set_shoulder_yaw_target(nil,qRArm0[3])--unlock left shoulder
 
-  hcm.set_largevalve_model(Config.armfsm.valveonearm.default_model_small)
+  hcm.set_door_model(Config.armfsm.doorpush.default_model)
+  hcm.set_door_yaw(0)
 
   hcm.set_state_tstartactual(unix.time()) 
   hcm.set_state_tstartrobot(Body.get_time())
@@ -56,6 +57,7 @@ function state.entry()
 end
 
 local function update_model()
+  --[[
   local trLArmTarget = hcm.get_hands_left_tr_target()
   local trLArm = hcm.get_hands_left_tr()
   local valve_model = hcm.get_largevalve_model()
@@ -63,11 +65,9 @@ local function update_model()
     valve_model[1] + trLArmTarget[1]-trLArm[1],
     valve_model[2] + trLArmTarget[2]-trLArm[2],
     valve_model[3] + trLArmTarget[3]-trLArm[3]
-  hcm.set_largevalve_model(valve_model)
-
-
-
-  angle1, angle2 = valve_model[5], valve_model[6]
+  hcm.set_door_model(Config.armfsm.doorpush.default_model)
+  hcm.set_door_yaw(0)
+  --]]
 end
 
 
@@ -80,10 +80,9 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-  local trLArm = Body.get_forward_larm(qLArm)
-  local trRArm = Body.get_forward_rarm(qRArm)  
+  local cur_cond = arm_planner:load_boundary_condition()
+  local trLArm = Body.get_forward_larm(cur_cond[1])
+  local trRArm = Body.get_forward_rarm(cur_cond[2])  
   
   if stage=="wristturn" then --Turn yaw angles first
     gripL,doneL = util.approachTol(gripL,1,2,dt)  --Close gripper
@@ -106,7 +105,7 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
         update_model()
-        local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,Config.armfsm.valveonearm.clearance, 1)
+        local trLArmTarget = movearm.getDoorLeftHandlePosition(Config.armfsm.doorpush.clearance,0,0)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       elseif hcm.get_state_proceed()==-1 then               
@@ -116,9 +115,8 @@ function state.update()
     end
   elseif stage=="pregrip" then 
     if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed()==1 then --teleop signal        
-        
-        local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,0,1)
+      if hcm.get_state_proceed()==1 then
+        local trLArmTarget = movearm.getDoorLeftHandlePosition({0,0,0},0,0)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
       elseif hcm.get_state_proceed(0)==-1 then
@@ -127,8 +125,9 @@ function state.update()
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armready" end
       elseif hcm.get_state_proceed(0)==2 then      
         print("update")  
-        update_model()
-        local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,Config.armfsm.valveonearm.clearance, 1)
+        update_model()        
+        local trLArmTarget = movearm.
+          getDoorLeftHandlePosition(Config.armfsm.doorpush.clearance,0,0)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       end
@@ -136,13 +135,13 @@ function state.update()
   elseif stage=="inposition" then 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-        arm_planner:save_valveparam({angle1,0,1,0})
-        local valve_seq={          
-          {'valveonearm',angle2,0,1,0},
-          {'valveonearm',angle2,Config.armfsm.valveonearm.clearance,1,0},          
-          {'valveonearm',angle1,Config.armfsm.valveonearm.clearance,1,0},          
+        arm_planner:save_doorparam({{0,0,0},0,0,0})
+        local arm_seq={
+          {'doorleft',{0,0,0},angle2,0},
+          {'doorleft',{0,0,0},angle2,Config.armfsm.doorpush.yawTargetInitial},
+          {'doorleft',{0,0,0},0,Config.armfsm.doorpush.yawTargetInitial},
         }
-        if arm_planner:plan_arm_sequence(valve_seq) then stage="valveturn" end
+        if arm_planner:plan_arm_sequence(arm_seq) then stage="dooropen" end
       elseif hcm.get_state_proceed()==-1 then 
         local trLArmTarget, trRArmTarget = movearm.getLargeValvePositionSingle(
           0,Config.armfsm.valveonearm.clearance,1,0)
@@ -156,7 +155,7 @@ function state.update()
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
       end
     end
-  elseif stage=="valveturn" then 
+  elseif stage=="dooropen" then 
     if arm_planner:play_arm_sequence(t) then 
       hcm.set_state_success(1) --Report success
       stage="pregrip"

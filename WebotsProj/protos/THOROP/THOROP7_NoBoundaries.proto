@@ -982,11 +982,11 @@ Robot {
           translation 0 0.161 0
           rotation -1 0 0 -0.17
           children [
-            hokuyo{
-						  rotation 0 1 0 3.14159
-              translation 0 0.1 0
-              name "HeadLidar"
-						}
+#            hokuyo{
+#						  rotation 0 1 0 3.14159
+#              translation 0 0.1 0
+#              name "HeadLidar"
+#						}
             Camera {
 						  rotation 0 1 0 3.14159
               translation 0 0.072 0.0785

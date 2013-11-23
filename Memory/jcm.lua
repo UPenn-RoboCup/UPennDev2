@@ -95,9 +95,11 @@ end
 -- Gripper only data Left, Right
 shared_data.gripper = {}
 -- Torque of joints is in mA (just for the gripper)
-shared_data.gripper.command_torque = vector.zeros( 2 )
+shared_data.gripper.command_torque = vector.zeros( 4 )
 -- 0: Position mode, 1: torque mode
-shared_data.gripper.torque_mode = vector.zeros( 2 )
+shared_data.gripper.torque_mode = vector.zeros( 4 )
+-- Temperature
+shared_data.gripper.temperature = vector.zeros( 4 )
 
 ------------------------
 -- Call the initializer

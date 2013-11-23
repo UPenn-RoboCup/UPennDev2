@@ -585,6 +585,33 @@ Body.set_rgrip_percent = function( percent, is_torque )
   jcm.gripperPtr.command_torque[3] = 0
 end
 
+-- Trigger position
+Body.set_ltrigger_percent = function( percent, is_torque )
+  local thumb = indexLGrip+1
+  percent = math.min(math.max(percent,0),1)
+  -- Convex combo
+  local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
+  jcm.actuatorPtr.command_position[thumb] = radian
+  jcm.writePtr.command_position[thumb] = 1
+  -- Set the command_torque to position
+  jcm.gripperPtr.torque_mode[1] = 0
+  -- Set the command_torque to zero
+  jcm.gripperPtr.command_torque[1] = 0
+end
+Body.set_rtrigger_percent = function( percent, is_torque )
+  -- Convex combo
+  percent = math.min(math.max(percent,0),1)
+  --  
+  local thumb = indexRGrip+1
+  local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
+  jcm.actuatorPtr.command_position[thumb] = radian
+  jcm.writePtr.command_position[thumb] = 1
+  -- Set the command_torque
+  jcm.gripperPtr.torque_mode[3] = 0
+  -- Set the command_torque to zero
+  jcm.gripperPtr.command_torque[3] = 0
+end
+
 
 --------------------------------
 -- TODO: Hardness

@@ -52,6 +52,7 @@ local function calculate_margin(qArm,isLeft)
   jointangle_margin = math.min(
     Config.arm.plan.max_margin,
     jointangle_margin)
+--  print("yaw, margin:",qArm[3]*Body.RAD_TO_DEG,jointangle_margin*Body.RAD_TO_DEG)
   return jointangle_margin
 end
 

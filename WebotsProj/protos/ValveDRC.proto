@@ -111,69 +111,15 @@ PROTO ValveDRC [
 
     ]
     boundingObject Group{
-      children [
-	Transform{
-          translation 0 0.0875 0
-          rotation 1 0 0 1.57
-          children[USE WHEEL_SEGMENT_SHAPE]
-        }
-
-      Transform{
-        translation 0 -0.0875 0
-        rotation 1 0 0 1.57
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
-
-      Transform{
-        translation 0 0 0.0875
-        rotation 1 0 0 0
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
-
-      Transform{
-        translation 0 0 -0.0875
-        rotation 1 0 0 0
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
-
-      Transform{
-        translation 0 -0.0619 0.0619
-        rotation 1 0 0 0.785
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
-
-      Transform{
-        translation 0 0.0619 -0.0619
-        rotation 1 0 0 0.785
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
-
-      Transform{
-        translation 0 0.0619 0.0619
-        rotation 1 0 0 -0.785
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
-
-      Transform{
-        translation 0 -0.0619 -0.0619
-        rotation 1 0 0 -0.785
-        children[USE WHEEL_SEGMENT_SHAPE]
-      }
-
-
+      children[
       Transform{        
         rotation 1 0 0 0
         children[USE CROSSBAR_SEGMENT_SHAPE]
       }
-
       Transform{        
         rotation 1 0 0 1.57
         children[USE CROSSBAR_SEGMENT_SHAPE]
       }
-
-
-
-
       ]
     }
     physics Physics {

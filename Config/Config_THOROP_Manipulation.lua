@@ -138,7 +138,7 @@ armfsm.hosegrip.rhand_rpy = {-90*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD}
 
 
 
-armfsm.hosegrip.lhand_rpy = {90*DEG_TO_RAD,60*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.hosegrip.lhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
 
 --xyz
 armfsm.hosegrip.default_model = {

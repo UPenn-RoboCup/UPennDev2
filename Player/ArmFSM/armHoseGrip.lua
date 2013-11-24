@@ -127,6 +127,9 @@ function state.update()
   elseif stage=="wristyawturn" then --Turn yaw angles first    
     gripR,doneR = util.approachTol(gripR,1,2,dt)  --Close gripper
     Body.set_rgrip_percent(gripR*0.8)
+    gripL,doneR = util.approachTol(gripL,0,2,dt)  --Close gripper
+    Body.set_lgrip_percent(gripL*0.8)
+
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
 --        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)
@@ -135,10 +138,11 @@ function state.update()
         trRArmTarget2 = get_hand_tr(Config.armfsm.hosegrip.arminit[3])
 
 print("trL:",arm_planner.print_transform(trLArm))
-        trLArmTarget1 = trLArm + vector.new({0.20,0,0.0,  0,0,0}) 
+        trLArmTarget1 = trLArm + vector.new({0.0,0,0.10,  0,0,0}) 
+        trLArmTarget2 = trLArm + vector.new({0.10,0,0.15,  0,0,0}) 
 
 --        local arm_seq = {{'move',nil,trRArmTarget1},{'move',nil,trRArmTarget2}}
-        local arm_seq = {{'move',trLArmTarget1,nil}}
+        local arm_seq = {{'move',trLArmTarget1,nil},{'move',trLArmTarget2,nil}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) 

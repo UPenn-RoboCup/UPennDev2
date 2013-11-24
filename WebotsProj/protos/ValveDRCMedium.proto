@@ -115,55 +115,7 @@ PROTO ValveDRCMedium [
     ]
     boundingObject Group{
       children [
-	Transform{
-          translation 0 0.2 0
-          rotation 1 0 0 1.57
-          children[USE WHEEL_SEGMENT_SHAPE]
-        }
-
-	Transform{
-          translation 0 -0.2 0
-          rotation 1 0 0 1.57
-          children[USE WHEEL_SEGMENT_SHAPE]
-        }
-
-
-        Transform{
-          translation 0 0 0.2
-          rotation 1 0 0 0
-          children[USE WHEEL_SEGMENT_SHAPE]
-        }
-
-        Transform{
-          translation 0 0 -0.2
-          rotation 1 0 0 0
-          children[USE WHEEL_SEGMENT_SHAPE]
-        }
-
-        Transform{
-          translation 0 -0.142 0.142
-          rotation 1 0 0 0.785
-          children[USE WHEEL_SEGMENT_SHAPE]
-        }
-
-        Transform{
-          translation 0 0.142 -0.142
-          rotation 1 0 0 0.785
-          children[USE WHEEL_SEGMENT_SHAPE]
-        }
-
-        Transform{
-          translation 0 0.142 0.142
-          rotation 1 0 0 -0.785
-          children[USE WHEEL_SEGMENT_SHAPE]
-        }
-
-        Transform{
-          translation 0 -0.142 -0.142
-          rotation 1 0 0 -0.785
-          children[USE WHEEL_SEGMENT_SHAPE]
-        }
-
+	
         Transform{        
           rotation 1 0 0 1.57
           children[USE CROSSBAR_SEGMENT_SHAPE]

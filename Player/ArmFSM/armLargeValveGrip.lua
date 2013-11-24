@@ -144,9 +144,9 @@ function state.update()
         }
         if arm_planner:plan_arm_sequence(valve_seq) then stage="valveturn" end
       elseif hcm.get_state_proceed()==-1 then 
-        local trLArmTarget, trRArmTarget = movearm.getLargeValvePositionSingle(
-          0,Config.armfsm.valveonearm.clearance,1,0)
-        local arm_seq = {{'move',trLArmTarget, trRArmTarget}}
+        local trLArmTarget = movearm.getLargeValvePositionSingle(
+          angle1,Config.armfsm.valveonearm.clearance,1,0)
+        local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       elseif hcm.get_state_proceed()==2 then --teleop signal
         print("update")

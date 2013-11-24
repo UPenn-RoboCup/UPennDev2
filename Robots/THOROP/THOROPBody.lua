@@ -1339,7 +1339,7 @@ elseif IS_WEBOTS then
     -90,0,0,0,0,0,0,
     0,0,
     -35,-90,    
-    -90,-35,
+    0,0,
     60,
   })*DEG_TO_RAD
   
@@ -1351,7 +1351,8 @@ elseif IS_WEBOTS then
     -90,-180,-90,-160,       -180,-87,-180, --RArm
     -90,-45, -- Waist
     80,80,
-    80,80,    
+--    120,80,    
+    120,60,    
 
     -60, -- Lidar pan
   })*DEG_TO_RAD
@@ -1364,7 +1365,7 @@ elseif IS_WEBOTS then
     160,-0,90,0,     180,87,180, --RArm
     90,79, -- Waist
     45,45,
-    45,45,    
+    0,45,    
     60, -- Lidar pan
   })*DEG_TO_RAD
   

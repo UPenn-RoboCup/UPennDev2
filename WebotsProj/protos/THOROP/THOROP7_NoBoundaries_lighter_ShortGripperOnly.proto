@@ -13,7 +13,7 @@
 #11/22: get rid of head lidar, some boundingboxes
 
 
-PROTO THOROP7_NoBoundaries_ShortGripperOnly [
+PROTO THOROP7_NoBoundaries_lighter_ShortGripperOnly [
   field SFVec3f    translation 0 1 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"

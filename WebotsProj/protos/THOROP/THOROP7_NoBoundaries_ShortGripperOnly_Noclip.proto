@@ -13,7 +13,7 @@
 #11/22: get rid of head lidar, some boundingboxes
 
 
-PROTO THOROP7_NoBoundaries_ShortGripperOnly [
+PROTO THOROP7_NoBoundaries_ShortGripperOnly_Noclip [
   field SFVec3f    translation 0 1 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
@@ -221,20 +221,20 @@ Robot {
                    children [Shape{geometry Box {size 0.01 0.028 0.015}}]
                   }
       			    ]
-                boundingObject Group{
-                  children[
-                    Transform {
-                      translation 0 -0.025 0
-                      children [Box {size 0.01 0.072 0.015}]
-                    }		               
-                    Transform {
-                      translation 0.01 -0.065 0
-                      rotation 0 0 1 0.9   
-                      children [Box {size 0.01 0.028 0.015}]
-                    }
-                  ]
-               }
-               physics Physics {mass 0.1}
+#                boundingObject Group{
+#                  children[
+#                    Transform {
+#                      translation 0 -0.025 0
+#                      children [Box {size 0.01 0.072 0.015}]
+#                    }		               
+#                    Transform {
+#                      translation 0.01 -0.065 0
+#                      rotation 0 0 1 0.9   
+#                      children [Box {size 0.01 0.028 0.015}]
+#                    }
+#                  ]
+#               }
+#               physics Physics {mass 0.1}
             }
 					 
 						 DEF r_passive_gripper Servo{
@@ -262,30 +262,30 @@ Robot {
                    children [Shape{geometry Box {size 0.01 0.029 0.015}}]
                  }
                ]
-               boundingObject Group{
-                children[
-                   Transform{
-                     translation 0 -0.025 0.02
-                children [Shape{geometry Box {size 0.01 0.072 0.015}}]
-                   }
-                   Transform{
-                     translation 0 -0.025 -0.02
-                  children [Shape{geometry Box {size 0.01 0.072 0.015}}]
-                   }                 
-                   #Bending part
-                   Transform{
-                     translation -0.01 -0.065 0.02
-                     rotation 0 0 1 -0.78                   
-                  children [Shape{geometry Box {size 0.01 0.029 0.015}}]
-                   }
-                   Transform{
-                    translation -0.01 -0.065 -0.02                   
-                    rotation 0 0 1 -0.78                   
-                 children [Shape{geometry Box {size 0.01 0.029 0.015}}]
-                  }
-               ]
-              }
-              physics Physics {mass 0.1}
+#               boundingObject Group{
+#                children[
+#                   Transform{
+#                     translation 0 -0.025 0.02
+#                children [Shape{geometry Box {size 0.01 0.072 0.015}}]
+#                   }
+#                   Transform{
+#                     translation 0 -0.025 -0.02
+#                  children [Shape{geometry Box {size 0.01 0.072 0.015}}]
+#                   }                 
+#                   #Bending part
+#                   Transform{
+#                     translation -0.01 -0.065 0.02
+#                     rotation 0 0 1 -0.78                   
+#                  children [Shape{geometry Box {size 0.01 0.029 0.015}}]
+#                   }
+#                   Transform{
+#                    translation -0.01 -0.065 -0.02                   
+#                    rotation 0 0 1 -0.78                   
+#                 children [Shape{geometry Box {size 0.01 0.029 0.015}}]
+#                  }
+#               ]
+#              }
+#              physics Physics {mass 0.1}
              }			
 						
 # RGRIP END

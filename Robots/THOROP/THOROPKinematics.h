@@ -123,10 +123,10 @@ Transform THOROP_kinematics_forward_r_arm_7(const double *q, double bodyPitch, c
 
 std::vector<double> THOROP_kinematics_inverse_r_arm_7(
 	const Transform trArm, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist,
-	double handOffsetXNew, double handOffsetYNew, double handOffsetZNew);
+	double handOffsetXNew, double handOffsetYNew, double handOffsetZNew, int flip_shoulderroll);
 std::vector<double> THOROP_kinematics_inverse_l_arm_7(
 	const Transform trArm, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist,
-	double handOffsetXNew, double handOffsetYNew, double handOffsetZNew);
+	double handOffsetXNew, double handOffsetYNew, double handOffsetZNew, int flip_shoulderroll);
 
 Transform THOROP_kinematics_forward_l_wrist(const double *q, double bodyPitch, const double *qWaist);
 Transform THOROP_kinematics_forward_r_wrist(const double *q, double bodyPitch, const double *qWaist);

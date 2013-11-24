@@ -767,7 +767,11 @@ Body.get_inverse_arm_given_wrist = function( q, tr, bodyTilt, qWaist)
   return q_target
 end
 
+
 Body.get_inverse_larm = function( qL, trL, lShoulderYaw, bodyTilt, qWaist)  
+  local shoulder_flipped = 0
+  if qL[2]>math.pi/2 then shoulder_flipped=1 end
+
   local qL_target = Kinematics.inverse_l_arm_7(
     trL,qL,
     lShoulderYaw or qL[3],
@@ -775,31 +779,26 @@ Body.get_inverse_larm = function( qL, trL, lShoulderYaw, bodyTilt, qWaist)
     qWaist or Body.get_waist_command_position(),
     mcm.get_arm_lhandoffset()[1],
     mcm.get_arm_lhandoffset()[2],
-    mcm.get_arm_lhandoffset()[3]
+    mcm.get_arm_lhandoffset()[3],
+    shoulder_flipped
     )
-  
+    
   local trL_check = Kinematics.l_arm_torso_7( 
     qL_target,
     bodyTilt or mcm.get_stance_bodyTilt(), 
     qWaist or Body.get_waist_command_position(),
     mcm.get_arm_lhandoffset()[1],
     mcm.get_arm_lhandoffset()[2],
-    mcm.get_arm_lhandoffset()[3]
+    mcm.get_arm_lhandoffset()[3]    
     )
---[[
-  print("LARM IK SOLVING")
-  print("bodyTilt:",(bodyTilt or mcm.get_camera_bodyTilt()) * 180/math.pi)
-  print("qWaist:",unpack(qWaist or Body.get_waist_command_position() ))
-  print("qL:",unpack(vector.new(qL_target)*180/math.pi))
-  print("trL:",unpack(trL))
-  print("trL2:",unpack(trL_check))
---]]
-  if not check_larm_bounds(qL_target) then return end
-  if not check_ik_error( trL, trL_check) then return end   
-  return qL_target
-end
 
+  local passed = check_larm_bounds(qL_target) and check_ik_error( trL, trL_check)
+  if passed then return qL_target end
+end
+--
 Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)    
+  local shoulder_flipped = 0
+  if qR[2]<-math.pi/2 then shoulder_flipped=1 end
   local qR_target = Kinematics.inverse_r_arm_7(
     trR, qR,
     rShoulderYaw or qR[3], 
@@ -807,8 +806,10 @@ Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)
     qWaist or Body.get_waist_command_position(),
     mcm.get_arm_rhandoffset()[1],
     mcm.get_arm_rhandoffset()[2],
-    mcm.get_arm_rhandoffset()[3]
+    mcm.get_arm_rhandoffset()[3],
+    shoulder_flipped
     )
+  
   local trR_check = Kinematics.r_arm_torso_7( 
     qR_target,
     bodyTilt or mcm.get_stance_bodyTilt(), 
@@ -817,12 +818,11 @@ Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)
     mcm.get_arm_rhandoffset()[2],
     mcm.get_arm_rhandoffset()[3]
     )
-  if not check_rarm_bounds(qR_target) then return end  
-  if not check_ik_error( trR, trR_check) then return end
-  return qR_target
+  
+  local passed = check_rarm_bounds(qR_target) and check_ik_error( trR, trR_check)
+  if passed then return qR_target end
 end
-
-
+--
 
 ----------------------
 -- Sensor access functions for convienence
@@ -1348,7 +1348,7 @@ elseif IS_WEBOTS then
     -90, 0, -90, -160,      -180,-87,-180, --LArm
     -175,-175,-175,-175,-175,-175, --LLeg
     -175,-175,-175,-175,-175,-175, --RLeg
-    -90,-87,-90,-160,       -180,-87,-180, --RArm
+    -90,-180,-90,-160,       -180,-87,-180, --RArm
     -90,-45, -- Waist
     80,80,
     80,80,    
@@ -1358,7 +1358,7 @@ elseif IS_WEBOTS then
   
   servo.max_rad = vector.new({
     90, 80, -- Head
-    160,87,90,0,     180,87,180, --LArm
+    160,180,90,0,     180,87,180, --LArm
     175,175,175,175,175,175, --LLeg
     175,175,175,175,175,175, --RLeg
     160,-0,90,0,     180,87,180, --RArm

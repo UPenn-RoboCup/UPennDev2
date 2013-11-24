@@ -133,8 +133,12 @@ armfsm.toolchop.drill_clearance = {-0.05,0,0}
 ------   Hose pickup
 ---------------------------------------------------------------
 armfsm.hosegrip = {}
-armfsm.hosegrip.lhand_rpy = {90*DEG_TO_RAD,5*DEG_TO_RAD, 0*DEG_TO_RAD}
-armfsm.hosegrip.rhand_rpy = {-90*DEG_TO_RAD,5*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.hosegrip.lhand_rpy = {90*DEG_TO_RAD,85*DEG_TO_RAD, -179*DEG_TO_RAD}
+armfsm.hosegrip.rhand_rpy = {-90*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD}
+
+
+
+armfsm.hosegrip.lhand_rpy = {90*DEG_TO_RAD,60*DEG_TO_RAD, 0*DEG_TO_RAD}
 
 --xyz
 armfsm.hosegrip.default_model = {
@@ -243,7 +247,16 @@ armfsm.doorpush.yawTarget = -10*DEG_TO_RAD
 
 
 
+armfsm.doorsupport={}
 
+armfsm.doorsupport.lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
+armfsm.doorsupport.lhand_rpy2 = {0,0*DEG_TO_RAD, -90*DEG_TO_RAD}
+
+armfsm.doorsupport.arminit={
+  {0.40,0.10,-0.05,0,0,-45*DEG_TO_RAD},
+  {0.26,-0.15, 0.15,unpack(armfsm.doorsupport.lhand_rpy2)},
+  {0.26,-0.20, 0.15,unpack(armfsm.doorsupport.lhand_rpy2)},
+}
 
 
 
@@ -279,12 +292,13 @@ armfsm.valveonearm.velInsert = 0.01 * speed_factor
 ------   Bar valve turning with single hand w/ chopstick
 ---------------------------------------------------------------
 armfsm.valvebar = {}
---Axel XYZ, radius, valve angle, hand fit angle
+--Axel XYZ, radius, current valve angle, final valve angle, hand fit angle, 
+--valve angle zero: straight down
 armfsm.valvebar.default_model= {0.55,0.20,0.07,   
-  0.05, 0, 70*DEG_TO_RAD }
+  0.05, 0, 90*DEG_TO_RAD, -10*DEG_TO_RAD  }
 
 armfsm.valvebar.arminit={{0.35,0.30,-0.15, 0,0,0}}
-armfsm.valvebar.handtightangle0 = 45*DEG_TO_RAD
+armfsm.valvebar.handtightangle0 = -45*DEG_TO_RAD
 armfsm.valvebar.clearance = -0.08
 
 armfsm.valvebar.velTurnAngle = 6*DEG_TO_RAD * speed_factor

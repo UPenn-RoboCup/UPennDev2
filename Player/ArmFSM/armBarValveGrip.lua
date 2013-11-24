@@ -136,8 +136,8 @@ function state.update()
       if hcm.get_state_proceed()==1 then --teleop signal
         local valve_model = hcm.get_barvalve_model()
         local turn_angle1 = valve_model[5]
-        local turn_angle2 = valve_model[5] + math.pi/2
-        local wrist_angle = valve_model[6]
+        local turn_angle2 = valve_model[6]
+        local wrist_angle = valve_model[7]
         arm_planner:save_valveparam({turn_angle1,handtightangle0,0,1})
         local valve_seq={          
           {'barvalve',turn_angle1,wrist_angle,0,1},

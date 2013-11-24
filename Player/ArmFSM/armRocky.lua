@@ -7,12 +7,11 @@ local movearm = require'movearm'
 local libArmPlan = require 'libArmPlan'
 local arm_planner = libArmPlan.new_planner()
 
-
 local lhand_rpy0 = {90*Body.DEG_TO_RAD,-25*Body.DEG_TO_RAD,0}
 local rhand_rpy0 = {-90*Body.DEG_TO_RAD,-25*Body.DEG_TO_RAD,0}
 
-local lhand_rpy1 = {90*Body.DEG_TO_RAD,-85*Body.DEG_TO_RAD,0}
-local rhand_rpy1 = {-90*Body.DEG_TO_RAD,-85*Body.DEG_TO_RAD,0}
+local lhand_rpy1 = {90*Body.DEG_TO_RAD,-65*Body.DEG_TO_RAD,0}
+local rhand_rpy1 = {-90*Body.DEG_TO_RAD,-65*Body.DEG_TO_RAD,0}
 
 
 
@@ -31,6 +30,9 @@ function state.entry()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
+  mcm.set_arm_lhandoffset(Config.arm.handoffset.chopstick)
+  mcm.set_arm_rhandoffset(Config.arm.handoffset.chopstick)
+
   qLArm0 = qLArm
   qRArm0 = qRArm
   
@@ -47,12 +49,11 @@ function state.entry()
   
   trLArm1 = Body.get_forward_larm(qLArm1)
   trRArm1 = Body.get_forward_rarm(qRArm1)  
-
-  hcm.set_hands_left_tr(trLArm1)
-  hcm.set_hands_right_tr(trRArm1)
-  hcm.set_hands_left_tr_target(trLArm1)
-  hcm.set_hands_right_tr_target(trRArm1)
     
+  arm_planner:set_shoulder_yaw_target(1*Body.DEG_TO_RAD, -1*Body.DEG_TO_RAD)
+
+  arm_planner:set_shoulder_yaw_target(-2*Body.DEG_TO_RAD, 2*Body.DEG_TO_RAD)
+
   local wrist_seq = {{'wrist',trLArm1, trRArm1}}
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristturn" end
 end
@@ -68,27 +69,21 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()  
-  local trLArm = Body.get_forward_larm(qLArm)
-  local trRArm = Body.get_forward_rarm(qRArm)  
+  local cur_cond = arm_planner:load_boundary_condition()
+  local trLArm = Body.get_forward_larm(cur_cond[1])
+  local trRArm = Body.get_forward_rarm(cur_cond[2])  
   
   if stage=="wristturn" then --Turn yaw angles first
     if arm_planner:play_arm_sequence(t) then 
---      local trLArmTarget = {0.24,0.30,-0.13,unpack(lhand_rpy0)}
---      local trRArmTarget = {0.24,-0.30,-0.13,unpack(rhand_rpy0)}
-
       local trLArmTarget = {0.35,0.242,0.0,unpack(lhand_rpy0)}
       local trRArmTarget = {0.35,-0.242,0.0,unpack(rhand_rpy0)}
-
       local arm_seq = {{'move',trLArmTarget, trRArmTarget}}      
       if arm_planner:plan_arm_sequence2(arm_seq) then stage="wristmove" end
     end
   elseif stage=="wristmove" then       
-    if arm_planner:play_arm_sequence(t) then       
-      arm_planner:set_shoulder_yaw_target(1*Body.DEG_TO_RAD, -1*Body.DEG_TO_RAD)
-      local trLArmTarget = {0.35,0.27,0.0,unpack(lhand_rpy1)}
-      local trRArmTarget = {0.35,-0.27,0.0,unpack(rhand_rpy1)}
+    if arm_planner:play_arm_sequence(t) then             
+      local trLArmTarget = {0.35,0.22,0.0,unpack(lhand_rpy1)}
+      local trRArmTarget = {0.35,-0.22,0.0,unpack(rhand_rpy1)}
       local arm_seq = {{'wrist',trLArmTarget, trRArmTarget}}      
       if arm_planner:plan_arm_sequence2(arm_seq) then stage="wristturn2" end          
     end      

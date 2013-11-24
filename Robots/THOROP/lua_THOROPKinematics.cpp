@@ -180,11 +180,11 @@ static int inverse_l_arm_7(lua_State *L) {
 	double handOffsetYNew = luaL_optnumber(L, 7,handOffsetY);
 	double handOffsetZNew = luaL_optnumber(L, 8,handOffsetZ);
 	
-
+	int flip_shoulderroll = luaL_optnumber(L, 9,0);
 
 	Transform trArm = transform6D(&pArm[0]);		
 	qArm = THOROP_kinematics_inverse_l_arm_7(trArm,&qArmOrg[0],shoulderYaw,bodyPitch,&qWaist[0],
-		handOffsetXNew, handOffsetYNew, handOffsetZNew);
+		handOffsetXNew, handOffsetYNew, handOffsetZNew, flip_shoulderroll);
 	lua_pushvector(L, qArm);
 	return 1;
 }
@@ -202,10 +202,11 @@ static int inverse_r_arm_7(lua_State *L) {
 	double handOffsetYNew = luaL_optnumber(L, 7,handOffsetY);
 	double handOffsetZNew = luaL_optnumber(L, 8,handOffsetZ);
 	
+	int flip_shoulderroll = luaL_optnumber(L, 9,0);
 
 	Transform trArm = transform6D(&pArm[0]);
 	qArm = THOROP_kinematics_inverse_r_arm_7(trArm,&qArmOrg[0],shoulderYaw,bodyPitch,&qWaist[0],
-		handOffsetXNew, handOffsetYNew, handOffsetZNew);
+		handOffsetXNew, handOffsetYNew, handOffsetZNew, flip_shoulderroll);
 	lua_pushvector(L, qArm);
 	return 1;
 }

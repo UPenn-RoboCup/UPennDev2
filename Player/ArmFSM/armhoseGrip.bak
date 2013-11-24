@@ -72,7 +72,8 @@ function state.entry()
   arm_planner:set_hand_mass(0,0)
   arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) --Lock left hand
 
-  
+  local wrist_seq = {{'wrist',nil,trRArm1}}
+  if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn" end  
   hcm.set_state_proceed(1)
 
   hcm.set_hose_model(Config.armfsm.hosegrip.default_model)
@@ -82,7 +83,6 @@ function state.entry()
   hcm.set_state_tstartactual(unix.time())
   hcm.set_state_tstartrobot(Body.get_time())
 
-  stage = "shoulderup1"
 end
 
 function state.update()
@@ -95,50 +95,16 @@ function state.update()
   local trLArm = Body.get_forward_larm(cur_cond[1])
   local trRArm = Body.get_forward_rarm(cur_cond[2])  
   
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-  if stage=="shoulderup1" then
-    local qLArmNew,done = util.approachTol(qLArm,
-      vector.new({160,0,0,-140,90,40,0})*Body.DEG_TO_RAD, 
-      Config.arm.slow_limit,dt)
-    movearm.setArmJoints(qLArmNew,qRArm,dt)
-    if done then stage="shoulderup2" end
-  elseif stage=="shoulderup2" then
-    local qLArmNew,done = util.approachTol(qLArm,
-      vector.new({90,0,0,-140,90,40,0})*Body.DEG_TO_RAD, 
-      Config.arm.slow_limit,dt)
-    movearm.setArmJoints(qLArmNew,qRArm,dt)
-    if done then stage="shoulderup3" end
-  elseif stage=="shoulderup3" then
-    local qLArmNew,done = util.approachTol(qLArm,
-      vector.new({90,150,0,-140,90,40,0})*Body.DEG_TO_RAD, 
-      Config.arm.slow_limit,dt)
-    movearm.setArmJoints(qLArmNew,qRArm,dt)
-    if done then 
-      arm_planner:reset_torso_comp(qLArm,qRArm)
-      local wrist_seq = {{'wrist',trLArm1,trRArm1}}
-      if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn" end  
-    end
 
-    
-
-
-
-  elseif stage=="wristyawturn" then --Turn yaw angles first    
+  if stage=="wristyawturn" then --Turn yaw angles first    
     gripR,doneR = util.approachTol(gripR,1,2,dt)  --Close gripper
     Body.set_rgrip_percent(gripR*0.8)
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
---        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)
-        arm_planner:set_shoulder_yaw_target(nil,nil)
+        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)
         trRArmTarget1 = get_hand_tr(Config.armfsm.hosegrip.arminit[2])
         trRArmTarget2 = get_hand_tr(Config.armfsm.hosegrip.arminit[3])
-
-print("trL:",arm_planner.print_transform(trLArm))
-        trLArmTarget1 = trLArm + vector.new({0.20,0,0.0,  0,0,0}) 
-
---        local arm_seq = {{'move',nil,trRArmTarget1},{'move',nil,trRArmTarget2}}
-        local arm_seq = {{'move',trLArmTarget1,nil}}
+        local arm_seq = {{'move',nil,trRArmTarget1},{'move',nil,trRArmTarget2}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) 

@@ -9,7 +9,12 @@ local arm_planner = libArmPlan.new_planner()
 
 --Door opening state using HOOK
 
+local lhand_rpy0 = Config.armfsm.doorsupport.lhand_rpy
+local lhand_rpy2 = Config.armfsm.doorsupport.lhand_rpy2
 local rhand_rpy0 = Config.armfsm.dooredge.rhand_rpy
+
+
+
 local edge_clearance = Config.armfsm.dooredge.edge_clearance
 local door_yaw1 = Config.armfsm.dooredge.door_yaw1
 local door_yaw2 = Config.armfsm.dooredge.door_yaw2
@@ -33,7 +38,9 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  mcm.set_arm_handoffset(Config.arm.handoffset.outerhook)
+  mcm.set_arm_lhandoffset(Config.arm.handoffset.chopstick)
+  mcm.set_arm_rhandoffset(Config.arm.handoffset.outerhook)
+
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
@@ -41,8 +48,8 @@ function state.entry()
   qRArm0 = qRArm
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
-
-  qLArm1 = qLArm
+  
+  qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
   qRArm1 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
   trLArm1 = Body.get_forward_larm(qLArm1)
   trRArm1 = Body.get_forward_rarm(qRArm1)  
@@ -50,10 +57,19 @@ function state.entry()
   hcm.set_door_model(Config.armfsm.dooropen.default_model)
 
   -- Default shoulder yaw angle: (-5,5)
+
+--[[  
   arm_planner:set_shoulder_yaw_target(qLArm0[3],nil) --Lock left shoulder yaw
   local wrist_seq = {{'wrist',nil,trRArm1}}
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn"end
-   
+--]]
+
+  arm_planner:set_shoulder_yaw_target(nil,nil) --Lock left shoulder yaw
+  local wrist_seq = {{'wrist',trLArm1,trRArm1}}
+  if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn"end
+
+
+
   debugdata=''
 
   hcm.set_state_tstartactual(unix.time()) 
@@ -92,13 +108,19 @@ function state.update()
   if stage=="wristyawturn" then --Turn wrist angles without moving arms
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then        
-        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil) --Lock left shoulder yaw
-        local trRArmTarget1 = movearm.getDoorEdgePosition(edge_clearance, door_yaw1, rhand_rpy0)
+--        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil) --Lock left shoulder yaw
 
-        print("trCurrent:",arm_planner.print_transform(trRArm))
-        print("trRArmTarget:",arm_planner.print_transform(trRArmTarget1))
+        arm_planner:set_shoulder_yaw_target(nil,nil)
+        print("trLArm:",arm_planner.print_transform(trLArm))
+        print("trRArm:",arm_planner.print_transform(trRArm))
 
-        local arm_seq = {{'move',nil, trRArmTarget1}}
+        local trLArmTarget1 = Config.armfsm.doorsupport.arminit[1]        
+        local trLArmTarget2 = {0,0,0,unpack(lhand_rpy2)}
+
+        local trRArmTarget1 = movearm.getDoorEdgePosition(edge_clearance, door_yaw1, rhand_rpy0)        
+
+        local arm_seq = {{'move',trLArmTarget1, trRArmTarget1},
+                          {'wrist',trLArmTarget2, nil}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "placehook"  end
       elseif hcm.get_state_proceed()==-1 then
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
@@ -109,9 +131,23 @@ function state.update()
   elseif stage=="placehook" then --Move the hook below the door knob
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then --Put the hook on
+
+
+        print("trLArm:",arm_planner.print_transform(trLArm))
+        local trLArmTarget1 = Config.armfsm.doorsupport.arminit[2]        
+        local trLArmTarget2 = Config.armfsm.doorsupport.arminit[3]
         local trRArmTarget1 = movearm.getDoorEdgePosition({0,0,0}, door_yaw1, rhand_rpy0)
-        local arm_seq = {{'move',nil, trRArmTarget1}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "hookknob"  end
+
+
+        --local arm_seq = {{'move',nil, trRArmTarget1}}
+        local arm_seq = {{'move',trLArmTarget1, trRArmTarget1},
+            {'move',trLArmTarget2, nil},
+            }
+        if arm_planner:plan_arm_sequence2(arm_seq) then 
+          stage = "hookknob"  
+          else print("Xxx")
+        end
+
 
       elseif hcm.get_state_proceed()==-1 then        
         local arm_seq = {{'move',nil,trRArm1}}

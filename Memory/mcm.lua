@@ -20,6 +20,7 @@ shared.stance.uTorsoCompBias = vector.zeros(2)
 --Arm info
 
 shared.arm = {}
+
 --Target arm position (w/o compensation)
 shared.arm.qlarm = vector.zeros(7)
 shared.arm.qrarm = vector.zeros(7)

@@ -38,7 +38,7 @@ PROTO SingleDoorCommonPush [
           children [
             HingeJoint {
               jointParameters HingeJointParameters {
-                axis 0 0 1
+                axis 0 0 -1
                 anchor 0.77 0 0
                 maxStop 1
                 staticFriction 0.1

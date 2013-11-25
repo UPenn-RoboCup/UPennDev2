@@ -261,9 +261,10 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   elseif plantype=="doorleft" then
     target_param[4] = target_param[4] or current_cond[6]
     local dpDoorMax = vector.slice(Config.arm.linear_slow_limit,1,3)
-    local dqDoorYawMax = Config.armfsm.dooropen.velDoorYaw
-    local dqWaistYawMax = Config.armfsm.dooropen.velWaistYaw
-    vel_param={dpDoorMax, dqDoorYawMax, dqWaistYawMax}
+    local dqDoorRollMax = Config.armfsm.doorpush.velDoorRoll
+    local dqDoorYawMax = Config.armfsm.doorpush.velDoorYaw
+    --local dqWaistYawMax = Config.armfsm.doorpush.velWaistYaw
+    vel_param={dpDoorMax, dqDoorRollMax, dqDoorYawMax}
 
   elseif plantype=="valvetwoarm" then
     vel_param={

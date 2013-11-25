@@ -2,7 +2,7 @@ local vector = require'vector'
 local DEG_TO_RAD = math.pi/180
 
 local IS_LONGARM = true
-local IS_LONGARM = false
+--local IS_LONGARM = false
 
 
 local Config = {}
@@ -292,6 +292,15 @@ armfsm.doorpush.clearance = {-0.08,0,0}
 armfsm.doorpush.yawTargetInitial = -8*DEG_TO_RAD
 armfsm.doorpush.yawTarget = -10*DEG_TO_RAD
 
+armfsm.doorpush.velDoorRoll = 10*DEG_TO_RAD * speed_factor
+armfsm.doorpush.velDoorYaw = 2*DEG_TO_RAD * speed_factor
+armfsm.doorpush.velWaistYaw = 3*DEG_TO_RAD * speed_factor
+
+
+
+
+
+
 
 
 
@@ -360,10 +369,6 @@ armfsm.valvetwoarm = {0.55,0.20,0.07,   0.05, 0, 70*DEG_TO_RAD }
 armfsm.valvetwoarm.velTurnAngle = 3*DEG_TO_RAD * speed_factor
 armfsm.valvetwoarm.velInsert = 0.02 * speed_factor
 
-
-
-
-
 ---------------------------------------------------------------
 ------   Debris pickup
 ---------------------------------------------------------------
@@ -373,20 +378,58 @@ armfsm.debrisgrip.rhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
 
 
 
+--------------------------------------------------------------------------
+---- Arm folding
+--------------------------------------------------------------------------
+
+armfsm.rocky={}
 
 
 
+armfsm.rocky.lhand_rpy0 = {90*DEG_TO_RAD,-25*DEG_TO_RAD,0}
+armfsm.rocky.rhand_rpy0 = {-90*DEG_TO_RAD,-25*DEG_TO_RAD,0}
+armfsm.rocky.lhand_rpy1 = {90*DEG_TO_RAD,-65*DEG_TO_RAD,0}
+armfsm.rocky.rhand_rpy1 = {-90*DEG_TO_RAD,-65*DEG_TO_RAD,0}
+armfsm.rocky.lhand_rpy2 = {90*DEG_TO_RAD,-75*DEG_TO_RAD,0}
+armfsm.rocky.rhand_rpy2 = {-90*DEG_TO_RAD,-75*DEG_TO_RAD,0}
+
+armfsm.rocky.lhand_rpy3 = {90*DEG_TO_RAD,40*DEG_TO_RAD,0}
+armfsm.rocky.rhand_rpy3 = {-90*DEG_TO_RAD,40*DEG_TO_RAD,0}
 
 
 
+armfsm.rocky.larminit={
+  {0.35,0.242,0,unpack(armfsm.rocky.lhand_rpy0)},
+  {0.35,0.22,0,unpack(armfsm.rocky.lhand_rpy1)}
+}
+armfsm.rocky.rarminit={
+  {0.35,-0.242,0,unpack(armfsm.rocky.rhand_rpy0)},
+  {0.35,-0.22,0,unpack(armfsm.rocky.rhand_rpy1)}
+}
 
 
-
-
-
-
-
-
+--for longarm
+armfsm.rocky.larminit={
+  {0.35,0.30,0,unpack(armfsm.rocky.lhand_rpy0)},
+  {0.35,0.30,0,unpack(armfsm.rocky.lhand_rpy1)},
+  {0.30,0.40,0.21,unpack(armfsm.rocky.lhand_rpy2)},
+  {0.40,0.45,0.61,unpack(armfsm.rocky.lhand_rpy2)},
+  {0.40,0.45,0.61,unpack(armfsm.rocky.lhand_rpy3)}
+}
+armfsm.rocky.larminit={
+  {0.35,0.30,0,unpack(armfsm.rocky.lhand_rpy0)},
+  {0.35,0.30,0,unpack(armfsm.rocky.lhand_rpy1)},
+  {0.30,0.40,0.21,unpack(armfsm.rocky.lhand_rpy2)},
+  {0.40,0.45,0.61,unpack(armfsm.rocky.lhand_rpy2)},
+  {0.40,0.45,0.61,unpack(armfsm.rocky.lhand_rpy3)}
+}
+armfsm.rocky.rarminit={
+  {0.35,-0.30,0,unpack(armfsm.rocky.rhand_rpy0)},
+  {0.35,-0.30,0,unpack(armfsm.rocky.rhand_rpy1)},
+  {0.30,-0.40,0.21,unpack(armfsm.rocky.rhand_rpy2)},
+  {0.40,-0.45,0.61,unpack(armfsm.rocky.rhand_rpy2)},
+  {0.40,-0.45,0.61,unpack(armfsm.rocky.rhand_rpy3)}
+}
 
 
 --------------------------------------------------------------------------
@@ -403,10 +446,17 @@ armfsm.dooropen.default_model = {
 }
 armfsm.dooropen.yawTarget = 45*DEG_TO_RAD
 
-
 armfsm.dooredge.hinge_offset_z = -0.29 
 armfsm.dooredge.door_yaw1 = 15*DEG_TO_RAD
 armfsm.dooredge.door_yaw2 = 55*DEG_TO_RAD
+
+armfsm.doorpush.default_model = {
+  0.58,-0.50,0.09,  --Hinge pos
+  0.86,             --Door width (hinge to knob axle)
+  -0.05,            --Knob X offset from door
+  0.08,             --Knob Y offset (from knob axle)
+}
+
 
 
 end

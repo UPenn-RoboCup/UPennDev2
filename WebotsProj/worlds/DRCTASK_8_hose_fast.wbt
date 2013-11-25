@@ -29,7 +29,7 @@ DirectionalLight {
 DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
-THOROP7_NoBoundaries {
+THOROP7_NoBoundaries_ShortGripperOnly {
   translation -0.5 1.15535 -1
   controller "thorop"
   controllerArgs "0 32"
@@ -37,23 +37,44 @@ THOROP7_NoBoundaries {
 
 
 DEF MY_TABLE Solid {
-  translation 0 0.45 1
+  #translation 0 0.45 0.8
+  translation 0 0.45 1.4
   children [
     Transform {
+      translation 0.05 0.2 -0.2
+      rotation 0 0 1 1.57
       children [
         Shape {
-          geometry Box {
-            size 0.2 1 1
-          }
+          appearance Appearance {material Material {diffuseColor 0.9 0.2 0.2}}
+          geometry Cylinder {height 0.03 radius 0.3}
+        }
+      ]
+    }    
+    Transform {
+      translation -0.05 0.2 -0.2
+      rotation 0 0 1 1.57
+      children [
+        Shape {
+          appearance Appearance {material Material {diffuseColor 0.9 0.2 0.2}}
+          geometry Cylinder {height 0.03 radius 0.3}
         }
       ]
     }    
   ]
-  boundingObject Transform {
+  boundingObject Group{
     children [
-      Box {
-         size 0.2 1 1
-      }
+      Transform {
+        translation 0.05 0.45 -0.2
+        children [
+          Shape {geometry Box {size 0.01 0.1 0.05}}
+        ]
+      }    
+      Transform {
+        translation -0.05 0.45 -0.2
+        children [
+          Shape {geometry Box {size 0.01 0.1 0.05}}
+        ]
+      }    
     ]
   }
 }
@@ -101,7 +122,7 @@ Solid {
 
 
 DEF MY_DRILL Solid {
-  translation 0 1 0.55
+  translation 0 1 1.2
   rotation 0 0 1 1.57
   children [
     Shape {
@@ -111,17 +132,31 @@ DEF MY_DRILL Solid {
           diffuseColor 0.2 0.5 0.2
         }
       }
-      geometry Cylinder {
-        height 0.3
-        radius 0.04
-      }
+      geometry Cylinder {height 0.3 radius 0.02}
+    }
+    Transform{
+      translation 0 0.15 0
+      children[
+        Shape {
+          appearance Appearance {
+            material Material {
+              ambientIntensity 0.1
+              diffuseColor 0.2 0.5 0.5
+            }
+          }
+          geometry Cylinder {
+            height 0.1
+            radius 0.04
+          }
+        }
+      ]
     }
   ]
   boundingObject Transform {
     children [
       Cylinder {
         height 0.3
-        radius 0.04
+        radius 0.02
       }
     ]
   }

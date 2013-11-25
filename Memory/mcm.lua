@@ -17,6 +17,13 @@ shared.stance.bodyHeightTarget = vector.zeros(1)
 shared.stance.uTorsoComp = vector.zeros(2) --For quasi-static balancing
 shared.stance.uTorsoCompBias = vector.zeros(2)
 
+--Used for drilling task
+--Torso compensation is used to follow arm position, not for balancing
+shared.stance.enable_torso_track = vector.zeros(1)
+shared.stance.track_hand_isleft = vector.zeros(1)
+shared.stance.track_hand_y0 =  vector.zeros(1)
+shared.stance.track_torso_y0 =  vector.zeros(1)
+
 --Arm info
 
 shared.arm = {}

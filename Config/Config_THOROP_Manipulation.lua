@@ -136,6 +136,42 @@ armfsm.hosegrip = {}
 armfsm.hosegrip.lhand_rpy = {-90*DEG_TO_RAD,45*DEG_TO_RAD,  0*DEG_TO_RAD}
 armfsm.hosegrip.rhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
 
+
+
+
+
+armfsm.hosegrip.lhand_rpy = {-90*DEG_TO_RAD,0*DEG_TO_RAD,  0*DEG_TO_RAD}
+
+
+
+armfsm.hosegrip.arminit={
+--  {0.21, 0,30, -0.16, unpack(armfsm.hosegrip.lhand_rpy)},
+  {0.21,0.40,-0.06, unpack(armfsm.hosegrip.lhand_rpy)},
+  {0.30,0.55,0.10, unpack(armfsm.hosegrip.lhand_rpy)},
+  {0.35,0.50,0.16, unpack(armfsm.hosegrip.lhand_rpy)},  
+  {0.40,0.45,0.16, unpack(armfsm.hosegrip.lhand_rpy)},    
+--  {0.45,0.40,0.25, unpack(armfsm.hosegrip.lhand_rpy)},    
+
+  {0.50,0.40,0.30, unpack(armfsm.hosegrip.lhand_rpy)},    
+  
+
+--{0.45,0.50,0.30, unpack(armfsm.hosegrip.lhand_rpy)},    
+
+
+--  {0.30,0.50,0.20, unpack(armfsm.hosegrip.lhand_rpy)},
+
+}
+
+
+
+--xyz yaw
+armfsm.hosegrip.default_model = {
+  0.50,0.30, 0.07, 0}
+
+armfsm.hosegrip.clearance={0,0,0.08}
+
+
+--[[
 armfsm.hosegrip.armflip={
   vector.new({160,0,0,-140,90,40,0})*DEG_TO_RAD,   
   vector.new({90,0,0,-140,90,40,0})*DEG_TO_RAD, 
@@ -152,12 +188,7 @@ armfsm.hosegrip.arminit={
 armfsm.hosegrip.armuninit={
   {0.41,0.23,0.08, -132.9*DEG_TO_RAD, 43.8*DEG_TO_RAD, -26.5*DEG_TO_RAD},
 }
-
-
-
-
 --91 150 0 -138 -84 10 174 
-
 --SJ: we need to flip the wrist angle first :[
 armfsm.hosegrip.armunflip={
   vector.new({90,150,0,-140,-90,10,180})*DEG_TO_RAD,
@@ -168,15 +199,10 @@ armfsm.hosegrip.armunflip={
   vector.new({160,0,0,-140,90,40,0})*DEG_TO_RAD,   
   vector.new({124,12,0,-80,85,14,-98})*DEG_TO_RAD,   
 }
+--]]
 
 
 
-
---xyz yaw
-armfsm.hosegrip.default_model = {
-  0.50,0.30, 0.07, 0}
-
-armfsm.hosegrip.clearance={0,0,0.08}
 
 
 
@@ -333,6 +359,34 @@ armfsm.valvetwoarm = {0.55,0.20,0.07,   0.05, 0, 70*DEG_TO_RAD }
 --Axel XYZ, radius, valve angle, hand fit angle
 armfsm.valvetwoarm.velTurnAngle = 3*DEG_TO_RAD * speed_factor
 armfsm.valvetwoarm.velInsert = 0.02 * speed_factor
+
+
+
+
+
+---------------------------------------------------------------
+------   Debris pickup
+---------------------------------------------------------------
+armfsm.debrisgrip = {}
+armfsm.debrisgrip.lhand_rpy = {-90*DEG_TO_RAD,45*DEG_TO_RAD,  0*DEG_TO_RAD}
+armfsm.debrisgrip.rhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 --------------------------------------------------------------------------

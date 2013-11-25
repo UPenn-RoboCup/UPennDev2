@@ -125,13 +125,7 @@ local function reset_torso_comp(self,qLArm,qRArm)
   local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm, 
          mcm.get_stance_bodyTilt(), 0,0)
 
---hack
-  --local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm, 
---         Config.walk.bodyTilt, 0,0)
-
-
   self.torsoCompBias = {-com[1]/com[4],-com[2]/com[4]}
-
   mcm.set_stance_uTorsoCompBias(self.torsoCompBias)  
   self:save_boundary_condition({qLArm,qRArm,qLArm,qRArm,{0.0}})
 end
@@ -160,26 +154,61 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
   qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
 
-  if not qLArmNext or not qRArmNext then return end
+  if not qLArmNext or not qRArmNext then 
+    print("ERROR1")
+    return end
 
   local trLArmNext, trRArmNext = Body.get_forward_larm(qLArmNext),Body.get_forward_rarm(qRArmNext)
   local vec_comp = vector.new({-uTorsoComp[1],-uTorsoComp[2],0,0,0,0})
   local trLArmNextComp = vector.new(trLArmNext) + vec_comp
   local trRArmNextComp = vector.new(trRArmNext) + vec_comp
-    
+
+  --Only compensate for X axis
+  --Y position should be based on arm position
+  if mcm.get_stance_enable_torso_track()>0 then
+    if mcm.get_stance_track_hand_isleft()>0 then
+      trRArmNextComp[2] = trRArmNext[2]     --Fix right arm
+    else
+      trLArmNextComp[2] = trLArmNext[2]
+    end
+  end
+
+
   --Actual arm angle considering the torso compensation
   local qLArmNextComp = self:search_shoulder_angle(qLArmComp,trLArmNextComp,1, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
   local qRArmNextComp = self:search_shoulder_angle(qRArmComp,trRArmNextComp,0, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
 
-  if not qLArmNextComp or not qRArmNextComp or not qLArmNext or not qRArmNext then return 
+  if not qLArmNextComp or not qRArmNextComp or not qLArmNext or not qRArmNext then 
+    print("ERROR")
+    return 
   else
     local max_movement_ratioL = check_arm_joint_velocity(qLArmComp, qLArmNextComp, dt_step)
     local max_movement_ratioR = check_arm_joint_velocity(qRArmComp, qRArmNextComp, dt_step)
     local dt_step_current = dt_step * math.max(max_movement_ratioL,max_movement_ratioR)
     --TODO: WAIST 
-    local uTorsoCompNextTarget = self:get_torso_compensation(qLArmNext,qRArmNext,massL,massR)
-    local uTorsoCompNext, torsoCompDone = util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
 
+    local uTorsoCompNextTarget = self:get_torso_compensation(qLArmNext,qRArmNext,massL,massR)
+    local uTorsoCompNext, torsoCompDone
+
+    if mcm.get_stance_enable_torso_track()>0 then
+      --Only compensate for X axis
+      --Y position should be based on arm position
+      if mcm.get_stance_track_hand_isleft()>0 then
+        uTorsoCompNextTarget[2]=
+          mcm.get_stance_track_torso_y0()+
+          (trLArmNext[2]-mcm.get_stance_track_hand_y0())*0.3
+      else
+        uTorsoCompNextTarget[2]=
+          mcm.get_stance_track_torso_y0()+
+          (trRArmNext[2]-mcm.get_stance_track_hand_y0())*0.3
+      end
+--      uTorsoCompNextTarget[2]=uTorsoComp[2]
+      uTorsoCompNext, torsoCompDone= util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
+
+--      print("UT:",uTorsoComp[2],uTorsoCompNextTarget[2],uTorsoCompNext[2])      
+    else --Normal compensation
+      uTorsoCompNext, torsoCompDone= util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
+    end
     local new_cond = {qLArmNext, qRArmNext, qLArmNextComp, qRArmNextComp, uTorsoCompNext, waistYaw}
     return new_cond, dt_step_current, torsoCompDone    
   end
@@ -617,6 +646,25 @@ local function set_shoulder_yaw_target(self,left,right)
   self.shoulder_yaw_target_right = right
 end
 
+local function start_torso_track(self,is_left)
+  local uTorsoComp = mcm.get_stance_uTorsoComp()
+  if is_left>0 then
+    local qLArm=mcm.get_arm_qlarm()
+    local trLArm = Body.get_forward_larm(qLArm)
+    mcm.set_stance_enable_torso_track(1)
+    mcm.set_stance_track_hand_isleft(1)
+    mcm.set_stance_track_hand_y0(trLArm[2])
+    mcm.set_stance_track_torso_y0(uTorsoComp[2])
+  else
+    local qRArm=mcm.get_arm_qrarm()     
+    local trRArm = Body.get_forward_rarm(qRArm)   
+    mcm.set_stance_enable_torso_track(1)
+    mcm.set_stance_track_hand_isleft(0)
+    mcm.set_stance_track_hand_y0(trRArm[2])
+    mcm.set_stance_track_torso_y0(uTorsoComp[2])
+  end
+end
+
 local libArmPlan={}
 
 libArmPlan.new_planner = function (params)
@@ -675,6 +723,7 @@ libArmPlan.new_planner = function (params)
   s.save_valveparam = save_valveparam
   s.set_shoulder_yaw_target = set_shoulder_yaw_target
 
+  s.start_torso_track = start_torso_track
   return s
 end
 

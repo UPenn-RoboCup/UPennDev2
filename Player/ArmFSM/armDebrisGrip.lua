@@ -16,6 +16,11 @@ local rhand_rpy0 = {-90*Body.DEG_TO_RAD,89*Body.DEG_TO_RAD,0}
 
 local lhand_rpy0 = {90*Body.DEG_TO_RAD,89.5*Body.DEG_TO_RAD,0}
 
+
+
+--testing
+local lhand_rpy0 = Config.armfsm.debrisgrip.lhand_rpy
+
 local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRArm0
 local stage
 

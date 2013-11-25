@@ -63,19 +63,19 @@ end
 
 
 local stage
-local cut_no=1
+local cut_no
 
 local function update_cutpos()
   cut_no = (cut_no+1)%3
-  if cut_no==2 then
-    hcm.set_tool_cutpos1({0.45,0.08, 0.2892, 0})
-    hcm.set_tool_cutpos2({0.45,0.08, -0.1172,   0})    
-  elseif cut_no==0 then
-    hcm.set_tool_cutpos1({0.45,0.08,-0.1172,   0})    
-    hcm.set_tool_cutpos2({0.45,-0.08,-0.1172,   0})
+  if cut_no==0 then
+    hcm.set_tool_cutpos1({0.40,0.22, 0.2892, 0})
+    hcm.set_tool_cutpos2({0.40,0.22, -0.1172,   0})    
+  elseif cut_no==1 then
+    hcm.set_tool_cutpos1({0.40,0.22,-0.1172,   0})    
+    hcm.set_tool_cutpos2({0.40,-0.38,-0.1172,   0})
   else
-    hcm.set_tool_cutpos1({0.45,-0.08,-0.1172, 0})
-    hcm.set_tool_cutpos2({0.45,0.08,0.2892, 0})
+    hcm.set_tool_cutpos1({0.40,-0.38,-0.1172, 0})
+    hcm.set_tool_cutpos2({0.40,0.22,0.2892, 0})
   end
 end
 
@@ -99,6 +99,7 @@ function state.entry()
   trRArm0 = Body.get_forward_rarm(init_cond[2]) 
   
   stage = "drillout"
+  cut_no=0
   update_cutpos()
 --  hcm.set_state_proceed(1)
 end
@@ -109,6 +110,10 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
+
+  local cur_cond = arm_planner:load_boundary_condition()
+  local trLArm = Body.get_forward_larm(cur_cond[1])
+  local trRArm = Body.get_forward_rarm(cur_cond[2])  
   
   if stage=="drillout" then
     if hcm.get_state_proceed()==1 then 
@@ -118,7 +123,11 @@ function state.update()
       if arm_planner:plan_arm_sequence2(arm_seq) then stage="drilloutmove" end
     end
   elseif stage=="drilloutmove" then
-    if arm_planner:play_arm_sequence(t) then stage = "drilloutwait" end
+    if arm_planner:play_arm_sequence(t) then 
+      stage = "drilloutwait" 
+      --Torso Y now should follow arm movement
+      arm_planner:start_torso_track(0)--right hand      
+    end
   elseif stage=="drilloutwait" then
     if hcm.get_state_proceed()==1 then       
       local trRArmTarget1 = get_cutpos1_tr(Config.armfsm.toolchop.drill_clearance)      

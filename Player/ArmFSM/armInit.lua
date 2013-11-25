@@ -43,7 +43,7 @@ function state.entry()
 
   qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)
   qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
-  
+  mcm.set_stance_enable_torso_track(0)
   if not IS_WEBOTS then
     for i=1,10 do      
       Body.set_larm_command_velocity({500,500,500,500,500,500,500})

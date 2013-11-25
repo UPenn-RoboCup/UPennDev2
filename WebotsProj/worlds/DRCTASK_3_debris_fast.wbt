@@ -45,23 +45,72 @@ PartialWalls {
   translation -0.5 0 1.5
   rotation 0 1 0 -1.5708
 }
-DebrisBoard {
-  translation -0.00257756 0.63214 1.47737
-  rotation 0.999677 0.0249408 0.00482767 0.00533707
+DebrisTruss {
+  translation 0.00921319 0.148584 1.59658
+  rotation -0.0482586 0.99165 -0.11959 -0.00997809
+}
+DebrisLongPost {
+  translation 0.251863 0.312812 1.13654
+  rotation 0.999922 0.00398638 0.0118333 -0.9856
+}
+DebrisLongPost {
+  translation -0.21168 0.314376 1.13479
+  rotation 0.999394 0.0181396 0.0296966 -0.982442
+}
+DebrisLongPost {
+  translation 0.116187 0.444691 1.82872
+  rotation -0.199829 0.917354 -0.344283 -1.6427
+}
+DebrisLongPost {
+  translation -0.099521 0.433304 1.69915
+  rotation 0.014851 0.00860697 0.999853 -0.615783
+}
+DebrisLongPost {
+  translation 0.111975 0.441277 2.11018
+  rotation -0.269269 0.921485 -0.279929 -1.66517
 }
 DebrisBoard {
-  translation 0.271091 0.365904 0.970323
-  rotation -0.286028 0.914694 -0.285521 1.66077
+  translation -0.0104571 0.511722 1.94763
+  rotation 0.027962 0.0700753 0.99715 -0.822788
 }
 DebrisBoard {
-  translation -0.288464 0.368992 0.980606
-  rotation -0.289803 0.912659 -0.288216 1.65779
+  translation -0.0129992 0.631976 1.42664
+  rotation 0.203843 0.977185 0.0596377 -0.00201978
 }
 DebrisBoard {
-  translation 0.0247213 0.429057 0.925092
-  rotation -0.403072 0.915083 -0.0124976 0.00260736
+  translation 0.342967 0.429862 1.10038
+  rotation -0.339884 0.876765 -0.340238 1.70709
 }
 DebrisBoard {
-  translation -0.0350932 0.0839825 0.48229
-  rotation -0.99974 0.0161937 0.0160797 0.614411
+  translation -0.335934 0.433001 1.10538
+  rotation -0.34525 0.874006 -0.341929 1.70259
+}
+DebrisBoard {
+  translation -0.017227 0.429023 0.802573
+  rotation 0.641393 0.767212 0.00124691 0.00624494
+}
+DEF WALL Solid {
+  translation 0.8 1 0.6
+  children [
+    Shape {
+      geometry Box {
+        size 0.1 2 5
+      }
+    }
+  ]
+}
+DEF STARTLINE Solid {
+  translation 0 -0.095 -0.3
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 1 0
+        }
+      }
+      geometry Box {
+        size 1 0.2 0.05
+      }
+    }
+  ]
 }

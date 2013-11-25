@@ -133,28 +133,50 @@ armfsm.toolchop.drill_clearance = {-0.05,0,0}
 ------   Hose pickup
 ---------------------------------------------------------------
 armfsm.hosegrip = {}
-armfsm.hosegrip.lhand_rpy = {90*DEG_TO_RAD,85*DEG_TO_RAD, -179*DEG_TO_RAD}
-armfsm.hosegrip.rhand_rpy = {-90*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.hosegrip.lhand_rpy = {-90*DEG_TO_RAD,45*DEG_TO_RAD,  0*DEG_TO_RAD}
+armfsm.hosegrip.rhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
 
-
-
-armfsm.hosegrip.lhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
-
---xyz
-armfsm.hosegrip.default_model = {
-  0.50,-0.29, -0.15, 0}
+armfsm.hosegrip.armflip={
+  vector.new({160,0,0,-140,90,40,0})*DEG_TO_RAD,   
+  vector.new({90,0,0,-140,90,40,0})*DEG_TO_RAD, 
+  vector.new({90,150,0,-140,90,40,0})*DEG_TO_RAD, 
+  vector.new({90,150,0,-140,90,-10,0})*DEG_TO_RAD,
+}
 
 armfsm.hosegrip.arminit={
-  {0.25,-0.10,-0.05},  
-  {0.40,-0.29,-0.25},
-  {0.40,-0.29,0.05},  
+--  {0.42,0.30,0.08, unpack(armfsm.hosegrip.lhand_rpy)},
+  {0.42,0.30,0.20, unpack(armfsm.hosegrip.lhand_rpy)},
+  {0.52,0.30,0.20, unpack(armfsm.hosegrip.lhand_rpy)},
 }
-armfsm.hosegrip.armhold={
-  {0.40,-0.29,0.05},  
-  {0.40,-0.29,-0.25},    
+
+armfsm.hosegrip.armuninit={
+  {0.41,0.23,0.08, -132.9*DEG_TO_RAD, 43.8*DEG_TO_RAD, -26.5*DEG_TO_RAD},
 }
+
+
+
+
+--91 150 0 -138 -84 10 174 
+
+--SJ: we need to flip the wrist angle first :[
+armfsm.hosegrip.armunflip={
+  vector.new({90,150,0,-140,-90,10,180})*DEG_TO_RAD,
+  vector.new({90,150,0,-140,-89,0,181})*DEG_TO_RAD,
+  vector.new({90,150,0,-140, 90,0,0})*DEG_TO_RAD,
+  vector.new({90,150,0,-140,90,40,0})*DEG_TO_RAD, 
+  vector.new({90,0,0,-140,90,40,0})*DEG_TO_RAD, 
+  vector.new({160,0,0,-140,90,40,0})*DEG_TO_RAD,   
+  vector.new({124,12,0,-80,85,14,-98})*DEG_TO_RAD,   
+}
+
+
+
+
+--xyz yaw
+armfsm.hosegrip.default_model = {
+  0.50,0.30, 0.07, 0}
+
 armfsm.hosegrip.clearance={0,0,0.08}
-armfsm.hosegrip.liftup = {0,0,0.08}
 
 
 

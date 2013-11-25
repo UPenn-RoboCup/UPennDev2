@@ -55,6 +55,7 @@ function state.entry()
 
   local wrist_seq = {{'wrist',trLArm1, nil}}
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "wristturn" end
+  hcm.set_state_proceed(1)
 end
 
 function update_model()
@@ -66,6 +67,7 @@ function update_model()
     valve_model[2] + trLArmTarget[2]-trLArm[2],
     valve_model[3] + trLArmTarget[3]-trLArm[3]
   hcm.set_barvalve_model(valve_model)
+  hcm.set_state_proceed(0)
 end
 
 
@@ -94,6 +96,7 @@ function state.update()
         local trLArmTarget=Config.armfsm.valvebar.arminit[1]
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armready" end
+        --hcm.set_state_proceed(0)  --stop after init
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
         local wrist_seq = {{'wrist',trLArm0, nil}}
@@ -106,6 +109,7 @@ function state.update()
         local trLArmTarget = movearm.getBarValvePositionSingle(0,handtightangle0,clearance)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
+        hcm.set_state_proceed(0)    
       elseif hcm.get_state_proceed()==-1 then               
         local arm_seq = {{'move',trLArm1, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="wristturn" end
@@ -119,6 +123,7 @@ function state.update()
         local trLArmTarget = movearm.getBarValvePositionSingle(turn_angle1,handtightangle0,0)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
+        hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed(0)==-1 then
         local trLArmTarget={0.35,0.30,-0.15, unpack(lhand_rpy0)}        
         local arm_seq = {{'move',trLArmTarget,nil}}
@@ -158,15 +163,16 @@ function state.update()
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
       end
     end
+    hcm.set_state_proceed(0)
   elseif stage=="valveturn" then 
     if arm_planner:play_arm_sequence(t) then 
       hcm.set_state_success(1) --Report success
       stage="pregrip"
     end
+    hcm.set_state_proceed(0)
   elseif stage=="armbacktoinitpos" then 
     if arm_planner:play_arm_sequence(t) then return "done" end
   end
-  hcm.set_state_proceed(0)
 end
 
 function state.exit()  

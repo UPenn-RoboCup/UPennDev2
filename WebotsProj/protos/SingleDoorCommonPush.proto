@@ -26,9 +26,11 @@ PROTO SingleDoorCommonPush [
       HingeJoint {
         jointParameters HingeJointParameters {
           axis 0 -1 0
+					# axis 0 1 0
           anchor -0.425 1.01 -0.17
-          maxStop 3
-          dampingConstant 10
+          maxStop 5
+					minStop 0
+          dampingConstant 40
         }
         endPoint Solid {
         	# Handle height satisfies DARPA'S rules
@@ -371,18 +373,19 @@ PROTO SingleDoorCommonPush [
                 children [
                   Box {
                     # smaller so that able to be pushed
-										size 0.78 1.96 0.02
+										# size 0.78 1.96 0.02
+										size 0.7 1.96 0.02
                  }
                 ]
               }
-              Transform {
-                translation 0.43 0 0.02
-                children [
-                  Box {
-                    size 0.78 1.96 0.02
-                  }
-                ]
-              }
+              # Transform {
+             #    translation 0.43 0 0.02
+             #    children [
+             #      Box {
+             #        size 0.78 1.96 0.02
+             #      }
+             #    ]
+             #  }
             ]
           }
           physics Physics {

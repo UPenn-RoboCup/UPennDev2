@@ -19,7 +19,7 @@ PROTO ValveDRCLever [
 {
   Servo {
     maxForce 0
-    staticFriction 0.1
+    staticFriction 0.3
     name "ValveDRCLever"
     rotation 1 0 0 0
     children [
@@ -45,7 +45,7 @@ PROTO ValveDRCLever [
       }
 
       Transform{        
-        translation 0 -0.075 0
+        translation 0 0.075 0
         rotation 1 0 0 0
         children[
         DEF CROSSBAR_SEGMENT_SHAPE Shape {
@@ -58,11 +58,6 @@ PROTO ValveDRCLever [
         ]
       }
 
-    
-
-
-
-
     ]
     boundingObject Group{
       children [
@@ -74,13 +69,10 @@ PROTO ValveDRCLever [
 
   
       Transform{        
-        translation 0 -0.075 0
+        translation 0 0.075 0
         rotation 1 0 0 0
         children[USE CROSSBAR_SEGMENT_SHAPE]
       }
-
-
-
 
       ]
     }

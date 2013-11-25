@@ -25,7 +25,7 @@ PROTO ValveDRCMedium [
     rotation 1 0 0 0
     children [
       Transform{
-        translation 0 0.2 0
+        translation 0 0.23 0
         rotation 1 0 0 1.57
         children[ 
           DEF WHEEL_SEGMENT_SHAPE Shape {
@@ -46,43 +46,43 @@ PROTO ValveDRCMedium [
       }
 
       Transform{
-        translation 0 -0.2 0
+        translation 0 -0.23 0
         rotation 1 0 0 1.57
         children[USE WHEEL_SEGMENT_SHAPE]
       }
 
       Transform{
-        translation 0 0 0.2
+        translation 0 0 0.23
         rotation 1 0 0 0
         children[USE WHEEL_SEGMENT_SHAPE]
       }
 
       Transform{
-        translation 0 0 -0.2
+        translation 0 0 -0.23
         rotation 1 0 0 0
         children[USE WHEEL_SEGMENT_SHAPE]
       }
 
       Transform{
-        translation 0 -0.142 0.142
+        translation 0 -0.162 0.162
         rotation 1 0 0 0.785
         children[USE WHEEL_SEGMENT_SHAPE]
       }
 
       Transform{
-        translation 0 0.142 -0.142
+        translation 0 0.162 -0.162
         rotation 1 0 0 0.785
         children[USE WHEEL_SEGMENT_SHAPE]
       }
 
       Transform{
-        translation 0 0.142 0.142
+        translation 0 0.162 0.162
         rotation 1 0 0 -0.785
         children[USE WHEEL_SEGMENT_SHAPE]
       }
 
       Transform{
-        translation 0 -0.142 -0.142
+        translation 0 -0.162 -0.162
         rotation 1 0 0 -0.785
         children[USE WHEEL_SEGMENT_SHAPE]
       }
@@ -94,7 +94,7 @@ PROTO ValveDRCMedium [
             appearance USE SEGMENT_APP
             geometry Cylinder {
               radius 0.0125
-              height 0.36
+              height 0.45
             }
           }
         ]

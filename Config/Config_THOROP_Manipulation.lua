@@ -2,7 +2,7 @@ local vector = require'vector'
 local DEG_TO_RAD = math.pi/180
 
 local IS_LONGARM = true
---local IS_LONGARM = false
+local IS_LONGARM = false
 
 
 local Config = {}
@@ -14,7 +14,8 @@ local arm = {}
 
 --Gripper end position offsets (Y is inside)
 arm.handoffset={}
-arm.handoffset.gripper = {0.245,0.035,0} --Default gripper
+--arm.handoffset.gripper = {0.245,0.035,0} --Default gripper
+arm.handoffset.gripper = {0.245,0,0} --Default gripper
 
 --For older hook
 --arm.handoffset.outerhook = {0.285,-0.065,0} --Single hook (for door)
@@ -130,45 +131,61 @@ armfsm.toolchop.drill_clearance = {-0.05,0,0}
 
 
 ---------------------------------------------------------------
-------   Hose pickup
+------   Hose pickup and attach
 ---------------------------------------------------------------
 armfsm.hosegrip = {}
-armfsm.hosegrip.lhand_rpy = {-90*DEG_TO_RAD,45*DEG_TO_RAD,  0*DEG_TO_RAD}
-armfsm.hosegrip.rhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.hosegrip.lhand_rpy = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.hosegrip.rhand_rpy = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 
-
-
-
-
-armfsm.hosegrip.lhand_rpy = {-90*DEG_TO_RAD,0*DEG_TO_RAD,  0*DEG_TO_RAD}
-
-
+armfsm.hosegrip.lhand_rpy1 = {160*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.hosegrip.rhand_rpy1 = {-160*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 
 armfsm.hosegrip.arminit={
---  {0.21, 0,30, -0.16, unpack(armfsm.hosegrip.lhand_rpy)},
-  {0.21,0.40,-0.06, unpack(armfsm.hosegrip.lhand_rpy)},
-  {0.30,0.55,0.10, unpack(armfsm.hosegrip.lhand_rpy)},
-  {0.35,0.50,0.16, unpack(armfsm.hosegrip.lhand_rpy)},  
-  {0.40,0.45,0.16, unpack(armfsm.hosegrip.lhand_rpy)},    
---  {0.45,0.40,0.25, unpack(armfsm.hosegrip.lhand_rpy)},    
-
-  {0.50,0.40,0.30, unpack(armfsm.hosegrip.lhand_rpy)},    
-  
-
---{0.45,0.50,0.30, unpack(armfsm.hosegrip.lhand_rpy)},    
-
-
---  {0.30,0.50,0.20, unpack(armfsm.hosegrip.lhand_rpy)},
-
+--  {0.21 0.27 -0.20},
+  {0.35,0.30,-0.10},
 }
 
+armfsm.hosegrip.armhold = {0.21,0.35,-0.20}
 
+armfsm.hosegrip.clearance={-0.06,-0.06,0}
+armfsm.hosegrip.sidepull={0,-0.06,0}
 
 --xyz yaw
 armfsm.hosegrip.default_model = {
-  0.50,0.30, 0.07, 0}
+  0.45,0.36, -0.05, 0}
 
-armfsm.hosegrip.clearance={0,0,0.08}
+
+armfsm.hoseattach = {}
+
+armfsm.hoseattach.lhand_rpy = {-90*DEG_TO_RAD,0*DEG_TO_RAD, 30*DEG_TO_RAD}
+armfsm.hoseattach.rhand_rpy = {90*DEG_TO_RAD,0*DEG_TO_RAD, 30*DEG_TO_RAD}
+
+
+armfsm.hoseattach.larminit={
+--  {0.14 0.49 -0.15},
+  {0.35,0.30,-0.10},
+  {0.35,0.20,-0.10},
+}
+armfsm.hoseattach.rarminit={
+--  {0.17 -0.18 -0.16},
+  {0.35,-0.08,-0.10},
+  {0.35,0.02,-0.10},
+}
+
+
+armfsm.hoseattach.clearance={-0.06,-0.06,0}
+armfsm.hoseattach.sidepull={0,-0.06,0}
+
+--xyz yaw
+armfsm.hoseattach.default_model = {
+  0.45,0.30, 0.07, 0}
+
+
+
+
+
+
+
 
 
 --[[

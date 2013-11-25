@@ -32,7 +32,7 @@ Solid {
 		}
 
 		DEF SECOND_FLOOR Transform {
-			translation 0.1016 0.3028 0
+			translation 0.0254 0.3028 0
 			rotation 0 1 0 0
 			children[
 	      Shape {
@@ -43,7 +43,7 @@ Solid {
 	           }
 	         }
 	         geometry Box {
-	 					size 1.4224 0.2032 0.1524
+	 					size 1.5748 0.2032 0.1524
 	 				}
 	      }			
 			]

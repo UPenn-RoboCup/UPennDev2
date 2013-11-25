@@ -25,16 +25,17 @@ PROTO SingleDoorEntreeWeighted [
     children [
       HingeJoint {
         jointParameters HingeJointParameters {
-        	position -1.5
-          axis 0 -1 0
-          anchor -0.425 1.01 -0.17
-          maxStop 3
-          minStop -2.8
+        	# position -1.5
+					# position -0.5
+          axis 0 1 0
+          anchor -0.425 1.01 0.17
+          maxStop 2
+          minStop -1
           dampingConstant 40
 					springConstant 30
         }
         endPoint Solid {
-          translation -0.425 1.01 -0.17
+          translation -0.425 1.01 0.17
           children [
             HingeJoint {
               jointParameters HingeJointParameters {

@@ -52,20 +52,20 @@ THOROP7_NoBoundaries_ShortClawHookSwap {
   controllerArgs "0 32"
   cameraWindowPosition 0.649891 0.233083
 }
-SingleDoorEntreeHandleUp {
-  translation 1.8 0 0.6
+SingleDoorEntreeHandleUp { # 1st Door: PUSH
+  translation 1.9 0 0.6
   rotation 0 1 0 1.57
 }
-SingleDoorCommonPush {
-  translation 0 0 0.6
+SingleDoorCommonPush { # 2nd Door: PULL
+  translation -0.16 0 0.6
   rotation 0 1 0 1.57
 }
 SingleDoorEntreeWeighted {
-  translation -1.8 0 0.6
+  translation -1.95 0 0.6
   rotation 0 1 0 1.57
 }
 DEF FINISHLINE Solid {
-  translation -2.2 -0.095 0.6
+  translation -2.35 -0.095 0.6
   children [
     Shape {
       appearance Appearance {

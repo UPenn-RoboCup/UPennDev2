@@ -30,7 +30,6 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 DEF STARTLINE Solid {
-# 1.8 + 0.9 + 0.3/2 = 
   translation 2.85 -0.095 0.6
   children [
     Shape {
@@ -64,6 +63,38 @@ SingleDoorEntreeWeighted {
   translation -1.95 0 0.6
   rotation 0 1 0 1.57
 }
+DEF MARKER1 Solid {
+  translation 0.85 -0.095 0.6
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.8 0.5 0
+        }
+      }
+      geometry Box {
+        size 0.05 0.2 1
+      }
+    }
+  ]
+}
+
+DEF MARKER2 Solid {
+  translation -0.95 -0.095 0.6
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.8 0.5 0
+        }
+      }
+      geometry Box {
+        size 0.05 0.2 1
+      }
+    }
+  ]
+}
+
 DEF FINISHLINE Solid {
   translation -2.35 -0.095 0.6
   children [

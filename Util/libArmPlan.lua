@@ -196,11 +196,13 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
       if mcm.get_stance_track_hand_isleft()>0 then
         uTorsoCompNextTarget[2]=
           mcm.get_stance_track_torso_y0()+
-          (trLArmNext[2]-mcm.get_stance_track_hand_y0())*0.3
+          (trLArmNext[2]-mcm.get_stance_track_hand_y0())*
+          Config.armfsm.toolchop.torsoMovementMag
       else
         uTorsoCompNextTarget[2]=
           mcm.get_stance_track_torso_y0()+
-          (trRArmNext[2]-mcm.get_stance_track_hand_y0())*0.3
+          (trRArmNext[2]-mcm.get_stance_track_hand_y0())*
+          Config.armfsm.toolchop.torsoMovementMag
       end
 --      uTorsoCompNextTarget[2]=uTorsoComp[2]
       uTorsoCompNext, torsoCompDone= util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )

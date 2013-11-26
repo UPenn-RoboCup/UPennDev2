@@ -68,14 +68,14 @@ local cut_no
 local function update_cutpos()
   cut_no = (cut_no+1)%3
   if cut_no==0 then
-    hcm.set_tool_cutpos1({0.40,0.22, 0.2892, 0})
-    hcm.set_tool_cutpos2({0.40,0.22, -0.1172,   0})    
+    hcm.set_tool_cutpos1(Config.armfsm.toolchop.curpos[1])
+    hcm.set_tool_cutpos2(Config.armfsm.toolchop.curpos[2])    
   elseif cut_no==1 then
-    hcm.set_tool_cutpos1({0.40,0.22,-0.1172,   0})    
-    hcm.set_tool_cutpos2({0.40,-0.38,-0.1172,   0})
+    hcm.set_tool_cutpos1(Config.armfsm.toolchop.curpos[2])
+    hcm.set_tool_cutpos2(Config.armfsm.toolchop.curpos[3])    
   else
-    hcm.set_tool_cutpos1({0.40,-0.38,-0.1172, 0})
-    hcm.set_tool_cutpos2({0.40,0.22,0.2892, 0})
+    hcm.set_tool_cutpos1(Config.armfsm.toolchop.curpos[3])
+    hcm.set_tool_cutpos2(Config.armfsm.toolchop.curpos[1])    
   end
 end
 

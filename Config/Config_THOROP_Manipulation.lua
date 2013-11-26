@@ -105,7 +105,7 @@ armfsm.toolgrip.rhand_rpy = {0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
 
 --xyz, yaw
 armfsm.toolgrip.default_model = {
-  0.49,-0.02,0.00,  0*DEG_TO_RAD}
+  0.53,-0.02,0.00,  0*DEG_TO_RAD}
 
 armfsm.toolgrip.arminit={
   {0.25,-0.10,-0.05},  
@@ -126,9 +126,24 @@ armfsm.toolchop.arminit={
   {0.30,-0.0,-0.10},
   {0.35,-0.0,0.0},
 }
+armfsm.toolchop.curpos={
+  {0.40,0.22,-0.03,0},
+  {0.40,-0.38,-0.03,0},
+  {0.40,-0.38,0.27,0}
+}
+--How much torso should follow arm?
+armfsm.toolchop.torsoMovementMag = 0.3
 armfsm.toolchop.drill_clearance = {-0.05,0,0}
 
-
+-------------------------------------------------
+--For short arm
+armfsm.toolchop.curpos={  
+  {0.40,0.10,-0.03,0},
+  {0.40,-0.20,-0.03,0},
+  {0.40,-0.20,0.27,0}
+}
+armfsm.toolchop.torsoMovementMag = 0.5
+-------------------------------------------------
 
 ---------------------------------------------------------------
 ------   Hose pickup and attach
@@ -157,33 +172,30 @@ armfsm.hosegrip.default_model = {
 
 armfsm.hoseattach = {}
 
-armfsm.hoseattach.lhand_rpy = {-90*DEG_TO_RAD,0*DEG_TO_RAD, 30*DEG_TO_RAD}
-armfsm.hoseattach.rhand_rpy = {90*DEG_TO_RAD,0*DEG_TO_RAD, 30*DEG_TO_RAD}
+armfsm.hoseattach.lhand_rpy0 = {-90*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.hoseattach.rhand_rpy0 = {90*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+
+
+armfsm.hoseattach.lhand_rpy = {-90*DEG_TO_RAD,0*DEG_TO_RAD, -90*DEG_TO_RAD}
+armfsm.hoseattach.rhand_rpy = {90*DEG_TO_RAD,0*DEG_TO_RAD, 90*DEG_TO_RAD}
+
+
 
 
 armfsm.hoseattach.larminit={
---  {0.14 0.49 -0.15},
-  {0.35,0.30,-0.10},
-  {0.35,0.20,-0.10},
+  {0.40,0.35,-0.20, unpack(armfsm.hoseattach.lhand_rpy0)},
+  {0.25,0.05,0.0, unpack(armfsm.hoseattach.lhand_rpy)},
 }
 armfsm.hoseattach.rarminit={
---  {0.17 -0.18 -0.16},
-  {0.35,-0.08,-0.10},
-  {0.35,0.02,-0.10},
+  {0.40,-0.35,-0.20, unpack(armfsm.hoseattach.rhand_rpy0)},
+  {0.33,-0.05,0.0, unpack(armfsm.hoseattach.rhand_rpy)},
 }
 
-
-armfsm.hoseattach.clearance={-0.06,-0.06,0}
-armfsm.hoseattach.sidepull={0,-0.06,0}
+armfsm.hoseattach.clearance={-0.05,0,0}
 
 --xyz yaw
 armfsm.hoseattach.default_model = {
-  0.45,0.30, 0.07, 0}
-
-
-
-
-
+  0.30,0.0, 0.10, 0}
 
 
 

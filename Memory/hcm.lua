@@ -126,6 +126,10 @@ shared_data.hose = {}
 shared_data.hose.model = vector.new({0.35,-0.25,0.0, 0})
 
 
+shared_data.hoseattach = {}
+shared_data.hoseattach.model = vector.new({0.35,0.30,-0.10, 0})
+
+
 
 
 

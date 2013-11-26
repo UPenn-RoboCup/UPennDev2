@@ -43,6 +43,7 @@ local function update_model()
   tool_model[4] + util.mod_angle(trRArmTarget[6] - trRArm[6])
 
   hcm.set_tool_model(tool_model)
+  print("Tool model:",tool_model[1],tool_model[2],tool_model[3])
   hcm.set_state_proceed(0)
 end
 

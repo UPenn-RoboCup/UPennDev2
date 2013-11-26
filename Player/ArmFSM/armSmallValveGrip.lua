@@ -129,7 +129,6 @@ function state.update()
         local arm_seq = {{'move',trLArmTarget,nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armready" end
       elseif hcm.get_state_proceed(0)==2 then      
-        print("update")  
         update_model()
         local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,Config.armfsm.valveonearm.clearance, 1)
         local arm_seq = {{'move',trLArmTarget, nil}}

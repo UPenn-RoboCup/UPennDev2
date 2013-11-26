@@ -61,6 +61,7 @@ DEF MY_TABLE Solid {
     }
   ]
   boundingObject Transform {
+    translation 0 0 0.1
     children [
       Box {
         size 0.5 0.05 0.8
@@ -119,6 +120,7 @@ DEF WALL_TO_BREAK Solid {
       }
     ]
   }
+  locked TRUE
 }
 
 Solid {
@@ -138,6 +140,7 @@ Solid {
       }
     }
   ]
+  locked TRUE
 }
 
 Solid {
@@ -157,6 +160,7 @@ Solid {
       }
     }
   ]
+  locked TRUE
 }
 
 Solid {
@@ -176,6 +180,7 @@ Solid {
       }
     }
   ]
+  locked TRUE
 }
 
 DEF MARKER1 Solid {

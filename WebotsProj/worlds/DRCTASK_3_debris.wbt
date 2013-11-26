@@ -89,7 +89,7 @@ DebrisBoard {
   rotation 0.641393 0.767212 0.00124691 0.00624494
 }
 DEF WALL Solid {
-  translation 0.8 1 0.6
+  translation 1 1 0.6
   children [
     Shape {
       geometry Box {
@@ -97,6 +97,48 @@ DEF WALL Solid {
       }
     }
   ]
+}
+
+Transform {
+	translation -0.7 0.2032 0.82
+	rotation 0 1 0 0
+	children[
+    DEF BLOCK Shape {
+       appearance DEF POS_APP Appearance {
+         material Material {
+           diffuseColor 0.5 0.5 1
+           specularColor 0 0 0
+         }
+       }
+       geometry Box {
+				size 0.4064 0.4064 0.1524 
+			}
+    }			
+	]
+	boundingObject Group{
+		 children[USE BLOCK]
+	}
+}
+
+Transform {
+	translation 0.7 0.2032 0.82
+	rotation 0 1 0 0
+	children[
+    DEF BLOCK Shape {
+       appearance DEF POS_APP Appearance {
+         material Material {
+           diffuseColor 0.5 0.5 1
+           specularColor 0 0 0
+         }
+       }
+       geometry Box {
+				size 0.4064 0.4064 0.1524 
+			}
+    }			
+	]
+	boundingObject Group{
+		 children[USE BLOCK]
+	}
 }
 DEF STARTLINE Solid {
   translation 0 -0.095 -0.3

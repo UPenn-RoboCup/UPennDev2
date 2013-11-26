@@ -20,7 +20,7 @@ local door_yaw1 = Config.armfsm.dooredge.door_yaw1
 local door_yaw2 = Config.armfsm.dooredge.door_yaw2
 
 
-local trRArmRelease = {0,0,0,unpack(Config.armfsm.dooropen.rhand_rpy_release)}
+local trRArmRelease = {0,0,0,unpack(Config.armfsm.dooropen.rhand_rpy_release1)}
 local trRArmForward = {0,0,0,unpack(Config.armfsm.dooropen.rhand_rpy_forward)}
 local trRArmSidePush = {0,0,0,unpack(Config.armfsm.dooropen.rhand_rpy_sidepush)}
 

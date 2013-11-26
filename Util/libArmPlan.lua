@@ -155,7 +155,7 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
 
   if not qLArmNext or not qRArmNext then 
-    print("ERROR1")
+--    print("ERROR1")
     return end
 
   local trLArmNext, trRArmNext = Body.get_forward_larm(qLArmNext),Body.get_forward_rarm(qRArmNext)
@@ -179,7 +179,7 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   local qRArmNextComp = self:search_shoulder_angle(qRArmComp,trRArmNextComp,0, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
 
   if not qLArmNextComp or not qRArmNextComp or not qLArmNext or not qRArmNext then 
-    print("ERROR")
+--  print("ERROR")
     return 
   else
     local max_movement_ratioL = check_arm_joint_velocity(qLArmComp, qLArmNextComp, dt_step)

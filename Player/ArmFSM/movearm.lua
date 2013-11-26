@@ -243,7 +243,7 @@ function movearm.getBarValvePositionSingle(turn_angle,wrist_angle,offset)
   
   local trGripL = trHandle
        * T.rotX(turn_angle)
-       * T.trans(0,0,-handle_radius)
+       * T.trans(0,0,handle_radius)
        * T.rotX(wrist_angle)
        * T.transform6D(
           {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  

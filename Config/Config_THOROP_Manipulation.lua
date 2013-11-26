@@ -317,7 +317,7 @@ armfsm.valveonearm.velInsert = 0.01 * speed_factor
 ---------------------------------------------------------------
 armfsm.valvebar = {}
 --Axel XYZ, radius, current valve angle, final valve angle, hand fit angle, 
---valve angle zero: straight down
+--valve angle zero: straight UP
 armfsm.valvebar.default_model= {0.65,0.20,0.07,   
   0.05, 0, 90*DEG_TO_RAD, -10*DEG_TO_RAD  }
 

@@ -304,12 +304,21 @@ armfsm.valveonearm = {}
 armfsm.valveonearm.default_model_small= 
   {0.60,0.30,0.07, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
+--height should be between 0.81(-0.12) to 1.22 (+0.29)
+
+
+
 armfsm.valveonearm.default_model_large= 
   {0.69,0.27,0.07, 0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
-armfsm.valveonearm.arminit={{0.35,0.30,-0.15, 0,0,0}}
-armfsm.valveonearm.clearance = -0.08
+armfsm.valveonearm.arminit={
+  {0.55,0.30,-0.12, 0,0,0}, --low
+  {0.55,0.40, 0.07, 0,0,0}, --med
+  {0.55,0.30, 0.29, 0,0,0}, --high
+}
 
+
+armfsm.valveonearm.clearance = -0.08
 armfsm.valveonearm.velTurnAngle = 6*DEG_TO_RAD * speed_factor
 armfsm.valveonearm.velInsert = 0.01 * speed_factor
 ---------------------------------------------------------------

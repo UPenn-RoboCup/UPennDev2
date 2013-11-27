@@ -95,10 +95,25 @@ function state.update()
 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-        local trLArmTarget=Config.armfsm.valveonearm.arminit[1]
-        local arm_seq = {{'move',trLArmTarget, nil}}
+        local model = hcm.get_largevalve_model()
+        local arm_seq
+        if model[3]>0.09 then --high
+          arm_seq = {
+            {'move',Config.armfsm.valveonearm.arminit[1], nil},
+            {'move',Config.armfsm.valveonearm.arminit[2], nil},
+            {'move',Config.armfsm.valveonearm.arminit[3], nil},
+          }
+        elseif model[3]>0.05 then --med
+          arm_seq = {
+            {'move',Config.armfsm.valveonearm.arminit[1], nil},
+            {'move',Config.armfsm.valveonearm.arminit[2], nil},
+          }
+        else
+          arm_seq = {{'move',Config.armfsm.valveonearm.arminit[1], nil}}
+        end
+        
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armready" end        
-        --hcm.set_state_proceed(0)  --stop after init
+--      hcm.set_state_proceed(0)  --stop after init
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
         local wrist_seq = {{'wrist',trLArm0, nil}}

@@ -31,7 +31,7 @@ while true do
   local t = unix.time()
   
   -- In position mode
-  if jcm.gripperPtr.torque_mode[2]==0 then
+  if jcm.gripperPtr.torque_mode[3]==0 then
     -- Make sure we are in the right mode
     while is_torque_mode do
       lD.set_rx_torque_mode(rclaw_id,0,usb2dyn)
@@ -89,7 +89,7 @@ while true do
     t_read_last = t_read
     if t-t_debug>1 then
       -- Debug printing
-      print('Time diff:',t_read_diff)
+      print('Time diff:',t_read_diff,'Torque mode',is_torque_mode)
       util.ptable(lall)
       print()
       t_debug=t

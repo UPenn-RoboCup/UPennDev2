@@ -1,11 +1,10 @@
 local vector = require'vector'
 local DEG_TO_RAD = math.pi/180
 
-local IS_LONGARM = true
-local IS_LONGARM = false
-
-
 local Config = {}
+
+Config.IS_LONGARM =true
+--Config.IS_LONGARM =false
 
 ------------------------------------
 -- For the arm FSM
@@ -14,16 +13,13 @@ local arm = {}
 
 --Gripper end position offsets (Y is inside)
 arm.handoffset={}
---arm.handoffset.gripper = {0.245,0.035,0} --Default gripper
-arm.handoffset.gripper = {0.245,0,0} --Default gripper
 
---For older hook
---arm.handoffset.outerhook = {0.285,-0.065,0} --Single hook (for door)
-
---For new hook
-arm.handoffset.outerhook = {0.285,0,0.065} --Single hook (for door)
-
-arm.handoffset.chopstick = {0.285,0,0} --Two rod (for valve)
+--0.130 + 0.60+0.50
+arm.handoffset.gripper = {0.241,0,0} --Default gripper
+--0.130+0.139+0.80-0.10
+arm.handoffset.outerhook = {0.339,0,0.040} --Single hook (for door)
+--0.130 + 0.140+0.80-0.10
+arm.handoffset.chopstick = {0.340,0,0} --Two rod (for valve)
 
 --Arm planner variables
 arm.plan={}
@@ -34,12 +30,10 @@ arm.plan.max_margin = math.pi/6
 arm.plan.dt_step0 = 0.1
 arm.plan.dt_step = 0.2
 arm.plan.search_step = 1
---arm.plan.search_step = .25
 
 
 
 -- Arm speed limits
-
 arm.wrist_turn_limit = vector.new({0,0,0,15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
 arm.shoulder_yaw_limit = 10*math.pi/180
 arm.torso_comp_limit = vector.new({0.02,0.01})
@@ -52,6 +46,8 @@ arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD
 
 -- Linear movement speed limits
 arm.linear_slow_limit = vector.new({0.02,0.02,0.02, 15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
+
+
 
 
 local speed_factor = 1
@@ -100,22 +96,38 @@ armfsm = {}
 ------   Drill pickup 
 ---------------------------------------------------------------
 armfsm.toolgrip = {}
-armfsm.toolgrip.lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
+--armfsm.toolgrip.lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
+armfsm.toolgrip.lhand_rpy = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 armfsm.toolgrip.rhand_rpy = {0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
 
 --xyz, yaw
 armfsm.toolgrip.default_model = {
-  0.53,-0.02,0.00,  0*DEG_TO_RAD}
+  0.50,-0.06,0.00,  0*DEG_TO_RAD}
 
 armfsm.toolgrip.arminit={
-  {0.25,-0.10,-0.05},  
-  {0.30,-0.10,-0.10},
-  {0.35,-0.10,0.05},
+--0.13 -0.13 -0.20
+  {0.33,-0.10,-0.20, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
-armfsm.toolgrip.armhold={ {0.20,0.0,-0.10}}
-armfsm.toolgrip.tool_clearance={-0.08,0,0}
+
+armfsm.toolgrip.armhold={0.25,0.0,-0.20}
+armfsm.toolgrip.tool_clearance={-0.05,0,0}
 armfsm.toolgrip.tool_liftup = {0,0,0.05}
-armfsm.toolgrip.tool_liftuppull = {-0.20,0,0.05}
+armfsm.toolgrip.tool_clearance_x = 0.38
+
+if Config.IS_LONGARM then --for long arm
+  armfsm.toolgrip.arminit={
+  --0.13 -0.13 -0.20
+    {0.33,-0.10,-0.20, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+    {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  }
+  armfsm.toolgrip.default_model = {
+    0.55,-0.06,0.07,  0*DEG_TO_RAD}
+
+  --Higher
+  armfsm.toolgrip.default_model = {
+    0.55,-0.06,0.20,  0*DEG_TO_RAD}    
+end
 
 ---------------------------------------------------------------
 ------   Drill cut
@@ -135,8 +147,27 @@ armfsm.toolchop.curpos={
 }
 --How much torso should follow arm?
 armfsm.toolchop.torsoMovementMag = 0.5
+
 armfsm.toolchop.drill_clearance = {-0.05,0,0}
 
+armfsm.toolchop.drill_offset = {0,0,0.10}
+
+
+if Config.IS_LONGARM then --for long arm
+--  armfsm.toolgrip.armhold={0.25,0.0,-0.20}
+  armfsm.toolchop.arminit={
+    {0.35,-0.0,-0.20},  
+    {0.35,-0.0,-0.20},
+    {0.40,-0.20,-0.13}, --center pos    
+  }
+--SJ: we can really barely cut this
+  armfsm.toolchop.curpos={
+    {0.50,0.15,0.0,0},
+    {0.50,-0.35,0.0,0},
+    {0.50,-0.35,0.245,0}
+  }
+  armfsm.toolchop.torsoMovementMag = 0.5
+end
 ---------------------------------------------------------------
 ------   Hose pickup
 ---------------------------------------------------------------
@@ -174,48 +205,18 @@ armfsm.hoseattach.rhand_rpy = {90*DEG_TO_RAD,0*DEG_TO_RAD, 90*DEG_TO_RAD}
 
 armfsm.hoseattach.larminit={
   {0.40,0.35,-0.20, unpack(armfsm.hoseattach.lhand_rpy0)},
-  {0.25,0.05,0.0, unpack(armfsm.hoseattach.lhand_rpy)},
+  {0.20,0.05,0.0, unpack(armfsm.hoseattach.lhand_rpy)},
 }
 armfsm.hoseattach.rarminit={
   {0.40,-0.35,-0.20, unpack(armfsm.hoseattach.rhand_rpy0)},
-  {0.33,-0.05,0.0, unpack(armfsm.hoseattach.rhand_rpy)},
+  {0.28,-0.05,0.0, unpack(armfsm.hoseattach.rhand_rpy)},
 }
 
-armfsm.hoseattach.clearance={-0.05,0,0}
+armfsm.hoseattach.clearance={-0.03,0,0}
 
 --xyz yaw
 armfsm.hoseattach.default_model = {
-  0.30,0.0, 0.10, 0}
-
---[[
-armfsm.hosegrip.armflip={
-  vector.new({160,0,0,-140,90,40,0})*DEG_TO_RAD,   
-  vector.new({90,0,0,-140,90,40,0})*DEG_TO_RAD, 
-  vector.new({90,150,0,-140,90,40,0})*DEG_TO_RAD, 
-  vector.new({90,150,0,-140,90,-10,0})*DEG_TO_RAD,
-}
-
-armfsm.hosegrip.arminit={
---  {0.42,0.30,0.08, unpack(armfsm.hosegrip.lhand_rpy)},
-  {0.42,0.30,0.20, unpack(armfsm.hosegrip.lhand_rpy)},
-  {0.52,0.30,0.20, unpack(armfsm.hosegrip.lhand_rpy)},
-}
-
-armfsm.hosegrip.armuninit={
-  {0.41,0.23,0.08, -132.9*DEG_TO_RAD, 43.8*DEG_TO_RAD, -26.5*DEG_TO_RAD},
-}
---91 150 0 -138 -84 10 174 
---SJ: we need to flip the wrist angle first :[
-armfsm.hosegrip.armunflip={
-  vector.new({90,150,0,-140,-90,10,180})*DEG_TO_RAD,
-  vector.new({90,150,0,-140,-89,0,181})*DEG_TO_RAD,
-  vector.new({90,150,0,-140, 90,0,0})*DEG_TO_RAD,
-  vector.new({90,150,0,-140,90,40,0})*DEG_TO_RAD, 
-  vector.new({90,0,0,-140,90,40,0})*DEG_TO_RAD, 
-  vector.new({160,0,0,-140,90,40,0})*DEG_TO_RAD,   
-  vector.new({124,12,0,-80,85,14,-98})*DEG_TO_RAD,   
-}
---]]
+  0.26,0.0, 0.10, 0}
 
 ---------------------------------------------------------------
 ------   Door pull open
@@ -223,7 +224,8 @@ armfsm.hosegrip.armunflip={
 armfsm.dooropen={}
 
 armfsm.dooropen.default_model = {
-  0.50,-1.15,0.09,  --Hinge pos
+--  0.50,-1.15,0.09,  --Hinge pos
+  0.60,-1.18,0.09,  --Hinge pos
   0.86,             --Door width (hinge to knob axle)
   -0.05,            --Knob X offset from door
   0.11,             --Knob Y offset (from knob axle)
@@ -236,12 +238,19 @@ armfsm.dooropen.rhand_rpy_release1={0*DEG_TO_RAD,-30*DEG_TO_RAD,-80*DEG_TO_RAD}
 armfsm.dooropen.rhand_rpy_release2={0*DEG_TO_RAD,70*DEG_TO_RAD,-80*DEG_TO_RAD}
 armfsm.dooropen.rhand_rpy_release3={0*DEG_TO_RAD,85*DEG_TO_RAD,0*DEG_TO_RAD}
 
-armfsm.dooropen.rhand_rpy_forward={0*DEG_TO_RAD,5*DEG_TO_RAD,10*DEG_TO_RAD}
+
+armfsm.dooropen.rhand_rpy_forward={0*DEG_TO_RAD,85*DEG_TO_RAD,-90*DEG_TO_RAD}
+armfsm.dooropen.rhand_rpy_forward2={0*DEG_TO_RAD,85*DEG_TO_RAD,-90*DEG_TO_RAD}
 armfsm.dooropen.rhand_rpy_sidepush={90*DEG_TO_RAD,0*DEG_TO_RAD,0*DEG_TO_RAD}
+
+
+
 ------------------------------------------------------
 --Hook down
 armfsm.dooropen.handle_clearance0 = vector.new({-0.05,0,0.05})
 armfsm.dooropen.handle_clearance = vector.new({0,0,0.05})
+armfsm.dooropen.handle_clearance2 = vector.new({0,0,0.05})
+
 
 armfsm.dooropen.rollTarget = 45*DEG_TO_RAD
 armfsm.dooropen.yawTargetInitial = 8*DEG_TO_RAD
@@ -250,14 +259,6 @@ armfsm.dooropen.yawTarget = 30*DEG_TO_RAD
 armfsm.dooropen.velDoorRoll = 10*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velDoorYaw = 2*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velWaistYaw = 3*DEG_TO_RAD * speed_factor
-
-armfsm.dooropen.yawTarget = 25*DEG_TO_RAD
-
-
-
-
-
-
 
 --swing open phase after unlock the door 
   
@@ -335,16 +336,48 @@ armfsm.valveonearm = {}
 
 --Axel XYZ, radius, valve angle 1, valve angle 2
 armfsm.valveonearm.default_model_small= 
-  {0.55,0.30,0.07, 
-    0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+  {0.60,0.30,0.07, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+
+--height should be between 0.81(-0.12) to 1.22 (+0.29)
 
 armfsm.valveonearm.default_model_large= 
-  {0.55,0.27,0.07,   
-    0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+  {0.69,0.27,0.07, 0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
-armfsm.valveonearm.arminit={{0.35,0.30,-0.15, 0,0,0}}
+--boundary between low/med/high
+armfsm.valveonearm.heights={0.03,0.09}
+
+armfsm.valveonearm.arminit={
+  {0.55,0.30,-0.12, 0,0,0}, --low
+  {0.55,0.40, 0.07, 0,0,0}, --med
+  {0.55,0.30, 0.29, 0,0,0}, --high
+}
+
+if Config.IS_LONGARM then --for long arm
+  armfsm.valveonearm.default_model_small= 
+    {0.70,0.30,0.07, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+
+--[[
+  armfsm.valveonearm.default_model_small= 
+    {0.70,0.30,-0.12, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+
+  armfsm.valveonearm.default_model_small= 
+    {0.70,0.30,0.29, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+--]]
+
+  armfsm.valveonearm.arminit={
+    {0.62,0.30,-0.12, 0,0,0}, --low
+    {0.62,0.40, 0.07, 0,0,0}, --med
+    {0.62,0.30, 0.29, 0,0,0}, --high
+  }
+end
+
+
+
+
+
+
+
 armfsm.valveonearm.clearance = -0.08
-
 armfsm.valveonearm.velTurnAngle = 6*DEG_TO_RAD * speed_factor
 armfsm.valveonearm.velInsert = 0.01 * speed_factor
 ---------------------------------------------------------------
@@ -352,8 +385,8 @@ armfsm.valveonearm.velInsert = 0.01 * speed_factor
 ---------------------------------------------------------------
 armfsm.valvebar = {}
 --Axel XYZ, radius, current valve angle, final valve angle, hand fit angle, 
---valve angle zero: straight down
-armfsm.valvebar.default_model= {0.55,0.20,0.07,   
+--valve angle zero: straight UP
+armfsm.valvebar.default_model= {0.65,0.20,0.07,   
   0.05, 0, 90*DEG_TO_RAD, -10*DEG_TO_RAD  }
 
 armfsm.valvebar.arminit={{0.35,0.30,-0.15, 0,0,0}}
@@ -438,14 +471,17 @@ armfsm.rocky.rarminit={
 ---- FOR LONG ARM (25cm)
 --------------------------------------------------------------------------
 
-if IS_LONGARM then
+if Config.IS_LONGARM then
   armfsm.dooropen.default_model = {
-    0.58,-1.20,0.09,  --Hinge pos
+    0.65,-1.20,0.09,  --Hinge pos
     0.86,             --Door width (hinge to knob axle)
     -0.05,            --Knob X offset from door
     0.08,             --Knob Y offset (from knob axle)
   }
-  armfsm.dooropen.yawTarget = 45*DEG_TO_RAD
+  armfsm.dooropen.yawTarget = 30*DEG_TO_RAD
+
+  armfsm.dooropen.yawTarget = 25*DEG_TO_RAD
+
 
   armfsm.dooredge.hinge_offset_z = -0.29 
   armfsm.dooredge.door_yaw1 = 15*DEG_TO_RAD
@@ -460,12 +496,7 @@ if IS_LONGARM then
 
 
 
-  armfsm.toolchop.curpos={
-    {0.40,0.22,-0.03,0},
-    {0.40,-0.38,-0.03,0},
-    {0.40,-0.38,0.27,0}
-  }
-  armfsm.toolchop.torsoMovementMag = 0.3
+  
 
 end
 

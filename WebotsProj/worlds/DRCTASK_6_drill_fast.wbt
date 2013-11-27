@@ -37,33 +37,24 @@ THOROP7_NoBoundaries_ShortGripperOnly {
 
 
 DEF MY_TABLE Solid {
-  translation -0.5 1 1
+  translation -0.5 1 1.1
   children [
     Transform {
 			translation 0 0 0.1
       children [
         Shape {
           geometry Box {
-            size 0.5 0.05 0.8
-          }
-        }
-      ]
-    }
-    Transform {
-      translation 0 -0.5 0.15
-      children [
-        Shape {
-          geometry Box {
-            size 0.075 1 0.075
+            size 0.5 0.05 0.5
           }
         }
       ]
     }
   ]
   boundingObject Transform {
+    translation 0 0 0.1
     children [
       Box {
-        size 0.5 0.05 0.8
+        size 0.5 0.05 0.5
       }
     ]
   }
@@ -71,7 +62,7 @@ DEF MY_TABLE Solid {
 
 
 DEF MY_DRILL Solid {
-  translation -0.5 1.15 0.8
+  translation -0.5 1.15 1.1
   children [
     Shape {
       appearance Appearance {
@@ -81,19 +72,72 @@ DEF MY_DRILL Solid {
         }
       }
       geometry Cylinder {
-        height 0.3
-        radius 0.04
+        height 0.1
+        radius 0.025
       }
     }
+    Transform {
+      translation 0 -0.075 0
+      children[
+        Shape {
+          geometry Cylinder {
+            height 0.05 radius 0.05
+          }
+        }
+      ]
+    }
+    Transform{
+      translation 0 0.06 0.03
+      rotation 1 0 0 1.57
+      children[
+        Shape {
+          geometry Cylinder {
+            height 0.15
+            radius 0.04
+          }
+        }
+      ]
+    }
+    Transform{
+      translation 0 0.06 0.15
+      rotation 1 0 0 1.57
+      children[
+        Shape {
+          geometry Cylinder {
+            height 0.2
+            radius 0.01
+          }
+        }
+      ]
+    }
   ]
-  boundingObject Transform {
+
+
+
+  boundingObject Group{
     children [
-      Cylinder {
-        height 0.3
-        radius 0.04
+      Transform {
+        children [
+          Cylinder {
+            height 0.1
+            radius 0.025
+          }
+        ]
+      }
+      Transform {
+        translation 0 -0.075 0
+        children [
+          Cylinder {
+            height 0.05
+            radius 0.05
+          }
+        ]
       }
     ]
   }
+
+
+
   physics Physics {
     density -1
     mass 3
@@ -119,6 +163,7 @@ DEF WALL_TO_BREAK Solid {
       }
     ]
   }
+  locked TRUE
 }
 
 Solid {
@@ -138,6 +183,7 @@ Solid {
       }
     }
   ]
+  locked TRUE
 }
 
 Solid {
@@ -157,6 +203,7 @@ Solid {
       }
     }
   ]
+  locked TRUE
 }
 
 Solid {
@@ -176,6 +223,7 @@ Solid {
       }
     }
   ]
+  locked TRUE
 }
 
 DEF MARKER1 Solid {

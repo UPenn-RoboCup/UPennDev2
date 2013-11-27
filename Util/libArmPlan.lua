@@ -190,7 +190,7 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
     local uTorsoCompNextTarget = self:get_torso_compensation(qLArmNext,qRArmNext,massL,massR)
     local uTorsoCompNext, torsoCompDone
 
-    if mcm.get_stance_enable_torso_track()>0 then
+    if mcm.get_stance_enable_torso_track()==1 then
       --Only compensate for X axis
       --Y position should be based on arm position
       if mcm.get_stance_track_hand_isleft()>0 then
@@ -205,9 +205,21 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
           Config.armfsm.toolchop.torsoMovementMag
       end
 --      uTorsoCompNextTarget[2]=uTorsoComp[2]
-      uTorsoCompNext, torsoCompDone= util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
+--      print("UT:",uTorsoComp[2],uTorsoCompNextTarget[2])      
 
---      print("UT:",uTorsoComp[2],uTorsoCompNextTarget[2],uTorsoCompNext[2])      
+    --Let's just lock down X as well
+      uTorsoCompNextTarget[1]=uTorsoComp[1]
+      --Clamp torso movement by 12cm
+      uTorsoCompNextTarget[2]= math.min(0.12,math.max(-0.12, uTorsoCompNextTarget[2]))
+
+
+
+      uTorsoCompNext, torsoCompDone= util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
+    elseif mcm.get_stance_enable_torso_track()==2 then
+    --Keep current Y value
+      mcm.set_stance_track_torso_y0(uTorsoCompNextTarget[2])
+      uTorsoCompNextTarget[2]=uTorsoComp[2] 
+      uTorsoCompNext, torsoCompDone= util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
     else --Normal compensation
       uTorsoCompNext, torsoCompDone= util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
     end

@@ -68,6 +68,8 @@ function update_model()
     valve_model[3] + trLArmTarget[3]-trLArm[3]
   hcm.set_barvalve_model(valve_model)
   hcm.set_state_proceed(0)
+  print("Bar valve model update:"
+    ,valve_model[1],valve_model[2],valve_model[3])
 end
 
 

@@ -68,10 +68,16 @@ function movearm.getDoorHandlePosition(pos_offset,knob_roll,door_yaw)
 
   local hand_rpy = Config.armfsm.dooropen.rhand_rpy
   local hand_yaw = door_yaw
-  if door_yaw>10*Body.DEG_TO_RAD then
-    hand_yaw = door_yaw-(door_yaw-10*Body.DEG_TO_RAD)*2.5 
-  end
 
+  local yaw_factor = 2.5
+
+--  local yaw_factor = 1.5 --30 deg at zero 
+
+
+  if door_yaw>10*Body.DEG_TO_RAD then
+    hand_yaw = door_yaw-(door_yaw-10*Body.DEG_TO_RAD)*yaw_factor
+  end
+ 
   local trHandle = T.eye()
     * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])    
     * T.rotZ(door_yaw)
@@ -237,7 +243,7 @@ function movearm.getBarValvePositionSingle(turn_angle,wrist_angle,offset)
   
   local trGripL = trHandle
        * T.rotX(turn_angle)
-       * T.trans(0,0,-handle_radius)
+       * T.trans(0,0,handle_radius)
        * T.rotX(wrist_angle)
        * T.transform6D(
           {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  

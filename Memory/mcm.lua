@@ -19,6 +19,9 @@ shared.stance.uTorsoCompBias = vector.zeros(2)
 
 --Used for drilling task
 --Torso compensation is used to follow arm position, not for balancing
+--0: compensation
+--1: follow the arm
+--2: stop compensation (keep current value)
 shared.stance.enable_torso_track = vector.zeros(1)
 shared.stance.track_hand_isleft = vector.zeros(1)
 shared.stance.track_hand_y0 =  vector.zeros(1)

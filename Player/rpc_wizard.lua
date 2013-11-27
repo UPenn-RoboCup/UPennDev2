@@ -130,7 +130,14 @@ local function send_status_feedback()
   data.rgrip = Body.get_rgrip_command_position()
 
   --Pose information
-  data.pose =  wcm.get_robot_pose()    
+--  data.pose =  wcm.get_robot_pose()    
+
+--SJ: now we apply torso compensation to pose 
+  local uTorsoComp = mcm.get_stance_uTorsoComp()
+  data.pose = util.pose_global(
+    vector.new({uTorsoComp[1],uTorsoComp[2],0}), wcm.get_robot_pose()
+    )
+
   data.pose_odom =  wcm.get_robot_pose_odom()
   data.pose_slam =  wcm.get_slam_pose()
   data.rpy = Body.get_sensor_rpy()

@@ -223,7 +223,7 @@ DEF WYE_WALL Solid {
 
 
 DEF WYE_TIP1 Solid {
-  translation -2.6 1 0
+  translation -2.6 1.02 0
   rotation 0 0 1 1.57
   children [
     Shape {
@@ -235,8 +235,156 @@ DEF WYE_TIP1 Solid {
       }
       geometry Cylinder {
         height 0.08
-        radius 0.08
+        radius 0.04
       }
+    }
+    Transform{
+      translation 0 -0.08 -0.04
+      rotation 1 0 0 0.6
+      children[
+        Shape {
+          appearance Appearance {
+            material Material {
+              ambientIntensity 0.9
+              diffuseColor 0.9 0.2 0.2
+            }
+          }
+          geometry Cylinder {
+            height 0.08
+            radius 0.04
+          }
+        }
+      ]
+    }
+    Transform{
+      translation 0 -0.08 0.04
+      rotation 1 0 0 -0.6
+      children[
+        Shape {
+          appearance Appearance {
+            material Material {
+              ambientIntensity 0.9
+              diffuseColor 0.9 0.2 0.2
+            }
+          }
+          geometry Cylinder {
+            height 0.08
+            radius 0.04
+          }
+        }
+      ]
+    }
+  ]
+  locked TRUE
+}
+
+DEF WYE_TIP2 Solid {
+  translation -2.6 0.81 0
+  rotation 0 0 1 1.57
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.9
+          diffuseColor 0.9 0.2 0.2
+        }
+      }
+      geometry Cylinder {
+        height 0.08
+        radius 0.04
+      }
+    }
+    Transform{
+      translation 0 -0.08 -0.04
+      rotation 1 0 0 0.6
+      children[
+        Shape {
+          appearance Appearance {
+            material Material {
+              ambientIntensity 0.9
+              diffuseColor 0.9 0.2 0.2
+            }
+          }
+          geometry Cylinder {
+            height 0.08
+            radius 0.04
+          }
+        }
+      ]
+    }
+    Transform{
+      translation 0 -0.08 0.04
+      rotation 1 0 0 -0.6
+      children[
+        Shape {
+          appearance Appearance {
+            material Material {
+              ambientIntensity 0.9
+              diffuseColor 0.9 0.2 0.2
+            }
+          }
+          geometry Cylinder {
+            height 0.08
+            radius 0.04
+          }
+        }
+      ]
+    }
+  ]
+  locked TRUE
+}
+
+DEF WYE_TIP1 Solid {
+  translation -2.6 1.22 0
+  rotation 0 0 1 1.57
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.9
+          diffuseColor 0.9 0.2 0.2
+        }
+      }
+      geometry Cylinder {
+        height 0.08
+        radius 0.04
+      }
+    }
+    Transform{
+      translation 0 -0.08 -0.04
+      rotation 1 0 0 0.6
+      children[
+        Shape {
+          appearance Appearance {
+            material Material {
+              ambientIntensity 0.9
+              diffuseColor 0.9 0.2 0.2
+            }
+          }
+          geometry Cylinder {
+            height 0.08
+            radius 0.04
+          }
+        }
+      ]
+    }
+    Transform{
+      translation 0 -0.08 0.04
+      rotation 1 0 0 -0.6
+      children[
+        Shape {
+          appearance Appearance {
+            material Material {
+              ambientIntensity 0.9
+              diffuseColor 0.9 0.2 0.2
+            }
+          }
+          geometry Cylinder {
+            height 0.08
+            radius 0.04
+          }
+        }
+      ]
     }
   ]
   locked TRUE

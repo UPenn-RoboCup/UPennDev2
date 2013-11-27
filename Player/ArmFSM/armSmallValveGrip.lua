@@ -95,10 +95,24 @@ function state.update()
 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-        local trLArmTarget=Config.armfsm.valveonearm.arminit[1]
-        local arm_seq = {{'move',trLArmTarget, nil}}
+        local model = hcm.get_largevalve_model()
+        local arm_seq
+        if model[3]>Config.armfsm.valveonearm.heights[2] then --high
+          arm_seq = {
+            {'move',Config.armfsm.valveonearm.arminit[1], nil},
+            {'move',Config.armfsm.valveonearm.arminit[2], nil},
+            {'move',Config.armfsm.valveonearm.arminit[3], nil},
+          }
+        elseif model[3]>Config.armfsm.valveonearm.heights[1] then --mid
+          arm_seq = {
+            {'move',Config.armfsm.valveonearm.arminit[1], nil},
+            {'move',Config.armfsm.valveonearm.arminit[2], nil},           
+          }
+        else --low
+          arm_seq = {{'move',Config.armfsm.valveonearm.arminit[1], nil}}
+        end        
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armready" end        
-        --hcm.set_state_proceed(0)  --stop after init
+--      hcm.set_state_proceed(0)  --stop after init
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
         local wrist_seq = {{'wrist',trLArm0, nil}}
@@ -113,7 +127,19 @@ function state.update()
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       elseif hcm.get_state_proceed()==-1 then               
-        local arm_seq = {{'move',trLArm1, nil}}
+        --local arm_seq = {{'move',trLArm1, nil}}
+        local arm_seq
+        local model = hcm.get_largevalve_model()
+        if model[3]>Config.armfsm.valveonearm.heights[2] then --high
+          arm_seq = {{'move',Config.armfsm.valveonearm.arminit[2], nil},
+              {'move',Config.armfsm.valveonearm.arminit[1], nil},
+              {'move',trLArm1, nil},}
+        elseif model[3]>Config.armfsm.valveonearm.heights[1] then --mid
+          arm_seq = {{'move',Config.armfsm.valveonearm.arminit[1], nil},
+            {'move',trLArm1, nil},}
+        else
+          arm_seq = {{'move',trLArm1, nil},}
+        end
         if arm_planner:plan_arm_sequence(arm_seq) then stage="wristturn" end
       end
     end
@@ -123,13 +149,19 @@ function state.update()
         local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,0,1)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
-        hcm.set_state_proceed(0)
+        hcm.set_state_proceed(0)        
       elseif hcm.get_state_proceed(0)==-1 then
-        local trLArmTarget=Config.armfsm.valveonearm.arminit[1]
-        local arm_seq = {{'move',trLArmTarget,nil}}
+        local model = hcm.get_largevalve_model()
+        local arm_seq
+        if model[3]>Config.armfsm.valveonearm.heights[2] then --high
+          arm_seq = {{'move',Config.armfsm.valveonearm.arminit[3], nil}}
+        elseif model[3]>Config.armfsm.valveonearm.heights[1] then --mid
+          arm_seq = {{'move',Config.armfsm.valveonearm.arminit[2], nil}}
+        else
+          arm_seq = {{'move',Config.armfsm.valveonearm.arminit[1], nil}}
+        end
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armready" end
       elseif hcm.get_state_proceed(0)==2 then      
-        print("update")  
         update_model()
         local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,Config.armfsm.valveonearm.clearance, 1)
         local arm_seq = {{'move',trLArmTarget, nil}}

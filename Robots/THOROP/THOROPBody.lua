@@ -630,16 +630,25 @@ for part,jlist in pairs( parts ) do
 end -- anthropomorphic
 --------------------------------
 
-
-
-
 ----------------------
 -- Inverse Kinematics
-local Kinematics = require'THOROPKinematics'
+local Kinematics
+if Config.IS_LONGARM then
+  Kinematics = require'THOROPLongarmKinematics' 
+  print("LONGARM IK LOADED")
+  print("LONGARM IK LOADED")
+  print("LONGARM IK LOADED")
+else
+  Kinematics = require'THOROPKinematics' 
+  print("SHORTARM IK LOADED")
+  print("SHORTARM IK LOADED")
+  print("SHORTARM IK LOADED")
+end
 
 -- Check the error from a desired transform tr
 -- to a forwards kinematics of in IK solution q
 local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
+
   -- Tolerate a 1mm error in distance  
   pos_tol = pos_tol or 0.001
   ang_tol = ang_tol or 0.1*DEG_TO_RAD

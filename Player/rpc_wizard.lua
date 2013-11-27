@@ -133,7 +133,7 @@ local function send_status_feedback()
 --  data.pose =  wcm.get_robot_pose()    
 
 --SJ: now we apply torso compensation to pose 
-  local uTorsoComp = mcm.get_stance_uTorsoComp
+  local uTorsoComp = mcm.get_stance_uTorsoComp()
   data.pose = util.pose_global(
     vector.new({uTorsoComp[1],uTorsoComp[2],0}), wcm.get_robot_pose()
     )

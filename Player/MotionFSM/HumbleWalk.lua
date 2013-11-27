@@ -190,18 +190,12 @@ function walk.update()
 
 
 
+  local uTorsoComp = mcm.get_stance_uTorsoComp()
+  local uTorsoCompensated = util.pose_global(
+      {uTorsoComp[1],uTorsoComp[2],0},uTorso)
 
-  moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
-
-
-
-
-
-
-
-
-
-
+  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
+      zLeft,zRight,delta_legs)    
 
 
   if is_logging then

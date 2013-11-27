@@ -96,7 +96,8 @@ armfsm = {}
 ------   Drill pickup 
 ---------------------------------------------------------------
 armfsm.toolgrip = {}
-armfsm.toolgrip.lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
+--armfsm.toolgrip.lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
+armfsm.toolgrip.lhand_rpy = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 armfsm.toolgrip.rhand_rpy = {0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
 
 --xyz, yaw
@@ -104,14 +105,29 @@ armfsm.toolgrip.default_model = {
   0.50,-0.06,0.00,  0*DEG_TO_RAD}
 
 armfsm.toolgrip.arminit={
-  {0.28,-0.10,-0.05},  
-  {0.33,-0.10,-0.10},
-  {0.38,-0.10,0.05},
+--0.13 -0.13 -0.20
+  {0.33,-0.10,-0.20, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
-armfsm.toolgrip.armhold={ {0.25,0.0,-0.10}}
-armfsm.toolgrip.tool_clearance={-0.08,0,0}
+
+armfsm.toolgrip.armhold={0.25,0.0,-0.20}
+armfsm.toolgrip.tool_clearance={-0.05,0,0}
 armfsm.toolgrip.tool_liftup = {0,0,0.05}
-armfsm.toolgrip.tool_liftuppull = {-0.15,0,0.05}
+armfsm.toolgrip.tool_clearance_x = 0.38
+
+if Config.IS_LONGARM then --for long arm
+  armfsm.toolgrip.arminit={
+  --0.13 -0.13 -0.20
+    {0.33,-0.10,-0.20, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+    {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  }
+  armfsm.toolgrip.default_model = {
+    0.55,-0.06,0.07,  0*DEG_TO_RAD}
+
+  --Higher
+  armfsm.toolgrip.default_model = {
+    0.55,-0.06,0.20,  0*DEG_TO_RAD}    
+end
 
 ---------------------------------------------------------------
 ------   Drill cut
@@ -131,8 +147,29 @@ armfsm.toolchop.curpos={
 }
 --How much torso should follow arm?
 armfsm.toolchop.torsoMovementMag = 0.5
+
 armfsm.toolchop.drill_clearance = {-0.05,0,0}
 
+armfsm.toolchop.drill_offset = {0,0,0.10}
+
+
+if Config.IS_LONGARM then --for long arm
+--  armfsm.toolgrip.armhold={0.25,0.0,-0.20}
+  armfsm.toolchop.arminit={
+    {0.35,-0.0,-0.20},  
+    {0.35,-0.0,-0.20},
+    {0.40,-0.20,-0.13}, --center pos    
+  }
+--SJ: we can really barely cut this
+  armfsm.toolchop.curpos={
+    {0.43,0.19,-0.03,0},
+--    {0.50,-0.41,-0.03,0},
+--    {0.50,-0.41,0.27,0}
+    {0.43,-0.38,-0.03,0},
+    {0.43,-0.38,0.27,0}
+  }
+  armfsm.toolchop.torsoMovementMag = 0.5
+end
 ---------------------------------------------------------------
 ------   Hose pickup
 ---------------------------------------------------------------
@@ -461,12 +498,7 @@ if Config.IS_LONGARM then
 
 
 
-  armfsm.toolchop.curpos={
-    {0.40,0.22,-0.03,0},
-    {0.40,-0.38,-0.03,0},
-    {0.40,-0.38,0.27,0}
-  }
-  armfsm.toolchop.torsoMovementMag = 0.3
+  
 
 end
 

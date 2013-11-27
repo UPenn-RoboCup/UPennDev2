@@ -162,11 +162,9 @@ if Config.IS_LONGARM then --for long arm
   }
 --SJ: we can really barely cut this
   armfsm.toolchop.curpos={
-    {0.43,0.19,-0.03,0},
---    {0.50,-0.41,-0.03,0},
---    {0.50,-0.41,0.27,0}
-    {0.43,-0.38,-0.03,0},
-    {0.43,-0.38,0.27,0}
+    {0.50,0.15,0.0,0},
+    {0.50,-0.35,0.0,0},
+    {0.50,-0.35,0.245,0}
   }
   armfsm.toolchop.torsoMovementMag = 0.5
 end

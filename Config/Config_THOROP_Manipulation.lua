@@ -1,11 +1,10 @@
 local vector = require'vector'
 local DEG_TO_RAD = math.pi/180
 
-local IS_LONGARM = true
-local IS_LONGARM = false
-
-
 local Config = {}
+
+Config.IS_LONGARM =true
+--Config.IS_LONGARM =false
 
 ------------------------------------
 -- For the arm FSM
@@ -31,12 +30,10 @@ arm.plan.max_margin = math.pi/6
 arm.plan.dt_step0 = 0.1
 arm.plan.dt_step = 0.2
 arm.plan.search_step = 1
---arm.plan.search_step = .25
 
 
 
 -- Arm speed limits
-
 arm.wrist_turn_limit = vector.new({0,0,0,15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
 arm.shoulder_yaw_limit = 10*math.pi/180
 arm.torso_comp_limit = vector.new({0.02,0.01})
@@ -49,6 +46,8 @@ arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD
 
 -- Linear movement speed limits
 arm.linear_slow_limit = vector.new({0.02,0.02,0.02, 15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
+
+
 
 
 local speed_factor = 1
@@ -306,16 +305,41 @@ armfsm.valveonearm.default_model_small=
 
 --height should be between 0.81(-0.12) to 1.22 (+0.29)
 
-
-
 armfsm.valveonearm.default_model_large= 
   {0.69,0.27,0.07, 0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+
+--boundary between low/med/high
+armfsm.valveonearm.heights={0.03,0.09}
 
 armfsm.valveonearm.arminit={
   {0.55,0.30,-0.12, 0,0,0}, --low
   {0.55,0.40, 0.07, 0,0,0}, --med
   {0.55,0.30, 0.29, 0,0,0}, --high
 }
+
+if Config.IS_LONGARM then --for long arm
+  armfsm.valveonearm.default_model_small= 
+    {0.70,0.30,0.07, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+
+--[[
+  armfsm.valveonearm.default_model_small= 
+    {0.70,0.30,-0.12, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+
+  armfsm.valveonearm.default_model_small= 
+    {0.70,0.30,0.29, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+--]]
+
+  armfsm.valveonearm.arminit={
+    {0.62,0.30,-0.12, 0,0,0}, --low
+    {0.62,0.40, 0.07, 0,0,0}, --med
+    {0.62,0.30, 0.29, 0,0,0}, --high
+  }
+end
+
+
+
+
+
 
 
 armfsm.valveonearm.clearance = -0.08
@@ -412,7 +436,7 @@ armfsm.rocky.rarminit={
 ---- FOR LONG ARM (25cm)
 --------------------------------------------------------------------------
 
-if IS_LONGARM then
+if Config.IS_LONGARM then
   armfsm.dooropen.default_model = {
     0.65,-1.20,0.09,  --Hinge pos
     0.86,             --Door width (hinge to knob axle)

@@ -186,31 +186,6 @@ function state.update()
         local angle1 = Config.armfsm.hoseattach.angle1
         local angle2 = Config.armfsm.hoseattach.angle2
 
---[[        
-        --using C shaped hook        
-        local trLArmTarget1,trRArmTarget1 = movearm.getHoseAttachPosition(
-            {0,0,0},0,0,rclearance)
-        local trLArmTarget2,trRArmTarget2 = movearm.getHoseAttachPosition(
-            {0,0,0},0,angle1,rclearance)
-        local trLArmTarget3,trRArmTarget3 = movearm.getHoseAttachPosition(
-            {0,0,0},0,angle1,0)
-        local trLArmTarget4,trRArmTarget4 = movearm.getHoseAttachPosition(
-            {0,0,0},0,angle2,0)
-        local trLArmTarget5,trRArmTarget5 = movearm.getHoseAttachPosition(
-            {0,0,0},0,angle2,rclearance)
-        local trLArmTarget6,trRArmTarget6 = movearm.getHoseAttachPosition(
-            {0,0,0},0,0,rclearance)
-
-        local arm_seq = {
-          {'move',trLArmTarget1,trRArmTarget1},
-          {'move',trLArmTarget2,trRArmTarget2},
-          {'move',trLArmTarget3,trRArmTarget3},
-          {'move',trLArmTarget3,trRArmTarget4},
-          {'move',trLArmTarget3,trRArmTarget5},
-          {'move',trLArmTarget3,trRArmTarget6},
-        }
---]]
-
         arm_planner:save_valveparam({{0,0,0},0,0,rclearance})
         local arm_seq = {
           {'hoseattach',{0,0,0},0,0,rclearance},

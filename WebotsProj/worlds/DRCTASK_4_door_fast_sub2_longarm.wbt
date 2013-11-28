@@ -30,7 +30,7 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP7_NoBoundaries_LongClawHook {  
-  translation -0.747878 1.15535 -0.0120909
+  translation -0.75 1.15535 -0.09
   rotation 0 1 0 1.57
   controller "thorop"
   controllerArgs "0 32"
@@ -39,7 +39,8 @@ SingleDoorCommonPush {
   translation -2.4 0 0.6
   rotation 0 1 0 1.57
 }
-SingleDoorEntree {
+#SingleDoorEntree {
+SingleDoorEntreeHandleUp {
   translation 0 0 0.6
   rotation 0 1 0 1.57
 }

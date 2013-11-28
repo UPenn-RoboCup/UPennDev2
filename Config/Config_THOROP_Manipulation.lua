@@ -21,50 +21,46 @@ arm.handoffset.outerhook = {0.339,0,0.040} --Single hook (for door)
 --0.130 + 0.140+0.80-0.10
 arm.handoffset.chopstick = {0.340,0,0} --Two rod (for valve)
 
+
+
+
 --Arm planner variables
 arm.plan={}
 arm.plan.max_margin = math.pi/6
---arm.plan.max_margin = math.pi
---arm.plan.dt_step0 = 0.5
---arm.plan.dt_step = 0.5
 arm.plan.dt_step0 = 0.1
 arm.plan.dt_step = 0.2
 arm.plan.search_step = 1
 
-
-
 -- Arm speed limits
-arm.wrist_turn_limit = vector.new({0,0,0,15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
 arm.shoulder_yaw_limit = 10*math.pi/180
 arm.torso_comp_limit = vector.new({0.02,0.01})
 
--- Use this for planned arm movement
-arm.joint_vel_limit_plan = vector.new({10,10,10,10,30,10,30}) *DEG_TO_RAD
-
--- vel limit at the servo level
-arm.slow_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD
-
 -- Linear movement speed limits
-arm.linear_slow_limit = vector.new({0.02,0.02,0.02, 15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
+arm.vel_linear_limit = vector.new({0.02,0.02,0.02, 15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
+
+-- Angular velocity limit at servo
+arm.vel_angular_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD
 
 
 
+--testing for speeding up 
+arm.overspeed_factor = 3
+--arm.overspeed_factor = 1
+
+arm.vel_linear_limit = vector.new({0.06,0.06,0.06, 30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD})
+arm.vel_angular_limit = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD
+arm.shoulder_yaw_limit = 20*DEG_TO_RAD
 
 local speed_factor = 1
-if IS_WEBOTS then
-  speed_factor = 3  
-end
 
-
-
-
-arm.wrist_turn_limit = arm.wrist_turn_limit * speed_factor
-arm.shoulder_yaw_limit = arm.shoulder_yaw_limit * speed_factor
-arm.torso_comp_limit = arm.torso_comp_limit * speed_factor
-arm.slow_limit = arm.slow_limit * speed_factor
-arm.linear_slow_limit = arm.linear_slow_limit * speed_factor
-arm.joint_vel_limit_plan = arm.joint_vel_limit_plan * speed_factor
-
+------------------------------------------------------
+--OLD LIMITS FOR WEBOTS
+--arm.overspeed_factor = 1
+--arm.vel_linear_limit = vector.new({0.06,0.06,0.06, 30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD})
+--arm.vel_angular_limit = vector.new({30,30,30,30,90,30,90})*DEG_TO_RAD
+arm.shoulder_yaw_limit = 30*DEG_TO_RAD
+arm.torso_comp_limit = vector.new({0.06,0.03})
+------------------------------------------------------
 
 
 --Pose 1 wrist position
@@ -274,33 +270,54 @@ armfsm.dooropen={}
 armfsm.dooropen.default_model = {
 --  0.50,-1.15,0.09,  --Hinge pos
   0.60,-1.18,0.09,  --Hinge pos
-  0.86,             --Door width (hinge to knob axle)
+  0.84,             --Door width (hinge to knob axle), 33inch for most doors
   -0.05,            --Knob X offset from door
-  0.11,             --Knob Y offset (from knob axle)
+  -0.08,             --Knob Y offset (from knob axle)
 }
 
 --With top-mounted hook------------------------------------------------------
 armfsm.dooropen.rhand_rpy={0*DEG_TO_RAD,-30*DEG_TO_RAD,0}
 
-armfsm.dooropen.rhand_rpy_release1={0*DEG_TO_RAD,-30*DEG_TO_RAD,-80*DEG_TO_RAD}
-armfsm.dooropen.rhand_rpy_release2={0*DEG_TO_RAD,70*DEG_TO_RAD,-80*DEG_TO_RAD}
+armfsm.dooropen.rhand_rpy_release1={0*DEG_TO_RAD,-30*DEG_TO_RAD,-60*DEG_TO_RAD}
+armfsm.dooropen.rhand_rpy_release2={0*DEG_TO_RAD,85*DEG_TO_RAD,-60*DEG_TO_RAD}
 armfsm.dooropen.rhand_rpy_release3={0*DEG_TO_RAD,85*DEG_TO_RAD,0*DEG_TO_RAD}
 
 
-armfsm.dooropen.rhand_rpy_forward={0*DEG_TO_RAD,85*DEG_TO_RAD,-90*DEG_TO_RAD}
-armfsm.dooropen.rhand_rpy_forward2={0*DEG_TO_RAD,85*DEG_TO_RAD,-90*DEG_TO_RAD}
-armfsm.dooropen.rhand_rpy_sidepush={90*DEG_TO_RAD,0*DEG_TO_RAD,0*DEG_TO_RAD}
+
+armfsm.dooropen.rhand_rpy_forward1={0*DEG_TO_RAD,85*DEG_TO_RAD, 20*DEG_TO_RAD}
+armfsm.dooropen.rhand_rpy_forward2={0*DEG_TO_RAD,0*DEG_TO_RAD,20*DEG_TO_RAD}
+armfsm.dooropen.rhand_rpy_sidepush={0*DEG_TO_RAD,0*DEG_TO_RAD,-80*DEG_TO_RAD}
+
+
+armfsm.dooropen.rhand_rpy_sidepush2={0*DEG_TO_RAD,85*DEG_TO_RAD,-80*DEG_TO_RAD}
+armfsm.dooropen.rhand_rpy_sidepush3={0*DEG_TO_RAD,85*DEG_TO_RAD,0*DEG_TO_RAD}
+
+
+
+
+
 
 
 
 ------------------------------------------------------
 --Hook down
+--[[
 armfsm.dooropen.handle_clearance0 = vector.new({-0.05,0,0.05})
 armfsm.dooropen.handle_clearance = vector.new({0,0,0.05})
 armfsm.dooropen.handle_clearance2 = vector.new({0,0,0.05})
-
-
 armfsm.dooropen.rollTarget = 45*DEG_TO_RAD
+--]]
+
+
+--Hook up
+armfsm.dooropen.handle_clearance0 = vector.new({-0.05,0,-0.05})
+armfsm.dooropen.handle_clearance = vector.new({0,0,-0.05})
+armfsm.dooropen.handle_clearance2 = vector.new({0,0,-0.05})
+armfsm.dooropen.rollTarget = -45*DEG_TO_RAD
+
+
+
+
 armfsm.dooropen.yawTargetInitial = 8*DEG_TO_RAD
 armfsm.dooropen.yawTarget = 30*DEG_TO_RAD
 
@@ -309,16 +326,74 @@ armfsm.dooropen.velDoorYaw = 2*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velWaistYaw = 3*DEG_TO_RAD * speed_factor
 
 
+
+armfsm.dooropen.handle_clearance2 = vector.new({0,0,-0.10})
+
 if Config.IS_LONGARM then
   armfsm.dooropen.default_model = {
-    0.65,-1.20,0.09,  --Hinge pos
+    0.62,-1.16,0.09,  --Hinge pos
+    0.84,             --Door width (hinge to knob axle)
+    -0.05,            --Knob X offset from door
+    -0.08,             --Knob Y offset (from knob axle)
+  }
+  armfsm.dooropen.yawTarget = 25*DEG_TO_RAD  
+
+
+--Current range:
+-- (0.65 -1.14) to (0.65 -1.26)
+
+
+end
+
+
+  armfsm.dooropen.yawClearance = 1*DEG_TO_RAD
+
+
+---------------------------------------------------------------
+------   Door push open
+---------------------------------------------------------------
+armfsm.doorpush={}
+
+armfsm.doorpush.default_model = {
+  0.50,-0.50,0.09,  --Hinge pos
+  0.86,             --Door width (hinge to knob axle)
+  -0.05,            --Knob X offset from door
+  -0.08,             --Knob Y offset (from knob axle)
+}
+
+armfsm.doorpush.roll1 = 0*DEG_TO_RAD
+armfsm.doorpush.roll2 = 135*DEG_TO_RAD
+armfsm.doorpush.clearance = {-0.08,0,0}
+
+armfsm.doorpush.yawTargetInitial = -8*DEG_TO_RAD
+armfsm.doorpush.yawTarget = -10*DEG_TO_RAD
+
+armfsm.doorpush.velDoorRoll = 10*DEG_TO_RAD * speed_factor
+armfsm.doorpush.velDoorYaw = 2*DEG_TO_RAD * speed_factor
+armfsm.doorpush.velWaistYaw = 3*DEG_TO_RAD * speed_factor
+
+if Config.IS_LONGARM then
+  armfsm.doorpush.default_model = {
+    0.70,-0.70,0.09,  --Hinge pos
     0.86,             --Door width (hinge to knob axle)
     -0.05,            --Knob X offset from door
     0.08,             --Knob Y offset (from knob axle)
   }
-  armfsm.dooropen.yawTarget = 30*DEG_TO_RAD
-  armfsm.dooropen.yawTarget = 25*DEG_TO_RAD
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -342,41 +417,6 @@ if Config.IS_LONGARM then
   armfsm.dooredge.door_yaw1 = 15*DEG_TO_RAD
   armfsm.dooredge.door_yaw2 = 55*DEG_TO_RAD
 end
-
----------------------------------------------------------------
-------   Door push open
----------------------------------------------------------------
-armfsm.doorpush={}
-
-armfsm.doorpush.default_model = {
-  0.50,-0.50,0.09,  --Hinge pos
-  0.86,             --Door width (hinge to knob axle)
-  -0.05,            --Knob X offset from door
-  0.08,             --Knob Y offset (from knob axle)
-}
-
-armfsm.doorpush.roll1 = 0*DEG_TO_RAD
-armfsm.doorpush.roll2 = 135*DEG_TO_RAD
-armfsm.doorpush.clearance = {-0.08,0,0}
-
-armfsm.doorpush.yawTargetInitial = -8*DEG_TO_RAD
-armfsm.doorpush.yawTarget = -10*DEG_TO_RAD
-
-armfsm.doorpush.velDoorRoll = 10*DEG_TO_RAD * speed_factor
-armfsm.doorpush.velDoorYaw = 2*DEG_TO_RAD * speed_factor
-armfsm.doorpush.velWaistYaw = 3*DEG_TO_RAD * speed_factor
-
-if Config.IS_LONGARM then
-  armfsm.doorpush.default_model = {
-    0.58,-0.50,0.09,  --Hinge pos
-    0.86,             --Door width (hinge to knob axle)
-    -0.05,            --Knob X offset from door
-    0.08,             --Knob Y offset (from knob axle)
-  }
-end
-
-
-
 
 
 

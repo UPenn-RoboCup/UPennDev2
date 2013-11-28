@@ -5,23 +5,24 @@ local util   = require'util'
 local vector = require'vector'
 require'hcm'
 
--- Angular velocity limit
-local dqArmMax = Config.arm.slow_limit
-local dpArmMax = Config.arm.linear_slow_limit
-
-
-
-
 local lShoulderYaw = -45*Body.DEG_TO_RAD;
 local rShoulderYaw = 45*Body.DEG_TO_RAD;
 
+  mcm.set_arm_dpVelLeft(Config.arm.vel_linear_limit)
+  mcm.set_arm_dpVelRight(Config.arm.vel_linear_limit)
+  mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit)
+  mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit)
+
 function movearm.setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim)
-  dqArmLim = dqArmLim or Config.arm.slow_limit
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()  
-   local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqArmLim, dt )  
-  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqArmLim, dt )
+
+  local dqVelLeft = mcm.get_arm_dqVelLeft()
+  local dqVelRight = mcm.get_arm_dqVelRight()
+
+  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqVelLeft, dt )  
+  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqVelRight, dt )
 
   --Dynamixel is STUPID so we should manually check for the direction
   for i=1,7 do
@@ -36,29 +37,6 @@ function movearm.setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim)
   if doneL2 and doneR2 then return 1 end
 end
 
-function movearm.setWristPosition(trLWristTarget, trRWristTarget, dt)
-  
-  --Interpolate in 6D space 
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-  local trLWrist = Body.get_forward_lwrist(qLArm);
-  local trRWrist = Body.get_forward_rwrist(qRArm);
-  local trLWristApproach, doneL = util.approachTol(trLWrist, trLWristTarget, dpArmMax, dt )
-  local trRWristApproach, doneR = util.approachTol(trRWrist, trRWristTarget, dpArmMax, dt )
-
-  -- Get desired angles from current angles and target transform
-  local qL_desired = Body.get_inverse_lwrist(qLArm,trLWristApproach, qLArm[3])
-  local qR_desired = Body.get_inverse_rwrist(qRArm,trRWristApproach, qRArm[3])  
-  if qL_desired and qR_desired then
-    local done = movearm.setArmJoints(qL_desired, qR_desired, dt)
-    if done then return 1
-    else return 0 end
-  else    
-    print("ERROR WITH WRIST IK")
-    return -1;
-  end  
-end
-
 function movearm.getDoorHandlePosition(pos_offset,knob_roll,door_yaw)
   local door_model = hcm.get_door_model()  
   local hinge_pos = vector.slice(door_model,1,3) + vector.new(pos_offset)  
@@ -70,23 +48,22 @@ function movearm.getDoorHandlePosition(pos_offset,knob_roll,door_yaw)
   local hand_yaw = door_yaw
 
   local yaw_factor = 2.5
-
---  local yaw_factor = 1.5 --30 deg at zero 
-
+--  local yaw_factor = 2 
 
   if door_yaw>10*Body.DEG_TO_RAD then
     hand_yaw = door_yaw-(door_yaw-10*Body.DEG_TO_RAD)*yaw_factor
   end
+  hand_yaw = hand_yaw - 20*Body.DEG_TO_RAD
  
   local trHandle = T.eye()
     * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])    
     * T.rotZ(door_yaw)
-    * T.trans(grip_offset_x, door_r+knob_offset_y, 0)     
+    * T.trans(grip_offset_x, door_r, 0)     
     * T.rotX(knob_roll)
-    * T.trans(0,-knob_offset_y, 0) 
+    * T.trans(0,knob_offset_y, 0) 
     * T.rotX(-knob_roll)
     * T.rotZ(hand_yaw-door_yaw)
-    * T.rotX(knob_roll)
+--    * T.rotX(knob_roll)
     * T.transform6D(
       {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
   local trTarget = T.position6D(trHandle)
@@ -100,26 +77,20 @@ function movearm.getDoorLeftHandlePosition(pos_offset,knob_roll,door_yaw)
 
   local door_r = door_model[4]
   local grip_offset_x = door_model[5]
+  local knob_offset_y = door_model[6]
   
 --  local hand_rpy = Config.armfsm.dooropen.rhand_rpy
   local hand_rpy = {0,0,0,0,0,0}
   local hand_yaw = door_yaw
-  if door_yaw>10*Body.DEG_TO_RAD then
-    hand_yaw = math.max(0,20*Body.DEG_TO_RAD-door_yaw)
-  end
---[[
-
-print(unpack(hinge_pos))
-print(door_yaw)
-print(door_r)
-print(knob_roll)
---]]
 
   local trHandle = T.eye()
     * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])    
     * T.rotZ(door_yaw)
-    * T.trans(0,door_r, 0)         
-    * T.rotZ(hand_yaw-door_yaw)
+
+    * T.trans(0,door_r+knob_offset_y, 0)         
+    * T.rotX(knob_roll)
+
+    * T.rotZ(-door_yaw)
     * T.rotX(knob_roll)
     * T.transform6D(
       {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  

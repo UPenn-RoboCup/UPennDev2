@@ -272,8 +272,8 @@ DEF HOOK_1 Servo {
     children [
       Shape{geometry Cylinder{height 0.16 radius 0.01}}
       Transform{
-        translation 0.02 -0.08 0
-        rotation    0 0 1 -2.09
+        translation -0.02 -0.08 0
+        rotation    0 0 1 -1.57
         children [
           Shape{geometry Cylinder{height 0.04 radius 0.01}}          
         ]
@@ -283,8 +283,8 @@ DEF HOOK_1 Servo {
       children[
         Shape{geometry Cylinder{height 0.16 radius 0.01}}
         Transform{
-          translation 0.02 -0.08 0
-          rotation    0 0 1 -2.09 #1.57+0.52
+        translation -0.02 -0.08 0
+        rotation    0 0 1 -1.57
         children [
           Shape{geometry Cylinder{height 0.04 radius 0.01}}          
         ]

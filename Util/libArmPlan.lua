@@ -57,8 +57,6 @@ local function calculate_margin(qArm,isLeft)
 end
 
 local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
-
-
   local step = Config.arm.plan.search_step
 
   --Calculte the margin for current shoulder yaw angle
@@ -105,9 +103,11 @@ end
 
 local function check_arm_joint_velocity(qArm0, qArm1, dt,velLimit)
   --Slow down the total movement time based on joint velocity limit
-  velLimit = velLimit or Config.arm.joint_vel_limit_plan
+  velLimit = velLimit or dqArmMax
+
   local qArmMovement = vector.new(qArm1) - vector.new(qArm0);
-  local max_movement_ratio = 1
+  local max_movement_ratio = 1 / Config.arm.overspeed_factor
+
   for i=1,7 do
     local movement_ratio = math.abs(util.mod_angle(qArmMovement[i]))/(velLimit[i]*dt)
     max_movement_ratio = math.max(max_movement_ratio,movement_ratio)
@@ -144,6 +144,9 @@ end
 
 local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, waistYaw)
 
+  local dqVelLeft = mcm.get_arm_dqVelLeft()
+  local dqVelRight = mcm.get_arm_dqVelRight()
+
   local velTorsoComp = Config.arm.torso_comp_limit
   local velYaw = Config.arm.shoulder_yaw_limit
   local massL, massR = self.mLeftHand, self.mRightHand
@@ -173,7 +176,6 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
     end
   end
 
-
   --Actual arm angle considering the torso compensation
   local qLArmNextComp = self:search_shoulder_angle(qLArmComp,trLArmNextComp,1, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
   local qRArmNextComp = self:search_shoulder_angle(qRArmComp,trRArmNextComp,0, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
@@ -182,8 +184,8 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
 --  print("ERROR")
     return 
   else
-    local max_movement_ratioL = check_arm_joint_velocity(qLArmComp, qLArmNextComp, dt_step)
-    local max_movement_ratioR = check_arm_joint_velocity(qRArmComp, qRArmNextComp, dt_step)
+    local max_movement_ratioL = check_arm_joint_velocity(qLArmComp, qLArmNextComp, dt_step, dqVelLeft)
+    local max_movement_ratioR = check_arm_joint_velocity(qRArmComp, qRArmNextComp, dt_step, dqVelRight)
     local dt_step_current = dt_step * math.max(max_movement_ratioL,max_movement_ratioR)
     --TODO: WAIST 
 
@@ -191,7 +193,6 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
     local uTorsoCompNext, torsoCompDone
 
     if mcm.get_stance_enable_torso_track()==1 then
-      --Only compensate for X axis
       --Y position should be based on arm position
       if mcm.get_stance_track_hand_isleft()>0 then
         uTorsoCompNextTarget[2]=
@@ -204,16 +205,9 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
           (trRArmNext[2]-mcm.get_stance_track_hand_y0())*
           Config.armfsm.toolchop.torsoMovementMag
       end
---      uTorsoCompNextTarget[2]=uTorsoComp[2]
---      print("UT:",uTorsoComp[2],uTorsoCompNextTarget[2])      
-
-    --Let's just lock down X as well
       uTorsoCompNextTarget[1]=uTorsoComp[1]
       --Clamp torso movement by 12cm
       uTorsoCompNextTarget[2]= math.min(0.12,math.max(-0.12, uTorsoCompNextTarget[2]))
-
-
-
       uTorsoCompNext, torsoCompDone= util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
     elseif mcm.get_stance_enable_torso_track()==2 then
     --Keep current Y value
@@ -230,9 +224,20 @@ end
 
 
 local function plan_unified(self, plantype, init_cond, init_param, target_param)
+--hack for now (constant speed)
+  mcm.set_arm_dpVelLeft(Config.arm.vel_linear_limit)
+  mcm.set_arm_dpVelRight(Config.arm.vel_linear_limit)
+  mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit)
+  mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit)
+
+
+
+
+  local dpVelLeft = mcm.get_arm_dpVelLeft()
+  local dpVelRight = mcm.get_arm_dpVelRight()
+
   --param: {trLArm,trRArm} for move
   --param: {trLArm,trRArm} for wrist
-
 
   if not init_cond then return end
   local done, failed = false, false, false
@@ -252,14 +257,12 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   local qArmCount = 2
   local vel_param  
 
-  local dpArmMax = Config.arm.linear_slow_limit  
-  local dpWristMax = Config.arm.wrist_turn_limit
-
   if plantype=="move" then
   elseif plantype=="wrist" then
   elseif plantype=="door" then
     target_param[4] = target_param[4] or current_cond[6]
-    local dpDoorMax = vector.slice(Config.arm.linear_slow_limit,1,3)
+
+    local dpDoorMax = vector.slice(dpVelRight,1,3)
     local dqDoorRollMax = Config.armfsm.dooropen.velDoorRoll
     local dqDoorYawMax = Config.armfsm.dooropen.velDoorYaw
     local dqWaistYawMax = Config.armfsm.dooropen.velWaistYaw
@@ -267,14 +270,14 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
   elseif plantype=="dooredge" then
     target_param[4] = target_param[4] or current_cond[6]
-    local dpDoorMax = vector.slice(Config.arm.linear_slow_limit,1,3)
+    local dpDoorMax = vector.slice(dpVelRight,1,3)
     local dqDoorYawMax = Config.armfsm.dooropen.velDoorYaw
     local dqWaistYawMax = Config.armfsm.dooropen.velWaistYaw
     vel_param={dpDoorMax, dqDoorYawMax, dqWaistYawMax}
 
   elseif plantype=="doorleft" then
     target_param[4] = target_param[4] or current_cond[6]
-    local dpDoorMax = vector.slice(Config.arm.linear_slow_limit,1,3)
+    local dpDoorMax = vector.slice(dpVelLeft,1,3)
     local dqDoorRollMax = Config.armfsm.doorpush.velDoorRoll
     local dqDoorYawMax = Config.armfsm.doorpush.velDoorYaw
     --local dqWaistYawMax = Config.armfsm.doorpush.velWaistYaw
@@ -297,7 +300,7 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       Config.armfsm.valvebar.velInsert}
   elseif plantype=="hoseattach" then        
     vel_param={
-      vector.slice(Config.arm.linear_slow_limit,1,3),
+      vector.slice(dpVelLeft,1,3),
       Config.armfsm.hoseattach.velTurnAngle,
       Config.armfsm.hoseattach.velTurnAngle,
       Config.armfsm.hoseattach.velMove}      
@@ -308,16 +311,17 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   local new_param = {}
 
   local t0 = unix.time()  
+  local t_robot = 0
 
   while not done and not failed  do        
     if plantype=="move" then
-      trLArmNext,doneL = util.approachTolTransform(trLArm, target_param[1], dpArmMax, dt_step )
-      trRArmNext,doneR = util.approachTolTransform(trRArm, target_param[2], dpArmMax, dt_step )
+      trLArmNext,doneL = util.approachTolTransform(trLArm, target_param[1], dpVelLeft, dt_step )
+      trRArmNext,doneR = util.approachTolTransform(trRArm, target_param[2], dpVelRight, dt_step )
       waistNext = current_cond[6]
       done = doneL and doneR
     elseif plantype=="wrist" then
-      trLArmNext,doneL = util.approachTolWristTransform(trLArm, target_param[1], dpWristMax, dt_step )      
-      trRArmNext,doneR = util.approachTolWristTransform(trRArm, target_param[2], dpWristMax, dt_step )
+      trLArmNext,doneL = util.approachTolWristTransform(trLArm, target_param[1], dpVelLeft, dt_step )      
+      trRArmNext,doneR = util.approachTolWristTransform(trRArm, target_param[2], dpVelRight, dt_step )
       done = doneL and doneR
       waistNext = current_cond[6]
       local qLArmTemp = Body.get_inverse_arm_given_wrist( qLArm0, trLArmNext)
@@ -414,6 +418,7 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       end
       failed = true    
     else
+      t_robot = t_robot + dt_step_current
       trLArm, trRArm = trLArmNext, trRArmNext
       qLArmQueue[qArmCount] = {new_cond[3],dt_step_current}
       qRArmQueue[qArmCount] = {new_cond[4],dt_step_current}
@@ -426,17 +431,38 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   end
 
   local t1 = unix.time()  
+
+  if failed then return end
+
+
+  local trLArm0, trRArm0 = Body.get_forward_larm(qLArm0), Body.get_forward_rarm(qRArm0)
+  local trLArm1, trRArm1 = Body.get_forward_larm(current_cond[1]), Body.get_forward_rarm(current_cond[2])
+
+  local distL = math.sqrt(
+      (trLArm0[1]-trLArm1[1])^2+
+      (trLArm0[2]-trLArm1[2])^2+
+      (trLArm0[3]-trLArm1[3])^2)
+  local distR = math.sqrt(
+      (trRArm0[1]-trRArm1[1])^2+
+      (trRArm0[2]-trRArm1[2])^2+
+      (trRArm0[3]-trRArm1[3])^2)
+
+
+  print(string.format("%.1f/ %.1f cm, %d steps, %.2fs real time, %.2f ms planning time",
+      distL*100,distR*100,
+      qArmCount,
+      t_robot,
+      (t1-t0)*1000 ))
+
   
   if debug_on_2 then
-    print(string.format("%d steps planned, %.2f ms elapsed:",qArmCount,(t1-t0)*1000 ))
     print("trLArm:",self.print_transform( Body.get_forward_larm( qLArmQueue[1][1]  ) ))
     print("trRArm:",self.print_transform( Body.get_forward_rarm( qRArmQueue[1][1]  )))
     print(string.format("TorsoComp: %.3f %.3f",uTorsoCompQueue[1][1],uTorsoCompQueue[1][2]) )
   end
 
 
-  if failed then return
-  else return qLArmQueue,qRArmQueue, uTorsoCompQueue, qWaistQueue, current_cond, current_param end
+  return qLArmQueue,qRArmQueue, uTorsoCompQueue, qWaistQueue, current_cond, current_param
 end
 
 

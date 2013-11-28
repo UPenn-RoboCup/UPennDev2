@@ -295,6 +295,12 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       Config.armfsm.valvebar.velTurnAngle,
       Config.armfsm.valvebar.velTurnAngle,
       Config.armfsm.valvebar.velInsert}
+  elseif plantype=="hoseattach" then        
+    vel_param={
+      vector.slice(Config.arm.linear_slow_limit,1,3),
+      Config.armfsm.hoseattach.velTurnAngle,
+      Config.armfsm.hoseattach.velTurnAngle,
+      Config.armfsm.hoseattach.velMove}      
   end
   
   local done, torsoCompDone = false, false
@@ -386,7 +392,14 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
         trLArmNext, trRArmNext =  trLArm, movearm.getBarValvePositionSingle(unpack(new_param))
       end
       waistNext = current_cond[6]
-
+    elseif plantype =="hoseattach" then
+      new_param[1], done1 = util.approachTol(current_param[1],target_param[1], vel_param[1],dt_step)
+      new_param[2], done2 = util.approachTol(current_param[2],target_param[2], vel_param[2],dt_step)
+      new_param[3], done3 = util.approachTol(current_param[3],target_param[3], vel_param[3],dt_step)
+      new_param[4], done4 = util.approachTol(current_param[4],target_param[4], vel_param[4],dt_step)
+      done = done1 and done2 and done3 and done4
+      trLArmNext, trRArmNext =  movearm.getHoseAttachPosition(new_param[1],new_param[2],new_param[3],new_param[4])
+      waistNext = current_cond[6]
     end
 
     local new_cond, dt_step_current, torsoCompDone=    
@@ -494,6 +507,11 @@ local function plan_arm_sequence2(self,arm_seq)
         self.init_valveparam, 
         vector.slice(arm_seq[i],2,#arm_seq[i]) )      
 
+    elseif arm_seq[i][1] =='hoseattach' then
+      LAP, RAP, uTP, WP, end_cond, end_valveparam  = self:plan_unified('hoseattach',
+        init_cond, 
+        self.init_valveparam, 
+        vector.slice(arm_seq[i],2,#arm_seq[i]) )      
     end
     if not LAP then 
       hcm.set_state_success(-1) --Report plan failure

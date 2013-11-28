@@ -251,5 +251,32 @@ function movearm.getBarValvePositionSingle(turn_angle,wrist_angle,offset)
   return T.position6D(trGripL)
 end
 
+function movearm.getHoseAttachPosition(offset, wristRollL, wristRollR, rhand_clearance)
+  local model = hcm.get_hoseattach_model()
+  local lhand_rpy = Config.armfsm.hoseattach.lhand_rpy
+  local rhand_rpy = Config.armfsm.hoseattach.rhand_rpy
+  local lhand_offset = Config.armfsm.hoseattach.lhand_offset
+  local rhand_offset = Config.armfsm.hoseattach.rhand_offset
+
+  local trHose = T.eye()
+       * T.trans(model[1]+offset[1],model[2]+offset[2],model[3]+offset[3])
+       * T.rotZ(model[4])
+       * T.rotY(model[5])
+
+  local trLeft = trHose
+      *T.trans(lhand_offset[1],lhand_offset[2],lhand_offset[3])
+      *T.rotX(wristRollL)
+      * T.transform6D(
+          {0,0,0,lhand_rpy[1],lhand_rpy[2],lhand_rpy[3]})  
+
+  local trRight = trHose
+      *T.trans(rhand_offset[1],rhand_offset[2],rhand_offset[3])
+      *T.rotX(wristRollR)
+      *T.trans(0,-rhand_clearance,0)
+      * T.transform6D(
+          {0,0,0,rhand_rpy[1],rhand_rpy[2],rhand_rpy[3]})  
+
+  return T.position6D(trLeft),T.position6D(trRight)
+end
 
 return movearm

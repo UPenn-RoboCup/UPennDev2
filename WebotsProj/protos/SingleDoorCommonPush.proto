@@ -484,30 +484,30 @@ PROTO SingleDoorCommonPush [
     ]
     boundingObject Group {
       children [
-        Transform {
-          translation 0 2.025 0
-          children [
-            Box {
-              size 0.895 0.045 0.315
-            }
-          ]
-        }
-        Transform {
-          translation 0.425 1 0
-          children [
-            Box {
-              size 0.045 1.995 0.315
-            }
-          ]
-        }
-        Transform {
-          translation -0.425 1 0
-          children [
-            Box {
-              size 0.045 1.995 0.315
-            }
-          ]
-        }
+#        Transform {
+#          translation 0 2.025 0
+#          children [
+#            Box {
+#              size 0.895 0.045 0.315
+#            }
+#          ]
+#        }
+#        Transform {
+#          translation 0.425 1 0
+#          children [
+#            Box {
+#              size 0.045 1.995 0.315
+#            }
+#          ]
+#        }
+#        Transform {
+#          translation -0.425 1 0
+#          children [
+#            Box {
+#              size 0.045 1.995 0.315
+#            }
+#          ]
+#        }
       ]
     }
   }

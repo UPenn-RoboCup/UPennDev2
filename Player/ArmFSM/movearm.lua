@@ -37,23 +37,29 @@ function movearm.setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim)
   if doneL2 and doneR2 then return 1 end
 end
 
-function movearm.getDoorHandlePosition(pos_offset,knob_roll,door_yaw)
+function movearm.getDoorHandlePosition(pos_offset,knob_roll,door_yaw, is_left)
   local door_model = hcm.get_door_model()  
   local hinge_pos = vector.slice(door_model,1,3) + vector.new(pos_offset)  
   local door_r = door_model[4]
   local grip_offset_x = door_model[5]
   local knob_offset_y = door_model[6]
 
-  local hand_rpy = Config.armfsm.dooropen.rhand_rpy
   local hand_yaw = door_yaw
-
   local yaw_factor = 2.5
+  local hand_rpy
 --  local yaw_factor = 2 
 
-  if door_yaw>10*Body.DEG_TO_RAD then
-    hand_yaw = door_yaw-(door_yaw-10*Body.DEG_TO_RAD)*yaw_factor
+  if is_left and is_left>0 then
+    hand_rpy = Config.armfsm.dooropen.lhand_rpy
+    hand_yaw = 0
+  else
+    hand_rpy = Config.armfsm.dooropen.rhand_rpy
+    if door_yaw<0 then
+      hand_yaw = 0
+    elseif door_yaw>10*Body.DEG_TO_RAD then
+      hand_yaw = door_yaw-(door_yaw-10*Body.DEG_TO_RAD)*yaw_factor
+    end
   end
-  hand_yaw = hand_yaw - 20*Body.DEG_TO_RAD
  
   local trHandle = T.eye()
     * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])    
@@ -63,38 +69,8 @@ function movearm.getDoorHandlePosition(pos_offset,knob_roll,door_yaw)
     * T.trans(0,knob_offset_y, 0) 
     * T.rotX(-knob_roll)
     * T.rotZ(hand_yaw-door_yaw)
---    * T.rotX(knob_roll)
     * T.transform6D(
       {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
-  local trTarget = T.position6D(trHandle)
-  return trTarget
-end
-
---Push open only (use left arm chopsticks)
-function movearm.getDoorLeftHandlePosition(pos_offset,knob_roll,door_yaw)
-  local door_model = hcm.get_door_model()  
-  local hinge_pos = vector.slice(door_model,1,3) + vector.new(pos_offset)  
-
-  local door_r = door_model[4]
-  local grip_offset_x = door_model[5]
-  local knob_offset_y = door_model[6]
-  
---  local hand_rpy = Config.armfsm.dooropen.rhand_rpy
-  local hand_rpy = {0,0,0,0,0,0}
-  local hand_yaw = door_yaw
-
-  local trHandle = T.eye()
-    * T.trans(hinge_pos[1],hinge_pos[2],hinge_pos[3])    
-    * T.rotZ(door_yaw)
-
-    * T.trans(0,door_r+knob_offset_y, 0)         
-    * T.rotX(knob_roll)
-
-    * T.rotZ(-door_yaw)
-    * T.rotX(knob_roll)
-    * T.transform6D(
-      {0,0,0,hand_rpy[1],hand_rpy[2],hand_rpy[3]})  
-
   local trTarget = T.position6D(trHandle)
   return trTarget
 end

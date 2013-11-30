@@ -200,7 +200,6 @@ function state.update()
 
         print("trLArm:",arm_planner.print_transform(trLArm))        
         arm_seq={
-         
           {'move',Config.armfsm.dooropen.lhand_support[6],nil},          
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "hooksupport"  
@@ -227,13 +226,8 @@ function state.update()
   elseif stage=="hookrelease" then     
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then        
---        arm_planner:set_shoulder_yaw_target(qLArm0[3], qRArm[3]) 
---        arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) 
-
-
         local trArmRelease0 = Config.armfsm.dooropen.rhand_release
-        trArmRelease0[6] = trRArm[6]
-        
+        trArmRelease0[6] = trRArm[6]        
         local wrist_seq = {
           {'wrist',nil, trRArmRelease0},
           {'wrist',nil, Config.armfsm.dooropen.rhand_release[2]},
@@ -279,18 +273,39 @@ function state.update()
         print("trRArm:",arm_planner.print_transform(trRArm))        
         local wrist_seq = {         
           {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[1]},
-
---          {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[2]},
---          {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[3]},
---          {'move',nil, trRArm0}
         }
-        if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armbacktoinitpos" end
+        if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armreturn" end
       end
+    end
+  elseif stage=="armreturn" then
+    if arm_planner:play_arm_sequence(t) then      
+      local wrist_seq = {
+        {'move',Config.armfsm.dooropen.lhand_support[5],nil},          
+        {'move',Config.armfsm.dooropen.lhand_support[4],nil},                  
+        {'move',nil,nil,0},--rotate waist
+      }
+      if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armreturn2" end
+    end
+
+
+
+
+  elseif stage=="armreturn2" then
+    if arm_planner:play_arm_sequence(t) then 
+      print("trLArm:",arm_planner.print_transform(trLArm))              
+      local wrist_seq = {
+        {'move',Config.armfsm.dooropen.lhand_unsupport[1],nil},
+        {'wrist',Config.armfsm.dooropen.lhand_unsupport[2],nil},
+        {'move',Config.armfsm.dooropen.lhand_unsupport[2],nil},
+      }
+      if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armbacktoinitpos" end
     end
   elseif stage=="armbacktoinitpos" then
     if arm_planner:play_arm_sequence(t) then 
-
-    --  return "done" 
+print("trLArm:",arm_planner.print_transform(trLArm))              
+--          {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[3]},
+--          {'move',nil, trRArm0}
+   
     end
   end
 end

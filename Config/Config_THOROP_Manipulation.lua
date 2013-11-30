@@ -312,10 +312,10 @@ armfsm.dooropen.yawTarget2 = 24*DEG_TO_RAD
 
 armfsm.dooropen.velDoorRoll = 10*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velDoorYaw = 2*DEG_TO_RAD * speed_factor
-armfsm.dooropen.velWaistYaw = 3*DEG_TO_RAD * speed_factor
 
 
-armfsm.dooropen.velWaistYaw = 1*DEG_TO_RAD * speed_factor
+
+--armfsm.dooropen.velWaistYaw = 1*DEG_TO_RAD * speed_factor
 
 
 if Config.IS_LONGARM then
@@ -334,22 +334,25 @@ end
 
 
 --Loaded door open
-
 armfsm.dooropen.lhand_support={
   {0,0,0,   0*DEG_TO_RAD,0*DEG_TO_RAD,-45*DEG_TO_RAD},
   --0.20 0.06 -0.16
   {0.45, 0.06, -0.06,   0*DEG_TO_RAD,0*DEG_TO_RAD,-45*DEG_TO_RAD},
   {0.45, 0.06, -0.06,   0*DEG_TO_RAD,0*DEG_TO_RAD,-90*DEG_TO_RAD},
   --0.16 -0.04 -0.06
-
   {0.35, -0.10, 0.04,   0*DEG_TO_RAD,0*DEG_TO_RAD,-90*DEG_TO_RAD},
   {0.40, -0.20, 0.15,   0*DEG_TO_RAD,0*DEG_TO_RAD,-90*DEG_TO_RAD},
---  {0.30, -0.35, 0.15,   0*DEG_TO_RAD,0*DEG_TO_RAD,-90*DEG_TO_RAD},
 
   {0.30, -0.38, 0.15,   0*DEG_TO_RAD,0*DEG_TO_RAD,-90*DEG_TO_RAD},
-
+}
+armfsm.dooropen.lhand_unsupport={
+  {0.20, -0.04, -0.16,   0*DEG_TO_RAD,0*DEG_TO_RAD,-90*DEG_TO_RAD},
+  --0.44 0.06 -0.16
+  {0.20, 0.06, -0.16,   0*DEG_TO_RAD,0*DEG_TO_RAD,-45*DEG_TO_RAD},
 }
 
+
+armfsm.dooropen.velWaistYaw = 3*DEG_TO_RAD * speed_factor
 armfsm.dooropen.waistTarget = -15*DEG_TO_RAD
 
 

@@ -87,11 +87,12 @@ function state.update()
       local qWaist, done1 = util.approachTol(
         qWaist,
 
---        vector.new({0,79*Body.DEG_TO_RAD}),
-        vector.new({0,19*Body.DEG_TO_RAD}),
---        vector.new({0,79*Body.DEG_TO_RAD}),
+--        vector.new({0,19*Body.DEG_TO_RAD}),
+--        vector.new({0,10*Body.DEG_TO_RAD}),
 
-        vector.new({0,10*Body.DEG_TO_RAD}),
+        vector.new({-30*Body.DEG_TO_RAD,0}),
+        vector.new({1*Body.DEG_TO_RAD,0}),
+
         dt)
       Body.set_waist_command_position(qWaist)
 
@@ -119,20 +120,23 @@ function state.update()
         qWaist,
 --        vector.new({-20*Body.DEG_TO_RAD,0}),
 --        vector.new({1*B=dy.DEG_TO_RAD,0}),
-        vector.new({0,0*Body.DEG_TO_RAD}),
-        vector.new({0,5*Body.DEG_TO_RAD}),        
+        vector.new({30*Body.DEG_TO_RAD,0}),
+        vector.new({1*Body.DEG_TO_RAD,0}),
         dt)
       Body.set_waist_command_position(qWaist)
 
-      local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,mcm.get_stance_bodyTilt(), 0,0)        
+      local qLArmNew = Body.get_inverse_larm(qLArm0,trLArm0)
+      local qRArmNew = Body.get_inverse_rarm(qRArm0,trRArm0)
+
+      local com = Kinematics.com_upperbody(qWaist,qLArmNew,qRArmNew,mcm.get_stance_bodyTilt(), 0,0)        
       local uTorsoComp = {-com[1]/com[4],-com[2]/com[4]}
       local uTorsoCompX = uTorsoComp[1]-uTorsoComp0[1]
       local uTorsoCompY = uTorsoComp[2]-uTorsoComp0[2]
       mcm.set_stance_uTorsoComp({uTorsoCompX, uTorsoCompY})
-
-      qLArmComp = Body.get_inverse_larm(qLArm,trLArm0+ vector.new({-uTorsoCompX, -uTorsoCompY,0, 0,0,0}) )
-      qRArmComp = Body.get_inverse_rarm(qRArm,trRArm0+ vector.new({-uTorsoCompX, -uTorsoCompY,0, 0,0,0}) )
-       
+      qLArmComp = Body.get_inverse_larm(qLArm0,trLArm0+ vector.new({-uTorsoCompX, -uTorsoCompY,0, 0,0,0}),
+        qLArm0[3], mcm.get_stance_bodyTilt(), qWaist)
+      qRArmComp = Body.get_inverse_rarm(qRArm0,trRArm0+ vector.new({-uTorsoCompX, -uTorsoCompY,0, 0,0,0}),
+          qRArm0[3], mcm.get_stance_bodyTilt(), qWaist)
       local done2 = movearm.setArmJoints(qLArmComp,qRArmComp,dt)
 comactual= {com[1]/com[4],com[2]/com[4]}
     end

@@ -154,14 +154,19 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
 
   local yawMag = dt_step * velYaw
   local qLArmNext, qRArmNext = qLArm, qRArm
-  qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
-  qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
+
+  local qWaist = {waistYaw,Body.get_waist_command_position()[2]}
+
+  qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, qWaist)
+  qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, qWaist)
 
   if not qLArmNext or not qRArmNext then 
 --    print("ERROR1")
     return end
 
-  local trLArmNext, trRArmNext = Body.get_forward_larm(qLArmNext),Body.get_forward_rarm(qRArmNext)
+  local trLArmNext, trRArmNext = 
+    Body.get_forward_larm(qLArmNext,mcm.get_stance_bodyTilt(),qWaist),
+    Body.get_forward_rarm(qRArmNext,mcm.get_stance_bodyTilt(),qWaist)
   local vec_comp = vector.new({-uTorsoComp[1],-uTorsoComp[2],0,0,0,0})
   local trLArmNextComp = vector.new(trLArmNext) + vec_comp
   local trRArmNextComp = vector.new(trRArmNext) + vec_comp
@@ -177,8 +182,8 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   end
 
   --Actual arm angle considering the torso compensation
-  local qLArmNextComp = self:search_shoulder_angle(qLArmComp,trLArmNextComp,1, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
-  local qRArmNextComp = self:search_shoulder_angle(qRArmComp,trRArmNextComp,0, yawMag, {waistYaw,Body.get_waist_command_position()[2]})
+  local qLArmNextComp = self:search_shoulder_angle(qLArmComp,trLArmNextComp,1, yawMag, qWaist)
+  local qRArmNextComp = self:search_shoulder_angle(qRArmComp,trRArmNextComp,0, yawMag, qWaist)
 
   if not qLArmNextComp or not qRArmNextComp or not qLArmNext or not qRArmNext then 
 --  print("ERROR")
@@ -339,6 +344,8 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       trRArmNext = movearm.getDoorHandlePosition(current_param[1],current_param[2],current_param[3])      
       waistNext = new_param[4]
 
+--      print("waist:",waistNext*Body.RAD_TO_DEG)
+
     elseif plantype=="dooredge" then
       local done1,done2,done3,done4      
       new_param[1], done1 = util.approachTol(current_param[1],target_param[1], vel_param[1],dt_step)
@@ -433,10 +440,9 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
   if failed then return end
 
-
+--[[
   local trLArm0, trRArm0 = Body.get_forward_larm(qLArm0), Body.get_forward_rarm(qRArm0)
   local trLArm1, trRArm1 = Body.get_forward_larm(current_cond[1]), Body.get_forward_rarm(current_cond[2])
-
   local distL = math.sqrt(
       (trLArm0[1]-trLArm1[1])^2+
       (trLArm0[2]-trLArm1[2])^2+
@@ -445,14 +451,12 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       (trRArm0[1]-trRArm1[1])^2+
       (trRArm0[2]-trRArm1[2])^2+
       (trRArm0[3]-trRArm1[3])^2)
-
-
   print(string.format("%.1f/ %.1f cm, %d steps, %.2fs real time, %.2f ms planning time",
       distL*100,distR*100,
       qArmCount,
       t_robot,
       (t1-t0)*1000 ))
-
+--]]
   
   if debug_on_2 then
     print("trLArm:",self.print_transform( Body.get_forward_larm( qLArmQueue[1][1]  ) ))

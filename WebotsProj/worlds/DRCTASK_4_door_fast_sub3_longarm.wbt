@@ -29,8 +29,8 @@ DirectionalLight {
 DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
-THOROP7_NoBoundaries_ShortClawHook {
-  translation -4 1.15535 0.6
+THOROP7_NoBoundaries_LongClaw2 {  
+  translation -0.75 1.15535 -0.09
   rotation 0 1 0 1.57
   controller "thorop"
   controllerArgs "0 32"
@@ -39,7 +39,8 @@ SingleDoorCommonPush {
   translation -2.2 0 0.6
   rotation 0 1 0 1.57
 }
-SingleDoorEntreeHandleUp {
+#SingleDoorEntreeHandleUp {
+SingleDoorEntreeHandleUpWeighted {
   translation 0 0 0.6
   rotation 0 1 0 1.57
 }

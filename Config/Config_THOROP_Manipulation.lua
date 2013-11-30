@@ -300,23 +300,12 @@ armfsm.dooropen.rhand_sidepush={
   {0,0,0,0*DEG_TO_RAD,85*DEG_TO_RAD,0*DEG_TO_RAD}
 }
 
-
-------------------------------------------------------
---Hook down
---[[
-armfsm.dooropen.handle_clearance0 = vector.new({-0.05,0,0.05})
-armfsm.dooropen.handle_clearance = vector.new({0,0,0.05})
-armfsm.dooropen.handle_clearance2 = vector.new({0,0,0.05})
-armfsm.dooropen.rollTarget = 45*DEG_TO_RAD
---]]
-
-
 --Hook up
 armfsm.dooropen.handle_clearance0 = vector.new({-0.05,0,-0.05})
 armfsm.dooropen.handle_clearance1 = vector.new({0,0,-0.05})
 armfsm.dooropen.handle_clearance2 = vector.new({0,0,-0.10})
-armfsm.dooropen.rollTarget = -45*DEG_TO_RAD
 
+armfsm.dooropen.rollTarget = -45*DEG_TO_RAD
 armfsm.dooropen.yawTargetInitial = 8*DEG_TO_RAD
 armfsm.dooropen.yawTarget1 = 25*DEG_TO_RAD
 armfsm.dooropen.yawTarget2 = 24*DEG_TO_RAD
@@ -324,6 +313,10 @@ armfsm.dooropen.yawTarget2 = 24*DEG_TO_RAD
 armfsm.dooropen.velDoorRoll = 10*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velDoorYaw = 2*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velWaistYaw = 3*DEG_TO_RAD * speed_factor
+
+
+armfsm.dooropen.velWaistYaw = 1*DEG_TO_RAD * speed_factor
+
 
 if Config.IS_LONGARM then
   armfsm.dooropen.default_model = {
@@ -333,6 +326,36 @@ if Config.IS_LONGARM then
     -0.08,             --Knob Y offset (from knob axle)
   }
 end
+
+
+
+
+
+
+
+--Loaded door open
+
+armfsm.dooropen.lhand_support={
+  {0,0,0,   0*DEG_TO_RAD,0*DEG_TO_RAD,-45*DEG_TO_RAD},
+  --0.20 0.06 -0.16
+  {0.45, 0.06, -0.06,   0*DEG_TO_RAD,0*DEG_TO_RAD,-45*DEG_TO_RAD},
+  {0.45, 0.06, -0.06,   0*DEG_TO_RAD,0*DEG_TO_RAD,-90*DEG_TO_RAD},
+  --0.16 -0.04 -0.06
+
+  {0.35, -0.10, 0.04,   0*DEG_TO_RAD,0*DEG_TO_RAD,-90*DEG_TO_RAD},
+  {0.40, -0.20, 0.15,   0*DEG_TO_RAD,0*DEG_TO_RAD,-90*DEG_TO_RAD},
+--  {0.30, -0.35, 0.15,   0*DEG_TO_RAD,0*DEG_TO_RAD,-90*DEG_TO_RAD},
+
+  {0.30, -0.38, 0.15,   0*DEG_TO_RAD,0*DEG_TO_RAD,-90*DEG_TO_RAD},
+
+}
+
+armfsm.dooropen.waistTarget = -15*DEG_TO_RAD
+
+
+
+
+
 
 
 

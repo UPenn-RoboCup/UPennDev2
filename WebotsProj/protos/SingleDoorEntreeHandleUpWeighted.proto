@@ -3,7 +3,7 @@
 # Author: fabien.rohrer@cyberbotics.com
 # Modified by: heqin@seas.upenn.edu
 
-PROTO SingleDoorEntreeHandleUp [
+PROTO SingleDoorEntreeHandleUpWeighted [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
   field SFColor mainColor 1 1 1
@@ -30,6 +30,8 @@ PROTO SingleDoorEntreeHandleUp [
           anchor -0.425 1.01 -0.17
           maxStop 3
           dampingConstant 10
+          position 1.57
+          springConstant 5
         }
         endPoint Solid {
           translation -0.425 1.01 -0.17

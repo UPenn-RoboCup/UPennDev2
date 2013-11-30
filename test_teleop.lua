@@ -70,7 +70,8 @@ local char_to_event = {
   ['1'] = {'body_ch','init'},
 
   ['2'] = {'arm_ch','toolgrab'},
-  ['3'] = {'arm_ch','doorgrab'},
+--  ['3'] = {'arm_ch','doorgrab'},
+  ['3'] = {'arm_ch','loaddoorgrab'},
   ['4'] = {'arm_ch','pushdoorgrab'},
 
 
@@ -86,6 +87,7 @@ local char_to_event = {
 
 --  ['9'] = {'arm_ch','teleop'},
   ['r'] = {'arm_ch','rocky'},
+  ['t'] = {'arm_ch','teleop'},
 
   ['9'] = {'arm_ch','test'},
   ['0'] = {'arm_ch','hosegrab'},

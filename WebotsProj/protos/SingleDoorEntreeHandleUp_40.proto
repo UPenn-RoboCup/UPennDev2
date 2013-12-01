@@ -3,7 +3,7 @@
 # Author: fabien.rohrer@cyberbotics.com
 # Modified by: heqin@seas.upenn.edu
 
-PROTO SingleDoorEntreeHandleUp [
+PROTO SingleDoorEntreeHandleUp_40 [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
   field SFColor mainColor 1 1 1

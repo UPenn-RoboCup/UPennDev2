@@ -4,7 +4,7 @@ local DEG_TO_RAD = math.pi/180
 local Config = {}
 
 Config.IS_LONGARM =true
-Config.IS_LONGARM =false
+--Config.IS_LONGARM =false
 
 ------------------------------------
 -- For the arm FSM
@@ -93,9 +93,15 @@ armfsm.toolgrip.default_model = {
   0.50,-0.06,0.00,  0*DEG_TO_RAD}
 
 armfsm.toolgrip.arminit={
---0.13 -0.13 -0.20
   {0.33,-0.10,-0.20, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
+}
+
+armfsm.toolgrip.armpull={
+  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},    
+  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
+  {0.33,-0.10,-0.20, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
 
 armfsm.toolgrip.armhold={0.25,0.0,-0.20}
@@ -104,17 +110,27 @@ armfsm.toolgrip.tool_liftup = {0,0,0.05}
 armfsm.toolgrip.tool_clearance_x = 0.38
 
 if Config.IS_LONGARM then --for long arm
+ --New side-grip and side-pulldown
   armfsm.toolgrip.arminit={
-    {0.33,-0.10,-0.20, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-    {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+    {0.33,-0.25,-0.20, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+    {0.42,-0.25,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+    {0.42,-0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
   }
-  armfsm.toolgrip.default_model = {
-    0.55,-0.06,0.07,  0*DEG_TO_RAD}
 
-  --Higher
+  armfsm.toolgrip.armpull={
+    --0.55 -0.06 0.25 
+    {0.46, -0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+    {0.46, -0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+    {0.32, -0.25, -0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  }
+
   armfsm.toolgrip.default_model = {
     0.55,-0.06,0.20,  0*DEG_TO_RAD}    
 end
+
+
+
+
 
 ---------------------------------------------------------------
 ------   Drill cut

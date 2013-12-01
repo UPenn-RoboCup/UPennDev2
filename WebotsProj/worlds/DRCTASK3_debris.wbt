@@ -8,8 +8,8 @@ WorldInfo {
   FPS 10
 }
 Viewpoint {
-  orientation -0.178085 -0.949825 -0.257134 2.0038
-  position -3.82898 3.48679 -1.18159
+  orientation -0.22803 -0.973538 -0.0150656 0.323405
+  position -1.0022 1.75783 8.15868
 }
 Background {
   skyColor [
@@ -30,7 +30,8 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP7_NoBoundaries_LongGripperOnly {
-  translation 0 1.15535 -0.5
+  translation -0.000697089 1.14137 -0.515375
+  rotation 0.998858 0.000610651 -0.0477763 -0.0127649
   controller "thorop"
   controllerArgs "0 32"
   cameraWindowPosition 0.399113 0.225564
@@ -44,48 +45,28 @@ PartialWalls {
   rotation 0 1 0 -1.5708
 }
 DebrisTruss {
-  translation 0.00921319 0.148584 1.9
-  rotation -0.0482586 0.99165 -0.11959 -0.00997809
-}
-#DebrisLongPost {
-#  translation 0.251863 0.312812 1.13654
-#  rotation 0.999922 0.00398638 0.0118333 -0.9856
-#}
-#DebrisLongPost {
-#  translation -0.21168 0.314376 1.13479
-#  rotation 0.999394 0.0181396 0.0296966 -0.982442
-#}
-#DebrisLongPost {
-#  translation 0.116187 0.444691 1.82872
-#  rotation -0.199829 0.917354 -0.344283 -1.6427
-#}
-#DebrisLongPost {
-#  translation -0.099521 0.433304 1.69915
-#  rotation 0.014851 0.00860697 0.999853 -0.615783
-#}
-#DebrisLongPost {
-#  translation 0.111975 0.441277 2.11018
-#  rotation -0.269269 0.921485 -0.279929 -1.66517
-#}
-DebrisBoard {
-  translation -0.0104571 0.511722 1.94763
-  rotation 0.027962 0.0700753 0.99715 -0.822788
+  translation 0.00816006 0.147908 1.89993
+  rotation -0.0118286 0.964046 -0.265474 -0.0109057
 }
 DebrisBoard {
-  translation -0.0129992 0.631976 1.42664
-  rotation 0.203843 0.977185 0.0596377 -0.00201978
+  translation 0.125182 0.37741 2.10055
+  rotation 0.440873 0.897542 0.00696718 -3.13029
 }
 DebrisBoard {
-  translation 0.342967 0.429862 1.10038
-  rotation -0.339884 0.876765 -0.340238 1.70709
+  translation -0.0130659 0.632622 1.43728
+  rotation 0.0117964 0.99993 -0.000922061 -0.0139514
 }
 DebrisBoard {
-  translation -0.335934 0.433001 1.10538
-  rotation -0.34525 0.874006 -0.341929 1.70259
+  translation 0.244677 0.404976 1.20653
+  rotation -0.444677 0.791435 -0.419395 1.88
 }
 DebrisBoard {
-  translation -0.017227 0.429023 0.802573
-  rotation 0.641393 0.767212 0.00124691 0.00624494
+  translation -0.254256 0.411506 1.21671
+  rotation -0.449716 0.771172 -0.45061 1.84435
+}
+DebrisBoard {
+  translation -0.0172273 0.429615 0.802471
+  rotation -1.06401e-08 0.999999 0.00171274 0.00479117
 }
 DEF WALL Solid {
   translation 1 1 0.6

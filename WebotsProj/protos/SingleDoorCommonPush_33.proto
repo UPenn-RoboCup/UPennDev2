@@ -2,7 +2,7 @@
 # Author: fabien.rohrer@cyberbotics.com
 # Adapted by: heqin@seas.upenn.edu
 
-PROTO SingleDoorCommonPush [
+PROTO SingleDoorCommonPush_33 [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
   field SFColor mainColor 1 1 1
@@ -33,19 +33,19 @@ PROTO SingleDoorCommonPush [
           dampingConstant 40
         }
         endPoint Solid {
-        	# Handle height satisfies DARPA'S rules
           translation -0.425 1.01 0.17
           children [
             HingeJoint {
               jointParameters HingeJointParameters {
                 axis 0 0 -1
-                anchor 0.77 0 0
+                anchor 0.77 -0.1778 0
                 maxStop 1
                 staticFriction 0.1
                 springConstant 5
               }
               endPoint Solid {
-                translation 0.77 0 0
+                # Handle height is 33 in  (reference: 40 in)
+                translation 0.77 -0.1778 0
                 rotation 0 0 1 0
                 children [
                   Shape {

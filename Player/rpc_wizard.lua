@@ -155,9 +155,9 @@ rpc_udp_poll.callback = process_udp
 local wait_channels = {rpc_zmq,rpc_udp_poll}
 local channel_poll = simple_ipc.wait_on_channels( wait_channels );
 --channel_poll:start()
-local channel_timeout = 500 -- 2Hz joint feedback
+--local channel_timeout = 500 -- 2Hz joint feedback
 
---local channel_timeout = 50 -- 20Hz joint feedback
+local channel_timeout = 50 -- 20Hz joint feedback
 while true do
   local npoll = channel_poll:poll(channel_timeout)
   -- Send the feedback 

@@ -8,8 +8,8 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-  orientation -0.0894026 0.957813 0.273131 2.5093
-  position 1.16511 4.44209 -3.96653
+  orientation -0.0548208 0.971631 0.23006 2.65728
+  position 1.48288 3.27035 -3.7613
 }
 Background {
   skyColor [
@@ -29,51 +29,66 @@ DirectionalLight {
 DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
-THOROP7_NoBoundaries_ShortGripperOnly {
+THOROP7_NoBoundaries_LongGripperOnly {
   translation 0.9 1.15535 0
   rotation 0 1 0 -1.57
   controller "thorop"
   controllerArgs "0 32"
 }
-
-
 DEF HOSE_REEL Solid {
-  translation 0 1.0 1.4
+  translation 0 1 1.4
   children [
     Transform {
       translation 0.05 0 -0.2
       rotation 0 0 1 1.57
       children [
         Shape {
-          appearance Appearance {material Material {diffuseColor 0.9 0.2 0.2}}
-          geometry Cylinder {height 0.03 radius 0.3}
+          appearance Appearance {
+            material Material {
+              diffuseColor 0.9 0.2 0.2
+            }
+          }
+          geometry Cylinder {
+            height 0.03
+            radius 0.3
+          }
         }
       ]
-    }    
+    }
     Transform {
       translation -0.05 0 -0.2
       rotation 0 0 1 1.57
       children [
         Shape {
-          appearance Appearance {material Material {diffuseColor 0.9 0.2 0.2}}
-          geometry Cylinder {height 0.03 radius 0.3}
+          appearance Appearance {
+            material Material {
+              diffuseColor 0.9 0.2 0.2
+            }
+          }
+          geometry Cylinder {
+            height 0.03
+            radius 0.3
+          }
         }
       ]
-    }    
+    }
   ]
-  boundingObject Group{
+  boundingObject Group {
     children [
       Transform {
         translation 0 -0.4 -0.5
         children [
-          Shape {geometry Box {size 0.05 0.01 0.05}}
+          Shape {
+            geometry Box {
+              size 0.05 0.01 0.05
+            }
+          }
         ]
-      }    
+      }
     ]
   }
   locked TRUE
 }
-
 DEF HOSE_TIP Solid {
   translation 0 0.8 0.9
   rotation 0 0 1 3.14
@@ -85,11 +100,14 @@ DEF HOSE_TIP Solid {
           diffuseColor 0.2 0.5 0.2
         }
       }
-      geometry Cylinder {height 0.3 radius 0.02}
+      geometry Cylinder {
+        height 0.3
+        radius 0.02
+      }
     }
-    Transform{
+    Transform {
       translation 0 0.15 0
-      children[
+      children [
         Shape {
           appearance Appearance {
             material Material {
@@ -118,13 +136,6 @@ DEF HOSE_TIP Solid {
     mass 0.5
   }
 }
-
-
-
-
-
-
-
 DEF WALL_TO_BREAK Solid {
   translation -0.5 1 1.55
   children [
@@ -147,7 +158,6 @@ DEF WALL_TO_BREAK Solid {
   }
   locked TRUE
 }
-
 DEF MARKER1 Solid {
   translation 0.7 0 0
   children [
@@ -158,7 +168,9 @@ DEF MARKER1 Solid {
           diffuseColor 0 0.5 0
         }
       }
-      geometry Box {size 0.10 0.01 1}      
+      geometry Box {
+        size 0.1 0.01 1
+      }
     }
     Shape {
       appearance Appearance {
@@ -167,12 +179,13 @@ DEF MARKER1 Solid {
           diffuseColor 0 0.5 0
         }
       }
-      geometry Box {size 0.2 0.01 0.1}      
+      geometry Box {
+        size 0.2 0.01 0.1
+      }
     }
-  ]  
+  ]
   locked TRUE
 }
-
 DEF MARKER2 Solid {
   translation -1.2 0 0
   children [
@@ -183,7 +196,9 @@ DEF MARKER2 Solid {
           diffuseColor 0.5 0.5 0
         }
       }
-      geometry Box {size 0.10 0.01 1}      
+      geometry Box {
+        size 0.1 0.01 1
+      }
     }
     Shape {
       appearance Appearance {
@@ -192,12 +207,13 @@ DEF MARKER2 Solid {
           diffuseColor 0.5 0.5 0
         }
       }
-      geometry Box {size 0.2 0.01 0.1}      
+      geometry Box {
+        size 0.2 0.01 0.1
+      }
     }
-  ]  
+  ]
   locked TRUE
 }
-
 DEF WYE_WALL Solid {
   translation -2.7 1 0
   children [
@@ -209,19 +225,17 @@ DEF WYE_WALL Solid {
           }
         }
       ]
-    }    
+    }
   ]
   boundingObject Transform {
     children [
       Box {
-         size 0.1 2 3
+        size 0.1 2 3
       }
     ]
   }
   locked TRUE
 }
-
-
 DEF WYE_TIP1 Solid {
   translation -2.6 1.02 0
   rotation 0 0 1 1.57
@@ -238,10 +252,10 @@ DEF WYE_TIP1 Solid {
         radius 0.04
       }
     }
-    Transform{
+    Transform {
       translation 0 -0.08 -0.04
       rotation 1 0 0 0.6
-      children[
+      children [
         Shape {
           appearance Appearance {
             material Material {
@@ -256,10 +270,10 @@ DEF WYE_TIP1 Solid {
         }
       ]
     }
-    Transform{
+    Transform {
       translation 0 -0.08 0.04
       rotation 1 0 0 -0.6
-      children[
+      children [
         Shape {
           appearance Appearance {
             material Material {
@@ -277,7 +291,6 @@ DEF WYE_TIP1 Solid {
   ]
   locked TRUE
 }
-
 DEF WYE_TIP2 Solid {
   translation -2.6 0.81 0
   rotation 0 0 1 1.57
@@ -294,10 +307,10 @@ DEF WYE_TIP2 Solid {
         radius 0.04
       }
     }
-    Transform{
+    Transform {
       translation 0 -0.08 -0.04
       rotation 1 0 0 0.6
-      children[
+      children [
         Shape {
           appearance Appearance {
             material Material {
@@ -312,10 +325,10 @@ DEF WYE_TIP2 Solid {
         }
       ]
     }
-    Transform{
+    Transform {
       translation 0 -0.08 0.04
       rotation 1 0 0 -0.6
-      children[
+      children [
         Shape {
           appearance Appearance {
             material Material {
@@ -333,7 +346,6 @@ DEF WYE_TIP2 Solid {
   ]
   locked TRUE
 }
-
 DEF WYE_TIP1 Solid {
   translation -2.6 1.22 0
   rotation 0 0 1 1.57
@@ -350,10 +362,10 @@ DEF WYE_TIP1 Solid {
         radius 0.04
       }
     }
-    Transform{
+    Transform {
       translation 0 -0.08 -0.04
       rotation 1 0 0 0.6
-      children[
+      children [
         Shape {
           appearance Appearance {
             material Material {
@@ -368,10 +380,10 @@ DEF WYE_TIP1 Solid {
         }
       ]
     }
-    Transform{
+    Transform {
       translation 0 -0.08 0.04
       rotation 1 0 0 -0.6
-      children[
+      children [
         Shape {
           appearance Appearance {
             material Material {

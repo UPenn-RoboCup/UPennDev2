@@ -29,7 +29,7 @@ DirectionalLight {
 DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
-THOROP7_NoBoundaries_ShortClawHook {
+THOROP7_NoBoundaries_LongClawHook {
   translation -0.2 1.15535 0.5
   rotation 0 1 0 1.57
   controller "thorop"
@@ -37,7 +37,7 @@ THOROP7_NoBoundaries_ShortClawHook {
 }
 
 Solid {
-  translation 0.9 1.22 0 
+  translation 0.9 0.81 0 
   rotation 0 0 1 0
   children [
     ValveDRCLever {
@@ -47,7 +47,7 @@ Solid {
 }
 
 Solid {
-  translation 0.9 1.22 0.6
+  translation 0.9 0.81 0.6
   rotation 0 0 1 0
   children [
     ValveDRCMedium {
@@ -57,7 +57,7 @@ Solid {
 }
 
 Solid {
-  translation 0.9 1.22 1.2
+  translation 0.9 0.81 1.2
   rotation 0 0 1 0
   children [
     ValveDRC {

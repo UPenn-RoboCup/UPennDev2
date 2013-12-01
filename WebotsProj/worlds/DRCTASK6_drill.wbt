@@ -37,14 +37,15 @@ THOROP7_NoBoundaries_LongGripperOnly {
 
 
 DEF MY_TABLE Solid {
-  translation -0.5 1 1.1
+  #translation -0.525 1 1.05
+  translation -0.525 1 1.15
   children [
     Transform {
 			translation 0 0 0.1
       children [
         Shape {
           geometry Box {
-            size 0.5 0.05 0.5
+            size 0.5 0.05 0.6
           }
         }
       ]
@@ -54,15 +55,15 @@ DEF MY_TABLE Solid {
     translation 0 0 0.1
     children [
       Box {
-        size 0.5 0.05 0.5
+        size 0.5 0.05 0.6
       }
     ]
   }
 }
 
 
-DEF MY_DRILL Solid {
-  translation -0.5 1.15 1.1
+DEF MY_DRILL1 Solid {
+  translation -0.37 1.15 1.1
   children [
     Shape {
       appearance Appearance {
@@ -136,13 +137,109 @@ DEF MY_DRILL Solid {
     ]
   }
 
+  physics Physics {
+    density -1
+    mass 3
+  }
+}
 
+
+
+
+
+DEF MY_DRILL2 Solid {
+  translation -0.67 1.15 1.1
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.1
+          diffuseColor 0.2 0.5 0.2
+        }
+      }
+      geometry Cylinder {
+        height 0.1
+        radius 0.025
+      }
+    }
+    Transform {
+      translation 0 -0.075 0
+      children[
+        Shape {
+          geometry Cylinder {
+            height 0.05 radius 0.05
+          }
+        }
+      ]
+    }
+    Transform{
+      translation 0 0.06 0.03
+      rotation 1 0 0 1.57
+      children[
+        Shape {
+          geometry Cylinder {
+            height 0.15
+            radius 0.04
+          }
+        }
+      ]
+    }
+    Transform{
+      translation 0 0.06 0.15
+      rotation 1 0 0 1.57
+      children[
+        Shape {
+          geometry Cylinder {
+            height 0.2
+            radius 0.01
+          }
+        }
+      ]
+    }
+  ]
+
+
+
+  boundingObject Group{
+    children [
+      Transform {
+        children [
+          Cylinder {
+            height 0.1
+            radius 0.025
+          }
+        ]
+      }
+      Transform {
+        translation 0 -0.075 0
+        children [
+          Cylinder {
+            height 0.05
+            radius 0.05
+          }
+        ]
+      }
+    ]
+  }
 
   physics Physics {
     density -1
     mass 3
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 DEF WALL_TO_BREAK Solid {
   translation -1.5 1 1.5
   children [
@@ -166,6 +263,75 @@ DEF WALL_TO_BREAK Solid {
   locked TRUE
 }
 
+
+DEF WALL2 Solid {
+  translation 1 1 0.5
+  rotation 0 1 0 0.785
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+        }
+      }
+      geometry Box {
+        size 2.8 2 0.01
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 2.8 2 0.01
+      }
+    ]
+  }
+  locked TRUE
+}
+
+DEF WALL3 Solid {
+  translation 0 1 -0.5
+  rotation 0 1 0 -0.785
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+        }
+      }
+      geometry Box {
+        size 2.8 2 0.01
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 2.8 2 0.01
+      }
+    ]
+  }
+  locked TRUE
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#MARKERS
 Solid {
   translation -1.5 0.9 1.49
   rotation 1 0 0 1.57
@@ -174,12 +340,12 @@ Solid {
       appearance Appearance {
         material Material {
           ambientIntensity 0.9
-          diffuseColor 0.9 0.2 0.2
+          diffuseColor 0 1 0
         }
       }
       geometry Cylinder {
         height 0.02
-        radius 0.03
+        radius 0.0762
       }
     }
   ]
@@ -187,19 +353,19 @@ Solid {
 }
 
 Solid {
-  translation -2.1 0.9 1.49
+  translation -2.1096 0.9 1.49
   rotation 1 0 0 1.57
   children [
     Shape {
       appearance Appearance {
         material Material {
           ambientIntensity 0.9
-          diffuseColor 0.9 0.2 0.2
+          diffuseColor 0 1 0
         }
       }
       geometry Cylinder {
         height 0.02
-        radius 0.03
+        radius 0.0762
       }
     }
   ]
@@ -207,24 +373,82 @@ Solid {
 }
 
 Solid {
-  translation -2.1 1.2 1.49
+  translation -2.1096 1.2 1.49
   rotation 1 0 0 1.57
   children [
     Shape {
       appearance Appearance {
         material Material {
           ambientIntensity 0.9
-          diffuseColor 0.9 0.2 0.2
+          diffuseColor 0 1 0
         }
       }
       geometry Cylinder {
         height 0.02
-        radius 0.03
+        radius 0.0762
       }
     }
   ]
   locked TRUE
 }
+
+Solid {
+  translation -1.8 0.9 1.49
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.9
+          diffuseColor 0 0 1
+        }
+      }
+      geometry Box {size 0.6096 0.1524 0.01}
+    }
+  ]
+  locked TRUE
+}
+
+Solid {
+  translation -2.1096 1.05 1.49
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.9
+          diffuseColor 0 0 1
+        }
+      }
+      geometry Box {size 0.1524 0.3048 0.01}
+    }
+  ]
+  locked TRUE
+}
+
+Solid {
+  translation -1.8 1.05 1.49
+  rotation 0 0 1 -0.45
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.9
+          diffuseColor 0 0 1
+        }
+      }
+      geometry Box {size 0.7 0.1524 0.01}
+    }
+  ]
+  locked TRUE
+}
+
+
+
+
+
+
+
+
+
 
 DEF MARKER1 Solid {
   translation -1.5 0 0.6
@@ -237,7 +461,7 @@ DEF MARKER1 Solid {
           diffuseColor 0 0.5 0
         }
       }
-      geometry Box {size 0.10 0.01 1}      
+      geometry Box {size 0.10 0.01 1.2}      
     }
     Shape {
       appearance Appearance {

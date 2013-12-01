@@ -459,12 +459,12 @@ armfsm.valveonearm = {}
 
 --Axel XYZ, radius, valve angle 1, valve angle 2
 armfsm.valveonearm.default_model_small= 
-  {0.60,0.30,0.07, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+  {0.60,0.30,0.09, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
 --height should be between 0.81(-0.12) to 1.22 (+0.29)
 
 armfsm.valveonearm.default_model_large= 
-  {0.69,0.27,0.07, 0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+  {0.69,0.27,0.09, 0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
 --boundary between low/med/high
 armfsm.valveonearm.heights={0.03,0.09}
@@ -477,7 +477,7 @@ armfsm.valveonearm.arminit={
 
 if Config.IS_LONGARM then --for long arm
   armfsm.valveonearm.default_model_small= 
-    {0.70,0.30,0.07, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+    {0.70,0.30,0.09, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 --[[
   armfsm.valveonearm.default_model_small= 
     {0.70,0.30,-0.12, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
@@ -500,7 +500,7 @@ armfsm.valveonearm.velInsert = 0.01 * speed_factor
 armfsm.valvebar = {}
 --Axel XYZ, radius, current valve angle, final valve angle, hand fit angle, 
 --valve angle zero: straight UP
-armfsm.valvebar.default_model= {0.65,0.20,0.07,   
+armfsm.valvebar.default_model= {0.65,0.20,0.09,   
   0.05, 0, 90*DEG_TO_RAD, -10*DEG_TO_RAD  }
 
 armfsm.valvebar.arminit={{0.35,0.30,-0.15, 0,0,0}}

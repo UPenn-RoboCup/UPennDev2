@@ -1,6 +1,5 @@
 local spacemouse = require 'spacemouse'
 spacemouse.lsusb()
-
 --sm = spacemouse.init(0x046d, 0xc62b) --pro
 sm = spacemouse.init(0x046d, 0xc626) --regular
 

@@ -42,11 +42,11 @@ SingleDoorCommonPush_37 {
   rotation 0 1 0 1.57
 }
 #SingleDoorEntreeHandleUp {
-SingleDoorEntreeHandleUpWeighted_40 {
+SingleDoorEntreeHandleUpWeighted_37 {
   translation 0.2 0 0.6
   rotation 0 1 0 1.57
 }
-SingleDoorEntreeHandleUp_33 {
+SingleDoorEntreeHandleUp_37 {
 #SingleDoorEntreeHandleUpWeighted {
   translation 2 0 0.6
   rotation 0 1 0 1.57

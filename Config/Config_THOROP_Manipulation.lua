@@ -256,8 +256,7 @@ end
 armfsm.dooropen={}
 
 armfsm.dooropen.default_model = {
---  0.50,-1.15,0.09,  --Hinge pos
-  0.60,-1.18,0.09,  --Hinge pos
+  0.55,-1.18,0.09,  --Hinge pos
   0.84,             --Door width (hinge to knob axle), 33inch for most doors
   -0.05,            --Knob X offset from door
   -0.08,             --Knob Y offset (from knob axle)
@@ -293,6 +292,9 @@ armfsm.dooropen.handle_clearance0 = vector.new({-0.05,0,-0.05})
 armfsm.dooropen.handle_clearance1 = vector.new({0,0,-0.05})
 armfsm.dooropen.handle_clearance2 = vector.new({0,0,-0.10})
 
+armfsm.dooropen.handle_clearance2 = vector.new({0,0,-0.05}) --shortarm
+
+
 armfsm.dooropen.rollTarget = -45*DEG_TO_RAD
 armfsm.dooropen.yawTargetInitial = 8*DEG_TO_RAD
 armfsm.dooropen.yawTarget1 = 25*DEG_TO_RAD
@@ -300,8 +302,6 @@ armfsm.dooropen.yawTarget2 = 24*DEG_TO_RAD
 
 armfsm.dooropen.velDoorRoll = 10*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velDoorYaw = 2*DEG_TO_RAD * speed_factor
-
-
 
 --armfsm.dooropen.velWaistYaw = 1*DEG_TO_RAD * speed_factor
 
@@ -313,15 +313,16 @@ if Config.IS_LONGARM then
     -0.05,            --Knob X offset from door
     -0.08,             --Knob Y offset (from knob axle)
   }
+  armfsm.dooropen.handle_clearance2 = vector.new({0,0,-0.10})
 end
 
 
 
 
+---------------------------------------------------------------
+------   Loaded door pull open
+---------------------------------------------------------------
 
-
-
---Loaded door open
 armfsm.dooropen.lhand_support={
   {0,0,0,   0*DEG_TO_RAD,0*DEG_TO_RAD,-45*DEG_TO_RAD},
   --0.20 0.06 -0.16
@@ -344,24 +345,13 @@ armfsm.dooropen.velWaistYaw = 3*DEG_TO_RAD * speed_factor
 armfsm.dooropen.waistTarget = -15*DEG_TO_RAD
 
 
-
-
-
-
-
-
-
-
-
 ---------------------------------------------------------------
 ------   Door push open
 ---------------------------------------------------------------
 armfsm.dooropenleft={}
 
-
-
 armfsm.dooropenleft.default_model = {
-  0.51,-0.53,0.09,  --Hinge pos
+  0.45,-0.53,0.09,  --Hinge pos
   0.84,             --Door width (hinge to knob axle)
   -0.05,            --Knob X offset from door
   -0.08,             --Knob Y offset (from knob axle)
@@ -370,6 +360,16 @@ armfsm.dooropenleft.default_model = {
 armfsm.dooropenleft.rollTarget = -45*DEG_TO_RAD
 armfsm.dooropenleft.yawTargetInitial = -8*DEG_TO_RAD
 
+armfsm.dooropenleft.lhand_rpy=
+  {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD,-10*DEG_TO_RAD}
+
+armfsm.dooropenleft.rhand_push={
+  {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD}, 
+  {0.25, -0.0, -0.10,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.50, -0.05, -0.0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.50, -0.05, -0.0,0*DEG_TO_RAD,-0*DEG_TO_RAD, -30*DEG_TO_RAD},
+}
+
 if Config.IS_LONGARM then
   armfsm.dooropenleft.default_model = {
     0.52,-0.50,0.09,  --Hinge pos
@@ -377,18 +377,16 @@ if Config.IS_LONGARM then
     -0.05,            --Knob X offset from door
     -0.08,             --Knob Y offset (from knob axle)
   }
+  
+  armfsm.dooropenleft.rhand_push={
+    {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD}, 
+  --0.21 -0.06 -0.16
+    {0.31, -0.0, -0.10,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
+    {0.65, -0.05, -0.0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
+    {0.65, -0.05, -0.0,0*DEG_TO_RAD,-0*DEG_TO_RAD, -30*DEG_TO_RAD},
+  }
+
 end
-
-armfsm.dooropenleft.lhand_rpy=
-  {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD,-10*DEG_TO_RAD}
-
-armfsm.dooropenleft.rhand_push={
-  {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD}, 
---0.21 -0.06 -0.16
-  {0.31, -0.0, -0.10,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.65, -0.05, -0.0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.65, -0.05, -0.0,0*DEG_TO_RAD,-0*DEG_TO_RAD, -30*DEG_TO_RAD},
-}
 
 
 

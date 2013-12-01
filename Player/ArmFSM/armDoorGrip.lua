@@ -246,9 +246,15 @@ function state.update()
         local wrist_seq = {         
           {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[1]},
           {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[2]},
-          {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[3]},
-          {'move',nil, trRArm0}
+          {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[3]},          
         }
+        if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "sidepush2" end
+      end
+    end
+ elseif stage=="sidepush2" then        
+    if arm_planner:play_arm_sequence(t) then      
+      if hcm.get_state_proceed()==1 then
+        local wrist_seq = {{'wrist',nil, trRArm0}}
         if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armbacktoinitpos" end
       end
     end

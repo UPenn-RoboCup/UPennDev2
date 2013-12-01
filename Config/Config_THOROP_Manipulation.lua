@@ -4,7 +4,7 @@ local DEG_TO_RAD = math.pi/180
 local Config = {}
 
 Config.IS_LONGARM =true
---Config.IS_LONGARM =false
+Config.IS_LONGARM =false
 
 ------------------------------------
 -- For the arm FSM
@@ -67,12 +67,6 @@ arm.torso_comp_limit = vector.new({0.06,0.03})
 arm.pLWristTarget0 = {-.0,.30,-.20,0,0,0}
 arm.pRWristTarget0 = {-.0,-.30,-.20,0,0,0}
 
---For old hook
---[[
-arm.lrpy0 = vector.new({0,0,0,90,30,0})*DEG_TO_RAD
-arm.rrpy0 = vector.new({0,0,0,-90,30,0})*DEG_TO_RAD
---]]
-
 --For new hook
 arm.lrpy0 = vector.new({0,0,0,0,30,0})*DEG_TO_RAD
 arm.rrpy0 = vector.new({0,0,0,-0,30,0})*DEG_TO_RAD
@@ -80,10 +74,8 @@ arm.rrpy0 = vector.new({0,0,0,-0,30,0})*DEG_TO_RAD
 arm.lShoulderYaw0 = -5*DEG_TO_RAD
 arm.rShoulderYaw0 = 5*DEG_TO_RAD
 
-
 arm.qLArmPose1 = vector.new({118.96025904076,9.0742631178663,-5,-81.120944928286,81,14.999999999986, 9})*DEG_TO_RAD
 arm.qRArmPose1 = vector.new({118.96025904076,-9.0742631178663,5,-81.120944928286,-81,-14.999999999986, 9})*DEG_TO_RAD
-
 
 --Arm State specific infos
 armfsm = {}
@@ -136,18 +128,14 @@ armfsm.toolchop.arminit={
 
 --For short arm
 armfsm.toolchop.curpos={  
-  {0.40,0.10,-0.03,0},
-  {0.40,-0.20,-0.03,0},
-  {0.40,-0.20,0.27,0}
+  {0.40,0.10,0.0,0},
+  {0.40,-0.20,0.0,0},
+  {0.40,-0.20,0.245,0}
 }
 --How much torso should follow arm?
 armfsm.toolchop.torsoMovementMag = 0.5
-
 armfsm.toolchop.drill_clearance = {-0.05,0,0}
-
-
 armfsm.toolchop.drill_offset = {0,0,0.10}
-
 
 if Config.IS_LONGARM then --for long arm
 --  armfsm.toolgrip.armhold={0.25,0.0,-0.20}
@@ -233,11 +221,11 @@ armfsm.hoseattach.default_model = {
 armfsm.hoseattach.velTurnAngle = 6*DEG_TO_RAD
 armfsm.hoseattach.velMove = 0.01
 
-armfsm.hoseattach.angle1 = -30*DEG_TO_RAD
-armfsm.hoseattach.angle2 = 30*DEG_TO_RAD
+armfsm.hoseattach.angle1 = -90*DEG_TO_RAD
+armfsm.hoseattach.angle2 = 90*DEG_TO_RAD
 
-armfsm.hoseattach.clearance={-0.03,0,0}
-armfsm.hoseattach.rarm_clearance = 0.05
+armfsm.hoseattach.rarm_clearance1 = 0.09
+armfsm.hoseattach.rarm_clearance2 = 0.05
 
 
 
@@ -406,52 +394,6 @@ armfsm.dooropenleft.rhand_push={
 
 
 
-
---swing open phase after unlock the door 
-  
-armfsm.dooredge={}
-armfsm.dooredge.hinge_offset_z = -0.26 --how low do we touch?
-
-armfsm.dooredge.hand_offset_x = 0.20
-armfsm.dooredge.edge_offset_x = 0.05
-armfsm.dooredge.edge_offset_y = 0.05
-
-armfsm.dooredge.rhand_rpy={90*DEG_TO_RAD,45*DEG_TO_RAD,0}
-armfsm.dooredge.edge_clearance = vector.new({0,0.05,0})
-
-armfsm.dooredge.door_yaw1 = 15*DEG_TO_RAD --start angle
-armfsm.dooredge.door_yaw2 = 50*DEG_TO_RAD --end angle
-
-if Config.IS_LONGARM then
-  armfsm.dooredge.hinge_offset_z = -0.29 
-  armfsm.dooredge.door_yaw1 = 15*DEG_TO_RAD
-  armfsm.dooredge.door_yaw2 = 55*DEG_TO_RAD
-end
-
-
-
-armfsm.doorsupport={}
-
-armfsm.doorsupport.lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
-armfsm.doorsupport.lhand_rpy2 = {0,0*DEG_TO_RAD, -90*DEG_TO_RAD}
-
-armfsm.doorsupport.arminit={
-  {0.40,0.10,-0.05,0,0,-45*DEG_TO_RAD},
-  {0.26,-0.15, 0.15,unpack(armfsm.doorsupport.lhand_rpy2)},
-  {0.26,-0.20, 0.15,unpack(armfsm.doorsupport.lhand_rpy2)},
-}
-
-
-
-
-
-
-
-
-
-
-
-
 ---------------------------------------------------------------
 ------   Circular valve turning with single hand w/chopstick
 ---------------------------------------------------------------
@@ -467,7 +409,7 @@ armfsm.valveonearm.default_model_large=
   {0.69,0.27,0.09, 0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
 --boundary between low/med/high
-armfsm.valveonearm.heights={0.03,0.09}
+armfsm.valveonearm.heights={0.03,0.15}
 
 armfsm.valveonearm.arminit={
   {0.55,0.30,-0.12, 0,0,0}, --low
@@ -525,15 +467,11 @@ armfsm.debrisgrip = {}
 armfsm.debrisgrip.lhand_rpy = {-90*DEG_TO_RAD,45*DEG_TO_RAD,  0*DEG_TO_RAD}
 armfsm.debrisgrip.rhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
 
-
-
 --------------------------------------------------------------------------
 ---- Arm folding
 --------------------------------------------------------------------------
 
 armfsm.rocky={}
-
-
 
 armfsm.rocky.lhand_rpy0 = {90*DEG_TO_RAD,-25*DEG_TO_RAD,0}
 armfsm.rocky.rhand_rpy0 = {-90*DEG_TO_RAD,-25*DEG_TO_RAD,0}
@@ -579,15 +517,6 @@ armfsm.rocky.rarminit={
   {0.40,-0.45,0.61,unpack(armfsm.rocky.rhand_rpy2)},
   {0.40,-0.45,0.61,unpack(armfsm.rocky.rhand_rpy3)}
 }
-
-
---------------------------------------------------------------------------
----- FOR LONG ARM (25cm)
---------------------------------------------------------------------------
-
-
-
-
 
 
 ------------------------------------

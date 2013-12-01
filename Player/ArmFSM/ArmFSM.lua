@@ -25,9 +25,6 @@ local armTeleop = require'armTeleop'
 
 local armIKTest = require'armIKTest'
 
-local armTest = require'armTest'
-
-
 local armRocky = require'armRocky'
 
 
@@ -103,7 +100,7 @@ sm:add_state(armRocky)
 sm:add_state(armSupportDoor)
 
 sm:add_state(armIKTest)
-sm:add_state(armTest)
+
 ----------
 -- Event types
 ----------
@@ -134,7 +131,7 @@ sm:set_transition(armPose1, 'largevalvetwograb', armLargeValveGripTwohand)
 sm:set_transition(armPose1, 'barvalvegrab', armBarValveGrip)
 sm:set_transition(armPose1, 'hosegrab', armHoseGrip)
 
-sm:set_transition(armPose1, 'test', armTest)
+
 
 
 sm:set_transition(armSmallValveGrip, 'done', armPose1)
@@ -158,7 +155,7 @@ sm:set_transition(armLoadDoorGrip, 'done', armPose1)
 
 sm:set_transition(armDebrisGrip, 'done', armPose1)
 sm:set_transition(armTeleop, 'done', armPose1)
-sm:set_transition(armTest, 'done', armPose1)
+
 
 
 

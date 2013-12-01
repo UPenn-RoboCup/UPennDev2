@@ -142,7 +142,7 @@ function state.update()
 --        local trLArmTarget,trRArmTarget = get_model_tr(
 --          Config.armfsm.hoseattach.clearance,0,0)
         local trLArmTarget,trRArmTarget = movearm.getHoseAttachPosition(
-            Config.armfsm.hoseattach.clearance,0,0,0)
+            {0,0,0},0,0,Config.armfsm.hoseattach.rarm_clearance1 )
 
         print("trLArm:",arm_planner.print_transform(trLArm))
         print("trRArm:",arm_planner.print_transform(trRArm))
@@ -163,10 +163,23 @@ function state.update()
   elseif stage=="reachout" then --Move arm to the gripping position
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-        local trLArmTarget,trRArmTarget = movearm.getHoseAttachPosition(
-            {0,0,0},0,0,0)
-        local arm_seq = {{'move',trLArmTarget,trRArmTarget}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "touchtool" end        
+
+        local rclearance1 = Config.armfsm.hoseattach.rarm_clearance1
+        local rclearance2 = Config.armfsm.hoseattach.rarm_clearance2
+        local angle1 = Config.armfsm.hoseattach.angle1
+        local angle2 = Config.armfsm.hoseattach.angle2
+
+        arm_planner:save_valveparam({{0,0,0},0,0,rclearance1})
+        local arm_seq = {
+          {'hoseattach',{0,0,0},0,0,rclearance1},
+          {'hoseattach',{0,0,0},0,angle1,rclearance1},
+          {'hoseattach',{0,0,0},0,angle1,rclearance2},
+          {'hoseattach',{0,0,0},0,angle2,rclearance2},
+          {'hoseattach',{0,0,0},0,angle2,rclearance1},
+          {'hoseattach',{0,0,0},0,0,rclearance1},
+        }
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end
+
       elseif hcm.get_state_proceed() == -1 then        
         local arm_seq={{'move',Config.armfsm.hoseattach.larminit[2],Config.armfsm.hoseattach.rarminit[2]}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
@@ -174,63 +187,12 @@ function state.update()
         print("update")
         update_model()        
         local trLArmTarget,trRArmTarget = movearm.getHoseAttachPosition(
-            Config.armfsm.hoseattach.clearance,0,0,0)
+            {0,0,0},0,0,Config.armfsm.hoseattach.rarm_clearance1 )
         local arm_seq = {{'move',trLArmTarget,trRArmTarget}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end
       end
     end
-  elseif stage=="touchtool" then --Move arm to the gripping position
-    if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed()==1 then 
-        local rclearance = Config.armfsm.hoseattach.rarm_clearance
-        local angle1 = Config.armfsm.hoseattach.angle1
-        local angle2 = Config.armfsm.hoseattach.angle2
 
-        arm_planner:save_valveparam({{0,0,0},0,0,rclearance})
-        local arm_seq = {
-          {'hoseattach',{0,0,0},0,0,rclearance},
-          {'hoseattach',{0,0,0},0,angle1,rclearance},
-          {'hoseattach',{0,0,0},0,angle1,0},
-          {'hoseattach',{0,0,0},0,angle2,0},
-          {'hoseattach',{0,0,0},0,angle2,rclearance},
-          {'hoseattach',{0,0,0},0,0,rclearance},
-        }
-
-
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "touchtool" end
-      elseif hcm.get_state_proceed() == -1 then 
-        local trLArmTarget,trRArmTarget = movearm.getHoseAttachPosition(
-            Config.armfsm.hoseattach.clearance,0,0,0)
-        local arm_seq = {{'move',trLArmTarget,trRArmTarget}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end
-      elseif hcm.get_state_proceed() == 2 then 
-        update_model()        
-        local trLArmTarget,trRArmTarget = movearm.getHoseAttachPosition(
-            {0,0,0},0,0,0)
-        local arm_seq = {{'move',trLArmTarget,trRArmTarget}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "touchtool" end        
-      end
-    end
-  elseif stage=="grab" then --Grip the object   
-    gripL,doneL = util.approachTol(gripL,1,2,dt)
-    Body.set_lgrip_percent(gripL*0.8)
-    if doneL then 
-      if hcm.get_state_proceed()==1 then 
-        local trArmTarget0 = get_model_tr(Config.armfsm.hosegrip.sidepull)
-        local trArmTarget1 = get_model_tr(Config.armfsm.hosegrip.clearance)        
-        local trArmTarget2 = get_hand_tr(Config.armfsm.hosegrip.arminit[1])
-        local arm_seq = {
-          {'move',trArmTarget0,nil},
-          {'move',trArmTarget1,nil},
-          {'move',trArmTarget2,nil},          
-          {'move',trLArm1,nil},
-        }
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "seqdone" end
-      elseif hcm.get_state_proceed()==-1 then stage="touchtool" end
-    end
-  elseif stage=="ungrab" then --Grip the object   
-    gripL,doneL = util.approachTol(gripL,1,2,dt)
-    Body.set_lgrip_percent(gripL*0.8)    
   elseif stage=="seqdone" then --Move arm back to holding position
     if arm_planner:play_arm_sequence(t) then    
       stage = "pulldone"

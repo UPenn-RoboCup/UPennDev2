@@ -70,34 +70,24 @@ local char_to_event = {
   ['1'] = {'body_ch','init'},
 
   ['2'] = {'arm_ch','toolgrab'},
---  ['3'] = {'arm_ch','doorgrab'},
-  ['3'] = {'arm_ch','loaddoorgrab'},
+  ['3'] = {'arm_ch','doorgrab'},
   ['4'] = {'arm_ch','pushdoorgrab'},
+  ['5'] = {'arm_ch','loaddoorgrab'},
 
 
 
-  ['5'] = {'arm_ch','smallvalvegrab'},
-  ['6'] = {'arm_ch','barvalvegrab'},
-  ['7'] = {'arm_ch','largevalvegrab'},
-  ['8'] = {'arm_ch','debrisgrab'},
+  ['6'] = {'arm_ch','smallvalvegrab'},
+  ['7'] = {'arm_ch','barvalvegrab'},
+  ['8'] = {'arm_ch','largevalvegrab'},
 
 
+  ['9'] = {'arm_ch','hosegrab'},
+  ['0'] = {'arm_ch','debrisgrab'},
 
-
-
---  ['9'] = {'arm_ch','teleop'},
   ['r'] = {'arm_ch','rocky'},
   ['t'] = {'arm_ch','teleop'},
+  ['y'] = {'arm_ch','test'},
 
-  ['9'] = {'arm_ch','test'},
-  ['0'] = {'arm_ch','hosegrab'},
-
-
---  ['8'] = {'arm_ch','largevalvetwograb'},
-
---  ['8'] = {'motion_ch','sit'},
---  ['9'] = {'motion_ch','stand'},
---  ['0'] = {'motion_ch','walk'},
  
 }
 

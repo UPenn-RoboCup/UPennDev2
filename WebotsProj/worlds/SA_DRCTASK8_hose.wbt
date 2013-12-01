@@ -29,7 +29,7 @@ DirectionalLight {
 DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
-THOROP7_NoBoundaries_LongGripperHose {
+THOROP7_NoBoundaries_ShortGripperHose {
   translation 0.9 1.15535 0
   rotation 0 1 0 -1.57
   controller "thorop"

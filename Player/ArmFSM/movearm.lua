@@ -220,6 +220,7 @@ function movearm.getHoseAttachPosition(offset, wristRollL, wristRollR, rhand_cle
       *T.trans(rhand_offset[1],rhand_offset[2],rhand_offset[3])
       *T.rotX(wristRollR)
       *T.trans(0,-rhand_clearance,0)
+      *T.rotX(-wristRollR)
       * T.transform6D(
           {0,0,0,rhand_rpy[1],rhand_rpy[2],rhand_rpy[3]})  
 

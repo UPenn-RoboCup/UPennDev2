@@ -44,29 +44,29 @@ PartialWalls {
   rotation 0 1 0 -1.5708
 }
 DebrisTruss {
-  translation 0.00921319 0.148584 1.59658
+  translation 0.00921319 0.148584 1.9
   rotation -0.0482586 0.99165 -0.11959 -0.00997809
 }
-DebrisLongPost {
-  translation 0.251863 0.312812 1.13654
-  rotation 0.999922 0.00398638 0.0118333 -0.9856
-}
-DebrisLongPost {
-  translation -0.21168 0.314376 1.13479
-  rotation 0.999394 0.0181396 0.0296966 -0.982442
-}
-DebrisLongPost {
-  translation 0.116187 0.444691 1.82872
-  rotation -0.199829 0.917354 -0.344283 -1.6427
-}
-DebrisLongPost {
-  translation -0.099521 0.433304 1.69915
-  rotation 0.014851 0.00860697 0.999853 -0.615783
-}
-DebrisLongPost {
-  translation 0.111975 0.441277 2.11018
-  rotation -0.269269 0.921485 -0.279929 -1.66517
-}
+#DebrisLongPost {
+#  translation 0.251863 0.312812 1.13654
+#  rotation 0.999922 0.00398638 0.0118333 -0.9856
+#}
+#DebrisLongPost {
+#  translation -0.21168 0.314376 1.13479
+#  rotation 0.999394 0.0181396 0.0296966 -0.982442
+#}
+#DebrisLongPost {
+#  translation 0.116187 0.444691 1.82872
+#  rotation -0.199829 0.917354 -0.344283 -1.6427
+#}
+#DebrisLongPost {
+#  translation -0.099521 0.433304 1.69915
+#  rotation 0.014851 0.00860697 0.999853 -0.615783
+#}
+#DebrisLongPost {
+#  translation 0.111975 0.441277 2.11018
+#  rotation -0.269269 0.921485 -0.279929 -1.66517
+#}
 DebrisBoard {
   translation -0.0104571 0.511722 1.94763
   rotation 0.027962 0.0700753 0.99715 -0.822788

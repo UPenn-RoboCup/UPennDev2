@@ -20,7 +20,7 @@ Solid {
 	         specularColor 0 0 0
 	       }
 	     }
-	     geometry Box { size 0.3 0.3  1.5 }
+	     geometry Box { size 0.3 0.3  0.6 }
 	  }			
   ]
 	
@@ -30,7 +30,7 @@ Solid {
 	
   boundingObject Group {
 		children[
-			Box { size 0.3 0.3  1.5 }
+			Box { size 0.3 0.3  0.6 }
 		]
   }  
   #locked TRUE

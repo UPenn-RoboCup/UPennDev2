@@ -50,7 +50,7 @@ while true do
       if status then
         local read_parser = lD.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )
-        is_torque_mode_lg = local value==1
+        is_torque_mode_lg = value==1
       end
     end
     -- Open the hand with a position
@@ -66,7 +66,7 @@ while true do
       if status then
         local read_parser = lD.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )
-        is_torque_mode_lg = local value==1
+        is_torque_mode_lg = value==1
       end
     end
     -- Grab the torque from the user
@@ -121,7 +121,7 @@ while true do
       if status then
         local read_parser = lD.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )
-        is_torque_mode_rg = local value==1
+        is_torque_mode_rg = value==1
       end
     end
     -- Open the hand with a position
@@ -137,7 +137,7 @@ while true do
       if status then
         local read_parser = lD.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )
-        is_torque_mode_rg = local value==1
+        is_torque_mode_rg = value==1
       end
     end
     -- Grab the torque from the user
@@ -192,7 +192,7 @@ while true do
       if status then
         local read_parser = lD.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )
-        is_torque_mode_rg = local value==1
+        is_torque_mode_rg = value==1
       end
     end
     -- Open the hand with a position
@@ -208,7 +208,7 @@ while true do
       if status then
         local read_parser = lD.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )
-        is_torque_mode_rg = local value==1
+        is_torque_mode_rg = value==1
       end
     end
     -- Grab the torque from the user
@@ -263,7 +263,7 @@ while true do
       if status then
         local read_parser = lD.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )
-        is_torque_mode_rg = local value==1
+        is_torque_mode_rg = value==1
       end
     end
     -- Open the hand with a position
@@ -279,7 +279,7 @@ while true do
       if status then
         local read_parser = lD.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )
-        is_torque_mode_rg = local value==1
+        is_torque_mode_rg = value==1
       end
     end
     -- Grab the torque from the user

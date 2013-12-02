@@ -263,7 +263,7 @@ while true do
       end
     end
     -- Open the hand with a position
-    local rtrigger = Body.get_rgrip_command_position(1)
+    local rtrigger = Body.get_rgrip_command_position(2)
     local rstep = Body.make_joint_step(Body.indexRGrip+1,rtrigger)
     lD.set_rx_command_position(rtrigger_id,rstep,usb2dyn)
   elseif jcm.gripperPtr.torque_mode[4]==1 then
@@ -280,6 +280,7 @@ while true do
     end
     -- Grab the torque from the user
     local r_tq_step = Body.get_rtrigger_command_torque_step()
+    print(rtrigger_id,r_tq_step)
     -- Close the hand with a certain force (0 is no force)
     lD.set_rx_command_torque(rtrigger_id,r_tq_step,usb2dyn)
   end

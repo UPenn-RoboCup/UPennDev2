@@ -106,12 +106,12 @@ while true do
     print('Error?',lall)
   end
   
-  --[[
   -- LEFT TRIGGER --
+  
   -- In position mode
-  if jcm.gripperPtr.torque_mode[2]==0 then
+  if jcm.gripperPtr.torque_mode[4]==0 then
     -- Make sure we are in the right mode
-    while is_torque_mode_rg do
+    while is_torque_mode_rt do
       lD.set_rx_torque_mode(ltrigger_id,0,usb2dyn)
       unix.usleep(1e2)
       local status = lD.get_rx_torque_mode(ltrigger_id,usb2dyn)
@@ -122,23 +122,23 @@ while true do
       end
     end
     -- Open the hand with a position
-    local ltrigger = Body.get_rgrip_command_position(1)
-    local rstep = Body.make_joint_step(Body.indexRGrip,ltrigger)
+    local ltrigger = Body.get_rgrip_command_position(2)
+    local rstep = Body.make_joint_step(Body.indexLGrip+1,ltrigger)
     lD.set_rx_command_position(ltrigger_id,rstep,usb2dyn)
-  elseif jcm.gripperPtr.torque_mode[2]==1 then
+  elseif jcm.gripperPtr.torque_mode[4]==1 then
     -- Make sure we are in the torque mode
-    while not is_torque_mode_rg do
+    while not is_torque_mode_rt do
       lD.set_rx_torque_mode(ltrigger_id,1,usb2dyn)
       unix.usleep(1e2)
       local status = lD.get_rx_torque_mode(ltrigger_id,usb2dyn)
       if status then
         local read_parser = lD.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )
-        is_torque_mode_rg = value==1
+        is_torque_mode_rt = value==1
       end
     end
     -- Grab the torque from the user
-    local r_tq_step = Body.get_rgrip_command_torque_step()
+    local r_tq_step = Body.get_ltrigger_command_torque_step()
     -- Close the hand with a certain force (0 is no force)
     lD.set_rx_command_torque(ltrigger_id,r_tq_step,usb2dyn)
   end
@@ -147,16 +147,16 @@ while true do
   unix.usleep(1e2)
 
   -- Read load/temperature/position/current
-  local s, lall = lD.get_rx_everything(ltrigger_id,usb2dyn)
+  local s, rall = lD.get_rx_everything(ltrigger_id,usb2dyn)
 
   -- TODO: Put everything into shared memory
-  if type(lall)=='table' then
+  if type(rall)=='table' then
     t_read = unix.time()
     jcm.sensorPtr.position[ltrigger_joint] = 
-      Body.make_joint_radian(ltrigger_joint,lall.position)
-    jcm.sensorPtr.velocity[ltrigger_joint] = lall.speed
-    jcm.sensorPtr.load[ltrigger_joint] = lall.load
-    jcm.sensorPtr.temperature[ltrigger_joint] = lall.temperature
+      Body.make_joint_radian(ltrigger_joint,rall.position)
+    jcm.sensorPtr.velocity[ltrigger_joint] = rall.speed
+    jcm.sensorPtr.load[ltrigger_joint] = rall.load
+    jcm.sensorPtr.temperature[ltrigger_joint] = rall.temperature
     -- time of Read
     jcm.treadPtr.position[ltrigger_joint] = t_read
     jcm.treadPtr.velocity[ltrigger_joint] = t_read
@@ -167,14 +167,13 @@ while true do
     t_read_last = t_read
     if t-t_debug>1 then
       -- Debug printing
-      print('LT | Time diff:',t_read_diff,'Torque mode',is_torque_mode_rg)
+      print('RT | Time diff:',t_read_diff,'Torque mode',is_torque_mode_rt)
+      util.ptable(rall)
       print()
     end
-  elseif type(lall)=='number' then
-    print('Error?',lall)
+  elseif type(rall)=='number' then
+    print('Error?',rall)
   end
-  
-  --]]
   
   
   -- RIGHT CLAW --

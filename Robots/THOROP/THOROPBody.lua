@@ -632,7 +632,7 @@ Body.set_ltrigger_command_torque = function(val)
   jcm.gripperPtr.torque_mode[2] = 1
 end
 -- For torque control (no reading from the motor just yet)
-Body.get_rtrigger_command_torque_step = function()
+Body.get_ltrigger_command_torque_step = function()
   local val = jcm.gripperPtr.command_torque[2]
   -- Val is in mA; 4.5 mA increments for the 
   val = math.floor(val / 4.5)

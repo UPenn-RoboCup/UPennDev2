@@ -76,13 +76,16 @@ local function body_logger()
   --Body.get_time()
   body.t = tonumber(pulse_sub:receive())
   body.command_position = jcm.get_actuator_command_position()
-  body.twrite = jcm.get_twrite_command_position()
+  body.tw_position = jcm.get_twrite_command_position()
   body.position = jcm.get_sensor_position()
-  body.tread = jcm.get_tread_position()
+  body.tr_position = jcm.get_tread_position()
   body.rpy  = Body.get_sensor_rpy()
   body.gyro = Body.get_sensor_gyro()
   body.lfoot = jcm.get_sensor_lfoot()
   body.rfoot = jcm.get_sensor_rfoot()
+  -- Log the temperature of the gripper only
+  body.lg_temp = Body.get_lgrip_temperature()
+  body.rg_temp = Body.get_rgrip_temperature()
 
   -- Write log file
   body_log_file:write( mp.pack(body) )

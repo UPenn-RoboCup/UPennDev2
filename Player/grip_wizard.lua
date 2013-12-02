@@ -24,7 +24,7 @@ local lclaw_joint = Body.indexLGrip
 local ltrigger_id = 67
 local ltrigger_joint = Body.indexLGrip+1
 
-local LOOP_RATE_HZ = 50
+local LOOP_RATE_HZ = 10
 local LOOP_SEC = 1/LOOP_RATE_HZ
 
 -- Use position mode to start
@@ -76,7 +76,7 @@ while true do
   end
 
   -- Wait a millisecond for the motor to be ready for the read command
-  unix.usleep(1e3)
+  unix.usleep(1e4)
 
   -- Read load/temperature/position/current
   local s, lall = lD.get_rx_everything(lclaw_id,usb2dyn)
@@ -147,7 +147,7 @@ while true do
   end
 
   -- Wait a millisecond for the motor to be ready for the read command
-  unix.usleep(1e3)
+  unix.usleep(1e4)
 
   -- Read load/temperature/position/current
   local s, rall = lD.get_rx_everything(rclaw_id,usb2dyn)
@@ -218,7 +218,7 @@ while true do
   end
 
   -- Wait a millisecond for the motor to be ready for the read command
-  unix.usleep(1e3)
+  unix.usleep(1e4)
 
   -- Read load/temperature/position/current
   local s, lall = lD.get_rx_everything(ltrigger_id,usb2dyn)
@@ -289,7 +289,7 @@ while true do
   end
 
   -- Wait a millisecond for the motor to be ready for the read command
-  unix.usleep(1e3)
+  unix.usleep(1e4)
 
   -- Read load/temperature/position/current
   local s, rall = lD.get_rx_everything(rtrigger_id,usb2dyn)

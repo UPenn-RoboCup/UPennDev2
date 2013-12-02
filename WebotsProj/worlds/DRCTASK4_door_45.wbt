@@ -8,8 +8,8 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-  orientation 0.165612 0.902369 0.397873 3.84338
-  position -3.57194 7.21729 -3.60315
+  orientation 0.0391553 0.997453 0.0596119 4.19266
+  position -6.74538 2.04378 -2.498
 }
 Background {
   skyColor [
@@ -29,75 +29,49 @@ DirectionalLight {
 DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
-THOROP7_NoBoundaries_ShortClaw2 {
-  translation -2.23 1.15535 0.6
+THOROP7_NoBoundaries_LongClaw2 {  
+  translation -2.9 1.15535 0.6  
   rotation 0 1 0 1.57
   controller "thorop"
   controllerArgs "0 32"
 }
-SingleDoorCommonPush_37 {
-  translation -2 0 0.6
+SingleDoorCommonPush_45 {
+  translation -2.0 0 0.6
   rotation 0 1 0 1.57
 }
-SingleDoorEntreeHandleUp_37 {
+SingleDoorEntreeHandleUp_45 {
   translation 0.2 0 0.6
   rotation 0 1 0 1.57
 }
-SingleDoorEntreeHandleUp_37 {
-  translation 2 0 0.6
+SingleDoorEntreeHandleUpWeighted_45 {
+  translation 2.0 0 0.6
   rotation 0 1 0 1.57
 }
+
+
 Solid {
   translation 0 1 1.8
-  children [
-    Shape {
-      geometry Box {
-        size 6.3 2 0.1
-      }
-    }
-  ]
+  children [Shape {geometry Box {size 6.3 2 0.1}}]
   boundingObject Transform {
-    children [
-      Box {
-        size 6.3 2 0.1
-      }
-    ]
+    children [Box {size 6.3 2 0.1}]
   }
   locked TRUE
 }
+
 Solid {
   translation 3.2 1 0.6
-  children [
-    Shape {
-      geometry Box {
-        size 0.1 2 2.5
-      }
-    }
-  ]
+  children [Shape {geometry Box {size 0.1 2 2.5}}]
   boundingObject Transform {
-    children [
-      Box {
-        size 0.1 2 2.5
-      }
-    ]
+    children [Box {size 0.1 2 2.5}]
   }
   locked TRUE
 }
+
 Solid {
   translation -3.2 1 0.6
-  children [
-    Shape {
-      geometry Box {
-        size 0.1 2 2.5
-      }
-    }
-  ]
+  children [Shape {geometry Box {size 0.1 2 2.5}}]
   boundingObject Transform {
-    children [
-      Box {
-        size 0.1 2 2.5
-      }
-    ]
+    children [Box {size 0.1 2 2.5}]
   }
   locked TRUE
 }

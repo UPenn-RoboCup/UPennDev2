@@ -35,15 +35,15 @@ THOROP7_NoBoundaries_LongClaw2 {
   controller "thorop"
   controllerArgs "0 32"
 }
-SingleDoorCommonPush {
+SingleDoorCommonPush_33 {
   translation -2.0 0 0.6
   rotation 0 1 0 1.57
 }
-SingleDoorEntreeHandleUp {
+SingleDoorEntreeHandleUp_33 {
   translation 0.2 0 0.6
   rotation 0 1 0 1.57
 }
-SingleDoorEntreeHandleUp {
+SingleDoorEntreeHandleUpWeighted_33 {
   translation 2.0 0 0.6
   rotation 0 1 0 1.57
 }

@@ -3,7 +3,7 @@
 # Author: fabien.rohrer@cyberbotics.com
 # Modified by: heqin@seas.upenn.edu
 
-PROTO SingleDoorEntreeHandleUpWeighted [
+PROTO SingleDoorEntreeHandleUpWeighted_37 [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
   field SFColor mainColor 1 1 1
@@ -39,12 +39,12 @@ PROTO SingleDoorEntreeHandleUpWeighted [
             HingeJoint {
               jointParameters HingeJointParameters {
                 axis 0 0 -1
-                anchor 0.77 0 0
+                anchor 0.77 -0.0762 0
                 maxStop 1
                 springConstant 5
               }
               endPoint Solid {
-                translation 0.77 0 0
+                translation 0.77 -0.0762 0
                 rotation 0 0 1 0
                 children [
                   Shape {

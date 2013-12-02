@@ -241,7 +241,7 @@ while true do
     t_read_last = t_read
     if t-t_debug>1 then
       -- Debug printing
-      print('R | Time diff:',t_read_diff,'Torque mode',is_torque_mode_rg)
+      print('LT | Time diff:',t_read_diff,'Torque mode',is_torque_mode_rg)
       util.ptable(lall)
       print()
       t_debug=t
@@ -312,7 +312,7 @@ while true do
     t_read_last = t_read
     if t-t_debug>1 then
       -- Debug printing
-      print('R | Time diff:',t_read_diff,'Torque mode',is_torque_mode_rg)
+      print('RT | Time diff:',t_read_diff,'Torque mode',is_torque_mode_rg)
       util.ptable(rall)
       print()
       t_debug=t

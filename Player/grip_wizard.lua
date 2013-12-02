@@ -280,7 +280,6 @@ while true do
     end
     -- Grab the torque from the user
     local r_tq_step = Body.get_rtrigger_command_torque_step()
-    print(rtrigger_id,r_tq_step)
     -- Close the hand with a certain force (0 is no force)
     lD.set_rx_command_torque(rtrigger_id,r_tq_step,usb2dyn)
   end

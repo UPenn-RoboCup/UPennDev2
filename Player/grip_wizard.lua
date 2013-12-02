@@ -24,7 +24,7 @@ local lclaw_joint = Body.indexLGrip
 local ltrigger_id = 67
 local ltrigger_joint = Body.indexLGrip+1
 
-local LOOP_RATE_HZ = 10
+local LOOP_RATE_HZ = 40
 local LOOP_SEC = 1/LOOP_RATE_HZ
 
 -- Use position mode to start
@@ -76,7 +76,7 @@ while true do
   end
 
   -- Wait a millisecond for the motor to be ready for the read command
-  unix.usleep(1e4)
+  unix.usleep(1e2)
 
   -- Read load/temperature/position/current
   local s, lall = lD.get_rx_everything(lclaw_id,usb2dyn)
@@ -105,6 +105,76 @@ while true do
   elseif type(lall)=='number' then
     print('Error?',lall)
   end
+  
+  --[[
+  -- LEFT TRIGGER --
+  -- In position mode
+  if jcm.gripperPtr.torque_mode[2]==0 then
+    -- Make sure we are in the right mode
+    while is_torque_mode_rg do
+      lD.set_rx_torque_mode(ltrigger_id,0,usb2dyn)
+      unix.usleep(1e2)
+      local status = lD.get_rx_torque_mode(ltrigger_id,usb2dyn)
+      if status then
+        local read_parser = lD.byte_to_number[ #status.parameter ]
+        local value = read_parser( unpack(status.parameter) )
+        is_torque_mode_rg = value==1
+      end
+    end
+    -- Open the hand with a position
+    local ltrigger = Body.get_rgrip_command_position(1)
+    local rstep = Body.make_joint_step(Body.indexRGrip,ltrigger)
+    lD.set_rx_command_position(ltrigger_id,rstep,usb2dyn)
+  elseif jcm.gripperPtr.torque_mode[2]==1 then
+    -- Make sure we are in the torque mode
+    while not is_torque_mode_rg do
+      lD.set_rx_torque_mode(ltrigger_id,1,usb2dyn)
+      unix.usleep(1e2)
+      local status = lD.get_rx_torque_mode(ltrigger_id,usb2dyn)
+      if status then
+        local read_parser = lD.byte_to_number[ #status.parameter ]
+        local value = read_parser( unpack(status.parameter) )
+        is_torque_mode_rg = value==1
+      end
+    end
+    -- Grab the torque from the user
+    local r_tq_step = Body.get_rgrip_command_torque_step()
+    -- Close the hand with a certain force (0 is no force)
+    lD.set_rx_command_torque(ltrigger_id,r_tq_step,usb2dyn)
+  end
+
+  -- Wait a millisecond for the motor to be ready for the read command
+  unix.usleep(1e2)
+
+  -- Read load/temperature/position/current
+  local s, lall = lD.get_rx_everything(ltrigger_id,usb2dyn)
+
+  -- TODO: Put everything into shared memory
+  if type(lall)=='table' then
+    t_read = unix.time()
+    jcm.sensorPtr.position[ltrigger_joint] = 
+      Body.make_joint_radian(ltrigger_joint,lall.position)
+    jcm.sensorPtr.velocity[ltrigger_joint] = lall.speed
+    jcm.sensorPtr.load[ltrigger_joint] = lall.load
+    jcm.sensorPtr.temperature[ltrigger_joint] = lall.temperature
+    -- time of Read
+    jcm.treadPtr.position[ltrigger_joint] = t_read
+    jcm.treadPtr.velocity[ltrigger_joint] = t_read
+    jcm.treadPtr.load[ltrigger_joint] = t_read
+    jcm.treadPtr.temperature[ltrigger_joint] = t_read
+    --
+    local t_read_diff = t_read - (t_read_last or t0)
+    t_read_last = t_read
+    if t-t_debug>1 then
+      -- Debug printing
+      print('LT | Time diff:',t_read_diff,'Torque mode',is_torque_mode_rg)
+      print()
+    end
+  elseif type(lall)=='number' then
+    print('Error?',lall)
+  end
+  
+  --]]
   
   
   -- RIGHT CLAW --
@@ -145,7 +215,7 @@ while true do
   end
 
   -- Wait a millisecond for the motor to be ready for the read command
-  unix.usleep(1e4)
+  unix.usleep(1e2)
 
   -- Read load/temperature/position/current
   local s, rall = lD.get_rx_everything(rclaw_id,usb2dyn)
@@ -174,75 +244,6 @@ while true do
     end
   elseif type(rall)=='number' then
     print('Error?',rall)
-  end
-  
-  
-  -- LEFT TRIGGER --
-  
-  -- In position mode
-  if jcm.gripperPtr.torque_mode[2]==0 then
-    -- Make sure we are in the right mode
-    while is_torque_mode_rg do
-      lD.set_rx_torque_mode(ltrigger_id,0,usb2dyn)
-      unix.usleep(1e2)
-      local status = lD.get_rx_torque_mode(ltrigger_id,usb2dyn)
-      if status then
-        local read_parser = lD.byte_to_number[ #status.parameter ]
-        local value = read_parser( unpack(status.parameter) )
-        is_torque_mode_rg = value==1
-      end
-    end
-    -- Open the hand with a position
-    local ltrigger = Body.get_rgrip_command_position(1)
-    local rstep = Body.make_joint_step(Body.indexRGrip,ltrigger)
-    lD.set_rx_command_position(ltrigger_id,rstep,usb2dyn)
-  elseif jcm.gripperPtr.torque_mode[2]==1 then
-    -- Make sure we are in the torque mode
-    while not is_torque_mode_rg do
-      lD.set_rx_torque_mode(ltrigger_id,1,usb2dyn)
-      unix.usleep(1e2)
-      local status = lD.get_rx_torque_mode(ltrigger_id,usb2dyn)
-      if status then
-        local read_parser = lD.byte_to_number[ #status.parameter ]
-        local value = read_parser( unpack(status.parameter) )
-        is_torque_mode_rg = value==1
-      end
-    end
-    -- Grab the torque from the user
-    local r_tq_step = Body.get_rgrip_command_torque_step()
-    -- Close the hand with a certain force (0 is no force)
-    lD.set_rx_command_torque(ltrigger_id,r_tq_step,usb2dyn)
-  end
-
-  -- Wait a millisecond for the motor to be ready for the read command
-  unix.usleep(1e4)
-
-  -- Read load/temperature/position/current
-  local s, lall = lD.get_rx_everything(ltrigger_id,usb2dyn)
-
-  -- TODO: Put everything into shared memory
-  if type(lall)=='table' then
-    t_read = unix.time()
-    jcm.sensorPtr.position[ltrigger_joint] = 
-      Body.make_joint_radian(ltrigger_joint,lall.position)
-    jcm.sensorPtr.velocity[ltrigger_joint] = lall.speed
-    jcm.sensorPtr.load[ltrigger_joint] = lall.load
-    jcm.sensorPtr.temperature[ltrigger_joint] = lall.temperature
-    -- time of Read
-    jcm.treadPtr.position[ltrigger_joint] = t_read
-    jcm.treadPtr.velocity[ltrigger_joint] = t_read
-    jcm.treadPtr.load[ltrigger_joint] = t_read
-    jcm.treadPtr.temperature[ltrigger_joint] = t_read
-    --
-    local t_read_diff = t_read - (t_read_last or t0)
-    t_read_last = t_read
-    if t-t_debug>1 then
-      -- Debug printing
-      print('LT | Time diff:',t_read_diff,'Torque mode',is_torque_mode_rg)
-      print()
-    end
-  elseif type(lall)=='number' then
-    print('Error?',lall)
   end
   
     
@@ -284,7 +285,7 @@ while true do
   end
 
   -- Wait a millisecond for the motor to be ready for the read command
-  unix.usleep(1e4)
+  unix.usleep(1e2)
 
   -- Read load/temperature/position/current
   local s, rall = lD.get_rx_everything(rtrigger_id,usb2dyn)

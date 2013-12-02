@@ -99,7 +99,7 @@ shared_data.gripper.command_torque = vector.zeros( 4 )
 -- 0: Position mode, 1: torque mode
 shared_data.gripper.torque_mode = vector.zeros( 4 )
 -- Temperature
-shared_data.gripper.temperature = vector.zeros( 4 )
+--shared_data.gripper.temperature = vector.zeros( 4 )
 
 ------------------------
 -- Call the initializer

@@ -17,7 +17,7 @@ local state_pub_ch
 if broadcast_en then
   state_pub_ch = simple_ipc.new_publisher(Config.net.state)
 end
-local pulse_ch = simple_ipc.new_publisher'pulse'
+--local pulse_ch = simple_ipc.new_publisher'pulse'
 
 require'gcm'
 require'wcm'
@@ -112,7 +112,7 @@ while true do
   
   -- Send the tick tock at the end of a cycle
   pulse_tbl.t = t
-  pulse_ch:send(mp.pack(pulse_tbl))
+  --pulse_ch:send(mp.pack(pulse_tbl))
   
   -- Sleep a bit if not webots
   if not IS_WEBOTS then

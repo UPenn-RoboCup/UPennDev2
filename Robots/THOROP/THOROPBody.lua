@@ -11,7 +11,8 @@ local use_pose   = true
 local use_lidar_chest  = false
 local use_lidar_head  = false
 -- if using one USB2Dynamixel
-local ONE_CHAIN = false
+local ONE_CHAIN = true
+local DISABLE_MICROSTRAIN = true
 
 --Turn off camera for default for webots
 --This makes body crash if we turn it on again...
@@ -21,14 +22,14 @@ if IS_WEBOTS then use_camera = false end
 if IS_TESTING then use_camera = false end
 
 -- If using remote control, then must not overwrite our *cm definitions
-if not jcm then
+--if not jcm then
   -- Shared memory for the joints
   require'jcm'
   -- Shared memory for vision of the world
   require'vcm'
   -- Shared memory for world 
   require'wcm'
-end
+--end
 
 -- Utilities
 local unix         = require'unix'
@@ -665,6 +666,8 @@ end -- anthropomorphic
 
 ----------------------
 -- Inverse Kinematics
+local Kinematics = require'THOROPKinematics' 
+--[[
 local Kinematics
 if Config.IS_LONGARM then
   Kinematics = require'THOROPLongarmKinematics' 
@@ -677,6 +680,7 @@ else
   print("SHORTARM IK LOADED")
   print("SHORTARM IK LOADED")
 end
+--]]
 
 -- Check the error from a desired transform tr
 -- to a forwards kinematics of in IK solution q
@@ -899,13 +903,17 @@ Body.entry = function()
       dynamixels['left_arm'] = libDynamixel.new_bus'/dev/ttyUSB1'
       dynamixels['right_leg'] = libDynamixel.new_bus'/dev/ttyUSB2'
       dynamixels['left_leg'] = libDynamixel.new_bus'/dev/ttyUSB3'
-      microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
+      if not DISABLE_MICROSTRAIN then
+        microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
+      end
     else
       dynamixels.right_arm = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9A'
       dynamixels['left_arm'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
       dynamixels['right_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
       dynamixels['left_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
-      microstrain = libMicrostrain.new_microstrain'/dev/cu.usbmodem1421'
+      if not DISABLE_MICROSTRAIN then
+        microstrain = libMicrostrain.new_microstrain'/dev/tty.usbmodem1a1211'
+      end
     end
     -- motor ids
     dynamixels.right_arm.nx_ids =
@@ -918,11 +926,7 @@ Body.entry = function()
       {16,18,20,22,24,26, --[[waist]]27}
     dynamixels.left_arm.mx_ids = { 37, --[[lidar]] }
   else
-    if OPERATING_SYSTEM~='darwin' then
-      dynamixels.one_chain = libDynamixel.new_bus'/dev/ttyUSB0'
-    else
-      dynamixels.one_chain = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9A'
-    end
+    dynamixels.one_chain = libDynamixel.new_bus()
     -- from 1 to 30
     dynamixels.one_chain.nx_ids = vector.count(1,30)
     -- lidar
@@ -953,10 +957,12 @@ Body.entry = function()
   -- looping through each chain
 
   --
-  microstrain:ahrs_on()
-  table.insert(dynamixel_fds,microstrain.fd)
-  microstrain.t_diff = 0
-  microstrain.t_read = 0
+  if not DISABLE_MICROSTRAIN then
+    microstrain:ahrs_on()
+    table.insert(dynamixel_fds,microstrain.fd)
+    microstrain.t_diff = 0
+    microstrain.t_read = 0
+  end
   --
 end
 
@@ -998,6 +1004,7 @@ local function process_fd(ready_fd)
   assert(buf,'no read in process fd')
   --
   if not d then -- assume microstrain
+    if DISABLE_MICROSTRAIN then return false end
     local gyro = carray.float(buf:sub( 7,18):reverse())
     local rpy  = carray.float(buf:sub(21,32):reverse())
     -- set to memory
@@ -1262,13 +1269,13 @@ Body.update = function()
       end
     end
     -- Await the responses of these packets
-    local READ_TIMEOUT = 12e-3 --8ms
+    local READ_TIMEOUT = 12e-3
     local still_recv = true
     while still_recv do
       still_recv = false
       local status, ready = unix.select(dynamixel_fds,READ_TIMEOUT)
       -- if a timeout, then return
-      if status==0 then print('read timeout') break end
+      if status==0 then print'read timeout' break end
       for ready_fd, is_ready in pairs(ready) do
         -- for items that are ready
         if is_ready then
@@ -1293,9 +1300,11 @@ Body.exit = function()
     -- Print helpful message
     print('Closed',k)
   end
-  -- close imu
-  microstrain:ahrs_off()
-  microstrain:close()
+  if not DISABLE_MICROSTRAIN then
+    -- close imu
+    microstrain:ahrs_off()
+    microstrain:close()
+  end
 end
 
 ----------------------

@@ -5,28 +5,31 @@ local libDynamixel = require'libDynamixel'
 local util = require'util'
 local carray = require'carray'
 
---local new_dynamixel = libDynamixel.new_bus()
+one_chain = libDynamixel.new_bus()
 
-local right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
-local left_arm  = libDynamixel.new_bus'/dev/ttyUSB1'
-local right_leg = libDynamixel.new_bus'/dev/ttyUSB2'
-local left_leg  = libDynamixel.new_bus'/dev/ttyUSB3'
-local grippers  = libDynamixel.new_bus('/dev/ttyUSB4',1000000)
-
-if OPERATING_SYSTEM=='darwin' then
-  right_arm = libDynamixel.new_bus('/dev/cu.usbserial-FTT3ABW9A')
-  left_arm  = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
-  right_leg = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
-  left_leg  = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
+if not one_chain then
+  if OPERATING_SYSTEM=='darwin' then
+    right_arm = libDynamixel.new_bus('/dev/cu.usbserial-FTT3ABW9A')
+    left_arm  = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
+    right_leg = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
+    left_leg  = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
+  else
+    right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
+    left_arm  = libDynamixel.new_bus'/dev/ttyUSB1'
+    right_leg = libDynamixel.new_bus'/dev/ttyUSB2'
+    left_leg  = libDynamixel.new_bus'/dev/ttyUSB3'
+    grippers  = libDynamixel.new_bus('/dev/ttyUSB4',1000000)
+  end
 end
 
 -- Choose a chain
-local test_dynamixel = grippers
+local test_dynamixel = one_chain
 assert(test_dynamixel)
 print('Using',test_dynamixel.ttyname)
 
-local found = test_dynamixel:ping_probe(1)
+local found = test_dynamixel:ping_probe(2)
 print('Inspecting',table.concat(found,','))
+os.exit()
 
 -- Change ID 19 to 64
 local status = libDynamixel.get_rx_id(19,test_dynamixel)

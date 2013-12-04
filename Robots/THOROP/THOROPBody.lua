@@ -10,6 +10,8 @@ local use_lidar_chest  = true
 local use_pose   = true
 local use_lidar_chest  = false
 local use_lidar_head  = false
+-- if using one USB2Dynamixel
+local ONE_CHAIN = false
 
 --Turn off camera for default for webots
 --This makes body crash if we turn it on again...
@@ -890,37 +892,42 @@ local fd_dynamixels = {}
 local motor_dynamixels = {}
 local microstrain
 Body.entry = function()
-  if OPERATING_SYSTEM~='darwin' then
-    dynamixels.right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
-    dynamixels['left_arm'] = libDynamixel.new_bus'/dev/ttyUSB1'
-    dynamixels['right_leg'] = libDynamixel.new_bus'/dev/ttyUSB2'
-    dynamixels['left_leg'] = libDynamixel.new_bus'/dev/ttyUSB3'
-    microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
+  
+  if not ONE_CHAIN then  
+    if OPERATING_SYSTEM~='darwin' then
+      dynamixels.right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
+      dynamixels['left_arm'] = libDynamixel.new_bus'/dev/ttyUSB1'
+      dynamixels['right_leg'] = libDynamixel.new_bus'/dev/ttyUSB2'
+      dynamixels['left_leg'] = libDynamixel.new_bus'/dev/ttyUSB3'
+      microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
+    else
+      dynamixels.right_arm = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9A'
+      dynamixels['left_arm'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
+      dynamixels['right_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
+      dynamixels['left_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
+      microstrain = libMicrostrain.new_microstrain'/dev/cu.usbmodem1421'
+    end
+    -- motor ids
+    dynamixels.right_arm.nx_ids =
+      {1,3,5,7,9,11,13}
+    dynamixels.left_arm.nx_ids =
+      {2,4,6,8,10,12,14, --[[head]] 29,30 }
+    dynamixels.right_leg.nx_ids = 
+      {15,17,19,21,23,25, --[[waist pitch]]28}
+    dynamixels.left_leg.nx_ids =
+      {16,18,20,22,24,26, --[[waist]]27}
+    dynamixels.left_arm.mx_ids = { 37, --[[lidar]] }
   else
-    dynamixels.right_arm = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9A'
-    dynamixels['left_arm'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
-    dynamixels['right_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
-    dynamixels['left_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
-    microstrain = libMicrostrain.new_microstrain'/dev/cu.usbmodem1421'
+    if OPERATING_SYSTEM~='darwin' then
+      dynamixels.one_chain = libDynamixel.new_bus'/dev/ttyUSB0'
+    else
+      dynamixels.one_chain = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9A'
+    end
+    -- from 1 to 30
+    dynamixels.one_chain.nx_ids = vector.count(1,30)
+    -- lidar
+    dynamixels.one_chain.mx_ids = {37}
   end
-  -- motor ids
-  dynamixels.right_arm.nx_ids =
-    {1,3,5,7,9,11,13}
-  dynamixels.left_arm.nx_ids =
-    {2,4,6,8,10,12,14, --[[head]] 29,30 }
-  dynamixels.right_leg.nx_ids = 
-    {15,17,19,21,23,25, --[[waist pitch]]28}
-  dynamixels.left_leg.nx_ids =
-    {16,18,20,22,24,26, --[[waist]]27}
-  --[[
-  dynamixels.right_arm.mx_ids =
-    { 31,33,35 }
-  --]]
-  dynamixels.left_arm.mx_ids = {
-    --32,34,36, 
-    37, --[[lidar]]
-   }
-  --
 
   --
   for _,d in pairs(dynamixels) do
@@ -929,9 +936,11 @@ Body.entry = function()
     -- make the 'all ids' list and the motor->chain mapping
     --d.all_ids = {}
     -- NX
-    for _,id in ipairs(d.nx_ids) do
-      --table.insert(d.all_ids,id)
-      motor_dynamixels[id]=d
+    if d.nx_ids then
+      for _,id in ipairs(d.nx_ids) do
+        --table.insert(d.all_ids,id)
+        motor_dynamixels[id]=d
+      end
     end
     -- MX
     if d.mx_ids then
@@ -1036,6 +1045,7 @@ local function process_fd(ready_fd)
 end
 
 local function add_nx_sync_write(d, is_writes, wr_values, register)
+  if not d.nx_ids then return end
   local cmd_ids, cmd_vals = {}, {}
   for _,id in ipairs(d.nx_ids) do
     local idx = motor_to_joint[id]
@@ -1228,7 +1238,6 @@ Body.update = function()
   until done
   --]]
 
-----[[
   -- Send the requests next
   local done = true
   repeat -- round robin repeat
@@ -1268,7 +1277,9 @@ Body.update = function()
       end -- for each ready_fd
     end
   until done
---]]
+  
+  -- Now send gripper torque if needed
+  
 end
 Body.exit = function()
   for k,d in pairs(dynamixels) do

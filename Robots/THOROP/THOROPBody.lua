@@ -10,6 +10,8 @@ local use_lidar_chest  = true
 local use_pose   = true
 local use_lidar_chest  = false
 local use_lidar_head  = false
+-- if using one USB2Dynamixel
+local ONE_CHAIN = false
 
 --Turn off camera for default for webots
 --This makes body crash if we turn it on again...
@@ -517,6 +519,49 @@ for actuator, pointer in pairs(jcm.actuatorPtr) do
   --------------------------------
 end
 
+Body.set_rgrip_percent = function( percent, is_torque )
+  -- Convex combo
+  percent = math.min(math.max(percent,0),1)
+  --  
+  local thumb = indexRGrip
+  local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
+  jcm.actuatorPtr.command_position[thumb] = radian
+  jcm.writePtr.command_position[thumb] = 1
+  -- Set the command_torque
+  jcm.gripperPtr.torque_mode[3] = 0
+  -- Set the command_torque to zero
+  jcm.gripperPtr.command_torque[3] = 0
+end
+-- For torque control (no reading from the motor just yet)
+Body.set_rgrip_command_torque = function(val)
+  -- Set the command_torque
+  jcm.gripperPtr.command_torque[3] = val
+  -- Set the command_torque
+  jcm.gripperPtr.torque_mode[3] = 1
+end
+-- For torque control (no reading from the motor just yet)
+Body.get_rgrip_command_torque_step = function()
+  local val = jcm.gripperPtr.command_torque[3]
+  -- Val is in mA; 4.5 mA increments for the 
+  val = math.floor(val / 4.5)
+  -- Not too large/small
+  val = util.procFunc(val,0,1023)
+  if val<0 then val=1024-val end
+  -- Return the value and the mode
+  return val, jcm.gripperPtr.torque_mode[3]
+end
+Body.set_rtrigger_percent = function( percent, is_torque )
+  local thumb = indexRGrip+1
+  percent = math.min(math.max(percent,0),1)
+  -- Convex combo
+  local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
+  jcm.actuatorPtr.command_position[thumb] = radian
+  jcm.writePtr.command_position[thumb] = 1
+  -- Set the command_torque to position
+  jcm.gripperPtr.torque_mode[4] = 0
+  -- Set the command_torque to zero
+  jcm.gripperPtr.command_torque[4] = 0
+end
 -- For torque control (no reading from the motor just yet)
 Body.set_rtrigger_command_torque = function(val)
   -- Set the command_torque
@@ -524,7 +569,6 @@ Body.set_rtrigger_command_torque = function(val)
   -- Set the command_torque
   jcm.gripperPtr.torque_mode[4] = 1
 end
-
 -- For torque control (no reading from the motor just yet)
 Body.get_rtrigger_command_torque_step = function()
   local val = jcm.gripperPtr.command_torque[4]
@@ -537,25 +581,7 @@ Body.get_rtrigger_command_torque_step = function()
   return val, jcm.gripperPtr.torque_mode[4]
 end
 
--- For torque control (no reading from the motor just yet)
-Body.set_rgrip_command_torque = function(val)
-  -- Set the command_torque
-  jcm.gripperPtr.command_torque[3] = val
-  -- Set the command_torque
-  jcm.gripperPtr.torque_mode[3] = 1
-end
-
--- For torque control (no reading from the motor just yet)
-Body.get_rgrip_command_torque_step = function()
-  local val = jcm.gripperPtr.command_torque[3]
-  -- Val is in mA; 4.5 mA increments for the 
-  val = math.floor(val / 4.5)
-  -- Not too large/small
-  val = util.procFunc(val,0,1023)
-  if val<0 then val=1024-val end
-  -- Return the value and the mode
-  return val, jcm.gripperPtr.torque_mode[3]
-end
+-- left --
 
 -- For position control
 Body.set_lgrip_percent = function( percent, is_torque )
@@ -570,21 +596,24 @@ Body.set_lgrip_percent = function( percent, is_torque )
   -- Set the command_torque to zero
   jcm.gripperPtr.command_torque[1] = 0
 end
-Body.set_rgrip_percent = function( percent, is_torque )
-  -- Convex combo
-  percent = math.min(math.max(percent,0),1)
-  --  
-  local thumb = indexRGrip
-  local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
-  jcm.actuatorPtr.command_position[thumb] = radian
-  jcm.writePtr.command_position[thumb] = 1
+-- For torque control (no reading from the motor just yet)
+Body.set_lgrip_command_torque = function(val)
   -- Set the command_torque
-  jcm.gripperPtr.torque_mode[3] = 0
-  -- Set the command_torque to zero
-  jcm.gripperPtr.command_torque[3] = 0
+  jcm.gripperPtr.command_torque[1] = val
+  -- Set the command_torque
+  jcm.gripperPtr.torque_mode[1] = 1
 end
-
--- Trigger position
+-- For torque control (no reading from the motor just yet)
+Body.get_lgrip_command_torque_step = function()
+  local val = jcm.gripperPtr.command_torque[1]
+  -- Val is in mA; 4.5 mA increments for the 
+  val = math.floor(val / 4.5)
+  -- Not too large/small
+  val = util.procFunc(val,0,1023)
+  if val<0 then val=1024-val end
+  -- Return the value and the mode
+  return val, jcm.gripperPtr.torque_mode[1]
+end
 Body.set_ltrigger_percent = function( percent, is_torque )
   local thumb = indexLGrip+1
   percent = math.min(math.max(percent,0),1)
@@ -593,24 +622,28 @@ Body.set_ltrigger_percent = function( percent, is_torque )
   jcm.actuatorPtr.command_position[thumb] = radian
   jcm.writePtr.command_position[thumb] = 1
   -- Set the command_torque to position
-  jcm.gripperPtr.torque_mode[1] = 0
+  jcm.gripperPtr.torque_mode[2] = 0
   -- Set the command_torque to zero
-  jcm.gripperPtr.command_torque[1] = 0
+  jcm.gripperPtr.command_torque[2] = 0
 end
-Body.set_rtrigger_percent = function( percent, is_torque )
-  -- Convex combo
-  percent = math.min(math.max(percent,0),1)
-  --  
-  local thumb = indexRGrip+1
-  local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
-  jcm.actuatorPtr.command_position[thumb] = radian
-  jcm.writePtr.command_position[thumb] = 1
+-- For torque control (no reading from the motor just yet)
+Body.set_ltrigger_command_torque = function(val)
   -- Set the command_torque
-  jcm.gripperPtr.torque_mode[3] = 0
-  -- Set the command_torque to zero
-  jcm.gripperPtr.command_torque[3] = 0
+  jcm.gripperPtr.command_torque[2] = val
+  -- Set the command_torque
+  jcm.gripperPtr.torque_mode[2] = 1
 end
-
+-- For torque control (no reading from the motor just yet)
+Body.get_ltrigger_command_torque_step = function()
+  local val = jcm.gripperPtr.command_torque[2]
+  -- Val is in mA; 4.5 mA increments for the 
+  val = math.floor(val / 4.5)
+  -- Not too large/small
+  val = util.procFunc(val,0,1023)
+  if val<0 then val=1024-val end
+  -- Return the value and the mode
+  return val, jcm.gripperPtr.torque_mode[2]
+end
 
 --------------------------------
 -- TODO: Hardness
@@ -859,37 +892,42 @@ local fd_dynamixels = {}
 local motor_dynamixels = {}
 local microstrain
 Body.entry = function()
-  if OPERATING_SYSTEM~='darwin' then
-    dynamixels.right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
-    dynamixels['left_arm'] = libDynamixel.new_bus'/dev/ttyUSB1'
-    dynamixels['right_leg'] = libDynamixel.new_bus'/dev/ttyUSB2'
-    dynamixels['left_leg'] = libDynamixel.new_bus'/dev/ttyUSB3'
-    microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
+  
+  if not ONE_CHAIN then  
+    if OPERATING_SYSTEM~='darwin' then
+      dynamixels.right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
+      dynamixels['left_arm'] = libDynamixel.new_bus'/dev/ttyUSB1'
+      dynamixels['right_leg'] = libDynamixel.new_bus'/dev/ttyUSB2'
+      dynamixels['left_leg'] = libDynamixel.new_bus'/dev/ttyUSB3'
+      microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
+    else
+      dynamixels.right_arm = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9A'
+      dynamixels['left_arm'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
+      dynamixels['right_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
+      dynamixels['left_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
+      microstrain = libMicrostrain.new_microstrain'/dev/cu.usbmodem1421'
+    end
+    -- motor ids
+    dynamixels.right_arm.nx_ids =
+      {1,3,5,7,9,11,13}
+    dynamixels.left_arm.nx_ids =
+      {2,4,6,8,10,12,14, --[[head]] 29,30 }
+    dynamixels.right_leg.nx_ids = 
+      {15,17,19,21,23,25, --[[waist pitch]]28}
+    dynamixels.left_leg.nx_ids =
+      {16,18,20,22,24,26, --[[waist]]27}
+    dynamixels.left_arm.mx_ids = { 37, --[[lidar]] }
   else
-    dynamixels.right_arm = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9A'
-    dynamixels['left_arm'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
-    dynamixels['right_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
-    dynamixels['left_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
-    microstrain = libMicrostrain.new_microstrain'/dev/cu.usbmodem1421'
+    if OPERATING_SYSTEM~='darwin' then
+      dynamixels.one_chain = libDynamixel.new_bus'/dev/ttyUSB0'
+    else
+      dynamixels.one_chain = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9A'
+    end
+    -- from 1 to 30
+    dynamixels.one_chain.nx_ids = vector.count(1,30)
+    -- lidar
+    dynamixels.one_chain.mx_ids = {37}
   end
-  -- motor ids
-  dynamixels.right_arm.nx_ids =
-    {1,3,5,7,9,11,13}
-  dynamixels.left_arm.nx_ids =
-    {2,4,6,8,10,12,14, --[[head]] 29,30 }
-  dynamixels.right_leg.nx_ids = 
-    {15,17,19,21,23,25, --[[waist pitch]]28}
-  dynamixels.left_leg.nx_ids =
-    {16,18,20,22,24,26, --[[waist]]27}
-  --[[
-  dynamixels.right_arm.mx_ids =
-    { 31,33,35 }
-  --]]
-  dynamixels.left_arm.mx_ids = {
-    --32,34,36, 
-    37, --[[lidar]]
-   }
-  --
 
   --
   for _,d in pairs(dynamixels) do
@@ -898,9 +936,11 @@ Body.entry = function()
     -- make the 'all ids' list and the motor->chain mapping
     --d.all_ids = {}
     -- NX
-    for _,id in ipairs(d.nx_ids) do
-      --table.insert(d.all_ids,id)
-      motor_dynamixels[id]=d
+    if d.nx_ids then
+      for _,id in ipairs(d.nx_ids) do
+        --table.insert(d.all_ids,id)
+        motor_dynamixels[id]=d
+      end
     end
     -- MX
     if d.mx_ids then
@@ -1005,6 +1045,7 @@ local function process_fd(ready_fd)
 end
 
 local function add_nx_sync_write(d, is_writes, wr_values, register)
+  if not d.nx_ids then return end
   local cmd_ids, cmd_vals = {}, {}
   for _,id in ipairs(d.nx_ids) do
     local idx = motor_to_joint[id]
@@ -1197,7 +1238,6 @@ Body.update = function()
   until done
   --]]
 
-----[[
   -- Send the requests next
   local done = true
   repeat -- round robin repeat
@@ -1237,7 +1277,9 @@ Body.update = function()
       end -- for each ready_fd
     end
   until done
---]]
+  
+  -- Now send gripper torque if needed
+  
 end
 Body.exit = function()
   for k,d in pairs(dynamixels) do

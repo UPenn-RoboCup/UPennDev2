@@ -1,10 +1,16 @@
 LIBNAME=spacemouse
-EXTRA_OBJ=hid.o spnav.o
-include ../../Makefile.inc
 ifeq ($(OSTYPE),darwin)
-LIBOPTS += -framework IOKit -framework CoreFoundation
+EXTRA_OBJ=hid.o spnav.o
+CFLAGS += -framework IOKit -framework CoreFoundation
 else
 EXTRA_OBJ=hid-libusb.o spnav.o
-LIBOPTS += `pkg-config libusb-1.0 --libs`
-INCLUDES += `pkg-config libusb-1.0 --cflags`
 endif
+include ../../Makefile.inc
+
+#ifneq ($(OSTYPE),darwin)
+INCLUDES += `pkg-config libusb-1.0 --cflags`
+CFLAGS += `pkg-config libusb-1.0 --libs`
+LDFLAGS+=-lpthread `pkg-config libusb-1.0 --libs`
+#endif
+
+LD=ld

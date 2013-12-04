@@ -8,8 +8,8 @@ WorldInfo {
   FPS 10
 }
 Viewpoint {
-  orientation -0.22803 -0.973538 -0.0150656 0.323405
-  position -1.0022 1.75783 8.15868
+  orientation -0.15425 -0.95983 -0.234379 2.04324
+  position -4.52165 2.88742 -1.00803
 }
 Background {
   skyColor [
@@ -30,43 +30,75 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP7_NoBoundaries_LongGripperOnly {
-  translation -0.000697089 1.14137 -0.515375
-  rotation 0.998858 0.000610651 -0.0477763 -0.0127649
+  translation -0.000680663 1.14138 -0.515759
+  rotation 0.998942 0.00118706 -0.0459678 -0.0130681
   controller "thorop"
   controllerArgs "0 32"
-  cameraWindowPosition 0.399113 0.225564
+  cameraWindowPosition 0.246154 0.610796
 }
 PartialWalls {
-  translation 0.5 0 1.5
+  translation 0.65 0 1.5
   rotation 0 1 0 -1.5708
 }
 PartialWalls {
-  translation -0.5 0 1.5
+  translation -0.65 0 1.5
   rotation 0 1 0 -1.5708
 }
 DebrisTruss {
-  translation 0.00816006 0.147908 1.89993
-  rotation -0.0118286 0.964046 -0.265474 -0.0109057
+  translation -0.0162143 0.147156 0.950098
+  rotation -0.0127582 0.995425 -0.0946856 -0.0100096
+}
+DebrisTruss {
+  translation -0.0261415 0.147523 1.79976
+  rotation 0.0354768 0.98821 -0.14894 -0.0113524
+}
+DebrisSupport {
+  translation -0.183184 0.147651 1.38031
+  rotation -0.00683537 0.0200126 -0.999776 -0.0243228
+}
+DebrisSupport {
+  translation 0.195766 0.14768 1.38031
+  rotation 0.00286871 0.00446941 -0.999986 0.0377238
 }
 DebrisBoard {
-  translation 0.125182 0.37741 2.10055
-  rotation 0.440873 0.897542 0.00696718 -3.13029
+  translation 0.177262 0.370516 1.48245
+  rotation -0.00282479 0.00295228 -0.999992 -0.888208
 }
 DebrisBoard {
-  translation -0.0130659 0.632622 1.43728
-  rotation 0.0117964 0.99993 -0.000922061 -0.0139514
+  translation -0.164072 0.372324 1.34323
+  rotation 0.000649465 0.00127696 -0.999999 0.894009
 }
 DebrisBoard {
-  translation 0.244677 0.404976 1.20653
-  rotation -0.444677 0.791435 -0.419395 1.88
+  translation -0.0175388 0.322203 0.802245
+  rotation 0.0243518 0.979403 0.20044 0.00495102
 }
 DebrisBoard {
-  translation -0.254256 0.411506 1.21671
-  rotation -0.449716 0.771172 -0.45061 1.84435
+  translation -0.198807 0.304467 1.14191
+  rotation 0.00339971 0.00620153 -0.999975 -0.672457
 }
 DebrisBoard {
-  translation -0.0172273 0.429615 0.802471
-  rotation -1.06401e-08 0.999999 0.00171274 0.00479117
+  translation 0.188439 0.287419 1.01636
+  rotation -0.00316172 0.0126498 0.999915 -0.624483
+}
+DebrisPost {
+  translation -0.386549 0.29229 1.80479
+  rotation -2.81701e-06 9.68059e-07 1 -1.0841
+}
+DebrisPost {
+  translation -0.0229153 0.347886 1.62445
+  rotation -0.0492808 0.979752 0.194054 0.00856419
+}
+DebrisPost {
+  translation -0.264106 0.270422 2.00558
+  rotation 0.00513935 0.00287048 -0.999983 -0.904654
+}
+DebrisPost {
+  translation 0.298693 0.226887 1.89957
+  rotation -0.0142558 0.170971 0.985173 -0.667032
+}
+DebrisPost {
+  translation 0.348433 0.273148 1.75874
+  rotation -0.0174801 0.0670807 -0.997594 -0.924681
 }
 DEF WALL Solid {
   translation 1 1 0.6
@@ -74,36 +106,6 @@ DEF WALL Solid {
     Shape {
       geometry Box {
         size 0.1 2 5
-      }
-    }
-  ]
-}
-Transform {
-  translation -0.7 0.2032 0.82
-  children [
-    DEF BLOCK Shape {
-      appearance DEF POS_APP Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 1
-        }
-      }
-      geometry Box {
-        size 0.4064 0.4064 0.1524
-      }
-    }
-  ]
-}
-Transform {
-  translation 0.7 0.2032 0.82
-  children [
-    DEF BLOCK Shape {
-      appearance DEF POS_APP Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 1
-        }
-      }
-      geometry Box {
-        size 0.4064 0.4064 0.1524
       }
     }
   ]

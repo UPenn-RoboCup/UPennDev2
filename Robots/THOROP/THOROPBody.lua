@@ -17,18 +17,18 @@ local ONE_CHAIN = false
 --This makes body crash if we turn it on again...
 if IS_WEBOTS then use_camera = false end
 
+-- Camera enabling
 if IS_TESTING then use_camera = false end
 
-
-
---local use_joint_feedback = false
-
--- Shared memory for the joints
-require'jcm'
--- Shared memory for vision of the world
-require'vcm'
--- Shared memory for world 
-require'wcm'
+-- If using remote control, then must not overwrite our *cm definitions
+if not jcm then
+  -- Shared memory for the joints
+  require'jcm'
+  -- Shared memory for vision of the world
+  require'vcm'
+  -- Shared memory for world 
+  require'wcm'
+end
 
 -- Utilities
 local unix         = require'unix'
@@ -1874,17 +1874,6 @@ elseif IS_WEBOTS then
         vcm.set_head_camera_net({0,0,0})--to enable camera streaming
         webots.wb_camera_disable(tags.head_camera)
       end
-    --[[
-    elseif key_char_lower=='j' then
-      t_last_keypressed = t
-      use_joint_feedback = not use_joint_feedback
-      -- Toggle camera
-      if use_joint_feedback then
-        print(util.color('Joint feedback enabled!','yellow'))
-      else
-        print(util.color('Joint feedback disabled!','yellow'))
-      end
-    --]]
     end
 
 

@@ -477,9 +477,36 @@ armfsm.valvetwoarm.velInsert = 0.02 * speed_factor
 ---------------------------------------------------------------
 ------   Debris pickup
 ---------------------------------------------------------------
+---------------------------------------------------------------
+------   Drill pickup 
+---------------------------------------------------------------
 armfsm.debrisgrip = {}
-armfsm.debrisgrip.lhand_rpy = {-90*DEG_TO_RAD,45*DEG_TO_RAD,  0*DEG_TO_RAD}
+--armfsm.toolgrip.lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
+armfsm.debrisgrip.lhand_rpy = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 armfsm.debrisgrip.rhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
+
+armfsm.debrisgrip.rhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
+
+--xyz, yaw
+armfsm.debrisgrip.default_model = {
+  0.50,-0.25,-0.40,  0*DEG_TO_RAD}
+
+armfsm.debrisgrip.arminit={
+  {0.43,-0.25,-0.30, 90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD},
+}
+
+armfsm.debrisgrip.armpull={
+  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},    
+  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
+  {0.33,-0.10,-0.20, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+}
+
+armfsm.debrisgrip.clearance={0,0,0.05}
+armfsm.debrisgrip.liftup = {0,0,0.05}
+
+
+
+
 
 --------------------------------------------------------------------------
 ---- Arm folding

@@ -4,7 +4,7 @@
 #
 
 
-PROTO DebrisTruss [
+PROTO DebrisSupport [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
 ]
@@ -16,11 +16,11 @@ Solid {
 	  Shape {
 	     appearance DEF POS_APP Appearance {
 	       material Material {
-	         diffuseColor 1 1 0.5
+	         diffuseColor 1 0.5 1
 	         specularColor 0 0 0
 	       }
 	     }
-	     geometry Box { size 0.3 0.3 0.5 }
+	     geometry Box { size 0.1 0.3 0.3 }
 	  }			
   ]
 	
@@ -30,9 +30,9 @@ Solid {
 	
   boundingObject Group {
 		children[
-			Box { size 0.3 0.3  0.5 }
+			Box { size 0.1 0.3  0.3 }
 		]
   }  
-  # locked TRUE
+  locked TRUE
 }
 }

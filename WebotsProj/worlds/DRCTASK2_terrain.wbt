@@ -8,8 +8,8 @@ WorldInfo {
   FPS 10
 }
 Viewpoint {
-  orientation 0.290853 -0.951259 -0.102517 5.64627
-  position 9.6546 5.43367 14.9865
+  orientation 0.231601 -0.965387 -0.119955 5.35769
+  position 7.14512 3.64532 12.6362
 }
 Background {
   skyColor [
@@ -44,76 +44,19 @@ Hurdle {
   rotation 0 1 0 3.1415
 }
 CinderBlockLevel1 {
-  translation -0.9968 0 3.3
-}
-CinderBlockLevel1 {
-  translation -0.5904 0 3.7064
-}
-CinderBlockLevel1 {
-  translation -0.184 0 4.1128
-}
-CinderBlockLevel1 {
-  translation 0.2224 0 4.5192
-}
-CinderBlockLevel1 {
-  translation 0.6288 0 4.9256
-}
-CinderBlockLevel1 {
-  translation 1.0352 0 5.332
+  translation -0.9968 0 4.7
 }
 CinderBlockLevel2 {
-  translation -0.9968 0.1524 3.3
-}
-CinderBlockLevel2 {
-  translation -0.5904 0.1524 3.7064
-}
-CinderBlockLevel2 {
-  translation -0.184 0.1524 4.1128
-}
-CinderBlockLevel2 {
-  translation 0.2224 0.1524 4.5192
-}
-CinderBlockLevel2 {
-  translation 0.6288 0.1524 4.9256
-}
-CinderBlockLevel2 {
-  translation 1.0352 0.1524 5.332
+  translation -0.9968 0.1524 4.7
 }
 CinderBlockLevel3 {
-  translation -0.9968 0.3048 3.3
-}
-CinderBlockLevel3 {
-  translation -0.5904 0.3048 3.7064
-}
-CinderBlockLevel3 {
-  translation -0.184 0.3048 4.1128
-}
-CinderBlockLevel3 {
-  translation 0.2224 0.3048 4.5192
-}
-CinderBlockLevel3 {
-  translation 0.6288 0.3048 4.9256
-}
-CinderBlockLevel3 {
-  translation 1.0352 0.3048 5.332
+  translation -0.9968 0.3048 4.7
 }
 CinderBlockLevel4 {
-  translation -0.9968 0.4572 3.3
+  translation -0.9968 0.4572 4.7
 }
 CinderBlockLevel4 {
-  translation -0.5904 0.4572 3.7064
-}
-CinderBlockLevel4 {
-  translation -0.184 0.4572 4.1128
-}
-CinderBlockLevel4 {
-  translation 0.2224 0.4572 4.5192
-}
-CinderBlockLevel4 {
-  translation 0.6288 0.4572 4.9256
-}
-CinderBlockLevel4 {
-  translation 1.0352 0.4572 5.332
+  translation -0.9968 0 6.8
 }
 DEF STARTLINE Solid {
   translation 0 -0.095 0.25
@@ -146,7 +89,7 @@ DEF YELLOWLINE Solid {
   ]
 }
 DEF ORANGE Solid {
-  translation 0 -0.095 7.25
+  translation 0 -0.095 7.4
   rotation 0 1 0 -0.78
   children [
     Shape {

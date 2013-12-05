@@ -20,7 +20,7 @@ Solid {
   rotation IS rotation
   children [
 		DEF block Transform{
-			translation 0 0.0762 0.8128
+			translation 0 0.0762 0
 			children[
 			  DEF cinderblock Shape {
 			     appearance Appearance {
@@ -28,16 +28,37 @@ Solid {
 			         diffuseColor 0.5 0.5 0.5
 			       }
 			     }
-			     geometry Box { size 0.4064 0.1524 0.4064 }
+			     geometry Box { size 0.4064 0.1524 1.2192 }
 			  }
 				Transform{
-					translation 0 0 0.4064
+					translation 0.4064 0 0.4064
 					children[
 						USE cinderblock
 						Transform{
-							translation 0 0 0.4064
+							translation 0.4064 0 0.4064
 							children[
-								USE cinderblock								
+								USE cinderblock
+								Transform{
+									translation 0.4064 0 0.4064
+									children[
+										USE cinderblock
+										Transform{
+											translation 0.4064 0 0.4064
+											children[
+												USE cinderblock
+												Transform{
+													translation 0.4064 0 0.4064
+													children[
+														USE cinderblock												
+													]
+												}
+																								
+											]
+										}
+										
+									]
+								}
+								
 							]
 						}
 						

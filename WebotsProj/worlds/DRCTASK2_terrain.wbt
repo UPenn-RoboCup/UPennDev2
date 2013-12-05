@@ -1,0 +1,163 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Default world for the THOR-OP"
+  ]
+  title "handletest"
+  basicTimeStep 40
+  FPS 10
+}
+Viewpoint {
+  orientation 0.290853 -0.951259 -0.102517 5.64627
+  position 9.6546 5.43367 14.9865
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR MetricFloor {
+  color 0.95 0.95 0.95
+}
+THOROP7_NoBoundaries_LongGripperOnly {
+  translation -0.000680663 1.14138 0.1
+  rotation 0.998942 0.00118706 -0.0459678 -0.0130681
+  controller "thorop"
+  controllerArgs "0 32"
+  cameraWindowPosition 0.246154 0.610796
+}
+PitchRamp {
+  translation 0 0 0.3
+}
+Hurdle {
+  translation 0 0 2.2
+  rotation 0 1 0 3.1415
+}
+CinderBlockLevel1 {
+  translation -0.9968 0 3.3
+}
+CinderBlockLevel1 {
+  translation -0.5904 0 3.7064
+}
+CinderBlockLevel1 {
+  translation -0.184 0 4.1128
+}
+CinderBlockLevel1 {
+  translation 0.2224 0 4.5192
+}
+CinderBlockLevel1 {
+  translation 0.6288 0 4.9256
+}
+CinderBlockLevel1 {
+  translation 1.0352 0 5.332
+}
+CinderBlockLevel2 {
+  translation -0.9968 0.1524 3.3
+}
+CinderBlockLevel2 {
+  translation -0.5904 0.1524 3.7064
+}
+CinderBlockLevel2 {
+  translation -0.184 0.1524 4.1128
+}
+CinderBlockLevel2 {
+  translation 0.2224 0.1524 4.5192
+}
+CinderBlockLevel2 {
+  translation 0.6288 0.1524 4.9256
+}
+CinderBlockLevel2 {
+  translation 1.0352 0.1524 5.332
+}
+CinderBlockLevel3 {
+  translation -0.9968 0.3048 3.3
+}
+CinderBlockLevel3 {
+  translation -0.5904 0.3048 3.7064
+}
+CinderBlockLevel3 {
+  translation -0.184 0.3048 4.1128
+}
+CinderBlockLevel3 {
+  translation 0.2224 0.3048 4.5192
+}
+CinderBlockLevel3 {
+  translation 0.6288 0.3048 4.9256
+}
+CinderBlockLevel3 {
+  translation 1.0352 0.3048 5.332
+}
+CinderBlockLevel4 {
+  translation -0.9968 0.4572 3.3
+}
+CinderBlockLevel4 {
+  translation -0.5904 0.4572 3.7064
+}
+CinderBlockLevel4 {
+  translation -0.184 0.4572 4.1128
+}
+CinderBlockLevel4 {
+  translation 0.2224 0.4572 4.5192
+}
+CinderBlockLevel4 {
+  translation 0.6288 0.4572 4.9256
+}
+CinderBlockLevel4 {
+  translation 1.0352 0.4572 5.332
+}
+DEF STARTLINE Solid {
+  translation 0 -0.095 0.25
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 1 0
+        }
+      }
+      geometry Box {
+        size 2.4 0.2 0.1
+      }
+    }
+  ]
+}
+DEF YELLOWLINE Solid {
+  translation 0 -0.095 2.65
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 1 0
+        }
+      }
+      geometry Box {
+        size 2.4 0.2 0.1
+      }
+    }
+  ]
+}
+DEF ORANGE Solid {
+  translation 0 -0.095 7.25
+  rotation 0 1 0 -0.78
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 0.8 0
+        }
+      }
+      geometry Box {
+        size 3.39 0.2 0.1
+      }
+    }
+  ]
+}

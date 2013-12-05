@@ -12,7 +12,7 @@ local use_lidar_chest  = false
 local use_lidar_head  = false
 -- if using one USB2Dynamixel
 local ONE_CHAIN = true
-local DISABLE_MICROSTRAIN = true
+local DISABLE_MICROSTRAIN = false
 
 --Turn off camera for default for webots
 --This makes body crash if we turn it on again...
@@ -926,11 +926,18 @@ Body.entry = function()
       {16,18,20,22,24,26, --[[waist]]27}
     dynamixels.left_arm.mx_ids = { 37, --[[lidar]] }
   else
+
+print("HEY")
+
     dynamixels.one_chain = libDynamixel.new_bus()
     -- from 1 to 30
     dynamixels.one_chain.nx_ids = vector.count(1,30)
     -- lidar
     dynamixels.one_chain.mx_ids = {37}
+    if not DISABLE_MICROSTRAIN then
+      microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
+    end
+
   end
 
   --

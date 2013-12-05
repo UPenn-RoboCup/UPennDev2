@@ -71,8 +71,8 @@ arm.pRWristTarget0 = {-.0,-.30,-.20,0,0,0}
 arm.lrpy0 = vector.new({0,0,0,0,30,0})*DEG_TO_RAD
 arm.rrpy0 = vector.new({0,0,0,-0,30,0})*DEG_TO_RAD
 
-arm.lShoulderYaw0 = -5*DEG_TO_RAD
-arm.rShoulderYaw0 = 5*DEG_TO_RAD
+arm.lShoulderYaw0 = 5*DEG_TO_RAD
+arm.rShoulderYaw0 = -5*DEG_TO_RAD
 
 arm.qLArmPose1 = vector.new({118.96025904076,9.0742631178663,-5,-81.120944928286,81,14.999999999986, 9})*DEG_TO_RAD
 arm.qRArmPose1 = vector.new({118.96025904076,-9.0742631178663,5,-81.120944928286,-81,-14.999999999986, 9})*DEG_TO_RAD

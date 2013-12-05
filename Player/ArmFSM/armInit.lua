@@ -32,17 +32,49 @@ function state.entry()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
+
+print(string.format("qLArmr: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
+qLArm[1]*Body.RAD_TO_DEG,
+qLArm[2]*Body.RAD_TO_DEG,
+qLArm[3]*Body.RAD_TO_DEG,
+qLArm[4]*Body.RAD_TO_DEG,
+qLArm[5]*Body.RAD_TO_DEG,
+qLArm[6]*Body.RAD_TO_DEG,
+qLArm[7]*Body.RAD_TO_DEG
+))
+
+
+
+
   local qLWrist = Body.get_inverse_lwrist(
     qLArm,
     Config.arm.pLWristTarget0,
-    Config.arm.lShoulderAngleYaw0)
+    Config.arm.lShoulderYaw0)
   local qRWrist = Body.get_inverse_rwrist(
     qRArm,
     Config.arm.pRWristTarget0,
-    Config.arm.rShoulderAngleYaw0)
+    Config.arm.rShoulderYaw0)
 
   qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)
   qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
+
+
+print(string.format("QLArmTarget: %.2f %.2f %.2f %.2f",
+qLArmTarget[1]*Body.RAD_TO_DEG,
+qLArmTarget[2]*Body.RAD_TO_DEG,
+qLArmTarget[3]*Body.RAD_TO_DEG,
+qLArmTarget[4]*Body.RAD_TO_DEG,
+qLArmTarget[5]*Body.RAD_TO_DEG,
+qLArmTarget[6]*Body.RAD_TO_DEG,
+qLArmTarget[7]*Body.RAD_TO_DEG
+
+))
+
+
+
+
+
+
   mcm.set_stance_enable_torso_track(0)
 
   mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit)
@@ -69,14 +101,27 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  print(state._NAME..' Update' )
+--  print(state._NAME..' Update' )
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
-print(unpack(qLArm))
-print(unpack(qLArmTarget))
+--[[
+print(string.format("Cur: %.2f %.2f %.2f %.2f" ,
+qLArm[1]*Body.RAD_TO_DEG,
+qLArm[2]*Body.RAD_TO_DEG,
+qLArm[3]*Body.RAD_TO_DEG,
+qLArm[4]*Body.RAD_TO_DEG
+))
 
+print(string.format("Nxt: %.2f %.2f %.2f %.2f",
+qLArmTarget[1]*Body.RAD_TO_DEG,
+qLArmTarget[2]*Body.RAD_TO_DEG,
+qLArmTarget[3]*Body.RAD_TO_DEG,
+qLArmTarget[4]*Body.RAD_TO_DEG
+
+))
+--]]
   local ret = movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)
   if ret==1 then return "done" end
 end

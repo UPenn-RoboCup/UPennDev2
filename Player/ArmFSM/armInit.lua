@@ -32,18 +32,55 @@ function state.entry()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
+
+print(string.format("qLArmr: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
+qLArm[1]*Body.RAD_TO_DEG,
+qLArm[2]*Body.RAD_TO_DEG,
+qLArm[3]*Body.RAD_TO_DEG,
+qLArm[4]*Body.RAD_TO_DEG,
+qLArm[5]*Body.RAD_TO_DEG,
+qLArm[6]*Body.RAD_TO_DEG,
+qLArm[7]*Body.RAD_TO_DEG
+))
+
+
+
+
   local qLWrist = Body.get_inverse_lwrist(
     qLArm,
     Config.arm.pLWristTarget0,
-    Config.arm.lShoulderAngleYaw0)
+    Config.arm.lShoulderYaw0)
   local qRWrist = Body.get_inverse_rwrist(
     qRArm,
     Config.arm.pRWristTarget0,
-    Config.arm.rShoulderAngleYaw0)
+    Config.arm.rShoulderYaw0)
 
   qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)
   qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
+
+
+print(string.format("QLArmTarget: %.2f %.2f %.2f %.2f",
+qLArmTarget[1]*Body.RAD_TO_DEG,
+qLArmTarget[2]*Body.RAD_TO_DEG,
+qLArmTarget[3]*Body.RAD_TO_DEG,
+qLArmTarget[4]*Body.RAD_TO_DEG,
+qLArmTarget[5]*Body.RAD_TO_DEG,
+qLArmTarget[6]*Body.RAD_TO_DEG,
+qLArmTarget[7]*Body.RAD_TO_DEG
+
+))
+
+
+
+
+
+
   mcm.set_stance_enable_torso_track(0)
+
+  mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit)
+  mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit)
+
+--[[
   if not IS_WEBOTS then
     for i=1,10 do      
       Body.set_larm_command_velocity({500,500,500,500,500,500,500})
@@ -56,7 +93,7 @@ function state.entry()
       unix.usleep(1e6*0.01);
     end
   end
-
+--]]
 end
 
 function state.update()
@@ -66,13 +103,27 @@ function state.update()
   t_update = t
 --  print(state._NAME..' Update' )
 
-
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
+--[[
+print(string.format("Cur: %.2f %.2f %.2f %.2f" ,
+qLArm[1]*Body.RAD_TO_DEG,
+qLArm[2]*Body.RAD_TO_DEG,
+qLArm[3]*Body.RAD_TO_DEG,
+qLArm[4]*Body.RAD_TO_DEG
+))
+
+print(string.format("Nxt: %.2f %.2f %.2f %.2f",
+qLArmTarget[1]*Body.RAD_TO_DEG,
+qLArmTarget[2]*Body.RAD_TO_DEG,
+qLArmTarget[3]*Body.RAD_TO_DEG,
+qLArmTarget[4]*Body.RAD_TO_DEG
+
+))
+--]]
   local ret = movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)
   if ret==1 then return "done" end
-
 end
 
 function state.exit()
@@ -81,6 +132,7 @@ function state.exit()
   --print("qLArm:",unpack(qLArmTarget))
   arm_planner:reset_torso_comp(qLArmTarget,qRArmTarget)
 
+--[[
   if not IS_WEBOTS then
     for i=1,10 do      
       Body.set_larm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
@@ -93,10 +145,10 @@ function state.exit()
       unix.usleep(1e6*0.01);
     end
   end
-
   
   Body.set_lgrip_percent(0.9)
   Body.set_rgrip_percent(0.9)
+--]]
 
   print(state._NAME..' Exit' )
 end

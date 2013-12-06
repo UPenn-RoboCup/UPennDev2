@@ -101,6 +101,11 @@ local mx_registers = {
   
   ['battery'] = {string.char(42,0),2},
   ['temperature'] = {string.char(43,0),1},
+  
+  -- For the MX-106
+  torque_mode = {70,1},
+  command_torque = {71,2},
+  command_acceleration = {73,1},
 }
 libDynamixel.mx_registers = mx_registers
 

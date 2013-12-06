@@ -487,8 +487,6 @@ for k,v in pairs( mx_registers ) do
     end
     
     if not bus then return instruction end
-print'wtf'    
-
     
     -- Clear old status packets
     local clear = unix.read( bus.fd )

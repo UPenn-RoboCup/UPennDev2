@@ -960,11 +960,10 @@ Body.entry = function()
       libDynamixel.set_mx_torque_mode({m_id},1,usb2dyn)
       unix.usleep(1e2)
       local status = libDynamixel.get_mx_torque_mode(m_id,usb2dyn)
-      print(m_id,'STATUS!!!!',type(status))
+      --print(m_id,'STATUS!!!!',type(status))
       if status then
         local read_parser = libDynamixel.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )
-print('VALE',value)
         is_torque_mode = value==1
       end
 
@@ -1256,26 +1255,31 @@ Body.update = function()
   
   -- SEND THE GRIP COMMANDS each time...
   -- LEFT HAND
+local lg_m1 = servo.joint_to_motor[indexLGrip]
+local lg_m2 = servo.joint_to_motor[indexLGrip+1]
   -- Grab the torques from the user
   local l_tq_step1 = Body.get_lgrip_command_torque_step()
   local l_tq_step2 = Body.get_ltrigger_command_torque_step()
+print('LGRIP 1/2:',l_tq_step1,l_tq_step2)
   -- Close the hand with a certain force (0 is no force)
-  local l_tq_pkt = libDynamixel.set_mx_command_torque({indexLGrip,indexLGrip+1},{l_tq_step1,l_tq_step2})
-  local dL_fd = motor_dynamixels[indexLGrip].fd
+  local l_tq_pkt = libDynamixel.set_mx_command_torque({lg_m1,lg_m2},{l_tq_step1,l_tq_step2})
+  local dL_fd = motor_dynamixels[servo.joint_to_motor[indexLGrip]].fd
   stty.flush(dL_fd)
   unix.write( dL_fd, l_tq_pkt )
   stty.drain(dL_fd)
   
+--[[
   -- RIGHT HAND
   -- Grab the torques from the user
   local r_tq_step1 = Body.get_rgrip_command_torque_step()
   local r_tq_step2 = Body.get_rtrigger_command_torque_step()
   -- Close the hand with a certain force (0 is no force)
   local r_tq_pkt = libDynamixel.set_mx_command_torque({indexRGrip,indexRGrip+1},{r_tq_step1,r_tq_step2})
-  local dR_fd = motor_dynamixels[indexRGrip].fd
+  local dR_fd = motor_dynamixels[ servo.joint_to_motor[indexRGrip] ].fd
   stty.flush(dR_fd)
   unix.write( dR_fd, r_tq_pkt )  
   stty.drain(dR_fd)
+--]]
 
   -- Send the requests next
   local done = true

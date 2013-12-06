@@ -243,11 +243,23 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   if not init_cond then return end
   local done, failed = false, false, false
 
-  local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]},
+  local qWaist = {
      init_cond[6] or Body.get_waist_command_position()[1],
      init_cond[7] or Body.get_waist_command_position()[2],
-      }
-  local trLArm, trRArm = Body.get_forward_larm(init_cond[1]), Body.get_forward_rarm(init_cond[2])
+    }
+--print("init waist:",qWaist[1]*Body.RAD_TO_DEG,qWaist[2]*Body.RAD_TO_DEG)
+
+  local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]},
+    qWaist[1],qWaist[2]}
+  local trLArm, trRArm = 
+    Body.get_forward_larm(init_cond[1],
+      mcm.get_stance_bodyTilt(),
+      qWaist), 
+    Body.get_forward_rarm(init_cond[2],
+      mcm.get_stance_bodyTilt(),
+      qWaist) 
+
+
   local qLArm0, qRArm0 = init_cond[1],init_cond[2]
 
   --Insert initial arm joint angle to the queue
@@ -334,6 +346,9 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
       waistNext = {new_param[3], new_param[4]}
 --      print("waistNext:",unpack(waistNext))
+
+
+--print("waist:",new_param[3]*Body.RAD_TO_DEG,new_param[4]*Body.RAD_TO_DEG)
 
       done = doneL and doneR and done3 and done4
     elseif plantype=="wrist" then

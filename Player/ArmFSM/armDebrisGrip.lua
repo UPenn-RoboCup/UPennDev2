@@ -75,9 +75,9 @@ function state.entry()
   arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) --Lock left hand  
 
   local wrist_seq = {
-    {'move',nil,nil,0*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD},
-    {'move',nil,nil,0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
-    } --bend down  
+    {'move',nil,nil,0*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD},
+--    {'move',nil,nil,0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
+  } --bend down  
 
   --local wrist_seq = {{'wrist',trLArm1,trRArm1}}
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "benddown" end  
@@ -113,11 +113,13 @@ function state.update()
 --        local arm_seq = {{'wrist',nil, trRArm1},}
 
   local arm_seq = {
-    {'move',nil,nil,15*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
-    {'move',nil,nil,0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
+   {'move',nil,nil,0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},  
+--    {'move',nil,nil,15*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
+--    {'move',nil,nil,0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
     } --bend down  
 
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "benddown" end
+--        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "benddown" end
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armbacktoinitpos" end
       end
     end
   elseif stage=="wristyawturn" then --Turn yaw angles first    

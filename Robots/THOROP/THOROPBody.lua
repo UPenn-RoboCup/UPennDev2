@@ -2033,4 +2033,48 @@ Body.get_odometry = function()
   return util.pose_relative(uTorso1,uTorso0)
 end
 
+---------------------------------------------
+-- New hand API
+-- Positive force value for closing
+-- Negative force value for openning
+---------------------------------------------
+
+Body.finger_target={0,0,0,0}
+local function control_finger(finger_index,force)
+  local finger_ids={32,34,  36,38} --TODO
+  if IS_WEBOTS then
+    if force>0 then
+      finger_target[finger_index] = 1 --close
+    elseif force<0 then
+      finger_target[finger_index] = 0 --open
+    end
+  else
+    --Write finger control code here
+  end
+end
+
+Body.move_lgrip1 = function(force) control_finger(1, force) end
+Body.move_lgrip2 = function(force) control_finger(2, force) end
+Body.move_rgrip1 = function(force) control_finger(3, force) end
+Body.move_rgrip2 = function(force) control_finger(4, force) end
+
+--Used only for webots
+Body.update_finger = function()
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 return Body

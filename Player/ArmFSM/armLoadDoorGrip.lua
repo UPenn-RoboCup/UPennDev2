@@ -302,7 +302,7 @@ function state.update()
     end
   elseif stage=="armbacktoinitpos" then
     if arm_planner:play_arm_sequence(t) then 
-print("trLArm:",arm_planner.print_transform(trLArm))              
+--print("trLArm:",arm_planner.print_transform(trLArm))              
 --          {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[3]},
 --          {'move',nil, trRArm0}
    

@@ -267,26 +267,26 @@ Robot {
 
 
 DEF HOOK_1 Servo {
-    translation 0 -0.139 0.05    
+    translation 0 -0.139 0.06    
     rotation    0 1 0 -1.57
     children [
-      Shape{geometry Cylinder{height 0.16 radius 0.01}}
+      Shape{geometry Cylinder{height 0.16 radius 0.004}}
       Transform{
         translation 0.02 -0.08 0
-        rotation    0 0 1 -2.09
+        rotation    0 0 1 -1.57
         children [
-          Shape{geometry Cylinder{height 0.04 radius 0.01}}          
+          Shape{geometry Cylinder{height 0.04 radius 0.004}}
         ]
       }
     ]      
     boundingObject Group{
       children[
-        Shape{geometry Cylinder{height 0.16 radius 0.01}}
+        Shape{geometry Cylinder{height 0.16 radius 0.004}}
         Transform{
           translation 0.02 -0.08 0
-          rotation    0 0 1 -2.09 #1.57+0.52
+          rotation    0 0 1 -1.57 #1.57+0.52
         children [
-          Shape{geometry Cylinder{height 0.04 radius 0.01}}          
+          Shape{geometry Cylinder{height 0.035 radius 0.004}}          
         ]
       }
       ]
@@ -520,28 +520,27 @@ DEF HOOK_1 Servo {
 
 
 
-                          
-            DEF HOOK_1 Servo {
-    translation 0 -0.139 0.05    
+DEF HOOK_2 Servo {
+    translation 0 -0.139 0.06    
     rotation    0 1 0 -1.57
     children [
-      Shape{geometry Cylinder{height 0.16 radius 0.01}}
+      Shape{geometry Cylinder{height 0.16 radius 0.004}}
       Transform{
         translation 0.02 -0.08 0
-        rotation    0 0 1 -2.09
+        rotation    0 0 1 -1.57
         children [
-          Shape{geometry Cylinder{height 0.04 radius 0.01}}          
+          Shape{geometry Cylinder{height 0.04 radius 0.004}}
         ]
       }
     ]      
     boundingObject Group{
       children[
-        Shape{geometry Cylinder{height 0.16 radius 0.01}}
+        Shape{geometry Cylinder{height 0.16 radius 0.004}}
         Transform{
           translation 0.02 -0.08 0
-          rotation    0 0 1 -2.09 #1.57+0.52
+          rotation    0 0 1 -1.57 #1.57+0.52
         children [
-          Shape{geometry Cylinder{height 0.04 radius 0.01}}          
+          Shape{geometry Cylinder{height 0.035 radius 0.004}}          
         ]
       }
       ]

@@ -17,7 +17,7 @@ arm.handoffset={}
 --0.130 + 0.60+0.50
 arm.handoffset.gripper = {0.241,0,0} --Default gripper
 --0.130+0.139+0.80-0.10
-arm.handoffset.outerhook = {0.339,0,0.040} --Single hook (for door)
+arm.handoffset.outerhook = {0.339,0,0.060} --Single hook (for door)
 --0.130 + 0.140+0.80-0.10
 arm.handoffset.chopstick = {0.340,0,0} --Two rod (for valve)
 
@@ -261,7 +261,7 @@ armfsm.hoseattach.rarminit={
 armfsm.dooropen={}
 
 armfsm.dooropen.default_model = {
-  0.62,-1.16,0.09,  --Hinge pos
+  0.62,-1.16,0.01,  --Hinge pos
   0.84,             --Door width (hinge to knob axle)
   -0.05,            --Knob X offset from door
   -0.08,             --Knob Y offset (from knob axle)
@@ -287,12 +287,6 @@ armfsm.dooropen.rhand_forward={
 }
 
 armfsm.dooropen.rhand_sidepush={
-  {0,0,0,0*DEG_TO_RAD,0*DEG_TO_RAD,-80*DEG_TO_RAD},
-  {0,0,0,0*DEG_TO_RAD,85*DEG_TO_RAD,-80*DEG_TO_RAD},
-  {0,0,0,0*DEG_TO_RAD,85*DEG_TO_RAD,0*DEG_TO_RAD}
-}
-
-armfsm.dooropen.rhand_sidepush={
   {0,0,0,0*DEG_TO_RAD,0*DEG_TO_RAD,-60*DEG_TO_RAD},
   {0,0,0,0*DEG_TO_RAD,60*DEG_TO_RAD,-60*DEG_TO_RAD},
   {0,0,0,0*DEG_TO_RAD,60*DEG_TO_RAD,0*DEG_TO_RAD}
@@ -303,8 +297,7 @@ armfsm.dooropen.rhand_sidepush={
 --Hook up
 armfsm.dooropen.handle_clearance0 = vector.new({-0.05,0,-0.05})
 armfsm.dooropen.handle_clearance1 = vector.new({0,0,-0.05})
---armfsm.dooropen.handle_clearance2 = vector.new({0,0,-0.05}) --shortarm
-armfsm.dooropen.handle_clearance2 = vector.new({0,0,-0.10})
+armfsm.dooropen.handle_clearance2 = vector.new({0,0,-0.05})
 
 armfsm.dooropen.rollTarget = -45*DEG_TO_RAD
 armfsm.dooropen.yawTargetInitial = 8*DEG_TO_RAD
@@ -314,10 +307,12 @@ armfsm.dooropen.yawTarget2 = 24*DEG_TO_RAD
 armfsm.dooropen.velDoorRoll = 10*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velDoorYaw = 2*DEG_TO_RAD * speed_factor
 
---armfsm.dooropen.velWaistYaw = 1*DEG_TO_RAD * speed_factor
 
 
+--New angle
 
+armfsm.dooropen.lhand_rpy={0*DEG_TO_RAD,-15*DEG_TO_RAD,-10*DEG_TO_RAD}
+armfsm.dooropen.rhand_rpy={0*DEG_TO_RAD,-15*DEG_TO_RAD,-20*DEG_TO_RAD}
 
 
 
@@ -354,7 +349,7 @@ armfsm.dooropen.waistTarget = -15*DEG_TO_RAD
 armfsm.dooropenleft={}
 
 armfsm.dooropenleft.default_model = {
-  0.45,-0.53,0.09,  --Hinge pos
+  0.45,-0.53,0.01,  --Hinge pos
   0.84,             --Door width (hinge to knob axle)
   -0.05,            --Knob X offset from door
   -0.08,             --Knob Y offset (from knob axle)
@@ -366,34 +361,21 @@ armfsm.dooropenleft.yawTargetInitial = -8*DEG_TO_RAD
 armfsm.dooropenleft.lhand_rpy=
   {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD,-10*DEG_TO_RAD}
 
-armfsm.dooropenleft.rhand_push={
-  {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD}, 
-  {0.25, -0.0, -0.10,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.50, -0.05, -0.0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.50, -0.05, -0.0,0*DEG_TO_RAD,-0*DEG_TO_RAD, -30*DEG_TO_RAD},
+
+armfsm.dooropenleft.default_model = {
+  0.52,-0.50,0.01,  --Hinge pos
+  0.84,             --Door width (hinge to knob axle)
+  -0.05,            --Knob X offset from door
+  -0.08,             --Knob Y offset (from knob axle)
 }
 
-if Config.IS_LONGARM then
-  armfsm.dooropenleft.default_model = {
-    0.52,-0.50,0.09,  --Hinge pos
-    0.84,             --Door width (hinge to knob axle)
-    -0.05,            --Knob X offset from door
-    -0.08,             --Knob Y offset (from knob axle)
-  }
-  
-  armfsm.dooropenleft.rhand_push={
-    {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD}, 
-  --0.21 -0.06 -0.16
-    {0.31, -0.0, -0.10,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
-    {0.65, -0.05, -0.0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
-    {0.65, -0.05, -0.0,0*DEG_TO_RAD,-0*DEG_TO_RAD, -30*DEG_TO_RAD},
-  }
-
-end
-
-
-
-
+armfsm.dooropenleft.rhand_push={
+  {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD}, 
+--0.21 -0.06 -0.16
+  {0.31, -0.0, -0.10,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.65, -0.05, -0.0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.65, -0.05, -0.0,0*DEG_TO_RAD,-0*DEG_TO_RAD, -30*DEG_TO_RAD},
+}
 
 ---------------------------------------------------------------
 ------   Circular valve turning with single hand w/chopstick

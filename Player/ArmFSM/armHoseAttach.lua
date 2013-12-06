@@ -149,9 +149,9 @@ function state.update()
         print("trLArmT:",arm_planner.print_transform(trLArmTarget))
         print("trRArmT:",arm_planner.print_transform(trRArmTarget))
 
-
         local arm_seq = {{'move',trLArmTarget,trRArmTarget}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end
+        hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed()==-1 then 
         local arm_seq = {
           {'wrist',Config.armfsm.hoseattach.larminit[1],Config.armfsm.hoseattach.rarminit[1]},
@@ -179,10 +179,12 @@ function state.update()
           {'hoseattach',{0,0,0},0,0,rclearance1},
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end
+        hcm.set_state_proceed(0)
 
       elseif hcm.get_state_proceed() == -1 then        
-        local arm_seq={{'move',Config.armfsm.hoseattach.larminit[2],Config.armfsm.hoseattach.rarminit[2]}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
+--No going back here        
+--        local arm_seq={{'move',Config.armfsm.hoseattach.larminit[2],Config.armfsm.hoseattach.rarminit[2]}}
+--        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
       elseif hcm.get_state_proceed() == 2 then --Model modification
         print("update")
         update_model()        
@@ -220,7 +222,7 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then return "done" end
   end
 
-  hcm.set_state_proceed(0)
+  
 end
 
 function state.exit()  

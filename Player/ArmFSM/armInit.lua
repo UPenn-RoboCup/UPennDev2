@@ -26,8 +26,11 @@ function state.entry()
 
   stage = 1
 
-  Body.set_lgrip_percent(.7)
-  Body.set_rgrip_percent(.7)
+  --Slowly close all fingers
+  Body.move_lgrip1(Config.arm.torque.movement)
+  Body.move_lgrip2(Config.arm.torque.movement)
+  Body.move_rgrip1(Config.arm.torque.movement)
+  Body.move_rgrip2(Config.arm.torque.movement)
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
@@ -132,6 +135,12 @@ function state.exit()
   --print("qLArm:",unpack(qLArmTarget))
   arm_planner:reset_torso_comp(qLArmTarget,qRArmTarget)
 
+  Body.move_lgrip1(0)
+  Body.move_lgrip2(0)
+  Body.move_rgrip1(0)
+  Body.move_rgrip2(0)
+
+
 --[[
   if not IS_WEBOTS then
     for i=1,10 do      
@@ -139,7 +148,7 @@ function state.exit()
       unix.usleep(1e6*0.01);
       Body.set_rarm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
       unix.usleep(1e6*0.01);  
-      Body.set_larm_command_acceleration({200,200,200,200,200,200,200})
+      Body.set_larm_comma0nd_acceleration({200,200,200,200,200,200,200})
       unix.usleep(1e6*0.01);
       Body.set_rarm_command_acceleration({200,200,200,200,200,200,200})
       unix.usleep(1e6*0.01);

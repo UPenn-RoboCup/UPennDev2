@@ -56,6 +56,10 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
+
+
+
+
   mcm.set_arm_lhandoffset(Config.arm.handoffset.gripper)
   mcm.set_arm_rhandoffset(Config.arm.handoffset.gripper)
 
@@ -101,10 +105,8 @@ function state.update()
   local trRArm = Body.get_forward_rarm(cur_cond[2])  
   
 
-  if stage=="wristyawturn" then --Turn yaw angles first    
-    gripL,doneL = util.approachTol(gripL,1,2,dt)  --Close gripper
-    Body.set_lgrip_percent(gripL*0.8)
-    if doneL and arm_planner:play_arm_sequence(t) then       
+  if stage=="wristyawturn" then --Turn yaw angles first  
+    if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
 --        print("trLArm:",arm_planner.print_transform(trLArm))
         trLArmTarget1 = get_hand_tr(Config.armfsm.hosegrip.arminit[1])
@@ -139,9 +141,12 @@ function state.update()
     end 
     
   elseif stage=="reachout" then --Move arm to the gripping position
-    gripL,doneL = util.approachTol(gripL,0,2,dt)  --Open gripper
-    Body.set_lgrip_percent(gripL*0.8)
-    if doneL and arm_planner:play_arm_sequence(t) and doneR then 
+
+    --Open gripper
+    Body.move_lgrip1(Config.arm.torque.open)
+    Body.move_lgrip2(Config.arm.torque.open)
+
+    if arm_planner:play_arm_sequence(t) and doneR then 
       if hcm.get_state_proceed()==1 then 
         local trLArmTarget2 = get_model_tr({0,0,0})    
 --        print("3 trLArm:",arm_planner.print_transform(trLArm))        
@@ -158,12 +163,14 @@ function state.update()
         local arm_seq = {{'move',trArmTarget1,nil}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end
       end
-    end
+    endo
     hcm.set_state_proceed(0)
   elseif stage=="touchtool" then --Move arm to the gripping position
-    gripL,doneL = util.approachTol(gripL,0,2,dt)  --Open gripper
-    Body.set_lgrip_percent(gripL*0.8)
-    if doneL and arm_planner:play_arm_sequence(t) then 
+    --Open gripper
+    Body.move_lgrip1(Config.arm.torque.open)
+    Body.move_lgrip2(Config.arm.torque.open)
+
+    if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
         stage = "grab"         
       elseif hcm.get_state_proceed() == -1 then 
@@ -179,28 +186,30 @@ function state.update()
     end
     hcm.set_state_proceed(0)
   elseif stage=="grab" then --Grip the object   
-    gripL,doneL = util.approachTol(gripL,1,2,dt)
-    Body.set_lgrip_percent(gripL*0.8)
-    if doneL then 
-      if hcm.get_state_proceed()==1 then
-        print("trLArm:",arm_planner.print_transform(trLArm))        
-        --Pull down and roll wrist
-        local trArmTarget0 = get_model_tr(Config.armfsm.hosegrip.bottompull)
-        local trArmTarget1 = get_model_tr(Config.armfsm.hosegrip.bottompull,
-            Config.armfsm.hosegrip.lhand_rpy1)        
-        local arm_seq = {
-          {'move',trArmTarget0,nil},
-          {'wrist',trArmTarget1,nil},                    
-        }
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armretract" end
-      elseif hcm.get_state_proceed()==-1 then stage="ungrab" 
-      elseif hcm.get_state_proceed() == 2 then 
-        update_model()        
-        local trLArmTarget2 = get_model_tr({0,0,0})        
-        local arm_seq = {{'move',trLArmTarget2,nil}}     
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grab" end        
-      end
+    
+    --Close gripper
+    Body.move_lgrip1(Config.arm.torque.grip1)
+    Body.move_lgrip2(Config.arm.torque.grip1)
+    
+    if hcm.get_state_proceed()==1 then
+      print("trLArm:",arm_planner.print_transform(trLArm))        
+      --Pull down and roll wrist
+      local trArmTarget0 = get_model_tr(Config.armfsm.hosegrip.bottompull)
+      local trArmTarget1 = get_model_tr(Config.armfsm.hosegrip.bottompull,
+          Config.armfsm.hosegrip.lhand_rpy1)        
+      local arm_seq = {
+        {'move',trArmTarget0,nil},
+        {'wrist',trArmTarget1,nil},                    
+      }
+      if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armretract" end
+    elseif hcm.get_state_proceed()==-1 then stage="ungrab" 
+    elseif hcm.get_state_proceed() == 2 then 
+      update_model()        
+      local trLArmTarget2 = get_model_tr({0,0,0})        
+      local arm_seq = {{'move',trLArmTarget2,nil}}     
+      if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grab" end        
     end
+  
   elseif stage=="ungrab" then --Grip the object   
     gripL,doneL = util.approachTol(gripL,1,2,dt)
     Body.set_lgrip_percent(gripL*0.8)    

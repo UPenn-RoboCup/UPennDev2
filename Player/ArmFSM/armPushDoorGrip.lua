@@ -57,6 +57,7 @@ function state.entry()
 --  local wrist_seq = {{'wrist',trLArm1, nil}}
   local wrist_seq = {{'wrist',trLArm1, trRArm1}}
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "wristturn" end
+  hcm.set_state_proceed(1) --stop here and wait
 end
 
 local function update_model()
@@ -95,38 +96,16 @@ function state.update()
   if stage=="wristturn" then --Turn yaw angles first
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-        local trArmTarget = movearm.getDoorHandlePosition(
-          Config.armfsm.dooropen.handle_clearance0, 0, door_yaw,1)
+        local trArmTarget = movearm.getDoorHandlePosition({0,0,0}, 0, door_yaw, 1)
         local arm_seq = {{'move',trArmTarget, nil}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "placehook"  end
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "hookknob"  end
+        hcm.set_state_proceed(0) --stop here and wait
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
         local wrist_seq = {{'wrist',trLArm0, nil}}
         if arm_planner:plan_arm_sequence(wrist_seq) then stage = "armbacktoinitpos" end
       end
     end
-  elseif stage=="placehook" then --Move the hook below the door knob
-    if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed()==1 then        
-        local trArmTarget1 = movearm.getDoorHandlePosition(
-          Config.armfsm.dooropen.handle_clearance1, 0, door_yaw, 1)
-        local trArmTarget2 = movearm.getDoorHandlePosition(
-          {0,0,0}, 0, door_yaw, 1)
-        local arm_seq = {{'move',trArmTarget1,nil},{'move',trArmTarget2,nil}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "hookknob"  end
-      elseif hcm.get_state_proceed()==-1 then
-        local arm_seq = {{'move',nil,trRArm1}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "wristyawturn" end        
-      elseif hcm.get_state_proceed()==2 then        
-        update_model()
-        local trArmTarget1 = movearm.getDoorHandlePosition(
-          Config.armfsm.dooropen.handle_clearance0, 0, door_yaw, 1)
-        local arm_seq = {{'move',trArmTarget1,nil}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "placehook"  end
-      end      
-    end    
-    hcm.set_state_proceed(0) --Stop here for a bit
-
   elseif stage=="hookknob" then --Move up the hook to make it touch the knob
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then --Open the door
@@ -139,19 +118,16 @@ function state.update()
         if arm_planner:plan_arm_sequence2(dooropen_seq) then stage = "opendoor"  end
       elseif hcm.get_state_proceed()==-1 then --Lower the hook
         local trArmTarget1 = movearm.getDoorHandlePosition(Config.armfsm.dooropen.handle_clearance1, 0, door_yaw,1)
-        local trArmTarget2 = movearm.getDoorHandlePosition(Config.armfsm.dooropen.handle_clearance0, 0, door_yaw,1)
-        local arm_seq = {{'move',trArmTarget1,nil},{'move',trArmTarget2,nil}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "placehook"  
-          else hcm.set_state_proceed(0) end
-
+        local arm_seq = {{'move',trtrArmTarget1,nil},{'move',trLArm1,nil}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "wristturn"  
+        else hcm.set_state_proceed(0) end
       elseif hcm.get_state_proceed()==2 then --adjust hook position
         update_model()
         local trArmTarget1 = movearm.getDoorHandlePosition({0,0,0}, 0, door_yaw,1)
         local arm_seq = {{'move',trArmTarget1},nil}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "hookknob"  end
       end
-    end
-    if hcm.get_state_proceed()==1 then hcm.set_state_proceed(0) end --stop here and wait
+    end    
   elseif stage=="opendoor" then --Move the arm forward using IK now     
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then
@@ -202,7 +178,7 @@ function state.update()
   elseif stage=="armbacktoinitpos" then 
     if arm_planner:play_arm_sequence(t) then return "done" end
   end
-  hcm.set_state_proceed(0)
+
 end
 
 function state.exit()    

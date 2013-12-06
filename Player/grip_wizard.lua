@@ -12,7 +12,7 @@ local lD = require'libDynamixel'
 
 -- Open the bus
 local baud = 2e6
-local usb2dyn = lD.new_bus('/dev/ttyUSB0',2e6)
+local usb2dyn = lD.new_bus('/dev/ttyUSB4',2e6)
 
 local rclaw_id = 64
 local rclaw_joint = Body.indexRGrip
@@ -107,7 +107,7 @@ while true do
   end
   
   -- LEFT TRIGGER --
-  
+--[[  
   -- In position mode
   if jcm.gripperPtr.torque_mode[2]==0 then
     -- Make sure we are in the right mode
@@ -313,6 +313,8 @@ while true do
   elseif type(rall)=='number' then
     print('Error?',rall)
   end
+
+--]]
   
   if t-t_debug>1 then t_debug=t end
 

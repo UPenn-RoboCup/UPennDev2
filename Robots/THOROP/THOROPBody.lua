@@ -529,8 +529,6 @@ end
 -- For torque control (no reading from the motor just yet)
 Body.get_rgrip_command_torque_step = function()
   local val = jcm.gripperPtr.command_torque[3]
-  -- Val is in mA; 4.5 mA increments for the 
-  val = math.floor(val / 4.5)
   -- Not too large/small
   val = util.procFunc(val,0,1023)
   if val<0 then val=1024-val end
@@ -593,8 +591,6 @@ end
 -- For torque control (no reading from the motor just yet)
 Body.get_lgrip_command_torque_step = function()
   local val = jcm.gripperPtr.command_torque[1]
-  -- Val is in mA; 4.5 mA increments for the 
-  val = math.floor(val / 4.5)
   -- Not too large/small
   val = util.procFunc(val,0,1023)
   if val<0 then val=1024-val end

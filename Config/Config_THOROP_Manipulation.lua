@@ -24,10 +24,10 @@ arm.handoffset.chopstick = {0.340,0,0} --Two rod (for valve)
 
 --Torques for finger controls
 arm.torque={}
-arm.torque.movement = 50
+arm.torque.movement = 5
 
-arm.torque.open = -100
-arm.torque.grip_hose = 100
+arm.torque.open = -10
+arm.torque.grip_hose = 10
 
 
 

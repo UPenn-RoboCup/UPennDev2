@@ -67,11 +67,11 @@ local nJointWaist = 2
 -- 4 Servos for gripping
 -- 1 servo for lidar panning
 local indexLGrip = 31
-local nJointLGrip = 2 --1
+local nJointLGrip = 2
 local indexRGrip = 33
-local nJointRGrip = 2 --1
+local nJointRGrip = 2
 -- One motor for lidar panning
-local indexLidar = 35 --33
+local indexLidar = 35
 local nJointLidar = 1
 local nJoint = 35 --33
 
@@ -90,11 +90,8 @@ local jointNames = {
 	-- Waist
 	"TorsoYaw","TorsoPitch",
 	-- Gripper
---	"l_wrist_grip1","l_wrist_grip2","l_wrist_grip3",
---	"r_wrist_grip1","r_wrist_grip2","r_wrist_grip3",
---"l_grip", "r_grip",
-"l_grip", "l_trigger", 
-"r_grip", "r_trigger",
+  "l_grip", "l_trigger", 
+  "r_grip", "r_trigger",
 	-- lidar movement
 	"ChestLidarPan",
 }
@@ -132,12 +129,8 @@ servo.joint_to_motor={
   15,17,19,21,23,25, -- right leg
   1,3,5,7,9,11,13,  --RArm
   27,28, --Waist yaw/pitch
---  32,34,36, -- left gripper (thumb, index, big&not_thumb)
---  31,33,35, -- right gripper (thumb, index, big&not_thumb)
-  32,34, -- left gripper (thumb, index, big&not_thumb)
-  31,33, -- right gripper (thumb, index, big&not_thumb)
-
---  63,64, --left, right grippers
+  66,67, -- left gripper/trigger
+  64,65, -- right gripper/trigger
   37, -- Lidar pan
 }
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
@@ -169,7 +162,6 @@ servo.steps = 2 * vector.new({
   251000,251000, -- Waist
   2048,2048, -- Left gripper
   2048,2048, -- Right gripper
---  2048, 2048, -- left/right
   2048, -- Lidar pan
 })
 assert(#servo.steps==nJoint,'Bad servo steps!')
@@ -186,7 +178,6 @@ servo.direction = vector.new({
   1,1, -- Waist
   1,1, -- left gripper TODO
   1,1, -- right gripper TODO
---1,1, -- lgrip,rgrip
   -1, -- Lidar pan
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
@@ -201,7 +192,6 @@ servo.rad_bias = vector.new({
   0,0, -- Waist
   0,0, -- left gripper
   0,0, -- right gripper
---0,0,
   0, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.rad_bias==nJoint,'Bad servo rad_bias!')
@@ -214,10 +204,8 @@ servo.min_rad = vector.new({
   -175,-175,-175,-175,-175,-175, --RLeg
   -90,-87,-90,-160,       -180,-87,-180, --RArm
   -90,-45, -- Waist
---  -32,-12,-12, -- left gripper
---  -12,-32,-32, -- right gripper
-0, -90,
-0, -90,
+  0, -90,
+  0, -90,
   -60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
@@ -229,10 +217,8 @@ servo.max_rad = vector.new({
   175,175,175,175,175,175, --RLeg
   160,-0,90,-25,     180,87,180, --RArm  
   90,45, -- Waist
---  12,32,32, -- left gripper
---  32,12,12, -- right gripper
-90,20,
-90,20,
+  90,20,
+  90,20,
   60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
@@ -926,9 +912,6 @@ Body.entry = function()
       {16,18,20,22,24,26, --[[waist]]27}
     dynamixels.left_arm.mx_ids = { 37, --[[lidar]] }
   else
-
-print("HEY")
-
     dynamixels.one_chain = libDynamixel.new_bus()
     -- from 1 to 30
     dynamixels.one_chain.nx_ids = vector.count(1,30)
@@ -937,7 +920,7 @@ print("HEY")
     if not DISABLE_MICROSTRAIN then
       microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
     end
-
+    -- end one chain
   end
 
   --
@@ -971,6 +954,25 @@ print("HEY")
     microstrain.t_read = 0
   end
   --
+  
+  -- Tell the hand motors to go to torque mode!!!
+  for g=indexLGrip,indexRGrip+1 do
+    local is_torque_mode = false
+    repeat
+      local m_id = servo.joint_to_motor[g]
+      lD.set_mx_torque_mode(m_id,1,usb2dyn)
+      unix.usleep(1e2)
+      local status = lD.get_mx_torque_mode(lclaw_id,usb2dyn)
+      if status then
+        local read_parser = lD.byte_to_number[ #status.parameter ]
+        local value = read_parser( unpack(status.parameter) )
+        is_torque_mode = value==1
+      end
+    until is_torque_mode
+  end
+  print'DONE SETTING TORQUE MODE'
+  
+  
 end
 
 local process_register_read = {
@@ -1251,6 +1253,30 @@ Body.update = function()
     end
   until done
   --]]
+  
+  
+  -- SEND THE GRIP COMMANDS each time...
+  -- LEFT HAND
+  -- Grab the torques from the user
+  local l_tq_step1 = Body.get_lgrip_command_torque_step()
+  local l_tq_step2 = Body.get_ltrigger_command_torque_step()
+  -- Close the hand with a certain force (0 is no force)
+  local l_tq_pkt = lD.set_mx_command_torque({indexLGrip,indexLGrip+1},{l_tq_step1,l_tq_step2})
+  local dL_fd = motor_dynamixels[indexLGrip].fd
+  stty.flush(dL_fd)
+  unix.write( dL_fd, l_tq_pkt )
+  stty.drain(dL_fd)
+  
+  -- RIGHT HAND
+  -- Grab the torques from the user
+  local r_tq_step1 = Body.get_rgrip_command_torque_step()
+  local r_tq_step2 = Body.get_rtrigger_command_torque_step()
+  -- Close the hand with a certain force (0 is no force)
+  local r_tq_pkt = lD.set_mx_command_torque({indexRGrip,indexRGrip+1},{r_tq_step1,r_tq_step2})
+  local dR_fd = motor_dynamixels[indexRGrip].fd
+  stty.flush(dR_fd)
+  unix.write( dR_fd, r_tq_pkt )  
+  stty.drain(dR_fd)
 
   -- Send the requests next
   local done = true
@@ -1292,7 +1318,7 @@ Body.update = function()
     end
   until done
   
-  -- Now send gripper torque if needed
+  -- READ GRIPPER TEMPERATURES
   
 end
 Body.exit = function()

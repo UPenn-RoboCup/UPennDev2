@@ -2061,7 +2061,6 @@ if IS_WEBOTS then
     end
   end
   Body.update_finger = function(dt)
-    print("xxx")
     Body.finger_pos = util.approachTol(
       Body.finger_pos,Body.finger_target,
       {2,2,2,2},dt) 

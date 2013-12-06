@@ -160,5 +160,8 @@ while true do
   local t = unix.time()
   -- Debug messages if desired
   local t_diff = t-t_debug
-  if t_diff>DEBUG_INTERVAL then t_debug = t end
+  if t_diff>DEBUG_INTERVAL then
+    t_debug = t
+    print('Head Count')
+  end
 end

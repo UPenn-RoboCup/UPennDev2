@@ -76,11 +76,12 @@ Config.camera = {}
 -- Head
 Config.camera.head = {}
 Config.camera.head.device = '/dev/video0'
-Config.camera.head.resolution = {320,180}
---Config.camera.head.resolution = {640,360}
 Config.camera.head.format = 'yuyv'
-Config.camera.head.fps = 30
 Config.camera.head.quality = 75
+--Config.camera.head.resolution = {320,180}
+--Config.camera.head.fps = 30
+Config.camera.head.resolution = {640,360}
+Config.camera.head.fps = 5
 
 -- LWrist (deprecated)
 --[[

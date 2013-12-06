@@ -2046,10 +2046,6 @@ end
 -- Negative force value for openning
 ---------------------------------------------
 
-Body.move_lgrip1 = function(force) Body.control_finger(1, force) end
-Body.move_lgrip2 = function(force) Body.control_finger(2, force) end
-Body.move_rgrip1 = function(force) Body.control_finger(3, force) end
-Body.move_rgrip2 = function(force) Body.control_finger(4, force) end
 
 --Used only for webots
 
@@ -2074,6 +2070,17 @@ if IS_WEBOTS then
 
     Body.set_rgrip_percent(Body.finger_pos[4])
   end
+  
+  Body.move_lgrip1 = function(force) Body.control_finger(1, force) end
+  Body.move_lgrip2 = function(force) Body.control_finger(2, force) end
+  Body.move_rgrip1 = function(force) Body.control_finger(3, force) end
+  Body.move_rgrip2 = function(force) Body.control_finger(4, force) end
+
+else
+  Body.move_lgrip1 = Body.set_ltrigger_command_torque
+  Body.move_lgrip2 = Body.set_lgrip_command_torque
+  Body.move_rgrip1 = Body.set_rtrigger_command_torque
+  Body.move_rgrip2 = Body.set_rgrip_command_torque
 end
   
 

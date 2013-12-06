@@ -72,15 +72,19 @@ function state.entry()
   trRArm1 = Body.get_forward_rarm(qRArm1)  
 
   arm_planner:set_hand_mass(0,0)
-  arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) --Lock left hand
---  local wrist_seq = {{'wrist',nil,trRArm1}}
-  local wrist_seq = {{'wrist',trLArm1,trRArm1}}
+  arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) --Lock left hand  
+
+  local wrist_seq = {
+    {'move',nil,nil,0*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD},
+    {'move',nil,nil,0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
+    } --bend down  
 
   --local wrist_seq = {{'wrist',trLArm1,trRArm1}}
-  if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn" end  
+  if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "benddown" end  
 
   hcm.set_debris_model(Config.armfsm.debrisgrip.default_model)
-  hcm.set_state_proceed(1)
+--  hcm.set_state_proceed(1)
+  hcm.set_state_proceed(0)
 
   debugdata=''   
 
@@ -102,8 +106,21 @@ function state.update()
 ----------------------------------------------------------
 --Forward motions
 ----------------------------------------------------------
+  if stage=="benddown" then --Turn yaw angles first    
+    if arm_planner:play_arm_sequence(t) then       
+      if hcm.get_state_proceed()==1 then 
+--        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)        
+--        local arm_seq = {{'wrist',nil, trRArm1},}
 
-  if stage=="wristyawturn" then --Turn yaw angles first    
+  local arm_seq = {
+    {'move',nil,nil,15*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
+    {'move',nil,nil,0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
+    } --bend down  
+
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "benddown" end
+      end
+    end
+  elseif stage=="wristyawturn" then --Turn yaw angles first    
     gripL,doneL = util.approachTol(gripL,1,2,dt)  --Close gripper
     gripR,doneR = util.approachTol(gripR,1,2,dt)  --Close gripper
 
@@ -113,10 +130,10 @@ function state.update()
       if hcm.get_state_proceed()==1 then 
 --        print("trLArm:",arm_planner.print_transform(trLArm))
         print("trRArm:",arm_planner.print_transform(trRArm))
-        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)        
         local arm_seq = {
           {'move',nil,Config.armfsm.debrisgrip.arminit[1]},
         }
+        print("trTarget:",arm_planner.print_transform(Config.armfsm.debrisgrip.arminit[1]))
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
         hcm.set_state_proceed(0)--stop at next step
       elseif hcm.get_state_proceed()==-1 then 

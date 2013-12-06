@@ -8,8 +8,8 @@ WorldInfo {
   FPS 10
 }
 Viewpoint {
-  orientation -0.15425 -0.95983 -0.234379 2.04324
-  position -4.52165 2.88742 -1.00803
+  orientation 0.00401439 -0.999928 0.01132 1.69476
+  position -3.55912 0.693492 -0.324645
 }
 Background {
   skyColor [
@@ -34,7 +34,7 @@ THOROP7_NoBoundaries_LongGripperOnly {
   rotation 0.998942 0.00118706 -0.0459678 -0.0130681
   controller "thorop"
   controllerArgs "0 32"
-  cameraWindowPosition 0.246154 0.610796
+  cameraWindowPosition 0.76912 0.128205
 }
 PartialWalls {
   translation 0.65 0 1.5
@@ -46,12 +46,9 @@ PartialWalls {
 }
 DebrisTruss {
   translation 0 0.15 1.5
-  rotation 0 1 0 0
 }
-
-
 DebrisBoard {
-  translation 0.142013 0.40 1.48
+  translation 0.142013 0.4 1.48
   rotation 0 0 1 0.998
 }
 DebrisBoard {

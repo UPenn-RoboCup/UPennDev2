@@ -57,6 +57,9 @@ local function calculate_margin(qArm,isLeft)
 end
 
 local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
+
+--print("qWaist:",unpack(qWaist))
+
   local step = Config.arm.plan.search_step
 
   --Calculte the margin for current shoulder yaw angle
@@ -141,7 +144,7 @@ local function get_torso_compensation(self,qLArm,qRArm,qWaist,massL,massR)
   end
 end
 
-local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, waistYaw)
+local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, waistYaw, waistPitch)
 
   local dqVelLeft = mcm.get_arm_dqVelLeft()
   local dqVelRight = mcm.get_arm_dqVelRight()
@@ -153,8 +156,7 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
 
   local yawMag = dt_step * velYaw
   local qLArmNext, qRArmNext = qLArm, qRArm
-
-  local qWaist = {waistYaw,Body.get_waist_command_position()[2]}
+  local qWaist = {waistYaw, waistPitch}
 
   qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, qWaist)
   qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, qWaist)
@@ -219,7 +221,7 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
     else --Normal compensation
       uTorsoCompNext, torsoCompDone= util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
     end
-    local new_cond = {qLArmNext, qRArmNext, qLArmNextComp, qRArmNextComp, uTorsoCompNext, waistYaw}
+    local new_cond = {qLArmNext, qRArmNext, qLArmNextComp, qRArmNextComp, uTorsoCompNext, waistYaw, waistPitch}
     return new_cond, dt_step_current, torsoCompDone    
   end
 end
@@ -242,7 +244,9 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   local done, failed = false, false, false
 
   local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]},
-     init_cond[6] or Body.get_waist_command_position()[1] }
+     init_cond[6] or Body.get_waist_command_position()[1],
+     init_cond[7] or Body.get_waist_command_position()[2],
+      }
   local trLArm, trRArm = Body.get_forward_larm(init_cond[1]), Body.get_forward_rarm(init_cond[2])
   local qLArm0, qRArm0 = init_cond[1],init_cond[2]
 
@@ -250,7 +254,9 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   local dt_step0 = Config.arm.plan.dt_step0
   local dt_step = Config.arm.plan.dt_step
   local qLArmQueue,qRArmQueue, uTorsoCompQueue = {{init_cond[3],dt_step0}}, {{init_cond[4],dt_step0}}, {init_cond[5]}
-  local qWaistQueue={current_cond[6]}
+
+--now pitch too
+  local qWaistQueue={{current_cond[6],current_cond[7]}}
 
   local current_param={unpack(init_param)}
   local qArmCount = 2
@@ -258,8 +264,10 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
   if plantype=="move" then
     current_param[3] = current_cond[6]
+    current_param[4] = current_cond[7]
     target_param[3] = target_param[3] or current_cond[6]
-    vel_param = {dpVelLeft,dpVelRight,Config.armfsm.dooropen.velWaistYaw}
+    target_param[4] = target_param[4] or current_cond[7]
+    vel_param = {dpVelLeft,dpVelRight,Config.armfsm.dooropen.velWaistYaw,Config.armfsm.dooropen.velWaistPitch}
   elseif plantype=="wrist" then
   elseif plantype=="door" then
     target_param[4] = target_param[4] or current_cond[6]
@@ -318,19 +326,28 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
     if plantype=="move" then
       trLArmNext,doneL = util.approachTolTransform(trLArm, target_param[1], dpVelLeft, dt_step )
       trRArmNext,doneR = util.approachTolTransform(trRArm, target_param[2], dpVelRight, dt_step )
-      new_param[3],done3 = util.approachTol(current_param[3],target_param[3],vel_param[3],dt_step )
 
-      waistNext = new_param[3]
-      done = doneL and doneR and done3
+      --Waist yaw
+      new_param[3],done3 = util.approachTol(current_param[3],target_param[3],vel_param[3],dt_step )
+      --Waist pitch
+      new_param[4],done4 = util.approachTol(current_param[4],target_param[4],vel_param[4],dt_step )
+
+      waistNext = {new_param[3], new_param[4]}
+--      print("waistNext:",unpack(waistNext))
+
+      done = doneL and doneR and done3 and done4
     elseif plantype=="wrist" then
       trLArmNext,doneL = util.approachTolWristTransform(trLArm, target_param[1], dpVelLeft, dt_step )      
       trRArmNext,doneR = util.approachTolWristTransform(trRArm, target_param[2], dpVelRight, dt_step )
       done = doneL and doneR
-      waistNext = current_cond[6]
+
       local qLArmTemp = Body.get_inverse_arm_given_wrist( qLArm0, trLArmNext)
       local qRArmTemp = Body.get_inverse_arm_given_wrist( qRArm0, trRArmNext)
       trLArmNext = Body.get_forward_larm(qLArmTemp)
       trRArmNext = Body.get_forward_rarm(qRArmTemp)  
+      waistNext = {current_cond[6], current_cond[7]}
+
+--      print("waistNext:",unpack(waistNext))      
 
     elseif plantype=="door" then
       local done1,done2,done3,done4      
@@ -341,19 +358,10 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       done = done1 and done2 and done3 and done4
       trLArmNext = trLArm
       trRArmNext = movearm.getDoorHandlePosition(current_param[1],current_param[2],current_param[3])      
-      waistNext = new_param[4]
+--      waistNext = new_param[4]
+      waistNext = {new_param[4], current_cond[7]}
 
 --      print("waist:",waistNext*Body.RAD_TO_DEG)
-
-    elseif plantype=="dooredge" then
-      local done1,done2,done3,done4      
-      new_param[1], done1 = util.approachTol(current_param[1],target_param[1], vel_param[1],dt_step)
-      new_param[2], done2 = util.approachTol(current_param[2],target_param[2], vel_param[2],dt_step)
-      new_param[3], done3 = util.approachTol(current_param[3],target_param[3], vel_param[3],dt_step)
-      done = done1 and done2 and done3 
-      trLArmNext = trLArm
-      trRArmNext = movearm.getDoorEdgePosition(current_param[1],current_param[2])
-      waistNext = new_param[3]
 
     elseif plantype=="doorleft" then
       local done1,done2,done3
@@ -365,7 +373,7 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       
       trLArmNext = movearm.getDoorHandlePosition(current_param[1],current_param[2],current_param[3],1)      
       trRArmNext = trRArm
-      waistNext = current_cond[6]
+      waistNext = {current_cond[6], current_cond[7]}
 
     elseif plantype =="valvetwoarm" then
       new_param[1], done1 = util.approachTol(current_param[1],target_param[1], vel_param[1],dt_step)
@@ -374,7 +382,7 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       new_param[4], done4 = util.approachTol(current_param[4],target_param[4], vel_param[4],dt_step)
       done = done1 and done2 and done3 and done4
       trLArmNext, trRArmNext =  movearm.getLargeValvePosition(unpack(new_param))
-      waistNext = current_cond[6]
+      waistNext = {current_cond[6], current_cond[7]}
 
     elseif plantype =="valveonearm" then
       new_param[1], done1 = util.approachTol(current_param[1],target_param[1], vel_param[1],dt_step)
@@ -387,7 +395,8 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       else
         trLArmNext, trRArmNext =  trLArm, movearm.getLargeValvePositionSingle(unpack(new_param))
       end
-      waistNext = current_cond[6]
+      waistNext = {current_cond[6], current_cond[7]}
+
     elseif plantype =="barvalve" then
       new_param[1], done1 = util.approachTol(current_param[1],target_param[1], vel_param[1],dt_step)
       new_param[2], done2 = util.approachTol(current_param[2],target_param[2], vel_param[2],dt_step)
@@ -400,7 +409,7 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       else
         trLArmNext, trRArmNext =  trLArm, movearm.getBarValvePositionSingle(unpack(new_param))
       end
-      waistNext = current_cond[6]
+      waistNext = {current_cond[6], current_cond[7]}
     elseif plantype =="hoseattach" then
       new_param[1], done1 = util.approachTol(current_param[1],target_param[1], vel_param[1],dt_step)
       new_param[2], done2 = util.approachTol(current_param[2],target_param[2], vel_param[2],dt_step)
@@ -408,11 +417,11 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       new_param[4], done4 = util.approachTol(current_param[4],target_param[4], vel_param[4],dt_step)
       done = done1 and done2 and done3 and done4
       trLArmNext, trRArmNext =  movearm.getHoseAttachPosition(new_param[1],new_param[2],new_param[3],new_param[4])
-      waistNext = current_cond[6]
+      waistNext = {current_cond[6], current_cond[7]}
     end
 
     local new_cond, dt_step_current, torsoCompDone=    
-      self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step, waistNext)
+      self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step, waistNext[1], waistNext[2])
 
     done = done and torsoCompDone
     if not new_cond then 
@@ -492,7 +501,11 @@ local function plan_arm_sequence2(self,arm_seq)
       LAP, RAP, uTP, WP, end_cond  = self:plan_unified('move',
         init_cond,
         {trLArm,trRArm},
-        {arm_seq[i][2] or trLArm,arm_seq[i][3] or trRArm, arm_seq[i][4]} )
+        {arm_seq[i][2] or trLArm,
+         arm_seq[i][3] or trRArm, 
+         arm_seq[i][4],
+         arm_seq[i][5],
+         } )
     elseif arm_seq[i][1] =='wrist' then
 
       LAP, RAP, uTP, WP, end_cond  = self:plan_unified('wrist',
@@ -671,8 +684,10 @@ local function play_arm_sequence(self,t)
     mcm.set_stance_uTorsoComp(uTorsoComp)    
 
     if self.waistQueue then
-      qWaist = self.waistStart + ph * (self.waistEnd - self.waistStart)
-      Body.set_waist_command_position({qWaist,Body.get_waist_command_position()[2]})
+      local qWaist={}
+      qWaist[1] = self.waistStart[1] + ph * (self.waistEnd[1] - self.waistStart[1])
+      qWaist[2] = self.waistStart[2] + ph * (self.waistEnd[2] - self.waistStart[2])
+      Body.set_waist_command_position(qWaist)
     end
   end
   return false

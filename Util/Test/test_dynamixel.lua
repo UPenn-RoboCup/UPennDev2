@@ -5,7 +5,7 @@ local libDynamixel = require'libDynamixel'
 local util = require'util'
 local carray = require'carray'
 
-one_chain = libDynamixel.new_bus()
+--one_chain = libDynamixel.new_bus()
 
 if not one_chain then
   if OPERATING_SYSTEM=='darwin' then
@@ -18,22 +18,24 @@ if not one_chain then
     left_arm  = libDynamixel.new_bus'/dev/ttyUSB1'
     right_leg = libDynamixel.new_bus'/dev/ttyUSB2'
     left_leg  = libDynamixel.new_bus'/dev/ttyUSB3'
-    grippers  = libDynamixel.new_bus('/dev/ttyUSB4',1000000)
+--    grippers  = libDynamixel.new_bus('/dev/ttyUSB4',1000000)
   end
 end
 
 -- Choose a chain
-local test_dynamixel = one_chain
+local test_dynamixel = left_arm
 assert(test_dynamixel)
 print('Using',test_dynamixel.ttyname)
 
---local found = test_dynamixel:ping_probe(2)
---print('Inspecting',table.concat(found,','))
+local found = test_dynamixel:ping_probe(2)
+print('Inspecting',table.concat(found,','))
 
-local status = libDynamixel.get_mx_position(1,test_dynamixel)
+local status = libDynamixel.get_mx_torque_mode(66,test_dynamixel)
 print('status',status)
+if status then
 local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
 print('Value:',value)
+end
 
 local status = libDynamixel.set_mx_command_position(1,2500,test_dynamixel)
 print('status',status)

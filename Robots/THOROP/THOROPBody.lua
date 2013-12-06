@@ -906,7 +906,7 @@ Body.entry = function()
       {15,17,19,21,23,25, --[[waist pitch]]28}
     dynamixels.left_leg.nx_ids =
       {16,18,20,22,24,26, --[[waist]]27}
-    dynamixels.left_arm.mx_ids = { 37, --[[lidar]] }
+    dynamixels.left_arm.mx_ids = { 66,67,37, --[[lidar]] }
   else
     dynamixels.one_chain = libDynamixel.new_bus()
     -- from 1 to 30
@@ -952,22 +952,25 @@ Body.entry = function()
   --
   
   -- Tell the hand motors to go to torque mode!!!
-  for g=indexLGrip,indexRGrip+1 do
+  for g=indexLGrip,indexLGrip+1 do
     local is_torque_mode = false
     repeat
       local m_id = servo.joint_to_motor[g]
-      lD.set_mx_torque_mode(m_id,1,usb2dyn)
+      local usb2dyn = motor_dynamixels[m_id]
+      libDynamixel.set_mx_torque_mode({m_id},1,usb2dyn)
       unix.usleep(1e2)
-      local status = lD.get_mx_torque_mode(lclaw_id,usb2dyn)
+      local status = libDynamixel.get_mx_torque_mode(m_id,usb2dyn)
+      print(m_id,'STATUS!!!!',type(status))
       if status then
-        local read_parser = lD.byte_to_number[ #status.parameter ]
+        local read_parser = libDynamixel.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )
+print('VALE',value)
         is_torque_mode = value==1
       end
+
     until is_torque_mode
   end
-  print'DONE SETTING TORQUE MODE'
-  
+  print'DONE SETTING TORQUE MODE'  
   
 end
 
@@ -1257,7 +1260,7 @@ Body.update = function()
   local l_tq_step1 = Body.get_lgrip_command_torque_step()
   local l_tq_step2 = Body.get_ltrigger_command_torque_step()
   -- Close the hand with a certain force (0 is no force)
-  local l_tq_pkt = lD.set_mx_command_torque({indexLGrip,indexLGrip+1},{l_tq_step1,l_tq_step2})
+  local l_tq_pkt = libDynamixel.set_mx_command_torque({indexLGrip,indexLGrip+1},{l_tq_step1,l_tq_step2})
   local dL_fd = motor_dynamixels[indexLGrip].fd
   stty.flush(dL_fd)
   unix.write( dL_fd, l_tq_pkt )
@@ -1268,7 +1271,7 @@ Body.update = function()
   local r_tq_step1 = Body.get_rgrip_command_torque_step()
   local r_tq_step2 = Body.get_rtrigger_command_torque_step()
   -- Close the hand with a certain force (0 is no force)
-  local r_tq_pkt = lD.set_mx_command_torque({indexRGrip,indexRGrip+1},{r_tq_step1,r_tq_step2})
+  local r_tq_pkt = libDynamixel.set_mx_command_torque({indexRGrip,indexRGrip+1},{r_tq_step1,r_tq_step2})
   local dR_fd = motor_dynamixels[indexRGrip].fd
   stty.flush(dR_fd)
   unix.write( dR_fd, r_tq_pkt )  

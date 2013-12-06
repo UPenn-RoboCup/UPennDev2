@@ -103,9 +103,9 @@ local mx_registers = {
   ['temperature'] = {string.char(43,0),1},
   
   -- For the MX-106
-  torque_mode = {70,1},
-  command_torque = {71,2},
-  command_acceleration = {73,1},
+  torque_mode = {string.char(70,0),1},
+  command_torque = {string.char(71,0),2},
+  command_acceleration = {string.char(73,0),1},
 }
 libDynamixel.mx_registers = mx_registers
 
@@ -474,7 +474,7 @@ for k,v in pairs( mx_registers ) do
   libDynamixel['get_mx_'..k] = function( motor_ids, bus )
     local addr = v[1]
     local sz = v[2]
-    
+
     -- Construct the instruction (single or sync)
     local instruction
     local nids = 1
@@ -487,6 +487,8 @@ for k,v in pairs( mx_registers ) do
     end
     
     if not bus then return instruction end
+print'wtf'    
+
     
     -- Clear old status packets
     local clear = unix.read( bus.fd )
@@ -494,7 +496,11 @@ for k,v in pairs( mx_registers ) do
     -- Write the instruction to the bus 
     stty.flush(bus.fd)
     local ret = unix.write( bus.fd, instruction)
+
+    -- Grab the status of the register
+    return get_status( bus.fd, nids )
     
+--[[
     -- Grab the status of the register
     local status = get_status( bus.fd, nids )
     if not status then return end
@@ -504,6 +510,7 @@ for k,v in pairs( mx_registers ) do
       table.insert(values,byte_to_number[sz]( unpack(s.parameter) ))
     end
     return status, values
+--]]
     
   end --function
 end

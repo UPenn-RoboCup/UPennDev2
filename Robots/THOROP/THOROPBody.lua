@@ -11,7 +11,7 @@ local use_pose   = true
 local use_lidar_chest  = false
 local use_lidar_head  = false
 -- if using one USB2Dynamixel
-local ONE_CHAIN = true
+local ONE_CHAIN = false
 local DISABLE_MICROSTRAIN = false
 
 --Turn off camera for default for webots

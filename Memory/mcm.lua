@@ -118,7 +118,7 @@ shared.support.uTorso_next = vector.zeros(3)
 
 
 
-local maxSteps = 40
+local maxSteps = 8
 shared.step = {}
 
 --Footsteps queue

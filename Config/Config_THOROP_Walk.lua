@@ -5,7 +5,23 @@ local Config = {}
 
 ------------------------------------
 -- Walk Parameters
+
 local walk = {}
+
+print("Robot hostname:",HOSTNAME)
+if HOSTNAME=="alvin" then
+  walk.legBias = 
+    vector.new({
+      0,0, 0,0,0, 0, --LLEG
+      0,0, 0,0,0, 0,  --RLEG
+    })*DEG_TO_RAD
+else
+  walk.legBias = 
+    vector.new({0,0, 0,0,0, 0,
+      0,0, 0,0,0, 0,
+    })*DEG_TO_RAD
+end
+
 
 ------------------------------------
 -- Stance and velocity limit values

@@ -209,7 +209,7 @@ function walk.update()
 
     moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
       zLeft,zRight,delta_legs)    
-print("Y:",uLeft[2],uTorso[2],uRight[2])
+--print("Y:",uLeft[2],uTorso[2],uRight[2])
   end
 
   if debug_on then

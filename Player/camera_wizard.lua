@@ -162,6 +162,6 @@ while true do
   local t_diff = t-t_debug
   if t_diff>DEBUG_INTERVAL then
     t_debug = t
-    print('Head Count')
+    --print('Head Count')
   end
 end

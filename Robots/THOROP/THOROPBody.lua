@@ -950,26 +950,31 @@ Body.entry = function()
     microstrain.t_read = 0
   end
   --
-  
+
+----[[  
   -- Tell the hand motors to go to torque mode!!!
   for g=indexLGrip,indexLGrip+1 do
     local is_torque_mode = false
+    local try = 0
     repeat
+      try = try+1
       local m_id = servo.joint_to_motor[g]
       local usb2dyn = motor_dynamixels[m_id]
       libDynamixel.set_mx_torque_mode({m_id},1,usb2dyn)
-      unix.usleep(1e2)
+      unix.usleep(1e4)
       local status = libDynamixel.get_mx_torque_mode(m_id,usb2dyn)
-      --print(m_id,'STATUS!!!!',type(status))
+      unix.usleep(1e4)
+--      print(m_id,'STATUS!!!!',type(status))
       if status then
         local read_parser = libDynamixel.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )
         is_torque_mode = value==1
       end
-
-    until is_torque_mode
+    until is_torque_mode or try>10
+  if try>10 then print('BAD TORQUE MODE SET!',g) end
   end
   print'DONE SETTING TORQUE MODE'  
+--]]
   
 end
 

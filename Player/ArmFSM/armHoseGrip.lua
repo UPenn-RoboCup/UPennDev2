@@ -85,7 +85,7 @@ function state.entry()
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn" end  
   hcm.set_state_proceed(1)
 
-  hcm.set_hose_model(Config.armfsm.hosegrip.default_model)
+--  hcm.set_hose_model(Config.armfsm.hosegrip.default_model)
 
   debugdata=''   
 

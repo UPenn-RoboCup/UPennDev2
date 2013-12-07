@@ -62,6 +62,7 @@ local function update_model()
     model[3] + trRArmTarget[3] - trRArm[3],
     model[4] + util.mod_angle(trRArmTarget[6] - trRArm[6])
   hcm.set_hoseattach_model(model)
+  hcm.set_state_proceed(0)
 end
 
 

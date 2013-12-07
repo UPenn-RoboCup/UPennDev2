@@ -100,16 +100,17 @@ function state.update()
   if stage=="wristyawturn" then --Turn wrist angles without moving arms
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then        
-        local trArmTarget1 = movearm.getDoorHandlePosition(
-          Config.armfsm.dooropen.handle_clearance0, 0, door_yaw)
+        local trArmTarget1 = movearm.getDoorHandlePosition({0,0,0}, 0, door_yaw)
         local arm_seq = {{'move',nil, trArmTarget1}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "placehook"  end
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "hookknob"  end
       elseif hcm.get_state_proceed()==-1 then
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
         local wrist_seq = {{'wrist',nil,trRArm0}}
         if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armbacktoinitpos" end   
       end
     end  
+
+--[[    
   elseif stage=="placehook" then --Move the hook below the door knob
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then        
@@ -130,7 +131,7 @@ function state.update()
       end      
     end    
     hcm.set_state_proceed(0) --Stop here for a bit
-
+--]]
   elseif stage=="hookknob" then --Move up the hook to make it touch the knob
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then --Open the door
@@ -145,7 +146,7 @@ function state.update()
         local trRArmTarget1 = movearm.getDoorHandlePosition(Config.armfsm.dooropen.handle_clearance1, 0, door_yaw)
         local trRArmTarget2 = movearm.getDoorHandlePosition(Config.armfsm.dooropen.handle_clearance0, 0, door_yaw)
         local arm_seq = {{'move',nil,trRArmTarget1},{'move',nil,trRArmTarget2}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "placehook"  
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "wristyawturn"  
           else hcm.set_state_proceed(0) end
 
       elseif hcm.get_state_proceed()==2 then --adjust hook position
@@ -245,8 +246,8 @@ function state.update()
         print("trRArm:",arm_planner.print_transform(trRArm))        
         local wrist_seq = {         
           {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[1]},
-          {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[2]},
-          {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[3]},          
+--          {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[2]},
+--          {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[3]},          
         }
         if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "sidepush2" end
       end

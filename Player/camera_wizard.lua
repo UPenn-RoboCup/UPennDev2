@@ -56,6 +56,8 @@ local function setup_camera(cam,name,udp_port,tcp_port)
   return camera
 end
 
+local socket_handle_lut = {}
+
 -- Open each of the cameras
 for name,cam in pairs(Config.camera) do
 
@@ -72,12 +74,14 @@ for name,cam in pairs(Config.camera) do
   camera_poll.ts = unix.time()
   camera_poll.count = 0
   -- Net settings get/set
+  --[[
   local get_net = vcm['get_'..name..'_camera_net']
   local set_net = vcm['set_'..name..'_camera_net']
   camera_poll.get_net = vcm['get_'..name..'_camera_net']
   camera_poll.set_net = vcm['set_'..name..'_camera_net']
+  --]]
   -- Frame callback
-  camera_poll.callback = function()
+  camera_poll.callback = function(sh)
     -- Grab the net settings to see if we should actually send this frame
     local net_settings = vcm.get_head_camera_net()
     local stream, method, quality = unpack(net_settings)

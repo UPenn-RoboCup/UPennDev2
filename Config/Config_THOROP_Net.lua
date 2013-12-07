@@ -1,6 +1,6 @@
 -- Tune this parameter if being used for testing
 local USE_LOCALHOST = false
---local USE_LOCALHOST = true
+local USE_LOCALHOST = true
 
 local Config = {}
 Config.USE_LOCALHOST = USE_LOCALHOST
@@ -51,12 +51,12 @@ Config.net.team           = 44444
 Config.net.state          = 44445
 --
 Config.net.camera = {}
-Config.net.camera.head    = 33333
-Config.net.camera.lwrist  = 33335
+Config.net.camera.head     = 33333
+Config.net.camera.forehead = 33335
 --
 Config.net.reliable_camera = {}
-Config.net.reliable_camera.head    = 33334
-Config.net.reliable_camera.lwrist  = 33336
+Config.net.reliable_camera.head     = 33334
+Config.net.reliable_camera.forehead = 33336
 --
 Config.net.mesh           = 33344
 Config.net.reliable_mesh  = 33345

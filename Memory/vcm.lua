@@ -12,22 +12,28 @@ local shsize = {}
 
 local DEG_TO_RAD = math.pi/180
 
-------------------------
---  Head Camera
+-----------------
+-- Head Camera --
 shared.head_camera       = {}
--- YUYV uses 4 bytes to represent 2 pixels, meaning there are 2 bytes per pixel
---shared.head_camera.image = 2*160*120
--- Look up table is 262144 bytes
---shared.head_camera.lut   = 262144
 shared.head_camera.t     = vector.zeros(1)
 -- Network Requests: [stream,compression,quality,fps]
 -- Stream | 0: None, 1: Single Frame, 2: Stream, 3: Single Reliable Frame 4: Reliable Stream
 -- Compression | 0: None, 1: JPEG, 3: PNG
 -- Quality | JPEG quality from 0-100
-shared.head_camera.net = vector.new({2,1,90})
+shared.head_camera.net = vector.new({2,1,75})
 
-------------------------
---  Head LIDAR
+---------------------
+-- Forehead Camera --
+shared.forehead_camera     = {}
+shared.forehead_camera.t   = vector.zeros(1)
+-- Network Requests: [stream,compression,quality,fps]
+-- Stream | 0: None, 1: Single Frame, 2: Stream, 3: Single Reliable Frame 4: Reliable Stream
+-- Compression | 0: None, 1: JPEG, 3: PNG
+-- Quality | JPEG quality from 0-100
+shared.forehead_camera.net = vector.new({2,1,75})
+
+----------------
+-- Head LIDAR --
 shared.head_lidar           = {}
 -- Hokuyo uses a float, which is 4 bytes, to represent each range
 shared.head_lidar.scan      = 4*1081

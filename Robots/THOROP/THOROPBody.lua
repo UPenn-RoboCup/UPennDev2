@@ -906,6 +906,7 @@ Body.entry = function()
       {15,17,19,21,23,25, --[[waist pitch]]28}
     dynamixels.left_leg.nx_ids =
       {16,18,20,22,24,26, --[[waist]]27}
+    dynamixels.right_arm.mx_ids = { 64,65 }
     dynamixels.left_arm.mx_ids = { 66,67,37, --[[lidar]] }
   else
     dynamixels.one_chain = libDynamixel.new_bus()
@@ -953,7 +954,8 @@ Body.entry = function()
 
 ----[[  
   -- Tell the hand motors to go to torque mode!!!
-  for g=indexLGrip,indexLGrip+1 do
+  --for g=indexLGrip,indexLGrip+1 do
+  for g=indexLGrip,indexRGrip+1 do
     local is_torque_mode = false
     local try = 0
     repeat
@@ -971,7 +973,8 @@ Body.entry = function()
         is_torque_mode = value==1
       end
     until is_torque_mode or try>10
-  if try>10 then print('BAD TORQUE MODE SET!',g) end
+    -- Debug message for when not set
+    if try>10 then print('BAD TORQUE MODE SET!',g) end
   end
   print'DONE SETTING TORQUE MODE'  
 --]]

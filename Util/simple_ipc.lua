@@ -152,8 +152,8 @@ simple_ipc.new_subscriber = function( channel, inverted, filter, addr )
     else
       ret = self.socket_handle:recv()
     end
-      local has_more = self.socket_handle:getopt( zmq.RCVMORE )
-      return ret, has_more==1
+    local has_more = self.socket_handle:getopt( zmq.RCVMORE )
+    return ret, has_more==1
   end
 
   return channel_obj
@@ -163,8 +163,15 @@ end
 -- Callbacks set in the code
 simple_ipc.wait_on_channels = function( channels )
   local poll_obj = poller.new( #channels )
+  --[[
   for i=1,#channels do
     poll_obj:add( channels[i].socket_handle, zmq.POLLIN, channels[i].callback )
+  end
+  --]]
+  for i,ch in ipairs(channels) do
+    poll_obj:add( ch.socket_handle, zmq.POLLIN, ch.callback )
+    assert(not channels.lut[ch.socket_handle],'Duplicate!')
+    channels.lut[ch.socket_handle] = ch
   end
   return poll_obj
 end

@@ -29,6 +29,11 @@ arm.torque.movement = 5
 arm.torque.open = -10
 arm.torque.grip_hose = 10
 
+arm.torque.grip_drill = 10
+arm.torque.grip_drill_trigger1 = 40
+arm.torque.grip_drill_trigger2 = 40
+
+
 
 
 --Arm planner variables
@@ -232,11 +237,20 @@ armfsm.hoseattach.lhand_rpy0 = {90*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 armfsm.hoseattach.rhand_rpy0 = {90*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 armfsm.hoseattach.lhand_rpy1 = {90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD}
 armfsm.hoseattach.rhand_rpy1 = {90*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD}
+
+
 armfsm.hoseattach.lhand_rpy = {90*DEG_TO_RAD,0*DEG_TO_RAD, -90*DEG_TO_RAD}
 armfsm.hoseattach.rhand_rpy = {90*DEG_TO_RAD,0*DEG_TO_RAD, 90*DEG_TO_RAD}
 
+
+armfsm.hoseattach.lhand_rpy = {90*DEG_TO_RAD,-15*DEG_TO_RAD, -90*DEG_TO_RAD}
+armfsm.hoseattach.rhand_rpy = {90*DEG_TO_RAD,-15*DEG_TO_RAD, 90*DEG_TO_RAD}
+
+
+
+
 armfsm.hoseattach.lhand_offset={-0.14,0,0}
-armfsm.hoseattach.rhand_offset={-0.08,0,0}
+armfsm.hoseattach.rhand_offset={-0.06,0,0}
 
 --xyz yaw pitch
 armfsm.hoseattach.default_model = {
@@ -245,11 +259,12 @@ armfsm.hoseattach.default_model = {
 armfsm.hoseattach.velTurnAngle = 6*DEG_TO_RAD
 armfsm.hoseattach.velMove = 0.01
 
-armfsm.hoseattach.angle1 = -90*DEG_TO_RAD
-armfsm.hoseattach.angle2 = 90*DEG_TO_RAD
+armfsm.hoseattach.angle1 = -45*DEG_TO_RAD
+armfsm.hoseattach.angle2 = 45*DEG_TO_RAD
 
-armfsm.hoseattach.rarm_clearance1 = 0.09
-armfsm.hoseattach.rarm_clearance2 = 0.05
+
+armfsm.hoseattach.rarm_clearance1 = 0.12
+armfsm.hoseattach.rarm_clearance2 = 0.09
 
 armfsm.hoseattach.larminit={
   {0.30,0.35,-0.20, unpack(armfsm.hoseattach.lhand_rpy0)},

@@ -86,7 +86,7 @@ for _,my_fsm in pairs(state_machines) do
 end
 
 -- Joint reading... seems that we are always reading????
-local all_joint_read = vector.ones(#jcm.get_read_position())
+--local all_joint_read = vector.ones(#jcm.get_read_position())
 
 -- Pulse
 local pulse_tbl = {t=0}
@@ -105,7 +105,7 @@ while true do
   end
   
   -- Always read from all the motors
-  jcm.set_read_position(all_joint_read)
+  --jcm.set_read_position(all_joint_read)
   
   -- Update the body (mostly needed for webots)
 	Body.update()

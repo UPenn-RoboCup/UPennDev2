@@ -45,7 +45,7 @@ stage = 1
 
 function state.entry()
   print(state._NAME..' Entry' )
-
+  mcm.set_leg_bias(Config.walk.legBias)
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
@@ -117,6 +117,11 @@ function state.update()
   
   -- Command the body  
   local qLegsTarget = Kinematics.inverse_legs( pLLeg_desired, pRLeg_desired, pTorso_approach, 0 )
+
+ 
+  local legBias = vector.new(mcm.get_leg_bias())
+  qLegsTarget = vector.new(qLegsTarget) + legBias  
+
   local qLLegTarget = vector.slice(qLegsTarget,1,6)
   local qRLegTarget = vector.slice(qLegsTarget,7,12)
 

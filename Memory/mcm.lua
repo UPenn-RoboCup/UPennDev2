@@ -9,6 +9,11 @@ local vector = require'vector'
 local shared = {}
 local shsize = {}
 
+--Leg bias info
+shared.leg={}
+shared.leg.bias=vector.zeros(12)
+
+
 -- Storing current stance info
 shared.stance = {}
 shared.stance.bodyTilt   = vector.zeros(1)

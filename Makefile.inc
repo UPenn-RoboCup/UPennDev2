@@ -28,6 +28,7 @@ ifeq ($(OSTYPE),darwin)
 else
   CFLAGS+= -mtune=native -march=native
   CXXFLAGS+= -mtune=native -march=native
+  LDFLAGS+= -L/usr/local/lib/torch/lua
   LUA_INC=`pkg-config lua5.1 --cflags`
 endif
 

@@ -228,6 +228,15 @@ armfsm.hosegrip.bottompull={0,0,-0.06}
 armfsm.hosegrip.default_model = {
   0.50,0.09, -0.10, 0}
 
+
+--Conservative model (bit away from target)
+--xyz yaw
+armfsm.hosegrip.default_model = {
+  0.35,0.09, -0.10, 0, 0}
+
+
+
+
 ---------------------------------------------------------------
 ------   Hose attach
 ---------------------------------------------------------------
@@ -276,6 +285,12 @@ armfsm.hoseattach.rarminit={
   {0.35,-0.18,-0.20, unpack(armfsm.hoseattach.rhand_rpy1)},
   {0.28,-0.05,0.0, unpack(armfsm.hoseattach.rhand_rpy)},
 }
+
+--Conservative model, away from target
+--xyz yaw pitch
+armfsm.hoseattach.default_model = {
+  0.35,0.0, 0.10,   0,0}
+
 
 ---------------------------------------------------------------
 ------   Door pull open

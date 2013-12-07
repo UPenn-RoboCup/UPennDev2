@@ -23,10 +23,7 @@ if not one_chain then
 end
 
 -- Choose a chain
---local test_dynamixel = left_arm
---local test_dynamixel = right_arm
 local test_dynamixel = left_leg
---local test_dynamixel = right_leg
 assert(test_dynamixel)
 print('Using',test_dynamixel.ttyname)
 

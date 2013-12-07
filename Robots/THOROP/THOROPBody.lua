@@ -123,7 +123,7 @@ end
 -- Servo parameters
 local servo = {}
 servo.joint_to_motor={
-  30,29,  --Head yaw/pitch
+  29,30,  --Head yaw/pitch
   2,4,6,8,10,12,14, --LArm
   16,18,20,22,24,26, -- left leg
   15,17,19,21,23,25, -- right leg
@@ -899,9 +899,9 @@ Body.entry = function()
     end
     -- motor ids
     dynamixels.right_arm.nx_ids =
-      {1,3,5,7,9,11,13}
+      {1,3,5,7,9,11,13, --[[head]] 29,30}
     dynamixels.left_arm.nx_ids =
-      {2,4,6,8,10,12,14, --[[head]] 29,30 }
+      {2,4,6,8,10,12,14 }
     dynamixels.right_leg.nx_ids = 
       {15,17,19,21,23,25, --[[waist pitch]]28}
     dynamixels.left_leg.nx_ids =

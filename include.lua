@@ -46,6 +46,9 @@ package.cpath = HOME..'/Robots/'..Config.PLATFORM_NAME..'/?.so;'..package.cpath
 KEYFRAME_DIR = HOME.."/Player/Keyframes"
 LOG_DIR = HOME.."/Logs/"
 
+local unix = require'unix'
+HOSTNAME = unix.gethostname()
+
 -- Print out the globally available variables, when using include.lua
 --[[
 print( 'Working Dir:', CWD )

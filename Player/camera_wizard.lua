@@ -62,7 +62,7 @@ local socket_handle_lut = {}
 for name,cam in pairs(Config.camera) do
 
   -- Debug
-  print(util.color('Setting up','green'),name)
+  print(util.color('Setting up','green'),name,cam.device)
 
   local udp_net = Config.net.camera[name]
   local tcp_net = Config.net.reliable_camera[name]
@@ -80,7 +80,8 @@ for name,cam in pairs(Config.camera) do
   -- Frame callback
   camera_poll.callback = function(sh)
     -- Identify which camera
-    local camera_poll = wait_channels.lut[wait_channels]
+    local camera_poll = wait_channels.lut[sh]
+print('cb!',sh,camera_poll)
     local camera = camera_poll.camera
     -- Grab the iamge
     local img, head_img_sz = camera.dev:get_image()
@@ -140,6 +141,9 @@ for name,cam in pairs(Config.camera) do
   -- Keep track of this camera
   table.insert(wait_channels,camera_poll)
   table.insert(cameras,camera)
+
+  unix.usleep(1e3)
+
 end
 
 -- Close the camera properly upon Ctrl-C

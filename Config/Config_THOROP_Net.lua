@@ -53,10 +53,12 @@ Config.net.state          = 44445
 Config.net.camera = {}
 Config.net.camera.head     = 33333
 Config.net.camera.forehead = 33335
+Config.net.camera.forehead2 = 33337
 --
 Config.net.reliable_camera = {}
 Config.net.reliable_camera.head     = 33334
 Config.net.reliable_camera.forehead = 33336
+Config.net.reliable_camera.forehead2 = 33338
 --
 Config.net.mesh           = 33344
 Config.net.reliable_mesh  = 33345

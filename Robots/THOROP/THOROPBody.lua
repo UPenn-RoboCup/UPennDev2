@@ -1215,7 +1215,8 @@ Body.update = function()
         end
         -- mk pkt
         if #read_ids>0 then
-          --print('mk',register)
+          -- DEBUG READ TIEMOUT
+          print('!!!mk read!!!',register,unpack(read_ids))
           table.insert(d.read_pkts,{get_func(read_ids),register})
           d.n_expect_read = d.n_expect_read + #read_ids
         end
@@ -1269,7 +1270,6 @@ Body.update = function()
   local l_tq_step2 = Body.get_ltrigger_command_torque_step()
   -- Close the hand with a certain force (0 is no force)
   libDynamixel.set_mx_command_torque({lg_m1,lg_m2},{l_tq_step1,l_tq_step2},l_dyn)
-  
   -- RIGHT HAND
   local rg_m1 = servo.joint_to_motor[indexRGrip]
   local rg_m2 = servo.joint_to_motor[indexRGrip+1]

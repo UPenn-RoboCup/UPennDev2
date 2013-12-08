@@ -39,9 +39,17 @@ arm.torque.grip_drill_trigger2 = 40
 --Arm planner variables
 arm.plan={}
 arm.plan.max_margin = math.pi/6
+
 arm.plan.dt_step0 = 0.1
 arm.plan.dt_step = 0.2
 arm.plan.search_step = 1
+
+
+arm.plan.max_margin = math.pi/2
+arm.plan.search_step = 0.5
+
+
+
 
 -- Arm speed limits
 arm.shoulder_yaw_limit = 10*math.pi/180

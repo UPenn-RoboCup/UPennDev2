@@ -65,7 +65,10 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
   --Calculte the margin for current shoulder yaw angle
   local qArmMaxMargin, qArmNext
   local max_margin = -math.huge  
+  local min_yaw_diff = math.huge
   local debugmsg=false
+  local check_yaw_diff = true
+  
 
   if isLeft>0 then 
     local shoulderYawTarget = self.shoulder_yaw_target_left
@@ -85,14 +88,32 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
  
   for div = -1,1,step do
     local qShoulderYaw = qArm[3] + div * yawMag
-    if debugmsg then print("CHECKING SHOULDERYAW ",qShoulderYaw*180/math.pi) end
     local qArmNext
     if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist)
     else qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist) end
     local margin = self.calculate_margin(qArmNext,isLeft)
-    if margin>max_margin then
-      qArmMaxMargin = qArmNext
-      max_margin = margin
+    local shoulderYawDiff = 999
+    if qArmNext then shoulderYawDiff = math.abs(qArmNext[3]-qArm[3]) end
+
+    if debugmsg then 
+      print("CHECKING SHOULDERYAW ",
+        qShoulderYaw*180/math.pi,
+        margin*180/math.pi
+--        ,shoulderYawDiff*180/math.pi
+        ) 
+    end
+
+    if margin>=max_margin then
+      if check_yaw_diff and margin == Config.arm.plan.max_margin then --max margin
+        if shoulderYawDiff < min_yaw_diff then
+          min_yaw_diff = shoulderYawDiff
+          qArmMaxMargin = qArmNext
+          max_margin = margin
+        end
+      else        
+        qArmMaxMargin = qArmNext
+        max_margin = margin
+      end
     end
   end
   if max_margin<0 then

@@ -130,7 +130,7 @@ servo.joint_to_motor={
   1,3,5,7,9,11,13,  --RArm
   27,28, --Waist yaw/pitch
   66,67, -- left gripper/trigger
-  64,65, -- right gripper/trigger
+  70,65, -- right gripper/trigger
   37, -- Lidar pan
 }
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
@@ -550,7 +550,7 @@ end
 -- For torque control (no reading from the motor just yet)
 Body.set_rtrigger_command_torque = function(val)
   -- Set the command_torque
-  jcm.gripperPtr.command_torque[4] = val
+  jcm.gripperPtr.command_torque[4] = -1*val
   -- Set the command_torque
   jcm.gripperPtr.torque_mode[4] = 1
 end
@@ -906,7 +906,7 @@ Body.entry = function()
       {15,17,19,21,23,25, --[[waist pitch]]28}
     dynamixels.left_leg.nx_ids =
       {16,18,20,22,24,26, --[[waist]]27}
-    dynamixels.right_arm.mx_ids = { 64,65 }
+    dynamixels.right_arm.mx_ids = { 70,65 }
     dynamixels.left_arm.mx_ids = { 66,67,37, --[[lidar]] }
   else
     dynamixels.one_chain = libDynamixel.new_bus()
@@ -952,7 +952,6 @@ Body.entry = function()
   end
   --
 
-----[[  
   -- Tell the hand motors to go to torque mode!!!
   --for g=indexLGrip,indexLGrip+1 do
   for g=indexLGrip,indexRGrip+1 do
@@ -966,7 +965,7 @@ Body.entry = function()
       unix.usleep(1e4)
       local status = libDynamixel.get_mx_torque_mode(m_id,usb2dyn)
       unix.usleep(1e4)
---      print(m_id,'STATUS!!!!',type(status))
+      --print(m_id,'STATUS!!!!',type(status),status,g,usb2dyn)
       if status then
         local read_parser = libDynamixel.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )
@@ -977,7 +976,6 @@ Body.entry = function()
     if try>10 then print('BAD TORQUE MODE SET!',g) end
   end
   print'DONE SETTING TORQUE MODE'  
---]]
   
 end
 
@@ -1280,7 +1278,7 @@ Body.update = function()
   local r_tq_step1 = Body.get_rgrip_command_torque_step()
   local r_tq_step2 = Body.get_rtrigger_command_torque_step()
   -- Close the hand with a certain force (0 is no force)
-  libDynamixel.set_mx_command_torque({indexRGrip,indexRGrip+1},{r_tq_step1,r_tq_step2},r_dyn)
+  libDynamixel.set_mx_command_torque({rg_m1,rg_m2},{r_tq_step1,r_tq_step2},r_dyn)
 
   -- Send the requests next
   local done = true

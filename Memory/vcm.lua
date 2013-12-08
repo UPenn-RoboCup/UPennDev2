@@ -20,7 +20,8 @@ shared.head_camera.t     = vector.zeros(1)
 -- Stream | 0: None, 1: Single Frame, 2: Stream, 3: Single Reliable Frame 4: Reliable Stream
 -- Compression | 0: None, 1: JPEG, 3: PNG
 -- Quality | JPEG quality from 0-100
-shared.head_camera.net = vector.new({4,1,75})
+-- Sending Rate | Number of seconds between frames
+shared.head_camera.net = vector.new({4,1,75,1})
 
 ---------------------
 -- Forehead Camera --
@@ -30,7 +31,8 @@ shared.forehead_camera.t   = vector.zeros(1)
 -- Stream | 0: None, 1: Single Frame, 2: Stream, 3: Single Reliable Frame 4: Reliable Stream
 -- Compression | 0: None, 1: JPEG, 3: PNG
 -- Quality | JPEG quality from 0-100
-shared.forehead_camera.net = vector.new({4,1,75})
+-- Sending Rate | Number of seconds between frames
+shared.forehead_camera.net = vector.new({4,1,75,1})
 
 -- Forehead Camera --
 shared.forehead2_camera     = {}
@@ -39,7 +41,8 @@ shared.forehead2_camera.t   = vector.zeros(1)
 -- Stream | 0: None, 1: Single Frame, 2: Stream, 3: Single Reliable Frame 4: Reliable Stream
 -- Compression | 0: None, 1: JPEG, 3: PNG
 -- Quality | JPEG quality from 0-100
-shared.forehead2_camera.net = vector.new({4,1,75})
+-- Sending Rate | Number of seconds between frames
+shared.forehead2_camera.net = vector.new({4,1,75,1})
 
 ----------------
 -- Head LIDAR --

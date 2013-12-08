@@ -104,11 +104,6 @@ function state.update()
 ----------------------------------------------------------
 
   if stage=="wristyawturn" then --Turn yaw angles first    
-    gripL,doneL = util.approachTol(gripL,1,2,dt)  --Close gripper
-    gripR,doneR = util.approachTol(gripR,1,2,dt)  --Close gripper
-
---  Body.set_lgrip_percent(gripL*0.8)
-    Body.set_rgrip_percent(gripR*0.8)
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
 --        print("trLArm:",arm_planner.print_transform(trLArm))
@@ -198,7 +193,6 @@ function state.update()
     end
     hcm.set_state_proceed(0)--stop at next step
   elseif stage=="grab" then --Grip the object   
-    --Body.move_rgrip1(Config.arm.torque.open)
     Body.move_rgrip1(Config.arm.torque.grip_drill)    
     Body.move_rgrip2(Config.arm.torque.grip_drill)    
     stage = "torsobalance"

@@ -77,30 +77,26 @@ Config.camera = {}
 Config.camera.head = {}
 Config.camera.head.device = '/dev/video0'
 Config.camera.head.format = 'yuyv'
-Config.camera.head.quality = 75
-Config.camera.head.resolution = {320,240}
-Config.camera.head.fps = 5
---Config.camera.head.resolution = {160,120}
---Config.camera.head.fps = 5
---Config.camera.head.resolution = {320,180}
---Config.camera.head.fps = 5
---Config.camera.head.resolution = {640,360}
---Config.camera.head.fps = 5
+Config.camera.head.resolution = {640,360}
+Config.camera.head.fps = 30
+
+--[[
 -- Forehead (wide angle)
 Config.camera.forehead = {}
 Config.camera.forehead.device = '/dev/video1'
 Config.camera.forehead.format = 'yuyv'
 --Config.camera.forehead.format = 'mjpeg'
-Config.camera.forehead.quality = 75
 Config.camera.forehead.resolution = {320,240}
-Config.camera.forehead.fps = 5
+Config.camera.forehead.fps = 30
+--]]
 
+--[[
 Config.camera.forehead2 = {}
 Config.camera.forehead2.device = '/dev/video2'
 Config.camera.forehead2.format = 'yuyv'
 --Config.camera.forehead2.format = 'mjpeg'
-Config.camera.forehead2.quality = 75
 Config.camera.forehead2.resolution = {320,240}
 Config.camera.forehead2.fps = 5
+--]]
 
 return Config

@@ -22,14 +22,13 @@ local logging = false
 
 local function setup_camera(cam,name,udp_port,tcp_port)
   -- Get the config values
-  local dev     = cam.device
-  local fps     = cam.fps
-  local quality = cam.quality
+  local dev    = cam.device
+  local fps    = cam.fps
   local width, height = unpack(cam.resolution)
   local format = cam.format
   -- Save the metadata
   local meta = {}
-  meta.t = unix.time()
+  meta.t = 0
   meta.count = 0
   meta.name = name..'_camera'
   meta.width = width
@@ -51,7 +50,6 @@ local function setup_camera(cam,name,udp_port,tcp_port)
   camera.pub  = cam_pub_ch
   camera.udp  = camera_udp_ch
   camera.tcp  = camera_tcp_ch
-  camera.quality = cam.quality
   camera.format = format
   return camera
 end
@@ -71,8 +69,8 @@ for name,cam in pairs(Config.camera) do
   -- Create the camera callback function
   local camera_poll = {}
   camera_poll.socket_handle = camera.dev:descriptor()
-  camera_poll.ts = unix.time()
   camera_poll.count = 0
+  camera_poll.ts = 0
   -- Net settings get/set
   camera_poll.get_net = vcm['get_'..name..'_camera_net']
   camera_poll.set_net = vcm['set_'..name..'_camera_net']
@@ -81,16 +79,24 @@ for name,cam in pairs(Config.camera) do
   camera_poll.callback = function(sh)
     -- Identify which camera
     local camera_poll = wait_channels.lut[sh]
-print('cb!',sh,camera_poll)
+    local t = unix.time()
+    camera_poll.ts = t
     local camera = camera_poll.camera
-    -- Grab the iamge
-    local img, head_img_sz = camera.dev:get_image()
+    -- Grab the image
+    local img, img_sz = camera.dev:get_image()
     -- Grab the net settings
     local net_settings = camera_poll.get_net()
-    local stream, method, quality = unpack(net_settings)
+    local stream, method, quality, interval = unpack(net_settings)
 
-    -- If no streaming, then no computation
-    if stream==0 and not logging then return end
+    -- If not sending, then no computation
+    if stream==0 then return end
+    
+    -- Streaming interval check
+    if stream==2 or stream==4 then
+      -- If we have not waited enough time
+      local t_diff_send = t - camera.meta.t
+      if t_diff_send<interval then return end
+    end
     
     -- Compress the image (ignore the 'method' for now - just jpeg)
     local c_img
@@ -100,21 +106,18 @@ print('cb!',sh,camera_poll)
       c_img = jpeg.compress_yuyv(img,camera.meta.width,camera.meta.height)
     else
       -- mjpeg
-      c_img = tostring(carray.char(img,head_img_sz))
+      c_img = tostring(carray.char(img,img_sz))
     end
 
     -- Update the metadata
-    camera.meta.t = unix.time()
+    camera.meta.t = t
     camera.meta.c = 'jpeg'
     camera.meta.count = camera.meta.count + 1
     camera.meta.sz = #c_img
     local metapack = mp.pack(camera.meta)
     
-    -- Send for logger
+    -- Send to the logger
     if logging then camera.pub:send( {metapack, c_img} ) end
-    
-    -- If no network streaming, then return
-    if stream==0 then return end
 
     -- Send over the network
     if stream==1 or stream==2 then
@@ -131,6 +134,9 @@ print('cb!',sh,camera_poll)
       net_settings[1] = 0
       camera_poll.set_net(net_settings)
     end
+    
+    -- Simple debug for the time being
+    --print(camera.meta.name,'Sent frame!',t)
     
   end
 

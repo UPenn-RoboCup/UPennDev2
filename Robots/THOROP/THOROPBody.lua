@@ -1282,6 +1282,7 @@ Body.update = function()
 
   -- Send the requests next
   local done = true
+local nreq = 0
   repeat -- round robin repeat
     done = true
     for _,d in pairs(dynamixels) do
@@ -1301,8 +1302,10 @@ Body.update = function()
         local flush_ret = stty.drain(fd)
         -- check if now done
         if #d.cmd_pkts>0 then done = false end
+nreq=nreq+1
       end
     end
+if nreq==0 then break end
     -- Await the responses of these packets
     local READ_TIMEOUT = 12e-3
     local still_recv = true
@@ -1310,7 +1313,10 @@ Body.update = function()
       still_recv = false
       local status, ready = unix.select(dynamixel_fds,READ_TIMEOUT)
       -- if a timeout, then return
-      if status==0 then print'read timeout' break end
+      if status==0 then
+        print'read timeout'
+        break
+      end
       for ready_fd, is_ready in pairs(ready) do
         -- for items that are ready
         if is_ready then

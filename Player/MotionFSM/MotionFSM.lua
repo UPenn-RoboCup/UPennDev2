@@ -7,6 +7,7 @@ local fsm = require'fsm'
 
 local motionIdle   = require'motionIdle' --Initial state, all legs torqued off
 local motionInit   = require'motionInit' --Torque on legs and go to initial leg position
+local motionBiasInit   = require'motionBiasInit' --Torque on legs and go to initial leg position
 local motionStance = require'motionStance' --Robots stands still, balancing itself, ready for walk again
 local motionHeightReturn = require'motionHeightReturn' --Robots stands still, balancing itself, ready for walk again
 local motionSit    = require'motionSit' --Robots changes the body height for manipulation
@@ -25,6 +26,7 @@ local motionStepNonstop = require'motionStepNonstop'
 local sm = fsm.new( motionIdle, motionInit, motionStance)
 --, motionFall )
 sm:add_state(motionWalk)
+sm:add_state(motionBiasInit)
 sm:add_state(motionStep)
 sm:add_state(motionStepNonstop)
 sm:add_state(motionStepPreview)
@@ -36,6 +38,9 @@ sm:add_state(motionHeightReturn)
 sm:set_transition(motionIdle, 'stand', motionInit)
 sm:set_transition(motionInit, 'done', motionStance)
 
+sm:set_transition(motionIdle, 'bias', motionBiasInit)
+sm:set_transition(motionBiasInit, 'bias', motionInit)
+sm:set_transition(motionStance, 'bias', motionBiasInit)
 
 --motionstance change bodyheight to target height
 --And it does balancing and torso compensation as well

@@ -34,7 +34,7 @@ function state.entry()
   qLLeg = Body.get_lleg_command_position()
   qRLeg = Body.get_rleg_command_position()
   qWaist = Body.get_waist_command_position()
-
+  mcm.set_leg_bias(Config.walk.legBias)
 end
 
 ---

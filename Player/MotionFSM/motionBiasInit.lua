@@ -45,7 +45,6 @@ stage = 1
 
 function state.entry()
   print(state._NAME..' Entry' )
-
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
@@ -116,8 +115,8 @@ function state.update()
   if not doneTorso or not doneWaist then t_finish = t end --do we need this?
   
   -- Command the body  
-  local qLegsTarget = Kinematics.inverse_legs( pLLeg_desired, pRLeg_desired, pTorso_approach, 0 )
-
+--  local qLegsTarget = Kinematics.inverse_legs( pLLeg_desired, pRLeg_desired, pTorso_approach, 0 )
+  qLegsTarget = vector.zeros(12)
  
   local legBias = vector.new(mcm.get_leg_bias())
   qLegsTarget = vector.new(qLegsTarget) + legBias  

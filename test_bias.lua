@@ -68,6 +68,8 @@ local channels = {
 -- Events for the FSMs
 local char_to_event = {
   ['1'] = {'body_ch','init'},
+  ['2'] = {'body_ch','stepplan'},
+  ['3'] = {'body_ch','stepplan2'},
 }
 
 local servo_names={
@@ -105,18 +107,13 @@ local function process_character(key_code,key_char,key_char_lower)
 
   local bias_mag = 0.5*Body.DEG_TO_RAD
   local legBias = mcm.get_leg_bias()
-  if key_char_lower=="5" then
-    selected_servo = 1    
-  elseif key_char_lower=="6" then
-    selected_servo = 2    
-  elseif key_char_lower=="7" then
-    selected_servo = 3
-  elseif key_char_lower=="8" then
-    selected_servo = 4
-  elseif key_char_lower=="9" then
-    selected_servo = 5
-  elseif key_char_lower=="0" then
-    selected_servo = 6
+  if key_char_lower=="[" then
+    selected_servo = selected_servo-1
+    if selected_servo<1 then selected_servo = 6 end    
+  elseif key_char_lower=="]" then
+    selected_servo = selected_servo+1
+    if selected_servo>6 then selected_servo = 1 end
+  
   elseif key_char_lower=="j" then
     legBias[selected_servo]=legBias[selected_servo]-bias_mag
   elseif key_char_lower=="l" then
@@ -125,6 +122,9 @@ local function process_character(key_code,key_char,key_char_lower)
     legBias[selected_servo+6]=legBias[selected_servo+6]-bias_mag
   elseif key_char_lower=="," then        
     legBias[selected_servo+6]=legBias[selected_servo+6]+bias_mag
+  elseif key_char_lower=="0" then
+    print(string.format("Current bias: \n%.2f %.2f %.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f %.2f %.2f ",
+      unpack(vector.new(legBias)*Body.RAD_TO_DEG)))
   end
   mcm.set_leg_bias(legBias)
   print(servo_names[selected_servo]," : ",

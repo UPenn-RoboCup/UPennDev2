@@ -45,8 +45,8 @@ arm.plan.dt_step = 0.2
 arm.plan.search_step = 1
 
 
-arm.plan.max_margin = math.pi/2
-arm.plan.search_step = 0.5
+--arm.plan.max_margin = math.pi/2
+--arm.plan.search_step = 0.25
 
 
 
@@ -171,22 +171,22 @@ armfsm.toolgrip.arminit={
   {0.33,-0.25,-0.20, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.42,-0.25,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.42,-0.25, 0.14, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
+  {0.42,-0.25, 0.14, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
 }
+armfsm.toolgrip.rhand_rpy0 = {0,0,45*DEG_TO_RAD}
 
-
-
-
-
+--[[
 --new init motion that avoids table
 armfsm.toolgrip.arminit={
   {0.33,-0.35,-0.20, 0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
   {0.45,-0.50,-0.0, 0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
-  {0.45,-0.50,0.14, 0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.45,-0.50,0.17, 0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
 
 --0.38 -0.33 0.14  
-  {0.42,-0.25,0.16, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD}, --barely works
+--  {0.40,-0.32,0.14, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD}, --barely works
+  {0.38,-0.33,0.14, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD}, --barely works
 }
-
+--]]
 
 
 

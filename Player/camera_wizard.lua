@@ -22,9 +22,8 @@ local logging = false
 
 local function setup_camera(cam,name,udp_port,tcp_port)
   -- Get the config values
-  local dev     = cam.device
-  local fps     = cam.fps
-  local quality = cam.quality
+  local dev    = cam.device
+  local fps    = cam.fps
   local width, height = unpack(cam.resolution)
   local format = cam.format
   -- Save the metadata
@@ -51,7 +50,6 @@ local function setup_camera(cam,name,udp_port,tcp_port)
   camera.pub  = cam_pub_ch
   camera.udp  = camera_udp_ch
   camera.tcp  = camera_tcp_ch
-  camera.quality = cam.quality
   camera.format = format
   return camera
 end

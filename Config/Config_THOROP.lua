@@ -55,8 +55,8 @@ exo.FSM  = 'Manipulation' --added
 
 
 for k,v in pairs(exo) do
--- SJ:Now we just put all config files in /Config folder
---  local exo_name = k..'/Config_'..Config.PLATFORM_NAME..'_'..v
+  -- TODO SJ: Now we just put all config files in /Config folder
+  --local exo_name = k..'/Config_'..Config.PLATFORM_NAME..'_'..v
   local exo_name = '/Config_'..Config.PLATFORM_NAME..'_'..v
   local exo_config = require(exo_name)
   for kk,vv in pairs(exo_config) do Config[kk] = vv end
@@ -69,29 +69,38 @@ Config.km = {}
 Config.km.standup_front = 'km_Charli_StandupFromFront.lua'
 Config.km.standup_back  = 'km_Charli_StandupFromBack.lua'
 
---------------------------
--- Temporary Overwrites --
---------------------------
+-------------
+-- Cameras --
+-------------
 Config.camera = {}
 -- Head
 Config.camera.head = {}
 Config.camera.head.device = '/dev/video0'
 Config.camera.head.format = 'yuyv'
 Config.camera.head.quality = 75
---Config.camera.head.resolution = {320,180}
---Config.camera.head.fps = 30
-Config.camera.head.resolution = {640,360}
+Config.camera.head.resolution = {320,240}
 Config.camera.head.fps = 5
+--Config.camera.head.resolution = {160,120}
+--Config.camera.head.fps = 5
+--Config.camera.head.resolution = {320,180}
+--Config.camera.head.fps = 5
+--Config.camera.head.resolution = {640,360}
+--Config.camera.head.fps = 5
+-- Forehead (wide angle)
+Config.camera.forehead = {}
+Config.camera.forehead.device = '/dev/video1'
+Config.camera.forehead.format = 'yuyv'
+--Config.camera.forehead.format = 'mjpeg'
+Config.camera.forehead.quality = 75
+Config.camera.forehead.resolution = {320,240}
+Config.camera.forehead.fps = 5
 
--- LWrist (deprecated)
---[[
-Config.camera.lwrist = {}
-Config.camera.lwrist.device = '/dev/video1'
-Config.camera.lwrist.resolution = {320,240}
-Config.camera.lwrist.format = 'yuyv'
---Config.camera.lwrist.format = 'mjpeg'
-Config.camera.lwrist.fps = 15
-Config.camera.lwrist.quality = 75
---]]
+Config.camera.forehead2 = {}
+Config.camera.forehead2.device = '/dev/video2'
+Config.camera.forehead2.format = 'yuyv'
+--Config.camera.forehead2.format = 'mjpeg'
+Config.camera.forehead2.quality = 75
+Config.camera.forehead2.resolution = {320,240}
+Config.camera.forehead2.fps = 5
 
 return Config

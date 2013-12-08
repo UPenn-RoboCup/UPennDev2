@@ -19,7 +19,7 @@ local hokuyos = {}
 
 -- Initialize the Hokuyos
 --local head_hokuyo  = libHokuyo.new_hokuyo(11)
-local chest_hokuyo = libHokuyo.new_hokuyo(10)
+local chest_hokuyo = libHokuyo.new_hokuyo(11)
 
 -- Head Hokuyo
 if head_hokuyo then

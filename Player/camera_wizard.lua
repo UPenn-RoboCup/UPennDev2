@@ -56,11 +56,13 @@ local function setup_camera(cam,name,udp_port,tcp_port)
   return camera
 end
 
+local socket_handle_lut = {}
+
 -- Open each of the cameras
 for name,cam in pairs(Config.camera) do
 
   -- Debug
-  print(util.color('Setting up','green'),name)
+  print(util.color('Setting up','green'),name,cam.device)
 
   local udp_net = Config.net.camera[name]
   local tcp_net = Config.net.reliable_camera[name]
@@ -71,21 +73,30 @@ for name,cam in pairs(Config.camera) do
   camera_poll.socket_handle = camera.dev:descriptor()
   camera_poll.ts = unix.time()
   camera_poll.count = 0
-  camera_poll.callback = function()
-    -- Grab the net settings to see if we should actually send this frame
-    local net_settings = vcm.get_head_camera_net()
-    local stream, method, quality = unpack(net_settings)
-    camera.quality = quality
+  -- Net settings get/set
+  camera_poll.get_net = vcm['get_'..name..'_camera_net']
+  camera_poll.set_net = vcm['set_'..name..'_camera_net']
+  camera_poll.camera = camera
+  -- Frame callback
+  camera_poll.callback = function(sh)
+    -- Identify which camera
+    local camera_poll = wait_channels.lut[sh]
+print('cb!',sh,camera_poll)
+    local camera = camera_poll.camera
+    -- Grab the iamge
     local img, head_img_sz = camera.dev:get_image()
+    -- Grab the net settings
+    local net_settings = camera_poll.get_net()
+    local stream, method, quality = unpack(net_settings)
 
-    -- No streaming, so no computation
+    -- If no streaming, then no computation
     if stream==0 and not logging then return end
     
     -- Compress the image (ignore the 'method' for now - just jpeg)
     local c_img
     if camera.format=='yuyv' then
       -- yuyv
-      jpeg.set_quality( camera.quality )
+      jpeg.set_quality( quality )
       c_img = jpeg.compress_yuyv(img,camera.meta.width,camera.meta.height)
     else
       -- mjpeg
@@ -118,7 +129,7 @@ for name,cam in pairs(Config.camera) do
     -- Turn off single frame
     if stream==1 or stream==3 then
       net_settings[1] = 0
-      vcm['set_'..camera.meta.name..'_net'](net_settings)
+      camera_poll.set_net(net_settings)
     end
     
   end
@@ -130,6 +141,9 @@ for name,cam in pairs(Config.camera) do
   -- Keep track of this camera
   table.insert(wait_channels,camera_poll)
   table.insert(cameras,camera)
+
+  unix.usleep(1e3)
+
 end
 
 -- Close the camera properly upon Ctrl-C

@@ -12,14 +12,15 @@ local qLArm0,qRArm0, trLArm0, trRArm0, trLArm1, trARArm1
 
 --Initial hand angle
 local lhand_rpy0 = Config.armfsm.toolgrip.lhand_rpy
-local rhand_rpy0 = Config.armfsm.toolgrip.rhand_rpy
+local rhand_rpy0 = Config.armfsm.toolgrip.rhand_rpy0
+local rhand_rpy1 = Config.armfsm.toolgrip.rhand_rpy
 
 local gripL, gripR = 1,1
 local stage
 local debugdata
 
 local function get_tool_tr(tooloffset)
-  local handrpy = rhand_rpy0
+  local handrpy = rhand_rpy1
   local tool_model = hcm.get_tool_model()
   local hand_pos = vector.slice(tool_model,1,3) + 
     vector.new({tooloffset[1],tooloffset[2],tooloffset[3]})  
@@ -29,7 +30,7 @@ local function get_tool_tr(tooloffset)
 end
 
 local function get_hand_tr(pos)
-  return {pos[1],pos[2],pos[3], unpack(rhand_rpy0)}
+  return {pos[1],pos[2],pos[3], unpack(rhand_rpy1)}
 end
 
 local function update_model()
@@ -112,7 +113,9 @@ function state.update()
         local arm_seq = {
           {'move',nil,Config.armfsm.toolgrip.arminit[1]},
           {'move',nil,Config.armfsm.toolgrip.arminit[2]},
-          {'move',nil,Config.armfsm.toolgrip.arminit[3]}
+          {'move',nil,Config.armfsm.toolgrip.arminit[3]},
+          {'wrist',nil,Config.armfsm.toolgrip.arminit[4]},
+          {'move',nil,Config.armfsm.toolgrip.arminit[4]}
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
       elseif hcm.get_state_proceed()==-1 then 

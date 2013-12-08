@@ -68,8 +68,10 @@ local channels = {
 -- Events for the FSMs
 local char_to_event = {
   ['1'] = {'body_ch','init'},
+  ['`'] = {'motion_ch','bias'},
   ['2'] = {'body_ch','stepplan'},
   ['3'] = {'body_ch','stepplan2'},
+
 }
 
 local servo_names={
@@ -131,7 +133,6 @@ local function process_character(key_code,key_char,key_char_lower)
     legBias[selected_servo]*Body.RAD_TO_DEG,
     legBias[selected_servo+6]*Body.RAD_TO_DEG
     )
- 
 
 end
 

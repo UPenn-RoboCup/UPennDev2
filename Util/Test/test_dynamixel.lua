@@ -23,20 +23,32 @@ if not one_chain then
 end
 
 -- Choose a chain
-local test_dynamixel = right_arm
+local test_dynamixel = left_arm
 assert(test_dynamixel)
 print('Using',test_dynamixel.ttyname)
 
 local found = test_dynamixel:ping_probe(2)
 print('Inspecting',table.concat(found,','))
 
+--os.exit()
 
+local m = 14
+local status = libDynamixel.get_nx_mode(m,test_dynamixel)
+if status then
+  local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
+  print(string.format('Mode: %d',value))
+end
+--local status = libDynamixel.set_nx_mode(m,4,test_dynamixel)
+
+
+--[[
 local status = libDynamixel.get_mx_torque_mode(70,test_dynamixel)
 print('status',status)
 if status then
 local value = libDynamixel.byte_to_number[#status.parameter](unpack(status.parameter))
 print('Value:',value)
 end
+--]]
 
 --local status = libDynamixel.set_mx_command_position(1,2500,test_dynamixel)
 --print('status',status)

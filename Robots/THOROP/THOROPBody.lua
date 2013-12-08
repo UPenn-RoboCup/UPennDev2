@@ -965,7 +965,7 @@ Body.entry = function()
       unix.usleep(1e4)
       local status = libDynamixel.get_mx_torque_mode(m_id,usb2dyn)
       unix.usleep(1e4)
-      print(m_id,'STATUS!!!!',type(status),status,g,usb2dyn)
+      --print(m_id,'STATUS!!!!',type(status),status,g,usb2dyn)
       if status then
         local read_parser = libDynamixel.byte_to_number[ #status.parameter ]
         local value = read_parser( unpack(status.parameter) )

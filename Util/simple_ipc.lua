@@ -168,6 +168,8 @@ simple_ipc.wait_on_channels = function( channels )
     poll_obj:add( channels[i].socket_handle, zmq.POLLIN, channels[i].callback )
   end
   --]]
+  -- Add lookup table for the callbacks
+  channels.lut = {}
   for i,ch in ipairs(channels) do
     poll_obj:add( ch.socket_handle, zmq.POLLIN, ch.callback )
     assert(not channels.lut[ch.socket_handle],'Duplicate!')

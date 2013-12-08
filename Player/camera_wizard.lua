@@ -74,28 +74,28 @@ for name,cam in pairs(Config.camera) do
   camera_poll.ts = unix.time()
   camera_poll.count = 0
   -- Net settings get/set
-  --[[
-  local get_net = vcm['get_'..name..'_camera_net']
-  local set_net = vcm['set_'..name..'_camera_net']
   camera_poll.get_net = vcm['get_'..name..'_camera_net']
   camera_poll.set_net = vcm['set_'..name..'_camera_net']
-  --]]
+  camera_poll.camera = camera
   -- Frame callback
   camera_poll.callback = function(sh)
-    -- Grab the net settings to see if we should actually send this frame
-    local net_settings = vcm.get_head_camera_net()
-    local stream, method, quality = unpack(net_settings)
-    camera.quality = quality
+    -- Identify which camera
+    local camera_poll = wait_channels.lut[wait_channels]
+    local camera = camera_poll.camera
+    -- Grab the iamge
     local img, head_img_sz = camera.dev:get_image()
+    -- Grab the net settings
+    local net_settings = camera_poll.get_net()
+    local stream, method, quality = unpack(net_settings)
 
-    -- No streaming, so no computation
+    -- If no streaming, then no computation
     if stream==0 and not logging then return end
     
     -- Compress the image (ignore the 'method' for now - just jpeg)
     local c_img
     if camera.format=='yuyv' then
       -- yuyv
-      jpeg.set_quality( camera.quality )
+      jpeg.set_quality( quality )
       c_img = jpeg.compress_yuyv(img,camera.meta.width,camera.meta.height)
     else
       -- mjpeg
@@ -128,7 +128,7 @@ for name,cam in pairs(Config.camera) do
     -- Turn off single frame
     if stream==1 or stream==3 then
       net_settings[1] = 0
-      vcm['set_'..camera.meta.name..'_net'](net_settings)
+      camera_poll.set_net(net_settings)
     end
     
   end

@@ -138,7 +138,7 @@ for name,cam in pairs(Config.camera) do
     end
     
     -- Simple debug for the time being
-    print(camera.meta.name,'Sent frame!',t)
+    --print(camera.meta.name,'Sent frame!',t)
     
   end
 

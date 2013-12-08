@@ -67,7 +67,7 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
   local max_margin = -math.huge  
   local min_yaw_diff = math.huge
   local debugmsg=false
-  local check_yaw_diff = true
+  local check_yaw_diff = false
   
 
   if isLeft>0 then 

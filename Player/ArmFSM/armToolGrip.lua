@@ -120,7 +120,6 @@ function state.update()
           {'move',nil,Config.armfsm.toolgrip.arminit[3]}
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
-        hcm.set_state_proceed(0)--stop at next step
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) 
         --local wrist_seq = {{"wrist",nil,trRArm0}}
@@ -149,7 +148,6 @@ function state.update()
           {'move',nil, trRArmTarget2}
         }     
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end          
-        hcm.set_state_proceed(0)--stop at next step
       elseif hcm.get_state_proceed()==-1 then 
         trRArmTarget1 = get_hand_tr(Config.armfsm.toolgrip.arminit[1])
         local arm_seq = {{'move',nil,trRArmTarget1},{'move',nil,trRArm1}}

@@ -19,7 +19,7 @@ function state.entry()
   qHead = Body.get_head_command_position()
 
   -- Request new readings
-  Body.request_head_position()
+--  Body.request_head_position()
 
 end
 
@@ -31,6 +31,7 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+--[[
   -- Grab our position if available
   local updatedH
   qH, updatedH = Body.get_head_position()
@@ -41,6 +42,7 @@ function state.update()
     qHead = qH
     Body.request_head_position()
   end
+--]]
 
 end
 

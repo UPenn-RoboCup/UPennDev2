@@ -92,8 +92,8 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
     if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist)
     else qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist) end
     local margin = self.calculate_margin(qArmNext,isLeft)
-    local shoulderYawDiff = 999
-    if qArmNext then shoulderYawDiff = math.abs(qArmNext[3]-qArm[3]) end
+--    local shoulderYawDiff = 999
+--    if qArmNext then shoulderRollDdiff = math.abs(qArmNext[2]-qArm[2]) end
 
     if debugmsg then 
       print("CHECKING SHOULDERYAW ",
@@ -103,18 +103,25 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
         ) 
     end
 
+    
+
+
     if margin>=max_margin then
+--[[      
       if check_yaw_diff and margin == Config.arm.plan.max_margin then --max margin
         if shoulderYawDiff < min_yaw_diff then
-          min_yaw_diff = shoulderYawDiff
+          min_yaw_diff = shoulderRollDiff
           qArmMaxMargin = qArmNext
           max_margin = margin
         end
       else        
-        qArmMaxMargin = qArmNext
-        max_margin = margin
+        
       end
+--]]
+      qArmMaxMargin = qArmNext
+      max_margin = margin      
     end
+
   end
   if max_margin<0 then
     print("CANNOT FIND CORRECT SHOULDER ANGLE, at trNext:",self.print_transform(trArmNext))

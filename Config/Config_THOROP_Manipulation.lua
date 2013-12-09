@@ -46,7 +46,7 @@ arm.plan.search_step = 1
 
 
 --arm.plan.max_margin = math.pi/2
---arm.plan.search_step = 0.25
+arm.plan.search_step = 0.25
 
 
 
@@ -148,8 +148,9 @@ armfsm.debrisgrip.liftup = {0,0,0.05}
 armfsm.toolgrip = {}
 --armfsm.toolgrip.lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
 armfsm.toolgrip.lhand_rpy = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
-armfsm.toolgrip.rhand_rpy0 = {0,0,0}
+armfsm.toolgrip.rhand_rpy0 = {0,0,45*DEG_TO_RAD}
 armfsm.toolgrip.rhand_rpy = {0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
+
 
 
 --The optimal model
@@ -173,29 +174,28 @@ armfsm.toolgrip.arminit={
   {0.42,-0.25, 0.14, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
   {0.42,-0.25, 0.14, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
 }
+
 armfsm.toolgrip.rhand_rpy0 = {0,0,45*DEG_TO_RAD}
-
---[[
---new init motion that avoids table
 armfsm.toolgrip.arminit={
-  {0.33,-0.35,-0.20, 0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
-  {0.45,-0.50,-0.0, 0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
-  {0.45,-0.50,0.17, 0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
-
---0.38 -0.33 0.14  
---  {0.40,-0.32,0.14, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD}, --barely works
-  {0.38,-0.33,0.14, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD}, --barely works
+  {0.33,-0.25,-0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.46,-0.35,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.46,-0.35, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
+  {0.46,-0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
 }
---]]
-
-
-
 
 armfsm.toolgrip.armpull={
   --0.55 -0.06 0.25 
   {0.46, -0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.46, -0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.32, -0.25, -0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+}
+
+
+armfsm.toolgrip.armpull={
+  --0.55 -0.06 0.25 
+  {0.46, -0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.46, -0.35, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.32, -0.35, -0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
 
 

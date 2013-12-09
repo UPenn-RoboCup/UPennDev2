@@ -158,14 +158,13 @@ function state.update()
         local trRArmTarget1 = get_tool_tr({0,0,0})        
         local arm_seq = {{'move',nil, trRArmTarget1}}     
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "touchtool" end        
-        hcm.set_state_proceed(0)--stop at next step
       elseif hcm.get_state_proceed() == -1 then        
         local trRArmTarget0 = trRArm
         trRArmTarget0[1]=Config.armfsm.toolgrip.tool_clearance_x
         local trRArmTarget1 = get_hand_tr(Config.armfsm.toolgrip.arminit[2])
         local arm_seq={{'move',nil,trRArmTarget0},{'move',nil,trRArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
-        hcm.set_state_proceed(0)--stop at next step
+  
       elseif hcm.get_state_proceed() == 2 then --Model modification
         update_model()        
         arm_planner:set_hand_mass(0,0)

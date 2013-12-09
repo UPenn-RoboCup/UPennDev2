@@ -99,8 +99,8 @@ local char_to_event = {
 }
 
 local char_to_vel = {
-  ['i'] = vector.new({0.025, 0, 0}),
-  [','] = vector.new({-.025, 0, 0}),
+  ['i'] = vector.new({0.05, 0, 0}),
+  [','] = vector.new({-.05, 0, 0}),
   ['h'] = vector.new({0, 0.025, 0}),
   [';'] = vector.new({0, -.025, 0}),
   ['j'] = vector.new({0, 0, 5})*math.pi/180,
@@ -131,6 +131,18 @@ print(cmd_string)
   return
 end
 
+
+
+local walk_target_local = vector.new({0,0,0})
+
+local function start_navigation()
+  hcm.set_motion_waypoints(walk_target_local)
+  hcm.set_motion_nwaypoints(1)
+  hcm.set_motion_waypoint_frame(0) --Relative movement
+  send_command_to_ch(channels['body_ch'],'follow')
+end
+
+
 local function process_character(key_code,key_char,key_char_lower)
   local cmd
 
@@ -141,18 +153,29 @@ local function process_character(key_code,key_char,key_char_lower)
     return send_command_to_ch(channels[event[1]],event[2])
   end
 
+  if key_char_lower == " " then
+    print("GO GO GO")
+    start_navigation()
+    walk_target_local = vector.new({0,0,0})  
+  end
+
+
   -- Adjust the velocity
   -- Only used in direct teleop mode
   local vel_adjustment = char_to_vel[key_char_lower]
   if vel_adjustment then
-    print( util.color('Inc vel by','yellow'), vel_adjustment )
-    local walk_vel_prev = mcm.get_walk_vel()
-    local walk_vel_new = vector.new(walk_vel_prev)+vector.new(vel_adjustment)
-    mcm.set_walk_vel(walk_vel_new)
+    walk_target_local = walk_target_local + vel_adjustment
+    print( util.color('Target movement:','yellow'), 
+
+      walk_target_local[1],
+      walk_target_local[2],
+      walk_target_local[3]*180/math.pi
+
+      )
     return
   elseif key_char_lower=='k' then
-    print( util.color('Zero Velocity','yellow'))
-    mcm.set_walk_vel({0,0,0})
+    print( util.color('Zero target movement','yellow'))
+    walk_target_local = vector.new({0,0,0})    
     return
   end
 

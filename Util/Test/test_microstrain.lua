@@ -11,7 +11,8 @@ local vector = require'vector'
 local RAD_TO_DEG = Body.RAD_TO_DEG
 
 local imu = libMicrostrain.new_microstrain(
-  '/dev/cu.usbmodem1421', 921600 )
+--  '/dev/cu.usbmodem1421', 921600 )
+  '/dev/ttyACM0')
 
 if not imu then
   print('No imu present!')
@@ -25,7 +26,7 @@ print('Opened Microstrain')
 print(table.concat(imu.information,'\n'))
 
 -- Set up the defaults:
---libMicrostrain.configure(imu)
+--libMicrostrain.configure(imu,true)
 --os.exit()
 
 -- Change the baud rate to fastest for this session
@@ -65,7 +66,7 @@ while true do
   end
 --]]
   cnt = cnt+1
-  if cnt>5 then
+  if false and cnt>5 then
     imu:ahrs_off()
     break
   end

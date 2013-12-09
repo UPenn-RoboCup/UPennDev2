@@ -61,10 +61,8 @@ function state.update()
   local zLeft,zRight = 0,0
   supportLeg = 2; --Double support
 
--- Grab gyro feedback for these joint angles
-  local gyro_rpy = Body.get_sensor_gyro()
 
-print(unpack(gyro_rpy))
+  local gyro_rpy = Body.get_sensor_gyro()
 
   local delta_legs
   delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,0,gyro_rpy, angleShift)

@@ -120,6 +120,8 @@ while true do
     local t_sleep = us_sleep-t_loop*1e6
     if t_sleep>0 then unix.usleep(t_sleep) end
   end
+
+  local gyro = Body.get_sensor_gyro()
   
 end
 Body.exit()

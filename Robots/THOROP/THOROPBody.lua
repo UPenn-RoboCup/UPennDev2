@@ -887,6 +887,7 @@ Body.entry = function()
       dynamixels['left_leg'] = libDynamixel.new_bus'/dev/ttyUSB3'
       if not DISABLE_MICROSTRAIN then
         microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
+--        libMicrostrain.configure(microstrain)
       end
     else
       dynamixels.right_arm = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9A'
@@ -1020,9 +1021,12 @@ local function process_fd(ready_fd)
     if DISABLE_MICROSTRAIN then return false end
     local gyro = carray.float(buf:sub( 7,18):reverse())
     local rpy  = carray.float(buf:sub(21,32):reverse())
+
     -- set to memory
     jcm.set_sensor_rpy{  rpy[2], rpy[3], -rpy[1]}
     jcm.set_sensor_gyro{gyro[2],gyro[3],-gyro[1]}
+
+
     -- done reading
     local t_read = unix.time()
     microstrain.t_diff = t_read - microstrain.t_read
@@ -1216,7 +1220,7 @@ Body.update = function()
         -- mk pkt
         if #read_ids>0 then
           -- DEBUG READ TIEMOUT
-          print('!!!mk read!!!',register,unpack(read_ids))
+          --print('!!!mk read!!!',register,unpack(read_ids))
           table.insert(d.read_pkts,{get_func(read_ids),register})
           d.n_expect_read = d.n_expect_read + #read_ids
         end
@@ -1282,7 +1286,7 @@ Body.update = function()
 
   -- Send the requests next
   local done = true
-local nreq = 0
+--local nreq = 0
   repeat -- round robin repeat
     done = true
     for _,d in pairs(dynamixels) do
@@ -1302,19 +1306,19 @@ local nreq = 0
         local flush_ret = stty.drain(fd)
         -- check if now done
         if #d.cmd_pkts>0 then done = false end
-nreq=nreq+1
+--nreq=nreq+1
       end
     end
-if nreq==0 then break end
+--if nreq==0 then break end
     -- Await the responses of these packets
-    local READ_TIMEOUT = 12e-3
+    local READ_TIMEOUT = 2e-3
     local still_recv = true
     while still_recv do
       still_recv = false
       local status, ready = unix.select(dynamixel_fds,READ_TIMEOUT)
       -- if a timeout, then return
       if status==0 then
-        print'read timeout'
+        --print('read timeout')
         break
       end
       for ready_fd, is_ready in pairs(ready) do

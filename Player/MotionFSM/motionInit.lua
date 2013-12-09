@@ -153,6 +153,7 @@ end
 
 function state.exit()
   print(state._NAME..' Exit.  Time elapsed:',t_finish-t_entry )
+
   -- now on feet
   mcm.set_walk_bipedal(1)
 

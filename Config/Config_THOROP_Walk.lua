@@ -126,7 +126,7 @@ else
   walk.hipRollCompensation = 1*math.pi/180
   walk.stepHeight = 0.03
   walk.supportX = 0.02
-  walk.supportY = 0.015
+  walk.supportY = 0.03
 
 
  ------------------------------------

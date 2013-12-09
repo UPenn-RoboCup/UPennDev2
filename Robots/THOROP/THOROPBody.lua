@@ -1424,7 +1424,7 @@ elseif IS_WEBOTS then
   local tags = {}
 
   servo.direction = vector.new({
-    1,-1, -- Head
+    -1,-1, -- Head
     1,-1,-1,1,-1,-1,-1, --LArm    
     -1,-1,-1,-1,1,1, --LLeg
     -1,-1,1,1,-1,1, --LArm

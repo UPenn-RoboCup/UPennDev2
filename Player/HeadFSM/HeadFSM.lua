@@ -11,19 +11,19 @@ local headCenter = require'headCenter'
 
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
-local sm = fsm.new( headIdle, headTiltScan )
---local sm = fsm.new( headIdle, headTiltScan )
+local sm = fsm.new(headIdle)
+sm:add_state(headTiltScan)
 sm:add_state(headTeleop)
 sm:add_state(headCenter)
 
 -- Setup the transistions for this FSM
-sm:set_transition(headIdle, 'tiltscan', headTiltScan)
+--sm:set_transition(headIdle, 'tiltscan', headTiltScan)
 sm:set_transition(headIdle, 'teleop', headTeleop)
 sm:set_transition(headIdle, 'center', headCenter)
 --
-sm:set_transition(headTiltScan, 'tiltscan', headTiltScan)
-sm:set_transition(headTiltScan, 'reset', headIdle)
-sm:set_transition(headTiltScan, 'center', headCenter)
+--sm:set_transition(headTiltScan, 'tiltscan', headTiltScan)
+--sm:set_transition(headTiltScan, 'reset', headIdle)
+--sm:set_transition(headTiltScan, 'center', headCenter)
 --
 sm:set_transition(headTeleop, 'reset', headIdle)
 sm:set_transition(headTeleop, 'center', headCenter)

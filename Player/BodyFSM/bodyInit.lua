@@ -27,7 +27,7 @@ function state.entry()
 
   arm_ch:send'init'
   lidar_ch:send'pan'
-  head_ch:send'center'
+  head_ch:send'teleop'
   motion_ch:send'stand'
 
   --Reset pose

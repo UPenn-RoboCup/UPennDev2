@@ -68,7 +68,7 @@ local channels = {
 -- Events for the FSMs
 local char_to_event = {
   ['1'] = {'body_ch','init'},
-  ['`'] = {'motion_ch','bias'},
+  ['q'] = {'motion_ch','bias'},
   ['2'] = {'body_ch','stepplan'},
   ['3'] = {'body_ch','stepplan2'},
 
@@ -107,7 +107,7 @@ local function process_character(key_code,key_char,key_char_lower)
   end
 
 
-  local bias_mag = 0.5*Body.DEG_TO_RAD
+  local bias_mag = 0.25*Body.DEG_TO_RAD
   local legBias = mcm.get_leg_bias()
   if key_char_lower=="[" then
     selected_servo = selected_servo-1

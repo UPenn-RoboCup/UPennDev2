@@ -12,8 +12,8 @@ print("Robot hostname:",HOSTNAME)
 if HOSTNAME=="alvin" then
   walk.legBias = 
     vector.new({
-      0,0, 0,0,0, 0, --LLEG
-      0,0, 0,0,0, 0,  --RLEG
+      0,  1.0,  -1.0,  -1.0,  0, 0, --LLEG
+      0,  -0.50, 0,0,0, 0,  --RLEG
     })*DEG_TO_RAD
 else
   walk.legBias = 
@@ -120,6 +120,15 @@ else
   --
   walk.phComp = {0.1,0.9}
   walk.phCompSlope = 0.2
+
+
+--For alvin
+  walk.hipRollCompensation = 1*math.pi/180
+  walk.stepHeight = 0.03
+  walk.supportX = 0.02
+  walk.supportY = 0.015
+
+
  ------------------------------------
 
   walk.foot_traj = 1; --curved step
@@ -128,7 +137,7 @@ else
   --To get rid of drifting
   walk.velocityBias = {0.005,0,0}  
   walk.velLimitX = {-.05,.05}
-  walk.velLimitY = {-.025,.025}
+  walk.velLimitY = {-.02,.02}
   walk.velLimitA = {-.2,.2}
   walk.velDelta  = {0.025,0.02,0.1}
 end

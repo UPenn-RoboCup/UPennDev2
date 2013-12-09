@@ -42,11 +42,13 @@ local function calculate_footsteps()
   local step_queue_count = 1;
 
   local num_steps = 2
+  local num_steps = 8
 
   for i=1,num_steps  do
 
 --    step_planner.velCurrent = vector.new({0,0,0.1})
-    step_planner.velCurrent = vector.new({0,0,0.1})
+--    step_planner.velCurrent = vector.new({0,0,0.1})
+    step_planner.velCurrent = vector.new({0,0,0})
 
     local new_step
     supportLeg = 1-supportLeg

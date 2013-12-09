@@ -73,6 +73,8 @@ local function update_model()
 
   print(string.format("Door model update: hinge %.3f %.3f %.3f",
     door_model[1],door_model[2],door_model[3]))
+    hcm.set_state_proceed(0)
+
 end
 
 

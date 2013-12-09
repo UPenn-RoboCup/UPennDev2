@@ -159,6 +159,7 @@ end
 
   --To get rid of drifting
   walk.velocityBias = {0.005,0,0}  
+  walk.velocityBias = {0.00,0,0}  
   walk.velLimitX = {-.05,.05}
   walk.velLimitY = {-.02,.02}
   walk.velLimitA = {-.2,.2}

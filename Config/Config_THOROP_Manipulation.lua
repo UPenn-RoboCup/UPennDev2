@@ -430,13 +430,25 @@ armfsm.dooropenleft.yawTargetInitial = -8*DEG_TO_RAD
 armfsm.dooropenleft.lhand_rpy=
   {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD,-10*DEG_TO_RAD}
 
-
+--optimal model
 armfsm.dooropenleft.default_model = {
   0.52,-0.50,0.01,  --Hinge pos
   0.84,             --Door width (hinge to knob axle)
   -0.05,            --Knob X offset from door
   -0.08,             --Knob Y offset (from knob axle)
 }
+
+
+--conservative initial model
+armfsm.dooropenleft.default_model = {
+  0.35,-0.50,0.01,  --Hinge pos
+  0.84,             --Door width (hinge to knob axle)
+  -0.05,            --Knob X offset from door
+  -0.08,             --Knob Y offset (from knob axle)
+}
+
+
+
 
 armfsm.dooropenleft.rhand_push={
   {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD}, 

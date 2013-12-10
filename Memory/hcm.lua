@@ -16,6 +16,33 @@ local shared_data_sz = {}
 shared_data.state={}
 shared_data.state.proceed = vector.zeros(0)
 
+--SJ: Now we use a single param instead of model itself to override everything 
+
+--Door open: x,y,z, door yaw, door knob roll 
+--Door open away: x,y,z, hand yaw
+
+--Drill pickup: x,y,z, drill yaw
+--Drill cut: x,y,z,    drill yaw, drill pitch
+
+--Rotary valve turn: x,y,z, valve roll 
+--Bar valve turn: x,y,z, valve roll, hand roll
+
+--Hose pickup: x,y,z, hand yaw
+--Hose attach: x,y,z, hand yaw, hand pitch
+
+shared_data.state.override=vector.zeros(5)
+
+
+
+
+
+
+
+
+
+
+
+
 --This variable is used for target transform based tele-op and fine tuning
 shared_data.hands={}
 

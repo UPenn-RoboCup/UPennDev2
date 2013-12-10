@@ -46,14 +46,16 @@ local armHoseAttach = require'armHoseAttach'
 -- Small circular valve turning (one hand turning)
 local armSmallValveGrip = require'armSmallValveGrip'
 
--- Large circular valve turning (one hand turning)
-local armLargeValveGrip = require'armLargeValveGrip'
-
--- Large circular valve turning (two hand turning)
-local armLargeValveGripTwohand = require'armLargeValveGripTwohand'
-
 -- bar valve turning
 local armBarValveGrip = require'armBarValveGrip'
+
+
+-- Large circular valve turning (one hand turning)
+--local armLargeValveGrip = require'armLargeValveGrip'
+
+-- Large circular valve turning (two hand turning)
+--local armLargeValveGripTwohand = require'armLargeValveGripTwohand'
+
 
 
 
@@ -62,7 +64,7 @@ local armDebrisGrip = require'armDebrisGrip'
 
 
 
-local armSupportDoor = require'armSupportDoor'
+--local armSupportDoor = require'armSupportDoor'
 
 local armForceReset = require'armForceReset'
 
@@ -86,10 +88,7 @@ sm:add_state(armHoseGrip)
 sm:add_state(armHoseHold)
 sm:add_state(armHoseAttach)
 
-
 sm:add_state(armSmallValveGrip)
-sm:add_state(armLargeValveGrip)
-sm:add_state(armLargeValveGripTwohand)
 sm:add_state(armBarValveGrip)
 
 
@@ -97,9 +96,13 @@ sm:add_state(armDebrisGrip)
 
 sm:add_state(armRocky)
 
-sm:add_state(armSupportDoor)
 
 sm:add_state(armIKTest)
+
+--sm:add_state(armLargeValveGrip)
+--sm:add_state(armLargeValveGripTwohand)
+--sm:add_state(armSupportDoor)
+
 
 ----------
 -- Event types
@@ -122,22 +125,22 @@ sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
 sm:set_transition(armPose1, 'pushdoorgrab', armPushDoorGrip)
 sm:set_transition(armPose1, 'loaddoorgrab', armLoadDoorGrip)
 
-
 sm:set_transition(armPose1, 'toolgrab', armToolGrip)
 sm:set_transition(armPose1, 'debrisgrab', armDebrisGrip)
 sm:set_transition(armPose1, 'smallvalvegrab', armSmallValveGrip)
-sm:set_transition(armPose1, 'largevalvegrab', armLargeValveGrip)
-sm:set_transition(armPose1, 'largevalvetwograb', armLargeValveGripTwohand)
 sm:set_transition(armPose1, 'barvalvegrab', armBarValveGrip)
 sm:set_transition(armPose1, 'hosegrab', armHoseGrip)
 
 
-
-
 sm:set_transition(armSmallValveGrip, 'done', armPose1)
-sm:set_transition(armLargeValveGrip, 'done', armPose1)
-sm:set_transition(armLargeValveGripTwohand, 'done', armPose1)
 sm:set_transition(armBarValveGrip, 'done', armPose1)
+
+
+--sm:set_transition(armPose1, 'largevalvegrab', armLargeValveGrip)
+--sm:set_transition(armPose1, 'largevalvetwograb', armLargeValveGripTwohand)
+--sm:set_transition(armLargeValveGrip, 'done', armPose1)
+--sm:set_transition(armLargeValveGripTwohand, 'done', armPose1)
+--sm:set_transition(armLargeValveGrip, 'forcereset', armForceReset)
 
 sm:set_transition(armToolGrip, 'done', armPose1)
 sm:set_transition(armToolGrip, 'hold', armToolHold)
@@ -161,7 +164,6 @@ sm:set_transition(armTeleop, 'done', armPose1)
 
 --Force reset states is used for offline testing only
 sm:set_transition(armSmallValveGrip, 'forcereset', armForceReset)
-sm:set_transition(armLargeValveGrip, 'forcereset', armForceReset)
 sm:set_transition(armBarValveGrip, 'forcereset', armForceReset)
 sm:set_transition(armToolGrip, 'forcereset', armForceReset)
 sm:set_transition(armToolHold, 'forcereset', armForceReset)

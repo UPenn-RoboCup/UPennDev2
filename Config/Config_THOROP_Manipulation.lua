@@ -326,15 +326,16 @@ armfsm.hoseattach.default_model = {
 armfsm.dooropen={}
 
 --With top-mounted hook------------------------------------------------------
-armfsm.dooropen.lhand_rpy={0*DEG_TO_RAD,-30*DEG_TO_RAD,0}
-armfsm.dooropen.rhand_rpy={0*DEG_TO_RAD,-30*DEG_TO_RAD,0}
-
-armfsm.dooropen.lhand_rpy={0*DEG_TO_RAD,-30*DEG_TO_RAD,-10*DEG_TO_RAD}
-armfsm.dooropen.rhand_rpy={0*DEG_TO_RAD,-30*DEG_TO_RAD,-20*DEG_TO_RAD}
+armfsm.dooropen.lhand_rpy={0*DEG_TO_RAD,-15*DEG_TO_RAD,-10*DEG_TO_RAD}
+armfsm.dooropen.rhand_rpy={0*DEG_TO_RAD,-15*DEG_TO_RAD,-20*DEG_TO_RAD}
 
 armfsm.dooropen.rhand_release={
-  {0,0,0,0*DEG_TO_RAD,-30*DEG_TO_RAD,-60*DEG_TO_RAD},
-  {0,0,0,0*DEG_TO_RAD,-30*DEG_TO_RAD,-60*DEG_TO_RAD},
+--  {0,0,0,0*DEG_TO_RAD,-15*DEG_TO_RAD,-60*DEG_TO_RAD},
+--  {0,0,0,0*DEG_TO_RAD,-15*DEG_TO_RAD,-60*DEG_TO_RAD},
+
+  {0,0,0,0*DEG_TO_RAD,15*DEG_TO_RAD,-60*DEG_TO_RAD},
+  {0,0,0,0*DEG_TO_RAD,15*DEG_TO_RAD,-60*DEG_TO_RAD},
+
   {0,0,0,0*DEG_TO_RAD,85*DEG_TO_RAD,-60*DEG_TO_RAD},
   {0,0,0,0*DEG_TO_RAD,85*DEG_TO_RAD,0*DEG_TO_RAD},
 }
@@ -363,12 +364,11 @@ armfsm.dooropen.yawTarget2 = 24*DEG_TO_RAD
 armfsm.dooropen.velDoorRoll = 10*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velDoorYaw = 2*DEG_TO_RAD * speed_factor
 
---New angle
-armfsm.dooropen.lhand_rpy={0*DEG_TO_RAD,-15*DEG_TO_RAD,-10*DEG_TO_RAD}
-armfsm.dooropen.rhand_rpy={0*DEG_TO_RAD,-15*DEG_TO_RAD,-20*DEG_TO_RAD}
+
+
 
 --Optimal model
-armfsm.dooropen.default_model = {
+armfsm.dooropen.default_model_target = {
   0.62,-1.16,0.01,  --Hinge pos
   0.84,             --Door width (hinge to knob axle)
   -0.05,            --Knob X offset from door
@@ -377,7 +377,7 @@ armfsm.dooropen.default_model = {
 
 --Conservative initial model
 armfsm.dooropen.default_model = {
-  0.45,-1.16,0.01,  --Hinge pos
+  0.45,-1.16,-0.07,  --Hinge pos
   0.84,             --Door width (hinge to knob axle)
   -0.05,            --Knob X offset from door
   -0.08,             --Knob Y offset (from knob axle)

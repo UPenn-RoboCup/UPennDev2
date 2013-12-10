@@ -101,8 +101,8 @@ local char_to_override = {
   
   ['h'] = vector.new({0,0,0,     2,0})*math.pi/180,
   [';'] = vector.new({0,0,0,    -2,0})*math.pi/180,
-  ['['] = vector.new({0,0,0,     0,2})*math.pi/180,
-  [']'] = vector.new({0,0,0,     0,-2})*math.pi/180,
+  ['['] = vector.new({0,0,0,     0,-2})*math.pi/180,
+  [']'] = vector.new({0,0,0,     0,2})*math.pi/180,
 
 }
 
@@ -132,11 +132,19 @@ local function process_character(key_code,key_char,key_char_lower)
   end
   
   --notify target transform change
-  local larmtr = char_to_override[key_char_lower]
-  if larmtr then
-    local left_tr = hcm.get_hands_left_tr()
-    hcm.get_state_override(larmtr)    
-    hcm.set_state_proceed(3) 
+  local trmod = char_to_override[key_char_lower]
+  if trmod then
+    local tr = hcm.get_state_override()
+    local tr_target_new = vector.new(tr)+ vector.new(trmod)
+    print( util.color('Right Tr:','yellow'), 
+      string.format("%.2f %.2f %.2f / %.1f %.1f",
+      tr_target_new[1],
+      tr_target_new[2],
+      tr_target_new[3],
+      tr_target_new[4]*180/math.pi,
+      tr_target_new[5]*180/math.pi))
+    hcm.set_state_override_target(tr_target_new)
+    hcm.set_state_proceed(3) --notify override change
     return
   end
  

@@ -31,11 +31,7 @@ shared_data.state.proceed = vector.zeros(0)
 --Hose attach: x,y,z, hand yaw, hand pitch
 
 shared_data.state.override=vector.zeros(5)
-
-
-
-
-
+shared_data.state.override_target=vector.zeros(5)
 
 
 

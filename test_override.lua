@@ -136,7 +136,7 @@ local function process_character(key_code,key_char,key_char_lower)
   if trmod then
     local tr = hcm.get_state_override()
     local tr_target_new = vector.new(tr)+ vector.new(trmod)
-    print( util.color('Right Tr:','yellow'), 
+    print( util.color('Override:','yellow'), 
       string.format("%.2f %.2f %.2f / %.1f %.1f",
       tr_target_new[1],
       tr_target_new[2],

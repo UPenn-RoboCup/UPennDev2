@@ -21,6 +21,11 @@ local DISABLE_MICROSTRAIN = false
 -- Camera enabling
 if IS_TESTING then use_camera = false end
 
+
+
+
+--use_camera = false
+
 -- If using remote control, then must not overwrite our *cm definitions
 --if not jcm then
   -- Shared memory for the joints

@@ -219,11 +219,7 @@ armfsm.toolchop.arminit={
 }
 
 --SJ: we can really barely cut this (52 cm = 20 inch)
-armfsm.toolchop.curpos={
-  {0.47,0.17,0.0,0},
-  {0.47,-0.36,0.0,0},
-  {0.47,-0.36,0.245,0}
-}
+armfsm.toolchop.model={0.47,-0.20,0.0,0}
 
 ---------------------------------------------------------------
 ------   Hose pickup

@@ -202,7 +202,6 @@ function state.update()
   elseif stage=="torsobalance" then
     if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        
-        arm_planner:set_hand_mass(0,2)   
         local trRArmTarget3 = get_tool_tr(Config.armfsm.toolgrip.tool_liftup)
         local arm_seq = {{'move',nil, trRArmTarget3}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end
@@ -218,6 +217,7 @@ function state.update()
   elseif stage=="lift" then
     if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        
+        
         print("trRArm:",arm_planner.print_transform(trRArm))
         local trRArmTarget1 = Config.armfsm.toolgrip.armpull[1]
         trRArmTarget1[2]=trRArm[2]

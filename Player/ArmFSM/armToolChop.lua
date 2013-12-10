@@ -16,28 +16,15 @@ local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD}
 local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, 0*Body.DEG_TO_RAD}
 
 
-local function get_cutpos1_tr(tooloffset)
+local function get_cutpos_tr(tooloffset)
   tooloffset = tooloffset or {0,0,0}
   local handrpy = rhand_rpy0
-  local cutpos = hcm.get_tool_cutpos1()
+  local cutpos = hcm.get_tool_cutpos()
   local drill_offset = Config.armfsm.toolchop.drill_offset
   local cutpos_tr = {
     cutpos[1] + tooloffset[1],
     cutpos[2] + tooloffset[2],
     cutpos[3] + tooloffset[3] - drill_offset[3],
-    handrpy[1],handrpy[2],handrpy[3] + cutpos[4]}
-  return cutpos_tr
-end
-
-local function get_cutpos2_tr(tooloffset)
-  tooloffset = tooloffset or {0,0,0}
-  local handrpy = rhand_rpy0
-  local cutpos = hcm.get_tool_cutpos2()
-  local drill_offset = Config.armfsm.toolchop.drill_offset
-  local cutpos_tr = {
-    cutpos[1] + tooloffset[1],
-    cutpos[2] + tooloffset[2],
-    cutpos[3] + tooloffset[3]- drill_offset[3],
     handrpy[1],handrpy[2],handrpy[3] + cutpos[4]}
   return cutpos_tr
 end
@@ -49,24 +36,17 @@ end
 local function update_model()
   local trRArmTarget = hcm.get_hands_right_tr_target()
   local trRArm = hcm.get_hands_right_tr()
-  local tool_cutpos1 = hcm.get_tool_cutpos1()
-  local tool_cutpos2 = hcm.get_tool_cutpos2()
+  local tool_cutpos = hcm.get_tool_cutpos()
 
-  tool_cutpos1[1],tool_cutpos1[2],tool_cutpos1[3],tool_cutpos1[4]=
+  tool_cutpos[1],tool_cutpos[2],tool_cutpos[3],tool_cutpos[4]=
 
-    tool_cutpos1[1] + trRArmTarget[1] - trRArm[1],
-    tool_cutpos1[2] + trRArmTarget[2] - trRArm[2],
-    tool_cutpos1[3] + trRArmTarget[3] - trRArm[3],
-    tool_cutpos1[4] + util.mod_angle(trRArmTarget[6] - trRArm[6])
+    tool_cutpos[1] + trRArmTarget[1] - trRArm[1],
+    tool_cutpos[2] + trRArmTarget[2] - trRArm[2],
+    tool_cutpos[3] + trRArmTarget[3] - trRArm[3],
+    tool_cutpos[4] + util.mod_angle(trRArmTarget[6] - trRArm[6])
 
-  tool_cutpos2[1],tool_cutpos2[2],tool_cutpos2[3],tool_cutpos2[4]=
-    tool_cutpos2[1] + trRArmTarget[1] - trRArm[1],
-    tool_cutpos2[2] + trRArmTarget[2] - trRArm[2],
-    tool_cutpos2[3] + trRArmTarget[3] - trRArm[3],
-    tool_cutpos2[4] + util.mod_angle(trRArmTarget[6] - trRArm[6])
-
-  hcm.set_tool_cutpos1(tool_cutpos1)
-  hcm.set_tool_cutpos2(tool_cutpos2)
+  hcm.set_tool_cutpos(tool_cutpos)  
+  hcm.set_state_proceed(0)
 end
 
 
@@ -74,20 +54,6 @@ end
 
 local stage
 local cut_no
-
-local function update_cutpos()
-  cut_no = (cut_no+1)%3
-  if cut_no==0 then
-    hcm.set_tool_cutpos1(Config.armfsm.toolchop.curpos[1])
-    hcm.set_tool_cutpos2(Config.armfsm.toolchop.curpos[2])    
-  elseif cut_no==1 then
-    hcm.set_tool_cutpos1(Config.armfsm.toolchop.curpos[2])
-    hcm.set_tool_cutpos2(Config.armfsm.toolchop.curpos[3])    
-  else
-    hcm.set_tool_cutpos1(Config.armfsm.toolchop.curpos[3])
-    hcm.set_tool_cutpos2(Config.armfsm.toolchop.curpos[1])    
-  end
-end
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -109,10 +75,8 @@ function state.entry()
   trRArm0 = Body.get_forward_rarm(init_cond[2]) 
   
   stage = "drillout"
-  cut_no=0
-  update_cutpos()
-  mcm.set_stance_enable_torso_track(2) --Keep current compensation value
---  hcm.set_state_proceed(1)
+  hcm.set_tool_cutpos(Config.armfsm.toolchop.model)
+
 end
 
 function state.update()
@@ -132,63 +96,70 @@ function state.update()
       local trRArmTarget2 = get_hand_tr(Config.armfsm.toolchop.arminit[3])
       local arm_seq = {{'move',nil,trRArmTarget1},{'move',nil,trRArmTarget2}}
       if arm_planner:plan_arm_sequence2(arm_seq) then stage="drilloutmove" end
+    elseif hcm.get_state_proceed()==-1 then 
+--      local trRArmTarget1 = get_hand_tr(Config.armfsm.toolgrip.armhold)
+--      local arm_seq = {{'move',nil,trRArmTarget1}}
+--      if arm_planner:plan_arm_sequence2(arm_seq) then stage="backtohold" end
     end
   elseif stage=="drilloutmove" then
     if arm_planner:play_arm_sequence(t) then 
+      if hcm.get_state_proceed()==1 then             
+        print("trRArm:",arm_planner.print_transform(trRArm))
+        local trRArmTarget1 = get_cutpos_tr(Config.armfsm.toolchop.drill_clearance)      
 
-      stage = "drilloutwait" 
-      --Torso Y now should follow arm movement
-      arm_planner:start_torso_track(0)--right hand      
+        print("trRArmTarget:",arm_planner.print_transform(trRArmTarget1))
+        local arm_seq = {{'move',nil, trRArmTarget1}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillpositionwait" end      
+        hcm.set_state_proceed(0)
+      elseif hcm.get_state_proceed()==-1 then       
+        local trRArmTarget1 = get_hand_tr(Config.armfsm.toolchop.arminit[2])
+        local trRArmTarget2 = get_hand_tr(Config.armfsm.toolchop.arminit[1])
+        local arm_seq = {{'move',nil, trRArmTarget1},{'move',nil, trRArmTarget2}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillout" end
+      end
     end
-  elseif stage=="drilloutwait" then
-    if hcm.get_state_proceed()==1 then             
-      local trRArmTarget1 = get_cutpos1_tr(Config.armfsm.toolchop.drill_clearance)      
-      local arm_seq = {{'move',nil, trRArmTarget1}}
-      if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillposition" end      
-    elseif hcm.get_state_proceed()==-1 then       
-      local trRArmTarget1 = get_hand_tr(Config.armfsm.toolchop.arminit[2])
-      local trRArmTarget2 = get_hand_tr(Config.armfsm.toolchop.arminit[1])
-      local arm_seq = {{'move',nil, trRArmTarget1},{'move',nil, trRArmTarget2}}
-      if arm_planner:plan_arm_sequence2(arm_seq) then stage = "undrillout" end
-    end
-  elseif stage=="drillposition" then
-    if arm_planner:play_arm_sequence(t) then stage = "drillpositionwait" end
   elseif stage=="drillpositionwait" then
-    if hcm.get_state_proceed()==1 then 
-      local trRArmTarget1 = get_cutpos1_tr(Config.armfsm.toolchop.drill_clearance)
-      local trRArmTarget2 = get_cutpos1_tr()
-      local trRArmTarget3 = get_cutpos2_tr()
-      local trRArmTarget4 = get_cutpos2_tr(Config.armfsm.toolchop.drill_clearance)
-
-      print(arm_planner.print_transform(trRArmTarget2))
-      print(arm_planner.print_transform(trRArmTarget3))
-
-      local arm_seq = {
-        {'move',nil,trRArmTarget1},{'move',nil,trRArmTarget2},
-        {'move',nil,trRArmTarget3},{'move',nil,trRArmTarget4}}
-      if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillcut" end
-    elseif hcm.get_state_proceed()==-1 then 
-      local trRArmTarget1 = get_hand_tr(Config.armfsm.toolchop.arminit[3])
-      local arm_seq = {{'move',nil,trRArmTarget1}}
-      if arm_planner:plan_arm_sequence2(arm_seq) then stage = "undrillposition" end
-    elseif hcm.get_state_proceed() == 2 then --Model modification
-      update_model()        
-      local trRArmTarget1 = get_cutpos1_tr(Config.armfsm.toolchop.drill_clearance)      
-      local arm_seq = {{'move',nil, trRArmTarget1}}
-      if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillposition" end      
+    if arm_planner:play_arm_sequence(t) then 
+      if hcm.get_state_proceed()==1 then 
+         print("trRArm:",arm_planner.print_transform(trRArm))
+        local trRArmTarget1 = get_cutpos_tr()
+        local arm_seq = {{'move',nil,trRArmTarget1}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillcut" end
+      elseif hcm.get_state_proceed()==-1 then 
+        local trRArmTarget1 = get_hand_tr(Config.armfsm.toolchop.arminit[3])
+        local arm_seq = {{'move',nil,trRArmTarget1}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drilloutmove" end
+        hcm.set_state_proceed(0)
+      elseif hcm.get_state_proceed() == 2 then --Model modification
+        update_model()        
+        local trRArmTarget1 = get_cutpos_tr(Config.armfsm.toolchop.drill_clearance)      
+        local arm_seq = {{'move',nil, trRArmTarget1}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillpositionwait" end      
+      end
     end
   elseif stage=="drillcut" then
     if arm_planner:play_arm_sequence(t) then 
-      update_cutpos()
-      stage = "drillpositionwait" 
+      if hcm.get_state_proceed()==1 then 
+
+      elseif hcm.get_state_proceed()==-1 then 
+        local trRArmTarget1 = get_cutpos_tr(Config.armfsm.toolchop.drill_clearance)      
+        local arm_seq = {{'move',nil, trRArmTarget1}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillpositionwait" end      
+        hcm.set_state_proceed(0)
+      elseif hcm.get_state_proceed() == 2 then --Model modification
+        update_model()        
+        local trRArmTarget1 = get_cutpos_tr()
+        local arm_seq = {{'move',nil, trRArmTarget1}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillcut" end      
+      end
     end
-  elseif stage=="undrillposition" then
-    if arm_planner:play_arm_sequence(t) then stage = "drilloutwait" end
-  elseif stage=="undrillout" then
-    if arm_planner:play_arm_sequence(t) then return "done" end
+  elseif stage=="backtohold" then    
+    if arm_planner:play_arm_sequence(t) then 
+      
+    end
   end
   
-  hcm.set_state_proceed(0)
+  
 end
 
 function state.exit()  

@@ -178,13 +178,11 @@ shared_data.door.yaw_target = vector.new({-20*math.pi/180}) --The target angle o
 -- Drill gripping
 shared_data.tool={}
 
---The model of drill,  posxyz(3), yawangle
+--The model of drill for pickup,  posxyz(3), yawangle
 shared_data.tool.model = vector.new({0.45,0.15,-0.05,  0*DEG_TO_RAD})
 
 -- The positions to start and end cutting
-shared_data.tool.cutpos1 = vector.new({0.40,0.17,0, 0})
-shared_data.tool.cutpos2 = vector.new({0.40,-0.13,0, 0})
-shared_data.tool.cutpos3 = vector.new({0.40,-0.13,0, 0})
+shared_data.tool.cutpos = vector.new({0.40,0.20,0, 0})
 shared_data.tool.yaw = vector.zeros(1)
 
 

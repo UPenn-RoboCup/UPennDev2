@@ -18,8 +18,8 @@ if HOSTNAME=="alvin" then
 elseif HOSTNAME=="teddy" then
   print("TEDDY")
   walk.legBias = 
-    vector.new({1, 0.25,    -0.75, -0.75,  0, 0,
-                0, 0.25,    0,   -0.75,  0, 0,
+    vector.new({1, 0.50,    -0, -0.25,  0.25, 0.25,
+                0, 0,    0.75,   -1,  0, -0.50,
     })*DEG_TO_RAD
 else
   walk.legBias = 
@@ -138,7 +138,7 @@ if HOSTNAME=="alvin" then
 elseif HOSTNAME=="teddy" then
 --for teddy
 
-  walk.hipRollCompensation = 2*math.pi/180
+  walk.hipRollCompensation = 1*math.pi/180
   walk.stepHeight = 0.03
   walk.supportX = 0.02
   walk.supportY = 0.03

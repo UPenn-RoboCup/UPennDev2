@@ -108,19 +108,14 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-  local trLArm = Body.get_forward_larm(qLArm)
-  local trRArm = Body.get_forward_rarm(qRArm)  
+  local cur_cond = arm_planner:load_boundary_condition()
+  local trLArm = Body.get_forward_larm(cur_cond[1])
+  local trRArm = Body.get_forward_rarm(cur_cond[2])  
   
   if stage=="wristturn" then --Turn yaw angles first
-    gripL,doneL = util.approachTol(gripL,1,2,dt)  --Close gripper
-    gripR,doneL = util.approachTol(gripR,1,2,dt)  --Close gripper
-    Body.set_lgrip_percent(gripL*0.8)
-    Body.set_rgrip_percent(gripR*0.8)
-
     if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed()==1 then 
+      if hcm.get_state_proceed()==1 then       
+        print("trLArm:",arm_planner.print_transform(trLArm))
         local model = hcm.get_largevalve_model()
         local arm_seq
         if model[3]>Config.armfsm.valveonearm.heights[2] then --high
@@ -205,9 +200,11 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
         arm_planner:save_valveparam({angle1,0,1,0})
+        local angle3 = angle2-Config.armfsm.valveonearm.anglemargin
         local valve_seq={          
           {'valveonearm',angle2,0,1,0},
-          {'valveonearm',angle2,Config.armfsm.valveonearm.clearance,1,0},          
+          {'valveonearm',angle3,0,1,0}, --rotate back a bit
+          {'valveonearm',angle3,Config.armfsm.valveonearm.clearance,1,0},          
           {'valveonearm',angle1,Config.armfsm.valveonearm.clearance,1,0},          
         }
         if arm_planner:plan_arm_sequence(valve_seq) then stage="valveturn" end
@@ -218,7 +215,6 @@ function state.update()
         local arm_seq = {{'move',trLArmTarget, trRArmTarget}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       elseif hcm.get_state_proceed()==2 then --teleop signal
-        print("update")
         update_model()
         local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,0,1)
         local arm_seq = {{'move',trLArmTarget, nil}}

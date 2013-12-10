@@ -460,39 +460,29 @@ armfsm.dooropenleft.rhand_push={
 armfsm.valveonearm = {}
 
 --Axel XYZ, radius, valve angle 1, valve angle 2
-armfsm.valveonearm.default_model_small= 
-  {0.60,0.30,0.09, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
 --height should be between 0.81(-0.12) to 1.22 (+0.29)
 
+
+
 armfsm.valveonearm.default_model_large= 
-  {0.69,0.27,0.09, 0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+  {0.67,0.27,0.09, 0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
 --boundary between low/med/high
 armfsm.valveonearm.heights={0.03,0.15}
 
+armfsm.valveonearm.default_model_small= 
+  {0.67,0.30,0.09, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+
+--0.30 0.30 -0.20
 armfsm.valveonearm.arminit={
-  {0.55,0.30,-0.12, 0,0,0}, --low
-  {0.55,0.40, 0.07, 0,0,0}, --med
-  {0.55,0.30, 0.29, 0,0,0}, --high
+  {0.55,0.50,-0.12, 0,0,0}, --low
+  {0.55,0.55, 0.07, 0,0,0}, --med
+  {0.55,0.50, 0.29, 0,0,0}, --high
 }
 
-if Config.IS_LONGARM then --for long arm
-  armfsm.valveonearm.default_model_small= 
-    {0.70,0.30,0.09, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
---[[
-  armfsm.valveonearm.default_model_small= 
-    {0.70,0.30,-0.12, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
-  armfsm.valveonearm.default_model_small= 
-    {0.70,0.30,0.29, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
---]]
-  armfsm.valveonearm.arminit={
-    {0.62,0.30,-0.12, 0,0,0}, --low
-    {0.62,0.40, 0.07, 0,0,0}, --med
-    {0.62,0.30, 0.29, 0,0,0}, --high
-  }
-end
 
+armfsm.valveonearm.anglemargin = 5*DEG_TO_RAD
 armfsm.valveonearm.clearance = -0.08
 armfsm.valveonearm.velTurnAngle = 6*DEG_TO_RAD * speed_factor
 armfsm.valveonearm.velInsert = 0.01 * speed_factor

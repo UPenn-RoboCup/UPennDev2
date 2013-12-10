@@ -16,7 +16,7 @@ local DISABLE_MICROSTRAIN = false
 
 --Turn off camera for default for webots
 --This makes body crash if we turn it on again...
-if IS_WEBOTS then use_camera = false end
+--if IS_WEBOTS then use_camera = false end
 
 -- Camera enabling
 if IS_TESTING then use_camera = false end
@@ -557,8 +557,6 @@ end
 -- For torque control (no reading from the motor just yet)
 Body.get_rtrigger_command_torque_step = function()
   local val = jcm.gripperPtr.command_torque[4]
-  -- Val is in mA; 4.5 mA increments for the 
-  val = math.floor(val / 4.5)
   -- Not too large/small
   val = util.procFunc(val,0,1023)
   if val<0 then val=1024-val end
@@ -619,8 +617,6 @@ end
 -- For torque control (no reading from the motor just yet)
 Body.get_ltrigger_command_torque_step = function()
   local val = jcm.gripperPtr.command_torque[2]
-  -- Val is in mA; 4.5 mA increments for the 
-  val = math.floor(val / 4.5)
   -- Not too large/small
   val = util.procFunc(val,0,1023)
   if val<0 then val=1024-val end

@@ -17,8 +17,55 @@ local gripL, gripR = 1,1
 local stage
 
 
-local handtightangle0 = Config.armfsm.valvebar.handtightangle0
+local turn_angle1, turn_angle2, wrist_angle
+local tight_angle = Config.armfsm.valvebar.handtightangle0
 local clearance = Config.armfsm.valvebar.clearance
+
+local function update_model()
+  local trLArmTarget = hcm.get_hands_left_tr_target()
+  local trLArm = hcm.get_hands_left_tr()
+  local valve_model = hcm.get_barvalve_model()
+  valve_model[1],valve_model[2],valve_model[3]=
+    valve_model[1] + trLArmTarget[1]-trLArm[1],
+    valve_model[2] + trLArmTarget[2]-trLArm[2],
+    valve_model[3] + trLArmTarget[3]-trLArm[3]
+  hcm.set_barvalve_model(valve_model)
+  hcm.set_state_proceed(0)
+  print("Bar valve model update:"
+    ,valve_model[1],valve_model[2],valve_model[3])
+  
+  turn_angle1 = 0
+  turn_angle2 = valve_model[6]        
+  wrist_angle = valve_model[7]
+end
+
+local function update_override()
+  local overrideTarget = hcm.get_state_override_target()
+  local override = hcm.get_state_override()
+  local valve_model = hcm.get_barvalve_model()
+
+  valve_model={
+    valve_model[1] + overrideTarget[1]-override[1],
+    valve_model[2] + overrideTarget[2]-override[2],
+    valve_model[3] + overrideTarget[3]-override[3],
+    valve_model[4], --This is the gripping radius (5cm)
+    0, --This should be the radius 
+    valve_model[6] + overrideTarget[4]-override[4], --the init angle
+    valve_model[7] + overrideTarget[5]-override[5]  --the target angle
+    }
+
+  hcm.set_barvalve_model(valve_model)
+  hcm.set_state_proceed(0)
+  print( util.color('Bar Valve model:','yellow'), 
+      string.format("%.2f %.2f %.2f / %.1f %.1f",
+      valve_model[1],valve_model[2],valve_model[3],
+      valve_model[6]*180/math.pi,
+      valve_model[7]*180/math.pi
+         ))
+  turn_angle1 = 0 --Initial angle
+  turn_angle2 = valve_model[6] --Target angle
+  wrist_angle = valve_model[7] --Wrist tight angle
+end
 
 
 function state.entry()
@@ -53,24 +100,14 @@ function state.entry()
   hcm.set_state_tstartactual(unix.time()) 
   hcm.set_state_tstartrobot(Body.get_time())
 
+  update_model()
   local wrist_seq = {{'wrist',trLArm1, nil}}
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "wristturn" end
   hcm.set_state_proceed(1)
+
 end
 
-function update_model()
-  local trLArmTarget = hcm.get_hands_left_tr_target()
-  local trLArm = hcm.get_hands_left_tr()
-  local valve_model = hcm.get_barvalve_model()
-  valve_model[1],valve_model[2],valve_model[3]=
-    valve_model[1] + trLArmTarget[1]-trLArm[1],
-    valve_model[2] + trLArmTarget[2]-trLArm[2],
-    valve_model[3] + trLArmTarget[3]-trLArm[3]
-  hcm.set_barvalve_model(valve_model)
-  hcm.set_state_proceed(0)
-  print("Bar valve model update:"
-    ,valve_model[1],valve_model[2],valve_model[3])
-end
+
 
 
 
@@ -108,10 +145,10 @@ function state.update()
   elseif stage=="armready" then        
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-        local trLArmTarget = movearm.getBarValvePositionSingle(0,handtightangle0,clearance)
+        local trLArmTarget = movearm.getBarValvePositionSingle(0,tight_angle,clearance)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
-        hcm.set_state_proceed(0)    
+--        hcm.set_state_proceed(0)    
       elseif hcm.get_state_proceed()==-1 then               
         local arm_seq = {{'move',trLArm1, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="wristturn" end
@@ -122,10 +159,16 @@ function state.update()
       if hcm.get_state_proceed()==1 then --teleop signal
         local valve_model = hcm.get_barvalve_model()
         local turn_angle1 = valve_model[5]        
-        local trLArmTarget = movearm.getBarValvePositionSingle(turn_angle1,handtightangle0,0)
-        local arm_seq = {{'move',trLArmTarget, nil}}
+        local trLArmTarget = movearm.getBarValvePositionSingle(turn_angle1,tight_angle,0)
+        arm_planner:save_valveparam({turn_angle1,tight_angle,0,1})
+
+        local arm_seq = {
+          {'move',trLArmTarget, nil},          
+        }
+
+
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
-        hcm.set_state_proceed(0)
+  --      hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed(0)==-1 then
         local trLArmTarget={0.35,0.30,-0.15, unpack(lhand_rpy0)}        
         local arm_seq = {{'move',trLArmTarget,nil}}
@@ -133,7 +176,7 @@ function state.update()
       elseif hcm.get_state_proceed(0)==2 then      
       print("update")  
         update_model()
-        local trLArmTarget = movearm.getBarValvePositionSingle(0,handtightangle0,clearance) 
+        local trLArmTarget = movearm.getBarValvePositionSingle(0,tight_angle,clearance) 
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       end
@@ -141,32 +184,53 @@ function state.update()
   elseif stage=="inposition" then 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then --teleop signal
-        local valve_model = hcm.get_barvalve_model()
-        local turn_angle1 = valve_model[5]
-        local turn_angle2 = valve_model[6]
-        local wrist_angle = valve_model[7]
-        arm_planner:save_valveparam({turn_angle1,handtightangle0,0,1})
+        update_model()
+        
         local valve_seq={          
           {'barvalve',turn_angle1,wrist_angle,0,1},
           {'barvalve',turn_angle2,wrist_angle,0,1},
+--[[          
           {'barvalve',turn_angle2,handtightangle0,0,1},
           {'barvalve',turn_angle2,handtightangle0,clearance,1},
           {'barvalve',turn_angle1,handtightangle0,clearance,1},
+--]]          
         }
         if arm_planner:plan_arm_sequence(valve_seq) then stage="valveturn" end
       elseif hcm.get_state_proceed()==-1 then 
-        local trLArmTarget = movearm.getBarValvePositionSingle(0,handtightangle0,clearance) 
+        local trLArmTarget = movearm.getBarValvePositionSingle(0,tight_angle,clearance) 
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       elseif hcm.get_state_proceed()==2 then --teleop signal
         update_model()
-        local trLArmTarget = movearm.getBarValvePositionSingle(0,handtightangle0,0)
+        local trLArmTarget = movearm.getBarValvePositionSingle(0,tight_angle,0)
         local arm_seq = {{'move',trLArmTarget, nil}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
+      elseif hcm.get_state_proceed()==2 then --teleop signal
+        update_model()
+        local trLArmTarget = movearm.getBarValvePositionSingle(0,tight_angle,0)
+        local arm_seq = {{'move',trLArmTarget, nil}}
+        if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end        
       end
     end
     hcm.set_state_proceed(0)
-  elseif stage=="valveturn" then 
+
+  elseif stage=="valveturn" then
+    if arm_planner:play_arm_sequence(t) then 
+      if hcm.get_state_proceed()==1 then --teleop signal
+        local valve_seq={          
+          {'barvalve',turn_angle2,tight_angle,0,1},
+          {'barvalve',turn_angle2,tight_angle,clearance,1},
+          {'barvalve',turn_angle1,tight_angle,clearance,1},
+        }
+        if arm_planner:plan_arm_sequence(valve_seq) then stage="valveturnend" end
+      elseif hcm.get_state_proceed()==3 then --OVERRIDE
+        update_override()
+        local valve_seq={    {'barvalve',turn_angle2,wrist_angle,0,1}}
+        if arm_planner:plan_arm_sequence(valve_seq) then stage="valveturn" end
+
+      end
+    end
+  elseif stage=="valveturnend" then 
     if arm_planner:play_arm_sequence(t) then 
       hcm.set_state_success(1) --Report success
       stage="pregrip"

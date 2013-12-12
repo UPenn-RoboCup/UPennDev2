@@ -20,6 +20,11 @@ local stage
 
 local qLArmInit0,qRArmInit0
 
+
+local qLArmFold, qRArmFold
+
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -30,8 +35,8 @@ function state.entry()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
-  mcm.set_arm_lhandoffset(Config.arm.handoffset.chopstick)
-  mcm.set_arm_rhandoffset(Config.arm.handoffset.chopstick)
+  mcm.set_arm_lhandoffset(Config.arm.handoffset.gripper)
+  mcm.set_arm_rhandoffset(Config.arm.handoffset.gripper)
 
   qLArm0 = qLArm
   qRArm0 = qRArm
@@ -57,6 +62,7 @@ function state.entry()
 
   local wrist_seq = {{'wrist',trLArm1, trRArm1}}
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristturn" end
+  hcm.set_state_proceed(1)
 end
 
 
@@ -74,51 +80,51 @@ function state.update()
   local trLArm = Body.get_forward_larm(cur_cond[1])
   local trRArm = Body.get_forward_rarm(cur_cond[2])  
   
-  if stage=="wristturn" then --Turn yaw angles first
-    if arm_planner:play_arm_sequence(t) then 
-      print("trLArm:",arm_planner.print_transform(trLArm))
-      local trLArmTarget = Config.armfsm.rocky.larminit[1]
-      local trRArmTarget = Config.armfsm.rocky.rarminit[1]
-      local arm_seq = {{'move',trLArmTarget, trRArmTarget}}      
-      if arm_planner:plan_arm_sequence2(arm_seq) then stage="wristmove" end
+   if stage=="wristturn" then 
+    if arm_planner:play_arm_sequence(t) then       
+      if hcm.get_state_proceed()==1 then 
+        print("trLArm:",arm_planner.print_transform(trLArm))
+        print("trRArm:",arm_planner.print_transform(trRArm))
+        local arm_seq = {
+          {'move',Config.armfsm.rocky.larminit[1],Config.armfsm.rocky.rarminit[1]},
+          {'move',Config.armfsm.rocky.larminit[2],Config.armfsm.rocky.rarminit[2]},
+          {'move',Config.armfsm.rocky.larminit[3],Config.armfsm.rocky.rarminit[3]},          
+        }                          
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armfold" end
+        hcm.set_state_proceed(0)
+      elseif hcm.get_state_proceed()==-1 then 
+        arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) 
+        local wrist_seq = {{"wrist",trLArm0,nil}}
+        if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armbacktoinitpos" end  
+      end
     end
-  elseif stage=="wristmove" then       
-    if arm_planner:play_arm_sequence(t) then             
-      local trLArmTarget = Config.armfsm.rocky.larminit[2]
-      local trRArmTarget = Config.armfsm.rocky.rarminit[2]
-      local arm_seq = {{'wrist',trLArmTarget, trRArmTarget}}      
-      if arm_planner:plan_arm_sequence2(arm_seq) then stage="wristup" end          
-    end      
-  elseif stage=="wristup" then 
-    if arm_planner:play_arm_sequence(t) then 
-      local trLArmTarget1 = Config.armfsm.rocky.larminit[3]
-      local trRArmTarget1 = Config.armfsm.rocky.rarminit[3]
-      local trLArmTarget2 = Config.armfsm.rocky.larminit[4]
-      local trRArmTarget2 = Config.armfsm.rocky.rarminit[4]
-      local arm_seq = {{'move',trLArmTarget1, trRArmTarget1},
-                        {'move',trLArmTarget2, trRArmTarget2}}      
-      if arm_planner:plan_arm_sequence2(arm_seq) then stage="wristturn2" end          
-      
-    end
-  elseif stage=="wristturn2" then 
-    if arm_planner:play_arm_sequence(t) then 
+  elseif stage=="armfold" then
+    if arm_planner:play_arm_sequence(t) then       
+      if hcm.get_state_proceed()==1 then 
+        qLArmFold, qRArmFold = 
+          Body.get_larm_command_position(),
+          Body.get_rarm_command_position()
+        local qLArm = {unpack(qLArmFold)}
+        local qRArm = {unpack(qRArmFold)}        
+        qLArm[2] = 0
+        qRArm[2] = 0
+        Body.set_larm_command_position(qLArm)
+        Body.set_rarm_command_position(qRArm)
 
-      local trLArmTarget1 = Config.armfsm.rocky.larminit[5]
-      local trRArmTarget1 = Config.armfsm.rocky.rarminit[5]
-      local arm_seq = {{'wrist',trLArmTarget1, trRArmTarget1}}
-      if arm_planner:plan_arm_sequence2(arm_seq) then stage="wristturn3" end          
-    end
-  elseif stage=="wristturn3" then 
-    if arm_planner:play_arm_sequence(t) then     
-      print("trLArm:",arm_planner.print_transform(trLArm))
-    end
-  end
 
-  hcm.set_state_proceed(0)
+        print("qL:",arm_planner.print_jangle(qLArmFold))
+        print("qR:",arm_planner.print_jangle(qRArmFold))
+        hcm.set_state_proceed(0)
+      end
+    end
+  end  
 end
+
+
 
 function state.exit()  
   print(state._NAME..' Exit' )
 end
 
 return state
+

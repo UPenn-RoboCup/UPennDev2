@@ -145,7 +145,10 @@ function state.update()
         hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed()==-1 then
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
-        local wrist_seq = {{'wrist',nil,trRArm0}}
+        local wrist_seq = {
+          {'move',nil,trRArm1},
+          {'wrist',nil,trRArm0}
+        }
         if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armbacktoinitpos" end   
       end
     end  
@@ -221,7 +224,6 @@ function state.update()
           hcm.set_state_proceed(0)
           stage = "sidepush" 
         end
-        
       end
     end    
   elseif stage=="sidepush" then        

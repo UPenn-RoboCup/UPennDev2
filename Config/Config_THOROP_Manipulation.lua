@@ -510,50 +510,51 @@ armfsm.valvetwoarm.velInsert = 0.02 * speed_factor
 
 armfsm.rocky={}
 
-armfsm.rocky.lhand_rpy0 = {90*DEG_TO_RAD,-25*DEG_TO_RAD,0}
-armfsm.rocky.rhand_rpy0 = {-90*DEG_TO_RAD,-25*DEG_TO_RAD,0}
-armfsm.rocky.lhand_rpy1 = {90*DEG_TO_RAD,-65*DEG_TO_RAD,0}
-armfsm.rocky.rhand_rpy1 = {-90*DEG_TO_RAD,-65*DEG_TO_RAD,0}
-armfsm.rocky.lhand_rpy2 = {90*DEG_TO_RAD,-75*DEG_TO_RAD,0}
-armfsm.rocky.rhand_rpy2 = {-90*DEG_TO_RAD,-75*DEG_TO_RAD,0}
-
-armfsm.rocky.lhand_rpy3 = {90*DEG_TO_RAD,40*DEG_TO_RAD,0}
-armfsm.rocky.rhand_rpy3 = {-90*DEG_TO_RAD,40*DEG_TO_RAD,0}
-
+armfsm.rocky.lhand_rpy0 = {0*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.rocky.rhand_rpy0 = {0*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.rocky.lhand_rpy1 = {0*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD}
+armfsm.rocky.rhand_rpy1 = {0*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD}
+armfsm.rocky.lhand_rpy = {0*DEG_TO_RAD,-0*DEG_TO_RAD, -90*DEG_TO_RAD}
+armfsm.rocky.rhand_rpy = {0*DEG_TO_RAD,-0*DEG_TO_RAD, 90*DEG_TO_RAD}
 
 
 armfsm.rocky.larminit={
-  {0.35,0.242,0,unpack(armfsm.rocky.lhand_rpy0)},
-  {0.35,0.22,0,unpack(armfsm.rocky.lhand_rpy1)}
+  {0.30,0.35,-0.20, unpack(armfsm.rocky.lhand_rpy0)},
+  {0.40,0.18,-0.15, unpack(armfsm.rocky.lhand_rpy1)},
+  --0.23 0.11 -0.15 
+  {0.23,0.11,-0.05, unpack(armfsm.rocky.lhand_rpy)},
 }
 armfsm.rocky.rarminit={
-  {0.35,-0.242,0,unpack(armfsm.rocky.rhand_rpy0)},
-  {0.35,-0.22,0,unpack(armfsm.rocky.rhand_rpy1)}
+  {0.30,-0.35,-0.20, unpack(armfsm.rocky.rhand_rpy0)},
+  {0.30,-0.18,-0.15, unpack(armfsm.rocky.rhand_rpy1)},
+  --0.13 -0.11 -0.15
+  {0.13,-0.11,-0.05, unpack(armfsm.rocky.rhand_rpy)},
 }
 
+armfsm.rocky.lhand_rpy0 = {0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.rocky.rhand_rpy0 = {0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.rocky.lhand_rpy1 = {0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.rocky.rhand_rpy1 = {0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD}
 
---for longarm
+armfsm.rocky.lhand_rpy = {0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.rocky.rhand_rpy = {0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD}
+
 armfsm.rocky.larminit={
-  {0.35,0.30,0,unpack(armfsm.rocky.lhand_rpy0)},
-  {0.35,0.30,0,unpack(armfsm.rocky.lhand_rpy1)},
-  {0.30,0.40,0.21,unpack(armfsm.rocky.lhand_rpy2)},
-  {0.40,0.45,0.61,unpack(armfsm.rocky.lhand_rpy2)},
-  {0.40,0.45,0.61,unpack(armfsm.rocky.lhand_rpy3)}
-}
-armfsm.rocky.larminit={
-  {0.35,0.30,0,unpack(armfsm.rocky.lhand_rpy0)},
-  {0.35,0.30,0,unpack(armfsm.rocky.lhand_rpy1)},
-  {0.30,0.40,0.21,unpack(armfsm.rocky.lhand_rpy2)},
-  {0.40,0.45,0.61,unpack(armfsm.rocky.lhand_rpy2)},
-  {0.40,0.45,0.61,unpack(armfsm.rocky.lhand_rpy3)}
+  {0.20,0.30,-0.40, unpack(armfsm.rocky.lhand_rpy)},
+  {0.30,0.18,-0.30, unpack(armfsm.rocky.lhand_rpy)},
+  {0.25,-0.02,-0.35, unpack(armfsm.rocky.lhand_rpy)},
+
 }
 armfsm.rocky.rarminit={
-  {0.35,-0.30,0,unpack(armfsm.rocky.rhand_rpy0)},
-  {0.35,-0.30,0,unpack(armfsm.rocky.rhand_rpy1)},
-  {0.30,-0.40,0.21,unpack(armfsm.rocky.rhand_rpy2)},
-  {0.40,-0.45,0.61,unpack(armfsm.rocky.rhand_rpy2)},
-  {0.40,-0.45,0.61,unpack(armfsm.rocky.rhand_rpy3)}
+  {-0.20,-0.30,-0.40, unpack(armfsm.rocky.rhand_rpy)},
+  {-0.30,-0.18,-0.30, unpack(armfsm.rocky.rhand_rpy)},
+--  {-0.30,-0.019,-0.30, unpack(armfsm.rocky.rhand_rpy)},
+
+  {-0.30,-0.02,-0.301, unpack(armfsm.rocky.rhand_rpy)},
 }
+
+
+
 
 
 ------------------------------------

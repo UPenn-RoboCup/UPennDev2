@@ -4,7 +4,6 @@
 --------------------------------
 local vector = require'vector'
 local memory = require'memory'
-local maxWaypoints = 10
 local DEG_TO_RAD = math.pi/180
 
 
@@ -88,13 +87,13 @@ shared_data.motion.bodyHeightTarget = vector.zeros(1)
 
 -- Waypoints
 -- {[x y a][x y a][x y a][x y a]...}
-shared_data.motion.waypoints  = vector.zeros(3*maxWaypoints)
+shared_data.motion.waypoints  = vector.zeros(3)
 -- How many of the waypoints are actually used
-shared_data.motion.nwaypoints = vector.zeros(1)
+shared_data.motion.nwaypoints = vector.ones(1)
 -- Local or global waypoint frame of reference
 -- 0: local
 -- 1: global
-shared_data.motion.waypoint_frame = vector.zeros(1)
+shared_data.motion.waypoint_frame = vector.ones(1)
 
 
 -------------------------------

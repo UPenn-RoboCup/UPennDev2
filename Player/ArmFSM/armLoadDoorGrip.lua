@@ -11,19 +11,65 @@ local arm_planner = libArmPlan.new_planner()
 
 local lhand_rpy0 = Config.armfsm.dooropen.lhand_support[1]
 local rhand_rpy0 = Config.armfsm.dooropen.rhand_rpy
-
-
-local rollTarget = Config.armfsm.dooropen.rollTarget
-local yawTargetInitial = Config.armfsm.dooropen.yawTargetInitial
-local yawTarget1 = Config.armfsm.dooropen.yawTarget1
-local yawTarget2 = Config.armfsm.dooropen.yawTarget2
-
+local rollTarget,yawTarget = 0,0
 
 local trLArm0, trRArm0, trLArm1, trRArm1, trRArm2
 local stage
-
-
 local debugdata
+
+local function update_model()
+  local trRArmCurrent = hcm.get_hands_right_tr()
+  local trRArmTarget = hcm.get_hands_right_tr_target()
+  local door_model = hcm.get_door_model()
+  door_model[1],door_model[2],door_model[3] = 
+    trRArmTarget[1] - trRArmCurrent[1] + door_model[1],
+    trRArmTarget[2] - trRArmCurrent[2] + door_model[2],
+    trRArmTarget[3] - trRArmCurrent[3] + door_model[3]
+
+  print(string.format("Door model update: hinge %.3f %.3f %.3f",
+    door_model[1],door_model[2],door_model[3]))
+
+  hcm.set_door_model(door_model)  
+  hcm.set_state_proceed(0) 
+end
+
+local function update_override()
+  local overrideTarget = hcm.get_state_override_target()
+  local override = hcm.get_state_override()
+  local door_model = hcm.get_door_model()
+
+  door_model={
+    door_model[1] + overrideTarget[1]-override[1],
+    door_model[2] + overrideTarget[2]-override[2],
+    door_model[3] + overrideTarget[3]-override[3],
+
+    door_model[4], --Door width
+    door_model[5], -- Knob x offset
+    door_model[6], -- Knob y offset from knob axle
+
+    door_model[7] + overrideTarget[4]-override[4], --Target knob roll
+    door_model[8] + overrideTarget[5]-override[5]  --Target door yaw
+    }
+
+  --Knob roll: 0 to -90
+  door_model[7] = math.max(-90*Body.DEG_TO_RAD,math.min(0,door_model[7]))
+
+  --Door yaw : plus to pull, minus to push
+  door_model[8] = math.max(-30*Body.DEG_TO_RAD,math.min(30*Body.DEG_TO_RAD,door_model[8]))  
+
+  hcm.set_door_model(door_model)
+  hcm.set_state_proceed(0)
+  print( util.color('Door model:','yellow'), 
+      string.format("%.2f %.2f %.2f / %.1f %.1f",
+      door_model[1],door_model[2],door_model[3],
+      door_model[7]*180/math.pi,
+      door_model[8]*180/math.pi
+         ))
+
+  rollTarget = door_model[7]
+  yawTarget = door_model[8]
+end
+
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -70,21 +116,7 @@ function state.entry()
 
 end
 
-local function update_model()
-  local trRArmCurrent = hcm.get_hands_right_tr()
-  local trRArmTarget = hcm.get_hands_right_tr_target()
-  local door_model = hcm.get_door_model()
-  door_model[1],door_model[2],door_model[3] = 
-    trRArmTarget[1] - trRArmCurrent[1] + door_model[1],
-    trRArmTarget[2] - trRArmCurrent[2] + door_model[2],
-    trRArmTarget[3] - trRArmCurrent[3] + door_model[3]
 
-  print(string.format("Door model update: hinge %.3f %.3f %.3f",
-    door_model[1],door_model[2],door_model[3]))
-
-  hcm.set_door_model(door_model)  
-  hcm.set_state_proceed(0) 
-end
 
 function state.update()
 --  print(state._NAME..' Update' )
@@ -105,121 +137,51 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then        
         print("trLArm:",arm_planner.print_transform(trLArm))        
-       
-        local trRArmTarget1 = movearm.getDoorHandlePosition(
-          Config.armfsm.dooropen.handle_clearance0, 0, door_yaw)
-
-        local arm_seq = {{'move',Config.armfsm.dooropen.lhand_support[2],trRArmTarget1},
-
-                      {'wrist',Config.armfsm.dooropen.lhand_support[3],nil},
-                      {'move',Config.armfsm.dooropen.lhand_support[4],nil},
-                      {'move',Config.armfsm.dooropen.lhand_support[5],nil},
-            } 
-
-
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "placehook"  end
+        local trRArmTarget1 = movearm.getDoorHandlePosition({0,0,0}, 0, 0)
+        local arm_seq = {
+          {'move',Config.armfsm.dooropen.lhand_support[2],trRArmTarget1},
+          {'wrist',Config.armfsm.dooropen.lhand_support[3],nil},
+          {'move',Config.armfsm.dooropen.lhand_support[4],nil},
+          {'move',Config.armfsm.dooropen.lhand_support[5],nil},
+        } 
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "opendoor"  end
+        hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed()==-1 then
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
         local wrist_seq = {{'wrist',nil,trRArm0}}
         if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armbacktoinitpos" end   
       end
     end  
-  elseif stage=="placehook" then --Move the hook below the door knob
-    if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed()==1 then        
-        print("trLArm:",arm_planner.print_transform(trLArm))        
-        local trArmTarget1 = movearm.getDoorHandlePosition(
-          Config.armfsm.dooropen.handle_clearance1, 0, door_yaw)
-        local trArmTarget2 = movearm.getDoorHandlePosition({0,0,0}, 0, door_yaw)
-        local arm_seq = {{'move',nil, trArmTarget1},{'move',nil, trArmTarget2}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "hookknob"  end
-      elseif hcm.get_state_proceed()==-1 then
-        local arm_seq = {{'move',nil,trRArm1}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "wristyawturn" end        
-      elseif hcm.get_state_proceed()==2 then        
-        update_model()
-        local trRArmTarget1 = movearm.getDoorHandlePosition(
-          Config.armfsm.dooropen.handle_clearance0, 0, door_yaw)
-        local arm_seq = {{'move',nil,trRArmTarget1}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "placehook"  end
-      end      
-    end    
-    hcm.set_state_proceed(0) --Stop here for a bit
-
-  elseif stage=="hookknob" then --Move up the hook to make it touch the knob
-    if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed()==1 then --Open the door
-        arm_planner:save_doorparam({{0,0,0},0*Body.DEG_TO_RAD,0,0})
-        local dooropen_seq =         {
-            {'door',{0,0,0}, rollTarget,door_yaw,0},
-            {'door',{0,0,0}, rollTarget,yawTargetInitial,0},
-            {'door',{0,0,0},  0*Body.DEG_TO_RAD,yawTargetInitial,0}   
-          }
-        if arm_planner:plan_arm_sequence2(dooropen_seq) then stage = "opendoor"  end
-      elseif hcm.get_state_proceed()==-1 then --Lower the hook
-        local trRArmTarget1 = movearm.getDoorHandlePosition(Config.armfsm.dooropen.handle_clearance1, 0, door_yaw)
-        local trRArmTarget2 = movearm.getDoorHandlePosition(Config.armfsm.dooropen.handle_clearance0, 0, door_yaw)
-        local arm_seq = {{'move',nil,trRArmTarget1},{'move',nil,trRArmTarget2}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "placehook"  
-          else hcm.set_state_proceed(0) end
-
-      elseif hcm.get_state_proceed()==2 then --adjust hook position
-        update_model()
-        local trRArmTarget1 = movearm.getDoorHandlePosition({0,0,0}, 0, door_yaw,0)
-        local arm_seq = {{'move',nil,trRArmTarget1}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "hookknob"  end
-      end
-    end
-    if hcm.get_state_proceed()==1 then hcm.set_state_proceed(0) end --stop here and wait
-  elseif stage=="opendoor" then --Move the arm forward using IK now     
+  elseif stage=="opendoor" then --Move the hook below the door knob
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then
-
-        local dooropen_seq ={
-          {'door',{0,0,0},  0*Body.DEG_TO_RAD,yawTarget1},
-          {'door',{0,0,0},  0*Body.DEG_TO_RAD,yawTarget2},
-          {'door',{0,0,0},  0*Body.DEG_TO_RAD,yawTarget2, Config.armfsm.dooropen.waistTarget},
-        }
-      
-        if arm_planner:plan_arm_sequence2(dooropen_seq) then stage = "opendoor2"  end
-      elseif hcm.get_state_proceed()==-1 then --Re-hook
-          local doorclose_seq={ 
-            {'door',Config.armfsm.dooropen.handle_clearance1,  0,yawTargetInitial},
-            {'door',Config.armfsm.dooropen.handle_clearance1,  0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},   
-            {'door',{0,0,0}, 0,0},
-          }
-          if arm_planner:plan_arm_sequence2(doorclose_seq) then stage = "hookknob"  end
-      end
-    end
-    hcm.set_state_proceed(0)
-  elseif stage=="opendoor2" then 
-    if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed()==1 then 
-        --Left arm support before unhook
-
-
         print("trLArm:",arm_planner.print_transform(trLArm))        
+--      arm_seq={{'move',Config.armfsm.dooropen.lhand_support[6],nil}}
+
+        --Rotate waist and support with left hand
         arm_seq={
-          {'move',Config.armfsm.dooropen.lhand_support[6],nil},          
+          {'move',nil,nil,Config.armfsm.dooropen.waistTarget},
+--          {'move',Config.armfsm.dooropen.lhand_support[6],nil}
         }
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "hooksupport"  
-        else hcm.set_state_proceed(0) end
-      elseif hcm.get_state_proceed()==-1 then --Fully close the door
-          local doorclose_seq={{'door',{0,0,0},  0,0}}
-          if arm_planner:plan_arm_sequence2(doorclose_seq) then stage = "hookknob"  end
-      elseif hcm.get_state_proceed()==2 then 
-        update_model()
-        local trRArmTarget1 = movearm.getDoorHandlePosition({0,0,0}, 0, yawTarget, rhand_rpy0)
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "hooksupport" end
+        hcm.set_state_proceed(0)
+      elseif hcm.get_state_proceed()==-1 then --Re-hook
+
+      elseif hcm.get_state_proceed()==3 then --move arms around
+        update_override()
+        local trRArmTarget1 = movearm.getDoorHandlePosition({0,0,0}, rollTarget, yawTarget)
         local arm_seq = {{'move',nil,trRArmTarget1}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "opendoor2"  end
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "opendoor"  end
       end
     end
   elseif stage=="hooksupport" then 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-        local doorparam = arm_planner.init_doorparam
-        local trRArmTarget1 = movearm.getDoorHandlePosition(Config.armfsm.dooropen.handle_clearance2, 0, doorparam[3])
+        local trRArmTarget1 = movearm.getDoorHandlePosition(Config.armfsm.dooropen.handle_clearance2, 0, yawTarget)
         local arm_seq = {{'move',nil,trRArmTarget1}}
+
+local arm_seq = {{'move',Config.armfsm.dooropen.lhand_support[6],nil}}
+hcm.set_state_proceed(0)
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "hookrelease" end
       end
     end

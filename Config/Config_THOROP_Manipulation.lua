@@ -440,9 +440,6 @@ armfsm.dooropenleft.default_model = {
   0,0, --knob target roll and door target yaw
 }
 
-
-
-
 armfsm.dooropenleft.rhand_push={
   {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD}, 
 --0.21 -0.06 -0.16

@@ -89,11 +89,21 @@ arm.pRWristTarget0 = {-.0,-.30,-.20,0,0,0}
 arm.lrpy0 = vector.new({0,0,0,0,30,0})*DEG_TO_RAD
 arm.rrpy0 = vector.new({0,0,0,-0,30,0})*DEG_TO_RAD
 
+--New angle
+--POse 1 wrist angle
+arm.lrpy0 = vector.new({0,0,0,0,5,-45})*DEG_TO_RAD
+arm.rrpy0 = vector.new({0,0,0,-0,5,45})*DEG_TO_RAD
+
+
+
+
+
+
+--[[
 --now hand facing down
 arm.lrpy0 = vector.new({0,0,0,0,80,0})*DEG_TO_RAD
 arm.rrpy0 = vector.new({0,0,0,0,80,0})*DEG_TO_RAD
-
-
+--]]
 
 
 arm.lShoulderYaw0 = 5*DEG_TO_RAD

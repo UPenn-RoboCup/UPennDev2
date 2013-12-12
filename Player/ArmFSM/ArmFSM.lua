@@ -159,6 +159,8 @@ sm:set_transition(armLoadDoorGrip, 'done', armPose1)
 sm:set_transition(armDebrisGrip, 'done', armPose1)
 sm:set_transition(armTeleop, 'done', armPose1)
 
+sm:set_transition(armPose1, 'rocky', armRocky)
+sm:set_transition(armRocky, 'done', armPose1) 
 
 
 
@@ -172,17 +174,6 @@ sm:set_transition(armDebrisGrip, 'forcereset', armForceReset)
 
 sm:set_transition(armForceReset, 'done', armPose1)
 
-
-
-
-
-
-
-
-
---depreciated
-sm:set_transition(armPose1, 'rocky', armRocky)
-sm:set_transition(armRocky, 'rocky', armInit) 
 
 --------------------------
 -- Setup the FSM object --

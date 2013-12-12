@@ -91,7 +91,6 @@ function state.update()
           {'move',Config.armfsm.rocky.larminit[3],Config.armfsm.rocky.rarminit[3]},          
         }                          
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armfold" end
-        hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) 
         local wrist_seq = {{"wrist",trLArm0,nil}}
@@ -111,13 +110,30 @@ function state.update()
         Body.set_larm_command_position(qLArm)
         Body.set_rarm_command_position(qRArm)
 
-
         print("qL:",arm_planner.print_jangle(qLArmFold))
         print("qR:",arm_planner.print_jangle(qRArmFold))
         hcm.set_state_proceed(0)
-      end
+      elseif hcm.get_state_proceed()==-1 then 
+        Body.set_larm_command_position(qLArmFold)
+        Body.set_rarm_command_position(qRArmFold)
+        local arm_seq = {
+          {'move',Config.armfsm.rocky.larminit[2],Config.armfsm.rocky.rarminit[2]},        
+          {'move',Config.armfsm.rocky.larminit[1],Config.armfsm.rocky.rarminit[1]},
+          {'move',trLArm1,trRArm1}
+        }                          
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armunfold" end
+      end  
     end
-  end  
+  elseif stage=="armunfold" then
+    if arm_planner:play_arm_sequence(t) then           
+      arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])            
+      local arm_seq = {{'wrist',trLArm0,trRArm0}}
+      if arm_planner:plan_arm_sequence2(arm_seq) then stage = "backtoinitpos" end
+    end   
+    
+  elseif stage=="backtoinitpos" then
+    if arm_planner:play_arm_sequence(t) then return"done" end
+  end
 end
 
 

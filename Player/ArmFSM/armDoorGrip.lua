@@ -12,11 +12,7 @@ local arm_planner = libArmPlan.new_planner()
 local rhand_rpy0 = Config.armfsm.dooropen.rhand_rpy
 
 
-local rollTarget = Config.armfsm.dooropen.rollTarget
-local yawTargetInitial = Config.armfsm.dooropen.yawTargetInitial
-local yawTarget1 = Config.armfsm.dooropen.yawTarget1
-local yawTarget2 = Config.armfsm.dooropen.yawTarget2
-
+local rollTarget,yawTarget = 0,0
 
 local trLArm0, trRArm0, trLArm1, trRArm1, trRArm2
 local stage
@@ -159,7 +155,6 @@ function state.update()
     --Control: xyz, knob roll, door yaw
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then --Unhook the door
-        update_override()
         arm_planner:save_doorparam({{0,0,0},rollTarget,yawTarget,0}) --xyz roll yaw dummy
         yawTarget1 = yawTarget
         local dooropen_seq ={ 
@@ -239,6 +234,7 @@ function state.update()
 --          {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[3]},          
         }
         if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "sidepush2" end
+        hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed()==2 then
         local trRArmCurrent = hcm.get_hands_right_tr()
         local trRArmTarget = hcm.get_hands_right_tr_target()
@@ -267,6 +263,21 @@ function state.update()
       if hcm.get_state_proceed()==1 then
         local wrist_seq = {{'wrist',nil, trRArm0},{'move',nil, trRArm0}}
         if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armbacktoinitpos" end
+      elseif hcm.get_state_proceed()==3 then
+        local trRArmCurrent = hcm.get_hands_right_tr()
+        local overrideTarget = hcm.get_state_override_target()
+        local override = hcm.get_state_override()
+        local trRArmTarget = {
+          trRArmCurrent[1]+overrideTarget[1]-override[1],
+          trRArmCurrent[2]+overrideTarget[2]-override[2],
+          trRArmCurrent[3]+overrideTarget[3]-override[3],
+          trRArmCurrent[4],
+          trRArmCurrent[5],
+          trRArmCurrent[6]
+        }
+        local arm_seq = {{'move',nil, trRArmTarget}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "sidepush2" end
+        hcm.set_state_proceed(0)
       end
     end
   elseif stage=="armbacktoinitpos" then

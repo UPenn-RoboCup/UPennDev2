@@ -54,7 +54,7 @@ sm:set_transition( bodyIdle,   'stepplan2', bodyStepPlan2 )
 sm:set_transition( bodyIdle,   'stepplan3', bodyStepPlan3 )
 sm:set_transition( bodyIdle,   'stepplan4', bodyStepPlan4 )
 sm:set_transition( bodyIdle,   'steptest', bodyStepTest )
-sm:set_transition( bodyIdle,   'stepwiden', bodyStepWiden )
+--sm:set_transition( bodyIdle,   'stepwiden', bodyStepWiden )
 
 sm:set_transition( bodyStepPlan,   'done', bodyIdle )
 sm:set_transition( bodyStepPlan2,   'done', bodyIdle )

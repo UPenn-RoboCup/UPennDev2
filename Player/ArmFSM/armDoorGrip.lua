@@ -146,6 +146,7 @@ function state.update()
         local trArmTarget1 = movearm.getDoorHandlePosition({0,0,0}, 0, door_yaw)
         local arm_seq = {{'move',nil, trArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "opendoor"  end
+        hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed()==-1 then
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
         local wrist_seq = {{'wrist',nil,trRArm0}}
@@ -184,8 +185,6 @@ function state.update()
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "opendoor"  end
       end
     end
-    if hcm.get_state_proceed()==1 then hcm.set_state_proceed(0) end --stop here and wait
-  
   elseif stage=="hookrelease" then     
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then        
@@ -197,7 +196,6 @@ function state.update()
           {'wrist',nil, Config.armfsm.dooropen.rhand_release[2]},
           {'wrist',nil, Config.armfsm.dooropen.rhand_release[3]},
         }        
-
         if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "hookrollback" end
       elseif hcm.get_state_proceed()==2 then
         update_model()

@@ -369,6 +369,8 @@ armfsm.dooropen.default_model_target = {
   0.84,             --Door width (hinge to knob axle)
   -0.05,            --Knob X offset from door
   -0.08,             --Knob Y offset (from knob axle)
+
+  0,0,
 }
 
 --Conservative initial model
@@ -377,6 +379,8 @@ armfsm.dooropen.default_model = {
   0.84,             --Door width (hinge to knob axle)
   -0.05,            --Knob X offset from door
   -0.08,             --Knob Y offset (from knob axle)
+
+  0,0, --Knob target roll and door target yaw
 }
 
 

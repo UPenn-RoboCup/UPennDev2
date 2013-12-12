@@ -165,6 +165,8 @@ shared_data.door.model = vector.new({
 	-0.60, --Door radius, negative - left hinge, positive - right hinge
 	-0.05, --The X offset of the door handle (from door surface)
 	0.05, --The Y offset of the knob axis (from gripping pos)
+	0, --Knob roll target
+	0, --Door yaw target
 	})
 shared_data.door.yaw = vector.zeros(1) --The current angle of the door
 shared_data.door.yaw_target = vector.new({-20*math.pi/180}) --The target angle of the door 

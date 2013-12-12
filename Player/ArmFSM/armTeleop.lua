@@ -48,8 +48,16 @@ function state.entry()
   hcm.set_hands_right_tr(trRArm1)
   hcm.set_hands_left_tr_target(trLArm1)
   hcm.set_hands_right_tr_target(trRArm1)
-    
-  local wrist_seq = {{'wrist',trLArm1, trRArm1}}
+  
+  local trLArm05 = {0,0,0, unpack(lhand_rpy0)}
+  local trRArm05 = {0,0,0, unpack(rhand_rpy0)}
+  trLArm05[2] = trLArm1[2]
+  trRArm05[2] = trRArm1[2]
+
+  local wrist_seq = {
+    {'wrist',trLArm05, trRArm05},
+    {'wrist',trLArm1, trRArm1},
+  }
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristturn" end
 end
 

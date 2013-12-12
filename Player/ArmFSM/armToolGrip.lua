@@ -72,10 +72,18 @@ function state.entry()
   trLArm1 = Body.get_forward_larm(qLArm1)
   trRArm1 = Body.get_forward_rarm(qRArm1)  
 
+  local trLArm05 = {unpack(trLArm0)}
+  local trRArm05 = {unpack(trRArm0)}
+  trLArm05[5] = trLArm1[5]
+  trRArm05[5] = trRArm1[5]
+
   arm_planner:set_hand_mass(0,0)
-  arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) --Lock left hand
---  local wrist_seq = {{'wrist',nil,trRArm1}}
-  local wrist_seq = {{'wrist',trLArm1,trRArm1}}
+  arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) 
+
+  local wrist_seq = {
+    {'wrist',trLArm05, trRArm05},
+    {'wrist',trLArm1, trRArm1},
+  }
 
   --local wrist_seq = {{'wrist',trLArm1,trRArm1}}
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn" end  

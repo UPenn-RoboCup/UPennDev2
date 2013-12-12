@@ -188,6 +188,9 @@ function state.entry()
   
   -- Grab the waypoints
   nwaypoints = hcm.get_motion_nwaypoints()
+  --==== HACK =====
+  --nwaypoints = nwaypoints + 1
+  --===============
   print('# of waypoints:', nwaypoints)
   print('waypoints', unpack(hcm.get_motion_waypoints()))
   local raw_waypoints = vector.slice(hcm.get_motion_waypoints(),1,3*nwaypoints)

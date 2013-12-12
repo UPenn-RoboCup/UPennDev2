@@ -77,7 +77,8 @@ Config.camera = {}
 Config.camera.head = {}
 Config.camera.head.device = '/dev/video0'
 Config.camera.head.format = 'yuyv'
-Config.camera.head.resolution = {640,360}
+--Config.camera.head.resolution = {640,360}
+Config.camera.head.resolution = {320,180}
 Config.camera.head.fps = 30
 
 --[[

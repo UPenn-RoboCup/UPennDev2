@@ -1,6 +1,6 @@
 -- Tune this parameter if being used for testing
 local USE_LOCALHOST = false
-local USE_LOCALHOST = true
+--local USE_LOCALHOST = true
 
 local Config = {}
 Config.USE_LOCALHOST = USE_LOCALHOST
@@ -18,10 +18,10 @@ Config.net.robot = {
 
 -- Remote Operator IP addresses
 Config.net.operator = {
-['wired']              = '192.168.123.43',
+['wired']              = '192.168.123.23',
 ['wired_broadcast']    = '192.168.123.255',
 --
-['wireless']           = '192.168.1.43',
+['wireless']           = '192.168.1.23',
 ['wireless_broadcast'] = '192.168.1.255'
 }
 

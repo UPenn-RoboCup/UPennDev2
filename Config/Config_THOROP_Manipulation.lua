@@ -517,6 +517,22 @@ armfsm.valveonearm.arminit={
 }
 
 
+--with tilted init
+
+armfsm.valveonearm.arminit={
+  {0.40,0.21,-0.15, 0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  {0.55,0.28,0.07,  0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  {0.60,0.01,0.07,  0,0*DEG_TO_RAD, -45*DEG_TO_RAD},  
+}
+
+
+
+
+
+
+
+
+
 
 
 

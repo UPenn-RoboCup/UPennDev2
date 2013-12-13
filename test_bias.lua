@@ -118,12 +118,30 @@ local function process_character(key_code,key_char,key_char_lower)
   
   elseif key_char_lower=="j" then
     legBias[selected_servo]=legBias[selected_servo]-bias_mag
+
+    if selected_servo==2 then
+      legBias[6]=legBias[6]+bias_mag
+    end
+
+
   elseif key_char_lower=="l" then
     legBias[selected_servo]=legBias[selected_servo]+bias_mag
+    if selected_servo==2 then
+      legBias[6]=legBias[6]-bias_mag
+    end
+
   elseif key_char_lower=="i" then    
     legBias[selected_servo+6]=legBias[selected_servo+6]-bias_mag
+    if selected_servo==2 then
+      legBias[12]=legBias[12]+bias_mag
+    end
+
   elseif key_char_lower=="," then        
     legBias[selected_servo+6]=legBias[selected_servo+6]+bias_mag
+    if selected_servo==2 then
+      legBias[12]=legBias[12]-bias_mag
+    end
+
   elseif key_char_lower=="0" then
     print(string.format("Current bias: \n%.2f %.2f %.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f %.2f %.2f ",
       unpack(vector.new(legBias)*Body.RAD_TO_DEG)))

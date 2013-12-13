@@ -509,6 +509,14 @@ armfsm.valveonearm.default_model_large=
 armfsm.valveonearm.default_model_small= 
   {0.72,0.30,0.09, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
+--360 deg turn
+
+
+armfsm.valveonearm.default_model_small= 
+  {0.72,0.30,0.09, 0, -60*DEG_TO_RAD, 400*DEG_TO_RAD }
+
+
+
 --0.30 0.30 -0.20
 armfsm.valveonearm.arminit={
   {0.65,0.50,-0.12, 0,0,0}, --low

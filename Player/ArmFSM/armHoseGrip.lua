@@ -49,16 +49,58 @@ local function update_model()
 end
 
 
+local function update_override()
+  local overrideTarget = hcm.get_state_override_target()
+  local override = hcm.get_state_override()
+  local model = hcm.get_hose_model()
+  
+  model[1],model[2],model[3],model[4]=
+    model[1] + (overrideTarget[1]-override[1]),
+    model[2] + (overrideTarget[2]-override[2]),
+    model[3] + (overrideTarget[3]-override[3]),
+    model[4] + (overrideTarget[4]-override[4])
+    
+  hcm.set_hose_model(model)
+
+  print( util.color('Hose model:','yellow'), 
+      string.format("%.2f %.2f %.2f / %.1f",
+      model[1],model[2],model[3],
+      model[4]*180/math.pi   ))
+
+  hcm.set_state_proceed(0)
+end
+
+local function revert_override()
+local overrideTarget = hcm.get_state_override_target()
+  local override = hcm.get_state_override()
+  local model = hcm.get_hose_model()
+  
+  model[1],model[2],model[3],model[4]=
+    model[1] - (overrideTarget[1]-override[1]),
+    model[2] - (overrideTarget[2]-override[2]),
+    model[3] - (overrideTarget[3]-override[3]),
+    model[4] - (overrideTarget[4]-override[4])
+    
+  hcm.set_hose_model(model)
+
+  print( util.color('Hose model:','yellow'), 
+      string.format("%.2f %.2f %.2f / %.1f",
+      model[1],model[2],model[3],
+      model[4]*180/math.pi   ))
+
+  hcm.set_state_proceed(0)end
+
+local function confirm_override()
+  local override = hcm.get_state_override()
+  hcm.set_state_override_target(override)
+end
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-
-
-
-
 
   mcm.set_arm_lhandoffset(Config.arm.handoffset.gripper)
   mcm.set_arm_rhandoffset(Config.arm.handoffset.gripper)
@@ -160,7 +202,17 @@ function state.update()
         update_model()        
         local trLArmTarget2 = get_model_tr({0,0,0})        
         local arm_seq = {{'move',trLArmTarget2,nil}}     
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "touchtool" end        
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "touchtool" end
+      elseif hcm.get_state_proceed() == 3 then 
+        update_override()        
+        local trLArmTarget2 = get_model_tr({0,0,0})        
+        local arm_seq = {{'move',trLArmTarget2,nil}}     
+        if arm_planner:plan_arm_sequence2(arm_seq) then 
+          stage = "touchtool" 
+          confirm_override()
+        else
+          revert_override()
+        end                        
       end
     end
     hcm.set_state_proceed(0)
@@ -169,6 +221,7 @@ function state.update()
       if hcm.get_state_proceed()==1 then
         print("trLArm:",arm_planner.print_transform(trLArm))        
         --Pull down and roll wrist
+--[[        
         local trArmTarget0 = get_model_tr(Config.armfsm.hosegrip.bottompull)
         local trArmTarget1 = get_model_tr(Config.armfsm.hosegrip.bottompull,
             Config.armfsm.hosegrip.lhand_rpy1)        
@@ -176,6 +229,10 @@ function state.update()
           {'move',trArmTarget0,nil},
           {'wrist',trArmTarget1,nil},                    
         }
+--]]     
+        local trArmTarget1 = get_model_tr(Config.armfsm.hosegrip.bottompull,
+            Config.armfsm.hosegrip.lhand_rpy1)        
+        local arm_seq = {{'wrist',trArmTarget1,nil},}   
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armretract" end
       elseif hcm.get_state_proceed()==-1 then stage="touchtool" 
         hcm.set_state_proceed(0)
@@ -185,6 +242,17 @@ function state.update()
         local trLArmTarget2 = get_model_tr({0,0,0})        
         local arm_seq = {{'move',trLArmTarget2,nil}}     
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grab" end        
+
+      elseif hcm.get_state_proceed() == 3 then 
+        update_override()        
+        local trLArmTarget2 = get_model_tr({0,0,0})        
+        local arm_seq = {{'move',trLArmTarget2,nil}}     
+        if arm_planner:plan_arm_sequence2(arm_seq) then 
+          stage = "grab" 
+          confirm_override()
+        else
+          revert_override()
+        end                        
       end
     end    
   elseif stage=="armretract" then --Move arm back to holding position
@@ -203,7 +271,8 @@ function state.update()
           Config.armfsm.hosegrip.armhold[2],
           Config.armfsm.hosegrip.lhand_rpy2
           )
-        local arm_seq = {{'move',trArmTarget0,nil},
+        local arm_seq = {
+--                  {'move',trArmTarget0,nil},
                          {'wrist',trArmTarget1,nil},
                          {'move',trArmTarget2,nil},
                        }

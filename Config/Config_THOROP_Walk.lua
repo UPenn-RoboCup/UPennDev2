@@ -33,7 +33,8 @@ end
 -- Stance and velocity limit values
 ------------------------------------
 walk.stanceLimitX = {-0.50,0.50}
-walk.stanceLimitY = {0.16,0.60}
+--walk.stanceLimitY = {0.16,0.60}
+walk.stanceLimitY = {0.16,0.30}
 walk.stanceLimitA = {-10*math.pi/180,30*math.pi/180}
 walk.leg_p_gain = 64
 
@@ -134,6 +135,26 @@ if HOSTNAME=="alvin" then
   walk.stepHeight = 0.03
   walk.supportX = 0.02
   walk.supportY = 0.03
+
+  walk.velLimitY = {-.01,.01}
+  walk.velLimitA = {-.2,.2}
+  walk.velDelta  = {0.025,0.02,0.1}
+
+
+--with battery
+  walk.torsoX = -0.02
+
+
+--slow step
+--[[
+  walk.tStep = 2.0
+  walk.stepHeight = 0.05
+
+  walk.phSingle = {0.3,0.7}
+  walk.phZmp = {0.3,0.7}
+--]]
+
+
 
 elseif HOSTNAME=="teddy" then
 --for teddy

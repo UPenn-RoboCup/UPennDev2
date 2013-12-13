@@ -162,11 +162,6 @@ function state.update()
   local trRArm = Body.get_forward_rarm(qRArm)  
   
   if stage=="wristturn" then --Turn yaw angles first
-    gripL,doneL = util.approachTol(gripL,1,2,dt)  --Close gripper
-    gripR,doneL = util.approachTol(gripR,1,2,dt)  --Close gripper
-    Body.set_lgrip_percent(gripL*0.8)
-    Body.set_rgrip_percent(gripR*0.8)
-
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
         local trLArmTarget=Config.armfsm.valvebar.arminit[1]

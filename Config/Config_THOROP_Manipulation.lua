@@ -515,9 +515,7 @@ armfsm.valveonearm.arminit={
   {0.65,0.55, 0.07, 0,0,0}, --med
   {0.65,0.50, 0.29, 0,0,0}, --high
 }
-
-
---with tilted init
+--with tilted init, should be used for bar grip as well
 
 armfsm.valveonearm.arminit={
   {0.40,0.21,-0.15, 0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
@@ -549,18 +547,12 @@ armfsm.valvebar = {}
 --Axel XYZ, radius, current valve angle, final valve angle, hand fit angle, 
 --valve angle zero: straight UP
 
-armfsm.valvebar.handtightangle0 = -45*DEG_TO_RAD
+--armfsm.valvebar.handtightangle0 = -45*DEG_TO_RAD
+armfsm.valvebar.handtightangle0 = -80*DEG_TO_RAD
 armfsm.valvebar.clearance = -0.08
 
 armfsm.valvebar.velTurnAngle = 6*DEG_TO_RAD * speed_factor
 armfsm.valvebar.velInsert = 0.01 * speed_factor
-
---[[
-armfsm.valvebar.default_model= {0.65,0.20,0.09,   
-  0.05, 0, 90*DEG_TO_RAD, -10*DEG_TO_RAD  }
-
-armfsm.valvebar.arminit={{0.35,0.30,-0.15, 0,0,0}}
---]]
 
 --With updated chopstick IK
 
@@ -568,6 +560,13 @@ armfsm.valvebar.default_model= {0.73,0.25,0.09,
   0.05, 0, 90*DEG_TO_RAD, -10*DEG_TO_RAD  }
 
 armfsm.valvebar.arminit={{0.55,0.30,-0.15, 0,0,0}}
+
+
+
+
+
+
+
 
 
 

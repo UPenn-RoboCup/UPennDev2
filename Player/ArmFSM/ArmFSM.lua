@@ -26,6 +26,7 @@ local armTeleop = require'armTeleop'
 local armIKTest = require'armIKTest'
 
 local armRocky = require'armRocky'
+local armDoorPass = require'armDoorPass'
 
 
 -- Door specific states
@@ -37,6 +38,9 @@ local armLoadDoorGrip = require'armLoadDoorGrip'
 local armToolGrip = require'armToolGrip'
 local armToolHold = require'armToolHold'
 local armToolChop = require'armToolChop'
+
+local armToolLeftGrip = require'armToolLeftGrip'
+local armToolLeftHold = require'armToolLeftHold'
 
 local armHoseGrip = require'armHoseGrip'
 local armHoseHold = require'armHoseHold'
@@ -84,6 +88,9 @@ sm:add_state(armToolGrip)
 sm:add_state(armToolHold)
 sm:add_state(armToolChop)
 
+sm:add_state(armToolLeftGrip)
+sm:add_state(armToolLeftHold)
+
 sm:add_state(armHoseGrip)
 sm:add_state(armHoseHold)
 sm:add_state(armHoseAttach)
@@ -95,6 +102,7 @@ sm:add_state(armBarValveGrip)
 sm:add_state(armDebrisGrip)
 
 sm:add_state(armRocky)
+sm:add_state(armDoorPass)
 
 
 sm:add_state(armIKTest)
@@ -125,7 +133,11 @@ sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
 sm:set_transition(armPose1, 'pushdoorgrab', armPushDoorGrip)
 sm:set_transition(armPose1, 'loaddoorgrab', armLoadDoorGrip)
 
-sm:set_transition(armPose1, 'toolgrab', armToolGrip)
+--sm:set_transition(armPose1, 'toolgrab', armToolGrip)
+sm:set_transition(armPose1, 'toolgrab', armToolLeftGrip)
+
+
+
 sm:set_transition(armPose1, 'debrisgrab', armDebrisGrip)
 sm:set_transition(armPose1, 'smallvalvegrab', armSmallValveGrip)
 sm:set_transition(armPose1, 'barvalvegrab', armBarValveGrip)
@@ -159,9 +171,11 @@ sm:set_transition(armLoadDoorGrip, 'done', armPose1)
 sm:set_transition(armDebrisGrip, 'done', armPose1)
 sm:set_transition(armTeleop, 'done', armPose1)
 
-sm:set_transition(armPose1, 'rocky', armRocky)
-sm:set_transition(armRocky, 'done', armPose1) 
+--sm:set_transition(armPose1, 'rocky', armRocky)
+--sm:set_transition(armRocky, 'done', armPose1) 
 
+sm:set_transition(armPose1, 'rocky', armDoorPass)
+sm:set_transition(armDoorPass, 'done', armPose1) 
 
 
 --Force reset states is used for offline testing only

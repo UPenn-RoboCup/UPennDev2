@@ -166,10 +166,7 @@ armfsm.debrisgrip.liftup = {0,0,0.05}
 armfsm.toolgrip = {}
 --armfsm.toolgrip.lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
 armfsm.toolgrip.lhand_rpy = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
-armfsm.toolgrip.rhand_rpy0 = {0,0,45*DEG_TO_RAD}
-armfsm.toolgrip.rhand_rpy = {0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
-
-
+armfsm.toolgrip.rhand_rpy = {0,0,45*DEG_TO_RAD}
 
 --The optimal model
 armfsm.toolgrip.default_model_target = {
@@ -179,21 +176,12 @@ armfsm.toolgrip.default_model_target = {
 armfsm.toolgrip.default_model = {
   0.42,-0.06,0.20,  0*DEG_TO_RAD}    
 
-
 armfsm.toolgrip.armhold={0.25,0.0,-0.20}
 armfsm.toolgrip.tool_clearance={-0.05,0,0}
 armfsm.toolgrip.tool_liftup = {0,0,0.05}
 armfsm.toolgrip.tool_clearance_x = 0.38
 
---New side-grip and side-pulldown
-armfsm.toolgrip.arminit={
-  {0.33,-0.25,-0.20, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.42,-0.25,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.42,-0.25, 0.14, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
-  {0.42,-0.25, 0.14, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
-}
 
-armfsm.toolgrip.rhand_rpy0 = {0,0,45*DEG_TO_RAD}
 armfsm.toolgrip.arminit={
   {0.33,-0.25,-0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.46,-0.35,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
@@ -204,17 +192,37 @@ armfsm.toolgrip.arminit={
 armfsm.toolgrip.armpull={
   --0.55 -0.06 0.25 
   {0.46, -0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.46, -0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.32, -0.25, -0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-}
-
-
-armfsm.toolgrip.armpull={
-  --0.55 -0.06 0.25 
-  {0.46, -0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.46, -0.35, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.32, -0.35, -0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
+
+armfsm.toolleftgrip={}
+armfsm.toolleftgrip.lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
+armfsm.toolleftgrip.rhand_rpy = {0,0,0*DEG_TO_RAD}
+
+--The optimal model
+armfsm.toolleftgrip.default_model_target = {
+  0.55,0.06,0.20,  0*DEG_TO_RAD}    --xyz, yaw
+
+--Conservative initial model (away from target)
+armfsm.toolleftgrip.default_model = {
+  0.42,0.06,0.20,  0*DEG_TO_RAD}    
+
+armfsm.toolleftgrip.arminit={
+  {0.33,0.25,-0.15, 0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  {0.46,0.35,0.07,  0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  {0.46,0.35, 0.17, 0,0*DEG_TO_RAD, -45*DEG_TO_RAD},  
+  {0.46,0.25, 0.17, 0,0*DEG_TO_RAD, -45*DEG_TO_RAD},  
+}
+
+armfsm.toolleftgrip.armpull={
+  --0.55 -0.06 0.25 
+  {0.46, 0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.46, 0.35, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.32, 0.35, -0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+}
+
+
 
 
 
@@ -563,6 +571,27 @@ armfsm.rocky.rarminit={
 
   {-0.30,-0.02,-0.301, unpack(armfsm.rocky.rhand_rpy)},
 }
+
+
+armfsm.doorpass={}
+armfsm.doorpass.lhand_rpy = {0*DEG_TO_RAD,0*DEG_TO_RAD, -15*DEG_TO_RAD}
+armfsm.doorpass.rhand_rpy = {0*DEG_TO_RAD,0*DEG_TO_RAD, 15*DEG_TO_RAD}
+
+armfsm.doorpass.lhand_rpy = {0*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.doorpass.rhand_rpy = {0*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+
+armfsm.doorpass.larminit={
+--0.24 0.30 -0.20
+  {0.14,0.30,-0.250, unpack(armfsm.doorpass.lhand_rpy)},
+}
+armfsm.doorpass.rarminit={
+  {0.14,-0.30,-0.25, unpack(armfsm.doorpass.rhand_rpy)},
+}
+
+
+
+
+
 
 
 

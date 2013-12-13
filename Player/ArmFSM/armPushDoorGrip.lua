@@ -152,7 +152,7 @@ function state.update()
         yawTarget1 = yawTarget
         local dooropen_seq ={ 
           {'doorleft',{0,0,0},  0*Body.DEG_TO_RAD,yawTarget1},
-          {'doorleft',Config.armfsm.dooropen.handle_clearance2,0,yawTarget1}
+--          {'doorleft',Config.armfsm.dooropen.handle_clearance2,0,yawTarget1}
         }
         if arm_planner:plan_arm_sequence2(dooropen_seq) then stage = "hookrelease"  end
       elseif hcm.get_state_proceed()==-1 then --Lower the hook

@@ -61,7 +61,7 @@ function state.entry()
 
   local wrist_seq = {{'wrist',trLArm1, trRArm1}}
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristturn" end
-  hcm.set_state_proceed(0)
+  hcm.set_state_proceed(1)
 end
 
 
@@ -84,7 +84,10 @@ function state.update()
       if hcm.get_state_proceed()==1 then 
         print("trLArm:",arm_planner.print_transform(trLArm))
         print("trRArm:",arm_planner.print_transform(trRArm))
-        local arm_seq = {{'move',Config.armfsm.doorpass.larminit[1],Config.armfsm.doorpass.rarminit[1]},}                          
+        local arm_seq = {
+          {'move',Config.armfsm.doorpass.larminit[1],Config.armfsm.doorpass.rarminit[1]},
+          {'wrist',Config.armfsm.doorpass.larminit[2],Config.armfsm.doorpass.rarminit[2]},
+        }                          
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armfold" end
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) 
@@ -95,26 +98,10 @@ function state.update()
   elseif stage=="armfold" then
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
-        qLArmFold, qRArmFold = 
-          Body.get_larm_command_position(),
-          Body.get_rarm_command_position()
-        local qLArm = {unpack(qLArmFold)}
-        local qRArm = {unpack(qRArmFold)}        
-        qLArm[2] = 0
-        qRArm[2] = 0
-        Body.set_larm_command_position(qLArm)
-        Body.set_rarm_command_position(qRArm)
-
-        print("qL:",arm_planner.print_jangle(qLArmFold))
-        print("qR:",arm_planner.print_jangle(qRArmFold))
-        hcm.set_state_proceed(0)
-      elseif hcm.get_state_proceed()==-1 then 
-        Body.set_larm_command_position(qLArmFold)
-        Body.set_rarm_command_position(qRArmFold)
+      elseif hcm.get_state_proceed()==-1 then         
         local arm_seq = {
-          {'move',Config.armfsm.rocky.larminit[2],Config.armfsm.rocky.rarminit[2]},        
-          {'move',Config.armfsm.rocky.larminit[1],Config.armfsm.rocky.rarminit[1]},
-          {'move',trLArm1,trRArm1}
+          {'wrist',Config.armfsm.doorpass.larminit[1],Config.armfsm.doorpass.rarminit[1]},
+          {'move',Config.armfsm.doorpass.larminit[1],Config.armfsm.doorpass.rarminit[1]},
         }                          
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armunfold" end
       end  

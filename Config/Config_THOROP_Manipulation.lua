@@ -442,7 +442,7 @@ armfsm.dooropenleft.lhand_rpy=
 
 --optimal model
 armfsm.dooropenleft.default_model_target = {
-  0.52,-0.50,0.01,  --Hinge pos
+  0.52,-0.50,-0.04,  --Hinge pos
   0.84,             --Door width (hinge to knob axle)
   -0.05,            --Knob X offset from door
   -0.08,             --Knob Y offset (from knob axle)
@@ -452,7 +452,7 @@ armfsm.dooropenleft.default_model_target = {
 
 --conservative initial model
 armfsm.dooropenleft.default_model = {
-  0.35,-0.50,0.01,  --Hinge pos
+  0.35,-0.50,-0.04,  --Hinge pos
   0.84,             --Door width (hinge to knob axle)
   -0.05,            --Knob X offset from door
   -0.08,             --Knob Y offset (from knob axle)
@@ -574,18 +574,30 @@ armfsm.rocky.rarminit={
 
 
 armfsm.doorpass={}
-armfsm.doorpass.lhand_rpy = {0*DEG_TO_RAD,0*DEG_TO_RAD, -15*DEG_TO_RAD}
-armfsm.doorpass.rhand_rpy = {0*DEG_TO_RAD,0*DEG_TO_RAD, 15*DEG_TO_RAD}
+--armfsm.doorpass.lhand_rpy = {0*DEG_TO_RAD,0*DEG_TO_RAD, -15*DEG_TO_RAD}
+--armfsm.doorpass.rhand_rpy = {0*DEG_TO_RAD,0*DEG_TO_RAD, 15*DEG_TO_RAD}
 
-armfsm.doorpass.lhand_rpy = {0*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
-armfsm.doorpass.rhand_rpy = {0*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+--default angle
+
+armfsm.doorpass.lhand_rpy = {0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.doorpass.rhand_rpy = {0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD}
+
+armfsm.doorpass.lhand_rpy2 = {0*DEG_TO_RAD,60*DEG_TO_RAD, 30*DEG_TO_RAD}
+armfsm.doorpass.rhand_rpy2 = {0*DEG_TO_RAD,60*DEG_TO_RAD, -30*DEG_TO_RAD}
+
+
+
+
 
 armfsm.doorpass.larminit={
 --0.24 0.30 -0.20
-  {0.14,0.30,-0.250, unpack(armfsm.doorpass.lhand_rpy)},
+  {0.14,0.27,-0.40, unpack(armfsm.doorpass.lhand_rpy)},
+  {0.14,0.27,-0.40, unpack(armfsm.doorpass.lhand_rpy2)},
 }
 armfsm.doorpass.rarminit={
-  {0.14,-0.30,-0.25, unpack(armfsm.doorpass.rhand_rpy)},
+  {0.14,-0.27,-0.40, unpack(armfsm.doorpass.rhand_rpy)},
+  {0.14,-0.27,-0.40, unpack(armfsm.doorpass.rhand_rpy2)},
+
 }
 
 

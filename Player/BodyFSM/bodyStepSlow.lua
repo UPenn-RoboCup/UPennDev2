@@ -85,8 +85,7 @@ local function calculate_footsteps()
 
   local step_queue={}
 
-  local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
-  local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
+  
   
   step_queue[1] = {{0,0,0},2, 0.1,1,0.1,{0,0,0},{0,0,0}}
   local step_queue_count = 1;
@@ -115,7 +114,16 @@ local function calculate_footsteps()
     local new_step
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step,last_step)
-    local leg_movemet
+
+
+    local tStep = Config.walk.tStep
+    local tSlope1 = tStep*Config.walk.phSingle[1]
+    local tSlope2 = tStep*(1-Config.walk.phSingle[2])
+    local stepHeight = Config.walk.stepHeight
+
+
+
+    local leg_movement
     if supportLeg==0 then --Left support
       leg_movement = util.pose_relative(uRight_next,uRight_now)  
     else
@@ -124,10 +132,10 @@ local function calculate_footsteps()
     new_step={leg_movement, 
               supportLeg, 
               tSlope1, 
-              Config.walk.tStep-tSlope1-tSlope2,
+              tStep-tSlope1-tSlope2,
               tSlope2,
               {0,0,0},
-              {0,Config.walk.stepHeight,0}}
+              {0,stepHeight,0}}
     
     step_queue[step_queue_count]=new_step
   end

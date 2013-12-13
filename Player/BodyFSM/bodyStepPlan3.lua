@@ -57,7 +57,7 @@ supportLeg = 1 --LFS first
 
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step,last_step)
-    local leg_movemet
+    local leg_movement
     if supportLeg==0 then --Left support
       leg_movement = util.pose_relative(uRight_next,uRight_now)  
     else

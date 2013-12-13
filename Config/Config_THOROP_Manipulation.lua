@@ -20,7 +20,12 @@ arm.handoffset.gripper = {0.23,0,0} --Default gripper (VT)
 --0.130+0.139+0.80-0.10
 arm.handoffset.outerhook = {0.339,0,0.060} --Single hook (for door)
 --0.130 + 0.140+0.80-0.10
-arm.handoffset.chopstick = {0.340,0,0} --Two rod (for valve)
+--arm.handoffset.chopstick = {0.340,0,0} --Two rod (for valve)
+
+--FROM EMPIRICAL DATA
+arm.handoffset.chopstick = {0.440,0,0} --Two rod (for valve)
+
+
 
 
 --Torques for finger controls
@@ -476,14 +481,13 @@ armfsm.valveonearm = {}
 --Axel XYZ, radius, valve angle 1, valve angle 2
 
 --height should be between 0.81(-0.12) to 1.22 (+0.29)
+--boundary between low/med/high
+armfsm.valveonearm.heights={0.03,0.15}
 
-
+--[[
 
 armfsm.valveonearm.default_model_large= 
   {0.67,0.27,0.09, 0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
-
---boundary between low/med/high
-armfsm.valveonearm.heights={0.03,0.15}
 
 armfsm.valveonearm.default_model_small= 
   {0.67,0.30,0.09, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
@@ -494,6 +498,28 @@ armfsm.valveonearm.arminit={
   {0.55,0.55, 0.07, 0,0,0}, --med
   {0.55,0.50, 0.29, 0,0,0}, --high
 }
+--]]
+
+
+--WITH NEW IK (longer chopstick model)
+
+armfsm.valveonearm.default_model_large= 
+  {0.72,0.27,0.09, 0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+
+armfsm.valveonearm.default_model_small= 
+  {0.72,0.30,0.09, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
+
+--0.30 0.30 -0.20
+armfsm.valveonearm.arminit={
+  {0.65,0.50,-0.12, 0,0,0}, --low
+  {0.65,0.55, 0.07, 0,0,0}, --med
+  {0.65,0.50, 0.29, 0,0,0}, --high
+}
+
+
+
+
+
 
 
 armfsm.valveonearm.anglemargin = 5*DEG_TO_RAD

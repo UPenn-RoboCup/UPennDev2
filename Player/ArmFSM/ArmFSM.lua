@@ -44,6 +44,7 @@ local armToolLeftHold = require'armToolLeftHold'
 
 local armHoseGrip = require'armHoseGrip'
 local armHoseHold = require'armHoseHold'
+local armHoseTap = require'armHoseTap'
 local armHoseAttach = require'armHoseAttach'
 
 
@@ -93,6 +94,7 @@ sm:add_state(armToolLeftHold)
 
 sm:add_state(armHoseGrip)
 sm:add_state(armHoseHold)
+sm:add_state(armHoseTap)
 sm:add_state(armHoseAttach)
 
 sm:add_state(armSmallValveGrip)
@@ -162,7 +164,11 @@ sm:set_transition(armToolChop, 'done', armToolHold)
 
 sm:set_transition(armHoseGrip, 'done', armPose1)
 sm:set_transition(armHoseGrip, 'hold', armHoseHold)
-sm:set_transition(armHoseHold, 'hosegrab', armHoseAttach)
+--sm:set_transition(armHoseHold, 'hosegrab', armHoseAttach)
+sm:set_transition(armHoseHold, 'hosegrab', armHoseTap)
+
+
+
 sm:set_transition(armHoseHold, 'hold', armHoseHold)
 
 sm:set_transition(armDoorGrip, 'done', armPose1)

@@ -124,12 +124,9 @@ local function revert_override()
 end
 
 local function confirm_override()
-  local overrideTarget = hcm.get_state_override_target()
   local override = hcm.get_state_override()
-  hcm.set_state_override({valve_model[1],valve_model[2],valve_model[3],valve_model[4],valve_model[5]}) -- 5 elements
-
+  hcm.set_state_override_target(override)
 end
-
 
 function state.update()
 --  print(state._NAME..' Update' )
@@ -224,7 +221,9 @@ function state.update()
         local arm_seq = {{'move',trLArmTarget, nil}}
         local ret = arm_planner:plan_arm_sequence(arm_seq)
 --        print("RET:",ret)
-        if ret then stage="pregrip" 
+        if ret then 
+          stage="pregrip" 
+          confirm_override()
         else revert_override() end
 
       end
@@ -259,7 +258,9 @@ function state.update()
         local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,0, 1)     
         local arm_seq = {{'move',trLArmTarget, nil}}
         local ret = arm_planner:plan_arm_sequence(arm_seq)
-        if ret then stage="inposition" 
+        if ret then 
+          stage="inposition" 
+          confirm_override()
         else revert_override() end
       end
     end

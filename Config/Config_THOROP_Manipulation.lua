@@ -289,6 +289,34 @@ armfsm.hosegrip.default_model = {
 armfsm.hosegrip.default_model = {
   0.35,0.09, -0.15, 0, 0}
 
+---------------------------------------------------------------
+------   Hose tap
+---------------------------------------------------------------
+
+armfsm.hosetap = {}
+armfsm.hosetap.lhand_rpy0 = {}
+armfsm.hosetap.lhand_rpy1 = {}
+
+armfsm.hosetap.larminit={
+  {0.21,0.18,-0.20, 90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  --0.21 0.19 -0.20
+
+  {0.33,0.25,-0.15, 90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  {0.46,0.35, 0.07,  90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  {0.46,0.35, 0.17, 90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},  
+  {0.46,0.05, 0.17, 90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},  
+  
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -516,13 +544,6 @@ armfsm.valveonearm.default_model_small=
   {0.72,0.30,0.09, 0, -60*DEG_TO_RAD, 400*DEG_TO_RAD }
 
 
-
---0.30 0.30 -0.20
-armfsm.valveonearm.arminit={
-  {0.65,0.50,-0.12, 0,0,0}, --low
-  {0.65,0.55, 0.07, 0,0,0}, --med
-  {0.65,0.50, 0.29, 0,0,0}, --high
-}
 --with tilted init, should be used for bar grip as well
 
 armfsm.valveonearm.arminit={

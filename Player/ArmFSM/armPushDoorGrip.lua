@@ -83,11 +83,9 @@ local function update_override()
     door_model[1] + overrideTarget[1]-override[1],
     door_model[2] + overrideTarget[2]-override[2],
     door_model[3] + overrideTarget[3]-override[3],
-
     door_model[4], --Door width
     door_model[5], -- Knob x offset
     door_model[6], -- Knob y offset from knob axle
-
     door_model[7] + overrideTarget[4]-override[4], --Target knob roll
     door_model[8] + overrideTarget[5]-override[5]  --Target door yaw
     }
@@ -110,6 +108,49 @@ local function update_override()
   rollTarget = door_model[7]
   yawTarget = door_model[8]
 end
+
+local function revert_override()
+  local overrideTarget = hcm.get_state_override_target()
+  local override = hcm.get_state_override()
+  local door_model = hcm.get_door_model()
+
+  door_model={
+    door_model[1] - (overrideTarget[1]-override[1]),
+    door_model[2] - (overrideTarget[2]-override[2]),
+    door_model[3] - (overrideTarget[3]-override[3]),
+    door_model[4], --Door width
+    door_model[5], -- Knob x offset
+    door_model[6], -- Knob y offset from knob axle
+    door_model[7] - (overrideTarget[4]-override[4]), --Target knob roll
+    door_model[8] - (overrideTarget[5]-override[5])  --Target door yaw
+    }
+
+  --Knob roll: 0 to -90
+  door_model[7] = math.max(-90*Body.DEG_TO_RAD,math.min(0,door_model[7]))
+
+  --Door yaw : plus to pull, minus to push
+  door_model[8] = math.max(-30*Body.DEG_TO_RAD,math.min(30*Body.DEG_TO_RAD,door_model[8]))  
+
+  hcm.set_door_model(door_model)
+  hcm.set_state_proceed(0)
+  print( util.color('Door model:','yellow'), 
+      string.format("%.2f %.2f %.2f / %.1f %.1f",
+      door_model[1],door_model[2],door_model[3],
+      door_model[7]*180/math.pi,
+      door_model[8]*180/math.pi
+         ))
+
+  rollTarget = door_model[7]
+  yawTarget = door_model[8]
+end
+
+local function confirm_override()
+  local override = hcm.get_state_override()
+  hcm.set_state_override_target(override)
+end
+
+
+
 
 function state.update()
 --  print(state._NAME..' Update' )
@@ -169,7 +210,12 @@ function state.update()
         update_override()
         local trArmTarget1 = movearm.getDoorHandlePosition({0,0,0}, rollTarget, yawTarget,1)
         local arm_seq = {{'move',trArmTarget1,nil}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "opendoor"  end
+        if arm_planner:plan_arm_sequence2(arm_seq) then 
+          stage = "opendoor"  
+          confirm_override()
+        else
+          revert_override()
+        end
       end
     end    
 
@@ -207,7 +253,12 @@ function state.update()
           trRArmCurrent[6]
         }
         local arm_seq = {{'move',nil, trRArmTarget}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "pushdoor" end
+        if arm_planner:plan_arm_sequence2(arm_seq) then 
+          stage = "pushdoor" 
+          confirm_override()
+        else
+          revert_override()
+        end
         hcm.set_state_proceed(0)
       end
     end
@@ -235,7 +286,13 @@ function state.update()
           trRArmCurrent[6]
         }
         local arm_seq = {{'move',nil, trRArmTarget}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "swingdoor" end
+        if arm_planner:plan_arm_sequence2(arm_seq) then 
+          stage = "swingdoor" 
+          confirm_override()
+        else
+          revert_override()
+        end
+
         hcm.set_state_proceed(0)
       end
     end

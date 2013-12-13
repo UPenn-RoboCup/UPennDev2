@@ -524,7 +524,7 @@ end
 -- For torque control (no reading from the motor just yet)
 Body.set_rgrip_command_torque = function(val)
   -- Set the command_torque
-  jcm.gripperPtr.command_torque[3] = val
+  jcm.gripperPtr.command_torque[3] = -1*val
   -- Set the command_torque
   jcm.gripperPtr.torque_mode[3] = 1
 end
@@ -552,7 +552,7 @@ end
 -- For torque control (no reading from the motor just yet)
 Body.set_rtrigger_command_torque = function(val)
   -- Set the command_torque
-  jcm.gripperPtr.command_torque[4] = -1*val
+  jcm.gripperPtr.command_torque[4] = val
   -- Set the command_torque
   jcm.gripperPtr.torque_mode[4] = 1
 end

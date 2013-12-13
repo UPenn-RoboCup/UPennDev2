@@ -15,7 +15,8 @@ local arm = {}
 arm.handoffset={}
 
 --0.130 + 0.60+0.50
-arm.handoffset.gripper = {0.241,0,0} --Default gripper
+--arm.handoffset.gripper = {0.241,0,0} --Default gripper
+arm.handoffset.gripper = {0.23,0,0} --Default gripper (VT)
 --0.130+0.139+0.80-0.10
 arm.handoffset.outerhook = {0.339,0,0.060} --Single hook (for door)
 --0.130 + 0.140+0.80-0.10

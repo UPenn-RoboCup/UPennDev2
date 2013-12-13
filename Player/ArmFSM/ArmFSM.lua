@@ -133,8 +133,9 @@ sm:set_transition(armPose1, 'doorgrab', armDoorGrip)
 sm:set_transition(armPose1, 'pushdoorgrab', armPushDoorGrip)
 sm:set_transition(armPose1, 'loaddoorgrab', armLoadDoorGrip)
 
---sm:set_transition(armPose1, 'toolgrab', armToolGrip)
-sm:set_transition(armPose1, 'toolgrab', armToolLeftGrip)
+-- LEFT/RIGHT for grabbing the tool
+sm:set_transition(armPose1, 'toolgrab', armToolGrip)
+--sm:set_transition(armPose1, 'toolgrab', armToolLeftGrip)
 
 
 

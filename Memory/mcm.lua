@@ -22,6 +22,10 @@ shared.stance.bodyHeightTarget = vector.zeros(1)
 shared.stance.uTorsoComp = vector.zeros(2) --For quasi-static balancing
 shared.stance.uTorsoCompBias = vector.zeros(2)
 
+shared.stance.waistPitchBias = vector.zeros(1) --To cancel out body sag
+shared.stance.waistPitchBiasTarget = vector.zeros(1) --To cancel out body sag
+
+
 --Used for drilling task
 --Torso compensation is used to follow arm position, not for balancing
 --0: compensation

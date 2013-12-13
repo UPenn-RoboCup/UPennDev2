@@ -16,6 +16,7 @@ local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRarm0
 local gripL, gripR = 1,1
 local stage
 
+local old_valve_model
 
 
 local angle1, angle2
@@ -66,6 +67,9 @@ local function update_model()
     valve_model[3] + trLArmTarget[3]-trLArm[3]
   hcm.set_largevalve_model(valve_model)
 
+ old_valve_model = valve_model
+
+
   print("Valve update: pos ",valve_model[1],valve_model[2],valve_model[3])
 
   angle1, angle2 = valve_model[5], valve_model[6]
@@ -85,7 +89,6 @@ local function update_override()
     valve_model[5] + overrideTarget[5]-override[5] --this is the init angle
     
   hcm.set_largevalve_model(valve_model)
-  hcm.set_state_override({valve_model[1],valve_model[2],valve_model[3],valve_model[4],valve_model[5]}) -- 5 elements
 
   print( util.color('Valve model:','yellow'), 
       string.format("%.2f %.2f %.2f / %.1f",
@@ -96,8 +99,36 @@ local function update_override()
   hcm.set_state_proceed(0)
 end
 
+local function revert_override()
+  local overrideTarget = hcm.get_state_override_target()
+  local override = hcm.get_state_override()
+  local valve_model = hcm.get_largevalve_model()
 
+  valve_model[1],valve_model[2],valve_model[3], valve_model[4], valve_model[5]=
+    valve_model[1] - (overrideTarget[1]-override[1]),
+    valve_model[2] - (overrideTarget[2]-override[2]),
+    valve_model[3] - (overrideTarget[3]-override[3]),
+    0, --This should be the radius 
+    valve_model[5] - (overrideTarget[5]-override[5]) --this is the init angle
+    
+  hcm.set_largevalve_model(valve_model)
+--  hcm.set_state_override({valve_model[1],valve_model[2],valve_model[3],valve_model[4],valve_model[5]}) -- 5 elements
 
+  print( util.color('Valve model:','yellow'), 
+      string.format("%.2f %.2f %.2f / %.1f",
+      valve_model[1],valve_model[2],valve_model[3],
+      valve_model[4]*180/math.pi   ))
+
+  angle1, angle2 = valve_model[5], valve_model[6]
+  hcm.set_state_proceed(0)
+end
+
+local function confirm_override()
+  local overrideTarget = hcm.get_state_override_target()
+  local override = hcm.get_state_override()
+  hcm.set_state_override({valve_model[1],valve_model[2],valve_model[3],valve_model[4],valve_model[5]}) -- 5 elements
+
+end
 
 
 function state.update()
@@ -191,7 +222,10 @@ function state.update()
         update_override()
         local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,Config.armfsm.valveonearm.clearance, 1)     
         local arm_seq = {{'move',trLArmTarget, nil}}
-        if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
+        local ret = arm_planner:plan_arm_sequence(arm_seq)
+--        print("RET:",ret)
+        if ret then stage="pregrip" 
+        else revert_override() end
 
       end
     end
@@ -224,8 +258,9 @@ function state.update()
         update_override()
         local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,0, 1)     
         local arm_seq = {{'move',trLArmTarget, nil}}
-        if arm_planner:plan_arm_sequence(arm_seq) then stage="inposition" end
-
+        local ret = arm_planner:plan_arm_sequence(arm_seq)
+        if ret then stage="inposition" 
+        else revert_override() end
       end
     end
     hcm.set_state_proceed(0)

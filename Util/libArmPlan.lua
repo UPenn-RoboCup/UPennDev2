@@ -600,6 +600,7 @@ local function plan_arm_sequence2(self,arm_seq)
     end
     if not LAP then 
       hcm.set_state_success(-1) --Report plan failure
+      print("FAIL")
       return 
     end
     init_cond = end_cond    

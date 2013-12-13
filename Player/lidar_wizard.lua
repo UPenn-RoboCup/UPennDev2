@@ -18,8 +18,12 @@ local libHokuyo  = require'libHokuyo'
 local hokuyos = {}
 
 -- Initialize the Hokuyos
---local head_hokuyo  = libHokuyo.new_hokuyo(11)
-local chest_hokuyo = libHokuyo.new_hokuyo(11)
+local chest_hokuo
+if HOSTNAME== "teddy" then
+  chest_hokuyo = libHokuyo.new_hokuyo(10) --for teddy
+else
+  chest_hokuyo  = libHokuyo.new_hokuyo(11)
+end
 
 -- Head Hokuyo
 if head_hokuyo then

@@ -611,8 +611,9 @@ Body.set_ltrigger_percent = function( percent, is_torque )
 end
 -- For torque control (no reading from the motor just yet)
 Body.set_ltrigger_command_torque = function(val)
+print('val!',val)
   -- Set the command_torque
-  jcm.gripperPtr.command_torque[2] = val
+  jcm.gripperPtr.command_torque[2] = -1*val
   -- Set the command_torque
   jcm.gripperPtr.torque_mode[2] = 1
 end
@@ -900,7 +901,7 @@ Body.entry = function()
     dynamixels.right_arm.nx_ids =
       {1,3,5,7,9,11,13, --[[head]] 29,30}
     dynamixels.left_arm.nx_ids =
-      {2,4,6,8,10,12,14 }
+      {2,4,6,8,10,12,14, }
     dynamixels.right_leg.nx_ids = 
       {15,17,19,21,23,25, --[[waist pitch]]28}
     dynamixels.left_leg.nx_ids =

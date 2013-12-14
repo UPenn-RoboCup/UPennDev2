@@ -86,6 +86,7 @@ function state.entry()
 
   Body.request_lleg_position()
   Body.request_rleg_position()
+  Body.request_waist_position()
 
 end
 
@@ -133,17 +134,24 @@ function state.update()
 
   local qLLegActual = Body.get_lleg_position()
   local qRLegActual = Body.get_rleg_position()
+  local qWaistActual = Body.get_waist_position()
+
   local qLLegCommand = Body.get_lleg_command_position()
   local qRLegCommand = Body.get_rleg_command_position()
+  local qWaistCommand = Body.get_waist_command_position()
 
   Body.request_lleg_position()
   Body.request_rleg_position()
+  Body.request_waist_position()
 
   local err = 0;
   for i=1,4 do --hack: skip ankle angles for now
     err = err + math.abs(qLLegActual[i]- qLLegCommand[i])
     err = err + math.abs(qRLegActual[i]- qRLegCommand[i])
   end
+  err = err + math.abs(qWaistActual[1]- qWaistCommand[1])
+  err = err + math.abs(qWaistActual[2]- qWaistCommand[2])
+
   --print("err: ",err, doneL,doneR)
 
   local err_th = 1*Body.DEG_TO_RAD
@@ -184,9 +192,12 @@ function state.exit()
   mcm.set_status_iskneeling(0)
   
   local pg = Config.walk.leg_p_gain or 64
+  local ag = Config.walk.ankle_p_gain or 64
 
   if not IS_WEBOTS then
     for i=1,10 do
+
+--[[
       Body.set_lleg_command_velocity({17000,17000,17000,17000,17000,17000})
       unix.usleep(1e6*0.01);
 
@@ -198,11 +209,30 @@ function state.exit()
 
       Body.set_lleg_command_acceleration({200,200,200,200,200,200})
       unix.usleep(1e6*0.01);
+--]]
 
-      Body.set_rleg_position_p({pg,pg,pg,pg,pg,pg})
+
+--set to zero = max value
+      Body.set_waist_command_velocity({0,0})
+
+      Body.set_lleg_command_velocity({0,0,0,0,0,0})
       unix.usleep(1e6*0.01);
 
-      Body.set_lleg_position_p({pg,pg,pg,pg,pg,pg})
+      Body.set_rleg_command_velocity({0,0,0,0,0,0})
+      unix.usleep(1e6*0.01);  
+
+      Body.set_rleg_command_acceleration({0,0,0,0,0,0})
+      unix.usleep(1e6*0.01);
+
+      Body.set_lleg_command_acceleration({0,0,0,0,0,0})
+      unix.usleep(1e6*0.01);
+
+
+
+      Body.set_rleg_position_p({pg,pg,pg,pg,pg,ag})
+      unix.usleep(1e6*0.01);
+
+      Body.set_lleg_position_p({pg,pg,pg,pg,pg,ag})
       unix.usleep(1e6*0.01);
     end
   end

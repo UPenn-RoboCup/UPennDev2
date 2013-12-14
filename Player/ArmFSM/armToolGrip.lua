@@ -178,8 +178,8 @@ function state.update()
   elseif stage=="armup" then
     if arm_planner:play_arm_sequence(t) then 
           --Open gripper
-      Body.move_rgrip1(Config.arm.torque.open)
-      Body.move_rgrip2(Config.arm.torque.open)    
+      --Body.move_rgrip1(Config.arm.torque.open)
+      --Body.move_rgrip2(Config.arm.torque.open)    
       
       if hcm.get_state_proceed()==1 then 
         print("trRArm:",arm_planner.print_transform(trRArm))
@@ -266,8 +266,8 @@ function state.update()
     end
     hcm.set_state_proceed(0)--stop at next step
   elseif stage=="grab" then --Grip the object   
-    Body.move_rgrip1(Config.arm.torque.grip_drill)    
-    Body.move_rgrip2(Config.arm.torque.grip_drill)    
+    --Body.move_rgrip1(Config.arm.torque.grip_drill)    
+    --Body.move_rgrip2(Config.arm.torque.grip_drill)    
     stage = "torsobalance"
 
   elseif stage=="torsobalance" then
@@ -349,10 +349,10 @@ function state.update()
 
   elseif stage=="ungrab" then --Ungrip the object
            --Open gripper
-    Body.move_rgrip1(Config.arm.torque.open)
-    Body.move_rgrip2(Config.arm.torque.open)   
+    --Body.move_rgrip1(Config.arm.torque.open)
+    --Body.move_rgrip2(Config.arm.torque.open)   
     
-    arm_planner:set_hand_mass(0,0)   
+    arm_planner:set_hand_mass(0,0)
     local trRArmTarget2 = get_tool_tr({0,0,0})
     local arm_seq = {{'move',nil, trRArmTarget2}}
     if arm_planner:plan_arm_sequence2(arm_seq) then stage = "touchtool" end

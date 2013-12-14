@@ -666,10 +666,6 @@ armfsm.doorpass.rhand_rpy = {0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD}
 armfsm.doorpass.lhand_rpy2 = {0*DEG_TO_RAD,60*DEG_TO_RAD, 30*DEG_TO_RAD}
 armfsm.doorpass.rhand_rpy2 = {0*DEG_TO_RAD,60*DEG_TO_RAD, -30*DEG_TO_RAD}
 
-
-
-
-
 armfsm.doorpass.larminit={
 --0.24 0.30 -0.20
   {0.14,0.27,-0.40, unpack(armfsm.doorpass.lhand_rpy)},
@@ -678,7 +674,26 @@ armfsm.doorpass.larminit={
 armfsm.doorpass.rarminit={
   {0.14,-0.27,-0.40, unpack(armfsm.doorpass.rhand_rpy)},
   {0.14,-0.27,-0.40, unpack(armfsm.doorpass.rhand_rpy2)},
+}
 
+
+--Take two, we use hook as feeler
+
+armfsm.doorpass.lhand_rpy2 = {0*DEG_TO_RAD,60*DEG_TO_RAD, -30*DEG_TO_RAD}
+armfsm.doorpass.rhand_rpy2 = {0*DEG_TO_RAD,60*DEG_TO_RAD, -30*DEG_TO_RAD}
+
+armfsm.doorpass.lhand_rpy2 = {90*DEG_TO_RAD,45*DEG_TO_RAD, -0*DEG_TO_RAD}
+armfsm.doorpass.rhand_rpy2 = {90*DEG_TO_RAD,45*DEG_TO_RAD, -0*DEG_TO_RAD}
+
+
+armfsm.doorpass.larminit={
+--0.24 0.30 -0.20
+  {0.20,0.27,-0.40, unpack(armfsm.doorpass.lhand_rpy)},
+  {0.20,0.27,-0.40, unpack(armfsm.doorpass.lhand_rpy2)},
+}
+armfsm.doorpass.rarminit={
+  {0.20,-0.27,-0.40, unpack(armfsm.doorpass.rhand_rpy)},
+  {0.20,-0.27,-0.40, unpack(armfsm.doorpass.rhand_rpy2)},
 }
 
 

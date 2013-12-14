@@ -90,7 +90,7 @@ local function calculate_footsteps()
   else --sidestep to the right
     supportLeg = 1
   end
-  
+
 
   local pose_initial = {uTorso_now[1],uTorso_now[2],uTorso_now[3]}
 
@@ -103,6 +103,8 @@ local function calculate_footsteps()
   local step_queue_count = 1;
   local num_steps = 6
   local arrived = false;
+
+  --TODO: only sidestep requires frequent pauseing
 
 --  local max_step_count = 30
   local max_step_count = 7

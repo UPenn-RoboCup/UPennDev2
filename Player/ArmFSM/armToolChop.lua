@@ -51,6 +51,52 @@ end
 
 
 
+local function update_override()
+  local overrideTarget = hcm.get_state_override_target()
+  local override = hcm.get_state_override()
+  local tool_model = hcm.get_tool_cutpos()
+
+  tool_model[1],tool_model[2],tool_model[3], tool_model[4] = 
+  tool_model[1] + (overrideTarget[1]-override[1]),
+  tool_model[2] + (overrideTarget[2]-override[2]),
+  tool_model[3] + (overrideTarget[3]-override[3]),
+  tool_model[4] + (util.mod_angle(overrideTarget[4]-override[4]))
+  
+  hcm.set_tool_cutpos(tool_model)  
+  print( util.color('Tool model:','yellow'), 
+      string.format("%.2f %.2f %.2f / %.1f",
+        tool_model[1],tool_model[2],tool_model[3],
+        tool_model[4]*180/math.pi ))
+  hcm.set_state_proceed(0)
+end
+
+local function revert_override()
+  local overrideTarget = hcm.get_state_override_target()
+  local override = hcm.get_state_override()
+  local tool_model = hcm.get_tool_cutpos()
+
+  tool_model[1],tool_model[2],tool_model[3], tool_model[4] = 
+  tool_model[1] - (overrideTarget[1]-override[1]),
+  tool_model[2] - (overrideTarget[2]-override[2]),
+  tool_model[3] - (overrideTarget[3]-override[3]),
+  tool_model[4] - (util.mod_angle(overrideTarget[4]-override[4]))
+
+  hcm.set_tool_cutpos(tool_model)  
+  print( util.color('Tool model:','yellow'), 
+      string.format("%.2f %.2f %.2f / %.1f",
+        tool_model[1],tool_model[2],tool_model[3],
+        tool_model[4]*180/math.pi ))
+  hcm.set_state_proceed(0)
+end
+
+local function confirm_override()
+  local override = hcm.get_state_override()
+  hcm.set_state_override_target(override)
+end
+
+
+
+
 
 local stage
 local cut_no
@@ -135,6 +181,13 @@ function state.update()
         local trRArmTarget1 = get_cutpos_tr(Config.armfsm.toolchop.drill_clearance)      
         local arm_seq = {{'move',nil, trRArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillpositionwait" end      
+      elseif hcm.get_state_proceed() == 3 then --Model modification
+        update_override()        
+        local trRArmTarget1 = get_cutpos_tr(Config.armfsm.toolchop.drill_clearance)      
+        local arm_seq = {{'move',nil, trRArmTarget1}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillpositionwait" 
+          confirm_override()
+        else revert_override() end      
       end
     end
   elseif stage=="drillcut" then
@@ -151,6 +204,13 @@ function state.update()
         local trRArmTarget1 = get_cutpos_tr()
         local arm_seq = {{'move',nil, trRArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillcut" end      
+      elseif hcm.get_state_proceed() == 3 then --Model modification        
+        update_override()        
+        local trRArmTarget1 = get_cutpos_tr()
+        local arm_seq = {{'move',nil, trRArmTarget1}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillcut" 
+          confirm_override()
+        else revert_override() end      
       end
     end
   elseif stage=="backtohold" then    

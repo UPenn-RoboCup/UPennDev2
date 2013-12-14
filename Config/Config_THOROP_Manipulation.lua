@@ -187,6 +187,16 @@ armfsm.toolgrip.tool_clearance={-0.05,0,0}
 armfsm.toolgrip.tool_liftup = {0,0,0.05}
 armfsm.toolgrip.tool_clearance_x = 0.38
 
+armfsm.toolgrip.armchecktrigger={
+  {0.33,-0.25,-0.15, 0,0*DEG_TO_RAD, 90*DEG_TO_RAD},
+  {0.46,-0.35,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+}
+
+
+
+
+
+
 
 armfsm.toolgrip.arminit={
   {0.33,-0.25,-0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
@@ -541,7 +551,7 @@ armfsm.valveonearm.default_model_small=
 
 
 armfsm.valveonearm.default_model_small= 
-  {0.72,0.30,0.09, 0, -60*DEG_TO_RAD, 400*DEG_TO_RAD }
+  {0.72,0.30,0.09, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
 
 --with tilted init, should be used for bar grip as well

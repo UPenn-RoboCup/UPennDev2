@@ -81,12 +81,13 @@ local function update_override()
   local override = hcm.get_state_override()
   local valve_model = hcm.get_largevalve_model()
 
-  valve_model[1],valve_model[2],valve_model[3], valve_model[4], valve_model[5]=
+  valve_model[1],valve_model[2],valve_model[3], valve_model[4], valve_model[5], valve_model[6]=
     valve_model[1] + overrideTarget[1]-override[1],
     valve_model[2] + overrideTarget[2]-override[2],
     valve_model[3] + overrideTarget[3]-override[3],
     0, --This should be the radius 
-    valve_model[5] + overrideTarget[5]-override[5] --this is the init angle
+    valve_model[5] + overrideTarget[5]-override[5], --this is the init angle
+    valve_model[6] + overrideTarget[4]-override[4] --this is the target angle
     
   hcm.set_largevalve_model(valve_model)
 
@@ -104,12 +105,13 @@ local function revert_override()
   local override = hcm.get_state_override()
   local valve_model = hcm.get_largevalve_model()
 
-  valve_model[1],valve_model[2],valve_model[3], valve_model[4], valve_model[5]=
+  valve_model[1],valve_model[2],valve_model[3], valve_model[4], valve_model[5], valve_model[6]=
     valve_model[1] - (overrideTarget[1]-override[1]),
     valve_model[2] - (overrideTarget[2]-override[2]),
     valve_model[3] - (overrideTarget[3]-override[3]),
     0, --This should be the radius 
-    valve_model[5] - (overrideTarget[5]-override[5]) --this is the init angle
+    valve_model[5] - (overrideTarget[5]-override[5]), --this is the init angle
+    valve_model[6] - (overrideTarget[4]-override[4]) --this is the target angle
     
   hcm.set_largevalve_model(valve_model)
 --  hcm.set_state_override({valve_model[1],valve_model[2],valve_model[3],valve_model[4],valve_model[5]}) -- 5 elements
@@ -179,9 +181,11 @@ function state.update()
         local angle3 = angle2-Config.armfsm.valveonearm.anglemargin
         local valve_seq={          
           {'valveonearm',angle2,0,1,0},
+--[[
           {'valveonearm',angle3,0,1,0}, --rotate back a bit
           {'valveonearm',angle3,Config.armfsm.valveonearm.clearance,1,0},          
           {'valveonearm',angle1,Config.armfsm.valveonearm.clearance,1,0},          
+--]]          
         }
         if arm_planner:plan_arm_sequence(valve_seq) then stage="valveturn" end
         hcm.set_state_proceed(0)
@@ -214,17 +218,36 @@ function state.update()
     
   elseif stage=="valveturn" then 
     if arm_planner:play_arm_sequence(t) then 
+      if hcm.get_state_proceed()==1 then 
+        print("RELEASE")
+        local angle3 = angle2-Config.armfsm.valveonearm.anglemargin
+        local valve_seq={          
+          {'valveonearm',angle3,0,1,0}, --rotate back a bit
+          {'valveonearm',angle3,Config.armfsm.valveonearm.clearance,1,0},          
+          {'valveonearm',angle1,Config.armfsm.valveonearm.clearance,1,0},          
+        }
+        if arm_planner:plan_arm_sequence(valve_seq) then stage="valverelease" end
+      elseif hcm.get_state_proceed()==3 then --NEW OVERRIDE
+        update_override()
+        local trLArmTarget = movearm.getLargeValvePositionSingle(angle1,0, 1)     
+        local arm_seq = {{'valveonearm',angle2,0,1,0}}
+        local ret = arm_planner:plan_arm_sequence(arm_seq)
+        if ret then 
+          stage="valveturn" 
+          confirm_override()
+        else revert_override() end
+      end
+    end
+
+  elseif stage=="valverelease" then     
+    if arm_planner:play_arm_sequence(t) then 
+--[[      
       local valve_model = hcm.get_largevalve_model()
       valve_model[1] = valve_model[1] + Config.armfsm.valveonearm.clearance 
---[[
-      print( util.color('Valve model:','yellow'), 
-      string.format("%.2f %.2f %.2f / %.1f",
-      valve_model[1],valve_model[2],valve_model[3],
-      valve_model[4]*180/math.pi   ))
---]]
       hcm.set_largevalve_model(valve_model)
       hcm.set_state_success(1) --Report success
       stage="inposition"
+--]]      
     end
   elseif stage=="armbacktoinitpos" then 
     if arm_planner:play_arm_sequence(t) then return "done" end

@@ -8,6 +8,20 @@ local Config = {}
 
 local walk = {}
 
+walk.init_command_velocity = 500
+walk.init_command_accelleration = 50
+
+
+
+walk.leg_p_gain = 64
+walk.ankle_p_gain = 64
+
+
+
+
+
+
+
 print("Robot hostname:",HOSTNAME)
 if HOSTNAME=="alvin" then
   walk.legBias = 
@@ -58,7 +72,6 @@ walk.stanceLimitX = {-0.50,0.50}
 --walk.stanceLimitY = {0.16,0.60}
 walk.stanceLimitY = {0.16,0.30}
 walk.stanceLimitA = {-10*math.pi/180,30*math.pi/180}
-walk.leg_p_gain = 64
 
 if IS_WEBOTS then  
   walk.foot_traj = 2; --square step

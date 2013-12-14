@@ -67,11 +67,10 @@ local channels = {
 
 -- Events for the FSMs
 local char_to_event = {
-  ['1'] = {'body_ch','init'},
-  ['q'] = {'motion_ch','bias'},
-  ['2'] = {'body_ch','stepplan'},
-  ['3'] = {'body_ch','stepplan2'},
-
+  ['9'] = {'body_ch','init'},
+  ['0'] = {'motion_ch','bias'},
+--  ['2'] = {'body_ch','stepplan'},
+--  ['3'] = {'body_ch','stepplan2'},
 }
 
 local servo_names={
@@ -109,38 +108,33 @@ local function process_character(key_code,key_char,key_char_lower)
 
   local bias_mag = 0.25*Body.DEG_TO_RAD
   local legBias = mcm.get_leg_bias()
-  if key_char_lower=="[" then
-    selected_servo = selected_servo-1
-    if selected_servo<1 then selected_servo = 6 end    
-  elseif key_char_lower=="]" then
-    selected_servo = selected_servo+1
-    if selected_servo>6 then selected_servo = 1 end
-  
-  elseif key_char_lower=="j" then
+
+  if key_char_lower=="1" then
+    selected_servo = 1
+  elseif key_char_lower=="2" then
+    selected_servo = 2
+  elseif key_char_lower=="3" then
+    selected_servo = 3
+  elseif key_char_lower=="4" then
+    selected_servo = 4        
+  elseif key_char_lower=="5" then
+    selected_servo = 5
+  elseif key_char_lower=="6" then
+    selected_servo = 6
+
+  elseif key_char_lower=="q" then
     legBias[selected_servo]=legBias[selected_servo]-bias_mag
 
-    if selected_servo==2 then
-      legBias[6]=legBias[6]+bias_mag
-    end
 
-
-  elseif key_char_lower=="l" then
+  elseif key_char_lower=="w" then
     legBias[selected_servo]=legBias[selected_servo]+bias_mag
-    if selected_servo==2 then
-      legBias[6]=legBias[6]-bias_mag
-    end
+    
 
-  elseif key_char_lower=="i" then    
+  elseif key_char_lower=="[" then    
     legBias[selected_servo+6]=legBias[selected_servo+6]-bias_mag
-    if selected_servo==2 then
-      legBias[12]=legBias[12]+bias_mag
-    end
-
-  elseif key_char_lower=="," then        
+    
+  elseif key_char_lower=="]" then        
     legBias[selected_servo+6]=legBias[selected_servo+6]+bias_mag
-    if selected_servo==2 then
-      legBias[12]=legBias[12]-bias_mag
-    end
 
   elseif key_char_lower=="0" then
     print(string.format("Current bias: \n%.2f %.2f %.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f %.2f %.2f ",

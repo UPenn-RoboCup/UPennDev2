@@ -288,7 +288,7 @@ function state.update()
         arm_planner:set_hand_mass(0,2)
         print("trRArm:",arm_planner.print_transform(trRArm))
         
---[[
+--
         --Going back to the init position
         local trRArmTarget1 = Config.armfsm.toolgrip.armpull[1]
         trRArmTarget1[2]=trRArm[2]
@@ -305,15 +305,14 @@ function state.update()
           {'move',nil,trRArmTarget4}          
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "liftpull" end
---]]
+--
 
+--[[
         --Turn wrist to check trigger
-        local arm_seq = {
-          {'wrist',nil,Config.armfsm.toolgrip.armchecktrigger[1]},
-          }
+        local arm_seq = {{'wrist',nil,Config.armfsm.toolgrip.armchecktrigger[1]},}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "checktrigger" end
         hcm.set_state_proceed(0) 
-
+--]]
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_hand_mass(0,1)   
         local trRArmTarget3 = get_tool_tr({0,0,0})
@@ -329,7 +328,7 @@ function state.update()
         else revert_override() end
       end
     end
-
+--[[
   elseif stage=="checktrigger" then --Move arm back to holding position
     if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        
@@ -384,7 +383,7 @@ function state.update()
         hcm.set_state_proceed(0)
       end
     end
-
+--]]
   elseif stage=="liftpull" then --Move arm back to holding position
     if arm_planner:play_arm_sequence(t) then    
       stage = "pulldone"

@@ -67,8 +67,8 @@ local channels = {
 
 -- Events for the FSMs
 local char_to_event = {
-  ['9'] = {'body_ch','init'},
-  ['0'] = {'motion_ch','bias'},
+  ['8'] = {'body_ch','init'},
+  ['9'] = {'motion_ch','bias'},
 --  ['2'] = {'body_ch','stepplan'},
 --  ['3'] = {'body_ch','stepplan2'},
 }

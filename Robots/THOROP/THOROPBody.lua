@@ -611,7 +611,7 @@ Body.set_ltrigger_percent = function( percent, is_torque )
 end
 -- For torque control (no reading from the motor just yet)
 Body.set_ltrigger_command_torque = function(val)
-print('val!',val)
+--print('val!',val)
   -- Set the command_torque
   jcm.gripperPtr.command_torque[2] = -1*val
   -- Set the command_torque

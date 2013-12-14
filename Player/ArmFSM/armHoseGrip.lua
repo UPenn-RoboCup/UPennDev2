@@ -193,16 +193,19 @@ function state.update()
         Body.move_lgrip1(Config.arm.torque.grip_hose)
         Body.move_lgrip2(Config.arm.torque.grip_hose)
         stage = "grab"         
+        hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed() == -1 then 
         local trArmTarget1 = get_model_tr(Config.armfsm.hosegrip.clearance)        
         local trArmTarget2 = get_hand_tr(Config.armfsm.hosegrip.arminit[1])
         local arm_seq = {{'move',trArmTarget1,nil},{'move',trArmTarget2,nil}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
-      elseif hcm.get_state_proceed() == 2 then 
+
+--[[      elseif hcm.get_state_proceed() == 2 then 
         update_model()        
         local trLArmTarget2 = get_model_tr({0,0,0})        
         local arm_seq = {{'move',trLArmTarget2,nil}}     
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "touchtool" end
+--]]        
       elseif hcm.get_state_proceed() == 3 then 
         update_override()        
         local trLArmTarget2 = get_model_tr({0,0,0})        
@@ -215,21 +218,12 @@ function state.update()
         end                        
       end
     end
-    hcm.set_state_proceed(0)
+    
   elseif stage=="grab" then --Grip the object   
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then
         print("trLArm:",arm_planner.print_transform(trLArm))        
         --Pull down and roll wrist
---[[        
-        local trArmTarget0 = get_model_tr(Config.armfsm.hosegrip.bottompull)
-        local trArmTarget1 = get_model_tr(Config.armfsm.hosegrip.bottompull,
-            Config.armfsm.hosegrip.lhand_rpy1)        
-        local arm_seq = {
-          {'move',trArmTarget0,nil},
-          {'wrist',trArmTarget1,nil},                    
-        }
---]]     
         local trArmTarget1 = get_model_tr(Config.armfsm.hosegrip.bottompull,
             Config.armfsm.hosegrip.lhand_rpy1)        
         local arm_seq = {{'wrist',trArmTarget1,nil},}   

@@ -17,6 +17,9 @@ require'jcm'
 require'mcm'
 require'hcm'
 
+-- New Body API
+require'Body'
+
 -- Require all necessary fsm channels
 local fsm_channels = {}
 for _,sm in ipairs(Config.fsm.enabled) do
@@ -44,6 +47,8 @@ local function process_rpc(rpc)
   rpc.segment = trim_string(rpc.segment)
   rpc.key = trim_string(rpc.key)
   rpc.special = trim_string(rpc.special)
+  rpc.body = trim_string(rpc.body)
+  rpc.bargs = trim_string(rpc.bargs)
 
   local status, reply
   -- Shared memory modification
@@ -87,7 +92,24 @@ local function process_rpc(rpc)
         print("sent")
       end
     end
-    --
+  end
+  
+  -- State machine events
+  --[[
+  local body_call = rpc.call
+  if type(body_call)=='string' then
+    local res = loadstring('return '..body_call)
+    print(res())
+    reply = res()
+    print(body_call,'body reply',type(reply))
+  end
+  --]]
+  local body_call = rpc.body
+  local body_args = rpc.bargs
+  if type(body_call)=='string' then
+    
+    status, reply = pcall(Body[body_call],body_args)
+    print('body',body_call,body_args,status,reply)
   end
 
   return reply

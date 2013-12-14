@@ -79,6 +79,8 @@ local function calculate_footsteps()
   step_planner = libStep.new_planner()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
       step_planner:init_stance()
+
+--TODO: select initial foot based on velocity
   supportLeg = 0
 
   local pose_initial = {uTorso_now[1],uTorso_now[2],uTorso_now[3]}
@@ -93,11 +95,12 @@ local function calculate_footsteps()
   local num_steps = 6
   local arrived = false;
 
-  local max_step_count = 30
+--  local max_step_count = 30
+  local max_step_count = 7
   
   while step_queue_count<max_step_count and not arrived do
     if not arrived then
-      if step_queue_count==1 then
+      if step_queue_count<=2 then
         step_planner.velCurrent = vector.new({0.0,0,0})
       else
         step_planner.velCurrent,arrived = robocup_follow(uTorso_now,target_pose)

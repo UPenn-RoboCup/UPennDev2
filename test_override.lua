@@ -99,10 +99,10 @@ local char_to_override = {
   ['u'] = vector.new({0, 0, 0.01,  0,0}),
   ['m'] = vector.new({0,0, -.01,   0,0}),
   
-  ['h'] = vector.new({0,0,0,     2,0})*math.pi/180,
-  [';'] = vector.new({0,0,0,    -2,0})*math.pi/180,
-  ['['] = vector.new({0,0,0,     0,-2})*math.pi/180,
-  [']'] = vector.new({0,0,0,     0,2})*math.pi/180,
+  ['h'] = vector.new({0,0,0,     -1,0}),
+  [';'] = vector.new({0,0,0,    1,0}),
+  ['['] = vector.new({0,0,0,     0,-1}),
+  [']'] = vector.new({0,0,0,     0,1}),
 
 }
 

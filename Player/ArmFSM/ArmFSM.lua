@@ -166,6 +166,7 @@ sm:set_transition(armHoseGrip, 'done', armPose1)
 sm:set_transition(armHoseGrip, 'hold', armHoseHold)
 --sm:set_transition(armHoseHold, 'hosegrab', armHoseAttach)
 sm:set_transition(armHoseHold, 'hosegrab', armHoseTap)
+sm:set_transition(armHoseTap, 'hold', armHoseHold)
 
 
 

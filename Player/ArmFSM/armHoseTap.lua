@@ -82,7 +82,6 @@ function state.update()
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
 
       elseif hcm.get_state_proceed()==-1 then 
-        print("HERE")
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) 
         local wrist_seq = {{"wrist",trLArm0,nil}}
         if arm_planner:plan_arm_sequence2(wrist_seq) then 
@@ -128,8 +127,7 @@ function state.update()
     end
    elseif stage=="armbacktoinitpos" then
     if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed()==1 then         
-      end
+      return "hold"   
     end
    end
 

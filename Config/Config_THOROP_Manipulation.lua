@@ -155,9 +155,17 @@ armfsm.debrisgrip.clearance={0,0.08,0}
 armfsm.debrisgrip.liftup = {0,0,0.05}
 
 
+armfsm.debrisgrip.lhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.debrisgrip.rhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
 
 
+--Take two
+armfsm.debrisgrip.arminit={
+---0.20 -0.30 -0.32  (0 30 0)
+  {0.20,-0.30,-0.40, 0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.20,-0.30,-0.40, 90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD},
 
+}
 
 
 

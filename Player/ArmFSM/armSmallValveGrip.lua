@@ -241,13 +241,12 @@ function state.update()
 
   elseif stage=="valverelease" then     
     if arm_planner:play_arm_sequence(t) then 
---[[      
       local valve_model = hcm.get_largevalve_model()
       valve_model[1] = valve_model[1] + Config.armfsm.valveonearm.clearance 
       hcm.set_largevalve_model(valve_model)
       hcm.set_state_success(1) --Report success
       stage="inposition"
---]]      
+      hcm.set_state_proceed(0)
     end
   elseif stage=="armbacktoinitpos" then 
     if arm_planner:play_arm_sequence(t) then return "done" end

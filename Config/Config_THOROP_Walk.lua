@@ -21,6 +21,28 @@ elseif HOSTNAME=="teddy" then
     vector.new({1, 0.50,    -0, -0.25,  0.25, 0.25,
                 0, 0,    0.75,   -1,  0, -0.50,
     })*DEG_TO_RAD
+--[[
+--JK bias 12/14
+
+  --hiproll 0.25 0.125
+  --hippitch -0.25 0.375
+  --kneepitch -0.5 -0.875
+
+  walk.legBias = 
+    vector.new({1, 0.25,-0.25, -0.50,  0.25, 0.25,
+                0, 0.125,0.375,-0.875,  0, -0.50,
+    })*DEG_TO_RAD
+
+--TWEAKED HIPROLL
+
+  walk.legBias = 
+    vector.new({1, 0.50,-0.25, -0.50,  0.25, 0.25,
+                0, 0.0,0.375,-0.875,  0, -0.50,
+    })*DEG_TO_RAD
+--]]
+
+
+
 else
   walk.legBias = 
     vector.new({0,0,0,0,0,0,

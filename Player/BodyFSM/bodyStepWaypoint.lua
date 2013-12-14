@@ -76,12 +76,21 @@ local function robocup_follow( pose, target_pose)
   return vStep, false
 end
 local function calculate_footsteps()
+  
+
   step_planner = libStep.new_planner()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
       step_planner:init_stance()
 
 --TODO: select initial foot based on velocity
-  supportLeg = 0
+
+
+  if target_pose[2]>0 then --sidestep to the left
+    supportLeg = 0
+  else --sidestep to the right
+    supportLeg = 1
+  end
+  
 
   local pose_initial = {uTorso_now[1],uTorso_now[2],uTorso_now[3]}
 

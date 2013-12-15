@@ -59,7 +59,13 @@ local function robocup_follow( pose, target_pose)
     vStep[3] = util.procFunc(0.25*aTurn,0,.15)
   end
 --]]
-  vStep[3] = math.min(0.15, math.max(-0.15, .25 * rel_pose[3]))
+
+
+
+--  vStep[3] = math.min(0.15, math.max(-0.15, .25 * rel_pose[3]))
+
+
+
 
 
   -- If we are close to the waypoint and have the right angle threshold, we are fine
@@ -70,7 +76,14 @@ local function robocup_follow( pose, target_pose)
     -- if not the last waypoint, then we are done with this waypoint
       return {0,0,0}, true 
     else
-      vStep[3] = .05*util.sign(rel_pose[3])
+--      vStep[3] = Config.walk.*util.sign(rel_pose[3])
+
+  vStep[3] = math.min(
+        Config.walk.maxTurnSpeed, 
+         math.max(-Config.walk.maxTurnSpeed,
+        Config.walk.aTurnSpeed * rel_pose[3]))
+
+
     end
   end
   return vStep, false
@@ -101,13 +114,14 @@ local function calculate_footsteps()
   
   step_queue[1] = {{0,0,0},2, 0.1,1,0.1,{0,0,0},{0,0,0}}
   local step_queue_count = 1;
-  local num_steps = 6
+
   local arrived = false;
 
   --TODO: only sidestep requires frequent pauseing
 
 --  local max_step_count = 30
-  local max_step_count = 7
+  local max_step_count = Config.walk.maxStepCount or 6
+
   
   while step_queue_count<max_step_count and not arrived do
     if not arrived then

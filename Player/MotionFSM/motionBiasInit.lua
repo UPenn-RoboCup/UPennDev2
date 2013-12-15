@@ -68,6 +68,7 @@ function state.entry()
   mcm.set_stance_bodyTilt(pTorso[5])
 
   stage = 1
+--[[
   if not IS_WEBOTS then
     for i=1,10 do
       Body.set_waist_command_velocity({500,500})
@@ -82,6 +83,7 @@ function state.entry()
       unix.usleep(1e6*0.01);
     end
   end
+--]]
 
   Body.request_lleg_position()
   Body.request_rleg_position()

@@ -16,54 +16,14 @@ walk.init_command_accelleration = 50
 walk.leg_p_gain = 64
 walk.ankle_p_gain = 64
 
-
-
-
+--Default-y vaue
+walk.maxTurnSpeed = 0.10
+walk.aTurnSpeed = 0.25
+walk.maxStepCount = 8
 
 
 
 print("Robot hostname:",HOSTNAME)
-if HOSTNAME=="alvin" then
-  walk.legBias = 
-    vector.new({
-      0,  1.0,  -1.0,  -1.0,  0, 0, --LLEG
-      0,  -0.50, 0,0,0, 0,  --RLEG
-    })*DEG_TO_RAD
-elseif HOSTNAME=="teddy" then
-  print("TEDDY")
-  walk.legBias = 
-    vector.new({1, 0.50,    -0, -0.25,  0.25, 0.25,
-                0, 0,    0.75,   -1,  0, -0.50,
-    })*DEG_TO_RAD
---[[
---JK bias 12/14
-
-  --hiproll 0.25 0.125
-  --hippitch -0.25 0.375
-  --kneepitch -0.5 -0.875
-
-  walk.legBias = 
-    vector.new({1, 0.25,-0.25, -0.50,  0.25, 0.25,
-                0, 0.125,0.375,-0.875,  0, -0.50,
-    })*DEG_TO_RAD
-
---TWEAKED HIPROLL
-
-  walk.legBias = 
-    vector.new({1, 0.50,-0.25, -0.50,  0.25, 0.25,
-                0, 0.0,0.375,-0.875,  0, -0.50,
-    })*DEG_TO_RAD
---]]
-
-
-
-else
-  walk.legBias = 
-    vector.new({0,0,0,0,0,0,
-        0,0,0,0,0,0,
-    })*DEG_TO_RAD
-end
-
 
 ------------------------------------
 -- Stance and velocity limit values
@@ -189,6 +149,22 @@ end
 
 if HOSTNAME=="alvin" then
 
+
+  walk.legBias = 
+    vector.new({
+      0,  1.0,  -1.0,  -1.0,  0, 0, --LLEG
+      0,  -0.50, 0,0,0, 0,  --RLEG
+    })*DEG_TO_RAD
+
+--New bias 12/14 9:12 PM
+
+  walk.legBias = 
+    vector.new({
+      0.875, 0.875, -0.625, -1.75, 0.00, -0.75,
+      0.625, -0.50, 0.375, 0.125, 0.00, 0.125 
+    })*DEG_TO_RAD
+
+
 --For alvin
   walk.hipRollCompensation = 1*math.pi/180
   walk.stepHeight = 0.03
@@ -201,16 +177,35 @@ if HOSTNAME=="alvin" then
 
 --with battery
   walk.torsoX = -0.02
---slow step
---[[
-  walk.tStep = 2.0
-  walk.stepHeight = 0.05
 
-  walk.phSingle = {0.3,0.7}
-  walk.phZmp = {0.3,0.7}
---]]
 
-  walk.footY = 0.095 --Narrower stance, robotis value
+--Narrower stance, robotis value, 12/14 10:10PM
+  walk.footY = 0.095 
+  walk.torsoX = -0.04 
+  walk.hipRollCompensation = 2*math.pi/180
+  walk.supportY = 0.05
+
+  walk.velLimitA = {-.4,.4}
+
+  --JK's 10:54PM
+--hiproll: 1 -0.4325
+--kneepitch: -2.155 -0.3475
+--ankleroll: -0.345 1.0025
+
+  walk.legBias = 
+    vector.new({
+      0.875, 1, -0.625, -2.155, 0.00, -0.345,
+      0.625, -0.4325, 0.375, -0.3475, 0.00, 1.0025 
+    })*DEG_TO_RAD
+
+  --Faster turn testing
+  walk.maxTurnSpeed = 0.20
+  walk.aTurnSpeed = 0.25
+  walk.maxStepCount = 30
+
+
+
+
 
 
 elseif HOSTNAME=="teddy" then
@@ -219,6 +214,47 @@ elseif HOSTNAME=="teddy" then
   walk.stepHeight = 0.03
   walk.supportX = 0.02
   walk.supportY = 0.03
+end
+
+
+
+
+if HOSTNAME=="alvin" then
+
+
+elseif HOSTNAME=="teddy" then
+  print("TEDDY")
+  walk.legBias = 
+    vector.new({1, 0.50,    -0, -0.25,  0.25, 0.25,
+                0, 0,    0.75,   -1,  0, -0.50,
+    })*DEG_TO_RAD
+--[[
+--JK bias 12/14
+
+  --hiproll 0.25 0.125
+  --hippitch -0.25 0.375
+  --kneepitch -0.5 -0.875
+
+  walk.legBias = 
+    vector.new({1, 0.25,-0.25, -0.50,  0.25, 0.25,
+                0, 0.125,0.375,-0.875,  0, -0.50,
+    })*DEG_TO_RAD
+
+--TWEAKED HIPROLL
+
+  walk.legBias = 
+    vector.new({1, 0.50,-0.25, -0.50,  0.25, 0.25,
+                0, 0.0,0.375,-0.875,  0, -0.50,
+    })*DEG_TO_RAD
+--]]
+
+
+
+else
+  walk.legBias = 
+    vector.new({0,0,0,0,0,0,
+        0,0,0,0,0,0,
+    })*DEG_TO_RAD
 end
 
 

@@ -48,8 +48,10 @@ local function update_override()
     door_model[5], -- Knob x offset
     door_model[6], -- Knob y offset from knob axle
 
-    door_model[7] + overrideTarget[4]-override[4], --Target knob roll
-    door_model[8] + overrideTarget[5]-override[5]  --Target door yaw
+    door_model[7] + (overrideTarget[4]-override[4])*
+      Config.armfsm.dooropen.turnUnit, --Target knob roll
+    door_model[8] + (overrideTarget[5]-override[5])*
+      Config.armfsm.dooropen.turnUnit2, --Target door yaw
     }
 
   --Knob roll: 0 to -90
@@ -84,8 +86,10 @@ local function revert_override()
     door_model[4], --Door width
     door_model[5], -- Knob x offset
     door_model[6], -- Knob y offset from knob axle
-    door_model[7] - (overrideTarget[4]-override[4]), --Target knob roll
-    door_model[8] - (overrideTarget[5]-override[5])  --Target door yaw
+    door_model[7] - (overrideTarget[4]-override[4])*
+      Config.armfsm.dooropen.turnUnit, --Target knob roll
+    door_model[8] - (overrideTarget[5]-override[5])*
+      Config.armfsm.dooropen.turnUnit2, --Target door yaw
     }
 
   --Knob roll: 0 to -90

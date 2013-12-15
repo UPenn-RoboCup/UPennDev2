@@ -483,6 +483,8 @@ armfsm.dooropen.velWaistYaw = 3*DEG_TO_RAD * speed_factor
 armfsm.dooropen.velWaistPitch = 3*DEG_TO_RAD * speed_factor
 armfsm.dooropen.waistTarget = -15*DEG_TO_RAD
 
+armfsm.dooropen.turnUnit = 15*DEG_TO_RAD --Knob roll
+armfsm.dooropen.turnUnit2 = 2*DEG_TO_RAD --Door yaw
 
 ---------------------------------------------------------------
 ------   Door push open

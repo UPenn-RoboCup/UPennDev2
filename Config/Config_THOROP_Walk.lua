@@ -163,43 +163,7 @@ else
   walk.phComp = {0.1,0.9}
   walk.phCompSlope = 0.2
 
-if HOSTNAME=="alvin" then
 
---For alvin
-  walk.hipRollCompensation = 1*math.pi/180
-  walk.stepHeight = 0.03
-  walk.supportX = 0.02
-  walk.supportY = 0.03
-
-  walk.velLimitY = {-.01,.01}
-  walk.velLimitA = {-.2,.2}
-  walk.velDelta  = {0.025,0.02,0.1}
-
-
---with battery
-  walk.torsoX = -0.02
-
-
---slow step
---[[
-  walk.tStep = 2.0
-  walk.stepHeight = 0.05
-
-  walk.phSingle = {0.3,0.7}
-  walk.phZmp = {0.3,0.7}
---]]
-
-
-
-elseif HOSTNAME=="teddy" then
---for teddy
-
-  walk.hipRollCompensation = 1*math.pi/180
-  walk.stepHeight = 0.03
-  walk.supportX = 0.02
-  walk.supportY = 0.03
-
-end
 
 
 
@@ -221,6 +185,49 @@ end
   walk.velLimitA = {-.2,.2}
   walk.velDelta  = {0.025,0.02,0.1}
 end
+
+
+if HOSTNAME=="alvin" then
+
+--For alvin
+  walk.hipRollCompensation = 1*math.pi/180
+  walk.stepHeight = 0.03
+  walk.supportX = 0.02
+  walk.supportY = 0.03
+
+  walk.velLimitY = {-.01,.01}
+  walk.velLimitA = {-.2,.2}
+  walk.velDelta  = {0.025,0.02,0.1}
+
+--with battery
+  walk.torsoX = -0.02
+--slow step
+--[[
+  walk.tStep = 2.0
+  walk.stepHeight = 0.05
+
+  walk.phSingle = {0.3,0.7}
+  walk.phZmp = {0.3,0.7}
+--]]
+
+  walk.footY = 0.095 --Narrower stance, robotis value
+
+
+elseif HOSTNAME=="teddy" then
+--for teddy
+  walk.hipRollCompensation = 1*math.pi/180
+  walk.stepHeight = 0.03
+  walk.supportX = 0.02
+  walk.supportY = 0.03
+end
+
+
+
+
+
+
+
+
 
 -----------------------------------------------------------
 -- Stance parameters

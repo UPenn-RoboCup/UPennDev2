@@ -1370,7 +1370,6 @@ Body.update = function()
   local rate_g = jcm.get_gripper_rate()
   local t_g = Body.get_time()
   if READ_GRIPPERS and (t_g-tread_g)>rate_g then
-print'reading...'
     -- Reset the time
     jcm.set_gripper_t(t_g)
     

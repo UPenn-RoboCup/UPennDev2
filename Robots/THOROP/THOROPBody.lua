@@ -13,7 +13,7 @@ local use_lidar_head  = false
 -- if using one USB2Dynamixel
 local ONE_CHAIN = false
 local DISABLE_MICROSTRAIN = false
-local READ_GRIPPERS = false
+local READ_GRIPPERS = true
 
 --Turn off camera for default for webots
 --This makes body crash if we turn it on again...
@@ -1335,20 +1335,21 @@ Body.update = function()
   local rate_g = jcm.get_gripper_rate()
   local t_g = Body.get_time()
   if READ_GRIPPERS and (t_g-tread_g)>rate_g then
+print'reading...'
     -- Reset the time
     jcm.set_gripper_t(t_g)
     -- Read load/temperature/position/current
-    local s, lall_1 = lD.get_mx_everything(lg_m1,l_dyn)
-    local s, lall_2 = lD.get_mx_everything(lg_m2,l_dyn)
-    local s, rall_1 = lD.get_mx_everything(rg_m1,r_dyn)
-    local s, rall_2 = lD.get_mx_everything(rg_m2,r_dyn)
+    local s, lall_1 = libDynamixel.get_mx_everything(lg_m1,l_dyn)
+    local s, lall_2 = libDynamixel.get_mx_everything(lg_m2,l_dyn)
+    local s, rall_1 = libDynamixel.get_mx_everything(rg_m1,r_dyn)
+    local s, rall_2 = libDynamixel.get_mx_everything(rg_m2,r_dyn)
     if lall_1 then
       t_read = unix.time()
       jcm.sensorPtr.position[indexLGrip] = 
-        Body.make_joint_radian(lclaw_joint,lall.position)
-      jcm.sensorPtr.velocity[indexLGrip] = lall.speed
-      jcm.sensorPtr.load[indexLGrip] = lall.load
-      jcm.sensorPtr.temperature[indexLGrip] = lall.temperature
+        Body.make_joint_radian(indexLGrip,lall_1.position)
+      jcm.sensorPtr.velocity[indexLGrip] = lall_1.speed
+      jcm.sensorPtr.load[indexLGrip] = lall_1.load
+      jcm.sensorPtr.temperature[indexLGrip] = lall_1.temperature
       -- time of Read
       jcm.treadPtr.position[indexLGrip] = t_read
       jcm.treadPtr.velocity[indexLGrip] = t_read

@@ -500,6 +500,7 @@ for k,v in pairs( mx_registers ) do
 
     -- Grab the status of the register    
     local status = get_status( bus.fd, nids )
+    if not status then return end
     
     if sz==8 and #status.parameter==8 then
       -- Everything!

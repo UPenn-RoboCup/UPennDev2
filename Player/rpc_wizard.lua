@@ -150,6 +150,13 @@ local function send_status_feedback()
   data.rlegangle  = Body.get_rleg_command_position()
   data.lgrip = Body.get_lgrip_command_position()
   data.rgrip = Body.get_rgrip_command_position()
+  -- Gripper
+  data.l_load = Body.get_lgrip_load()
+  data.r_load = Body.get_rgrip_load()
+  data.l_temp = Body.get_lgrip_temperature()
+  data.r_temp = Body.get_rgrip_temperature()
+  data.l_gpos = Body.get_lgrip_position()
+  data.r_gpos = Body.get_rgrip_position()
 
   --Pose information
 --  data.pose =  wcm.get_robot_pose()    

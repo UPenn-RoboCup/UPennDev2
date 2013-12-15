@@ -13,7 +13,7 @@ local use_lidar_head  = false
 -- if using one USB2Dynamixel
 local ONE_CHAIN = false
 local DISABLE_MICROSTRAIN = false
-local READ_GRIPPERS = false
+local READ_GRIPPERS = true
 
 --Turn off camera for default for webots
 --This makes body crash if we turn it on again...
@@ -1153,6 +1153,41 @@ end
   
 end
 
+local parse_all = function(status_raw,id)
+if not status_raw then return end
+--print(status_raw,id)
+--util.ptable(status_raw)
+  local status
+  if status_raw.id==id then
+    status = status_raw
+  else
+    for _,p in ipairs(status_raw) do
+      if p.id==id then status = p end
+    end
+  end
+--print(status,'status')
+
+  if not status then return end
+  -- Everything!
+  local value = {}
+  -- In steps
+  value.position = libDynamixel.byte_to_number[2]( unpack(status.parameter,1,2) )
+  local speed = libDynamixel.byte_to_number[2]( unpack(status.parameter,3,4) )
+  if speed>=1024 then speed = 1024-speed end
+  -- To Radians per second
+  value.speed = (speed * math.pi) / 270
+  local load  = libDynamixel.byte_to_number[2]( unpack(status.parameter,5,6) )
+  if load>=1024 then load = 1024-load end
+  -- To percent
+  value.load = load / 10.24
+  -- To Volts
+  value.voltage = status.parameter[7] / 10
+  -- Is Celsius already
+  value.temperature = status.parameter[8]
+--util.ptable(value)
+  return value
+end
+
 Body.update = function()
 
   for _,d in pairs(dynamixels) do
@@ -1338,64 +1373,67 @@ Body.update = function()
 print'reading...'
     -- Reset the time
     jcm.set_gripper_t(t_g)
+    
     -- Read load/temperature/position/current
-    local s, lall_1 = libDynamixel.get_mx_everything(lg_m1,l_dyn)
-    local s, lall_2 = libDynamixel.get_mx_everything(lg_m2,l_dyn)
-    local s, rall_1 = libDynamixel.get_mx_everything(rg_m1,r_dyn)
-    local s, rall_2 = libDynamixel.get_mx_everything(rg_m2,r_dyn)
+    local lall_1 = libDynamixel.get_mx_everything(lg_m1,l_dyn)
+    local rall_1 = libDynamixel.get_mx_everything(rg_m1,r_dyn)
+    unix.usleep(1e2)
+    local lall_2 = libDynamixel.get_mx_everything(lg_m2,l_dyn)
+    local rall_2 = libDynamixel.get_mx_everything(rg_m2,r_dyn)
+--
+lall_1 = parse_all(lall_1,lg_m1)
+lall_2 = parse_all(lall_2,lg_m2)
+rall_1 = parse_all(rall_1,rg_m1)
+rall_2 = parse_all(rall_2,rg_m2)
     if lall_1 then
-      t_read = unix.time()
       jcm.sensorPtr.position[indexLGrip] = 
         Body.make_joint_radian(indexLGrip,lall_1.position)
       jcm.sensorPtr.velocity[indexLGrip] = lall_1.speed
       jcm.sensorPtr.load[indexLGrip] = lall_1.load
       jcm.sensorPtr.temperature[indexLGrip] = lall_1.temperature
       -- time of Read
-      jcm.treadPtr.position[indexLGrip] = t_read
-      jcm.treadPtr.velocity[indexLGrip] = t_read
-      jcm.treadPtr.load[indexLGrip] = t_read
-      jcm.treadPtr.temperature[indexLGrip] = t_read
+      jcm.treadPtr.position[indexLGrip] = t_g
+      jcm.treadPtr.velocity[indexLGrip] = t_g
+      jcm.treadPtr.load[indexLGrip] = t_g
+      jcm.treadPtr.temperature[indexLGrip] = t_g
     end
     if lall_2 then
-      t_read = unix.time()
       jcm.sensorPtr.position[indexLGrip+1] = 
         Body.make_joint_radian(indexLGrip+1,lall_2.position)
       jcm.sensorPtr.velocity[indexLGrip+1] = lall_2.speed
       jcm.sensorPtr.load[indexLGrip+1] = lall_2.load
       jcm.sensorPtr.temperature[indexLGrip+1] = lall_2.temperature
       -- time of Read
-      jcm.treadPtr.position[indexLGrip+1] = t_read
-      jcm.treadPtr.velocity[indexLGrip+1] = t_read
-      jcm.treadPtr.load[indexLGrip+1] = t_read
-      jcm.treadPtr.temperature[indexLGrip+1] = t_read
+      jcm.treadPtr.position[indexLGrip+1] = t_g
+      jcm.treadPtr.velocity[indexLGrip+1] = t_g
+      jcm.treadPtr.load[indexLGrip+1] = t_g
+      jcm.treadPtr.temperature[indexLGrip+1] = t_g
     end
     if rall_1 then
-      t_read = unix.time()
       jcm.sensorPtr.position[indexRGrip] = 
         Body.make_joint_radian(indexRGrip,rall_1.position)
       jcm.sensorPtr.velocity[indexRGrip] = rall_1.speed
       jcm.sensorPtr.load[indexRGrip] = rall_1.load
       jcm.sensorPtr.temperature[indexRGrip] = rall_1.temperature
       -- time of Read
-      jcm.treadPtr.position[indexRGrip] = t_read
-      jcm.treadPtr.velocity[indexRGrip] = t_read
-      jcm.treadPtr.load[indexRGrip] = t_read
-      jcm.treadPtr.temperature[indexRGrip] = t_read
+      jcm.treadPtr.position[indexRGrip] = t_g
+      jcm.treadPtr.velocity[indexRGrip] = t_g
+      jcm.treadPtr.load[indexRGrip] = t_g
+      jcm.treadPtr.temperature[indexRGrip] = t_g
     end
     if rall_2 then
-      t_read = unix.time()
       jcm.sensorPtr.position[indexRGrip+1] = 
         Body.make_joint_radian(indexRGrip+1,rall_2.position)
       jcm.sensorPtr.velocity[indexRGrip+1] = rall_2.speed
       jcm.sensorPtr.load[indexRGrip+1] = rall_2.load
       jcm.sensorPtr.temperature[indexRGrip+1] = rall_2.temperature
       -- time of Read
-      jcm.treadPtr.position[indexRGrip+1] = t_read
-      jcm.treadPtr.velocity[indexRGrip+1] = t_read
-      jcm.treadPtr.load[indexRGrip+1] = t_read
-      jcm.treadPtr.temperature[indexRGrip+1] = t_read
+      jcm.treadPtr.position[indexRGrip+1] = t_g
+      jcm.treadPtr.velocity[indexRGrip+1] = t_g
+      jcm.treadPtr.load[indexRGrip+1] = t_g
+      jcm.treadPtr.temperature[indexRGrip+1] = t_g
     end
-    
+    --]]
   end
   -- END GRIP READING --
   -----------------------

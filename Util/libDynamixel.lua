@@ -13,7 +13,7 @@ local unix = require'unix'
 local stty = require'stty'
 local using_status_return = true
 -- 75ms default timeout
-local READ_TIMEOUT = 0.005
+local READ_TIMEOUT = 0.015
 
 -- TODO: Make this a parameter to set externally
 -- TODO: This should be tuned based on the byte size written?
@@ -108,7 +108,7 @@ local mx_registers = {
   command_acceleration = {string.char(73,0),1},
   
   -- all dat!
-  everything = {36,8},
+  everything = {string.char(36,0),8},
 }
 libDynamixel.mx_registers = mx_registers
 
@@ -328,16 +328,23 @@ local function get_status( fd, npkt, protocol, timeout )
       if pkts then
         for p,pkt in ipairs(pkts) do
           local status = DP.parse_status_packet( pkt )
-          if npkt==1 then return status end
+          --if npkt==1 then return status end
           table.insert( statuses, status )
         end
-        if #statuses==npkt then return statuses end
+        --if #statuses>=npkt then return statuses end
       end -- if pkts
     end
     unix.select({fd},0.001)
   end
+
+if #statuses==0 then
   -- Did we timeout?
   return nil
+elseif #statuses==1 then
+  return statuses[1]
+end
+
+  return statuses
 end
 
 --------------------
@@ -499,43 +506,8 @@ for k,v in pairs( mx_registers ) do
     local ret = unix.write( bus.fd, instruction)
 
     -- Grab the status of the register    
-    local status = get_status( bus.fd, nids )
-    if not status then return end
-    
-    if sz==8 and #status.parameter==8 then
-      -- Everything!
-      value = {}
-      -- In steps
-      value.position = byte_to_number[2]( unpack(status.parameter,1,2) )
-      local speed = byte_to_number[2]( unpack(status.parameter,3,4) )
-      if speed>=1024 then speed = 1024-speed end
-      -- To Radians per second
-      value.speed = (speed * math.pi) / 270
-      local load  = byte_to_number[2]( unpack(status.parameter,5,6) )
-      if load>=1024 then load = 1024-load end
-      -- To percent
-      value.load = load / 10.24
-      -- To Volts
-      value.voltage = status.parameter[7] / 10
-      -- Is Celsius already
-      value.temperature = status.parameter[8]
-      return status, value
-    end
-    
-    return status
-    
---[[
-    -- Grab the status of the register
-    local status = get_status( bus.fd, nids )
-    if not status then return end
-    
-    local values = {}
-    for i,s in ipairs(status) do
-      table.insert(values,byte_to_number[sz]( unpack(s.parameter) ))
-    end
-    return status, values
---]]
-    
+    return get_status( bus.fd, nids )
+
   end --function
 end
 

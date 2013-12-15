@@ -73,20 +73,18 @@ local char_to_event = {
   ['3'] = {'arm_ch','doorgrab'},
   ['4'] = {'arm_ch','pushdoorgrab'},
   ['5'] = {'arm_ch','loaddoorgrab'},
-
-
-
   ['6'] = {'arm_ch','smallvalvegrab'},
   ['7'] = {'arm_ch','barvalvegrab'},
-  ['8'] = {'arm_ch','largevalvegrab'},
+
+--  ['8'] = {'arm_ch','largevalvegrab'},
 
 
   ['9'] = {'arm_ch','hosegrab'},
   ['0'] = {'arm_ch','debrisgrab'},
 
   ['r'] = {'arm_ch','rocky'},
-  ['t'] = {'arm_ch','teleop'},
-  ['y'] = {'arm_ch','test'},
+--  ['t'] = {'arm_ch','teleop'},
+--  ['y'] = {'arm_ch','test'},
 
  
 }
@@ -103,13 +101,26 @@ local char_to_override = {
   [';'] = vector.new({0,0,0,    1,0}),
   ['['] = vector.new({0,0,0,     0,-1}),
   [']'] = vector.new({0,0,0,     0,1}),
-
 }
 
 local char_to_state = {
   ['='] = 1,
   ['-'] = -1,  
 }
+
+local char_to_lfinger = {
+  ['z'] = vector.new({-5,-5}),
+  ['a'] = vector.new({0,0}),
+  ['q'] = vector.new({5,5}),
+}
+
+local char_to_rfinger = {
+  ['x'] = vector.new({-5,-5}),
+  ['s'] = vector.new({0,0}),
+  ['w'] = vector.new({5,5}),
+}
+
+
 
 local function send_command_to_ch(channel, cmd_string)
   -- Default case is to send the command and receive a reply
@@ -147,6 +158,21 @@ local function process_character(key_code,key_char,key_char_lower)
     hcm.set_state_proceed(3) --notify override change
     return
   end
+
+  local lf = char_to_lfinger[key_char_lower]
+  if lf then
+    Body.move_lgrip1(lf[1])
+    Body.move_lgrip2(lf[2])
+    return
+  end
+
+  local rf = char_to_rfinger[key_char_lower]
+  if rf then
+    Body.move_rgrip1(rf[1])
+    Body.move_rgrip2(rf[2])
+    return
+  end
+
  
 
   local state_adj = char_to_state[key_char_lower]

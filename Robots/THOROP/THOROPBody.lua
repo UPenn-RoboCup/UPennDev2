@@ -1153,6 +1153,26 @@ end
   
 end
 
+local function parse_all = function(status)
+  -- Everything!
+  local value = {}
+  -- In steps
+  value.position = libDynamixel.byte_to_number[2]( unpack(status.parameter,1,2) )
+  local speed = libDynamixel.byte_to_number[2]( unpack(status.parameter,3,4) )
+  if speed>=1024 then speed = 1024-speed end
+  -- To Radians per second
+  value.speed = (speed * math.pi) / 270
+  local load  = libDynamixel.byte_to_number[2]( unpack(status.parameter,5,6) )
+  if load>=1024 then load = 1024-load end
+  -- To percent
+  value.load = load / 10.24
+  -- To Volts
+  value.voltage = status.parameter[7] / 10
+  -- Is Celsius already
+  value.temperature = status.parameter[8]
+  return value
+end
+
 Body.update = function()
 
   for _,d in pairs(dynamixels) do
@@ -1366,56 +1386,56 @@ print'reading...'
     local s, lall_2 = libDynamixel.get_mx_everything(lg_m2,l_dyn)
     local s, rall_2 = libDynamixel.get_mx_everything(rg_m2,r_dyn)
     if lall_1 then
-      t_read = unix.time()
+      lall_l1 = parse_all(lall_1)
       jcm.sensorPtr.position[indexLGrip] = 
         Body.make_joint_radian(indexLGrip,lall_1.position)
       jcm.sensorPtr.velocity[indexLGrip] = lall_1.speed
       jcm.sensorPtr.load[indexLGrip] = lall_1.load
       jcm.sensorPtr.temperature[indexLGrip] = lall_1.temperature
       -- time of Read
-      jcm.treadPtr.position[indexLGrip] = t_read
-      jcm.treadPtr.velocity[indexLGrip] = t_read
-      jcm.treadPtr.load[indexLGrip] = t_read
-      jcm.treadPtr.temperature[indexLGrip] = t_read
+      jcm.treadPtr.position[indexLGrip] = t_g
+      jcm.treadPtr.velocity[indexLGrip] = t_g
+      jcm.treadPtr.load[indexLGrip] = t_g
+      jcm.treadPtr.temperature[indexLGrip] = t_g
     end
     if lall_2 then
-      t_read = unix.time()
+      lall_2 = parse_all(lall_2)
       jcm.sensorPtr.position[indexLGrip+1] = 
         Body.make_joint_radian(indexLGrip+1,lall_2.position)
       jcm.sensorPtr.velocity[indexLGrip+1] = lall_2.speed
       jcm.sensorPtr.load[indexLGrip+1] = lall_2.load
       jcm.sensorPtr.temperature[indexLGrip+1] = lall_2.temperature
       -- time of Read
-      jcm.treadPtr.position[indexLGrip+1] = t_read
-      jcm.treadPtr.velocity[indexLGrip+1] = t_read
-      jcm.treadPtr.load[indexLGrip+1] = t_read
-      jcm.treadPtr.temperature[indexLGrip+1] = t_read
+      jcm.treadPtr.position[indexLGrip+1] = t_g
+      jcm.treadPtr.velocity[indexLGrip+1] = t_g
+      jcm.treadPtr.load[indexLGrip+1] = t_g
+      jcm.treadPtr.temperature[indexLGrip+1] = t_g
     end
     if rall_1 then
-      t_read = unix.time()
+      rall_1 = parse_all(rall_1)
       jcm.sensorPtr.position[indexRGrip] = 
         Body.make_joint_radian(indexRGrip,rall_1.position)
       jcm.sensorPtr.velocity[indexRGrip] = rall_1.speed
       jcm.sensorPtr.load[indexRGrip] = rall_1.load
       jcm.sensorPtr.temperature[indexRGrip] = rall_1.temperature
       -- time of Read
-      jcm.treadPtr.position[indexRGrip] = t_read
-      jcm.treadPtr.velocity[indexRGrip] = t_read
-      jcm.treadPtr.load[indexRGrip] = t_read
-      jcm.treadPtr.temperature[indexRGrip] = t_read
+      jcm.treadPtr.position[indexRGrip] = t_g
+      jcm.treadPtr.velocity[indexRGrip] = t_g
+      jcm.treadPtr.load[indexRGrip] = t_g
+      jcm.treadPtr.temperature[indexRGrip] = t_g
     end
     if rall_2 then
-      t_read = unix.time()
+      rall_2 = parse_all(rall_2)
       jcm.sensorPtr.position[indexRGrip+1] = 
         Body.make_joint_radian(indexRGrip+1,rall_2.position)
       jcm.sensorPtr.velocity[indexRGrip+1] = rall_2.speed
       jcm.sensorPtr.load[indexRGrip+1] = rall_2.load
       jcm.sensorPtr.temperature[indexRGrip+1] = rall_2.temperature
       -- time of Read
-      jcm.treadPtr.position[indexRGrip+1] = t_read
-      jcm.treadPtr.velocity[indexRGrip+1] = t_read
-      jcm.treadPtr.load[indexRGrip+1] = t_read
-      jcm.treadPtr.temperature[indexRGrip+1] = t_read
+      jcm.treadPtr.position[indexRGrip+1] = t_g
+      jcm.treadPtr.velocity[indexRGrip+1] = t_g
+      jcm.treadPtr.load[indexRGrip+1] = t_g
+      jcm.treadPtr.temperature[indexRGrip+1] = t_g
     end
     --]]
   end

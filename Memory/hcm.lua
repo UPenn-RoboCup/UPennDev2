@@ -10,8 +10,9 @@ local DEG_TO_RAD = math.pi/180
 local shared_data = {}
 local shared_data_sz = {}
 
---SJ: Now we use this variable to control inner-states 
--- Set 1 to proceed, and -1 to reverse
+shared_data.audio={}
+shared_data.audio.request = vector.zeros(0)
+
 shared_data.state={}
 shared_data.state.proceed = vector.zeros(0)
 

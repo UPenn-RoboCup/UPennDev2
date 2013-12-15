@@ -49,6 +49,8 @@ local function process_rpc(rpc)
   rpc.special = trim_string(rpc.special)
   rpc.body = trim_string(rpc.body)
   rpc.bargs = trim_string(rpc.bargs)
+  -- Experimental raw support
+  rpc.raw = trim_string(rpc.raw)
 
   local status, reply
   -- Shared memory modification
@@ -94,22 +96,20 @@ local function process_rpc(rpc)
     end
   end
   
-  -- State machine events
-  --[[
-  local body_call = rpc.call
-  if type(body_call)=='string' then
-    local res = loadstring('return '..body_call)
-    print(res())
-    reply = res()
-    print(body_call,'body reply',type(reply))
-  end
-  --]]
+  -- Body
   local body_call = rpc.body
   local body_args = rpc.bargs
   if type(body_call)=='string' then
-    
     status, reply = pcall(Body[body_call],body_args)
     print('body',body_call,body_args,status,reply)
+  end
+  
+  -- Raw commands
+  local raw_call = rpc.raw
+  if type(raw_call)=='string' then
+    local res = loadstring('return '..raw_call)
+    reply = res()
+    print('RAW | ',raw_call,reply)
   end
 
   return reply

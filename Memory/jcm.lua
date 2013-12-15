@@ -99,6 +99,10 @@ shared_data.gripper = {}
 shared_data.gripper.command_torque = vector.zeros( 4 )
 -- 0: Position mode, 1: torque mode
 shared_data.gripper.torque_mode = vector.zeros( 4 )
+-- Last grip reading
+shared_data.gripper.t = vector.zeros( 1 )
+-- Reading rate (seconds between reads): 1 sec default
+shared_data.gripper.rate = vector.ones( 1 )
 
 ------------------------
 -- Call the initializer

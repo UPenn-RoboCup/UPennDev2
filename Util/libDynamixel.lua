@@ -106,6 +106,9 @@ local mx_registers = {
   torque_mode = {string.char(70,0),1},
   command_torque = {string.char(71,0),2},
   command_acceleration = {string.char(73,0),1},
+  
+  -- all dat!
+  everything = {36,8},
 }
 libDynamixel.mx_registers = mx_registers
 
@@ -495,8 +498,31 @@ for k,v in pairs( mx_registers ) do
     stty.flush(bus.fd)
     local ret = unix.write( bus.fd, instruction)
 
-    -- Grab the status of the register
-    return get_status( bus.fd, nids )
+    -- Grab the status of the register    
+    local status = get_status( bus.fd, nids )
+    if not status then return end
+    
+    if sz==8 and #status.parameter==8 then
+      -- Everything!
+      value = {}
+      -- In steps
+      value.position = byte_to_number[2]( unpack(status.parameter,1,2) )
+      local speed = byte_to_number[2]( unpack(status.parameter,3,4) )
+      if speed>=1024 then speed = 1024-speed end
+      -- To Radians per second
+      value.speed = (speed * math.pi) / 270
+      local load  = byte_to_number[2]( unpack(status.parameter,5,6) )
+      if load>=1024 then load = 1024-load end
+      -- To percent
+      value.load = load / 10.24
+      -- To Volts
+      value.voltage = status.parameter[7] / 10
+      -- Is Celsius already
+      value.temperature = status.parameter[8]
+      return status, value
+    end
+    
+    return status
     
 --[[
     -- Grab the status of the register

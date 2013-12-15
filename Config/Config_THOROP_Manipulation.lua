@@ -332,9 +332,21 @@ armfsm.hosegrip.default_model = {
 armfsm.hosegrip.armhold = {
   {0.33,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},
   {0.10,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+
+  -- -0.13 0.35 -0.43
+  {-0.25,0.30,-0.30,179*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {-0.30,0.05,-0.30,179*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
 }
 
+armfsm.hosegrip.armhosepull={
+  {-0.30,0.05,-0.30,179*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {-0.25,0.30,-0.30,179*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {-0.0,0.35,-0.43,179*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
 
+--  {0.23,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  
+  {0.43,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+}
 
 
 

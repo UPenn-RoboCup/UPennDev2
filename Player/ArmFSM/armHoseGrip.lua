@@ -172,7 +172,8 @@ function state.update()
           {'wrist',Config.armfsm.hosegrip.armhold[1],nil},
           {'move',Config.armfsm.hosegrip.armhold[1],nil},
           {'move',Config.armfsm.hosegrip.armhold[2],nil},
-        }   
+        }
+
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armretract" end
         hcm.set_state_proceed(0)
 
@@ -197,6 +198,19 @@ function state.update()
     
   elseif stage=="armretract" then --Move arm back to holding position
     if arm_planner:play_arm_sequence(t) then 
+      if hcm.get_state_proceed()==1 then                
+        local arm_seq={
+          {'wrist',Config.armfsm.hosegrip.armhold[3],nil},
+          {'move',Config.armfsm.hosegrip.armhold[3],nil},
+          {'move',Config.armfsm.hosegrip.armhold[4],nil},
+        }
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armretract2" end
+        hcm.set_state_proceed(0)
+      end
+    end
+  elseif stage=="armretract2" then --Move arm back to holding position
+    if arm_planner:play_arm_sequence(t) then 
+      print("trLArm:",arm_planner.print_transform(trLArm))
       stage = "pulldone"
       print("SEQUENCE DONE")
       return"hold"

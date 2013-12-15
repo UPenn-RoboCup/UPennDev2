@@ -94,10 +94,20 @@ function state.entry()
   arm_planner:set_shoulder_yaw_target(nil,nil) --Lock left hand
 
 
-  --local wrist_seq = {{'wrist',nil,trRArm1}}
+--[[  
   local wrist_seq = {{'wrist',trLArm1,trRArm1}}
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn" end  
+--]]
+  arm_planner:set_shoulder_yaw_target(nil,qRArm0[3]) --Unlock left hand
+  local wrist_seq = {
+    {'move',Config.armfsm.hosegrip.armhosepull[1],nil},
+    {'move',Config.armfsm.hosegrip.armhosepull[2],nil},
+    {'move',Config.armfsm.hosegrip.armhosepull[3],nil},
+  }
+  if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn" end  
+
   hcm.set_state_proceed(1)
+  hcm.set_state_proceed(0)
 
   hcm.set_hoseattach_model(Config.armfsm.hoseattach.default_model)
 

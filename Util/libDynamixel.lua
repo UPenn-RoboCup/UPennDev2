@@ -108,7 +108,7 @@ local mx_registers = {
   command_acceleration = {string.char(73,0),1},
   
   -- all dat!
-  everything = {36,8},
+  everything = {string.char(36,0),8},
 }
 libDynamixel.mx_registers = mx_registers
 

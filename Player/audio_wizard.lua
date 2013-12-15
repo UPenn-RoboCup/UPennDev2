@@ -9,7 +9,7 @@ while true do
 
 if(hcm.get_audio_request()==1) then
 --  os.execute('sh get_audio.sh')
-  os.execute('arecord -f S16_LE -c2 -d 10 -D hw:1,0 -t raw | lame -r - /tmp/robot.mp3')
+  os.execute('arecord -f S16_LE -c2 -d 10 -D hw:1,0 -t raw | lame -r -s 16 - /tmp/robot.mp3')
 --arecord -f S16_LE -c2 -d 10 -D hw:1,0 /tmp/robot.wav')
   local f = io.open('/tmp/robot.mp3')
   local audio = f:read('*all')

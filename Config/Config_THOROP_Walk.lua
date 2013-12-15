@@ -183,11 +183,15 @@ if HOSTNAME=="alvin" then
   walk.footY = 0.095 
   walk.torsoX = -0.04 
   walk.hipRollCompensation = 2*math.pi/180
+  walk.hipRollCompensationLeft = 2*math.pi/180
+  walk.hipRollCompensationRight = 2*math.pi/180
+
   walk.supportY = 0.05
+
 
   walk.velLimitA = {-.4,.4}
 
-  --JK's 10:54PM
+  --JK's bias 10:54PM
 --hiproll: 1 -0.4325
 --kneepitch: -2.155 -0.3475
 --ankleroll: -0.345 1.0025
@@ -214,21 +218,12 @@ elseif HOSTNAME=="teddy" then
   walk.stepHeight = 0.03
   walk.supportX = 0.02
   walk.supportY = 0.03
-end
 
-
-
-
-if HOSTNAME=="alvin" then
-
-
-elseif HOSTNAME=="teddy" then
   print("TEDDY")
   walk.legBias = 
     vector.new({1, 0.50,    -0, -0.25,  0.25, 0.25,
                 0, 0,    0.75,   -1,  0, -0.50,
     })*DEG_TO_RAD
---[[
 --JK bias 12/14
 
   --hiproll 0.25 0.125
@@ -240,22 +235,58 @@ elseif HOSTNAME=="teddy" then
                 0, 0.125,0.375,-0.875,  0, -0.50,
     })*DEG_TO_RAD
 
---TWEAKED HIPROLL
+--New values
+  walk.footY = 0.095 
+  walk.torsoX = -0.04 
+  walk.hipRollCompensation = 2*math.pi/180
+
+  walk.hipRollCompensationLeft = 2*math.pi/180
+  walk.hipRollCompensationRight = 2*math.pi/180
+
+  walk.supportY = 0.05
+
+  walk.maxTurnSpeed = 0.20
+  walk.aTurnSpeed = 0.25
+  walk.maxStepCount = 30
+
+
+
+--Little less torso shift (with hands on)
+  walk.torsoX = -0.04 
+  walk.torsoX = -0.02 
+
+--ankle roll tweak
+  walk.legBias = 
+    vector.new({1, 0.25,-0.25, -0.50,  0.25, 0.5875,
+                0, 0.125,0.375,-0.875,  0, -0.7025,
+    })*DEG_TO_RAD
+
+--ankle pitch tweak
+  walk.legBias = 
+    vector.new({1, 0.25,-0.25, -0.50,  0.52, 0.25,
+                0, 0.125,0.375,-0.875,  0, -0.50,
+    })*DEG_TO_RAD
+
+--Support Y reduce
+  walk.supportY = 0.05
+  walk.supportY = 0.03
+
+--ankle roll untweak
 
   walk.legBias = 
-    vector.new({1, 0.50,-0.25, -0.50,  0.25, 0.25,
-                0, 0.0,0.375,-0.875,  0, -0.50,
+    vector.new({1, 0.25,-0.25, -0.50,  0.52, 0.25,
+                0, 0.125,0.375,-0.875,  0, -0.50,
     })*DEG_TO_RAD
---]]
-
 
 
 else
+  print("UNKNOWN ROBOT")
   walk.legBias = 
     vector.new({0,0,0,0,0,0,
         0,0,0,0,0,0,
     })*DEG_TO_RAD
 end
+
 
 
 

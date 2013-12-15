@@ -157,6 +157,7 @@ local function send_status_feedback()
   data.r_temp = Body.get_rgrip_temperature()
   data.l_gpos = Body.get_lgrip_position()
   data.r_gpos = Body.get_rgrip_position()
+  
 
   --Pose information
 --  data.pose =  wcm.get_robot_pose()    
@@ -172,6 +173,7 @@ local function send_status_feedback()
   data.rpy = Body.get_sensor_rpy()
   data.body_height = mcm.get_stance_bodyHeight()
   data.battery =  0
+  data.t = Body.get_time()
 
   local ret,err = feedback_udp_ch:send( mp.pack(data) )
 --  if err then print('feedback udp',err) end

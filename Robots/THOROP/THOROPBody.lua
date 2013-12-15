@@ -1153,7 +1153,7 @@ end
   
 end
 
-local function parse_all = function(status)
+local parse_all = function(status)
   -- Everything!
   local value = {}
   -- In steps

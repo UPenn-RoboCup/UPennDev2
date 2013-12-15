@@ -1338,6 +1338,8 @@ Body.update = function()
 print'reading...'
     -- Reset the time
     jcm.set_gripper_t(t_g)
+    
+    --[[
     local s = libDynamixel.get_mx_temperature(lg_m1,l_dyn)
     local l1_temp
     if s then
@@ -1355,7 +1357,8 @@ print'reading...'
       end
     end
     print('L1 temp',l1_temp[1])
-    --[[
+    --]]
+    ----[[
     -- Read load/temperature/position/current
     local s, lall_1 = libDynamixel.get_mx_everything(lg_m1,l_dyn)
     local s, rall_1 = libDynamixel.get_mx_everything(rg_m1,r_dyn)

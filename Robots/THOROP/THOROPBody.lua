@@ -1359,34 +1359,15 @@ print'reading...'
     -- Reset the time
     jcm.set_gripper_t(t_g)
     
-    --[[
-    local s = libDynamixel.get_mx_temperature(lg_m1,l_dyn)
-    local l1_temp
-    if s then
-      if s.id==lg_m1 then
-        --util.ptable(s.parameter)
-        l1_temp = s.parameter
-      else
-        for _,p in ipairs(s) do
-          --util.ptable(p)
-          if p.id==lg_m1 then
-            --print('bulky temp',s.parameter)
-            l1_temp = p.parameter
-          end
-        end
-      end
-    end
-    print('L1 temp',l1_temp[1])
-    --]]
-    ----[[
     -- Read load/temperature/position/current
-    local s, lall_1 = libDynamixel.get_mx_everything(lg_m1,l_dyn)
-    local s, rall_1 = libDynamixel.get_mx_everything(rg_m1,r_dyn)
+    local lall_1 = libDynamixel.get_mx_everything(lg_m1,l_dyn)
+    local rall_1 = libDynamixel.get_mx_everything(rg_m1,r_dyn)
     unix.usleep(1e2)
-    local s, lall_2 = libDynamixel.get_mx_everything(lg_m2,l_dyn)
-    local s, rall_2 = libDynamixel.get_mx_everything(rg_m2,r_dyn)
+    local lall_2 = libDynamixel.get_mx_everything(lg_m2,l_dyn)
+    local rall_2 = libDynamixel.get_mx_everything(rg_m2,r_dyn)
     if lall_1 then
-      lall_l1 = parse_all(lall_1)
+      util.ptable(lall_1)
+      lall_1 = parse_all(lall_1)
       jcm.sensorPtr.position[indexLGrip] = 
         Body.make_joint_radian(indexLGrip,lall_1.position)
       jcm.sensorPtr.velocity[indexLGrip] = lall_1.speed

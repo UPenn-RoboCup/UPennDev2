@@ -16,9 +16,10 @@ walk.init_command_accelleration = 50
 walk.leg_p_gain = 64
 walk.ankle_p_gain = 64
 
-
-
-
+--Default-y vaue
+walk.maxTurnSpeed = 0.10
+walk.aTurnSpeed = 0.25
+walk.maxStepCount = 8
 
 
 
@@ -197,7 +198,10 @@ if HOSTNAME=="alvin" then
       0.625, -0.4325, 0.375, -0.3475, 0.00, 1.0025 
     })*DEG_TO_RAD
 
-
+  --Faster turn testing
+  walk.maxTurnSpeed = 0.20
+  walk.aTurnSpeed = 0.25
+  walk.maxStepCount = 30
 
 
 

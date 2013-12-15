@@ -78,11 +78,8 @@ function state.entry()
   arm_planner:set_hand_mass(0,0)
   arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) --Lock left hand  
 
-
   local bend_seq = {
-    {'move',nil,nil,0*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD},
---    {'move',nil,nil,0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
-  } --bend down  
+    {'move',nil,nil,0*Body.DEG_TO_RAD,Config.armfsm.debrisgrip.body_bend}}
   if arm_planner:plan_arm_sequence2(bend_seq) then stage = "benddown" end  
 
   hcm.set_debris_model(Config.armfsm.debrisgrip.default_model)
@@ -112,6 +109,7 @@ function state.update()
   if stage=="benddown" then --Turn yaw angles first    
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
+        arm_planner:set_shoulder_yaw_target(nil,nil) --Lock left hand  
         arm_seq={ 
           {'move',nil,Config.armfsm.debrisgrip.arminit[1]},
           {'wrist',nil,Config.armfsm.debrisgrip.arminit[2]},

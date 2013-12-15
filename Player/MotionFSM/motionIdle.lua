@@ -35,6 +35,7 @@ function state.entry()
   qRLeg = Body.get_rleg_command_position()
   qWaist = Body.get_waist_command_position()
   mcm.set_leg_bias(Config.walk.legBias)
+print("BIAS SET:",unpack(Config.walk.legBias))
 end
 
 ---

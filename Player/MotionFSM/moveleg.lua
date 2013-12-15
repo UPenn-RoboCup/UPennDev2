@@ -535,7 +535,6 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 
 
 --print("SR:",supportRatio,supportRatioLeft,supportRatioRight)
---[[
   --SJ: now we apply the compensation during DS too
   local phComp1 = Config.walk.phComp[1]
   local phComp2 = Config.walk.phComp[2]
@@ -550,7 +549,6 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   elseif supportLeg==1 then
     supportRatioRight = phComp;
   end
---]]
 
     delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft
     delta_legs[3] = - hipPitchCompensation*supportRatioLeft

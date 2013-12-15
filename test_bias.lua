@@ -106,7 +106,7 @@ local function process_character(key_code,key_char,key_char_lower)
   end
 
 
-  local bias_mag = 0.125*Body.DEG_TO_RAD
+  local bias_mag = 0.0675*Body.DEG_TO_RAD
   local legBias = mcm.get_leg_bias()
 
   if key_char_lower=="1" then

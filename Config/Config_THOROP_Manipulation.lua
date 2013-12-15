@@ -135,6 +135,14 @@ armfsm.debrisgrip.rhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
 armfsm.debrisgrip.lhand_rpy = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 armfsm.debrisgrip.rhand_rpy = {0*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD}
 
+
+
+
+armfsm.debrisgrip.body_bend = 30*DEG_TO_RAD
+
+armfsm.debrisgrip.body_bend = 45*DEG_TO_RAD
+
+
 --xyz, yaw
 armfsm.debrisgrip.default_model = {
   0.15,-0.40,-0.40,  0*DEG_TO_RAD}
@@ -165,6 +173,44 @@ armfsm.debrisgrip.arminit={
   {0.20,-0.30,-0.40, 90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD},
 
 }
+
+---------------------------------------------------------------
+-- Open door sideways
+---------------------------------------------------------------
+armfsm.doorpushside = {}
+
+armfsm.doorpushside.arminit = {
+  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 90*DEG_TO_RAD},
+
+--going back
+  {0.0,0.64,-0.14,  0,0*DEG_TO_RAD, 90*DEG_TO_RAD}, --last tr
+}
+
+--little tilt angle up
+
+armfsm.doorpushside.arminit = {
+  {0.38,-0.10,0.07,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.38,-0.10,0.07,  0,-15*DEG_TO_RAD, 90*DEG_TO_RAD},
+--going back
+  {0.0,0.64,-0.14,  0,-15*DEG_TO_RAD, 90*DEG_TO_RAD}, --last tr
+}
+
+armfsm.doorpushside.unit_tilt = 5*DEG_TO_RAD
+armfsm.doorpushside.unit_yaw = 2*DEG_TO_RAD
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

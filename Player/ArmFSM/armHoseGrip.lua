@@ -164,8 +164,8 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then     
       --Open gripper
-        Body.move_lgrip1(Config.arm.torque.open)
-        Body.move_lgrip2(Config.arm.torque.open)    
+        --Body.move_lgrip1(Config.arm.torque.open)
+        --Body.move_lgrip2(Config.arm.torque.open)    
         local trLArmTarget1 = get_model_tr(Config.armfsm.hosegrip.clearance)
         trLArmTarget1[1] = trLArm[1]
         local trLArmTarget2 = get_model_tr({0,0,0})
@@ -184,14 +184,14 @@ function state.update()
     
   elseif stage=="touchtool" then --Move arm to the gripping position
     --Open gripper
-    Body.move_lgrip1(Config.arm.torque.open)
-    Body.move_lgrip2(Config.arm.torque.open)
+    --Body.move_lgrip1(Config.arm.torque.open)
+    --Body.move_lgrip2(Config.arm.torque.open)
 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
         --Close gripper
-        Body.move_lgrip1(Config.arm.torque.grip_hose)
-        Body.move_lgrip2(Config.arm.torque.grip_hose)
+        --Body.move_lgrip1(Config.arm.torque.grip_hose)
+        --Body.move_lgrip2(Config.arm.torque.grip_hose)
         stage = "grab"         
         hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed() == -1 then 

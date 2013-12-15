@@ -154,7 +154,6 @@ armfsm.debrisgrip.armpull={
 armfsm.debrisgrip.clearance={0,0.08,0}
 armfsm.debrisgrip.liftup = {0,0,0.05}
 
-
 armfsm.debrisgrip.lhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
 armfsm.debrisgrip.rhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
 
@@ -194,6 +193,8 @@ armfsm.toolgrip.armhold={0.25,0.0,-0.20}
 armfsm.toolgrip.tool_clearance={-0.05,0,0}
 armfsm.toolgrip.tool_liftup = {0,0,0.05}
 armfsm.toolgrip.tool_clearance_x = 0.38
+
+armfsm.toolgrip.turnUnit = 7.5*DEG_TO_RAD --Yaw
 
 armfsm.toolgrip.armchecktrigger={
   {0.33,-0.25,-0.15, 0,0*DEG_TO_RAD, 90*DEG_TO_RAD},

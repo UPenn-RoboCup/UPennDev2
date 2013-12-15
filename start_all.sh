@@ -2,4 +2,4 @@
 
 # Begin running everything
 sh start_passive.sh
-sh active_passive.sh
+sh start_active.sh

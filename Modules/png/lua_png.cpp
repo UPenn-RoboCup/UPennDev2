@@ -494,6 +494,7 @@ static int lua_png_compress(lua_State *L) {
 
   /* initialize stuff */
   png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+png_set_compression_level(png_ptr,9);
 
   if (!png_ptr)
     abort_("[write_png_file] png_create_write_struct failed");

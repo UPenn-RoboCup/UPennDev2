@@ -40,6 +40,7 @@ end
 -- Ports
 Config.net.reliable_rpc   = 55555
 Config.net.unreliable_rpc = 55556
+Config.net.audio = 55557
 --
 Config.net.team           = 44444
 Config.net.state          = 44445

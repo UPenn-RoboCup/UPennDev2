@@ -13,7 +13,7 @@ local use_lidar_head  = false
 -- if using one USB2Dynamixel
 local ONE_CHAIN = false
 local DISABLE_MICROSTRAIN = false
-local READ_GRIPPERS = false
+local READ_GRIPPERS = true
 
 --Turn off camera for default for webots
 --This makes body crash if we turn it on again...
@@ -1339,7 +1339,22 @@ print'reading...'
     -- Reset the time
     jcm.set_gripper_t(t_g)
     local s = libDynamixel.get_mx_temperature(lg_m1,l_dyn)
-    if s then util.ptable(s) end
+    local l1_temp
+    if s then
+      if s.id==lg_m1 then
+        --util.ptable(s.parameter)
+        l1_temp = s.parameter
+      else
+        for _,p in ipairs(s) do
+          --util.ptable(p)
+          if p.id==lg_m1 then
+            --print('bulky temp',s.parameter)
+            l1_temp = p.parameter
+          end
+        end
+      end
+    end
+    print('L1 temp',l1_temp[1])
     --[[
     -- Read load/temperature/position/current
     local s, lall_1 = libDynamixel.get_mx_everything(lg_m1,l_dyn)

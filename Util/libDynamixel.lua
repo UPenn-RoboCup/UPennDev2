@@ -13,7 +13,7 @@ local unix = require'unix'
 local stty = require'stty'
 local using_status_return = true
 -- 75ms default timeout
-local READ_TIMEOUT = 0.005
+local READ_TIMEOUT = 0.015
 
 -- TODO: Make this a parameter to set externally
 -- TODO: This should be tuned based on the byte size written?
@@ -328,16 +328,23 @@ local function get_status( fd, npkt, protocol, timeout )
       if pkts then
         for p,pkt in ipairs(pkts) do
           local status = DP.parse_status_packet( pkt )
-          if npkt==1 then return status end
+          --if npkt==1 then return status end
           table.insert( statuses, status )
         end
-        if #statuses==npkt then return statuses end
+        --if #statuses>=npkt then return statuses end
       end -- if pkts
     end
     unix.select({fd},0.001)
   end
+
+if #statuses==0 then
   -- Did we timeout?
   return nil
+elseif #statuses==1 then
+  return statuses[1]
+end
+
+  return statuses
 end
 
 --------------------

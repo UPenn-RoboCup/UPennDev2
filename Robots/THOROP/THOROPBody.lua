@@ -1338,10 +1338,14 @@ Body.update = function()
 print'reading...'
     -- Reset the time
     jcm.set_gripper_t(t_g)
+    local s = libDynamixel.get_mx_temperature(lg_m1,l_dyn)
+    if s then util.ptable(s) end
+    --[[
     -- Read load/temperature/position/current
     local s, lall_1 = libDynamixel.get_mx_everything(lg_m1,l_dyn)
-    local s, lall_2 = libDynamixel.get_mx_everything(lg_m2,l_dyn)
     local s, rall_1 = libDynamixel.get_mx_everything(rg_m1,r_dyn)
+    unix.usleep(1e2)
+    local s, lall_2 = libDynamixel.get_mx_everything(lg_m2,l_dyn)
     local s, rall_2 = libDynamixel.get_mx_everything(rg_m2,r_dyn)
     if lall_1 then
       t_read = unix.time()
@@ -1395,7 +1399,7 @@ print'reading...'
       jcm.treadPtr.load[indexRGrip+1] = t_read
       jcm.treadPtr.temperature[indexRGrip+1] = t_read
     end
-    
+    --]]
   end
   -- END GRIP READING --
   -----------------------

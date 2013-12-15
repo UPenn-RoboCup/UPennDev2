@@ -21,23 +21,6 @@ local turn_angle1, turn_angle2, wrist_angle
 local tight_angle = Config.armfsm.valvebar.handtightangle0
 local clearance = Config.armfsm.valvebar.clearance
 
-local function update_model()
-  local trLArmTarget = hcm.get_hands_left_tr_target()
-  local trLArm = hcm.get_hands_left_tr()
-  local valve_model = hcm.get_barvalve_model()
-  valve_model[1],valve_model[2],valve_model[3]=
-    valve_model[1] + trLArmTarget[1]-trLArm[1],
-    valve_model[2] + trLArmTarget[2]-trLArm[2],
-    valve_model[3] + trLArmTarget[3]-trLArm[3]
-  hcm.set_barvalve_model(valve_model)
-  hcm.set_state_proceed(0)
-  print("Bar valve model update:"
-    ,valve_model[1],valve_model[2],valve_model[3])
-  
-  turn_angle1 = 0
-  turn_angle2 = valve_model[6]        
-  wrist_angle = valve_model[7]
-end
 
 local function update_override()
   local overrideTarget = hcm.get_state_override_target()
@@ -50,8 +33,8 @@ local function update_override()
     valve_model[3] + overrideTarget[3]-override[3],
     valve_model[4], --This is the gripping radius (5cm)
     0, --This should be the radius 
-    valve_model[6] + overrideTarget[4]-override[4], --the init angle
-    valve_model[7] + overrideTarget[5]-override[5]  --the target angle
+    valve_model[6] + (overrideTarget[4]-override[4])*Config.armfsm.valvebar.turnUnit,  --the target angle
+    valve_model[7]--the wrist angle
     }
 
   hcm.set_barvalve_model(valve_model)
@@ -62,8 +45,7 @@ local function update_override()
       valve_model[6]*180/math.pi,
       valve_model[7]*180/math.pi
          ))
-  turn_angle1 = 0 --Initial angle
-  turn_angle2 = valve_model[6] --Target angle
+  turn_angle1 = valve_model[6] --Target angle
   wrist_angle = valve_model[7] --Wrist tight angle
 end
 
@@ -78,8 +60,8 @@ local function revert_override()
     valve_model[3] - (overrideTarget[3]-override[3]),
     valve_model[4], --This is the gripping radius (5cm)
     0, --This should be the radius 
-    valve_model[6] - (overrideTarget[4]-override[4]), --the init angle
-    valve_model[7] - (overrideTarget[5]-override[5])  --the target angle
+    valve_model[6] - (overrideTarget[4]-override[4])*Config.armfsm.valvebar.turnUnit, --the target angle
+    valve_model[7] --wrist angle
     }
 
   hcm.set_barvalve_model(valve_model)
@@ -90,8 +72,7 @@ local function revert_override()
       valve_model[6]*180/math.pi,
       valve_model[7]*180/math.pi
          ))
-  turn_angle1 = 0 --Initial angle
-  turn_angle2 = valve_model[6] --Target angle
+  turn_angle1 = valve_model[6] --Target angle
   wrist_angle = valve_model[7] --Wrist tight angle
 end
 
@@ -137,7 +118,8 @@ function state.entry()
   hcm.set_state_tstartactual(unix.time()) 
   hcm.set_state_tstartrobot(Body.get_time())
 
-  update_model()
+  confirm_override()
+  update_override()
   local wrist_seq = {{'wrist',trLArm1, nil}}
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "wristturn" end
   hcm.set_state_proceed(1)
@@ -191,19 +173,22 @@ function state.update()
         if arm_planner:plan_arm_sequence(arm_seq) then stage="wristturn" end
       end
     end
-
+  
   elseif stage=="inposition" then 
     if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed()==1 then --rotate
-        arm_planner:save_valveparam({turn_angle1,tight_angle,0,1})       
+      if hcm.get_state_proceed()==1 then --Try turn 15 degree
+        arm_planner:save_valveparam({0,tight_angle,0,1})       
         local valve_seq={          
-          {'barvalve',turn_angle1,wrist_angle,0,1},
-          {'barvalve',turn_angle2,wrist_angle,0,1},
+          {'barvalve',0,wrist_angle,0,1},
+          {'barvalve',Config.armfsm.valvebar.testAngle,wrist_angle,0,1},
         }
-        if arm_planner:plan_arm_sequence(valve_seq) then stage="valveturn" end
+        if arm_planner:plan_arm_sequence(valve_seq) then stage="valveturn" end 
         hcm.set_state_proceed(0)
+
+
       elseif hcm.get_state_proceed()==-1 then 
         local arm_seq = {
+            {'move',Config.armfsm.valveonearm.arminit[4], nil},           
             {'wrist',Config.armfsm.valveonearm.arminit[3], nil},           
             {'move',Config.armfsm.valveonearm.arminit[3], nil},           
             {'move',Config.armfsm.valveonearm.arminit[2], nil},           
@@ -213,7 +198,7 @@ function state.update()
         if arm_planner:plan_arm_sequence(arm_seq) then stage="wristturn" end
       elseif hcm.get_state_proceed()==3 then --teleop signal
         update_override()
-        local trLArmTarget = movearm.getBarValvePositionSingle(0,tight_angle,0)
+        local trLArmTarget = movearm.getBarValvePositionSingle(turn_angle1,tight_angle,0)
         local arm_seq = {{'move',trLArmTarget, nil}}
         local ret = arm_planner:plan_arm_sequence(arm_seq)
         print("RET:",ret)
@@ -223,32 +208,29 @@ function state.update()
         else revert_override() end
       end
     end
-    
-
+  
   elseif stage=="valveturn" then
     if arm_planner:play_arm_sequence(t) then 
-      if hcm.get_state_proceed()==1 then --teleop signal
-        local valve_seq={          
-          {'barvalve',turn_angle2,tight_angle,0,1},
-          {'barvalve',turn_angle2,tight_angle,clearance,1},
-          {'barvalve',turn_angle1,tight_angle,clearance,1},
-        }
-        if arm_planner:plan_arm_sequence(valve_seq) then stage="valveturnend" end
+      if hcm.get_state_proceed()==-1 then
+        local valve_seq={{'barvalve',turn_angle1,tight_angle,0,1}}
+        if arm_planner:plan_arm_sequence(valve_seq) then 
+          stage="inposition" 
+        end
+        hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed()==3 then --OVERRIDE
+        print("here")
         update_override()
-        local valve_seq={    {'barvalve',turn_angle2,wrist_angle,0,1}}
-        if arm_planner:plan_arm_sequence(valve_seq) then stage="valveturn" end
+        print("angle:",turn_angle1)
+        local valve_seq={{'barvalve',turn_angle1,wrist_angle,0,1}}
+        if arm_planner:plan_arm_sequence(valve_seq) then 
+          print("done")
+          stage="valveturn" 
+          confirm_override()
+        else
+          revert_override()
+        end
       end
-    end
-  elseif stage=="valveturnend" then 
-    if arm_planner:play_arm_sequence(t) then 
-      local valve_model = hcm.get_barvalve_model()
-      valve_model[1] = valve_model[1] + Config.armfsm.valvebar.clearance
-      hcm.set_barvalve_model(valve_model)
-      hcm.set_state_success(1) --Report success
-      stage="inposition"
-    end
-    hcm.set_state_proceed(0)
+    end  
   elseif stage=="armbacktoinitpos" then 
     if arm_planner:play_arm_sequence(t) then return "done" end
   end

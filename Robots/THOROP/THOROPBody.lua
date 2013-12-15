@@ -1153,7 +1153,16 @@ end
   
 end
 
-local parse_all = function(status)
+local parse_all = function(status_raw,id)
+  local status
+  if status_raw,id.id==lg_m1 then
+    status_raw,id = status_raw,id
+  else
+    for _,p in ipairs(s) do
+      if p.id==id then status = p end
+    end
+  end
+  
   -- Everything!
   local value = {}
   -- In steps
@@ -1367,7 +1376,7 @@ print'reading...'
     local rall_2 = libDynamixel.get_mx_everything(rg_m2,r_dyn)
     if lall_1 then
       util.ptable(lall_1)
-      lall_1 = parse_all(lall_1)
+      lall_l1 = parse_all(lall_1,lg_m1)
       jcm.sensorPtr.position[indexLGrip] = 
         Body.make_joint_radian(indexLGrip,lall_1.position)
       jcm.sensorPtr.velocity[indexLGrip] = lall_1.speed
@@ -1380,7 +1389,7 @@ print'reading...'
       jcm.treadPtr.temperature[indexLGrip] = t_g
     end
     if lall_2 then
-      lall_2 = parse_all(lall_2)
+      lall_2 = parse_all(lall_2,lg_m2)
       jcm.sensorPtr.position[indexLGrip+1] = 
         Body.make_joint_radian(indexLGrip+1,lall_2.position)
       jcm.sensorPtr.velocity[indexLGrip+1] = lall_2.speed
@@ -1393,7 +1402,7 @@ print'reading...'
       jcm.treadPtr.temperature[indexLGrip+1] = t_g
     end
     if rall_1 then
-      rall_1 = parse_all(rall_1)
+      rall_1 = parse_all(rall_1,rg_m1)
       jcm.sensorPtr.position[indexRGrip] = 
         Body.make_joint_radian(indexRGrip,rall_1.position)
       jcm.sensorPtr.velocity[indexRGrip] = rall_1.speed
@@ -1406,7 +1415,7 @@ print'reading...'
       jcm.treadPtr.temperature[indexRGrip] = t_g
     end
     if rall_2 then
-      rall_2 = parse_all(rall_2)
+      rall_2 = parse_all(rall_2,rg_m2)
       jcm.sensorPtr.position[indexRGrip+1] = 
         Body.make_joint_radian(indexRGrip+1,rall_2.position)
       jcm.sensorPtr.velocity[indexRGrip+1] = rall_2.speed

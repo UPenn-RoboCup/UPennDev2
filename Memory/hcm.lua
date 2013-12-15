@@ -94,7 +94,7 @@ shared_data.motion.nwaypoints = vector.ones(1)
 -- Local or global waypoint frame of reference
 -- 0: local
 -- 1: global
-shared_data.motion.waypoint_frame = vector.ones(1)
+shared_data.motion.waypoint_frame = vector.zeros(1)
 
 
 -------------------------------

@@ -91,7 +91,6 @@ local function process_rpc(rpc)
         ch:send{rpc.evt,rpc.special}
       else
         ch:send(rpc.evt)
-        print("sent")
       end
     end
   end

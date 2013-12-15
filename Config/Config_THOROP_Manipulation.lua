@@ -348,7 +348,10 @@ armfsm.hosegrip.armhosepull={
   {0.43,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
 }
 
-
+armfsm.hosegrip.armhoseattachinit={
+  {0.43,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  {0.43,0.35,-0.20,0*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},        
+}
 
 
 

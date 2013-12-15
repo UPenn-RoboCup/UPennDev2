@@ -83,29 +83,31 @@ function state.update()
       if hcm.get_state_proceed()==1 then 
         print("trLArm:",arm_planner.print_transform(trLArm))
         print("trRArm:",arm_planner.print_transform(trRArm))
+        --[[
         local arm_seq = {
           {'move',Config.armfsm.hosetap.larminit[2],nil},
           {'move',Config.armfsm.hosetap.larminit[3],nil},
           {'move',Config.armfsm.hosetap.larminit[4],nil},          
           {'move',Config.armfsm.hosetap.larminit[5],nil},          
         }                          
+        --]]
 
+        local arm_seq = {
+          {'wrist',Config.armfsm.hosegrip.armhoseattachinit[1],nil},
+          {'wrist',Config.armfsm.hosegrip.armhoseattachinit[2],nil},
+        }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
 
       elseif hcm.get_state_proceed()==-1 then 
-
         local wrist_seq = {
           {'wrist',Config.armfsm.hosegrip.armhosepull[4],nil},
-          {'move',Config.armfsm.hosegrip.armhosepull[1],nil},
-          {'move',Config.armfsm.hosegrip.armhosepull[2],nil},
+          {'move',Config.armfsm.hosegrip.armhosepull[4],nil},
+          {'wrist',Config.armfsm.hosegrip.armhosepull[3],nil},
           {'move',Config.armfsm.hosegrip.armhosepull[3],nil},
-          {'wrist',Config.armfsm.hosegrip.armhosepull[4],nil},
-        
+          {'move',Config.armfsm.hosegrip.armhosepull[1],nil},
         }
-
-
-        arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) 
-        local wrist_seq = {{"wrist",trLArm0,nil}}
+--        arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) 
+--        local wrist_seq = {{"wrist",trLArm0,nil}}
         if arm_planner:plan_arm_sequence2(wrist_seq) then 
           stage = "armbacktoinitpos" 
           else print ("ERROR?") end  

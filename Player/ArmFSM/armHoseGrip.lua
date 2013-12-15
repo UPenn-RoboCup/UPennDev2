@@ -154,7 +154,7 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then         
         print("trLArm:",arm_planner.print_transform(trLArm))
-        local trArmTarget1 = get_model_tr({0,0,0},Config.armfsm.hosegrip.lhand_rpy1)        
+        local trArmTarget1 = get_model_tr({0,0,0})        
         local arm_seq = {{'move',Config.armfsm.hosegrip.arminit[2],nil},
           {'move',trArmTarget1,nil},}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "touchtool" end

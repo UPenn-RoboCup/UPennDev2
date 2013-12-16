@@ -21,16 +21,6 @@ local turn_angle1, turn_angle2, wrist_angle
 local tight_angle = Config.armfsm.valvebar.handtightangle0
 local clearance = Config.armfsm.valvebar.clearance
 
-local function check_override()
-  local override_old = hcm.get_state_override()
-  local override_target = hcm.get_state_override_target()
-  for i=1,7 do
-    if override_old[i]~=override_target[i] then
-      return true
-    end
-  end
-  return false
-end
 
 local function update_override()
   local override_old = hcm.get_state_override()
@@ -214,7 +204,7 @@ function state.update()
             {'move',trLArm1, nil},
           }
         if arm_planner:plan_arm_sequence(arm_seq) then stage="wristturn" end
-      elseif check_override() then
+      elseif hcm.get_state_proceed()==3 then --teleop signal
         update_override()
         local valve_seq={{'barvalve',turn_angle1,tight_angle,0,1}}
         if arm_planner:plan_arm_sequence(valve_seq) then 
@@ -232,7 +222,7 @@ function state.update()
           stage="inposition" 
         end
         hcm.set_state_proceed(0)
-      elseif check_override() then
+      elseif hcm.get_state_proceed()==3 then --OVERRIDE
         print("here")
         update_override()
         print("angle:",turn_angle1)

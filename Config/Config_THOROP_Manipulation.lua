@@ -669,23 +669,8 @@ armfsm.valveonearm = {}
 --boundary between low/med/high
 armfsm.valveonearm.heights={0.03,0.15}
 
-
-
-armfsm.valveonearm.default_model_large= 
-  {0.72,0.27,0.09, 0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
-
 armfsm.valveonearm.default_model_small= 
   {0.72,0.30,0.09, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
-
-
-
---360 deg turn
-armfsm.valveonearm.default_model_small= 
-  {0.72,0.30,0.09, 0, -45*DEG_TO_RAD, 315*DEG_TO_RAD }
-armfsm.valveonearm.default_model_large= 
-  {0.72,0.27,0.09, 0.13, -45*DEG_TO_RAD, 315*DEG_TO_RAD }
-
-
 
 --with tilted init, should be used for bar grip as well
 

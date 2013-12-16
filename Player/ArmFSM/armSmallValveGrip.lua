@@ -22,7 +22,16 @@ local old_valve_model
 local angle1
 
 
-
+local function check_override()
+  local override_old = hcm.get_state_override()
+  local override_target = hcm.get_state_override_target()
+  for i=1,7 do
+    if override_old[i]~=override_target[i] then
+      return true
+    end
+  end
+  return false
+end
 
 local function update_override()
   local override_old = hcm.get_state_override()
@@ -76,10 +85,12 @@ local function revert_override()
 
   angle1 = valve_model[5]
   hcm.set_state_proceed(0)  
+
+  hcm.set_state_override_target(hcm.get_state_override())
 end
 
 local function confirm_override()
-  hcm.set_state_override(hcm.get_state_override_target())    
+  hcm.set_state_override(hcm.get_state_override_target())
 end
 
 
@@ -182,7 +193,7 @@ function state.update()
             {'move',trLArm1, nil},
           }
         if arm_planner:plan_arm_sequence(arm_seq) then stage="wristturn" end
-      elseif hcm.get_state_proceed()==3 then --NEW OVERRIDE
+      elseif check_override() then
         update_override()
         local valve_seq={{'valveonearm',angle1,0,1,0}}
         if arm_planner:plan_arm_sequence(valve_seq) then 

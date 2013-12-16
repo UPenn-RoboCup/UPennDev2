@@ -73,10 +73,12 @@ local char_to_event = {
   ['3'] = {'arm_ch','doorgrab'},
   ['4'] = {'arm_ch','pushdoorgrab'},
   ['5'] = {'arm_ch','loaddoorgrab'},
+
+
   ['6'] = {'arm_ch','smallvalvegrab'},
   ['7'] = {'arm_ch','barvalvegrab'},
 
---  ['8'] = {'arm_ch','largevalvegrab'},
+  ['8'] = {'arm_ch','smallvalveleftgrab'},
 
 
   ['9'] = {'arm_ch','hosegrab'},
@@ -161,8 +163,7 @@ local function process_character(key_code,key_char,key_char_lower)
       tr[3],
       tr[4]*180/math.pi,
       tr[5]*180/math.pi))
-    hcm.set_state_override_target(tr)
-    hcm.set_state_proceed(3) --notify override change
+    hcm.set_state_override_target(tr)    
     return
   end
 

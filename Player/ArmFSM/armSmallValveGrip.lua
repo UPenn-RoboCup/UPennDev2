@@ -49,8 +49,8 @@ local function update_override()
 end
 
 local function revert_override()
-  local overrideTarget = hcm.get_state_override_target()
   local override = hcm.get_state_override()
+  local override_task = hcm.get_state_override_task()
   local valve_model = hcm.get_largevalve_model()
 
   valve_model[1],valve_model[2],valve_model[3], valve_model[4], valve_model[5], valve_model[6]=

@@ -63,6 +63,10 @@ local override = hcm.get_state_override()
     valve_model[6] - override_task*Config.armfsm.valvebar.turnUnit,  --the target angle
     valve_model[7]--the wrist angle
     }
+  hcm.set_barvalve_model(valve_model)
+  hcm.set_state_proceed(0)
+  turn_angle1 = valve_model[6] --Target angle
+  wrist_angle = valve_model[7] --Wrist tight angle
 end
 
 local function confirm_override()
@@ -155,7 +159,6 @@ function state.update()
           {'wrist',trLArmTarget, nil},
           {'move',trLArmTarget, nil}
         }
-
         if arm_planner:plan_arm_sequence(arm_seq) then 
           stage="inposition" 
           arm_planner:save_valveparam({0,tight_angle,0,1})       
@@ -192,13 +195,6 @@ function state.update()
         update_override()
         local valve_seq={{'barvalve',turn_angle1,tight_angle,0,1}}
         if arm_planner:plan_arm_sequence(valve_seq) then 
-          --[[
-        local trLArmTarget = movearm.getBarValvePositionSingle(turn_angle1,tight_angle,0)
-        local arm_seq = {{'move',trLArmTarget, nil}}
-        local ret = arm_planner:plan_arm_sequence(arm_seq)
-        print("RET:",ret)
-        if ret then 
-          --]]
           stage="inposition"           
         else revert_override() end
         confirm_override()

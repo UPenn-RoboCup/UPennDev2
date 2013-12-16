@@ -23,6 +23,7 @@ local angle1
 
 
 local function check_override()
+  --[[
   local override_old = hcm.get_state_override()
   local override_target = hcm.get_state_override_target()
   for i=1,7 do
@@ -30,13 +31,23 @@ local function check_override()
       return true
     end
   end
+  --]]
+  local override = hcm.get_state_override()
+  for i=1,7 do
+    if override[i]~=0 then return true end
+  end
   return false
 end
 
 local function update_override()
+  --[[
   local override_old = hcm.get_state_override()
   local override_target = hcm.get_state_override_target()
   local override = vector.new(override_target)- vector.new(override_old)
+  
+--]]
+  --Incremental update!!!! 
+  local override = hcm.get_state_override()
   local override_task = override[7]
 
   local valve_model = hcm.get_largevalve_model()
@@ -61,9 +72,14 @@ local function update_override()
 end
 
 local function revert_override()
+  --[[
   local override_old = hcm.get_state_override()
   local override_target = hcm.get_state_override_target()
   local override = vector.new(override_target)- vector.new(override_old)
+  --]]
+
+  --Incremental update!!!! 
+  local override = hcm.get_state_override()  
   local override_task = override[7]
 
   local valve_model = hcm.get_largevalve_model()
@@ -86,11 +102,13 @@ local function revert_override()
   angle1 = valve_model[5]
   hcm.set_state_proceed(0)  
 
-  hcm.set_state_override_target(hcm.get_state_override())
+--  hcm.set_state_override_target(hcm.get_state_override())
+  hcm.set_state_override({0,0,0,0,0,0,0})
 end
 
 local function confirm_override()
-  hcm.set_state_override(hcm.get_state_override_target())
+--  hcm.set_state_override(hcm.get_state_override_target())
+  hcm.set_state_override({0,0,0,0,0,0,0})    
 end
 
 

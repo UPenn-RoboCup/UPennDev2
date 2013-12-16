@@ -154,8 +154,11 @@ local function process_character(key_code,key_char,key_char_lower)
   --notify target transform change
   local trmod = char_to_override[key_char_lower]
   if trmod then
+    --[[
     local override_old = hcm.get_state_override()
     local tr = vector.new(trmod) + vector.new(override_old)
+    --]]
+    local tr = trmod
     print( util.color('Override:','yellow'), 
       string.format("%.2f %.2f %.2f / %.1f %.1f",
       tr[1],
@@ -163,7 +166,8 @@ local function process_character(key_code,key_char,key_char_lower)
       tr[3],
       tr[4]*180/math.pi,
       tr[5]*180/math.pi))
-    hcm.set_state_override_target(tr)    
+    --hcm.set_state_override_target(tr)    
+    hcm.set_state_override(tr)    
     return
   end
 

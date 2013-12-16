@@ -13,3 +13,6 @@ screen -S mesh -L -dm lua mesh_wizard.lua
 #
 screen -X -S rpc quit
 screen -S rpc -L -dm lua rpc_wizard.lua
+#
+screen -X -S audio quit
+screen -S audio -L -dm lua audio_wizard.lua

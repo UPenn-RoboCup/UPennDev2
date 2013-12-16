@@ -8,5 +8,5 @@ cd $RUN_DIR
 screen -X -S lidar quit
 screen -S lidar -L -dm lua lidar_wizard.lua
 #
-screen -X -S state quit
+screen -X -S state kill
 screen -S state -L -dm lua state_wizard.lua

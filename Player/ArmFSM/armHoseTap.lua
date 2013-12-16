@@ -13,6 +13,32 @@ local qLArm0,qRArm0, trLArm0, trRArm0, trLArm1, trARArm1
 local stage
 local debugdata
 
+local function check_override()
+  local override = hcm.get_state_override()
+  for i=1,7 do
+    if override[i]~=0 then return true end
+  end
+  return false
+end
+
+local function get_override(left_tr)
+  local override = hcm.get_state_override()
+  local left_tr_target = {
+      left_tr[1]+override[1],
+      left_tr[2]+override[2],
+      left_tr[3]+override[3],
+      left_tr[4],
+      left_tr[5],
+      left_tr[6]
+    }
+  return left_tr_target
+end
+
+local function confirm_override()
+  hcm.set_state_override({0,0,0,0,0,0,0})
+end
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -39,11 +65,8 @@ function state.entry()
 
   arm_planner:set_hand_mass(0,0)
   arm_planner:set_shoulder_yaw_target(nil,qRArm0[3]) --Lock left hand
-  --[[
-  local wrist_seq = {
-    {'wrist',trLArm1,nil},
-  }
---]]
+  
+  confirm_override()
 
   local wrist_seq = {
     {'move',Config.armfsm.hosegrip.armhosepull[1],nil},
@@ -125,23 +148,14 @@ function state.update()
           {'move',Config.armfsm.hosetap.larminit[1],nil},          
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "wristyawturn" end  
-      elseif hcm.get_state_proceed()==3 then 
-
+      elseif check_override() then 
         local trLArmCurrent = hcm.get_hands_left_tr()
-        local overrideTarget = hcm.get_state_override_target()
-        local override = hcm.get_state_override()
-        local trLArmTarget = {
-          trLArmCurrent[1]+overrideTarget[1]-override[1],
-          trLArmCurrent[2]+overrideTarget[2]-override[2],
-          trLArmCurrent[3]+overrideTarget[3]-override[3],
-          trLArmCurrent[4],
-          trLArmCurrent[5],
-          trLArmCurrent[6]
-        }
+        local trLArmTarget = get_override(trLArmCurrent)
         local arm_seq = {{'move',trLArmTarget,nil}}
         if arm_planner:plan_arm_sequence2(arm_seq) then
           stage = "armup"
         end
+        confirm_override()
         hcm.set_state_proceed(0)
       end
     end 

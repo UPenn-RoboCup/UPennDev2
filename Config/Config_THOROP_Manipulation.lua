@@ -181,6 +181,46 @@ armfsm.doorpushside = {}
 
 armfsm.doorpushside.arminit = {
   {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+
+--going back
+  {0.0,0.64,-0.14,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
+}
+
+--little tilt angle up
+
+armfsm.doorpushside.arminit = {
+  {0.38,-0.10,0.07,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.38,-0.10,0.07,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},
+--going back
+  {0.0,0.64,-0.14,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
+}
+
+armfsm.doorpushside.unit_tilt = 5*DEG_TO_RAD
+armfsm.doorpushside.unit_yaw = 5*DEG_TO_RAD
+
+
+
+
+
+
+
+
+
+
+
+
+
+armfsm.doorpullside = {}
+
+armfsm.doorpullside.larminit = {
+ --0.32 0.30 -0.32 (0 30 0)
+  {0.15,0.30,-0.32,  0,30*DEG_TO_RAD, 0*DEG_TO_RAD},     
+}
+
+armfsm.doorpullside.rarminit = {
+  --0.32 -0.30 -0.32 (0 30 0)
+  {0.42,-0.30,-0.32,  0,30*DEG_TO_RAD, 0*DEG_TO_RAD},    
   {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 90*DEG_TO_RAD},
 
 --going back
@@ -189,17 +229,8 @@ armfsm.doorpushside.arminit = {
 
 --little tilt angle up
 
-armfsm.doorpushside.arminit = {
-  {0.38,-0.10,0.07,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},    
-  {0.38,-0.10,0.07,  0,-15*DEG_TO_RAD, 90*DEG_TO_RAD},
---going back
-  {0.0,0.64,-0.14,  0,-15*DEG_TO_RAD, 90*DEG_TO_RAD}, --last tr
-}
-
-armfsm.doorpushside.unit_tilt = 5*DEG_TO_RAD
-armfsm.doorpushside.unit_yaw = 2*DEG_TO_RAD
-
-
+armfsm.doorpullside.unit_tilt = 5*DEG_TO_RAD
+armfsm.doorpullside.unit_yaw = 2*DEG_TO_RAD
 
 
 

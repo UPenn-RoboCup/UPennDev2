@@ -25,17 +25,16 @@ local angle1
 
 
 local function update_override()
-  local overrideTarget = hcm.get_state_override_target()
   local override = hcm.get_state_override()
+  local override_task = hcm.get_state_override_task()
   local valve_model = hcm.get_largevalve_model()
 
   valve_model[1],valve_model[2],valve_model[3], valve_model[4], valve_model[5], valve_model[6]=
-    valve_model[1] + overrideTarget[1]-override[1],
-    valve_model[2] + overrideTarget[2]-override[2],
-    valve_model[3] + overrideTarget[3]-override[3],
+    valve_model[1] + override[1],
+    valve_model[2] + override[2],
+    valve_model[3] + override[3],
     0, --This should be the radius 
-    valve_model[5] + (overrideTarget[4]-override[4])*
-      Config.armfsm.valveonearm.turnUnit,   --this is the init angle
+    valve_model[5] + override_task*Config.armfsm.valveonearm.turnUnit,   --this is the init angle
     valve_model[6] --target angle, but we won't use it
     
   hcm.set_largevalve_model(valve_model)
@@ -55,12 +54,11 @@ local function revert_override()
   local valve_model = hcm.get_largevalve_model()
 
   valve_model[1],valve_model[2],valve_model[3], valve_model[4], valve_model[5], valve_model[6]=
-    valve_model[1] - (overrideTarget[1]-override[1]),
-    valve_model[2] - (overrideTarget[2]-override[2]),
-    valve_model[3] - (overrideTarget[3]-override[3]),
+    valve_model[1] - override[1],
+    valve_model[2] - override[2],
+    valve_model[3] - override[3],
     0, --This should be the radius 
-    valve_model[5] - (overrideTarget[4]-override[4])*
-      Config.armfsm.valveonearm.turnUnit,   --this is the init angle
+    valve_model[5] - override_task*Config.armfsm.valveonearm.turnUnit,   --this is the init angle
     valve_model[6] --target angle, but we won't use it
     
   hcm.set_largevalve_model(valve_model)
@@ -68,15 +66,15 @@ local function revert_override()
   print( util.color('Valve model:','yellow'), 
       string.format("%.2f %.2f %.2f / %.1f",
       valve_model[1],valve_model[2],valve_model[3],
-      valve_model[4]*180/math.pi   ))
+      valve_model[5]*180/math.pi   ))
 
-  angle1, angle2 = valve_model[5], valve_model[6]
+  angle1 = valve_model[5]
   hcm.set_state_proceed(0)
 end
 
 local function confirm_override()
-  local override = hcm.get_state_override()
-  hcm.set_state_override_target(override)
+  hcm.set_state_override({0,0,0,0,0,0})
+  hcm.set_state_override_task(0)  
 end
 
 
@@ -183,11 +181,11 @@ function state.update()
         update_override()
         local valve_seq={{'valveonearm',angle1,0,1,0}}
         if arm_planner:plan_arm_sequence(valve_seq) then 
-          stage="inposition" 
-          confirm_override()
+          stage="inposition"         
         else
           revert_override()
         end
+        confirm_override()
         hcm.set_state_proceed(0)
       end
     end

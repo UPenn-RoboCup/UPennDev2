@@ -36,6 +36,8 @@ local armLoadDoorGrip = require'armLoadDoorGrip'
 
 
 local armPushDoorSideGrip = require'armPushDoorSideGrip'
+local armPullDoorSideGrip = require'armPullDoorSideGrip'
+
 
 -- Tool specific states
 local armToolGrip = require'armToolGrip'
@@ -87,7 +89,9 @@ sm:add_state(armTeleop)
 sm:add_state(armDoorGrip)
 sm:add_state(armPushDoorGrip)
 sm:add_state(armLoadDoorGrip)
+
 sm:add_state(armPushDoorSideGrip)
+sm:add_state(armPullDoorSideGrip)
 
 sm:add_state(armToolGrip)
 sm:add_state(armToolHold)
@@ -142,6 +146,7 @@ sm:set_transition(armPose1, 'loaddoorgrab', armLoadDoorGrip)
 
 
 sm:set_transition(armPose1, 'pushdoorgrab', armPushDoorSideGrip)
+sm:set_transition(armPose1, 'doorgrab', armPullDoorSideGrip)
 
 
 
@@ -188,6 +193,7 @@ sm:set_transition(armPushDoorGrip, 'done', armPose1)
 sm:set_transition(armLoadDoorGrip, 'done', armPose1)
 
 sm:set_transition(armPushDoorSideGrip, 'done', armPose1)
+sm:set_transition(armPullDoorSideGrip, 'done', armPose1)
 
 
 

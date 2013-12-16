@@ -16,26 +16,21 @@ shared_data.audio.request = vector.zeros(0)
 shared_data.state={}
 shared_data.state.proceed = vector.zeros(0)
 
---SJ: Now we use a single param instead of model itself to override everything 
+--Now we use TWO sets of params (both are INCREMENTS)
 
---Door open: x,y,z, door yaw, door knob roll 
---Door open away: x,y,z, hand yaw
+--override variables are (x,y,z, r,p,y)
+--unit of x,y,z is in meters
+--unit of r,p,y is radians
+shared_data.state.override=vector.zeros(6)
 
---Drill pickup: x,y,z, drill yaw
---Drill cut: x,y,z,    drill yaw, drill pitch
-
---Rotary valve turn: x,y,z, valve roll 
---Bar valve turn: x,y,z, valve roll, hand roll
-
---Hose pickup: x,y,z, hand yaw
---Hose attach: x,y,z, hand yaw, hand pitch
-
-shared_data.state.override=vector.zeros(5)
-shared_data.state.override_target=vector.zeros(5)
+--Task-specific override variables (i.g. valve turn)
+--unit is DISCRETE, and can be -1/0/1 
+shared_data.state.override_task=vector.zeros(1)
 
 
 
-
+--WE DON'T USE THESE ANY MORE
+shared_data.state.override_target=vector.zeros(6)
 
 
 

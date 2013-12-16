@@ -17,10 +17,101 @@ local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRarm0
 local gripL, gripR = 1,1
 local stage
 
+
+
+
+local function update_override()
+  local overrideTarget = hcm.get_state_override_target()
+  local override = hcm.get_state_override()
+  local door_model = hcm.get_door_model()
+
+  door_model={
+    door_model[1] + overrideTarget[1]-override[1],
+    door_model[2] + overrideTarget[2]-override[2],
+    door_model[3] + overrideTarget[3]-override[3],
+    door_model[4], --Door width
+    door_model[5], -- Knob x offset
+    door_model[6], -- Knob y offset from knob axle
+    door_model[7] + (overrideTarget[4]-override[4])*
+      Config.armfsm.dooropen.turnUnit, --Target knob roll
+    door_model[8] + (overrideTarget[5]-override[5])*
+      Config.armfsm.dooropen.turnUnit2, --Target door yaw
+    }
+
+  --Knob roll: 0 to -90
+  door_model[7] = math.max(-90*Body.DEG_TO_RAD,math.min(0,door_model[7]))
+
+  --Door yaw : plus to pull, minus to push
+  door_model[8] = math.max(-30*Body.DEG_TO_RAD,math.min(30*Body.DEG_TO_RAD,door_model[8]))  
+
+  hcm.set_door_model(door_model)
+  hcm.set_state_proceed(0)
+  print( util.color('Door model:','yellow'), 
+      string.format("%.2f %.2f %.2f / %.1f %.1f",
+      door_model[1],door_model[2],door_model[3],
+      door_model[7]*180/math.pi,
+      door_model[8]*180/math.pi
+         ))
+
+  rollTarget = door_model[7]
+  yawTarget = door_model[8]
+end
+
+local function revert_override()
+  local overrideTarget = hcm.get_state_override_target()
+  local override = hcm.get_state_override()
+  local door_model = hcm.get_door_model()
+
+  door_model={
+    door_model[1] - (overrideTarget[1]-override[1]),
+    door_model[2] - (overrideTarget[2]-override[2]),
+    door_model[3] - (overrideTarget[3]-override[3]),
+    door_model[4], --Door width
+    door_model[5], -- Knob x offset
+    door_model[6], -- Knob y offset from knob axle
+
+    door_model[7] - (overrideTarget[4]-override[4])*
+      Config.armfsm.dooropen.turnUnit, --Target knob roll
+    door_model[8] - (overrideTarget[5]-override[5])*
+      Config.armfsm.dooropen.turnUnit2, --Target door yaw
+    }
+
+  --Knob roll: 0 to -90
+  door_model[7] = math.max(-90*Body.DEG_TO_RAD,math.min(0,door_model[7]))
+
+  --Door yaw : plus to pull, minus to push
+  door_model[8] = math.max(-30*Body.DEG_TO_RAD,math.min(30*Body.DEG_TO_RAD,door_model[8]))  
+
+  hcm.set_door_model(door_model)
+  hcm.set_state_proceed(0)
+  print( util.color('Door model:','yellow'), 
+      string.format("%.2f %.2f %.2f / %.1f %.1f",
+      door_model[1],door_model[2],door_model[3],
+      door_model[7]*180/math.pi,
+      door_model[8]*180/math.pi
+         ))
+
+  rollTarget = door_model[7]
+  yawTarget = door_model[8]
+end
+
 local function confirm_override()
   local override = hcm.get_state_override()
   hcm.set_state_override_target(override)
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -55,7 +146,7 @@ function state.entry()
 
   hcm.set_state_tstartactual(unix.time()) 
   hcm.set_state_tstartrobot(Body.get_time())
-  confirm_override()
+
 
   local cur_cond = arm_planner:load_boundary_condition()
   local qLArm = cur_cond[1]
@@ -63,8 +154,8 @@ function state.entry()
   trLArm0 = Body.get_forward_larm(cur_cond[1])
   trRArm0 = Body.get_forward_rarm(cur_cond[2])  
 
-  print("trLArm:",arm_planner.print_transform(trLArm))
-  print("trRArm:",arm_planner.print_transform(trRArm))
+  print("trLArm:",arm_planner.print_transform(trLArm0))
+  print("trRArm:",arm_planner.print_transform(trRArm0))
 
   local wrist_seq = {{'move',trLArm0, trRArm0, 30*Body.DEG_TO_RAD,0},}
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "bodyturn" end
@@ -90,9 +181,12 @@ function state.update()
   if stage=="bodyturn" then 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
+  
+
         local wrist_seq = {
-          {'wrist',Config.armfsm.doorpushside.arminit[1], nil},
-          {'wrist',Config.armfsm.doorpushside.arminit[2], nil}
+          {'move',
+            Config.armfsm.doorpullside.larminit[1],Config.armfsm.doorpullside.rarminit[1]},        
+
         }
         if arm_planner:plan_arm_sequence2(wrist_seq) then stage="movearm" end
         hcm.set_state_proceed(0) --stop here and wait
@@ -129,11 +223,7 @@ function state.update()
           trArmCurrent[2]+(overrideTarget[2]-override[2]),
           trArmCurrent[3]+(overrideTarget[3]-override[3]),
           trArmCurrent[4],
-
-          --Pitch control
           trArmCurrent[5]+(overrideTarget[4]-override[4])*Config.armfsm.doorpushside.unit_tilt,
-
-          --Yaw control
           trArmCurrent[6]+(overrideTarget[5]-override[5])*Config.armfsm.doorpushside.unit_yaw,
         }        
         local arm_seq = {{'move',trArmTarget,nil}}

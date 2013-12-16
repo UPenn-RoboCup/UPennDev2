@@ -87,8 +87,15 @@ function state.entry()
 
   mcm.set_arm_lhandoffset(Config.arm.handoffset.chopstick)
 
+--[[
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
+--]]
+
+  local cur_cond = arm_planner:load_boundary_condition()
+  local qLArm = cur_cond[1]
+  local qRArm = cur_cond[2]
+
 
   qLArm0 = qLArm
   qRArm0 = qRArm

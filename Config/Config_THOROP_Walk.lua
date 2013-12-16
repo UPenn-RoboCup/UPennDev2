@@ -318,7 +318,6 @@ elseif HOSTNAME=="teddy" then
 
 
 
-
 else
   print("UNKNOWN ROBOT")
   walk.legBias = 

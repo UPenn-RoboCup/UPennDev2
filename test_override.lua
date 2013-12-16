@@ -91,6 +91,8 @@ local char_to_event = {
  
 }
 
+local angle_increment = 5*math.pi/180
+
 local char_to_override = {
   ['i'] = vector.new({0.01, 0, 0,   0,0,0,0}),
   [','] = vector.new({-.01, 0, 0,   0,0,0,0}),
@@ -100,12 +102,12 @@ local char_to_override = {
   ['m'] = vector.new({0,0, -.01,   0,0,0,0}),
   
   --Yaw
-  ['h'] = vector.new({0,0,0,     0,1,0,0}),
-  [';'] = vector.new({0,0,0,    0,-1,0,0}),
+  ['h'] = vector.new({0,0,0,     0,0,angle_increment,0}),
+  [';'] = vector.new({0,0,0,    0,0,-angle_increment,0}),
 
   --Pitch
-  ['y'] = vector.new({0,0,0,     -1,0,0,0}),
-  ['n'] = vector.new({0,0,0,     1,0,0,0}),
+  ['y'] = vector.new({0,0,0,     0,-angle_increment,0, 0}),
+  ['n'] = vector.new({0,0,0,     0,angle_increment,0,  0}),
 
   --Task
   ['['] = vector.new({0,0,0,     -1,0,0,-1}),

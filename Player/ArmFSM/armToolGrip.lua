@@ -20,6 +20,7 @@ local stage
 local debugdata
 
 local function get_tool_tr(tooloffset)
+
   local handrpy = rhand_rpy
   local tool_model = hcm.get_tool_model()
   local hand_pos = vector.slice(tool_model,1,3) + 
@@ -33,19 +34,30 @@ local function get_hand_tr(pos)
   return {pos[1],pos[2],pos[3], unpack(rhand_rpy)}
 end
 
+local function check_override()
+  local override = hcm.get_state_override()
+  for i=1,7 do
+    if override[i]~=0 then return true end
+  end
+  return false
+end
 
 local function update_override()
-  local overrideTarget = hcm.get_state_override_target()
   local override = hcm.get_state_override()
   local tool_model = hcm.get_tool_model()
 
   tool_model[1],tool_model[2],tool_model[3], tool_model[4] = 
-  tool_model[1] + (overrideTarget[1]-override[1]),
-  tool_model[2] + (overrideTarget[2]-override[2]),
-  tool_model[3] + (overrideTarget[3]-override[3]),
-  tool_model[4] + (util.mod_angle(overrideTarget[4]-override[4]))*Config.armfsm.toolgrip.turnUnit
+  tool_model[1] + override[1],
+  tool_model[2] + override[2],
+  tool_model[3] + override[3],
+  tool_model[4] + override[6], --yaw
+--print("upd: old model",unpack(hcm.get_tool_model() ))
 
+
+--SJ: this is weird, we need to read once to update the shm
+  hcm.get_tool_model()
   hcm.set_tool_model(tool_model)
+
   print( util.color('Tool model:','yellow'), 
       string.format("%.2f %.2f %.2f / %.1f",
         tool_model[1],tool_model[2],tool_model[3],
@@ -54,15 +66,18 @@ local function update_override()
 end
 
 local function revert_override()
-  local overrideTarget = hcm.get_state_override_target()
+  print("revert")
   local override = hcm.get_state_override()
   local tool_model = hcm.get_tool_model()
 
   tool_model[1],tool_model[2],tool_model[3], tool_model[4] = 
-  tool_model[1] - (overrideTarget[1]-override[1]),
-  tool_model[2] - (overrideTarget[2]-override[2]),
-  tool_model[3] - (overrideTarget[3]-override[3]),
-  tool_model[4] - (util.mod_angle(overrideTarget[4]-override[4]))*Config.armfsm.toolgrip.turnUnit
+  tool_model[1] - override[1],
+  tool_model[2] - override[2],
+  tool_model[3] - override[3],
+  tool_model[4] - override[6], --yaw
+
+--SJ: this is weird, we need to read once to update the shm
+  hcm.get_tool_model()
 
   hcm.set_tool_model(tool_model)
   print( util.color('Tool model:','yellow'), 
@@ -70,11 +85,12 @@ local function revert_override()
         tool_model[1],tool_model[2],tool_model[3],
         tool_model[4]*180/math.pi ))
   hcm.set_state_proceed(0)
+  hcm.set_state_override({0,0,0,0,0,0,0})  
+
 end
 
 local function confirm_override()
-  local override = hcm.get_state_override()
-  hcm.set_state_override_target(override)
+  hcm.set_state_override({0,0,0,0,0,0,0})
 end
 
 function state.entry()
@@ -163,19 +179,13 @@ function state.update()
     end
   elseif stage=="armup" then
     if arm_planner:play_arm_sequence(t) then 
-          --Open gripper
-      --Body.move_rgrip1(Config.arm.torque.open)
-      --Body.move_rgrip2(Config.arm.torque.open)    
-      
       if hcm.get_state_proceed()==1 then 
         print("trRArm:",arm_planner.print_transform(trRArm))
         arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)
-      
 
         local trRArmTarget1 = get_tool_tr(Config.armfsm.toolgrip.tool_clearance)        
         trRArmTarget1[1]=Config.armfsm.toolgrip.tool_clearance_x
         local trRArmTarget2 = get_tool_tr(Config.armfsm.toolgrip.tool_clearance)
-
 
         local arm_seq = {
           {'move',nil, trRArmTarget1},
@@ -200,16 +210,7 @@ function state.update()
         local trRArmTarget1 = get_hand_tr(Config.armfsm.toolgrip.arminit[2])
         local arm_seq={{'move',nil,trRArmTarget0},{'move',nil,trRArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
-      elseif hcm.get_state_proceed() == 3 then 
-        print("reachout")
-        update_override()        
-        arm_planner:set_hand_mass(0,0)
-        local trRArmTarget1 = get_tool_tr(Config.armfsm.toolgrip.tool_clearance)
-        local arm_seq = {{'move',nil,trRArmTarget1}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then 
-          stage = "reachout" 
-          confirm_override()
-        else revert_override() end
+   
       end
     end    
   elseif stage=="touchtool" then --Move arm to the gripping position
@@ -223,24 +224,13 @@ function state.update()
         arm_planner:set_hand_mass(0,0)
         local trRArmTarget1 = get_tool_tr(Config.armfsm.toolgrip.tool_clearance)
         local arm_seq = {{'move',nil, trRArmTarget1}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end
-      
-      elseif hcm.get_state_proceed() == 3 then 
-        print("touchtool")
-        arm_planner:set_hand_mass(0,0)
-        update_override()        
-        local trRArmTarget2 = get_tool_tr({0,0,0})        
-        local arm_seq = {{'move',nil,trRArmTarget2}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then 
-          stage = "touchtool" 
-          confirm_override()
-        else revert_override() end
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end    
 
 
       end
     end
     
-  elseif stage=="grab" then --Grip the object       
+  elseif stage=="grab" then --Grip the object   
     if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        
         arm_planner:set_hand_mass(0,1)
@@ -249,16 +239,16 @@ function state.update()
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end
       elseif hcm.get_state_proceed()==-1 then stage="ungrab" 
       
-      elseif hcm.get_state_proceed() == 3 then --Model modification
+      elseif check_override() then --Model modification
         print("grab")
+        local trRArmTarget2 = get_tool_tr({0,0,0})
         update_override()        
         local trRArmTarget2 = get_tool_tr({0,0,0})
         local arm_seq = {{'move',nil,trRArmTarget2}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grab" 
-        confirm_override()
+        if arm_planner:plan_arm_sequence2(arm_seq) then 
+          stage = "grab" 
+          confirm_override()
         else revert_override() end
-
-
       end
     end
     hcm.set_state_proceed(0) --stop here
@@ -291,7 +281,8 @@ function state.update()
         local arm_seq = {{'move',nil,trRArmTarget3}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grab" end
       
-      elseif hcm.get_state_proceed() == 3 then --Model modification
+      elseif check_override() then --Model modification
+        print("LIFT")
         update_override()        
         local trRArmTarget2 = get_tool_tr(Config.armfsm.toolgrip.tool_liftup)
         local arm_seq = {{'move',nil,trRArmTarget2}}

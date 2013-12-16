@@ -13,7 +13,7 @@ local use_lidar_head  = false
 -- if using one USB2Dynamixel
 local ONE_CHAIN = false
 local DISABLE_MICROSTRAIN = false
-local READ_GRIPPERS = false
+local READ_GRIPPERS = true
 
 --Turn off camera for default for webots
 --This makes body crash if we turn it on again...
@@ -1188,180 +1188,12 @@ if not status_raw then return end
   return value
 end
 
-Body.update = function()
 
-  for _,d in pairs(dynamixels) do
-    d.cmd_pkts = {}
-    d.read_pkts = {}
-    d.n_expect_read = 0
-    d.read_register = nil
-  end
 
-  -- Loop through the registers
-  -- TODO: Indirect addressesing so we
-  -- would need to only send ONE packet with
-  -- all PID, cmd_position, etc.
-  -- BUT it is important to design indirect address
-  -- layout properly
-  for register,is_writes in pairs(jcm.writePtr) do
-    --
-    local wr_values = jcm['get_actuator_'..register]()
-    -- Add instruction packets to the chains
-    for _,d in pairs(dynamixels) do
-      add_mxnx_bulk_write(d, is_writes, wr_values, register)
-    end
-    --
-  end
-  --
-  for register,is_reads in pairs(jcm.readPtr) do
+--SJ: reading hand causes the body almost freeze (~14fps)
 
-    if register=='lfoot' then
-      if is_reads[1]>0 then
-        is_reads[1]=0
-        local d = motor_dynamixels[24]
-        table.insert(d.read_pkts,{
-          libDynamixel.get_nx_data{24,26},
-          'lfoot'})
-        d.n_expect_read = d.n_expect_read + 2
-      end
-    elseif register=='rfoot' then
-      if is_reads[1]>0 then
-        is_reads[1]=0
-        local d = motor_dynamixels[23]
-        table.insert(d.read_pkts,{
-          libDynamixel.get_nx_data{23,25},
-          'rfoot'})
-        d.n_expect_read = d.n_expect_read + 2
-      end
-    elseif register=='command_torque' then
-      -- No command_torque
-    else
-      local get_func    = libDynamixel['get_nx_'..register]
-      local mx_get_func = libDynamixel['get_mx_'..register]
-      --local is_reads    = jcm['get_read_'..register]()
-      --util.ptable(dynamixels)
-      for _,d in pairs(dynamixels) do
-        local read_ids = {}
-        for _,id in ipairs(d.nx_ids) do
-          local idx = motor_to_joint[id]
-          --
-          if is_reads[idx]>0 then
-            is_reads[idx]=0
-            table.insert(read_ids,id)
-          end
-        end
-        -- mk pkt
-        if #read_ids>0 then
-          -- DEBUG READ TIEMOUT
-          --print('!!!mk read!!!',register,unpack(read_ids))
-          table.insert(d.read_pkts,{get_func(read_ids),register})
-          d.n_expect_read = d.n_expect_read + #read_ids
-        end
-      end
-    end
-  end
+Body.hand_update = function()
 
-  -- Execute packet sending
-  -- Send the commands first
-  ----[[
-  local done = true
-  repeat -- round robin repeat
-    done = true
-    for _,d in pairs(dynamixels) do
-      local fd = d.fd
-      -- grab a packet
-      local pkt = table.remove(d.cmd_pkts)
-      -- ensure that the pkt exists
-      if pkt then
-        -- remove leftover reads
-        --local leftovers = unix.read(fd)
-        -- flush previous writes
-        local flush_ret = stty.flush(fd)
-        -- write the new command
-        local cmd_ret = unix.write( fd, pkt )
-        -- possibly need a drain? Robotis does not
-        local flush_ret = stty.drain(fd)
-        local t_cmd  = unix.time()
-        d.t_diff_cmd = t_cmd - d.t_cmd
-        d.t_cmd      = t_cmd
-        --if d.t_diff_cmd*1000>11 then print('BAD tdiff_cmd (ms)',d.ttyname,d.t_diff_cmd*1000) end
-        -- check if now done
-        if #d.cmd_pkts>0 then
-          --print'sleepy'
-          unix.usleep(1e4)
-          done = false
-        end
-      end
-    end
-  until done
-  --]]
-  
-  
-  -- SEND THE GRIP COMMANDS each time...
-  -- LEFT HAND
-  local lg_m1 = servo.joint_to_motor[indexLGrip]
-  local lg_m2 = servo.joint_to_motor[indexLGrip+1]
-  local l_dyn = motor_dynamixels[ lg_m1 ]
-  -- Grab the torques from the user
-  local l_tq_step1 = Body.get_lgrip_command_torque_step()
-  local l_tq_step2 = Body.get_ltrigger_command_torque_step()
-  -- Close the hand with a certain force (0 is no force)
-  libDynamixel.set_mx_command_torque({lg_m1,lg_m2},{l_tq_step1,l_tq_step2},l_dyn)
-  -- RIGHT HAND
-  local rg_m1 = servo.joint_to_motor[indexRGrip]
-  local rg_m2 = servo.joint_to_motor[indexRGrip+1]
-  local r_dyn = motor_dynamixels[ rg_m1 ]
-  -- Grab the torques from the user
-  local r_tq_step1 = Body.get_rgrip_command_torque_step()
-  local r_tq_step2 = Body.get_rtrigger_command_torque_step()
-  -- Close the hand with a certain force (0 is no force)
-  libDynamixel.set_mx_command_torque({rg_m1,rg_m2},{r_tq_step1,r_tq_step2},r_dyn)
-
-  -- Send the requests next
-  local done = true
---local nreq = 0
-  repeat -- round robin repeat
-    done = true
-    for _,d in pairs(dynamixels) do
-      local fd = d.fd
-      d.str = ''
-      -- grab a packet
-      local pkt = table.remove(d.read_pkts)
-      -- ensure that the pkt exists
-      if pkt then
-        d.read_register = pkt[2]
-        -- flush previous stuff
-        local flush_ret = stty.flush(fd)
-        -- write the new command
-        --local t_write = unix.time()
-        local cmd_ret = unix.write( fd, pkt[1] )
-        -- possibly need a drain? Robotis does not
-        local flush_ret = stty.drain(fd)
-        -- check if now done
-        if #d.cmd_pkts>0 then done = false end
---nreq=nreq+1
-      end
-    end
---if nreq==0 then break end
-    -- Await the responses of these packets
-    local READ_TIMEOUT = 2e-3
-    local still_recv = true
-    while still_recv do
-      still_recv = false
-      local status, ready = unix.select(dynamixel_fds,READ_TIMEOUT)
-      -- if a timeout, then return
-      if status==0 then
-        --print('read timeout')
-        break
-      end
-      for ready_fd, is_ready in pairs(ready) do
-        -- for items that are ready
-        if is_ready then
-          still_recv = process_fd(ready_fd)
-        end
-      end -- for each ready_fd
-    end
-  until done
   
   
   ------------------------
@@ -1436,8 +1268,201 @@ rall_2 = parse_all(rall_2,rg_m2)
   end
   -- END GRIP READING --
   -----------------------
+
+
+
+end
+
+
+
+
+Body.update = function()
+
+  for _,d in pairs(dynamixels) do
+    d.cmd_pkts = {}
+    d.read_pkts = {}
+    d.n_expect_read = 0
+    d.read_register = nil
+  end
+
+  -- Loop through the registers
+  -- TODO: Indirect addressesing so we
+  -- would need to only send ONE packet with
+  -- all PID, cmd_position, etc.
+  -- BUT it is important to design indirect address
+  -- layout properly
+  for register,is_writes in pairs(jcm.writePtr) do
+    --
+    local wr_values = jcm['get_actuator_'..register]()
+    -- Add instruction packets to the chains
+    for _,d in pairs(dynamixels) do
+      add_mxnx_bulk_write(d, is_writes, wr_values, register)
+    end
+    --
+  end
+  --
+  for register,is_reads in pairs(jcm.readPtr) do
+
+    if register=='lfoot' then
+      if is_reads[1]>0 then
+        is_reads[1]=0
+        local d = motor_dynamixels[24]
+        table.insert(d.read_pkts,{
+          libDynamixel.get_nx_data{24,26},
+          'lfoot'})
+        d.n_expect_read = d.n_expect_read + 2
+      end
+    elseif register=='rfoot' then
+      if is_reads[1]>0 then
+        is_reads[1]=0
+        local d = motor_dynamixels[23]
+        table.insert(d.read_pkts,{
+          libDynamixel.get_nx_data{23,25},
+          'rfoot'})
+        d.n_expect_read = d.n_expect_read + 2
+      end
+    elseif register=='command_torque' then
+      -- No command_torque
+    else
+      local get_func    = libDynamixel['get_nx_'..register]
+      local mx_get_func = libDynamixel['get_mx_'..register]
+      --local is_reads    = jcm['get_read_'..register]()
+      --util.ptable(dynamixels)
+      for _,d in pairs(dynamixels) do
+        local read_ids = {}
+        for _,id in ipairs(d.nx_ids) do
+          local idx = motor_to_joint[id]
+          --
+          if is_reads[idx]>0 then
+            is_reads[idx]=0
+            table.insert(read_ids,id)
+          end
+        end
+        -- mk pkt
+        if #read_ids>0 then
+          -- DEBUG READ TIEMOUT
+          --print('!!!mk read!!!',register,unpack(read_ids))
+          table.insert(d.read_pkts,{get_func(read_ids),register})
+          d.n_expect_read = d.n_expect_read + #read_ids
+        end
+      end
+    end
+  end
+
+
+
+
+  -- Execute packet sending
+  -- Send the commands first
+  ----[[
+  local done = true
+  repeat -- round robin repeat
+    done = true
+    for _,d in pairs(dynamixels) do
+      local fd = d.fd
+      -- grab a packet
+      local pkt = table.remove(d.cmd_pkts)
+      -- ensure that the pkt exists
+      if pkt then
+        -- remove leftover reads
+        --local leftovers = unix.read(fd)
+        -- flush previous writes
+        local flush_ret = stty.flush(fd)
+        -- write the new command
+        local cmd_ret = unix.write( fd, pkt )
+        -- possibly need a drain? Robotis does not
+        local flush_ret = stty.drain(fd)
+        local t_cmd  = unix.time()
+        d.t_diff_cmd = t_cmd - d.t_cmd
+        d.t_cmd      = t_cmd
+        --if d.t_diff_cmd*1000>11 then print('BAD tdiff_cmd (ms)',d.ttyname,d.t_diff_cmd*1000) end
+        -- check if now done
+        if #d.cmd_pkts>0 then
+          --print'sleepy'
+          unix.usleep(1e4)
+          done = false
+        end
+      end
+    end
+  until done
+  --]]
+  
+  -- SEND THE GRIP COMMANDS each time...
+  -- LEFT HAND
+  local lg_m1 = servo.joint_to_motor[indexLGrip]
+  local lg_m2 = servo.joint_to_motor[indexLGrip+1]
+  local l_dyn = motor_dynamixels[ lg_m1 ]
+  -- Grab the torques from the user
+  local l_tq_step1 = Body.get_lgrip_command_torque_step()
+  local l_tq_step2 = Body.get_ltrigger_command_torque_step()
+  -- Close the hand with a certain force (0 is no force)
+  libDynamixel.set_mx_command_torque({lg_m1,lg_m2},{l_tq_step1,l_tq_step2},l_dyn)
+  -- RIGHT HAND
+  local rg_m1 = servo.joint_to_motor[indexRGrip]
+  local rg_m2 = servo.joint_to_motor[indexRGrip+1]
+  local r_dyn = motor_dynamixels[ rg_m1 ]
+  -- Grab the torques from the user
+  local r_tq_step1 = Body.get_rgrip_command_torque_step()
+  local r_tq_step2 = Body.get_rtrigger_command_torque_step()
+  -- Close the hand with a certain force (0 is no force)
+  libDynamixel.set_mx_command_torque({rg_m1,rg_m2},{r_tq_step1,r_tq_step2},r_dyn)
+
+  -- Send the requests next
+  local done = true
+--local nreq = 0
+  repeat -- round robin repeat
+    done = true
+    for _,d in pairs(dynamixels) do
+      local fd = d.fd
+      d.str = ''
+      -- grab a packet
+      local pkt = table.remove(d.read_pkts)
+      -- ensure that the pkt exists
+      if pkt then
+        d.read_register = pkt[2]
+        -- flush previous stuff
+        local flush_ret = stty.flush(fd)
+        -- write the new command
+        --local t_write = unix.time()
+        local cmd_ret = unix.write( fd, pkt[1] )
+        -- possibly need a drain? Robotis does not
+        local flush_ret = stty.drain(fd)
+        -- check if now done
+        if #d.cmd_pkts>0 then done = false end
+--nreq=nreq+1
+      end
+    end
+--if nreq==0 then break end
+    -- Await the responses of these packets
+    local READ_TIMEOUT = 2e-3
+    local still_recv = true
+    while still_recv do
+      still_recv = false
+      local status, ready = unix.select(dynamixel_fds,READ_TIMEOUT)
+      -- if a timeout, then return
+      if status==0 then
+        --print('read timeout')
+        break
+      end
+      for ready_fd, is_ready in pairs(ready) do
+        -- for items that are ready
+        if is_ready then
+          still_recv = process_fd(ready_fd)
+        end
+      end -- for each ready_fd
+    end
+  until done
+
+
+--SJ: hand reading takes VERY long and makes all motions very jerky
+--So here I separate them and comment out for now
+--Body.hand_update()
+
   
 end
+
+
+
 Body.exit = function()
   for k,d in pairs(dynamixels) do
     -- Torque off motors

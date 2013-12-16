@@ -215,8 +215,30 @@ if HOSTNAME=="alvin" then
   walk.maxStepCount = 30
 
 
+  --ankle roll tweak
+  walk.legBias = 
+    vector.new({
+      0.875, 1, -0.625, -2.155, 0.00, -0.615,
+      0.625, -0.4325, 0.375, -0.3475, 0.00, 1.0025 
+    })*DEG_TO_RAD
+
+  walk.torsoX = -0.04 
+  walk.torsoX = -0.02 
 
 
+
+
+
+
+--[[
+  walk.ankleImuParamY={1, 1.0*gyroFactorY,  0*math.pi/180, 10*math.pi/180}
+  walk.hipImuParamY  ={1, 0.5*gyroFactorY,  0*math.pi/180, 10*math.pi/180}
+
+
+
+  walk.ankleImuParamY={1, 0.5*gyroFactorY,  0*math.pi/180, 10*math.pi/180}
+  walk.hipImuParamY  ={1, 0.25*gyroFactorY,  0*math.pi/180, 10*math.pi/180}
+--]]
 
 
 elseif HOSTNAME=="teddy" then
@@ -284,6 +306,16 @@ elseif HOSTNAME=="teddy" then
     vector.new({1, 0.25,-0.25, -0.50,  0.52, 0.25,
                 0, 0.125,0.375,-0.875,  0, -0.50,
     })*DEG_TO_RAD
+
+
+--Roll fix after collapse 
+
+  walk.legBias = 
+    vector.new({1, 1.26,-0.25, -0.50,  1.06, 0.2475,
+                0, -0.415,0.375,-0.875,  0, -0.50,
+    })*DEG_TO_RAD
+
+
 
 
 else

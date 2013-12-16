@@ -308,6 +308,17 @@ elseif HOSTNAME=="teddy" then
     })*DEG_TO_RAD
 
 
+--Roll fix after collapse 
+
+  walk.legBias = 
+    vector.new({1, 1.26,-0.25, -0.50,  1.06, 0.2475,
+                0, -0.415,0.375,-0.875,  0, -0.50,
+    })*DEG_TO_RAD
+
+
+
+
+
 else
   print("UNKNOWN ROBOT")
   walk.legBias = 

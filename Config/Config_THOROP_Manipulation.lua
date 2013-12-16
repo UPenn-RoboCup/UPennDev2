@@ -394,7 +394,6 @@ armfsm.hosegrip.default_model = {
 --New param with passive finger outside
 
 armfsm.hosegrip.lhand_rpy = {179*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD}
-
 armfsm.hosegrip.lhand_rpy1 = {135*DEG_TO_RAD,0,45*DEG_TO_RAD}
 armfsm.hosegrip.lhand_rpy2 = {135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 
@@ -433,6 +432,49 @@ armfsm.hosegrip.armhoseattachinit={
 
 
 
+
+
+--REverted back, view blocked
+
+armfsm.hosegrip.lhand_rpy = {0*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD}
+armfsm.hosegrip.lhand_rpy1 = {135*DEG_TO_RAD,0,-45*DEG_TO_RAD}
+armfsm.hosegrip.lhand_rpy2 = {135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+
+
+--0.16 0.14 -0.20 
+
+armfsm.hosegrip.arminit={
+  {0.30,0.14,-0.15,0*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  {0.30,0.14,-0.15,0*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+--0.16 0.46 -0.20 (179,0,45)
+}
+
+armfsm.hosegrip.default_model = {
+  0.31,0.14, -0.15, 0, 0}
+
+armfsm.hosegrip.armhold = {
+  {0.33,0.35,-0.20,135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.23,0.25,-0.20,135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+
+  -- 0.16 0.14 -0.20 (0 0 -45)
+  {-0.25,0.30,-0.30,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {-0.30,0.05,-0.30,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
+}
+
+armfsm.hosegrip.armhosepull={
+  {-0.30,0.05,-0.30,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {-0.25,0.30,-0.30,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {-0.0,0.35,-0.43,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
+
+--  {0.23,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  
+  {0.43,0.35,-0.20,135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+}
+
+armfsm.hosegrip.armhoseattachinit={
+  {0.43,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  {0.43,0.35,-0.20,0*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},        
+}
 
 
 

@@ -18,16 +18,8 @@ local gripL, gripR = 1,1
 local stage
 local debugdata
 
-local function check_override()
-  local override_old = hcm.get_state_override()
-  local override_target = hcm.get_state_override_target()
-  for i=1,7 do
-    if override_old[i]~=override_target[i] then
-      return true
-    end
-  end
-  return false
-end
+
+
 
 local function get_model_tr(offset,handrpy)
   local handrpy = handrpy or lhand_rpy0
@@ -45,16 +37,23 @@ local function get_hand_tr(pos,rpy)
   return {pos[1],pos[2],pos[3], unpack(rpy)}
 end
 
+local function check_override()
+  local override = hcm.get_state_override()
+  for i=1,7 do
+    if override[i]~=0 then return true end
+  end
+  return false
+end
+
 local function update_override()
-  local overrideTarget = hcm.get_state_override_target()
   local override = hcm.get_state_override()
   local model = hcm.get_hose_model()
   
   model[1],model[2],model[3],model[4]=
-    model[1] + (overrideTarget[1]-override[1]),
-    model[2] + (overrideTarget[2]-override[2]),
-    model[3] + (overrideTarget[3]-override[3]),
-    model[4] + (overrideTarget[4]-override[4])
+    model[1] + override[1],
+    model[2] + override[2],
+    model[3] + override[3],
+    model[4]
     
   hcm.set_hose_model(model)
 
@@ -67,15 +66,14 @@ local function update_override()
 end
 
 local function revert_override()
-local overrideTarget = hcm.get_state_override_target()
   local override = hcm.get_state_override()
   local model = hcm.get_hose_model()
   
   model[1],model[2],model[3],model[4]=
-    model[1] - (overrideTarget[1]-override[1]),
-    model[2] - (overrideTarget[2]-override[2]),
-    model[3] - (overrideTarget[3]-override[3]),
-    model[4] - (overrideTarget[4]-override[4])
+    model[1] - override[1],
+    model[2] - override[2],
+    model[3] - override[3],
+    model[4]
     
   hcm.set_hose_model(model)
 
@@ -84,11 +82,12 @@ local overrideTarget = hcm.get_state_override_target()
       model[1],model[2],model[3],
       model[4]*180/math.pi   ))
 
-  hcm.set_state_proceed(0)end
+  hcm.set_state_proceed(0)
+  hcm.set_state_override({0,0,0,0,0,0,0})
+end
 
 local function confirm_override()
-  local override = hcm.get_state_override()
-  hcm.set_state_override_target(override)
+  hcm.set_state_override({0,0,0,0,0,0,0})
 end
 
 function state.entry()

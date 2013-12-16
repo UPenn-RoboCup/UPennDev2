@@ -42,6 +42,14 @@ local function check_override()
   return false
 end
 
+local function check_override_rotate()
+  local override = hcm.get_state_override()
+  for i=4,6 do
+    if override[i]~=0 then return true end
+  end
+  return false
+end
+
 local function update_override()
   local override = hcm.get_state_override()
   local tool_model = hcm.get_tool_model()
@@ -245,6 +253,7 @@ function state.update()
         update_override()        
         local trRArmTarget2 = get_tool_tr({0,0,0})
         local arm_seq = {{'move',nil,trRArmTarget2}}
+        
         if arm_planner:plan_arm_sequence2(arm_seq) then 
           stage = "grab" 
           confirm_override()

@@ -340,14 +340,15 @@ armfsm.toolchop.torsoMovementMag = 0.5
 armfsm.toolchop.drill_clearance = {-0.05,0,0}
 armfsm.toolchop.drill_offset = {0,0,0.10}
 
+--armfsm.toolgrip.armhold={0.25,0.0,-0.20}
+
 armfsm.toolchop.arminit={
-  {0.30,-0.0,-0.20},  
-  {0.30,-0.0,-0.20},
-  {0.35,-0.20,-0.13}, --center pos    
+  {0.25,-0.16,-0.20},  
+  {0.25,-0.16,-0.20},  
+  {0.30,-0.16,-0.07},
 }
 
---SJ: we can really barely cut this (52 cm = 20 inch)
-armfsm.toolchop.model={0.47,-0.20,0.0,0}
+armfsm.toolchop.model={0.30,-0.16,0.03,0}
 
 ---------------------------------------------------------------
 ------   Hose pickup

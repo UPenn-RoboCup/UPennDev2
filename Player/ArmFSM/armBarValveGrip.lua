@@ -23,9 +23,10 @@ local clearance = Config.armfsm.valvebar.clearance
 
 
 local function update_override()
-local override_old = hcm.get_state_override()
+  local override_old = hcm.get_state_override()
   local override_target = hcm.get_state_override_target()
-  local override = vector.new(override_target)- vector.new(override)
+  local override = vector.new(override_target)- vector.new(override_old)
+  local override_task = override[7]
 
   local valve_model = hcm.get_barvalve_model()
 
@@ -52,10 +53,10 @@ local override_old = hcm.get_state_override()
 end
 
 local function revert_override()
-
   local override_old = hcm.get_state_override()
   local override_target = hcm.get_state_override_target()
-  local override = vector.new(override_target)- vector.new(override)
+  local override = vector.new(override_target)- vector.new(override_old)
+  local override_task = override[7]
 
   local valve_model = hcm.get_barvalve_model()
 
@@ -72,11 +73,12 @@ local function revert_override()
   hcm.set_state_proceed(0)
   turn_angle1 = valve_model[6] --Target angle
   wrist_angle = valve_model[7] --Wrist tight angle
+
+  hcm.set_state_override_target(hcm.get_state_override())
 end
 
 local function confirm_override()
-  hcm.set_state_override({0,0,0,0,0,0})
-  hcm.set_state_override_task(0)  
+  hcm.set_state_override(hcm.get_state_override_target())    
 end
 
 function state.entry()

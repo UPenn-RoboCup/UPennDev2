@@ -27,10 +27,7 @@ local angle1
 local function update_override()
   local override_old = hcm.get_state_override()
   local override_target = hcm.get_state_override_target()
-  print(override_target)
-  print(override_old)
   local override = vector.new(override_target)- vector.new(override_old)
-
   local override_task = override[7]
 
   local valve_model = hcm.get_largevalve_model()
@@ -57,9 +54,7 @@ end
 local function revert_override()
   local override_old = hcm.get_state_override()
   local override_target = hcm.get_state_override_target()
-
   local override = vector.new(override_target)- vector.new(override_old)
-
   local override_task = override[7]
 
   local valve_model = hcm.get_largevalve_model()

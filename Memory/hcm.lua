@@ -24,9 +24,13 @@ shared_data.state.proceed = vector.zeros(0)
 --unit of TASK is 1
 shared_data.state.override=vector.zeros(7)
 
+shared_data.state.override_support=vector.zeros(7)
+
+
+
+
+--Not used any more
 shared_data.state.override_target=vector.zeros(7)
-
-
 
 --This variable is used for target transform based tele-op and fine tuning
 shared_data.hands={}

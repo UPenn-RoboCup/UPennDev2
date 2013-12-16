@@ -29,6 +29,7 @@ local function get_model_tr(offset,handrpy)
     vector.new({offset[1],offset[2],offset[3]})  
   local tr = {hand_pos[1],hand_pos[2],hand_pos[3],
       handrpy[1],handrpy[2],handrpy[3] + model[4]}
+   
   return tr
 end
 
@@ -90,6 +91,41 @@ local function confirm_override()
   hcm.set_state_override({0,0,0,0,0,0,0})
 end
 
+
+
+local function check_override_support()
+  local override = hcm.get_state_override_support()
+  for i=1,7 do 
+    if override[i]~=0 then return true end 
+  end
+  return false
+end
+
+local function update_override_support()
+  local override = hcm.get_state_override_support()
+  local trArmTarget = hcm.get_hands_right_tr()
+  
+  trArmTarget[1],trArmTarget[2],trArmTarget[3]=
+    trArmTarget[1] + override[1],
+    trArmTarget[2] + override[2],
+    trArmTarget[3] + override[3]  
+
+  hcm.set_state_override_support({0,0,0,0,0,0,0})
+  hcm.set_state_proceed(0)
+  return trArmTarget
+end
+
+
+
+
+
+
+
+
+
+
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -115,12 +151,18 @@ function state.entry()
   trRArm1 = Body.get_forward_rarm(qRArm1)  
 
   arm_planner:set_hand_mass(0,0)
---  arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) --Lock left hand
-  arm_planner:set_shoulder_yaw_target(nil,qRArm0[3]) --Lock left hand
-  --local wrist_seq = {{'wrist',nil,trRArm1}}
+
+  --arm_planner:set_shoulder_yaw_target(nil,qRArm0[3]) --Lock left hand
+  arm_planner:set_shoulder_yaw_target(nil,nil) --Lock left hand
+  --[[
   local arm_seq = {
     {'wrist',Config.armfsm.hosegrip.arminit[1],nil},
     {'wrist',Config.armfsm.hosegrip.arminit[2],nil},
+  }
+  --]]
+  local arm_seq = {
+    {'wrist',Config.armfsm.hosegrip.arminit[1],Config.armfsm.hosegrip.arminit_support[1]},
+    {'move',Config.armfsm.hosegrip.arminit[1],Config.armfsm.hosegrip.arminit_support[1]},
   }
   if arm_planner:plan_arm_sequence2(arm_seq) then stage = "wristyawturn" end  
   hcm.set_state_proceed(1)
@@ -151,13 +193,15 @@ function state.update()
         print("trLArm:",arm_planner.print_transform(trLArm))
         local arm_seq = {
           {'move',Config.armfsm.hosegrip.arminit[2],nil},
---          {'move',get_model_tr({0,0,0}),nil},
           }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "touchtool" end
         hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) 
-        local wrist_seq = {{"wrist",trLArm0,nil}}
+        local wrist_seq = {
+          {"wrist",trLArm0,trRArm0},
+          {"move",trLArm0,trRArm0}
+        }
         if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "armbacktoinitpos" end  
       end
     end
@@ -172,8 +216,12 @@ function state.update()
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armretract" end
         hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed() == -1 then 
-        local trArmTarget2 = get_hand_tr(Config.armfsm.hosegrip.arminit[1])
-        local arm_seq = {{'move',trArmTarget2,nil}}
+--        local trArmTarget2 = get_hand_tr(Config.armfsm.hosegrip.arminit[1])
+--        local arm_seq = {{'move',trArmTarget2,nil}}
+        local arm_seq = {{'move',
+          Config.armfsm.hosegrip.arminit[1],
+          Config.armfsm.hosegrip.arminit_support[1]}}
+
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "wristyawturn" end
 
       elseif check_override() then 
@@ -186,6 +234,13 @@ function state.update()
         else
           revert_override()
         end                        
+      elseif check_override_support() then
+        print("SUPPORT")
+        local trRArmTarget = update_override_support()
+        local arm_seq = {{'move',nil,trRArmTarget}}     
+        if arm_planner:plan_arm_sequence2(arm_seq) then 
+          stage = "touchtool" 
+        end
       end
     end
     
@@ -194,8 +249,8 @@ function state.update()
       if hcm.get_state_proceed()==1 then                
         local arm_seq={
           {'wrist',Config.armfsm.hosegrip.armhold[3],nil},
-          {'move',Config.armfsm.hosegrip.armhold[3],nil},
-          {'move',Config.armfsm.hosegrip.armhold[4],nil},
+          {'move',Config.armfsm.hosegrip.armhold[3],Config.armfsm.hosegrip.arminit_support[1]},
+          {'move',Config.armfsm.hosegrip.armhold[4],trRArm0},
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armretract2" end
         hcm.set_state_proceed(0)

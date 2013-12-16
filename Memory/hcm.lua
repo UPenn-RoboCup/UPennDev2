@@ -18,19 +18,13 @@ shared_data.state.proceed = vector.zeros(0)
 
 --Now we use TWO sets of params (both are INCREMENTS)
 
---override variables are (x,y,z, r,p,y)
+--override variables are (x,y,z, r,p,y, TASK)
 --unit of x,y,z is in meters
 --unit of r,p,y is radians
-shared_data.state.override=vector.zeros(6)
+--unit of TASK is 1
+shared_data.state.override=vector.zeros(7)
 
---Task-specific override variables (i.g. valve turn)
---unit is DISCRETE, and can be -1/0/1 
-shared_data.state.override_task=vector.zeros(1)
-
-
-
---WE DON'T USE THESE ANY MORE
-shared_data.state.override_target=vector.zeros(6)
+shared_data.state.override_target=vector.zeros(7)
 
 
 

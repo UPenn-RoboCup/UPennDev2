@@ -90,20 +90,24 @@ local char_to_event = {
 }
 
 local char_to_override = {
-  ['i'] = vector.new({0.01, 0, 0,   0,0}),
-  [','] = vector.new({-.01, 0, 0,   0,0}),
-  ['j'] = vector.new({0, 0.01, 0,   0,0}),
-  ['l'] = vector.new({0, -.01, 0,   0,0}),
-  ['u'] = vector.new({0, 0, 0.01,  0,0}),
-  ['m'] = vector.new({0,0, -.01,   0,0}),
+  ['i'] = vector.new({0.01, 0, 0,   0,0,0,0}),
+  [','] = vector.new({-.01, 0, 0,   0,0,0,0}),
+  ['j'] = vector.new({0, 0.01, 0,   0,0,0,0}),
+  ['l'] = vector.new({0, -.01, 0,   0,0,0,0}),
+  ['u'] = vector.new({0, 0, 0.01,  0,0,0,0}),
+  ['m'] = vector.new({0,0, -.01,   0,0,0,0}),
   
   --Yaw
-  ['h'] = vector.new({0,0,0,     0,1}),
-  [';'] = vector.new({0,0,0,    0,-1}),
+  ['h'] = vector.new({0,0,0,     0,1,0,0}),
+  [';'] = vector.new({0,0,0,    0,-1,0,0}),
 
   --Pitch
-  ['y'] = vector.new({0,0,0,     -1,0}),
-  ['n'] = vector.new({0,0,0,     1,0}),
+  ['y'] = vector.new({0,0,0,     -1,0,0,0}),
+  ['n'] = vector.new({0,0,0,     1,0,0,0}),
+
+  --Task
+  ['['] = vector.new({0,0,0,     -1,0,0,-1}),
+  [']'] = vector.new({0,0,0,     1,0,0,1}),
 }
 
 local char_to_state = {
@@ -148,7 +152,8 @@ local function process_character(key_code,key_char,key_char_lower)
   --notify target transform change
   local trmod = char_to_override[key_char_lower]
   if trmod then
-    local tr = vector.new(trmod)
+    local override_old = hcm.get_state_override()
+    local tr = vector.new(trmod) + vector.new(override_old)
     print( util.color('Override:','yellow'), 
       string.format("%.2f %.2f %.2f / %.1f %.1f",
       tr[1],
@@ -156,17 +161,9 @@ local function process_character(key_code,key_char,key_char_lower)
       tr[3],
       tr[4]*180/math.pi,
       tr[5]*180/math.pi))
-    hcm.set_state_override(tr)
+    hcm.set_state_override_target(tr)
     hcm.set_state_proceed(3) --notify override change
     return
-  end
-
-  if key_char_lower=='[' then
-    hcm.set_state_override_task(-1)
-    hcm.set_state_proceed(3) --notify override change
-  elseif key_char_lower==']' then
-    hcm.set_state_override_task(1)
-    hcm.set_state_proceed(3) --notify override change
   end
 
 

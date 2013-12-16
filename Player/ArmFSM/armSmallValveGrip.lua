@@ -25,8 +25,14 @@ local angle1
 
 
 local function update_override()
-  local override = hcm.get_state_override()
-  local override_task = hcm.get_state_override_task()
+  local override_old = hcm.get_state_override()
+  local override_target = hcm.get_state_override_target()
+  print(override_target)
+  print(override_old)
+  local override = vector.new(override_target)- vector.new(override_old)
+
+  local override_task = override[7]
+
   local valve_model = hcm.get_largevalve_model()
 
   valve_model[1],valve_model[2],valve_model[3], valve_model[4], valve_model[5], valve_model[6]=
@@ -49,8 +55,13 @@ local function update_override()
 end
 
 local function revert_override()
-  local override = hcm.get_state_override()
-  local override_task = hcm.get_state_override_task()
+  local override_old = hcm.get_state_override()
+  local override_target = hcm.get_state_override_target()
+
+  local override = vector.new(override_target)- vector.new(override_old)
+
+  local override_task = override[7]
+
   local valve_model = hcm.get_largevalve_model()
 
   valve_model[1],valve_model[2],valve_model[3], valve_model[4], valve_model[5], valve_model[6]=
@@ -69,12 +80,11 @@ local function revert_override()
       valve_model[5]*180/math.pi   ))
 
   angle1 = valve_model[5]
-  hcm.set_state_proceed(0)
+  hcm.set_state_proceed(0)  
 end
 
 local function confirm_override()
-  hcm.set_state_override({0,0,0,0,0,0})
-  hcm.set_state_override_task(0)  
+  hcm.set_state_override(hcm.get_state_override_target())    
 end
 
 
@@ -86,28 +96,20 @@ function state.entry()
   t_update = t_entry
 
   mcm.set_arm_lhandoffset(Config.arm.handoffset.chopstick)
-
---[[
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
---]]
+  mcm.set_arm_rhandoffset(Config.arm.handoffset.chopstick)
 
   local cur_cond = arm_planner:load_boundary_condition()
   local qLArm = cur_cond[1]
   local qRArm = cur_cond[2]
 
-
-  qLArm0 = qLArm
-  qRArm0 = qRArm
+  qLArm0, qRArm0 = qLArm, qRArm
+  qLArm1, qRArm1 = qLArm, qRArm
   
-  trLArm0 = Body.get_forward_larm(qLArm0)
-  trRArm0 = Body.get_forward_rarm(qRArm0)  
   
   qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, Config.armfsm.valveonearm.arminit[1])  
-  qRArm1 = qRArm
   
-  trLArm1 = Body.get_forward_larm(qLArm1)
-  trRArm1 = Body.get_forward_rarm(qRArm1)  
+  trLArm0, trRArm0 = Body.get_forward_larm(qLArm0),Body.get_forward_rarm(qRArm0)  
+  trLArm1, trRArm1 = Body.get_forward_larm(qLArm1),Body.get_forward_rarm(qRArm1)  
 
   arm_planner:set_shoulder_yaw_target(nil,qRArm0[3])--unlock left shoulder
 
@@ -115,6 +117,7 @@ function state.entry()
 
   hcm.set_state_tstartactual(unix.time()) 
   hcm.set_state_tstartrobot(Body.get_time())
+
   confirm_override()
   update_override()
   local wrist_seq = {{'wrist',trLArm1, nil}}

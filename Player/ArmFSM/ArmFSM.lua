@@ -59,6 +59,16 @@ local armSmallValveGrip = require'armSmallValveGrip'
 -- bar valve turning
 local armBarValveGrip = require'armBarValveGrip'
 
+-- Small circular valve turning (one hand turning)
+local armSmallValveRightGrip = require'armSmallValveGrip'
+
+-- bar valve turning
+local armBarValveRightGrip = require'armBarValveGrip'
+
+
+
+
+
 
 -- Large circular valve turning (one hand turning)
 --local armLargeValveGrip = require'armLargeValveGrip'

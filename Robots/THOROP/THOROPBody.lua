@@ -904,7 +904,7 @@ Body.entry = function()
     dynamixels.right_leg.nx_ids = 
       {15,17,19,21,23,25, --[[waist pitch]]28}
     dynamixels.left_leg.nx_ids =
-      {16,18,20,22,24,26, --[[waist]]27}
+      {16,18,20,22,24,26, --[[waist yaw]]27}
     dynamixels.right_arm.mx_ids = { 70,65 }
     dynamixels.left_arm.mx_ids = { 66,67,37, --[[lidar]] }
   else

@@ -318,6 +318,28 @@ elseif HOSTNAME=="teddy" then
 
 
 
+
+
+
+
+
+
+--DRC site, 12/18 3:21PM
+--HY  1 -0.27
+--HP -.495 1.455
+--AP -0.4925 -0.945
+--AR .01125 0.175
+
+  walk.legBias = 
+    vector.new({1, 1.26,    0.495,   -0.50,  -0.4925, 0.1125,
+            -0.27, -0.415,  1.455,   -0.875,  -0.945, 0.175,
+    })*DEG_TO_RAD
+
+
+
+
+
+
 else
   print("UNKNOWN ROBOT")
   walk.legBias = 

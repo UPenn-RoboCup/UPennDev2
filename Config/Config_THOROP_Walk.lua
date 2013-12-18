@@ -341,6 +341,13 @@ elseif HOSTNAME=="teddy" then
 
 
 
+  walk.supportY = 0.05
+--Ankle tweak, 5:26PM
+  walk.legBias = 
+    vector.new({1, 1.26,    0.495,   -0.50,  -0.02, 0.5175,
+            -0.27, -0.415,  1.455,   -0.875,  -0.945, 0.175,
+    })*DEG_TO_RAD
+
 
 else
   print("UNKNOWN ROBOT")

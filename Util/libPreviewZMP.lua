@@ -278,17 +278,15 @@ end
 local function emergency_stop(self,step_planner,t)
   --Find the end time of current step
   local current_info = self.preview_queue[1]
+  local future_index = math.floor( (current_info.tEnd-t)/ self.preview_tStep + 0.999)
 
+--[[
   print("Current discrete t:",t)
   print("Current step start time:",current_info.tStart)
   print("Current step end time:",current_info.tEnd)
   print("Current tStep :",self.preview_tStep)
-
-
-  local future_index = math.floor( (current_info.tEnd-t)/ self.preview_tStep + 0.999)
-
   print("future index:",future_index)
-
+--]]
   --Insert the DS step
   local new_preview_item = {}  
   local last_preview_item = self.preview_queue[1]

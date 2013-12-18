@@ -77,7 +77,7 @@ local nJointLidar = 1
 local nJoint = 35 --33
 
 local jointNames = {
-	"Neck","Head", -- Head
+	"Neck","Head", -- Head (Yaw,pitch)
 	-- Left Arm
 	"ShoulderL", "ArmUpperL", "LeftShoulderYaw",
 	"ArmLowerL","LeftWristYaw","LeftWristRoll","LeftWristYaw2",
@@ -974,7 +974,30 @@ Body.entry = function()
     -- Debug message for when not set
     if try>10 then print('BAD TORQUE MODE SET!',g) end
   end
-  print'DONE SETTING TORQUE MODE'  
+  print'DONE SETTING TORQUE MODE'
+  
+  -------------
+  -- Set the head yaw external light on; not sure which port(s)
+  local m_id = servo.joint_to_motor[indexHead+1]
+  libDynamixel.set_nx_data1_mode({m_id},1,usb2dyn)
+  unix.usleep(1e4)
+  libDynamixel.set_nx_data2_mode({m_id},1,usb2dyn)
+  unix.usleep(1e4)
+  libDynamixel.set_nx_data3_mode({m_id},1,usb2dyn)
+  unix.usleep(1e4)
+  libDynamixel.set_nx_data4_mode({m_id},1,usb2dyn)
+  unix.usleep(1e4)
+  -- Turn on!
+  libDynamixel.set_nx_data1({m_id},1,usb2dyn)
+  unix.usleep(1e4)
+  libDynamixel.set_nx_data2({m_id},1,usb2dyn)
+  unix.usleep(1e4)
+  libDynamixel.set_nx_data3({m_id},1,usb2dyn)
+  unix.usleep(1e4)
+  libDynamixel.set_nx_data4({m_id},1,usb2dyn)
+  unix.usleep(1e4)
+  -- End the light setting mode
+  -------------
   
 end
 

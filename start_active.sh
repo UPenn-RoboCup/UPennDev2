@@ -1,12 +1,14 @@
 #!/bin/sh
-RUN_DIR=/home/thor/UPennDev/Player
+# Run the items that need power
 
-# Enter the correct directory
-cd $RUN_DIR
+# Kill previous instances
+pkill -f state_wizard.lua
+pkill -f lidar_wizard.lua
 
-# Run the items that need power (Killing previous instances)
-screen -X -S lidar quit
+# Go to the correct directory
+cd /home/thor/UPennDev/Player
 screen -S lidar -L -dm lua lidar_wizard.lua
-#
-screen -X -S state kill
 screen -S state -L -dm lua state_wizard.lua
+
+# Double check that state wizard is *actually* running
+pgrep -f state_wizard.lua

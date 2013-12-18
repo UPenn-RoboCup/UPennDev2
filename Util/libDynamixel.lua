@@ -152,6 +152,12 @@ local nx_registers = {
   ['max_velocity'] = {string.char(0x20,0x00),4},
   ['max_position'] = {string.char(0x24,0x00),4},
   ['min_position'] = {string.char(0x28,0x00),4},
+  --
+  ['data1_mode'] = {string.char(44,0x00),1},
+  ['data2_mode'] = {string.char(45,0x00),1},
+  ['data3_mode'] = {string.char(46,0x00),1},
+  ['data4_mode'] = {string.char(47,0x00),1},
+  --
   ['shutdown'] = {string.char(0x30,0x00),1},
   
   -- ENTER RAM AREA

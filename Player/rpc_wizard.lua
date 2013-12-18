@@ -42,11 +42,14 @@ local function process_rpc(rpc)
   -- for debugging
   util.ptable(rpc)
   rpc.fsm = trim_string(rpc.fsm)
-  rpc.shm = trim_string(rpc.shm)
   rpc.evt = trim_string(rpc.evt)
+  rpc.special = trim_string(rpc.special)
+  --
+  rpc.shm = trim_string(rpc.shm)
   rpc.segment = trim_string(rpc.segment)
   rpc.key = trim_string(rpc.key)
-  rpc.special = trim_string(rpc.special)
+  rpc.segkeyfun = trim_string(rpc.segkey) -- segment AND key AND function
+  --
   rpc.body = trim_string(rpc.body)
   rpc.bargs = trim_string(rpc.bargs)
   -- Experimental raw support
@@ -58,7 +61,13 @@ local function process_rpc(rpc)
   if shm then
     local mem = _G[shm]
     if type(mem)~='table' then return'Invalid memory' end
-    if rpc.val then
+
+    if rpc.segkeyfun then
+      local func = mem[rpc.segkeyfun]
+      -- Use a protected call
+      print(rpc.segkeyfun)
+      status, reply = pcall(func,rpc.val)
+    elseif rpc.val then
       -- Set memory
       local method = string.format('set_%s_%s',rpc.segment,rpc.key)
       local func = mem[method]

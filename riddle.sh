@@ -1,2 +1,2 @@
 #!/bin/sh
-lua -i riddle.lua
+lua -i riddle2.lua

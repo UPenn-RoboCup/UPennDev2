@@ -163,13 +163,16 @@ function state.update()
   elseif stage=="drillcut" then
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-
+        hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed()==-1 then 
+
+--[[        
         local trRArmTarget1 = get_cutpos_tr(Config.armfsm.toolchop.drill_clearance)      
         local arm_seq = {{'move',nil, trRArmTarget1}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillpositionwait" end      
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drilloutmove" end      
+    
+--]]
         hcm.set_state_proceed(0)
-
       elseif check_override() then --Model modification        
         update_override()        
         local trRArmTarget1 = get_cutpos_tr()

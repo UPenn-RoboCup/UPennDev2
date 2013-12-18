@@ -266,7 +266,7 @@ armfsm.toolgrip.default_model_target = {
 armfsm.toolgrip.default_model = {
   0.42,-0.06,0.20,  0*DEG_TO_RAD}    
 
-armfsm.toolgrip.armhold={0.25,0.0,-0.20}
+
 armfsm.toolgrip.tool_clearance={-0.05,0,0}
 armfsm.toolgrip.tool_liftup = {0,0,0.05}
 armfsm.toolgrip.tool_clearance_x = 0.38
@@ -298,10 +298,39 @@ armfsm.toolgrip.armpull={
   {0.32, -0.35, -0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
 
+
+--New init sequence that avoids the table
+
+armfsm.toolgrip.arminit={
+  {0.29,-0.40,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.39,-0.40,0.01,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.46,-0.40,0.17,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.46,-0.40,0.17,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+}
+
+armfsm.toolgrip.armpull={
+  {0.42,-0.40,0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.39,-0.40,0.01,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.25,-0.40,-0.10,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+}
+
+armfsm.toolgrip.armhold={0.25,0.0,-0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
+
+
+armfsm.toolgrip.default_model = {
+  0.42,-0.06,0.20,  0*DEG_TO_RAD}    
+
+
+
+
+
+
+
+
+
 armfsm.toolleftgrip={}
 armfsm.toolleftgrip.lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
 armfsm.toolleftgrip.rhand_rpy = {0,0,0*DEG_TO_RAD}
-
 --The optimal model
 armfsm.toolleftgrip.default_model_target = {
   0.55,0.06,0.20,  0*DEG_TO_RAD}    --xyz, yaw

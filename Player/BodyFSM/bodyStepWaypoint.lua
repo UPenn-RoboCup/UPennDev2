@@ -94,6 +94,13 @@ local function calculate_footsteps()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
       step_planner:init_stance()
 
+  print("CUrrent uLeft:",unpack(uLeft_now))
+  print("CUrrent uTorso:",unpack(uTorso_now))
+  print("CUrrent uRight:",unpack(uRight_now))
+
+
+
+
 --TODO: select initial foot based on velocity
   if target_pose[2]>0 then --sidestep to the left
     supportLeg = 0
@@ -242,26 +249,28 @@ end
 
 
 
-local function calculate_footsteps_new()
+local function calculate_footsteps_new(self)
   follow_stage = 0
   step_planner = libStep.new_planner()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
       step_planner:init_stance()
 
-  print("target pose:",unpack(target_pose))
 
-  print("Current stance:",
-    unpack( util.pose_relative(uLeft_now,uRight_now) )    
-    )
+  local uTorso0 = util.pose_global({-Config.walk.supportX,0,0},uTorso_now)
+  local target_pose_local = util.pose_relative(target_pose,uTorso0)
+
+
+  print("local target pose:",unpack(target_pose_local))
+  print("Current stance:",unpack( util.pose_relative(uLeft_now,uRight_now) )    )
   print("footY:",2*Config.walk.footY)
 
 
 
 --TODO: select initial foot based on velocity
-  if target_pose[2]>0 then --sidestep to the left
-    supportLeg = 0
+  if target_pose_local[2]>0 then --sidestep to the left
+    supportLeg = 1 --right support. left move
   else --sidestep to the right
-    supportLeg = 1
+    supportLeg = 0 --left support, right move
   end
 
 
@@ -277,63 +286,146 @@ local function calculate_footsteps_new()
 
   local arrived = false;
 
-  --TODO: only sidestep requires frequent pauseing
+  --TODO: only sidestep requires frequent pausing
 
 --  local max_step_count = 30
   local max_step_count = Config.walk.maxStepCount or 6
 
   
   while step_queue_count<max_step_count and not arrived do
-
+    step_queue_count = step_queue_count + 1    
     print("===========")
-    if not arrived then
-      if step_queue_count<=2 then
-        step_planner.velCurrent = vector.new({0.0,0,0})
-      else
---        step_planner.velCurrent,arrived = robocup_follow(uTorso_now,target_pose)
-        step_planner.velCurrent,arrived = forward_follow(
-          uLeft_next,uTorso_next,uRight_next,target_pose)
-      end
-    else
-      step_planner.velCurrent = vector.new({0.0,0,0})
-      last_step=true 
-    end
     
-    supportLeg = 1-supportLeg
-    step_queue_count = step_queue_count + 1
-    initial_step, last_step = false, false
-    if step_queue_count==max_step_count then last_step = true end
-        
-    local new_step
-    uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
-      step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step,last_step)
-    local leg_movemet
-    if supportLeg==0 then --Left support
-      leg_movement = util.pose_relative(uRight_next,uRight_now)  
-    else
-      leg_movement = util.pose_relative(uLeft_next,uLeft_now)  
+    local leg_movement=vector.new({0,0,0})
+    if not arrived then
+
+
+      initial_step, last_step = false, false
+      if step_queue_count==max_step_count then last_step = true end
+      if step_queue_count<=3 or step_queue_count == max_step_count-1 then
+        if supportLeg ==0 then --Left support, right move
+          uRight_next = util.pose_global(
+            vector.new({0,-2*Config.walk.footY,0}),
+            uLeft_now)
+          uLeft_next = uLeft_now
+          leg_movement = util.pose_relative(uRight_next,uRight_now)  
+        else
+          uLeft_next = util.pose_global(
+            vector.new({0,2*Config.walk.footY,0}),
+            uRight_now)
+          uRight_next = uRight_now
+          leg_movement = util.pose_relative(uLeft_next,uLeft_now)  
+        end
+
+--        if step_queue_count==2 then arrived = true end
+      else
+        local uTorso0 = util.pose_global({-Config.walk.supportX,0,0},uTorso_now)
+        local uLeftTarget = util.pose_global({0,Config.walk.footY,0},target_pose)
+        local uRightTarget = util.pose_global({0,-Config.walk.footY,0},target_pose)
+
+        local rel_pose = util.pose_relative(target_pose,uTorso0) --global frame
+        local rel_foot = util.pose_relative(uLeft_now,uRight_now)
+
+        local rel_lfoot = util.pose_relative(uLeftTarget,uLeft_now)
+        local rel_rfoot = util.pose_relative(uRightTarget,uRight_now)
+
+        print("rel pose x:",rel_pose[1])
+        print("rel lfoot x:",rel_lfoot[1],rel_lfoot[2])
+        print("rel rfoot x:",rel_rfoot[1],rel_rfoot[2])
+     
+        local max_step_x = 0.05
+        local min_step_x = -0.03
+
+
+        local max_leg_movement_x = math.abs(rel_foot[1])+max_step_x
+        local min_leg_movement_x = -math.abs(rel_foot[1])+min_step_x
+
+        local max_step_y = 0.08
+        local min_stance_y = 0.18 --Config.walk.stanceLimitY[1]
+
+
+        if supportLeg==0 then --Left support
+          leg_movement[1]  =  math.max(min_leg_movement_x,math.min(max_leg_movement_x, rel_rfoot[1]))
+          leg_movement[2]  =  math.max(-max_step_y,math.min(max_step_y, rel_rfoot[2]))
+
+        else
+          leg_movement[1]  =  math.max(min_leg_movement_x,math.min(max_leg_movement_x, rel_lfoot[1]))
+          leg_movement[2]  =  math.max(-max_step_y,math.min(max_step_y, rel_lfoot[2]))
+        end
+
+        if supportLeg==0 then 
+          uLeft_next = uLeft_now
+          uRight_next = util.pose_global(leg_movement,uRight_now)
+        else
+          uLeft_next = util.pose_global(leg_movement,uLeft_now)
+          uRight_next = uRight_now
+        end
+
+
+        local uLeftRight = util.pose_relative(uLeft_next, uRight_next)      
+        print("leg width:",uLeftRight[2]," limit ",min_stance_y)  
+        uLeftRight[2] = math.max(min_stance_y,uLeftRight[2])
+        if supportLeg==0 then --left support
+          uRight_next = util.pose_global(-uLeftRight,uLeft_next)          
+          leg_movement = util.pose_relative(uRight_next,uRight_now)
+        else
+          uLeft_next = util.pose_global(uLeftRight,uRight_next)                    
+          leg_movement = util.pose_relative(uLeft_next,uLeft_now)
+        end
+
+
+        local rel_lfoot = util.pose_relative(uLeftTarget,uLeft_next)
+        local rel_rfoot = util.pose_relative(uRightTarget,uRight_next)
+
+        local d_lfoot = math.sqrt(rel_lfoot[1]^2+rel_lfoot[2]^2)
+        local d_rfoot = math.sqrt(rel_rfoot[1]^2+rel_rfoot[2]^2)
+
+        if d_lfoot<0.001 and d_rfoot<0.001 then
+          arrived=true
+        end
+
+      end
     end
 
-    print("velocity x:",step_planner.velCurrent[1])
-    print("leg movement x:",leg_movement[1])
+    local uLSupport_next,uRSupport_next = step_planner.get_supports(uLeft_next,uRight_next)
+    uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
 
-    new_step={leg_movement, 
+    print(unpack(leg_movement))
+
+    uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
+      step_planner:get_next_step_increment(
+        uLeft_next,uRight_next,uTorso_next,
+        supportLeg,
+        leg_movement)
+
+    print("leg movement :x",leg_movement[1], " y",leg_movement[2])
+
+    local new_step ={leg_movement, 
               supportLeg, 
               tSlope1, 
               Config.walk.tStep-tSlope1-tSlope2,
               tSlope2,
               {0,0,0},
               {0,Config.walk.stepHeight,0}}
-    
+    --print("t:",tSlope1,Config.walk.tStep-tSlope1-tSlope2, tSlope2 )
     step_queue[step_queue_count]=new_step
+
+    print("uLeftnext",unpack(uLeft_next))
+    print("uRightnext",unpack(uRight_next))
+
+    print("uTOrsonext:",unpack(util.pose_relative(uTorso_next,pose_initial)))
+
+
+    supportLeg = 1-supportLeg    
   end
+
+
 
   local pose_end = {uTorso_next[1],uTorso_next[2],uTorso_next[3]}
 
-  print("Target relative pose:",unpack(target_pose))
-  print("Actual relative pose:",unpack(
-    util.pose_relative(pose_end,pose_initial)
-    ))
+  print("Target pose:",unpack(target_pose_local))
+  print("Actual pose:",unpack(util.pose_relative(pose_end,pose_initial)))
+--    util.pose_relative(pose_end,pose_initial)    ))
 
 
 
@@ -423,7 +515,22 @@ function state.entry()
 
   target_pose = waypoints[1] --Single-waypoint approach for now
 
-  calculate_footsteps()
+
+
+  local uTorso = mcm.get_status_uTorso()  
+  local uTorso0 = util.pose_global({-Config.walk.supportX,0,0},uTorso)
+  local target_pose_local = util.pose_relative(target_pose,uTorso0)
+
+  if math.abs(target_pose_local[3])>10*Body.DEG_TO_RAD then
+    print("OLD STEP")
+    calculate_footsteps()    
+  else
+    print("NEW STEP")
+    calculate_footsteps_new()
+  end
+
+
+--  calculate_footsteps()
 --  calculate_footsteps_new()
   motion_ch:send'preview'  
 end

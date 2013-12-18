@@ -111,6 +111,26 @@ velocityBias = vector.new({0,0,0})
 end
 
 
+
+
+local function get_next_step_increment(self,uLeft_now, uRight_now, uTorso_now, supportLeg, increment)
+  local uLeft_next, uRight_next, uTorso_next = uLeft_now, uRight_now, uTorso_now
+  local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
+  local uSupport
+  if supportLeg == 0 then    -- Left support
+      uSupport = uLSupport
+      uRight_next = util.pose_global(increment,uRight_now)
+      local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
+      uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
+  elseif supportLeg==1 then    -- Right support
+      uSupport = uRSupport
+      uLeft_next = util.pose_global(increment,uLeft_now)
+      local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
+      uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
+  end
+  return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport 
+end
+
 --------------------------------------------------------------
 --
 -- Step queue: future foothold informations
@@ -285,6 +305,8 @@ libStep.new_planner = function (params)
   s.step_enque = step_enque
   s.step_enque_trapezoid = step_enque_trapezoid
   s.get_next_step_queue = get_next_step_queue
+
+  s.get_next_step_increment = get_next_step_increment
 
   --Functions #2
   s.get_supports = get_supports

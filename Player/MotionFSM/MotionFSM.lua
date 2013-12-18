@@ -44,12 +44,13 @@ sm:set_transition(motionStance, 'bias', motionBiasInit)
 
 --motionstance change bodyheight to target height
 --And it does balancing and torso compensation as well
-sm:set_transition(motionStance, 'sit', motionSit)
+
+--sm:set_transition(motionStance, 'sit', motionSit)
 
 --for step, we change back to initial bodyheight and start stepping
-sm:set_transition(motionStance, 'preview', motionHeightReturn)
-sm:set_transition(motionHeightReturn, 'done', motionStepPreview)
-
+--sm:set_transition(motionStance, 'preview', motionHeightReturn)
+--sm:set_transition(motionHeightReturn, 'done', motionStepPreview)
+sm:set_transition(motionStance, 'preview',  motionStepPreview)
 
 --We don't use regular walk any more
 --sm:set_transition(motionStance, 'step', motionStep)

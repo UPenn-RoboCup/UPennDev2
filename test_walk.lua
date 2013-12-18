@@ -101,8 +101,8 @@ local char_to_event = {
 local char_to_vel = {
   ['i'] = vector.new({0.05, 0, 0}),
   [','] = vector.new({-.05, 0, 0}),
-  ['h'] = vector.new({0, 0.025, 0}),
-  [';'] = vector.new({0, -.025, 0}),
+  ['h'] = vector.new({0, 0.05, 0}),
+  [';'] = vector.new({0, -.05, 0}),
   ['j'] = vector.new({0, 0, 5})*math.pi/180,
   ['l'] = vector.new({0, 0, -5})*math.pi/180,
 }

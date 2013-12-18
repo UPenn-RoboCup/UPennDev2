@@ -159,6 +159,10 @@ local function process_character(key_code,key_char,key_char_lower)
     walk_target_local = vector.new({0,0,0})  
   end
 
+  if key_char_lower=='e' then --ESTOP!
+    hcm.set_motion_estop(1)
+  end
+
 
   -- Adjust the velocity
   -- Only used in direct teleop mode

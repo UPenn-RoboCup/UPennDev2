@@ -91,7 +91,7 @@ function walk.entry()
 
 
 
-print("Init Y:",uLeft_now[2],uTorso_now[2],uRight_now[2])
+--print("Init Y:",uLeft_now[2],uTorso_now[2],uRight_now[2])
 
 
   --SHM BASED
@@ -122,6 +122,7 @@ print("Init Y:",uLeft_now[2],uTorso_now[2],uRight_now[2])
     Body.request_lleg_position()
     Body.request_rleg_position()
   end
+  hcm.set_motion_estop(0)
 end
 
 function walk.update()
@@ -130,7 +131,13 @@ function walk.update()
   local t_diff = t - t_update
   t_update = t   -- Save this at the last update time
   local discrete_updated = false
-  local com_pos
+  local com_pos 
+
+
+  if hcm.get_motion_estop()==1 then
+    zmp_solver:emergency_stop(step_planner,t_discrete + time_discrete_shift)
+  end
+
 
   while t_discrete<t do
     zmp_solver:update_preview_queue_steps(step_planner,t_discrete + time_discrete_shift)

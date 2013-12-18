@@ -12,16 +12,16 @@ Config.USE_LOCALHOST = USE_LOCALHOST
 Config.net = {}
 -- Robot IP addresses
 Config.net.robot = {
-['wired']    = '192.168.123.24',
-['wireless'] = '192.168.1.24',
+['wired']    = '192.168.123.26',
+['wireless'] = '192.168.1.26',
 }
 
 -- Remote Operator IP addresses
 Config.net.operator = {
-['wired']              = '192.168.123.143',
+['wired']              = '192.168.123.23',
 ['wired_broadcast']    = '192.168.123.255',
 --
-['wireless']           = '192.168.1.143',
+['wireless']           = '192.168.1.23',
 ['wireless_broadcast'] = '192.168.1.255'
 }
 

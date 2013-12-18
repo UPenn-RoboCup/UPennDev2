@@ -79,7 +79,14 @@ local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, su
   local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
   local uSupport
 
+--OMG why do we still have these?
+initialStep = false
+velocityBias = vector.new({0,0,0})
+
   local velWalk = self.velCurrent + velocityBias
+
+
+
 
   if initialStep then
     if supportLeg == 0 then    -- Left support      

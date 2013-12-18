@@ -46,6 +46,7 @@ local function init_preview_queue(self,uLeft,uRight,uTorso,t,step_planner)
     self.preview_queue_zmpx[i] = uSupport[1]
     self.preview_queue_zmpy[i] = uSupport[2]
   end  
+  self.is_estopping = false
 end
 
 local function get_current_step_info(self,t)
@@ -167,8 +168,14 @@ local function update_preview_queue_velocity(self,step_planner,t,stoprequest)
   end
 end
 
+
+
 local function update_preview_queue_steps(self,step_planner,t)
   local t_future = t + self.preview_interval
+  if self.is_estopping then
+    self:update_preview_queue_estop(step_planner,t)
+    return
+  end
 
   table.remove(self.preview_queue,1)
   table.remove(self.preview_queue_zmpx,1)
@@ -179,7 +186,6 @@ local function update_preview_queue_steps(self,step_planner,t)
   local last_preview_zmpy = self.preview_queue_zmpy[#self.preview_queue]
 
   if last_preview_item.tEnd >= t_future then --Old step
-
     if last_preview_item.trapezoidparams then --moving support
       local trapezoidparams = last_preview_item.trapezoidparams
       table.insert(self.preview_queue,last_preview_item)
@@ -209,7 +215,7 @@ local function update_preview_queue_steps(self,step_planner,t)
       table.insert(self.preview_queue_zmpx,last_preview_zmpx)
       table.insert(self.preview_queue_zmpy,last_preview_zmpy)
     end
-  else --New step
+  else --New step    
     local supportLeg, tStep, uSupport, stepParams, trapezoidparams
     local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 
@@ -227,6 +233,7 @@ local function update_preview_queue_steps(self,step_planner,t)
             )
     local new_preview_item = {}
     if not uLeft_now then --No more footsteps            
+
       new_preview_item.uLeft_now = last_preview_item.uLeft_next
       new_preview_item.uLeft_next = last_preview_item.uLeft_next
       new_preview_item.uRight_now = last_preview_item.uRight_next
@@ -237,7 +244,6 @@ local function update_preview_queue_steps(self,step_planner,t)
       new_preview_item.ended = true
       uSupport = step_planner.get_torso(
           last_preview_item.uLeft_next,last_preview_item.uRight_next)
-          
     else
       --New footstep
       new_preview_item.uLeft_now = uLeft_now
@@ -268,6 +274,77 @@ local function update_preview_queue_steps(self,step_planner,t)
     end
   end
 end
+
+local function emergency_stop(self,step_planner,t)
+  --Find the end time of current step
+  local current_info = self.preview_queue[1]
+
+  print("Current discrete t:",t)
+  print("Current step start time:",current_info.tStart)
+  print("Current step end time:",current_info.tEnd)
+  print("Current tStep :",self.preview_tStep)
+
+
+  local future_index = math.floor( (current_info.tEnd-t)/ self.preview_tStep + 0.999)
+
+  print("future index:",future_index)
+
+  --Insert the DS step
+  local new_preview_item = {}  
+  local last_preview_item = self.preview_queue[1]
+
+  new_preview_item.uLeft_now = last_preview_item.uLeft_next
+  new_preview_item.uLeft_next = last_preview_item.uLeft_next
+  new_preview_item.uRight_now = last_preview_item.uRight_next
+  new_preview_item.uRight_next = last_preview_item.uRight_next
+  new_preview_item.supportLeg = 2 --Double support
+  new_preview_item.tStart = last_preview_item.tEnd
+--  new_preview_item.tEnd = last_preview_item.tEnd + self.preview_tStep
+--  new_preview_item.tEnd = last_preview_item.tEnd + self.preview_tStep
+  new_preview_item.tEnd = last_preview_item.tEnd + 4.0
+  new_preview_item.ended = true
+  uSupport = step_planner.get_torso(
+     last_preview_item.uLeft_next,last_preview_item.uRight_next)
+  self.preview_queue[2] = new_preview_item
+
+  hcm.set_motion_estop(0)
+  self.is_estopping = true
+
+  --Wipe out the zmp position queue after current step
+  for i=future_index, #self.preview_queue_zmpx do
+    self.preview_queue_zmpx[i]=uSupport[1]
+    self.preview_queue_zmpy[i]=uSupport[2]
+  end
+
+end
+
+local function update_preview_queue_estop(self,step_planner,t)
+  --Now we should have 1 or 2 preview items in the queue
+  -- last step (SS), DS 
+  -- DS
+
+  local first_preview_item = self.preview_queue[1]
+  if first_preview_item.ended then --now we're executing the last DS step
+    --We don't need to do anything now 
+  else --We still have to execute the last SS step
+    if t<first_preview_item.tEnd then 
+      --execute step
+   
+    else --advance to the DS step
+      table.remove(self.preview_queue,1)
+    end
+  end
+
+  --Update zmp xy array
+  table.remove(self.preview_queue_zmpx,1)
+  table.remove(self.preview_queue_zmpy,1)
+  uSupport = step_planner.get_torso(
+      first_preview_item.uLeft_next,first_preview_item.uRight_next)
+  table.insert(self.preview_queue_zmpx,uSupport[1])
+  table.insert(self.preview_queue_zmpy,uSupport[2])
+end
+
+
 
 local function trim_preview_queue(self,step_planner,t0)
   --Trim initial nPreview-1 entries of preview queue
@@ -440,6 +517,9 @@ libZMP.new_solver = function( params )
   s.trim_preview_queue = trim_preview_queue
 
   s.can_stop = can_stop
+  s.emergency_stop = emergency_stop
+  s.update_preview_queue_estop = update_preview_queue_estop
+  s.is_estopping = false
   
 	return s
 end

@@ -89,6 +89,7 @@ function walk.entry()
   --Reset odometry varialbe
   Body.init_odometry(uTorso_now)  
 
+  roll_max = 0
 
 
 --print("Init Y:",uLeft_now[2],uTorso_now[2],uRight_now[2])
@@ -217,6 +218,23 @@ function walk.update()
     moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
       zLeft,zRight,delta_legs)    
 --print("Y:",uLeft[2],uTorso[2],uRight[2])
+
+    local rpy = Body.get_sensor_rpy()
+    local roll = rpy[1] * Body.RAD_TO_DEG
+    
+    if math.abs(roll)>roll_max then
+      roll_max = math.abs(roll)
+      print("IMU roll angle:",roll_max)
+    end
+
+    local roll_threshold = 5 --this is degree
+
+    if roll_max>roll_threshold and hcm.get_motion_estop()==0 then
+      print("EMERGENCY STOPPING")
+      hcm.set_motion_estop(1)
+    end
+
+
   end
 
   if debug_on then

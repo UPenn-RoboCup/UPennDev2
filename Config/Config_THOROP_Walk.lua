@@ -336,6 +336,8 @@ elseif HOSTNAME=="teddy" then
     })*DEG_TO_RAD
 
 
+  walk.torsoX = -0.02 
+  walk.torsoX = -0.00 
 
 
 

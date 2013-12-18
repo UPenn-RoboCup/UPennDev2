@@ -181,6 +181,8 @@ local function send_status_feedback()
   data.rpy = Body.get_sensor_rpy()
   data.body_height = mcm.get_stance_bodyHeight()
   data.battery =  0
+  data.l_tr = hcm.get_hands_left_tr()
+  data.r_tr = hcm.get_hands_right_tr()
   data.t = Body.get_time()
 
   local ret,err = feedback_udp_ch:send( mp.pack(data) )

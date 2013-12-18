@@ -11,4 +11,4 @@ screen -S lidar -L -dm lua lidar_wizard.lua
 screen -S state -L -dm lua state_wizard.lua
 
 # Double check that state wizard is *actually* running
-test ! `pgrep -f test_scripts.lua` && sleep 1 && screen -S state -L -dm lua state_wizard.lua
+#test ! `pgrep -f test_scripts.lua` && sleep 1 && screen -S state -L -dm lua state_wizard.lua

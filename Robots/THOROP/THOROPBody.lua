@@ -1001,6 +1001,7 @@ Body.entry = function()
   
 end
 
+
 local process_register_read = {
   position = function(idx,val,t)
     if type(val)~='number' then return end
@@ -1212,92 +1213,83 @@ if not status_raw then return end
 end
 
 
-
 --SJ: reading hand causes the body almost freeze (~14fps)
+------------------------
+-- READ GRIPPER STUFF --
+local hand_update = function()
 
-Body.hand_update = function()
+  if not READ_GRIPPERS then return end
 
-  
-  
-  ------------------------
-  -- READ GRIPPER STUFF --
-  local tread_g = jcm.get_gripper_t()
-  local rate_g = jcm.get_gripper_rate()
-  local t_g = Body.get_time()
-  if READ_GRIPPERS and (t_g-tread_g)>rate_g then
-    -- Reset the time
-    jcm.set_gripper_t(t_g)
-    
-    -- Read load/temperature/position/current
-    local lall_1 = libDynamixel.get_mx_everything(lg_m1,l_dyn)
-    local rall_1 = libDynamixel.get_mx_everything(rg_m1,r_dyn)
-    unix.usleep(1e2)
-    local lall_2 = libDynamixel.get_mx_everything(lg_m2,l_dyn)
-    local rall_2 = libDynamixel.get_mx_everything(rg_m2,r_dyn)
---
-lall_1 = parse_all(lall_1,lg_m1)
-lall_2 = parse_all(lall_2,lg_m2)
-rall_1 = parse_all(rall_1,rg_m1)
-rall_2 = parse_all(rall_2,rg_m2)
-    if lall_1 then
-      jcm.sensorPtr.position[indexLGrip] = 
-        Body.make_joint_radian(indexLGrip,lall_1.position)
-      jcm.sensorPtr.velocity[indexLGrip] = lall_1.speed
-      jcm.sensorPtr.load[indexLGrip] = lall_1.load
-      jcm.sensorPtr.temperature[indexLGrip] = lall_1.temperature
-      -- time of Read
-      jcm.treadPtr.position[indexLGrip] = t_g
-      jcm.treadPtr.velocity[indexLGrip] = t_g
-      jcm.treadPtr.load[indexLGrip] = t_g
-      jcm.treadPtr.temperature[indexLGrip] = t_g
-    end
-    if lall_2 then
-      jcm.sensorPtr.position[indexLGrip+1] = 
-        Body.make_joint_radian(indexLGrip+1,lall_2.position)
-      jcm.sensorPtr.velocity[indexLGrip+1] = lall_2.speed
-      jcm.sensorPtr.load[indexLGrip+1] = lall_2.load
-      jcm.sensorPtr.temperature[indexLGrip+1] = lall_2.temperature
-      -- time of Read
-      jcm.treadPtr.position[indexLGrip+1] = t_g
-      jcm.treadPtr.velocity[indexLGrip+1] = t_g
-      jcm.treadPtr.load[indexLGrip+1] = t_g
-      jcm.treadPtr.temperature[indexLGrip+1] = t_g
-    end
-    if rall_1 then
-      jcm.sensorPtr.position[indexRGrip] = 
-        Body.make_joint_radian(indexRGrip,rall_1.position)
-      jcm.sensorPtr.velocity[indexRGrip] = rall_1.speed
-      jcm.sensorPtr.load[indexRGrip] = rall_1.load
-      jcm.sensorPtr.temperature[indexRGrip] = rall_1.temperature
-      -- time of Read
-      jcm.treadPtr.position[indexRGrip] = t_g
-      jcm.treadPtr.velocity[indexRGrip] = t_g
-      jcm.treadPtr.load[indexRGrip] = t_g
-      jcm.treadPtr.temperature[indexRGrip] = t_g
-    end
-    if rall_2 then
-      jcm.sensorPtr.position[indexRGrip+1] = 
-        Body.make_joint_radian(indexRGrip+1,rall_2.position)
-      jcm.sensorPtr.velocity[indexRGrip+1] = rall_2.speed
-      jcm.sensorPtr.load[indexRGrip+1] = rall_2.load
-      jcm.sensorPtr.temperature[indexRGrip+1] = rall_2.temperature
-      -- time of Read
-      jcm.treadPtr.position[indexRGrip+1] = t_g
-      jcm.treadPtr.velocity[indexRGrip+1] = t_g
-      jcm.treadPtr.load[indexRGrip+1] = t_g
-      jcm.treadPtr.temperature[indexRGrip+1] = t_g
-    end
-    --]]
+  local lg_m1 = servo.joint_to_motor[indexLGrip]
+  local lg_m2 = servo.joint_to_motor[indexLGrip+1]
+  local l_dyn = motor_dynamixels[ lg_m1 ]
+  --
+  local rg_m1 = servo.joint_to_motor[indexRGrip]
+  local rg_m2 = servo.joint_to_motor[indexRGrip+1]
+  local r_dyn = motor_dynamixels[ rg_m1 ]
+
+  -- Read load/temperature/position/current
+  local lall_1 = libDynamixel.get_mx_everything(lg_m1,l_dyn)
+  local rall_1 = libDynamixel.get_mx_everything(rg_m1,r_dyn)
+  unix.usleep(1e2)
+  local lall_2 = libDynamixel.get_mx_everything(lg_m2,l_dyn)
+  local rall_2 = libDynamixel.get_mx_everything(rg_m2,r_dyn)
+  --
+  lall_1 = parse_all(lall_1,lg_m1)
+  lall_2 = parse_all(lall_2,lg_m2)
+  rall_1 = parse_all(rall_1,rg_m1)
+  rall_2 = parse_all(rall_2,rg_m2)
+  if lall_1 then
+    jcm.sensorPtr.position[indexLGrip] = 
+      Body.make_joint_radian(indexLGrip,lall_1.position)
+    jcm.sensorPtr.velocity[indexLGrip] = lall_1.speed
+    jcm.sensorPtr.load[indexLGrip] = lall_1.load
+    jcm.sensorPtr.temperature[indexLGrip] = lall_1.temperature
+    -- time of Read
+    jcm.treadPtr.position[indexLGrip] = t_g
+    jcm.treadPtr.velocity[indexLGrip] = t_g
+    jcm.treadPtr.load[indexLGrip] = t_g
+    jcm.treadPtr.temperature[indexLGrip] = t_g
+  end
+  if lall_2 then
+    jcm.sensorPtr.position[indexLGrip+1] = 
+      Body.make_joint_radian(indexLGrip+1,lall_2.position)
+    jcm.sensorPtr.velocity[indexLGrip+1] = lall_2.speed
+    jcm.sensorPtr.load[indexLGrip+1] = lall_2.load
+    jcm.sensorPtr.temperature[indexLGrip+1] = lall_2.temperature
+    -- time of Read
+    jcm.treadPtr.position[indexLGrip+1] = t_g
+    jcm.treadPtr.velocity[indexLGrip+1] = t_g
+    jcm.treadPtr.load[indexLGrip+1] = t_g
+    jcm.treadPtr.temperature[indexLGrip+1] = t_g
+  end
+  if rall_1 then
+    jcm.sensorPtr.position[indexRGrip] = 
+      Body.make_joint_radian(indexRGrip,rall_1.position)
+    jcm.sensorPtr.velocity[indexRGrip] = rall_1.speed
+    jcm.sensorPtr.load[indexRGrip] = rall_1.load
+    jcm.sensorPtr.temperature[indexRGrip] = rall_1.temperature
+    -- time of Read
+    jcm.treadPtr.position[indexRGrip] = t_g
+    jcm.treadPtr.velocity[indexRGrip] = t_g
+    jcm.treadPtr.load[indexRGrip] = t_g
+    jcm.treadPtr.temperature[indexRGrip] = t_g
+  end
+  if rall_2 then
+    jcm.sensorPtr.position[indexRGrip+1] = 
+      Body.make_joint_radian(indexRGrip+1,rall_2.position)
+    jcm.sensorPtr.velocity[indexRGrip+1] = rall_2.speed
+    jcm.sensorPtr.load[indexRGrip+1] = rall_2.load
+    jcm.sensorPtr.temperature[indexRGrip+1] = rall_2.temperature
+    -- time of Read
+    jcm.treadPtr.position[indexRGrip+1] = t_g
+    jcm.treadPtr.velocity[indexRGrip+1] = t_g
+    jcm.treadPtr.load[indexRGrip+1] = t_g
+    jcm.treadPtr.temperature[indexRGrip+1] = t_g
   end
   -- END GRIP READING --
-  -----------------------
-
-
-
+  ----------------------
 end
-
-
-
 
 Body.update = function()
 
@@ -1476,12 +1468,13 @@ Body.update = function()
     end
   until done
 
+  --SJ: hand reading takes VERY long and makes all motions very jerky
+  --So here I separate them and comment out for now
+  if hcm.get_hands_read()==1
+    hcm.set_hands_read(0)
+    hand_update()
+  end
 
---SJ: hand reading takes VERY long and makes all motions very jerky
---So here I separate them and comment out for now
---Body.hand_update()
-
-  
 end
 
 

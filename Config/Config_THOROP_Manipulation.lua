@@ -508,7 +508,7 @@ armfsm.hosegrip.arminit_support={
 
 --wider pose
   {0.30,-0.30,-0.15,0*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.38,-0.40,0.025,0*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.45,-0.35,0.025,0*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 
 --holding pose
   {0.20,-0.14,-0.20,0*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD},
@@ -535,8 +535,9 @@ armfsm.hosegrip.armhosepull={
 }
 
 armfsm.hosegrip.armhoseattachinit={
-  {0.43,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
-  {0.43,0.35,-0.20,0*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},        
+  {0.43,0.35,-0.20,135*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+--  {0.43,0.35,-0.20,90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},        
+  {0.43,0.15,0.0,90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},        
 }
 
 

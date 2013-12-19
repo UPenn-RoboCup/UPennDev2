@@ -29,7 +29,7 @@ local function get_override(left_tr)
       left_tr[3]+override[3],
       left_tr[4],
       left_tr[5],
-      left_tr[6]
+      left_tr[6]+override[6]* 5*Body.DEG_TO_RAD
     }
   return left_tr_target
 end
@@ -144,6 +144,7 @@ function state.update()
         local arm_seq = {
           {'wrist',Config.armfsm.hosegrip.armhoseattachinit[1],nil},
           {'wrist',Config.armfsm.hosegrip.armhoseattachinit[2],nil},
+          {'move',Config.armfsm.hosegrip.armhoseattachinit[2],nil},
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
 
@@ -177,7 +178,11 @@ function state.update()
       elseif check_override() then 
         local trLArmCurrent = hcm.get_hands_left_tr()
         local trLArmTarget = get_override(trLArmCurrent)
+        local override = hcm.get_state_override()
         local arm_seq = {{'move',trLArmTarget,nil}}
+        if math.abs(override[6])~=0 then
+          arm_seq = {{'wrist',trLArmTarget,nil}}
+        end        
         if arm_planner:plan_arm_sequence2(arm_seq) then
           stage = "armup"
         end

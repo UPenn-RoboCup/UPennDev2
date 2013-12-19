@@ -224,6 +224,19 @@ function state.update()
       elseif check_override() then 
         update_override()        
         local trLArmTarget2 = get_model_tr({0,0,0})        
+
+--[[
+        local trRArmPos = Config.armfsm.hosegrip.arminit_support[2]
+        local trRArmTarget = {
+          trLArmTarget2[1],
+          trRArmPos[2],
+          trRArmPos[3],
+          trRArmPos[4],
+          trRArmPos[5],
+          trRArmPos[6]
+        }
+        local arm_seq = {{'move',trLArmTarget2,trRArmTarget}}     
+--]]
         local arm_seq = {{'move',trLArmTarget2,nil}}     
         if arm_planner:plan_arm_sequence2(arm_seq) then 
           stage = "touchtool" 

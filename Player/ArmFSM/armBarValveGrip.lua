@@ -139,8 +139,8 @@ function state.entry()
   trLArm1 = Body.get_forward_larm(qLArm1)
   trRArm1 = Body.get_forward_rarm(qRArm1)  
 
-  arm_planner:set_shoulder_yaw_target(nil,qRArm0[3])--unlock left shoulder
-
+  --arm_planner:set_shoulder_yaw_target(nil,qRArm0[3])--unlock left shoulder
+  arm_planner:set_shoulder_yaw_target(nil,nil)--unlock left shoulder
 --  hcm.set_barvalve_model({0.55,0.20,0.07,   0.05, 0, 70*Body.DEG_TO_RAD })
   hcm.set_barvalve_model(Config.armfsm.valvebar.default_model)
 
@@ -186,6 +186,7 @@ function state.update()
             {'move',Config.armfsm.valveonearm.arminit[3], nil},           
           }
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armready" end        
+        hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
         local wrist_seq = {{'wrist',trLArm0, nil}}

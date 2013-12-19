@@ -131,11 +131,15 @@ function state.entry()
   
   
   qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, Config.armfsm.valveonearm.arminit[1])  
-  
+  qRArm1 = Body.get_inverse_arm_given_wrist( qRArm, Config.armfsm.valveonearm.rarminit[1])    
+
   trLArm0, trRArm0 = Body.get_forward_larm(qLArm0),Body.get_forward_rarm(qRArm0)  
   trLArm1, trRArm1 = Body.get_forward_larm(qLArm1),Body.get_forward_rarm(qRArm1)  
 
-  arm_planner:set_shoulder_yaw_target(nil,qRArm0[3])--unlock left shoulder
+--  arm_planner:set_shoulder_yaw_target(nil,qRArm0[3])--unlock left shoulder
+
+  arm_planner:set_shoulder_yaw_target(nil,nil)--unlock left shoulder
+
 
   hcm.set_largevalve_model(Config.armfsm.valveonearm.default_model_small)
 
@@ -144,7 +148,10 @@ function state.entry()
 
   confirm_override()
   update_override()
-  local wrist_seq = {{'wrist',trLArm1, nil}}
+--  local wrist_seq = {{'wrist',trLArm1, nil}}
+
+  local wrist_seq = {{'wrist',trLArm1, trRArm1}}
+
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "wristturn" end
   hcm.set_state_proceed(1)
 end
@@ -167,15 +174,27 @@ function state.update()
       if hcm.get_state_proceed()==1 then       
         print("trLArm:",arm_planner.print_transform(trLArm))
         local model = hcm.get_largevalve_model()
+--[[
         local arm_seq = {
             {'move',Config.armfsm.valveonearm.arminit[1], nil},
             {'move',Config.armfsm.valveonearm.arminit[2], nil},           
             {'move',Config.armfsm.valveonearm.arminit[3], nil},           
           }
+--]]
+--       
+        local arm_seq = {
+            {'move',Config.armfsm.valveonearm.arminit[1], Config.armfsm.valveonearm.rarminit[1]},
+            {'move',Config.armfsm.valveonearm.arminit[2], Config.armfsm.valveonearm.rarminit[2]},           
+            {'move',Config.armfsm.valveonearm.arminit[3], Config.armfsm.valveonearm.rarminit[3]},           
+          }   
+--          
         if arm_planner:plan_arm_sequence(arm_seq) then stage="armready" end        
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
-        local wrist_seq = {{'wrist',trLArm0, nil}}
+--        local wrist_seq = {{'wrist',trLArm0, nil}}
+print("trRARm0:",arm_planner.print_transform(trRArm0))
+
+        local wrist_seq = {{'wrist',trLArm0, trRArm0}}
         if arm_planner:plan_arm_sequence(wrist_seq) then stage = "armbacktoinitpos" end
       end
     end
@@ -199,18 +218,34 @@ function state.update()
   elseif stage=="inposition" then 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-
+        hcm.set_state_proceed(0)
 --        print("trLArm:",arm_planner.print_transform(trLArm))
       elseif hcm.get_state_proceed()==-1 then 
+--[[        
         local arm_seq = {
             {'move',Config.armfsm.valveonearm.arminit[4], nil},           
             {'wrist',Config.armfsm.valveonearm.arminit[3], nil},           
             {'move',Config.armfsm.valveonearm.arminit[3], nil},           
-            {'move',Config.armfsm.valveonearm.arminit[2], nil},           
-            {'move',Config.armfsm.valveonearm.arminit[1], nil},
-            {'move',trLArm1, nil},
+--            {'move',Config.armfsm.valveonearm.arminit[2], nil},           
+--            {'move',Config.armfsm.valveonearm.arminit[1], nil},
+--            {'move',trLArm1, nil},
           }
-        if arm_planner:plan_arm_sequence(arm_seq) then stage="wristturn" end
+--]]          
+
+          local arm_seq = {
+            {'move',Config.armfsm.valveonearm.arminit[4], nil},           
+            {'wrist',Config.armfsm.valveonearm.arminit[3], nil},           
+            {'move',Config.armfsm.valveonearm.arminit[3], Config.armfsm.valveonearm.rarminit[3]},           
+            {'move',Config.armfsm.valveonearm.arminit[2], Config.armfsm.valveonearm.rarminit[2]},           
+            {'move',Config.armfsm.valveonearm.arminit[1], Config.armfsm.valveonearm.rarminit[1]},           
+            {'move',trLArm1, trRArm1},            
+          }
+
+        if arm_planner:plan_arm_sequence(arm_seq) then 
+          stage="wristturn" 
+        else
+          hcm.set_state_proceed(0)
+        end
       elseif check_override() then
         update_override()
         local valve_seq={{'valveonearm',angle1,0,1,0}}
@@ -221,6 +256,7 @@ function state.update()
         end
         confirm_override()
         hcm.set_state_proceed(0)
+        
       end
     end
 

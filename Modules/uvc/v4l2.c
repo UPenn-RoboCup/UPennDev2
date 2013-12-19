@@ -7,6 +7,8 @@
 
 #include "v4l2.h"
 
+uint8_t* yuyv_rotate(uint8_t* frame, int width, int height);
+
 static query_node * add_query_node(query_node * query, char * key, 
 					void * query_value, 
 					long unsigned int query_value_len) {

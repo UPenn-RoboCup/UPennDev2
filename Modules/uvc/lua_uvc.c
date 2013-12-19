@@ -30,6 +30,59 @@ extern "C" {
 #define WIDTH 640
 #define HEIGHT 480
 
+
+static uint8_t* yuyv_rotate(uint8_t* frame, int width, int height) {
+  int i;
+  //SJ: I maintain a second buffer here
+  //So that we do not directly rewrite on camera buffer address
+
+  static uint8_t frame2[160*120*4];
+
+  //printf("WIDTH HEIGHT:%d %d\n",width,height);
+
+  int siz = width*height/2;
+  for (int i=0;i<siz/2;i++){
+    int index_1 = i*4;
+    int index_2 = (siz-1-i)*4;
+    uint8_t x1,x2,x3,x4;
+    frame2[index_2] = frame[index_1+2];
+    frame2[index_2+1] = frame[index_1+1];
+    frame2[index_2+2] = frame[index_1];
+    frame2[index_2+3] = frame[index_1+3];
+
+    frame2[index_1]=frame[index_2+2];
+    frame2[index_1+1]=frame[index_2+1];
+    frame2[index_1+2]=frame[index_2];
+    frame2[index_1+3]=frame[index_2+3];
+
+  }
+  return frame2;
+
+
+/*
+  uint32_t* frame32 = (uint32_t*)frame;
+
+  // Swap top and bottom
+  for(i=0;i<height/2;i++){
+
+    uint32_t* row1addr = frame32+i*width/2;
+    uint32_t* row2addr = frame32+(height-1-i)*width/2;
+    row_swap( row1addr, row2addr, width );
+  
+    // Swap the yuyv byte order for the swapped rows
+    int j;
+    for(j=0;j<width/4;j++){// width/4 since frame32 is width/2 long
+      yuyv_px_swap( (uint8_t*)(row1addr+j), (uint8_t*)(row1addr+width/2-1-j) );
+    }
+    for(j=0;j<width/4;j++){// width/4 since frame32 is width/2 long
+      yuyv_px_swap( (uint8_t*)(row2addr+j), (uint8_t*)(row2addr+width/2-1-j) );
+    }
+
+  }
+*/
+
+}
+
 static v4l2_device * lua_checkuvc(lua_State *L, int narg) {
     void *ud = luaL_checkudata(L, narg, MT_NAME);
     luaL_argcheck(L, ud != NULL, narg, "invalid uvc userdata");
@@ -153,6 +206,23 @@ static int lua_uvc_get_raw(lua_State *L) {
     return 4;
 }
 
+static int lua_uvc_get_rotated(lua_State *L) {
+    v4l2_device *ud = lua_checkuvc(L, 1);
+    int buf_num = v4l2_read_frame(ud);
+    if( buf_num < 0 ){
+      lua_pushnumber(L,buf_num);
+      return 1;
+    }
+    uint32_t* image = (uint32_t*)ud->buffer[buf_num];
+    uitn8_t* rot_image = yuyv_rotate( (uint8_t*)image, width, height );
+    ud->count ++;
+    lua_pushlightuserdata(L, rot_image);
+    lua_pushnumber(L, ud->buf_len[buf_num]);
+    lua_pushnumber(L, ud->count);
+    lua_pushnumber(L, time_scalar());
+    return 4;
+}
+
 static int lua_uvc_reset_resolution(lua_State *L) {
     v4l2_device *ud = lua_checkuvc(L, 1);
     ud->width = luaL_checkint(L, 2);
@@ -182,6 +252,7 @@ static const struct luaL_Reg uvc_methods [] = {
     {"set_param", lua_uvc_set_param},
     {"get_param", lua_uvc_get_param},
     {"get_image", lua_uvc_get_raw},
+    {"get_rotated_image", lua_uvc_get_rotated},
     {"__index", lua_uvc_index},
     {"__gc", lua_uvc_delete},
     {NULL, NULL}

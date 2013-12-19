@@ -38,6 +38,39 @@ local function confirm_override()
   hcm.set_state_override({0,0,0,0,0,0,0})
 end
 
+local function check_override_support()
+  local override = hcm.get_state_override_support()
+  for i=1,7 do 
+    if override[i]~=0 then return true end 
+  end
+  return false
+end
+
+local function update_override_support()
+  local override = hcm.get_state_override_support()
+  local trArmTarget = hcm.get_hands_right_tr()
+  
+  trArmTarget[1],trArmTarget[2],trArmTarget[3]=
+    trArmTarget[1] + override[1],
+    trArmTarget[2] + override[2],
+    trArmTarget[3] + override[3]  
+
+  hcm.set_state_override_support({0,0,0,0,0,0,0})
+  hcm.set_state_proceed(0)
+  return trArmTarget
+end
+
+
+
+
+
+
+
+
+
+
+
+
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -64,9 +97,10 @@ function state.entry()
   trRArm1 = Body.get_forward_rarm(qRArm1)  
 
   arm_planner:set_hand_mass(0,0)
-  arm_planner:set_shoulder_yaw_target(nil,qRArm0[3]) --Lock left hand
+  arm_planner:set_shoulder_yaw_target(nil,nil) --Lock left hand
   
-  confirm_override()
+  hcm.set_state_override({0,0,0,0,0,0,0})
+  hcm.set_state_override_support({0,0,0,0,0,0,0})
 
   local wrist_seq = {
     {'move',Config.armfsm.hosegrip.armhosepull[1],nil},
@@ -106,14 +140,6 @@ function state.update()
       if hcm.get_state_proceed()==1 then 
         print("trLArm:",arm_planner.print_transform(trLArm))
         print("trRArm:",arm_planner.print_transform(trRArm))
-        --[[
-        local arm_seq = {
-          {'move',Config.armfsm.hosetap.larminit[2],nil},
-          {'move',Config.armfsm.hosetap.larminit[3],nil},
-          {'move',Config.armfsm.hosetap.larminit[4],nil},          
-          {'move',Config.armfsm.hosetap.larminit[5],nil},          
-        }                          
-        --]]
 
         local arm_seq = {
           {'wrist',Config.armfsm.hosegrip.armhoseattachinit[1],nil},

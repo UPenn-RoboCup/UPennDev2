@@ -282,13 +282,15 @@ armfsm.toolgrip.armchecktrigger={
 
 
 
-
+--Table height: 0.95
+--Drill height: 0.13
+--Hand height: 1.08 = 0.93 + 0.15
 
 armfsm.toolgrip.arminit={
   {0.33,-0.25,-0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.46,-0.35,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.46,-0.35, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
-  {0.46,-0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
+  {0.46,-0.35, 0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
+  {0.46,-0.25, 0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
 }
 
 armfsm.toolgrip.armpull={
@@ -299,17 +301,21 @@ armfsm.toolgrip.armpull={
 }
 
 
+--Table height: 0.95
+--Drill height: 0.13
+--Hand height: 1.08 = 0.93 + 0.15
+
 --New init sequence that avoids the table
 
 armfsm.toolgrip.arminit={
   {0.29,-0.40,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.39,-0.40,0.01,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.46,-0.40,0.17,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.46,-0.40,0.17,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.46,-0.40,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.46,-0.40,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
 
 armfsm.toolgrip.armpull={
-  {0.42,-0.40,0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.42,-0.40,0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.39,-0.40,0.01,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.25,-0.40,-0.10,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
@@ -318,7 +324,32 @@ armfsm.toolgrip.armhold={0.25,0.0,-0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
 
 
 armfsm.toolgrip.default_model = {
-  0.42,-0.06,0.20,  0*DEG_TO_RAD}    
+  0.42,-0.06,0.15,  0*DEG_TO_RAD}    
+
+--[[
+---------------------------------
+--WIth hand yaw control
+---------------------------------
+
+armfsm.toolgrip.arminit={
+  {0.31,-0.50,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.45,-0.58,0.01,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.50,-0.58, 0.17,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+
+  {0.46,-0.40,0.17,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+}
+
+
+armfsm.toolgrip.armpull={
+  {0.42,-0.40, 0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.50,-0.53, 0.17,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.45,-0.53,0.01,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.31,-0.50,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},  
+}
+--]]
+
+
+
 
 
 
@@ -393,9 +424,7 @@ armfsm.hosegrip.rhand_rpy1 = {-135*DEG_TO_RAD,0,45*DEG_TO_RAD}
 armfsm.hosegrip.lhand_rpy2 = {135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 armfsm.hosegrip.rhand_rpy2 = {-135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 
-armfsm.hosegrip.arminit={
-  {0.30,0.13,-0.15},
-}
+
 
 armfsm.hosegrip.armhold = {
   {0.33,0.10,-0.15},
@@ -407,19 +436,27 @@ armfsm.hosegrip.bottompull={0,0,-0.06}
 
 --with 45 deg
 armfsm.hosegrip.default_model = {
-  0.30,0.24, -0.15, 0, 0}
+  0.38,0.24, 0.025, 0, 0}
 
 --REverted back, view blocked
 armfsm.hosegrip.lhand_rpy = {0*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD}
 armfsm.hosegrip.lhand_rpy1 = {135*DEG_TO_RAD,0,-45*DEG_TO_RAD}
 armfsm.hosegrip.lhand_rpy2 = {135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 
+--Hose grip height: 37.5in or 0.93 + 0.025
+
+
 --0.16 0.14 -0.20 (0 0 -45)
 armfsm.hosegrip.arminit={
   {0.30,0.24,-0.15,0*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
-  {0.30,0.24,-0.15,0*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  {0.38,0.24,0.025,0*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
 --0.16 0. -0.20 (179,0,45)
 }
+
+
+
+
+
 
 --RIGHT ARM (FOR CAMERA SUPPORT)
 armfsm.hosegrip.arminit_support={

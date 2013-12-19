@@ -25,6 +25,8 @@ local bodyStepWiden = require'bodyStepWiden' --For drilling
 
 local bodyStepWaypoint = require'bodyStepWaypoint'
 
+local bodyDrive = require'bodyDrive'
+
 
 sm:add_state(bodyStepOver)
 sm:add_state(bodyStepPlan)
@@ -36,10 +38,13 @@ sm:add_state(bodyStepTest)
 sm:add_state(bodyStepWiden)
 
 sm:add_state(bodyStepWaypoint)
+sm:add_state(bodyDrive)
 
 -- Setup the transitions for this FSM
 --
 sm:set_transition( bodyIdle, 'init', bodyInit )
+sm:set_transition( bodyIdle, 'drive', bodyDrive)
+
 sm:set_transition( bodyInit, 'done', bodyIdle )
 
 sm:set_transition( bodyIdle,   'follow', bodyStepWaypoint )

@@ -13,6 +13,13 @@ local shared_data_sz = {}
 shared_data.audio={}
 shared_data.audio.request = vector.zeros(0)
 
+shared_data.drive={}
+shared_data.drive.gas_pedal = vector.zeros(1)
+shared_data.drive.wheel_angle = vector.zeros(1)
+
+
+
+
 shared_data.state={}
 shared_data.state.proceed = vector.zeros(0)
 

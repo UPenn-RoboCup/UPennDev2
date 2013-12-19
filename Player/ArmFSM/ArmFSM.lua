@@ -28,6 +28,8 @@ local armIKTest = require'armIKTest'
 local armRocky = require'armRocky'
 local armDoorPass = require'armDoorPass'
 
+local armDrive = require'armDrive'
+
 
 -- Door specific states
 local armDoorGrip = require'armDoorGrip'
@@ -105,7 +107,7 @@ sm:add_state(armSmallValveRightGrip)
 sm:add_state(armBarValveGrip)
 sm:add_state(armBarValveRightGrip)
 
-
+sm:add_state(armDrive)
 
 sm:add_state(armDebrisGrip)
 
@@ -131,6 +133,7 @@ sm:add_state(armIKTest)
 
 -- Setup the transitions for this FSM
 sm:set_transition(armIdle, 'init', armInit)
+sm:set_transition(armIdle, 'drive', armDrive)
 sm:set_transition(armInit, 'done', armPose1)
 --sm:set_transition(armPose1, 'teleop', armTeleop)
 sm:set_transition(armPose1, 'teleop', armIKTest)

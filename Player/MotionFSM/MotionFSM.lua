@@ -16,6 +16,7 @@ local motionWalk   = require(Config.dev.walk) --Reactive walking
 local motionStep   = require'motionStep'   --Stationary stepping
 local motionStepPreview   = require'motionStepPreview' --ZMP preview stepping
 local motionStepNonstop = require'motionStepNonstop'
+local motionDrive = require'motionDrive'
 
 
 --Our robot never fall!
@@ -33,9 +34,10 @@ sm:add_state(motionStepPreview)
 sm:add_state(motionSit)
 sm:add_state(motionUnSit)
 sm:add_state(motionHeightReturn)
-
+sm:add_state(motionDrive)
 
 sm:set_transition(motionIdle, 'stand', motionInit)
+sm:set_transition(motionIdle, 'drive', motionDrive)
 sm:set_transition(motionInit, 'done', motionStance)
 
 sm:set_transition(motionIdle, 'bias', motionBiasInit)

@@ -58,7 +58,8 @@ function state.update()
   t_update = t
 --  print(state._NAME..' Update' )
 
-  wheel_angle = wheel_angle + hcm.get_drive_wheel_angle()
+--  wheel_angle = wheel_angle + hcm.get_drive_wheel_angle()
+  wheel_angle = hcm.get_drive_wheel_angle()
 
   local qLArmTarget = {
     qLArm0[1],qLArm0[2],qLArm0[3],

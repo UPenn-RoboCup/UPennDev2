@@ -21,7 +21,7 @@ local timeout = 15.0
 local qLArm0,qRArm0
 
 local qRArmCurrent, qRArmTarget
-
+local wheel_angle = 0
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -58,7 +58,7 @@ function state.update()
   t_update = t
 --  print(state._NAME..' Update' )
 
-  wheel_angle = hcm.get_drive_wheel_angle()
+  wheel_angle = wheel_angle + hcm.get_drive_wheel_angle()
 
   local qLArmTarget = {
     qLArm0[1],qLArm0[2],qLArm0[3],

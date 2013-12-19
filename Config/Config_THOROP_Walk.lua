@@ -359,6 +359,10 @@ elseif HOSTNAME=="teddy" then
     })*DEG_TO_RAD
 
 
+
+  walk.maxTurnSpeed = 0.10
+
+
 else
   print("UNKNOWN ROBOT")
   walk.legBias = 

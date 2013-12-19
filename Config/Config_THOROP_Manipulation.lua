@@ -179,6 +179,8 @@ armfsm.debrisgrip.arminit={
 ---------------------------------------------------------------
 armfsm.doorpushside = {}
 
+--initial tr: 0.32 0.30 -0.32 (0 30 0)
+
 armfsm.doorpushside.arminit = {
   {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
   {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
@@ -195,6 +197,51 @@ armfsm.doorpushside.arminit = {
 --going back
   {0.0,0.64,-0.14,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
 }
+
+
+
+
+armfsm.doorpushside.larminit = {
+  {0.32,0.30,-0.05,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.22,0.30,-0.05,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.22,0.30,-0.03,  0,-15*DEG_TO_RAD, 90*DEG_TO_RAD},  
+--going back
+  {0.0,0.64,-0.14,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
+}
+
+
+armfsm.doorpushside.larminit = {
+  {0.32,0.26,-0.05,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.22,0.26,-0.03,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.22,0.26,-0.03,  0,-15*DEG_TO_RAD, 90*DEG_TO_RAD},  
+--going back
+  {0.0,0.64,-0.14,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
+}
+
+
+
+
+
+armfsm.doorpushside.rarminit = {
+  {0.32,-0.30,-0.05,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.47,-0.30,-0.03,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.47,-0.30,-0.03,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},
+--going back
+  {0.0,0.64,-0.14,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 armfsm.doorpushside.unit_tilt = 5*DEG_TO_RAD
 armfsm.doorpushside.unit_yaw = 5*DEG_TO_RAD
@@ -453,15 +500,18 @@ armfsm.hosegrip.arminit={
 --0.16 0. -0.20 (179,0,45)
 }
 
-
-
-
-
-
 --RIGHT ARM (FOR CAMERA SUPPORT)
+--init pose: 0.20 -0.30 
 armfsm.hosegrip.arminit_support={
-  {0.30,-0.24,-0.15,0*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD},
---0.16 0.46 -0.20 (179,0,45)
+--  {0.30,-0.24,-0.15,0*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+--  {0.38,-0.24,0.025,0*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+
+--wider pose
+  {0.30,-0.30,-0.15,0*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.38,-0.40,0.025,0*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+
+--holding pose
+  {0.20,-0.14,-0.20,0*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
 
 

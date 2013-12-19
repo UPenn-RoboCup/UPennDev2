@@ -528,9 +528,8 @@ armfsm.hosegrip.armhosepull={
   {-0.30,0.05,-0.30,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
   {-0.25,0.30,-0.30,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
   {-0.0,0.35,-0.43,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
-
 --  {0.23,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
-  
+ 
   {0.43,0.35,-0.20,135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
 }
 
@@ -540,6 +539,17 @@ armfsm.hosegrip.armhoseattachinit={
   {0.43,0.15,0.0,90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},        
 }
 
+
+
+--more away from the robot
+armfsm.hosegrip.armhosepull={
+  {-0.30,0.05,-0.30,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {-0.25,0.40,-0.30,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {-0.0,0.45,-0.43,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
+--  {0.23,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+ 
+  {0.43,0.40,-0.20,135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+}
 
 
 

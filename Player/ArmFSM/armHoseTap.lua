@@ -169,12 +169,15 @@ function state.update()
         hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed()==-1 then 
         local arm_seq = {
+          {'wrist',Config.armfsm.hosetap.larminit[4],nil},
           {'move',Config.armfsm.hosetap.larminit[4],nil},
           {'move',Config.armfsm.hosetap.larminit[3],nil},
           {'move',Config.armfsm.hosetap.larminit[2],nil},          
           {'move',Config.armfsm.hosetap.larminit[1],nil},          
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "wristyawturn" end  
+        hcm.set_state_proceed(0)
+
       elseif check_override() then 
         local trLArmCurrent = hcm.get_hands_left_tr()
         local trLArmTarget = get_override(trLArmCurrent)

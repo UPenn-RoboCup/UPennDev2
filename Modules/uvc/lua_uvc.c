@@ -32,7 +32,6 @@ extern "C" {
 
 
 static uint8_t* yuyv_rotate(uint8_t* frame, int width, int height) {
-  int i;
   //SJ: I maintain a second buffer here
   //So that we do not directly rewrite on camera buffer address
 
@@ -41,7 +40,8 @@ static uint8_t* yuyv_rotate(uint8_t* frame, int width, int height) {
   //printf("WIDTH HEIGHT:%d %d\n",width,height);
 
   int siz = width*height/2;
-  for (int i=0;i<siz/2;i++){
+  int i;
+  for (i=0;i<siz/2;i++){
     int index_1 = i*4;
     int index_2 = (siz-1-i)*4;
     uint8_t x1,x2,x3,x4;
@@ -214,7 +214,7 @@ static int lua_uvc_get_rotated(lua_State *L) {
       return 1;
     }
     uint32_t* image = (uint32_t*)ud->buffer[buf_num];
-    uitn8_t* rot_image = yuyv_rotate( (uint8_t*)image, width, height );
+    uint8_t* rot_image = yuyv_rotate( (uint8_t*)image, 160, 120 );
     ud->count ++;
     lua_pushlightuserdata(L, rot_image);
     lua_pushnumber(L, ud->buf_len[buf_num]);

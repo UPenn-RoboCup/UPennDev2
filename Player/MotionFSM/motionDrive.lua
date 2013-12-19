@@ -99,7 +99,7 @@ function state.update()
   end
   
   qRLegCurrent = util.approachTolRad(qRLegCurrent, qRLegTarget,
-    vector.new({1,1,1,1,1,1})*15*math.pi/180,dt)
+    vector.new({1,1,1,1,1,1})*45*math.pi/180,dt)
   Body.set_rleg_command_position(qRLegCurrent)
 
 end

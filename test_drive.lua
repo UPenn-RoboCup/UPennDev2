@@ -108,11 +108,23 @@ local function process_character(key_code,key_char,key_char_lower)
   end
 
   if key_char_lower == "j" then
-    hcm.set_drive_wheel_angle(-30*math.pi/180)
+    local wheel_angle = hcm.get_drive_wheel_angle()
+    wheel_angle = wheel_angle - 30*math.pi/180
+    hcm.set_drive_wheel_angle(wheel_angle)
+
+    print( "Wheel angle:",wheel_angle*180/math.pi)
+
+
   elseif key_char_lower == "k" then
     hcm.set_drive_wheel_angle(0)
+    print( "Wheel reset")
+
   elseif key_char_lower == "l" then
-    hcm.set_drive_wheel_angle(30*math.pi/180)
+    local wheel_angle = hcm.get_drive_wheel_angle()
+    wheel_angle = wheel_angle + 30*math.pi/180
+    hcm.set_drive_wheel_angle(wheel_angle)
+    print( "Wheel angle:",wheel_angle*180/math.pi)
+
   end
 
   if key_char_lower==' ' then 

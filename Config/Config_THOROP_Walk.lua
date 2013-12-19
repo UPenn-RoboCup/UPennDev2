@@ -211,6 +211,9 @@ if HOSTNAME=="alvin" then
 
   --Faster turn testing
   walk.maxTurnSpeed = 0.20
+
+  walk.maxTurnSpeed = 0.10
+
   walk.aTurnSpeed = 0.25
   walk.maxStepCount = 30
 
@@ -227,18 +230,25 @@ if HOSTNAME=="alvin" then
 
 
 
+--19th, 9:02AM
+  walk.legBias = 
+    vector.new({
+      0.875, 2.35, -0.625, -2.155,       0.00, -0.615,
+      0.1525, -1.2425, 0.375, -0.3475,   0.00, 0.41
+    })*DEG_TO_RAD
 
 
 
---[[
-  walk.ankleImuParamY={1, 1.0*gyroFactorY,  0*math.pi/180, 10*math.pi/180}
-  walk.hipImuParamY  ={1, 0.5*gyroFactorY,  0*math.pi/180, 10*math.pi/180}
 
 
 
-  walk.ankleImuParamY={1, 0.5*gyroFactorY,  0*math.pi/180, 10*math.pi/180}
-  walk.hipImuParamY  ={1, 0.25*gyroFactorY,  0*math.pi/180, 10*math.pi/180}
---]]
+
+
+
+
+
+
+
 
 
 elseif HOSTNAME=="teddy" then

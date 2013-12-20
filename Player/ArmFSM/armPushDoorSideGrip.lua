@@ -82,7 +82,6 @@ function state.entry()
 
     {'move',Config.armfsm.doorpushside.larminit[2],
             Config.armfsm.doorpushside.rarminit[2],Config.armfsm.doorpushside.bodyyaw,0}
-
   }
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "bodyturn" end
   --hcm.set_state_proceed(0) --stop here and wait

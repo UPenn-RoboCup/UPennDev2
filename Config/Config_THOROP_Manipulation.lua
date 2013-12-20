@@ -219,6 +219,17 @@ armfsm.doorpushside.rarminit = {
   {0.0,0.64,-0.14,  0,755*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
 }
 
+--FOR CAMERA
+
+armfsm.doorpushside.rarminit = {
+  {0.32,-0.30,-0.05,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},    
+  --0.24 -0.06 -0.14
+  {0.32, -0.15, -0.14,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.32, -0.15, -0.14,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+--going back
+  {0.0,0.64,-0.14,  0,75*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
+}
+
 
 
 

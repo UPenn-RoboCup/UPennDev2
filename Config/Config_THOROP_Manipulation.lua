@@ -369,6 +369,11 @@ armfsm.toolgrip.armpull={
 
 armfsm.toolgrip.armhold={0.25,0.0,-0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
 
+--Roll Pitch Yaw
+armfsm.toolgrip.larm={
+  {0.29,-0.40,-0.15,-30*DEG_TO_RAD,0*DEG_TO_RAD, -10*DEG_TO_RAD},  
+}
+
 
 armfsm.toolgrip.default_model = {
   0.42,-0.06,0.15,  0*DEG_TO_RAD}    

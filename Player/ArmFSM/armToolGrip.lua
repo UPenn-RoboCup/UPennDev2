@@ -121,7 +121,7 @@ function state.entry()
   trRArm0 = Body.get_forward_rarm(qRArm0)  
 
   --Initial arm joint angles after rotating wrist
-  qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0,0,0,0})
+  qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, Config.armfsm.toolgrip.larm[1])
   qRArm1 = Body.get_inverse_arm_given_wrist( qRArm, Config.armfsm.toolgrip.arminit[1])
   trLArm1 = Body.get_forward_larm(qLArm1)
   trRArm1 = Body.get_forward_rarm(qRArm1)  
@@ -132,7 +132,8 @@ function state.entry()
   trRArm05[5] = trRArm1[5]
 
   arm_planner:set_hand_mass(0,0)
-  arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) 
+--  arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) 
+  arm_planner:set_shoulder_yaw_target(nil, nil) 
 
   local wrist_seq = {
     {'wrist',trLArm1, trRArm1},
@@ -170,7 +171,7 @@ function state.update()
       if hcm.get_state_proceed()==1 then 
 --        print("trLArm:",arm_planner.print_transform(trLArm))
         print("trRArm:",arm_planner.print_transform(trRArm))
-        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)        
+--        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)        
         local arm_seq = {
           {'move',nil,Config.armfsm.toolgrip.arminit[1]},
           {'move',nil,Config.armfsm.toolgrip.arminit[2]},
@@ -189,7 +190,8 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
         print("trRArm:",arm_planner.print_transform(trRArm))
-        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)
+        --arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)
+        arm_planner:set_shoulder_yaw_target(nil,nil)        
         local trRArmTarget = get_tool_tr({0,0,0})
         local arm_seq = { {'move',nil, trRArmTarget} }     
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grab" end          

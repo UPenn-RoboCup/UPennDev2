@@ -22,15 +22,6 @@ local tight_angle = Config.armfsm.valvebar.handtightangle0
 local clearance = Config.armfsm.valvebar.clearance
 
 local function check_override()
-  --[[
-  local override_old = hcm.get_state_override()
-  local override_target = hcm.get_state_override_target()
-  for i=1,7 do
-    if override_old[i]~=override_target[i] then
-      return true
-    end
-  end
-  --]]
   local override = hcm.get_state_override()
   for i=1,7 do
     if override[i]~=0 then return true end
@@ -39,12 +30,6 @@ local function check_override()
 end
 
 local function update_override()
-  --[[
-  local override_old = hcm.get_state_override()
-  local override_target = hcm.get_state_override_target()
-  local override = vector.new(override_target)- vector.new(override_old)
-  
---]]
   --Incremental update!!!! 
   local override = hcm.get_state_override()
   local override_task = override[7]
@@ -74,16 +59,9 @@ local function update_override()
 end
 
 local function revert_override()
-  --[[
-  local override_old = hcm.get_state_override()
-  local override_target = hcm.get_state_override_target()
-  local override = vector.new(override_target)- vector.new(override_old)
-  --]]
-
   --Incremental update!!!! 
   local override = hcm.get_state_override()
   local override_task = override[7]
-
   local valve_model = hcm.get_barvalve_model()
 
   valve_model={
@@ -99,13 +77,10 @@ local function revert_override()
   hcm.set_state_proceed(0)
   turn_angle1 = valve_model[6] --Target angle
   wrist_angle = valve_model[7] --Wrist tight angle
-
---  hcm.set_state_override_target(hcm.get_state_override())
   hcm.set_state_override({0,0,0,0,0,0,0})
 end
 
 local function confirm_override()
---  hcm.set_state_override(hcm.get_state_override_target())    
   hcm.set_state_override({0,0,0,0,0,0,0})  
 end
 
@@ -117,11 +92,7 @@ function state.entry()
   t_update = t_entry
 
   mcm.set_arm_lhandoffset(Config.arm.handoffset.chopstick)
-
---[[
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
---]]
+  mcm.set_arm_rhandoffset(Config.arm.handoffset.chopstick)
 
   local cur_cond = arm_planner:load_boundary_condition()
   local qLArm = cur_cond[1]

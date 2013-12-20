@@ -180,6 +180,12 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   local velTorsoComp = Config.arm.torso_comp_limit
   local velYaw = Config.arm.shoulder_yaw_limit
   local massL, massR = self.mLeftHand, self.mRightHand
+
+  local default_hand_mass = Config.arm.default_hand_mass or 0
+  massL = massL + default_hand_mass
+  massR = massR + default_hand_mass
+
+
   local qLArm,qRArm, qLArmComp , qRArmComp, uTorsoComp = unpack(init_cond)
 
   local yawMag = dt_step * velYaw

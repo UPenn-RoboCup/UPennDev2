@@ -23,15 +23,7 @@ local angle1
 
 
 local function check_override()
-  --[[
-  local override_old = hcm.get_state_override()
-  local override_target = hcm.get_state_override_target()
-  for i=1,7 do
-    if override_old[i]~=override_target[i] then
-      return true
-    end
-  end
-  --]]
+  
   local override = hcm.get_state_override()
   for i=1,7 do
     if override[i]~=0 then return true end
@@ -40,12 +32,7 @@ local function check_override()
 end
 
 local function update_override()
-  --[[
-  local override_old = hcm.get_state_override()
-  local override_target = hcm.get_state_override_target()
-  local override = vector.new(override_target)- vector.new(override_old)
-  
---]]
+ 
   --Incremental update!!!! 
   local override = hcm.get_state_override()
   local override_task = override[7]
@@ -72,11 +59,7 @@ local function update_override()
 end
 
 local function revert_override()
-  --[[
-  local override_old = hcm.get_state_override()
-  local override_target = hcm.get_state_override_target()
-  local override = vector.new(override_target)- vector.new(override_old)
-  --]]
+ 
 
   --Incremental update!!!! 
   local override = hcm.get_state_override()  
@@ -102,12 +85,10 @@ local function revert_override()
   angle1 = valve_model[5]
   hcm.set_state_proceed(0)  
 
---  hcm.set_state_override_target(hcm.get_state_override())
   hcm.set_state_override({0,0,0,0,0,0,0})
 end
 
 local function confirm_override()
---  hcm.set_state_override(hcm.get_state_override_target())
   hcm.set_state_override({0,0,0,0,0,0,0})    
 end
 
@@ -233,12 +214,12 @@ print("trRARm0:",arm_planner.print_transform(trRArm0))
 --]]          
 
           local arm_seq = {
-            {'move',Config.armfsm.valveonearm.arminit[4], nil},           
+            {'move',Config.armfsm.valveonearm.arminit[4], Config.armfsm.valveonearm.rarminit[3]},           
             {'wrist',Config.armfsm.valveonearm.arminit[3], nil},           
-            {'move',Config.armfsm.valveonearm.arminit[3], Config.armfsm.valveonearm.rarminit[3]},           
-            {'move',Config.armfsm.valveonearm.arminit[2], Config.armfsm.valveonearm.rarminit[2]},           
-            {'move',Config.armfsm.valveonearm.arminit[1], Config.armfsm.valveonearm.rarminit[1]},           
-            {'move',trLArm1, trRArm1},            
+            {'move',Config.armfsm.valveonearm.arminit[3], Config.armfsm.valveonearm.rarminit[2]},           
+--            {'move',Config.armfsm.valveonearm.arminit[2], },           
+--            {'move',Config.armfsm.valveonearm.arminit[1], Config.armfsm.valveonearm.rarminit[1]},           
+--            {'move',trLArm1, trRArm1},            
           }
 
         if arm_planner:plan_arm_sequence(arm_seq) then 

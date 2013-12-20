@@ -48,13 +48,12 @@ function state.entry()
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
   
-  qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, Config.armfsm.doorpushside.arminit[1])  
+  --qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, Config.armfsm.doorpushside.arminit[1])  
+  qLArm1 = qLArm
   qRArm1 = qRArm
   
   trLArm1 = Body.get_forward_larm(qLArm1)
   trRArm1 = Body.get_forward_rarm(qRArm1)  
-
-  arm_planner:set_shoulder_yaw_target(nil,qRArm0[3])--unlock left shoulder
 
   arm_planner:set_shoulder_yaw_target(nil,nil)--unlock left shoulder
 
@@ -77,12 +76,12 @@ function state.entry()
   local wrist_seq = {
     {'wrist',Config.armfsm.doorpushside.larminit[1],
             Config.armfsm.doorpushside.rarminit[1],0,0},
-    
+
     {'move',Config.armfsm.doorpushside.larminit[2],
             Config.armfsm.doorpushside.rarminit[2],0,0},
 
     {'move',Config.armfsm.doorpushside.larminit[2],
-            Config.armfsm.doorpushside.rarminit[2],45*Body.DEG_TO_RAD,0}
+            Config.armfsm.doorpushside.rarminit[2],Config.armfsm.doorpushside.bodyyaw,0}
 
   }
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "bodyturn" end
@@ -104,14 +103,16 @@ function state.update()
   local trLArm = Body.get_forward_larm(cur_cond[1])
   local trRArm = Body.get_forward_rarm(cur_cond[2])  
   
-  door_yaw = 0
+  door_yaw = 0  
 
   if stage=="bodyturn" then 
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
+        print("trLArm:",arm_planner.print_transform(trLArm))
+        print("trRArm:",arm_planner.print_transform(trRArm))
         local wrist_seq = {
           {'wrist',Config.armfsm.doorpushside.larminit[3],
-            Config.armfsm.doorpushside.rarminit[3]},
+                   Config.armfsm.doorpushside.rarminit[3]},
         }
         if arm_planner:plan_arm_sequence2(wrist_seq) then stage="movearm" end
         hcm.set_state_proceed(0) --stop here and wait
@@ -130,6 +131,12 @@ function state.update()
         print("trLArm:",arm_planner.print_transform(trLArm))
         print("trRArm:",arm_planner.print_transform(trRArm))
         hcm.set_state_proceed(0) --stop here and wait
+        local wrist_seq = {
+          {'move',trLArm, trRArm,0,0},
+        }
+        if arm_planner:plan_arm_sequence2(wrist_seq) then 
+          stage="bodyzeroyaw"
+        end
       elseif hcm.get_state_proceed()==-1 then 
         local wrist_seq = {
           {'wrist',Config.armfsm.doorpushside.larminit[2], nil},
@@ -169,6 +176,42 @@ function state.update()
         if arm_planner:plan_arm_sequence2(arm_seq) then 
           print("target pos:",arm_planner.print_transform(trArmTarget))
           stage = "movearm"           
+        end
+        confirm_override()
+      end
+    end
+  elseif stage=="bodyzeroyaw" then 
+    if arm_planner:play_arm_sequence(t) then 
+      if hcm.get_state_proceed()==-1 then 
+        local wrist_seq = {
+          {'move',trLArm, trRArm,Config.armfsm.doorpushside.bodyyaw,0},
+        }
+        if arm_planner:plan_arm_sequence2(wrist_seq) then 
+          stage="movearm"
+        end
+        hcm.set_state_proceed(0) --stop here and wait
+      elseif check_override() then --adjust hook position
+        local trArmCurrent = hcm.get_hands_left_tr()        
+        local override = hcm.get_state_override()
+        local trArmTarget = {
+          trArmCurrent[1]+override[1],
+          trArmCurrent[2]+override[2],
+          trArmCurrent[3]+override[3],
+          trArmCurrent[4],
+
+          --Pitch control
+          trArmCurrent[5]+(override[5])*Config.armfsm.doorpushside.unit_tilt,
+          --Yaw control
+          trArmCurrent[6]+(override[6])*Config.armfsm.doorpushside.unit_yaw,
+        }        
+        local arm_seq = {{'move',trArmTarget,nil}}
+        --Wrist movement?
+        if math.abs(override[4]) + math.abs(override[5])+ math.abs(override[6])>0 then
+          arm_seq = {{'wrist',trArmTarget,nil}}
+        end
+        if arm_planner:plan_arm_sequence2(arm_seq) then 
+          print("target pos:",arm_planner.print_transform(trArmTarget))
+          stage = "bodyzeroyaw"           
         end
         confirm_override()
       end

@@ -189,37 +189,6 @@ armfsm.debrisgrip.arminit={
 ---------------------------------------------------------------
 armfsm.doorpushside = {}
 
---initial tr: 0.32 0.30 -0.32 (0 30 0)
-
-armfsm.doorpushside.arminit = {
-  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
-  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
-
---going back
-  {0.0,0.64,-0.14,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
-}
-
---little tilt angle up
-
-armfsm.doorpushside.arminit = {
-  {0.38,-0.10,0.07,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},    
-  {0.38,-0.10,0.07,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},
---going back
-  {0.0,0.64,-0.14,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
-}
-
-
-
-
-armfsm.doorpushside.larminit = {
-  {0.32,0.30,-0.05,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},    
-  {0.22,0.30,-0.05,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},
-  {0.22,0.30,-0.03,  0,-15*DEG_TO_RAD, 90*DEG_TO_RAD},  
---going back
-  {0.0,0.64,-0.14,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
-}
-
-
 armfsm.doorpushside.larminit = {
   {0.32,0.26,-0.05,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},    
   {0.22,0.26,-0.03,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},
@@ -227,10 +196,6 @@ armfsm.doorpushside.larminit = {
 --going back
   {0.0,0.64,-0.14,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
 }
-
-
-
-
 
 armfsm.doorpushside.rarminit = {
   {0.32,-0.30,-0.05,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},    
@@ -241,10 +206,26 @@ armfsm.doorpushside.rarminit = {
 }
 
 
+--new rarm pos
+
+ 
+
+armfsm.doorpushside.rarminit = {
+  {0.32,-0.30,-0.05,  0,75*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  --0.15 -0.30 -0.51
+  {0.20, -0.30, -0.51,  0,75*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.20, -0.30, -0.51,  0,75*DEG_TO_RAD, 0*DEG_TO_RAD},
+--going back
+  {0.0,0.64,-0.14,  0,755*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
+}
 
 
 
 
+
+
+
+armfsm.doorpushside.bodyyaw = 45*DEG_TO_RAD
 
 
 

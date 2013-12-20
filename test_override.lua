@@ -70,15 +70,12 @@ local char_to_event = {
   ['1'] = {'body_ch','init'},
 
   ['2'] = {'arm_ch','toolgrab'},
-  ['3'] = {'arm_ch','doorgrab'},
-  ['4'] = {'arm_ch','pushdoorgrab'},
-  ['5'] = {'arm_ch','loaddoorgrab'},
+  ['3'] = {'arm_ch','pushdoorgrab'},
 
 
   ['6'] = {'arm_ch','smallvalvegrab'},
   ['7'] = {'arm_ch','barvalvegrab'},
 
-  ['8'] = {'arm_ch','smallvalveleftgrab'},
 
 
   ['9'] = {'arm_ch','hosegrab'},

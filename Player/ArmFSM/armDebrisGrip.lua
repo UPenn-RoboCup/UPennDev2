@@ -40,6 +40,15 @@ local function check_override()
   return false
 end
 
+local function check_override_support()
+  local override = hcm.get_state_override_support()
+    for i=1,7 do
+    if override[i]~=0 then return true end
+  end
+  return false
+end
+
+
 local function update_model()
   local trRArmTarget = hcm.get_hands_right_tr_target()
   local trRArm = hcm.get_hands_right_tr()
@@ -118,10 +127,16 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
         arm_planner:set_shoulder_yaw_target(nil,nil) --Lock left hand  
+--[[        
         arm_seq={ 
           {'move',nil,Config.armfsm.debrisgrip.arminit[1]},
           {'wrist',nil,Config.armfsm.debrisgrip.arminit[2]},
         }
+--]]     
+        arm_seq={ 
+          {'move',Config.armfsm.debrisgrip.larminit[1],Config.armfsm.debrisgrip.arminit[1]},
+          {'wrist',Config.armfsm.debrisgrip.larminit[2],Config.armfsm.debrisgrip.arminit[2]},
+        }   
 --        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armbacktoinitpos" end
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armreachout" end
       elseif hcm.get_state_proceed()==-1 then 
@@ -132,6 +147,7 @@ function state.update()
       end
     end
   elseif stage=="armreachout" then --Turn yaw angles first    
+--    if arm_planner:play_arm_sequence(t) then   
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
 --        print("trLArm:",arm_planner.print_transform(trLArm))
@@ -139,11 +155,17 @@ function state.update()
 --        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
         hcm.set_state_proceed(0)--stop at next step
       elseif hcm.get_state_proceed()==-1 then 
+        --[[
         arm_seq={ 
-          {'move',nil,Config.armfsm.debrisgrip.arminit[1]},
+          {'move',nil,Config.armfsm.debrisgConfig.armfsm.debrisgrip.arminit[1]Config.armfsm.debrisgrip.arminit[1]Config.armfsm.debrisgrip.arminit[1]Config.armfsm.debrisgrip.arminit[1]Config.armfsm.debrisgrip.arminit[1]rip.arminit[1]},
           {'wrist',nil,trRArm0},
           {'move',nil,trRArm0},
-
+        }
+        --]]
+        arm_seq={ 
+          {'move',Config.armfsm.debrisgrip.larminit[1],Config.armfsm.debrisgrip.arminit[1]},
+          {'wrist',trLArm0,trRArm0},
+          {'move',trLArm0,trRArm0},
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "benddown" end
       elseif check_override() then 
@@ -161,6 +183,24 @@ function state.update()
         hcm.set_state_override({0,0,0,0,0,0,0})        
         local arm_seq = {{'move',nil, trRArmTarget}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armreachout" end
+        hcm.set_state_proceed(0)--stop at next step
+      elseif check_override_support() then
+        local trLArmCurrent = hcm.get_hands_left_tr()
+        local override_support = hcm.get_state_override_support()
+        local trLArmTarget = {
+          trLArmCurrent[1]+override_support[1],
+          trLArmCurrent[2]+override_support[2],
+          trLArmCurrent[3]+override_support[3],
+          trLArmCurrent[4],
+          trLArmCurrent[5],
+          trLArmCurrent[6]
+        }
+        print("trLarm:",arm_planner.print_transform(trLArmTarget))
+        hcm.set_state_override_support({0,0,0,0,0,0,0})        
+        local arm_seq = {{'move',trLArmTarget,nil}}
+        if arm_planner:plan_arm_sequence2(arm_seq) then 
+          stage = "armreachout" 
+        end
         hcm.set_state_proceed(0)--stop at next step
       end
     end

@@ -166,8 +166,8 @@ armfsm.debrisgrip.armpull={
 armfsm.debrisgrip.clearance={0,0.08,0}
 armfsm.debrisgrip.liftup = {0,0,0.05}
 
-armfsm.debrisgrip.lhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
-armfsm.debrisgrip.rhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.debrisgrip.lhand_rpy = {0*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.debrisgrip.rhand_rpy = {0*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
 
 
 --Take two
@@ -183,6 +183,41 @@ armfsm.debrisgrip.arminit={
   {0.40,-0.40,-0.30, 0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD},
   {0.40,-0.40,-0.20, -90*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},
 }
+
+
+--LEFT
+--Take three
+armfsm.debrisgrip.larminit={
+---0.20 -0.30 -0.32  (0 30 0)
+  {0.40,0.40,-0.30, 0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.40,0.40,-0.20, -90*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},
+}
+
+
+--WITH wolverine setup
+
+
+
+--Take three
+armfsm.debrisgrip.arminit={
+---0.20 -0.30 -0.32  (0 30 0)
+  {0.40,-0.40,-0.30, 0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD},
+--  {0.40,-0.40,-0.20, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.40,-0.40,-0.10, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},  
+}
+
+--LEFT
+armfsm.debrisgrip.larminit={
+---0.20 -0.30 -0.32  (0 30 0)
+  {0.40,0.40,-0.30, 0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD},
+--  {0.40,0.40,-0.20, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.40,0.40,-0.10, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},  
+}
+
+
+
+
+
 
 ---------------------------------------------------------------
 -- Open door sideways

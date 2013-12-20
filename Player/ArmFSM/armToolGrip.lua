@@ -60,7 +60,7 @@ local function update_override()
   tool_model[1] + override[1],
   tool_model[2] + override[2],
   tool_model[3] + override[3],
-  tool_model[4] + override[6], --yaw
+  tool_model[4] + override[6]*5*Body.DEG_TO_RAD, --yaw
 --print("upd: old model",unpack(hcm.get_tool_model() ))
 
 
@@ -84,7 +84,7 @@ local function revert_override()
   tool_model[1] - override[1],
   tool_model[2] - override[2],
   tool_model[3] - override[3],
-  tool_model[4] - override[6], --yaw
+  tool_model[4] - override[6]*5*Body.DEG_TO_RAD, --yaw
 
 --SJ: this is weird, we need to read once to update the shm
   hcm.get_tool_model()

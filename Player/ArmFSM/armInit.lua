@@ -134,12 +134,12 @@ function state.exit()
   local arm_planner = libArmPlan.new_planner()
   --print("qLArm:",unpack(qLArmTarget))
   arm_planner:reset_torso_comp(qLArmTarget,qRArmTarget)
-
+--[[
   Body.move_lgrip1(0)
   Body.move_lgrip2(0)
   Body.move_rgrip1(0)
   Body.move_rgrip2(0)
-
+--]]
 
 --[[
   if not IS_WEBOTS then

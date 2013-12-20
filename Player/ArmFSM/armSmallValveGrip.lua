@@ -173,7 +173,7 @@ function state.update()
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
 --        local wrist_seq = {{'wrist',trLArm0, nil}}
-print("trRARm0:",arm_planner.print_transform(trRArm0))
+        print("trRARm0:",arm_planner.print_transform(trRArm0))
 
         local wrist_seq = {{'wrist',trLArm0, trRArm0}}
         if arm_planner:plan_arm_sequence(wrist_seq) then stage = "armbacktoinitpos" end
@@ -217,9 +217,11 @@ print("trRARm0:",arm_planner.print_transform(trRArm0))
             {'move',Config.armfsm.valveonearm.arminit[4], Config.armfsm.valveonearm.rarminit[3]},           
             {'wrist',Config.armfsm.valveonearm.arminit[3], nil},           
             {'move',Config.armfsm.valveonearm.arminit[3], Config.armfsm.valveonearm.rarminit[2]},           
+            {'move',nil, Config.armfsm.valveonearm.rarminit[1]},           
+            {'move',trLArm1, trRArm1},            
 --            {'move',Config.armfsm.valveonearm.arminit[2], },           
 --            {'move',Config.armfsm.valveonearm.arminit[1], Config.armfsm.valveonearm.rarminit[1]},           
---            {'move',trLArm1, trRArm1},            
+
           }
 
         if arm_planner:plan_arm_sequence(arm_seq) then 

@@ -142,10 +142,7 @@ armfsm.debrisgrip.rhand_rpy = {0*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD}
 
 armfsm.debrisgrip.body_bend = 30*DEG_TO_RAD
 
-armfsm.debrisgrip.body_bend = 45*DEG_TO_RAD
-
-armfsm.debrisgrip.body_bend = 60*DEG_TO_RAD
-
+--armfsm.debrisgrip.body_bend = 45*DEG_TO_RAD
 
 --xyz, yaw
 armfsm.debrisgrip.default_model = {

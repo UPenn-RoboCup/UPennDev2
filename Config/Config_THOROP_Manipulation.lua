@@ -10,6 +10,9 @@ Config.IS_LONGARM =true
 -- For the arm FSM
 local arm = {}
 
+arm.default_hand_mass = 0.4 
+
+
 
 --Gripper end position offsets (Y is inside)
 arm.handoffset={}
@@ -376,14 +379,16 @@ armfsm.toolgrip.armpull={
 
 armfsm.toolgrip.armhold={0.25,0.0,-0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
 
+--FOR 2nd CAMERA
 --Roll Pitch Yaw
 armfsm.toolgrip.larm={
-  {0.29,-0.40,-0.15,-30*DEG_TO_RAD,0*DEG_TO_RAD, -10*DEG_TO_RAD},  
+  {0.29,-0.40,-0.15,-45*DEG_TO_RAD,0*DEG_TO_RAD, -10*DEG_TO_RAD},  
 }
 
 
-armfsm.toolgrip.default_model = {
-  0.42,-0.06,0.15,  0*DEG_TO_RAD}    
+armfsm.toolgrip.default_model = 
+--{0.42,-0.06,0.15,  0*DEG_TO_RAD}    
+{0.42,-0.3,0.15,  0*DEG_TO_RAD}    --shoulder position
 
 --[[
 ---------------------------------
@@ -801,14 +806,14 @@ armfsm.valveonearm.heights={0.03,0.15}
 
 
 --with tilted init, should be used for bar grip as well
-
+--[[
 armfsm.valveonearm.arminit={
   {0.40,0.21,-0.15, 0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
   {0.55,0.28,0.07,  0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
   {0.60,0.01,0.07,  0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
   {0.72,0.30,0.09,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
 }
-
+--]]
 armfsm.valveonearm.turnUnit = 15*DEG_TO_RAD
 
 armfsm.valveonearm.default_model_small= 
@@ -834,6 +839,14 @@ armfsm.valveonearm.rarminit={
   {0.53,-0.25,0.03,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
 
+
+
+armfsm.valveonearm.arminit_mirror={
+  {0.40,-0.25,-0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.53,-0.28,0.03,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.53,-0.01,0.03,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.67,-0.30,0.03,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+}
 
 
 
@@ -862,8 +875,18 @@ armfsm.valvebar.velInsert = 0.01 * speed_factor
 
 --With updated chopstick IK
 
+
 armfsm.valvebar.default_model= {0.73,0.25,0.09,   
   0.05, 0, 0*DEG_TO_RAD, -10*DEG_TO_RAD  }
+
+
+--RIGHT ARM
+armfsm.valvebar.default_model_right= {0.73,-0.25,0.09,   
+  0.05, 0, 0*DEG_TO_RAD, -10*DEG_TO_RAD  }
+
+
+
+
 
 armfsm.valvebar.arminit={{0.55,0.30,-0.15, 0,0,0}}
 

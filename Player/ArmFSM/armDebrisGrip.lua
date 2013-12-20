@@ -140,6 +140,7 @@ function state.update()
 --        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armbacktoinitpos" end
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armreachout" end
       elseif hcm.get_state_proceed()==-1 then 
+        arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) --Lock left hand  
         local bend_seq = {
           {'move',nil,nil,0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
         } --straighten waist
@@ -155,19 +156,13 @@ function state.update()
 --        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
         hcm.set_state_proceed(0)--stop at next step
       elseif hcm.get_state_proceed()==-1 then 
-        --[[
-        arm_seq={ 
-          {'move',nil,Config.armfsm.debrisgConfig.armfsm.debrisgrip.arminit[1]Config.armfsm.debrisgrip.arminit[1]Config.armfsm.debrisgrip.arminit[1]Config.armfsm.debrisgrip.arminit[1]Config.armfsm.debrisgrip.arminit[1]rip.arminit[1]},
-          {'wrist',nil,trRArm0},
-          {'move',nil,trRArm0},
-        }
-        --]]
         arm_seq={ 
           {'move',Config.armfsm.debrisgrip.larminit[1],Config.armfsm.debrisgrip.arminit[1]},
           {'wrist',trLArm0,trRArm0},
           {'move',trLArm0,trRArm0},
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "benddown" end
+        hcm.set_state_proceed(0)--stop at next step
       elseif check_override() then 
         local trRArmCurrent = hcm.get_hands_right_tr()
         local override = hcm.get_state_override()

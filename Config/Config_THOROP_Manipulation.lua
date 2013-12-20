@@ -204,6 +204,9 @@ armfsm.debrisgrip.arminit={
   {0.40,-0.40,-0.30, 0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD},
 --  {0.40,-0.40,-0.20, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},
   {0.40,-0.40,-0.10, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},  
+
+--for returning
+  {0.22, -0.40, -0.41, 0.0, 85*DEG_TO_RAD, 0}
 }
 
 --LEFT
@@ -212,6 +215,9 @@ armfsm.debrisgrip.larminit={
   {0.40,0.40,-0.30, 0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD},
 --  {0.40,0.40,-0.20, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},
   {0.40,0.40,-0.10, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},  
+
+  --for returning
+  {0.22, 0.40, -0.41, 0.0, 85*DEG_TO_RAD, 0}
 }
 
 

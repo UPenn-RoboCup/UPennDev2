@@ -142,7 +142,7 @@ function state.update()
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) --Lock left hand  
         local bend_seq = {
-          {'move',nil,nil,0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
+          {'move',trLArm0,trRArm0,0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
         } --straighten waist
         if arm_planner:plan_arm_sequence(bend_seq) then stage = "done" end  
       end
@@ -157,7 +157,7 @@ function state.update()
         hcm.set_state_proceed(0)--stop at next step
       elseif hcm.get_state_proceed()==-1 then 
         arm_seq={ 
-          {'move',Config.armfsm.debrisgrip.larminit[1],Config.armfsm.debrisgrip.arminit[1]},
+          {'move',Config.armfsm.debrisgrip.larminit[3],Config.armfsm.debrisgrip.arminit[3]},
           {'wrist',trLArm0,trRArm0},
           {'move',trLArm0,trRArm0},
         }

@@ -131,7 +131,13 @@ function state.entry()
   update_override()
 --  local wrist_seq = {{'wrist',trLArm1, nil}}
 
-  local wrist_seq = {{'wrist',trLArm1, trRArm1}}
+--  local wrist_seq = {{'wrist',trLArm1, trRArm1}}
+
+  local wrist_seq = {
+      {'wrist',{0,0,0,0,0,0},{0,0,0,0,0,0}},   
+      {'wrist',trLArm1, trRArm1}
+    }
+
 
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "wristturn" end
   hcm.set_state_proceed(1)
@@ -217,8 +223,9 @@ function state.update()
             {'move',Config.armfsm.valveonearm.arminit[4], Config.armfsm.valveonearm.rarminit[3]},           
             {'wrist',Config.armfsm.valveonearm.arminit[3], nil},           
             {'move',Config.armfsm.valveonearm.arminit[3], Config.armfsm.valveonearm.rarminit[2]},           
-            {'move',nil, Config.armfsm.valveonearm.rarminit[1]},           
+            {'move',nil, Config.armfsm.valveonearm.rarminit[1]},                       
             {'move',trLArm1, trRArm1},            
+            {'wrist',{0,0,0,0,0,0},{0,0,0,0,0,0}},   
 --            {'move',Config.armfsm.valveonearm.arminit[2], },           
 --            {'move',Config.armfsm.valveonearm.arminit[1], Config.armfsm.valveonearm.rarminit[1]},           
 

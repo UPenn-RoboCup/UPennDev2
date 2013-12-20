@@ -125,7 +125,8 @@ function state.entry()
 
   confirm_override()
   update_override()
-  local wrist_seq = {{'wrist',trLArm1, nil}}
+--  local wrist_seq = {{'wrist',trLArm1, nil}}
+  local wrist_seq = {{'wrist',{0,0,0,0,0,0}, nil},{'wrist',trLArm1, nil}}
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "wristturn" end
   hcm.set_state_proceed(1)
 
@@ -160,7 +161,10 @@ function state.update()
         hcm.set_state_proceed(0)
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
-        local wrist_seq = {{'wrist',trLArm0, nil}}
+        local wrist_seq = {
+          {'wrist',{0,0,0,0,0,0}, nil},
+          {'wrist',trLArm0, nil}
+      }
         if arm_planner:plan_arm_sequence(wrist_seq) then stage = "armbacktoinitpos" end
       end
     end

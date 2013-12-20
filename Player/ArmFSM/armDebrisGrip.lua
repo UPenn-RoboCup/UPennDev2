@@ -32,6 +32,14 @@ local function get_hand_tr(pos)
   return {pos[1],pos[2],pos[3], unpack(rhand_rpy0)}
 end
 
+local function check_override()
+  local override = hcm.get_state_override()
+    for i=1,7 do
+    if override[i]~=0 then return true end
+  end
+  return false
+end
+
 local function update_model()
   local trRArmTarget = hcm.get_hands_right_tr_target()
   local trRArm = hcm.get_hands_right_tr()
@@ -138,19 +146,19 @@ function state.update()
 
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "benddown" end
-      elseif hcm.get_state_proceed()==3 then 
---temporary
+      elseif check_override() then 
         local trRArmCurrent = hcm.get_hands_right_tr()
-        local overrideTarget = hcm.get_state_override_target()
         local override = hcm.get_state_override()
         local trRArmTarget = {
-          trRArmCurrent[1]+overrideTarget[1]-override[1],
-          trRArmCurrent[2]+overrideTarget[2]-override[2],
-          trRArmCurrent[3]+overrideTarget[3]-override[3],
+          trRArmCurrent[1]+override[1],
+          trRArmCurrent[2]+override[2],
+          trRArmCurrent[3]+override[3],
           trRArmCurrent[4],
           trRArmCurrent[5],
           trRArmCurrent[6]
         }
+        print("trRarm:",arm_planner.print_transform(trRArmTarget))
+        hcm.set_state_override({0,0,0,0,0,0,0})        
         local arm_seq = {{'move',nil, trRArmTarget}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armreachout" end
         hcm.set_state_proceed(0)--stop at next step

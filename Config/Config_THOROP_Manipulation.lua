@@ -142,10 +142,12 @@ armfsm.debrisgrip.body_bend = 30*DEG_TO_RAD
 
 armfsm.debrisgrip.body_bend = 45*DEG_TO_RAD
 
+armfsm.debrisgrip.body_bend = 60*DEG_TO_RAD
+
 
 --xyz, yaw
 armfsm.debrisgrip.default_model = {
-  0.15,-0.40,-0.40,  0*DEG_TO_RAD}
+  0.30,-0.40,-0.20,  0*DEG_TO_RAD}
 
 armfsm.debrisgrip.arminit={
 ---0.02 -0.30 -0.44 
@@ -169,9 +171,15 @@ armfsm.debrisgrip.rhand_rpy = {90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD}
 --Take two
 armfsm.debrisgrip.arminit={
 ---0.20 -0.30 -0.32  (0 30 0)
-  {0.20,-0.30,-0.40, 0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD},
-  {0.20,-0.30,-0.40, 90*DEG_TO_RAD,45*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.20,-0.40,-0.40, 0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.30,-0.40,-0.20, -90*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},
+}
 
+--Take three
+armfsm.debrisgrip.arminit={
+---0.20 -0.30 -0.32  (0 30 0)
+  {0.40,-0.40,-0.30, 0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.40,-0.40,-0.20, -90*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},
 }
 
 ---------------------------------------------------------------

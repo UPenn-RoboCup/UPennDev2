@@ -225,7 +225,7 @@ if HOSTNAME=="alvin" then
       0.625, -0.4325, 0.375, -0.3475, 0.00, 1.0025 
     })*DEG_TO_RAD
 
-  walk.torsoX = -0.04 
+  walk.torsoX3 = -0.04 
   walk.torsoX = -0.02 
 
 
@@ -238,16 +238,50 @@ if HOSTNAME=="alvin" then
     })*DEG_TO_RAD
 
 
+--D-day, 7:31AM
+
+  walk.legBias = 
+    vector.new({
+      0.875,  2.1475, -0.625, -1.5475,       0.00, -0.615,
+      -0.2525, -1.58, 1.1175, -0.3475,   0.00, 0.41
+    })*DEG_TO_RAD
 
 
 
 
+--hiproll: 2.1475 -1.58
+--hippitch: -0.625 1.1175
+--kneepitch: -1.5475 -0.3475
+
+
+--hipyaw:0.875 -0.2525
+
+  walk.legBias = 
+    vector.new({
+      0.875,  2.1475, -0.625, -1.5475,       1.2775, -0.615,
+      -0.2525, -1.58, 1.1175, -0.3475,   0.940, 0.41
+    })*DEG_TO_RAD
 
 
 
+--AFTER HIP SWAP
+--hiproll: 2.1475 -1.1075
+--hippitch -0.8275 0.915
+--kneepitch -1.9525 -0.7525
 
+  walk.legBias = 
+    vector.new({
+      0.875,  2.1475, -0.8275, -1.9525,       1.2775, -0.615,
+      -0.2525, -1.1075, 0.915, -0.752,   0.940, 0.41
+    })*DEG_TO_RAD
 
+--angle fune tuning
 
+  walk.legBias = 
+    vector.new({
+      0.875,  2.1475, -0.49, -1.9525,       1.48, -0.615,
+      -0.2525, -1.1075, 1.25, -0.752,   0.740, 0.41
+    })*DEG_TO_RAD
 
 
 

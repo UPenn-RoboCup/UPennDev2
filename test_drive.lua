@@ -131,6 +131,10 @@ local function process_character(key_code,key_char,key_char_lower)
     hcm.set_drive_gas_pedal({0,20*math.pi/180})
   end
 
+  if key_char_lower=='z' then 
+    hcm.set_drive_gas_pedal({-5*math.pi/180,20*math.pi/180})
+  end
+
 
 
   -- Send motion fsm events

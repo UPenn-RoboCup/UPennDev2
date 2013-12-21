@@ -36,6 +36,8 @@ local function setup_camera(cam,name,udp_port,tcp_port)
   
   -- Open the camera
   local dev = uvc.init(dev, width, height, format, 1, fps)
+  dev:set_param('Focus, Auto'.0)
+  dev:set_param('Focus (absolute)',0)
   -- Open the local channel for logging
   local cam_pub_ch = simple_ipc.new_publisher(meta.name)
   -- Open the unreliable network channel

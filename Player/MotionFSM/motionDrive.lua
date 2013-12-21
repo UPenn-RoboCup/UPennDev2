@@ -67,10 +67,6 @@ function state.entry()
   qRLegTarget = Body.get_rleg_command_position()
   qRLegCurrent = Body.get_rleg_command_position()
   local t_gas_timeout = 0
-
-
-  hcm.set_drive_pedal_ankle_pitch(20*Body.DEG_TO_RAD)
-  hcm.set_drive_pedal_knee_pitch(0*Body.DEG_TO_RAD)
 end
 
 ---
@@ -89,17 +85,18 @@ function state.update()
       t_gas_timeout = 0
       qRLegTarget = qRLeg0
     end
-  elseif hcm.get_drive_gas_pedal()>0 then
+  elseif 
+    hcm.get_drive_gas_pedal()[1]+hcm.get_drive_gas_pedal()[2]>0 then
     t_gas_timeout = t + pedal_time
     qRLegTarget = {
       qRLeg0[1],
       qRLeg0[2],
       qRLeg0[3],
-      qRLeg0[4]+hcm.get_drive_pedal_knee_pitch(),
-      qRLeg0[5]+hcm.get_drive_pedal_ankle_pitch(),
+      qRLeg0[4]+hcm.get_drive_gas_pedal()[1],
+      qRLeg0[5]+hcm.get_drive_gas_pedal()[2],
       qRLeg0[6],
     }
-    hcm.set_drive_gas_pedal(0)
+    hcm.set_drive_gas_pedal({0,0})
   end
   
   qRLegCurrent = util.approachTolRad(qRLegCurrent, qRLegTarget,

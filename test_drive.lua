@@ -128,7 +128,7 @@ local function process_character(key_code,key_char,key_char_lower)
   end
 
   if key_char_lower==' ' then 
-    hcm.set_drive_gas_pedal(1)
+    hcm.set_drive_gas_pedal({0,20*math.pi/180})
   end
 
 

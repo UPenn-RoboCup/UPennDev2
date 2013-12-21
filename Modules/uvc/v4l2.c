@@ -79,12 +79,12 @@ int v4l2_query_ctrl(v4l2_device * vdev, unsigned int addr_begin,
             else
                 fprintf(stderr, "Could not query control %d\n", queryctrl.id);
         }
-/*
+
         fprintf(stdout, "queryctrl: \"%s\" 0x%x %d %d %d\n", 
                 queryctrl.name, queryctrl.id, queryctrl.minimum, 
 		queryctrl.maximum, queryctrl.default_value);
         fflush(stdout);
-*/
+
 
         switch (queryctrl.type) {
             case V4L2_CTRL_TYPE_MENU:

@@ -84,7 +84,8 @@ for name,cam in pairs{forehead=Config.camera.forehead} do
     camera_poll.ts = t
     local camera = camera_poll.camera
     -- Grab the image
-    local img, img_sz = camera.dev:get_rotated_image()
+    --local img, img_sz = camera.dev:get_rotated_image()
+    local img, img_sz = camera.dev:get_image()
     if type(img)=='number' then os.exit() end
     -- Grab the net settings
     local net_settings = camera_poll.get_net()

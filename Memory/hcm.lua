@@ -18,6 +18,11 @@ shared_data.drive.gas_pedal = vector.zeros(1)
 shared_data.drive.wheel_angle = vector.zeros(1)
 
 
+shared_data.drive.pedal_ankle_pitch = vector.zeros(1)
+shared_data.drive.pedal_knee_pitch = vector.zeros(1)
+
+
+
 
 
 shared_data.state={}

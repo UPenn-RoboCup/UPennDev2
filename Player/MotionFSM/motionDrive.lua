@@ -34,7 +34,8 @@ local qRLegTarget
 local qRLegCurrent
 local t_gas_timeout = 0
 
-local pedal_time = 2.0
+--local pedal_time = 2.0
+local pedal_time = 1.5
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -67,6 +68,9 @@ function state.entry()
   qRLegCurrent = Body.get_rleg_command_position()
   local t_gas_timeout = 0
 
+
+  hcm.set_drive_pedal_ankle_pitch(20*Body.DEG_TO_RAD)
+  hcm.set_drive_pedal_knee_pitch(0*Body.DEG_TO_RAD)
 end
 
 ---
@@ -91,8 +95,8 @@ function state.update()
       qRLeg0[1],
       qRLeg0[2],
       qRLeg0[3],
-      qRLeg0[4],
-      qRLeg0[5]+20*Body.DEG_TO_RAD,
+      qRLeg0[4]+hcm.get_drive_pedal_knee_pitch(),
+      qRLeg0[5]+hcm.get_drive_pedal_ankle_pitch(),
       qRLeg0[6],
     }
     hcm.set_drive_gas_pedal(0)

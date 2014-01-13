@@ -26,8 +26,8 @@ require'mcm'
 -- Five degree of freedom arm
 local nJoint = 5
 
+-- Table of servo properties
 local servo = {}
-
 servo.min_rad = vector.new({
   0,0,0,0,0
 })*DEG_TO_RAD
@@ -37,6 +37,27 @@ servo.max_rad = vector.new({
   145,145,100,100,100
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
+
+-- Convienence functions for each joint
+local jointNames = {
+	"ShoulderYaw", "ShoulderPitch", "Elbow", "WristPitch","WristYaw"
+}
+assert(nJoint==#jointNames,'bad jointNames!')
+for i,v in ipairs(jointNames) do
+  local idx = i
+  Body['set_'..v:lower()] = function(val)
+    jcm.actuatorPtr.command_position[idx] = val
+  end
+  Body['get_'..v:lower()] = function()
+    return jcm.sensorPtr.position[idx]
+  end
+end
+
+-- Convience function for each joint sensor
+for i,v in ipairs{'torque','velocity','position'} do
+  Body['get_'..v] = jcm['get_sensor_'..v]
+  Body['set_'..v] = jcm['set_sensor_'..v]
+end
 
 -- Entry initializes the hardware of the robot
 Body.entry = function()

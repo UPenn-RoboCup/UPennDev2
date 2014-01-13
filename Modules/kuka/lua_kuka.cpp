@@ -105,18 +105,16 @@ static int lua_set_arm_angle(lua_State *L) {
   ybArm->getArmJoint(joint_id).setData(desiredJointAngle);
   return 0;
 }
-
+/*
 static int lua_set_arm_max_positioning_speed(lua_State *L) {
   static MaximumPositioningSpeed maxPositioningSpeed;
-  
   int joint_id = luaL_checkint(L, 1);
   double max_speed = (double)lua_tonumber(L, 2);
-  
   maxPositioningSpeed.setParameter(max_speed * radian_per_second);
-  ybArm->getArmJoint(joint_id).setConfigurationParameter(maxPositioningSpeed);  
-  
+  ybArm->getArmJoint(joint_id).setConfigurationParameter(maxPositioningSpeed);
   return 0;
 }
+*/
 
 // Get data about the arm
 static int lua_get_arm_position(lua_State *L) {
@@ -162,6 +160,7 @@ static int lua_get_arm_current(lua_State *L) {
   lua_pushnumber(L, sensed.current.value() );
   return 1;
 }
+/*
 static int lua_get_arm_pwm(lua_State *L) {
   static JointSensedPWM sensed;
   int joint_id = luaL_checkint(L, 1);
@@ -169,6 +168,7 @@ static int lua_get_arm_pwm(lua_State *L) {
   lua_pushnumber(L, sensed.pwm );
   return 1;
 }
+*/
 
 static const struct luaL_reg kuka_lib [] = {
 	{"init_base", lua_init_base},
@@ -180,7 +180,7 @@ static const struct luaL_reg kuka_lib [] = {
   {"set_base_velocity", lua_set_base_velocity},
   //
   {"calibrate_arm", lua_calibrate_arm},
-  {"set_arm_max_positioning_speed", lua_set_arm_max_positioning_speed},
+//  {"set_arm_max_positioning_speed", lua_set_arm_max_positioning_speed},
   {"set_arm_angle", lua_set_arm_angle},
   //
   {"get_arm_position", lua_get_arm_position},
@@ -190,7 +190,7 @@ static const struct luaL_reg kuka_lib [] = {
   {"get_arm_encoder", lua_get_arm_encoder},
   {"get_arm_rpm", lua_get_arm_rpm},
   {"get_arm_current", lua_get_arm_current},
-  {"get_arm_pwm", lua_get_arm_pwm},
+  //{"get_arm_pwm", lua_get_arm_pwm},
   //
 	{NULL, NULL}
 };

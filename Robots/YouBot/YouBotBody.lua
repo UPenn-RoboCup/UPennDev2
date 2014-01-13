@@ -21,11 +21,13 @@ local kuka = require'kuka'
 
 -- Shared memory
 require'jcm'
+require'mcm'
 
 -- Five degree of freedom arm
 local nJoint = 5
 
---SJ: Arm servos should at least move up to 90 deg
+local servo = {}
+
 servo.min_rad = vector.new({
   0,0,0,0,0
 })*DEG_TO_RAD
@@ -43,10 +45,12 @@ Body.entry = function()
   -- kuka.calibrate_arm()
   
   -- Set the initial joint command angles, so we have no jerk initially
+  local init_pos = {}
   for i=1,nJoint do
     local rad = kuka.get_arm_position(i)
-    jcm.set_actuator_command_position(rad,i)
+    init_pos[i] = rad
   end
+  jcm.set_actuator_command_position(init_pos)
   
 end
 
@@ -82,3 +86,5 @@ Body.exit = function()
   kuka.shutdown_arm()
   kuka.shutdown_base()
 end
+
+return Body

@@ -2,14 +2,19 @@ require'unix'
 local kuka = require'kuka'
 
 -- Init the base
---kuka.init_base()
+kuka.init_base()
+
+os.exit()
+
 -- Set the wheels to move forward
 --kuka.set_base_velocity(0,0,0.1)
 
 --Init the arm
 kuka.init_arm()
 
---kuka.calibrate_arm()
+kuka.calibrate_arm()
+
+os.exit()
 
 kuka.set_arm_angle(1,2)
 kuka.set_arm_angle(2,2.8)

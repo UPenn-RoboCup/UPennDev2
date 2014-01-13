@@ -56,11 +56,11 @@ shared.arm.dqVelRight = vector.zeros(6)
 shared.arm.dpVelRight = vector.zeros(7)
 
 --hand offset X and Y (for hook)
-shared.arm.handoffset = vector.new(Config.arm.handoffset.gripper)
-
-shared.arm.lhandoffset = vector.new(Config.arm.handoffset.gripper)
-shared.arm.rhandoffset = vector.new(Config.arm.handoffset.gripper)
-
+if Config.arm then
+  shared.arm.handoffset = vector.new(Config.arm.handoffset.gripper)
+  shared.arm.lhandoffset = vector.new(Config.arm.handoffset.gripper)
+  shared.arm.rhandoffset = vector.new(Config.arm.handoffset.gripper)
+end
 
 -- Walk Parameters
 shared.walk = {}

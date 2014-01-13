@@ -1,0 +1,2 @@
+# Allow non-root for the Ethercat (give lua ability to grab raw packets)
+sudo setcap cap_net_raw+ep /usr/bin/lua5.1

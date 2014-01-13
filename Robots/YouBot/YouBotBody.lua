@@ -55,6 +55,7 @@ Body.entry = function()
 end
 
 -- Update speaks to the hardware of the robot
+Body.update_cycle = 1 -- milliseconds
 Body.update = function()
   -- Get joint readings
   local rad,mps,nm = {},{},{}

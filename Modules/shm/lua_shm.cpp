@@ -102,8 +102,6 @@ static int lua_shm_set(lua_State *L) {
 
   const void* light_ptr = NULL;
   unsigned int light_bytes = 0;
-  
-  int start = luaL_optint(L, 4, 1)-1;
 
   if (lua_isnumber(L, 3)) {
     nval = 1;
@@ -168,8 +166,9 @@ static int lua_shm_set(lua_State *L) {
     // use memcpy if the input is a pointer
     memcpy( pr, light_ptr, light_bytes );
   } else {
+    //int start = luaL_optint(L, 4, 1)-1;
     // otherwise copy the array data
-    for (int i = start; i < nval+start; i++) {
+    for (int i = 0; i < nval; i++) {
       pr[i] = val[i];
     }
   }

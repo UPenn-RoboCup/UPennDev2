@@ -22,6 +22,7 @@ Config.fsm.enabled = {}
 -- Complementary Configs --
 ---------------------------
 local exo = {}
+exo.Net = 'Net'
 
 for k,v in pairs(exo) do
   -- TODO SJ: Now we just put all config files in /Config folder

@@ -16,14 +16,6 @@ local util         = require'util'
 -- Get time (for the real robot)
 local get_time = unix.time
 
--- KUKA/Webots interfaces
-local kuka, webots
-if IS_WEBOTS then
-  webots = require'webots'
-else
-  kuka = require'kuka'
-end
-
 -- Shared memory
 require'jcm'
 require'mcm'
@@ -70,6 +62,7 @@ for i,v in ipairs{'torque','velocity','position'} do
   Body['set_'..v] = jcm['set_sensor_'..v]
 end
 Body.set_command_position = jcm.set_actuator_command_position
+Body.get_command_position = jcm.get_actuator_command_position
 
 -- Base convience
 Body.set_velocity = function(x,y,a)
@@ -79,6 +72,9 @@ Body.get_velocity = mcm.get_walk_vel
 
 -- Entry initializes the hardware of the robot
 Body.entry = function()
+  
+  kuka = require'kuka'
+  
   kuka.init_base()
   kuka.init_arm()
   -- kuka.calibrate_arm()
@@ -86,7 +82,7 @@ Body.entry = function()
   -- Set the initial joint command angles, so we have no jerk initially
   local init_pos = {}
   for i=1,nJoint do
-    local rad = kuka.get_arm_position(i)
+    local rad = kuka.get_arm_position(i) * servo.direction[i]
     init_pos[i] = rad
   end
   jcm.set_actuator_command_position(init_pos)
@@ -135,7 +131,9 @@ end
 
 -- Webots overrides
 if IS_WEBOTS then
-  local timeStep = webots.wb_robot_get_basic_time_step()
+  
+  webots = require'webots'
+  
   get_time = webots.wb_robot_get_time
 
   -- Setup the webots tags
@@ -146,17 +144,66 @@ if IS_WEBOTS then
     -- Start the system
     webots.wb_robot_init()
     
+    local timeStep = webots.wb_robot_get_basic_time_step()
+    Body.timeStep = timeStep
+    
     -- Grab the joints
   	tags.joints = {}
   	for i=1,nJoint do
-  		tags.joints[i] = webots.wb_robot_get_device('arm'..i)
+      local name = 'arm'..i
+  		tags.joints[i] = webots.wb_robot_get_device(name)
   		if tags.joints[i]>0 then
-        print('Joint '..i..' enabled!')
-  			webots.wb_servo_enable_position(tags.joints[i], timeStep)
+        webots.wb_motor_set_velocity(tags.joints[i], 0.5)
+        webots.wb_motor_enable_position(tags.joints[i],Body.timeStep)
   		else
   			print('Joint '..i..' not found')
   		end
   	end
+    
+    -- Step the simulation
+		webots.wb_robot_step(Body.timeStep)
+    webots.wb_robot_step(Body.timeStep)
+    
+    -- Read values
+    for idx, jtag in pairs(tags.joints) do
+      local val = webots.wb_motor_get_position( jtag )
+      -- Take care of nan
+      if val~=val then
+        val = 0
+      else
+        val = servo.direction[idx] * val
+      end
+      jcm.sensorPtr.position[idx] = val
+      jcm.actuatorPtr.command_position[idx] = val
+    end
+    
+  end
+  
+  Body.update = function()
+    
+    -- Write values
+    local cmds = Body.get_command_position()
+    for i,v in ipairs(cmds) do
+      local jtag = tags.joints[i]
+      if jtag then
+        local pos = servo.direction[i] * v
+        webots.wb_motor_set_position( jtag, pos )
+      end
+    end
+    
+		-- Step the simulation, and shutdown if the update fails
+		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
+    
+    -- Read values
+    for idx, jtag in pairs(tags.joints) do
+      local val = webots.wb_motor_get_position( jtag )
+      local rad = servo.direction[idx] * val
+      jcm.sensorPtr.position[idx] = rad
+    end
+    
+  end
+  
+  Body.exit = function()
   end
   
 end

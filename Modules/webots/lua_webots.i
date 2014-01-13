@@ -21,6 +21,7 @@
 #include <webots/led.h>
 #include <webots/light_sensor.h>
 #include <webots/microphone.h>
+#include <webots/motor.h>
 #include <webots/nodes.h>
 #include <webots/pen.h>
 #include <webots/radio.h>
@@ -143,6 +144,7 @@ unsigned char * to_rgb( int tag ) {
 %include <webots/led.h>
 %include <webots/light_sensor.h>
 %include <webots/microphone.h>
+%include <webots/motor.h>
 %include <webots/nodes.h>
 %include <webots/pen.h>
 %include <webots/radio.h>

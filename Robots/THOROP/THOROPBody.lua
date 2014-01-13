@@ -1718,9 +1718,11 @@ elseif IS_WEBOTS then
 		-- Grab the tags from the joint names
 		tags.joints = {}
 		for i,v in ipairs(jointNames) do
-			tags.joints[i] = webots.wb_robot_get_device(v)
-			if tags.joints[i]>0 then
-				webots.wb_servo_enable_position(tags.joints[i], timeStep)
+      local tag = webots.wb_robot_get_device(v)
+			if tag>0 then
+				webots.wb_servo_enable_position(tag, timeStep)
+        webots.wb_motor_set_velocity(tag, 0.5);
+        tags.joints[i] = tag
 			else
 				print(v,'not found')
 			end

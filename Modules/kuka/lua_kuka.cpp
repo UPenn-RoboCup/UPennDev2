@@ -66,12 +66,27 @@ static int lua_calibrate_arm(lua_State *L) {
 
 // Set base speed
 static int lua_set_base_velocity(lua_State *L) {
+  
+  static quantity<si::velocity> longitudinalVelocity;
+  static quantity<si::velocity> transversalVelocity;
+  static quantity<si::angular_velocity> angularVelocity;
+  
+  double dx = (double)lua_tonumber(L, 1);
+  double dy = (double)lua_tonumber(L, 2);
+  double da = (double)lua_tonumber(L, 3);
+  
+  printf("dx: %lf, dy: %lf, da: %lf \n",dx,dy,da);
+  fflush(stdout);
+  
   // Make the appropriate quantities
-	quantity<si::velocity> longitudinalVelocity = lua_tonumber(L, 1) * meter_per_second;
-	quantity<si::velocity> transversalVelocity = lua_tonumber(L, 2) * meter_per_second;
-	quantity<si::angular_velocity> angularVelocity = lua_tonumber(L, 3) * radian_per_second;
+  longitudinalVelocity = dx * meter_per_second;
+  transversalVelocity  = dy * meter_per_second;
+  angularVelocity      = da * radian_per_second;
+  
   // Set the base
   ybBase->setBaseVelocity(longitudinalVelocity, transversalVelocity, angularVelocity);
+  
+  return 0;
 }
 
 

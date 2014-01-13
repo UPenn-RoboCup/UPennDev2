@@ -34,7 +34,7 @@ servo.min_rad = vector.new({
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 
 servo.max_rad = vector.new({
-  145,145,100,100,100
+  145,145,120,120,100
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
 

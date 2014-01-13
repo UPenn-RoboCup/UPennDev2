@@ -90,26 +90,85 @@ static int lua_set_base_velocity(lua_State *L) {
 // Set arm angles
 static int lua_set_arm_angle(lua_State *L) {
   static JointAngleSetpoint desiredJointAngle;
-  
-  if(!ybArm){
-    return luaL_error(L,"Arm is not initialized!");
-  }
+  if(!ybArm){return luaL_error(L,"Arm is not initialized!");}
   
   int joint_id = luaL_checkint(L, 1);
   double joint_angle = (double)lua_tonumber(L, 2);
-
+  /*
   printf("joint_id: %d, angle: %lf\n", joint_id, joint_angle);
   fflush(stdout);
+  */
   
   // Convert the format
   desiredJointAngle.angle = joint_angle * radian;
-  
   // Send the angle to the robot
   ybArm->getArmJoint(joint_id).setData(desiredJointAngle);
+  return 0;
+}
+
+static int lua_set_arm_max_positioning_speed(lua_State *L) {
+  static MaximumPositioningSpeed maxPositioningSpeed;
+  
+  int joint_id = luaL_checkint(L, 1);
+  double max_speed = (double)lua_tonumber(L, 2);
+  
+  maxPositioningSpeed.setParameter(max_speed * radian_per_second);
+  ybArm->getArmJoint(joint_id).setConfigurationParameter(maxPositioningSpeed);  
   
   return 0;
 }
 
+// Get data about the arm
+static int lua_get_arm_position(lua_State *L) {
+  static JointSensedAngle sensed;
+  int joint_id = luaL_checkint(L, 1);
+  ybArm->getArmJoint(joint_id).getData(sensed);
+  lua_pushnumber(L, sensed.angle.value() );
+  return 1;
+}
+static int lua_get_arm_velocity(lua_State *L) {
+  static JointSensedVelocity sensed;
+  int joint_id = luaL_checkint(L, 1);
+  ybArm->getArmJoint(joint_id).getData(sensed);
+  lua_pushnumber(L, sensed.angularVelocity.value() );
+  return 1;
+}
+static int lua_get_arm_torque(lua_State *L) {
+  static JointSensedTorque sensed;
+  int joint_id = luaL_checkint(L, 1);
+  ybArm->getArmJoint(joint_id).getData(sensed);
+  lua_pushnumber(L, sensed.torque.value() );
+  return 1;
+}
+//
+static int lua_get_arm_encoder(lua_State *L) {
+  static JointSensedEncoderTicks sensed;
+  int joint_id = luaL_checkint(L, 1);
+  ybArm->getArmJoint(joint_id).getData(sensed);
+  lua_pushnumber(L, sensed.encoderTicks );
+  return 1;
+}
+static int lua_get_arm_rpm(lua_State *L) {
+  static JointSensedRoundsPerMinute sensed;
+  int joint_id = luaL_checkint(L, 1);
+  ybArm->getArmJoint(joint_id).getData(sensed);
+  lua_pushnumber(L, sensed.rpm );
+  return 1;
+}
+static int lua_get_arm_current(lua_State *L) {
+  static JointSensedCurrent sensed;
+  int joint_id = luaL_checkint(L, 1);
+  ybArm->getArmJoint(joint_id).getData(sensed);
+  lua_pushnumber(L, sensed.current.value() );
+  return 1;
+}
+static int lua_get_arm_pwm(lua_State *L) {
+  static JointSensedPWM sensed;
+  int joint_id = luaL_checkint(L, 1);
+  ybArm->getArmJoint(joint_id).getData(sensed);
+  lua_pushnumber(L, sensed.pwm );
+  return 1;
+}
 
 static const struct luaL_reg kuka_lib [] = {
 	{"init_base", lua_init_base},
@@ -118,10 +177,20 @@ static const struct luaL_reg kuka_lib [] = {
   {"shutdown_base", lua_shutdown_base},
   {"shutdown_arm", lua_shutdown_arm},
   //
-  {"calibrate_arm", lua_calibrate_arm},
-  //
   {"set_base_velocity", lua_set_base_velocity},
+  //
+  {"calibrate_arm", lua_calibrate_arm},
+  {"set_arm_max_positioning_speed", lua_set_arm_max_positioning_speed},
   {"set_arm_angle", lua_set_arm_angle},
+  //
+  {"get_arm_position", lua_get_arm_position},
+  {"get_arm_velocity", lua_get_arm_velocity},
+  {"get_arm_torque", lua_get_arm_torque},
+  //
+  {"get_arm_encoder", lua_get_arm_encoder},
+  {"get_arm_rpm", lua_get_arm_rpm},
+  {"get_arm_current", lua_get_arm_current},
+  {"get_arm_pwm", lua_get_arm_pwm},
   //
 	{NULL, NULL}
 };

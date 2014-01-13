@@ -53,7 +53,7 @@ static int lua_shutdown_arm(lua_State *L) {
 static int lua_calibrate_arm(lua_State *L) {  
   
   if(!ybArm){
-    return luaL_error('Arm is not initialized!!');
+    return luaL_error(L,"Arm is not initialized!");
   }
   
   ybArm->calibrateManipulator();
@@ -91,16 +91,18 @@ static int lua_set_base_velocity(lua_State *L) {
 static int lua_set_arm_angle(lua_State *L) {
   static JointAngleSetpoint desiredJointAngle;
   
-  if(!ybArm){return luaL_error('Arm is not initialized!!');}
+  if(!ybArm){
+    return luaL_error(L,"Arm is not initialized!");
+  }
   
-  int joint_id = lua_checkint(L, 1);
+  int joint_id = luaL_checkint(L, 1);
   double joint_angle = (double)lua_tonumber(L, 2);
 
   printf("joint_id: %d, angle: %lf\n", joint_id, joint_angle);
   fflush(stdout);
   
   // Convert the format
-  desiredJointAngle.angle = joint_angle;
+  desiredJointAngle.angle = joint_angle * radian;
   
   // Send the angle to the robot
   ybArm->getArmJoint(joint_id).setData(desiredJointAngle);
@@ -119,6 +121,7 @@ static const struct luaL_reg kuka_lib [] = {
   {"calibrate_arm", lua_calibrate_arm},
   //
   {"set_base_velocity", lua_set_base_velocity},
+  {"set_arm_angle", lua_set_arm_angle},
   //
 	{NULL, NULL}
 };

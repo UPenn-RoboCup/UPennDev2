@@ -10,8 +10,6 @@ using namespace youbot;
 // Access the robot modules
 YouBotBase* ybBase = NULL;
 YouBotManipulator* ybArm = NULL;
-// Container for desired joint angles
-JointAngleSetpoint* desiredJointAngle;
 
 // Initialize the wheeled base module
 static int lua_init_base(lua_State *L) {
@@ -52,16 +50,14 @@ static int lua_shutdown_arm(lua_State *L) {
 }
 
 // Calibrate arm
-static int lua_calibrate_arm(lua_State *L) {
-  if(ybArm){
-    ybArm->calibrateManipulator();
-  	// Return true
-  	lua_pushboolean(L,1);
-  	return 1;
+static int lua_calibrate_arm(lua_State *L) {  
+  
+  if(!ybArm){
+    return luaL_error('Arm is not initialized!!');
   }
-	// Return false if not available
-	lua_pushboolean(L,0);
-	return 1;
+  
+  ybArm->calibrateManipulator();
+
 }
 
 // Set base speed
@@ -74,9 +70,11 @@ static int lua_set_base_velocity(lua_State *L) {
   double dx = (double)lua_tonumber(L, 1);
   double dy = (double)lua_tonumber(L, 2);
   double da = (double)lua_tonumber(L, 3);
-  
+
+  /*
   printf("dx: %lf, dy: %lf, da: %lf \n",dx,dy,da);
   fflush(stdout);
+  */
   
   // Make the appropriate quantities
   longitudinalVelocity = dx * meter_per_second;
@@ -85,6 +83,27 @@ static int lua_set_base_velocity(lua_State *L) {
   
   // Set the base
   ybBase->setBaseVelocity(longitudinalVelocity, transversalVelocity, angularVelocity);
+  
+  return 0;
+}
+
+// Set arm angles
+static int lua_set_arm_angle(lua_State *L) {
+  static JointAngleSetpoint desiredJointAngle;
+  
+  if(!ybArm){return luaL_error('Arm is not initialized!!');}
+  
+  int joint_id = lua_checkint(L, 1);
+  double joint_angle = (double)lua_tonumber(L, 2);
+
+  printf("joint_id: %d, angle: %lf\n", joint_id, joint_angle);
+  fflush(stdout);
+  
+  // Convert the format
+  desiredJointAngle.angle = joint_angle;
+  
+  // Send the angle to the robot
+  ybArm->getArmJoint(joint_id).setData(desiredJointAngle);
   
   return 0;
 }

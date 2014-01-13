@@ -1,6 +1,6 @@
 dofile'../../include.lua'
 local vector = require'vector'
-local K = require'THOROPKinematics'
+local K = require'YouBotKinematics'
 local T = require'Transform'
 
 print()

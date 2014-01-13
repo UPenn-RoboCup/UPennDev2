@@ -169,7 +169,7 @@ static int lua_shm_set(lua_State *L) {
     memcpy( pr, light_ptr, light_bytes );
   } else {
     // otherwise copy the array data
-    for (int i = start; i < nval; i++) {
+    for (int i = start; i < nval+start; i++) {
       pr[i] = val[i];
     }
   }

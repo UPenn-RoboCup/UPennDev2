@@ -56,15 +56,17 @@ end
 
 -- Update speaks to the hardware of the robot
 Body.update = function()
-  -- Get joints and place in shared memory
+  -- Get joint readings
+  local rad,mps,nm = {},{},{}
   for i=1,nJoint do
-    local rad = kuka.get_arm_position(i)
-    jcm.set_sensor_position(rad,i)
-    local mps = kuka.get_arm_velocity(i)
-    jcm.set_sensor_velocity(mps,i)
-    local nm = kuka.get_arm_torque(i)
-    jcm.set_sensor_torque(nm,i)
+    rad[i] = kuka.get_arm_position(i)
+    mps[i] = kuka.get_arm_velocity(i)
+    nm[i] = kuka.get_arm_torque(i)
   end
+  -- Set shm
+  jcm.set_sensor_position(rad)
+  jcm.set_sensor_velocity(mps)
+  jcm.set_sensor_torque(nm)
   
   -- Set joints from shared memory
   local desired_pos = jcm.get_actuator_command_position()

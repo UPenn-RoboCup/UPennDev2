@@ -1,5 +1,5 @@
-LIBNAME = THOROPKinematics
-EXTRA_OBJ = THOROPKinematics.o
+LIBNAME = YouBotKinematics
+EXTRA_OBJ = YouBotKinematics.o
 EXTRA_LINK = ../Transform/Transform.o
 include ../../Makefile.inc
 LIBOPTS += -lm

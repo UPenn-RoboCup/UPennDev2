@@ -1,4 +1,4 @@
-#include "THOROPKinematics.h"
+#include "YouBotKinematics.h"
 /* 7 DOF */
 
 enum {LEG_LEFT = 0, LEG_RIGHT = 1};
@@ -22,7 +22,7 @@ void printVector(std::vector<double> v) {
 }
 
   std::vector<double>
-THOROP_kinematics_forward_joints(const double *r)
+YouBot_kinematics_forward_joints(const double *r)
 {
   /* forward kinematics to convert servo positions to joint angles */
   std::vector<double> q(23);
@@ -35,7 +35,7 @@ THOROP_kinematics_forward_joints(const double *r)
 //DH transform params: (alpha, a, theta, d)
 
   Transform
-THOROP_kinematics_forward_head(const double *q)
+YouBot_kinematics_forward_head(const double *q)
 {
   Transform t;
   t = t.translateZ(neckOffsetZ)
@@ -47,7 +47,7 @@ THOROP_kinematics_forward_head(const double *q)
 
 
   Transform
-THOROP_kinematics_forward_l_arm_7(const double *q, double bodyPitch, const double *qWaist, 
+YouBot_kinematics_forward_l_arm_7(const double *q, double bodyPitch, const double *qWaist, 
   double handOffsetXNew, double handOffsetYNew, double handOffsetZNew)
 {
 //FK for 7-dof arm (pitch-roll-yaw-pitch-yaw-roll-yaw)
@@ -74,7 +74,7 @@ THOROP_kinematics_forward_l_arm_7(const double *q, double bodyPitch, const doubl
 
 
   Transform
-THOROP_kinematics_forward_r_arm_7(const double *q, double bodyPitch, const double *qWaist,
+YouBot_kinematics_forward_r_arm_7(const double *q, double bodyPitch, const double *qWaist,
    double handOffsetXNew, double handOffsetYNew, double handOffsetZNew) 
 {
 //New FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
@@ -99,7 +99,7 @@ THOROP_kinematics_forward_r_arm_7(const double *q, double bodyPitch, const doubl
 }
 
   Transform
-THOROP_kinematics_forward_l_wrist(const double *q, double bodyPitch, const double *qWaist) 
+YouBot_kinematics_forward_l_wrist(const double *q, double bodyPitch, const double *qWaist) 
 {
 //FK for 7-dof arm (pitch-roll-yaw-pitch-yaw-roll-yaw)
   Transform t;
@@ -118,7 +118,7 @@ THOROP_kinematics_forward_l_wrist(const double *q, double bodyPitch, const doubl
 
 
   Transform
-THOROP_kinematics_forward_r_wrist(const double *q, double bodyPitch, const double *qWaist) 
+YouBot_kinematics_forward_r_wrist(const double *q, double bodyPitch, const double *qWaist) 
 {
 //New FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
   Transform t;
@@ -137,7 +137,7 @@ THOROP_kinematics_forward_r_wrist(const double *q, double bodyPitch, const doubl
 
 
   Transform
-THOROP_kinematics_forward_l_leg(const double *q)
+YouBot_kinematics_forward_l_leg(const double *q)
 {
   Transform t;
   t = t.translateY(hipOffsetY).translateZ(-hipOffsetZ)
@@ -152,7 +152,7 @@ THOROP_kinematics_forward_l_leg(const double *q)
 }
 
   Transform
-THOROP_kinematics_forward_r_leg(const double *q)
+YouBot_kinematics_forward_r_leg(const double *q)
 {
   Transform t;
   t = t.translateY(-hipOffsetY).translateZ(-hipOffsetZ)
@@ -169,7 +169,7 @@ THOROP_kinematics_forward_r_leg(const double *q)
 //Get the COM and total mass of the upper body
 
   std::vector<double>
-THOROP_kinematics_com_upperbody(
+YouBot_kinematics_com_upperbody(
     const double *qWaist,
     const double *qLArm,
     const double *qRArm,
@@ -327,7 +327,7 @@ THOROP_kinematics_com_upperbody(
 }
 
 std::vector<double>
-THOROP_kinematics_com_leg(const double *q, double bodyPitch, int is_left)  
+YouBot_kinematics_com_leg(const double *q, double bodyPitch, int is_left)  
 {
   /* inverse kinematics to convert joint angles to servo positions */
   std::vector<double> r(4);
@@ -395,7 +395,7 @@ THOROP_kinematics_com_leg(const double *q, double bodyPitch, int is_left)
 }
 
 std::vector<double>
-THOROP_kinematics_calculate_support_torque(
+YouBot_kinematics_calculate_support_torque(
   const double *qWaist,
   const double *qLArm,
   const double *qRArm,
@@ -419,9 +419,9 @@ THOROP_kinematics_calculate_support_torque(
   std::vector<double> rel_com_ankle(4);
 
 
-  com_upperbody = THOROP_kinematics_com_upperbody(qWaist, qLArm, qRArm,bodyPitch, mLHand, mRHand);
-  com_left_leg = THOROP_kinematics_com_leg(qLLeg,bodyPitch,1);
-  com_right_leg = THOROP_kinematics_com_leg(qRLeg,bodyPitch,0);
+  com_upperbody = YouBot_kinematics_com_upperbody(qWaist, qLArm, qRArm,bodyPitch, mLHand, mRHand);
+  com_left_leg = YouBot_kinematics_com_leg(qLLeg,bodyPitch,1);
+  com_right_leg = YouBot_kinematics_com_leg(qRLeg,bodyPitch,0);
 
   tPelvis = tPelvis.rotateY(bodyPitch);
 
@@ -535,7 +535,7 @@ double actlength (double top[], double bot[])
 }
 
   std::vector<double>
-THOROP_kinematics_inverse_joints(const double *q)  //dereks code to write
+YouBot_kinematics_inverse_joints(const double *q)  //dereks code to write
 {
   /* inverse kinematics to convert joint angles to servo positions */
   std::vector<double> r(23);
@@ -547,7 +547,7 @@ THOROP_kinematics_inverse_joints(const double *q)  //dereks code to write
 
 
   std::vector<double>
-THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist) {
+YouBot_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist) {
   //calculate soulder and elbow angle given wrist POSITION
   // Shoulder yaw angle is given
 
@@ -675,7 +675,7 @@ THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, 
 
 
   std::vector<double>
-THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, double shoulderYaw, 
+YouBot_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, double shoulderYaw, 
   double bodyPitch, const double *qWaist, double handOffsetXNew, double handOffsetYNew, double handOffsetZNew, int flip_shoulderroll) 
 {
   // Closed-form inverse kinematics for THOR-OP 7DOF arm
@@ -909,7 +909,7 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
 
 
 std::vector<double>
-THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg, double bodyPitch, const double *qWaist) 
+YouBot_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg, double bodyPitch, const double *qWaist) 
 {
   //Calculate the wrist angle given the wrist position and the target transform 
 
@@ -995,35 +995,35 @@ THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg, d
 
 
   std::vector<double>
-THOROP_kinematics_inverse_l_arm_7(Transform trArm, const double *qOrg, double shoulderYaw , double bodyPitch, const double *qWaist,
+YouBot_kinematics_inverse_l_arm_7(Transform trArm, const double *qOrg, double shoulderYaw , double bodyPitch, const double *qWaist,
     double handOffsetXNew, double handOffsetYNew, double handOffsetZNew, int flip_shoulderroll) 
 {
-  return THOROP_kinematics_inverse_arm_7(trArm, ARM_LEFT, qOrg, shoulderYaw, bodyPitch, qWaist, handOffsetXNew, handOffsetYNew, handOffsetZNew, flip_shoulderroll);
+  return YouBot_kinematics_inverse_arm_7(trArm, ARM_LEFT, qOrg, shoulderYaw, bodyPitch, qWaist, handOffsetXNew, handOffsetYNew, handOffsetZNew, flip_shoulderroll);
 }
 
   std::vector<double>
-THOROP_kinematics_inverse_r_arm_7(Transform trArm, const double *qOrg,double shoulderYaw, double bodyPitch, const double *qWaist,
+YouBot_kinematics_inverse_r_arm_7(Transform trArm, const double *qOrg,double shoulderYaw, double bodyPitch, const double *qWaist,
    double handOffsetXNew, double handOffsetYNew, double handOffsetZNew, int flip_shoulderroll)  
 {
-  return THOROP_kinematics_inverse_arm_7(trArm, ARM_RIGHT, qOrg, shoulderYaw, bodyPitch, qWaist, handOffsetXNew, handOffsetYNew, handOffsetZNew, flip_shoulderroll);
+  return YouBot_kinematics_inverse_arm_7(trArm, ARM_RIGHT, qOrg, shoulderYaw, bodyPitch, qWaist, handOffsetXNew, handOffsetYNew, handOffsetZNew, flip_shoulderroll);
 }
 
   std::vector<double>
-THOROP_kinematics_inverse_l_wrist(Transform trWrist, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist)
+YouBot_kinematics_inverse_l_wrist(Transform trWrist, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist)
 {
-  return THOROP_kinematics_inverse_wrist(trWrist, ARM_LEFT, qOrg, shoulderYaw, bodyPitch, qWaist);
+  return YouBot_kinematics_inverse_wrist(trWrist, ARM_LEFT, qOrg, shoulderYaw, bodyPitch, qWaist);
 }
 
   std::vector<double>
-THOROP_kinematics_inverse_r_wrist(Transform trWrist,const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist) 
+YouBot_kinematics_inverse_r_wrist(Transform trWrist,const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist) 
 {
-  return THOROP_kinematics_inverse_wrist(trWrist, ARM_RIGHT, qOrg, shoulderYaw, bodyPitch, qWaist);
+  return YouBot_kinematics_inverse_wrist(trWrist, ARM_RIGHT, qOrg, shoulderYaw, bodyPitch, qWaist);
 }
 
 
 
   std::vector<double>
-THOROP_kinematics_inverse_leg(Transform trLeg, int leg)
+YouBot_kinematics_inverse_leg(Transform trLeg, int leg)
 {
   std::vector<double> qLeg(6);
   Transform trInvLeg = inv(trLeg);
@@ -1081,7 +1081,7 @@ THOROP_kinematics_inverse_leg(Transform trLeg, int leg)
 }
 
 double 
-THOROP_kinematics_calculate_knee_height(const double *q){
+YouBot_kinematics_calculate_knee_height(const double *q){
 //We calculate the knee height assuming the foot is on the ground
 
 
@@ -1099,13 +1099,13 @@ THOROP_kinematics_calculate_knee_height(const double *q){
 
 
   std::vector<double>
-THOROP_kinematics_inverse_l_leg(Transform trLeg)
+YouBot_kinematics_inverse_l_leg(Transform trLeg)
 {
-  return THOROP_kinematics_inverse_leg(trLeg, LEG_LEFT);
+  return YouBot_kinematics_inverse_leg(trLeg, LEG_LEFT);
 }
 
   std::vector<double>
-THOROP_kinematics_inverse_r_leg(Transform trLeg)
+YouBot_kinematics_inverse_r_leg(Transform trLeg)
 {
-  return THOROP_kinematics_inverse_leg(trLeg, LEG_RIGHT);
+  return YouBot_kinematics_inverse_leg(trLeg, LEG_RIGHT);
 }

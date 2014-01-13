@@ -1,5 +1,5 @@
-#ifndef THOROP7_KINEMATICS_H_
-#define THOROP7_KINEMATICS_H_
+#ifndef YOUBOT_KINEMATICS_H_
+#define YOUBOT_KINEMATICS_H_
 
 #include "Transform.h"
 #include <stdio.h>
@@ -108,49 +108,49 @@ const double servoOffset[] = {
 void printTransform(Transform tr);
 void printVector(std::vector<double> v);
 
-Transform THOROP_kinematics_forward_head(const double *q);
-//Transform THOROP_kinematics_forward_l_arm(const double *q);
-//Transform THOROP_kinematics_forward_r_arm(const double *q);
-Transform THOROP_kinematics_forward_l_leg(const double *q);
-Transform THOROP_kinematics_forward_r_leg(const double *q);
-std::vector<double> THOROP_kinematics_forward_joints(const double *r);
+Transform YouBot_kinematics_forward_head(const double *q);
+//Transform YouBot_kinematics_forward_l_arm(const double *q);
+//Transform YouBot_kinematics_forward_r_arm(const double *q);
+Transform YouBot_kinematics_forward_l_leg(const double *q);
+Transform YouBot_kinematics_forward_r_leg(const double *q);
+std::vector<double> YouBot_kinematics_forward_joints(const double *r);
 
 
-Transform THOROP_kinematics_forward_l_arm_7(const double *q, double bodyPitch, const double *qWaist,
+Transform YouBot_kinematics_forward_l_arm_7(const double *q, double bodyPitch, const double *qWaist,
 	double handOffsetXNew, double handOffsetYNew, double handOffsetZNew);
-Transform THOROP_kinematics_forward_r_arm_7(const double *q, double bodyPitch, const double *qWaist,
+Transform YouBot_kinematics_forward_r_arm_7(const double *q, double bodyPitch, const double *qWaist,
 	double handOffsetXNew, double handOffsetYNew, double handOffsetZNew);
 
-std::vector<double> THOROP_kinematics_inverse_r_arm_7(
+std::vector<double> YouBot_kinematics_inverse_r_arm_7(
 	const Transform trArm, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist,
 	double handOffsetXNew, double handOffsetYNew, double handOffsetZNew, int flip_shoulderroll);
-std::vector<double> THOROP_kinematics_inverse_l_arm_7(
+std::vector<double> YouBot_kinematics_inverse_l_arm_7(
 	const Transform trArm, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist,
 	double handOffsetXNew, double handOffsetYNew, double handOffsetZNew, int flip_shoulderroll);
 
-Transform THOROP_kinematics_forward_l_wrist(const double *q, double bodyPitch, const double *qWaist);
-Transform THOROP_kinematics_forward_r_wrist(const double *q, double bodyPitch, const double *qWaist);
+Transform YouBot_kinematics_forward_l_wrist(const double *q, double bodyPitch, const double *qWaist);
+Transform YouBot_kinematics_forward_r_wrist(const double *q, double bodyPitch, const double *qWaist);
 
-std::vector<double> THOROP_kinematics_inverse_r_wrist(const Transform trWrist, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist);
-std::vector<double> THOROP_kinematics_inverse_l_wrist(const Transform trWrist, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist); 
+std::vector<double> YouBot_kinematics_inverse_r_wrist(const Transform trWrist, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist);
+std::vector<double> YouBot_kinematics_inverse_l_wrist(const Transform trWrist, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist); 
 
-std::vector<double> THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg, double bodyPitch, const double *qWaist); 
+std::vector<double> YouBot_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg, double bodyPitch, const double *qWaist); 
 
 
 
-std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg);
-std::vector<double> THOROP_kinematics_inverse_l_leg(const Transform trLeg);
-std::vector<double> THOROP_kinematics_inverse_joints(const double *q);
+std::vector<double> YouBot_kinematics_inverse_r_leg(const Transform trLeg);
+std::vector<double> YouBot_kinematics_inverse_l_leg(const Transform trLeg);
+std::vector<double> YouBot_kinematics_inverse_joints(const double *q);
 
-std::vector<double> THOROP_kinematics_com_upperbody(const double *qWaist,const double *qLArm,const double *qRArm, double bodyPitch, double mLHand, double mRHand); 
-std::vector<double> THOROP_kinematics_com_leg(const double *q, double bodyPitch, int is_left);  
-std::vector<double> THOROP_kinematics_calculate_support_torque(
+std::vector<double> YouBot_kinematics_com_upperbody(const double *qWaist,const double *qLArm,const double *qRArm, double bodyPitch, double mLHand, double mRHand); 
+std::vector<double> YouBot_kinematics_com_leg(const double *q, double bodyPitch, int is_left);  
+std::vector<double> YouBot_kinematics_calculate_support_torque(
 	const double *qWaist,  const double *qLArm,  const double *qRArm,
   	const double *qLLeg,  const double *qRLeg,  
   	double bodyPitch,   int supportLeg,
   	const double *uTorsoAcc, double mLHand, double mRHand); 
 
 
-double THOROP_kinematics_calculate_knee_height(const double *q); 
+double YouBot_kinematics_calculate_knee_height(const double *q); 
 
 #endif

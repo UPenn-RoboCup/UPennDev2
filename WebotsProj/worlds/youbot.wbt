@@ -31,7 +31,6 @@ DEF FLOOR MetricFloor {
 }
 
 YouBot {
-  translation 0 1.155 0
-  controller "void"
-  controllerArgs "0 32"
+  controller "youbot"
+  controllerArgs "0 1"
 }

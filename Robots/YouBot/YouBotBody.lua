@@ -16,8 +16,13 @@ local util         = require'util'
 -- Get time (for the real robot)
 local get_time = unix.time
 
--- KUKA interface
-local kuka = require'kuka'
+-- KUKA/Webots interfaces
+local kuka, webots
+if IS_WEBOTS then
+  webots = require'webots'
+else
+  kuka = require'kuka'
+end
 
 -- Shared memory
 require'jcm'
@@ -126,5 +131,36 @@ Body.exit = function()
   kuka.shutdown_arm()
   kuka.shutdown_base()
 end
+
+
+-- Webots overrides
+if IS_WEBOTS then
+  local timeStep = webots.wb_robot_get_basic_time_step()
+  get_time = webots.wb_robot_get_time
+
+  -- Setup the webots tags
+  local tags = {}
+  
+  Body.entry = function()
+    
+    -- Start the system
+    webots.wb_robot_init()
+    
+    -- Grab the joints
+  	tags.joints = {}
+  	for i=1,nJoint do
+  		tags.joints[i] = webots.wb_robot_get_device('arm'..i)
+  		if tags.joints[i]>0 then
+        print('Joint '..i..' enabled!')
+  			webots.wb_servo_enable_position(tags.joints[i], timeStep)
+  		else
+  			print('Joint '..i..' not found')
+  		end
+  	end
+  end
+  
+end
+
+Body.get_time = get_time
 
 return Body

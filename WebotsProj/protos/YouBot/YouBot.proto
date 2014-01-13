@@ -8,7 +8,7 @@
 
 PROTO YouBot [
   field SFVec3f    translation 0 0.102838 0
-  field SFRotation rotation 0 1 0 0
+  field SFRotation rotation 1 0 0 -1.5708
   field SFString   controller "void"
   field SFString   controllerArgs ""
 #  field SFVec2f    cameraWindowPosition 0 0

@@ -60,6 +60,10 @@ for i,v in ipairs{'torque','velocity','position'} do
 end
 Body.set_command_position = jcm.set_actuator_command_position
 
+-- Base convience
+Body.set_velocity = mcm.set_walk_vel
+Body.get_velocity = mcm.get_walk_vel
+
 -- Entry initializes the hardware of the robot
 Body.entry = function()
   kuka.init_base()

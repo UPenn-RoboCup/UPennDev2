@@ -61,7 +61,9 @@ end
 Body.set_command_position = jcm.set_actuator_command_position
 
 -- Base convience
-Body.set_velocity = mcm.set_walk_vel
+Body.set_velocity = function(x,y,a)
+  mcm.set_walk_vel{x,y,a}
+end
 Body.get_velocity = mcm.get_walk_vel
 
 -- Entry initializes the hardware of the robot

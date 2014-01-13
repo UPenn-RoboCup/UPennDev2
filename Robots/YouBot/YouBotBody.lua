@@ -38,6 +38,12 @@ servo.max_rad = vector.new({
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
 
+-- NOTE: Servo direction is webots/real robot specific
+servo.direction = vector.new({
+  1,1,-1,1,1
+})
+assert(#servo.direction==nJoint,'Bad servo direction!')
+
 -- Convienence functions for each joint
 local jointNames = {
 	"ShoulderYaw", "ShoulderPitch", "Elbow", "WristPitch","WristYaw"
@@ -88,9 +94,9 @@ Body.update = function()
   -- Get joint readings
   local rad,mps,nm = {},{},{}
   for i=1,nJoint do
-    rad[i] = kuka.get_arm_position(i)
+    rad[i] = kuka.get_arm_position(i) * servo.direction[i]
     mps[i] = kuka.get_arm_velocity(i)
-    nm[i] = kuka.get_arm_torque(i)
+    nm[i]  = kuka.get_arm_torque(i)
   end
   -- Set shm
   jcm.set_sensor_position(rad)
@@ -103,6 +109,8 @@ Body.update = function()
     local v = desired_pos[i]
     -- Clamp the angle
     local val = math.max(math.min(v,servo.max_rad[i]),servo.min_rad[i])
+    -- Put into the right direction
+    val = val * servo.direction[i]
     -- Set the kuka arm
     kuka.set_arm_angle(i,val)
   end

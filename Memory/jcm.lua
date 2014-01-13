@@ -22,6 +22,8 @@ shared_data.sensor.velocity = vector.zeros( nJoints )
 shared_data.sensor.load     = vector.zeros( nJoints )
 -- Temperature of joints is measured in Celsius
 shared_data.sensor.temperature  = vector.zeros( nJoints )
+-- Torque of joints is measured in Newton-meters
+shared_data.sensor.torque  = vector.zeros( nJoints )
 
 -- Foot sensors (strain gauges; should be just 6, not quite 8...)
 -- 8 is because 2 motors, with 4 ext data each

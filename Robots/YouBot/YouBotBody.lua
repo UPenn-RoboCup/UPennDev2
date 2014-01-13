@@ -58,6 +58,7 @@ for i,v in ipairs{'torque','velocity','position'} do
   Body['get_'..v] = jcm['get_sensor_'..v]
   Body['set_'..v] = jcm['set_sensor_'..v]
 end
+Body.set_command_position = jcm.set_actuator_command_position
 
 -- Entry initializes the hardware of the robot
 Body.entry = function()
@@ -92,7 +93,8 @@ Body.update = function()
   
   -- Set joints from shared memory
   local desired_pos = jcm.get_actuator_command_position()
-  for i,v in ipairs(desired_pos) do
+  for i=1,nJoint do
+    local v = desired_pos[i]
     -- Clamp the angle
     local val = math.max(math.min(v,servo.max_rad[i]),servo.min_rad[i])
     -- Set the kuka arm

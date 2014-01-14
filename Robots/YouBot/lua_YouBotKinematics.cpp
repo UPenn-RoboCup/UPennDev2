@@ -74,8 +74,8 @@ static int forward_arm(lua_State *L) {
 static int inverse_arm(lua_State *L) {
 	std::vector<double> qArm;
 	std::vector<double> pArm = lua_checkvector(L, 1);
-	Transform trArm = transform6D(&pArm[0]);		
-	qArm = YouBot_kinematics_inverse_arm(trArm);
+	//Transform trArm = transform6D(&pArm[0]);
+	qArm = YouBot_kinematics_inverse_arm(&pArm[0]);
 	lua_pushvector(L, qArm);
 	return 1;
 }

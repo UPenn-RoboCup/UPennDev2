@@ -17,33 +17,115 @@ void printVector(std::vector<double> v) {
   printf("\n");
 }
 
-//DH transform params: (alpha, a, theta, d)
+// DH transform params: (alpha, a, theta, d)
 Transform YouBot_kinematics_forward_arm(const double *q) {
   Transform t;
   t = t.translateZ(baseLength)
-    .mDH(0, 0, q[0], 0)
-    .mDH(-PI/2, 0, -PI/2+q[1], 0)
-    .rotateX(PI/2).rotateY(PI/2);
+    .rotateZ(q[0])
+    .rotateY(q[1])
+    .translateZ(lowerArmLength)
+    .rotateY(q[2])
+    .translateZ(upperArmLength)
+    .rotateY(q[3])
+    .translateZ(wristLength+handLength)
+    .rotateZ(q[4]);
   return t;
 }
 
+std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
+  // Grab the position
+  double x = tr[0];
+  double y = tr[1];
+  double z = tr[2];
+  // Grab the pitch desired
+  double p = tr[4];
+  
+  // Remove the height of the body
+  z -= baseLength;
+  
+  // Given the pitch, find the effective position
+  double dx = x - gripperLength * sin(p);
+  double dz = z - gripperLength * cos(p);
+  
+  printf("\n\tdx: %lf, dz: %lf\n",dx,dz);
+  
+  double dr2 = dx*dx+dz*dz;
+  double dr  = sqrt(dr2);
+  double elevation = PI/2 - atan2(dz,dx);
+  
+  //printf("\n\televation: %lf\n",elevation);
+  
+  // Find the elbow, given the effective position
+  // Law of cosines
+  double elbow_help = upperArmLength*upperArmLength + lowerArmLength*lowerArmLength - dr2;
+  elbow_help /= 2*upperArmLength*lowerArmLength;
+  //printf("\n\telbow_help: %lf\n",elbow_help);
+  if(elbow_help<-1)
+    elbow_help = -1;
+  else if(elbow_help>1)
+    elbow_help = 1;
+  
+  double elbow = acos(elbow_help);
+  //printf("\n\telbow: %lf\n",elbow);
+  
+  // Find how much to rotate the shoulder pitch
+  // Law of sines
+  double ratio = upperArmLength * sin(elbow) / dr;
+  
+  //printf("\n\tRatio: %lf\n",ratio);
+  
+  double effective_elevation = asin(ratio);
+  
+  printf("\n\teffective_elevation: %lf\n",effective_elevation);
+  
+  // Output to joint angles
+  std::vector<double> qArm(7);
+  qArm[0] = 0;
+  qArm[1] = elevation - effective_elevation;
+  qArm[2] = PI - elbow;
+  qArm[3] = p - (qArm[1] + qArm[2]);
+  qArm[4] = 0;
+  
+  return qArm;
+  
+}
+
+/*
 std::vector<double> YouBot_kinematics_inverse_arm(Transform trArm) {
-double z = trArm(0,3);
-double x = trArm(1,3);
-double y = trArm(2,3);
+  double alpha, beta, gamma, delta, epsilon;
+  
+  //printTransform(trArm);
+  
+  double z = trArm(0,3);
+  double x = trArm(1,3);
+  double y = trArm(2,3);
+  
+  printf("\n\tx: %lf, y: %lf, z: %lf\n",x,y,z);
   
   double x1 = sqrt(x*x + z*z);
   double y1 = y + wristLength + handLength - baseLength;
+  
+  printf("\n\tx1: %lf, y1: %lf\n",x1,y1);
   
   double a = lowerArmLength;
   double b = upperArmLength;
   double c = sqrt(x1*x1 + y1*y1);
   
-  double alpha = - asin( z / x1 );
-  double beta = -(M_PI_2 - acos( (a*a + c*c - b*b) / (2.0*a*c) ) - atan( y1/x1 ));
-  double gamma = -(M_PI - acos( (a*a + b*b - c*c) / (2.0*a*b) ));
-  double delta = -(M_PI + (beta + gamma));
-  double epsilon = M_PI_2 + alpha;
+  printf("\n\ta: %lf, b: %lf, c: %lf\n",a,b,c);
+  
+  // Singularity treatment
+  if(x1>1e-6||x1<-1e-6){
+    alpha = - asin( z / x1 );
+  } else {
+    alpha = 0;
+  }
+  
+  printf("\n\tbeta ratio %lf\n",(a*a + c*c - b*b) / (2.0*a*c));
+  
+  beta = -(M_PI_2 - acos( (a*a + c*c - b*b) / (2.0*a*c) ) - atan( y1/x1 ));
+  gamma = -(M_PI - acos( (a*a + b*b - c*c) / (2.0*a*b) ));
+  delta = -(M_PI + (beta + gamma));
+  epsilon = M_PI_2 + alpha;
   
   std::vector<double> qArm(7);
   qArm[0] = alpha;
@@ -54,3 +136,4 @@ double y = trArm(2,3);
   
   return qArm;
 }
+*/

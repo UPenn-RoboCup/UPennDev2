@@ -82,15 +82,16 @@ std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
   //printf("\n\tRatio: %lf\n",ratio);
   
   double effective_elevation = asin(ratio);
+  double shoulderPitch = elevation - effective_elevation;
   
   //printf("\n\teffective_elevation: %lf\n",effective_elevation);
   
   // Output to joint angles
-  std::vector<double> qArm(7);
+  std::vector<double> qArm(5);
   qArm[0] = yaw;
-  qArm[1] = elevation - effective_elevation;
+  qArm[1] = -1*shoulderPitch;
   qArm[2] = PI - elbow;
-  qArm[3] = p - (qArm[1] + qArm[2]);
+  qArm[3] = (shoulderPitch + qArm[2]) - p;
   qArm[4] = 0;
   
   return qArm;

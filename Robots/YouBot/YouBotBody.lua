@@ -10,8 +10,12 @@ Body.RAD_TO_DEG = RAD_TO_DEG
 local unix         = require'unix'
 local vector       = require'vector'
 local quaternion   = require'quaternion'
-local Transform    = require'Transform'
 local util         = require'util'
+
+-- Kinamatics
+local Transform = require'Transform'
+local K = require'YouBotKinematics'
+Body.Kinematics = K
 
 -- Get time (for the real robot)
 local get_time = unix.time

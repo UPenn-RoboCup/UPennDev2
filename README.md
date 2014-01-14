@@ -29,6 +29,9 @@ Mac
 * `brew tap smcgill3/grasp-brew`
 * `brew install torch openni octomap`
 
+Ubuntu
+* Install dependencies https://github.com/smcgill3/UPennDev/wiki/install-dependencies-for-UpennDev-in-Ubuntu
+
 Making
 * make clean
 * make -j8

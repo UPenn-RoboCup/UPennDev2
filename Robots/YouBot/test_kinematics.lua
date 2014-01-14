@@ -43,5 +43,8 @@ print('+x+y | Inverse Angles:\n',iqArm)
 
 -- Test inverse somewhat straight up
 print('\n+x | Arm Up slack')
-local iqArm = vector.new( K.inverse_arm{0,0,.5, 0,0,0} )
+local pArm = {0,0,.5, 0,0,0}
+local iqArm = vector.new( K.inverse_arm(pArm) )
 print('+x | Inverse Angles:\n',iqArm)
+local fA = K.forward_arm(iqArm)
+print('+x+y | Arm end effector x,y,z, roll, pitch, yaw:\n', T.position6D(fA) )

@@ -10,8 +10,8 @@ local move_arm = {
   [','] = vector.new{-.01,0,0,0,0,0},
   j = vector.new{0,.01,0,0,0,0},
   l = vector.new{0,-.01,0,0,0,0},
-  ['='] = vector.new{0,0,0,0,.01,0},
-  ['-'] = vector.new{0,0,0,0,-.01,0},
+  ['='] = vector.new{0,0,0,0,.1,0},
+  ['-'] = vector.new{0,0,0,0,-.1,0},
 }
 
 local move_base = {

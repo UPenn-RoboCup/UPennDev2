@@ -1,3 +1,6 @@
+/*
+(c) 2014 Stephen McGill
+*/
 #include "YouBotKinematics.h"
 
 void printTransform(Transform tr) {
@@ -97,51 +100,3 @@ std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
   return qArm;
   
 }
-
-/*
-std::vector<double> YouBot_kinematics_inverse_arm(Transform trArm) {
-  double alpha, beta, gamma, delta, epsilon;
-  
-  //printTransform(trArm);
-  
-  double z = trArm(0,3);
-  double x = trArm(1,3);
-  double y = trArm(2,3);
-  
-  printf("\n\tx: %lf, y: %lf, z: %lf\n",x,y,z);
-  
-  double x1 = sqrt(x*x + z*z);
-  double y1 = y + wristLength + handLength - baseLength;
-  
-  printf("\n\tx1: %lf, y1: %lf\n",x1,y1);
-  
-  double a = lowerArmLength;
-  double b = upperArmLength;
-  double c = sqrt(x1*x1 + y1*y1);
-  
-  printf("\n\ta: %lf, b: %lf, c: %lf\n",a,b,c);
-  
-  // Singularity treatment
-  if(x1>1e-6||x1<-1e-6){
-    alpha = - asin( z / x1 );
-  } else {
-    alpha = 0;
-  }
-  
-  printf("\n\tbeta ratio %lf\n",(a*a + c*c - b*b) / (2.0*a*c));
-  
-  beta = -(M_PI_2 - acos( (a*a + c*c - b*b) / (2.0*a*c) ) - atan( y1/x1 ));
-  gamma = -(M_PI - acos( (a*a + b*b - c*c) / (2.0*a*b) ));
-  delta = -(M_PI + (beta + gamma));
-  epsilon = M_PI_2 + alpha;
-  
-  std::vector<double> qArm(7);
-  qArm[0] = alpha;
-  qArm[1] = beta;
-  qArm[2] = gamma;
-  qArm[3] = delta;
-  qArm[4] = epsilon;
-  
-  return qArm;
-}
-*/

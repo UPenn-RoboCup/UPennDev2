@@ -164,6 +164,24 @@ if IS_WEBOTS then
   		end
   	end
     
+    -- Grab the wheels
+  	tags.wheels = {}
+  	for i=1,4 do
+      local name = 'wheel'..i
+  		tags.wheels[i] = webots.wb_robot_get_device(name)
+  		if tags.joints[i]<0 then
+  			print('Wheel '..i..' not found')
+  		end
+  	end
+    
+    -- Sensors
+    --[[
+	  tags.gps = webots.wb_robot_get_device("gps")
+	  webots.wb_gps_enable(tags.gps, timeStep)
+	  tags.compass = webots.wb_robot_get_device("compass")
+	  webots.wb_compass_enable(tags.compass, timeStep)
+    --]]
+    
     -- Step the simulation
 		webots.wb_robot_step(Body.timeStep)
     webots.wb_robot_step(Body.timeStep)
@@ -183,6 +201,57 @@ if IS_WEBOTS then
     
   end
   
+  local wheel_helper = function(vx,vy,va)
+    local K1,K2,K3 = 10,10,10
+    local v1,v2,v3,v4 = 0,0,0,0
+    -- First, the angle
+    v1 = v1 - va * K1
+    v2 = v2 + va * K1
+    v3 = v3 - va * K1
+    v4 = v4 + va * K1
+    -- Second, forward
+    v1 = v1 + vx * K2
+    v2 = v2 + vx * K2
+    v3 = v3 + vx * K2
+    v4 = v4 + vx * K2
+    -- Third, strafe
+    v1 = v1 - vy * K3
+    v2 = v2 + vy * K3
+    v3 = v3 + vy * K3
+    v4 = v4 - vy * K3
+    
+    if v1 > 0 then
+      webots.wb_motor_set_position(tags.wheels[1],1/0)
+    else
+      webots.wb_motor_set_position(tags.wheels[1],-1/0)
+    end
+    webots.wb_motor_set_velocity(tags.wheels[1],math.abs(v1))
+    
+    if v2 > 0 then
+      webots.wb_motor_set_position(tags.wheels[2],1/0)
+    else
+      webots.wb_motor_set_position(tags.wheels[2],-1/0)
+    end
+    webots.wb_motor_set_velocity(tags.wheels[2],math.abs(v2))
+    
+    if v3 > 0 then
+      webots.wb_motor_set_position(tags.wheels[3],1/0)
+    else
+      webots.wb_motor_set_position(tags.wheels[3],-1/0)
+    end
+    webots.wb_motor_set_velocity(tags.wheels[3],math.abs(v3))
+    
+    if v4 > 0 then
+      webots.wb_motor_set_position(tags.wheels[4],1/0)
+    else
+      webots.wb_motor_set_position(tags.wheels[4],-1/0)
+    end
+    webots.wb_motor_set_velocity(tags.wheels[4],math.abs(v4))
+    
+    print('v',v1,v2,v3,v4)
+    
+  end
+  
   Body.update = function()
     
     -- Write values
@@ -195,6 +264,10 @@ if IS_WEBOTS then
       end
     end
     
+    -- Base
+    local vel = mcm.get_walk_vel()
+    wheel_helper( unpack(vel) )
+    
 		-- Step the simulation, and shutdown if the update fails
 		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
     
@@ -204,6 +277,12 @@ if IS_WEBOTS then
       local rad = servo.direction[idx] * val
       jcm.sensorPtr.position[idx] = rad
     end
+    
+    -- Get sensors
+    --[[
+    local gps     = webots.wb_gps_get_values(tags.gps)
+    local compass = webots.wb_compass_get_values(tags.compass)
+    ]]
     
   end
   

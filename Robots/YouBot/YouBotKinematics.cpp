@@ -43,11 +43,18 @@ std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
   // Remove the height of the body
   z -= baseLength;
   
+  // Remove rotation of the shoulder yaw
+  double dist2 = x*x + y*y;
+  double dist = sqrt(dist2);
+  double yaw = atan2(y,x);
+  // x is the distance now
+  x = dist;
+  
   // Given the pitch, find the effective position
   double dx = x - gripperLength * sin(p);
   double dz = z - gripperLength * cos(p);
   
-  printf("\n\tdx: %lf, dz: %lf\n",dx,dz);
+  //printf("\n\tdx: %lf, dz: %lf\n",dx,dz);
   
   double dr2 = dx*dx+dz*dz;
   double dr  = sqrt(dr2);
@@ -76,11 +83,11 @@ std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
   
   double effective_elevation = asin(ratio);
   
-  printf("\n\teffective_elevation: %lf\n",effective_elevation);
+  //printf("\n\teffective_elevation: %lf\n",effective_elevation);
   
   // Output to joint angles
   std::vector<double> qArm(7);
-  qArm[0] = 0;
+  qArm[0] = yaw;
   qArm[1] = elevation - effective_elevation;
   qArm[2] = PI - elbow;
   qArm[3] = p - (qArm[1] + qArm[2]);

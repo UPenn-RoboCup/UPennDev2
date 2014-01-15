@@ -194,6 +194,17 @@ shared_data.tool.cutpos = vector.new({0.40,0.20,0, 0})
 shared_data.tool.yaw = vector.zeros(1)
 
 
+
+-- Fire suppression
+shared_data.fire={}
+shared_data.fire.model = vector.new({0.45,0,-0.05,  0*DEG_TO_RAD})
+
+-- Range of panning
+shared_data.fire.panangle = vector.new({30*DEG_TO_RAD})
+shared_data.fire.yaw = vector.zeros(1)
+
+
+
 -- Dipoles for arbitrary grabbing
 -- TODO: Use this in place of the wheel/door?
 shared_data.left = {}

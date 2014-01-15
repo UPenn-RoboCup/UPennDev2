@@ -70,13 +70,12 @@ local char_to_event = {
   ['1'] = {'body_ch','init'},
 
   ['2'] = {'arm_ch','toolgrab'},
-  ['3'] = {'arm_ch','pushdoorgrab'},
+  ['3'] = {'arm_ch','firesuppress'},
 
+  ['4'] = {'arm_ch','pushdoorgrab'},
 
   ['6'] = {'arm_ch','smallvalvegrab'},
   ['7'] = {'arm_ch','barvalvegrab'},
-
-
 
   ['9'] = {'arm_ch','hosegrab'},
   ['0'] = {'arm_ch','debrisgrab'},
@@ -159,12 +158,13 @@ local function process_character(key_code,key_char,key_char_lower)
     --]]
     local tr = trmod
     print( util.color('Override:','yellow'), 
-      string.format("%.2f %.2f %.2f / %.1f %.1f",
+      string.format("%.2f %.2f %.2f / %.1f %.1f %.1f",
       tr[1],
       tr[2],
       tr[3],
-      tr[4]*180/math.pi,
-      tr[5]*180/math.pi))
+      tr[4],  -- The turnUnit is task-specific
+      tr[5],
+      tr[6]))
     --hcm.set_state_override_target(tr)    
     hcm.set_state_override(tr)    
     return

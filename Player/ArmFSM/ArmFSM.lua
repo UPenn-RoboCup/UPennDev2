@@ -49,24 +49,26 @@ local armToolChop = require'armToolChop'
 local armToolLeftGrip = require'armToolLeftGrip'
 local armToolLeftHold = require'armToolLeftHold'
 
+
+-- Fire suppression states
+local armFireSuppress = require'armFireSuppress'
+
+
+-- Hose specific states
 local armHoseGrip = require'armHoseGrip'
 local armHoseHold = require'armHoseHold'
 local armHoseTap = require'armHoseTap'
 local armHoseAttach = require'armHoseAttach'
 
-
 -- Small circular valve turning (one hand turning)
 local armSmallValveGrip = require'armSmallValveGrip'
 local armSmallValveRightGrip = require'armSmallValveRightGrip'
 
--- bar valve turning
+-- Bar valve turning
 local armBarValveGrip = require'armBarValveGrip'
 local armBarValveRightGrip = require'armBarValveRightGrip'
 
-
-
-
-
+-- Debris specific states
 local armDebrisGrip = require'armDebrisGrip'
 
 
@@ -93,6 +95,10 @@ sm:add_state(armPullDoorSideGrip)
 sm:add_state(armToolGrip)
 sm:add_state(armToolHold)
 sm:add_state(armToolChop)
+
+----- Fire Suppress -----
+sm:add_state(armFireSuppress)
+-------------------------
 
 sm:add_state(armToolLeftGrip)
 sm:add_state(armToolLeftHold)
@@ -157,15 +163,18 @@ sm:set_transition(armPose1, 'toolgrab', armToolGrip)
 --sm:set_transition(armPose1, 'toolgrab', armToolLeftGrip)
 
 
+sm:set_transition(armPose1, 'firesuppress', armFireSuppress)
+sm:set_transition(armFireSuppress, 'done', armPose1)
+-- sm:set_transition(armFireSuppress, 'pan', armPan)
+-- sm:set_transition(armPan, 'done', armPose1)
+
+
 
 sm:set_transition(armPose1, 'debrisgrab', armDebrisGrip)
 sm:set_transition(armPose1, 'smallvalvegrab', armSmallValveGrip)
 sm:set_transition(armPose1, 'barvalvegrab', armBarValveGrip)
 sm:set_transition(armPose1, 'smallvalverightgrab', armSmallValveRightGrip)
 sm:set_transition(armPose1, 'barvalverightgrab', armBarValveRightGrip)
-
-
-
 sm:set_transition(armPose1, 'hosegrab', armHoseGrip)
 
 

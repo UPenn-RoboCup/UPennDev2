@@ -268,21 +268,7 @@ armfsm.doorpushside.rarminit = {
   {0.0,0.64,-0.14,  0,75*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
 }
 
-
-
-
-
-
-
 armfsm.doorpushside.bodyyaw = 45*DEG_TO_RAD
-
-
-
-
-
-
-
-
 armfsm.doorpushside.unit_tilt = 5*DEG_TO_RAD
 armfsm.doorpushside.unit_yaw = 5*DEG_TO_RAD
 
@@ -322,21 +308,6 @@ armfsm.doorpullside.unit_yaw = 2*DEG_TO_RAD
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---------------------------------------------------------------
 ------   Drill pickup 
 ---------------------------------------------------------------
@@ -364,9 +335,6 @@ armfsm.toolgrip.armchecktrigger={
   {0.33,-0.25,-0.15, 0,0*DEG_TO_RAD, 90*DEG_TO_RAD},
   {0.46,-0.35,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
-
-
-
 
 
 --Table height: 0.95
@@ -480,11 +448,6 @@ armfsm.toolleftgrip.armpull={
 
 
 
-
-
-
-
-
 ---------------------------------------------------------------
 ------   Drill cut
 ---------------------------------------------------------------
@@ -503,6 +466,40 @@ armfsm.toolchop.arminit={
 }
 
 armfsm.toolchop.model={0.30,-0.16,0.03,0}
+
+
+
+---------------------------------------------------------------
+------ Fire Suppression (SAFFiR)
+---------------------------------------------------------------
+armfsm.firesuppress = {}
+-- Default wrist angles
+armfsm.firesuppress.lhand_rpy = {0,0,0}
+armfsm.firesuppress.rhand_rpy = {0,0,0}
+
+--The optimal model
+armfsm.firesuppress.default_model_target = {
+  0.6, -0.06, 0.1,  0*DEG_TO_RAD}    --xyz, yaw
+
+--Conservative initial model (away from target)
+armfsm.firesuppress.default_model = {
+  0.55, -0.06, 0.1,  45*DEG_TO_RAD}    
+
+armfsm.firesuppress.turnUnit = 5 --Yaw, degree
+
+armfsm.firesuppress.arminit={  -- For right arm
+  -- Gripper has a 45 degree Yaw
+  {0.4,-0.25,-0.15, 0,0,0*DEG_TO_RAD},
+  {0.5,-0.35, 0,  0,0,0*DEG_TO_RAD},
+  {0.5,-0.35, 0.1, 0,0,0*DEG_TO_RAD},  
+  {0.5,-0.25, 0.1, 0,0,0*DEG_TO_RAD},  
+}
+armfsm.firesuppress.larm={  -- For Left arm
+	{0.45, 0.3, 0, 0,20*DEG_TO_RAD,-30*DEG_TO_RAD},
+}
+
+
+
 
 ---------------------------------------------------------------
 ------   Hose pickup

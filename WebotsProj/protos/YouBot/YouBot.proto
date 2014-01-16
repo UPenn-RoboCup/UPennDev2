@@ -426,15 +426,29 @@ Robot {
     GPS {
       name "GPS"
     }
+    #Transform {
+    #translation 0 1 0
+    #  children [
+    #    KinectWithoutFoot{}
+    #  ]
+    #}
     # Hokuyo in fron
     Transform {
         rotation 1 0 0 1.57
         children [
-          hokuyo {
+          Transform {
             rotation 0 -1 0 1.57
-            #rotation 0 0.707107 0.707107 3.14
-            translation 0.3 .025 0
-            name "lidar"
+            children [
+              KinectWithoutFoot{
+                rotation -1 0 0 .76
+                translation 0 .75 0
+                windowPosition 0 1
+              }
+              hokuyo {
+                translation 0 .025 -0.3
+                name "lidar"
+              }
+            ]
           }
         ]
       }

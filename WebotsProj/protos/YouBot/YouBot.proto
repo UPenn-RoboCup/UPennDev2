@@ -11,11 +11,11 @@ PROTO YouBot [
   field SFRotation rotation 1 0 0 -1.5708
   field SFString   controller "void"
   field SFString   controllerArgs ""
-#  field SFVec2f    cameraWindowPosition 0 0
-#  field SFFloat    cameraPixelSize 1.0
-#  field SFInt32    cameraWidth 320
-#  field SFInt32    cameraHeight 240
-#	 field SFFloat    cameraFov 1.0472
+  field SFVec2f    cameraWindowPosition 0 0
+  field SFFloat    cameraPixelSize 1.0
+  field SFInt32    cameraWidth 320
+  field SFInt32    cameraHeight 240
+  field SFFloat    cameraFov 1.0472
 #  field SFInt32    channel 0
 ]
 {
@@ -134,6 +134,17 @@ Robot {
                                           rotation 1 0 0 4.71239
                                           children [
                                             FingerMesh {
+                                            }
+                                            Camera {
+						                                  rotation -1 0 0 1.57
+                                              translation -0.05 0 0
+                                              name "HandCamera"
+                                              windowPosition IS cameraWindowPosition
+                                              fieldOfView IS cameraFov
+                                              width IS cameraWidth
+                                              height IS cameraHeight
+                                              pixelSize IS cameraPixelSize
+                                              near 0.02
                                             }
                                           ]
                                           boundingObject DEF FINGER_BO Group {
@@ -408,6 +419,26 @@ Robot {
         mass 0.5
       }
     }
+    # Sensors within the body
+    Compass {
+      name "Compass"
+    }
+    GPS {
+      name "GPS"
+    }
+    # Hokuyo in fron
+    Transform {
+        rotation 1 0 0 1.57
+        children [
+          hokuyo {
+            rotation 0 -1 0 1.57
+            #rotation 0 0.707107 0.707107 3.14
+            translation 0.3 0 0
+            name "lidar"
+          }
+        ]
+      }
+    
   ]
   description "KUKA youBot"
   boundingObject Group {

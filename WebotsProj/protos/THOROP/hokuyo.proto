@@ -3863,18 +3863,18 @@ Camera {
     }
   ]
   name IS name
-  boundingObject Transform {
-    translation 0 -0.0115 0
-    children [
-      Box {
-        size 0.06 0.087 0.06
-      }
-    ]
-  }
-  physics Physics {
-    density -1
-    mass 0.37
-  }
+  #boundingObject Transform {
+  #  translation 0 -0.0115 0
+  #  children [
+  #    Box {
+  #      size 0.06 0.087 0.06
+  #    }
+  #  ]
+  #}
+  #physics Physics {
+  #  density -1
+  #  mass 0.37
+  #}
   fieldOfView IS fieldOfView
   width IS width
   height 1

@@ -1,3 +1,7 @@
+-- Configuration
+local ENABLE_CAMERA = true
+local ENABLE_LIDAR  = true
+
 local Body = {}
 
 -- Useful constants
@@ -137,20 +141,48 @@ end
 if IS_WEBOTS then
   
   webots = require'webots'
+  -- Start the system
+  webots.wb_robot_init()
+  -- Acquire the timesteps
+  local timeStep = webots.wb_robot_get_basic_time_step()
+  local camera_timeStep = math.max(33,timeStep)
+  local lidar_timeStep = math.max(25,timeStep)
+  Body.timeStep = timeStep
   
   get_time = webots.wb_robot_get_time
 
   -- Setup the webots tags
   local tags = {}
   
+  -- Ability to turn on/off items
+  local t_last_keypress = get_time()
+  local key_action = {
+    l = function()
+      if ENABLE_LIDAR then
+        print(util.color('LIDAR disabled!','yellow'))
+        webots.wb_camera_disable(tags.lidar)
+        ENABLE_LIDAR = false
+      else
+        print(util.color('LIDAR enabled!','green'))
+        webots.wb_camera_enable(tags.lidar,lidar_timeStep)
+        ENABLE_LIDAR = true
+      end
+    end,
+    c = function()
+      if ENABLE_CAMERA then
+        print(util.color('CAMERA disabled!','yellow'))
+        webots.wb_camera_disable(tags.hand_camera)
+        ENABLE_CAMERA = false
+      else
+        print(util.color('CAMERA enabled!','green'))
+        webots.wb_camera_enable(tags.hand_camera,camera_timeStep)
+        ENABLE_CAMERA = true
+      end
+    end
+  }
+
   Body.entry = function()
-    
-    -- Start the system
-    webots.wb_robot_init()
-    
-    local timeStep = webots.wb_robot_get_basic_time_step()
-    Body.timeStep = timeStep
-    
+
     -- Grab the joints
   	tags.joints = {}
   	for i=1,nJoint do
@@ -174,13 +206,23 @@ if IS_WEBOTS then
   		end
   	end
     
-    -- Sensors
-    --[[
-	  tags.gps = webots.wb_robot_get_device("gps")
+    -- Body Sensors
+	  tags.gps = webots.wb_robot_get_device("GPS")
 	  webots.wb_gps_enable(tags.gps, timeStep)
-	  tags.compass = webots.wb_robot_get_device("compass")
+	  tags.compass = webots.wb_robot_get_device("Compass")
 	  webots.wb_compass_enable(tags.compass, timeStep)
-    --]]
+
+    -- Grab the camera
+    tags.hand_camera = webots.wb_robot_get_device("HandCamera")
+    if ENABLE_CAMERA then
+      webots.wb_camera_enable(tags.hand_camera, camera_timeStep)
+    end
+
+    -- Grab the hokuyo
+    tags.lidar = webots.wb_robot_get_device("lidar")
+    if ENABLE_LIDAR then
+      webots.wb_camera_enable(tags.lidar, lidar_timeStep)
+    end
     
     -- Step the simulation
 		webots.wb_robot_step(Body.timeStep)
@@ -199,6 +241,9 @@ if IS_WEBOTS then
       jcm.actuatorPtr.command_position[idx] = val
     end
     
+    -- Enable the keyboard 100ms
+    webots.wb_robot_keyboard_enable( 100 )
+
   end
   
   local neg_inf, pos_inf = -1/0, 1/0
@@ -252,6 +297,7 @@ if IS_WEBOTS then
     
 		-- Step the simulation, and shutdown if the update fails
 		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
+    local t = get_time()
     
     -- Read values
     for idx, jtag in pairs(tags.joints) do
@@ -261,10 +307,26 @@ if IS_WEBOTS then
     end
     
     -- Get sensors
-    --[[
     local gps     = webots.wb_gps_get_values(tags.gps)
     local compass = webots.wb_compass_get_values(tags.compass)
-    ]]
+
+    -- Grab a camera frame
+    if ENABLE_CAMERA then
+      local camera_fr = webots.to_rgb(tags.hand_camera)
+    end
+    -- Grab a lidar scan
+    if ENABLE_LIDAR then
+      local lidar_fr = webots.wb_camera_get_range_image(tags.lidar)
+    end
+
+    -- Grab keyboard input, for modifying items
+    local key_code = webots.wb_robot_keyboard_get_key()
+    local key_char = string.char(key_code)
+    local key_char_lower = string.lower(key_char)
+    if t-t_last_keypress>1 and key_code and key_action[key_char_lower] then
+      key_action[key_char_lower]()
+      t_last_keypress = t
+    end
     
   end
   

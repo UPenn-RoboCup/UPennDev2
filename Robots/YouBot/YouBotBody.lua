@@ -202,6 +202,14 @@ if IS_WEBOTS then
   end
   
   local neg_inf, pos_inf = -1/0, 1/0
+  local wb_wheel_speed = function(tag,speed)
+    if speed > 0 then
+      webots.wb_motor_set_position(tag,pos_inf)
+    else
+      webots.wb_motor_set_position(tag,neg_inf)
+    end
+    webots.wb_motor_set_velocity(tag,math.abs(speed))
+  end
   local wheel_helper = function(vx,vy,va)
     local K1,K2,K3 = 10,10,10
     local v1,v2,v3,v4 = 0,0,0,0
@@ -220,39 +228,14 @@ if IS_WEBOTS then
     v2 = v2 - vy * K3
     v3 = v3 - vy * K3
     v4 = v4 + vy * K3
-    
-    if v1 > 0 then
-      webots.wb_motor_set_position(tags.wheels[1],pos_inf)
-    else
-      webots.wb_motor_set_position(tags.wheels[1],neg_inf)
-    end
-    webots.wb_motor_set_velocity(tags.wheels[1],math.abs(v1))
-    
-    if v2 > 0 then
-      webots.wb_motor_set_position(tags.wheels[2],pos_inf)
-    else
-      webots.wb_motor_set_position(tags.wheels[2],neg_inf)
-    end
-    webots.wb_motor_set_velocity(tags.wheels[2],math.abs(v2))
-    
-    if v3 > 0 then
-      webots.wb_motor_set_position(tags.wheels[3],pos_inf)
-    else
-      webots.wb_motor_set_position(tags.wheels[3],neg_inf)
-    end
-    webots.wb_motor_set_velocity(tags.wheels[3],math.abs(v3))
-    
-    if v4 > 0 then
-      webots.wb_motor_set_position(tags.wheels[4],pos_inf)
-    else
-      webots.wb_motor_set_position(tags.wheels[4],neg_inf)
-    end
-    webots.wb_motor_set_velocity(tags.wheels[4],math.abs(v4))
-        
+    -- Set the speeds
+    wb_wheel_speed(tags.wheels[1],v1)
+    wb_wheel_speed(tags.wheels[2],v2)
+    wb_wheel_speed(tags.wheels[3],v3)
+    wb_wheel_speed(tags.wheels[4],v4)
   end
   
   Body.update = function()
-    
     -- Write values
     local cmds = Body.get_command_position()
     for i,v in ipairs(cmds) do

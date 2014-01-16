@@ -387,8 +387,9 @@ static int lua_carray_totensor(lua_State *L) {
     return luaL_error(L, "Bad source.");
   
   /* Ensure that we are not overstepping our boundary of the tensor */
-  if( n_elements > tensor_sz )
-    return luaL_error(L, "Not enough Tensor space.");
+  if( n_elements > tensor_sz ){
+    return luaL_error(L, "Not enough Tensor space (%d vs %d).",n_elements,tensor_sz);
+  }
   /* TODO: Ensure that the tensor is contiguous */
   
 	/* Copy the data */

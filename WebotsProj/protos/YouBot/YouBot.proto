@@ -438,6 +438,8 @@ Robot {
               translation 0 .75 0
               windowPosition 0 1
               cameraName "kinect"
+              width 320
+              height 240
             }
             hokuyo {
               translation 0 .025 -0.3

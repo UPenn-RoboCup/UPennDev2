@@ -36,11 +36,11 @@ local nJoint = 5
 local servo = {}
 -- Real Robot is the default
 servo.min_rad = vector.new({
-  -180,-180,-180,-180,-180,
+  -169,-65,-151,-102,-167.5,
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 servo.max_rad = vector.new({
-  180,180,180,180,180,
+  169,90,146,102,167.5,
 })*DEG_TO_RAD
 servo.direction = vector.new({
   1,1,-1,1,1
@@ -150,8 +150,12 @@ end
 if IS_WEBOTS then
   
   require'wcm'
+  local torch = require'torch'
+  torch.Tensor = torch.DoubleTensor
+  local carray = require'carray'
+  local jpeg = require'jpeg'
 
-  webots = require'webots'
+  local webots = require'webots'
   -- Start the system
   webots.wb_robot_init()
   -- Acquire the timesteps
@@ -161,6 +165,8 @@ if IS_WEBOTS then
   Body.timeStep = timeStep
   
   get_time = webots.wb_robot_get_time
+
+  local depth_torch, depth_byte, depth_adj
 
   -- Set the correct servo properties for Webots
   servo.direction = vector.new({
@@ -268,6 +274,12 @@ if IS_WEBOTS then
     
     -- Grab the kinect
     tags.kinect = webots.wb_robot_get_device("kinect")
+    local w = webots.wb_camera_get_width(tags.kinect)
+    local h = webots.wb_camera_get_height(tags.kinect)
+    -- Kinect torch data containers
+    depth_torch = torch.FloatTensor( w*h ):zero()
+    depth_byte  = torch.ByteTensor( w*h ):zero()
+    depth_adj   = torch.FloatTensor( w*h ):zero()
     if ENABLE_KINECT then
       webots.wb_camera_enable(tags.kinect, camera_timeStep)
     end
@@ -370,24 +382,40 @@ if IS_WEBOTS then
     local angle   = math.atan2( compass[3], compass[1] )
     local pose    = vector.pose{gps[1], -gps[3], angle}
     wcm.set_robot_pose( pose )
-    --[[
-    print('gps',unpack(gps) )
-    print('compass',unpack(compass) )
-    print('pose', pose )
-    --]]
 
     -- Grab a camera frame
     if ENABLE_CAMERA then
       local camera_fr = webots.to_rgb(tags.hand_camera)
+      local w = webots.wb_camera_get_width(tags.hand_camera)
+      local h = webots.wb_camera_get_height(tags.hand_camera)
+      local jpeg_fr  = jpeg.compress_rgb(camera_fr,w,h)
     end
     -- Grab a lidar scan
     if ENABLE_LIDAR then
+      local w = webots.wb_camera_get_width(tags.lidar)
+      local h = webots.wb_camera_get_height(tags.lidar)
       local lidar_fr = webots.wb_camera_get_range_image(tags.lidar)
+      local lidar_array = carray.float( lidar_fr, w*h )
     end
     -- Grab kinect RGBD data
-    if ENABLE_LIDAR then
+    if ENABLE_KINECT then
+      local w = webots.wb_camera_get_width(tags.kinect)
+      local h = webots.wb_camera_get_height(tags.kinect)
       local color_fr = webots.to_rgb(tags.kinect)
       local depth_fr = webots.wb_camera_get_range_image(tags.kinect)
+      local depth_array = carray.float( depth_fr, w*h )
+      depth_array:tensor(depth_torch)
+      local near, far = .1, 2
+      -- Enhance the dynamic range of the mesh image
+      depth_adj:copy(depth_torch):add( -near )
+      depth_adj:mul( 255/(far-near) )
+      -- Ensure that we are between 0 and 255
+      depth_adj[torch.lt(depth_adj,0)] = 0
+      depth_adj[torch.gt(depth_adj,255)] = 255
+      depth_byte:copy( depth_adj )
+      -- Compress images
+      local depth_jpg = jpeg.compress_gray( depth_byte:storage():pointer(), w, h )
+      local color_jpg = jpeg.compress_rgb(color_fr,w,h)
     end
 
     -- Grab keyboard input, for modifying items

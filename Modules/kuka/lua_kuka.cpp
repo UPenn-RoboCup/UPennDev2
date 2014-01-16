@@ -204,8 +204,8 @@ static const struct luaL_reg kuka_lib [] = {
   {"get_arm_rpm", lua_get_arm_rpm},
   {"get_arm_current", lua_get_arm_current},
   //
-  {"lua_set_gripper_spacing", lua_set_gripper_spacing},
-  {"lua_get_gripper_spacing", lua_get_gripper_spacing},
+  {"set_gripper_spacing", lua_set_gripper_spacing},
+  {"get_gripper_spacing", lua_get_gripper_spacing},
   //
 	{NULL, NULL}
 };

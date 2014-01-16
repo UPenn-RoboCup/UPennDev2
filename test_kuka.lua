@@ -31,13 +31,15 @@ local function process_keycode(keycode,t_diff)
   local char = string.char(keycode)
   local char_lower = string.lower(char)
   
-  -- Calibrate, open and close
+  -- Open and close the gripper
   if char_lower=='g' then
-    kuka.calibrate_arm()
+    local cur_g = jcm.get_gripper_command_position()[1]
+    cur_g = math.min(cur_g + 0.005,0.025)
+    jcm.set_gripper_command_position({cur_g})
   elseif char_lower=='h' then
-    kuka.lua_set_gripper_spacing(0.020)
-  elseif char_lower=='f' then
-    kuka.lua_set_gripper_spacing(0)
+    local cur_g = jcm.get_gripper_command_position()[1]
+    cur_g = math.max(cur_g - 0.005,0)
+    jcm.set_gripper_command_position({cur_g})
   end
   
   -- Avoid any arm motions, since tailored for webots zero positions

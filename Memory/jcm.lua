@@ -97,6 +97,8 @@ end
 -- Gripper only data Left, Right
 -- NOTE: NX Motor must go through a sequence to change modes...
 shared_data.gripper = {}
+-- Position of joints (just for the gripper)
+shared_data.gripper.command_position = vector.zeros( 4 )
 -- Torque of joints is in mA (just for the gripper)
 shared_data.gripper.command_torque = vector.zeros( 4 )
 -- 0: Position mode, 1: torque mode

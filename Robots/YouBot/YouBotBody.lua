@@ -124,6 +124,11 @@ Body.update = function()
     kuka.set_arm_angle(i,val)
   end
   
+  -- Set the gripper from shared memory
+  local spacing = jcm.get_gripper_command_position()[1]
+  print('SPACING',spacing)
+  --kuka.lua_set_gripper_spacing(spacing)
+  
   -- Set base from shared memory
   local vel = mcm.get_walk_vel()
   kuka.set_base_velocity( unpack(vel) )

@@ -150,7 +150,7 @@ static int lua_get_arm_current(lua_State *L) {
 // Sets the spacing between the gripper fingers
 static int lua_set_gripper_spacing(lua_State *L) {
   static GripperBarSpacingSetPoint barSpacing;
-  double spacing = (double)lua_tonumber(L, 2);
+  double spacing = (double)lua_tonumber(L, 1);
   barSpacing.barSpacing = spacing * meter;
   ybArm->getArmGripper().setData(barSpacing);
 }

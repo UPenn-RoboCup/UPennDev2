@@ -31,6 +31,18 @@ local function process_keycode(keycode,t_diff)
   local char = string.char(keycode)
   local char_lower = string.lower(char)
   
+  -- Calibrate, open and close
+  if char_lower=='g' then
+    kuka.calibrate_arm()
+  elseif char_lower=='h' then
+    kuka.lua_set_gripper_spacing(0.020)
+  elseif char_lower=='f' then
+    kuka.lua_set_gripper_spacing(0)
+  end
+  
+  -- Avoid any arm motions, since tailored for webots zero positions
+  if true then return end
+  
   if move_arm[char] then
     print('cur_arm',cur_arm)
     local desired = cur_arm + move_arm[char]

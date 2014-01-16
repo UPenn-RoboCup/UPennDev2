@@ -53,6 +53,7 @@ static int lua_calibrate_arm(lua_State *L) {
     return luaL_error(L,"Arm is not initialized!");
   }
   ybArm->calibrateManipulator();
+  ybArm->calibrateGripper();
 }
 
 // Set base speed
@@ -151,13 +152,13 @@ static int lua_set_gripper_spacing(lua_State *L) {
   static GripperBarSpacingSetPoint barSpacing;
   double spacing = (double)lua_tonumber(L, 2);
   barSpacing.barSpacing = spacing * meter;
-  youBotArm->getArmGripper().setData(barSpacing);
+  ybArm->getArmGripper().setData(barSpacing);
 }
 
 // Sets the spacing between the gripper fingers
 static int lua_get_gripper_spacing(lua_State *L) {
-  static GripperBarSpacingSetPoint barSpacing;
-  youBotArm->getArmGripper().getData(sensed);
+  static GripperSensedBarSpacing sensed;
+  ybArm->getArmGripper().getData(sensed);
   lua_pushnumber(L, sensed.barSpacing.value() );
 }
 

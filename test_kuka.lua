@@ -33,17 +33,19 @@ local function process_keycode(keycode,t_diff)
   
   -- Open and close the gripper
   if char_lower=='g' then
-    local cur_g = jcm.get_gripper_command_position()[1]
-    cur_g = math.min(cur_g + 0.005,0.025)
-    jcm.set_gripper_command_position({cur_g})
+    local cur_g = jcm.get_gripper_command_position()
+    cur_g[1] = math.max(cur_g[1] - 0.0025,0)
+    jcm.set_gripper_command_position(cur_g)
+    print('New gripper',cur_g[1])
   elseif char_lower=='h' then
-    local cur_g = jcm.get_gripper_command_position()[1]
-    cur_g = math.max(cur_g - 0.005,0)
-    jcm.set_gripper_command_position({cur_g})
+    local cur_g = jcm.get_gripper_command_position()
+    cur_g[1] = math.min(cur_g[1] + 0.0025,0.025)
+    jcm.set_gripper_command_position(cur_g)
+    print('New gripper',cur_g[1])
   end
   
   -- Avoid any arm motions, since tailored for webots zero positions
-  if true then return end
+  --if true then return end
   
   if move_arm[char] then
     print('cur_arm',cur_arm)

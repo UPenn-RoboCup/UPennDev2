@@ -1,6 +1,6 @@
 -- Configuration
-local ENABLE_CAMERA = true
-local ENABLE_LIDAR  = true
+local ENABLE_CAMERA = false
+local ENABLE_LIDAR  = false
 
 local Body = {}
 
@@ -33,21 +33,23 @@ local nJoint = 5
 
 -- Table of servo properties
 local servo = {}
+-- Real Robot is the default
 servo.min_rad = vector.new({
-  0,0,0,0,0
+  -180,-180,-180,-180,-180,
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
-
 servo.max_rad = vector.new({
-  145,145,120,120,100
+  180,180,180,180,180,
 })*DEG_TO_RAD
-assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
-
--- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
   1,1,-1,1,1
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
+-- Offsets represent the actual zero position
+servo.offset = vector.new({
+  169,65,-151,102,167
+})
+assert(#servo.offset==nJoint,'Bad servo offsets!')
 
 -- Convienence functions for each joint
 local jointNames = {
@@ -94,6 +96,7 @@ Body.entry = function()
     init_pos[i] = rad
   end
   jcm.set_actuator_command_position(init_pos)
+  jcm.set_sensor_position(init_pos)
   
 end
 
@@ -103,7 +106,7 @@ Body.update = function()
   -- Get joint readings
   local rad,mps,nm = {},{},{}
   for i=1,nJoint do
-    rad[i] = kuka.get_arm_position(i) * servo.direction[i]
+    rad[i] = (kuka.get_arm_position(i) - servo.offset[i]) * servo.direction[i]
     mps[i] = kuka.get_arm_velocity(i)
     nm[i]  = kuka.get_arm_torque(i)
   end
@@ -119,15 +122,16 @@ Body.update = function()
     -- Clamp the angle
     local val = math.max(math.min(v,servo.max_rad[i]),servo.min_rad[i])
     -- Put into the right direction
-    val = val * servo.direction[i]
+    val = val * servo.direction[i] + servo.offset[i]
     -- Set the kuka arm
     kuka.set_arm_angle(i,val)
   end
   
   -- Set the gripper from shared memory
-  local spacing = jcm.get_gripper_command_position()[1]
-  print('SPACING',spacing)
-  --kuka.lua_set_gripper_spacing(spacing)
+  local spacing = jcm.get_gripper_command_position()
+  local width = math.max(math.min(spacing[1],0.025),0)
+  print('SPACING',width)
+  --kuka.lua_set_gripper_spacing(width)
   
   -- Set base from shared memory
   local vel = mcm.get_walk_vel()
@@ -140,7 +144,6 @@ Body.exit = function()
   kuka.shutdown_arm()
   kuka.shutdown_base()
 end
-
 
 -- Webots overrides
 if IS_WEBOTS then
@@ -155,6 +158,14 @@ if IS_WEBOTS then
   Body.timeStep = timeStep
   
   get_time = webots.wb_robot_get_time
+
+  -- Set the correct servo properties for Webots
+  servo.direction = vector.new({
+    1,1,-1,1,1
+  })
+  assert(#servo.direction==nJoint,'Bad servo direction!')
+  servo.offset = vector.zeros(nJoint)
+  assert(#servo.offset==nJoint,'Bad servo offsets!')
 
   -- Setup the webots tags
   local tags = {}
@@ -211,6 +222,18 @@ if IS_WEBOTS then
   		end
   	end
     
+    -- Grab the fingers
+    tags.fingers = {}
+  	for i=1,2 do
+      local name = 'finger'..i
+  		tags.fingers[i] = webots.wb_robot_get_device(name)
+  		if tags.joints[i]<0 then
+        print('Finger '..i..' not found')
+      else
+        webots.wb_motor_set_velocity(tags.fingers[i],0.03)
+      end
+  	end
+
     -- Body Sensors
 	  tags.gps = webots.wb_robot_get_device("GPS")
 	  webots.wb_gps_enable(tags.gps, timeStep)
@@ -237,11 +260,9 @@ if IS_WEBOTS then
     for idx, jtag in pairs(tags.joints) do
       local val = webots.wb_motor_get_position( jtag )
       -- Take care of nan
-      if val~=val then
-        val = 0
-      else
-        val = servo.direction[idx] * val
-      end
+      if val~=val then val = 0 end
+
+      val = servo.direction[idx] * (val - servo.offset[idx])
       jcm.sensorPtr.position[idx] = val
       jcm.actuatorPtr.command_position[idx] = val
     end
@@ -286,13 +307,18 @@ if IS_WEBOTS then
   end
   
   Body.update = function()
-    -- Write values
+
+    -- Write arm commands
     local cmds = Body.get_command_position()
     for i,v in ipairs(cmds) do
       local jtag = tags.joints[i]
       if jtag then
-        local pos = servo.direction[i] * v
-        webots.wb_motor_set_position( jtag, pos )
+        -- Clamp the angle
+        local val = math.max(math.min(v,servo.max_rad[i]),servo.min_rad[i])
+        -- Put into the right direction
+        val = val * servo.direction[i] + servo.offset[i]
+        -- Push to webots
+        webots.wb_motor_set_position( jtag, val )
       end
     end
     
@@ -300,6 +326,12 @@ if IS_WEBOTS then
     local vel = mcm.get_walk_vel()
     wheel_helper( unpack(vel) )
     
+    -- Gripper
+    local spacing = jcm.get_gripper_command_position()
+    local width = math.max(math.min(spacing[1],0.025),0)
+    webots.wb_motor_set_position(tags.fingers[1],width)
+    webots.wb_motor_set_position(tags.fingers[2],width)
+
 		-- Step the simulation, and shutdown if the update fails
 		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
     local t = get_time()
@@ -307,7 +339,7 @@ if IS_WEBOTS then
     -- Read values
     for idx, jtag in pairs(tags.joints) do
       local val = webots.wb_motor_get_position( jtag )
-      local rad = servo.direction[idx] * val
+      local rad = servo.direction[idx] * val - servo.offset[idx]
       jcm.sensorPtr.position[idx] = rad
     end
     

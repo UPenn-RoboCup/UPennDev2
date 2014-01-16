@@ -31,11 +31,9 @@ static int lua_init_arm(lua_State *L) {
 	try {
 		ybArm = new YouBotManipulator("youbot-manipulator", YOUBOT_CONFIGURATIONS_DIR);
 		ybArm->doJointCommutation();
-		//ybArm->calibrateManipulator();
 	} catch (std::exception& e) {
 		return luaL_error(L, e.what() );
 	}
-
 	// Return true
 	lua_pushboolean(L,1);
 	return 1;
@@ -51,13 +49,10 @@ static int lua_shutdown_arm(lua_State *L) {
 
 // Calibrate arm
 static int lua_calibrate_arm(lua_State *L) {  
-  
   if(!ybArm){
     return luaL_error(L,"Arm is not initialized!");
   }
-  
   ybArm->calibrateManipulator();
-
 }
 
 // Set base speed
@@ -105,16 +100,6 @@ static int lua_set_arm_angle(lua_State *L) {
   ybArm->getArmJoint(joint_id).setData(desiredJointAngle);
   return 0;
 }
-/*
-static int lua_set_arm_max_positioning_speed(lua_State *L) {
-  static MaximumPositioningSpeed maxPositioningSpeed;
-  int joint_id = luaL_checkint(L, 1);
-  double max_speed = (double)lua_tonumber(L, 2);
-  maxPositioningSpeed.setParameter(max_speed * radian_per_second);
-  ybArm->getArmJoint(joint_id).setConfigurationParameter(maxPositioningSpeed);
-  return 0;
-}
-*/
 
 // Get data about the arm
 static int lua_get_arm_position(lua_State *L) {
@@ -160,6 +145,33 @@ static int lua_get_arm_current(lua_State *L) {
   lua_pushnumber(L, sensed.current.value() );
   return 1;
 }
+
+// Sets the spacing between the gripper fingers
+static int lua_set_gripper_spacing(lua_State *L) {
+  static GripperBarSpacingSetPoint barSpacing;
+  double spacing = (double)lua_tonumber(L, 2);
+  barSpacing.barSpacing = spacing * meter;
+  youBotArm->getArmGripper().setData(barSpacing);
+}
+
+// Sets the spacing between the gripper fingers
+static int lua_get_gripper_spacing(lua_State *L) {
+  static GripperBarSpacingSetPoint barSpacing;
+  youBotArm->getArmGripper().getData(sensed);
+  lua_pushnumber(L, sensed.barSpacing.value() );
+}
+
+/*
+static int lua_set_arm_max_positioning_speed(lua_State *L) {
+  static MaximumPositioningSpeed maxPositioningSpeed;
+  int joint_id = luaL_checkint(L, 1);
+  double max_speed = (double)lua_tonumber(L, 2);
+  maxPositioningSpeed.setParameter(max_speed * radian_per_second);
+  ybArm->getArmJoint(joint_id).setConfigurationParameter(maxPositioningSpeed);
+  return 0;
+}
+*/
+
 /*
 static int lua_get_arm_pwm(lua_State *L) {
   static JointSensedPWM sensed;
@@ -190,7 +202,9 @@ static const struct luaL_reg kuka_lib [] = {
   {"get_arm_encoder", lua_get_arm_encoder},
   {"get_arm_rpm", lua_get_arm_rpm},
   {"get_arm_current", lua_get_arm_current},
-  //{"get_arm_pwm", lua_get_arm_pwm},
+  //
+  {"lua_set_gripper_spacing", lua_set_gripper_spacing},
+  {"lua_get_gripper_spacing", lua_get_gripper_spacing},
   //
 	{NULL, NULL}
 };

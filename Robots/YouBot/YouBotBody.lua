@@ -201,55 +201,54 @@ if IS_WEBOTS then
     
   end
   
+  local neg_inf, pos_inf = -1/0, 1/0
   local wheel_helper = function(vx,vy,va)
     local K1,K2,K3 = 10,10,10
     local v1,v2,v3,v4 = 0,0,0,0
     -- First, the angle
-    v1 = v1 - va * K1
-    v2 = v2 + va * K1
-    v3 = v3 - va * K1
-    v4 = v4 + va * K1
+    v1 = v1 + va * K1
+    v2 = v2 - va * K1
+    v3 = v3 + va * K1
+    v4 = v4 - va * K1
     -- Second, forward
     v1 = v1 + vx * K2
     v2 = v2 + vx * K2
     v3 = v3 + vx * K2
     v4 = v4 + vx * K2
     -- Third, strafe
-    v1 = v1 - vy * K3
-    v2 = v2 + vy * K3
-    v3 = v3 + vy * K3
-    v4 = v4 - vy * K3
+    v1 = v1 + vy * K3
+    v2 = v2 - vy * K3
+    v3 = v3 - vy * K3
+    v4 = v4 + vy * K3
     
     if v1 > 0 then
-      webots.wb_motor_set_position(tags.wheels[1],1/0)
+      webots.wb_motor_set_position(tags.wheels[1],pos_inf)
     else
-      webots.wb_motor_set_position(tags.wheels[1],-1/0)
+      webots.wb_motor_set_position(tags.wheels[1],neg_inf)
     end
     webots.wb_motor_set_velocity(tags.wheels[1],math.abs(v1))
     
     if v2 > 0 then
-      webots.wb_motor_set_position(tags.wheels[2],1/0)
+      webots.wb_motor_set_position(tags.wheels[2],pos_inf)
     else
-      webots.wb_motor_set_position(tags.wheels[2],-1/0)
+      webots.wb_motor_set_position(tags.wheels[2],neg_inf)
     end
     webots.wb_motor_set_velocity(tags.wheels[2],math.abs(v2))
     
     if v3 > 0 then
-      webots.wb_motor_set_position(tags.wheels[3],1/0)
+      webots.wb_motor_set_position(tags.wheels[3],pos_inf)
     else
-      webots.wb_motor_set_position(tags.wheels[3],-1/0)
+      webots.wb_motor_set_position(tags.wheels[3],neg_inf)
     end
     webots.wb_motor_set_velocity(tags.wheels[3],math.abs(v3))
     
     if v4 > 0 then
-      webots.wb_motor_set_position(tags.wheels[4],1/0)
+      webots.wb_motor_set_position(tags.wheels[4],pos_inf)
     else
-      webots.wb_motor_set_position(tags.wheels[4],-1/0)
+      webots.wb_motor_set_position(tags.wheels[4],neg_inf)
     end
     webots.wb_motor_set_velocity(tags.wheels[4],math.abs(v4))
-    
-    print('v',v1,v2,v3,v4)
-    
+        
   end
   
   Body.update = function()

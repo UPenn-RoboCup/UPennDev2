@@ -4,7 +4,8 @@ WorldInfo {
     "Default world for the YouBot"
   ]
   title "YouBot in the sim"
-  basicTimeStep 40
+  physics "fast_wheels"
+  basicTimeStep 16
   FPS 15
 }
 Viewpoint {
@@ -26,10 +27,27 @@ DirectionalLight {
   direction 0.5 -0.5 0.5
   intensity 0.5
 }
-DEF FLOOR MetricFloor {
-  color 0.95 0.95 0.95
-}
 
+DEF GROUND Solid {
+  children [
+    DEF GROUND_SHAPE Shape {
+      appearance Appearance {
+        texture ImageTexture {
+          url [
+            "textures/parquetry.png"
+          ]
+        }
+        textureTransform TextureTransform {
+          scale 200 200
+        }
+      }
+      geometry Plane {
+        size 100 100
+      }
+    }
+  ]
+  boundingObject USE GROUND_SHAPE
+}
 YouBot {
   controller "youbot"
   controllerArgs "0 1"

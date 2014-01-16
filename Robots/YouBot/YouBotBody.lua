@@ -1,6 +1,7 @@
 -- Configuration
 local ENABLE_CAMERA = false
 local ENABLE_LIDAR  = false
+local ENABLE_KINECT = false
 
 local Body = {}
 
@@ -148,6 +149,8 @@ end
 -- Webots overrides
 if IS_WEBOTS then
   
+  require'wcm'
+
   webots = require'webots'
   -- Start the system
   webots.wb_robot_init()
@@ -194,7 +197,18 @@ if IS_WEBOTS then
         webots.wb_camera_enable(tags.hand_camera,camera_timeStep)
         ENABLE_CAMERA = true
       end
-    end
+    end,
+    k = function()
+      if ENABLE_KINECT then
+        print(util.color('KINECT disabled!','yellow'))
+        webots.wb_camera_disable(tags.kinect)
+        ENABLE_KINECT = false
+      else
+        print(util.color('KINECT enabled!','green'))
+        webots.wb_camera_enable(tags.kinect,camera_timeStep)
+        ENABLE_KINECT = true
+      end
+    end,
   }
 
   Body.entry = function()
@@ -237,7 +251,7 @@ if IS_WEBOTS then
     -- Body Sensors
 	  tags.gps = webots.wb_robot_get_device("GPS")
 	  webots.wb_gps_enable(tags.gps, timeStep)
-	  tags.compass = webots.wb_robot_get_device("Compass")
+	  tags.compass = webots.wb_robot_get_device("compass")
 	  webots.wb_compass_enable(tags.compass, timeStep)
 
     -- Grab the camera
@@ -252,6 +266,12 @@ if IS_WEBOTS then
       webots.wb_camera_enable(tags.lidar, lidar_timeStep)
     end
     
+    -- Grab the kinect
+    tags.kinect = webots.wb_robot_get_device("kinect")
+    if ENABLE_KINECT then
+      webots.wb_camera_enable(tags.kinect, camera_timeStep)
+    end
+
     -- Step the simulation
 		webots.wb_robot_step(Body.timeStep)
     webots.wb_robot_step(Body.timeStep)
@@ -346,6 +366,15 @@ if IS_WEBOTS then
     -- Get sensors
     local gps     = webots.wb_gps_get_values(tags.gps)
     local compass = webots.wb_compass_get_values(tags.compass)
+    -- Process sensors (Verified)
+    local angle   = math.atan2( compass[3], compass[1] )
+    local pose    = vector.pose{gps[1], -gps[3], angle}
+    wcm.set_robot_pose( pose )
+    --[[
+    print('gps',unpack(gps) )
+    print('compass',unpack(compass) )
+    print('pose', pose )
+    --]]
 
     -- Grab a camera frame
     if ENABLE_CAMERA then
@@ -354,6 +383,11 @@ if IS_WEBOTS then
     -- Grab a lidar scan
     if ENABLE_LIDAR then
       local lidar_fr = webots.wb_camera_get_range_image(tags.lidar)
+    end
+    -- Grab kinect RGBD data
+    if ENABLE_LIDAR then
+      local color_fr = webots.to_rgb(tags.kinect)
+      local depth_fr = webots.wb_camera_get_range_image(tags.kinect)
     end
 
     -- Grab keyboard input, for modifying items

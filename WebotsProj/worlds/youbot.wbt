@@ -1,4 +1,4 @@
-#VRML_SIM V6.0 utf8
+#VRML_SIM V7.3.0 utf8
 WorldInfo {
   info [
     "Default world for the YouBot"
@@ -9,8 +9,8 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-  orientation -0.768284 -0.636013 -0.0722995 0.368058
-  position -0.934313 1.3658 2.88718
+  orientation -0.701598 0.689441 0.180088 0.673453
+  position 0.127314 0.307556 0.352365
 }
 Background {
   skyColor [
@@ -27,7 +27,6 @@ DirectionalLight {
   direction 0.65 -1 0.93
   intensity 0.4
 }
-
 DEF GROUND Solid {
   children [
     DEF GROUND_SHAPE Shape {

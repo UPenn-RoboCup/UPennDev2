@@ -420,40 +420,34 @@ Robot {
       }
     }
     # Sensors within the body
-    Compass {
-      name "Compass"
-    }
-    GPS {
-      name "GPS"
-    }
-    #Transform {
-    #translation 0 1 0
-    #  children [
-    #    KinectWithoutFoot{}
-    #  ]
-    #}
-    # Hokuyo in fron
     Transform {
-        rotation 1 0 0 1.57
-        children [
-          Transform {
-            rotation 0 -1 0 1.57
-            children [
-              KinectWithoutFoot{
-                rotation -1 0 0 .76
-                translation 0 .75 0
-                windowPosition 0 1
-              }
-              hokuyo {
-                translation 0 .025 -0.3
-                name "lidar"
-              }
-            ]
-          }
-        ]
-      }
-    
-  ]
+      # Undo the robot rotation
+      rotation 1 0 0 1.57
+      children [
+        Compass {
+          name "compass"
+        }
+        GPS {
+          name "GPS"
+        }
+        Transform {
+          rotation 0 -1 0 1.57
+          children [
+            KinectWithoutFoot{
+              rotation -1 0 0 .76
+              translation 0 .75 0
+              windowPosition 0 1
+              cameraName "kinect"
+            }
+            hokuyo {
+              translation 0 .025 -0.3
+              name "lidar"
+            }
+          ]
+        }
+      ]
+    }
+  ] # End of the Robot
   description "KUKA youBot"
   boundingObject Group {
     children [

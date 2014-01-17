@@ -66,12 +66,11 @@ local function process_keycode(keycode,t_diff)
     local desired = sensed_arm + ik_arm[char]
     local iqArm = vector.new(K.inverse_arm(desired))
     --
-    print()
-    print('pitch',pitch)
-    print('sensed_arm',sensed_arm)
-    print('desired',desired)
-    print('qArm',qArm)
-    print('iqArm',iqArm)
+    print('\nIK | desired',desired)
+    --print('pitch',pitch)
+    --print('sensed_arm',sensed_arm)
+    --print('qArm',qArm)
+    --print('iqArm',iqArm)
     --
     Body.set_command_position(iqArm)
     return
@@ -80,12 +79,13 @@ local function process_keycode(keycode,t_diff)
   if move_base[char] then
     local cur_vel = mcm.get_walk_vel()
     local desired = cur_vel + move_base[char]
-    print('Vel',desired)
+    print('\n\tBase |',desired)
     mcm.set_walk_vel(desired)
     return
   elseif char=='s' then
-    print('Vel',vector.zeros(3))
-    mcm.set_walk_vel{0,0,0}
+    local desired = vector.zeros(3)
+    print('\n\tBase |',desired)
+    mcm.set_walk_vel(desired)
     return
   end
 
@@ -100,24 +100,18 @@ local function process_keycode(keycode,t_diff)
     Body.set_command_position(qCmd)
     local fk = K.forward_arm(qCmd)
     local fArm = vector.new(T.position6D(fk))
-    print()
-    print('qArm',qArm)
-    print('qCmd',qCmd)
-    print('fArm',fArm)
-    local rpy = T.to_rpy(fk)
-    print('rpy',rpy)
+    print('\nDirect | fArm',fArm)
+    --print('qArm',qArm)
+    --print('qCmd',qCmd)
   elseif char=='-' then
     local qArm = Body.get_position()
     local qCmd = qArm - delta_q
     Body.set_command_position(qCmd)
     local fk = K.forward_arm(qCmd)
     local fArm = vector.new(T.position6D(fk))
-    print()
-    print('qArm',qArm)
-    print('qCmd',qCmd)
-    print('fArm',fArm)
-    local rpy = T.to_rpy(fk)
-    print('rpy',rpy)
+    print('\nDirect | fArm',fArm)
+    --print('qArm',qArm)
+    --print('qCmd',qCmd)
   end
   
 end

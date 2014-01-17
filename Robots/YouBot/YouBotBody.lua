@@ -1,8 +1,3 @@
--- Configuration
-local ENABLE_CAMERA = false
-local ENABLE_LIDAR  = false
-local ENABLE_KINECT = false
-
 local Body = {}
 
 -- Useful constants
@@ -149,6 +144,11 @@ end
 -- Webots overrides
 if IS_WEBOTS then
   
+  -- Default configuration (toggle during run time)
+  local ENABLE_CAMERA = false
+  local ENABLE_LIDAR  = false
+  local ENABLE_KINECT = false
+
   require'wcm'
   local torch = require'torch'
   torch.Tensor = torch.DoubleTensor

@@ -1,2 +1,10 @@
 # Allow non-root for the Ethercat (give lua ability to grab raw packets)
 sudo setcap cap_net_raw+ep /usr/bin/lua5.1
+
+Call with KUKA
+==============
+* Show the 50 times item (should be in the _old helloworld folder)
+* Discuss the motor shaft issue
+* Be able to quickly open the gripper
+* Ensure we know much to replace, and that we can get it with the Rockin camp
+* Ask about the firmware version issue, using Domenico's laptop

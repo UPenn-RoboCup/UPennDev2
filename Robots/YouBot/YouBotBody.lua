@@ -170,7 +170,7 @@ if IS_WEBOTS then
 
   -- Set the correct servo properties for Webots
   servo.direction = vector.new({
-    1,1,-1,1,1
+    1,-1,-1,-1,1
   })
   assert(#servo.direction==nJoint,'Bad servo direction!')
   servo.offset = vector.zeros(nJoint)

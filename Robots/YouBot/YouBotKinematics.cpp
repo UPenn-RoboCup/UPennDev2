@@ -20,7 +20,6 @@ void printVector(std::vector<double> v) {
   printf("\n");
 }
 
-// DH transform params: (alpha, a, theta, d)
 Transform YouBot_kinematics_forward_arm(const double *q) {
   Transform t;
   t = t.translateZ(baseLength)
@@ -41,6 +40,8 @@ std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
   double y = tr[1];
   double z = tr[2];
   // Grab the pitch desired
+  // TODO: This messes up, which is why we must not use position6D
+  // TODO: Not sure the best way... Must set precedence for matrix to rpy
   double p = tr[4];
   
   // Remove the height of the body
@@ -92,9 +93,9 @@ std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
   // Output to joint angles
   std::vector<double> qArm(5);
   qArm[0] = yaw;
-  qArm[1] = -1*shoulderPitch;
+  qArm[1] = shoulderPitch;
   qArm[2] = PI - elbow;
-  qArm[3] = (shoulderPitch + qArm[2]) - p;
+  qArm[3] = p - (shoulderPitch + qArm[2]);
   qArm[4] = 0;
   
   return qArm;

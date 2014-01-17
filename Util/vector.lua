@@ -99,6 +99,12 @@ local function norm(v1)
   return math.sqrt(s)
 end
 
+local function sum(v1)
+  local s = 0
+  for i = 1, #v1 do s = s + v1[i] end
+  return s
+end
+
 local function cross(v1,v2)
 	local v = {}
   v[1] =   ( (v1[2] * v2[3]) - (v1[3] * v2[2]) )
@@ -190,5 +196,6 @@ vector.unm = unm
 vector.slice = slice
 vector.norm  = norm
 vector.cross = cross
+vector.sum = sum
 
 return vector

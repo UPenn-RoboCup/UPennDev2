@@ -8,7 +8,8 @@ local udp = require 'udp'
 
 local udp_sender, udp_receiver
 -- Default params
-local send_ip = '192.168.123.7'
+--local send_ip = '192.168.123.7'
+local send_ip = '192.168.123.23'
 local dport = 54321
 
 -- Only send to a remote host
@@ -44,7 +45,8 @@ string.format("\t%s\nrecv_fd\n\t%s\n",tostring(udp_sender),tostring(udp_receiver
 
 package.cpath = '../unix/?.so;'..package.cpath
 require'unix'
-for i=1,10 do
+--for i=1,10 do
+while true do
 	unix.sleep(1)  -- sec
 	if udp_sender then
 	  local ret = udp_sender:send( msg )

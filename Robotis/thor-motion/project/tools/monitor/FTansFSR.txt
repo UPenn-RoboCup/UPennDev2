@@ -1,0 +1,1 @@
+RFx	Rfy	RFz	Rtx	Rty	Rtz	Lfx	Lfy	Lfz	Ltx	Lty	Ltz	R1	R2	R3	R4	L1	L2	L3	L4	R	P	Y

@@ -42,11 +42,10 @@ print(
 string.format("\t%s\nrecv_fd\n\t%s\n",tostring(udp_sender),tostring(udp_receiver) )
 )
 
-
+package.cpath = '../unix/?.so;'..package.cpath
 require'unix'
 for i=1,10 do
-	unix.sleep(1)
-	--TODO: sleep a bit
+	unix.sleep(1)  -- sec
 	if udp_sender then
 	  local ret = udp_sender:send( msg )
     if ret==#msg then

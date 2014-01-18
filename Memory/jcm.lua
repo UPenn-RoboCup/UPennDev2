@@ -4,7 +4,7 @@
 --------------------------------
 local memory = require'memory'
 local vector = require'vector'
-local nJoints = 5
+local nJoints = Body.nJoint
 local shared_data = {}
 local shared_data_sz = {}
 

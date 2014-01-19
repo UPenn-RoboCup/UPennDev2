@@ -75,6 +75,10 @@ local function process_keycode(keycode,t_diff)
 
     local zyz = T.to_zyz(fk)
     local desired_tr = T.transform6D(desired)
+
+    -- override
+    local desired_tr = T.local_rot(fk,T.rotY(.1))
+
     local iqArm = vector.new(K.inverse_arm(desired_tr))
     --
     print('\nIK | desired',desired)

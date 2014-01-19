@@ -262,19 +262,47 @@ end
   R = M*(matrix.transpose(M)*M)^-1/2
 --]]
 
+--[[
+-- Extract Just the rotation component
+libTransform.extract_rot = function(t)
+  local tr = t:clone()
+  tr[1][4] = 0
+  tr[2][4] = 0
+  tr[3][4] = 0
+  return tr
+end
+libTransform.copy_rot = function(t1,t2)
+  local r1 = t1:sub(1,3,1,3)
+  local r2 = t2:sub(1,3,1,3)
+  r1:copy(r2)
+  return t1
+end
+libTransform.set_trans = function(t,dx,dy,dz)
+  t[1][4] = dx
+  t[2][4] = dy
+  t[3][4] = dz
+  return t
+end
+--]]
+
+-- Rotate t1 by t2, rotation only
+libTransform.local_rot = function(t1,t2)
+  local t3 = t1:clone()
+  local r1 = t1:sub(1,3,1,3)
+  local r2 = t2:sub(1,3,1,3)
+  local r3 = t3:sub(1,3,1,3)
+  r3:mm(r2,r1)
+  return t3
+end
+
 -- Put element of t into tr
 libTransform.copy = function(t)
   if type(t)=='table' then
+    -- Copy the table
     return torch.Tensor(t)
   end
   -- copy a tensor
-  local tr = torch.Tensor(4,4)
-  for i=1,4 do
-    for j=1,4 do
-      tr[i][j] = t[i][j]
-    end
-  end
-  return tr
+  return t:clone()
 end
 
 libTransform.tostring = function(tr)

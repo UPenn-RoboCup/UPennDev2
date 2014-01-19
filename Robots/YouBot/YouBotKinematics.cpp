@@ -34,15 +34,40 @@ Transform YouBot_kinematics_forward_arm(const double *q) {
   return t;
 }
 
+#ifdef TORCH
+std::vector<double> YouBot_kinematics_inverse_arm(const THDoubleTensor * tr) {
+#else
 std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
+#endif
+  double x, y, z, yaw, p, hand_yaw;
+  #ifdef TORCH
+  x = THTensor_fastGet2d( tr, 0, 3 );
+  y = THTensor_fastGet2d( tr, 1, 3 );
+  z = THTensor_fastGet2d( tr, 2, 3 );
+  // Grab the "pitch" desired (ZYZ where Y is "pitch")
+  double tmp1 = THTensor_fastGet2d( tr, 0, 2 );
+  double tmp2 = THTensor_fastGet2d( tr, 1, 2 );
+  p = atan2(
+    sqrt(tmp1*tmp1 + tmp2*tmp2),
+    THTensor_fastGet2d( tr, 2, 2 )
+  );
+  // Grab also the "yaw" of the gripper (ZYZ, where 2nd Z is yaw)
+  hand_yaw = atan2(
+    THTensor_fastGet2d( tr, 2, 1 ),
+    -THTensor_fastGet2d( tr, 2, 0 )
+  );
+  printf("xyz: %lf %lf %lf\n",x,y,z);
+  printf("zyz: 0 %lf %lf\n",p,hand_yaw);
+  #else
   // Grab the position
-  double x = tr[0];
-  double y = tr[1];
-  double z = tr[2];
-  // Grab the pitch desired
-  // TODO: This messes up, which is why we must not use position6D
-  // TODO: Not sure the best way... Must set precedence for matrix to rpy
-  double p = tr[4];
+  x = tr[0];
+  y = tr[1];
+  z = tr[2];
+  // This is RPY pitch... hacked in lua to be ZYZ Y as "pitch"
+  p = tr[4];
+  // yaw is second Z
+  hand_yaw = tr[5];
+  #endif
   
   // Remove the height of the body
   z -= baseLength;
@@ -50,11 +75,11 @@ std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
   // Remove rotation of the shoulder yaw
   double dist2 = x*x + y*y;
   double dist = sqrt(dist2);
-  double yaw = atan2(y,x);
+  yaw = atan2(y,x);
   // x is the distance now
   x = dist;
   
-  // Given the pitch, find the effective position
+  // Given the "pitch", find the effective position
   double dx = x - gripperLength * sin(p);
   double dz = z - gripperLength * cos(p);
   
@@ -96,7 +121,7 @@ std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
   qArm[1] = shoulderPitch;
   qArm[2] = PI - elbow;
   qArm[3] = p - (shoulderPitch + qArm[2]);
-  qArm[4] = 0;
+  qArm[4] = hand_yaw;
   
   return qArm;
   

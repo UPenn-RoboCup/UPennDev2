@@ -3,8 +3,18 @@ local mt      = {}
 local mt_pose = {}
 
 local function new(t)
-  if type(t)=='number' then t = {t} end
-  t = t or {}
+  local ty = type(t)
+  if type(t)=='number' then
+    t = {t}
+  elseif ty=='userdata' then
+    local n = #t
+    if type(n)~='number' then n = n[1] end
+    local tt = {}
+    for i=1,n do tt[i] = t[i] end
+    t = tt
+  else
+    t = t or {}
+  end
   return setmetatable(t, mt)
 end
 

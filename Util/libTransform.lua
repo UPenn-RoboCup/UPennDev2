@@ -54,6 +54,17 @@ libTransform.trans = function(dx, dy, dz)
   return t
 end
 
+-- Recovering Euler Angles
+-- Good resource: http://www.vectoralgebra.info/eulermatrix.html
+libTransform.to_zyz = function(t)
+  -- Modelling and Control of Robot Manipulators, pg. 30
+  -- Lorenzo Sciavicco and Bruno Siciliano
+  local z = math.atan2(t[2][3],t[1][3]) -- Z (phi)
+  local y = math.atan2(math.sqrt( t[1][3]^2 + t[2][3]^2),t[3][3]) -- Y (theta)
+  local zz = math.atan2(t[3][2],-t[3][1]) -- Z' (psi)
+  return torch.Tensor{z,y,zz}
+end
+
 -- Rotation matrix to Roll Pitch Yaw
 -- Yida's from http://planning.cs.uiuc.edu/node102.html
 libTransform.to_rpy = function( R )
@@ -250,5 +261,33 @@ end
   -- Real Rotation Matrix
   R = M*(matrix.transpose(M)*M)^-1/2
 --]]
+
+-- Put element of t into tr
+libTransform.copy = function(t)
+  if type(t)=='table' then
+    return torch.Tensor(t)
+  end
+  -- copy a tensor
+  local tr = torch.Tensor(4,4)
+  for i=1,4 do
+    for j=1,4 do
+      tr[i][j] = t[i][j]
+    end
+  end
+  return tr
+end
+
+libTransform.tostring = function(tr)
+  local pr = {}
+  for i=1,4 do
+    local row = {}
+    for j=1,4 do
+      table.insert(row,string.format('%6.3f',tr[i][j]))
+    end
+    local c = table.concat(row,', ')
+    table.insert(pr,string.format('[%s]',c))
+  end
+  return table.concat(pr,'\n')
+end
 
 return libTransform

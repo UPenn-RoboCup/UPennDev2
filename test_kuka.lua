@@ -1,6 +1,7 @@
 dofile'fiddle.lua'
 local K = Body.Kinematics
-local T = require'Transform'
+--local T = require'Transform'
+local T = require'libTransform'
 local getch = require'getch'
 
 local ik_arm = {
@@ -57,7 +58,11 @@ local function process_keycode(keycode,t_diff)
   if ik_arm[char] then
     local qArm = Body.get_position()
     local fk = K.forward_arm(qArm)
-    local zyz = T.to_zyz(fk)
+
+    print('fk1',fk)
+    if T.copy then fk = T.copy(fk) end
+    print(T.tostring(fk))
+
     local sensed_arm = vector.new(T.position6D(fk))
 
     -- TODO: HACK: This should be done in the IK...
@@ -66,7 +71,11 @@ local function process_keycode(keycode,t_diff)
     -- END HACK
 
     local desired = sensed_arm + ik_arm[char]
-    local iqArm = vector.new(K.inverse_arm(desired))
+    --local iqArm = vector.new(K.inverse_arm(desired))
+
+    local zyz = T.to_zyz(fk)
+    local desired_tr = T.transform6D(desired)
+    local iqArm = vector.new(K.inverse_arm(desired_tr))
     --
     print('\nIK | desired',desired)
     print('zyz',zyz)
@@ -103,7 +112,13 @@ local function process_keycode(keycode,t_diff)
     Body.set_command_position(qCmd)
     -- Debug
     local fk = K.forward_arm(qCmd)
-    local fArm = vector.new(T.position6D(fk))
+
+    print('fk1',fk)
+    if T.copy then fk = T.copy(fk) end
+    print('fk2',fk)
+
+    local p6D = T.position6D(fk)
+    local fArm = vector.new(p6D)
     print('\nDirect | fArm',fArm)
     local zyz = T.to_zyz(fk)
     print('zyz',zyz)
@@ -115,6 +130,7 @@ local function process_keycode(keycode,t_diff)
     Body.set_command_position(qCmd)
     -- Debug
     local fk = K.forward_arm(qCmd)
+    if T.copy then fk = T.copy(fk) end
     local fArm = vector.new(T.position6D(fk))
     print('\nDirect | fArm',fArm)
     local zyz = T.to_zyz(fk)

@@ -6,6 +6,21 @@
 #include <math.h>
 #include <vector>
 
+// For pushing/pulling torch objects
+#ifdef TORCH
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include <torch/luaT.h>
+#include <torch/TH/TH.h>
+#ifdef __cplusplus
+}
+#endif
+
+#endif
+
 const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);
 
@@ -27,7 +42,12 @@ void printTransform(Transform tr);
 void printVector(std::vector<double> v);
 
 Transform YouBot_kinematics_forward_arm(const double *q);
+
+#ifdef TORCH
+std::vector<double> YouBot_kinematics_inverse_arm(const THDoubleTensor * tr);
+#else
 //std::vector<double> YouBot_kinematics_inverse_arm(Transform trArm);
 std::vector<double> YouBot_kinematics_inverse_arm(const double *r);
+#endif
 
 #endif

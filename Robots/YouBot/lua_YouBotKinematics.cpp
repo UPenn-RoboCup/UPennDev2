@@ -52,6 +52,13 @@ static std::vector<double> lua_checkvector(lua_State *L, int narg) {
 	return v;
 }
 
+#ifdef TORCH
+static std::vector<double> lua_checktransform(lua_State *L, int narg) {
+  std::vector<double> v(16);
+  return v;
+}
+#endif
+
 static void lua_pushtransform(lua_State *L, Transform t) {
 	lua_createtable(L, 4, 0);
 	for (int i = 0; i < 4; i++) {
@@ -64,6 +71,7 @@ static void lua_pushtransform(lua_State *L, Transform t) {
 	}
 }
 
+
 static int forward_arm(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
 	Transform t = YouBot_kinematics_forward_arm(&q[0]);
@@ -73,9 +81,17 @@ static int forward_arm(lua_State *L) {
 
 static int inverse_arm(lua_State *L) {
 	std::vector<double> qArm;
-	std::vector<double> pArm = lua_checkvector(L, 1);
-	//Transform trArm = transform6D(&pArm[0]);
-	qArm = YouBot_kinematics_inverse_arm(&pArm[0]);
+
+  #ifdef TORCH
+  const THDoubleTensor * tr =
+		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
+  #else
+  std::vector<double> pArm = lua_checkvector(L, 1);
+  const double * tr = &pArm[0];
+  //Transform tr = transform6D(&pArm[0]);
+  #endif
+
+  qArm = YouBot_kinematics_inverse_arm( tr );
 	lua_pushvector(L, qArm);
 	return 1;
 }

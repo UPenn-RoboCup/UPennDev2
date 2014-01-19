@@ -285,13 +285,22 @@ libTransform.set_trans = function(t,dx,dy,dz)
 end
 --]]
 
--- Rotate t1 by t2, rotation only
-libTransform.local_rot = function(t1,t2)
+-- Rotate t1 by t2, rotation component only
+libTransform.local_intrinsic_rot = function(t1,t2)
   local t3 = t1:clone()
   local r1 = t1:sub(1,3,1,3)
   local r2 = t2:sub(1,3,1,3)
   local r3 = t3:sub(1,3,1,3)
   r3:mm(r2,r1)
+  return t3
+end
+-- Rotate t2 by t1, where t1 is the present transform (rot component only)
+libTransform.local_extrinsic_rot = function(t1,t2)
+  local t3 = t1:clone()
+  local r1 = t1:sub(1,3,1,3)
+  local r2 = t2:sub(1,3,1,3)
+  local r3 = t3:sub(1,3,1,3)
+  r3:mm(r1,r2)
   return t3
 end
 

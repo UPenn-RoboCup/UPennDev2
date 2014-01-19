@@ -4,15 +4,23 @@ local K = Body.Kinematics
 local T = require'libTransform'
 local getch = require'getch'
 
-local ik_arm = {
-  u = vector.new{0,0,.01,0,0,0},
-  m = vector.new{0,0,-.01,0,0,0},
-  i = vector.new{.01,0,0,0,0,0},
-  [','] = vector.new{-.01,0,0,0,0,0},
-  j = vector.new{0,.01,0,0,0,0},
-  l = vector.new{0,-.01,0,0,0,0},
-  [']'] = vector.new{0,0,0,0,.1,0},
-  ['['] = vector.new{0,0,0,0,-.1,0},
+
+-- Translate the end effector
+local trans_arm = {
+  u = T.trans(0,0,.01),
+  m = T.trans(0,0,-.01),
+  i = T.trans(.01,0,0),
+  [','] = T.trans(-.01,0,0),
+  j = T.trans(0,.01,0),
+  l = T.trans(0,-.01,0),
+}
+
+-- Rotate (locally) the end effector
+local rot_arm = {
+  [']'] = T.rotY(.1),
+  ['['] = T.rotY(-.1),
+  ["'"] = T.rotZ(.1),
+  [';'] = T.rotZ(-.1),
 }
 
 local move_base = {
@@ -52,42 +60,25 @@ local function process_keycode(keycode,t_diff)
     return
   end
   
-  -- Avoid any arm motions, since tailored for webots zero positions
-  --if true then return end
-  
-  if ik_arm[char] then
+  if trans_arm[char] then
+    local d_tr = trans_arm[char]
     local qArm = Body.get_position()
     local fk = K.forward_arm(qArm)
-
-    print('fk1',fk)
     if T.copy then fk = T.copy(fk) end
-    print(T.tostring(fk))
-
-    local sensed_arm = vector.new(T.position6D(fk))
-
-    -- TODO: HACK: This should be done in the IK...
-    local pitch = vector.sum(vector.slice(qArm,2,4))
-    sensed_arm[4],sensed_arm[5],sensed_arm[6] = 0, pitch, 0
-    -- END HACK
-
-    local desired = sensed_arm + ik_arm[char]
-    --local iqArm = vector.new(K.inverse_arm(desired))
-
-    local zyz = T.to_zyz(fk)
-    local desired_tr = T.transform6D(desired)
-
-    -- override
-    local desired_tr = T.local_rot(fk,T.rotY(.1))
-
+    local desired_tr = d_tr * fk
     local iqArm = vector.new(K.inverse_arm(desired_tr))
-    --
-    print('\nIK | desired',desired)
-    print('zyz',zyz)
-    print('pitch',pitch)
-    --print('sensed_arm',sensed_arm)
-    --print('qArm',qArm)
-    --print('iqArm',iqArm)
-    --
+    iqArm[5] = qArm[5]
+    Body.set_command_position(iqArm)
+    return
+  elseif rot_arm[char] then
+    local d_tr = rot_arm[char]
+    local qArm = Body.get_position()
+    local fk = K.forward_arm(qArm)
+    if T.copy then fk = T.copy(fk) end
+    local desired_tr = T.local_intrinsic_rot(fk,d_tr)
+    print(T.tostring(desired_tr))
+    local iqArm = vector.new(K.inverse_arm(desired_tr))
+    iqArm[5] = qArm[5]
     Body.set_command_position(iqArm)
     return
   end
@@ -117,15 +108,15 @@ local function process_keycode(keycode,t_diff)
     -- Debug
     local fk = K.forward_arm(qCmd)
 
-    print('fk1',fk)
+    --print('fk1',fk)
     if T.copy then fk = T.copy(fk) end
-    print('fk2',fk)
+    --print('fk2',fk)
 
     local p6D = T.position6D(fk)
     local fArm = vector.new(p6D)
     print('\nDirect | fArm',fArm)
-    local zyz = T.to_zyz(fk)
-    print('zyz',zyz)
+    --local zyz = T.to_zyz(fk)
+    --print('zyz',zyz)
     --print('qArm',qArm)
     --print('qCmd',qCmd)
   elseif char=='-' then
@@ -137,8 +128,8 @@ local function process_keycode(keycode,t_diff)
     if T.copy then fk = T.copy(fk) end
     local fArm = vector.new(T.position6D(fk))
     print('\nDirect | fArm',fArm)
-    local zyz = T.to_zyz(fk)
-    print('zyz',zyz)
+    --local zyz = T.to_zyz(fk)
+    --print('zyz',zyz)
     --print('qArm',qArm)
     --print('qCmd',qCmd)
   end

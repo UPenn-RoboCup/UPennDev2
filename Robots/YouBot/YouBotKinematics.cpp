@@ -51,13 +51,16 @@ std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
     sqrt(tmp1*tmp1 + tmp2*tmp2),
     THTensor_fastGet2d( tr, 2, 2 )
   );
+
   // Grab also the "yaw" of the gripper (ZYZ, where 2nd Z is yaw)
   hand_yaw = atan2(
     THTensor_fastGet2d( tr, 2, 1 ),
     -THTensor_fastGet2d( tr, 2, 0 )
   );
-  printf("xyz: %lf %lf %lf\n",x,y,z);
-  printf("zyz: 0 %lf %lf\n",p,hand_yaw);
+
+
+  //printf("xyz: %lf %lf %lf\n",x,y,z);
+  //printf("zyz: 0 %lf %lf\n",p,hand_yaw);
   #else
   // Grab the position
   x = tr[0];
@@ -121,7 +124,8 @@ std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
   qArm[1] = shoulderPitch;
   qArm[2] = PI - elbow;
   qArm[3] = p - (shoulderPitch + qArm[2]);
-  qArm[4] = hand_yaw;
+  //qArm[4] = hand_yaw;
+  qArm[4] = 0;
   
   return qArm;
   

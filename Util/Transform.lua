@@ -70,6 +70,19 @@ function Transform.trans(dx, dy, dz)
   return setmetatable(t, mt)
 end
 
+-- Recovering Euler Angles
+-- Good resource: http://www.vectoralgebra.info/eulermatrix.html
+function Transform.to_zyz(t)
+  -- Modelling and Control of Robot Manipulators, pg. 30
+  -- Lorenzo Sciavicco and Bruno Siciliano
+  local e = vector.zeros(3)
+  e[1]=math.atan2(t[2][3],t[1][3]) -- Z (phi)
+  e[2]=math.atan2(math.sqrt( t[1][3]^2 + t[2][3]^2),t[3][3]) -- Y (theta)
+  e[3]=math.atan2(t[3][2],-t[3][1]) -- Z' (psi)
+  return e
+end
+
+-- RPY is XYZ convention
 function Transform.to_rpy(t)
   -- http://planning.cs.uiuc.edu/node103.html
   -- returns [roll, pitch, yaw] vector

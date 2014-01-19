@@ -56,7 +56,9 @@ local function process_keycode(keycode,t_diff)
   
   if ik_arm[char] then
     local qArm = Body.get_position()
-    local sensed_arm = vector.new(T.position6D(K.forward_arm(qArm)))
+    local fk = K.forward_arm(qArm)
+    local zyz = T.to_zyz(fk)
+    local sensed_arm = vector.new(T.position6D(fk))
 
     -- TODO: HACK: This should be done in the IK...
     local pitch = vector.sum(vector.slice(qArm,2,4))
@@ -67,7 +69,8 @@ local function process_keycode(keycode,t_diff)
     local iqArm = vector.new(K.inverse_arm(desired))
     --
     print('\nIK | desired',desired)
-    --print('pitch',pitch)
+    print('zyz',zyz)
+    print('pitch',pitch)
     --print('sensed_arm',sensed_arm)
     --print('qArm',qArm)
     --print('iqArm',iqArm)
@@ -98,18 +101,24 @@ local function process_keycode(keycode,t_diff)
     local qArm = Body.get_position()
     local qCmd = qArm + delta_q
     Body.set_command_position(qCmd)
+    -- Debug
     local fk = K.forward_arm(qCmd)
     local fArm = vector.new(T.position6D(fk))
     print('\nDirect | fArm',fArm)
+    local zyz = T.to_zyz(fk)
+    print('zyz',zyz)
     --print('qArm',qArm)
     --print('qCmd',qCmd)
   elseif char=='-' then
     local qArm = Body.get_position()
     local qCmd = qArm - delta_q
     Body.set_command_position(qCmd)
+    -- Debug
     local fk = K.forward_arm(qCmd)
     local fArm = vector.new(T.position6D(fk))
     print('\nDirect | fArm',fArm)
+    local zyz = T.to_zyz(fk)
+    print('zyz',zyz)
     --print('qArm',qArm)
     --print('qCmd',qCmd)
   end

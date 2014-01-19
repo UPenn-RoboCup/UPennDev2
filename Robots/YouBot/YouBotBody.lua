@@ -26,6 +26,7 @@ require'mcm'
 
 -- Five degree of freedom arm
 local nJoint = 5
+assert(nJoint==Config.nJoint)
 
 -- Table of servo properties
 local servo = {}

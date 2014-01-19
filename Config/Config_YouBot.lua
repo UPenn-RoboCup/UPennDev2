@@ -4,6 +4,7 @@ local Config = {}
 -- General parameters --
 ------------------------
 Config.PLATFORM_NAME = 'YouBot'
+Config.nJoint = 5
 
 -----------------------
 -- Device Interfaces --

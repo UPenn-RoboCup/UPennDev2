@@ -26,7 +26,7 @@ require'mcm'
 
 -- Five degree of freedom arm
 local nJoint = 5
-assert(nJoint==Config.nJoint)
+assert(nJoint==Config.nJoint,'Config file and Body must agree on nuber of joints!')
 
 -- Table of servo properties
 local servo = {}

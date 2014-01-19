@@ -4,7 +4,11 @@
 --------------------------------
 local memory = require'memory'
 local vector = require'vector'
+
+local Config = require'Config'
+assert(Config,'JCM requires a config, since it defines joints!')
 local nJoints = Config.nJoint
+
 local shared_data = {}
 local shared_data_sz = {}
 

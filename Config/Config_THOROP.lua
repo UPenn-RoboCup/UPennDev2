@@ -4,6 +4,7 @@ local Config = {}
 -- General parameters --
 ------------------------
 Config.PLATFORM_NAME = 'THOROP'
+Config.nJoint = 35
 
 -----------------------
 -- Device Interfaces --

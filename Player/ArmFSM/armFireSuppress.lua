@@ -61,8 +61,8 @@ local function update_override()
   fire_model[1] + override[1],
   fire_model[2] + override[2],
   fire_model[3] + override[3],
-  fire_model[4] + override[5]*Config.armfsm.firesuppress.turnUnit*Body.DEG_TO_RAD, --pitch
-  fire_model[5] + override[6]*Config.armfsm.firesuppress.turnUnit*Body.DEG_TO_RAD, --yaw
+  fire_model[4] + override[5]*Body.DEG_TO_RAD, --pitch
+  fire_model[5] + override[6]*Body.DEG_TO_RAD, --yaw
 
 --SJ: this is weird, we need to read once to update the shm
   hcm.get_fire_model()
@@ -91,8 +91,8 @@ local function revert_override()
   fire_model[1] - override[1],
   fire_model[2] - override[2],
   fire_model[3] - override[3],
-  fire_model[4] - override[5]*Config.armfsm.firesuppress.turnUnit*Body.DEG_TO_RAD, --pitch
-  fire_model[5] - override[6]*Config.armfsm.firesuppress.turnUnit*Body.DEG_TO_RAD, --yaw
+  fire_model[4] - override[5]*Body.DEG_TO_RAD, --pitch
+  fire_model[5] - override[6]*Body.DEG_TO_RAD, --yaw
 
 --SJ: this is weird, we need to read once to update the shm
   hcm.get_fire_model()

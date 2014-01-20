@@ -96,9 +96,27 @@ static int inverse_arm(lua_State *L) {
 	return 1;
 }
 
+static int test(lua_State *L) {
+  /*
+  // This seems good...
+  THLongStorage *storage = THLongStorage_newWithSize(2);
+	luaT_pushudata(L, storage, "torch.LongStorage");
+  */
+
+  // This also seems to work!
+  THLongStorage *sz = THLongStorage_newWithSize(2);
+  sz->data[0] = 4;
+  sz->data[1] = 4;
+  THDoubleTensor *storage = THDoubleTensor_newWithSize(sz,NULL);
+	luaT_pushudata(L, storage, "torch.DoubleTensor");
+
+	return 1;
+}
+
 static const struct luaL_Reg kinematics_lib [] = {
 	{"forward_arm", forward_arm},
 	{"inverse_arm", inverse_arm},
+  {"test", test},
 	{NULL, NULL}
 };
 

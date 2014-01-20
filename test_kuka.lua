@@ -45,6 +45,9 @@ local function process_keycode(keycode,t_diff)
   local char = string.char(keycode)
   local char_lower = string.lower(char)
   
+  local tmp = K.test()
+  print('tmp',tmp)
+
   -- Open and close the gripper
   if char_lower=='g' then
     local cur_g = jcm.get_gripper_command_position()
@@ -67,7 +70,6 @@ local function process_keycode(keycode,t_diff)
     if T.copy then fk = T.copy(fk) end
     local desired_tr = d_tr * fk
     local iqArm = vector.new(K.inverse_arm(desired_tr))
-    iqArm[5] = qArm[5]
     Body.set_command_position(iqArm)
     return
   elseif rot_arm[char] then
@@ -75,10 +77,8 @@ local function process_keycode(keycode,t_diff)
     local qArm = Body.get_position()
     local fk = K.forward_arm(qArm)
     if T.copy then fk = T.copy(fk) end
-    local desired_tr = T.local_intrinsic_rot(fk,d_tr)
-    print(T.tostring(desired_tr))
+    local desired_tr = T.local_extrinsic_rot(fk,d_tr)
     local iqArm = vector.new(K.inverse_arm(desired_tr))
-    iqArm[5] = qArm[5]
     Body.set_command_position(iqArm)
     return
   end
@@ -106,12 +106,11 @@ local function process_keycode(keycode,t_diff)
     local qCmd = qArm + delta_q
     Body.set_command_position(qCmd)
     -- Debug
+    --[[
     local fk = K.forward_arm(qCmd)
-
     --print('fk1',fk)
     if T.copy then fk = T.copy(fk) end
     --print('fk2',fk)
-
     local p6D = T.position6D(fk)
     local fArm = vector.new(p6D)
     print('\nDirect | fArm',fArm)
@@ -119,11 +118,13 @@ local function process_keycode(keycode,t_diff)
     --print('zyz',zyz)
     --print('qArm',qArm)
     --print('qCmd',qCmd)
+    --]]
   elseif char=='-' then
     local qArm = Body.get_position()
     local qCmd = qArm - delta_q
     Body.set_command_position(qCmd)
     -- Debug
+    --[[
     local fk = K.forward_arm(qCmd)
     if T.copy then fk = T.copy(fk) end
     local fArm = vector.new(T.position6D(fk))
@@ -132,6 +133,7 @@ local function process_keycode(keycode,t_diff)
     --print('zyz',zyz)
     --print('qArm',qArm)
     --print('qCmd',qCmd)
+    --]]
   end
   
 end

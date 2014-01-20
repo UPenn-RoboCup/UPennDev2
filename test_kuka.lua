@@ -5,7 +5,7 @@ local getch = require'getch'
 
 -- Translate the end effector
 local ds = 0.005
-local trans_arm = {
+local pre_arm = {
   u = T.trans(0,0,ds),
   m = T.trans(0,0,-ds),
   i = T.trans(ds,0,0),
@@ -71,8 +71,8 @@ local function process_keycode(keycode,t_diff)
     return
   end
   
-  if trans_arm[char] then
-    local d_tr = trans_arm[char]
+  if pre_arm[char] then
+    local d_tr = pre_arm[char]
     local qArm = Body.get_position()
     local fk = K.forward_arm(qArm)
     local desired_tr = d_tr * fk

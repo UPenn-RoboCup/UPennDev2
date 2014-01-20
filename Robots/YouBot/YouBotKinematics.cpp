@@ -1,6 +1,8 @@
 /*
-(c) 2014 Stephen McGill
+(c) 2014 Stephen G. McGill
+Kinematics for KUKA YouBot's 5 DOF arm
 */
+
 #include "YouBotKinematics.h"
 
 void printTransform(Transform tr) {
@@ -22,8 +24,9 @@ void printVector(std::vector<double> v) {
 
 Transform YouBot_kinematics_forward_arm(const double *q) {
   Transform t;
-  t = t.translateZ(baseLength)
+  t = t
     .rotateZ(q[0])
+    //.translateX(baseLength) // do not use for now
     .rotateY(q[1])
     .translateZ(lowerArmLength)
     .rotateY(q[2])
@@ -34,30 +37,9 @@ Transform YouBot_kinematics_forward_arm(const double *q) {
   return t;
 }
 
-#ifdef TORCH
-std::vector<double> YouBot_kinematics_inverse_arm(const THDoubleTensor * tr) {
-#else
 std::vector<double> YouBot_kinematics_inverse_arm(Transform tr) {
-#endif
   double x, y, z, yaw, p, hand_yaw;
 
-#ifdef TORCH
-  x = THTensor_fastGet2d( tr, 0, 3 );
-  y = THTensor_fastGet2d( tr, 1, 3 );
-  z = THTensor_fastGet2d( tr, 2, 3 );
-  // Grab the "pitch" desired (ZYZ where Y is "pitch")
-  double tmp1 = THTensor_fastGet2d( tr, 0, 2 );
-  double tmp2 = THTensor_fastGet2d( tr, 1, 2 );
-  p = atan2(
-    sqrt(tmp1*tmp1 + tmp2*tmp2),
-    THTensor_fastGet2d( tr, 2, 2 )
-  );
-  // Grab also the "yaw" of the gripper (ZYZ, where 2nd Z is yaw)
-  hand_yaw = atan2(
-    THTensor_fastGet2d( tr, 2, 1 ),
-    -1*THTensor_fastGet2d( tr, 2, 0 )
-  );
-#else
   // Grab the position
   x = tr(0,3);
   y = tr(1,3);
@@ -74,12 +56,13 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr) {
     tr( 2, 1 ),
     -1*tr( 2, 0 )
   );
-#endif
+
   //printf("xyz: %lf %lf %lf\n",x,y,z);
   //printf("zyz: %lf %lf %lf\n",0.0,p,hand_yaw);
   
   // Remove the height of the body
-  z -= baseLength;
+  // NOTE: Now not using this
+  //z -= baseLength;
   
   // Remove rotation of the shoulder yaw
   double dist2 = x*x + y*y;

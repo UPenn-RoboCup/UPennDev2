@@ -1,6 +1,6 @@
 /* 
-(c) 2013 Seung Joon Yi
-7 DOF
+(c) 2014 Stephen G. McGill
+Kinematics for KUKA YouBot's 5 DOF arm
 */
 
 #include <lua.hpp>
@@ -53,12 +53,19 @@ static std::vector<double> lua_checkvector(lua_State *L, int narg) {
 }
 
 #ifdef TORCH
-static const THDoubleTensor * luaT_checktransform(lua_State *L, int narg) {
-  const THDoubleTensor * tr =
+static Transform luaT_checktransform(lua_State *L, int narg) {
+  const THDoubleTensor * _t =
 		(THDoubleTensor *) luaT_checkudata(L, narg, "torch.DoubleTensor");
   // Check the dimensions
-  if(tr->size[0]!=4||tr->size[1]!=4)
-    luaL_error(L, "Bad dimensions: %ld x %ld",tr->size[0],tr->size[1]);
+  if(_t->size[0]!=4||_t->size[1]!=4)
+    luaL_error(L, "Bad dimensions: %ld x %ld",_t->size[0],_t->size[1]);
+
+  // Form into our Transform type
+  Transform tr;
+  for (int i = 0; i < 4; i++)
+    for (int j = 0; j < 4; j++)
+      tr(i,j) = THTensor_fastGet2d( _t, i, j );
+
   return tr;
 }
 static void luaT_pushtransform(lua_State *L, Transform t) {
@@ -148,10 +155,12 @@ static int forward_arm(lua_State *L) {
 	Transform t = YouBot_kinematics_forward_arm(&q[0]);
 
   #ifdef TORCH
+  // Check if you want a table
+  if(!lua_toboolean(L, 2))
     luaT_pushtransform(L, t);
-  #else
-    lua_pushtransform(L, t);
+  else
   #endif
+    lua_pushtransform(L, t);
 
 	return 1;
 }
@@ -160,38 +169,19 @@ static int forward_arm(lua_State *L) {
 static int inverse_arm(lua_State *L) {
 	std::vector<double> qArm;
 
-  #ifdef TORCH
-  const THDoubleTensor * tr = luaT_checktransform(L, 1);
-  #else
-  Transform tr = lua_checktransform(L, 1);
-  #endif
-
-  qArm = YouBot_kinematics_inverse_arm( tr );
+#ifdef TORCH
+  if( !lua_istable(L,1) )
+    qArm = YouBot_kinematics_inverse_arm( luaT_checktransform(L, 1) );
+  else
+#endif
+    qArm = YouBot_kinematics_inverse_arm( lua_checktransform(L, 1) );
 	lua_pushvector(L, qArm);
 	return 1;
 }
 
-/*
-static int test(lua_State *L) {
-  // This seems good...
-  //THLongStorage *storage = THLongStorage_newWithSize(2);
-	//luaT_pushudata(L, storage, "torch.LongStorage");
-
-  // This also seems to work!
-  THLongStorage *sz = THLongStorage_newWithSize(2);
-  sz->data[0] = 4;
-  sz->data[1] = 4;
-  THDoubleTensor *storage = THDoubleTensor_newWithSize(sz,NULL);
-	luaT_pushudata(L, storage, "torch.DoubleTensor");
-
-	return 1;
-}
-*/
-
 static const struct luaL_Reg kinematics_lib [] = {
 	{"forward_arm", forward_arm},
 	{"inverse_arm", inverse_arm},
-  //{"test", test},
 	{NULL, NULL}
 };
 

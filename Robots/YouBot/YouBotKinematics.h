@@ -1,3 +1,8 @@
+/*
+(c) 2014 Stephen G. McGill
+Kinematics for KUKA YouBot's 5 DOF arm
+*/
+
 #ifndef YOUBOT_KINEMATICS_H_
 #define YOUBOT_KINEMATICS_H_
 
@@ -25,8 +30,8 @@ const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);
 
 // Based on User Manual
-// arm1: from ground to first pitch joint
-const double baseLength = .155;
+// arm1: from center of the z rotation to the protrusion of the arm
+const double baseLength = .077;
 // arm2: 
 const double lowerArmLength = .155;
 // arm3: 
@@ -42,11 +47,6 @@ void printTransform(Transform tr);
 void printVector(std::vector<double> v);
 
 Transform YouBot_kinematics_forward_arm(const double *q);
-
-#ifdef TORCH
-std::vector<double> YouBot_kinematics_inverse_arm(const THDoubleTensor * tr);
-#else
 std::vector<double> YouBot_kinematics_inverse_arm(Transform tr);
-#endif
 
 #endif

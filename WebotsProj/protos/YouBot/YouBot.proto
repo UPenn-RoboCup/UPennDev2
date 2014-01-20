@@ -450,6 +450,7 @@ Robot {
       ]
     }
   ] # End of the Robot
+  
   description "KUKA youBot"
   boundingObject Group {
     children [

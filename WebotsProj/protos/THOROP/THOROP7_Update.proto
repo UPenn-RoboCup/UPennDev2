@@ -1,0 +1,263 @@
+#VRML_SIM V7.3.0 utf8
+#############################################
+# THOR-OP webots prototype file
+# Based on Robotis wbt
+# Converted and augmented by Seung-Joon Yi (2013/7)
+# Converted to 7.3.0 API by Stephen McGill (2014/01)
+#############################################
+
+PROTO THOROP7_Update [
+  field SFVec3f    translation 0 1 0
+  field SFRotation rotation 0 1 0 0
+  field SFString   controller "void"
+  field SFString   controllerArgs ""
+  field SFBool     synchronization TRUE
+  field SFInt32    lidarRays 1081
+  field SFString   name "THOR-OP"
+  #field SFVec2f    cameraWindowPosition 0 0
+  #field SFFloat    cameraPixelSize 1.0
+  #field SFInt32    cameraWidth 320
+  #field SFInt32    cameraHeight 180
+	#field SFFloat    cameraFov 1.0472
+]
+{
+Robot {
+  # General Characteristics
+  translation IS translation
+  rotation IS rotation
+  controller IS controller
+  controllerArgs IS controllerArgs
+  synchronization IS synchronization
+  name IS name
+
+  # Unsure why there is physics here...
+  physics Physics {
+    density -1
+    mass 9.21
+    centerOfMass 0 0.1557 -0.0208
+  }
+  # Use a simple bounding object for the center of mass area
+  boundingObject Transform {
+    children [Box {size 0.5 0.2 0.25}]
+  }
+
+  # Children items
+  children [
+    ## The sensors occupy the same position as the Chest
+    InertialUnit {name "InertialUnit"}
+    Compass {name "Compass"}
+    GPS {name "GPS"}
+    Accelerometer {
+      name "Accelerometer"
+      # Must place where is on the actual robot
+      translation 0 0 0.02
+      # Rotate to the correct orientation
+      rotation 0 0.707107 0.707107 3.14159
+      lookupTable [
+        -39.24 0 0
+        39.24 1024 0
+      ]
+    }
+    Gyro {
+      # Must place where is on the actual robot
+      translation 0 0 0.02
+      # Rotate to the correct orientation
+      rotation -0.57735 0.57735 0.57735 2.09
+      name "Gyro"
+      lookupTable [
+        -27.925 0 0
+        27.925 1024 0
+      ]
+    }
+    DEF RECEIVER Receiver {
+      name "receiver"
+      channel IS channel
+    }
+    DEF EMITTER Emitter {
+      name "emitter"
+      channel IS channel
+    }
+    DEF PHYSICS_RECEIVER Receiver {
+      name "physics_receiver"
+      type "serial"
+      channel 10
+      byteSize 192
+    }
+    DEF PHYSICS_EMITTER Emitter {
+      name "physics_emitter"
+      type "serial"
+      byteSize 96
+    }
+    ## End of sensors that are children of the root
+    
+    ## The Chest is occupies the same position as the root
+    CHEST{ scale 0.001 0.001 0.001 }
+    ## End of chest this is root child
+    
+    ## Begin the Chest lidar chain
+    DEF Chest_Pan Solid {
+      translation 0 0 0.05
+      children [
+        ## Chest lidar is root child    
+        HingeJoint {
+          device RotationalMotor {
+            name "ChestLidarPan"
+            # Use MX-28 specs (54*pi/30)
+            maxVelocity 5.65486677646
+            maxTorque 2.5
+            # Not sure of these...
+            minPosition -2.92343
+            maxPosition 2.92343
+          } # End of the ChestLidarPan RotationalMotor
+          jointParameters HingeJointParameters {
+            # Straight up in the y-axis for webots
+            axis 0 1 0
+            # I think anchor means the up direction?
+            anchor 0 0.081 0
+          } # End of the ChestLidarPan HingeJointParameters
+          endPoint Solid {
+            translation 0 0 0.010 #lidar chest offset
+            rotation 0 0 1 1.57
+            children [
+              hokuyo {
+                name "ChestLidar"
+                width IS lidarRays
+              }
+            ] # End of the ChestLidarPan Children
+            #physics Physics{
+            #  density -1
+            #  mass 0.1
+            #}
+          } # End of the ChestLidarPan endpoint
+        } # End of the ChestLidarPan HingeJoint
+      ] # End the solid children
+      #physics Physics {
+      #  density -1
+      #  mass 0.2
+      #}
+    }
+    ## End the Chest lidar chain
+    
+    ## Begin the Right arm chain
+    DEF Right_shoulder_pitch Solid {
+      translation -0.234 0 0
+      children [
+        # Has a mesh, with offsets, etc.
+        RIGHT_SHOULDER_PITCH{
+          scale 0.001 0.001 0.001
+          translation 0.05 0 0
+          rotation 0 0 1 -1.5708
+        }
+        ## Shoulder Pitch is root child    
+        HingeJoint {
+          device RotationalMotor {
+            name "ShoulderR"
+            # TODO: Use NX Motor specs
+            maxVelocity 5.65486677646
+            maxTorque 2.5
+            # Not sure of these...
+            minPosition -2.92343
+            maxPosition 2.92343
+          } # End of the ShoulderR RotationalMotor
+          jointParameters HingeJointParameters {
+            # Straight up in the y-axis for webots
+            axis -1 0 0
+            # I think anchor means the up direction?
+            anchor -0.081 0 0
+          } # End of the ShoulderR HingeJointParameters
+          endPoint Solid {
+            ## Begin Shoulder Roll
+            children [
+              # Has a mesh, with offsets, etc.
+              RIGHT_SHOULDER_ROLL{
+                scale 0.001 0.001 0.001
+                translation 0 0 0.024
+                rotation 0 0 1 -1.5708
+              }
+              HingeJoint {
+                device RotationalMotor {
+                  name "ArmUpperR"
+                  # TODO: Use NX Motor specs
+                  maxVelocity 5.65486677646
+                  maxTorque 2.5
+                  # Not sure of these...
+                  minPosition -2.92343
+                  maxPosition 2.92343
+                } # End of the ArmUpperR RotationalMotor
+                jointParameters HingeJointParameters {
+                  # Straight up in the y-axis for webots
+                  axis 0 0 1
+                  # I think anchor means the up direction?
+                  anchor 0 0 0.081
+                } # End of the ArmUpperR HingeJointParameters
+                endPoint Solid {
+                  ## Begin Shoulder Yaw
+                  children [
+                    RIGHT_ARM{
+                      translation 0 -0.027 0
+                      rotation 0 1 0 3.14159
+                      scale 0.001 0.001 0.001
+                    }
+                    HingeJoint {
+                      device RotationalMotor {
+                        name "RightShoulderYaw"
+                        # TODO: Use NX Motor specs
+                        maxVelocity 5.65486677646
+                        maxTorque 2.5
+                        # Not sure of these...
+                        minPosition -2.92343
+                        maxPosition 2.92343
+                      } # End of the RightShoulderYaw RotationalMotor
+                      jointParameters HingeJointParameters {
+                        # Straight up in the y-axis for webots
+                        axis 0 1 0
+                        anchor 0 0.081 0
+                      } # End of the RightShoulderYaw HingeJointParameters
+                      endPoint Solid {
+                        
+                        ## Begin Shoulder Yaw
+                        children [
+                          # No mesh
+                          HingeJoint {
+                            device RotationalMotor {
+                              name "RightShoulderYaw"
+                              # TODO: Use NX Motor specs
+                              maxVelocity 5.65486677646
+                              maxTorque 2.5
+                              # Not sure of these...
+                              minPosition -2.92343
+                              maxPosition 2.92343
+                            } # End of the RightShoulderYaw RotationalMotor
+                            jointParameters HingeJointParameters {
+                              # Straight up in the y-axis for webots
+                              axis 0 1 0
+                              anchor 0 0.081 0
+                            } # End of the RightShoulderYaw HingeJointParameters
+                            endPoint Solid {
+                              
+                              
+                              
+                            } # End of the Shoulder Yaw endpoint
+                          } # End of the Shoulder Yaw HingeJoint
+                        ] # End the solid children
+                        ## End Shoulder Yaw
+                        
+                      } # End of the Shoulder Yaw endpoint
+                    } # End of the Shoulder Yaw HingeJoint
+                  ] # End the solid children
+                  ## End Shoulder Yaw
+                } # End of the Shoulder Roll endpoint
+              } # End of the Shoulder Roll HingeJoint
+            ] # End the solid children
+            ## End Shoulder Roll
+          } # End of the Shoulder Pitch endpoint
+        } # End of the Shoulder Pitch HingeJoint
+      ] # End the solid children
+    }
+    ## End the Right arm chain    
+    
+  ] # End of the Robot children
+
+} # End of Robot
+
+} # End of PROTO

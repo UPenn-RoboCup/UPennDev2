@@ -22,11 +22,11 @@ local debugdata
 local function get_fire_tr(fireoffset)
 
   local handrpy = rhand_rpy
-  local fire_model = hcm.get_fire_model()  -- xyz, yaw
+  local fire_model = hcm.get_fire_model()  -- xyz, pitch, yaw
   local hand_pos = vector.slice(fire_model,1,3) + 
     vector.new({fireoffset[1],fireoffset[2],fireoffset[3]})  
   local fire_tr = {hand_pos[1],hand_pos[2],hand_pos[3],
-                    handrpy[1],handrpy[2],handrpy[3] + fire_model[4]}
+                    handrpy[1],handrpy[2]+fire_model[4], handrpy[3]+fire_model[5]}
 
   print("hand transform:",arm_planner.print_transform(fire_tr))                    
   return fire_tr
@@ -57,20 +57,23 @@ local function update_override()
   local fire_model = hcm.get_fire_model()
 
 	-- Update target tranform
-  fire_model[1],fire_model[2],fire_model[3], fire_model[4] = 
+  fire_model[1],fire_model[2],fire_model[3], fire_model[4], fire_model[5] = 
   fire_model[1] + override[1],
   fire_model[2] + override[2],
   fire_model[3] + override[3],
-  fire_model[4] + override[6]*Config.armfsm.firesuppress.turnUnit*Body.DEG_TO_RAD, --yaw
+  fire_model[4] + override[5]*Body.DEG_TO_RAD, --pitch
+  fire_model[5] + override[6]*Body.DEG_TO_RAD, --yaw
 
 --SJ: this is weird, we need to read once to update the shm
   hcm.get_fire_model()
   hcm.set_fire_model(fire_model)
 
   print( util.color('Fire model:','yellow'), 
-        string.format("%.2f %.2f %.2f / %.1f",
+        string.format("%.2f %.2f %.2f / %.1f %.1f",
         fire_model[1],fire_model[2],fire_model[3],
-        fire_model[4]*Body.RAD_TO_DEG ))
+        fire_model[4]*Body.RAD_TO_DEG,
+        fire_model[5]*Body.RAD_TO_DEG) 
+       )
   
 	hcm.set_state_proceed(0)
 end
@@ -84,22 +87,23 @@ local function revert_override()
   local override = hcm.get_state_override()
   local fire_model = hcm.get_fire_model()
 
-  fire_model[1],fire_model[2],fire_model[3], fire_model[4] = 
+  fire_model[1],fire_model[2],fire_model[3], fire_model[4], fire_model[5] = 
   fire_model[1] - override[1],
   fire_model[2] - override[2],
   fire_model[3] - override[3],
-  fire_model[4] - override[6]*
-									Config.armfsm.firesuppress.turnUnit*
-									Body.DEG_TO_RAD, --yaw
+  fire_model[4] - override[5]*Body.DEG_TO_RAD, --pitch
+  fire_model[5] - override[6]*Body.DEG_TO_RAD, --yaw
 
 --SJ: this is weird, we need to read once to update the shm
   hcm.get_fire_model()
   hcm.set_fire_model(fire_model)
 	
   print( util.color('Fire model:','yellow'), 
-      string.format("%.2f %.2f %.2f / %.1f",
+        string.format("%.2f %.2f %.2f / %.1f %.1f",
         fire_model[1],fire_model[2],fire_model[3],
-        fire_model[4]*180/math.pi ))
+        fire_model[4]*Body.RAD_TO_DEG,
+        fire_model[5]*Body.RAD_TO_DEG)
+       )
 				
   hcm.set_state_proceed(0)
   clear_override()  
@@ -149,7 +153,8 @@ function state.entry()
   if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn" end  
 
   hcm.set_fire_model( Config.armfsm.firesuppress.default_model )
-  hcm.set_state_proceed(0)  -- Stop after wrist turn
+  hcm.set_state_proceed(1)  -- proceed after wrist turn
+  -- hcm.set_state_proceed(0)  -- Stop after wrist turn
 
   debugdata=''   
 
@@ -222,7 +227,7 @@ function state.update()
 				end                  
      
       elseif check_override() then --Model modification
-        print("target")
+        print("target on fire")
 				-- Update fire model
         update_override()        
         local trRArmTarget2 = get_fire_tr({0,0,0})

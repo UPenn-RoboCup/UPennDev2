@@ -477,15 +477,11 @@ armfsm.firesuppress = {}
 armfsm.firesuppress.lhand_rpy = {0,0,0}
 armfsm.firesuppress.rhand_rpy = {0,0,0}
 
---The optimal model
-armfsm.firesuppress.default_model_target = {
-  0.6, -0.06, 0.1,  0*DEG_TO_RAD}    --xyz, yaw
-
 --Conservative initial model (away from target)
 armfsm.firesuppress.default_model = {
-  0.55, -0.06, 0.1,  45*DEG_TO_RAD}    
+  0.55, -0.06, 0.1, 0, 45*DEG_TO_RAD}   --xyz,pitch,yaw   
 
-armfsm.firesuppress.turnUnit = 5 --Yaw, degree
+armfsm.firesuppress.turnUnit = 2.5 --degree
 
 armfsm.firesuppress.arminit={  -- For right arm
   -- Gripper has a 45 degree Yaw

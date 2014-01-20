@@ -23,6 +23,8 @@ local post_arm = {
   [';'] = T.rotZ(-dr),
   ["/"] = T.trans(0,0,ds),
   ['.'] = T.trans(0,0,-ds),
+  ["p"] = T.trans(ds,0,0),
+  ['o'] = T.trans(-ds,0,0),
 }
 
 local dv = 0.05

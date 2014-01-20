@@ -26,7 +26,7 @@ Transform YouBot_kinematics_forward_arm(const double *q) {
   Transform t;
   t = t
     .rotateZ(q[0])
-    //.translateX(baseLength) // do not use for now
+    .translateX(baseLength) // do not use for now
     .rotateY(q[1])
     .translateZ(lowerArmLength)
     .rotateY(q[2])
@@ -59,17 +59,13 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr) {
 
   //printf("xyz: %lf %lf %lf\n",x,y,z);
   //printf("zyz: %lf %lf %lf\n",0.0,p,hand_yaw);
-  
-  // Remove the height of the body
-  // NOTE: Now not using this
-  //z -= baseLength;
-  
+
   // Remove rotation of the shoulder yaw
   double dist2 = x*x + y*y;
   double dist = sqrt(dist2);
   yaw = atan2(y,x);
-  // x is the distance now
-  x = dist;
+  // x is the distance now, less the offset
+  x = dist - baseLength;
   
   // Given the "pitch", find the effective position
   double dx = x - gripperLength * sin(p);

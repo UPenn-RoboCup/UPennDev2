@@ -1,9 +1,13 @@
 PROTO RIGHT_ELBOW [
 field SFVec3f scale 1 1 1
+field SFRotation rotation 1 0 0 0
+field SFVec3f translation 0 0 0
 ]
 {
 Transform {
   scale IS scale
+  rotation IS rotation
+  translation IS translation
  children [
 
                               Shape {

@@ -65,8 +65,10 @@ local function process_keycode(keycode,t_diff)
     local qArm = Body.get_position()
     local fk = K.forward_arm(qArm)
     local desired_tr = d_tr * fk
-    print('\nTranslate to')
+    --
+    print('\Rotate to')
     print(T.tostring(desired_tr))
+    --
     local iqArm = vector.new(K.inverse_arm(desired_tr))
     Body.set_command_position(iqArm)
     return
@@ -75,14 +77,12 @@ local function process_keycode(keycode,t_diff)
     local qArm = Body.get_position()
     local fk = K.forward_arm(qArm)
     local desired_tr = T.local_extrinsic_rot(fk,d_tr)
-    if type(desired_tr)=='table' then
-      -- If not using torch
-      desired_tr = T.position6d(desired_tr)
-    end
-    local iqArm = vector.new(K.inverse_arm(desired_tr))
-    Body.set_command_position(iqArm)
+    --
     print('\Rotate to')
     print(T.tostring(desired_tr))
+    --
+    local iqArm = vector.new(K.inverse_arm(desired_tr))
+    Body.set_command_position(iqArm)
     return
   end
 

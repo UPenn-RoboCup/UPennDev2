@@ -196,8 +196,11 @@ static const struct luaL_Reg kinematics_lib [] = {
 };
 
 static const def_info kinematics_constants[] = {
-  {"upperArmLength", upperArmLength},
+  {"baseLength", baseLength},
   {"lowerArmLength", lowerArmLength},
+  {"upperArmLength", upperArmLength},
+  {"wristLength", wristLength},
+  {"handLength", handLength},
   {NULL, 0}
 };
 
@@ -211,4 +214,3 @@ int luaopen_YouBotKinematics (lua_State *L) {
 	lua_install_constants(L, kinematics_constants);
 	return 1;
 }
-

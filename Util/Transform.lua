@@ -185,8 +185,8 @@ end
 
 local function mul(t1, t2)
   local t = {}
-  -- Matrix * Vector
   if type(t2[1]) == "number" then
+    -- Matrix * Vector
     for i = 1,4 do
       t[i] = t1[i][1] * t2[1]
       + t1[i][2] * t2[2]
@@ -194,8 +194,8 @@ local function mul(t1, t2)
       + t1[i][4] * t2[4]
     end
     return vector.new(t)
-    -- Matrix * Matrix
   elseif type(t2[1]) == "table" then
+    -- Matrix * Matrix
     for i = 1,4 do
       t[i] = {}
       for j = 1,4 do
@@ -230,27 +230,49 @@ Transform.copy = function(tt)
   return t
 end
 
--- TODO: intrinsic/extrinsic rots
---[[
 -- Rotate t1 by t2, rotation component only
-libTransform.local_intrinsic_rot = function(t1,t2)
-  local t3 = t1:clone()
-  local r1 = t1:sub(1,3,1,3)
-  local r2 = t2:sub(1,3,1,3)
-  local r3 = t3:sub(1,3,1,3)
-  r3:mm(r2,r1)
-  return t3
+Transform.local_intrinsic_rot = function(t1,t2)
+  -- Matrix * Matrix
+  local t = {}
+  for i = 1,3 do
+    t[i] = {}
+    for j = 1,3 do
+      t[i][j] = t2[i][1] * t1[1][j]
+      + t2[i][2] * t1[2][j]
+      + t2[i][3] * t1[3][j]
+    end
+    t[i] = vector.new(t[i])
+  end
+  -- Copy the translation
+  t[1][4] = t1[1][4]
+  t[2][4] = t1[2][4]
+  t[3][4] = t1[3][4]
+  -- Set the bottom row
+  t[4] = vector.new{0, 0, 0, 1}
+  return setmetatable(t, mt)
 end
+
 -- Rotate t2 by t1, where t1 is the present transform (rot component only)
-libTransform.local_extrinsic_rot = function(t1,t2)
-  local t3 = t1:clone()
-  local r1 = t1:sub(1,3,1,3)
-  local r2 = t2:sub(1,3,1,3)
-  local r3 = t3:sub(1,3,1,3)
-  r3:mm(r1,r2)
-  return t3
+Transform.local_extrinsic_rot = function(t1,t2)
+  -- Matrix * Matrix
+  local t = {}
+  for i = 1,3 do
+    t[i] = {}
+    for j = 1,3 do
+      t[i][j] = t1[i][1] * t2[1][j]
+      + t1[i][2] * t2[2][j]
+      + t1[i][3] * t2[3][j]
+    end
+    t[i] = vector.new(t[i])
+  end
+  -- Copy the translation
+  t[1][4] = t1[1][4]
+  t[2][4] = t1[2][4]
+  t[3][4] = t1[3][4]
+  -- Set the bottom row
+  t[4] = vector.new{0, 0, 0, 1}
+  return setmetatable(t, mt)
 end
---]]
 
 -- Use the 6D vector
 local function tostring(t, formatstr)

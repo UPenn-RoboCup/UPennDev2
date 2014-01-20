@@ -230,50 +230,6 @@ Transform.copy = function(tt)
   return t
 end
 
--- Rotate t1 by t2, rotation component only
-Transform.local_intrinsic_rot = function(t1,t2)
-  -- Matrix * Matrix
-  local t = {}
-  for i = 1,3 do
-    t[i] = {}
-    for j = 1,3 do
-      t[i][j] = t2[i][1] * t1[1][j]
-      + t2[i][2] * t1[2][j]
-      + t2[i][3] * t1[3][j]
-    end
-    t[i] = vector.new(t[i])
-  end
-  -- Copy the translation
-  t[1][4] = t1[1][4]
-  t[2][4] = t1[2][4]
-  t[3][4] = t1[3][4]
-  -- Set the bottom row
-  t[4] = vector.new{0, 0, 0, 1}
-  return setmetatable(t, mt)
-end
-
--- Rotate t2 by t1, where t1 is the present transform (rot component only)
-Transform.local_extrinsic_rot = function(t1,t2)
-  -- Matrix * Matrix
-  local t = {}
-  for i = 1,3 do
-    t[i] = {}
-    for j = 1,3 do
-      t[i][j] = t1[i][1] * t2[1][j]
-      + t1[i][2] * t2[2][j]
-      + t1[i][3] * t2[3][j]
-    end
-    t[i] = vector.new(t[i])
-  end
-  -- Copy the translation
-  t[1][4] = t1[1][4]
-  t[2][4] = t1[2][4]
-  t[3][4] = t1[3][4]
-  -- Set the bottom row
-  t[4] = vector.new{0, 0, 0, 1}
-  return setmetatable(t, mt)
-end
-
 -- Use the 6D vector
 local function tostring(t, formatstr)
   return tostring( Transform.position6D(t), formatstr )

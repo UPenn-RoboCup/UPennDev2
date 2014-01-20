@@ -238,71 +238,18 @@ function libTransform.inv(a)
   return t
 end
 
+-- Find the closest Orthonormal matrix for the rotaiton component
+-- Calculating square roots via LAPACK:
+-- http://math.stackexchange.com/questions/106774/matrix-square-root
 --[[
-  -- These should form an orthonormal basis
-  -- Each norm is 1
-  t2n = t2n / vector.norm(t2n);
-  s2s = s2s / vector.norm(s2s);
-  --Check the properties:
-  --if( t2n*s2s > 0.05 ) then
-  --print('Dot product should be zero: ', n2t*sL2sR);
-  --end
-  -- Find the cross product
-  chest = cross(s2s,t2n);
-
-  -- Remap the coordinates
-  u = vector.new({chest[3],chest[1],chest[2]})
-  v = vector.new({s2s[3],s2s[1],s2s[2]})
-  w = vector.new({t2n[3],t2n[1],t2n[2]})
-
-  -- Find the closest Orthonormal matrix
-  local matrix = require 'matrix'
-  M = matrix.transpose( matrix{u,v,w} )
-  -- Real Rotation Matrix
-  R = M*(matrix.transpose(M)*M)^-1/2
---]]
-
---[[
--- Extract Just the rotation component
-libTransform.extract_rot = function(t)
-  local tr = t:clone()
-  tr[1][4] = 0
-  tr[2][4] = 0
-  tr[3][4] = 0
-  return tr
-end
-libTransform.copy_rot = function(t1,t2)
-  local r1 = t1:sub(1,3,1,3)
-  local r2 = t2:sub(1,3,1,3)
-  r1:copy(r2)
-  return t1
-end
-libTransform.set_trans = function(t,dx,dy,dz)
-  t[1][4] = dx
-  t[2][4] = dy
-  t[3][4] = dz
-  return t
+function libTransform.nearest( rotation )
+  local tr = torch.eye(4)
+  local rot = tr:sub(1,3,1,3)
+  local tmp = torch.mm(rotation:t(),rotation)
+  local tmp2 = tmp
+  rot:mm( rotation, (tmp^-1/2) )
 end
 --]]
-
--- Rotate t1 by t2, rotation component only
-libTransform.local_intrinsic_rot = function(t1,t2)
-  local t3 = t1:clone()
-  local r1 = t1:sub(1,3,1,3)
-  local r2 = t2:sub(1,3,1,3)
-  local r3 = t3:sub(1,3,1,3)
-  r3:mm(r2,r1)
-  return t3
-end
--- Rotate t2 by t1, where t1 is the present transform (rot component only)
-libTransform.local_extrinsic_rot = function(t1,t2)
-  local t3 = t1:clone()
-  local r1 = t1:sub(1,3,1,3)
-  local r2 = t2:sub(1,3,1,3)
-  local r3 = t3:sub(1,3,1,3)
-  r3:mm(r1,r2)
-  return t3
-end
 
 -- Put element of t into tr
 libTransform.copy = function(t)

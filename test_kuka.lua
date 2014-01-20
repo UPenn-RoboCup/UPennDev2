@@ -16,21 +16,24 @@ local trans_arm = {
 
 -- Rotate (locally) the end effector
 local dr = 0.05
-local rot_arm = {
+local post_arm = {
   [']'] = T.rotY(dr),
   ['['] = T.rotY(-dr),
   ["'"] = T.rotZ(dr),
   [';'] = T.rotZ(-dr),
+  ["/"] = T.trans(0,0,ds),
+  ['.'] = T.trans(0,0,-ds),
 }
 
-local dv = 0.01
+local dv = 0.05
+local da = 0.05
 local move_base = {
   w = vector.new{dv,0,0},
   x = vector.new{-dv,0,0},
   a = vector.new{0,dv,0},
   d = vector.new{0,-dv,0},
-  q = vector.new{0,0,.01},
-  e = vector.new{0,0,-.01},
+  q = vector.new{0,0,da},
+  e = vector.new{0,0,-da},
 }
 
 local dq = 0.05
@@ -39,18 +42,32 @@ local function process_keycode(keycode,t_diff)
   local char = string.char(keycode)
   local char_lower = string.lower(char)
 
+  if char==' ' then
+    -- Debugging
+    local grip = jcm.get_gripper_command_position()
+    local qArm = Body.get_position()
+    local fk = K.forward_arm(qArm)
+    local cur_vel = mcm.get_walk_vel()
+    print('cur_vel',cur_vel)
+    print()
+    print('grip',grip[1])
+    print()
+    print('qArm',qArm)
+    print()
+    print(T.tostring(fk))
+    return
+  end
+
   -- Open and close the gripper
   if char_lower=='g' then
     local cur_g = jcm.get_gripper_command_position()
     cur_g[1] = math.max(cur_g[1] - 0.0025,0)
     jcm.set_gripper_command_position(cur_g)
-    print('New gripper',cur_g[1])
     return
   elseif char_lower=='h' then
     local cur_g = jcm.get_gripper_command_position()
     cur_g[1] = math.min(cur_g[1] + 0.0025,0.025)
     jcm.set_gripper_command_position(cur_g)
-    print('New gripper',cur_g[1])
     return
   end
   
@@ -59,22 +76,15 @@ local function process_keycode(keycode,t_diff)
     local qArm = Body.get_position()
     local fk = K.forward_arm(qArm)
     local desired_tr = d_tr * fk
-    --
-    print('\Rotate to')
-    print(T.tostring(desired_tr))
-    --
     local iqArm = vector.new(K.inverse_arm(desired_tr))
     Body.set_command_position(iqArm)
     return
-  elseif rot_arm[char] then
-    local d_tr = rot_arm[char]
+  elseif post_arm[char] then
+    local d_tr = post_arm[char]
     local qArm = Body.get_position()
     local fk = K.forward_arm(qArm)
-    local desired_tr = T.local_extrinsic_rot(fk,d_tr)
-    --
-    print('\Rotate to')
-    print(T.tostring(desired_tr))
-    --
+    --local desired_tr = T.local_extrinsic_rot(fk,d_tr)
+    local desired_tr = fk * d_tr
     local iqArm = vector.new(K.inverse_arm(desired_tr))
     Body.set_command_position(iqArm)
     return
@@ -89,25 +99,21 @@ local function process_keycode(keycode,t_diff)
     local qArm = Body.get_position()
     local qCmd = qArm + delta_q
     Body.set_command_position(qCmd)
-    print('\nDirect to',qCmd)
     return
   elseif char=='-' then
     local qArm = Body.get_position()
     local qCmd = qArm - delta_q
     Body.set_command_position(qCmd)
-    print('\nDirect to',qCmd)
     return
   end
 
   if move_base[char] then
     local cur_vel = mcm.get_walk_vel()
     local desired = cur_vel + move_base[char]
-    print('\n\tBase |',desired)
     mcm.set_walk_vel(desired)
     return
   elseif char=='s' then
     local desired = vector.zeros(3)
-    print('\n\tBase |',desired)
     mcm.set_walk_vel(desired)
     return
   end

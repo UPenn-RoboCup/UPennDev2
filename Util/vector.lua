@@ -18,6 +18,12 @@ local function new(t)
   return setmetatable(t, mt)
 end
 
+local function copy(t)
+  local tt = {}
+  for i=1,#t do tt[i] = t[i] end
+  return setmetatable(t, mt)
+end
+
 local function ones(n)
   n = n or 1
   local t = {}
@@ -206,6 +212,7 @@ vector.unm = unm
 vector.slice = slice
 vector.norm  = norm
 vector.cross = cross
+vector.copy = copy
 vector.sum = sum
 
 return vector

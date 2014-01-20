@@ -44,9 +44,6 @@ local delta_q = vector.zeros(5)
 local function process_keycode(keycode,t_diff)
   local char = string.char(keycode)
   local char_lower = string.lower(char)
-  
-  local tmp = K.test()
-  print('tmp',tmp)
 
   -- Open and close the gripper
   if char_lower=='g' then
@@ -67,8 +64,9 @@ local function process_keycode(keycode,t_diff)
     local d_tr = trans_arm[char]
     local qArm = Body.get_position()
     local fk = K.forward_arm(qArm)
-    if T.copy then fk = T.copy(fk) end
     local desired_tr = d_tr * fk
+    print('\nTranslate to')
+    print(T.tostring(desired_tr))
     local iqArm = vector.new(K.inverse_arm(desired_tr))
     Body.set_command_position(iqArm)
     return
@@ -76,23 +74,15 @@ local function process_keycode(keycode,t_diff)
     local d_tr = rot_arm[char]
     local qArm = Body.get_position()
     local fk = K.forward_arm(qArm)
-    if T.copy then fk = T.copy(fk) end
     local desired_tr = T.local_extrinsic_rot(fk,d_tr)
+    if type(desired_tr)=='table' then
+      -- If not using torch
+      desired_tr = T.position6d(desired_tr)
+    end
     local iqArm = vector.new(K.inverse_arm(desired_tr))
     Body.set_command_position(iqArm)
-    return
-  end
-  
-  if move_base[char] then
-    local cur_vel = mcm.get_walk_vel()
-    local desired = cur_vel + move_base[char]
-    print('\n\tBase |',desired)
-    mcm.set_walk_vel(desired)
-    return
-  elseif char=='s' then
-    local desired = vector.zeros(3)
-    print('\n\tBase |',desired)
-    mcm.set_walk_vel(desired)
+    print('\Rotate to')
+    print(T.tostring(desired_tr))
     return
   end
 
@@ -105,35 +95,27 @@ local function process_keycode(keycode,t_diff)
     local qArm = Body.get_position()
     local qCmd = qArm + delta_q
     Body.set_command_position(qCmd)
-    -- Debug
-    --[[
-    local fk = K.forward_arm(qCmd)
-    --print('fk1',fk)
-    if T.copy then fk = T.copy(fk) end
-    --print('fk2',fk)
-    local p6D = T.position6D(fk)
-    local fArm = vector.new(p6D)
-    print('\nDirect | fArm',fArm)
-    --local zyz = T.to_zyz(fk)
-    --print('zyz',zyz)
-    --print('qArm',qArm)
-    --print('qCmd',qCmd)
-    --]]
+    print('\nDirect to',qCmd)
+    return
   elseif char=='-' then
     local qArm = Body.get_position()
     local qCmd = qArm - delta_q
     Body.set_command_position(qCmd)
-    -- Debug
-    --[[
-    local fk = K.forward_arm(qCmd)
-    if T.copy then fk = T.copy(fk) end
-    local fArm = vector.new(T.position6D(fk))
-    print('\nDirect | fArm',fArm)
-    --local zyz = T.to_zyz(fk)
-    --print('zyz',zyz)
-    --print('qArm',qArm)
-    --print('qCmd',qCmd)
-    --]]
+    print('\nDirect to',qCmd)
+    return
+  end
+
+  if move_base[char] then
+    local cur_vel = mcm.get_walk_vel()
+    local desired = cur_vel + move_base[char]
+    print('\n\tBase |',desired)
+    mcm.set_walk_vel(desired)
+    return
+  elseif char=='s' then
+    local desired = vector.zeros(3)
+    print('\n\tBase |',desired)
+    mcm.set_walk_vel(desired)
+    return
   end
   
 end

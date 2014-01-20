@@ -53,12 +53,84 @@ static std::vector<double> lua_checkvector(lua_State *L, int narg) {
 }
 
 #ifdef TORCH
-static std::vector<double> lua_checktransform(lua_State *L, int narg) {
-  std::vector<double> v(16);
-  return v;
+static const THDoubleTensor * luaT_checktransform(lua_State *L, int narg) {
+  const THDoubleTensor * tr =
+		(THDoubleTensor *) luaT_checkudata(L, narg, "torch.DoubleTensor");
+  // Check the dimensions
+  if(tr->size[0]!=4||tr->size[1]!=4)
+    luaL_error(L, "Bad dimensions: %ld x %ld",tr->size[0],tr->size[1]);
+  return tr;
+}
+static void luaT_pushtransform(lua_State *L, Transform t) {
+  // Make the Tensor
+  THLongStorage *sz = THLongStorage_newWithSize(2);
+  sz->data[0] = 4;
+  sz->data[1] = 4;
+  THDoubleTensor *_t = THDoubleTensor_newWithSize(sz,NULL);
+
+  // Copy the data
+  //double* dest = _t->storage->data;
+  for (int i = 0; i < 4; i++)
+    for (int j = 0; j < 4; j++)
+      THTensor_fastSet2d( _t, i, j, t(i,j) );
+
+  // Push the Tensor
+	luaT_pushudata(L, _t, "torch.DoubleTensor");
 }
 #endif
 
+static Transform lua_checktransform(lua_State *L, int narg) {
+  // Table of tables
+  luaL_checktype(L, narg, LUA_TTABLE);
+#if LUA_VERSION_NUM == 502
+	int n_el = lua_rawlen(L, 1);
+#else
+  int n_el = lua_objlen(L, 1);
+#endif
+  if(n_el!=4)
+    luaL_error(L, "Bad dimension! %d x ?",n_el);
+
+  // Make the Transform
+  Transform tr;
+  int i, j;
+
+  // Loop through the transform
+  for (i = 1; i <= 4; i++) {
+    // Grab the table entry
+    lua_rawgeti(L, narg, i);
+    // Get the top of the stack
+    int top_tbl = lua_gettop(L);
+    //printf("Top of stack: %d\n",top_arg);
+
+    luaL_checktype(L, top_tbl, LUA_TTABLE);
+    #if LUA_VERSION_NUM == 502
+      int n_el2 = lua_rawlen(L, 1);
+    #else
+      int n_el2 = lua_objlen(L, 1);
+    #endif
+    if(n_el!=4)
+      luaL_error(L, "Bad dimension! %d x %d",i,n_el2);
+
+    // Work with the table, which is pushed
+    for (j = 1; j <= 4; j++) {
+      // Grab the table entry on top of the stack (of 2 things?)
+      lua_rawgeti(L, top_tbl, j);
+      int top_num = lua_gettop(L);
+      // The number is now on the top of the stack
+      double el = luaL_checknumber(L, top_num);
+      // Work with the table, which is pushed
+      //printf("El @ (%d,%d)=%lf\n",i,j,el);
+      tr(i-1,j-1) = el;
+      // Remove the number from the stack
+      lua_pop(L, 1);
+    }
+    // Remove from the stack
+    lua_pop(L, 1);
+  }
+
+  // Return the Transform
+  return tr;
+}
 static void lua_pushtransform(lua_State *L, Transform t) {
 	lua_createtable(L, 4, 0);
 	for (int i = 0; i < 4; i++) {
@@ -71,24 +143,27 @@ static void lua_pushtransform(lua_State *L, Transform t) {
 	}
 }
 
-
 static int forward_arm(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
 	Transform t = YouBot_kinematics_forward_arm(&q[0]);
-	lua_pushtransform(L, t);
+
+  #ifdef TORCH
+    luaT_pushtransform(L, t);
+  #else
+    lua_pushtransform(L, t);
+  #endif
+
 	return 1;
 }
 
+// TODO: Take a Transform metatable in...?
 static int inverse_arm(lua_State *L) {
 	std::vector<double> qArm;
 
   #ifdef TORCH
-  const THDoubleTensor * tr =
-		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
+  const THDoubleTensor * tr = luaT_checktransform(L, 1);
   #else
-  std::vector<double> pArm = lua_checkvector(L, 1);
-  const double * tr = &pArm[0];
-  //Transform tr = transform6D(&pArm[0]);
+  Transform tr = lua_checktransform(L, 1);
   #endif
 
   qArm = YouBot_kinematics_inverse_arm( tr );
@@ -96,12 +171,11 @@ static int inverse_arm(lua_State *L) {
 	return 1;
 }
 
+/*
 static int test(lua_State *L) {
-  /*
   // This seems good...
-  THLongStorage *storage = THLongStorage_newWithSize(2);
-	luaT_pushudata(L, storage, "torch.LongStorage");
-  */
+  //THLongStorage *storage = THLongStorage_newWithSize(2);
+	//luaT_pushudata(L, storage, "torch.LongStorage");
 
   // This also seems to work!
   THLongStorage *sz = THLongStorage_newWithSize(2);
@@ -112,11 +186,12 @@ static int test(lua_State *L) {
 
 	return 1;
 }
+*/
 
 static const struct luaL_Reg kinematics_lib [] = {
 	{"forward_arm", forward_arm},
 	{"inverse_arm", inverse_arm},
-  {"test", test},
+  //{"test", test},
 	{NULL, NULL}
 };
 

@@ -46,8 +46,7 @@ Transform YouBot_kinematics_forward_arm(const double *q);
 #ifdef TORCH
 std::vector<double> YouBot_kinematics_inverse_arm(const THDoubleTensor * tr);
 #else
-//std::vector<double> YouBot_kinematics_inverse_arm(Transform trArm);
-std::vector<double> YouBot_kinematics_inverse_arm(const double *r);
+std::vector<double> YouBot_kinematics_inverse_arm(Transform tr);
 #endif
 
 #endif

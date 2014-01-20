@@ -209,9 +209,65 @@ local function mul(t1, t2)
   end
 end
 
+-- Copy
+Transform.copy = function(tt)
+  if type(t)=='table' then
+    -- Copy the table
+    local t = {}
+    t[1] = vector.copy(tt[1])
+    t[2] = vector.copy(tt[2])
+    t[3] = vector.copy(tt[3])
+    t[4] = vector.copy(tt[4])
+    return setmetatable(t, mt)
+  end
+  local t = Transform.eye()
+  for i=1,3 do
+    for j=1,4 do
+      t[i][j] = tt[i][j]
+    end
+  end
+  -- copy a tensor
+  return t
+end
+
+-- TODO: intrinsic/extrinsic rots
+--[[
+-- Rotate t1 by t2, rotation component only
+libTransform.local_intrinsic_rot = function(t1,t2)
+  local t3 = t1:clone()
+  local r1 = t1:sub(1,3,1,3)
+  local r2 = t2:sub(1,3,1,3)
+  local r3 = t3:sub(1,3,1,3)
+  r3:mm(r2,r1)
+  return t3
+end
+-- Rotate t2 by t1, where t1 is the present transform (rot component only)
+libTransform.local_extrinsic_rot = function(t1,t2)
+  local t3 = t1:clone()
+  local r1 = t1:sub(1,3,1,3)
+  local r2 = t2:sub(1,3,1,3)
+  local r3 = t3:sub(1,3,1,3)
+  r3:mm(r1,r2)
+  return t3
+end
+--]]
+
 -- Use the 6D vector
 local function tostring(t, formatstr)
   return tostring( Transform.position6D(t), formatstr )
+end
+-- Full matrix for the library tostring helper
+Transform.tostring = function(tr)
+  local pr = {}
+  for i=1,4 do
+    local row = {}
+    for j=1,4 do
+      table.insert(row,string.format('%6.3f',tr[i][j]))
+    end
+    local c = table.concat(row,', ')
+    table.insert(pr,string.format('[%s]',c))
+  end
+  return table.concat(pr,'\n')
 end
 
 mt.__mul = mul

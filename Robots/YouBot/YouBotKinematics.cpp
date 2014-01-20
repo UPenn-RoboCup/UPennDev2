@@ -37,7 +37,7 @@ Transform YouBot_kinematics_forward_arm(const double *q) {
 #ifdef TORCH
 std::vector<double> YouBot_kinematics_inverse_arm(const THDoubleTensor * tr) {
 #else
-std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
+std::vector<double> YouBot_kinematics_inverse_arm(Transform tr) {
 #endif
   double x, y, z, yaw, p, hand_yaw;
   #ifdef TORCH
@@ -65,18 +65,26 @@ std::vector<double> YouBot_kinematics_inverse_arm(const double *tr) {
   );
   */
 
-  //printf("xyz: %lf %lf %lf\n",x,y,z);
-  //printf("zyz: %lf %lf %lf\n",take2,p,hand_yaw);
   #else
   // Grab the position
-  x = tr[0];
-  y = tr[1];
-  z = tr[2];
-  // This is RPY pitch... hacked in lua to be ZYZ Y as "pitch"
-  p = tr[4];
-  // yaw is second Z
-  hand_yaw = tr[5];
+  x = tr(0,3);
+  y = tr(1,3);
+  z = tr(2,3);
+  // Grab the "pitch" desired (ZYZ where Y is "pitch")
+  double tmp1 = tr( 0, 2 );
+  double tmp2 = tr( 1, 2 );
+  p = atan2(
+    sqrt(tmp1*tmp1 + tmp2*tmp2),
+    tr( 2, 2 )
+  );
+  // Grab also the "yaw" of the gripper (ZYZ, where 2nd Z is yaw)
+  hand_yaw = atan2(
+    tr( 2, 1 ),
+    -1*tr( 2, 0 )
+  );
   #endif
+  //printf("xyz: %lf %lf %lf\n",x,y,z);
+  //printf("zyz: %lf %lf %lf\n",0.0,p,hand_yaw);
   
   // Remove the height of the body
   z -= baseLength;

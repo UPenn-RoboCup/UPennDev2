@@ -618,6 +618,398 @@ Robot {
     }
     ## End the Left arm chain
     
+    ## Begin the Legs
+    DEF Right_shoulder_pitch Solid {
+      translation 0 -0.17 0
+      children [
+        # Has no mesh?
+        ## Shoulder Pitch is root child    
+        HingeJoint {
+          device RotationalMotor {
+            name "TorsoPitch"
+            # TODO: Use NX Motor specs
+            maxVelocity 5.65486677646
+            maxTorque 2.5
+            # Not sure of these...
+            minPosition -2.92343
+            maxPosition 2.92343
+          } # End of the ShoulderR RotationalMotor
+          jointParameters HingeJointParameters {
+            # Out x for pitch
+            axis 1 0 0
+            # I think anchor means the up direction?
+            anchor 0.081 0 0
+          } # End of the ShoulderR HingeJointParameters
+          endPoint Solid {
+            translation 0 -0.038 0
+            children[
+              TORSO_PITCH_SERVO {scale 0.001 0.001 0.001}
+              HingeJoint {
+                device RotationalMotor {
+                  name "TorsoYaw"
+                  # TODO: Use NX Motor specs
+                  maxVelocity 5.65486677646
+                  maxTorque 2.5
+                  # Not sure of these...
+                  minPosition -2.92343
+                  maxPosition 2.92343
+                } # End of the ShoulderR RotationalMotor
+                jointParameters HingeJointParameters {
+                  # Out x for pitch
+                  axis 0 1 0
+                  # I think anchor means the up direction?
+                  anchor 0 0.081 0
+                } # End of the ShoulderR HingeJointParameters
+                endPoint Solid {
+                  children[
+                  PELVIS{
+                    translation 0 -0.0875 0
+                    scale 0.001 0.001 0.001
+                  }
+                  ## Begin Right Leg
+                  DEF Right_hip_yaw Solid {
+                    translation -0.072 -0.232 0
+                    children [
+                      HingeJoint {
+                        device RotationalMotor {
+                          name "PelvYR"
+                          # TODO: Use NX Motor specs
+                          maxVelocity 5.65486677646
+                          maxTorque 2.5
+                          # Not sure of these...
+                          minPosition -2.92343
+                          maxPosition 2.92343
+                        } # End of the PelvYR RotationalMotor
+                        jointParameters HingeJointParameters {
+                          # Out x for pitch
+                          axis 0 1 0
+                          # I think anchor means the up direction?
+                          anchor 0 0.081 0
+                        } # End of the PelvYR HingeJointParameters
+                        endPoint Solid {
+                          children[
+                            LEFT_HIP_YAW{
+                              translation 0 0.063 0
+                              scale 0.001 0.001 0.001
+                            }
+                            # Right_hip_roll
+                            HingeJoint {
+                              device RotationalMotor {
+                                name "PelvR"
+                                # TODO: Use NX Motor specs
+                                maxVelocity 5.65486677646
+                                maxTorque 2.5
+                                # Not sure of these...
+                                minPosition -2.92343
+                                maxPosition 2.92343
+                              } # End of the PelvYR RotationalMotor
+                              jointParameters HingeJointParameters {
+                                # Out x for pitch
+                                axis 0 0 1
+                                # I think anchor means the up direction?
+                                anchor 0 0 0.081
+                              } # End of the PelvYR HingeJointParameters
+                              endPoint Solid {
+                                children[
+                                  RIGHT_HIP_ROLL{scale 0.001 0.001 0.001}
+                                  # Right_hip_pitch
+                                  HingeJoint {
+                                    device RotationalMotor {
+                                      name "LegUpperR"
+                                      # TODO: Use NX Motor specs
+                                      maxVelocity 5.65486677646
+                                      maxTorque 2.5
+                                      # Not sure of these...
+                                      minPosition -2.92343
+                                      maxPosition 2.92343
+                                    } # End of the PelvYR RotationalMotor
+                                    jointParameters HingeJointParameters {
+                                      # I think z?
+                                      axis 1 0 0
+                                      # I think anchor means the up direction?
+                                      anchor 0.081 0 0
+                                    } # End of the PelvYR HingeJointParameters
+                                    endPoint Solid {
+                                      translation 0 -0.3 -0.03
+                                      children[
+                                        R_THIGH{
+                                          rotation 0 1 0 3.14159
+                                          translation 0 0.3 0.03
+                                          scale 0.001 0.001 0.001
+                                        }
+                                        # Right_knee_pitch
+                                        HingeJoint {
+                                          device RotationalMotor {
+                                            name "LegLowerR"
+                                            # TODO: Use NX Motor specs
+                                            maxVelocity 5.65486677646
+                                            maxTorque 2.5
+                                            # Not sure of these...
+                                            minPosition -2.92343
+                                            maxPosition 2.92343
+                                          } # End of the LegLowerR RotationalMotor
+                                          jointParameters HingeJointParameters {
+                                            # I think z?
+                                            axis 1 0 0
+                                            # I think anchor means the up direction?
+                                            anchor 0.081 0 0
+                                          } # End of the LegLowerR HingeJointParameters
+                                          endPoint Solid {
+                                            translation 0 -0.3 0.03
+                                            children[
+                                              R_LEG{
+                                                translation 0 0.3 0
+                                                rotation 0 1 0 3.14159
+                                                scale 0.001 0.001 0.001
+                                              }
+                                              # Right_ankle_pitch
+                                              HingeJoint {
+                                                device RotationalMotor {
+                                                  name "AnkleR"
+                                                  # TODO: Use NX Motor specs
+                                                  maxVelocity 5.65486677646
+                                                  maxTorque 2.5
+                                                  # Not sure of these...
+                                                  minPosition -2.92343
+                                                  maxPosition 2.92343
+                                                } # End of the LegLowerR RotationalMotor
+                                                jointParameters HingeJointParameters {
+                                                  # I think z?
+                                                  axis 1 0 0
+                                                  # I think anchor means the up direction?
+                                                  anchor 0.081 0 0
+                                                } # End of the LegLowerR HingeJointParameters
+                                                endPoint Solid {
+                                                  children[
+                                                    LEFT_ANKLE{scale 0.001 0.001 0.001}
+                                                    # Right_ankle_roll
+                                                    HingeJoint {
+                                                      device RotationalMotor {
+                                                        name "FootR"
+                                                        # TODO: Use NX Motor specs
+                                                        maxVelocity 5.65486677646
+                                                        maxTorque 2.5
+                                                        # Not sure of these...
+                                                        minPosition -2.92343
+                                                        maxPosition 2.92343
+                                                      } # End of the LegLowerR RotationalMotor
+                                                      jointParameters HingeJointParameters {
+                                                        # I think z?
+                                                        axis 0 0 1
+                                                        # I think anchor means the up direction?
+                                                        anchor 0 0 0.081
+                                                      } # End of the LegLowerR HingeJointParameters
+                                                      endPoint Solid {
+                                                        children[
+                                                          FOOT{scale 0.001 0.001 0.001}
+                                                          DEF R_FSR TouchSensor {
+                                                            translation 0 -0.1115 0.018
+                                                            name "R_FSR"
+                                                            boundingObject Box {size 0.145 0.012 0.26}
+                                                            physics Physics {
+                                                              density -1
+                                                              mass 0.0001
+                                                            }
+                                                            type "force"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                  ## End Right Leg
+                  ## Begin Left Leg
+                  DEF Left_hip_yaw Solid {
+                    translation 0.072 -0.232 0
+                    children [
+                      HingeJoint {
+                        device RotationalMotor {
+                          name "PelvYL"
+                          # TODO: Use NX Motor specs
+                          maxVelocity 5.65486677646
+                          maxTorque 2.5
+                          # Not sure of these...
+                          minPosition -2.92343
+                          maxPosition 2.92343
+                        } # End of the PelvYL RotationalMotor
+                        jointParameters HingeJointParameters {
+                          # Out x for pitch
+                          axis 0 1 0
+                          # I think anchor means the up direction?
+                          anchor 0 0.081 0
+                        } # End of the PelvYL HingeJointParameters
+                        endPoint Solid {
+                          children[
+                            LEFT_HIP_YAW{
+                              translation 0 0.063 0
+                              scale 0.001 0.001 0.001
+                            }
+                            # Left_hip_roll
+                            HingeJoint {
+                              device RotationalMotor {
+                                name "PelvL"
+                                # TODO: Use NX Motor specs
+                                maxVelocity 5.65486677646
+                                maxTorque 2.5
+                                # Not sure of these...
+                                minPosition -2.92343
+                                maxPosition 2.92343
+                              } # End of the PelvL RotationalMotor
+                              jointParameters HingeJointParameters {
+                                # Out x for pitch
+                                axis 0 0 1
+                                # I think anchor means the up direction?
+                                anchor 0 0 0.081
+                              } # End of the PelvL HingeJointParameters
+                              endPoint Solid {
+                                children[
+                                  RIGHT_HIP_ROLL{scale 0.001 0.001 0.001}
+                                  # Left_hip_pitch
+                                  HingeJoint {
+                                    device RotationalMotor {
+                                      name "LegUpperL"
+                                      # TODO: Use NX Motor specs
+                                      maxVelocity 5.65486677646
+                                      maxTorque 2.5
+                                      # Not sure of these...
+                                      minPosition -2.92343
+                                      maxPosition 2.92343
+                                    } # End of the LegUpperL RotationalMotor
+                                    jointParameters HingeJointParameters {
+                                      # I think z?
+                                      axis 1 0 0
+                                      # I think anchor means the up direction?
+                                      anchor 0.081 0 0
+                                    } # End of the LegUpperL HingeJointParameters
+                                    endPoint Solid {
+                                      translation 0 -0.3 -0.03
+                                      children[
+                                        L_THIGH{
+                                          #rotation 0 1 0 3.14159
+                                          translation 0 0.3 0.03
+                                          scale 0.001 0.001 0.001
+                                        }
+                                        # Left_knee_pitch
+                                        HingeJoint {
+                                          device RotationalMotor {
+                                            name "LegLowerL"
+                                            # TODO: Use NX Motor specs
+                                            maxVelocity 5.65486677646
+                                            maxTorque 2.5
+                                            # Not sure of these...
+                                            minPosition -2.92343
+                                            maxPosition 2.92343
+                                          } # End of the LegLowerL RotationalMotor
+                                          jointParameters HingeJointParameters {
+                                            # I think z?
+                                            axis 1 0 0
+                                            # I think anchor means the up direction?
+                                            anchor 0.081 0 0
+                                          } # End of the LegLowerL HingeJointParameters
+                                          endPoint Solid {
+                                            translation 0 -0.3 0.03
+                                            children[
+                                              L_LEG{
+                                                translation 0 0.3 0
+                                                #rotation 0 1 0 3.14159
+                                                scale 0.001 0.001 0.001
+                                              }
+                                              # Left_ankle_pitch
+                                              HingeJoint {
+                                                device RotationalMotor {
+                                                  name "AnkleL"
+                                                  # TODO: Use NX Motor specs
+                                                  maxVelocity 5.65486677646
+                                                  maxTorque 2.5
+                                                  # Not sure of these...
+                                                  minPosition -2.92343
+                                                  maxPosition 2.92343
+                                                } # End of the AnkleL RotationalMotor
+                                                jointParameters HingeJointParameters {
+                                                  # I think z?
+                                                  axis 1 0 0
+                                                  # I think anchor means the up direction?
+                                                  anchor 0.081 0 0
+                                                } # End of the AnkleL HingeJointParameters
+                                                endPoint Solid {
+                                                  children[
+                                                    LEFT_ANKLE{scale 0.001 0.001 0.001}
+                                                    # Left_ankle_roll
+                                                    HingeJoint {
+                                                      device RotationalMotor {
+                                                        name "FootL"
+                                                        # TODO: Use NX Motor specs
+                                                        maxVelocity 5.65486677646
+                                                        maxTorque 2.5
+                                                        # Not sure of these...
+                                                        minPosition -2.92343
+                                                        maxPosition 2.92343
+                                                      } # End of the FootL RotationalMotor
+                                                      jointParameters HingeJointParameters {
+                                                        # I think z?
+                                                        axis 0 0 1
+                                                        # I think anchor means the up direction?
+                                                        anchor 0 0 0.081
+                                                      } # End of the FootL HingeJointParameters
+                                                      endPoint Solid {
+                                                        children[
+                                                          FOOT{scale 0.001 0.001 0.001}
+                                                          DEF L_FSR TouchSensor {
+                                                            translation 0 -0.1115 0.018
+                                                            name "L_FSR"
+                                                            boundingObject Box {size 0.145 0.012 0.26}
+                                                            physics Physics {
+                                                              density -1
+                                                              mass 0.0001
+                                                            }
+                                                            type "force"
+                                                          }
+                                                        ]
+                                                      }
+                                                      
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                  ## End Left Leg
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+    ## End the Legs
     
   ] # End of the Robot children
 

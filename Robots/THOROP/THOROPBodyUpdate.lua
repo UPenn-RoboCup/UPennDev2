@@ -3,34 +3,18 @@
 -- (c) 2013 Stephen McGill, Seung-Joon Yi
 --------------------------------
 
--- Webots THOR-OP Body sensors
-
-local use_camera = true
-local use_lidar_chest  = true
-local use_pose   = true
-local use_lidar_chest  = false
-local use_lidar_head  = false
 -- if using one USB2Dynamixel
 local ONE_CHAIN = false
+-- if using the microstrain IMU
 local DISABLE_MICROSTRAIN = false
+-- if reading the grippers
 local READ_GRIPPERS = true
-
---Turn off camera for default for webots
---This makes body crash if we turn it on again...
-if IS_WEBOTS then use_camera = false end
-
--- Camera enabling
-if IS_TESTING then use_camera = false end
-
--- If using remote control, then must not overwrite our *cm definitions
---if not jcm then
-  -- Shared memory for the joints
-  require'jcm'
-  -- Shared memory for vision of the world
-  require'vcm'
-  -- Shared memory for world
-  require'wcm'
---end
+-- Shared memory for the joints
+require'jcm'
+-- Shared memory for vision of the world
+require'vcm'
+-- Shared memory for world
+require'wcm'
 
 -- Utilities
 local unix         = require'unix'
@@ -50,6 +34,9 @@ local Body = {}
 Body.DEG_TO_RAD = DEG_TO_RAD
 Body.RAD_TO_DEG = RAD_TO_DEG
 local get_time = unix.time
+
+-- How fast to update the body
+Body.update_cycle = 1 -- milliseconds
 
 --------------------------------
 -- Shared memory layout
@@ -75,34 +62,6 @@ local nJointRGrip = 2
 local indexLidar = 35
 local nJointLidar = 1
 local nJoint = 35 --33
-
-local jointNames = {
-	"Neck","Head", -- Head (Yaw,pitch)
-	-- Left Arm
-	"ShoulderL", "ArmUpperL", "LeftShoulderYaw",
-	"ArmLowerL","LeftWristYaw","LeftWristRoll","LeftWristYaw2",
-	-- Left leg
-	"PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",
-	-- Right leg
-	"PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
-	--Right arm
-	"ShoulderR", "ArmUpperR", "RightShoulderYaw","ArmLowerR",
-	"RightWristYaw","RightWristRoll","RightWristYaw2",
-	-- Waist
-	"TorsoYaw","TorsoPitch",
-	-- Gripper
-  "l_grip", "l_trigger",
-  "r_grip", "r_trigger",
-	-- lidar movement
-	"ChestLidarPan",
-}
-
-local passiveJointNames = {
-  "l_wrist_grip1_2","l_wrist_grip2_2","l_wrist_grip3_2",
-  "r_wrist_grip1_2","r_wrist_grip2_2","r_wrist_grip3_2",
-}
-
-assert(nJoint==#jointNames,'bad jointNames!')
 
 local parts = {
 	['Head']=vector.count(indexHead,nJointHead),
@@ -1557,20 +1516,32 @@ if IS_TESTING then
   })*DEG_TO_RAD
 
 elseif IS_WEBOTS then
-  -- TODO: fix the min/max/bias for the grippers
-  local Config     = require'Config'
-	local webots     = require'webots'
-  local simple_ipc = require'simple_ipc'
-  local jpeg       = require'jpeg'
-  local png        = require'png'
-  local udp        = require'udp'
-  local mp         = require'msgpack'
-  get_time    = webots.wb_robot_get_time
-  local t_last_keypressed = get_time()
 
-  local t_last_error =  -math.huge
-  -- Setup the webots tags
-  local tags = {}
+  local jointNames = {
+    "Neck","Head", -- Head (Yaw,pitch)
+    -- Left Arm
+    "ShoulderL", "ArmUpperL", "LeftShoulderYaw",
+    "ArmLowerL","LeftWristYaw","LeftWristRoll","LeftWristYaw2",
+    -- Left leg
+    "PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",
+    -- Right leg
+    "PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
+    --Right arm
+    "ShoulderR", "ArmUpperR", "RightShoulderYaw","ArmLowerR",
+    "RightWristYaw","RightWristRoll","RightWristYaw2",
+    -- Waist
+    "TorsoYaw","TorsoPitch",
+    -- Gripper
+    "l_grip", "l_trigger",
+    "r_grip", "r_trigger",
+    -- lidar movement
+    "ChestLidarPan",
+  }
+  local passiveJointNames = {
+    "l_wrist_grip1_2","l_wrist_grip2_2","l_wrist_grip3_2",
+    "r_wrist_grip1_2","r_wrist_grip2_2","r_wrist_grip3_2",
+  }
+  assert(nJoint==#jointNames,'bad jointNames!')
 
   servo.direction = vector.new({
     -1,-1, -- Head
@@ -1629,91 +1600,88 @@ elseif IS_WEBOTS then
   })*DEG_TO_RAD
 
 
+  -- Default configuration (toggle during run time)
+  local ENABLE_CAMERA = false
+  local ENABLE_CHEST_LIDAR  = false
+  local ENABLE_HEAD_LIDAR = false
+  local ENABLE_KINECT = false
+  local ENABLE_POSE   = false
 
+  require'wcm'
+  local torch = require'torch'
+  torch.Tensor = torch.DoubleTensor
+  local carray = require'carray'
+  local jpeg = require'jpeg'
 
-
-
-
-
-
-
-  -- Webots body broadcasting
-  local chest_lidar_wbt, head_lidar_wbt
-  head_lidar_wbt = {}
-  head_lidar_wbt.meta = {}
-  head_lidar_wbt.channel  = simple_ipc.new_publisher'head_lidar'
-  chest_lidar_wbt = {}
-  chest_lidar_wbt.meta = {}
-  chest_lidar_wbt.channel = simple_ipc.new_publisher'chest_lidar'
-
-  local head_camera_wbt, update_head_camera
-  -- camera
-  head_camera_wbt = {}
-  head_camera_wbt.meta = {}
-  --head_camera_wbt.channel = simple_ipc.new_publisher'head_cam'
-  --head_camera_wbt.channel = udp.new_sender(Config.net.operator.wired,Config.net.head_camera)
-  head_camera_wbt.channel = udp.new_sender(Config.net.operator.wired,Config.net.camera.head)
-  update_head_camera = function()
-    local metadata = {}
-    metadata.t = Body.get_time()
-    local net_settings = vcm.get_head_camera_net()
-    if net_settings[1]==0 then return end
-    local c_color
-    if net_settings[2]==1 then
-      metadata.c = 'jpeg'
-      c_color = jpeg.compress_rgb(
-        webots.to_rgb(tags.head_camera),
-        head_camera_wbt.width,
-        head_camera_wbt.height)
-      metadata.width = head_camera_wbt.width
-      metadata.height = head_camera_wbt.height
-    elseif net_settings[2]==2 then
-      metadata.c = 'png'
-      c_color = png.compress(
-        webots.to_rgb(tags.head_camera),
-        head_camera_wbt.width,
-        head_camera_wbt.height)
-      metadata.width = head_camera_wbt.width
-      metadata.height = head_camera_wbt.height
-    end
-    if not c_color then return end
-    local metapack = mp.pack(metadata)
-    local ret_c,err_c = head_camera_wbt.channel:send( metapack..c_color )
-
-    if err_c and metadata.t-t_last_error>5 then --Don't flood error message
-      print('head cam',util.color(err_c,'red'))
-      t_last_error = metadata.t
-    end
-    if net_settings[1]==1 then
-      net_settings[1] = 0
-      vcm.set_head_camera_net(net_settings)
-      return
-    end
-  end --update_head_camera
-
-
-    local timeStep = webots.wb_robot_get_basic_time_step()
-
---    local lidar_timeStep = 25
---    local camera_timeStep = 33
-  -- Lidar and camera timestep should be SLOWER than the webots timestep
-  local lidar_timeStep = math.max(25, timeStep)
+  local webots = require'webots'
+  -- Start the system
+  webots.wb_robot_init()
+  -- Acquire the timesteps
+  local timeStep = webots.wb_robot_get_basic_time_step()
   local camera_timeStep = math.max(33,timeStep)
+  local lidar_timeStep = math.max(25,timeStep)
+  Body.timeStep = timeStep
+  get_time = webots.wb_robot_get_time
+
+  -- Setup the webots tags
+  local tags = {}
+  local t_last_error = -math.huge
+
+  -- Ability to turn on/off items
+  local t_last_keypress = get_time()
+  -- Enable the keyboard 100ms
+  webots.wb_robot_keyboard_enable( 100 )
+  local key_action = {
+    c = function()
+      if ENABLE_LIDAR then
+        print(util.color('CHEST_LIDAR disabled!','yellow'))
+        webots.wb_camera_disable(tags.chest_lidar)
+        ENABLE_CHEST_LIDAR = false
+      else
+        print(util.color('CHEST_LIDAR enabled!','green'))
+        webots.wb_camera_enable(tags.chest_lidar,lidar_timeStep)
+        ENABLE_CHEST_LIDAR = true
+      end
+    end,
+    h = function()
+      if ENABLE_LIDAR then
+        print(util.color('HEAD_LIDAR disabled!','yellow'))
+        webots.wb_camera_disable(tags.head_lidar)
+        ENABLE_HEAD_LIDAR = false
+      else
+        print(util.color('HEAD_LIDAR enabled!','green'))
+        webots.wb_camera_enable(tags.head_lidar,lidar_timeStep)
+        ENABLE_HEAD_LIDAR = true
+      end
+    end,
+    c = function()
+      if ENABLE_CAMERA then
+        print(util.color('CAMERA disabled!','yellow'))
+        webots.wb_camera_disable(tags.hand_camera)
+        ENABLE_CAMERA = false
+      else
+        print(util.color('CAMERA enabled!','green'))
+        webots.wb_camera_enable(tags.hand_camera,camera_timeStep)
+        ENABLE_CAMERA = true
+      end
+    end,
+    k = function()
+      if ENABLE_KINECT then
+        print(util.color('KINECT disabled!','yellow'))
+        webots.wb_camera_disable(tags.kinect)
+        ENABLE_KINECT = false
+      else
+        print(util.color('KINECT enabled!','green'))
+        webots.wb_camera_enable(tags.kinect,camera_timeStep)
+        ENABLE_KINECT = true
+      end
+    end,
+  }
 
 	Body.entry = function()
 
     -- Request @ t=0 to always be earlier than position reads
     jcm.set_trequest_position( vector.zeros(nJoint) )
-
-		-- Initialize the webots system
-		webots.wb_robot_init()
-
-		-- Grab the update time
-
-    local timeStep = webots.wb_robot_get_basic_time_step()
-
-    -- Enable the keyboard 100ms
-    webots.wb_robot_keyboard_enable( 100 )
 
 		-- Grab the tags from the joint names
 		tags.joints = {}
@@ -1728,29 +1696,17 @@ elseif IS_WEBOTS then
 			end
 		end
 
-
-    tags.passive_joints = {}
-    --[[
-    for i,v in ipairs(passiveJointNames) do
-      tags.passive_joints[i] = webots.wb_robot_get_device(v)
-      if tags.passive_joints[i]>0 then
-        webots.wb_servo_enable_position(tags.passive_joints[i], timeStep)
-      else
-        print(v,'not found')
-      end
-    end
-    --]]
-
-
 		-- Add Sensor Tags
 		-- Accelerometer
 		tags.accelerometer = webots.wb_robot_get_device("Accelerometer")
 		webots.wb_accelerometer_enable(tags.accelerometer, timeStep)
-		-- Gyro
+
+    -- Gyro
 		tags.gyro = webots.wb_robot_get_device("Gyro")
 		webots.wb_gyro_enable(tags.gyro, timeStep)
+
     -- Perfect Pose
-    if use_pose then
+    if ENABLE_POSE then
       -- GPS
 		  tags.gps = webots.wb_robot_get_device("GPS")
 		  webots.wb_gps_enable(tags.gps, timeStep)
@@ -1761,89 +1717,40 @@ elseif IS_WEBOTS then
       tags.inertialunit = webots.wb_robot_get_device("InertialUnit")
       webots.wb_inertial_unit_enable(tags.inertialunit, timeStep)
     end
-    --[[
-		-- Kinect
-		tags.kinect = webots.wb_robot_get_device("kinect")
-		webots.wb_camera_enable(tags.kinect, timeStep)
-		--]]
-    -- Head Camera
-    tags.head_camera = webots.wb_robot_get_device("Camera")
-    -- Chest Lidar
+
+    -- Grab the camera
+    tags.hand_camera = webots.wb_robot_get_device("HeadCamera")
+    if ENABLE_CAMERA then
+      webots.wb_camera_enable(tags.hand_camera, camera_timeStep)
+    end
+
+    -- Grab the hokuyos
     tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
-    chest_lidar_wbt.meta.count = 0
-    -- Head Lidar
-    if use_lidar_chest then
+    if ENABLE_CHEST_LIDAR then
       webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
-      chest_lidar_wbt.pointer = webots.wb_camera_get_range_image(tags.chest_lidar)
     end
-
---[[
-
-    tags.head_lidar  = webots.wb_robot_get_device("HeadLidar")
-    head_lidar_wbt.meta.count = 0
-    if use_lidar_head then
+    tags.head_lidar = webots.wb_robot_get_device("HeadLidar")
+    if ENABLE_HEAD_LIDAR then
       webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
-      head_lidar_wbt.pointer  = webots.wb_camera_get_range_image(tags.head_lidar)
-    end
---]]
-
-    if use_camera then
-      webots.wb_camera_enable(tags.head_camera, camera_timeStep)
-      head_camera_wbt.meta.count = 0
-      head_camera_wbt.width = webots.wb_camera_get_width(tags.head_camera)
-      head_camera_wbt.height = webots.wb_camera_get_height(tags.head_camera)
     end
 
+    -- Grab the kinect
+    tags.kinect = webots.wb_robot_get_device("kinect")
+    if ENABLE_KINECT then
+      webots.wb_camera_enable(tags.kinect, camera_timeStep)
+    end
 
-
-    -- Update the Sensor Parameters in shared memory
---[[
-    vcm.set_head_lidar_sensor_params({
-      webots.wb_camera_get_fov(tags.head_lidar),
-      webots.wb_camera_get_width(tags.head_lidar)
-    })
---]]
-    vcm.set_chest_lidar_sensor_params({
-      webots.wb_camera_get_fov(tags.chest_lidar),
-      webots.wb_camera_get_width(tags.chest_lidar)
-    })
-
---[[
-    --FSR sensors
-    tags.l_ul_fsr = webots.wb_robot_get_device("L_UL_FSR")
-    tags.l_ur_fsr = webots.wb_robot_get_device("L_UR_FSR")
-    tags.l_ll_fsr = webots.wb_robot_get_device("L_LL_FSR")
-    tags.l_lr_fsr = webots.wb_robot_get_device("L_LR_FSR")
-
-    webots.wb_touch_sensor_enable(tags.l_ul_fsr, timeStep)
-    webots.wb_touch_sensor_enable(tags.l_ur_fsr, timeStep)
-    webots.wb_touch_sensor_enable(tags.l_ll_fsr, timeStep)
-    webots.wb_touch_sensor_enable(tags.l_lr_fsr, timeStep)
-
-    tags.r_ul_fsr = webots.wb_robot_get_device("R_UL_FSR")
-    tags.r_ur_fsr = webots.wb_robot_get_device("R_UR_FSR")
-    tags.r_ll_fsr = webots.wb_robot_get_device("R_LL_FSR")
-    tags.r_lr_fsr = webots.wb_robot_get_device("R_LR_FSR")
-
-    webots.wb_touch_sensor_enable(tags.r_ul_fsr, timeStep)
-    webots.wb_touch_sensor_enable(tags.r_ur_fsr, timeStep)
-    webots.wb_touch_sensor_enable(tags.r_ll_fsr, timeStep)
-    webots.wb_touch_sensor_enable(tags.r_lr_fsr, timeStep)
-
-
---]]
+    -- Foot Sensors
     tags.l_fsr = webots.wb_robot_get_device("L_FSR")
     tags.r_fsr = webots.wb_robot_get_device("R_FSR")
-    webots.wb_touch_sensor_enable(tags.l_fsr, timeStep)
-    webots.wb_touch_sensor_enable(tags.r_fsr, timeStep)
+    if ENABLE_FSR then
+      webots.wb_touch_sensor_enable(tags.l_fsr, timeStep)
+      webots.wb_touch_sensor_enable(tags.r_fsr, timeStep)
+    end
 
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
-		Body.timeStep = timeStep
-		-- Filter the IMU a bit?
-		-- TODO: Should use Yida's IMU filter
-		--imuAngle = {0, 0, 0}
-		--aImuFilter = 1 - math.exp(-tDelta/0.5)
+    webots.wb_robot_step(timeStep)
 
     for idx, jtag in ipairs(tags.joints) do
       if jtag>0 then
@@ -1864,7 +1771,7 @@ elseif IS_WEBOTS then
 		local tDelta = .001 * Body.timeStep
 
 
-    Body.update_finger(tDelta)
+    --Body.update_finger(tDelta)
 
 
 
@@ -1898,7 +1805,7 @@ elseif IS_WEBOTS then
 			if en>0 and jtag>0 then
         local pos = servo.direction[idx] * (new_pos + servo.rad_bias[idx])
         --SJ: Webots is STUPID so we should set direction correctly to prevent flip
-        local val = webots.wb_servo_get_position( jtag )
+        local val = webots.wb_motor_get_position( jtag )
 
         if pos>val+math.pi then
           webots.wb_motor_set_position(jtag, pos-2*math.pi )
@@ -1927,50 +1834,16 @@ elseif IS_WEBOTS then
     jcm.sensorPtr.gyro[2] = -(gyro[2]-512)/512*39.24
     jcm.sensorPtr.gyro[3] = (gyro[3]-512)/512*39.24
 
-    -- FSR forces
-    --[[
-    jcm.sensorPtr.lfoot[1] = webots.wb_touch_sensor_get_value(tags.l_ul_fsr)
-    jcm.sensorPtr.lfoot[2] = webots.wb_touch_sensor_get_value(tags.l_ur_fsr)
-    jcm.sensorPtr.lfoot[3] = webots.wb_touch_sensor_get_value(tags.l_ll_fsr)
-    jcm.sensorPtr.lfoot[4] = webots.wb_touch_sensor_get_value(tags.l_lr_fsr)
-    --
-    jcm.sensorPtr.rfoot[1] = webots.wb_touch_sensor_get_value(tags.r_ul_fsr)
-    jcm.sensorPtr.rfoot[2] = webots.wb_touch_sensor_get_value(tags.r_ur_fsr)
-    jcm.sensorPtr.rfoot[3] = webots.wb_touch_sensor_get_value(tags.r_ll_fsr)
-    jcm.sensorPtr.rfoot[4] = webots.wb_touch_sensor_get_value(tags.r_lr_fsr)
-    --]]
-
-    jcm.sensorPtr.lfoot[1] = webots.wb_touch_sensor_get_value(tags.l_fsr)*4
-
-    --
-    jcm.sensorPtr.rfoot[1] = webots.wb_touch_sensor_get_value(tags.r_fsr)*4
-
-
-    --Passive joint handling (2nd digit for figners)
-    -- local passive_jangle_offsets = {
-    --   math.pi/4,-math.pi/4,-math.pi/4,-math.pi/4,math.pi/4,math.pi/4
-    -- }
-    -- local passive_jangle_factor = 1.3;
-    -- for i=1,6 do
-    --   local ang_orig = webots.wb_servo_get_position(tags.joints[i+Body.indexLGrip-1])
-    --   --webots.wb_servo_set_position(tags.passive_joints[i],
-    --   --  (ang_orig + passive_jangle_offsets[i]) * passive_jangle_factor  )
-    -- end
-
---[[
-    print("FSRL:",unpack(jcm.get_sensor_lfoot()))
-    print("FSRR:",unpack(jcm.get_sensor_rfoot()))
- --]]
-
-
-    -- Debugging:
-    --print('Gyro:',Body.get_sensor_gyro())
-    --print('Accel:',Body.get_sensor_accelerometer())
+    -- FSR
+    if ENABLE_FSR then
+      jcm.sensorPtr.lfoot[1] = webots.wb_touch_sensor_get_value(tags.l_fsr)*4
+      jcm.sensorPtr.rfoot[1] = webots.wb_touch_sensor_get_value(tags.r_fsr)*4
+    end
 
     -- GPS and compass data
     -- Webots x is our y, Webots y is our z, Webots z is our x,
     -- Our x is Webots z, Our y is Webots x, Our z is Webots y
-    if use_pose then
+    if ENABLE_POSE then
       local gps     = webots.wb_gps_get_values(tags.gps)
       local compass = webots.wb_compass_get_values(tags.compass)
       local angle   = math.atan2( compass[3], compass[1] )
@@ -2004,117 +1877,36 @@ elseif IS_WEBOTS then
 			end
 		end
 
-    -- Set lidar data into shared memory
-    if use_lidar_head then
-      Body.set_head_lidar(head_lidar_wbt.pointer)
-      local meta = head_lidar_wbt.meta
-      meta.t = t
-      meta.count  = head_lidar_wbt.meta.count  + 1
-      meta.hangle = Body.get_head_position()
-      meta.rpy  = Body.get_sensor_rpy()
-      meta.gyro = Body.get_sensor_gyro()
-      meta.pose = wcm.get_robot_pose()
-      -- Send the count on the channel so they know to process a new frame
-      head_lidar_wbt.channel:send(  mp.pack(head_lidar_wbt.meta)  )
+    -- Grab a camera frame
+    if ENABLE_CAMERA then
+      local camera_fr = webots.to_rgb(tags.hand_camera)
+      local w = webots.wb_camera_get_width(tags.hand_camera)
+      local h = webots.wb_camera_get_height(tags.hand_camera)
+      local jpeg_fr  = jpeg.compress_rgb(camera_fr,w,h)
     end
-    if use_lidar_chest then
-      Body.set_chest_lidar(chest_lidar_wbt.pointer)
-      local meta = chest_lidar_wbt.meta
-      -- Save important metadata
-      meta.t = t
-      meta.count = chest_lidar_wbt.meta.count + 1
-      meta.pangle = Body.get_lidar_position(1)
-      meta.rpy  = Body.get_sensor_rpy()
-      meta.gyro = Body.get_sensor_gyro()
-      meta.pose = wcm.get_robot_pose()
-      -- Send the count on the channel so they know to process a new frame
-      chest_lidar_wbt.channel:send( mp.pack(meta) )
+    -- Grab a lidar scan
+    if ENABLE_CHEST_LIDAR then
+      local w = webots.wb_camera_get_width(tags.chest_lidar)
+      local h = webots.wb_camera_get_height(tags.chest_lidar)
+      local lidar_fr = webots.wb_camera_get_range_image(tags.chest_lidar)
+      local lidar_array = carray.float( lidar_fr, w*h )
+    end
+    -- Grab a lidar scan
+    if ENABLE_HEAD_LIDAR then
+      local w = webots.wb_camera_get_width(tags.head_lidar)
+      local h = webots.wb_camera_get_height(tags.head_lidar)
+      local lidar_fr = webots.wb_camera_get_range_image(tags.head_lidar)
+      local lidar_array = carray.float( lidar_fr, w*h )
     end
 
-
-
-    if use_camera then
-      update_head_camera()
-    end --use_camera
-
-    -- Grab keyboard input
+    -- Grab keyboard input, for modifying items
     local key_code = webots.wb_robot_keyboard_get_key()
     local key_char = string.char(key_code)
     local key_char_lower = string.lower(key_char)
-
-    --avoid auto-repeat
-    local t = get_time()
-    if (t-t_last_keypressed)<1 then return end
-
-    if key_char_lower=='k' then
---[[
-      t_last_keypressed = t
-      use_lidar_head = not use_lidar_head
-      -- Toggle lidar
-      if use_lidar_head then
-        print(util.color('HEAD LIDAR enabled!','yellow'))
-        webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
-        head_lidar_wbt.pointer  = webots.wb_camera_get_range_image(tags.head_lidar)
-      else
-        print(util.color('HEAD LIDAR disabled!','yellow'))
-        webots.wb_camera_disable(tags.head_lidar)
-      end
---]]
-    elseif key_char_lower=='l' then
-      t_last_keypressed = t
-      use_lidar_chest = not use_lidar_chest
-      -- Toggle lidar
-      if use_lidar_chest then
-        print(util.color('CHEST LIDAR enabled!','yellow'))
-        webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
-        chest_lidar_wbt.pointer =
-					webots.wb_camera_get_range_image(tags.chest_lidar)
-      else
-        print(util.color('CHEST LIDAR disabled!','yellow'))
-        webots.wb_camera_disable(tags.chest_lidar)
-      end
-    elseif key_char_lower=='c' then
-      t_last_keypressed = t
-      use_camera = not use_camera
-      -- Toggle camera
-      if use_camera then
-        print(util.color('Camera enabled!','yellow'))
-        vcm.set_head_camera_net({2,1,0})--to enable camera streaming
-        webots.wb_camera_enable(tags.head_camera, camera_timeStep)
-      else
-        print(util.color('Camera disabled!','yellow'))
-        vcm.set_head_camera_net({0,0,0})--to enable camera streaming
-        webots.wb_camera_disable(tags.head_camera)
-      end
+    if t-t_last_keypress>1 and key_code and key_action[key_char_lower] then
+      key_action[key_char_lower]()
+      t_last_keypress = t
     end
-
-
---COM testing
---[[
-    local qWaist = Body.get_waist_command_position()
-    local qLArm = Body.get_larm_command_position()
-    local qRArm = Body.get_rarm_command_position()
-    local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,
-        Config.walk.bodyTilt)
---]]
---[[
-    print(string.format("ubody Com:%.3f %.3f %.3f mass:%.3f",
-      com[1]/com[4],com[2]/com[4],com[3]/com[4], com[4]))
-]]--
-
-
-
-
---[[
-    print("COML:",unpack(comLArm))
-    print("COMR:",unpack(comRArm))
---]]
-
-
-
-
-
-
 
 	end -- function
 

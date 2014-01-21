@@ -182,6 +182,8 @@ if IS_WEBOTS then
   
   -- Ability to turn on/off items
   local t_last_keypress = get_time()
+  -- Enable the keyboard 100ms
+  webots.wb_robot_keyboard_enable( 100 )
   local key_action = {
     l = function()
       if ENABLE_LIDAR then
@@ -277,13 +279,14 @@ if IS_WEBOTS then
     tags.kinect = webots.wb_robot_get_device("kinect")
     local w = webots.wb_camera_get_width(tags.kinect)
     local h = webots.wb_camera_get_height(tags.kinect)
+    if ENABLE_KINECT then
+      webots.wb_camera_enable(tags.kinect, camera_timeStep)
+    end
+
     -- Kinect torch data containers
     depth_torch = torch.FloatTensor( w*h ):zero()
     depth_byte  = torch.ByteTensor( w*h ):zero()
     depth_adj   = torch.FloatTensor( w*h ):zero()
-    if ENABLE_KINECT then
-      webots.wb_camera_enable(tags.kinect, camera_timeStep)
-    end
 
     -- Step the simulation
 		webots.wb_robot_step(Body.timeStep)
@@ -299,9 +302,6 @@ if IS_WEBOTS then
       jcm.sensorPtr.position[idx] = val
       jcm.actuatorPtr.command_position[idx] = val
     end
-    
-    -- Enable the keyboard 100ms
-    webots.wb_robot_keyboard_enable( 100 )
 
   end
   

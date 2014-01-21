@@ -14,11 +14,11 @@ PROTO THOROP7_Update [
   field SFBool     synchronization TRUE
   field SFInt32    lidarRays 1081
   field SFString   name "THOR-OP"
-  #field SFVec2f    cameraWindowPosition 0 0
-  #field SFFloat    cameraPixelSize 1.0
-  #field SFInt32    cameraWidth 320
-  #field SFInt32    cameraHeight 180
-	#field SFFloat    cameraFov 1.0472
+  field SFVec2f    cameraWindowPosition 0 0
+  field SFFloat    cameraPixelSize 1.0
+  field SFInt32    cameraWidth 320
+  field SFInt32    cameraHeight 180
+	field SFFloat    cameraFov 1.0472
 ]
 {
 Robot {
@@ -89,6 +89,86 @@ Robot {
       byteSize 96
     }
     ## End of sensors that are children of the root
+    
+    ## The Head is a root child
+    DEF Head Solid {
+      children [
+        ## Neck must Yaw
+        HingeJoint {
+          device RotationalMotor {
+            name "Neck"
+            # TODO: Use NX specs
+            maxVelocity 5.65486677646
+            maxTorque 2.5
+            # Not sure of these...
+            minPosition -2.92343
+            maxPosition 2.92343
+          } # End of the Head RotationalMotor
+          jointParameters HingeJointParameters {
+            # Straight up in the y-axis for webots
+            axis 0 1 0
+            # I think anchor means the up direction?
+            anchor 0 0.081 0
+          } # End of the Head HingeJointParameters
+          endPoint Solid {
+            translation 0 0.161 0
+            #rotation -1 0 0 -0.17
+            children [
+              NECK{
+                translation 0 -0.111 0
+                scale 0.001 0.001 0.001
+              }
+              
+              HingeJoint {
+                device RotationalMotor {
+                  name "Head"
+                  # TODO: Use NX specs
+                  maxVelocity 5.65486677646
+                  maxTorque 2.5
+                  # Not sure of these...
+                  minPosition -2.92343
+                  maxPosition 2.92343
+                } # End of the Head RotationalMotor
+                jointParameters HingeJointParameters {
+                  # Out the x
+                  axis 1 0 0
+                  # I think anchor means the up direction?
+                  anchor 0.081 0 0
+                } # End of the Head HingeJointParameters
+                endPoint Solid {
+                  #translation 0 0.161 0
+                  rotation -1 0 0 -0.17
+                  children [
+                    CAM {
+                      scale 0.001 0.001 0.001
+                    }
+                    hokuyo{
+        						  rotation 0 1 0 3.14159
+                      translation 0 0.1 0
+                      name "HeadLidar"
+                    }
+                    Camera {
+                      rotation 0 1 0 3.14159
+                      translation 0 0.072 0.0785
+                      name "Camera"
+                      windowPosition IS cameraWindowPosition
+                      fieldOfView IS cameraFov
+                      width IS cameraWidth
+                      height IS cameraHeight
+                      pixelSize IS cameraPixelSize
+                      near 0.02
+                    }
+                    
+                  ] # End of the Head Children
+                } # End of the Head endpoint
+              } # End of the Head HingeJoint
+              
+            ] # End of the Head Children
+          } # End of the Head endpoint
+        } # End of the Head HingeJoint
+      ] # End the solid children
+    }
+    # End of the Head
     
     ## The Chest is occupies the same position as the root
     CHEST{ scale 0.001 0.001 0.001 }
@@ -347,20 +427,20 @@ Robot {
         ## Shoulder Pitch is root child    
         HingeJoint {
           device RotationalMotor {
-            name "ShoulderR"
+            name "ShoulderL"
             # TODO: Use NX Motor specs
             maxVelocity 5.65486677646
             maxTorque 2.5
             # Not sure of these...
             minPosition -2.92343
             maxPosition 2.92343
-          } # End of the ShoulderR RotationalMotor
+          } # End of the ShoulderL RotationalMotor
           jointParameters HingeJointParameters {
             # Straight up in the y-axis for webots
             axis -1 0 0
             # I think anchor means the up direction?
             anchor -0.081 0 0
-          } # End of the ShoulderR HingeJointParameters
+          } # End of the ShoulderL HingeJointParameters
           endPoint Solid {
             ## Begin Shoulder Roll
             children [
@@ -372,7 +452,7 @@ Robot {
               }
               HingeJoint {
                 device RotationalMotor {
-                  name "ArmUpperR"
+                  name "ArmUpperL"
                   # TODO: Use NX Motor specs
                   maxVelocity 5.65486677646
                   maxTorque 2.5
@@ -424,7 +504,7 @@ Robot {
                           }
                           HingeJoint {
                             device RotationalMotor {
-                              name "ArmLowerR"
+                              name "ArmLowerL"
                               # TODO: Use NX Motor specs
                               maxVelocity 5.65486677646
                               maxTorque 2.5

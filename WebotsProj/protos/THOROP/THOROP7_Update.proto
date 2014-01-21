@@ -975,7 +975,8 @@ Robot {
                                                             boundingObject Box {size 0.145 0.012 0.26}
                                                             physics Physics {
                                                               density -1
-                                                              mass 0.0001
+                                                              mass 0.6
+                                                              centerOfMass -0.01 -0.07 0.02
                                                             }
                                                             type "force"
                                                           }

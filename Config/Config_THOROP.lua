@@ -10,7 +10,8 @@ Config.nJoint = 35
 -- Device Interfaces --
 -----------------------
 Config.dev = {}
-Config.dev.body         = Config.PLATFORM_NAME..'Body'
+--Config.dev.body         = Config.PLATFORM_NAME..'Body'
+Config.dev.body         = 'THOROPBodyUpdate'
 Config.dev.game_control = 'OPGameControl'
 Config.dev.team         = 'TeamNSL'
 Config.dev.kick         = 'NewNewKick'

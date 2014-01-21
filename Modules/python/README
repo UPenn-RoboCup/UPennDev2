@@ -1,0 +1,6 @@
+This was acquired from https://github.com/bastibe/lunatic-python
+We also want lua available in python.
+No idea what kind of erros will occur; check the html file
+To install lunatic-python in the python interpreter:
+
+sudo ARCHFLAGS="-arch x86_64" pip install lunatic-python-bugfix --verbose

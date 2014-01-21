@@ -142,12 +142,7 @@ Robot {
     DEF Right_shoulder_pitch Solid {
       translation -0.234 0 0
       children [
-        # Has a mesh, with offsets, etc.
-        RIGHT_SHOULDER_PITCH{
-          scale 0.001 0.001 0.001
-          translation 0.05 0 0
-          rotation 0 0 1 -1.5708
-        }
+        # Has no mesh?
         ## Shoulder Pitch is root child    
         HingeJoint {
           device RotationalMotor {
@@ -169,9 +164,9 @@ Robot {
             ## Begin Shoulder Roll
             children [
               # Has a mesh, with offsets, etc.
-              RIGHT_SHOULDER_ROLL{
+              RIGHT_SHOULDER_PITCH {
                 scale 0.001 0.001 0.001
-                translation 0 0 0.024
+                translation 0.05 0 0
                 rotation 0 0 1 -1.5708
               }
               HingeJoint {
@@ -193,6 +188,11 @@ Robot {
                 endPoint Solid {
                   ## Begin Shoulder Yaw
                   children [
+                    RIGHT_SHOULDER_ROLL{
+                      scale 0.001 0.001 0.001
+                      translation 0 0 0.024
+                      rotation 0 0 1 -1.5708
+                    }
                     RIGHT_ARM{
                       translation 0 -0.027 0
                       rotation 0 1 0 3.14159
@@ -214,7 +214,6 @@ Robot {
                         anchor 0 0.081 0
                       } # End of the RightShoulderYaw HingeJointParameters
                       endPoint Solid {
-                        
                         ## Begin Elbow
                         translation 0 -0.246 0.030
                         children [
@@ -223,7 +222,6 @@ Robot {
                             rotation 0 1 0 3.14159
                             scale 0.001 0.001 0.001
                           }
-                          
                           HingeJoint {
                             device RotationalMotor {
                               name "ArmLowerR"
@@ -235,19 +233,97 @@ Robot {
                               maxPosition 2.92343
                             } # End of the ArmLowerR RotationalMotor
                             jointParameters HingeJointParameters {
-                              # Straight up in the y-axis for webots
-                              axis 0 1 0
-                              anchor 0 0.081 0
+                              # Out the side, since Elbow is a pitch
+                              axis 1 0 0
+                              anchor 0.081 0 0
                             } # End of the ArmLowerR HingeJointParameters
                             endPoint Solid {
-                              
-                              
-                              
+                              ## Begin Wrist Yaw
+                              translation 0 -0.186 -0.030
+                              children [
+                                RIGHT_WRIST {scale 0.001 0.001 0.001}
+                                HingeJoint {
+                                  device RotationalMotor {
+                                    name "RightWristYaw"
+                                    # TODO: Use NX Motor specs
+                                    maxVelocity 5.65486677646
+                                    maxTorque 2.5
+                                    # Not sure of these...
+                                    minPosition -2.92343
+                                    maxPosition 2.92343
+                                  } # End of the RightWristYaw RotationalMotor
+                                  jointParameters HingeJointParameters {
+                                    # Straight up in the y-axis for webots
+                                    axis 0 1 0
+                                    anchor 0 0.081 0
+                                  } # End of the RightWristYaw HingeJointParameters
+                                  endPoint Solid {
+                                    ## Begin Wrist Roll
+                                    children [
+                                      Transform {
+                                        translation 0 -0.065 0
+                                        children [Shape{geometry Box {size 0.04 0.130 0.04}}]
+                                      }
+                                      HingeJoint {
+                                        device RotationalMotor {
+                                          name "RightWristRoll"
+                                          # TODO: Use NX Motor specs
+                                          maxVelocity 5.65486677646
+                                          maxTorque 2.5
+                                          # Not sure of these...
+                                          minPosition -2.92343
+                                          maxPosition 2.92343
+                                        } # End of the RightWristRoll RotationalMotor
+                                        jointParameters HingeJointParameters {
+                                          # Straight out the z axis
+                                          axis 0 0 1
+                                          anchor 0 0 0.081
+                                        } # End of the RightWristRoll HingeJointParameters
+                                        endPoint Solid {
+                                          ## Begin Wrist Yaw2
+                                          translation 0 -0.130 0
+                                          children [
+                                            HingeJoint {
+                                              device RotationalMotor {
+                                                name "RightWristYaw2"
+                                                # TODO: Use NX Motor specs
+                                                maxVelocity 5.65486677646
+                                                maxTorque 2.5
+                                                # Not sure of these...
+                                                minPosition -2.92343
+                                                maxPosition 2.92343
+                                              } # End of the RightWristYaw2 RotationalMotor
+                                              jointParameters HingeJointParameters {
+                                                # Straight out the z axis
+                                                axis 0 0 1
+                                                anchor 0 0 0.081
+                                              } # End of the RightWristYaw2 HingeJointParameters
+                                              endPoint Solid {
+                                                ## Begin the End Effector!
+                                                children [
+                                                #Palm
+                                                Transform{
+                                                  translation 0 -0.055 0
+                                                  children [Shape{geometry Box {size 0.05 0.110 0.02}}]
+                                                }
+                                                ]
+                                                ## End the End Effector!
+                                              } # End of the Wrist Yaw2 endpoint
+                                            } # End of the Wrist Yaw2 HingeJoint
+                                          ] # End the solid children
+                                          ## End Wrist Yaw2
+                                        } # End of the Wrist Roll endpoint
+                                      } # End of the Wrist Roll HingeJoint
+                                    ] # End the solid children
+                                    ## End Wrist Roll
+                                  } # End of the Wrist Yaw endpoint
+                                } # End of the Wrist Yaw HingeJoint
+                              ] # End the solid children
+                              ## End Wrist Yaw
                             } # End of the Elbow endpoint
                           } # End of the Elbow HingeJoint
                         ] # End the solid children
                         ## End Elbow
-                        
                       } # End of the Shoulder Yaw endpoint
                     } # End of the Shoulder Yaw HingeJoint
                   ] # End the solid children
@@ -260,7 +336,208 @@ Robot {
         } # End of the Shoulder Pitch HingeJoint
       ] # End the solid children
     }
-    ## End the Right arm chain    
+    ## End the Right arm chain
+    
+    
+    ## Begin the Left arm chain
+    DEF Left_shoulder_pitch Solid {
+      translation 0.234 0 0
+      children [
+        # Has no mesh?
+        ## Shoulder Pitch is root child    
+        HingeJoint {
+          device RotationalMotor {
+            name "ShoulderR"
+            # TODO: Use NX Motor specs
+            maxVelocity 5.65486677646
+            maxTorque 2.5
+            # Not sure of these...
+            minPosition -2.92343
+            maxPosition 2.92343
+          } # End of the ShoulderR RotationalMotor
+          jointParameters HingeJointParameters {
+            # Straight up in the y-axis for webots
+            axis -1 0 0
+            # I think anchor means the up direction?
+            anchor -0.081 0 0
+          } # End of the ShoulderR HingeJointParameters
+          endPoint Solid {
+            ## Begin Shoulder Roll
+            children [
+              # Has a mesh, with offsets, etc.
+              LEFT_SHOULDER_PITCH {
+                scale 0.001 0.001 0.001
+                translation -0.05 0 0
+                rotation 0 0 1 1.5708
+              }
+              HingeJoint {
+                device RotationalMotor {
+                  name "ArmUpperR"
+                  # TODO: Use NX Motor specs
+                  maxVelocity 5.65486677646
+                  maxTorque 2.5
+                  # Not sure of these...
+                  minPosition -2.92343
+                  maxPosition 2.92343
+                } # End of the ArmUpperR RotationalMotor
+                jointParameters HingeJointParameters {
+                  # Straight up in the y-axis for webots
+                  axis 0 0 1
+                  # I think anchor means the up direction?
+                  anchor 0 0 0.081
+                } # End of the ArmUpperR HingeJointParameters
+                endPoint Solid {
+                  ## Begin Shoulder Yaw
+                  children [
+                    RIGHT_SHOULDER_ROLL{
+                      scale 0.001 0.001 0.001
+                      translation 0 0 0.024
+                      rotation 0 0 1 -1.5708
+                    }
+                    LEFT_ARM {
+                      translation 0 -0.027 0
+                      scale 0.001 0.001 0.001
+                    }
+                    HingeJoint {
+                      device RotationalMotor {
+                        name "LeftShoulderYaw"
+                        # TODO: Use NX Motor specs
+                        maxVelocity 5.65486677646
+                        maxTorque 2.5
+                        # Not sure of these...
+                        minPosition -2.92343
+                        maxPosition 2.92343
+                      } # End of the LeftShoulderYaw RotationalMotor
+                      jointParameters HingeJointParameters {
+                        # Straight up in the y-axis for webots
+                        axis 0 1 0
+                        anchor 0 0.081 0
+                      } # End of the LeftShoulderYaw HingeJointParameters
+                      endPoint Solid {
+                        ## Begin Elbow
+                        translation 0 -0.246 0.030
+                        children [
+                          LEFT_ELBOW {
+                            translation 0 0 -0.03
+                            rotation 0 1 0 0
+                            scale 0.001 0.001 0.001
+                          }
+                          HingeJoint {
+                            device RotationalMotor {
+                              name "ArmLowerR"
+                              # TODO: Use NX Motor specs
+                              maxVelocity 5.65486677646
+                              maxTorque 2.5
+                              # Not sure of these...
+                              minPosition -2.92343
+                              maxPosition 2.92343
+                            } # End of the ArmLowerR RotationalMotor
+                            jointParameters HingeJointParameters {
+                              # Out the side, since Elbow is a pitch
+                              axis 1 0 0
+                              anchor 0.081 0 0
+                            } # End of the ArmLowerR HingeJointParameters
+                            endPoint Solid {
+                              ## Begin Wrist Yaw
+                              translation 0 -0.186 -0.030
+                              children [
+                                RIGHT_WRIST {scale 0.001 0.001 0.001}
+                                HingeJoint {
+                                  device RotationalMotor {
+                                    name "LeftWristYaw"
+                                    # TODO: Use NX Motor specs
+                                    maxVelocity 5.65486677646
+                                    maxTorque 2.5
+                                    # Not sure of these...
+                                    minPosition -2.92343
+                                    maxPosition 2.92343
+                                  } # End of the LeftWristYaw RotationalMotor
+                                  jointParameters HingeJointParameters {
+                                    # Straight up in the y-axis for webots
+                                    axis 0 1 0
+                                    anchor 0 0.081 0
+                                  } # End of the LeftWristYaw HingeJointParameters
+                                  endPoint Solid {
+                                    ## Begin Wrist Roll
+                                    children [
+                                      Transform {
+                                        translation 0 -0.065 0
+                                        children [Shape{geometry Box {size 0.04 0.130 0.04}}]
+                                      }
+                                      HingeJoint {
+                                        device RotationalMotor {
+                                          name "LeftWristRoll"
+                                          # TODO: Use NX Motor specs
+                                          maxVelocity 5.65486677646
+                                          maxTorque 2.5
+                                          # Not sure of these...
+                                          minPosition -2.92343
+                                          maxPosition 2.92343
+                                        } # End of the LeftWristRoll RotationalMotor
+                                        jointParameters HingeJointParameters {
+                                          # Straight out the z axis
+                                          axis 0 0 1
+                                          anchor 0 0 0.081
+                                        } # End of the LeftWristRoll HingeJointParameters
+                                        endPoint Solid {
+                                          ## Begin Wrist Yaw2
+                                          translation 0 -0.130 0
+                                          children [
+                                            HingeJoint {
+                                              device RotationalMotor {
+                                                name "LeftWristYaw2"
+                                                # TODO: Use NX Motor specs
+                                                maxVelocity 5.65486677646
+                                                maxTorque 2.5
+                                                # Not sure of these...
+                                                minPosition -2.92343
+                                                maxPosition 2.92343
+                                              } # End of the LeftWristYaw2 RotationalMotor
+                                              jointParameters HingeJointParameters {
+                                                # Straight out the z axis
+                                                axis 0 0 1
+                                                anchor 0 0 0.081
+                                              } # End of the LeftWristYaw2 HingeJointParameters
+                                              endPoint Solid {
+                                                ## Begin the End Effector!
+                                                children [
+                                                #Palm
+                                                Transform{
+                                                  translation 0 -0.055 0
+                                                  children [Shape{geometry Box {size 0.05 0.110 0.02}}]
+                                                }
+                                                ]
+                                                ## End the End Effector!
+                                              } # End of the Wrist Yaw2 endpoint
+                                            } # End of the Wrist Yaw2 HingeJoint
+                                          ] # End the solid children
+                                          ## End Wrist Yaw2
+                                        } # End of the Wrist Roll endpoint
+                                      } # End of the Wrist Roll HingeJoint
+                                    ] # End the solid children
+                                    ## End Wrist Roll
+                                  } # End of the Wrist Yaw endpoint
+                                } # End of the Wrist Yaw HingeJoint
+                              ] # End the solid children
+                              ## End Wrist Yaw
+                            } # End of the Elbow endpoint
+                          } # End of the Elbow HingeJoint
+                        ] # End the solid children
+                        ## End Elbow
+                      } # End of the Shoulder Yaw endpoint
+                    } # End of the Shoulder Yaw HingeJoint
+                  ] # End the solid children
+                  ## End Shoulder Yaw
+                } # End of the Shoulder Roll endpoint
+              } # End of the Shoulder Roll HingeJoint
+            ] # End the solid children
+            ## End Shoulder Roll
+          } # End of the Shoulder Pitch endpoint
+        } # End of the Shoulder Pitch HingeJoint
+      ] # End the solid children
+    }
+    ## End the Left arm chain
+    
     
   ] # End of the Robot children
 

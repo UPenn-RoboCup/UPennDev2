@@ -37,36 +37,10 @@ Transform YouBot_kinematics_forward_arm(const double *q) {
   return t;
 }
 
-std::vector<double> YouBot_kinematics_inverse_arm(Transform tr) {
-  double x, y, z, yaw, p, hand_yaw;
-
-  // Grab the position
-  x = tr(0,3);
-  y = tr(1,3);
-  z = tr(2,3);
-  // Grab the "pitch" desired (ZYZ where Y is "pitch")
-  double tmp1 = tr( 0, 2 );
-  double tmp2 = tr( 1, 2 );
-  p = atan2(
-    sqrt(tmp1*tmp1 + tmp2*tmp2),
-    tr( 2, 2 )
-  );
-  // Grab also the "yaw" of the gripper (ZYZ, where 2nd Z is yaw)
-  hand_yaw = atan2(
-    tr( 2, 1 ),
-    -1*tr( 2, 0 )
-  );
-
-  //printf("xyz: %lf %lf %lf\n",x,y,z);
-  //printf("zyz: %lf %lf %lf\n",0.0,p,hand_yaw);
-
-  // Remove rotation of the shoulder yaw
-  double dist2 = x*x + y*y;
-  double dist = sqrt(dist2);
-  yaw = atan2(y,x);
-  // x is the distance now, less the offset
-  x = dist - baseLength;
-  
+// Given the appropriate yaw, just get the angles in the xz plane
+// Input: x and z position, pitch angle
+// Output: Vector of 3 pitch angles
+std::vector<double> get_xz_angles(double x, double z, double p){
   // Given the "pitch", find the effective position
   double dx = x - gripperLength * sin(p);
   double dz = z - gripperLength * cos(p);
@@ -99,18 +73,91 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr) {
   //printf("\n\tRatio: %lf\n",ratio);
   
   double effective_elevation = asin(ratio);
-  double shoulderPitch = elevation - effective_elevation;
   
   //printf("\n\teffective_elevation: %lf\n",effective_elevation);
   
+  double shoulderPitch = elevation - effective_elevation;
+
+  // Form the vector
+  std::vector<double> xz(3);
+  xz[0] = shoulderPitch;
+  xz[1] = PI - elbow;
+  xz[2] = p - (shoulderPitch + xz[1]);
+
+  return xz;
+
+}
+
+std::vector<double> YouBot_kinematics_inverse_arm(Transform tr) {
+  double x, y, z, yaw, p, hand_yaw;
+
+  // Grab the position
+  x = tr(0,3);
+  y = tr(1,3);
+  z = tr(2,3);
+  // Grab the "pitch" desired (ZYZ where Y is "pitch")
+  double tmp1 = tr( 0, 2 );
+  double tmp2 = tr( 1, 2 );
+  p = atan2(
+    sqrt(tmp1*tmp1 + tmp2*tmp2),
+    tr( 2, 2 )
+  );
+  // Grab also the "yaw" of the gripper (ZYZ, where 2nd Z is yaw)
+  hand_yaw = atan2(
+    tr( 2, 1 ),
+    -1*tr( 2, 0 )
+  );
+
+  //printf("xyz: %lf %lf %lf\n",x,y,z);
+  //printf("zyz: %lf %lf %lf\n",0.0,p,hand_yaw);
+
+  // Remove rotation of the shoulder yaw
+  double dist2 = x*x + y*y;
+  double dist = sqrt(dist2);
+  yaw = atan2(y,x);
+  // x is the distance now, less the offset
+  x = dist - baseLength;
+
+  // Grab the XZ plane angles
+  std::vector<double> xz = get_xz_angles( x, z, p );
+
   // Output to joint angles
   std::vector<double> qArm(5);
   qArm[0] = yaw;
-  qArm[1] = shoulderPitch;
-  qArm[2] = PI - elbow;
-  qArm[3] = p - (shoulderPitch + qArm[2]);
+  qArm[1] = xz[0];
+  qArm[2] = xz[1];
+  qArm[3] = xz[2];
   qArm[4] = hand_yaw;
   
   return qArm;
   
+}
+
+// Given only a position
+std::vector<double> YouBot_kinematics_inverse_arm_position(double x, double y, double z) {
+
+  // Find the perfect pitch
+
+  // Remove rotation of the shoulder yaw
+  double dist2 = x*x + y*y;
+  double dist = sqrt(dist2);
+  double yaw = atan2(y,x);
+  // x is the distance now, less the offset
+  x = dist - baseLength;
+  // The angle of attack is our perfect pitch
+  double p = atan2(x,z);
+  // End perfect pitch calculation
+
+  // Grab the XZ plane angles
+  std::vector<double> xz = get_xz_angles( x, z, p );
+
+  // Output to joint angles
+  std::vector<double> qArm(5);
+  qArm[0] = yaw;
+  qArm[1] = xz[0];
+  qArm[2] = xz[1];
+  qArm[3] = xz[2];
+  qArm[4] = 0; // Go to zero here, but this is arbitrary
+
+  return qArm;
 }

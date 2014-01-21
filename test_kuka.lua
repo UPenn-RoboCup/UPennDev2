@@ -44,6 +44,26 @@ local function process_keycode(keycode,t_diff)
   local char = string.char(keycode)
   local char_lower = string.lower(char)
 
+  -- Press enter to give a desired posiiton
+  if keycode==10 then
+    io.flush()
+    io.write('Desired x: ')
+    local dx = tonumber(io.stdin:read())
+    if not dx then return end
+    io.write('Desired y: ')
+    local dy = tonumber(io.stdin:read())
+    if not dy then return end
+    io.write('Desired z: ')
+    local dz = tonumber(io.stdin:read())
+    if not dz then return end
+    -- Ask for the joints
+    print('IK for',dx,dy,dz)
+    local iqArm = vector.new(K.inverse_arm_pos(dx,dy,dz))
+    print('iqArm',iqArm)
+    Body.set_command_position(iqArm)
+    return
+  end
+
   if char==' ' then
     -- Debugging
     local grip = jcm.get_gripper_command_position()

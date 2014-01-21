@@ -165,7 +165,6 @@ static int forward_arm(lua_State *L) {
 	return 1;
 }
 
-// TODO: Take a Transform metatable in...?
 static int inverse_arm(lua_State *L) {
 	std::vector<double> qArm;
 
@@ -179,9 +178,25 @@ static int inverse_arm(lua_State *L) {
 	return 1;
 }
 
+// Take in a desired position, and the current joints
+// TODO: Should find with minimal end effector change...?
+// Should have just a transform?
+static int inverse_arm_position_only(lua_State *L) {
+	std::vector<double> qArm;
+
+  double x = luaL_checknumber(L, 1);
+  double y = luaL_checknumber(L, 2);
+  double z = luaL_checknumber(L, 3);
+
+  qArm = YouBot_kinematics_inverse_arm_position( x, y, z);
+	lua_pushvector(L, qArm);
+	return 1;
+}
+
 static const struct luaL_Reg kinematics_lib [] = {
 	{"forward_arm", forward_arm},
 	{"inverse_arm", inverse_arm},
+  {"inverse_arm_pos", inverse_arm_position_only},
 	{NULL, NULL}
 };
 

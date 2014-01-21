@@ -25,21 +25,20 @@ Robot {
   # General Characteristics
   translation IS translation
   rotation IS rotation
-  controller IS controller
-  controllerArgs IS controllerArgs
   synchronization IS synchronization
   name IS name
-
-  # Unsure why there is physics here...
-  physics Physics {
-    density -1
-    mass 9.21
-    centerOfMass 0 0.1557 -0.0208
-  }
+  controller IS controller
+  controllerArgs IS controllerArgs
+  description "Robotis THOR-OP"
+  
   # Use a simple bounding object for the center of mass area
-  boundingObject Transform {
-    children [Box {size 0.5 0.2 0.25}]
-  }
+  #boundingObject Transform { children [Box {size 0.5 0.2 0.25}] }
+  # Unsure why there is physics here...
+  #physics Physics {
+  #  density -1
+  #  mass 9.21
+  #  centerOfMass 0 0.1557 -0.0208
+  #}
 
   # Children items
   children [
@@ -47,47 +46,47 @@ Robot {
     InertialUnit {name "InertialUnit"}
     Compass {name "Compass"}
     GPS {name "GPS"}
-    Accelerometer {
-      name "Accelerometer"
-      # Must place where is on the actual robot
-      translation 0 0 0.02
-      # Rotate to the correct orientation
-      rotation 0 0.707107 0.707107 3.14159
-      lookupTable [
-        -39.24 0 0
-        39.24 1024 0
-      ]
-    }
-    Gyro {
-      # Must place where is on the actual robot
-      translation 0 0 0.02
-      # Rotate to the correct orientation
-      rotation -0.57735 0.57735 0.57735 2.09
-      name "Gyro"
-      lookupTable [
-        -27.925 0 0
-        27.925 1024 0
-      ]
-    }
-    DEF RECEIVER Receiver {
-      name "receiver"
-      channel IS channel
-    }
-    DEF EMITTER Emitter {
-      name "emitter"
-      channel IS channel
-    }
-    DEF PHYSICS_RECEIVER Receiver {
-      name "physics_receiver"
-      type "serial"
-      channel 10
-      byteSize 192
-    }
-    DEF PHYSICS_EMITTER Emitter {
-      name "physics_emitter"
-      type "serial"
-      byteSize 96
-    }
+#    Accelerometer {
+#      name "Accelerometer"
+#      # Must place where is on the actual robot
+#      translation 0 0 0.02
+#      # Rotate to the correct orientation
+#      rotation 0 0.707107 0.707107 3.14159
+#      lookupTable [
+#        -39.24 0 0
+#        39.24 1024 0
+#      ]
+#    }
+#    Gyro {
+#      # Must place where is on the actual robot
+#      translation 0 0 0.02
+#      # Rotate to the correct orientation
+#      rotation -0.57735 0.57735 0.57735 2.09
+#      name "Gyro"
+#      lookupTable [
+#        -27.925 0 0
+#        27.925 1024 0
+#      ]
+#    }
+#    DEF RECEIVER Receiver {
+#      name "receiver"
+#      channel IS channel
+#    }
+#    DEF EMITTER Emitter {
+#      name "emitter"
+#      channel IS channel
+#    }
+#    DEF PHYSICS_RECEIVER Receiver {
+#      name "physics_receiver"
+#      type "serial"
+#      channel 10
+#      byteSize 192
+#    }
+#    DEF PHYSICS_EMITTER Emitter {
+#      name "physics_emitter"
+#      type "serial"
+#      byteSize 96
+#    }
     ## End of sensors that are children of the root
     
     ## The Head is a root child
@@ -211,10 +210,10 @@ Robot {
           } # End of the ChestLidarPan endpoint
         } # End of the ChestLidarPan HingeJoint
       ] # End the solid children
-      #physics Physics {
-      #  density -1
-      #  mass 0.2
-      #}
+#      physics Physics {
+#        density -1
+#        mass 0.2
+#      }
     }
     ## End the Chest lidar chain
     
@@ -800,37 +799,70 @@ Robot {
                                                         anchor 0 0 0.081
                                                       } # End of the LegLowerR HingeJointParameters
                                                       endPoint Solid {
+                                                        translation 0 -0.1115 0.018
                                                         children[
-                                                          FOOT{scale 0.001 0.001 0.001}
-                                                          DEF R_FSR TouchSensor {
-                                                            translation 0 -0.1115 0.018
-                                                            name "R_FSR"
-                                                            boundingObject Box {size 0.145 0.012 0.26}
-                                                            physics Physics {
-                                                              density -1
-                                                              mass 0.0001
-                                                            }
-                                                            type "force"
+                                                          FOOT{
+                                                            scale 0.001 0.001 0.001
+                                                            translation 0 0.1115 -0.018
                                                           }
+#                                                          DEF R_FSR TouchSensor {
+#                                                            name "R_FSR"
+#                                                            # Should be a bit bigger
+#                                                            boundingObject Box {size 0.145 0.013 0.26}
+#                                                            physics Physics {
+#                                                              density -1
+#                                                              mass 0.0001
+#                                                            }
+#                                                            type "force"
+#                                                          }
                                                         ]
+                                                        #boundingObject Box {size 0.145 0.012 0.26}
+#                                                        physics Physics {
+#                                                          density -1
+#                                                          mass 0.0001
+#                                                        }
                                                       }
                                                     }
                                                   ]
+#                                                  physics Physics {
+#                                                    density -1
+#                                                    mass 0.0001
+#                                                  }
                                                 }
                                               }
                                             ]
+#                                            physics Physics {
+#                                              density -1
+#                                              mass 0.0001
+#                                            }
                                           }
                                         }
                                       ]
+#                                      physics Physics {
+#                                        density -1
+#                                        mass 0.0001
+#                                      }
                                     }
                                   }
                                 ]
+#                                physics Physics {
+#                                  density -1
+#                                  mass 0.0001
+#                                }
                               }
                             }
                           ]
+#                          physics Physics {
+#                            density -1
+#                            mass 0.0001
+#                          }
                         }
                       }
                     ]
+#                    physics Physics {
+#                      density -1
+#                      mass 0.0001
+#                    }
                   }
                   ## End Right Leg
                   ## Begin Left Leg
@@ -967,52 +999,96 @@ Robot {
                                                         anchor 0 0 0.081
                                                       } # End of the FootL HingeJointParameters
                                                       endPoint Solid {
+                                                        translation 0 -0.1115 0.018
                                                         children[
-                                                          FOOT{scale 0.001 0.001 0.001}
-                                                          DEF L_FSR TouchSensor {
-                                                            translation 0 -0.1115 0.018
-                                                            name "L_FSR"
-                                                            boundingObject Box {size 0.145 0.012 0.26}
-                                                            physics Physics {
-                                                              density -1
-                                                              mass 0.6
-                                                              centerOfMass -0.01 -0.07 0.02
-                                                            }
-                                                            type "force"
+                                                          FOOT{
+                                                            scale 0.001 0.001 0.001
+                                                            translation 0 0.1115 -0.018
                                                           }
+#                                                         DEF L_FSR TouchSensor {
+#                                                            name "L_FSR"
+#                                                            # Should be a bit bigger
+#                                                            boundingObject Box {size 0.145 0.013 0.26}
+#                                                            physics Physics {
+#                                                              density -1
+#                                                              mass 0.0001
+#                                                            }
+#                                                            type "force"
+#                                                          }
                                                         ]
+                                                        #boundingObject Box {size 0.145 0.012 0.26}
+#                                                        physics Physics {
+#                                                          density -1
+#                                                          mass 0.0001
+#                                                        }
                                                       }
                                                     }
                                                   ]
+#                                                  physics Physics {
+#                                                    density -1
+#                                                    mass 0.0001
+#                                                  }
                                                 }
                                               }
                                             ]
+#                                            physics Physics {
+#                                              density -1
+#                                              mass 0.0001
+#                                            }
                                           }
                                         }
                                       ]
+#                                      physics Physics {
+#                                        density -1
+#                                        mass 0.0001
+#                                      }
                                     }
                                   }
                                 ]
+#                                physics Physics {
+#                                  density -1
+#                                  mass 0.0001
+#                                }
                               }
                             }
                           ]
+#                          physics Physics {
+#                            density -1
+#                            mass 0.0001
+#                          }
                         }
                       }
                     ]
+#                    physics Physics {
+#                      density -1
+#                      mass 0.0001
+#                    }
                   }
                   ## End Left Leg
                   ]
+#                  physics Physics {
+#                    density -1
+#                    mass 0.0001
+#                  }
                 }
               }
             ]
+#            physics Physics {
+#              density -1
+#              mass 0.0001
+#            }
           }
         }
       ]
+#      physics Physics {
+#        density -1
+#        mass 0.0001
+#      }
     }
     ## End the Legs
     
   ] # End of the Robot children
-
+  
 } # End of Robot
 
 } # End of PROTO

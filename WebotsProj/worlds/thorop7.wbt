@@ -3,8 +3,8 @@ WorldInfo {
   info [
     "Default world for the THOR-OP"
   ]
-  title "handletest"
-  basicTimeStep 40
+  title "THOR-OP Only"
+  basicTimeStep 5
   FPS 15
 }
 Viewpoint {
@@ -32,8 +32,7 @@ DEF FLOOR MetricFloor {
 
 #THOROP7_NoBoundaries_ShortNewHand {
 THOROP7_Update {
-  #translation 0 1.155 0
-  translation 0 1.16 0
+  translation 0 1.155 0
   controller "thorop"
   controllerArgs "0 32"
 }

@@ -1606,6 +1606,7 @@ elseif IS_WEBOTS then
   local ENABLE_HEAD_LIDAR = false
   local ENABLE_KINECT = false
   local ENABLE_POSE   = false
+  local ENABLE_GYRO   = false
 
   require'wcm'
   local torch = require'torch'
@@ -1691,19 +1692,18 @@ elseif IS_WEBOTS then
 				webots.wb_motor_enable_position(tag, timeStep)
         webots.wb_motor_set_velocity(tag, 0.5);
         tags.joints[i] = tag
-			else
-				print(v,'not found')
 			end
 		end
 
 		-- Add Sensor Tags
-		-- Accelerometer
-		tags.accelerometer = webots.wb_robot_get_device("Accelerometer")
-		webots.wb_accelerometer_enable(tags.accelerometer, timeStep)
-
-    -- Gyro
-		tags.gyro = webots.wb_robot_get_device("Gyro")
-		webots.wb_gyro_enable(tags.gyro, timeStep)
+    if ENABLE_GYRO then
+      -- Accelerometer
+      tags.accelerometer = webots.wb_robot_get_device("Accelerometer")
+      webots.wb_accelerometer_enable(tags.accelerometer, timeStep)
+      -- Gyro
+      tags.gyro = webots.wb_robot_get_device("Gyro")
+      webots.wb_gyro_enable(tags.gyro, timeStep)
+    end
 
     -- Perfect Pose
     if ENABLE_POSE then
@@ -1764,17 +1764,17 @@ elseif IS_WEBOTS then
     end
 
 	end
+  Body.null_update = function()
+    -- Step only
+    if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
+  end
 	Body.update = function()
 
     local t = Body.get_time()
 
 		local tDelta = .001 * Body.timeStep
 
-
     --Body.update_finger(tDelta)
-
-
-
 
 		-- Set actuator commands from shared memory
 		for idx, jtag in ipairs(tags.joints) do
@@ -1821,18 +1821,20 @@ elseif IS_WEBOTS then
 		-- Step the simulation, and shutdown if the update fails
 		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
 
-		-- Accelerometer data (verified)
-		local accel = webots.wb_accelerometer_get_values(tags.accelerometer)
-    jcm.sensorPtr.accelerometer[1] = (accel[1]-512)/128
-    jcm.sensorPtr.accelerometer[2] = (accel[2]-512)/128
-    jcm.sensorPtr.accelerometer[3] = (accel[3]-512)/128
+    if ENABLE_GYRO then
+      -- Accelerometer data (verified)
+      local accel = webots.wb_accelerometer_get_values(tags.accelerometer)
+      jcm.sensorPtr.accelerometer[1] = (accel[1]-512)/128
+      jcm.sensorPtr.accelerometer[2] = (accel[2]-512)/128
+      jcm.sensorPtr.accelerometer[3] = (accel[3]-512)/128
 
-		-- Gyro data (verified)
-		local gyro = webots.wb_gyro_get_values(tags.gyro)
+      -- Gyro data (verified)
+      local gyro = webots.wb_gyro_get_values(tags.gyro)
 
-    jcm.sensorPtr.gyro[1] = -(gyro[1]-512)/512*39.24
-    jcm.sensorPtr.gyro[2] = -(gyro[2]-512)/512*39.24
-    jcm.sensorPtr.gyro[3] = (gyro[3]-512)/512*39.24
+      jcm.sensorPtr.gyro[1] = -(gyro[1]-512)/512*39.24
+      jcm.sensorPtr.gyro[2] = -(gyro[2]-512)/512*39.24
+      jcm.sensorPtr.gyro[3] = (gyro[3]-512)/512*39.24
+    end
 
     -- FSR
     if ENABLE_FSR then

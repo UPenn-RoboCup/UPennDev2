@@ -10,7 +10,8 @@ require'unix'
 Body.entry()
 
 while true do
-  Body.update()
+  --Body.update()
+  Body.null_update()
   unix.usleep(Body.update_cycle*1e3)
 end
 

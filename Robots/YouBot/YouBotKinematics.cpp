@@ -49,7 +49,6 @@ std::vector<double> get_xz_angles(double x, double z, double p){
   
   double dr2 = dx*dx+dz*dz;
   double dr  = sqrt(dr2);
-  double elevation = PI/2 - atan2(dz,dx);
   
   //printf("\n\televation: %lf\n",elevation);
   
@@ -75,7 +74,7 @@ std::vector<double> get_xz_angles(double x, double z, double p){
   double effective_elevation = asin(ratio);
   
   //printf("\n\teffective_elevation: %lf\n",effective_elevation);
-  
+  double elevation = PI/2 - atan2(dz,dx);
   double shoulderPitch = elevation - effective_elevation;
 
   // Form the vector
@@ -85,9 +84,9 @@ std::vector<double> get_xz_angles(double x, double z, double p){
   xz[2] = p - (shoulderPitch + xz[1]);
 
   return xz;
-
 }
 
+// Inverse given a transform
 std::vector<double> YouBot_kinematics_inverse_arm(Transform tr) {
   double x, y, z, yaw, p, hand_yaw;
 
@@ -102,6 +101,7 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr) {
     sqrt(tmp1*tmp1 + tmp2*tmp2),
     tr( 2, 2 )
   );
+  printf("p: %lf\n",p);
   // Grab also the "yaw" of the gripper (ZYZ, where 2nd Z is yaw)
   hand_yaw = atan2(
     tr( 2, 1 ),
@@ -133,7 +133,7 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr) {
   
 }
 
-// Given only a position
+// Inverse given only a position
 std::vector<double> YouBot_kinematics_inverse_arm_position(double x, double y, double z) {
 
   // Find the perfect pitch
@@ -144,8 +144,24 @@ std::vector<double> YouBot_kinematics_inverse_arm_position(double x, double y, d
   double yaw = atan2(y,x);
   // x is the distance now, less the offset
   x = dist - baseLength;
-  // The angle of attack is our perfect pitch
-  double p = atan2(x,z);
+
+  // TODO: Make a simple optimization routine
+  // How much the arm must reach
+  double dr2 = x*x+z*z;
+  double dr  = sqrt(dr2);
+  double p;
+  if(dr<.35) {
+    // Optimization routine in tight spaces
+    // Basically loop between 90 and 180 degrees
+    // TODO: Could in clude the *current* pitch angle
+    double ratio = (dr-.1)/.3;
+    if(ratio<0) ratio=0;
+    p = ratio * PI/2 + (1-ratio)*PI*125/180;
+    printf("pp: %lf, ratio: %lf\n",p,ratio);
+  } else {
+    // The angle of attack is our perfect pitch
+    p = atan2(x,z);
+  }
   // End perfect pitch calculation
 
   // Grab the XZ plane angles

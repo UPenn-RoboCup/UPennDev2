@@ -44,7 +44,7 @@ local function process_keycode(keycode,t_diff)
   local char = string.char(keycode)
   local char_lower = string.lower(char)
 
-  -- Press enter to give a desired posiiton
+  -- Press enter to give a desired position only
   if keycode==10 then
     io.flush()
     io.write('Desired x: ')
@@ -56,10 +56,7 @@ local function process_keycode(keycode,t_diff)
     io.write('Desired z: ')
     local dz = tonumber(io.stdin:read())
     if not dz then return end
-    -- Ask for the joints
-    print('IK for',dx,dy,dz)
     local iqArm = vector.new(K.inverse_arm_pos(dx,dy,dz))
-    print('iqArm',iqArm)
     Body.set_command_position(iqArm)
     return
   end
@@ -77,6 +74,9 @@ local function process_keycode(keycode,t_diff)
     print('qArm',qArm)
     print()
     print(T.tostring(fk))
+    print()
+    local zyz = T.to_zyz(fk)*RAD_TO_DEG
+    print('zyz:',zyz[1],zyz[2],zyz[3])
     return
   end
 

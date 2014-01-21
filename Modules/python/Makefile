@@ -10,3 +10,5 @@ LDFLAGS+=`python-config --libs`
 
 # Not sure this is needed (seems it is not wanted...)
 #CFLAGS+=`python-config --cflags`
+
+# This was acquired from https://github.com/bastibe/lunatic-python

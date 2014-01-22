@@ -67,7 +67,7 @@ local status, reply
     local func = mem[rpc.access]
     if type(func)~='function' then return'Invalid access function' end
     status, reply = pcall(func,rpc.val)
-    print('SHM |',rpc.shm,rpc.access,status,reply)
+    print('SHM |',rpc.shm,rpc.access,rpc.val,status,reply)
   end
 
   -- State machine events

@@ -74,12 +74,13 @@ function memory.init_shm_segment(name, shared, shsize, tid, pid)
         -- Delta table if we have a vector of numbers
         fenv['delta_'..shtable..'_'..k] = function(delta, ...)
           local val = shmHandle:get(k)
+          local tv = type(val)
           -- Must both be vectors
-          if type(val)~='table' or type(delta)~='table' then return end
+          if tv~=type(delta) then return end
           val = vector.new(val)
           delta = vector.new(delta)
           -- Must be the same size
-          if #val~=#delta then return end
+          if tv=='table' and #val~=#delta then return end
           -- Set in memory
           return shmHandle:set(k, val + delta, ...)
         end

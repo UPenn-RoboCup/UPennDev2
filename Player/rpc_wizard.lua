@@ -9,7 +9,7 @@ local rpc_rep = simple_ipc.new_replier(Config.net.reliable_rpc,'*')
 print('RPC | REP Receiving on',Config.net.reliable_rpc)
 unix.usleep(1e5)
 --
-local rpc_rep = simple_ipc.new_subscriber(Config.net.reliable_rpc2)
+local rpc_sub = simple_ipc.new_subscriber(Config.net.reliable_rpc2)
 print('RPC | SUB Receiving on',Config.net.reliable_rpc2)
 unix.usleep(1e5)
 --
@@ -44,7 +44,7 @@ local function process_rpc(rpc)
 local status, reply
   local status, reply
   -- Debugging the request
-  --util.ptable(rpc)
+  util.ptable(rpc)
 
   -- TODO: Remove the stupid trim_string necessity
   rpc.fsm = trim_string(rpc.fsm)
@@ -172,17 +172,21 @@ local function send_status_feedback()
 end
 
 rpc_rep.callback = process_zmq
+rpc_sub.callback = process_zmq
 local rpc_udp_poll = {}
 rpc_udp_poll.socket_handle = rpc_udp:descriptor()
 rpc_udp_poll.callback = process_udp
-local wait_channels = {rpc_rep,rpc_udp_poll}
+local wait_channels = {rpc_rep,rpc_udp_poll,rpc_sub}
 local channel_poll = simple_ipc.wait_on_channels( wait_channels );
---channel_poll:start()
+
+-- For no feedback
+channel_poll:start()
+
 local channel_timeout = 500 -- 2Hz joint feedback
 
 --local channel_timeout = 50 -- 20Hz joint feedback
 while true do
   local npoll = channel_poll:poll(channel_timeout)
   -- Send the feedback 
-  --send_status_feedback()
+  send_status_feedback()
 end

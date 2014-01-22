@@ -12,9 +12,8 @@ local function new(t)
     local tt = {}
     for i=1,n do tt[i] = t[i] end
     t = tt
-  else
-    t = t or {}
   end
+  t = t or {}
   return setmetatable(t, mt)
 end
 
@@ -131,7 +130,7 @@ end
 
 local function tostring(v1, formatstr)
   formatstr = formatstr or "%g"
-  local str = "{"..string.format(formatstr, v1[1])
+  local str = "{"..string.format(formatstr, v1[1] or 0/0)
   for i = 2, #v1 do
     str = str..", "..string.format(formatstr,v1[i])
   end

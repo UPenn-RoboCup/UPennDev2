@@ -4,7 +4,7 @@ WorldInfo {
     "Default world for the THOR-OP"
   ]
   title "THOR-OP Only"
-  basicTimeStep 5
+  basicTimeStep 15
   FPS 15
 }
 Viewpoint {

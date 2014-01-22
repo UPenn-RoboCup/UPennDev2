@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+execfile("../fiddle.py")
+
 import rospy
 from std_msgs.msg import String
 

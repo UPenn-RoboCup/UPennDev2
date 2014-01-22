@@ -1,0 +1,16 @@
+>>> Body=lg.Body
+>>> cp=Body.get_head_command_position()
+>>> cp
+{-0, -0}
+>>> cp[long(1)]
+0L
+>>> cp[long(1)]=1.0
+>>> cp
+{1, -0}
+>>> Body.set_head_command_position(cp)
+{1, -0}
+>>> Body.get_head_command_position()
+{1, -0}
+>>> Body.set_head_command_position(cp)
+{1, -0}
+>>>

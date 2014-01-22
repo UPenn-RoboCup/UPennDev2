@@ -62,8 +62,7 @@ local shm_send = function(t,func)
     rpc_req:send(mp.pack(tbl))
     local data = rpc_req:receive()
     local result = mp.unpack(data)
-    local tr = type(result)
-    if tr=='number' or tr=='table' then return vector.new(result) end
+    if type(result)=='table' then return vector.new(result) end
     return result
   end
 end

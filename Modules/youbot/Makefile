@@ -1,4 +1,4 @@
-LIBNAME=kuka
+LIBNAME=youbot
 include ../../Makefile.inc
 INCLUDES+= \
 -I/home/youbot/youbot_driver \

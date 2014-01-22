@@ -8,11 +8,12 @@
 using namespace youbot;
 
 // Access the robot modules
-YouBotBase* ybBase = NULL;
-YouBotManipulator* ybArm = NULL;
+static YouBotBase* ybBase = NULL;
+static YouBotManipulator* ybArm = NULL;
 
 // Initialize the wheeled base module
 static int lua_init_base(lua_State *L) {
+	if(ybBase) return luaL_error(L,"Base is initialized already!");
 	try {
 		ybBase = new YouBotBase("youbot-base", YOUBOT_CONFIGURATIONS_DIR);
 		// Why the commutation?
@@ -28,6 +29,7 @@ static int lua_init_base(lua_State *L) {
 
 // Initialize the arm module
 static int lua_init_arm(lua_State *L) {
+	if(ybArm) return luaL_error(L,"Arm is initialized already!");
 	try {
 		ybArm = new YouBotManipulator("youbot-manipulator", YOUBOT_CONFIGURATIONS_DIR);
 		ybArm->doJointCommutation();
@@ -41,18 +43,23 @@ static int lua_init_arm(lua_State *L) {
 
 // Shutdown the modules
 static int lua_shutdown_base(lua_State *L) {
+	if(!ybBase) return luaL_error(L,"Base is not initialized!");
   delete ybBase;
+	return 0;
 }
 static int lua_shutdown_arm(lua_State *L) {
+	if(!ybArm) return luaL_error(L,"Arm is not initialized!");
   delete ybArm;
+	return 0;
 }
 
 // Calibrate arm
 static int lua_calibrate_arm(lua_State *L) {  
-  if(!ybArm){
-    return luaL_error(L,"Arm is not initialized!");
-  }
+  if(!ybArm) return luaL_error(L,"Arm is not initialized!");
   ybArm->calibrateManipulator();
+}
+static int lua_calibrate_gripper(lua_State *L) {  
+  if(!ybArm) return luaL_error(L,"Arm is not initialized!");
   ybArm->calibrateGripper();
 }
 
@@ -62,6 +69,8 @@ static int lua_set_base_velocity(lua_State *L) {
   static quantity<si::velocity> longitudinalVelocity;
   static quantity<si::velocity> transversalVelocity;
   static quantity<si::angular_velocity> angularVelocity;
+  
+  if(!ybBase) return luaL_error(L,"Base is not initialized!");
   
   double dx = (double)lua_tonumber(L, 1);
   double dy = (double)lua_tonumber(L, 2);
@@ -81,6 +90,33 @@ static int lua_set_base_velocity(lua_State *L) {
   ybBase->setBaseVelocity(longitudinalVelocity, transversalVelocity, angularVelocity);
   
   return 0;
+}
+
+// Get base position, from encoders, and use YouBot API calculation
+static int lua_get_base_position(lua_State *L) {
+  static quantity<si::length> actualLongitudinalPose = 0 * meter;
+  static quantity<si::length> actualTransversalPose = 0 * meter;
+  static quantity<si::plane_angle> actualAngle = 0 * radian;
+  
+  if(!ybBase){return luaL_error(L,"Base is not initialized!");}
+  
+  ybBase->getBasePosition(actualLongitudinalPose, actualTransversalPose, actualAngle);
+  
+  // Push the numbers onto the stack
+  lua_pushnumber(L, actualLongitudinalPose.value() ); //x
+  lua_pushnumber(L, actualTransversalPose.value() ); //y
+  lua_pushnumber(L, actualAngle.value() ); //a
+  return 3;
+}
+
+static int lua_set_base_wheel(lua_State *L) {
+	static JointVelocitySetpoint setVel;
+	if(!ybBase) return luaL_error(L,"Base is not initialized!");
+	int wheel_id = luaL_checkint(L, 1);
+  double velocity = (double)lua_tonumber(L, 2);
+	setVel.angularVelocity = velocity*radian_per_second;
+  ybBase->getBaseJoint(wheel_id).setData(setVel);
+	return 0;
 }
 
 // Set arm angles
@@ -105,6 +141,7 @@ static int lua_set_arm_angle(lua_State *L) {
 // Get data about the arm
 static int lua_get_arm_position(lua_State *L) {
   static JointSensedAngle sensed;
+	if(!ybArm){return luaL_error(L,"Arm is not initialized!");}
   int joint_id = luaL_checkint(L, 1);
   ybArm->getArmJoint(joint_id).getData(sensed);
   lua_pushnumber(L, sensed.angle.value() );
@@ -112,6 +149,7 @@ static int lua_get_arm_position(lua_State *L) {
 }
 static int lua_get_arm_velocity(lua_State *L) {
   static JointSensedVelocity sensed;
+	if(!ybArm){return luaL_error(L,"Arm is not initialized!");}
   int joint_id = luaL_checkint(L, 1);
   ybArm->getArmJoint(joint_id).getData(sensed);
   lua_pushnumber(L, sensed.angularVelocity.value() );
@@ -119,6 +157,7 @@ static int lua_get_arm_velocity(lua_State *L) {
 }
 static int lua_get_arm_torque(lua_State *L) {
   static JointSensedTorque sensed;
+	if(!ybArm){return luaL_error(L,"Arm is not initialized!");}
   int joint_id = luaL_checkint(L, 1);
   ybArm->getArmJoint(joint_id).getData(sensed);
   lua_pushnumber(L, sensed.torque.value() );
@@ -127,6 +166,7 @@ static int lua_get_arm_torque(lua_State *L) {
 //
 static int lua_get_arm_encoder(lua_State *L) {
   static JointSensedEncoderTicks sensed;
+	if(!ybArm){return luaL_error(L,"Arm is not initialized!");}
   int joint_id = luaL_checkint(L, 1);
   ybArm->getArmJoint(joint_id).getData(sensed);
   lua_pushnumber(L, sensed.encoderTicks );
@@ -134,6 +174,7 @@ static int lua_get_arm_encoder(lua_State *L) {
 }
 static int lua_get_arm_rpm(lua_State *L) {
   static JointSensedRoundsPerMinute sensed;
+	if(!ybArm){return luaL_error(L,"Arm is not initialized!");}
   int joint_id = luaL_checkint(L, 1);
   ybArm->getArmJoint(joint_id).getData(sensed);
   lua_pushnumber(L, sensed.rpm );
@@ -141,6 +182,7 @@ static int lua_get_arm_rpm(lua_State *L) {
 }
 static int lua_get_arm_current(lua_State *L) {
   static JointSensedCurrent sensed;
+	if(!ybArm){return luaL_error(L,"Arm is not initialized!");}
   int joint_id = luaL_checkint(L, 1);
   ybArm->getArmJoint(joint_id).getData(sensed);
   lua_pushnumber(L, sensed.current.value() );
@@ -153,6 +195,7 @@ static int lua_set_gripper_spacing(lua_State *L) {
   double spacing = (double)lua_tonumber(L, 1);
   barSpacing.barSpacing = spacing * meter;
   ybArm->getArmGripper().setData(barSpacing);
+	return 0;
 }
 
 // Sets the spacing between the gripper fingers
@@ -160,40 +203,42 @@ static int lua_get_gripper_spacing(lua_State *L) {
   static GripperSensedBarSpacing sensed;
   ybArm->getArmGripper().getData(sensed);
   lua_pushnumber(L, sensed.barSpacing.value() );
+	return 1;
 }
 
-/*
-static int lua_set_arm_max_positioning_speed(lua_State *L) {
-  static MaximumPositioningSpeed maxPositioningSpeed;
+static int lua_set_arm_max_positioning_velocity(lua_State *L) {
+  static MaximumPositioningVelocity maxPositioningVelocity;
   int joint_id = luaL_checkint(L, 1);
-  double max_speed = (double)lua_tonumber(L, 2);
-  maxPositioningSpeed.setParameter(max_speed * radian_per_second);
-  ybArm->getArmJoint(joint_id).setConfigurationParameter(maxPositioningSpeed);
+  double max_velocity = (double)lua_tonumber(L, 2);
+	ybArm->getArmJoint(joint_id).getConfigurationParameter(maxPositioningVelocity);
+	maxPositioningVelocity.setParameter(max_velocity * radian_per_second);
+  ybArm->getArmJoint(joint_id).setConfigurationParameter(maxPositioningVelocity);
   return 0;
 }
-*/
 
-/*
-static int lua_get_arm_pwm(lua_State *L) {
-  static JointSensedPWM sensed;
+static int lua_get_arm_max_positioning_velocity(lua_State *L) {
+  static MaximumPositioningVelocity maxPositioningVelocity;
+	static quantity<angular_velocity> velocity;
   int joint_id = luaL_checkint(L, 1);
-  ybArm->getArmJoint(joint_id).getData(sensed);
-  lua_pushnumber(L, sensed.pwm );
+	ybArm->getArmJoint(joint_id).getConfigurationParameter(maxPositioningVelocity);
+	maxPositioningVelocity.getParameter(velocity);
+	lua_pushnumber(L, velocity.value() );
   return 1;
 }
-*/
 
-static const struct luaL_reg kuka_lib [] = {
-	{"init_base", lua_init_base},
-	{"init_arm", lua_init_arm},
+static const struct luaL_reg youbot_lib [] = {
+  {"init_base", lua_init_base},
+  {"init_arm", lua_init_arm},
   //
   {"shutdown_base", lua_shutdown_base},
   {"shutdown_arm", lua_shutdown_arm},
   //
   {"set_base_velocity", lua_set_base_velocity},
+  {"get_base_position", lua_get_base_position},    
   //
   {"calibrate_arm", lua_calibrate_arm},
-//  {"set_arm_max_positioning_speed", lua_set_arm_max_positioning_speed},
+	{"calibrate_gripper", lua_calibrate_gripper},
+	//
   {"set_arm_angle", lua_set_arm_angle},
   //
   {"get_arm_position", lua_get_arm_position},
@@ -201,23 +246,25 @@ static const struct luaL_reg kuka_lib [] = {
   {"get_arm_torque", lua_get_arm_torque},
   //
   {"get_arm_encoder", lua_get_arm_encoder},
-  {"get_arm_rpm", lua_get_arm_rpm},
   {"get_arm_current", lua_get_arm_current},
   //
   {"set_gripper_spacing", lua_set_gripper_spacing},
   {"get_gripper_spacing", lua_get_gripper_spacing},
   //
-	{NULL, NULL}
+  {"get_arm_max_positioning_velocity", lua_get_arm_max_positioning_velocity},
+	{"set_arm_max_positioning_velocity", lua_set_arm_max_positioning_velocity},
+  //
+  {NULL, NULL}
 };
 
 #ifdef __cplusplus
 extern "C"
 #endif
-int luaopen_kuka (lua_State *L) {
+int luaopen_youbot (lua_State *L) {
 #if LUA_VERSION_NUM == 502
-	luaL_newlib(L, kuka_lib);
+	luaL_newlib(L, youbot_lib);
 #else
-	luaL_register(L, "kuka", kuka_lib);
+	luaL_register(L, "youbot", youbot_lib);
 #endif
 	return 1;
 }

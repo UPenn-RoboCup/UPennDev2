@@ -80,16 +80,16 @@ Body.get_velocity = mcm.get_walk_vel
 -- Entry initializes the hardware of the robot
 Body.entry = function()
   
-  kuka = require'kuka'
+  youbot = require'youbot'
   
-  kuka.init_base()
-  kuka.init_arm()
-  -- kuka.calibrate_arm()
+  youbot.init_base()
+  youbot.init_arm()
+  -- youbot.calibrate_arm()
   
   -- Set the initial joint command angles, so we have no jerk initially
   local init_pos = {}
   for i=1,nJoint do
-    local rad = kuka.get_arm_position(i) * servo.direction[i]
+    local rad = youbot.get_arm_position(i) * servo.direction[i]
     init_pos[i] = rad
   end
   jcm.set_actuator_command_position(init_pos)
@@ -103,9 +103,9 @@ Body.update = function()
   -- Get joint readings
   local rad,mps,nm = {},{},{}
   for i=1,nJoint do
-    rad[i] = (kuka.get_arm_position(i) - servo.offset[i]) * servo.direction[i]
-    mps[i] = kuka.get_arm_velocity(i)
-    nm[i]  = kuka.get_arm_torque(i)
+    rad[i] = (youbot.get_arm_position(i) - servo.offset[i]) * servo.direction[i]
+    mps[i] = youbot.get_arm_velocity(i)
+    nm[i]  = youbot.get_arm_torque(i)
   end
   -- Set shm
   jcm.set_sensor_position(rad)
@@ -120,26 +120,26 @@ Body.update = function()
     local val = math.max(math.min(v,servo.max_rad[i]),servo.min_rad[i])
     -- Put into the right direction
     val = val * servo.direction[i] + servo.offset[i]
-    -- Set the kuka arm
-    kuka.set_arm_angle(i,val)
+    -- Set the youbot arm
+    youbot.set_arm_angle(i,val)
   end
   
   -- Set the gripper from shared memory
   local spacing = jcm.get_gripper_command_position()
   local width = math.max(math.min(spacing[1],0.025),0)
   print('SPACING',width)
-  --kuka.lua_set_gripper_spacing(width)
+  --youbot.lua_set_gripper_spacing(width)
   
   -- Set base from shared memory
   local vel = mcm.get_walk_vel()
-  kuka.set_base_velocity( unpack(vel) )
+  youbot.set_base_velocity( unpack(vel) )
   
 end
 
 -- Exit gracefully shuts down the hardware of the robot
 Body.exit = function()
-  kuka.shutdown_arm()
-  kuka.shutdown_base()
+  youbot.shutdown_arm()
+  youbot.shutdown_base()
 end
 
 -- Webots overrides

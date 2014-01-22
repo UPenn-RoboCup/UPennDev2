@@ -226,25 +226,47 @@ static int lua_get_arm_max_positioning_velocity(lua_State *L) {
   return 1;
 }
 
+static int lua_get_arm_joint_limit(lua_State *L) {
+  static JointLimitsRadian jointLimitsRadian;
+	static quantity<plane_angle> lowerLimit;
+	static quantity<plane_angle> upperLimit;
+	static bool areLimitsActive;
+  int joint_id = luaL_checkint(L, 1);
+	ybArm->getArmJoint(joint_id).getConfigurationParameter(jointLimitsRadian);
+	jointLimitsRadian.getParameter(lowerLimit,upperLimit,areLimitsActive);
+	//
+	lua_pushnumber(L, lowerLimit.value() );
+	lua_pushnumber(L, upperLimit.value() );
+	lua_pushboolean(L, areLimitsActive );
+  return 3;
+}
+
+static int lua_set_arm_joint_limit(lua_State *L) {
+  static JointLimitsRadian jointLimitsRadian;
+  int joint_id = luaL_checkint(L, 1);
+	quantity<plane_angle> lowerLimit = luaL_checknumber(L, 2);
+	quantity<plane_angle> upperLimit = (double)luaL_checknumber(L, 3);
+	bool areLimitsActive = (bool)lua_toboolean(L, 4);
+	ybArm->getArmJoint(joint_id).getConfigurationParameter(jointLimitsRadian);
+	jointLimitsRadian.getParameter(lowerLimit,upperLimit,areLimitsActive);
+  return 0;
+}
+
 static const struct luaL_reg youbot_lib [] = {
   {"init_base", lua_init_base},
   {"init_arm", lua_init_arm},
-  //
-  {"shutdown_base", lua_shutdown_base},
+	{"calibrate_arm", lua_calibrate_arm},
+	{"calibrate_gripper", lua_calibrate_gripper},
+	{"shutdown_base", lua_shutdown_base},
   {"shutdown_arm", lua_shutdown_arm},
   //
   {"set_base_velocity", lua_set_base_velocity},
   {"get_base_position", lua_get_base_position},    
   //
-  {"calibrate_arm", lua_calibrate_arm},
-	{"calibrate_gripper", lua_calibrate_gripper},
-	//
   {"set_arm_angle", lua_set_arm_angle},
-  //
   {"get_arm_position", lua_get_arm_position},
   {"get_arm_velocity", lua_get_arm_velocity},
   {"get_arm_torque", lua_get_arm_torque},
-  //
   {"get_arm_encoder", lua_get_arm_encoder},
   {"get_arm_current", lua_get_arm_current},
   //
@@ -253,6 +275,8 @@ static const struct luaL_reg youbot_lib [] = {
   //
   {"get_arm_max_positioning_velocity", lua_get_arm_max_positioning_velocity},
 	{"set_arm_max_positioning_velocity", lua_set_arm_max_positioning_velocity},
+	{"get_arm_joint_limit", lua_get_arm_joint_limit},
+	{"set_arm_joint_limit", lua_set_arm_joint_limit},
   //
   {NULL, NULL}
 };

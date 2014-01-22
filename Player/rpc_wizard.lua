@@ -3,22 +3,25 @@ local mp   = require'msgpack'
 local util = require'util'
 local vector = require'vector'
 local simple_ipc = require'simple_ipc'
-
--- TODO: Use the Config file for the ports
 local udp = require'udp'
-local rpc_zmq = simple_ipc.new_replier(Config.net.reliable_rpc,'*')
-unix.usleep(1e5)
-local rpc_udp = udp.new_receiver( Config.net.unreliable_rpc )
-print('RPC | Receiving on',Config.net.reliable_rpc)
 
--- TODO: Require all necessary modules
+local rpc_rep = simple_ipc.new_replier(Config.net.reliable_rpc,'*')
+print('RPC | REP Receiving on',Config.net.reliable_rpc)
+unix.usleep(1e5)
+--
+local rpc_rep = simple_ipc.new_subscriber(Config.net.reliable_rpc2)
+print('RPC | SUB Receiving on',Config.net.reliable_rpc2)
+unix.usleep(1e5)
+--
+local rpc_udp = udp.new_receiver( Config.net.unreliable_rpc )
+print('RPC | UDP Receiving on',Config.net.unreliable_rpc)
+
+-- Require all necessary modules
 require'vcm'
 require'jcm'
 require'mcm'
 require'hcm'
-
--- New Body API
-require'Body'
+Body = require'Body'
 
 -- Require all necessary fsm channels
 local fsm_channels = {}
@@ -36,88 +39,67 @@ local function trim_string(str)
    return str
 end
 
-
 --NOTE: Can do memory AND fsm event.  In that order
 local function process_rpc(rpc)
-  -- for debugging
-  util.ptable(rpc)
+local status, reply
+  local status, reply
+  -- Debugging the request
+  --util.ptable(rpc)
+
+  -- TODO: Remove the stupid trim_string necessity
   rpc.fsm = trim_string(rpc.fsm)
   rpc.evt = trim_string(rpc.evt)
   rpc.special = trim_string(rpc.special)
   --
   rpc.shm = trim_string(rpc.shm)
-  rpc.segment = trim_string(rpc.segment)
-  rpc.key = trim_string(rpc.key)
-  rpc.segkeyfun = trim_string(rpc.segkey) -- segment AND key AND function
+  rpc.access = trim_string(rpc.access)
+  rpc.val = trim_string(rpc.val)
   --
   rpc.body = trim_string(rpc.body)
   rpc.bargs = trim_string(rpc.bargs)
   -- Experimental raw support
   rpc.raw = trim_string(rpc.raw)
 
-  local status, reply
   -- Shared memory modification
-  local shm = rpc.shm
-  if shm then
-    local mem = _G[shm]
+  if rpc.shm then
+    local mem = _G[rpc.shm]
     if type(mem)~='table' then return'Invalid memory' end
-
-    if rpc.segkeyfun then
-      local func = mem[rpc.segkeyfun]
-      -- Use a protected call
-      print(rpc.segkeyfun)
-      status, reply = pcall(func,rpc.val)
-    elseif rpc.val then
-      -- Set memory
-      local method = string.format('set_%s_%s',rpc.segment,rpc.key)
-      local func = mem[method]
-      -- Use a protected call
-      print(method)
-      status, reply = pcall(func,rpc.val)
-    elseif rpc.delta then
-      -- Increment/Decrement memory
-      local method = string.format('_%s_%s',rpc.segment,rpc.key)
-      local func = mem['get'..method]
-      status, cur = pcall(func)
-      func = mem['set'..method]
-      local up = vector.new(cur)+vector.new(rpc.delta)
-      status, reply = pcall(func,up)
-    else
-      -- Get memory
-      local method = string.format('get_%s_%s',rpc.segment,rpc.key)
-      local func = mem[method]
-      -- Use a protected call
-      status, reply = pcall(func)
-    end
-  end -- if shm
+    local func = mem[rpc.access]
+    if type(func)~='function' then return'Invalid access function' end
+    status, reply = pcall(func,rpc.val)
+    print('SHM |',rpc.shm,rpc.access,status,reply)
+  end
 
   -- State machine events
-  local fsm = rpc.fsm
-  if fsm and type(rpc.evt)=='string' then
-    local ch = fsm_channels[fsm]
+  if rpc.fsm and type(rpc.evt)=='string' then
+    local ch = fsm_channels[rpc.fsm]
     if ch then
       if rpc.special then
         ch:send{rpc.evt,rpc.special}
       else
         ch:send(rpc.evt)
       end
+      print('FSM |',rpc.fsm,rpc.evt,rpc.special,status,reply)
     end
   end
   
-  -- Body
+  -- Body functions
   local body_call = rpc.body
   local body_args = rpc.bargs
   if type(body_call)=='string' then
-    status, reply = pcall(Body[body_call],body_args)
-    print('body',body_call,body_args,status,reply)
+    local func = Body[body_call]
+    if type(func)=='function' then
+      status, reply = pcall(func,body_args)
+      print('Body |',body_call,body_args,status,reply)
+    end
   end
   
   -- Raw commands
   local raw_call = rpc.raw
   if type(raw_call)=='string' then
     local res = loadstring('return '..raw_call)
-    reply = res()
-    print('RAW | ',raw_call,reply)
+    status, reply = pcall(res)
+    print('RAW |',raw_call,status,reply)
   end
 
   return reply
@@ -126,12 +108,12 @@ end
 local function process_zmq()
   local request, has_more
   repeat
-    request, has_more = rpc_zmq:receive()
+    request, has_more = rpc_rep:receive()
     local rpc         = mp.unpack(request)
     local reply       = process_rpc(rpc)
     -- NOTE: The zmq channel is REP/REQ
     -- Reply with the result of the request
-    local ret         = rpc_zmq:send( mp.pack(reply) )
+    local ret         = rpc_rep:send( mp.pack(reply) )
   until not has_more
 end
 
@@ -189,11 +171,11 @@ local function send_status_feedback()
 --  if err then print('feedback udp',err) end
 end
 
-rpc_zmq.callback = process_zmq
+rpc_rep.callback = process_zmq
 local rpc_udp_poll = {}
 rpc_udp_poll.socket_handle = rpc_udp:descriptor()
 rpc_udp_poll.callback = process_udp
-local wait_channels = {rpc_zmq,rpc_udp_poll}
+local wait_channels = {rpc_rep,rpc_udp_poll}
 local channel_poll = simple_ipc.wait_on_channels( wait_channels );
 --channel_poll:start()
 local channel_timeout = 500 -- 2Hz joint feedback

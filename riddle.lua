@@ -7,22 +7,34 @@ local libs = {
   'util',
   'vector',
   'torch',
-  'simple_ipc'
+  'simple_ipc',
+  'udp'
 }
 
 mp = require'msgpack'
+Body = require'Body'
 
 -- Load the libraries
 for _,lib in ipairs(libs) do _G[lib] = require(lib) end
 if torch then torch.Tensor = torch.DoubleTensor end
 
 -- Requester
-print('Connected to',Config.net.robot.wired,Config.net.reliable_rpc)
-local rpc_zmq = simple_ipc.new_requester(Config.net.reliable_rpc,Config.net.robot.wired)
+print('REQ |',Config.net.robot.wired,Config.net.reliable_rpc)
+local rpc_req = simple_ipc.new_requester(Config.net.reliable_rpc,Config.net.robot.wired)
+unix.usleep(1e5)
+
+-- Publisher
+print('PUB |',Config.net.robot.wired,Config.net.reliable_rpc2)
+local rpc_pub = simple_ipc.new_publisher(Config.net.reliable_rpc2,false,Config.net.robot.wired)
+unix.usleep(1e5)
+
+-- UDP
+print('UDP |',Config.net.robot.wired,Config.net.unreliable_rpc)
+local rpc_udp = udp.new_sender(Config.net.robot.wired,Config.net.unreliable_rpc)
 
 -- FSM communicationg
 local fsm_send = function(t,evt)
-  local ret = rpc_zmq:send(mp.pack({fsm=t.fsm,evt=evt}))
+  local ret = rpc_req:send(mp.pack({fsm=t.fsm,evt=evt}))
 end
 
 local listing = unix.readdir(HOME..'/Player')
@@ -42,50 +54,19 @@ end
 -- Shared memory
 local shm_send = function(t,func)
   local tbl = {}
-  if func:find('get_')==1 then
-    local segment_idx = func:find('_',5)
-    assert(segment_idx,'no segment!')
-    local segment = func:sub(5,segment_idx-1)
-    assert(#segment>0,'Invalid segment!')
-    local key = func:sub(segment_idx+1)
-    assert(#key>0,'Invalid key!')
-    tbl.segment = segment
-    tbl.key = key
-    tbl.shm = t.shm
+  tbl.shm = t.shm
+  tbl.access = func
   
-    return function()
-      rpc_zmq:send(mp.pack(tbl))
-      local data = rpc_zmq:receive()
-      local result = mp.unpack(data)
-      return vector.new(result)
-    end
-    
-  elseif func:find('set_')==1 then
-    local segment_idx = func:find('_',5)
-    assert(segment_idx,'no segment!')
-    local segment = func:sub(5,segment_idx-1)
-    assert(#segment>0,'Invalid segment!')
-    local key = func:sub(segment_idx+1)
-    assert(#key>0,'Invalid key!')
-    --print('shm tbl',t.shm,segment,key)
-    tbl.segment = segment
-    tbl.key = key
-    tbl.shm = t.shm
-    
-    return function(val)
-      tbl.val = val
-      rpc_zmq:send(mp.pack(tbl))
-      local data = rpc_zmq:receive()
-    end
+  return function(val)
+    if val then tbl.val=val end
+    rpc_req:send(mp.pack(tbl))
+    local data = rpc_req:receive()
+    local result = mp.unpack(data)
+    return vector.new(result)
   end
-
-  return function()
-    print'Bad SHM function!'
-    return nil
-  end
-  
 end
 
+-- This should overwrite memory calls...
 local listing = unix.readdir(HOME..'/Memory')
 local shm_vars = {}
 for _,mem in ipairs(listing) do
@@ -103,6 +84,3 @@ RAD_TO_DEG = 180/math.pi
 
 print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
 print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
-
--- Import Body
-Body = require'Body'

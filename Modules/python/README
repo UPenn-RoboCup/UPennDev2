@@ -4,3 +4,6 @@ No idea what kind of erros will occur; check the html file
 To install lunatic-python in the python interpreter:
 
 sudo ARCHFLAGS="-arch x86_64" pip install lunatic-python-bugfix --verbose
+
+After installing, this is useful:
+http://stackoverflow.com/questions/8361437/linker-error-lunatic-python-lua-requiresocket-undefined-symbol-lua-getme

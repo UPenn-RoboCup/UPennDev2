@@ -62,7 +62,7 @@ local shm_send = function(t,func)
     rpc_req:send(mp.pack(tbl))
     local data = rpc_req:receive()
     local result = mp.unpack(data)
-    return vector.new(result)
+    if result then return vector.new(result) end
   end
 end
 

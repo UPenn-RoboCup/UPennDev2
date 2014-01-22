@@ -35,8 +35,9 @@ Body.DEG_TO_RAD = DEG_TO_RAD
 Body.RAD_TO_DEG = RAD_TO_DEG
 local get_time = unix.time
 
--- How fast to update the body
-Body.update_cycle = 1 -- milliseconds
+-- How fast to update the body (seconds)
+-- 100Hz
+Body.update_cycle = 0.010
 
 --------------------------------
 -- Shared memory layout
@@ -1633,7 +1634,7 @@ elseif IS_WEBOTS then
   -- Enable the keyboard 100ms
   webots.wb_robot_keyboard_enable( 100 )
   local key_action = {
-    c = function()
+    l = function()
       if ENABLE_LIDAR then
         print(util.color('CHEST_LIDAR disabled!','yellow'))
         webots.wb_camera_disable(tags.chest_lidar)
@@ -1764,7 +1765,7 @@ elseif IS_WEBOTS then
     end
 
 	end
-  Body.null_update = function()
+  Body.nop = function()
     -- Step only
     if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
   end

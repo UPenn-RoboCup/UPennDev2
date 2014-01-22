@@ -9,7 +9,8 @@ local udp = require 'udp'
 local udp_sender, udp_receiver
 -- Default params
 --local send_ip = '192.168.123.7'
-local send_ip = '192.168.123.23'
+--local send_ip = '192.168.123.23'
+local send_ip = '127.0.0.1'
 local dport = 54321
 
 -- Only send to a remote host
@@ -32,7 +33,8 @@ else
   udp_receiver = udp.new_receiver(dport)
 end
 
-local msg = 'hello'
+--local msg = 'hello'
+local msg = '12,34'
 if udp_sender then
   assert(udp_sender,"Bad udp sender!")
 end

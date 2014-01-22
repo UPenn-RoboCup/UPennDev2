@@ -11,9 +11,6 @@ import os
 CWD = os.getcwd()
 HOME = CWD.replace("/ROS","")
 os.chdir(HOME)
-
-print("CWD:",HOME)
-print("HOME:",HOME)
 	
 # Import luantic-python
 import lua

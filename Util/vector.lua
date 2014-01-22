@@ -1,7 +1,6 @@
 local vector  = {}
 local mt      = {}
 local mt_pose = {}
-local nan = 0/0
 
 local function new(t)
   local ty = type(t)
@@ -131,7 +130,7 @@ end
 
 local function tostring(v1, formatstr)
   formatstr = formatstr or "%g"
-  local str = "{"..string.format(formatstr, v1[1] or nan)
+  local str = "{"..string.format(formatstr, v1[1] or 0/0)
   for i = 2, #v1 do
     str = str..", "..string.format(formatstr,v1[i])
   end

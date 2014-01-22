@@ -184,5 +184,5 @@ local channel_timeout = 500 -- 2Hz joint feedback
 while true do
   local npoll = channel_poll:poll(channel_timeout)
   -- Send the feedback 
-  send_status_feedback()
+  --send_status_feedback()
 end

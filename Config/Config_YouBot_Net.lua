@@ -12,13 +12,13 @@ Config.USE_LOCALHOST = USE_LOCALHOST
 Config.net = {}
 -- Robot IP addresses
 Config.net.robot = {
-['wired']    = '192.168.1.237',
+['wired']    = '192.168.1.138',
 }
 
 -- Remote Operator IP addresses
 Config.net.operator = {
-['wired']              = '192.168.1.23',
-['wired_broadcast']    = '192.168.1.255',
+['wired']              = '192.168.2.84',
+['wired_broadcast']    = '192.168.3.255',
 }
 
 -- For use only when testing in webots on a local computer
@@ -37,6 +37,7 @@ end
 Config.net.reliable_rpc   = 55555
 Config.net.unreliable_rpc = 55556
 Config.net.audio = 55557
+Config.net.reliable_rpc2   = 55558
 --
 Config.net.team           = 44444
 Config.net.state          = 44445

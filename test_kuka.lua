@@ -64,7 +64,7 @@ local function process_keycode(keycode,t_diff)
   if char==' ' then
     -- Debugging
     local grip = jcm.get_gripper_command_position()
-    local qArm = Body.get_position()
+    local qArm = Body.get_command_position()
     local fk = K.forward_arm(qArm)
     local cur_vel = mcm.get_walk_vel()
     print('cur_vel',cur_vel)
@@ -95,7 +95,7 @@ local function process_keycode(keycode,t_diff)
   
   if pre_arm[char] then
     local d_tr = pre_arm[char]
-    local qArm = Body.get_position()
+    local qArm = Body.get_command_position()
     local fk = K.forward_arm(qArm)
     local desired_tr = d_tr * fk
     local iqArm = vector.new(K.inverse_arm(desired_tr))
@@ -103,7 +103,7 @@ local function process_keycode(keycode,t_diff)
     return
   elseif post_arm[char] then
     local d_tr = post_arm[char]
-    local qArm = Body.get_position()
+    local qArm = Body.get_command_position()
     local fk = K.forward_arm(qArm)
     --local desired_tr = T.local_extrinsic_rot(fk,d_tr)
     local desired_tr = fk * d_tr
@@ -118,12 +118,12 @@ local function process_keycode(keycode,t_diff)
     delta_q[num] = dq
     return
   elseif char=='=' then
-    local qArm = Body.get_position()
+    local qArm = Body.get_command_position()
     local qCmd = qArm + delta_q
     Body.set_command_position(qCmd)
     return
   elseif char=='-' then
-    local qArm = Body.get_position()
+    local qArm = Body.get_command_position()
     local qCmd = qArm - delta_q
     Body.set_command_position(qCmd)
     return

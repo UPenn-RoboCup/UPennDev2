@@ -479,16 +479,17 @@ armfsm.firesuppress.rhand_rpy = {0,0,0}
 
 --Conservative initial model (away from target)
 armfsm.firesuppress.default_model = {
-  0.55, -0.06, 0.1, 0, 45*DEG_TO_RAD}   --xyz,pitch,yaw   
+  --0.55, -0.06, 0.1, 0, 45*DEG_TO_RAD}   --xyz,pitch,yaw   
+  0.4, -0.05, -0.1, 0, 45*DEG_TO_RAD}   --xyz,pitch,yaw   
 
 armfsm.firesuppress.turnUnit = 2.5 --degree
 
 armfsm.firesuppress.arminit={  -- For right arm
   -- Gripper has a 45 degree Yaw
-  {0.4,-0.25,-0.15, 0,0,0*DEG_TO_RAD},
-  {0.5,-0.35, 0,  0,0,0*DEG_TO_RAD},
-  {0.5,-0.35, 0.1, 0,0,0*DEG_TO_RAD},  
-  {0.5,-0.25, 0.1, 0,0,0*DEG_TO_RAD},  
+  {0.3,-0.25,-0.15, 0,0,0*DEG_TO_RAD},
+  {0.35,-0.35, -0.1,  0,0,0*DEG_TO_RAD},
+  {0.35,-0.35, -0.1, 0,0,0*DEG_TO_RAD},  
+  {0.4,-0.25, -0.1, 0,0,0*DEG_TO_RAD},  
 }
 armfsm.firesuppress.larm={  -- For Left arm
 	{0.45, 0.3, 0, 0,20*DEG_TO_RAD,-30*DEG_TO_RAD},

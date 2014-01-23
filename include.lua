@@ -5,6 +5,7 @@ IS_WEBOTS = false
 HOME = CWD:gsub('Player.*$','')
 HOME = HOME:gsub('Robots.*$','')
 HOME = HOME:gsub('Operate.*$','')
+HOME = HOME:gsub('Modules.*$','')
 HOME = HOME:gsub('Tools.*$','')
 HOME = HOME:gsub('Frameworks.*$','')
 HOME = HOME:gsub('Util.*$','')

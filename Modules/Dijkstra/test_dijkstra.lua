@@ -1,4 +1,4 @@
-dofile('../../Run/include.lua')
+dofile('../../include.lua')
 
 local util = require 'util'
 local dijkstra = require 'dijkstra'
@@ -29,8 +29,8 @@ function gen_costs(N, M, Sparsity)
 end
 
 local torch = require 'torch'
-costs = gen_costs(100, 100, .05)
-local goal = {60, 60}
+costs = gen_costs(100, 100, 0.01)
+local goal = {80, 80}
 t0 = unix.time()
 local ctg = dijkstra.matrix(costs, goal[1], goal[2])
 t1 = unix.time() - t0

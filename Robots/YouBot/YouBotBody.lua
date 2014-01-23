@@ -87,8 +87,21 @@ Body.entry = function()
   youbot.init_arm()
   youbot.init_base()
   youbot.arm_commutation()
+  unix.usleep(1e5)
   youbot.base_commutation()
   unix.usleep(1e6)
+
+  -- Calibrate arm
+  print("Calibrating Arm")
+  youbot.calibrate_arm()
+  unix.usleep(5e6)
+  print("Done!")
+
+  -- Calibrate gripper
+  print("Calibrating Gripper")
+  youbot.calibrate_gripper()
+  unix.usleep(5e6)
+  print("Done!")
   
   -- Set the initial joint command angles, so we have no jerk initially
   local init_pos = {}

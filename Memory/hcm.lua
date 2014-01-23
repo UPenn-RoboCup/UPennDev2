@@ -15,6 +15,7 @@ shared_data.audio.request = vector.zeros(0)
 
 shared_data.drive={}
 shared_data.drive.gas_pedal = vector.zeros(2)
+shared_data.drive.gas_pedal_time = vector.zeros(1)
 
 
 

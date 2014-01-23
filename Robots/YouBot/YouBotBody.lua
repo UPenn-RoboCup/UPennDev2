@@ -117,16 +117,14 @@ Body.update = function()
   
   -- Set joints from shared memory
   local desired_pos = jcm.get_actuator_command_position()
-  for i=1,nJoint do
-    -- Put into the right direction
-    local v = desired_pos[i] * servo.direction[i]
-    -- Add the offset
-    v = v + servo.offset[i]
-    -- Clamp the angle
-    local val = math.max(math.min(v,servo.max_rad[i]),servo.min_rad[i])
+  for i,v in ipairs(desired_pos) do
+		-- Clamp into allowable range
+		local val = math.max(math.min(v,servo.max_rad[i]),servo.min_rad[i])
+    -- Correct the direction and the offset
+    val = val * servo.direction[i] + servo.offset[i]
+		--print(i,'set',v,'=>',val)
     -- Set the youbot arm
     youbot.set_arm_angle(i,val)
-    --print('Set',i,'to',val)
   end
   
   -- Set the gripper from shared memory

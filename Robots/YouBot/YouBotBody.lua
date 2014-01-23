@@ -77,19 +77,21 @@ Body.set_velocity = function(x,y,a)
 end
 Body.get_velocity = mcm.get_walk_vel
 
+youbot = require'youbot'
+
 -- Entry initializes the hardware of the robot
-Body.entry = function()
+Body.entry = function()  
   
-  youbot = require'youbot'
-  
-  youbot.init_base()
   youbot.init_arm()
-  -- youbot.calibrate_arm()
+  youbot.init_base()
+  youbot.arm_commutation()
+  youbot.base_commutation()
+  unix.usleep(1e6)
   
   -- Set the initial joint command angles, so we have no jerk initially
   local init_pos = {}
   for i=1,nJoint do
-    local rad = youbot.get_arm_position(i) * servo.direction[i]
+    local rad = (youbot.get_arm_position(i) - servo.offset[i]) * servo.direction[i]
     init_pos[i] = rad
   end
   jcm.set_actuator_command_position(init_pos)
@@ -98,7 +100,8 @@ Body.entry = function()
 end
 
 -- Update speaks to the hardware of the robot
-Body.update_cycle = 1 -- milliseconds
+Body.update_cycle = 0.010
+Body.nop = function() end
 Body.update = function()
   -- Get joint readings
   local rad,mps,nm = {},{},{}
@@ -115,19 +118,21 @@ Body.update = function()
   -- Set joints from shared memory
   local desired_pos = jcm.get_actuator_command_position()
   for i=1,nJoint do
-    local v = desired_pos[i]
+    -- Put into the right direction
+    local v = desired_pos[i] * servo.direction[i]
+    -- Add the offset
+    v = v + servo.offset[i]
     -- Clamp the angle
     local val = math.max(math.min(v,servo.max_rad[i]),servo.min_rad[i])
-    -- Put into the right direction
-    val = val * servo.direction[i] + servo.offset[i]
     -- Set the youbot arm
     youbot.set_arm_angle(i,val)
+    --print('Set',i,'to',val)
   end
   
   -- Set the gripper from shared memory
   local spacing = jcm.get_gripper_command_position()
   local width = math.max(math.min(spacing[1],0.025),0)
-  print('SPACING',width)
+  --print('SPACING',width)
   --youbot.lua_set_gripper_spacing(width)
   
   -- Set base from shared memory

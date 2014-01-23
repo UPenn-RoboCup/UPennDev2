@@ -7,6 +7,7 @@ dofile'include.lua'
 local Body = require'Body'
 local simple_ipc = require'simple_ipc'
 local mp = require'msgpack'
+local signal = require'signal'
 require'unix'
 
 -- Send a Body pulse after each update
@@ -15,6 +16,19 @@ local pulse_ch = simple_ipc.new_publisher'pulse'
 -- Get the timing
 local t_wait = Body.update_cycle
 local t_wait_us = t_wait*1e6
+
+
+
+-- Clean Shutdown function
+function shutdown()
+  print'Shutting down the Body...'
+  Body.exit()
+  os.exit()
+end
+signal.signal("SIGINT", shutdown)
+signal.signal("SIGTERM", shutdown)
+
+
 
 Body.entry()
 local t_last = Body.get_time()

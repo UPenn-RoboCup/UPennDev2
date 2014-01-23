@@ -246,8 +246,10 @@ static int lua_set_arm_joint_limit(lua_State *L) {
   int joint_id = luaL_checkint(L, 1);
   static quantity<plane_angle> lowerLimit;
   static quantity<plane_angle> upperLimit;
-  lowerLimit.from_value(luaL_checknumber(L, 2));
-  upperLimit.from_value(luaL_checknumber(L, 3));
+  //lowerLimit.from_value(luaL_checknumber(L, 2));
+  //upperLimit.from_value(luaL_checknumber(L, 3));
+  lowerLimit = luaL_checknumber(L, 2) * radian;
+  upperLimit = luaL_checknumber(L, 3) * radian;
   bool areLimitsActive = (bool)lua_toboolean(L, 4);
   ybArm->getArmJoint(joint_id).getConfigurationParameter(jointLimitsRadian);
   jointLimitsRadian.getParameter(lowerLimit,upperLimit,areLimitsActive);

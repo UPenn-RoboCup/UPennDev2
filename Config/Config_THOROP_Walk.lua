@@ -396,6 +396,43 @@ elseif HOSTNAME=="teddy" then
 
   walk.maxTurnSpeed = 0.10
 
+  --PENN DEMO, 1/22/2014
+  walk.legBias = 
+    vector.new({1, 1.26,    0.36,   -0.50,  -0.02, 0.5175,
+            -0.27, -0.415,  1.05,   -0.27,  -0.945, 0.175,
+    })*DEG_TO_RAD
+
+-- BIAS set 1
+  walk.legBias = 
+    vector.new({1, 1.26,    0.36,   -0.50,  0.52, 0.38,
+            -0.27, -0.415,  1.05,   -0.27,  -0.745, 0.65,
+    })*DEG_TO_RAD
+
+--Hip roll change
+  walk.legBias = 
+    vector.new({1, 1.26,    0.36,   -0.50,  0.52, 0.38,
+            -0.27, -0.8875,  1.05,   -0.27,  -0.745, 0.65,
+    })*DEG_TO_RAD
+
+--pitch tweak
+  walk.legBias = 
+    vector.new({1, 1.26,    0.36,   -0.50,  0.52, 0.38,
+            -0.27, -0.8875,  1.05,   -0.27,  -0.745, 0.65,
+    })*DEG_TO_RAD
+
+
+--[[
+--new roll tweak
+  walk.legBias = 
+    vector.new({1, 1.26,    0.36,   -0.23,  0.52, 0.38,
+            -0.27, -0.2875,  1.05,   -0.27,  -0.745, 0.65,
+    })*DEG_TO_RAD
+--]]
+
+
+
+
+
 
 else
   print("UNKNOWN ROBOT")

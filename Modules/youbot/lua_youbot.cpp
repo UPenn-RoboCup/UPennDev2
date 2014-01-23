@@ -16,8 +16,6 @@ static int lua_init_base(lua_State *L) {
 	if(ybBase) return luaL_error(L,"Base is initialized already!");
 	try {
 		ybBase = new YouBotBase("youbot-base", YOUBOT_CONFIGURATIONS_DIR);
-		// Why the commutation?
-		ybBase->doJointCommutation();
 	} catch (std::exception& e) {
 		return luaL_error(L, e.what() );
 	}
@@ -32,13 +30,24 @@ static int lua_init_arm(lua_State *L) {
 	if(ybArm) return luaL_error(L,"Arm is initialized already!");
 	try {
 		ybArm = new YouBotManipulator("youbot-manipulator", YOUBOT_CONFIGURATIONS_DIR);
-		ybArm->doJointCommutation();
 	} catch (std::exception& e) {
 		return luaL_error(L, e.what() );
 	}
 	// Return true
 	lua_pushboolean(L,1);
 	return 1;
+}
+
+static int lua_arm_commutation(lua_State *L) {
+	if(!ybArm) return luaL_error(L,"Arm not initialized!");
+	ybArm->doJointCommutation();
+	return 0;
+}
+
+static int lua_base_commutation(lua_State *L) {
+	if(!ybBase) return luaL_error(L,"Base not initialized!");
+	ybBase->doJointCommutation();
+	return 0;
 }
 
 // Shutdown the modules
@@ -259,10 +268,13 @@ static int lua_set_arm_joint_limit(lua_State *L) {
 static const struct luaL_reg youbot_lib [] = {
   {"init_base", lua_init_base},
   {"init_arm", lua_init_arm},
-	{"calibrate_arm", lua_calibrate_arm},
-	{"calibrate_gripper", lua_calibrate_gripper},
 	{"shutdown_base", lua_shutdown_base},
   {"shutdown_arm", lua_shutdown_arm},
+	//
+	{"arm_commutation", lua_arm_commutation},
+	{"base_commutation", lua_base_commutation},
+	{"calibrate_arm", lua_calibrate_arm},
+	{"calibrate_gripper", lua_calibrate_gripper},
   //
   {"set_base_velocity", lua_set_base_velocity},
   {"get_base_position", lua_get_base_position},

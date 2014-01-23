@@ -285,6 +285,15 @@ if HOSTNAME=="alvin" then
 
 
 
+
+--at penn, with broken hip servo
+  walk.legBias = 
+    vector.new({
+      0.875,  2.1475, -0.49, -1.9525,       1.48, -1.22,
+      -0.2525, -1.1075, 1.25, -0.752,   0.740, 1.15
+    })*DEG_TO_RAD
+
+
 elseif HOSTNAME=="teddy" then
 --for teddy
   walk.hipRollCompensation = 1*math.pi/180

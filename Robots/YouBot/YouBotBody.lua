@@ -339,6 +339,12 @@ if IS_WEBOTS then
     wb_wheel_speed(tags.wheels[4],v4)
   end
   
+
+	Body.nop = function()
+    -- Step only
+    if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
+  end
+
   Body.update = function()
 
     -- Write arm commands

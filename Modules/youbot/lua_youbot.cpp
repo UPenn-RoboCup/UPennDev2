@@ -244,11 +244,13 @@ static int lua_get_arm_joint_limit(lua_State *L) {
 static int lua_set_arm_joint_limit(lua_State *L) {
   static JointLimitsRadian jointLimitsRadian;
   int joint_id = luaL_checkint(L, 1);
-	quantity<plane_angle> lowerLimit = luaL_checknumber(L, 2);
-	quantity<plane_angle> upperLimit = (double)luaL_checknumber(L, 3);
-	bool areLimitsActive = (bool)lua_toboolean(L, 4);
-	ybArm->getArmJoint(joint_id).getConfigurationParameter(jointLimitsRadian);
-	jointLimitsRadian.getParameter(lowerLimit,upperLimit,areLimitsActive);
+  static quantity<plane_angle> lowerLimit;
+  static quantity<plane_angle> upperLimit;
+  lowerLimit.from_value(luaL_checknumber(L, 2));
+  upperLimit.from_value(luaL_checknumber(L, 3));
+  bool areLimitsActive = (bool)lua_toboolean(L, 4);
+  ybArm->getArmJoint(joint_id).getConfigurationParameter(jointLimitsRadian);
+  jointLimitsRadian.getParameter(lowerLimit,upperLimit,areLimitsActive);
   return 0;
 }
 
@@ -261,7 +263,7 @@ static const struct luaL_reg youbot_lib [] = {
   {"shutdown_arm", lua_shutdown_arm},
   //
   {"set_base_velocity", lua_set_base_velocity},
-  {"get_base_position", lua_get_base_position},    
+  {"get_base_position", lua_get_base_position},
   //
   {"set_arm_angle", lua_set_arm_angle},
   {"get_arm_position", lua_get_arm_position},

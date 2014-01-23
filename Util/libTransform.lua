@@ -165,6 +165,20 @@ function libTransform.to_angle_axis( tr )
   return angle, axis
 end
 
+-- Take in two vectors (9 dim and 3 dim)
+-- Mostly for rcm
+function libTransform.from_flat( rot, trans )
+	local t = libTransform.trans(unpack(trans))
+	for i,v in ipairs(rot) do
+		local ii = ((i-1) % 3) + 1
+		local jj = ((i-ii) / 3) + 1
+		t[ii][jj] = v
+		print(i,ii,jj,v)
+	end
+	print('rot',rot)
+	return t
+end
+
 -- http://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
 function libTransform.from_angle_axis( angle, axis )
   axis:div(axis:norm())

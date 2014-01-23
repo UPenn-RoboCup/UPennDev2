@@ -114,6 +114,10 @@ local function process_keycode(keycode,t_diff)
 
   local num = tonumber(char)
   if num then
+		if num == 0 then
+			Body.set_command_position(vector.zeros(Body.nJoint))
+			return
+		end
     delta_q = vector.zeros(5)
     delta_q[num] = dq
     return

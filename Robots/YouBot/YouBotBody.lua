@@ -26,6 +26,7 @@ require'mcm'
 
 -- Five degree of freedom arm
 local nJoint = 5
+Body.nJoint = nJoint
 assert(nJoint==Config.nJoint,'Config file and Body must agree on nuber of joints!')
 
 -- Table of servo properties
@@ -77,10 +78,9 @@ Body.set_velocity = function(x,y,a)
 end
 Body.get_velocity = mcm.get_walk_vel
 
-youbot = require'youbot'
-
 -- Entry initializes the hardware of the robot
-Body.entry = function()  
+Body.entry = function()
+	youbot = require'youbot'
   
   youbot.init_arm()
   youbot.init_base()

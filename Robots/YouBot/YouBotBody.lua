@@ -1,3 +1,5 @@
+-- 58.5cm up from the z=0 of the arm
+-- 41.5cm back from the x=0 position
 local Body = {}
 
 -- Useful constants
@@ -64,7 +66,7 @@ for i,v in ipairs(jointNames) do
   end
 end
 
--- Convience function for each joint sensor
+-- Convienence function to get each joint sensor
 for i,v in ipairs{'torque','velocity','position'} do
   Body['get_'..v] = jcm['get_sensor_'..v]
   Body['set_'..v] = jcm['set_sensor_'..v]

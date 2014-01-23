@@ -25,6 +25,18 @@ static int lua_init_base(lua_State *L) {
 	return 1;
 }
 
+// Shutdown the modules
+static int lua_shutdown_base(lua_State *L) {
+	if(!ybBase) return luaL_error(L,"Base is not initialized!");
+  delete ybBase;
+	return 0;
+}
+static int lua_shutdown_arm(lua_State *L) {
+	if(!ybArm) return luaL_error(L,"Arm is not initialized!");
+  delete ybArm;
+	return 0;
+}
+
 // Initialize the arm module
 static int lua_init_arm(lua_State *L) {
 	if(ybArm) return luaL_error(L,"Arm is initialized already!");
@@ -50,22 +62,14 @@ static int lua_base_commutation(lua_State *L) {
 	return 0;
 }
 
-// Shutdown the modules
-static int lua_shutdown_base(lua_State *L) {
-	if(!ybBase) return luaL_error(L,"Base is not initialized!");
-  delete ybBase;
-	return 0;
-}
-static int lua_shutdown_arm(lua_State *L) {
-	if(!ybArm) return luaL_error(L,"Arm is not initialized!");
-  delete ybArm;
-	return 0;
-}
-
 // Calibrate arm
 static int lua_calibrate_arm(lua_State *L) {  
   if(!ybArm) return luaL_error(L,"Arm is not initialized!");
-  ybArm->calibrateManipulator();
+	try {
+  	ybArm->calibrateManipulator();
+	} catch (std::exception& e) {
+		return luaL_error(L, e.what() );
+	}
 }
 static int lua_calibrate_gripper(lua_State *L) {  
   if(!ybArm) return luaL_error(L,"Arm is not initialized!");

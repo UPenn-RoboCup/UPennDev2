@@ -1607,7 +1607,7 @@ elseif IS_WEBOTS then
   local ENABLE_HEAD_LIDAR = false
   local ENABLE_KINECT = false
   local ENABLE_POSE   = false
-  local ENABLE_GYRO   = false
+  local ENABLE_IMU   = false
 
   require'wcm'
   local torch = require'torch'
@@ -1697,25 +1697,23 @@ elseif IS_WEBOTS then
 		end
 
 		-- Add Sensor Tags
-    if ENABLE_GYRO then
-      -- Accelerometer
-      tags.accelerometer = webots.wb_robot_get_device("Accelerometer")
+		tags.accelerometer = webots.wb_robot_get_device("Accelerometer")
+		tags.gyro = webots.wb_robot_get_device("Gyro")
+    if ENABLE_IMU then
       webots.wb_accelerometer_enable(tags.accelerometer, timeStep)
-      -- Gyro
-      tags.gyro = webots.wb_robot_get_device("Gyro")
       webots.wb_gyro_enable(tags.gyro, timeStep)
     end
 
     -- Perfect Pose
+		tags.gps = webots.wb_robot_get_device("GPS")
+		tags.compass = webots.wb_robot_get_device("Compass")
+		tags.inertialunit = webots.wb_robot_get_device("InertialUnit")
     if ENABLE_POSE then
       -- GPS
-		  tags.gps = webots.wb_robot_get_device("GPS")
 		  webots.wb_gps_enable(tags.gps, timeStep)
 		  -- Compass
-		  tags.compass = webots.wb_robot_get_device("Compass")
 		  webots.wb_compass_enable(tags.compass, timeStep)
       -- RPY
-      tags.inertialunit = webots.wb_robot_get_device("InertialUnit")
       webots.wb_inertial_unit_enable(tags.inertialunit, timeStep)
     end
 
@@ -1822,7 +1820,7 @@ elseif IS_WEBOTS then
 		-- Step the simulation, and shutdown if the update fails
 		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
 
-    if ENABLE_GYRO then
+    if ENABLE_IMU then
       -- Accelerometer data (verified)
       local accel = webots.wb_accelerometer_get_values(tags.accelerometer)
       jcm.sensorPtr.accelerometer[1] = (accel[1]-512)/128

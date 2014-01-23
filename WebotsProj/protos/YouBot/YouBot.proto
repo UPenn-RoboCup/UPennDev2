@@ -16,7 +16,6 @@ PROTO YouBot [
   field SFInt32    cameraWidth 320
   field SFInt32    cameraHeight 240
   field SFFloat    cameraFov 1.0472
-#  field SFInt32    channel 0
 ]
 {
 Robot {
@@ -434,8 +433,12 @@ Robot {
           rotation 0 -1 0 1.57
           children [
             KinectWithoutFoot{
-              rotation -1 0 0 .76
-              translation 0 .75 0
+							# 45 degree rotation
+              rotation -1 0 0 .7854
+              #translation 0 0 -.156
+							#translation 0 .077 -.156
+							#translation 0 .147 -.156
+							translation 0 .732 .259
               windowPosition 0 1
               cameraName "kinect"
               width 320

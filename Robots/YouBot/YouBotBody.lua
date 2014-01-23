@@ -143,6 +143,10 @@ Body.update = function()
   jcm.set_sensor_position(rad)
   jcm.set_sensor_velocity(mps)
   jcm.set_sensor_torque(nm)
+
+	-- Get Odometry measurements
+	local dx, dy, da = youbot.get_base_position()
+	wcm.set_robot_odometry({dx,dy,da})
   
   -- Set joints from shared memory
   local desired_pos = jcm.get_actuator_command_position()
@@ -181,6 +185,7 @@ if IS_WEBOTS then
   local ENABLE_CAMERA = false
   local ENABLE_LIDAR  = false
   local ENABLE_KINECT = false
+	local ENABLE_POSE   = false
 
   require'wcm'
   local torch = require'torch'
@@ -217,8 +222,10 @@ if IS_WEBOTS then
   -- Enable the keyboard 100ms
   webots.wb_robot_keyboard_enable( 100 )
   local key_action = {
-    l = function()
-      if ENABLE_LIDAR then
+    l = function(override)
+      -- if not enabled, or override
+			local en = override or not ENABLE_LIDAR
+      if en==false then
         print(util.color('LIDAR disabled!','yellow'))
         webots.wb_camera_disable(tags.lidar)
         ENABLE_LIDAR = false
@@ -228,8 +235,10 @@ if IS_WEBOTS then
         ENABLE_LIDAR = true
       end
     end,
-    c = function()
-      if ENABLE_CAMERA then
+    c = function(override)
+      -- if not enabled, or override
+			local en = override or not ENABLE_CAMERA
+      if en==false then
         print(util.color('CAMERA disabled!','yellow'))
         webots.wb_camera_disable(tags.hand_camera)
         ENABLE_CAMERA = false
@@ -239,8 +248,10 @@ if IS_WEBOTS then
         ENABLE_CAMERA = true
       end
     end,
-    k = function()
-      if ENABLE_KINECT then
+    k = function(override)
+      -- if not enabled, or override
+			local en = override or not ENABLE_KINECT
+      if en==false then
         print(util.color('KINECT disabled!','yellow'))
         webots.wb_camera_disable(tags.kinect)
         ENABLE_KINECT = false
@@ -248,6 +259,21 @@ if IS_WEBOTS then
         print(util.color('KINECT enabled!','green'))
         webots.wb_camera_enable(tags.kinect,camera_timeStep)
         ENABLE_KINECT = true
+      end
+    end,
+		p = function(override)
+			-- if not enabled, or override
+			local en = override or not ENABLE_POSE
+      if en==false then
+        print(util.color('POSE disabled!','yellow'))
+        webots.wb_gps_disable(tags.gps)
+	  		webots.wb_compass_disable(tags.compass)
+        ENABLE_POSE = false
+      else
+        print(util.color('POSE enabled!','green'))
+        webots.wb_gps_enable(tags.gps, timeStep)
+	  		webots.wb_compass_enable(tags.compass, timeStep)
+        ENABLE_POSE = true
       end
     end,
   }
@@ -289,33 +315,26 @@ if IS_WEBOTS then
       end
   	end
 
-    -- Body Sensors
-	  tags.gps = webots.wb_robot_get_device("GPS")
-	  webots.wb_gps_enable(tags.gps, timeStep)
-	  tags.compass = webots.wb_robot_get_device("compass")
-	  webots.wb_compass_enable(tags.compass, timeStep)
+    -- Grab the inertial sensors
+		tags.gps = webots.wb_robot_get_device("GPS")
+		tags.compass = webots.wb_robot_get_device("compass")
+		key_action.p(ENABLE_POSE)
 
     -- Grab the camera
     tags.hand_camera = webots.wb_robot_get_device("HandCamera")
-    if ENABLE_CAMERA then
-      webots.wb_camera_enable(tags.hand_camera, camera_timeStep)
-    end
+		key_action.c(ENABLE_CAMERA)
 
     -- Grab the hokuyo
     tags.lidar = webots.wb_robot_get_device("lidar")
-    if ENABLE_LIDAR then
-      webots.wb_camera_enable(tags.lidar, lidar_timeStep)
-    end
+		key_action.l(ENABLE_LIDAR)
     
     -- Grab the kinect
     tags.kinect = webots.wb_robot_get_device("kinect")
-    local w = webots.wb_camera_get_width(tags.kinect)
-    local h = webots.wb_camera_get_height(tags.kinect)
-    if ENABLE_KINECT then
-      webots.wb_camera_enable(tags.kinect, camera_timeStep)
-    end
+		key_action.k(ENABLE_KINECT)
 
     -- Kinect torch data containers
+		local w = webots.wb_camera_get_width(tags.kinect)
+    local h = webots.wb_camera_get_height(tags.kinect)
     depth_torch = torch.FloatTensor( w*h ):zero()
     depth_byte  = torch.ByteTensor( w*h ):zero()
     depth_adj   = torch.FloatTensor( w*h ):zero()
@@ -415,12 +434,15 @@ if IS_WEBOTS then
     end
     
     -- Get sensors
-    local gps     = webots.wb_gps_get_values(tags.gps)
-    local compass = webots.wb_compass_get_values(tags.compass)
-    -- Process sensors (Verified)
-    local angle   = math.atan2( compass[3], compass[1] )
-    local pose    = vector.pose{gps[1], -gps[3], angle}
-    wcm.set_robot_pose( pose )
+		if ENABLE_POSE then
+    	local gps     = webots.wb_gps_get_values(tags.gps)
+    	local compass = webots.wb_compass_get_values(tags.compass)
+    	-- Process sensors (Verified)
+    	local angle   = math.atan2( compass[3], compass[1] )
+    	local pose    = vector.pose{gps[1], -gps[3], angle}
+			wcm.set_robot_gps( pose )
+    	wcm.set_robot_pose( pose )
+		end
 
     -- Grab a camera frame
     if ENABLE_CAMERA then

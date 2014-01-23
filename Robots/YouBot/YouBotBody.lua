@@ -1,5 +1,15 @@
 -- 58.5cm up from the z=0 of the arm
 -- 41.5cm back from the x=0 position
+
+-- Joint limits
+--[[
+Joint 1	-5.8401401893656	-0.010069207223044	true
+Joint 2	-2.6179938779915	-0.010069207223044	true
+Joint 3	-5.0265482457437	-0.015707963267949	true
+Joint 4	-3.4292032486367	-0.022123891926689	true
+Joint 5	-5.6415924413056	-0.11061945963344	true
+--]]
+
 local Body = {}
 
 -- Useful constants
@@ -51,6 +61,10 @@ servo.offset = vector.new({
 })*DEG_TO_RAD
 assert(#servo.offset==nJoint,'Bad servo offsets!')
 
+-- Add the KUKA limits (TODO: This should be done better...)
+servo.min_rad = servo.min_rad + vector.new{0.010069207223044,0,0,0,0}
+servo.max_rad = servo.max_rad + vector.new{0.010069207223044,0,0,0,0}
+
 -- Convienence functions for each joint
 local jointNames = {
 	"ShoulderYaw", "ShoulderPitch", "Elbow", "WristPitch","WristYaw"
@@ -87,20 +101,20 @@ Body.entry = function()
   youbot.init_arm()
   youbot.init_base()
   youbot.arm_commutation()
-  unix.usleep(1e5)
+  --unix.usleep(1e5)
   youbot.base_commutation()
-  unix.usleep(1e6)
+  --unix.usleep(1e6)
 
   -- Calibrate arm
   print("Calibrating Arm")
   youbot.calibrate_arm()
-  unix.usleep(5e6)
+  --unix.usleep(5e6)
   print("Done!")
 
   -- Calibrate gripper
   print("Calibrating Gripper")
   youbot.calibrate_gripper()
-  unix.usleep(5e6)
+  --unix.usleep(5e6)
   print("Done!")
   
   -- Set the initial joint command angles, so we have no jerk initially

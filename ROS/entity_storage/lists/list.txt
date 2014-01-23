@@ -1,0 +1,9 @@
+pipe	0.0,0.5,180
+bolt	0.5,1.0,90
+table	3.1,8.3,0
+bottle	3.1,8.3,0
+jar	3.1,8.3,0
+box	1.4,2.7,90
+kitchen	3.4,10.3,0
+loading area	10.4,21.4,180
+unloading area	7.5,15.3,270

@@ -1,6 +1,7 @@
 dofile('../../include.lua')
 local dijkstra = require 'dijkstra'
 local carray = require 'carray'
+local cutil = require 'cutil'
 local util = require 'util'
 local torch = require'torch'
 torch.Tensor = torch.DoubleTensor
@@ -17,7 +18,6 @@ function gen_costs(N, M, Sparsity)
   end
 	c0:div(sparsity)
   local c1 = c0:mul(5):exp()
-----[[
   local nconv = 10
   local hnconv = math.abs(nconv / 2)
   local kconv1 = torch.DoubleTensor():linspace(1, nconv, nconv):reshape(1, nconv)
@@ -26,15 +26,45 @@ function gen_costs(N, M, Sparsity)
   kconv:div(torch.sum(kconv))
   local c = torch.conv2(c1, kconv, 'F')
 	c = c:narrow(1, hnconv + 1, m):narrow(2, hnconv + 1, n)
---]]
 	-- Return the contiguous version :)
-  --return c:sub(1):mul(100):clone()
 	return c:clone()
-	--return c1
 end
 
-local torch = require 'torch'
+-- Generate random costs
 costs = gen_costs(100, 100, 0.01)
+-- Import costs from a PPM file (gmapping)
+local f_img = io.open('KUHill-1.ppm','r')
+local f_type = f_img:read('*line')
+local is_comment = true
+local comments = {}
+local resolution = nil
+repeat
+	comment = f_img:read('*line')
+	is_comment = comment:sub(1,1)=='#'
+	if is_comment then
+		table.insert(comments,comment)
+	else
+		-- Is resolution
+		resolution = comment:gmatch("%d+")
+	end
+until not is_comment
+local max = tonumber( f_img:read('*line') )
+local img_str = f_img:read('*all')
+f_img:close()
+local ncolumns = tonumber(resolution())
+local nrows = tonumber(resolution())
+print('Resolution',ncolumns,nrows)
+print('Max',max)
+print('Comments')
+print(table.concat(comments,'\n'))
+local n_el = #img_str
+print('Size of data:',#img_str)
+assert(n_el==3*ncolumns*nrows,'Bad resolution check!')
+print()
+-- Make into a tensor
+local img_t = torch.ByteTensor(ncolumns,nrows,3)
+cutil.string2storage(img_str,img_t:storage())
+
 local goal = {80, 80}
 t0 = unix.time()
 local ctg = dijkstra.matrix(costs, goal[1], goal[2])
@@ -43,9 +73,6 @@ print(t1)
 
 ip1, jp1 = dijkstra.path(ctg, costs, 40, 40);
 --ip2, jp2 = dijkstra.path2(ctg, costs, 1, 1);
-
---util.ptorch(ip1)
---util.ptorch(jp1)
 
 -- Save the maps for viewing in MATLAB
 print('Costs',costs,"contiguous",costs:isContiguous())
@@ -82,4 +109,4 @@ f_jp1:write( tostring(jp1_arr) )
 f_jp1:close()
 
 -- Plot in MATLAB
-os.execute('matlab -nodesktop -nosplash -r view_dijkstra')
+--os.execute('matlab -nodesktop -nosplash -r view_dijkstra')

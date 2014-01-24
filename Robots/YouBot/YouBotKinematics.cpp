@@ -127,7 +127,8 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr) {
   qArm[1] = xz[0];
   qArm[2] = xz[1];
   qArm[3] = xz[2];
-  qArm[4] = hand_yaw;
+  qArm[4] = hand_yaw;// + yaw * cos(p);
+	//printf("hand_yaw: %lf, yaw: %lf, p: %lf, offset: %lf\n",hand_yaw,yaw,p,yaw * cos(p));
   
   return qArm;
   

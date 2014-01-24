@@ -80,3 +80,6 @@ print('Costs to Go | Writing',n_jp1)
 local f_jp1 = io.open('jp1.raw', 'w')
 f_jp1:write( tostring(jp1_arr) )
 f_jp1:close()
+
+-- Plot in MATLAB
+os.execute('matlab -nodesktop -nosplash -r view_dijkstra')

@@ -11,7 +11,7 @@ local timeout = 10.0  -- Replan every 10 seconds
 local t_entry, t_update, t_exit
 
 -- The map is static, so import it once
-local map = libMap.open_map('map.ppm')
+local map = libMap.open_map'map.ppm'
 -- Make the initial cost to go
 local goal = wcm.get_map_goal()
 map:new_goal(goal)
@@ -25,6 +25,10 @@ local f_map = io.open('cur_map.jpeg','w')
 f_map:write(c_map)
 f_map:close()
 --]]
+local c_map = map:render('png')
+local f_map = io.open('cur_map.png','w')
+f_map:write(c_map)
+f_map:close()
 
 local function robocup_follow( pose, target_pose )
   local maxStep = 0.15
@@ -43,7 +47,7 @@ local function robocup_follow( pose, target_pose )
   local aTurn = util.mod_angle(math.atan2(rel_pose[2],rel_pose[1]))
 
   -- calculate walk step velocity based on ball position
-  local vStep = vector.new{stepScale * rel_pose[1],stepScale * rel_pose[2],0}
+  local vStep = vector.new{stepScale * rel_pose[1], stepScale * rel_pose[2],0}
 
   -- Reduce speed based on how far away from the waypoint we are
   local scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1)
@@ -114,7 +118,6 @@ function state.update()
 		finished_path = #path==0
 	end
 	--print('Path following',wp_id,path_sz,velocity)
-
 
 	-- Done when finished the path
   if finished_path then

@@ -20,7 +20,10 @@ extern "C"
 #endif
 #endif
 
+#ifdef DEBUG
 #include <iostream>
+#endif
+
 #include <vector>
 #include <utility>
 #include <set>

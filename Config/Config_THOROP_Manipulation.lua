@@ -498,6 +498,27 @@ armfsm.firesuppress.larm={  -- For Left arm
 
 
 
+--Take 2 by SJ (which includes nozzle pickup)
+
+--[[
+armfsm.firesuppress.arminit={
+  {0.29,-0.40,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.39,-0.40,0.01,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.46,-0.40,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.46,-0.40,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+}
+--]]
+
+armfsm.firesuppress.arminit={
+  {0.29,-0.30,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.35,-0.15,-0.1,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.35,-0.15,-0.1,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.35,-0.15,-0.1,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+}
+armfsm.firesuppress.default_model={0.39,-0.15,-0.10,0,0,0}
+
+
+
 ---------------------------------------------------------------
 ------   Hose pickup
 ---------------------------------------------------------------

@@ -8,8 +8,7 @@ local util = require'util'
 local mp   = require'msgpack'
 local signal = require'signal'
 local simple_ipc = require'simple_ipc'
-local udp        = require'udp'
-local vector     = require'vector'
+require'gcm'
 
 -- Not using this right now...
 local broadcast_en = false
@@ -17,11 +16,6 @@ local state_pub_ch
 if broadcast_en then
   state_pub_ch = simple_ipc.new_publisher(Config.net.state)
 end
-
-require'gcm'
-require'wcm'
-require'jcm'
-require'mcm'
 
 local needs_broadcast = true
 local state_machines = {}

@@ -67,6 +67,8 @@ function state.entry()
   qRLegTarget = Body.get_rleg_command_position()
   qRLegCurrent = Body.get_rleg_command_position()
   local t_gas_timeout = 0
+  hcm.set_drive_gas_pedal_time(1.5)
+
 end
 
 ---
@@ -86,7 +88,11 @@ function state.update()
       qRLegTarget = qRLeg0
     end
   elseif 
+    --
+
     hcm.get_drive_gas_pedal()[1]+hcm.get_drive_gas_pedal()[2]>0 then
+    local pedal_time = hcm.get_drive_gas_pedal_time()
+
     t_gas_timeout = t + pedal_time
     qRLegTarget = {
       qRLeg0[1],

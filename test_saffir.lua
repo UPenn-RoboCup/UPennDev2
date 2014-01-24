@@ -58,7 +58,7 @@ local poll_timeout = 500   --2Hz
 
 -- Useful constants
 DEG_TO_RAD = Body.DEG_TO_RAD
-RAD_TO_DEG = Body.RAD_TO_DEGs
+RAD_TO_DEG = Body.RAD_TO_DEG
 
 print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
 print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
@@ -92,12 +92,12 @@ local char_to_override = {
   ['m'] = vector.new({0,0, -.01,   0,0,0,0}),
   
   --Yaw
-  ['h'] = vector.new({0,0,0,     0,0,2,0}),
-  [';'] = vector.new({0,0,0,    0,0,-2,0}),
+  ['h'] = vector.new({0,0,0,     0,0,5,0}),
+  [';'] = vector.new({0,0,0,    0,0,-5,0}),
 
   --Pitch
-  ['y'] = vector.new({0,0,0,     0,2,0, 0}),
-  ['n'] = vector.new({0,0,0,     0,-2,0,  0}),
+  ['y'] = vector.new({0,0,0,     0,5,0, 0}),
+  ['n'] = vector.new({0,0,0,     0,-5,0,  0}),
 
   --Task
   ['['] = vector.new({0,0,0,     -1,0,0,-1}),
@@ -113,7 +113,11 @@ local char_to_rfinger = {}
 local char_to_lfinger = {}
 
 local char_to_tilt_pan = {
-  ['s'] = '2,5',
+  --['s'] = '2,5',
+  ['w'] = '0,0.1',  -- for HEAD: yaw, pitch
+  ['x'] = '0,-0.1',
+  ['a'] = '0.1,0',
+  ['d'] = '-0.1,0',
 }
 
 
@@ -209,27 +213,41 @@ local t0 = unix.time()
 while true do
 	-- UDP message passing
 	--local npoll = channel_poll:poll( poll_timeout )
-	---[[
 	while udp_receiver:size()>0 do
 		local data = udp_receiver:receive()
 		local comma = data:find(',')
     local pitch = tonumber( data:sub(1,comma-1) )
     local yaw = tonumber( data:sub(comma+1,#data) )
-    local target_pose = vector.new({pitch, yaw})
+    -- If in RADIAN
+    --local target_pose = vector.new({pitch, yaw})  -- yaw, pitch for HEAD
+    -- If in DEGREE
+    local target_pose = vector.new({pitch*DEG_TO_RAD, yaw*DEG_TO_RAD})
+
+    -- For moving the head
+    --[[ If sending incremental amount
+    local head_angle = Body.get_head_command_position()
+    target_pose[1] = target_pose[1] + head_angle[1]
+    target_pose[2] = target_pose[2] + head_angle[2]
+    --]]
+    hcm.set_motion_headangle(target_pose)
+		print( util.color('Move head to:','green'), target_pose[1]*RAD_TO_DEG, target_pose[2]*RAD_TO_DEG )
+    
+    --[[ For moving the right arm
     local override = {0,0,0, 0, target_pose[1], target_pose[2], 0}
     hcm.set_state_override(override)
 		print( util.color('Move hand to:','green'), unpack(target_pose) )
+		--]]
 	end
-	--]]
 
-  -- Grab the keyboard character
+  --[[ Grab the keyboard character
   local key_code = getch.block()
   local key_char = string.char(key_code)
   local key_char_lower = string.lower(key_char)
   
   -- Process the character
   local msg = process_character(key_code,key_char,key_char_lower)
-  
+  --]]
+
   -- Measure the timing
   local t = unix.time()
   local t_diff = t-t0

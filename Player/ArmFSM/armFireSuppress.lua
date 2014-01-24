@@ -108,8 +108,11 @@ local function update_override()
 
 --print("upd: old model",unpack(hcm.get_tool_model() ))
 
-  wristPitch = wristPitch + override[5]*5*Body.DEG_TO_RAD 
-  wristYaw = wristYaw + override[6]*5*Body.DEG_TO_RAD 
+  wristPitch = wristPitch + override[5]*2.5*Body.DEG_TO_RAD 
+  wristYaw = wristYaw + override[6]*2.5*Body.DEG_TO_RAD 
+
+  wristPitch= math.max(-30*Body.DEG_TO_RAD,math.min(30*Body.DEG_TO_RAD,wristPitch))
+  wristYaw= math.max(-45*Body.DEG_TO_RAD,math.min(45*Body.DEG_TO_RAD,wristYaw))
 
 
 
@@ -269,6 +272,18 @@ print("armTarget:",unpack(trRArmTarget))
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end
         hcm.set_state_proceed(0) --stop here
 --]]        
+print("trLArm:",arm_planner.print_transform(trLArm))
+        local arm_seq = {
+          {'move',nil,Config.armfsm.firesuppress.arminit[5]},
+          {'move',Config.armfsm.firesuppress.larmtrigger[1],nil},
+          {'move',Config.armfsm.firesuppress.larmtrigger[2],nil},
+          {'wrist',Config.armfsm.firesuppress.larmtrigger[3],nil},
+          {'move',Config.armfsm.firesuppress.larmtrigger[3],nil},
+          {'wrist',Config.armfsm.firesuppress.larmtrigger[4],nil},
+        }
+        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end
+        hcm.set_state_proceed(0) --stop here
+
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_hand_mass(0,0)
         local arm_seq = {
@@ -299,10 +314,26 @@ print("armTarget:",unpack(trRArmTarget))
         else revert_override() end
       end
     end
+
+
+
+
+
+
+
+
+
+
+
     
   elseif stage=="lift" then
     if arm_planner:play_arm_sequence(t) then    
-      if hcm.get_state_proceed()==1 then        
+      print("trLArm:",arm_planner.print_transform(trLArm))
+--      print("trRArm:",arm_planner.print_transform(trRArm))
+ 
+  
+--      if hcm.get_state_proceed()==1 then        
+if false then
         arm_planner:set_hand_mass(0,2)
         print("trRArm:",arm_planner.print_transform(trRArm))
         

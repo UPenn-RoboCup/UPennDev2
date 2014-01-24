@@ -2,12 +2,14 @@
 fid = fopen('costs.raw');
 data = fread(fid,inf,'*double');
 fclose(fid);
-costs = reshape(data,100,100);
+%costs = reshape(data,100,100);
+costs = reshape(data,388,303);
 % Costs to Go
 fid = fopen('ctg.raw');
 data = fread(fid,inf,'*double');
 fclose(fid);
-ctg = reshape(data,100,100);
+%ctg = reshape(data,100,100);
+ctg = reshape(data,388,303);
 % Path
 fid = fopen('ip1.raw');
 ip1 = fread(fid,inf,'*double');

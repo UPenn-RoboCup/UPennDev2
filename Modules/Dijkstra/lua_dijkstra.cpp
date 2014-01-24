@@ -339,25 +339,32 @@ static int lua_dijkstra_path(lua_State *L) {
     THDoubleTensor *Ap = (THDoubleTensor *) luaT_checkudata(L, 1, tname);
     THArgCheck(Ap->nDimension == 2, 1, "dijkstra matrix must have two dimensions");
     
-    int size = Ap->size[0] * Ap->size[1];
+		int m = Ap->size[0]; // number of rows;
+    int n = Ap->size[1]; // number of cols;
+		int size = m*n;
+	/*
     A = (double *)malloc(size * sizeof(double));
     // Get torchTensor data
     for (int r = 0; r < Ap->size[0]; r++)
       for (int c = 0; c < Ap->size[1]; c++)
         A[r * Ap->size[1] + c] = (THTensor_fastGet2d(Ap, r, c));
-    int m = Ap->size[0]; // number of rows;
-    int n = Ap->size[1]; // number of cols;
+
+		*/
+		A = (double*)Ap->storage->data;
     
     tname = luaT_typename(L, 2);
     THDoubleTensor *costp = (THDoubleTensor *) luaT_checkudata(L, 2, tname);
     THArgCheck(costp->nDimension == 2, 1, "cost matrix must have two dimensions");
 
     size = costp->size[0] * costp->size[1];
+	/*
     C = (double *)malloc(size * sizeof(double));
     // Get torchTensor data
     for (int r = 0; r < costp->size[0]; r++)
       for (int c = 0; c < costp->size[1]; c++)
         C[r * costp->size[1] + c] = (THTensor_fastGet2d(costp, r, c));
+			*/
+		C = (double*)costp->storage->data;
  
     int istart = luaL_optint(L, 3, 0) - 1; // 0-indexed nodes
     int jstart = luaL_optint(L, 4, 0) - 1; // 0-indexed nodes
@@ -421,8 +428,8 @@ static int lua_dijkstra_path(lua_State *L) {
   luaT_pushudata(L, jpathp, "torch.DoubleTensor");
 #endif
 
-    free(A);
-    free(C);
+    //free(A);
+    //free(C);
     return 2;
 }
 

@@ -28,10 +28,11 @@ fclose(fid);
 clear data fid
 figure(1);
 clf;
-imagesc(costs);
+imagesc(costs');
 hold on;
 plot(ip1,jp1,'k+');
+%plot(jp1,ip1,'k+');
 hold off;
 figure(2);
 clf;
-imagesc(ctg);
+imagesc(ctg');

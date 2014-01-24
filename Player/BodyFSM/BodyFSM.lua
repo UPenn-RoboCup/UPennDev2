@@ -27,6 +27,9 @@ local bodyStepWaypoint = require'bodyStepWaypoint'
 
 local bodyDrive = require'bodyDrive'
 
+-- YouBot map following
+local bodyFollow = require'bodyFollow'
+
 
 sm:add_state(bodyStepOver)
 sm:add_state(bodyStepPlan)
@@ -34,11 +37,11 @@ sm:add_state(bodyStepPlan2)
 sm:add_state(bodyStepPlan3)
 sm:add_state(bodyStepPlan4)
 sm:add_state(bodyStepTest)
-
 sm:add_state(bodyStepWiden)
-
 sm:add_state(bodyStepWaypoint)
 sm:add_state(bodyDrive)
+
+sm:add_state(bodyFollow)
 
 -- Setup the transitions for this FSM
 --
@@ -69,6 +72,10 @@ sm:set_transition( bodyStepTest,   'done', bodyIdle )
 
 sm:set_transition( bodyStepWiden,   'done', bodyIdle )
 
+-- Plan and follow a path to the world goal position
+sm:set_transition( bodyIdle, 'follow', bodyFollow )
+-- Replan on timeout
+sm:set_transition( bodyFollow, 'timeout', bodyFollow )
 
 --------------------------
 -- Setup the FSM object --

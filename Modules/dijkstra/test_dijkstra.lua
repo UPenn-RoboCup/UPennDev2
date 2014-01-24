@@ -91,8 +91,10 @@ local costs, goal, start
 if USE_IMG then
 	costs = cost_img
 	-- Seems like {y,x} for the image imported...
-	start = {100, 160}
-	goal = {200, 225}
+	--start = {100, 160}
+	--goal = {200, 225}
+	start = {150, 70}
+	goal = {175, 225}
 else
 	costs = gen_costs(100, 100, 0.01)
 	start = {40,40}

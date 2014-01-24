@@ -17,7 +17,13 @@ Config.dev.body         = Config.PLATFORM_NAME..'Body'
 --------------------
 Config.fsm = {}
 -- Which FSMs should be enabled?
-Config.fsm.enabled = {}
+Config.fsm.enabled = {'BodyFSM'}
+if HOME then
+  -- Add all FSM directories that are in Player
+  for _,sm in ipairs(Config.fsm.enabled) do
+		package.path = HOME..'/Player/'..sm..'/?.lua;'..package.path
+  end
+end
 
 ---------------------------
 -- Complementary Configs --

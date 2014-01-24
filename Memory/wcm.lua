@@ -23,7 +23,7 @@ shared.robot.utorso1 = vector.zeros(3)
 
 -- Get the map goal
 shared.map = {}
-shared.map.goal = vector.pose()
+shared.map.goal = vector.zeros(3)
 
 -- Call the initializer
 memory.init_shm_segment(..., shared, shsize)

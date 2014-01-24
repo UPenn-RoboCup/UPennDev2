@@ -11,7 +11,7 @@ local t_entry, t_update, t_exit
 local map = libMap.open_map('map.pgm')
 -- Make the initial cost to go
 local goal = wcm.get_map_goal()
-libMap.new_goal(goal)
+map:new_goal(goal)
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -24,12 +24,12 @@ function state.entry()
 	local cur_goal = wcm.get_map_goal()
 	if goal~=cur_goal then
 		goal = cur_goal
-		libMap.new_goal(goal)
+		map:new_goal(goal)
 	end
 	
 	-- Plan the from our current position
 	local pose = wcm.get_robot_pose()
-	local path = libMap:new_path(pose)
+	local path = map:new_path(pose)
 	
 end
 

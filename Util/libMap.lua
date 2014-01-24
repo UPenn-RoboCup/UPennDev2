@@ -12,6 +12,36 @@ torch.Tensor = torch.DoubleTensor
 -- Make the metatable
 --local mt = {}
 
+local function pose_to_map_index(map,pose)
+	--print('Pose:',pose)
+	--print('Map size:',map.size,'meters')
+	--print('Map offset:',map.offset,'meters')
+	local inv_pose = pose * map.inv_resolution
+	--print('Inverse Pose:',inv_pose)
+	local map_sz = vector.new{map.cost:size(1),map.cost:size(2)}
+	--print('Map size',map_sz)
+	local map_pose = map_sz/2 + inv_pose
+	--print('map_pose',map_pose)
+	i = math.max(math.min(math.ceil(map_pose[1]),map_sz[1]),1)
+	j = math.max(math.min(math.ceil(map_pose[2]),map_sz[2]),1)
+	return i, j
+end
+
+local function index_path_to_pose_path(map,i_path,j_path)
+	-- Should return a lua table, not a torch object
+	local pose_path = {}
+	local i_mid, j_mid = map.cost:size(1)/2, map.cost:size(2)/2
+	local npath = i_path:size(1)
+	-- Go in reverse order: last item is is the next point in the path
+	-- Easy pop operation in lua
+	for p=npath,1,-1 do
+		local x = (i_path[p] - i_mid) * map.resolution
+		local y = (j_path[p] - j_mid) * map.resolution
+		table.insert(pose_path,vector.pose{x,y,0})
+	end
+	return pose_path
+end
+
 -- import a map
 libMap.open_map = function( map_filename )
 	local map = {}
@@ -46,10 +76,11 @@ libMap.open_map = function( map_filename )
 	-- First comment is map resolution in meters %S is NOT space, %s is space
 	local m_res = comments[1]:gmatch("%S+")
 	local header = m_res()
-	print('header',header)
 	assert(header=='#resolution','Bad resolution header')
-	map.map_res = tonumber(m_res())
-	assert(map.map_res,'Bad resolution')
+	map.resolution = tonumber(m_res())
+	assert(map.resolution,'Bad resolution')
+	map.inv_resolution = 1 / map.resolution
+	map.size = map.resolution*vector.new{ncolumns,nrows}
 	-- Second comment are x and y offsets
 	local m_offset = comments[2]:gmatch("%S+")
 	local header = m_offset()
@@ -58,7 +89,7 @@ libMap.open_map = function( map_filename )
 	assert(x_off,'Bad X offset')
 	local y_off = tonumber(m_offset())
 	assert(y_off,'Bad Y offset')
-	map.map_offset = vector.new{x_off,y_off}
+	map.offset = vector.new{x_off,y_off}
 	
 	-- Read the actual map image
 	local img_str = f_img:read('*all')
@@ -74,10 +105,10 @@ libMap.open_map = function( map_filename )
 	-- Copy the pgm img string to the tensor
 	cutil.string2storage(img_str,img_t:storage())
 	-- Make the double of the cost map
-	map.cost_map = torch.DoubleTensor(ncolumns,nrows)
+	map.cost = torch.DoubleTensor(ncolumns,nrows)
 	-- Make 1 free space, and max+1 the max?
 	-- TODO: Should be log odds... For now, whatever
-	map.cost_map:copy(img_t):mul(-1):add(max+1)
+	map.cost:copy(img_t):mul(-1):add(max+1)
 
 	-- Give the table
 	--return setmetatable(map, mt)
@@ -89,40 +120,22 @@ end
 
 -- Compute the cost to go to the goal
 libMap.new_goal = function( map, goal )
-	assert(map.cost_map,'You must open a map first!')
-	map.cost_to_go = dijkstra.matrix(map.cost_map, goal[1], goal[2])
+	assert(map.cost,'You must open a map first!')
+	--print('GOAL')
+	local i, j = pose_to_map_index(map,goal)
+	--print('GOAL IDX',i,j)
+	map.cost_to_go = dijkstra.matrix( map.cost, i, j )
 end
 
 -- Compute a path to the goal
 libMap.new_path = function( map, start )
 	assert(map.cost_to_go,'You must set a goal first!')
-	return dijkstra.path(map.cost_to_go, map.cost_map, start[1], start[2]);
+	--print('START')
+	local i, j = pose_to_map_index(map,start)
+	--print('START IDX',i,j)
+	local i_path, j_path = dijkstra.path( map.cost_to_go, map.cost, i, j )
+	return index_path_to_pose_path(map,i_path,j_path)
 end
-
---[[
-local function update_wheel_velocity( self )
-	local max_wheel_velocity = 4000
-	local t_now = unix.time()
-	local t_diff = t_now - self.last_update
-	self.last_update = t_now
-	
-	-- Attenuate the velocity if not just commanded
-	if self.mode == 'waypoint' then
-		self:update_waypoint_velocity()
-	else
-		if self.t_commanded then
-			self.t_commanded = false
-		else
-			self.vx = self.vx * self.attenuation*t_diff
-			self.vy = self.vx * self.attenuation*t_diff
-		end
-	end
-
-	-- TODO: better conversion factor
-	Body.set_lwheel_velocity(self.vx)
-	Body.set_rwheel_velocity(self.vy)
-end
---]]
 
 -- Metatable methods
 --mt.new_goal = libMap.new_goal

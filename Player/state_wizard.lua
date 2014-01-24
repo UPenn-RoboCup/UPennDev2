@@ -93,7 +93,7 @@ end
 
 local update = function(pulse)
 	local t = Body.get_time()
-	print('State Update from Body pulse',pulse.t,t)
+	--print('State Update from Body pulse',pulse.t,t)
 	-- Update each state machine
   for _,my_fsm in pairs(state_machines) do local event = my_fsm.update() end
 
@@ -131,5 +131,7 @@ local channel_poll = simple_ipc.wait_on_channels( wait_channels );
 entry()
 while true do
   local npoll = channel_poll:poll(channel_timeout)
+	-- Update anyway, just missing a cycle
+	update()
 end
 exit()

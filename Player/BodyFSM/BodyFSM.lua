@@ -4,9 +4,6 @@
 --------------------------------
 -- Use the fsm module
 local fsm = require'fsm'
-
-print('BODY FSM')
-
 -- Require the needed states
 local bodyIdle = require'bodyIdle'
 --[[
@@ -78,6 +75,10 @@ sm:set_transition( bodyStepWiden,   'done', bodyIdle )
 sm:set_transition( bodyIdle, 'path', bodyPath )
 -- Replan on timeout
 sm:set_transition( bodyPath, 'timeout', bodyPath )
+-- Replan upon request
+sm:set_transition( bodyPath, 'path', bodyPath )
+-- Finished the path
+sm:set_transition( bodyPath, 'done', bodyIdle )
 
 --------------------------
 -- Setup the FSM object --

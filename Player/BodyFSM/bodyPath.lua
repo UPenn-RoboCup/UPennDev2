@@ -12,6 +12,8 @@ local map = libMap.open_map('map.pgm')
 -- Make the initial cost to go
 local goal = wcm.get_map_goal()
 map:new_goal(goal)
+-- Access the path persistently
+local path, finished_path, cur_wp
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -29,7 +31,17 @@ function state.entry()
 	
 	-- Plan the from our current position
 	local pose = wcm.get_robot_pose()
-	local path = map:new_path(pose)
+	-- Store the path information persistently
+	path = map:new_path(pose)
+	cur_wp = table.remove(path)
+	finished_path = #path==0
+	--[[
+	print('Start',pose)
+	print('Goal',goal)
+	for i,p in ipairs(path) do
+		print('Waypoint',i,p)
+	end
+	--]]
 	
 end
 
@@ -42,8 +54,16 @@ function state.update()
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 
-  --TODO: Check whether all FSMs have done initialzing 
-  return 'done'
+	-- Check if we are close to the current waypoint
+
+	-- Grab the next waypoint
+	if close_to_cur_wp then
+		cur_wp = table.remove(path)
+		finished_path = #path==0
+	end
+
+	-- Done when finished the path
+  if finished_path then return'done' end
 
 end
 

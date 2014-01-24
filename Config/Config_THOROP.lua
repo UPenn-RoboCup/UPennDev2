@@ -79,7 +79,8 @@ Config.camera.head.device = '/dev/video0'
 Config.camera.head.format = 'yuyv'
 Config.camera.head.resolution = {640,360}
 --Config.camera.head.resolution = {320,180}
-Config.camera.head.fps = 10
+--Config.camera.head.fps = 10
+Config.camera.head.fps = 30
 
 -- Forehead (wide angle)
 Config.camera.forehead = {}
@@ -88,7 +89,8 @@ Config.camera.forehead.format = 'yuyv'
 --Config.camera.forehead.format = 'mjpeg'
 --Config.camera.forehead.resolution = {160,120}
 Config.camera.forehead.resolution = {320,240}
-Config.camera.forehead.fps = 10
+--Config.camera.forehead.fps = 10
+Config.camera.forehead.fps = 30
 
 --[[
 Config.camera.forehead2 = {}

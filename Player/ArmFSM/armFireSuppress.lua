@@ -164,6 +164,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
+  mcm.set_arm_lhandoffset(Config.arm.handoffset.gripper)
   mcm.set_arm_rhandoffset(Config.arm.handoffset.gripper)
 
   local qLArm = Body.get_larm_command_position()
@@ -278,8 +279,8 @@ print("trLArm:",arm_planner.print_transform(trLArm))
           {'move',Config.armfsm.firesuppress.larmtrigger[1],nil},
           {'move',Config.armfsm.firesuppress.larmtrigger[2],nil},
           {'wrist',Config.armfsm.firesuppress.larmtrigger[3],nil},
-          {'move',Config.armfsm.firesuppress.larmtrigger[3],nil},
-          {'wrist',Config.armfsm.firesuppress.larmtrigger[4],nil},
+--          {'move',Config.armfsm.firesuppress.larmtrigger[3],nil},
+--          {'wrist',Config.armfsm.firesuppress.larmtrigger[4],nil},
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end
         hcm.set_state_proceed(0) --stop here

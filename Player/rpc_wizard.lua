@@ -148,6 +148,10 @@ end
 local Body = require'Body'
 local feedback_udp_ch =
   udp.new_sender(Config.net.operator.wired, Config.net.feedback)
+
+local feedback_udp_ch2 =
+  udp.new_sender('192.168.123.200', Config.net.feedback)
+
 local function send_status_feedback()
   local data={};
   data.larmangle  = Body.get_larm_command_position()
@@ -186,6 +190,8 @@ local function send_status_feedback()
   data.t = Body.get_time()
 
   local ret,err = feedback_udp_ch:send( mp.pack(data) )
+  local ret,err = feedback_udp_ch2:send( mp.pack(data) )
+
 --  if err then print('feedback udp',err) end
 end
 

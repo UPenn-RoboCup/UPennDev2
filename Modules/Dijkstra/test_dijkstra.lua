@@ -73,7 +73,7 @@ if USE_IMG then
 		print(img_t[225][225])
 		print(img_t[150][150])
 		cost_img = torch.DoubleTensor(ncolumns,nrows)
-		cost_img:copy(img_t):mul(-1):add(255)
+		cost_img:copy(img_t):mul(-1):add(256)
 	else
 		print('RGB')
 		assert(n_el==3*ncolumns*nrows,'Bad resolution check!')
@@ -112,6 +112,7 @@ if ENABLE_PLAN then
 	--ip2, jp2 = dijkstra.path2(ctg, costs, 1, 1);
 	t1 = unix.time() - t0
 	print('Time to find path:',t1)
+	print(ip1:nElement(),'Path steps',ip1,jp1)
 end
 
 -- Save the maps for viewing in MATLAB
@@ -137,14 +138,14 @@ f_ctg:close()
 if ENABLE_PLAN then
 	print('Path',ip1,jp1,"contiguous",ip1:isContiguous(),jp1:isContiguous())
 	local ip1_ptr, n_ip1 = ip1:storage():pointer(), #ip1:storage()
-	local ip1_arr = carray.double(ip1_ptr, n_ip1)
+	local ip1_arr = carray.int(ip1_ptr, n_ip1)
 	print('Costs to Go | Writing',n_ip1)
 	local f_ip1 = io.open('ip1.raw', 'w')
 	f_ip1:write( tostring(ip1_arr) )
 	f_ip1:close()
 
 	local jp1_ptr, n_jp1 = jp1:storage():pointer(), #jp1:storage()
-	local jp1_arr = carray.double(jp1_ptr, n_jp1)
+	local jp1_arr = carray.int(jp1_ptr, n_jp1)
 	print('Costs to Go | Writing',n_jp1)
 	local f_jp1 = io.open('jp1.raw', 'w')
 	f_jp1:write( tostring(jp1_arr) )

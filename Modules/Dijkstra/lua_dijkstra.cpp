@@ -388,7 +388,11 @@ static int lua_dijkstra_path(lua_State *L) {
         j0 = jpath[jpath.size() - 1];
         int ind0 = i0 * n + j0;
 
-        if (A[i0 * n + j0] < eps) break;
+				double next_val = A[ind0];
+        if (next_val < eps){
+					//printf("Done! next_val: %lf, eps: %lf\n",next_val,eps);
+					break;
+				}
         
         valid_idx.clear();
         for (int cnt = 0; cnt < array_size; cnt++) {
@@ -401,9 +405,10 @@ static int lua_dijkstra_path(lua_State *L) {
         double min_a = 10000000;
         int min_idx = 0;
         for (int cnt = 0; cnt < valid_idx.size(); cnt ++) {
-            i1 = iarray[valid_idx[cnt]];
-            j1 = jarray[valid_idx[cnt]];
-            d1 = doffset[valid_idx[cnt]];
+					int idx_idx = valid_idx[cnt];
+            i1 = iarray[idx_idx];
+            j1 = jarray[idx_idx];
+            d1 = doffset[idx_idx];
             int ind1 = i1 * n + j1;
 
             double a1 = A[ind1] + 0.5 * d1 * (C[ind1] + C[ind0]);
@@ -417,15 +422,32 @@ static int lua_dijkstra_path(lua_State *L) {
     }
 
 #ifdef TORCH 
-  THDoubleTensor *ipathp = THDoubleTensor_newWithSize1d(ipath.size());
-  for (int i = 0; i < ipath.size(); i++)
-        THTensor_fastSet1d(ipathp, i, ipath[i]);
-  luaT_pushudata(L, ipathp, "torch.DoubleTensor");
+	int npath = ipath.size();
+  THIntTensor *ipathp = THIntTensor_newWithSize1d( npath );
+	int* ipathp_ptr = (int*)ipathp->storage->data;
+	/*
+	// Valid, but let's try something new
+	memcpy(ipathp_ptr,&ipath[0],npath*sizeof(int));
+	printf("ip %d, %d\n",ipathp_ptr[1],ipathp_ptr[2]);
+	*/
+	std::copy(ipath.begin(), ipath.end(), ipathp_ptr);
+	//printf("ip %d, %d\n",ipathp_ptr[1],ipathp_ptr[2]);
+	/*
+  for (int i = 0; i < npath; i++)
+		THTensor_fastSet1d(ipathp, i, ipath[i]);
+	printf("ip %d, %d\n",ipathp_ptr[1],ipathp_ptr[2]);
+	*/
+	luaT_pushudata(L, ipathp, "torch.IntTensor");
+	//printf("sizeof(int): %lu\n",sizeof(int));
 
-  THDoubleTensor *jpathp = THDoubleTensor_newWithSize1d(jpath.size());
+  THIntTensor *jpathp = THIntTensor_newWithSize1d(jpath.size());
+	int* jpathp_ptr = (int*)jpathp->storage->data;
+	/*
   for (int i = 0; i < jpath.size(); i++)
         THTensor_fastSet1d(jpathp, i, jpath[i]);
-  luaT_pushudata(L, jpathp, "torch.DoubleTensor");
+	*/
+	std::copy(jpath.begin(), jpath.end(), jpathp_ptr);
+  luaT_pushudata(L, jpathp, "torch.IntTensor");
 #endif
 
     //free(A);

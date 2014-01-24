@@ -384,6 +384,10 @@ if false then
     if arm_planner:play_arm_sequence(t) then return "done" end
   end
 
+
+  hcm.set_motion_wristYaw(wristYaw+45*Body.DEG_TO_RAD)
+  hcm.set_motion_wristPitch(wristPitch)
+
   
 end
 

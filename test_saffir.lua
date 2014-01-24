@@ -56,6 +56,10 @@ local channel_poll = simple_ipc.wait_on_channels( {udp_poll} )
 local poll_timeout = 500   --2Hz
 
 
+-- Task flag
+local HEAD = false
+--local HEAD = true
+
 -- Useful constants
 DEG_TO_RAD = Body.DEG_TO_RAD
 RAD_TO_DEG = Body.RAD_TO_DEG
@@ -213,31 +217,39 @@ local t0 = unix.time()
 while true do
 	-- UDP message passing
 	--local npoll = channel_poll:poll( poll_timeout )
-	while udp_receiver:size()>0 do
-		local data = udp_receiver:receive()
-		local comma = data:find(',')
-    local pitch = tonumber( data:sub(1,comma-1) )
-    local yaw = tonumber( data:sub(comma+1,#data) )
-    -- If in RADIAN
-    --local target_pose = vector.new({pitch, yaw})  -- yaw, pitch for HEAD
-    -- If in DEGREE
-    local target_pose = vector.new({pitch*DEG_TO_RAD, yaw*DEG_TO_RAD})
+    while udp_receiver:size()>0 do
+	local data = udp_receiver:receive()
+	local comma = data:find(',')
+        local pitch = tonumber( data:sub(1,comma-1) )
+        local yaw = tonumber( data:sub(comma+1,#data) )
+        -- If in RADIAN
+        --local target_pose = vector.new({pitch, yaw})  -- yaw, pitch for HEAD
+        -- If in DEGREE
+        local target_pose = vector.new({pitch*DEG_TO_RAD, yaw*DEG_TO_RAD})
 
-    -- For moving the head
-    --[[ If sending incremental amount
-    local head_angle = Body.get_head_command_position()
-    target_pose[1] = target_pose[1] + head_angle[1]
-    target_pose[2] = target_pose[2] + head_angle[2]
-    --]]
-    hcm.set_motion_headangle(target_pose)
-		print( util.color('Move head to:','green'), target_pose[1]*RAD_TO_DEG, target_pose[2]*RAD_TO_DEG )
-    
+        if HEAD then
+        -- For moving the head
+             hcm.set_motion_headangle(target_pose)
+        else
+             local wristYaw = hcm.get_motion_wristYaw()
+	     local wristPitch = hcm.get_motion_wristPitch()
+	     print('wrist yaw:', wristYaw, 'wrist pitch:', wristPitch)
+	     local dyaw = yaw - wristYaw*RAD_TO_DEG
+	     local dpitch = pitch - wristPitch*RAD_TO_DEG
+	     dyaw = dyaw/5
+	     dpitch = dpitch/5
+	     dyaw = math.min( math.max(dyaw,-2),2 )
+	     dpitch = math.min( math.max(dpitch,-2),2 )
+	     print('dyaw:', dyaw, 'dpitch:', dpitch)
+	     hcm.set_state_override({0,0,0, 0,dpitch,dyaw, 0})
+	end
+	print( util.color('Move head to:','green'), target_pose[1]*RAD_TO_DEG, target_pose[2]*RAD_TO_DEG )
     --[[ For moving the right arm
     local override = {0,0,0, 0, target_pose[1], target_pose[2], 0}
     hcm.set_state_override(override)
 		print( util.color('Move hand to:','green'), unpack(target_pose) )
 		--]]
-	end
+    end
 
   --[[ Grab the keyboard character
   local key_code = getch.block()

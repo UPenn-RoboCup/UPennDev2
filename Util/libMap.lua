@@ -9,6 +9,8 @@ local cutil = require 'cutil'
 local util = require 'util'
 local torch = require'torch'
 torch.Tensor = torch.DoubleTensor
+local png = require'png'
+local jpeg = require'jpeg'
 -- Make the metatable
 --local mt = {}
 
@@ -49,7 +51,7 @@ libMap.open_map = function( map_filename )
 	local f_type = f_img:read('*line')
 	--print('NetPBM type',f_type)
 	-- Assume PGM greyscale binary for now
-	assert(f_type=='P5','PGM binary file support only! (P5 Header)')
+	assert(f_type=='P5' or f_type=='P6','NetPBM binary file support!')
 	local is_comment = true
 	local comments = {}
 	local resolution = nil
@@ -96,24 +98,38 @@ libMap.open_map = function( map_filename )
 	
 	-- Close the map image file
 	f_img:close()
-	
-	-- Check the resolution
-	assert(#img_str==ncolumns*nrows,'Bad resolution check!')
-	
+
 	-- Make the Byte tensor to container the PGM bytes of the map
-	local img_t = torch.ByteTensor(ncolumns,nrows)
-	-- Copy the pgm img string to the tensor
-	cutil.string2storage(img_str,img_t:storage())
+	local img_t
+	if f_type=='P5' then
+		-- Grayscale
+		assert(#img_str==ncolumns*nrows,'Bad Greyscale resolution check!')
+		img_t = torch.ByteTensor(ncolumns,nrows)
+		-- Copy the pgm img string to the tensor
+		cutil.string2storage(img_str,img_t:storage())
+	elseif f_type=='P6' then
+		-- RGB
+		assert(#img_str==ncolumns*nrows*3,'Bad RGB resolution check!')
+		local rgb_t = torch.ByteTensor(ncolumns,nrows,3)
+		cutil.string2storage(img_str,rgb_t:storage())
+		-- Just the R channel
+		img_t = rgb_t:select(3,1):clone()
+	else
+		error('Unsupported!')
+	end
 	-- Make the double of the cost map
 	map.cost = torch.DoubleTensor(ncolumns,nrows)
 	-- Make 1 free space, and max+1 the max?
 	-- TODO: Should be log odds... For now, whatever
 	map.cost:copy(img_t):mul(-1):add(max+1)
+	-- Save the map byte image
+	map.map = img_t
 
 	-- Give the table
 	--return setmetatable(map, mt)
 	map.new_goal = libMap.new_goal
 	map.new_path = libMap.new_path
+	map.render = libMap.render
 	return map
 	
 end
@@ -135,6 +151,16 @@ libMap.new_path = function( map, start )
 	--print('START IDX',i,j)
 	local i_path, j_path = dijkstra.path( map.cost_to_go, map.cost, i, j )
 	return index_path_to_pose_path(map,i_path,j_path)
+end
+
+libMap.render = function( map, fmt )
+	-- Export in grayscale
+	local w, h = map.cost:size(1), map.cost:size(2)
+	if fmt=='jpg' or fmt=='jpeg' then
+		return jpeg.compress_gray( map.map:storage():pointer(), w, h )
+	elseif fmt=='png' then
+		return png.compress( map.map:storage():pointer(), w, h, 1 )
+	end
 end
 
 -- Metatable methods

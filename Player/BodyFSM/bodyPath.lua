@@ -11,12 +11,20 @@ local timeout = 10.0  -- Replan every 10 seconds
 local t_entry, t_update, t_exit
 
 -- The map is static, so import it once
-local map = libMap.open_map('map.pgm')
+local map = libMap.open_map('map.ppm')
 -- Make the initial cost to go
 local goal = wcm.get_map_goal()
 map:new_goal(goal)
 -- Access the path persistently
 local path, finished_path, cur_wp, wp_id, path_sz
+
+-- Export so that I can see it :)
+--[[
+local c_map = map:render('jpeg')
+local f_map = io.open('cur_map.jpeg','w')
+f_map:write(c_map)
+f_map:close()
+--]]
 
 local function robocup_follow( pose, target_pose )
   local maxStep = 0.15
@@ -105,7 +113,7 @@ function state.update()
 		wp_id = wp_id + 1
 		finished_path = #path==0
 	end
-	print('Path following',wp_id,path_sz,velocity)
+	--print('Path following',wp_id,path_sz,velocity)
 
 
 	-- Done when finished the path

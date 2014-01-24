@@ -47,8 +47,7 @@ end
 
 -- UDP communicating
 local udp_sender = udp.new_sender('127.0.0.1', Config.net.saffir )
---local udp_receiver = udp.new_receiver( Config.net.saffir )
-local udp_receiver = udp.new_receiver( 61557 )
+local udp_receiver = udp.new_receiver( Config.net.saffir )
 print('UDP | Receiving on', udp_receiver)
 local udp_poll = {}
 udp_poll.socket_handle = udp_receiver:descriptor()
@@ -240,7 +239,7 @@ while true do
 		--]]
 	end
 
-  ---[[ Grab the keyboard character
+  --[[ Grab the keyboard character
   local key_code = getch.block()
   local key_char = string.char(key_code)
   local key_char_lower = string.lower(key_char)

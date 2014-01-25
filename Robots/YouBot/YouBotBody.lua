@@ -97,25 +97,9 @@ Body.get_velocity = mcm.get_walk_vel
 -- Entry initializes the hardware of the robot
 Body.entry = function()
 	youbot = require'youbot'
-  
-  youbot.init_arm()
-  youbot.init_base()
-  youbot.arm_commutation()
-  --unix.usleep(1e5)
-  youbot.base_commutation()
-  --unix.usleep(1e6)
-
-  -- Calibrate arm
-  print("Calibrating Arm")
-  youbot.calibrate_arm()
-  --unix.usleep(5e6)
-  print("Done!")
-
-  -- Calibrate gripper
-  print("Calibrating Gripper")
-  youbot.calibrate_gripper()
-  --unix.usleep(5e6)
-  print("Done!")
+	youbot.init_base()
+	youbot.init_arm()
+	youbot.calibrate_gripper()
   
   -- Set the initial joint command angles, so we have no jerk initially
   local init_pos = {}

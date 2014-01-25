@@ -57,6 +57,7 @@ NeighborStruct neighbors[] = {
 */ 
 static int lua_dijkstra_matrix(lua_State *L) {
   double *A = NULL;
+	double *D = NULL;
 #ifdef TORCH
   const char *tname = luaT_typename(L, 1);
   THDoubleTensor *costp = (THDoubleTensor *) luaT_checkudata(L, 1, tname);
@@ -65,6 +66,16 @@ static int lua_dijkstra_matrix(lua_State *L) {
   std::cout << "Torch Dimension " << costp->nDimension << std::endl;
 #endif
   THArgCheck(costp->nDimension == 2, 1, "tensor must have two dimensions");
+	int iGoal = luaL_optint(L, 2, 0) - 1; // 0-indexed nodes
+  int jGoal = luaL_optint(L, 3, 0) - 1; // 0-indexed nodes
+  int nNeighbors = luaL_optint(L, 4, 8);
+
+	int m = costp->size[0]; // number of rows;
+  int n = costp->size[1]; // number of cols;
+	int size = m*n;
+	A = (double*)costp->storage->data;
+
+	/*
   int size = costp->size[0] * costp->size[1];
   A = (double *)malloc(size * sizeof(double));
   // Get torchTensor data
@@ -73,11 +84,7 @@ static int lua_dijkstra_matrix(lua_State *L) {
       A[r * costp->size[1] + c] = (THTensor_fastGet2d(costp, r, c));
   int m = costp->size[0]; // number of rows;
   int n = costp->size[1]; // number of cols;
-
-  int iGoal = luaL_optint(L, 2, 0) - 1; // 0-indexed nodes
-  int jGoal = luaL_optint(L, 3, 0) - 1; // 0-indexed nodes
-
-  int nNeighbors = luaL_optint(L, 4, 8);
+	*/
 #endif
 
 #ifdef DEBUG
@@ -96,19 +103,27 @@ static int lua_dijkstra_matrix(lua_State *L) {
   int indGoal = iGoal + m * jGoal; // linear index
 
   // Cost to go values
+	/*
   double *D = (double *)malloc(m * n * sizeof(double));
-  for (int i = 0; i < m*n; i++) D[i] = INFINITY;
-  D[indGoal] = 0;
+	for (int i = 0; i < m*n; i++) D[i] = INFINITY;
+	*/
 
+	#ifdef TORCH
+  	THDoubleTensor *dp = THDoubleTensor_newWithSize2d(m,n);
+		D = dp->storage->data;
+	#endif
+
+	for (int i = 0; i < size; i++) D[i] = INFINITY;
+	D[indGoal] = 0;
   // Priority queue implementation as STL set
   set<CostNodePair> Q; // Sorted set of (cost to go, node)
   Q.insert(CostNodePair(0, indGoal));
 
-  while (!Q.empty()) {
-    // Fetch closest node in queue
-    CostNodePair top = *Q.begin();
-    Q.erase(Q.begin());
-    double c0 = top.first;
+	while (!Q.empty()) {
+		// Fetch closest node in queue
+		CostNodePair top = *Q.begin();
+		Q.erase(Q.begin());
+		double c0 = top.first;
     int ind0 = top.second;
 
     // Array subscripts of node:
@@ -121,28 +136,27 @@ static int lua_dijkstra_matrix(lua_State *L) {
       int j1 = j0 + neighbors[k].joffset;
       if ((j1 < 0) || (j1 >= n)) continue;
       int ind1 = m*j1+i1;
-
-      double c1 = c0 + 0.5*(A[ind0]+A[ind1])*neighbors[k].distance;
+			double c1 = c0 + 0.5*(A[ind0]+A[ind1])*neighbors[k].distance;
       if (c1 < D[ind1]) {
-	if (!isinf(D[ind1])) {
-	  Q.erase(Q.find(CostNodePair(D[ind1],ind1)));
+				if (!isinf(D[ind1])){ Q.erase(Q.find(CostNodePair(D[ind1],ind1))); }
+				D[ind1] = c1;
+				Q.insert(CostNodePair(D[ind1], ind1));
+			}
+		}
 	}
-	D[ind1] = c1;
-	Q.insert(CostNodePair(D[ind1], ind1));
-      }
-    }
-  }
 
 #ifdef TORCH 
+	/*
   THDoubleTensor *dp = THDoubleTensor_newWithSize2d(n, m);
   for (int r = 0; r < dp->size[0]; r++)
     for (int c = 0; c < dp->size[1]; c++)
       THTensor_fastSet2d(dp, r, c, D[r * dp->size[1] + c]);
+	*/
   luaT_pushudata(L, dp, "torch.DoubleTensor");
 #endif
 
-  free(A);
-  free(D);
+  //free(A);
+  //free(D);
   return 1;
 }
 

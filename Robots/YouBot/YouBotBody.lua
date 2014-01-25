@@ -103,7 +103,9 @@ Body.entry = function()
   -- Set the initial joint command angles, so we have no jerk initially
   local init_pos = {}
   for i=1,nJoint do
-    local rad = (youbot.get_arm_position(i) - servo.offset[i]) * servo.direction[i]
+		local lower, upper, en = youbot.get_arm_joint_limit(i)
+		local pos = youbot.get_arm_position(i)
+    local rad = (pos - servo.offset[i]) * servo.direction[i]
     init_pos[i] = rad
   end
   jcm.set_actuator_command_position(init_pos)
@@ -118,7 +120,8 @@ Body.update = function()
   -- Get joint readings
   local rad,mps,nm = {},{},{}
   for i=1,nJoint do
-    rad[i] = (youbot.get_arm_position(i) - servo.offset[i]) * servo.direction[i]
+		local pos = youbot.get_arm_position(i)
+    rad[i] = (pos - servo.offset[i]) * servo.direction[i]
     mps[i] = youbot.get_arm_velocity(i)
     nm[i]  = youbot.get_arm_torque(i)
   end

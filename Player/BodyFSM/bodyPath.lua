@@ -12,23 +12,26 @@ local t_entry, t_update, t_exit
 
 -- The map is static, so import it once
 local map = libMap.open_map'map.ppm'
+-- Perform the convolution so that
+-- the girth of the robot will not collide with walls
+map:grow()
+
 -- Make the initial cost to go
 local goal = wcm.get_map_goal()
 map:new_goal(goal)
 -- Access the path persistently
 local path, finished_path, cur_wp, wp_id, path_sz
 
--- Export so that I can see it :)
---[[
-local c_map = map:render('jpeg')
-local f_map = io.open('cur_map.jpeg','w')
-f_map:write(c_map)
-f_map:close()
---]]
-local c_map = map:render('png')
+-- Render so that I can see it :)
+local c_map = map:render'png'
 local f_map = io.open('cur_map.png','w')
 f_map:write(c_map)
 f_map:close()
+
+-- Export for MATLAB
+libMap.export(map.cost,'cost.raw')
+libMap.export(map.cost_to_go,'cost_to_go.raw')
+libMap.export(map.grown,'grown.raw')
 
 local function robocup_follow( pose, target_pose )
   local maxStep = 0.15

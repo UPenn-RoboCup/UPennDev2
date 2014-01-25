@@ -72,6 +72,7 @@ libMap.open_map = function( map_filename )
 	
 	-- Maximum value
 	local max = tonumber( f_img:read('*line') )
+	map.max = max
 	
 	-- Parse the comments
 	assert(#comments>=2,'Need the comments to provide Map resolution and offset')
@@ -129,9 +130,21 @@ libMap.open_map = function( map_filename )
 	--return setmetatable(map, mt)
 	map.new_goal = libMap.new_goal
 	map.new_path = libMap.new_path
+	map.grow = libMap.grow
 	map.render = libMap.render
 	return map
 	
+end
+
+-- Buffer the map so that the robot will not hit anything
+libMap.grow = function( map, radius )
+	assert(map.cost,'You must open a map first!')
+	radius = (radius or .5) * map.inv_resolution
+	local kernel = torch.DoubleTensor(radius,radius):fill(1)
+	local grown = torch.conv2(map.cost,kernel,'V')
+	print('grown sz',grown:size(1),grown:size(2),grown:isContiguous())
+	print('cost sz',map.cost:size(1),map.cost:size(2))
+	map.grown = grown
 end
 
 -- Compute the cost to go to the goal
@@ -155,12 +168,26 @@ end
 
 libMap.render = function( map, fmt )
 	-- Export in grayscale
-	local w, h = map.cost:size(1), map.cost:size(2)
+	local w, h = map.map:size(1), map.map:size(2)
 	if fmt=='jpg' or fmt=='jpeg' then
 		return jpeg.compress_gray( map.map:storage():pointer(), w, h )
 	elseif fmt=='png' then
 		return png.compress( map.map:storage():pointer(), w, h, 1 )
 	end
+end
+
+libMap.export = function( map, filename )
+	-- Export for MATLAB
+	local f = io.open(filename, 'w')
+
+	local sz = map:size()
+	f:write( tostring(carray.double{sz[1],sz[2]}) )
+
+	local ptr, n_el = map:storage():pointer(), #map:storage()
+	local arr = carray.double(ptr, n_el)
+
+	f:write( tostring(arr) )
+	f:close()
 end
 
 -- Metatable methods

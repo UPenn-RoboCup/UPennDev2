@@ -1,4 +1,4 @@
-USE_IMG = false
+USE_IMG = true
 ENABLE_PLAN = true
 dofile('../../include.lua')
 local dijkstra = require 'dijkstra'

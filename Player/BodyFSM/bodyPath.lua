@@ -18,7 +18,7 @@ map:grow()
 
 -- Make the initial cost to go
 local goal = wcm.get_map_goal()
-map:new_goal(goal)
+--map:new_goal(goal)
 -- Access the path persistently
 local path, finished_path, cur_wp, wp_id, path_sz
 
@@ -30,7 +30,10 @@ f_map:close()
 
 -- Export for MATLAB
 libMap.export(map.cost,'cost.raw')
+map:new_goal{-1.2,0,0}
 libMap.export(map.cost_to_go,'cost_to_go.raw')
+
+path = map:new_path({1,1,0},'path.raw')
 
 local function robocup_follow( pose, target_pose )
   local maxStep = 0.15

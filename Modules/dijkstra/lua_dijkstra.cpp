@@ -360,11 +360,12 @@ static int lua_dijkstra_path(lua_State *L) {
     iarray.resize(array_size);
     jarray.resize(array_size);
     std::vector<int> valid_idx;
-    while (1) {
+    while(1) {
         i0 = ipath[ipath.size() - 1];
         j0 = jpath[jpath.size() - 1];
-        int ind0 = i0 * n + j0;
+        int ind0 = i0 * m + j0;
 				double next_val = A[ind0];
+			//printf("next_val: %lf\n",next_val);
         if (next_val < eps){ break; }
         
         valid_idx.clear();
@@ -382,7 +383,7 @@ static int lua_dijkstra_path(lua_State *L) {
             i1 = iarray[idx_idx];
             j1 = jarray[idx_idx];
             d1 = doffset[idx_idx];
-            int ind1 = i1 * n + j1;
+            int ind1 = i1 * m + j1;
 
             double a1 = A[ind1] + 0.5 * d1 * (C[ind1] + C[ind0]);
             if (a1 < min_a) {

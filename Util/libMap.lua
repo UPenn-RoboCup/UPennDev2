@@ -14,11 +14,13 @@ local jpeg = require'jpeg'
 local slam = require'slam'
 
 local function pose_to_map_index(map,pose)
-	local inv_pose = pose * map.inv_resolution
+	local inv_pose = vector.pose(pose) * map.inv_resolution
+	--print('inv_pose',inv_pose)
 	local map_sz = vector.new{map.cost:size(1),map.cost:size(2)}
 	local map_pose = map_sz/2 + inv_pose
 	local i = math.max(math.min(math.ceil(map_pose[1]),map_sz[1]),1)
 	local j = math.max(math.min(math.ceil(map_pose[2]),map_sz[2]),1)
+	--print(i,j)
 	return i, j
 end
 
@@ -156,10 +158,20 @@ libMap.new_goal = function( map, goal )
 end
 
 -- Compute a path to the goal
-libMap.new_path = function( map, start )
+libMap.new_path = function( map, start, filename )
 	assert(map.cost_to_go,'You must set a goal first!')
 	local i, j = pose_to_map_index(map,start)
 	local i_path, j_path = dijkstra.path( map.cost_to_go, map.cost, i, j )
+	if filename then
+		local f = io.open(filename, 'w')
+		local ptr, n_el = i_path:storage():pointer(), #i_path:storage()
+		local arr = carray.int(ptr, n_el)
+		f:write( tostring(arr) )
+		ptr, n_el = j_path:storage():pointer(), #j_path:storage()
+		arr = carray.int(ptr, n_el)
+		f:write( tostring(arr) )
+		f:close()
+	end
 	return index_path_to_pose_path(map,i_path,j_path)
 end
 

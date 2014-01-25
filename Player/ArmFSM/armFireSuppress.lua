@@ -200,7 +200,7 @@ function state.entry()
   --hcm.set_tool_model(Config.armfsm.toolgrip.default_model)
   hcm.set_tool_model(Config.armfsm.firesuppress.default_model)  
 
-print("tool model:",unpack(Config.armfsm.firesuppress.default_model))
+--print("tool model:",unpack(Config.armfsm.firesuppress.default_model))
 
   hcm.set_state_proceed(1)
 
@@ -253,9 +253,7 @@ function state.update()
         arm_planner:set_shoulder_yaw_target(nil,nil)        
         local trRArmTarget = get_tool_tr({0,0,0})
         local arm_seq = { {'move',nil, trRArmTarget} }     
-
-
-print("armTarget:",unpack(trRArmTarget))        
+--print("armTarget:",unpack(trRArmTarget))        
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grab" end          
         hcm.set_state_proceed(0) --stop here
       elseif hcm.get_state_proceed()==-1 then 
@@ -274,13 +272,13 @@ print("armTarget:",unpack(trRArmTarget))
         hcm.set_state_proceed(0) --stop here
 --]]        
 print("trLArm:",arm_planner.print_transform(trLArm))
+print("trRArm:",arm_planner.print_transform(trRArm))
         local arm_seq = {
           {'move',nil,Config.armfsm.firesuppress.arminit[5]},
           {'move',Config.armfsm.firesuppress.larmtrigger[1],nil},
           {'move',Config.armfsm.firesuppress.larmtrigger[2],nil},
           {'wrist',Config.armfsm.firesuppress.larmtrigger[3],nil},
---          {'move',Config.armfsm.firesuppress.larmtrigger[3],nil},
---          {'wrist',Config.armfsm.firesuppress.larmtrigger[4],nil},
+          {'move',Config.armfsm.firesuppress.larmtrigger[3],nil},
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end
         hcm.set_state_proceed(0) --stop here

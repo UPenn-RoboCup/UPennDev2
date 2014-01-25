@@ -510,26 +510,25 @@ armfsm.firesuppress.arminit={
 --]]
 
 armfsm.firesuppress.arminit={
-  {0.29,-0.30,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.29,-0.15,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.35,-0.15,-0.1,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.35,-0.15,-0.1,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.35,-0.15,-0.1,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 
-  {0.35,-0.07,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.25,-0.07,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
-armfsm.firesuppress.default_model={0.39,-0.15,-0.10,0,0,0}
+armfsm.firesuppress.default_model={0.35,-0.15,-0.10,0,0,0}
 
 
 armfsm.firesuppress.larmtrigger={
 --  {0.19,0.26,-0.20,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
-  {0.35,0.21,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
-  {0.48,0.25,-0.05,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
---  {0.41,0.07,0,0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
-  {0.45,0.25,-0.05,0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
-
-  {0.45,0.15,-0.05,0,0*DEG_TO_RAD, -90*DEG_TO_RAD},
+  {0.35,0.30,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.55,0.30,-0.05,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+--  {0.34,0.07,-0.05,0,0*DEG_TO_RAD, -85*DEG_TO_RAD},
+  {0.28,0.07,-0.05,0,0*DEG_TO_RAD, -85*DEG_TO_RAD},
 
 
+  
 
 }
 

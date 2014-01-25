@@ -274,12 +274,13 @@ function state.update()
 print("trLArm:",arm_planner.print_transform(trLArm))
 print("trRArm:",arm_planner.print_transform(trRArm))
         local arm_seq = {
-          {'move',nil,Config.armfsm.firesuppress.arminit[5]},
-          {'move',Config.armfsm.firesuppress.larmtrigger[1],nil},
+--          {'move',nil,Config.armfsm.firesuppress.arminit[5]},
+--          {'move',Config.armfsm.firesuppress.larmtrigger[1],nil},
+
+          {'move',Config.armfsm.firesuppress.larmtrigger[1],Config.armfsm.firesuppress.arminit[5]},
           {'move',Config.armfsm.firesuppress.larmtrigger[2],nil},
           {'wrist',Config.armfsm.firesuppress.larmtrigger[3],nil},
           {'move',Config.armfsm.firesuppress.larmtrigger[3],nil},
-
           
           {'wrist',Config.armfsm.firesuppress.larmtrigger[2],nil},
           {'move',Config.armfsm.firesuppress.larmtrigger[1],nil},

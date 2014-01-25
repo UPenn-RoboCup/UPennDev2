@@ -515,8 +515,9 @@ armfsm.firesuppress.arminit={
   {0.35,-0.15,-0.1,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.35,-0.15,-0.1,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 
-  {0.25,-0.07,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-
+--  {0.25,-0.07,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+--closer
+  {0.25,-0.0,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 
 
   {0.35,-0.10,-0.1,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
@@ -529,12 +530,37 @@ armfsm.firesuppress.larmtrigger={
   {0.35,0.30,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
   {0.55,0.30,-0.05,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
 --  {0.34,0.07,-0.05,0,0*DEG_TO_RAD, -85*DEG_TO_RAD},
-  {0.28,0.07,-0.05,0,0*DEG_TO_RAD, -85*DEG_TO_RAD},
+
+--  {0.28,0.07,-0.05,0,0*DEG_TO_RAD, -85*DEG_TO_RAD},
+  {0.25,0.07,-0.05,0,0*DEG_TO_RAD, -85*DEG_TO_RAD},
 
 
   {0.19,0.26,-0.20,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
-
 }
+
+--Closer
+armfsm.firesuppress.larmtrigger={
+--  {0.19,0.26,-0.20,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.35,0.26,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.55,0.24,-0.05,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.28,0.01,-0.05,0,0*DEG_TO_RAD, -85*DEG_TO_RAD},
+  {0.19,0.26,-0.20,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+}
+
+--Higher
+armfsm.firesuppress.larmtrigger={
+--  {0.19,0.26,-0.20,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.35,0.26,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+  {0.55,0.24,-0.02,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+--  {0.24,0.01,-0.02,0,0*DEG_TO_RAD, -85*DEG_TO_RAD},
+
+--pull back and push down
+  {0.22,0.01,-0.07,0,0*DEG_TO_RAD, -85*DEG_TO_RAD},
+
+
+  {0.19,0.26,-0.20,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+}
+
 
 
 

@@ -88,7 +88,7 @@ local function process_keycode(keycode,t_diff)
     return
   elseif char_lower=='h' then
     local cur_g = jcm.get_gripper_command_position()
-    cur_g[1] = math.min(cur_g[1] + 0.0025,0.025)
+    cur_g[1] = math.min(cur_g[1] + 0.0025,0.0115)
     jcm.set_gripper_command_position(cur_g)
     return
   end

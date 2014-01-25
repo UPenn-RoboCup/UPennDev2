@@ -130,7 +130,7 @@ Body.update = function()
 
 	-- Get Odometry measurements
 	local dx, dy, da = youbot.get_base_position()
-	wcm.set_robot_odometry({dx,dy,da})
+	wcm.set_robot_odometry{-1*dx,dy,da}
   
   -- Set joints from shared memory
   local desired_pos = jcm.get_actuator_command_position()
@@ -147,11 +147,11 @@ Body.update = function()
   -- Set the gripper from shared memory
   local spacing = jcm.get_gripper_command_position()
   local width = math.max(math.min(spacing[1],0.025),0)
-  --print('SPACING',width)
-  --youbot.lua_set_gripper_spacing(width)
+  youbot.lua_set_gripper_spacing(width)
   
   -- Set base from shared memory
   local vel = mcm.get_walk_vel()
+	vel[1] = -1*vel[1]
   youbot.set_base_velocity( unpack(vel) )
   
 end

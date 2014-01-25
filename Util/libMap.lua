@@ -24,8 +24,8 @@ local function pose_to_map_index(map,pose)
 	--print('Map size',map_sz)
 	local map_pose = map_sz/2 + inv_pose
 	--print('map_pose',map_pose)
-	i = math.max(math.min(math.ceil(map_pose[1]),map_sz[1]),1)
-	j = math.max(math.min(math.ceil(map_pose[2]),map_sz[2]),1)
+	local i = math.max(math.min(math.ceil(map_pose[1]),map_sz[1]),1)
+	local j = math.max(math.min(math.ceil(map_pose[2]),map_sz[2]),1)
 	return i, j
 end
 
@@ -139,11 +139,21 @@ end
 -- Buffer the map so that the robot will not hit anything
 libMap.grow = function( map, radius )
 	assert(map.cost,'You must open a map first!')
-	radius = (radius or .5) * map.inv_resolution
-	local kernel = torch.DoubleTensor(radius,radius):fill(1)
-	local grown = torch.conv2(map.cost,kernel,'V')
-	print('grown sz',grown:size(1),grown:size(2),grown:isContiguous())
-	print('cost sz',map.cost:size(1),map.cost:size(2))
+	radius = (radius or .4) * map.inv_resolution
+	local grown = map.cost:clone()
+	local t0 = unix.time()
+	for i=radius+1,grown:size(1)-radius do
+		for j=radius+1,grown:size(2)-radius do
+			local c = map.cost[i][j]
+			-- Obstacle
+			if c>127 then
+				grown[{ i, {j-radius,j+radius} }] = c
+			end
+		end
+	end
+
+	local t1 = unix.time()
+	--print('Grow time',t1-t0)
 	map.grown = grown
 end
 
@@ -177,6 +187,7 @@ libMap.render = function( map, fmt )
 end
 
 libMap.export = function( map, filename )
+	assert(map:isContiguous(),'Map must be contiguous!')
 	-- Export for MATLAB
 	local f = io.open(filename, 'w')
 

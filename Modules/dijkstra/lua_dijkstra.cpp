@@ -74,17 +74,6 @@ static int lua_dijkstra_matrix(lua_State *L) {
   int n = costp->size[1]; // number of cols;
 	int size = m*n;
 	A = (double*)costp->storage->data;
-
-	/*
-  int size = costp->size[0] * costp->size[1];
-  A = (double *)malloc(size * sizeof(double));
-  // Get torchTensor data
-  for (int r = 0; r < costp->size[0]; r++)
-    for (int c = 0; c < costp->size[1]; c++)
-      A[r * costp->size[1] + c] = (THTensor_fastGet2d(costp, r, c));
-  int m = costp->size[0]; // number of rows;
-  int n = costp->size[1]; // number of cols;
-	*/
 #endif
 
 #ifdef DEBUG
@@ -103,11 +92,6 @@ static int lua_dijkstra_matrix(lua_State *L) {
   int indGoal = iGoal + m * jGoal; // linear index
 
   // Cost to go values
-	/*
-  double *D = (double *)malloc(m * n * sizeof(double));
-	for (int i = 0; i < m*n; i++) D[i] = INFINITY;
-	*/
-
 	#ifdef TORCH
   	THDoubleTensor *dp = THDoubleTensor_newWithSize2d(m,n);
 		D = dp->storage->data;
@@ -145,18 +129,9 @@ static int lua_dijkstra_matrix(lua_State *L) {
 		}
 	}
 
-#ifdef TORCH 
-	/*
-  THDoubleTensor *dp = THDoubleTensor_newWithSize2d(n, m);
-  for (int r = 0; r < dp->size[0]; r++)
-    for (int c = 0; c < dp->size[1]; c++)
-      THTensor_fastSet2d(dp, r, c, D[r * dp->size[1] + c]);
-	*/
+#ifdef TORCH
   luaT_pushudata(L, dp, "torch.DoubleTensor");
 #endif
-
-  //free(A);
-  //free(D);
   return 1;
 }
 

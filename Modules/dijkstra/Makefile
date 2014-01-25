@@ -1,4 +1,6 @@
 LIBNAME=dijkstra
 include ../../Makefile.inc
+ifdef USE_TORCH
 CXXFLAGS+=-DTORCH=1
-LIBS+=-ltorch
+LIBOPTS+=-ltorch
+endif

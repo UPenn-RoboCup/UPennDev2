@@ -10,42 +10,20 @@ local shared = {}
 local shsize = {}
 
 shared.robot = {}
--- Webot pose
-shared.robot.pose_gps = vector.zeros(3)
 
---Combined pose (either odom only / slam only / combined)
+-- Combined pose
 shared.robot.pose = vector.zeros(3)
-
---Odometry 
+-- Webot pose from GPS
+shared.robot.gps = vector.zeros(3)
+-- Accumulated Odometry
+shared.robot.odometry = vector.zeros(3)
+-- Walking Odometry
 shared.robot.utorso0 = vector.zeros(3)
 shared.robot.utorso1 = vector.zeros(3)
 
---Odometry pose
-shared.robot.pose_odom = vector.zeros(3)
--- 0: only odom
--- 1: only slam
--- 2: slam + odom
-shared.robot.odom_mode = vector.zeros(1)
-
--- SLAM pose
-shared.slam = {}
-shared.slam.pose = vector.zeros(3)
-
-
---[[
-shared.robot.team_ball = vector.zeros(3);
-shared.robot.team_ball_score = vector.zeros(1);
--- Auto detected objects
-shared.ball = {};
-shared.ball.x = vector.zeros(1);
-shared.ball.y = vector.zeros(1);
-shared.ball.t = vector.zeros(1);
-shared.ball.velx = vector.zeros(1);
-shared.ball.vely = vector.zeros(1);
-shared.ball.dodge = vector.zeros(1);
-shared.ball.locked_on = vector.zeros(1);
-shared.ball.p = vector.zeros(1);
---]]
+-- Get the map goal
+shared.map = {}
+shared.map.goal = vector.zeros(3)
 
 -- Call the initializer
 memory.init_shm_segment(..., shared, shsize)

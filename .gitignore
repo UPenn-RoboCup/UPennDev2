@@ -27,6 +27,7 @@ WebotsProj/controllers/ballGPS/ballGPS
 
 # generic log files
 *.log
+*.raw
 
 # Player copy of the compiled libraries
 Run/Lib/*

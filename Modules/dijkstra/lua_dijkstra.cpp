@@ -20,7 +20,10 @@ extern "C"
 #endif
 #endif
 
+#ifdef DEBUG
 #include <iostream>
+#endif
+
 #include <vector>
 #include <utility>
 #include <set>
@@ -339,25 +342,17 @@ static int lua_dijkstra_path(lua_State *L) {
     THDoubleTensor *Ap = (THDoubleTensor *) luaT_checkudata(L, 1, tname);
     THArgCheck(Ap->nDimension == 2, 1, "dijkstra matrix must have two dimensions");
     
-    int size = Ap->size[0] * Ap->size[1];
-    A = (double *)malloc(size * sizeof(double));
-    // Get torchTensor data
-    for (int r = 0; r < Ap->size[0]; r++)
-      for (int c = 0; c < Ap->size[1]; c++)
-        A[r * Ap->size[1] + c] = (THTensor_fastGet2d(Ap, r, c));
-    int m = Ap->size[0]; // number of rows;
+		int m = Ap->size[0]; // number of rows;
     int n = Ap->size[1]; // number of cols;
+		int size = m*n;
+		A = (double*)Ap->storage->data;
     
     tname = luaT_typename(L, 2);
     THDoubleTensor *costp = (THDoubleTensor *) luaT_checkudata(L, 2, tname);
     THArgCheck(costp->nDimension == 2, 1, "cost matrix must have two dimensions");
 
     size = costp->size[0] * costp->size[1];
-    C = (double *)malloc(size * sizeof(double));
-    // Get torchTensor data
-    for (int r = 0; r < costp->size[0]; r++)
-      for (int c = 0; c < costp->size[1]; c++)
-        C[r * costp->size[1] + c] = (THTensor_fastGet2d(costp, r, c));
+		C = (double*)costp->storage->data;
  
     int istart = luaL_optint(L, 3, 0) - 1; // 0-indexed nodes
     int jstart = luaL_optint(L, 4, 0) - 1; // 0-indexed nodes
@@ -380,8 +375,8 @@ static int lua_dijkstra_path(lua_State *L) {
         i0 = ipath[ipath.size() - 1];
         j0 = jpath[jpath.size() - 1];
         int ind0 = i0 * n + j0;
-
-        if (A[i0 * n + j0] < eps) break;
+				double next_val = A[ind0];
+        if (next_val < eps){ break; }
         
         valid_idx.clear();
         for (int cnt = 0; cnt < array_size; cnt++) {
@@ -394,9 +389,10 @@ static int lua_dijkstra_path(lua_State *L) {
         double min_a = 10000000;
         int min_idx = 0;
         for (int cnt = 0; cnt < valid_idx.size(); cnt ++) {
-            i1 = iarray[valid_idx[cnt]];
-            j1 = jarray[valid_idx[cnt]];
-            d1 = doffset[valid_idx[cnt]];
+					int idx_idx = valid_idx[cnt];
+            i1 = iarray[idx_idx];
+            j1 = jarray[idx_idx];
+            d1 = doffset[idx_idx];
             int ind1 = i1 * n + j1;
 
             double a1 = A[ind1] + 0.5 * d1 * (C[ind1] + C[ind0]);
@@ -410,19 +406,24 @@ static int lua_dijkstra_path(lua_State *L) {
     }
 
 #ifdef TORCH 
-  THDoubleTensor *ipathp = THDoubleTensor_newWithSize1d(ipath.size());
-  for (int i = 0; i < ipath.size(); i++)
-        THTensor_fastSet1d(ipathp, i, ipath[i]);
-  luaT_pushudata(L, ipathp, "torch.DoubleTensor");
+	int npath = ipath.size();
+  THIntTensor *ipathp = THIntTensor_newWithSize1d( npath );
+	int* ipathp_ptr = (int*)ipathp->storage->data;
+	/*
+	// Valid, but let's try something new (std::copy)
+	memcpy(ipathp_ptr,&ipath[0],npath*sizeof(int));
+	*/
+	std::copy(ipath.begin(), ipath.end(), ipathp_ptr);
 
-  THDoubleTensor *jpathp = THDoubleTensor_newWithSize1d(jpath.size());
-  for (int i = 0; i < jpath.size(); i++)
-        THTensor_fastSet1d(jpathp, i, jpath[i]);
-  luaT_pushudata(L, jpathp, "torch.DoubleTensor");
+  THIntTensor *jpathp = THIntTensor_newWithSize1d( npath );
+	int* jpathp_ptr = (int*)jpathp->storage->data;
+	std::copy(jpath.begin(), jpath.end(), jpathp_ptr);
+
+	// Push
+	luaT_pushudata(L, ipathp, "torch.IntTensor");
+  luaT_pushudata(L, jpathp, "torch.IntTensor");
 #endif
 
-    free(A);
-    free(C);
     return 2;
 }
 

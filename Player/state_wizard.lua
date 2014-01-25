@@ -8,8 +8,7 @@ local util = require'util'
 local mp   = require'msgpack'
 local signal = require'signal'
 local simple_ipc = require'simple_ipc'
-local udp        = require'udp'
-local vector     = require'vector'
+require'gcm'
 
 -- Not using this right now...
 local broadcast_en = false
@@ -17,11 +16,6 @@ local state_pub_ch
 if broadcast_en then
   state_pub_ch = simple_ipc.new_publisher(Config.net.state)
 end
-
-require'gcm'
-require'wcm'
-require'jcm'
-require'mcm'
 
 local needs_broadcast = true
 local state_machines = {}
@@ -93,7 +87,7 @@ end
 
 local update = function(pulse)
 	local t = Body.get_time()
-	print('State Update from Body pulse',pulse.t,t)
+	--print('State Update from Body pulse',pulse.t,t)
 	-- Update each state machine
   for _,my_fsm in pairs(state_machines) do local event = my_fsm.update() end
 
@@ -131,5 +125,7 @@ local channel_poll = simple_ipc.wait_on_channels( wait_channels );
 entry()
 while true do
   local npoll = channel_poll:poll(channel_timeout)
+	-- Update anyway, just missing a cycle
+	update()
 end
 exit()

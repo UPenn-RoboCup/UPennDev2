@@ -58,9 +58,19 @@ local shm_send = function(t,func)
   tbl.access = func
   
   return function(val)
-    if val then tbl.val=val end
-    rpc_req:send(mp.pack(tbl))
-    local data = rpc_req:receive()
+		if val then tbl.val=val end
+		local packed = mp.pack(tbl)
+		--[[
+		if val then
+			-- Just PUB to the robot for shm set
+			tbl.val=val
+			local ret = rpc_pub:send(mp.pack(tbl))
+			return
+		end
+		--]]
+		-- Use REQ/REP to get data
+		rpc_req:send(packed)
+		local data = rpc_req:receive()
     local result = mp.unpack(data)
     if type(result)=='table' then return vector.new(result) end
     return result

@@ -5,6 +5,7 @@ IS_WEBOTS = false
 HOME = CWD:gsub('Player.*$','')
 HOME = HOME:gsub('Robots.*$','')
 HOME = HOME:gsub('Operate.*$','')
+HOME = HOME:gsub('Modules.*$','')
 HOME = HOME:gsub('Tools.*$','')
 HOME = HOME:gsub('Frameworks.*$','')
 HOME = HOME:gsub('Util.*$','')
@@ -53,11 +54,11 @@ LOG_DIR = HOME.."/Logs/"
 
 
 -- Print out the globally available variables, when using include.lua
---[[
-print( 'Working Dir:', CWD )
-print( 'Home Dir:', HOME )
-print( 'Operating Sys:', OPERATING_SYSTEM )
-print( 'Webots:', IS_WEBOTS )
-print( 'Platform:', Config.PLATFORM_NAME )
-print( 'Keyframes directory:', KEYFRAME_DIR )
---]]
+function print_env()
+	print( 'Working Dir:', CWD )
+	print( 'Home Dir:', HOME )
+	print( 'Operating Sys:', OPERATING_SYSTEM )
+	print( 'Webots:', IS_WEBOTS )
+	print( 'Platform:', Config.PLATFORM_NAME )
+	print( 'Keyframes directory:', KEYFRAME_DIR )
+end

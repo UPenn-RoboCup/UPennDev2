@@ -106,6 +106,7 @@ simple_ipc.new_publisher = function( channel, inverted, addr, filter )
       end
     end
   end
+	channel_obj.type = 'pub'
   return channel_obj
 end
 
@@ -155,7 +156,9 @@ simple_ipc.new_subscriber = function( channel, inverted, filter, addr )
     local has_more = self.socket_handle:getopt( zmq.RCVMORE )
     return ret, has_more==1
   end
-
+	
+	channel_obj.type = 'sub'
+	
   return channel_obj
 end
 
@@ -252,6 +255,8 @@ simple_ipc.new_requester = function( channel, addr, filter )
     return ret, has_more==1
   end
   
+	channel_obj.type = 'req'
+	
   return channel_obj
 end
 
@@ -314,6 +319,8 @@ simple_ipc.new_replier = function( channel, addr )
     return ret, has_more==1
   end
 
+	channel_obj.type = 'rep'
+	
   return channel_obj
 end
 

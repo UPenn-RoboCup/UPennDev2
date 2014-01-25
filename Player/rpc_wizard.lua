@@ -3,6 +3,7 @@ local mp   = require'msgpack'
 local util = require'util'
 local vector = require'vector'
 local simple_ipc = require'simple_ipc'
+local wait_channels
 local udp = require'udp'
 
 local rpc_rep = simple_ipc.new_replier(Config.net.reliable_rpc,'*')
@@ -21,6 +22,7 @@ require'vcm'
 require'jcm'
 require'mcm'
 require'hcm'
+require'wcm'
 Body = require'Body'
 
 -- Require all necessary fsm channels
@@ -105,16 +107,21 @@ local status, reply
   return reply
 end
 
-local function process_zmq()
+local function process_zmq(sh)
+	print("HERE")
+	local poll_obj = wait_channels.lut[sh]
   local request, has_more
   repeat
-    request, has_more = rpc_rep:receive()
-    local rpc         = mp.unpack(request)
-    local reply       = process_rpc(rpc)
-    -- NOTE: The zmq channel is REP/REQ
-    -- Reply with the result of the request
-    local ret         = rpc_rep:send( mp.pack(reply) )
-  until not has_more
+    request, has_more = rpc_rep:receive(true)
+		if request then
+    	local rpc         = mp.unpack(request)
+    	local reply       = process_rpc(rpc)
+    	-- if REQ/REP then reply
+			if poll_obj.type=='rep' then
+				local ret = rpc_rep:send( mp.pack(reply) )
+			end
+		end
+  until not request
 end
 
 local function process_udp()
@@ -126,49 +133,19 @@ local function process_udp()
   end
 end
 
--- Send body feedback
-local Body = require'Body'
+-- Send memory feedback
 local feedback_udp_ch =
   udp.new_sender(Config.net.operator.wired, Config.net.feedback)
+
 local function send_status_feedback()
-  local data={};
-  data.larmangle  = Body.get_larm_command_position()
-  data.rarmangle  = Body.get_rarm_command_position()
-  data.waistangle = Body.get_waist_command_position()
-  data.neckangle  = Body.get_head_command_position()
-  data.llegangle  = Body.get_lleg_command_position()
-  data.rlegangle  = Body.get_rleg_command_position()
-  data.lgrip = Body.get_lgrip_command_position()
-  data.rgrip = Body.get_rgrip_command_position()
-  -- Gripper
-  data.l_load = Body.get_lgrip_load()
-  data.r_load = Body.get_rgrip_load()
-  data.l_temp = Body.get_lgrip_temperature()
-  data.r_temp = Body.get_rgrip_temperature()
-  data.l_gpos = Body.get_lgrip_position()
-  data.r_gpos = Body.get_rgrip_position()
-  
+  local data = {}
+	data.pose = wcm.get_robot_pose()
+	data.battery = jcm.get_sensor_battery()
+	data.rpy = jcm.get_sensor_rpy()
+  data.t   = unix.time()
 
-  --Pose information
---  data.pose =  wcm.get_robot_pose()    
-
---SJ: now we apply torso compensation to pose 
-  local uTorsoComp = mcm.get_stance_uTorsoComp()
-  data.pose = util.pose_global(
-    vector.new({uTorsoComp[1],uTorsoComp[2],0}), wcm.get_robot_pose()
-    )
-
-  data.pose_odom =  wcm.get_robot_pose_odom()
-  data.pose_slam =  wcm.get_slam_pose()
-  data.rpy = Body.get_sensor_rpy()
-  data.body_height = mcm.get_stance_bodyHeight()
-  data.battery =  0
-  data.l_tr = hcm.get_hands_left_tr()
-  data.r_tr = hcm.get_hands_right_tr()
-  data.t = Body.get_time()
-
-  local ret,err = feedback_udp_ch:send( mp.pack(data) )
---  if err then print('feedback udp',err) end
+  local ret, err = feedback_udp_ch:send( mp.pack(data) )
+  --if err then print('Feedback UDP error',err) end
 end
 
 rpc_rep.callback = process_zmq
@@ -176,11 +153,11 @@ rpc_sub.callback = process_zmq
 local rpc_udp_poll = {}
 rpc_udp_poll.socket_handle = rpc_udp:descriptor()
 rpc_udp_poll.callback = process_udp
-local wait_channels = {rpc_rep,rpc_udp_poll,rpc_sub}
+wait_channels = {rpc_rep,rpc_udp_poll,rpc_sub}
 local channel_poll = simple_ipc.wait_on_channels( wait_channels );
 
 -- For no feedback
-channel_poll:start()
+--channel_poll:start()
 
 local channel_timeout = 500 -- 2Hz joint feedback
 

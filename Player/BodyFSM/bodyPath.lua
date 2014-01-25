@@ -31,7 +31,6 @@ f_map:close()
 -- Export for MATLAB
 libMap.export(map.cost,'cost.raw')
 libMap.export(map.cost_to_go,'cost_to_go.raw')
-libMap.export(map.grown,'grown.raw')
 
 local function robocup_follow( pose, target_pose )
   local maxStep = 0.15

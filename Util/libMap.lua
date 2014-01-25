@@ -11,19 +11,12 @@ local torch = require'torch'
 torch.Tensor = torch.DoubleTensor
 local png = require'png'
 local jpeg = require'jpeg'
--- Make the metatable
---local mt = {}
+local slam = require'slam'
 
 local function pose_to_map_index(map,pose)
-	--print('Pose:',pose)
-	--print('Map size:',map.size,'meters')
-	--print('Map offset:',map.offset,'meters')
 	local inv_pose = pose * map.inv_resolution
-	--print('Inverse Pose:',inv_pose)
 	local map_sz = vector.new{map.cost:size(1),map.cost:size(2)}
-	--print('Map size',map_sz)
 	local map_pose = map_sz/2 + inv_pose
-	--print('map_pose',map_pose)
 	local i = math.max(math.min(math.ceil(map_pose[1]),map_sz[1]),1)
 	local j = math.max(math.min(math.ceil(map_pose[2]),map_sz[2]),1)
 	return i, j
@@ -42,6 +35,17 @@ local function index_path_to_pose_path(map,i_path,j_path)
 		table.insert(pose_path,vector.pose{x,y,0})
 	end
 	return pose_path
+end
+
+local function map_to_cost(map,max)
+	max = max or 255
+	-- Make the double of the cost map
+	local cost = torch.DoubleTensor(map:size(1),map:size(2))
+	-- Make 1 free space, and max+1 the max?
+	-- TODO: Should be log odds... For now, whatever
+	cost:copy(map):mul(-1):add(max+1)
+	-- Save the map byte image
+	return cost
 end
 
 -- import a map
@@ -118,13 +122,11 @@ libMap.open_map = function( map_filename )
 	else
 		error('Unsupported!')
 	end
-	-- Make the double of the cost map
-	map.cost = torch.DoubleTensor(ncolumns,nrows)
-	-- Make 1 free space, and max+1 the max?
-	-- TODO: Should be log odds... For now, whatever
-	map.cost:copy(img_t):mul(-1):add(max+1)
+
 	-- Save the map byte image
 	map.map = img_t
+	-- Make the double of the cost map
+	map.cost = map_to_cost(img_t)
 
 	-- Give the table
 	--return setmetatable(map, mt)
@@ -136,42 +138,40 @@ libMap.open_map = function( map_filename )
 	
 end
 
--- Buffer the map so that the robot will not hit anything
+-- Grow the costs so that the robot will not hit anything
 libMap.grow = function( map, radius )
 	assert(map.cost,'You must open a map first!')
+	--[[
 	radius = (radius or .4) * map.inv_resolution
+
 	local grown = map.cost:clone()
-	local t0 = unix.time()
-	for i=radius+1,grown:size(1)-radius do
-		for j=radius+1,grown:size(2)-radius do
+	for i=radius+1, grown:size(1)-radius do
+		for j=radius+1, grown:size(2)-radius do
 			local c = map.cost[i][j]
-			-- Obstacle
 			if c>127 then
-				grown[{ i, {j-radius,j+radius} }] = c
+				-- Obstacle
+				grown[{ i, {j-radius,j+radius} }] = 200
 			end
 		end
 	end
+	--]]
+	local grown = slam.grow_map(map.cost)
 
-	local t1 = unix.time()
-	--print('Grow time',t1-t0)
-	map.grown = grown
+	-- Replace the cost map with the grown map
+	map.cost = grown
 end
 
 -- Compute the cost to go to the goal
 libMap.new_goal = function( map, goal )
 	assert(map.cost,'You must open a map first!')
-	--print('GOAL')
 	local i, j = pose_to_map_index(map,goal)
-	--print('GOAL IDX',i,j)
 	map.cost_to_go = dijkstra.matrix( map.cost, i, j )
 end
 
 -- Compute a path to the goal
 libMap.new_path = function( map, start )
 	assert(map.cost_to_go,'You must set a goal first!')
-	--print('START')
 	local i, j = pose_to_map_index(map,start)
-	--print('START IDX',i,j)
 	local i_path, j_path = dijkstra.path( map.cost_to_go, map.cost, i, j )
 	return index_path_to_pose_path(map,i_path,j_path)
 end
@@ -200,9 +200,5 @@ libMap.export = function( map, filename )
 	f:write( tostring(arr) )
 	f:close()
 end
-
--- Metatable methods
---mt.new_goal = libMap.new_goal
---mt.new_path = libMap.new_path
 
 return libMap

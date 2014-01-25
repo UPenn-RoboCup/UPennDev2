@@ -15,7 +15,9 @@ extern "C" {
 #include <vector>
 #include <stdbool.h>
 #include <float.h>
+#ifdef DEBUG
 #include <iostream>
+#endif
 
 #define SKIP 2
 #define DEFAULT_RESOLUTION 0.05
@@ -52,6 +54,50 @@ int isContiguous(TT *self)
 double xmin, ymin, xmax, ymax;
 double invxmax, invymax;
 double res = DEFAULT_RESOLUTION, invRes = DEFAULT_INV_RESOLUTION;
+
+int lua_grow_map(lua_State *L) {
+  THDoubleTensor *cost_t = (THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
+	THArgCheck(cost_t->nDimension == 2, 1, "tensor must have two dimensions");
+	unsigned long m = cost_t->size[0]; // number of rows;
+  unsigned long n = cost_t->size[1]; // number of cols;
+	unsigned long size = m*n;
+	unsigned long radius = 5;
+	THDoubleTensor *grown_t = THDoubleTensor_newClone(cost_t);
+	double* grown_ptr = grown_t->storage->data;
+	unsigned long count = n*radius+radius;
+	printf("sizeof: %lu, %lu\n", sizeof(unsigned long), sizeof(double*));
+	/*
+	for (unsigned long i = 0+radius; i<m-radius; i++){
+    for (unsigned long j = 0+radius; j<n-radius; j++){
+	*/
+	for (unsigned long i = 0; i<m; i++){
+    for (unsigned long j = 0; j<n; j++){
+			count++;
+			if(i<radius||i>m-radius||j<radius||j>n-radius) continue;
+			double c = THTensor_fastGet2d( cost_t, i, j );
+
+			if(c>127){
+				//printf("i: %ld, j:%ld, m: %ld, n: %ld, count: %lu\n",i,j,m,n,count);
+				for(unsigned long b=j-radius;b<j+radius;b++){
+					double cc = THTensor_fastGet2d( grown_t, i, b );
+					//double ccc = THTensor_fastGet2d( grown_t, i+1, b );
+					//printf("%lf %lf %lf\n",cc,ccc,cccc);
+					THTensor_fastSet2d( grown_t, i, b, (c>cc) ? c : cc );
+				}
+				double * tmp_ptr = grown_ptr + count - radius*n - radius;
+				for(unsigned long a = 1; a<radius; a++){
+					double* ptr = tmp_ptr + a*m;
+					if(c>*ptr) *ptr = c;
+					ptr = tmp_ptr - a*m;
+					if(c>*ptr) *ptr = c;
+				}
+			}
+		}
+	}
+
+	luaT_pushudata(L, grown_t, "torch.DoubleTensor");
+	return 1;
+}
 
 /* Set the boundaries for scan matching and map updating */
 int lua_set_boundaries(lua_State *L) {
@@ -1103,6 +1149,7 @@ static const struct luaL_Reg slam_lib [] = {
 	{"mask_points", lua_mask_points},
 	{"decay_map", lua_decay_map},
 	{"range_filter", lua_range_filter},
+	{"grow_map", lua_grow_map},
 	{NULL, NULL}
 };
 

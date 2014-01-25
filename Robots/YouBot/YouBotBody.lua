@@ -19,10 +19,10 @@ Body.DEG_TO_RAD = DEG_TO_RAD
 Body.RAD_TO_DEG = RAD_TO_DEG
 
 -- Utilities
-local unix         = require'unix'
-local vector       = require'vector'
-local quaternion   = require'quaternion'
-local util         = require'util'
+local unix       = require'unix'
+local vector     = require'vector'
+local quaternion = require'quaternion'
+local util       = require'util'
 require'wcm'
 
 -- Kinamatics

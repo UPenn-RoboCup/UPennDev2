@@ -141,24 +141,9 @@ end
 -- Grow the costs so that the robot will not hit anything
 libMap.grow = function( map, radius )
 	assert(map.cost,'You must open a map first!')
-	--[[
-	radius = (radius or .4) * map.inv_resolution
-
-	local grown = map.cost:clone()
-	for i=radius+1, grown:size(1)-radius do
-		for j=radius+1, grown:size(2)-radius do
-			local c = map.cost[i][j]
-			if c>127 then
-				-- Obstacle
-				grown[{ i, {j-radius,j+radius} }] = 200
-			end
-		end
-	end
-	--]]
-	local grown = slam.grow_map(map.cost)
-
+	radius = math.ceil( (radius or .4) * map.inv_resolution )
 	-- Replace the cost map with the grown map
-	map.cost = grown
+	map.cost = slam.grow_map(map.cost, radius)
 end
 
 -- Compute the cost to go to the goal

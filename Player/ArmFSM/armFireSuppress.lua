@@ -83,7 +83,7 @@ local function check_override_rotate()
   return false
 end
 
-local function update_override()
+local function update_override(disable_rotate)
   local override = hcm.get_state_override()
   local tool_model = hcm.get_tool_model()
 
@@ -105,7 +105,7 @@ local function update_override()
   trArmCurrent[2] + override[2],
   trArmCurrent[3] + override[3]
 
-
+  if not disable_rotate then
 --print("upd: old model",unpack(hcm.get_tool_model() ))
 
   wristPitch = wristPitch + override[5]*2.5*Body.DEG_TO_RAD 
@@ -114,7 +114,7 @@ local function update_override()
   wristPitch= math.max(-30*Body.DEG_TO_RAD,math.min(30*Body.DEG_TO_RAD,wristPitch))
   wristYaw= math.max(-70*Body.DEG_TO_RAD,math.min(20*Body.DEG_TO_RAD,wristYaw))
 
-
+  end
 
 
 
@@ -279,6 +279,12 @@ print("trRArm:",arm_planner.print_transform(trRArm))
           {'move',Config.armfsm.firesuppress.larmtrigger[2],nil},
           {'wrist',Config.armfsm.firesuppress.larmtrigger[3],nil},
           {'move',Config.armfsm.firesuppress.larmtrigger[3],nil},
+
+          
+          {'wrist',Config.armfsm.firesuppress.larmtrigger[2],nil},
+          {'move',Config.armfsm.firesuppress.larmtrigger[1],nil},
+          {'move',Config.armfsm.firesuppress.larmtrigger[4],Config.armfsm.firesuppress.arminit[6]},
+
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end
         hcm.set_state_proceed(0) --stop here
@@ -296,17 +302,23 @@ print("trRArm:",arm_planner.print_transform(trRArm))
      
       elseif check_override() then --Model modification
         print("grab")
---        local trRArmTarget2 = get_tool_tr({0,0,0})
-        update_override()        
+--        local trRArmTarget2 = get_tool_tr({0,0,0})       
+
+        update_override(1)        
+
+
+        
+
+
 --        local trRArmTarget2 = get_tool_tr({0,0,0})
         local trRArmTarget2 = get_tool_tr_2()
 
         local arm_seq = {{'move',nil,trRArmTarget2}}
-
+--[[
         if check_override_rotate() then
           arm_seq = {{'wrist',nil,trRArmTarget2}}
         end
-        
+--]]        
         if arm_planner:plan_arm_sequence2(arm_seq) then 
           stage = "grab" 
           confirm_override()
@@ -327,7 +339,7 @@ print("trRArm:",arm_planner.print_transform(trRArm))
     
   elseif stage=="lift" then
     if arm_planner:play_arm_sequence(t) then    
-      print("trLArm:",arm_planner.print_transform(trLArm))
+--      print("trLArm:",arm_planner.print_transform(trLArm))
 --      print("trRArm:",arm_planner.print_transform(trRArm))
  
   
@@ -359,12 +371,18 @@ if false then
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grab" end
       
       elseif check_override() then --Model modification
-        print("LIFT")
+
+--       print("grab")
+--        local trRArmTarget2 = get_tool_tr({0,0,0})
         update_override()        
-        local trRArmTarget2 = get_tool_tr({0,0,0})
+        local trRArmTarget2 = get_tool_tr_2()
         local arm_seq = {{'move',nil,trRArmTarget2}}
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" 
-        confirm_override()
+        if check_override_rotate() then
+          arm_seq = {{'wrist',nil,trRArmTarget2}}
+        end
+        if arm_planner:plan_arm_sequence2(arm_seq) then 
+          stage = "lift" 
+          confirm_override()
         else revert_override() end
       end
     end

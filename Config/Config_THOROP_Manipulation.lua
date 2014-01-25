@@ -516,6 +516,10 @@ armfsm.firesuppress.arminit={
   {0.35,-0.15,-0.1,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 
   {0.25,-0.07,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+
+
+
+  {0.35,-0.10,-0.1,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
 armfsm.firesuppress.default_model={0.35,-0.15,-0.10,0,0,0}
 
@@ -528,7 +532,7 @@ armfsm.firesuppress.larmtrigger={
   {0.28,0.07,-0.05,0,0*DEG_TO_RAD, -85*DEG_TO_RAD},
 
 
-  
+  {0.19,0.26,-0.20,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
 
 }
 

@@ -58,7 +58,7 @@ local poll_timeout = 500   --2Hz
 
 -- Task flag
 local HEAD = false
---local HEAD = true
+local HEAD = true
 
 -- Useful constants
 DEG_TO_RAD = Body.DEG_TO_RAD
@@ -220,29 +220,24 @@ while true do
     while udp_receiver:size()>0 do
 	local data = udp_receiver:receive()
 	local comma = data:find(',')
-        local pitch = tonumber( data:sub(1,comma-1) )
-        local yaw = tonumber( data:sub(comma+1,#data) )
-        -- If in RADIAN
-        --local target_pose = vector.new({pitch, yaw})  -- yaw, pitch for HEAD
-        -- If in DEGREE
-        local target_pose = vector.new({pitch*DEG_TO_RAD, yaw*DEG_TO_RAD})
+        local yaw = tonumber( data:sub(1,comma-1) )
+        local pitch = tonumber( data:sub(comma+1,#data) )
+        -- in DEGREE
+        local target_pose = vector.new({yaw*DEG_TO_RAD, pitch*DEG_TO_RAD})
 
-        if HEAD then
         -- For moving the head
              hcm.set_motion_headangle(target_pose)
-        else
              local wristYaw = hcm.get_motion_wristYaw()
 	     local wristPitch = hcm.get_motion_wristPitch()
 	     print('wrist yaw:', wristYaw, 'wrist pitch:', wristPitch)
 	     local dyaw = yaw - wristYaw*RAD_TO_DEG
 	     local dpitch = pitch - wristPitch*RAD_TO_DEG
-	     dyaw = dyaw/5
-	     dpitch = dpitch/5
-	     dyaw = math.min( math.max(dyaw,-2),2 )
-	     dpitch = math.min( math.max(dpitch,-2),2 )
+	     dyaw = dyaw/2.5
+	     dpitch = dpitch/2.5
+	     dyaw = math.min( math.max(dyaw,-4),4 )
+	     dpitch = math.min( math.max(dpitch,-4),4 )
 	     print('dyaw:', dyaw, 'dpitch:', dpitch)
 	     hcm.set_state_override({0,0,0, 0,dpitch,dyaw, 0})
-	end
 	print( util.color('Move head to:','green'), target_pose[1]*RAD_TO_DEG, target_pose[2]*RAD_TO_DEG )
     --[[ For moving the right arm
     local override = {0,0,0, 0, target_pose[1], target_pose[2], 0}

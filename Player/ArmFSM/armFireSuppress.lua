@@ -112,7 +112,7 @@ local function update_override()
   wristYaw = wristYaw + override[6]*2.5*Body.DEG_TO_RAD 
 
   wristPitch= math.max(-30*Body.DEG_TO_RAD,math.min(30*Body.DEG_TO_RAD,wristPitch))
-  wristYaw= math.max(-45*Body.DEG_TO_RAD,math.min(45*Body.DEG_TO_RAD,wristYaw))
+  wristYaw= math.max(-70*Body.DEG_TO_RAD,math.min(20*Body.DEG_TO_RAD,wristYaw))
 
 
 

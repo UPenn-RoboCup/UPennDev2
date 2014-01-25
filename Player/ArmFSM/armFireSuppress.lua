@@ -277,14 +277,15 @@ print("trRArm:",arm_planner.print_transform(trRArm))
 --          {'move',nil,Config.armfsm.firesuppress.arminit[5]},
 --          {'move',Config.armfsm.firesuppress.larmtrigger[1],nil},
 
-          {'move',Config.armfsm.firesuppress.larmtrigger[1],Config.armfsm.firesuppress.arminit[5]},
-          {'move',Config.armfsm.firesuppress.larmtrigger[2],nil},
+          {'move',Config.armfsm.firesuppress.larmtrigger[1],nil},
+          {'move',Config.armfsm.firesuppress.larmtrigger[2],Config.armfsm.firesuppress.arminit[5]},
           {'wrist',Config.armfsm.firesuppress.larmtrigger[3],nil},
           {'move',Config.armfsm.firesuppress.larmtrigger[3],nil},
-          
+          {'move',Config.armfsm.firesuppress.larmtrigger[4],nil},--move up a bit
+
           {'wrist',Config.armfsm.firesuppress.larmtrigger[2],nil},
-          {'move',Config.armfsm.firesuppress.larmtrigger[1],nil},
-          {'move',Config.armfsm.firesuppress.larmtrigger[4],Config.armfsm.firesuppress.arminit[6]},
+          {'move',Config.armfsm.firesuppress.larmtrigger[1],Config.armfsm.firesuppress.arminit[6]},
+          {'move',Config.armfsm.firesuppress.larmtrigger[5],nil},
 
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end

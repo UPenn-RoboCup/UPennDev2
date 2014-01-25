@@ -142,8 +142,10 @@ end
 libMap.grow = function( map, radius )
 	assert(map.cost,'You must open a map first!')
 	radius = math.ceil( (radius or .4) * map.inv_resolution )
+	local r_i = math.ceil( map.inv_resolution*.4 )
+	local r_j = math.ceil( map.inv_resolution*.25 )
 	-- Replace the cost map with the grown map
-	map.cost = slam.grow_map(map.cost, radius)
+	map.cost = slam.grow_map(map.cost, r_i, r_j)
 end
 
 -- Compute the cost to go to the goal

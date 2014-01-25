@@ -58,27 +58,23 @@ double res = DEFAULT_RESOLUTION, invRes = DEFAULT_INV_RESOLUTION;
 int lua_grow_map(lua_State *L) {
   THDoubleTensor *cost_t = (THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
 	THArgCheck(cost_t->nDimension == 2, 1, "tensor must have two dimensions");
-	int radius = luaL_checkint(L, 2);
+	int r_i = luaL_checkint(L, 2);
+	int r_j = luaL_checkint(L, 3);
 	long m = cost_t->size[0]; // number of rows;
   long n = cost_t->size[1]; // number of cols;
 	long size = m*n;
 	THDoubleTensor *grown_t = THDoubleTensor_newClone(cost_t);
 	double* grown_ptr = grown_t->storage->data;
-	long count = n*radius+radius;
-	//printf("sizeof: %lu, %lu\n", sizeof(unsigned long), sizeof(double*));
-	/*
-	for (unsigned long i = 0+radius; i<m-radius; i++){
-    for (unsigned long j = 0+radius; j<n-radius; j++){
-	*/
+	long count = n*r_i+r_j;
 	for (long i = 0; i<m; i++){
     for (long j = 0; j<n; j++){
 			count++;
-			if(i<radius||i>m-radius||j<radius||j>n-radius) continue;
+			if(i<r_i||i>m-r_i||j<r_j||j>n-r_j) continue;
 			double c = THTensor_fastGet2d( cost_t, i, j );
 			if(c>127){
-				double * tmp_ptr = grown_ptr + count - radius*n - radius;
-				for(long b = -radius; b<radius; b++){
-					for(long a = 1; a<radius; a++){
+				double * tmp_ptr = grown_ptr + count - r_i*n - r_j;
+				for(long b = -r_j; b<r_j; b++){
+					for(long a = 1; a<r_i; a++){
 						double* ptr = tmp_ptr + a*m + b;
 						if(c>*ptr) *ptr = c;
 						ptr = tmp_ptr - a*m + b;

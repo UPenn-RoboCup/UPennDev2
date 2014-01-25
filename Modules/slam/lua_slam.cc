@@ -65,19 +65,18 @@ int lua_grow_map(lua_State *L) {
 	long size = m*n;
 	THDoubleTensor *grown_t = THDoubleTensor_newClone(cost_t);
 	double* grown_ptr = grown_t->storage->data;
-	long count = n*r_i+r_j;
+	double* cur_ptr = grown_ptr;
 	for (long i = 0; i<m; i++){
     for (long j = 0; j<n; j++){
-			count++;
+			cur_ptr++;
 			if(i<r_i||i>m-r_i||j<r_j||j>n-r_j) continue;
 			double c = THTensor_fastGet2d( cost_t, i, j );
 			if(c>127){
-				double * tmp_ptr = grown_ptr + count - r_i*n - r_j;
 				for(long b = -r_j; b<r_j; b++){
 					for(long a = 1; a<r_i; a++){
-						double* ptr = tmp_ptr + a*m + b;
+						double* ptr = cur_ptr + a*m + b;
 						if(c>*ptr) *ptr = c;
-						ptr = tmp_ptr - a*m + b;
+						ptr = cur_ptr - a*m + b;
 						if(c>*ptr) *ptr = c;
 					}
 				}

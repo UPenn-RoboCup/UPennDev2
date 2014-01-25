@@ -11,18 +11,28 @@ using namespace youbot;
 static YouBotBase* ybBase = NULL;
 static YouBotManipulator* ybArm = NULL;
 
-// Initialize the wheeled base module
+// Initialize the modules
 static int lua_init_base(lua_State *L) {
-	if(ybBase) return luaL_error(L,"Base is initialized already!");
-	try {
+  if(ybBase) return luaL_error(L,"Base is initialized already!");
+  try {
 		ybBase = new YouBotBase("youbot-base", YOUBOT_CONFIGURATIONS_DIR);
+    ybBase->doJointCommutation();
 	} catch (std::exception& e) {
 		return luaL_error(L, e.what() );
 	}
+	return 0;
+}
 
-	// Return true
-	lua_pushboolean(L,1);
-	return 1;
+static int lua_init_arm(lua_State *L) {
+	if(ybArm) return luaL_error(L,"Arm is initialized already!");
+	try {
+		ybArm = new YouBotManipulator("youbot-manipulator", YOUBOT_CONFIGURATIONS_DIR);
+    ybArm->doJointCommutation();
+    ybArm->calibrateManipulator();
+	} catch (std::exception& e) {
+		return luaL_error(L, e.what() );
+	}
+	return 0;
 }
 
 // Shutdown the modules
@@ -37,40 +47,6 @@ static int lua_shutdown_arm(lua_State *L) {
 	return 0;
 }
 
-// Initialize the arm module
-static int lua_init_arm(lua_State *L) {
-	if(ybArm) return luaL_error(L,"Arm is initialized already!");
-	try {
-		ybArm = new YouBotManipulator("youbot-manipulator", YOUBOT_CONFIGURATIONS_DIR);
-	} catch (std::exception& e) {
-		return luaL_error(L, e.what() );
-	}
-	// Return true
-	lua_pushboolean(L,1);
-	return 1;
-}
-
-static int lua_arm_commutation(lua_State *L) {
-	if(!ybArm) return luaL_error(L,"Arm not initialized!");
-	ybArm->doJointCommutation();
-	return 0;
-}
-
-static int lua_base_commutation(lua_State *L) {
-	if(!ybBase) return luaL_error(L,"Base not initialized!");
-	ybBase->doJointCommutation();
-	return 0;
-}
-
-// Calibrate arm
-static int lua_calibrate_arm(lua_State *L) {  
-  if(!ybArm) return luaL_error(L,"Arm is not initialized!");
-	try {
-  	ybArm->calibrateManipulator();
-	} catch (std::exception& e) {
-		return luaL_error(L, e.what() );
-	}
-}
 static int lua_calibrate_gripper(lua_State *L) {  
   if(!ybArm) return luaL_error(L,"Arm is not initialized!");
   ybArm->calibrateGripper();
@@ -275,9 +251,6 @@ static const struct luaL_reg youbot_lib [] = {
 	{"shutdown_base", lua_shutdown_base},
   {"shutdown_arm", lua_shutdown_arm},
 	//
-	{"arm_commutation", lua_arm_commutation},
-	{"base_commutation", lua_base_commutation},
-	{"calibrate_arm", lua_calibrate_arm},
 	{"calibrate_gripper", lua_calibrate_gripper},
   //
   {"set_base_velocity", lua_set_base_velocity},

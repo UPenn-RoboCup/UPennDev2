@@ -5,17 +5,7 @@ local youbot = require'youbot'
 youbot.init_base()
 -- Init the arm
 youbot.init_arm()
-
--- Commutation
-unix.usleep(1e6)
-print('Commutation!')
-youbot.arm_commutation()
-unix.usleep(1e6)
-
--- Wait
-youbot.calibrate_arm()
-unix.usleep(5e6)
-
+youbot.calibrate_gripper()
 
 -- Get the limits
 for i=1,5 do

@@ -14,7 +14,7 @@ local t_entry, t_update, t_exit
 local map = libMap.open_map'map.ppm'
 -- Perform the convolution so that
 -- the girth of the robot will not collide with walls
-map:grow()
+--map:grow()
 
 -- Make the initial cost to go
 local goal = wcm.get_map_goal()
@@ -30,7 +30,7 @@ f_map:close()
 
 -- Export for MATLAB
 libMap.export(map.cost,'cost.raw')
-map:new_goal{-1.2,0,0}
+map:new_goal{-2,0,0}
 libMap.export(map.cost_to_go,'cost_to_go.raw')
 
 path = map:new_path({1,1,0},'path.raw')

@@ -6,11 +6,11 @@ function [map,i_path,j_path] = view_map(map_name)
         disp(dims)
         data = fread(fid,inf,'*double');
         fclose(fid);
-        map = reshape(data,dims(1),dims(2));
+        map = reshape(data,dims(2),dims(1));
 
         figure(1);
         clf;
-        imagesc(map);
+        imagesc(map');
         title(map_name);
         axis square;
     end

@@ -58,29 +58,27 @@ NeighborStruct neighbors[] = {
 static int lua_dijkstra_matrix(lua_State *L) {
   double *A = NULL;
 	double *D = NULL;
+
 #ifdef TORCH
   const char *tname = luaT_typename(L, 1);
   THDoubleTensor *costp = (THDoubleTensor *) luaT_checkudata(L, 1, tname);
-#ifdef DEBUG
-  std::cout << "Type Name " << tname << std::endl;
-  std::cout << "Torch Dimension " << costp->nDimension << std::endl;
-#endif
   THArgCheck(costp->nDimension == 2, 1, "tensor must have two dimensions");
-	int iGoal = luaL_optint(L, 2, 0) - 1; // 0-indexed nodes
-  int jGoal = luaL_optint(L, 3, 0) - 1; // 0-indexed nodes
+
+	// 0-indexed nodes
+	int iGoal = luaL_optint(L, 2, 0) - 1;
+  int jGoal = luaL_optint(L, 3, 0) - 1;
   int nNeighbors = luaL_optint(L, 4, 8);
 
-	int m = costp->size[0]; // number of rows;
-  int n = costp->size[1]; // number of cols;
+	int m = costp->size[0];
+  int n = costp->size[1];
+	int i_stride = costp->stride[0];
+	int j_stride = costp->stride[1];
+
 	int size = m*n;
 	A = (double*)costp->storage->data;
-#endif
-
-#ifdef DEBUG
-  std::cout << size << std::endl;
-  for (int i = 0; i < size; i++)
-    std::cout << A[i] << " ";
-  std::cout << std::endl;
+	// Cost to go values
+  THDoubleTensor *dp = THDoubleTensor_newWithSize2d(m,n);
+	D = dp->storage->data;
 #endif
 
   if (iGoal < 0) iGoal = 0;
@@ -89,16 +87,12 @@ static int lua_dijkstra_matrix(lua_State *L) {
   if (jGoal < 0) iGoal = 0;
   if (jGoal >= n-1) iGoal = n-1;
 
-  int indGoal = iGoal + m * jGoal; // linear index
+  int indGoal = n * iGoal + jGoal;
 
-  // Cost to go values
-	#ifdef TORCH
-  	THDoubleTensor *dp = THDoubleTensor_newWithSize2d(m,n);
-		D = dp->storage->data;
-	#endif
-
+	// Set max costs
 	for (int i = 0; i < size; i++) D[i] = INFINITY;
 	D[indGoal] = 0;
+
   // Priority queue implementation as STL set
   set<CostNodePair> Q; // Sorted set of (cost to go, node)
   Q.insert(CostNodePair(0, indGoal));
@@ -111,15 +105,15 @@ static int lua_dijkstra_matrix(lua_State *L) {
     int ind0 = top.second;
 
     // Array subscripts of node:
-    int i0 = ind0 % m;
-    int j0 = ind0 / m;
+    int i0 = ind0 / n;
+    int j0 = ind0 % n;
     // Iterate over neighbor nodes:
     for (int k = 0; k < nNeighbors; k++) {
       int i1 = i0 + neighbors[k].ioffset;
       if ((i1 < 0) || (i1 >= m)) continue;
       int j1 = j0 + neighbors[k].joffset;
       if ((j1 < 0) || (j1 >= n)) continue;
-      int ind1 = m*j1+i1;
+      int ind1 = i1*n+j1;
 			double c1 = c0 + 0.5*(A[ind0]+A[ind1])*neighbors[k].distance;
       if (c1 < D[ind1]) {
 				if (!isinf(D[ind1])){ Q.erase(Q.find(CostNodePair(D[ind1],ind1))); }
@@ -333,15 +327,18 @@ static int lua_dijkstra_path(lua_State *L) {
     
 		int m = Ap->size[0]; // number of rows;
     int n = Ap->size[1]; // number of cols;
-		int size = m*n;
-		A = (double*)Ap->storage->data;
-    
+
     tname = luaT_typename(L, 2);
     THDoubleTensor *costp = (THDoubleTensor *) luaT_checkudata(L, 2, tname);
     THArgCheck(costp->nDimension == 2, 1, "cost matrix must have two dimensions");
+		THArgCheck(costp->size[0] == m, 1, "cost matrix size 1");
+		THArgCheck(costp->size[1] == n, 1, "cost matrix size 2");
 
-    size = costp->size[0] * costp->size[1];
+		A = (double*)Ap->storage->data;
 		C = (double*)costp->storage->data;
+		int i_stride = Ap->stride[0];
+		int j_stride = Ap->stride[1];
+		int size = m*n;
  
     int istart = luaL_optint(L, 3, 0) - 1; // 0-indexed nodes
     int jstart = luaL_optint(L, 4, 0) - 1; // 0-indexed nodes
@@ -363,7 +360,7 @@ static int lua_dijkstra_path(lua_State *L) {
     while(1) {
         i0 = ipath[ipath.size() - 1];
         j0 = jpath[jpath.size() - 1];
-        int ind0 = i0 * m + j0;
+        int ind0 = i0 * n + j0;
 				double next_val = A[ind0];
 			//printf("next_val: %lf\n",next_val);
         if (next_val < eps){ break; }
@@ -383,7 +380,7 @@ static int lua_dijkstra_path(lua_State *L) {
             i1 = iarray[idx_idx];
             j1 = jarray[idx_idx];
             d1 = doffset[idx_idx];
-            int ind1 = i1 * m + j1;
+            int ind1 = i1 * n + j1;
 
             double a1 = A[ind1] + 0.5 * d1 * (C[ind1] + C[ind0]);
             if (a1 < min_a) {

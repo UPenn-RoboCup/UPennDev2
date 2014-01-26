@@ -117,7 +117,8 @@ libMap.open_map = function( map_filename )
 	elseif f_type=='P6' then
 		-- RGB
 		assert(#img_str==ncolumns*nrows*3,'Bad RGB resolution check!')
-		local rgb_t = torch.ByteTensor(ncolumns,nrows,3)
+		--local rgb_t = torch.ByteTensor(ncolumns,nrows,3)
+		local rgb_t = torch.ByteTensor(nrows,ncolumns,3)
 		cutil.string2storage(img_str,rgb_t:storage())
 		-- Just the R channel
 		img_t = rgb_t:select(3,1):clone()

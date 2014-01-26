@@ -14,10 +14,9 @@ import string
 rcm = lg.rcm
 
 def data_matrix_cb(data):
-    print('\n===')
-    rospy.loginfo(rospy.get_name()+" received: "+data.message)
-    print("Translation: ",data.translation,type(data.translation))
-    print("Rot: ",data.rotation,type(data.rotation))
+    rospy.loginfo('\n'+rospy.get_name()+" received: "+data.message)
+    #print("Translation: ",data.translation,type(data.translation))
+    #print("Rot: ",data.rotation,type(data.rotation))
     # Save the translation
     trans = rcm.get_datamatrix_translation()
     for i,v in enumerate(data.translation):

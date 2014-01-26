@@ -21,7 +21,8 @@ shared.head_camera.t     = vector.zeros(1)
 -- Compression | 0: None, 1: JPEG, 3: PNG
 -- Quality | JPEG quality from 0-100
 -- Sending Rate | Number of seconds between frames
-shared.head_camera.net = vector.new{2,1,60,2}
+--shared.head_camera.net = vector.new{2,1,60,2}
+shared.head_camera.net = vector.new{2,1,60,0.2}
 
 ---------------------
 -- Forehead Camera --
@@ -32,7 +33,8 @@ shared.forehead_camera.t   = vector.zeros(1)
 -- Compression | 0: None, 1: JPEG, 3: PNG
 -- Quality | JPEG quality from 0-100
 -- Sending Rate | Number of seconds between frames
-shared.forehead_camera.net = vector.new{2,1,50,1}
+--shared.forehead_camera.net = vector.new{2,1,50,1}
+shared.forehead_camera.net = vector.new{2,1,50,0.2}
 
 -- Forehead Camera --
 shared.forehead2_camera     = {}

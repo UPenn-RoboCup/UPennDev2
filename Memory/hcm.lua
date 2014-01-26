@@ -205,6 +205,9 @@ shared_data.tool.yaw = vector.zeros(1)
 shared_data.fire={}
 shared_data.fire.model = vector.new({0.45,0,-0.05, 0,0})
 
+shared_data.fire.t=vector.zeros(1)
+
+
 -- Range of panning
 shared_data.fire.panangle = vector.new({30*DEG_TO_RAD})
 shared_data.fire.yaw = vector.zeros(1)

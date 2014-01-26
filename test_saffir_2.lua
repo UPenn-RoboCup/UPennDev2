@@ -282,11 +282,35 @@ while true do
     --local pitch = tonumber( data:sub(comma+1,#data) )
       
     local rel_angle = vector.new({yaw*DEG_TO_RAD, pitch*DEG_TO_RAD})
-    
-    local target_head_angle = head_ik(Body.get_head_command_position(),rel_angle,dist)
+
+--HACK
+   rel_angle[1] = rel_angle[1]*0.7
+   rel_angle[2] = rel_angle[2]*0.7
+
+
+
+    local current_head_angle = Body.get_head_command_position()
+    local target_head_angle = head_ik(current_head_angle,rel_angle,dist)
+
+  
+    --Slow down head movement 
+    local d_head_yaw = target_head_angle[1]-current_head_angle[1]
+    local d_head_pitch = target_head_angle[2]-current_head_angle[2]
+
+
+    local head_th = 3*Body.DEG_TO_RAD
+    if math.abs(d_head_yaw)<head_th then d_head_yaw = 0 end
+    if math.abs(d_head_pitch)<head_th then d_head_pitch = 0 end
+
+
+    local d_max_head = 3*Body.DEG_TO_RAD
+
+    d_head_yaw = math.min(d_max_head,math.max(-d_max_head,d_head_yaw))
+    d_head_pitch = math.min(d_max_head,math.max(-d_max_head,d_head_pitch))
+
   
     hcm.set_fire_t(unix.time())
-    hcm.set_motion_headangle(target_head_angle)
+    hcm.set_motion_headangle({d_head_yaw+current_head_angle[1],d_head_pitch+current_head_angle[2]})
 
   --For now, just use head angle as wrist angle
 

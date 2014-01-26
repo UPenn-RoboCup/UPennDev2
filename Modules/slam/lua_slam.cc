@@ -60,8 +60,8 @@ int lua_grow_map(lua_State *L) {
 	THArgCheck(cost_t->nDimension == 2, 1, "tensor must have two dimensions");
 	int r_i = luaL_checkint(L, 2);
 	int r_j = luaL_checkint(L, 3);
-	long m = cost_t->size[0]; // number of rows;
-  long n = cost_t->size[1]; // number of cols;
+	long m = cost_t->size[0];
+  long n = cost_t->size[1];
 	long size = m*n;
 	THDoubleTensor *grown_t = THDoubleTensor_newClone(cost_t);
 	double* grown_ptr = grown_t->storage->data;
@@ -74,9 +74,9 @@ int lua_grow_map(lua_State *L) {
 			if(c>127){
 				for(long b = -r_j; b<r_j; b++){
 					for(long a = 1; a<r_i; a++){
-						double* ptr = cur_ptr + a*m + b;
+						double* ptr = cur_ptr + a*n + b;
 						if(c>*ptr) *ptr = c;
-						ptr = cur_ptr - a*m + b;
+						ptr = cur_ptr - a*n + b;
 						if(c>*ptr) *ptr = c;
 					}
 				}

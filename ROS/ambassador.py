@@ -36,6 +36,7 @@ def listener():
 				msg.pose.pose.orientation = Quaternion(1,0,0,0)
 				pub.publish(msg)
 				print("Published Odometry!")
+				print(msg)
 
     except rospy.ROSInterruptException:
         pass

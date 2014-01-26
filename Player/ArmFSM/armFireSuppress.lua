@@ -355,7 +355,19 @@ print("trRArm:",arm_planner.print_transform(trRArm))
           {'move',nil,trRArm1}
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "wristyawturn" end                  
-      
+      elseif hcm.get_motion_wristUpdated()>0 then
+        --Got udp packet
+        wristYaw = hcm.get_motion_wristYaw()
+        wristPitch = hcm.get_motion_wristPitch()
+        wristPitch= math.max(-30*Body.DEG_TO_RAD,math.min(30*Body.DEG_TO_RAD,wristPitch))
+        wristYaw= math.max(-40*Body.DEG_TO_RAD,math.min(40*Body.DEG_TO_RAD,wristYaw))
+
+        local trRArmTarget2 = get_tool_tr_2()
+        arm_seq = {{'wrist',nil,trRArmTarget2}}        
+        if arm_planner:plan_arm_sequence2(arm_seq) then 
+          stage = "lift" 
+        end
+        hcm.set_motion_wristUpdated(0)
       elseif check_override_rotate() then
         update_override()        
         local trRArmTarget2 = get_tool_tr_2()
@@ -382,8 +394,6 @@ print("trRArm:",arm_planner.print_transform(trRArm))
   end
 
 
-  hcm.set_motion_wristYaw(wristYaw+45*Body.DEG_TO_RAD)
-  hcm.set_motion_wristPitch(wristPitch)
 
   
 end

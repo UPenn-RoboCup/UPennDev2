@@ -221,15 +221,23 @@ while true do
 	local data = udp_receiver:receive()
 	local comma = data:find(',')
         local yaw = tonumber( data:sub(1,comma-1) )
-        local pitch = tonumber( data:sub(comma+1,#data) )
+    
+	-- now we receive 3 values
+	local remains = data:sub(comma+1,#data)
+	comma = remains:find(',')
+	local pitch = tonumber( remains:sub(1,comma-1) )
+	local dist = tonumber( remains:sub(comma+1,#remains) )
+		
+print("Received yaw:",yaw," pitch",pitch)
+        --local pitch = tonumber( data:sub(comma+1,#data) )
         -- in DEGREE
         local target_pose = vector.new({yaw*DEG_TO_RAD, pitch*DEG_TO_RAD})
 
         -- For moving the head
-             hcm.set_motion_headangle(target_pose)
-             local wristYaw = hcm.get_motion_wristYaw()
-	     local wristPitch = hcm.get_motion_wristPitch()
-	     print('wrist yaw:', wristYaw, 'wrist pitch:', wristPitch)
+             --hcm.set_motion_headangle(target_pose)
+--	     print('wrist yaw:', wristYaw, 'wrist pitch:', wristPitch)
+
+--[[
 	     local dyaw = yaw - wristYaw*RAD_TO_DEG
 	     local dpitch = pitch - wristPitch*RAD_TO_DEG
 	     dyaw = dyaw/2.5
@@ -238,12 +246,29 @@ while true do
 	     dpitch = math.min( math.max(dpitch,-4),4 )
 	     print('dyaw:', dyaw, 'dpitch:', dpitch)
 	     hcm.set_state_override({0,0,0, 0,dpitch,dyaw, 0})
-	print( util.color('Move head to:','green'), target_pose[1]*RAD_TO_DEG, target_pose[2]*RAD_TO_DEG )
-    --[[ For moving the right arm
-    local override = {0,0,0, 0, target_pose[1], target_pose[2], 0}
-    hcm.set_state_override(override)
-		print( util.color('Move hand to:','green'), unpack(target_pose) )
-		--]]
+	print( util.color('Move head to:','green'), target_pose[1]*RAD_TO_DEG, target_pose[2]*RAD_TO_DEG, dist )
+	--]]
+
+      local wristYaw = hcm.get_motion_wristYaw()
+      local wristPitch = hcm.get_motion_wristPitch()
+
+      local degree_max = 3*Body.DEG_TO_RAD
+
+      local dYaw = math.min(degree_max, math.max(-degree_max,
+          target_pose[1]-wristYaw))
+      local dPitch = math.min(degree_max, math.max(-degree_max,
+          target_pose[2]-wristPitch))
+
+      local wristYawFiltered = wristYaw + dYaw
+      local wristPitchFiltered = wristPitch + dPitch
+
+      hcm.set_motion_wristYaw(wristYawFiltered)
+      hcm.set_motion_wristPitch(wristPitchFiltered)
+      hcm.set_motion_wristUpdated(1)
+	     print('old wrist yaw:', wristYaw*Body.RAD_TO_DEG, 'wrist pitch:', wristPitch*Body.RAD_TO_DEG)
+
+	     print('wrist yaw:', wristYawFiltered*Body.RAD_TO_DEG, 'wrist pitch:', wristPitchFiltered*Body.RAD_TO_DEG)
+
     end
 
   --[[ Grab the keyboard character

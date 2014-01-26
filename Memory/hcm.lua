@@ -97,6 +97,7 @@ shared_data.motion.headangle = vector.zeros(2)
 shared_data.motion.bodyHeightTarget = vector.zeros(1)
 
 --Wrist angles
+shared_data.motion.wristUpdated = vector.zeros(1)
 shared_data.motion.wristYaw = vector.zeros(1)
 shared_data.motion.wristPitch = vector.zeros(1)
 

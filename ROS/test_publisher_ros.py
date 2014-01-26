@@ -12,6 +12,9 @@ def talker():
         str = "hello world %s" % rospy.get_time()
         rospy.loginfo(str)
         pub.publish(String(str))
+				# Formulate the odometry
+				msg = Odometry()
+				# Sleep a bit
         rospy.sleep(1.0)
 
 

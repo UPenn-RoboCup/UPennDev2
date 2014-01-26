@@ -67,12 +67,12 @@ if USE_IMG then
 	if f_type=='P5' then
 		print('Grayscale')
 		assert(n_el==ncolumns*nrows,'Bad resolution check!')
-		img_t = torch.ByteTensor(ncolumns,nrows)
+		img_t = torch.ByteTensor(nrows,ncolumns)
 		-- Copy the img string to the tensor
 		cutil.string2storage(img_str,img_t:storage())
 		print(img_t[225][225])
 		print(img_t[150][150])
-		cost_img = torch.DoubleTensor(ncolumns,nrows)
+		cost_img = torch.DoubleTensor(nrows,ncolumns)
 		cost_img:copy(img_t):mul(-1):add(256)
 	else
 		print('RGB')

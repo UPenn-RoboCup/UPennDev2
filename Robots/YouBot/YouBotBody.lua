@@ -19,10 +19,11 @@ Body.DEG_TO_RAD = DEG_TO_RAD
 Body.RAD_TO_DEG = RAD_TO_DEG
 
 -- Utilities
-local unix         = require'unix'
-local vector       = require'vector'
-local quaternion   = require'quaternion'
-local util         = require'util'
+local unix       = require'unix'
+local vector     = require'vector'
+local quaternion = require'quaternion'
+local util       = require'util'
+require'wcm'
 
 -- Kinamatics
 local Transform = require'Transform'
@@ -45,11 +46,13 @@ assert(nJoint==Config.nJoint,'Config file and Body must agree on nuber of joints
 local servo = {}
 -- Real Robot is the default
 servo.min_rad = vector.new({
-  -169,-65,-151,-102,-167.5,
+--  -169,-65,-151,-102,-167.5,
+  -168,-64,-150,-100,-160,
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 servo.max_rad = vector.new({
-  169,90,146,102,167.5,
+--  169,90,146,102,167.5,
+  168,89,145,100,160,
 })*DEG_TO_RAD
 servo.direction = vector.new({
   -1,1,1,1,1
@@ -60,10 +63,6 @@ servo.offset = vector.new({
   169,65,-151,102,167
 })*DEG_TO_RAD
 assert(#servo.offset==nJoint,'Bad servo offsets!')
-
--- Add the KUKA limits (TODO: This should be done better...)
-servo.min_rad = servo.min_rad + vector.new{0.010069207223044,0,0,0,0}
-servo.max_rad = servo.max_rad + vector.new{0.010069207223044,0,0,0,0}
 
 -- Convienence functions for each joint
 local jointNames = {
@@ -97,30 +96,16 @@ Body.get_velocity = mcm.get_walk_vel
 -- Entry initializes the hardware of the robot
 Body.entry = function()
 	youbot = require'youbot'
-  
-  youbot.init_arm()
-  youbot.init_base()
-  youbot.arm_commutation()
-  --unix.usleep(1e5)
-  youbot.base_commutation()
-  --unix.usleep(1e6)
-
-  -- Calibrate arm
-  print("Calibrating Arm")
-  youbot.calibrate_arm()
-  --unix.usleep(5e6)
-  print("Done!")
-
-  -- Calibrate gripper
-  print("Calibrating Gripper")
-  youbot.calibrate_gripper()
-  --unix.usleep(5e6)
-  print("Done!")
+	youbot.init_base()
+	youbot.init_arm()
+	youbot.calibrate_gripper()
   
   -- Set the initial joint command angles, so we have no jerk initially
   local init_pos = {}
   for i=1,nJoint do
-    local rad = (youbot.get_arm_position(i) - servo.offset[i]) * servo.direction[i]
+		local lower, upper, en = youbot.get_arm_joint_limit(i)
+		local pos = youbot.get_arm_position(i)
+    local rad = (pos - servo.offset[i]) * servo.direction[i]
     init_pos[i] = rad
   end
   jcm.set_actuator_command_position(init_pos)
@@ -135,7 +120,8 @@ Body.update = function()
   -- Get joint readings
   local rad,mps,nm = {},{},{}
   for i=1,nJoint do
-    rad[i] = (youbot.get_arm_position(i) - servo.offset[i]) * servo.direction[i]
+		local pos = youbot.get_arm_position(i)
+    rad[i] = (pos - servo.offset[i]) * servo.direction[i]
     mps[i] = youbot.get_arm_velocity(i)
     nm[i]  = youbot.get_arm_torque(i)
   end
@@ -146,7 +132,7 @@ Body.update = function()
 
 	-- Get Odometry measurements
 	local dx, dy, da = youbot.get_base_position()
-	wcm.set_robot_odometry({dx,dy,da})
+	wcm.set_robot_odometry{-1*dx,dy,da}
   
   -- Set joints from shared memory
   local desired_pos = jcm.get_actuator_command_position()
@@ -162,12 +148,12 @@ Body.update = function()
   
   -- Set the gripper from shared memory
   local spacing = jcm.get_gripper_command_position()
-  local width = math.max(math.min(spacing[1],0.025),0)
-  --print('SPACING',width)
-  --youbot.lua_set_gripper_spacing(width)
+  local width = math.max(math.min(spacing[1],0.0115),0)
+  youbot.set_gripper_spacing(width)
   
   -- Set base from shared memory
   local vel = mcm.get_walk_vel()
+	vel[1] = -1*vel[1]
   youbot.set_base_velocity( unpack(vel) )
   
 end
@@ -187,7 +173,6 @@ if IS_WEBOTS then
   local ENABLE_KINECT = false
 	local ENABLE_POSE   = false
 
-  require'wcm'
   local torch = require'torch'
   torch.Tensor = torch.DoubleTensor
   local carray = require'carray'

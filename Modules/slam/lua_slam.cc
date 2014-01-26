@@ -15,7 +15,9 @@ extern "C" {
 #include <vector>
 #include <stdbool.h>
 #include <float.h>
+#ifdef DEBUG
 #include <iostream>
+#endif
 
 #define SKIP 2
 #define DEFAULT_RESOLUTION 0.05
@@ -52,6 +54,39 @@ int isContiguous(TT *self)
 double xmin, ymin, xmax, ymax;
 double invxmax, invymax;
 double res = DEFAULT_RESOLUTION, invRes = DEFAULT_INV_RESOLUTION;
+
+int lua_grow_map(lua_State *L) {
+  THDoubleTensor *cost_t = (THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
+	THArgCheck(cost_t->nDimension == 2, 1, "tensor must have two dimensions");
+	int r_i = luaL_checkint(L, 2);
+	int r_j = luaL_checkint(L, 3);
+	long m = cost_t->size[0];
+  long n = cost_t->size[1];
+	long size = m*n;
+	THDoubleTensor *grown_t = THDoubleTensor_newClone(cost_t);
+	double* grown_ptr = grown_t->storage->data;
+	double* cur_ptr = grown_ptr;
+	for (long i = 0; i<m; i++){
+    for (long j = 0; j<n; j++){
+			cur_ptr++;
+			if(i<r_i||i>m-r_i||j<r_j||j>n-r_j) continue;
+			double c = THTensor_fastGet2d( cost_t, i, j );
+			if(c>127){
+				for(long b = -r_j; b<r_j; b++){
+					for(long a = 1; a<r_i; a++){
+						double* ptr = cur_ptr + a*n + b;
+						if(c>*ptr) *ptr = c;
+						ptr = cur_ptr - a*n + b;
+						if(c>*ptr) *ptr = c;
+					}
+				}
+			}
+		}
+	}
+
+	luaT_pushudata(L, grown_t, "torch.DoubleTensor");
+	return 1;
+}
 
 /* Set the boundaries for scan matching and map updating */
 int lua_set_boundaries(lua_State *L) {
@@ -1103,6 +1138,7 @@ static const struct luaL_Reg slam_lib [] = {
 	{"mask_points", lua_mask_points},
 	{"decay_map", lua_decay_map},
 	{"range_filter", lua_range_filter},
+	{"grow_map", lua_grow_map},
 	{NULL, NULL}
 };
 

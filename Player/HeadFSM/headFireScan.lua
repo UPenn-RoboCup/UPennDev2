@@ -18,6 +18,9 @@ function state.entry()
   local t_entry_prev = t_entry
   -- Update the time of entry
   t_entry = Body.get_time()
+
+  hcm.set_fire_t(0)
+
   t_update = t_entry
   -- Reset the human position
   hcm.set_motion_headangle(Body.get_head_command_position())
@@ -48,7 +51,10 @@ function state.update()
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
 
-
+  local fire_t = hcm.get_fire_t()
+  if fire_t - t < 0.5 then
+    return "track"
+  end
 end
 
 function state.exit()  

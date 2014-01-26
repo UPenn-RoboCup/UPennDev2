@@ -43,6 +43,10 @@ function state.update()
 
 
   --TODO: restart scan afer some seconds
+  local fire_t = hcm.get_fire_t()
+  if fire_t - t > 3.0 then
+    return "lost"
+  end
 
 end
 

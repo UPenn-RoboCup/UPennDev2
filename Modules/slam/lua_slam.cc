@@ -30,30 +30,19 @@ unsigned int yis[1081];
 double lxs_map[1081];
 double lys_map[1081];
 
-	template<typename TT>
-int isContiguous(TT *self)
-{
-	long z = 1;
-	int d;
-	for(d = self->nDimension-1; d >= 0; d--)
-	{
-		if(self->size[d] != 1)
-		{
-			if(self->stride[d] == z)
-				z *= self->size[d];
-			else
-				return 0;
-		}
-	}
-	return 1;
-}
-
 /* Store the min and max values of the map */
 /* TODO: either make as a module, or pass as arguments. */
 /* TODO: multiple maps of various resolution? */
 double xmin, ymin, xmax, ymax;
 double invxmax, invymax;
 double res = DEFAULT_RESOLUTION, invRes = DEFAULT_INV_RESOLUTION;
+
+/* Set the resolution of the map */
+int lua_set_resolution(lua_State *L) {
+	res = luaL_checknumber(L, 1);
+	invRes = 1.0 / res;
+	return 0;
+}
 
 int lua_grow_map(lua_State *L) {
   THDoubleTensor *cost_t = (THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
@@ -88,6 +77,273 @@ int lua_grow_map(lua_State *L) {
 	return 1;
 }
 
+/* 2D scan match, with resulting maximum correlation information */
+// Input: 2D bytemap and search ranges
+// Output: likehoods tensor
+int lua_match(lua_State *L) {
+
+	/* Get the map, which is a ByteTensor */
+	const THByteTensor * map_t =
+		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+	/* Grab the xs and ys from the last laser scan*/
+	const THDoubleTensor * lY_t =
+		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
+	/* Grab the scanning values for theta, x, y */
+	const THDoubleTensor * pths_t =
+		(THDoubleTensor *) luaT_checkudata(L, 3, "torch.DoubleTensor");
+	const THDoubleTensor * pxs_t =
+		(THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
+	const THDoubleTensor * pys_t =
+		(THDoubleTensor *) luaT_checkudata(L, 5, "torch.DoubleTensor");
+	/* Prior on where we are now (zero position) */
+	double prior = luaL_optnumber(L, 6, 0);
+
+
+	/* Grab the number of points to process */
+	unsigned int nps = lY_t->size[0];
+	THArgCheck(lY_t->size[0]==2, 1, "Proper laser points");
+
+	// Assume offset of zero for map
+	uint8_t * map_ptr = map_t->storage->data;
+	const unsigned int sizex = map_t->size[0];
+	const unsigned int sizey = map_t->size[1];
+	const unsigned int map_xstride = map_t->stride[0];
+	// Assume ystride of 1
+	//const unsigned int map_ystride = map_t->stride[1];
+
+	/* The number of laser points and number of candidate x/y to match */
+	unsigned int npxs, npys, npths;
+	unsigned int th_stride = pths_t->stride[0];
+
+	npths = pths_t->size[0];
+	npxs = pxs_t->size[0];
+	npys = pys_t->size[0];
+
+	// TODO: create the likelihoods here each time!
+	/* Grab the output Tensor */
+	/* Ensure that the likelihood map matches the candidate sizes */
+	/*
+	THDoubleTensor * likelihoods_t =
+		(THDoubleTensor *) luaT_checkudata(L, 6, "torch.DoubleTensor");
+	const unsigned int nlikes = likelihoods_t->storage->size;
+	if (likelihoods_t->size[1] != npxs ||
+			likelihoods_t->size[2]!=npys ||
+			likelihoods_t->size[0]!=npths)
+		return luaL_error(L, "Likelihood output wrong");
+	*/
+	THDoubleTensor *likelihoods_t = THDoubleTensor_newWithSize3d(npths,npxs,npys);
+	// zero it...
+	THDoubleTensor_zero( likelihoods_t );
+	double* likestorage =
+		likelihoods_t->storage->data + likelihoods_t->storageOffset;
+	long nlikes = likelihoods_t->storage->size;
+
+	// Add the prior to the likelihoods
+	long mid_th = floor(npths/2);
+	long mid_x = floor(npxs/2);
+	long mid_y = floor(npys/2);
+	THTensor_fastSet3d(likelihoods_t,mid_th,mid_x,mid_y,prior);
+
+	/* Precalculate the indices for candidate x and y */
+	unsigned int ii=0;
+	//TODO: invRes should not be semaphored... that would be slow
+#pragma omp parallel default(shared) private(ii) firstprivate(invRes)
+	{
+#pragma omp sections nowait
+		{ /* sections */
+#pragma omp section
+			{
+				double* pxs_ptr = pxs_t->storage->data + pxs_t->storageOffset;
+				unsigned int* tmpx = xis;
+				unsigned int xstride1 = pxs_t->stride[0];
+				for( ii=0; ii<npxs; ii++ ){
+					//xis[ii] = (THTensor_fastGet1d(pxs_t,ii)-xmin)*invRes;
+					*tmpx = ( *pxs_ptr - xmin )*invRes;
+					pxs_ptr += xstride1;
+					tmpx++;
+				}
+			} /*section*/
+#pragma omp section
+			{
+				double* pys_ptr = pys_t->storage->data + pys_t->storageOffset;
+				unsigned int* tmpy = yis;
+				unsigned int ystride1 = pys_t->stride[0];
+				for(unsigned int ii=0;ii<npys;ii++){
+					//yis[ii] = (THTensor_fastGet1d(pys_t,ii)-ymin)*invRes;
+					*tmpy = ( *pys_ptr - ymin )*invRes;
+					pys_ptr+=ystride1;
+					tmpy++;
+				}
+			}/*section*/
+#pragma omp section
+			{
+				/* Convert the laser points to the map coordinates */
+				double* pls_ptr = lY_t->storage->data + lY_t->storageOffset;
+				unsigned int pstride = lY_t->stride[0];
+				double * tmplx = lxs_map, * tmply = lys_map;
+				for(unsigned int ii=0;ii<nps;ii++){
+					*tmplx = *(pls_ptr) * invRes;
+					*tmply = *(pls_ptr+1) * invRes;
+					pls_ptr += pstride;
+					tmplx++;
+					tmply++;
+					/*
+						 double lx = THTensor_fastGet2d( lY_t, ii, 0) * invRes;
+						 double ly = THTensor_fastGet2d( lY_t, ii, 1) * invRes;
+						 printf("lx (%f) tmplx (%f)\t",lx,*tmplx);
+						 printf("lx (%f) tmplx (%f)\n",ly,*tmply);
+						 */
+				}
+			} /*section*/
+		}/*sections*/
+	}/*omp parallel*/
+
+
+	/* Loop indices */
+	/* Iterate over all search angles */
+	/* Shared variables for each thread */
+	/* Private variables to be used within each thread */
+	unsigned int * tmp_xi, * tmp_yi;
+	double * tmp_lx_map, * tmp_ly_map, * tmp_like_with;
+	uint8_t * map_ptr_with_x;
+	unsigned int pi, pyi, pxi, xi, yi, pthi;
+	double theta, costh, sinth, lx_map, ly_map, x_map, y_map;
+	/* Variables for each distribution */
+	double* th_ptr = pths_t->storage->data;
+	double* tmp_like = likestorage;
+	//#pragma omp parallel for default(none) private(tmp_xi,tmp_yi,tmp_lx_map,tmp_ly_map, tmp_like_with, map_ptr_with_x, pi, pyi, pxi, xi, yi, theta, costh, sinth, lx_map, ly_map, x_map, y_map, npths, pthi, nps, npxs, npys )
+	for ( pthi=0; pthi < npths; pthi++ ) {
+
+		/* Matrix transform for each theta */
+		theta = *th_ptr;
+		th_ptr += th_stride;
+		costh = cos( theta );
+		sinth = sin( theta );
+
+		/* Reset the pointers to the candidate points and liklihoods */
+		tmp_xi = xis;
+		tmp_yi = yis;
+
+		/* Reset the pointers to the laser points */
+		tmp_lx_map = lxs_map;
+		tmp_ly_map = lys_map;
+		/* Iterate over all laser points */
+		// TODO: +=2 or adaptive filtering of the laser points
+		for ( pi=0; pi<nps; pi+=SKIP ) {
+
+			/* Grab the laser readings in map coordinates */
+			/* Rotate them by the candidate theta */
+			/* TODO: Do in bulk with torch? */
+
+			lx_map = *tmp_lx_map;
+			ly_map = *tmp_ly_map;
+			x_map = lx_map*costh - ly_map*sinth;
+			y_map = lx_map*sinth + ly_map*costh;
+			/* Increment the pointer */
+			tmp_lx_map+=SKIP;
+			tmp_ly_map+=SKIP;
+
+			/* Iterate over all candidate x's */
+			tmp_like_with = tmp_like;
+			tmp_xi = xis;
+			for ( pxi=0; pxi<npxs; pxi++ ) {
+				/* Use unsigned int - don't have to check < 0 */
+				/* TODO: is this really a safe assumption at map edges? */
+				xi = x_map + *(tmp_xi++);
+				/*
+					 int xi_old = x_map + (THTensor_fastGet1d(pxs_t,pxi)-xmin)*invRes;
+					 printf("xi: %d -> xi: %u\n",xi_old,xi);
+					 */
+				if ( xi >= sizex ) {
+					tmp_xi ++;
+					tmp_like_with ++;
+					continue;
+				}
+				map_ptr_with_x = map_ptr + xi*map_xstride;
+
+				/* Iterate over all search y's */
+				tmp_yi = yis;
+				for ( pyi=0; pyi<npys; pyi++ ) {
+					/* Use unsigned int - don't have to check < 0 */
+					yi = y_map + *(tmp_yi++);
+					/*
+						 int yi_old = y_map + (THTensor_fastGet1d(pys_t,pyi)-ymin)*invRes;
+						 printf("yi: %d -> yi: %u\n",yi_old,yi);
+						 */
+					if ( yi >= sizey ){
+						tmp_like_with ++;
+						continue;
+					}
+					// Increment likelihoods
+					*tmp_like_with += *( map_ptr_with_x + yi );
+					// Increment likelihood pointer
+					tmp_like_with ++;
+
+				} /* For pose ys */
+			} /* For pose xs */
+		} /* For laser scan points */
+		/* Update the liklihood pointers AFTER each iteration */
+		tmp_like = tmp_like_with;
+	} /* For yaw values */
+
+	/* Initialize max correlation value */
+	double hmax = 0;
+	double* tmplikestorage = likestorage; // Assume 0 for storageOffset
+	int ilikestorage = 0;
+	/* TODO: Use OpenMP to find the max */
+	// http://stackoverflow.com/questions/978222/openmp-c-algorithms-for-min-max-median-average
+	// http://msdn.microsoft.com/en-us/magazine/cc163717.aspx#S6
+	for(unsigned int ii=0;ii<nlikes;ii++){
+		//#pragma omp critical
+		{
+			if( *tmplikestorage > hmax ){
+				ilikestorage = ii;
+				hmax = *tmplikestorage;
+			}
+		}
+		tmplikestorage++;
+	}
+	long ithmax = ilikestorage / likelihoods_t->stride[0];
+	long ixmax  = (ilikestorage - ithmax*likelihoods_t->stride[0]) / likelihoods_t->stride[1];
+	long iymax  = ilikestorage - ithmax*likelihoods_t->stride[0] - ixmax*likelihoods_t->stride[1];
+
+	/* Push the likelihood positions */
+	luaT_pushudata(L, likelihoods_t, "torch.DoubleTensor");
+
+	/* Push the indices of the maximum value */
+	/* Lua indices start at 1, rather than 0, so +1 each index */
+	lua_createtable(L, 0, 4);
+	lua_pushinteger(L,ithmax+1);
+	lua_setfield(L, -2, "a");
+	lua_pushinteger(L,ixmax+1);
+	lua_setfield(L, -2, "x");
+	lua_pushinteger(L,iymax+1);
+	lua_setfield(L, -2, "y");
+	/* Push maximum correlation value to Lua */
+	lua_pushnumber(L,hmax);
+	lua_setfield(L, -2, "hits");
+
+	return 2;
+}
+
+	template<typename TT>
+int isContiguous(TT *self)
+{
+	long z = 1;
+	int d;
+	for(d = self->nDimension-1; d >= 0; d--)
+	{
+		if(self->size[d] != 1)
+		{
+			if(self->stride[d] == z)
+				z *= self->size[d];
+			else
+				return 0;
+		}
+	}
+	return 1;
+}
+
 /* Set the boundaries for scan matching and map updating */
 int lua_set_boundaries(lua_State *L) {
 	xmin = luaL_checknumber(L, 1);
@@ -96,13 +352,6 @@ int lua_set_boundaries(lua_State *L) {
 	ymax = luaL_checknumber(L, 4);
 	invymax = ymax * DEFAULT_INV_RESOLUTION;
 	invxmax = xmax * DEFAULT_INV_RESOLUTION;
-	return 0;
-}
-
-/* Set the resolution of the map */
-int lua_set_resolution(lua_State *L) {
-	res = luaL_checknumber(L, 1);
-	invRes = 1.0 / res;
 	return 0;
 }
 
@@ -353,227 +602,6 @@ int lua_update_smap(lua_State *L) {
 
 	}
 	return 0;
-}
-
-
-
-/* 2D scan match, with resulting maximum correlation information */
-int lua_match(lua_State *L) {
-
-	/* Get the map, which is a ByteTensor */
-	const THByteTensor * map_t =
-		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
-	// Assume offset of zero for map
-	uint8_t * map_ptr = map_t->storage->data;
-	const unsigned int sizex = map_t->size[0];
-	const unsigned int sizey = map_t->size[1];
-	const unsigned int map_xstride = map_t->stride[0];
-	// Assume ystride of 1
-	//const unsigned int map_ystride = map_t->stride[1];
-
-	/* Grab the xs and ys from the last laser scan*/
-	const THDoubleTensor * lY_t =
-		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
-	/* Grab the scanning values for theta, x, y */
-	const THDoubleTensor * pxs_t =
-		(THDoubleTensor *) luaT_checkudata(L, 3, "torch.DoubleTensor");
-	const THDoubleTensor * pys_t =
-		(THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
-	const THDoubleTensor * pths_t =
-		(THDoubleTensor *) luaT_checkudata(L, 5, "torch.DoubleTensor");
-	/* The number of laser points and number of candidate x/y to match */
-	unsigned int nps, npxs, npys;
-	unsigned int npths = pths_t->size[0];
-	unsigned int th_stride = pths_t->stride[0];
-
-	/* Grab the output Tensor */
-	THDoubleTensor * likelihoods_t = 
-		(THDoubleTensor *) luaT_checkudata(L, 6, "torch.DoubleTensor");
-	double* likestorage = 
-		likelihoods_t->storage->data + likelihoods_t->storageOffset;
-	const unsigned int nlikes = likelihoods_t->storage->size;
-
-	/* Grab the number of points to process */
-	npxs = pxs_t->size[0];
-	npys = pys_t->size[0];
-	nps = lY_t->size[0];
-
-	/* Ensure that the liklihood map matches the candidate sizes */
-	if (likelihoods_t->size[1] != npxs || 
-			likelihoods_t->size[2]!=npys || 
-			likelihoods_t->size[0]!=npths)
-		return luaL_error(L, "Likelihood output wrong");
-
-	/* Precalculate the indices for candidate x and y */
-	unsigned int ii=0;
-	//TODO: invRes should not be semaphored... that would be slow
-#pragma omp parallel default(shared) private(ii) firstprivate(invRes)
-	{
-#pragma omp sections nowait
-		{ /* sections */
-#pragma omp section
-			{
-				double* pxs_ptr = pxs_t->storage->data + pxs_t->storageOffset;
-				unsigned int* tmpx = xis;
-				unsigned int xstride1 = pxs_t->stride[0];
-				for( ii=0; ii<npxs; ii++ ){
-					//xis[ii] = (THTensor_fastGet1d(pxs_t,ii)-xmin)*invRes;
-					*tmpx = ( *pxs_ptr - xmin )*invRes;
-					pxs_ptr += xstride1;
-					tmpx++;
-				}
-			} /*section*/
-#pragma omp section
-			{
-				double* pys_ptr = pys_t->storage->data + pys_t->storageOffset;
-				unsigned int* tmpy = yis;
-				unsigned int ystride1 = pys_t->stride[0];
-				for(unsigned int ii=0;ii<npys;ii++){
-					//yis[ii] = (THTensor_fastGet1d(pys_t,ii)-ymin)*invRes;
-					*tmpy = ( *pys_ptr - ymin )*invRes;
-					pys_ptr+=ystride1;
-					tmpy++;
-				}
-			}/*section*/
-#pragma omp section
-			{
-				/* Convert the laser points to the map coordinates */
-				double* pls_ptr = lY_t->storage->data + lY_t->storageOffset;
-				unsigned int pstride = lY_t->stride[0];
-				double * tmplx = lxs_map, * tmply = lys_map;
-				for(unsigned int ii=0;ii<nps;ii++){
-					*tmplx = *(pls_ptr) * invRes;
-					*tmply = *(pls_ptr+1) * invRes;
-					pls_ptr += pstride;
-					tmplx++;
-					tmply++;
-					/*
-						 double lx = THTensor_fastGet2d( lY_t, ii, 0) * invRes;
-						 double ly = THTensor_fastGet2d( lY_t, ii, 1) * invRes;
-						 printf("lx (%f) tmplx (%f)\t",lx,*tmplx);
-						 printf("lx (%f) tmplx (%f)\n",ly,*tmply);
-						 */
-				}
-			} /*section*/
-		}/*sections*/
-	}/*omp parallel*/
-
-
-	/* Loop indices */
-	/* Iterate over all search angles */
-	/* Shared variables for each thread */
-	/* Private variables to be used within each thread */
-	unsigned int * tmp_xi, * tmp_yi;
-	double * tmp_lx_map, * tmp_ly_map, * tmp_like_with;
-	uint8_t * map_ptr_with_x;
-	unsigned int pi, pyi, pxi, xi, yi, pthi;
-	double theta, costh, sinth, lx_map, ly_map, x_map, y_map;
-	/* Variables for each distribution */
-	double* th_ptr = pths_t->storage->data;
-	double* tmp_like = likestorage;
-	#pragma omp parallel for default(none) private(tmp_xi,tmp_yi,tmp_lx_map,tmp_ly_map, tmp_like_with, map_ptr_with_x, pi, pyi, pxi, xi, yi, theta, costh, sinth, lx_map, ly_map, x_map, y_map, npths, pthi, nps, npxs, npys )
-	for ( pthi=0; pthi < npths; pthi++ ) {
-
-		/* Matrix transform for each theta */
-		theta = *th_ptr;
-		th_ptr += th_stride;
-		costh = cos( theta );
-		sinth = sin( theta );
-
-		/* Reset the pointers to the candidate points and liklihoods */
-		tmp_xi = xis;
-		tmp_yi = yis;
-
-		/* Reset the pointers to the laser points */
-		tmp_lx_map = lxs_map;
-		tmp_ly_map = lys_map;
-		/* Iterate over all laser points */
-		// TODO: +=2 or adaptive filtering of the laser points
-		for ( pi=0; pi<nps; pi+=SKIP ) {
-
-			/* Grab the laser readings in map coordinates */
-			/* Rotate them by the candidate theta */
-			/* TODO: Do in bulk with torch? */
-
-			lx_map = *tmp_lx_map;
-			ly_map = *tmp_ly_map;
-			x_map = lx_map*costh - ly_map*sinth;
-			y_map = lx_map*sinth + ly_map*costh;
-			/* Increment the pointer */
-			tmp_lx_map+=SKIP;
-			tmp_ly_map+=SKIP;
-
-			/* Iterate over all candidate x's */
-			tmp_like_with = tmp_like;
-			tmp_xi = xis;
-			for ( pxi=0; pxi<npxs; pxi++ ) {
-				/* Use unsigned int - don't have to check < 0 */
-				/* TODO: is this really a safe assumption at map edges? */
-				xi = x_map + *(tmp_xi++);
-				/*
-					 int xi_old = x_map + (THTensor_fastGet1d(pxs_t,pxi)-xmin)*invRes;
-					 printf("xi: %d -> xi: %u\n",xi_old,xi);
-					 */
-				if ( xi >= sizex ) {
-					tmp_xi ++;
-					tmp_like_with ++;
-					continue;
-				}
-				map_ptr_with_x = map_ptr + xi*map_xstride;
-
-				/* Iterate over all search y's */
-				tmp_yi = yis;
-				for ( pyi=0; pyi<npys; pyi++ ) {
-					/* Use unsigned int - don't have to check < 0 */
-					yi = y_map + *(tmp_yi++);
-					/*
-						 int yi_old = y_map + (THTensor_fastGet1d(pys_t,pyi)-ymin)*invRes;
-						 printf("yi: %d -> yi: %u\n",yi_old,yi);
-						 */
-					if ( yi >= sizey ){
-						tmp_like_with ++;
-						continue;
-					}
-					// Increment likelihoods
-					*tmp_like_with += *( map_ptr_with_x + yi );
-					// Increment likelihood pointer
-					tmp_like_with ++;
-
-				} /* For pose ys */
-			} /* For pose xs */
-		} /* For laser scan points */
-		/* Update the liklihood pointers AFTER each iteration */
-		tmp_like = tmp_like_with;
-	} /* For yaw values */
-
-	/* Initialize max correlation value */
-	double hmax = 0;
-	double* tmplikestorage = likestorage; // Assume 0 for storageOffset
-	int ilikestorage = 0;
-	/* TODO: Use OpenMP to find the max */
-	// http://stackoverflow.com/questions/978222/openmp-c-algorithms-for-min-max-median-average
-	// http://msdn.microsoft.com/en-us/magazine/cc163717.aspx#S6
-	for(unsigned int ii=0;ii<nlikes;ii++){
-		//#pragma omp critical 
-		{
-			if( *tmplikestorage > hmax ){
-				ilikestorage = ii;
-				hmax = *tmplikestorage;
-			}		
-		}
-		tmplikestorage++;
-	}
-	unsigned int ithmax = ilikestorage / likelihoods_t->stride[0];
-	unsigned int ixmax  = (ilikestorage - ithmax*likelihoods_t->stride[0]) / likelihoods_t->stride[1];
-	unsigned int iymax = ilikestorage - ithmax*likelihoods_t->stride[0] - ixmax*likelihoods_t->stride[1];
-
-	/* Push maximum correlation results to Lua */
-	lua_pushnumber(L,hmax);
-	/* Lua indices start at 1, rather than 0, so +1 each index */
-	lua_pushinteger(L,ixmax+1);
-	lua_pushinteger(L,iymax+1);
-	lua_pushinteger(L,ithmax+1);
-	return 4;
 }
 
 
@@ -1125,9 +1153,14 @@ int lua_range_filter(lua_State *L) {
 
 
 static const struct luaL_Reg slam_lib [] = {
-	{"set_boundaries", lua_set_boundaries},	
-	{"set_resolution", lua_set_resolution},
+	{"grow_map", lua_grow_map},
+	//
 	{"match", lua_match},
+	//
+	{"set_resolution", lua_set_resolution},
+
+	{"set_boundaries", lua_set_boundaries},
+	//
 	{"update_map", lua_update_map},
 	{"binStats", lua_binStats},
 	{"update_hmap", lua_update_hmap},
@@ -1138,7 +1171,7 @@ static const struct luaL_Reg slam_lib [] = {
 	{"mask_points", lua_mask_points},
 	{"decay_map", lua_decay_map},
 	{"range_filter", lua_range_filter},
-	{"grow_map", lua_grow_map},
+
 	{NULL, NULL}
 };
 

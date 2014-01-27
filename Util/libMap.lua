@@ -15,26 +15,34 @@ local slam = require'slam'
 
 local function pose_to_map_index(map,pose)
 	local inv_pose = vector.pose(pose) * map.inv_resolution
-	--print('inv_pose',inv_pose)
 	local map_sz = vector.new{map.cost:size(1),map.cost:size(2)}
 	local map_pose = map_sz/2 + inv_pose
 	local i = math.max(math.min(math.ceil(map_pose[1]),map_sz[1]),1)
 	local j = math.max(math.min(math.ceil(map_pose[2]),map_sz[2]),1)
-	--print(i,j)
 	return i, j
+end
+
+local function map_index_to_pose(map,i,j)
+	local i_mid, j_mid = map.cost:size(1)/2, map.cost:size(2)/2
+	local x = (i - i_mid) * map.resolution
+	local y = (j - j_mid) * map.resolution
+	return vector.pose{x,y,0}
 end
 
 local function index_path_to_pose_path(map,i_path,j_path)
 	-- Should return a lua table, not a torch object
 	local pose_path = {}
-	local i_mid, j_mid = map.cost:size(1)/2, map.cost:size(2)/2
+	--local i_mid, j_mid = map.cost:size(1)/2, map.cost:size(2)/2
 	local npath = i_path:size(1)
 	-- Go in reverse order: last item is is the next point in the path
 	-- Easy pop operation in lua
 	for p=npath,1,-1 do
+		--[[
 		local x = (i_path[p] - i_mid) * map.resolution
 		local y = (j_path[p] - j_mid) * map.resolution
 		table.insert(pose_path,vector.pose{x,y,0})
+		--]]
+		table.insert( pose_path, map_index_to_pose(map,i,j) )
 	end
 	return pose_path
 end
@@ -89,9 +97,8 @@ libMap.open_map = function( map_filename )
 	map.resolution = tonumber(m_res())
 	assert(map.resolution,'Bad resolution')
 	map.inv_resolution = 1 / map.resolution
-	map.size = map.resolution*vector.new{ncolumns,nrows}
 	-- Second comment are x and y offsets
-	local m_offset = comments[2]:gmatch("%S+")
+	local m_offset = comments[2]:gmatch"%S+"
 	local header = m_offset()
 	assert(header=='#offset','Bad offset header')
 	local x_off = tonumber(m_offset())
@@ -111,13 +118,12 @@ libMap.open_map = function( map_filename )
 	if f_type=='P5' then
 		-- Grayscale
 		assert(#img_str==ncolumns*nrows,'Bad Greyscale resolution check!')
-		img_t = torch.ByteTensor(ncolumns,nrows)
+		img_t = torch.ByteTensor(nrows,ncolumns)
 		-- Copy the pgm img string to the tensor
 		cutil.string2storage(img_str,img_t:storage())
 	elseif f_type=='P6' then
 		-- RGB
 		assert(#img_str==ncolumns*nrows*3,'Bad RGB resolution check!')
-		--local rgb_t = torch.ByteTensor(ncolumns,nrows,3)
 		local rgb_t = torch.ByteTensor(nrows,ncolumns,3)
 		cutil.string2storage(img_str,rgb_t:storage())
 		-- Just the R channel
@@ -130,15 +136,17 @@ libMap.open_map = function( map_filename )
 	map.map = img_t
 	-- Make the double of the cost map
 	map.cost = map_to_cost(img_t)
-
-	-- Give the table
-	--return setmetatable(map, mt)
+	-- Map boundaries
+	map.bounds_x = map.resolution*ncolumns/2*vector.new{-1,1}
+	map.bounds_y = map.resolution*nrows/2*vector.new{-1,1}
+	-- Add functions to work on the map itself
 	map.new_goal = libMap.new_goal
 	map.new_path = libMap.new_path
-	map.grow = libMap.grow
-	map.render = libMap.render
+	map.localize = libMap.localize
+	map.grow     = libMap.grow
+	map.render   = libMap.render
+	--
 	return map
-	
 end
 
 -- Grow the costs so that the robot will not hit anything
@@ -176,6 +184,35 @@ libMap.new_path = function( map, start, filename )
 	return index_path_to_pose_path(map,i_path,j_path)
 end
 
+-- x, y laser_point pairs (Nx2 DoubleTensor)
+-- search_amount: {x=[radius in meters],y=[radius in meters],
+-- a=[radians for angular search], da=[resolution of angular search]}
+libMap.localize = function( map, laser_points, search_amount, prior )
+	assert(map.pose,'Must have a valid pose on the map!')
+	local pose_guess = map.pose
+	--
+	local dx = (search_amount.x or .25)
+	local ddx = math.floor(dx*inv_map.resolution)*map.resolution -- make sure 0 is included
+	local search_x = torch.range( pose_guess.x-dx, pose_guess.x+dx )
+	--
+	local dy = (search_amount.y or .25)
+	local ddx = math.floor(dy*map.inv_resolution)*map.resolution -- make sure 0 is included
+	local search_y = torch.range( pose_guess.y-dy, pose_guess.y+dy )
+	--
+	local a  = search_amount.a  or 5*DEG_TO_RAD
+	local da = search_amount.da or 1*DEG_TO_RAD
+	local dda = math.floor(a/da)*da -- make sure 0 is included
+	local search_a = torch.range( pose_guess.a-dda, pose_guess.a+dda, da )
+
+	-- Perform the match
+	slam.set_resolution()(map.resolution)
+	local likelihoods, max =
+		slam.match( map, laser_points, search_a, search_x, search_y, prior or 200 )
+	local matched_pose = vector.pose{search_x[max.x],search_y[max.y],search_a[max.a]}
+	--
+	return matched_pose, max.hits
+end
+
 libMap.render = function( map, fmt )
 	-- Export in grayscale
 	local w, h = map.map:size(1), map.map:size(2)
@@ -188,16 +225,12 @@ end
 
 libMap.export = function( map, filename )
 	assert(map:isContiguous(),'Map must be contiguous!')
+	local sz = map:size()
+	local ptr, n_el = map:storage():pointer(), #map:storage()
 	-- Export for MATLAB
 	local f = io.open(filename, 'w')
-
-	local sz = map:size()
 	f:write( tostring(carray.double{sz[1],sz[2]}) )
-
-	local ptr, n_el = map:storage():pointer(), #map:storage()
-	local arr = carray.double(ptr, n_el)
-
-	f:write( tostring(arr) )
+	f:write( tostring(carray.double(ptr, n_el)) )
 	f:close()
 end
 

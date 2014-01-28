@@ -117,18 +117,19 @@ local char_to_state = {
   ['-'] = -1,  
 }
 
-local char_to_lfinger = {
-  ['z'] = vector.new({-5,-5}),
-  ['a'] = vector.new({0,0}),
-  ['q'] = vector.new({5,5}),
-}
+
+local char_to_lfinger = {}
 
 local char_to_rfinger = {
   ['x'] = vector.new({-5,-5}),
   ['s'] = vector.new({0,0}),
-  ['w'] = vector.new({5,5}),
+  ['w'] = vector.new({10,10}),
 }
 
+local char_to_rtrigger = {
+  ['z'] = vector.new({-5}),
+  ['q'] = vector.new({10}),
+}
 
 
 local function send_command_to_ch(channel, cmd_string)
@@ -187,7 +188,12 @@ local function process_character(key_code,key_char,key_char_lower)
     return
   end
 
- 
+  local rr = char_to_rtrigger[key_char_lower]
+  if rr then
+    Body.move_rgrip1(rr[1])
+    return
+  end
+
 
   local state_adj = char_to_state[key_char_lower]
   if state_adj then

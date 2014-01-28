@@ -298,7 +298,7 @@ while true do
     local d_head_pitch = target_head_angle[2]-current_head_angle[2]
 
 
-    local head_th = 3*Body.DEG_TO_RAD
+    local head_th = 2*Body.DEG_TO_RAD
     if math.abs(d_head_yaw)<head_th then d_head_yaw = 0 end
     if math.abs(d_head_pitch)<head_th then d_head_pitch = 0 end
 

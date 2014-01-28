@@ -14,18 +14,19 @@ local jpeg = require'jpeg'
 local slam = require'slam'
 
 local function pose_to_map_index(map,pose)
-	local inv_pose = vector.pose(pose) * map.inv_resolution
+	local p = vector.pose(pose) + map.offset
+	local inv_pose = p * map.inv_resolution
 	local map_sz = vector.new{map.cost:size(1),map.cost:size(2)}
-	local map_pose = map_sz/2 + inv_pose
-	local i = math.max(math.min(math.ceil(map_pose[1]),map_sz[1]),1)
-	local j = math.max(math.min(math.ceil(map_pose[2]),map_sz[2]),1)
-	return i, j
+	local i = math.max(math.min(math.ceil(inv_pose[1]),map_sz[1]),1)
+	local j = math.max(math.min(math.ceil(inv_pose[2]),map_sz[2]),1)
+	return i, map_sz[2]-j
 end
 
 local function map_index_to_pose(map,i,j)
-	local i_mid, j_mid = map.cost:size(1)/2, map.cost:size(2)/2
-	local x = (i - i_mid) * map.resolution
-	local y = (j - j_mid) * map.resolution
+	--local i_mid, j_mid = map.cost:size(1)/2, map.cost:size(2)/2
+	local i_offset, j_offset = unpack(map.offset_idx)
+	local x = (i - i_offset) * map.resolution
+	local y = (j_offset - j) * map.resolution
 	return vector.pose{x,y,0}
 end
 
@@ -37,12 +38,8 @@ local function index_path_to_pose_path(map,i_path,j_path)
 	-- Go in reverse order: last item is is the next point in the path
 	-- Easy pop operation in lua
 	for p=npath,1,-1 do
-		--[[
-		local x = (i_path[p] - i_mid) * map.resolution
-		local y = (j_path[p] - j_mid) * map.resolution
-		table.insert(pose_path,vector.pose{x,y,0})
-		--]]
-		table.insert( pose_path, map_index_to_pose(map,i,j) )
+		local pose = map_index_to_pose(map,i_path[p],j_path[p])
+		table.insert( pose_path, pose )
 	end
 	return pose_path
 end
@@ -56,6 +53,17 @@ local function map_to_cost(map,max)
 	cost:copy(map):mul(-1):add(max+1)
 	-- Save the map byte image
 	return cost
+end
+
+local render = function( map, fmt )
+	-- Export in grayscale
+	local export_map = map.map:t():clone()
+	local w, h = export_map:size(1), export_map:size(2)
+	if fmt=='jpg' or fmt=='jpeg' then
+		return jpeg.compress_gray( export_map:storage():pointer(), w, h )
+	elseif fmt=='png' then
+		return png.compress( export_map:storage():pointer(), w, h, 1 )
+	end
 end
 
 -- import a map
@@ -105,7 +113,6 @@ libMap.open_map = function( map_filename )
 	assert(x_off,'Bad X offset')
 	local y_off = tonumber(m_offset())
 	assert(y_off,'Bad Y offset')
-	map.offset = vector.new{x_off,y_off}
 	
 	-- Read the actual map image
 	local img_str = f_img:read('*all')
@@ -137,6 +144,9 @@ libMap.open_map = function( map_filename )
 	map.map = img_t
 	-- Make the double of the cost map
 	map.cost = map_to_cost(img_t)
+	-- Offset is the coordinate of... something
+	map.offset = vector.pose{x_off,y_off,0}
+	map.offset_idx = {pose_to_map_index(map,map.offset)}
 	-- Map boundaries
 	map.bounds_x = map.resolution*ncolumns/2*vector.new{-1,1}
 	map.bounds_y = map.resolution*nrows/2*vector.new{-1,1}
@@ -145,7 +155,7 @@ libMap.open_map = function( map_filename )
 	map.new_path = libMap.new_path
 	map.localize = libMap.localize
 	map.grow     = libMap.grow
-	map.render   = libMap.render
+	map.render   = render
 	--
 	return map
 end
@@ -164,7 +174,10 @@ end
 libMap.new_goal = function( map, goal )
 	assert(map.cost,'You must open a map first!')
 	local i, j = pose_to_map_index(map,goal)
+	print("G",i,j)
+	print("O",map.offset)
 	map.cost_to_go = dijkstra.matrix( map.cost, i, j )
+	map.goal = goal
 end
 
 -- Compute a path to the goal
@@ -182,6 +195,9 @@ libMap.new_path = function( map, start, filename )
 		f:write( tostring(arr) )
 		f:close()
 	end
+	map.start = start
+	print("Map Start:",start)
+	print("Map Goal:",map.goal)
 	return index_path_to_pose_path(map,i_path,j_path)
 end
 
@@ -212,16 +228,6 @@ libMap.localize = function( map, laser_points, search_amount, prior )
 	local matched_pose = vector.pose{search_x[max.x],search_y[max.y],search_a[max.a]}
 	--
 	return matched_pose, max.hits
-end
-
-libMap.render = function( map, fmt )
-	-- Export in grayscale
-	local w, h = map.map:size(1), map.map:size(2)
-	if fmt=='jpg' or fmt=='jpeg' then
-		return jpeg.compress_gray( map.map:storage():pointer(), w, h )
-	elseif fmt=='png' then
-		return png.compress( map.map:storage():pointer(), w, h, 1 )
-	end
 end
 
 libMap.export = function( map, filename )

@@ -422,9 +422,8 @@ if IS_WEBOTS then
 		if ENABLE_POSE then
     	local gps     = webots.wb_gps_get_values(tags.gps)
     	local compass = webots.wb_compass_get_values(tags.compass)
-    	-- Process sensors (Verified)
     	local angle   = math.atan2( compass[3], compass[1] )
-    	local pose    = vector.pose{gps[1], -gps[3], angle}
+    	local pose    = vector.pose{gps[3], gps[1], util.mod_angle(angle + 90*Body.DEG_TO_RAD)}
 			wcm.set_robot_gps( pose )
     	wcm.set_robot_pose( pose )
 		end

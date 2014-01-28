@@ -10,9 +10,11 @@ function [map,i_path,j_path] = view_map(map_name)
 
         figure(1);
         clf;
-        imagesc(map');
+        imagesc(map);
         title(map_name);
         axis square;
+        xlabel('x');
+        ylabel('y');
     end
     
     fid = fopen('path.raw');
@@ -28,10 +30,13 @@ function [map,i_path,j_path] = view_map(map_name)
         im = imread('map.png');
         imagesc(im);
         hold on;
-        plot(j_path,i_path,'b*-');
-        plot(start(2),start(1),'g+');
-        plot(finish(2),finish(1),'r+');
+        plot(i_path,j_path,'b*-');
+        plot(start(1),start(2),'g+');
+        plot(finish(1),finish(2),'r+');
         hold off;
+        axis square;
+        xlabel('x');
+        ylabel('y');
         
     end
     

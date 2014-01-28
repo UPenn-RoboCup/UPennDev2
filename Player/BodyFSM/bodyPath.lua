@@ -30,10 +30,10 @@ f_map:close()
 
 -- Export for MATLAB
 libMap.export(map.cost,'cost.raw')
-map:new_goal{-1,0,0}
+map:new_goal{2.5,-1,0}
 libMap.export(map.cost_to_go,'cost_to_go.raw')
 
-path = map:new_path({1,3,0},'path.raw')
+path = map:new_path({1,0,0},'path.raw')
 
 local function robocup_follow( pose, target_pose )
   local maxStep = 0.15

@@ -8,11 +8,12 @@ import rospy
 from nav_msgs.msg import Odometry
 from std_msgs.msg import String
 from geometry_msgs.msg import Point, Quaternion, Twist
+from object_recognizer.msg import ObjectPose
 
 wcm = lg.wcm
 mcm = lg.mcm
 
-def callback(data):
+def velocity_cb(data):
     rospy.loginfo(rospy.get_name())
     print(data)
     vel = mcm.get_walk_vel()
@@ -21,10 +22,25 @@ def callback(data):
     vel[3L] = float(angular.z)
     mcm.set_walk_vel( vel )
 
+def object_cb(data):
+    rospy.loginfo(rospy.get_name())
+    print(data)
+    # Save the translation
+    trans = rcm.get_datamatrix_translation()
+    for i,v in enumerate(data.translation):
+        trans[long(i+1)] = float(v)
+    rcm.set_datamatrix_translation(trans)
+    # Save the rotation
+    rot = rcm.get_datamatrix_rotation()
+    for i,v in enumerate(data.rotation):
+        rot[long(i+1)] = float(v)
+    rcm.set_datamatrix_rotation(rot)
+
 def listener():
     rospy.init_node('ambassor')
-    rospy.Subscriber("/cmd_vel", Twist, callback)
     pub = rospy.Publisher('/odom', Odometry)
+		rospy.Subscriber("/cmd_vel", Twist, velocity_cb)
+		rospy.Subscriber("/object_pose", ObjectPose, object_cb)
 
     try:
         # Formulate the odometry

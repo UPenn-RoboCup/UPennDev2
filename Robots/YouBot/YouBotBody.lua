@@ -177,6 +177,8 @@ if IS_WEBOTS then
   torch.Tensor = torch.DoubleTensor
   local carray = require'carray'
   local jpeg = require'jpeg'
+	local simple_ipc = require'simple_ipc'
+	local mp = require'msgpack'
 
   local webots = require'webots'
   -- Start the system
@@ -262,6 +264,9 @@ if IS_WEBOTS then
       end
     end,
   }
+
+	-- Publish lidar readings
+	local lidar_ch = simple_ipc.new_publisher'lidar'
 
   Body.entry = function()
 
@@ -441,6 +446,12 @@ if IS_WEBOTS then
       local h = webots.wb_camera_get_height(tags.lidar)
       local lidar_fr = webots.wb_camera_get_range_image(tags.lidar)
       local lidar_array = carray.float( lidar_fr, w*h )
+			-- Send the message on the lidar channel
+			local meta = {}
+			meta.t = Body.get_time()
+			meta.fov = webots.wb_camera_get_fov(tags.lidar)
+			meta.count = webots.wb_camera_get_width(tags.lidar)
+			lidar_ch:send{mp.pack(meta),tostring(lidar_array)}
     end
     -- Grab kinect RGBD data
     if ENABLE_KINECT then

@@ -446,6 +446,8 @@ Robot {
             }
             hokuyo {
               translation 0 .025 -0.3
+							fieldOfView 3.1415926
+							width 721
               name "lidar"
             }
           ]

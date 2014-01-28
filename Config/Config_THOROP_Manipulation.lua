@@ -492,7 +492,7 @@ armfsm.firesuppress.arminit={  -- For right arm
   {0.4,-0.25, -0.1, 0,0,0*DEG_TO_RAD},  
 }
 armfsm.firesuppress.larm={  -- For Left arm
-	{0.45, 0.3, 0, 0,20*DEG_TO_RAD,-30*DEG_TO_RAD},
+  {0.29,0.26,-0.15,-55*DEG_TO_RAD,0*DEG_TO_RAD, -20*DEG_TO_RAD},  
 }
 
 

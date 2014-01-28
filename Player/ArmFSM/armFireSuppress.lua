@@ -170,7 +170,7 @@ function state.entry()
   trRArm0 = Body.get_forward_rarm(qRArm0)  
 
   --Initial arm joint angles after rotating wrist
-  qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, Config.armfsm.toolgrip.larm[1])
+  qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, Config.armfsm.firesuppress.larm[1])
   qRArm1 = Body.get_inverse_arm_given_wrist( qRArm, Config.armfsm.toolgrip.arminit[1])
   trLArm1 = Body.get_forward_larm(qLArm1)
   trRArm1 = Body.get_forward_rarm(qRArm1)  
@@ -183,6 +183,8 @@ function state.entry()
   arm_planner:set_hand_mass(0,0)
 --  arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) 
   arm_planner:set_shoulder_yaw_target(nil, nil) 
+
+  print("L Arm:",arm_planner.print_transform(trLArm1))
 
   local wrist_seq = {
     {'wrist',trLArm1, trRArm1},

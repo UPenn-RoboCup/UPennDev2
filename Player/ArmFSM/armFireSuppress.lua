@@ -87,16 +87,6 @@ local function update_override(disable_rotate)
   local override = hcm.get_state_override()
   local tool_model = hcm.get_tool_model()
 
-
---[[
-  tool_model[1],tool_model[2],tool_model[3]=
- 
-  tool_model[1] + override[1],
-  tool_model[2] + override[2],
-  tool_model[3] + override[3]
---]]
-
-
   local trArmCurrent = hcm.get_hands_right_tr()        
 
   tool_model[1],tool_model[2],tool_model[3]=
@@ -304,39 +294,18 @@ print("trRArm:",arm_planner.print_transform(trRArm))
      
       elseif check_override() then --Model modification
         print("grab")
---        local trRArmTarget2 = get_tool_tr({0,0,0})       
+        --update_override(1)        
+        update_override(false)        
 
-        update_override(1)        
-
-
-        
-
-
---        local trRArmTarget2 = get_tool_tr({0,0,0})
         local trRArmTarget2 = get_tool_tr_2()
-
         local arm_seq = {{'move',nil,trRArmTarget2}}
---[[
-        if check_override_rotate() then
-          arm_seq = {{'wrist',nil,trRArmTarget2}}
-        end
---]]        
+
         if arm_planner:plan_arm_sequence2(arm_seq) then 
           stage = "grab" 
           confirm_override()
         else revert_override() end
       end
     end
-
-
-
-
-
-
-
-
-
-
 
     
   elseif stage=="lift" then

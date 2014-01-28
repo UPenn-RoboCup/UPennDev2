@@ -53,8 +53,18 @@ local function map_to_cost(map,max)
 	-- Make 1 free space, and max+1 the max?
 	-- TODO: Should be log odds... For now, whatever
 	cost:copy(map):mul(-1):add(max+1)
-	-- Save the map byte image
 	return cost
+end
+
+local function map_to_omap(map,max)
+	max = max or 255
+	-- Make the double of the cost map
+	local omap = map:clone()
+	omap:apply(function(x)
+			if x>100 then return 0 end
+			return max-x
+		end)
+	return omap
 end
 
 local render = function( map, fmt )
@@ -146,12 +156,20 @@ libMap.open_map = function( map_filename )
 	map.map = img_t
 	-- Make the double of the cost map
 	map.cost = map_to_cost(img_t)
+	-- Make the occupancy map
+	map.omap = map_to_omap(img_t)
 	-- Offset is the coordinate of... something
 	map.offset = vector.pose{x_off,y_off,0}
 	map.offset_idx = {pose_to_map_index(map,map.offset)}
 	-- Map boundaries
 	map.bounds_x = map.resolution*ncolumns/2*vector.new{-1,1}
 	map.bounds_y = map.resolution*nrows/2*vector.new{-1,1}
+	--print("Bounds",map.bounds_x,map.bounds_y)
+	map.bounds_x = vector.new{-map.offset[1]}
+	map.bounds_x[2] = map.bounds_x[1]+map.resolution*ncolumns
+	map.bounds_y = vector.new{-map.offset[2]}
+	map.bounds_y[2] = map.bounds_y[1]+map.resolution*nrows
+	--print("Offset",map.bounds_x,map.bounds_y)
 	-- Add functions to work on the map itself
 	map.new_goal = libMap.new_goal
 	map.new_path = libMap.new_path
@@ -225,8 +243,9 @@ libMap.localize = function( map, laser_points, search_amount, prior )
 
 	-- Perform the match
 	slam.set_resolution(map.resolution)
+	slam.set_boundaries(map.bounds_x[1],map.bounds_y[1],map.bounds_x[2],map.bounds_y[2])
 	local likelihoods, max =
-		slam.match( map.map, laser_points, search_a, search_x, search_y, prior or 200 )
+		slam.match( map.omap, laser_points, search_a, search_x, search_y, prior or 200 )
 
 	--print("dd",ddx,ddy,dda)
 	--print(pose_guess)
@@ -239,14 +258,21 @@ libMap.localize = function( map, laser_points, search_amount, prior )
 	return matched_pose, max.hits
 end
 
-libMap.export = function( map, filename )
+libMap.export = function( map, filename, kind )
 	assert(map:isContiguous(),'Map must be contiguous!')
 	local sz = map:size()
 	local ptr, n_el = map:storage():pointer(), #map:storage()
 	-- Export for MATLAB
 	local f = io.open(filename, 'w')
-	f:write( tostring(carray.double{sz[1],sz[2]}) )
-	f:write( tostring(carray.double(ptr, n_el)) )
+	f:write( tostring(carray.double({sz[1],sz[2]}) ) )
+	local data
+	if kind=='byte' then
+		data = carray.byte( ptr, n_el)
+		--print(n_el,'n_el',kind,sz[1],sz[2],#data)
+	else
+		data = carray.double( ptr, n_el)
+	end
+	f:write( tostring( data ) )
 	f:close()
 end
 

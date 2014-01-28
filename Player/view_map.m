@@ -1,9 +1,8 @@
-function [map,i_path,j_path] = view_map(map_name)
+function [map,i_path,j_path,xy,omap] = view_map(map_name)
 
     if nargin==1,
         fid = fopen(map_name);
         dims = fread(fid,2,'*double');
-        disp(dims)
         data = fread(fid,inf,'*double');
         fclose(fid);
         map = reshape(data,dims(2),dims(1));
@@ -12,7 +11,7 @@ function [map,i_path,j_path] = view_map(map_name)
         clf;
         imagesc(map);
         title(map_name);
-        axis square;
+        axis equal;
         xlabel('x');
         ylabel('y');
     end
@@ -34,10 +33,35 @@ function [map,i_path,j_path] = view_map(map_name)
         plot(start(1),start(2),'g+');
         plot(finish(1),finish(2),'r+');
         hold off;
-        axis square;
+        axis equal;
         xlabel('x');
         ylabel('y');
-        
+    end
+    
+    fid = fopen('xy.raw');
+    if fid~=-1
+        data = fread(fid,inf,'*double');
+        fclose(fid);
+        xy = reshape(data,2,numel(data)/2);
+        figure(3);
+        clf;
+        x = xy(1,:);
+        y = xy(2,:);
+        plot(x,y,'.');
+        xlabel('x');
+        ylabel('y');
+        axis equal;
+    end
+    
+    fid = fopen('omap.raw');
+    if fid~=-1
+        dims = fread(fid,2,'*double');
+        data = fread(fid,inf,'*uint8');
+        fclose(fid);
+        omap = reshape( data, dims(2),dims(1) );
+        figure(4);
+        imagesc(omap);
+        axis equal;
     end
     
 end

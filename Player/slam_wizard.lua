@@ -16,6 +16,7 @@ local libMap = require'libMap'
 -- Open the map to localize against
 local map = libMap.open_map'map.ppm'
 map.pose = vector.pose{-1.32058, -0.216679, 1.5708}
+libMap.export(map.omap,'omap.raw','byte')
 
 local function localize(ch)
 	--util.ptorch(ch.points)
@@ -59,10 +60,22 @@ lidar_ch.callback = function(sh)
 	-- Put into x y space from r/theta
 	local pts_x = ch.points:select(2,1)
 	local pts_y = ch.points:select(2,2)
-	torch.cmul(pts_x,ch.cosines,ch.ranges)
-	torch.cmul(pts_y,ch.sines,ch.ranges)
+	torch.cmul(pts_x,ch.sines,ch.ranges)
+	torch.cmul(pts_y,ch.cosines,ch.ranges)
+	--pts_y:mul(-1)
 	-- Localize based on this channel
 	localize(ch)
+
+	-- Save the xy lidar points
+	SAVE_POINTS = true
+	if SAVE_POINTS then
+		local f = io.open('xy.raw', 'w')
+		local ptr, n_el = ch.points:storage():pointer(), #ch.points:storage()
+		local arr = carray.double(ptr, n_el)
+		f:write( tostring(arr) )
+		f:close()
+	end
+
 end
 
 -- Make the poller

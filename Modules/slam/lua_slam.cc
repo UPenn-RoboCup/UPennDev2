@@ -44,6 +44,17 @@ int lua_set_resolution(lua_State *L) {
 	return 0;
 }
 
+/* Set the boundaries for scan matching and map updating */
+int lua_set_boundaries(lua_State *L) {
+	xmin = luaL_checknumber(L, 1);
+	ymin = luaL_checknumber(L, 2);
+	xmax = luaL_checknumber(L, 3);
+	ymax = luaL_checknumber(L, 4);
+	invymax = ymax * DEFAULT_INV_RESOLUTION;
+	invxmax = xmax * DEFAULT_INV_RESOLUTION;
+	return 0;
+}
+
 int lua_grow_map(lua_State *L) {
   THDoubleTensor *cost_t = (THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
 	THArgCheck(cost_t->nDimension == 2, 1, "tensor must have two dimensions");
@@ -98,16 +109,15 @@ int lua_match(lua_State *L) {
 	/* Prior on where we are now (zero position) */
 	double prior = luaL_optnumber(L, 6, 0);
 
-
 	/* Grab the number of points to process */
 	unsigned int nps = lY_t->size[0];
 	THArgCheck(lY_t->size[1]==2, 1, "Proper laser points");
 
 	// Assume offset of zero for map
 	uint8_t * map_ptr = map_t->storage->data;
-	const unsigned int sizex = map_t->size[0];
-	const unsigned int sizey = map_t->size[1];
-	const unsigned int map_xstride = map_t->stride[0];
+	const int sizex = map_t->size[0];
+	const int sizey = map_t->size[1];
+	const int map_xstride = map_t->stride[0];
 	// Assume ystride of 1
 	//const unsigned int map_ystride = map_t->stride[1];
 
@@ -171,6 +181,7 @@ int lua_match(lua_State *L) {
 				for(unsigned int ii=0;ii<npys;ii++){
 					//yis[ii] = (THTensor_fastGet1d(pys_t,ii)-ymin)*invRes;
 					*tmpy = ( *pys_ptr - ymin )*invRes;
+					//printf("y: %lf, yi: %d\n",*pys_ptr,*tmpy);
 					pys_ptr+=ystride1;
 					tmpy++;
 				}
@@ -274,8 +285,10 @@ int lua_match(lua_State *L) {
 						tmp_like_with ++;
 						continue;
 					}
+					double update_value = *( map_ptr_with_x + yi );
+					//if(update_value<200) continue;
 					// Increment likelihoods
-					*tmp_like_with += *( map_ptr_with_x + yi );
+					*tmp_like_with += update_value;
 					// Increment likelihood pointer
 					tmp_like_with ++;
 
@@ -342,17 +355,6 @@ int isContiguous(TT *self)
 		}
 	}
 	return 1;
-}
-
-/* Set the boundaries for scan matching and map updating */
-int lua_set_boundaries(lua_State *L) {
-	xmin = luaL_checknumber(L, 1);
-	ymin = luaL_checknumber(L, 2);
-	xmax = luaL_checknumber(L, 3);
-	ymax = luaL_checknumber(L, 4);
-	invymax = ymax * DEFAULT_INV_RESOLUTION;
-	invxmax = xmax * DEFAULT_INV_RESOLUTION;
-	return 0;
 }
 
 /* Update the map with the laser scan points */

@@ -70,7 +70,7 @@ end
 local render = function( map, fmt )
 	-- Export in grayscale
 	local export_map = map.map:t():clone()
-	local w, h = export_map:size(1), export_map:size(2)
+	local w, h = export_map:size(2), export_map:size(1)
 	if fmt=='jpg' or fmt=='jpeg' then
 		return jpeg.compress_gray( export_map:storage():pointer(), w, h )
 	elseif fmt=='png' then
@@ -160,6 +160,7 @@ libMap.open_map = function( map_filename )
 	map.omap = map_to_omap(img_t)
 	-- Offset is the coordinate of... something
 	map.offset = vector.pose{x_off,y_off,0}
+	print(map.offset)
 	map.offset_idx = {pose_to_map_index(map,map.offset)}
 	-- Map boundaries
 	map.bounds_x = map.resolution*ncolumns/2*vector.new{-1,1}
@@ -194,8 +195,8 @@ end
 libMap.new_goal = function( map, goal )
 	assert(map.cost,'You must open a map first!')
 	local i, j = pose_to_map_index(map,goal)
-	print("G",i,j)
-	print("O",map.offset)
+	--print("G",i,j)
+	--print("O",map.offset)
 	map.cost_to_go = dijkstra.matrix( map.cost, i, j )
 	map.goal = goal
 end
@@ -249,7 +250,7 @@ libMap.localize = function( map, laser_points, search_amount, prior )
 
 	--print("dd",ddx,ddy,dda)
 	--print(pose_guess)
-	util.ptable( max )
+	--util.ptable( max )
 	--util.ptorch( search_x )
 	--print("size",search_x:size(1),search_y:size(1),search_a:size(1))
 

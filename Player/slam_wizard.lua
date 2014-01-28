@@ -18,11 +18,18 @@ local map = libMap.open_map'map.ppm'
 map.pose = vector.pose{-1.32058, -0.216679, 1.5708}
 libMap.export(map.omap,'omap.raw','byte')
 
+-- Render so that I can see it :)
+local c_map = map:render'png'
+local f_map = io.open('cur_map.png','w')
+f_map:write(c_map)
+f_map:close()
+
 local function localize(ch)
 	--util.ptorch(ch.points)
 	local matched_pose, hits = map:localize( ch.points, {} )
-	print( map.pose, "SLAM", matched_pose, hits )
+	--print( map.pose, "SLAM", matched_pose, hits )
 	map.pose = matched_pose
+	wcm.set_robot_pose( matched_pose )
 end
 
 -- Listen for lidars

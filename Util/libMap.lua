@@ -121,13 +121,14 @@ libMap.open_map = function( map_filename )
 		img_t = torch.ByteTensor(nrows,ncolumns)
 		-- Copy the pgm img string to the tensor
 		cutil.string2storage(img_str,img_t:storage())
+		img_t = img_t:t():clone()
 	elseif f_type=='P6' then
 		-- RGB
 		assert(#img_str==ncolumns*nrows*3,'Bad RGB resolution check!')
 		local rgb_t = torch.ByteTensor(nrows,ncolumns,3)
 		cutil.string2storage(img_str,rgb_t:storage())
 		-- Just the R channel
-		img_t = rgb_t:select(3,1):clone()
+		img_t = rgb_t:select(3,1):t():clone()
 	else
 		error('Unsupported!')
 	end
@@ -191,11 +192,11 @@ libMap.localize = function( map, laser_points, search_amount, prior )
 	assert(map.pose,'Must have a valid pose on the map!')
 	local pose_guess = map.pose
 	--
-	local dx = (search_amount.x or .25)
+	local dx = search_amount.x or .25
 	local ddx = math.floor(dx*inv_map.resolution)*map.resolution -- make sure 0 is included
 	local search_x = torch.range( pose_guess.x-dx, pose_guess.x+dx )
 	--
-	local dy = (search_amount.y or .25)
+	local dy = search_amount.y or .25
 	local ddx = math.floor(dy*map.inv_resolution)*map.resolution -- make sure 0 is included
 	local search_y = torch.range( pose_guess.y-dy, pose_guess.y+dy )
 	--

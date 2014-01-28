@@ -211,12 +211,12 @@ libMap.localize = function( map, laser_points, search_amount, prior )
 	local pose_guess = map.pose
 	--
 	local dx = search_amount.x or .25
-	local ddx = math.floor(dx*map.inv_resolution)*map.resolution -- make sure 0 is included
-	local search_x = torch.range( pose_guess.x-dx, pose_guess.x+dx )
+	local ddx = math.floor(dx*map.inv_resolution)* map.resolution -- make sure 0 is included
+	local search_x = torch.range( pose_guess.x-ddx, pose_guess.x+ddx, map.resolution )
 	--
 	local dy = search_amount.y or .25
-	local ddx = math.floor(dy*map.inv_resolution)*map.resolution -- make sure 0 is included
-	local search_y = torch.range( pose_guess.y-dy, pose_guess.y+dy )
+	local ddy = math.floor(dy*map.inv_resolution)*map.resolution -- make sure 0 is included
+	local search_y = torch.range( pose_guess.y-ddy, pose_guess.y+ddy, map.resolution )
 	--
 	local a  = search_amount.a  or 5*DEG_TO_RAD
 	local da = search_amount.da or 1*DEG_TO_RAD
@@ -227,6 +227,13 @@ libMap.localize = function( map, laser_points, search_amount, prior )
 	slam.set_resolution(map.resolution)
 	local likelihoods, max =
 		slam.match( map.map, laser_points, search_a, search_x, search_y, prior or 200 )
+
+	--print("dd",ddx,ddy,dda)
+	--print(pose_guess)
+	util.ptable( max )
+	--util.ptorch( search_x )
+	--print("size",search_x:size(1),search_y:size(1),search_a:size(1))
+
 	local matched_pose = vector.pose{search_x[max.x],search_y[max.y],search_a[max.a]}
 	--
 	return matched_pose, max.hits

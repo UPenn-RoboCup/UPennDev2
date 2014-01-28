@@ -21,6 +21,7 @@ local function localize(ch)
 	--util.ptorch(ch.points)
 	local matched_pose, hits = map:localize( ch.points, {} )
 	print( map.pose, "SLAM", matched_pose, hits )
+	map.pose = matched_pose
 end
 
 -- Listen for lidars

@@ -97,3 +97,15 @@ simple_wall {
 	size 0.55 .2 0.05
 	translation -1.375 .1 1.175
 }
+simple_wall {
+	size 0.05 .2 1
+	translation -1.25 .1 -1.375
+}
+simple_wall {
+	size 0.05 .2 0.75
+	translation -1.075 .1 1.55
+}
+simple_wall {
+	size 0.55 .2 0.05
+	translation -1.375 .1 1.925
+}

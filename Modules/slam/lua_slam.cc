@@ -101,7 +101,7 @@ int lua_match(lua_State *L) {
 
 	/* Grab the number of points to process */
 	unsigned int nps = lY_t->size[0];
-	THArgCheck(lY_t->size[0]==2, 1, "Proper laser points");
+	THArgCheck(lY_t->size[1]==2, 1, "Proper laser points");
 
 	// Assume offset of zero for map
 	uint8_t * map_ptr = map_t->storage->data;

@@ -443,14 +443,15 @@ if IS_WEBOTS then
     -- Grab a lidar scan
     if ENABLE_LIDAR then
       local w = webots.wb_camera_get_width(tags.lidar)
-      local h = webots.wb_camera_get_height(tags.lidar)
       local lidar_fr = webots.wb_camera_get_range_image(tags.lidar)
-      local lidar_array = carray.float( lidar_fr, w*h )
+      local lidar_array = carray.float( lidar_fr, w )
 			-- Send the message on the lidar channel
 			local meta = {}
-			meta.t = Body.get_time()
-			meta.fov = webots.wb_camera_get_fov(tags.lidar)
-			meta.count = webots.wb_camera_get_width(tags.lidar)
+			meta.t     = Body.get_time()
+			meta.fov   = webots.wb_camera_get_fov(tags.lidar)
+			meta.pose  = wcm.get_robot_pose()
+			meta.n     = w
+			meta.res   = 1/math.floor(meta.n/(meta.fov*Body.RAD_TO_DEG))
 			lidar_ch:send{mp.pack(meta),tostring(lidar_array)}
     end
     -- Grab kinect RGBD data

@@ -12,6 +12,8 @@ torch.Tensor = torch.DoubleTensor
 local png = require'png'
 local jpeg = require'jpeg'
 local slam = require'slam'
+local DEG_TO_RAD = Body.DEG_TO_RAD
+local RAD_TO_DEG = Body.RAD_TO_DEG
 
 local function pose_to_map_index(map,pose)
 	local p = vector.pose(pose) + map.offset
@@ -209,7 +211,7 @@ libMap.localize = function( map, laser_points, search_amount, prior )
 	local pose_guess = map.pose
 	--
 	local dx = search_amount.x or .25
-	local ddx = math.floor(dx*inv_map.resolution)*map.resolution -- make sure 0 is included
+	local ddx = math.floor(dx*map.inv_resolution)*map.resolution -- make sure 0 is included
 	local search_x = torch.range( pose_guess.x-dx, pose_guess.x+dx )
 	--
 	local dy = search_amount.y or .25
@@ -222,9 +224,9 @@ libMap.localize = function( map, laser_points, search_amount, prior )
 	local search_a = torch.range( pose_guess.a-dda, pose_guess.a+dda, da )
 
 	-- Perform the match
-	slam.set_resolution()(map.resolution)
+	slam.set_resolution(map.resolution)
 	local likelihoods, max =
-		slam.match( map, laser_points, search_a, search_x, search_y, prior or 200 )
+		slam.match( map.map, laser_points, search_a, search_x, search_y, prior or 200 )
 	local matched_pose = vector.pose{search_x[max.x],search_y[max.y],search_a[max.a]}
 	--
 	return matched_pose, max.hits

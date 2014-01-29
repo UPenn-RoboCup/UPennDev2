@@ -370,7 +370,7 @@ function moveleg.foot_trajectory_square_stair_cross(phSingle,uStart,uEnd, stepHe
   local zFoot
   local zHeight0, zHeight1= 0,0,0
 
-local moveback_ratio = 0.3
+local moveback_ratio = 0.1
 
 
 

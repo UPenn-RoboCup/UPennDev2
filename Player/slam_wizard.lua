@@ -38,12 +38,12 @@ end
 -- Listen for lidars
 local wait_channels = {}
 local lidar_ch = simple_ipc.new_subscriber'lidar'
-lidar_ch.n   = 721
-lidar_ch.fov = math.pi
-lidar_ch.res = Body.DEG_TO_RAD/math.floor(lidar_ch.n/(lidar_ch.fov*Body.RAD_TO_DEG))
-lidar_ch.angles = torch.range(0,lidar_ch.fov,lidar_ch.res)
+lidar_ch.n   = 769 -- Webots: 721
+lidar_ch.fov = 270 -- Webots: 180
+lidar_ch.res = 360 / 1024
+lidar_ch.angles = torch.range(0,lidar_ch.fov,lidar_ch.res)*DEG_TO_RAD
 assert(lidar_ch.n==lidar_ch.angles:size(1),"Bad lidar resolution")
-lidar_ch.raw  = torch.FloatTensor(lidar_ch.n)
+lidar_ch.raw     = torch.FloatTensor(lidar_ch.n)
 lidar_ch.ranges  = torch.Tensor(lidar_ch.n)
 lidar_ch.cosines = torch.cos(lidar_ch.angles)
 lidar_ch.sines   = torch.sin(lidar_ch.angles)
@@ -65,6 +65,13 @@ lidar_ch.callback = function(sh)
 	assert(ch.raw:size(1)==meta.n,"TODO: Update range sizes")
 	cutil.string2storage(ranges,ch.raw:storage())
 	-- TODO: Filter... r and theta
+	local ir = 0
+	ch.ranges:apply(function(x)
+			ir = ir+1
+			-- Only use 180 degrees of data, to avoid self collision
+			if ir<129 or ir>641 then return 0 end
+			return x
+		end)
 	-- For now, just copy
 	ch.ranges:copy(ch.raw)
 	-- Put into x y space from r/theta

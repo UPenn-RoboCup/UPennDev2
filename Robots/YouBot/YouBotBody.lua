@@ -132,7 +132,7 @@ Body.update = function()
 
 	-- Get Odometry measurements
 	local dx, dy, da = youbot.get_base_position()
-	wcm.set_robot_odometry{-1*dx,dy,da}
+	wcm.set_robot_odometry{dx,dy,da}
   
   -- Set joints from shared memory
   local desired_pos = jcm.get_actuator_command_position()
@@ -153,7 +153,6 @@ Body.update = function()
   
   -- Set base from shared memory
   local vel = mcm.get_walk_vel()
-	vel[1] = -1*vel[1]
   youbot.set_base_velocity( unpack(vel) )
   
 end
@@ -452,7 +451,7 @@ if IS_WEBOTS then
 			meta.fov   = webots.wb_camera_get_fov(tags.lidar)
 			meta.pose  = wcm.get_robot_pose()
 			meta.n     = w
-			meta.res   = 1/math.floor(meta.n/(meta.fov*Body.RAD_TO_DEG))
+			meta.res   = 360 / 1440 -- Per hokuyo documentation (degrees)
 			lidar_ch:send{mp.pack(meta),tostring(lidar_array)}
     end
     -- Grab kinect RGBD data

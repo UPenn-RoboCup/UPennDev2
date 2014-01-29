@@ -15,7 +15,8 @@ local HOKUYO_2DIGITS = 2
 local HOKUYO_3DIGITS = 3
 
 -- Reading properties
-local N_SCAN_BYTES = 3372
+--local N_SCAN_BYTES = 3372
+local N_SCAN_BYTES = 1578
 local TIMEOUT = 0.05 -- (uses select)
 
 -------------------------
@@ -50,7 +51,7 @@ local write_command = function(fd, cmd, expected_response)
 		local t_diff = unix.time() - t_write
     if t_diff>response_timeout then
       -- TODO: DEBUG should be error or print
-  		--DEBUG( string.format('Response timeout for command (%s)',cmd) )
+  		print( string.format('Response timeout for command (%s)',cmd) )
       return nil
     end
     
@@ -64,7 +65,7 @@ local write_command = function(fd, cmd, expected_response)
 	response = response:sub(iCmd+#cmd)
 	-- Last byte is 10 (\n)
 	if response:byte(#response)~=10 then
-		--DEBUG(string.format('Bad end of response!'))
+		print(string.format('Bad end of response!'))
 		return nil
 	end
 	
@@ -73,8 +74,8 @@ local write_command = function(fd, cmd, expected_response)
 	--------------------
 	-- Check the response
   if response:sub(1,2)~=expected_response then
-    --DEBUG(string.format('Cmd (%s)Expected response (%s) but got (%s)', 
-    --cmd, expected_response, response:sub(1,2) ))
+    print(string.format('Cmd (%s)Expected response (%s) but got (%s)',
+    cmd, expected_response, response:sub(1,2) ))
     return nil
   end
 	--------------------
@@ -157,11 +158,20 @@ local stream_on = function(self)
 
 	-- scan_start, scan_end, scan_skip, encoding, scan_type, num_scans 
 	-- TODO: Check encoding types
-	local scan_req = create_scan_request(0, 1080, 1, 3, 0, 0);
+--	local scan_req = create_scan_request(0, 1080, 1, 3, 0, 0);
+	local scan_req = create_scan_request(0, 768, 1, 2, 0, 0);
 	-- TODO: Does the scan request expect a return, 
 	-- or just the actual streaming data?
 	ret = write_command( self.fd, scan_req )
 
+end
+
+local single_scan = function(self)
+--  local ret = unix.write( self.fd, string.char(0)..string.char(0x56) )
+  local ret = unix.write( self.fd, 'SCIP2.0\n' )
+  local data = unix.read(self.fd)
+if data then print(#data) end
+print(ret,'Got data!',data)
 end
 
 -------------------------
@@ -208,7 +218,8 @@ end
 -- Set the Hokuyo baud rate
 local set_baudrate = function(self, baud)
 	local cmd = 'SS'..string.format("%6d", baud)..'\n';
-	local res = write_command(self.fd, cmd, '04')
+--	local res = write_command(self.fd, cmd, '04')
+--	local res = write_command(self.fd, cmd, '04')
 end
 
 ---------------------------
@@ -283,7 +294,7 @@ local new_hokuyo_usb = function(ttyname, serial_number, ttybaud )
 	local fd = unix.open( ttyname, unix.O_RDWR + unix.O_NOCTTY)
 	-- Check if opened correctly
 	if fd<3 then
-    -- DEBUG(string.format("Open: %s, (%d)\n", name, fd))
+    print(string.format("Open: %s, (%d)\n", name, fd))
 		return nil
 	end
   
@@ -309,6 +320,7 @@ local new_hokuyo_usb = function(ttyname, serial_number, ttybaud )
 	-----------
 	-- Set the methods for accessing the data
 	obj.stream_on = stream_on
+	obj.single_scan = single_scan
 	obj.stream_off = stream_off
 	obj.get_scan = get_scan
   obj.set_baudrate = set_baudrate
@@ -321,6 +333,7 @@ local new_hokuyo_usb = function(ttyname, serial_number, ttybaud )
 
 	-----------
 	-- Setup the Hokuyo properly
+----[[
   if not obj:stream_off() then
     obj:close()
     return nil
@@ -328,6 +341,7 @@ local new_hokuyo_usb = function(ttyname, serial_number, ttybaud )
 	obj:set_baudrate(baud)
 	obj.params = obj:get_sensor_params()
 	obj.info = obj:get_sensor_info()
+--]]
   obj.t_diff = 0
   obj.t_last = 0
 	-----------
@@ -430,7 +444,8 @@ libHokuyo.service = function( hokuyos, main )
         end
         -- Process the callback
         if param and who_to_service.callback then
-          who_to_service.callback( HokuyoPacket.parse(param) )
+--          who_to_service.callback( HokuyoPacket.parse(param) )
+          who_to_service.callback( HokuyoPacket.parse2(param) )
         end
       end
     end

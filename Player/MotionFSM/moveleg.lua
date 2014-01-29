@@ -332,6 +332,7 @@ end
 
 
 function moveleg.foot_trajectory_square_stair(phSingle,uStart,uEnd, stepHeight, walkParam)
+
   local phase1,phase2 = 0.2, 0.7 --TODO: automatic detect
   local xf,zf = 0,0
   local zFoot
@@ -359,6 +360,45 @@ function moveleg.foot_trajectory_square_stair(phSingle,uStart,uEnd, stepHeight, 
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)  
   return uFoot, zFoot
 end
+
+function moveleg.foot_trajectory_square_stair_cross(phSingle,uStart,uEnd, stepHeight, walkParam)
+
+--to prevent the toe strike when walking over threshold
+
+  local phase1,phase2 = 0.2, 0.7 --TODO: automatic detect
+  local xf,zf = 0,0
+  local zFoot
+  local zHeight0, zHeight1= 0,0,0
+
+local moveback_ratio = 0.3
+
+
+
+  if walkParam then    
+    zHeight0, zHeight1 = walkParam[1],walkParam[3]
+    stepHeight = walkParam[2]      
+  end
+
+  if phSingle<phase1 then --Lifting phase
+    ph1 = phSingle / phase1
+    xf = -ph1*moveback_ratio
+    zf = ph1;
+    zFoot = zHeight0 + (stepHeight-zHeight0) * zf
+  elseif phSingle<phase2 then
+    ph1 = (phSingle-phase1) / (phase2-phase1)
+--    xf,zf = ph1, 1
+    xf,zf = -moveback_ratio + (1+moveback_ratio)*ph1, 1
+    zFoot = stepHeight * zf
+  else
+    ph1 = (phSingle-phase2) / (1-phase2)    
+    xf,zf = 1, 1-ph1
+    zFoot = zHeight1 + (stepHeight-zHeight1) * zf
+  end
+  
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)  
+  return uFoot, zFoot
+end
+
 
 
 

@@ -57,6 +57,8 @@ local debug_on = false
 -- State machine methods --
 ---------------------------
 function walk.entry()
+
+
   print(walk._NAME..' Entry' )
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
@@ -168,7 +170,14 @@ function walk.update()
       uRight,zRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
 --      if walkParam then print(unpack(walkParam))end
     elseif supportLeg==1 then    -- Right support    
+
       uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)    
+      --HACK TO DETECT THE CROSSING STEP
+      if walkParam[2]==0.10 then
+        uLeft,zLeft = moveleg.foot_trajectory_square_stair_cross(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)    
+      end
+
+      
 --      if walkParam then print(unpack(walkParam))end
     elseif supportLeg == 2 then --Double support
     end

@@ -27,11 +27,12 @@ if DO_EXPORT then
 end
 
 local function localize(ch)
+	--local pose_gps = vector.pose( wcm.get_robot_gps() )
 	local matched_pose, hits = map:localize( ch.points, {} )
 	map.pose = matched_pose
-	print('\nMatched',matched_pose)
-	print('GPS',vector.pose(wcm.get_robot_pose()))
 	wcm.set_robot_pose( matched_pose )
+	--print('\nMatched',matched_pose)
+	--print('GPS',pose_gps)
 end
 
 -- Listen for lidars
@@ -73,7 +74,6 @@ lidar_ch.callback = function(sh)
 	torch.cmul(pts_y,ch.cosines,ch.ranges)
 	-- Link length
 	pts_x:add(.3)
-	--pts_y:mul(-1)
 	-- Localize based on this channel
 	localize(ch)
 

@@ -7,6 +7,9 @@ local util = require'util'
 local vector = require'vector'
 require'wcm'
 
+USE_GPS = false
+DO_EXPORT = false
+
 -- Replan every timeout
 local timeout = 5.0
 local t_entry, t_update, t_exit
@@ -23,8 +26,7 @@ local goal = wcm.get_map_goal()
 map:new_goal(goal)
 
 -- Export for MATLAB
-DO_EXPORT = true
-if DO_EXPORT then
+if DO_EXPORT==true then
 	libMap.export(map.cost,'cost.raw')
 	libMap.export(map.cost_to_go,'cost_to_go.raw')
 end
@@ -84,8 +86,14 @@ function state.entry()
 	end
 	
 	-- Plan the from our current position
-	local pose = wcm.get_robot_pose()
-	if DO_EXPORT then
+	local pose
+	if USE_GPS==true then
+		pose = wcm.get_robot_gps()
+	else
+		pose = wcm.get_robot_pose()
+	end
+
+	if DO_EXPORT==true then
 		path = map:new_path(pose,'path.raw')
 	else
 		path = map:new_path(pose)
@@ -107,8 +115,15 @@ function state.update()
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 
+	-- Grab the pose
+	local pose
+	if USE_GPS==true then
+		pose = wcm.get_robot_gps()
+	else
+		pose = wcm.get_robot_pose()
+	end
+
 	-- Find our velocity
-	local pose = wcm.get_robot_pose()
 	local velocity, near_wp = robocup_follow(pose,cur_wp)
 	-- Grab the next waypoint
 	if near_wp then

@@ -16,32 +16,51 @@ local DEG_TO_RAD = Body.DEG_TO_RAD
 local RAD_TO_DEG = Body.RAD_TO_DEG
 
 local function pose_to_map_index(map,pose)
-	local p = vector.pose(pose) + map.offset
-	local inv_pose = p * map.inv_resolution
+	pose = vector.pose(pose)
 	local map_sz = vector.new{map.cost:size(1),map.cost:size(2)}
-	local i = math.max(math.min(math.ceil(inv_pose[1]),map_sz[1]),1)
-	local j = math.max(math.min(math.ceil(inv_pose[2]),map_sz[2]),1)
-	return i, map_sz[2]-j
+	local xi = (pose.x - map.bounds_x[1]) * map.inv_resolution
+	local yi = (pose.y - map.bounds_y[1]) * map.inv_resolution
+	local i = math.max(math.min(math.ceil(xi),map_sz[1]),1)
+	local j = math.max(math.min(math.ceil(yi),map_sz[2]),1)
+	return i, j
 end
 
 local function map_index_to_pose(map,i,j)
-	--local i_mid, j_mid = map.cost:size(1)/2, map.cost:size(2)/2
-	local i_offset, j_offset = unpack(map.offset_idx)
-	local x = (i - i_offset) * map.resolution
-	local y = (j_offset - j) * map.resolution
+	local x = i * map.resolution + map.bounds_x[1]
+	local y = j * map.resolution + map.bounds_y[1]
 	return vector.pose{x,y,0}
 end
 
 local function index_path_to_pose_path(map,i_path,j_path)
+	-- Get the current pose
+	local cur_pose = wcm.get_robot_pose()
 	-- Should return a lua table, not a torch object
 	local pose_path = {}
 	--local i_mid, j_mid = map.cost:size(1)/2, map.cost:size(2)/2
 	local npath = i_path:size(1)
 	-- Go in reverse order: last item is is the next point in the path
+	local p_after = nil
 	-- Easy pop operation in lua
 	for p=npath,1,-1 do
 		local pose = map_index_to_pose(map,i_path[p],j_path[p])
-		table.insert( pose_path, pose )
+		--pose.a = cur_pose.a
+		local use_wp = true
+		--[[
+		-- Pruning
+		if p<npath and p>1 then
+			local p_before = map_index_to_pose(map,i_path[p-1],j_path[p-1])
+			local rp = util.pose_relative(p_before,pose)
+			local rp_after = util.pose_relative(p_before,p_after)
+			local a1 = util.mod_angle(math.atan2(rp[2],rp[1]))
+			local a2 = util.mod_angle(math.atan2(rp_after[2],rp_after[1]))
+			-- If the same heading, then don't use
+			if util.mod_angle(a1-a2)<5*DEG_TO_RAD then use_wp=false end
+		end
+		--]]
+		if use_wp then
+			table.insert( pose_path, pose )
+			p_after = pose
+		end
 	end
 	return pose_path
 end
@@ -161,7 +180,6 @@ libMap.open_map = function( map_filename )
 	-- Offset is the coordinate of... something
 	map.offset = vector.pose{x_off,y_off,0}
 	print(map.offset)
-	map.offset_idx = {pose_to_map_index(map,map.offset)}
 	-- Map boundaries
 	map.bounds_x = map.resolution*ncolumns/2*vector.new{-1,1}
 	map.bounds_y = map.resolution*nrows/2*vector.new{-1,1}
@@ -182,11 +200,11 @@ libMap.open_map = function( map_filename )
 end
 
 -- Grow the costs so that the robot will not hit anything
-libMap.grow = function( map, radius )
+libMap.grow = function( map, length, width )
 	assert(map.cost,'You must open a map first!')
-	radius = math.ceil( (radius or .4) * map.inv_resolution )
-	local r_i = math.ceil( map.inv_resolution*.4 )
-	local r_j = math.ceil( map.inv_resolution*.25 )
+	--local r_i = math.ceil( map.inv_resolution*.2 )
+	local r_i = math.ceil( map.inv_resolution*.32 )
+	local r_j = math.ceil( map.inv_resolution*.32 )
 	-- Replace the cost map with the grown map
 	map.cost = slam.grow_map(map.cost, r_i, r_j)
 end
@@ -195,8 +213,6 @@ end
 libMap.new_goal = function( map, goal )
 	assert(map.cost,'You must open a map first!')
 	local i, j = pose_to_map_index(map,goal)
-	--print("G",i,j)
-	--print("O",map.offset)
 	map.cost_to_go = dijkstra.matrix( map.cost, i, j )
 	map.goal = goal
 end
@@ -204,6 +220,7 @@ end
 -- Compute a path to the goal
 libMap.new_path = function( map, start, filename )
 	assert(map.cost_to_go,'You must set a goal first!')
+	if map.goal==start then return {} end
 	local i, j = pose_to_map_index(map,start)
 	local i_path, j_path = dijkstra.path( map.cost_to_go, map.cost, i, j )
 	if filename then
@@ -219,7 +236,8 @@ libMap.new_path = function( map, start, filename )
 	map.start = start
 	print("Map Start:",start)
 	print("Map Goal:",map.goal)
-	return index_path_to_pose_path(map,i_path,j_path)
+	local pose_path = index_path_to_pose_path(map,i_path,j_path)
+	return pose_path
 end
 
 -- x, y laser_point pairs (Nx2 DoubleTensor)

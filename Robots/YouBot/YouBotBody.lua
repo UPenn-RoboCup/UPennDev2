@@ -110,7 +110,7 @@ Body.entry = function()
   end
   jcm.set_actuator_command_position(init_pos)
   jcm.set_sensor_position(init_pos)
-  
+  mcm.set_walk_vel(vector.zeros(3))
 end
 
 -- Update speaks to the hardware of the robot
@@ -343,6 +343,7 @@ if IS_WEBOTS then
       jcm.sensorPtr.position[idx] = val
       jcm.actuatorPtr.command_position[idx] = val
     end
+		mcm.set_walk_vel(vector.zeros(3))
 
   end
   
@@ -430,7 +431,7 @@ if IS_WEBOTS then
     	local angle   = math.atan2( compass[3], compass[1] )
     	local pose    = vector.pose{gps[3], gps[1], util.mod_angle(angle + 90*Body.DEG_TO_RAD)}
 			wcm.set_robot_gps( pose )
-    	--wcm.set_robot_pose( pose )
+    	wcm.set_robot_pose( pose )
 		end
 
     -- Grab a camera frame

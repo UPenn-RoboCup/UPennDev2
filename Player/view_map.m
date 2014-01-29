@@ -1,12 +1,12 @@
 function [map,i_path,j_path,xy,omap] = view_map(map_name)
 
+    map = [];
     if nargin==1,
         fid = fopen(map_name);
         dims = fread(fid,2,'*double');
         data = fread(fid,inf,'*double');
         fclose(fid);
         map = reshape(data,dims(2),dims(1));
-
         figure(1);
         clf;
         imagesc(map);
@@ -16,6 +16,8 @@ function [map,i_path,j_path,xy,omap] = view_map(map_name)
         ylabel('y');
     end
     
+    i_path = [];
+    j_path = [];
     fid = fopen('path.raw');
     if fid~=-1
         data = fread(fid,inf,'*int');
@@ -39,6 +41,7 @@ function [map,i_path,j_path,xy,omap] = view_map(map_name)
     end
     
     fid = fopen('xy.raw');
+    xy = [];
     if fid~=-1
         data = fread(fid,inf,'*double');
         fclose(fid);

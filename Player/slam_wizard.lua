@@ -29,6 +29,8 @@ end
 local function localize(ch)
 	local matched_pose, hits = map:localize( ch.points, {} )
 	map.pose = matched_pose
+	print('\nMatched',matched_pose)
+	print('GPS',vector.pose(wcm.get_robot_pose()))
 	wcm.set_robot_pose( matched_pose )
 end
 

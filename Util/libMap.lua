@@ -45,7 +45,7 @@ local function index_path_to_pose_path(map,i_path,j_path)
 	-- Easy pop operation in lua
 	for p=npath,1,-1 do
 		local pose = map_index_to_pose(map,i_path[p],j_path[p])
-		print("POSE CAND",pose)
+		--print("POSE CAND",pose)
 		--pose.a = cur_pose.a
 		local use_wp = true
 		----[[
@@ -66,7 +66,7 @@ local function index_path_to_pose_path(map,i_path,j_path)
 		if use_wp then
 			table.insert( pose_path, pose )
 			p_after = pose
-			print("!!POSE WP",pose)
+			--print("!!POSE WP",pose)
 		end
 	end
 	return pose_path
@@ -186,7 +186,7 @@ libMap.open_map = function( map_filename )
 	map.omap = map_to_omap(img_t)
 	-- Offset is the coordinate of... something
 	map.offset = vector.pose{x_off,y_off,0}
-	print(map.offset)
+	--print(map.offset)
 	-- Map boundaries
 	map.bounds_x = map.resolution*ncolumns/2*vector.new{-1,1}
 	map.bounds_y = map.resolution*nrows/2*vector.new{-1,1}

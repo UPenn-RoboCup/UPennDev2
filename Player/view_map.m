@@ -9,11 +9,14 @@ function [map,i_path,j_path,xy,omap] = view_map(map_name)
         map = reshape(data,dims(2),dims(1));
         figure(1);
         clf;
+        %imagesc(flip(map,1));
         imagesc(map);
         title(map_name);
         axis equal;
         xlabel('x');
-        ylabel('y');
+        ylabel('-y');
+        %axh = gca;
+        %set(axh,'XTick',[0:1:50]);
     end
     
     i_path = [];
@@ -37,7 +40,7 @@ function [map,i_path,j_path,xy,omap] = view_map(map_name)
         hold off;
         axis equal;
         xlabel('x');
-        ylabel('y');
+        ylabel('-y');
     end
     
     fid = fopen('xy.raw');
@@ -52,7 +55,7 @@ function [map,i_path,j_path,xy,omap] = view_map(map_name)
         y = xy(2,:);
         plot(x,y,'.');
         xlabel('x');
-        ylabel('y');
+        ylabel('-y');
         axis equal;
     end
     

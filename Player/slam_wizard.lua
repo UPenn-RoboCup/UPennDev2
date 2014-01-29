@@ -71,6 +71,8 @@ lidar_ch.callback = function(sh)
 	local pts_y = ch.points:select(2,2)
 	torch.cmul(pts_x,ch.sines,ch.ranges)
 	torch.cmul(pts_y,ch.cosines,ch.ranges)
+	-- Link length
+	pts_x:add(.3)
 	--pts_y:mul(-1)
 	-- Localize based on this channel
 	localize(ch)

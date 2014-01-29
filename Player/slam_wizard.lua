@@ -13,12 +13,22 @@ local torch = require'torch'
 torch.Tensor = torch.DoubleTensor
 local libMap = require'libMap'
 
+local DEG_TO_RAD = Body.DEG_TO_RAD
+
+-- Flags
+local USE_ODOMETRY = true
+local SAVE_POINTS  = false
+local DO_EXPORT    = false
+
 -- Open the map to localize against
 local map = libMap.open_map'map.ppm'
+-- Need a good guess for the starting pose of the robot
 map.pose = vector.pose{-1.32058, -0.216679, 1.5708}
+-- Store a snapshot of the odometry at this time
+map.odom = wcm.get_robot_odometry()
 
 -- Render so that I can see it :)
-if DO_EXPORT then
+if DO_EXPORT==true then
 	local c_map = map:render'png'
 	local f_map = io.open('cur_map.png','w')
 	f_map:write(c_map)
@@ -26,28 +36,40 @@ if DO_EXPORT then
 	libMap.export(map.omap,'omap.raw','byte')
 end
 
+local function setup_ch( ch, meta )
+	ch.n   = meta.n --769 -- Webots: 721
+	ch.fov = meta.fov --270 -- Webots: 180
+	ch.res = meta.res --360 / 1024
+	--util.ptable(ch)
+	ch.angles = torch.range(0,ch.fov,ch.res)*DEG_TO_RAD
+	assert(ch.n==ch.angles:size(1),"Bad lidar resolution")
+	ch.raw     = torch.FloatTensor(ch.n)
+	ch.ranges  = torch.Tensor(ch.n)
+	ch.cosines = torch.cos(ch.angles)
+	ch.sines   = torch.sin(ch.angles)
+	ch.points  = torch.Tensor(ch.n,2)
+end
+
 local function localize(ch)
-	--local pose_gps = vector.pose( wcm.get_robot_gps() )
+	-- Update odometry
+	local odom = wcm.get_robot_odometry()
+	if USE_ODOMETRY==true then
+		local p_traveled = util.pose_relative(odom,map.odom)
+		map.pose = util.pose_global(p_traveled,map.pose)
+	end
+	map.odom = odom
+	-- Match laser scan points
 	local matched_pose, hits = map:localize( ch.points, {} )
 	map.pose = matched_pose
+	-- Set shared memory accordingly
 	wcm.set_robot_pose( matched_pose )
-	--print('\nMatched',matched_pose)
-	--print('GPS',pose_gps)
 end
 
 -- Listen for lidars
 local wait_channels = {}
 local lidar_ch = simple_ipc.new_subscriber'lidar'
-lidar_ch.n   = 769 -- Webots: 721
-lidar_ch.fov = 270 -- Webots: 180
-lidar_ch.res = 360 / 1024
-lidar_ch.angles = torch.range(0,lidar_ch.fov,lidar_ch.res)*DEG_TO_RAD
-assert(lidar_ch.n==lidar_ch.angles:size(1),"Bad lidar resolution")
-lidar_ch.raw     = torch.FloatTensor(lidar_ch.n)
-lidar_ch.ranges  = torch.Tensor(lidar_ch.n)
-lidar_ch.cosines = torch.cos(lidar_ch.angles)
-lidar_ch.sines   = torch.sin(lidar_ch.angles)
-lidar_ch.points  = torch.Tensor(lidar_ch.n,2)
+--setup_ch(lidar_ch)
+lidar_ch.n = 0
 lidar_ch.callback = function(sh)
 	local ch = wait_channels.lut[sh]
 	local meta, ranges
@@ -62,17 +84,21 @@ lidar_ch.callback = function(sh)
 		ranges, has_more = ch:receive(true)
 	until false
 	-- Update the points
-	assert(ch.raw:size(1)==meta.n,"TODO: Update range sizes")
+	if meta.n~=ch.n then
+		print('Set up the channel!',ch.n,meta.n)
+		setup_ch(ch,meta)
+	end
+	--assert(ch.raw:size(1)==meta.n,"TODO: Update range sizes")
 	cutil.string2storage(ranges,ch.raw:storage())
-	-- TODO: Filter... r and theta
-	local ir = 0
+	-- Filter... r and theta
+	local i_th = 0
 	ch.ranges:apply(function(x)
-			ir = ir+1
+			i_th = i_th+1
 			-- Only use 180 degrees of data, to avoid self collision
-			if ir<129 or ir>641 then return 0 end
+			if i_th<129 or i_th>641 then return 0 end
 			return x
 		end)
-	-- For now, just copy
+	-- Copy to the double format
 	ch.ranges:copy(ch.raw)
 	-- Put into x y space from r/theta
 	local pts_x = ch.points:select(2,1)
@@ -85,7 +111,7 @@ lidar_ch.callback = function(sh)
 	localize(ch)
 
 	-- Save the xy lidar points
-	if SAVE_POINTS then
+	if SAVE_POINTS==true then
 		local f = io.open('xy.raw', 'w')
 		local ptr, n_el = ch.points:storage():pointer(), #ch.points:storage()
 		local arr = carray.double(ptr, n_el)

@@ -448,10 +448,10 @@ if IS_WEBOTS then
 			-- Send the message on the lidar channel
 			local meta = {}
 			meta.t     = Body.get_time()
-			meta.fov   = webots.wb_camera_get_fov(tags.lidar)
-			meta.pose  = wcm.get_robot_pose()
 			meta.n     = w
 			meta.res   = 360 / 1440 -- Per hokuyo documentation (degrees)
+			meta.fov   = math.floor(webots.wb_camera_get_fov(tags.lidar)*RAD_TO_DEG)
+			meta.pose  = wcm.get_robot_pose()
 			lidar_ch:send{mp.pack(meta),tostring(lidar_array)}
     end
     -- Grab kinect RGBD data

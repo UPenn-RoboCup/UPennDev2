@@ -15,7 +15,7 @@ shared.robot = {}
 shared.robot.pose = vector.zeros(3)
 -- Webot pose from GPS
 shared.robot.gps = vector.zeros(3)
--- Accumulated Odometry
+-- (Full) Accumulated Odometry
 shared.robot.odometry = vector.zeros(3)
 -- Walking Odometry
 shared.robot.utorso0 = vector.zeros(3)

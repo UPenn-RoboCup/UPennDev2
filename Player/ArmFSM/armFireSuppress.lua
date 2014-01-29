@@ -155,8 +155,8 @@ function state.entry()
   t_update = t_entry
 
   -- Open fingers
-  Body.move_rgrip1(-5)
-  Body.move_rgrip2(-5)
+  --Body.move_rgrip1(-5)
+  --Body.move_rgrip2(-5)
 
   mcm.set_arm_lhandoffset(Config.arm.handoffset.gripper)
   mcm.set_arm_rhandoffset(Config.arm.handoffset.gripper)
@@ -259,9 +259,6 @@ function state.update()
     end        
   
   elseif stage=="grab" then --Grip the object   
-    -- Torque off the fingers
-    Body.move_rgrip1(0)
-    Body.move_rgrip2(0)
 
     if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        

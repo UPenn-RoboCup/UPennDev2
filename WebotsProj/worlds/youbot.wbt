@@ -52,92 +52,92 @@ YouBot {
   controller "youbot"
   controllerArgs "0 1"
 }
-#simple_wall {
-#  size 0.05 0.2 1
-#  translation 0.375 0.1 0
-#}
-#simple_wall {
-#  size 0.05 0.2 1
-#  translation -0.375 0.1 0
-#}
-#simple_wall {
-#  size 0.75 0.2 0.05
-#  translation 0 0.1 0.5
-#}
-#simple_wall {
-#  size 0.75 0.2 0.05
-#  translation 0 0.1 -0.5
-#}
-
 simple_wall {
-  size 0.6 0.2 0.05
-  translation 1 0.1 3.075
-}
-simple_wall {
-  size 0.05 0.2 4.45
-  translation 1.3 0.1 0.875
-}
-simple_wall {
-  size 0.6 0.2 0.05
-  translation 1.025 0.1 -1.375
+  size 0.05 0.2 1
+  translation -0.375 0.1 0
 }
 simple_wall {
   size 0.05 0.2 1
-  translation 0.75 0.1 -1.875
-}
-simple_wall {
-  size 0.6 0.2 0.05
-  translation 1.025 0.1 -2.375
-}
-simple_wall {
-  size 0.05 0.2 0.625
-  translation 1.3 0.1 -2.675
-}
-simple_wall {
-  size 0.05 0.2 1.125
-  translation -1.625 0.1 -2.5
-}
-simple_wall {
-  size 0.375 0.2 0.05
-  translation -1.426 0.1 -1.875
-}
-simple_wall {
-  size 0.05 0.2 2.05
-  translation -1.625 0.1 0.125
-}
-simple_wall {
-  size 0.375 0.2 0.05
-  translation -1.426 0.1 -0.875
-}
-simple_wall {
-  size 0.55 0.2 0.05
-  translation -1.375 0.1 1.175
-}
-simple_wall {
-  size 0.05 0.2 1
-  translation -1.25 0.1 -1.375
-}
-simple_wall {
-  size 0.05 0.2 0.75
-  translation -1.075 0.1 1.55
-}
-simple_wall {
-  size 0.55 0.2 0.05
-  translation -1.375 0.1 1.925
-}
-simple_wall {
-  size 1.2 0.2 0.05
-  translation 0.7 0.1 -3
-}
-simple_wall {
-  size 0.05 0.2 0.625
-  translation 0.1 0.1 -2.675
+  translation 0.375 0.1 0
 }
 simple_wall {
   size 0.75 0.2 0.05
-  translation -0.275 0.1 -2.375
+  translation 0 0.1 0.5
+}
+simple_wall {
+  size 0.75 0.2 0.05
+  translation 0 0.1 -0.5
+}
+
+simple_wall {
+  size 0.6 0.2 0.05
+  translation -1 0.1 3.075
+}
+simple_wall {
+  size 0.05 0.2 4.45
+  translation -1.3 0.1 0.875
+}
+simple_wall {
+  size 0.6 0.2 0.05
+  translation -1.025 0.1 -1.375
+}
+simple_wall {
+  size 0.05 0.2 1
+  translation -0.75 0.1 -1.875
+}
+simple_wall {
+  size 0.6 0.2 0.05
+  translation -1.025 0.1 -2.375
 }
 simple_wall {
   size 0.05 0.2 0.625
-  translation -0.65 0.1 -2.675
+  translation -1.3 0.1 -2.675
+}
+simple_wall {
+  size 0.05 0.2 1.125
+  translation 1.625 0.1 -2.5
+}
+simple_wall {
+  size 0.375 0.2 0.05
+  translation 1.426 0.1 -1.875
+}
+simple_wall {
+  size 0.05 0.2 2.05
+  translation 1.625 0.1 0.125
+}
+simple_wall {
+  size 0.375 0.2 0.05
+  translation 1.426 0.1 -0.875
+}
+simple_wall {
+  size 0.55 0.2 0.05
+  translation 1.375 0.1 1.175
+}
+simple_wall {
+  size 0.05 0.2 1
+  translation 1.25 0.1 -1.375
+}
+simple_wall {
+  size 0.05 0.2 0.75
+  translation 1.075 0.1 1.55
+}
+simple_wall {
+  size 0.55 0.2 0.05
+  translation 1.375 0.1 1.925
+}
+simple_wall {
+  size 1.2 0.2 0.05
+  translation -0.7 0.1 -3
+}
+simple_wall {
+  size 0.05 0.2 0.625
+  translation -0.1 0.1 -2.675
+}
+simple_wall {
+  size 0.75 0.2 0.05
+  translation 0.275 0.1 -2.375
+}
+simple_wall {
+  size 0.05 0.2 0.625
+  translation 0.65 0.1 -2.675
 }

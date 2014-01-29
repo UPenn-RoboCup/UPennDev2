@@ -59,12 +59,12 @@ local function robocup_follow( pose, target_pose )
   -- TODO: Only with the last point do we care about the angle
   --print('Relative distances',rel_dist,rel_pose)
   if rel_dist<dist_threshold then
-    --if math.abs(rel_pose[3])<angle_threshold then
+    if math.abs(rel_pose[3])<angle_threshold then
     	-- if not the last waypoint, then we are done with this waypoint
       return vector.zeros(3), true
-		--end
+		end
 		-- Turn towards the waypoint
-    --vStep[3] = aTurnSpeed * rel_pose[3]
+    vStep[3] = aTurnSpeed * rel_pose[3]
   end
   return vStep, false
 end

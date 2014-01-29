@@ -43,23 +43,28 @@ local function index_path_to_pose_path(map,i_path,j_path)
 	-- Easy pop operation in lua
 	for p=npath,1,-1 do
 		local pose = map_index_to_pose(map,i_path[p],j_path[p])
+		print("POSE CAND",pose)
 		--pose.a = cur_pose.a
 		local use_wp = true
-		--[[
+		----[[
 		-- Pruning
 		if p<npath and p>1 then
-			local p_before = map_index_to_pose(map,i_path[p-1],j_path[p-1])
+			p_before = map_index_to_pose(map,i_path[p-1],j_path[p-1])
 			local rp = util.pose_relative(p_before,pose)
 			local rp_after = util.pose_relative(p_before,p_after)
+			local rp_cont = util.pose_relative(pose,p_after)
 			local a1 = util.mod_angle(math.atan2(rp[2],rp[1]))
 			local a2 = util.mod_angle(math.atan2(rp_after[2],rp_after[1]))
+			local dist = math.sqrt(rp_cont.x*rp_cont.x + rp_cont.y*rp_cont.y)
 			-- If the same heading, then don't use
-			if util.mod_angle(a1-a2)<5*DEG_TO_RAD then use_wp=false end
+			--if util.mod_angle(a1-a2)<5*DEG_TO_RAD and  then use_wp=false end
+			if dist<.1 then use_wp=false end
 		end
 		--]]
 		if use_wp then
 			table.insert( pose_path, pose )
 			p_after = pose
+			print("!!POSE WP",pose)
 		end
 	end
 	return pose_path

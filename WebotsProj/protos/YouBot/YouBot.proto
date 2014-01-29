@@ -429,6 +429,7 @@ Robot {
         GPS {
           name "GPS"
         }
+				Shape {geometry Box {size .1 1 .1}}
         Transform {
           rotation 0 -1 0 1.57
           children [

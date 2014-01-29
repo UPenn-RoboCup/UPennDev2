@@ -52,22 +52,23 @@ YouBot {
   controller "youbot"
   controllerArgs "0 1"
 }
-simple_wall {
-  size 0.05 0.2 1
-  translation 0.375 0.1 0
-}
-simple_wall {
-  size 0.05 0.2 1
-  translation -0.375 0.1 0
-}
-simple_wall {
-  size 0.75 0.2 0.05
-  translation 0 0.1 0.5
-}
-simple_wall {
-  size 0.75 0.2 0.05
-  translation 0 0.1 -0.5
-}
+#simple_wall {
+#  size 0.05 0.2 1
+#  translation 0.375 0.1 0
+#}
+#simple_wall {
+#  size 0.05 0.2 1
+#  translation -0.375 0.1 0
+#}
+#simple_wall {
+#  size 0.75 0.2 0.05
+#  translation 0 0.1 0.5
+#}
+#simple_wall {
+#  size 0.75 0.2 0.05
+#  translation 0 0.1 -0.5
+#}
+
 simple_wall {
   size 0.6 0.2 0.05
   translation 1 0.1 3.075

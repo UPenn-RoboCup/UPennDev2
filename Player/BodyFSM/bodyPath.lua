@@ -30,11 +30,11 @@ if DO_EXPORT then
 end
 
 local function robocup_follow( pose, target_pose )
-  local maxStep = 0.2
+  local maxStep = 0.5
   local maxTurn = 0.2
   local dist_threshold = 0.025
   local angle_threshold = .1
-	local stepScale = .25
+	local stepScale = 4
 	local aTurnSpeed = .25
 
   -- Distance to the waypoint
@@ -57,7 +57,7 @@ local function robocup_follow( pose, target_pose )
   -- If we are close to the waypoint and have the correct angle threshold
 	-- then we are fine
   -- TODO: Only with the last point do we care about the angle
-  print('Relative distances',rel_dist,rel_pose)
+  --print('Relative distances',rel_dist,rel_pose)
   if rel_dist<dist_threshold then
     --if math.abs(rel_pose[3])<angle_threshold then
     	-- if not the last waypoint, then we are done with this waypoint
@@ -109,7 +109,6 @@ function state.update()
 
 	-- Find our velocity
 	local pose = wcm.get_robot_pose()
-	print(pose,cur_wp)
 	local velocity, near_wp = robocup_follow(pose,cur_wp)
 	-- Grab the next waypoint
 	if near_wp then

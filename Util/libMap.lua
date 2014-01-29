@@ -17,17 +17,17 @@ local RAD_TO_DEG = Body.RAD_TO_DEG
 
 local function pose_to_map_index(map,pose)
 	pose = vector.pose(pose)
-	local map_sz = vector.new{map.cost:size(1),map.cost:size(2)}
+	local map_sz = vector.new{map.map:size(1),map.map:size(2)}
 	local xi = (pose.x - map.bounds_x[1]) * map.inv_resolution
 	local yi = (pose.y - map.bounds_y[1]) * map.inv_resolution
 	local i = math.max(math.min(math.ceil(xi),map_sz[1]),1)
-	local j = math.max(math.min(math.ceil(yi),map_sz[2]),1)
+	local j = math.max(math.min(math.ceil(map_sz[2]-yi),map_sz[2]),1)
 	return i, j
 end
 
 local function map_index_to_pose(map,i,j)
 	local x = i * map.resolution + map.bounds_x[1]
-	local y = j * map.resolution + map.bounds_y[1]
+	local y = (map.map:size(2)-j) * map.resolution + map.bounds_y[1]
 	return vector.pose{x,y,0}
 end
 

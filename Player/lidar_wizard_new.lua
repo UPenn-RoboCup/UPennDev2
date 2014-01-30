@@ -20,13 +20,14 @@ local RAD_TO_DEG = Body.RAD_TO_DEG
 local hokuyos = {}
 
 -- Initialize the Hokuyos
-local hokuyo = libHokuyo.new_hokuyo('/dev/ttyACM0')
+--local hokuyo = libHokuyo.new_hokuyo('/dev/ttyACM0')
+local hokuyo = libHokuyo.new_hokuyo('/dev/cu.usbmodem1411',nil,9600)
 hokuyo.name = 'Front'
 local lidar_ch = simple_ipc.new_publisher'lidar'
 hokuyo.callback = function(data)
-	--local scan = carray.float(data,768)
+	local scan = carray.float(data,768)
 	-- Mid right left
-	--print("DATA",#data,#scan,scan[385],scan[129],scan[641])
+	--print("DATA",#data,#scan,scan[45],scan[385],scan[129],scan[641],scan[726],scan[#scan-1])
 	local meta = {}
 	meta.t     = Body.get_time()
 	meta.n     = 769 --768
@@ -49,6 +50,7 @@ signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
 -- Begin to service
+table.insert(hokuyos,hokuyo)
 os.execute('clear')
 assert(#hokuyos>0,"No hokuyos detected!")
 print( util.color('Servicing '..#hokuyos..' Hokuyos','green') )
@@ -76,5 +78,4 @@ local main = function()
   end
 end
 
-table.insert(hokuyos,hokuyo)
 libHokuyo.service( hokuyos, main )

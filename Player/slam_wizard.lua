@@ -17,8 +17,8 @@ local DEG_TO_RAD = Body.DEG_TO_RAD
 
 -- Flags
 local USE_ODOMETRY = true
-local SAVE_POINTS  = false
-local DO_EXPORT    = false
+local SAVE_POINTS  = true
+local DO_EXPORT    = true
 
 -- Open the map to localize against
 local map = libMap.open_map'map.ppm'
@@ -41,7 +41,7 @@ local function setup_ch( ch, meta )
 	ch.fov = meta.fov --270 -- Webots: 180
 	ch.res = meta.res --360 / 1024
 	--util.ptable(ch)
-	ch.angles = torch.range(0,ch.fov,ch.res)*DEG_TO_RAD
+	ch.angles = (torch.range(0,ch.fov,ch.res)-ch.fov/2)*DEG_TO_RAD
 	assert(ch.n==ch.angles:size(1),"Bad lidar resolution")
 	ch.raw     = torch.FloatTensor(ch.n)
 	ch.ranges  = torch.Tensor(ch.n)
@@ -91,20 +91,27 @@ lidar_ch.callback = function(sh)
 	--assert(ch.raw:size(1)==meta.n,"TODO: Update range sizes")
 	cutil.string2storage(ranges,ch.raw:storage())
 	-- Filter... r and theta
+--[[
 	local i_th = 0
 	ch.ranges:apply(function(x)
 			i_th = i_th+1
 			-- Only use 180 degrees of data, to avoid self collision
 			if i_th<129 or i_th>641 then return 0 end
+      if x>10 or x<0 then return 0 end
 			return x
 		end)
+--]]
 	-- Copy to the double format
 	ch.ranges:copy(ch.raw)
+for i=1,128 do ch.ranges[i]=0 end
+for i=642,ch.ranges:size(1) do ch.ranges[i]=0 end
 	-- Put into x y space from r/theta
 	local pts_x = ch.points:select(2,1)
 	local pts_y = ch.points:select(2,2)
-	torch.cmul(pts_x,ch.sines,ch.ranges)
-	torch.cmul(pts_y,ch.cosines,ch.ranges)
+	--torch.cmul(pts_x,ch.sines,ch.ranges)
+	--torch.cmul(pts_y,ch.cosines,ch.ranges)
+	torch.cmul(pts_x,ch.cosines,ch.ranges)
+	torch.cmul(pts_y,ch.sines,ch.ranges)
 	-- Link length
 	pts_x:add(.3)
 	-- Localize based on this channel

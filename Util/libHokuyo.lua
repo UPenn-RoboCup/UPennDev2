@@ -68,7 +68,6 @@ local write_command = function(fd, cmd, expected_response)
 		print(string.format('Bad end of response!'))
 		return nil
 	end
-	
 	--------------------
 
 	--------------------
@@ -86,22 +85,23 @@ end
 -------------------------
 -- Form the stream command
 -- TODO range checks and more types support
+local data_encoding = {
+	HOKUYO_2DIGITS = 'MS',
+	HOKUYO_3DIGITS = 'MD',
+}
 local create_scan_request = 
 function(scan_start, scan_end, scan_skip, encoding, scan_type, num_scans)
-local request = nil
-local base_request = string.format(
-"%04d%04d%02x0%02d\n", scan_start, scan_end, scan_skip, num_scans
-);
-if num_scans==0 then
-  if scan_type == HOKUYO_SCAN_REGULAR then
-    if encoding == HOKUYO_3DIGITS then
-      request = 'MD'..base_request
-      elseif encoding == HOKUYO_2DIGITS then
-        request = 'MS'..base_request
-      end
-    end
-  end
-  assert(request,'Invalid character encoding')
+
+	local enc = data_encoding[encoding]
+	assert(num_scans~=0 and scan_type==HOKUYO_SCAN_REGULAR and enc,
+		'Invalid character encoding')
+
+	local request = string.format(
+		"%s%04d%04d%02x0%02d\n",
+		enc,
+		scan_start, scan_end, scan_skip, num_scans
+	)
+
   return request
 end
 
@@ -159,7 +159,7 @@ local stream_on = function(self)
 	-- scan_start, scan_end, scan_skip, encoding, scan_type, num_scans 
 	-- TODO: Check encoding types
 --	local scan_req = create_scan_request(0, 1080, 1, 3, 0, 0);
-	local scan_req = create_scan_request(0, 768, 1, 2, 0, 0);
+	local scan_req = create_scan_request(0, 768, 1, self.char_encoding, 0, 0);
 	-- TODO: Does the scan request expect a return, 
 	-- or just the actual streaming data?
 	ret = write_command( self.fd, scan_req )
@@ -217,6 +217,7 @@ end
 ---------------------------
 -- Set the Hokuyo baud rate
 local set_baudrate = function(self, baud)
+	-- NOTE: Can only be set over RS232... per documentation
 	local cmd = 'SS'..string.format("%6d", baud)..'\n';
 --	local res = write_command(self.fd, cmd, '04')
 --	local res = write_command(self.fd, cmd, '04')
@@ -251,6 +252,7 @@ local new_hokuyo_net = function(host_id)
   obj.get_sensor_params = get_sensor_params
   obj.get_sensor_info = get_sensor_info
   obj.callback = nil
+	obj.char_encoding = 3
 	-- TODO: Use sensor_params.scan_rate
 	obj.update_time = 1/40
 	-----------
@@ -274,7 +276,8 @@ end
 
 ---------------------------
 -- Service multiple hokuyos
-local new_hokuyo_usb = function(ttyname, serial_number, ttybaud )
+local new_hokuyo_usb =
+function(ttyname, serial_number, ttybaud, char_encoding )
   
   local baud = ttybaud or 115200
   
@@ -327,6 +330,7 @@ local new_hokuyo_usb = function(ttyname, serial_number, ttybaud )
   obj.get_sensor_params = get_sensor_params
   obj.get_sensor_info = get_sensor_info
   obj.callback = nil
+	obj.char_encoding = char_encoding
 	-- TODO: Use sensor_params.scan_rate
 	obj.update_time = 1/40
 	-----------

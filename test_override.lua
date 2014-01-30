@@ -68,14 +68,14 @@ local channels = {
 -- Events for the FSMs
 local char_to_event = {
   ['1'] = {'body_ch','init'},
-
+--[[
   ['2'] = {'arm_ch','toolgrab'},
   ['3'] = {'arm_ch','firesuppress'},
 
   ['4'] = {'arm_ch','pushdoorgrab'},
-
+--]]
   ['5'] = {'arm_ch','firesuppress'},
-
+--[[
   ['6'] = {'arm_ch','smallvalvegrab'},
   ['7'] = {'arm_ch','barvalvegrab'},
 
@@ -85,7 +85,7 @@ local char_to_event = {
   ['r'] = {'arm_ch','rocky'},
 --  ['t'] = {'arm_ch','teleop'},
 --  ['y'] = {'arm_ch','test'},
-
+--]]
  
 }
 

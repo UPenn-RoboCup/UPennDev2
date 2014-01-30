@@ -424,11 +424,11 @@ elseif HOSTNAME=="teddy" then
     })*DEG_TO_RAD
 
 --pitch tweak
+
   walk.legBias = 
     vector.new({1, 1.26,    0.36,   -0.50,  0.52, 0.38,
             -0.27, -0.8875,  1.05,   -0.27,  -0.745, 0.65,
     })*DEG_TO_RAD
-
 
 --[[
 --new roll tweak
@@ -439,8 +439,58 @@ elseif HOSTNAME=="teddy" then
 --]]
 
 
+--NRL site, 1/30/2014
+
+  walk.legBias = 
+    vector.new({1, 1.26,    0.36,   -0.50,  0.72, 0.38,
+            -0.27, -0.8875,  1.05,   -0.27,  -0.205, 0.65,
+    })*DEG_TO_RAD
 
 
+
+--slight hip roll tweak
+  walk.legBias = 
+    vector.new({1, 1.26,    0.36,   -0.50,  0.72, 0.38,
+            -0.27, -1.3,  1.05,   -0.27,  -0.205, 0.65,
+    })*DEG_TO_RAD
+
+
+
+
+--after power shutdown
+  walk.legBias = 
+    vector.new({1, 1.26, 0.36,   -0.365,  0.72, 0.38,
+            0.47, -1.3, 1.05,   -0.88,  -0.20, -0.16,
+    })*DEG_TO_RAD
+
+
+  walk.legBias = 
+    vector.new({1, 1.19, 0.36,   -0.365,  -0.29, -0.02,
+            0.47, -1.3, 1.05,   -0.88,  -1.4, -0.51,
+    })*DEG_TO_RAD
+
+
+--emergency fix
+  walk.legBias = 
+    vector.new({1, 0.72, 0.36,   -0.365,  -0.29, 0.45,
+            0.47, -0.49, 1.05,   -0.88,  -1.4, 0.03,
+    })*DEG_TO_RAD
+
+
+--1.00 0.72 0.36 -0.36 -0.02 1.33
+-- 0.47 -0.69 1.19 -0.88 -1.06 0.03 
+
+  walk.legBias = 
+    vector.new({1, 0.72, 0.36,   -0.365,  -0.02, 1.33,
+            0.47, -0.69, 1.19,   -0.88,  -1.06, 0.03,
+    })*DEG_TO_RAD
+
+
+
+  walk.legBias = 
+    vector.new({1, 0.72, 0.36,   -0.365,  0.32, 0.72,
+            0.47, -0.69, 1.19,   -0.88,  -1.06, 0.03,
+    })*DEG_TO_RAD
 
 
 else

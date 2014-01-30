@@ -373,7 +373,6 @@ function moveleg.foot_trajectory_square_stair_cross(phSingle,uStart,uEnd, stepHe
 local moveback_ratio = 0.1
 
 
-
   if walkParam then    
     zHeight0, zHeight1 = walkParam[1],walkParam[3]
     stepHeight = walkParam[2]      

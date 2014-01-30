@@ -9,7 +9,7 @@ require'wcm'
 
 USE_GPS = false
 DO_EXPORT = false
-USE_ODOM = true
+USE_ODOM = false
 
 -- Replan every timeout
 local timeout = 5.0

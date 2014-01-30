@@ -41,7 +41,8 @@ local function setup_ch( ch, meta )
 	ch.fov = meta.fov --270 -- Webots: 180
 	ch.res = meta.res --360 / 1024
 	--util.ptable(ch)
-	ch.angles = (torch.range(0,ch.fov,ch.res)-ch.fov/2)*DEG_TO_RAD
+	--ch.angles = (torch.range(0,ch.fov,ch.res)-ch.fov/2)*DEG_TO_RAD
+	ch.angles = (torch.range(0,ch.fov,ch.res))*DEG_TO_RAD
 	assert(ch.n==ch.angles:size(1),"Bad lidar resolution")
 	ch.raw     = torch.FloatTensor(ch.n)
 	ch.ranges  = torch.Tensor(ch.n)
@@ -60,6 +61,7 @@ local function localize(ch)
 	map.odom = odom
 	-- Match laser scan points
 	local matched_pose, hits = map:localize( ch.points, {} )
+	print("MATCH",matched_pose,hits)
 	map.pose = matched_pose
 	-- Set shared memory accordingly
 	wcm.set_robot_pose( matched_pose )
@@ -108,10 +110,12 @@ for i=642,ch.ranges:size(1) do ch.ranges[i]=0 end
 	-- Put into x y space from r/theta
 	local pts_x = ch.points:select(2,1)
 	local pts_y = ch.points:select(2,2)
-	--torch.cmul(pts_x,ch.sines,ch.ranges)
-	--torch.cmul(pts_y,ch.cosines,ch.ranges)
-	torch.cmul(pts_x,ch.cosines,ch.ranges)
-	torch.cmul(pts_y,ch.sines,ch.ranges)
+	-- Webots...
+	torch.cmul(pts_x,ch.sines,ch.ranges)
+	torch.cmul(pts_y,ch.cosines,ch.ranges)
+	--
+	--torch.cmul(pts_x,ch.cosines,ch.ranges)
+	--torch.cmul(pts_y,ch.sines,ch.ranges)
 	-- Link length
 	pts_x:add(.3)
 	-- Localize based on this channel

@@ -9,11 +9,14 @@ require'wcm'
 
 USE_GPS = false
 DO_EXPORT = false
+USE_ODOM = true
 
 -- Replan every timeout
 local timeout = 5.0
 local t_entry, t_update, t_exit
 local map, path, finished_path, cur_wp, wp_id, path_sz
+
+local start_pose = vector.pose{-1.32058, -0.216679, 1.5708}
 
 -- The map is static, so import it once
 map = libMap.open_map'map.ppm'
@@ -89,6 +92,9 @@ function state.entry()
 	local pose
 	if USE_GPS==true then
 		pose = wcm.get_robot_gps()
+	elseif USE_ODOM==true then
+		local odom = wcm.get_robot_pose()
+		pose = util.pose_global(odom,start_pose)
 	else
 		pose = wcm.get_robot_pose()
 	end
@@ -119,6 +125,9 @@ function state.update()
 	local pose
 	if USE_GPS==true then
 		pose = wcm.get_robot_gps()
+	elseif USE_ODOM==true then
+		local odom = wcm.get_robot_pose()
+		pose = util.pose_global(odom,start_pose)
 	else
 		pose = wcm.get_robot_pose()
 	end

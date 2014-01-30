@@ -9,8 +9,6 @@ local vector = require'vector'
 --local timeout = 10.0
 local t_entry, t_update, t_exit
 
-
-
 -- Min/Switch pitch/Max range
 local min_r, mid_r, max_r = .25, .3, .39
 --local object_coord = vector.new{.275,.275,-.175} --max

@@ -75,8 +75,8 @@ local char_to_event = {
   ['4'] = {'arm_ch','pushdoorgrab'},
 --]]
   ['5'] = {'arm_ch','firesuppress'},
---[[
   ['6'] = {'arm_ch','smallvalvegrab'},
+--[[
   ['7'] = {'arm_ch','barvalvegrab'},
 
   ['9'] = {'arm_ch','hosegrab'},

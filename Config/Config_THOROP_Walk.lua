@@ -493,6 +493,22 @@ elseif HOSTNAME=="teddy" then
     })*DEG_TO_RAD
 
 
+
+
+
+--NRL D-0, 7:40AM
+
+--1.00 0.72 0.02 -0.36 0.32 0.72
+--0.47 -0.69 1.19 -0.88 -0.66 0.03 
+
+
+  walk.legBias = 
+    vector.new({1, 0.72, 0.02,   -0.365,  0.32, 0.72,
+            0.47, -0.69, 1.19,   -0.88,  -0.66, 0.03,
+    })*DEG_TO_RAD
+
+
+
 else
   print("UNKNOWN ROBOT")
   walk.legBias = 

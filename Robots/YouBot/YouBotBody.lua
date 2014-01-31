@@ -168,9 +168,9 @@ if IS_WEBOTS then
   
   -- Default configuration (toggle during run time)
   local ENABLE_CAMERA = false
-  local ENABLE_LIDAR  = false
+  local ENABLE_LIDAR  = true
   local ENABLE_KINECT = false
-	local ENABLE_POSE   = false
+	local ENABLE_POSE   = true
 
   local torch = require'torch'
   torch.Tensor = torch.DoubleTensor
@@ -209,8 +209,7 @@ if IS_WEBOTS then
   webots.wb_robot_keyboard_enable( 100 )
   local key_action = {
     l = function(override)
-      -- if not enabled, or override
-			local en = override or not ENABLE_LIDAR
+			if override~=nil then en=override else en=ENABLE_LIDAR==false end
       if en==false then
         print(util.color('LIDAR disabled!','yellow'))
         webots.wb_camera_disable(tags.lidar)
@@ -222,8 +221,7 @@ if IS_WEBOTS then
       end
     end,
     c = function(override)
-      -- if not enabled, or override
-			local en = override or not ENABLE_CAMERA
+      if override~=nil then en=override else en=ENABLE_CAMERA==false end
       if en==false then
         print(util.color('CAMERA disabled!','yellow'))
         webots.wb_camera_disable(tags.hand_camera)
@@ -235,8 +233,7 @@ if IS_WEBOTS then
       end
     end,
     k = function(override)
-      -- if not enabled, or override
-			local en = override or not ENABLE_KINECT
+      if override~=nil then en=override else en=ENABLE_KINECT==false end
       if en==false then
         print(util.color('KINECT disabled!','yellow'))
         webots.wb_camera_disable(tags.kinect)
@@ -248,8 +245,7 @@ if IS_WEBOTS then
       end
     end,
 		p = function(override)
-			-- if not enabled, or override
-			local en = override or not ENABLE_POSE
+			if override~=nil then en=override else en=ENABLE_POSE==false end
       if en==false then
         print(util.color('POSE disabled!','yellow'))
         webots.wb_gps_disable(tags.gps)
@@ -449,8 +445,7 @@ if IS_WEBOTS then
 			local meta = {}
 			meta.t     = Body.get_time()
 			meta.n     = w
-			meta.res   = 360 / 1440 -- Per hokuyo documentation (degrees)
-			meta.fov   = math.floor(webots.wb_camera_get_fov(tags.lidar)*RAD_TO_DEG)
+			meta.res   = 360 / 1440
 			meta.pose  = wcm.get_robot_pose()
 			lidar_ch:send{mp.pack(meta),tostring(lidar_array)}
     end

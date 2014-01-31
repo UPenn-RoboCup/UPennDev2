@@ -449,6 +449,8 @@ Robot {
               translation 0 .025 -0.3
 							fieldOfView 3.1415926536
 							width 721
+							#fieldOfView 1.5707963268
+							#width 361
               name "lidar"
             }
           ]

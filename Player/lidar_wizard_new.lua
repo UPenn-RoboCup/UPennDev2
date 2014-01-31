@@ -25,13 +25,13 @@ local hokuyo = libHokuyo.new_hokuyo('/dev/cu.usbmodem1411',nil,9600)
 hokuyo.name = 'Front'
 local lidar_ch = simple_ipc.new_publisher'lidar'
 hokuyo.callback = function(data)
-	local scan = carray.float(data,768)
+
 	-- Mid right left
+	--local scan = carray.float(data)
 	--print("DATA",#data,#scan,scan[45],scan[385],scan[129],scan[641],scan[726],scan[#scan-1])
 	local meta = {}
 	meta.t     = Body.get_time()
-	meta.n     = 769 --768
-	meta.fov   = 270 --239.77
+	meta.n     = #scan
 	meta.res   = 360 / 1024
 	local ret  = lidar_ch:send{mp.pack(meta),data}
 end

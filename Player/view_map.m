@@ -1,5 +1,5 @@
 function [map,i_path,j_path,xy,omap] = view_map(map_name)
-
+    close all;
     map = [];
     if nargin==1,
         fid = fopen(map_name);
@@ -54,8 +54,11 @@ function [map,i_path,j_path,xy,omap] = view_map(map_name)
         x = xy(1,:);
         y = xy(2,:);
         plot(x,y,'.');
+        hold on;
+        plot(0,0,'k*')
+        hold off;
         xlabel('x');
-        ylabel('-y');
+        ylabel('y');
         axis equal;
     end
     

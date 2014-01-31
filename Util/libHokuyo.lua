@@ -8,15 +8,10 @@ local stty = require'stty'
 local unix = require'unix'
 local tcp = require'tcp'
 
---------------------
--- libHokuyo constants
-local HOKUYO_SCAN_REGULAR = 0
-local HOKUYO_2DIGITS = 2
-local HOKUYO_3DIGITS = 3
-
 -- Reading properties
 --local N_SCAN_BYTES = 3372
 local N_SCAN_BYTES = 1578
+
 local TIMEOUT = 0.05 -- (uses select)
 
 -------------------------
@@ -82,27 +77,25 @@ local write_command = function(fd, cmd, expected_response)
 	return response
 end
 
+-- Data encoding is how many bytes
+local data_encoding = {
+	2 = 'MS',
+	3 = 'MD',
+}
 -------------------------
 -- Form the stream command
--- TODO range checks and more types support
-local data_encoding = {
-	HOKUYO_2DIGITS = 'MS',
-	HOKUYO_3DIGITS = 'MD',
-}
 local create_scan_request = 
 function(scan_start, scan_end, scan_skip, encoding, scan_type, num_scans)
 
 	local enc = data_encoding[encoding]
-	assert(num_scans~=0 and scan_type==HOKUYO_SCAN_REGULAR and enc,
-		'Invalid character encoding')
+	assert(num_scans~=0 and enc, 'Invalid scan request')
 
-	local request = string.format(
+	return string.format(
 		"%s%04d%04d%02x0%02d\n",
 		enc,
 		scan_start, scan_end, scan_skip, num_scans
 	)
 
-  return request
 end
 
 ---------------------------
@@ -121,15 +114,11 @@ local get_scan = function(self)
       else
       	scan_str = scan_str..scan_buf -- Append it to the scan string
       end
-      if #scan_str>=N_SCAN_BYTES then
-				break
-			end
+      if #scan_str>=N_SCAN_BYTES then break end
 		end
 	end
 	return HokuyoPacket.parse(scan_str)
 end
-
-
 
 -------------------------
 -- Turn off data streaming
@@ -156,22 +145,17 @@ local stream_on = function(self)
 
 	local ret = write_command( self.fd, 'BM\n' )
 
-	-- scan_start, scan_end, scan_skip, encoding, scan_type, num_scans 
-	-- TODO: Check encoding types
---	local scan_req = create_scan_request(0, 1080, 1, 3, 0, 0);
-	local scan_req = create_scan_request(0, 768, 1, self.char_encoding, 0, 0);
+	-- scan_start, scan_end, scan_skip, encoding, scan_type, num_scans
 	-- TODO: Does the scan request expect a return, 
 	-- or just the actual streaming data?
-	ret = write_command( self.fd, scan_req )
+	ret = write_command( self.fd, self.scan_request )
 
 end
 
-local single_scan = function(self)
---  local ret = unix.write( self.fd, string.char(0)..string.char(0x56) )
+libHokuyo.set_scip2 = function(self)
   local ret = unix.write( self.fd, 'SCIP2.0\n' )
   local data = unix.read(self.fd)
-if data then print(#data) end
-print(ret,'Got data!',data)
+	if data then print(ret,#data,'Got data!',data) end
 end
 
 -------------------------
@@ -206,8 +190,8 @@ local get_sensor_info = function(self)
   
 	if not info then return nil end
   
-	sensor_info.vender = info[1]
-	sensor_info.product = info[2]
+	sensor_info.vender   = info[1]
+	sensor_info.product  = info[2]
 	sensor_info.firmware = info[3]
 	sensor_info.protocol = info[4]
 	sensor_info.serial_number = info[5]
@@ -253,6 +237,8 @@ local new_hokuyo_net = function(host_id)
   obj.get_sensor_info = get_sensor_info
   obj.callback = nil
 	obj.char_encoding = 3
+	obj.scan_request = create_scan_request(0, 1080, 1, self.char_encoding, 0, 0)
+	obj.parse = HokuyoPacket.parse
 	-- TODO: Use sensor_params.scan_rate
 	obj.update_time = 1/40
 	-----------
@@ -331,21 +317,29 @@ function(ttyname, serial_number, ttybaud, char_encoding )
   obj.get_sensor_info = get_sensor_info
   obj.callback = nil
 	obj.char_encoding = char_encoding
-	-- TODO: Use sensor_params.scan_rate
-	obj.update_time = 1/40
+	if char_encoding==2 then
+		-- URG-04LX
+		obj.scan_request = create_scan_request(44, 725, 1, self.char_encoding, 0, 0)
+		obj.parse = HokuyoPacket.parse2
+		obj.update_time = 1/10
+	else
+		-- UTM-30LX
+		obj.scan_request = create_scan_request(0, 1080, 1, self.char_encoding, 0, 0)
+		obj.parse = HokuyoPacket.parse
+		-- TODO: Use sensor_params.scan_rate
+		obj.update_time = 1/40
+	end
 	-----------
 
 	-----------
 	-- Setup the Hokuyo properly
-----[[
   if not obj:stream_off() then
     obj:close()
     return nil
   end
-	obj:set_baudrate(baud)
+	--obj:set_baudrate(baud)
 	obj.params = obj:get_sensor_params()
-	obj.info = obj:get_sensor_info()
---]]
+	obj.info   = obj:get_sensor_info()
   obj.t_diff = 0
   obj.t_last = 0
 	-----------
@@ -448,8 +442,8 @@ libHokuyo.service = function( hokuyos, main )
         end
         -- Process the callback
         if param and who_to_service.callback then
---          who_to_service.callback( HokuyoPacket.parse(param) )
-          who_to_service.callback( HokuyoPacket.parse2(param) )
+					local parsed = who_to_service.parse(param)
+          who_to_service.callback( parsed )
         end
       end
     end

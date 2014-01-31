@@ -32,7 +32,7 @@ hokuyo.callback = function(data)
 	local meta = {}
 	meta.t     = Body.get_time()
 	meta.n     = #scan
-	meta.res   = 360 / 1024
+	meta.res   = hokuyo.res
 	local ret  = lidar_ch:send{mp.pack(meta),data}
 end
 

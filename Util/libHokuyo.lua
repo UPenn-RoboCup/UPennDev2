@@ -241,6 +241,7 @@ local new_hokuyo_net = function(host_id)
 	obj.parse = HokuyoPacket.parse
 	-- TODO: Use sensor_params.scan_rate
 	obj.update_time = 1/40
+	hokuyo.res = 360 / 1440
 	-----------
 
 	-----------
@@ -322,12 +323,14 @@ function(ttyname, serial_number, ttybaud, char_encoding )
 		obj.scan_request = create_scan_request(44, 725, 1, self.char_encoding, 0, 0)
 		obj.parse = HokuyoPacket.parse2
 		obj.update_time = 1/10
+		hokuyo.res = 360 / 1024
 	else
 		-- UTM-30LX
 		obj.scan_request = create_scan_request(0, 1080, 1, self.char_encoding, 0, 0)
 		obj.parse = HokuyoPacket.parse
 		-- TODO: Use sensor_params.scan_rate
 		obj.update_time = 1/40
+		hokuyo.res = 360 / 1440
 	end
 	-----------
 

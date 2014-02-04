@@ -20,12 +20,14 @@ if torch then torch.Tensor = torch.DoubleTensor end
 
 -- Requester
 print('REQ |',Config.net.robot.wired,Config.net.reliable_rpc)
-local rpc_req = simple_ipc.new_requester(Config.net.reliable_rpc,Config.net.robot.wired)
+local rpc_req =
+  simple_ipc.new_requester(Config.net.reliable_rpc,Config.net.robot.wired)
 unix.usleep(1e5)
 
 -- Publisher
 print('PUB |',Config.net.robot.wired,Config.net.reliable_rpc2)
-local rpc_pub = simple_ipc.new_publisher(Config.net.reliable_rpc2,false,Config.net.robot.wired)
+local rpc_pub =
+  simple_ipc.new_publisher(Config.net.reliable_rpc2,true,Config.net.robot.wired)
 unix.usleep(1e5)
 
 -- UDP
@@ -60,7 +62,7 @@ local shm_send = function(t,func)
   return function(val)
 		if val then tbl.val=val end
 		local packed = mp.pack(tbl)
-		--[[
+		----[[
 		if val then
 			-- Just PUB to the robot for shm set
 			tbl.val=val

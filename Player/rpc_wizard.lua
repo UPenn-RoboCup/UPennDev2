@@ -6,15 +6,18 @@ local simple_ipc = require'simple_ipc'
 local wait_channels
 local udp = require'udp'
 
-local rpc_rep = simple_ipc.new_replier(Config.net.reliable_rpc,'*')
+local rpc_rep =
+	simple_ipc.new_replier(Config.net.reliable_rpc,'*')
 print('RPC | REP Receiving on',Config.net.reliable_rpc)
 unix.usleep(1e5)
 --
-local rpc_sub = simple_ipc.new_subscriber(Config.net.reliable_rpc2)
+local rpc_sub =
+	simple_ipc.new_subscriber(Config.net.reliable_rpc2, true, '*')
 print('RPC | SUB Receiving on',Config.net.reliable_rpc2)
 unix.usleep(1e5)
 --
-local rpc_udp = udp.new_receiver( Config.net.unreliable_rpc )
+local rpc_udp =
+	udp.new_receiver( Config.net.unreliable_rpc )
 print('RPC | UDP Receiving on',Config.net.unreliable_rpc)
 
 -- Require all necessary modules
@@ -46,7 +49,7 @@ local function process_rpc(rpc)
 local status, reply
   local status, reply
   -- Debugging the request
-  util.ptable(rpc)
+	--util.ptable(rpc)
 
   -- TODO: Remove the stupid trim_string necessity
   rpc.fsm = trim_string(rpc.fsm)
@@ -108,14 +111,13 @@ local status, reply
 end
 
 local function process_zmq(sh)
-	print("HERE")
 	local poll_obj = wait_channels.lut[sh]
   local request, has_more
   repeat
-    request, has_more = rpc_rep:receive(true)
+    request, has_more = poll_obj:receive(true)
 		if request then
-    	local rpc         = mp.unpack(request)
-    	local reply       = process_rpc(rpc)
+    	local rpc   = mp.unpack(request)
+    	local reply = process_rpc(rpc)
     	-- if REQ/REP then reply
 			if poll_obj.type=='rep' then
 				local ret = rpc_rep:send( mp.pack(reply) )

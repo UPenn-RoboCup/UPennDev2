@@ -1,9 +1,4 @@
--- Tune this parameter if being used for testing
---local USE_LOCALHOST = false
-local USE_LOCALHOST = true
-
 local Config = {}
-Config.USE_LOCALHOST = USE_LOCALHOST
 
 ----------------------
 -- Network settings --
@@ -22,7 +17,7 @@ Config.net.operator = {
 }
 
 -- For use only when testing in webots on a local computer
-if Config.USE_LOCALHOST then
+if USE_LOCALHOST then
   -- wired
   Config.net.robot.wired = 'localhost'
   Config.net.operator.wired = 'localhost'

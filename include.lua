@@ -1,3 +1,6 @@
+USE_LOCALHOST = true
+
+-- Locate the Modules
 local handle = io.popen('pwd')
 CWD = handle:read("*a"):gsub("%s+$", "")
 handle:close()
@@ -51,7 +54,6 @@ package.cpath = HOME..'/Robots/'..Config.PLATFORM_NAME..'/?.so;'..package.cpath
 
 KEYFRAME_DIR = HOME.."/Player/Keyframes"
 LOG_DIR = HOME.."/Logs/"
-
 
 -- Print out the globally available variables, when using include.lua
 function print_env()

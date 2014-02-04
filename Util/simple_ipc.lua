@@ -111,7 +111,7 @@ simple_ipc.new_publisher = function( channel, inverted, addr, filter )
 end
 
 -- Make a new subscriber
-simple_ipc.new_subscriber = function( channel, inverted, filter, addr )
+simple_ipc.new_subscriber = function( channel, inverted, addr, filter )
   local channel_obj = {}
   local channel_type = type(channel)
   if channel_type=="string" then

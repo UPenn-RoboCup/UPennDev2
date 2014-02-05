@@ -12,12 +12,6 @@ Joint 5	-5.6415924413056	-0.11061945963344	true
 
 local Body = {}
 
--- Useful constants
-local DEG_TO_RAD = math.pi/180
-local RAD_TO_DEG = 180/math.pi
-Body.DEG_TO_RAD = DEG_TO_RAD
-Body.RAD_TO_DEG = RAD_TO_DEG
-
 -- Utilities
 local unix       = require'unix'
 local vector     = require'vector'
@@ -176,8 +170,11 @@ if IS_WEBOTS then
   torch.Tensor = torch.DoubleTensor
   local carray = require'carray'
   local jpeg = require'jpeg'
+	
+	-- Publish sensor data
 	local simple_ipc = require'simple_ipc'
 	local mp = require'msgpack'
+	local lidar0_ch = simple_ipc.new_publisher'lidar0'
 
   local webots = require'webots'
   -- Start the system
@@ -260,9 +257,6 @@ if IS_WEBOTS then
     end,
   }
 
-	-- Publish lidar readings
-	local lidar_ch = simple_ipc.new_publisher'lidar'
-
   Body.entry = function()
 
     -- Grab the joints
@@ -300,21 +294,17 @@ if IS_WEBOTS then
       end
   	end
 
-    -- Grab the inertial sensors
+    -- Acquire sensor tags
 		tags.gps = webots.wb_robot_get_device("GPS")
 		tags.compass = webots.wb_robot_get_device("compass")
+		tags.hand_camera = webots.wb_robot_get_device("HandCamera")
+		tags.lidar = webots.wb_robot_get_device("lidar")
+		tags.kinect = webots.wb_robot_get_device("kinect")
+		
+		-- Enable sensors
 		key_action.p(ENABLE_POSE)
-
-    -- Grab the camera
-    tags.hand_camera = webots.wb_robot_get_device("HandCamera")
 		key_action.c(ENABLE_CAMERA)
-
-    -- Grab the hokuyo
-    tags.lidar = webots.wb_robot_get_device("lidar")
 		key_action.l(ENABLE_LIDAR)
-    
-    -- Grab the kinect
-    tags.kinect = webots.wb_robot_get_device("kinect")
 		key_action.k(ENABLE_KINECT)
 
     -- Kinect torch data containers
@@ -424,7 +414,7 @@ if IS_WEBOTS then
     	local gps     = webots.wb_gps_get_values(tags.gps)
     	local compass = webots.wb_compass_get_values(tags.compass)
     	local angle   = math.atan2( compass[3], compass[1] )
-    	local pose    = vector.pose{gps[3], gps[1], util.mod_angle(angle + 90*Body.DEG_TO_RAD)}
+    	local pose    = vector.pose{gps[3], gps[1], util.mod_angle(angle + 90*DEG_TO_RAD)}
 			wcm.set_robot_gps( pose )
     	--wcm.set_robot_pose( pose )
 		end
@@ -447,7 +437,7 @@ if IS_WEBOTS then
 			meta.n     = w
 			meta.res   = 360 / 1440
 			meta.pose  = wcm.get_robot_pose()
-			lidar_ch:send{mp.pack(meta),tostring(lidar_array)}
+			lidar0_ch:send{mp.pack(meta),tostring(lidar_array)}
     end
     -- Grab kinect RGBD data
     if ENABLE_KINECT then
@@ -474,8 +464,9 @@ if IS_WEBOTS then
     local key_code = webots.wb_robot_keyboard_get_key()
     local key_char = string.char(key_code)
     local key_char_lower = string.lower(key_char)
-    if t-t_last_keypress>1 and key_code and key_action[key_char_lower] then
-      key_action[key_char_lower]()
+    local key_toggle = key_action[key_char_lower]
+    if key_toggle and t-t_last_keypress>1 then
+      key_toggle()
       t_last_keypress = t
     end
     

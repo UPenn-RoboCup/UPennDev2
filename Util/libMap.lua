@@ -12,8 +12,6 @@ torch.Tensor = torch.DoubleTensor
 local png = require'png'
 local jpeg = require'jpeg'
 local slam = require'slam'
-local DEG_TO_RAD = Body.DEG_TO_RAD
-local RAD_TO_DEG = Body.RAD_TO_DEG
 
 local function pose_to_map_index(map,pose)
 	pose = vector.pose(pose)

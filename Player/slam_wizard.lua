@@ -4,6 +4,7 @@
 ---------------------------------
 dofile'../include.lua'
 local simple_ipc = require'simple_ipc'
+local wait_channels = {}
 local mp = require'msgpack'
 local vector = require'vector'
 local util = require'util'
@@ -12,8 +13,6 @@ local Body = require'Body'
 local torch = require'torch'
 torch.Tensor = torch.DoubleTensor
 local libMap = require'libMap'
-
-local DEG_TO_RAD = Body.DEG_TO_RAD
 
 -- Flags
 local USE_ODOMETRY = true
@@ -61,16 +60,14 @@ local function localize(ch)
 	map.odom = odom
 	-- Match laser scan points
 	local matched_pose, hits = map:localize( ch.points, {} )
-	print("MATCH",matched_pose,hits)
+	--print("MATCH",matched_pose,hits)
 	map.pose = matched_pose
 	-- Set shared memory accordingly
 	wcm.set_robot_pose( matched_pose )
 end
 
 -- Listen for lidars
-local wait_channels = {}
-local lidar_ch = simple_ipc.new_subscriber'lidar'
-lidar_ch.callback = function(sh)
+local lidar_cb = function(sh)
 	local ch = wait_channels.lut[sh]
 	local meta, ranges
 	repeat
@@ -102,6 +99,7 @@ lidar_ch.callback = function(sh)
 	pts_x:add(.3)
 
 	-- Save the xy lidar points
+	--[[
 	if SAVE_POINTS==true then
 		local f = io.open('xy.raw', 'w')
 		local ptr, n_el = ch.points:storage():pointer(), #ch.points:storage()
@@ -109,11 +107,14 @@ lidar_ch.callback = function(sh)
 		f:write( tostring(arr) )
 		f:close()
 	end
+	--]]
 
 	-- Localize based on this channel
 	localize(ch)
-
 end
+
+local lidar_ch = simple_ipc.new_subscriber'lidar0'
+lidar_ch.callback = lidar_cb
 
 -- Make the poller
 table.insert(wait_channels, lidar_ch)

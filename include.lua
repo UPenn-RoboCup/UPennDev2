@@ -17,6 +17,10 @@ if HOME:find'Webots' ~= nil then
   IS_WEBOTS = true
 end
 
+-- Useful constants
+DEG_TO_RAD = math.pi/180
+RAD_TO_DEG = 180/math.pi
+
 -- SJ: This removes the output buffer
 io.stdout:setvbuf("no")
 

@@ -8,72 +8,34 @@ dofile'include.lua'
 -- Libraries
 local Body       = require'Body'
 local signal     = require'signal'
-local carray     = require'carray'
 local mp         = require'msgpack'
 local util       = require'util'
 local simple_ipc = require'simple_ipc'
 local libHokuyo  = require'libHokuyo'
+--local carray     = require'carray'
+
+local cb = function(self,data)
+	-- Mid right left
+	--local scan = carray.float(data)
+	--print("DATA",#data,#scan,scan[45],scan[385],scan[129],scan[641],scan[726],scan[#scan-1])
+	local meta = {}
+	meta.t     = Body.get_time()
+	meta.n     = #scan
+	meta.res   = self.res
+	meta.name  = self.name
+	local ret  = self.ch:send{mp.pack(meta),data}
+end
 
 -- Setup the Hokuyos array
 local hokuyos = {}
 
 -- Initialize the Hokuyos
-local chest_hokuo
-if HOSTNAME== "teddy" then
-  chest_hokuyo = libHokuyo.new_hokuyo(10) --for teddy
-else
-  chest_hokuyo  = libHokuyo.new_hokuyo(11)
-end
-
--- Head Hokuyo
-if head_hokuyo then
-
-  -- Update shared memory
-  vcm.set_head_lidar_sensor_params{270*Body.DEG_TO_RAD, 1081}
-
-  head_hokuyo.name = 'Head'
-  head_hokuyo.count = 0
-  local head_lidar_ch = simple_ipc.new_publisher'head_lidar'
-  table.insert(hokuyos,head_hokuyo)
-  head_hokuyo.callback = function(data)
-    -- TODO: ZeroMQ zero copy may work as well as SHM?
-    Body.set_head_lidar( data )
-    head_hokuyo.count = head_hokuyo.count + 1
-    
-    local meta = {}
-    meta.count  = head_hokuyo.count
-    meta.hangle = Body.get_head_command_position()
-    --meta.hangle = Body.get_head_position()
-    meta.rpy  = Body.get_sensor_rpy()
-    meta.pose = wcm.get_robot_pose()
-    meta.gyro = Body.get_sensor_gyro()
-    meta.t = Body.get_time()
-    local ret = head_lidar_ch:send( mp.pack(meta) )
-  end
-end
-
--- Chest Hokuyo
-if chest_hokuyo then
-  chest_hokuyo.name = 'Chest'
-  chest_hokuyo.count = 0
-  table.insert(hokuyos,chest_hokuyo)
-  local chest_lidar_ch = simple_ipc.new_publisher'chest_lidar'
-  chest_hokuyo.callback = function(data)
-    Body.set_chest_lidar( data )
-    chest_hokuyo.count = chest_hokuyo.count + 1
-
-    local meta = {}
-    meta.count  = chest_hokuyo.count
-    -- Use the measured position for better accuracy
-    --meta.pangle = Body.get_lidar_position(1)
-    meta.pangle = Body.get_lidar_command_position(1)
-    meta.rpy = Body.get_sensor_rpy()
-    meta.pose = wcm.get_robot_pose()
-    meta.t = Body.get_time()
-    meta.gyro = Body.get_sensor_gyro()
-    local ret = chest_lidar_ch:send( mp.pack(meta) )
-  end
-end
+--local h0 = libHokuyo.new_hokuyo('/dev/ttyACM0')
+local h0 = libHokuyo.new_hokuyo('/dev/cu.usbmodem1411',nil,9600)
+h0.name = 'front'
+h0.ch = simple_ipc.new_publisher('lidar0')
+h0.callback = cb
+table.insert(hokuyos,h0)
 
 -- Ensure that we shutdown the devices properly
 local function shutdown()
@@ -115,4 +77,5 @@ local main = function()
     coroutine.yield()
   end
 end
+
 libHokuyo.service( hokuyos, main )

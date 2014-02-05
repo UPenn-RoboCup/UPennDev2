@@ -446,7 +446,7 @@ libHokuyo.service = function( hokuyos, main )
         -- Process the callback
         if param and who_to_service.callback then
 					local parsed = who_to_service.parse(param)
-          who_to_service.callback( parsed )
+          who_to_service:callback( parsed )
         end
       end
     end

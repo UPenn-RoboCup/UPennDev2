@@ -27,12 +27,7 @@ local libDynamixel   = require'libDynamixel'
 local DP2 = libDynamixel.DP2
 local libMicrostrain = require'libMicrostrain'
 
-local DEG_TO_RAD = math.pi/180
-local RAD_TO_DEG = 180/math.pi
-
 local Body = {}
-Body.DEG_TO_RAD = DEG_TO_RAD
-Body.RAD_TO_DEG = RAD_TO_DEG
 local get_time = unix.time
 
 -- How fast to update the body (seconds)
@@ -1615,6 +1610,12 @@ elseif IS_WEBOTS then
   local carray = require'carray'
   local jpeg = require'jpeg'
 
+	-- Publish sensor data
+	local simple_ipc = require'simple_ipc'
+	local mp = require'msgpack'
+	local lidar0_ch = simple_ipc.new_publisher'lidar0'
+	local lidar1_ch = simple_ipc.new_publisher'lidar1'
+	
   local webots = require'webots'
   -- Start the system
   webots.wb_robot_init()
@@ -1634,30 +1635,33 @@ elseif IS_WEBOTS then
   -- Enable the keyboard 100ms
   webots.wb_robot_keyboard_enable( 100 )
   local key_action = {
-    l = function()
-      if ENABLE_LIDAR then
-        print(util.color('CHEST_LIDAR disabled!','yellow'))
-        webots.wb_camera_disable(tags.chest_lidar)
-        ENABLE_CHEST_LIDAR = false
-      else
-        print(util.color('CHEST_LIDAR enabled!','green'))
-        webots.wb_camera_enable(tags.chest_lidar,lidar_timeStep)
-        ENABLE_CHEST_LIDAR = true
-      end
-    end,
-    h = function()
-      if ENABLE_LIDAR then
+		h = function(override)
+			if override~=nil then en=override else en=ENABLE_HEAD_LIDAR==false end
+      if en==false then
         print(util.color('HEAD_LIDAR disabled!','yellow'))
-        webots.wb_camera_disable(tags.head_lidar)
+        webots.wb_camera_disable(tags.lidar)
         ENABLE_HEAD_LIDAR = false
       else
         print(util.color('HEAD_LIDAR enabled!','green'))
-        webots.wb_camera_enable(tags.head_lidar,lidar_timeStep)
+        webots.wb_camera_enable(tags.lidar,lidar_timeStep)
         ENABLE_HEAD_LIDAR = true
       end
     end,
-    c = function()
-      if ENABLE_CAMERA then
+    l = function(override)
+			if override~=nil then en=override else en=ENABLE_CHEST_LIDAR==false end
+      if en==false then
+        print(util.color('CHEST_LIDAR disabled!','yellow'))
+        webots.wb_camera_disable(tags.lidar)
+        ENABLE_CHEST_LIDAR = false
+      else
+        print(util.color('CHEST_LIDAR enabled!','green'))
+        webots.wb_camera_enable(tags.lidar,lidar_timeStep)
+        ENABLE_CHEST_LIDAR = true
+      end
+    end,
+    c = function(override)
+      if override~=nil then en=override else en=ENABLE_CAMERA==false end
+      if en==false then
         print(util.color('CAMERA disabled!','yellow'))
         webots.wb_camera_disable(tags.hand_camera)
         ENABLE_CAMERA = false
@@ -1667,8 +1671,9 @@ elseif IS_WEBOTS then
         ENABLE_CAMERA = true
       end
     end,
-    k = function()
-      if ENABLE_KINECT then
+    k = function(override)
+      if override~=nil then en=override else en=ENABLE_KINECT==false end
+      if en==false then
         print(util.color('KINECT disabled!','yellow'))
         webots.wb_camera_disable(tags.kinect)
         ENABLE_KINECT = false
@@ -1678,8 +1683,52 @@ elseif IS_WEBOTS then
         ENABLE_KINECT = true
       end
     end,
+		p = function(override)
+			if override~=nil then en=override else en=ENABLE_POSE==false end
+      if en==false then
+        print(util.color('POSE disabled!','yellow'))
+        webots.wb_gps_disable(tags.gps)
+	  		webots.wb_compass_disable(tags.compass)
+				webots.wb_inertial_unit_enable(tags.inertialunit)
+        ENABLE_POSE = false
+      else
+        print(util.color('POSE enabled!','green'))
+        webots.wb_gps_enable(tags.gps, timeStep)
+	  		webots.wb_compass_enable(tags.compass, timeStep)
+				webots.wb_inertial_unit_enable(tags.inertialunit, timeStep)
+        ENABLE_POSE = true
+      end
+    end,
+		i = function(override)
+			if override~=nil then en=override else en=ENABLE_IMU==false end
+      if en==false then
+        print(util.color('IMU disabled!','yellow'))
+        webots.wb_accelerometer_disable(tags.accelerometer, timeStep)
+  			webots.wb_gyro_disable(tags.gyro, timeStep)
+        ENABLE_IMU = false
+      else
+        print(util.color('IMU enabled!','green'))
+        webots.wb_accelerometer_enable(tags.accelerometer, timeStep)
+  			webots.wb_gyro_enable(tags.gyro, timeStep)
+        ENABLE_IMU = true
+      end
+    end,
+		f = function(override)
+			if override~=nil then en=override else en=ENABLE_FSR==false end
+      if en==false then
+        print(util.color('FSR disabled!','yellow'))
+        webots.wb_touch_sensor_disable(tags.l_fsr, timeStep)
+  			webots.wb_touch_sensor_disable(tags.r_fsr, timeStep)
+        ENABLE_FSR = false
+      else
+        print(util.color('FSR enabled!','green'))
+        webots.wb_touch_sensor_enable(tags.l_fsr, timeStep)
+  			webots.wb_touch_sensor_enable(tags.r_fsr, timeStep)
+        ENABLE_FSR = true
+      end
+    end,
   }
-
+	
 	Body.entry = function()
 
     -- Request @ t=0 to always be earlier than position reads
@@ -1699,53 +1748,24 @@ elseif IS_WEBOTS then
 		-- Add Sensor Tags
 		tags.accelerometer = webots.wb_robot_get_device("Accelerometer")
 		tags.gyro = webots.wb_robot_get_device("Gyro")
-    if ENABLE_IMU then
-      webots.wb_accelerometer_enable(tags.accelerometer, timeStep)
-      webots.wb_gyro_enable(tags.gyro, timeStep)
-    end
-
-    -- Perfect Pose
 		tags.gps = webots.wb_robot_get_device("GPS")
 		tags.compass = webots.wb_robot_get_device("Compass")
 		tags.inertialunit = webots.wb_robot_get_device("InertialUnit")
-    if ENABLE_POSE then
-      -- GPS
-		  webots.wb_gps_enable(tags.gps, timeStep)
-		  -- Compass
-		  webots.wb_compass_enable(tags.compass, timeStep)
-      -- RPY
-      webots.wb_inertial_unit_enable(tags.inertialunit, timeStep)
-    end
-
-    -- Grab the camera
-    tags.hand_camera = webots.wb_robot_get_device("HeadCamera")
-    if ENABLE_CAMERA then
-      webots.wb_camera_enable(tags.hand_camera, camera_timeStep)
-    end
-
-    -- Grab the hokuyos
+		tags.head_camera = webots.wb_robot_get_device("HeadCamera")
     tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
-    if ENABLE_CHEST_LIDAR then
-      webots.wb_camera_enable(tags.chest_lidar, lidar_timeStep)
-    end
     tags.head_lidar = webots.wb_robot_get_device("HeadLidar")
-    if ENABLE_HEAD_LIDAR then
-      webots.wb_camera_enable(tags.head_lidar, lidar_timeStep)
-    end
-
-    -- Grab the kinect
-    tags.kinect = webots.wb_robot_get_device("kinect")
-    if ENABLE_KINECT then
-      webots.wb_camera_enable(tags.kinect, camera_timeStep)
-    end
-
-    -- Foot Sensors
-    tags.l_fsr = webots.wb_robot_get_device("L_FSR")
+		tags.kinect = webots.wb_robot_get_device("kinect")
+		tags.l_fsr = webots.wb_robot_get_device("L_FSR")
     tags.r_fsr = webots.wb_robot_get_device("R_FSR")
-    if ENABLE_FSR then
-      webots.wb_touch_sensor_enable(tags.l_fsr, timeStep)
-      webots.wb_touch_sensor_enable(tags.r_fsr, timeStep)
-    end
+		
+		-- Enable or disable the sensors
+		key_action.i(ENABLE_IMU)
+		key_action.p(ENABLE_POSE)
+		key_action.c(ENABLE_CAMERA)
+		key_action.h(ENABLE_HEAD_LIDAR)
+		key_action.l(ENABLE_CHEST_LIDAR)
+		key_action.k(ENABLE_KINECT)
+		key_action.f(ENABLE_FSR)
 
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
@@ -1888,9 +1908,15 @@ elseif IS_WEBOTS then
     -- Grab a lidar scan
     if ENABLE_CHEST_LIDAR then
       local w = webots.wb_camera_get_width(tags.chest_lidar)
-      local h = webots.wb_camera_get_height(tags.chest_lidar)
       local lidar_fr = webots.wb_camera_get_range_image(tags.chest_lidar)
       local lidar_array = carray.float( lidar_fr, w*h )
+			-- Send the message on the lidar channel
+			local meta = {}
+			meta.t     = Body.get_time()
+			meta.n     = w
+			meta.res   = 360 / 1440
+			meta.pose  = wcm.get_robot_pose()
+			lidar0_ch:send{mp.pack(meta),tostring(lidar_array)}
     end
     -- Grab a lidar scan
     if ENABLE_HEAD_LIDAR then
@@ -1898,18 +1924,26 @@ elseif IS_WEBOTS then
       local h = webots.wb_camera_get_height(tags.head_lidar)
       local lidar_fr = webots.wb_camera_get_range_image(tags.head_lidar)
       local lidar_array = carray.float( lidar_fr, w*h )
+			-- Send the message on the lidar channel
+			local meta = {}
+			meta.t     = Body.get_time()
+			meta.n     = w
+			meta.res   = 360 / 1440
+			meta.pose  = wcm.get_robot_pose()
+			lidar1_ch:send{mp.pack(meta),tostring(lidar_array)}
     end
 
     -- Grab keyboard input, for modifying items
     local key_code = webots.wb_robot_keyboard_get_key()
     local key_char = string.char(key_code)
     local key_char_lower = string.lower(key_char)
-    if t-t_last_keypress>1 and key_code and key_action[key_char_lower] then
-      key_action[key_char_lower]()
+		local key_toggle = key_action[key_char_lower]
+    if key_toggle and t-t_last_keypress>1 then
+      key_toggle()
       t_last_keypress = t
     end
 
-	end -- function
+	end -- update
 
 	Body.exit = function()
 	end

@@ -178,7 +178,7 @@ function(location, minRange, maxRange, minHeight, maxHeight, minFOV, maxFOV)
   lidar.N_POINTS = (lidar.maxIdx - lidar.minIdx)+1
 
   -- Container for the anlges TODO: make sure size(1) = N_POINTS
-  lidar.angles = torch.range(minFOV,maxFOV,.25*Body.DEG_TO_RAD)
+  lidar.angles = torch.range(minFOV,maxFOV,.25*DEG_TO_RAD)
   -- Make the point containers
   lidar.ranges = torch.FloatTensor( lidar.N_POINTS ):zero()
   -- Relative XYZ points in the Hokuyo frame

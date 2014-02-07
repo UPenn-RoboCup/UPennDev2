@@ -224,7 +224,7 @@ void dynamixel_instruction_add_bulk_write(
 ){
   /* save the pointer to the current parameters */
   uint8_t *params;
-  uint16_t d;
+  //uint16_t d;
   params = inst_pkt.parameter + inst_pkt.length;
   /* Add the packet */
   *(params)   = id;

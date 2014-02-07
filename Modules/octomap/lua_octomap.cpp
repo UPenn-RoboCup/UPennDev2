@@ -18,6 +18,8 @@
 using namespace std;
 using namespace octomap;
 
+// TODO: Make a metatable with a pointer to each tree
+
 /* Initialize the tree (5mm) */
 static OcTree tree (0.005);
 /* Gloabl Origin */
@@ -25,7 +27,8 @@ static point3d origin (0.0f,0.0f,0.3f);
 
 static int lua_set_origin( lua_State *L ) {
 	static float ox,oy,oz;
-	const THDoubleTensor * origin_t = (THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
+	const THDoubleTensor * origin_t =
+		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
 	ox = (float)THTensor_fastGet1d( origin_t, 0);
 	oy = (float)THTensor_fastGet1d( origin_t, 1);
 	oz = (float)THTensor_fastGet1d( origin_t, 2);
@@ -36,7 +39,8 @@ static int lua_set_origin( lua_State *L ) {
 static int lua_add_scan( lua_State *L ) {
 
 	/* Grab the points from the last laser scan*/
-	const THDoubleTensor * points_t = (THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
+	const THDoubleTensor * points_t =
+		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
 	const long nps = points_t->size[0]; // The number of laser points to match
 	/* Check to optionally use raycasting from the origin */
 	int use_raycast = luaL_optint(L, 2, 0);

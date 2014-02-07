@@ -3,6 +3,7 @@
   
   Daniel D. Lee (ddlee@seas.upenn.edu), 4/2007
   Lua wrapper by Yida Zhang (yida@seas.upenn.edu), 4/2013
+	Fixes/Efficiencies: Stephen McGill (smcgill3@seas.upenn.edu), 1/2014
 */
 
 #include <lua.hpp>
@@ -20,17 +21,12 @@ extern "C"
 #endif
 #endif
 
-#ifdef DEBUG
-#include <iostream>
-#endif
-
 #include <vector>
 #include <utility>
 #include <set>
 #include <math.h>
 
 #define TURN_COST 1.2
-
 #define STOP_FACTOR 1.1
 
 using namespace std;
@@ -42,11 +38,15 @@ typedef struct {
   int joffset;
   double distance;
 } NeighborStruct;
+
 NeighborStruct neighbors[] = {
-  {-1,0, 1.0}, {1,0, 1.0}, {0,-1, 1.0}, {0,1, 1.0}, // 4-connected
-  {-1,-1, sqrt(2)}, {1,-1, sqrt(2)}, {-1,1, sqrt(2)}, {1,1, sqrt(2)}, // 8-connected
-  {2,1,sqrt(5)}, {1,2,sqrt(5)}, {-1,2,sqrt(5)}, {-2,1,sqrt(5)}, 
-  {-2,-1,sqrt(5)}, {-1,-2,sqrt(5)}, {1,-2,sqrt(5)}, {2,-1,sqrt(5)}, // 16-connected
+	// 4-connected
+  {-1,0, 1.0}, {1,0, 1.0}, {0,-1, 1.0}, {0,1, 1.0},
+	// 8-connected
+	{-1,-1, sqrt(2)}, {1,-1, sqrt(2)}, {-1,1, sqrt(2)}, {1,1, sqrt(2)},
+	// 16-connected
+  {2,1,sqrt(5)}, {1,2,sqrt(5)}, {-1,2,sqrt(5)}, {-2,1,sqrt(5)},
+  {-2,-1,sqrt(5)}, {-1,-2,sqrt(5)}, {1,-2,sqrt(5)}, {2,-1,sqrt(5)},
 };
 
 /*
@@ -56,30 +56,27 @@ NeighborStruct neighbors[] = {
   and (i_goal, j_goal) is the goal node.
 */ 
 static int lua_dijkstra_matrix(lua_State *L) {
-  double *A = NULL;
-	double *D = NULL;
+  double *A = NULL, *D = NULL;
 
 #ifdef TORCH
-  const char *tname = luaT_typename(L, 1);
-  THDoubleTensor *costp = (THDoubleTensor *) luaT_checkudata(L, 1, tname);
+  THDoubleTensor *costp =
+		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
   THArgCheck(costp->nDimension == 2, 1, "tensor must have two dimensions");
+	// TODO: Contiguous check
 
 	// 0-indexed nodes
-	int iGoal = luaL_optint(L, 2, 0) - 1;
-  int jGoal = luaL_optint(L, 3, 0) - 1;
+	int iGoal = luaL_optint(L, 2, 1) - 1;
+  int jGoal = luaL_optint(L, 3, 1) - 1;
   int nNeighbors = luaL_optint(L, 4, 8);
-
 	int m = costp->size[0];
   int n = costp->size[1];
-	int i_stride = costp->stride[0];
-	int j_stride = costp->stride[1];
 
-	int size = m*n;
 	A = (double*)costp->storage->data;
-	// Cost to go values
   THDoubleTensor *dp = THDoubleTensor_newWithSize2d(m,n);
 	D = dp->storage->data;
 #endif
+
+	int size = m*n;
 
   if (iGoal < 0) iGoal = 0;
   if (iGoal >= m-1) iGoal = m-1;
@@ -131,58 +128,63 @@ static int lua_dijkstra_matrix(lua_State *L) {
 
 /*
   [cost_to_go] = dijkstra_nonholonomic(A, xya_goal, xya_start, [nNeighbors]);
-  where positive costs are given in matrix A with nNeighbors different orientations.
+  where positive costs are given in matrix A
+	with nNeighbors different orientations.
 */ 
 static int lua_dijkstra_nonholonomic(lua_State *L) {
-  double *A = NULL;
-  double *prGoal = NULL;
-  double *prStart = NULL;
+  double *A = NULL, *prGoal = NULL, *prStart = NULL, *D = NULL;
 
 #ifdef TORCH
   // check input A
-  const char *tname = luaT_typename(L, 1);
-  THDoubleTensor *costp = (THDoubleTensor *) luaT_checkudata(L, 1, tname);
-#ifdef DEBUG
-  std::cout << "Type Name " << tname << std::endl;
-  std::cout << "Torch Dimension " << costp->nDimension << std::endl;
-#endif
+  THDoubleTensor *costp =
+		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
   THArgCheck(costp->nDimension == 2, 1, "cost tensor must have two dimensions");
-  int size = costp->size[0] * costp->size[1];
-  A = (double *)malloc(size * sizeof(double));
+  int m = costp->size[0]; // number of rows;
+  int n = costp->size[1]; // number of cols;
+  //int size = m * n;
+ 
+	A = (double*)costp->storage->data;
+	// TODO: Memory layout check
+	/*
+	A = (double *)malloc(size * sizeof(double));
   // Get torchTensor data
   for (int r = 0; r < costp->size[0]; r++)
     for (int c = 0; c < costp->size[1]; c++)
       A[r * costp->size[1] + c] = (THTensor_fastGet2d(costp, r, c));
-  int m = costp->size[0]; // number of rows;
-  int n = costp->size[1]; // number of cols;
+	*/
 
   // check input prGoal
-  const char *goal_name = luaT_typename(L, 1);
-  THDoubleTensor *goalp = (THDoubleTensor *) luaT_checkudata(L, 1, goal_name);
-#ifdef DEBUG
-  std::cout << "Type Name " << goal_name << std::endl;
-  std::cout << "Torch Dimension " << goalp->nDimension << std::endl;
-#endif
+  THDoubleTensor *goalp =
+		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
   THArgCheck(goalp->nDimension == 1, 1, "goal must have one dimension");
   THArgCheck(goalp->size[0] == 3, 1, "Goal should be (xgoal, ygoal, agoal)");
+
+	prGoal = goalp->storage->data;
+
+	/*
   prGoal = (double *)malloc(3 * sizeof(double));
   for (int i = 0; i < 3; i++)
     prGoal[i] = THTensor_fastGet1d(goalp, i);
+	*/
 
   // check input prStart
-  const char *start_name = luaT_typename(L, 1);
-  THDoubleTensor *startp = (THDoubleTensor *) luaT_checkudata(L, 1, start_name);
-#ifdef DEBUG
-  std::cout << "Type Name " << start_name << std::endl;
-  std::cout << "Torch Dimension " << startp->nDimension << std::endl;
-#endif
+  //const char *start_name = luaT_typename(L, 1);
+  THDoubleTensor *startp =
+		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
   THArgCheck(startp->nDimension == 1, 1, "start must have one dimension");
   THArgCheck(startp->size[0] == 3, 1, "Goal should be (xstart, ystart, astart)");
+	prStart = (double*)startp->storage->data;
+	/*
   prStart = (double *)malloc(3 * sizeof(double));
   for (int i = 0; i < 3; i++)
     prStart[i] = THTensor_fastGet1d(startp, i);
+	*/
 
   int nNeighbors = luaL_optint(L, 4, 16); // default 16 neighbors
+
+	THDoubleTensor *dp = THDoubleTensor_newWithSize3d(n, m, nNeighbors);
+	D = (double*)dp->storage->data;
+
 #endif
 
   /* Due to hopping in 16 neighbor pattern, need to seed
@@ -210,8 +212,7 @@ static int lua_dijkstra_nonholonomic(lua_State *L) {
   if (aStart < 0) aStart += nNeighbors;
   int indStart = iStart + m*jStart + m*n*aStart; // linear index
 
-  // Cost to go values
-  double *D = (double *) malloc(nNeighbors * m * n * sizeof(double));
+  // Initiate ost to go values
   for (int i = 0; i < nNeighbors*m*n; i++) D[i] = INFINITY;
 
   // Priority queue implementation as STL set
@@ -245,7 +246,8 @@ static int lua_dijkstra_nonholonomic(lua_State *L) {
     int i0 = ij0 % m;
     // Iterate over neighbor nodes:
     for (int ashift = -1; ashift <= +1; ashift++) {
-      int a1 = (a0+nNeighbors+ashift) % nNeighbors; // Non-negative heading index
+			// Non-negative heading index
+      int a1 = (a0+nNeighbors+ashift) % nNeighbors;
 
       int ioffset = neighbors[a1].ioffset;
       int joffset = neighbors[a1].joffset;
@@ -268,30 +270,24 @@ static int lua_dijkstra_nonholonomic(lua_State *L) {
 
       int ind1 = i1 + m*j1 + m*n*a1;
       if (c1 < D[ind1]) {
-      	if (!isinf(D[ind1])) {
-	        Q.erase(CostNodePair(D[ind1],ind1));
-	      }
+      	if (!isinf(D[ind1])) {Q.erase(CostNodePair(D[ind1],ind1));}
       	D[ind1] = c1;
       	Q.insert(CostNodePair(D[ind1], ind1));
       }
     }
   }
 
-#ifdef TORCH 
+#ifdef TORCH
+	/*
   THDoubleTensor *dp = THDoubleTensor_newWithSize3d(n, m, nNeighbors);
   for (int s = 0; s < dp->size[2]; s++)
     for (int r = 0; r < dp->size[0]; r++)
       for (int c = 0; c < dp->size[1]; c++)
         THTensor_fastSet3d(dp, r, c, s, D[s * dp->size[1] * dp->size[0] + r * dp->size[1] + c]);
+	*/
   luaT_pushudata(L, dp, "torch.DoubleTensor");
 #endif
 
-#ifdef DEBUG
-  std::cout << "Dijkstra: nNode = " << nNode << ", queue = " << Q.size() << std::endl;
-#endif
-
-  free(A);
-  free(D);
   return 1;
 }
 
@@ -318,32 +314,32 @@ const double doffset[] = {1, 1, 1, 1, sqrt(2), sqrt(2), sqrt(2), sqrt(2)};
 const double eps = 0.0000001;
 
 static int lua_dijkstra_path(lua_State *L) {
-    double *A = NULL;
-    double *C = NULL;
+    double *A = NULL, *C = NULL;
+		int m = 0, n = 0, istart = 0, jstart = 0;
 #ifdef TORCH
-    const char *tname = luaT_typename(L, 1);
-    THDoubleTensor *Ap = (THDoubleTensor *) luaT_checkudata(L, 1, tname);
-    THArgCheck(Ap->nDimension == 2, 1, "dijkstra matrix must have two dimensions");
+    THDoubleTensor *Ap = (THDoubleTensor *)
+			luaT_checkudata(L, 1, "torch.DoubleTensor");
+    THArgCheck(Ap->nDimension == 2, 1, "Matrix requires two dimensions");
     
-		int m = Ap->size[0]; // number of rows;
-    int n = Ap->size[1]; // number of cols;
-
-    tname = luaT_typename(L, 2);
-    THDoubleTensor *costp = (THDoubleTensor *) luaT_checkudata(L, 2, tname);
-    THArgCheck(costp->nDimension == 2, 1, "cost matrix must have two dimensions");
+		m = Ap->size[0]; // number of rows;
+    n = Ap->size[1]; // number of cols;
+		THArgCheck(Ap->stride[0] == n, 1, "Improper memory layout (i)");
+		THArgCheck(Ap->stride[1] == 1, 1, "Improper memory layout (j)");
+		
+    THDoubleTensor *costp =
+			(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
+    THArgCheck(costp->nDimension == 2, 1, "Cost matrix requires 2 dimensions");
 		THArgCheck(costp->size[0] == m, 1, "cost matrix size 1");
 		THArgCheck(costp->size[1] == n, 1, "cost matrix size 2");
+    
+		istart = luaL_optint(L, 3, 1) - 1; // 0-indexed nodes
+    jstart = luaL_optint(L, 4, 1) - 1; // 0-indexed nodes
 
 		A = (double*)Ap->storage->data;
 		C = (double*)costp->storage->data;
-		int i_stride = Ap->stride[0];
-		int j_stride = Ap->stride[1];
-		int size = m*n;
- 
-    int istart = luaL_optint(L, 3, 0) - 1; // 0-indexed nodes
-    int jstart = luaL_optint(L, 4, 0) - 1; // 0-indexed nodes
-    
 #endif
+
+		//int size = m*n;
     std::vector<int> ipath;
     std::vector<int> jpath;
     ipath.push_back(istart);
@@ -362,7 +358,6 @@ static int lua_dijkstra_path(lua_State *L) {
         j0 = jpath[jpath.size() - 1];
         int ind0 = i0 * n + j0;
 				double next_val = A[ind0];
-			//printf("next_val: %lf\n",next_val);
         if (next_val < eps){ break; }
         
         valid_idx.clear();
@@ -392,26 +387,23 @@ static int lua_dijkstra_path(lua_State *L) {
         jpath.push_back(jarray[min_idx]);
     }
 
-#ifdef TORCH 
 	int npath = ipath.size();
+#ifdef TORCH 
   THIntTensor *ipathp = THIntTensor_newWithSize1d( npath );
 	int* ipathp_ptr = (int*)ipathp->storage->data;
-	/*
-	// Valid, but let's try something new (std::copy)
-	memcpy(ipathp_ptr,&ipath[0],npath*sizeof(int));
-	*/
-	std::copy(ipath.begin(), ipath.end(), ipathp_ptr);
-
   THIntTensor *jpathp = THIntTensor_newWithSize1d( npath );
 	int* jpathp_ptr = (int*)jpathp->storage->data;
+#endif
+	
 	std::copy(jpath.begin(), jpath.end(), jpathp_ptr);
+	std::copy(ipath.begin(), ipath.end(), ipathp_ptr);
 
-	// Push
+#ifdef TORCH 
 	luaT_pushudata(L, ipathp, "torch.IntTensor");
   luaT_pushudata(L, jpathp, "torch.IntTensor");
 #endif
 
-    return 2;
+  return 2;
 }
 
 static const luaL_Reg dijkstra_functions [] = {

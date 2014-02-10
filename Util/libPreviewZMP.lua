@@ -400,7 +400,7 @@ local function can_stop(self)
 end
 
 local function save_param(self)
-  local outfile=assert(io.open("zmpparams.lua","w")); 
+  local outfile=assert(io.open(HOME.."/Data/zmpparams.lua","w")); 
   local data=''
   data=data..string.format("zmpstep.params = true;\n")
   data=data..string.format("zmpstep.param_k1_px={%f,%f,%f}\n",

@@ -20,7 +20,7 @@ local USE_ODOMETRY = true
 --local DO_EXPORT    = true
 
 -- Open the map to localize against
-local map = libMap.open_map'map.ppm'
+local map = libMap.open_map(HOME..'/Data/map.ppm')
 -- Need a good guess for the starting pose of the robot
 map.pose = vector.pose{-1.29028, -0.222768, -0.0282755}
 -- Store a snapshot of the odometry at this time

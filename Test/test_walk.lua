@@ -1,228 +1,239 @@
-cwd = os.getenv('PWD')
-local init = require('init')
+dofile'include.lua'
 
-local unix = require('unix')
-local Config = require('Config')
-local shm = require('shm')
-local vector = require('vector')
-local mcm = require('mcm')
-local Speak = require('Speak')
-local getch = require('getch')
-local Body = require('Body')
-local Motion = require('Motion')
-local dive = require('dive')
+-- Important libraries in the global space
+local libs = {
+  'Config',
+  'Body',
+  'unix',
+  'util',
+  'vector',
+  'torch',
+  'getch',
+  'msgpack'
+}
 
-local grip = require('grip')
-Motion.entry();
-darwin = false;
-webots = false;
+-- Load the libraries
+for _,lib in ipairs(libs) do _G[lib] = require(lib) end
+if torch then torch.Tensor = torch.DoubleTensor end
 
--- Enable OP specific 
-if(Config.platform.name == 'OP') then
-  darwin = true;
-  --SJ: OP specific initialization posing (to prevent twisting)
---  Body.set_body_hardness(0.3);
---  Body.set_actuator_command(Config.stance.initangle)
-end
-
---TODO: enable new nao specific
-newnao = false; --Turn this on for new naos (run main code outside naoqi)
-newnao = true;
-
-getch.enableblock(1);
-unix.usleep(1E6*1.0);
-Body.set_body_hardness(0);
-
---This is robot specific 
-webots = false;
-init = false;
-calibrating = false;
-ready = false;
-if( webots or darwin) then
-  ready = true;
-end
-
-initToggle = true;
-targetvel=vector.zeros(3);
-button_pressed = {0,0};
-
-
-function process_keyinput()
-  local str=getch.get();
-  if #str>0 then
-    local byte=string.byte(str,1);
-    -- Walk velocity setting
-    if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
-    elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1;
-    elseif byte==string.byte("k") then	targetvel[1],targetvel[2],targetvel[3]=0,0,0;
-    elseif byte==string.byte("l") then	targetvel[3]=targetvel[3]-0.1;
-    elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
-    elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
-    elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
-
-    elseif byte==string.byte("1") then	
-      kick.set_kick("kickForwardLeft");
-      Motion.event("kick");
-    elseif byte==string.byte("2") then	
-      kick.set_kick("kickForwardRight");
-      Motion.event("kick");
-    elseif byte==string.byte("3") then	
-      kick.set_kick("kickSideLeft");
-      Motion.event("kick");
-    elseif byte==string.byte("4") then	
-      kick.set_kick("kickSideRight");
-      Motion.event("kick");
-    elseif byte==string.byte("5") then
-      walk.doWalkKickLeft();
-    elseif byte==string.byte("6") then
-      walk.doWalkKickRight();
-    elseif byte==string.byte("t") then
-      walk.doSideKickLeft();
-    elseif byte==string.byte("y") then
-      walk.doSideKickRight();
-
-
-    elseif byte==string.byte("w") then
-      Motion.event("diveready");
-    elseif byte==string.byte("a") then
-      dive.set_dive("diveLeft");
-      Motion.event("dive");
-    elseif byte==string.byte("s") then
-      dive.set_dive("diveCenter");
-      Motion.event("dive");
-    elseif byte==string.byte("d") then
-      dive.set_dive("diveRight");
-      Motion.event("dive");
-
---[[
-	elseif byte==string.byte("z") then
-		grip.throw=0;
-		Motion.event("pickup");
-	elseif byte==string.byte("x") then
-		grip.throw=1;
-		Motion.event("throw");
---]]
-
-	elseif byte==string.byte("z") then
-	    walk.startMotion("hurray1");
-
-	elseif byte==string.byte("x") then
-	    walk.startMotion("hurray2");
-
-	elseif byte==string.byte("c") then
-	    walk.startMotion("swing");
-
-	elseif byte==string.byte("v") then
-	    walk.startMotion("2punch");
-
---	elseif byte==string.byte("b") then
---	    walk.startMotion("point");
-
-
-
-	elseif byte==string.byte("b") then
-	    grip.throw=0;
-	    Motion.event("pickup");
-	elseif byte==string.byte("n") then
-	    grip.throw=1;
-	    Motion.event("pickup");
-
-    elseif byte==string.byte("7") then	
-      Motion.event("sit");
-    elseif byte==string.byte("8") then	
-      if walk.active then walk.stop();end
-      Motion.event("standup");
-    elseif byte==string.byte("9") then	
-      Motion.event("walk");
-      walk.start();
-    end
-    walk.set_velocity(unpack(targetvel));
-    print("Command velocity:",unpack(walk.velCommand))
+-- FSM communicationg
+local listing = unix.readdir(HOME..'/Player')
+-- Add all FSM directories that are in Player
+local simple_ipc = require'simple_ipc'
+local fsm_ch_vars = {}
+for _,sm in ipairs(listing) do
+  local found = sm:find'FSM'
+  if found then
+    -- make GameFSM to game_ch
+    local name = sm:sub(1,found-1):lower()..'_ch'
+    table.insert(fsm_ch_vars,name)
+    -- Put into the global space
+    _G[name] = simple_ipc.new_publisher(sm,true)
   end
 end
 
--- main loop
-count = 0;
-lcount = 0;
-tUpdate = unix.time();
+-- Shared memory
+local listing = unix.readdir(HOME..'/Memory')
+local shm_vars = {}
+for _,mem in ipairs(listing) do
+  local found, found_end = mem:find'cm'
+  if found then
+    local name = mem:sub(1,found_end)
+    table.insert(shm_vars,name)
+    require(name)
+  end
+end
 
-function update()
-  count = count + 1;
-  if (not init)  then
-    if (calibrating) then
-      if (Body.calibrate(count)) then
-        Speak.talk('Calibration done');
-        calibrating = false;
-        ready = true;
-      end
-    elseif (ready) then
-      init = true;
-    else
-      if (count % 20 == 0) then
--- start calibrating w/o waiting
---        if (Body.get_change_state() == 1) then
-          Speak.talk('Calibrating');
-          calibrating = true;
---        end
-      end
-      -- toggle state indicator
-      if (count % 100 == 0) then
-        initToggle = not initToggle;
-        if (initToggle) then
-          Body.set_indicator_state({1,1,1}); 
-        else
-          Body.set_indicator_state({0,0,0});
-        end
-      end
-    end
-  else
-    -- update state machines 
-    process_keyinput();
-    Motion.update();
-    Body.update();
+-- RPC engine
+rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
+
+-- Mesh requester
+mesh_req_ch = simple_ipc.new_requester(Config.net.reliable_mesh)
+
+-- Useful constants
+DEG_TO_RAD = Body.DEG_TO_RAD
+RAD_TO_DEG = Body.RAD_TO_DEG
+
+print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
+print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
+
+
+local channels = {
+  ['motion_ch'] = motion_ch,
+  ['body_ch'] = body_ch,
+  ['arm_ch'] = arm_ch,
+}
+
+
+-- Events for the FSMs
+local char_to_event = {
+  ['1'] = {'body_ch','init'},
+
+
+  ['7'] = {'motion_ch','sit'},
+  ['8'] = {'motion_ch','stand'},
+  ['9'] = {'motion_ch','walk'},
+
+  ['t'] = {'body_ch','stepover'},
+  ['2'] = {'body_ch','stepplan'},
+  ['3'] = {'body_ch','stepplan2'},
+  ['4'] = {'body_ch','stepplan3'},
+  ['5'] = {'body_ch','steptest'},
+  ['6'] = {'body_ch','stepwiden'},
+
+--  ['6'] = {'body_ch','follow'},
+
+
+  --
+  ['a'] = {'arm_ch','init'},
+  ['s'] = {'arm_ch','reset'},
+  ['r'] = {'arm_ch','smallvalvegrab'},
+  --
+  ['x'] = {'arm_ch','teleop'},
+  --
+  ['w'] = {'arm_ch','wheelgrab'},
+  --
+  ['d'] = {'arm_ch','doorgrab'},
+
+  ['c'] = {'arm_ch','toolgrab'},
+}
+
+local char_to_vel = {
+  ['i'] = vector.new({0.05, 0, 0}),
+  [','] = vector.new({-.05, 0, 0}),
+  ['h'] = vector.new({0, 0.05, 0}),
+  [';'] = vector.new({0, -.05, 0}),
+  ['j'] = vector.new({0, 0, 5})*math.pi/180,
+  ['l'] = vector.new({0, 0, -5})*math.pi/180,
+}
+
+local char_to_wheel = {
+  ['['] = -1*Body.DEG_TO_RAD,
+  [']'] = 1*Body.DEG_TO_RAD,
+}
+
+local char_to_state = {
+  ['='] = 1,
+  ['-'] = -1,
+}
+
+
+
+
+
+local function send_command_to_ch(channel, cmd_string)
+  -- Default case is to send the command and receive a reply
+--  local ret   = channel:send(msgpack.pack(cmd))
+--  local reply = channel:receive()
+--  return msgpack.unpack(reply)
+print(cmd_string)
+  local ret   = channel:send(cmd_string)
+  return
+end
+
+
+
+local walk_target_local = vector.new({0,0,0})
+
+local function start_navigation()
+  hcm.set_motion_waypoints(walk_target_local)
+  hcm.set_motion_nwaypoints(1)
+  hcm.set_motion_waypoint_frame(0) --Relative movement
+  send_command_to_ch(channels['body_ch'],'follow')
+end
+
+
+local function process_character(key_code,key_char,key_char_lower)
+  local cmd
+
+  -- Send motion fsm events
+  local event = char_to_event[key_char_lower]
+  if event then
+    print( event[1], util.color(event[2],'yellow') )    
+    return send_command_to_ch(channels[event[1]],event[2])
   end
-  local dcount = 50;
-  if (count % 50 == 0) then
---    print('fps: '..(50 / (unix.time() - tUpdate)));
-    tUpdate = unix.time();
-    -- update battery indicator
-    Body.set_indicator_batteryLevel(Body.get_battery_level());
+
+  if key_char_lower == " " then
+    print("GO GO GO")
+    start_navigation()
+    walk_target_local = vector.new({0,0,0})  
   end
+
+  if key_char_lower=='e' then --ESTOP!
+    hcm.set_motion_estop(1)
+  end
+
+
+  -- Adjust the velocity
+  -- Only used in direct teleop mode
+  local vel_adjustment = char_to_vel[key_char_lower]
+  if vel_adjustment then
+    walk_target_local = walk_target_local + vel_adjustment
+    print( util.color('Target movement:','yellow'), 
+
+      walk_target_local[1],
+      walk_target_local[2],
+      walk_target_local[3]*180/math.pi
+
+      )
+    return
+  elseif key_char_lower=='k' then
+    print( util.color('Zero target movement','yellow'))
+    walk_target_local = vector.new({0,0,0})    
+    return
+  end
+
+  -- Adjust the wheel angle
+  local wheel_adj = char_to_wheel[key_char_lower]
+  if wheel_adj then
+    print( util.color('Turn wheel','yellow'), wheel_adj )
+    local turnAngle = hcm.get_wheel_turnangle() + wheel_adj
+    hcm.set_wheel_turnangle(turnAngle)
+    return
+  elseif key_char_lower=='\\' then
+    print( util.color('Center the wheel','yellow') )    
+    hcm.set_wheel_turnangle(0)
+    return
+  end
+
+  local state_adj = char_to_state[key_char_lower]
+  if state_adj then
+    print( util.color('State advance','yellow'), state_adj )
+    hcm.set_state_proceed(state_adj)
+    return
+  end
+
+end
+
+
+
+
+------------
+-- Start processing
+--os.execute("clear")
+io.flush()
+local t0 = unix.time()
+while true do
   
-  -- check if the last update completed without errors
-  lcount = lcount + 1;
-  if (count ~= lcount) then
-    print('count: '..count)
-    print('lcount: '..lcount)
-    Speak.talk('missed cycle');
-    lcount = count;
+  -- Grab the keyboard character
+  local key_code = getch.block()
+  local key_char = string.char(key_code)
+  local key_char_lower = string.lower(key_char)
+  
+  -- Process the character
+  local msg = process_character(key_code,key_char,key_char_lower)
+  
+  -- Measure the timing
+  local t = unix.time()
+  local t_diff = t-t0
+  t0 = t
+  local fps = 1/t_diff
+ 
+  -- Print is_debugging message
+  if is_debug then
+    print( string.format('\nKeyboard | Code: %d, Char: %s, Lower: %s',
+    key_code,key_char,key_char_lower) )
+    print('Response time:',t_diff)
   end
-
-  --Stop walking if button is pressed and the released
-  if (Body.get_change_state() == 1) then
-    button_pressed[1]=1;
-  else
-    if button_pressed[1]==1 then
-      Motion.event("sit");
-    end
-    button_pressed[1]=0;
-  end
-end
-
--- if using Webots simulator just run update
-if (webots) then
-  while (true) do
-    -- update motion process
-    update();
-    io.stdout:flush();
-  end
-end
-
---Now both nao and darwin runs this separately
-if (darwin) or (newnao) then
-  local tDelay = 0.005 * 1E6; -- Loop every 5ms
-  while 1 do
-    update();
-    unix.usleep(tDelay);
-  end
+    
 end

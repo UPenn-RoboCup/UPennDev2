@@ -75,7 +75,7 @@ unsigned char * to_rgb( int tag ) {
   const int height = wb_camera_get_height(tag);
   const unsigned char * raw = wb_camera_get_image( tag );
 
-    int x, y, r, g, b, rgb_index = 0;
+    int x, y, rgb_index = 0;
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
             rgb[rgb_index++] = wb_camera_image_get_red   (raw, width, x, y);

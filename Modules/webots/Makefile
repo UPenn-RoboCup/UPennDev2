@@ -13,8 +13,4 @@ ifeq ($(OSTYPE),darwin)
 WEBOTS_HOME=/Applications/Webots
 endif
 INCLUDES+=-I$(WEBOTS_HOME)/include/controller/c
-LIBOPTS+=-L$(WEBOTS_HOME)/lib -lController
-ifeq ($(VERBOSE),no)
-CXXFLAGS+=-Wno-deprecated-declarations
-CFLAGS+=-Wno-deprecated-declarations
-endif
+LDFLAGS+=-L$(WEBOTS_HOME)/lib -lController

@@ -7,6 +7,6 @@ clean:
 else
 LIBNAME=joystick
 include ../../Makefile.inc
-LIBOPTS+=-lusb-1.0
+LDFLAGS+=-lusb-1.0
 INCLUDES+=`pkg-config libusb-1.0 --cflags`
 endif

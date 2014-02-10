@@ -7,4 +7,4 @@ EXTRA_OBJ=color_count.o block_bitor.o \
 	lua_field_lines.o lua_field_spots.o lua_field_occupancy.o \
 	lua_fast_12.o fast_12.o
 include ../../Makefile.inc
-LIBOPTS+=-lm
+LDFLAGS+=-lm

@@ -1639,11 +1639,11 @@ elseif IS_WEBOTS then
 			if override~=nil then en=override else en=ENABLE_HEAD_LIDAR==false end
       if en==false then
         print(util.color('HEAD_LIDAR disabled!','yellow'))
-        webots.wb_camera_disable(tags.lidar)
+        webots.wb_camera_disable(tags.head_lidar)
         ENABLE_HEAD_LIDAR = false
       else
         print(util.color('HEAD_LIDAR enabled!','green'))
-        webots.wb_camera_enable(tags.lidar,lidar_timeStep)
+        webots.wb_camera_enable(tags.head_lidar,lidar_timeStep)
         ENABLE_HEAD_LIDAR = true
       end
     end,
@@ -1651,11 +1651,11 @@ elseif IS_WEBOTS then
 			if override~=nil then en=override else en=ENABLE_CHEST_LIDAR==false end
       if en==false then
         print(util.color('CHEST_LIDAR disabled!','yellow'))
-        webots.wb_camera_disable(tags.lidar)
+        webots.wb_camera_disable(tags.chest_lidar)
         ENABLE_CHEST_LIDAR = false
       else
         print(util.color('CHEST_LIDAR enabled!','green'))
-        webots.wb_camera_enable(tags.lidar,lidar_timeStep)
+        webots.wb_camera_enable(tags.chest_lidar,lidar_timeStep)
         ENABLE_CHEST_LIDAR = true
       end
     end,
@@ -1663,11 +1663,11 @@ elseif IS_WEBOTS then
       if override~=nil then en=override else en=ENABLE_CAMERA==false end
       if en==false then
         print(util.color('CAMERA disabled!','yellow'))
-        webots.wb_camera_disable(tags.hand_camera)
+        webots.wb_camera_disable(tags.head_camera)
         ENABLE_CAMERA = false
       else
         print(util.color('CAMERA enabled!','green'))
-        webots.wb_camera_enable(tags.hand_camera,camera_timeStep)
+        webots.wb_camera_enable(tags.head_camera,camera_timeStep)
         ENABLE_CAMERA = true
       end
     end,
@@ -1689,7 +1689,7 @@ elseif IS_WEBOTS then
         print(util.color('POSE disabled!','yellow'))
         webots.wb_gps_disable(tags.gps)
 	  		webots.wb_compass_disable(tags.compass)
-				webots.wb_inertial_unit_enable(tags.inertialunit)
+				webots.wb_inertial_unit_disable(tags.inertialunit)
         ENABLE_POSE = false
       else
         print(util.color('POSE enabled!','green'))
@@ -1703,8 +1703,8 @@ elseif IS_WEBOTS then
 			if override~=nil then en=override else en=ENABLE_IMU==false end
       if en==false then
         print(util.color('IMU disabled!','yellow'))
-        webots.wb_accelerometer_disable(tags.accelerometer, timeStep)
-  			webots.wb_gyro_disable(tags.gyro, timeStep)
+        webots.wb_accelerometer_disable(tags.accelerometer)
+  			webots.wb_gyro_disable(tags.gyro)
         ENABLE_IMU = false
       else
         print(util.color('IMU enabled!','green'))
@@ -1717,8 +1717,8 @@ elseif IS_WEBOTS then
 			if override~=nil then en=override else en=ENABLE_FSR==false end
       if en==false then
         print(util.color('FSR disabled!','yellow'))
-        webots.wb_touch_sensor_disable(tags.l_fsr, timeStep)
-  			webots.wb_touch_sensor_disable(tags.r_fsr, timeStep)
+        webots.wb_touch_sensor_disable(tags.l_fsr)
+  			webots.wb_touch_sensor_disable(tags.r_fsr)
         ENABLE_FSR = false
       else
         print(util.color('FSR enabled!','green'))

@@ -2,9 +2,9 @@ LIBNAME = YouBotKinematics
 EXTRA_OBJ = YouBotKinematics.o
 EXTRA_LINK = ../Transform/Transform.o
 include ../../Makefile.inc
-LIBOPTS += -lm
+LDFLAGS += -lm
 INCLUDES +=-I../Transform
 ifdef USE_TORCH
 	CXXFLAGS+=-DTORCH=1
-	LIBOPTS+=-ltorch
+	LDFLAGS+=-ltorch
 endif

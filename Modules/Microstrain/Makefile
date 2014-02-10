@@ -1,3 +1,3 @@
 LIBNAME=Microstrain
 include ../../Makefile.inc
-LIBOPTS+=-lm
+LDFLAGS+=-lm

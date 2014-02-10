@@ -5,10 +5,21 @@ PWD=$(shell pwd)
 LIBRT= $(shell [ `uname` != "Darwin" ] && echo "-lrt")
 
 TARGETS= \
-time mexshm getch \
-udp_recv udp_send cjpeg djpeg\
-msgpack zmq ImageProc Planner tcpopen lidartrans\
-serialize deserialize zlibCompress zlibUncompress
+	time mexshm getch \
+	udp_recv udp_send cjpeg djpeg \
+	msgpack zmq \
+	tcpopen lidartrans \
+	serialize deserialize \
+	zlibCompress zlibUncompress \
+	astar_graph \
+	astar_nonholonomic16 \
+	dijkstra_graph \
+	dijkstra_matrix \
+	dijkstra_nonholonomic16 \
+	subs_interp \
+	subs_interp3_circular \
+	ImageProc
+
 .PHONY: all clean
 	
 all: $(TARGETS)
@@ -57,6 +68,27 @@ zlibCompress:
 
 zlibUncompress:
 	$(MEX) $@.cc -lz
+	
+astar_graph:
+	$(MEX) $@.cc
+
+astar_nonholonomic16:
+	$(MEX) $@.cc
+
+dijkstra_graph:
+	$(MEX) $@.cc
+
+dijkstra_matrix:
+	$(MEX) $@.cc
+
+dijkstra_nonholonomic16:
+	$(MEX) $@.cc
+
+subs_interp:
+	$(MEX) $@.cc
+
+subs_interp3_circular:
+	$(MEX) $@.cc
 
 # Platform dependent modules
 serialopen:
@@ -67,10 +99,6 @@ uvc:
 ImageProc:
 	@echo "Building ImageProc"
 	cd ImageProc && make && cd $(PWD)
-
-Planner:
-	@echo "Building Planner"
-	cd Planner && make && cd $(PWD)
 	
 test:
 	@echo "Testing matlab scripts!"
@@ -80,4 +108,3 @@ test:
 clean:
 	rm -f *.$(MEXEXT) *.o
 	@cd ImageProc && make clean && cd $(PWD)
-	@cd Planner && make clean && cd $(PWD)

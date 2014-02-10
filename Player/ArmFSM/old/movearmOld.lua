@@ -11,8 +11,8 @@ local dpArmMax = Config.arm.linear_slow_limit
 local body_pos = {0,0,0}
 local body_rpy = {0,0,0}
 
-local lShoulderYaw = -45*Body.DEG_TO_RAD;
-local rShoulderYaw = 45*Body.DEG_TO_RAD;
+local lShoulderYaw = -45*DEG_TO_RAD;
+local rShoulderYaw = 45*DEG_TO_RAD;
 
 function movearm.setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim)
   if not dqArmLim then dqArmLim = dqArmMax end
@@ -403,22 +403,22 @@ function movearm.getDoorHandlePosition(
   local grip_offset_x = door_model[5]
   local knob_offset_y = door_model[6]
  
-  local rhand_rpy0 = {-90*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD,0}
+  local rhand_rpy0 = {-90*DEG_TO_RAD,-5*DEG_TO_RAD,0}
 
---  local rhand_rpy0 = {-90*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD,0}
+--  local rhand_rpy0 = {-90*DEG_TO_RAD,0*DEG_TO_RAD,0}
 
   local hand_rpy = rhand_rpy0
 
   local hand_yaw = door_yaw
-  if door_yaw>10*Body.DEG_TO_RAD then
-    hand_yaw = door_yaw-(door_yaw-10*Body.DEG_TO_RAD)*2.5 
+  if door_yaw>10*DEG_TO_RAD then
+    hand_yaw = door_yaw-(door_yaw-10*DEG_TO_RAD)*2.5 
   end
 
 
 --[[
   local hand_yaw = 0
-  if door_yaw>10*Body.DEG_TO_RAD then
-    hand_yaw = -(door_yaw-10*Body.DEG_TO_RAD)*1.5 
+  if door_yaw>10*DEG_TO_RAD then
+    hand_yaw = -(door_yaw-10*DEG_TO_RAD)*1.5 
   end
 --]]
 
@@ -471,8 +471,8 @@ function movearm.getLargeValvePosition(
   local handle_pitch  = 0 --we assume zero pitch 
   local handle_radius = wheel[6] 
 
-  local lhand_rpy = {0,0*Body.DEG_TO_RAD, -10*Body.DEG_TO_RAD}
-  local rhand_rpy = {0,0*Body.DEG_TO_RAD, 10*Body.DEG_TO_RAD}
+  local lhand_rpy = {0,0*DEG_TO_RAD, -10*DEG_TO_RAD}
+  local rhand_rpy = {0,0*DEG_TO_RAD, 10*DEG_TO_RAD}
 
   --Calculate the hand transforms
   local trHandle = T.eye()
@@ -509,7 +509,7 @@ function movearm.getLargeValvePositionSingle(
   local handle_yaw    = 0
   local handle_pitch  = 0 
   local handle_radius = wheel[4] 
-  local hand_rpy = {0,0*Body.DEG_TO_RAD, 0*Body.DEG_TO_RAD}
+  local hand_rpy = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 
   --Calculate the hand transforms
   local trHandle = T.eye()
@@ -552,7 +552,7 @@ function movearm.getBarValvePositionSingle(
   local handle_pitch  = 0 
   
   --We assume verticle, downward valve as zero turnangle (and vertial chopsticks)
-  local hand_rpy = {0,0*Body.DEG_TO_RAD, 0*Body.DEG_TO_RAD}
+  local hand_rpy = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 
   --Calculate the hand transforms
   local trHandle = T.eye()

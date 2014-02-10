@@ -9,8 +9,8 @@ local arm_planner = libArmPlan.new_planner()
 local T      = require'Transform'
 
 --Initial hand angle
-local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, 0*Body.DEG_TO_RAD}
-local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 0*Body.DEG_TO_RAD}
+local lhand_rpy0 = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+local rhand_rpy0 = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 
 local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRarm0
 local gripL, gripR = 1,1

@@ -39,10 +39,10 @@ local function update_override()
     }
 
   --Knob roll: 0 to -90
-  door_model[7] = math.max(-90*Body.DEG_TO_RAD,math.min(0,door_model[7]))
+  door_model[7] = math.max(-90*DEG_TO_RAD,math.min(0,door_model[7]))
 
   --Door yaw : plus to pull, minus to push
-  door_model[8] = math.max(-30*Body.DEG_TO_RAD,math.min(30*Body.DEG_TO_RAD,door_model[8]))  
+  door_model[8] = math.max(-30*DEG_TO_RAD,math.min(30*DEG_TO_RAD,door_model[8]))  
 
   hcm.set_door_model(door_model)
   hcm.set_state_proceed(0)
@@ -77,10 +77,10 @@ local function revert_override()
     }
 
   --Knob roll: 0 to -90
-  door_model[7] = math.max(-90*Body.DEG_TO_RAD,math.min(0,door_model[7]))
+  door_model[7] = math.max(-90*DEG_TO_RAD,math.min(0,door_model[7]))
 
   --Door yaw : plus to pull, minus to push
-  door_model[8] = math.max(-30*Body.DEG_TO_RAD,math.min(30*Body.DEG_TO_RAD,door_model[8]))  
+  door_model[8] = math.max(-30*DEG_TO_RAD,math.min(30*DEG_TO_RAD,door_model[8]))  
 
   hcm.set_door_model(door_model)
   hcm.set_state_proceed(0)
@@ -157,7 +157,7 @@ function state.entry()
   print("trLArm:",arm_planner.print_transform(trLArm0))
   print("trRArm:",arm_planner.print_transform(trRArm0))
 
-  local wrist_seq = {{'move',trLArm0, trRArm0, 30*Body.DEG_TO_RAD,0},}
+  local wrist_seq = {{'move',trLArm0, trRArm0, 30*DEG_TO_RAD,0},}
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "bodyturn" end
   hcm.set_state_proceed(0) --stop here and wait
 end
@@ -191,7 +191,7 @@ function state.update()
         if arm_planner:plan_arm_sequence2(wrist_seq) then stage="movearm" end
         hcm.set_state_proceed(0) --stop here and wait
       elseif hcm.get_state_proceed()==-1 then 
-        local wrist_seq = {{'move',trLArm0, trRArm0, 0*Body.DEG_TO_RAD,0},}
+        local wrist_seq = {{'move',trLArm0, trRArm0, 0*DEG_TO_RAD,0},}
         if arm_planner:plan_arm_sequence(wrist_seq) then stage = "bodyreturn" end
       end
     end

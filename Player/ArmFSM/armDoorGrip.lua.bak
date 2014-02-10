@@ -113,11 +113,11 @@ function state.update()
   elseif stage=="hookknob" then --Move up the hook to make it touch the knob
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then --Open the door
-        arm_planner:save_doorparam({{0,0,0},0*Body.DEG_TO_RAD,0,0})
+        arm_planner:save_doorparam({{0,0,0},0*DEG_TO_RAD,0,0})
         local dooropen_seq =         {
             {'door',{0,0,0}, rollTarget,door_yaw},
             {'door',{0,0,0}, rollTarget,yawTargetInitial},
-            {'door',{0,0,0},  0*Body.DEG_TO_RAD,yawTargetInitial}   
+            {'door',{0,0,0},  0*DEG_TO_RAD,yawTargetInitial}   
           }
         if arm_planner:plan_arm_sequence2(dooropen_seq) then stage = "opendoor"  end
       elseif hcm.get_state_proceed()==-1 then --Lower the hook
@@ -139,14 +139,14 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then
         local dooropen_seq ={
-          {'door',{0,0,0},  0*Body.DEG_TO_RAD,yawTarget1},
-          {'door',{0,0,0},  0*Body.DEG_TO_RAD,yawTarget2},
+          {'door',{0,0,0},  0*DEG_TO_RAD,yawTarget1},
+          {'door',{0,0,0},  0*DEG_TO_RAD,yawTarget2},
         }
         if arm_planner:plan_arm_sequence2(dooropen_seq) then stage = "opendoor2"  end
       elseif hcm.get_state_proceed()==-1 then --Re-hook
           local doorclose_seq={ 
             {'door',Config.armfsm.dooropen.handle_clearance1,  0,yawTargetInitial},
-            {'door',Config.armfsm.dooropen.handle_clearance1,  0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},   
+            {'door',Config.armfsm.dooropen.handle_clearance1,  0*DEG_TO_RAD,0*DEG_TO_RAD},   
             {'door',{0,0,0}, 0,0},
           }
           if arm_planner:plan_arm_sequence2(doorclose_seq) then stage = "hookknob"  end
@@ -192,7 +192,7 @@ function state.update()
       elseif hcm.get_state_proceed()==2 then
         update_model()
         local doorparam = arm_planner.init_doorparam
-        local dooropen_seq ={{'door',Config.armfsm.dooropen.handle_clearance2,0*Body.DEG_TO_RAD,doorparam[3]},}
+        local dooropen_seq ={{'door',Config.armfsm.dooropen.handle_clearance2,0*DEG_TO_RAD,doorparam[3]},}
         if arm_planner:plan_arm_sequence2(dooropen_seq) then stage = "hookrelease"  end
       end
     end    

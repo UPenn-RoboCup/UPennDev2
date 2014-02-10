@@ -29,7 +29,7 @@ local stage
 
 
 local velBodyTilt = 5*math.pi/180
-local velWaist = {3*Body.DEG_TO_RAD, 0}
+local velWaist = {3*DEG_TO_RAD, 0}
 local velTorso = {0.03,0.03,0}
 local velHeight = 0.03
 
@@ -40,8 +40,8 @@ local bodyHeightSit = 0.60;
 
 local uTorsoKneel = {0.15,0,0}
 local bodyTiltKneel = Config.walk.bodyTilt
---local qWaistTarget = {45*Body.DEG_TO_RAD,0,0}
-local qWaistTarget = {0*Body.DEG_TO_RAD,0,0}
+--local qWaistTarget = {45*DEG_TO_RAD,0,0}
+local qWaistTarget = {0*DEG_TO_RAD,0,0}
 
 ---------------------------
 -- State machine methods --

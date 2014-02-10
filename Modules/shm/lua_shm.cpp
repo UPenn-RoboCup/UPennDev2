@@ -262,10 +262,8 @@ static int lua_shm_next(lua_State *L) {
       return 2;
     } else {
       const managed_shared_memory::char_type *name = named_beg->name();
-      std::size_t name_len = named_beg->name_length();
-      if (std::string(key) == std::string(name)) {
-        find = true;
-      }
+      //std::size_t name_len = named_beg->name_length();
+      if (std::string(key) == std::string(name)) { find = true; }
     }
   } while (++named_beg != named_end);
 

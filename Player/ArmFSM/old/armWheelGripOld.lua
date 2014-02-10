@@ -10,8 +10,8 @@ local stage = 1;
 local handle_pos_temp
 
 local qJointVelInit = 
-  {30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,
-   30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,30*Body.DEG_TO_RAD,}
+  {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,
+   30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,}
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -30,8 +30,8 @@ function state.entry()
   qLArm = Body.get_larm_command_position()
   qRArm = Body.get_rarm_command_position()
 
-  local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}
-  local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD}
+  local lhand_rpy0 = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
+  local rhand_rpy0 = {0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
 
   qLArm0 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})
   qRArm0 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
@@ -39,7 +39,7 @@ function state.entry()
   --This works for valvetest
   --New world model for new IK
   hcm.set_wheel_model(
-    {0.36,0.00,0.02,   0, 0*Body.DEG_TO_RAD,0.20})
+    {0.36,0.00,0.02,   0, 0*DEG_TO_RAD,0.20})
 
   -- Let's store wheel data here
   local wheel   = hcm.get_wheel_model()

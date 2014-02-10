@@ -29,7 +29,7 @@ local function get_override(left_tr)
       left_tr[3]+override[3],
       left_tr[4],
       left_tr[5],
-      left_tr[6]+override[6]* 5*Body.DEG_TO_RAD
+      left_tr[6]+override[6]* 5*DEG_TO_RAD
     }
   return left_tr_target
 end

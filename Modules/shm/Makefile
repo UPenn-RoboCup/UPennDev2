@@ -2,5 +2,5 @@
 LIBNAME=shm
 include ../../Makefile.inc
 ifeq ($(OSTYPE),linux)
-LIBOPTS=-lrt
+LD_FLAGS=-lrt
 endif

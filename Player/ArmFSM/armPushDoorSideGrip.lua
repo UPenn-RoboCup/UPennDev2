@@ -118,7 +118,7 @@ function state.update()
       elseif hcm.get_state_proceed()==-1 then 
         local wrist_seq = {
          {'move',Config.armfsm.doorpushside.larminit[1],Config.armfsm.doorpushside.rarminit[1]},
-         {'wrist',trLArm0, trRArm0, 0*Body.DEG_TO_RAD,0},
+         {'wrist',trLArm0, trRArm0, 0*DEG_TO_RAD,0},
        }
         if arm_planner:plan_arm_sequence(wrist_seq) then stage = "bodyreturn" end
       end

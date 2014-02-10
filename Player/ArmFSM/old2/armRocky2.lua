@@ -50,9 +50,9 @@ function state.entry()
   trLArm1 = Body.get_forward_larm(qLArm1)
   trRArm1 = Body.get_forward_rarm(qRArm1)  
     
---  arm_planner:set_shoulder_yaw_target(1*Body.DEG_TO_RAD, -1*Body.DEG_TO_RAD)
+--  arm_planner:set_shoulder_yaw_target(1*DEG_TO_RAD, -1*DEG_TO_RAD)
 
-  arm_planner:set_shoulder_yaw_target(-2*Body.DEG_TO_RAD, 2*Body.DEG_TO_RAD)
+  arm_planner:set_shoulder_yaw_target(-2*DEG_TO_RAD, 2*DEG_TO_RAD)
   arm_planner:set_shoulder_yaw_target(nil,nil)
 
   local wrist_seq = {{'wrist',trLArm1, trRArm1}}

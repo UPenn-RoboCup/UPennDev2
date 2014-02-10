@@ -33,7 +33,7 @@ local dqWaistLimit   = Config.stance.dqWaistLimit
 local dqLegLimit = Config.stance.dqLegLimit
 
 
---local dqLegLimit = vector.new{10,10,10,10,10,10}*Body.DEG_TO_RAD
+--local dqLegLimit = vector.new{10,10,10,10,10,10}*DEG_TO_RAD
 
 dpMaxDelta = vector.new{.04, .03, .03, .4, .1, .4}
 
@@ -147,7 +147,7 @@ function state.update()
   end
   --print("err: ",err, doneL,doneR)
 
-  local err_th = 1*Body.DEG_TO_RAD
+  local err_th = 1*DEG_TO_RAD
   
   if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end        
 end

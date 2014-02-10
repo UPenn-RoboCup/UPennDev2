@@ -9,8 +9,8 @@ local arm_planner = libArmPlan.new_planner()
 local T      = require'Transform'
 
 --Initial hand angle
-local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}
-local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD}
+local lhand_rpy0 = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
+local rhand_rpy0 = {0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
 local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRarm0
 local stage
 local gripL, gripR = 1,1
@@ -24,8 +24,8 @@ local function getArmWheelPosition(radius_offset, turn_angleL, turn_angleR)
   local handle_pitch  = wheel[5]
   local handle_radius = wheel[6] + radius_offset
 
-  local lhand_rpy = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}
-  local rhand_rpy = {0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD}
+  local lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
+  local rhand_rpy = {0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
 
   --Calculate the hand transforms
   local trHandle = T.eye()

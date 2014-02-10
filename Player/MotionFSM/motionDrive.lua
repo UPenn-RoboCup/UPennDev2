@@ -19,7 +19,7 @@ local t_settle   = 0.10
 local t_entry, t_update, t_finish
 
 
---local dqLegLimit = vector.new{10,10,10,10,10,10}*Body.DEG_TO_RAD
+--local dqLegLimit = vector.new{10,10,10,10,10,10}*DEG_TO_RAD
 
 dpMaxDelta = vector.new{.04, .03, .03, .4, .1, .4}
 

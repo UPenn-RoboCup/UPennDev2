@@ -9,8 +9,8 @@ local arm_planner = libArmPlan.new_planner()
 local T      = require'Transform'
 
 --Initial hand angle
-local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, -30*Body.DEG_TO_RAD}
-local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 30*Body.DEG_TO_RAD}
+local lhand_rpy0 = {0,0*DEG_TO_RAD, -30*DEG_TO_RAD}
+local rhand_rpy0 = {0,0*DEG_TO_RAD, 30*DEG_TO_RAD}
 
 local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRarm0
 local stage
@@ -114,20 +114,20 @@ function state.update()
         --[[
         local valve_seq={
           {0,0,-0.08,0}, 
-          {-45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD,-0.08,0}, 
-          {-45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD,0,-0.08},
-          {5*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD, 0,-0.08},
-          {5*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD, -0.08,0},           
+          {-45*DEG_TO_RAD,45*DEG_TO_RAD,-0.08,0}, 
+          {-45*DEG_TO_RAD,45*DEG_TO_RAD,0,-0.08},
+          {5*DEG_TO_RAD,-5*DEG_TO_RAD, 0,-0.08},
+          {5*DEG_TO_RAD,-5*DEG_TO_RAD, -0.08,0},           
           {0,0,-0.08,0},           
         }
         if arm_planner:plan_valve_sequence(valve_seq) then stage="inposition" end
         --]]
         local valve_seq={
           {'valvetwoarm',0,0,-0.08,0}, 
-          {'valvetwoarm',-45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD,-0.08,0}, 
-          {'valvetwoarm',-45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD,0,-0.08},
-          {'valvetwoarm',5*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD, 0,-0.08},
-          {'valvetwoarm',5*Body.DEG_TO_RAD,-5*Body.DEG_TO_RAD, -0.08,0},           
+          {'valvetwoarm',-45*DEG_TO_RAD,45*DEG_TO_RAD,-0.08,0}, 
+          {'valvetwoarm',-45*DEG_TO_RAD,45*DEG_TO_RAD,0,-0.08},
+          {'valvetwoarm',5*DEG_TO_RAD,-5*DEG_TO_RAD, 0,-0.08},
+          {'valvetwoarm',5*DEG_TO_RAD,-5*DEG_TO_RAD, -0.08,0},           
           {'valvetwoarm',0,0,-0.08,0},           
         }
         if arm_planner:plan_arm_sequence(valve_seq) then stage="inposition" end

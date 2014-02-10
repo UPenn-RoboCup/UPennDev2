@@ -96,7 +96,7 @@ function state.entry()
   arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) --Lock left hand  
 
   local bend_seq = {
-    {'move',nil,nil,0*Body.DEG_TO_RAD,Config.armfsm.debrisgrip.body_bend}}
+    {'move',nil,nil,0*DEG_TO_RAD,Config.armfsm.debrisgrip.body_bend}}
   if arm_planner:plan_arm_sequence2(bend_seq) then stage = "benddown" end  
 
   hcm.set_debris_model(Config.armfsm.debrisgrip.default_model)
@@ -142,7 +142,7 @@ function state.update()
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3]) --Lock left hand  
         local bend_seq = {
-          {'move',trLArm0,trRArm0,0*Body.DEG_TO_RAD,0*Body.DEG_TO_RAD},
+          {'move',trLArm0,trRArm0,0*DEG_TO_RAD,0*DEG_TO_RAD},
         } --straighten waist
         if arm_planner:plan_arm_sequence(bend_seq) then stage = "done" end  
       end

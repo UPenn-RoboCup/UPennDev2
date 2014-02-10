@@ -19,7 +19,7 @@ local map, path, finished_path, cur_wp, wp_id, path_sz
 local start_pose = vector.pose{-1.32058, -0.216679, 1.5708}
 
 -- The map is static, so import it once
-map = libMap.open_map'map.ppm'
+map = libMap.open_map(HOME..'/Data/map.ppm')
 -- Perform the convolution so that
 -- the girth of the robot will not collide with walls
 map:grow()

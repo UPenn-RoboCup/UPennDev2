@@ -55,10 +55,10 @@ local function update_override()
     }
 
   --Knob roll: 0 to -90
-  door_model[7] = math.max(-90*Body.DEG_TO_RAD,math.min(0,door_model[7]))
+  door_model[7] = math.max(-90*DEG_TO_RAD,math.min(0,door_model[7]))
 
   --Door yaw : plus to pull, minus to push
-  door_model[8] = math.max(-30*Body.DEG_TO_RAD,math.min(30*Body.DEG_TO_RAD,door_model[8]))  
+  door_model[8] = math.max(-30*DEG_TO_RAD,math.min(30*DEG_TO_RAD,door_model[8]))  
 
   hcm.set_door_model(door_model)
   hcm.set_state_proceed(0)
@@ -93,10 +93,10 @@ local function revert_override()
     }
 
   --Knob roll: 0 to -90
-  door_model[7] = math.max(-90*Body.DEG_TO_RAD,math.min(0,door_model[7]))
+  door_model[7] = math.max(-90*DEG_TO_RAD,math.min(0,door_model[7]))
 
   --Door yaw : plus to pull, minus to push
-  door_model[8] = math.max(-30*Body.DEG_TO_RAD,math.min(30*Body.DEG_TO_RAD,door_model[8]))  
+  door_model[8] = math.max(-30*DEG_TO_RAD,math.min(30*DEG_TO_RAD,door_model[8]))  
 
   hcm.set_door_model(door_model)
   hcm.set_state_proceed(0)
@@ -203,7 +203,7 @@ function state.update()
         arm_planner:save_doorparam({{0,0,0},rollTarget,yawTarget,0}) --xyz roll yaw dummy
         yawTarget1 = yawTarget
         local dooropen_seq ={ 
-          {'door',{0,0,0},  0*Body.DEG_TO_RAD,yawTarget1},
+          {'door',{0,0,0},  0*DEG_TO_RAD,yawTarget1},
           {'door',Config.armfsm.dooropen.handle_clearance2,0,yawTarget1}
         }
         if arm_planner:plan_arm_sequence2(dooropen_seq) then 
@@ -245,7 +245,7 @@ function state.update()
       elseif hcm.get_state_proceed()==2 then
         update_model()
         local doorparam = arm_planner.init_doorparam
-        local dooropen_seq ={{'door',Config.armfsm.dooropen.handle_clearance2,0*Body.DEG_TO_RAD,doorparam[3]},}
+        local dooropen_seq ={{'door',Config.armfsm.dooropen.handle_clearance2,0*DEG_TO_RAD,doorparam[3]},}
         if arm_planner:plan_arm_sequence2(dooropen_seq) then stage = "hookrelease"  end
       end
     end    

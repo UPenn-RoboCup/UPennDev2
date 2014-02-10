@@ -11,9 +11,9 @@ local arm_planner = libArmPlan.new_planner()
 local qLArm0,qRArm0, trLArm0, trRArm0
 
 --Initial hand angle
-local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, -45*Body.DEG_TO_RAD}
-local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 45*Body.DEG_TO_RAD}
-local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, 0*Body.DEG_TO_RAD}
+local lhand_rpy0 = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
+local rhand_rpy0 = {0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
+local lhand_rpy0 = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 
 
 local function get_cutpos_tr(tooloffset)

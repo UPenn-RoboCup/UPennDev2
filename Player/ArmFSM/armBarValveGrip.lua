@@ -9,8 +9,8 @@ local arm_planner = libArmPlan.new_planner()
 local T      = require'Transform'
 
 --Initial hand angle
-local lhand_rpy0 = {0,0*Body.DEG_TO_RAD, 0*Body.DEG_TO_RAD}
-local rhand_rpy0 = {0,0*Body.DEG_TO_RAD, 0*Body.DEG_TO_RAD}
+local lhand_rpy0 = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+local rhand_rpy0 = {0,0*DEG_TO_RAD, 0*DEG_TO_RAD}
 
 local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRarm0
 local gripL, gripR = 1,1
@@ -112,7 +112,7 @@ function state.entry()
 
   --arm_planner:set_shoulder_yaw_target(nil,qRArm0[3])--unlock left shoulder
   arm_planner:set_shoulder_yaw_target(nil,nil)--unlock left shoulder
---  hcm.set_barvalve_model({0.55,0.20,0.07,   0.05, 0, 70*Body.DEG_TO_RAD })
+--  hcm.set_barvalve_model({0.55,0.20,0.07,   0.05, 0, 70*DEG_TO_RAD })
   hcm.set_barvalve_model(Config.armfsm.valvebar.default_model)
 
   local valve_model = hcm.get_barvalve_model()

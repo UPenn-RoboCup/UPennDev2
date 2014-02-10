@@ -12,7 +12,8 @@ PROTO THOROP7_Update [
   field SFString   controller "void"
   field SFString   controllerArgs ""
   field SFBool     synchronization TRUE
-  field SFInt32    lidarRays 1081
+	field SFFloat    lidarFov 3.1415926536
+	field SFInt32    lidarRays 721
   field SFString   name "THOR-OP"
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
@@ -36,7 +37,8 @@ Robot {
   # Unsure why there is physics here...
   physics Physics {
     density -1
-    mass 9.21
+    #mass 9.21
+		mass 0.1
     centerOfMass 0 0.1557 -0.0208
   }
 
@@ -98,7 +100,7 @@ Robot {
             name "Neck"
             # TODO: Use NX specs
             maxVelocity 5.65486677646
-            maxTorque 2.5
+            maxTorque 40
             # Not sure of these...
             minPosition -2.92343
             maxPosition 2.92343
@@ -123,7 +125,7 @@ Robot {
                   name "Head"
                   # TODO: Use NX specs
                   maxVelocity 5.65486677646
-                  maxTorque 2.5
+                  maxTorque 40
                   # Not sure of these...
                   minPosition -2.92343
                   maxPosition 2.92343
@@ -182,7 +184,7 @@ Robot {
             name "ChestLidarPan"
             # Use MX-28 specs (54*pi/30)
             maxVelocity 5.65486677646
-            maxTorque 2.5
+            maxTorque 40
             # Not sure of these...
             minPosition -2.92343
             maxPosition 2.92343
@@ -200,6 +202,7 @@ Robot {
               hokuyo {
                 name "ChestLidar"
                 width IS lidarRays
+								fieldOfView IS lidarFov
               }
             ] # End of the ChestLidarPan Children
           } # End of the ChestLidarPan endpoint
@@ -219,14 +222,14 @@ Robot {
             name "ShoulderR"
             # TODO: Use NX Motor specs
             maxVelocity 5.65486677646
-            maxTorque 2.5
+            maxTorque 40
             # Not sure of these...
             minPosition -2.92343
             maxPosition 2.92343
           } # End of the ShoulderR RotationalMotor
           jointParameters HingeJointParameters {
             # Straight up in the y-axis for webots
-            axis -1 0 0
+            axis 1 0 0
             # I think anchor means the up direction?
             anchor -0.081 0 0
           } # End of the ShoulderR HingeJointParameters
@@ -244,7 +247,7 @@ Robot {
                   name "ArmUpperR"
                   # TODO: Use NX Motor specs
                   maxVelocity 5.65486677646
-                  maxTorque 2.5
+                  maxTorque 40
                   # Not sure of these...
                   minPosition -2.92343
                   maxPosition 2.92343
@@ -263,17 +266,12 @@ Robot {
                       translation 0 0 0.024
                       rotation 0 0 1 -1.5708
                     }
-                    RIGHT_ARM{
-                      translation 0 -0.027 0
-                      rotation 0 1 0 3.14159
-                      scale 0.001 0.001 0.001
-                    }
                     HingeJoint {
                       device RotationalMotor {
                         name "RightShoulderYaw"
                         # TODO: Use NX Motor specs
                         maxVelocity 5.65486677646
-                        maxTorque 2.5
+                        maxTorque 40
                         # Not sure of these...
                         minPosition -2.92343
                         maxPosition 2.92343
@@ -287,17 +285,17 @@ Robot {
                         ## Begin Elbow
                         translation 0 -0.246 0.030
                         children [
-                          RIGHT_ELBOW {
-                            translation 0 0 -0.03
-                            rotation 0 1 0 3.14159
-                            scale 0.001 0.001 0.001
-                          }
+													RIGHT_ARM{
+														translation 0 0.219 0
+														rotation 0 1 0 3.14159
+														scale 0.001 0.001 0.001
+													}
                           HingeJoint {
                             device RotationalMotor {
                               name "ArmLowerR"
                               # TODO: Use NX Motor specs
                               maxVelocity 5.65486677646
-                              maxTorque 2.5
+                              maxTorque 40
                               # Not sure of these...
                               minPosition -2.92343
                               maxPosition 2.92343
@@ -311,13 +309,17 @@ Robot {
                               ## Begin Wrist Yaw
                               translation 0 -0.186 -0.030
                               children [
-                                RIGHT_WRIST {scale 0.001 0.001 0.001}
+																RIGHT_ELBOW {
+																	translation 0 0.186 0.030
+																	rotation 0 1 0 3.14159
+																	scale 0.001 0.001 0.001
+																}
                                 HingeJoint {
                                   device RotationalMotor {
                                     name "RightWristYaw"
                                     # TODO: Use NX Motor specs
                                     maxVelocity 5.65486677646
-                                    maxTorque 2.5
+                                    maxTorque 40
                                     # Not sure of these...
                                     minPosition -2.92343
                                     maxPosition 2.92343
@@ -330,16 +332,15 @@ Robot {
                                   endPoint Solid {
                                     ## Begin Wrist Roll
                                     children [
-                                      Transform {
-                                        translation 0 -0.065 0
-                                        children [Shape{geometry Box {size 0.04 0.130 0.04}}]
-                                      }
+																			RIGHT_WRIST {
+																				scale 0.001 0.001 0.001
+																			}
                                       HingeJoint {
                                         device RotationalMotor {
                                           name "RightWristRoll"
                                           # TODO: Use NX Motor specs
                                           maxVelocity 5.65486677646
-                                          maxTorque 2.5
+                                          maxTorque 40
                                           # Not sure of these...
                                           minPosition -2.92343
                                           maxPosition 2.92343
@@ -353,12 +354,16 @@ Robot {
                                           ## Begin Wrist Yaw2
                                           translation 0 -0.130 0
                                           children [
+																						Transform {
+																							translation 0 0.065 0
+																							children [Shape{geometry Box {size 0.04 0.130 0.04}}]
+																						}
                                             HingeJoint {
                                               device RotationalMotor {
                                                 name "RightWristYaw2"
                                                 # TODO: Use NX Motor specs
                                                 maxVelocity 5.65486677646
-                                                maxTorque 2.5
+                                                maxTorque 40
                                                 # Not sure of these...
                                                 minPosition -2.92343
                                                 maxPosition 2.92343
@@ -420,14 +425,14 @@ Robot {
             name "ShoulderL"
             # TODO: Use NX Motor specs
             maxVelocity 5.65486677646
-            maxTorque 2.5
+            maxTorque 40
             # Not sure of these...
             minPosition -2.92343
             maxPosition 2.92343
           } # End of the ShoulderL RotationalMotor
           jointParameters HingeJointParameters {
             # Straight up in the y-axis for webots
-            axis -1 0 0
+            axis 1 0 0
             # I think anchor means the up direction?
             anchor -0.081 0 0
           } # End of the ShoulderL HingeJointParameters
@@ -445,7 +450,7 @@ Robot {
                   name "ArmUpperL"
                   # TODO: Use NX Motor specs
                   maxVelocity 5.65486677646
-                  maxTorque 2.5
+                  maxTorque 40
                   # Not sure of these...
                   minPosition -2.92343
                   maxPosition 2.92343
@@ -473,7 +478,7 @@ Robot {
                         name "LeftShoulderYaw"
                         # TODO: Use NX Motor specs
                         maxVelocity 5.65486677646
-                        maxTorque 2.5
+                        maxTorque 40
                         # Not sure of these...
                         minPosition -2.92343
                         maxPosition 2.92343
@@ -497,7 +502,7 @@ Robot {
                               name "ArmLowerL"
                               # TODO: Use NX Motor specs
                               maxVelocity 5.65486677646
-                              maxTorque 2.5
+                              maxTorque 40
                               # Not sure of these...
                               minPosition -2.92343
                               maxPosition 2.92343
@@ -517,7 +522,7 @@ Robot {
                                     name "LeftWristYaw"
                                     # TODO: Use NX Motor specs
                                     maxVelocity 5.65486677646
-                                    maxTorque 2.5
+                                    maxTorque 40
                                     # Not sure of these...
                                     minPosition -2.92343
                                     maxPosition 2.92343
@@ -539,7 +544,7 @@ Robot {
                                           name "LeftWristRoll"
                                           # TODO: Use NX Motor specs
                                           maxVelocity 5.65486677646
-                                          maxTorque 2.5
+                                          maxTorque 40
                                           # Not sure of these...
                                           minPosition -2.92343
                                           maxPosition 2.92343
@@ -558,7 +563,7 @@ Robot {
                                                 name "LeftWristYaw2"
                                                 # TODO: Use NX Motor specs
                                                 maxVelocity 5.65486677646
-                                                maxTorque 2.5
+                                                maxTorque 40
                                                 # Not sure of these...
                                                 minPosition -2.92343
                                                 maxPosition 2.92343
@@ -613,7 +618,7 @@ Robot {
       translation 0 -0.17 0
       physics Physics {
         density -1
-        mass 0.0001
+        mass 0.2
       }
       children [
         # Has no mesh?
@@ -623,7 +628,7 @@ Robot {
             name "TorsoPitch"
             # TODO: Use NX Motor specs
             maxVelocity 5.65486677646
-            maxTorque 2.5
+            maxTorque 40
             # Not sure of these...
             minPosition -2.92343
             maxPosition 2.92343
@@ -637,8 +642,8 @@ Robot {
           endPoint Solid {
             translation 0 -0.038 0
             physics Physics {
-              density -1
-              mass 0.0001
+              mass 8.0
+							centerOfMass 0 -0.1208 -0.0264
             }
             children[
               TORSO_PITCH_SERVO {scale 0.001 0.001 0.001}
@@ -647,7 +652,7 @@ Robot {
                   name "TorsoYaw"
                   # TODO: Use NX Motor specs
                   maxVelocity 5.65486677646
-                  maxTorque 2.5
+                  maxTorque 40
                   # Not sure of these...
                   minPosition -2.92343
                   maxPosition 2.92343
@@ -661,7 +666,7 @@ Robot {
                 endPoint Solid {
                   physics Physics {
                     density -1
-                    mass 0.0001
+                    mass 0.1
                   }
                   children[
                   PELVIS{
@@ -673,7 +678,7 @@ Robot {
                     translation -0.072 -0.232 0
                     physics Physics {
                       density -1
-                      mass 0.0001
+                      mass 0.1
                     }
                     children [
                       HingeJoint {
@@ -681,7 +686,7 @@ Robot {
                           name "PelvYR"
                           # TODO: Use NX Motor specs
                           maxVelocity 5.65486677646
-                          maxTorque 2.5
+                          maxTorque 40
                           # Not sure of these...
                           minPosition -2.92343
                           maxPosition 2.92343
@@ -695,7 +700,7 @@ Robot {
                         endPoint Solid {
                           physics Physics {
                             density -1
-                            mass 0.0001
+                            mass 0.1
                           }
                           children[
                             LEFT_HIP_YAW{
@@ -708,7 +713,7 @@ Robot {
                                 name "PelvR"
                                 # TODO: Use NX Motor specs
                                 maxVelocity 5.65486677646
-                                maxTorque 2.5
+                                maxTorque 40
                                 # Not sure of these...
                                 minPosition -2.92343
                                 maxPosition 2.92343
@@ -722,7 +727,8 @@ Robot {
                               endPoint Solid {
                                 physics Physics {
                                   density -1
-                                  mass 0.0001
+                                  mass 4.28
+																	centerOfMass 0.0211 -0.1241 -0.0082
                                 }
                                 children[
                                   RIGHT_HIP_ROLL{scale 0.001 0.001 0.001}
@@ -732,7 +738,7 @@ Robot {
                                       name "LegUpperR"
                                       # TODO: Use NX Motor specs
                                       maxVelocity 5.65486677646
-                                      maxTorque 2.5
+                                      maxTorque 40
                                       # Not sure of these...
                                       minPosition -2.92343
                                       maxPosition 2.92343
@@ -747,7 +753,8 @@ Robot {
                                       translation 0 -0.3 -0.03
                                       physics Physics {
                                         density -1
-                                        mass 0.0001
+                                        mass 2.24
+																				centerOfMass 0.0313 -0.1796 0.0374
                                       }
                                       children[
                                         R_THIGH{
@@ -761,7 +768,7 @@ Robot {
                                             name "LegLowerR"
                                             # TODO: Use NX Motor specs
                                             maxVelocity 5.65486677646
-                                            maxTorque 2.5
+                                            maxTorque 40
                                             # Not sure of these...
                                             minPosition -2.92343
                                             maxPosition 2.92343
@@ -776,7 +783,7 @@ Robot {
                                             translation 0 -0.3 0.03
                                             physics Physics {
                                               density -1
-                                              mass 0.0001
+                                              mass 0.1
                                             }
                                             children[
                                               R_LEG{
@@ -790,7 +797,7 @@ Robot {
                                                   name "AnkleR"
                                                   # TODO: Use NX Motor specs
                                                   maxVelocity 5.65486677646
-                                                  maxTorque 2.5
+                                                  maxTorque 40
                                                   # Not sure of these...
                                                   minPosition -2.92343
                                                   maxPosition 2.92343
@@ -814,7 +821,7 @@ Robot {
                                                         name "FootR"
                                                         # TODO: Use NX Motor specs
                                                         maxVelocity 5.65486677646
-                                                        maxTorque 2.5
+                                                        maxTorque 40
                                                         # Not sure of these...
                                                         minPosition -2.92343
                                                         maxPosition 2.92343
@@ -827,16 +834,18 @@ Robot {
                                                       } # End of the LegLowerR HingeJointParameters
                                                       endPoint Solid {
                                                         translation 0 -0.1115 0.018
-                                                        #boundingObject Box {size 0.145 0.012 0.26}
+                                                        boundingObject Box {size 0.145 0.012 0.26}
                                                         physics Physics {
-                                                          density -1
-                                                          mass 0.0001
-                                                        }
+																													density -1
+																													mass 1.74
+																													centerOfMass 0 -0.0429 -0.0048
+																												}
                                                         children[
                                                           FOOT{
                                                             scale 0.001 0.001 0.001
                                                             translation 0 0.1115 -0.018
                                                           }
+																													
                                                           DEF R_FSR TouchSensor {
                                                             name "R_FSR"
                                                             # Should be a bit bigger
@@ -881,7 +890,7 @@ Robot {
                           name "PelvYL"
                           # TODO: Use NX Motor specs
                           maxVelocity 5.65486677646
-                          maxTorque 2.5
+                          maxTorque 40
                           # Not sure of these...
                           minPosition -2.92343
                           maxPosition 2.92343
@@ -908,7 +917,7 @@ Robot {
                                 name "PelvL"
                                 # TODO: Use NX Motor specs
                                 maxVelocity 5.65486677646
-                                maxTorque 2.5
+                                maxTorque 40
                                 # Not sure of these...
                                 minPosition -2.92343
                                 maxPosition 2.92343
@@ -932,7 +941,7 @@ Robot {
                                       name "LegUpperL"
                                       # TODO: Use NX Motor specs
                                       maxVelocity 5.65486677646
-                                      maxTorque 2.5
+                                      maxTorque 40
                                       # Not sure of these...
                                       minPosition -2.92343
                                       maxPosition 2.92343
@@ -961,7 +970,7 @@ Robot {
                                             name "LegLowerL"
                                             # TODO: Use NX Motor specs
                                             maxVelocity 5.65486677646
-                                            maxTorque 2.5
+                                            maxTorque 40
                                             # Not sure of these...
                                             minPosition -2.92343
                                             maxPosition 2.92343
@@ -990,7 +999,7 @@ Robot {
                                                   name "AnkleL"
                                                   # TODO: Use NX Motor specs
                                                   maxVelocity 5.65486677646
-                                                  maxTorque 2.5
+                                                  maxTorque 40
                                                   # Not sure of these...
                                                   minPosition -2.92343
                                                   maxPosition 2.92343
@@ -1004,7 +1013,7 @@ Robot {
                                                 endPoint Solid {
                                                   physics Physics {
                                                     density -1
-                                                    mass 0.0001
+                                                    mass 0.1
                                                   }
                                                   children[
                                                     LEFT_ANKLE{scale 0.001 0.001 0.001}
@@ -1014,7 +1023,7 @@ Robot {
                                                         name "FootL"
                                                         # TODO: Use NX Motor specs
                                                         maxVelocity 5.65486677646
-                                                        maxTorque 2.5
+                                                        maxTorque 40
                                                         # Not sure of these...
                                                         minPosition -2.92343
                                                         maxPosition 2.92343
@@ -1027,11 +1036,12 @@ Robot {
                                                       } # End of the FootL HingeJointParameters
                                                       endPoint Solid {
                                                         translation 0 -0.1115 0.018
-                                                        #boundingObject Box {size 0.145 0.012 0.26}
+                                                        boundingObject Box {size 0.145 0.012 0.26}
                                                         physics Physics {
-                                                          density -1
-                                                          mass 0.0001
-                                                        }
+																													density -1
+																													mass 1.74
+																													centerOfMass 0 -0.0429 -0.0048
+																												}
                                                         children[
                                                           FOOT{
                                                             scale 0.001 0.001 0.001

@@ -235,7 +235,7 @@ Robot {
           } # End of the ShoulderR RotationalMotor
           jointParameters HingeJointParameters {
             # Straight up in the y-axis for webots
-            axis -1 0 0
+            axis 1 0 0
             # I think anchor means the up direction?
             anchor -0.081 0 0
           } # End of the ShoulderR HingeJointParameters
@@ -272,11 +272,6 @@ Robot {
                       translation 0 0 0.024
                       rotation 0 0 1 -1.5708
                     }
-                    RIGHT_ARM{
-                      translation 0 -0.027 0
-                      rotation 0 1 0 3.14159
-                      scale 0.001 0.001 0.001
-                    }
                     HingeJoint {
                       device RotationalMotor {
                         name "RightShoulderYaw"
@@ -296,11 +291,12 @@ Robot {
                         ## Begin Elbow
                         translation 0 -0.246 0.030
                         children [
-                          RIGHT_ELBOW {
-                            translation 0 0 -0.03
-                            rotation 0 1 0 3.14159
-                            scale 0.001 0.001 0.001
-                          }
+													RIGHT_ARM{
+														#translation 0 -0.027 0
+														translation 0 0.219 -0.03
+														rotation 0 1 0 3.14159
+														scale 0.001 0.001 0.001
+													}
                           HingeJoint {
                             device RotationalMotor {
                               name "ArmLowerR"
@@ -320,7 +316,11 @@ Robot {
                               ## Begin Wrist Yaw
                               translation 0 -0.186 -0.030
                               children [
-                                RIGHT_WRIST {scale 0.001 0.001 0.001}
+																RIGHT_ELBOW {
+																	translation 0 0.186 0
+																	rotation 0 1 0 3.14159
+																	scale 0.001 0.001 0.001
+																}
                                 HingeJoint {
                                   device RotationalMotor {
                                     name "RightWristYaw"
@@ -339,10 +339,7 @@ Robot {
                                   endPoint Solid {
                                     ## Begin Wrist Roll
                                     children [
-                                      Transform {
-                                        translation 0 -0.065 0
-                                        children [Shape{geometry Box {size 0.04 0.130 0.04}}]
-                                      }
+																			RIGHT_WRIST {scale 0.001 0.001 0.001}
                                       HingeJoint {
                                         device RotationalMotor {
                                           name "RightWristRoll"
@@ -362,6 +359,10 @@ Robot {
                                           ## Begin Wrist Yaw2
                                           translation 0 -0.130 0
                                           children [
+																						Transform {
+																							translation 0 0.065 0
+																							children [Shape{geometry Box {size 0.04 0.130 0.04}}]
+																						}
                                             HingeJoint {
                                               device RotationalMotor {
                                                 name "RightWristYaw2"
@@ -436,7 +437,7 @@ Robot {
           } # End of the ShoulderL RotationalMotor
           jointParameters HingeJointParameters {
             # Straight up in the y-axis for webots
-            axis -1 0 0
+            axis 1 0 0
             # I think anchor means the up direction?
             anchor -0.081 0 0
           } # End of the ShoulderL HingeJointParameters
@@ -473,10 +474,6 @@ Robot {
                       translation 0 0 0.024
                       rotation 0 0 1 -1.5708
                     }
-                    LEFT_ARM {
-                      translation 0 -0.027 0
-                      scale 0.001 0.001 0.001
-                    }
                     HingeJoint {
                       device RotationalMotor {
                         name "LeftShoulderYaw"
@@ -496,11 +493,10 @@ Robot {
                         ## Begin Elbow
                         translation 0 -0.246 0.030
                         children [
-                          LEFT_ELBOW {
-                            translation 0 0 -0.03
-                            rotation 0 1 0 0
-                            scale 0.001 0.001 0.001
-                          }
+													LEFT_ARM {
+														translation 0 0.219 -0.030
+														scale 0.001 0.001 0.001
+													}
                           HingeJoint {
                             device RotationalMotor {
                               name "ArmLowerL"
@@ -520,7 +516,11 @@ Robot {
                               ## Begin Wrist Yaw
                               translation 0 -0.186 -0.030
                               children [
-                                RIGHT_WRIST {scale 0.001 0.001 0.001}
+																LEFT_ELBOW {
+																	translation 0 0.186 0
+																	rotation 0 1 0 0
+																	scale 0.001 0.001 0.001
+																}
                                 HingeJoint {
                                   device RotationalMotor {
                                     name "LeftWristYaw"
@@ -539,6 +539,7 @@ Robot {
                                   endPoint Solid {
                                     ## Begin Wrist Roll
                                     children [
+																			RIGHT_WRIST {scale 0.001 0.001 0.001}
                                       Transform {
                                         translation 0 -0.065 0
                                         children [Shape{geometry Box {size 0.04 0.130 0.04}}]

@@ -31,7 +31,7 @@ function state.entry()
   motion_ch:send'stand'
 
   --Reset pose
-  wcm.set_robot_pose_odom({0,0,0})
+  wcm.set_robot_odometry({0,0,0})
   wcm.set_robot_pose({0,0,0})
 end
 

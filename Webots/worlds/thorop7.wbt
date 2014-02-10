@@ -30,8 +30,8 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 
-#THOROP7_Update {
-THOROP7_Kinematic {
+THOROP7_Update {
+#THOROP7_Kinematic {
   translation 0 1.155 0
   controller "thorop"
   controllerArgs "0 32"

@@ -37,13 +37,7 @@ function state.entry()
 
 
 print(string.format("qLArmr: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
-qLArm[1]*Body.RAD_TO_DEG,
-qLArm[2]*Body.RAD_TO_DEG,
-qLArm[3]*Body.RAD_TO_DEG,
-qLArm[4]*Body.RAD_TO_DEG,
-qLArm[5]*Body.RAD_TO_DEG,
-qLArm[6]*Body.RAD_TO_DEG,
-qLArm[7]*Body.RAD_TO_DEG
+unpack(qLArm*RAD_TO_DEG)
 ))
 
 
@@ -63,14 +57,7 @@ qLArm[7]*Body.RAD_TO_DEG
 
 
 print(string.format("QLArmTarget: %.2f %.2f %.2f %.2f",
-qLArmTarget[1]*Body.RAD_TO_DEG,
-qLArmTarget[2]*Body.RAD_TO_DEG,
-qLArmTarget[3]*Body.RAD_TO_DEG,
-qLArmTarget[4]*Body.RAD_TO_DEG,
-qLArmTarget[5]*Body.RAD_TO_DEG,
-qLArmTarget[6]*Body.RAD_TO_DEG,
-qLArmTarget[7]*Body.RAD_TO_DEG
-
+unpack( vector.new(qLArmTarget)*RAD_TO_DEG)
 ))
 
 

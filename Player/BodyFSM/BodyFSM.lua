@@ -6,8 +6,8 @@
 local fsm = require'fsm'
 -- Require the needed states
 local bodyIdle = require'bodyIdle'
---[[
 local bodyInit = require'bodyInit'
+--[[
 local bodyStepOver = require'bodyStepOver'
 local bodyStepPlan = require'bodyStepPlan'
 local bodyStepPlan2 = require'bodyStepPlan2' --90 deg turn
@@ -28,8 +28,8 @@ local bodyGrab = require'bodyGrab'
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
 local sm = fsm.new(bodyIdle)
---[[
 sm:add_state(bodyInit)
+--[[
 sm:add_state(bodyStepOver)
 sm:add_state(bodyStepPlan)
 sm:add_state(bodyStepPlan2)
@@ -44,11 +44,11 @@ sm:add_state(bodyPath)
 sm:add_state(bodyGrab)
 
 -- Setup the transitions for this FSM
---[[
 sm:set_transition( bodyIdle, 'init', bodyInit )
-sm:set_transition( bodyIdle, 'drive', bodyDrive)
-
 sm:set_transition( bodyInit, 'done', bodyIdle )
+
+--[[
+sm:set_transition( bodyIdle, 'drive', bodyDrive)
 
 sm:set_transition( bodyIdle,   'follow', bodyStepWaypoint )
 sm:set_transition( bodyStepWaypoint,   'done', bodyIdle )

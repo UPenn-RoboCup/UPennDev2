@@ -35,7 +35,7 @@ function state.entry()
   Body.request_larm_position()
   Body.request_rarm_position()
 
-   mcm.set_arm_handoffset(Config.arm.handoffset.gripper)
+  mcm.set_arm_handoffset(Config.arm.handoffset.gripper)
 end
 
 function state.update()
@@ -58,7 +58,7 @@ function state.update()
 
   Body.set_larm_command_position(qLArm)  
   Body.set_rarm_command_position(qRArm)
---  print("LArm jangle:",vector.new(qLArm)*Body.RAD_TO_DEG)
+  --print("LArm jangle:",vector.new(qLArm)*RAD_TO_DEG)
   
 end
 

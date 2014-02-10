@@ -139,7 +139,7 @@ servo.direction = vector.new({
 assert(#servo.direction==nJoint,'Bad servo direction!')
 
 -- TODO: Offset in addition to bias?
-servo.rad_bias = vector.new({
+servo.rad_offset = vector.new({
   0,0, -- Head
   -90,90,-90,45,90,0,0, --LArm
   0,0,0,-45,0,0, --LLeg
@@ -150,15 +150,15 @@ servo.rad_bias = vector.new({
   0,0, -- right gripper
   0, -- Lidar pan
 })*DEG_TO_RAD
-assert(#servo.rad_bias==nJoint,'Bad servo rad_bias!')
+assert(#servo.rad_offset==nJoint,'Bad servo rad_offset!')
 
 --SJ: Arm servos should at least move up to 90 deg
 servo.min_rad = vector.new({
   -90,-80, -- Head
-  -90, 0, -90, -160,      -180,-87,-180, --LArm
+  -90, 0, -90,    -160,   -180,-87,-180, --LArm
   -175,-175,-175,-175,-175,-175, --LLeg
   -175,-175,-175,-175,-175,-175, --RLeg
-  -90,-87,-90,-160,       -180,-87,-180, --RArm
+  -90,-87,-90,    -160,   -180,-87,-180, --RArm
   -90,-45, -- Waist
   0, -90,
   0, -90,
@@ -168,10 +168,10 @@ assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 
 servo.max_rad = vector.new({
   90,80, -- Head
-  160,87,90,-25,     180,87,180, --LArm
+  160,87,90,   0,     180,87,180, --LArm
   175,175,175,175,175,175, --LLeg
   175,175,175,175,175,175, --RLeg
-  160,-0,90,-25,     180,87,180, --RArm
+  160,-0,90,   0,     180,87,180, --RArm
   90,45, -- Waist
   90,20,
   90,20,
@@ -201,11 +201,11 @@ end
 
 -- TODO: How is direction used?
 -- Add the bias in to the min/max helper tables
-servo.step_bias = vector.zeros(nJoint)
+servo.step_offset = vector.zeros(nJoint)
 servo.min_step  = vector.zeros(nJoint)
 servo.max_step  = vector.zeros(nJoint)
-for i, bias in ipairs(servo.rad_bias) do
-  servo.step_bias[i] = bias * servo.to_steps[i]
+for i, offset in ipairs(servo.rad_offset) do
+  servo.step_offset[i] = offset * servo.to_steps[i]
 end
 
 -- Clamp the radian within the min and max
@@ -223,14 +223,14 @@ end
 local make_joint_step = function( idx, radian )
   radian = radian_clamp( idx, radian )
 	local step = math.floor(servo.direction[idx] * radian * servo.to_steps[idx]
-	+ servo.step_zero[idx] + servo.step_bias[idx])
+	+ servo.step_zero[idx] + servo.step_offset[idx])
 	return step
 end
 
 -- Step to radian
 local make_joint_radian = function( idx, step )
 	local radian = servo.direction[idx] * servo.to_radians[idx] *
-	(step - servo.step_zero[idx] - servo.step_bias[idx])
+	(step - servo.step_zero[idx] - servo.step_offset[idx])
 	return radian
 end
 
@@ -1541,10 +1541,10 @@ elseif IS_WEBOTS then
 
   servo.direction = vector.new({
     -1,-1, -- Head
-    1,-1,-1,1,-1,-1,-1, --LArm
-    -1,-1,-1,-1,1,1, --LLeg
-    -1,-1,1,1,-1,1, --LArm
-    -1,-1,-1,-1,-1,-1,-1, --RArm
+    1,1,1,  1,  -1,-1,-1, --LArm
+    --[[Yaw/Roll:]] -1, 1, --[[3 Pitch:]] 1,1,1, 1, --LLeg
+    --[[Yaw/Roll:]] -1, 1, --[[3 Pitch:]] 1,1,1, 1, --RLeg
+    1,1,1,  1,  -1,-1,-1, --RArm
     -- TODO: Check the gripper
     -1,1, -- Waist
     1,-1, -- left gripper
@@ -1552,49 +1552,17 @@ elseif IS_WEBOTS then
 
     1, -- Lidar pan
   })
-  servo.rad_bias = vector.new({
+  servo.rad_offset = vector.new({
     0,0, -- head
-    -90,0,0,0,0,0,0,
+    -90,0,0,  0,  0,0,0,
     0,0,0,0,0,0,
     0,0,0,0,0,0,
-    -90,0,0,0,0,0,0,
+    -90,0,0,  0,  0,0,0,
     0,0,
     0,0,
     0,0,
     60,
   })*DEG_TO_RAD
-
-  servo.min_rad = vector.new({
-    -90,-80, -- Head
-    -90, 0, -90, -160,      -180,-87,-180, --LArm
-    -175,-175,-175,-175,-175,-175, --LLeg
-    -175,-175,-175,-175,-175,-175, --RLeg
-    -90,-180,-90,-160,       -180,-87,-180, --RArm
-    -90,-45, -- Waist
-
-
---  80,80, --lhand
-
-    120,80, --lhand
-    120,60,--rhand
-
-    -60, -- Lidar pan
-  })*DEG_TO_RAD
-
-  servo.max_rad = vector.new({
-    90, 80, -- Head
-    160,180,90,0,     180,87,180, --LArm
-    175,175,175,175,175,175, --LLeg
-    175,175,175,175,175,175, --RLeg
-    160,-0,90,0,     180,87,180, --RArm
-    90,79, -- Waist
-
-
-    0,45,  --lhand
-    0,45,    --rhand
-    60, -- Lidar pan
-  })*DEG_TO_RAD
-
 
   -- Default configuration (toggle during run time)
   local ENABLE_CAMERA = false
@@ -1774,7 +1742,7 @@ elseif IS_WEBOTS then
     for idx, jtag in ipairs(tags.joints) do
       if jtag>0 then
         local val = webots.wb_motor_get_position( jtag )
-        local rad = servo.direction[idx] * val - servo.rad_bias[idx]
+        local rad = servo.direction[idx] * val - servo.rad_offset[idx]
         jcm.sensorPtr.position[idx] = rad
         jcm.actuatorPtr.command_position[idx] = rad
         jcm.treadPtr.position[idx] = t
@@ -1822,7 +1790,7 @@ elseif IS_WEBOTS then
 
 			-- Only set in webots if Torque Enabled
 			if en>0 and jtag>0 then
-        local pos = servo.direction[idx] * (new_pos + servo.rad_bias[idx])
+        local pos = servo.direction[idx] * (new_pos + servo.rad_offset[idx])
         --SJ: Webots is STUPID so we should set direction correctly to prevent flip
         local val = webots.wb_motor_get_position( jtag )
 
@@ -1892,7 +1860,7 @@ elseif IS_WEBOTS then
 		for idx, jtag in ipairs(tags.joints) do
 			if jtag>0 then
 				local val = webots.wb_motor_get_position( jtag )
-				local rad = servo.direction[idx] * val - servo.rad_bias[idx]
+				local rad = servo.direction[idx] * val - servo.rad_offset[idx]
         jcm.sensorPtr.position[idx] = rad
         jcm.treadPtr.position[idx] = t
 			end
@@ -1909,7 +1877,7 @@ elseif IS_WEBOTS then
     if ENABLE_CHEST_LIDAR then
       local w = webots.wb_camera_get_width(tags.chest_lidar)
       local lidar_fr = webots.wb_camera_get_range_image(tags.chest_lidar)
-      local lidar_array = carray.float( lidar_fr, w*h )
+      local lidar_array = carray.float( lidar_fr, w )
 			-- Send the message on the lidar channel
 			local meta = {}
 			meta.t     = Body.get_time()
@@ -1921,9 +1889,8 @@ elseif IS_WEBOTS then
     -- Grab a lidar scan
     if ENABLE_HEAD_LIDAR then
       local w = webots.wb_camera_get_width(tags.head_lidar)
-      local h = webots.wb_camera_get_height(tags.head_lidar)
       local lidar_fr = webots.wb_camera_get_range_image(tags.head_lidar)
-      local lidar_array = carray.float( lidar_fr, w*h )
+      local lidar_array = carray.float( lidar_fr, w )
 			-- Send the message on the lidar channel
 			local meta = {}
 			meta.t     = Body.get_time()

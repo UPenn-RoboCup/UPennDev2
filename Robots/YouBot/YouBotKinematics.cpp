@@ -44,7 +44,7 @@ std::vector<double> get_xz_angles(double x, double z, double p){
   // Given the "pitch", find the effective position
   double dx = x - gripperLength * sin(p);
   double dz = z - gripperLength * cos(p);
-  
+	
   //printf("\n\tdx: %lf, dz: %lf\n",dx,dz);
   
   double dr2 = dx*dx+dz*dz;
@@ -82,41 +82,86 @@ std::vector<double> get_xz_angles(double x, double z, double p){
   xz[0] = shoulderPitch;
   xz[1] = PI - elbow;
   xz[2] = p - (shoulderPitch + xz[1]);
+	//printf("\tp: %lf\n\tSum: %lf\n\tdiff: %lf\n",p,shoulderPitch + xz[1], xz[2]);
 
   return xz;
 }
 
 // Inverse given a transform
-std::vector<double> YouBot_kinematics_inverse_arm(Transform tr) {
-  double x, y, z, yaw, p, hand_yaw;
+std::vector<double> YouBot_kinematics_inverse_arm(Transform tr,std::vector<double> q) {
+  double x, y, z, yaw, p, z1, hand_yaw, tmp1, tmp2, dyaw;
 
   // Grab the position
   x = tr(0,3);
   y = tr(1,3);
   z = tr(2,3);
-  // Grab the "pitch" desired (ZYZ where Y is "pitch")
-  double tmp1 = tr( 0, 2 );
-  double tmp2 = tr( 1, 2 );
-  p = atan2(
-    sqrt(tmp1*tmp1 + tmp2*tmp2),
-    tr( 2, 2 )
-  );
-  printf("p: %lf\n",p);
-  // Grab also the "yaw" of the gripper (ZYZ, where 2nd Z is yaw)
-  hand_yaw = atan2(
-    tr( 2, 1 ),
-    -1*tr( 2, 0 )
-  );
+	// Grab the pitch
+	tmp1 = tr( 2, 2 );
+	tmp1 = tmp1 > 1 ? 1 : tmp1;
+	tmp1 = tmp1 < -1 ? -1 : tmp1;
+	p = acos( tmp1 );
+	// Yaw is the rotation of the first arm joint on the base
+	//printf("x: %lf, y: %lf\n",x,y);
+	
+	// Around the zero position
+  yaw = ( x<1e-9 && x>-1e-9 && y<1e-9 && y>-1e-9 ) ?
+		0 : atan2(y,x);
+	
+	// Check if major differences between current joint angle
+	tmp2 = q[0];
+	dyaw = tmp2 > yaw ? tmp2 - yaw : yaw - tmp2;	
+	if(dyaw>0.1){
+		//printf("cur: %lf; desired: %lf\n",tmp2,yaw);
+		printf("FIXING spin based on current base yaw\n");
+		yaw -= PI;
+	}
 
-  //printf("xyz: %lf %lf %lf\n",x,y,z);
-  //printf("zyz: %lf %lf %lf\n",0.0,p,hand_yaw);
-
-  // Remove rotation of the shoulder yaw
+	// Remove rotation of the shoulder yaw
+	// New "x" is the distance, less the offset, in the xz plane
   double dist2 = x*x + y*y;
   double dist = sqrt(dist2);
-  yaw = atan2(y,x);
-  // x is the distance now, less the offset
   x = dist - baseLength;
+	
+	printf("X: %lf\n",x);
+	
+	if( tmp1 > .999 || tmp1 < -.999 ){
+		// Unreliable Calculations of the other angles...
+		// Use approximation, since cos(p)=1, sin(p)=0
+		hand_yaw = asin( tr( 1, 0 ) );
+		z1 = 0;
+	} else {
+		// Grab also the "yaw" of the gripper (ZYZ, where 2nd Z is yaw)
+		tmp1 =  tr( 2, 1 );
+		tmp2 = -tr( 2, 0 );
+		//printf("t1: %lf t2: %lf\n",tmp1,tmp2);
+		hand_yaw = ( tmp1<1e-9 && tmp1>-1e-9 && tmp2<1e-9 && tmp2>-1e-9 ) ?
+			0 : atan2(tmp1,tmp2);
+		
+		// Grab the "pitch" desired (ZYZ where Y is "pitch")
+		tmp1 = tr( 0, 2 );
+		tmp2 = tr( 1, 2 );
+		z1 = ( tmp1<1e-9 && tmp1>-1e-9 && tmp2<1e-9 && tmp2>-1e-9 ) ?
+			0 : atan2(tmp2,tmp1);
+	}
+	
+	// See the difference here
+	dyaw = z1 > yaw ? z1 - yaw : yaw - z1;	
+	
+  //printf("xyz: %lf %lf %lf\n",x,y,z);
+  //printf("zyz: %lf %lf %lf\n",z1,p,hand_yaw);
+	
+	if(dyaw>0.0001){
+		printf("NEAR SOME SINGULARITY!\n");
+		if(p>3.14){
+			printf("\tBAD PITCH!\n");
+			p = PI_DOUBLE - p;
+			hand_yaw -= z1;
+			z1 = 0;
+		}
+		// TODO: return NULL
+	}
+	
+	printf("p: %lf, yaw: %lf z1: %lf hyaw: %lf, dy: %lf\n", p, yaw, z1, hand_yaw, dyaw);
 
   // Grab the XZ plane angles
   std::vector<double> xz = get_xz_angles( x, z, p );

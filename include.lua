@@ -10,8 +10,8 @@ HOME = HOME:gsub('Robots.*$','')
 HOME = HOME:gsub('Operate.*$','')
 HOME = HOME:gsub('Modules.*$','')
 HOME = HOME:gsub('Tools.*$','')
-HOME = HOME:gsub('Frameworks.*$','')
 HOME = HOME:gsub('Util.*$','')
+HOME = HOME:gsub('Test.*$','')
 if HOME:find'Webots' ~= nil then
   HOME = HOME:gsub('Webots.*$','')
   IS_WEBOTS = true
@@ -45,9 +45,6 @@ package.path = HOME..'/Player/World/?.lua;'..package.path
 -- include Config files to path
 package.path = HOME..'/Config/?.lua;'..package.path
 
--- Save the hostname
-local unix = require'unix'
-HOSTNAME = unix.gethostname()
 
 -- Config is global now!
 Config = require'Config'
@@ -58,6 +55,10 @@ package.cpath = HOME..'/Robots/'..Config.PLATFORM_NAME..'/?.so;'..package.cpath
 
 KEYFRAME_DIR = HOME.."/Player/Keyframes"
 LOG_DIR = HOME.."/Logs/"
+
+-- Save the hostname
+local unix = require'unix'
+HOSTNAME = unix.gethostname()
 
 -- Print out the globally available variables, when using include.lua
 function print_env()

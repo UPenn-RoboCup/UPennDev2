@@ -78,7 +78,13 @@ for i,v in ipairs{'torque','velocity','position'} do
   Body['get_'..v] = jcm['get_sensor_'..v]
   Body['set_'..v] = jcm['set_sensor_'..v]
 end
-Body.set_command_position = jcm.set_actuator_command_position
+Body.set_command_position = function(val)
+	-- Clamp each value
+	for i,v in ipairs(val) do
+		val[i] = math.max(math.min(v,servo.max_rad[i]),servo.min_rad[i])
+	end
+	jcm.set_actuator_command_position(val)
+end
 Body.get_command_position = jcm.get_actuator_command_position
 
 -- Base convience
@@ -131,8 +137,6 @@ Body.update = function()
   -- Set joints from shared memory
   local desired_pos = jcm.get_actuator_command_position()
   for i,v in ipairs(desired_pos) do
-		-- Clamp into allowable range
-		local val = math.max(math.min(v,servo.max_rad[i]),servo.min_rad[i])
     -- Correct the direction and the offset
     val = val * servo.direction[i] + servo.offset[i]
 		--print(i,'set',v,'=>',val)
@@ -379,12 +383,8 @@ if IS_WEBOTS then
     for i,v in ipairs(cmds) do
       local jtag = tags.joints[i]
       if jtag then
-        -- Clamp the angle
-        local val = math.max(math.min(v,servo.max_rad[i]),servo.min_rad[i])
-        -- Put into the right direction
-        val = val * servo.direction[i] + servo.offset[i]
         -- Push to webots
-        webots.wb_motor_set_position( jtag, val )
+        webots.wb_motor_set_position( jtag, v * servo.direction[i] + servo.offset[i] )
       end
     end
     

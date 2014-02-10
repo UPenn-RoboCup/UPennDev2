@@ -98,7 +98,11 @@ local function process_keycode(keycode,t_diff)
     local qArm = Body.get_command_position()
     local fk = K.forward_arm(qArm)
     local desired_tr = d_tr * fk
-    local iqArm = vector.new(K.inverse_arm(desired_tr))
+		--[[
+		local zyz = T.to_zyz(desired_tr)
+    print('des zyz:',zyz[1],zyz[2],zyz[3])
+		--]]
+    local iqArm = vector.new(K.inverse_arm(desired_tr,qArm))
     Body.set_command_position(iqArm)
     return
   elseif post_arm[char] then
@@ -107,7 +111,11 @@ local function process_keycode(keycode,t_diff)
     local fk = K.forward_arm(qArm)
     --local desired_tr = T.local_extrinsic_rot(fk,d_tr)
     local desired_tr = fk * d_tr
-    local iqArm = vector.new(K.inverse_arm(desired_tr))
+		--[[
+		local zyz = T.to_zyz(desired_tr)
+    print('des zyz:',zyz[1],zyz[2],zyz[3])
+		--]]
+    local iqArm = vector.new(K.inverse_arm(desired_tr,qArm))
     Body.set_command_position(iqArm)
     return
   end

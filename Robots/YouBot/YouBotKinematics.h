@@ -26,12 +26,15 @@ extern "C"
 
 #endif
 
-const double PI = 2*asin(1);
+const double PI_HALF = asin(1);
+const double PI = 2*PI_HALF;
+const double PI_DOUBLE = 4*PI_HALF;
 const double SQRT2 = sqrt(2);
 
 // Based on User Manual
 // arm1: from center of the z rotation to the protrusion of the arm
-const double baseLength = .077;
+//const double baseLength = .077;
+const double baseLength = .020;
 // arm2: 
 const double lowerArmLength = .155;
 // arm3: 
@@ -47,7 +50,7 @@ void printTransform(Transform tr);
 void printVector(std::vector<double> v);
 
 Transform YouBot_kinematics_forward_arm(const double *q);
-std::vector<double> YouBot_kinematics_inverse_arm(Transform tr);
+std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<double> q);
 std::vector<double> YouBot_kinematics_inverse_arm_position(double x, double y, double z);
 
 #endif

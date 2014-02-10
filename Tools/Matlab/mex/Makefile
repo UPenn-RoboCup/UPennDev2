@@ -4,101 +4,86 @@ MEXEXT=$(shell mexext)
 PWD=$(shell pwd)
 LIBRT= $(shell [ `uname` != "Darwin" ] && echo "-lrt")
 
-TARGETS= \
-	time mexshm getch \
-	udp_recv udp_send cjpeg djpeg \
-	msgpack zmq \
-	tcpopen lidartrans \
-	serialize deserialize \
-	zlibCompress zlibUncompress \
-	astar_graph \
-	astar_nonholonomic16 \
-	dijkstra_graph \
-	dijkstra_matrix \
-	dijkstra_nonholonomic16 \
-	subs_interp \
-	subs_interp3_circular \
-	ImageProc
+TARGETS=\
+	time.$(MEXEXT) \
+	mexshm.$(MEXEXT) \
+	getch.$(MEXEXT) \
+	udp_recv.$(MEXEXT) \
+	udp_send.$(MEXEXT) \
+	cjpeg.$(MEXEXT) \
+	djpeg.$(MEXEXT) \
+	msgpack.$(MEXEXT) \
+	zmq.$(MEXEXT) \
+	tcpopen.$(MEXEXT) \
+	lidartrans.$(MEXEXT) \
+	zlibCompress.$(MEXEXT) \
+	zlibUncompress.$(MEXEXT) \
+	astar_graph.$(MEXEXT) \
+	astar_nonholonomic16.$(MEXEXT) \
+	dijkstra_graph.$(MEXEXT) \
+	dijkstra_matrix.$(MEXEXT) \
+	dijkstra_nonholonomic16.$(MEXEXT) \
+	subs_interp.$(MEXEXT) \
+	subs_interp3_circular.$(MEXEXT) \
+	yuyv2label.$(MEXEXT) \
+	block_bitor.$(MEXEXT) \
+	color_count.$(MEXEXT) \
+	color_stats.$(MEXEXT) \
+	connected_regions.$(MEXEXT) \
+	goal_posts.$(MEXEXT) \
+	field_lines.$(MEXEXT) \
+	field_occupancy.$(MEXEXT) \
+	field_spots.$(MEXEXT) \
+	label_to_mask.$(MEXEXT) \
+#	test \
+#	serialize.$(MEXEXT) \
+#	deserialize.$(MEXEXT) \
 
 .PHONY: all clean
 	
 all: $(TARGETS)
 
-time:
-	$(MEX) $@.cc
+%.o: %.cc
+	$(CXX) -fpic -O3 -o $@ -c $<
 
-mexshm:
-	$(MEX) $@.cc $(LIBRT)
+%.$(MEXEXT): %.cc
+	$(MEX) $<
 
-getch:
-	$(MEX) $@.c
-
-udp_send:
-	$(MEX) $@.cc
-
-udp_recv:
-	$(MEX) $@.cc
-
-lidartrans:
-	$(MEX) $@.cc
+mexshm.$(MEXEXT):
+	$(MEX) mexshm.cc $(LIBRT)
 	
-cjpeg:
-	$(MEX) $@.cc -ljpeg
+cjpeg.$(MEXEXT):
+	$(MEX) cjpeg.cc -ljpeg
 
-djpeg:
-	$(MEX) $@.cc -ljpeg
+djpeg.$(MEXEXT):
+	$(MEX) djpeg.cc -ljpeg
 
-zmq:	
-	$(MEX) $@.cc -lzmq
+zmq.$(MEXEXT):
+	$(MEX) zmq.cc -lzmq
 	
-msgpack:
-	$(MEX) $@.cc -lmsgpack
+msgpack.$(MEXEXT):
+	$(MEX) msgpack.cc -lmsgpack
 	
-tcpopen:
-	$(MEX) $@.c
+zlibCompress.$(MEXEXT):
+	$(MEX) zlibCompress.cc -lz
 
-serialize:
-	$(MEX) $@.c
-
-deserialize:
-	$(MEX) $@.c
+zlibUncompress.$(MEXEXT):
+	$(MEX) zlibUncompress.cc -lz
 	
-zlibCompress:
-	$(MEX) $@.cc -lz
+connected_regions.$(MEXEXT): connected_regions.cc RegionProps.o ConnectRegions.o
+	$(MEX) $^
 
-zlibUncompress:
-	$(MEX) $@.cc -lz
-	
-astar_graph:
-	$(MEX) $@.cc
+goal_posts.$(MEXEXT): goal_posts.cc RegionProps.o
+	$(MEX) $^
 
-astar_nonholonomic16:
-	$(MEX) $@.cc
+goal_crossbar.$(MEXEXT): goal_crossbar.cc RegionProps.o
+	$(MEX) $^
 
-dijkstra_graph:
-	$(MEX) $@.cc
+field_lines.$(MEXEXT): field_lines.cc RadonTransform.o
+	$(MEX) $^
 
-dijkstra_matrix:
-	$(MEX) $@.cc
-
-dijkstra_nonholonomic16:
-	$(MEX) $@.cc
-
-subs_interp:
-	$(MEX) $@.cc
-
-subs_interp3_circular:
-	$(MEX) $@.cc
-
-# Platform dependent modules
-serialopen:
-	$(MEX) $@.c	
-uvc:
-	$(MEX) $@.cc
-	
-ImageProc:
-	@echo "Building ImageProc"
-	cd ImageProc && make && cd $(PWD)
+field_spots.$(MEXEXT): field_spots.cc RegionProps.o ConnectRegions.o
+	$(MEX) $^
 	
 test:
 	@echo "Testing matlab scripts!"

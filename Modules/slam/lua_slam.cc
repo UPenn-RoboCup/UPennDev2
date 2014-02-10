@@ -19,7 +19,7 @@ extern "C" {
 #include <iostream>
 #endif
 
-#define SKIP 2
+#define SKIP 1
 #define DEFAULT_RESOLUTION 0.05
 #define DEFAULT_INV_RESOLUTION 20
 
@@ -29,6 +29,10 @@ unsigned int yis[1081];
 /* Laser points in map coordinates */
 double lxs_map[1081];
 double lys_map[1081];
+
+// For updating the map
+const int range_max = 255;
+const int range_min = 0;
 
 /* Store the min and max values of the map */
 /* TODO: either make as a module, or pass as arguments. */
@@ -56,18 +60,18 @@ int lua_set_boundaries(lua_State *L) {
 }
 
 int lua_grow_map(lua_State *L) {
-  THDoubleTensor *cost_t = (THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
+	THDoubleTensor *cost_t = (THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
 	THArgCheck(cost_t->nDimension == 2, 1, "tensor must have two dimensions");
 	int r_i = luaL_checkint(L, 2);
 	int r_j = luaL_checkint(L, 3);
 	long m = cost_t->size[0];
-  long n = cost_t->size[1];
-	long size = m*n;
+	long n = cost_t->size[1];
+	//long size = m*n;
 	THDoubleTensor *grown_t = THDoubleTensor_newClone(cost_t);
 	double* grown_ptr = grown_t->storage->data;
 	double* cur_ptr = grown_ptr;
 	for (long i = 0; i<m; i++){
-    for (long j = 0; j<n; j++){
+		for (long j = 0; j<n; j++){
 			cur_ptr++;
 			if(i<r_i||i>m-r_i||j<r_j||j>n-r_j) continue;
 			double c = THTensor_fastGet2d( cost_t, i, j );
@@ -129,18 +133,7 @@ int lua_match(lua_State *L) {
 	npxs = pxs_t->size[0];
 	npys = pys_t->size[0];
 
-	// TODO: create the likelihoods here each time!
-	/* Grab the output Tensor */
-	/* Ensure that the likelihood map matches the candidate sizes */
-	/*
-	THDoubleTensor * likelihoods_t =
-		(THDoubleTensor *) luaT_checkudata(L, 6, "torch.DoubleTensor");
-	const unsigned int nlikes = likelihoods_t->storage->size;
-	if (likelihoods_t->size[1] != npxs ||
-			likelihoods_t->size[2]!=npys ||
-			likelihoods_t->size[0]!=npths)
-		return luaL_error(L, "Likelihood output wrong");
-	*/
+	// Make the likliehoods storage
 	THDoubleTensor *likelihoods_t = THDoubleTensor_newWithSize3d(npths,npxs,npys);
 	// zero it...
 	THDoubleTensor_zero( likelihoods_t );
@@ -150,8 +143,8 @@ int lua_match(lua_State *L) {
 
 	// Add the prior to the likelihoods
 	long mid_th = floor(npths/2);
-	long mid_x = floor(npxs/2);
-	long mid_y = floor(npys/2);
+	long mid_x  = floor(npxs/2);
+	long mid_y  = floor(npys/2);
 	THTensor_fastSet3d(likelihoods_t,mid_th,mid_x,mid_y,prior);
 
 	/* Precalculate the indices for candidate x and y */
@@ -167,7 +160,6 @@ int lua_match(lua_State *L) {
 				unsigned int* tmpx = xis;
 				unsigned int xstride1 = pxs_t->stride[0];
 				for( ii=0; ii<npxs; ii++ ){
-					//xis[ii] = (THTensor_fastGet1d(pxs_t,ii)-xmin)*invRes;
 					*tmpx = ( *pxs_ptr - xmin )*invRes;
 					pxs_ptr += xstride1;
 					tmpx++;
@@ -179,9 +171,7 @@ int lua_match(lua_State *L) {
 				unsigned int* tmpy = yis;
 				unsigned int ystride1 = pys_t->stride[0];
 				for(unsigned int ii=0;ii<npys;ii++){
-					//yis[ii] = (THTensor_fastGet1d(pys_t,ii)-ymin)*invRes;
 					*tmpy = ( *pys_ptr - ymin )*invRes;
-					//printf("y: %lf, yi: %d\n",*pys_ptr,*tmpy);
 					pys_ptr+=ystride1;
 					tmpy++;
 				}
@@ -198,12 +188,6 @@ int lua_match(lua_State *L) {
 					pls_ptr += pstride;
 					tmplx++;
 					tmply++;
-					/*
-						 double lx = THTensor_fastGet2d( lY_t, ii, 0) * invRes;
-						 double ly = THTensor_fastGet2d( lY_t, ii, 1) * invRes;
-						 printf("lx (%f) tmplx (%f)\t",lx,*tmplx);
-						 printf("lx (%f) tmplx (%f)\n",ly,*tmply);
-						 */
 				}
 			} /*section*/
 		}/*sections*/
@@ -222,14 +206,14 @@ int lua_match(lua_State *L) {
 	/* Variables for each distribution */
 	double* th_ptr = pths_t->storage->data;
 	double* tmp_like = likestorage;
-	//#pragma omp parallel for default(none) private(tmp_xi,tmp_yi,tmp_lx_map,tmp_ly_map, tmp_like_with, map_ptr_with_x, pi, pyi, pxi, xi, yi, theta, costh, sinth, lx_map, ly_map, x_map, y_map, npths, pthi, nps, npxs, npys )
+
 	for ( pthi=0; pthi < npths; pthi++ ) {
 
 		/* Matrix transform for each theta */
 		theta = *th_ptr;
-		th_ptr += th_stride;
 		costh = cos( theta );
 		sinth = sin( theta );
+		th_ptr += th_stride;
 
 		/* Reset the pointers to the candidate points and liklihoods */
 		tmp_xi = xis;
@@ -316,9 +300,11 @@ int lua_match(lua_State *L) {
 		}
 		tmplikestorage++;
 	}
-	long ithmax = ilikestorage / likelihoods_t->stride[0];
-	long ixmax  = (ilikestorage - ithmax*likelihoods_t->stride[0]) / likelihoods_t->stride[1];
-	long iymax  = ilikestorage - ithmax*likelihoods_t->stride[0] - ixmax*likelihoods_t->stride[1];
+	long like_stride0 = likelihoods_t->stride[0];
+	long like_stride1 = likelihoods_t->stride[1];
+	long ithmax = ilikestorage / like_stride0;
+	long ixmax  = (ilikestorage - ithmax*like_stride0) / like_stride1;
+	long iymax  = ilikestorage - ithmax*like_stride0 - ixmax*like_stride1;
 
 	/* Push the likelihood positions */
 	luaT_pushudata(L, likelihoods_t, "torch.DoubleTensor");
@@ -339,6 +325,143 @@ int lua_match(lua_State *L) {
 	return 2;
 }
 
+/* Update the map with the laser scan points */
+int lua_update_map(lua_State *L) {
+
+	/* Get the map, which is a ByteTensor */
+	const THByteTensor * map_t =
+		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+	// Check contiguous
+	THArgCheck(map_t->stride[1] == 1, 1, "Improper memory layout (j)");
+	const long map_istride = map_t->stride[0];
+	THArgCheck(map_istride == map_t->size[1], 1, "Improper memory layout (i)");
+
+	/* Grab the updated points */
+	const THDoubleTensor * pts_t =
+		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
+	THArgCheck(pts_t->size[1]==2, 2, "Proper laser points");
+
+	/* Grab the increment value */
+	const int inc = luaL_checknumber(L, 3);
+
+	/* Get the updating table: sets which items were updated */
+	const THDoubleTensor * update_t =
+		(THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
+	THArgCheck(update_t->stride[1] == 1, 4, "Improper memory layout (j)");
+	THArgCheck(update_t->stride[0] == update_t->size[1], 4, "Improper memory layout (i)");
+	THArgCheck(map_istride == update_t->stride[0], 4, "Improper memory layout (i)");
+	
+	/* Grab the timestamp */
+	const double t = luaL_checknumber(L, 5);
+
+	double * update_ptr = (double *)(update_t->storage->data + update_t->storageOffset);
+	uint8_t * map_ptr = (uint8_t *)(map_t->storage->data + map_t->storageOffset);
+	double* pts_ptr = (double *)(pts_t->storage->data + pts_t->storageOffset);
+
+	const long nps  = pts_t->size[0];
+	const int pts_stride = pts_t->stride[0];
+
+	/*
+	// TODO: Check the map size...?
+	const long sizex = map_t->size[0];
+	const long sizey = map_t->size[1];
+	*/
+
+	double x, y;
+	int i, xi, yi, mapLikelihood;
+	long map_idx;
+	double * update_ptr_tmp;
+	uint8_t* map_ptr_tmp;
+	for( i=0; i<nps; i++ ) {
+		// Grab the cartesian coordinates of the point
+		x = *(pts_ptr);
+		y = *(pts_ptr+1);
+		pts_ptr += pts_stride;
+
+		// If out of range...
+		if( x>xmax || y>ymax || x<xmin || y<ymin ) continue;
+
+		/* TODO: ceil or floor these? map_t bounds check? */
+		xi = ( x - xmin ) * invRes;
+		yi = ( y - ymin ) * invRes;
+
+		// Get the index on the map (same as update map)
+		map_idx = xi * map_istride + yi;
+		update_ptr_tmp = update_ptr + map_idx;
+
+		/* Check if this cell has been updated before */
+		if( *update_ptr_tmp >=t ) continue;
+
+		// Find the current likelihood
+		map_ptr_tmp = map_ptr + map_idx;
+		mapLikelihood = *map_ptr_tmp + inc;
+
+		/* --------------------------- */
+		/* bit hack for range limit */
+		/* http://graphics.stanford.edu/~seander/bithacks.html#IntegerMinOrMax */
+		/* newVal = min(mapLikelihood, 255) */
+		mapLikelihood = range_max ^ ((mapLikelihood ^ range_max) & -(mapLikelihood < range_max));
+		mapLikelihood = mapLikelihood ^ ((mapLikelihood ^ range_min) & -(mapLikelihood < range_min));
+		/* --------------------------- */
+
+		// Update the maps
+		*map_ptr_tmp = mapLikelihood;
+		*update_ptr_tmp = t;
+	}
+	return 0;
+}
+
+/* Decay the map around a region from the robot  */
+int lua_decay_map(lua_State *L) {
+
+	/* Get the torch that contains the map data */
+	/* NOTE: This is a sub-map around the robot... stride is important now! */
+	const THByteTensor * map_t =
+		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+	uint8_t * map_ptr = (uint8_t *)(map_t->storage->data + map_t->storageOffset);
+
+	/* Grab the threshold on likelihood */
+	const double thres = luaL_checknumber(L, 2);
+
+	/* Grab by how much to decay the map */
+	const double decay_factor = luaL_checknumber(L, 3);
+
+	/* Get the map properties */
+	const long ystride = map_t->stride[1];
+	THArgCheck(ystride == 1, 1, "Improper memory layout (j)");
+	const long xstride = map_t->stride[0];
+	const long nps_x = map_t->size[0];
+	const long nps_y = map_t->size[1];
+
+	uint8_t* cur_map = map_ptr;
+	int i=0, j=0;
+	uint8_t val = 0;
+
+	// Loop through the submap
+	for( i=0; i<nps_x; i++ ) {
+		for ( j=0; j<nps_y; j++){
+			val = *(cur_map+j);
+			if ( val>=thres ){
+				/* If super certain: remain at high level */
+				*(cur_map+j) = thres;
+			} else {
+				/* Decay */
+				*(cur_map+j) = val * decay_factor;
+			}
+		} /* for j */
+		cur_map += xstride;
+	} /* for i */
+
+	return 0;
+}
+
+
+
+
+
+
+
+
 	template<typename TT>
 int isContiguous(TT *self)
 {
@@ -355,103 +478,6 @@ int isContiguous(TT *self)
 		}
 	}
 	return 1;
-}
-
-/* Update the map with the laser scan points */
-int lua_update_map(lua_State *L) {
-	static int i = 0, mapLikelihood = 0;
-	static double x=0,y=0;
-	static unsigned int xi = 0, yi = 0;
-	static uint8_t newVal = 0;
-
-	/* Get the map, which is a ByteTensor */
-	const THByteTensor * map_t =
-		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
-#ifdef DEBUG
-	int is_con = isContiguous<THByteTensor>((THByteTensor *)map_t);
-	if (!is_con)
-		return luaL_error(L, "map_t input must be contiguous");
-#endif
-	uint8_t * map_tp = (uint8_t *)(map_t->storage->data + map_t->storageOffset);
-
-	/*
-		 const long sizex = map_t->size[0];
-		 const long sizey = map_t->size[1];
-		 */
-
-	/* Get the updating table */
-	const THDoubleTensor * update_t =
-		(THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
-#ifdef DEBUG
-	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)update_t);
-	if (!is_con)
-		return luaL_error(L, "update_t input must be contiguous");
-#endif
-	double * update_tp = (double *)(update_t->storage->data + update_t->storageOffset);
-
-
-	/* Grab the updated points */
-	const THDoubleTensor * ps_t =
-		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
-	const long nps  = ps_t->size[0];
-#ifdef DEBUG
-	is_con = isContiguous<THDoubleTensor>((THDoubleTensor *)ps_t);
-	if (!is_con)
-		return luaL_error(L, "ps_t input must be contiguous");
-#endif
-	//  double * ps_tp = (double *)(ps_t->storage->data + ps_t->storageOffset);
-
-	/* Grab the increment value */
-	const int inc = luaL_checknumber(L, 3);
-
-	// TODO: Assume x/y stride relationship (Make sure to TH_Assert this or something)
-	/*
-		 printf("W | Offset (%ld), Stride0 (%ld), Stride1 (%ld), Size0 (%ld), Size1 (%ld)\n",
-		 ps_t->storageOffset, ps_t->stride[0], ps_t->stride[1], 
-		 ps_t->size[0], ps_t->size[1]);
-	//x = THTensor_fastGet2d( ps_t, i, 0 );
-	//y = THTensor_fastGet2d( ps_t, i, 1 );
-	*/
-	double* pts_ptr = ps_t->storage->data;
-	long mystride = ps_t->stride[0];
-	//#pragma omp parallel for
-	for( i=0; i<nps; i++ ) {
-		x = *(pts_ptr);
-		y = *(pts_ptr+1);
-		pts_ptr += mystride;
-		if( x>xmax || y>ymax || x<xmin || y<ymin ) continue;
-
-		/* TODO: ceil or floor these? map_t bounds check? */
-		xi = (unsigned long)( ( x - xmin ) * invRes );
-		yi = (unsigned long)( ( y - ymin ) * invRes );
-
-		/* Check if this cell has been updated before */
-		/* if (THTensor_fastGet2d(update_t,xi,yi) == 1) continue; */
-		if (update_tp[xi * update_t->stride[0] + yi] == 1) continue;
-
-		/* mapLikelihood = THTensor_fastGet2d(map_t,xi,yi) + inc; */
-		mapLikelihood = map_tp[xi * map_t->stride[0] + yi] + inc;
-
-		/* --------------------------- */
-		/* bit hack for range limit */
-		/* http://graphics.stanford.edu/~seander/bithacks.html#IntegerMinOrMax */
-		/* newVal = min(mapLikelihood, 255) */
-		int range_max = 255;
-		int range_min = 0;
-		mapLikelihood = range_max ^ ((mapLikelihood ^ range_max) & -(mapLikelihood < range_max));
-		mapLikelihood = mapLikelihood ^ ((mapLikelihood ^ range_min) & -(mapLikelihood < range_min));
-		newVal = mapLikelihood;
-
-		/* --------------------------- */
-
-		/*
-			 THTensor_fastSet2d( map_t, xi, yi, newVal );
-			 THTensor_fastSet2d( update_t, xi, yi, 1 );
-			 */
-		map_tp[xi * map_t->stride[0] + yi] = newVal;
-		update_tp[xi * update_t->stride[0] + yi] = 1;
-	}
-	return 0;
 }
 
 /* Update the height map with the laser scan points */
@@ -513,94 +539,6 @@ int lua_update_hmap(lua_State *L) {
 		/* THTensor_fastSet2d( map_t, xi, yi, height); */
 		map_tp[xi * map_t->stride[0] + yi]= height;
 		//}
-
-	}
-	return 0;
-}
-
-
-/* Merge hmap and omap together */
-int lua_update_smap(lua_State *L) {
-	static int i = 0, j=0;
-	static uint8_t omap_val=0, hmap_val=0;
-
-	/* Get the omap, which is a ByteTensor */
-	const THByteTensor * omap_t =
-		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
-#ifdef DEBUG
-	int is_con = isContiguous<THByteTensor>((THByteTensor *)omap_t);
-	if (!is_con)
-		return luaL_error(L, "omap_t input must be contiguous");
-#endif
-	uint8_t * omap_tp = (uint8_t *)(omap_t->storage->data + omap_t->storageOffset);
-
-	/* Get the hmap, which is a ByteTensor */
-	const THByteTensor * hmap_t =
-		(THByteTensor *) luaT_checkudata(L, 2, "torch.ByteTensor");
-#ifdef DEBUG
-	is_con = isContiguous<THByteTensor>((THByteTensor *)hmap_t);
-	if (!is_con)
-		return luaL_error(L, "hmap_t input must be contiguous");
-#endif
-	uint8_t * hmap_tp = (uint8_t *)(hmap_t->storage->data + hmap_t->storageOffset);
-
-	/* Get the smap, which is a ByteTensor */
-	const THByteTensor * smap_t =
-		(THByteTensor *) luaT_checkudata(L, 3, "torch.ByteTensor");
-#ifdef DEBUG
-	is_con = isContiguous<THByteTensor>((THByteTensor *)smap_t);
-	if (!is_con)
-		return luaL_error(L, "smap_t input must be contiguous");
-#endif
-	uint8_t * smap_tp = (uint8_t *)(smap_t->storage->data + smap_t->storageOffset);
-
-	/* Get the size of maps */
-	const long sizex = omap_t->size[0];
-	const long sizey = omap_t->size[1];
-
-	/* Get pointers
-		 double* omap_ptr = omap_t->storage->data;
-		 long ostride = omap_t->stride[0];
-
-		 double* hmap_ptr = hmap_t->storage->data;
-		 long hstride = hmap_t->stride[0];
-
-		 double* smap_ptr = smap_t->storage->data;
-		 long sstride = smap_t->stride[0];
-		 */
-
-	//#pragma omp parallel for
-	for( i=0; i<sizex; i++ ) {
-		for( j=0; j<sizey; j++){
-
-			/*
-				 ox = *(omap_ptr);
-				 oy = *(omap_ptr+1);
-				 omap_ptr += ostride;
-
-				 hx = *(hmap_ptr);
-				 hy = *(hmap_ptr+1);
-				 hmap_ptr += hstride;
-
-				 sx = *(smap_ptr);
-				 sy = *(smap_ptr+1);
-				 smap_ptr += sstride;
-				 */
-
-			/* omap_val = THTensor_fastGet2d(omap_t,i,j); */
-			omap_val = omap_tp[i * omap_t->stride[0] + j];
-			/* hmap_val = THTensor_fastGet2d(hmap_t,i,j); */
-			hmap_val = hmap_tp[i * hmap_t->stride[0] + j];
-
-			if(omap_val>200){
-				/* THTensor_fastSet2d( smap_t, i, j, 255 ); */
-				smap_tp[i * smap_t->stride[0] + j] = 255;
-			}else{
-				/* THTensor_fastSet2d( smap_t, i, j, hmap_val ); */
-				smap_tp[i * smap_t->stride[0] + j] = hmap_val;
-			}
-
-		}
 
 	}
 	return 0;
@@ -1038,118 +976,6 @@ int lua_find_last_free_point(lua_State *L) {
 }
 
 
-
-
-/* Decay the map around a region from the robot  */
-int lua_decay_map(lua_State *L) {
-	int i=0, j=0;
-	uint8_t val = 0;
-	uint8_t * ps_mapp = NULL;
-
-	/* Get the torch that contains the map data */
-	const THByteTensor * ps_map =
-		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
-#ifdef DEBUG
-	int is_con = isContiguous<THByteTensor>((THByteTensor *)ps_map);
-	if (!is_con)
-		return luaL_error(L, "ps_map input must be contiguous");
-#endif
-	ps_mapp = (uint8_t *)(ps_map->storage->data + ps_map->storageOffset);
-
-	const long nps_x  = ps_map->size[0];
-	const long nps_y  = ps_map->size[1];
-	
-	//fprintf(stdout, "local map stride0: %d \n", uint8_t(ps_map->stride[0]));
-
-	/* Grab the threshold on likelihood */
-	const double thres = luaL_checknumber(L, 2);
-
-	/* Grab by how much to deacy the map */
-	const double dec = luaL_checknumber(L, 3);
-
-	for( i=0; i<nps_x; i++ ) {
-		for ( j=0; j<nps_y; j++){
-			val = *(ps_mapp + i * nps_y + j);
-
-			/* If super certain: remain at high level */
-			if ( val>=thres ){
-				ps_mapp[i * nps_y + j] = thres;
-				// *(ps_mapp+j) = thres;
-			}
-
-			/* Decay */
-			else {
-				val = val * dec;
-				ps_mapp[i * nps_y + j] = val;
-				// *(ps_mapp+j) = val;
-			}
-		}
-	}
-
-	return 0;
-}
-
-
-/**************
- * range_filter(key,min,max,value1,value2)
- * This function removes, in memory, points outside of the min/max band
- * Removes the points from both value1 and value2, but not key
- * Does not perform a resize
- * */
-int lua_range_filter(lua_State *L) {
-	THFloatTensor * k_t = 
-		(THFloatTensor *) luaT_checkudata(L, 1, "torch.FloatTensor");
-	THArgCheck(k_t->nDimension == 1, 1, "Ranges should be 1 dimensional");
-
-	// The key must lie within min and max
-	const double min = luaL_checknumber(L,2);
-	const double max = luaL_checknumber(L,3);
-
-	/* 
-	Grab the Value tensors
-	Check that Key and Value tensors have the same number of elements 
-	*/
-	THDoubleTensor * v1_t = 
-		(THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
-	THArgCheck(v1_t->nDimension == 1, 4, "Data1 should be 1 dimensional");
-	const long nKeys = k_t->size[0];
-	const long nData1 = v1_t->size[0];
-	if(nKeys!=nData1)
-		return luaL_error(L, "Keys and Data1 dimension mismatch");
-
-	THDoubleTensor * v2_t = 
-		(THDoubleTensor *) luaT_checkudata(L, 5, "torch.DoubleTensor");
-	THArgCheck(v2_t->nDimension == 1, 5, "Data2 should be 1 dimensional");
-	const long nData2 = v2_t->size[0];
-	if(nKeys!=nData2)
-		return luaL_error(L, "Keys and Data2 dimension mismatch");
-
-	// Filter points with range outside of band
-	float* k_ptr = k_t->storage->data + k_t->storageOffset;
-	double* v1_ptr = v1_t->storage->data + v1_t->storageOffset;
-	long v1_stride = v1_t->stride[0];
-	double* v2_ptr = v2_t->storage->data + v2_t->storageOffset;
-	long v2_stride = v2_t->stride[0];
-	float tmpR;
-	int i,curIndex;
-	for(i = 0, curIndex = 0; i<nKeys; i++){
-		tmpR = *(k_ptr + i);
-		if(tmpR>=min && tmpR<=max) {
-			//printf("%lf %lf %lf\n",key,min,max);
-			//fflush(stdout);
-			if(i!=curIndex){
-				*(v1_ptr+curIndex*v1_stride) = *(v1_ptr + i*v1_stride );
-				*(v2_ptr+curIndex*v2_stride) = *(v2_ptr + i*v2_stride );
-			}
-			curIndex++;
-		}
-	}
-	
-	// Return the new size of the array, without resizing
-	lua_pushinteger(L,curIndex+1);
-	return 1;
-}
-
 /************************************************************************/
 
 
@@ -1158,21 +984,18 @@ static const struct luaL_Reg slam_lib [] = {
 	{"grow_map", lua_grow_map},
 	//
 	{"match", lua_match},
+	{"update_map", lua_update_map},
+	{"decay_map", lua_decay_map},
 	//
 	{"set_resolution", lua_set_resolution},
-
 	{"set_boundaries", lua_set_boundaries},
 	//
-	{"update_map", lua_update_map},
 	{"binStats", lua_binStats},
 	{"update_hmap", lua_update_hmap},
-	{"update_smap", lua_update_smap},
 	{"get_ground_points", lua_get_ground_points},
 	{"get_height_points", lua_get_height_points},
 	{"get_last_free_point",lua_find_last_free_point},
 	{"mask_points", lua_mask_points},
-	{"decay_map", lua_decay_map},
-	{"range_filter", lua_range_filter},
 
 	{NULL, NULL}
 };
@@ -1181,7 +1004,6 @@ static const struct luaL_Reg slam_lib [] = {
 #ifdef __cplusplus
 extern "C"
 #endif
-
 
 int luaopen_slam (lua_State *L) {
 #if LUA_VERSION_NUM == 502

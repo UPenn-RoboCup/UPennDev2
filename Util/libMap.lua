@@ -26,7 +26,6 @@ end
 
 local function map_index_to_pose(map,i,j)
 	local x = i * map.resolution + map.bounds_x[1]
-	--local y = (map.map:size(2)-j) * map.resolution + map.bounds_y[1]
 	local y = j * map.resolution + map.bounds_y[1]
 	return vector.pose{x,y,0}
 end
@@ -102,9 +101,37 @@ local render = function( map, fmt )
 	end
 end
 
+local function init_map_table()
+	local _m = {}
+	_m.new_goal = libMap.new_goal
+	_m.new_path = libMap.new_path
+	_m.localize = libMap.localize
+	_m.grow     = libMap.grow
+	_m.render   = render
+	_m.update   = update
+	return map
+end
+
+libMap.new_map = function(area,resolution)
+	local map = init_map_table()
+	map.resolution = resolution
+	map.inv_resolution = 1 / resolution
+	map.bounds_x = area[1]/2 * vector.new{-1,1}
+	map.bounds_y = area[2]/2 * vector.new{-1,1}
+	
+	local nrows = area[1] * map.inv_resolution
+	local ncolumns = area[2] * map.inv_resolution
+	map.omap = torch.ByteTensor(nrows,ncolumns)
+	map.last_seen = torch.DoubleTensor(nrows,ncolumns)
+	
+	-- Pose is 0,0,0
+	map.pose = vector.pose({0,0,0})
+	
+	return map
+end
+
 -- import a map
 libMap.open_map = function( map_filename )
-	local map = {}
 	local f_img = io.open(map_filename,'r')
 	local f_type = f_img:read('*line')
 	--print('NetPBM type',f_type)
@@ -127,10 +154,8 @@ libMap.open_map = function( map_filename )
 	-- Parse the resolution iterator
 	local ncolumns = tonumber(resolution())
 	local nrows    = tonumber(resolution())
-	
 	-- Maximum value
 	local max = tonumber( f_img:read('*line') )
-	map.max = max
 	
 	-- Parse the comments
 	assert(#comments>=2,'Need the comments to provide Map resolution and offset')
@@ -138,9 +163,8 @@ libMap.open_map = function( map_filename )
 	local m_res = comments[1]:gmatch("%S+")
 	local header = m_res()
 	assert(header=='#resolution','Bad resolution header')
-	map.resolution = tonumber(m_res())
-	assert(map.resolution,'Bad resolution')
-	map.inv_resolution = 1 / map.resolution
+	local res = tonumber(m_res())
+	assert(res,'Bad resolution')
 	-- Second comment are x and y offsets
 	local m_offset = comments[2]:gmatch"%S+"
 	local header = m_offset()
@@ -175,7 +199,14 @@ libMap.open_map = function( map_filename )
 	else
 		error('Unsupported!')
 	end
-
+	
+	-- Make the map table
+	local map = init_map_table(map)
+	--
+	map.resolution = res
+	map.inv_resolution = 1 / res
+	-- Max should be 255 always...
+	map.max = max
 	-- Save the map byte image
 	map.map = img_t
 	-- Make the double of the cost map
@@ -195,12 +226,8 @@ libMap.open_map = function( map_filename )
 	map.bounds_y[2] = map.bounds_y[1]+map.resolution*nrows
 	--print("Offset",map.bounds_x,map.bounds_y)
 	-- Add functions to work on the map itself
-	map.new_goal = libMap.new_goal
-	map.new_path = libMap.new_path
-	map.localize = libMap.localize
-	map.grow     = libMap.grow
-	map.render   = render
-	--
+	map.read_only = true
+	init_map_table(map)
 	return map
 end
 
@@ -264,22 +291,19 @@ libMap.localize = function( map, laser_points, search_amount, prior )
 	local da = search_amount.da or 1*DEG_TO_RAD
 	local dda = math.floor(a/da)*da -- make sure 0 is included
 	local search_a = torch.range( pose_guess.a-dda, pose_guess.a+dda, da )
-
 	-- Perform the match
 	slam.set_resolution(map.resolution)
 	slam.set_boundaries(map.bounds_x[1],map.bounds_y[1],map.bounds_x[2],map.bounds_y[2])
 	local likelihoods, max =
 		slam.match( map.omap, laser_points, search_a, search_x, search_y, prior or 200 )
-
-	--print("dd",ddx,ddy,dda)
-	--print(pose_guess)
-	--util.ptable( max )
-	--util.ptorch( search_x )
-	--print("size",search_x:size(1),search_y:size(1),search_a:size(1))
-
+	-- Return the matched pose and the number of hits (as confidence)
 	local matched_pose = vector.pose{search_x[max.x],search_y[max.y],search_a[max.a]}
-	--
 	return matched_pose, max.hits
+end
+
+libMap.update = function( map, points, t, inc )
+	slam.update_map( map.omap, points, inc or 5, map.last_seen, t )
+	map.t = t
 end
 
 libMap.export = function( map, filename, kind )
@@ -292,7 +316,6 @@ libMap.export = function( map, filename, kind )
 	local data
 	if kind=='byte' then
 		data = carray.byte( ptr, n_el)
-		--print(n_el,'n_el',kind,sz[1],sz[2],#data)
 	else
 		data = carray.double( ptr, n_el)
 	end

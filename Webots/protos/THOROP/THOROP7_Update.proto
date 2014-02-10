@@ -99,7 +99,7 @@ Robot {
           device RotationalMotor {
             name "Neck"
             # TODO: Use NX specs
-            maxVelocity 5.65486677646
+            #maxVelocity 5.65486677646
             maxTorque 40
             # Not sure of these...
             minPosition -2.92343
@@ -124,7 +124,7 @@ Robot {
                 device RotationalMotor {
                   name "Head"
                   # TODO: Use NX specs
-                  maxVelocity 5.65486677646
+                  #maxVelocity 5.65486677646
                   maxTorque 40
                   # Not sure of these...
                   minPosition -2.92343
@@ -183,7 +183,7 @@ Robot {
           device RotationalMotor {
             name "ChestLidarPan"
             # Use MX-28 specs (54*pi/30)
-            maxVelocity 5.65486677646
+            #maxVelocity 5.65486677646
             maxTorque 40
             # Not sure of these...
             minPosition -2.92343
@@ -221,7 +221,7 @@ Robot {
           device RotationalMotor {
             name "ShoulderR"
             # TODO: Use NX Motor specs
-            maxVelocity 5.65486677646
+            #maxVelocity 5.65486677646
             maxTorque 40
             # Not sure of these...
             minPosition -2.92343
@@ -246,7 +246,7 @@ Robot {
                 device RotationalMotor {
                   name "ArmUpperR"
                   # TODO: Use NX Motor specs
-                  maxVelocity 5.65486677646
+                  #maxVelocity 5.65486677646
                   maxTorque 40
                   # Not sure of these...
                   minPosition -2.92343
@@ -270,7 +270,7 @@ Robot {
                       device RotationalMotor {
                         name "RightShoulderYaw"
                         # TODO: Use NX Motor specs
-                        maxVelocity 5.65486677646
+                        #maxVelocity 5.65486677646
                         maxTorque 40
                         # Not sure of these...
                         minPosition -2.92343
@@ -294,7 +294,7 @@ Robot {
                             device RotationalMotor {
                               name "ArmLowerR"
                               # TODO: Use NX Motor specs
-                              maxVelocity 5.65486677646
+                              #maxVelocity 5.65486677646
                               maxTorque 40
                               # Not sure of these...
                               minPosition -2.92343
@@ -318,7 +318,7 @@ Robot {
                                   device RotationalMotor {
                                     name "RightWristYaw"
                                     # TODO: Use NX Motor specs
-                                    maxVelocity 5.65486677646
+                                    #maxVelocity 5.65486677646
                                     maxTorque 40
                                     # Not sure of these...
                                     minPosition -2.92343
@@ -339,7 +339,7 @@ Robot {
                                         device RotationalMotor {
                                           name "RightWristRoll"
                                           # TODO: Use NX Motor specs
-                                          maxVelocity 5.65486677646
+                                          #maxVelocity 5.65486677646
                                           maxTorque 40
                                           # Not sure of these...
                                           minPosition -2.92343
@@ -362,7 +362,7 @@ Robot {
                                               device RotationalMotor {
                                                 name "RightWristYaw2"
                                                 # TODO: Use NX Motor specs
-                                                maxVelocity 5.65486677646
+                                                #maxVelocity 5.65486677646
                                                 maxTorque 40
                                                 # Not sure of these...
                                                 minPosition -2.92343
@@ -424,7 +424,7 @@ Robot {
           device RotationalMotor {
             name "ShoulderL"
             # TODO: Use NX Motor specs
-            maxVelocity 5.65486677646
+            #maxVelocity 5.65486677646
             maxTorque 40
             # Not sure of these...
             minPosition -2.92343
@@ -449,7 +449,7 @@ Robot {
                 device RotationalMotor {
                   name "ArmUpperL"
                   # TODO: Use NX Motor specs
-                  maxVelocity 5.65486677646
+                  #maxVelocity 5.65486677646
                   maxTorque 40
                   # Not sure of these...
                   minPosition -2.92343
@@ -477,7 +477,7 @@ Robot {
                       device RotationalMotor {
                         name "LeftShoulderYaw"
                         # TODO: Use NX Motor specs
-                        maxVelocity 5.65486677646
+                        #maxVelocity 5.65486677646
                         maxTorque 40
                         # Not sure of these...
                         minPosition -2.92343
@@ -501,7 +501,7 @@ Robot {
                             device RotationalMotor {
                               name "ArmLowerL"
                               # TODO: Use NX Motor specs
-                              maxVelocity 5.65486677646
+                              #maxVelocity 5.65486677646
                               maxTorque 40
                               # Not sure of these...
                               minPosition -2.92343
@@ -521,7 +521,7 @@ Robot {
                                   device RotationalMotor {
                                     name "LeftWristYaw"
                                     # TODO: Use NX Motor specs
-                                    maxVelocity 5.65486677646
+                                    #maxVelocity 5.65486677646
                                     maxTorque 40
                                     # Not sure of these...
                                     minPosition -2.92343
@@ -543,7 +543,7 @@ Robot {
                                         device RotationalMotor {
                                           name "LeftWristRoll"
                                           # TODO: Use NX Motor specs
-                                          maxVelocity 5.65486677646
+                                          #maxVelocity 5.65486677646
                                           maxTorque 40
                                           # Not sure of these...
                                           minPosition -2.92343
@@ -562,7 +562,7 @@ Robot {
                                               device RotationalMotor {
                                                 name "LeftWristYaw2"
                                                 # TODO: Use NX Motor specs
-                                                maxVelocity 5.65486677646
+                                                #maxVelocity 5.65486677646
                                                 maxTorque 40
                                                 # Not sure of these...
                                                 minPosition -2.92343
@@ -627,7 +627,7 @@ Robot {
           device RotationalMotor {
             name "TorsoPitch"
             # TODO: Use NX Motor specs
-            maxVelocity 5.65486677646
+            ##maxVelocity 5.65486677646
             maxTorque 40
             # Not sure of these...
             minPosition -2.92343
@@ -642,7 +642,8 @@ Robot {
           endPoint Solid {
             translation 0 -0.038 0
             physics Physics {
-              mass 8.0
+              #mass 8.0
+							mass .1
 							centerOfMass 0 -0.1208 -0.0264
             }
             children[
@@ -651,7 +652,7 @@ Robot {
                 device RotationalMotor {
                   name "TorsoYaw"
                   # TODO: Use NX Motor specs
-                  maxVelocity 5.65486677646
+                  #maxVelocity 5.65486677646
                   maxTorque 40
                   # Not sure of these...
                   minPosition -2.92343
@@ -685,7 +686,7 @@ Robot {
                         device RotationalMotor {
                           name "PelvYR"
                           # TODO: Use NX Motor specs
-                          maxVelocity 5.65486677646
+                          #maxVelocity 5.65486677646
                           maxTorque 40
                           # Not sure of these...
                           minPosition -2.92343
@@ -712,7 +713,7 @@ Robot {
                               device RotationalMotor {
                                 name "PelvR"
                                 # TODO: Use NX Motor specs
-                                maxVelocity 5.65486677646
+                                #maxVelocity 5.65486677646
                                 maxTorque 40
                                 # Not sure of these...
                                 minPosition -2.92343
@@ -737,7 +738,7 @@ Robot {
                                     device RotationalMotor {
                                       name "LegUpperR"
                                       # TODO: Use NX Motor specs
-                                      maxVelocity 5.65486677646
+                                      #maxVelocity 5.65486677646
                                       maxTorque 40
                                       # Not sure of these...
                                       minPosition -2.92343
@@ -767,7 +768,7 @@ Robot {
                                           device RotationalMotor {
                                             name "LegLowerR"
                                             # TODO: Use NX Motor specs
-                                            maxVelocity 5.65486677646
+                                            #maxVelocity 5.65486677646
                                             maxTorque 40
                                             # Not sure of these...
                                             minPosition -2.92343
@@ -796,7 +797,7 @@ Robot {
                                                 device RotationalMotor {
                                                   name "AnkleR"
                                                   # TODO: Use NX Motor specs
-                                                  maxVelocity 5.65486677646
+                                                  #maxVelocity 5.65486677646
                                                   maxTorque 40
                                                   # Not sure of these...
                                                   minPosition -2.92343
@@ -820,7 +821,7 @@ Robot {
                                                       device RotationalMotor {
                                                         name "FootR"
                                                         # TODO: Use NX Motor specs
-                                                        maxVelocity 5.65486677646
+                                                        #maxVelocity 5.65486677646
                                                         maxTorque 40
                                                         # Not sure of these...
                                                         minPosition -2.92343
@@ -846,16 +847,16 @@ Robot {
                                                             translation 0 0.1115 -0.018
                                                           }
 																													
-                                                          DEF R_FSR TouchSensor {
-                                                            name "R_FSR"
-                                                            # Should be a bit bigger
-                                                            boundingObject Box {size 0.145 0.013 0.26}
-                                                            physics Physics {
-                                                              density -1
-                                                              mass 0.0001
-                                                            }
-                                                            type "force"
-                                                          }
+                                                          #DEF R_FSR TouchSensor {
+                                                          #  name "R_FSR"
+                                                          #  # Should be a bit bigger
+                                                          #  boundingObject Box {size 0.145 0.013 0.26}
+                                                          #  physics Physics {
+                                                          #    density -1
+                                                          #    mass 0.0001
+                                                          #  }
+                                                          #  type "force"
+                                                          #}
                                                         ]
                                                       }
                                                     }
@@ -889,7 +890,7 @@ Robot {
                         device RotationalMotor {
                           name "PelvYL"
                           # TODO: Use NX Motor specs
-                          maxVelocity 5.65486677646
+                          #maxVelocity 5.65486677646
                           maxTorque 40
                           # Not sure of these...
                           minPosition -2.92343
@@ -916,7 +917,7 @@ Robot {
                               device RotationalMotor {
                                 name "PelvL"
                                 # TODO: Use NX Motor specs
-                                maxVelocity 5.65486677646
+                                #maxVelocity 5.65486677646
                                 maxTorque 40
                                 # Not sure of these...
                                 minPosition -2.92343
@@ -940,7 +941,7 @@ Robot {
                                     device RotationalMotor {
                                       name "LegUpperL"
                                       # TODO: Use NX Motor specs
-                                      maxVelocity 5.65486677646
+                                      #maxVelocity 5.65486677646
                                       maxTorque 40
                                       # Not sure of these...
                                       minPosition -2.92343
@@ -969,7 +970,7 @@ Robot {
                                           device RotationalMotor {
                                             name "LegLowerL"
                                             # TODO: Use NX Motor specs
-                                            maxVelocity 5.65486677646
+                                            #maxVelocity 5.65486677646
                                             maxTorque 40
                                             # Not sure of these...
                                             minPosition -2.92343
@@ -998,7 +999,7 @@ Robot {
                                                 device RotationalMotor {
                                                   name "AnkleL"
                                                   # TODO: Use NX Motor specs
-                                                  maxVelocity 5.65486677646
+                                                  #maxVelocity 5.65486677646
                                                   maxTorque 40
                                                   # Not sure of these...
                                                   minPosition -2.92343
@@ -1022,7 +1023,7 @@ Robot {
                                                       device RotationalMotor {
                                                         name "FootL"
                                                         # TODO: Use NX Motor specs
-                                                        maxVelocity 5.65486677646
+                                                        #maxVelocity 5.65486677646
                                                         maxTorque 40
                                                         # Not sure of these...
                                                         minPosition -2.92343
@@ -1047,16 +1048,16 @@ Robot {
                                                             scale 0.001 0.001 0.001
                                                             translation 0 0.1115 -0.018
                                                           }
-                                                          DEF L_FSR TouchSensor {
-                                                             name "L_FSR"
-                                                             # Should be a bit bigger
-                                                             boundingObject Box {size 0.145 0.013 0.26}
-                                                             physics Physics {
-                                                               density -1
-                                                               mass 0.0001
-                                                             }
-                                                             type "force"
-                                                           }
+                                                          #DEF L_FSR TouchSensor {
+                                                          #   name "L_FSR"
+                                                          #   # Should be a bit bigger
+                                                          #   boundingObject Box {size 0.145 0.013 0.26}
+                                                          #   physics Physics {
+                                                          #     density -1
+                                                          #     mass 0.0001
+                                                          #   }
+                                                          #   type "force"
+                                                          # }
                                                         ]
                                                       }
                                                     }

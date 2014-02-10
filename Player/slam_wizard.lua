@@ -69,6 +69,7 @@ end
 -- Listen for lidars
 local lidar_cb = function(sh)
 	local ch = wait_channels.lut[sh]
+	localt = Body.get_time()
 	local meta, ranges
 	repeat
 		-- Do not block
@@ -85,11 +86,13 @@ local lidar_cb = function(sh)
 		print('Set up the channel!',ch.n,meta.n)
 		setup_ch(ch,meta)
 	end
-	--assert(ch.raw:size(1)==meta.n,"TODO: Update range sizes")
+	-- Update the count
+	ch.count = ch.count + 1
+	-- Place into storage
 	cutil.string2storage(ranges,ch.raw:storage())
 	-- Copy to the double format
 	ch.ranges:copy(ch.raw)
-	-- Put into x y space from r/theta
+	-- Put into x/y space from r/theta
 	local pts_x = ch.points:select(2,1)
 	local pts_y = ch.points:select(2,2)
 	--
@@ -98,22 +101,28 @@ local lidar_cb = function(sh)
 	-- Link length
 	pts_x:add(.3)
 
-	-- Save the xy lidar points
-	--[[
-	if SAVE_POINTS==true then
-		local f = io.open('xy.raw', 'w')
-		local ptr, n_el = ch.points:storage():pointer(), #ch.points:storage()
-		local arr = carray.double(ptr, n_el)
-		f:write( tostring(arr) )
-		f:close()
+	-- SLAM
+	if map.read_only==true then
+		-- Just localize if we cannot change the map
+		localize(ch)
+	else
+		if ch.count>5 then
+			-- Only localize if we have have seen enough points
+			localize(ch)
+			-- Update the map sharply
+			map:update(ch.points, t, 100)
+		else
+			-- Update the map
+			map:update(ch.points, t)
+		end
+		
 	end
-	--]]
-
-	-- Localize based on this channel
-	localize(ch)
+	
 end
 
 local lidar_ch = simple_ipc.new_subscriber'lidar0'
+lidar_ch.name = 'head'
+lidar_ch.count = 0
 lidar_ch.callback = lidar_cb
 
 -- Make the poller

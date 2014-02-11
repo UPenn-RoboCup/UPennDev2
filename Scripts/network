@@ -1,0 +1,12 @@
+# /etc/network/interfaces
+auto lo
+iface lo inet loopback
+
+auto eth0 eth0:1
+iface eth0 inet dhcp
+iface eth0:1 inet static
+  address 192.168.123.1
+  gateway 192.168.123.1
+  netmask 255.255.255.0
+  network 192.168.123.0
+  broadcast 192.168.123.255

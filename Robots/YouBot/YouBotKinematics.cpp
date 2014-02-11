@@ -103,6 +103,10 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr,std::vector<doubl
 	tmp1 = tr( 2, 2 );
 	tmp1 = tmp1 > 1 ? 1 : (tmp1 < -1 ? -1 : tmp1);
 	p = acos( tmp1 );
+	
+	// hand_yaw += yaw * cos(p);
+	//printf("hand_yaw: %lf, yaw: %lf, p: %lf, offset: %lf\n",hand_yaw,yaw,p,yaw * cos(p));
+	
 	// If the pitch is close to zero or pi, make note of
 	// the total required yaw (zyz)->z0z-> z+z=effective_z
 	if( tmp1 > .999 || tmp1 < -.999 ){
@@ -124,14 +128,12 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr,std::vector<doubl
 				xy_coord = -xy_dist - baseLength;
 				yaw = tmp2;
 			} else {
-				//printf("Undefined pitch yaw:\n\t%lf\n\t%lf\n",yaw,z1);
+				printf("Undefined pitch | z1,yaw,p:\n\t%lf\n\t%lf\n\t%lf\n\t%lf\n",z1,yaw,p,cos(p));
 			}
 			// Hand gets the rest
 			hand_yaw = z1 - yaw;
 		}
 	} else {
-
-		// Well defined pitch
 
 		// Grab also the "yaw" of the gripper (ZYZ, where 2nd Z is yaw)
 		tmp1 =  tr( 2, 1 );
@@ -152,6 +154,9 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr,std::vector<doubl
 		} else {
 			// Determine the angle
 			yaw = atan2(y,x);
+			printf("OK pitch | z1,yaw,p:\n\t%lf\n\t%lf\n\t%lf\n\t%lf\n\t%lf\n",z1,yaw,p,yaw*cos(p),hand_yaw);
+			// This may be good...
+			//hand_yaw -= yaw*cos(p);
 		}
 	}
 	
@@ -167,8 +172,7 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr,std::vector<doubl
   qArm[1] = xz[0];
   qArm[2] = xz[1];
   qArm[3] = xz[2];
-  qArm[4] = hand_yaw;// + yaw * cos(p);
-	//printf("hand_yaw: %lf, yaw: %lf, p: %lf, offset: %lf\n",hand_yaw,yaw,p,yaw * cos(p));
+  qArm[4] = hand_yaw;
   
   return qArm;
   

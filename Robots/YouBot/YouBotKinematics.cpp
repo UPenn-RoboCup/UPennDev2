@@ -89,82 +89,75 @@ std::vector<double> get_xz_angles(double x, double z, double p){
 
 // Inverse given a transform
 std::vector<double> YouBot_kinematics_inverse_arm(Transform tr,std::vector<double> q) {
-  double x, y, z, yaw, p, z1, hand_yaw, tmp1, tmp2, dyaw;
+  double x, y, z, yaw, p, z1, hand_yaw, tmp1, tmp2, dyaw, xy_dist;
 
   // Grab the position
   x = tr(0,3);
   y = tr(1,3);
   z = tr(2,3);
+  xy_dist = sqrt(x*x + y*y);
+	printf("XY dist: %lf\n",xy_dist);
 	// Grab the pitch
 	tmp1 = tr( 2, 2 );
-	tmp1 = tmp1 > 1 ? 1 : tmp1;
-	tmp1 = tmp1 < -1 ? -1 : tmp1;
+	tmp1 = tmp1 > 1 ? 1 : (tmp1 < -1 ? -1 : tmp1);
 	p = acos( tmp1 );
-	// Yaw is the rotation of the first arm joint on the base
-	//printf("x: %lf, y: %lf\n",x,y);
-	
-	// Around the zero position
-  yaw = ( x<1e-9 && x>-1e-9 && y<1e-9 && y>-1e-9 ) ?
-		0 : atan2(y,x);
-	
-	// Check if major differences between current joint angle
-	tmp2 = q[0];
-	dyaw = tmp2 > yaw ? tmp2 - yaw : yaw - tmp2;	
-	if(dyaw>0.1){
-		//printf("cur: %lf; desired: %lf\n",tmp2,yaw);
-		printf("FIXING spin based on current base yaw\n");
-		yaw -= PI;
-	}
-
-	// Remove rotation of the shoulder yaw
-	// New "x" is the distance, less the offset, in the xz plane
-  double dist2 = x*x + y*y;
-  double dist = sqrt(dist2);
-  x = dist - baseLength;
-	
-	printf("X: %lf\n",x);
-	
+	// If the pitch is close to zero or pi, make note of
+	// the total required yaw (zyz)->z0z-> z+z=effective_z
 	if( tmp1 > .999 || tmp1 < -.999 ){
-		// Unreliable Calculations of the other angles...
-		// Use approximation, since cos(p)=1, sin(p)=0
-		hand_yaw = asin( tr( 1, 0 ) );
-		z1 = 0;
+		z1 = asin( tr( 1, 0 ) );
+		tmp2 = q[0];
+		// Check if around zero
+		if( x<1e-9 && x>-1e-9 && y<1e-9 && y>-1e-9 ) {
+			// Use the current base
+			yaw = tmp2; // Current Yaw
+			hand_yaw = z1;
+			printf("Undefined pitch around zero yaw:\n\t%lf\n\t%lf\n",yaw,z1);
+		} else {
+			// Determine the angle
+			yaw = atan2(y,x);
+			dyaw = tmp2 > yaw ? tmp2 - yaw : yaw - tmp2;
+			if(dyaw>=PI_HALF){
+				// Major difference in current and proposed base yaw
+				printf("MAJOR DIFF: %lf -> %lf\n",tmp2,yaw);
+				yaw = tmp2;
+			} else {
+				printf("Undefined pitch yaw:\n\t%lf\n\t%lf\n",yaw,z1);
+			}
+			// Hand gets the rest
+			hand_yaw = z1 - yaw;
+		}
 	} else {
+
+		// Well defined pitch
+
 		// Grab also the "yaw" of the gripper (ZYZ, where 2nd Z is yaw)
 		tmp1 =  tr( 2, 1 );
 		tmp2 = -tr( 2, 0 );
-		//printf("t1: %lf t2: %lf\n",tmp1,tmp2);
-		hand_yaw = ( tmp1<1e-9 && tmp1>-1e-9 && tmp2<1e-9 && tmp2>-1e-9 ) ?
-			0 : atan2(tmp1,tmp2);
+		hand_yaw = atan2(tmp1,tmp2);
 		
-		// Grab the "pitch" desired (ZYZ where Y is "pitch")
+		// Grab also the "yaw" of the base (ZYZ, where 1st Z is yaw)
 		tmp1 = tr( 0, 2 );
 		tmp2 = tr( 1, 2 );
-		z1 = ( tmp1<1e-9 && tmp1>-1e-9 && tmp2<1e-9 && tmp2>-1e-9 ) ?
-			0 : atan2(tmp2,tmp1);
-	}
-	
-	// See the difference here
-	dyaw = z1 > yaw ? z1 - yaw : yaw - z1;	
-	
-  //printf("xyz: %lf %lf %lf\n",x,y,z);
-  //printf("zyz: %lf %lf %lf\n",z1,p,hand_yaw);
-	
-	if(dyaw>0.0001){
-		printf("NEAR SOME SINGULARITY!\n");
-		if(p>3.14){
-			printf("\tBAD PITCH!\n");
-			p = PI_DOUBLE - p;
-			hand_yaw -= z1;
-			z1 = 0;
+		z1 = atan2(tmp2,tmp1);
+
+		// Check if position is around zero
+		if( x<1e-9 && x>-1e-9 && y<1e-9 && y>-1e-9 ) {
+			// Use the current base
+			yaw = q[0];
+			dyaw = z1 > yaw ? z1 - yaw : yaw - z1;
+			printf("Around zero yaw:\n\t%lf\n\t%lf\n",yaw,z1);
+		} else {
+			// Determine the angle
+			yaw = atan2(y,x);
 		}
-		// TODO: return NULL
 	}
 	
-	printf("p: %lf, yaw: %lf z1: %lf hyaw: %lf, dy: %lf\n", p, yaw, z1, hand_yaw, dyaw);
+  printf("xyz: %lf %lf %lf\n",x,y,z);
+  printf("zyz: %lf %lf %lf\n",z1,p,hand_yaw);
+	printf("yaw: %lf\n",yaw);
 
   // Grab the XZ plane angles
-  std::vector<double> xz = get_xz_angles( x, z, p );
+  std::vector<double> xz = get_xz_angles( xy_dist - baseLength, z, p );
 
   // Output to joint angles
   std::vector<double> qArm(5);

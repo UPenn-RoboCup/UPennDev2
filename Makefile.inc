@@ -4,13 +4,14 @@ OSTYPE=$(shell uname -s|awk '{print tolower($$0)}')
 # Compiler Definitions
 CXX=c++
 CC=cc
-CXXFLAGS=-O3 -fPIC -std=c++03 -pedantic -Wall
-CFLAGS=-O3 -fPIC -std=c99 -pedantic -Wall
-LIBRT=-lrt
+CXXFLAGS=-O3 -fpic -std=c++03 -pedantic -Wall
+CFLAGS=-O3 -fpic -pedantic -Wall
 
 # Linker Definitions
-LD=g++
-LDFLAGS=-shared
+LD=g++ -shared
+#LD=ld -shared -lstdc++
+LDFLAGS=
+LIBRT=-lrt
 SHLIBEXT=so
 STRIP=strip
 USE_TORCH=1
@@ -18,9 +19,9 @@ INCLUDES=-I/usr/local/include/
 
 # OS Specific overrides
 ifeq ($(OSTYPE),darwin)
-  LIBRT=
   LD=ld -macosx_version_min 10.8
   LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup
+  LIBRT=
 else # Linux
   CFLAGS+= -mtune=native -march=native `pkg-config lua5.1 --cflags`
   CXXFLAGS+= -mtune=native -march=native `pkg-config lua5.1 --cflags`
@@ -55,7 +56,7 @@ all none: $(LIBNAME)
 	$(V)$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	$(V)printf '\t%b %b\n' $(LINKCOLOR)LINK$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR);
-	$(V)$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(EXTRA_LINK)
+	$(V)$(LD) -o $@.$(SHLIBEXT) $^ $(EXTRA_LINK) $(LDFLAGS)
 	$(V)rm $^
 clean:
 	$(V)printf '\t%b %b\n' $(CLEANCOLOR)Cleaning$(ENDCOLOR) $(shell pwd);

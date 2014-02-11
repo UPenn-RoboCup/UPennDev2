@@ -89,14 +89,16 @@ std::vector<double> get_xz_angles(double x, double z, double p){
 
 // Inverse given a transform
 std::vector<double> YouBot_kinematics_inverse_arm(Transform tr,std::vector<double> q) {
-  double x, y, z, yaw, p, z1, hand_yaw, tmp1, tmp2, dyaw, xy_dist;
+  double x, y, z, yaw, p, z1, hand_yaw, tmp1, tmp2, dyaw, xy_dist, xy_coord;
 
   // Grab the position
   x = tr(0,3);
   y = tr(1,3);
   z = tr(2,3);
   xy_dist = sqrt(x*x + y*y);
-	printf("XY dist: %lf\n",xy_dist);
+	xy_coord = xy_dist - baseLength;
+	//printf("xyz: %lf %lf %lf\n",x,y,z);
+	//printf("XY dist: %lf\n",xy_dist);
 	// Grab the pitch
 	tmp1 = tr( 2, 2 );
 	tmp1 = tmp1 > 1 ? 1 : (tmp1 < -1 ? -1 : tmp1);
@@ -111,17 +113,18 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr,std::vector<doubl
 			// Use the current base
 			yaw = tmp2; // Current Yaw
 			hand_yaw = z1;
-			printf("Undefined pitch around zero yaw:\n\t%lf\n\t%lf\n",yaw,z1);
+			//printf("Undefined pitch around zero yaw:\n\t%lf\n\t%lf\n",yaw,z1);
 		} else {
 			// Determine the angle
 			yaw = atan2(y,x);
 			dyaw = tmp2 > yaw ? tmp2 - yaw : yaw - tmp2;
 			if(dyaw>=PI_HALF){
 				// Major difference in current and proposed base yaw
-				printf("MAJOR DIFF: %lf -> %lf\n",tmp2,yaw);
+				//printf("MAJOR DIFF: %lf -> %lf\n",tmp2,yaw);
+				xy_coord = -xy_dist - baseLength;
 				yaw = tmp2;
 			} else {
-				printf("Undefined pitch yaw:\n\t%lf\n\t%lf\n",yaw,z1);
+				//printf("Undefined pitch yaw:\n\t%lf\n\t%lf\n",yaw,z1);
 			}
 			// Hand gets the rest
 			hand_yaw = z1 - yaw;
@@ -145,19 +148,18 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr,std::vector<doubl
 			// Use the current base
 			yaw = q[0];
 			dyaw = z1 > yaw ? z1 - yaw : yaw - z1;
-			printf("Around zero yaw:\n\t%lf\n\t%lf\n",yaw,z1);
+			//printf("Around zero yaw:\n\t%lf\n\t%lf\n",yaw,z1);
 		} else {
 			// Determine the angle
 			yaw = atan2(y,x);
 		}
 	}
 	
-  printf("xyz: %lf %lf %lf\n",x,y,z);
-  printf("zyz: %lf %lf %lf\n",z1,p,hand_yaw);
-	printf("yaw: %lf\n",yaw);
+  //printf("zyz: %lf %lf %lf\n",z1,p,hand_yaw);
+	//printf("yaw: %lf\n",yaw);
 
   // Grab the XZ plane angles
-  std::vector<double> xz = get_xz_angles( xy_dist - baseLength, z, p );
+  std::vector<double> xz = get_xz_angles( xy_coord, z, p );
 
   // Output to joint angles
   std::vector<double> qArm(5);

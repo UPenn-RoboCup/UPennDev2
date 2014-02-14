@@ -49,10 +49,12 @@ function quaternion.to_rpy( q )
 end
 
 function quaternion.conjugate( q )
-  q[2] = -1*q[2]
-  q[3] = -1*q[3]
-  q[4] = -1*q[4]
-  return setmetatable(q, mt)
+	local q_c = {}
+	q_c[1] = q[1]
+  q_c[2] = -1*q[2]
+  q_c[3] = -1*q[3]
+  q_c[4] = -1*q[4]
+  return setmetatable(q_c, mt)
 end
 
 -- Make a unit quaternion
@@ -119,6 +121,7 @@ end
 -- Take the average of a set of quaternions
 -- TODO: Remove the torch dependence
 -- NOTE: without torch, this may be slow
+--[[
 function quaternion.mean( QMax, qInit )
   local torch = require'torch'
   local qIter = torch.DoubleTensor(4):copy(qInit)
@@ -141,6 +144,14 @@ function quaternion.mean( QMax, qInit )
     qIter = qIterNext
   until diff < 1e-6
   return qIter, e
+end
+--]]
+
+function quaternion.slerp(q0,q1,t)
+	local prodQuat = quaternion.conjugate(q0) * q1
+	local angle, axis = quaternion.angle_axis(prodQuat)
+	local quadT = quaternion.from_angle_axis(angle * t,axis)
+	return q0 * quadT
 end
 
 -- Metatable methods are local

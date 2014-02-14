@@ -16,44 +16,24 @@ local line_path = function(self, qArm, trGoal, res)
 	local K = self.K
 	-- First, find the FK of where we are
 	local trArm = K.forward_arm(qArm)
+	local quatArm, posArm = T.to_quaternion(trArm)
 	-- Second, check the IK of the goal
+	local quatGoal, posGoal = T.to_quaternion(trGoal)
 	local qGoal = K.inverse_arm(trGoal,qArm)
 
 	-- DEBUG
+	--[[
 	print('Start')
 	print(T.tostring(trArm))
 	print('Goal')
 	print(T.tostring(trGoal))
+	--]]
 	-- END DEBUG
 
 	-- TODO: Check some metric of feasibility
-	local posArm  = trArm:select(2,4):narrow(1,1,3)
-	local posGoal = trGoal:select(2,4):narrow(1,1,3)
 	local dPos = posGoal - posArm
 	local distance = torch.norm(dPos)
 	local nSteps = math.ceil(distance / res)
-	--[[
-	-- Find the position interpolations
-	local xpath = torch.range(posArm[1],posGoal[1],dPos[1]/nSteps)
-	local ypath = torch.range(posArm[2],posGoal[2],dPos[2]/nSteps)
-	local zpath = torch.range(posArm[3],posGoal[3],dPos[3]/nSteps)
-	-- TODO: ensure the same size...
-	-- Use the position only IK to solve the position path
-	local qStack = {}
-	local cur_qArm = qGoal
-	table.insert(qStack,cur_qArm)
-	for i=nSteps,1,-1 do
-		local iqArm = K.inverse_arm_pos(
-			xpath[i],
-			ypath[i],
-			zpath[i],
-			cur_qArm
-		)
-		cur_qArm = iqArm
-		table.insert(qStack,cur_qArm)
-	end
-	--]]
-	--local dTrans = T.trans(dPos[1]/nSteps,dPos[2]/nSteps,dPos[3]/nSteps)
 	local dTransBack = T.trans(-dPos[1]/nSteps,-dPos[2]/nSteps,-dPos[3]/nSteps)
 	local qStack = {}
 	local cur_qArm = qGoal

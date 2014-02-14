@@ -5,6 +5,9 @@ local getch = require'getch'
 local P = require'libPlan'
 local planner = P.new_planner(K)
 
+local diff = vector.new{.1,.1,-.1}
+local dir = 1
+
 local function process_keycode(keycode,t_diff)
   local char = string.char(keycode)
   local char_lower = string.lower(char)
@@ -28,15 +31,9 @@ local function process_keycode(keycode,t_diff)
 	if char_lower=='p' then
 		local qArm = Body.get_command_position()
 		local fk = K.forward_arm(qArm)
-		local trGoal = T.trans(.05,.05,-.05) * fk
+		local trGoal = T.trans(unpack(diff*dir)) * fk
+		dir = dir * -1
 		local pathStack = planner:line(qArm,trGoal)
-		--[[
-		for _,qWaypoint in ipairs(pathStack) do
-			print(vector.new(qWaypoint))
-			Body.set_command_position(qWaypoint)
-			unix.usleep(1e4)
-		end
-		--]]
 		while true do
 			local qWaypoint = table.remove(pathStack)
 			if not qWaypoint then break end

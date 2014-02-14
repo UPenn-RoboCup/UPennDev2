@@ -40,12 +40,14 @@ Transform YouBot_kinematics_forward_arm(const double *q) {
 // Given the appropriate yaw, just get the angles in the xz plane
 // Input: x and z position, pitch angle
 // Output: Vector of 3 pitch angles
-std::vector<double> get_xz_angles(double x, double z, double p){
+std::vector<double> get_xz_angles(double xy_dist, double z, double p ){
+
+	double xy_coord = xy_dist - baseLength;
   // Given the "pitch", find the effective position
-  double dx = x - gripperLength * sin(p);
+  double dx = xy_coord - gripperLength * sin(p);
   double dz = z - gripperLength * cos(p);
 	
-  //printf("\n\tdx: %lf, dz: %lf\n",dx,dz);
+  printf("\n\tdx: %lf, dz: %lf\n",dx,dz);
   
   double dr2 = dx*dx+dz*dz;
   double dr  = sqrt(dr2);
@@ -78,62 +80,125 @@ std::vector<double> get_xz_angles(double x, double z, double p){
   double shoulderPitch = elevation - effective_elevation;
 
   // Form the vector
-  std::vector<double> xz(3);
-  xz[0] = shoulderPitch;
-  xz[1] = PI - elbow;
-  xz[2] = p - (shoulderPitch + xz[1]);
+  std::vector<double> xz(5);
+  xz[0] = 0;
+	xz[1] = shoulderPitch;
+  xz[2] = PI - elbow;
+  xz[3] = p - (shoulderPitch + (PI - elbow));
+	xz[4] = 0;
 	//printf("\tp: %lf\n\tSum: %lf\n\tdiff: %lf\n",p,shoulderPitch + xz[1], xz[2]);
 
   return xz;
 }
 
 // Inverse given a transform
-std::vector<double> YouBot_kinematics_inverse_arm(Transform tr,std::vector<double> q) {
-  double x, y, z, yaw, p, z1, hand_yaw, tmp1, tmp2, dyaw, xy_dist, xy_coord;
+std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<double> q) {
+  double dx, dy, dz, base_yaw, pseudo_yaw, pitch, hand_yaw, tmp1, xy_coord;
+	//double yaw, dyaw, tmp2, ;
+	char unique_pitch, reach_back, yaw_issue;
 
-  // Grab the position
-  x = tr(0,3);
-  y = tr(1,3);
-  z = tr(2,3);
-  xy_dist = sqrt(x*x + y*y);
-	xy_coord = xy_dist - baseLength;
-	//printf("xyz: %lf %lf %lf\n",x,y,z);
-	//printf("XY dist: %lf\n",xy_dist);
 	// Grab the pitch
 	tmp1 = tr( 2, 2 );
-	tmp1 = tmp1 > 1 ? 1 : (tmp1 < -1 ? -1 : tmp1);
-	p = acos( tmp1 );
+	unique_pitch = tmp1 > .99 ? 1 : (tmp1 < -.99 ? -1 : 0);
+	// Check for singularity when the z1 and z2 yaws are parallel
+	// Form the yaw of the hand
+	if( unique_pitch!=0 ){
+		pitch = unique_pitch > 0 ? 0 : PI;
+		pseudo_yaw = 0;
+		hand_yaw = asin( tr( 1, 0 ) );
+		printf("\nUndefined pitch\n");
+	} else {
+		pitch = acos( tmp1 );
+		pseudo_yaw = atan2( tr(1,2),tr(0,2) );
+		hand_yaw = atan2( tr(2,1),-tr(2,0) );
+		printf("\nWell defined pitch\n");
+	}
+
+	// Grab the position
+  dx = tr(0,3);
+  dy = tr(1,3);
+  dz = tr(2,3);
+  xy_coord = sqrt(dx*dx + dy*dy);
+	// Check if we want to reach back
+	if( xy_coord<1e-9 ) {
+		base_yaw = q[0];
+		if( unique_pitch==0 ){printf("\tSPECIAL SCENARIO 1\n");}
+	} else {
+		base_yaw = atan2(dy,dx);
+	}
+
+	printf("\tbase_yaw: %lf\n",base_yaw);
+	printf("\tq[0]: %lf\n",q[0]);
+
+	reach_back = 0;
+	if( (base_yaw-q[0])>=PI_HALF ){
+		// Decide to reach back
+		printf("\tCheck if we wish to reach back +\n");
+		base_yaw -= PI;
+		xy_coord *= -1;
+		reach_back = 1;
+	} else if( (q[0]-base_yaw)>=PI_HALF ){
+		// Decide to reach back
+		printf("\tCheck if we wish to reach back -\n");
+		base_yaw += PI;
+		xy_coord *= -1;
+		reach_back = -1;
+	}
 	
-	// hand_yaw += yaw * cos(p);
-	//printf("hand_yaw: %lf, yaw: %lf, p: %lf, offset: %lf\n",hand_yaw,yaw,p,yaw * cos(p));
+	printf("\treach_back: %d\n",reach_back);
+	printf("\tpitch: %lf\n",pitch);
+	printf("\tp_yaw: %lf\n",pseudo_yaw);
+	printf("\th_yaw: %lf\n",hand_yaw);
 	
-	// If the pitch is close to zero or pi, make note of
-	// the total required yaw (zyz)->z0z-> z+z=effective_z
-	if( tmp1 > .999 || tmp1 < -.999 ){
+	yaw_issue = 0;
+	if( (base_yaw-pseudo_yaw)>=PI_HALF ){
+		printf("\tYaw issue +\n");
+		pseudo_yaw += PI;
+		hand_yaw += PI;
+		pitch *= -1;
+		yaw_issue = 1;
+	} else if( (pseudo_yaw-base_yaw)>=PI_HALF ){
+		printf("\tYaw issue -\n");
+		pseudo_yaw -= PI;
+		hand_yaw -= PI;
+		pitch *= -1;
+		yaw_issue = -1;
+	}
+
+	printf("\tpitch: %lf\n",pitch);
+	printf("\tbase_yaw: %lf\n",base_yaw);
+	printf("\tpseudo_yaw: %lf\n",pseudo_yaw);
+	printf("\thand_yaw: %lf\n",hand_yaw);
+
+	// Grab the XZ plane angles
+  std::vector<double> output = get_xz_angles( xy_coord, dz, pitch );
+  output[0] = base_yaw;
+  //output[4] = hand_yaw;
+	return output;
+
+
+
+	/*
+	if( tmp1 > .99 || tmp1 < -.99 ){
+		p = tmp1 > 0 ? 0 : PI;
+		printf("\nUndefined pitch\n");
 		z1 = asin( tr( 1, 0 ) );
-		tmp2 = q[0];
 		// Check if around zero
 		if( x<1e-9 && x>-1e-9 && y<1e-9 && y>-1e-9 ) {
 			// Use the current base
-			yaw = tmp2; // Current Yaw
+			yaw = q[0]; // Current Yaw
 			hand_yaw = z1;
 			//printf("Undefined pitch around zero yaw:\n\t%lf\n\t%lf\n",yaw,z1);
 		} else {
 			// Determine the angle
 			yaw = atan2(y,x);
-			dyaw = tmp2 > yaw ? tmp2 - yaw : yaw - tmp2;
-			if(dyaw>=PI_HALF){
-				// Major difference in current and proposed base yaw
-				//printf("MAJOR DIFF: %lf -> %lf\n",tmp2,yaw);
-				xy_coord = -xy_dist - baseLength;
-				yaw = tmp2;
-			} else {
-				printf("Undefined pitch | z1,yaw,p:\n\t%lf\n\t%lf\n\t%lf\n\t%lf\n",z1,yaw,p,cos(p));
-			}
-			// Hand gets the rest
-			hand_yaw = z1 - yaw;
+			hand_yaw = z1 + yaw;
+			printf("\tyaw: %lf, z1: %lf\n",yaw,z1);
+			printf("\thand_yaw: %lf\n",hand_yaw);
 		}
 	} else {
+		p = acos( tmp1 );
+		printf("\nWell defined pitch\n");
 
 		// Grab also the "yaw" of the gripper (ZYZ, where 2nd Z is yaw)
 		tmp1 =  tr( 2, 1 );
@@ -154,27 +219,24 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr,std::vector<doubl
 		} else {
 			// Determine the angle
 			yaw = atan2(y,x);
-			printf("OK pitch | z1,yaw,p:\n\t%lf\n\t%lf\n\t%lf\n\t%lf\n\t%lf\n",z1,yaw,p,yaw*cos(p),hand_yaw);
+			//printf("OK pitch | z1,yaw,p:\n\t%lf\n\t%lf\n\t%lf\n\t%lf\n\t%lf\n",z1,yaw,p,yaw*cos(p),hand_yaw);
 			// This may be good...
 			//hand_yaw -= yaw*cos(p);
 		}
 	}
 	
-  //printf("zyz: %lf %lf %lf\n",z1,p,hand_yaw);
-	//printf("yaw: %lf\n",yaw);
+	// Check against our current base angle
+	dyaw = q[0] > yaw ? q[0] - yaw : yaw - q[0];
+	if(dyaw>=PI_HALF){
+		// Major difference in current and proposed base yaw
+		xy_coord = -xy_dist - baseLength;
+		yaw = q[0];
+		prtinf("Difference\n");
+	}
+	*/
 
   // Grab the XZ plane angles
-  std::vector<double> xz = get_xz_angles( xy_coord, z, p );
 
-  // Output to joint angles
-  std::vector<double> qArm(5);
-  qArm[0] = yaw;
-  qArm[1] = xz[0];
-  qArm[2] = xz[1];
-  qArm[3] = xz[2];
-  qArm[4] = hand_yaw;
-  
-  return qArm;
   
 }
 

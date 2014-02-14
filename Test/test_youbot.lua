@@ -5,6 +5,7 @@ local getch = require'getch'
 
 -- Translate the end effector
 local ds = 0.005
+local dr = 0.05
 local pre_arm = {
   u = T.trans(0,0,ds),
   m = T.trans(0,0,-ds),
@@ -12,10 +13,11 @@ local pre_arm = {
   [','] = T.trans(-ds,0,0),
   j = T.trans(0,ds,0),
   l = T.trans(0,-ds,0),
+	y = T.rotY(dr),
+  n = T.rotY(-dr),
 }
 
 -- Rotate (locally) the end effector
-local dr = 0.05
 local post_arm = {
   [']'] = T.rotY(dr),
   ['['] = T.rotY(-dr),

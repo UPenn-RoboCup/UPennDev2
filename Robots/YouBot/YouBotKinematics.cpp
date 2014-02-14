@@ -42,46 +42,48 @@ Transform YouBot_kinematics_forward_arm(const double *q) {
 // Output: Vector of 3 pitch angles
 std::vector<double> get_xz_angles(double xy_dist, double z, double p ){
 
-	printf("==\n\txy_dist: %lf\n",xy_dist);
-	printf("\n\tz: %lf\n",z);
-	printf("\n\tp: %lf\n",p);
-
 	double xy_coord = xy_dist - baseLength;
   // Given the "pitch", find the effective position
   double dx = xy_coord - gripperLength * sin(p);
   double dz = z - gripperLength * cos(p);
-	
+#ifdef DEBUG
+/*
   printf("\tdx: %lf, dz: %lf\n",dx,dz);
-  
-  double dr2 = dx*dx+dz*dz;
-  double dr  = sqrt(dr2);
-  
-  //printf("\n\televation: %lf\n",elevation);
+*/
+#endif
   
   // Find the elbow, given the effective position
   // Law of cosines
+	double dr2 = dx*dx+dz*dz;
+  double dr  = sqrt(dr2);
   double elbow_help = upperArmLength*upperArmLength + lowerArmLength*lowerArmLength - dr2;
   elbow_help /= 2*upperArmLength*lowerArmLength;
-  //printf("\n\telbow_help: %lf\n",elbow_help);
+#ifdef DEBUG
+/*
+  printf("\telbow_help: %lf\n",elbow_help);
+*/
+#endif
   if(elbow_help<-1)
     elbow_help = -1;
   else if(elbow_help>1)
     elbow_help = 1;
   
   double elbow = acos(elbow_help);
-  //printf("\n\telbow: %lf\n",elbow);
-  
   // Find how much to rotate the shoulder pitch
   // Law of sines
   double ratio = upperArmLength * sin(elbow) / dr;
-  
-  //printf("\n\tRatio: %lf\n",ratio);
-  
   double effective_elevation = asin(ratio);
-  
-  //printf("\n\teffective_elevation: %lf\n",effective_elevation);
   double elevation = PI/2 - atan2(dz,dx);
   double shoulderPitch = elevation - effective_elevation;
+
+#ifdef DEBUG
+/*
+  printf("\telbow: %lf\n",elbow);
+	printf("\tratio: %lf\n",ratio);
+	printf("\teffective_elevation: %lf\n",effective_elevation);
+	printf("\televation: %lf\n",elevation);
+*/
+#endif
 
   // Form the vector
   std::vector<double> xz(5);
@@ -90,7 +92,6 @@ std::vector<double> get_xz_angles(double xy_dist, double z, double p ){
   xz[2] = PI - elbow;
   xz[3] = p - (shoulderPitch + (PI - elbow));
 	xz[4] = 0;
-	//printf("\tp: %lf\n\tSum: %lf\n\tdiff: %lf\n",p,shoulderPitch + xz[1], xz[2]);
 
   return xz;
 }
@@ -110,12 +111,16 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<doub
 		pitch = unique_pitch > 0 ? 0 : PI;
 		pseudo_yaw = 0;
 		hand_yaw = asin( tr( 1, 0 ) );
-		printf("\nUndefined pitch\n");
+#ifdef DEBUG
+		printf("\nUndefined pitch %d\n",unique_pitch);
+#endif
 	} else {
 		pitch = acos( tmp1 );
 		pseudo_yaw = atan2( tr(1,2),tr(0,2) );
 		hand_yaw = atan2( tr(2,1),-tr(2,0) );
+#ifdef DEBUG
 		printf("\nWell defined pitch\n");
+#endif
 	}
 
 	// Grab the position
@@ -126,126 +131,107 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<doub
 	// Check if we want to reach back
 	if( xy_coord<1e-9 ) {
 		base_yaw = q[0];
+#ifdef DEBUG
 		if( unique_pitch==0 ){printf("\tSPECIAL SCENARIO 1\n");}
+#endif
 	} else {
 		base_yaw = atan2(dy,dx);
 	}
 
+#ifdef DEBUG
 	printf("\tbase_yaw: %lf\n",base_yaw);
 	printf("\tq[0]: %lf\n",q[0]);
-
+#endif
 	reach_back = 0;
 	if( (base_yaw-q[0])>=PI_HALF ){
 		// Decide to reach back
+#ifdef DEBUG
 		printf("\tCheck if we wish to reach back +\n");
+#endif
 		base_yaw -= PI;
 		xy_coord *= -1;
 		reach_back = 1;
 	} else if( (q[0]-base_yaw)>=PI_HALF ){
 		// Decide to reach back
+#ifdef DEBUG
 		printf("\tCheck if we wish to reach back -\n");
+#endif
 		base_yaw += PI;
 		xy_coord *= -1;
 		reach_back = -1;
 	}
 	
+#ifdef DEBUG
 	printf("\treach_back: %d\n",reach_back);
 	printf("\tpitch: %lf\n",pitch);
 	printf("\tp_yaw: %lf\n",pseudo_yaw);
 	printf("\th_yaw: %lf\n",hand_yaw);
+#endif
 	
 	yaw_issue = 0;
 	if( (base_yaw-pseudo_yaw)>=PI_HALF ){
+#ifdef DEBUG
 		printf("\tYaw issue +\n");
+#endif
 		pseudo_yaw += PI;
-		hand_yaw += PI;
+		hand_yaw -= PI;
 		pitch *= -1;
 		yaw_issue = 1;
 	} else if( (pseudo_yaw-base_yaw)>=PI_HALF ){
+#ifdef DEBUG
 		printf("\tYaw issue -\n");
+#endif
 		pseudo_yaw -= PI;
 		hand_yaw -= PI;
 		pitch *= -1;
 		yaw_issue = -1;
 	}
 
+#ifdef DEBUG
 	printf("\tpitch: %lf\n",pitch);
 	printf("\tbase_yaw: %lf\n",base_yaw);
 	printf("\tpseudo_yaw: %lf\n",pseudo_yaw);
 	printf("\thand_yaw: %lf\n",hand_yaw);
+#endif
 
 	// Make into positive space for the pitch (above PI)
 	if( pitch<0 && reach_back==0 ){
 		pitch += PI_DOUBLE;
+		// Also flip the hand_yaw...?
 	}
+
+	if(hand_yaw>PI)
+		hand_yaw -= PI_DOUBLE;
+	else if(hand_yaw<-PI)
+		hand_yaw += PI_DOUBLE;
+
+
+	double mod_yaw;
+	if( unique_pitch!=0 ){
+		hand_yaw -= unique_pitch * base_yaw;
+		mod_yaw = hand_yaw;
+	} else {
+		double diff_yaw = pseudo_yaw - base_yaw;
+#ifdef DEBUG
+		printf("\tdiff_yaw: %lf\n",diff_yaw);
+#endif
+		double mod_factor = cos(pitch) * diff_yaw;
+		mod_yaw = hand_yaw + mod_factor;
+	}
+
+
+#ifdef DEBUG
+	printf("\thand_yaw: %lf\n",hand_yaw);
+	printf("\tmod_yaw: %lf\n",mod_yaw);
+	printf("\tcos(p): %lf\n",cos(pitch));
+#endif
 
 	// Grab the XZ plane angles
   std::vector<double> output = get_xz_angles( xy_coord, dz, pitch );
   output[0] = base_yaw;
   //output[4] = hand_yaw;
+	output[4] = mod_yaw;
 	return output;
-
-
-
-	/*
-	if( tmp1 > .99 || tmp1 < -.99 ){
-		p = tmp1 > 0 ? 0 : PI;
-		printf("\nUndefined pitch\n");
-		z1 = asin( tr( 1, 0 ) );
-		// Check if around zero
-		if( x<1e-9 && x>-1e-9 && y<1e-9 && y>-1e-9 ) {
-			// Use the current base
-			yaw = q[0]; // Current Yaw
-			hand_yaw = z1;
-			//printf("Undefined pitch around zero yaw:\n\t%lf\n\t%lf\n",yaw,z1);
-		} else {
-			// Determine the angle
-			yaw = atan2(y,x);
-			hand_yaw = z1 + yaw;
-			printf("\tyaw: %lf, z1: %lf\n",yaw,z1);
-			printf("\thand_yaw: %lf\n",hand_yaw);
-		}
-	} else {
-		p = acos( tmp1 );
-		printf("\nWell defined pitch\n");
-
-		// Grab also the "yaw" of the gripper (ZYZ, where 2nd Z is yaw)
-		tmp1 =  tr( 2, 1 );
-		tmp2 = -tr( 2, 0 );
-		hand_yaw = atan2(tmp1,tmp2);
-		
-		// Grab also the "yaw" of the base (ZYZ, where 1st Z is yaw)
-		tmp1 = tr( 0, 2 );
-		tmp2 = tr( 1, 2 );
-		z1 = atan2(tmp2,tmp1);
-
-		// Check if position is around zero
-		if( x<1e-9 && x>-1e-9 && y<1e-9 && y>-1e-9 ) {
-			// Use the current base
-			yaw = q[0];
-			dyaw = z1 > yaw ? z1 - yaw : yaw - z1;
-			//printf("Around zero yaw:\n\t%lf\n\t%lf\n",yaw,z1);
-		} else {
-			// Determine the angle
-			yaw = atan2(y,x);
-			//printf("OK pitch | z1,yaw,p:\n\t%lf\n\t%lf\n\t%lf\n\t%lf\n\t%lf\n",z1,yaw,p,yaw*cos(p),hand_yaw);
-			// This may be good...
-			//hand_yaw -= yaw*cos(p);
-		}
-	}
-	
-	// Check against our current base angle
-	dyaw = q[0] > yaw ? q[0] - yaw : yaw - q[0];
-	if(dyaw>=PI_HALF){
-		// Major difference in current and proposed base yaw
-		xy_coord = -xy_dist - baseLength;
-		yaw = q[0];
-		prtinf("Difference\n");
-	}
-	*/
-
-  // Grab the XZ plane angles
-
   
 }
 

@@ -205,22 +205,11 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<doub
 	else if(hand_yaw<-PI)
 		hand_yaw += PI_DOUBLE;
 
-
-	double mod_yaw;
-	if( unique_pitch!=0 ){
-		hand_yaw -= unique_pitch * base_yaw;
-		mod_yaw = hand_yaw;
-	} else {
-		double diff_yaw = pseudo_yaw - base_yaw;
-#ifdef DEBUG
-		printf("\tdiff_yaw: %lf\n",diff_yaw);
-#endif
-		double mod_factor = cos(pitch) * diff_yaw;
-		mod_yaw = hand_yaw + mod_factor;
-	}
-
+	double diff_yaw = pseudo_yaw - base_yaw;
+	double mod_yaw = hand_yaw + cos(pitch) * diff_yaw;
 
 #ifdef DEBUG
+	printf("\tdiff_yaw: %lf\n",diff_yaw);
 	printf("\thand_yaw: %lf\n",hand_yaw);
 	printf("\tmod_yaw: %lf\n",mod_yaw);
 	printf("\tcos(p): %lf\n",cos(pitch));
@@ -229,53 +218,65 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<doub
 	// Grab the XZ plane angles
   std::vector<double> output = get_xz_angles( xy_coord, dz, pitch );
   output[0] = base_yaw;
-  //output[4] = hand_yaw;
 	output[4] = mod_yaw;
 	return output;
   
 }
 
 // Inverse given only a position
-std::vector<double> YouBot_kinematics_inverse_arm_position(double x, double y, double z) {
+std::vector<double> YouBot_kinematics_inverse_arm_position(double dx, double dy, double dz, std::vector<double> q) {
+	double xy_coord = sqrt(dx*dx + dy*dy);
+	// Check if we want to reach back
+	double base_yaw;
+	if( xy_coord<1e-9 ) {
+		base_yaw = q[0];
+	} else {
+		base_yaw = atan2(dy,dx);
+	}
 
-  // Find the perfect pitch
+	/*
+	char reach_back = 0;
+	if( (base_yaw-q[0])>=PI_HALF ){
+		// Decide to reach back
+#ifdef DEBUG
+		printf("\tCheck if we wish to reach back +\n");
+#endif
+		base_yaw -= PI;
+		xy_coord *= -1;
+		reach_back = 1;
+	} else if( (q[0]-base_yaw)>=PI_HALF ){
+		// Decide to reach back
+#ifdef DEBUG
+		printf("\tCheck if we wish to reach back -\n");
+#endif
+		base_yaw += PI;
+		xy_coord *= -1;
+		reach_back = -1;
+	}
+	*/
 
-  // Remove rotation of the shoulder yaw
-  double dist2 = x*x + y*y;
-  double dist = sqrt(dist2);
-  double yaw = atan2(y,x);
-  // x is the distance now, less the offset
-  x = dist - baseLength;
+	// Start guessing the pitch
+	double pitch = atan2(xy_coord,dz);
 
-  // TODO: Make a simple optimization routine
-  // How much the arm must reach
-  double dr2 = x*x+z*z;
-  double dr  = sqrt(dr2);
-  double p;
-  if(dr<.35) {
-    // Optimization routine in tight spaces
-    // Basically loop between 90 and 180 degrees
-    // TODO: Could in clude the *current* pitch angle
-    double ratio = (dr-.1)/.3;
-    if(ratio<0) ratio=0;
-    p = ratio * PI/2 + (1-ratio)*PI*125/180;
-    printf("pp: %lf, ratio: %lf\n",p,ratio);
-  } else {
-    // The angle of attack is our perfect pitch
-    p = atan2(x,z);
-  }
-  // End perfect pitch calculation
+#ifdef DEBUG
+	printf("\tPitch: %lf\n",pitch);
+	printf("\txy_coord: %lf\n",xy_coord);
+#endif
 
-  // Grab the XZ plane angles
-  std::vector<double> xz = get_xz_angles( x, z, p );
+	if(dz<0)
+		pitch += PI_HALF / 2;
+	else if(xy_coord<=.25)
+		pitch += PI_HALF / 2;
 
-  // Output to joint angles
-  std::vector<double> qArm(5);
-  qArm[0] = yaw;
-  qArm[1] = xz[0];
-  qArm[2] = xz[1];
-  qArm[3] = xz[2];
-  qArm[4] = 0; // Go to zero here, but this is arbitrary
+#ifdef DEBUG
+	printf("\tPitch(!): %lf\n",pitch);
+#endif
 
-  return qArm;
+// Grab the XZ plane angles
+  std::vector<double> output = get_xz_angles( xy_coord, dz, pitch );
+  output[0] = base_yaw;
+	// Keep the same angle of the gripper yaw
+	output[4] = q[4];
+	return output;
+
 }

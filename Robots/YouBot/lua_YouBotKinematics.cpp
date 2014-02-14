@@ -188,7 +188,7 @@ static int inverse_arm_position_only(lua_State *L) {
   double y = luaL_checknumber(L, 2);
   double z = luaL_checknumber(L, 3);
 
-  qArm = YouBot_kinematics_inverse_arm_position( x, y, z);
+  qArm = YouBot_kinematics_inverse_arm_position( x, y, z, lua_checkvector(L, 4));
 	lua_pushvector(L, qArm);
 	return 1;
 }

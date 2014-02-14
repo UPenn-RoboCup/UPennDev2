@@ -33,7 +33,6 @@ const double SQRT2 = sqrt(2);
 
 // Based on User Manual
 // arm1: from center of the z rotation to the protrusion of the arm
-//const double baseLength = .077;
 const double baseLength = .020;
 // arm2: 
 const double lowerArmLength = .155;

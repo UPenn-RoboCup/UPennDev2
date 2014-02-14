@@ -5,6 +5,7 @@ local libPlan = {}
 local torch  = require'torch'
 torch.Tensor = torch.DoubleTensor
 local vector = require'vector'
+local q = require'quaternion'
 local carray = require 'carray'
 local T = require'libTransform'
 
@@ -38,11 +39,15 @@ local line_path = function(self, qArm, trGoal, res)
 	local qStack = {}
 	local cur_qArm = qGoal
 	local cur_trArm = trGoal
+	local inv_nSteps = 1 / nSteps
 	table.insert(qStack,cur_qArm)
 	for i=nSteps,1,-1 do
 		local trWaypoint = dTransBack * cur_trArm
+		local qSlerp = q.slerp(quatArm,quatGoal,i*inv_nSteps)
 		local iqArm = K.inverse_arm(
-			trWaypoint,
+			--trWaypoint,
+			T.from_quaternion(qSlerp,
+				{trWaypoint[1][4],trWaypoint[2][4],trWaypoint[3][4]}),
 			cur_qArm
 		)
 		cur_qArm = iqArm

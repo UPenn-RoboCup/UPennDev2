@@ -150,7 +150,12 @@ function libTransform.from_quaternion( q, root )
   t[3][1] = 2 * q[2] * q[4] - 2 * q[3] * q[1]
   t[3][2] = 2 * q[3] * q[4] + 2 * q[2] * q[1]
   t[3][3] = 1 - 2 * q[2] * q[2] - 2 * q[3] * q[3]
-  if root then return libTransform.trans(unpack(root))*t end
+  --if root then return libTransform.trans(unpack(root))*t end
+	if root then
+		t[1][4] = root[1]
+		t[2][4] = root[2]
+		t[3][4] = root[3]
+	end
   return t
 end
 

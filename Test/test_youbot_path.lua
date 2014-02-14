@@ -5,8 +5,11 @@ local getch = require'getch'
 local P = require'libPlan'
 local planner = P.new_planner(K)
 
-local diff = vector.new{.1,.1,-.1}
+--local diff = vector.new{.1,.1,-.1}
+local diff = vector.new{.2,0.05,-.2}
 local dir = 1
+local zrot = 45 * DEG_TO_RAD
+local yrot = 60 * DEG_TO_RAD
 
 local function process_keycode(keycode,t_diff)
   local char = string.char(keycode)
@@ -31,7 +34,15 @@ local function process_keycode(keycode,t_diff)
 	if char_lower=='p' then
 		local qArm = Body.get_command_position()
 		local fk = K.forward_arm(qArm)
-		local trGoal = T.trans(unpack(diff*dir)) * fk
+		local trGoal
+		if dir==1 then
+			trGoal = T.trans(unpack(diff))
+			* fk
+			* T.rotY(yrot)
+			* T.rotZ(zrot)
+		else
+			trGoal = T.trans(0.020,0,.45)
+		end
 		dir = dir * -1
 		local pathStack = planner:line(qArm,trGoal)
 		while true do

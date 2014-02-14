@@ -91,6 +91,10 @@ std::vector<double> get_xz_angles(double xy_dist, double z, double p ){
 	xz[1] = shoulderPitch;
   xz[2] = PI - elbow;
   xz[3] = p - (shoulderPitch + (PI - elbow));
+	if(xz[3]>PI)
+		xz[3] -= PI_DOUBLE;
+	else if(xz[3]<-PI)
+		xz[3] += PI_DOUBLE;
 	xz[4] = 0;
 
   return xz;

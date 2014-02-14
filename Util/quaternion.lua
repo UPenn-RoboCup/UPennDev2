@@ -164,12 +164,13 @@ end
 local function mul(q1, q2)
   local a1,b1,c1,d1 = unpack(q1)
   local a2,b2,c2,d2 = unpack(q2)
-  local q = {}
-  q[1] = a1*a2 - b1*b2 - c1*c2 - d1*d2
-  q[2] = a1*b2 + b1*a2 + c1*d2 - d1*c2
-  q[3] = a1*c2 - b1*d2 + c1*a2 + d1*b2
-  q[4] = a1*d2 + b1*c2 - c1*b2 + d1*a2
-  return setmetatable(q, mt)
+  local q = {
+  a1*a2 - b1*b2 - c1*c2 - d1*d2,
+  a1*b2 + b1*a2 + c1*d2 - d1*c2,
+  a1*c2 - b1*d2 + c1*a2 + d1*b2,
+  a1*d2 + b1*c2 - c1*b2 + d1*a2
+	}
+  return setmetatable(quaternion.unit( q ), mt)
 end
 
 -- Same tostring as a vector

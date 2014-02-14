@@ -42,12 +42,16 @@ Transform YouBot_kinematics_forward_arm(const double *q) {
 // Output: Vector of 3 pitch angles
 std::vector<double> get_xz_angles(double xy_dist, double z, double p ){
 
+	printf("==\n\txy_dist: %lf\n",xy_dist);
+	printf("\n\tz: %lf\n",z);
+	printf("\n\tp: %lf\n",p);
+
 	double xy_coord = xy_dist - baseLength;
   // Given the "pitch", find the effective position
   double dx = xy_coord - gripperLength * sin(p);
   double dz = z - gripperLength * cos(p);
 	
-  printf("\n\tdx: %lf, dz: %lf\n",dx,dz);
+  printf("\tdx: %lf, dz: %lf\n",dx,dz);
   
   double dr2 = dx*dx+dz*dz;
   double dr  = sqrt(dr2);
@@ -99,7 +103,7 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<doub
 
 	// Grab the pitch
 	tmp1 = tr( 2, 2 );
-	unique_pitch = tmp1 > .99 ? 1 : (tmp1 < -.99 ? -1 : 0);
+	unique_pitch = tmp1 > .999 ? 1 : (tmp1 < -.999 ? -1 : 0);
 	// Check for singularity when the z1 and z2 yaws are parallel
 	// Form the yaw of the hand
 	if( unique_pitch!=0 ){
@@ -169,6 +173,11 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<doub
 	printf("\tbase_yaw: %lf\n",base_yaw);
 	printf("\tpseudo_yaw: %lf\n",pseudo_yaw);
 	printf("\thand_yaw: %lf\n",hand_yaw);
+
+	// Make into positive space for the pitch (above PI)
+	if( pitch<0 && reach_back==0 ){
+		pitch += PI_DOUBLE;
+	}
 
 	// Grab the XZ plane angles
   std::vector<double> output = get_xz_angles( xy_coord, dz, pitch );

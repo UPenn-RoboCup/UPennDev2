@@ -147,11 +147,35 @@ function quaternion.mean( QMax, qInit )
 end
 --]]
 
+-- https://en.wikipedia.org/wiki/Slerp
 function quaternion.slerp(q0,q1,t)
-	local prodQuat = quaternion.conjugate(q0) * q1
+	t = t or .5
+	local q0_prime = quaternion.conjugate(q0)
+	local prodQuat = q0_prime * q1
 	local angle, axis = quaternion.angle_axis(prodQuat)
 	local quadT = quaternion.from_angle_axis(angle * t,axis)
-	return q0 * quadT
+	local qSlerp = q0 * quadT
+	-- Check if long path or not...
+	-- NOTE: must use the context of joint limits, since
+	-- the long path may be necessary
+	-- TODO: return both paths?
+	local prodQuat_minus = q0_prime * (-q1)
+	angle, axis = quaternion.angle_axis(prodQuat_minus)
+	quadT = quaternion.from_angle_axis(angle * t,axis)
+	local qSlerp_minus = q0 * quadT
+	--
+	return qSlerp, qSlerp_minus
+end
+
+-- https://theory.org/software/qfa/writeup/node12.html
+-- s0, s1: inner quadrangle points
+function quaternion.squad(q0,q1,t,s0,s1)
+	local sl = quaternion.slerp
+	return sl(
+		sl(q0,q1,t),
+		sl(s0,s1,t),
+		2*t*(1-t)
+	)
 end
 
 -- Metatable methods are local
@@ -159,6 +183,13 @@ local function add(q1, q2)
   local q = {}
   for i,v in ipairs(q1) do q[i] = v + q2[i] end
   return setmetatable(q, mt)
+end
+
+--http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/
+local function negate(q)
+	return setmetatable({
+		-q[1],-q[2],-q[3],-q[4]
+	},mt)
 end
 
 local function mul(q1, q2)
@@ -170,7 +201,7 @@ local function mul(q1, q2)
   a1*c2 - b1*d2 + c1*a2 + d1*b2,
   a1*d2 + b1*c2 - c1*b2 + d1*a2
 	}
-  return setmetatable(quaternion.unit( q ), mt)
+  return quaternion.unit( q )
 end
 
 -- Same tostring as a vector
@@ -187,6 +218,7 @@ end
 -- Set the metatable values
 mt.__add = add
 mt.__mul = mul
+mt.__unm = negate
 mt.__tostring = tostring
 
 return quaternion

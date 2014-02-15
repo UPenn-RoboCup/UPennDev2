@@ -108,7 +108,7 @@ end
 -- Rotation Matrix to quaternion
 -- from Yida.  Adapted to take a transformation matrix
 libTransform.to_quaternion = function(t)
-  local offset = torch.Tensor{t[1][4],t[2][4],t[3][4]}
+  local offset = vector.new{t[1][4],t[2][4],t[3][4]}
   local q = quaternion.new()
   local tr = t[1][1] + t[2][2] + t[3][3]
   if tr > 0 then

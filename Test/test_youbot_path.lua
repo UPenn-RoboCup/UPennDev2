@@ -44,7 +44,7 @@ local function process_keycode(keycode,t_diff)
 			trGoal = T.trans(0.020,0,.45)
 		end
 		dir = dir * -1
-		local pathStack = planner:line(qArm,trGoal)
+		local pathStack = planner:line_stack(qArm,trGoal)
 		while true do
 			local qWaypoint = table.remove(pathStack)
 			if not qWaypoint then break end

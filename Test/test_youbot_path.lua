@@ -5,6 +5,8 @@ local getch = require'getch'
 local P = require'libPlan'
 local planner = P.new_planner(K)
 
+local use_stack = true
+
 --local diff = vector.new{.1,.1,-.1}
 local diff = vector.new{.2,0.05,-.2}
 local dir = 1
@@ -44,14 +46,28 @@ local function process_keycode(keycode,t_diff)
 			trGoal = T.trans(0.020,0,.45)
 		end
 		dir = dir * -1
-		local pathStack = planner:line_stack(qArm,trGoal)
+		local pathStack, pathIter
+		if use_stack==true then
+			print("STACK")
+			pathStack = planner:line_stack(qArm,trGoal)
+		else
+			print("ITERATOR")
+			pathIter  = planner:line_iter(qArm,trGoal)
+		end
 		while true do
-			local qWaypoint = table.remove(pathStack)
+			local qWaypoint
+			if use_stack==true then
+				qWaypoint = table.remove(pathStack)
+			else
+				qWaypoint = pathIter(Body.get_command_position())
+			end
 			if not qWaypoint then break end
 			print(vector.new(qWaypoint))
 			Body.set_command_position(qWaypoint)
 			unix.usleep(1e5)
 		end
+	elseif char_lower=='o' then
+		use_stack = not use_stack
 	end
 
 end

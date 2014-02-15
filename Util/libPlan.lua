@@ -13,21 +13,20 @@ local T = require'libTransform'
 -- a straight line
 -- res: resolution in meters
 -- TODO: Check some metric of feasibility
-local line_path = function(self, qArm, trGoal, res)
+local line_path_stack = function(self, qArm, trGoal, res)
 	res = res or 0.005
 	local K = self.K
 	local trArm = K.forward_arm(qArm)
 	local qGoal = K.inverse_arm(trGoal,qArm)
 	--
-	local quatArm, posArm   = T.to_quaternion(trArm)
+	local quatArm,  posArm  = T.to_quaternion(trArm)
 	local quatGoal, posGoal = T.to_quaternion(trGoal)
 	--
 	local dPos = posGoal - posArm
 	local distance = vector.norm(dPos)
 	local nSteps = math.ceil(distance / res)
 	local inv_nSteps = 1 / nSteps
-	local dTransBack = T.trans(unpack(-inv_nSteps*dPos))
-
+	local dTransBack = T.trans(unpack(dPos/-nSteps))
 	-- Form the precomputed stack
 	local qStack = {}
 	local cur_qArm = qGoal
@@ -47,34 +46,30 @@ local line_path = function(self, qArm, trGoal, res)
 	return qStack
 end
 
+-- This should hav exponential distance properties...
+
 local line_path_iter = function(self, qArm, trGoal, res)
 	res = res or 0.005
 	local K = self.K
-	-- First, find the FK of where we are
-	local trArm = K.forward_arm(qArm)
-	local quatArm, posArm = T.to_quaternion(trArm)
-	-- Second, check the IK of the goal
-	local quatGoal, posGoal = T.to_quaternion(trGoal)
+	-- Save the goal
 	local qGoal = K.inverse_arm(trGoal,qArm)
-	-- TODO: Check some metric of feasibility
-	local dPos = posGoal - posArm
-	local distance = torch.norm(dPos)
-	local nSteps = math.ceil(distance / res)
-	local inv_nSteps = 1 / nSteps
-	--
-	local dTransBack = T.trans(-dPos[1]/nSteps,-dPos[2]/nSteps,-dPos[3]/nSteps)
-
+	local quatGoal, posGoal = T.to_quaternion(trGoal)
 	-- Form the iterator... (more even computation time)
 	return function(cur_qArm)
 		local cur_trArm = K.forward_arm(cur_qArm)
-		local trWaypoint = dTransBack * cur_trArm
-		local qSlerp = q.slerp(quatArm,quatGoal,i*inv_nSteps)
+		local quatArm, posArm = T.to_quaternion(cur_trArm)
+		--
+		local dPos = posGoal - posArm
+		local distance = vector.norm(dPos)
+		-- If closer than the resolution, return
+		if distance<res then return end
+		local res_ratio = res / distance
+		--
 		local trStep = T.from_quaternion(
-			qSlerp,
-			{trWaypoint[1][4],trWaypoint[2][4],trWaypoint[3][4]}
+			q.slerp(quatArm,quatGoal,res_ratio),
+			dPos*res_ratio + posArm
 		)
-		local iqArm = K.inverse_arm(trStep, cur_qArm)
-		return iqArm
+		return K.inverse_arm(trStep, cur_qArm)
 	end
 
 end
@@ -87,7 +82,7 @@ libPlan.new_planner = function(kinematics, min_q, max_q)
 	planner.K = kinematics
 	planner.min_q = min_q
 	planner.max_q = max_q
-	planner.line_stack = line_path
+	planner.line_stack = line_path_stack
 	planner.line_iter = line_path_iter
 	planner.joint = joint_path
 	return planner

@@ -165,7 +165,7 @@ static void lua_pushtransform(lua_State *L, Transform t) {
 	}
 }
 
-static int forward_arm(lua_State *L) {
+static int lua_forward_arm(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
 	Transform t = YouBot_kinematics_forward_arm(&q[0]);
 
@@ -180,16 +180,33 @@ static int forward_arm(lua_State *L) {
 	return 1;
 }
 
-static int com_arm(lua_State *L) {
+// Center of mass with respect to the arm (not including the base)
+static int lua_com_arm(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
 	std::vector<double> comObject = lua_checkvector(L, 2);
 	double mObject = luaL_checknumber(L, 3);
 	std::vector<double> com = YouBot_kinematics_com_arm(&q[0],comObject,mObject);
+	com[0] /= mArm;
+	com[1] /= mArm;
+	com[2] /= mArm;
 	lua_pushvector(L, com);
 	return 1;
 }
 
-static int inverse_arm(lua_State *L) {
+// Center of mass with respect to the base (including the arm)
+static int lua_com_base(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	std::vector<double> comObject = lua_checkvector(L, 2);
+	double mObject = luaL_checknumber(L, 3);
+	std::vector<double> com = YouBot_kinematics_com_arm(&q[0],comObject,mObject);
+	com[0] = (com[0] - comArm[0]) / mTotal;
+	com[1] = (com[1] - comArm[1]) / mTotal;
+	com[2] = (com[2] - comArm[2]) / mTotal;
+	lua_pushvector(L, com);
+	return 1;
+}
+
+static int lua_inverse_arm(lua_State *L) {
 	std::vector<double> qArm;
 	char is_reach_back;
 
@@ -208,7 +225,7 @@ static int inverse_arm(lua_State *L) {
 // Take in a desired position, and the current joints
 // TODO: Should find with minimal end effector change...?
 // Should have just a transform?
-static int inverse_arm_position_only(lua_State *L) {
+static int lua_inverse_arm_position_only(lua_State *L) {
 	std::vector<double> qArm;
 
   double x = luaL_checknumber(L, 1);
@@ -221,10 +238,11 @@ static int inverse_arm_position_only(lua_State *L) {
 }
 
 static const struct luaL_Reg kinematics_lib [] = {
-	{"forward_arm", forward_arm},
-	{"com_arm", com_arm},
-	{"inverse_arm", inverse_arm},
-  {"inverse_arm_pos", inverse_arm_position_only},
+	{"forward_arm", lua_forward_arm},
+	{"forward_com_arm", lua_com_arm},
+	{"forward_com", lua_com_base},
+	{"inverse_arm", lua_inverse_arm},
+  {"inverse_arm_position", lua_inverse_arm_position_only},
 	{NULL, NULL}
 };
 
@@ -235,6 +253,8 @@ static const def_info kinematics_constants[] = {
   {"wristLength", wristLength},
   {"handLength", handLength},
 	//
+	{"mTotal", mTotal},
+	{"mBase", mBase},
 	{"mArm", mArm},
 	{"mLowerArm", mLowerArm},
 	{"mUpperArm", mUpperArm},

@@ -59,7 +59,7 @@ local function process_keycode(keycode,t_diff)
     local dz = tonumber(io.stdin:read())
     if not dz then return end
 		local qArm = Body.get_command_position()
-    local iqArm = vector.new(K.inverse_arm_pos(dx,dy,dz,qArm))
+    local iqArm = vector.new(K.inverse_arm_position(dx,dy,dz,qArm))
     Body.set_command_position(iqArm)
     return
   end
@@ -80,6 +80,12 @@ local function process_keycode(keycode,t_diff)
     print()
     local zyz = T.to_zyz(fk)*RAD_TO_DEG
     print('zyz:',zyz[1],zyz[2],zyz[3])
+		print()
+		-- Show the forward mass model
+		local com = vector.new( K.forward_com(qArm, {0,0,0}, 0) )
+		local com_arm = vector.new( K.forward_com_arm(qArm, {0,0,0}, 0) )
+		print('Full COM',com)
+		print('Arm  COM',com_arm)
     return
   end
 

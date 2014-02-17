@@ -32,16 +32,20 @@ const double handLength = .105;
 const double gripperLength = wristLength + handLength;
 
 // Center of mass calculation
-const double mLowerArm = 0.81;
-const double mUpperArm = 2.89;
-const double mWrist = 0.97;
-const double mHand = 0.13;
+const double mLowerArm = 1;
+const double mUpperArm = 1;
+const double mWrist = .2;
+const double mHand = .3;
+const double mBase = 5;
 const double mArm = mLowerArm + mUpperArm + mWrist + mHand;
+const double mTotal = mBase + mArm;
 //
-const double comLowerArm[3] = {0,0,0};
-const double comUpperArm[3] = {0,0,0};
-const double comWrist[3]    = {0,0,0};
-const double comHand[3]     = {0,0,0};
+const double comLowerArm[3] = {0,0,0.075};
+const double comUpperArm[3] = {0,0,0.07};
+const double comWrist[3]    = {0,0,.04};
+const double comHand[3]     = {0,0,.05};
+// How far offset from the base the arm is
+const double comArm[3]      = {0.4,0,0};
 
 Transform YouBot_kinematics_forward_arm(const double *q);
 std::vector<double> YouBot_kinematics_com_arm(const double *q, std::vector<double>& comObject, const double mObject);

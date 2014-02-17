@@ -7,7 +7,6 @@
 local vector=require'vector'
 local util=require'util'
 local quaternion = {}
-
 local mt = {}
 
 -- New quaternion from a 3 or 4 element table
@@ -16,18 +15,17 @@ function quaternion.new(t,alpha)
   if #t==4 then return setmetatable(t, mt) end
   -- Rotation vector to a quaternion
   assert(#t==3,'Must give a 3 or 4 element table to make a quaternion')
-  local q = {1,0,0,0}
   -- Grab the norm of the rotation vector
   local wNorm = vector.norm(t)
   -- Avoid small norms
-  if wNorm < 1e-6 then return setmetatable(q, mt) end
+  if wNorm < 1e-6 then return setmetatable({1,0,0,0}, mt) end
   -- If given, use alpha as the amount of rotation about the axis vector t
   alpha = alpha or wNorm
   local scale = math.sin(alpha/2) / wNorm
-  q[1] = math.cos(alpha/2)
-  q[2] = scale*t[1]
-  q[3] = scale*t[2]
-  q[4] = scale*t[3]
+	local q = {
+  	math.cos(alpha/2),
+  	scale*t[1], scale*t[2], scale*t[3],
+	}
   return setmetatable(q, mt)
 end
 
@@ -49,22 +47,25 @@ function quaternion.to_rpy( q )
 end
 
 function quaternion.conjugate( q )
-	local q_c = {}
-	q_c[1] = q[1]
-  q_c[2] = -1*q[2]
-  q_c[3] = -1*q[3]
-  q_c[4] = -1*q[4]
+	local q_c = {
+		q[1], -1*q[2], -1*q[3], -1*q[4],
+	}
   return setmetatable(q_c, mt)
 end
 
 -- Make a unit quaternion
 -- Assumes that q is already a quaternion
 function quaternion.unit( v1 )
-  local v = {1,0,0,0}
   local wNorm = vector.norm(v1)
-  if wNorm < 1e-6 then return setmetatable(v, mt) end
-  for i = 1, #v1 do v[i] = v1[i] / wNorm end
-  return setmetatable(v, mt)
+  if wNorm < 1e-6 then return quaternion.new() end
+  return setmetatable(
+		{
+			v1[1]/wNorm,
+			v1[2]/wNorm,
+			v1[3]/wNorm,
+			v1[4]/wNorm
+		},
+		mt)
 end
 
 -- Return a rotation vector
@@ -72,14 +73,10 @@ end
 function quaternion.vector(q)
   assert( math.abs(q[1])<=1, 'Bad unit quaternion' )
   local alphaW = 2*math.acos(q[1])
-  local v = vector.new{0,0,0}
-  -- Avoid the divide by zero scenario
-  if alphaW > 1e-6 then
-    v[1] = q[2] / math.sin(alphaW/2) * alphaW
-    v[2] = q[3] / math.sin(alphaW/2) * alphaW
-    v[3] = q[4] / math.sin(alphaW/2) * alphaW
-  end
-  return v
+	-- Avoid the divide by zero scenario
+  if alphaW < 1e-6 then return vector.zeros(3) end
+	local factor = alphaW / math.sin(alphaW/2)
+  return factor * vector.new({q[2],q[3],q[4]})
 end
 
 function quaternion.from_angle_axis(angle,axis)
@@ -108,44 +105,19 @@ function quaternion.angle_axis(q)
   q = quaternion.unit( q )
   assert( math.abs(q[1])<=1, 'Bad unit quaternion' )
   local angle = 2*math.acos(q[1])
-  local v = vector.new({1,0,0})
   -- Avoid the divide by zero scenario
-  if angle > 1e-6 then
-    v[1] = q[2] / math.sin(angle/2)
-    v[2] = q[3] / math.sin(angle/2)
-    v[3] = q[4] / math.sin(angle/2)
-  end
-  return util.mod_angle(angle), v
+	if angle< 1e-6 then return 0, vector.new({1,0,0}) end
+	return angle, vector.new({q[2],q[3],q[4]})/math.sin(angle/2)
 end
 
--- Take the average of a set of quaternions
--- TODO: Remove the torch dependence
--- NOTE: without torch, this may be slow
---[[
-function quaternion.mean( QMax, qInit )
-  local torch = require'torch'
-  local qIter = torch.DoubleTensor(4):copy(qInit)
-  local e = torch.DoubleTensor(3, QMax:size(2)):fill(0)
-  local iter = 0
-  local diff = 0
-  repeat
-    iter = iter + 1
-    for i = 1, QMax:size(2) do
-      local ei = e:narrow(2, i, 1):fill(0)
-      local qi = QMax:narrow(2, i, 1)
-      local eQ = QuatMul(qi, QuatInv(qIter))
-      ei:copy(Quat2Vector(eQ))
-    end
-    local eMean = quaternion.new( torch.mean(e,2) )
-    
-    local qIterNext = eMean * qIter
-    -- Compare the roation vectors
-    local diff = vector.norm(quaternion.vector(qIterNext)-quaternion.vector(e2))
-    qIter = qIterNext
-  until diff < 1e-6
-  return qIter, e
+-- Get the angle between two quaternions
+local function diff(q0,q1)
+	local angle0, axis0 = quaternion.angle_axis(
+		quaternion.conjugate(q0) * q1
+	)
+	return angle0, axis0
 end
---]]
+quaternion.diff = diff
 
 -- https://en.wikipedia.org/wiki/Slerp
 function quaternion.slerp(q0,q1,t)
@@ -159,12 +131,7 @@ function quaternion.slerp(q0,q1,t)
 	-- NOTE: must use the context of joint limits, since
 	-- the long path may be necessary
 	-- TODO: return both paths?
-	local prodQuat_minus = q0_prime * (-q1)
-	angle, axis = quaternion.angle_axis(prodQuat_minus)
-	quadT = quaternion.from_angle_axis(angle * t,axis)
-	local qSlerp_minus = q0 * quadT
-	--
-	return qSlerp, qSlerp_minus
+	return qSlerp
 end
 
 -- https://theory.org/software/qfa/writeup/node12.html
@@ -217,8 +184,39 @@ end
 
 -- Set the metatable values
 mt.__add = add
+mt.__sub = diff
 mt.__mul = mul
 mt.__unm = negate
 mt.__tostring = tostring
 
 return quaternion
+
+
+-- Take the average of a set of quaternions
+-- TODO: Remove the torch dependence
+-- NOTE: without torch, this may be slow
+--[[
+function quaternion.mean( QMax, qInit )
+  local torch = require'torch'
+  local qIter = torch.DoubleTensor(4):copy(qInit)
+  local e = torch.DoubleTensor(3, QMax:size(2)):fill(0)
+  local iter = 0
+  local diff = 0
+  repeat
+    iter = iter + 1
+    for i = 1, QMax:size(2) do
+      local ei = e:narrow(2, i, 1):fill(0)
+      local qi = QMax:narrow(2, i, 1)
+      local eQ = QuatMul(qi, QuatInv(qIter))
+      ei:copy(Quat2Vector(eQ))
+    end
+    local eMean = quaternion.new( torch.mean(e,2) )
+
+    local qIterNext = eMean * qIter
+    -- Compare the roation vectors
+    local diff = vector.norm(quaternion.vector(qIterNext)-quaternion.vector(e2))
+    qIter = qIterNext
+  until diff < 1e-6
+  return qIter, e
+end
+--]]

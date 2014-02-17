@@ -49,7 +49,7 @@ void printTransform(Transform tr);
 void printVector(std::vector<double> v);
 
 Transform YouBot_kinematics_forward_arm(const double *q);
-std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<double> q);
+std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<double> q, char& is_reach_back, bool use_safe_yaw);
 std::vector<double> YouBot_kinematics_inverse_arm_position(double x, double y, double z, std::vector<double> q);
 
 #endif

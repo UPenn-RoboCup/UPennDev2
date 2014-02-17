@@ -101,10 +101,11 @@ std::vector<double> get_xz_angles(double xy_dist, double z, double p ){
 }
 
 // Inverse given a transform
-std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<double> q) {
+// Default uses the safe yaw
+std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<double> q, char& is_reach_back, bool use_safe_yaw=true) {
   double dx, dy, dz, base_yaw, pseudo_yaw, pitch, hand_yaw, tmp1, xy_coord;
 	//double yaw, dyaw, tmp2, ;
-	char unique_pitch, reach_back, yaw_issue;
+	char unique_pitch, yaw_issue;
 
 	// Grab the pitch
 	tmp1 = tr( 2, 2 );
@@ -146,7 +147,7 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<doub
 	printf("\tbase_yaw: %lf\n",base_yaw);
 	printf("\tq[0]: %lf\n",q[0]);
 #endif
-	reach_back = 0;
+	is_reach_back = 0;
 	if( (base_yaw-q[0])>=PI_HALF ){
 		// Decide to reach back
 #ifdef DEBUG
@@ -154,7 +155,7 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<doub
 #endif
 		base_yaw -= PI;
 		xy_coord *= -1;
-		reach_back = 1;
+		is_reach_back = 1;
 	} else if( (q[0]-base_yaw)>=PI_HALF ){
 		// Decide to reach back
 #ifdef DEBUG
@@ -162,11 +163,11 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<doub
 #endif
 		base_yaw += PI;
 		xy_coord *= -1;
-		reach_back = -1;
+		is_reach_back = -1;
 	}
 	
 #ifdef DEBUG
-	printf("\treach_back: %d\n",reach_back);
+	printf("\treach_back: %d\n",is_reach_back);
 	printf("\tpitch: %lf\n",pitch);
 	printf("\tp_yaw: %lf\n",pseudo_yaw);
 	printf("\th_yaw: %lf\n",hand_yaw);
@@ -199,7 +200,7 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<doub
 #endif
 
 	// Make into positive space for the pitch (above PI)
-	if( pitch<0 && reach_back==0 ){
+	if( pitch<0 && is_reach_back==0 ){
 		pitch += PI_DOUBLE;
 		// Also flip the hand_yaw...?
 	}
@@ -209,20 +210,23 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<doub
 	else if(hand_yaw<-PI)
 		hand_yaw += PI_DOUBLE;
 
-	double diff_yaw = pseudo_yaw - base_yaw;
-	double mod_yaw = hand_yaw + cos(pitch) * diff_yaw;
+	// Optional safe yaw:
+	if(use_safe_yaw){
+		double diff_yaw = pseudo_yaw - base_yaw;
+		hand_yaw += cos(pitch) * diff_yaw;
+	}
 
 #ifdef DEBUG
 	printf("\tdiff_yaw: %lf\n",diff_yaw);
 	printf("\thand_yaw: %lf\n",hand_yaw);
-	printf("\tmod_yaw: %lf\n",mod_yaw);
+	printf("\tmod_yaw: %lf\n",hand_yaw);
 	printf("\tcos(p): %lf\n",cos(pitch));
 #endif
 
 	// Grab the XZ plane angles
   std::vector<double> output = get_xz_angles( xy_coord, dz, pitch );
   output[0] = base_yaw;
-	output[4] = mod_yaw;
+	output[4] = hand_yaw;
 	return output;
   
 }

@@ -6,12 +6,16 @@ local P = require'libPlan'
 local planner = P.new_planner(K)
 
 local use_stack = true
-
---local diff = vector.new{.1,.1,-.1}
-local diff = vector.new{.2,0.05,-.2}
 local dir = 1
-local zrot = 45 * DEG_TO_RAD
-local yrot = 60 * DEG_TO_RAD
+
+local diff = vector.new{.1,.1,-.1}
+local zrot = 0
+local yrot = 0
+
+local diff = vector.new{.3,.1,-.5}
+--local diff = vector.new{.1,.1,-.1}
+local zrot = -45 * DEG_TO_RAD
+local yrot = 120 * DEG_TO_RAD
 
 local function process_keycode(keycode,t_diff)
   local char = string.char(keycode)
@@ -62,12 +66,18 @@ local function process_keycode(keycode,t_diff)
 				qWaypoint = pathIter(Body.get_command_position())
 			end
 			if not qWaypoint then break end
-			print(vector.new(qWaypoint))
+			--print(vector.new(qWaypoint))
 			Body.set_command_position(qWaypoint)
-			unix.usleep(1e5)
+			--unix.usleep(1e6)
 		end
+		print'DONE'
 	elseif char_lower=='o' then
 		use_stack = not use_stack
+		if use_stack==true then
+			print("STACK")
+		else
+			print("ITERATOR")
+		end
 	end
 
 end

@@ -165,6 +165,15 @@ static int forward_arm(lua_State *L) {
 	return 1;
 }
 
+static int com_arm(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	std::vector<double> comObject = lua_checkvector(L, 2);
+	double mObject = luaL_checknumber(L, 3);
+	std::vector<double> com = YouBot_kinematics_com_arm(&q[0],comObject,mObject);
+	lua_pushvector(L, com);
+	return 1;
+}
+
 static int inverse_arm(lua_State *L) {
 	std::vector<double> qArm;
 	char is_reach_back;
@@ -198,6 +207,7 @@ static int inverse_arm_position_only(lua_State *L) {
 
 static const struct luaL_Reg kinematics_lib [] = {
 	{"forward_arm", forward_arm},
+	{"com_arm", com_arm},
 	{"inverse_arm", inverse_arm},
   {"inverse_arm_pos", inverse_arm_position_only},
 	{NULL, NULL}
@@ -209,6 +219,12 @@ static const def_info kinematics_constants[] = {
   {"upperArmLength", upperArmLength},
   {"wristLength", wristLength},
   {"handLength", handLength},
+	//
+	{"mArm", mArm},
+	{"mLowerArm", mLowerArm},
+	{"mUpperArm", mUpperArm},
+	{"mWrist", mWrist},
+	{"mHand", mHand},
   {NULL, 0}
 };
 

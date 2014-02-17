@@ -5,27 +5,9 @@ Kinematics for KUKA YouBot's 5 DOF arm
 
 #include "YouBotKinematics.h"
 
-void printTransform(Transform tr) {
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      printf("%.4g ", tr(i,j));
-    }
-    printf("\n");
-  }
-  printf("\n");
-}
-
-void printVector(std::vector<double> v) {
-  for (int i = 0; i < v.size(); i++) {
-    printf("%.4g\n", v[i]);
-  }
-  printf("\n");
-}
-
 Transform YouBot_kinematics_forward_arm(const double *q) {
-  Transform t;
-  t = t
-    .rotateZ(q[0])
+  Transform tr;
+  tr.rotateZ(q[0])
     .translateX(baseLength) // do not use for now
     .rotateY(q[1])
     .translateZ(lowerArmLength)
@@ -34,8 +16,78 @@ Transform YouBot_kinematics_forward_arm(const double *q) {
     .rotateY(q[3])
     .translateZ(wristLength+handLength)
     .rotateZ(q[4]);
-  return t;
+  return tr;
 }
+
+std::vector<double> YouBot_kinematics_com_arm(const double *q, std::vector<double>& comObject, const double mObject) {
+  Transform tr_lower_arm, tr_upper_arm, tr_wrist, tr_hand, tr_object;
+	std::vector<double> com(3);
+	
+	tr_lower_arm
+    .rotateZ(q[0])
+    .translateX(baseLength)
+    .rotateY(q[1]);
+	// base ends pointing in the direction that the lower arm goes
+  tr_upper_arm = trcopy(tr_lower_arm)
+		.translateZ(lowerArmLength)
+		.rotateY(q[2]);
+	// upper arm ends pointing in the direction that the upper arm goes
+	tr_wrist = trcopy(tr_upper_arm)
+    .translateZ(upperArmLength)
+		.rotateY(q[3]);
+	// lower arm ends pointing in the direction that the wrist goes
+	tr_hand = trcopy(tr_wrist)
+    .translateZ(wristLength)
+		.rotateZ(q[4]);
+	// wrist ends twisting in the direction that the hand is twisted
+	tr_object = trcopy(tr_hand)
+		.translateZ(handLength);
+	// hand ends pointing in the direction of the object it holds
+	
+	// Now add the offsets for the masses
+	tr_lower_arm
+		.translateX(comLowerArm[0])
+		.translateX(comLowerArm[1])
+    .translateZ(comLowerArm[2]);
+	tr_upper_arm
+		.translateX(comUpperArm[0])
+		.translateX(comUpperArm[1])
+    .translateZ(comUpperArm[2]);
+	tr_wrist
+		.translateX(comWrist[0])
+		.translateX(comWrist[1])
+    .translateZ(comWrist[2]);
+	tr_hand
+		.translateX(comHand[0])
+		.translateX(comHand[1])
+    .translateZ(comHand[2]);
+	tr_object
+		.translateX(comObject[0])
+		.translateX(comObject[1])
+    .translateZ(comObject[2]);
+	
+	// Form the centor of mass vector
+	com[0] = mLowerArm * tr_lower_arm(0,3)
+		+ mUpperArm * tr_upper_arm(0,3)
+		+ mWrist * tr_wrist(0,3)
+		+ mHand * tr_hand(0,3)
+		+ mObject * tr_object(0,3);
+	
+	com[1] = mLowerArm * tr_lower_arm(1,3)
+		+ mUpperArm * tr_upper_arm(1,3)
+		+ mWrist * tr_wrist(1,3)
+		+ mHand * tr_hand(1,3)
+		+ mObject * tr_object(1,3);
+	
+	com[2] = mLowerArm * tr_lower_arm(2,3)
+		+ mUpperArm * tr_upper_arm(2,3)
+		+ mWrist * tr_wrist(2,3)
+		+ mHand * tr_hand(2,3)
+		+ mObject * tr_object(2,3);
+	
+  return com;
+}
+
 
 // Given the appropriate yaw, just get the angles in the xz plane
 // Input: x and z position, pitch angle

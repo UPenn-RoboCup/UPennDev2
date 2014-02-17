@@ -31,4 +31,7 @@ Transform trcopy (const Transform &t1);
 Transform transform6D(const double p[6]);
 std::vector<double> position6D(const Transform &t1);
 
+void printTransform(Transform tr);
+void printVector(std::vector<double> v);
+
 #endif

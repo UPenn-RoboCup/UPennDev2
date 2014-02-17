@@ -188,3 +188,20 @@ std::vector<double> position6D(const Transform &t1) {
   p[5] = atan2(t1(1,0), t1(0,0));
   return p;
 }
+
+void printTransform(Transform tr) {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      printf("%.4g ", tr(i,j));
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
+
+void printVector(std::vector<double> v) {
+  for (int i = 0; i < v.size(); i++) {
+    printf("%.4g\n", v[i]);
+  }
+  printf("\n");
+}

@@ -115,6 +115,19 @@ local function diff(q0,q1)
 	local angle0, axis0 = quaternion.angle_axis(
 		quaternion.conjugate(q0) * q1
 	)
+	local angle1, axis1 = quaternion.angle_axis(
+		quaternion.conjugate(q0) * -q1
+	)
+	--[[
+	print('==')
+	print('A: ',angle0*RAD_TO_DEG, axis0)
+	print('B: ',angle1*RAD_TO_DEG, axis1)
+	print('--')
+	--]]
+	-- Check the other direction
+	if math.abs(angle1)<math.abs(angle0) then
+		return angle1, axis1
+	end
 	return angle0, axis0
 end
 quaternion.diff = diff
@@ -122,15 +135,16 @@ quaternion.diff = diff
 -- https://en.wikipedia.org/wiki/Slerp
 function quaternion.slerp(q0,q1,t)
 	t = t or .5
+	----[[
 	local q0_prime = quaternion.conjugate(q0)
 	local prodQuat = q0_prime * q1
 	local angle, axis = quaternion.angle_axis(prodQuat)
+	--]]
+	--[[
+	local angle, axis = diff(q0,q1)
+	--]]
 	local quadT = quaternion.from_angle_axis(angle * t,axis)
 	local qSlerp = q0 * quadT
-	-- Check if long path or not...
-	-- NOTE: must use the context of joint limits, since
-	-- the long path may be necessary
-	-- TODO: return both paths?
 	return qSlerp
 end
 

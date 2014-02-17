@@ -105,7 +105,7 @@ local function process_keycode(keycode,t_diff)
 		local zyz = T.to_zyz(desired_tr)
     print('des zyz:',zyz[1],zyz[2],zyz[3])
 		--]]
-    local iqArm = vector.new(K.inverse_arm(desired_tr,qArm))
+    local iqArm = vector.new(K.inverse_arm(desired_tr,qArm,true))
     Body.set_command_position(iqArm)
     return
   elseif post_arm[char] then
@@ -118,7 +118,7 @@ local function process_keycode(keycode,t_diff)
 		local zyz = T.to_zyz(desired_tr)
     print('des zyz:',zyz[1],zyz[2],zyz[3])
 		--]]
-    local iqArm = vector.new(K.inverse_arm(desired_tr,qArm))
+    local iqArm = vector.new(K.inverse_arm(desired_tr,qArm,true))
     Body.set_command_position(iqArm)
     return
   end

@@ -28,6 +28,7 @@ extern "C"
 
 const double PI_HALF = asin(1);
 const double PI = 2*PI_HALF;
+const double PI_ALMOST = .9*PI;
 const double PI_DOUBLE = 4*PI_HALF;
 const double SQRT2 = sqrt(2);
 

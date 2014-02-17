@@ -168,6 +168,7 @@ static int forward_arm(lua_State *L) {
 static int inverse_arm(lua_State *L) {
 	std::vector<double> qArm;
 	char is_reach_back;
+
 	// Current joint angles must be given as arg 2
 #ifdef TORCH
   if( !lua_istable(L,1) )
@@ -176,7 +177,7 @@ static int inverse_arm(lua_State *L) {
 #endif
     qArm = YouBot_kinematics_inverse_arm( lua_checktransform(L, 1), lua_checkvector(L, 2), is_reach_back, lua_toboolean(L, 3) );
 	lua_pushvector(L, qArm);
-	lua_pushboolean(L, is_reach_back);
+	lua_pushnumber(L, is_reach_back);
 	return 2;
 }
 

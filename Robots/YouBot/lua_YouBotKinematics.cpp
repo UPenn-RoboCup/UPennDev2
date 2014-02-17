@@ -4,6 +4,21 @@ Kinematics for KUKA YouBot's 5 DOF arm
 */
 
 #include <lua.hpp>
+
+// For pushing/pulling torch objects
+#ifdef TORCH
+#include <torch/luaT.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include <torch/TH/TH.h>
+#ifdef __cplusplus
+}
+#endif
+
+#endif
+
 #include "YouBotKinematics.h"
 
 /* Copied from lua_unix */

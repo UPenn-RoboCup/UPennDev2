@@ -78,12 +78,21 @@ for i,v in ipairs{'torque','velocity','position'} do
   Body['get_'..v] = jcm['get_sensor_'..v]
   Body['set_'..v] = jcm['set_sensor_'..v]
 end
-Body.set_command_position = function(val)
-	-- Clamp each value
-	for i,v in ipairs(val) do
-		val[i] = math.max(math.min(v,servo.max_rad[i]),servo.min_rad[i])
+
+-- Clamp eachh angle correctly
+local function clamp_angles( angles )
+	local clamped = vector.new()
+	for i,v in ipairs(angles) do
+		clamped[i] = math.max(math.min(v,servo.max_rad[i]),servo.min_rad[i])
 	end
-	jcm.set_actuator_command_position(val)
+	return clamped
+end
+Body.clamp_angles = clamp_angles
+
+Body.set_command_position = function(val)
+	assert(type(val)=='table' and #val==nJoint,'Bad set_command!')
+	local clamped = clamp_angles( val )
+	jcm.set_actuator_command_position(clamped)
 end
 Body.get_command_position = jcm.get_actuator_command_position
 

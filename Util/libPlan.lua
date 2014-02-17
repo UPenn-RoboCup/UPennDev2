@@ -11,8 +11,11 @@ local T = require'libTransform'
 
 -- TODO List for the planner
 -- TODO: Check some metric of feasibility
+-- TODO: endpoint with angles clamped
 -- TODO: Check if we must pass through the x,y=0,0
 -- to change the orientation through the singularity
+-- TODO: Handle goal of transform or just position
+-- Just position disables orientation checking
 
 -- Plan a direct path using
 -- a straight line
@@ -23,8 +26,11 @@ local line_path_stack = function(self, qArm, trGoal, res_pos, res_ang, use_safe_
 	res_pos = res_pos or 0.005
 	res_ang = res_ang or 1*DEG_TO_RAD
 	local K = self.K
+	-- If goal is position vector, then skip check
+	local skip_angles = type(goal[1])=='number'
 	local trArm = K.forward_arm(qArm)
 	local qGoal, is_reach_back = K.inverse_arm(trGoal,qArm,use_safe_inverse)
+	--qGoal = Body.clamp_angles(qGoal)
 	local fkGoal = K.forward_arm(qGoal)
 	--
 	local quatArm,  posArm  = T.to_quaternion(trArm)
@@ -63,11 +69,16 @@ local line_path_iter = function(self, qArm, trGoal, res_pos, res_ang, use_safe_i
 	res_pos = res_pos or 0.005
 	res_ang = res_ang or 1*DEG_TO_RAD
 	local K = self.K
+	-- If goal is position vector, then skip check
+	local skip_angles = type(goal[1])=='number'
 	-- Save the goal
 	local qGoal, is_reach_back = K.inverse_arm(trGoal,qArm,use_safe_inverse)
+	-- Check the joint limits!
+	--qGoal = Body.clamp_angles(qGoal)
 	-- Must also fix the rotation matrix, else the yaw will not be correct!
 	local fkGoal = K.forward_arm(qGoal)
 	local quatGoal, posGoal = T.to_quaternion(fkGoal)
+	-- TODO: Add failure detection; if no dist/ang changes in a while
 	-- We return the iterator and the final joint configuarion
 	return function(cur_qArm)
 		local cur_trArm = K.forward_arm(cur_qArm)
@@ -80,17 +91,21 @@ local line_path_iter = function(self, qArm, trGoal, res_pos, res_ang, use_safe_i
 		local trStep
 		if distance<res_pos then
 			-- If both within tolerance, then we are done
-			if math.abs(dAng)<res_ang then return end
+			if math.abs(dAng)<res_ang or skip_angles==true then return end
+			-- Else, just rotate in place
 			local qSlerp = q.slerp(quatArm,quatGoal,res_ang/dAng)
 			trStep = T.from_quaternion(qSlerp,posGoal)
-		elseif math.abs(dAng)<res_ang then
+		elseif math.abs(dAng)<res_ang or skip_angles==true then
 			-- Just translation
-			local ddpos = dPos * res_pos / distance
+			local ddpos = (res_pos / distance) * dPos
+			if skip_angles==true then
+				return K.inverse_arm_position(ddpos+posArm, cur_qArm)
+			end
 			trStep = T.trans(unpack(ddpos)) * cur_trArm
 		else
+			-- Both translation and rotation
 			trStep = T.from_quaternion(
 				q.slerp(quatArm,quatGoal,res_ang/dAng),
-				--q.slerp(quatArm,quatGoal,0.05),
 				dPos*res_pos/distance + posArm
 			)
 		end

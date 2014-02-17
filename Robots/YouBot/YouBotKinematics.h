@@ -11,21 +11,6 @@ Kinematics for KUKA YouBot's 5 DOF arm
 #include <math.h>
 #include <vector>
 
-// For pushing/pulling torch objects
-#ifdef TORCH
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-#include <torch/luaT.h>
-#include <torch/TH/TH.h>
-#ifdef __cplusplus
-}
-#endif
-
-#endif
-
 const double PI_HALF = asin(1);
 const double PI = 2*PI_HALF;
 const double PI_ALMOST = .9*PI;

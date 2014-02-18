@@ -24,11 +24,10 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
 
-
 	-- -- Override for now -- --
 	local pose = wcm.get_robot_pose()
-	local poseRel = util.pose_global({.2,0,0}, pose)
-	wcm.set_drill_pos({poseRel.x,poseRel.y,0})
+	local poseRel = util.pose_global({.2,.14,0}, pose)
+	wcm.set_drill_pos({poseRel.x,poseRel.y,-.1})
 	-- --   Override end   -- --
 
 	-- Find initial guess of where we want to go

@@ -446,7 +446,7 @@ Robot {
               height 240
             }
             hokuyo {
-              translation 0 .025 -0.3
+              translation 0 -0.02 -0.3
 							fieldOfView 3.1415926536
 							width 721
 							#fieldOfView 1.5707963268

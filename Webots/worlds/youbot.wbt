@@ -141,3 +141,22 @@ simple_wall {
   size 0.05 0.2 0.625
   translation 0.65 0.1 -2.675
 }
+
+# Pickup this object
+Solid {
+  translation -0.1 0 -.9
+  children [
+    DEF GRAB_SHAPE Shape {
+			appearance Appearance {
+				material Material {
+					diffuseColor .8 .4 .4
+				}
+			}
+      geometry Cylinder {
+        radius 0.025
+				height 0.2
+      }
+    }
+  ]
+  boundingObject USE GRAB_SHAPE
+}

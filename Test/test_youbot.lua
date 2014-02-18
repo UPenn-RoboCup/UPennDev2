@@ -58,8 +58,9 @@ local function process_keycode(keycode,t_diff)
     io.write('Desired z: ')
     local dz = tonumber(io.stdin:read())
     if not dz then return end
+		local pos = vector.new{dx,dy,dz}
 		local qArm = Body.get_command_position()
-    local iqArm = vector.new(K.inverse_arm_position(dx,dy,dz,qArm))
+    local iqArm = vector.new(K.inverse_arm_position(pos,qArm))
     Body.set_command_position(iqArm)
     return
   end

@@ -70,32 +70,41 @@ local line_path_iter = function(self, qArm, trGoal, res_pos, res_ang, use_safe_i
 	res_ang = res_ang or 1*DEG_TO_RAD
 	local K = self.K
 	-- If goal is position vector, then skip check
-	local skip_angles = type(goal[1])=='number'
+	local skip_angles = type(trGoal[1])=='number'
 	-- Save the goal
-	local qGoal, is_reach_back = K.inverse_arm(trGoal,qArm,use_safe_inverse)
+	local qGoal, is_reach_back, fkGoal, quatGoal, posGoal
+	if skip_angles then
+		posGoal = trGoal
+		qGoal, is_reach_back = K.inverse_arm_position(posGoal,qArm)
+	else
+		-- Must also fix the rotation matrix, else the yaw will not be correct!
+		fkGoal = K.forward_arm(qGoal)
+		quatGoal, posGoal = T.to_quaternion(fkGoal)
+		qGoal, is_reach_back = K.inverse_arm(trGoal,qArm,use_safe_inverse)
+	end
 	-- Check the joint limits!
 	--qGoal = Body.clamp_angles(qGoal)
-	-- Must also fix the rotation matrix, else the yaw will not be correct!
-	local fkGoal = K.forward_arm(qGoal)
-	local quatGoal, posGoal = T.to_quaternion(fkGoal)
 	-- TODO: Add failure detection; if no dist/ang changes in a while
 	-- We return the iterator and the final joint configuarion
 	return function(cur_qArm)
 		local cur_trArm = K.forward_arm(cur_qArm)
-		local quatArm, posArm = T.to_quaternion(cur_trArm)
+		local trStep, dAng, dAxis, quatArm, posArm
+		if skip_angles==true then
+			posArm = {cur_trArm[1][4],cur_trArm[2][4],cur_trArm[3][4]}
+		else
+			quatArm, posArm = T.to_quaternion(cur_trArm)
+			dAng, dAxis = q.diff(quatArm,quatGoal)
+		end
 		--
 		local dPos = posGoal - posArm
 		local distance = vector.norm(dPos)
-		local dAng,dAxis = q.diff(quatArm,quatGoal)
-		--
-		local trStep
 		if distance<res_pos then
 			-- If both within tolerance, then we are done
-			if math.abs(dAng)<res_ang or skip_angles==true then return end
+			if skip_angles==true or math.abs(dAng)<res_ang then return end
 			-- Else, just rotate in place
 			local qSlerp = q.slerp(quatArm,quatGoal,res_ang/dAng)
 			trStep = T.from_quaternion(qSlerp,posGoal)
-		elseif math.abs(dAng)<res_ang or skip_angles==true then
+		elseif skip_angles==true or math.abs(dAng)<res_ang then
 			-- Just translation
 			local ddpos = (res_pos / distance) * dPos
 			if skip_angles==true then
@@ -145,6 +154,7 @@ libPlan.new_planner = function(kinematics, min_q, max_q)
 	planner.K = kinematics
 	planner.min_q = min_q
 	planner.max_q = max_q
+	--
 	planner.line_stack = line_path_stack
 	planner.line_iter = line_path_iter
 	--

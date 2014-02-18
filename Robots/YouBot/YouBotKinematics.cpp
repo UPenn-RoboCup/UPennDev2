@@ -154,7 +154,7 @@ std::vector<double> get_xz_angles(double xy_dist, double z, double p ){
 
 // Inverse given a transform
 // Default uses the safe yaw
-std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<double> q, char& is_reach_back, bool use_safe_yaw=true) {
+std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<double>& q, char& is_reach_back, bool use_safe_yaw=true) {
   double dx, dy, dz, base_yaw, pseudo_yaw, pitch, hand_yaw, tmp1, xy_coord;
 	char unique_pitch, yaw_issue;
 
@@ -184,40 +184,33 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<doub
   dy = tr(1,3);
   dz = tr(2,3);
   xy_coord = sqrt(dx*dx + dy*dy);
-	// Check if we want to reach back
+	// Check vertical singularity
 	if( xy_coord<1e-9 ) {
 		base_yaw = q[0];
-#ifdef DEBUG
-		if( unique_pitch==0 ){printf("\tSPECIAL SCENARIO 1\n");}
-#endif
 	} else {
 		base_yaw = atan2(dy,dx);
-	}
-
+		// Decide to reach back
+		if( (base_yaw-q[0])>=PI_ALMOST ){
+#ifdef DEBUG
+			printf("\tReach back +\n");
+#endif
+			base_yaw -= PI;
+			xy_coord *= -1;
+			is_reach_back = 1;
+		} else if( (q[0]-base_yaw)>=PI_ALMOST ){
+#ifdef DEBUG
+			printf("\tReach back -\n");
+#endif
+			base_yaw += PI;
+			xy_coord *= -1;
+			is_reach_back = -1;
+		} else
+			is_reach_back = 0;
+	} // End check if close to vertical singularity
+	
 #ifdef DEBUG
 	printf("\tbase_yaw: %lf\n",base_yaw);
 	printf("\tq[0]: %lf\n",q[0]);
-#endif
-	is_reach_back = 0;
-	if( (base_yaw-q[0])>=PI_ALMOST ){
-		// Decide to reach back
-#ifdef DEBUG
-		printf("\tCheck if we wish to reach back +\n");
-#endif
-		base_yaw -= PI;
-		xy_coord *= -1;
-		is_reach_back = 1;
-	} else if( (q[0]-base_yaw)>=PI_ALMOST ){
-		// Decide to reach back
-#ifdef DEBUG
-		printf("\tCheck if we wish to reach back -\n");
-#endif
-		base_yaw += PI;
-		xy_coord *= -1;
-		is_reach_back = -1;
-	}
-	
-#ifdef DEBUG
 	printf("\treach_back: %d\n",is_reach_back);
 	printf("\tpitch: %lf\n",pitch);
 	printf("\tp_yaw: %lf\n",pseudo_yaw);
@@ -283,52 +276,40 @@ std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<doub
 }
 
 // Inverse given only a position
-std::vector<double> YouBot_kinematics_inverse_arm_position(double dx, double dy, double dz, std::vector<double> q) {
+std::vector<double> YouBot_kinematics_inverse_arm_position(std::vector<double>& position, std::vector<double>& q, char& is_reach_back) {
+	double dx = position[0], dy = position[1], dz = position[2];
 	double xy_coord = sqrt(dx*dx + dy*dy);
 	// Check if we want to reach back
 	double base_yaw;
-	if( xy_coord<1e-9 ) {
+	if( xy_coord<1e-6 )
 		base_yaw = q[0];
-	} else {
+	else {
 		base_yaw = atan2(dy,dx);
-	}
-
-	/*
-	char reach_back = 0;
-	if( (base_yaw-q[0])>=PI_HALF ){
 		// Decide to reach back
-#ifdef DEBUG
-		printf("\tCheck if we wish to reach back +\n");
-#endif
-		base_yaw -= PI;
-		xy_coord *= -1;
-		reach_back = 1;
-	} else if( (q[0]-base_yaw)>=PI_HALF ){
-		// Decide to reach back
-#ifdef DEBUG
-		printf("\tCheck if we wish to reach back -\n");
-#endif
-		base_yaw += PI;
-		xy_coord *= -1;
-		reach_back = -1;
+		if( (base_yaw-q[0])>=PI_ALMOST ){
+			base_yaw -= PI;
+			xy_coord *= -1;
+			is_reach_back = 1;
+		} else if( (q[0]-base_yaw)>=PI_ALMOST ){
+			base_yaw += PI;
+			xy_coord *= -1;
+			is_reach_back = -1;
+		} else is_reach_back = 0;
 	}
-	*/
+	double xy_dist = xy_coord - baseLength;
+	double extended_arm_length = sqrt( xy_dist*xy_dist + dz*dz );
+	double arm_ratio = extended_arm_length / armLength;
+	arm_ratio = arm_ratio>1?1:(arm_ratio<0?0:arm_ratio);
 
 	// Start guessing the pitch
-	double pitch = atan2(xy_coord,dz);
+	double pitch0 = atan2(xy_dist,dz);
+	double pitch1 = pitch0 + PI_HALF;
+	double pitch = pitch0 * arm_ratio + pitch1 * (1-arm_ratio);
 
 #ifdef DEBUG
-	printf("\tPitch: %lf\n",pitch);
-	printf("\txy_coord: %lf\n",xy_coord);
-#endif
-
-	if(dz<0)
-		pitch += PI_HALF / 2;
-	else if(xy_coord<=.25)
-		pitch += PI_HALF / 2;
-
-#ifdef DEBUG
-	printf("\tPitch(!): %lf\n",pitch);
+	printf("\arm_ratio: %lf\n",arm_ratio);
+	printf("\pitch0: %lf\n",pitch0);
+	printf("\pitch1: %lf\n",pitch1);
 #endif
 
 // Grab the XZ plane angles

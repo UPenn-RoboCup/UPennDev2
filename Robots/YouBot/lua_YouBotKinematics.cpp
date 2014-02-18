@@ -186,9 +186,10 @@ static int lua_com_arm(lua_State *L) {
 	std::vector<double> comObject = lua_checkvector(L, 2);
 	double mObject = luaL_checknumber(L, 3);
 	std::vector<double> com = YouBot_kinematics_com_arm(&q[0],comObject,mObject);
-	com[0] /= mArm;
-	com[1] /= mArm;
-	com[2] /= mArm;
+	double mAugmented = mObject + mArm;
+	com[0] /= mAugmented;
+	com[1] /= mAugmented;
+	com[2] /= mAugmented;
 	lua_pushvector(L, com);
 	return 1;
 }
@@ -199,9 +200,10 @@ static int lua_com_base(lua_State *L) {
 	std::vector<double> comObject = lua_checkvector(L, 2);
 	double mObject = luaL_checknumber(L, 3);
 	std::vector<double> com = YouBot_kinematics_com_arm(&q[0],comObject,mObject);
-	com[0] = (com[0] - comArm[0]) / mTotal;
-	com[1] = (com[1] - comArm[1]) / mTotal;
-	com[2] = (com[2] - comArm[2]) / mTotal;
+	double mAugmented = mObject + mTotal;
+	com[0] = (com[0] - comArm[0]) / mAugmented;
+	com[1] = (com[1] - comArm[1]) / mAugmented;
+	com[2] = (com[2] - comArm[2]) / mAugmented;
 	lua_pushvector(L, com);
 	return 1;
 }
@@ -211,12 +213,15 @@ static int lua_inverse_arm(lua_State *L) {
 	char is_reach_back;
 
 	// Current joint angles must be given as arg 2
-#ifdef TORCH
-  if( !lua_istable(L,1) )
-    qArm = YouBot_kinematics_inverse_arm( luaT_checktransform(L, 1), lua_checkvector(L, 2), is_reach_back, lua_toboolean(L, 3) );
-  else
-#endif
-    qArm = YouBot_kinematics_inverse_arm( lua_checktransform(L, 1), lua_checkvector(L, 2), is_reach_back, lua_toboolean(L, 3) );
+  if( !lua_istable(L,1) ){
+		Transform tr = luaT_checktransform(L, 1);
+		std::vector<double> qArm0 = lua_checkvector(L, 2);
+    qArm = YouBot_kinematics_inverse_arm( tr, qArm0, is_reach_back, lua_toboolean(L, 3) );
+	} else {
+		Transform tr = lua_checktransform(L, 1);
+		std::vector<double> qArm0 = lua_checkvector(L, 2);
+    qArm = YouBot_kinematics_inverse_arm( tr, qArm0, is_reach_back, lua_toboolean(L, 3) );
+	}
 	lua_pushvector(L, qArm);
 	lua_pushnumber(L, is_reach_back);
 	return 2;
@@ -227,14 +232,13 @@ static int lua_inverse_arm(lua_State *L) {
 // Should have just a transform?
 static int lua_inverse_arm_position_only(lua_State *L) {
 	std::vector<double> qArm;
-
-  double x = luaL_checknumber(L, 1);
-  double y = luaL_checknumber(L, 2);
-  double z = luaL_checknumber(L, 3);
-
-  qArm = YouBot_kinematics_inverse_arm_position( x, y, z, lua_checkvector(L, 4));
+	char is_reach_back;
+	std::vector<double> pos = lua_checkvector(L, 1);
+	std::vector<double> qArm0 = lua_checkvector(L, 2);
+  qArm = YouBot_kinematics_inverse_arm_position(pos, qArm0, is_reach_back );
 	lua_pushvector(L, qArm);
-	return 1;
+	lua_pushnumber(L, is_reach_back);
+	return 2;
 }
 
 static const struct luaL_Reg kinematics_lib [] = {
@@ -252,6 +256,8 @@ static const def_info kinematics_constants[] = {
   {"upperArmLength", upperArmLength},
   {"wristLength", wristLength},
   {"handLength", handLength},
+	{"gripperLength", gripperLength},
+	{"armLength", armLength},
 	//
 	{"mTotal", mTotal},
 	{"mBase", mBase},

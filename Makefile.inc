@@ -46,18 +46,18 @@ CLEANCOLOR="\033[35m"
 # Default compiling for modules
 all none: $(LIBNAME)
 %.o: %.cpp
-	$(V)printf '\t%b %b\n' $(CXXCOLOR)CXX$(ENDCOLOR) $(SRCCOLOR)$@$(ENDCOLOR);
+	@printf '\t%b %b\n' $(CXXCOLOR)CXX$(ENDCOLOR) $(SRCCOLOR)$@$(ENDCOLOR);
 	$(V)$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.cc
-	$(V)printf '\t%b %b\n' $(CXXCOLOR)CXX$(ENDCOLOR) $(SRCCOLOR)$@$(ENDCOLOR);
+	@printf '\t%b %b\n' $(CXXCOLOR)CXX$(ENDCOLOR) $(SRCCOLOR)$@$(ENDCOLOR);
 	$(V)$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
-	$(V)printf '\t%b %b\n' $(CCCOLOR)CC$(ENDCOLOR) $(SRCCOLOR)$@$(ENDCOLOR);
+	@printf '\t%b %b\n' $(CCCOLOR)CC$(ENDCOLOR) $(SRCCOLOR)$@$(ENDCOLOR);
 	$(V)$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
-	$(V)printf '\t%b %b\n' $(LINKCOLOR)LINK$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR);
+	@printf '\t%b %b\n' $(LINKCOLOR)LINK$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR);
 	$(V)$(LD) -o $@.$(SHLIBEXT) $^ $(EXTRA_LINK) $(LDFLAGS)
 	$(V)rm $^
 clean:
-	$(V)printf '\t%b %b\n' $(CLEANCOLOR)Cleaning$(ENDCOLOR) $(shell pwd);
+	@printf '\t%b %b\n' $(CLEANCOLOR)Cleaning$(ENDCOLOR) $(shell pwd);
 	$(V)rm -f *.so *.o $(EXTRA_CLEAN)

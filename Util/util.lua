@@ -83,6 +83,14 @@ function util.procFunc(a,deadband,maxvalue)
   return b
 end
 
+function util.clamp_vector(values,min_values,max_values)
+	local clamped = vector.new()
+	for i,v in ipairs(values) do
+		clamped[i] = math.max(math.min(v,max_values[i]),min_values[i])
+	end
+	return clamped
+end
+
 -- Tolerance approach to a vector
 -- Kinda like a gradient descent
 function util.approachTol( values, targets, speedlimits, dt, tolerance )

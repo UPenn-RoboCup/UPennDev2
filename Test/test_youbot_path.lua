@@ -3,19 +3,21 @@ local K = Body.Kinematics
 local T = require'libTransform'
 local getch = require'getch'
 local P = require'libPlan'
-local planner = P.new_planner(K)
+local planner = P.new_planner(K,Body.servo.min_rad,Body.servo.max_rad)
 
 local use_stack = true
 local dir = 1
 local pathStack, pathIter
 
 local qGoal
-local trGoal0 = T.trans(0.020,0,.45)
-local trGoal1 = T.rotZ(120 * DEG_TO_RAD)
-			* T.trans(.3,0,-.45)
-			* trGoal0
-			* T.rotY(120 * DEG_TO_RAD)
-			--* T.rotZ(-45 * DEG_TO_RAD)
+local trGoal0 =
+	T.trans(0.020,0,.45)
+local trGoal1 =
+	T.rotZ(120 * DEG_TO_RAD) *
+	T.trans(.3,0,-.45) *
+	trGoal0
+	* T.rotY(120 * DEG_TO_RAD)
+	* T.rotZ(-45 * DEG_TO_RAD)
 
 local function process_keycode(keycode,t_diff)
   local char = string.char(keycode)

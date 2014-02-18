@@ -20,6 +20,7 @@ shared.robot.odometry = vector.zeros(3)
 -- Walking Odometry
 shared.robot.utorso0 = vector.zeros(3)
 shared.robot.utorso1 = vector.zeros(3)
+shared.robot.t = vector.zeros(1)
 
 -- Get the map goal
 shared.map = {}
@@ -30,7 +31,7 @@ shared.map.waypoint = vector.zeros(3)
 -- These are global coordinates
 shared.drill = {}
 shared.drill.pos = vector.zeros(3)
-shared.drill.rot = vector.zeros(9)
+shared.drill.rot = vector.new({1,0,0,0,1,0,0,0,1})
 shared.drill.t = vector.zeros(1)
 
 -- Call the initializer

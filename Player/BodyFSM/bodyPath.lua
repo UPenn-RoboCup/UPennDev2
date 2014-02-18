@@ -24,8 +24,16 @@ map = libMap.open_map(HOME..'/Data/map.ppm')
 -- the girth of the robot will not collide with walls
 map:grow()
 
+
+----------------------------
+-- NOTE: BIG DEBUG FOR NOW!
+--wcm.set_map_goal(start_pose)
+-- END NOTE
+----------------------------
+
 -- Make the initial cost to go
 local goal = wcm.get_map_goal()
+
 map:new_goal(goal)
 
 -- Export for MATLAB

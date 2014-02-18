@@ -7,6 +7,7 @@ torch.Tensor = torch.DoubleTensor
 local vector = require'vector'
 local q = require'quaternion'
 local carray = require 'carray'
+local util = require 'util'
 local T = require'libTransform'
 
 -- TODO List for the planner

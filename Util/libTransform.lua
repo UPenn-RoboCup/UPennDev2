@@ -108,7 +108,6 @@ end
 -- Rotation Matrix to quaternion
 -- from Yida.  Adapted to take a transformation matrix
 libTransform.to_quaternion = function(t)
-  local offset = vector.new{t[1][4],t[2][4],t[3][4]}
   local q = quaternion.new()
   local tr = t[1][1] + t[2][2] + t[3][3]
   if tr > 0 then
@@ -136,7 +135,7 @@ libTransform.to_quaternion = function(t)
     q[3] = (t[2][3] + t[3][2]) / S
     q[4] = 0.25 * S
   end
-  return q, offset
+  return q, {t[1][4],t[2][4],t[3][4]}
 end
 
 function libTransform.from_quaternion( q, root )
@@ -179,9 +178,11 @@ function libTransform.from_flat( trans, rot )
 		local ii = ((i-1) % 3) + 1
 		local jj = ((i-ii) / 3) + 1
 		t[ii][jj] = v
-		print(i,ii,jj,v)
 	end
 	return t
+end
+function libTransform.flatten( tr )
+	-- TODO
 end
 
 -- http://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle

@@ -109,7 +109,7 @@ local function init_map_table()
 	_m.grow     = libMap.grow
 	_m.render   = render
 	_m.update   = update
-	return map
+	return _m
 end
 
 libMap.new_map = function(area,resolution)
@@ -227,7 +227,6 @@ libMap.open_map = function( map_filename )
 	--print("Offset",map.bounds_x,map.bounds_y)
 	-- Add functions to work on the map itself
 	map.read_only = true
-	init_map_table(map)
 	return map
 end
 

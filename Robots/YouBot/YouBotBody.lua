@@ -25,6 +25,7 @@ Body.Kinematics = K
 
 -- Get time (for the real robot)
 local get_time = unix.time
+Body.get_time = get_time
 
 -- Shared memory
 require'jcm'
@@ -164,7 +165,7 @@ if IS_WEBOTS then
   
   -- Default configuration (toggle during run time)
   local ENABLE_CAMERA = false
-  local ENABLE_LIDAR  = true
+  local ENABLE_LIDAR  = false
   local ENABLE_KINECT = false
 	local ENABLE_POSE   = true
 
@@ -188,7 +189,9 @@ if IS_WEBOTS then
   local lidar_timeStep = math.max(25,timeStep)
   Body.timeStep = timeStep
   
+	-- Note: weirdness maybe...
   get_time = webots.wb_robot_get_time
+	Body.get_time = get_time
 
   local depth_torch, depth_byte, depth_adj
 
@@ -261,7 +264,6 @@ if IS_WEBOTS then
   }
 
   Body.entry = function()
-
     -- Grab the joints
   	tags.joints = {}
   	for i=1,nJoint do
@@ -372,7 +374,10 @@ if IS_WEBOTS then
 
 	Body.nop = function()
     -- Step only
-    if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
+    if webots.wb_robot_step(Body.timeStep) < 0 then
+			print('EPIC FAIL NOP')
+			os.exit()
+		end
   end
 
   Body.update = function()
@@ -383,7 +388,8 @@ if IS_WEBOTS then
       local jtag = tags.joints[i]
       if jtag then
         -- Push to webots
-        webots.wb_motor_set_position( jtag, v * servo.direction[i] + servo.offset[i] )
+				local qi = v * servo.direction[i] + servo.offset[i]
+        webots.wb_motor_set_position( jtag, qi )
       end
     end
     
@@ -398,8 +404,13 @@ if IS_WEBOTS then
     webots.wb_motor_set_position(tags.fingers[2],width)
 
 		-- Step the simulation, and shutdown if the update fails
-		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
+		if webots.wb_robot_step(Body.timeStep) < 0 then
+			print('EPIC FAIL UPDATE')
+			os.exit()
+		end
     local t = get_time()
+		-- Shared time...
+		--wcm.set_robot_t(t)
     
     -- Read values
     for idx, jtag in pairs(tags.joints) do
@@ -425,7 +436,7 @@ if IS_WEBOTS then
       local h = webots.wb_camera_get_height(tags.hand_camera)
 			local camera_arr = carray.byte( camera_fr, w*h*3 )
 			local meta = {}
-			meta.t     = Body.get_time()
+			meta.t     = get_time()
 			meta.n     = #camera_arr
 			meta.w     = w
 			meta.h     = h
@@ -441,7 +452,7 @@ if IS_WEBOTS then
       local lidar_array = carray.float( lidar_fr, w )
 			-- Send the message on the lidar channel
 			local meta = {}
-			meta.t     = Body.get_time()
+			meta.t     = get_time()
 			meta.n     = w
 			meta.res   = 360 / 1440
 			meta.pose  = wcm.get_robot_pose()
@@ -486,7 +497,6 @@ if IS_WEBOTS then
 end
 
 -- Exports
-Body.get_time = get_time
 Body.servo = servo
 
 return Body

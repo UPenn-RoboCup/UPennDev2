@@ -17,8 +17,6 @@ local pulse_ch = simple_ipc.new_publisher'pulse'
 local t_wait = Body.update_cycle
 local t_wait_us = t_wait*1e6
 
-
-
 -- Clean Shutdown function
 function shutdown()
   print'Shutting down the Body...'
@@ -27,8 +25,6 @@ function shutdown()
 end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
-
-
 
 Body.entry()
 local t_last = Body.get_time()
@@ -40,7 +36,7 @@ pulse_ch:send(mp.pack(pulse_tbl))
 pulse_tbl.mode='update'
 while true do
   local t = Body.get_time()
-  local t_diff = t-t_last
+  local t_diff = t - t_last
 
   if t_diff>t_wait then
     --print('Update',t)

@@ -77,10 +77,10 @@ Config.km.standup_back  = 'km_Charli_StandupFromBack.lua'
 Config.camera = {}
 -- Head
 Config.camera.head = {}
-Config.camera.head.device = '/dev/video0'
-Config.camera.head.format = 'yuyv'
-Config.camera.head.resolution = {640,360}
---Config.camera.head.resolution = {320,180}
+Config.camera.head.fname = '/dev/video0'
+Config.camera.head.fmt = 'yuyv'
+Config.camera.head.res = {640,360}
+--Config.camera.head.res = {320,180}
 Config.camera.head.fps = 10
 
 -- Forehead (wide angle)
@@ -91,14 +91,5 @@ Config.camera.forehead.format = 'yuyv'
 --Config.camera.forehead.resolution = {160,120}
 Config.camera.forehead.resolution = {320,240}
 Config.camera.forehead.fps = 10
-
---[[
-Config.camera.forehead2 = {}
-Config.camera.forehead2.device = '/dev/video2'
-Config.camera.forehead2.format = 'yuyv'
---Config.camera.forehead2.format = 'mjpeg'
-Config.camera.forehead2.resolution = {320,240}
-Config.camera.forehead2.fps = 5
---]]
 
 return Config

@@ -15,7 +15,6 @@ local Body = {}
 -- Utilities
 local unix       = require'unix'
 local vector     = require'vector'
-local quaternion = require'quaternion'
 local util       = require'util'
 require'wcm'
 
@@ -178,6 +177,7 @@ if IS_WEBOTS then
 	local simple_ipc = require'simple_ipc'
 	local mp = require'msgpack'
 	local lidar0_ch = simple_ipc.new_publisher'lidar0'
+	local camera0_ch = simple_ipc.new_publisher'camera0'
 
   local webots = require'webots'
   -- Start the system
@@ -415,15 +415,24 @@ if IS_WEBOTS then
     	local angle   = math.atan2( compass[3], compass[1] )
     	local pose    = vector.pose{gps[3], gps[1], util.mod_angle(angle + 90*DEG_TO_RAD)}
 			wcm.set_robot_gps( pose )
-    	--wcm.set_robot_pose( pose )
+			-- TODO: Smarter way to control if we overwrite the pose variable...
+    	wcm.set_robot_pose( pose )
 		end
-
     -- Grab a camera frame
     if ENABLE_CAMERA then
       local camera_fr = webots.to_rgb(tags.hand_camera)
       local w = webots.wb_camera_get_width(tags.hand_camera)
       local h = webots.wb_camera_get_height(tags.hand_camera)
-      local jpeg_fr  = jpeg.compress_rgb(camera_fr,w,h)
+			local camera_arr = carray.byte( camera_fr, w*h*3 )
+			local meta = {}
+			meta.t     = Body.get_time()
+			meta.n     = #camera_arr
+			meta.w     = w
+			meta.h     = h
+			-- Send frame locally
+			camera0_ch:send{mp.pack(meta),tostring(camera_arr)}
+			-- Broadcast the frame
+      --local jpeg_fr = jpeg.compress_rgb(camera_fr,w,h)
     end
     -- Grab a lidar scan
     if ENABLE_LIDAR then

@@ -172,15 +172,15 @@ end
 
 -- Take in two vectors (9 dim and 3 dim)
 -- Mostly for rcm
-function libTransform.from_flat( rot, trans )
+function libTransform.from_flat( trans, rot )
 	local t = libTransform.trans(unpack(trans))
+	if not rot then return t end
 	for i,v in ipairs(rot) do
 		local ii = ((i-1) % 3) + 1
 		local jj = ((i-ii) / 3) + 1
 		t[ii][jj] = v
 		print(i,ii,jj,v)
 	end
-	print('rot',rot)
 	return t
 end
 

@@ -157,6 +157,7 @@ end
 
 local joint_path_stack = function(self, qArm, qGoal, res_q)
 	res_q = res_q or 2*DEG_TO_RAD
+	qGoal = util.clamp_vector(qGoal,self.min_q,self.max_q)
 	--
 	local dq = qGoal - qArm
 	local distance = vector.norm(dq)
@@ -171,7 +172,7 @@ end
 
 local joint_path_iter = function(self, qGoal, res_q)
 	res_q = res_q or 2*DEG_TO_RAD
-
+	qGoal = util.clamp_vector(qGoal,self.min_q,self.max_q)
 	return function(cur_qArm)
 		local dq = qGoal - cur_qArm
 		local distance = vector.norm(dq)

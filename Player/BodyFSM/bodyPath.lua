@@ -7,7 +7,7 @@ local util = require'util'
 local vector = require'vector'
 require'wcm'
 
-USE_GPS = false
+USE_GPS = true
 DO_EXPORT = false
 USE_ODOM = false
 

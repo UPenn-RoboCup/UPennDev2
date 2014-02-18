@@ -26,5 +26,12 @@ shared.map = {}
 shared.map.goal = vector.zeros(3)
 shared.map.waypoint = vector.zeros(3)
 
+-- Picking up the drill
+-- These are global coordinates
+shared.drill = {}
+shared.drill.pos = vector.zeros(3)
+shared.drill.rot = vector.zeros(9)
+shared.drill.t = vector.zeros(1)
+
 -- Call the initializer
 memory.init_shm_segment(..., shared, shsize)

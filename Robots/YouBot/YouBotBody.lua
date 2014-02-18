@@ -25,7 +25,8 @@ Body.Kinematics = K
 
 -- Get time (for the real robot)
 local get_time = unix.time
-Body.get_time = get_time
+Body.get_real_time = get_time
+Body.get_time = wcm.get_robot_t
 
 -- Shared memory
 require'jcm'
@@ -191,7 +192,8 @@ if IS_WEBOTS then
   
 	-- Note: weirdness maybe...
   get_time = webots.wb_robot_get_time
-	Body.get_time = get_time
+	Body.get_sim_time = get_time
+	Body.get_time = wcm.get_robot_t
 
   local depth_torch, depth_byte, depth_adj
 
@@ -498,5 +500,7 @@ end
 
 -- Exports
 Body.servo = servo
+-- Working on time...
+Body.get_time = get_time
 
 return Body

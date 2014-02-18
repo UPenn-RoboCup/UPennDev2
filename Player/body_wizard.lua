@@ -26,8 +26,10 @@ end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
+local get_time = Body.get_sim_time or Body.get_time
+
 Body.entry()
-local t_last = Body.get_time()
+local t_last = get_time()
 
 -- Send the entry pulse
 local pulse_tbl = {mode='entry',t=t_last}
@@ -35,7 +37,8 @@ pulse_ch:send(mp.pack(pulse_tbl))
 
 pulse_tbl.mode='update'
 while true do
-  local t = Body.get_time()
+
+  local t = get_time()
   local t_diff = t - t_last
 
   if t_diff>t_wait then
@@ -55,6 +58,6 @@ while true do
 end
 
 Body.exit()
-pulse_tbl.t = Body.get_time()
+pulse_tbl.t = get_time()
 pulse_tbl.mode='exit'
 pulse_ch:send(mp.pack(pulse_tbl))

@@ -85,8 +85,9 @@ sm:set_transition( bodyPath, 'done', bodyIdle )
 
 sm:set_transition( bodyIdle, 'grab', bodyGrab )
 sm:set_transition( bodyGrab, 'done', bodyIdle )
+sm:set_transition( bodyGrab, 'timeout', bodyIdle )
+sm:set_transition( bodyGrab, 'stop', bodyIdle )
 sm:set_transition( bodyGrab, 'grab', bodyIdle )
-sm:set_transition( bodyGrab, 'timeout', bodyGrab )
 
 --------------------------
 -- Setup the FSM object --

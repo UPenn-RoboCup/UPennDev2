@@ -51,12 +51,13 @@ function state.entry()
 end
 
 function state.update()
-  --print(state._NAME..' Update' )
-  -- Get the time of update
+	-- Get the time of update
   local t  = Body.get_time()
   local dt = t - (t_update or t_entry)
   -- Save this at the last update time
   t_update = t
+
+	--print(state._NAME..' Update', t, dt )
   --if (t-t_entry)>timeout then return'timeout' end
 
 	-- Find where we want to go
@@ -91,7 +92,11 @@ function state.update()
 		local qArm = Body.get_command_position()
 		local qArmCmd = pathIter(qArm)
 		-- TODO: If done positioning, then change to orierntation
-		if not qArmCmd then return'done' end
+		if not qArmCmd then
+			-- Set to the goal, since iterator may not hit, since within tolerance
+			Body.set_command_position(qGoal)
+			return'done'
+		end
 		vector.new( qArmCmd )
 		Body.set_command_position(qArmCmd)
 	end

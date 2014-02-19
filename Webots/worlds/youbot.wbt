@@ -155,6 +155,7 @@ Solid {
       geometry Cylinder {
         radius 0.025
 				height 0.2
+				top FALSE
       }
     }
   ]

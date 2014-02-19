@@ -1,9 +1,10 @@
 /* NOTE: Torch C access begins with 0, not 1 as in Torch's Lua access */
 #include <lua.hpp>
+#include <torch/luaT.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <torch/luaT.h>
 #include <torch/TH/TH.h>
 #ifdef __cplusplus
 }
@@ -23,6 +24,8 @@ extern "C" {
 #define DEFAULT_RESOLUTION 0.05
 #define DEFAULT_INV_RESOLUTION 20
 
+// TODO: Maybe not allocate these arrays immediately...
+
 /* Candidate indices helpers for speed */
 unsigned int xis[1081];
 unsigned int yis[1081];
@@ -40,6 +43,75 @@ const int range_min = 0;
 double xmin, ymin, xmax, ymax;
 double invxmax, invymax;
 double res = DEFAULT_RESOLUTION, invRes = DEFAULT_INV_RESOLUTION;
+
+#define MT_NAME "connected_mt"
+typedef struct structConnected {
+  long start; // C index of the first element
+	long end; // C index of the first element
+} structConnected;
+
+int lua_connected_components(lua_State *L) {
+	THFloatTensor *returns_t = (THFloatTensor *) luaT_checkudata(L, 1, "torch.FloatTensor");
+	THArgCheck(returns_t->nDimension == 1, 1, "tensor must have one dimensions");
+	long n = returns_t->size[0];
+	float* returns_ptr = returns_t->storage->data;
+	double threshold = luaL_checknumber(L, 2);
+	//
+	lua_newtable(L);
+	// New table for first connected component
+	lua_createtable(L, 0, 3);
+	lua_pushstring(L, "diff");
+  lua_pushnumber(L, 0);
+  lua_settable(L, -3);
+	lua_pushstring(L, "start");
+  lua_pushnumber(L, 1);
+	lua_settable(L, -3);
+	//
+	float* cur_ptr = returns_ptr;
+	float curVal = *cur_ptr, prevVal, diffVal;
+	cur_ptr++;
+	//
+	int i, ncc = 1;
+	int prevInd = 0;
+	for(i=1;i<n;i++){
+		prevVal = curVal;
+		curVal = *cur_ptr;
+		diffVal = curVal - prevVal;
+		if( fabs(diffVal)>threshold ){
+			// For the previous table
+			lua_pushstring(L, "stop");
+			lua_pushnumber(L, i);
+			lua_settable(L, -3);
+			//lua_pushstring(L, "size");
+			//lua_pushnumber(L, i-prevInd);
+			//lua_settable(L, -3);
+			lua_rawseti(L, -2, ncc);
+			prevInd = i;
+			// New table for next connected component
+			ncc++;
+			lua_createtable(L, 0, 3);
+			lua_pushstring(L, "diff");
+			lua_pushnumber(L, diffVal);
+			lua_settable(L, -3);
+			lua_pushstring(L, "start");
+			lua_pushnumber(L, i+1);
+			lua_settable(L, -3);
+		}
+		cur_ptr++;
+	}
+	// For the previous table
+	lua_pushstring(L, "stop");
+	lua_pushnumber(L, i);
+	lua_settable(L, -3);
+	//lua_pushstring(L, "size");
+	//lua_pushnumber(L, i-prevInd);
+	//lua_settable(L, -3);
+	// Index in the master table
+	lua_rawseti(L, -2, ncc);
+
+	// Return this table
+	return 1;
+}
 
 /* Set the resolution of the map */
 int lua_set_resolution(lua_State *L) {
@@ -981,6 +1053,7 @@ int lua_find_last_free_point(lua_State *L) {
 
 
 static const struct luaL_Reg slam_lib [] = {
+	{"connected_components", lua_connected_components},
 	{"grow_map", lua_grow_map},
 	//
 	{"match", lua_match},
@@ -1006,6 +1079,10 @@ extern "C"
 #endif
 
 int luaopen_slam (lua_State *L) {
+
+	// Make the metatable for the connected lidar
+  luaL_newmetatable(L, MT_NAME);
+
 #if LUA_VERSION_NUM == 502
 	luaL_newlib(L, slam_lib);
 #else

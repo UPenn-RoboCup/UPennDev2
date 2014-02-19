@@ -101,6 +101,50 @@ local lidar_cb = function(sh)
 	-- Link length
 	pts_x:add(.3)
 
+	-- Find objects...
+	local cc = slam.connected_components(ch.raw,0.05)
+	print('== cc ==',#cc)
+	for i,c in ipairs(cc) do
+		local is_object = true
+		local nps = c.stop - c.start + 1
+		local xs = pts_x:narrow(1,c.start,nps)
+		local ys = pts_y:narrow(1,c.start,nps)
+		if nps<5 then is_object=false end
+		local imid = math.ceil(nps/2)
+		local first = vector.new{xs[1],ys[1]}
+		local last = vector.new{xs[nps],ys[nps]}
+		local diff_chord = last - first
+		local diameter = vector.norm(diff_chord)
+		if diameter>1 then is_object=false end
+		local center = vector.new{xs[imid],ys[imid]}
+		local center_phantom = first+diff_chord/2
+		local diff_phantom = center-center_phantom
+		local radius = vector.norm(diff_phantom)
+		local ratio = diameter / radius
+		if ratio>3 or ratio<1.5 then is_object=false end
+		if is_object then
+			--local rs = ch.raw:narrow(1,c.start,nps)
+			local as = ch.angles:narrow(1,c.start,nps)
+			--util.ptable(c)
+			--print('first',rs[1],first)
+			--print('last',rs[nps],last)
+			center_phantom[3] = as[imid]
+			vector.pose(center_phantom)
+			local gp = util.pose_global(center_phantom,wcm.get_robot_pose())
+			--print('angle',angle)
+			--print('diameter',diameter)
+			--print('radius',radius)
+			print('ratio',ratio)
+			--print('center',center)
+			print('Local',center_phantom)
+			print('Global',gp)
+			--print('diffp',diff_phantom)
+			--print('diffc',diff_chord)
+			print('-')
+		end
+	end
+	---------
+
 	-- SLAM
 	if map.read_only==true then
 		-- Just localize if we cannot change the map

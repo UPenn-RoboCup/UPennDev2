@@ -117,6 +117,7 @@ local line_path_iter = function(self, qArm, trGoal, res_pos, res_ang, use_safe_i
 	local fkGoal = K.forward_arm(qGoal)
 	if skip_angles==false then
 		quatGoal, posGoal = T.to_quaternion(fkGoal)
+		vector.new(posGoal)
 	end
 	-- TODO: Add failure detection; if no dist/ang changes in a while
 	-- We return the iterator and the final joint configuarion

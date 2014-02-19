@@ -144,7 +144,7 @@ simple_wall {
 
 # Pickup this object
 Solid {
-  translation -0.1 0 -.9
+  translation -0.1 0 -.85
   children [
     DEF GRAB_SHAPE Shape {
 			appearance Appearance {
@@ -155,7 +155,7 @@ Solid {
       geometry Cylinder {
         radius 0.03
 				height 0.2
-				top FALSE
+				top TRUE
       }
     }
   ]

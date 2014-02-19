@@ -23,6 +23,7 @@ local bodyDrive = require'bodyDrive'
 --]]
 -- YouBot map following
 local bodyPath = require'bodyPath'
+local bodyApproachGrab = require'bodyApproachGrab'
 local bodyGrab = require'bodyGrab'
 
 -- Instantiate a new state machine with an initial state
@@ -41,6 +42,7 @@ sm:add_state(bodyStepWaypoint)
 sm:add_state(bodyDrive)
 --]]
 sm:add_state(bodyPath)
+sm:add_state(bodyApproachGrab)
 sm:add_state(bodyGrab)
 
 -- Setup the transitions for this FSM
@@ -79,15 +81,14 @@ sm:set_transition( bodyIdle, 'path', bodyPath )
 sm:set_transition( bodyPath, 'timeout', bodyPath )
 -- Replan upon request
 sm:set_transition( bodyPath, 'path', bodyPath )
--- Finished the path
---sm:set_transition( bodyPath, 'done', bodyIdle )
-sm:set_transition( bodyPath, 'done', bodyGrab )
-
-sm:set_transition( bodyIdle, 'grab', bodyGrab )
+-- Finished the path, so approach the grab
+sm:set_transition( bodyPath, 'done', bodyApproachGrab )
+--
+sm:set_transition( bodyIdle, 'grab', bodyApproachGrab )
+sm:set_transition( bodyApproachGrab, 'done', bodyGrab )
+sm:set_transition( bodyApproachGrab, 'far', bodyPath )
+--
 sm:set_transition( bodyGrab, 'done', bodyIdle )
-sm:set_transition( bodyGrab, 'timeout', bodyIdle )
-sm:set_transition( bodyGrab, 'stop', bodyIdle )
-sm:set_transition( bodyGrab, 'grab', bodyIdle )
 
 --------------------------
 -- Setup the FSM object --

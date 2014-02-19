@@ -78,7 +78,7 @@ function state.entry()
 	
 	-- Check the goal, and update if needed
 	local obj_pose = wcm.get_drill_pose()
-	local obj_offset = vector.pose{-0.4,-.15,0}
+	local obj_offset = vector.pose{-0.4,0,0}
 	local target_pose = util.pose_global(obj_offset,obj_pose)
 	wcm.set_map_goal(target_pose)
 	if target_pose~=cur_goal then

@@ -26,13 +26,15 @@ shared.robot.t = vector.zeros(1)
 shared.map = {}
 shared.map.goal = vector.zeros(3)
 shared.map.waypoint = vector.zeros(3)
+shared.map.enable_slam = vector.zeros(1)
 
 -- Picking up the drill
 -- These are global coordinates
 shared.drill = {}
+shared.drill.pose = vector.zeros(3)
+shared.drill.t = vector.zeros(1)
 shared.drill.pos = vector.zeros(3)
 shared.drill.rot = vector.new({1,0,0,0,1,0,0,0,1})
-shared.drill.t = vector.zeros(1)
 
 -- Call the initializer
 memory.init_shm_segment(..., shared, shsize)

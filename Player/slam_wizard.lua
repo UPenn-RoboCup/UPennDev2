@@ -62,8 +62,53 @@ local function localize(ch)
 	local matched_pose, hits = map:localize( ch.points, {} )
 	--print("MATCH",matched_pose,hits)
 	map.pose = matched_pose
-	-- Set shared memory accordingly
-	wcm.set_robot_pose( matched_pose )
+	return matched_pose
+end
+
+local function detect_semicircle(c,pts_x,pts_y,angles)
+	local nps = c.stop - c.start + 1
+	if nps<8 then
+		return string.format("FAIL: nps (%d)",nps)
+	end
+	local xs = pts_x:narrow(1,c.start,nps)
+	local ys = pts_y:narrow(1,c.start,nps)
+	local first = vector.new{xs[1],ys[1]}
+	local last = vector.new{xs[nps],ys[nps]}
+	local diff_chord = last - first
+	local diameter = vector.norm(diff_chord)
+	if diameter>.2 then
+		return string.format("FAIL: diameter (%f)",diameter)
+	end
+	local assumed_radius = diameter/2
+	-- Phantom center
+	local center_phantom = first+(diff_chord/2)
+	-- Sample approximately 10 points
+	local inc = math.ceil(nps / 10)
+	local sum = diameter
+	local radii_phantom = {}
+	for imid=2,nps-1,inc do
+		local candidate = vector.new{xs[imid],ys[imid]}
+		local radius_phantom = vector.norm(candidate-center_phantom)
+		sum = sum + radius_phantom
+		table.insert(radii_phantom,radius_phantom)
+	end
+	local ninspect = #radii_phantom+2
+	local radius_phantom = sum / ninspect
+	local sum_sq = 0
+	for _,r in ipairs(radii_phantom) do
+		local diff = r-radius_phantom
+		sum_sq = sum_sq + diff^2
+	end
+	local variance_phantom = sum_sq/(ninspect - 1)
+	local stddev_phantom = math.sqrt(variance_phantom)
+	local ratio = stddev_phantom / radius_phantom
+	if ratio>0.2 then
+		return string.format("FAIL: deviation ratio (%f)",ratio)
+	end
+	-- This is a semicircle, so form the description
+	center_phantom[3] = 0
+	vector.pose(center_phantom)
+	return {pose=center_phantom,radius=radius_phantom}
 end
 
 -- Listen for lidars
@@ -101,65 +146,34 @@ local lidar_cb = function(sh)
 	-- Link length
 	pts_x:add(.3)
 
-	-- Find objects...
-	local cc = slam.connected_components(ch.raw,0.05)
-	print('== cc ==',#cc)
-	for i,c in ipairs(cc) do
-		local is_object = true
-		local nps = c.stop - c.start + 1
-		local xs = pts_x:narrow(1,c.start,nps)
-		local ys = pts_y:narrow(1,c.start,nps)
-		if nps<5 then is_object=false end
-		local imid = math.ceil(nps/2)
-		local first = vector.new{xs[1],ys[1]}
-		local last = vector.new{xs[nps],ys[nps]}
-		local diff_chord = last - first
-		local diameter = vector.norm(diff_chord)
-		if diameter>1 then is_object=false end
-		local center = vector.new{xs[imid],ys[imid]}
-		local center_phantom = first+diff_chord/2
-		local diff_phantom = center-center_phantom
-		local radius = vector.norm(diff_phantom)
-		local ratio = diameter / radius
-		if ratio>3 or ratio<1.5 then is_object=false end
-		if is_object then
-			--local rs = ch.raw:narrow(1,c.start,nps)
-			local as = ch.angles:narrow(1,c.start,nps)
-			--util.ptable(c)
-			--print('first',rs[1],first)
-			--print('last',rs[nps],last)
-			center_phantom[3] = as[imid]
-			vector.pose(center_phantom)
-			local gp = util.pose_global(center_phantom,wcm.get_robot_pose())
-			--print('angle',angle)
-			--print('diameter',diameter)
-			--print('radius',radius)
-			print('ratio',ratio)
-			--print('center',center)
-			print('Local',center_phantom)
-			print('Global',gp)
-			--print('diffp',diff_phantom)
-			--print('diffc',diff_chord)
-			print('-')
-		end
-	end
-	---------
-
 	-- SLAM
-	if map.read_only==true then
-		-- Just localize if we cannot change the map
-		localize(ch)
-	else
-		if ch.count>5 then
-			-- Only localize if we have have seen enough points
-			localize(ch)
-			-- Update the map sharply
-			map:update(ch.points, t, 100)
-		else
+	local pose
+	if wcm.get_map_enable_slam()==1 then
+		-- If slam is enabled
+		pose = localize(ch)
+		if map.read_only==false then
 			-- Update the map
 			map:update(ch.points, t)
 		end
-		
+		print("SLAM POSE",pose)
+		wcm.set_robot_pose(pose)
+	else
+		pose = wcm.get_robot_pose()
+	end
+
+	-- Find objects...
+	local cc = slam.connected_components(ch.raw,0.05)
+	local nDetect = 0
+	for i,c in ipairs(cc) do
+		local obj = detect_semicircle(c,pts_x,pts_y)
+		if type(obj)=='table' then
+			nDetect = nDetect + 1
+			local gp = util.pose_global(obj.pose,pose)
+			--print('Detected '..nDetect,gp,obj.radius)
+			-- Update the shared memory
+			wcm.set_drill_pose(gp)
+			wcm.set_drill_t(Body.get_time())
+		end
 	end
 	
 end

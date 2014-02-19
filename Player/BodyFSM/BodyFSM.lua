@@ -80,8 +80,8 @@ sm:set_transition( bodyPath, 'timeout', bodyPath )
 -- Replan upon request
 sm:set_transition( bodyPath, 'path', bodyPath )
 -- Finished the path
-sm:set_transition( bodyPath, 'done', bodyIdle )
---sm:set_transition( bodyPath, 'done', bodyGrab )
+--sm:set_transition( bodyPath, 'done', bodyIdle )
+sm:set_transition( bodyPath, 'done', bodyGrab )
 
 sm:set_transition( bodyIdle, 'grab', bodyGrab )
 sm:set_transition( bodyGrab, 'done', bodyIdle )

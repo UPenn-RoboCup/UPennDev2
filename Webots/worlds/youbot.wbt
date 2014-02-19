@@ -153,7 +153,7 @@ Solid {
 				}
 			}
       geometry Cylinder {
-        radius 0.025
+        radius 0.03
 				height 0.2
 				top FALSE
       }

@@ -428,8 +428,8 @@ if IS_WEBOTS then
     	local angle   = math.atan2( compass[3], compass[1] )
     	local pose    = vector.pose{gps[3], gps[1], util.mod_angle(angle + 90*DEG_TO_RAD)}
 			wcm.set_robot_gps( pose )
-			-- TODO: Smarter way to control if we overwrite the pose variable...
-    	wcm.set_robot_pose( pose )
+			-- If SLAM is not running, then use the Webots pose
+			if wcm.get_map_enable_slam()==0 then wcm.set_robot_pose( pose ) end
 		end
     -- Grab a camera frame
     if ENABLE_CAMERA then

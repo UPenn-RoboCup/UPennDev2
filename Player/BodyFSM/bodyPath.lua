@@ -14,8 +14,7 @@ USE_ODOM = false
 -- Replan every timeout
 local timeout = 5.0
 local t_entry, t_update, t_exit
-local map, path, finished_path, cur_wp, wp_id, path_sz
-
+local map, path, finished_path, cur_wp, wp_id, path_sz, cur_goal
 local start_pose = vector.pose{-1.32058, -0.216679, 1.5708}
 
 -- The map is static, so import it once
@@ -23,18 +22,6 @@ map = libMap.open_map(HOME..'/Data/map.ppm')
 -- Perform the convolution so that
 -- the girth of the robot will not collide with walls
 map:grow()
-
-
-----------------------------
--- NOTE: BIG DEBUG FOR NOW!
---wcm.set_map_goal(start_pose)
--- END NOTE
-----------------------------
-
--- Make the initial cost to go
-local goal = wcm.get_map_goal()
-
-map:new_goal(goal)
 
 -- Export for MATLAB
 if DO_EXPORT==true then
@@ -90,10 +77,14 @@ function state.entry()
   t_update = t_entry
 	
 	-- Check the goal, and update if needed
-	local cur_goal = wcm.get_map_goal()
-	if goal~=cur_goal then
-		goal = cur_goal
-		map:new_goal(goal)
+	local obj_pose = wcm.get_drill_pose()
+	local obj_offset = vector.pose{-0.4,-.15,0}
+	local target_pose = util.pose_global(obj_offset,obj_pose)
+	wcm.set_map_goal(target_pose)
+	if target_pose~=cur_goal then
+		print("NEW GOAL",target_pose)
+		cur_goal = target_pose
+		map:new_goal(target_pose)
 	end
 	
 	-- Plan the from our current position

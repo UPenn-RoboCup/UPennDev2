@@ -13,6 +13,7 @@ local Body = require'Body'
 local torch = require'torch'
 torch.Tensor = torch.DoubleTensor
 local libMap = require'libMap'
+local libDetect = require'libDetect'
 
 -- Flags
 local USE_ODOMETRY = true
@@ -61,52 +62,6 @@ local function localize(ch)
 	return matched_pose
 end
 
-local function detect_semicircle(c,pts_x,pts_y,angles)
-	local nps = c.stop - c.start + 1
-	if nps<8 then
-		return string.format("FAIL: nps (%d)",nps)
-	end
-	local xs = pts_x:narrow(1,c.start,nps)
-	local ys = pts_y:narrow(1,c.start,nps)
-	local first = vector.new{xs[1],ys[1]}
-	local last = vector.new{xs[nps],ys[nps]}
-	local diff_chord = last - first
-	local diameter = vector.norm(diff_chord)
-	if diameter>.2 then
-		return string.format("FAIL: diameter (%f)",diameter)
-	end
-	local assumed_radius = diameter/2
-	-- Phantom center
-	local center_phantom = first+(diff_chord/2)
-	-- Sample approximately 10 points
-	local inc = math.ceil(nps / 10)
-	local sum = diameter
-	local radii_phantom = {}
-	for imid=2,nps-1,inc do
-		local candidate = vector.new{xs[imid],ys[imid]}
-		local radius_phantom = vector.norm(candidate-center_phantom)
-		sum = sum + radius_phantom
-		table.insert(radii_phantom,radius_phantom)
-	end
-	local ninspect = #radii_phantom+2
-	local radius_phantom = sum / ninspect
-	local sum_sq = 0
-	for _,r in ipairs(radii_phantom) do
-		local diff = r-radius_phantom
-		sum_sq = sum_sq + diff^2
-	end
-	local variance_phantom = sum_sq/(ninspect - 1)
-	local stddev_phantom = math.sqrt(variance_phantom)
-	local ratio = stddev_phantom / radius_phantom
-	if ratio>0.2 then
-		return string.format("FAIL: deviation ratio (%f)",ratio)
-	end
-	-- This is a semicircle, so form the description
-	center_phantom[3] = 0
-	vector.pose(center_phantom)
-	return {pose=center_phantom,radius=radius_phantom}
-end
-
 -- Listen for lidars
 local lidar_cb = function(sh)
 	local ch = wait_channels.lut[sh]
@@ -143,7 +98,6 @@ local lidar_cb = function(sh)
 	pts_x:add(.3)
 
 	-- SLAM
-	local pose
 	if wcm.get_map_enable_slam()==1 then
 		if not map.pose then
 			local start = wcm.get_robot_initialpose()
@@ -153,32 +107,18 @@ local lidar_cb = function(sh)
 			map.odom = wcm.get_robot_odometry()
 		end
 		-- If slam is enabled
-		pose = localize(ch)
+		local pose = localize(ch)
 		if map.read_only==false then
 			-- Update the map
 			map:update(ch.points, t)
 		end
 		print("SLAM POSE",pose)
 		wcm.set_robot_pose(pose)
-	else
-		pose = wcm.get_robot_pose()
-	end
-
-	-- Find objects...
-	local cc = slam.connected_components(ch.raw,0.05)
-	local nDetect = 0
-	for i,c in ipairs(cc) do
-		local obj = detect_semicircle(c,pts_x,pts_y)
-		if type(obj)=='table' then
-			nDetect = nDetect + 1
-			local gp = util.pose_global(obj.pose,pose)
-			--print('Detected '..nDetect,gp,obj.radius)
-			-- Update the shared memory
-			wcm.set_ball_pose(gp)
-			wcm.set_ball_t(Body.get_time())
-		end
 	end
 	
+	-- Detect circles
+	libDetect.lidar_circles(ch)
+
 end
 
 local lidar_ch = simple_ipc.new_subscriber'lidar0'

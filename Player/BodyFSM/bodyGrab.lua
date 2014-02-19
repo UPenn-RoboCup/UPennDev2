@@ -49,23 +49,18 @@ function state.update()
 	-- TODO: Check if too far from the initial place
 	--local relative_pick_tr = get_pick_position()
 
-	-- Timing
-	-- TODO: Have some speed parameter, based on mm resolution
-	--if t-t_cmd>CMD_INTERVAL then
-		--t_cmd = t
-		-- Move the arm
-		--local qArm = Body.get_command_position()
-		local qArm = Body.get_position()
-		local qArmCmd = pathIter(qArm)
-		-- TODO: If done positioning, then change to orierntation
-		if not qArmCmd then
-			-- Set to the goal, since iterator may not hit, since within tolerance
-			Body.set_command_position(qGoal)
-			return'done'
-		end
-		vector.new( qArmCmd )
-		Body.set_command_position(qArmCmd)
-	--end
+	-- Move the arm
+	--local qArm = Body.get_command_position()
+	local qArm = Body.get_position()
+	local qArmCmd = pathIter(qArm)
+	-- TODO: If done positioning, then change to orierntation
+	if not qArmCmd then
+		-- Set to the goal, since iterator may not hit, since within tolerance
+		Body.set_command_position(qGoal)
+		return'done'
+	end
+	vector.new( qArmCmd )
+	Body.set_command_position(qArmCmd)
 
 end
 

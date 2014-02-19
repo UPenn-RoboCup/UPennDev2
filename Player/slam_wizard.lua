@@ -21,10 +21,6 @@ local USE_ODOMETRY = true
 
 -- Open the map to localize against
 local map = libMap.open_map(HOME..'/Data/map.ppm')
--- Need a good guess for the starting pose of the robot
-map.pose = vector.pose{-1.29028, -0.222768, -0.0282755}
--- Store a snapshot of the odometry at this time
-map.odom = wcm.get_robot_odometry()
 
 -- Render so that I can see it :)
 if DO_EXPORT==true then
@@ -149,6 +145,13 @@ local lidar_cb = function(sh)
 	-- SLAM
 	local pose
 	if wcm.get_map_enable_slam()==1 then
+		if not map.pose then
+			local start = wcm.get_robot_initialpose()
+			-- Need a good guess for the starting pose of the robot
+			map.pose = vector.pose(start)
+			-- Store a snapshot of the odometry at this time
+			map.odom = wcm.get_robot_odometry()
+		end
 		-- If slam is enabled
 		pose = localize(ch)
 		if map.read_only==false then
@@ -171,8 +174,8 @@ local lidar_cb = function(sh)
 			local gp = util.pose_global(obj.pose,pose)
 			--print('Detected '..nDetect,gp,obj.radius)
 			-- Update the shared memory
-			wcm.set_drill_pose(gp)
-			wcm.set_drill_t(Body.get_time())
+			wcm.set_ball_pose(gp)
+			wcm.set_ball_t(Body.get_time())
 		end
 	end
 	

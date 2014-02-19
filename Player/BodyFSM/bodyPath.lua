@@ -15,7 +15,6 @@ USE_ODOM = false
 local timeout = 5.0
 local t_entry, t_update, t_exit
 local map, path, finished_path, cur_wp, wp_id, path_sz, cur_goal
-local start_pose = vector.pose{-1.32058, -0.216679, 1.5708}
 
 -- The map is static, so import it once
 map = libMap.open_map(HOME..'/Data/map.ppm')
@@ -77,7 +76,7 @@ function state.entry()
   t_update = t_entry
 	
 	-- Check the goal, and update if needed
-	local obj_pose = wcm.get_drill_pose()
+	local obj_pose = wcm.get_ball_pose()
 	local obj_offset = vector.pose{-0.4,0,0}
 	local target_pose = util.pose_global(obj_offset,obj_pose)
 	wcm.set_map_goal(target_pose)
@@ -93,7 +92,8 @@ function state.entry()
 		pose = wcm.get_robot_gps()
 	elseif USE_ODOM==true then
 		local odom = wcm.get_robot_pose()
-		pose = util.pose_global(odom,start_pose)
+		local start = wcm.get_robot_initialpose()
+		pose = util.pose_global(odom,start)
 	else
 		pose = wcm.get_robot_pose()
 	end
@@ -126,7 +126,8 @@ function state.update()
 		pose = wcm.get_robot_gps()
 	elseif USE_ODOM==true then
 		local odom = wcm.get_robot_pose()
-		pose = util.pose_global(odom,start_pose)
+		local start = wcm.get_robot_initialpose()
+		pose = util.pose_global(odom,start)
 	else
 		pose = wcm.get_robot_pose()
 	end

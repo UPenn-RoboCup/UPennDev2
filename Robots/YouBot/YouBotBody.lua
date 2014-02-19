@@ -308,29 +308,31 @@ if IS_WEBOTS then
 		tags.lidar = webots.wb_robot_get_device("lidar")
 		tags.kinect = webots.wb_robot_get_device("kinect")
 		
+		-- Grab the original pose in the world
+		key_action.p(true)
+		-- Step the simulation
+		webots.wb_robot_step(Body.timeStep)
+		-- Form and set the pose
+		local gps     = webots.wb_gps_get_values(tags.gps)
+		local compass = webots.wb_compass_get_values(tags.compass)
+		local angle   = math.atan2( compass[3], compass[1] )
+		local pose    = vector.pose{gps[3], gps[1], util.mod_angle(angle + 90*DEG_TO_RAD)}
+		wcm.set_robot_initialpose( pose )
+
 		-- Enable sensors
 		key_action.p(ENABLE_POSE)
 		key_action.c(ENABLE_CAMERA)
 		key_action.l(ENABLE_LIDAR)
 		key_action.k(ENABLE_KINECT)
 
-    -- Kinect torch data containers
-		local w = webots.wb_camera_get_width(tags.kinect)
-    local h = webots.wb_camera_get_height(tags.kinect)
-    depth_torch = torch.FloatTensor( w*h ):zero()
-    depth_byte  = torch.ByteTensor( w*h ):zero()
-    depth_adj   = torch.FloatTensor( w*h ):zero()
-
-    -- Step the simulation
-		webots.wb_robot_step(Body.timeStep)
+		-- Step it again
     webots.wb_robot_step(Body.timeStep)
-    
+
     -- Read values
     for idx, jtag in pairs(tags.joints) do
       local val = webots.wb_motor_get_position( jtag )
       -- Take care of nan
       if val~=val then val = 0 end
-
       val = servo.direction[idx] * (val - servo.offset[idx])
       jcm.sensorPtr.position[idx] = val
       jcm.actuatorPtr.command_position[idx] = val
@@ -466,7 +468,14 @@ if IS_WEBOTS then
       local h = webots.wb_camera_get_height(tags.kinect)
       local color_fr = webots.to_rgb(tags.kinect)
       local depth_fr = webots.wb_camera_get_range_image(tags.kinect)
-      local depth_array = carray.float( depth_fr, w*h )
+			local sz = w*h
+      local depth_array = carray.float( depth_fr, sz )
+			if not depth_torch then
+				-- Perform the initial allocation
+				depth_torch = torch.FloatTensor( sz ):zero()
+				depth_byte  = torch.ByteTensor( sz ):zero()
+				depth_adj   = torch.FloatTensor( sz ):zero()
+			end
       depth_array:tensor(depth_torch)
       local near, far = .1, 2
       -- Enhance the dynamic range of the mesh image

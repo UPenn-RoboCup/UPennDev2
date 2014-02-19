@@ -19,7 +19,7 @@ local t_cmd, CMD_INTERVAL = 0, 0.1
 local function get_pick_transform()
 	local pose = vector.pose(wcm.get_robot_pose())
 	local pose_arm = util.pose_global({0.14,0,0},pose)
-	local obj_pose = vector.pose(wcm.get_drill_pose())
+	local obj_pose = vector.pose(wcm.get_ball_pose())
 	local pose_rel = util.pose_relative(obj_pose,pose_arm)
 	local relative_pick_tr = T.trans(pose_rel.x,pose_rel.y,-0.1) * T.rotY(175*DEG_TO_RAD)
 	return relative_pick_tr

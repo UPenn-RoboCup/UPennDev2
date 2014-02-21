@@ -3,7 +3,6 @@
 #include <zmq.h>
 #include <vector>
 #include <string>
-#include <jpeglib.h>
 
 using namespace gazebo;
 

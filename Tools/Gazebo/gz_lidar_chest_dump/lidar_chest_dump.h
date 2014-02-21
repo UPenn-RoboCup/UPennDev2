@@ -14,8 +14,8 @@
  * limitations under the License.
  *
 */
-#include "gazebo.hh"
-#include "plugins/RayPlugin.hh"
+#include <gazebo/gazebo.hh>
+#include <gazebo/plugins/RayPlugin.hh>
 #include <stdio.h>
 #include <iostream>
 #include <iomanip>

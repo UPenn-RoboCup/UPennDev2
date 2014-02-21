@@ -7,36 +7,24 @@ include (FindPkgConfig)
 if (PKG_CONFIG_FOUND)
 	pkg_check_modules(GAZEBO gazebo)
 	pkg_check_modules(ZMQ libzmq>=3.2 REQUIRED)
-	pkg_check_modules(MSGPACK libmsgpack-dev)
-	#pkg_check_modules(LUA luajit)
-	if (NOT LUA_FOUND)
-		if (APPLE)
-			pkg_check_modules(LUA lua)
-		else()
-			pkg_check_modules(LUA lua5.1)
-		endif()
-	endif()
 endif()
 
 include_directories(
+  /usr/local/include
 	${GAZEBO_INCLUDE_DIRS}
 	${ZMQ_INCLUDE_DIRS}
-	${MSGPACK_INCLUDE_DIRS}
-	${LUA_INCLUDE_DIRS}
 	../../Comms
 	)
 
 link_directories(
+  /usr/local/lib
 	${GAZEBO_LIBRARY_DIRS}
 	${ZMQ_LIBRARY_DIRS}
-	${MSGPACK_LIBRARY_DIRS}
-	${LUA_LIBRARY_DIRS}
 	)
 
 add_library(
 	gz_pose_manager SHARED
 	gz_pose_manager.cpp
-	../../Comms/config.cpp
 	)
 
 target_link_libraries(
@@ -44,7 +32,6 @@ target_link_libraries(
 	${GAZEBO_LIBRARIES}
 	${ZMQ_LIBRARIES}
 	${MSGPACK_LIBRARIES}
-	${LUA_LIBRARIES}
 	${Boost_LIBRARIES}
 	)
 

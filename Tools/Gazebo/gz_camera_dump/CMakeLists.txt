@@ -9,12 +9,17 @@ if (PKG_CONFIG_FOUND)
   pkg_check_modules(GAZEBO gazebo)
 endif()
 include_directories(${GAZEBO_INCLUDE_DIRS})
+include_directories(${GAZEBO_INCLUDE_DIRS})
 link_directories(${GAZEBO_LIBRARY_DIRS})
 link_directories("/usr/local/lib")
 
 add_library(gz_camera_dump SHARED camera_dump.cc)
-target_link_libraries(gz_camera_dump ${GAZEBO_libraries} 
-  CameraPlugin zmq jpeg
+target_link_libraries(
+  gz_camera_dump
+  ${GAZEBO_libraries} 
+  CameraPlugin
+  zmq
+  jpeg
   ${Boost_LIBRARIES}
 )
 

@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 #include <msgpack.hpp>
-#include "Comms/config.h"
 
 extern "C" {
 #include <zmq.h>

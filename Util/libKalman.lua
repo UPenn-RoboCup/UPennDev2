@@ -66,7 +66,8 @@ local function correct( self, z_k )
 end
 
 -- Filter initialization code
-libKalman.initialize_filter = function( filter, nDim )
+libKalman.initialize_filter = function( nDim )
+	local filter = {}
 	-- Utility
 	filter.I = torch.eye(nDim)
 	-- Process
@@ -109,12 +110,10 @@ libKalman.initialize_temporary_variables = function( filter )
 	return filter
 end
 
--- Generic filter
+-- Generic filter with default initialization
 libKalman.new_filter = function( nDim )
-	local f = {}
-	-- Default initialization
-	f = libKalman.initialize_filter( f, nDim )
-	f = libKalman.initialize_temporary_variables( f )
+	local f = libKalman.initialize_filter( nDim )
+	libKalman.initialize_temporary_variables( f )
 	return f
 end
 

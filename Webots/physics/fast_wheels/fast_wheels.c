@@ -31,8 +31,8 @@ void webots_physics_init(dWorldID w, dSpaceID s, dJointGroupID j) {
   char name[32];
   int i;
   
-  for (i = 0; i < 4; i++) {
-    sprintf(name, "WHEEL%d.WHEEL_SOLID", i + 1);
+  for (i=0; i<4; i++) {
+    sprintf(name, "WHEEL%d.WHEEL_SOLID", i+1);
     wheels_bodies[i] = dWebotsGetBodyFromDEF(name);
     wheels_geoms[i] = dWebotsGetGeomFromDEF(name);
   }
@@ -45,20 +45,20 @@ void webots_physics_step() {
 
 int webots_physics_collide(dGeomID g1, dGeomID g2) {
   dBodyID body = dGeomGetBody(g1);
-  if (body == NULL) body = dGeomGetBody(g2);
-  if (body == NULL) return 0; // ignore collisions between geoms that have no body 
-  const dWorldID world = dBodyGetWorld(body);
+  if (body==NULL) body = dGeomGetBody(g2);
+  if (body==NULL) return 0; // ignore collisions between geoms that have no body 
+  dWorldID world = dBodyGetWorld(body);
   // retrieve wheel_id
   int wheel_id = -1;
   int wheel_id_found = 0;
-  for (wheel_id = 0; wheel_id < 4; wheel_id++) {
-    if (g1 == wheels_geoms[wheel_id] || g2 == wheels_geoms[wheel_id]) {
+  for (wheel_id=0; wheel_id<4; wheel_id++) {
+    if (dAreGeomsSame(g1, wheels_geoms[wheel_id]) || dAreGeomsSame(g2, wheels_geoms[wheel_id])) {
       wheel_id_found = 1;
       break;
     }
   }
   
-  if ((wheel_id_found && (g1 == ground_geom || g2 == ground_geom)))
+  if ((wheel_id_found && (dAreGeomsSame(g1, ground_geom) || dAreGeomsSame(g2, ground_geom))))
   {
     // see how many collision points there are between theses objects
     nContacts = dCollide(g1, g2, MAX_CONTACTS, &contacts[0].geom, sizeof(dContact));
@@ -86,8 +86,8 @@ int webots_physics_collide(dGeomID g1, dGeomID g2) {
         b = dBodyGetPosition(wheels_bodies[3]);
         c = dBodyGetPosition(wheels_bodies[2]);
       }
-      dVector3 ac = {a[0] - c[0], a[1] - c[1], a[2] - c[2]};
-      dVector3 bc = {b[0] - c[0], b[1] - c[1], b[2] - c[2]};
+      dVector3 ac = {a[0]-c[0], a[1]-c[1], a[2]-c[2]};
+      dVector3 bc = {b[0]-c[0], b[1]-c[1], b[2]-c[2]};
       dSafeNormalize3(ac);
       dSafeNormalize3(bc);
       contacts[i].fdir1[0] = (ac[0] + bc[0]);
@@ -104,7 +104,7 @@ int webots_physics_collide(dGeomID g1, dGeomID g2) {
       dJointAttach(contact_joints[i], wheels_bodies[wheel_id], 0);
       pthread_mutex_unlock(&mutex);
     }
-    return 2;  // collision was handled above and will be notified by an change in the boundingObject color
+    return 1;  // collision was handled above
   }
   return 0;  // collision must be handled by webots
 }

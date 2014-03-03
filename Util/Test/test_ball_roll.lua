@@ -19,7 +19,7 @@ local nIter = 30;
 local fps = 30;
 local dt_frame = 1/fps;
 local add_noise = true
-local add_roll = false
+local add_roll = true
 local pos_noise = 0.0254 -- 2.54cm noise (1inch)
 
 -- Initialize the tracker
@@ -87,8 +87,8 @@ for i=2,nIter do
 	pos_tolerance[i], vel_tolerance[i] )
 	-- Show the state confidence
 	local pos_cov = confidence:sub(1,2,1,2)
-	local pos_cov_det = pos_cov:det()
 	--[[
+	local pos_cov_det = pos_cov:det()
 	print('Determinant: ', pos_cov_det)
 	for ii=1,pos_cov:size(1) do
 		for jj=1,pos_cov:size(2) do

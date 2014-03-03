@@ -18,9 +18,9 @@ Background {
   ]
 }
 DirectionalLight {
-  ambientIntensity 4
+  ambientIntensity 1
   direction -0.22 -1 0.56
-  intensity 1.3
+  intensity .8
   castShadows TRUE
 }
 DirectionalLight {

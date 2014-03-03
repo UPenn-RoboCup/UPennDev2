@@ -4,6 +4,7 @@
 -- (c) Stephen McGill
 ---------------------------------
 dofile'include.lua'
+--print_env()
 local Body = require'Body'
 local simple_ipc = require'simple_ipc'
 local mp = require'msgpack'

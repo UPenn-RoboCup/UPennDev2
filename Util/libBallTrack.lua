@@ -9,7 +9,7 @@ local prior_debug = false
 local libBallTrack = {}
 local tmp_rotatation = torch.Tensor(2,2)
 local DEFAULT_VAR = 100*100
-local EPS = .1/(DEFAULT_VAR*DEFAULT_VAR);
+local EPS = .1/(DEFAULT_VAR*DEFAULT_VAR)
 -- TODO: Tune these values...
 local MIN_ERROR_DISTANCE = 5 -- 5cm
 local ERROR_DEPTH_FACTOR = .2
@@ -170,14 +170,14 @@ end
 -- FOR NOW - ONLY USE 2 DIMENSIONS
 -- 4 states: x y vx vy
 libBallTrack.new_tracker = function()
-	local f = {}
 	-- Generic filter to start with 2 states per dimension
-	f = libKalman.initialize_filter( f, 4 )
-	f = customize_filter( f, 2 )
+	local f = libKalman.initialize_filter( 4 )
+	-- Customize for 2D x/y (no vx/vy) observations
+	customize_filter( f, 2 )
 	f.update = update
 	f.reset = reset
 	f:reset()
-	f = libKalman.initialize_temporary_variables( f )
+	libKalman.initialize_temporary_variables( f )
 	return f
 end
 

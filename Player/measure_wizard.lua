@@ -47,8 +47,8 @@ local function get_net()
 	local rx,tx
 	local ns = io.popen'ifconfig eth2'
 	local data = ns:read('*all')
-	rx = data:match('RX bytes:(%d+)')
-	tx = data:match('TX bytes:(%d+)')
+	rx = tonumber( data:match('RX bytes:(%d+)') )
+	tx = tonumber( data:match('TX bytes:(%d+)') )
 	return rx,tx
 end
 
@@ -101,10 +101,10 @@ local function log()
 			local dd = {}
 			for v in d do table.insert(dd,v) end
 			--util.ptable(dd)
-			data[lut[dd[header['PID']]]] = {
-				pid = dd[header['PID']],
-				cpu = dd[header['%CPU']],
-				mem = dd[header['%MEM']],
+			local pid = dd[header['PID']]
+			data[pid] = {
+				cpu = tonumber(dd[header['%CPU']]),
+				mem = tonumber(dd[header['%MEM']]),
 			}
 		elseif x:find'PID' then
 			--print('header',x)
@@ -162,12 +162,12 @@ local function unlog()
 		if not tbl then break end
 		cnt = cnt+1
 		ts[cnt] = tbl.t
+		print(tbl.tx,type(tbl.tx))
 		tx[cnt] = tbl.tx
 		rx[cnt] = tbl.rx
 		for k,v in pairs(tbl) do
 			if type(v)=='table' then
 				local id = ids[k]
-				--print(id,cnt)
 				cpu[id][cnt] = v.cpu
 				mem[id][cnt] = v.mem
 			end
@@ -189,10 +189,13 @@ local function unlog()
 	--
 	local tx_rate = torch.cdiv(tx_diff,ts_diff)
 	local rx_rate = torch.cdiv(tx_diff,ts_diff)
+	-- Save rates to file
+	--
 	local total_time = ts[-1]-ts[1]
 	local tx_rate_total = (tx[-1]-tx[1]) / total_time
 	local rx_rate_total = (rx[-1]-rx[1]) / total_time
 	print('Rates',tx_rate_total,rx_rate_total)
+	
   
 	for k,v in pairs(ids) do
 		print('\n'..k)

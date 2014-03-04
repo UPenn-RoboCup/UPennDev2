@@ -64,19 +64,21 @@ TEST_STRING('')
 -- unpacker
 
 print("\n================= Test unpacker ==================")
-local file = io.open('dummy_mp_data.log', 'r');
-local file_str = file:read('*a')
-
-local t0 = unix.time()
-local unpacker = msgpack.unpacker(file_str)
+local file = io.open('dummy_mp_data.msg', 'r');
 local dataset = {}
-local tbl = unpacker:unpack()
-while tbl do
-  dataset[#dataset+1] = tbl
-  tbl = unpacker:unpack()
+if file then
+	local file_str = file:read('*a')
+
+	local t0 = unix.time()
+	local unpacker = msgpack.unpacker(file_str)
+	local tbl = unpacker:unpack()
+	while tbl do
+		dataset[#dataset+1] = tbl
+		tbl = unpacker:unpack()
+	end
+	print("streaming unpack "..#dataset.." tables takes "..(unix.time() - t0).."with pack length "..#file_str)
+	file:close()
 end
-print("streaming unpack "..#dataset.." tables takes "..(unix.time() - t0).."with pack length "..#file_str)
-file:close()
 
 t0 = unix.time()
 local len = 0
@@ -87,7 +89,7 @@ end
 print("pack "..#dataset.." tables takes "..(unix.time() - t0).."with pack length "..len)
 
 print("\n================= Test Msgpack for lightuserdata ==================")
-package.cpath = '../Util/CArray/?.so;'..package.cpath
+package.cpath = '../carray/?.so;'..package.cpath
 local carray = require 'carray'
 
 local ud = carray.float(1081)
@@ -103,13 +105,13 @@ print("test case ", ud == dp)
 function TEST_TORCH(aa)
   local pack_str = msgpack.pack(aa)
   local tbl = msgpack.unpack(pack_str)
-  for k ,v in pairs(tbl) do
+  for k, v in pairs(tbl) do
     print('Key:', k, 'Value:', v)
   end
   print('pack size:',#pack_str)
 end
 print("\n================= Test Msgpack for Torch ==================")
-----[[
+--[[
 local torch = require 'torch'
 aa = torch.DoubleTensor({{3.0, 4.0, 5.24, 6.123, 7.90}, {1,2,3,4,5}})
 TEST_TORCH(aa)

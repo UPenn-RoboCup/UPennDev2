@@ -3,6 +3,8 @@
  *
  * Copyright [2013] [ Yida Zhang <yida@seas.upenn.edu> ]
  *              University of Pennsylvania
+ * Copyright [2014] [ Stephen McGill <smcgill3@seas.upenn.edu> ]
+ *              University of Pennsylvania
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,47 +20,21 @@
  *
  * */
 
-#include <lua.hpp>
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+#include <msgpack.h>
 
 #ifdef TORCH
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <torch/luaT.h>
 #include <torch/TH/TH.h>
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif
 
 #ifdef DEBUG
-#include <iostream>
-#endif
-
-#include <stdint.h>
-#include <unistd.h>
-#include <float.h>
-#include <limits.h>
 #include <stdio.h>
-#include <math.h>
-#include <msgpack.h>
+#endif
 
 #define MT_NAME "msgpack_mt"
-
-#ifdef TORCH
-/* Keep pointers to Torch objects */
-static THByteTensor * b_t;
-static THCharTensor * c_t;
-static THShortTensor * s_t;
-static THIntTensor * i_t;
-static THLongTensor * l_t;
-static THFloatTensor * f_t;
-static THDoubleTensor * d_t;
-#endif
 
 typedef struct {
   const char *str;
@@ -67,8 +43,8 @@ typedef struct {
   msgpack_unpacked *msg;
 } structUnpacker;
 
-int (*PackMap[9]) (lua_State *L, int index, msgpack_packer *pk, const char * opt);
-int (*unPackMap[8]) (lua_State *L, msgpack_object obj, const char * opt);
+int (*PackMap[9]) (lua_State *L, int index, msgpack_packer *pk);
+int (*unPackMap[8]) (lua_State *L, msgpack_object obj);
 
 static structUnpacker * lua_checkunpacker(lua_State *L, int narg) {
   void *ud = luaL_checkudata(L, narg, MT_NAME);
@@ -77,155 +53,109 @@ static structUnpacker * lua_checkunpacker(lua_State *L, int narg) {
 }
 
 static int lua_msgpack_index(lua_State *L) {
+	
   lua_checkunpacker(L, 1);
+	
   /* Get index through metatable: */
-  if (!lua_getmetatable(L, 1)) {lua_pop(L, 1); return 0;} /* push metatable */
+  if (!lua_getmetatable(L, 1)) {
+		lua_pop(L, 1);
+		return 0;
+	}/* push metatable */
+	
   lua_pushvalue(L, 2); /* copy key */
   lua_rawget(L, -2); /* get metatable function */
   lua_remove(L, -2); /* delete metatable */
   return 1;
 }
 
-static int lua_msgpack_unpack_nil(lua_State *L, msgpack_object obj, const char * opt) {
+static int lua_msgpack_unpack_nil(lua_State *L, msgpack_object obj) {
   lua_pushnil(L);
   return 1;
 }
 
-static int lua_msgpack_unpack_boolean(lua_State *L, msgpack_object obj, const char * opt) {
-#ifdef TORCH
-  if (!strcmp(opt, "torch")) {
-    THCharTensor *bp = THCharTensor_newWithSize1d(1);
-    THTensor_fastSet1d(bp, 0, obj.via.boolean);
-    luaT_pushudata(L, bp, "torch.CharTensor");
-  } else
-#endif
-    lua_pushboolean(L, obj.via.boolean);
+static int lua_msgpack_unpack_boolean(lua_State *L, msgpack_object obj) {
+	lua_pushboolean(L, obj.via.boolean);
   return 1;
 }
 
-static int lua_msgpack_unpack_positive_integer(lua_State *L, msgpack_object obj, const char * opt) {
-#ifdef TORCH
-  if (!strcmp(opt, "torch")) {
-    THDoubleTensor *up = THDoubleTensor_newWithSize1d(1);
-    THTensor_fastSet1d(up, 0, obj.via.u64);
-    luaT_pushudata(L, up, "torch.DoubleTensor");
-  } else
-#endif
+static int lua_msgpack_unpack_positive_integer(lua_State *L, msgpack_object obj) {
   lua_pushnumber(L, obj.via.u64);
   return 1;
 }
 
-static int lua_msgpack_unpack_negative_integer(lua_State *L, msgpack_object obj, const char * opt) {
-#ifdef TORCH
-  if (!strcmp(opt, "torch")) {
-    THDoubleTensor *lp = THDoubleTensor_newWithSize1d(1);
-    THTensor_fastSet1d(lp, 0, obj.via.i64);
-    luaT_pushudata(L, lp, "torch.DoubleTensor");
-  } else
-#endif
+static int lua_msgpack_unpack_negative_integer(lua_State *L, msgpack_object obj) {
   lua_pushnumber(L, obj.via.i64);
   return 1;
 }
 
-static int lua_msgpack_unpack_double(lua_State *L, msgpack_object obj, const char * opt) {
-#ifdef TORCH
-  if (!strcmp(opt, "torch")) {
-    THDoubleTensor *dp = THDoubleTensor_newWithSize1d(1);
-    THTensor_fastSet1d(dp, 0, obj.via.dec);
-    luaT_pushudata(L, dp, "torch.DoubleTensor");
-  } else
-#endif
+static int lua_msgpack_unpack_double(lua_State *L, msgpack_object obj) {
   lua_pushnumber(L, obj.via.dec);
   return 1;
 }
 
-#ifdef TORCH
-template<typename T, typename TT>
-static int lua_msgpack_unpack_torch(lua_State *L, TT* (*new_func)(long size), 
-                             const char * Ttype, const char *ptr, uint32_t size) {
-  long type_size = size / sizeof(T);
-  TT * tensorp = (*new_func)(type_size);
-  size_t offset = tensorp->storageOffset;
-  void * dest_data = tensorp->storage->data + offset;
-  memcpy(dest_data, ptr, size * sizeof(char));
-  luaT_pushudata(L, tensorp, Ttype);
- 
-  return 1;
-}
-#endif
-
-static int lua_msgpack_unpack_raw(lua_State *L, msgpack_object obj, const char * opt) {
-#ifdef TORCH
-  if (!strcmp(opt, "torch")) {
-    const char * type = luaL_optstring(L, -1, "double");
-    if (!strcmp(type, "double"))
-      return lua_msgpack_unpack_torch<double, THDoubleTensor>(L, 
-          THDoubleTensor_newWithSize1d, "torch.DoubleTensor", 
-          obj.via.raw.ptr, obj.via.raw.size);
-    else if (!strcmp(type, "float"))
-      return lua_msgpack_unpack_torch<float, THFloatTensor>(L, 
-          THFloatTensor_newWithSize1d, "torch.FloatTensor",
-          obj.via.raw.ptr, obj.via.raw.size);
-    else if (!strcmp(type, "int"))
-      return lua_msgpack_unpack_torch<int, THIntTensor>(L, 
-              THIntTensor_newWithSize1d, "torch.IntTensor", 
-              obj.via.raw.ptr, obj.via.raw.size);
-    else if (!strcmp(type, "long"))
-      return lua_msgpack_unpack_torch<long, THLongTensor>(L, 
-              THLongTensor_newWithSize1d, "torch.LongTensor",
-              obj.via.raw.ptr, obj.via.raw.size);
-    else if (!strcmp(type, "byte"))
-      return lua_msgpack_unpack_torch<char, THCharTensor>(L, 
-              THCharTensor_newWithSize1d, "torch.CharTensor",
-              obj.via.raw.ptr, obj.via.raw.size);
-    else
-      luaL_error(L, "unknown type");
-  } else
-#endif
+static int lua_msgpack_unpack_raw(lua_State *L, msgpack_object obj) {
+/*
+	size_t sz = obj.via.raw.ptr;
+  THByteTensor * tensorp = THByteTensor_newWithSize1d(sz);
+  void * dest_data = tensorp->storage->data;
+  memcpy(dest_data, obj.via.raw.ptr, sz);
+  luaT_pushudata(L, tensorp, "torch.ByteTensor");
+*/
   lua_pushlstring(L, obj.via.raw.ptr, obj.via.raw.size);
   return 1;
 }
 
-static int lua_msgpack_unpack_array(lua_State *L, msgpack_object obj, const char * opt) {
+static int lua_msgpack_unpack_array(lua_State *L, msgpack_object obj) {
   int i, ret;
   lua_createtable(L, obj.via.array.size, 0);
   for (i = 0; i < obj.via.array.size; i++) {
     msgpack_object ob = obj.via.array.ptr[i];
-    ret = (*unPackMap[ob.type])(L, ob, opt);
+    ret = (*unPackMap[ob.type])(L, ob);
     lua_rawseti(L, -2, i + 1);
   }
   return 1;
 }
 
-static int lua_msgpack_unpack_map(lua_State *L, msgpack_object obj, const char * opt) {
+static int lua_msgpack_unpack_map(lua_State *L, msgpack_object obj) {
   int i, ret;
   lua_createtable(L, 0, obj.via.map.size);
   for (i = 0; i < obj.via.map.size; i++) {
     msgpack_object key = obj.via.map.ptr[i].key;
-    ret = (*unPackMap[key.type])(L, key, opt);
-    msgpack_object val = obj.via.map.ptr[i].val;
-    ret = (*unPackMap[val.type])(L, val, opt);
+		msgpack_object val = obj.via.map.ptr[i].val;
+		//
+    ret = (*unPackMap[key.type])(L, key);
+    ret = (*unPackMap[val.type])(L, val);
+		//
     lua_settable(L, -3);
   }
   return 1;
 }
 
-static int lua_msgpack_pack_nil(lua_State *L, int index, msgpack_packer *pk, const char * opt) {
+static int lua_msgpack_pack_nil(lua_State *L, int index, msgpack_packer *pk) {
   msgpack_pack_nil(pk);
   return 1;
 }
 
-static int lua_msgpack_pack_boolean(lua_State *L, int index, msgpack_packer *pk, const char * opt) {
+static int lua_msgpack_pack_boolean(lua_State *L, int index, msgpack_packer *pk) {
   int value = lua_toboolean(L, index);
-  (value == 0)? msgpack_pack_true(pk) : msgpack_pack_false(pk);
+	if(value){
+		msgpack_pack_true(pk);
+	} else {
+		msgpack_pack_false(pk);
+	}
   return 1;
 }
 
-static int lua_msgpack_pack_lightuserdata(lua_State *L, int index, msgpack_packer *pk, const char * opt) {
-  uint8_t *data = (uint8_t *)lua_touserdata(L, index);
-  if ((data == NULL) || !lua_islightuserdata(L, index)) 
-    return luaL_error(L, "Input not light user data");
+static int lua_msgpack_pack_lightuserdata(lua_State *L, int index, msgpack_packer *pk) {
+	if(!lua_islightuserdata(L, index)){
+		return luaL_error(L, "Input not light user data");
+	}
+  void *data = (void *)lua_touserdata(L, index);
+  if ( data == NULL){
+		return luaL_error(L, "NULL light userdata");
+	}
 
+	// TODO: Packing lightuserdata should be a bit more careful...
   int size = luaL_optint(L, index + 1, 0);
 
   int ret = msgpack_pack_raw(pk, size);
@@ -233,20 +163,14 @@ static int lua_msgpack_pack_lightuserdata(lua_State *L, int index, msgpack_packe
   return 1;
 }
 
-static int lua_msgpack_pack_number(lua_State *L, int index, msgpack_packer *pk, const char * opt) {
-  /* magic number : when input larger then this number
-   * msgpack_pack_int64 not working as expected */
-#define LIMIT 4294967296
+static int lua_msgpack_pack_number(lua_State *L, int index, msgpack_packer *pk) {
+	// TODO: Respect limits of message pack (See documentation)
   double num = lua_tonumber(L, index);
-  double intpart;
-  if (modf(num, &intpart) == 0.0) {
-    (intpart > LIMIT || intpart < -LIMIT)? msgpack_pack_double(pk, intpart) : msgpack_pack_int64(pk, intpart);
-  } else
-    msgpack_pack_double(pk, num);
+	msgpack_pack_double(pk, num);
   return 1;
 }
 
-static int lua_msgpack_pack_string(lua_State *L, int index, msgpack_packer *pk, const char * opt) {
+static int lua_msgpack_pack_string(lua_State *L, int index, msgpack_packer *pk) {
   size_t size;
   const char *str = lua_tolstring(L, index, &size);
   int ret = msgpack_pack_raw(pk, size);
@@ -254,7 +178,8 @@ static int lua_msgpack_pack_string(lua_State *L, int index, msgpack_packer *pk, 
   return ret;
 }
 
-static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk, const char * opt) {
+static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk) {
+	// TODO: Try to speed up a lot
   int valtype, keytype, ret, allnumeric = 0;
   int nfield = 0;
   /* 
@@ -277,33 +202,33 @@ static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk, c
     lua_pop(L, 1);
   }
 
+	// TODO: A bit annoying; is there a quick way in lua to check if all numeric indices?
   /* if all numeric array, use array type, otherwise use map type */
-  if (!allnumeric) 
+  if (!allnumeric){
     msgpack_pack_array(pk, nfield);
-  else
+	} else {
     msgpack_pack_map(pk, nfield);
+	}
 
   lua_pushnil(L);
   while (lua_next(L, index)) {
+		
 #ifdef DEBUG
-    keytype = lua_type(L, -2);
-    std::cout << "keytype " << keytype << std::endl;
- 
-    valtype = lua_type(L, -1);
-    std::cout << "valtype " << valtype << std::endl;
+	printf("key:val|%s:%s\n",lua_typename(L, -2),lua_typename(L, -1));
 #endif
+		
     /* if all numeric array, no need to get key */
     if (allnumeric > 0) {
       keytype = lua_type(L, -2);
       /* since key is first push to stack, the absolute key position
        * on stack should be index + 1 */
-      ret = (*PackMap[keytype])(L, index + 1, pk, opt);
+      ret = (*PackMap[keytype])(L, index + 1, pk);
     }
 
     valtype = lua_type(L, -1);
     /* since value is second push to stack, the absolute position
      * on stack should be index + 2 */
-    ret = (*PackMap[valtype])(L, index + 2, pk, opt);
+    ret = (*PackMap[valtype])(L, index + 2, pk);
 
     lua_pop(L, 1);
   }
@@ -311,14 +236,19 @@ static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk, c
   return 1;
 }
 
-static int lua_msgpack_pack_function(lua_State *L, int index, msgpack_packer *pk, const char * opt) {
+static int lua_msgpack_pack_function(lua_State *L, int index, msgpack_packer *pk) {
+#ifdef DEBUG
   printf("lua function type packing not implemented, return nil\n");
+#endif
   msgpack_pack_nil(pk);
   return 1;
 }
 
-static int lua_msgpack_pack_userdata(lua_State *L, int index, msgpack_packer *pk, const char * opt) {
-/* printf("lua userdata type packing not implemented, return nil\n"); */
+static int lua_msgpack_pack_userdata(lua_State *L, int index, msgpack_packer *pk) {
+#ifdef DEBUG
+	printf("lua userdata type packing not implemented, return nil\n");
+#endif
+	
 #ifdef TORCH
   const char *torch_name = luaT_typename(L, index);
   // just use byte tensor - should be fine
@@ -361,30 +291,34 @@ static int lua_msgpack_pack_userdata(lua_State *L, int index, msgpack_packer *pk
   void * src_data = tensorp->storage->data + tensorp->storageOffset;
   // pack the data as raw
   msgpack_pack_raw_body(pk, src_data, nbytes);
-  return 1;
 #else
-  return luaL_error(L, "unknown Torch Tensor type ");
+  msgpack_pack_nil(pk);
 #endif
-  
+  return 1;
 }
 
-static int lua_msgpack_pack_thread(lua_State *L, int index, msgpack_packer *pk, const char * opt) {
+static int lua_msgpack_pack_thread(lua_State *L, int index, msgpack_packer *pk) {
+#ifdef DEBUG
   printf("lua thread type packing not implemented, return nil\n");
+#endif
   msgpack_pack_nil(pk);
   return 1;
 }
 
+// TODO: Push a metatable of the buffer?
+// This way, we have less copying of data possibly
+// Can have the direct pointer to the data
+// Just memcpy it into some message...
+// The tostring method would take out the string...
 static int lua_msgpack_pack(lua_State *L) {
   /* creates buffer and serializer instance. */
   msgpack_sbuffer* buffer = msgpack_sbuffer_new();
   msgpack_packer* pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
 
   int type = lua_type(L, 1);
-  const char * opt = luaL_optstring(L, 2, "");
+  (*PackMap[type])(L, 1, pk);
 
-  (*PackMap[type])(L, 1, pk, opt);
-  //int ret = (*PackMap[type])(L, 1, pk);
-  /* output packed string */
+	/* output packed string */
   lua_pushlstring(L, buffer->data, buffer->size);
   /* cleaning */
   msgpack_sbuffer_free(buffer);
@@ -395,18 +329,18 @@ static int lua_msgpack_pack(lua_State *L) {
 static int lua_msgpack_unpack(lua_State *L) {
   size_t size;
   const char *str  = lua_tolstring(L, 1, &size);
-  const char * opt = luaL_optstring(L, 2, "");
 
   /* deserializes it. */
   size_t offset = 0;
   msgpack_unpacked msg;
   msgpack_unpacked_init(&msg);
-  if (!msgpack_unpack_next(&msg, str, size, &offset))
+  if (!msgpack_unpack_next(&msg, str, size, &offset)){
     luaL_error(L, "unpack error");
+	}
 
   /* prints the deserialized object. */
   msgpack_object obj = msg.data;
-  (*unPackMap[obj.type])(L, obj, opt);
+  (*unPackMap[obj.type])(L, obj);
   lua_pushnumber(L,offset);
   return 2;
 }
@@ -417,8 +351,7 @@ static int lua_msgpack_newunpacker(lua_State *L) {
   ud->str = lua_tolstring(L, 1, &ud->size);
 
   /* Init deserialize using msgpack_unpacker */
-  ud->pac = (msgpack_unpacker *)malloc(sizeof(msgpack_unpacker));
-  msgpack_unpacker_init(ud->pac, MSGPACK_UNPACKER_INIT_BUFFER_SIZE);
+  ud->pac = msgpack_unpacker_new(MSGPACK_UNPACKER_INIT_BUFFER_SIZE);
 
   /* feeds the buffer */
   msgpack_unpacker_reserve_buffer(ud->pac, ud->size);
@@ -434,23 +367,38 @@ static int lua_msgpack_newunpacker(lua_State *L) {
   return 1;
 }
 
+// Unpacker tostring should be able to output the lstring
+// of the raw data left to be unpacked
 static int lua_msgpack_unpacker(lua_State *L) {
   structUnpacker *ud = lua_checkunpacker(L, 1);
-  const char *opt = luaL_optstring(L, 2, "");
-  bool ret = msgpack_unpacker_next(ud->pac, ud->msg);
-  if (ret) {
+  if( msgpack_unpacker_next(ud->pac, ud->msg) ) {
     msgpack_object obj = ud->msg->data;
 		/* TODO: Push the encoded data as well as the decoded data */
-    int re = (*unPackMap[obj.type])(L, obj, opt);
-  } else lua_pushnil(L);
+    (*unPackMap[obj.type])(L, obj);
+  } else {
+		lua_pushnil(L);
+	}
   return 1;
 }
 
 static int lua_msgpack_delete(lua_State *L) {
+#ifdef DEBUG
+	printf("\n\n\n\n****HERE\n\n\n");
+	fflush(stdout);
+#endif
+	
   structUnpacker *ud = lua_checkunpacker(L, 1);
-  if (!ud->pac) free(ud->pac);
-  if (!ud->msg) free(ud->msg);
-
+	msgpack_unpacker_free(ud->pac);
+	msgpack_unpacked_destroy(ud->msg);
+/*
+	// TODO: These seem like we are freeing NULL always...
+  if (!ud->pac){
+		free(ud->pac);
+	}
+  if (!ud->msg){
+		free(ud->msg);
+	}
+*/
   return 1;
 }
 
@@ -467,20 +415,25 @@ static const struct luaL_reg msgpack_Methods [] = {
   {NULL, NULL}
 };
 
-#ifdef __cplusplus
-extern "C"
-#endif
 int luaopen_msgpack(lua_State *L) {
+	// Implement metatable for unpacker
   luaL_newmetatable(L, MT_NAME);
-
-  // Implement index method:
   lua_pushstring(L, "__index");
   lua_pushcfunction(L, lua_msgpack_index);
   lua_settable(L, -3);
-
-  luaL_register(L, NULL, msgpack_Methods);
+#if LUA_VERSION_NUM == 502
+	luaL_setfuncs(L, msgpack_Methods, 0);
+#else
+	luaL_register(L, NULL, msgpack_Methods);
+#endif
+	
+	// The msgpack library
+#if LUA_VERSION_NUM == 502
+	luaL_newlib(L, msgpack_Functions);
+#else
   luaL_register(L, "msgpack", msgpack_Functions);
-
+#endif
+	
   /* Init pack functions map */
   PackMap[LUA_TNIL] = lua_msgpack_pack_nil;
   PackMap[LUA_TBOOLEAN] = lua_msgpack_pack_boolean;

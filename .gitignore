@@ -23,31 +23,16 @@ Logs
 *.elf
 *.d
 *.signature
-WebotsProj/controllers/ballGPS/ballGPS
 
 # generic log files
 *.log
 *.raw
 
-# Player copy of the compiled libraries
-Run/Lib/*
-
-#player.lua link in Player
-Run/player.lua
-Run/Run
-
 # Config link file
 Config.lua
 
 # auto-generated webots controller wrapper
-WebotsController/
-WebotsController/controller_wrap.c
-controller_wrap.c
 *.wbproj
-
-#controller links
-WebotsProj/controllers/nao_soccer_supervisor/
-WebotsProj/controllers/nsl_soccer_supervisor/
 
 #auto-generated webots file
 #*.wrl
@@ -65,7 +50,7 @@ build
 # Webot World File temp
 *.project
 
-# svn 
+# svn
 .svn
 
 # for files in nao bu default
@@ -89,6 +74,5 @@ Player/Log/debugdata*.*
 *screenlog*
 
 # Generated new lut
-*_new.raw
 *_auto.*
-Tools/Matlab/*.raw
+Tools/Matlab/Figures/

@@ -602,20 +602,6 @@ end -- anthropomorphic
 ----------------------
 -- Inverse Kinematics
 local Kinematics = require'THOROPKinematics'
---[[
-local Kinematics
-if Config.IS_LONGARM then
-  Kinematics = require'THOROPLongarmKinematics'
-  print("LONGARM IK LOADED")
-  print("LONGARM IK LOADED")
-  print("LONGARM IK LOADED")
-else
-  Kinematics = require'THOROPKinematics'
-  print("SHORTARM IK LOADED")
-  print("SHORTARM IK LOADED")
-  print("SHORTARM IK LOADED")
-end
---]]
 
 -- Check the error from a desired transform tr
 -- to a forwards kinematics of in IK solution q
@@ -1980,46 +1966,7 @@ Body.Kinematics = Kinematics
 
 -- For supporting the THOR repo
 require'mcm'
-Body.set_walk_velocity = function(vel)
-  mcm.set_walk_vel(vel)
-end
-
-Body.init_odometry = function(uTorso)
-  wcm.set_robot_utorso0(uTorso)
-  wcm.set_robot_utorso1(uTorso)
-end
-
---This function should be called by motion state
-Body.update_odometry = function(uTorso)
-	--[[
-  local uTorso1 = wcm.get_robot_utorso1()
-
-  --update odometry pose
-  local odometry_step = util.pose_relative(uTorso,uTorso1)
-  local pose_odom0 = wcm.get_robot_pose_odom()
-  local pose_odom = util.pose_global(odometry_step, pose_odom0)
-  wcm.set_robot_pose_odom(pose_odom)
-
-  local odom_mode = wcm.get_robot_odom_mode();
-  if odom_mode==0 then
-    wcm.set_robot_pose(pose_odom)
-  else
-    wcm.set_robot_pose(wcm.get_slam_pose())
-  end
-
-  --updae odometry variable
-  wcm.set_robot_utorso1(uTorso)
-	--]]
-end
-
---This function should be called by slam wizard (slower rate than state update)
-Body.get_odometry = function()
-  local uTorso0 = wcm.get_robot_utorso0()
-  local uTorso1 = wcm.get_robot_utorso1()
-
-  wcm.set_robot_utorso0(uTorso1) --reset initial position
-  return util.pose_relative(uTorso1,uTorso0)
-end
+Body.set_walk_velocity = mcm.set_walk_vel
 
 ---------------------------------------------
 -- New hand API

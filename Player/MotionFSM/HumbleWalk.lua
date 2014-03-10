@@ -38,6 +38,32 @@ local foot_traj_func
 if Config.walk.foot_traj==1 then foot_traj_func = moveleg.foot_trajectory_base
 else foot_traj_func = moveleg.foot_trajectory_square end
 
+local init_odometry = function(uTorso)
+  wcm.set_robot_utorso0(uTorso)
+  wcm.set_robot_utorso1(uTorso)
+end
+
+local update_odometry = function(uTorso_in)
+	if true then return end
+  local uTorso1 = wcm.get_robot_utorso1()
+
+  --update odometry pose
+  local odometry_step = util.pose_relative(uTorso_in,uTorso1)
+  local pose_odom0 = wcm.get_robot_pose_odom()
+  local pose_odom = util.pose_global(odometry_step, pose_odom0)
+  wcm.set_robot_pose_odom(pose_odom)
+
+  local odom_mode = wcm.get_robot_odom_mode();
+  if odom_mode==0 then
+    wcm.set_robot_pose(pose_odom)
+  else
+    wcm.set_robot_pose(wcm.get_slam_pose())
+  end
+
+  --updae odometry variable
+  wcm.set_robot_utorso1(uTorso_in)
+end
+
 ---------------------------
 -- State machine methods --
 ---------------------------
@@ -63,7 +89,7 @@ function walk.entry()
       step_planner:init_stance()
 
   --Reset odometry varialbe
-  Body.init_odometry(uTorso_now)
+  init_odometry(uTorso_now)
 
   --Now we advance a step at next update  
   t_last_step = Body.get_time() - tStep 
@@ -212,7 +238,7 @@ function walk.update()
   end
 
   --Update the odometry variable
-  Body.update_odometry(uTorso)
+  update_odometry(uTorso)
   --print("odometry pose:",unpack(wcm.get_robot_pose_odom()))
 
 --[[

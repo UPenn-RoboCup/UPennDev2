@@ -50,7 +50,30 @@ local read_test = false
 --local read_test = true
 local debug_on = false
 
+local init_odometry = function(uTorso)
+  wcm.set_robot_utorso0(uTorso)
+  wcm.set_robot_utorso1(uTorso)
+end
 
+local update_odometry = function(uTorso_in)
+  local uTorso1 = wcm.get_robot_utorso1()
+
+  --update odometry pose
+  local odometry_step = util.pose_relative(uTorso_in,uTorso1)
+  local pose_odom0 = wcm.get_robot_pose_odom()
+  local pose_odom = util.pose_global(odometry_step, pose_odom0)
+  wcm.set_robot_pose_odom(pose_odom)
+
+  local odom_mode = wcm.get_robot_odom_mode();
+  if odom_mode==0 then
+    wcm.set_robot_pose(pose_odom)
+  else
+    wcm.set_robot_pose(wcm.get_slam_pose())
+  end
+
+  --updae odometry variable
+  wcm.set_robot_utorso1(uTorso_in)
+end
 
 
 ---------------------------
@@ -87,7 +110,7 @@ function walk.entry()
   mcm.set_walk_stoprequest(0) --cancel stop request flag
   mcm.set_walk_ismoving(1) --We started moving
   --Reset odometry varialbe
-  Body.init_odometry(uTorso_now)  
+  init_odometry(uTorso_now)  
 
   roll_max = 0
 
@@ -175,7 +198,7 @@ function walk.update()
     step_planner:save_stance(uLeft,uRight,uTorso)  
 
     --Update the odometry variable
-    Body.update_odometry(uTorso)
+    update_odometry(uTorso)
 
     local uZMP = zmp_solver:get_zmp()
     mcm.set_status_uTorso(uTorso)

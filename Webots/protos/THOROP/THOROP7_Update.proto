@@ -331,6 +331,12 @@ Robot {
                                     anchor 0 0.081 0
                                   } # End of the RightWristYaw HingeJointParameters
                                   endPoint Solid {
+																		#physics Physics {
+																		#	density -1
+																		#	mass 2.89
+																		#	centerOfMass 0 -0.146 -0.0039
+																		#	inertiaMatrix [0.001 0.001 0.001, 0 0 0]
+																		#}
                                     ## Begin Wrist Roll
                                     children [
 																			RIGHT_WRIST {
@@ -685,7 +691,7 @@ Robot {
                     translation -0.072 -0.232 0
                     physics Physics {
                       density -1
-                      mass 0.1
+                      mass 0.01
 											centerOfMass [0 0 0]
 											inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                     }
@@ -724,7 +730,9 @@ Robot {
                                 name "PelvR"
                                 # TODO: Use NX Motor specs
                                 #maxVelocity 5.65486677646
-                                maxTorque 40
+                                #maxTorque 40
+																maxTorque 200
+																maxVelocity 250
                                 # Not sure of these...
                                 minPosition -2.92343
                                 maxPosition 2.92343
@@ -739,7 +747,8 @@ Robot {
                                 physics Physics {
                                   density -1
                                   mass 4.28
-																	centerOfMass [0.0211 -0.1241 -0.0082]
+																	# TODO: Test that this is the correct center of mass...
+																	centerOfMass [-0.0211 -0.1241 -0.0082]
 																	inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                 }
                                 children[
@@ -750,7 +759,9 @@ Robot {
                                       name "LegUpperR"
                                       # TODO: Use NX Motor specs
                                       #maxVelocity 5.65486677646
-                                      maxTorque 40
+                                      #maxTorque 40
+																			maxTorque 200
+																			maxVelocity 25
                                       # Not sure of these...
                                       minPosition -2.92343
                                       maxPosition 2.92343
@@ -781,7 +792,9 @@ Robot {
                                             name "LegLowerR"
                                             # TODO: Use NX Motor specs
                                             #maxVelocity 5.65486677646
-                                            maxTorque 40
+                                            #maxTorque 40
+																						maxTorque 200
+																						maxVelocity 250
                                             # Not sure of these...
                                             minPosition -2.92343
                                             maxPosition 2.92343
@@ -812,7 +825,9 @@ Robot {
                                                   name "AnkleR"
                                                   # TODO: Use NX Motor specs
                                                   #maxVelocity 5.65486677646
-                                                  maxTorque 40
+                                                  #maxTorque 40
+																									maxTorque 200
+																									maxVelocity 250
                                                   # Not sure of these...
                                                   minPosition -2.92343
                                                   maxPosition 2.92343
@@ -826,8 +841,8 @@ Robot {
                                                 endPoint Solid {
                                                   physics Physics {
                                                     density -1
-                                                    mass 0.0001
-																										centerOfMass [0 0 0]
+																										mass 1.74
+																										centerOfMass [0 -0.0429 -0.0048]
 																										inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                                   }
                                                   children[
@@ -838,7 +853,9 @@ Robot {
                                                         name "FootR"
                                                         # TODO: Use NX Motor specs
                                                         #maxVelocity 5.65486677646
-                                                        maxTorque 40
+                                                        #maxTorque 40
+																												maxTorque 200
+																												maxVelocity 250
                                                         # Not sure of these...
                                                         minPosition -2.92343
                                                         maxPosition 2.92343
@@ -853,27 +870,26 @@ Robot {
                                                         translation 0 -0.1115 0.018
                                                         boundingObject Box {size 0.145 0.012 0.26}
                                                         physics Physics {
-																													density -1
-																													mass 1.74
-																													centerOfMass 0 -0.0429 -0.0048
-																													inertiaMatrix [0.001 0.001 0.001, 0 0 0]
+																													#density -1
+																													#mass 0.0001
+																													#centerOfMass [0 0 0]
+																													#inertiaMatrix [0.001 0.001 0.001, 0 0 0]
 																												}
                                                         children[
                                                           FOOT{
                                                             scale 0.001 0.001 0.001
                                                             translation 0 0.1115 -0.018
                                                           }
-																													
-                                                          #DEF R_FSR TouchSensor {
-                                                          #  name "R_FSR"
-                                                          #  # Should be a bit bigger
-                                                          #  boundingObject Box {size 0.145 0.013 0.26}
-                                                          #  physics Physics {
-                                                          #    density -1
-                                                          #    mass 0.0001
-                                                          #  }
-                                                          #  type "force"
-                                                          #}
+                                                          DEF R_FSR TouchSensor {
+                                                            name "R_FSR"
+                                                            # Should be a bit bigger
+                                                            boundingObject Box {size 0.145 0.013 0.26}
+                                                            physics Physics {
+                                                              density -1
+                                                              mass 0.0001
+                                                            }
+                                                            type "force"
+                                                          }
                                                         ]
                                                       }
                                                     }
@@ -939,7 +955,9 @@ Robot {
                                 name "PelvL"
                                 # TODO: Use NX Motor specs
                                 #maxVelocity 5.65486677646
-                                maxTorque 40
+                                #maxTorque 40
+																maxTorque 200
+																maxVelocity 250
                                 # Not sure of these...
                                 minPosition -2.92343
                                 maxPosition 2.92343
@@ -953,8 +971,10 @@ Robot {
                               endPoint Solid {
                                 physics Physics {
                                   density -1
-                                  mass 0.0001
-																	centerOfMass [0 0 0]
+                                  #mass 0.0001
+																	#centerOfMass [0 0 0]
+																	mass 4.28
+                        					centerOfMass [0.0211 -0.1241 -0.0082]
 																	inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                 }
                                 children[
@@ -965,7 +985,9 @@ Robot {
                                       name "LegUpperL"
                                       # TODO: Use NX Motor specs
                                       #maxVelocity 5.65486677646
-                                      maxTorque 40
+                                      #maxTorque 40
+																			maxTorque 200
+																			maxVelocity 25
                                       # Not sure of these...
                                       minPosition -2.92343
                                       maxPosition 2.92343
@@ -996,10 +1018,14 @@ Robot {
                                             name "LegLowerL"
                                             # TODO: Use NX Motor specs
                                             #maxVelocity 5.65486677646
-                                            maxTorque 40
+                                            #maxTorque 40
+																						maxTorque 200
+																						maxVelocity 250
                                             # Not sure of these...
-                                            minPosition -2.92343
-                                            maxPosition 2.92343
+                                            #minPosition -2.92343
+                                            #maxPosition 2.92343
+																						#minPosition -4
+                                            #maxPosition 4
                                           } # End of the LegLowerL RotationalMotor
                                           jointParameters HingeJointParameters {
                                             # I think z?
@@ -1027,7 +1053,9 @@ Robot {
                                                   name "AnkleL"
                                                   # TODO: Use NX Motor specs
                                                   #maxVelocity 5.65486677646
-                                                  maxTorque 40
+                                                  #maxTorque 40
+																									maxTorque 200
+																									maxVelocity 250
                                                   # Not sure of these...
                                                   minPosition -2.92343
                                                   maxPosition 2.92343
@@ -1040,9 +1068,9 @@ Robot {
                                                 } # End of the AnkleL HingeJointParameters
                                                 endPoint Solid {
                                                   physics Physics {
-                                                    density -1
-                                                    mass 0.1
-																										centerOfMass [0 0 0]
+                                                    density -1																										
+																										mass 1.74
+																										centerOfMass [0 -0.0429 -0.0048]
 																										inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                                   }
                                                   children[
@@ -1053,7 +1081,9 @@ Robot {
                                                         name "FootL"
                                                         # TODO: Use NX Motor specs
                                                         #maxVelocity 5.65486677646
-                                                        maxTorque 40
+                                                        #maxTorque 40
+																												maxTorque 200
+																												maxVelocity 250
                                                         # Not sure of these...
                                                         minPosition -2.92343
                                                         maxPosition 2.92343
@@ -1068,10 +1098,10 @@ Robot {
                                                         translation 0 -0.1115 0.018
                                                         boundingObject Box {size 0.145 0.012 0.26}
                                                         physics Physics {
-																													density -1
-																													mass 1.74
-																													centerOfMass 0 -0.0429 -0.0048
-																													inertiaMatrix [0.001 0.001 0.001, 0 0 0]
+																													#density -1
+																													#mass 0.0001
+																													#centerOfMass [0 0 0]
+																													#inertiaMatrix [0.001 0.001 0.001, 0 0 0]
 																												}
                                                         children[
                                                           FOOT{
@@ -1079,15 +1109,15 @@ Robot {
                                                             translation 0 0.1115 -0.018
                                                           }
                                                           DEF L_FSR TouchSensor {
-                                                             name "L_FSR"
-                                                             # Should be a bit bigger
-                                                             boundingObject Box {size 0.145 0.013 0.26}
-                                                             physics Physics {
-                                                               density -1
-                                                               mass 0.0001
-                                                             }
-                                                             type "force"
-                                                           }
+																														name "L_FSR"
+																														# Should be a bit bigger
+																														boundingObject Box {size 0.145 0.013 0.26}
+																														physics Physics {
+																														 density -1
+																														 mass 0.0001
+																														}
+																														type "force"
+																													}
                                                         ]
                                                       }
                                                     }

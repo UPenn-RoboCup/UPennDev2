@@ -104,7 +104,7 @@ Robot {
           physics Physics{
 					  density -1
 				    mass 0.1
-				  } 
+				  }
         }
       ]
       name "ChestLidarPan"

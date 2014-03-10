@@ -58,9 +58,9 @@ sm:set_transition(motionStance, 'preview',  motionStepPreview)
 --sm:set_transition(motionStance, 'step', motionStep)
 
 --We keep this for webots only
-if IS_WEBOTS then
+--if IS_WEBOTS then
   sm:set_transition(motionStance, 'walk', motionWalk)
-end
+--end
 
 sm:set_transition(motionSit, 'stand', motionUnSit)
 sm:set_transition(motionUnSit, 'done', motionStance)

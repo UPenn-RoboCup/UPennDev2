@@ -38,8 +38,9 @@ Robot {
   physics Physics {
     density -1
     #mass 9.21
-		mass 0.1
-    centerOfMass 0 0.1557 -0.0208
+		mass 0.001
+    centerOfMass [0 0.1557 -0.0208]
+		inertiaMatrix [0.001 0.001 0.001, 0 0 0]
   }
 
   # Children items
@@ -619,6 +620,8 @@ Robot {
       physics Physics {
         density -1
         mass 0.2
+				centerOfMass [0 0 0]
+				inertiaMatrix [0.001 0.001 0.001, 0 0 0]
       }
       children [
         # Has no mesh?
@@ -642,10 +645,10 @@ Robot {
           endPoint DEF Something Solid {
             translation 0 -0.038 0
             physics Physics {
-              #mass 8.0
-							#centerOfMass 0 -0.1208 -0.0264
-							mass .1
 							density -1
+              mass 8.0
+							centerOfMass [0 -0.1208 -0.0264]
+							inertiaMatrix [0.001 0.001 0.001, 0 0 0]
             }
             children[
               TORSO_PITCH_SERVO {scale 0.001 0.001 0.001}
@@ -669,6 +672,8 @@ Robot {
                   physics Physics {
                     density -1
                     mass 0.1
+										centerOfMass [0 0 0]
+										inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                   }
                   children[
                   PELVIS{
@@ -681,6 +686,8 @@ Robot {
                     physics Physics {
                       density -1
                       mass 0.1
+											centerOfMass [0 0 0]
+											inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                     }
                     children [
                       HingeJoint {
@@ -703,6 +710,8 @@ Robot {
                           physics Physics {
                             density -1
                             mass 0.1
+														centerOfMass [0 0 0]
+														inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                           }
                           children[
                             LEFT_HIP_YAW{
@@ -730,7 +739,8 @@ Robot {
                                 physics Physics {
                                   density -1
                                   mass 4.28
-																	centerOfMass 0.0211 -0.1241 -0.0082
+																	centerOfMass [0.0211 -0.1241 -0.0082]
+																	inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                 }
                                 children[
                                   RIGHT_HIP_ROLL{scale 0.001 0.001 0.001}
@@ -757,6 +767,7 @@ Robot {
                                         density -1
                                         mass 2.24
 																				centerOfMass 0.0313 -0.1796 0.0374
+																				inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                       }
                                       children[
                                         R_THIGH{
@@ -786,6 +797,8 @@ Robot {
                                             physics Physics {
                                               density -1
                                               mass 0.1
+																							centerOfMass [0 0 0]
+																							inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                             }
                                             children[
                                               R_LEG{
@@ -814,6 +827,8 @@ Robot {
                                                   physics Physics {
                                                     density -1
                                                     mass 0.0001
+																										centerOfMass [0 0 0]
+																										inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                                   }
                                                   children[
                                                     LEFT_ANKLE{scale 0.001 0.001 0.001}
@@ -841,6 +856,7 @@ Robot {
 																													density -1
 																													mass 1.74
 																													centerOfMass 0 -0.0429 -0.0048
+																													inertiaMatrix [0.001 0.001 0.001, 0 0 0]
 																												}
                                                         children[
                                                           FOOT{
@@ -885,6 +901,8 @@ Robot {
                     physics Physics {
                       density -1
                       mass 0.0001
+											centerOfMass [0 0 0]
+											inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                     }
                     children [
                       HingeJoint {
@@ -907,6 +925,8 @@ Robot {
                           physics Physics {
                             density -1
                             mass 0.0001
+														centerOfMass [0 0 0]
+														inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                           }
                           children[
                             LEFT_HIP_YAW{
@@ -934,6 +954,8 @@ Robot {
                                 physics Physics {
                                   density -1
                                   mass 0.0001
+																	centerOfMass [0 0 0]
+																	inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                 }
                                 children[
                                   RIGHT_HIP_ROLL{scale 0.001 0.001 0.001}
@@ -959,6 +981,8 @@ Robot {
                                       physics Physics {
                                         density -1
                                         mass 0.0001
+																				centerOfMass [0 0 0]
+																				inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                       }
                                       children[
                                         L_THIGH{
@@ -988,6 +1012,8 @@ Robot {
                                             physics Physics {
                                               density -1
                                               mass 0.0001
+																							centerOfMass [0 0 0]
+																							inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                             }
                                             children[
                                               L_LEG{
@@ -1016,6 +1042,8 @@ Robot {
                                                   physics Physics {
                                                     density -1
                                                     mass 0.1
+																										centerOfMass [0 0 0]
+																										inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                                   }
                                                   children[
                                                     LEFT_ANKLE{scale 0.001 0.001 0.001}
@@ -1043,22 +1071,23 @@ Robot {
 																													density -1
 																													mass 1.74
 																													centerOfMass 0 -0.0429 -0.0048
+																													inertiaMatrix [0.001 0.001 0.001, 0 0 0]
 																												}
                                                         children[
                                                           FOOT{
                                                             scale 0.001 0.001 0.001
                                                             translation 0 0.1115 -0.018
                                                           }
-                                                          #DEF L_FSR TouchSensor {
-                                                          #   name "L_FSR"
-                                                          #   # Should be a bit bigger
-                                                          #   boundingObject Box {size 0.145 0.013 0.26}
-                                                          #   physics Physics {
-                                                          #     density -1
-                                                          #     mass 0.0001
-                                                          #   }
-                                                          #   type "force"
-                                                          # }
+                                                          DEF L_FSR TouchSensor {
+                                                             name "L_FSR"
+                                                             # Should be a bit bigger
+                                                             boundingObject Box {size 0.145 0.013 0.26}
+                                                             physics Physics {
+                                                               density -1
+                                                               mass 0.0001
+                                                             }
+                                                             type "force"
+                                                           }
                                                         ]
                                                       }
                                                     }

@@ -1533,10 +1533,6 @@ elseif IS_WEBOTS then
     -- lidar movement
     "ChestLidarPan",
   }
-  local passiveJointNames = {
-    "l_wrist_grip1_2","l_wrist_grip2_2","l_wrist_grip3_2",
-    "r_wrist_grip1_2","r_wrist_grip2_2","r_wrist_grip3_2",
-  }
   assert(nJoint==#jointNames,'bad jointNames!')
 
   servo.direction = vector.new({
@@ -1722,9 +1718,9 @@ elseif IS_WEBOTS then
 		tags.head_camera = webots.wb_robot_get_device("HeadCamera")
     tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
     tags.head_lidar = webots.wb_robot_get_device("HeadLidar")
-		tags.kinect = webots.wb_robot_get_device("kinect")
-		tags.l_fsr = webots.wb_robot_get_device("L_FSR")
-    tags.r_fsr = webots.wb_robot_get_device("R_FSR")
+		--tags.kinect = webots.wb_robot_get_device("kinect")
+		--tags.l_fsr = webots.wb_robot_get_device("L_FSR")
+    --tags.r_fsr = webots.wb_robot_get_device("R_FSR")
 		
 		-- Enable or disable the sensors
 		key_action.i(ENABLE_IMU)
@@ -1732,8 +1728,8 @@ elseif IS_WEBOTS then
 		key_action.c(ENABLE_CAMERA)
 		key_action.h(ENABLE_HEAD_LIDAR)
 		key_action.l(ENABLE_CHEST_LIDAR)
-		key_action.k(ENABLE_KINECT)
-		key_action.f(ENABLE_FSR)
+		--key_action.k(ENABLE_KINECT)
+		--key_action.f(ENABLE_FSR)
 
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
@@ -1995,6 +1991,7 @@ end
 
 --This function should be called by motion state
 Body.update_odometry = function(uTorso)
+	--[[
   local uTorso1 = wcm.get_robot_utorso1()
 
   --update odometry pose
@@ -2012,6 +2009,7 @@ Body.update_odometry = function(uTorso)
 
   --updae odometry variable
   wcm.set_robot_utorso1(uTorso)
+	--]]
 end
 
 --This function should be called by slam wizard (slower rate than state update)

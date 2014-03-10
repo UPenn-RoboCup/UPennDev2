@@ -12,8 +12,6 @@ Config.nJoint = 35
 Config.dev = {}
 --Config.dev.body         = Config.PLATFORM_NAME..'Body'
 Config.dev.body         = 'THOROPBodyUpdate'
-Config.dev.body         = 'THOROPBody'
-
 Config.dev.game_control = 'OPGameControl'
 Config.dev.team         = 'TeamNSL'
 Config.dev.kick         = 'NewNewKick'

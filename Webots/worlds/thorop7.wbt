@@ -28,8 +28,8 @@ DirectionalLight {
 }
 DEF FLOOR Floor {
 }
-#THOROP7_Update {
-THOROP7_NoBoundaries {
+THOROP7_Update {
+#THOROP7_NoBoundaries {
   translation 0 1.155 0
   controller "thorop"
   controllerArgs "0 32"

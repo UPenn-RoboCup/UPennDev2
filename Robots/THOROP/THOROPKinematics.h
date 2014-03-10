@@ -105,9 +105,6 @@ const double servoOffset[] = {
   0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 };
 
-void printTransform(Transform tr);
-void printVector(std::vector<double> v);
-
 Transform THOROP_kinematics_forward_head(const double *q);
 //Transform THOROP_kinematics_forward_l_arm(const double *q);
 //Transform THOROP_kinematics_forward_r_arm(const double *q);

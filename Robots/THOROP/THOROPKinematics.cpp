@@ -4,23 +4,6 @@
 enum {LEG_LEFT = 0, LEG_RIGHT = 1};
 enum {ARM_LEFT = 0, ARM_RIGHT = 1};
 
-void printTransform(Transform tr) {
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      printf("%.4g ", tr(i,j));
-    }
-    printf("\n");
-  }
-  printf("\n");
-}
-
-void printVector(std::vector<double> v) {
-  for (int i = 0; i < v.size(); i++) {
-    printf("%.4g\n", v[i]);
-  }
-  printf("\n");
-}
-
   std::vector<double>
 THOROP_kinematics_forward_joints(const double *r)
 {

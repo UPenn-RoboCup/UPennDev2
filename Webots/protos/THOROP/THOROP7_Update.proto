@@ -639,12 +639,13 @@ Robot {
             # I think anchor means the up direction?
             anchor 0.081 0 0
           } # End of the ShoulderR HingeJointParameters
-          endPoint Solid {
+          endPoint DEF Something Solid {
             translation 0 -0.038 0
             physics Physics {
               #mass 8.0
+							#centerOfMass 0 -0.1208 -0.0264
 							mass .1
-							centerOfMass 0 -0.1208 -0.0264
+							density -1
             }
             children[
               TORSO_PITCH_SERVO {scale 0.001 0.001 0.001}

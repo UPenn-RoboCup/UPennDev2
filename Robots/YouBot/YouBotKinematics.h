@@ -48,7 +48,7 @@ const double comHand[3]     = {0,0,.05};
 // How far offset from the base the arm is
 const double comArm[3]      = {0.4,0,0};
 
-Transform YouBot_kinematics_forward_arm(const double *q);
+Transform YouBot_kinematics_forward_arm(const double *q, char& is_singular);
 std::vector<double> YouBot_kinematics_com_arm(const double *q, std::vector<double>& comObject, const double mObject);
 std::vector<double> YouBot_kinematics_inverse_arm(Transform tr, std::vector<double>& q, char& is_reach_back, bool use_safe_yaw);
 std::vector<double> YouBot_kinematics_inverse_arm_position(std::vector<double>& position, std::vector<double>& q, char& is_reach_back);

@@ -59,10 +59,19 @@ end
 libTransform.to_zyz = function(t)
   -- Modelling and Control of Robot Manipulators, pg. 30
   -- Lorenzo Sciavicco and Bruno Siciliano
-  local z = math.atan2(t[2][3],t[1][3]) -- Z (phi)
-  local y = math.atan2(math.sqrt( t[1][3]^2 + t[2][3]^2),t[3][3]) -- Y (theta)
-  local zz = math.atan2(t[3][2],-t[3][1]) -- Z' (psi)
-  return torch.Tensor{z,y,zz}
+	local z, y, zz
+	local s = math.abs(t[3][3])
+	if s>0.99 then
+		z = 0
+		y = (t[3][3]>0 and 0) or math.pi
+		zz = math.asin( t[2][1] )
+	else
+		z = math.atan2(t[2][3],t[1][3]) -- Z (phi)
+		y = math.atan2(math.sqrt( t[1][3]^2 + t[2][3]^2),t[3][3]) -- Y (theta)
+		zz = math.atan2(t[3][2],-t[3][1]) -- Z' (psi)
+		s = false
+	end
+  return torch.Tensor{z,y,zz}, s
 end
 
 -- Rotation matrix to Roll Pitch Yaw

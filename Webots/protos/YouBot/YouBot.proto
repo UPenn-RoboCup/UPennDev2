@@ -11,7 +11,6 @@ PROTO YouBot [
   field SFRotation rotation 1 0 0 -1.5708
   field SFString   controller "void"
   field SFString   controllerArgs ""
-  field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
   field SFInt32    cameraWidth 320
   field SFInt32    cameraHeight 240
@@ -138,7 +137,7 @@ Robot {
 						                                  rotation -1 0 0 1.57
                                               translation -0.05 0 0
                                               name "HandCamera"
-                                              windowPosition IS cameraWindowPosition
+																							windowPosition 1 1
                                               fieldOfView IS cameraFov
                                               width IS cameraWidth
                                               height IS cameraHeight

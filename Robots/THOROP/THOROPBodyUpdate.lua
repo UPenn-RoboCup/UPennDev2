@@ -1621,18 +1621,6 @@ elseif IS_WEBOTS then
         ENABLE_CAMERA = true
       end
     end,
-    k = function(override)
-      if override~=nil then en=override else en=ENABLE_KINECT==false end
-      if en==false then
-        print(util.color('KINECT disabled!','yellow'))
-        webots.wb_camera_disable(tags.kinect)
-        ENABLE_KINECT = false
-      else
-        print(util.color('KINECT enabled!','green'))
-        webots.wb_camera_enable(tags.kinect,camera_timeStep)
-        ENABLE_KINECT = true
-      end
-    end,
 		p = function(override)
 			if override~=nil then en=override else en=ENABLE_POSE==false end
       if en==false then
@@ -1704,9 +1692,8 @@ elseif IS_WEBOTS then
 		tags.head_camera = webots.wb_robot_get_device("HeadCamera")
     tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
     tags.head_lidar = webots.wb_robot_get_device("HeadLidar")
-		--tags.kinect = webots.wb_robot_get_device("kinect")
-		--tags.l_fsr = webots.wb_robot_get_device("L_FSR")
-    --tags.r_fsr = webots.wb_robot_get_device("R_FSR")
+		tags.l_fsr = webots.wb_robot_get_device("L_FSR")
+    tags.r_fsr = webots.wb_robot_get_device("R_FSR")
 		
 		-- Enable or disable the sensors
 		key_action.i(ENABLE_IMU)

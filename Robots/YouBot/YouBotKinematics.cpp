@@ -5,7 +5,8 @@ Kinematics for KUKA YouBot's 5 DOF arm
 
 #include "YouBotKinematics.h"
 
-Transform YouBot_kinematics_forward_arm(const double *q) {
+// TODO: also output a singularity, if near one
+Transform YouBot_kinematics_forward_arm(const double *q, char& is_singular) {
   Transform tr;
   tr.rotateZ(q[0])
     .translateX(baseLength) // do not use for now
@@ -16,6 +17,14 @@ Transform YouBot_kinematics_forward_arm(const double *q) {
     .rotateY(q[3])
     .translateZ(wristLength+handLength)
     .rotateZ(q[4]);
+	
+	// Singularity checks
+	if(fabs(tr(2,2)) > 0.99){
+		is_singular = 1;
+	} else {
+		is_singular = 0;
+	}
+	
   return tr;
 }
 

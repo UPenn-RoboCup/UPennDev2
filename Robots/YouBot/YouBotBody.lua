@@ -16,25 +16,21 @@ local Body = {}
 local unix       = require'unix'
 local vector     = require'vector'
 local util       = require'util'
+local youbot
 require'wcm'
+require'jcm'
+require'mcm'
 
--- Kinamatics
+-- Kinematics
 local Transform = require'Transform'
 local K = require'YouBotKinematics'
 Body.Kinematics = K
 
 -- Get time (for the real robot)
 local get_time = unix.time
-Body.get_real_time = get_time
-Body.get_time = wcm.get_robot_t
-
--- Shared memory
-require'jcm'
-require'mcm'
 
 -- Five degree of freedom arm
 local nJoint = 5
-Body.nJoint = nJoint
 assert(nJoint==Config.nJoint,'Config file and Body must agree on nuber of joints!')
 
 -- Table of servo properties
@@ -511,5 +507,6 @@ end
 Body.servo = servo
 -- Working on time...
 Body.get_time = get_time
+Body.nJoint = nJoint
 
 return Body

@@ -167,8 +167,9 @@ static void lua_pushtransform(lua_State *L, Transform t) {
 
 static int lua_forward_arm(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
-	Transform t = YouBot_kinematics_forward_arm(&q[0]);
-
+	char is_singular;
+	Transform t = YouBot_kinematics_forward_arm(&q[0], is_singular);
+		
   #ifdef TORCH
   // Check if you want a table
   if(!lua_toboolean(L, 2))
@@ -177,7 +178,10 @@ static int lua_forward_arm(lua_State *L) {
   #endif
     lua_pushtransform(L, t);
 
-	return 1;
+	// Identify the singularity
+	lua_pushboolean(L,is_singular);
+	
+	return 2;
 }
 
 // Center of mass with respect to the arm (not including the base)

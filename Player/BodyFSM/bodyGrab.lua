@@ -21,7 +21,9 @@ local function get_pick_transform()
 	local pose_arm = util.pose_global({0.14,0,0},pose)
 	local obj_pose = vector.pose(wcm.get_ball_pose())
 	local pose_rel = util.pose_relative(obj_pose,pose_arm)
-	local relative_pick_tr = T.trans(pose_rel.x,pose_rel.y,-0.1) * T.rotY(175*DEG_TO_RAD)
+	-- Use 175 since it is safe...
+	--local relative_pick_tr = T.trans(pose_rel.x,pose_rel.y,-0.1) * T.rotY(175*DEG_TO_RAD)
+	local relative_pick_tr = T.trans(pose_rel.x,pose_rel.y,-0.1) * T.rotY(180*DEG_TO_RAD)
 	return relative_pick_tr
 end
 
@@ -32,9 +34,15 @@ function state.entry()
   t_entry = Body.get_time()
 	--
 	relative_pick_tr0 = get_pick_transform()
-	--io.write('GOAL\n',T.tostring(relative_pick_tr0),'\n')
 	local qArm = Body.get_command_position()
 	pathIter, qGoal = planner:line_iter(qArm,relative_pick_tr0,nil,nil,true)
+	--pathIter, qGoal = planner:line_iter(qArm,relative_pick_tr0)
+	--pathIter, qGoal = planner:line_stack(qArm,relative_pick_tr0)
+	-- The joint follower works, and qGoal is correct
+	--pathIter = planner:joint_iter(qArm,qGoal)
+	--pathIter = planner:joint_stack(qArm,qGoal)
+	--io.write('GOAL tr\n',T.tostring(relative_pick_tr0),'\n')
+	--print('GOAL q',qGoal)
 end
 
 function state.update()
@@ -58,6 +66,9 @@ function state.update()
 		-- Set to the goal, since iterator may not hit, since within tolerance
 		Body.set_command_position(qGoal)
 		return'done'
+	elseif type(qArmCmd)~='table' then
+		pathIter = planner:joint_stack(qArm,qGoal,.25*DEG_TO_RAD)
+		return
 	end
 	vector.new( qArmCmd )
 	Body.set_command_position(qArmCmd)

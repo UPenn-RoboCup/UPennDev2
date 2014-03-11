@@ -28,6 +28,7 @@ DirectionalLight {
 }
 DEF FLOOR Floor {
 }
+#THOROP7_Kinematic {
 THOROP7_Update {
 #THOROP7_NoBoundaries {
   translation 0 1.155 0

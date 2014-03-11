@@ -55,6 +55,7 @@ function shutdown()
     -- Print helpful message
     print('Exit',my_fsm._NAME)
   end
+	if IS_WEBOTS then Body.exit() end
   os.exit()
 end
 signal.signal("SIGINT", shutdown)
@@ -105,13 +106,17 @@ local wait_channels = {}
 local pulse_ch = simple_ipc.new_subscriber'pulse'
 print'Receiving Body pulse'
 pulse_ch.callback = function(sh)
-	local ch = wait_channels.lut[sh]
+	local ch, n = wait_channels.lut[sh], 0
 	local ekg, has_more
 	repeat
 		-- Do not block
     data, has_more = ch:receive(true)
 		--print('Pulse Data',type(data))
-		if data then ekg = mp.unpack(data) end
+		if data then
+			if n>1 then print('MISSED CYCLE OVERFLOW') end
+			ekg = mp.unpack(data)
+			n = n + 1
+		end
 	until not data
 	-- Call the update
 	update(ekg)
@@ -122,10 +127,19 @@ table.insert(wait_channels, pulse_ch)
 local channel_timeout = 2 * Body.update_cycle * 1e3
 local channel_poll = simple_ipc.wait_on_channels( wait_channels );
 
+-- Check if webots...
+if IS_WEBOTS then Body.entry() end
+
 entry()
 while true do
-  local npoll = channel_poll:poll(channel_timeout)
+	if IS_WEBOTS then
+		Body.update()
+	else
+		local npoll = channel_poll:poll(channel_timeout)
+		if npoll<1 then print('MISSED CYCLE TIMEOUT') end
+	end
 	-- Update anyway, just missing a cycle
 	update()
 end
 exit()
+if IS_WEBOTS then Body.exit() end

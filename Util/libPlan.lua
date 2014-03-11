@@ -157,7 +157,7 @@ local line_iter = function(self, qArm0, trGoal, res_pos, res_ang, use_safe_inver
 			-- Just translation
 			local ddpos = (res_pos / distance) * dPos
 			if skip_angles==true then
-				return K.inverse_arm_position(ddpos+posArm, qArm0)
+				return K.inverse_arm_position(ddpos+posArm, cur_qArm)
 			end
 			trStep = T.trans(unpack(ddpos)) * cur_trArm
 		else
@@ -167,7 +167,7 @@ local line_iter = function(self, qArm0, trGoal, res_pos, res_ang, use_safe_inver
 				dPos*res_pos/distance + posArm
 			)
 		end
-		return K.inverse_arm(trStep, qArm0, use_safe_inverse)
+		return K.inverse_arm(trStep, cur_qArm, use_safe_inverse)
 	end, qGoal
 end
 

@@ -16,7 +16,7 @@ else
 	-- lzmq
 	zmq    = require'lzmq'
 	poller = require'lzmq.poller'
-	llthreads = require'llthreads2'
+	llthreads = require'llthreads'
 --	print(llthreads,'llthreads')
 end
 

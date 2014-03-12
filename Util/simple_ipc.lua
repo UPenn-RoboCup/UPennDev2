@@ -238,7 +238,9 @@ end
 -- Return a ZMQ Poller object based on the set of channels
 -- Callbacks set in the code
 simple_ipc.wait_on_channels = function( channels )
-  local poll_obj = poller.new( #channels )
+	assert(type(channels)=='table', 'Bad wait channels!')
+	local n_ch = #channels
+  local poll_obj = poller.new( n_ch )
   -- Add local lookup table for the callbacks
   local lut = {}
   for i,ch in ipairs(channels) do
@@ -249,7 +251,17 @@ simple_ipc.wait_on_channels = function( channels )
     poll_obj:add( ch.socket, zmq.POLLIN, ch.callback )
 		lut[s] = ch
   end
-  return poll_obj, lut
+	poll_obj.lut = lut
+	poll_obj.n = n_ch
+	poll_obj.clean = function(self,s)
+		-- NOTE: may only be able to remove the last added socket...
+		-- That means arbitrary removal is bad...
+		self:remove(s)
+		self.lut[s] = nil
+		self.n = self.n - 1
+		return self.n
+	end
+  return poll_obj
 end
 
 simple_ipc.import_context = function( existing_ctx )

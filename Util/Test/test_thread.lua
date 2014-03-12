@@ -13,6 +13,7 @@ local function main()
 	meta.dev = "/dev/ttyUSB0"
 	meta.name = 'chainA'
 	local threadA, chA = simple_ipc.new_thread('test_thread.lua',meta.name,meta)
+	chA.thread = threadA
 	util.ptable(chA)
 	
 	-- Setup the children
@@ -21,7 +22,30 @@ local function main()
 	meta.dev = "/dev/ttyUSB1"
 	meta.name = 'chainB'
 	local threadB, chB = simple_ipc.new_thread('test_thread.lua',meta.name,meta)
+	chB.thread = threadB
 	util.ptable(chB)
+	
+	-- Poll on the threads
+	local p
+	local function cb(s)
+		print('CB!!')
+		local ch = p.lut[s]
+		local data, has_more = ch:receive()
+		print('MAIN | Got',data,has_more)
+		if ch.thread:alive() then
+			ch:send('More work')
+		else
+			-- Cleanup
+			print('**** Removing',ch.name)
+			if p:clean(s)<1 then p:stop() end
+		end
+	end
+	chA.callback = cb
+	chB.callback = cb
+	p = simple_ipc.wait_on_channels{chA,chB}
+	print('====')
+	util.ptable(p)
+	print('====')
 	
 	-- Give the thread some time to start
 	threadA:start()
@@ -29,15 +53,13 @@ local function main()
 	threadB:start()
 	unix.usleep(1e5)
 	
-	while threadA:alive() do
-		print('MAIN | sending data...')
-		chA:send('Hello')
-		chB:send('Hi')
-		local dataA, has_more = chA:receive()
-		print('MAIN | got',dataA,has_more)
-		local dataB, has_more = chB:receive()
-		print('MAIN | got',dataB,has_more)
-	end
+	-- Send the initial work
+	chA:send('work')
+	chB:send('work')
+	
+	p:start()
+	print('Done!')
+
 end
 
 local function child(meta)
@@ -50,9 +72,9 @@ local function child(meta)
 	for i=1,4 do
 		print('THREAD waiting for data')
 		local data, has_more = ch:receive()
-		print('thread received',data,has_more)
+		print(meta.name,'received',data,has_more)
 		-- Simulate computation
-		unix.usleep(1e6)
+		unix.usleep(meta.bus*1e6)
 		-- Send the response
 		ch:send(meta.dev)
 	end

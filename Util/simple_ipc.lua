@@ -17,7 +17,6 @@ else
 	zmq    = require'lzmq'
 	poller = require'lzmq.poller'
 	llthreads = require'llthreads'
---	print(llthreads,'llthreads')
 end
 
 local simple_ipc = {} -- Our module

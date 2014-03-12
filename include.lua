@@ -31,6 +31,8 @@ OPERATING_SYSTEM = io.popen('uname'):read('*a'):lower():gsub("%s+$", "")
 -- include C modules to cpath
 -- getch.so is in Modules/getch/ (Modules/unix/unix.so -> Modules/?/?.so)
 package.cpath = HOME..'/Modules/?/?.so;'..package.cpath
+-- Sometimes there are helper lua files (even for ffi, but still experimental)
+package.path = HOME..'/Modules/?.lua;'..package.path
 
 -- include Lua utilities to path
 package.path = HOME..'/Util/?.lua;'..package.path

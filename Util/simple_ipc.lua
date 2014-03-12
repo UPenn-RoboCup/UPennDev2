@@ -7,11 +7,18 @@
 local zmq, poller, llthreads, CTX
 -- LEGACY means we use zmq 3.x with lua-zmq from Neopallium
 -- Else, use lzmq from moetus, which supports zmq 4.x
---local LEGACY = true
+local LEGACY = false
+local USE_FFI = false
+if type(jit) == 'table' then USE_FFI = true end
 if LEGACY then
 	-- lua-zmq
 	zmq    = require'zmq'
 	poller = require'zmq/poller'
+elseif USE_FFI then
+	-- lzmq
+	zmq    = require'lzmq.ffi'
+	poller = require'lzmq.ffi.poller'
+	llthreads = require'llthreads'
 else
 	-- lzmq
 	zmq    = require'lzmq'

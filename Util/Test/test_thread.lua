@@ -1,10 +1,11 @@
 dofile'../../include.lua'
+--print_env()
 local simple_ipc = require'simple_ipc'
 local util = require'util'
 
 -- Grab the arguments from require
 local CTX, metadata = ...
-print('... is ', CTX, metadata)
+print('... is ', type(CTX), type(metadata) )
 
 local function main()
 	-- Setup the children
@@ -14,7 +15,7 @@ local function main()
 	meta.name = 'chainA'
 	local threadA, chA = simple_ipc.new_thread('test_thread.lua',meta.name,meta)
 	chA.thread = threadA
-	util.ptable(chA)
+	--util.ptable(chA)
 	
 	-- Setup the children
 	local meta = {}
@@ -23,12 +24,11 @@ local function main()
 	meta.name = 'chainB'
 	local threadB, chB = simple_ipc.new_thread('test_thread.lua',meta.name,meta)
 	chB.thread = threadB
-	util.ptable(chB)
+	--util.ptable(chB)
 	
 	-- Poll on the threads
 	local p
 	local function cb(s)
-		print('CB!!')
 		local ch = p.lut[s]
 		local data, has_more = ch:receive()
 		print('MAIN | Got',data,has_more)
@@ -38,14 +38,15 @@ local function main()
 			-- Cleanup
 			print('**** Removing',ch.name)
 			if p:clean(s)<1 then p:stop() end
+			ch.thread:join()
 		end
 	end
 	chA.callback = cb
 	chB.callback = cb
 	p = simple_ipc.wait_on_channels{chA,chB}
-	print('====')
-	util.ptable(p)
-	print('====')
+	--print('====')
+	--util.ptable(p)
+	--print('====')
 	
 	-- Give the thread some time to start
 	threadA:start()
@@ -54,8 +55,8 @@ local function main()
 	unix.usleep(1e5)
 	
 	-- Send the initial work
-	chA:send('work')
-	chB:send('work')
+	chA:send('work1')
+	chB:send('work2')
 	
 	p:start()
 	print('Done!')
@@ -67,7 +68,7 @@ local function child(meta)
 	print("yay - I'm a thread!")
 	util.ptable(metadata)
 	local ch = simple_ipc.new_pair(metadata.ch_name)
-	util.ptable(ch)
+	--util.ptable(ch)
 
 	for i=1,4 do
 		print('THREAD waiting for data')
@@ -81,7 +82,8 @@ local function child(meta)
 end
 
 -- Run the code based on being a parent or child
-if type(CTX)=='userdata' and type(metadata)=='table' then
+if CTX and type(metadata)=='table' then
+	print('^^^^ SPAWN CHILD ***')
 	child(metadata)
 else
 	main()

@@ -1,0 +1,26 @@
+#ifndef _ZSUPPORT_H_
+#define _ZSUPPORT_H_
+#include "zmq.h"
+#include "zmq_utils.h"
+
+#if ZMQ_VERSION >= ZMQ_MAKE_VERSION(4,0,0)
+#  define LUAZMQ_SUPPORT_Z85
+#endif
+
+#if ZMQ_VERSION >= ZMQ_MAKE_VERSION(4,0,0)
+#  define LUAZMQ_SUPPORT_CTX_SHUTDOWN
+#endif
+
+#if ZMQ_VERSION >= ZMQ_MAKE_VERSION(3,2,3)
+#  define LUAZMQ_SUPPORT_PROXY
+#endif
+
+#if ZMQ_VERSION >= ZMQ_MAKE_VERSION(4,0,1)
+#  define LUAZMQ_SUPPORT_CURVE_KEYPAIR
+#endif
+
+#if ZMQ_VERSION >= ZMQ_MAKE_VERSION(4,1,0)
+#  define LUAZMQ_SUPPORT_PROXY_STEERABLE
+#endif
+
+#endif

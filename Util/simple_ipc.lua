@@ -4,9 +4,13 @@
 -- ZeroMQ wrapper for Team THOR
 -- (c) Stephen McGill, 2013
 ---------------------------------
-
+--[[
 local zmq        = require 'zmq' -- Based on ZMQ
 local poller     = require 'zmq/poller'
+--]]
+local zmq        = require'lzmq'
+local poller     = zmq.poller
+
 local simple_ipc = {} -- Our module
 
 -- Available for simple_ipc
@@ -67,7 +71,8 @@ local ch_receive = function( self, noblock )
 		ret = s:recv()
 	end
 	-- Check if there is more to be received
-	local has_more = s:getopt( zmq.RCVMORE )
+	--local has_more = s:getopt( zmq.RCVMORE )
+	local has_more = s:get_rcvmore()
 	return ret, has_more==1
 end
 
@@ -104,7 +109,12 @@ simple_ipc.new_subscriber = function( channel, target )
   local ch_socket = CTX:socket( zmq.SUB )
   assert( ch_socket, 'SUBSCRIBE | Bad socket!' )
 	-- Set the subscribe flag with no filters
-	ch_socket:setopt( zmq.SUBSCRIBE, '', 0 )
+	
+	-- FIXME: API difference between lzmq and zmq
+	--ch_socket:setopt( zmq.SUBSCRIBE, '', 0 )
+	assert(ch_socket.set_subscribe,'Please use lzmq!')
+	ch_socket:set_subscribe''
+	
   -- Attach to the channel
   if bind then
 		print('BIND')

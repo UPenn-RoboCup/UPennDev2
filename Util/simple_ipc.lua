@@ -1,21 +1,20 @@
 ---------------------------------
 -- Simple Interface to Lua's 
--- Version 2 with lzmq from moteus
 -- ZeroMQ wrapper for Team THOR
--- (c) Stephen McGill, 2013
+-- Version 2 with lzmq from moteus
+-- Version 2 adds pthreads with llthreads2 from moteus
+-- (c) Stephen McGill, 2014
 ---------------------------------
 local zmq, poller, llthreads, CTX
 -- LEGACY means we use zmq 3.x with lua-zmq from Neopallium
 -- Else, use lzmq from moetus, which supports zmq 4.x
 local LEGACY = false
-local USE_FFI = false
-if type(jit) == 'table' then USE_FFI = true end
 if LEGACY then
 	-- lua-zmq
 	zmq    = require'zmq'
 	poller = require'zmq/poller'
-elseif USE_FFI then
-	-- lzmq
+elseif type(jit)=='table' then
+	-- lzmq with luajit FFI
 	zmq    = require'lzmq.ffi'
 	poller = require'lzmq.ffi.poller'
 	llthreads = require'llthreads'
@@ -26,7 +25,7 @@ else
 	llthreads = require'llthreads'
 end
 
-local simple_ipc = {} -- Our module
+local simple_ipc = {}
 
 -- Available for simple_ipc
 local N_THREAD_POOL = 1
@@ -102,7 +101,7 @@ simple_ipc.new_publisher = function( channel, target )
 	-- Form the prefix
   local ch_name, connect = type2prefix[type(channel)](channel,target)
 	assert(ch_name,'PUBLISH | Bad prefix!')
-	-- Grab or creat the context
+	-- Grab or create the context
 	CTX = CTX or zmq.init( N_THREAD_POOL )
   -- Set the socket type
   local ch_socket = CTX:socket( zmq.PUB )
@@ -129,7 +128,7 @@ simple_ipc.new_subscriber = function( channel, target )
 	-- Form the prefix
   local ch_name, bind = type2prefix[type(channel)](channel,target)
 	assert(ch_name,'SUBSCRIBE | Bad prefix!')
-	-- Grab or creat the context
+	-- Grab or create the context
 	CTX = CTX or zmq.init( N_THREAD_POOL )
   -- Set the socket type
   local ch_socket = CTX:socket( zmq.SUB )
@@ -291,7 +290,7 @@ simple_ipc.new_thread = function(scriptname, channel, metadata)
 	local script_str = f:read'*all'
 	f:close()
 	
-	-- Grab or creat the context
+	-- Grab or create the context
 	CTX = CTX or zmq.init( N_THREAD_POOL )
 	
 	-- Load the script into the child Lua state

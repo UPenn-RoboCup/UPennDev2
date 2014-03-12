@@ -25,6 +25,14 @@ static int lua_shm_create(lua_State *L) {
   const char *name = luaL_checkstring(L, 1);
   int size = luaL_optinteger(L, 2, 65536);
 
+	/*
+	// TODO: Even if using root, allow the segment to be unrestricted
+	// http://www.boost.org/doc/libs/1_46_1/boost/interprocess/managed_shared_memory.hpp
+	// http://stackoverflow.com/questions/8758896/setting-permission-for-shared-memory-created-by-boost
+	boost::interprocess::permissions perm;
+	perm.set_unrestricted();
+	*/
+
   managed_shared_memory **ud = (managed_shared_memory **)
     lua_newuserdata(L, sizeof(managed_shared_memory *));
   *ud = new managed_shared_memory(open_or_create, name, size);

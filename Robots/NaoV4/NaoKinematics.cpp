@@ -1,7 +1,6 @@
 #include "NaoKinematics.h"
 #include "Transform.h"
 #include <math.h>
-#include <stdio.h>
 
 Transform rotYawPitchLeft(double a) {
   double ca = cos(a);
@@ -21,16 +20,6 @@ Transform rotYawPitchRight(double a) {
   t(1,0) = sa/SQRT2; t(1,1) = .5*(1+ca); t(1,2) = .5*(1-ca);
   t(2,0) = -sa/SQRT2; t(2,1) = .5*(1-ca); t(2,2) = .5*(1+ca);
   return t;
-}
-
-void printTransform(Transform tr) {
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      printf("%.4g ",tr(i,j));
-    }
-    printf("\n");
-  }
-  printf("\n");
 }
 
 Transform

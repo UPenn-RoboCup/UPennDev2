@@ -23,15 +23,17 @@ for k,v in pairs(dcm) do
   getfenv()[k] = v;
 end
 
-jointNames = {"HeadYaw", "HeadPitch",
-              "LShoulderPitch", "LShoulderRoll",
-              "LElbowYaw", "LElbowRoll",
-              "LHipYawPitch", "LHipRoll", "LHipPitch",
-              "LKneePitch", "LAnklePitch", "LAnkleRoll",
-              "RHipYawPitch", "RHipRoll", "RHipPitch",
-              "RKneePitch", "RAnklePitch", "RAnkleRoll",
-              "RShoulderPitch", "RShoulderRoll",
-              "RElbowYaw", "RElbowRoll"};
+jointNames = {
+	"HeadYaw", "HeadPitch",
+	"LShoulderPitch", "LShoulderRoll",
+	"LElbowYaw", "LElbowRoll",
+	"LHipYawPitch", "LHipRoll", "LHipPitch",
+	"LKneePitch", "LAnklePitch", "LAnkleRoll",
+	"RHipYawPitch", "RHipRoll", "RHipPitch",
+	"RKneePitch", "RAnklePitch", "RAnkleRoll",
+	"RShoulderPitch", "RShoulderRoll",
+	"RElbowYaw", "RElbowRoll"
+};
 
 nJoint = #jointNames;
 indexHead = 1;

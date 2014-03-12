@@ -5,93 +5,23 @@
 -- and send to UDP/TCP
 -- (c) Stephen McGill, Seung Joon Yi, 2013
 ---------------------------------
+
 dofile'../include.lua'
--- Going to be threading this
-local simple_ipc = require'simple_ipc'
--- Are we a child?
-local IS_CHILD, pair_ch = false, nil
-local CTX, metadata = ...
-if CTX and type(metadata)=='table' then
-	IS_CHILD=true
-	simple_ipc.import_context( CTX )
-	pair_ch = simple_ipc.new_pair(metadata.ch_name)
-	print('CHILD CTX')
-end
-
-local lidars = {'lidar0','lidar1'}
-
--- The main thread's job is to give:
--- joint angles and network request
-if not IS_CHILD then
-	-- Only the parent communicates with the body
-	local Body = require'Body'
-	-- TODO: Signal of ctrl-c should kill all threads...
-	--local signal = require'signal'
-	-- Only the parent accesses shared memory
-	require'vcm'
-	local poller, threads, channels = nil, {}, {}
-	-- Spawn children
-	for i,v in ipairs(lidars) do
-		local meta = {
-			name = v,
-			fov = {-60*DEG_TO_RAD,60*DEG_TO_RAD},
-			scanlines = {-45*DEG_TO_RAD,45*DEG_TO_RAD},
-			density = 10*RAD_TO_DEG, -- #scanlines per radian on actuated motor
-			dynrange = {.1,1}, -- Dynamic range of depths when compressing
-			c = 'jpeg', -- Type of compression
-			t = Body.get_time(),
-		}
-		local thread, ch = simple_ipc.new_thread('mesh_wizard.lua',v,meta)
-		ch.callback = function(s)
-			local data, has_more = poller.lut[s]:receive()
-		end
-		threads[v] = {thread,ch}
-		table.insert(channels,ch)
-		-- Start officially
-		thread:start()
-	end
-	-- TODO: Also poll on mesh requests, instead of using net_settings...
-	-- This would be a Replier (then people ask for data, or set data)
-	-- Instead of changing shared memory a lot...
-	local replier = simple_ipc.new_replier'mesh'
-	replier.callback = function(s)
-		local data, has_more = poller.lut[s]:receive()
-		-- Send message to a thread
-	end
-	table.insert(channels,replier)
-	-- Just wait for requests from the children
-	poller = simple_ipc.wait_on_channels(channels)
-	--poller:start()
-	while poller.n>0 do
-		local npoll = poller:poll(1e3)
-		-- Check if everybody is alive periodically
-		print(npoll,poller.n)
-		for k,v in pairs(threads) do
-			local thread, ch = unpack(v)
-			print(thread,ch)
-			if not thread:alive() then
-				thread:join()
-				poller:clean(ch.socket)
-				threads[k] = nil
-				print('Mesh |',k,'thread died!')
-			end
-		end
-	end
-	return
-end
 
 -- Libraries
 local torch      = require'torch'
 torch.Tensor     = torch.DoubleTensor
+local Body       = require'Body'
 local util       = require'util'
 local jpeg       = require'jpeg'
-jpeg.set_quality( 95 )
 local png        = require'png'
 local zlib       = require'zlib'
 local util       = require'util'
 local mp         = require'msgpack'
 local carray     = require'carray'
+local simple_ipc = require'simple_ipc'
 local udp        = require'udp'
+require'vcm'
 
 -- Globals
 -- Output channels
@@ -99,23 +29,62 @@ local mesh_pub_ch, mesh_udp_ch, mesh_tcp_ch
 -- Input channels
 local channel_polls
 local channel_timeout = 100 --milliseconds
+-- Data structures
+local chest, head
+local mesh_lookup = {}
+
+jpeg.set_quality( 95 )
 
 -- Setup metadata and tensors for a lidar mesh
-local reading_per_radian, scan_resolution, fov_resolution
-local mesh, mesh_byte, mesh_adj, scan_angles
-local offset_idx
-local function setup_mesh( meta )
+local function setup_mesh( name, tbl )
+  tbl = tbl or {}
+  -- Save the meta data for easy sending
+  tbl.meta = {}
+  -- Actuator endpoints
+  -- In radians, specifies the actuator scanline angle endpoints
+  -- The third number is the scanline density (scanlines/radian)
+  local get_name = 'get_'..name
+  tbl.meta.scanlines = vcm[get_name..'_scanlines']()
+  -- Field of view endpoints of the lidar ranges
+  -- -135 to 135 degrees for Hokuyo
+  -- This is in RADIANS, though
+  tbl.meta.fov = vcm[get_name..'_fov']()
+  -- Depths when compressing
+  tbl.meta.depths = vcm[get_name..'_depths']()
+  tbl.meta.name = name
+  -- Type of compression
+  tbl.meta.c = 'jpeg'
+  -- Timestamp
+  tbl.meta.t = Body.get_time()
+  tbl.meta.rpy = {0,0,0}
+
   -- Find the resolutions
-  local scan_resolution = meta.density
-    * math.abs(meta.scanlines[2]-meta.scanlines[1])
+  local scan_resolution = tbl.meta.scanlines[3]
+    * math.abs(tbl.meta.scanlines[2]-tbl.meta.scanlines[1])
   scan_resolution = math.ceil(scan_resolution)
+
+  -- Grab the sensor paramters
+  local lidar_sensor_fov, lidar_sensor_width = 
+    unpack(vcm[get_name..'_sensor_params']())
+    
+  print('Mesh |',name,lidar_sensor_fov, lidar_sensor_width)
+  
   -- Set our resolution
-	-- NOTE: This has been changed in the lidar msgs...
-  reading_per_radian = (1081-1)/(270*DEG_TO_RAD);
-  fov_resolution = reading_per_radian * math.abs(meta.fov[2]-meta.fov[1])
+  local reading_per_radian = 
+    (lidar_sensor_width-1)/lidar_sensor_fov;
+
+  tbl.meta.reading_per_radian = reading_per_radian
+  
+  local fov_resolution = reading_per_radian
+    * math.abs(tbl.meta.fov[2]-tbl.meta.fov[1])
   fov_resolution = math.ceil(fov_resolution)
-  -- TODO: Pose information
-	--[[
+
+  -- Resolution
+  tbl.meta.resolution = {scan_resolution,fov_resolution}
+  
+  -- Pose information
+--  tbl.meta.pose = {}
+--  for i=1,scan_resolution do tbl.meta.pose[i] = {0,0,0} end
   tbl.meta.posex = {}
   tbl.meta.posey = {}
   tbl.meta.posez = {}
@@ -124,48 +93,27 @@ local function setup_mesh( meta )
     tbl.meta.posey[i],
     tbl.meta.posez[i]=0,0,0
   end
-	--]]
-  -- In-memory mesh
-  mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
+
+  -- In memory mesh
+  tbl.mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
   -- Mesh buffers for compressing and sending to the user
-  mesh_byte = torch.ByteTensor( scan_resolution, fov_resolution ):zero()
-  mesh_adj  = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
+  tbl.mesh_byte = torch.ByteTensor( scan_resolution, fov_resolution ):zero()
+  tbl.mesh_adj  = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
   -- Save the exact actuator angles of every scan
-  scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
+  tbl.scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
+  -- Save the exact pose of every scan
+  -- TODO: Save the whole whole rotation?
+  --tbl.scan_poses = torch.FloatTensor( scan_resolution, 3 ):zero()
+  -- metadata to point here
+  --tbl.meta.poses = torch.FloatTensor( tbl.scan_poses:storage() )
+
   -- Find the offset for copying lidar readings into the mesh
   -- if fov is from -fov/2 to fov/2 degrees, then offset_idx is zero
   -- if fov is from 0 to fov/2 degrees, then offset_idx is sensor_width/2
-  local fov_offset = (1081-1)/2+math.ceil( reading_per_radian*meta.fov[1] )
-  offset_idx   = math.floor(fov_offset)
+  local fov_offset = (lidar_sensor_width-1)/2+math.ceil( reading_per_radian*tbl.meta.fov[1] )
+  tbl.offset_idx   = math.floor(fov_offset)
+  return tbl
 end
--- Initial setup of the mesh from metadata
-setup_mesh(metadata)
-print('SETUP THE MESH!')
-
--- Poll for the lidar and master thread info
-local lidar_ch = simple_ipc.new_subscriber(metadata.name)
-lidar_ch.callback = function(s)
-	local data, has_more = poller.lut[s]:receive()
-	-- Send message to a thread
-	print('Got lidar data!')
-end
-pair_ch.callback = function(s)
-	local data, has_more = poller.lut[s]:receive()
-	-- Send message to a thread
-	print('Got pair data!')
-end
-
-local wait_channels = {}
-table.insert(wait_channels,lidar_ch)
-table.insert(wait_channels,pair_ch)
-poller = simple_ipc.wait_on_channels( wait_channels )
-print('start child poll')
-poller:start()
-
-
-
-
-
 
 local function prepare_mesh(mesh,depths,net_settings)
   -- Safety check

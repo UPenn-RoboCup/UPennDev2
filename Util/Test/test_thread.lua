@@ -1,5 +1,6 @@
 dofile'../../include.lua'
 --print_env()
+
 local simple_ipc = require'simple_ipc'
 local util = require'util'
 
@@ -15,7 +16,8 @@ local function main()
 	meta.name = 'chainA'
 	local threadA, chA = simple_ipc.new_thread('test_thread.lua',meta.name,meta)
 	chA.thread = threadA
-	--util.ptable(chA)
+	util.ptable(chA)
+	print('/\\/\\/\\/',type(threadA))
 	
 	-- Setup the children
 	local meta = {}

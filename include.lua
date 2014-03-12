@@ -1,6 +1,13 @@
+-- Include script to be run at the top of each file
+-- This mainly sets the paths
+-- It also adds very useful globals
+
+-- Are we locally testing?
 USE_LOCALHOST = true
 
 -- Locate the Modules
+-- NOTE: This is prempted in threads sometimes, it seems!
+-- TODO: Add as a critical section... (or the whole include?
 local handle = io.popen('pwd')
 CWD = handle:read("*a"):gsub("%s+$", "")
 handle:close()
@@ -70,6 +77,7 @@ function print_env()
 	print( 'Operating Sys:', OPERATING_SYSTEM )
 	print( 'Host:', HOSTNAME )
 	print( 'Webots:', IS_WEBOTS )
+	print( 'Child thread:', IS_CHILD )
 	print( 'Platform:', Config.PLATFORM_NAME )
 	print( 'Keyframes directory:', KEYFRAME_DIR )
 	print( 'package path:', package.path )

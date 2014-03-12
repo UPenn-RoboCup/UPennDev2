@@ -257,7 +257,7 @@ simple_ipc.import_context = function( existing_ctx )
 end
 
 -- Make a thread with a channel
-simple_ipc.new_thread = function(scriptname, channel)
+simple_ipc.new_thread = function(scriptname, channel, metadata)
 	--local t_ch = type(channel)
 	assert(type(channel)=='string','Must given a comm channel string')
 	-- Make the communication channel name
@@ -282,14 +282,16 @@ simple_ipc.new_thread = function(scriptname, channel)
 	-- execution of the script is the same
 	-- in the scriptname file, recover values:
 	-- scriptname, CTX, ch_name = ...
-	local thread = llthreads.new(script_str, scriptname, CTX:lightuserdata(), channel)
+	metadata = metadata or {}
+	metadata.ch_name = '#'..channel
+	local thread = llthreads.new(script_str, CTX:lightuserdata(), metadata )
 	
 	-- Must add the communication...
 	-- NOTE: It is the job of the script to
 	-- ascertain if it was called as a thread
 	-- (Should just check if it was given a context...
 	-- Must call import_context in the thread to achieve communication
-	local requester = simple_ipc.new_pair(channel,true)
+	local requester = simple_ipc.new_pair(metadata.ch_name,true)
 	
 	return thread, requester
 end

@@ -67,7 +67,8 @@ local ch_send = function( self, messages, sz )
 	elseif tmsg=="table" then
 		local nmessages = #messages
 		for i, msg in ipairs(messages) do
-			local more = (i==nmessages and zmq.SNDMORE) or nil
+			local more = (i<nmessages and zmq.SNDMORE) or nil
+			print('SEND',i,more)
 			ret = s:send( msg, more )
 		end
 		return ret

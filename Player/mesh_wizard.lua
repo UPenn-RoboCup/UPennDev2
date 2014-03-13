@@ -233,13 +233,10 @@ local function lidar_cb(s)
 		if not data then break end
 		-- Must have a pair with the range data
 		assert(has_more,"metadata and not lidar ranges!")
-		ranges, has_more = ch:receive(true)
+		ranges, has_more = ch:receive()
 		meta = mp.unpack(data)
-		print(#data,#ranges)
-		print(data)
 	end
 	-- Update the points
-	print('meta',meta)
 	if meta.n~=n then
 		print('LIDAR Properties',n,'=>',meta.n)
 		n = meta.n

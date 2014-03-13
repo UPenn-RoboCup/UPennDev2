@@ -157,23 +157,20 @@ local function angle_to_scanlines( rad )
   -- Get the most recent direction the lidar was moving
   local prev_scanline = current_scanline
   -- Get the metadata for calculations
-  local meta  = lidar.meta
-  local start = meta.scanlines[1]
-  local stop  = meta.scanlines[2]
-  local res   = meta.resolution[1]
+  local start = metadata.scanlines[1]
+  local stop  = metadata.scanlines[2]
   local ratio = (rad-start)/(stop-start)
   -- Round...? Why??
 	-- TODO: Make this simpler/smarter
-  local scanline = math.floor(ratio*res+.5)
+  local scanline = math.floor(ratio*scan_resolution+.5)
   -- Return a bounded value
-  scanline = math.max( math.min(scanline, res), 1 )
-
+  scanline = math.max( math.min(scanline, scan_resolution), 1 )
   --SJ: I have no idea why, but this fixes the scanline tilting problem
   if current_direction then
     if lidar.current_direction<0 then        
       scanline = math.max(1,scanline-1)
     else
-      scanline = math.min(res,scanline+1)
+      scanline = math.min(scan_resolution,scanline+1)
     end
   end
   -- Save in our table
@@ -250,7 +247,7 @@ local function lidar_cb(s)
   -- Save the body pose info
   local px, py, pa = unpack(meta.pose)
   -- Insert into the correct column
-  local scanlines = angle_to_scanlines( chest, meta.angle )
+  local scanlines = angle_to_scanlines( meta.angle )
   -- Update each outdated scanline in the mesh
   for _,line in ipairs(scanlines) do
 		-- Copy lidar readings to the torch object for fast modification

@@ -456,6 +456,7 @@ if IS_WEBOTS then
 			meta.n     = w
 			meta.res   = 360 / 1440
 			meta.pose  = wcm.get_robot_pose()
+			meta.angle = 0 -- no actuation
 			lidar0_ch:send{mp.pack(meta),tostring(lidar_array)}
     end
     -- Grab kinect RGBD data

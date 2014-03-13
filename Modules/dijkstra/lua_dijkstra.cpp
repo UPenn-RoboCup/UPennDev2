@@ -9,13 +9,12 @@
 #include <lua.hpp>
 
 #ifdef TORCH
+#include <torch/luaT.h>
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-#include <torch/luaT.h>
 #include <torch/TH/TH.h>
-#include <torch/TH/THGeneral.h>
 #ifdef __cplusplus
 }
 #endif
@@ -329,8 +328,8 @@ static int lua_dijkstra_path(lua_State *L) {
     THDoubleTensor *costp =
 			(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
     THArgCheck(costp->nDimension == 2, 1, "Cost matrix requires 2 dimensions");
-		THArgCheck(costp->size[0] == m, 1, "cost matrix size 1");
-		THArgCheck(costp->size[1] == n, 1, "cost matrix size 2");
+		THArgCheck(costp->size[0] == m, 2, "cost matrix size 1");
+		THArgCheck(costp->size[1] == n, 2, "cost matrix size 2");
     
 		istart = luaL_optint(L, 3, 1) - 1; // 0-indexed nodes
     jstart = luaL_optint(L, 4, 1) - 1; // 0-indexed nodes

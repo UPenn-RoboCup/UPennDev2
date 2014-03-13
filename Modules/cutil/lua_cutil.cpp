@@ -5,37 +5,26 @@
  * 2010
  */
 
+#include <lua.hpp>
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
 #include <vector>
 #include <string>
 #include <map>
-#include <lua.hpp>
-
 #ifdef TORCH
 #include <torch/luaT.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 #include <torch/TH/TH.h>
-/* Keep pointers to Torch objects */
-static THByteStorage * b_t;
-static THCharStorage * c_t;
-static THShortStorage * s_t;
-static THIntStorage * i_t;
-static THLongStorage * l_t;
-static THFloatStorage * f_t;
-static THDoubleStorage * d_t;
+#ifdef __cplusplus
+}
+#endif
 #endif
 
-
 const char ascii_lut[] = "0123456789abcdef";
-const int8_t byte_lut[] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                            0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                            0x0, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                            0x0, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 
 //Pack 32 possible label color bits into 6 types (for monitoring)
 //Priority: Orange > Yellow > Cyan > White > Green > Black
@@ -50,12 +39,6 @@ const int8_t label_color_pack_lut[]=
           5, 1, 2, 1, 3, 1, 2, 1, 5, 1, 2, 1, 3, 1, 2, 1};
 
 const int8_t label_color_unpack_lut[]={0,1,2,4,8,16};
-
-const char label_lut1[] = "012345";
-const char label_lut2[] = "abcdef";
-
-
-
 
 std::map<std::string, int> dataTypeMap;
 
@@ -90,7 +73,6 @@ static int lua_array2string(lua_State *L) {
     return luaL_error(L, "unkown dtype: %s", dtype.c_str());
   }
   int nbytes = idataTypeMap->second;
-
   int size = width*height * nbytes;
   char cdata[(2*size) + 1];
 
@@ -374,7 +356,6 @@ static int lua_label2string_double(lua_State *L) {
 
   int ind = 0;
   int cind = 0;
-  char buffer=0; 
   while (ind < size*2) {
     //bin label data (0-31) to 6 class (0-5)
     char pixel1=label_color_pack_lut[data[ind++]];
@@ -694,75 +675,136 @@ static int lua_bitrshift(lua_State *L) {
 }
 
 #ifdef TORCH
-/* Copies data to the torch tensor */
-static int lua_string2storage(lua_State *L) {
-  void* src = NULL;
-  void* dest = NULL;
-  unsigned long storage_sz;
-  
+/* Copies string data to the torch tensor */
+static int lua_string2tensor(lua_State *L) {
   /* Grab the source string */
   size_t num;
-  src = (void*)lua_tolstring(L, 1, &num);
+  char * src = (char*)lua_tolstring(L, 1, &num);
   /* Check that we have a src (should be true...) */
   if( src==NULL )
-    return luaL_error(L, "Bad source.");
-  
+    return luaL_error(L, "Bad source string.");
   /* Grab the destination tensor */
-  const char* storage_typename = luaT_typename(L,2);
-  char type = storage_typename[6]+32;
-  
-  switch (type) {
-  case 'b':
-    b_t = (THByteStorage *) luaT_checkudata(L, 2, "torch.ByteStorage");
-  	dest = b_t->data;
-    storage_sz = b_t->size * sizeof(unsigned char);
-    break;
-  case 'c':
-    c_t = (THCharStorage *) luaT_checkudata(L, 2, "torch.CharStorage");
-  	dest = c_t->data;
-    storage_sz = b_t->size * sizeof(char);
-    break;
-  case 's':
-    s_t = (THShortStorage *) luaT_checkudata(L, 2, "torch.ShortStorage");
-  	dest = s_t->data;
-    storage_sz = s_t->size * sizeof(short);
-    break;
-  case 'l':
-    l_t = (THLongStorage *) luaT_checkudata(L, 2, "torch.LongStorage");
-  	dest = l_t->data;
-    storage_sz = l_t->size * sizeof(long);
-    break;
-  case 'i':
-    i_t = (THIntStorage *) luaT_checkudata(L, 2, "torch.IntStorage");
-  	dest = i_t->data;
-    storage_sz = i_t->size * sizeof(int);
-    break;
-  case 'f':
-    f_t = (THFloatStorage *) luaT_checkudata(L, 2, "torch.FloatStorage");
-  	dest = f_t->data;
-    storage_sz = f_t->size * sizeof(float);
-    break;
-  case 'd':
-    d_t = (THDoubleStorage *) luaT_checkudata(L, 2, "torch.DoubleStorage");
-  	dest = d_t->data;
-    storage_sz = d_t->size * sizeof(double);
-    break;
-  default:
-    return luaL_error(L, "Bad carray.");
-  }
-  
-  /* Check that we got a destination */
+  const char* t_name = luaT_typename(L,2);
+  THByteTensor *b_t = (THByteTensor *)luaT_checkudata(L, 2, t_name);
+	/* Safety checks */
+	THArgCheck(b_t->nDimension == 1, 2, "Tensor must have one dimension.");
+	THArgCheck(b_t->stride[0] == 1, 2, "Improper tensor memory layout (non-contiguous).");
+	/* Find the destination pointer */
+	unsigned char* dest = b_t->storage->data;
   if( dest == NULL )
     return luaL_error(L, "Bad destination.");
-  
+	/* Number of elements to copy */
+  size_t n_elements = luaL_optint( L, 3, num );
+  /* Optional Offset in the carray */
+  size_t offset = luaL_optint(L,4,0);
+	size_t n_str = offset+n_elements;
+	/* Ensure that we are not overstepping our boundary of the string */
+  if( n_str > num )
+    return luaL_error(L, "Copying outside of string boundary.");
+	/* Size adjustment */
+	size_t type_sz;
+	size_t byte_sz = b_t->size[0];
+	char type = t_name[6];
+  switch (type) {
+  case 'B':
+		type_sz = sizeof(unsigned char);
+    break;
+  case 'C':
+		type_sz = sizeof(char);
+    break;
+  case 'S':
+		type_sz = sizeof(short);
+    break;
+  case 'L':
+		type_sz = sizeof(long);
+    break;
+  case 'I':
+    type_sz = sizeof(int);
+    break;
+  case 'F':
+    type_sz = sizeof(float);
+    break;
+  case 'D':
+    type_sz = sizeof(double);
+    break;
+  default:
+    return luaL_error(L, "Bad tensor type.");
+  }
+	/* Find the byte size of the storage segment */
+	byte_sz *= type_sz;
+	/* Add an offset */
+	dest += b_t->storageOffset * type_sz;
+	/* Add the offset from copying the string */
+	src += offset;
   /* Ensure that we are not overstepping our boundary of the tensor */
-  if( num != storage_sz )
-    return luaL_error(L, "Not same Storage size. str: %d storage: %d",num,storage_sz);
-  /* TODO: Ensure that the tensor is contiguous */
-  
+  if( num != byte_sz )
+    return luaL_error(L, "Not same Storage size. str: %d storage: %d",num,byte_sz);
 	/* Copy the data */
 	memcpy( dest, src, num );
-  
+  return 0;
+}
+/* Copies string data to the torch tensor */
+static int lua_string2storage(lua_State *L) {
+  /* Grab the source string */
+  size_t num;
+  char * src = (char*)lua_tolstring(L, 1, &num);
+  /* Check that we have a src (should be true...) */
+  if( src==NULL )
+    return luaL_error(L, "Bad source string.");
+  /* Grab the destination tensor */
+  const char* s_name = luaT_typename(L,2);
+  THByteStorage *b_s = (THByteStorage *)luaT_checkudata(L, 2, s_name);
+	/* Find the destination pointer */
+	unsigned char* dest = b_s->data;
+  if( dest == NULL )
+    return luaL_error(L, "Bad destination.");
+	/* Number of elements to copy */
+  size_t n_elements = luaL_optint( L, 3, num );
+  /* Optional Offset in the carray */
+  size_t offset = luaL_optint(L,4,0);
+	size_t n_str = offset + n_elements;
+	/* Ensure that we are not overstepping our boundary of the string */
+  if( n_str > num )
+    return luaL_error(L, "Copying outside of string boundary.");
+	/* Size adjustment */
+	size_t type_sz;
+	size_t byte_sz = b_s->size;
+	char type = s_name[6];
+  switch (type) {
+  case 'B':
+		type_sz = sizeof(unsigned char);
+    break;
+  case 'C':
+		type_sz = sizeof(char);
+    break;
+  case 'S':
+		type_sz = sizeof(short);
+    break;
+  case 'L':
+		type_sz = sizeof(long);
+    break;
+  case 'I':
+    type_sz = sizeof(int);
+    break;
+  case 'F':
+    type_sz = sizeof(float);
+    break;
+  case 'D':
+    type_sz = sizeof(double);
+    break;
+  default:
+    return luaL_error(L, "Bad tensor type.");
+  }
+	/* Find the byte size of the storage segment */
+	byte_sz *= type_sz;
+	/* TODO: Add a storage offset? */
+	/* Add the offset from copying the string */
+	src += offset;
+  /* Ensure that we are not overstepping our boundary of the tensor */
+  if( num != byte_sz )
+    return luaL_error(L, "Not same Storage size. str: %d storage: %d",num,byte_sz);
+	/* Copy the data */
+	memcpy( dest, src, num );
   return 0;
 }
 #endif
@@ -790,7 +832,8 @@ static const luaL_Reg cutil_lib [] = {
   {"sizeof", lua_sizeof},
   {"test_array", lua_testarray},
 #ifdef TORCH
-  {"string2storage", lua_string2storage},
+  {"string2tensor", lua_string2tensor},
+	{"string2storage", lua_string2storage},
 #endif
   {NULL, NULL}
 };

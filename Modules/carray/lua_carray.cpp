@@ -328,7 +328,7 @@ static int lua_carray_totensor(lua_State *L) {
   case 'c':
     c_t = (THCharTensor *) luaT_checkudata(L, 2, "torch.CharTensor");
   	dest = c_t->storage->data + c_t->storageOffset;
-    tensor_sz = b_t->size[0];
+    tensor_sz = c_t->size[0];
     num = n_elements * sizeof(char);
     src = ((char*)p->ptr)+offset;
     break;

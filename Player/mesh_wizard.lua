@@ -5,6 +5,8 @@
 -- and send to UDP/TCP
 -- (c) Stephen McGill, Seung Joon Yi, 2013
 ---------------------------------
+-- TODO: Critical section for include
+-- Something there is non-reentrant
 dofile'../include.lua'
 -- Going to be threading this
 local simple_ipc = require'simple_ipc'
@@ -44,7 +46,7 @@ if not IS_CHILD then
 		local thread, ch = simple_ipc.new_thread('mesh_wizard.lua',v,meta)
 		ch.callback = function(s)
 			local data, has_more = poller.lut[s]:receive()
-			print('child tread data!',data)
+			--print('child tread data!',data)
 		end
 		threads[v] = {thread,ch}
 		table.insert(channels,ch)
@@ -67,7 +69,7 @@ if not IS_CHILD then
 	while poller.n>0 do
 		local npoll = poller:poll(1e3)
 		-- Check if everybody is alive periodically
-		print(npoll,poller.n)
+		--print(npoll,poller.n)
 		local t = Body.get_time()
 		if t-t_check>1e3 or npoll<1 then
 			t_check = t
@@ -102,25 +104,32 @@ local udp        = require'udp'
 
 -- Globals
 -- Output channels
-local mesh_pub_ch, mesh_udp_ch, mesh_tcp_ch
+local mesh_udp_ch, mesh_tcp_ch, lidar_ch
 -- Input channels
 local channel_polls
 local channel_timeout = 100 --milliseconds
 
 -- Setup metadata and tensors for a lidar mesh
 local reading_per_radian, scan_resolution, fov_resolution
-local mesh, mesh_byte, mesh_adj, scan_angles
-local offset_idx
-local function setup_mesh( meta )
+local mesh, mesh_byte, mesh_adj, scan_angles, offset_idx
+-- LIDAR properties
+local n, res, fov = 1081, 1, 270
+local current_scanline, current_direction
+local function setup_mesh()
   -- Find the resolutions
-  local scan_resolution = meta.density
-    * math.abs(meta.scanlines[2]-meta.scanlines[1])
+  local scan_resolution = metadata.density
+    * math.abs(metadata.scanlines[2]-metadata.scanlines[1])
   scan_resolution = math.ceil(scan_resolution)
   -- Set our resolution
 	-- NOTE: This has been changed in the lidar msgs...
-  reading_per_radian = (1081-1)/(270*DEG_TO_RAD);
-  fov_resolution = reading_per_radian * math.abs(meta.fov[2]-meta.fov[1])
+  reading_per_radian = (n-1)/(270*DEG_TO_RAD)
+  fov_resolution = reading_per_radian * math.abs(metadata.fov[2]-metadata.fov[1])
   fov_resolution = math.ceil(fov_resolution)
+	-- Find the offset for copying lidar readings into the mesh
+  -- if fov is from -fov/2 to fov/2 degrees, then offset_idx is zero
+  -- if fov is from 0 to fov/2 degrees, then offset_idx is sensor_width/2
+  local fov_offset = (n-1)/2+math.ceil( reading_per_radian*metadata.fov[1] )
+  offset_idx   = math.floor(fov_offset)
   -- TODO: Pose information
 	--[[
   tbl.meta.posex = {}
@@ -135,184 +144,40 @@ local function setup_mesh( meta )
   -- In-memory mesh
   mesh      = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
   -- Mesh buffers for compressing and sending to the user
-  mesh_byte = torch.ByteTensor( scan_resolution, fov_resolution ):zero()
-  mesh_adj  = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
+	mesh_adj  = torch.FloatTensor( scan_resolution, fov_resolution )
+  mesh_byte = torch.ByteTensor( scan_resolution, fov_resolution )
   -- Save the exact actuator angles of every scan
   scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
-  -- Find the offset for copying lidar readings into the mesh
-  -- if fov is from -fov/2 to fov/2 degrees, then offset_idx is zero
-  -- if fov is from 0 to fov/2 degrees, then offset_idx is sensor_width/2
-  local fov_offset = (1081-1)/2+math.ceil( reading_per_radian*meta.fov[1] )
-  offset_idx   = math.floor(fov_offset)
-end
--- Initial setup of the mesh from metadata
-setup_mesh(metadata)
-print('SETUP THE MESH!')
-
--- Poll for the lidar and master thread info
-local lidar_ch = simple_ipc.new_subscriber(metadata.name)
-lidar_ch.callback = function(s)
-	local data, has_more = poller.lut[s]:receive()
-	-- Send message to a thread
-	print('Got lidar data!')
-end
-pair_ch.callback = function(s)
-	local ch = poller.lut[s]
-	local data, has_more = ch:receive()
-	print('Got pair data!',data)
-	-- Send message to a thread
-	ch:send('what??')
-end
-
-local wait_channels = {}
-table.insert(wait_channels,lidar_ch)
-table.insert(wait_channels,pair_ch)
-poller = simple_ipc.wait_on_channels( wait_channels )
-print('start child poll')
-poller:start()
-
-
-
-
-
-
-local function prepare_mesh(mesh,depths,net_settings)
-  -- Safety check
-  local near, far = unpack(depths)
-  if near>=far then
-		print('near ',near,' far ',far,'mixed')
-		return
-	end
-  if not mesh then
-		print('nil mesh')
-		return
-	end
-
-  local stream, method, quality, use_pose = unpack(net_settings)
-
-  -- Enhance the dynamic range of the mesh image
-  local adjusted_range = mesh.mesh_adj
-  adjusted_range:copy(mesh.mesh):add( -near )
-  adjusted_range:mul( 255/(far-near) )
-    
-  -- Ensure that we are between 0 and 255
-	local mesh_byte = mesh.mesh_byte
-  adjusted_range[torch.lt(adjusted_range,0)] = 0
-  adjusted_range[torch.gt(adjusted_range,255)] = 255
-  mesh_byte:copy( adjusted_range )
-  
-  -- Compression
-  local c_mesh 
-  local dim = mesh_byte:size()
-  if method==1 then
-    -- jpeg
-    mesh.meta.c = 'jpeg'
-    jpeg.set_quality( quality )
-    c_mesh = jpeg.compress_gray( mesh_byte:storage():pointer(),
-      dim[2], dim[1] )
-  elseif method==2 then
-    -- zlib
-    mesh.meta.c = 'zlib'
-    c_mesh = zlib.compress(
-      mesh_byte:storage():pointer(),
-      mesh_byte:nElement() )
-  elseif method==3 then
-    -- png
-    mesh.meta.c = 'png'
-    c_mesh = png.compress(mesh_byte:storage():pointer(),
-      dim[2], dim[1], 1)
-  else
-    -- raw data?
-    return
-  end
-  -- Depth data is compressed to a certain range
-  mesh.meta.depths = {near,far}
-
-  return mp.pack(mesh.meta), c_mesh
-end
-
--- mesh is head or chest table
-local function stream_mesh(mesh)
-  local get_name = 'get_'..mesh.meta.name
-  -- Network streaming settings
-  local net_settings = vcm[get_name..'_net']()
-  -- Streaming?
-  if net_settings[1]==0 then return end
-
-  -- Check if the panning is over (for interval streaming)
-  if net_settings[1]==2 or net_settings[1]==4 then
-    if mesh.current_direction == mesh.prev_direction then return end
-  end
-
-  -- Sensitivity range in meters
-  -- Depths when compressing
-  local depths = vcm[get_name..'_depths']()
-
-  local metapack, c_mesh = prepare_mesh(
-    mesh,
-    depths,
-    net_settings)
-  
-	if net_settings[1]==1 then
-    -- Unreliable Single sending
-    net_settings[1] = 0
-    local ret, err = mesh_udp_ch:send( metapack..c_mesh )
-    if err then print('mesh udp',err) end
-    vcm['set_'..mesh.meta.name..'_net'](net_settings)
-		print('Mesh | sent single unreliable!',mesh.meta.t)
-  elseif net_settings[1]==2 then
-    -- Unreliable Interval streaming
-    local ret, err = mesh_udp_ch:send( metapack..c_mesh )
-    if err then print('mesh udp',err) end
-    vcm['set_'..mesh.meta.name..'_net'](net_settings)
-    print('Mesh | sent interval unreliable!',mesh.meta.t)
-  elseif net_settings[1]==3 then
-    -- Reliable single frame
-    net_settings[1] = 0
-    local ret = mesh_tcp_ch:send{metapack,c_mesh}
-    vcm['set_'..mesh.meta.name..'_net'](net_settings)
-		print('Mesh | sent single reliable!',mesh.meta.t)
-  elseif net_settings[1]==4 then
-    -- Reliable Interval streaming
-    local ret = mesh_tcp_ch:send{metapack,c_mesh}
-    vcm['set_'..mesh.meta.name..'_net'](net_settings)
-		print('Mesh | sent interval reliable!',mesh.meta.t)
-  end
-  --[[
-  util.ptable(mesh.meta)
-  print(err or string.format('Sent a %g kB packet.', ret/1024))
-  --]]
 end
 
 ------------------------------
 -- Data copying helpers
 -- Convert a pan angle to a column of the chest mesh image
-local function angle_to_scanlines( lidar, rad )
+local function angle_to_scanlines( rad )
   -- Get the most recent direction the lidar was moving
-  local prev_scanline = lidar.current_scanline
+  local prev_scanline = current_scanline
   -- Get the metadata for calculations
   local meta  = lidar.meta
   local start = meta.scanlines[1]
   local stop  = meta.scanlines[2]
   local res   = meta.resolution[1]
   local ratio = (rad-start)/(stop-start)
-  -- Round
+  -- Round...? Why??
+	-- TODO: Make this simpler/smarter
   local scanline = math.floor(ratio*res+.5)
-
   -- Return a bounded value
   scanline = math.max( math.min(scanline, res), 1 )
 
   --SJ: I have no idea why, but this fixes the scanline tilting problem
-  if lidar.current_direction then
+  if current_direction then
     if lidar.current_direction<0 then        
       scanline = math.max(1,scanline-1)
     else
       scanline = math.min(res,scanline+1)
     end
   end
-
   -- Save in our table
-  lidar.current_scanline = scanline
+  current_scanline = scanline
 	-- Initialize if no previous scanline
   -- If not moving, assume we are staying in the previous direction
 	if not prev_scanline then return {scanline} end
@@ -333,7 +198,6 @@ local function angle_to_scanlines( lidar, rad )
   -- Save the directions
   lidar.current_direction = direction
   lidar.prev_direction = prev_direction
-
   -- Find the set of scanlines for copying the lidar reading
   local scanlines = {}
   if direction==prev_direction then
@@ -352,162 +216,118 @@ local function angle_to_scanlines( lidar, rad )
       for s=1,end_line do table.insert(scanlines,i) end        
     end
   end
-
   -- Return for populating
   return scanlines
 end
 
-------------------------------
--- Lidar Callback functions --
-------------------------------
-local function chest_callback()
-  local meta, has_more = chest.lidar_ch:receive()
-  local metadata = mp.unpack(meta)
-  
-  if chest.meta.scanlines ~= vcm.get_chest_lidar_scanlines() or
-    chest.meta.fov ~= vcm.get_chest_lidar_fov()
-    then
-    setup_mesh('chest_lidar',chest)
-    chest.current_scanline = nil --We need to clear this
-    print("Chest Resolution:",unpack(chest.meta.resolution))
-  end
-  
-  -- Get raw data from shared memory
-  local ranges = Body.get_chest_lidar()
+local function lidar_cb(s)
+	print('Got lidar data!')
+  local ch = poller.lut[s]
+	-- Send message to a thread
+	local meta, ranges
+	while true do
+		-- Do not block, as we are flushing the buffer
+		-- in the worst case of data being backed up
+    local data, has_more = ch:receive(true)
+		-- If no msg, then process
+		if not data then break end
+		-- Must have a pair with the range data
+		assert(has_more,"metadata and not lidar ranges!")
+		ranges, has_more = ch:receive(true)
+		meta = mp.unpack(data)
+		print(#data,#ranges)
+		print(data)
+	end
+	-- Update the points
+	print('meta',meta)
+	if meta.n~=n then
+		print('LIDAR Properties',n,'=>',meta.n)
+		n = meta.n
+		setup_mesh()
+		current_direction, current_scanline = nil, nil
+	end
+	-- Save the rpy of the body
+	metadata.rpy = meta.rpy
+	-- Save the latest lidar timestamp
+	metadata.t = meta.t
   -- Save the body pose info
-  local pose = metadata.pose
+  local px, py, pa = unpack(meta.pose)
   -- Insert into the correct column
-  local angle = metadata.pangle
-  local scanlines = angle_to_scanlines( chest, angle )
+  local scanlines = angle_to_scanlines( chest, meta.angle )
   -- Update each outdated scanline in the mesh
   for _,line in ipairs(scanlines) do
 		-- Copy lidar readings to the torch object for fast modification
-    ranges:tensor( 
-			chest.mesh:select(1,line),
-      chest.mesh:size(2),
-      chest.offset_idx )
+		-- TODO: This must change...
+		-- Use string2storage? We only want one copy operation...
+		-- Place into storage
+		cutil.string2storage(ranges, mesh:select(1,line), mesh:size(2), offset_idx)
 		-- Save the pan angle
 		chest.scan_angles[line] = angle
     -- Save the pose
-    --[[
-    local chest_pose = chest.scan_poses:select(1,line)
-    chest_pose[1],chest_pose[2],chest_pose[3] = unpack(pose)
-    --]]
---    chest.meta.pose[line] = {unpack(pose)}
-
     chest.meta.posex[line],
     chest.meta.posey[line],
     chest.meta.posez[line]=
-    pose[1],pose[2],pose[3]
-
+    px, py, pz
   end
-  -- Save the body tilt info
-  -- TODO: bodyHeight as well?
-  chest.meta.rpy = metadata.rpy
-  -- We've been updated at this timestamp
-  chest.meta.t = metadata.t
 end
 
-local function head_callback()
-  local meta, has_more = head.lidar_ch:receive()
-  local metadata = mp.unpack(meta)
-  
-  -- Check if we must update our torch data
-  if head.meta.scanlines ~= vcm.get_head_lidar_scanlines() or
-    head.meta.fov ~= vcm.get_head_lidar_fov()
-    then
-    setup_mesh('head_lidar',head)
-    print("Head Resolution:",unpack(head.meta.resolution))
+local function send_mesh(is_reliable)
+	-- TODO: Somewhere check that far>near
+  local near, far = unpack(metadata.dynrange)
+  -- Enhance the dynamic range of the mesh image
+  mesh_adj:copy(mesh.mesh):add( -near )
+  mesh_adj:mul( 255/(far-near) )
+  -- Ensure that we are between 0 and 255
+  mesh_adj[torch.lt(mesh_adj,0)] = 0
+  mesh_adj[torch.gt(mesh_adj,255)] = 255
+  mesh_byte:copy( mesh_adj )
+  -- Compression
+  local c_mesh 
+  local dim = mesh_byte:size()
+  if metadata.c=='jpeg' then
+    -- jpeg
+    c_mesh = jpeg.compress_gray(mesh_byte:storage():pointer(), dim[2], dim[1])
+  elseif metadata.c=='png' then
+    -- png
+    mesh.meta.c = 'png'
+    c_mesh = png.compress(mesh_byte:storage():pointer(), dim[2], dim[1], 1)
+  elseif metadata.c=='zlib' then
+    -- zlib
+    c_mesh = zlib.compress(mesh_byte:storage():pointer(), mesh_byte:nElement())
+  else
+    -- raw data?
+		-- Maybe needed for sending a mesh to another process
+    return
   end
-  
-  
-  -- Get raw data from shared memory
-  local ranges = Body.get_head_lidar()
-  -- Save the body pose info
-  local pose = metadata.pose
-  -- Insert into the correct scanlin
-  local angle = metadata.hangle[2]
-  local scanlines = angle_to_scanlines( head, angle )
-  -- Update each outdated scanline in the mesh
-  for _,line in ipairs(scanlines) do
-		-- Copy lidar readings to the torch object for fast modification
-    ranges:tensor(
-			head.mesh:select(1,line),
-      head.mesh:size(2),
-      head.offset_idx )      
-    -- Save the pan angle
-    head.scan_angles[line] = angle
-    -- Save the pose
-    local head_pose = head.scan_poses:select(1,line)
-    head_pose[1],head_pose[2],head_pose[3] = unpack(pose)      
-  end
-  -- Save the body tilt info
-  -- TODO: bodyHeight as well?
-  head.meta.rpy = metadata.rpy
-  -- We've been updated
-  head.meta.t = metadata.t
+	-- NOTE: Metadata should be packed only when it changes...
+	local metapack = mp.pack(metadata)
+	if is_reliable then
+		local ret = mesh_tcp_ch:send{metapack,c_mesh}
+	else
+		local ret, err = mesh_udp_ch:send(metapack..c_mesh)
+		if err then print('Mesh | UDP:',err) end
+	end
 end
 
-------------------
--- Main routine --
-------------------
-
--- Make an object
-local mesh = {}
--- Entry function
-function mesh.entry()
-  -- Setup the data structures for each mesh
-  chest = setup_mesh'chest_lidar'
-  head  = setup_mesh'head_lidar'
-
-  -- Poll the lidar readings with zeromq
-  local wait_channels = {}
-  if head then
-    mesh_lookup['head_lidar'] = head
-    -- Subscribe to a lidar channel
-    local ch = simple_ipc.new_subscriber('head_lidar')
-    ch.callback = head_callback
-    table.insert( wait_channels, ch )
-    head.lidar_ch  = ch
-  end
-  if chest then
-    mesh_lookup['chest_lidar'] = chest
-    -- Subscribe to a lidar channel
-    local ch = simple_ipc.new_subscriber'chest_lidar'
-    ch.callback = chest_callback
-    table.insert( wait_channels, ch )
-    chest.lidar_ch  = ch
-  end
-
-  -- Reliable tcp sending
-  mesh_tcp_ch = simple_ipc.new_publisher(
-    Config.net.reliable_mesh,false,'*') --Config.net.operator.wired
-
-  -- Send mesh messages on interprocess to other processes
-  -- TODO: Not used yet
-  --mesh_pub_ch = simple_ipc.new_publisher'mesh'
-
-  -- Send (unreliably) to users
-  mesh_udp_ch = udp.new_sender(
-    Config.net.operator.wired, Config.net.mesh )
-  print('Connected to Operator:',
-    Config.net.operator.wired,Config.net.mesh)
-
-  -- Prepare the polling
-  channel_polls = simple_ipc.wait_on_channels( wait_channels )
+-- Initial setup of the mesh from metadata
+setup_mesh()
+-- Data sending channels
+mesh_tcp_ch = simple_ipc.new_publisher(Config.net.reliable_mesh)
+mesh_udp_ch = udp.new_sender(Config.net.operator.wired, Config.net.mesh)
+-- Poll for the lidar and master thread info
+lidar_ch = simple_ipc.new_subscriber(metadata.name)
+lidar_ch.callback = lidar_cb
+pair_ch.callback = function(s)
+	local ch = poller.lut[s]
+	local data, has_more = ch:receive()
+	--print('Got pair data!',data)
+	-- Send message to a thread
+	ch:send('what??')
 end
 
-function mesh.update()
-  local npoll = channel_polls:poll(channel_timeout)
-  -- Stream the current mesh
-  stream_mesh(head)
-  stream_mesh(chest) 
-end
-
-function mesh.exit()
-end
-mesh.entry()
-while true do mesh.update() end
-mesh.exit()
-
-return mesh
+local wait_channels = {}
+table.insert(wait_channels,lidar_ch)
+table.insert(wait_channels,pair_ch)
+poller = simple_ipc.wait_on_channels( wait_channels )
+print('Child | Start poll')
+poller:start()

@@ -678,8 +678,8 @@ static int lua_bitrshift(lua_State *L) {
 /* Copies string data to the torch tensor */
 static int lua_string2tensor(lua_State *L) {
   /* Grab the source string */
-  size_t num;
-  char * src = (char*)lua_tolstring(L, 1, &num);
+  size_t n_str;
+  char * src = (char*)lua_tolstring(L, 1, &n_str);
   /* Check that we have a src (should be true...) */
   if( src==NULL )
     return luaL_error(L, "Bad source string.");
@@ -693,14 +693,6 @@ static int lua_string2tensor(lua_State *L) {
 	unsigned char* dest = b_t->storage->data;
   if( dest == NULL )
     return luaL_error(L, "Bad destination.");
-	/* Number of elements to copy */
-  size_t n_elements = luaL_optint( L, 3, num );
-  /* Optional Offset in the carray */
-  size_t offset = luaL_optint(L,4,0);
-	size_t n_str = offset+n_elements;
-	/* Ensure that we are not overstepping our boundary of the string */
-  if( n_str > num )
-    return luaL_error(L, "Copying outside of string boundary.");
 	/* Size adjustment */
 	size_t type_sz;
 	size_t byte_sz = b_t->size[0];
@@ -734,13 +726,20 @@ static int lua_string2tensor(lua_State *L) {
 	byte_sz *= type_sz;
 	/* Add an offset */
 	dest += b_t->storageOffset * type_sz;
+	/* Number of string elements to copy */
+  size_t n_copy = luaL_optint( L, 3, n_str/type_sz ) * type_sz;
+  /* Optional offset (in elements) of the string */
+  size_t offset = luaL_optint(L,4,0) * type_sz;
 	/* Add the offset from copying the string */
 	src += offset;
   /* Ensure that we are not overstepping our boundary of the tensor */
-  if( num != byte_sz )
-    return luaL_error(L, "Not same Storage size. str: %d storage: %d",num,byte_sz);
+  if( n_copy > byte_sz || (n_copy+offset)>n_str ){
+    return luaL_error(L,
+				"Bad copy size.\nn_str: %d\nbyte_sz: %d\noffset: %d\nn_copy:%d",
+				n_str,byte_sz,offset,n_copy);
+	}
 	/* Copy the data */
-	memcpy( dest, src, num );
+	memcpy( dest, src, n_copy );
   return 0;
 }
 /* Copies string data to the torch tensor */

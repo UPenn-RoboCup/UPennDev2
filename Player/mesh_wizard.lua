@@ -90,17 +90,16 @@ if not IS_CHILD then
 end
 
 -- Libraries
-local torch      = require'torch'
-torch.Tensor     = torch.DoubleTensor
-local util       = require'util'
-local jpeg       = require'jpeg'
+local torch  = require'torch'
+torch.Tensor = torch.DoubleTensor
+local util   = require'util'
+local cutil  = require'cutil'
+local mp     = require'msgpack'
+local udp    = require'udp'
+local png    = require'png'
+local zlib   = require'zlib'
+local jpeg   = require'jpeg'
 jpeg.set_quality( 95 )
-local png        = require'png'
-local zlib       = require'zlib'
-local util       = require'util'
-local mp         = require'msgpack'
-local carray     = require'carray'
-local udp        = require'udp'
 
 -- Globals
 -- Output channels
@@ -117,9 +116,10 @@ local n, res, fov = 1081, 1, 270
 local current_scanline, current_direction
 local function setup_mesh()
   -- Find the resolutions
-  local scan_resolution = metadata.density
-    * math.abs(metadata.scanlines[2]-metadata.scanlines[1])
-  scan_resolution = math.ceil(scan_resolution)
+  scan_resolution = math.ceil(
+		metadata.density * math.abs(metadata.scanlines[2]
+			-metadata.scanlines[1])
+	)
   -- Set our resolution
 	-- NOTE: This has been changed in the lidar msgs...
   reading_per_radian = (n-1)/(270*DEG_TO_RAD)
@@ -167,7 +167,7 @@ local function angle_to_scanlines( rad )
   scanline = math.max( math.min(scanline, scan_resolution), 1 )
   --SJ: I have no idea why, but this fixes the scanline tilting problem
   if current_direction then
-    if lidar.current_direction<0 then        
+    if current_direction<0 then        
       scanline = math.max(1,scanline-1)
     else
       scanline = math.min(scan_resolution,scanline+1)
@@ -179,9 +179,9 @@ local function angle_to_scanlines( rad )
   -- If not moving, assume we are staying in the previous direction
 	if not prev_scanline then return {scanline} end
   -- Grab the most recent scanline saved in the mesh
-  local prev_direction = lidar.current_direction
+  local prev_direction = current_direction
   if not prev_direction then
-    lidar.current_direction = 1
+    current_direction = 1
     return {scanline}
   end
   -- Grab the direction
@@ -193,8 +193,7 @@ local function angle_to_scanlines( rad )
     direction = util.sign(diff_scanline)
   end
   -- Save the directions
-  lidar.current_direction = direction
-  lidar.prev_direction = prev_direction
+  current_direction = direction
   -- Find the set of scanlines for copying the lidar reading
   local scanlines = {}
   if direction==prev_direction then
@@ -218,7 +217,6 @@ local function angle_to_scanlines( rad )
 end
 
 local function lidar_cb(s)
-	print('Got lidar data!')
   local ch = poller.lut[s]
 	-- Send message to a thread
 	local meta, ranges
@@ -254,14 +252,16 @@ local function lidar_cb(s)
 		-- TODO: This must change...
 		-- Use string2storage? We only want one copy operation...
 		-- Place into storage
-		cutil.string2storage(ranges, mesh:select(1,line), mesh:size(2), offset_idx)
+		cutil.string2tensor(ranges, mesh:select(1,line), mesh:size(2), offset_idx)
 		-- Save the pan angle
-		chest.scan_angles[line] = angle
+		scan_angles[line] = meta.angle
     -- Save the pose
+		--[[
     chest.meta.posex[line],
     chest.meta.posey[line],
     chest.meta.posez[line]=
     px, py, pz
+		--]]
   end
 end
 

@@ -44,6 +44,7 @@ if not IS_CHILD then
 		local thread, ch = simple_ipc.new_thread('mesh_wizard.lua',v,meta)
 		ch.callback = function(s)
 			local data, has_more = poller.lut[s]:receive()
+			print('child tread data!',data)
 		end
 		threads[v] = {thread,ch}
 		table.insert(channels,ch)
@@ -62,21 +63,26 @@ if not IS_CHILD then
 	-- Just wait for requests from the children
 	poller = simple_ipc.wait_on_channels(channels)
 	--poller:start()
+	local t_check = 0
 	while poller.n>0 do
 		local npoll = poller:poll(1e3)
 		-- Check if everybody is alive periodically
 		print(npoll,poller.n)
-		for k,v in pairs(threads) do
-			local thread, ch = unpack(v)
-			if not thread:alive() then
-				thread:join()
-				poller:clean(ch.socket)
-				threads[k] = nil
-				print('Mesh |',k,'thread died!')
-			else
-				ch:send'hello'
+		local t = Body.get_time()
+		if t-t_check>1e3 or npoll<1 then
+			t_check = t
+			for k,v in pairs(threads) do
+				local thread, ch = unpack(v)
+				if not thread:alive() then
+					thread:join()
+					poller:clean(ch.socket)
+					threads[k] = nil
+					print('Mesh |',k,'thread died!')
+				else
+					ch:send'hello'
+				end
 			end
-		end
+		end -- if too long
 	end
 	return
 end
@@ -151,9 +157,11 @@ lidar_ch.callback = function(s)
 	print('Got lidar data!')
 end
 pair_ch.callback = function(s)
-	print('Got pair data!')
-	local data, has_more = poller.lut[s]:receive()
+	local ch = poller.lut[s]
+	local data, has_more = ch:receive()
+	print('Got pair data!',data)
 	-- Send message to a thread
+	ch:send('what??')
 end
 
 local wait_channels = {}

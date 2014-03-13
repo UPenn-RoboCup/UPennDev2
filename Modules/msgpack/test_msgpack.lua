@@ -62,7 +62,7 @@ TEST_STRING('hello')
 TEST_STRING('')
 
 -- unpacker
-
+--[[
 print("\n================= Test unpacker ==================")
 local file = io.open('dummy_mp_data.msg', 'r');
 local dataset = {}
@@ -102,6 +102,7 @@ local pack_str = msgpack.pack(ud:pointer())
 local dp = carray.float(msgpack.unpack(pack_str))
 print("test case ", ud == dp)
 
+--]]
 function TEST_TORCH(aa)
   local pack_str = msgpack.pack(aa)
   local tbl = msgpack.unpack(pack_str)

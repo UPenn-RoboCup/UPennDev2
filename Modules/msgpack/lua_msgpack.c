@@ -1,459 +1,1062 @@
-/* 
- * Enhanced MessagePack Module for Lua
- *
- * Copyright [2013] [ Yida Zhang <yida@seas.upenn.edu> ]
- *              University of Pennsylvania
- * Copyright [2014] [ Stephen McGill <smcgill3@seas.upenn.edu> ]
- *              University of Pennsylvania
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * */
+#include <math.h>
+#include <string.h>
+#include <assert.h>
+
+#include <arpa/inet.h>
+
 
 #include "lua.h"
-#include "lualib.h"
 #include "lauxlib.h"
-#include <msgpack.h>
 
-#ifdef TORCH
-#include <torch/luaT.h>
-#include <torch/TH/TH.h>
+#define ntohll(x) ( ( (uint64_t)(ntohl( (uint32_t)((x << 32) >> 32) )) << 32) | ntohl( ((uint32_t)(x >> 32)) ) )
+
+#define htonll(x) ntohll(x)
+
+#define MP_ENABLE_DEBUGPRINT 0
+
+#if MP_ENABLE_DEBUGPRINT
+#define MPDEBUGPRINT(...) fprintf( stderr, __VA_ARGS__ )
+#else
+#define MPDEBUGPRINT(...) 
 #endif
-
-#ifdef DEBUG
-#include <stdio.h>
-#endif
-
-#define MT_NAME "msgpack_mt"
 
 typedef struct {
-  const char *str;
-  size_t size;
-  msgpack_unpacker *pac;
-  msgpack_unpacked *msg;
-} structUnpacker;
+    unsigned char data[1024*1024];
+    size_t used; // start from zero
+    size_t capacity;
+    int err;
+} mpwbuf_t;
 
-int (*PackMap[9]) (lua_State *L, int index, msgpack_packer *pk);
-int (*unPackMap[8]) (lua_State *L, msgpack_object obj);
+#define ERRORBIT_BUFNOLEFT 1
+#define ERRORBIT_STRINGLEN 2
+#define ERRORBIT_TYPE_LIGHTUSERDATA 4
+#define ERRORBIT_TYPE_FUNCTION 8
+#define ERRORBIT_TYPE_USERDATA 16
+#define ERRORBIT_TYPE_THREAD 32
+#define ERRORBIT_TYPE_UNKNOWN 64
 
-static structUnpacker * lua_checkunpacker(lua_State *L, int narg) {
-  void *ud = luaL_checkudata(L, narg, MT_NAME);
-  luaL_argcheck(L, ud != NULL, narg, "invalid unpacker");
-  return (structUnpacker *)ud;
+typedef struct {
+    unsigned char *data; // read buffer dont have to allocate buffer.
+    size_t ofs;
+    size_t len;
+    int err;
+} mprbuf_t;
+
+mpwbuf_t g_mpwbuf; // single threaded! 
+
+void mpwbuf_init(mpwbuf_t *b){
+    b->used=0;
+    b->capacity = sizeof(b->data);
+    b->err=0;
+}
+void mprbuf_init(mprbuf_t *b, const unsigned char *p, size_t len ){
+    b->data = (unsigned char*)p;
+    b->len = len;
+    b->ofs=0;
+    b->err=0;
 }
 
-static int lua_msgpack_index(lua_State *L) {
-	
-  lua_checkunpacker(L, 1);
-	
-  /* Get index through metatable: */
-  if (!lua_getmetatable(L, 1)) {
-		lua_pop(L, 1);
-		return 0;
-	}/* push metatable */
-	
-  lua_pushvalue(L, 2); /* copy key */
-  lua_rawget(L, -2); /* get metatable function */
-  lua_remove(L, -2); /* delete metatable */
-  return 1;
+size_t mpwbuf_left(mpwbuf_t *b){
+    return b->capacity - b->used;
+}
+size_t mprbuf_left(mprbuf_t *b){
+    return b->len - b->ofs;
 }
 
-static int lua_msgpack_unpack_nil(lua_State *L, msgpack_object obj) {
-  lua_pushnil(L);
-  return 1;
+void mp_rcopy( unsigned char *dest, unsigned char*from, size_t l ){
+    size_t i;
+    for(i=0;i<l;i++){
+        dest[l-i-1]=from[i];
+    }
 }
 
-static int lua_msgpack_unpack_boolean(lua_State *L, msgpack_object obj) {
-	lua_pushboolean(L, obj.via.boolean);
-  return 1;
+size_t mpwbuf_append(mpwbuf_t *b, const unsigned char *toadd, size_t l){
+    if(b->err){return 0;}
+    if( mpwbuf_left(b)<l){
+        b->err |= ERRORBIT_BUFNOLEFT;
+        return 0;
+    }
+    memcpy( b->data + b->used, toadd,l);
+    b->used += l;
+    return l;
+}
+// return packed size. 0 when error.
+static size_t mpwbuf_pack_nil( mpwbuf_t *b ){
+    unsigned char append[1]={ 0xc0 };    
+    return mpwbuf_append(b,append,1);
+}
+static size_t mpwbuf_pack_boolean( mpwbuf_t *b, int i) {
+    unsigned char append[1];
+    if(i){
+        append[0] = 0xc3;
+    } else {
+        append[0] = 0xc2;
+    }
+    return mpwbuf_append(b,append,1);
+}
+static size_t mpwbuf_pack_number( mpwbuf_t *b, lua_Number n ) {
+    unsigned char buf[1+8];
+    size_t len=0;
+
+    if( isinf(n) ){
+        buf[0] = 0xcb; // double
+        if(n>0){
+            buf[1] = 0x7f;
+            buf[2] = 0xf0;
+        } else {
+            buf[1] = 0xff;
+            buf[2] = 0xf0;
+        }
+        buf[3] = buf[4] = buf[5] = buf[6] = buf[7] = buf[8] = 0;
+        len += 1+8;
+    } else if( isnan(n) ) {
+        buf[0] = 0xcb;
+        buf[1] = 0xff;
+        buf[2] = 0xf8;
+        buf[3] = buf[4] = buf[5] = buf[6] = buf[7] = buf[8] = 0;
+        len += 1+8;        
+    } else if(floor(n)==n){
+        long long lv = (long long)n;
+        if(lv>=0){
+            if(lv<128){
+                buf[0]=(char)lv;
+                len=1;
+            } else if(lv<256){
+                buf[0] = 0xcc;
+                buf[1] = (char)lv;
+                len=2;
+            } else if(lv<65536){
+                buf[0] = 0xcd;
+                short v = htons((short)lv);
+                memcpy(buf+1,&v,2);
+                len=1+2;
+            } else if(lv<4294967296LL){
+                buf[0] = 0xce;
+                long v = htonl((long)lv);
+                memcpy(buf+1,&v,4);
+                len=1+4;
+            } else {
+                buf[0] = 0xcf;
+                long long v = htonll((long long)lv);
+                memcpy(buf+1,&v,8);
+                len=1+8;
+            }
+        } else {
+            if(lv >= -32){
+                buf[0] = 0xe0 | (char)lv;
+                len=1;
+            } else if( lv >= -128 ){
+                buf[0] = 0xd0;
+                buf[1] = lv;
+                len=2;
+            } else if( lv >= -32768 ){
+                short v = htons(lv&0xffff);
+                buf[0] = 0xd1;
+                memcpy(buf+1, &v,2);
+                len=1+2;
+            } else if( lv >= -2147483648LL ){
+                int v = htonl(lv&0xffffffff);
+                buf[0] = 0xd2;
+                memcpy(buf+1,&v,4);
+                len=1+4;
+            } else{
+                long long v = htonll(lv);
+                buf[0] = 0xd3;
+                memcpy(buf+1,&v,8);
+                len=1+8;
+            }
+        }
+    } else { // floating point!
+        assert(sizeof(double)==sizeof(n));
+        buf[0] = 0xcb;
+        mp_rcopy(buf+1,(unsigned char*)&n,sizeof(double)); // endianness
+        len=1+8;
+    }
+    return mpwbuf_append(b,buf,len);
+}
+static size_t mpwbuf_pack_string( mpwbuf_t *b, const unsigned char *sval, size_t slen ) {
+    unsigned char topbyte=0;
+    size_t wl=0;
+    if(slen<32){
+        topbyte = 0xa0 | (char)slen;
+        wl = mpwbuf_append(b, &topbyte, 1 );
+        wl += mpwbuf_append(b, sval, slen);
+    } else if(slen<65536){
+        topbyte = 0xda;
+        wl = mpwbuf_append(b,&topbyte,1);
+        unsigned short l = htons(slen);
+        wl += mpwbuf_append(b,(unsigned char*)(&l),2);
+        wl += mpwbuf_append(b,sval,slen);
+    } else if(slen<4294967296LL-1){ // TODO: -1 for avoiding (condition is always true warning)
+        topbyte = 0xdb;
+        wl = mpwbuf_append(b,&topbyte,1);
+        unsigned int l = htonl(slen);
+        wl += mpwbuf_append(b,(unsigned char*)(&l),4);
+        wl += mpwbuf_append(b,sval,slen);
+    } else {
+        b->err |= ERRORBIT_STRINGLEN;
+    }
+    return wl;    
 }
 
-static int lua_msgpack_unpack_positive_integer(lua_State *L, msgpack_object obj) {
-  lua_pushnumber(L, obj.via.u64);
-  return 1;
+static size_t mpwbuf_pack_anytype( mpwbuf_t *b, lua_State *L, int index ) ;
+
+
+// from mplua:  void packTable(Packer& pk, int index) const {
+// check if this is an array
+// NOTE: This code strongly depends on the internal implementation
+// of Lua5.1. The table in Lua5.1 consists of two parts: the array part
+// and the hash part. The array part is placed before the hash part.
+// Therefore, it is possible to obtain the first key of the hash part
+// by using the return value of lua_objlen as the argument of lua_next.
+// If lua_next return 0, it means the table does not have the hash part,
+// that is, the table is an array.
+//
+// Due to the specification of Lua, the table with non-continous integral
+// keys is detected as a table, not an array.
+
+// index: index in stack
+static size_t mpwbuf_pack_table( mpwbuf_t *b, lua_State *L, int index ) {
+    size_t nstack = lua_gettop(L);
+    size_t l = lua_objlen(L,index);
+    
+    size_t wl=0;
+    //    fprintf(stderr, "mpwbuf_pack_table: lua_objlen: array part len: %d index:%d\n", (int)l,index);
+    
+    // try array first, and then map.
+    if(l>0){
+        unsigned char topbyte;
+        // array!(ignore map part.) 0x90|n , 0xdc+2byte, 0xdd+4byte
+        if(l<16){
+            topbyte = 0x90 | (unsigned char)l;
+            wl = mpwbuf_append(b,&topbyte,1);
+        } else if( l<65536){
+            topbyte = 0xdc;
+            wl = mpwbuf_append(b,&topbyte,1);
+            unsigned short elemnum = htons(l);
+            wl += mpwbuf_append(b,(unsigned char*)&elemnum,2);
+        } else if( l<4294967296LL-1){ // TODO: avoid C warn
+            topbyte = 0xdd;
+            wl = mpwbuf_append(b,&topbyte,1);
+            unsigned int elemnum = htonl(l);
+            wl += mpwbuf_append(b,(unsigned char*)&elemnum,4);
+        }
+        
+        int i;
+        for(i=1;i<=(int)l;i++){
+            lua_rawgeti(L,index,i); // push table value to stack
+            wl += mpwbuf_pack_anytype(b,L,nstack+1);
+            lua_pop(L,1); // repair stack
+        }
+    } else {
+        // map!
+        l=0;
+        lua_pushnil(L);
+        while(lua_next(L,index)){
+            l++;
+            lua_pop(L,1);
+        }
+        // map fixmap, 16,32 : 0x80|num, 0xde+2byte, 0xdf+4byte
+        unsigned char topbyte=0;
+        if(l<16){
+            topbyte = 0x80 | (char)l;
+            wl = mpwbuf_append(b,&topbyte,1);
+        }else if(l<65536){
+            topbyte = 0xde;
+            wl = mpwbuf_append(b,&topbyte,1);
+            unsigned short elemnum = htons(l);
+            wl += mpwbuf_append(b,(unsigned char*)&elemnum,2);
+        }else if(l<4294967296LL-1){
+            topbyte = 0xdf;
+            wl = mpwbuf_append(b,&topbyte,1);
+            unsigned int elemnum = htonl(l);
+            wl += mpwbuf_append(b,(unsigned char*)&elemnum,4);
+        }
+        lua_pushnil(L); // nil for first iteration on lua_next
+        while( lua_next(L,index)){
+            wl += mpwbuf_pack_anytype(b,L,nstack+1); // -2:key
+            wl += mpwbuf_pack_anytype(b,L,nstack+2); // -1:value
+            lua_pop(L,1); // remove value and keep key for next iteration
+        }
+    }
+    return wl;
 }
 
-static int lua_msgpack_unpack_negative_integer(lua_State *L, msgpack_object obj) {
-  lua_pushnumber(L, obj.via.i64);
-  return 1;
-}
-
-static int lua_msgpack_unpack_double(lua_State *L, msgpack_object obj) {
-  lua_pushnumber(L, obj.via.dec);
-  return 1;
-}
-
-static int lua_msgpack_unpack_raw(lua_State *L, msgpack_object obj) {
-/*
-	size_t sz = obj.via.raw.ptr;
-  THByteTensor * tensorp = THByteTensor_newWithSize1d(sz);
-  void * dest_data = tensorp->storage->data;
-  memcpy(dest_data, obj.via.raw.ptr, sz);
-  luaT_pushudata(L, tensorp, "torch.ByteTensor");
-*/
-  lua_pushlstring(L, obj.via.raw.ptr, obj.via.raw.size);
-  return 1;
-}
-
-static int lua_msgpack_unpack_array(lua_State *L, msgpack_object obj) {
-  int i, ret;
-  lua_createtable(L, obj.via.array.size, 0);
-  for (i = 0; i < obj.via.array.size; i++) {
-    msgpack_object ob = obj.via.array.ptr[i];
-    ret = (*unPackMap[ob.type])(L, ob);
-    lua_rawseti(L, -2, i + 1);
-  }
-  return 1;
-}
-
-static int lua_msgpack_unpack_map(lua_State *L, msgpack_object obj) {
-  int i, ret;
-  lua_createtable(L, 0, obj.via.map.size);
-  for (i = 0; i < obj.via.map.size; i++) {
-    msgpack_object key = obj.via.map.ptr[i].key;
-		msgpack_object val = obj.via.map.ptr[i].val;
-		//
-    ret = (*unPackMap[key.type])(L, key);
-    ret = (*unPackMap[val.type])(L, val);
-		//
-    lua_settable(L, -3);
-  }
-  return 1;
-}
-
-static int lua_msgpack_pack_nil(lua_State *L, int index, msgpack_packer *pk) {
-  msgpack_pack_nil(pk);
-  return 1;
-}
-
-static int lua_msgpack_pack_boolean(lua_State *L, int index, msgpack_packer *pk) {
-  int value = lua_toboolean(L, index);
-	if(value){
-		msgpack_pack_true(pk);
-	} else {
-		msgpack_pack_false(pk);
-	}
-  return 1;
-}
-
-static int lua_msgpack_pack_lightuserdata(lua_State *L, int index, msgpack_packer *pk) {
-	if(!lua_islightuserdata(L, index)){
-		return luaL_error(L, "Input not light user data");
-	}
-  void *data = (void *)lua_touserdata(L, index);
-  if ( data == NULL){
-		return luaL_error(L, "NULL light userdata");
-	}
-
-	// TODO: Packing lightuserdata should be a bit more careful...
-  int size = luaL_optint(L, index + 1, 0);
-
-  int ret = msgpack_pack_raw(pk, size);
-  ret = msgpack_pack_raw_body(pk, data, size);
-  return 1;
-}
-
-static int lua_msgpack_pack_number(lua_State *L, int index, msgpack_packer *pk) {
-	// TODO: Respect limits of message pack (See documentation)
-  double num = lua_tonumber(L, index);
-	msgpack_pack_double(pk, num);
-  return 1;
-}
-
-static int lua_msgpack_pack_string(lua_State *L, int index, msgpack_packer *pk) {
-  size_t size;
-  const char *str = lua_tolstring(L, index, &size);
-  int ret = msgpack_pack_raw(pk, size);
-  ret = msgpack_pack_raw_body(pk, str, size);
-  return ret;
-}
-
-static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk) {
-	// TODO: Try to speed up a lot
-  int valtype, keytype, ret, allnumeric = 0;
-  int nfield = 0;
-  /* 
-   * Use lua_next to read table
-   *
-   * lua_next(L, index) do three steps
-   *    1. pop one key from top of stack (-1)
-   *    2. get one key-value pair from stack position index and
-   *       first push key into stack and then push value into stack
-   *       so key at -2 and value at -1
-   *    3. return 0 if step 2 succeed
-   */
-  /* first iterate table to get actual key-value pair numbers */
-  lua_pushnil(L); /* push nil key as dummy starting point for lua_next */
-  while (lua_next(L, index)) {
-    nfield ++;
-    if (lua_type(L, -2) != LUA_TNUMBER) allnumeric++;
-
-    /* only pop value and leave key on stack for next lua_next operation */
-    lua_pop(L, 1);
-  }
-
-	// TODO: A bit annoying; is there a quick way in lua to check if all numeric indices?
-  /* if all numeric array, use array type, otherwise use map type */
-  if (!allnumeric){
-    msgpack_pack_array(pk, nfield);
-	} else {
-    msgpack_pack_map(pk, nfield);
-	}
-
-  lua_pushnil(L);
-  while (lua_next(L, index)) {
-		
-#ifdef DEBUG
-	printf("key:val|%s:%s\n",lua_typename(L, -2),lua_typename(L, -1));
-#endif
-		
-    /* if all numeric array, no need to get key */
-    if (allnumeric > 0) {
-      keytype = lua_type(L, -2);
-      /* since key is first push to stack, the absolute key position
-       * on stack should be index + 1 */
-      ret = (*PackMap[keytype])(L, index + 1, pk);
+static size_t mpwbuf_pack_anytype( mpwbuf_t *b, lua_State *L, int index ) {
+    //    int top = lua_gettop(L); 
+    //    fprintf(stderr, "mpwbuf_pack_anytype: top:%d index:%d\n", top, index);
+    int t = lua_type(L,index);
+    switch(t){
+    case LUA_TNIL:
+        return mpwbuf_pack_nil(&g_mpwbuf);
+    case LUA_TBOOLEAN:
+        {
+            int iv = lua_toboolean(L,index);
+            return mpwbuf_pack_boolean(&g_mpwbuf,iv);
+        }
+    case LUA_TNUMBER:
+        {
+            lua_Number nv = lua_tonumber(L,index);
+            return mpwbuf_pack_number(&g_mpwbuf,nv);
+        }
+        break;
+    case LUA_TSTRING:
+        {
+            size_t slen;
+            const char *sval = luaL_checklstring(L,index,&slen);
+            return mpwbuf_pack_string(&g_mpwbuf,(const unsigned char*)sval,slen);
+        }
+        break;
+    case LUA_TTABLE:
+        return mpwbuf_pack_table(&g_mpwbuf, L, index );
+    case LUA_TLIGHTUSERDATA:
+        b->err |= ERRORBIT_TYPE_LIGHTUSERDATA;
+        break;
+    case LUA_TFUNCTION:
+        b->err |= ERRORBIT_TYPE_FUNCTION;
+        break;
+    case LUA_TUSERDATA:
+        b->err |= ERRORBIT_TYPE_USERDATA;
+        break;
+    case LUA_TTHREAD:
+        b->err |= ERRORBIT_TYPE_THREAD;
+        break;
+    default:
+        b->err |= ERRORBIT_TYPE_UNKNOWN;
+        break;
     }
 
-    valtype = lua_type(L, -1);
-    /* since value is second push to stack, the absolute position
-     * on stack should be index + 2 */
-    ret = (*PackMap[valtype])(L, index + 2, pk);
-
-    lua_pop(L, 1);
-  }
-
-  return 1;
+    return 0;    
 }
 
-static int lua_msgpack_pack_function(lua_State *L, int index, msgpack_packer *pk) {
-#ifdef DEBUG
-  printf("lua function type packing not implemented, return nil\n");
-#endif
-  msgpack_pack_nil(pk);
-  return 1;
+// return num of return value
+static int msgpack_pack_api( lua_State *L ) {
+    mpwbuf_init( &g_mpwbuf);
+
+    size_t wlen = mpwbuf_pack_anytype(&g_mpwbuf,L,1);
+    if(wlen>0 && g_mpwbuf.err == 0 ){
+        lua_pushlstring(L,(const char*)g_mpwbuf.data,g_mpwbuf.used);
+        return 1;
+    } else {
+        const char *errmsg = "unknown error";
+        if( g_mpwbuf.err & ERRORBIT_BUFNOLEFT ){
+            errmsg = "no buffer left";
+        } else if ( g_mpwbuf.err &  ERRORBIT_STRINGLEN ){
+            errmsg = "string too long";
+        } else if ( g_mpwbuf.err & ERRORBIT_TYPE_LIGHTUSERDATA ){
+            errmsg = "invalid type: lightuserdata";
+        } else if ( g_mpwbuf.err & ERRORBIT_TYPE_FUNCTION ){
+            errmsg = "invalid type: function";
+        } else if ( g_mpwbuf.err & ERRORBIT_TYPE_USERDATA ){
+            errmsg = "invalid type: userdata";
+        } else if ( g_mpwbuf.err & ERRORBIT_TYPE_THREAD ){
+            errmsg = "invalid type: thread";
+        } else if ( g_mpwbuf.err & ERRORBIT_TYPE_UNKNOWN ){
+            errmsg = "invalid type: unknown";
+        }
+
+        lua_pushfstring( L, errmsg );
+        lua_error(L);
+        return 2;
+    }
 }
 
-static int lua_msgpack_pack_userdata(lua_State *L, int index, msgpack_packer *pk) {
-#ifdef DEBUG
-	printf("lua userdata type packing not implemented, return nil\n");
-#endif
-	
-#ifdef TORCH
-  const char *torch_name = luaT_typename(L, index);
-  // just use byte tensor - should be fine
-  THByteTensor *tensorp  = (THByteTensor *)luaT_checkudata(L, index, torch_name);
-  THArgCheck(tensorp->nDimension==1, 1, "Tensor must have only one dimension.");
-  
-  // find how many bytes
-  size_t nbytes = tensorp->size[0];
-  // switch on the type
-  switch(torch_name[6]){
-    case 'B':
-      nbytes*=sizeof(unsigned char);
-      break;
-    case 'C':
-      nbytes*=sizeof(char);
-      break;
-    case 'S':
-      nbytes*=sizeof(short);
-      break;
-    case 'L':
-      nbytes*=sizeof(long);
-      break;
-    case 'I':
-    case 'U':
-      nbytes*=sizeof(int);
-      break;
-    case 'F':
-      nbytes*=sizeof(float);
-      break;
-    case 'D':
-      nbytes*=sizeof(double);
-      break;
+// push a table
+static void mprbuf_unpack_anytype( mprbuf_t *b, lua_State *L );
+static void mprbuf_unpack_array( mprbuf_t *b, lua_State *L, int arylen ) {
+    //    lua_newtable(L);
+    lua_createtable(L,arylen,0);
+    int i;
+    for(i=0;i<arylen;i++){
+        mprbuf_unpack_anytype(b,L); // array element
+        if(b->err)break;
+        lua_rawseti(L, -2, i+1);
+    }
+}
+static void mprbuf_unpack_map( mprbuf_t *b, lua_State *L, int maplen ) {
+    // return a table
+    //    lua_newtable(L); // push {}
+    lua_createtable(L,0,maplen);
+    int i;
+    for(i=0;i<maplen;i++){
+        mprbuf_unpack_anytype(b,L); // key
+        mprbuf_unpack_anytype(b,L); // value
+        lua_rawset(L,-3);
+    }
+}
+
+static void mprbuf_unpack_anytype( mprbuf_t *b, lua_State *L ) {
+    if( mprbuf_left(b) < 1){
+        b->err |= 1;
+        return;
+    }
+    unsigned char t = b->data[ b->ofs ];
+    //        fprintf( stderr, "mprbuf_unpack_anytype: topbyte:%x ofs:%d len:%d\n",(int)t, (int)b->ofs, (int)b->len );
+
+    b->ofs += 1; // for toptypebyte
+    
+    if(t<0x80){ // fixed num
+        lua_pushnumber(L,(lua_Number)t);
+        return;
+    }
+
+    unsigned char *s = b->data + b->ofs;
+    
+    if(t>=0x80 && t <=0x8f){ // fixed map
+        size_t maplen = t & 0xf;
+        mprbuf_unpack_map(b,L,maplen);
+        return;
+    }
+    if(t>=0x90 && t <=0x9f){ // fixed array
+        size_t arylen = t & 0xf;
+        mprbuf_unpack_array(b,L,arylen);
+        return;
+    }
+
+    if(t>=0xa0 && t<=0xbf){ // fixed string
+        size_t slen = t & 0x1f;
+        if( mprbuf_left(b) < slen ){
+            b->err |= 1;
+            return;
+        }
+        lua_pushlstring(L,(const char*)s,slen);
+        b->ofs += slen;
+        return;
+    }
+    if(t>0xdf){ // fixnum_neg (-32 ~ -1)
+        unsigned char ut = t;
+        lua_Number n = ( 256 - ut ) * -1;
+        lua_pushnumber(L,n);
+        return;
+    }
+    
+    switch(t){
+    case 0xc0: // nil
+        lua_pushnil(L);
+        return;
+    case 0xc2: // false
+        lua_pushboolean(L,0);
+        return;
+    case 0xc3: // true
+        lua_pushboolean(L,1);
+        return;
+
+    case 0xca: // float
+        if(mprbuf_left(b)>=4){
+            float f;
+            mp_rcopy( (unsigned char*)(&f), s,4); // endianness
+            lua_pushnumber(L,f);
+            b->ofs += 4;
+            return;
+        }
+        break;
+    case 0xcb: // double
+        if(mprbuf_left(b)>=8){
+            double v;
+            mp_rcopy( (unsigned char*)(&v), s,8); // endianness
+            lua_pushnumber(L,v);
+            b->ofs += 8;
+            return;
+        }
+        break;
+        
+    case 0xcc: // 8bit large posi int
+        if(mprbuf_left(b)>=1){
+            lua_pushnumber(L,(unsigned char) s[0] );
+            b->ofs += 1;
+            return;
+        }
+        break;
+    case 0xcd: // 16bit posi int
+        if(mprbuf_left(b)>=2){
+            unsigned short v = ntohs( *(short*)(s) );
+            lua_pushnumber(L,v);
+            b->ofs += 2;
+            return;
+        }
+        break;
+    case 0xce: // 32bit posi int
+        if(mprbuf_left(b)>=4){
+            unsigned long v = ntohl( *(long*)(s) );
+            lua_pushnumber(L,v);
+            b->ofs += 4;
+            return;
+        }
+        break;
+    case 0xcf: // 64bit posi int
+        if(mprbuf_left(b)>=8){
+            unsigned long long v = ntohll( *(long long*)(s));
+            lua_pushnumber(L,v);
+            b->ofs += 8;
+            return;
+        }
+        break;
+    case 0xd0: // 8bit neg int
+        if(mprbuf_left(b)>=1){
+            lua_pushnumber(L, (signed char) s[0] );
+            b->ofs += 1;
+            return;
+        }
+        break;
+    case 0xd1: // 16bit neg int
+        if(mprbuf_left(b)>=2){
+            short v = *(short*)(s);
+            v = ntohs(v);
+            lua_pushnumber(L,v);
+            b->ofs += 2;
+            return;
+        }
+        break;
+    case 0xd2: // 32bit neg int
+        if(mprbuf_left(b)>=4){
+            int v = *(long*)(s);
+            v = ntohl(v);
+            lua_pushnumber(L,v);
+            b->ofs += 4;
+            return;
+        }
+        break;
+    case 0xd3: // 64bit neg int
+        if(mprbuf_left(b)>=8){
+            long long v = *(long long*)(s);
+            v = ntohll(v);
+            lua_pushnumber(L,v);
+            b->ofs += 8;
+            return;
+        }
+        break;
+    case 0xda: // long string len<65536
+        if(mprbuf_left(b)>=2){
+            size_t slen = ntohs(*((unsigned short*)(s)));
+            b->ofs += 2;
+            if(mprbuf_left(b)>=slen){
+                lua_pushlstring(L,(const char*)b->data+b->ofs,slen);
+                b->ofs += slen;
+                return;
+            }
+        }
+        break;
+    case 0xdb: // longer string
+        if(mprbuf_left(b)>=4){
+            size_t slen = ntohl(*((unsigned int*)(s)));
+            b->ofs += 4;
+            if(mprbuf_left(b)>=slen){
+                lua_pushlstring(L,(const char*)b->data+b->ofs,slen);
+                b->ofs += slen;
+                return;
+            }
+        }
+
+        break;
+
+    case 0xdc: // ary16
+        if(mprbuf_left(b)>=2){
+            unsigned short elemnum = ntohs( *((unsigned short*)(b->data+b->ofs) ) );
+            b->ofs += 2;
+            mprbuf_unpack_array(b,L,elemnum);
+            return;
+        }
+        break;
+    case 0xdd: // ary32
+        if(mprbuf_left(b)>=4){
+            unsigned int elemnum = ntohl( *((unsigned int*)(b->data+b->ofs)));
+            b->ofs += 4;
+            mprbuf_unpack_array(b,L,elemnum);
+            return;
+        }
+        break;
+    case 0xde: // map16
+        if(mprbuf_left(b)>=2){
+            unsigned short elemnum = ntohs( *((unsigned short*)(b->data+b->ofs)));
+            b->ofs += 2;
+            mprbuf_unpack_map(b,L,elemnum);
+            return;
+        }
+        break;
+    case 0xdf: // map32
+        if(mprbuf_left(b)>=4){
+            unsigned int elemnum = ntohl( *((unsigned int*)(b->data+b->ofs)));
+            b->ofs += 4;
+            mprbuf_unpack_map(b,L,elemnum);
+            return;
+        }
+        break;
     default:
-      return luaL_error(L, "unknown Torch Tensor type ");
-  }
-
-  // set the raw header in msgpack
-  msgpack_pack_raw(pk, nbytes);
-  // find the torch data
-  void * src_data = tensorp->storage->data + tensorp->storageOffset;
-  // pack the data as raw
-  msgpack_pack_raw_body(pk, src_data, nbytes);
-#else
-  msgpack_pack_nil(pk);
-#endif
-  return 1;
+        break;
+    }
+    b->err |= 1;
 }
 
-static int lua_msgpack_pack_thread(lua_State *L, int index, msgpack_packer *pk) {
-#ifdef DEBUG
-  printf("lua thread type packing not implemented, return nil\n");
-#endif
-  msgpack_pack_nil(pk);
-  return 1;
+
+static int msgpack_unpack_api( lua_State *L ) {
+    size_t len;
+    const char * s = luaL_checklstring(L,1,&len);
+    if(!s){
+        lua_pushstring(L,"arg must be a string");
+        lua_error(L);
+        return 2;
+    }
+    if(len==0){
+        lua_pushnil(L);
+        return 1;
+    }
+
+    mprbuf_t rb;
+    mprbuf_init(&rb,(const unsigned char*)s,len);
+
+    lua_pushnumber(L,-123456); // push readlen and replace it later
+    mprbuf_unpack_anytype(&rb,L);
+
+    //    fprintf(stderr, "mprbuf_unpack_anytype: ofs:%d len:%d err:%d\n", (int)rb.ofs, (int)rb.len, rb.err );
+    
+    if( rb.ofs >0 && rb.err==0){
+        lua_pushnumber(L,rb.ofs);
+        lua_replace(L,-3); // replace dummy len
+        //        fprintf(stderr, "msgpack_unpack_api: unpacked len: %d\n", (int)rb.ofs );
+        return 2;
+    } else{
+        //        lua_pushfstring(L,"msgpack_unpack_api: unsupported type or buffer short. error code: %d\n", rb.err );
+        //        lua_error(L);
+        lua_pushnil(L);
+        lua_replace(L,-3);
+        lua_pushnil(L);
+        lua_replace(L,-2);        
+        return 2;        
+    }
+}        
+
+typedef enum {
+    // containers without size bytes
+    MPCT_FIXARRAY,
+    MPCT_FIXMAP,
+    // containers with size bytes
+    MPCT_ARRAY16,
+    MPCT_MAP16,
+    MPCT_ARRAY32,
+    MPCT_MAP32,
+    // direct values with size bytes
+    MPCT_RAW16,
+    MPCT_RAW32,    
+    // direct values without size bytes
+    MPCT_RAW,
+    MPCT_FLOAT,
+    MPCT_DOUBLE,
+    MPCT_UINT8,
+    MPCT_UINT16,
+    MPCT_UINT32,
+    MPCT_UINT64,
+    MPCT_INT8,
+    MPCT_INT16,
+    MPCT_INT32,
+    MPCT_INT64,
+
+
+    
+} MP_CONTAINER_TYPE;
+
+static inline int MP_CONTAINER_TYPE_is_container( MP_CONTAINER_TYPE t ) {
+    if( t >= MPCT_FIXARRAY && t <= MPCT_MAP32 ) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
-// TODO: Push a metatable of the buffer?
-// This way, we have less copying of data possibly
-// Can have the direct pointer to the data
-// Just memcpy it into some message...
-// The tostring method would take out the string...
-static int lua_msgpack_pack(lua_State *L) {
-  /* creates buffer and serializer instance. */
-  msgpack_sbuffer* buffer = msgpack_sbuffer_new();
-  msgpack_packer* pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
-
-  int type = lua_type(L, 1);
-  (*PackMap[type])(L, 1, pk);
-
-	/* output packed string */
-  lua_pushlstring(L, buffer->data, buffer->size);
-  /* cleaning */
-  msgpack_sbuffer_free(buffer);
-  msgpack_packer_free(pk);
-  return 1;
+static inline char *MP_CONTAINER_TYPE_to_s( MP_CONTAINER_TYPE t ) {
+    switch(t){
+    case MPCT_FIXARRAY: return "fixary";
+    case MPCT_FIXMAP: return "fixmap";
+    case MPCT_RAW: return "fixraw";
+    case MPCT_FLOAT: return "float";
+    case MPCT_DOUBLE: return "double";
+    case MPCT_UINT8: return "u8";
+    case MPCT_UINT16: return "u16";
+    case MPCT_UINT32: return "u32";
+    case MPCT_UINT64: return "u64";
+    case MPCT_INT8: return "i8";
+    case MPCT_INT16: return "i16";
+    case MPCT_INT32: return "i32";
+    case MPCT_INT64: return "i64";
+    case MPCT_ARRAY16: return "ary16";
+    case MPCT_MAP16: return "map16";
+    case MPCT_RAW16: return "raw16";
+    case MPCT_ARRAY32: return "ary32";
+    case MPCT_MAP32: return "map32";
+    case MPCT_RAW32: return "raw32";        
+    default:
+        assert( !"not impl");
+    }
+}
+static inline int MP_CONTAINER_TYPE_sizesize( MP_CONTAINER_TYPE t) {
+    if( t == MPCT_ARRAY16 || t == MPCT_MAP16 || t == MPCT_RAW16 ){
+        return 2;
+    } else if( t == MPCT_ARRAY32 || t == MPCT_MAP32 || t == MPCT_RAW32 ){
+        return 4;
+    } else {
+        return 0;
+    }
+}
+static inline int MP_CONTAINER_TYPE_is_map( MP_CONTAINER_TYPE t) {
+    if( t == MPCT_FIXMAP || t == MPCT_MAP16 || t == MPCT_MAP32 ) return 1; else return 0;
 }
 
-static int lua_msgpack_unpack(lua_State *L) {
-  size_t size;
-  const char *str  = lua_tolstring(L, 1, &size);
+typedef struct {
+    MP_CONTAINER_TYPE t;
+    size_t expect;
+    size_t sofar;
 
-  /* deserializes it. */
-  size_t offset = 0;
-  msgpack_unpacked msg;
-  msgpack_unpacked_init(&msg);
-  if (!msgpack_unpack_next(&msg, str, size, &offset)){
-    luaL_error(L, "unpack error");
-	}
+    // for containers with size bytes
+    char sizebytes[4];
+    size_t sizesize; // array16,map16,raw16:2 array32,map32,raw32:4    
+    size_t sizesofar;
+} mpstackent_t;
 
-  /* prints the deserialized object. */
-  msgpack_object obj = msg.data;
-  (*unPackMap[obj.type])(L, obj);
-  lua_pushnumber(L,offset);
-  return 2;
+typedef struct {
+    char *buf;
+    size_t size;
+    size_t used;
+    
+    mpstackent_t stack[256];
+    size_t nstacked;
+    size_t resultnum;
+} unpacker_t;
+
+void unpacker_init( lua_State *L, unpacker_t *u, size_t maxsize ) {
+    void* ud;
+    lua_Alloc alloc = lua_getallocf( L, &ud );
+    u->nstacked = 0;
+    u->resultnum = 0;
+    u->buf = alloc( ud, NULL, 0, maxsize );
+    assert(u->buf);
+    u->used = 0;
+    u->size = maxsize;
+}
+#define elementof(x) ( sizeof(x) / sizeof(x[0]))
+static inline void mpstackent_init( mpstackent_t *e, MP_CONTAINER_TYPE t, size_t expect ) {
+    e->t = t;
+    e->expect = expect;
+    e->sofar = 0;
+    e->sizesize = MP_CONTAINER_TYPE_sizesize(t);
+    e->sizesofar = 0;
 }
 
-static int lua_msgpack_newunpacker(lua_State *L) {
-  structUnpacker *ud = (structUnpacker *)lua_newuserdata(L, sizeof(structUnpacker));
 
-  ud->str = lua_tolstring(L, 1, &ud->size);
 
-  /* Init deserialize using msgpack_unpacker */
-  ud->pac = msgpack_unpacker_new(MSGPACK_UNPACKER_INIT_BUFFER_SIZE);
-
-  /* feeds the buffer */
-  msgpack_unpacker_reserve_buffer(ud->pac, ud->size);
-  memcpy(msgpack_unpacker_buffer(ud->pac), ud->str, ud->size);
-  msgpack_unpacker_buffer_consumed(ud->pac, ud->size);
-
-  /* start streaming deserialization */
-  ud->msg = (msgpack_unpacked *)malloc(sizeof(msgpack_unpacked));
-  msgpack_unpacked_init(ud->msg);
-
-  luaL_getmetatable(L, MT_NAME);
-  lua_setmetatable(L, -2);
-  return 1;
+// move 1 byte forward
+static inline int unpacker_progress( unpacker_t *u, char ch ) {
+    int i;
+    for(i = u->nstacked-1; i >= 0; i-- ) {
+        mpstackent_t *e = & u->stack[ i ];
+        if( e->sizesofar < e->sizesize ) {
+            MPDEBUGPRINT( "(%s Size:%d/%d)", MP_CONTAINER_TYPE_to_s(e->t), (int)e->sizesofar, (int)e->sizesize );
+            e->sizebytes[ e->sizesofar ] = ch;
+            e->sizesofar ++;
+            if(e->sizesofar == e->sizesize){
+                if( e->sizesize == 2 ){
+                    e->expect = ntohs( *(short*)( e->sizebytes ) );
+                    if( MP_CONTAINER_TYPE_is_map(e->t) ) e->expect *= 2;
+                    MPDEBUGPRINT( "expect:%d ", (int)e->expect );
+                } else if(e->sizesize == 4 ){
+                    e->expect = ntohl( *(int*)( e->sizebytes ) );
+                    if( MP_CONTAINER_TYPE_is_map(e->t) ) e->expect *= 2;                    
+                    MPDEBUGPRINT( "expect:%d ", (int)e->expect );                    
+                } else {
+                    assert(!"possible bug in msgpack, not parse error" );
+                }
+            }
+            break;
+        } 
+        e->sofar++;
+        MPDEBUGPRINT( "(%s %d/%d)", MP_CONTAINER_TYPE_to_s(e->t),(int)e->sofar,(int)e->expect) ;
+        //        assert( e->sofar <= e->expect );
+        if(e->sofar < e->expect){
+            break;
+        }
+        u->nstacked --;
+        assert(u->nstacked >= 0);
+        MPDEBUGPRINT( "fill-pop! " );
+    }
+    MPDEBUGPRINT( "\n");
+    if( u->nstacked == 0 ) {
+        MPDEBUGPRINT( "got result!\n" );
+        u->resultnum ++;
+        return 1;
+    }
+    return 0;
+}
+static inline mpstackent_t *unpacker_top( unpacker_t *u ) {
+    if( u->nstacked == 0 ) {
+        return NULL;
+    } else {
+        return & u->stack[ u->nstacked - 1 ];
+    }
 }
 
-// Unpacker tostring should be able to output the lstring
-// of the raw data left to be unpacked
-static int lua_msgpack_unpacker(lua_State *L) {
-  structUnpacker *ud = lua_checkunpacker(L, 1);
-  if( msgpack_unpacker_next(ud->pac, ud->msg) ) {
-    msgpack_object obj = ud->msg->data;
-		/* TODO: Push the encoded data as well as the decoded data */
-    (*unPackMap[obj.type])(L, obj);
-  } else {
-		lua_pushnil(L);
-	}
-  return 1;
+
+static inline void unpacker_progress_datasize( unpacker_t *u, size_t progress) {
+    MPDEBUGPRINT( ">%d>",(int)progress);
+    mpstackent_t *top = unpacker_top(u);
+    size_t need = top->expect - top->sofar;
+    assert( progress <= need );
+    top->sofar += progress; 
+    if( top->sofar == top->expect ){
+        top->sofar -= 1; // sofar++ is in unpacker_progress!
+        MPDEBUGPRINT("[DS]");
+        unpacker_progress(u,0);
+    }
 }
 
-static int lua_msgpack_delete(lua_State *L) {
-#ifdef DEBUG
-	printf("\n\n\n\n****HERE\n\n\n");
-	fflush(stdout);
-#endif
-	
-  structUnpacker *ud = lua_checkunpacker(L, 1);
-	msgpack_unpacker_free(ud->pac);
-	msgpack_unpacked_destroy(ud->msg);
-/*
-	// TODO: These seem like we are freeing NULL always...
-  if (!ud->pac){
-		free(ud->pac);
-	}
-  if (!ud->msg){
-		free(ud->msg);
-	}
-*/
-  return 1;
+
+// error:-1
+// give expect=0 when need size bytes.
+static inline int unpacker_push( unpacker_t *u, MP_CONTAINER_TYPE t, int expect ) {
+    MPDEBUGPRINT( "push: t:%s expect:%d\n", MP_CONTAINER_TYPE_to_s(t), expect );
+    if( u->nstacked >= elementof(u->stack)) return -1;
+    mpstackent_t *ent = & u->stack[ u->nstacked ];
+    mpstackent_init( ent, t, expect );
+    u->nstacked ++;
+    // handle empty container
+    if( MP_CONTAINER_TYPE_sizesize(t)==0 && expect == 0 ){
+        MPDEBUGPRINT("[PUSH]");        
+        unpacker_progress(u, 0x0);
+    }
+    return 0;
 }
 
-static const struct luaL_reg msgpack_Functions [] = {
-  {"pack", lua_msgpack_pack},
-  {"unpack", lua_msgpack_unpack},
-  {"unpacker", lua_msgpack_newunpacker},
-  {NULL, NULL}
+
+// need bytes, not values
+static inline int unpacker_container_needs_bytes( unpacker_t *u, size_t *dataneed ) {
+    mpstackent_t *top = unpacker_top(u);
+    if(!top)return 0;
+    if( top->sizesofar < top->sizesize ) {
+        *dataneed = 0;
+        return 1;
+    }
+    
+    if( top->sofar < top->expect ) {
+        if( MP_CONTAINER_TYPE_is_container(top->t) ){
+            return 0;
+        } else {
+            *dataneed = top->expect - top->sofar;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+
+
+void unpacker_dump( unpacker_t *u ) {
+    fprintf(stderr, "\n------\nnstacked:%d resultnum:%d\n", (int) u->nstacked, (int) u->resultnum );
+    int i;
+    for(i=0;i<u->nstacked;i++){
+        fprintf(stderr, "  stack[%d]: %s %d/%d\n", i, MP_CONTAINER_TYPE_to_s(u->stack[i].t), (int)u->stack[i].sofar, (int)u->stack[i].expect );
+    }
+    fprintf(stderr, "--------\n");
+}
+                   
+
+                  
+int unpacker_feed( unpacker_t *u, char *p, size_t len ) {
+
+    if(u->used + len > u->size ){
+        return -1;
+    }
+    memcpy( u->buf + u->used, p, len );
+    u->used += len;
+
+
+    
+    size_t i;
+    for(i=0;i<len;i++){
+        unsigned char ch = (unsigned char)( p[i] );
+
+#if MP_ENABLE_DEBUGPRINT
+        int k;
+        for(k=0;k<u->nstacked;k++){ MPDEBUGPRINT(" "); }
+#endif        
+        MPDEBUGPRINT( "[%x]:", ch );
+
+        size_t dataneed; // for data, not for sizebytes.
+        if( unpacker_container_needs_bytes(u, &dataneed ) ){
+            if(dataneed>0){
+                size_t progress = len-i;
+                if( progress > dataneed ) {
+                    progress = dataneed;
+                }
+                MPDEBUGPRINT( "dneed:%d progress:%d len:%d ", (int) dataneed,(int)progress, (int)len );
+                i += progress -1; // sofar++ in unpacker_progress!
+                unpacker_progress_datasize( u, progress );
+            } else {
+                MPDEBUGPRINT("[FEED]");
+                unpacker_progress(u,ch);
+            }
+            continue;
+        }
+            
+        if( ch <= 0x7f ){ // posfixnum
+            unpacker_progress(u,ch);
+        } else if( ch>=0x80 && ch<=0x8f ){ // fixmap
+            int n = ch & 0xf;
+            if(unpacker_push( u, MPCT_FIXMAP, n*2 )<0) return -1;
+        } else if( ch>=0x90 && ch<=0x9f ){ // fixarray
+            int n = ch & 0xf;
+            if(unpacker_push( u, MPCT_FIXARRAY, n )<0) return -1;
+        } else if( ch>=0xa0 && ch<=0xbf ){ // fixraw
+            int n = ch & 0x1f;
+            if(unpacker_push( u, MPCT_RAW, n )<0) return -1;
+        } else if( ch==0xc0){ // nil
+            unpacker_progress(u,ch);            
+        } else if( ch==0xc1){ // reserved
+            return -1;
+        } else if( ch==0xc2){ // false
+            unpacker_progress(u,ch);            
+        } else if( ch==0xc3){ // true
+            unpacker_progress(u,ch);            
+        } else if( ch>=0xc4 && ch<=0xc9){ // reserved
+            return -1;
+        } else if( ch==0xca){ // float (4byte)
+            if(unpacker_push( u, MPCT_FLOAT, 4 )<0) return -1;
+        } else if( ch==0xcb){ // double (8byte)
+            if(unpacker_push( u, MPCT_DOUBLE, 8 )<0) return -1;
+        } else if( ch==0xcc){ // uint8 (1byte)
+            if(unpacker_push( u, MPCT_UINT8, 1 )<0) return -1;
+        } else if( ch==0xcd){ // uint16 (2byte)
+            if(unpacker_push( u, MPCT_UINT16, 2 )<0) return -1;
+        } else if( ch ==0xce){ // uint32
+            if(unpacker_push( u, MPCT_UINT32, 4 )<0) return -1;
+        } else if( ch ==0xcf){ // uint64
+            if(unpacker_push( u, MPCT_UINT64, 8 )<0) return -1;
+        } else if( ch ==0xd0){ // int8
+            if(unpacker_push( u, MPCT_INT8, 1 )<0) return -1;
+        } else if( ch == 0xd1){ // int16
+            if(unpacker_push( u, MPCT_INT16, 2 )<0) return -1;
+        } else if( ch == 0xd2){ // int32
+            if(unpacker_push( u, MPCT_INT32, 4 )<0) return -1;            
+        } else if( ch == 0xd3){ // int64
+            if(unpacker_push( u, MPCT_INT64, 8 )<0) return -1;
+        } else if( ch >= 0xd4 && ch <= 0xd9 ) { // reserved
+            return -1;
+        } else if( ch == 0xda){ // raw 16
+            if(unpacker_push( u, MPCT_RAW16, 0 )<0) return -1;            
+        } else if( ch == 0xdb){ // raw 32
+            if(unpacker_push( u, MPCT_RAW32, 0 )<0) return -1;            
+        } else if( ch == 0xdc){ // array 16
+            if(unpacker_push( u, MPCT_ARRAY16, 0)<0) return -1;
+        } else if( ch == 0xdd){ // array 32
+            if(unpacker_push( u, MPCT_ARRAY32, 0)<0) return -1;
+        } else if( ch == 0xde){ // map16
+            if(unpacker_push( u, MPCT_MAP16, 0)<0) return -1;
+        } else if( ch == 0xdf){ // map32
+            if(unpacker_push( u, MPCT_MAP32, 0)<0) return -1;
+        } else if( ch >= 0xe0 ) { // neg fixnum
+            unpacker_progress(u,ch);
+        }
+            
+    }
+    return 0;                
+}
+void unpacker_shift( unpacker_t *u, size_t l ) {
+    assert( l <= u->used );
+    memmove( u->buf, u->buf + l, u->used - l );
+    u->used -= l;
+}
+
+static int msgpack_unpacker_feed_api( lua_State *L ) {
+    unpacker_t *u =  luaL_checkudata( L, 1, "msgpack_unpacker" );
+    size_t slen;
+    const char *sval = luaL_checklstring(L, 2, &slen );
+    MPDEBUGPRINT( "feed. used:%d len:%d\n",(int)u->used, (int)slen );
+    int res = unpacker_feed( u, (char*)sval, slen );
+    lua_pushnumber(L,res);
+    return 1;
+}
+static int msgpack_unpacker_pull_api( lua_State *L ) {
+    unpacker_t *u =  luaL_checkudata( L, 1, "msgpack_unpacker" );
+    MPDEBUGPRINT( "pull:%d\n", (int)u->resultnum );
+    if( u->resultnum == 0 ) {
+        lua_pushnil(L);
+    } else {
+        mprbuf_t rb;
+        mprbuf_init( &rb, (const unsigned char*) u->buf, u->used );
+        mprbuf_unpack_anytype(&rb,L);
+        unpacker_shift( u, rb.ofs );
+        u->resultnum --;
+    }
+    return 1;
+}
+static int msgpack_unpacker_gc_api( lua_State *L ) {
+    void* ud;
+    lua_Alloc alloc = lua_getallocf( L, &ud );
+    unpacker_t *u =  luaL_checkudata( L, 1, "msgpack_unpacker" );
+    (void)alloc( ud, u->buf, 0, 0 );    // freeing
+    u->buf = NULL;
+    return 0;
+}
+
+static const luaL_reg msgpack_unpacker_m[] = {
+    {"feed", msgpack_unpacker_feed_api },
+    {"pull", msgpack_unpacker_pull_api },
+    {"__gc", msgpack_unpacker_gc_api },
+    {NULL,NULL}
+};
+    
+static int msgpack_createUnpacker_api( lua_State *L ) {
+    size_t bufsz = luaL_checknumber(L,1);
+#if 0    
+    //    { aho=7, hoge = { 5,6,"7", {8,9,10} }, fuga="11" }
+    char data[28] = { 0x83, 0xa3, 0x61, 0x68,
+                      0x6f, 0x7, 0xa4, 0x66,
+                      0x75, 0x67, 0x61, 0xa2,
+                      0x31, 0x31, 0xa4, 0x68,
+                      0x6f, 0x67, 0x65, 0x94,
+                      0x5, 0x6, 0xa1, 0x37,
+                      0x93, 0x8, 0x9, 0xa };
+#endif    
+    unpacker_t *u = (unpacker_t*) lua_newuserdata( L, sizeof(unpacker_t));
+
+    unpacker_init(L, u, bufsz );
+    luaL_getmetatable(L, "msgpack_unpacker" );
+    lua_setmetatable(L, -2 );
+    return 1;
+}
+
+
+static int msgpack_largetbl( lua_State *L ) {
+    int n = luaL_checkint(L,1);
+    lua_createtable(L,n,0);
+    int i;
+    for(i=0;i<n;i++){
+        lua_pushnumber(L,i);
+        lua_rawseti(L,-2,i+1);
+    }
+    return 1;
+}
+
+
+static const luaL_reg msgpack_f[] = {
+    {"pack", msgpack_pack_api },
+    {"unpack", msgpack_unpack_api },
+    {"createUnpacker", msgpack_createUnpacker_api },
+    {"largetbl", msgpack_largetbl },
+    { "feed", msgpack_unpacker_feed_api },
+    { "pull", msgpack_unpacker_pull_api },        
+    {NULL,NULL}
 };
 
-static const struct luaL_reg msgpack_Methods [] = {
-  {"unpack", lua_msgpack_unpacker},
-  {"__gc", lua_msgpack_delete},
-  {NULL, NULL}
-};
 
-int luaopen_msgpack(lua_State *L) {
-	// Implement metatable for unpacker
-  luaL_newmetatable(L, MT_NAME);
-  lua_pushstring(L, "__index");
-  lua_pushcfunction(L, lua_msgpack_index);
-  lua_settable(L, -3);
-#if LUA_VERSION_NUM == 502
-	luaL_setfuncs(L, msgpack_Methods, 0);
-#else
-	luaL_register(L, NULL, msgpack_Methods);
-#endif
-	
-	// The msgpack library
-#if LUA_VERSION_NUM == 502
-	luaL_newlib(L, msgpack_Functions);
-#else
-  luaL_register(L, "msgpack", msgpack_Functions);
-#endif
-	
-  /* Init pack functions map */
-  PackMap[LUA_TNIL] = lua_msgpack_pack_nil;
-  PackMap[LUA_TBOOLEAN] = lua_msgpack_pack_boolean;
-  PackMap[LUA_TLIGHTUSERDATA] = lua_msgpack_pack_lightuserdata;
-  PackMap[LUA_TNUMBER] = lua_msgpack_pack_number;
-  PackMap[LUA_TSTRING] = lua_msgpack_pack_string;
-  PackMap[LUA_TTABLE] = lua_msgpack_pack_table;
-  PackMap[LUA_TFUNCTION] = lua_msgpack_pack_function;
-  PackMap[LUA_TUSERDATA] = lua_msgpack_pack_userdata;
-  PackMap[LUA_TTHREAD] = lua_msgpack_pack_thread;
- 
-  /* Init unpack functions Map */
-  unPackMap[MSGPACK_OBJECT_NIL] = lua_msgpack_unpack_nil;
-  unPackMap[MSGPACK_OBJECT_BOOLEAN] = lua_msgpack_unpack_boolean;
-  unPackMap[MSGPACK_OBJECT_POSITIVE_INTEGER] = lua_msgpack_unpack_positive_integer;
-  unPackMap[MSGPACK_OBJECT_NEGATIVE_INTEGER] = lua_msgpack_unpack_negative_integer;
-  unPackMap[MSGPACK_OBJECT_DOUBLE] = lua_msgpack_unpack_double;
-  unPackMap[MSGPACK_OBJECT_RAW] = lua_msgpack_unpack_raw;
-  unPackMap[MSGPACK_OBJECT_ARRAY] = lua_msgpack_unpack_array;
-  unPackMap[MSGPACK_OBJECT_MAP] = lua_msgpack_unpack_map; 
+LUALIB_API int luaopen_msgpack ( lua_State *L ) {
 
-  return 1;
+    luaL_newmetatable(L, "msgpack_unpacker" );
+    lua_pushvalue(L,-1);
+    lua_setfield(L,-2,"__index");
+    luaL_register(L,NULL, msgpack_unpacker_m );
+        
+    lua_newtable(L);
+    luaL_register(L,NULL, msgpack_f );
+
+
+    
+    return 1;
 }

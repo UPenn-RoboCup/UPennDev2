@@ -68,12 +68,13 @@ if not IS_CHILD then
 		print(npoll,poller.n)
 		for k,v in pairs(threads) do
 			local thread, ch = unpack(v)
-			print(thread,ch)
 			if not thread:alive() then
 				thread:join()
 				poller:clean(ch.socket)
 				threads[k] = nil
 				print('Mesh |',k,'thread died!')
+			else
+				ch:send'hello'
 			end
 		end
 	end
@@ -150,9 +151,9 @@ lidar_ch.callback = function(s)
 	print('Got lidar data!')
 end
 pair_ch.callback = function(s)
+	print('Got pair data!')
 	local data, has_more = poller.lut[s]:receive()
 	-- Send message to a thread
-	print('Got pair data!')
 end
 
 local wait_channels = {}

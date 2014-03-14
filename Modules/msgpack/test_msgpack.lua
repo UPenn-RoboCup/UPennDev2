@@ -1,8 +1,10 @@
 package.cpath = '../unix/?.so;'..package.cpath
 package.cpath = '../carray/?.so;'..package.cpath
+package.path = '../../Util/?.lua;'..package.path
 
 local unix = require 'unix'
 local msgpack = require 'msgpack'
+local util = require 'util'
 
 function TEST_NUM(num_in)
   local pack_str = msgpack.pack(num_in)
@@ -62,21 +64,30 @@ TEST_STRING('hello')
 TEST_STRING('')
 
 -- unpacker
---[[
+----[[
 print("\n================= Test unpacker ==================")
 local file = io.open('dummy_mp_data.msg', 'r');
 local dataset = {}
 if file then
-	local file_str = file:read('*a')
+	--local file_str = file:read('*a')
 
 	local t0 = unix.time()
-	local unpacker = msgpack.unpacker(file_str)
-	local tbl = unpacker:unpack()
-	while tbl do
-		dataset[#dataset+1] = tbl
-		tbl = unpacker:unpack()
+	local unpacker = msgpack.unpacker(2048)
+	local buf,nbuf = file:read(512),0
+	while buf do
+		nbuf = nbuf + #buf
+		local res,left = unpacker:feed(buf)
+		local tbl = unpacker:pull()
+		--print(res,left,nbuf,type(tbl))
+		while tbl do
+			--util.ptable(tbl)
+			dataset[#dataset+1] = tbl
+			tbl = unpacker:pull()
+		end
+		buf = file:read(left)
 	end
-	print("streaming unpack "..#dataset.." tables takes "..(unix.time() - t0).."with pack length "..#file_str)
+	print("streaming unpack ", #dataset, (unix.time() - t0))
+	print("with pack length ",nbuf)
 	file:close()
 end
 
@@ -88,6 +99,7 @@ for i = 1, #dataset do
 end
 print("pack "..#dataset.." tables takes "..(unix.time() - t0).."with pack length "..len)
 
+--[[
 print("\n================= Test Msgpack for lightuserdata ==================")
 package.cpath = '../carray/?.so;'..package.cpath
 local carray = require 'carray'
@@ -103,6 +115,8 @@ local dp = carray.float(msgpack.unpack(pack_str))
 print("test case ", ud == dp)
 
 --]]
+
+--[[
 function TEST_TORCH(aa)
   local pack_str = msgpack.pack(aa)
   local tbl = msgpack.unpack(pack_str)
@@ -112,7 +126,6 @@ function TEST_TORCH(aa)
   print('pack size:',#pack_str)
 end
 print("\n================= Test Msgpack for Torch ==================")
---[[
 local torch = require 'torch'
 aa = torch.DoubleTensor({{3.0, 4.0, 5.24, 6.123, 7.90}, {1,2,3,4,5}})
 TEST_TORCH(aa)

@@ -390,15 +390,13 @@ static int lua_msgpack_delete(lua_State *L) {
   structUnpacker *ud = lua_checkunpacker(L, 1);
 	msgpack_unpacker_free(ud->pac);
 	msgpack_unpacked_destroy(ud->msg);
-/*
 	// TODO: These seem like we are freeing NULL always...
-  if (!ud->pac){
+  if (ud->pac){
 		free(ud->pac);
 	}
-  if (!ud->msg){
+  if (ud->msg){
 		free(ud->msg);
 	}
-*/
   return 1;
 }
 

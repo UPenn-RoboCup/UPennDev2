@@ -308,9 +308,9 @@ simple_ipc.new_thread = function(scriptname, channel, metadata)
 	-- ascertain if it was called as a thread
 	-- (Should just check if it was given a context...
 	-- Must call import_context in the thread to achieve communication
-	local requester = simple_ipc.new_pair(metadata.ch_name,true)
+	local pair = simple_ipc.new_pair(metadata.ch_name,true)
 	
-	return thread, requester
+	return pair, thread
 end
 
 return simple_ipc

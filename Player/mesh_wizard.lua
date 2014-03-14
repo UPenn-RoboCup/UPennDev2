@@ -28,10 +28,10 @@ if not IS_CHILD then
 	-- Only the parent communicates with the body
 	local Body = require'Body'
 	-- TODO: Signal of ctrl-c should kill all threads...
-	--local signal = require'signal'
+	local signal = require'signal'
 	-- Only the parent accesses shared memory
 	require'vcm'
-	local poller, threads, channels = nil, {}, {}
+	local poller, channels = nil, {}
 	-- Spawn children
 	for i,v in ipairs(lidars) do
 		local meta = {
@@ -43,15 +43,15 @@ if not IS_CHILD then
 			c = 'jpeg', -- Type of compression
 			t = Body.get_time(),
 		}
-		local thread, ch = simple_ipc.new_thread('mesh_wizard.lua',v,meta)
+		-- The thread will automagically start detached upon gc
+		local ch, thread = simple_ipc.new_thread('mesh_wizard.lua',v,meta)
 		ch.callback = function(s)
 			local data, has_more = poller.lut[s]:receive()
 			--print('child tread data!',data)
 		end
-		threads[v] = {thread,ch}
+		-- Start detached
+		thread:start(true,true)
 		table.insert(channels,ch)
-		-- Start officially
-		thread:start()
 	end
 	-- TODO: Also poll on mesh requests, instead of using net_settings...
 	-- This would be a Replier (then people ask for data, or set data)
@@ -62,29 +62,18 @@ if not IS_CHILD then
 		-- Send message to a thread
 	end
 	table.insert(channels,replier)
+	-- Ensure that we shutdown the threads properly
+	signal.signal("SIGINT", os.exit)
+	signal.signal("SIGTERM", os.exit)
+	
 	-- Just wait for requests from the children
 	poller = simple_ipc.wait_on_channels(channels)
 	--poller:start()
 	local t_check = 0
 	while poller.n>0 do
 		local npoll = poller:poll(1e3)
-		-- Check if everybody is alive periodically
 		--print(npoll,poller.n)
 		local t = Body.get_time()
-		if t-t_check>1e3 or npoll<1 then
-			t_check = t
-			for k,v in pairs(threads) do
-				local thread, ch = unpack(v)
-				if not thread:alive() then
-					thread:join()
-					poller:clean(ch.socket)
-					threads[k] = nil
-					print('Mesh |',k,'thread died!')
-				else
-					ch:send'hello'
-				end
-			end
-		end -- if too long
 	end
 	return
 end
@@ -229,11 +218,11 @@ local function lidar_cb(s)
 		-- Must have a pair with the range data
 		assert(has_more,"metadata and not lidar ranges!")
 		ranges, has_more = ch:receive()
-		meta = mp.unpack(data)
+		meta, num = mp.unpack(data)
 	end
 	-- Update the points
 	if meta.n~=n then
-		print('LIDAR Properties',n,'=>',meta.n)
+		print(metadata.name,'Properties',n,'=>',meta.n)
 		n = meta.n
 		setup_mesh()
 		current_direction, current_scanline = nil, nil

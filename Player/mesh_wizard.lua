@@ -49,9 +49,10 @@ if not IS_CHILD then
 			local data, has_more = poller.lut[s]:receive()
 			--print('child tread data!',data)
 		end
+		-- Add the channel for our poller to sample
+		table.insert(channels,ch)
 		-- Start detached
 		thread:start(true,true)
-		table.insert(channels,ch)
 	end
 	-- TODO: Also poll on mesh requests, instead of using net_settings...
 	-- This would be a Replier (then people ask for data, or set data)
@@ -65,16 +66,9 @@ if not IS_CHILD then
 	-- Ensure that we shutdown the threads properly
 	signal.signal("SIGINT", os.exit)
 	signal.signal("SIGTERM", os.exit)
-	
 	-- Just wait for requests from the children
 	poller = simple_ipc.wait_on_channels(channels)
-	--poller:start()
-	local t_check = 0
-	while poller.n>0 do
-		local npoll = poller:poll(1e3)
-		--print(npoll,poller.n)
-		local t = Body.get_time()
-	end
+	poller:start()
 	return
 end
 
@@ -83,7 +77,8 @@ local torch  = require'torch'
 torch.Tensor = torch.DoubleTensor
 local util   = require'util'
 local cutil  = require'cutil'
-local mp     = require'msgpack'
+--local mp     = require'msgpack'
+local mp     = require'msgpack.MessagePack'
 local udp    = require'udp'
 local png    = require'png'
 local zlib   = require'zlib'
@@ -206,20 +201,17 @@ local function angle_to_scanlines( rad )
 end
 
 local function lidar_cb(s)
+	-- NOTE: Ensure that we are able to run the cb fast enough
+	-- For some reason the while loop is bad with luajit...
   local ch = poller.lut[s]
 	-- Send message to a thread
-	local meta, ranges
-	while true do
-		-- Do not block, as we are flushing the buffer
-		-- in the worst case of data being backed up
-    local data, has_more = ch:receive(true)
-		-- If no msg, then process
-		if not data then break end
-		-- Must have a pair with the range data
-		assert(has_more,"metadata and not lidar ranges!")
-		ranges, has_more = ch:receive()
-		meta, num = mp.unpack(data)
-	end
+	local data, has_more = ch:receive()
+	-- If no msg, then process
+	--if not data then break end
+	-- Must have a pair with the range data
+	assert(has_more,"metadata and not lidar ranges!")
+	local ranges, has_more = ch:receive()
+	local meta = mp.unpack(data)
 	-- Update the points
 	if meta.n~=n then
 		print(metadata.name,'Properties',n,'=>',meta.n)

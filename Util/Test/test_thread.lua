@@ -14,7 +14,7 @@ local function main()
 	meta.bus = 1
 	meta.dev = "/dev/ttyUSB0"
 	meta.name = 'chainA'
-	local threadA, chA = simple_ipc.new_thread('test_thread.lua',meta.name,meta)
+	local chA, threadA = simple_ipc.new_thread('test_thread.lua',meta.name,meta, true)
 	chA.thread = threadA
 	util.ptable(chA)
 	print('/\\/\\/\\/',type(threadA))
@@ -24,7 +24,7 @@ local function main()
 	meta.bus = 2
 	meta.dev = "/dev/ttyUSB1"
 	meta.name = 'chainB'
-	local threadB, chB = simple_ipc.new_thread('test_thread.lua',meta.name,meta)
+	local chB, threadB = simple_ipc.new_thread('test_thread.lua',meta.name,meta, true)
 	chB.thread = threadB
 	--util.ptable(chB)
 	

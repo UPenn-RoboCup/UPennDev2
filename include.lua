@@ -7,7 +7,6 @@ USE_LOCALHOST = true
 
 -- Locate the Modules
 CWD = assert(os.getenv('PWD'),'No PWD variable set!')
---CWD:gsub("%s+$", "")
 IS_WEBOTS = false
 HOME = CWD:gsub('Player.*$','')
 HOME = HOME:gsub('Robots.*$','')
@@ -65,7 +64,6 @@ LOG_DIR = HOME.."/Logs/"
 unix = require'unix'
 HOSTNAME = unix.gethostname()
 OPERATING_SYSTEM = unix.uname():lower()
---:gsub("%s+$", "")
 
 -- Print out the globally available variables, when using include.lua
 function print_env()

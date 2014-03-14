@@ -15,6 +15,7 @@ local mt = {}
 local function tbl_iter(t,k)
 	return table.remove(t)
 end
+mt.__call  = tbl_iter
 
 -- TODO List for the planner
 -- TODO: Check some metric of feasibility
@@ -129,7 +130,7 @@ local line_iter = function(self, qArm0, trGoal, res_pos, res_ang, use_safe_inver
 	end
 	-- We return the iterator and the final joint configuarion
 	-- TODO: Add failure detection; if no dist/ang changes in a while
-	return function(cur_qArm)
+	return function(cur_qArm,human)
 		local cur_trArm, is_singular = K.forward_arm(cur_qArm)
 		--if skip_angles==false and is_singular then print('PLAN SINGULARITY') end
 		
@@ -189,7 +190,7 @@ end
 local joint_iter = function(self, qArm0, qGoal, res_q)
 	res_q = res_q or 2*DEG_TO_RAD
 	qGoal = util.clamp_vector(qGoal,self.min_q,self.max_q)
-	return function(cur_qArm)
+	return function(cur_qArm,human)
 		local dq = qGoal - cur_qArm
 		local distance = vector.norm(dq)
 		local ddq = res_q / distance * dq
@@ -197,6 +198,16 @@ local joint_iter = function(self, qArm0, qGoal, res_q)
 		return cur_qArm + ddq
 	end
 
+end
+
+-- Return a joint iter or a line iter
+-- Also, could return some other policy
+-- Each policy, I guess, should be able to take some feedback
+-- It's a greedy follower then, with some feedback
+local learn_planner = function()
+	-- Initialize all the policies given the goal
+	-- Should we have them all running inside a thread?
+	return policy[imax]
 end
 
 libPlan.new_planner = function(kinematics, min_q, max_q)
@@ -212,7 +223,5 @@ libPlan.new_planner = function(kinematics, min_q, max_q)
 	planner.joint_iter = joint_iter
 	return planner
 end
-
-mt.__call  = tbl_iter
 
 return libPlan

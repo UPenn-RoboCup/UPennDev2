@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/utsname.h>
 #include <string.h>
 #include <math.h>
 
@@ -42,6 +43,13 @@ static int lua_sleep(lua_State *L) {
   int ret = sleep(sec);
   lua_pushinteger(L, ret);
   return 1;
+}
+
+static int lua_uname(lua_State *L) {
+	struct utsname unameData;
+	uname(&unameData);
+	lua_pushstring(L,unameData.sysname);
+	return 1;
 }
 
 static int lua_gethostname(lua_State *L) {
@@ -287,6 +295,7 @@ static int lua_fork(lua_State *L) {
 static const struct luaL_Reg unix_lib [] = {
   {"usleep", lua_usleep},
   {"sleep", lua_sleep},
+  {"uname", lua_uname},
   {"gethostname", lua_gethostname},
   {"getcwd", lua_getcwd},
   {"chdir", lua_chdir},

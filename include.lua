@@ -6,11 +6,8 @@
 USE_LOCALHOST = true
 
 -- Locate the Modules
--- NOTE: This is prempted in threads sometimes, it seems!
--- TODO: Add as a critical section... (or the whole include?
-local handle = io.popen('pwd')
-CWD = handle:read("*a"):gsub("%s+$", "")
-handle:close()
+CWD = assert(os.getenv('PWD'),'No PWD variable set!')
+--CWD:gsub("%s+$", "")
 IS_WEBOTS = false
 HOME = CWD:gsub('Player.*$','')
 HOME = HOME:gsub('Robots.*$','')
@@ -32,8 +29,6 @@ RAD_TO_DEG = 180/math.pi
 
 -- SJ: This removes the output buffer
 io.stdout:setvbuf("no")
-
-OPERATING_SYSTEM = io.popen('uname'):read('*a'):lower():gsub("%s+$", "")
 
 -- include C modules to cpath
 -- getch.so is in Modules/getch/ (Modules/unix/unix.so -> Modules/?/?.so)
@@ -69,6 +64,8 @@ LOG_DIR = HOME.."/Logs/"
 -- Save the hostname
 unix = require'unix'
 HOSTNAME = unix.gethostname()
+OPERATING_SYSTEM = unix.uname():lower()
+--:gsub("%s+$", "")
 
 -- Print out the globally available variables, when using include.lua
 function print_env()

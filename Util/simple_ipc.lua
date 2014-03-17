@@ -248,7 +248,8 @@ simple_ipc.wait_on_channels = function( channels )
   local poll_obj = poller.new( n_ch )
   -- Add local lookup table for the callbacks
   local lut = {}
-  for i,ch in ipairs(channels) do
+  --for i,ch in ipairs(channels) do
+	for i,ch in pairs(channels) do
 		local s = ch.socket
 		assert(s,'No socket for poller!')
 		assert(not lut[s],'Duplicate poller channel!')

@@ -19,14 +19,15 @@ if CTX and type(metadata)=='table' then
 	pair_ch = simple_ipc.new_pair(metadata.ch_name)
 	print('CHILD CTX')
 end
+-- For all threads
+--local mp     = require'msgpack'
+local mp     = require'msgpack.MessagePack'
 
 local lidars = {'lidar0','lidar1'}
 
 -- The main thread's job is to give:
 -- joint angles and network request
 if not IS_CHILD then
-	-- Only the parent communicates with the body
-	local Body = require'Body'
 	-- TODO: Signal of ctrl-c should kill all threads...
 	local signal = require'signal'
 	-- Only the parent accesses shared memory
@@ -41,7 +42,7 @@ if not IS_CHILD then
 			density = 10*RAD_TO_DEG, -- #scanlines per radian on actuated motor
 			dynrange = {.1,1}, -- Dynamic range of depths when compressing
 			c = 'jpeg', -- Type of compression
-			t = Body.get_time(),
+			t = 0,
 		}
 		-- The thread will automagically start detached upon gc
 		local ch, thread = simple_ipc.new_thread('mesh_wizard.lua',v,meta)
@@ -50,7 +51,7 @@ if not IS_CHILD then
 			--print('child tread data!',data)
 		end
 		-- Add the channel for our poller to sample
-		table.insert(channels,ch)
+		channels[v] = ch
 		-- Start detached
 		thread:start(true,true)
 	end
@@ -61,6 +62,8 @@ if not IS_CHILD then
 	replier.callback = function(s)
 		local data, has_more = poller.lut[s]:receive()
 		-- Send message to a thread
+		local cmd = mp.unpack(data)
+		if cmd.id==0 then 
 	end
 	table.insert(channels,replier)
 	-- Ensure that we shutdown the threads properly
@@ -77,18 +80,14 @@ local torch  = require'torch'
 torch.Tensor = torch.DoubleTensor
 local util   = require'util'
 local cutil  = require'cutil'
---local mp     = require'msgpack'
-local mp     = require'msgpack.MessagePack'
 local udp    = require'udp'
 local png    = require'png'
 local zlib   = require'zlib'
 local jpeg   = require'jpeg'
 jpeg.set_quality( 95 )
 
--- Globals
--- Output channels
-local mesh_udp_ch, mesh_tcp_ch, lidar_ch
--- Input channels
+-- Channels
+local mesh_udp_ch, mesh_tcp_ch, mesh_ch, lidar_ch
 local channel_polls
 local channel_timeout = 100 --milliseconds
 
@@ -280,9 +279,14 @@ local function send_mesh(is_reliable)
 		local ret = mesh_tcp_ch:send{metapack,c_mesh}
 	else
 		local ret, err = mesh_udp_ch:send(metapack..c_mesh)
-		if err then print('Mesh | UDP:',err) end
+		if err then return err end
 	end
 end
+
+local child_cmds = {
+	reliable = function() send_mesh(true) end,
+	unreliable = send_mesh,
+}
 
 -- Initial setup of the mesh from metadata
 setup_mesh()
@@ -295,9 +299,11 @@ lidar_ch.callback = lidar_cb
 pair_ch.callback = function(s)
 	local ch = poller.lut[s]
 	local data, has_more = ch:receive()
-	--print('Got pair data!',data)
-	-- Send message to a thread
-	ch:send('what??')
+	local fun, ret = child_cmds[data]
+	-- If a function, then execute it
+	if fun then ret = fun() end
+	-- Send anything back to the master thread if needed
+	if ret then ch:send(ret) end
 end
 
 local wait_channels = {}

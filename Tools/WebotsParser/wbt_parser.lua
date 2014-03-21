@@ -270,7 +270,7 @@ function print_tree(root, indent)
   end
 end
 
-local file_name = '../../WebotsProj/protos/TeenWalls.proto'
+local file_name = '../../Webots/protos/TeenWalls.proto'
 wbt_lines = read_wbt(file_name)
 -- root.string : raw field_name
 -- root.attr 

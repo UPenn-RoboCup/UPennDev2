@@ -11,7 +11,7 @@ carray.cast()
 
 --cdata = ffi.cast('double*', dd:pointer())
 --print(cdata[1])
-
+--[[
 local torch = require'torch'
 local tmp   = torch.FloatTensor(5):zero()
 local tt    = carray.float(5)
@@ -22,3 +22,4 @@ local tbl = tt:table()
 print(tbl[1])
 tt:tensor( tmp, 3, 2 )
 print('Tensor[1:5]:',tmp[1],tmp[2],tmp[3],tmp[4],tmp[5])
+--]]

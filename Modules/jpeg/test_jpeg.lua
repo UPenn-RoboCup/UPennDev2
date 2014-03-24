@@ -1,6 +1,7 @@
 dofile('../../include.lua')
 
 local jpeg = require 'jpeg'
+local unix = require'unix'
 w = 320
 h = 240
 ch = 3;
@@ -18,6 +19,9 @@ print('Filling a '..w..' by '..h..' image',ch..' channels.')
   img = carray.byte(w*h*ch)
 --end
 
+print()
+print()
+
 for k=1,nbytes,ch do
   -- Blue up top
   img[k] = 0;
@@ -31,26 +35,33 @@ for k=1,nbytes,ch do
   end
 end
 
-local c_rgb = jpeg.rgb()
-print(c_rgb)
-print('compressing')
-c_rgb:quality(25)
+unix.usleep(2e6)
+
+local c_rgb = jpeg.compressor('rgb')
+print('compressing',c_rgb)
+c_rgb:quality(95)
 --os.exit()
 --print(jpeg.compress)
 --print(c_rgb.compress)
-print('ok...')
---img_jpeg = jpeg.compress( c_rgb,img:pointer(), w, h )
-img_jpeg = c_rgb:compress( img:pointer(), w, h )
+for i=1,100000 do
+	t0=unix.time()
+	--img_jpeg = jpeg.compress( c_rgb,img:pointer(), w, h )
+	local ntimes = 100
+	for i=1,ntimes do
+		img_jpeg = c_rgb:compress( img:pointer(), w, h )
+	end
+	t1=unix.time()
+	print(ntimes..' compressions average:', (t1-t0)/ntimes );
+	print(type(img_jpeg),'Compression Ratio:', #img_jpeg, #img_jpeg/nbytes )
+	unix.usleep(1e4)
+end
 
+unix.usleep(5e6)
 
-
-
-print(type(img_jpeg),'Compression Ratio:', #img_jpeg, #img_jpeg/nbytes )
 
 f = io.open('img.jpeg','w')
 n = f:write( img_jpeg )
 f:close()
-os.exit()
 
 
 -- gray
@@ -74,12 +85,26 @@ for k=1,nbytes,ch do
   end
 end
 
-img_jpeg = jpeg.compress( img:pointer(), w, h, 1 )--gray
+print()
+print()
+
+local c_gray = jpeg.compressor('gray')
+print('compressing',c_gray)
+c_rgb:quality(95)
+local ntimes = 100
+for i=1,ntimes do
+	img_jpeg = c_gray:compress( img:pointer(), w, h )
+end
+t1=unix.time()
+print(ntimes..' compressions average:', (t1-t0)/ntimes );
+
 print(type(img_jpeg),'Compression Ratio:', #img_jpeg, #img_jpeg/nbytes )
 
 f = io.open('img_gray.jpeg','w')
 n = f:write( img_jpeg )
 f:close()
+
+os.exit()
 
 ff = io.open('img.jpeg','r')
 file_str = ff:read('*a')

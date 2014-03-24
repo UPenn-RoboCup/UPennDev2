@@ -14,10 +14,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+//#define DEBUG 1
 // UDP Friendly size (2^16)
+//#define BUF_SZ 1024
 #define BUF_SZ 65536
 //#define BUF_SZ 131072
 #define DEFAULT_QUALITY 85
+#define USE_JFIF FALSE
+// TurboJPEG: fastest
+#define DEFAULT_DCT_METHOD JDCT_FASTEST
+//#define DEFAULT_DCT_METHOD JDCT_IFAST
 
 // Define the functions to use
 void error_exit_compress(j_common_ptr cinfo);
@@ -31,6 +37,7 @@ typedef struct {
 	j_common_ptr cinfo;
 	JOCTET* buffer;
 	size_t buffer_sz;
+	uint8_t downsample; // Downsampling if needed
 } structJPEG;
 // Be able to check the input of a jpeg
 static structJPEG * lua_checkjpeg(lua_State *L, int narg) {
@@ -39,39 +46,71 @@ static structJPEG * lua_checkjpeg(lua_State *L, int narg) {
   return (structJPEG *)ud;
 }
 
+inline void fill_yuyv(JSAMPLE *img_row, JSAMPLE *buf_row, structJPEG* ud) {
+	size_t row_idx = 0, width = ((j_compress_ptr)ud->cinfo)->image_width;
+  uint8_t Y0 = 0, Y1 = 0, U = 0, V = 0, downsample = ud->downsample;
+  while (row_idx < width) {
+    Y0 = *img_row;
+    U  = *(img_row++);
+    Y1 = *(img_row++);
+    V  = *(img_row++);
+		// Always store the pixel
+		*buf_row = Y0;
+		*(buf_row++) = U;
+		*(buf_row++) = V;
+		// One pixel is written to buf_row
+		row_idx++;
+    if (downsample == 1) {
+			// No downsampling, so we duplicate some data
+			*buf_row = Y1;
+			*(buf_row++) = U;
+			*(buf_row++) = V;
+			// Another pixel is written
+			row_idx++;
+    } else if (downsample == 4) {
+			// Quarter size support, so skip a whole yuyv block
+      img_row += 4;
+    }
+  }
+}
 
 // TODO: There may be issues with free if this is called...
-void error_exit_compress(j_common_ptr cinfo)
-{
+void error_exit_compress(j_common_ptr cinfo) {
+#ifdef DEBUG
 	fprintf(stdout,"Error exit!\n");
 	fflush(stdout);
+#endif
   (*cinfo->err->output_message) (cinfo);
   jpeg_destroy_compress((j_compress_ptr)cinfo);
 }
 void init_destination(j_compress_ptr cinfo) {
+#ifdef DEBUG
 	fprintf(stdout,"Init destination!\n");
 	fflush(stdout);
+#endif
 	structJPEG* ud = (structJPEG *)cinfo->client_data;
 	ud->buffer = (JOCTET*)malloc(BUF_SZ);
 	if(ud->buffer==NULL){
+		#ifdef DEBUG
 		fprintf(stdout,"Bad malloc!\n");
 		fflush(stdout);
+		#endif
 	}
 	ud->buffer_sz = BUF_SZ;
   cinfo->dest->next_output_byte = ud->buffer;
   cinfo->dest->free_in_buffer = BUF_SZ;
+#ifdef DEBUG
 	printf("nb: %x, %zu\n",cinfo->dest->next_output_byte,cinfo->dest->free_in_buffer);
+#endif
 }
 void term_destination(j_compress_ptr cinfo) {
+#ifdef DEBUG
 	fprintf(stdout,"Term destination!\n");
 	fflush(stdout);
-	
-  /*
-	cinfo->dest->next_output_byte = destBuf;
-	cinfo->dest->free_in_buffer = destBufSize;
-	*/
+#endif
+
 	structJPEG* ud = (structJPEG *)cinfo->client_data;
-	uint8_t* destBuf = ud->buffer;
+	JOCTET* destBuf = ud->buffer;
 	
 	// How much left
   int len = ud->buffer_sz - cinfo->dest->free_in_buffer;
@@ -80,32 +119,37 @@ void term_destination(j_compress_ptr cinfo) {
     destBuf[len++] = 0xFF;
 
 	// Reallocate
-	if( (ud->buffer=realloc(ud->buffer, len))==NULL ){
-		fprintf(stdout,"Bad realloc!");
+	ud->buffer = realloc(ud->buffer, len);
+	if(ud->buffer == NULL){
+#ifdef DEBUG
+		fprintf(stdout,"Bad realloc!\n");
 		fflush(stdout);
+#endif
 	}
+	free(destBuf);
+	
 	ud->buffer_sz = len;
-  //destBuf.resize(len);
 }
 boolean empty_output_buffer(j_compress_ptr cinfo) {
+#ifdef DEBUG
   fprintf(stdout,"Error buffer too small!\n");
 	fflush(stdout);
+#endif
 	structJPEG* ud = (structJPEG *)cinfo->client_data;
+	JOCTET* destBuf = ud->buffer;
 	// TODO: Use realloc instead of the vector, for C only
 	// Reallocate
-	if( (ud->buffer=realloc(ud->buffer, ud->buffer_sz * 2))==NULL ){
-		fprintf(stdout,"Bad realloc!");
+	ud->buffer = realloc(ud->buffer, ud->buffer_sz * 2);
+	if(ud->buffer == NULL){
+#ifdef DEBUG
+		fprintf(stdout,"Bad realloc!\n");
 		fflush(stdout);
-	}
+#endif
+	free(destBuf);}
+	
 	cinfo->dest->free_in_buffer = ud->buffer_sz;
 	cinfo->dest->next_output_byte = ud->buffer + ud->buffer_sz;
 	ud->buffer_sz *= 2;
-	/*
-  unsigned int size = destBuf.size();
-  destBuf.resize(2*size);
-  cinfo->dest->next_output_byte = &(destBuf[size]);
-  cinfo->dest->free_in_buffer = size;
-	*/
 	
   return TRUE;
 }
@@ -127,23 +171,25 @@ j_compress_ptr new_cinfo(structJPEG *ud){
 	// Initialize the struct for compression
 	jpeg_create_compress(compress_info);
   if (compress_info->dest == NULL) {
+#ifdef DEBUG
 		fprintf(stdout,"Make pool!\n");
 		fflush(stdout);
+#endif
     compress_info->dest = (struct jpeg_destination_mgr *)
       (*cinfo->mem->alloc_small)(cinfo, JPOOL_PERMANENT, sizeof(struct jpeg_destination_mgr));
-		printf("dest: %x\n",compress_info->dest);
   }
+#ifdef DEBUG
+		printf("dest: %x\n",compress_info->dest);
+#endif
   compress_info->dest->init_destination = init_destination;
   compress_info->dest->empty_output_buffer = empty_output_buffer;
   compress_info->dest->term_destination = term_destination;
 	
 	// set the client data for the compressor
 	cinfo->client_data = ud;
-	
-	//cinfo->write_JFIF_header = TRUE;
-  compress_info->write_JFIF_header = FALSE;
-  //cinfo->dct_method = JDCT_IFAST;
-  compress_info->dct_method = JDCT_FASTEST; // TurboJPEG
+	// Some compression properties
+  compress_info->write_JFIF_header = USE_JFIF;
+  compress_info->dct_method = DEFAULT_DCT_METHOD;
 	
 	jpeg_set_quality( compress_info, DEFAULT_QUALITY, TRUE);
 	
@@ -167,7 +213,9 @@ static int lua_jpeg_compress(lua_State *L) {
 	size_t n = width * height;
 	size_t sz = 0;
 	
+#ifdef DEBUG
 	printf("w: %d, h: %d\n",width,height);
+#endif
 	
 	// TODO: Check if a torch object
   if (lua_isstring(L, 2)) {
@@ -180,6 +228,10 @@ static int lua_jpeg_compress(lua_State *L) {
   } else {
 		return luaL_error(L, "Bad JPEG Compress 16 input");
   }
+#ifdef DEBUG
+	fprintf(stdout,"Data: %x\n",data);
+	fflush(stdout);
+#endif
 	
 	j_compress_ptr cinfo = (j_compress_ptr) ud->cinfo;
 	// Set the width and height for compression
@@ -190,119 +242,80 @@ static int lua_jpeg_compress(lua_State *L) {
 	// http://refspecs.linuxbase.org/LSB_3.1.0/LSB-Desktop-generic/LSB-Desktop-generic/libjpeg.jpeg.set.defaults.1.html
 	jpeg_set_defaults(cinfo);
 	
+	size_t stride = cinfo->input_components * width;
+	JSAMPROW row_pointer[1];
 	// Begin compression
 	jpeg_start_compress(cinfo, TRUE);
-	// Write all scanlines at once, from data
-	size_t stride = cinfo->input_components * width;
-	
-	printf("HERE2\n");
-	fflush(stdout);
-	
-	fprintf(stdout,"Data: %x",data);
-	fflush(stdout);
-	
-  JSAMPROW row_pointer[1];
-	JSAMPLE* img_ptr = (JSAMPLE*)data;	
-	while (cinfo->next_scanline < height) {
-		*row_pointer = img_ptr;
-		jpeg_write_scanlines(cinfo, row_pointer, 1);
-		img_ptr += stride;
+	if( ud->downsample > 0 ){
+		// We are special: allocate a buffer for each row
+		JSAMPLE* row_buf = (JSAMPLE*)malloc(sizeof(JSAMPLE) * stride);
+		JSAMPLE* img_ptr = (JSAMPLE*)data;
+		// Increase the stride. Could still be 1
+		stride *= ud->downsample;
+		while (cinfo->next_scanline < height) {
+			*row_pointer = img_ptr;
+			// TODO: Maybe other fills for subsampling RGB or Grey
+			fill_yuyv(img_ptr, row_buf, ud);
+			jpeg_write_scanlines(cinfo, row_pointer, 1);
+			img_ptr += stride;
+		}
+		free(row_buf);
+	} else {
+		// Default is just a raw copy
+		// Suitable for jpeg and grayscale
+		JSAMPLE* img_ptr = (JSAMPLE*)data;
+		while (cinfo->next_scanline < height) {
+			*row_pointer = img_ptr;
+			jpeg_write_scanlines(cinfo, row_pointer, 1);
+			img_ptr += stride;
+		}
 	}
 	
-	// Check that the scanlines were written correctly
-	//if(n_written!=cinfo->image_height){
-	//	return luaL_error(L, "Did not write all scanlines!");
-	//}
 	// Finish the compression
   jpeg_finish_compress(cinfo);
 	
-	//int len = ud->buffer_sz - cinfo->dest->free_in_buffer;
+#ifdef DEBUG
 	printf("len: %zu %zu\n",cinfo->dest->free_in_buffer,ud->buffer_sz);
 	fflush(stdout);
-	lua_pushlstring(L, (const char *)ud->buffer, ud->buffer_sz);
-
-  //if (lenPacked > 0)
-//    lua_pushlstring(L, (const char *)&(destBuf[0]), lenPacked);
-  //else
-  //  return luaL_error(L, "Compress Error");
+#endif
 	
-
+	lua_pushlstring(L, (const char *)ud->buffer, ud->buffer_sz);	
   return 1;
 }
 
-static int lua_jpeg_rgb_new(lua_State *L) {
+static int lua_jpeg_new_compressor(lua_State *L) {
 	// Form the struct of metadata
 	// The function also pushes it to the stack
 	structJPEG *ud = (structJPEG *)lua_newuserdata(L, sizeof(structJPEG));
-	
+	// Compressor format
+	size_t len;
+	const char * fmt = luaL_checklstring(L,1,&len);
 	// Form the compressor
 	j_compress_ptr cinfo = new_cinfo(ud);
 	
-	// Grayscale specific
-	cinfo->in_color_space = JCS_RGB;
-	cinfo->input_components = 3;
+	if (strncmp(fmt, "rgb", 3) == 0){
+		cinfo->in_color_space = JCS_RGB;
+		cinfo->input_components = 3;
+		ud->downsample = 0;
+	} else if (strncmp(fmt, "gray", 4) == 0){
+		cinfo->in_color_space = JCS_GRAYSCALE;
+		cinfo->input_components = 1;
+		ud->downsample = 0;
+	} else if (strncmp(fmt, "yuyv", 4) == 0){
+		cinfo->in_color_space = JCS_YCbCr;
+		cinfo->input_components = 3;
+		ud->downsample = 2;
+	} else if (strncmp(fmt, "yuv", 3) == 0){
+		cinfo->in_color_space = JCS_YCbCr;
+		cinfo->input_components = 3;
+		ud->downsample = 0;
+	} else {
+		return luaL_error(L, "Unsupported format.");
+	}
 	
 	// Set the metatable information
 	luaL_getmetatable(L, MT_NAME);
   lua_setmetatable(L, -2);
-	
-	// only pushed the metatable
-	return 1;
-}
-
-static int lua_jpeg_yuv_new(lua_State *L) {
-	// Form the struct of metadata
-	// The function also pushes it to the stack
-	structJPEG *ud = (structJPEG *)lua_newuserdata(L, sizeof(structJPEG));
-	// Set the metatable information
-	luaL_getmetatable(L, MT_NAME);
-  lua_setmetatable(L, -2);
-	
-	// Form the compressor
-	j_compress_ptr cinfo = new_cinfo(ud);
-	
-	// Grayscale specific
-	cinfo->in_color_space = JCS_YCbCr;
-	cinfo->input_components = 3;
-	
-	// only pushed the metatable
-	return 1;
-}
-
-static int lua_jpeg_yuyv_new(lua_State *L) {
-	// Form the struct of metadata
-	// The function also pushes it to the stack
-	structJPEG *ud = (structJPEG *)lua_newuserdata(L, sizeof(structJPEG));
-	// Set the metatable information
-	luaL_getmetatable(L, MT_NAME);
-  lua_setmetatable(L, -2);
-	
-	// Form the compressor
-	j_compress_ptr cinfo = new_cinfo(ud);
-	
-	// Grayscale specific
-	cinfo->in_color_space = JCS_YCbCr;
-	cinfo->input_components = 3;
-	
-	// only pushed the metatable
-	return 1;
-}
-
-static int lua_jpeg_gray_new(lua_State *L) {
-	// Form the struct of metadata
-	// The function also pushes it to the stack
-	structJPEG *ud = (structJPEG *)lua_newuserdata(L, sizeof(structJPEG));
-	// Set the metatable information
-	luaL_getmetatable(L, MT_NAME);
-  lua_setmetatable(L, -2);
-	
-	// Form the compressor
-	j_compress_ptr cinfo = new_cinfo(ud);
-	
-	// Grayscale specific
-	cinfo->in_color_space = JCS_GRAYSCALE;
-	cinfo->input_components = 1;
-	
 	// only pushed the metatable
 	return 1;
 }
@@ -335,28 +348,50 @@ static int lua_jpeg_quality(lua_State *L) {
   return 0;
 }
 
+static int lua_jpeg_downsampling(lua_State *L) {
+  structJPEG *ud = lua_checkjpeg(L, 1);
+  int dsample = luaL_checkint(L, 2);
+	if(dsample<0 || dsample>4 || dsample==3)
+  	return luaL_error(L, "Bad downsample factor");
+	ud->downsample = dsample;
+  return 0;
+}
+
 static int lua_jpeg_delete(lua_State *L) {
   structJPEG *ud = lua_checkjpeg(L, 1);
-  /* cleanup heap allocation */
+  /* cleanup heap allocations */
 	if(ud->buffer!=NULL){
   	free(ud->buffer);
 	}
-	
 	if(ud->cinfo->err!=NULL){
 		free(ud->cinfo->err);
 	}
-	
 	if(ud->cinfo!=NULL){
 		jpeg_destroy_compress((j_compress_ptr)ud->cinfo);
 		free(ud->cinfo);
 	}
-	
   return 1;
 }
 
 static int lua_jpeg_tostring(lua_State *L) {
-  structJPEG *p = lua_checkjpeg(L, 1);
-  lua_pushstring(L,"Compressor");
+  structJPEG *ud = lua_checkjpeg(L, 1);
+	j_compress_ptr cinfo = (j_compress_ptr)ud->cinfo;
+	char buffer[64];
+	switch(cinfo->in_color_space){
+		case JCS_RGB:
+			sprintf(buffer,"RGB: %d channels.",cinfo->input_components);
+			break;
+		case JCS_GRAYSCALE:
+			sprintf(buffer,"Gray: %d channels.",cinfo->input_components);
+			break;
+		case JCS_YCbCr:
+			sprintf(buffer,"YCbCr: %d channels.",cinfo->input_components);
+			break;
+		default:
+			sprintf(buffer,"Unknown: %d channels.",cinfo->input_components);
+	}
+  lua_pushstring(L,buffer);
+	
   return 1;
 }
 
@@ -375,6 +410,7 @@ static int lua_jpeg_index(lua_State *L) {
 static const struct luaL_reg jpeg_Methods [] = {
   {"compress", lua_jpeg_compress},
 	{"quality", lua_jpeg_quality},
+	{"downsampling", lua_jpeg_downsampling},
   {"__gc", lua_jpeg_delete},
 	{"__tostring", lua_jpeg_tostring},
 	{"__index", lua_jpeg_index},
@@ -382,10 +418,7 @@ static const struct luaL_reg jpeg_Methods [] = {
 };
 
 static const struct luaL_reg jpeg_Functions [] = {
-  {"rgb", lua_jpeg_rgb_new},
-	{"yuv", lua_jpeg_yuv_new},
-  {"gray", lua_jpeg_gray_new},
-  {"yuyv", lua_jpeg_yuyv_new},
+	{"compressor", lua_jpeg_new_compressor},
   {NULL, NULL}
 };
 

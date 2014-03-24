@@ -16,8 +16,8 @@ void error_exit_compress(j_common_ptr cinfo)
 }
 
 void init_destination(j_compress_ptr cinfo) {
-//  const unsigned int size = 65536; //UDP friendly size
-  const unsigned int size = 2*65536;
+  const unsigned int size = 65536; //UDP friendly size
+//  const unsigned int size = 2*65536;
   destBuf.resize(size);
   cinfo->dest->next_output_byte = &(destBuf[0]);
   cinfo->dest->free_in_buffer = size;
@@ -26,7 +26,8 @@ void init_destination(j_compress_ptr cinfo) {
 boolean empty_output_buffer(j_compress_ptr cinfo)
 {
   fprintf(stdout,"Error buffer too small!\n");
-
+// TODO: Use client_data  of cinfo
+	// TODO: Use realloc instead of the vector, for C only
   unsigned int size = destBuf.size();
   destBuf.resize(2*size);
   cinfo->dest->next_output_byte = &(destBuf[size]);

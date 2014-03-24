@@ -1,5 +1,4 @@
-local pwd = os.getenv('PWD')
-package.cpath = pwd..'/../../../Player/Lib/?.so;'..package.cpath
+dofile('../../include.lua')
 
 local jpeg = require 'jpeg'
 w = 320
@@ -32,12 +31,26 @@ for k=1,nbytes,ch do
   end
 end
 
-img_jpeg = jpeg.compress( img:pointer(), w, h )
+local c_rgb = jpeg.rgb()
+print(c_rgb)
+print('compressing')
+c_rgb:quality(25)
+--os.exit()
+--print(jpeg.compress)
+--print(c_rgb.compress)
+print('ok...')
+--img_jpeg = jpeg.compress( c_rgb,img:pointer(), w, h )
+img_jpeg = c_rgb:compress( img:pointer(), w, h )
+
+
+
+
 print(type(img_jpeg),'Compression Ratio:', #img_jpeg, #img_jpeg/nbytes )
 
 f = io.open('img.jpeg','w')
 n = f:write( img_jpeg )
 f:close()
+os.exit()
 
 
 -- gray

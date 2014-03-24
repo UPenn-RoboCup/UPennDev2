@@ -4,17 +4,19 @@
  * University of Pennsylvania
  * */
 
+// TODO: Add torch support, then we can compress a sub window of the camera image
+// If we can add torch support to the uvc library - should be a simple thing with pointers
+
 #include <lua.hpp>
 #include "jpeg_utils.h"
 #include <string.h>
 #define MT_NAME "jpeg_mt"
 
+// TODO: The following is definitely not thread safe
 std::vector<unsigned char> destBuf;
 static uint8_t global_shift = 8;
-#define MAX_CH 4
-#define MAX_WIDTH 640
-//static JSAMPLE row[MAX_CH*MAX_WIDTH];
 static int quality = 85;
+// End TODO
 
 static structJPEG * lua_checkjpeg(lua_State *L, int narg) {
   void *ud = luaL_checkudata(L, narg, MT_NAME);
@@ -72,12 +74,12 @@ inline JSAMPLE* assign_data_yuyv(const uint8_t *p, JSAMPLE *row, int width,
 	return row;
 }
 
+// TODO: Should have a jpeg metatable for compression (a compressor)
+// WOuld have resolution and type (YUYV, RGB) and other relavant parameters
 int CompressData(const uint8_t* datap, int width, int height, int data_ch, int ch, int scale,
                 J_COLOR_SPACE color_space, 
                 JSAMPLE*(*assign_data)(const uint8_t *p, JSAMPLE *row, 
                                         int width, int height, int ch, int scale)) {
-  int out_width = width / scale;
-  int out_height = height / scale;
 
   struct jpeg_compress_struct cinfo;
   struct jpeg_error_mgr jerr;
@@ -94,6 +96,8 @@ int CompressData(const uint8_t* datap, int width, int height, int data_ch, int c
   cinfo.dest->empty_output_buffer = empty_output_buffer;
   cinfo.dest->term_destination = term_destination;
 
+	int out_width = width / scale;
+  int out_height = height / scale;
   cinfo.image_width = out_width;
   cinfo.image_height = out_height;
   cinfo.input_components = ch;

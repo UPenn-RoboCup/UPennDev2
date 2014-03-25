@@ -15,7 +15,8 @@ static YouBotManipulator* ybArm = NULL;
 static int lua_init_base(lua_State *L) {
   if(ybBase) return luaL_error(L,"Base is initialized already!");
   try {
-		ybBase = new YouBotBase("youbot-base", YOUBOT_CONFIGURATIONS_DIR);
+		ybBase = new YouBotBase(
+				"youbot-base", YOUBOT_CONFIGURATIONS_DIR);
     ybBase->doJointCommutation();
 	} catch (std::exception& e) {
 		return luaL_error(L, e.what() );
@@ -26,7 +27,8 @@ static int lua_init_base(lua_State *L) {
 static int lua_init_arm(lua_State *L) {
 	if(ybArm) return luaL_error(L,"Arm is initialized already!");
 	try {
-		ybArm = new YouBotManipulator("youbot-manipulator", YOUBOT_CONFIGURATIONS_DIR);
+		ybArm = new YouBotManipulator(
+				"youbot-manipulator", YOUBOT_CONFIGURATIONS_DIR);
     ybArm->doJointCommutation();
     ybArm->calibrateManipulator();
 	} catch (std::exception& e) {
@@ -66,18 +68,14 @@ static int lua_set_base_velocity(lua_State *L) {
   double dy = (double)lua_tonumber(L, 2);
   double da = (double)lua_tonumber(L, 3);
 
-  /*
-  printf("dx: %lf, dy: %lf, da: %lf \n",dx,dy,da);
-  fflush(stdout);
-  */
-
   // Make the appropriate quantities
   longitudinalVelocity = dx * meter_per_second;
   transversalVelocity  = dy * meter_per_second;
   angularVelocity      = da * radian_per_second;
 
   // Set the base
-  ybBase->setBaseVelocity(longitudinalVelocity, transversalVelocity, angularVelocity);
+  ybBase->setBaseVelocity(
+			longitudinalVelocity, transversalVelocity, angularVelocity);
 
   return 0;
 }
@@ -90,7 +88,8 @@ static int lua_get_base_position(lua_State *L) {
 
   if(!ybBase){return luaL_error(L,"Base is not initialized!");}
 
-  ybBase->getBasePosition(actualLongitudinalPose, actualTransversalPose, actualAngle);
+  ybBase->getBasePosition(
+			actualLongitudinalPose, actualTransversalPose, actualAngle);
 
   // Push the numbers onto the stack
   lua_pushnumber(L, actualLongitudinalPose.value() ); //x
@@ -116,10 +115,6 @@ static int lua_set_arm_angle(lua_State *L) {
 
   int joint_id = luaL_checkint(L, 1);
   double joint_angle = (double)lua_tonumber(L, 2);
-  /*
-  printf("joint_id: %d, angle: %lf\n", joint_id, joint_angle);
-  fflush(stdout);
-  */
 
   // Convert the format
   desiredJointAngle.angle = joint_angle * radian;
@@ -201,9 +196,10 @@ static int lua_set_arm_max_positioning_velocity(lua_State *L) {
   static MaximumPositioningVelocity maxPositioningVelocity;
   int joint_id = luaL_checkint(L, 1);
   double max_velocity = (double)lua_tonumber(L, 2);
-	ybArm->getArmJoint(joint_id).getConfigurationParameter(maxPositioningVelocity);
-	maxPositioningVelocity.setParameter(max_velocity * radian_per_second);
-  ybArm->getArmJoint(joint_id).setConfigurationParameter(maxPositioningVelocity);
+	maxPositioningVelocity
+		.setParameter(max_velocity * radian_per_second);
+  ybArm->getArmJoint(joint_id)
+		.setConfigurationParameter(maxPositioningVelocity);
   return 0;
 }
 
@@ -211,7 +207,8 @@ static int lua_get_arm_max_positioning_velocity(lua_State *L) {
   static MaximumPositioningVelocity maxPositioningVelocity;
 	static quantity<angular_velocity> velocity;
   int joint_id = luaL_checkint(L, 1);
-	ybArm->getArmJoint(joint_id).getConfigurationParameter(maxPositioningVelocity);
+	ybArm->getArmJoint(joint_id)
+		.getConfigurationParameter(maxPositioningVelocity);
 	maxPositioningVelocity.getParameter(velocity);
 	lua_pushnumber(L, velocity.value() );
   return 1;
@@ -223,8 +220,10 @@ static int lua_get_arm_joint_limit(lua_State *L) {
 	static quantity<plane_angle> upperLimit;
 	static bool areLimitsActive;
   int joint_id = luaL_checkint(L, 1);
-	ybArm->getArmJoint(joint_id).getConfigurationParameter(jointLimitsRadian);
-	jointLimitsRadian.getParameter(lowerLimit,upperLimit,areLimitsActive);
+	ybArm->getArmJoint(joint_id)
+		.getConfigurationParameter(jointLimitsRadian);
+	jointLimitsRadian
+		.getParameter(lowerLimit,upperLimit,areLimitsActive);
 	//
 	lua_pushnumber(L, lowerLimit.value() );
 	lua_pushnumber(L, upperLimit.value() );
@@ -234,40 +233,107 @@ static int lua_get_arm_joint_limit(lua_State *L) {
 
 static int lua_set_arm_joint_limit(lua_State *L) {
   static JointLimitsRadian jointLimitsRadian;
-  int joint_id = luaL_checkint(L, 1);
   static quantity<plane_angle> lowerLimit;
   static quantity<plane_angle> upperLimit;
+  int joint_id = luaL_checkint(L, 1);
   lowerLimit = luaL_checknumber(L, 2) * radian;
   upperLimit = luaL_checknumber(L, 3) * radian;
   bool areLimitsActive = (bool)lua_toboolean(L, 4);
 	jointLimitsRadian.setParameter(lowerLimit,upperLimit,areLimitsActive);
-  ybArm->getArmJoint(joint_id).setConfigurationParameter(jointLimitsRadian);
+/*
+	ybArm->getArmJoint(joint_id)
+		.setConfigurationParameter(jointLimitsRadian);
+*/	
   return 0;
 }
 
 /* PID from JointConfigurator*/
-static int lua_get_arm_p(lua_State *L) {
-	static PParameterFirstParametersPositionControl PParameterFirstParametersPositionControl_Parameter;
-  static int PParameterFirstParametersPositionControl_actual;
+static int lua_get_arm_pid1(lua_State *L) {
+	static PParameterFirstParametersPositionControl p_param;
+	static IParameterFirstParametersPositionControl i_param;
+	static DParameterFirstParametersPositionControl d_param;
+  static int p, i, d;
 	//
   int joint_id = luaL_checkint(L, 1);
-	ybArm->getArmJoint(joint_id).getConfigurationParameter(PParameterFirstParametersPositionControl_Parameter);
-	PParameterFirstParametersPositionControl_Parameter.getParameter(PParameterFirstParametersPositionControl_actual);
+	ybArm->getArmJoint(joint_id)
+		.getConfigurationParameter(p_param);
+	p_param.getParameter(p);
+	ybArm->getArmJoint(joint_id)
+		.getConfigurationParameter(i_param);
+	i_param.getParameter(i);
+	ybArm->getArmJoint(joint_id)
+		.getConfigurationParameter(d_param);
+	d_param.getParameter(d);
 	//
-	lua_pushnumber(L, PParameterFirstParametersPositionControl_actual );
-  return 1;
+	lua_pushnumber(L, p );
+	lua_pushnumber(L, i );
+	lua_pushnumber(L, d );
+  return 3;
 }
-static int lua_set_arm_p(lua_State *L) {
-	static PParameterFirstParametersPositionControl PParameterFirstParametersPositionControl_Parameter;
-  static int PParameterFirstParametersPositionControl_actual;
+static int lua_set_arm_pid1(lua_State *L) {
+	static PParameterFirstParametersPositionControl p_param;
+	static IParameterFirstParametersPositionControl i_param;
+	static DParameterFirstParametersPositionControl d_param;
 	//
   int joint_id = luaL_checkint(L, 1);
 	int p = luaL_checkint(L, 2);
-	PParameterFirstParametersPositionControl_Parameter.setParameter(p);
-	ybArm->getArmJoint(joint_id).setConfigurationParameter(PParameterFirstParametersPositionControl_Parameter);
+	int i = luaL_checkint(L, 3);
+	int d = luaL_checkint(L, 4);
+	p_param.setParameter(p);
+	i_param.setParameter(i);
+	d_param.setParameter(d);
+	ybArm->getArmJoint(joint_id)
+		.setConfigurationParameter(p_param);
+	ybArm->getArmJoint(joint_id)
+		.setConfigurationParameter(i_param);
+	ybArm->getArmJoint(joint_id)
+		.setConfigurationParameter(d_param);
   return 0;
 }
 
+/* PID from JointConfigurator*/
+static int lua_get_arm_pid2(lua_State *L) {
+	static PParameterSecondParametersPositionControl p_param;
+	static IParameterSecondParametersPositionControl i_param;
+	static DParameterSecondParametersPositionControl d_param;
+  static int p, i, d;
+	//
+  int joint_id = luaL_checkint(L, 1);
+	ybArm->getArmJoint(joint_id)
+		.getConfigurationParameter(p_param);
+	p_param.getParameter(p);
+	ybArm->getArmJoint(joint_id)
+		.getConfigurationParameter(i_param);
+	i_param.getParameter(i);
+	ybArm->getArmJoint(joint_id)
+		.getConfigurationParameter(d_param);
+	d_param.getParameter(d);
+	//
+	lua_pushnumber(L, p );
+	lua_pushnumber(L, i );
+	lua_pushnumber(L, d );
+  return 3;
+}
+static int lua_set_arm_pid2(lua_State *L) {
+	static PParameterSecondParametersPositionControl p_param;
+	static IParameterSecondParametersPositionControl i_param;
+	static DParameterSecondParametersPositionControl d_param;
+	//
+  int joint_id = luaL_checkint(L, 1);
+	int p = luaL_checkint(L, 2);
+	int i = luaL_checkint(L, 3);
+	int d = luaL_checkint(L, 4);
+	p_param.setParameter(p);
+	i_param.setParameter(i);
+	d_param.setParameter(d);
+	ybArm->getArmJoint(joint_id)
+		.setConfigurationParameter(p_param);
+	ybArm->getArmJoint(joint_id)
+		.setConfigurationParameter(i_param);
+	ybArm->getArmJoint(joint_id)
+		.setConfigurationParameter(d_param);
+  return 0;
+}
 
 static const struct luaL_reg youbot_lib [] = {
   {"init_base", lua_init_base},
@@ -297,8 +363,10 @@ static const struct luaL_reg youbot_lib [] = {
   {"get_arm_joint_limit", lua_get_arm_joint_limit},
   {"set_arm_joint_limit", lua_set_arm_joint_limit},
 	//
-	{"get_arm_p", lua_get_arm_p},
-	{"set_arm_p", lua_set_arm_p},
+	{"get_arm_pid1", lua_get_arm_pid1},
+	{"set_arm_pid1", lua_set_arm_pid1},
+	{"get_arm_pid2", lua_get_arm_pid2},
+	{"set_arm_pid2", lua_set_arm_pid2},
   //
   {NULL, NULL}
 };

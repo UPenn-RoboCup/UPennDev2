@@ -28,8 +28,8 @@ end
 
 
 -- Move the base arm
---youbot.set_arm_angle(1,2)
---unix.usleep(3e6)
+youbot.set_arm_angle(1,2)
+unix.usleep(3e6)
 
 -- Shutdown
 youbot.shutdown_base()

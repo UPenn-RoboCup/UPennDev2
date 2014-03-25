@@ -233,7 +233,6 @@ static int lua_get_arm_joint_limit(lua_State *L) {
 }
 
 static int lua_set_arm_joint_limit(lua_State *L) {
-	// TODO: This is a bit wrong...
   static JointLimitsRadian jointLimitsRadian;
   int joint_id = luaL_checkint(L, 1);
   static quantity<plane_angle> lowerLimit;
@@ -241,8 +240,8 @@ static int lua_set_arm_joint_limit(lua_State *L) {
   lowerLimit = luaL_checknumber(L, 2) * radian;
   upperLimit = luaL_checknumber(L, 3) * radian;
   bool areLimitsActive = (bool)lua_toboolean(L, 4);
+	jointLimitsRadian.setParameter(lowerLimit,upperLimit,areLimitsActive);
   ybArm->getArmJoint(joint_id).setConfigurationParameter(jointLimitsRadian);
-  jointLimitsRadian.getParameter(lowerLimit,upperLimit,areLimitsActive);
   return 0;
 }
 

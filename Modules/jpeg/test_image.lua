@@ -1,7 +1,7 @@
 local jpeg = require 'jpeg'
 require 'unix'
 
-local yuyv_filename = '../uvc/image_yuyv'
+local yuyv_filename = 'image_yuyv'
 local yuyv_file = io.open(yuyv_filename, 'r')
 local yuyv_str = yuyv_file:read('*a')
 
@@ -43,4 +43,13 @@ print("ok?",#yuyv_jpg,t1-t0)
 local jpg_file = io.open('yuyv.jpg', 'w');
 jpg_file:write(yuyv_jpg)
 jpg_file:close()
---print("ok?",#yuyv_jpg,c_yuyv)
+
+
+c_yuyv:downsampling(0)
+--c_yuyv:downsampling(1)
+--c_yuyv:downsampling(2)
+local yuyv_jpg_crop = c_yuyv:compress_crop(yuyv_str, 640, 480, 121, 321, 121, 240)
+print("ok2?",#yuyv_jpg_crop)
+local jpg_file = io.open('yuyv_crop.jpg', 'w');
+jpg_file:write(yuyv_jpg_crop)
+jpg_file:close()

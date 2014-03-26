@@ -43,7 +43,7 @@ c_rgb:quality(95)
 --os.exit()
 --print(jpeg.compress)
 --print(c_rgb.compress)
-for i=1,100 do
+for i=1,10 do
 	t0=unix.time()
 	--img_jpeg = jpeg.compress( c_rgb,img:pointer(), w, h )
 	local ntimes = 100
@@ -63,6 +63,11 @@ f = io.open('img.jpeg','w')
 n = f:write( img_jpeg )
 f:close()
 
+
+img_jpeg_crop = c_rgb:compress_crop( img:pointer(), w, h, 10, 20, 100, 100 )
+f = io.open('img_crop.jpeg','w')
+n = f:write( img_jpeg_crop )
+f:close()
 
 -- gray
 ch = 1;
@@ -103,6 +108,11 @@ print(type(img_jpeg),'Compression Ratio:', #img_jpeg, #img_jpeg/nbytes )
 
 f = io.open('img_gray.jpeg','w')
 n = f:write( img_jpeg )
+f:close()
+
+img_jpeg_crop = c_gray:compress_crop( img:pointer(), w, h, 10, 20, 10, h )
+f = io.open('img_gray_crop.jpeg','w')
+n = f:write( img_jpeg_crop )
 f:close()
 
 os.exit()

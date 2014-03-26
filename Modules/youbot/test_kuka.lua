@@ -18,29 +18,43 @@ for j=1,5 do
 	print("PID2",p,i,d)
 	print()
 end
-----[[
+--[[
 youbot.set_arm_pid1(1,1,0,0)
 youbot.set_arm_pid2(1,2,0,0)
 unix.usleep(1e6)
 --]]
+--os.exit()
 
 -- Read for 2 seconds
 local t0 = unix.time()
 local t = unix.time()
 local rad = {}
-while t-t0<5 do
+while t-t0<1 do
   for i=1,5 do
     rad[i] = youbot.get_arm_position(i)
-    print('Joint '..i, rad[i])
   end
   unix.usleep(1e4)
   t = unix.time()
 end
-
+print('Joints',unpack(rad))
 
 -- Move the base arm
-youbot.set_arm_angle(1,-.1)
+youbot.set_arm_angle(1,-2.9)
+youbot.set_arm_angle(2,-1)
 unix.usleep(3e6)
+
+-- Read for 2 seconds
+local t0 = unix.time()
+local t = unix.time()
+local rad = {}
+while t-t0<1 do
+  for i=1,5 do
+    rad[i] = youbot.get_arm_position(i)
+  end
+  unix.usleep(1e4)
+  t = unix.time()
+end
+print('Joints',unpack(rad))
 
 -- Shutdown
 youbot.shutdown_base()

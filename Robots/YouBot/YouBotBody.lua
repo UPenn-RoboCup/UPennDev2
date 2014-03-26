@@ -44,12 +44,12 @@ servo.max_rad = vector.new({
   167,74,145,100,160,
 })*DEG_TO_RAD
 servo.direction = vector.new({
-  1,1,1,1,1
+  1,-1,1,1,1
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
 -- Offsets represent the actual zero position
 servo.offset = vector.new({
-  167,65,-151,102,167
+  -167,-74,-151,102,167
 })*DEG_TO_RAD
 assert(#servo.offset==nJoint,'Bad servo offsets!')
 

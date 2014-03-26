@@ -1,15 +1,6 @@
 -- 58.5cm up from the z=0 of the arm
 -- 41.5cm back from the x=0 position
 
--- Joint limits
---[[
-Joint 1	-5.8401401893656	-0.010069207223044	true
-Joint 2	-2.6179938779915	-0.010069207223044	true
-Joint 3	-5.0265482457437	-0.015707963267949	true
-Joint 4	-3.4292032486367	-0.022123891926689	true
-Joint 5	-5.6415924413056	-0.11061945963344	true
---]]
-
 local Body = {}
 
 -- Utilities
@@ -31,7 +22,8 @@ local get_time = unix.time
 
 -- Five degree of freedom arm
 local nJoint = 5
-assert(nJoint==Config.nJoint,'Config file and Body must agree on nuber of joints!')
+assert(nJoint==Config.nJoint,
+	'Config file and Body must agree on nuber of joints!')
 
 -- Table of servo properties
 local servo = {}
@@ -108,10 +100,12 @@ Body.entry = function()
 end
 
 -- Update speaks to the hardware of the robot
-Body.update_cycle = 0.1
+Body.update_cycle = 0.100
 Body.nop = function() end
 Body.update = function()
   -- Get joint readings
+	-- Reading kills you!
+	--[[
   local rad,mps,nm = {},{},{}
   for i=1,nJoint do
 		local pos = youbot.get_arm_position(i)
@@ -123,10 +117,7 @@ Body.update = function()
   jcm.set_sensor_position(rad)
   jcm.set_sensor_velocity(mps)
   jcm.set_sensor_torque(nm)
-
-	-- Get Odometry measurements
-	local dx, dy, da = youbot.get_base_position()
-	wcm.set_robot_odometry{dx,dy,da}
+	--]]
   
   -- Set joints from shared memory
   local desired_pos = jcm.get_actuator_command_position()
@@ -139,12 +130,17 @@ Body.update = function()
   
   -- Set the gripper from shared memory
   local spacing = jcm.get_gripper_command_position()
-  local width = math.max(math.min(spacing[1],0.0115),0)
+  --local width = math.max(math.min(spacing[1],0.0115),0)
+  local width = math.max(math.min(spacing[1],0.02),0)
   youbot.set_gripper_spacing(width)
   
   -- Set base from shared memory
   local vel = mcm.get_walk_vel()
   youbot.set_base_velocity( unpack(vel) )
+	
+	-- Get Odometry measurements
+	local dx, dy, da = youbot.get_base_position()
+	wcm.set_robot_odometry{dx,dy,da}
   
 end
 

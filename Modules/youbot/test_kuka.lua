@@ -41,6 +41,9 @@ print('Joints',unpack(rad))
 -- Move the base arm
 youbot.set_arm_angle(1,-2.9)
 youbot.set_arm_angle(2,-1)
+youbot.set_arm_angle(3,-2.5)
+youbot.set_arm_angle(4,-1.7)
+youbot.set_arm_angle(5,-2.95)
 unix.usleep(3e6)
 
 -- Read for 2 seconds

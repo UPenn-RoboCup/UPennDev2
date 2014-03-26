@@ -37,19 +37,19 @@ assert(nJoint==Config.nJoint,'Config file and Body must agree on nuber of joints
 local servo = {}
 -- Real Robot is the default
 servo.min_rad = vector.new({
-  -167,-74,-143,-100,-160,
+  -165,-57,-142,-95,-150,
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 servo.max_rad = vector.new({
-  167,74,143,100,160,
+  165,89,142,95,150,
 })*DEG_TO_RAD
 servo.direction = vector.new({
-  1,-1,1,1,1
+  1,-1,1,-1,1
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
 -- Offsets represent the actual zero position
 servo.offset = vector.new({
-  -167,-74,-143,102,167
+  -167,-58,-143,-97,-158
 })*DEG_TO_RAD
 assert(#servo.offset==nJoint,'Bad servo offsets!')
 
@@ -102,13 +102,13 @@ Body.entry = function()
     local rad = (pos - servo.offset[i]) * servo.direction[i]
     init_pos[i] = rad
   end
-  jcm.set_actuator_command_position(init_pos)
+	Body.set_command_position(init_pos)
   jcm.set_sensor_position(init_pos)
   mcm.set_walk_vel(vector.zeros(3))
 end
 
 -- Update speaks to the hardware of the robot
-Body.update_cycle = 0.010
+Body.update_cycle = 0.1
 Body.nop = function() end
 Body.update = function()
   -- Get joint readings
@@ -134,7 +134,7 @@ Body.update = function()
     -- Correct the direction and the offset
     local val = v * servo.direction[i] + servo.offset[i]
     -- Set the youbot arm
-    --youbot.set_arm_angle(i,val)
+    youbot.set_arm_angle(i,val)
   end
   
   -- Set the gripper from shared memory

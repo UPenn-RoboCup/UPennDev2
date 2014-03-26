@@ -43,7 +43,7 @@ c_rgb:quality(95)
 --os.exit()
 --print(jpeg.compress)
 --print(c_rgb.compress)
-for i=1,100000 do
+for i=1,100 do
 	t0=unix.time()
 	--img_jpeg = jpeg.compress( c_rgb,img:pointer(), w, h )
 	local ntimes = 100
@@ -92,6 +92,7 @@ local c_gray = jpeg.compressor('gray')
 print('compressing',c_gray)
 c_rgb:quality(95)
 local ntimes = 100
+t0=unix.time()
 for i=1,ntimes do
 	img_jpeg = c_gray:compress( img:pointer(), w, h )
 end

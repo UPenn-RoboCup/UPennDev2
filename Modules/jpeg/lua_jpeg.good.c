@@ -37,7 +37,7 @@ typedef struct {
 	j_common_ptr cinfo;
 	JOCTET* buffer;
 	size_t buffer_sz;
-	uint8_t downsample; // Downsampling if needed
+	uint8_t subsample; // Downsampling if needed
 	uint8_t fmt;
 } structJPEG;
 // Be able to check the input of a jpeg
@@ -208,17 +208,17 @@ static int lua_jpeg_compress(lua_State *L) {
 	JDIMENSION width  = luaL_checkint(L, 3);
   JDIMENSION height = luaL_checkint(L, 4);
 	
-#ifdef DEBUG
-	printf("w: %d, h: %d\n",width,height);
-	fprintf(stdout,"Data: %p\n",(void*)data);
-	fflush(stdout);
-#endif
-	
 	// Access the JPEG compression settings
 	j_compress_ptr cinfo = (j_compress_ptr) ud->cinfo;
 	// Set the width and height for compression
-  cinfo->image_width  = width;
-	cinfo->image_height = height;
+  cinfo->image_width  = width  >> ud->subsample;
+	cinfo->image_height = height >> ud->subsample;
+	
+#ifdef DEBUG
+	printf("w: %d, h: %d | %d %d\n",width,height,cinfo->image_width,cinfo->image_height);
+	fprintf(stdout,"Data: %p\n",(void*)data);
+	fflush(stdout);
+#endif
 	
 	// Ensure the colorspace of the OUTPUTTED jpeg (for raw)
 	// For raw, this is the same as the input format
@@ -231,27 +231,38 @@ static int lua_jpeg_compress(lua_State *L) {
 	JSAMPROW row_pointer[1];
 	JSAMPLE* img_ptr = data;
 	
-	// YUYV is special
-	if(ud->fmt==3){		
-		JSAMPLE* yuv_row = (JSAMPLE*)malloc( 3 * width * sizeof(JSAMPLE) );
-		*row_pointer = yuv_row;
-		int i;
 #ifdef DEBUG
 		printf("YUYV: %2x %2x %2x %2x\n", data[0], data[1], data[2], data[3]);
 		int line = 0;
 #endif
+	
+	// YUYV is special
+	if(ud->fmt==3){
+		int w = cinfo->image_width;
+		int h = cinfo->image_height;
+		size_t img_stride = 2*width * ud->subsample;
+		JSAMPLE* yuv_row = (JSAMPLE*)malloc( 3 * w * sizeof(JSAMPLE) );
+		if(yuv_row==NULL){
+			return luaL_error(L,"Bad malloc of yuv_row");
+		}
+		*row_pointer = yuv_row;
+		int i;
 		uint8_t y0,u,y1,v;
-		while (cinfo->next_scanline < height) {
+		while (cinfo->next_scanline < h) {
 			JSAMPLE* yuv_pixel = yuv_row;
 #ifdef DEBUG
 			line++;
 #endif
 			i=0;
-			while(i<width){
+			while(i<w){
 				y0 = *img_ptr++;
-				u = *img_ptr++;
+				u  = *img_ptr++;
 				y1 = *img_ptr++;
-				v = *img_ptr++;
+				v  = *img_ptr++;
+				if (ud->subsample==2){
+					// Skip the next pixel, too
+					img_ptr += 4;
+				}
 				//
 				*yuv_pixel = y0;
 				yuv_pixel++;
@@ -259,26 +270,38 @@ static int lua_jpeg_compress(lua_State *L) {
 				yuv_pixel++;
 				*yuv_pixel = v;
 				yuv_pixel++;
-				*yuv_pixel = y1;
-				yuv_pixel++;
-				*yuv_pixel = u;
-				yuv_pixel++;
-				*yuv_pixel = v;
-				yuv_pixel++;
-				// 2 pixels
-				i+=2;
+				if (ud->subsample) {
+					// If subsampling, then we add only one pixel
+					i++;
+				} else {
+					// Ignore this pixel if subsampling
+					*yuv_pixel = y1;
+					yuv_pixel++;
+					*yuv_pixel = u;
+					yuv_pixel++;
+					*yuv_pixel = v;
+					yuv_pixel++;
+					// 2 pixels
+					i+=2;
+				}
+				
 #ifdef DEBUG
-				if(line>470){
+				if(line<5){
 					printf("line: (%d,%d): Y: %d, U: %d, Y: %d, V: %d, %d\n",line, i,y0,u,y1,v,yuv_row[0]);
 				}
 #endif
 			}
 			nlines = jpeg_write_scanlines(cinfo, row_pointer, 1);
+			if (ud->subsample) {
+				// Skip a row if this subsample level
+				img_ptr += img_stride;
+			}
 		}
 		free(yuv_row);
 	} else {
 		size_t stride = cinfo->input_components * width;
-		while (cinfo->next_scanline < cinfo->image_height) {
+		int h = cinfo->image_height;
+		while (cinfo->next_scanline < h) {
 			*row_pointer = img_ptr;
 			nlines = jpeg_write_scanlines(cinfo, row_pointer, 1);
 			img_ptr += stride;
@@ -304,26 +327,23 @@ static int lua_jpeg_new_compressor(lua_State *L) {
 	const char * fmt = luaL_checklstring(L,1,&len);
 	// Form the compressor
 	j_compress_ptr cinfo = new_cinfo(ud);
+	ud->subsample = 0;
 	
 	if (strncmp(fmt, "rgb", 3) == 0){
 		cinfo->in_color_space = JCS_RGB;
 		cinfo->input_components = 3;
-		ud->downsample = 0;
 		ud->fmt = 0;
 	} else if (strncmp(fmt, "gray", 4) == 0){
 		cinfo->in_color_space = JCS_GRAYSCALE;
 		cinfo->input_components = 1;
-		ud->downsample = 0;
 		ud->fmt = 1;
 	} else if (strncmp(fmt, "yuv", 4) == 0){
 		cinfo->in_color_space = JCS_YCbCr;
 		cinfo->input_components = 3;
-		ud->downsample = 0;
 		ud->fmt = 2;
 	} else if (strncmp(fmt, "yuyv", 3) == 0){
 		cinfo->in_color_space = JCS_YCbCr;
 		cinfo->input_components = 3;
-		ud->downsample = 0;
 		ud->fmt = 3;
 	} else {
 		return luaL_error(L, "Unsupported format.");
@@ -351,10 +371,14 @@ static int lua_jpeg_quality(lua_State *L) {
 
 static int lua_jpeg_downsampling(lua_State *L) {
   structJPEG *ud = lua_checkjpeg(L, 1);
+	if(ud->fmt!=3){
+		return luaL_error(L, "Only YUYV subsampling!");
+	}
   int dsample = luaL_checkint(L, 2);
-	if(dsample<0 || dsample>4 || dsample==3)
-  	return luaL_error(L, "Bad downsample factor");
-	ud->downsample = dsample;
+	if(dsample<0 || dsample>2){
+  	return luaL_error(L, "Bad subsample factor!");
+	}
+	ud->subsample = dsample;
   return 0;
 }
 

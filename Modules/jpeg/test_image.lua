@@ -27,7 +27,7 @@ local yuyv_str = yuyv_file:read('*a')
 --end
 ----[[
 local c_yuyv = jpeg.compressor('yuyv')
-c_yuyv:downsampling(1)
+c_yuyv:downsampling(0)
 t0=unix.time()
 for i=1,10 do c_yuyv:compress(yuyv_str, 640, 480) end
 t1=unix.time()

@@ -82,15 +82,18 @@ local util   = require'util'
 local cutil  = require'cutil'
 local udp    = require'udp'
 local png    = require'png'
-local zlib   = require'zlib'
 local jpeg   = require'jpeg'
 jpeg.set_quality( 95 )
 
 -- Channels
 local mesh_udp_ch, mesh_tcp_ch, mesh_ch, lidar_ch
 local channel_polls
-local channel_timeout = 100 --milliseconds
+--milliseconds
+local channel_timeout = 100
 
+-- Compression
+local j_compress = jpeg.compressor('gray')
+	
 -- Setup metadata and tensors for a lidar mesh
 local reading_per_radian, scan_resolution, fov_resolution
 local mesh, mesh_byte, mesh_adj, scan_angles, offset_idx
@@ -260,14 +263,11 @@ local function send_mesh(is_reliable)
   local dim = mesh_byte:size()
   if metadata.c=='jpeg' then
     -- jpeg
-    c_mesh = jpeg.compress_gray(mesh_byte:storage():pointer(), dim[2], dim[1])
+		c_mesh = j_compress:compress(mesh_byte:storage():pointer(), dim[2], dim[1])
   elseif metadata.c=='png' then
     -- png
     mesh.meta.c = 'png'
     c_mesh = png.compress(mesh_byte:storage():pointer(), dim[2], dim[1], 1)
-  elseif metadata.c=='zlib' then
-    -- zlib
-    c_mesh = zlib.compress(mesh_byte:storage():pointer(), mesh_byte:nElement())
   else
     -- raw data?
 		-- Maybe needed for sending a mesh to another process

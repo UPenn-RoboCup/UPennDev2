@@ -37,14 +37,14 @@ assert(nJoint==Config.nJoint,'Config file and Body must agree on nuber of joints
 local servo = {}
 -- Real Robot is the default
 servo.min_rad = vector.new({
-  -167,-89,-150,-100,-160,
+  -167,-74,-150,-100,-160,
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 servo.max_rad = vector.new({
-  167,64,145,100,160,
+  167,74,145,100,160,
 })*DEG_TO_RAD
 servo.direction = vector.new({
-  -1,1,1,1,1
+  1,1,1,1,1
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
 -- Offsets represent the actual zero position
@@ -132,8 +132,7 @@ Body.update = function()
   local desired_pos = jcm.get_actuator_command_position()
   for i,v in ipairs(desired_pos) do
     -- Correct the direction and the offset
-    val = val * servo.direction[i] + servo.offset[i]
-		--print(i,'set',v,'=>',val)
+    local val = v * servo.direction[i] + servo.offset[i]
     -- Set the youbot arm
     --youbot.set_arm_angle(i,val)
   end

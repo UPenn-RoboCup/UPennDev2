@@ -204,7 +204,7 @@ static int lua_jpeg_compress_crop(lua_State *L) {
 	JDIMENSION h0  = luaL_checkint(L, 7) - 1;
   JDIMENSION h_cropped  = luaL_checkint(L, 8);
 	
-	if(h_cropped-h0>height||w_cropped-w0>width){
+	if(h_cropped+h0>height||w_cropped+w0>width){
 		return luaL_error(L,"Bad crop");
 	}
 	// Access the JPEG compression settings

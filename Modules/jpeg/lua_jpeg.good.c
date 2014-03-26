@@ -14,11 +14,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-//#define DEBUG 1
 // UDP Friendly size (2^16)
-//#define BUF_SZ 1024
 #define BUF_SZ 65536
-//#define BUF_SZ 131072
 #define DEFAULT_QUALITY 85
 #define USE_JFIF FALSE
 // TurboJPEG: fastest
@@ -47,7 +44,6 @@ static structJPEG * lua_checkjpeg(lua_State *L, int narg) {
   return (structJPEG *)ud;
 }
 
-// TODO: There may be issues with free if this is called...
 void error_exit_compress(j_common_ptr cinfo) {
 #ifdef DEBUG
 	fprintf(stdout,"Error exit!\n");
@@ -94,23 +90,19 @@ void term_destination(j_compress_ptr cinfo) {
 
 	// Reallocate
 	ud->buffer = realloc(ud->buffer, len);
+	ud->buffer_sz = len;
 	if(ud->buffer == NULL){
 #ifdef DEBUG
 		fprintf(stdout,"Bad realloc!\n");
 		fflush(stdout);
 #endif
 		free(destBuf);
-	} else {
-		//free(destBuf);
 	}
-	
-	ud->buffer_sz = len;
 	
 #ifdef DEBUG
 	fprintf(stdout,"Done Term destination!\n");
 	fflush(stdout);
 #endif
-	
 }
 boolean empty_output_buffer(j_compress_ptr cinfo) {
 #ifdef DEBUG
@@ -128,8 +120,6 @@ boolean empty_output_buffer(j_compress_ptr cinfo) {
 		fflush(stdout);
 #endif
 		free(destBuf);
-	} else {
-		//free(destBuf);
 	}
 	
 	cinfo->dest->free_in_buffer = ud->buffer_sz;
@@ -197,7 +187,7 @@ static int lua_jpeg_compress(lua_State *L) {
 	// TODO: Check if a torch object
   if (lua_isstring(L, 2)) {
 		size_t sz = 0;
-    data = (JSAMPLE*)lua_tolstring(L, 2, &sz);
+    data = (JSAMPLE*) lua_tolstring(L, 2, &sz);
   } else if (lua_islightuserdata(L, 2)) {
     data = (JSAMPLE*) lua_touserdata(L, 2);
   } else {
@@ -220,21 +210,21 @@ static int lua_jpeg_compress(lua_State *L) {
 	fflush(stdout);
 #endif
 	
-	// Ensure the colorspace of the OUTPUTTED jpeg (for raw)
-	// For raw, this is the same as the input format
+	// Colorspace of the OUTPUTTED jpeg same is input (save space/speed?)
 	// YCbCr and Grayscale are JFIF. RGB and others are Adobe
 	jpeg_set_colorspace(cinfo, cinfo->in_color_space);
 	
-	jpeg_start_compress(cinfo, TRUE);
+	// Copy the reference to data for pointer arithmetic
 	JDIMENSION nlines;
-	
 	JSAMPROW row_pointer[1];
 	JSAMPLE* img_ptr = data;
 	
 #ifdef DEBUG
-		printf("YUYV: %2x %2x %2x %2x\n", data[0], data[1], data[2], data[3]);
 		int line = 0;
 #endif
+	
+	// Begin compression
+	jpeg_start_compress(cinfo, TRUE);
 	
 	// YUYV is special
 	if(ud->fmt==3){

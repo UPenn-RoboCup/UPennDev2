@@ -37,11 +37,11 @@ assert(nJoint==Config.nJoint,'Config file and Body must agree on nuber of joints
 local servo = {}
 -- Real Robot is the default
 servo.min_rad = vector.new({
-  -167,-74,-150,-100,-160,
+  -167,-74,-143,-100,-160,
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 servo.max_rad = vector.new({
-  167,74,145,100,160,
+  167,74,143,100,160,
 })*DEG_TO_RAD
 servo.direction = vector.new({
   1,-1,1,1,1
@@ -49,7 +49,7 @@ servo.direction = vector.new({
 assert(#servo.direction==nJoint,'Bad servo direction!')
 -- Offsets represent the actual zero position
 servo.offset = vector.new({
-  -167,-74,-151,102,167
+  -167,-74,-143,102,167
 })*DEG_TO_RAD
 assert(#servo.offset==nJoint,'Bad servo offsets!')
 

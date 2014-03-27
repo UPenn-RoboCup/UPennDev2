@@ -108,8 +108,6 @@ Body.nop = function() end
 -- cnt of 0 is a reset
 Body.update = function(cnt)
   -- Get joint readings
-	-- Reading kills you!
-	----[[
   local rad,mps,nm = {},{},{}
   for i=1,nJoint do
 		local pos = youbot.get_arm_position(i)
@@ -121,37 +119,31 @@ Body.update = function(cnt)
   jcm.set_sensor_position(rad)
   jcm.set_sensor_velocity(mps)
   jcm.set_sensor_torque(nm)
-	--]]
   
   -- Set joints from shared memory
-  local desired_pos = jcm.get_actuator_command_position()
+	local desired_pos = jcm.get_actuator_command_position()
   for i,v in ipairs(desired_pos) do
     -- Correct the direction and the offset
     local val = v * servo.direction[i] + servo.offset[i]
     -- Set the youbot arm
-		if i~=5 or cnt%50==0 then
-			-- reset
-			youbot.set_arm_angle(i,val)
-			cnt = 0
-		end
-		--youbot.set_arm_angle(i,val)
+		youbot.set_arm_angle(i,val)
   end
   
   -- Set the gripper from shared memory
+	--[[
   local spacing = jcm.get_gripper_command_position()
   --local width = math.max(math.min(spacing[1],0.0115),0)
   local width = math.max(math.min(spacing[1],0.02),0)
   youbot.set_gripper_spacing(width)
+	--]]
   
   -- Set base from shared memory
   local vel = mcm.get_walk_vel()
   youbot.set_base_velocity( unpack(vel) )
 	
 	-- Get Odometry measurements
-	--[[
 	local dx, dy, da = youbot.get_base_position()
 	wcm.set_robot_odometry{dx,dy,da}
-	--]]
 
 	return cnt+1
   

@@ -25,9 +25,10 @@ local function get_pick_transform()
 	local pose_rel = util.pose_relative(obj_pose,pose_arm)
 
 	-- FOR DEBUG ONLY
-	if DEBUG then pose_rel = vector.new{.25,.1,0} end
+	if DEBUG then pose_rel = vector.pose{.25,.1,0} end
 
-	local relative_pick_tr = T.trans(pose_rel.x,pose_rel.y,-0.1) * T.rotY(180*DEG_TO_RAD)
+	local relative_pick_tr = 
+		T.trans(pose_rel.x,pose_rel.y,-0.2) * T.rotY(180*DEG_TO_RAD)
 	return relative_pick_tr
 end
 

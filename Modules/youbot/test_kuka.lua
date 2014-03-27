@@ -5,7 +5,7 @@ local youbot = require'youbot'
 youbot.init_base()
 -- Init the arm
 youbot.init_arm()
---youbot.calibrate_gripper()
+youbot.calibrate_gripper()
 
 -- Get the limits
 for j=1,5 do
@@ -18,12 +18,12 @@ for j=1,5 do
 	print("PID2",p,i,d)
 	print()
 end
---[[
-youbot.set_arm_pid1(1,1,0,0)
-youbot.set_arm_pid2(1,2,0,0)
+----[[
+youbot.set_arm_pid1(1,20,0,0)
+youbot.set_arm_pid2(1,20,0,0)
 unix.usleep(1e6)
 --]]
---os.exit()
+os.exit()
 
 -- Read for 2 seconds
 local t0 = unix.time()
@@ -43,7 +43,9 @@ youbot.set_arm_angle(1,-2.9)
 youbot.set_arm_angle(2,-1)
 youbot.set_arm_angle(3,-2.5)
 youbot.set_arm_angle(4,-1.7)
+----[[
 youbot.set_arm_angle(5,-2.95)
+--]]
 unix.usleep(3e6)
 
 -- Read for 2 seconds

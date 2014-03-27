@@ -29,7 +29,7 @@ signal.signal("SIGTERM", shutdown)
 
 local get_time = Body.get_sim_time or Body.get_time
 
-Body.entry()
+local cnt = Body.entry()
 local t_last = get_time()
 
 -- Send the entry pulse
@@ -37,6 +37,9 @@ local pulse_tbl = {mode='entry',t=t_last}
 pulse_ch:send(mp.pack(pulse_tbl))
 
 pulse_tbl.mode='update'
+
+
+
 while true do
 
   local t = get_time()
@@ -44,7 +47,7 @@ while true do
 
   if t_diff>t_wait then
     --print('Update',t)
-    Body.update()
+    cnt = Body.update(cnt)
     -- Webots must always update...
     if not IS_WEBOTS then unix.usleep(t_wait_us) end
 		-- Send a pulse after each update, so that the state wizard may proceed

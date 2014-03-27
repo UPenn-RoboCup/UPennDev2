@@ -97,14 +97,16 @@ Body.entry = function()
 	Body.set_command_position(init_pos)
   jcm.set_sensor_position(init_pos)
   mcm.set_walk_vel(vector.zeros(3))
+	return 1
 end
 
 -- Update speaks to the hardware of the robot
 --Body.update_cycle = 0.050 -- seems ok
-Body.update_cycle = 0.005
+Body.update_cycle = 0.001
 --Body.update_cycle = 0.2
 Body.nop = function() end
-Body.update = function()
+-- cnt of 0 is a reset
+Body.update = function(cnt)
   -- Get joint readings
 	-- Reading kills you!
 	----[[
@@ -127,8 +129,12 @@ Body.update = function()
     -- Correct the direction and the offset
     local val = v * servo.direction[i] + servo.offset[i]
     -- Set the youbot arm
-		--if i~=5 then youbot.set_arm_angle(i,val) end
-		youbot.set_arm_angle(i,val)
+		if i~=5 or cnt%50==0 then
+			-- reset
+			youbot.set_arm_angle(i,val)
+			cnt = 0
+		end
+		--youbot.set_arm_angle(i,val)
   end
   
   -- Set the gripper from shared memory
@@ -146,6 +152,8 @@ Body.update = function()
 	local dx, dy, da = youbot.get_base_position()
 	wcm.set_robot_odometry{dx,dy,da}
 	--]]
+
+	return cnt+1
   
 end
 

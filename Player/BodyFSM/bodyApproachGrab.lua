@@ -16,15 +16,16 @@ local t_entry, t_update, t_exit
 --
 local t_cmd, CMD_INTERVAL = 0, 0.1
 
+local DEBUG = true
+
 local function get_pick_position()
 	local pose = vector.pose(wcm.get_robot_pose())
 	local pose_arm = util.pose_global({0.14,0,0},pose)
 	local obj_pose = vector.pose(wcm.get_ball_pose())
 	local pose_rel = util.pose_relative(obj_pose,pose_arm)
 	local relative_pick_pos = vector.new{pose_rel.x,pose_rel.y,0.0}
-	
 	-- FOR DEBUG ONLY
-	local relative_pick_pos = vector.new{.2,.1,0}
+	if DEBUG then relative_pick_pos = vector.new{.25,.1,0} end
 
 	return relative_pick_pos
 end

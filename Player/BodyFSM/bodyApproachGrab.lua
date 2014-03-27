@@ -22,6 +22,10 @@ local function get_pick_position()
 	local obj_pose = vector.pose(wcm.get_ball_pose())
 	local pose_rel = util.pose_relative(obj_pose,pose_arm)
 	local relative_pick_pos = vector.new{pose_rel.x,pose_rel.y,0.0}
+	
+	-- FOR DEBUG ONLY
+	local relative_pick_pos = vector.new{.2,.1.0}
+
 	return relative_pick_pos
 end
 

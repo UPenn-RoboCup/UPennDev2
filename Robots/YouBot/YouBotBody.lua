@@ -41,7 +41,7 @@ servo.direction = vector.new({
 assert(#servo.direction==nJoint,'Bad servo direction!')
 -- Offsets represent the actual zero position
 servo.offset = vector.new({
-  -167,-58,-143,-97,-158
+  -167,-58,-143,-97,-168
 })*DEG_TO_RAD
 assert(#servo.offset==nJoint,'Bad servo offsets!')
 
@@ -100,12 +100,14 @@ Body.entry = function()
 end
 
 -- Update speaks to the hardware of the robot
-Body.update_cycle = 0.100
+--Body.update_cycle = 0.050 -- seems ok
+Body.update_cycle = 0.005
+--Body.update_cycle = 0.2
 Body.nop = function() end
 Body.update = function()
   -- Get joint readings
 	-- Reading kills you!
-	--[[
+	----[[
   local rad,mps,nm = {},{},{}
   for i=1,nJoint do
 		local pos = youbot.get_arm_position(i)
@@ -125,7 +127,8 @@ Body.update = function()
     -- Correct the direction and the offset
     local val = v * servo.direction[i] + servo.offset[i]
     -- Set the youbot arm
-    youbot.set_arm_angle(i,val)
+		--if i~=5 then youbot.set_arm_angle(i,val) end
+		youbot.set_arm_angle(i,val)
   end
   
   -- Set the gripper from shared memory
@@ -139,8 +142,10 @@ Body.update = function()
   youbot.set_base_velocity( unpack(vel) )
 	
 	-- Get Odometry measurements
+	--[[
 	local dx, dy, da = youbot.get_base_position()
 	wcm.set_robot_odometry{dx,dy,da}
+	--]]
   
 end
 

@@ -49,7 +49,7 @@ while true do
     if not IS_WEBOTS then unix.usleep(t_wait_us) end
 		-- Send a pulse after each update, so that the state wizard may proceed
 		pulse_tbl.t = t
-		--pulse_ch:send(mp.pack(pulse_tbl))
+		pulse_ch:send(mp.pack(pulse_tbl))
   else
     if not IS_WEBOTS then print('NOP CYCLE') end
     Body.nop()

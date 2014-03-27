@@ -24,7 +24,7 @@ local function get_pick_position()
 	local relative_pick_pos = vector.new{pose_rel.x,pose_rel.y,0.0}
 	
 	-- FOR DEBUG ONLY
-	local relative_pick_pos = vector.new{.2,.1.0}
+	local relative_pick_pos = vector.new{.2,.1,0}
 
 	return relative_pick_pos
 end

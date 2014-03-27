@@ -9,6 +9,7 @@ local util = require'util'
 local mp     = require'msgpack.MessagePack'
 local signal = require'signal'
 local simple_ipc = require'simple_ipc'
+local channel_poll
 require'gcm'
 
 -- Not using this right now...
@@ -107,7 +108,7 @@ local wait_channels = {}
 local pulse_ch = simple_ipc.new_subscriber'pulse'
 print'Receiving Body pulse'
 pulse_ch.callback = function(sh)
-	local ch, n = wait_channels.lut[sh], 0
+	local ch, n = channel_poll.lut[sh], 0
 	local ekg, has_more
 	repeat
 		-- Do not block
@@ -126,7 +127,7 @@ end
 -- Make the poller
 table.insert(wait_channels, pulse_ch)
 local channel_timeout = 2 * Body.update_cycle * 1e3
-local channel_poll = simple_ipc.wait_on_channels( wait_channels );
+channel_poll = simple_ipc.wait_on_channels( wait_channels );
 
 -- Check if webots...
 if IS_WEBOTS then Body.entry() end
@@ -137,7 +138,7 @@ while true do
 		Body.update()
 	else
 		local npoll = channel_poll:poll(channel_timeout)
-		if npoll<1 then print('MISSED CYCLE TIMEOUT') end
+		--if npoll<1 then print('MISSED CYCLE TIMEOUT') end
 	end
 	-- Update anyway, just missing a cycle
 	update()

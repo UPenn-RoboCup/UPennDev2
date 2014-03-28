@@ -51,7 +51,7 @@ function memory.init_shm_segment(name, shared, shsize, tid, pid)
     local shmHandle = fenv[shmHandleName];
 
     -- intialize shared memory
-    memory.init_shm_keys(shmHandle, shared[shtable]);
+    init_shm_keys(shmHandle, shared[shtable]);
 
     -- generate accessors and pointers
     local shmPointerName = shtable..'Ptr';

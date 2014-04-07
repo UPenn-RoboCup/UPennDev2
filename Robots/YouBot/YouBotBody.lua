@@ -20,6 +20,9 @@ Body.Kinematics = K
 -- Get time (for the real robot)
 local get_time = unix.time
 
+-- Store the gripper position
+local gripper_pos
+
 -- Five degree of freedom arm
 local nJoint = 5
 assert(nJoint==Config.nJoint,
@@ -120,22 +123,24 @@ Body.update = function(cnt)
   jcm.set_sensor_velocity(mps)
   jcm.set_sensor_torque(nm)
   
-  -- Set joints from shared memory
-	local desired_pos = jcm.get_actuator_command_position()
-  for i,v in ipairs(desired_pos) do
-    -- Correct the direction and the offset
-    local val = v * servo.direction[i] + servo.offset[i]
-    -- Set the youbot arm
-		youbot.set_arm_angle(i,val)
-  end
-  
   -- Set the gripper from shared memory
-	--[[
-  local spacing = jcm.get_gripper_command_position()
-  --local width = math.max(math.min(spacing[1],0.0115),0)
-  local width = math.max(math.min(spacing[1],0.02),0)
-  youbot.set_gripper_spacing(width)
-	--]]
+  local spacing = jcm.get_gripper_command_position()[1]
+	if spacing~=gripper_pos then
+		youbot.set_gripper_spacing(
+			math.max(math.min(spacing,0.02),0)
+		)
+		-- Keep a local copy
+		gripper_pos = spacing
+	else
+		-- Set joints from shared memory when not using the gripper
+		local desired_pos = jcm.get_actuator_command_position()
+		for i,v in ipairs(desired_pos) do
+			-- Correct the direction and the offset
+			local val = v * servo.direction[i] + servo.offset[i]
+			-- Set the youbot arm
+			youbot.set_arm_angle(i,val)
+		end
+	end
   
   -- Set base from shared memory
   local vel = mcm.get_walk_vel()
@@ -145,7 +150,8 @@ Body.update = function(cnt)
 	local dx, dy, da = youbot.get_base_position()
 	wcm.set_robot_odometry{dx,dy,da}
 
-	return cnt+1
+	-- Increment the counter... why?
+	if cnt then return cnt+1 end
   
 end
 

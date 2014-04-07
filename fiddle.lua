@@ -8,6 +8,7 @@ local libs = {
   'util',
   'vector',
   'torch',
+	'fun'
 }
 
 -- Load the libraries

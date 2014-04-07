@@ -78,6 +78,12 @@ end
 -- Libraries
 local torch  = require'torch'
 torch.Tensor = torch.DoubleTensor
+-- NOTE: torch cannot use OpenBLAS in this thread
+-- since OpenBLAS cannot operate in a threaded environmenta
+-- TODO: Add a method to dynamically set N_THREADS in OpenBLAS
+-- TODO: Check with Accelerate (OSX), too
+-- https://developer.apple.com/library/mac/documentation/Darwin/Reference/Manpages/man7/Accelerate.7.html
+-- https://github.com/xianyi/OpenBLAS/wiki/faq#multi-threaded
 local util   = require'util'
 local cutil  = require'cutil'
 local udp    = require'udp'

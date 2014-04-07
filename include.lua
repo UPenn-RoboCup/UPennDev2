@@ -66,6 +66,7 @@ HOSTNAME = unix.gethostname()
 OPERATING_SYSTEM = unix.uname():lower()
 
 -- Print out the globally available variables, when using include.lua
+--[[
 function print_env()
 	print( 'Working Dir:', CWD )
 	print( 'Home Dir:', HOME )
@@ -78,3 +79,4 @@ function print_env()
 	print( 'package path:', package.path )
 	print( 'package cpath:', package.cpath )
 end
+--]]

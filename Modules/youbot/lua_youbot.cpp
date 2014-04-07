@@ -8,6 +8,7 @@
 using namespace youbot;
 
 // Access the robot modules
+// NOTE: not thread safe if twice loaded
 static YouBotBase* ybBase = NULL;
 static YouBotManipulator* ybArm = NULL;
 
@@ -183,12 +184,40 @@ static int lua_set_gripper_spacing(lua_State *L) {
 	return 0;
 }
 
-// Sets the spacing between the gripper fingers
+// Gets the spacing between the gripper fingers
 static int lua_get_gripper_spacing(lua_State *L) {
   static GripperSensedBarSpacing sensed;
   ybArm->getArmGripper().getData(sensed);
   lua_pushnumber(L, sensed.barSpacing.value() );
 	return 1;
+}
+
+/* Sets the microstepping resolution
+ * full step: 0, half step: 1, 256 microsteps: 8
+ * For now, we keep the bars symmetric (bar1=bar2 for all params)
+ */
+static int lua_set_gripper_microsteps(lua_State *L) {
+  static MicrostepResolution usteps;
+  unsigned int res = (unsigned int)lua_tointeger(L, 1);
+  microsteps.setParameter(res);
+  ybArm->getArmGripper()->getGripperBar1().setConfigurationParameter(usteps);
+  ybArm->getArmGripper()->getGripperBar2().setConfigurationParameter(usteps);
+	return 0;
+}
+
+// Sets the spacing between the gripper fingers
+static int lua_get_gripper_microsteps(lua_State *L) {
+  static MicrostepResolution usteps;
+  static unsigned int res;
+  //
+  ybArm->getArmGripper()->getGripperBar1().getConfigurationParameter(usteps);
+  usteps.getParameter(res);
+  lua_pushnumber(L, res );
+  //
+  ybArm->getArmGripper()->getGripperBar2().getConfigurationParameter(usteps);
+  usteps.getParameter(res);
+  lua_pushnumber(L, res );
+	return 2;
 }
 
 /* Limits */
@@ -355,9 +384,6 @@ static const struct luaL_reg youbot_lib [] = {
   {"get_arm_rpm", lua_get_arm_rpm},
   {"get_arm_current", lua_get_arm_current},
   //
-  {"set_gripper_spacing", lua_set_gripper_spacing},
-  {"get_gripper_spacing", lua_get_gripper_spacing},
-  //
   {"get_arm_max_positioning_velocity", lua_get_arm_max_positioning_velocity},
   {"set_arm_max_positioning_velocity", lua_set_arm_max_positioning_velocity},
   {"get_arm_joint_limit", lua_get_arm_joint_limit},
@@ -367,6 +393,11 @@ static const struct luaL_reg youbot_lib [] = {
 	{"set_arm_pid1", lua_set_arm_pid1},
 	{"get_arm_pid2", lua_get_arm_pid2},
 	{"set_arm_pid2", lua_set_arm_pid2},
+  //
+  {"set_gripper_spacing", lua_set_gripper_spacing},
+  {"get_gripper_spacing", lua_get_gripper_spacing},
+  {"get_gripper_microsteps", lua_get_gripper_microsteps},
+  {"set_gripper_microsteps", lua_set_gripper_microsteps},
   //
   {NULL, NULL}
 };

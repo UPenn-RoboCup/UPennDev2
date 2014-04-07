@@ -1,5 +1,4 @@
 dofile'../../include.lua'
---print_env()
 
 local simple_ipc = require'simple_ipc'
 local util = require'util'

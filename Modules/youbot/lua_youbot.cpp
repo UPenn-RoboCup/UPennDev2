@@ -199,9 +199,9 @@ static int lua_get_gripper_spacing(lua_State *L) {
 static int lua_set_gripper_microsteps(lua_State *L) {
   static MicrostepResolution usteps;
   unsigned int res = (unsigned int)lua_tointeger(L, 1);
-  microsteps.setParameter(res);
-  ybArm->getArmGripper()->getGripperBar1().setConfigurationParameter(usteps);
-  ybArm->getArmGripper()->getGripperBar2().setConfigurationParameter(usteps);
+  usteps.setParameter(res);
+  ybArm->getArmGripper().getGripperBar1().setConfigurationParameter(usteps);
+  ybArm->getArmGripper().getGripperBar2().setConfigurationParameter(usteps);
 	return 0;
 }
 
@@ -210,11 +210,11 @@ static int lua_get_gripper_microsteps(lua_State *L) {
   static MicrostepResolution usteps;
   static unsigned int res;
   //
-  ybArm->getArmGripper()->getGripperBar1().getConfigurationParameter(usteps);
+  ybArm->getArmGripper().getGripperBar1().getConfigurationParameter(usteps);
   usteps.getParameter(res);
   lua_pushnumber(L, res );
   //
-  ybArm->getArmGripper()->getGripperBar2().getConfigurationParameter(usteps);
+  ybArm->getArmGripper().getGripperBar2().getConfigurationParameter(usteps);
   usteps.getParameter(res);
   lua_pushnumber(L, res );
 	return 2;

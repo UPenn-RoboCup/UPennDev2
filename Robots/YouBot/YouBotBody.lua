@@ -130,12 +130,12 @@ Body.update = function(cnt)
   end
   
   -- Set the gripper from shared memory
-	--[[
+  ----[[
   local spacing = jcm.get_gripper_command_position()
   --local width = math.max(math.min(spacing[1],0.0115),0)
   local width = math.max(math.min(spacing[1],0.02),0)
   youbot.set_gripper_spacing(width)
-	--]]
+  --]]
   
   -- Set base from shared memory
   local vel = mcm.get_walk_vel()

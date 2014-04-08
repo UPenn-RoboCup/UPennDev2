@@ -54,6 +54,8 @@ mesh_req_ch = simple_ipc.new_requester(Config.net.reliable_mesh)
 print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
 print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
 
-package.path = package.path..';'..HOME..'/Tools/iluajit/?.lua'
-dofile'Tools/iluajit/iluajit.lua'
+if jit then
+  package.path = package.path..';'..HOME..'/Tools/iluajit/?.lua'
+  dofile'Tools/iluajit/iluajit.lua'
+end
 

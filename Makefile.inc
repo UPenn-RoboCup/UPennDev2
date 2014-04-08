@@ -58,7 +58,6 @@ all none: $(LIBNAME)
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	@printf '\t%b %b\n' $(LINKCOLOR)LINK$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR);
 	$(V)$(LD) -o $@.$(SHLIBEXT) $^ $(EXTRA_LINK) $(LDFLAGS)
-	$(V)rm $^
 clean:
 	@printf '\t%b %b\n' $(CLEANCOLOR)Cleaning$(ENDCOLOR) $(shell pwd);
 	$(V)rm -f *.so *.o $(EXTRA_CLEAN)

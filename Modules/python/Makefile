@@ -3,10 +3,10 @@ EXTRA_OBJ=luainpython.o
 include ../../Makefile.inc
 INCLUDES+=`python-config --includes`
 LDFLAGS+=`python-config --libs`
-# Note, the following may need to be included
-# I don't recommend -llua since they may mess up luajit and more
-# This means you cannot nest lua inside python that is inside lua :P
-#-llua
 
-# Not sure this is needed (seems it is not wanted...)
-#CFLAGS+=`python-config --cflags`
+lua: luainpython.o lua_python.o
+	@printf '\t%b %b\n' $(LINKCOLOR)LINK$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR);
+	$(V)$(LD) -o $@.$(SHLIBEXT) $^ $(LDFLAGS) -llua
+
+# Make both the module for python and for lua
+all none: $(LIBNAME) lua

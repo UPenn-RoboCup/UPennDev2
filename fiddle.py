@@ -13,6 +13,7 @@ HOME = CWD.replace("/ROS","")
 os.chdir(HOME)
 	
 # Import luantic-python
+sys.path.append(HOME+"/Modules/python")
 import lua
 # Have all the framework files/Modules available
 lua.execute('dofile"fiddle.lua"')

@@ -98,7 +98,8 @@ RAD_TO_DEG = 180/math.pi
 print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
 print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
 
-if jit then
+if arg and arg[-1]=='-i' and jit then
+  -- Interactive LuaJIT
   package.path = package.path..';'..HOME..'/Tools/iluajit/?.lua'
   dofile'Tools/iluajit/iluajit.lua'
 end

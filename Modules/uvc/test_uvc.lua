@@ -1,18 +1,25 @@
+local ffi
+if jit then ffi = require'ffi' end
+
 local camera = require'uvc'
 --local carray = require'carray'
 video_ud1 = camera.init('/dev/video0', 640, 480, 'yuyv',1, 30)
 --video_ud2 = camera.init('/dev/video1', 640, 480, 'yuyv')
 
-while (true) do
+local f_raw = io.open('log.raw', 'w')
+local i = 0
+while i<120 do
+	i = i+1
   local img1, size1, count1, time1 = video_ud1:get_image();
---  local img2, size2, count2, time2 = video_ud2:get_image();
-
   if (img1 ~= -1) then
     print('img1', img1, size1, time1, count1)
+		if ffi then
+			local ptr = ffi.cast('void*',img1)
+			--local img_bytes = ffi.cast('uint8_t*',ptr)
+			local str = ffi.string(ptr,size1)
+			f_raw:write(str)
+		end
   end
---  if (img2 ~= -1) then
---    print('img2', img2, size2, time2, count2)
---  end
 end
 
 --video_ud2 = uvc.init('/dev/video1', 320, 240, 'yuyv')

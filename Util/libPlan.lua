@@ -3,7 +3,6 @@
 -- Plan a path with the arm
 local libPlan = {}
 local torch  = require'torch'
-torch.Tensor = torch.DoubleTensor
 local vector = require'vector'
 local q = require'quaternion'
 local carray = require 'carray'

@@ -1,6 +1,6 @@
 local test_poller = true
 dofile'../../include.lua'
-local p, lut
+local p
 local util = require'util'
 local simple_ipc = require 'simple_ipc'
 local test_channel = simple_ipc.new_subscriber('test')

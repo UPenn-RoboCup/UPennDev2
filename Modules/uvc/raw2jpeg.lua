@@ -1,8 +1,13 @@
 dofile'../../include.lua'
 msgpack=require'msgpack'
 
+date = '04.09.2014.14.59.58'
+DIR = '/Users/smcgill3/Box Sync/YouBot'
+
 -- Read the metadata
-f_m = io.open('/tmp/uvc_m_04.09.2014.12.43.50.log','r')
+local m_name = DIR..'/uvc_m_'..date..'.log'
+print(m_name)
+f_m = io.open(m_name,'r')
 -- Must use an unpacker...
 local metadata = {}
 local unpacker = msgpack.unpacker(2048)
@@ -21,7 +26,7 @@ f_m:close()
 
 print('Unlogging',#metadata,'images')
 
-f_r = io.open('/tmp/uvc_r_04.09.2014.12.43.50.log','r')
+f_r = io.open(DIR..'/uvc_r_'..date..'.log','r')
 jpeg = require'jpeg'
 cy = jpeg.compressor('yuyv')
 cy:downsampling(0)

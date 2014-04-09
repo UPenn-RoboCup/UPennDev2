@@ -1,8 +1,9 @@
 -- Torch/Lua Kalman Filter
 -- (c) 2013 Stephen McGill
 
-local torch = require 'torch'
-torch.Tensor = torch.DoubleTensor
+local torch = require'torch'
+
+-- TODO: Add a reset
 
 -- Begin the library code
 local libKalman = {}
@@ -34,6 +35,7 @@ local function predict(self, u_k)
 	self.x_k_minus = self.A * self.x_k_minus + self.B * (u_k or 0)
 	self.P_k_minus = self.A * self.P_k_minus * self.A:t() + self.Q
 	--]]
+	return self
 end
 
 -- Correct the state estimate based on a measurement
@@ -63,6 +65,7 @@ local function correct( self, z_k )
 	-- Duplicate Values
 	self.x_k_minus:copy(self.x_k)
 	self.P_k_minus:copy(self.P_k)
+	return self
 end
 
 -- Filter initialization code

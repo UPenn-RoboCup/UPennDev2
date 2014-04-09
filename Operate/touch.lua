@@ -10,45 +10,36 @@ local util = require'util'
 local mp = require'msgpack'
 local simple_ipc, poller = require'simple_ipc'
 local tou_ch = simple_ipc.new_subscriber'touch'
-
--- TODO: make libTouch instead...
-local contacts = {}
-
-local function pstart(c,ts)
-	-- TODO: Make more efficient somehow...?
-	contacts[c.id] = {
-		x = c.x,
-		y = c.y,
-		t = ts
-	}
-	util.ptable(contacts)
+local libTouch = require'libTouch'
+-- Allow logging
+local DO_LOG, libLog, logger = false
+if DO_LOG then
+	libLog = require'libLog'
+	-- Make the logger
+	logger = libLog.new'touch'
 end
 
-local function pend(c,ts)
-	-- Remove from table
-	local contact = contacts[c.id]
-	util.ptable(contact)
-	contacts[c.id] = nil
-end
-
--- Processing hashtable
-local process = {}
-process.start = pstart
-process['end'] = pend
 -- Callback for processing
 tou_ch.callback = function(s)
+	local t = unix.time()
 	local data, has_more = tou_ch:receive()
 	local evt = mp.unpack(data)
+	if DO_LOG then
+		evt.TIMESTAMP = t
+		logger:record(mp.pack(evt))
+		-- Hope it's not too slow to repack ;)
+		--logger:record(data)
+	end
 	local ts = evt.t/1e3
-	local f = process[evt.e]
+	local f = libTouch[evt.e]
 	if type(f)~='function' then return end
 	-- Process a non-touch event
 	if not evt.touch then
-		f(ts)
+		f(ts,evt)
 	else
 		-- Process the touches
 		for _,c in ipairs(evt.touch) do
-			f(c,ts)
+			f(ts,c)
 		end
 	end
 end

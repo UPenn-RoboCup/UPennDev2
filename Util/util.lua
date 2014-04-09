@@ -192,8 +192,6 @@ function util.approachTolWristTransform( values, targets, vellimit, dt, toleranc
 end
 
 
-
-
 -- Tolerance approach to a radian value (to correct direction)
 -- Kinda like a gradient descent
 --SJ: modangle didnt work for whatever reason so just used math.mod
@@ -221,9 +219,6 @@ function util.approachTolRad( values, targets, speedlimits, dt, tolerance )
   -- Return the next values to take and if we are within tolerance
   return values, within_tolerance
 end
-
-
-
 
 function util.pose_global(pRelative, pose)
   local ca = math.cos(pose[3])
@@ -268,7 +263,6 @@ function util.randn(n)
   return t
 end
 
--- From wikipedia
 function util.factorial(n)
   if n == 0 then
     return 1
@@ -291,8 +285,7 @@ function util.bezier( alpha, s )
   local n = #alpha
   local m = #alpha[1]
   local M = m-1
-  
-  
+
   -- Pascal's triangle
   local k = {}
   if M==3 then
@@ -321,11 +314,6 @@ function util.bezier( alpha, s )
   return value
 end
 
-function util.get_wireless_ip()
-  local ifconfig = io.popen('/sbin/ifconfig wlan0 | grep "inet " | cut -d" " -f10-11')
-  return ifconfig:read()
-end
-
 function util.tablesize(table)
   local count = 0
   for _ in pairs(table) do count = count + 1 end
@@ -335,15 +323,6 @@ end
 function util.ptable(t)
   -- print a table key, value pairs
   for k,v in pairs(t) do print(k,v) end
-end
-
-function util.stable(t)
-  local str = ''
-  for k,v in pairs(t) do
-    str=string.format('\n%s\n%s\t%s',str,tostring(k),tostring(v))
-  end
-  -- Remove initial '\n'
-  return str:sub(1)
 end
 
 function util.ptorch(data, W, Precision)
@@ -407,5 +386,8 @@ util.color = function(str,fg,bg,blink)
   end
   return begin_fg..str..color_end
 end
+
+-- Writing files for logging
+-- May make a separate libLog.lua file
 
 return util

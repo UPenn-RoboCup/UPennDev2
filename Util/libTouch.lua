@@ -24,7 +24,11 @@ end
 local function update(id,c)
 	-- Run the Kalman filter on touch c
 	local k = c.kalman
-	local x,P = k:predict():correct( obs1 ):get_state()
+	local observation = touch.DoubleTensor(2)
+	observation[1] = c.x
+	observation[2] = c.y
+	-- NOTE: c.dt is important... if finger in contact but not moving
+	local x,P = k:predict():correct( observation ):get_state()
 end
 
 -- Handler API: timestamp, object

@@ -20,7 +20,7 @@ local mp = require'msgpack.MessagePack'
 local function stop(self)
 	-- Close the files
 	self.f_meta:close()
-	if self.f_raw then f_raw:close() end
+	if self.f_raw then self.f_raw:close() end
 end
 
 -- User should pass :data() of a torch object
@@ -30,7 +30,7 @@ local function record(self,meta,raw,n_raw)
 	local mtype, m_ok = type(meta), false
 	if mtype=='string' then
 		m_ok = self.f_meta:write(metapack)
-	elseif mtype
+	elseif mtype then
 		local metapack = mp.pack(meta)
 		m_ok = self.f_meta:write(metapack)
 	end
@@ -68,11 +68,11 @@ function libLog.new(prefix,has_raw)
 	local t = {}
 	t.f_raw = f_raw
 	t.f_meta = f_meta
-	return setmetatable(t, mt_log)
+	t.record = record
+	t.stop = stop
+	return t
 end
 
 -- Fill the metatable
-mt_log.record = record
-mt_log.stop = stop
 
 return libLog

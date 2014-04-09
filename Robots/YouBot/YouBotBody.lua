@@ -127,7 +127,7 @@ Body.update = function(cnt)
   local spacing = jcm.get_gripper_command_position()[1]
 	if spacing~=gripper_pos then
 		youbot.set_gripper_spacing(
-			math.max(math.min(spacing,0.02),0)
+			math.max(math.min(spacing,0.023),0)
 		)
 		-- Keep a local copy
 		gripper_pos = spacing

@@ -7,6 +7,11 @@ youbot.init_base()
 youbot.init_arm()
 youbot.calibrate_gripper()
 
+local steps1, steps2 = youbot.get_gripper_microsteps()
+youbot.set_gripper_microsteps(1)
+print('steps',steps1,steps2)
+os.exit()
+
 -- Get the limits
 for j=1,5 do
   print('Joint',j)

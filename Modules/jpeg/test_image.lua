@@ -1,3 +1,4 @@
+dofile'../../include.lua'
 local jpeg = require 'jpeg'
 require 'unix'
 
@@ -29,7 +30,7 @@ local yuyv_str = yuyv_file:read('*a')
 local c_yuyv = jpeg.compressor('yuyv')
 c_yuyv:downsampling(0)
 t0=unix.time()
-for i=1,10 do c_yuyv:compress(yuyv_str, 640, 480) end
+for i=1,20 do c_yuyv:compress(yuyv_str, 640, 480) end
 t1=unix.time()
 local yuyv_jpg = c_yuyv:compress(yuyv_str, 640, 480)
 --]]

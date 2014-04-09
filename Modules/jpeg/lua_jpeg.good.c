@@ -4,8 +4,11 @@
  * University of Pennsylvania
  * */
 
-// TODO: Add torch support, then we can compress a sub window of the camera image
-// If we can add torch support to the uvc library - should be a simple thing with pointers
+/* TODO
+ * Add torch support, then we can compress a sub window of the camera image
+ If we can add torch support to the uvc library - 
+ should be a simple thing with pointers
+*/
 
 #include <lauxlib.h>
 #include <lua.h>
@@ -14,15 +17,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-// UDP Friendly size (2^16)
+/* UDP Friendly size (2^16) */
 #define BUF_SZ 65536
+//#define BUF_SZ 131072
 #define DEFAULT_QUALITY 85
 #define USE_JFIF FALSE
 // TurboJPEG: fastest
 #define DEFAULT_DCT_METHOD JDCT_FASTEST
 //#define DEFAULT_DCT_METHOD JDCT_IFAST
 
-// Define the functions to use
+/* Define the functions to use */
 void error_exit_compress(j_common_ptr cinfo);
 void init_destination(j_compress_ptr cinfo);
 void term_destination(j_compress_ptr cinfo);
@@ -88,9 +92,10 @@ void term_destination(j_compress_ptr cinfo) {
   while (len % 2 != 0)
     destBuf[len++] = 0xFF;
 
-	// Reallocate
-	ud->buffer = realloc(ud->buffer, len);
 	ud->buffer_sz = len;
+	// Reallocate is unnecessary to smaller size
+	/*
+	ud->buffer = realloc(ud->buffer, len);
 	if(ud->buffer == NULL){
 #ifdef DEBUG
 		fprintf(stdout,"Bad realloc!\n");
@@ -98,7 +103,7 @@ void term_destination(j_compress_ptr cinfo) {
 #endif
 		free(destBuf);
 	}
-	
+	*/
 #ifdef DEBUG
 	fprintf(stdout,"Done Term destination!\n");
 	fflush(stdout);
@@ -113,7 +118,8 @@ boolean empty_output_buffer(j_compress_ptr cinfo) {
 	JOCTET* destBuf = ud->buffer;
 	// TODO: Use realloc instead of the vector, for C only
 	// Reallocate
-	ud->buffer = realloc(ud->buffer, ud->buffer_sz * 2);
+	size_t new_size = ud->buffer_sz * 2;
+	ud->buffer = realloc(ud->buffer, new_size);
 	if(ud->buffer == NULL){
 #ifdef DEBUG
 		fprintf(stdout,"Bad realloc!\n");
@@ -179,12 +185,11 @@ j_compress_ptr new_cinfo(structJPEG *ud){
 // Crop the image, though
 static int lua_jpeg_compress_crop(lua_State *L) {
 	
+	JDIMENSION width, height, w0, w_cropped, h0, h_cropped;
+  JSAMPLE* data;
 	// JPEG struct with buffer and cinfo is our first
 	structJPEG *ud = lua_checkjpeg(L, 1);
 	
-	// We will not modify the data
-  JSAMPLE* data;
-
 	// TODO: Check if a torch object
   if (lua_isstring(L, 2)) {
 		size_t sz = 0;
@@ -196,13 +201,13 @@ static int lua_jpeg_compress_crop(lua_State *L) {
   }
 	
 	// Input image dimensions
-	JDIMENSION width  = luaL_checkint(L, 3);
-  JDIMENSION height = luaL_checkint(L, 4);
+	width = luaL_checkint(L, 3);
+  height = luaL_checkint(L, 4);
 	// Start and stop for crop (put into C indices)
-	JDIMENSION w0  = luaL_checkint(L, 5) - 1;
-  JDIMENSION w_cropped  = luaL_checkint(L, 6);
-	JDIMENSION h0  = luaL_checkint(L, 7) - 1;
-  JDIMENSION h_cropped  = luaL_checkint(L, 8);
+	w0  = luaL_checkint(L, 5) - 1;
+  w_cropped  = luaL_checkint(L, 6);
+	h0  = luaL_checkint(L, 7) - 1;
+  h_cropped  = luaL_checkint(L, 8);
 	
 	if(h_cropped+h0>height||w_cropped+w0>width){
 		return luaL_error(L,"Bad crop");
@@ -305,9 +310,11 @@ static int lua_jpeg_compress_crop(lua_State *L) {
 				}
 				
 #ifdef DEBUG
+/*
 				if(line<2){
 					printf("line: (%d,%d): Y: %d, U: %d, Y: %d, V: %d, %d\n",line, i,y0,u,y1,v,yuv_row[0]);
 				}
+*/
 #endif
 			}
 			nlines = jpeg_write_scanlines(cinfo, row_pointer, 1);
@@ -437,9 +444,11 @@ static int lua_jpeg_compress(lua_State *L) {
 				}
 				
 #ifdef DEBUG
+				/*
 				if(line<5){
 					printf("line: (%d,%d): Y: %d, U: %d, Y: %d, V: %d, %d\n",line, i,y0,u,y1,v,yuv_row[0]);
 				}
+				*/
 #endif
 			}
 			nlines = jpeg_write_scanlines(cinfo, row_pointer, 1);

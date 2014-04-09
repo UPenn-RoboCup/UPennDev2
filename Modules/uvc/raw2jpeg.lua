@@ -32,6 +32,5 @@ for i,m in ipairs(metadata) do
 	f_i = io.open('/tmp/img'..i..'.jpeg','w')
 	f_i:write(jimg)
 	f_i:close()
-	if i==1 then break end
 end
 f_r:close()

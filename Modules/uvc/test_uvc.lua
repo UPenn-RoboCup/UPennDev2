@@ -19,6 +19,7 @@ while n<5 do
 	local img1, size1, count1, time1 = video_ud1:get_image();
 	if (img1 ~= -1) then
 		print('img1', img1, size1, time1, count1)
+		print(type(img1))
 		if DO_LOG then
 			local m_ok, r_ok = logger:record({t=t,n=i},img1,size1)
 			print(n, m_ok, r_ok)

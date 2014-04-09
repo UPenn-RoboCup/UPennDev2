@@ -10,7 +10,7 @@ if DO_LOG then
 end
 
 local uvc = require'uvc'
-video_ud1 = uvc.init('/dev/video0', 640, 480, 'yuyv',1, 30)
+video_ud1 = uvc.init('/dev/video0', 320, 240, 'yuyv',1, 30)
 
 local n, t = 0, unix.time()
 while n<5 do
@@ -19,9 +19,10 @@ while n<5 do
 	local img1, size1, count1, time1 = video_ud1:get_image();
 	if (img1 ~= -1) then
 		print('img1', img1, size1, time1, count1)
-		print(type(img1))
 		if DO_LOG then
-			local m_ok, r_ok = logger:record({t=t,n=i},img1,size1)
+			local m_ok, r_ok = logger:record(
+				{t=t,n=i,sz=size1},
+				img1,size1)
 			print(n, m_ok, r_ok)
 			-- Wait half a second
 			unix.usleep(5e5)

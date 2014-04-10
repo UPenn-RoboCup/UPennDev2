@@ -12,7 +12,7 @@ local simple_ipc, poller = require'simple_ipc'
 local tou_ch = simple_ipc.new_subscriber'touch'
 local libTouch = require'libTouch'
 -- Allow logging
-local DO_LOG, libLog, logger = true
+local DO_LOG, libLog, logger = false
 if DO_LOG then
 	libLog = require'libLog'
 	-- Make the logger

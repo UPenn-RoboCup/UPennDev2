@@ -83,6 +83,10 @@ end
 libTouch.stop = function(t,o)
 	-- Remove from table
 	local c = contacts[o.id]
+	if not c then
+		print(o.id,'not found for stop')
+		return
+	end
 	contacts[o.id] = nil
 	-- Reset the relevant Kalman filter
 	k_to_c[c.kalman_id] = false
@@ -93,6 +97,10 @@ end
 libTouch.move = function(t,o)
 	-- Find in the table
 	local c = contacts[o.id]
+	if not c then
+		print(o.id,'not found for move')
+		return
+	end
 	-- TODO: Ensure that the id is present
 	-- Grab the time differential
 	local dt = t - (c.t or c.t0)

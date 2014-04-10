@@ -8,13 +8,42 @@ local contacts = {}
 local trails = {}
 
 -- Initialize the Kalman filters:
+
+local function generate_kalman()
+	-- TODO: Tune these somehow
+	local DECAY = 1
+	local filter = libKalman.initialize_filter( 4 )
+	-----------------
+	-- Modify the Dynamics update
+	-----------------
+	filter.A:zero()
+	-- Position stays the same
+	filter.A:sub(1,2,  1,2):eye(2)
+	-- TODO: blocks of the matrix may be mixed up...
+	-- Predict next position by velocity
+	filter.A:sub(1,2, 3,4):eye(2)
+	-- Velocity Decay
+	filter.A:sub(3,4, 3,4):eye(2):mul(DECAY)
+	-----------------
+	-- Modify the Measurement update
+	-----------------
+	-- We only measure the state positions, not velocities
+	filter.R = torch.eye( 2 )
+	filter.H = torch.Tensor( 2, 4 ):zero()
+	filter.H:sub(1,2, 1,2):eye(2)
+	--
+	libKalman.initialize_temporary_variables( filter )
+	return filter
+end
+
 -- Assume a max of five fingers...
 -- TODO: Find easy way to map the changing
 -- ids of the touches to the pool of filters
 local kalmans, k_to_c, nKalman = {}, {}, 5
 for i=1,nKalman do
 	-- 2 dimensions (finger x and y)
-	local k = libKalman.new_filter(2)
+	--local k = libKalman.new_filter(2)
+	local k = generate_kalman()
 	table.insert(kalmans,k)
 	-- map to contacts (false is unused)
 	table.insert(k_to_c,false)

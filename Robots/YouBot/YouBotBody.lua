@@ -174,6 +174,7 @@ if IS_WEBOTS then
   torch.Tensor = torch.DoubleTensor
   local carray = require'carray'
   local jpeg = require'jpeg'
+	local c_rgb = jpeg.compressor('rgb')
 	
 	-- Publish sensor data
 	local simple_ipc = require'simple_ipc'
@@ -444,10 +445,11 @@ if IS_WEBOTS then
 			meta.n     = #camera_arr
 			meta.w     = w
 			meta.h     = h
-			-- Send frame locally
-			camera0_ch:send{mp.pack(meta),tostring(camera_arr)}
+			-- Send frame locally?
+			--camera0_ch:send{mp.pack(meta),tostring(camera_arr)}
 			-- Broadcast the frame
-      --local jpeg_fr = jpeg.compress_rgb(camera_fr,w,h)
+      local jpeg_fr = c_rgb:compress(camera_fr,w,h)
+			camera0_ch:send{mp.pack(meta),jpeg_fr}
     end
     -- Grab a lidar scan
     if ENABLE_LIDAR then

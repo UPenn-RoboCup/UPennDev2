@@ -27,8 +27,6 @@ tou_ch.callback = function(s)
 	if DO_LOG then
 		evt.TIMESTAMP = t
 		logger:record(evt)
-		-- Hope it's not too slow to repack ;)
-		--logger:record(data)
 	end
 	local ts = evt.t/1e3
 	local f = libTouch[evt.e]

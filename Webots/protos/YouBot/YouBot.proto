@@ -133,17 +133,22 @@ Robot {
                                           children [
                                             FingerMesh {
                                             }
-                                            Camera {
-						                                  rotation -1 0 0 1.57
-                                              translation -0.05 0 0
-                                              name "HandCamera"
-																							windowPosition 1 1
-                                              fieldOfView IS cameraFov
-                                              width IS cameraWidth
-                                              height IS cameraHeight
-                                              pixelSize IS cameraPixelSize
-                                              near 0.02
-                                            }
+																						Transform {
+																							rotation -1 0 0 1.57079
+																							children [
+																								Camera {
+																									rotation 0 0 1 1.57
+																									translation -0.05 0 0
+																									name "HandCamera"
+																									windowPosition 1 1
+																									fieldOfView IS cameraFov
+																									width IS cameraWidth
+																									height IS cameraHeight
+																									pixelSize IS cameraPixelSize
+																									near 0.02
+																								}
+																							]
+																						}
                                           ]
                                           boundingObject DEF FINGER_BO Group {
                                             children [

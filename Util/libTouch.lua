@@ -11,7 +11,7 @@ local trails = {}
 
 local function generate_kalman()
 	-- TODO: Tune these somehow
-	local DECAY = 1
+	local DECAY = .8
 	local filter = libKalman.initialize_filter( 4 )
 	-----------------
 	-- Modify the Dynamics update
@@ -58,20 +58,18 @@ local function update_contacts(id,c)
 	observation[2] = c.y
 	-- NOTE: c.dt is important... if finger in contact but not moving
 	local x,P = k:predict():correct( observation ):get_state()
-	print('\nraw',c.x,c.y,1/c.dt)
-	print('filt',x[1],x[2])
+	--print('\nraw',c.x,c.y,1/c.dt)
+	--print('filt',x[1],x[2],x[3],x[4])
+	print('Vel',x[3],x[4])
+	print(x[1],x[2])
 end
 
 local function update_trails(id,c)
 	-- Run the Kalman filter on touch c
 	local k = c.kalman
-	local observation = torch.DoubleTensor(2)
-	observation[1] = c.x
-	observation[2] = c.y
-	-- NOTE: c.dt is important... if finger in contact but not moving
-	local x,P = k:predict():correct( observation ):get_state()
-	print('\nraw',c.x,c.y,1/c.dt)
-	print('filt',x[1],x[2])
+	-- NOTE: c.dt is important...
+	local x,P = k:predict():get_prior()
+	print('filt',x[1],x[2],x[3],x[4])
 end
 
 -- Handler API: timestamp, object
@@ -117,9 +115,7 @@ libTouch.stop = function(t,o)
 		return
 	end
 	contacts[o.id] = nil
-	-- Reset the relevant Kalman filter
-	k_to_c[c.kalman_id] = false
-	-- TODO: c.kalman:reset()
+	trails[o.id] = c
 end
 
 -- Move of a touch
@@ -150,6 +146,24 @@ end
 
 libTouch.trail = function(t,o)
 	print('trail',o.id,t)
+	local c = trails[o.id]
+	if not c then
+		print(o.id,'not found for trail')
+		return
+	end
+	update_trails(o.id, c)
+end
+
+libTouch.finish = function(t,o)
+	print('finish',o.id,t)
+	local c = trails[o.id]
+	if not c then
+		print(o.id,'not found for finish')
+		return
+	end
+	-- Reset the relevant Kalman filter
+	k_to_c[c.kalman_id] = false
+	-- TODO: c.kalman:reset()
 end
 
 return libTouch

@@ -28,7 +28,7 @@ local function update(id,c)
 	observation[2] = c.y
 	-- NOTE: c.dt is important... if finger in contact but not moving
 	local x,P = k:predict():correct( observation ):get_state()
-	print('\nraw',c.x,c.y)
+	print('\nraw',c.x,c.y,1/c.dt)
 	print('filt',x[1],x[2])
 end
 
@@ -92,6 +92,10 @@ libTouch.move = function(t,o)
 	c.y, c.dy = o.y, dy
 	-- General update
 	update(o.id, c)
+end
+
+libTouch.beat = function(t,o)
+	print('heartbeat',o.id)
 end
 
 return libTouch

@@ -11,7 +11,6 @@ local contacts = {}
 -- TODO: Find easy way to map the changing
 -- ids of the touches to the pool of filters
 local kalmans, k_to_c, nKalman = {}, {}, 5
-local k_to_c
 for i=1,nKalman do
 	-- 2 dimensions (finger x and y)
 	local k = libKalman.new_filter(2)
@@ -24,11 +23,13 @@ end
 local function update(id,c)
 	-- Run the Kalman filter on touch c
 	local k = c.kalman
-	local observation = touch.DoubleTensor(2)
+	local observation = torch.DoubleTensor(2)
 	observation[1] = c.x
 	observation[2] = c.y
 	-- NOTE: c.dt is important... if finger in contact but not moving
 	local x,P = k:predict():correct( observation ):get_state()
+	print('\nraw',c.x,c.y)
+	print('filt',x[1],x[2])
 end
 
 -- Handler API: timestamp, object
@@ -66,7 +67,7 @@ libTouch.start = function(t,o)
 end
 
 -- End of a touch
-libTouch.end = function(t,o)
+libTouch.stop = function(t,o)
 	-- Remove from table
 	local c = contacts[o.id]
 	contacts[o.id] = nil

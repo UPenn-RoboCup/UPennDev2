@@ -1,8 +1,7 @@
 -- Torch/Lua Ball tracking using a Kalman Filter
 -- (c) 2013 Stephen McGill
 local libKalman = require'libKalman'
-local torch = require 'torch'
-torch.Tensor = torch.DoubleTensor
+local torch = require'torch'
 local cov_debug = false
 local prior_debug = false
 

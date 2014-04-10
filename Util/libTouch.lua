@@ -5,6 +5,7 @@ local libTouch = {}
 
 -- TODO: Add rpy of the tablet
 local contacts = {}
+local trails = {}
 
 -- Initialize the Kalman filters:
 -- Assume a max of five fingers...
@@ -20,7 +21,19 @@ for i=1,nKalman do
 end
 
 -- Update, knowing which was last updated
-local function update(id,c)
+local function update_contacts(id,c)
+	-- Run the Kalman filter on touch c
+	local k = c.kalman
+	local observation = torch.DoubleTensor(2)
+	observation[1] = c.x
+	observation[2] = c.y
+	-- NOTE: c.dt is important... if finger in contact but not moving
+	local x,P = k:predict():correct( observation ):get_state()
+	print('\nraw',c.x,c.y,1/c.dt)
+	print('filt',x[1],x[2])
+end
+
+local function update_trails(id,c)
 	-- Run the Kalman filter on touch c
 	local k = c.kalman
 	local observation = torch.DoubleTensor(2)
@@ -91,11 +104,15 @@ libTouch.move = function(t,o)
 	local dy = o.y - (c.y or c.y0)
 	c.y, c.dy = o.y, dy
 	-- General update
-	update(o.id, c)
+	update_contacts(o.id, c)
 end
 
 libTouch.beat = function(t,o)
 	print('heartbeat',o.id)
+end
+
+libTouch.trail = function(t,o)
+	print('trail',o.id,t)
 end
 
 return libTouch

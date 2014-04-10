@@ -29,7 +29,7 @@ local function record(self,meta,raw,n_raw)
 	-- Record the metadata
 	local mtype, m_ok = type(meta), false
 	if mtype=='string' then
-		m_ok = self.f_meta:write(metapack)
+		m_ok = self.f_meta:write(meta)
 	elseif mtype then
 		local metapack = mp.pack(meta)
 		m_ok = self.f_meta:write(metapack)

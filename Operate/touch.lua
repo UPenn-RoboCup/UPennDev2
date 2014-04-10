@@ -12,7 +12,7 @@ local simple_ipc, poller = require'simple_ipc'
 local tou_ch = simple_ipc.new_subscriber'touch'
 local libTouch = require'libTouch'
 -- Allow logging
-local DO_LOG, libLog, logger = false
+local DO_LOG, libLog, logger = true
 if DO_LOG then
 	libLog = require'libLog'
 	-- Make the logger
@@ -26,7 +26,7 @@ tou_ch.callback = function(s)
 	local evt = mp.unpack(data)
 	if DO_LOG then
 		evt.TIMESTAMP = t
-		logger:record(mp.pack(evt))
+		logger:record(evt)
 		-- Hope it's not too slow to repack ;)
 		--logger:record(data)
 	end
@@ -43,6 +43,16 @@ tou_ch.callback = function(s)
 		end
 	end
 end
+
+local signal = require'signal'
+local function shutdown()
+	-- Stop the poller
+	poller:stop()
+	-- Save the logs
+	if DO_LOG then logger:stop() end
+end
+signal.signal("SIGINT", shutdown)
+signal.signal("SIGTERM", shutdown)
 
 -- Start listening with the poller
 poller = simple_ipc.wait_on_channels{tou_ch}

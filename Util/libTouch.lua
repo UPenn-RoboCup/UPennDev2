@@ -92,6 +92,7 @@ end
 
 -- Start of a touch
 libTouch.start = function(t,o)
+	print('start',o.id)
 	-- Assign a Kalman filter if available
 	local filter, kalman_id
 	for i,k in ipairs(k_to_c) do
@@ -114,16 +115,14 @@ libTouch.start = function(t,o)
 	end
 	-- Add a property
 	table.insert(props,{
-		start = {x=o.x,y=o.y,t=t},
-		move = {},
-		trail = {}
+		move = {{x=o.x,y=o.y,vx=0,vy=0,t=t}},
+		trail = {},
 	})
 	-- Add to contacts
 	contacts[o.id] = {
 		x = o.x,
 		y = o.y,
 		t = t,
-		
 		kalman = filter,
 		kalman_id = kalman_id,
 		prop_id = #props
@@ -148,6 +147,11 @@ libTouch.stop = function(t,o)
 	c.t = t
 	-- Add a property
 	props[c.prop_id].stop = {x=o.x,y=o.y,t=t}
+	-- For continuity in the trail
+	local x,P = c.kalman:get_state()
+	table.insert(props[c.prop_id].trail,{
+		x=x[1],y=x[2],vx=x[3],vy=x[4],
+	})
 end
 
 -- Move of a touch
@@ -192,12 +196,17 @@ libTouch.beat = function(t,o)
 	update_contacts(o.id, c)
 	--
 	local props = props[c.prop_id]
-	-- Move item gets this number of beats
-	local beat_count = props.beats[#props.move]
-	if not beat_counter then
-		props.beats[#props.move] = 1
+	local move_id = #props.move
+	local beats = props.beats
+	local cur_beat = beats and beats[#beats]
+	if not cur_beat then
+		-- Initial beat
+		props.beats = {{i=move_id,n=1}}
+	elseif cur_beat.i == move_id then
+		cur_beat.n = cur_beat.n + 1
 	else
-		props.beats[#props.move] = beat_count + 1
+		-- add new beat
+		table.insert(props.beats,{i=move_id,n=1})
 	end
 end
 

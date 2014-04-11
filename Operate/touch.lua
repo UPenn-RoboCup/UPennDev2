@@ -10,6 +10,8 @@ local util = require'util'
 local mp = require'msgpack'
 local simple_ipc, poller = require'simple_ipc'
 local tou_ch = simple_ipc.new_subscriber'touch'
+-- Processed
+local tou_che = simple_ipc.new_publisher'touche'
 local libTouch = require'libTouch'
 -- Allow logging
 local DO_LOG, libLog, logger = false
@@ -33,11 +35,14 @@ tou_ch.callback = function(s)
 	if type(f)~='function' then return end
 	-- Process a non-touch event
 	if not evt.touch then
-		f(ts,evt)
+		local ret = f(ts,evt)
+		if ret then tou_che:send(mp.pack(ret)) end
 	else
 		-- Process the touches
+		local ret
 		for _,c in ipairs(evt.touch) do
-			f(ts,c)
+			ret = f(ts,c)
+			if ret then tou_che:send(mp.pack(ret)) end
 		end
 	end
 end

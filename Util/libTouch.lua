@@ -6,12 +6,20 @@ local libTouch = {}
 -- TODO: Add rpy of the tablet
 local contacts = {}
 local trails = {}
+-- Table of all gestures and their properties
+-- TODO: Keep running table per session,
+-- or prune once you send on the network
+local props = {}
+
+util = require'util'
+
+local FPS = 60
+local DECAY = .7
 
 -- Initialize the Kalman filters:
 
 local function generate_kalman()
 	-- TODO: Tune these somehow
-	local DECAY = .8
 	local filter = libKalman.initialize_filter( 4 )
 	-----------------
 	-- Modify the Dynamics update
@@ -56,58 +64,75 @@ local function update_contacts(id,c)
 	local observation = torch.DoubleTensor(2)
 	observation[1] = c.x
 	observation[2] = c.y
-	-- NOTE: c.dt is important... if finger in contact but not moving
-	local x,P = k:predict():correct( observation ):get_state()
-	--print('\nraw',c.x,c.y,1/c.dt)
-	--print('filt',x[1],x[2],x[3],x[4])
-	print('Vel',x[3],x[4])
-	print(x[1],x[2])
+	-- See the number of frames to evolve
+	local ndt = math.max(math.floor(c.dt * FPS),1)
+	k:predict():correct( observation )
+	return k
 end
 
 local function update_trails(id,c)
 	-- Run the Kalman filter on touch c
 	local k = c.kalman
-	-- NOTE: c.dt is important...
-	local x,P = k:predict():get_prior()
-	print('filt',x[1],x[2],x[3],x[4])
+	-- See the number of frames to evolve
+	local ndt = math.max(math.floor(c.dt * FPS + 0.5),1)
+	for i=1,ndt do
+		k:predict()
+	end
+	return k
 end
 
 -- Handler API: timestamp, object
 -- Refresh the system
 libTouch.refresh = function(t,o)
 	contacts = {}
-	-- TODO: Reset the Kalman filters
 	for i=1,nKalman do
 		k_to_c[i] = false
-		-- TODO: kalmans[i]:reset()
 	end
 end
 
 -- Start of a touch
 libTouch.start = function(t,o)
 	-- Assign a Kalman filter if available
-	local kalman, kalman_id
+	local filter, kalman_id
 	for i,k in ipairs(k_to_c) do
 		if not k then
-			kalman = kalmans[i]
+			filter = kalmans[i]
 			kalman_id = i
 			break
 		end
 	end
+	-- Finsh the kalman lookup
+	if kalman_id then
+		k_to_c[kalman_id] = contacts[o.id]
+		-- Reset to the position
+		filter.x_k_minus[1] = o.x
+		filter.x_k_minus[2] = o.y
+		filter.x_k_minus[3] = 0
+		filter.x_k_minus[4] = 0
+		filter.x_k:copy( filter.x_k_minus )
+		-- TODO: Reset noise
+	end
+	-- Add a property
+	table.insert(props,{
+		start = {x=o.x,y=o.y,t=t},
+		move = {},
+		trail = {}
+	})
 	-- Add to contacts
 	contacts[o.id] = {
-		x0 = o.x,
-		y0 = o.y,
-		t0 = t,
-		kalman = kalman,
+		x = o.x,
+		y = o.y,
+		t = t,
+		
+		kalman = filter,
 		kalman_id = kalman_id,
+		prop_id = #props
 	}
-	-- Finsh the kalman lookup
-	if kalman_id then k_to_c[kalman_id] = contacts[o.id] end
 end
 
 -- End of a touch
 libTouch.stop = function(t,o)
+	print('stop',o.id)
 	-- Remove from table
 	local c = contacts[o.id]
 	if not c then
@@ -116,10 +141,18 @@ libTouch.stop = function(t,o)
 	end
 	contacts[o.id] = nil
 	trails[o.id] = c
+	-- Final time when the mouse is up
+	c.tf = t
+	-- Still track the time
+	local dt = t - c.t
+	c.t = t
+	-- Add a property
+	props[c.prop_id].stop = {x=o.x,y=o.y,t=t}
 end
 
 -- Move of a touch
 libTouch.move = function(t,o)
+	print('move',o.id)
 	-- Find in the table
 	local c = contacts[o.id]
 	if not c then
@@ -128,20 +161,44 @@ libTouch.move = function(t,o)
 	end
 	-- TODO: Ensure that the id is present
 	-- Grab the time differential
-	local dt = t - (c.t or c.t0)
+	local dt = t - c.t
 	-- Update the times
 	c.t, c.dt = t, dt
 	-- Update the positions
-	local dx = o.x - (c.x or c.x0)
+	local dx = o.x - c.x
 	c.x, c.dx = o.x, dx
-	local dy = o.y - (c.y or c.y0)
+	local dy = o.y - c.y
 	c.y, c.dy = o.y, dy
 	-- General update
-	update_contacts(o.id, c)
+	local k = update_contacts(o.id, c)
+	-- Modify the property
+	local x,P = k:get_state()
+	util.ptorch(P)
+	table.insert(props[c.prop_id].move,{
+		x=x[1],y=x[2],vx=x[3],vy=x[4],
+	})
 end
 
 libTouch.beat = function(t,o)
-	print('heartbeat',o.id)
+	print('beat',o.id)
+	local c = contacts[o.id]
+	if not c then
+		print(o.id,'not found for beat')
+		return
+	end
+	local dt = t - c.t
+	c.t, c.dt = t, dt
+	-- Add observation of no velocity?
+	update_contacts(o.id, c)
+	--
+	local props = props[c.prop_id]
+	-- Move item gets this number of beats
+	local beat_count = props.beats[#props.move]
+	if not beat_counter then
+		props.beats[#props.move] = 1
+	else
+		props.beats[#props.move] = beat_count + 1
+	end
 end
 
 libTouch.trail = function(t,o)
@@ -151,7 +208,14 @@ libTouch.trail = function(t,o)
 		print(o.id,'not found for trail')
 		return
 	end
-	update_trails(o.id, c)
+	local dt = t - c.t
+	c.t, c.dt = t, dt
+	local k = update_trails(o.id, c)
+	local x,P = k:get_prior()
+	util.ptorch(P)
+	table.insert(props[c.prop_id].trail,{
+		x=x[1],y=x[2],vx=x[3],vy=x[4],
+	})
 end
 
 libTouch.finish = function(t,o)
@@ -161,9 +225,10 @@ libTouch.finish = function(t,o)
 		print(o.id,'not found for finish')
 		return
 	end
-	-- Reset the relevant Kalman filter
+	-- The filter is alailable now
 	k_to_c[c.kalman_id] = false
-	-- TODO: c.kalman:reset()
+	-- Return data to be sent to the browser
+	return props[c.prop_id]
 end
 
 return libTouch

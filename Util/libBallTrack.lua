@@ -25,7 +25,7 @@ local function check_uncertainty(cxx,cyy,cxy)
 		cxy = 0;
 	end
 	
-	local cDet = cxx*cyy-cxy*cxy;
+	local cDet = cxx*cyy-cxy*cxy
 	if (cDet < EPS) then
 		local t = (1-cDet)/(cxx+cyy)
 		cxx = cxx + t

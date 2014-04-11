@@ -393,8 +393,8 @@ int lua_field_lines_old(lua_State *L) {
       im_row += ni;
       int width = lineState(label);
       if ((width >= widthMin) && (width <= widthMax)) {
-	int jline = j - (width+1)/2;
-	radonTransform.addHorizontalPixel(i, jline);
+				int jline = j - (width+1)/2;
+				radonTransform.addHorizontalPixel(i, jline);
       }
     }
   }

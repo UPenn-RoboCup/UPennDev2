@@ -440,11 +440,13 @@ if IS_WEBOTS then
       local w = webots.wb_camera_get_width(tags.hand_camera)
       local h = webots.wb_camera_get_height(tags.hand_camera)
 			local camera_arr = carray.byte( camera_fr, w*h*3 )
-			local meta = {}
-			meta.t     = get_time()
-			meta.n     = #camera_arr
-			meta.w     = w
-			meta.h     = h
+			local meta = {
+				t = get_time(),
+				n = #camera_arr,
+				w = w,
+				h = h
+				c = 'jpeg'
+			}
 			-- Send frame locally?
 			--camera0_ch:send{mp.pack(meta),tostring(camera_arr)}
 			-- Broadcast the frame

@@ -75,21 +75,23 @@ Config.km.standup_back  = 'km_Charli_StandupFromBack.lua'
 -- Cameras --
 -------------
 Config.camera = {}
--- Head
-Config.camera.head = {}
-Config.camera.head.fname = '/dev/video0'
-Config.camera.head.fmt = 'yuyv'
-Config.camera.head.res = {640,360}
---Config.camera.head.res = {320,180}
-Config.camera.head.fps = 10
-
--- Forehead (wide angle)
-Config.camera.forehead = {}
-Config.camera.forehead.device = '/dev/video1'
-Config.camera.forehead.format = 'yuyv'
---Config.camera.forehead.format = 'mjpeg'
---Config.camera.forehead.resolution = {160,120}
-Config.camera.forehead.resolution = {320,240}
-Config.camera.forehead.fps = 10
+table.insert(Config.camera,
+	{
+		name = 'head',
+		fname = '/dev/video0',
+		fmt = 'yuyv',
+		res = {640,360},
+		fps = 10
+	})
+--[[
+table.insert(Config.camera,
+	{
+		name = 'hand',
+		fname = '/dev/video1',
+		fmt = 'yuyv',
+		res = {320,240},
+		fps = 10
+	})
+--]]
 
 return Config

@@ -248,8 +248,8 @@ simple_ipc.wait_on_channels = function( channels )
   local poll_obj = poller.new( n_ch )
   -- Add local lookup table for the callbacks
   local lut = {}
-	--for i,ch in pairs(channels) do
-  for i,ch in ipairs(channels) do
+	for i,ch in pairs(channels) do
+  --for i,ch in ipairs(channels) do
 		local s
 		if type(s)=='number' then
 			-- File descriptor

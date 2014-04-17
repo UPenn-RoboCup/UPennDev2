@@ -444,7 +444,7 @@ if IS_WEBOTS then
 				t = get_time(),
 				n = #camera_arr,
 				w = w,
-				h = h
+				h = h,
 				c = 'jpeg'
 			}
 			-- Send frame locally?

@@ -80,6 +80,7 @@ for name,cam in pairs{head=Config.camera.head} do
   camera_poll.camera = camera
   -- Frame callback
   camera_poll.callback = function(sh)
+		print('hello?')
     -- Identify which camera
     local camera_poll = wait_channels.lut[sh]
     local t = unix.time()
@@ -93,6 +94,7 @@ for name,cam in pairs{head=Config.camera.head} do
     -- Grab the net settings
     local net_settings = camera_poll.get_net()
     local stream, method, quality, interval = unpack(net_settings)
+		print('here?')
 
     -- If not sending, then no computation
     if stream==0 then return end
@@ -101,6 +103,7 @@ for name,cam in pairs{head=Config.camera.head} do
     if stream==2 or stream==4 then
       -- If we have not waited enough time
       local t_diff_send = t - camera.meta.t
+			print('t_diff_send',t_diff_send)
       if t_diff_send<interval then return end
     end
     
@@ -129,6 +132,7 @@ for name,cam in pairs{head=Config.camera.head} do
     if stream==1 or stream==2 then
       -- Send over UDP
       local udp_ret, err = camera.udp:send( metapack..c_img )
+			print('SENT UDP',udp_ret)
       if err then print(camera.meta.name,'udp error',err) end
     elseif stream==3 or stream==4 then
       -- Send over TCP
@@ -174,7 +178,7 @@ signal.signal("SIGTERM", shutdown)
 -- Poll multiple sockets
 assert(#cameras>0,'No cameras available!')
 local channel_poll = simple_ipc.wait_on_channels( wait_channels );
-local channel_timeout = 1e3 --ms, means 1 sec timeout = 1e3
+local channel_timeout = 2e3 --ms, means 1 sec timeout = 1e3
 
 -- Debugging
 local t_debug = unix.time()
@@ -183,11 +187,11 @@ local DEBUG_INTERVAL = 1
 -- Begin to poll
 while true do
   local npoll = channel_poll:poll(channel_timeout)
-  local t = unix.time()
+	print('Head Count',npoll)
+	local t = unix.time()
   -- Debug messages if desired
   local t_diff = t-t_debug
   if t_diff>DEBUG_INTERVAL then
     t_debug = t
-    --print('Head Count')
   end
 end

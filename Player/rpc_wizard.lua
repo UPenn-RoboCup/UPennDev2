@@ -153,7 +153,7 @@ end
 rpc_rep.callback = process_zmq
 rpc_sub.callback = process_zmq
 local rpc_udp_poll = {}
-rpc_udp_poll.socket_handle = rpc_udp:descriptor()
+rpc_udp_poll.socket = rpc_udp:descriptor()
 rpc_udp_poll.callback = process_udp
 wait_channels = {rpc_rep,rpc_udp_poll,rpc_sub}
 local channel_poll = simple_ipc.wait_on_channels( wait_channels );

@@ -250,7 +250,6 @@ simple_ipc.wait_on_channels = function( channels )
   local lut = {}
 	--for i,ch in pairs(channels) do
   for i,ch in ipairs(channels) do
-print('poller',i,ch)
 		local s
 		if type(s)=='number' then
 			-- File descriptor

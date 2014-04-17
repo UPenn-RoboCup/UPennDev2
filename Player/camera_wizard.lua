@@ -17,7 +17,7 @@ if CTX and type(metadata)=='table' then
 	IS_CHILD=true
 	simple_ipc.import_context( CTX )
 	pair_ch = simple_ipc.new_pair(metadata.ch_name)
-	print('CHILD CTX')
+--	print('CHILD CTX')
 end
 -- For all threads
 local mp = require'msgpack.MessagePack'
@@ -25,7 +25,7 @@ local mp = require'msgpack.MessagePack'
 -- The main thread's job is to give:
 -- joint angles and network request
 if not IS_CHILD then
-	print('PARENT')
+--	print('PARENT')
 	-- TODO: Signal of ctrl-c should kill all threads...
 	local signal = require'signal'
 	local util = require'util'
@@ -76,36 +76,44 @@ local w = metadata.width
 local h = metadata.height
 local fps = metadata.fps
 local fmt = metadata.format
+local name = metadata.name
+local dev = metadata.dev
 metadata = nil
 -- Extract Config information
 local operator = Config.net.operator.wired
-local udp_port = Config.net.camera[cam.name]
+local udp_port = Config.net.camera[name]
 Config = nil
+
+-- Debug
+print(util.color('Begin','yellow'),name)
+
 -- Open the camera
-local dev = uvc.init(metadata.dev, width, height, fmt, 1, fps)
+local camera = uvc.init(dev, width, height, fmt, 1, fps)
 -- UDP Sending
-local camera_udp_ch = udp.new_sender(operator, udp_port)
+local udp_ch = udp.new_sender(operator, udp_port)
 -- Metadata for the operator
 local meta = {
 	t = 0,
-	c = 'jpeg',
+	n = 0,
+	sz = 0,
 	w = w,
 	h = h,
-	name = cam.name..'_camera',
+	name = name..'_camera',
+	c = 'jpeg',
 }
 -- JPEG Compressor
 local c_yuyv = jpeg.compressor('yuyv')
 
 while true do
 	-- Grab and compress
-	local img, sz, cnt, t = dev:get_image()
-	local c_img = c_yuyv:compress( img, camera.meta.w,camera.meta.h)
+	local img, sz, cnt, t = camera:get_image()
+	local c_img = c_yuyv:compress( img, w, h)
 	-- Update metadata
 	meta.t = t
+	meta.n = cnt
 	meta.sz = #c_img
 	-- Send
-	local udp_ret, err = camera.udp:send( mp.pack(meta)..c_img )
-	print('SENT UDP',udp_ret,cnt,t)
-	if err then print(camera.meta.name,'udp error',err) end
---	print('img',img)
+	local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
+	--print('udp img',img,sz,cnt,t,udp_ret)
+	if err then print(name,'udp error',err) end
 end

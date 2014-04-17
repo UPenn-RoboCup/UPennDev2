@@ -57,7 +57,7 @@ table.insert(Config.camera,
 	dev = '/dev/video0',
 	fmt = 'yuyv',
 	width = 640,
-	height = 360,
+	height = 480,
 	fps = 10
 })
 

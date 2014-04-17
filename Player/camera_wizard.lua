@@ -68,9 +68,10 @@ end
 
 -- LOGGING
 local DO_LOG = true
-local libLog, logger
+local libLog, logger, Body
 if DO_LOG then
 	libLog = require'libLog'
+	Body = require'Body'
 	-- Make the logger
 	logger = libLog.new('uvc',true)
 end
@@ -99,7 +100,7 @@ print(util.color('Begin','yellow'),name)
 
 
 -- Open the camera
-local camera = uvc.init(dev, width, height, fmt, 1, fps)
+local camera = uvc.init(dev, w, h, fmt, 1, fps)
 -- UDP Sending
 local udp_ch = udp.new_sender(operator, udp_port)
 -- Metadata for the operator

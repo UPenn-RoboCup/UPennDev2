@@ -249,7 +249,8 @@ simple_ipc.wait_on_channels = function( channels )
   -- Add local lookup table for the callbacks
   local lut = {}
 	--for i,ch in pairs(channels) do
-  for _,ch in ipairs(channels) do
+  for i,ch in ipairs(channels) do
+print('poller',i,ch)
 		local s
 		if type(s)=='number' then
 			-- File descriptor
@@ -258,11 +259,11 @@ simple_ipc.wait_on_channels = function( channels )
 			-- ZMQ Socket
 			s = ch.socket
 		end
-		lut[s] = ch
 		assert(s,'No socket for poller!')
 		assert(not lut[s],'Duplicate poller channel!')
 		assert(ch.callback,'No callback for poller!')
     poll_obj:add( s, zmq.POLLIN, ch.callback )
+		lut[s] = ch
   end
 	poll_obj.lut = lut
 	poll_obj.n = n_ch

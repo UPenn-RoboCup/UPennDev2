@@ -71,7 +71,7 @@ for name,cam in pairs{head=Config.camera.head} do
   local camera = setup_camera(cam,name,udp_net,tcp_net)
   -- Create the camera callback function
   local camera_poll = {}
-  camera_poll.socket_handle = camera.dev:descriptor()
+  camera_poll.socket = camera.dev:descriptor()
   camera_poll.count = 0
   camera_poll.ts = 0
   -- Net settings get/set

@@ -13,7 +13,7 @@ local uvc = require'uvc'
 video_ud1 = uvc.init('/dev/video0', 320, 240, 'yuyv',1, 30)
 
 local n, t = 0, unix.time()
-while n<5 do
+while n<120 do
 	n = n+1
 	t = unix.time()
 	local img1, size1, count1, time1 = video_ud1:get_image();

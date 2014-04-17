@@ -65,6 +65,16 @@ if not IS_CHILD then
 	return
 end
 
+
+-- LOGGING
+local DO_LOG = true
+local libLog, logger
+if DO_LOG then
+	libLog = require'libLog'
+	-- Make the logger
+	logger = libLog.new('uvc',true)
+end
+
 -- Libraries
 local util   = require'util'
 local udp    = require'udp'
@@ -86,6 +96,7 @@ Config = nil
 
 -- Debug
 print(util.color('Begin','yellow'),name)
+
 
 -- Open the camera
 local camera = uvc.init(dev, width, height, fmt, 1, fps)
@@ -116,4 +127,9 @@ while true do
 	local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
 	--print('udp img',img,sz,cnt,t,udp_ret)
 	if err then print(name,'udp error',err) end
+	if DO_LOG then
+		meta.arm = Body.get_command_position()
+		local m_ok, r_ok = logger:record(meta, img, sz)
+	end
+
 end

@@ -12,7 +12,7 @@ Config.net.robot = {
 
 -- Remote Operator IP addresses
 Config.net.operator = {
-['wired']              = '192.168.2.84',
+['wired']              = '20.20.20.57',
 ['wired_broadcast']    = '192.168.3.255',
 }
 
@@ -39,8 +39,6 @@ Config.net.state          = 44445
 --
 Config.net.camera = {}
 Config.net.camera.head     = 33333
-Config.net.camera.forehead = 33335
-Config.net.camera.forehead2 = 33337
 --
 Config.net.reliable_camera = {}
 Config.net.reliable_camera.head     = 33334

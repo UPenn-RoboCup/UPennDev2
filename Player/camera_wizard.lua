@@ -20,36 +20,22 @@ if CTX and type(metadata)=='table' then
 	print('CHILD CTX')
 end
 -- For all threads
-local mp     = require'msgpack.MessagePack'
-
-local cameras = {
-	'camera0' = {
-		dev = '/dev/video0',
-	}
-}
-
-meta.t     = get_time()
-			meta.n     = #camera_arr
-			meta.w     = w
-			meta.h     = h
+local mp = require'msgpack.MessagePack'
 
 -- The main thread's job is to give:
 -- joint angles and network request
 if not IS_CHILD then
+	print('PARENT')
 	-- TODO: Signal of ctrl-c should kill all threads...
 	local signal = require'signal'
 	local util = require'util'
-
-	-- Only the parent accesses shared memory
-	require'vcm'
 	local poller, channels = nil, {}
 	-- Spawn children
 	for _,cam in ipairs(Config.camera) do
-		print(util.color('Setting up','green'),name,cam.device)
-		-- Open the camera
-		local camera = setup_camera(cam,name)
+		print(util.color('Setting up','green'))
+		util.ptable(cam)
 		-- The thread will automagically start detached upon gc
-		local ch, thread = simple_ipc.new_thread('mesh_wizard.lua',cam.name,cam)
+		local ch, thread = simple_ipc.new_thread('camera_wizard.lua',cam.name,cam)
 		-- Deal with any data from the camera
 		ch.callback = function(s)
 			local data, has_more = poller.lut[s]:receive()
@@ -68,7 +54,6 @@ if not IS_CHILD then
 		local data, has_more = poller.lut[s]:receive()
 		-- Send message to a thread
 		local cmd = mp.unpack(data)
-		if cmd.id==0 then
 	end
 	table.insert(channels,replier)
 	-- Ensure that we shutdown the threads properly
@@ -85,27 +70,28 @@ local util   = require'util'
 local udp    = require'udp'
 local uvc    = require'uvc'
 local jpeg   = require'jpeg'
-jpeg.set_quality( 95 )
 
 local function setup_camera(cam)
 	-- Get the config values
 	local dev = cam.device
 	local fps = cam.fps
 	local fmt = cam.format
-	local width, height = unpack(cam.resolution)
+	local width, height = unpack(cam.res)
 	-- Save the metadata
 	local meta = {
 		t = 0,
 		c = 'jpeg',
 		w = width,
-		h = height
+		h = height,
 		count = 0,
 		name = cam.name..'_camera',
 	}
 	-- Open the camera
 	local dev = uvc.init(dev, width, height, fmt, 1, fps)
 	-- Open the unreliable network channel
-	local camera_udp_ch = udp.new_sender(operator, Config.net.camera[name])
+	print(Config.net.operator.wired,Config.net.camera[cam.name])
+	local camera_udp_ch =
+		udp.new_sender(Config.net.operator.wired, Config.net.camera[cam.name])
 	-- Open the reliable network channel
 	--local camera_tcp_ch = simple_ipc.new_publisher(Config.net.reliable_camera[name],false,'*')
 	-- Open the local channel for logging
@@ -121,9 +107,18 @@ local function setup_camera(cam)
 	}
 	return camera
 end
+
 -- Setup the camera from our metadata
 local camera = setup_camera(metadata)
+local dev = camera.dev
+local metapack = mp.pack(camera.meta)
+local c_yuyv = jpeg.compressor('yuyv')
+
 while true do
-	local img, sz, cnt, t = camera:get_image()
-	print('img',img)
+	local img, sz, cnt, t = dev:get_image()
+	local c_img = c_yuyv:compress( img, camera.meta.w,camera.meta.h)
+	local udp_ret, err = camera.udp:send( metapack..c_img )
+	--print('SENT UDP',udp_ret)
+	if err then print(camera.meta.name,'udp error',err) end
+--	print('img',img)
 end

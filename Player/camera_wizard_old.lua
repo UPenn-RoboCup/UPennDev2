@@ -71,41 +71,54 @@ local udp    = require'udp'
 local uvc    = require'uvc'
 local jpeg   = require'jpeg'
 
--- Extract metadata information
-local w = metadata.width
-local h = metadata.height
-local fps = metadata.fps
-local fmt = metadata.format
-metadata = nil
--- Extract Config information
-local operator = Config.net.operator.wired
-local udp_port = Config.net.camera[cam.name]
-Config = nil
--- Open the camera
-local dev = uvc.init(metadata.dev, width, height, fmt, 1, fps)
--- UDP Sending
-local camera_udp_ch = udp.new_sender(operator, udp_port)
--- Metadata for the operator
-local meta = {
-	t = 0,
-	c = 'jpeg',
-	w = w,
-	h = h,
-	name = cam.name..'_camera',
-}
--- JPEG Compressor
+local function setup_camera(cam)
+	-- Get the config values
+	local dev = cam.device
+	local fps = cam.fps
+	local fmt = cam.format
+	local width, height = unpack(cam.res)
+	-- Save the metadata
+	local meta = {
+		t = 0,
+		c = 'jpeg',
+		w = width,
+		h = height,
+		count = 0,
+		name = cam.name..'_camera',
+	}
+	-- Open the camera
+	local dev = uvc.init(dev, width, height, fmt, 1, fps)
+	-- Open the unreliable network channel
+	print(Config.net.operator.wired,Config.net.camera[cam.name])
+	local camera_udp_ch =
+		udp.new_sender(Config.net.operator.wired, Config.net.camera[cam.name])
+	-- Open the reliable network channel
+	--local camera_tcp_ch = simple_ipc.new_publisher(Config.net.reliable_camera[name],false,'*')
+	-- Open the local channel for logging
+	--local cam_pub_ch = simple_ipc.new_publisher(meta.name)
+	-- Export
+	local camera = {
+		meta = meta,
+		dev  = dev,
+		fmt = fmt,
+		udp  = camera_udp_ch,
+		--pub  = cam_pub_ch,
+		--tcp  = camera_tcp_ch
+	}
+	return camera
+end
+
+-- Setup the camera from our metadata
+local camera = setup_camera(metadata)
+local dev = camera.dev
+local metapack = mp.pack(camera.meta)
 local c_yuyv = jpeg.compressor('yuyv')
 
 while true do
-	-- Grab and compress
 	local img, sz, cnt, t = dev:get_image()
 	local c_img = c_yuyv:compress( img, camera.meta.w,camera.meta.h)
-	-- Update metadata
-	meta.t = t
-	meta.sz = #c_img
-	-- Send
-	local udp_ret, err = camera.udp:send( mp.pack(meta)..c_img )
-	print('SENT UDP',udp_ret,cnt,t)
+	local udp_ret, err = camera.udp:send( metapack..c_img )
+	--print('SENT UDP',udp_ret)
 	if err then print(camera.meta.name,'udp error',err) end
 --	print('img',img)
 end

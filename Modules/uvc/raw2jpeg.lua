@@ -1,8 +1,9 @@
 dofile'../../include.lua'
 msgpack=require'msgpack'
 
-date = '04.09.2014.14.59.58'
-DIR = '/Users/smcgill3/Box Sync/YouBot'
+--date = '04.09.2014.14.59.58'
+date = '04.17.2014.15.00.52'
+DIR = '/Users/smcgill3/Box Sync/YouBot/log1'
 
 -- Read the metadata
 local m_name = DIR..'/uvc_m_'..date..'.log'
@@ -31,10 +32,11 @@ jpeg = require'jpeg'
 cy = jpeg.compressor('yuyv')
 cy:downsampling(0)
 for i,m in ipairs(metadata) do
-	local img = f_r:read(m.sz)
-	print('image size',#img)
-	local jimg = cy:compress(img, 320, 240)
-	f_i = io.open('/tmp/img'..i..'.jpeg','w')
+	local img = f_r:read(640*480*2)
+	print('image size',#img,m.sz)
+	local jimg = cy:compress(img, 640, 480)
+	local fn = string.format('/tmp/img%04d.jpeg',i)
+	f_i = io.open(fn,'w')
 	f_i:write(jimg)
 	f_i:close()
 end

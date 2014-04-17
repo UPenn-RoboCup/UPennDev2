@@ -67,9 +67,9 @@ end
 
 
 -- LOGGING
-local DO_LOG = true
+local ENABLE_LOG = true
 local libLog, logger, Body
-if DO_LOG then
+if ENABLE_LOG then
 	libLog = require'libLog'
 	Body = require'Body'
 	-- Make the logger
@@ -112,6 +112,7 @@ local meta = {
 	h = h,
 	name = name..'_camera',
 	c = 'jpeg',
+	arm = Body.get_command_position(),
 }
 -- JPEG Compressor
 local c_yuyv = jpeg.compressor('yuyv')
@@ -124,13 +125,14 @@ while true do
 	meta.t = t
 	meta.n = cnt
 	meta.sz = #c_img
+	meta.arm = Body.get_command_position()
 	-- Send
 	local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
 	--print('udp img',img,sz,cnt,t,udp_ret)
 	if err then print(name,'udp error',err) end
-	if DO_LOG then
-		meta.arm = Body.get_command_position()
-		local m_ok, r_ok = logger:record(meta, img, sz)
+	if ENABLE_LOG then
+		meta.rsz = sz
+		logger:record(meta, img, sz)
 	end
 
 end

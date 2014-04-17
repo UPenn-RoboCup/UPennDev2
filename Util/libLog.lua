@@ -43,7 +43,7 @@ local function record(self,meta,raw,n_raw)
 		if not n_raw then return end
 		if C then
 			local n_written = C.fwrite(raw,1,n_raw,self.f_raw)
-			print('wrote',n_written)
+			--print('wrote',n_written)
 			r_ok = n_written==n_raw
 		else
 			local data = carray.byte(raw,n_raw)

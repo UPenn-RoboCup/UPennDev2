@@ -16,7 +16,7 @@ else
 	-- TODO: Maybe use a pcall here in case carray not found
 	carray = require'carray'
 end
-
+local torch = require'torch'
 local mp = require'msgpack'
 --local mp = require'msgpack.MessagePack'
 
@@ -100,9 +100,10 @@ local function unroll_meta(self)
 end
 
 local function log_iter(self,metadata)
-	local buf, buf_t
+	local buf_t
 	local f_r = io.open(DIR..'/uvc_r_'..date..'.log','r')
 	local i, n = 0, #metadata
+	if C then buf_t = torch.ByteTensor() end
 	local function iter(param, state)
 		i = i + 1
 		if i>n then
@@ -111,11 +112,9 @@ local function log_iter(self,metadata)
 		end
 		--if not param then return end
 		local m = metadata[i]
-		-- Too much malloc'ing here, fix later
-		buf_t = torch.ByteTensor(m.rsz)
-		buf = buf_t:data()
 		if C then
-			local n_read = C.fread(buf,1,m.rsz,f_r)
+			buf_t:resize(m.rsz)
+			local n_read = C.fread(buf_t:data(),1,m.rsz,f_r)
 			return i, m, buf_t
 		else
 			local data = f_r:read(m.rsz)

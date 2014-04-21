@@ -31,12 +31,38 @@ for i=1,n do
 	yi = yi+2
 end
 
+-- Let's perform a convolution...
+local kconv = torch.ByteTensor({
+	{0,0,0},
+	{0,1,0},
+	{0,0,0}
+})
+
+--[[
+local y2 = torch.DoubleTensor(y_img:size())
+y2:copy(y_img)
+local y3 = torch.ByteTensor(im2:size())
+y3:copy(im2)
+local y3 = torch.conv2(y2, kconv, 'F')
+--]]
+local y2 = torch.conv2(y_img, kconv, 'F')
+y2:narrow(1,2,meta.w):narrow(2,2,meta.h)
+y3 = y2:clone()
+
+--[[
+util = require'util'
+util.ptorch(kconv)
+--]]
+
 -- Now let's save this to a JPEG for viewing
 local jpeg = require'jpeg'
 c_gray = jpeg.compressor('gray')
 local str = c_gray:compress(y_img)
-print('I got',type(str),#str)
-
 local f_y = io.open('y.jpg','w')
 f_y:write(str)
+f_y:close()
+
+f_y = torch.DiskFile('y.raw', 'w')
+f_y.binary(f_y)
+f_y:writeByte(y_img:storage())
 f_y:close()

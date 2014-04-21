@@ -100,11 +100,7 @@ local function unroll_meta(self)
 end
 
 local function log_iter(self,metadata)
-	local buf
-	if C then
-		local BUF_SZ = 153600
-		buf = ffi.new('uint8_t[?]',BUF_SZ)
-	end
+	local buf, buf_t
 	local f_r = io.open(DIR..'/uvc_r_'..date..'.log','r')
 	local i, n = 0, #metadata
 	local function iter(param, state)
@@ -115,9 +111,12 @@ local function log_iter(self,metadata)
 		end
 		--if not param then return end
 		local m = metadata[i]
+		-- Too much malloc'ing here, fix later
+		buf_t = torch.ByteTensor(m.rsz)
+		buf = buf_t:data()
 		if C then
 			local n_read = C.fread(buf,1,m.rsz,f_r)
-			return i, m, buf
+			return i, m, buf_t
 		else
 			local data = f_r:read(m.rsz)
 			return i, m, data

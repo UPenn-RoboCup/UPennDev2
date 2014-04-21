@@ -16,11 +16,18 @@ for i,m,r in d do
 	yuyv = r
 	if i>#metadata/2 then break end
 end
+local w, h = meta.w, meta.h
+print(yuyv:size(1),w*h*2)
+yuyv = yuyv:reshape(h/2,w,4)
+print("sub sz",yuyv:size(1),yuyv:size(2))
+yuyv_sub = yuyv:sub(1,-1,1,w/2):select(3,1):clone()
+print("sub sz",yuyv_sub:size(1),yuyv_sub:size(2))
+yuyv = yuyv:data()
+--os.exit()
 
 -- Extract the Y-plane
 -- Do this in Int Space! Need negatives...
 -- In the future, this will be a combo of Y U and V
-local w, h = meta.w, meta.h
 local y_img = torch.IntTensor(h,w)
 local y_plane = torch.IntTensor(y_img)
 local n = y_img:nElement()
@@ -77,6 +84,11 @@ local str = c_gray:compress(y_img_b2)
 local f_y = io.open('y.jpeg','w')
 f_y:write(str)
 f_y:close()
+--
+local str = c_gray:compress(yuyv_sub)
+local f_y = io.open('y_sub.jpeg','w')
+f_y:write(str)
+f_y:close()
 
 print('y_nosub',y_img:size(1),y_img:size(2))
 f_y = torch.DiskFile('y.raw', 'w')
@@ -95,9 +107,6 @@ f_y = torch.DiskFile('c.raw', 'w')
 f_y.binary(f_y)
 f_y:writeInt(c:storage())
 f_y:close()
-
-util=require'util'
-util.ptorch(c2)
 
 print("Conv",c2:size(1),c2:size(2))
 f_y = torch.DiskFile('c2.raw', 'w')

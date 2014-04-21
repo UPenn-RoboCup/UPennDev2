@@ -17,13 +17,12 @@ for i,m,r in d do
 end
 
 -- Extract the Y-plane
--- Assume LuaJIT right now...
-print('yuyv',yuyv,meta.w,meta.h)
---local y_plane = ffi.new('uint8_t[?]',meta.w*meta.h)
-local y_img = torch.ByteTensor(meta.w,meta.h)
-local y_plane = torch.ByteTensor(y_img)
+-- Do this in Int Space! Need negatives...
+-- In the future, this will be a combo of Y U and V
+local y_img = torch.IntTensor(meta.w,meta.h)
+local y_plane = torch.IntTensor(y_img)
 local n = y_img:nElement()
-y_plane:resizeAs(torch.ByteTensor(n))
+y_plane:resizeAs(torch.IntTensor(n))
 
 local yi = 0
 for i=1,n do
@@ -31,38 +30,34 @@ for i=1,n do
 	yi = yi+2
 end
 
--- Let's perform a convolution...
-local kconv = torch.ByteTensor({
-	{0,0,0},
-	{0,1,0},
-	{0,0,0}
+-- Attempt conv2
+k = torch.IntTensor({
+	{0, 0, 1, 0, 0,},
+	{0, 1, 2, 1, 0,},
+	{1, 2, -15, 2, 1,},
+	{0, 1, 2, 1, 0,},
+	{0, 0, 1, 0, 0,}
 })
-
---[[
-local y2 = torch.DoubleTensor(y_img:size())
-y2:copy(y_img)
-local y3 = torch.ByteTensor(im2:size())
-y3:copy(im2)
-local y3 = torch.conv2(y2, kconv, 'F')
---]]
-local y2 = torch.conv2(y_img, kconv, 'F')
-y2:narrow(1,2,meta.w):narrow(2,2,meta.h)
-y3 = y2:clone()
-
---[[
-util = require'util'
-util.ptorch(kconv)
---]]
+c = torch.conv2(y_img,k,'V')
+print("Conv2",c:size(1),c:size(2))
 
 -- Now let's save this to a JPEG for viewing
+local y_img_byte = torch.ByteTensor(meta.w,meta.h)
+y_img_byte:copy(y_img)
 local jpeg = require'jpeg'
 c_gray = jpeg.compressor('gray')
-local str = c_gray:compress(y_img)
+local str = c_gray:compress(y_img_byte)
 local f_y = io.open('y.jpg','w')
 f_y:write(str)
 f_y:close()
 
 f_y = torch.DiskFile('y.raw', 'w')
 f_y.binary(f_y)
-f_y:writeByte(y_img:storage())
+f_y:writeInt(y_img:storage())
+f_y:close()
+
+
+f_y = torch.DiskFile('c.raw', 'w')
+f_y.binary(f_y)
+f_y:writeInt(c:storage())
 f_y:close()

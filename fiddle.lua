@@ -16,6 +16,9 @@ for _,lib in ipairs(libs) do _G[lib] = require(lib) end
 if torch then torch.Tensor = torch.DoubleTensor end
 -- mp
 mp = require'msgpack'
+-- ffi
+ok, ffi = pcall(require,'ffi')
+ok = nil
 
 -- FSM communicationg
 local listing = unix.readdir(HOME..'/Player')

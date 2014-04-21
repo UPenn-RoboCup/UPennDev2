@@ -76,3 +76,7 @@ Player/Log/debugdata*.*
 # Generated new lut
 *_auto.*
 Tools/Matlab/Figures/
+
+# Julia and iPython
+.ipynb_checkpoints
+*.ipynb

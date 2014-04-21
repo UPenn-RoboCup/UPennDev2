@@ -17,6 +17,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef TORCH
+#include <torch/luaT.h>
+#include <torch/TH/TH.h>
+#endif
+
+
 /* UDP Friendly size (2^16) */
 #define BUF_SZ 65536
 //#define BUF_SZ 131072
@@ -350,21 +356,36 @@ static int lua_jpeg_compress(lua_State *L) {
 	structJPEG *ud = lua_checkjpeg(L, 1);
 	
 	// We will not modify the data
+	// Use the JPEG typedef notations
   JSAMPLE* data;
+	JDIMENSION width, height;
 
 	// TODO: Check if a torch object
   if (lua_isstring(L, 2)) {
 		size_t sz = 0;
     data = (JSAMPLE*) lua_tolstring(L, 2, &sz);
+		width  = luaL_checkint(L, 3);
+		height = luaL_checkint(L, 4);
   } else if (lua_islightuserdata(L, 2)) {
     data = (JSAMPLE*) lua_touserdata(L, 2);
-  } else {
+		width  = luaL_checkint(L, 3);
+		height = luaL_checkint(L, 4);
+  }
+#ifdef TORCH
+	else if(luaT_isudata(L,2,"torch.ByteTensor")) {
+		THByteTensor* b_t = 
+			(THByteTensor *) luaT_checkudata(L, 2, "torch.ByteTensor");
+		// TODO: Check continguous (or add stride support)
+		data = b_t->storage->data;
+		// Use the torch dimensions
+		width = b_t->size[0];
+		height = b_t->size[1];
+	}
+#endif
+	else {
 		return luaL_error(L, "Bad JPEG Compress 16 input");
   }
 	
-	// Use the JPEG typedef notations
-	JDIMENSION width  = luaL_checkint(L, 3);
-  JDIMENSION height = luaL_checkint(L, 4);
 	
 	// Access the JPEG compression settings
 	j_compress_ptr cinfo = (j_compress_ptr) ud->cinfo;

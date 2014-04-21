@@ -102,26 +102,25 @@ end
 local function log_iter(self,metadata)
 	local buf
 	if C then
-		print('C!')
 		local BUF_SZ = 153600
 		buf = ffi.new('uint8_t[?]',BUF_SZ)
 	end
 	local f_r = io.open(DIR..'/uvc_r_'..date..'.log','r')
 	local i, n = 0, #metadata
-	local function iter(self, param, state)
-		print('iter',self,param,state)
+	local function iter(param, state)
 		i = i + 1
 		if i>n then
 			f_r:close()
 			return nil
 		end
+		--if not param then return end
 		local m = metadata[i]
 		if C then
 			local n_read = C.fread(buf,1,m.rsz,f_r)
-			return m, buf
+			return i, m, buf
 		else
 			local data = f_r:read(m.rsz)
-			return m, data
+			return i, m, data
 		end
 	end
 	return iter

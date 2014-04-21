@@ -2,20 +2,23 @@ local libLog = {}
 local mt_log = {}
 local LOG_DIR = '/tmp'
 local C, carray
+local ok, ffi = pcall(require, "ffi")
 if ffi then
 	C = ffi.C
 	ffi.cdef [[
 	typedef struct __IO_FILE FILE;
-	size_t fwrite(const void *restrict ptr, size_t size, size_t nitems, FILE *restrict stream);
+	size_t fwrite
+	(const void *restrict ptr, size_t size, size_t nitems, FILE *restrict stream);
+	size_t fread
+	(void *restrict ptr, size_t size, size_t nitems, FILE *restrict stream);
 	]]
 else
 	-- TODO: Maybe use a pcall here in case carray not found
 	carray = require'carray'
 end
---local mp = require'msgpack'
--- Use pure lua and FFI here, with no c modules...
--- NOTE: may may use carray in the future
-local mp = require'msgpack.MessagePack'
+
+local mp = require'msgpack'
+--local mp = require'msgpack.MessagePack'
 
 local function stop(self)
 	-- Close the files
@@ -56,6 +59,7 @@ local function record(self,meta,raw,n_raw)
 	return m_ok, r_ok
 end
 
+
 -- Factory
 function libLog.new(prefix,has_raw)
 	-- Set up log file handles
@@ -71,6 +75,64 @@ function libLog.new(prefix,has_raw)
 	t.f_meta = f_meta
 	t.record = record
 	t.stop = stop
+	return t
+end
+
+local function unroll_meta(self)
+	-- Read the metadata
+	local f_m = io.open(self.m_name,'r')
+	-- Must use an unpacker...
+	local metadata = {}
+	local u = mp.unpacker(2048)
+	local buf, nbuf = f_m:read(512),0
+	while buf do
+		nbuf = nbuf + #buf
+		local res,left = u:feed(buf)
+		local tbl = u:pull()
+		while tbl do
+			metadata[#metadata+1] = tbl
+			tbl = u:pull()
+		end
+		buf = f_m:read(left)
+	end
+	f_m:close()
+	return metadata
+end
+
+local function log_iter(self,metadata)
+	local buf
+	if C then
+		print('C!')
+		local BUF_SZ = 153600
+		buf = ffi.new('uint8_t[?]',BUF_SZ)
+	end
+	local f_r = io.open(DIR..'/uvc_r_'..date..'.log','r')
+	local i, n = 0, #metadata
+	local function iter(self, param, state)
+		print('iter',self,param,state)
+		i = i + 1
+		if i>n then
+			f_r:close()
+			return nil
+		end
+		local m = metadata[i]
+		if C then
+			local n_read = C.fread(buf,1,m.rsz,f_r)
+			return m, buf
+		else
+			local data = f_r:read(m.rsz)
+			return m, data
+		end
+	end
+	return iter
+end
+
+function libLog.open(dir,date)
+	local t = {}
+	t.m_name = dir..'/uvc_m_'..date..'.log'
+	t.r_name = dir..'/uvc_r_'..date..'.log'
+	t.unroll_meta = unroll_meta
+	t.log_iter = log_iter
 	return t
 end
 

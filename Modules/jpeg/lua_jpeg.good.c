@@ -354,11 +354,14 @@ static int lua_jpeg_compress(lua_State *L) {
 	
 	// JPEG struct with buffer and cinfo is our first
 	structJPEG *ud = lua_checkjpeg(L, 1);
+	// Access the JPEG compression settings
+	j_compress_ptr cinfo = (j_compress_ptr) ud->cinfo;
 	
 	// We will not modify the data
 	// Use the JPEG typedef notations
   JSAMPLE* data;
 	JDIMENSION width, height;
+	size_t stride;
 
 	// TODO: Check if a torch object
   if (lua_isstring(L, 2)) {
@@ -366,10 +369,12 @@ static int lua_jpeg_compress(lua_State *L) {
     data = (JSAMPLE*) lua_tolstring(L, 2, &sz);
 		width  = luaL_checkint(L, 3);
 		height = luaL_checkint(L, 4);
-  } else if (lua_islightuserdata(L, 2)) {
+		stride = cinfo->input_components * width;
+	} else if (lua_islightuserdata(L, 2)) {
     data = (JSAMPLE*) lua_touserdata(L, 2);
 		width  = luaL_checkint(L, 3);
 		height = luaL_checkint(L, 4);
+		stride = cinfo->input_components * width;
   }
 #ifdef TORCH
 	else if(luaT_isudata(L,2,"torch.ByteTensor")) {
@@ -378,8 +383,10 @@ static int lua_jpeg_compress(lua_State *L) {
 		// TODO: Check continguous (or add stride support)
 		data = b_t->storage->data;
 		// Use the torch dimensions
-		width = b_t->size[0];
-		height = b_t->size[1];
+		width = b_t->size[1];
+		height = b_t->size[0];
+		// TODO: Double check :)
+		stride = b_t->stride[0];
 	}
 #endif
 	else {
@@ -387,8 +394,6 @@ static int lua_jpeg_compress(lua_State *L) {
   }
 	
 	
-	// Access the JPEG compression settings
-	j_compress_ptr cinfo = (j_compress_ptr) ud->cinfo;
 	// Set the width and height for compression
   cinfo->image_width  = width  >> ud->subsample;
 	cinfo->image_height = height >> ud->subsample;
@@ -480,7 +485,6 @@ static int lua_jpeg_compress(lua_State *L) {
 		}
 		free(yuv_row);
 	} else {
-		size_t stride = cinfo->input_components * width;
 		int h = cinfo->image_height;
 		while (cinfo->next_scanline < h) {
 			*row_pointer = img_ptr;

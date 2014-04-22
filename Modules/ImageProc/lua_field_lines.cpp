@@ -1,26 +1,26 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
-#ifdef __cplusplus
-}
-#endif
-
+#include <lua.hpp>
 #include <stdint.h>
 #include <math.h>
 #include <vector>
-
 #include "RadonTransform.h"
+
+#ifdef TORCH
+#include <torch/luaT.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include <torch/TH/TH.h>
+#ifdef __cplusplus
+}
+#endif
+#endif
 
 static RadonTransform radonTransform;
 
 static uint8_t colorLine = 0x10;
 static uint8_t colorField = 0x08;
-static int widthMin = 1;
+static int widthMin = 2;
 static int widthMax = 10;
 
 /*
@@ -34,14 +34,14 @@ int lineState(uint8_t label)
   enum {STATE_NONE, STATE_FIELD, STATE_LINE};
   static int state = STATE_NONE;
   static int width = 0;
-
   switch (state) {
   case STATE_NONE:
-    if (label == colorField)
+    if (label & colorField){
       state = STATE_FIELD;
+		}
     break;
   case STATE_FIELD:
-    if (label & colorLine) {
+		if (label & colorLine) {
       state = STATE_LINE;
       width = 1;
     }
@@ -50,7 +50,7 @@ int lineState(uint8_t label)
     }
     break;
   case STATE_LINE:
-    if (label == colorField) {
+    if ( !(label & colorField) ) {
       state = STATE_FIELD;
       return width;
     }
@@ -258,7 +258,7 @@ int lua_field_lines(lua_State *L) {
     uint8_t *im_col = im_ptr + ni*j;
     for (int i = 0; i < ni; i++) {
       uint8_t label = *im_col++;
-      int width = lineState(label);
+			int width = lineState(label);
       if ((width >= widthMin) && (width <= widthMax)) {
 	int iline = i - (width+1)/2;
 	addVerticalPixel(iline,j,connect_th,max_gap,width);
@@ -360,12 +360,25 @@ int lua_field_lines(lua_State *L) {
 
 
 int lua_field_lines_old(lua_State *L) {
-  uint8_t *im_ptr = (uint8_t *) lua_touserdata(L, 1);
-  if ((im_ptr == NULL) || !lua_islightuserdata(L, 1)) {
-    return luaL_error(L, "Input image not light user data");
-  }
-  int ni = luaL_checkint(L, 2);
-  int nj = luaL_checkint(L, 3);
+	uint8_t *im_ptr;
+	int ni, nj;
+	if( lua_islightuserdata(L,1) ){
+		im_ptr = (uint8_t *) lua_touserdata(L, 1);
+		ni = luaL_checkint(L, 2);
+		nj = luaL_checkint(L, 3);
+	}
+#ifdef TORCH
+	else if(luaT_isudata(L,1,"torch.ByteTensor")){
+		THByteTensor* b_t =
+			(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+		im_ptr = b_t->storage->data;
+		nj = b_t->size[0];
+		ni = b_t->size[1];
+	}
+#endif
+	else {
+		return luaL_error(L, "Input image invalid");
+	}
   if (lua_gettop(L) >= 4)
     widthMax = luaL_checkint(L, 4);
 
@@ -377,9 +390,10 @@ int lua_field_lines_old(lua_State *L) {
     for (int i = 0; i < ni; i++) {
       uint8_t label = *im_col++;
       int width = lineState(label);
+			//printf("label %d -> %d\n",label,width);
       if ((width >= widthMin) && (width <= widthMax)) {
-	int iline = i - (width+1)/2;
-	radonTransform.addVerticalPixel(iline, j);
+				int iline = i - (width+1)/2;
+				radonTransform.addVerticalPixel(iline, j);
       }
     }
   }
@@ -398,22 +412,28 @@ int lua_field_lines_old(lua_State *L) {
       }
     }
   }
+//	printf("Done search...");
 
-/*
-  LineStats bestLine0 = radonTransform.getLineStats();
+	//LineStats bestLine0 = radonTransform.getLineStats();
   LineStats bestLine[10];
-  bestLine[0]=bestLine0;
-*/
+  bestLine[0] = radonTransform.getLineStats();
 
-  LineStats* bestLine = radonTransform.getMultiLineStats(ni,nj,im_ptr);
+//  LineStats* bestLine = 
+//  radonTransform.getMultiLineStats(ni,nj,im_ptr);
 
   int lines_num=0;
   for (int i=0;i<MAXLINES;i++){
-    if (bestLine[i].count>5) lines_num=i;
+//		printf("(i:%d).",i);
+//		fflush(stdout);
+    if (bestLine[i].count>5){
+			//printf("huh? %d\n",i);
+			lines_num=i;
+		}
   }
+//	printf("Pushing table...\n");
   
-  lua_createtable(L, lines_num, 0);
-  for (int i = 0; i < lines_num; i++) {
+  lua_createtable(L, lines_num+1, 0);
+  for (int i = 0; i <= lines_num; i++) {
       lua_createtable(L, 0, 3);
 
       // count field

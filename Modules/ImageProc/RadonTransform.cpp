@@ -80,6 +80,7 @@ struct LineStats &RadonTransform::getLineStats() {
   if (countMax == 0) {
     return bestLine;
   }
+	//printf("countMax %d\n",countMax);
 //R value: 0 to MAXR-1
 //R index: 0 to NR-1
 
@@ -155,19 +156,21 @@ struct LineStats *RadonTransform::getMultiLineStats(
   int count_threshold = 5;
 
 
-  for (int ith = 0; ith < NTH; ith++) {
-    for (int ir = 0; ir < NR; ir++) {
-      if (count[ith][ir]>count_threshold){
-	if (i_bestLines<MAXCANDIDATES){
-	  thMaxs[i_bestLines]=ith;
-	  rMaxs[i_bestLines]=ir;
-	  countMaxs[i_bestLines]=count[ith][ir];
-	  i_bestLines=i_bestLines+1;
+	for (int ith = 0; ith < NTH; ith++) {
+		for (int ir = 0; ir < NR; ir++) {
+			if (count[ith][ir]>count_threshold){
+				if (i_bestLines<MAXCANDIDATES){
+					thMaxs[i_bestLines]=ith;
+					rMaxs[i_bestLines]=ir;
+					countMaxs[i_bestLines]=count[ith][ir];
+					i_bestLines=i_bestLines+1;
+				}
+			}
+		}
 	}
-      }
-    }
-  }
+#ifdef DEBUG
   printf("Line candidates:%d\n",i_bestLines);
+#endif
 
   int R_MERGE = 1;
   int TH_MERGE = 5;
@@ -222,7 +225,9 @@ struct LineStats *RadonTransform::getMultiLineStats(
     }
   }
 
+#ifdef DEBUG
   printf("Line %d merged\n",mergecount);
+#endif
 
 // Check the fill rate of each lines
 
@@ -243,36 +248,41 @@ struct LineStats *RadonTransform::getMultiLineStats(
       int dLine = sqrt(dLine2);
       int fillCount = 0;
       for (int k=0;k < dLine;k++){
-	int i_in = iMin + k* sinTable[thMaxs[i]]/NTRIG;
-	int j_in = jMin + k* cosTable[thMaxs[i]]/NTRIG;
+				int i_in = iMin + k* sinTable[thMaxs[i]]/NTRIG;
+				int j_in = jMin + k* cosTable[thMaxs[i]]/NTRIG;
         uint8_t *im_col = im_ptr + ni*j_in + i_in;
-	if (*im_col & colorLine) fillCount=fillCount+1;	
-      }
+				if (*im_col & colorLine){
+					fillCount=fillCount+1;
+				}
+			}
+
+#ifdef DEBUG
       printf("Count %d, Ang%d, R %d, Fill %d, Len %d\n",
 	countMaxs[i], thMaxs[i], rMaxs[i],100*fillCount/dLine,dLine);
-      if (fillCount*5<dLine)
-	countMaxs[i]=1; //Kill line if fill rate is below 35%
+#endif
+			if (fillCount*5<dLine)
+				countMaxs[i]=1; //Kill line if fill rate is below 35%
     }
   }
 
   for (int i=0;i<i_bestLines-1;i++){
     for (int j=i+1;j<i_bestLines;j++){
       if (countMaxs[i]<countMaxs[j]){
-	   int temp1,temp2,temp3;
-	   temp1=countMaxs[i];
-	   temp2=thMaxs[i];
-	   temp3=rMaxs[i];
+				int temp1,temp2,temp3;
+				temp1=countMaxs[i];
+				temp2=thMaxs[i];
+				temp3=rMaxs[i];
 
-	   countMaxs[i]=countMaxs[j];
-	   thMaxs[i]=thMaxs[j];
-	   rMaxs[i]=rMaxs[j];
+				countMaxs[i]=countMaxs[j];
+				thMaxs[i]=thMaxs[j];
+				rMaxs[i]=rMaxs[j];
 
-	   countMaxs[j]=temp1;
-	   thMaxs[j]=temp2;
-	   rMaxs[j]=temp3;
-      }
-    }
-  }
+				countMaxs[j]=temp1;
+				thMaxs[j]=temp2;
+				rMaxs[j]=temp3;
+			}
+		}
+	}
 
 
   //Get rid of blank lines
@@ -293,6 +303,7 @@ struct LineStats *RadonTransform::getMultiLineStats(
     bestLines[i].jMin = (jR + lMin*cosTable[thMaxs[i]])/NTRIG;
     bestLines[i].jMax = (jR + lMax*cosTable[thMaxs[i]])/NTRIG;
   }
+#ifdef DEBUG
   printf("Count:");
   for (int i=0;i<i_bestLines;i++){
    printf("%d ",countMaxs[i]);
@@ -306,5 +317,6 @@ struct LineStats *RadonTransform::getMultiLineStats(
    printf("%d ",rMaxs[i]);
   }
   printf("\n:");
+#endif
   return bestLines;
 }

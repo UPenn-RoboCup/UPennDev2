@@ -6,19 +6,9 @@
 
 #include <string.h>
 #include "fast_12.h"
+#include <lua.hpp>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
-
-static int lua_fast_12(lua_State *L) {
+int lua_fast_12(lua_State *L) {
   size_t len;
   const byte *im;
   if (lua_type(L, 1) == LUA_TLIGHTUSERDATA) {

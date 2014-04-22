@@ -1,6 +1,9 @@
 dofile'../include.lua'
 local libLog = require'libLog'
 local torch = require'torch'
+local ImageProc = require'ImageProc'
+local util = require'util'
+local bit = require'bit'
 
 date = '04.17.2014.16.34.17'
 DIR = HOME..'/Logs/'
@@ -27,11 +30,13 @@ local kern = torch.IntTensor({
 })
 
 -- TODO: Convolution placeholder for speed
+local label = bit.bor(0x10,0x08)
+print('label',label)
 local y_int = torch.IntTensor()
 local edge_bin = torch.ByteTensor()
 local meta, yuyv, yuyv_sub, y_plane, u_plane, v_plane
-local edge
-local THRESH = 500
+local edge = torch.IntTensor()
+local THRESH, lines = 500, nil
 for i,m,r in d do
 	if i>#metadata/2 then break end
 	local t0 = unix.time()
@@ -47,14 +52,23 @@ for i,m,r in d do
 	--y1_plane = yuyv_sub:select(3,4)
 	-- Perform the convolution on the Int y-plane
 	y_int:resize(y_plane:size()):copy(y_plane)
-	edge = torch.conv2(y_int,kern)
+	edge:resize(
+		y_plane:size(1)+kern:size(1)/2,
+		y_plane:size(2)+kern:size(2)/2
+	)
+	torch.conv2(edge,y_int,kern)
 	-- Threshold (Somewhat not working...
 	edge_bin:resize(edge:size())
 	edge_bin[edge:lt(0)] = 0
-	edge_bin[edge:gt(THRESH)] = 255
+	edge_bin[edge:gt(THRESH)] = label
+	-- Run the Radon
+	lines = ImageProc.field_lines_old(edge_bin)
+	util.ptable(lines[1])
 	local t1 = unix.time()
-	print('Processing Time',t1-t0,edge)
+	--print('Processing Time',t1-t0,edge_bin,lines)
 end
+util.ptable(lines)
+os.exit()
 
 -- Now let's save this to a JPEG for viewing
 local jpeg = require'jpeg'

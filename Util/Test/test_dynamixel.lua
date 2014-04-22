@@ -9,10 +9,10 @@ local carray = require'carray'
 
 if not one_chain then
   if OPERATING_SYSTEM=='darwin' then
-    right_arm = libDynamixel.new_bus('/dev/cu.usbserial-FTT3ABW9A')
-    left_arm  = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
-    right_leg = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
-    left_leg  = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
+    right_arm = libDynamixel.new_bus('/dev/cu.usbserial-FTVTLUY0A')
+    left_arm  = libDynamixel.new_bus'/dev/cu.usbserial-FTVTLUY0B'
+    right_leg = libDynamixel.new_bus'/dev/cu.usbserial-FTVTLUY0C'
+    left_leg  = libDynamixel.new_bus'/dev/cu.usbserial-FTVTLUY0D'
   else
     right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
     left_arm  = libDynamixel.new_bus'/dev/ttyUSB1'
@@ -30,7 +30,7 @@ print('Using',test_dynamixel.ttyname)
 local found = test_dynamixel:ping_probe(2)
 print('Inspecting',table.concat(found,','))
 
---os.exit()
+os.exit()
 
 local m = 14
 local status = libDynamixel.get_nx_mode(m,test_dynamixel)

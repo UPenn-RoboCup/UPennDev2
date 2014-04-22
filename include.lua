@@ -54,8 +54,9 @@ package.path = HOME..'/Config/?.lua;'..package.path
 Config = require'Config'
 
 -- include platform specific modules
-package.path  = HOME..'/Robots/'..Config.PLATFORM_NAME..'/?.lua;'..package.path
-package.cpath = HOME..'/Robots/'..Config.PLATFORM_NAME..'/?.so;'..package.cpath
+ROBOT_HOME = HOME..'/Robots/'..Config.PLATFORM_NAME..'/'
+package.path  = ROBOT_HOME..'?.lua;'..package.path
+package.cpath = ROBOT_HOME..'?.so;'..package.cpath
 
 KEYFRAME_DIR = HOME.."/Player/Keyframes"
 LOG_DIR = HOME.."/Logs/"

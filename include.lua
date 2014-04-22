@@ -65,6 +65,13 @@ unix = require'unix'
 HOSTNAME = unix.gethostname()
 OPERATING_SYSTEM = unix.uname():lower()
 
+-- Check for LuaJit and add to the global namespace
+local ok, myffi = pcall(require,'ffi')
+if ok then
+	ffi = myffi
+	C = ffi.C
+end
+
 -- Print out the globally available variables, when using include.lua
 --[[
 function print_env()

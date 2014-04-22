@@ -1,6 +1,6 @@
 --------------------------------
 -- Body abstraction for THOR-OP
--- (c) 2013 Stephen McGill, Seung-Joon Yi
+-- (c) 2013,2014 Stephen McGill, Seung-Joon Yi
 --------------------------------
 
 -- if using one USB2Dynamixel
@@ -11,19 +11,15 @@ local DISABLE_MICROSTRAIN = false
 local READ_GRIPPERS = true
 -- Shared memory for the joints
 require'jcm'
--- Shared memory for vision of the world
-require'vcm'
 -- Shared memory for world
 require'wcm'
 
 -- Utilities
 local unix         = require'unix'
 local vector       = require'vector'
-local quaternion   = require'quaternion'
-local Transform    = require'Transform'
 local util         = require'util'
 -- For the real body
-local libDynamixel   = require'libDynamixel'
+local libDynamixel = require'libDynamixel'
 local DP2 = libDynamixel.DP2
 local libMicrostrain = require'libMicrostrain'
 
@@ -60,14 +56,14 @@ local nJointLidar = 1
 local nJoint = 35 --33
 
 local parts = {
-	['Head']=vector.count(indexHead,nJointHead),
-	['LArm']=vector.count(indexLArm,nJointLArm),
-	['LLeg']=vector.count(indexLLeg,nJointLLeg),
-	['RLeg']=vector.count(indexRLeg,nJointRLeg),
-	['RArm']=vector.count(indexRArm,nJointRArm),
-	['Waist']=vector.count(indexWaist,nJointWaist),
-	['LGrip']=vector.count(indexLGrip,nJointLGrip),
-  ['RGrip']=vector.count(indexRGrip,nJointRGrip),
+	Head=vector.count(indexHead,nJointHead),
+	LArm=vector.count(indexLArm,nJointLArm),
+	LLeg=vector.count(indexLLeg,nJointLLeg),
+	RLeg=vector.count(indexRLeg,nJointRLeg),
+	RArm=vector.count(indexRArm,nJointRArm),
+	Waist=vector.count(indexWaist,nJointWaist),
+	LGrip=vector.count(indexLGrip,nJointLGrip),
+  RGrip=vector.count(indexRGrip,nJointRGrip),
   ['Lidar']=vector.count(indexLidar,nJointLidar)
 }
 local inv_parts = {}
@@ -790,24 +786,6 @@ Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)
   if passed then return qR_target end
 end
 --
-
-----------------------
--- Sensor access functions for convienence
--- TODO: Lidar scans should return metadata, too
-Body.get_chest_lidar = function()
-  return carray.float( vcm.get_chest_lidar_scan(), 1081 )
-end
-Body.get_head_lidar = function()
-  return carray.float( vcm.get_head_lidar_scan(), 1081 )
-end
-Body.set_chest_lidar = function( data )
-	vcm.set_chest_lidar_scan( data )
-	vcm.set_chest_lidar_t( Body.get_time() )
-end
-Body.set_head_lidar = function( data )
-	vcm.set_head_lidar_scan( data )
-	vcm.set_head_lidar_t( Body.get_time() )
-end
 
 ----------------------
 -- More standard api functions
@@ -1554,7 +1532,6 @@ elseif IS_WEBOTS then
   local ENABLE_POSE   = false
   local ENABLE_IMU   = false
 
-  require'wcm'
   local torch = require'torch'
   torch.Tensor = torch.DoubleTensor
   local carray = require'carray'

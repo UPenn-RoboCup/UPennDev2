@@ -2,8 +2,9 @@
 -- TODO: Just replace carray with FFI?
 -- 
 local shm    = require'shm'
-local carray = require'carray'
 local vector = require'vector'
+local carray
+if not ffi then carray = require'carray' end
 
 local memory = {}
 
@@ -53,18 +54,31 @@ function memory.init_shm_segment(name, shared, shsize, tid, pid)
     -- intialize shared memory
     init_shm_keys(shmHandle, shared[shtable]);
 
-    -- generate accessors and pointers
-    local shmPointerName = shtable..'Ptr';
-    fenv[shmPointerName] = {};
-    local shmPointer = fenv[shmPointerName]
+		-- Add more direct memory access
+		-- Default is LuaJIT FFI, with carray fallback
+		local shmPointerName = shtable..'Ptr';
+		fenv[shmPointerName] = {};
+		local shmPointer = fenv[shmPointerName]
+		if ffi then
+			-- Add an iterator
+			--
+		else
+			-- generate accessors and pointers
+
+		end
 
     for k,v in pairs(shared[shtable]) do
-      shmPointer[k] = carray.cast(shmHandle:pointer(k))
+			local ptr, tp, n = shmHandle:pointer(k)
+			if ffi then
+				shmPointer[k] = ffi.cast(tp..'*',ptr)
+			else
+				shmPointer[k] = carray.cast(ptr, tp, n)
+			end
       local kind = type(v)
       if kind=='string' then
         -- Get String
         fenv['get_'..shtable..'_'..k] = function()
-            local bytes = shmHandle:get(k);
+            local bytes = shmHandle:get(k)
             if not bytes then return '' end
             for i,b in ipairs(bytes) do
               --Testing NaN
@@ -119,13 +133,13 @@ function memory.shm_key_exists(shmHandle, k, nvals)
   -- checks the shm segment for the given key
   -- returns true if the key exists and is of the correct length nvals (if provided)
   for sk,sv in shmHandle.next, shmHandle do
-    cpsv = carray.cast(shmHandle:pointer(sk));
-    if (k == sk) then
+		local ptr, tp, n = shmHandle:pointer(sk)
+    if k == sk then
       -- key exists, check length
-      if (nvals and nvals ~= #cpsv) then
-        return false;
+			if (nvals and nvals ~= n) then
+        return false
       else
-        return true;
+        return true
       end
     end
   end

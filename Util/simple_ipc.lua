@@ -283,18 +283,11 @@ end
 
 -- Make a thread with a channel
 simple_ipc.new_thread = function(scriptname, channel, metadata)
-	--local t_ch = type(channel)
+	-- Type checking
 	assert(type(channel)=='string','Must given a comm channel string')
-	-- Make the communication channel name
-	--local ch_name = 'inproc://'..channel
-	--local ch_name, connect = type2prefix[t_ch](channel)
-	-- llthread only accepts a string
-	-- TODO: Add a patch to take a file name
-	-- TODO: Add the ability to take in a function
-	-- Really, this is just for readability and reusability :)
-	-- I don't want to do: [[ code... ]] all over the place
-	local f = io.open(scriptname,'r')
-	assert(f,'No script found!')
+	assert(type(scriptname)=='string','Must givefilename for stript')
+
+	local f = assert(io.open(scriptname,'r'),'No script found!')
 	local script_str = f:read'*all'
 	f:close()
 	
@@ -303,10 +296,6 @@ simple_ipc.new_thread = function(scriptname, channel, metadata)
 	
 	-- Load the script into the child Lua state
 	-- pass in the ctx, since it is thread safe
-	-- Pass the filename per usual, so that non-thread
-	-- execution of the script is the same
-	-- in the scriptname file, recover values:
-	-- scriptname, CTX, ch_name = ...
 	metadata = metadata or {}
 	metadata.ch_name = '#'..channel
 	local thread = llthreads.new(script_str, CTX:lightuserdata(), metadata )

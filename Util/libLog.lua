@@ -1,10 +1,8 @@
 local libLog = {}
 local mt_log = {}
 local LOG_DIR = '/tmp'
-local C, carray
-local ok, ffi = pcall(require, "ffi")
+local carray
 if ffi then
-	C = ffi.C
 	ffi.cdef [[
 	typedef struct __IO_FILE FILE;
 	size_t fwrite

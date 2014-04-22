@@ -366,24 +366,25 @@ for k,v in pairs( nx_registers ) do
     if single then
       instruction = nx_single_write[sz](motor_ids, addr, values)
     else
---      print('sync writing')
       local msg = sync_write[sz](motor_ids, addr, values)
       instruction = DP2.sync_write(addr, sz, string.char(unpack(msg)))
     end
     
-      if not bus then return instruction end
+		if not bus then return instruction end
 
-      -- Clear the reading
-      local clr = unix.read(bus.fd)
+		-- Clear the reading
+		local clr = unix.read(bus.fd)
 
-      -- Write the instruction to the bus 
-      stty.flush(bus.fd)
-      local ret = unix.write(bus.fd, instruction)
-      
-      -- Grab any status returns
-      if using_status_return and single then
-        return get_status( bus.fd, 1 )
-      end
+		-- Write the instruction to the bus
+		stty.flush(bus.fd)
+		local ret = unix.write(bus.fd, instruction)
+
+		-- Grab any status returns
+		if using_status_return and single then
+			return get_status( bus.fd, 1 )
+		else
+			return ret
+		end
     
   end --function
 end
@@ -596,7 +597,7 @@ end
 
 --------------------
 -- Ping functions
-libDynamixel.send_ping = function( id, protocol, bus, twait )
+local function send_ping( bus, id, protocol, twait )
   protocol = protocol or 2
   local instruction = nil
   if protocol==1 then
@@ -617,8 +618,7 @@ local function ping_probe(self, protocol, twait)
   protocol = protocol or 2
   twait = twait or READ_TIMEOUT
   for id = 0,253 do
-    local status = 
-      libDynamixel.send_ping( id, protocol, self, twait )
+    local status = send_ping( self, id, protocol, twait )
     if status then
       print( string.format('Found %d.0 Motor: %d\n',protocol,status.id) )
       table.insert( found_ids, status.id )
@@ -672,6 +672,7 @@ function libDynamixel.new_bus( ttyname, ttybaud )
     self.fd = libDynamixel.open( self.ttyname )
   end
   obj.ping_probe = ping_probe
+	obj.ping = send_ping
   -------------------
   
   -------------------

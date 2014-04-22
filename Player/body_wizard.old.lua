@@ -10,6 +10,13 @@ local mp = require'msgpack'
 local signal = require'signal'
 require'unix'
 
+-- Send a Body pulse after each update
+local pulse_ch = simple_ipc.new_publisher'pulse'
+
+-- Get the timing
+local t_wait = Body.update_cycle
+local t_wait_us = t_wait*1e6
+
 -- Clean Shutdown function
 function shutdown()
   print'Shutting down the Body...'
@@ -19,7 +26,18 @@ end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
+local get_time = Body.get_sim_time or Body.get_time
+
 local cnt = Body.entry()
+local t_last = get_time()
+
+-- Send the entry pulse
+local pulse_tbl = {mode='entry',t=t_last}
+pulse_ch:send(mp.pack(pulse_tbl))
+
+pulse_tbl.mode='update'
+
+
 
 while true do
 

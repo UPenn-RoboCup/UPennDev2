@@ -77,10 +77,10 @@ if ENABLE_LOG then
 end
 
 -- Libraries
-local util   = require'util'
-local udp    = require'udp'
-local uvc    = require'uvc'
-local jpeg   = require'jpeg'
+local util = require'util'
+local udp  = require'udp'
+local uvc  = require'uvc'
+local jpeg = require'jpeg'
 
 -- Extract metadata information
 local w = metadata.width

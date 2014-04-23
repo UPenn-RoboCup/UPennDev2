@@ -67,7 +67,7 @@ end
 
 
 -- LOGGING
-local ENABLE_LOG = true
+local ENABLE_LOG = false
 local libLog, logger, Body
 if ENABLE_LOG then
 	libLog = require'libLog'
@@ -112,7 +112,7 @@ local meta = {
 	h = h,
 	name = name..'_camera',
 	c = 'jpeg',
-	arm = Body.get_command_position(),
+	--arm = Body.get_command_position(),
 }
 -- JPEG Compressor
 local c_yuyv = jpeg.compressor('yuyv')
@@ -120,12 +120,14 @@ local c_yuyv = jpeg.compressor('yuyv')
 while true do
 	-- Grab and compress
 	local img, sz, cnt, t = camera:get_image()
+  print(img, sz, cnt, t)
+--[[
 	local c_img = c_yuyv:compress( img, w, h)
 	-- Update metadata
 	meta.t = t
 	meta.n = cnt
 	meta.sz = #c_img
-	meta.arm = Body.get_command_position()
+	--meta.arm = Body.get_command_position()
 	-- Send
 	local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
 	--print('udp img',img,sz,cnt,t,udp_ret)
@@ -134,5 +136,5 @@ while true do
 		meta.rsz = sz
 		logger:record(meta, img, sz)
 	end
-
+--]]
 end

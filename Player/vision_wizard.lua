@@ -12,28 +12,13 @@ dofile'../include.lua'
 local simple_ipc = require'simple_ipc'
 -- For all threads
 local mp = require'msgpack.MessagePack'
--- On ctrl-c
-local signal = require'signal'
-signal.signal("SIGINT", os.exit)
-signal.signal("SIGTERM", os.exit)
 -- Camera
 local metadata = Config.camera[1]
 
--- LOGGING
-local ENABLE_LOG = false
-local libLog, logger, Body
-if ENABLE_LOG then
-	libLog = require'libLog'
-	Body = require'Body'
-	-- Make the logger
-	logger = libLog.new('uvc',true)
-end
-
 -- Libraries
+local lV    = require'libVision'
 local uvc   = require'uvc'
-local util  = require'util'
 local torch = require'torch'
-local lV = require'libVision'
 
 -- Extract metadata information
 local w = metadata.width
@@ -47,9 +32,6 @@ metadata = nil
 local operator = Config.net.operator.wired
 local udp_port = Config.net.camera[name]
 Config = nil
-
--- Debug
-print(util.color('Begin','yellow'),name)
 
 -- Load the LUT
 local lut_name = HOME.."/Data/lut_NaoV4_Grasp.raw"
@@ -70,18 +52,40 @@ local yuyv_s = torch.ByteStorage(h*w*2,0)
 local yuyv_t = torch.ByteTensor(yuyv_s)
 local yuyv_sc = yuyv_s:cdata()
 local labelA_t = torch.ByteTensor(h/2,w/2)
+local color_count = torch.IntTensor(256):zero()
+
+-- Loop temp vars
+local img, sz, cnt, t
+
+-- On ctrl-c
+local function shutdown()
+  -- Save to file
+  print('Saving labelA',labelA_t:size(1),labelA_t:size(2))
+  local f_l = torch.DiskFile('labelA.raw', 'w')
+  f_l.binary(f_l)
+  f_l:writeByte(labelA_t:storage())
+  f_l:close()
+  --
+  local jpeg = require'jpeg'
+  c_yuyv = jpeg.compressor('yuyv')
+  local str = c_yuyv:compress(img,w,h)
+  local f_y = io.open('yuyv.jpeg','w')
+  f_y:write(str)
+  f_y:close()
+  --
+  os.exit()
+end
+local signal = require'signal'
+signal.signal("SIGINT", shutdown)
+signal.signal("SIGTERM", shutdown)
 
 while true do
 	-- Grab the image
-	local img, sz, cnt, t = camera:get_image()
+	img, sz, cnt, t = camera:get_image()
   local t0 = unix.time()
   -- Set into a torch container
   yuyv_sc.data = ffi.cast("uint8_t*",img)
-  lV.yuyv_to_labelA(yuyv_t, labelA_t, lut, w, h)
+  lV.yuyv_to_labelA(yuyv_t, labelA_t, lut, color_count, w, h)
   local t1 = unix.time()
-  print(t1-t0)
-	if ENABLE_LOG then
-		meta.rsz = sz
-		logger:record(meta, img, sz)
-	end
+  --print(t1-t0)
 end

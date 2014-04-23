@@ -3,12 +3,15 @@
 -- General Detection methods
 local libVision = {}
 local torch  = require'torch'
+local bit = require'bit'
+local lshift = bit.lshift
+local rshift = bit.rshift
+local bor = bit.bor
+local band = bit.band
 
-function libDetect.yuyv_to_labelA(yuyv_t, labelA_t, w, h)
+function libVision.yuyv_to_labelA(yuyv_t, labelA_t, lut, w, h)
   -- Form the color count array
   local cc = torch.IntTensor(256):zero()
-  -- Resize the labelA image if needed
-  labelA_t:resizeAs(torch.ByteTensor(w/2,h/2))
   -- Access the data with the FFI
   local y, lA, yuyv = 
     yuyv_t:reshape(h/2,w,4):sub(1,-1,1,w/2):select(3,1):cdata(),
@@ -32,7 +35,7 @@ function libDetect.yuyv_to_labelA(yuyv_t, labelA_t, w, h)
       index = bor( y6, lshift(u6,4), lshift(v6,10) )
       cdt = lut[index]
       lA[i] = cdt
-      cc[cdt] = cc[cdt] + 1
+      --cc[cdt] = cc[cdt] + 1
       -- Stride to next, assume 4
       idx = idx + 4
       i = i + 1

@@ -33,6 +33,7 @@ end
 local uvc   = require'uvc'
 local util  = require'util'
 local torch = require'torch'
+local lV = require'libVision'
 
 -- Extract metadata information
 local w = metadata.width
@@ -50,19 +51,35 @@ Config = nil
 -- Debug
 print(util.color('Begin','yellow'),name)
 
+-- Load the LUT
+local lut_name = HOME.."/Data/lut_NaoV4_Grasp.raw"
+--print("lut_name",lut_name)
+local f_lut = torch.DiskFile(lut_name, 'r')
+--print('Opened',f_lut)
+f_lut.binary(f_lut)
+-- We know the size of the LUT
+local lut_s = f_lut:readByte(262144)
+f_lut:close()
+local lut = lut_s:data()
+
 -- Open the camera
 local camera = uvc.init(dev, w, h, fmt, 1, fps)
 
 -- Torch container (Just to a pointer)
 local yuyv_s = torch.ByteStorage(h*w*2,0)
-local yuyv_sc = yuyv_t:cdata()
-local yuyv_t = torch.ByteTensor(yuyv_s,1,torch.LongStorage{h,w})
+local yuyv_t = torch.ByteTensor(yuyv_s)
+local yuyv_sc = yuyv_s:cdata()
+local labelA_t = torch.ByteTensor(h/2,w/2)
 
 while true do
 	-- Grab the image
 	local img, sz, cnt, t = camera:get_image()
+  local t0 = unix.time()
   -- Set into a torch container
-  local yuyv_sc.data = ffi.cast("uint8_t*",img)
+  yuyv_sc.data = ffi.cast("uint8_t*",img)
+  lV.yuyv_to_labelA(yuyv_t, labelA_t, lut, w, h)
+  local t1 = unix.time()
+  print(t1-t0)
 	if ENABLE_LOG then
 		meta.rsz = sz
 		logger:record(meta, img, sz)

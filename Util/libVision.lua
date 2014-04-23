@@ -4,13 +4,15 @@
 local libVision = {}
 local torch  = require'torch'
 
-function libDetect.yuyv2labelA(yuyv_t, labelA, w, h)
+function libDetect.yuyv_to_labelA(yuyv_t, labelA_t, w, h)
+  -- Form the color count array
+  local cc = torch.IntTensor(256):zero()
   -- Resize the labelA image if needed
-  labelA:resizeAs(torch.ByteTensor(w/2,h/2))
+  labelA_t:resizeAs(torch.ByteTensor(w/2,h/2))
   -- Access the data with the FFI
   local y, lA, yuyv = 
     yuyv_t:reshape(h/2,w,4):sub(1,-1,1,w/2):select(3,1):cdata(),
-    labelA:data(),
+    labelA_t:data(),
     yuyv_t:data()
   -- Counters and Bounds
   local na, nb, s, idx, i = 
@@ -30,6 +32,7 @@ function libDetect.yuyv2labelA(yuyv_t, labelA, w, h)
       index = bor( y6, lshift(u6,4), lshift(v6,10) )
       cdt = lut[index]
       lA[i] = cdt
+      cc[cdt] = cc[cdt] + 1
       -- Stride to next, assume 4
       idx = idx + 4
       i = i + 1
@@ -37,7 +40,8 @@ function libDetect.yuyv2labelA(yuyv_t, labelA, w, h)
     -- stride to next
     idx = idx + s
   end
-  -- Need not return anything, since we are given the labelA holder
+  -- Return the color counts
+  return cc
 end
 
-return libDetect
+return libVision

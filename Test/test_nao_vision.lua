@@ -30,39 +30,55 @@ f_lut:close()
 local lut = lut_s:data()
 
 local labelA = torch.ByteTensor()
-
+local y_plane
 for i,m,r in d do
+	if i>#metadata/2 then break end
 	local t0 = unix.time()
 	meta = m
-	yuyv = r
+	yuyv_t = r
 	local w, h = meta.w, meta.h
-	-- Get the sub_sampled planes
-	yuyv_sub = r:reshape(h/2,w,4):sub(1,-1,1,w/2)
-	-- Get the y-plane
-	-- Use LuaJIT and have only in the cdata format
-	y_plane = yuyv_sub:select(3,1):data()
-	u_plane = yuyv_sub:select(3,2):data()
-	v_plane = yuyv_sub:select(3,3):data()
-	-- Construct the label image
-	labelA:resizeAs(torch.ByteTensor(w/2,h/2))
-	local lA = labelA:data()
-	for i=0, labelA:nElement()-1 do
-		--[[
-		local y6, u6, v6 = 
-		rshift(y_plane[i], 2),
-		band(u_plane[i],0xFC),
-		band(v_plane[i],0xFC)
-		local idx = bor( y6, lshift(u6,4), lshift(v6,10) )
-		lA[i] = lut[idx]
-		--]]
-		lA[i] = bor(
-			rshift(y_plane[i], 2),
-			lshift(band(u_plane[i],0xFC),4),
-			lshift(band(v_plane[i],0xFC),10)
-		)
-	end
-	--y1_plane = yuyv_sub:select(3,4)
+
+  -- Format the label image
+  labelA:resizeAs(torch.ByteTensor(w/2,h/2))
+  -- Get the subsample information for strides
+  y_plane = yuyv_t:reshape(h/2,w,4):sub(1,-1,1,w/2):select(3,1)
+  local y = y_plane:cdata()
+	local na, nb = tonumber(y.size[0])-1, tonumber(y.size[1])-1
+  -- Counters on the planes
+  local i, s, idx = 0, tonumber(y.stride[0]), tonumber(y.storageOffset)
+  local lA, yuyv = labelA:data(), yuyv_t:data()
+	local y6,u6,v6,index,cdt
+  for a=0,na do
+    for b=0,nb do
+      y6, u6, v6 =
+        rshift(yuyv[idx], 2),
+        band(yuyv[idx+1],0xFC),
+        band(yuyv[idx+2],0xFC)
+			index = bor( y6, lshift(u6,4), lshift(v6,10) )
+      cdt = lut[index]
+			lA[i] = cdt
+      -- Stride to next, assume 4
+      idx = idx + 4
+			i = i + 1
+    end
+    -- stride to next
+    idx = idx + s
+  end
+
 	local t1 = unix.time()
 	print('Processing Time',t1-t0)
 end
+-- Save to file
+print('labelA',labelA:size(1),labelA:size(2))
+local f_l = torch.DiskFile('labelA.raw', 'w')
+f_l.binary(f_l)
+f_l:writeByte(labelA:storage())
+f_l:close()
 
+local jpeg = require'jpeg'
+c_gray = jpeg.compressor('gray')
+--
+local str = c_gray:compress(y_plane:clone())
+local f_y = io.open('y_plane.jpeg','w')
+f_y:write(str)
+f_y:close()

@@ -62,7 +62,6 @@ while 1
             Az = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';
             set(cam.labelA,'Cdata', Az);
             if isa(metadata.ball,'double')
-                disp(metadata.ball)
                 set(p_j_t,'Xdata', 2*metadata.ball(1));
                 set(p_j_t,'Ydata', 2*metadata.ball(2));
             else

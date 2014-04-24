@@ -4,25 +4,24 @@
 ---------------------------------
 dofile'include.lua'
 local Body = require'Body'
-local util = require'util'
---local mp     = require'msgpack'
-local mp     = require'msgpack.MessagePack'
 local signal = require'signal'
-local simple_ipc = require'simple_ipc'
-local channel_poll
 require'gcm'
 
+local state_machines = {}
+local status = {}
+
 -- Not using this right now...
+--[[
+local simple_ipc = require'simple_ipc'
+local mp = require'msgpack.MessagePack'
+local channel_poll
 local broadcast_en = false
+local needs_broadcast = true
 local state_pub_ch
 if broadcast_en then
   state_pub_ch = simple_ipc.new_publisher(Config.net.state)
 end
-
-local needs_broadcast = true
-local state_machines = {}
-
-local status = {}
+--]]
 
 -- TODO: Make coroutines for each FSM
 -- TODO: Or other way of handling state machine failure
@@ -36,12 +35,12 @@ for _,sm in ipairs(Config.fsm.enabled) do
     local s = {cur_state_name,event}
     status[my_fsm._NAME] = s
     -- Broadcast requirement
-    needs_broadcast = true
+    --needs_broadcast = true
     -- Debugging printing
     --print(table.concat(s,' from '))
   end)
   state_machines[sm] = my_fsm
-  print( util.color('FSM | Loaded','yellow'),sm)
+  print( 'FSM | Loaded',sm)
 end
 
 -- Start the state machines
@@ -71,9 +70,7 @@ local entry = function()
 		local cur_state_name = cur_state._NAME
 		local s = {cur_state_name,nil}
 		status[my_fsm._NAME] = s
-		if broadcast_en then
-			local ret = state_pub_ch:send( mp.pack(status) )
-		end
+		--if broadcast_en then state_pub_ch:send( mp.pack(status) ) end
 	end
 end
 
@@ -84,7 +81,7 @@ local exit = function()
 		local cur_state_name = cur_state._NAME
 		local s = {cur_state_name,nil}
 		status[my_fsm._NAME] = s
-		local ret = state_pub_ch:send( mp.pack(status) )
+		--local ret = state_pub_ch:send( mp.pack(status) )
 	end
 end
 
@@ -103,8 +100,8 @@ local update = function(pulse)
 end
 
 -- Listen for pulses
+--[[
 local wait_channels = {}
-
 local pulse_ch = simple_ipc.new_subscriber'pulse'
 print'Receiving Body pulse'
 pulse_ch.callback = function(sh)
@@ -123,25 +120,22 @@ pulse_ch.callback = function(sh)
 	-- Call the update
 	update(ekg)
 end
-
 -- Make the poller
 table.insert(wait_channels, pulse_ch)
 local channel_timeout = 2 * Body.update_cycle * 1e3
 channel_poll = simple_ipc.wait_on_channels( wait_channels );
+--]]
 
--- Check if webots...
+-- The simple state wizard approach
 if IS_WEBOTS then Body.entry() end
-
 entry()
 while true do
-	if IS_WEBOTS then
-		Body.update()
-	else
-		local npoll = channel_poll:poll(channel_timeout)
-		--if npoll<1 then print('MISSED CYCLE TIMEOUT') end
-	end
-	-- Update anyway, just missing a cycle
+  -- Update the body
+  Body.update()
+  -- Update the state machines
 	update()
+  -- Run at ~100Hz
+	if not IS_WEBOTS then unix.usleep(1e4) end
 end
 exit()
 if IS_WEBOTS then Body.exit() end

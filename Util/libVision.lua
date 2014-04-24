@@ -116,6 +116,7 @@ function libVision.form_labelB()
 end
 
 -- Simple bbox with no tilted color stats
+-- TODO: Use the FFI for color stats, should be super fast
 local function bboxStats (color, bboxB)
   local bboxA = {
     scaleB * bboxB[1],
@@ -123,7 +124,6 @@ local function bboxStats (color, bboxB)
     scaleB * bboxB[3],
     scaleB * bboxB[4] + scaleB - 1
   }
-  -- TODO: Use the FFI for color stats
   local area = (bboxA[2] - bboxA[1] + 1) * (bboxA[4] - bboxA[3] + 1)
   return ImageProc.color_stats(labelA_t, color, bboxA), area
 end
@@ -133,23 +133,11 @@ local function check_prop (prop, th_area, th_fill)
   local stats, box_area = bboxStats(1, prop.boundingBox);
   local area = stats.area
   -- If no pixels then return
-  if area<th_area then return'Area' end
+  if area < th_area then return'Area' end
   -- Get the fill rate
   local fill_rate = area / box_area
-  if fill_rate<th_fill then return'Fill rate' end
+  if fill_rate < th_fill then return'Fill rate' end
   return stats
-end
-
-function coordinatesA(c, scale)
-  scale = scale or 1;
-  local v = vector.new({focalA,
-                       -(c[1] - x0A),
-                       -(c[2] - y0A),
-                       scale});
-  v = tHead*v;
-  v = v/v[4];
-
-  return v;
 end
 
 local function check_coordinate(centroid, scale, maxD, maxH)
@@ -191,9 +179,8 @@ function libVision.ball()
     local v = check_coordinate(propsA.centroid, scale, 5.0, 0.20)
     if type(propsA)=='string' then return string.format("Failed %s", v) end
     -- TODO: Check if outside the field
-    print("v")
-    util.ptorch(v)
-    return propsA.centroid
+    -- TODO: Ground color check
+    return propsA.centroid, v
   end
   --
 end

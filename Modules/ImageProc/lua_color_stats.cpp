@@ -2,6 +2,17 @@
 #include <stdint.h>
 #include <math.h>
 #include <vector>
+#ifdef TORCH
+#include <torch/luaT.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include <torch/TH/TH.h>
+#ifdef __cplusplus
+}
+#endif
+#endif
 
 int lua_color_stats(lua_State *L) {
 

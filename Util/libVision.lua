@@ -45,57 +45,61 @@ function libVision.load_lut (fname)
 end
 
 -- Take in a pointer (or string) to the image
+-- Return nothing, since given the tensors
 function libVision.yuyv_to_labelA (yuyv_ptr)
-  -- Correct dimensions
-  -- NOTE: 4 bytes yields 2 pixels, so stride of (4/2)*w
-  local stride, idx, la_i = 2 * w, 0, 0
   -- The yuyv pointer changes each time
   -- Cast the lightuserdata to cdata
   local yuyv_d = ffi.cast("uint8_t*", yuyv_ptr)
   -- Reset the color count
   cc_t:zero()
   -- Temporary variables for the loop
-  local y6, u6, v6, index, cdt
+  -- NOTE: 4 bytes yields 2 pixels, so stride of (4/2)*w
+  local a_ptr, yuyv_ptr, stride, index, cdt = lA_d, yuyv_d, 2 * w
   for j=0,ha-1 do
     for i=0,wa-1 do
-      y6, u6, v6 = 
-      rshift(yuyv_d[idx], 2),
-      band(yuyv_d[idx+1], 0xFC),
-      band(yuyv_d[idx+2], 0xFC)
-      index = bor(y6, lshift(u6,4), lshift(v6,10))
+      index = bor(
+        rshift(yuyv_ptr[0], 2),
+        lshift(band(yuyv_ptr[1], 0xFC),4),
+        lshift(band(yuyv_ptr[2], 0xFC),10)
+      )
       cdt = lut_d[index]
-      lA_d[la_i] = cdt
       -- Increment the color count
       cc_d[cdt] = cc_d[cdt] + 1
-      -- Stride to next, assume 4
-      idx = idx + 4
-      la_i = la_i + 1
+      -- Move the labelA pointer
+      a_ptr[0] = cdt
+      a_ptr = a_ptr + 1
+      -- Move the image pointer
+      yuyv_ptr = yuyv_ptr + 4
     end
     -- stride to next
-    idx = idx + stride
+    yuyv_ptr = yuyv_ptr + stride
   end
-  -- Return nothing, since given the tensors
+  --
 end
 
 -- Bit OR on blocks of 2x2 to get to labelB
 -- NOTE: could do 4x4 blocks, too, if we add a parameter
 function libVision.form_labelB()
-  -- Zero the downsmapled image
+  -- Zero the downsampled image
   labelB_t:zero()
-  -- Grab pointer to labelA
-  local a_ptr, sub = lA_d, 2
-  local jb, ib, b_idx
-  for ja=0,ha-1 do
-    jb = math.floor(ja / sub)
-    for ia=0,wa-1 do
-      ib = math.floor(ia / sub)
-      --b_idx = jb * wb + ib
-      --print(jb,ib)
-      labelB_t[jb+1][ib+1] = bor(labelB_t[jb+1][ib+1], a_ptr[0])
-      a_ptr = a_ptr + 1
+  -- Assumes a subsample of 2 only
+  local a_ptr, b_ptr = lA_d, lB_d
+  -- Offset a row
+  local a_ptr1 = a_ptr + wa
+  -- Start the loop
+  for jb=0,hb-1 do
+    for ib=0,wb-1 do
+      b_ptr[0] = bor(a_ptr[0],a_ptr[1],a_ptr1[0],a_ptr1[1])
+      -- Move to the next pixel
+      a_ptr = a_ptr + 2
+      a_ptr1 = a_ptr1 + 2
+      -- Move b
+      b_ptr = b_ptr + 1
     end
+    -- Move another row, too
+    a_ptr = a_ptr + wa
+    a_ptr1 = a_ptr1 + wa
   end
-  -- Let's see if we can make this faster
 end
 
 return libVision

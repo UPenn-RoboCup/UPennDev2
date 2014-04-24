@@ -2,8 +2,9 @@
 -- (c) 2014 Stephen McGill
 -- General Detection methods
 local libVision = {}
+local ImageProc = require'ImageProc'
 local torch  = require'torch'
-local bit = require'bit'
+local bit    = require'bit'
 local lshift = bit.lshift
 local rshift = bit.rshift
 local bor = bit.bor
@@ -101,6 +102,13 @@ function libVision.form_labelB()
     a_ptr = a_ptr + wa
     a_ptr1 = a_ptr1 + wa
   end
+end
+
+function libVision.ball()
+  -- The ball is color 1
+  local cc = cc_d[1]
+  local ballPropsB = ImageProc.connected_regions(labelB_t, 1)
+  print('ballPropsB',ballPropsB)
 end
 
 return libVision

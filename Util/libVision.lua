@@ -127,6 +127,7 @@ function libVision.ball()
   --
   for i=1,math.min(5,nProps) do
     local prop = ballPropsB[i]
+    local stats = bboxStats(1, prop.boundingBox);
     for k,v in pairs(prop) do
       print(k,v)
     end

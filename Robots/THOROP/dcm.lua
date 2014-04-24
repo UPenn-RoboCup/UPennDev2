@@ -11,26 +11,29 @@ if CTX then
 	simple_ipc.import_context( CTX )
 	-- Communicate with the master body_wizard
 	pair_ch = simple_ipc.new_pair(metadata.ch_name)
-else
-	metadata = {
-		device = '/dev/cu.usbserial-FTVTLUY0B',
-		m_ids = {2,4,6,8},
-	}
 end
 -- Set up the Dynamixel bus
 local libDynamixel = require'libDynamixel'
-local bus = libDynamixel.new_bus(metadata.device)
 -- Corresponding Motor ids
-local m_ids = metadata.m_ids
+local bus, m_ids
+if metadata then
+	bus = libDynamixel.new_bus(metadata.device)
+	m_ids = metadata.m_ids
+	metadata = nil
+else
+	-- Run as a process, select the next unoccupied tty
+	bus = libDynamixel.new_bus()
+	m_ids = bus:ping_probe(m_id)
+end
 local n_motors = #m_ids
-metadata = nil
+
 -- Grab the Joint IDs for this thread
 -- NOTE: Joint IDs start at 0 if ffi
 -- Joint IDs start at 1 if carray
 local Body = require'Body'
 local m_to_j = Body.servo.motor_to_joint
 local step_to_radian = Body.make_joint_radian
-Body = nil
+local joint_to_step = make_joint_step
 local j_ids = {}
 for i,m_id in ipairs(m_ids) do
   j_ids[i] = m_to_j[m_id]
@@ -50,10 +53,6 @@ local p_read = libDynamixel.get_nx_position
 local p_parse = libDynamixel.byte_to_number[libDynamixel.nx_registers.position[2]]
 -- Remove Config
 Config = nil
--- Cannot nil the jcm...
--- Let's think about this a bit more, then...
--- May wish to have a smarter memory system?
---jcm = nil
 
 -- Initial position reading
 local status = p_read(m_ids,bus)
@@ -78,26 +77,24 @@ while true do
 	local t = unix.time()
 	local t_diff = t-t0
 	t0 = t
-	if t_diff>0.02 then
-		print('Slow dcm FPS',1/t_diff,t_diff)
-	end
+	if t_diff>0.015 then print('Slow dcm FPS',1/t_diff,t_diff) end
 	-- First, write position to the motors
 	for i,j_id in ipairs(j_ids) do
-		if ffi then j_id = j_id - 1 end
-		cp_vals[i] = cp_ptr[j_id]
+		local v
+		if ffi then v=cp_ptr[j_id-1] else v=cp_ptr[j_id] end
+		cp_vals[i] = joint_to_step(j_id,v)
 	end
 	-- Send on the bus
 	--local ret = cp_cmd(m_ids,cp_vals,bus)
 	-- Next, read the positions
 	local status = p_read(m_ids,bus)
-	if type(status)=='table' then
-		for _,s in ipairs(status) do
-			local p = p_parse(unpack(s.parameter))
-			local j_id = m_to_j[s.id]
-			local r = step_to_radian(j_id,p)
-			if ffi then j_id = j_id - 1 end
-			p_ptr[j_id] = r
-		end
+	print(status,#status)
+	for _,s in ipairs(status) do
+		local p = p_parse(unpack(s.parameter))
+		local j_id = m_to_j[s.id]
+		local r = step_to_radian(j_id,p)
+		if ffi then j_id = j_id - 1 end
+		p_ptr[j_id] = r
 	end
 	-- Set the data in shared memory
 	-- TODO: Check if any messages from the master thread

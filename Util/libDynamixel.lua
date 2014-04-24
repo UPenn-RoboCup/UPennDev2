@@ -317,39 +317,31 @@ libDynamixel.byte_to_number = byte_to_number
 local function get_status( fd, npkt, protocol, timeout )
   -- TODO: Is this the best default timeout for the new PRO series?
   timeout = timeout or READ_TIMEOUT
-  npkt = npkt or 1
-
-  local DP = DP2
-  if protocol==1 then DP = DP1 end
-
-  local t0 = unix.time()
+	npkt = npkt or 1
+	local DP = protocol==1 and DP1 or DP2
+	-- Form the temporary variables
   local status_str = ''
-  local pkt_cnt = 0
   local statuses = {}
-  while unix.time()-t0<timeout do
+	local in_timeout = true
+	local t0 = unix.time()
+  while in_timeout do
+		-- Wait for any packets
+		local status, ready = unix.select({fd},timeout)
     local s = unix.read(fd)
     if s then
-      local pkts,status_str = DP.input(status_str..s)
-      --print('Status sz',#status_str,#pkts)
+      local pkts, status_str = DP.input(status_str..s)
+      print('Status sz',#status_str,#pkts)
       if pkts then
         for p,pkt in ipairs(pkts) do
           local status = DP.parse_status_packet( pkt )
-          --if npkt==1 then return status end
           table.insert( statuses, status )
         end
-        --if #statuses>=npkt then return statuses end
+        if #statuses>=npkt then return statuses end
       end -- if pkts
-    end
-    unix.select({fd},0.001)
+    end -- if s
+		in_timeout = (unix.time()-t0)<timeout
   end
-
-if #statuses==0 then
-  -- Did we timeout?
-  return nil
-elseif #statuses==1 then
-  return statuses[1]
-end
-
+	print('READ TIMEOUT',#statuses,'of',npkt)
   return statuses
 end
 
@@ -431,10 +423,11 @@ for k,v in pairs( nx_registers ) do
   libDynamixel['get_nx_'..k] = function( motor_ids, bus )
     -- Construct the instruction (single or sync)
     local instruction
-    local nids = 1
+    local nids
     if type(motor_ids)=='number' then
       -- Single motor
       instruction = DP2.read_data(motor_ids, addr, sz)
+			nids = 1
     else
       instruction = DP2.sync_read(string.char(unpack(motor_ids)), addr, sz)
       nids = #motor_ids

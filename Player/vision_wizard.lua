@@ -13,32 +13,38 @@ local simple_ipc = require'simple_ipc'
 -- For all threads
 local mp = require'msgpack.MessagePack'
 -- Camera
-local metadata = Config.camera[1]
+local cam_metadata = Config.camera[1]
 
 -- Libraries
 local lV    = require'libVision'
 local uvc   = require'uvc'
 local torch = require'torch'
 
--- Extract metadata information
-local w = metadata.width
-local h = metadata.height
-local fps = metadata.fps
-local fmt = metadata.format
-local name = metadata.name
-local dev = metadata.dev
-metadata = nil
--- Extract Config information
-local operator = Config.net.operator.wired
-local udp_port = Config.net.camera[name]
-Config = nil
+-- Extract cam_metadata information
+local w = cam_metadata.width
+local h = cam_metadata.height
+local fps = cam_metadata.fps
+local fmt = cam_metadata.format
+local name = cam_metadata.name
+local dev = cam_metadata.dev
+cam_metadata = nil
 
 -- Setup the Vision system
 lV.setup(w, h)
-lV.load_lut(HOME.."/Data/lut_NaoV4_Grasp.raw")
-
+lV.load_lut(HOME.."/Data/"..cam_metadata.lut)
 -- Open the camera
 local camera = uvc.init(dev, w, h, fmt, 1, fps)
+-- Setup the parameters
+for k,v in ipairs(cam_metadata.auto_param) do
+  camera:set_param(k,v)
+  unix.usleep(1e5)
+  camera:get_param(k)
+end
+for k,v in ipairs(cam_metadata.param) do
+  camera:set_param(k,v)
+  unix.usleep(1e5)
+  camera:get_param(k)
+end
 
 -- Loop temp vars
 local img, sz, cnt, t
@@ -66,6 +72,9 @@ local signal = require'signal'
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
+-- Free some memory
+Config = nil
+
 while true do
 	-- Grab the image
 	img, sz, cnt, t = camera:get_image()
@@ -73,6 +82,7 @@ while true do
   -- Set into a torch container
   lV.yuyv_to_labelA(img)
   lV.form_labelB()
+  -- Now we can detect the ball, etc.
   local t1 = unix.time()
   --print(t1-t0)
 end

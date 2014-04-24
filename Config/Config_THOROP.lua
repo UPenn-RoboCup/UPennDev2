@@ -80,18 +80,57 @@ table.insert(Config.camera,
 		name = 'head',
 		fname = '/dev/video0',
 		fmt = 'yuyv',
-		res = {640,360},
-		fps = 10
+		res = {640,480},
+		fps = 10,
+    lut = 'lut_low_contrast_pink_n_green.raw',
+    auto_param = {
+      {'White Balance, Automatic', 0},
+      {'Horizontal Flip', 0},
+      {'Vertical Flip', 0},
+      {'Auto Exposure', 0},
+      {'Auto Exposure Algorithm', 3},
+      {'Fade to Black', 0},
+      },
+    param = {
+      {'Brightness', 100},
+      {'Contrast', 25},
+      {'Saturation', 190},
+      {'Hue', 50},
+      {'Do White Balance', 100},
+      {'Exposure', 35},
+      {'Gain', 255},
+      {'Sharpness', 0},
+      {'Backlight Compensation', 1},
+    },
 	})
---[[
+  
 table.insert(Config.camera,
 	{
 		name = 'hand',
 		fname = '/dev/video1',
 		fmt = 'yuyv',
-		res = {320,240},
-		fps = 10
+		res = {640,480},
+		fps = 10,
+    lut = 'lut_low_contrast_pink_n_green.raw'
+    auto_param = {
+      {'White Balance, Automatic', 0},
+      {'Horizontal Flip', 0},
+      {'Vertical Flip', 0},
+      {'Auto Exposure', 0},
+      {'Auto Exposure Algorithm', 3},
+      {'Fade to Black', 0},
+      },
+    param = {
+      {'Brightness', 100},
+      {'Contrast', 25},
+      {'Saturation', 190},
+      {'Hue', 50},
+      {'Do White Balance', 100},
+      {'Exposure', 35},
+      {'Gain', 255},
+      {'Sharpness', 0},
+      {'Backlight Compensation', 1},
+    },
 	})
---]]
 
 return Config

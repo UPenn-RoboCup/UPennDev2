@@ -12,7 +12,7 @@ print('Unlogging',#metadata,'images')
 local d = replay:log_iter(metadata)
 --
 lV.setup(metadata[1].w, metadata[1].h)
-lV.load_lut(HOME.."/Data/lut_NaoV4_Grasp.raw")
+lV.load_lut(HOME.."/Data/lut_low_contrast_pink_n_green.raw")
 
 local meta, yuyv_t
 for i,m,r in d do

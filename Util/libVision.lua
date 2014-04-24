@@ -42,6 +42,10 @@ function libVision.load_lut (fname)
   lut_t = torch.ByteTensor(lut_s)
   -- Raw data
   lut_d = lut_t:data()
+  for i=0,lut_t:nElement()-1 do
+    local cdt = lut_d[i]
+    if cdt~=0 then print('cdt',cdt,i) end
+  end 
 end
 
 -- Take in a pointer (or string) to the image
@@ -49,27 +53,28 @@ end
 function libVision.yuyv_to_labelA (yuyv_ptr)
   -- The yuyv pointer changes each time
   -- Cast the lightuserdata to cdata
-  local yuyv_d = ffi.cast("uint8_t*", yuyv_ptr)
+  local yuyv_d = ffi.cast("uint32_t*", yuyv_ptr)
   -- Reset the color count
   cc_t:zero()
   -- Temporary variables for the loop
   -- NOTE: 4 bytes yields 2 pixels, so stride of (4/2)*w
-  local a_ptr, yuyv_ptr, stride, index, cdt = lA_d, yuyv_d, 2 * w
+  local a_ptr, yuyv_ptr, stride, index, cdt = lA_d, yuyv_d, w / 2
   for j=0,ha-1 do
     for i=0,wa-1 do
       index = bor(
-        rshift(yuyv_ptr[0], 2),
-        lshift(band(yuyv_ptr[1], 0xFC),4),
-        lshift(band(yuyv_ptr[2], 0xFC),10)
+        rshift(band(yuyv_ptr[0], 0xFC000000), 26),
+        rshift(band(yuyv_ptr[0], 0x0000FC00), 4),
+        lshift(band(yuyv_ptr[0], 0xFC), 10)
       )
       cdt = lut_d[index]
+      --if cdt~=0 then print('cdt',cdt,index) end
       -- Increment the color count
       cc_d[cdt] = cc_d[cdt] + 1
       -- Move the labelA pointer
       a_ptr[0] = cdt
       a_ptr = a_ptr + 1
       -- Move the image pointer
-      yuyv_ptr = yuyv_ptr + 4
+      yuyv_ptr = yuyv_ptr + 1
     end
     -- stride to next
     yuyv_ptr = yuyv_ptr + stride

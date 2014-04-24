@@ -114,23 +114,34 @@ local function bboxStats (color, bboxB)
     scaleB * bboxB[3],
     scaleB * bboxB[4] + scaleB - 1
   }
-  return ImageProc.color_stats(labelA_t, color, bboxA);
+  -- TODO: Use the FFI for color stats
+  local area = (bboxA[2] - bboxA[1] + 1) * (bboxA[4] - bboxA[3] + 1)
+  return ImageProc.color_stats(labelA_t, color, bboxA), area
+end
+
+local function check_prop (prop, th_area, th_fill)
+  -- Grab the statistics in labelA
+  local stats, box_area = bboxStats(1, prop.boundingBox);
+  local area = stats.area
+  -- If no pixels then return
+  if area<th_area then return'Area check' end
+  -- Get the fill rate
+  local fill_rate = area / box_area
+  if fill_rate<th_fill then return'Fill rate' end
+  return true
 end
 
 function libVision.ball()
   -- The ball is color 1
   local cc = cc_d[1]
   if cc<6 then return'Not enough color' end
+  -- Connect the regions in labelB
   local ballPropsB = ImageProc.connected_regions(labelB_t, 1)
   local nProps = #ballPropsB
   if nProps==0 then return'No connected regions' end
   --
   for i=1,math.min(5,nProps) do
-    local prop = ballPropsB[i]
-    local stats = bboxStats(1, prop.boundingBox);
-    for k,v in pairs(prop) do
-      print(k,v)
-    end
+    local passed = check_prop(ballPropsB[i], 4, 0.35)
   end
   --
 end

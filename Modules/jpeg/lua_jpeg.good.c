@@ -385,6 +385,9 @@ static int lua_jpeg_compress(lua_State *L) {
 		// Use the torch dimensions
 		width = b_t->size[1];
 		height = b_t->size[0];
+    // Can override
+		width  = luaL_optint(L, 3, width);
+		height = luaL_optint(L, 4, height);
 		// TODO: Double check :)
 		stride = b_t->stride[0];
 	}

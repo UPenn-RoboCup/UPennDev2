@@ -97,9 +97,9 @@ local function unroll_meta(self)
 	return metadata
 end
 
-local function log_iter(self,metadata)
+local function log_iter(self,metadata,prefix)
 	local buf_t
-	local f_r = io.open(DIR..'/uvc_r_'..date..'.log','r')
+	local f_r = io.open(DIR..'/'..prefix..'_r_'..date..'.log','r')
 	local i, n = 0, #metadata
 	if C then buf_t = torch.ByteTensor() end
 	local function iter(param, state)
@@ -122,10 +122,10 @@ local function log_iter(self,metadata)
 	return iter
 end
 
-function libLog.open(dir,date)
+function libLog.open(dir,date,prefix)
 	local t = {}
-	t.m_name = dir..'/uvc_m_'..date..'.log'
-	t.r_name = dir..'/uvc_r_'..date..'.log'
+	t.m_name = dir..'/'..prefix..'_m_'..date..'.log'
+	t.r_name = dir..'/'..prefix..'uvc_r_'..date..'.log'
 	t.unroll_meta = unroll_meta
 	t.log_iter = log_iter
 	return t

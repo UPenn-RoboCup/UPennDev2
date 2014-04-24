@@ -16,7 +16,7 @@ local labelA_t, labelB_t, lut_t, cc_t
 -- torch raw data
 local lut_d, lA_d, lB_d, cc_d
 -- Scale to support legacy
-local scaleA, scaleB = 2, 4
+local scaleA, scaleB = 2, 2
 
 function libVision.get_labels()
   return labelA_t, labelB_t
@@ -26,7 +26,7 @@ function libVision.setup (w0, h0)
   -- Take in the width and height of the original YUYV image
   w, h = w0, h0
   wa, ha = w/scaleA, h/scaleA
-  wb, hb = w/scaleB, h/scaleB
+  wb, hb = wa/scaleB, ha/scaleB
   labelA_t, labelB_t = torch.ByteTensor(ha,wa), torch.ByteTensor(hb,wb)
   -- Raw data access
   lA_d, lB_d = labelA_t:data(), labelB_t:data()
@@ -142,6 +142,7 @@ function libVision.ball()
   --
   for i=1,math.min(5,nProps) do
     local passed = check_prop(ballPropsB[i], 4, 0.35)
+    if type(passed)=='string' then print("Failed",passed) end
   end
   --
 end

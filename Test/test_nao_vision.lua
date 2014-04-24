@@ -4,32 +4,68 @@ local torch = require'torch'
 local util = require'util'
 local lV = require'libVision'
 
-date = '04.17.2014.16.34.17'
-DIR = HOME..'/Logs/'
-local replay = libLog.open(DIR,date)
+date = '09.17.2009.00.06.21'
+DIR = HOME..'/Data/'
+local replay = libLog.open(DIR,date,'yuyv')
 local metadata = replay:unroll_meta()
 print('Unlogging',#metadata,'images')
-local d = replay:log_iter(metadata)
 --
-lV.setup(metadata[1].w, metadata[1].h)
-lV.load_lut(HOME.."/Data/lut_low_contrast_pink_n_green.raw")
+local w, h = metadata[1].w, metadata[1].h
+lV.setup(w, h)
+lV.load_lut(HOME.."/Data/lut_nao_new.raw")
 
+local labelA_t, labelB_t = lV.get_labels()
+
+-- For broadcasting the labeled image
+local zlib = require'zlib.ffi'
+local c_zlib = zlib.compress_cdata
+local a_sz = labelA_t:nElement()
+local lA_d = labelA_t:data()
+-- Send on localhost
+local mp    = require'msgpack.MessagePack'
+local udp = require'udp'
+local udp_ch = udp.new_sender('127.0.0.1', 33333)
+local jpeg = require'jpeg'
+local c_yuyv = jpeg.compressor'yuyv'
+
+local meta_a = {
+  w = labelA_t:size(2),
+  h = labelA_t:size(1),
+  c = 'zlib',
+}
+local meta_j = {
+  w = w,
+  h = h,
+  c = 'jpeg',
+}
+
+while true do
+local d = replay:log_iter(metadata,'yuyv')
 local meta, yuyv_t
 for i,m,r in d do
-	if i>#metadata/2 then break end
 	local t0 = unix.time()
 	meta = m
-	yuyv_t = r
+	yuyv_t = torch.ByteTensor(r:storage(),1,torch.LongStorage({h,w}))
   local t0 = unix.time()
   -- Set into a torch container
   lV.yuyv_to_labelA(yuyv_t:data())
   lV.form_labelB()
+  lV.ball()
   local t1 = unix.time()
+  -- Send on UDP
+  -- Send labelA
+  lA_z = c_zlib( lA_d, a_sz, true )
+  local udp_ret, err = udp_ch:send( mp.pack(meta_a)..lA_z )
+  -- Send JPEG image
+  yuyv_j = c_yuyv:compress(yuyv_t)
+  local udp_ret, err = udp_ch:send( mp.pack(meta_j)..yuyv_j )
 	print('Processing Time (ms)', 1e3*(t1-t0))
+  unix.usleep(1e5)
+end
+-- Loop forever
 end
 
 -- Save the data
-local labelA_t, labelB_t = lV.get_labels()
 -- Save to file
 print('Saving labelA',labelA_t:size(1),labelA_t:size(2))
 local f_l = torch.DiskFile('labelA.raw', 'w')

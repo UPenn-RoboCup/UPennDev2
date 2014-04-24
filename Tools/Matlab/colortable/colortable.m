@@ -499,9 +499,8 @@ return;
     % get the gui userdata
     hfig = gcbf;
     DATA = get(hfig, 'UserData');
-    
     if (nargin) 
-      index
+      %index
       pathname = DATA.LogFilePath;
       filename = get(DATA.LogFileName, 'String');
       fileorder = strmatch(filename, strvcat(DATA.LogList.name));
@@ -518,7 +517,8 @@ return;
       filename = DATA.LogList(fileorder).name;
     else
       % open file select gui
-      [filename, pathname] = uigetfile('*.mat', 'Select montage file');
+      
+      [filename, pathname] = uigetfile('*.mat', 'Select montage file',DATA.LogFilePath);
     end
 
     if (filename ~= 0)

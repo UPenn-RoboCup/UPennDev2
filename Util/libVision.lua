@@ -15,6 +15,8 @@ local w, h, wa, ha, wb, hb
 local labelA_t, labelB_t, lut_t, cc_t
 -- torch raw data
 local lut_d, lA_d, lB_d, cc_d
+-- Scale to support legacy
+local scaleA, scaleB = 2, 4
 
 function libVision.get_labels()
   return labelA_t, labelB_t
@@ -23,8 +25,8 @@ end
 function libVision.setup (w0, h0)
   -- Take in the width and height of the original YUYV image
   w, h = w0, h0
-  wa, ha = w/2, h/2
-  wb, hb = wa/2, ha/2
+  wa, ha = w/scaleA, h/scaleA
+  wb, hb = w/scaleB, h/scaleB
   labelA_t, labelB_t = torch.ByteTensor(ha,wa), torch.ByteTensor(hb,wb)
   -- Raw data access
   lA_d, lB_d = labelA_t:data(), labelB_t:data()
@@ -104,11 +106,32 @@ function libVision.form_labelB()
   end
 end
 
+-- Simple bbox with no tilted color stats
+local function bboxStats (color, bboxB)
+  local bboxA = {
+    scaleB * bboxB[1],
+    scaleB * bboxB[2] + scaleB - 1,
+    scaleB * bboxB[3],
+    scaleB * bboxB[4] + scaleB - 1
+  }
+  return ImageProc.color_stats(labelA_t, color, bboxA);
+end
+
 function libVision.ball()
   -- The ball is color 1
   local cc = cc_d[1]
+  if cc<6 then return'Not enough color' end
   local ballPropsB = ImageProc.connected_regions(labelB_t, 1)
-  print('ballPropsB',ballPropsB)
+  local nProps = #ballPropsB
+  if nProps==0 then return'No connected regions' end
+  --
+  for i=1,math.min(5,nProps) do
+    local prop = ballPropsB[i]
+    for k,v in pairs(prop) do
+      print(k,v)
+    end
+  end
+  --
 end
 
 return libVision

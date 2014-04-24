@@ -24,7 +24,8 @@ class RadonTransform {
     static const int NR = 100; // Number of radius
     static const int NTH = 45; // Number of angles
     static const int NTRIG = 65536; // Integer trig normalization
-    static const int DIAGONAL_THRESHOLD = NTRIG/1.41421356;
+    //static const int DIAGONAL_THRESHOLD = NTRIG/1.41421356;
+    static const int DIAGONAL_THRESHOLD = 46340;
     
     void clear();
     void addHorizontalPixel(int i, int j);

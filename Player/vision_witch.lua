@@ -14,6 +14,7 @@ local simple_ipc = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
 -- Camera
 local cam_metadata = Config.camera[tonumber(arg[1]) or 1]
+local IS_LOG = false
 
 -- Libraries
 local mp    = require'msgpack.MessagePack'
@@ -40,9 +41,12 @@ c_yuyv = jpeg.compressor'yuyv'
 
 -- For colortable logging, set fps to 5
 fps = 5
-local libLog = require'libLog'
--- Make the logger
-local logger = libLog.new('yuyv',true)
+local libLog, logger
+if IS_LOG then
+  libLog = require'libLog'
+  -- Make the logger
+  logger = libLog.new('yuyv',true)
+end
 
 -- Setup the Vision system
 lV.setup(w, h)
@@ -116,19 +120,25 @@ local meta = {
   c = 'zlib',
 }
 
+-- YUYV size
+-- We do not trust the Aldebaran implementation
+local sz = w * h * 2
 while true do
 	-- Grab the image
-	img, sz, cnt, t = camera:get_image()
+	img, sz_bad, cnt, t = camera:get_image()
   local t0 = unix.time()
   -- Set into a torch container
   lV.yuyv_to_labelA(img)
   lV.form_labelB()
+  lV.ball()
   -- Now we can detect the ball, etc.
   -- Send to the monitor
   local t1 = unix.time()
   print(t1-t0)
   -- Log the raw YUYV for colortables
-  logger:record({w = w, h = h, rsz=sz}, img, sz)
+  if IS_LOG then
+    logger:record({w = w, h = h, rsz=sz}, img, sz)
+  end
   -- Send labelA
   lA_z = c_zlib( lA_d, a_sz, true )
   meta.c = 'zlib'

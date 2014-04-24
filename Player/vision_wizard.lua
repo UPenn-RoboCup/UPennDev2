@@ -33,32 +33,19 @@ local operator = Config.net.operator.wired
 local udp_port = Config.net.camera[name]
 Config = nil
 
--- Load the LUT
-local lut_name = HOME.."/Data/lut_NaoV4_Grasp.raw"
---print("lut_name",lut_name)
-local f_lut = torch.DiskFile(lut_name, 'r')
---print('Opened',f_lut)
-f_lut.binary(f_lut)
--- We know the size of the LUT
-local lut_s = f_lut:readByte(262144)
-f_lut:close()
-local lut = lut_s:data()
+-- Setup the Vision system
+lV.setup(w, h)
+lV.load_lut(HOME.."/Data/lut_NaoV4_Grasp.raw")
 
 -- Open the camera
 local camera = uvc.init(dev, w, h, fmt, 1, fps)
 
--- Torch container (Just to a pointer)
-local yuyv_s = torch.ByteStorage(h*w*2,0)
-local yuyv_t = torch.ByteTensor(yuyv_s)
-local yuyv_sc = yuyv_s:cdata()
-local labelA_t = torch.ByteTensor(h/2,w/2)
-local color_count = torch.IntTensor(256):zero()
-
 -- Loop temp vars
 local img, sz, cnt, t
 
--- On ctrl-c
+-- On ctrl-c, saev some data
 local function shutdown()
+  local labelA_t, labelB_t = lV.get_labels()
   -- Save to file
   print('Saving labelA',labelA_t:size(1),labelA_t:size(2))
   local f_l = torch.DiskFile('labelA.raw', 'w')
@@ -84,8 +71,8 @@ while true do
 	img, sz, cnt, t = camera:get_image()
   local t0 = unix.time()
   -- Set into a torch container
-  yuyv_sc.data = ffi.cast("uint8_t*",img)
-  lV.yuyv_to_labelA(yuyv_t, labelA_t, lut, color_count, w, h)
+  lV.yuyv_to_labelA(img)
+  lV.form_labelB()
   local t1 = unix.time()
   --print(t1-t0)
 end

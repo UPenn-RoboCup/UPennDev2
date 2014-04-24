@@ -6,6 +6,10 @@ local quaternion = require'quaternion'
 -- TODO: Is this actually a good name?
 local libTransform = {}
 
+libTransform.eye = function()
+  return torch.eye(4)
+end
+
 -- TODO: Make sure the helper functions are working properly!
 libTransform.rotX = function(t)
   -- Homogeneous transformation representing a rotation of theta

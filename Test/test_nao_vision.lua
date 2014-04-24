@@ -52,7 +52,7 @@ for i,m,r in d do
   lV.yuyv_to_labelA(yuyv_t:data())
   lV.form_labelB()
   local ball = lV.ball()
-  print(ball)
+  if type(ball)=='string' then print(ball) end
   meta_a.ball = ball
   local t1 = unix.time()
   -- Send on UDP

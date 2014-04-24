@@ -2,13 +2,14 @@
 -- (c) 2014 Stephen McGill
 -- General Detection methods
 local libVision = {}
-local ImageProc = require'ImageProc'
 local torch  = require'torch'
 local bit    = require'bit'
 local lshift = bit.lshift
 local rshift = bit.rshift
 local bor = bit.bor
 local band = bit.band
+local ImageProc = require'ImageProc'
+local T = require'libTransform'
 
 local w, h, wa, ha, wb, hb
 -- Form the labelA and labelB tensors
@@ -17,6 +18,10 @@ local labelA_t, labelB_t, lut_t, cc_t
 local lut_d, lA_d, lB_d, cc_d
 -- Scale to support legacy
 local scaleA, scaleB = 2, 2
+-- Keep the Head Transform updated
+local trHead = T.eye()
+-- Image center, as float
+local x0A, y0A, focalA
 
 function libVision.get_labels()
   return labelA_t, labelB_t
@@ -27,12 +32,16 @@ function libVision.setup (w0, h0)
   w, h = w0, h0
   wa, ha = w/scaleA, h/scaleA
   wb, hb = wa/scaleB, ha/scaleB
-  labelA_t, labelB_t = torch.ByteTensor(ha,wa), torch.ByteTensor(hb,wb)
+  labelA_t, labelB_t = torch.ByteTensor(ha, wa), torch.ByteTensor(hb, wb)
   -- Raw data access
   lA_d, lB_d = labelA_t:data(), labelB_t:data()
   -- Color count tensor
   cc_t = torch.IntTensor(256):zero()
   cc_d = cc_t:data()
+  --
+  local focal_length, focal_base = 545.6, 640
+  x0A, y0A = 0.5 * (labelA_t:size(2) - 1), 0.5 * (labelA_t:size(1) - 1)
+  focalA = focal_length / (focal_base / labelA_t:size(2))
 end
 
 function libVision.load_lut (fname)
@@ -124,34 +133,67 @@ local function check_prop (prop, th_area, th_fill)
   local stats, box_area = bboxStats(1, prop.boundingBox);
   local area = stats.area
   -- If no pixels then return
-  if area<th_area then return'Area check' end
+  if area<th_area then return'Area' end
   -- Get the fill rate
   local fill_rate = area / box_area
   if fill_rate<th_fill then return'Fill rate' end
   return stats
 end
 
+function coordinatesA(c, scale)
+  scale = scale or 1;
+  local v = vector.new({focalA,
+                       -(c[1] - x0A),
+                       -(c[2] - y0A),
+                       scale});
+  v = tHead*v;
+  v = v/v[4];
+
+  return v;
+end
+
+local function check_coordinate(centroid, scale, maxD, maxH)
+  local v = torch.Tensor({
+    focalA,
+    -(centroid[1] - x0A),
+    -(centroid[2] - y0A),
+    scale,
+  })
+  v = trHead * v / v[4]
+  -- Check the distance
+  if v[1]*v[1] + v[2]*v[2] > maxD*maxD then
+    return"Distance"
+  elseif v[3] > maxH then
+    return"Height"
+  end
+  return v
+end
+
 local util = require'util'
+local b_diameter = 0.065
 function libVision.ball()
   -- The ball is color 1
   local cc = cc_d[1]
-  if cc<6 then return'Not enough color' end
+  if cc<6 then return'Color count' end
   -- Connect the regions in labelB
   local ballPropsB = ImageProc.connected_regions(labelB_t, 1)
   local nProps = #ballPropsB
-  if nProps==0 then return'No connected regions' end
+  if nProps==0 then return'Connected regions' end
   --
   for i=1,math.min(5,nProps) do
+    -- Check the image properties
     local propsB = ballPropsB[i]
-    local check = check_prop(propsB, 4, 0.35)
-    if type(check)=='string' then return string.format("Failed %s",check) end
-    ----[[
-    print('\n====')
-    util.ptable(propsB)
-    print()
-    util.ptable(check)
-    --]]
-    return check.centroid
+    local propsA = check_prop(propsB, 4, 0.35)
+    if type(propsA)=='string' then return string.format("Failed %s", propsA) end
+    -- Check the coordinate on the field
+    local dArea = math.sqrt((4/math.pi) * propsA.area)
+    local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
+    local v = check_coordinate(propsA.centroid, scale, 5.0, 0.20)
+    if type(propsA)=='string' then return string.format("Failed %s", v) end
+    -- TODO: Check if outside the field
+    print("v")
+    util.ptorch(v)
+    return propsA.centroid
   end
   --
 end

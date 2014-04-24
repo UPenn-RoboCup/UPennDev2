@@ -3,7 +3,7 @@ local Config = {}
 ------------------------
 -- General parameters --
 ------------------------
-Config.PLATFORM_NAME = 'NaoV4'
+Config.PLATFORM_NAME = 'Nao'
 Config.nJoint = 35
 
 -----------------------
@@ -23,6 +23,7 @@ Config.dev.walk         = 'HumbleWalk'
 Config.fsm = {}
 -- Which FSMs should be enabled?
 Config.fsm.enabled = {}
+--[[
 if HOME then
   -- Check if include has set some variables
   local unix = require'unix'
@@ -35,6 +36,7 @@ if HOME then
     end
   end
 end
+--]]
 
 ---------------------------
 -- Complementary Configs --

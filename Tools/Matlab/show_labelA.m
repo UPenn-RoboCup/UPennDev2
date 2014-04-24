@@ -3,6 +3,7 @@ clear all;
 cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
 cmap = [cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
 figure(1);
+clf;
 % LabelA
 subplot(2,2,1);
 i_az_t = image(zeros(240,320));
@@ -10,6 +11,9 @@ colormap(cmap);
 % yuyv
 subplot(2,2,2);
 i_j_t = image(zeros(480,640));
+hold on;
+p_j_t = plot([120],[160],'m*');
+hold off;
 % LabelA (bottom)
 subplot(2,2,3);
 i_az_b = image(zeros(120,160));
@@ -21,7 +25,7 @@ i_j_b = image(zeros(240,320));
 drawnow;
 
 % Add the monitor
-top_fd  = udp_recv('new', 33333);
+top_fd = udp_recv('new', 33333);
 s_top = zmq( 'fd', top_fd );
 bottom_fd  = udp_recv('new', 33334);
 s_bottom = zmq( 'fd', bottom_fd );
@@ -57,6 +61,14 @@ while 1
         elseif strcmp(compr_t,'zlib')
             Az = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';
             set(cam.labelA,'Cdata', Az);
+            if isa(metadata.ball,'double')
+                disp(metadata.ball)
+                set(p_j_t,'Xdata', 2*metadata.ball(1));
+                set(p_j_t,'Ydata', 2*metadata.ball(2));
+            else
+                set(p_j_t,'Xdata', 0);
+                set(p_j_t,'Ydata', 0);
+            end
         end
         drawnow;
     end

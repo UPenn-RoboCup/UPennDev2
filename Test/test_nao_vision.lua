@@ -4,7 +4,8 @@ local torch = require'torch'
 local util = require'util'
 local lV = require'libVision'
 
-date = '09.17.2009.00.06.21'
+lut = 'nao3'
+date = '09.17.2009.00.09.00'
 DIR = HOME..'/Data/'
 local replay = libLog.open(DIR,date,'yuyv')
 local metadata = replay:unroll_meta()
@@ -12,7 +13,7 @@ print('Unlogging',#metadata,'images')
 --
 local w, h = metadata[1].w, metadata[1].h
 lV.setup(w, h)
-lV.load_lut(HOME.."/Data/lut_nao_new.raw")
+lV.load_lut(HOME.."/Data/lut_"..lut..".raw")
 
 local labelA_t, labelB_t = lV.get_labels()
 
@@ -50,7 +51,9 @@ for i,m,r in d do
   -- Set into a torch container
   lV.yuyv_to_labelA(yuyv_t:data())
   lV.form_labelB()
-  lV.ball()
+  local ball = lV.ball()
+  print(ball)
+  meta_a.ball = ball
   local t1 = unix.time()
   -- Send on UDP
   -- Send labelA
@@ -60,7 +63,7 @@ for i,m,r in d do
   yuyv_j = c_yuyv:compress(yuyv_t)
   local udp_ret, err = udp_ch:send( mp.pack(meta_j)..yuyv_j )
 	print('Processing Time (ms)', 1e3*(t1-t0))
-  unix.usleep(1e5)
+  unix.usleep(5e5)
 end
 -- Loop forever
 end

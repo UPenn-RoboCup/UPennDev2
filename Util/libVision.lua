@@ -128,9 +128,10 @@ local function check_prop (prop, th_area, th_fill)
   -- Get the fill rate
   local fill_rate = area / box_area
   if fill_rate<th_fill then return'Fill rate' end
-  return true
+  return stats
 end
 
+local util = require'util'
 function libVision.ball()
   -- The ball is color 1
   local cc = cc_d[1]
@@ -141,8 +142,16 @@ function libVision.ball()
   if nProps==0 then return'No connected regions' end
   --
   for i=1,math.min(5,nProps) do
-    local passed = check_prop(ballPropsB[i], 4, 0.35)
-    if type(passed)=='string' then print("Failed",passed) end
+    local propsB = ballPropsB[i]
+    local check = check_prop(propsB, 4, 0.35)
+    if type(check)=='string' then return string.format("Failed %s",check) end
+    ----[[
+    print('\n====')
+    util.ptable(propsB)
+    print()
+    util.ptable(check)
+    --]]
+    return check.centroid
   end
   --
 end

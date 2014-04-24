@@ -99,8 +99,8 @@ int lua_connected_regions(lua_State *L) {
 		THByteTensor* b_t =
 			(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
 		x = b_t->storage->data;
-		mx = b_t->size[0];
-		nx = b_t->size[1];
+    nx = b_t->size[0];
+		mx = b_t->size[1];
     mask = luaL_optinteger(L, 2, 1);
 	}
 #endif

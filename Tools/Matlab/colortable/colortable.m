@@ -58,7 +58,7 @@ return;
     % Toggle between masking mode and label preview mode
     DATA.viewmode = 0;
 
-    DATA.LogFilePath = './logs';
+    DATA.LogFilePath = './Data';
     DATA.LogList = {};
 
     % standard options for all gui elements

@@ -1,4 +1,4 @@
-datestamp = '09.17.2009.01.48.45';
+datestamp = '09.17.2009.00.06.21';
 % Metadata
 fid = fopen(sprintf('Data/yuyv_m_%s.log',datestamp));
 yuyvMeta = fread(fid,Inf,'*uint8');
@@ -6,11 +6,20 @@ fclose(fid);
 clear fid;
 yuyvMeta = msgpack('unpacker',yuyvMeta,'uint8');
 
+% Setup the colortable item
 % Grab the YUYV logged information
 f_raw = fopen(sprintf('Data/yuyv_r_%s.log',datestamp));
+yuyvMontage = fread(f_raw,Inf,'*uint32');
+yuyvMontage = reshape( ...
+    yuyvMontage, ...
+    [yuyvMeta{1}.w/2, yuyvMeta{1}.h, 1, numel(yuyvMeta)] ...
+    );
+save(sprintf('Data/yuyv_%s.mat'),'yuyvMontage');
 
+% Individual reading
+%{
+f_raw = fopen(sprintf('Data/yuyv_r_%s.log',datestamp));
 for i=1:numel(yuyvMeta)
-%for i=1:1
     meta = yuyvMeta{i};
     rsz = meta.w * meta.h * 2;
     if rsz ~= meta.rsz
@@ -19,18 +28,12 @@ for i=1:numel(yuyvMeta)
     yuyv = fread(f_raw, rsz, '*uint8');
     yuyv = typecast(yuyv,'uint32');
     yuyv = reshape( yuyv, meta.w/2, meta.h );
-    s = sum(yuyv(:));
-    if s~=0
-        yuv = yuyv2yuv(yuyv);
-        imagesc(yuv);
-        pause;
-    end
+    yuv = yuyv2yuv(yuyv);
+    rgb = ycbcr2rgb(yuv);
+    imagesc(rgb);
+    pause;
 end
-
+clear yuyv yuv rgb;
 fclose(f_raw);
 clear f_raw;
-
-% Setup the colortable item
-%n_img = numel(yuyvMontage) / yuyvMeta{1}.w / yuyvMeta{1}.h * 2;
-%yuyvMontage = reshape(yuyvMontage,[yuyvMeta{1}.w/2,yuyvMeta{1}.h,1,n_img]);
-%save('test.mat','yuyvMontage');
+%}

@@ -219,6 +219,8 @@ end
 function set_waist_hardness(val)
 end
 
+function set_waist_torque_enable(val)
+end
 
 function update()
   -- Set actuators

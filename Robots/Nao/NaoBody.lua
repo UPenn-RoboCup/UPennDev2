@@ -35,25 +35,14 @@ Body.update_cycle = 0.010
 local indexHead = 1   -- Head: 1 2
 local nJointHead = 2
 local indexLArm = 3   --LArm: 3 4 5 6 7 8 9
-local nJointLArm = 7
-local indexLLeg = 10  --LLeg: 10 11 12 13 14 15
+local nJointLArm = 4
+local indexLLeg = 7  --LLeg: 10 11 12 13 14 15
 local nJointLLeg = 6
-local indexRLeg = 16  --RLeg: 16 17 18 19 20 21
+local indexRLeg = 13  --RLeg: 16 17 18 19 20 21
 local nJointRLeg = 6
-local indexRArm = 22  --RArm: 22 23 24 25 26 27 28
-local nJointRArm = 7
-local indexWaist = 29  --Waist: 29 30
-local nJointWaist = 2
--- 4 Servos for gripping
--- 1 servo for lidar panning
-local indexLGrip = 31
-local nJointLGrip = 2
-local indexRGrip = 33
-local nJointRGrip = 2
--- One motor for lidar panning
-local indexLidar = 35
-local nJointLidar = 1
-local nJoint = 35 --33
+local indexRArm = 19  --RArm: 22 23 24 25 26 27 28
+local nJointRArm = 4
+local nJoint = 22
 
 local parts = {
 	Head=vector.count(indexHead,nJointHead),
@@ -61,10 +50,6 @@ local parts = {
 	LLeg=vector.count(indexLLeg,nJointLLeg),
 	RLeg=vector.count(indexRLeg,nJointRLeg),
 	RArm=vector.count(indexRArm,nJointRArm),
-	Waist=vector.count(indexWaist,nJointWaist),
-	LGrip=vector.count(indexLGrip,nJointLGrip),
-  RGrip=vector.count(indexRGrip,nJointRGrip),
-  ['Lidar']=vector.count(indexLidar,nJointLidar)
 }
 local inv_parts = {}
 for name,list in pairs(parts) do
@@ -74,16 +59,13 @@ end
 --------------------------------
 -- Servo parameters
 local servo = {}
+if not IS_WEBOTS then
 servo.joint_to_motor={
   29,30,  --Head yaw/pitch
   2,4,6,8,10,12,14, --LArm
   16,18,20,22,24,26, -- left leg
   15,17,19,21,23,25, -- right leg
   1,3,5,7,9,11,13,  --RArm
-  27,28, --Waist yaw/pitch
-  66,67, -- left gripper/trigger
-  70,65, -- right gripper/trigger
-  37, -- Lidar pan
 }
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
 
@@ -111,10 +93,6 @@ servo.steps = 2 * vector.new({
   251000,251000,251000,251000,251000,251000, --LLeg
   251000,251000,251000,251000,251000,251000, --RLeg
   251000,251000,251000,251000,151875,151875,151875, --RArm
-  251000,251000, -- Waist
-  2048,2048, -- Left gripper
-  2048,2048, -- Right gripper
-  2048, -- Lidar pan
 })
 assert(#servo.steps==nJoint,'Bad servo steps!')
 
@@ -127,10 +105,6 @@ servo.direction = vector.new({
   -1, -1,-1, -1,  1,1, --RLeg
   ------
   -1,-1,1,-1, 1,1,1, --RArm
-  1,1, -- Waist
-  1,1, -- left gripper TODO
-  1,1, -- right gripper TODO
-  -1, -- Lidar pan
 })
 assert(#servo.direction==nJoint,'Bad servo direction!')
 
@@ -141,10 +115,6 @@ servo.rad_offset = vector.new({
   0,0,0,-45,0,0, --LLeg
   0,0,0,45,0,0, --RLeg
   90,-90,90,-45,-90,0,0, --RArm
-  0,0, -- Waist
-  0,0, -- left gripper
-  0,0, -- right gripper
-  0, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.rad_offset==nJoint,'Bad servo rad_offset!')
 
@@ -155,10 +125,6 @@ servo.min_rad = vector.new({
   -175,-175,-175,-175,-175,-175, --LLeg
   -175,-175,-175,-175,-175,-175, --RLeg
   -90,-87,-90,    -160,   -180,-87,-180, --RArm
-  -90,-45, -- Waist
-  0, -90,
-  0, -90,
-  -60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 
@@ -168,10 +134,6 @@ servo.max_rad = vector.new({
   175,175,175,175,175,175, --LLeg
   175,175,175,175,175,175, --RLeg
   160,-0,90,   0,     180,87,180, --RArm
-  90,45, -- Waist
-  90,20,
-  90,20,
-  60, -- Lidar pan
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
 
@@ -204,6 +166,8 @@ for i, offset in ipairs(servo.rad_offset) do
   servo.step_offset[i] = offset * servo.to_steps[i]
 end
 
+end
+
 -- Clamp the radian within the min and max
 -- Used when sending packets and working with actuator commands
 local radian_clamp = function( idx, radian )
@@ -228,11 +192,6 @@ local make_joint_radian = function( idx, step )
 	local radian = servo.direction[idx] * servo.to_radians[idx] *
 	(step - servo.step_zero[idx] - servo.step_offset[idx])
 	return radian
-end
-
---------------------------------
--- Legacy API
-Body.set_syncread_enable = function()
 end
 
 ----------------------
@@ -1264,83 +1223,49 @@ if IS_TESTING then
 
   servo.min_rad = vector.new({
     -90,-80, -- Head
-    -90, 0, -90, -160,      -180,-87,-180, --LArm
+    -90, 0, 0, 0, --LArm
     -175,-175,-175,-175,-175,-175, --LLeg
     -175,-175,-175,-175,-175,-175, --RLeg
-    -90,-87,-90,-160,       -180,-87,-180, --RArm
-    -90,-45, -- Waist
-    80,80,80,
-    80,80,80,
-
-    -60, -- Lidar pan
+    -90, 0, 0, 0, --RArm
   })*DEG_TO_RAD
 
   servo.max_rad = vector.new({
     90, 80, -- Head
-    160,87,90,0,     180,87,180, --LArm
+    160, 90, 90, 90, --LArm
     175,175,175,175,175,175, --LLeg
     175,175,175,175,175,175, --RLeg
-    160,-0,90,0,     180,87,180, --RArm
-    90,79, -- Waist
-    45,45,45,
-    45,45,45,
-    60, -- Lidar pan
+    160, 90, 90, 90, --RArm
   })*DEG_TO_RAD
 
 elseif IS_WEBOTS then
 
   local jointNames = {
-    "Neck","Head", -- Head (Yaw,pitch)
-    -- Left Arm
-    "ShoulderL", "ArmUpperL", "LeftShoulderYaw",
-    "ArmLowerL","LeftWristYaw","LeftWristRoll","LeftWristYaw2",
-    -- Left leg
-    "PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",
-    -- Right leg
-    "PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
-    --Right arm
-    "ShoulderR", "ArmUpperR", "RightShoulderYaw","ArmLowerR",
-    "RightWristYaw","RightWristRoll","RightWristYaw2",
-    -- Waist
-    "TorsoYaw","TorsoPitch",
-    -- Gripper
-    "l_grip", "l_trigger",
-    "r_grip", "r_trigger",
-    -- lidar movement
-    "ChestLidarPan",
+    "HeadYaw", "HeadPitch",
+    "LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll",
+    "LHipYawPitch", "LHipRoll", "LHipPitch", "LKneePitch", "LAnklePitch", "LAnkleRoll",
+    "RHipYawPitch", "RHipRoll", "RHipPitch", "RKneePitch", "RAnklePitch", "RAnkleRoll",
+    "RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll",
   }
+  print(nJoint, #jointNames)
   assert(nJoint==#jointNames,'bad jointNames!')
 
   servo.direction = vector.new({
-    -1,-1, -- Head
-    1,1,1,  1,  -1,-1,-1, --LArm
+    1, 1, -- Head
+    1,1,1,1,  --LArm
     --[[Yaw/Roll:]] -1, 1, --[[3 Pitch:]] 1,1,1, 1, --LLeg
     --[[Yaw/Roll:]] -1, 1, --[[3 Pitch:]] 1,1,1, 1, --RLeg
-    1,1,1,  1,  -1,-1,-1, --RArm
-    -- TODO: Check the gripper
-    -1,1, -- Waist
-    1,-1, -- left gripper
-    -1,-1, -- right gripper
-
-    1, -- Lidar pan
+    1,1,1,1, --RArm
   })
   servo.rad_offset = vector.new({
     0,0, -- head
-    -90,0,0,  0,  0,0,0,
+    0,0,0,  0,
     0,0,0,0,0,0,
     0,0,0,0,0,0,
-    -90,0,0,  0,  0,0,0,
-    0,0,
-    0,0,
-    0,0,
-    60,
+    0,0,0,  0,
   })*DEG_TO_RAD
 
   -- Default configuration (toggle during run time)
-  local ENABLE_CAMERA = false
-  local ENABLE_CHEST_LIDAR  = false
-  local ENABLE_HEAD_LIDAR = false
-  local ENABLE_KINECT = false
+  local ENABLE_CAMERA = true
   local ENABLE_POSE   = false
   local ENABLE_IMU   = false
 
@@ -1374,39 +1299,17 @@ elseif IS_WEBOTS then
   -- Enable the keyboard 100ms
   webots.wb_robot_keyboard_enable( 100 )
   local key_action = {
-		h = function(override)
-			if override~=nil then en=override else en=ENABLE_HEAD_LIDAR==false end
-      if en==false then
-        print(util.color('HEAD_LIDAR disabled!','yellow'))
-        webots.wb_camera_disable(tags.head_lidar)
-        ENABLE_HEAD_LIDAR = false
-      else
-        print(util.color('HEAD_LIDAR enabled!','green'))
-        webots.wb_camera_enable(tags.head_lidar,lidar_timeStep)
-        ENABLE_HEAD_LIDAR = true
-      end
-    end,
-    l = function(override)
-			if override~=nil then en=override else en=ENABLE_CHEST_LIDAR==false end
-      if en==false then
-        print(util.color('CHEST_LIDAR disabled!','yellow'))
-        webots.wb_camera_disable(tags.chest_lidar)
-        ENABLE_CHEST_LIDAR = false
-      else
-        print(util.color('CHEST_LIDAR enabled!','green'))
-        webots.wb_camera_enable(tags.chest_lidar,lidar_timeStep)
-        ENABLE_CHEST_LIDAR = true
-      end
-    end,
     c = function(override)
       if override~=nil then en=override else en=ENABLE_CAMERA==false end
       if en==false then
         print(util.color('CAMERA disabled!','yellow'))
-        webots.wb_camera_disable(tags.head_camera)
+        webots.wb_camera_disable(tags.camera_top)
+        webots.wb_camera_disable(tags.camera_bottom)
         ENABLE_CAMERA = false
       else
         print(util.color('CAMERA enabled!','green'))
-        webots.wb_camera_enable(tags.head_camera,camera_timeStep)
+        webots.wb_camera_enable(tags.camera_top,camera_timeStep)
+        webots.wb_camera_enable(tags.camera_bottom,camera_timeStep)
         ENABLE_CAMERA = true
       end
     end,
@@ -1415,7 +1318,6 @@ elseif IS_WEBOTS then
       if en==false then
         print(util.color('POSE disabled!','yellow'))
         webots.wb_gps_disable(tags.gps)
-	  		webots.wb_compass_disable(tags.compass)
 				webots.wb_inertial_unit_disable(tags.inertialunit)
         ENABLE_POSE = false
       else
@@ -1473,25 +1375,24 @@ elseif IS_WEBOTS then
 		end
 
 		-- Add Sensor Tags
-		tags.accelerometer = webots.wb_robot_get_device("Accelerometer")
-		tags.gyro = webots.wb_robot_get_device("Gyro")
-		tags.gps = webots.wb_robot_get_device("GPS")
-		tags.compass = webots.wb_robot_get_device("Compass")
-		tags.inertialunit = webots.wb_robot_get_device("InertialUnit")
-		tags.head_camera = webots.wb_robot_get_device("HeadCamera")
-    tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
-    tags.head_lidar = webots.wb_robot_get_device("HeadLidar")
-		tags.l_fsr = webots.wb_robot_get_device("L_FSR")
-    tags.r_fsr = webots.wb_robot_get_device("R_FSR")
+		tags.accelerometer = webots.wb_robot_get_device("accelerometer")
+		tags.gyro = webots.wb_robot_get_device("gyro")
+		tags.gps = webots.wb_robot_get_device("gps")
+		tags.inertialunit = webots.wb_robot_get_device("inertial unit")
+    tags.us1 = webots.wb_robot_get_device("USSensor1")
+    tags.us2 = webots.wb_robot_get_device("USSensor2")
+    tags.us3 = webots.wb_robot_get_device("USSensor3")
+    tags.us4 = webots.wb_robot_get_device("USSensor4")
+		tags.camera_top = webots.wb_robot_get_device("CameraTop")
+    tags.camera_bottom = webots.wb_robot_get_device("CameraBottom")
+		tags.l_fsr = webots.wb_robot_get_device("LFsr")
+    tags.r_fsr = webots.wb_robot_get_device("RFsr")
 		
 		-- Enable or disable the sensors
 		key_action.i(ENABLE_IMU)
 		key_action.p(ENABLE_POSE)
 		key_action.c(ENABLE_CAMERA)
-		key_action.h(ENABLE_HEAD_LIDAR)
-		key_action.l(ENABLE_CHEST_LIDAR)
-		--key_action.k(ENABLE_KINECT)
-		--key_action.f(ENABLE_FSR)
+		key_action.f(ENABLE_FSR)
 
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
@@ -1503,8 +1404,6 @@ elseif IS_WEBOTS then
         local rad = servo.direction[idx] * val - servo.rad_offset[idx]
         jcm.sensorPtr.position[idx] = rad
         jcm.actuatorPtr.command_position[idx] = rad
-        jcm.treadPtr.position[idx] = t
-        jcm.twritePtr.command_position[idx] = t
       end
     end
 
@@ -1559,7 +1458,7 @@ elseif IS_WEBOTS then
         else
           webots.wb_motor_set_position(jtag, pos )
         end
-        jcm.twritePtr.command_position[idx] = t
+        --jcm.twritePtr.command_position[idx] = t
       end
 		end --for
 
@@ -1592,8 +1491,8 @@ elseif IS_WEBOTS then
     -- Our x is Webots z, Our y is Webots x, Our z is Webots y
     if ENABLE_POSE then
       local gps     = webots.wb_gps_get_values(tags.gps)
-      local compass = webots.wb_compass_get_values(tags.compass)
-      local angle   = math.atan2( compass[3], compass[1] )
+      --local angle   = math.atan2( compass[3], compass[1] )
+      local angle = 0
       local pose    = vector.pose{gps[3], gps[1], angle}
       --wcm.set_robot_pose( pose )
       wcm.set_robot_pose_gps( pose )
@@ -1601,7 +1500,7 @@ elseif IS_WEBOTS then
       local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
 
       --SJ: we need to remap rpy for webots
-      jcm.sensorPtr.rpy[1],jcm.sensorPtr.rpy[2],jcm.sensorPtr.rpy[3] =
+      jcm.sensorPtr.rpy[1], jcm.sensorPtr.rpy[2], jcm.sensorPtr.rpy[3] =
         rpy[2],rpy[1],-rpy[3]
 
       --[[
@@ -1620,16 +1519,16 @@ elseif IS_WEBOTS then
 				local val = webots.wb_motor_get_position( jtag )
 				local rad = servo.direction[idx] * val - servo.rad_offset[idx]
         jcm.sensorPtr.position[idx] = rad
-        jcm.treadPtr.position[idx] = t
+        --jcm.treadPtr.position[idx] = t
 			end
 		end
 
     -- Grab a camera frame
     if ENABLE_CAMERA then
-      local camera_fr = webots.to_rgb(tags.hand_camera)
-      local w = webots.wb_camera_get_width(tags.hand_camera)
-      local h = webots.wb_camera_get_height(tags.hand_camera)
-      local jpeg_fr  = jpeg.compress_rgb(camera_fr,w,h)
+      local camera_fr = webots.to_rgb(tags.camera_top)
+      local w = webots.wb_camera_get_width(tags.camera_top)
+      local h = webots.wb_camera_get_height(tags.camera_top)
+      --local jpeg_fr  = jpeg.compress_rgb(camera_fr,w,h)
     end
 
     -- Grab keyboard input, for modifying items

@@ -8,15 +8,15 @@ gps_enable = 0;
 
 -- Get webots tags:
 tags = {};
-jointNames = {"HeadYaw", "HeadPitch",
-              "LShoulderPitch", "LShoulderRoll",
-              "LElbowYaw", "LElbowRoll",
-              "LHipYawPitch", "LHipRoll", "LHipPitch",
-              "LKneePitch", "LAnklePitch", "LAnkleRoll",
+jointNames = {
+  "HeadYaw", "HeadPitch",
+  "LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll",
+  "LHipYawPitch", "LHipRoll", "LHipPitch", "LKneePitch", "LAnklePitch", "LAnkleRoll",
               "RHipYawPitch", "RHipRoll", "RHipPitch",
               "RKneePitch", "RAnklePitch", "RAnkleRoll",
               "RShoulderPitch", "RShoulderRoll",
-              "RElbowYaw", "RElbowRoll"};
+              "RElbowYaw", "RElbowRoll"
+              };
 
 nJoint = #jointNames;
 indexHead = 1;

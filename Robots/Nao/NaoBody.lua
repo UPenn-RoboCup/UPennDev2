@@ -1193,34 +1193,17 @@ end
 
 ----------------------
 -- Webots compatibility
+if IS_WEBOTS then
 
-
-if IS_TESTING then
-  print("TESTING")
-  local Config     = require'Config'
-  local simple_ipc = require'simple_ipc'
-  local jpeg       = require'jpeg'
-  local png        = require'png'
-  local udp        = require'udp'
-  local mp         = require'msgpack'
-  Body.entry = function ()
-  end
-  Body.update = function()
-
-
-
-    local t = Body.get_time()
-
-    local rad = jcm.get_actuator_command_position()
-    jcm.set_sensor_position(rad)
-
-  end
-  Body.exit=function()
-  end
-  get_time = function()
-    return global_clock
-  end
-
+  local jointNames = {
+    "HeadYaw", "HeadPitch",
+    "LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll",
+    "LHipYawPitch", "LHipRoll", "LHipPitch", "LKneePitch", "LAnklePitch", "LAnkleRoll",
+    "RHipYawPitch", "RHipRoll", "RHipPitch", "RKneePitch", "RAnklePitch", "RAnkleRoll",
+    "RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll",
+  }
+  assert(nJoint==#jointNames,'bad jointNames!')
+  
   servo.min_rad = vector.new({
     -90,-80, -- Head
     -90, 0, 0, 0, --LArm
@@ -1236,18 +1219,6 @@ if IS_TESTING then
     175,175,175,175,175,175, --RLeg
     160, 90, 90, 90, --RArm
   })*DEG_TO_RAD
-
-elseif IS_WEBOTS then
-
-  local jointNames = {
-    "HeadYaw", "HeadPitch",
-    "LShoulderPitch", "LShoulderRoll", "LElbowYaw", "LElbowRoll",
-    "LHipYawPitch", "LHipRoll", "LHipPitch", "LKneePitch", "LAnklePitch", "LAnkleRoll",
-    "RHipYawPitch", "RHipRoll", "RHipPitch", "RKneePitch", "RAnklePitch", "RAnkleRoll",
-    "RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll",
-  }
-  print(nJoint, #jointNames)
-  assert(nJoint==#jointNames,'bad jointNames!')
 
   servo.direction = vector.new({
     1, 1, -- Head
@@ -1418,8 +1389,6 @@ elseif IS_WEBOTS then
 
 		local tDelta = .001 * Body.timeStep
 
-    --Body.update_finger(tDelta)
-
 		-- Set actuator commands from shared memory
 		for idx, jtag in ipairs(tags.joints) do
 			local cmd = Body.get_actuator_command_position(idx)
@@ -1449,16 +1418,13 @@ elseif IS_WEBOTS then
 			if en>0 and jtag>0 then
         local pos = servo.direction[idx] * (new_pos + servo.rad_offset[idx])
         --SJ: Webots is STUPID so we should set direction correctly to prevent flip
-        local val = webots.wb_motor_get_position( jtag )
-
+        local val = webots.wb_motor_get_position(jtag)
         if pos>val+math.pi then
-          webots.wb_motor_set_position(jtag, pos-2*math.pi )
+          pos = pos - 2 * math.pi
         elseif pos<val-math.pi then
-          webots.wb_motor_set_position(jtag, pos+2*math.pi )
-        else
-          webots.wb_motor_set_position(jtag, pos )
+          pos = pos + 2 * math.pi
         end
-        --jcm.twritePtr.command_position[idx] = t
+        webots.wb_motor_set_position(jtag, radian_clamp(idx,pos))
       end
 		end --for
 
@@ -1519,7 +1485,6 @@ elseif IS_WEBOTS then
 				local val = webots.wb_motor_get_position( jtag )
 				local rad = servo.direction[idx] * val - servo.rad_offset[idx]
         jcm.sensorPtr.position[idx] = rad
-        --jcm.treadPtr.position[idx] = t
 			end
 		end
 

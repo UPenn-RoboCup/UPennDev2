@@ -17,7 +17,6 @@ local cam_metadata =
   Config.camera[tonumber(arg[1]) or 1]
 
 -- Libraries
-local lV    = require'libVision'
 local uvc   = require'uvc'
 local torch = require'torch'
 
@@ -30,8 +29,16 @@ local name = cam_metadata.name
 local dev = cam_metadata.dev
 
 -- Setup the Vision system
-lV.setup(w, h)
-lV.load_lut(HOME.."/Data/"..cam_metadata.lut)
+--[[
+local ImageProc = require'ImageProc'
+local ImageProc2 = require'ImageProc.ffi'
+local lut_id = 
+ImageProc2.load_lut (HOME.."/Data/"..cam_metadata.lut)
+ImageProc2.setup(w, h)
+lut_t = ImageProc2.get_lut(lut_id)
+lut = lut_t:data()
+--]]
+
 -- Open the camera
 local camera = uvc.init(dev, w, h, fmt, 1, fps)
 -- Setup the parameters
@@ -67,9 +74,11 @@ while true do
   -- Grab the image
   img, sz, cnt, t = camera:get_image()
   --t0 = unix.time()
-  -- Set into a torch container
-  lV.yuyv_to_labelA(img)
-  lV.form_labelB()
+--[[
+  labelA_t = ImageProc2.yuyv_to_label(image, lut)
+  cc_t = ImageProc2.color_count(labelA_t)
+  labelB_t = ImageProc2.block_bitor(labelA_t)
+--]]
   --t1 = unix.time()
   --print(t1-t0)
 end

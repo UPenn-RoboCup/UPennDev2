@@ -34,6 +34,11 @@ local meta_a = {
   h = h / scaleA,
   c = 'zlib',
 }
+local meta_b = {
+  w = (w / scaleA) / scaleB,
+  h = (h / scaleA) / scaleB,
+  c = 'zlib',
+}
 local meta_j = {
   w = w,
   h = h,
@@ -42,7 +47,7 @@ local meta_j = {
 
 -- nElement
 local a_sz = w / scaleA * h / scaleA
-
+local b_sz = a_sz / (scaleB * scaleB)
 
 local labelA_t, labelB_t, labelA_ud, labelB_ud
 
@@ -92,8 +97,11 @@ for i,m,r in d do
   
   -- Send on UDP
   -- Send labelA
-  lA_z = c_zlib( labelA_t:data(), a_sz, true )
-  local udp_ret, err = udp_ch:send( mp.pack(meta_a)..lA_z )
+  --lA_z = c_zlib( labelA_t:data(), a_sz, true )
+  --local udp_ret, err = udp_ch:send( mp.pack(meta_a)..lA_z )
+  -- Or Send labelB :)
+  lB_z = c_zlib( labelB_t:data(), b_sz, true )
+  local udp_ret, err = udp_ch:send( mp.pack(meta_b)..lB_z )
   -- Send JPEG image
   yuyv_j = c_yuyv:compress(yuyv_t,w,h)
   local udp_ret, err = udp_ch:send( mp.pack(meta_j)..yuyv_j )

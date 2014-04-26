@@ -20,7 +20,13 @@ local cc_d = cc_t:data()
 -- The Current Lookup table (Can be swapped dynamically)
 local luts = {}
 -- Downscaling
-local scaleA, scaleB
+local scaleA, scaleB, log_sA, log_sB
+local log2 = {
+  [1] = 0,
+  [2] = 1,
+  [4] = 2,
+  [8] = 3,
+}
 
 -- Load LookUp Table for Color -> Label
 function ImageProc.load_lut (filename)
@@ -42,27 +48,10 @@ function ImageProc.get_lut (lut_id)
   return lut_t
 end
 
--- Setup should be able to quickly switch between cameras
--- i.e. not much overhead here.
--- Resize should be expensive at most n_cameras times (if all increase the sz)
-function ImageProc.setup (w0, h0, sA, sB)
-  -- Save the scale paramter
-  scaleA = sA or 2
-  scaleB = sB or 2
-  -- Recompute the width and height of the images
-  w, h = w0, h0
-  wa, ha = w / scaleA, h / scaleA
-  wb, hb = wa / scaleB, ha / scaleB
-  -- Save the number of pixels
-  np_a, np_b = wa * ha, wb * hb
-  -- Resize as needed
-  labelA_t:resize(ha, wa)
-  labelB_t:resize(hb, wb)
-end
-
 -- Take in a pointer (or string) to the image
 -- Take in the lookup table, too
 -- Return labelA and the color count
+-- Assumes a subscale of 2 (i.e. drop every other column and row)
 -- Should be dropin for previous method
 function ImageProc.yuyv_to_label (yuyv_ptr, lut_ptr)
   -- The yuyv pointer changes each time
@@ -107,12 +96,33 @@ function ImageProc.color_count (label_t)
   return cc_t
 end
 
--- Bit OR on blocks of 2x2 to get to labelB from labelA
--- TODO: could do 4x4 blocks, too, if we add a parameter
-function ImageProc.block_bitor (label_t)
+-- Bit OR on blocks of NxN to get to labelB from labelA
+local function block_bitorN (label_t)
   -- Zero the downsampled image
   labelB_t:zero()
   local a_ptr, b_ptr = label_t:data(), labelB_t:data()
+
+  local jy, iy, ind_b, off_j
+  for jx=0,ha-1 do
+    jy = rshift(jx, log_sB)
+    off_j = jy * wb
+    for ix=0,wa-1 do
+      iy = rshift(ix, log_sB)
+      ind_b = iy + off_j
+      b_ptr[ind_b] = bor(b_ptr[ind_b], a_ptr[0])
+      a_ptr = a_ptr + 1
+    end
+  end
+
+  return labelB_t
+end
+
+-- Bit OR on blocks of 2x2 to get to labelB from labelA
+local function block_bitor2 (label_t)
+  -- Zero the downsampled image
+  labelB_t:zero()
+  local a_ptr, b_ptr = label_t:data(), labelB_t:data()
+  
   -- Offset a row
   local a_ptr1 = a_ptr + wa
   -- Start the loop
@@ -129,6 +139,7 @@ function ImageProc.block_bitor (label_t)
     a_ptr = a_ptr + wa
     a_ptr1 = a_ptr1 + wa
   end
+
   return labelB_t
 end
 
@@ -146,6 +157,31 @@ function ImageProc.color_stats ()
   for j=0,ha-1 do
     for i=0,wa-1 do
     end
+  end
+end
+
+-- Setup should be able to quickly switch between cameras
+-- i.e. not much overhead here.
+-- Resize should be expensive at most n_cameras times (if all increase the sz)
+function ImageProc.setup (w0, h0, sA, sB)
+  -- Save the scale paramter
+  scaleA = sA or 2
+  scaleB = sB or 2
+  log_sA, log_sB = log2[scaleA], log2[scaleB]
+  -- Recompute the width and height of the images
+  w, h = w0, h0
+  wa, ha = w / scaleA, h / scaleA
+  wb, hb = wa / scaleB, ha / scaleB
+  -- Save the number of pixels
+  np_a, np_b = wa * ha, wb * hb
+  -- Resize as needed
+  labelA_t:resize(ha, wa)
+  labelB_t:resize(hb, wb)
+  -- Select faster bit_or
+  if scaleB==2 then
+    ImageProc.block_bitor = block_bitor2
+  else
+    ImageProc.block_bitor = block_bitorN
   end
 end
 

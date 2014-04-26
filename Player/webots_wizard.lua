@@ -75,20 +75,25 @@ local meta_j = {
   c = 'jpeg',
 }
 
+-- Process image should essentially be the same code as camera_wizard.lua
 local function process_image(im, lut, udp)
+  -- Images to labels
   local labelA = ImageProc2.yuyv_to_label(im, lut)
   local labelB = ImageProc2.block_bitor(labelA)
-  -- Detection System
-  local cc_top = ImageProc2.color_count(labelA)
-  -- Send images to monitor
+  -- Send images and labels to monitor
   udp:send( mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ) )
   udp:send( mp.pack(meta_j)..c_yuyv:compress(im,w,h) )
+  -- Detection System
+  -- NOTE: Muse entry each time since on webots, we switch cameras
+  -- In camera wizard, we do not switch cameras, so call only once
+  lV.entry()
+  lV.update(Body.get_head_position())
 end
 
 while true do
   -- Update the body
   Body.update()
-  -- Image Processing (Must do TOP then BOTTOM fully.)
+  -- Image Processing (Must do TOP then BOTTOM fully due to to_rgb pointer)
   local im_top = Body.get_img_top()
   process_image(im_top, lut_top, udp_t)
   -- NOTE: This sleep is important for flushing buffers of udp. Not sure why...

@@ -5,15 +5,25 @@ local libVision = {}
 -- Detection and HeadTransform information
 local ImageProc = require'ImageProc'
 local T = require'libTransform'
-local trHead = T.eye()
--- Image center, as float
-local x0A, y0A, focalA
--- TODO: Should be able to load from a Config file.
--- This file should NOT require a Config file
--- Ball
+local trHead, trNeck, trNeck0, dtrCamera
+-- Camera information
+local x0A, y0A, focalA, focal_length, focal_base
+-- Object properties
 local b_diameter = 0.065
 
-function libVision.setup (w0, h0, lut, sA, sB)
+-- Load robot parameters from a Config table
+function libVision.load_robot (c_vision)
+  -- Placeholder for now
+  focal_length, focal_base = 545.6, 640
+  b_diameter = 0.065
+  -- Delta transform from neck to camera
+  dtrCamera = Transform.trans(unpack(c_vision.pCamera))
+  * Transform.rotY(c_vision.pitchCamera)
+end
+
+-- TODO: Combine entry with load_robot. Take in the config,
+-- The config should have the w, h, and scales, or just ma, na, mb, nb...
+function libVision.entry (w0, h0, sA, sB)
   -- Save the scale paramter
   scaleA = sA or 2
   scaleB = sB or 2
@@ -23,10 +33,28 @@ function libVision.setup (w0, h0, lut, sA, sB)
   wb, hb = wa/scaleB, ha/scaleB
   -- Information for the HeadTransform
   x0A, y0A = 0.5 * (wa - 1), 0.5 * (ha - 1)
-  local focal_length, focal_base = 545.6, 640
   focalA = focal_length / (focal_base / wa)
+  -- TODO: Do not assume a constant height/tilt/etc.
+  -- TODO: Use :mul so no new matrices allocated
+  trNeck0 = T.trans(-footX, 0, bodyHeight) 
+  * T.rotY(bodyTilt)
+  * T.trans(neckX, 0, neckZ)
 end
 
+-- Update the Head transform
+-- Input: Head angles
+function libVision.update (head)
+  -- TODO: Smarter memory allocation
+  -- NOTE: pitch0 is Robot specific head angle bias (for OP)
+  tNeck = tNeck0 * T.rotZ(head[1]) * T.rotY(head[2] + pitch0)
+  tHead = tNeck * dtrCamera
+  --[[
+  --update camera position
+  local vHead=vector.new({0,0,0,1});
+  vHead=tHead*vHead;
+  vHead=vHead/vHead[4];
+  --]]
+end
 
 -- Simple bbox with no tilted color stats
 -- TODO: Use the FFI for color stats, should be super fast

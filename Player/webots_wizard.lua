@@ -46,21 +46,23 @@ end
 -- Image Processing
 local ImageProc = require'ImageProc'
 local ImageProc2 = require'ImageProc.ffi'
-local lut_id = ImageProc2.load_lut (HOME.."/Data/lut_webots.raw")
-local lut = ImageProc2.get_lut(lut_id):data()
+local lut_id_t = ImageProc2.load_lut (HOME.."/Data/lut_webots.raw")
+local lut_top = ImageProc2.get_lut(lut_id_t):data()
+local lut_id_b = ImageProc2.load_lut (HOME.."/Data/lut_webots.raw")
+local lut_b = ImageProc2.get_lut(lut_id_b):data()
 local w, h, sA = 320, 240, 2
+local nA = (w / sA) * (h / sA)
 ImageProc2.setup(w, h)
 
-local a_sz = (w / sA) * (240 / sA)
-
 -- For broadcasting the labeled image
+local mp   = require'msgpack.MessagePack'
 local zlib = require'zlib.ffi'
-local c_zlib = zlib.compress_cdata
-local mp    = require'msgpack.MessagePack'
-local udp = require'udp'
-local udp_ch = udp.new_sender('127.0.0.1', 33333)
 local jpeg = require'jpeg'
+local udp  = require'udp'
+local c_zlib = zlib.compress_cdata
 local c_yuyv = jpeg.compressor'yuyv'
+local udp_t = udp.new_sender('127.0.0.1', 33333)
+local udp_b = udp.new_sender('127.0.0.1', 33334)
 
 local meta_a = {
   w = w / sA,
@@ -73,20 +75,26 @@ local meta_j = {
   c = 'jpeg',
 }
 
+local function process_image(im, lut, udp)
+  local labelA = ImageProc2.yuyv_to_label(im, lut)
+  local labelB = ImageProc2.block_bitor(labelA)
+  -- Detection System
+  local cc_top = ImageProc2.color_count(labelA)
+  -- Send images to monitor
+  udp:send( mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ) )
+  udp:send( mp.pack(meta_j)..c_yuyv:compress(im,w,h) )
+end
+
 while true do
   -- Update the body
   Body.update()
-  -- Image Processing
-  local im_top, im_btm = Body.get_images()
-  local labelA_t = ImageProc2.yuyv_to_label(im_top, lut)
-  local cc_t = ImageProc2.color_count(labelA_t)
-  local labelB_t = ImageProc2.block_bitor(labelA_t)
-  -- Send images to monitor
-  lA_z = c_zlib( labelA_t:data(), a_sz, true )
-  local udp_ret, err = udp_ch:send( mp.pack(meta_a)..lA_z )
-  -- Send JPEG image
-  --yuyv_j = c_yuyv:compress(yuyv_t,w,h)
-  --local udp_ret, err = udp_ch:send( mp.pack(meta_j)..yuyv_j )
+  -- Image Processing (Must do TOP then BOTTOM fully.)
+  local im_top = Body.get_img_top()
+  process_image(im_top, lut_top, udp_t)
+  -- NOTE: This sleep is important for flushing buffers of udp. Not sure why...
+  unix.usleep(1e4)
+  local im_b = Body.get_img_bottom()
+  process_image(im_b, lut_b, udp_b)
   
   -- Update the state machines
 	for _,my_fsm in pairs(state_machines) do local event = my_fsm.update() end
@@ -99,7 +107,6 @@ for _,my_fsm in pairs(state_machines) do
 	local cur_state_name = cur_state._NAME
 	local s = {cur_state_name,nil}
 	status[my_fsm._NAME] = s
-	--local ret = state_pub_ch:send( mp.pack(status) )
 end
 
 Body.exit()

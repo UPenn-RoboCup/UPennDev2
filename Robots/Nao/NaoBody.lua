@@ -1276,15 +1276,15 @@ if IS_WEBOTS then
   
   local camera_top, camera_bottom
   local ImageProc = require'ImageProc'
-  function Body.get_images ()
+  function Body.get_img_top ()
     local w = webots.wb_camera_get_width(tags.camera_top)
     local h = webots.wb_camera_get_height(tags.camera_top)
-    local top_yuyv = ImageProc.rgb_to_yuyv(camera_top, w, h)
-    --
+    return ImageProc.rgb_to_yuyv(webots.to_rgb(tags.camera_top), w, h)
+  end
+  function Body.get_img_bottom ()
     local w = webots.wb_camera_get_width(tags.camera_bottom)
     local h = webots.wb_camera_get_height(tags.camera_bottom)
-    local btm_yuyv = ImageProc.rgb_to_yuyv(camera_bottom, w, h)
-    return top_yuyv, btm_yuyv
+    return ImageProc.rgb_to_yuyv(webots.to_rgb(tags.camera_bottom), w, h)
   end
   
 	Body.update = function()
@@ -1391,12 +1391,6 @@ if IS_WEBOTS then
         jcm.sensorPtr.position[idx] = rad
 			end
 		end
-
-    -- Grab a camera frame
-    if ENABLE_CAMERA then
-      camera_top = webots.to_rgb(tags.camera_top)
-      camera_bottom = webots.to_rgb(tags.camera_bottom)
-    end
 
     -- Grab keyboard input, for modifying items
     local key_code = webots.wb_robot_keyboard_get_key()

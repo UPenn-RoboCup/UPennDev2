@@ -21,7 +21,6 @@ local w, h = metadata[1].w, metadata[1].h
 -- For broadcasting the labeled image
 local zlib = require'zlib.ffi'
 local c_zlib = zlib.compress_cdata
--- Send on localhost
 local mp    = require'msgpack.MessagePack'
 local udp = require'udp'
 local udp_ch = udp.new_sender('127.0.0.1', 33333)

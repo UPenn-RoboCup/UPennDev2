@@ -1,46 +1,45 @@
 clear all;
+close all;
+% Camera data for MATLAB GUI
+cams = {};
+cams{1} = {};
+cams{2} = {};
+
 % Colormap for the labeled image
 cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
 cmap = [cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
 figure(1);
 clf;
+% (top)
 % LabelA
-f_az_t = subplot(2,2,1);
-i_az_t = image(zeros(240,320));
+cams{1}.f_lA = subplot(2,2,1);
+cams{1}.im_lA = image(zeros(1));
 colormap(cmap);
 % yuyv
-subplot(2,2,2);
-i_j_t = image(zeros(480,640));
+cams{1}.f_yuyv = subplot(2,2,2);
+cams{1}.im_yuyv = image(zeros(1));
 hold on;
-p_j_t = plot([120],[160],'m*');
+cams{1}.p_ball = plot([],[],'m*');
 hold off;
-% LabelA (bottom)
-subplot(2,2,3);
-i_az_b = image(zeros(120,160));
+% (bottom)
+% LabelA 
+cams{2}.f_lA = subplot(2,2,3);
+cams{2}.im_lA = image(zeros(1));
 colormap(cmap);
 % yuyv (bottom)
-subplot(2,2,4);
-i_j_b = image(zeros(240,320));
+cams{2}.f_yuyv = subplot(2,2,4);
+cams{2}.im_yuyv = image(zeros(1));
+hold on;
+cams{2}.p_ball = plot([],[],'m*');
+hold off;
 %
 drawnow;
 
 % Add the monitor
-top_fd = udp_recv('new', 33333);
-s_top = zmq( 'fd', top_fd );
-bottom_fd  = udp_recv('new', 33334);
-s_bottom = zmq( 'fd', bottom_fd );
-% Cameras
-cams = {};
-cams{1} = {};
-cams{1}.labelA = i_az_t;
-cams{1}.f_lA = f_az_t;
-cams{1}.yuyv = i_j_t;
-cams{1}.fd = top_fd;
-%
-cams{2} = {};
-cams{2}.labelA = i_az_b;
-cams{2}.yuyv = i_j_b;
-cams{2}.fd = bottom_fd;
+cams{1}.fd = udp_recv('new', 33333);
+s_top = zmq( 'fd', cams{1}.fd );
+cams{2}.fd = udp_recv('new', 33334);
+s_bottom = zmq( 'fd', cams{2}.fd );
 
 while 1
     % 1 second timeout
@@ -57,19 +56,20 @@ while 1
         raw = udp_data(offset+1:end); % This must be uint8
         compr_t = char(metadata.c);
         if strcmp(compr_t,'jpeg')
-            jimg = djpeg(raw);
-            set(cam.yuyv,'Cdata', jimg);
+            set(cam.im_yuyv,'Cdata', djpeg(raw));
+            xlim(cam.f_yuyv,[0 metadata.w]);
+            ylim(cam.f_yuyv,[0 metadata.h]);
         elseif strcmp(compr_t,'zlib')
             Az = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';
-            set(cam.labelA,'Cdata', Az);
+            set(cam.im_lA,'Cdata', Az);
             xlim(cam.f_lA,[0 metadata.w]);
             ylim(cam.f_lA,[0 metadata.h]);
             if isfield(metadata, 'ball') && isa(metadata.ball,'double')
-                set(p_j_t,'Xdata', 2*metadata.ball(1));
-                set(p_j_t,'Ydata', 2*metadata.ball(2));
+                set(cam.p_ball,'Xdata', 2*metadata.ball(1));
+                set(cam.p_ball,'Ydata', 2*metadata.ball(2));
             else
-                set(p_j_t,'Xdata', 0);
-                set(p_j_t,'Ydata', 0);
+                set(cam.p_ball,'Xdata', []);
+                set(cam.p_ball,'Ydata', []);
             end
         end
         drawnow;

@@ -6,7 +6,7 @@ REPO=RoboCup
 # This is for RoboCup old code
 mkdir -p robot/RoboCup/Player/Lib
 # Robot
-find RoboCup/Lib/Platform/Nao \( -regex '.*.so' -or -regex '.*.lua' \) -exec cp -v '{}' robot/RoboCup/Player/Lib/ \;
+find RoboCup/Lib/Platform/NaoV4 \( -regex '.*.so' -or -regex '.*.lua' \) -exec cp -v '{}' robot/RoboCup/Player/Lib/ \;
 # Image
 find RoboCup/Lib/Modules/ImageProc \( -regex '.*.so' -or -regex '.*.lua' \) -exec cp -v '{}' robot/RoboCup/Player/Lib/ \;
 # Util

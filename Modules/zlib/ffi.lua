@@ -30,7 +30,6 @@ end
 function zlib.compress_cdata (ptr, len, to_str)
   local n = z.compressBound(len)
   if n>nBound then
-    print("Bound:", n, nBound)
     nBound = n
     buf = ffi.new("uint8_t[?]", nBound)
     buflen = ffi.new("unsigned long[1]", nBound)

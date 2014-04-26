@@ -5,7 +5,7 @@ cmap = [cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
 figure(1);
 clf;
 % LabelA
-subplot(2,2,1);
+f_az_t = subplot(2,2,1);
 i_az_t = image(zeros(240,320));
 colormap(cmap);
 % yuyv
@@ -33,6 +33,7 @@ s_bottom = zmq( 'fd', bottom_fd );
 cams = {};
 cams{1} = {};
 cams{1}.labelA = i_az_t;
+cams{1}.f_lA = f_az_t;
 cams{1}.yuyv = i_j_t;
 cams{1}.fd = top_fd;
 %
@@ -61,7 +62,9 @@ while 1
         elseif strcmp(compr_t,'zlib')
             Az = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';
             set(cam.labelA,'Cdata', Az);
-            if isa(metadata.ball,'double')
+            xlim(cam.f_lA,[0 metadata.w]);
+            ylim(cam.f_lA,[0 metadata.h]);
+            if isfield(metadata, 'ball') && isa(metadata.ball,'double')
                 set(p_j_t,'Xdata', 2*metadata.ball(1));
                 set(p_j_t,'Ydata', 2*metadata.ball(2));
             else

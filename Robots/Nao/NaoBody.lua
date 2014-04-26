@@ -1273,6 +1273,20 @@ if IS_WEBOTS then
     -- Step only
     if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
   end
+  
+  local camera_top, camera_bottom
+  local ImageProc = require'ImageProc'
+  function Body.get_images ()
+    local w = webots.wb_camera_get_width(tags.camera_top)
+    local h = webots.wb_camera_get_height(tags.camera_top)
+    local top_yuyv = ImageProc.rgb_to_yuyv(camera_top, w, h)
+    --
+    local w = webots.wb_camera_get_width(tags.camera_bottom)
+    local h = webots.wb_camera_get_height(tags.camera_bottom)
+    local btm_yuyv = ImageProc.rgb_to_yuyv(camera_bottom, w, h)
+    return top_yuyv, btm_yuyv
+  end
+  
 	Body.update = function()
 
     local t = Body.get_time()
@@ -1380,10 +1394,8 @@ if IS_WEBOTS then
 
     -- Grab a camera frame
     if ENABLE_CAMERA then
-      local camera_fr = webots.to_rgb(tags.camera_top)
-      local w = webots.wb_camera_get_width(tags.camera_top)
-      local h = webots.wb_camera_get_height(tags.camera_top)
-      --local jpeg_fr  = jpeg.compress_rgb(camera_fr,w,h)
+      camera_top = webots.to_rgb(tags.camera_top)
+      camera_bottom = webots.to_rgb(tags.camera_bottom)
     end
 
     -- Grab keyboard input, for modifying items

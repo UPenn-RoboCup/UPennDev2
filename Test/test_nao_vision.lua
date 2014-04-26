@@ -98,7 +98,7 @@ for i,m,r in d do
   -- Send JPEG image
   yuyv_j = c_yuyv:compress(yuyv_t,w,h)
   local udp_ret, err = udp_ch:send( mp.pack(meta_j)..yuyv_j )
-  --unix.usleep(5e5)
+  unix.usleep(5e5)
 end
 -- Loop forever
 end

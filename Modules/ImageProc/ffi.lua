@@ -13,104 +13,106 @@ local bor    = bit.bor
 local w, h, wa, ha, wb, hb
 -- Form the labelA and labelB tensors
 local labelA_t, labelB_t = torch.ByteTensor(), torch.ByteTensor()
--- torch FFI raw data access
-local lA_d, lB_d
 -- Color Count always the same, as 8 bits for 8 colors means 256 color combos
 local cc_t = torch.IntTensor(256)
 -- The pointer will not change for this one
 local cc_d = cc_t:data()
 -- The Current Lookup table (Can be swapped dynamically)
-local luts, lut_ns, lut_t, lut_d = {}, {}
+local luts = {}
 -- Downscaling
 local scaleA, scaleB
+
+-- Load LookUp Table for Color -> Label
+function ImageProc.load_lut (filename)
+  local f_lut = torch.DiskFile( filename , 'r')
+  f_lut.binary(f_lut)
+  -- We know the size of the LUT, so load the storage
+  local lut_s = f_lut:readByte(262144)
+  f_lut:close()
+  -- Form a tensor for us
+  lut_t = torch.ByteTensor(lut_s)
+  table.insert(luts,lut_t)
+  -- Return the id of this LUT
+  return #luts
+end
+-- Return the pointer to the LUT
+function ImageProc.get_lut (lut_id)
+  local lut_t = luts[lut_id]
+  if not lut_t then return end
+  return lut_t
+end
 
 -- Setup should be able to quickly switch between cameras
 -- i.e. not much overhead here.
 -- Resize should be expensive at most n_cameras times (if all increase the sz)
-function ImageProc.setup (w0, h0, lut, sA, sB)
+function ImageProc.setup (w0, h0, sA, sB)
   -- Save the scale paramter
   scaleA = sA or 2
   scaleB = sB or 2
   -- Recompute the width and height of the images
   w, h = w0, h0
-  wa, ha = w/scaleA, h/scaleA
-  wb, hb = wa/scaleB, ha/scaleB
+  wa, ha = w / scaleA, h / scaleA
+  wb, hb = wa / scaleB, ha / scaleB
+  -- Save the number of pixels
+  np_a, np_b = wa * ha, wb * hb
   -- Resize as needed
   labelA_t:resize(ha, wa)
   labelB_t:resize(hb, wb)
-  -- Raw data access
-  lA_d, lB_d = labelA_t:data(), labelB_t:data()
-  -- Lookup Table for Color -> Label
-  if type(lut)=='number' then
-    lut_t = luts[lut]
-  else
-    -- Check if already loaded
-    local loaded
-    for i,name in ipairs(lut_ns) do
-      if lut==name then
-        loaded = i
-        break
-      end
-    end
-    if loaded then
-      lut_t = luts[i]
-    else
-      local f_lut = torch.DiskFile( fname , 'r')
-      f_lut.binary(f_lut)
-      -- We know the size of the LUT
-      local lut_s = f_lut:readByte(262144)
-      f_lut:close()
-      -- Form a tensor for us
-      lut_t = torch.ByteTensor(lut_s)
-      table.insert(luts,lut_t)
-      table.insert(lut_ns,lut)
-    end
-  end  
-  -- Set the LUT Raw data
-  lut_d = lut_t:data()
 end
 
 -- Take in a pointer (or string) to the image
+-- Take in the lookup table, too
 -- Return labelA and the color count
-function ImageProc.yuyv_to_label (yuyv_ptr)
+-- Should be dropin for previous method
+function ImageProc.yuyv_to_label (yuyv_ptr, lut_ptr)
   -- The yuyv pointer changes each time
   -- Cast the lightuserdata to cdata
   local yuyv_d = ffi.cast("uint32_t*", yuyv_ptr)
-  -- Reset the color count
-  cc_t:zero()
+  -- Set the LUT Raw data
+  local lut_d = ffi.cast("uint8_t*", lut_ptr)
   -- Temporary variables for the loop
   -- NOTE: 4 bytes yields 2 pixels, so stride of (4/2)*w
-  local a_ptr, yuyv_ptr, stride, index, cdt = lA_d, yuyv_d, w / 2
+  local a_ptr, stride, yuyv = labelA_t:data(), w / 2
   for j=0,ha-1 do
     for i=0,wa-1 do
-      index = bor(
-        rshift(band(yuyv_ptr[0], 0xFC000000), 26),
-        rshift(band(yuyv_ptr[0], 0x0000FC00), 4),
-        lshift(band(yuyv_ptr[0], 0xFC), 10)
-      )
-      cdt = lut_d[index]
-      --if cdt~=0 then print('cdt',cdt,index) end
-      -- Increment the color count
-      cc_d[cdt] = cc_d[cdt] + 1
+      yuyv = yuyv_d[0]
+      -- Set the label 
+      a_ptr[0] = lut_d[bor(
+        rshift(band(yuyv, 0xFC000000), 26),
+        rshift(band(yuyv, 0x0000FC00), 4),
+        lshift(band(yuyv, 0xFC), 10)
+      )]
       -- Move the labelA pointer
-      a_ptr[0] = cdt
       a_ptr = a_ptr + 1
       -- Move the image pointer
-      yuyv_ptr = yuyv_ptr + 1
+      yuyv_d = yuyv_d + 1
     end
-    -- stride to next
-    yuyv_ptr = yuyv_ptr + stride
+    -- stride to next line
+    yuyv_d = yuyv_d + stride
   end
   --
-  return labelA_t, cc_t
+  return labelA_t
+end
+
+function ImageProc.color_count (label_t)
+  -- Reset the color count
+  cc_t:zero()
+  -- Loop variables
+  local l_ptr, color = label_t:data()
+  for i=0,np_a-1 do
+    color = l_ptr[0]
+    cc_d[color] = cc_d[color] + 1
+    l_ptr = l_ptr + 1
+  end
+  return cc_t
 end
 
 -- Bit OR on blocks of 2x2 to get to labelB from labelA
 -- TODO: could do 4x4 blocks, too, if we add a parameter
-function ImageProc.block_bitor ()
+function ImageProc.block_bitor (label_t)
   -- Zero the downsampled image
   labelB_t:zero()
-  local a_ptr, b_ptr = lA_d, lB_d
+  local a_ptr, b_ptr = label_t:data(), labelB_t:data()
   -- Offset a row
   local a_ptr1 = a_ptr + wa
   -- Start the loop
@@ -138,7 +140,7 @@ function ImageProc.color_stats ()
 	local area = 0
 	local minI, maxI = width-1, 0
 	local minJ, maxJ = height-1, 0
-	local sumI 0, sumJ = 0, 0
+	local sumI, sumJ = 0, 0
 	local sumII, sumJJ, sumIJ = 0, 0, 0
   
   for j=0,ha-1 do

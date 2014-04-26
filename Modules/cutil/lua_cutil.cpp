@@ -675,6 +675,14 @@ static int lua_bitrshift(lua_State *L) {
 }
 
 #ifdef TORCH
+static int lua_torch_to_userdata (lua_State *L) {
+  /* Grab the destination tensor */
+  const char* t_name = luaT_typename(L,1);
+  THByteTensor *b_t = (THByteTensor *)luaT_checkudata(L, 1, t_name);
+  lua_pushlightuserdata(L,b_t->storage->data);
+  return 1;
+}
+
 /* Copies string data to the torch tensor */
 static int lua_string2tensor(lua_State *L) {
   /* Grab the source string */
@@ -823,6 +831,7 @@ static const luaL_Reg cutil_lib [] = {
 #ifdef TORCH
   {"string2tensor", lua_string2tensor},
 	{"string2storage", lua_string2storage},
+  {"torch_to_userdata", lua_torch_to_userdata},
 #endif
   {NULL, NULL}
 };

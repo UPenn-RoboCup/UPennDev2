@@ -2,6 +2,11 @@ dofile'../include.lua'
 local libLog = require'libLog'
 local torch = require'torch'
 local util = require'util'
+local cutil = require'cutil'
+-- Test the old ImageProc
+local ImageProc = require'ImageProc'
+local ImageProc2 = require'ImageProc.ffi'
+-- Test Ball Detection
 local lV = require'libVision'
 
 lut = 'nao3'
@@ -12,16 +17,10 @@ local metadata = replay:unroll_meta()
 print('Unlogging',#metadata,'images')
 --
 local w, h = metadata[1].w, metadata[1].h
-lV.setup(w, h)
-lV.load_lut(HOME.."/Data/lut_"..lut..".raw")
-
-local labelA_t, labelB_t = lV.get_labels()
 
 -- For broadcasting the labeled image
 local zlib = require'zlib.ffi'
 local c_zlib = zlib.compress_cdata
-local a_sz = labelA_t:nElement()
-local lA_d = labelA_t:data()
 -- Send on localhost
 local mp    = require'msgpack.MessagePack'
 local udp = require'udp'
@@ -29,9 +28,11 @@ local udp_ch = udp.new_sender('127.0.0.1', 33333)
 local jpeg = require'jpeg'
 local c_yuyv = jpeg.compressor'yuyv'
 
+local scaleA, scaleB = 2, 2
+
 local meta_a = {
-  w = labelA_t:size(2),
-  h = labelA_t:size(1),
+  w = w / scaleA,
+  h = h / scaleA,
   c = 'zlib',
 }
 local meta_j = {
@@ -40,30 +41,64 @@ local meta_j = {
   c = 'jpeg',
 }
 
+-- nElement
+local a_sz = w / scaleA * h / scaleA
+
+
+local labelA_t, labelB_t, labelA_ud, labelB_ud
+
+-- Load the one colortable
+local lut_id = ImageProc2.load_lut (HOME.."/Data/lut_"..lut..".raw")
+ImageProc2.setup(w, h)
+lut_t = ImageProc2.get_lut(lut_id)
+lut_ud = cutil.torch_to_userdata(lut_t) 
+lut = lut_t:data()
+
 while true do
 local d = replay:log_iter(metadata,'yuyv')
-local meta, yuyv_t
+local meta, yuyv_t, image, t0, t1
 for i,m,r in d do
-	local t0 = unix.time()
+	t0 = unix.time()
 	meta = m
-	yuyv_t = torch.ByteTensor(r:storage(),1,torch.LongStorage({h,w}))
-  local t0 = unix.time()
-  -- Set into a torch container
-  lV.yuyv_to_labelA(yuyv_t:data())
-  lV.form_labelB()
+  
+  -- Form the images from the log
+	--yuyv_t = torch.ByteTensor(r:storage(),1,torch.LongStorage({h,2*w}))
+  yuyv_t = torch.ByteTensor(r:storage())
+  image = cutil.torch_to_userdata(yuyv_t)
+  
+  -- Test the old method
+  ----[[
+  t0 = unix.time()
+  labelA_ud = ImageProc.yuyv_to_label(image, lut_ud, w, h, scaleA)
+  cc = ImageProc.color_count(labelA_ud, a_sz)
+  labelB_ud = ImageProc.block_bitor(labelA_ud, w, h, scaleB, scaleB)
+  t1 = unix.time()
+  print('Old Processing Time (ms)', 1e3*(t1-t0))
+  --]]
+  
+  -- Test the new method
+  t0 = unix.time()
+  labelA_t = ImageProc2.yuyv_to_label(image, lut)
+  cc_t = ImageProc2.color_count(labelA_t)
+  labelB_t = ImageProc2.block_bitor(labelA_t)
+  t1 = unix.time()
+  print('New Processing Time (ms)', 1e3*(t1-t0))
+  
+  -- Vision pipeline
+  --[[
   local ball = lV.ball()
   if type(ball)=='string' then print(ball) end
   meta_a.ball = ball
-  local t1 = unix.time()
+  --]]
+  
   -- Send on UDP
   -- Send labelA
-  lA_z = c_zlib( lA_d, a_sz, true )
+  lA_z = c_zlib( labelA_t:data(), a_sz, true )
   local udp_ret, err = udp_ch:send( mp.pack(meta_a)..lA_z )
   -- Send JPEG image
-  yuyv_j = c_yuyv:compress(yuyv_t)
+  yuyv_j = c_yuyv:compress(yuyv_t,w,h)
   local udp_ret, err = udp_ch:send( mp.pack(meta_j)..yuyv_j )
-	print('Processing Time (ms)', 1e3*(t1-t0))
-  unix.usleep(5e5)
+  --unix.usleep(5e5)
 end
 -- Loop forever
 end

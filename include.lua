@@ -30,6 +30,8 @@ RAD_TO_DEG = 180/math.pi
 io.stdout:setvbuf("no")
 
 -- include C modules to cpath
+-- For copying to the Nao and just dumping into one directory
+package.cpath = HOME..'/Lib/?.so;'..package.cpath
 -- getch.so is in Modules/getch/ (Modules/unix/unix.so -> Modules/?/?.so)
 package.cpath = HOME..'/Modules/?/?.so;'..package.cpath
 -- Sometimes there are helper lua files (even for ffi, but still experimental)

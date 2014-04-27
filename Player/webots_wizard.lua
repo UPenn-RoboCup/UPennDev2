@@ -76,6 +76,13 @@ local meta_j = {
   c = 'jpeg',
 }
 
+-- Add Motion from old code
+package.path = HOME..'/Player/Motion/?.lua;'..package.path
+package.path = HOME..'/Player/Motion/Walk/?.lua;'..package.path
+Motion = require'Motion'
+Motion.entry()
+Motion.event'standup'
+
 -- Process image should essentially be the same code as camera_wizard.lua
 -- NOTE: This sleep is important for flushing buffers of udp. Not sure why...
 local function process_image(im, lut, udp, id)
@@ -114,11 +121,15 @@ end
 while true do
   -- Update the body
   Body.update()
+  
   -- Image Processing (Must do TOP then BOTTOM fully due to to_rgb pointer)
   local im_top = Body.get_img_top()
   process_image(im_top, lut_top, udp_t, 1)
   local im_b = Body.get_img_bottom()
   process_image(im_b, lut_b, udp_b, 2)
+  
+  -- Motion update
+  Motion.update()
   
   -- Update the state machines
 	for _,my_fsm in pairs(state_machines) do local event = my_fsm.update() end

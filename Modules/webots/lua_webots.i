@@ -17,11 +17,9 @@
 #include <webots/emitter.h>
 #include <webots/gps.h>
 #include <webots/gyro.h>
-#include <webots/inertial_unit.h>
 #include <webots/led.h>
 #include <webots/light_sensor.h>
 #include <webots/microphone.h>
-#include <webots/motor.h>
 #include <webots/nodes.h>
 #include <webots/pen.h>
 #include <webots/radio.h>
@@ -140,14 +138,17 @@ unsigned char * to_rgb( int tag ) {
 
 %include <webots/gps.h>
 %include <webots/gyro.h>
-%include <webots/inertial_unit.h>
 %include <webots/led.h>
 %include <webots/light_sensor.h>
 %include <webots/microphone.h>
-%include <webots/motor.h>
 %include <webots/nodes.h>
 %include <webots/pen.h>
 %include <webots/radio.h>
+
+/*
+%include <webots/inertial_unit.h>
+%include <webots/motor.h>
+*/
 
 # Receiver:
 %typemap(out) const void * {

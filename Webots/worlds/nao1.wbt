@@ -1,3 +1,4 @@
+#VRML_SIM V6.0 utf8
 #VRML_SIM V7.4.0 utf8
 WorldInfo {
   info [
@@ -54,7 +55,8 @@ DEF BLUE_GOAL Goal {
 }
 DEF BALL Ball {
 }
-DEF PLAYER_1_0 Nao {
+#DEF PLAYER_1_0 Nao {
+DEF PLAYER_1_0 Nao_H21_V40GPS {
   translation -2.325 0.35 -0.35
   degreeOfFreedom 21
   color 0.8 0.8 0.8

@@ -14,8 +14,11 @@ Config.dev.gender       = 'boy'
 Config.dev.body         = 'NaoBody'
 Config.dev.game_control = 'OPGameControl'
 Config.dev.team         = 'TeamNSL'
-Config.dev.kick         = 'NewNewKick'
-Config.dev.walk         = 'HumbleWalk'
+Config.dev.kick         = 'ZMPStepKick'
+Config.dev.walk         = 'CleanWalk'
+
+-- OLD SUPPORT
+Config.dev.kinematics = 'NaoKinematics'
 
 --------------------
 -- State Machines --

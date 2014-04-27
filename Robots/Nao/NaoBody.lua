@@ -89,6 +89,11 @@ if IS_WEBOTS then
   Body.timeStep = timeStep
   get_time = webots.wb_robot_get_time
   Body.get_time = webots.wb_robot_get_time
+  
+  -- For IMU use
+  local tDelta = .001 * Body.timeStep
+  local imuAngle = {0, 0};
+  local aImuFilter = 1 - math.exp(-tDelta/0.5);
 
   -- Setup the webots tags
   local tags = {}
@@ -117,13 +122,22 @@ if IS_WEBOTS then
       if en==false then
         print(util.color('POSE disabled!','yellow'))
         webots.wb_gps_disable(tags.gps)
-				webots.wb_inertial_unit_disable(tags.inertialunit)
+        if tags.compass then
+          webots.wb_compass_disable(tags.compass)
+        end
+        if webots.wb_inertial_unit_disable then
+				  webots.wb_inertial_unit_disable(tags.inertialunit)
+        end
         ENABLE_POSE = false
       else
         print(util.color('POSE enabled!','green'))
         webots.wb_gps_enable(tags.gps, timeStep)
-	  		webots.wb_compass_enable(tags.compass, timeStep)
-				webots.wb_inertial_unit_enable(tags.inertialunit, timeStep)
+        if tags.compass then
+	  		  webots.wb_compass_enable(tags.compass, timeStep)
+        end
+        if webots.wb_inertial_unit_enable then
+				  webots.wb_inertial_unit_enable(tags.inertialunit, timeStep)
+        end
         ENABLE_POSE = true
       end
     end,
@@ -164,8 +178,13 @@ if IS_WEBOTS then
 		for i,v in ipairs(jointNames) do
       local tag = webots.wb_robot_get_device(v)
 			if tag>0 then
-				webots.wb_motor_enable_position(tag, timeStep)
-        webots.wb_motor_set_velocity(tag, 0.5);
+        -- For webots versions
+        if webots.wb_motor_enable_position then
+          webots.wb_motor_enable_position(tag, timeStep)
+          webots.wb_motor_set_velocity(tag, 0.5);
+        else
+          webots.wb_servo_enable_position(tag, timeStep);
+        end
         tags.joints[i] = tag
 			end
 		end
@@ -212,7 +231,7 @@ if IS_WEBOTS then
 
     local t = Body.get_time()
 
-		local tDelta = .001 * Body.timeStep
+		
 
 		-- Set actuator commands from shared memory
 		for idx, jtag in ipairs(tags.joints) do
@@ -240,13 +259,22 @@ if IS_WEBOTS then
 			if jtag>0 then
         local pos = new_pos
         --SJ: Webots is STUPID so we should set direction correctly to prevent flip
-        local val = webots.wb_motor_get_position(jtag)
+        local val
+        if webots.wb_motor_get_position then
+          val = webots.wb_motor_get_position(jtag)
+        else
+          val = webots.wb_servo_get_position(jtag)
+        end
         if pos>val+math.pi then
           pos = pos - 2 * math.pi
         elseif pos<val-math.pi then
           pos = pos + 2 * math.pi
         end
-        webots.wb_motor_set_position(jtag, pos)
+        if webots.wb_motor_set_position then
+          webots.wb_motor_set_position(jtag, pos)
+        else
+          webots.wb_servo_set_position(jtag, pos)
+        end
       end
 		end --for
 
@@ -254,18 +282,29 @@ if IS_WEBOTS then
 		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
 
     if ENABLE_IMU then
-      -- Accelerometer data (verified)
       local accel = webots.wb_accelerometer_get_values(tags.accelerometer)
+      local gyro = webots.wb_gyro_get_values(tags.gyro)
+      -- Accelerometer data (verified)
+      --[[
       jcm.sensorPtr.accelerometer[1] = (accel[1]-512)/128
       jcm.sensorPtr.accelerometer[2] = (accel[2]-512)/128
       jcm.sensorPtr.accelerometer[3] = (accel[3]-512)/128
-
+      --]]
       -- Gyro data (verified)
-      local gyro = webots.wb_gyro_get_values(tags.gyro)
-
+      --[[
       jcm.sensorPtr.gyro[1] = -(gyro[1]-512)/512*39.24
       jcm.sensorPtr.gyro[2] = -(gyro[2]-512)/512*39.24
       jcm.sensorPtr.gyro[3] = (gyro[3]-512)/512*39.24
+      --]]
+      
+      local gAccel = 9.80;
+      local accX = accel[2]/gAccel;
+      local accY = -accel[1]/gAccel;
+      if ((accX > -1) and (accX < 1) and (accY > -1) and (accY < 1)) then
+        imuAngle[1] = imuAngle[1] + aImuFilter*(math.asin(accX) - imuAngle[1]);
+        imuAngle[2] = imuAngle[2] + aImuFilter*(math.asin(accY) - imuAngle[2]);
+      end
+      
     end
 
     -- FSR
@@ -322,11 +361,16 @@ if IS_WEBOTS then
     else
       local t = {};
       for i = 1,nJoint do
-        t[i] = webots.wb_motor_get_position(tags.joints[i]);
+        if webots.wb_motor_get_position then
+          t[i] = webots.wb_motor_get_position(tags.joints[i])
+        else
+          t[i] = webots.wb_servo_get_position(tags.joints[i])
+        end
       end
       return t;
     end
   end
+  Body.get_sensor_position = get_sensor_position
   
   local function set_actuator_command(a, index)
     index = index or 1;
@@ -338,6 +382,7 @@ if IS_WEBOTS then
       end
     end
   end
+  Body.set_actuator_command = set_actuator_command
   
   local function get_actuator_command(index)
     if index then
@@ -348,6 +393,17 @@ if IS_WEBOTS then
         t[i] = actuator.command[i]
       end
       return t
+    end
+  end
+  
+  local function set_actuator_hardness(a, index)
+    index = index or 1;
+    if (type(a) == "number") then
+      actuator.hardness[index] = a;
+    else
+      for i = 1,#a do
+        actuator.hardness[index+i-1] = a[i];
+      end
     end
   end
   
@@ -375,8 +431,15 @@ if IS_WEBOTS then
   function Body.set_head_command(val)
     set_actuator_command(val, indexHead);
   end
+  
+  -- Totally unsure why this is here...
+  local commanded_joint_angles = vector.zeros(nJoint)
+  Body.commanded_joint_angles = commanded_joint_angles
   function Body.set_lleg_command(val)
     set_actuator_command(val, indexLLeg);
+    for i=1,#val do
+      commanded_joint_angles[6+i] = val[i];
+    end
   end
   function Body.set_rleg_command(val)
     set_actuator_command(val, indexRLeg);
@@ -437,7 +500,78 @@ if IS_WEBOTS then
   end
   function Body.request_rleg_position()
   end
+  
+  function Body.set_body_hardness(val)
+    if (type(val) == "number") then
+      val = val*vector.ones(nJoint);
+    end
+    set_actuator_hardness(val);
+  end
+  function Body.set_head_hardness(val)
+    if (type(val) == "number") then
+      val = val*vector.ones(nJointHead);
+    end
+    set_actuator_hardness(val, indexHead);
+  end
+  function Body.set_larm_hardness(val)
+    if (type(val) == "number") then
+      val = val*vector.ones(nJointLArm);
+    end
+    set_actuator_hardness(val, indexLArm);
+  end
+  function Body.set_rarm_hardness(val)
+    if (type(val) == "number") then
+      val = val*vector.ones(nJointRArm);
+    end
+    set_actuator_hardness(val, indexRArm);
+  end
+  function Body.set_lleg_hardness(val)
+    if (type(val) == "number") then
+      val = val*vector.ones(nJointLLeg);
+    end
+    set_actuator_hardness(val, indexLLeg);
+  end
+  function Body.set_rleg_hardness(val)
+    if (type(val) == "number") then
+      val = val*vector.ones(nJointRLeg);
+    end
+    set_actuator_hardness(val, indexRLeg);
+  end
+  function Body.set_waist_hardness(val)
+  end
 
+  function Body.set_actuator_us()
+  end
+  function Body.get_sensor_usLeft()
+    return vector.zeros(10);
+  end
+  function Body.get_sensor_usRight()
+    return vector.zeros(10);
+  end
+  
+  function Body.set_syncread_enable(val)
+  end
+  
+  function Body.get_sensor_imuAngle(index)
+    if not index then
+      return imuAngle;
+    else
+      return imuAngle[index];
+    end
+  end
+  
+  function Body.get_sensor_imuGyrRPY()
+    -- TODO: Reimplement this
+    --[[
+    imuGyrRaw = get_sensor_imuGyr();
+    gyro_roll = -(imuGyrRaw[1]-gyro0[1]);
+    gyro_pitch = -(imuGyrRaw[2]-gyro0[2]);
+    gyrRPY = vector.new({gyro_roll, gyro_pitch, 0});
+    return gyrRPY;
+    --]]
+    return vector.zeros(3)
+  end
+  
 end
 
 Body.Kinematics = Kinematics

@@ -127,8 +127,9 @@ local function process_image(im, lut, id)
   lV.entry(Config.vision[id])
   lV.update(Body.get_head_position())
   local ball = lV.ball(labelA, labelB, cc)
-  local goal = lV.goal(labelA, labelB, cc)
-  print('\ngoal',goal, id)
+  local fail_msg, goals = lV.goal(labelA, labelB, cc)
+  print('\nCamera '..id..': '..#goals..' goals.')
+  print(fail_msg)
   
   -- Send the detection information
   meta_detect.ball = ball

@@ -141,32 +141,52 @@ end
 
 -- TODO: Allow the loop to run many times
 function libVision.goal (labelA_t, labelB_t, cc_t)
+  -- Form the initial goal check
   local postB = ImageProc.goal_posts(labelB_t, color.yellow, th_nPostB)
-  if not postB then return'None detected' end
+  if not postB then return'None detected', {} end
+  -- Now process each goal post
+  -- Store failures in the array
+  local failures, successes = {}, {}
   for i, post in ipairs(postB) do
-    local postStats = check_prop(color.yellow, post, 25, 0.35, labelA_t)
-    if type(postStats)=='string' then return string.format("Failed %s", propsA) end
+    local fail, has_stats = {}, true
+    local postStats = check_prop(color.yellow, post, 25, 0, labelA_t)
+    if type(postStats)=='string' then
+      table.insert(fail, propsA)
+    else
     -- TODO: Add lower goal post bbox check
-    if math.abs(postStats.orientation) < 60*DEG_TO_RAD then
-      return'Orientation'
+      -- Orientation check
+      if math.abs(postStats.orientation) < 60*DEG_TO_RAD then
+        table.insert(fail, 'Orientation '..postStats.orientation)
+      end
+      -- Fill extent check
+      local extent = postStats.area / (postStats.axisMajor * postStats.axisMinor)
+      if extent < 0.35 then
+        table.insert(fail, 'Fill Extent '..extent)
+      end
+      -- Aspect Ratio check
+      local aspect = postStats.axisMajor / postStats.axisMinor;
+      if (aspect < .5) or (aspect > 15) then
+        table.insert(fail, 'Aspect Ratio '..aspect)
+      end
+      -- Edge Margin
+      local leftPoint= postStats.centroid[1] - postStats.axisMinor / 2
+      local rightPoint= postStats.centroid[1] + postStats.axisMinor / 2
+      local margin = math.min(leftPoint, wa - rightPoint)
+      if margin <= 5 then
+        table.insert(fail, 'Edge Margin '..margin)
+      end
     end
-    -- Fill extent check
-    local extent = postStats.area / (postStats.axisMajor * postStats.axisMinor)
-    if extent < 0.35 then return'Fill Extent' end
-    -- Aspect Ratio check
-    local aspect = postStats.axisMajor / postStats.axisMinor;
-    if (aspect < .5) or (aspect > 15) then return'Aspect Ratio' end
-    -- Edge Margin
-    local leftPoint= postStats.centroid[1] - postStats.axisMinor / 2
-    local rightPoint= postStats.centroid[1] + postStats.axisMinor / 2
-    local margin = math.min(leftPoint, wa - rightPoint)
-    if margin <= 5 then return'Edge Margin' end
     -- TODO: Add ground check
     -- TODO: Add height check
-    util.ptable(postStats)
-    return postStats
+    if #fail==0 then
+      table.insert(successes, postStats)
+      table.insert(failures, 'SUCCESS')
+    else
+      table.insert(failures, table.concat(fail,'\n'))
+    end
   end
-  return'found nothing'
+  -- Yield the failure messages and the success tables
+  return table.concat(failures,'\n'), successes
 end
 
 return libVision

@@ -12,6 +12,14 @@ local x0A, y0A, focalA, focal_length, focal_base
 -- Object properties (TODO: Should this be a config, or not?)
 local b_diameter, b_dist, b_height
 
+local color = {
+  orange = 1,
+  yellow = 2,
+  cyan = 4,
+  field = 8,
+  white = 16,
+}
+
 -- FOR DEBUG
 local util = require'util'
 
@@ -71,9 +79,9 @@ local function bboxStats (color, bboxB, labelA_t)
   return ImageProc.color_stats(labelA_t, color, bboxA), area
 end
 
-local function check_prop (prop, th_area, th_fill, labelA_t)
+local function check_prop (color, prop, th_area, th_fill, labelA_t)
   -- Grab the statistics in labelA
-  local stats, box_area = bboxStats(1, prop.boundingBox, labelA_t);
+  local stats, box_area = bboxStats(color, prop.boundingBox, labelA_t);
   local area = stats.area
   -- If no pixels then return
   if area < th_area then return'Area' end
@@ -102,7 +110,7 @@ end
 
 function libVision.ball (labelA_t, labelB_t, cc_t)
   -- The ball is color 1
-  local cc = cc_t[1]
+  local cc = cc_t[color.orange]
   if cc<6 then return'Color count' end
   -- Connect the regions in labelB
   local ballPropsB = ImageProc.connected_regions(labelB_t, 1)
@@ -113,19 +121,51 @@ function libVision.ball (labelA_t, labelB_t, cc_t)
   for i=1,math.min(5,nProps) do
     -- Check the image properties
     local propsB = ballPropsB[i]
-    local propsA = check_prop(propsB, 4, 0.35, labelA_t)
+    local propsA = check_prop(color.orange, propsB, 4, 0.35, labelA_t)
     if type(propsA)=='string' then return string.format("Failed %s", propsA) end
     -- Check the coordinate on the field
     local dArea = math.sqrt((4/math.pi) * propsA.area)
     local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
     local v = check_coordinate(propsA.centroid, scale, b_dist, b_height)
     if type(v)=='string' then return string.format("Failed %s", v) end
+    -- Found the ball position
+    propsA.v = vector.new(v)
     -- TODO: Check if outside the field
     -- TODO: Ground color check
     -- Convert v to table from torch
-    return propsA, vector.new(v)
+    return propsA
   end
   --
+  return'found nothing'
+end
+
+-- TODO: Allow the loop to run many times
+function libVision.goal (labelA_t, labelB_t, cc_t)
+  local postB = ImageProc.goal_posts(labelB_t, color.yellow, th_nPostB)
+  if not postB then return'None detected' end
+  for i, post in ipairs(postB) do
+    local postStats = check_prop(color.yellow, post, 25, 0.35, labelA_t)
+    if type(postStats)=='string' then return string.format("Failed %s", propsA) end
+    -- TODO: Add lower goal post bbox check
+    if math.abs(postStats.orientation) < 60*DEG_TO_RAD then
+      return'Orientation'
+    end
+    -- Fill extent check
+    local extent = postStats.area / (postStats.axisMajor * postStats.axisMinor)
+    if extent < 0.35 then return'Fill Extent' end
+    -- Aspect Ratio check
+    local aspect = postStats.axisMajor / postStats.axisMinor;
+    if (aspect < .5) or (aspect > 15) then return'Aspect Ratio' end
+    -- Edge Margin
+    local leftPoint= postStats.centroid[1] - postStats.axisMinor / 2
+    local rightPoint= postStats.centroid[1] + postStats.axisMinor / 2
+    local margin = math.min(leftPoint, wa - rightPoint)
+    if margin <= 5 then return'Edge Margin' end
+    -- TODO: Add ground check
+    -- TODO: Add height check
+    util.ptable(postStats)
+    return postStats
+  end
   return'found nothing'
 end
 

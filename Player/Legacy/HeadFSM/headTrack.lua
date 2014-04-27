@@ -60,9 +60,9 @@ end
 function exit()
 end
 
-function ikineCam(x, y, z)
+function ikineCam(x, y, z, sel)
   --Bottom camera by default (cameras are 0 indexed so add 1)
-  select = 2;
+  sel = sel or 2;
   --Look at ground by default
   z = z or 0;
 
@@ -71,7 +71,7 @@ function ikineCam(x, y, z)
   local yaw = math.atan2(y, x);
   local pitch = math.asin(-z/(norm + 1E-10));
 
-  pitch = pitch - cameraAngle[select][2];
+  pitch = pitch - cameraAngle[sel][2];
 
   yaw = math.min(math.max(yaw, yawMin), yawMax);
   pitch = math.min(math.max(pitch, pitchMin), pitchMax);

@@ -1,18 +1,19 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
-#ifdef __cplusplus
-}
-#endif
-
+#include <lua.hpp>
 #include <stdint.h>
 #include <math.h>
 #include <vector>
+
+#ifdef TORCH
+#include <torch/luaT.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include <torch/TH/TH.h>
+#ifdef __cplusplus
+}
+#endif
+#endif
 
 #include "RegionProps.h"
 
@@ -24,16 +25,34 @@ static int minJ[NMAX];
 static int maxJ[NMAX];
 static int sumJ[NMAX];
 
-
 int lua_goal_posts(lua_State *L) {
-  uint8_t *im_ptr = (uint8_t *) lua_touserdata(L, 1);
-  if ((im_ptr == NULL) || !lua_islightuserdata(L, 1)) {
-    return luaL_error(L, "Input image not light user data");
+  uint8_t *im_ptr, mask;
+  int m, n, threshold;
+  
+  if( lua_islightuserdata(L,1) ){
+    im_ptr = (uint8_t *) lua_touserdata(L, 1);
+    if (im_ptr == NULL) {
+      return luaL_error(L, "Input image bad");
+    }
+    m = luaL_checkint(L, 2);
+    n = luaL_checkint(L, 3);
+    mask = luaL_optinteger(L, 4, 1);
+    threshold = luaL_optinteger(L, 5, thresholdDefault);
   }
-  int m = luaL_checkint(L, 2);
-  int n = luaL_checkint(L, 3);
-  uint8_t mask = luaL_optinteger(L, 4, 1);
-  int threshold = luaL_optinteger(L, 5, thresholdDefault);
+#ifdef TORCH
+	else if(luaT_isudata(L,1,"torch.ByteTensor")){
+		THByteTensor* b_t =
+			(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+		im_ptr = b_t->storage->data;
+    m = b_t->size[1];
+		n = b_t->size[0];
+    mask = luaL_optinteger(L, 2, 1);
+    threshold = luaL_optinteger(L, 3, thresholdDefault);
+	}
+#endif
+else {
+  return luaL_error(L, "Input image bad");
+}
 
   // Initialize arrays
   for (int i = 0; i < m; i++) {

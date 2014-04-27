@@ -126,17 +126,13 @@ local function process_image(im, lut, id)
   local cc = ImageProc2.color_count(labelA)
   lV.entry(Config.vision[id])
   lV.update(Body.get_head_position())
-  local ball, ball_v = lV.ball(labelA, labelB, cc)
+  local ball = lV.ball(labelA, labelB, cc)
+  local goal = lV.goal(labelA, labelB, cc)
+  print('\ngoal',goal, id)
+  
   -- Send the detection information
   meta_detect.ball = ball
-  -- Now add goal detection
-  -- Add world coordinates? In arbitrator I guess
-  if ball_v then
-    --print('ball_v', ball_v)
-    wcm.set_ball_pos(ball_v)
-    wcm.set_ball_t(Body.get_time())
-    meta_world.ball = ball_v
-  end
+  meta_detect.goal = goal
 
   -- LabelA
   table.insert(debug_data, mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ))
@@ -147,7 +143,7 @@ local function process_image(im, lut, id)
   -- Detection
   table.insert(debug_data, mp.pack(meta_detect))
 
-  return debug_data
+  return debug_data, meta_detect
 end
 
 while true do
@@ -157,9 +153,14 @@ while true do
   
   -- Image Processing (Must do TOP then BOTTOM fully due to to_rgb pointer)
   local im_top = Body.get_img_top()
-  local top_data = process_image(im_top, lut_top, 1)
+  local top_debug, top_detection = process_image(im_top, lut_top, 1)
   local im_b = Body.get_img_bottom()
-  local btm_data = process_image(im_b, lut_b, 2)
+  local btm_debug, btm_detection = process_image(im_b, lut_b, 2)
+  -- Send all the debug information
+  s_t:send(top_data)
+  s_b:send(btm_data)
+  
+  -- Publish vision messages to wcm
   
   -- Motion update
   walk.set_velocity(unpack(mcm.get_walk_vel()))
@@ -172,10 +173,6 @@ while true do
   
   -- Update the state machines
 	for _,my_fsm in pairs(state_machines) do local event = my_fsm.update() end
-  
-  -- Send all the debug information
-  s_t:send(top_data)
-  s_b:send(btm_data)
   
 end
 

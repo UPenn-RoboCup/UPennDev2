@@ -137,6 +137,7 @@ while true do
   local btm_data = process_image(im_b, lut_b, 2)
   
   -- Motion update
+  walk.set_velocity(unpack(mcm.get_walk_vel()))
   Motion.update()
   
   -- Update the state machines

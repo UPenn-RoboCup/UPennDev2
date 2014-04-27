@@ -50,9 +50,6 @@ rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
 -- Mesh requester
 mesh_req_ch = simple_ipc.new_requester(Config.net.reliable_mesh)
 
--- Useful constants
-DEG_TO_RAD = Body.DEG_TO_RAD
-RAD_TO_DEG = Body.RAD_TO_DEG
 
 print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
 print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
@@ -108,8 +105,8 @@ local char_to_vel = {
 }
 
 local char_to_wheel = {
-  ['['] = -1*Body.DEG_TO_RAD,
-  [']'] = 1*Body.DEG_TO_RAD,
+  ['['] = -DEG_TO_RAD,
+  [']'] = DEG_TO_RAD,
 }
 
 local char_to_state = {

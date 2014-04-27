@@ -82,11 +82,6 @@ local function process_image(im, lut, udp, id)
   -- Images to labels
   local labelA = ImageProc2.yuyv_to_label(im, lut)
   local labelB = ImageProc2.block_bitor(labelA)
-  -- Send images and labels to monitor
-  udp:send( mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ) )
-  unix.usleep(1e4)
-  udp:send( mp.pack(meta_j)..c_yuyv:compress(im,w,h) )
-  unix.usleep(1e4)
   -- Detection System
   -- NOTE: Muse entry each time since on webots, we switch cameras
   -- In camera wizard, we do not switch cameras, so call only once
@@ -98,14 +93,21 @@ local function process_image(im, lut, udp, id)
   local meta_detect = {detect=true}
   meta_detect.ball = ball
   -- Now add goal detection
-  udp:send( mp.pack(meta_detect) )
-  unix.usleep(1e4)
   -- Add world coordinates? In arbitrator I guess
   local meta_world = {}
   if ball_v then
     print('ball_v', ball_v)
     meta_world.ball = ball_v
   end
+  -- Send images and labels to monitor
+  --[[
+  udp:send( mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ) )
+  unix.usleep(1e4)
+  udp:send( mp.pack(meta_j)..c_yuyv:compress(im,w,h) )
+  unix.usleep(1e4)
+  udp:send( mp.pack(meta_detect) )
+  unix.usleep(1e4)
+  --]]
   --udp:send( mp.pack(meta_detect) )
 end
 

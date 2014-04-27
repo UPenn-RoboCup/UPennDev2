@@ -102,11 +102,10 @@ local special_evts = {
 --------------------------
 local obj = {}
 obj._NAME = ...
-local util = require'util'
 -- Simple IPC for remote state triggers
 local simple_ipc = require'simple_ipc'
-local evts = simple_ipc.new_subscriber(...,true)
-local debug_str = util.color(obj._NAME..' Event:','green')
+local evts = simple_ipc.new_subscriber(obj._NAME..'!')
+local debug_str = print(obj._NAME..' Event:')
 local special_evts = special_evts or {}
 obj.entry = function()
   sm:entry()

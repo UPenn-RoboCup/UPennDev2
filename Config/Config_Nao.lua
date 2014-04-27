@@ -24,7 +24,7 @@ Config.fsm = {}
 -- Which FSMs should be enabled?
 Config.fsm.enabled = {}
 
-----[[
+--[[
 if HOME then
   -- Check if include has set some variables
   local unix = require'unix'

@@ -58,6 +58,8 @@ lut_t = ImageProc2.get_lut(lut_id)
 lut_ud = cutil.torch_to_userdata(lut_t) 
 lut = lut_t:data()
 
+lV.entry (w, h, 2, 2)
+
 while true do
 local d = replay:log_iter(metadata,'yuyv')
 local meta, yuyv_t, image, t0, t1
@@ -89,19 +91,19 @@ for i,m,r in d do
   print('New Processing Time (ms)', 1e3*(t1-t0))
   
   -- Vision pipeline
-  --[[
-  local ball = lV.ball()
+
+  local ball = lV.ball(labelA_t, labelB_t, cc_t)
   if type(ball)=='string' then print(ball) end
   meta_a.ball = ball
-  --]]
+  meta_b.ball = ball
   
   -- Send on UDP
   -- Send labelA
-  --lA_z = c_zlib( labelA_t:data(), a_sz, true )
-  --local udp_ret, err = udp_ch:send( mp.pack(meta_a)..lA_z )
+  lA_z = c_zlib( labelA_t:data(), a_sz, true )
+  local udp_ret, err = udp_ch:send( mp.pack(meta_a)..lA_z )
   -- Or Send labelB :)
-  lB_z = c_zlib( labelB_t:data(), b_sz, true )
-  local udp_ret, err = udp_ch:send( mp.pack(meta_b)..lB_z )
+  --lB_z = c_zlib( labelB_t:data(), b_sz, true )
+  --local udp_ret, err = udp_ch:send( mp.pack(meta_b)..lB_z )
   -- Send JPEG image
   yuyv_j = c_yuyv:compress(yuyv_t,w,h)
   local udp_ret, err = udp_ch:send( mp.pack(meta_j)..yuyv_j )

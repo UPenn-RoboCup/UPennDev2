@@ -124,5 +124,44 @@ table.insert(Config.camera,
       {'Backlight Compensation', 1},
     },
 	})
+  
+------------
+-- Vision --
+------------
+Config.vision = {}
+-- Vision for camera 1
+table.insert(Config.vision,{
+  focal_length = 545.6,
+  focal_base = 640,
+  scaleA = 2,
+  scaleB = 2,
+  -- NOTE: Should verify with camera config...
+	w = 320,
+  h = 240,
+  bodyHeight = 0.315,
+  bodyTilt = 0,
+  footX = 0,
+  neckX = 0,
+  neckZ = 0.14,
+  pCamera = {0.05871, 0.0, 0.06364},
+  pitchCamera = 1.2*math.pi/180,
+  })
+-- Vision for camera 2
+table.insert(Config.vision,{
+  focal_length = 545.6,
+  focal_base = 640,
+  scaleA = 2,
+  scaleB = 2,
+  -- NOTE: Should verify with camera config...
+	w = 320,
+  h = 240,
+  bodyHeight = 0.315,
+  bodyTilt = 0,
+  footX = 0,
+  neckX = 0,
+  neckZ = 0.14,
+  pCamera = {0.05071, 0.0, 0.01774},
+  pitchCamera = 39.7*math.pi/180,
+  })
 
 return Config

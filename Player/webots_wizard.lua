@@ -46,6 +46,7 @@ end
 -- Image Processing
 local ImageProc = require'ImageProc'
 local ImageProc2 = require'ImageProc.ffi'
+local lV = require'libVision'
 local lut_id_t = ImageProc2.load_lut (HOME.."/Data/lut_webots.raw")
 local lut_top = ImageProc2.get_lut(lut_id_t):data()
 local lut_id_b = ImageProc2.load_lut (HOME.."/Data/lut_webots.raw")
@@ -76,18 +77,28 @@ local meta_j = {
 }
 
 -- Process image should essentially be the same code as camera_wizard.lua
-local function process_image(im, lut, udp)
+-- NOTE: This sleep is important for flushing buffers of udp. Not sure why...
+local function process_image(im, lut, udp, id)
   -- Images to labels
   local labelA = ImageProc2.yuyv_to_label(im, lut)
   local labelB = ImageProc2.block_bitor(labelA)
   -- Send images and labels to monitor
   udp:send( mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ) )
+  unix.usleep(1e4)
   udp:send( mp.pack(meta_j)..c_yuyv:compress(im,w,h) )
+  unix.usleep(1e4)
   -- Detection System
   -- NOTE: Muse entry each time since on webots, we switch cameras
   -- In camera wizard, we do not switch cameras, so call only once
-  lV.entry()
+  local cc = ImageProc2.color_count(labelA)
+  lV.entry(Config.vision[id])
   lV.update(Body.get_head_position())
+  local ball = lV.ball(labelA, labelB, cc)
+  -- Send the detection information
+  local meta_detect = {}
+  meta_detect.ball = ball
+  udp:send( mp.pack(meta_detect) )
+  unix.usleep(1e4)
 end
 
 while true do
@@ -95,11 +106,9 @@ while true do
   Body.update()
   -- Image Processing (Must do TOP then BOTTOM fully due to to_rgb pointer)
   local im_top = Body.get_img_top()
-  process_image(im_top, lut_top, udp_t)
-  -- NOTE: This sleep is important for flushing buffers of udp. Not sure why...
-  unix.usleep(1e4)
+  process_image(im_top, lut_top, udp_t, 1)
   local im_b = Body.get_img_bottom()
-  process_image(im_b, lut_b, udp_b)
+  process_image(im_b, lut_b, udp_b, 2)
   
   -- Update the state machines
 	for _,my_fsm in pairs(state_machines) do local event = my_fsm.update() end

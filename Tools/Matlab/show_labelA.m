@@ -1,5 +1,6 @@
 clear all;
 close all;
+startup;
 % Camera data for MATLAB GUI
 cams = {};
 cams{1} = {};
@@ -19,7 +20,7 @@ colormap(cmap);
 cams{1}.f_yuyv = subplot(2,2,2);
 cams{1}.im_yuyv = image(zeros(1));
 hold on;
-cams{1}.p_ball = plot([],[],'m*');
+cams{1}.p_ball = plot([0],[0],'m*');
 hold off;
 % (bottom)
 % LabelA 
@@ -30,7 +31,7 @@ colormap(cmap);
 cams{2}.f_yuyv = subplot(2,2,4);
 cams{2}.im_yuyv = image(zeros(1));
 hold on;
-cams{2}.p_ball = plot([],[],'m*');
+cams{2}.p_ball = plot([0],[0],'m*');
 hold off;
 %
 drawnow;
@@ -40,6 +41,11 @@ cams{1}.fd = udp_recv('new', 33333);
 s_top = zmq( 'fd', cams{1}.fd );
 cams{2}.fd = udp_recv('new', 33334);
 s_bottom = zmq( 'fd', cams{2}.fd );
+
+% Plot scale
+% Default: labelA is half size, so scale twice
+cams{1}.scale = 2;
+cams{2}.scale = 2;
 
 while 1
     % 1 second timeout
@@ -53,25 +59,34 @@ while 1
             udp_data = udp_recv('receive',cam.fd);
         end
         [metadata,offset] = msgpack('unpack',udp_data);
-        raw = udp_data(offset+1:end); % This must be uint8
-        compr_t = char(metadata.c);
-        if strcmp(compr_t,'jpeg')
-            set(cam.im_yuyv,'Cdata', djpeg(raw));
-            xlim(cam.f_yuyv,[0 metadata.w]);
-            ylim(cam.f_yuyv,[0 metadata.h]);
-        elseif strcmp(compr_t,'zlib')
-            Az = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';
-            set(cam.im_lA,'Cdata', Az);
-            xlim(cam.f_lA,[0 metadata.w]);
-            ylim(cam.f_lA,[0 metadata.h]);
-            if isfield(metadata, 'ball') && isa(metadata.ball,'double')
-                set(cam.p_ball,'Xdata', 2*metadata.ball(1));
-                set(cam.p_ball,'Ydata', 2*metadata.ball(2));
-            else
-                set(cam.p_ball,'Xdata', []);
-                set(cam.p_ball,'Ydata', []);
+        if numel(udp_data)==offset
+            % Process ball data
+            if isfield(metadata, 'ball')
+                if isfield(metadata.ball, 'centroid') ...
+                        && isa(metadata.ball.centroid,'double')
+                    ball_c = metadata.ball.centroid * cam.scale;
+                    set(cam.p_ball,'Xdata', ball_c(1));
+                    set(cam.p_ball,'Ydata', ball_c(2));
+                else
+                    set(cam.p_ball,'Xdata', []);
+                    set(cam.p_ball,'Ydata', []);
+                end
             end
+        else
+            % Process the raw data
+            raw = udp_data(offset+1:end); % This must be uint8
+            compr_t = char(metadata.c);
+            if strcmp(compr_t,'jpeg')
+                set(cam.im_yuyv,'Cdata', djpeg(raw));
+                xlim(cam.f_yuyv,[0 metadata.w]);
+                ylim(cam.f_yuyv,[0 metadata.h]);
+            elseif strcmp(compr_t,'zlib')
+                Az = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';
+                set(cam.im_lA,'Cdata', Az);
+                xlim(cam.f_lA,[0 metadata.w]);
+                ylim(cam.f_lA,[0 metadata.h]);
+            end
+            drawnow;
         end
-        drawnow;
     end
 end

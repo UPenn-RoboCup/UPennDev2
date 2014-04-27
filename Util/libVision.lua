@@ -8,46 +8,38 @@ local T = require'libTransform'
 local trHead, trNeck, trNeck0, dtrCamera
 -- Camera information
 local x0A, y0A, focalA, focal_length, focal_base
--- Object properties
+-- Object properties (TODO: Should this be a config, or not?)
 local b_diameter = 0.065
-
--- Load robot parameters from a Config table
-function libVision.load_robot (c_vision)
-  -- Placeholder for now
-  focal_length, focal_base = 545.6, 640
-  b_diameter = 0.065
-  -- Delta transform from neck to camera
-  dtrCamera = Transform.trans(unpack(c_vision.pCamera))
-  * Transform.rotY(c_vision.pitchCamera)
-end
 
 -- TODO: Combine entry with load_robot. Take in the config,
 -- The config should have the w, h, and scales, or just ma, na, mb, nb...
-function libVision.entry (w0, h0, sA, sB)
+function libVision.entry (c_vision)
   -- Save the scale paramter
-  scaleA = sA or 2
-  scaleB = sB or 2
+  scaleA, scaleB = c_vision.scaleA, c_vision.scaleB
+  focal_length, focal_base = c_vision.focal_length, c_vision.focal_base
   -- Recompute the width and height of the images
-  w, h = w0, h0
-  wa, ha = w/scaleA, h/scaleA
-  wb, hb = wa/scaleB, ha/scaleB
+  w, h = c_vision.w, c_vision.h
+  wa, ha = w / scaleA, h / scaleA
+  wb, hb = wa / scaleB, ha / scaleB
   -- Information for the HeadTransform
   x0A, y0A = 0.5 * (wa - 1), 0.5 * (ha - 1)
+  -- Delta transform from neck to camera
+  dtrCamera = T.trans(unpack(c_vision.pCamera))
+  * T.rotY(c_vision.pitchCamera)
   focalA = focal_length / (focal_base / wa)
-  -- TODO: Do not assume a constant height/tilt/etc.
-  -- TODO: Use :mul so no new matrices allocated
-  trNeck0 = T.trans(-footX, 0, bodyHeight) 
-  * T.rotY(bodyTilt)
-  * T.trans(neckX, 0, neckZ)
+  -- TODO: check tilt, height, etc. with walk config
+  trNeck0 = T.trans(-c_vision.footX, 0, c_vision.bodyHeight) 
+  * T.rotY(c_vision.bodyTilt)
+  * T.trans(c_vision.neckX, 0, c_vision.neckZ)
 end
 
 -- Update the Head transform
 -- Input: Head angles
 function libVision.update (head)
   -- TODO: Smarter memory allocation
-  -- NOTE: pitch0 is Robot specific head angle bias (for OP)
-  tNeck = tNeck0 * T.rotZ(head[1]) * T.rotY(head[2] + pitch0)
-  tHead = tNeck * dtrCamera
+  -- TODO: Add any bias for each robot
+  trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
+  trHead = trNeck * dtrCamera
   --[[
   --update camera position
   local vHead=vector.new({0,0,0,1});
@@ -58,7 +50,7 @@ end
 
 -- Simple bbox with no tilted color stats
 -- TODO: Use the FFI for color stats, should be super fast
-local function bboxStats (color, bboxB)
+local function bboxStats (color, bboxB, labelA_t)
   local bboxA = {
     scaleB * bboxB[1],
     scaleB * bboxB[2] + scaleB - 1,
@@ -69,9 +61,9 @@ local function bboxStats (color, bboxB)
   return ImageProc.color_stats(labelA_t, color, bboxA), area
 end
 
-local function check_prop (prop, th_area, th_fill)
+local function check_prop (prop, th_area, th_fill, labelA_t)
   -- Grab the statistics in labelA
-  local stats, box_area = bboxStats(1, prop.boundingBox);
+  local stats, box_area = bboxStats(1, prop.boundingBox, labelA_t);
   local area = stats.area
   -- If no pixels then return
   if area < th_area then return'Area' end
@@ -98,30 +90,32 @@ local function check_coordinate(centroid, scale, maxD, maxH)
   return v
 end
 
-function libVision.ball()
+function libVision.ball (labelA_t, labelB_t, cc_t)
   -- The ball is color 1
-  local cc = cc_d[1]
+  local cc = cc_t[1]
   if cc<6 then return'Color count' end
   -- Connect the regions in labelB
   local ballPropsB = ImageProc.connected_regions(labelB_t, 1)
+  if not ballPropsB then return'No connected regions' end
   local nProps = #ballPropsB
-  if nProps==0 then return'Connected regions' end
+  if nProps==0 then return'0 connected regions' end
   --
   for i=1,math.min(5,nProps) do
     -- Check the image properties
     local propsB = ballPropsB[i]
-    local propsA = check_prop(propsB, 4, 0.35)
+    local propsA = check_prop(propsB, 4, 0.35, labelA_t)
     if type(propsA)=='string' then return string.format("Failed %s", propsA) end
     -- Check the coordinate on the field
     local dArea = math.sqrt((4/math.pi) * propsA.area)
     local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
-    local v = check_coordinate(propsA.centroid, scale, 5.0, 0.20)
-    if type(propsA)=='string' then return string.format("Failed %s", v) end
+    --local v = check_coordinate(propsA.centroid, scale, 5.0, 0.20)
+    --if type(v)=='string' then return string.format("Failed %s", v) end
     -- TODO: Check if outside the field
     -- TODO: Ground color check
-    return propsA.centroid, v
+    return propsA, v
   end
   --
+  return'found nothing'
 end
 
 return libVision

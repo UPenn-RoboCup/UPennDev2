@@ -5,11 +5,15 @@ local libVision = {}
 -- Detection and HeadTransform information
 local ImageProc = require'ImageProc'
 local T = require'libTransform'
+local vector = require'vector'
 local trHead, trNeck, trNeck0, dtrCamera
 -- Camera information
 local x0A, y0A, focalA, focal_length, focal_base
 -- Object properties (TODO: Should this be a config, or not?)
-local b_diameter = 0.065
+local b_diameter, b_dist, b_height
+
+-- FOR DEBUG
+local util = require'util'
 
 -- TODO: Combine entry with load_robot. Take in the config,
 -- The config should have the w, h, and scales, or just ma, na, mb, nb...
@@ -31,6 +35,12 @@ function libVision.entry (c_vision)
   trNeck0 = T.trans(-c_vision.footX, 0, c_vision.bodyHeight) 
   * T.rotY(c_vision.bodyTilt)
   * T.trans(c_vision.neckX, 0, c_vision.neckZ)
+  -- Load ball
+  if c_vision.ball then
+    b_diameter = c_vision.ball.diameter
+    b_dist = c_vision.ball.max_distance
+    b_height = c_vision.ball.max_height
+  end
 end
 
 -- Update the Head transform
@@ -108,11 +118,12 @@ function libVision.ball (labelA_t, labelB_t, cc_t)
     -- Check the coordinate on the field
     local dArea = math.sqrt((4/math.pi) * propsA.area)
     local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
-    --local v = check_coordinate(propsA.centroid, scale, 5.0, 0.20)
-    --if type(v)=='string' then return string.format("Failed %s", v) end
+    local v = check_coordinate(propsA.centroid, scale, b_dist, b_height)
+    if type(v)=='string' then return string.format("Failed %s", v) end
     -- TODO: Check if outside the field
     -- TODO: Ground color check
-    return propsA, v
+    -- Convert v to table from torch
+    return propsA, vector.new(v)
   end
   --
   return'found nothing'

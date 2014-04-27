@@ -24,14 +24,14 @@ Config.fsm = {}
 -- Which FSMs should be enabled?
 Config.fsm.enabled = {}
 
---[[
+----[[
 if HOME then
   -- Check if include has set some variables
   local unix = require'unix'
   local listing = unix.readdir(HOME..'/Player')
   -- Add all FSM directories that are in Player
   for _,sm in ipairs(listing) do
-    if sm:find'FSM' then
+    if sm:find'FSM' and sm:find'Motion' then
       package.path = CWD..'/'..sm..'/?.lua;'..package.path
       table.insert(Config.fsm.enabled,sm)
     end
@@ -44,6 +44,7 @@ end
 ---------------------------
 local exo = {}
 exo.Walk = 'Walk'
+exo.Net = 'Net'
 
 -- Load each exogenous Config file
 for k,v in pairs(exo) do
@@ -145,6 +146,12 @@ table.insert(Config.vision,{
   neckZ = 0.14,
   pCamera = {0.05871, 0.0, 0.06364},
   pitchCamera = 1.2*math.pi/180,
+  -- If the ball key, then search for ball
+  ball = {
+    max_distance = 5.0,
+    max_height = 0.20,
+    diameter = 0.065,
+  }
   })
 -- Vision for camera 2
 table.insert(Config.vision,{
@@ -162,6 +169,11 @@ table.insert(Config.vision,{
   neckZ = 0.14,
   pCamera = {0.05071, 0.0, 0.01774},
   pitchCamera = 39.7*math.pi/180,
+  ball = {
+    max_distance = 5.0,
+    max_height = 0.20,
+    diameter = 0.065,
+  }
   })
 
 return Config

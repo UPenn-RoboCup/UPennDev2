@@ -61,13 +61,14 @@ while 1
         [metadata,offset] = msgpack('unpack',udp_data);
         if numel(udp_data)==offset
             % Process ball data
-            if isfield(metadata, 'ball')
-                if isfield(metadata.ball, 'centroid') ...
-                        && isa(metadata.ball.centroid,'double')
+            if isfield(metadata, 'detect')
+                if ~isa(metadata.ball,'uint8')
                     ball_c = metadata.ball.centroid * cam.scale;
                     set(cam.p_ball,'Xdata', ball_c(1));
                     set(cam.p_ball,'Ydata', ball_c(2));
                 else
+                    % Error message
+                    debug_b = char(metadata.ball);
                     set(cam.p_ball,'Xdata', []);
                     set(cam.p_ball,'Ydata', []);
                 end

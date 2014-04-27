@@ -54,8 +54,8 @@ function state.entry()
   
   --SJ: Now we only use commanded positions
   --As the actual values are read at motionIdle state
-  qLLeg = Body.get_lleg_command_position()
-  qRLeg = Body.get_rleg_command_position()
+  qLLeg = Body.get_lleg_command()
+  qRLeg = Body.get_rleg_command()
 
   -- How far away from the torso are the legs currently?
   local dpLLeg = K.torso_lleg(qLLeg)
@@ -100,13 +100,18 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
-   
+  
+  if IS_WEBOTS then
+    print('hi')
+    return'done'
+  end
+  
   -- Zero the waist  
 
-  local qWaist = Body.get_waist_command_position()
+  local qWaist = Body.get_waist_command()
   local qWaist_approach, doneWaist = 
     util.approachTol( qWaist, qWaist_desired, dqWaistLimit, dt )
-  Body.set_waist_command_position(qWaist_approach)
+  Body.set_waist_command(qWaist_approach)
  
 
   -- Ensure that we do not move motors too quickly
@@ -129,16 +134,16 @@ function state.update()
   qLLegMove,doneL = util.approachTol(qLLeg,qLLegTarget, dqLegLimit, dt )
   qRLegMove,doneR = util.approachTol(qRLeg,qRLegTarget, dqLegLimit, dt )
 
-  Body.set_lleg_command_position(qLLegMove)
-  Body.set_rleg_command_position(qRLegMove)
+  Body.set_lleg_command(qLLegMove)
+  Body.set_rleg_command(qRLegMove)
 
   local qLLegActual = Body.get_lleg_position()
   local qRLegActual = Body.get_rleg_position()
   local qWaistActual = Body.get_waist_position()
 
-  local qLLegCommand = Body.get_lleg_command_position()
-  local qRLegCommand = Body.get_rleg_command_position()
-  local qWaistCommand = Body.get_waist_command_position()
+  local qLLegCommand = Body.get_lleg_command()
+  local qRLegCommand = Body.get_rleg_command()
+  local qWaistCommand = Body.get_waist_command()
 
   Body.request_lleg_position()
   Body.request_rleg_position()

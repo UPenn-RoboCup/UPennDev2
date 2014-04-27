@@ -31,11 +31,13 @@ function state.entry()
   Body.request_waist_position()
 
   -- Commanded at first
-  qLLeg = Body.get_lleg_command_position()
-  qRLeg = Body.get_rleg_command_position()
-  qWaist = Body.get_waist_command_position()
-  mcm.set_leg_bias(Config.walk.legBias)
-print("BIAS SET:",unpack(Config.walk.legBias))
+  qLLeg = Body.get_lleg_command()
+  qRLeg = Body.get_rleg_command()
+  qWaist = Body.get_waist_command()
+  if Config.walk.legBias then
+    mcm.set_leg_bias(Config.walk.legBias)
+    print("BIAS SET:",unpack(Config.walk.legBias))
+  end
 end
 
 ---
@@ -65,8 +67,8 @@ function state.update()
   qRLeg = Body.get_rleg_position()
 
 
-  Body.set_lleg_command_position(qLLeg)  
-  Body.set_rleg_command_position(qRLeg)
+  Body.set_lleg_command(qLLeg)  
+  Body.set_rleg_command(qRLeg)
 
 
 

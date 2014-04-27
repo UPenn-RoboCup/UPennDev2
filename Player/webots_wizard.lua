@@ -93,12 +93,20 @@ local function process_image(im, lut, udp, id)
   local cc = ImageProc2.color_count(labelA)
   lV.entry(Config.vision[id])
   lV.update(Body.get_head_position())
-  local ball = lV.ball(labelA, labelB, cc)
+  local ball, ball_v = lV.ball(labelA, labelB, cc)
   -- Send the detection information
-  local meta_detect = {}
+  local meta_detect = {detect=true}
   meta_detect.ball = ball
+  -- Now add goal detection
   udp:send( mp.pack(meta_detect) )
   unix.usleep(1e4)
+  -- Add world coordinates? In arbitrator I guess
+  local meta_world = {}
+  if ball_v then
+    print('ball_v', ball_v)
+    meta_world.ball = ball_v
+  end
+  --udp:send( mp.pack(meta_detect) )
 end
 
 while true do

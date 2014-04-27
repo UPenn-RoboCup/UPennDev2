@@ -331,11 +331,23 @@ if IS_WEBOTS then
   local function set_actuator_command(a, index)
     index = index or 1;
     if (type(a) == "number") then
-      actuator.command[index] = a;
+      actuator.command[index] = a
     else
       for i = 1,#a do
-        actuator.command[index+i-1] = a[i];
+        actuator.command[index+i-1] = a[i]
       end
+    end
+  end
+  
+  local function get_actuator_command(index)
+    if index then
+      return actuator.command[index]
+    else
+      local t = {}
+      for i = 1,nJoint do
+        t[i] = actuator.command[i]
+      end
+      return t
     end
   end
   
@@ -358,6 +370,72 @@ if IS_WEBOTS then
   function Body.get_rleg_position()
     local q = get_sensor_position()
     return {unpack(q, indexRLeg, indexRLeg+nJointRLeg-1)}
+  end
+  
+  function Body.set_head_command(val)
+    set_actuator_command(val, indexHead);
+  end
+  function Body.set_lleg_command(val)
+    set_actuator_command(val, indexLLeg);
+  end
+  function Body.set_rleg_command(val)
+    set_actuator_command(val, indexRLeg);
+  end
+  function Body.set_larm_command(val)
+    set_actuator_command(val, indexLArm);
+  end
+  function Body.set_rarm_command(val)
+    set_actuator_command(val, indexRArm);
+  end
+  function Body.set_waist_command(val)
+  end
+  
+  function Body.get_head_command()
+    local q = get_actuator_command()
+    return {unpack(q, indexHead, indexHead+nJointHead-1)}
+  end
+  function Body.get_larm_command()
+    local q = get_actuator_command()
+    return {unpack(q, indexLArm, indexLArm+nJointLArm-1)}
+  end
+  function Body.get_rarm_command()
+    local q = get_actuator_command()
+    return {unpack(q, indexRArm, indexRArm+nJointRArm-1)}
+  end
+  function Body.get_lleg_command()
+    local q = get_actuator_command()
+    return {unpack(q, indexLLeg, indexLLeg+nJointLLeg-1)}
+  end
+  function Body.get_rleg_command()
+    local q = get_actuator_command()
+    return {unpack(q, indexRLeg, indexRLeg+nJointRLeg-1)}
+  end
+  function Body.get_waist_command()
+    return {0,0}
+  end
+  
+  function Body.set_head_torque_enable(val)
+  end
+  function Body.set_lleg_torque_enable(val)
+  end
+  function Body.set_rleg_torque_enable(val)
+  end
+  function Body.set_larm_torque_enable(val)
+  end
+  function Body.set_rarm_torque_enable(val)
+  end
+  function Body.set_waist_torque_enable(val)
+  end
+  
+  function Body.request_head_position()
+  end
+  function Body.request_larm_position()
+  end
+  function Body.request_rarm_position()
+  end
+  function Body.request_lleg_position()
+  end
+  function Body.request_rleg_position()
   end
 
 end

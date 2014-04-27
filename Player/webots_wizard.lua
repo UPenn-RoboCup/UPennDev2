@@ -51,8 +51,10 @@ local lut_id_t = ImageProc2.load_lut (HOME.."/Data/lut_webots.raw")
 local lut_top = ImageProc2.get_lut(lut_id_t):data()
 local lut_id_b = ImageProc2.load_lut (HOME.."/Data/lut_webots.raw")
 local lut_b = ImageProc2.get_lut(lut_id_b):data()
-local w, h, sA = 320, 240, 2
+-- TODO: Get this from the config...
+local w, h, sA, sB = 320, 240, 2, 2
 local nA = (w / sA) * (h / sA)
+local nB = (w / sA / sB) * (h / sA / sB)
 ImageProc2.setup(w, h)
 
 -- For broadcasting the labeled image
@@ -71,14 +73,28 @@ local s_t = simple_ipc.new_publisher('top')
 local s_b = simple_ipc.new_publisher('bottom')
 
 local meta_a = {
+  id = 'labelA',
   w = w / sA,
   h = h / sA,
   c = 'zlib',
 }
-local meta_j = {
+local meta_b = {
+  id = 'labelB',
+  w = w / sA / sB,
+  h = h / sA / sB,
+  c = 'zlib',
+}
+local meta_yuyv = {
+  id = 'yuyv',
   w = w,
   h = h,
   c = 'jpeg',
+}
+local meta_detect = {
+  id = 'detect'
+}
+local meta_world = {
+  id = 'world'
 }
 
 -- Add Motion from old code
@@ -106,11 +122,9 @@ local function process_image(im, lut, id)
   lV.update(Body.get_head_position())
   local ball, ball_v = lV.ball(labelA, labelB, cc)
   -- Send the detection information
-  local meta_detect = {detect=true}
   meta_detect.ball = ball
   -- Now add goal detection
   -- Add world coordinates? In arbitrator I guess
-  local meta_world = {}
   if ball_v then
     --print('ball_v', ball_v)
     meta_world.ball = ball_v
@@ -118,8 +132,10 @@ local function process_image(im, lut, id)
 
   -- LabelA
   table.insert(debug_data, mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ))
+  -- LabelB
+  table.insert(debug_data, mp.pack(meta_b)..c_zlib( labelB:data(), nB, true ))
   -- YUYV
-  table.insert(debug_data, mp.pack(meta_j)..c_yuyv:compress(im,w,h))
+  table.insert(debug_data, mp.pack(meta_yuyv)..c_yuyv:compress(im,w,h))
   -- Detection
   table.insert(debug_data, mp.pack(meta_detect))
 
@@ -144,8 +160,8 @@ while true do
 	for _,my_fsm in pairs(state_machines) do local event = my_fsm.update() end
   
   -- Send all the debug information
-  for _, v in ipairs(top_data) do s_t:send(v) end
-  for _, v in ipairs(btm_data) do s_b:send(v) end
+  s_t:send(top_data)
+  s_b:send(btm_data)
   
 end
 

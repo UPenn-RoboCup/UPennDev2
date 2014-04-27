@@ -67,8 +67,11 @@ local ch_send = function( self, messages, sz )
 	elseif tmsg=="table" then
 		local nmessages = #messages
 		for i, msg in ipairs(messages) do
-			local more = (i<nmessages and zmq.SNDMORE) or nil
-			ret = s:send( msg, more )
+      if i<nmessages then
+			  ret = s:send( msg, zmq.SNDMORE )
+      else
+        ret = s:send( msg )
+      end
 		end
 		return ret
 	elseif tmsg=="userdata" then

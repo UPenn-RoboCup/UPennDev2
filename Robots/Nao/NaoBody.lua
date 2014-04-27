@@ -233,8 +233,6 @@ if IS_WEBOTS then
 
     local t = Body.get_time()
 
-		
-
 		-- Set actuator commands from shared memory
 		for idx, jtag in ipairs(tags.joints) do
       
@@ -320,18 +318,13 @@ if IS_WEBOTS then
     -- Webots x is our y, Webots y is our z, Webots z is our x,
     -- Our x is Webots z, Our y is Webots x, Our z is Webots y
     if ENABLE_POSE then
-      local gps     = webots.wb_gps_get_values(tags.gps)
+      local gps = webots.wb_gps_get_values(tags.gps)
+      local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
       --local angle   = math.atan2( compass[3], compass[1] )
       local angle = 0
       local pose    = vector.pose{gps[3], gps[1], angle}
       --wcm.set_robot_pose( pose )
       wcm.set_robot_pose_gps( pose )
-
-      local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
-
-      --SJ: we need to remap rpy for webots
-      jcm.sensorPtr.rpy[1], jcm.sensorPtr.rpy[2], jcm.sensorPtr.rpy[3] =
-        rpy[2],rpy[1],-rpy[3]
 
       --[[
       print('rpy',unpack(rpy) )
@@ -589,6 +582,10 @@ if IS_WEBOTS then
     return gyrRPY;
     --]]
     return vector.zeros(3)
+  end
+  
+  function Body.get_battery_level()
+    return 10;
   end
   
 end

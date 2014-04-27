@@ -59,11 +59,16 @@ ImageProc2.setup(w, h)
 local mp   = require'msgpack.MessagePack'
 local zlib = require'zlib.ffi'
 local jpeg = require'jpeg'
-local udp  = require'udp'
 local c_zlib = zlib.compress_cdata
 local c_yuyv = jpeg.compressor'yuyv'
+--[[
+local udp  = require'udp'
 local udp_t = udp.new_sender('127.0.0.1', 33333)
 local udp_b = udp.new_sender('127.0.0.1', 33334)
+--]]
+local simple_ipc = require'simple_ipc'
+local s_t = simple_ipc.new_publisher('top')
+local s_b = simple_ipc.new_publisher('bottom')
 
 local meta_a = {
   w = w / sA,
@@ -85,7 +90,11 @@ Motion.event'standup'
 
 -- Process image should essentially be the same code as camera_wizard.lua
 -- NOTE: This sleep is important for flushing buffers of udp. Not sure why...
-local function process_image(im, lut, udp, id)
+local function process_image(im, lut, id)
+  
+  -- Data to send on the channel
+  local debug_data = {}
+  
   -- Images to labels
   local labelA = ImageProc2.yuyv_to_label(im, lut)
   local labelB = ImageProc2.block_bitor(labelA)
@@ -106,16 +115,15 @@ local function process_image(im, lut, udp, id)
     --print('ball_v', ball_v)
     meta_world.ball = ball_v
   end
-  -- Send images and labels to monitor
-  --[[
-  udp:send( mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ) )
-  unix.usleep(1e4)
-  udp:send( mp.pack(meta_j)..c_yuyv:compress(im,w,h) )
-  unix.usleep(1e4)
-  udp:send( mp.pack(meta_detect) )
-  unix.usleep(1e4)
-  --]]
-  --udp:send( mp.pack(meta_detect) )
+
+  -- LabelA
+  table.insert(debug_data, mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ))
+  -- YUYV
+  table.insert(debug_data, mp.pack(meta_j)..c_yuyv:compress(im,w,h))
+  -- Detection
+  table.insert(debug_data, mp.pack(meta_detect))
+
+  return debug_data
 end
 
 while true do
@@ -124,15 +132,20 @@ while true do
   
   -- Image Processing (Must do TOP then BOTTOM fully due to to_rgb pointer)
   local im_top = Body.get_img_top()
-  process_image(im_top, lut_top, udp_t, 1)
+  local top_data = process_image(im_top, lut_top, 1)
   local im_b = Body.get_img_bottom()
-  process_image(im_b, lut_b, udp_b, 2)
+  local btm_data = process_image(im_b, lut_b, 2)
   
   -- Motion update
   Motion.update()
   
   -- Update the state machines
 	for _,my_fsm in pairs(state_machines) do local event = my_fsm.update() end
+  
+  -- Send all the debug information
+  for _, v in ipairs(top_data) do s_t:send(v) end
+  for _, v in ipairs(btm_data) do s_b:send(v) end
+  
 end
 
 -- Exit

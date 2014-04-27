@@ -38,7 +38,7 @@ function entry()
     print("standupFromFront");
     keyframe.do_motion("standupFromFront");
   else
-    pose = wcm.get_pose();
+    pose = vector.pose(wcm.get_robot_pose());
     batt_level=Body.get_battery_level();
 
     if math.abs(pose.x) < 2.0 and

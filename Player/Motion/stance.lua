@@ -32,6 +32,7 @@ tEndWait=tEndWait/100;
 tStart=0;
 
 hardnessLeg = Config.stance.hardnessLeg or 1;
+hardnessArm = Config.walk.hardnessArm or 0.2;
 
 function entry()
   print("Motion SM:".._NAME.." entry");
@@ -51,6 +52,12 @@ function entry()
 
   Body.set_waist_hardness(1);
   Body.set_waist_command(0);
+  
+  --Place arms in appropriate position at sides
+  Body.set_larm_command(qLArm);
+  Body.set_rarm_command(qRArm);
+  Body.set_larm_hardness(hardnessArm);
+  Body.set_rarm_hardness(hardnessArm);
 
   t0 = Body.get_time();
 

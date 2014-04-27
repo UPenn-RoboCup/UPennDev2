@@ -130,7 +130,7 @@ function update()
     end
     for i = 1,nServo do
       Body.set_actuator_command(q[i], mot.servos[i]);
-      if Config.platform.name == 'NaoV4' then
+      if Config.PLATFORM_NAME == 'Nao' then
         Body.commanded_joint_angles[mot.servos[i]] = q[i];
       end
     end		

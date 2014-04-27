@@ -25,6 +25,7 @@ local nJointRLeg = 6
 local indexRArm = 19  --RArm: 22 23 24 25 26 27 28
 local nJointRArm = 4
 local nJoint = 22
+Body.nJoint = nJoint
 
 local parts = {
 	Head=vector.count(indexHead,nJointHead),
@@ -56,8 +57,9 @@ if IS_WEBOTS then
   
   -- Default configuration (toggle during run time)
   local ENABLE_CAMERA = true
+  local ENABLE_IMU    = true
   local ENABLE_POSE   = false
-  local ENABLE_IMU   = false
+  
 
   local jointNames = {
     "HeadYaw", "HeadPitch",
@@ -235,6 +237,7 @@ if IS_WEBOTS then
 
 		-- Set actuator commands from shared memory
 		for idx, jtag in ipairs(tags.joints) do
+      
 			local cmd = actuator.command[idx]
 			local pos = actuator.position[idx]
       local vel = 0
@@ -256,7 +259,7 @@ if IS_WEBOTS then
 			end
 
 			-- Only set in webots if Torque Enabled
-			if jtag>0 then
+			if jtag>0 and actuator.hardness[idx] > 0 then
         local pos = new_pos
         --SJ: Webots is STUPID so we should set direction correctly to prevent flip
         local val
@@ -357,7 +360,11 @@ if IS_WEBOTS then
   
   local function get_sensor_position(index)
     if (index) then
-      return webots.wb_motor_get_position(tags.joints[index]);
+      if webots.wb_motor_get_position then
+        return webots.wb_motor_get_position(tags.joints[index]);
+      else
+        return webots.wb_servo_get_position(tags.joints[index]);
+      end
     else
       local t = {};
       for i = 1,nJoint do
@@ -406,6 +413,18 @@ if IS_WEBOTS then
       end
     end
   end
+  
+  local function set_actuator_velocity(a, index)
+    index = index or 1;
+    if (type(a) == "number") then
+      actuator.velocity[index] = a;
+    else
+      for i = 1,#a do
+        actuator.velocity[index+i-1] = a[i];
+      end
+    end
+  end
+  Body.set_actuator_velocity = set_actuator_velocity
   
   function Body.get_head_position()
     local q = get_sensor_position()

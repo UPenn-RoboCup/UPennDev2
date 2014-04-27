@@ -60,8 +60,8 @@ end
 -- Keyframes --
 ---------------
 Config.km = {}
-Config.km.standup_front = 'km_NaoV4_StandupFromFront.lua'
-Config.km.standup_back  = 'km_NaoV4_StandupFromBack.lua'
+Config.km.standup_front = 'km_WebotsNao_StandupFromFront.lua'
+Config.km.standup_back  = 'km_WebotsNao_StandupFromBack.lua'
 
 -------------
 -- Cameras --

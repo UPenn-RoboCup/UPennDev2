@@ -32,7 +32,7 @@ for _,sm in ipairs(listing) do
     local name = sm:sub(1,found-1):lower()..'_ch'
     table.insert(fsm_ch_vars,name)
     -- Put into the global space
-    _G[name] = simple_ipc.new_publisher(sm,true)
+    _G[name] = simple_ipc.new_publisher(sm.."!")
   end
 end
 

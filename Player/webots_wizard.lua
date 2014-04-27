@@ -96,7 +96,7 @@ local function process_image(im, lut, udp, id)
   -- Add world coordinates? In arbitrator I guess
   local meta_world = {}
   if ball_v then
-    print('ball_v', ball_v)
+    --print('ball_v', ball_v)
     meta_world.ball = ball_v
   end
   -- Send images and labels to monitor

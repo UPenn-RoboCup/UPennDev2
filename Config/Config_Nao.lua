@@ -48,6 +48,7 @@ end
 local exo = {}
 exo.Walk = 'Walk'
 exo.Net = 'Net'
+exo.fsm = 'FSM'
 
 -- Load each exogenous Config file
 for k,v in pairs(exo) do
@@ -55,6 +56,10 @@ for k,v in pairs(exo) do
   local exo_config = require(exo_name)
   for kk,vv in pairs(exo_config) do Config[kk] = vv end
 end
+
+-- Override legacy...
+-- Which FSMs should be enabled?
+Config.fsm.enabled = {}
 
 ---------------
 -- Keyframes --
@@ -178,5 +183,24 @@ table.insert(Config.vision,{
     diameter = 0.065,
   }
   })
+  
+-- Legacy...
+local head = {}
+
+head.camOffsetZ = 0.41;
+head.pitchMin = -35*math.pi/180;
+head.pitchMax = 30*math.pi/180;
+head.yawMin = -120*math.pi/180;
+head.yawMax = 120*math.pi/180;
+--Update with naoV4 camera values
+head.cameraPos = {{0.05871, 0.0, 0.06364},
+                  {0.05071, 0.0, 0.01774}}; 
+head.cameraAngle = {{0.0, 1.2*math.pi/180, 0.0},
+                    {0.0, 39.7*math.pi/180, 0.0}};
+
+head.neckZ=0.14; --From CoM to neck joint
+head.neckX=0;  
+head.bodyTilt = 0;
+Config.head = head
 
 return Config

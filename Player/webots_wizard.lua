@@ -104,6 +104,12 @@ Motion = require'Motion'
 Motion.entry()
 Motion.event'standup'
 
+-- Add FSMs from old code
+--package.path = HOME..'/Player/Legacy/BodyFSM/?.lua;'..package.path
+package.path = HOME..'/Player/Legacy/HeadFSM/?.lua;'..package.path
+HeadFSM = require'HeadFSM'
+HeadFSM.entry()
+
 -- Process image should essentially be the same code as camera_wizard.lua
 -- NOTE: This sleep is important for flushing buffers of udp. Not sure why...
 local function process_image(im, lut, id)
@@ -127,6 +133,8 @@ local function process_image(im, lut, id)
   -- Add world coordinates? In arbitrator I guess
   if ball_v then
     --print('ball_v', ball_v)
+    wcm.set_ball_pos(ball_v)
+    wcm.set_ball_t(Body.get_time())
     meta_world.ball = ball_v
   end
 
@@ -143,6 +151,7 @@ local function process_image(im, lut, id)
 end
 
 while true do
+  local t = Body.get_time()
   -- Update the body
   Body.update()
   
@@ -155,6 +164,11 @@ while true do
   -- Motion update
   walk.set_velocity(unpack(mcm.get_walk_vel()))
   Motion.update()
+  
+  -- FSM updates
+  -- Hack
+  if t>5 and t<6 then HeadFSM.sm:set_state('headScan') end
+  HeadFSM.update()
   
   -- Update the state machines
 	for _,my_fsm in pairs(state_machines) do local event = my_fsm.update() end

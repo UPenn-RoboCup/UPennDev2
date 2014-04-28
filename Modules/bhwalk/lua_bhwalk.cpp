@@ -5,7 +5,12 @@
 #include <lua.hpp>
 #include "WalkingEngine.h"
 
+// Out state variables in C
+// TODO: These should kinda be in Lua. Let's do it later, though
+// NOTE: The general usage of WalkgingEngine is how Bowdoin does it
+// NOTE: From BHWalkProvider
 static WalkingEngine walkingEngine;
+static bool requestedToStop = false;
 
 const float INITIAL_BODY_POSE_ANGLES[] =
 {
@@ -33,29 +38,67 @@ bool hasPassed(const Pose2D& p1, const Pose2D& p2) {
           hasLargerMagnitude(p1.translation.y, p2.translation.y));
 }
 
-static int lua_is_standing (lua_State *L) {
+static int luaBH_is_standing (lua_State *L) {
   lua_pushboolean(
-                  L,
-                  walkingEngine.theMotionRequest.motion == MotionRequest::stand
-                 );
+    L,
+    walkingEngine.theMotionRequest.motion == MotionRequest::stand
+  );
   return 1;
 }
 
-static int lua_is_calibrated (lua_State *L) {
+static int luaBH_is_walk_active (lua_State *L) {
+  lua_pushboolean(
+    L,
+    !(isStanding() && walkingEngine.walkingEngineOutput.isLeavingPossible) && isActive()
+  );
+  return 1;
+}
+
+static int luaBH_is_calibrated (lua_State *L) {
   lua_pushboolean(L, walkingEngine.theInertiaSensorData.calibrated);
   return 1;
 }
 
-static int lua_get_hand_speeds (lua_State *L) {
-    lua_pushnumber(L, walkingEngine.leftHandSpeed);
-    lua_pushnumber(L, walkingEngine.rightHandSpeed);
-    return 2;
+static int luaBH_get_hand_speeds (lua_State *L) {
+  lua_pushnumber(L, walkingEngine.leftHandSpeed);
+  lua_pushnumber(L, walkingEngine.rightHandSpeed);
+  return 2;
+}
+
+static int luaBH_hard_reset (lua_State *L) {
+  inactive();
+
+  // reset odometry
+  walkingEngine.theOdometryData = OdometryData();
+
+  // Set the motion request
+  MotionRequest motionRequest;
+  motionRequest.motion = MotionRequest::specialAction;
+
+  motionRequest.specialActionRequest.specialAction = SpecialActionRequest::standUpBackNao;
+  currentCommand = MotionCommand::ptr();
+
+  walkingEngine.inertiaSensorCalibrator.reset();
+
+  requestedToStop = false;
+  // Nothing pushed
+  return 0;
+}
+
+// Request to stand
+static int luaBH_stand (lua_State *L) {
+    currentCommand = MotionCommand::ptr();
+    active();
+    return 0;
 }
 
 static const struct luaL_Reg bhwalk_lib [] = {
-  {"is_standing", lua_is_standing},
-  {"is_calibrated", lua_is_calibrated},
-  {"get_hand_speeds", lua_get_hand_speeds},
+  {"is_standing", luaBH_is_standing},
+  {"is_walk_active", luaBH_is_walk_active},
+  {"is_calibrated", luaBH_is_calibrated},
+  {"get_hand_speeds", luaBH_get_hand_speeds},
+  {"hard_reset", luaBH_hard_reset},
+  {"stand", luaBH_stand},
   {NULL, NULL}
 };
 

@@ -15,12 +15,12 @@
 
 FallDownStateDetector::FallDownStateDetector()
 {
-  InConfigMap stream("/home/nao/bhwalk/config/fallDownStateDetector.cfg");
+  InConfigMap stream("/usr/local/share/bhwalk/config/fallDownStateDetector.cfg");
   if(stream.exists())
     stream >> parameters;
   else
   {
-    InConfigMap stream("fallDownStateDetector.cfg");
+    InConfigMap stream("/usr/local/share/bhwalk/config/fallDownStateDetector.cfg");
     ASSERT(stream.exists());
     stream >> parameters;
   }

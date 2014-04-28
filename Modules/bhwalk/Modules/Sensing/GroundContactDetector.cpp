@@ -24,7 +24,7 @@ GroundContactDetector::GroundContactDetector() :
 
 void GroundContactDetector::init()
 {
-  InConfigMap stream("/home/nao/bhwalk/config/groundContact.cfg");
+  InConfigMap stream("/usr/local/share/bhwalk/config/groundContact.cfg");
   if(stream.exists())
     stream >> p;
   else

@@ -39,7 +39,7 @@
 #include "Tools/RingBuffer.h"
 #include "Tools/RingBufferWithSum.h"
 #include "Tools/Math/Matrix.h"
-#include "Platform/SystemCall.h"
+//#include "Platform/SystemCall.h"
 //#include "Tools/Optimization/ParticleSwarm.h"
 #include "WalkingEngineKick.h"
 
@@ -540,13 +540,14 @@ private:
     WalkingEngineKick kicks[(WalkRequest::numOfKickTypes - 1) / 2];
   };
 
-//  PROCESS_WIDE_STORAGE_STATIC(WalkingEngine) theInstance; /**< Points to the only instance of this class in this process or is 0 if there is none */
+//  PROCESS_WIDE_STORAGE_STATIC(WalkingEngine) theInstance;
+  /**< Points to the only instance of this class in this process or is 0 if there is none */
   Parameters p; /**< The walking engine parameters */
 
   void init();
 
   public:
-  void update();
+  void update( unsigned int t);
 
   //read from config
   JointCalibration theJointCalibration;

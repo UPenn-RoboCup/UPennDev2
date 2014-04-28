@@ -12,7 +12,6 @@ BH_SOURCES=\
 					 MotionSelector.cpp \
 					 WalkingEngine.cpp \
 					 WalkingEngineKick.cpp \
-					 Modules/Infrastructure/NaoProvider.cpp \
 					 Modules/Sensing/TorsoMatrixProvider.cpp \
 					 Modules/Sensing/RobotModelProvider.cpp \
 					 Modules/Sensing/FallDownStateDetector.cpp \
@@ -26,9 +25,8 @@ BH_SOURCES=\
 					 Representations/MotionControl/MotionSelection.cpp \
 					 Platform/BHAssert.cpp \
 					 Platform/File.cpp \
-					 Platform/SystemCall.cpp \
-					 Tools/Enum.cpp \
 					 Tools/Global.cpp \
+					 Tools/Enum.cpp \
 					 Tools/Math/Matrix.cpp \
 					 Tools/Math/Pose2D.cpp \
 					 Tools/Math/RotationMatrix.cpp \
@@ -39,7 +37,9 @@ BH_SOURCES=\
 					 Tools/Streams/Streamable.cpp \
 					 Tools/Configuration/ConfigMap.cpp \
 					 Tools/Configuration/ConfigMapParser.cpp
-
+					 
+#					 Modules/Infrastructure/NaoProvider.cpp
+#					 Platform/SystemCall.cpp
 #					 Representations/MotionControl/BikeRequest.cpp
 #					 Representations/MotionControl/MotionRequest.cpp
 
@@ -62,9 +62,11 @@ ifeq ($(OSTYPE),darwin)
 					 -lm \
 					 -L/usr/local/lib
 	CXX=clang++
+	SHLIBEXT=dylib
 else
 	LD=g++
 	LDFLAGS=-shared -fpic -lm -lrt
+	SHLIBEXT=so
 endif
 
 all: bhwalk
@@ -76,7 +78,9 @@ lua_bhwalk.o:
 	$(CXX) $(CXXFLAGS) -I/usr/local/include lua_bhwalk.cpp -o lua_bhwalk.o
 
 install:
-	cp libbhwalk.so /usr/local/lib
+	cp libbhwalk.$(SHLIBEXT) /usr/local/lib
+	mkdir -p /usr/local/share/bhwalk
+	cp -r config /usr/local/share/bhwalk/
 
 clean:
 	rm -f $(BH_OBJECTS)
@@ -91,8 +95,8 @@ ifeq ($(OSTYPE),darwin)
 libbhwalk: $(BH_OBJECTS)
 	$(LD) -dylib $^ $(LDFLAGS) -o $@.dylib
 
-bhwalk: $(BH_OBJECTS) lua_bhwalk.cpp.o
-	$(LD) -bundle $^ $(LDFLAGS) -o $@.so
+bhwalk: lua_bhwalk.o
+	$(LD) -bundle $^ $(LDFLAGS) -lbhwalk -o $@.so
 
 else
 	# Linux linking and installation

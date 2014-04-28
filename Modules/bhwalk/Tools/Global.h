@@ -6,7 +6,10 @@
 
 #pragma once
 
-#include "Platform/SystemCall.h"
+#define PROCESS_WIDE_STORAGE(type) __thread type*
+#define PROCESS_WIDE_STORAGE_STATIC(type) static PROCESS_WIDE_STORAGE(type)
+
+//#include "Platform/SystemCall.h"
 
 // Only declare prototypes. Don't include anything here, because this
 // file is included in many other files.

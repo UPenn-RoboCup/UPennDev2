@@ -87,7 +87,8 @@ static int luaBH_get_odometry (lua_State *L) {
 }
 
 static int luaBH_update (lua_State *L) {
-  walkingEngine.update();
+	unsigned int t = luaL_checkinteger(L, 1);
+  walkingEngine.update(t);
   return 0;
 }
 

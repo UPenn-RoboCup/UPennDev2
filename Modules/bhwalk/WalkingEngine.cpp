@@ -17,7 +17,6 @@
 //#include "Platform/SoundPlayer.h"
 
 //#include "NaoPaths.h"
-#define BH_CONFIG_DIR /home/nao/bhwalk/config
 
 using namespace std;
 
@@ -151,42 +150,42 @@ WalkingEngine::WalkingEngine() : emergencyShutOff(false), currentMotionType(stan
 void WalkingEngine::init()
 {
     // load parameters from config file
-    InConfigMap massesStream("/home/nao/bhwalk/config/masses.cfg");
+    InConfigMap massesStream("/usr/local/share/bhwalk/config/masses.cfg");
     if (massesStream.exists()) {
         massesStream >> theMassCalibration;
     } else {
         cout << "Could not find masses.cfg!" << endl;
     }
 
-    InConfigMap robotDimStream("/home/nao/bhwalk/config/robotDimensions.cfg");
+    InConfigMap robotDimStream("/usr/local/share/bhwalk/config/robotDimensions.cfg");
     if (robotDimStream.exists()) {
         robotDimStream >> theRobotDimensions;
     } else {
         cout << "Could not find robotDims.cfg!" << endl;
     }
 
-    InConfigMap jointCalibrateStream("/home/nao/bhwalk/config/jointCalibration.cfg");
+    InConfigMap jointCalibrateStream("/usr/local/share/bhwalk/config/jointCalibration.cfg");
     if (jointCalibrateStream.exists()) {
         jointCalibrateStream >> theJointCalibration;
     } else {
         cout << "Could not find jointCalibration.cfg!" << endl;
     }
 
-    InConfigMap sensorCalibrateStream("/home/nao/bhwalk/config/sensorCalibration.cfg");
+    InConfigMap sensorCalibrateStream("/usr/local/share/bhwalk/config/sensorCalibration.cfg");
     if (sensorCalibrateStream.exists()) {
         sensorCalibrateStream >> theSensorCalibration;
     } else {
         cout << "Could not find sensorCalibration.cfg!" << endl;
     }
 
-    InConfigMap hardnessStream("/home/nao/bhwalk/config/jointHardness.cfg");
+    InConfigMap hardnessStream("/usr/local/share/bhwalk/config/jointHardness.cfg");
     if (hardnessStream.exists()) {
         hardnessStream >> defaultHardnessData;
     } else {
         cout << "Could not find jointHardness.cfg!" << endl;
     }
 
-  InConfigMap stream("/home/nao/bhwalk/config/walking.cfg");
+  InConfigMap stream("/usr/local/share/bhwalk/config/walking.cfg");
   if(stream.exists())
     stream >> p;
   else
@@ -208,7 +207,7 @@ void WalkingEngine::init()
   balanceStepSize = p.balanceStepSize;
 }
 
-void WalkingEngine::update()
+void WalkingEngine::update(unsigned int t)
 {
 
     //set the motion selection
@@ -216,7 +215,7 @@ void WalkingEngine::update()
 
     //get new joint, sensor and frame info data
     theFrameInfo.cycleTime = 0.01f;
-    theFrameInfo.time = theJointData.timeStamp = theSensorData.timeStamp = SystemCall::getCurrentSystemTime();
+    theFrameInfo.time = theJointData.timeStamp = theSensorData.timeStamp = t;
 
     //calibrate joints
     for(int i = 0; i < JointData::numOfJoints; ++i) {

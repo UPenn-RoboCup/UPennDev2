@@ -9,7 +9,7 @@
 #include <cstdio>
 
 #include "NaoProvider.h"
-#include "Platform/SystemCall.h"
+//#include "Platform/SystemCall.h"
 
 #ifdef MEASURE_DELAY
 #include "Tools/Streams/InStreams.h"
@@ -173,8 +173,12 @@ void NaoProvider::send(JointRequest &theJointRequest, JointCalibration &theJoint
 //  naoBody.closeActuators();
 }
 
-void NaoProvider::update(JointData& jointData, const JointCalibration &theJointCalibration,
-        SensorData& sensorData, const SensorCalibration &theSensorCalibration, FrameInfo& frameInfo)
+void NaoProvider::update(
+  JointData& jointData,
+  const JointCalibration &theJointCalibration,
+  SensorData& sensorData,
+  const SensorCalibration &theSensorCalibration,
+  FrameInfo& frameInfo)
 {
   frameInfo.cycleTime = 0.01f;
   frameInfo.time = jointData.timeStamp = sensorData.timeStamp = SystemCall::getCurrentSystemTime();

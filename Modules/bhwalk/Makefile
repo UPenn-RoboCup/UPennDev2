@@ -15,22 +15,23 @@ BH_SOURCES=\
 					 MotionSelector.cpp \
 					 WalkingEngine.cpp \
 					 WalkingEngineKick.cpp \
-					 Modules/Sensing/FallDownStateDetector.cpp \
-					 Modules/Sensing/GroundContactDetector.cpp \
-					 Modules/Sensing/InertiaSensorCalibrator.cpp \
-					 Modules/Sensing/InertiaSensorFilter.cpp \
-					 Modules/Sensing/InertiaSensorInspector.cpp \
-					 Modules/Sensing/JointFilter.cpp \
-					 Modules/Sensing/RobotModelProvider.cpp \
-					 Modules/Sensing/SensorFilter.cpp \
-					 Modules/Sensing/TorsoMatrixProvider.cpp \
+			     Modules/Infrastructure/NaoProvider.cpp \
+			     Modules/Sensing/TorsoMatrixProvider.cpp \
+			     Modules/Sensing/RobotModelProvider.cpp \
+			     Modules/Sensing/FallDownStateDetector.cpp \
+			     Modules/Sensing/GroundContactDetector.cpp \
+			     Modules/Sensing/InertiaSensorCalibrator.cpp \
+			     Modules/Sensing/InertiaSensorFilter.cpp \
+			     Modules/Sensing/InertiaSensorInspector.cpp \
+			     Modules/Sensing/JointFilter.cpp \
+			     Modules/Sensing/SensorFilter.cpp \
 					 Representations/Sensing/RobotModel.cpp \
+					 Representations/MotionControl/MotionSelection.cpp \
 					 Representations/MotionControl/BikeRequest.cpp \
 					 Representations/MotionControl/MotionRequest.cpp \
-					 Representations/MotionControl/MotionSelection.cpp \
-					 Platform/SystemCall.cpp \
 					 Platform/BHAssert.cpp \
 					 Platform/File.cpp \
+					 Platform/SystemCall.cpp \
 					 Tools/Enum.cpp \
 					 Tools/Global.cpp \
 					 Tools/Math/Matrix.cpp \

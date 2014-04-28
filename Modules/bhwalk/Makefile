@@ -1,9 +1,6 @@
-## Makefile Method for making torch into a module for any lua
-## Daniel D. Lee, Feb 2013.
-## <ddlee@seas.upenn.edu>
+## Makefile Method for making BHuman Walk from nbites
 ## Stephen McGill, Apr 2014
 ## <smcgill3@seas.upenn.edu>
-# http://clang.llvm.org/docs/ClangTools.html (unordered map)
 
 ifndef OSTYPE 
 	OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
@@ -77,6 +74,9 @@ all: bhwalk
 
 lua_bhwalk.o:
 	$(CXX) $(CXXFLAGS) -I/usr/local/include lua_bhwalk.cpp -o lua_bhwalk.o
+
+install:
+	cp libbhwalk.so /usr/local/lib
 
 clean:
 	rm -f $(BH_OBJECTS)

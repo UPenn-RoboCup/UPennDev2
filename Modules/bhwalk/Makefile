@@ -15,20 +15,18 @@ BH_SOURCES=\
 					 MotionSelector.cpp \
 					 WalkingEngine.cpp \
 					 WalkingEngineKick.cpp \
-			     Modules/Infrastructure/NaoProvider.cpp \
-			     Modules/Sensing/TorsoMatrixProvider.cpp \
-			     Modules/Sensing/RobotModelProvider.cpp \
-			     Modules/Sensing/FallDownStateDetector.cpp \
-			     Modules/Sensing/GroundContactDetector.cpp \
-			     Modules/Sensing/InertiaSensorCalibrator.cpp \
-			     Modules/Sensing/InertiaSensorFilter.cpp \
-			     Modules/Sensing/InertiaSensorInspector.cpp \
-			     Modules/Sensing/JointFilter.cpp \
-			     Modules/Sensing/SensorFilter.cpp \
+					 Modules/Infrastructure/NaoProvider.cpp \
+					 Modules/Sensing/TorsoMatrixProvider.cpp \
+					 Modules/Sensing/RobotModelProvider.cpp \
+					 Modules/Sensing/FallDownStateDetector.cpp \
+					 Modules/Sensing/GroundContactDetector.cpp \
+					 Modules/Sensing/InertiaSensorCalibrator.cpp \
+					 Modules/Sensing/InertiaSensorFilter.cpp \
+					 Modules/Sensing/InertiaSensorInspector.cpp \
+					 Modules/Sensing/JointFilter.cpp \
+					 Modules/Sensing/SensorFilter.cpp \
 					 Representations/Sensing/RobotModel.cpp \
 					 Representations/MotionControl/MotionSelection.cpp \
-					 Representations/MotionControl/BikeRequest.cpp \
-					 Representations/MotionControl/MotionRequest.cpp \
 					 Platform/BHAssert.cpp \
 					 Platform/File.cpp \
 					 Platform/SystemCall.cpp \
@@ -45,19 +43,20 @@ BH_SOURCES=\
 					 Tools/Configuration/ConfigMap.cpp \
 					 Tools/Configuration/ConfigMapParser.cpp
 
+#					 Representations/MotionControl/BikeRequest.cpp
+#					 Representations/MotionControl/MotionRequest.cpp
 
 BH_OBJECTS=$(BH_SOURCES:.cpp=.o)
 
 CXXFLAGS= \
-					-c \
+					-c -g \
+					-fpic \
 					-I/usr/local/include -I. \
 					-I/usr/include/lua5.1 \
-					-O3 -fpic \
-					-fno-stack-protector \
-					-fomit-frame-pointer \
 					-DRELEASE
+#	-fno-stack-protector -fomit-frame-pointer
 #	-pedantic -Wall -Wno-unused-function -Wno-unknown-pragmas
-#	-march=native -mtune=native
+#	-march=native -mtune=native -O3
 #-std=c++11
 
 ifeq ($(OSTYPE),darwin)

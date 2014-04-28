@@ -1,18 +1,9 @@
 /*
- Lua Octomap Wrapper
-(c) 2013 Stephen McGill
+ Lua BHuman Wrapper
+(c) 2014 Stephen McGill
 */
 #include <lua.hpp>
-#include <stdio.h>
-#include <vector>
-#include <string>
-
 #include "WalkingEngine.h"
-
-using namespace std;
-
-// NOTE: This variable could cause segfaults, see OpenNI for how to use C++ objs
-static WalkingEngine walkingEngine;
 
 const float INITIAL_BODY_POSE_ANGLES[] =
 {
@@ -22,7 +13,7 @@ const float INITIAL_BODY_POSE_ANGLES[] =
         1.57f, -0.18f, 1.43f, 0.23f
 };
 
-inline bool hasLargerMagnitude(float x, float y) {
+bool hasLargerMagnitude(float x, float y) {
     if (y > 0.0f)
         return x > y;
     if (y < 0.0f)
@@ -41,11 +32,15 @@ bool hasPassed(const Pose2D& p1, const Pose2D& p2) {
 }
 
 static int lua_is_standing( lua_State *L ) {
-  
+  /*
+  static WalkingEngine walkingEngine;
+
   lua_pushboolean(
     L, walkingEngine.theMotionRequest.motion == MotionRequest::stand);
   
 	return 1;
+  */
+  return 0;
 }
 
 static const struct luaL_Reg bhwalk_lib [] = {

@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
+
 #include <cstring>
 #include <cstdio>
 #include <cstdarg>
@@ -240,6 +241,11 @@ const char* File::getBHDir()
   return dir;
 }
 #endif
+
+const char* File::getBHDir() {
+  static char dir[FILENAME_MAX] = "/home/nao/bhwalk/";
+  return dir;
+}
 
 
 bool File::isAbsolute(const char* path)

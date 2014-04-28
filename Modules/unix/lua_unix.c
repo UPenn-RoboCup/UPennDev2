@@ -112,6 +112,21 @@ static int lua_time(lua_State *L) {
   return 1;
 }
 
+static int lua_time_ms(lua_State *L) {
+	// Answer is in milliseconds
+	// Used for BHuman code
+#ifdef __APPLE__
+  struct timeval t;
+  gettimeofday(&t, NULL);
+	lua_pushinteger(L, t.tv_sec * 1000 + t.tv_usec / 1000l);
+#else
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	lua_pushinteger(L, ts.tv_sec * 1000 + ts.tv_nsec / 1000000l);
+#endif
+  return 1;
+}
+
 static int lua_openfd(lua_State *L) {
   const char *path = luaL_checkstring(L, 1);
   int oflag = luaL_optinteger(L, 2, O_RDONLY);
@@ -301,6 +316,7 @@ static const struct luaL_Reg unix_lib [] = {
   {"chdir", lua_chdir},
   {"readdir", lua_readdir},
   {"time", lua_time},
+  {"time_ms", lua_time_ms},
   {"open", lua_openfd},
   {"close", lua_closefd},
   {"fdopen", lua_fdopen},

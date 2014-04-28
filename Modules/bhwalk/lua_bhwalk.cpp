@@ -32,9 +32,8 @@ bool hasPassed(const Pose2D& p1, const Pose2D& p2) {
 }
 
 static int lua_is_standing( lua_State *L ) {
+  WalkingEngine walkingEngine;
   /*
-  static WalkingEngine walkingEngine;
-
   lua_pushboolean(
     L, walkingEngine.theMotionRequest.motion == MotionRequest::stand);
   

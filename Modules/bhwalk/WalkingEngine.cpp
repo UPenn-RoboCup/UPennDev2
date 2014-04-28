@@ -17,7 +17,7 @@
 //#include "Platform/SoundPlayer.h"
 
 //#include "NaoPaths.h"
-#define BH_CONFIG_DIR /home/nao/bh_config
+#define BH_CONFIG_DIR /home/nao/bhwalk/config
 
 using namespace std;
 
@@ -151,42 +151,42 @@ WalkingEngine::WalkingEngine() : emergencyShutOff(false), currentMotionType(stan
 void WalkingEngine::init()
 {
     // load parameters from config file
-    InConfigMap massesStream("BH_CONFIG_DIR/masses.cfg");
+    InConfigMap massesStream("/home/nao/bhwalk/config/masses.cfg");
     if (massesStream.exists()) {
         massesStream >> theMassCalibration;
     } else {
         cout << "Could not find masses.cfg!" << endl;
     }
 
-    InConfigMap robotDimStream("BH_CONFIG_DIR/robotDimensions.cfg");
+    InConfigMap robotDimStream("/home/nao/bhwalk/config/robotDimensions.cfg");
     if (robotDimStream.exists()) {
         robotDimStream >> theRobotDimensions;
     } else {
         cout << "Could not find robotDims.cfg!" << endl;
     }
 
-    InConfigMap jointCalibrateStream("BH_CONFIG_DIR/jointCalibration.cfg");
+    InConfigMap jointCalibrateStream("/home/nao/bhwalk/config/jointCalibration.cfg");
     if (jointCalibrateStream.exists()) {
         jointCalibrateStream >> theJointCalibration;
     } else {
         cout << "Could not find jointCalibration.cfg!" << endl;
     }
 
-    InConfigMap sensorCalibrateStream("BH_CONFIG_DIR/sensorCalibration.cfg");
+    InConfigMap sensorCalibrateStream("/home/nao/bhwalk/config/sensorCalibration.cfg");
     if (sensorCalibrateStream.exists()) {
         sensorCalibrateStream >> theSensorCalibration;
     } else {
         cout << "Could not find sensorCalibration.cfg!" << endl;
     }
 
-    InConfigMap hardnessStream("BH_CONFIG_DIR/jointHardness.cfg");
+    InConfigMap hardnessStream("/home/nao/bhwalk/config/jointHardness.cfg");
     if (hardnessStream.exists()) {
         hardnessStream >> defaultHardnessData;
     } else {
         cout << "Could not find jointHardness.cfg!" << endl;
     }
 
-  InConfigMap stream("BH_CONFIG_DIRwalking.cfg");
+  InConfigMap stream("/home/nao/bhwalk/config/walking.cfg");
   if(stream.exists())
     stream >> p;
   else

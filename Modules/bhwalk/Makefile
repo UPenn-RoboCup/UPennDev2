@@ -51,8 +51,7 @@ BH_OBJECTS=$(BH_SOURCES:.cpp=.o)
 CXXFLAGS= \
 					-c -g \
 					-fpic \
-					-I/usr/local/include -I. \
-					-I/usr/include/lua5.1 \
+					-I. \
 					-DRELEASE
 #	-fno-stack-protector -fomit-frame-pointer
 #	-pedantic -Wall -Wno-unused-function -Wno-unknown-pragmas
@@ -76,12 +75,12 @@ all: bhwalk
 .cpp.o:
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-lua_bhwalk.cpp.o:
-	$(CXX) $(CXXFLAGS) lua_bhwalk.cpp -o lua_bhwalk.cpp.o
+lua_bhwalk.o:
+	$(CXX) $(CXXFLAGS) -I/usr/local/include lua_bhwalk.cpp -o lua_bhwalk.o
 
 clean:
 	rm -f $(BH_OBJECTS)
-	rm -f *.so
+	rm -f *.so *.o
 
 ifeq ($(OSTYPE),darwin)
 	# OSX linking and installation
@@ -89,21 +88,19 @@ ifeq ($(OSTYPE),darwin)
 	# GCC is -dynamiclib, clang is -dylib for the DYLIB
 	# lua loads .so files, dylib files are linked
 
-libbh: $(BH_OBJECTS)
-	$(LD) -bundle $^ $(LDFLAGS) -o $@.so
-	#	$(LD) -dylib $^ $(LDFLAGS) -o $@.dylib
+libbhwalk: $(BH_OBJECTS)
+	$(LD) -dylib $^ $(LDFLAGS) -o $@.dylib
 
 bhwalk: $(BH_OBJECTS) lua_bhwalk.cpp.o
 	$(LD) -bundle $^ $(LDFLAGS) -o $@.so
-	#	$(LD) -dylib $^ $(LDFLAGS) -o $@.dylib
 
 else
 	# Linux linking and installation
 
-libbh: $(BH_OBJECTS)
+libbhwalk: $(BH_OBJECTS)
 	$(LD) $^ $(LDFLAGS) -o $@.so
 
-bhwalk: $(BH_OBJECTS) lua_bhwalk.cpp.o
-	$(LD) $^ $(LDFLAGS) -o $@.so
+bhwalk: lua_bhwalk.o
+	$(LD) $^ $(LDFLAGS) -lbhwalk -o $@.so
 
 endif

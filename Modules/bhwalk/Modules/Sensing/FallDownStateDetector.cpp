@@ -13,11 +13,9 @@
 //#include "Tools/Settings.h"
 //#include "Tools/Debugging/DebugDrawings.h"
 
-#define BH_CONFIG_DIR /home/nao/bh_config
-
 FallDownStateDetector::FallDownStateDetector()
 {
-  InConfigMap stream("BH_CONFIG_DIR/fallDownStateDetector.cfg");
+  InConfigMap stream("/home/nao/bhwalk/config/fallDownStateDetector.cfg");
   if(stream.exists())
     stream >> parameters;
   else

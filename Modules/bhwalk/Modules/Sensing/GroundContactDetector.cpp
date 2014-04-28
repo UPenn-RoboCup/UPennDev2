@@ -14,8 +14,6 @@
 #include <algorithm>
 #include <iostream>
 
-#define BH_CONFIG_DIR /home/nao/bh_config
-
 //MAKE_MODULE(GroundContactDetector, Sensing)
 
 GroundContactDetector::GroundContactDetector() :
@@ -26,7 +24,7 @@ GroundContactDetector::GroundContactDetector() :
 
 void GroundContactDetector::init()
 {
-  InConfigMap stream("BH_CONFIG_DIR/groundContact.cfg");
+  InConfigMap stream("/home/nao/bhwalk/config/groundContact.cfg");
   if(stream.exists())
     stream >> p;
   else

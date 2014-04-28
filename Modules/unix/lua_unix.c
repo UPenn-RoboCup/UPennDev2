@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <dirent.h>
 #include <sys/time.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>

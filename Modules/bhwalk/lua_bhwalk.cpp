@@ -43,12 +43,18 @@ static int luaBH_get_odometry (lua_State *L) {
   return 3;
 }
 
+static int luaBH_update (lua_State *L) {
+  walkingEngine.update();
+  return 0;
+}
+
 static const struct luaL_Reg bhwalk_lib [] = {
   {"get_motion_request", luaBH_get_motion_request},
   {"is_leaving_possible", luaBH_is_leaving_possible},
   {"is_calibrated", luaBH_is_calibrated},
   {"get_hand_speeds", luaBH_get_hand_speeds},
   {"get_odometry", luaBH_get_odometry},
+  {"get_update", luaBH_update},
   {NULL, NULL}
 };
 

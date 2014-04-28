@@ -130,6 +130,39 @@ static int luaBH_set_sensor_currents (lua_State *L) {
   return 0;
 }
 
+static int luaBH_set_sensor_gyro (lua_State *L) {
+  SensorData& bh_sensors = walkingEngine.theSensorData;
+  bh_sensors.data[SensorData::gyroX] = luaL_checknumber(L, 1);
+  bh_sensors.data[SensorData::gyroY] = luaL_checknumber(L, 2);
+  return 0;
+}
+
+static int luaBH_set_sensor_acc (lua_State *L) {
+  SensorData& bh_sensors = walkingEngine.theSensorData;
+  bh_sensors.data[SensorData::accX] = luaL_checknumber(L, 1);
+  bh_sensors.data[SensorData::accY] = luaL_checknumber(L, 2);
+  bh_sensors.data[SensorData::accZ] = luaL_checknumber(L, 3);
+  return 0;
+}
+
+static int luaBH_set_sensor_lfsr (lua_State *L) {
+  SensorData& bh_sensors = walkingEngine.theSensorData;
+  bh_sensors.data[SensorData::fsrLFL] = luaL_checknumber(L, 1);
+  bh_sensors.data[SensorData::fsrLFR] = luaL_checknumber(L, 2);
+  bh_sensors.data[SensorData::fsrLBL] = luaL_checknumber(L, 3);
+  bh_sensors.data[SensorData::fsrLBR] = luaL_checknumber(L, 4);
+  return 0;
+}
+
+static int luaBH_set_sensor_rfsr (lua_State *L) {
+  SensorData& bh_sensors = walkingEngine.theSensorData;
+  bh_sensors.data[SensorData::fsrRFL] = luaL_checknumber(L, 1);
+  bh_sensors.data[SensorData::fsrRFR] = luaL_checknumber(L, 2);
+  bh_sensors.data[SensorData::fsrRBL] = luaL_checknumber(L, 3);
+  bh_sensors.data[SensorData::fsrRBR] = luaL_checknumber(L, 4);
+  return 0;
+}
+
 static int luaBH_get_joint_angles (lua_State *L) {
   // Make the table
   lua_createtable(L, JointData::numOfJoints, 0);

@@ -11,8 +11,8 @@ for i=1,nJoint do
   jAngles[i] = 0
   jCurrents[i] = 0
 end
-bhwalk.walk_request(10,10,0)
 for i=1,5 do
+  bhwalk.walk_request(10,10,0)
   bhwalk.set_sensor_angles(jAngles)
   bhwalk.set_sensor_currents(jCurrents)
   bhwalk.update()

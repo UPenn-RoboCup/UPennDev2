@@ -33,7 +33,7 @@ bool hasPassed(const Pose2D& p1, const Pose2D& p2) {
           hasLargerMagnitude(p1.translation.y, p2.translation.y));
 }
 
-static int lua_is_standing( lua_State *L ) {
+static int lua_is_standing (lua_State *L) {
   lua_pushboolean(
                   L,
                   walkingEngine.theMotionRequest.motion == MotionRequest::stand
@@ -41,8 +41,21 @@ static int lua_is_standing( lua_State *L ) {
   return 1;
 }
 
+static int lua_is_calibrated (lua_State *L) {
+  lua_pushboolean(L, walkingEngine.theInertiaSensorData.calibrated);
+  return 1;
+}
+
+static int lua_get_hand_speeds (lua_State *L) {
+    lua_pushnumber(L, walkingEngine.leftHandSpeed);
+    lua_pushnumber(L, walkingEngine.rightHandSpeed);
+    return 2;
+}
+
 static const struct luaL_Reg bhwalk_lib [] = {
   {"is_standing", lua_is_standing},
+  {"is_calibrated", lua_is_calibrated},
+  {"get_hand_speeds", lua_get_hand_speeds},
   {NULL, NULL}
 };
 

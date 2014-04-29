@@ -158,7 +158,12 @@ end
 
 -- Get the color stats for a bounding box
 -- TODO: Add tilted color stats if needed
-function ImageProc.color_stats ()
+-- TODO: use the bbox in the for loop
+function ImageProc.color_stats (label_t, bbox, color)
+  local i0 = 0
+  local i1 = label_t:size(2) - 1
+  local j0 = 0
+  local j1 = label_t:size(1) - 1
   
 	-- Initialize statistics
 	local area = 0
@@ -167,10 +172,30 @@ function ImageProc.color_stats ()
 	local sumI, sumJ = 0, 0
 	local sumII, sumJJ, sumIJ = 0, 0, 0
   
-  for j=0,ha-1 do
-    for i=0,wa-1 do
+  local l_ptr, label = label_t:data()
+  for j=j0,j1 do
+    for i=i0,i1 do
+      label = l_ptr[0]
+      l_ptr = l_ptr + 1
+			if label == color then
+				-- Increment area size
+				area = area + 1
+				-- Update min/max row/column values
+				if i < minI then minI = i end
+				if i > maxI then maxI = i end
+				if j < minJ then minJ = j end
+				if j > maxJ then maxJ = j end
+				-- Update the sums
+				sumI = sumI + i
+				sumJ = sumJ + j
+				sumII = sumII + i * i
+				sumJJ = sumJJ + j * j
+				sumIJ = sumIJ + i * j
+      end
+      -- If      
     end
   end
+  
 end
 
 -- TODO: Add the line state machine

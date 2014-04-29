@@ -78,7 +78,7 @@ end
 
 local function unroll_meta(self)
 	-- Read the metadata
-	local f_m = io.open(self.m_name,'r')
+	local f_m = assert(io.open(self.m_name,'r'))
 	-- Must use an unpacker...
 	local metadata = {}
 	local u = mp.unpacker(2048)
@@ -94,12 +94,13 @@ local function unroll_meta(self)
 		buf = f_m:read(left)
 	end
 	f_m:close()
+  self.metadata = metadata
 	return metadata
 end
 
-local function log_iter(self,metadata,prefix)
-	local buf_t
-	local f_r = io.open(DIR..'/'..prefix..'_r_'..date..'.log','r')
+local function log_iter(self)
+	local metadata, buf_t = self.metadata
+	local f_r = io.open(self.r_name,'r')
 	local i, n = 0, #metadata
 	if C then buf_t = torch.ByteTensor() end
 	local function iter(param, state)
@@ -125,7 +126,7 @@ end
 function libLog.open(dir,date,prefix)
 	local t = {}
 	t.m_name = dir..'/'..prefix..'_m_'..date..'.log'
-	t.r_name = dir..'/'..prefix..'uvc_r_'..date..'.log'
+	t.r_name = dir..'/'..prefix..'_r_'..date..'.log'
 	t.unroll_meta = unroll_meta
 	t.log_iter = log_iter
 	return t

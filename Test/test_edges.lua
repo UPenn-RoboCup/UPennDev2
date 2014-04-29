@@ -8,11 +8,10 @@ local bit = require'bit'
 date = '04.17.2014.16.34.17'
 DIR = HOME..'/Logs/'
 local replay = libLog.open(DIR,date,'uvc')
-util.ptable(replay)
 local metadata = replay:unroll_meta()
 print('Unlogging',#metadata,'images')
 
-local d = replay:log_iter(metadata)
+local d = replay:log_iter()
 
 -- Convolution kernel
 local kern = torch.IntTensor({

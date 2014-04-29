@@ -8,6 +8,7 @@ local lshift = bit.lshift
 local rshift = bit.rshift
 local band   = bit.band
 local bor    = bit.bor
+local RadonTransform = require'ImageProc.ffi.RadonTransform'
 
 -- Widths and Heights of Image, LabelA, LabelB
 local w, h, wa, ha, wb, hb
@@ -129,11 +130,11 @@ local function block_bitor2 (label_t)
   for jb=0,hb-1 do
     for ib=0,wb-1 do
       b_ptr[0] = bor(a_ptr[0],a_ptr[1],a_ptr1[0],a_ptr1[1])
+      -- Move b
+      b_ptr = b_ptr + 1
       -- Move to the next pixel
       a_ptr = a_ptr + 2
       a_ptr1 = a_ptr1 + 2
-      -- Move b
-      b_ptr = b_ptr + 1
     end
     -- Move another row, too
     a_ptr = a_ptr + wa
@@ -158,6 +159,47 @@ function ImageProc.color_stats ()
     for i=0,wa-1 do
     end
   end
+end
+
+-- TODO: Add the line state machine
+function ImageProc.line_stats (edge_t, threshold)
+  threshold = threshold or 0
+  local j, i, label0, label1
+  -- Clear out any old transform
+  RadonTransform:init()
+  
+  -- Scan for vertical field line pixels
+  local e_ptr = edge_t:data()
+  for j=0, edge_t:size(1)-1 do
+    -- Use -2 and not -1 since we do not go to the edge
+    for i=0, edge_t:size(2)-2 do
+      label0 = e_ptr[0]
+      e_ptr = e_ptr + 1
+      label1 = e_ptr[0]
+      if label0>threshold and label1>threshold then
+        RadonTransform.addVerticalPixel(i, j)
+      end
+    end
+  end
+  
+  -- Scan for horizontal field line pixels
+  local e_ptr_l = edge_t:data()
+  local e_ptr_r = e_ptr_l
+  for j=0, edge_t:size(1)-2 do
+    -- Use -2 and not -1 since we do not go to the edge
+    for i=0, edge_t:size(2)-1 do
+      label0 = e_ptr_l[0]
+      e_ptr_l = e_ptr_l + 1
+      label1 = e_ptr_r[0]
+      e_ptr_r = e_ptr_r + 1
+      if label0>threshold and label1>threshold then
+        RadonTransform.addHorizontalPixel(i, j)
+      end
+    end
+  end
+  
+  return RadonTransform:get_line_stats ()
+  
 end
 
 -- Setup should be able to quickly switch between cameras

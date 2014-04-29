@@ -53,6 +53,7 @@ end
 -- TODO: Respect the integer method, since since lua converts back to double
 -- NOTE: Maybe have two ways - one in double, and one in int
 function RadonTransform.addPixelToRay (i, j, ith)
+  
   -- TODO: Use FFI math, like fabs, etc.
   local ir = math.abs(cosTable[ith] * i + sinTable[ith] * j) / NTRIG
   -- R value: 0 to MAXR-1
@@ -78,6 +79,10 @@ function RadonTransform.addPixelToRay (i, j, ith)
 end
 
 function RadonTransform.addHorizontalPixel (i, j)
+  ------------
+  -- While not in ffi land!
+  i, j = i+1, j+1
+  ------------
   for ith = 1, NTH do
     if math.abs(sinTable[ith]) >= DIAGONAL_THRESHOLD then
       RadonTransform.addPixelToRay(i, j, ith)
@@ -86,6 +91,10 @@ function RadonTransform.addHorizontalPixel (i, j)
 end
 
 function RadonTransform.addVerticalPixel (i, j)
+  ------------
+  -- While not in ffi land!
+  i, j = i+1, j+1
+  ------------
   for ith = 1, NTH do
     if math.abs(cosTable[ith]) >= DIAGONAL_THRESHOLD then
       RadonTransform.addPixelToRay(i, j, ith)

@@ -8,6 +8,7 @@ local lshift = bit.lshift
 local rshift = bit.rshift
 local band   = bit.band
 local bor    = bit.bor
+-- Externally defined libraries
 local RadonTransform = require'ImageProc.ffi.RadonTransform'
 
 -- Widths and Heights of Image, LabelA, LabelB
@@ -24,9 +25,21 @@ local luts = {}
 local scaleA, scaleB, log_sA, log_sB
 local log2 = {[1] = 0, [2] = 1, [4] = 2, [8] = 3,}
 -- For the edge system
-local edge_t, edge_bin_t = torch.ByteTensor(), torch.ByteTensor()
-local grey_t = torch.IntTensor()
+local kernel = {
+	{0, 0, 0, 0, 0,},
+	{0, 1, 2, 1, 0,},
+	{2, 4, -20, 4, 2,},
+	{0, 1, 2, 1, 0,},
+	{0, 0, 0, 0, 0,}
+}
 local THRESH = 500
+local edge_t = torch.IntTensor()
+local grey_t = torch.IntTensor()
+local kernel_t = torch.IntTensor(kernel)
+--
+local edge_char_t = torch.CharTensor()
+local grey_char_t = torch.CharTensor()
+local kernel_char_t = torch.CharTensor(kernel)
 
 -- Load LookUp Table for Color -> Label
 function ImageProc.load_lut (filename)
@@ -199,8 +212,19 @@ function ImageProc.line_stats (edge_t, threshold)
   return RadonTransform.get_line_stats()
 end
 
-function ImageProc.label_to_edge (edge_t, threshold)
-  
+-- The label is in Byte space but assume it is edges
+-- Could put somewhere else...?
+function ImageProc.label_to_edge (label_t, label)
+  -- Resize as necessary. First time gets the hit
+  edge_byte:resize(label_t:size())
+  -- TODO: Is 1 the right number?
+  grey_char_t[label_t:eq(label)] = 1
+  -- Do the convolution in byte space
+  -- TODO: Test any overflow issues!
+  -- TODO: Do I even need to resize edge_char_t ?
+  -- Or does that happen automagically?
+  edge_char_t:conv2(grey_char_t, kernel_char_t)
+  return edge_char_t
 end
 
 function ImageProc.yuyv_to_edge (yuyv_ptr, threshold, label)
@@ -217,21 +241,17 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, threshold, label)
 	-- Perform the convolution on the Int y-plane
   -- TODO: Mix this
   -- This typecast is required
-	y_int:resize(y_plane:size()):copy(y_plane)
+	grey_t:resize(y_plane:size()):copy(y_plane)
   -- Resize the edge map as necessary
-	edge:resize(
-		y_plane:size(1)+kern:size(1)/2,
-		y_plane:size(2)+kern:size(2)/2
-	)
+	edge_t:resize(grey_t:size(1)+kernel_t:size(1)/2,grey_t:size(2)+kernel_t:size(2)/2)
   -- Perform the convolution
-	torch.conv2(edge,y_int,kern)
+	edge_t:conv2(grey_t, kernel_t)
 	-- Threshold (Somewhat not working...)
-  label = label or 255
-	edge_bin:resize(edge:size())
-	edge_bin[edge:lt(0)] = 0
-	edge_bin[edge:gt(THRESH)] = label
+	edge_char_t:resize(edge_t:size())
+	edge_char_t[edge_t:lt(0)] = 0
+	edge_char_t[edge_t:gt(THRESH)] = label or 255
   -- TODO: Some other dynamic range compression
-  return edge, edge_bin
+  return edge_t, edge_char_t
 end
 
 -- Setup should be able to quickly switch between cameras

@@ -250,9 +250,16 @@ end
 -- Could put somewhere else...?
 function ImageProc.label_to_edge (label_t, label)
   -- Resize as necessary. First time gets the hit
-  edge_byte:resize(label_t:size())
-  -- TODO: Is 1 the right number?
+  grey_char_t:resize(label_t:size())
+  -- Zero the edge map
+  -- TODO: Is "map" actually faster than zero and search?
+  --[[
+  grey_char_t:zero()
   grey_char_t[label_t:eq(label)] = 1
+  --]]
+  grey_char_t:map(label_t, function(g, l)
+    if l==label then return 1 else return 0 end
+    end)
   -- Do the convolution in byte space
   -- TODO: Test any overflow issues!
   -- TODO: Do I even need to resize edge_char_t ?

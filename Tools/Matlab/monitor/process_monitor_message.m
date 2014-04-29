@@ -3,21 +3,26 @@ function [needs_draw] = process_monitor_message(metadata, raw, cam)
     msg_id = char(metadata.id);
     needs_draw = 0;
     if strcmp(msg_id,'detect')
+        % Set the debug information
+        set(cam.a_debug, 'String', char(metadata.debug));
         % Process the ball detection result
-        if isa(metadata.ball,'uint8')
-            % Error message
-            ball_debug = sprintf('Ball: %s',char(metadata.ball));
-            % Remove from the plot
-            set(cam.p_ball,'Xdata', []);
-            set(cam.p_ball,'Ydata', []);
-        else
+        if isfield(metadata,'ball')
             % Show our ball on the YUYV image plot
             ball_c = metadata.ball.centroid * cam.scale;
             set(cam.p_ball,'Xdata', ball_c(1));
             set(cam.p_ball,'Ydata', ball_c(2));
-            ball_debug = sprintf('Ball: %f %f',metadata.ball.centroid);
+        else
+            % Remove from the plot
+            set(cam.p_ball,'Xdata', []);
+            set(cam.p_ball,'Ydata', []);
         end
-        set(cam.a_debug, 'String', ball_debug);
+        if isfield(metadata,'posts')
+            % Show on the plot
+            metadata.posts
+        else
+            % Remove from the plot
+        end
+        
     elseif strcmp(msg_id,'world')
 
     elseif strcmp(msg_id,'yuyv')

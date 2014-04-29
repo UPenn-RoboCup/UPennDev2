@@ -118,32 +118,45 @@ function libVision.ball (labelA_t, labelB_t, cc_t)
   local nProps = #ballPropsB
   if nProps==0 then return'0 connected regions' end
   --
+  local failures, successes = {}, {}
   for i=1,math.min(5,nProps) do
+    local fail = {}
     -- Check the image properties
     local propsB = ballPropsB[i]
     local propsA = check_prop(color.orange, propsB, 4, 0.35, labelA_t)
-    if type(propsA)=='string' then return string.format("Failed %s", propsA) end
-    -- Check the coordinate on the field
-    local dArea = math.sqrt((4/math.pi) * propsA.area)
-    local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
-    local v = check_coordinate(propsA.centroid, scale, b_dist, b_height)
-    if type(v)=='string' then return string.format("Failed %s", v) end
-    -- Found the ball position
-    propsA.v = vector.new(v)
-    -- TODO: Check if outside the field
-    -- TODO: Ground color check
-    -- Convert v to table from torch
-    return propsA
+    if type(propsA)=='string' then
+      table.insert(fail, propsA)
+    else
+      -- Check the coordinate on the field
+      local dArea = math.sqrt((4/math.pi) * propsA.area)
+      local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
+      local v = check_coordinate(propsA.centroid, scale, b_dist, b_height)
+      if type(v)=='string' then
+        table.insert(fail, v)
+      else
+        -- Found the ball position
+        propsA.v = vector.new(v)
+        -- TODO: Check if outside the field
+        -- TODO: Ground color check
+      end
+    end
+    -- Did we succeed in finding a ball?
+    if #fail==0 then
+      return tostring(propsA.v), propsA
+    else
+      -- Add another failure
+      table.insert(failures, table.concat(fail,'\n'))
+    end
   end
-  --
-  return'found nothing'
+  -- Assume failure
+  return table.concat(failures)
 end
 
 -- TODO: Allow the loop to run many times
 function libVision.goal (labelA_t, labelB_t, cc_t)
   -- Form the initial goal check
   local postB = ImageProc.goal_posts(labelB_t, color.yellow, th_nPostB)
-  if not postB then return'None detected', {} end
+  if not postB then return'None detected' end
   -- Now process each goal post
   -- Store failures in the array
   local failures, successes = {}, {}
@@ -186,7 +199,11 @@ function libVision.goal (labelA_t, labelB_t, cc_t)
     end
   end
   -- Yield the failure messages and the success tables
-  return table.concat(failures,'\n'), successes
+  if #successes>0 then
+    return table.concat(failures,'\n\n'), successes
+  else
+    return table.concat(failures,'\n\n')
+  end
 end
 
 return libVision

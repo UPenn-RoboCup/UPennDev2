@@ -112,6 +112,7 @@ HeadFSM.entry()
 
 -- Process image should essentially be the same code as camera_wizard.lua
 -- NOTE: This sleep is important for flushing buffers of udp. Not sure why...
+local util = require'util'
 local function process_image(im, lut, id)
   
   -- Data to send on the channel
@@ -126,14 +127,17 @@ local function process_image(im, lut, id)
   local cc = ImageProc2.color_count(labelA)
   lV.entry(Config.vision[id])
   lV.update(Body.get_head_position())
-  local ball = lV.ball(labelA, labelB, cc)
-  local fail_msg, goals = lV.goal(labelA, labelB, cc)
-  print('\nCamera '..id..': '..#goals..' goals.')
-  print(fail_msg)
+  local ball_fails, ball = lV.ball(labelA, labelB, cc)
+  local post_fails, posts = lV.goal(labelA, labelB, cc)
+  --if posts then print('\nCamera '..id..': '..#posts..' posts.') end
+  --print(post_fails)
+  if posts then util.ptable(posts[1]) end
   
   -- Send the detection information
   meta_detect.ball = ball
-  meta_detect.goal = goal
+  meta_detect.posts = posts and posts[1]
+  meta_detect.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
+  if meta_detect.posts then util.ptable(meta_detect.posts) end
 
   -- LabelA
   table.insert(debug_data, mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ))
@@ -158,8 +162,8 @@ while true do
   local im_b = Body.get_img_bottom()
   local btm_debug, btm_detection = process_image(im_b, lut_b, 2)
   -- Send all the debug information
-  s_t:send(top_data)
-  s_b:send(btm_data)
+  ret = s_t:send(top_debug)
+  s_b:send(btm_debug)
   
   -- Publish vision messages to wcm
   

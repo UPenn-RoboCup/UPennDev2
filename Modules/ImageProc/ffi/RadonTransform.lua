@@ -27,7 +27,7 @@ local INT_MIN = -4294967296
 local PI = math.pi
 
 -- Clear the Radon transform
-function RadonTransform:clear ()
+function RadonTransform.clear ()
   -- Clear the transform
   count:zero()
   lineMin:fill(INT_MAX)
@@ -37,7 +37,7 @@ function RadonTransform:clear ()
 end
 
 -- Initialize the lookup table
-function RadonTransform:init ()
+function RadonTransform.init ()
   -- TODO: Just use apply
   for i = 1, NTH do
     -- We only need 0 to Pi
@@ -47,54 +47,54 @@ function RadonTransform:init ()
     sinTable[i] = NTRIG * math.sin(th[i])
   end
   -- Do the clear initially
-  self:clear()
+  RadonTransform.clear()
 end
 
 -- TODO: Respect the integer method, since since lua converts back to double
 -- NOTE: Maybe have two ways - one in double, and one in int
-function RadonTransform:addPixelToRay (i, j, ith)
+function RadonTransform.addPixelToRay (i, j, ith)
   -- TODO: Use FFI math, like fabs, etc.
   local ir = math.abs(cosTable[ith] * i + sinTable[ith] * j) / NTRIG
   -- R value: 0 to MAXR-1
   -- R index: 0 to NR-1
   local ir1 = (ir + 1) * NR / MAXR - 1
-  self.count[ith][ir1] = self.count[ith][ir1] + 1
-  if self.count[ith][ir1] > self.countMax then
-    self.thMax = ith
-    self.rMax  = ir1
-    self.countMax = count[ith][ir1]
+  count[ith][ir1] = count[ith][ir1] + 1
+  if count[ith][ir1] > countMax then
+    thMax = ith
+    rMax  = ir1
+    countMax = count[ith][ir1]
   end
 
   -- Line statistics:
   local iline = (-sinTable[ith] * i + cosTable[ith] * j) / NTRIG
-  self.lineSum[ith][ir1] = self.lineSum[ith][ir1] + iline
-  if iline > self.lineMax[ith][ir1] then
+  lineSum[ith][ir1] = lineSum[ith][ir1] + iline
+  if iline > lineMax[ith][ir1] then
     lineMax[ith][ir1] = iline
   end
-  if iline < self.lineMin[ith][ir1] then
-    self.lineMin[ith][ir1] = iline
+  if iline < lineMin[ith][ir1] then
+    lineMin[ith][ir1] = iline
   end
   
 end
 
-function RadonTransform:addHorizontalPixel (i, j)
+function RadonTransform.addHorizontalPixel (i, j)
   for ith = 1, NTH do
     if math.abs(sinTable[ith]) >= DIAGONAL_THRESHOLD then
-      self.addPixelToRay(i, j, ith)
+      RadonTransform.addPixelToRay(i, j, ith)
     end
   end
 end
 
-function RadonTransform:addVerticalPixel (i, j)
+function RadonTransform.addVerticalPixel (i, j)
   for ith = 1, NTH do
     if math.abs(cosTable[ith]) >= DIAGONAL_THRESHOLD then
-      self.addPixelToRay(i, j, ith)
+      RadonTransform.addPixelToRay(i, j, ith)
     end
   end
 end
 
 -- This gives the one best line
-function RadonTransform:get_line_stats ()
+function RadonTransform.get_line_stats ()
   -- If no lines
   if countMax == 0 then return end
   -- Find the index

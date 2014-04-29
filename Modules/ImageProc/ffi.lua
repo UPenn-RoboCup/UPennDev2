@@ -160,10 +160,19 @@ end
 -- TODO: Add tilted color stats if needed
 -- TODO: use the bbox in the for loop
 function ImageProc.color_stats (label_t, bbox, color)
+  local ni, nj = label_t:size(1), label_t:size(2)
   local i0 = 0
-  local i1 = label_t:size(2) - 1
+  local i1 = ni - 1
   local j0 = 0
-  local j1 = label_t:size(1) - 1
+  local j1 = nj - 1
+  if bbox then
+    -- TODO: bounds check
+    i0 = bbox[1]
+    i1 = bbox[2]
+    j0 = bbox[3]
+    j1 = bbox[4]
+  end
+  color = color or 1
   
 	-- Initialize statistics
 	local area = 0
@@ -175,8 +184,7 @@ function ImageProc.color_stats (label_t, bbox, color)
   local l_ptr, label = label_t:data()
   for j=j0,j1 do
     for i=i0,i1 do
-      label = l_ptr[0]
-      l_ptr = l_ptr + 1
+      label = l_ptr[i]
 			if label == color then
 				-- Increment area size
 				area = area + 1
@@ -194,6 +202,7 @@ function ImageProc.color_stats (label_t, bbox, color)
       end
       -- If      
     end
+    l_ptr = l_ptr + ni
   end
   
 end

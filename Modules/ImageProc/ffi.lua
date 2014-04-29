@@ -246,8 +246,8 @@ function ImageProc.line_stats (edge_t, threshold)
   return RadonTransform.get_line_stats()
 end
 
--- The label is in Byte space but assume it is edges
--- Could put somewhere else...?
+-- TODO: Might not be the smartest approach...
+-- That is why the state machine system is used
 function ImageProc.label_to_edge (label_t, label)
   -- Resize as necessary. First time gets the hit
   grey_char_t:resize(label_t:size())
@@ -273,7 +273,13 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, threshold, label)
   local yuyv_t = torch.ByteTensor(ffi.cast('uint8_t*',yuyv_ptr),w*h*4)
   -- Reshape for a subsample.
   -- TODO: Should be resize onto the same storage, else a malloc!
-	local yuyv_sub = r:reshape(h/2,w,4):sub(1,-1,1,w/2)
+  -- TODO: Could finagle the strides via the ffi ;)
+  -- TODO: Be careful, since not contiguous, so reshape
+  -- may help with type cast copy? or no?
+  -- TODO: Support more subsample levels, too. This may work:
+  -- yuyv_sub = yuyv_t:reshape(h/4,w,4):sub(1,-1,1,w/4)
+  -- yuyv_sub = yuyv_t:reshape(h/8,w,4):sub(1,-1,1,w/8)
+	local yuyv_sub = yuyv_t:reshape(h/2,w,4):sub(1,-1,1,w/2)
 	-- Get the y-plane
 	local y_plane = yuyv_sub:select(3,1)
 	local u_plane = yuyv_sub:select(3,2)
@@ -281,16 +287,26 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, threshold, label)
 	--local y1_plane = yuyv_sub:select(3,4)
 	-- Perform the convolution on the Int y-plane
   -- TODO: Mix this
-  -- This typecast is required
+  -- This typecast is required for conv2
 	grey_t:resize(y_plane:size()):copy(y_plane)
   -- Resize the edge map as necessary
-	edge_t:resize(grey_t:size(1)+kernel_t:size(1)/2,grey_t:size(2)+kernel_t:size(2)/2)
+  -- TODO: I think this happens automatically...
+	--edge_t:resize(
+  --grey_t:size(1)+kernel_t:size(1)/2,
+  --grey_t:size(2)+kernel_t:size(2)/2)
   -- Perform the convolution
 	edge_t:conv2(grey_t, kernel_t)
 	-- Threshold (Somewhat not working...)
 	edge_char_t:resize(edge_t:size())
+  -- TODO: Is using map faster than these two statements?
+  --[[
 	edge_char_t[edge_t:lt(0)] = 0
 	edge_char_t[edge_t:gt(THRESH)] = label or 255
+  --]]
+  label = label or 1
+  edge_char_t:map(edge_t, function(g, l)
+    if l>THRESH then return 1 else return 0 end
+    end)
   -- TODO: Some other dynamic range compression
   return edge_t, edge_char_t
 end

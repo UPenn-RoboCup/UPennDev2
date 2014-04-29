@@ -8,7 +8,7 @@ local NTH = 45 -- Number of angles
 local NTRIG = 65536 -- Integer trig normalization
 -- a horizontal pixel could be part of a 45 degree line
 -- NOTE: This we can change based on the prior
-local DIAGONAL_THRESHOLD = NTRIG/1.41421356
+local DIAGONAL_THRESHOLD = NTRIG / math.sqrt(2)
 
 -- Keep track of the counts
 local countMax, thMax, rMax = 0

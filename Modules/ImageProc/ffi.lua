@@ -22,12 +22,11 @@ local cc_d = cc_t:data()
 local luts = {}
 -- Downscaling
 local scaleA, scaleB, log_sA, log_sB
-local log2 = {
-  [1] = 0,
-  [2] = 1,
-  [4] = 2,
-  [8] = 3,
-}
+local log2 = {[1] = 0, [2] = 1, [4] = 2, [8] = 3,}
+-- For the edge system
+local edge_t, edge_bin_t = torch.ByteTensor(), torch.ByteTensor()
+local grey_t = torch.IntTensor()
+local THRESH = 500
 
 -- Load LookUp Table for Color -> Label
 function ImageProc.load_lut (filename)
@@ -166,7 +165,7 @@ function ImageProc.line_stats (edge_t, threshold)
   threshold = threshold or 0
   local j, i, label0, label1
   -- Clear out any old transform
-  RadonTransform:init()
+  RadonTransform.init()
   
   -- Scan for vertical field line pixels
   local e_ptr = edge_t:data()
@@ -197,9 +196,42 @@ function ImageProc.line_stats (edge_t, threshold)
       end
     end
   end
+  return RadonTransform.get_line_stats()
+end
+
+function ImageProc.label_to_edge (edge_t, threshold)
   
-  return RadonTransform:get_line_stats ()
-  
+end
+
+function ImageProc.yuyv_to_edge (yuyv_ptr, threshold, label)
+  -- Wrap the pointer into a tensor
+  local yuyv_t = torch.ByteTensor(ffi.cast('uint8_t*',yuyv_ptr),w*h*4)
+  -- Reshape for a subsample.
+  -- TODO: Should be resize onto the same storage, else a malloc!
+	local yuyv_sub = r:reshape(h/2,w,4):sub(1,-1,1,w/2)
+	-- Get the y-plane
+	local y_plane = yuyv_sub:select(3,1)
+	local u_plane = yuyv_sub:select(3,2)
+	local v_plane = yuyv_sub:select(3,3)
+	--local y1_plane = yuyv_sub:select(3,4)
+	-- Perform the convolution on the Int y-plane
+  -- TODO: Mix this
+  -- This typecast is required
+	y_int:resize(y_plane:size()):copy(y_plane)
+  -- Resize the edge map as necessary
+	edge:resize(
+		y_plane:size(1)+kern:size(1)/2,
+		y_plane:size(2)+kern:size(2)/2
+	)
+  -- Perform the convolution
+	torch.conv2(edge,y_int,kern)
+	-- Threshold (Somewhat not working...)
+  label = label or 255
+	edge_bin:resize(edge:size())
+	edge_bin[edge:lt(0)] = 0
+	edge_bin[edge:gt(THRESH)] = label
+  -- TODO: Some other dynamic range compression
+  return edge, edge_bin
 end
 
 -- Setup should be able to quickly switch between cameras

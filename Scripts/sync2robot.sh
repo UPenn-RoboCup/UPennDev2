@@ -9,6 +9,8 @@ mkdir -p robot/RoboCup/Player/Lib
 find RoboCup/Lib/Platform/NaoV4 \( -regex '.*.so' -or -regex '.*.lua' \) -exec cp -v '{}' robot/RoboCup/Player/Lib/ \;
 # Image
 find RoboCup/Lib/Modules/ImageProc \( -regex '.*.so' -or -regex '.*.lua' \) -exec cp -v '{}' robot/RoboCup/Player/Lib/ \;
+# Comm
+find RoboCup/Lib/Modules/Comm \( -regex '.*.so' -or -regex '.*.lua' \) -exec cp -v '{}' robot/RoboCup/Player/Lib/ \;
 # Util
 find RoboCup/Lib/Modules/Util \( -regex '.*.so' -or -regex '.*.lua' \) -exec cp -v '{}' robot/RoboCup/Player/Lib/ \;
 

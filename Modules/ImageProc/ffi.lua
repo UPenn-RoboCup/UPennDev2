@@ -268,9 +268,23 @@ function ImageProc.label_to_edge (label_t, label)
   return edge_char_t
 end
 
-function ImageProc.yuyv_to_edge (yuyv_ptr, threshold, label)
+function ImageProc.yuyv_to_edge (yuyv_ptr)
   -- Wrap the pointer into a tensor
-  local yuyv_t = torch.ByteTensor(ffi.cast('uint8_t*',yuyv_ptr),w*h*4)
+  local yuyv_s = torch.ByteStorage(
+  w*h*4,
+  tonumber(ffi.cast("intptr_t",yuyv_ptr))
+  )
+  --[[
+  print('SIZE',yuyv_s:size(), w, h, w*h*4)
+  local yuyv_t = torch.ByteTensor(yuyv_s)
+  local yuyv_sub = yuyv_t:reshape(h/2,w,4):sub(1,-1,1,w/2)
+  --]]
+  ----[[
+  local yuyv_sz = torch.LongStorage{h/2,w,4}
+  local yuyv_t = torch.ByteTensor(yuyv_s, 1, yuyv_sz)
+  local yuyv_sub = yuyv_t:sub(1,-1,1,w/2)
+  --]]
+  -- TODO: Can add the strides easily - wow!
   -- Reshape for a subsample.
   -- TODO: Should be resize onto the same storage, else a malloc!
   -- TODO: Could finagle the strides via the ffi ;)
@@ -279,7 +293,6 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, threshold, label)
   -- TODO: Support more subsample levels, too. This may work:
   -- yuyv_sub = yuyv_t:reshape(h/4,w,4):sub(1,-1,1,w/4)
   -- yuyv_sub = yuyv_t:reshape(h/8,w,4):sub(1,-1,1,w/8)
-	local yuyv_sub = yuyv_t:reshape(h/2,w,4):sub(1,-1,1,w/2)
 	-- Get the y-plane
 	local y_plane = yuyv_sub:select(3,1)
 	local u_plane = yuyv_sub:select(3,2)

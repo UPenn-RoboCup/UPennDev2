@@ -25,17 +25,34 @@ local luts = {}
 local scaleA, scaleB, log_sA, log_sB
 local log2 = {[1] = 0, [2] = 1, [4] = 2, [8] = 3,}
 -- For the edge system
+
 local kernel = {
-	{0, 0, 0, 0, 0,},
-	{0, 1, 2, 1, 0,},
-	{2, 4, -20, 4, 2,},
-	{0, 1, 2, 1, 0,},
-	{0, 0, 0, 0, 0,}
+	{0,  2,   0,  2,  0,},
+	{0,  4,   3,  3,  0,},
+	{3,  8, -30,  8,  3,},
+	{0,  3,   3,  4,  0,},
+	{0,  0,   0,  0,  0,}
 }
-local THRESH = 500
+
+----[[
+local kernel = {
+	{0, 0,   0,  0, 0,},
+	{0, 1,   0,  0, 0,},
+	{4, 10, -30,  10, 4,},
+	{0, 0,   0,  1, 0,},
+	{0, 0,   0,  0, 0,}
+}
+--]]
+
+--[[
+local kernel = {
+	{5, 10, -30, 10, 5,},
+}
+--]]
+
 local edge_t = torch.IntTensor()
 local grey_t = torch.IntTensor()
-local kernel_t = torch.IntTensor(kernel)
+local kernel_t = torch.IntTensor(kernel)--:t():clone()
 --
 local edge_char_t = torch.CharTensor()
 local grey_char_t = torch.CharTensor()
@@ -268,7 +285,8 @@ function ImageProc.label_to_edge (label_t, label)
   return edge_char_t
 end
 
-function ImageProc.yuyv_to_edge (yuyv_ptr)
+function ImageProc.yuyv_to_edge (yuyv_ptr, thresh)
+  local THRESH = thresh or 450
   -- Wrap the pointer into a tensor
   local yuyv_s = torch.ByteStorage(
   w*h*4,
@@ -318,10 +336,12 @@ function ImageProc.yuyv_to_edge (yuyv_ptr)
   --]]
   label = label or 1
   edge_char_t:map(edge_t, function(g, l)
-    if l>THRESH then return 1 else return 0 end
+    if l>THRESH then return 1
+    elseif l<-THRESH then return -1
+    else return 0 end
     end)
   -- TODO: Some other dynamic range compression
-  return edge_t, edge_char_t
+  return edge_t, edge_char_t, grey_t
 end
 
 -- Setup should be able to quickly switch between cameras

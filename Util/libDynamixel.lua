@@ -13,7 +13,7 @@ local unix = require'unix'
 local stty = require'stty'
 local using_status_return = true
 -- 75ms default timeout
-local READ_TIMEOUT = 0.015
+local READ_TIMEOUT = 0.020
 
 -- TODO: Make this a parameter to set externally
 -- TODO: This should be tuned based on the byte size written?
@@ -321,16 +321,24 @@ local function get_status( fd, npkt, protocol, timeout )
 	local DP = protocol==1 and DP1 or DP2
 	-- Form the temporary variables
   local status_str = ''
+	local full_status_str = ''
   local statuses = {}
 	local in_timeout = true
 	local t0 = unix.time()
   while in_timeout do
 		-- Wait for any packets
 		local status, ready = unix.select({fd},timeout)
+    --local tf = unix.time()
+    --print("t_diff",tf-t0,1/(tf-t0))
     local s = unix.read(fd)
     if s then
+			full_status_str = full_status_str..s
+      --print('Full Status str',#s,#full_status_str,pkts)
       local pkts, status_str = DP.input(status_str..s)
-      print('Status sz',#status_str,#pkts)
+      --print(pkts,'packets',#pkts,'of',npkt)
+      --print('PACKET', s:byte(1,-1))
+      --print(#status_str, 'LEFTOVER:', status_str:byte(1,-1))
+			--util.ptable(pkts)
       if pkts then
         for p,pkt in ipairs(pkts) do
           local status = DP.parse_status_packet( pkt )
@@ -342,7 +350,7 @@ local function get_status( fd, npkt, protocol, timeout )
 		in_timeout = (unix.time()-t0)<timeout
   end
 	print('READ TIMEOUT',#statuses,'of',npkt)
-  return statuses
+  return statuses, full_status_str
 end
 
 --------------------
@@ -610,9 +618,11 @@ local function ping_probe(self, protocol, twait)
   local found_ids = {}
   protocol = protocol or 2
   twait = twait or READ_TIMEOUT
-  for id = 0,253 do
+  for id=0,253 do
     local status = send_ping( self, id, protocol, twait )
-    if status then
+    print(id, 'STATUS', status, #status)
+    if status and #status>0 then
+			status = status[1]
       print( string.format('Found %d.0 Motor: %d\n',protocol,status.id) )
       table.insert( found_ids, status.id )
     end

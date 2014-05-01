@@ -377,9 +377,9 @@ static int lua_jpeg_compress(lua_State *L) {
 		stride = cinfo->input_components * width;
   }
 #ifdef TORCH
-	else if(luaT_isudata(L,2,"torch.ByteTensor")) {
+	else {
 		THByteTensor* b_t = 
-			(THByteTensor *) luaT_checkudata(L, 2, "torch.ByteTensor");
+			(THByteTensor *) luaT_checkudata(L, 2, luaT_typename(L, 2));
 		// TODO: Check continguous (or add stride support)
 		data = b_t->storage->data;
 		// Use the torch dimensions
@@ -391,11 +391,11 @@ static int lua_jpeg_compress(lua_State *L) {
 		// TODO: Double check :)
 		stride = b_t->stride[0];
 	}
-#endif
+#else
 	else {
 		return luaL_error(L, "Bad JPEG Compress 16 input");
   }
-	
+#endif
 	
 	// Set the width and height for compression
   cinfo->image_width  = width  >> ud->subsample;

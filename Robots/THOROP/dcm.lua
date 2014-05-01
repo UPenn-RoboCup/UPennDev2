@@ -16,6 +16,12 @@ end
 local libDynamixel = require'libDynamixel'
 -- Corresponding Motor ids
 local bus, m_ids
+
+local util = require'util'
+--metadata = {device = '/dev/cu.usbserial-FTVTLUY0A',m_ids = {1,3,5,7,9,11,13,29,30},}
+metadata = {device = '/dev/cu.usbserial-FTVTLUY0B',m_ids = {2,4,6,8},}
+--metadata = {device = '/dev/cu.usbserial-FTVTLUY0C',m_ids = {15,17,19,21,23,25,28},}
+
 if metadata then
 	bus = libDynamixel.new_bus(metadata.device)
 	m_ids = metadata.m_ids
@@ -26,21 +32,22 @@ else
 	m_ids = bus:ping_probe(m_id)
 end
 local n_motors = #m_ids
+print('FOUND',n_motors,unpack(m_ids))
 
 -- Grab the Joint IDs for this thread
 -- NOTE: Joint IDs start at 0 if ffi
 -- Joint IDs start at 1 if carray
-local Body = require'Body'
+local Body = require'THOROPBodyUpdate'
 local m_to_j = Body.servo.motor_to_joint
 local step_to_radian = Body.make_joint_radian
-local joint_to_step = make_joint_step
+local joint_to_step = Body.make_joint_step
 local j_ids = {}
-for i,m_id in ipairs(m_ids) do
-  j_ids[i] = m_to_j[m_id]
-end
+for i,m_id in ipairs(m_ids) do j_ids[i] = m_to_j[m_id] end
 -- Verify that they are present
 for id,m_id in pairs(m_ids) do
-	assert(bus:ping(m_id),string.format('ID %d not present.',m_id))
+  print('PING',id,m_id)
+	local p = assert(bus:ping(m_id),string.format('ID %d not present.',m_id))
+	--if p[1] then util.ptable(p[1]) end
 	unix.usleep(1e3)
 end
 -- Access the typical commands quickly
@@ -55,7 +62,12 @@ local p_parse = libDynamixel.byte_to_number[libDynamixel.nx_registers.position[2
 Config = nil
 
 -- Initial position reading
-local status = p_read(m_ids,bus)
+print('\nPOSITION READ\n----------')
+local status, full_str = p_read(m_ids,bus)
+print('FULL STR', type(full_str))
+--os.exit()
+
+
 for _,s in ipairs(status) do
 	local p = p_parse(unpack(s.parameter))
 	local j_id = m_to_j[s.id]
@@ -77,7 +89,8 @@ while true do
 	local t = unix.time()
 	local t_diff = t-t0
 	t0 = t
-	if t_diff>0.015 then print('Slow dcm FPS',1/t_diff,t_diff) end
+  print('t_diff',t_diff)
+	--if t_diff>0.015 then print('Slow dcm FPS',1/t_diff,t_diff) end
 	-- First, write position to the motors
 	for i,j_id in ipairs(j_ids) do
 		local v
@@ -88,7 +101,7 @@ while true do
 	--local ret = cp_cmd(m_ids,cp_vals,bus)
 	-- Next, read the positions
 	local status = p_read(m_ids,bus)
-	print(status,#status)
+	--print(status,#status)
 	for _,s in ipairs(status) do
 		local p = p_parse(unpack(s.parameter))
 		local j_id = m_to_j[s.id]

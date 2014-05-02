@@ -2,8 +2,8 @@ local RadonTransform = {}
 
 -- These are the integer constants for avoiding floating point precision
 -- Max r for 80*60 label
-local MAXR = 180 -- Max radius (max(width,height)?)
-local NR = 180 -- Number of radii
+local MAXR = 200 -- Max radius (max(width,height)?)
+local NR = 200 -- Number of radii
 local NTH = 45 -- Number of angles
 -- a horizontal pixel could be part of a 45 degree line
 -- NOTE: This we can change based on the prior
@@ -58,8 +58,8 @@ function RadonTransform.addPixelToRay (i, j, ith)
   -- R value: 0 to MAXR-1
   -- R index: 0 to NR-1
   --local ir1 = math.floor(math.max(1,math.min(ir, MAXR))+.5)
-  --local ir1 = math.floor(ir) % MAXR + 1
-  local ir1 = math.max(1,math.min(ir, MAXR))
+  local ir1 = math.floor(ir) % MAXR + 1
+  --local ir1 = math.max(1,math.min(ir, MAXR))
   count[ith][ir1] = count[ith][ir1] + 1
   if count[ith][ir1] > countMax then
     thMax = ith

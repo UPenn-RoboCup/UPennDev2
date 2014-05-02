@@ -232,6 +232,8 @@ function ImageProc.line_stats (edge_t, threshold)
   RadonTransform.init()
   
   ----[[
+  -- This loop is ok
+  -- Horizontal?
   local e_ptr = edge_t:data()
   for j=0, edge_t:size(1)-1 do
     -- Use -2 and not -1 since we do not go to the edge
@@ -246,10 +248,10 @@ function ImageProc.line_stats (edge_t, threshold)
   end
   --]]
   
-  --[[
+  ----[[
   -- This loop may have a problem
   local e_ptr_l = edge_t:data()
-  local e_ptr_r = e_ptr_l
+  local e_ptr_r = e_ptr_l + edge_t:size(2)
   for j=0, edge_t:size(1)-2 do
     -- Use -2 and not -1 since we do not go to the edge
     for i=0, edge_t:size(2)-1 do

@@ -14,16 +14,16 @@ edge_char = double(reshape(A,[w, h])');
 % line counts
 fid = fopen('Data/line_cnts.raw');A = fread(fid,Inf,'*int64');fclose(fid);
 size(A)
-line_counts = double(reshape(A,[180, 45])');
+line_counts = double(reshape(A,[200, 45])');
 % lines sums
 fid = fopen('Data/line_sums.raw');A = fread(fid,Inf,'*int64');fclose(fid);
-line_sums = double(reshape(A,[180, 45])');
+line_sums = double(reshape(A,[200, 45])');
 % lines min
 fid = fopen('Data/line_min.raw');A = fread(fid,Inf,'*int64');fclose(fid);
-line_min = double(reshape(A,[180, 45])');
+line_min = double(reshape(A,[200, 45])');
 % lines max
 fid = fopen('Data/line_max.raw');A = fread(fid,Inf,'*int64');fclose(fid);
-line_max = double(reshape(A,[180, 45])');
+line_max = double(reshape(A,[200, 45])');
 
 figure(1);
 imshow('Data/edge_img.jpeg');

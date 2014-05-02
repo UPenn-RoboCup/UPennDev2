@@ -226,7 +226,7 @@ end
 
 -- TODO: Add the line state machine
 function ImageProc.line_stats (edge_t, threshold)
-  threshold = threshold or 450
+  threshold = threshold or 500
   local j, i, label0, label1
   -- Clear out any old transform
   RadonTransform.init()
@@ -242,7 +242,7 @@ function ImageProc.line_stats (edge_t, threshold)
       e_ptr = e_ptr + 1
       label1 = e_ptr[0]
       if label0>threshold and label1>threshold then
-        RadonTransform.addHorizontalPixel(i, j)
+        RadonTransform.addVerticalPixel(j, i)
       end
     end
   end
@@ -260,7 +260,7 @@ function ImageProc.line_stats (edge_t, threshold)
       label1 = e_ptr_r[0]
       e_ptr_r = e_ptr_r + 1
       if label0>threshold and label1>threshold then
-        RadonTransform.addVerticalPixel(i, j)
+        RadonTransform.addHorizontalPixel(j, i)
       end
     end
   end
@@ -295,7 +295,7 @@ function ImageProc.label_to_edge (label_t, label)
 end
 
 function ImageProc.yuyv_to_edge (yuyv_ptr, thresh)
-  local THRESH = thresh or 450
+  thresh = thresh or 500
   -- Wrap the pointer into a tensor
   local yuyv_s = torch.ByteStorage(
   w*h*4,
@@ -345,8 +345,8 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, thresh)
   --]]
   label = label or 1
   edge_char_t:map(edge_t, function(g, l)
-    if l>THRESH then return 1
-    elseif l<-THRESH then return -1
+    if l>thresh then return 1
+--    elseif l<-thresh then return -1
     else return 0 end
     end)
   -- TODO: Some other dynamic range compression

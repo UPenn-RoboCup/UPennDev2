@@ -18,7 +18,8 @@ ImageProc2.setup(w, h, 2, 2)
 
 local meta, yuyv_t, edge_t, edge_char_t
 for i,m,r in d do
-	if i>#metadata/4 then break end
+	--if i>#metadata/2 then break end
+  if i>2 then break end
 	local t0 = unix.time()
 	meta = m
 	yuyv_t = r
@@ -62,7 +63,7 @@ f_y:write(str)
 f_y:close()
 
 -- Try some line detection
---edge_t:zero():select(2, 40):fill(2)
+edge_t:zero():select(1, 40):fill(2)
 local lines = ImageProc2.line_stats(edge_t,1)
 
 f_y = torch.DiskFile('../Data/edge.raw', 'w')

@@ -62,7 +62,14 @@ f_y:write(str)
 f_y:close()
 
 -- Try some line detection
-local lines = ImageProc2.line_stats(edge_t)
+edge_t:zero()
+edge_t:select(1, 40):fill(2)
+local lines = ImageProc2.line_stats(edge_t,1)
+
+f_y = torch.DiskFile('../Data/edge.raw', 'w')
+f_y.binary(f_y)
+f_y:writeInt(edge_t:storage())
+f_y:close()
 
 util.ptable(lines)
 
@@ -73,20 +80,20 @@ print('edge',counts_t:size(1),counts_t:size(2))
 
 f_y = torch.DiskFile('../Data/line_cnts.raw', 'w')
 f_y.binary(f_y)
-f_y:writeInt(counts_t:storage())
+f_y:writeLong(counts_t:storage())
 f_y:close()
 
 f_y = torch.DiskFile('../Data/line_sums.raw', 'w')
 f_y.binary(f_y)
-f_y:writeInt(line_sums_t:storage())
+f_y:writeLong(line_sums_t:storage())
 f_y:close()
 
 f_y = torch.DiskFile('../Data/line_min.raw', 'w')
 f_y.binary(f_y)
-f_y:writeInt(line_min_t:storage())
+f_y:writeLong(line_min_t:storage())
 f_y:close()
 
 f_y = torch.DiskFile('../Data/line_max.raw', 'w')
 f_y.binary(f_y)
-f_y:writeInt(line_max_t:storage())
+f_y:writeLong(line_max_t:storage())
 f_y:close()

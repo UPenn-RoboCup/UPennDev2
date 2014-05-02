@@ -11,10 +11,10 @@ local DIAGONAL_THRESHOLD = math.sqrt(2) / 2
 
 -- Keep track of the counts
 local countMax, thMax, rMax = 0
-local count   = torch.IntTensor(NTH, NR)
-local lineMin = torch.IntTensor(NTH, NR)
-local lineMax = torch.IntTensor(NTH, NR)
-local lineSum = torch.IntTensor(NTH, NR)
+local count   = torch.LongTensor(NTH, NR)
+local lineMin = torch.LongTensor(NTH, NR)
+local lineMax = torch.LongTensor(NTH, NR)
+local lineSum = torch.LongTensor(NTH, NR)
 
 -- Save our lookup table discretization
 local th = torch.DoubleTensor(NTH)
@@ -50,10 +50,15 @@ end
 -- NOTE: Maybe have two ways - one in double, and one in int
 function RadonTransform.addPixelToRay (i, j, ith)
   
+  ------------
+  -- While not in ffi land! i-1 and j-1
+  ------------
   -- TODO: Use FFI math, like fabs, etc.
-  local ir = math.abs(cosTable[ith] * i + sinTable[ith] * j)
+  local ir = math.abs(cosTable[ith] * (i-1) + sinTable[ith] * (j-1))
   -- R value: 0 to MAXR-1
   -- R index: 0 to NR-1
+  --local ir1 = math.floor(math.max(1,math.min(ir, MAXR))+.5)
+  --local ir1 = math.floor(ir) % MAXR + 1
   local ir1 = math.max(1,math.min(ir, MAXR))
   count[ith][ir1] = count[ith][ir1] + 1
   if count[ith][ir1] > countMax then
@@ -63,7 +68,7 @@ function RadonTransform.addPixelToRay (i, j, ith)
   end
 
   -- Line statistics:
-  local iline = (-sinTable[ith] * i + cosTable[ith] * j)
+  local iline = -sinTable[ith] * (i-1) + cosTable[ith] * (j-1)
   lineSum[ith][ir1] = lineSum[ith][ir1] + iline
   if iline > lineMax[ith][ir1] then
     lineMax[ith][ir1] = iline
@@ -110,8 +115,9 @@ function RadonTransform.get_line_stats ()
   local lMin = lineMin[thMax][rMax]
   local lMax = lineMax[thMax][rMax]
   
-  print('max',thMax,rMax)
-  print('l',lMean,lMax,lMin)
+  print('max',thMax, math.floor(rMax+.5) )
+  print('l',lMin,lMean,lMax)
+  print()
   
   -- Return our table of statistics
   return {

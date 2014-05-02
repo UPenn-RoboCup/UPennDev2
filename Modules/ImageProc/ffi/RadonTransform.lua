@@ -20,7 +20,7 @@ local lineSum = torch.IntTensor(NTH, NR)
 local th = torch.DoubleTensor(NTH)
 local sinTable, cosTable = torch.DoubleTensor(NTH), torch.DoubleTensor(NTH)
 
-local BIG = 2147483648
+local BIG = 2147483640
 
 -- Clear the Radon transform
 function RadonTransform.clear ()
@@ -51,11 +51,9 @@ end
 function RadonTransform.addPixelToRay (i, j, ith)
   
   -- TODO: Use FFI math, like fabs, etc.
-  local ir = math.abs(cosTable[ith] * (i-1) + sinTable[ith] * (j-1))
+  local ir = math.abs(cosTable[ith] * i + sinTable[ith] * j)
   -- R value: 0 to MAXR-1
   -- R index: 0 to NR-1
-  --local ir1 = (ir + 1) * NR / MAXR - 1
-  --print('ir compare',ir,ir1,NR,MAXR)
   local ir1 = math.max(1,math.min(ir, MAXR))
   count[ith][ir1] = count[ith][ir1] + 1
   if count[ith][ir1] > countMax then
@@ -65,7 +63,7 @@ function RadonTransform.addPixelToRay (i, j, ith)
   end
 
   -- Line statistics:
-  local iline = (-sinTable[ith] * (i-1) + cosTable[ith] * (j-1))
+  local iline = (-sinTable[ith] * i + cosTable[ith] * j)
   lineSum[ith][ir1] = lineSum[ith][ir1] + iline
   if iline > lineMax[ith][ir1] then
     lineMax[ith][ir1] = iline
@@ -105,21 +103,24 @@ function RadonTransform.get_line_stats ()
   -- If no lines
   if countMax == 0 then return end
   -- Find the index
-  local iR = math.max(1,math.min(rMax, MAXR))*cosTable[thMax]
-  local jR = math.max(1,math.min(rMax, MAXR))*sinTable[thMax]
+  local iR = rMax * cosTable[thMax]
+  local jR = rMax * sinTable[thMax]
   -- Find our counts
   local lMean = lineSum[thMax][rMax] / countMax
   local lMin = lineMin[thMax][rMax]
   local lMax = lineMax[thMax][rMax]
   
+  print('max',thMax,rMax)
+  print('l',lMean,lMax,lMin)
+  
   -- Return our table of statistics
   return {
-    iMean = (iR - lMean*sinTable[thMax]),
-    jMean = (jR + lMean*cosTable[thMax]),
-    iMin = (iR - lMin*sinTable[thMax]),
-    jMin = (jR + lMin*cosTable[thMax]),
-    iMax = (iR - lMax*sinTable[thMax]),
-    jMax = (jR + lMax*cosTable[thMax]),
+    iMean = iR - lMean * sinTable[thMax],
+    jMean = jR + lMean * cosTable[thMax],
+    iMin  = iR - lMin  * sinTable[thMax],
+    jMin  = jR + lMin  * cosTable[thMax],
+    iMax  = iR - lMax  * sinTable[thMax],
+    jMax  = jR + lMax  * cosTable[thMax],
   }
 end
 

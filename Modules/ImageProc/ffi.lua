@@ -231,7 +231,6 @@ function ImageProc.line_stats (edge_t, threshold)
   -- Clear out any old transform
   RadonTransform.init()
   
-  -- Scan for vertical field line pixels
   ----[[
   local e_ptr = edge_t:data()
   for j=0, edge_t:size(1)-1 do
@@ -247,8 +246,8 @@ function ImageProc.line_stats (edge_t, threshold)
   end
   --]]
   
-  -- Scan for horizontal field line pixels
-  ----[[
+  --[[
+  -- This loop may have a problem
   local e_ptr_l = edge_t:data()
   local e_ptr_r = e_ptr_l
   for j=0, edge_t:size(1)-2 do

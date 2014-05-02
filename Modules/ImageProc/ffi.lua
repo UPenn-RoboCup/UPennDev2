@@ -260,7 +260,12 @@ function ImageProc.line_stats (edge_t, threshold)
       end
     end
   end
+  
   return RadonTransform.get_line_stats()
+end
+
+ImageProc.get_radon = function()
+  return RadonTransform
 end
 
 -- TODO: Might not be the smartest approach...

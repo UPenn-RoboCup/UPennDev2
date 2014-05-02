@@ -60,3 +60,33 @@ str = c_gray:compress(grey_t2)
 f_y = io.open('../Data/edge_gray.jpeg','w')
 f_y:write(str)
 f_y:close()
+
+-- Try some line detection
+local lines = ImageProc2.line_stats(edge_t)
+
+util.ptable(lines)
+
+RadonTransform = ImageProc2.get_radon()
+local counts_t, line_sums_t, line_min_t, line_max_t = RadonTransform.get_population()
+
+print('edge',counts_t:size(1),counts_t:size(2))
+
+f_y = torch.DiskFile('../Data/line_cnts.raw', 'w')
+f_y.binary(f_y)
+f_y:writeInt(counts_t:storage())
+f_y:close()
+
+f_y = torch.DiskFile('../Data/line_sums.raw', 'w')
+f_y.binary(f_y)
+f_y:writeInt(line_sums_t:storage())
+f_y:close()
+
+f_y = torch.DiskFile('../Data/line_min.raw', 'w')
+f_y.binary(f_y)
+f_y:writeInt(line_min_t:storage())
+f_y:close()
+
+f_y = torch.DiskFile('../Data/line_max.raw', 'w')
+f_y.binary(f_y)
+f_y:writeInt(line_max_t:storage())
+f_y:close()

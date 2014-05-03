@@ -19,7 +19,10 @@ local bus, m_ids
 
 local util = require'util'
 --metadata = {device = '/dev/cu.usbserial-FTVTLUY0A',m_ids = {1,3,5,7,9,11,13,29,30},}
-metadata = {device = '/dev/cu.usbserial-FTVTLUY0B',m_ids = {2,4,6,8},}
+--metadata = {device = '/dev/cu.usbserial-FTVTLUY0B',m_ids = {2,4,6,8},}
+--metadata = {device = '/dev/ttyUSB1', m_ids = {2,4,6,8},}
+--metadata = {device = '/dev/ttyUSB2',m_ids = {15,17,19,21,23,25,28},}
+metadata = {device = '/dev/ttyUSB2',m_ids = {15,17,19,21,23,25},}
 --metadata = {device = '/dev/cu.usbserial-FTVTLUY0C',m_ids = {15,17,19,21,23,25,28},}
 
 if metadata then
@@ -89,7 +92,7 @@ while true do
 	local t = unix.time()
 	local t_diff = t-t0
 	t0 = t
-  print('t_diff',t_diff)
+  print('t_diff',t_diff,1/t_diff)
 	--if t_diff>0.015 then print('Slow dcm FPS',1/t_diff,t_diff) end
 	-- First, write position to the motors
 	for i,j_id in ipairs(j_ids) do
@@ -108,6 +111,7 @@ while true do
 		local r = step_to_radian(j_id,p)
 		if ffi then j_id = j_id - 1 end
 		p_ptr[j_id] = r
+		print(j_id,r)
 	end
 	-- Set the data in shared memory
 	-- TODO: Check if any messages from the master thread

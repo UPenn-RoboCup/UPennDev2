@@ -13,7 +13,7 @@ local unix = require'unix'
 local stty = require'stty'
 local using_status_return = true
 -- 75ms default timeout
-local READ_TIMEOUT = 0.020
+local READ_TIMEOUT = 0.002
 
 -- TODO: Make this a parameter to set externally
 -- TODO: This should be tuned based on the byte size written?
@@ -325,31 +325,32 @@ local function get_status( fd, npkt, protocol, timeout )
   local statuses = {}
 	local in_timeout = true
 	local t0 = unix.time()
-  while in_timeout do
+	local s, pkts
+  while in_timeout or s do
 		-- Wait for any packets
-		local status, ready = unix.select({fd},timeout)
+		--local status, ready = unix.select({fd},timeout)
+		unix.select({fd},timeout)
     --local tf = unix.time()
     --print("t_diff",tf-t0,1/(tf-t0))
-    local s = unix.read(fd)
+    s = unix.read(fd)
     if s then
 			full_status_str = full_status_str..s
       --print('Full Status str',#s,#full_status_str,pkts)
-      local pkts, status_str = DP.input(status_str..s)
+      pkts, status_str = DP.input(status_str..s)
       --print(pkts,'packets',#pkts,'of',npkt)
       --print('PACKET', s:byte(1,-1))
       --print(#status_str, 'LEFTOVER:', status_str:byte(1,-1))
 			--util.ptable(pkts)
       if pkts then
         for p,pkt in ipairs(pkts) do
-          local status = DP.parse_status_packet( pkt )
-          table.insert( statuses, status )
+          table.insert(statuses, DP.parse_status_packet(pkt))
         end
         if #statuses>=npkt then return statuses end
       end -- if pkts
     end -- if s
 		in_timeout = (unix.time()-t0)<timeout
   end
-	print('READ TIMEOUT',#statuses,'of',npkt)
+	--print('READ TIMEOUT',#statuses,'of',npkt,type(s),#status_str)
   return statuses, full_status_str
 end
 

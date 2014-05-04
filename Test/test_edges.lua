@@ -18,8 +18,7 @@ ImageProc2.setup(w, h, 2, 2)
 
 local meta, yuyv_t, edge_t, edge_char_t
 for i,m,r in d do
-	--if i>#metadata/2 then break end
-  if i>2 then break end
+	if i>#metadata/2 then break end
 	local t0 = unix.time()
 	meta = m
 	yuyv_t = r
@@ -49,6 +48,7 @@ local f_y = io.open('../Data/edge_bin.jpeg','w')
 f_y:write(str)
 f_y:close()
 
+-- Save the image
 str = c_yuyv:compress(yuyv_t, w, h )
 f_y = io.open('../Data/edge_img.jpeg','w')
 f_y:write(str)
@@ -63,7 +63,7 @@ f_y:write(str)
 f_y:close()
 
 -- Try some line detection
-edge_t:zero():select(1, 40):fill(2)
+--edge_t:zero():select(1, 40):fill(2)
 local lines = ImageProc2.line_stats(edge_t,1)
 
 f_y = torch.DiskFile('../Data/edge.raw', 'w')
@@ -96,4 +96,13 @@ f_y:close()
 f_y = torch.DiskFile('../Data/line_max.raw', 'w')
 f_y.binary(f_y)
 f_y:writeLong(line_max_t:storage())
+f_y:close()
+
+-- PCA on a bounding box
+--ImageProc2.yuyv_color_stats(yuyv_t:data(), {20, 80, 40, 60})
+-- Save the cropped JPEG :)
+c_yuyv:downsampling(2)
+str = c_yuyv:compress_crop(yuyv_t, w, h, 200, 100, 21, 200 )
+f_y = io.open('../Data/edge_focus_img.jpeg','w')
+f_y:write(str)
 f_y:close()

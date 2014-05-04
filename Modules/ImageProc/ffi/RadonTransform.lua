@@ -1,5 +1,9 @@
 local RadonTransform = {}
 
+local ok, ffi = pcall(require,'ffi')
+assert(ok, 'No ffi!')
+ok = nil
+
 -- These are the integer constants for avoiding floating point precision
 -- Max r for 80*60 label
 local MAXR = 200 -- Max radius (max(width,height)?)
@@ -54,7 +58,7 @@ function RadonTransform.addPixelToRay (i, j, ith)
   -- While not in ffi land! i-1 and j-1
   ------------
   -- TODO: Use FFI math, like fabs, etc.
-  local ir = math.abs(cosTable[ith] * (i-1) + sinTable[ith] * (j-1))
+  local ir = math.abs(cosTable[ith] * j + sinTable[ith] * i)
   -- R value: 0 to MAXR-1
   -- R index: 0 to NR-1
   --local ir1 = math.floor(math.max(1,math.min(ir, MAXR))+.5)
@@ -68,7 +72,7 @@ function RadonTransform.addPixelToRay (i, j, ith)
   end
 
   -- Line statistics:
-  local iline = -sinTable[ith] * (i-1) + cosTable[ith] * (j-1)
+  local iline = -sinTable[ith] * j + cosTable[ith] * i
   lineSum[ith][ir1] = lineSum[ith][ir1] + iline
   if iline > lineMax[ith][ir1] then
     lineMax[ith][ir1] = iline

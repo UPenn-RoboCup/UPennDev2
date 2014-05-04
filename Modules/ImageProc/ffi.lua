@@ -242,7 +242,7 @@ function ImageProc.line_stats (edge_t, threshold)
       e_ptr = e_ptr + 1
       label1 = e_ptr[0]
       if label0>threshold and label1>threshold then
-        RadonTransform.addVerticalPixel(j, i)
+        RadonTransform.addVerticalPixel(i, j)
       end
     end
   end
@@ -260,7 +260,7 @@ function ImageProc.line_stats (edge_t, threshold)
       label1 = e_ptr_r[0]
       e_ptr_r = e_ptr_r + 1
       if label0>threshold and label1>threshold then
-        RadonTransform.addHorizontalPixel(j, i)
+        RadonTransform.addHorizontalPixel(i, j)
       end
     end
   end
@@ -271,6 +271,50 @@ end
 ImageProc.get_radon = function()
   return RadonTransform
 end
+
+local function pca(x)
+    -- From: https://github.com/koraykv/unsup
+   local mean = torch.mean(x,1)
+   local xm = x - torch.ger(torch.ones(x:size(1)),mean:squeeze())
+   xm:div(math.sqrt(x:size(1)-1))
+   local w,s,v = torch.svd(xm:t())
+   s:cmul(s)
+   return s,w
+end
+
+function ImageProc.yuyv_color_stats (yuyv_ptr, bbox)
+  local yuyv_s = torch.ByteStorage(
+  w*h*4,
+  tonumber(ffi.cast("intptr_t",yuyv_ptr))
+  )
+  local yuyv_t = torch.ByteTensor(yuyv_s, 1, torch.LongStorage{h/2,w,4})
+  local yuyv_sub = yuyv_t:sub(1,-1,1,w/2)
+	local y_plane = yuyv_sub:select(3,1)
+	local u_plane = yuyv_sub:select(3,2)
+	local v_plane = yuyv_sub:select(3,3)
+  -- Select just the bbox pixels
+  local ys, us, vs
+  if bbox then
+    -- Remember the coordinates and memory layout of a yuyv camera image
+    local c, d, a, b = unpack(bbox)
+    ys = y_plane:sub(a,b,c,d)
+    us = u_plane:sub(a,b,c,d)
+    vs = v_plane:sub(a,b,c,d)
+  else
+    ys = y_plane
+    us = u_plane
+    vs = v_plane
+  end
+  -- Copy into our samples, with a precision change, too
+  local yuv_samples = torch.DoubleTensor(ys:nElement(),3)
+  yuv_samples:select(2,1):copy(ys)
+  yuv_samples:select(2,2):copy(us)
+  yuv_samples:select(2,3):copy(vs)
+  -- Run PCA
+  local eigenvalues, eigenvectors = pca(yuv_samples)
+  return eigenvalues, eigenvectors
+end
+
 
 -- TODO: Might not be the smartest approach...
 -- That is why the state machine system is used

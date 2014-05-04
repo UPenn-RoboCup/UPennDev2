@@ -193,33 +193,57 @@ static int lua_jpeg_compress_crop(lua_State *L) {
 	
 	JDIMENSION width, height, w0, w_cropped, h0, h_cropped;
   JSAMPLE* data;
+  size_t stride;
 	// JPEG struct with buffer and cinfo is our first
 	structJPEG *ud = lua_checkjpeg(L, 1);
+  
+	// Access the JPEG compression settings
+	j_compress_ptr cinfo = (j_compress_ptr) ud->cinfo;
 	
 	// TODO: Check if a torch object
   if (lua_isstring(L, 2)) {
 		size_t sz = 0;
     data = (JSAMPLE*) lua_tolstring(L, 2, &sz);
+  	width  = luaL_checkint(L, 3);
+  	height = luaL_checkint(L, 4);
+		stride = cinfo->input_components * width;
   } else if (lua_islightuserdata(L, 2)) {
     data = (JSAMPLE*) lua_touserdata(L, 2);
-  } else {
+  	width  = luaL_checkint(L, 3);
+  	height = luaL_checkint(L, 4);
+		stride = cinfo->input_components * width;
+  }
+#ifdef TORCH
+	else {
+		THByteTensor* b_t = 
+			(THByteTensor *) luaT_checkudata(L, 2, luaT_typename(L, 2));
+		// TODO: Check continguous (or add stride support)
+		data = b_t->storage->data;
+		// Use the torch dimensions
+		width = b_t->size[1];
+		height = b_t->size[0];
+    // Must override for crop, since easier :)
+  	width  = luaL_checkint(L, 3);
+  	height = luaL_checkint(L, 4);
+		// TODO: Double check :)
+		stride = b_t->stride[0];
+	}
+#else
+	else {
 		return luaL_error(L, "Bad JPEG Compress 16 input");
   }
+#endif
 	
-	// Input image dimensions
-	width = luaL_checkint(L, 3);
-  height = luaL_checkint(L, 4);
+
 	// Start and stop for crop (put into C indices)
-	w0  = luaL_checkint(L, 5) - 1;
+	w0  = luaL_optint(L, 5, 1) - 1;
   w_cropped  = luaL_checkint(L, 6);
-	h0  = luaL_checkint(L, 7) - 1;
+	h0  = luaL_optint(L, 7, 1) - 1;
   h_cropped  = luaL_checkint(L, 8);
 	
 	if(h_cropped+h0>height||w_cropped+w0>width){
 		return luaL_error(L,"Bad crop");
 	}
-	// Access the JPEG compression settings
-	j_compress_ptr cinfo = (j_compress_ptr) ud->cinfo;
 	
 #ifdef DEBUG
 	printf("w: %d, h: %d | %d %d\n",width,height,cinfo->image_width,cinfo->image_height);
@@ -324,14 +348,13 @@ static int lua_jpeg_compress_crop(lua_State *L) {
 #endif
 			}
 			nlines = jpeg_write_scanlines(cinfo, row_pointer, 1);
-			if (img_stride) {
+			if (ud->subsample) {
 				// Skip a row if this subsample level
 				img_ptr += img_stride;
 			}
 		}
 		free(yuv_row);
 	} else {
-		size_t stride = cinfo->input_components * width;
 		while (cinfo->next_scanline < h) {
 			*row_pointer = img_ptr;
 			nlines = jpeg_write_scanlines(cinfo, row_pointer, 1);
@@ -427,7 +450,7 @@ static int lua_jpeg_compress(lua_State *L) {
 	if(ud->fmt==3){
 		int w = cinfo->image_width;
 		int h = cinfo->image_height;
-		size_t img_stride = 2*width * ud->subsample;
+		size_t img_stride = 2 * width * ud->subsample;
 		JSAMPLE* yuv_row = (JSAMPLE*)malloc( 3 * w * sizeof(JSAMPLE) );
 		if(yuv_row==NULL){
 			return luaL_error(L,"Bad malloc of yuv_row");

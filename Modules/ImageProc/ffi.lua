@@ -268,6 +268,8 @@ function ImageProc.line_stats (edge_t, threshold)
   return RadonTransform.get_line_stats()
 end
 
+-- TODO: Remove these functions
+util = require'util'
 ImageProc.get_radon = function()
   return RadonTransform
 end
@@ -279,7 +281,7 @@ local function pca(x)
    xm:div(math.sqrt(x:size(1)-1))
    local w,s,v = torch.svd(xm:t())
    s:cmul(s)
-   return s,w
+   return s, w, mean, xm
 end
 
 function ImageProc.yuyv_color_stats (yuyv_ptr, bbox)
@@ -291,12 +293,14 @@ function ImageProc.yuyv_color_stats (yuyv_ptr, bbox)
   local yuyv_sub = yuyv_t:sub(1,-1,1,w/2)
 	local y_plane = yuyv_sub:select(3,1)
 	local u_plane = yuyv_sub:select(3,2)
-	local v_plane = yuyv_sub:select(3,3)
+  --local y1_plane = yuyv_sub:select(3,3)
+	local v_plane = yuyv_sub:select(3,4)
   -- Select just the bbox pixels
   local ys, us, vs
   if bbox then
     -- Remember the coordinates and memory layout of a yuyv camera image
     local c, d, a, b = unpack(bbox)
+    print(a, b, c, d, y_plane:size(1), y_plane:size(2) )
     ys = y_plane:sub(a,b,c,d)
     us = u_plane:sub(a,b,c,d)
     vs = v_plane:sub(a,b,c,d)
@@ -310,9 +314,26 @@ function ImageProc.yuyv_color_stats (yuyv_ptr, bbox)
   yuv_samples:select(2,1):copy(ys)
   yuv_samples:select(2,2):copy(us)
   yuv_samples:select(2,3):copy(vs)
+  --util.ptorch(yuv_samples)
   -- Run PCA
-  local eigenvalues, eigenvectors = pca(yuv_samples)
-  return eigenvalues, eigenvectors
+  local eigenvalues, eigenvectors, mean, yuv_samples_0_mean = pca(yuv_samples)
+  print('evecs')
+  util.ptorch(eigenvectors)
+  print('evals')
+  util.ptorch(eigenvalues)
+  --print('STUFF')
+  --util.ptorch(eigenvalues:sub(1,1,1,1))
+  --print('STUFF2')
+  -- Convert samples to a nice space
+  --print('make into a row',eigenvalues:sub(1,3,1,1) * yuv_samples_0_mean)
+  --local transformed = torch.mv(yuv_samples_0_mean,eigenvectors[2])
+  local transformed = torch.mv(yuv_samples_0_mean,eigenvectors:select(2,1))
+  --util.ptorch(eigenvalues[1])
+  --util.ptorch(eigenvalues:select(2,1))
+  --util.ptorch(transformed)
+  transformed:resize(ys:size(1),ys:size(2))
+  --util.ptorch(transformed)
+  return eigenvalues, eigenvectors, mean, ys, us, vs, transformed
 end
 
 
@@ -367,8 +388,8 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, thresh)
 	-- Get the y-plane
 	local y_plane = yuyv_sub:select(3,1)
 	local u_plane = yuyv_sub:select(3,2)
-	local v_plane = yuyv_sub:select(3,3)
-	--local y1_plane = yuyv_sub:select(3,4)
+  --local y1_plane = yuyv_sub:select(3,3)
+	local v_plane = yuyv_sub:select(3,4)
 	-- Perform the convolution on the Int y-plane
   -- TODO: Mix this
   -- This typecast is required for conv2

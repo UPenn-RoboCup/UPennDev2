@@ -99,10 +99,37 @@ f_y:writeLong(line_max_t:storage())
 f_y:close()
 
 -- PCA on a bounding box
---ImageProc2.yuyv_color_stats(yuyv_t:data(), {20, 80, 40, 60})
 -- Save the cropped JPEG :)
 c_yuyv:downsampling(2)
-str = c_yuyv:compress_crop(yuyv_t, w, h, 200, 100, 21, 200 )
+-- crop coords in orginal dimensions
+str = c_yuyv:compress_crop(yuyv_t, w, h, 201, 100, 21, 200 )
 f_y = io.open('../Data/edge_focus_img.jpeg','w')
 f_y:write(str)
+f_y:close()
+
+-- Use 1 based indexing here...
+-- dimensions in the subsample space... TODO: Make clearer
+e, v, u, ys, us, vs, trans = ImageProc2.yuyv_color_stats(yuyv_t:data(), {61, 91, 11, 111})
+
+--e, v, u, ys, us, vs, trans = ImageProc2.yuyv_color_stats(yuyv_t:data(), {11, 41, 11, 51})
+
+print(ys:size(1),ys:size(2))
+f_y = torch.DiskFile('../Data/ys_bbox.raw', 'w')
+f_y.binary(f_y)
+f_y:writeByte(ys:clone():storage())
+f_y:close()
+
+f_y = torch.DiskFile('../Data/us_bbox.raw', 'w')
+f_y.binary(f_y)
+f_y:writeByte(us:clone():storage())
+f_y:close()
+
+f_y = torch.DiskFile('../Data/vs_bbox.raw', 'w')
+f_y.binary(f_y)
+f_y:writeByte(vs:clone():storage())
+f_y:close()
+
+f_y = torch.DiskFile('../Data/trans_bbox.raw', 'w')
+f_y.binary(f_y)
+f_y:writeDouble(trans:storage())
 f_y:close()

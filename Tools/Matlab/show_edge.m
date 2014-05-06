@@ -23,7 +23,7 @@ fid = fopen('Data/edge.raw');A = fread(fid,Inf,'*int32');fclose(fid);
 edge_raw = double(reshape(A,[w, h])');
 % char edges
 fid = fopen('Data/edge_char.raw');A = fread(fid,Inf,'*int8');fclose(fid);
-edge_char = double(reshape(A,[w, h])');
+edge_char = logical(reshape(A,[w, h])');
 %
 figure(2);
 subplot(1,2,1);
@@ -33,13 +33,16 @@ subplot(1,2,2);
 imagesc(edge_char);
 axis image;
 
+figure(10);
+imagesc(radon(edge_char));
+
 %% Line counts and sums
 nr = 100;
 nth = 35;
 fid = fopen('Data/line_cnts.raw');A = fread(fid,Inf,'*int64');fclose(fid);
-line_counts = double(reshape(A,[nr, nth])');
+line_counts = double(reshape(A,[nr, nth]));
 fid = fopen('Data/line_sums.raw');A = fread(fid,Inf,'*int64');fclose(fid);
-line_sums = double(reshape(A,[nr, nth])');
+line_sums = double(reshape(A,[nr, nth]));
 %
 figure(3);
 subplot(2,1,1);
@@ -52,6 +55,8 @@ imagesc(line_sums);
 title('Line Sums');
 
 %% Line extrema
+nr = 100;
+nth = 35;
 fid = fopen('Data/line_min.raw');A = fread(fid,Inf,'*int64');fclose(fid);
 line_min = double(reshape(A,[nr, nth])');
 fid = fopen('Data/line_max.raw');A = fread(fid,Inf,'*int64');fclose(fid);

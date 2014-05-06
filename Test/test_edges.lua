@@ -21,33 +21,60 @@ c_gray = jpeg.compressor('gray')
 c_yuyv = jpeg.compressor('yuyv')
 
 local meta, yuyv_t, edge_t, edge_char_t
+local computation_times, n_over = {}, 0
 for i,m,r in d do
 	if i>#metadata/2 then break end
 	local t0 = unix.time()
 	meta = m
 	yuyv_t = r
+
+  -- Form the edges
+  local t0_edge = unix.time()
+  edge_t, grey_t = ImageProc2.yuyv_to_edge(yuyv_t:data(),{61, 91, 11, 111})
+  local t1_edge = unix.time()
+  local t_edge = t1_edge-t0_edge
   
-  --print('\n',i)
+  -- Old Line detection
+  --[[
+  local t0_old = unix.time()
+  ImageProc2.line_stats_old(edge_t,1)
+  local t1_old = unix.time()
+  local t_old = t1_old-t0_old
+  --]]
+  
+  -- New line detection
+  local t0_new = unix.time()
+  ImageProc2.line_stats(edge_t,1)
+  local t1_new = unix.time()
+  local t_new = t1_new-t0_new
+  
+  -- Collect garbage in regular intervals :)
+  local t0_gc = unix.time()
+  collectgarbage()
+  local t1_gc = unix.time()
+  local t_gc = t1_gc - t0_gc
+  
+  local t_total = t_edge + t_gc
+  if t_total > 1/30 then
+    print('\n',i)
+    print('Over time!', i, t_total)
+    print("yuyv_to_edge (ms)", t_edge*1e3)
+    print("line_stats (ms)", t_new*1e3)
+    --print("line_stats_old (ms)", t_old*1e3)
+    n_over = n_over + 1
+  end
+  -- Save the times
+  table.insert(computation_times, t_total)
   
 end
 
-
--- Form the edges
-t0 = unix.time()
-edge_t, grey_t = ImageProc2.yuyv_to_edge(yuyv_t:data(),{61, 91, 11, 111})
-t1 = unix.time()
-print("yuyv_to_edge",t1-t0)
-
--- Line detection
-t00 = unix.time()
-local lines = ImageProc2.line_stats_old(edge_t,1)
-t11 = unix.time()
-print("line_stats_old",t11-t00)
-
-t00 = unix.time()
-local lines = ImageProc2.line_stats(edge_t,1)
-t11 = unix.time()
-print("line_stats",t11-t00)
+local t_total, t_max = 0, -math.huge
+for _, t in ipairs(computation_times) do
+  t_total = t_total + t
+  if t>t_max then t_max = t end
+end
+t_avg = t_total / #computation_times
+print('\nAverage time', t_avg, t_max, n_over / #computation_times)
 
 
 -- Save the YUYV image

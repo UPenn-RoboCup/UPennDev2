@@ -240,7 +240,6 @@ function ImageProc.line_stats_old (edge_t, threshold, shift90)
   -- Clear out any old transform
   RadonTransform.init(edge_t:size(1), edge_t:size(2))
   
-  t0 = unix.time()
   local e_ptr = edge_t:data()
   for j=0, edge_t:size(1)-1 do
     -- Use -2 and not -1 since we do not go to the edge
@@ -262,12 +261,9 @@ function ImageProc.line_stats_old (edge_t, threshold, shift90)
       end
     end
   end
-  t1 = unix.time()
-  print('Radon horiz',t1-t0)
   
   
   
-  t0 = unix.time()
   local aH = RadonTransform.addVerticalPixel
   local e_ptr_l = edge_t:data()
   local e_ptr_r = e_ptr_l + edge_t:size(2)
@@ -292,8 +288,6 @@ function ImageProc.line_stats_old (edge_t, threshold, shift90)
       end
     end
   end
-  t1 = unix.time()
-  print('Radon vert',t1-t0)
 
   --return RadonTransform.get_line_stats()
 

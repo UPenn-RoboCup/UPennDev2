@@ -7,11 +7,16 @@ ok = nil
 -- These are the integer constants for avoiding floating point precision
 -- Max radius: the diagonal of the image
 -- NR: number of radii (100 of MAXR with 200 of NR is .5 R precision)
-local MAXR, NR = 100, 100 
+-- TODO: Now just assuming 1 pixel resolution, and just having a constant buffer
+-- so that we do not malloc each time
+local MAXR, NR = 101
 
 --local NTH = 45 -- Number of angles
 --local NTH = 35 -- Number of angles (just over 5 degrees seems ok)
 local NTH = 180 -- Let's try it :)
+
+local count_d = ffi.new("int64_t["..NTH.."]["..MAXR.."]")
+local line_sum_d = ffi.new("int64_t["..NTH.."]["..MAXR.."]")
 
 -- Save our lookup table discretization
 local th = ffi.new('double[?]',NTH)
@@ -23,9 +28,6 @@ for i = 0, NTH-1 do
   cos_d[i] = math.cos(th[i])
   sin_d[i] = math.sin(th[i])
 end
-
--- 2D counts array
-local count_d, line_sum_d
 
 -- a horizontal pixel could be part of a 45 degree line
 -- NOTE: This we can change based on the prior
@@ -45,10 +47,7 @@ local BIG = 2147483640
 -- TODO: Make smarter? Seems somewhat ok...
 function RadonTransform.init (w, h)
   -- Resize for the image
-  MAXR = math.ceil(math.sqrt(w*w+h*h))
-  NR = MAXR
-  count_d = ffi.new("int64_t["..NTH.."]["..NR.."]")
-  line_sum_d = ffi.new("int64_t["..NTH.."]["..NR.."]")
+  NR = math.ceil(math.sqrt(w*w+h*h))
 end
 
 -- TODO: Respect the integer method, since since lua converts back to double

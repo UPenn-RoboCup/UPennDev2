@@ -6,9 +6,10 @@ ok = nil
 
 -- These are the integer constants for avoiding floating point precision
 -- Max r for 80*60 label
-local MAXR = 200 -- Max radius (max(width,height)?)
-local NR = 200 -- Number of radii
-local NTH = 45 -- Number of angles
+local MAXR = 100 -- Max radius: the diagonal of the image
+local NR = 100 -- Number of radii
+--local NTH = 45 -- Number of angles
+local NTH = 35 -- Number of angles
 -- a horizontal pixel could be part of a 45 degree line
 -- NOTE: This we can change based on the prior
 local DIAGONAL_THRESHOLD = math.sqrt(2) / 2

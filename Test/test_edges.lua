@@ -22,8 +22,9 @@ for i,m,r in d do
 	local t0 = unix.time()
 	meta = m
 	yuyv_t = r
-  edge_t, edge_char_t, grey_t = ImageProc2.yuyv_to_edge(yuyv_t:data())
 end
+
+edge_t, edge_char_t, grey_t = ImageProc2.yuyv_to_edge(yuyv_t:data(),{61, 91, 11, 111})
 
 print('edge',edge_t:size(1),edge_t:size(2))
 

@@ -300,7 +300,6 @@ function ImageProc.yuyv_color_stats (yuyv_ptr, bbox)
   if bbox then
     -- Remember the coordinates and memory layout of a yuyv camera image
     local c, d, a, b = unpack(bbox)
-    print(a, b, c, d, y_plane:size(1), y_plane:size(2) )
     ys = y_plane:sub(a,b,c,d)
     us = u_plane:sub(a,b,c,d)
     vs = v_plane:sub(a,b,c,d)
@@ -359,24 +358,16 @@ function ImageProc.label_to_edge (label_t, label)
   return edge_char_t
 end
 
-function ImageProc.yuyv_to_edge (yuyv_ptr, thresh)
-  thresh = thresh or 500
+function ImageProc.yuyv_to_edge (yuyv_ptr, bbox)
   -- Wrap the pointer into a tensor
   local yuyv_s = torch.ByteStorage(
   w*h*4,
   tonumber(ffi.cast("intptr_t",yuyv_ptr))
   )
-  --[[
-  print('SIZE',yuyv_s:size(), w, h, w*h*4)
-  local yuyv_t = torch.ByteTensor(yuyv_s)
-  local yuyv_sub = yuyv_t:reshape(h/2,w,4):sub(1,-1,1,w/2)
-  --]]
-  ----[[
   local yuyv_sz = torch.LongStorage{h/2,w,4}
   local yuyv_t = torch.ByteTensor(yuyv_s, 1, yuyv_sz)
   local yuyv_sub = yuyv_t:sub(1,-1,1,w/2)
-  --]]
-  -- TODO: Can add the strides easily - wow!
+  -- TODO: Can modify the strides easily - wow!
   -- Reshape for a subsample.
   -- TODO: Should be resize onto the same storage, else a malloc!
   -- TODO: Could finagle the strides via the ffi ;)
@@ -390,10 +381,43 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, thresh)
 	local u_plane = yuyv_sub:select(3,2)
   --local y1_plane = yuyv_sub:select(3,3)
 	local v_plane = yuyv_sub:select(3,4)
+  -- Form the greyscale image
+  local ys, us, vs
+  if bbox then
+    -- Remember the coordinates and memory layout of a yuyv camera image
+    local c, d, a, b = unpack(bbox)
+    ys = y_plane:sub(a,b,c,d)
+    us = u_plane:sub(a,b,c,d)
+    vs = v_plane:sub(a,b,c,d)
+  else
+    ys = y_plane
+    us = u_plane
+    vs = v_plane
+  end
+  -- Copy into our samples, with a precision change, too
+  -- TODO: Just use resize instead of making a new tensor
+  local yuv_samples = torch.DoubleTensor(ys:nElement(),3)
+  yuv_samples:select(2,1):copy(ys)
+  yuv_samples:select(2,2):copy(us)
+  yuv_samples:select(2,3):copy(vs)
+  -- Run PCA
+  local eigenvalues, eigenvectors, mean, yuv_samples_0_mean = pca(yuv_samples)
+  -- Transform into the grey space
+  local transformed = torch.mv(yuv_samples_0_mean,eigenvectors:select(2,1))
+  -- Resize as an image
+  transformed:resize(ys:size(1),ys:size(2))
+  -- Scale to the integer plane
+  grey_t:resize(transformed:size()):copy(transformed:mul(255))
+  
 	-- Perform the convolution on the Int y-plane
   -- TODO: Mix this
   -- This typecast is required for conv2
-	grey_t:resize(y_plane:size()):copy(y_plane)
+  
+  -- THIS WAS OK
+	--grey_t:resize(y_plane:size()):copy(y_plane)
+  -- END THIS WAS OK
+  
+  
   -- Resize the edge map as necessary
   -- TODO: I think this happens automatically...
 	--edge_t:resize(
@@ -408,7 +432,7 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, thresh)
 	edge_char_t[edge_t:lt(0)] = 0
 	edge_char_t[edge_t:gt(THRESH)] = label or 255
   --]]
-  label = label or 1
+  local thresh = thresh or 2000
   edge_char_t:map(edge_t, function(g, l)
     if l>thresh then return 1
 --    elseif l<-thresh then return -1

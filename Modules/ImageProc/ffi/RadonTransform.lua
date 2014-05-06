@@ -11,12 +11,13 @@ ok = nil
 -- so that we do not malloc each time
 local MAXR, NR = 101
 
---local NTH = 45 -- Number of angles
+local NTH = 45 -- Number of angles
 --local NTH = 35 -- Number of angles (just over 5 degrees seems ok)
-local NTH = 180 -- Let's try it :)
+--local NTH = 180 -- Let's try it :)
 
 local count_d = ffi.new("int64_t["..NTH.."]["..MAXR.."]")
 local line_sum_d = ffi.new("int64_t["..NTH.."]["..MAXR.."]")
+local b_size = NTH*MAXR*ffi.sizeof('int64_t')
 
 -- Save our lookup table discretization
 local th = ffi.new('double[?]',NTH)
@@ -48,6 +49,9 @@ local BIG = 2147483640
 function RadonTransform.init (w, h)
   -- Resize for the image
   NR = math.ceil(math.sqrt(w*w+h*h))
+  -- Zero the counts
+  ffi.fill(count_d, b_size)
+  ffi.fill(line_sum_d, b_size)
 end
 
 -- TODO: Respect the integer method, since since lua converts back to double

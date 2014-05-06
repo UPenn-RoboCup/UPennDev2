@@ -35,8 +35,8 @@ axis image;
 
 %% Line counts and sums
 nr = 101;
-%nth = 35;
-nth = 180;
+nth = 45;
+%nth = 180;
 fid = fopen('Data/line_cnts.raw');A = fread(fid,Inf,'*int64');fclose(fid);
 line_counts = double(reshape(A,[nr, nth]));
 fid = fopen('Data/line_sums.raw');A = fread(fid,Inf,'*int64');fclose(fid);

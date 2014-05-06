@@ -35,7 +35,7 @@ axis image;
 
 %% Line counts and sums
 nr = 101;
-nth = 45;
+nth = 36;
 %nth = 180;
 fid = fopen('Data/line_cnts.raw');A = fread(fid,Inf,'*int64');fclose(fid);
 line_counts = double(reshape(A,[nr, nth]));
@@ -63,6 +63,9 @@ imagesc(R);
 title('MATLAB gut check');
 subplot(2,1,2);
 imagesc(IR);
+
+figure(5);
+plot(max(line_counts));
 
 %% Line extrema
 %{

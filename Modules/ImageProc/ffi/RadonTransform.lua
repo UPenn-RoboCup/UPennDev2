@@ -11,8 +11,8 @@ ok = nil
 -- so that we do not malloc each time
 local MAXR, NR = 101
 
-local NTH = 45 -- Number of angles
---local NTH = 35 -- Number of angles (just over 5 degrees seems ok)
+--local NTH = 45 -- Number of angles
+local NTH = 36 -- 5 degree resolution
 --local NTH = 180 -- Let's try it :)
 
 local count_d = ffi.new("int64_t["..NTH.."]["..MAXR.."]")
@@ -78,31 +78,32 @@ function RadonTransform.addVerticalPixel (i, j)
   for _,ith in ipairs(cos_index_thresh) do addPixelToRay(i,j,ith) end
 end
 
--- This gives the one best line
-function RadonTransform.get_line_stats ()
-  -- If no lines
-  if countMax == 0 then return end
-  -- Find the index
-  local iR = rMax * cosTable[thMax]
-  local jR = rMax * sinTable[thMax]
-  -- Find our counts
-  local lMean = lineSum[thMax][rMax] / countMax
-  local lMin = lineMin[thMax][rMax]
-  local lMax = lineMax[thMax][rMax]
-  
-  --print('max',thMax, math.floor(rMax+.5) )
-  --print('l',lMin,lMean,lMax)
-  --print()
-  
-  -- Return our table of statistics
-  return {
-    iMean = iR - lMean * sinTable[thMax],
-    jMean = jR + lMean * cosTable[thMax],
-    iMin  = iR - lMin  * sinTable[thMax],
-    jMin  = jR + lMin  * cosTable[thMax],
-    iMax  = iR - lMax  * sinTable[thMax],
-    jMax  = jR + lMax  * cosTable[thMax],
-  }
+-- Find parallel lines in the Radon space
+function RadonTransform.get_parallel_lines (threshold)
+  threshold = threshold or 60
+  local i_monotonic_max, monotonic_max, val
+  for ith=0, NTH-1 do
+    local i_arr, v_arr = {}, {}
+    i_monotonic_max = 0
+    monotonic_max = 0
+    for ir=0, MAXR-1 do
+      val = count_d[ith][ir]
+      if val>threshold and val>monotonic_max then
+        monotonic_max = val
+        i_monotonic_max = ir
+      elseif ir>i_monotonic_max+1 and monotonic_max>0 then
+        table.insert(i_arr, i_monotonic_max)
+        table.insert(v_arr, monotonic_max)
+        i_monotonic_max = ir
+        monotonic_max = -1
+      end
+    end
+    if #v_arr>1 then
+      print('TH',ith)
+      print('V FOUND', #v_arr, unpack(v_arr))
+      print('I FOUND', #i_arr, unpack(i_arr))
+    end
+  end
 end
 
 -- Converts to torch

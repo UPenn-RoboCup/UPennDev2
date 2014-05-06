@@ -322,6 +322,8 @@ function ImageProc.line_stats (edge_t, threshold, shift90)
     end
   end
 
+  RadonTransform.get_parallel_lines()
+
   --return RadonTransform.get_line_stats()
 end
 

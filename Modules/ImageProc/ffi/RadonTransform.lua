@@ -10,109 +10,69 @@ ok = nil
 local MAXR, NR = 100, 100 
 
 --local NTH = 45 -- Number of angles
-local NTH = 35 -- Number of angles (just over 5 degrees seems ok)
---local NTH = 180 -- Let's try it :)
+--local NTH = 35 -- Number of angles (just over 5 degrees seems ok)
+local NTH = 180 -- Let's try it :)
+
+-- Save our lookup table discretization
+local th = ffi.new('double[?]',NTH)
+local sin_d, cos_d = ffi.new('double[?]',NTH), ffi.new('double[?]',NTH)
+for i = 0, NTH-1 do
+  -- We only need 0 to Pi
+  -- TODO: Change based on the prior
+  th[i] = math.pi * i / NTH
+  cos_d[i] = math.cos(th[i])
+  sin_d[i] = math.sin(th[i])
+end
+
+-- 2D counts array
+local count_d, line_sum_d
 
 -- a horizontal pixel could be part of a 45 degree line
 -- NOTE: This we can change based on the prior
 local DIAGONAL_THRESHOLD = math.sqrt(2) / 2
-
--- Save our lookup table discretization
-local th = torch.DoubleTensor(NTH)
-local sinTable, cosTable = torch.DoubleTensor(NTH), torch.DoubleTensor(NTH)
-
--- Keep track of the counts
-local countMax, thMax, rMax = 0
-local count, lineMin, lineMax, lineSum
+local sin_index_thresh, cos_index_thresh = {}, {}
+for ith = 0, NTH-1 do
+  if math.abs(sin_d[ith]) >= DIAGONAL_THRESHOLD then
+    table.insert(sin_index_thresh, ith)
+  end
+  if math.abs(cos_d[ith]) >= DIAGONAL_THRESHOLD then
+    table.insert(cos_index_thresh, ith)
+  end
+end
 
 local BIG = 2147483640
 
--- Clear the Radon transform
-function RadonTransform.clear ()
-  -- Clear the transform
-  count:zero()
-  lineMin:fill(BIG)
-  lineMax:fill(-BIG)
-  lineSum:zero()
-  countMax = 0
-end
-
--- Initialize the lookup table
+-- TODO: Make smarter? Seems somewhat ok...
 function RadonTransform.init (w, h)
-  -- TODO: Just use apply
-  for i = 1, NTH do
-    -- We only need 0 to Pi
-    -- TODO: Change based on the prior
-    th[i] = math.pi * i / NTH
-    cosTable[i] = math.cos(th[i])
-    sinTable[i] = math.sin(th[i])
-  end
   -- Resize for the image
   MAXR = math.ceil(math.sqrt(w*w+h*h))
   NR = MAXR
-  count = torch.LongTensor(NTH, NR)
-  lineMin = torch.LongTensor(NTH, NR)
-  lineMax = torch.LongTensor(NTH, NR)
-  lineSum = torch.LongTensor(NTH, NR)
-  -- Do the clear initially
-  RadonTransform.clear()
+  count_d = ffi.new("int64_t["..NTH.."]["..NR.."]")
+  line_sum_d = ffi.new("int64_t["..NTH.."]["..NR.."]")
 end
 
 -- TODO: Respect the integer method, since since lua converts back to double
 -- NOTE: Maybe have two ways - one in double, and one in int
-function RadonTransform.addPixelToRay (i, j, ith)
-  
-  ------------
-  -- While not in ffi land! i-1 and j-1
-  ------------
-  -- TODO: Use FFI math, like fabs, etc.
-  local ir = math.abs(cosTable[ith] * i + sinTable[ith] * j)
-  -- R value: 0 to MAXR-1
-  -- R index: 0 to NR-1
-  --local ir1 = math.floor(math.max(1,math.min(ir, MAXR))+.5)
-  local ir1 = math.floor(ir) % MAXR + 1
-  --local ir1 = math.max(1,math.min(ir, MAXR))
-  count[ith][ir1] = count[ith][ir1] + 1
-  if count[ith][ir1] > countMax then
-    thMax = ith
-    rMax  = ir1
-    countMax = count[ith][ir1]
-  end
 
-  -- Line statistics:
-  local iline = -sinTable[ith] * i + cosTable[ith] * j
-  lineSum[ith][ir1] = lineSum[ith][ir1] + iline
-  if iline > lineMax[ith][ir1] then
-    lineMax[ith][ir1] = iline
-  end
-  if iline < lineMin[ith][ir1] then
-    lineMin[ith][ir1] = iline
-  end
-  
+local fabs, min, max, floor = math.abs, math.min, math.max, math.floor
+
+function RadonTransform.addPixelToRay (i, j, ith)
+  local s, c = sin_d[ith], cos_d[ith]
+  -- Counts
+  local ir = fabs(c * i + s * j)
+  count_d[ith][ir] = count_d[ith][ir] + 1  
+  -- Line statistics
+  local iline = -s * i + c * j
+  line_sum_d[ith][ir] = line_sum_d[ith][ir] + iline
 end
+local addPixelToRay = RadonTransform.addPixelToRay
 
 function RadonTransform.addHorizontalPixel (i, j)
-  ------------
-  -- While not in ffi land!
-  i, j = i+1, j+1
-  ------------
-  for ith = 1, NTH do
-    if math.abs(sinTable[ith]) >= DIAGONAL_THRESHOLD then
-      RadonTransform.addPixelToRay(i, j, ith)
-    end
-  end
+  for _,ith in ipairs(sin_index_thresh) do addPixelToRay(i,j,ith) end
 end
 
 function RadonTransform.addVerticalPixel (i, j)
-  ------------
-  -- While not in ffi land!
-  i, j = i+1, j+1
-  ------------
-  for ith = 1, NTH do
-    if math.abs(cosTable[ith]) >= DIAGONAL_THRESHOLD then
-      RadonTransform.addPixelToRay(i, j, ith)
-    end
-  end
+  for _,ith in ipairs(cos_index_thresh) do addPixelToRay(i,j,ith) end
 end
 
 -- This gives the one best line
@@ -127,9 +87,9 @@ function RadonTransform.get_line_stats ()
   local lMin = lineMin[thMax][rMax]
   local lMax = lineMax[thMax][rMax]
   
-  print('max',thMax, math.floor(rMax+.5) )
-  print('l',lMin,lMean,lMax)
-  print()
+  --print('max',thMax, math.floor(rMax+.5) )
+  --print('l',lMin,lMean,lMax)
+  --print()
   
   -- Return our table of statistics
   return {
@@ -142,8 +102,25 @@ function RadonTransform.get_line_stats ()
   }
 end
 
+-- Converts to torch
 function RadonTransform.get_population ()
-  return count, lineSum, lineMin, lineMax
+  local torch = require'torch'
+  local count_t = torch.LongTensor(NTH, NR)
+  local count_s = count_t:storage()
+  local tmp_s = torch.LongStorage(
+  NTH*NR,
+  tonumber(ffi.cast("intptr_t",count_d))
+  )
+  count_s:copy(tmp_s)
+  
+  local line_sum_t = torch.LongTensor(NTH, NR)
+  local line_sum_s = line_sum_t:storage()
+  local tmp_s = torch.LongStorage(
+  NTH*NR,
+  tonumber(ffi.cast("intptr_t",line_sum_d))
+  )
+  line_sum_s:copy(tmp_s)  
+  return count_t, line_sum_t
 end
 
 return RadonTransform

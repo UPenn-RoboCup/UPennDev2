@@ -35,8 +35,8 @@ axis image;
 
 %% Line counts and sums
 nr = 101;
-nth = 35;
-%nth = 180;
+%nth = 35;
+nth = 180;
 fid = fopen('Data/line_cnts.raw');A = fread(fid,Inf,'*int64');fclose(fid);
 line_counts = double(reshape(A,[nr, nth]));
 fid = fopen('Data/line_sums.raw');A = fread(fid,Inf,'*int64');fclose(fid);
@@ -65,6 +65,7 @@ subplot(2,1,2);
 imagesc(IR);
 
 %% Line extrema
+%{
 nr = 101;
 nth = 35;
 %nth = 180;
@@ -78,6 +79,7 @@ subplot(2,1,1);
 imagesc(line_min);
 subplot(2,1,2);
 imagesc(line_max);
+%}
 
 %% bbox of the image
 w = 31; h = 101;

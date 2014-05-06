@@ -24,6 +24,7 @@ for i,m,r in d do
 	yuyv_t = r
 end
 
+-- Form the edges
 edge_t, edge_char_t, grey_t = ImageProc2.yuyv_to_edge(yuyv_t:data(),{61, 91, 11, 111})
 
 print('edge',edge_t:size(1),edge_t:size(2))

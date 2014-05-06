@@ -10,7 +10,8 @@ ok = nil
 local MAXR, NR = 100, 100 
 
 --local NTH = 45 -- Number of angles
-local NTH = 35 -- Number of angles
+local NTH = 35 -- Number of angles (just over 5 degrees seems ok)
+--local NTH = 180 -- Let's try it :)
 
 -- a horizontal pixel could be part of a 45 degree line
 -- NOTE: This we can change based on the prior
@@ -59,7 +60,7 @@ end
 
 -- TODO: Respect the integer method, since since lua converts back to double
 -- NOTE: Maybe have two ways - one in double, and one in int
-function RadonTransform.addPixelToRay (j, i, ith)
+function RadonTransform.addPixelToRay (i, j, ith)
   
   ------------
   -- While not in ffi land! i-1 and j-1

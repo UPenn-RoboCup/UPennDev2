@@ -225,13 +225,14 @@ function ImageProc.color_stats (label_t, bbox, color)
 end
 
 -- TODO: Add the line state machine
-function ImageProc.line_stats (edge_t, threshold)
+-- TODO: Use can shift by 90 degrees to make the search for line match reliable
+-- because no edge spill over
+function ImageProc.line_stats (edge_t, threshold, shift90)
   threshold = threshold or 500
   local j, i, label0, label1
   -- Clear out any old transform
   RadonTransform.init(edge_t:size(1), edge_t:size(2))
   
-  ----[[
   local e_ptr = edge_t:data()
   for j=0, edge_t:size(1)-1 do
     -- Use -2 and not -1 since we do not go to the edge
@@ -240,14 +241,14 @@ function ImageProc.line_stats (edge_t, threshold)
       e_ptr = e_ptr + 1
       label1 = e_ptr[0]
       if label0>threshold and label1>threshold then
-        RadonTransform.addVerticalPixel(i, j)
-        --RadonTransform.addHorizontalPixel(j, i)
+        -- 90 degree shift
+        --RadonTransform.addVerticalPixel(j, i)
+        -- 0 degree shift
+        RadonTransform.addHorizontalPixel(i, j)
       end
     end
   end
-  --]]
   
-  ----[[
   local e_ptr_l = edge_t:data()
   local e_ptr_r = e_ptr_l + edge_t:size(2)
   for j=0, edge_t:size(1)-2 do
@@ -258,12 +259,14 @@ function ImageProc.line_stats (edge_t, threshold)
       label1 = e_ptr_r[0]
       e_ptr_r = e_ptr_r + 1
       if label0>threshold and label1>threshold then
-        RadonTransform.addHorizontalPixel(i, j)
-        --RadonTransform.addVerticalPixel(j, i)
+        -- 90 degree shift
+        --RadonTransform.addHorizontalPixel(j, i)
+        -- 0 degree shift
+        RadonTransform.addVerticalPixel(i, j)
       end
     end
   end
-  --]]
+
   return RadonTransform.get_line_stats()
 end
 

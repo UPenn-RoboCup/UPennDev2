@@ -36,6 +36,7 @@ axis image;
 %% Line counts and sums
 nr = 101;
 nth = 35;
+%nth = 180;
 fid = fopen('Data/line_cnts.raw');A = fread(fid,Inf,'*int64');fclose(fid);
 line_counts = double(reshape(A,[nr, nth]));
 fid = fopen('Data/line_sums.raw');A = fread(fid,Inf,'*int64');fclose(fid);
@@ -53,16 +54,24 @@ title('Line Sums');
 %
 figure(4);
 % Origin is the center pixel. For us, it it 0,0 top left
-imagesc(radon(edge_char));
+% Use explicit default theta
+TH = 0:179;
+R = radon(edge_char,TH);
+IR = iradon(R,TH);
+subplot(2,1,1);
+imagesc(R);
 title('MATLAB gut check');
+subplot(2,1,2);
+imagesc(IR);
 
 %% Line extrema
-nr = 100;
+nr = 101;
 nth = 35;
+%nth = 180;
 fid = fopen('Data/line_min.raw');A = fread(fid,Inf,'*int64');fclose(fid);
-line_min = double(reshape(A,[nr, nth])');
+line_min = double(reshape(A,[nr, nth]));
 fid = fopen('Data/line_max.raw');A = fread(fid,Inf,'*int64');fclose(fid);
-line_max = double(reshape(A,[nr, nth])');
+line_max = double(reshape(A,[nr, nth]));
 %
 figure(5);
 subplot(2,1,1);

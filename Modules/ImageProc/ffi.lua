@@ -57,6 +57,9 @@ local kernel_t = torch.IntTensor(kernel)--:t():clone()
 local edge_char_t = torch.CharTensor()
 local grey_char_t = torch.CharTensor()
 local kernel_char_t = torch.CharTensor(kernel)
+--
+local yuv_samples_t = torch.DoubleTensor()
+local grey_transformed_t = torch.DoubleTensor()
 
 -- Load LookUp Table for Color -> Label
 function ImageProc.load_lut (filename)
@@ -228,7 +231,7 @@ end
 -- TODO: Use can shift by 90 degrees to make the search for line match reliable
 -- because no edge spill over
 function ImageProc.line_stats (edge_t, threshold, shift90)
-  threshold = threshold or 500
+  threshold = threshold or 2000
   local j, i, label0, label1
   -- Clear out any old transform
   RadonTransform.init(edge_t:size(1), edge_t:size(2))
@@ -241,10 +244,13 @@ function ImageProc.line_stats (edge_t, threshold, shift90)
       e_ptr = e_ptr + 1
       label1 = e_ptr[0]
       if label0>threshold and label1>threshold then
-        -- 90 degree shift
-        --RadonTransform.addVerticalPixel(j, i)
-        -- 0 degree shift
-        RadonTransform.addHorizontalPixel(i, j)
+        if shift90 then
+          -- 90 degree shift
+          RadonTransform.addVerticalPixel(j, i)
+        else
+          -- 0 degree shift
+          RadonTransform.addHorizontalPixel(i, j)
+        end
       end
     end
   end
@@ -259,10 +265,13 @@ function ImageProc.line_stats (edge_t, threshold, shift90)
       label1 = e_ptr_r[0]
       e_ptr_r = e_ptr_r + 1
       if label0>threshold and label1>threshold then
-        -- 90 degree shift
-        --RadonTransform.addHorizontalPixel(j, i)
-        -- 0 degree shift
-        RadonTransform.addVerticalPixel(i, j)
+        if shift90 then
+          -- 90 degree shift
+          RadonTransform.addHorizontalPixel(j, i)
+        else
+          -- 0 degree shift
+          RadonTransform.addVerticalPixel(i, j)
+        end
       end
     end
   end
@@ -286,6 +295,7 @@ local function pca(x)
    return s, w, mean, xm
 end
 
+-- NOTE: This is just a test funciton, really. Makes a greyscaleimage
 function ImageProc.yuyv_color_stats (yuyv_ptr, bbox)
   local yuyv_s = torch.ByteStorage(
   w*h*4,
@@ -342,14 +352,8 @@ end
 -- That is why the state machine system is used
 function ImageProc.label_to_edge (label_t, label)
   -- Resize as necessary. First time gets the hit
-  grey_char_t:resize(label_t:size())
-  -- Zero the edge map
-  -- TODO: Is "map" actually faster than zero and search?
-  --[[
-  grey_char_t:zero()
-  grey_char_t[label_t:eq(label)] = 1
-  --]]
-  grey_char_t:map(label_t, function(g, l)
+  -- Fill our map correctly
+  grey_char_t:resize(label_t:size()):map(label_t, function(g, l)
     if l==label then return 1 else return 0 end
     end)
   -- Do the convolution in byte space
@@ -398,50 +402,24 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, bbox)
   end
   -- Copy into our samples, with a precision change, too
   -- TODO: Just use resize instead of making a new tensor
-  local yuv_samples = torch.DoubleTensor(ys:nElement(),3)
-  yuv_samples:select(2,1):copy(ys)
-  yuv_samples:select(2,2):copy(us)
-  yuv_samples:select(2,3):copy(vs)
+  yuv_samples_t:resize(ys:nElement(), 3)
+  yuv_samples_t:select(2,1):copy(ys)
+  yuv_samples_t:select(2,2):copy(us)
+  yuv_samples_t:select(2,3):copy(vs)
+  grey_transformed_t:resize(ys:nElement())
   -- Run PCA
-  local eigenvalues, eigenvectors, mean, yuv_samples_0_mean = pca(yuv_samples)
+  local eigenvalues, eigenvectors, mean, yuv_samples_0_mean = pca(yuv_samples_t)
   -- Transform into the grey space
-  local transformed = torch.mv(yuv_samples_0_mean,eigenvectors:select(2,1))
+  -- TODO: Need to figure out which eigenvector to use...
+  torch.mv(grey_transformed_t,yuv_samples_0_mean,eigenvectors:select(2,1))
   -- Resize as an image
-  transformed:resize(ys:size(1),ys:size(2))
+  grey_transformed_t:resize(ys:size(1),ys:size(2))
   -- Scale to the integer plane
-  grey_t:resize(transformed:size()):copy(transformed:mul(255))
-  
-	-- Perform the convolution on the Int y-plane
-  -- TODO: Mix this
-  -- This typecast is required for conv2
-  
-  -- THIS WAS OK
-	--grey_t:resize(y_plane:size()):copy(y_plane)
-  -- END THIS WAS OK
-  
-  
-  -- Resize the edge map as necessary
-  -- TODO: I think this happens automatically...
-	--edge_t:resize(
-  --grey_t:size(1)+kernel_t:size(1)/2,
-  --grey_t:size(2)+kernel_t:size(2)/2)
+  -- TODO: Just use the double space? I wonder how much of a speed hit...?
+  grey_t:resize(grey_transformed_t:size()):copy(grey_transformed_t:mul(255))
   -- Perform the convolution
 	edge_t:conv2(grey_t, kernel_t)
-	-- Threshold (Somewhat not working...)
-	edge_char_t:resize(edge_t:size())
-  -- TODO: Is using map faster than these two statements?
-  --[[
-	edge_char_t[edge_t:lt(0)] = 0
-	edge_char_t[edge_t:gt(THRESH)] = label or 255
-  --]]
-  local thresh = thresh or 2000
-  edge_char_t:map(edge_t, function(g, l)
-    if l>thresh then return 1
---    elseif l<-thresh then return -1
-    else return 0 end
-    end)
-  -- TODO: Some other dynamic range compression
-  return edge_t, edge_char_t, grey_t
+  return edge_t, grey_t
 end
 
 -- Setup should be able to quickly switch between cameras

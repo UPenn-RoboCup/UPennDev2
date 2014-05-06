@@ -16,6 +16,10 @@ local d = replay:log_iter()
 local w, h = metadata[1].w, metadata[1].h
 ImageProc2.setup(w, h, 2, 2)
 
+local jpeg = require'jpeg'
+c_gray = jpeg.compressor('gray')
+c_yuyv = jpeg.compressor('yuyv')
+
 local meta, yuyv_t, edge_t, edge_char_t
 for i,m,r in d do
 	if i>#metadata/2 then break end
@@ -24,15 +28,48 @@ for i,m,r in d do
 	yuyv_t = r
 end
 
+-- Save the YUYV image
+str = c_yuyv:compress(yuyv_t, w, h )
+f_y = io.open('../Data/edge_img.jpeg','w')
+f_y:write(str)
+f_y:close()
+
 -- Form the edges
-edge_t, edge_char_t, grey_t = ImageProc2.yuyv_to_edge(yuyv_t:data(),{61, 91, 11, 111})
-
-print('edge',edge_t:size(1),edge_t:size(2))
-
+t0 = unix.time()
+edge_t, grey_t = ImageProc2.yuyv_to_edge(yuyv_t:data(),{61, 91, 11, 111})
+t1 = unix.time()
+print("yuyv_to_edge",t1-t0)
+print('Edge Size:',edge_t:size(1),edge_t:size(2))
+-- Save this edge
 f_y = torch.DiskFile('../Data/edge.raw', 'w')
 f_y.binary(f_y)
 f_y:writeInt(edge_t:storage())
 f_y:close()
+
+-- Line detection
+--edge_t:zero():select(1, 40):fill(2)
+t0 = unix.time()
+local lines = ImageProc2.line_stats(edge_t,1)
+t1 = unix.time()
+print("line_stats",t1-t0)
+
+
+
+
+
+-- The rest is just debug code :)
+
+-- Threshold (Somewhat not working...)
+-- TODO: Some other dynamic range compression
+local edge_char_t = torch.CharTensor()
+edge_char_t:resize(edge_t:size())
+-- Form a char map between 0 and 255 for Radon...?
+local thresh = thresh or 2000
+edge_char_t:map(edge_t, function(g, l)
+  if l>thresh then return 1
+--    elseif l<-thresh then return -1
+  else return 0 end
+  end)
 
 f_y = torch.DiskFile('../Data/edge_char.raw', 'w')
 f_y.binary(f_y)
@@ -40,19 +77,10 @@ f_y:writeChar(edge_char_t:storage())
 f_y:close()
 
 -- Now let's save this to a JPEG for viewing
-local jpeg = require'jpeg'
-c_gray = jpeg.compressor('gray')
-c_yuyv = jpeg.compressor('yuyv')
 -- -1 is 255 since 0xFF is -1 in signed stuff :)
 --local str = c_gray:compress(edge_char_t:mul(-1))
 local str = c_gray:compress(edge_char_t:mul(127):add(127))
 local f_y = io.open('../Data/edge_bin.jpeg','w')
-f_y:write(str)
-f_y:close()
-
--- Save the image
-str = c_yuyv:compress(yuyv_t, w, h )
-f_y = io.open('../Data/edge_img.jpeg','w')
 f_y:write(str)
 f_y:close()
 
@@ -63,10 +91,6 @@ str = c_gray:compress(grey_t2)
 f_y = io.open('../Data/edge_gray.jpeg','w')
 f_y:write(str)
 f_y:close()
-
--- Try some line detection
---edge_t:zero():select(1, 40):fill(2)
-local lines = ImageProc2.line_stats(edge_t,1)
 
 f_y = torch.DiskFile('../Data/edge.raw', 'w')
 f_y.binary(f_y)

@@ -79,31 +79,33 @@ function RadonTransform.addVerticalPixel (i, j)
 end
 
 -- Find parallel lines in the Radon space
-function RadonTransform.get_parallel_lines (threshold)
+function RadonTransform.get_parallel_lines (threshold, min_width)
+  -- Threshold should be 75% of the maxR maybe? We can deal with this later
   threshold = threshold or 60
+  min_width = min_width or 7
+  local parallel_lines = {}
   local i_monotonic_max, monotonic_max, val
+  local max_r = floor(0.75*NR)
   for ith=0, NTH-1 do
-    local i_arr, v_arr = {}, {}
+    local i_arr = {}
     i_monotonic_max = 0
     monotonic_max = 0
-    for ir=0, MAXR-1 do
+    for ir=0, max_r do
       val = count_d[ith][ir]
       if val>threshold and val>monotonic_max then
         monotonic_max = val
         i_monotonic_max = ir
-      elseif ir>i_monotonic_max+1 and monotonic_max>0 then
+      elseif ir>i_monotonic_max+min_width and monotonic_max>0 then
         table.insert(i_arr, i_monotonic_max)
-        table.insert(v_arr, monotonic_max)
         i_monotonic_max = ir
         monotonic_max = -1
       end
     end
-    if #v_arr>1 then
-      print('TH',ith)
-      print('V FOUND', #v_arr, unpack(v_arr))
-      print('I FOUND', #i_arr, unpack(i_arr))
-    end
+    -- Save the parallel lines
+    if #i_arr>1 then parallel_lines[ith] = i_arr end
   end
+  -- Yield the parallel lines
+  return parallel_lines
 end
 
 -- Converts to torch

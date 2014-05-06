@@ -294,20 +294,15 @@ function ImageProc.line_stats_old (edge_t, threshold, shift90)
   return
 end
 
-
-
-
-function ImageProc.line_stats (edge_t, threshold, shift90)
+function ImageProc.line_stats (edge_t, threshold)
   threshold = threshold or 2000
   -- TODO: Use SouthEast pixel so we can have diagonal pixel resolution
   local j, i, label_nw, label_ne, label_sw, label_se
   -- Clear out any old transform
   RadonTransform.init(edge_t:size(1), edge_t:size(2))
-    
   local e_ptr_l = edge_t:data()
   local e_ptr_r = e_ptr_l + edge_t:size(2)
-  for j=0, edge_t:size(1)-2 do
-    -- Use -2 and not -1 since we do not go to the edge
+  for j=0, edge_t:size(1)-1 do
     for i=0, edge_t:size(2)-1 do
       label_nw = e_ptr_l[0]
       e_ptr_l = e_ptr_l + 1
@@ -321,14 +316,9 @@ function ImageProc.line_stats (edge_t, threshold, shift90)
       end
     end
   end
-
-  RadonTransform.get_parallel_lines()
-
-  --return RadonTransform.get_line_stats()
+  -- Give the parallel lines
+  return RadonTransform.get_parallel_lines()
 end
-
-
-
 
 
 -- TODO: Remove these functions

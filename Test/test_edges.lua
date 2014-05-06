@@ -28,7 +28,7 @@ for i,m,r in d do
 	meta = m
 	yuyv_t = r
   
-  --[[
+  ----[[
   -- Collect garbage in regular intervals :)
   local gc_kb = collectgarbage('count')
   local t0_gc = unix.time()
@@ -43,16 +43,17 @@ for i,m,r in d do
   local t_edge = t1_edge-t0_edge
   
   -- Old Line detection
-  local t0_old = unix.time()
-  ImageProc2.line_stats_old(edge_t,1)
-  local t1_old = unix.time()
-  local t_old = t1_old-t0_old
+  --local t0_old = unix.time()
+  --ImageProc2.line_stats_old(edge_t,1)
+  --local t1_old = unix.time()
+  --local t_old = t1_old-t0_old
   
   -- New line detection
   local t0_new = unix.time()
-  ImageProc2.line_stats(edge_t,1)
+  plines = ImageProc2.line_stats(edge_t,1)
   local t1_new = unix.time()
   local t_new = t1_new-t0_new
+  for k, v in pairs(plines) do print(i,'Theta', k, 'R:', unpack(v)) end
   
   local t_total = t_gc + t_edge + t_new
   if t_total > 1/30 then
@@ -61,7 +62,7 @@ for i,m,r in d do
     print('Over time! (ms)', i, t_total*1e3)
     print("yuyv_to_edge (ms)", t_edge*1e3)
     print("line_stats (ms)", t_new*1e3)
-    print("line_stats_old (ms)", t_old*1e3)
+    --print("line_stats_old (ms)", t_old*1e3)
     n_over = n_over + 1
   end
   -- Save the times
@@ -70,7 +71,7 @@ for i,m,r in d do
   --]]
 end
 
---[[
+----[[
 local t_total, t_max = 0, -math.huge
 for _, t in ipairs(computation_times) do
   t_total = t_total + t
@@ -89,9 +90,11 @@ local t_edge = t1_edge-t0_edge
 
 -- New line detection
 local t0_new = unix.time()
-ImageProc2.line_stats(edge_t,1)
+plines = ImageProc2.line_stats(edge_t,1)
 local t1_new = unix.time()
 local t_new = t1_new-t0_new
+
+for k, v in pairs(plines) do print('Theta', k, 'R:', unpack(v)) end
 
 -- Save the YUYV image
 str = c_yuyv:compress(yuyv_t, w, h )

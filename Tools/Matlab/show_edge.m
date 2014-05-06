@@ -68,21 +68,21 @@ figure(5);
 plot(max(line_counts));
 
 %% Line extrema
-%{
 nr = 101;
-nth = 35;
+nth = 36;
 %nth = 180;
 fid = fopen('Data/line_min.raw');A = fread(fid,Inf,'*int64');fclose(fid);
 line_min = double(reshape(A,[nr, nth]));
 fid = fopen('Data/line_max.raw');A = fread(fid,Inf,'*int64');fclose(fid);
 line_max = double(reshape(A,[nr, nth]));
+line_min(line_min>nr) = 0;
+line_max(line_max<-nr) = 0;
 %
-figure(5);
+figure(6);
 subplot(2,1,1);
 imagesc(line_min);
 subplot(2,1,2);
 imagesc(line_max);
-%}
 
 %% bbox of the image
 w = 31; h = 101;
@@ -96,7 +96,7 @@ vs_bbox = double(reshape(A,[w, h])');
 fid = fopen('Data/trans_bbox.raw');A = fread(fid,Inf,'*double');fclose(fid);
 trans_bbox = double(reshape(A,[w, h])');
 %
-figure(6);
+figure(7);
 subplot(2,2,1);
 imagesc(ys_bbox);
 title('Y');

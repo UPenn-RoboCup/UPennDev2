@@ -17,6 +17,8 @@ local NTH = 36 -- 5 degree resolution
 
 local count_d = ffi.new("int64_t["..NTH.."]["..MAXR.."]")
 local line_sum_d = ffi.new("int64_t["..NTH.."]["..MAXR.."]")
+local line_min_d = ffi.new("int64_t["..NTH.."]["..MAXR.."]")
+local line_max_d = ffi.new("int64_t["..NTH.."]["..MAXR.."]")
 local b_size = NTH*MAXR*ffi.sizeof('int64_t')
 
 -- Save our lookup table discretization
@@ -43,8 +45,6 @@ for ith = 0, NTH-1 do
   end
 end
 
-local BIG = 2147483640
-
 -- TODO: Make smarter? Seems somewhat ok...
 function RadonTransform.init (w, h)
   -- Resize for the image
@@ -52,6 +52,11 @@ function RadonTransform.init (w, h)
   -- Zero the counts
   ffi.fill(count_d, b_size)
   ffi.fill(line_sum_d, b_size)
+  -- Fill up the min/max lines
+  ffi.fill(line_min_d, b_size, 0x7F)
+  ffi.fill(line_max_d, b_size, 0xFF)
+  --
+  countMax = 0
 end
 
 -- TODO: Respect the integer method, since since lua converts back to double
@@ -63,10 +68,13 @@ function RadonTransform.addPixelToRay (i, j, ith)
   local s, c = sin_d[ith], cos_d[ith]
   -- Counts
   local ir = fabs(c * i + s * j)
-  count_d[ith][ir] = count_d[ith][ir] + 1  
+  count_d[ith][ir] = count_d[ith][ir] + 1
   -- Line statistics
   local iline = -s * i + c * j
   line_sum_d[ith][ir] = line_sum_d[ith][ir] + iline
+  --print(iline,line_max_d[ith][ir],line_min_d[ith][ir])
+  if iline > line_max_d[ith][ir] then line_max_d[ith][ir] = iline end
+  if iline < line_min_d[ith][ir] then line_min_d[ith][ir] = iline end
 end
 local addPixelToRay = RadonTransform.addPixelToRay
 
@@ -83,14 +91,13 @@ function RadonTransform.get_parallel_lines (threshold, min_width)
   -- Threshold should be 75% of the maxR maybe? We can deal with this later
   threshold = threshold or 60
   min_width = min_width or 7
-  local parallel_lines = {}
+  local parallel_lines, found = {}, false
   local i_monotonic_max, monotonic_max, val
-  local max_r = floor(0.75*NR)
   for ith=0, NTH-1 do
     local i_arr = {}
     i_monotonic_max = 0
     monotonic_max = 0
-    for ir=0, max_r do
+    for ir=0, NR-1 do
       val = count_d[ith][ir]
       if val>threshold and val>monotonic_max then
         monotonic_max = val
@@ -102,15 +109,49 @@ function RadonTransform.get_parallel_lines (threshold, min_width)
       end
     end
     -- Save the parallel lines
-    if #i_arr>1 then parallel_lines[ith] = i_arr end
+    if #i_arr>1 then
+      found = true
+      parallel_lines[ith] = i_arr
+    end
   end
   -- Yield the parallel lines
-  return parallel_lines
+  if not found then return end
+  
+  local lines = {}
+  for ith, rs in pairs(parallel_lines) do
+    for _, i_r in pairs(rs) do
+      local s, c = sin_d[ith], cos_d[ith]
+      -- Find the image index
+      local iR = i_r * c
+      local jR = i_r * s
+      --
+      local lMean = tonumber(line_sum_d[ith][i_r] / count_d[ith][i_r])
+      local lMin = tonumber(line_min_d[ith][i_r])
+      local lMax = tonumber(line_max_d[ith][i_r])
+      --print(iR, jR, lMax,lMin,lMean)
+      --
+      table.insert(lines, {
+        ith = ith,
+        ir = i_r,
+        iMean = iR - lMean * s,
+        jMean = jR + lMean * c,
+        iMin = iR - lMin * s,
+        jMin = jR + lMin * c,
+        iMax = iR - lMax * s,
+        jMax = jR + lMax * c,
+      })
+    end
+  end
+  
+  -- Return our table of statistics
+  return lines
+  
 end
 
 -- Converts to torch
 function RadonTransform.get_population ()
   local torch = require'torch'
+  --
   local count_t = torch.LongTensor(NTH, NR)
   local count_s = count_t:storage()
   local tmp_s = torch.LongStorage(
@@ -118,15 +159,31 @@ function RadonTransform.get_population ()
   tonumber(ffi.cast("intptr_t",count_d))
   )
   count_s:copy(tmp_s)
-  
+  --
   local line_sum_t = torch.LongTensor(NTH, NR)
   local line_sum_s = line_sum_t:storage()
   local tmp_s = torch.LongStorage(
   NTH*NR,
   tonumber(ffi.cast("intptr_t",line_sum_d))
   )
-  line_sum_s:copy(tmp_s)  
-  return count_t, line_sum_t
+  line_sum_s:copy(tmp_s)
+  --
+  local line_min_t = torch.LongTensor(NTH, NR)
+  local line_min_s = line_min_t:storage()
+  local tmp_s = torch.LongStorage(
+  NTH*NR,
+  tonumber(ffi.cast("intptr_t",line_min_d))
+  )
+  line_min_s:copy(tmp_s)
+  --
+  local line_max_t = torch.LongTensor(NTH, NR)
+  local line_max_s = line_max_t:storage()
+  local tmp_s = torch.LongStorage(
+  NTH*NR,
+  tonumber(ffi.cast("intptr_t",line_max_d))
+  )
+  line_max_s:copy(tmp_s)
+  return count_t, line_sum_t, line_min_t, line_max_t
 end
 
 return RadonTransform

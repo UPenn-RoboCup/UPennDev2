@@ -50,10 +50,9 @@ for i,m,r in d do
   
   -- New line detection
   local t0_new = unix.time()
-  plines = ImageProc2.line_stats(edge_t,1)
+  ImageProc2.line_stats(edge_t,1)
   local t1_new = unix.time()
   local t_new = t1_new-t0_new
-  for k, v in pairs(plines) do print(i,'Theta', k, 'R:', unpack(v)) end
   
   local t_total = t_gc + t_edge + t_new
   if t_total > 1/30 then
@@ -94,7 +93,11 @@ plines = ImageProc2.line_stats(edge_t,1)
 local t1_new = unix.time()
 local t_new = t1_new-t0_new
 
-for k, v in pairs(plines) do print('Theta', k, 'R:', unpack(v)) end
+for i, line in ipairs(plines) do
+  print('\nLine',i)
+  util.ptable(line)
+  -- Form the equation of the line
+end
 
 -- Save the YUYV image
 str = c_yuyv:compress(yuyv_t, w, h )
@@ -102,7 +105,7 @@ f_y = io.open('../Data/edge_img.jpeg','w')
 f_y:write(str)
 f_y:close()
 
-print('Edge Size:',edge_t:size(1),edge_t:size(2))
+print('\nEdge Size:',edge_t:size(1),edge_t:size(2))
 -- Save this edge
 f_y = torch.DiskFile('../Data/edge.raw', 'w')
 f_y.binary(f_y)
@@ -153,7 +156,7 @@ f_y:close()
 --util.ptable(lines)
 
 RadonTransform = ImageProc2.get_radon()
-local counts_t, line_sums_t = RadonTransform.get_population()
+local counts_t, line_sums_t, line_min_t, line_max_t = RadonTransform.get_population()
 
 print('edge',counts_t:size(1),counts_t:size(2))
 
@@ -167,7 +170,6 @@ f_y.binary(f_y)
 f_y:writeLong(line_sums_t:storage())
 f_y:close()
 
---[[
 f_y = torch.DiskFile('../Data/line_min.raw', 'w')
 f_y.binary(f_y)
 f_y:writeLong(line_min_t:storage())
@@ -177,7 +179,6 @@ f_y = torch.DiskFile('../Data/line_max.raw', 'w')
 f_y.binary(f_y)
 f_y:writeLong(line_max_t:storage())
 f_y:close()
---]]
 
 -- PCA on a bounding box
 -- Save the cropped JPEG :)

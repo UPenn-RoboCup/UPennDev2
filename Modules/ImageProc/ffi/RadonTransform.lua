@@ -5,25 +5,24 @@ assert(ok, 'No ffi!')
 ok = nil
 
 -- These are the integer constants for avoiding floating point precision
--- Max r for 80*60 label
-local MAXR = 100 -- Max radius: the diagonal of the image
-local NR = 100 -- Number of radii
+-- Max radius: the diagonal of the image
+-- NR: number of radii (100 of MAXR with 200 of NR is .5 R precision)
+local MAXR, NR = 100, 100 
+
 --local NTH = 45 -- Number of angles
 local NTH = 35 -- Number of angles
+
 -- a horizontal pixel could be part of a 45 degree line
 -- NOTE: This we can change based on the prior
 local DIAGONAL_THRESHOLD = math.sqrt(2) / 2
 
--- Keep track of the counts
-local countMax, thMax, rMax = 0
-local count   = torch.LongTensor(NTH, NR)
-local lineMin = torch.LongTensor(NTH, NR)
-local lineMax = torch.LongTensor(NTH, NR)
-local lineSum = torch.LongTensor(NTH, NR)
-
 -- Save our lookup table discretization
 local th = torch.DoubleTensor(NTH)
 local sinTable, cosTable = torch.DoubleTensor(NTH), torch.DoubleTensor(NTH)
+
+-- Keep track of the counts
+local countMax, thMax, rMax = 0
+local count, lineMin, lineMax, lineSum
 
 local BIG = 2147483640
 
@@ -38,7 +37,7 @@ function RadonTransform.clear ()
 end
 
 -- Initialize the lookup table
-function RadonTransform.init ()
+function RadonTransform.init (w, h)
   -- TODO: Just use apply
   for i = 1, NTH do
     -- We only need 0 to Pi
@@ -47,19 +46,26 @@ function RadonTransform.init ()
     cosTable[i] = math.cos(th[i])
     sinTable[i] = math.sin(th[i])
   end
+  -- Resize for the image
+  MAXR = math.ceil(math.sqrt(w*w+h*h))
+  NR = MAXR
+  count = torch.LongTensor(NTH, NR)
+  lineMin = torch.LongTensor(NTH, NR)
+  lineMax = torch.LongTensor(NTH, NR)
+  lineSum = torch.LongTensor(NTH, NR)
   -- Do the clear initially
   RadonTransform.clear()
 end
 
 -- TODO: Respect the integer method, since since lua converts back to double
 -- NOTE: Maybe have two ways - one in double, and one in int
-function RadonTransform.addPixelToRay (i, j, ith)
+function RadonTransform.addPixelToRay (j, i, ith)
   
   ------------
   -- While not in ffi land! i-1 and j-1
   ------------
   -- TODO: Use FFI math, like fabs, etc.
-  local ir = math.abs(cosTable[ith] * j + sinTable[ith] * i)
+  local ir = math.abs(cosTable[ith] * i + sinTable[ith] * j)
   -- R value: 0 to MAXR-1
   -- R index: 0 to NR-1
   --local ir1 = math.floor(math.max(1,math.min(ir, MAXR))+.5)
@@ -73,7 +79,7 @@ function RadonTransform.addPixelToRay (i, j, ith)
   end
 
   -- Line statistics:
-  local iline = -sinTable[ith] * j + cosTable[ith] * i
+  local iline = -sinTable[ith] * i + cosTable[ith] * j
   lineSum[ith][ir1] = lineSum[ith][ir1] + iline
   if iline > lineMax[ith][ir1] then
     lineMax[ith][ir1] = iline

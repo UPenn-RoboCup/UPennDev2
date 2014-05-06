@@ -229,11 +229,9 @@ function ImageProc.line_stats (edge_t, threshold)
   threshold = threshold or 500
   local j, i, label0, label1
   -- Clear out any old transform
-  RadonTransform.init()
+  RadonTransform.init(edge_t:size(1), edge_t:size(2))
   
   ----[[
-  -- This loop is ok
-  -- Horizontal?
   local e_ptr = edge_t:data()
   for j=0, edge_t:size(1)-1 do
     -- Use -2 and not -1 since we do not go to the edge
@@ -243,13 +241,13 @@ function ImageProc.line_stats (edge_t, threshold)
       label1 = e_ptr[0]
       if label0>threshold and label1>threshold then
         RadonTransform.addVerticalPixel(i, j)
+        --RadonTransform.addHorizontalPixel(j, i)
       end
     end
   end
   --]]
   
   ----[[
-  -- This loop may have a problem
   local e_ptr_l = edge_t:data()
   local e_ptr_r = e_ptr_l + edge_t:size(2)
   for j=0, edge_t:size(1)-2 do
@@ -261,6 +259,7 @@ function ImageProc.line_stats (edge_t, threshold)
       e_ptr_r = e_ptr_r + 1
       if label0>threshold and label1>threshold then
         RadonTransform.addHorizontalPixel(i, j)
+        --RadonTransform.addVerticalPixel(j, i)
       end
     end
   end

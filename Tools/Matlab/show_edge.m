@@ -33,11 +33,8 @@ subplot(1,2,2);
 imagesc(edge_char);
 axis image;
 
-figure(10);
-imagesc(radon(edge_char));
-
 %% Line counts and sums
-nr = 100;
+nr = 101;
 nth = 35;
 fid = fopen('Data/line_cnts.raw');A = fread(fid,Inf,'*int64');fclose(fid);
 line_counts = double(reshape(A,[nr, nth]));
@@ -53,6 +50,11 @@ subplot(2,1,2);
 imagesc(line_sums);
 %mesh(line_sums);
 title('Line Sums');
+%
+figure(4);
+% Origin is the center pixel. For us, it it 0,0 top left
+imagesc(radon(edge_char));
+title('MATLAB gut check');
 
 %% Line extrema
 nr = 100;
@@ -62,7 +64,7 @@ line_min = double(reshape(A,[nr, nth])');
 fid = fopen('Data/line_max.raw');A = fread(fid,Inf,'*int64');fclose(fid);
 line_max = double(reshape(A,[nr, nth])');
 %
-figure(4);
+figure(5);
 subplot(2,1,1);
 imagesc(line_min);
 subplot(2,1,2);
@@ -80,7 +82,7 @@ vs_bbox = double(reshape(A,[w, h])');
 fid = fopen('Data/trans_bbox.raw');A = fread(fid,Inf,'*double');fclose(fid);
 trans_bbox = double(reshape(A,[w, h])');
 %
-figure(5);
+figure(6);
 subplot(2,2,1);
 imagesc(ys_bbox);
 title('Y');

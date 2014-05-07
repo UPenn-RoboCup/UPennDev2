@@ -11,9 +11,9 @@ ok = nil
 -- so that we do not malloc each time
 local MAXR, NR = 101
 
---local NTH = 45 -- Number of angles
+local NTH = 45 -- Number of angles
 --local NTH = 36 -- 5 degree resolution
-local NTH = 180 -- Let's try it :)
+--local NTH = 180 -- Let's try it :)
 
 local count_d = ffi.new("uint32_t["..NTH.."]["..MAXR.."]")
 local line_sum_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
@@ -99,6 +99,7 @@ function RadonTransform.get_parallel_lines (min_width)
   
   local ithMax, irMax1, irMax2
   local cntMax1, cntMax2 = 0, 0
+  local found = false
   
   for ith=0, NTH-1 do
     i_monotonic_max = 0
@@ -130,14 +131,15 @@ function RadonTransform.get_parallel_lines (min_width)
     --print(ith, #c_arr, 'FOUND', unpack(c_arr))
     -- Save the parallel lines
     if #i_arr==2 then
-      found = true
       -- Dominate the previous maxes
       if c_arr[1]>cntMax1 and c_arr[2]>cntMax2 then
         irMax1, irMax2, ithMax = i_arr[1], i_arr[2], ith
         cntMax1, cntMax2 = c_arr[1], c_arr[2]
+        found = true
       elseif c_arr[1]>cntMax1 and c_arr[2]>cntMax2 then
         irMax1, irMax2, ithMax = i_arr[2], i_arr[1], ith
         cntMax1, cntMax2 = c_arr[2], c_arr[1]
+        found = true
       end
     end
   end
@@ -145,7 +147,7 @@ function RadonTransform.get_parallel_lines (min_width)
   -- Yield the parallel lines
   if not found then return end
   
-  --print('SUPER FOUND', ithMax, irMax1, irMax2, cntMax1, cntMax2)
+  print('SUPER FOUND', found, ithMax, irMax1, irMax2, cntMax1, cntMax2)
   
   local s, c = sin_d[ithMax], cos_d[ithMax]
   -- Find the image indices

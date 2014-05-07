@@ -12,14 +12,23 @@ hold off;
 drawnow;
 
 f_radon = figure(11);
-im_radon = imagesc(zeros(101, 180));
+nth = 45;
+nr = 101;
+im_radon = imagesc(zeros(nr, nth));
 
 f_grey = figure(12);
+subplot(1,2,1);
 im_grey = imagesc(zeros(101, 31));
 hold on;
-p_bb2 = plot([0],[0],'r+-');
+p_l1s = plot([0],[0],'m*-');
+p_l2s = plot([0],[0],'k*-');
 hold off;
 axis image;
+colorbar;
+subplot(1,2,2);
+im_edge = imagesc(zeros(97, 27));
+axis image;
+colorbar;
 
 %% Channel setup
 skt = zmq( 'subscribe', 'ipc', 'edge' );
@@ -30,19 +39,6 @@ while 1
         [data, has_more] = zmq( 'receive', s_idx );
         % Get the metadata
         [metadata, offset] = msgpack('unpack',data);
-        % Set the lines
-        % (5x5 Kernel means offset of 2. 1 indexing means off of 1. So 3.)
-        % Calculations done in subsampled space of half size. So scale by 2
-        offset_x = 2*double(metadata.offset(1)+3);
-        offset_y = 2*double(metadata.offset(1)+3);
-        l1_x = double([metadata.l1.iMin, metadata.l1.iMean metadata.l1.iMax]);
-        l1_y = double([metadata.l1.jMin, metadata.l1.jMean metadata.l1.jMax]);
-        l2_x = double([metadata.l2.iMin, metadata.l2.iMean metadata.l2.iMax]);
-        l2_y = double([metadata.l2.jMin, metadata.l2.jMean metadata.l2.jMax]);
-        set(p_l1, 'Xdata', l1_x);
-        set(p_l1, 'Ydata', l1_y);
-        set(p_l2, 'Xdata', l2_x);
-        set(p_l2, 'Ydata', l2_y);
         % Show the bounding box
         bbox = double(metadata.bbox);
         x0 = bbox(1);
@@ -51,10 +47,26 @@ while 1
         y1 = bbox(4);
         bbox_w = x1 - x0 + 1;
         bbox_h = y1 - y0 + 1;
+        % Times 2 since we were in the downsampled space
         xbox = 2*([x0, x1, x1, x0, x0]);
         ybox = 2*([y0, y0, y1, y1, y0]);
         set(p_bb, 'XData', xbox);
         set(p_bb, 'YData', ybox);
+        % Set the lines
+        % (5x5 Kernel means offset of 2. 1 indexing means off of 1. So 3.)
+        if isfield(metadata,'l1')
+            offset_x = double(metadata.offset(1)+3);
+            offset_y = double(metadata.offset(2)+3);
+            l1_x = double([metadata.l1.iMin, metadata.l1.iMean metadata.l1.iMax]);
+            l1_y = double([metadata.l1.jMin, metadata.l1.jMean metadata.l1.jMax]);
+            l2_x = double([metadata.l2.iMin, metadata.l2.iMean metadata.l2.iMax]);
+            l2_y = double([metadata.l2.jMin, metadata.l2.jMean metadata.l2.jMax]);
+            % Calculations done in subsampled space of half size. So scale by 2
+            set(p_l1, 'Xdata', 2*(l1_x+offset_x) );
+            set(p_l1, 'Ydata', 2*(l1_y+offset_y) );
+            set(p_l2, 'Xdata', 2*(l2_x+offset_x) );
+            set(p_l2, 'Ydata', 2*(l2_y+offset_y) );
+        end
         
         % Process the JPEG data
         if has_more~=1
@@ -80,8 +92,24 @@ while 1
             return
         end
         [data, has_more] = zmq( 'receive', s_idx );
-        grey_space = reshape(typecast(data,'double'), bbox_w, bbox_h)';
+        grey_space = reshape(typecast(data,'int32'), bbox_w, bbox_h)';
         set(im_grey, 'Cdata', grey_space);
+        if isfield(metadata,'l1')
+            % Calculations done in subsampled space of half size. So scale by 2
+            set(p_l1s, 'Xdata', l1_x);
+            set(p_l1s, 'Ydata', l1_y);
+            set(p_l2s, 'Xdata', l2_x);
+            set(p_l2s, 'Ydata', l2_y);
+        end
+        
+        % Receive the edge image
+        if has_more~=1
+            disp('NO EDGE IMAGE RECEIVED');
+            return
+        end
+        [data, has_more] = zmq( 'receive', s_idx );
+        edge_img = reshape(typecast(data,'int32'), bbox_w-4, bbox_h-4)';
+        set(im_edge, 'Cdata', edge_img);
         
         drawnow;
     end

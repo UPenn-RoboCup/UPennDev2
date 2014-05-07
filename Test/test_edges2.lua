@@ -51,6 +51,7 @@ for i,m,r in d do
   -- New line detection
   local t0_new = unix.time()
   local RT = ImageProc2.line_stats_new(grey_t2)
+  --local RT = ImageProc2.line_stats(edge_t)
   local pline1, pline2, line_radon = RT.get_parallel_lines()
   local t1_new = unix.time()
   local t_new = t1_new-t0_new
@@ -77,9 +78,6 @@ for i,m,r in d do
     util.ptable(line_radon)
   end
   
-  -- Make just the grayspace
-  local e, v, u, ys, us, vs, trans = ImageProc2.yuyv_color_stats(yuyv_t:data(), bbox)
-  
   -- Broadcast on ZMQ
   local metapack = mp.pack({
     l1 = pline1,
@@ -98,11 +96,12 @@ for i,m,r in d do
     metapack,
     c_yuyv:compress(yuyv_t, w, h),
     ffi.string(RT.count_d, ffi.sizeof('int')*RT.MAXR*RT.NTH),
-    ffi.string(trans:data(), ffi.sizeof('double')*bb_w*bb_h)
+    ffi.string(grey_t:data(), ffi.sizeof('int') * grey_t:size(1) * grey_t:size(2) ),
+    ffi.string(edge_t:data(), ffi.sizeof('int') * edge_t:size(1) * edge_t:size(2) )
   })
   
   -- Sleep a little
-  unix.usleep(1e4)
+  unix.usleep(1e5)
 
 end
 

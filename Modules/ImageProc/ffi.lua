@@ -289,9 +289,7 @@ function ImageProc.line_stats_old (edge_t, threshold, shift90)
     end
   end
 
-  --return RadonTransform.get_line_stats()
-
-  return
+  return RadonTransform
 end
 
 function ImageProc.line_stats (edge_t, threshold)
@@ -321,7 +319,7 @@ function ImageProc.line_stats (edge_t, threshold)
   end
   
   -- Give the parallel lines
-  return RadonTransform.get_parallel_lines()
+  return RadonTransform
 end
 
 local fabs = math.abs
@@ -481,6 +479,9 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, bbox)
   -- Scale to the integer plane
   -- TODO: Just use the double space? I wonder how much of a speed hit...?
   grey_t:resize(grey_transformed_t:size()):copy(grey_transformed_t:mul(255))
+  -- Just use the y plane?
+  --print('USE Y PLANE')
+  --grey_t:resize(ys:size()):copy(ys)
   -- Perform the convolution
 	edge_t:conv2(grey_t, kernel_t)
   grey_transformed_t:resize(edge_t:size()):copy(edge_t)

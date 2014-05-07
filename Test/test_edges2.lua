@@ -101,7 +101,7 @@ for i,m,r in d do
   })
   
   -- Sleep a little
-  unix.usleep(1e5)
+  unix.usleep(5e4)
 
 end
 

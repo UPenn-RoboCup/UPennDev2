@@ -12,7 +12,7 @@ hold off;
 drawnow;
 
 f_radon = figure(11);
-nth = 45;
+nth = 180;
 nr = 101;
 im_radon = imagesc(zeros(nr, nth));
 
@@ -29,6 +29,12 @@ subplot(1,2,2);
 im_edge = imagesc(zeros(97, 27));
 axis image;
 colorbar;
+
+f_radon2 = figure(13);
+subplot(1,2,1);
+im_radon2 = imagesc(zeros(nr, nth));
+subplot(1,2,2);
+im_iradon2 = imagesc(zeros(75, 75));
 
 %% Channel setup
 skt = zmq( 'subscribe', 'ipc', 'edge' );
@@ -57,11 +63,15 @@ while 1
         if isfield(metadata,'l1')
             offset_x = double(metadata.offset(1)+3);
             offset_y = double(metadata.offset(2)+3);
-            l1_x = double([metadata.l1.iMin, metadata.l1.iMean metadata.l1.iMax]);
-            l1_y = double([metadata.l1.jMin, metadata.l1.jMean metadata.l1.jMax]);
-            l2_x = double([metadata.l2.iMin, metadata.l2.iMean metadata.l2.iMax]);
-            l2_y = double([metadata.l2.jMin, metadata.l2.jMean metadata.l2.jMax]);
-            % Calculations done in subsampled space of half size. So scale by 2
+            l1_x = double([metadata.l1.iMin, metadata.l1.iMean,...
+                metadata.l1.iMax]);
+            l1_y = double([metadata.l1.jMin, metadata.l1.jMean,...
+                metadata.l1.jMax]);
+            l2_x = double([metadata.l2.iMin, metadata.l2.iMean,...
+                metadata.l2.iMax]);
+            l2_y = double([metadata.l2.jMin, metadata.l2.jMean,...
+                metadata.l2.jMax]);
+            % Calculations done in subsampled space of half size.
             set(p_l1, 'Xdata', 2*(l1_x+offset_x) );
             set(p_l1, 'Ydata', 2*(l1_y+offset_y) );
             set(p_l2, 'Xdata', 2*(l2_x+offset_x) );
@@ -96,10 +106,10 @@ while 1
         set(im_grey, 'Cdata', grey_space);
         if isfield(metadata,'l1')
             % Calculations done in subsampled space of half size. So scale by 2
-            set(p_l1s, 'Xdata', l1_x);
-            set(p_l1s, 'Ydata', l1_y);
-            set(p_l2s, 'Xdata', l2_x);
-            set(p_l2s, 'Ydata', l2_y);
+            set(p_l1s, 'Xdata', l1_x+3);
+            set(p_l1s, 'Ydata', l1_y+3);
+            set(p_l2s, 'Xdata', l2_x+3);
+            set(p_l2s, 'Ydata', l2_y+3);
         end
         
         % Receive the edge image
@@ -111,6 +121,11 @@ while 1
         edge_img = reshape(typecast(data,'int32'), bbox_w-4, bbox_h-4)';
         set(im_edge, 'Cdata', edge_img);
         
+        % Form the MATLAB radon
+        R = radon(edge_img,0:179);
+        IR = iradon(R,0:179);
+        set(im_radon2, 'Cdata', R);
+        set(im_iradon2, 'Cdata', IR);
         drawnow;
     end
 end

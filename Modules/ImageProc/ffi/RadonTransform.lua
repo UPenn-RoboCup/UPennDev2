@@ -11,9 +11,9 @@ ok = nil
 -- so that we do not malloc each time
 local MAXR, NR = 101
 
-local NTH = 45 -- Number of angles
+--local NTH = 45 -- Number of angles
 --local NTH = 36 -- 5 degree resolution
---local NTH = 180 -- Let's try it :)
+local NTH = 180 -- Let's try it :)
 
 local count_d = ffi.new("uint32_t["..NTH.."]["..MAXR.."]")
 local line_sum_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")

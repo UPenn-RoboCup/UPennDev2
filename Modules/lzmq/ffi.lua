@@ -475,6 +475,13 @@ function Socket:send(msg, flags)
   return true
 end
 
+function Socket:send_ffi(msg, sz, flags)
+  assert(not self:closed())
+  local ret = api.libzmq3.zmq_send(self._private.skt, msg, sz, flags or 0)
+  if ret == -1 then return nil, zerror() end
+  return true
+end
+
 function Socket:recv(flags)
   assert(not self:closed())
   local msg = api.zmq_msg_init(tmp_msg)

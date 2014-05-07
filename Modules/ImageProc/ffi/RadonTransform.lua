@@ -22,6 +22,11 @@ local line_max_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local b_size32 = NTH*MAXR*ffi.sizeof('int32_t')
 local b_size64 = NTH*MAXR*ffi.sizeof('int32_t')
 
+-- Export a bit
+RadonTransform.count_d = count_d
+RadonTransform.NTH = NTH
+RadonTransform.MAXR = MAXR
+
 -- Save our lookup table discretization
 local th = ffi.new('double[?]',NTH)
 local sin_d, cos_d = ffi.new('double[?]',NTH), ffi.new('double[?]',NTH)

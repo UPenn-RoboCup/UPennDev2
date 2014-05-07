@@ -64,6 +64,8 @@ local ch_send = function( self, messages, sz )
 	local tmsg, s, ret = type(messages), self.socket, nil
 	if tmsg == "string" then
 		ret = s:send( messages )
+  elseif tmsg=="cdata" then
+    ret = s:send_ffi( messages, sz )
 	elseif tmsg=="table" then
 		local nmessages = #messages
 		for i, msg in ipairs(messages) do

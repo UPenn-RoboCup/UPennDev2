@@ -361,12 +361,6 @@ function ImageProc.line_stats_new (edge_t)
   end
   
   -- Give the parallel lines
-  return RadonTransform.get_parallel_lines()
-end
-
--- TODO: Remove these functions
-util = require'util'
-ImageProc.get_radon = function()
   return RadonTransform
 end
 
@@ -410,25 +404,10 @@ function ImageProc.yuyv_color_stats (yuyv_ptr, bbox)
   yuv_samples:select(2,1):copy(ys)
   yuv_samples:select(2,2):copy(us)
   yuv_samples:select(2,3):copy(vs)
-  --util.ptorch(yuv_samples)
   -- Run PCA
   local eigenvalues, eigenvectors, mean, yuv_samples_0_mean = pca(yuv_samples)
-  print('evecs')
-  util.ptorch(eigenvectors)
-  print('evals')
-  util.ptorch(eigenvalues)
-  --print('STUFF')
-  --util.ptorch(eigenvalues:sub(1,1,1,1))
-  --print('STUFF2')
-  -- Convert samples to a nice space
-  --print('make into a row',eigenvalues:sub(1,3,1,1) * yuv_samples_0_mean)
-  --local transformed = torch.mv(yuv_samples_0_mean,eigenvectors[2])
   local transformed = torch.mv(yuv_samples_0_mean,eigenvectors:select(2,1))
-  --util.ptorch(eigenvalues[1])
-  --util.ptorch(eigenvalues:select(2,1))
-  --util.ptorch(transformed)
   transformed:resize(ys:size(1),ys:size(2))
-  --util.ptorch(transformed)
   return eigenvalues, eigenvectors, mean, ys, us, vs, transformed
 end
 

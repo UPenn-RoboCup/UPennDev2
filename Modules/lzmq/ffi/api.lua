@@ -82,6 +82,9 @@ ffi.cdef[[
 
 local _M = {}
 
+-- Give ffi access
+_M.libzmq3 = libzmq3
+
 -- zmq_version
 do
 

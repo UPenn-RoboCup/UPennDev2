@@ -321,6 +321,45 @@ function ImageProc.line_stats (edge_t, threshold)
   return RadonTransform.get_parallel_lines()
 end
 
+local fabs = math.abs
+function ImageProc.line_stats_new (edge_t)
+  -- Take care of noise with a threshold
+  local THRESH = torch.std(edge_t)
+  -- TODO: Use SouthEast pixel so we can have diagonal pixel resolution
+  local j, i, label_nw, label_ne, label_sw, label_se
+  -- Clear out any old transform
+  RadonTransform.init(edge_t:size(1), edge_t:size(2))
+  local e_ptr_l = edge_t:data()
+  local e_ptr_r = e_ptr_l + edge_t:size(2)
+  for j=0, edge_t:size(1)-2 do
+    for i=0, edge_t:size(2)-2 do
+      label_nw = e_ptr_l[0]
+      e_ptr_l = e_ptr_l + 1
+      label_ne = e_ptr_l[0]
+      label_sw = e_ptr_r[0]
+      e_ptr_r = e_ptr_r + 1
+      label_se = e_ptr_r[0]
+      if fabs(label_nw)>THRESH then
+        if fabs(label_sw)>THRESH then
+          if (label_nw>0 and label_sw<0) or (label_nw<0 and label_sw>0) then
+           aH(i, j+.5)
+          end
+        end
+        if fabs(label_ne)>THRESH then
+          if (label_nw>0 and label_ne<0) or (label_nw<0 and label_ne>0) then
+           aV(i+.5, j)
+         end
+        end
+      end
+    end
+    -- Must have one more increment :)
+    e_ptr_l = e_ptr_l + 1
+    e_ptr_r = e_ptr_r + 1
+  end
+  
+  -- Give the parallel lines
+  return RadonTransform.get_parallel_lines()
+end
 
 -- TODO: Remove these functions
 util = require'util'
@@ -462,7 +501,8 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, bbox)
   grey_t:resize(grey_transformed_t:size()):copy(grey_transformed_t:mul(255))
   -- Perform the convolution
 	edge_t:conv2(grey_t, kernel_t)
-  return edge_t, grey_t
+  grey_transformed_t:resize(edge_t:size()):copy(edge_t)
+  return edge_t, grey_t, grey_transformed_t
 end
 
 -- Setup should be able to quickly switch between cameras

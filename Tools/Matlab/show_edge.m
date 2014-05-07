@@ -28,6 +28,7 @@ edge_char = logical(reshape(A,[w, h])');
 figure(2);
 subplot(1,2,1);
 imagesc(edge_raw);
+colormap;
 axis image;
 subplot(1,2,2);
 imagesc(edge_char);
@@ -35,11 +36,12 @@ axis image;
 
 %% Line counts and sums
 nr = 101;
-nth = 36;
-%nth = 180;
-fid = fopen('Data/line_cnts.raw');A = fread(fid,Inf,'*int64');fclose(fid);
+%nth = 36;
+%nth = 45;
+nth = 180;
+fid = fopen('Data/line_cnts.raw');A = fread(fid,Inf,'*uint32');fclose(fid);
 line_counts = double(reshape(A,[nr, nth]));
-fid = fopen('Data/line_sums.raw');A = fread(fid,Inf,'*int64');fclose(fid);
+fid = fopen('Data/line_sums.raw');A = fread(fid,Inf,'*int32');fclose(fid);
 line_sums = double(reshape(A,[nr, nth]));
 %
 figure(3);
@@ -65,15 +67,21 @@ subplot(2,1,2);
 imagesc(IR);
 
 figure(5);
+subplot(2,1,1);
 plot(max(line_counts));
+xlim([0,nth]);
+subplot(2,1,2);
+plot(std(line_counts));
+xlim([0,nth]);
 
 %% Line extrema
-nr = 101;
+%{
+nr = 106;
 nth = 36;
 %nth = 180;
-fid = fopen('Data/line_min.raw');A = fread(fid,Inf,'*int64');fclose(fid);
+fid = fopen('Data/line_min.raw');A = fread(fid,Inf,'*int32');fclose(fid);
 line_min = double(reshape(A,[nr, nth]));
-fid = fopen('Data/line_max.raw');A = fread(fid,Inf,'*int64');fclose(fid);
+fid = fopen('Data/line_max.raw');A = fread(fid,Inf,'*int32');fclose(fid);
 line_max = double(reshape(A,[nr, nth]));
 line_min(line_min>nr) = 0;
 line_max(line_max<-nr) = 0;
@@ -83,7 +91,7 @@ subplot(2,1,1);
 imagesc(line_min);
 subplot(2,1,2);
 imagesc(line_max);
-
+%}
 %% bbox of the image
 w = 31; h = 101;
 %w = 31; h = 41;

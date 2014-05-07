@@ -28,7 +28,7 @@ for i,m,r in d do
 	meta = m
 	yuyv_t = r
   
-  ----[[
+  --[[
   -- Collect garbage in regular intervals :)
   local gc_kb = collectgarbage('count')
   local t0_gc = unix.time()
@@ -38,7 +38,7 @@ for i,m,r in d do
 
   -- Form the edges
   local t0_edge = unix.time()
-  edge_t, grey_t = ImageProc2.yuyv_to_edge(yuyv_t:data(),{61, 91, 11, 111})
+  edge_t, grey_t, grey_t2 = ImageProc2.yuyv_to_edge(yuyv_t:data(),{61, 91, 11, 111})
   local t1_edge = unix.time()
   local t_edge = t1_edge-t0_edge
   
@@ -48,9 +48,15 @@ for i,m,r in d do
   --local t1_old = unix.time()
   --local t_old = t1_old-t0_old
   
+  -- Standard line detection
+  --local t0_line = unix.time()
+  --ImageProc2.line_stats(edge_t,1)
+  --local t1_line = unix.time()
+  --local t_line = t1_line-t0_line
+  
   -- New line detection
   local t0_new = unix.time()
-  ImageProc2.line_stats(edge_t,1)
+  ImageProc2.line_stats_new(grey_t2)
   local t1_new = unix.time()
   local t_new = t1_new-t0_new
   
@@ -83,21 +89,27 @@ print()
 
 -- Form the edges
 local t0_edge = unix.time()
-edge_t, grey_t = ImageProc2.yuyv_to_edge(yuyv_t:data(),{61, 91, 11, 111})
+edge_t, grey_t, grey_t2 = ImageProc2.yuyv_to_edge(yuyv_t:data(),{61, 91, 11, 111})
 local t1_edge = unix.time()
 local t_edge = t1_edge-t0_edge
 
 -- New line detection
 local t0_new = unix.time()
-plines = ImageProc2.line_stats(edge_t,1)
+plines = ImageProc2.line_stats_new(grey_t2)
+--plines = ImageProc2.line_stats(edge_t, 1000)
 local t1_new = unix.time()
 local t_new = t1_new-t0_new
 
-for i, line in ipairs(plines) do
-  print('\nLine',i)
-  util.ptable(line)
-  -- Form the equation of the line
+if plines then
+  for i, line in ipairs(plines) do
+    print('\nLine',i)
+    util.ptable(line)
+    -- Form the equation of the line
+  end
 end
+
+RadonTransform = ImageProc2.get_radon()
+local count_t, line_sums_t, line_min_t, line_max_t = RadonTransform.get_population()
 
 -- Save the YUYV image
 str = c_yuyv:compress(yuyv_t, w, h )
@@ -155,29 +167,26 @@ f_y:close()
 
 --util.ptable(lines)
 
-RadonTransform = ImageProc2.get_radon()
-local counts_t, line_sums_t, line_min_t, line_max_t = RadonTransform.get_population()
-
-print('edge',counts_t:size(1),counts_t:size(2))
+print('Line Counts',count_t:size(1),count_t:size(2))
 
 f_y = torch.DiskFile('../Data/line_cnts.raw', 'w')
 f_y.binary(f_y)
-f_y:writeLong(counts_t:storage())
+f_y:writeInt(count_t:storage())
 f_y:close()
 
 f_y = torch.DiskFile('../Data/line_sums.raw', 'w')
 f_y.binary(f_y)
-f_y:writeLong(line_sums_t:storage())
+f_y:writeInt(line_sums_t:storage())
 f_y:close()
 
 f_y = torch.DiskFile('../Data/line_min.raw', 'w')
 f_y.binary(f_y)
-f_y:writeLong(line_min_t:storage())
+f_y:writeInt(line_min_t:storage())
 f_y:close()
 
 f_y = torch.DiskFile('../Data/line_max.raw', 'w')
 f_y.binary(f_y)
-f_y:writeLong(line_max_t:storage())
+f_y:writeInt(line_max_t:storage())
 f_y:close()
 
 -- PCA on a bounding box

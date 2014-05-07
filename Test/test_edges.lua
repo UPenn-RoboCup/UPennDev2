@@ -95,17 +95,17 @@ local t_edge = t1_edge-t0_edge
 
 -- New line detection
 local t0_new = unix.time()
-plines = ImageProc2.line_stats_new(grey_t2)
+local pline1, pline2, line_radon = ImageProc2.line_stats_new(grey_t2)
 --plines = ImageProc2.line_stats(edge_t, 1000)
 local t1_new = unix.time()
 local t_new = t1_new-t0_new
 
-if plines then
-  for i, line in ipairs(plines) do
-    print('\nLine',i)
-    util.ptable(line)
-    -- Form the equation of the line
-  end
+if pline1 then
+  util.ptable(pline1)
+  print()
+  util.ptable(pline2)
+  print()
+  util.ptable(line_radon)
 end
 
 RadonTransform = ImageProc2.get_radon()

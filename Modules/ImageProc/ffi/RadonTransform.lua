@@ -106,21 +106,23 @@ function RadonTransform.get_parallel_lines (min_width)
         i_monotonic_max = ir
       else
         -- End of monotonicity
-        if #c_arr>0 and monotonic_max>c_arr[1] then
-          -- Put in the front
-          table.insert(i_arr, 1, i_monotonic_max)
-          table.insert(c_arr, 1, monotonic_max)
-        elseif monotonic_max>0 then
+        if #c_arr<2 then
           table.insert(i_arr, i_monotonic_max)
           table.insert(c_arr, monotonic_max)
+        elseif monotonic_max>c_arr[1] then
+          c_arr[1] = monotonic_max
+          i_arr[1] = i_monotonic_max
+        elseif monotonic_max>c_arr[#c_arr] then
+          c_arr[#c_arr] = monotonic_max
+          i_arr[#i_arr] = i_monotonic_max
         end
 
         i_monotonic_max = ir
         monotonic_max = 0
       end
     end
-    print()
-    print(ith, #c_arr, 'FOUND', unpack(c_arr))
+    --print()
+    --print(ith, #c_arr, 'FOUND', unpack(c_arr))
     -- Save the parallel lines
     if #i_arr==2 then
       found = true
@@ -132,47 +134,50 @@ function RadonTransform.get_parallel_lines (min_width)
         irMax1, irMax2, ithMax = i_arr[2], i_arr[1], ith
         cntMax1, cntMax2 = c_arr[2], c_arr[1]
       end
-    elseif #i_arr>2 then
-      -- Multiple line case!!
-      --print(ith, "MULTILINES")
     end
   end
-  
-  --print('FOUND',found,ithMax,irMax1, irMax2)
   
   -- Yield the parallel lines
   if not found then return end
   
---[[
-  local lines = {}
-  for ith, rs in pairs(parallel_lines) do
-    for _, i_r in pairs(rs) do
-      local s, c = sin_d[ith], cos_d[ith]
-      -- Find the image index
-      local iR = i_r * c
-      local jR = i_r * s
-      --
-      local lMean = tonumber(line_sum_d[ith][i_r] / count_d[ith][i_r])
-      local lMin = tonumber(line_min_d[ith][i_r])
-      local lMax = tonumber(line_max_d[ith][i_r])
-      --print(iR, jR, lMax,lMin,lMean)
-      --
-      table.insert(lines, {
-        ith = ith,
-        ir = i_r,
-        iMean = iR - lMean * s,
-        jMean = jR + lMean * c,
-        iMin = iR - lMin * s,
-        jMin = jR + lMin * c,
-        iMax = iR - lMax * s,
-        jMax = jR + lMax * c,
-      })
-    end
-  end
---]]
+  --print('SUPER FOUND', ithMax, irMax1, irMax2, cntMax1, cntMax2)
   
-  -- Return our table of statistics
-  return lines
+  local s, c = sin_d[ithMax], cos_d[ithMax]
+  -- Find the image indices
+  local iR1 = irMax1 * c
+  local iR2 = irMax2 * c
+  local jR1 = irMax1 * s
+  local jR2 = irMax2 * s
+  local lMean1 = line_sum_d[ithMax][irMax1] / count_d[ithMax][irMax1]
+  local lMin1 = line_min_d[ithMax][irMax1]
+  local lMax1 = line_max_d[ithMax][irMax1]
+  local lMean2 = line_sum_d[ithMax][irMax2] / count_d[ithMax][irMax2]
+  local lMin2 = line_min_d[ithMax][irMax2]
+  local lMax2 = line_max_d[ithMax][irMax2]
+  
+  return {
+      iMean = iR1 - lMean1 * s,
+      jMean = jR1 + lMean1 * c,
+      iMin = iR1 - lMin1 * s,
+      jMin = jR1 + lMin1 * c,
+      iMax = iR1 - lMax1 * s,
+      jMax = jR1 + lMax1 * c,
+    },
+    {
+      iMean = iR2 - lMean1 * s,
+      jMean = jR2 + lMean1 * c,
+      iMin = iR2 - lMin1 * s,
+      jMin = jR2 + lMin1 * c,
+      iMax = iR2 - lMax1 * s,
+      jMax = jR2 + lMax1 * c,
+    },
+    {
+      ith = ithMax,
+      ir1 = irMax1,
+      ir2 = irMax2,
+      c1 = cntMax1,
+      c2 = cntMax2,
+    }
   
 end
 

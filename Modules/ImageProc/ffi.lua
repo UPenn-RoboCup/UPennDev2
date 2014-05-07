@@ -302,8 +302,8 @@ function ImageProc.line_stats (edge_t, threshold)
   RadonTransform.init(edge_t:size(1), edge_t:size(2))
   local e_ptr_l = edge_t:data()
   local e_ptr_r = e_ptr_l + edge_t:size(2)
-  for j=0, edge_t:size(1)-1 do
-    for i=0, edge_t:size(2)-1 do
+  for j=0, edge_t:size(1)-2 do
+    for i=0, edge_t:size(2)-2 do
       label_nw = e_ptr_l[0]
       e_ptr_l = e_ptr_l + 1
       label_ne = e_ptr_l[0]
@@ -315,6 +315,9 @@ function ImageProc.line_stats (edge_t, threshold)
         if label_ne>threshold then aH(i, j) end
       end
     end
+    -- Must have one more increment :)
+    e_ptr_l = e_ptr_l + 1
+    e_ptr_r = e_ptr_r + 1
   end
   
   -- Give the parallel lines
@@ -342,12 +345,12 @@ function ImageProc.line_stats_new (edge_t)
       if fabs(label_nw)>THRESH then
         if fabs(label_sw)>THRESH then
           if (label_nw>0 and label_sw<0) or (label_nw<0 and label_sw>0) then
-           aH(i, j+.5)
+            aH(i, j+.5)
           end
         end
         if fabs(label_ne)>THRESH then
           if (label_nw>0 and label_ne<0) or (label_nw<0 and label_ne>0) then
-           aV(i+.5, j)
+            aV(i+.5, j)
          end
         end
       end

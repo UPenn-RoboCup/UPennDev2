@@ -4,7 +4,7 @@ local torch = require'torch'
 local ImageProc2 = require'ImageProc.ffi'
 local util = require'util'
 local bit = require'bit'
-local cutil = require'cutil'
+local vector = require'vector'
 
 local mp = require'msgpack.MessagePack'
 local si = require'simple_ipc'
@@ -47,12 +47,10 @@ for i,m,r in d do
 	-- Check if there is an updated bounding box
 	local bbox_data = tou_che:receive(true)
 	if bbox_data then
-		print('NEW BBOX')
 		-- Just use the first one...
 		local bb = mp.unpack(bbox_data[1])
-		util.ptable(bb)
-	else
-		print('No new bbox')
+		bbox = vector.new(bb.bbox) / 2
+		print('BBOX', bbox)
 	end
 
   -- Form the edges
@@ -82,6 +80,7 @@ for i,m,r in d do
   table.insert(computation_times, t_total)
 
   -- Print if found a line
+	--[[
   if pline1 then
     util.ptable(pline1)
     print()
@@ -89,13 +88,13 @@ for i,m,r in d do
     print()
     util.ptable(line_radon)
   end
+	--]]
 
   -- Broadcast on ZMQ
   local metapack = mp.pack({
     l1 = pline1,
     l2 = pline2,
     lr = line_radon,
-    offset = {61, 11},
     bbox = bbox,
     NTH = RT.NTH,
     MAXR = RT.MAXR,
@@ -104,6 +103,8 @@ for i,m,r in d do
   -- Send the Image, line information
   local bb_w = bbox[2] - bbox[1] + 1
   local bb_h = bbox[4] - bbox[3] + 1
+	assert(bb_h==grey_t:size(1), 'bad dims height '..bb_h..' '..grey_t:size(1))
+	assert(bb_w==grey_t:size(2), 'bad dims width'..bb_w..' '..grey_t:size(2))
 	local jstr = c_yuyv:compress(yuyv_t, w, h)
   edge_ch:send({
     metapack,
@@ -111,13 +112,13 @@ for i,m,r in d do
     ffi.string(RT.count_d, ffi.sizeof('int')*RT.MAXR*RT.NTH),
     ffi.string(grey_t:data(), ffi.sizeof('int') * grey_t:size(1) * grey_t:size(2) ),
     ffi.string(edge_t:data(), ffi.sizeof('int') * edge_t:size(1) * edge_t:size(2) ),
-    ffi.string(RT.line_sum_d, ffi.sizeof('int')*RT.MAXR*RT.NTH),
+    --ffi.string(RT.line_sum_d, ffi.sizeof('int')*RT.MAXR*RT.NTH),
   })
 
 	-- Send the image to the browser
 	camera_ch:send({mp.pack(meta),jstr})
   -- Sleep a little
-  unix.usleep(1e5)
+  unix.usleep(5e5)
 
 end
 

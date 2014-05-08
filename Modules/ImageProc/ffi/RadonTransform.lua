@@ -12,8 +12,8 @@ ok = nil
 local MAXR, NR = 101
 
 --local NTH = 45 -- Number of angles
---local NTH = 36 -- 5 degree resolution
-local NTH = 180 -- Let's try it :)
+local NTH = 36 -- 5 degree resolution
+--local NTH = 180 -- Let's try it :)
 
 local count_d = ffi.new("uint32_t["..NTH.."]["..MAXR.."]")
 local line_sum_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
@@ -104,11 +104,11 @@ function RadonTransform.get_parallel_lines (min_width)
   -- Have a minimum width of the line (in pixel space)
   min_width = min_width or 5
   local i_monotonic_max, monotonic_max, val
-  
+
   local ithMax, irMax1, irMax2
   local cntMax1, cntMax2 = 0, 0
   local found = false
-  
+
   for ith=0, NTH-1 do
     i_monotonic_max = 0
     monotonic_max = 0
@@ -151,12 +151,12 @@ function RadonTransform.get_parallel_lines (min_width)
       end
     end
   end
-  
+
   -- Yield the parallel lines
   if not found then return end
-  
+
   print('SUPER FOUND', found, ithMax, irMax1, irMax2, cntMax1, cntMax2)
-  
+
   local s, c = sin_d[ithMax], cos_d[ithMax]
   -- Find the image indices
   local iR1 = irMax1 * c
@@ -169,7 +169,7 @@ function RadonTransform.get_parallel_lines (min_width)
   local lMean2 = line_sum_d[ithMax][irMax2] / count_d[ithMax][irMax2]
   local lMin2 = line_min_d[ithMax][irMax2]
   local lMax2 = line_max_d[ithMax][irMax2]
-  
+
   return {
       iMean = iR1 - lMean1 * s,
       jMean = jR1 + lMean1 * c,
@@ -193,7 +193,7 @@ function RadonTransform.get_parallel_lines (min_width)
       c1 = cntMax1,
       c2 = cntMax2,
     }
-  
+
 end
 
 -- Converts to torch

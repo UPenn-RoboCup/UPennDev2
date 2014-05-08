@@ -3,7 +3,11 @@
 clear all;
 
 f_yuyv = figure(10);
-im_yuyv = image(zeros(240, 320));
+im_yuyv = image();
+a_yuyv = gca;
+set(a_yuyv, 'xlimmode','manual',...
+'ylimmode','manual',...
+'ydir','reverse');
 hold on;
 p_l1 = plot([0],[0],'m*-');
 p_l2 = plot([0],[0],'k*-');
@@ -12,34 +16,52 @@ hold off;
 drawnow;
 
 f_radon = figure(11);
-nth = 180;
-nr = 101;
-im_radon = imagesc(zeros(nr, nth));
-
-f_line_sum = figure(14);
-nth = 180;
-nr = 101;
-im_line_sum = imagesc(zeros(nr, nth));
+im_radon = imagesc();
+a_radon = gca;
+set(a_radon, 'xlimmode','manual',...
+'ylimmode','manual',...
+'ydir','reverse');
 
 f_grey = figure(12);
 subplot(1,2,1);
-im_grey = imagesc(zeros(101, 31));
+im_grey = imagesc();
+a_grey = gca;
+set(a_grey, 'xlimmode','manual',...
+'ylimmode','manual',...
+'ydir','reverse');
+axis image;
 hold on;
 p_l1s = plot([0],[0],'m*-');
 p_l2s = plot([0],[0],'k*-');
 hold off;
-axis image;
 colorbar;
 subplot(1,2,2);
-im_edge = imagesc(zeros(97, 27));
+im_edge = imagesc();
+a_edge = gca;
+set(a_edge, 'xlimmode','manual',...
+'ylimmode','manual',...
+'ydir','reverse');
 axis image;
 colorbar;
 
 f_radon2 = figure(13);
 subplot(1,2,1);
-im_radon2 = imagesc(zeros(nr, nth));
+im_radon2 = imagesc();
+a_radon2 = gca;
+set(a_radon2, 'xlimmode','manual',...
+'ylimmode','manual',...
+'ydir','reverse');
 subplot(1,2,2);
-im_iradon2 = imagesc(zeros(75, 75));
+im_iradon2 = imagesc();
+a_iradon2 = gca;
+set(a_iradon2, 'xlimmode','manual',...
+'ylimmode','manual',...
+'ydir','reverse');
+
+%f_line_sum = figure(14);
+%nth = 180;
+%nr = 101;
+%im_line_sum = imagesc();
 
 %% Channel setup
 skt = zmq( 'subscribe', 'ipc', 'edge' );
@@ -66,8 +88,8 @@ while 1
         % Set the lines
         % (5x5 Kernel means offset of 2. 1 indexing means off of 1. So 3.)
         if isfield(metadata,'l1')
-            offset_x = double(metadata.offset(1)+3);
-            offset_y = double(metadata.offset(2)+3);
+            offset_x = double(x0+2);
+            offset_y = double(y0+2);
             l1_x = double([metadata.l1.iMin, metadata.l1.iMean,...
                 metadata.l1.iMax]);
             l1_y = double([metadata.l1.jMin, metadata.l1.jMean,...
@@ -90,7 +112,9 @@ while 1
         end
         [data, has_more] = zmq( 'receive', s_idx );
         % Set the jpeg image
-        set(im_yuyv, 'Cdata', djpeg(data));
+        jpg = djpeg(data);
+        set(im_yuyv, 'Cdata', jpg);
+        set(a_yuyv, 'XLim', [1, size(jpg,2)], 'YLim', [1, size(jpg,1)]);
         
         % Receive the radon space
         if has_more~=1
@@ -98,8 +122,11 @@ while 1
             return
         end
         [data, has_more] = zmq( 'receive', s_idx );
-        radon_space = reshape(typecast(data,'uint32'), double(metadata.MAXR), double(metadata.NTH));
+        radon_space = reshape(typecast(data,'uint32'), ...
+            double(metadata.MAXR), double(metadata.NTH));
         set(im_radon, 'Cdata', radon_space);
+        set(a_radon, 'XLim', [1, size(radon_space,2)], 'YLim', [1, size(radon_space,1)]);
+        
         
         % Receive the transformed gray space
         if has_more~=1
@@ -109,6 +136,7 @@ while 1
         [data, has_more] = zmq( 'receive', s_idx );
         grey_space = reshape(typecast(data,'int32'), bbox_w, bbox_h)';
         set(im_grey, 'Cdata', grey_space);
+        set(a_grey, 'XLim', [1, size(grey_space,2)], 'YLim', [1, size(grey_space,1)]);
         if isfield(metadata,'l1')
             % Calculations done in subsampled space of half size. So scale by 2
             set(p_l1s, 'Xdata', l1_x+3);
@@ -130,8 +158,10 @@ while 1
         %edge_img(edge_img>=sigma) = 1;
         %edge_img(edge_img<=-sigma) = -1;
         set(im_edge, 'Cdata', edge_img);
+        set(a_edge, 'XLim', [1, size(edge_img,2)], 'YLim', [1, size(edge_img,1)]);
         
         % Receive the line sums
+        %{
         if has_more~=1
             disp('NO LINE SUMS RECEIVED');
             return
@@ -139,136 +169,16 @@ while 1
         [data, has_more] = zmq( 'receive', s_idx );
         line_sum = reshape(typecast(data,'int32'), double(metadata.MAXR), double(metadata.NTH));
         set(im_line_sum, 'Cdata', line_sum );
+        %}
         
         % Form the MATLAB radon
         R = radon(edge_img,0:179);
         IR = iradon(R,0:179);
         set(im_radon2, 'Cdata', R);
+        set(a_radon2, 'XLim', [1, size(R,2)], 'YLim', [1, size(R,1)]);
         set(im_iradon2, 'Cdata', IR);
+        set(a_iradon2, 'XLim', [1, size(IR,2)], 'YLim', [1, size(IR,1)]);
+        
     end
     drawnow;
 end
-
-%% Raw image and sample gray
-figure(1);
-subplot(1,2,1);
-imshow('Data/edge_img.jpeg');
-axis image;
-subplot(1,2,2);
-imshow('Data/edge_gray.jpeg');
-axis image;
-
-%% Edges from LoG convolution
-%h = 120;
-%w = 160;
-%h = 116;
-%w = 156;
-h = 97;
-w = 27;
-% raw edges
-fid = fopen('Data/edge.raw');A = fread(fid,Inf,'*int32');fclose(fid);
-edge_raw = double(reshape(A,[w, h])');
-% char edges
-fid = fopen('Data/edge_char.raw');A = fread(fid,Inf,'*int8');fclose(fid);
-edge_char = logical(reshape(A,[w, h])');
-%
-figure(2);
-subplot(1,2,1);
-imagesc(edge_raw);
-colormap;
-axis image;
-subplot(1,2,2);
-imagesc(edge_char);
-axis image;
-
-%% Line counts and sums
-nr = 101;
-%nth = 36;
-%nth = 45;
-nth = 180;
-fid = fopen('Data/line_cnts.raw');A = fread(fid,Inf,'*uint32');fclose(fid);
-line_counts = double(reshape(A,[nr, nth]));
-fid = fopen('Data/line_sums.raw');A = fread(fid,Inf,'*int32');fclose(fid);
-line_sums = double(reshape(A,[nr, nth]));
-%
-figure(3);
-subplot(2,1,1);
-imagesc(line_counts);
-%mesh(line_counts);
-title('Line Counts');
-subplot(2,1,2);
-imagesc(line_sums);
-%mesh(line_sums);
-title('Line Sums');
-%
-figure(4);
-% Origin is the center pixel. For us, it it 0,0 top left
-% Use explicit default theta
-TH = 0:179;
-R = radon(edge_char,TH);
-IR = iradon(R,TH);
-subplot(2,1,1);
-imagesc(R);
-title('MATLAB gut check');
-subplot(2,1,2);
-imagesc(IR);
-
-figure(5);
-subplot(2,1,1);
-plot(max(line_counts));
-xlim([0,nth]);
-subplot(2,1,2);
-plot(std(line_counts));
-xlim([0,nth]);
-
-%% Line extrema
-%{
-nr = 106;
-nth = 36;
-%nth = 180;
-fid = fopen('Data/line_min.raw');A = fread(fid,Inf,'*int32');fclose(fid);
-line_min = double(reshape(A,[nr, nth]));
-fid = fopen('Data/line_max.raw');A = fread(fid,Inf,'*int32');fclose(fid);
-line_max = double(reshape(A,[nr, nth]));
-line_min(line_min>nr) = 0;
-line_max(line_max<-nr) = 0;
-%
-figure(6);
-subplot(2,1,1);
-imagesc(line_min);
-subplot(2,1,2);
-imagesc(line_max);
-%}
-%% bbox of the image
-w = 31; h = 101;
-%w = 31; h = 41;
-fid = fopen('Data/ys_bbox.raw');A = fread(fid,Inf,'*uint8');fclose(fid);
-ys_bbox = double(reshape(A,[w, h])');
-fid = fopen('Data/us_bbox.raw');A = fread(fid,Inf,'*uint8');fclose(fid);
-us_bbox = double(reshape(A,[w, h])');
-fid = fopen('Data/vs_bbox.raw');A = fread(fid,Inf,'*uint8');fclose(fid);
-vs_bbox = double(reshape(A,[w, h])');
-fid = fopen('Data/trans_bbox.raw');A = fread(fid,Inf,'*double');fclose(fid);
-trans_bbox = double(reshape(A,[w, h])');
-%
-figure(7);
-subplot(2,2,1);
-imagesc(ys_bbox);
-title('Y');
-axis image;
-colorbar;
-subplot(2,2,2);
-imagesc(us_bbox);
-title('U');
-axis image;
-colorbar;
-subplot(2,2,3);
-imagesc(vs_bbox);
-title('V');
-axis image;
-colorbar;
-subplot(2,2,4);
-imagesc(255*trans_bbox);
-title('Transformed');
-axis image;
-colorbar;

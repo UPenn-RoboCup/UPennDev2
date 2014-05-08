@@ -44,7 +44,7 @@ local kernel = {
 }
 --]]
 
-----[[
+--[[
 local kernel = {
 	{0,   0,    1,    0,  0,},
 	{0,   1,    2,    1,  0,},
@@ -108,7 +108,7 @@ function ImageProc.yuyv_to_label (yuyv_ptr, lut_ptr)
   for j=0,ha-1 do
     for i=0,wa-1 do
       yuyv = yuyv_d[0]
-      -- Set the label 
+      -- Set the label
       a_ptr[0] = lut_d[bor(
         rshift(band(yuyv, 0xFC000000), 26),
         rshift(band(yuyv, 0x0000FC00), 4),
@@ -165,7 +165,7 @@ local function block_bitor2 (label_t)
   -- Zero the downsampled image
   labelB_t:zero()
   local a_ptr, b_ptr = label_t:data(), labelB_t:data()
-  
+
   -- Offset a row
   local a_ptr1 = a_ptr + wa
   -- Start the loop
@@ -203,14 +203,14 @@ function ImageProc.color_stats (label_t, bbox, color)
     j1 = bbox[4]
   end
   color = color or 1
-  
+
 	-- Initialize statistics
 	local area = 0
 	local minI, maxI = width-1, 0
 	local minJ, maxJ = height-1, 0
 	local sumI, sumJ = 0, 0
 	local sumII, sumJJ, sumIJ = 0, 0, 0
-  
+
   local l_ptr, label = label_t:data()
   for j=j0,j1 do
     for i=i0,i1 do
@@ -230,11 +230,11 @@ function ImageProc.color_stats (label_t, bbox, color)
 				sumJJ = sumJJ + j * j
 				sumIJ = sumIJ + i * j
       end
-      -- If      
+      -- If
     end
     l_ptr = l_ptr + ni
   end
-  
+
 end
 
 function ImageProc.radon_lines (edge_t)
@@ -261,16 +261,14 @@ function ImageProc.radon_lines (edge_t)
       label_se = e_ptr_r[0]
       if fabs(label_nw)>THRESH then
         if fabs(label_sw)>THRESH then
-          if (label_nw>0 and label_sw<0) or (label_nw<0 and label_sw>0) then
-            aH(i, j+.5)
-            --aV(j+.5, i)
-          end
+          if (label_nw>0 and label_sw<0) or (label_nw<0 and label_sw>0) then aH(i, j+.5) end
+					--aH(i, j+.5)
+					--aV(j+0.5, i)
         end
         if fabs(label_ne)>THRESH then
-          if (label_nw>0 and label_ne<0) or (label_nw<0 and label_ne>0) then
-            aV(i+.5, j)
-            --aH(j, i+.5)
-         end
+					if (label_nw>0 and label_ne<0) or (label_nw<0 and label_ne>0) then aV(i+.5, j) end
+					--aV(i+.5, j)
+					--aH(j, i+.5)
         end
       end
     end
@@ -278,7 +276,7 @@ function ImageProc.radon_lines (edge_t)
     e_ptr_l = e_ptr_l + 1
     e_ptr_r = e_ptr_r + 1
   end
-  
+
   -- Give the parallel lines
   return RadonTransform
 end
@@ -389,6 +387,11 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, bbox)
   yuv_samples_t:select(2,1):copy(ys)
   yuv_samples_t:select(2,2):copy(us)
   yuv_samples_t:select(2,3):copy(vs)
+	-- Scale the samples for importance
+	-- TODO: See what is actually a valid approach here!
+	yuv_samples_t:select(2,2):mul(3)
+	yuv_samples_t:select(2,3):mul(3)
+
   grey_transformed_t:resize(ys:nElement())
   -- Run PCA
   local eigenvalues, eigenvectors, mean, yuv_samples_0_mean = pca(yuv_samples_t)
@@ -402,7 +405,7 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, bbox)
   grey_t:resize(grey_transformed_t:size()):copy(grey_transformed_t:mul(255))
   -- Just use the y plane?
   --print('USE Y PLANE')
-  --grey_t:resize(ys:size()):copy(ys)
+  --grey_t:resize(ys:size()):copy(vs)
   -- Perform the convolution
 	edge_t:conv2(grey_t, kernel_t)
   grey_transformed_t:resize(edge_t:size()):copy(edge_t)

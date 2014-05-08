@@ -239,7 +239,7 @@ end
 
 function ImageProc.radon_lines (edge_t)
   -- Take care of noise with a threshold
-  local THRESH = torch.std(edge_t)
+  local THRESH = 2.5*torch.std(edge_t)
   -- TODO: Use SouthEast pixel so we can have diagonal pixel resolution
   local j, i, label_nw, label_ne, label_sw, label_se
   -- Clear out any old transform
@@ -259,6 +259,9 @@ function ImageProc.radon_lines (edge_t)
       label_sw = e_ptr_r[0]
       e_ptr_r = e_ptr_r + 1
       label_se = e_ptr_r[0]
+			if fabs(label_nw - label_sw)>THRESH then aH(i, j+.5) end
+			if fabs(label_nw - label_ne)>THRESH then aV(i+.5, j) end
+			--[[
       if fabs(label_nw)>THRESH then
         if fabs(label_sw)>THRESH then
           if (label_nw>0 and label_sw<0) or (label_nw<0 and label_sw>0) then aH(i, j+.5) end
@@ -271,6 +274,7 @@ function ImageProc.radon_lines (edge_t)
 					--aH(j, i+.5)
         end
       end
+			--]]
     end
     -- Must have one more increment :)
     e_ptr_l = e_ptr_l + 1

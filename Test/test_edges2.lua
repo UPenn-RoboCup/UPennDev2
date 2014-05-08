@@ -118,7 +118,7 @@ for i,m,r in d do
 	-- Send the image to the browser
 	camera_ch:send({mp.pack(meta),jstr})
   -- Sleep a little
-  unix.usleep(5e5)
+  unix.usleep(2e5)
 
 end
 

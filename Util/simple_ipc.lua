@@ -1,19 +1,12 @@
 ---------------------------------
--- Simple Interface to Lua's 
+-- Simple Interface to Lua's
 -- ZeroMQ wrapper for Team THOR
 -- Version 2 with lzmq from moteus
 -- Version 2 adds pthreads with llthreads2 from moteus
 -- (c) Stephen McGill, 2014
 ---------------------------------
 local zmq, poller, llthreads, CTX
--- LEGACY means we use zmq 3.x with lua-zmq from Neopallium
--- Else, use lzmq from moetus, which supports zmq 4.x
-local LEGACY = false
-if LEGACY then
-	-- lua-zmq
-	zmq    = require'zmq'
-	poller = require'zmq/poller'
-elseif type(jit)=='table' then
+if type(jit)=='table' then
 	-- lzmq with luajit FFI
 	zmq    = require'lzmq.ffi'
 	poller = require'lzmq.ffi.poller'
@@ -60,45 +53,23 @@ local type2prefix = {
 
 -- Set up the sending object
 -- Supported: string, userdata, array of strings
-local ch_send = function( self, messages, sz )
+local function ch_send (self, messages, sz)
 	local tmsg, s, ret = type(messages), self.socket, nil
 	if tmsg == "string" then
 		ret = s:send( messages )
   elseif tmsg=="cdata" then
     ret = s:send_ffi( messages, sz )
-	elseif tmsg=="table" then
-		local nmessages = #messages
-		for i, msg in ipairs(messages) do
-      if i<nmessages then
-			  ret = s:send( msg, zmq.SNDMORE )
-      else
-        ret = s:send( msg )
-      end
-		end
-		return ret
 	elseif tmsg=="userdata" then
 		-- TODO
+	elseif tmsg=="table" then
+		ret = s:send_all(messages)
 	end
 	return ret
 end
 
 -- Set up receiving object
-local ch_receive = function( self, noblock )
-	local s, ret = self.socket, nil
-	if noblock then
-		ret = s:recv(zmq.NOBLOCK)
-	else
-		ret = s:recv()
-	end
-	-- Check if there is more to be received
-	local has_more
-	-- Remove old API of lua-zmq
-	if LEGACY then
-		has_more = s:getopt( zmq.RCVMORE )
-	else
-		has_more = s:get_rcvmore()
-	end
-	return ret, has_more==1
+local function ch_receive (self, noblock)
+	return self.socket:recv_all(noblock and zmq.DONTWAIT)
 end
 
 -- Make a new publisher
@@ -139,11 +110,7 @@ simple_ipc.new_subscriber = function( channel, target )
   local ch_socket = CTX:socket( zmq.SUB )
   assert( ch_socket, 'SUBSCRIBE | Bad socket!' )
 	-- Set the subscribe flag with no filters
-	if LEGACY then
-		ch_socket:setopt( zmq.SUBSCRIBE, '', 0 )
-	else
-		ch_socket:set_subscribe''
-	end
+	ch_socket:set_subscribe''
   -- Attach to the channel
 	local is_bind = false
   if bind then
@@ -295,23 +262,23 @@ simple_ipc.new_thread = function(scriptname, channel, metadata)
 	local f = assert(io.open(scriptname,'r'),'No script found!')
 	local script_str = f:read'*all'
 	f:close()
-	
+
 	-- Grab or create the context
 	CTX = CTX or zmq.init( N_THREAD_POOL )
-	
+
 	-- Load the script into the child Lua state
 	-- pass in the ctx, since it is thread safe
 	metadata = metadata or {}
 	metadata.ch_name = '#'..channel
 	local thread = llthreads.new(script_str, CTX:lightuserdata(), metadata )
-	
+
 	-- Must add the communication...
 	-- NOTE: It is the job of the script to
 	-- ascertain if it was called as a thread
 	-- (Should just check if it was given a context...
 	-- Must call import_context in the thread to achieve communication
 	local pair = simple_ipc.new_pair(metadata.ch_name,true)
-	
+
 	return pair, thread
 end
 

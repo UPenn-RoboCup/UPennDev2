@@ -10,6 +10,7 @@ local mp = require'msgpack.MessagePack'
 local si = require'simple_ipc'
 local edge_ch = si.new_publisher('edge')
 local camera_ch = si.new_publisher('camera0')
+local tou_che = si.new_subscriber('touche')
 
 date = '04.17.2014.16.34.17'
 DIR = HOME..'/Logs/'
@@ -24,6 +25,9 @@ ImageProc2.setup(w, h, 2, 2)
 local jpeg = require'jpeg'
 c_gray = jpeg.compressor('gray')
 c_yuyv = jpeg.compressor('yuyv')
+
+-- Form the default bounding box (in scaled down space...)
+local bbox = {61, 91, 11, 111}
 
 local meta, yuyv_t, edge_t, edge_char_t
 local computation_times, n_over = {}, 0
@@ -40,8 +44,16 @@ for i,m,r in d do
   local t1_gc = unix.time()
   local t_gc = t1_gc - t0_gc
 
-  -- Form the bounding box
-  local bbox = {61, 91, 11, 111}
+	-- Check if there is an updated bounding box
+	local bbox_data = tou_che:receive(true)
+	if bbox_data then
+		print('NEW BBOX')
+		-- Just use the first one...
+		local bb = mp.unpack(bbox_data[1])
+		util.ptable(bb)
+	else
+		print('No new bbox')
+	end
 
   -- Form the edges
   local t0_edge = unix.time()

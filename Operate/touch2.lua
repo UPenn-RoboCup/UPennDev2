@@ -50,6 +50,18 @@ local function form_bbox (contact)
 		end
 		-- Update for the next swipe
 		has_new_bbox = not has_new_bbox
+		if has_new_bbox then
+			print('touch bbox', bb_major, bb_minor, RAD_TO_DEG * bb_angle, bb_xc, bb_yc)
+			-- Send to JavaScript to communicate that we have calculated just fine
+			tou_che:send(mp.pack({
+				id = 'bbox',
+				xc = bb_xc,
+				yc = bb_yc,
+				a = bb_angle,
+				major = bb_major,
+				minor = bb_minor,
+			}))
+		end
 	end
 end
 
@@ -57,27 +69,16 @@ end
 -- Only get the full swipe information
 tou_ch.callback = function(s)
 	local t = unix.time()
-	local data, has_more = tou_ch:receive()
-	local evt = mp.unpack(data)
-	-- evt should be an array of all full swipes
-	if DO_LOG then
-		evt.TIMESTAMP = t
-		logger:record(evt)
-	end
-	-- Process and send back the bounding box
-	libTouch2.update(evt, form_bbox)
-	-- Check if we have a bbox
-	if has_new_bbox then
-		print('touch bbox', bb_major, bb_minor, RAD_TO_DEG * bb_angle, bb_xc, bb_yc)
-		-- Send to JavaScript to communicate that we have calculated just fine
-		tou_che:send(mp.pack({
-			id = 'bbox',
-			xc = bb_xc,
-			yc = bb_yc,
-			a = bb_angle,
-			major = bb_major,
-			minor = bb_minor,
-		}))
+	local data = tou_ch:receive()
+	for _, d in ipairs(data) do
+		local evt = mp.unpack(d)
+		-- evt should be an array of all full swipes
+		if DO_LOG then
+			evt.TIMESTAMP = t
+			logger:record(evt)
+		end
+		-- Process and send back the bounding box
+		libTouch2.update(evt, form_bbox)
 	end
 end
 

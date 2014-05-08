@@ -38,9 +38,19 @@ local kernel = {
 local kernel = {
 	{0, 0,   0,  0, 0,},
 	{0, 1,   0,  0, 0,},
-	{4, 10, -36,  10, 4,},
+	{4, 20, -50,  20, 4,},
 	{0, 0,   0,  1, 0,},
 	{0, 0,   0,  0, 0,}
+}
+--]]
+
+----[[
+local kernel = {
+	{0,   0,    1,    0,  0,},
+	{0,   1,    2,    1,  0,},
+	{1,   2,  -16,    2,  5,},
+	{0,   1,    2,    1,  0,},
+	{0,   0,    1,    0,  0,}
 }
 --]]
 
@@ -227,109 +237,18 @@ function ImageProc.color_stats (label_t, bbox, color)
   
 end
 
-
-local aH = RadonTransform.addHorizontalPixel
-local aV = RadonTransform.addVerticalPixel
-
--- TODO: Add the line state machine
--- TODO: Use can shift by 90 degrees to make the search for line match reliable
--- because no edge spill over
-function ImageProc.line_stats_old (edge_t, threshold, shift90)
-  threshold = threshold or 2000
-  local j, i, label0, label1
-  -- Clear out any old transform
-  RadonTransform.init(edge_t:size(1), edge_t:size(2))
-  
-  local e_ptr = edge_t:data()
-  for j=0, edge_t:size(1)-1 do
-    -- Use -2 and not -1 since we do not go to the edge
-    for i=0, edge_t:size(2)-2 do
-      label0 = e_ptr[0]
-      e_ptr = e_ptr + 1
-      label1 = e_ptr[0]
-      if label0>threshold and label1>threshold then
-        aH(i, j)
-        --[[
-        if shift90 then
-          -- 90 degree shift
-          aV(j, i)
-        else
-          -- 0 degree shift
-          aH(i, j)
-        end
-        --]]
-      end
-    end
-  end
-  
-  
-  
-  local aH = RadonTransform.addVerticalPixel
-  local e_ptr_l = edge_t:data()
-  local e_ptr_r = e_ptr_l + edge_t:size(2)
-  for j=0, edge_t:size(1)-2 do
-    -- Use -2 and not -1 since we do not go to the edge
-    for i=0, edge_t:size(2)-1 do
-      label0 = e_ptr_l[0]
-      e_ptr_l = e_ptr_l + 1
-      label1 = e_ptr_r[0]
-      e_ptr_r = e_ptr_r + 1
-      if label0>threshold and label1>threshold then
-        aV(i, j)
-        --[[
-        if shift90 then
-          -- 90 degree shift
-          RadonTransform.addHorizontalPixel(j, i)
-        else
-          -- 0 degree shift
-          RadonTransform.addVerticalPixel(i, j)
-        end
-        --]]
-      end
-    end
-  end
-
-  return RadonTransform
-end
-
-function ImageProc.line_stats (edge_t, threshold)
-  threshold = threshold or 2000
-  -- TODO: Use SouthEast pixel so we can have diagonal pixel resolution
-  local j, i, label_nw, label_ne, label_sw, label_se
-  -- Clear out any old transform
-  RadonTransform.init(edge_t:size(1), edge_t:size(2))
-  local e_ptr_l = edge_t:data()
-  local e_ptr_r = e_ptr_l + edge_t:size(2)
-  for j=0, edge_t:size(1)-2 do
-    for i=0, edge_t:size(2)-2 do
-      label_nw = e_ptr_l[0]
-      e_ptr_l = e_ptr_l + 1
-      label_ne = e_ptr_l[0]
-      label_sw = e_ptr_r[0]
-      e_ptr_r = e_ptr_r + 1
-      label_se = e_ptr_r[0]
-      if label_nw>threshold then
-        if label_sw>threshold then aV(i, j) end
-        if label_ne>threshold then aH(i, j) end
-      end
-    end
-    -- Must have one more increment :)
-    e_ptr_l = e_ptr_l + 1
-    e_ptr_r = e_ptr_r + 1
-  end
-  
-  -- Give the parallel lines
-  return RadonTransform
-end
-
-local fabs = math.abs
-function ImageProc.line_stats_new (edge_t)
+function ImageProc.radon_lines (edge_t)
   -- Take care of noise with a threshold
   local THRESH = torch.std(edge_t)
   -- TODO: Use SouthEast pixel so we can have diagonal pixel resolution
   local j, i, label_nw, label_ne, label_sw, label_se
   -- Clear out any old transform
   RadonTransform.init(edge_t:size(1), edge_t:size(2))
+  -- Cache the functions
+  local fabs = math.abs
+  local aH = RadonTransform.addHorizontalPixel
+  local aV = RadonTransform.addVerticalPixel
+  -- Start the pointers
   local e_ptr_l = edge_t:data()
   local e_ptr_r = e_ptr_l + edge_t:size(2)
   for j=0, edge_t:size(1)-2 do
@@ -344,11 +263,13 @@ function ImageProc.line_stats_new (edge_t)
         if fabs(label_sw)>THRESH then
           if (label_nw>0 and label_sw<0) or (label_nw<0 and label_sw>0) then
             aH(i, j+.5)
+            --aV(j+.5, i)
           end
         end
         if fabs(label_ne)>THRESH then
           if (label_nw>0 and label_ne<0) or (label_nw<0 and label_ne>0) then
             aV(i+.5, j)
+            --aH(j, i+.5)
          end
         end
       end

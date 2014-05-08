@@ -9,6 +9,7 @@ local cutil = require'cutil'
 local mp = require'msgpack.MessagePack'
 local si = require'simple_ipc'
 local edge_ch = si.new_publisher('edge')
+local camera_ch = si.new_publisher('camera0')
 
 date = '04.17.2014.16.34.17'
 DIR = HOME..'/Logs/'
@@ -31,7 +32,7 @@ for i,m,r in d do
 	local t0 = unix.time()
 	meta = m
 	yuyv_t = r
-  
+
   -- Collect garbage in regular intervals :)
   local gc_kb = collectgarbage('count')
   local t0_gc = unix.time()
@@ -47,15 +48,14 @@ for i,m,r in d do
   local edge_t, grey_t, grey_t2 = ImageProc2.yuyv_to_edge(yuyv_t:data(), bbox)
   local t1_edge = unix.time()
   local t_edge = t1_edge-t0_edge
-  
+
   -- New line detection
   local t0_new = unix.time()
-  local RT = ImageProc2.line_stats_new(grey_t2)
-  --local RT = ImageProc2.line_stats(edge_t)
+  local RT = ImageProc2.radon_lines(grey_t2)
   local pline1, pline2, line_radon = RT.get_parallel_lines()
   local t1_new = unix.time()
   local t_new = t1_new-t0_new
-  
+
   local t_total = t_gc + t_edge + t_new
   if t_total > 1/30 then
     print('\n',i)
@@ -68,7 +68,7 @@ for i,m,r in d do
   end
   -- Save the times
   table.insert(computation_times, t_total)
-  
+
   -- Print if found a line
   if pline1 then
     util.ptable(pline1)
@@ -77,7 +77,7 @@ for i,m,r in d do
     print()
     util.ptable(line_radon)
   end
-  
+
   -- Broadcast on ZMQ
   local metapack = mp.pack({
     l1 = pline1,
@@ -88,20 +88,24 @@ for i,m,r in d do
     NTH = RT.NTH,
     MAXR = RT.MAXR,
   })
-  
+
   -- Send the Image, line information
   local bb_w = bbox[2] - bbox[1] + 1
   local bb_h = bbox[4] - bbox[3] + 1
+	local jstr = c_yuyv:compress(yuyv_t, w, h)
   edge_ch:send({
     metapack,
-    c_yuyv:compress(yuyv_t, w, h),
+    jstr,
     ffi.string(RT.count_d, ffi.sizeof('int')*RT.MAXR*RT.NTH),
     ffi.string(grey_t:data(), ffi.sizeof('int') * grey_t:size(1) * grey_t:size(2) ),
-    ffi.string(edge_t:data(), ffi.sizeof('int') * edge_t:size(1) * edge_t:size(2) )
+    ffi.string(edge_t:data(), ffi.sizeof('int') * edge_t:size(1) * edge_t:size(2) ),
+    ffi.string(RT.line_sum_d, ffi.sizeof('int')*RT.MAXR*RT.NTH),
   })
-  
+
+	-- Send the image to the browser
+	camera_ch:send({mp.pack(meta),jstr})
   -- Sleep a little
-  unix.usleep(5e4)
+  unix.usleep(1e5)
 
 end
 

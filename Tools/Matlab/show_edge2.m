@@ -16,6 +16,11 @@ nth = 180;
 nr = 101;
 im_radon = imagesc(zeros(nr, nth));
 
+f_line_sum = figure(14);
+nth = 180;
+nr = 101;
+im_line_sum = imagesc(zeros(nr, nth));
+
 f_grey = figure(12);
 subplot(1,2,1);
 im_grey = imagesc(zeros(101, 31));
@@ -119,15 +124,29 @@ while 1
         end
         [data, has_more] = zmq( 'receive', s_idx );
         edge_img = reshape(typecast(data,'int32'), bbox_w-4, bbox_h-4)';
+        edge_img = double(edge_img);
+        sigma = std(edge_img(:));
+        %edge_img(abs(edge_img)<sigma) = 0;
+        %edge_img(edge_img>=sigma) = 1;
+        %edge_img(edge_img<=-sigma) = -1;
         set(im_edge, 'Cdata', edge_img);
+        
+        % Receive the line sums
+        if has_more~=1
+            disp('NO LINE SUMS RECEIVED');
+            return
+        end
+        [data, has_more] = zmq( 'receive', s_idx );
+        line_sum = reshape(typecast(data,'int32'), double(metadata.MAXR), double(metadata.NTH));
+        set(im_line_sum, 'Cdata', line_sum );
         
         % Form the MATLAB radon
         R = radon(edge_img,0:179);
         IR = iradon(R,0:179);
         set(im_radon2, 'Cdata', R);
         set(im_iradon2, 'Cdata', IR);
-        drawnow;
     end
+    drawnow;
 end
 
 %% Raw image and sample gray

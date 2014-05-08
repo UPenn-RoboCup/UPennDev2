@@ -24,6 +24,7 @@ local b_size64 = NTH*MAXR*ffi.sizeof('int32_t')
 
 -- Export a bit
 RadonTransform.count_d = count_d
+RadonTransform.line_sum_d = line_sum_d
 RadonTransform.NTH = NTH
 RadonTransform.MAXR = MAXR
 
@@ -84,11 +85,18 @@ end
 local addPixelToRay = RadonTransform.addPixelToRay
 
 function RadonTransform.addHorizontalPixel (i, j)
-  for _,ith in ipairs(sin_index_thresh) do addPixelToRay(i,j,ith) end
+  for _, ith in ipairs(sin_index_thresh) do addPixelToRay(i,j,ith) end
 end
 
 function RadonTransform.addVerticalPixel (i, j)
-  for _,ith in ipairs(cos_index_thresh) do addPixelToRay(i,j,ith) end
+  for ii, ith in ipairs(cos_index_thresh) do addPixelToRay(i,j,ith) end
+  --[[
+  for ith = 0, NTH-1 do
+    if math.abs(cos_d[ith]) >= DIAGONAL_THRESHOLD then
+      addPixelToRay(i,j,ith)
+    end
+  end
+  --]]
 end
 
 -- Find parallel lines in the Radon space

@@ -72,6 +72,10 @@ while 1
         [data, has_more] = zmq( 'receive', s_idx );
         % Get the metadata
         [metadata, offset] = msgpack('unpack',data);
+        % Get the kernel that was used
+        k_h = metadata.kh;
+        k_w = metadata.kw;
+        kernel = reshape( typecast(metadata.kernel, 'double'), k_h, k_w );
         % Show the bounding box
         bbox = double(metadata.bbox);
         x0 = bbox(1);
@@ -134,7 +138,7 @@ while 1
             return
         end
         [data, has_more] = zmq( 'receive', s_idx );
-        grey_space = reshape(typecast(data,'int32'), bbox_w, bbox_h)';
+        grey_space = reshape(typecast(data,'double'), bbox_w, bbox_h)';
         set(im_grey, 'Cdata', grey_space);
         set(a_grey, 'XLim', [1, size(grey_space,2)], 'YLim', [1, size(grey_space,1)]);
         if isfield(metadata,'l1')
@@ -151,7 +155,7 @@ while 1
             return
         end
         [data, has_more] = zmq( 'receive', s_idx );
-        edge_img = reshape(typecast(data,'int32'), bbox_w-4, bbox_h-4)';
+        edge_img = reshape(typecast(data,'double'), bbox_w-(k_w-1), bbox_h-(k_h-1))';
         edge_img = double(edge_img);
         sigma = std(edge_img(:));
         %edge_img(abs(edge_img)<sigma) = 0;

@@ -11,9 +11,10 @@ ok = nil
 -- so that we do not malloc each time
 local MAXR, NR = 101
 
---local NTH = 45 -- Number of angles
-local NTH = 36 -- 5 degree resolution
---local NTH = 180 -- Let's try it :)
+local NTH = 90 -- Number of angles (2 degree res)
+--local NTH = 45 -- Number of angles (4 degree res)
+--local NTH = 36 -- 5 degree resolution
+--local NTH = 180 -- (1 degree res)
 
 local count_d = ffi.new("uint32_t["..NTH.."]["..MAXR.."]")
 local line_sum_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
@@ -154,8 +155,6 @@ function RadonTransform.get_parallel_lines (min_width)
 
   -- Yield the parallel lines
   if not found then return end
-
-  print('SUPER FOUND', found, ithMax, irMax1, irMax2, cntMax1, cntMax2)
 
   local s, c = sin_d[ithMax], cos_d[ithMax]
   -- Find the image indices

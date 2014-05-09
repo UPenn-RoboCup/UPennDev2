@@ -29,8 +29,9 @@ c_yuyv = jpeg.compressor('yuyv')
 -- Form the default bounding box (in scaled down space...)
 local bbox = {61, 91, 11, 111}
 
-local meta, yuyv_t, edge_t, edge_char_t
+local meta, yuyv_t, edge_t
 local computation_times, n_over = {}, 0
+local kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel(), true, true
 for i,m,r in d do
 	if i>#metadata/2 then break end
 	local t0 = unix.time()
@@ -50,32 +51,35 @@ for i,m,r in d do
 		-- Just use the first one...
 		local bb = mp.unpack(bbox_data[1])
 		bbox = vector.new(bb.bbox) / 2
-		print('BBOX', bbox)
+		for i,v in ipairs(bbox) do bbox[i] = math.ceil(v) end
+		local dir = bb.dir
+		print('BBOX', bbox, dir)
+		kernel_t = ImageProc2.dir_to_kernel(dir)
+		if dir=='v' then
+			use_horiz, use_vert = false, true
+		elseif dir=='h' then
+			use_horiz, use_vert = true, false
+		else
+			use_horiz, use_vert = true, true
+		end
+		util.ptorch(kernel_t)
 	end
 
   -- Form the edges
   local t0_edge = unix.time()
-  local edge_t, grey_t, grey_t2 = ImageProc2.yuyv_to_edge(yuyv_t:data(), bbox)
+	-- True means use PCA. False means use the Y channel
+  local edge_t, grey_t = ImageProc2.yuyv_to_edge(yuyv_t:data(), bbox, true, kernel_t)
   local t1_edge = unix.time()
   local t_edge = t1_edge-t0_edge
 
   -- New line detection
   local t0_new = unix.time()
-  local RT = ImageProc2.radon_lines(grey_t2)
+  local RT = ImageProc2.radon_lines(edge_t, use_horiz, use_vert)
   local pline1, pline2, line_radon = RT.get_parallel_lines()
   local t1_new = unix.time()
   local t_new = t1_new-t0_new
 
   local t_total = t_gc + t_edge + t_new
-  if t_total > 1/30 then
-    print('\n',i)
-    print('GC (ms)', t_gc*1e3, collectgarbage('count'))
-    print('Over time! (ms)', i, t_total*1e3)
-    print("yuyv_to_edge (ms)", t_edge*1e3)
-    print("line_stats (ms)", t_new*1e3)
-    --print("line_stats_old (ms)", t_old*1e3)
-    n_over = n_over + 1
-  end
   -- Save the times
   table.insert(computation_times, t_total)
 
@@ -98,6 +102,9 @@ for i,m,r in d do
     bbox = bbox,
     NTH = RT.NTH,
     MAXR = RT.MAXR,
+		kernel = ffi.string(kernel_t:data(), ffi.sizeof'double' * kernel_t:nElement()),
+		kh = kernel_t:size(1),
+		kw = kernel_t:size(2),
   })
 
   -- Send the Image, line information
@@ -110,13 +117,24 @@ for i,m,r in d do
     metapack,
     jstr,
     ffi.string(RT.count_d, ffi.sizeof('int')*RT.MAXR*RT.NTH),
-    ffi.string(grey_t:data(), ffi.sizeof('int') * grey_t:size(1) * grey_t:size(2) ),
-    ffi.string(edge_t:data(), ffi.sizeof('int') * edge_t:size(1) * edge_t:size(2) ),
+    ffi.string(grey_t:data(), ffi.sizeof('double') * grey_t:nElement() ),
+    ffi.string(edge_t:data(), ffi.sizeof('double') * edge_t:nElement() ),
     --ffi.string(RT.line_sum_d, ffi.sizeof('int')*RT.MAXR*RT.NTH),
   })
 
 	-- Send the image to the browser
 	camera_ch:send({mp.pack(meta),jstr})
+
+	if t_total > 1/30 then
+		print('\n',i)
+		print('GC (ms)', t_gc*1e3, collectgarbage('count'))
+		print('Over time! (ms)', i, t_total*1e3)
+		print("yuyv_to_edge (ms)", t_edge*1e3)
+		print("line_stats (ms)", t_new*1e3)
+		--print("line_stats_old (ms)", t_old*1e3)
+		n_over = n_over + 1
+	end
+
   -- Sleep a little
   unix.usleep(2e5)
 

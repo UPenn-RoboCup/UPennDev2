@@ -25,51 +25,9 @@ local luts = {}
 local scaleA, scaleB, log_sA, log_sB
 local log2 = {[1] = 0, [2] = 1, [4] = 2, [8] = 3,}
 -- For the edge system
-
-local kernel = {
-	{0,  0,   3,  0,  0,},
-	{0,  3,   8,  3,  0,},
-	{3,  8, -40,  8,  3,},
-	{0,  3,   8,  3,  0,},
-	{0,  0,   3,  0,  0,}
-}
-
-----[[
-local kernel = {
-	{0, 0,   0,  0, 0,},
-	{0, 1,   0,  0, 0,},
-	{4, 20, -50,  20, 4,},
-	{0, 0,   0,  1, 0,},
-	{0, 0,   0,  0, 0,}
-}
---]]
-
---[[
-local kernel = {
-	{0,   0,    1,    0,  0,},
-	{0,   1,    2,    1,  0,},
-	{1,   2,  -16,    2,  5,},
-	{0,   1,    2,    1,  0,},
-	{0,   0,    1,    0,  0,}
-}
---]]
-
---[[
-local kernel = {
-	{5, 10, -30, 10, 5,},
-}
---]]
-
-local edge_t = torch.IntTensor()
-local grey_t = torch.IntTensor()
-local kernel_t = torch.IntTensor(kernel)--:t():clone()
---
-local edge_char_t = torch.CharTensor()
-local grey_char_t = torch.CharTensor()
-local kernel_char_t = torch.CharTensor(kernel)
---
+local edge_t = torch.Tensor()
+local grey_t = torch.Tensor()
 local yuv_samples_t = torch.DoubleTensor()
-local grey_transformed_t = torch.DoubleTensor()
 
 -- Load LookUp Table for Color -> Label
 function ImageProc.load_lut (filename)
@@ -85,11 +43,7 @@ function ImageProc.load_lut (filename)
   return #luts
 end
 -- Return the pointer to the LUT
-function ImageProc.get_lut (lut_id)
-  local lut_t = luts[lut_id]
-  if not lut_t then return end
-  return lut_t
-end
+function ImageProc.get_lut (lut_id) return luts[lut_id] end
 
 -- Take in a pointer (or string) to the image
 -- Take in the lookup table, too
@@ -144,7 +98,6 @@ local function block_bitorN (label_t)
   -- Zero the downsampled image
   labelB_t:zero()
   local a_ptr, b_ptr = label_t:data(), labelB_t:data()
-
   local jy, iy, ind_b, off_j
   for jx=0,ha-1 do
     jy = rshift(jx, log_sB)
@@ -156,7 +109,6 @@ local function block_bitorN (label_t)
       a_ptr = a_ptr + 1
     end
   end
-
   return labelB_t
 end
 
@@ -165,7 +117,6 @@ local function block_bitor2 (label_t)
   -- Zero the downsampled image
   labelB_t:zero()
   local a_ptr, b_ptr = label_t:data(), labelB_t:data()
-
   -- Offset a row
   local a_ptr1 = a_ptr + wa
   -- Start the loop
@@ -182,7 +133,6 @@ local function block_bitor2 (label_t)
     a_ptr = a_ptr + wa
     a_ptr1 = a_ptr1 + wa
   end
-
   return labelB_t
 end
 
@@ -203,14 +153,12 @@ function ImageProc.color_stats (label_t, bbox, color)
     j1 = bbox[4]
   end
   color = color or 1
-
 	-- Initialize statistics
 	local area = 0
 	local minI, maxI = width-1, 0
 	local minJ, maxJ = height-1, 0
 	local sumI, sumJ = 0, 0
 	local sumII, sumJJ, sumIJ = 0, 0, 0
-
   local l_ptr, label = label_t:data()
   for j=j0,j1 do
     for i=i0,i1 do
@@ -237,62 +185,64 @@ function ImageProc.color_stats (label_t, bbox, color)
 
 end
 
-function ImageProc.radon_lines (edge_t)
-  -- Take care of noise with a threshold
-  local THRESH = 2.5*torch.std(edge_t)
-  -- TODO: Use SouthEast pixel so we can have diagonal pixel resolution
-  local j, i, label_nw, label_ne, label_sw, label_se
-  -- Clear out any old transform
-  RadonTransform.init(edge_t:size(1), edge_t:size(2))
-  -- Cache the functions
-  local fabs = math.abs
-  local aH = RadonTransform.addHorizontalPixel
-  local aV = RadonTransform.addVerticalPixel
-  -- Start the pointers
-  local e_ptr_l = edge_t:data()
-  local e_ptr_r = e_ptr_l + edge_t:size(2)
-  for j=0, edge_t:size(1)-2 do
-    for i=0, edge_t:size(2)-2 do
-      label_nw = e_ptr_l[0]
-      e_ptr_l = e_ptr_l + 1
-      label_ne = e_ptr_l[0]
-      label_sw = e_ptr_r[0]
-      e_ptr_r = e_ptr_r + 1
-      label_se = e_ptr_r[0]
-			if fabs(label_nw - label_sw)>THRESH then aH(i, j+.5) end
-			if fabs(label_nw - label_ne)>THRESH then aV(i+.5, j) end
-			--[[
-      if fabs(label_nw)>THRESH then
-        if fabs(label_sw)>THRESH then
-          if (label_nw>0 and label_sw<0) or (label_nw<0 and label_sw>0) then aH(i, j+.5) end
-					--aH(i, j+.5)
-					--aV(j+0.5, i)
-        end
-        if fabs(label_ne)>THRESH then
-					if (label_nw>0 and label_ne<0) or (label_nw<0 and label_ne>0) then aV(i+.5, j) end
-					--aV(i+.5, j)
-					--aH(j, i+.5)
-        end
-      end
-			--]]
-    end
-    -- Must have one more increment :)
-    e_ptr_l = e_ptr_l + 1
-    e_ptr_r = e_ptr_r + 1
-  end
-
-  -- Give the parallel lines
-  return RadonTransform
+-- Subsample 1 row and one column
+-- TODO: Take other subsample options
+-- NOTE: This references the same memory, still
+-- TODO: Can modify the strides easily - wow!
+-- Reshape for a subsample.
+-- TODO: Should be resize onto the same storage, else a malloc!
+-- TODO: Could finagle the strides via the ffi ;)
+-- TODO: Be careful, since not contiguous, so reshape
+-- may help with type cast copy? or no?
+-- TODO: Support more subsample levels, too. This may work:
+-- yuyv_sub = yuyv_t:reshape(h/4,w,4):sub(1,-1,1,w/4)
+-- yuyv_sub = yuyv_t:reshape(h/8,w,4):sub(1,-1,1,w/8)
+local function yuyv_planes (yuyv_ptr, w0, h0)
+	-- Must be userdata or cdata
+	local ty = type(yuyv_ptr)
+	assert(ty=='userdata' or ty=='cdata', 'Bad YUYV pointer: '..ty)
+	-- Wrap the pointer into a tensor
+	local yuyv_s = torch.ByteStorage(
+	w0 * h0 * 4,
+	tonumber(ffi.cast("intptr_t",yuyv_ptr))
+	)
+	-- The new size kills half the columns
+	local yuyv_sz = torch.LongStorage{h/2,w,4}
+	-- The tensor
+	local yuyv_t = torch.ByteTensor(yuyv_s, 1, yuyv_sz)
+	-- Kill every other row
+	local yuyv_sub = yuyv_t:sub(1,-1,1,w/2)
+	-- Grab the Y, U, V planes
+	local y0 = yuyv_sub:select(3,1)
+	local u  = yuyv_sub:select(3,2)
+	local y1 = yuyv_sub:select(3,3)
+	local v  = yuyv_sub:select(3,4)
+	-- Return the planes
+	return y0, u, y1, v
 end
 
+-- Use PCA for finding a better color space
 local function pca(x)
-    -- From: https://github.com/koraykv/unsup
-   local mean = torch.mean(x,1)
-   local xm = x - torch.ger(torch.ones(x:size(1)),mean:squeeze())
-   xm:div(math.sqrt(x:size(1)-1))
-   local w,s,v = torch.svd(xm:t())
-   s:cmul(s)
-   return s, w, mean, xm
+	-- From: https://github.com/koraykv/unsup
+	local mean = torch.mean(x,1)
+	local xm = x - torch.ger(torch.ones(x:size(1)),mean:squeeze())
+	xm:div(math.sqrt(x:size(1)-1))
+	local w,s,v = torch.svd(xm:t())
+	s:cmul(s)
+	return s, w, mean, xm
+end
+
+-- Learn a grayspace from three color components
+local function learn_greyspace (samples_t, output_t)
+	-- Scale the samples for importance
+	-- TODO: See what is actually a valid approach here!
+	samples_t:select(2,2):mul(3)
+	samples_t:select(2,3):mul(3)
+	-- Run PCA
+	local eigenvalues, eigenvectors, mean, samples_0_mean = pca(samples_t)
+	-- Transform into the grey space
+	-- TODO: Need to figure out which eigenvector to use...
+	torch.mv(output_t, samples_0_mean, eigenvectors:select(2,1))
 end
 
 -- NOTE: This is just a test funciton, really. Makes a greyscaleimage
@@ -332,46 +282,78 @@ function ImageProc.yuyv_color_stats (yuyv_ptr, bbox)
   return eigenvalues, eigenvectors, mean, ys, us, vs, transformed
 end
 
+function ImageProc.dir_to_kernel (dir)
+	if dir=='h' then
+		return torch.Tensor({
+			{1}, {4}, {-10}, {4}, {1},
+		})
+	elseif dir=='v' then
+		return torch.Tensor({
+			{1, 4, -10, 4, 1},
+		})
+	end
+	-- Base case
+	return torch.Tensor({
+		{0,   0,    1,    0,  0,},
+		{0,   1,    2,    1,  0,},
+		{1,   2,  -16,    2,  1,},
+		{0,   1,    2,    1,  0,},
+		{0,   0,    1,    0,  0,}
+	})
 
--- TODO: Might not be the smartest approach...
--- That is why the state machine system is used
-function ImageProc.label_to_edge (label_t, label)
-  -- Resize as necessary. First time gets the hit
-  -- Fill our map correctly
-  grey_char_t:resize(label_t:size()):map(label_t, function(g, l)
-    if l==label then return 1 else return 0 end
-    end)
-  -- Do the convolution in byte space
-  -- TODO: Test any overflow issues!
-  -- TODO: Do I even need to resize edge_char_t ?
-  -- Or does that happen automagically?
-  edge_char_t:conv2(grey_char_t, kernel_char_t)
-  return edge_char_t
+	--[[
+	-- Diagonal ;)
+	local kernel = {
+		{1, 0,   0, 0, 0},
+		{0, 4,   0, 0, 0},
+		{0, 0, -10, 0, 0},
+		{0, 0,   0, 4, 0},
+		{0, 0,   0, 0, 1},
+	}
+	--]]
 end
 
-function ImageProc.yuyv_to_edge (yuyv_ptr, bbox)
-  -- Wrap the pointer into a tensor
-  local yuyv_s = torch.ByteStorage(
-  w*h*4,
-  tonumber(ffi.cast("intptr_t",yuyv_ptr))
-  )
-  local yuyv_sz = torch.LongStorage{h/2,w,4}
-  local yuyv_t = torch.ByteTensor(yuyv_s, 1, yuyv_sz)
-  local yuyv_sub = yuyv_t:sub(1,-1,1,w/2)
-  -- TODO: Can modify the strides easily - wow!
-  -- Reshape for a subsample.
-  -- TODO: Should be resize onto the same storage, else a malloc!
-  -- TODO: Could finagle the strides via the ffi ;)
-  -- TODO: Be careful, since not contiguous, so reshape
-  -- may help with type cast copy? or no?
-  -- TODO: Support more subsample levels, too. This may work:
-  -- yuyv_sub = yuyv_t:reshape(h/4,w,4):sub(1,-1,1,w/4)
-  -- yuyv_sub = yuyv_t:reshape(h/8,w,4):sub(1,-1,1,w/8)
-	-- Get the y-plane
-	local y_plane = yuyv_sub:select(3,1)
-	local u_plane = yuyv_sub:select(3,2)
-  --local y1_plane = yuyv_sub:select(3,3)
-	local v_plane = yuyv_sub:select(3,4)
+-- TODO: Select which pixels to add
+function ImageProc.radon_lines (edge_t, use_horiz, use_vert)
+	-- Take care of noise with a threshold, relating to the standard deviation
+	local THRESH = 2 * torch.std(edge_t)
+	-- Use pixel directions
+	local j, i, label_nw, label_ne, label_sw, label_se
+	-- Clear out any old transform
+	RadonTransform.init(edge_t:size(1), edge_t:size(2))
+	-- Cache the functions
+	local fabs = math.abs
+	local aH = RadonTransform.addHorizontalPixel
+	local aV = RadonTransform.addVerticalPixel
+	-- Start the pointers
+	local e_ptr_l = edge_t:data()
+	local e_ptr_r = e_ptr_l + edge_t:size(2)
+	-- Loop is -2 since we do not hit the boundary
+	for j=0, edge_t:size(1)-2 do
+		for i=0, edge_t:size(2)-2 do
+			label_nw = e_ptr_l[0]
+			e_ptr_l = e_ptr_l + 1
+			label_ne = e_ptr_l[0]
+			label_sw = e_ptr_r[0]
+			e_ptr_r = e_ptr_r + 1
+			label_se = e_ptr_r[0]
+			-- Strong zero crossings
+			-- TODO: Add both j and j+1 (nw and sw pixels are edges, maybe?)
+			if use_horiz and fabs(label_nw - label_sw) > THRESH then aH(i, j+.5) end
+			if use_vert  and fabs(label_nw - label_ne) > THRESH then aV(i+.5, j) end
+		end
+		-- Must have one more increment to get to the next line
+		e_ptr_l = e_ptr_l + 1
+		e_ptr_r = e_ptr_r + 1
+	end
+	-- Yield the Radon Transform
+	return RadonTransform
+end
+
+-- TODO: Take in some swipe information.
+function ImageProc.yuyv_to_edge (yuyv_ptr, bbox, use_pca, kernel_t)
+	-- Grab the planes
+	local y_plane, u_plane, y1_plane, v_plane = yuyv_planes(yuyv_ptr, w, h)
   -- Form the greyscale image
   local ys, us, vs
   if bbox then
@@ -385,35 +367,30 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, bbox)
     us = u_plane
     vs = v_plane
   end
-  -- Copy into our samples, with a precision change, too
-  -- TODO: Just use resize instead of making a new tensor
-  yuv_samples_t:resize(ys:nElement(), 3)
-  yuv_samples_t:select(2,1):copy(ys)
-  yuv_samples_t:select(2,2):copy(us)
-  yuv_samples_t:select(2,3):copy(vs)
-	-- Scale the samples for importance
-	-- TODO: See what is actually a valid approach here!
-	yuv_samples_t:select(2,2):mul(3)
-	yuv_samples_t:select(2,3):mul(3)
-
-  grey_transformed_t:resize(ys:nElement())
-  -- Run PCA
-  local eigenvalues, eigenvectors, mean, yuv_samples_0_mean = pca(yuv_samples_t)
-  -- Transform into the grey space
-  -- TODO: Need to figure out which eigenvector to use...
-  torch.mv(grey_transformed_t,yuv_samples_0_mean,eigenvectors:select(2,1))
-  -- Resize as an image
-  grey_transformed_t:resize(ys:size(1),ys:size(2))
-  -- Scale to the integer plane
-  -- TODO: Just use the double space? I wonder how much of a speed hit...?
-  grey_t:resize(grey_transformed_t:size()):copy(grey_transformed_t:mul(255))
-  -- Just use the y plane?
-  --print('USE Y PLANE')
-  --grey_t:resize(ys:size()):copy(vs)
-  -- Perform the convolution
-	edge_t:conv2(grey_t, kernel_t)
-  grey_transformed_t:resize(edge_t:size()):copy(edge_t)
-  return edge_t, grey_t, grey_transformed_t
+	-- This is the structure on which to perform convolution
+	if use_pca then
+	  -- Copy into our samples, with a precision change, too
+	  -- TODO: Just use resize instead of making a new tensor
+	  yuv_samples_t:resize(ys:nElement(), 3)
+	  yuv_samples_t:select(2,1):copy(ys)
+	  yuv_samples_t:select(2,2):copy(us)
+	  yuv_samples_t:select(2,3):copy(vs)
+		-- Resize the output tensor for holding the transformed pixels
+		grey_t:resize(ys:nElement())
+		-- Find a greyscale image for use in edge detection
+		learn_greyspace(yuv_samples_t, grey_t)
+	  -- Resize the output grey samples back to an image
+		-- NOTE: This is only ok if we KNOW that the memory layout is still ok
+		-- We are OK in this situation
+		grey_t:resize(ys:size())
+	else
+		-- Just use a single plane
+		grey_t:resize(ys:size())
+		grey_t:copy(ys)
+	end
+  -- Perform the convolution in integer space
+	edge_t:conv2(grey_t, kernel_t, 'V')
+  return edge_t, grey_t
 end
 
 -- Setup should be able to quickly switch between cameras

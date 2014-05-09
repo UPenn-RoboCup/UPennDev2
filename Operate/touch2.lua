@@ -51,22 +51,24 @@ local function form_bbox (contact)
 		-- Update for the next swipe
 		has_new_bbox = not has_new_bbox
 		if has_new_bbox then
-			local bbox
+			local bbox, dir
 			if math.abs(bb_angle)<45*DEG_TO_RAD or math.abs(bb_angle)>135*DEG_TO_RAD then
 				print('Horizontal')
+				dir = 'h'
 				bbox = {
-					math.floor(bb_xc - bb_major / 2), -- x0
-					math.floor(bb_xc + bb_major / 2), -- x1
-					math.floor(bb_yc - bb_minor / 2), -- y0
-					math.floor(bb_yc + bb_minor / 2), -- y1
+					(bb_xc - bb_major / 2), -- x0
+					(bb_xc + bb_major / 2), -- x1
+					(bb_yc - bb_minor / 2), -- y0
+					(bb_yc + bb_minor / 2), -- y1
 				}
 			else
 				print('Vertical')
+				dir = 'v'
 				bbox = {
-					math.floor(bb_xc - bb_minor / 2), -- x0
-					math.floor(bb_xc + bb_minor / 2), -- x1
-					math.floor(bb_yc - bb_major / 2), -- y0
-					math.floor(bb_yc + bb_major / 2), -- y1
+					(bb_xc - bb_minor / 2), -- x0
+					(bb_xc + bb_minor / 2), -- x1
+					(bb_yc - bb_major / 2), -- y0
+					(bb_yc + bb_major / 2), -- y1
 				}
 			end
 			print('touch bbox', bb_major, bb_minor, RAD_TO_DEG * bb_angle, bb_xc, bb_yc)
@@ -80,7 +82,9 @@ local function form_bbox (contact)
 				major = bb_major,
 				minor = bb_minor,
 				-- Use the standard notation for non tilted, as fallback
-				bbox = bbox
+				bbox = bbox,
+				-- Direction for Kernel and Radon use
+				dir = dir,
 			}))
 		end
 	end

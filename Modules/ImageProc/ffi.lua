@@ -245,43 +245,6 @@ local function learn_greyspace (samples_t, output_t)
 	torch.mv(output_t, samples_0_mean, eigenvectors:select(2,1))
 end
 
--- NOTE: This is just a test funciton, really. Makes a greyscaleimage
-function ImageProc.yuyv_color_stats (yuyv_ptr, bbox)
-  local yuyv_s = torch.ByteStorage(
-  w*h*4,
-  tonumber(ffi.cast("intptr_t",yuyv_ptr))
-  )
-  local yuyv_t = torch.ByteTensor(yuyv_s, 1, torch.LongStorage{h/2,w,4})
-  local yuyv_sub = yuyv_t:sub(1,-1,1,w/2)
-	local y_plane = yuyv_sub:select(3,1)
-	local u_plane = yuyv_sub:select(3,2)
-  --local y1_plane = yuyv_sub:select(3,3)
-	local v_plane = yuyv_sub:select(3,4)
-  -- Select just the bbox pixels
-  local ys, us, vs
-  if bbox then
-    -- Remember the coordinates and memory layout of a yuyv camera image
-    local c, d, a, b = unpack(bbox)
-    ys = y_plane:sub(a,b,c,d)
-    us = u_plane:sub(a,b,c,d)
-    vs = v_plane:sub(a,b,c,d)
-  else
-    ys = y_plane
-    us = u_plane
-    vs = v_plane
-  end
-  -- Copy into our samples, with a precision change, too
-  local yuv_samples = torch.DoubleTensor(ys:nElement(),3)
-  yuv_samples:select(2,1):copy(ys)
-  yuv_samples:select(2,2):copy(us)
-  yuv_samples:select(2,3):copy(vs)
-  -- Run PCA
-  local eigenvalues, eigenvectors, mean, yuv_samples_0_mean = pca(yuv_samples)
-  local transformed = torch.mv(yuv_samples_0_mean,eigenvectors:select(2,1))
-  transformed:resize(ys:size(1),ys:size(2))
-  return eigenvalues, eigenvectors, mean, ys, us, vs, transformed
-end
-
 function ImageProc.dir_to_kernel (dir)
 	if dir=='h' then
 		return torch.Tensor({
@@ -295,9 +258,9 @@ function ImageProc.dir_to_kernel (dir)
 	-- Base case
 	return torch.Tensor({
 		{0,   0,    1,    0,  0,},
-		{0,   1,    2,    1,  0,},
-		{1,   2,  -16,    2,  1,},
-		{0,   1,    2,    1,  0,},
+		{0,   1,    4,    1,  0,},
+		{1,   4,  -24,    4,  1,},
+		{0,   1,    4,    1,  0,},
 		{0,   0,    1,    0,  0,}
 	})
 

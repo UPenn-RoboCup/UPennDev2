@@ -26,12 +26,11 @@ local jpeg = require'jpeg'
 c_gray = jpeg.compressor('gray')
 c_yuyv = jpeg.compressor('yuyv')
 
--- Form the default bounding box (in scaled down space...)
-local bbox = {61, 91, 11, 111}
-
 local meta, yuyv_t, edge_t
 local computation_times, n_over = {}, 0
 local kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel(), true, true
+-- Form the default bounding box (in scaled down space...)
+local bbox = {51, 101, 21, 111}
 for i,m,r in d do
 	if i>#metadata/2 then break end
 	local t0 = unix.time()
@@ -136,7 +135,7 @@ for i,m,r in d do
 	end
 
   -- Sleep a little
-  unix.usleep(2e5)
+  unix.usleep(1e5)
 
 end
 

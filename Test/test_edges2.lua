@@ -11,6 +11,7 @@ local si = require'simple_ipc'
 local edge_ch = si.new_publisher('edge')
 local camera_ch = si.new_publisher('camera0')
 local tou_che = si.new_subscriber('touche')
+local line_ch = si.new_publisher('line')
 
 date = '04.17.2014.16.34.17'
 DIR = HOME..'/Logs/'
@@ -133,6 +134,32 @@ for i,m,r in d do
 		--print("line_stats_old (ms)", t_old*1e3)
 		n_over = n_over + 1
 	end
+
+	-- Send result to the browser (or anyone else :P)
+	--[[
+	line_ch:send(mp.pack({
+		name = 'pline',
+		i1 = {pline1.iMin, pline1.iMean, pline1.iMax},
+		j1 = {pline1.jMin, pline1.jMean, pline1.jMax},
+		i2 = {pline2.iMin, pline2.iMean, pline2.iMax},
+		j2 = {pline2.jMin, pline2.jMean, pline2.jMax},
+	}))
+	--]]
+	line_ch:send(mp.pack({
+		name = 'pline',
+		l1 = {
+			{x=pline1.iMin,  y=pline1.jMin},
+			{x=pline1.iMean, y=pline1.jMean},
+			{x=pline1.iMax,  y=pline1.jMax},
+		},
+		l2 = {
+			{x=pline2.iMin,  y=pline2.jMin},
+			{x=pline2.iMean, y=pline2.jMean},
+			{x=pline2.iMax,  y=pline2.jMax},
+		},
+		-- Relative placement
+		bbox = bbox,
+	}))
 
   -- Sleep a little
   unix.usleep(1e5)

@@ -164,6 +164,7 @@ local function update (swipes, cb)
 		-- Look at each touch within the swipe
 		for j, touch in ipairs(swipe) do
 			-- Handle the event
+			util.ptable(touch)
 			c = handlers[touch.e](touch)
 			-- Run the callback for this contact
 			if cb then cb(c) end

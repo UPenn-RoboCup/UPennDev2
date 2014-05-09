@@ -131,13 +131,10 @@ function RadonTransform.get_parallel_lines (min_width)
           c_arr[#c_arr] = monotonic_max
           i_arr[#i_arr] = i_monotonic_max
         end
-
         i_monotonic_max = ir
         monotonic_max = 0
       end
     end
-    --print()
-    --print(ith, #c_arr, 'FOUND', unpack(c_arr))
     -- Save the parallel lines
     if #i_arr==2 then
       -- Dominate the previous maxes
@@ -152,10 +149,8 @@ function RadonTransform.get_parallel_lines (min_width)
       end
     end
   end
-
   -- Yield the parallel lines
   if not found then return end
-
   local s, c = sin_d[ithMax], cos_d[ithMax]
   -- Find the image indices
   local iR1 = irMax1 * c

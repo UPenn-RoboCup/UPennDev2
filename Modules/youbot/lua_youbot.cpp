@@ -1,8 +1,8 @@
 #include <lua.hpp>
-#include "youbot/YouBotBase.hpp"
-#include "youbot/YouBotManipulator.hpp"
+#include "youbot_driver/youbot/YouBotBase.hpp"
+#include "youbot_driver/youbot/YouBotManipulator.hpp"
 
-#define YOUBOT_CONFIGURATIONS_DIR "/usr/local/config"
+#define YOUBOT_CONFIGURATIONS_DIR "/usr/local/share/config"
 
 // Namespace
 using namespace youbot;

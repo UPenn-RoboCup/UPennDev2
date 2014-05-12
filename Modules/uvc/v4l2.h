@@ -3,7 +3,7 @@
   	: Stephen McGill 10/10
     : Yida Zhang 05/13
 */
-			
+
 #ifndef v4l2driver_h_DEFINED
 #define v4l2driver_h_DEFINED
 
@@ -81,8 +81,10 @@ int v4l2_init_mmap(v4l2_device * vdev);
 int v4l2_uninit_mmap(v4l2_device * vdev);
 int v4l2_close_query(v4l2_device * vdev);
 
-//int v4l2_set_ctrl_by_id(int id, int value);
-//int v4l2_read_frame(void);
-//uint8_t* yuyv_rotate(uint8_t* frame);
+/*
+int v4l2_set_ctrl_by_id(int id, int value);
+int v4l2_read_frame(void);
+uint8_t* yuyv_rotate(uint8_t* frame);
+*/
 
 #endif

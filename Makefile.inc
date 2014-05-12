@@ -15,7 +15,7 @@ LIBRT=-lrt
 SHLIBEXT=so
 STRIP=strip
 USE_TORCH=1
-INCLUDES=-I/usr/local/include/
+INCLUDES=-I/usr/local/include -I/usr/include/lua5.1
 
 # OS Specific overrides
 ifeq ($(OSTYPE),darwin)

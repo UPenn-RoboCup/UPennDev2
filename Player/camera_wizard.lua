@@ -120,8 +120,8 @@ local c_yuyv = jpeg.compressor('yuyv')
 while true do
 	-- Grab and compress
 	local img, sz, cnt, t = camera:get_image()
-  print(img, sz, cnt, t)
---[[
+--  print(img, sz, cnt, t)
+----[[
 	local c_img = c_yuyv:compress( img, w, h)
 	-- Update metadata
 	meta.t = t

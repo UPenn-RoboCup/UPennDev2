@@ -144,6 +144,7 @@ shared.step.nfootholds = vector.zeros(1)
 ---------------
 -- ADDED FOR NAO
 ---------------
+--[[
 
 shared.walk.bodyOffset = vector.zeros(3);
 shared.walk.tStep = vector.zeros(1);
@@ -183,10 +184,6 @@ shared.walk.isSearching = vector.zeros(1);
 shared.walk.isStepping = vector.zeros(1);
 
 
-
-
-
-
 shared.us = {};
 shared.us.left = vector.zeros(10);
 shared.us.right = vector.zeros(10);
@@ -195,12 +192,11 @@ shared.us.free = vector.zeros(2);
 shared.us.dSum = vector.zeros(2);
 shared.us.distance = vector.zeros(2);
 
-
 shared.motion = {};
 --Should we perform fall check
 shared.motion.fall_check = vector.zeros(1);
 
-
+--]]
 ---------------
 -- END ADDED FOR NAO
 ---------------
@@ -220,7 +216,7 @@ memory.init_shm_segment(..., shared, shsize)
 ---------------
 -- ADDED FOR NAO
 ---------------
-
+--[[
 -- helper functions
 
 ---
@@ -259,6 +255,7 @@ end
 function mcm.get_headPitchBias()
   return mcm.get_walk_headPitchBiasComp()+headPitchBias;
 end
+--]]
 ---------------
 -- END ADDED FOR NAO
 ---------------

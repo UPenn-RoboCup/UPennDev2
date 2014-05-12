@@ -4,16 +4,9 @@
         : Yida Zhang 05/13
 */
 
-#ifdef _cplusplus
-extern "C" {
-#endif
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
-#ifdef _cplusplus
-}
-#endif
-
 #include "v4l2.h"
 #include "timeScalar.h"
 
@@ -159,8 +152,8 @@ static int lua_uvc_reset_resolution(lua_State *L) {
     v4l2_uninit_mmap(ud);
     v4l2_close_query(ud);
 
-	// TODO: already init'd, so this cannot work
-	// should be an ioctl
+    /* TODO: already init'd, so this cannot work
+     should be an ioctl */
     v4l2_init(ud);
     v4l2_stream_on(ud);
     return 1;

@@ -54,11 +54,14 @@ Config.camera = {}
 table.insert(Config.camera,
 {
 	name = 'head',
-	dev = '/dev/video0',
+	dev = '/dev/video1',
 	fmt = 'yuyv',
-	width = 320,
-	height = 240,
-	fps = 10
+	width = 640,
+	height = 480,
+	fps = 30,
+	params = {
+		
+	},
 })
 
 return Config

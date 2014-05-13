@@ -1,6 +1,6 @@
 -- Transformation Matrix functions
 local torch = require'torch'
-torch.Tensor = torch.DoubleTensor
+local vector = require'vector'
 local quaternion = require'quaternion'
 
 -- TODO: Is this actually a good name?
@@ -87,7 +87,7 @@ libTransform.to_rpy = function( R )
   return torch.Tensor{r,p,y}
 end
 
--- This gives xyz,rpy, 
+-- This gives xyz,rpy,
 -- so should be better than the to_rpy function...
 function libTransform.position6D(tr)
   return torch.Tensor{
@@ -133,18 +133,18 @@ libTransform.to_quaternion = function(t)
     local S = math.sqrt(1.0 + t[1][1] - t[2][2] - t[3][3]) * 2
     q[1] = (t[3][2] - t[2][3]) / S
     q[2] = 0.25 * S
-    q[3] = (t[1][2] + t[2][1]) / S 
+    q[3] = (t[1][2] + t[2][1]) / S
     q[4] = (t[1][3] + t[3][1]) / S
   elseif t[2][2] > t[3][3] then
     local S = math.sqrt(1.0 + t[2][2] - t[1][1] - t[3][3]) * 2
     q[1] = (t[1][3] - t[3][1]) / S
-    q[2] = (t[1][2] + t[2][1]) / S 
+    q[2] = (t[1][2] + t[2][1]) / S
     q[3] = 0.25 * S
     q[4] = (t[2][3] + t[3][2]) / S
   else
     local S = math.sqrt(1.0 + t[3][3] - t[1][1] - t[2][2]) * 2
     q[1] = (t[2][1] - t[1][2]) / S
-    q[2] = (t[1][3] + t[3][1]) / S 
+    q[2] = (t[1][3] + t[3][1]) / S
     q[3] = (t[2][3] + t[3][2]) / S
     q[4] = 0.25 * S
   end
@@ -256,6 +256,10 @@ function libTransform.transform6D(p)
   t[3][4] = p[3]
 
   return t
+end
+
+function libTransform.get_pos(tr)
+  return vector.new(tr:select(2,4):narrow(1,1,3))
 end
 
 -- Quicker inverse, since Transformation matrices are special cases

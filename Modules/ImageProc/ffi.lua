@@ -253,6 +253,8 @@ function ImageProc.dir_to_kernel (dir)
 	elseif dir=='v' then
 		return torch.Tensor({
 			{1, 4, -10, 4, 1},
+      {1, 4, -10, 4, 1},
+      {1, 4, -10, 4, 1},
 		})
 	end
 	-- Base case

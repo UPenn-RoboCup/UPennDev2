@@ -186,6 +186,8 @@ function RadonTransform.get_parallel_lines (min_width)
       ir2 = irMax2,
       c1 = cntMax1,
       c2 = cntMax2,
+      NTH = NTH,
+      NR = NR,
     }
 
 end

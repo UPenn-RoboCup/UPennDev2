@@ -34,13 +34,16 @@ local T = require'libTransform'
 local Body = require'Body'
 local K = Body.Kinematics
 local last_measurement
---local focal_length = 184.75
 --local focal_length = 160
+--local focal_length = 184.75
 --local focal_length = 200
-local focal_length = 300
+--local focal_length = 320
+local focal_length = 184.75 * 2
+--local focal_length = 640
 local sin, cos = math.sin, math.cos
-local function update_dist (pline1, pline2, tr, t)
+local function update_dist (pline1, pline2, tr, t, line_radon)
 	-- Find the distance between the lines
+	--[[
 	local p0 = vector.new{pline2.iMin, pline2.jMin}
 	local p1 = vector.new{pline1.iMean, pline1.jMean}
 	local p2 = vector.new{pline2.iMax, pline2.jMax}
@@ -49,12 +52,24 @@ local function update_dist (pline1, pline2, tr, t)
 	local c = vector.norm(p2 - p1)
 	local angle = math.acos( (a^2+b^2-c^2) / (2 * a * b) )
 	local px_width = math.abs(a * sin(angle))
+	print('px_width',px_width)
+	print('radon_w', 2*math.abs(line_radon.ir1 - line_radon.ir2))
+	--]]
+
+	local px_width = 2*math.abs(line_radon.ir1 - line_radon.ir2)
+
 	-- Get the angles
 	local i_px1, i_px2 = pline1.iMean - (w / 2), pline2.iMean - (w / 2)
+	local j_px1, j_px2 = pline1.jMean - (h / 2), pline2.jMean - (h / 2)
 	local camera_angle1 = math.atan(i_px1 / focal_length)
 	local camera_angle2 = math.atan(i_px2 / focal_length)
+
+	local r_px1, r_px2 = math.sqrt(i_px1^2 + j_px1^2), math.sqrt(i_px2^2 + j_px2^2)
+	local camera_angle1 = math.atan(r_px1 / focal_length)
+	local camera_angle2 = math.atan(r_px2 / focal_length)
+
 	--local angle_width = math.abs((camera_angle2 + camera_angle1) / 2)
-	local angle_width = math.abs(camera_angle2 - camera_angle1)
+	local angle_width = math.abs(camera_angle2 - camera_angle1) / 2
 	--print('angle_width',angle_width*RAD_TO_DEG)
 	-- See if this is our first mesaurment
 	if not last_measurement then
@@ -92,14 +107,12 @@ local function update_dist (pline1, pline2, tr, t)
 	end
 
 	local angle_diff = angle_width - last_measurement.angle_width
-	if math.abs(angle_diff)<1*DEG_TO_RAD then
-		--print('FAILED angle_diff', angle_diff)
-		return
-	end
+	if angle_diff<0 then return end
+	--if math.abs(angle_diff)<1*DEG_TO_RAD then print('FAILED angle_diff', angle_diff); return; end
 
 	local sin_diff = sin(angle_width - last_measurement.angle_width)
 	--print('sin_diff',sin_diff)
-	local s_a = sin(angle_width)
+	local s_a = sin(math.pi - angle_width)
 	local r = (s_a * sin(last_measurement.angle_width)) / sin_diff * p_diff
 	local d = (s_a * cos(last_measurement.angle_width)) / sin_diff * p_diff
 	-- Update the last_measurment
@@ -111,9 +124,14 @@ local function update_dist (pline1, pline2, tr, t)
 		t = t,
 	}
 	--]]
-	print("\n\nr, d",r, d)
-	print('p_diff, a_diff',p_diff, RAD_TO_DEG*angle_diff)
-	print()
+	-- Check based on previous knowledge
+	--if r<0.005 then
+		print("\nr, d", r, d)
+		print('p_diff', p_diff)
+		--print('a_diff', RAD_TO_DEG*angle_width, RAD_TO_DEG*last_measurement.angle_width)
+		--print('p_diff', p_diff - p_diff0, d - d0)
+		print()
+	--end
 	-- Return the distance measurement
 	return r, d
 end
@@ -235,7 +253,7 @@ for i,m,r in d do
 	--util.ptable(line_radon)
 	--print('camera_roll',camera_roll)
 
-	if i>185 and pline1 then
+	if i>183 and pline1 then if i>326 then return end
 	--if i>610 and pline1 then
 
 		edge_ch:send({
@@ -284,8 +302,11 @@ line_ch:send(mp.pack({
 	bbox = bbox,
 }))
 
-update_dist (pline1, pline2, fk, meta.t)
-print('i',i)
+update_dist (pline1, pline2, fk, meta.t, line_radon)
+--print('i',i)
+
+--if true then return end
+
 		-- Sleep a little
 		unix.usleep(1e5)
 	end

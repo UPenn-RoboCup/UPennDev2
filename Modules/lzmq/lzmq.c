@@ -499,4 +499,3 @@ LUAZMQ_EXPORT int luaopen_lzmq (lua_State *L){
   luazmq_init_lib(L);
   return 1;
 }
-

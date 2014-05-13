@@ -164,7 +164,6 @@ end
 
 function Context:_remove_socket(skt)
   self._private.sockets[skt:handle()] = nil
-  self:_inc_socket_count(-1)
 end
 
 function Context:closed()
@@ -362,6 +361,7 @@ function Socket:close(linger)
   if not self._private.dont_destroy then
     if self._private.ctx then
       self._private.ctx:_remove_socket(self)
+      self._private.ctx:_inc_socket_count(-1)
     end
 
     if linger then
@@ -471,13 +471,6 @@ end
 function Socket:send(msg, flags)
   assert(not self:closed())
   local ret = api.zmq_send(self._private.skt, msg, flags)
-  if ret == -1 then return nil, zerror() end
-  return true
-end
-
-function Socket:send_ffi(msg, sz, flags)
-  assert(not self:closed())
-  local ret = api.libzmq3.zmq_send(self._private.skt, msg, sz, flags or 0)
   if ret == -1 then return nil, zerror() end
   return true
 end
@@ -684,7 +677,7 @@ local poll_item = ffi.new(api.vla_pollitem_t, 1)
 
 function Socket:poll(timeout, events)
   timeout = timeout or -1
-  events  = mask or ZMQ_POLLIN
+  events  = events or ZMQ_POLLIN
 
   poll_item[0].socket  = self._private.skt
   poll_item[0].fd      = 0
@@ -892,6 +885,17 @@ function Message:get(option)
   local ret = api.zmq_msg_get(self._private.msg, option)
   if ret ~= -1 then return nil, zerror() end
   return true
+end
+
+if api.zmq_msg_gets then
+
+function Message:gets(option)
+  assert(not self:closed())
+  local value = api.zmq_msg_gets(self._private.msg, option)
+  if not value then return nil, zerror() end
+  return value
+end
+
 end
 
 Message.__tostring = Message.data

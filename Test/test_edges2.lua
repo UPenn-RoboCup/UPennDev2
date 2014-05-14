@@ -37,28 +37,16 @@ local last_measurement
 --local focal_length = 160
 --local focal_length = 184.75
 --local focal_length = 200
---local focal_length = 320
-local focal_length = 184.75 * 2
+local focal_length = 320
+--local focal_length = 184.75 * 2
 --local focal_length = 640
 local sin, cos = math.sin, math.cos
 local function update_dist (pline1, pline2, tr, t, line_radon)
-	-- Find the distance between the lines
-	--[[
-	local p0 = vector.new{pline2.iMin, pline2.jMin}
-	local p1 = vector.new{pline1.iMean, pline1.jMean}
-	local p2 = vector.new{pline2.iMax, pline2.jMax}
-	local a = vector.norm(p1 - p0)
-	local b = vector.norm(p2 - p0)
-	local c = vector.norm(p2 - p1)
-	local angle = math.acos( (a^2+b^2-c^2) / (2 * a * b) )
-	local px_width = math.abs(a * sin(angle))
-	print('px_width',px_width)
-	print('radon_w', 2*math.abs(line_radon.ir1 - line_radon.ir2))
-	--]]
-
-	local px_width = 2*math.abs(line_radon.ir1 - line_radon.ir2)
+	-- Scale up
+	local px_width = 2 * math.abs(line_radon.ir1 - line_radon.ir2)
 
 	-- Get the angles
+	--[[
 	local i_px1, i_px2 = pline1.iMean - (w / 2), pline2.iMean - (w / 2)
 	local j_px1, j_px2 = pline1.jMean - (h / 2), pline2.jMean - (h / 2)
 	local camera_angle1 = math.atan(i_px1 / focal_length)
@@ -70,6 +58,11 @@ local function update_dist (pline1, pline2, tr, t, line_radon)
 
 	--local angle_width = math.abs((camera_angle2 + camera_angle1) / 2)
 	local angle_width = math.abs(camera_angle2 - camera_angle1) / 2
+	--]]
+
+	-- Assume in the center
+	local angle_width = math.atan(px_width / 2 / focal_length)
+
 	--print('angle_width',angle_width*RAD_TO_DEG)
 	-- See if this is our first mesaurment
 	if not last_measurement then
@@ -84,9 +77,9 @@ local function update_dist (pline1, pline2, tr, t, line_radon)
 	end
 
 	-- If the less than a few pixels difference in width, then return
-	local px_diff = math.ceil(px_width - last_measurement.px_width)
+	local px_diff = px_width - last_measurement.px_width
 
-	if px_diff < 3 then
+	if px_diff < 2.5 then
 		--print('FAILED px_diff', px_diff, px_width)
 		return
 	end

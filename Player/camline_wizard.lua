@@ -72,47 +72,79 @@ local c_yuyv = jpeg.compressor('yuyv')
 local T = require'libTransform'
 local last_measurement
 local sin, cos = math.sin, math.cos
-local function update_dist (pline1, pline2, tr)
-	-- Find the distance between the lines
-	local p0 = vector.new{pline2.iMin, pline2.jMin}
-	local p1 = vector.new{pline1.iMean, pline1.jMean}
-	local p2 = vector.new{pline2.iMax, pline2.jMax}
-	local a = vector.norm(p1 - p0)
-	local b = vector.norm(p2 - p0)
-	local c = vector.norm(p2 - p1)
-	local angle = math.acos( (a^2+b^2-c^2) / (2 * a * b) )
-	local px_width = a * sin(angle)
+local function update_dist (pline1, pline2, tr, t, line_radon)
+	-- Scale up
+	local px_width = 2 * math.abs(line_radon.ir1 - line_radon.ir2)
+
 	-- Get the angles
+	--[[
 	local i_px1, i_px2 = pline1.iMean - (w / 2), pline2.iMean - (w / 2)
+	local j_px1, j_px2 = pline1.jMean - (h / 2), pline2.jMean - (h / 2)
 	local camera_angle1 = math.atan(i_px1 / focal_length)
 	local camera_angle2 = math.atan(i_px2 / focal_length)
-	local angle_width = (camera_angle2 + camera_angle1) / 2
+
+	local r_px1, r_px2 = math.sqrt(i_px1^2 + j_px1^2), math.sqrt(i_px2^2 + j_px2^2)
+	local camera_angle1 = math.atan(r_px1 / focal_length)
+	local camera_angle2 = math.atan(r_px2 / focal_length)
+
+	--local angle_width = math.abs((camera_angle2 + camera_angle1) / 2)
+	local angle_width = math.abs(camera_angle2 - camera_angle1) / 2
+	--]]
+
+	-- Assume in the center
+	local angle_width = math.atan(px_width / 2 / focal_length)
+
+	--print('angle_width',angle_width*RAD_TO_DEG)
 	-- See if this is our first mesaurment
 	if not last_measurement then
+		print("UPDATE", T.get_pos(tr))
 		last_measurement = {
 			px_width = px_width,
 			tr = tr,
 			angle_width = angle_width,
+			t = t,
 		}
 		return
 	end
+
 	-- If the less than a few pixels difference in width, then return
-	if width - last_measurement.width < 5 then return end
+	local px_diff = px_width - last_measurement.px_width
+
+	if px_diff < 2.5 then
+		--print('FAILED px_diff', px_diff, px_width)
+		return
+	end
 	-- Check the distance between transforms
 	local p_last, p_now = T.get_pos(last_measurement.tr), T.get_pos(tr)
 	local p_diff = vector.norm(p_last - p_now)
+
+	--util.ptorch(tr)
+	--print('p_diff', p_diff)
+
 	-- If less than an inch, discard
-	if p_diff < 0.0254 then return end
+	if p_diff < 0.050 then
+		--print('FAILED p_diff', p_diff)
+		return
+	else
+		--print('SUCCESS p_diff', p_diff)
+		--print('angle_width', RAD_TO_DEG*angle_width, RAD_TO_DEG*last_measurement.angle_width)
+	end
+
+	local angle_diff = angle_width - last_measurement.angle_width
+	if angle_diff<0 then return end
+	--if math.abs(angle_diff)<1*DEG_TO_RAD then print('FAILED angle_diff', angle_diff); return; end
+
 	local sin_diff = sin(angle_width - last_measurement.angle_width)
-	local s_a = sin(angle_width)
+	--print('sin_diff',sin_diff)
+	local s_a = sin(math.pi - angle_width)
 	local r = (s_a * sin(last_measurement.angle_width)) / sin_diff * p_diff
-	local d = (s_a * cos(last_measurement.angle_width)) / sin_diff * p_diff - r
+	local d = (s_a * cos(last_measurement.angle_width)) / sin_diff * p_diff
 	-- Update the last_measurment
-	last_measurement = {
-		px_width = px_width,
-		tr = tr,
-		angle_width = angle_width,
-	}
+	print("\nr, d", r, d)
+	print('p_diff', p_diff)
+	--print('a_diff', RAD_TO_DEG*angle_width, RAD_TO_DEG*last_measurement.angle_width)
+	--print('p_diff', p_diff - p_diff0, d - d0)
+	print()
 	-- Return the distance measurement
 	return r, d
 end

@@ -4,7 +4,7 @@ Config.fsm = {}
 
 -- Which FSMs should be enabled?
 Config.fsm.enabled = {
-  'Body', 'Arm'
+  'Body', 'Arm',
 }
 
 Config.fsm.Arm = {
@@ -15,8 +15,8 @@ Config.fsm.Arm = {
 }
 
 Config.fsm.Body = {
-  {'bodyIdle', 'timeout', 'bodyIdle'},
   {'bodyIdle', 'init', 'bodyInit'},
+  {'bodyIdle', 'timeout', 'bodyIdle'},
   --
   {'bodyInit', 'path', 'bodyPath'},
   {'bodyInit', 'grab', 'bodyApproachGrab'},

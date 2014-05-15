@@ -23,7 +23,7 @@ local t_debug = t0
 
 -- Entry
 Body.entry()
-for _,my_fsm in pairs(state_machines) do my_fsm.entry() end
+for _,my_fsm in pairs(state_machines) do my_fsm:entry() end
 
 -- Update loop
 while true do
@@ -31,10 +31,10 @@ while true do
   -- Update the body
   Body.update()
   -- Update the state machines
-  for _,my_fsm in pairs(state_machines) do my_fsm.update() end
+  for _,my_fsm in pairs(state_machines) do my_fsm:update() end
 end
 
 -- Exit
-for _,my_fsm in pairs(state_machines) do my_fsm.exit() end
+for _,my_fsm in pairs(state_machines) do my_fsm:exit() end
 
 Body.exit()

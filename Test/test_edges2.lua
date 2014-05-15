@@ -14,6 +14,11 @@ local tou_che = si.new_subscriber('touche')
 local line_ch = si.new_publisher('line')
 
 date = '04.17.2014.16.34.17'
+date = '05.14.2014.15.40.49'
+date = '05.14.2014.16.12.50'
+--date = '05.14.2014.16.12.50'
+date = '05.14.2014.16.58.44'
+
 DIR = HOME..'/Logs/'
 local replay = libLog.open(DIR,date,'uvc')
 local metadata = replay:unroll_meta()
@@ -27,8 +32,6 @@ local jpeg = require'jpeg'
 c_gray = jpeg.compressor('gray')
 c_yuyv = jpeg.compressor('yuyv')
 
-
-
 -- Update the distance measurements!
 local T = require'libTransform'
 local Body = require'Body'
@@ -37,9 +40,9 @@ local last_measurement
 --local focal_length = 160
 --local focal_length = 184.75
 --local focal_length = 200
-local focal_length = 320
+--local focal_length = 320
 --local focal_length = 184.75 * 2
---local focal_length = 640
+local focal_length = 800
 local sin, cos = math.sin, math.cos
 local function update_dist (pline1, pline2, tr, t, line_radon)
 	-- Scale up
@@ -140,9 +143,14 @@ local computation_times, n_over = {}, 0
 local kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel('v'), true, true
 util.ptorch(kernel_t)
 -- Form the default bounding box (in scaled down space...)
-local bbox = {51, 101, 21, 111}
+--local bbox = {51, 101, 21, 111}
+local bbox = {151, 251, 51, 251}
+--local bbox = {201, 301, 51, 251}
+collectgarbage()
+
 for i,m,r in d do
 	if i>#metadata/2 then break end
+
 	local t0 = unix.time()
 	meta = m
 	yuyv_t = r
@@ -174,6 +182,8 @@ for i,m,r in d do
 		util.ptorch(kernel_t)
 	end
 
+
+
   -- Form the edges
   local t0_edge = unix.time()
 	-- True means use PCA. False means use the Y channel
@@ -181,12 +191,16 @@ for i,m,r in d do
   local t1_edge = unix.time()
   local t_edge = t1_edge-t0_edge
 
+
+
   -- New line detection
   local t0_new = unix.time()
   local RT = ImageProc2.radon_lines(edge_t, use_horiz, use_vert)
   local pline1, pline2, line_radon = RT.get_parallel_lines()
   local t1_new = unix.time()
   local t_new = t1_new-t0_new
+
+
 
   local t_total = t_gc + t_edge + t_new
   -- Save the times
@@ -210,7 +224,7 @@ for i,m,r in d do
     lr = line_radon,
     bbox = bbox,
     NTH = RT.NTH,
-    MAXR = RT.MAXR,
+    MAXR = RT.NR,
 		kernel = ffi.string(kernel_t:data(), ffi.sizeof'double' * kernel_t:nElement()),
 		kh = kernel_t:size(1),
 		kw = kernel_t:size(2),
@@ -224,6 +238,7 @@ for i,m,r in d do
 	local jstr = c_yuyv:compress(yuyv_t, w, h)
 
 
+
 	if t_total > 1/30 then
 		print('\n',i)
 		print('GC (ms)', t_gc*1e3, collectgarbage('count'))
@@ -235,18 +250,13 @@ for i,m,r in d do
 	end
 
 
-	-- Update the distance
-	--util.ptable(meta)
-	local q = vector.new(meta.arm)
-	local fk = K.forward_arm(q)
-	local camera_roll = line_radon.ith / line_radon.NTH * math.pi
-	camera_roll = camera_roll > (math.pi / 2) and (camera_roll - math.pi) or camera_roll
-	local cam_roll_diff = camera_roll_last or camera_roll - camera_roll
-	camera_roll_last = camera_roll
+
 	--util.ptable(line_radon)
 	--print('camera_roll',camera_roll)
 
-	if i>183 and pline1 then if i>326 then return end
+
+if pline1 then
+	--if i>183 and pline1 then if i>326 then return end
 	--if i>610 and pline1 then
 
 		edge_ch:send({
@@ -295,15 +305,26 @@ line_ch:send(mp.pack({
 	bbox = bbox,
 }))
 
+
+-- Update the distance
+if meta.arm then
+local q = vector.new(meta.arm)
+local fk = K.forward_arm(q)
+local camera_roll = line_radon.ith / line_radon.NTH * math.pi
+camera_roll = camera_roll > (math.pi / 2) and (camera_roll - math.pi) or camera_roll
+local cam_roll_diff = camera_roll_last or camera_roll - camera_roll
+camera_roll_last = camera_roll
+
 update_dist (pline1, pline2, fk, meta.t, line_radon)
---print('i',i)
+print('i',i)
+if i>=118 then return end
 
---if true then return end
+end
 
-		-- Sleep a little
-		unix.usleep(1e5)
+
 	end
-
+-- Sleep a little
+unix.usleep(1e5)
 
 
 end

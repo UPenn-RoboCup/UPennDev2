@@ -75,6 +75,17 @@ if ok then
 	C = ffi.C
 end
 
+-- NOTE: We can somehow require multiple same FSMs, now... (i.e. for two hands)
+function load_fsm (name)
+  -- Set some temporary globals
+  fsm_name, transitions = name, Config.fsm[name]
+  -- Load the state machine
+	local my_fsm = dofile(HOME..'/Util/fsm_helper.lua')
+  -- Unset the temporary globals
+	fsm_name, transitions = nil, nil
+	return my_fsm
+end
+
 -- Print out the globally available variables, when using include.lua
 --[[
 function print_env()

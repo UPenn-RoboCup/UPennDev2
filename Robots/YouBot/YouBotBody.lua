@@ -48,21 +48,6 @@ servo.offset = vector.new({
 })*DEG_TO_RAD
 assert(#servo.offset==nJoint,'Bad servo offsets!')
 
--- Convienence functions for each joint
-local jointNames = {
-	"ShoulderYaw", "ShoulderPitch", "Elbow", "WristPitch","WristYaw"
-}
-assert(nJoint==#jointNames,'bad jointNames!')
-for i,v in ipairs(jointNames) do
-  local idx = i
-  Body['set_'..v:lower()] = function(val)
-    jcm.actuatorPtr.command_position[idx] = val
-  end
-  Body['get_'..v:lower()] = function()
-    return jcm.sensorPtr.position[idx]
-  end
-end
-
 -- Convienence function to get each joint sensor
 for i,v in ipairs{'torque','velocity','position'} do
   Body['get_'..v] = jcm['get_sensor_'..v]
@@ -88,7 +73,7 @@ Body.entry = function()
 	youbot.init_base()
 	youbot.init_arm()
 	youbot.calibrate_gripper()
-  
+
   -- Set the initial joint command angles, so we have no jerk initially
   local init_pos = {}
   for i=1,nJoint do
@@ -122,7 +107,7 @@ Body.update = function(cnt)
   jcm.set_sensor_position(rad)
   jcm.set_sensor_velocity(mps)
   jcm.set_sensor_torque(nm)
-  
+
   -- Set the gripper from shared memory
   local spacing = jcm.get_gripper_command_position()[1]
 	if spacing~=gripper_pos then
@@ -141,18 +126,18 @@ Body.update = function(cnt)
 			youbot.set_arm_angle(i,val)
 		end
 	end
-  
+
   -- Set base from shared memory
   local vel = mcm.get_walk_vel()
   youbot.set_base_velocity( unpack(vel) )
-	
+
 	-- Get Odometry measurements
 	local dx, dy, da = youbot.get_base_position()
 	wcm.set_robot_odometry{dx,dy,da}
 
 	-- Increment the counter... why?
 	if cnt then return cnt+1 end
-  
+
 end
 
 -- Exit gracefully shuts down the hardware of the robot
@@ -163,7 +148,7 @@ end
 
 -- Webots overrides
 if IS_WEBOTS then
-  
+
   -- Default configuration (toggle during run time)
   local ENABLE_CAMERA = false
   local ENABLE_LIDAR  = false
@@ -175,7 +160,7 @@ if IS_WEBOTS then
   local carray = require'carray'
   local jpeg = require'jpeg'
 	local c_rgb = jpeg.compressor('rgb')
-	
+
 	-- Publish sensor data
 	local simple_ipc = require'simple_ipc'
 	local mp = require'msgpack'
@@ -183,6 +168,7 @@ if IS_WEBOTS then
 	local camera0_ch = simple_ipc.new_publisher'camera0'
 
   local webots = require'webots'
+	assert(webots.wb_motor_set_position, 'BAD WEBOTS MODULE')
   -- Start the system
   webots.wb_robot_init()
   -- Acquire the timesteps
@@ -190,7 +176,7 @@ if IS_WEBOTS then
   local camera_timeStep = math.max(33,timeStep)
   local lidar_timeStep = math.max(25,timeStep)
   Body.timeStep = timeStep
-  
+
 	-- Note: weirdness maybe...
   get_time = webots.wb_robot_get_time
 	Body.get_sim_time = get_time
@@ -208,7 +194,7 @@ if IS_WEBOTS then
 
   -- Setup the webots tags
   local tags = {}
-  
+
   -- Ability to turn on/off items
   local t_last_keypress = get_time()
   -- Enable the keyboard 100ms
@@ -279,7 +265,7 @@ if IS_WEBOTS then
   			print('Joint '..i..' not found')
   		end
   	end
-    
+
     -- Grab the wheels
   	tags.wheels = {}
   	for i=1,4 do
@@ -289,7 +275,7 @@ if IS_WEBOTS then
   			print('Wheel '..i..' not found')
   		end
   	end
-    
+
     -- Grab the fingers
     tags.fingers = {}
   	for i=1,2 do
@@ -308,7 +294,7 @@ if IS_WEBOTS then
 		tags.hand_camera = webots.wb_robot_get_device("HandCamera")
 		tags.lidar = webots.wb_robot_get_device("lidar")
 		tags.kinect = webots.wb_robot_get_device("kinect")
-		
+
 		-- Grab the original pose in the world
 		key_action.p(true)
 		-- Step the simulation
@@ -330,20 +316,22 @@ if IS_WEBOTS then
     webots.wb_robot_step(Body.timeStep)
 
     -- Read values
+		local vals = {}
     for idx, jtag in pairs(tags.joints) do
       local val = webots.wb_motor_get_position( jtag )
       -- Take care of nan
       if val~=val then val = 0 end
       val = servo.direction[idx] * (val - servo.offset[idx])
-      jcm.sensorPtr.position[idx] = val
-      jcm.actuatorPtr.command_position[idx] = val
+			vals[idx] = val
     end
+		jcm.set_sensor_position(vals)
+		jcm.set_actuator_command_position(vals)
+		-- Reset the body velocity
 		mcm.set_walk_vel(vector.zeros(3))
-
   end
-  
+
   local neg_inf, pos_inf = -1/0, 1/0
-  local wb_wheel_speed = function(tag,speed)
+  local function wb_wheel_speed (tag, speed)
     if speed > 0 then
       webots.wb_motor_set_position(tag,pos_inf)
     else
@@ -351,7 +339,8 @@ if IS_WEBOTS then
     end
     webots.wb_motor_set_velocity(tag,math.abs(speed))
   end
-  local wheel_helper = function(vx,vy,va)
+
+  local function wheel_helper (vx, vy, va)
     local K1,K2,K3 = 10,10,10
     local v1,v2,v3,v4 = 0,0,0,0
     -- First, the angle
@@ -375,7 +364,7 @@ if IS_WEBOTS then
     wb_wheel_speed(tags.wheels[3],v3)
     wb_wheel_speed(tags.wheels[4],v4)
   end
-  
+
 
 	Body.nop = function()
     -- Step only
@@ -385,10 +374,32 @@ if IS_WEBOTS then
 		end
   end
 
+	-- Simple vision routine for webots
+	--[[
+	local lV = require'libVision'
+	local meta_b = {
+		id = 'labelB',
+		w = w / sA / sB,
+		h = h / sA / sB,
+		c = 'zlib',
+	}
+	local s_t = simple_ipc.new_publisher('top')
+	local zlib = require'zlib.ffi'
+	local c_zlib = zlib.compress_cdata
+	--]]
+	local function update_vision ()
+		if not ENABLE_CAMERA then return end
+		local im_top = Body.get_img_top()
+		lV.entry(Config.vision[1])
+		local dbg_top = lV.update(im_top)
+		-- Send all the debug information
+		s_t:send(top_debug)
+	end
+
   Body.update = function()
 
     -- Write arm commands
-    local cmds = Body.get_command_position()
+    local cmds = jcm.get_actuator_command_position()
     for i,v in ipairs(cmds) do
       local jtag = tags.joints[i]
       if jtag then
@@ -397,16 +408,16 @@ if IS_WEBOTS then
         webots.wb_motor_set_position( jtag, qi )
       end
     end
-    
+
     -- Base
     local vel = mcm.get_walk_vel()
     wheel_helper( unpack(vel) )
-    
+
     -- Gripper
     local spacing = jcm.get_gripper_command_position()
     local width = math.max(math.min(spacing[1],0.025),0)
-    webots.wb_motor_set_position(tags.fingers[1],width)
-    webots.wb_motor_set_position(tags.fingers[2],width)
+    webots.wb_motor_set_position(tags.fingers[1], width)
+    webots.wb_motor_set_position(tags.fingers[2], width)
 
 		-- Step the simulation, and shutdown if the update fails
 		if webots.wb_robot_step(Body.timeStep) < 0 then
@@ -416,14 +427,16 @@ if IS_WEBOTS then
     local t = get_time()
 		-- Shared time...
 		--wcm.set_robot_t(t)
-    
+
     -- Read values
+		local positions = {}
     for idx, jtag in pairs(tags.joints) do
       local val = webots.wb_motor_get_position( jtag )
       local rad = servo.direction[idx] * val - servo.offset[idx]
-      jcm.sensorPtr.position[idx] = rad
+			positions[idx] = rad
     end
-    
+		jcm.set_sensor_position(positions)
+
     -- Get sensors
 		if ENABLE_POSE then
     	local gps     = webots.wb_gps_get_values(tags.gps)
@@ -504,12 +517,12 @@ if IS_WEBOTS then
       key_toggle()
       t_last_keypress = t
     end
-    
+
   end
-  
+
   Body.exit = function()
   end
-  
+
 end
 
 -- Exports

@@ -12,6 +12,7 @@ local simple_ipc, poller = require'simple_ipc'
 local tou_ch = simple_ipc.new_subscriber'touch'
 -- Processed
 local tou_che = simple_ipc.new_publisher'touche'
+local tou_che_remote = simple_ipc.new_publisher(55588,'25.25.1.112')
 local libTouch2 = require'libTouch2'
 -- Allow logging
 local DO_LOG, libLog, logger = false
@@ -74,7 +75,8 @@ local function form_bbox (contact)
 			print('touch bbox', bb_major, bb_minor, RAD_TO_DEG * bb_angle, bb_xc, bb_yc)
 			print('bbox',unpack(bbox))
 			-- Send to JavaScript to communicate that we have calculated just fine
-			tou_che:send(mp.pack({
+			local mmm =
+			mp.pack({
 				id = 'bbox',
 				xc = bb_xc,
 				yc = bb_yc,
@@ -85,7 +87,9 @@ local function form_bbox (contact)
 				bbox = bbox,
 				-- Direction for Kernel and Radon use
 				dir = dir,
-			}))
+			})
+			tou_che:send(mmm)
+			tou_che_remote:send(mmm)
 		end
 	end
 end

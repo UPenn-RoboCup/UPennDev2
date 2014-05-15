@@ -1,6 +1,7 @@
 local state = {}
 state._NAME = ...
-local Body  = require'Body'
+
+local Body = require'Body'
 local t_entry, t_update, t_finish
 local timeout = 10.0
 
@@ -14,13 +15,14 @@ function state.entry()
 end
 
 function state.update()
---  print(state._NAME..' Update' )
+--  print(state._NAME..' Update' ) 
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
+  --if t-t_entry > timeout then return'timeout' end
+
 end
 
 function state.exit()

@@ -40,8 +40,8 @@ local type2prefix = {
 		return name, is_inverted
 	end,
 	number = function(n, target)
+		local name, is_inverted = nil, true
 		-- TODO: Specify inverted
-		local name, is_inverted
 		if type(target)~='string' then
 			name = 'tcp://*:'..n
 		else
@@ -102,7 +102,7 @@ end
 -- Make a new subscriber
 simple_ipc.new_subscriber = function( channel, target )
 	-- Form the prefix
-  local ch_name, bind = type2prefix[type(channel)](channel,target)
+  local ch_name, is_inverted = type2prefix[type(channel)](channel, target)
 	assert(ch_name,'SUBSCRIBE | Bad prefix!')
 	-- Grab or create the context
 	CTX = CTX or zmq.init( N_THREAD_POOL )
@@ -113,7 +113,7 @@ simple_ipc.new_subscriber = function( channel, target )
 	ch_socket:set_subscribe''
   -- Attach to the channel
 	local is_bind = false
-  if bind then
+  if is_inverted then
     ch_socket:bind( ch_name )
 		is_bind = true
   else

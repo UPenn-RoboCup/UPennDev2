@@ -1,6 +1,6 @@
 -- TODO: Make an FFI version (may be faster?)
 -- TODO: Just replace carray with FFI?
--- 
+--
 local shm    = require'shm'
 local vector = require'vector'
 local carray
@@ -8,15 +8,15 @@ if not ffi then carray = require'carray' end
 
 local memory = {}
 
-local function init_shm_keys(shmHandle, shmTable)
+local function init_shm_keys (shmHandle, shmTable)
   -- initialize a shared memory block (creating the entries if needed)
-  for k,v in pairs(shmTable) do 
+  for k,v in pairs(shmTable) do
     -- create the key if needed
     if type(v) == 'string' then
       if not memory.shm_key_exists(shmHandle, k) then
         shmHandle:set(k, {string.byte(v, 1, string.len(v))});
       end
-    elseif type(v) == 'number' then 
+    elseif type(v) == 'number' then
       if not memory.shm_key_exists(shmHandle, k) or shmHandle:size(k) ~= v then
         shmHandle:empty(k, v);
       end
@@ -28,7 +28,7 @@ local function init_shm_keys(shmHandle, shmTable)
   end
 end
 
-function memory.init_shm_segment(name, shared, shsize, tid, pid)
+function memory.init_shm_segment (name, shared, shsize, tid, pid)
   local tid = tid or 0
   local pid = pid or 1
 
@@ -47,7 +47,7 @@ function memory.init_shm_segment(name, shared, shsize, tid, pid)
     -- ex. vcmBall01brindza is the segment for shared.ball table in vcm.lua
     -- NOTE: the first letter of the shared_table_name is capitalized
     local shmName = name..string.upper(string.sub(shtable, 1, 1))..string.sub(shtable, 2)..tid..pid..(os.getenv('USER') or '');
-    
+
     fenv[shmHandleName] = shm.new(shmName, shsize[shtable]);
     local shmHandle = fenv[shmHandleName];
 
@@ -69,10 +69,11 @@ function memory.init_shm_segment(name, shared, shsize, tid, pid)
 
     for k,v in pairs(shared[shtable]) do
 			local ptr, tp, n = shmHandle:pointer(k)
+      -- If FFI, then give raw access to the SHM pointer
 			if ffi then
 				shmPointer[k] = ffi.cast(tp..'*',ptr)
-			else
-				shmPointer[k] = carray.cast(ptr, tp, n)
+			--else
+			--	shmPointer[k] = carray.cast(ptr, tp, n)
 			end
       local kind = type(v)
       if kind=='string' then
@@ -86,19 +87,19 @@ function memory.init_shm_segment(name, shared, shsize, tid, pid)
             end
             return string.char(unpack(bytes));
           end
-        -- Set string
+        -- Set string. Never trust FFI here... since expansion may need to happen
         fenv['set_'..shtable..'_'..k] = function(val)
           return shmHandle:set(k, {string.byte(val, 1, string.len(val))});
         end
-        
+
       elseif kind=='number' then
         -- Get userdata
         fenv['get_'..shtable..'_'..k] = function() return shmHandle:pointer(k) end
         -- Set userdata (Can accept a string for memcpy'ing the string)
         fenv['set_'..shtable..'_'..k] = function(val) return shmHandle:set(k, val, v) end
-        
+
       elseif kind=='table' then
-        -- setup accessors for a number/vector 
+        -- setup accessors for a number/vector
         fenv['get_'..shtable..'_'..k] = function()
           local val = shmHandle:get(k)
           if type(val) == 'table' then val = vector.new(val) end
@@ -108,6 +109,7 @@ function memory.init_shm_segment(name, shared, shsize, tid, pid)
         fenv['set_'..shtable..'_'..k] = function(val, ...)
           return shmHandle:set(k, val, ...)
         end
+        --[[
         -- Delta table if we have a vector of numbers
         fenv['delta_'..shtable..'_'..k] = function(delta, ...)
           local val = shmHandle:get(k)
@@ -121,9 +123,10 @@ function memory.init_shm_segment(name, shared, shsize, tid, pid)
           -- Set in memory
           return shmHandle:set(k, val + delta, ...)
         end
+        --]]
       else
         -- unsupported type
-        error('Unsupported shm type '..kind);
+        error('Unsupported shm type: '..kind);
       end
     end
   end
@@ -145,6 +148,6 @@ function memory.shm_key_exists(shmHandle, k, nvals)
   end
 
   -- key does not exist
-  return false; 
+  return false;
 end
 return memory

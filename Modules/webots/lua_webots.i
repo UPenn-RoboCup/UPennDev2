@@ -146,10 +146,8 @@ unsigned char * to_rgb( int tag ) {
 %include <webots/radio.h>
 
 /* This is Webots7 only!! */
-/*
 %include <webots/inertial_unit.h>
 %include <webots/motor.h>
-*/
 
 # Receiver:
 %typemap(out) const void * {

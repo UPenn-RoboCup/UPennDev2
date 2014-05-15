@@ -9,8 +9,8 @@ set(a_yuyv, 'xlimmode','manual',...
 'ylimmode','manual',...
 'ydir','reverse');
 hold on;
-p_l1 = plot([0],[0],'m*-');
-p_l2 = plot([0],[0],'k*-');
+p_l1 = plot([0],[0],'y*-');
+p_l2 = plot([0],[0],'y*-');
 p_bb = plot([0],[0],'r+-');
 hold off;
 drawnow;
@@ -28,6 +28,7 @@ im_grey = imagesc();
 a_grey = gca;
 set(a_grey, 'xlimmode','manual',...
 'ylimmode','manual',...
+'climmode','auto',...
 'ydir','reverse');
 axis image;
 hold on;

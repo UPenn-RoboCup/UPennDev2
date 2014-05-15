@@ -2,32 +2,29 @@ local RadonTransform = {}
 
 local ok, ffi = pcall(require,'ffi')
 assert(ok, 'No ffi!')
-ok = nil
+local torch = require'torch'
 
 -- These are the integer constants for avoiding floating point precision
 -- Max radius: the diagonal of the image
 -- NR: number of radii (100 of MAXR with 200 of NR is .5 R precision)
 -- TODO: Now just assuming 1 pixel resolution, and just having a constant buffer
 -- so that we do not malloc each time
-local MAXR, NR = 101
+local MAXR, NR = 222
 
-local NTH = 90 -- Number of angles (2 degree res)
---local NTH = 45 -- Number of angles (4 degree res)
+--local NTH = 90 -- Number of angles (2 degree res)
+local NTH = 45 -- Number of angles (4 degree res)
 --local NTH = 36 -- 5 degree resolution
 --local NTH = 180 -- (1 degree res)
 
-local count_d = ffi.new("uint32_t["..NTH.."]["..MAXR.."]")
+local count_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local line_sum_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local line_min_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local line_max_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
-local b_size32 = NTH*MAXR*ffi.sizeof('int32_t')
-local b_size64 = NTH*MAXR*ffi.sizeof('int32_t')
 
 -- Export a bit
 RadonTransform.count_d = count_d
-RadonTransform.line_sum_d = line_sum_d
 RadonTransform.NTH = NTH
-RadonTransform.MAXR = MAXR
+RadonTransform.NR = NR
 
 -- Save our lookup table discretization
 local th = ffi.new('double[?]',NTH)
@@ -57,14 +54,17 @@ end
 function RadonTransform.init (w, h)
   -- Resize for the image
   NR = math.ceil(math.sqrt(w*w+h*h))
+  MAXR = NR
+  -- Update the export
+  RadonTransform.NR = NR
+  -- Size of the zeroing
+  local b_size32 = NTH * MAXR * ffi.sizeof'int32_t'
   -- Zero the counts
   ffi.fill(count_d, b_size32)
   ffi.fill(line_sum_d, b_size32)
   -- Fill up the min/max lines
   ffi.fill(line_min_d, b_size32, 0x7F)
   ffi.fill(line_max_d, b_size32, 0xFF)
-  --
-  countMax = 0
 end
 
 -- TODO: Respect the integer method, since since lua converts back to double
@@ -103,7 +103,7 @@ end
 -- Find parallel lines in the Radon space
 function RadonTransform.get_parallel_lines (min_width)
   -- Have a minimum width of the line (in pixel space)
-  min_width = min_width or 5
+  min_width = min_width or 4
   local i_monotonic_max, monotonic_max, val
 
   local ithMax, irMax1, irMax2
@@ -124,19 +124,24 @@ function RadonTransform.get_parallel_lines (min_width)
         if #c_arr<2 then
           table.insert(i_arr, i_monotonic_max)
           table.insert(c_arr, monotonic_max)
-        elseif monotonic_max>c_arr[1] then
-          c_arr[1] = monotonic_max
-          i_arr[1] = i_monotonic_max
-        elseif monotonic_max>c_arr[#c_arr] then
-          c_arr[#c_arr] = monotonic_max
-          i_arr[#i_arr] = i_monotonic_max
+          i_monotonic_max = ir
+          monotonic_max = 0
+        elseif (ir-i_monotonic_max)>min_width then
+          if monotonic_max>c_arr[1]  then
+            c_arr[1] = monotonic_max
+            i_arr[1] = i_monotonic_max
+          elseif monotonic_max>c_arr[#c_arr]  then
+            c_arr[#c_arr] = monotonic_max
+            i_arr[#i_arr] = i_monotonic_max
+          end
+          i_monotonic_max = ir
+          monotonic_max = 0
         end
-        i_monotonic_max = ir
-        monotonic_max = 0
       end
     end
     -- Save the parallel lines
     if #i_arr==2 then
+      --print(ith,'ith',unpack(c_arr))
       -- Dominate the previous maxes
       if c_arr[1]>cntMax1 and c_arr[2]>cntMax2 then
         irMax1, irMax2, ithMax = i_arr[1], i_arr[2], ith
@@ -151,6 +156,9 @@ function RadonTransform.get_parallel_lines (min_width)
   end
   -- Yield the parallel lines
   if not found then return end
+
+  --print('PARALLEL',ithMax,irMax1-irMax2)
+
   local s, c = sin_d[ithMax], cos_d[ithMax]
   -- Find the image indices
   local iR1 = irMax1 * c

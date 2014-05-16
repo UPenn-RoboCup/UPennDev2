@@ -42,8 +42,9 @@ local n_motors = #m_ids
 -- Verify that the m_ids are present
 for _,m_id in pairs(m_ids) do
 	print('PING', m_id)
-	local p = assert(bus:ping(m_id), string.format('ID %d not present.', m_id))
-	--if p[1] then util.ptable(p[1]) end
+	local p = bus:ping(m_id)
+	assert(p[1], string.format('ID %d not present.', m_id))
+	--util.ptable(p[1])
 	usleep(1e3)
 end
 -- Have the correct conversions

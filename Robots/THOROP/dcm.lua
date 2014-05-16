@@ -7,20 +7,20 @@ assert(ffi, 'Please use LuaJIT :). Lua support in the near future')
 local si = require'simple_ipc'
 -- Import the context
 local pair_ch
-if CTX then
+if type(CTX)=='userdata' then
 	si.import_context(CTX)
 	-- Communicate with the master body_wizard
-	pair_ch = simple_ipc.new_pair(metadata.ch_name)
+	pair_ch = si.new_pair(metadata.ch_name)
 else
 	-- Set metadata based on command line arguments
 	local chain_id, chain = tonumber(arg[1])
 	if chain_id then
-		metadata = Config.chains[chain_id]
+		metadata = Config.chain[chain_id]
 		-- Make reverse subscriber for the chain
-		pair_ch = simple_ipc.new_subscriber('dcm'..chain_id..'!')
+		pair_ch = si.new_subscriber('dcm'..chain_id..'!')
 	else
 		-- Make reverse subscriber for the anonymous chain
-		pair_ch = simple_ipc.new_subscriber('dcm!')
+		pair_ch = si.new_subscriber('dcm!')
 	end
 end
 -- Fallback on undefined metadata
@@ -30,7 +30,7 @@ require'jcm'
 local lD = require'libDynamixel'
 local Body = require'THOROPBodyUpdate'
 local util = require'util'
-local usleep, metadata = unix.usleep, unix.time
+local usleep, time = unix.usleep, unix.time
 -- Corresponding Motor ids
 local bus = lD.new_bus(metadata.device)
 local m_ids = metadata.m_ids

@@ -802,7 +802,7 @@ function Body.entry ()
 		microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
 		microstrain:ahrs_on()
 		-- Read the FD... should this be a thread?
-		microstrain.fd
+		--microstrain.fd
 	end
 	-- Start all the threads
 	-- TODO: Check if already running as a separate process

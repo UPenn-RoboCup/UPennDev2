@@ -6,21 +6,21 @@ assert(ffi, 'Please use LuaJIT :). Lua support in the near future')
 -- Going to be threading this
 local si = require'simple_ipc'
 -- Import the context
-local pair_ch
+local parent_ch
 if type(CTX)=='userdata' then
 	si.import_context(CTX)
 	-- Communicate with the master body_wizard
-	pair_ch = si.new_pair(metadata.ch_name)
+	parent_ch = si.new_pair(metadata.ch_name)
 else
 	-- Set metadata based on command line arguments
 	local chain_id, chain = tonumber(arg[1])
 	if chain_id then
 		metadata = Config.chain[chain_id]
 		-- Make reverse subscriber for the chain
-		pair_ch = si.new_subscriber('dcm'..chain_id..'!')
+		parent_ch = si.new_subscriber('dcm'..chain_id..'!')
 	else
 		-- Make reverse subscriber for the anonymous chain
-		pair_ch = si.new_subscriber('dcm!')
+		parent_ch = si.new_subscriber('dcm!')
 	end
 end
 -- Fallback on undefined metadata
@@ -75,6 +75,10 @@ local function do_read (is_strict)
 	end
 	return true
 end
+-- Define parent interaction. NOTE: Openly subscribing to ANYONE. fiddle even
+local function process_parent (msg)
+
+end
 -- Initially, copy the command positions from the read positions
 -- Try 5 times to get all joints at once
 local did_read_all
@@ -114,5 +118,13 @@ while true do
 	---------------------
 	-- Parent Commands --
 	---------------------
-
+	local parent_msg = parent_ch:receive(true)
+	if parent_msg then
+		if parent_msg=='exit' then
+			bus:close()
+			return
+		else
+			process_parent(parent_msg)
+		end
+	end
 end

@@ -1,6 +1,6 @@
 dofile'../include.lua'
-local TEST_THREAD = true
---local TEST_BODY = true
+--local TEST_THREAD = true
+local TEST_BODY = true
 
 if TEST_THREAD then
 	local simple_ipc = require'simple_ipc'

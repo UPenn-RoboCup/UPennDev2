@@ -59,10 +59,10 @@ local m_to_j, step_to_radian, joint_to_step =
 local j_ids = {}
 for i,m_id in ipairs(m_ids) do j_ids[i] = m_to_j[m_id] end
 -- Access the typical commands quickly
-local cp_ptr = jcm.writePtr.command_position
+local cp_ptr = jcm.actuatorPtr.command_position
 local cp_cmd = lD.set_nx_command_position
 local cp_vals = {}
-local p_ptr = jcm.writePtr.command_position
+local p_ptr = jcm.sensorPtr.position
 local p_read = lD.get_nx_position
 local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 -- Define reading
@@ -97,11 +97,20 @@ did_read_all = nil
 collectgarbage()
 -- Begin infinite loop
 local t0 = get_time()
+local t_debug = t0
 while true do
 	local t = get_time()
 	local t_diff = t-t0
 	t0 = t
-	print('t_diff', t_diff, 1 / t_diff)
+  if t - t_debug>1 then
+	  print('\nt_diff', t_diff, 1 / t_diff)
+    local pos = {}
+    for _,j_id in ipairs(j_ids) do
+      table.insert(pos,p_ptr[j_id-1])
+    end
+    print(table.concat(pos,'\n'))
+    t_debug = t
+  end
 	--------------------
 	-- Read Positions --
 	--------------------

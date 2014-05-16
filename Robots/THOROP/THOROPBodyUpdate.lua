@@ -252,7 +252,11 @@ for sensor, pointer in pairs(jcm.sensorPtr) do
           for i=idx,idx2 do
             if treq_ptr[i]>tread_ptr[i] then up2date=false break end
           end
-          return vector.new(pointer:table(idx,idx2)), up2date
+					local tbl = {}
+					for i=idx-1,idx2-1 do
+						table.insert(tbl, pointer[i])
+					end
+          return vector.new(tbl), up2date
         end
         return pointer[idx], tread_ptr[idx]>treq_ptr[idx]
       end

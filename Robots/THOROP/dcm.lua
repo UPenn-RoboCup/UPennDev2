@@ -8,7 +8,7 @@ local si = require'simple_ipc'
 -- Import the context
 local pair_ch
 if CTX then
-	si.import_context( CTX )
+	si.import_context(CTX)
 	-- Communicate with the master body_wizard
 	pair_ch = simple_ipc.new_pair(metadata.ch_name)
 else
@@ -16,13 +16,14 @@ else
 	local chain_id, chain = tonumber(arg[1])
 	if chain_id then metadata = Config.chains[chain_id] end
 end
--- Fallback on metadata with no IDs
-if not metadata then metadata = {device = '/dev/ttyUSB0', m_ids = {}} end
+-- Fallback on undefined metadata
+metadata = metadata or {}
 -- Modules
 require'jcm'
 local lD = require'libDynamixel'
 local Body = require'THOROPBodyUpdate'
 local util = require'util'
+local usleep, metadata = unix.usleep, unix.time
 -- Corresponding Motor ids
 local bus = lD.new_bus(metadata.device)
 local m_ids = metadata.m_ids
@@ -36,7 +37,7 @@ for _,m_id in pairs(m_ids) do
 	print('PING', m_id)
 	local p = assert(bus:ping(m_id), string.format('ID %d not present.', m_id))
 	--if p[1] then util.ptable(p[1]) end
-	unix.usleep(1e3)
+	usleep(1e3)
 end
 -- Have the correct conversions
 local m_to_j, step_to_radian, joint_to_step =
@@ -59,7 +60,7 @@ local function do_read (is_strict)
 	for _,s in ipairs(status) do
 		local p = p_parse(unpack(s.parameter))
 		local j_id = m_to_j[s.id]
-		local r = step_to_radian(j_id,p)
+		local r = step_to_radian(j_id, p)
 		p_ptr[j_id-1] = r
 	end
 	return true
@@ -79,12 +80,12 @@ did_read_all = nil
 -- Collect garbage before starting
 collectgarbage()
 -- Begin infinite loop
-local t0 = unix.time()
+local t0 = get_time()
 while true do
-	local t = unix.time()
+	local t = get_time()
 	local t_diff = t-t0
 	t0 = t
-	print('t_diff',t_diff,1/t_diff)
+	print('t_diff', t_diff, 1 / t_diff)
 	--------------------
 	-- Read Positions --
 	--------------------

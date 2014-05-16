@@ -28,7 +28,7 @@ local N_THREAD_POOL = 1
 local type2prefix = {
 	string = function(s)
 		-- Prefix string with # for inproc
-		local is_inproc = s:byte(1,1)==35
+		local is_inproc = s:byte(1, 1)==35
 		local name
 		if is_inproc then
 			name = 'inproc://'..s
@@ -73,7 +73,7 @@ local function ch_receive (self, noblock)
 end
 
 -- Make a new publisher
-simple_ipc.new_publisher = function( channel, target )
+function simple_ipc.new_publisher (channel, target)
 	-- Form the prefix
   local ch_name, connect = type2prefix[type(channel)](channel,target)
 	assert(ch_name,'PUBLISH | Bad prefix!')
@@ -100,7 +100,7 @@ simple_ipc.new_publisher = function( channel, target )
 end
 
 -- Make a new subscriber
-simple_ipc.new_subscriber = function( channel, target )
+function simple_ipc.new_subscriber (channel, target)
 	-- Form the prefix
   local ch_name, is_inverted = type2prefix[type(channel)](channel, target)
 	assert(ch_name,'SUBSCRIBE | Bad prefix!')
@@ -129,7 +129,7 @@ simple_ipc.new_subscriber = function( channel, target )
 end
 
 -- Make a new requester
-simple_ipc.new_requester = function( channel, target )
+function simple_ipc.new_requester (channel, target)
 	-- Form the prefix
   local ch_name, bind = type2prefix[type(channel)](channel,target)
 	assert(ch_name,'REQUEST | Bad prefix!')
@@ -157,7 +157,7 @@ simple_ipc.new_requester = function( channel, target )
 end
 
 -- Make a new replier
-simple_ipc.new_replier = function( channel, target )
+function simple_ipc.new_replier (channel, target)
 	-- Form the prefix
   local ch_name, connect = type2prefix[type(channel)](channel,target)
 	assert(ch_name,'REPLIER | Bad prefix!')
@@ -185,7 +185,7 @@ simple_ipc.new_replier = function( channel, target )
 end
 
 -- Make a new pair
-simple_ipc.new_pair = function( channel, is_parent )
+function simple_ipc.new_pair (channel, is_parent)
 	-- Form the prefix
   local ch_name, connect = type2prefix[type(channel)](channel)
 	assert(ch_name,'PAIR | Bad prefix!')
@@ -214,47 +214,27 @@ end
 
 -- Return a ZMQ Poller object based on the set of channels
 -- Callbacks set in the code
-simple_ipc.wait_on_channels = function( channels )
+function simple_ipc.wait_on_channels (channels)
 	assert(type(channels)=='table', 'Bad wait channels!')
 	local n_ch = #channels
-  local poll_obj = poller.new( n_ch )
+  local poll_obj = poller.new(n_ch)
   -- Add local lookup table for the callbacks
-  local lut = {}
 	for i,ch in ipairs(channels) do
-  --for i,ch in ipairs(channels) do
-		local s
-		if type(s)=='number' then
-			-- File descriptor
-			s = ch
-		else
-			-- ZMQ Socket
-			s = ch.socket
-		end
+		local s = ch.socket
 		assert(s,'No socket for poller!')
 		assert(not lut[s],'Duplicate poller channel!')
 		assert(ch.callback,'No callback for poller!')
     poll_obj:add( s, zmq.POLLIN, ch.callback )
-		lut[s] = ch
   end
-	poll_obj.lut = lut
-	poll_obj.n = n_ch
-	poll_obj.clean = function(self,s)
-		-- NOTE: may only be able to remove the last added socket...
-		-- That means arbitrary removal is bad...
-		self:remove(s)
-		self.lut[s] = nil
-		self.n = self.n - 1
-		return self.n
-	end
   return poll_obj
 end
 
-simple_ipc.import_context = function( existing_ctx )
+function simple_ipc.import_context (existing_ctx)
 	CTX = zmq.init_ctx(existing_ctx)
 end
 
 -- Make a thread with a channel
-simple_ipc.new_thread = function(scriptname, channel, metadata)
+function simple_ipc.new_thread (scriptname, channel, metadata)
 	-- Type checking
 	assert(type(channel)=='string','Must given a comm channel string')
 	assert(type(scriptname)=='string','Must givefilename for stript')
@@ -264,20 +244,20 @@ simple_ipc.new_thread = function(scriptname, channel, metadata)
 	f:close()
 
 	-- Grab or create the context
-	CTX = CTX or zmq.init( N_THREAD_POOL )
+	CTX = CTX or zmq.init(N_THREAD_POOL)
 
 	-- Load the script into the child Lua state
 	-- pass in the ctx, since it is thread safe
 	metadata = metadata or {}
 	metadata.ch_name = '#'..channel
-	local thread = llthreads.new(script_str, CTX:lightuserdata(), metadata )
+	local thread = llthreads.new(script_str, CTX:lightuserdata(), metadata)
 
 	-- Must add the communication...
 	-- NOTE: It is the job of the script to
 	-- ascertain if it was called as a thread
 	-- (Should just check if it was given a context...
 	-- Must call import_context in the thread to achieve communication
-	local pair = simple_ipc.new_pair(metadata.ch_name,true)
+	local pair = simple_ipc.new_pair(metadata.ch_name, true)
 
 	return pair, thread
 end

@@ -1,11 +1,11 @@
 dofile'../include.lua'
---local TEST_THREAD = true
-local TEST_BODY = true
+local TEST_THREAD = true
+--local TEST_BODY = true
 
 if TEST_THREAD then
 	local simple_ipc = require'simple_ipc'
 	local ch, thread =
-		simple_ipc.new_thread(ROBOT_HOME..'dcm.lua','dcm')
+		simple_ipc.new_thread(ROBOT_HOME..'/dcm.lua','dcm')
 	ch.callback = function(ch)
 		local msg = ch:receive()
 		if msg=='exit' then poller:remove(ch) end
@@ -13,6 +13,7 @@ if TEST_THREAD then
 	thread:start()
 	poller = simple_ipc.wait_on_channels{ch}
 	poller:start()
+  print('DONE')
 end
 
 if TEST_BODY then
@@ -24,4 +25,5 @@ if TEST_BODY then
 		unix.usleep(t_sleep)
 	end
 	Body.exit()
+print('DONE')
 end

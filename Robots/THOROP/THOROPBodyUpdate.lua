@@ -6,7 +6,7 @@
 -- if using one USB2Dynamixel
 local ONE_CHAIN = false
 -- if using the microstrain IMU
-local DISABLE_MICROSTRAIN = false
+local DISABLE_MICROSTRAIN = true
 -- if reading the grippers
 local READ_GRIPPERS = true
 -- Shared memory for the joints
@@ -18,6 +18,7 @@ require'wcm'
 local unix         = require'unix'
 local vector       = require'vector'
 local util         = require'util'
+local si = require'simple_ipc'
 -- For the real body
 local libDynamixel = require'libDynamixel'
 local DP2 = libDynamixel.DP2
@@ -807,9 +808,9 @@ function Body.entry ()
 	-- Start all the threads
 	-- TODO: Check if already running as a separate process
 	local chain_chs = {}
-	for i, v in ipairs(Config.chains) do
+	for i, v in ipairs(Config.chain) do
 		local ch, thread =
-			simple_ipc.new_thread(ROBOT_HOME..'/dcm.lua', 'dcm'..i, v)
+			si.new_thread(ROBOT_HOME..'/dcm.lua', 'dcm'..i, v)
 		ch.callback = chain_cb
 		table.insert(chain_chs, ch)
 		thread:start()
@@ -848,7 +849,6 @@ end
 if IS_TESTING then
   print("TESTING")
   local Config     = require'Config'
-  local simple_ipc = require'simple_ipc'
   local jpeg       = require'jpeg'
   local png        = require'png'
   local udp        = require'udp'

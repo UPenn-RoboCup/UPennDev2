@@ -30,7 +30,7 @@ require'jcm'
 local lD = require'libDynamixel'
 local Body = require'THOROPBodyUpdate'
 local util = require'util'
-local usleep, time = unix.usleep, unix.time
+local usleep, get_time = unix.usleep, unix.time
 -- Corresponding Motor ids
 local bus = lD.new_bus(metadata.device)
 local m_ids = metadata.m_ids

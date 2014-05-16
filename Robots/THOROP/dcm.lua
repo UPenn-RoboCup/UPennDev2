@@ -6,8 +6,9 @@ assert(ffi, 'Please use LuaJIT :). Lua support in the near future')
 -- Going to be threading this
 local si = require'simple_ipc'
 -- Import the context
-local parent_ch
+local parent_ch, IS_THREAD
 if type(CTX)=='userdata' then
+	IS_THREAD = true
 	si.import_context(CTX)
 	-- Communicate with the master body_wizard
 	parent_ch = si.new_pair(metadata.ch_name)
@@ -122,6 +123,7 @@ while true do
 	if parent_msg then
 		if parent_msg=='exit' then
 			bus:close()
+			if IS_THREAD then parent_msg:send'exit' end
 			return
 		else
 			process_parent(parent_msg)

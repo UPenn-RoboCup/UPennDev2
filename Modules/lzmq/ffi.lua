@@ -2,7 +2,7 @@ local LZMQ_VERSION = "0.3.6-dev"
 
 local lua_version_t
 local function lua_version()
-  if not lua_version_t then 
+  if not lua_version_t then
     local version = rawget(_G,"_VERSION")
     local maj,min = version:match("^Lua (%d+)%.(%d+)$")
     if maj then                         lua_version_t = {tonumber(maj),tonumber(min)}
@@ -22,14 +22,14 @@ local bit = api.bit
 
 local make_weak_k do
   local mt = {__mode = "k"}
-  make_weak_k = function() 
+  make_weak_k = function()
     return setmetatable({}, mt)
   end
 end
 
 local make_weak_kv do
   local mt = {__mode = "kv"}
-  make_weak_kv = function() 
+  make_weak_kv = function()
     return setmetatable({}, mt)
   end
 end
@@ -390,7 +390,7 @@ function Socket:reset_handle(h, own, close)
   end
 
   self._private.skt = assert(api.deserialize_ptr(h))
-  if own ~= nil then 
+  if own ~= nil then
     self._private.dont_destroy = not own
   end
 
@@ -455,7 +455,7 @@ function Socket:bind_to_random_port(address, port, tries)
 
     if (err:no() ~= ERRORS.EADDRINUSE) and (err:no() ~= ERRORS.EACCES) then
       local msg = err:msg()
-      if msg ~= "Address in use" then 
+      if msg ~= "Address in use" then
         if not msg:lower():find("address .- in use") then
           break
         end
@@ -670,7 +670,7 @@ function Socket:monitor(addr, events)
   local ret = api.zmq_socket_monitor(self._private.skt, addr, events)
   if -1 == ret then return nil, zerror() end
 
-  return addr  
+  return addr
 end
 
 local poll_item = ffi.new(api.vla_pollitem_t, 1)
@@ -700,7 +700,7 @@ do -- Message
 Message.__index = Message
 
 -- we need only one zmq_msg_t struct to handle resize Message.
--- Because of ffi.gc is too slow tmp_msg is always set 
+-- Because of ffi.gc is too slow tmp_msg is always set
 -- ffi.gc(tmp_msg, api.zmq_msg_close).
 -- Double call zmq_msg_close is valid.
 local tmp_msg = ffi.gc(api.zmq_msg_init(), api.zmq_msg_close)
@@ -975,7 +975,7 @@ function Poller:remove(skt)
   if nitems == 0 then return true end
   local skt_no =  params[3]
   assert(skt_no < nitems)
-  
+
   nitems = nitems - 1
   self._private.nitems = nitems
 
@@ -1038,6 +1038,8 @@ function Poller:start()
     if not status then
       return nil, err
     end
+    -- If no more items, then stop the poller
+    if self._private.nitems<1 then self:stop() end
   end
   return true
 end
@@ -1100,7 +1102,7 @@ end
 
 function zmq.init(n)
   return zmq.context{io_threads = n}
-end  
+end
 
 function zmq.init_ctx(ctx)
   return Context:new(ctx)
@@ -1131,7 +1133,7 @@ function zmq.error(no)
 end
 
 function zmq.strerror(no)
-  return string.format("[%s] %s (%d)", 
+  return string.format("[%s] %s (%d)",
     api.zmq_mnemoerror(no),
     api.zmq_strerror(no),
     no
@@ -1153,7 +1155,7 @@ for name, value in pairs(api.SECURITY_MECHANISM) do zmq[ name:sub(5) ] = value e
 for name, value in pairs(api.EVENTS)             do zmq[ name:sub(5) ] = value end
 
 zmq.errors = {}
-for name, value in pairs(api.ERRORS) do 
+for name, value in pairs(api.ERRORS) do
   zmq[ name ] = value
   zmq.errors[name]  = value
   zmq.errors[value] = name

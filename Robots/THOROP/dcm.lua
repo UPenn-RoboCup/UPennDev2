@@ -14,7 +14,14 @@ if CTX then
 else
 	-- Set metadata based on command line arguments
 	local chain_id, chain = tonumber(arg[1])
-	if chain_id then metadata = Config.chains[chain_id] end
+	if chain_id then
+		metadata = Config.chains[chain_id]
+		-- Make reverse subscriber for the chain
+		pair_ch = simple_ipc.new_subscriber('dcm'..chain_id..'!')
+	else
+		-- Make reverse subscriber for the anonymous chain
+		pair_ch = simple_ipc.new_subscriber('dcm!')
+	end
 end
 -- Fallback on undefined metadata
 metadata = metadata or {}
@@ -101,5 +108,8 @@ while true do
 	end
 	local ret = cp_cmd(m_ids,cp_vals,bus)
 	--]]
+	---------------------
+	-- Parent Commands --
+	---------------------
 
 end

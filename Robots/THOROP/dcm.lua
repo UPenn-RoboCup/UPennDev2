@@ -25,6 +25,8 @@ else
 end
 -- Fallback on undefined metadata
 metadata = metadata or {}
+-- Debug
+if metadata.name then print('Running', metadata.name) end
 -- Modules
 require'jcm'
 local lD = require'libDynamixel'

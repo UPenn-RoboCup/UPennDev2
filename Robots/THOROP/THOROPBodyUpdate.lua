@@ -87,6 +87,13 @@ servo.joint_to_motor={
 }
 assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
 
+-- Make the reverse map
+local motor_to_joint = {}
+for j,m in ipairs(servo.joint_to_motor) do
+	motor_to_joint[m] = j
+end
+servo.motor_to_joint = motor_to_joint
+
 local motor_parts = {}
 for name,list in pairs(parts) do
 	motor_parts[name] = vector.zeros(#list)
@@ -94,13 +101,6 @@ for name,list in pairs(parts) do
 		motor_parts[name][i] = servo.joint_to_motor[idx]
 	end
 end
-
--- Make the reverse map
-local motor_to_joint = {}
-for j,m in ipairs(servo.joint_to_motor) do
-	motor_to_joint[m] = j
-end
-servo.motor_to_joint = motor_to_joint
 
 --http://support.robotis.com/en/product/dynamixel_pro/control_table.htm#Actuator_Address_611
 -- TODO: Use some loop based upon MX/NX
@@ -787,6 +787,10 @@ Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)
 end
 --
 
+local function chain_cb ()
+
+end
+
 ----------------------
 -- More standard api functions
 local dynamixels = {}
@@ -794,129 +798,23 @@ local dynamixel_fds = {}
 local fd_dynamixels = {}
 local motor_dynamixels = {}
 local microstrain
-Body.entry = function()
-
-  if not ONE_CHAIN then
-    if OPERATING_SYSTEM~='darwin' then
-      dynamixels.right_arm = libDynamixel.new_bus'/dev/ttyUSB0'
-      dynamixels['left_arm'] = libDynamixel.new_bus'/dev/ttyUSB1'
-      dynamixels['right_leg'] = libDynamixel.new_bus'/dev/ttyUSB2'
-      dynamixels['left_leg'] = libDynamixel.new_bus'/dev/ttyUSB3'
-      if not DISABLE_MICROSTRAIN then
-        microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
---        libMicrostrain.configure(microstrain)
-      end
-    else
-      dynamixels.right_arm = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9A'
-      dynamixels['left_arm'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9B'
-      dynamixels['right_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9C'
-      dynamixels['left_leg'] = libDynamixel.new_bus'/dev/cu.usbserial-FTT3ABW9D'
-      if not DISABLE_MICROSTRAIN then
-        microstrain = libMicrostrain.new_microstrain'/dev/tty.usbmodem1a1211'
-      end
-    end
-    -- motor ids
-    dynamixels.right_arm.nx_ids =
-      {1,3,5,7,9,11,13, --[[head]] 29,30}
-    dynamixels.left_arm.nx_ids =
-      {2,4,6,8,10,12,14, }
-    dynamixels.right_leg.nx_ids =
-      {15,17,19,21,23,25, --[[waist pitch]]28}
-    dynamixels.left_leg.nx_ids =
-      {16,18,20,22,24,26, --[[waist yaw]]27}
-    dynamixels.right_arm.mx_ids = { 70,65 }
-    dynamixels.left_arm.mx_ids = { 66,67,37, --[[lidar]] }
-  else
-    dynamixels.one_chain = libDynamixel.new_bus()
-    -- from 1 to 30
-    dynamixels.one_chain.nx_ids = vector.count(1,30)
-    -- lidar
-    dynamixels.one_chain.mx_ids = {37}
-    if not DISABLE_MICROSTRAIN then
-      microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
-    end
-    -- end one chain
-  end
-
-  --
-  for _,d in pairs(dynamixels) do
-    table.insert(dynamixel_fds,d.fd)
-    fd_dynamixels[d.fd] = d
-    -- make the 'all ids' list and the motor->chain mapping
-    --d.all_ids = {}
-    -- NX
-    if d.nx_ids then
-      for _,id in ipairs(d.nx_ids) do
-        --table.insert(d.all_ids,id)
-        motor_dynamixels[id]=d
-      end
-    end
-    -- MX
-    if d.mx_ids then
-      for _,id in ipairs(d.mx_ids) do
-        --table.insert(d.all_ids,id)
-        motor_dynamixels[id]=d
-      end
-    end
-  end
-  -- looping through each chain
-
-  --
-  if not DISABLE_MICROSTRAIN then
-    microstrain:ahrs_on()
-    table.insert(dynamixel_fds,microstrain.fd)
-    microstrain.t_diff = 0
-    microstrain.t_read = 0
-  end
-  --
-
-  -- Tell the hand motors to go to torque mode!!!
-  --for g=indexLGrip,indexLGrip+1 do
-  for g=indexLGrip,indexRGrip+1 do
-    local is_torque_mode = false
-    local try = 0
-    repeat
-      try = try+1
-      local m_id = servo.joint_to_motor[g]
-      local usb2dyn = motor_dynamixels[m_id]
-      libDynamixel.set_mx_torque_mode({m_id},1,usb2dyn)
-      unix.usleep(1e4)
-      local status = libDynamixel.get_mx_torque_mode(m_id,usb2dyn)
-      unix.usleep(1e4)
-      --print(m_id,'STATUS!!!!',type(status),status,g,usb2dyn)
-      if status then
-        local read_parser = libDynamixel.byte_to_number[ #status.parameter ]
-        local value = read_parser( unpack(status.parameter) )
-        is_torque_mode = value==1
-      end
-    until is_torque_mode or try>10
-    -- Debug message for when not set
-    if try>10 then print('BAD TORQUE MODE SET!',g) end
-  end
-  print'DONE SETTING TORQUE MODE'
-
-  -------------
-  -- Set the head yaw external light on; not sure which port(s)
-  local m_id = servo.joint_to_motor[indexHead+1]
-  libDynamixel.set_nx_data1_mode({m_id},1,usb2dyn)
-  unix.usleep(1e4)
-  libDynamixel.set_nx_data2_mode({m_id},1,usb2dyn)
-  unix.usleep(1e4)
-  libDynamixel.set_nx_data3_mode({m_id},1,usb2dyn)
-  unix.usleep(1e4)
-  libDynamixel.set_nx_data4_mode({m_id},1,usb2dyn)
-  unix.usleep(1e4)
-  -- Turn on!
-  libDynamixel.set_nx_data1({m_id},1,usb2dyn)
-  unix.usleep(1e4)
-  libDynamixel.set_nx_data2({m_id},1,usb2dyn)
-  unix.usleep(1e4)
-  libDynamixel.set_nx_data3({m_id},1,usb2dyn)
-  unix.usleep(1e4)
-  libDynamixel.set_nx_data4({m_id},1,usb2dyn)
-  unix.usleep(1e4)
-  -- End the light setting mode
-  -------------
+function Body.entry ()
+	-- Open the IMU
+	if not DISABLE_MICROSTRAIN then
+		microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
+		microstrain:ahrs_on()
+		-- Read the FD... should this be a thread?
+		microstrain.fd
+	end
+	-- Start all the threads
+	local chain_chs = {}
+	for i, v in ipairs(Config.chains) do
+		local ch, thread =
+			simple_ipc.new_thread(ROBOT_HOME..'/dcm.lua', 'dcm'..i, v)
+		ch.callback = chain_cb
+		table.insert(chain_chs, ch)
+		thread:start()
+	end
 
 end
 
@@ -1542,7 +1440,7 @@ elseif IS_WEBOTS then
 	local mp = require'msgpack'
 	local lidar0_ch = simple_ipc.new_publisher'lidar0'
 	local lidar1_ch = simple_ipc.new_publisher'lidar1'
-	
+
   local webots = require'webots'
   -- Start the system
   webots.wb_robot_init()
@@ -1643,7 +1541,7 @@ elseif IS_WEBOTS then
       end
     end,
   }
-	
+
 	Body.entry = function()
 
     -- Request @ t=0 to always be earlier than position reads
@@ -1671,7 +1569,7 @@ elseif IS_WEBOTS then
     tags.head_lidar = webots.wb_robot_get_device("HeadLidar")
 		tags.l_fsr = webots.wb_robot_get_device("L_FSR")
     tags.r_fsr = webots.wb_robot_get_device("R_FSR")
-		
+
 		-- Enable or disable the sensors
 		key_action.i(ENABLE_IMU)
 		key_action.p(ENABLE_POSE)

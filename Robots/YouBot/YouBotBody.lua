@@ -45,7 +45,7 @@ sensor.base = vector.zeros(3)
 
 -- Commanding the arm position
 function Body.set_command_position (val)
-	assert(type(val)=='table' and #val==nJoint,'Bad set_command!')
+	assert(type(val)=='table' and #val==nJoint, 'Bad set_command!')
 	local clamped = util.clamp_vector(val, servo.min_rad, servo.max_rad)
 	jcm.set_actuator_command_position(clamped)
 end

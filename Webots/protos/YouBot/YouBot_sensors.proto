@@ -2,7 +2,7 @@
 # The KUKA youBot is a powerful, educational robot that has been especially designed for research and education in mobile manipulation, which counts as a key technology for professional service robotics. It consists of an omnidirectional platform, a five degree-of-freedom robot arm and a two-finger gripper.
 # Model author: fabien.rohrer@cyberbotics.com
 
-PROTO YouBot [
+PROTO YouBot_sensors [
   field SFVec3f    translation    0 0.12 0
   field SFRotation rotation       1 0 0 -1.5708
   field SFString   controller     "default"
@@ -140,6 +140,22 @@ Robot {
                                           rotation 1 0 0 4.71239
                                           children [
                                             FingerMesh {
+                                            }
+                                            Transform {
+                                              rotation -1 0 0 1.57079
+                                              children [
+                                                Camera {
+                                                  rotation 0 0 1 1.57
+                                                  translation -0.05 0 0
+                                                  name "HandCamera"
+                                                  windowPosition 1 1
+                                                  fieldOfView IS cameraFov
+                                                  width IS cameraWidth
+                                                  height IS cameraHeight
+                                                  pixelSize IS cameraPixelSize
+                                                  near 0.02
+                                                }
+                                              ]
                                             }
                                           ]
                                           boundingObject DEF FINGER_BO Group {
@@ -440,6 +456,45 @@ Robot {
         density -1
         mass 0.5
       }
+    }
+    # Sensors within the body
+    Transform {
+      # Undo the robot rotation
+      rotation 1 0 0 1.57
+      children [
+        Compass {
+          name "compass"
+        }
+        GPS {
+          name "GPS"
+        }
+        Shape {geometry Box {size .05 .2 .05}}
+        Transform {
+          rotation 0 -1 0 1.57
+          children [
+            KinectWithoutFoot{
+              # 45 degree rotation
+              rotation -1 0 0 .7854
+              #translation 0 0 -.156
+              #translation 0 .077 -.156
+              #translation 0 .147 -.156
+              translation 0 .732 .259
+              windowPosition 0 1
+              cameraName "kinect"
+              width 320
+              height 240
+            }
+            hokuyo {
+              translation 0 -0.02 -0.3
+              fieldOfView 3.1415926536
+              width 721
+              #fieldOfView 1.5707963268
+              #width 361
+              name "lidar"
+            }
+          ]
+        }
+      ]
     }
   ]
   description "KUKA youBot"

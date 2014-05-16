@@ -69,7 +69,7 @@ HOSTNAME = unix.gethostname()
 OPERATING_SYSTEM = unix.uname():lower()
 
 -- Check for LuaJit and add to the global namespace
-local ok, myffi = pcall(require,'ffi')
+local ok, myffi = pcall(require, 'ffi')
 if ok then
 	ffi = myffi
 	C = ffi.C
@@ -101,3 +101,6 @@ function print_env()
 	print( 'package cpath:', package.cpath )
 end
 --]]
+
+-- Run the garbage collector after done the include
+collectgarbage()

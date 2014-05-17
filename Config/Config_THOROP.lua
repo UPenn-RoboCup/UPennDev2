@@ -1,4 +1,4 @@
-local Config = {}
+Config = {}
 
 ------------------------
 -- General parameters --

@@ -10,6 +10,7 @@ local get_time, bupdate, usleep = Body.get_time, Body.update, unix.usleep
 
 -- Cleanly exit on Ctrl-C
 local running = true
+local sign = require'signal'
 function shutdown () running = false end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)

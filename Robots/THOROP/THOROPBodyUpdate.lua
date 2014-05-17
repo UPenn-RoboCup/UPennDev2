@@ -3,8 +3,6 @@
 -- (c) 2013,2014 Stephen McGill, Seung-Joon Yi
 --------------------------------
 
--- if using the microstrain IMU
-local DISABLE_MICROSTRAIN = true
 -- if reading the grippers
 local READ_GRIPPERS = true
 -- Shared memory for the joints
@@ -17,7 +15,6 @@ local unix   = require'unix'
 local vector = require'vector'
 local util   = require'util'
 local si     = require'simple_ipc'
-local libMicrostrain = require'libMicrostrain'
 
 local Body = {}
 local get_time = unix.time
@@ -632,54 +629,55 @@ end
 local function chain_cb ()
 
 end
+local function imu_cb ()
+
+end
+local function body_cb ()
+
+end
 
 ----------------------
 -- More standard api functions
-local microstrain
+local channels, dev_poll = {}, nil
 function Body.entry ()
-	-- Open the IMU
-	-- TODO: Make as a thread/process
-	if not DISABLE_MICROSTRAIN then
-		microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
-		microstrain:ahrs_on()
-		-- Read the FD... should this be a thread?
-		--microstrain.fd
-	end
 	-- Start all the threads
 	-- TODO: Check if already running as a separate process
-	local chain_chs = {}
 	for i, v in ipairs(Config.chain) do
 		local ch, thread =
-			si.new_thread(ROBOT_HOME..'/dcm.lua', 'dcm'..i, v)
+			si.new_thread(ROBOT_HOME..'/run_dcm.lua', 'dcm'..i, v)
 		ch.callback = chain_cb
-		table.insert(chain_chs, ch)
+		table.insert(channels, ch)
 		thread:start()
 	end
-
+	-- IMU
+	if Config.imu.enabled then
+		local imu_ch, imu_thread =
+			si.new_thread(ROBOT_HOME..'/run_imu.lua', 'imu', v)
+		ch.callback = imu_cb
+		table.insert(channels, imu_ch)
+		imu_thread:start()
+	end
+	-- Body requests
+	-- Listens from everybody
+	local body_ch = si.new_subscriber'body!'
+	body_ch.callback = body_cb
+	table.insert(channels, body_ch)
+	-- Polling object
+	dev_poll = si.wait_on_channels(channels)
 end
 
 function Body.update ()
-	-- Read the gyro
-	if microstrain then
-		local buf = unix.read(microstrain.fd)
-		-- TODO: Check the size of the buffer, too
-		if buf then
-			local gyro = carray.float(buf:sub( 7,18):reverse())
-			local rpy  = carray.float(buf:sub(21,32):reverse())
-			-- set to memory
-			jcm.set_sensor_rpy{  rpy[2], rpy[3], -rpy[1]}
-			jcm.set_sensor_gyro{gyro[2],gyro[3],-gyro[1]}
-		end
-	end
-
+	-- Poll for events
+	-- Return immediately if nothing happening
+	-- NOTE: Most of the time, nothing will happen...
+	dev_poll:poll(0)
 end
 
 function Body.exit ()
-  for _,ch in pairs(chain_chs) do ch:send'exit' end
-  if microstrain then
-    microstrain:ahrs_off()
-    microstrain:close()
-  end
+	-- Tell the devices to exit cleanly
+  for _,ch in pairs(dev_chs) do
+		if ch.send then ch:send'exit' end
+	end
 end
 
 ----------------------

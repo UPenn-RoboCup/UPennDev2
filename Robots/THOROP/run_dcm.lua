@@ -2,7 +2,7 @@
 local CTX, metadata = ...
 -- Still need our library paths set
 dofile'include.lua'
-assert(ffi, 'Please use LuaJIT :). Lua support in the near future')
+assert(ffi, 'DCM | Please use LuaJIT :). Lua support in the near future')
 -- Going to be threading this
 local si = require'simple_ipc'
 -- Import the context
@@ -28,7 +28,7 @@ end
 -- Fallback on undefined metadata
 metadata = metadata or {}
 -- Debug
-if metadata.name then print('Running', metadata.name) end
+if metadata.name then print('DCM | Running', metadata.name) end
 -- Modules
 require'jcm'
 local lD = require'libDynamixel'
@@ -39,14 +39,14 @@ local bus = lD.new_bus(metadata.device)
 local m_ids = metadata.m_ids
 if not m_ids then
 	m_ids = bus:ping_probe()
-	print(#m_ids, 'FOUND', unpack(m_ids))
+	print('DCM | FOUND', unpack(m_ids))
 end
 local n_motors = #m_ids
 -- Verify that the m_ids are present
 for _,m_id in pairs(m_ids) do
 	print('PING', m_id)
 	local p = bus:ping(m_id)
-	assert(p[1], string.format('ID %d not present.', m_id))
+	assert(p[1], string.format('DCM | ID %d not present.', m_id))
 	--ptable(p[1])
 	usleep(1e3)
 end
@@ -133,7 +133,7 @@ while true do
 	-- Periodic Debug --
 	--------------------
   if t - t_debug>1 then
-	  print('\nt_diff', t_diff, 1 / t_diff)
+	  print('\nDCM | t_diff', t_diff, 1 / t_diff)
     ptable(positions)
     t_debug = t
   end

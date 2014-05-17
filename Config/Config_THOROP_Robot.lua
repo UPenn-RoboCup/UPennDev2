@@ -1,8 +1,17 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
--------------
+
+---------
+-- IMU --
+---------
+Config.imu = {
+  device = '/dev/ttyACM0',
+  -- TODO: Add some mapping, etc.
+}
+
+----------------
 -- DCM Chains --
--------------
+----------------
 -- NOTE: Ignore the MX motors for now
 Config.chain = {}
 local right_arm = {

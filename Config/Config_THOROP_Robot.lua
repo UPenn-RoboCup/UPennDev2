@@ -72,6 +72,7 @@ end
 ----------------------
 -- Servo Properties --
 ----------------------
+local nJoint = 35
 local servo = {}
 servo.joint_to_motor={
   29,30,  --Head yaw/pitch
@@ -163,8 +164,8 @@ servo.max_rad = vector.new({
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
 -- If the motor can rotate in extended mode
 local is_unclampled = {}
-for idx=1,#min_rad do
-  if max_rad[idx] == 180*DEG_TO_RAD and min_rad[idx]==-180*DEG_TO_RAD then
+for idx=1,#servo.min_rad do
+  if servo.max_rad[idx] == 180*DEG_TO_RAD and servo.min_rad[idx]==-180*DEG_TO_RAD then
     is_unclampled[idx] = true
   else
     is_unclampled[idx] = false

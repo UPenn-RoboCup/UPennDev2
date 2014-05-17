@@ -42,7 +42,7 @@ if HOME then
   for _,sm in ipairs(listing) do
     if sm:find'FSM' then
       package.path = CWD..'/'..sm..'/?.lua;'..package.path
-      table.insert(Config.fsm.enabled,sm)
+      table.insert(Config.fsm.enabled, sm)
     end
   end
 end

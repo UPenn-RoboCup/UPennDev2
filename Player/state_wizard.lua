@@ -9,11 +9,13 @@ local Body = require(Config.dev.body)
 local get_time, bupdate, usleep = Body.get_time, Body.update, unix.usleep
 
 -- Cleanly exit on Ctrl-C
-local running = true
-local sign = require'signal'
-function shutdown () running = false end
-signal.signal("SIGINT", shutdown)
-signal.signal("SIGTERM", shutdown)
+local running, signal = true, nil
+if not IS_WEBOTS then
+  signal = require'signal'
+  function shutdown () running = false end
+  signal.signal("SIGINT", shutdown)
+  signal.signal("SIGTERM", shutdown)
+end
 
 -- Load the FSMs and attach event handler
 local state_machines = {}

@@ -11,7 +11,7 @@ local parent_ch, IS_THREAD
 if CTX and not arg then
 	IS_THREAD = true
 	si.import_context(CTX)
-	-- Communicate with the master body_wizard
+	-- Communicate with the master thread
 	parent_ch = si.new_pair(metadata.ch_name)
 else
 	-- Set metadata based on command line arguments
@@ -32,8 +32,7 @@ if metadata.name then print('Running', metadata.name) end
 -- Modules
 require'jcm'
 local lD = require'libDynamixel'
-local Body = require'THOROPBodyUpdate'
-local util = require'util'
+local ptable = require'util'.ptable
 local usleep, get_time = unix.usleep, unix.time
 -- Corresponding Motor ids
 local bus = lD.new_bus(metadata.device)
@@ -48,24 +47,38 @@ for _,m_id in pairs(m_ids) do
 	print('PING', m_id)
 	local p = bus:ping(m_id)
 	assert(p[1], string.format('ID %d not present.', m_id))
-	--util.ptable(p[1])
+	--ptable(p[1])
 	usleep(1e3)
 end
--- Have the correct conversions
-local m_to_j, step_to_radian, joint_to_step =
-	Body.servo.motor_to_joint, Body.make_joint_radian, Body.make_joint_step
--- Make the reverse mapping
--- TODO: What used for?
+-- Cache some settings from the Config
+local min_rad, max_rad, is_unclamped = Config.servo.min_rad, Config.servo.max_rad, Config.servo.is_unclamped
+local direction, to_steps, step_zero = Config.servo.direction, Config.servo.to_steps, Config.servo.step_offset
+local to_radians, step_offset, m_to_j = Config.servo.to_radians, Config.servo.step_zero, Config.servo.motor_to_joint
+-- Make the reverse mapping for our motor ids of this thread
 local j_ids = {}
 for i,m_id in ipairs(m_ids) do j_ids[i] = m_to_j[m_id] end
--- Access the typical commands quickly
-local cp_ptr = jcm.actuatorPtr.command_position
-local cp_cmd = lD.set_nx_command_position
-local cp_vals = {}
-local p_ptr = jcm.sensorPtr.position
-local p_read = lD.get_nx_position
+-- Clamp the radian within the min and max
+-- Used when sending packets and working with actuator commands
+local function radian_clamp (idx, radian)
+	if is_unclampled[idx] then return radian end
+	return math.min(math.max(radian, min_rad[idx]), max_rad[idx])
+end
+-- Radian to step, using offsets and biases
+local function radian_to_step (idx, radian)
+	return math.floor(direction[idx] * radian_clamp(idx, radian) * to_steps[idx] + step_zero[idx] + step_offset[idx])
+end
+-- Step to radian
+local function step_to_radian (idx, step)
+	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
+end
+-- Cache the typical commands quickly
+local cp_ptr  = jcm.actuatorPtr.command_position
+local cp_cmd  = lD.set_nx_command_position
+local p_ptr   = jcm.sensorPtr.position
+local p_read  = lD.get_nx_position
 local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 -- Define reading
+local positions = vector.zeros(n_motors)
 local function do_read (is_strict)
 	local status = p_read(m_ids, bus)
 	if is_strict and #status~=n_motors then return end
@@ -73,9 +86,24 @@ local function do_read (is_strict)
 		local p = p_parse(unpack(s.parameter))
 		local j_id = m_to_j[s.id]
 		local r = step_to_radian(j_id, p)
+		-- Set in SHM
+		-- TODO: Worry about the cache charing among threads
 		p_ptr[j_id-1] = r
+		-- Keep a local copy
+		-- TODO: Send this copy back to the master thread?
+		positions[j_id] = r
 	end
 	return true
+end
+-- Define writing
+-- TODO: Add MX support
+local commands = vector.zeros(n_motors)
+local function do_write ()
+	for _,j_id in ipairs(j_ids) do
+		commands[i] = radian_to_step(cp_ptr[j_id-1])
+	end
+	-- Perform the sync write
+	cp_cmd(m_ids, commands, bus)
 end
 -- Define parent interaction. NOTE: Openly subscribing to ANYONE. fiddle even
 local function process_parent (msg)
@@ -92,7 +120,6 @@ for i=1,5 do
 	end
 end
 assert(did_read_all, 'Did not initialize the motors properly!')
-did_read_all = nil
 -- Collect garbage before starting
 collectgarbage()
 -- Begin infinite loop
@@ -102,13 +129,12 @@ while true do
 	local t = get_time()
 	local t_diff = t-t0
 	t0 = t
+	--------------------
+	-- Periodic Debug --
+	--------------------
   if t - t_debug>1 then
 	  print('\nt_diff', t_diff, 1 / t_diff)
-    local pos = {}
-    for _,j_id in ipairs(j_ids) do
-      table.insert(pos,p_ptr[j_id-1])
-    end
-    print(table.concat(pos,'\n'))
+    ptable(positions)
     t_debug = t
   end
 	--------------------
@@ -118,14 +144,7 @@ while true do
 	---------------------
 	-- Write Positions --
 	---------------------
-	--[[
-	for i,j_id in ipairs(j_ids) do
-		local v
-		if ffi then v=cp_ptr[j_id-1] else v=cp_ptr[j_id] end
-		cp_vals[i] = joint_to_step(j_id,v)
-	end
-	local ret = cp_cmd(m_ids,cp_vals,bus)
-	--]]
+	do_write()
 	---------------------
 	-- Parent Commands --
 	---------------------
@@ -133,7 +152,7 @@ while true do
 	if parent_msg then
 		if parent_msg=='exit' then
 			bus:close()
-			if IS_THREAD then parent_msg:send'exit' end
+			if IS_THREAD then parent_msg:send'done' end
 			return
 		else
 			process_parent(parent_msg)

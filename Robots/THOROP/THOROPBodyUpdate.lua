@@ -3,8 +3,6 @@
 -- (c) 2013,2014 Stephen McGill, Seung-Joon Yi
 --------------------------------
 
--- if using one USB2Dynamixel
-local ONE_CHAIN = false
 -- if using the microstrain IMU
 local DISABLE_MICROSTRAIN = true
 -- if reading the grippers
@@ -15,13 +13,10 @@ require'jcm'
 require'wcm'
 
 -- Utilities
-local unix         = require'unix'
-local vector       = require'vector'
-local util         = require'util'
-local si = require'simple_ipc'
--- For the real body
-local libDynamixel = require'libDynamixel'
-local DP2 = libDynamixel.DP2
+local unix   = require'unix'
+local vector = require'vector'
+local util   = require'util'
+local si     = require'simple_ipc'
 local libMicrostrain = require'libMicrostrain'
 
 local Body = {}
@@ -70,165 +65,6 @@ local parts = {
 local inv_parts = {}
 for name,list in pairs(parts) do
 	for _,idx in ipairs(list) do inv_parts[idx]=name end
-end
-
---------------------------------
--- Servo parameters
-local servo = {}
-servo.joint_to_motor={
-  29,30,  --Head yaw/pitch
-  2,4,6,8,10,12,14, --LArm
-  16,18,20,22,24,26, -- left leg
-  15,17,19,21,23,25, -- right leg
-  1,3,5,7,9,11,13,  --RArm
-  27,28, --Waist yaw/pitch
-  66,67, -- left gripper/trigger
-  70,65, -- right gripper/trigger
-  37, -- Lidar pan
-}
-assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
-
--- Make the reverse map
-local motor_to_joint = {}
-for j,m in ipairs(servo.joint_to_motor) do
-	motor_to_joint[m] = j
-end
-servo.motor_to_joint = motor_to_joint
-
-local motor_parts = {}
-for name,list in pairs(parts) do
-	motor_parts[name] = vector.zeros(#list)
-	for i,idx in ipairs(list) do
-		motor_parts[name][i] = servo.joint_to_motor[idx]
-	end
-end
-
---http://support.robotis.com/en/product/dynamixel_pro/control_table.htm#Actuator_Address_611
--- TODO: Use some loop based upon MX/NX
--- TODO: some pros are different
-servo.steps = 2 * vector.new({
-  151875,151875, -- Head
-  251000,251000,251000,251000,151875,151875,151875, --LArm
-  251000,251000,251000,251000,251000,251000, --LLeg
-  251000,251000,251000,251000,251000,251000, --RLeg
-  251000,251000,251000,251000,151875,151875,151875, --RArm
-  251000,251000, -- Waist
-  2048,2048, -- Left gripper
-  2048,2048, -- Right gripper
-  2048, -- Lidar pan
-})
-assert(#servo.steps==nJoint,'Bad servo steps!')
-
--- NOTE: Servo direction is webots/real robot specific
-servo.direction = vector.new({
-  1,1, -- Head
-  1,-1,1,1,1,1,1, --LArm
-  ------
-  -1, -1,1,   1,  -1,1, --LLeg
-  -1, -1,-1, -1,  1,1, --RLeg
-  ------
-  -1,-1,1,-1, 1,1,1, --RArm
-  1,1, -- Waist
-  1,1, -- left gripper TODO
-  1,1, -- right gripper TODO
-  -1, -- Lidar pan
-})
-assert(#servo.direction==nJoint,'Bad servo direction!')
-
--- TODO: Offset in addition to bias?
-servo.rad_offset = vector.new({
-  0,0, -- Head
-  -90,90,-90,45,90,0,0, --LArm
-  0,0,0,-45,0,0, --LLeg
-  0,0,0,45,0,0, --RLeg
-  90,-90,90,-45,-90,0,0, --RArm
-  0,0, -- Waist
-  0,0, -- left gripper
-  0,0, -- right gripper
-  0, -- Lidar pan
-})*DEG_TO_RAD
-assert(#servo.rad_offset==nJoint,'Bad servo rad_offset!')
-
---SJ: Arm servos should at least move up to 90 deg
-servo.min_rad = vector.new({
-  -90,-80, -- Head
-  -90, 0, -90,    -160,   -180,-87,-180, --LArm
-  -175,-175,-175,-175,-175,-175, --LLeg
-  -175,-175,-175,-175,-175,-175, --RLeg
-  -90,-87,-90,    -160,   -180,-87,-180, --RArm
-  -90,-45, -- Waist
-  0, -90,
-  0, -90,
-  -60, -- Lidar pan
-})*DEG_TO_RAD
-assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
-
-servo.max_rad = vector.new({
-  90,80, -- Head
-  160,87,90,   0,     180,87,180, --LArm
-  175,175,175,175,175,175, --LLeg
-  175,175,175,175,175,175, --RLeg
-  160,-0,90,   0,     180,87,180, --RArm
-  90,45, -- Waist
-  90,20,
-  90,20,
-  60, -- Lidar pan
-})*DEG_TO_RAD
-assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
-
--- Convienence tables to go between steps and radians
-servo.moveRange = 360 * DEG_TO_RAD * vector.ones(nJoint)
--- EX106 is different
---servo.moveRange[indexLGrip] = 250.92 * DEG_TO_RAD
---servo.moveRange[indexRGrip] = 250.92 * DEG_TO_RAD
--- Step<-->Radian ratios
-servo.to_radians = vector.zeros(nJoint)
-servo.to_steps = vector.zeros(nJoint)
-for i,nsteps in ipairs(servo.steps) do
-  servo.to_steps[i] = nsteps / servo.moveRange[i]
-  servo.to_radians[i] = servo.moveRange[i] / nsteps
-end
--- Set the step zero
--- NOTE: rad zero is always zero
-servo.step_zero = vector.new(servo.steps) / 2
-for i,nsteps in ipairs(servo.steps) do
-  -- MX is halfway, while NX is 0 and goes positive/negative
-  if nsteps~=4096 then servo.step_zero[i] = 0 end
-end
-
--- TODO: How is direction used?
--- Add the bias in to the min/max helper tables
-servo.step_offset = vector.zeros(nJoint)
-servo.min_step  = vector.zeros(nJoint)
-servo.max_step  = vector.zeros(nJoint)
-for i, offset in ipairs(servo.rad_offset) do
-  servo.step_offset[i] = offset * servo.to_steps[i]
-end
-
--- Clamp the radian within the min and max
--- Used when sending packets and working with actuator commands
-local radian_clamp = function( idx, radian )
-  --print('clamp...',idx,radian,servo.min_rad[idx],servo.max_rad[idx])
-  if servo.max_rad[idx] == 180*DEG_TO_RAD and servo.min_rad[idx]==-180*DEG_TO_RAD then
-    return radian
-  else
-    return math.min(math.max(radian, servo.min_rad[idx]), servo.max_rad[idx])
-  end
-end
-
--- Radian to step, using offsets and biases
-local make_joint_step = function( idx, radian )
-  radian = radian_clamp( idx, radian )
-	local step = math.floor(servo.direction[idx] * radian * servo.to_steps[idx]
-	+ servo.step_zero[idx] + servo.step_offset[idx])
-	return step
-end
-
--- Step to radian
-local make_joint_radian = function( idx, step )
-	local radian = servo.direction[idx] * servo.to_radians[idx] *
-	(step - servo.step_zero[idx] - servo.step_offset[idx])
-	return radian
 end
 
 --------------------------------
@@ -1346,10 +1182,6 @@ Body.nJoint = nJoint
 Body.jointNames = jointNames
 Body.parts = parts
 Body.inv_parts = inv_parts
-Body.motor_parts = motor_parts
-Body.servo = servo
-Body.make_joint_step = make_joint_step
-Body.make_joint_radian = make_joint_radian
 
 Body.Kinematics = Kinematics
 

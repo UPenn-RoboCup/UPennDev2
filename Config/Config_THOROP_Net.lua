@@ -1,4 +1,5 @@
-local Config = {}
+assert(Config, 'Need a pre-existing Config table!')
+local vector = require'vector'
 
 ----------------------
 -- Network settings --

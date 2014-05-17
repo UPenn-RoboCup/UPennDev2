@@ -1,6 +1,8 @@
 assert(Config, 'Need a pre-existing Config table!')
 
 Config.fsm = {}
+-- Update rate in Hz
+Config.fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
 Config.fsm.enabled = {

@@ -5,6 +5,8 @@
 dofile'include.lua'
 require'gcm'
 local Body = require(Config.dev.body)
+-- Cache some functions
+local get_time, bupdate, usleep = Body.get_time, Body.update, unix.usleep
 
 -- Cleanly exit on Ctrl-C
 local running = true
@@ -24,9 +26,9 @@ for _,sm in ipairs(Config.fsm.enabled) do
   print('FSM | Loaded', sm)
 end
 
--- Start the state machines
-local t0 = Body.get_time()
-local t_debug = t0
+-- Timing
+local t_sleep = 1 / Config.fsm.update_cycle
+local t0, t = get_time()
 
 -- Entry
 Body.entry()
@@ -34,11 +36,15 @@ for _,my_fsm in pairs(state_machines) do my_fsm:entry() end
 
 -- Update loop
 while running do
-  local t = Body.get_time()
+  t = get_time()
   -- Update the body
-  Body.update()
+  bupdate()
   -- Update the state machines
   for _,my_fsm in pairs(state_machines) do my_fsm:update() end
+  -- If not webots, then wait the update cycle rate
+  if not IS_WEBOTS then usleep(1e6 * (t_sleep - (get_time() - t))) end
+  -- Run garbage collection each cycle so that we have consistent timing
+  collectgarbage()
 end
 
 -- Exit

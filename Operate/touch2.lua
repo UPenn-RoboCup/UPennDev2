@@ -12,6 +12,7 @@ local simple_ipc, poller = require'simple_ipc'
 local tou_ch = simple_ipc.new_subscriber'touch'
 -- Processed
 local tou_che = simple_ipc.new_publisher'touche'
+local tou_che = simple_ipc.new_publisher(Config.net.reliable_touch)
 local libTouch2 = require'libTouch2'
 -- Allow logging
 local DO_LOG, libLog, logger = false

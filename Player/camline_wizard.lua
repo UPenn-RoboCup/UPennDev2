@@ -7,6 +7,14 @@ dofile'../include.lua'
 
 -- Which camera
 local metadata = Config.camera[1]
+-- Extract metadata information
+local w = metadata.width
+local h = metadata.height
+local fps = metadata.fps
+local fmt = metadata.format
+local name = metadata.name
+local dev = metadata.dev
+local focal_length = metadata.focal_length
 -- Who to send to
 local operator = Config.net.operator.wired
 local udp_port = Config.net.camera[name]
@@ -27,32 +35,22 @@ local K = Body.Kinematics
 local edge_ch = si.new_publisher('edge')
 local camera_ch = si.new_publisher('camera0')
 local tou_che = si.new_subscriber('touche')
+local tou_che2 = si.new_subscriber(55588)
 local line_ch = si.new_publisher('line')
+local line_ch_remote = si.new_publisher(55589,'25.25.1.109')
 -- UDP Sending
 local udp_ch = udp.new_sender(operator, udp_port)
 
 -- LOGGING
 local ENABLE_LOG = false
-local libLog, logger, Body
+local libLog, logger
 if ENABLE_LOG then
 	libLog = require'libLog'
-	Body = require'Body'
 	-- Make the logger
 	logger = libLog.new('uvc',true)
 end
 
--- Extract metadata information
-local w = metadata.width
-local h = metadata.height
-local fps = metadata.fps
-local fmt = metadata.format
-local name = metadata.name
-local dev = metadata.dev
-local focal_length = metadata.focal_length
 
--- Garbage collection
-metadata = nil
-Config = nil
 
 -- Metadata for the operator
 local meta = {
@@ -67,6 +65,7 @@ local meta = {
 }
 -- JPEG Compressor
 local c_yuyv = jpeg.compressor('yuyv')
+local c_grey = jpeg.compressor('gray')
 
 -- Update the distance measurements!
 local T = require'libTransform'
@@ -150,14 +149,17 @@ local function update_dist (pline1, pline2, tr, t, line_radon)
 end
 
 -- Variables
-local kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel(), true, true
+local kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel('v'), false, true
+util.ptorch(kernel_t)
 -- Form the default bounding box (in scaled down space...)
 local bbox = {51, 101, 21, 111}
+--local bbox = {101, 201, 41, 221}
 ImageProc2.setup(w, h, 2, 2)
 
 -- Updating stuff
 local function update_bbox ()
-	local bbox_data = tou_che:receive(true)
+	--local bbox_data = tou_che:receive(true)
+	local bbox_data = tou_che2:receive(true)
 	if not bbox_data then return end
 	-- Just use the first one...
 	local bb = mp.unpack(bbox_data[1])
@@ -178,6 +180,18 @@ end
 
 -- Open the camera
 local camera = uvc.init(dev, w, h, fmt, 1, fps)
+-- Set the params
+for k, v in pairs(metadata.params) do
+print(k,v)
+camera:set_param(k,v)
+unix.usleep(1e4)
+print(camera:get_param(k))
+end
+
+-- Garbage collection
+metadata = nil
+Config = nil
+--garbagecollect()
 
 while true do
 	-- Grab and compress
@@ -188,10 +202,6 @@ while true do
 	meta.n = cnt
 	meta.sz = #c_img
 	--meta.arm = Body.get_command_position()
-	-- Send to the human user
-	local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
-	--print('udp img',img,sz,cnt,t,udp_ret)
-	if err then print(name,'udp error',err) end
 	if ENABLE_LOG then
 		meta.rsz = sz
 		logger:record(meta, img, sz)
@@ -200,7 +210,14 @@ while true do
 	t0 = unix.time()
 	-- Process line stuff
 	update_bbox()
-	local edge_t, grey_t = ImageProc2.yuyv_to_edge(img, bbox, false, kernel_t)
+	local edge_t, grey_t, grey_bt = ImageProc2.yuyv_to_edge(img, bbox, false, kernel_t)
+	-- Send to the human user
+  local c_img = c_grey:compress(grey_bt)
+	local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
+	--print('udp img',img,sz,cnt,t,udp_ret)
+	if err then print(name,'udp error',err) end
+
+
 	local RT = ImageProc2.radon_lines(edge_t, use_horiz, use_vert)
 	local pline1, pline2, line_radon = RT.get_parallel_lines()
 	t1 = unix.time()
@@ -220,7 +237,7 @@ while true do
 		pline2.jMean = 2 * (pline2.jMean + bbox[3])
 		pline2.jMax  = 2 * (pline2.jMax  + bbox[3])
 
-		line_ch:send(mp.pack({
+local mmm = mp.pack({
 			name = 'pline',
 			l1 = {
 				{x=pline1.iMin,  y=pline1.jMin},
@@ -234,13 +251,21 @@ while true do
 				},
 			-- Relative placement
 			bbox = bbox,
-			}))
+			})
+
+
+		line_ch:send(mmm)
+		line_ch_remote:send(mmm)
 
 		-- Tell the arm where to go
+		local q = Body.get_command_position()
 		-- WristYaw is the camera roll...
-		local camera_roll = line_radon.ith * line_radon.NTH
+    local camera_roll = line_radon.ith / line_radon.NTH * math.pi
+--util.ptable(line_radon)
+--print('line_radon.ith',line_radon.ith)
 		-- Shortest rotation to the point
 		camera_roll = camera_roll > (math.pi / 2) and (camera_roll - math.pi) or camera_roll
+
 		-- Place iMean in the center of the frame horizontally
 		-- Remember, we massaged plines to be in the original resolution
 		local i_px = (pline1.iMean + pline2.iMean) / 2 - (w / 2)
@@ -248,18 +273,21 @@ while true do
 		local j_px = (pline1.jMean + pline2.jMean) / 2 - (h / 2)
 		local camera_angle_j = math.atan(j_px / focal_length)
 		-- Now must set the pitch properly...
-		local q = Body.get_command_position()
 		local fk = K.forward_arm(q)
 		-- Rotate
 		local desired_tr = fk * T.rotY(camera_angle_j)
-		local iqArm = vector.new(K.inverse_arm(desired_tr, qArm, false))
+		local iqArm = vector.new(K.inverse_arm(desired_tr, q, false))
 		iqArm[1] = camera_angle_i
 		iqArm[5] = camera_roll
 		-- Send the commands
-		Body.set_command_position(iqArm)
+		--q[1] = camera_angle_i
+--		print('q5', q[5], camera_roll)
+		q[5] = q[5] + camera_roll/20
+
+--		Body.set_command_position(q)
 
 		-- Update the distance to the wire and the wire's radius
-		update_dist(pline1, pline2)
+		update_dist(pline1, pline2, fk, t, line_radon)
 	end
 
 	-- Collect garbage every cycle

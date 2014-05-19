@@ -27,6 +27,7 @@ local log2 = {[1] = 0, [2] = 1, [4] = 2, [8] = 3,}
 -- For the edge system
 local edge_t = torch.Tensor()
 local grey_t = torch.Tensor()
+local grey_bt = torch.ByteTensor()
 local yuv_samples_t = torch.DoubleTensor()
 
 -- Load LookUp Table for Color -> Label
@@ -332,6 +333,7 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, bbox, use_pca, kernel_t)
     us = u_plane
     vs = v_plane
   end
+
 	-- This is the structure on which to perform convolution
 	if use_pca then
 	  -- Copy into our samples, with a precision change, too
@@ -350,12 +352,16 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, bbox, use_pca, kernel_t)
 		grey_t:resize(ys:size())
 	else
 		-- Just use a single plane
-		grey_t:resize(ys:size())
-		grey_t:copy(ys)
+		grey_t:resize(ys:size()):copy(vs)
+    local min, max = torch.max(grey_t), torch.min(grey_t)
+    grey_t:add(-min):mul(255/max)
 	end
   -- Perform the convolution in integer space
 	edge_t:conv2(grey_t, kernel_t, 'V')
-  return edge_t, grey_t
+-- debug
+	grey_bt:resize(y_plane:size()):copy(v_plane)
+
+  return edge_t, grey_t, grey_bt
 end
 
 -- Setup should be able to quickly switch between cameras

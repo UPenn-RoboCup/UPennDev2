@@ -18,11 +18,9 @@ Config.dev.body = Config.PLATFORM_NAME..'Body'
 ---------------------------
 -- Complementary Configs --
 ---------------------------
-local exo = {}
-exo.Net = 'Net'
-exo.FSM = 'FSM'
+local exo = {'Net', 'FSM'}
 -- Perform the load
-for k, v in pairs(exo) do
+for i, v in ipairs(exo) do
 	local fname = {HOME, '/Config/Config_', Config.PLATFORM_NAME, '_', v, '.lua'}
 	dofile(table.concat(fname))
 end

@@ -14,7 +14,6 @@ local util = require'util'
 local states, sm = {}
 for _, v in ipairs(transitions) do
   local state0 = states[v[1]]
-  local state1 = states[v[3]]
   if not state0 then
     -- Require if needed
     state0 = require(v[1])
@@ -22,6 +21,7 @@ for _, v in ipairs(transitions) do
     if not sm then sm = fsm.new(state0) else sm:add_state(state0) end
     print(util.color('Loaded '..v[1], 'yellow'))
   end
+  local state1 = states[v[3]]
   if not state1 then
     -- Require if needed
     state1 = require(v[3])

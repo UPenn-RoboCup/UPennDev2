@@ -1039,10 +1039,7 @@ armfsm.doorpass.rarminit={
 
 ------------------------------------
 -- Associate with the table
-Config.walk    = walk
 Config.arm     = arm
 Config.armfsm  = armfsm
-Config.stance  = stance
-Config.zmpstep = zmpstep
 
 return Config

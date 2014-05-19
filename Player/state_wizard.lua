@@ -30,7 +30,7 @@ for _,sm in ipairs(Config.fsm.enabled) do
 end
 
 -- Timing
-local t_sleep = 1 / Config.fsm.update_cycle
+local t_sleep = 1 / Config.fsm.update_rate
 local t0, t = get_time()
 
 -- Entry

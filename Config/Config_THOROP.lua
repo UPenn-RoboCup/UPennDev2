@@ -26,38 +26,13 @@ Config.dev.crawl        = 'ScrambleCrawl'
 Config.dev.largestep    = 'ZMPStepStair'
 Config.dev.gender       = 'boy'
 
---------------------
--- State Machines --
---------------------
-Config.fsm = {}
--- Update rate in Hz
-Config.fsm.update_rate = 100
--- Which FSMs should be enabled?
-Config.fsm.enabled = {}
-if HOME then
-  -- Check if include has set some variables
-  local unix = require'unix'
-  local listing = unix.readdir(HOME..'/Player')
-  -- Add all FSM directories that are in Player
-  for _,sm in ipairs(listing) do
-    if sm:find'FSM' then
-      package.path = CWD..'/'..sm..'/?.lua;'..package.path
-      table.insert(Config.fsm.enabled, sm)
-    end
-  end
-end
-
 ---------------------------
 -- Complementary Configs --
 ---------------------------
-local exo = {}
-exo.Robot = 'Robot'
-exo.Walk  = 'Walk'
-exo.Net   = 'Net'
-exo.FSM   = 'Manipulation' --added
+local exo = {'Robot', 'Walk', 'Net', 'Manipulation', 'FSM'}
 
 -- Load each exogenous Config file
-for k,v in pairs(exo) do
+for _,v in ipairs(exo) do
   local fname = {HOME, '/Config/Config_', Config.PLATFORM_NAME, '_', v, '.lua'}
   dofile(table.concat(fname))
 end

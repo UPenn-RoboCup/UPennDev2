@@ -6,7 +6,7 @@ assert(ffi, 'DCM | Please use LuaJIT :). Lua support in the near future')
 -- Going to be threading this
 local si = require'simple_ipc'
 -- Import the context
-print('CTX',CTX,type(CTX))
+--print('CTX',CTX,type(CTX))
 local parent_ch, IS_THREAD
 if CTX and not arg then
 	IS_THREAD = true

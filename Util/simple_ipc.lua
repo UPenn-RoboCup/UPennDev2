@@ -250,7 +250,7 @@ function simple_ipc.new_thread (scriptname, channel, metadata)
 	-- pass in the ctx, since it is thread safe
 	metadata = metadata or {}
 	metadata.ch_name = '#'..channel
-print('CTX:lightuserdata()',type(CTX:lightuserdata()))
+	--print('CTX:lightuserdata()',type(CTX:lightuserdata()))
 	local thread = llthreads.new(script_str, CTX:lightuserdata(), metadata)
 
 	-- Must add the communication...

@@ -1,141 +1,56 @@
----------------------------------
--- State Machine Manager for Team THOR
--- (c) Stephen McGill
----------------------------------
+---------------------------
+-- State Machine Manager --
+-- (c) Stephen McGill    --
+---------------------------
 dofile'include.lua'
-local Body = require'Body'
-local signal = require'signal'
 require'gcm'
+local Body = require(Config.dev.body)
+-- Cache some functions
+local get_time, bupdate, usleep = Body.get_time, Body.update, unix.usleep
 
-local state_machines = {}
-local status = {}
-
--- Not using this right now...
---[[
-local simple_ipc = require'simple_ipc'
-local mp = require'msgpack.MessagePack'
-local channel_poll
-local broadcast_en = false
-local needs_broadcast = true
-local state_pub_ch
-if broadcast_en then
-  state_pub_ch = simple_ipc.new_publisher(Config.net.state)
+-- Cleanly exit on Ctrl-C
+local running, signal = true, nil
+if not IS_WEBOTS then
+  signal = require'signal'
+  function shutdown () running = false end
+  signal.signal("SIGINT", shutdown)
+  signal.signal("SIGTERM", shutdown)
 end
---]]
 
--- TODO: Make coroutines for each FSM
--- TODO: Or other way of handling state machine failure
--- Maybe a reset() function in each fsm?
+-- Load the FSMs and attach event handler
+local state_machines = {}
 for _,sm in ipairs(Config.fsm.enabled) do
-  local my_fsm = require(sm)
-  my_fsm.sm:set_state_debug_handle(function(cur_state_name,event)
-    -- For other processes
+  local my_fsm = require(sm..'FSM')
+  -- TODO: Check that this SHM segment exists...
+  my_fsm.sm:set_state_debug_handle( function(cur_state_name, event)
     gcm['set_fsm_'..sm](cur_state_name)
-    -- Local copy
-    local s = {cur_state_name,event}
-    status[my_fsm._NAME] = s
-    -- Broadcast requirement
-    --needs_broadcast = true
-    -- Debugging printing
-    --print(table.concat(s,' from '))
   end)
   state_machines[sm] = my_fsm
-  print( 'FSM | Loaded',sm)
+  print('FSM | Loaded', sm)
 end
 
--- Start the state machines
-local t0 = Body.get_time()
-local t_debug = t0
+-- Timing
+local t_sleep = 1 / Config.fsm.update_rate
+local t0, t = get_time()
 
---------------------
--- Clean Shutdown function
-function shutdown()
-  print'Shutting down the state machines...'
-  for _,my_fsm in pairs(state_machines) do
-    my_fsm.exit()
-    -- Print helpful message
-    print('Exit',my_fsm._NAME)
-  end
-	if IS_WEBOTS then Body.exit() end
-  os.exit()
-end
-signal.signal("SIGINT", shutdown)
-signal.signal("SIGTERM", shutdown)
+-- Entry
+Body.entry()
+for _,my_fsm in pairs(state_machines) do my_fsm:entry() end
 
--- Perform inialization
-local entry = function()
-	for _,my_fsm in pairs(state_machines) do
-		my_fsm.entry()
-		local cur_state = my_fsm.sm:get_current_state()
-		local cur_state_name = cur_state._NAME
-		local s = {cur_state_name,nil}
-		status[my_fsm._NAME] = s
-		--if broadcast_en then state_pub_ch:send( mp.pack(status) ) end
-	end
-end
-
-local exit = function()
-	for _,my_fsm in pairs(state_machines) do
-		my_fsm.exit()
-		local cur_state = my_fsm.sm:get_current_state()
-		local cur_state_name = cur_state._NAME
-		local s = {cur_state_name,nil}
-		status[my_fsm._NAME] = s
-		--local ret = state_pub_ch:send( mp.pack(status) )
-	end
-end
-
-local update = function(pulse)
-	local t = Body.get_time()
-	--print('State Update from Body pulse',pulse.t,t)
-	-- Update each state machine
-  for _,my_fsm in pairs(state_machines) do local event = my_fsm.update() end
-
-  -- Broadcast state changes... why...? Need the stage as well?
-  if broadcast_en and needs_broadcast then
-    needs_broadcast = false
-    -- Broadcast over UDP/TCP/IPC
-    local ret = state_pub_ch:send( mp.pack(status) )
-  end
-end
-
--- Listen for pulses
---[[
-local wait_channels = {}
-local pulse_ch = simple_ipc.new_subscriber'pulse'
-print'Receiving Body pulse'
-pulse_ch.callback = function(sh)
-	local ch, n = channel_poll.lut[sh], 0
-	local ekg, has_more
-	repeat
-		-- Do not block
-    data, has_more = ch:receive(true)
-		--print('Pulse Data',type(data))
-		if data then
-			if n>1 then print('MISSED CYCLE OVERFLOW') end
-			ekg = mp.unpack(data)
-			n = n + 1
-		end
-	until not data
-	-- Call the update
-	update(ekg)
-end
--- Make the poller
-table.insert(wait_channels, pulse_ch)
-local channel_timeout = 2 * Body.update_cycle * 1e3
-channel_poll = simple_ipc.wait_on_channels( wait_channels );
---]]
-
--- The simple state wizard approach
-if IS_WEBOTS then Body.entry() end
-entry()
-while true do
+-- Update loop
+while running do
+  t = get_time()
   -- Update the body
-  Body.update()
+  bupdate()
   -- Update the state machines
-	update()
-  -- Run at ~100Hz
-	if not IS_WEBOTS then unix.usleep(1e4) end
+  for _,my_fsm in pairs(state_machines) do my_fsm:update() end
+  -- If not webots, then wait the update cycle rate
+  if not IS_WEBOTS then usleep(1e6 * (t_sleep - (get_time() - t))) end
+  -- Run garbage collection each cycle so that we have consistent timing
+  collectgarbage()
 end
-exit()
-if IS_WEBOTS then Body.exit() end
+
+-- Exit
+print'Exiting state wizard...'
+for _,my_fsm in pairs(state_machines) do my_fsm:exit() end
+Body.exit()

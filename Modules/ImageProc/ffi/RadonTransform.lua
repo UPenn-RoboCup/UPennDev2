@@ -2,7 +2,6 @@ local RadonTransform = {}
 
 local ok, ffi = pcall(require,'ffi')
 assert(ok, 'No ffi!')
-ok = nil
 local torch = require'torch'
 
 -- These are the integer constants for avoiding floating point precision
@@ -18,24 +17,14 @@ local NTH = 45 -- Number of angles (4 degree res)
 --local NTH = 180 -- (1 degree res)
 
 local count_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
-
-local count_is = torch.IntStorage(
-NTH * MAXR,
-tonumber(ffi.cast("intptr_t",count_d))
-)
-local count_it = torch.IntTensor(count_is,1,torch.LongStorage{NTH,MAXR})
-
 local line_sum_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local line_min_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local line_max_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
-local b_size32 = NTH*MAXR*ffi.sizeof('int32_t')
-local b_size64 = NTH*MAXR*ffi.sizeof('int32_t')
 
 -- Export a bit
 RadonTransform.count_d = count_d
-RadonTransform.line_sum_d = line_sum_d
 RadonTransform.NTH = NTH
-RadonTransform.MAXR = MAXR
+RadonTransform.NR = NR
 
 -- Save our lookup table discretization
 local th = ffi.new('double[?]',NTH)
@@ -65,15 +54,17 @@ end
 function RadonTransform.init (w, h)
   -- Resize for the image
   NR = math.ceil(math.sqrt(w*w+h*h))
+  MAXR = NR
+  -- Update the export
+  RadonTransform.NR = NR
+  -- Size of the zeroing
+  local b_size32 = NTH * MAXR * ffi.sizeof'int32_t'
   -- Zero the counts
   ffi.fill(count_d, b_size32)
-  count_it:zero()
   ffi.fill(line_sum_d, b_size32)
   -- Fill up the min/max lines
   ffi.fill(line_min_d, b_size32, 0x7F)
   ffi.fill(line_max_d, b_size32, 0xFF)
-  --
-  countMax = 0
 end
 
 -- TODO: Respect the integer method, since since lua converts back to double

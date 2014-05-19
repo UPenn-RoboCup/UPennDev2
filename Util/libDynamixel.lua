@@ -621,7 +621,8 @@ local function ping_probe(self, protocol, twait)
   twait = twait or READ_TIMEOUT
   for id=0,253 do
     local status = send_ping( self, id, protocol, twait )
-    print(id, 'STATUS', status, #status)
+-- TODO: PING PRINT
+--    print(id, 'STATUS', status, #status)
     if status and #status>0 then
 			status = status[1]
       print( string.format('Found %d.0 Motor: %d\n',protocol,status.id) )

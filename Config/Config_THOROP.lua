@@ -1,4 +1,4 @@
-local Config = {}
+Config = {}
 
 ------------------------
 -- General parameters --
@@ -26,42 +26,15 @@ Config.dev.crawl        = 'ScrambleCrawl'
 Config.dev.largestep    = 'ZMPStepStair'
 Config.dev.gender       = 'boy'
 
---------------------
--- State Machines --
---------------------
-Config.fsm = {}
--- Which FSMs should be enabled?
-Config.fsm.enabled = {}
-if HOME then
-  -- Check if include has set some variables
-  local unix = require'unix'
-  local listing = unix.readdir(HOME..'/Player')
-  -- Add all FSM directories that are in Player
-  for _,sm in ipairs(listing) do
-    if sm:find'FSM' then
-      package.path = CWD..'/'..sm..'/?.lua;'..package.path
-      table.insert(Config.fsm.enabled,sm)
-    end
-  end
-end
-
 ---------------------------
 -- Complementary Configs --
 ---------------------------
-local exo = {}
-exo.Walk = 'Walk'
-exo.Net  = 'Net'
-exo.FSM  = 'Manipulation' --added
+local exo = {'Robot', 'Walk', 'Net', 'Manipulation', 'FSM'}
 
 -- Load each exogenous Config file
-
-
-for k,v in pairs(exo) do
-  -- TODO SJ: Now we just put all config files in /Config folder
-  --local exo_name = k..'/Config_'..Config.PLATFORM_NAME..'_'..v
-  local exo_name = '/Config_'..Config.PLATFORM_NAME..'_'..v
-  local exo_config = require(exo_name)
-  for kk,vv in pairs(exo_config) do Config[kk] = vv end
+for _,v in ipairs(exo) do
+  local fname = {HOME, '/Config/Config_', Config.PLATFORM_NAME, '_', v, '.lua'}
+  dofile(table.concat(fname))
 end
 
 ---------------
@@ -105,7 +78,7 @@ table.insert(Config.camera,
       {'Backlight Compensation', 1},
     },
 	})
-  
+
 table.insert(Config.camera,
 	{
 		name = 'hand',

@@ -4,7 +4,7 @@ WorldInfo {
     "Default world for the YouBot"
   ]
   title "YouBot in the sim"
-  physics "fast_wheels"
+  physics "youbot_swedish_wheels"
   basicTimeStep 16
   FPS 15
 }
@@ -47,11 +47,12 @@ DEF GROUND Solid {
   ]
   boundingObject USE GROUND_SHAPE
 }
-YouBot {
+YouBot_sensors {
   translation -0.222768 0.102838 -1.29028
   rotation -0.566469 -0.582716 -0.582714 2.1108
   controller "youbot"
   controllerArgs "0 1"
+	fastWheels TRUE
 }
 simple_wall {
   size 0.05 0.2 1

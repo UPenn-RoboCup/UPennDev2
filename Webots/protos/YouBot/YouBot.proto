@@ -1,27 +1,35 @@
-#VRML_SIM V7.3.0 utf8
-#############################################
-# THOR-OP webots prototype file
-# Based on Robotis wbt
-# Converted and augmented by SJ
-# 2013/7
-#############################################
+#VRML_SIM V7.4.3 utf8
+# The KUKA youBot is a powerful, educational robot that has been especially designed for research and education in mobile manipulation, which counts as a key technology for professional service robotics. It consists of an omnidirectional platform, a five degree-of-freedom robot arm and a two-finger gripper.
+# Model author: fabien.rohrer@cyberbotics.com
 
 PROTO YouBot [
-  field SFVec3f    translation 0 0.102838 0
-  field SFRotation rotation 1 0 0 -1.5708
-  field SFString   controller "void"
+  field SFVec3f    translation    0 0.12 0
+  field SFRotation rotation       1 0 0 -1.5708
+  field SFString   controller     "default"
   field SFString   controllerArgs ""
-  field SFFloat    cameraPixelSize 1.0
-  field SFInt32    cameraWidth 320
-  field SFInt32    cameraHeight 240
-  field SFFloat    cameraFov 1.0472
+  field MFNode     bodySlot       []
+  field SFBool     fastWheels     FALSE
 ]
 {
+%{
+  if fields.fastWheels then
+    print [[
+      'fastWheels' is on.
+      Please check that the WorldInfo::physics field is set to 'youbot_swedish_wheels'.]]
+  else
+    print [[
+      'fastWheels' is off.
+      Enabling it is recommended to improve the simulation performences.]]
+  end
+}%
 Robot {
   translation IS translation
   rotation IS rotation
   children [
     BodyMesh {
+    }
+    Group {
+      children IS bodySlot
     }
     DEF ARM Solid {
       translation 0.156 0 0
@@ -29,16 +37,16 @@ Robot {
         Arm0Mesh {
         }
         HingeJoint {
+          jointParameters HingeJointParameters {
+            axis 0 0 1
+            anchor 0 0 0.077
+          }
           device RotationalMotor {
             name "arm1"
             maxVelocity 1.5708
             minPosition -2.9496
             maxPosition 2.9496
             maxTorque 9.5
-          }
-          jointParameters HingeJointParameters {
-            axis 0 0 1
-            anchor 0 0 0.077
           }
           endPoint Solid {
             translation 0 0 0.077
@@ -47,16 +55,16 @@ Robot {
               Arm1Mesh {
               }
               HingeJoint {
+                jointParameters HingeJointParameters {
+                  axis 0 -1 0
+                  anchor 0.033 0 0.07
+                }
                 device RotationalMotor {
                   name "arm2"
                   maxVelocity 1.5708
                   minPosition -1.13446
                   maxPosition 1.5708
                   maxTorque 9.5
-                }
-                jointParameters HingeJointParameters {
-                  axis 0 -1 0
-                  anchor 0.033 0 0.07
                 }
                 endPoint Solid {
                   translation 0.033 0 0.07
@@ -65,16 +73,16 @@ Robot {
                     Arm2Mesh {
                     }
                     HingeJoint {
+                      jointParameters HingeJointParameters {
+                        axis 0 -1 0
+                        anchor 0 0 0.155
+                      }
                       device RotationalMotor {
                         name "arm3"
                         maxVelocity 1.5708
                         minPosition -2.63545
                         maxPosition 2.54818
                         maxTorque 6
-                      }
-                      jointParameters HingeJointParameters {
-                        axis 0 -1 0
-                        anchor 0 0 0.155
                       }
                       endPoint Solid {
                         translation 0 0 0.155
@@ -83,16 +91,16 @@ Robot {
                           Arm3Mesh {
                           }
                           HingeJoint {
+                            jointParameters HingeJointParameters {
+                              axis 0 -1 0
+                              anchor 0 0 0.135
+                            }
                             device RotationalMotor {
                               name "arm4"
                               maxVelocity 1.5708
                               minPosition -1.78024
                               maxPosition 1.78024
                               maxTorque 2
-                            }
-                            jointParameters HingeJointParameters {
-                              axis 0 -1 0
-                              anchor 0 0 0.135
                             }
                             endPoint Solid {
                               translation 0 0 0.135
@@ -101,16 +109,16 @@ Robot {
                                 Arm4Mesh {
                                 }
                                 HingeJoint {
+                                  jointParameters HingeJointParameters {
+                                    axis 0 0 1
+                                    anchor 0 0 0.081
+                                  }
                                   device RotationalMotor {
                                     name "arm5"
                                     maxVelocity 1.5708
                                     minPosition -2.92343
                                     maxPosition 2.92343
                                     maxTorque 1
-                                  }
-                                  jointParameters HingeJointParameters {
-                                    axis 0 0 1
-                                    anchor 0 0 0.081
                                   }
                                   endPoint Solid {
                                     translation 0 0 0.081
@@ -120,7 +128,7 @@ Robot {
                                       }
                                       SliderJoint {
                                         jointParameters JointParameters {
-                                          axis 0 -1 0
+                                          axis 0 1 0
                                         }
                                         device LinearMotor {
                                           name "finger1"
@@ -133,22 +141,6 @@ Robot {
                                           children [
                                             FingerMesh {
                                             }
-																						Transform {
-																							rotation -1 0 0 1.57079
-																							children [
-																								Camera {
-																									rotation 0 0 1 1.57
-																									translation -0.05 0 0
-																									name "HandCamera"
-																									windowPosition 1 1
-																									fieldOfView IS cameraFov
-																									width IS cameraWidth
-																									height IS cameraHeight
-																									pixelSize IS cameraPixelSize
-																									near 0.02
-																								}
-																							]
-																						}
                                           ]
                                           boundingObject DEF FINGER_BO Group {
                                             children [
@@ -177,14 +169,15 @@ Robot {
                                               0 -0.02 0.01
                                             ]
                                             inertiaMatrix [
-                                              6.84034e-06 1.41763e-06 6.40271e-06, 0 0 8.29319e-07
+                                              6.84034e-06 1.41763e-06 6.40271e-06
+                                              0 0 8.29319e-07
                                             ]
                                           }
                                         }
                                       }
                                       SliderJoint {
                                         jointParameters JointParameters {
-                                          axis 0 1 0
+                                          axis 0 -1 0
                                         }
                                         device LinearMotor {
                                           name "finger2"
@@ -218,7 +211,8 @@ Robot {
                                         0 0 0.045
                                       ]
                                       inertiaMatrix [
-                                        0.000271917 0.000182498 0.000115565, 0 0 0
+                                        0.000271917 0.000182498 0.000115565
+                                        0 0 0
                                       ]
                                     }
                                   }
@@ -252,7 +246,8 @@ Robot {
                                   0 0 0.026
                                 ]
                                 inertiaMatrix [
-                                  0.00152517 0.00103897 0.000837339, 0 0 -0.00015098
+                                  0.00152517 0.00103897 0.000837339
+                                  0 0 -0.00015098
                                 ]
                               }
                             }
@@ -273,7 +268,8 @@ Robot {
                             0 0.0225 0.065
                           ]
                           inertiaMatrix [
-                            0.0029674 0.00308998 0.000437812, 0 0 -5.99276e-20
+                            0.0029674 0.00308998 0.000437812
+                            0 0 -5.99276e-20
                           ]
                         }
                       }
@@ -294,7 +290,8 @@ Robot {
                       0 -0.03 0.078
                     ]
                     inertiaMatrix [
-                      0.00459113 0.00471625 0.000818125, 0 0 1.56701e-20
+                      0.00459113 0.00471625 0.000818125
+                      0 0 1.56701e-20
                     ]
                   }
                 }
@@ -316,7 +313,8 @@ Robot {
                 0.015 0.01 0.05
               ]
               inertiaMatrix [
-                0.00257923 0.00322484 0.0023115, -0.000533052 -0.00082008 -0.00062712
+                0.00257923 0.00322484 0.0023115
+                -0.000533052 -0.00082008 -0.00062712
               ]
             }
           }
@@ -339,26 +337,47 @@ Robot {
           0 0 0.04
         ]
         inertiaMatrix [
-          0.00173591 0.00173591 0.00257049, 0 0 -3.06558e-09
+          0.00173591 0.00173591 0.00257049
+          0 0 -3.06558e-09
         ]
       }
     }
-    DEF WHEEL1 FastInteriorWheel {
+    %{ if fields.fastWheels then }%
+      DEF WHEEL1 FastInteriorWheel
+    %{ else }%
+      RealisticInteriorWheel
+    %{ end }%
+    {
       translation 0.228 -0.158 -0.055
       anchor 0.228 -0.158 -0.055
       name "wheel1"
     }
-    DEF WHEEL2 FastExteriorWheel {
+    %{ if fields.fastWheels then }%
+      DEF WHEEL2 FastExteriorWheel
+    %{ else }%
+      RealisticExteriorWheel
+    %{ end }%
+    {
       translation 0.228 0.158 -0.055
       anchor 0.228 0.158 -0.055
       name "wheel2"
     }
-    DEF WHEEL3 FastExteriorWheel {
+    %{ if fields.fastWheels then }%
+      DEF WHEEL3 FastExteriorWheel
+    %{ else }%
+      RealisticExteriorWheel
+    %{ end }%
+    {
       translation -0.228 -0.158 -0.055
       anchor -0.228 -0.158 -0.055
       name "wheel3"
     }
-    DEF WHEEL4 FastInteriorWheel {
+    %{ if fields.fastWheels then }%
+      DEF WHEEL4 FastInteriorWheel
+    %{ else }%
+      RealisticInteriorWheel
+    %{ end }%
+    {
       translation -0.228 0.158 -0.055
       anchor -0.228 0.158 -0.055
       name "wheel4"
@@ -422,47 +441,7 @@ Robot {
         mass 0.5
       }
     }
-    # Sensors within the body
-    Transform {
-      # Undo the robot rotation
-      rotation 1 0 0 1.57
-      children [
-        Compass {
-          name "compass"
-        }
-        GPS {
-          name "GPS"
-        }
-				Shape {geometry Box {size .05 .2 .05}}
-        Transform {
-          rotation 0 -1 0 1.57
-          children [
-            KinectWithoutFoot{
-							# 45 degree rotation
-              rotation -1 0 0 .7854
-              #translation 0 0 -.156
-							#translation 0 .077 -.156
-							#translation 0 .147 -.156
-							translation 0 .732 .259
-              windowPosition 0 1
-              cameraName "kinect"
-              width 320
-              height 240
-            }
-            hokuyo {
-              translation 0 -0.02 -0.3
-							fieldOfView 3.1415926536
-							width 721
-							#fieldOfView 1.5707963268
-							#width 361
-              name "lidar"
-            }
-          ]
-        }
-      ]
-    }
-  ] # End of the Robot
-  
+  ]
   description "KUKA youBot"
   boundingObject Group {
     children [
@@ -491,7 +470,8 @@ Robot {
       0 0 -0.045
     ]
     inertiaMatrix [
-      0.166204 0.418086 0.55459, 0 0 0
+      0.166204 0.418086 0.55459
+      0 0 0
     ]
   }
   controller IS controller

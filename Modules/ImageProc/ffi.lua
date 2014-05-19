@@ -32,16 +32,16 @@ local yuv_samples_t = torch.DoubleTensor()
 
 -- Load LookUp Table for Color -> Label
 function ImageProc.load_lut (filename)
-  local f_lut = torch.DiskFile( filename , 'r')
+  local f_lut = torch.DiskFile(filename, 'r')
   f_lut.binary(f_lut)
   -- We know the size of the LUT, so load the storage
   local lut_s = f_lut:readByte(262144)
   f_lut:close()
   -- Form a tensor for us
-  lut_t = torch.ByteTensor(lut_s)
-  table.insert(luts,lut_t)
-  -- Return the id of this LUT
-  return #luts
+  local lut_t = torch.ByteTensor(lut_s)
+  table.insert(luts, lut_t)
+  -- Return LUT and the id of this LUT
+  return lut_t, #luts
 end
 -- Return the pointer to the LUT
 function ImageProc.get_lut (lut_id) return luts[lut_id] end
@@ -237,8 +237,12 @@ end
 local function learn_greyspace (samples_t, output_t)
 	-- Scale the samples for importance
 	-- TODO: See what is actually a valid approach here!
-	samples_t:select(2,2):mul(3)
-	samples_t:select(2,3):mul(3)
+  local a = samples_t:select(2,1)
+	local b = samples_t:select(2,2)
+	local c = samples_t:select(2,3)
+  a:add(-torch.min(a)):mul(255/torch.max(a))
+  b:add(-torch.min(b)):mul(255/torch.max(b))
+  c:add(-torch.min(c)):mul(255/torch.max(c))
 	-- Run PCA
 	local eigenvalues, eigenvectors, mean, samples_0_mean = pca(samples_t)
 	-- Transform into the grey space
@@ -333,7 +337,6 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, bbox, use_pca, kernel_t)
     us = u_plane
     vs = v_plane
   end
-
 	-- This is the structure on which to perform convolution
 	if use_pca then
 	  -- Copy into our samples, with a precision change, too
@@ -352,15 +355,13 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, bbox, use_pca, kernel_t)
 		grey_t:resize(ys:size())
 	else
 		-- Just use a single plane
-		grey_t:resize(ys:size()):copy(vs)
-    local min, max = torch.max(grey_t), torch.min(grey_t)
+		grey_t:resize(ys:size()):copy(ys)
+    local min, max = torch.min(grey_t), torch.max(grey_t)
     grey_t:add(-min):mul(255/max)
+    grey_bt:resize(y_plane:size()):copy(y_plane)
 	end
   -- Perform the convolution in integer space
 	edge_t:conv2(grey_t, kernel_t, 'V')
--- debug
-	grey_bt:resize(y_plane:size()):copy(v_plane)
-
   return edge_t, grey_t, grey_bt
 end
 

@@ -1,4 +1,4 @@
-local Config = {}
+assert(Config, 'Need a pre-existing Config table!')
 
 ----------------------
 -- Network settings --
@@ -54,5 +54,3 @@ Config.net.omap           = 22222
 Config.net.hmap           = 22223
 
 Config.net.feedback       = 54329
-
-return Config

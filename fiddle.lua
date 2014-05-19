@@ -7,7 +7,6 @@ local libs = {
   'unix',
   'util',
   'vector',
-  'torch',
 	'fun'
 }
 

@@ -2,10 +2,16 @@
 -- (c) 2014 Stephen McGill
 -- General Detection methods
 local libVision = {}
+-- Know our joints
+require'jcm'
 -- Detection and HeadTransform information
 local ImageProc = require'ImageProc'
+local ImageProc2 = require'ImageProc.ffi'
 local T = require'libTransform'
 local vector = require'vector'
+-- Important local variables
+local w, h, wa, wb, ha, hab, scaleA, scaleB, lut_t
+-- Head transform
 local trHead, trNeck, trNeck0, dtrCamera
 -- Camera information
 local x0A, y0A, focalA, focal_length, focal_base
@@ -20,40 +26,11 @@ local color = {
   white = 16,
 }
 
--- FOR DEBUG
-local util = require'util'
-
--- TODO: Combine entry with load_robot. Take in the config,
--- The config should have the w, h, and scales, or just ma, na, mb, nb...
-function libVision.entry (c_vision)
-  -- Save the scale paramter
-  scaleA, scaleB = c_vision.scaleA, c_vision.scaleB
-  focal_length, focal_base = c_vision.focal_length, c_vision.focal_base
-  -- Recompute the width and height of the images
-  w, h = c_vision.w, c_vision.h
-  wa, ha = w / scaleA, h / scaleA
-  wb, hb = wa / scaleB, ha / scaleB
-  -- Information for the HeadTransform
-  x0A, y0A = 0.5 * (wa - 1), 0.5 * (ha - 1)
-  -- Delta transform from neck to camera
-  dtrCamera = T.trans(unpack(c_vision.pCamera))
-  * T.rotY(c_vision.pitchCamera)
-  focalA = focal_length / (focal_base / wa)
-  -- TODO: check tilt, height, etc. with walk config
-  trNeck0 = T.trans(-c_vision.footX, 0, c_vision.bodyHeight) 
-  * T.rotY(c_vision.bodyTilt)
-  * T.trans(c_vision.neckX, 0, c_vision.neckZ)
-  -- Load ball
-  if c_vision.ball then
-    b_diameter = c_vision.ball.diameter
-    b_dist = c_vision.ball.max_distance
-    b_height = c_vision.ball.max_height
-  end
-end
-
 -- Update the Head transform
 -- Input: Head angles
-function libVision.update (head)
+function libVision.update_head ()
+  -- TODO: get from jcm
+  local head = vector.zeros(2)
   -- TODO: Smarter memory allocation
   -- TODO: Add any bias for each robot
   trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
@@ -204,6 +181,77 @@ function libVision.goal (labelA_t, labelB_t, cc_t)
   else
     return table.concat(failures,'\n\n')
   end
+end
+
+-- Set the variables based on the config file
+function libVision.entry (cfg)
+  -- Save the scale paramter
+  scaleA, scaleB = cfg.scaleA, cfg.scaleB
+  focal_length, focal_base = cfg.focal_length, cfg.focal_base
+  -- Recompute the width and height of the images
+  w, h = cfg.w, cfg.h
+  -- Set up ImageProc
+  ImageProc2.setup(w, h)
+  wa, ha = w / scaleA, h / scaleA
+  wb, hb = wa / scaleB, ha / scaleB
+  -- Information for the HeadTransform
+  x0A, y0A = 0.5 * (wa - 1), 0.5 * (ha - 1)
+  -- Delta transform from neck to camera
+  dtrCamera = T.trans(unpack(cfg.pCamera))
+  * T.rotY(cfg.pitchCamera)
+  focalA = focal_length / (focal_base / wa)
+  -- TODO: check tilt, height, etc. with walk config
+  trNeck0 = T.trans(-cfg.footX, 0, cfg.bodyHeight)
+  * T.rotY(cfg.bodyTilt)
+  * T.trans(cfg.neckX, 0, cfg.neckZ)
+  -- Load ball
+  if cfg.ball then
+    b_diameter = cfg.ball.diameter
+    b_dist = cfg.ball.max_distance
+    b_height = cfg.ball.max_height
+  end
+  -- Load the lookup table
+  local lut_fname = {HOME, "/Data/", "lut_", cfg.lut, ".raw"}
+  lut_t = ImageProc2.load_lut (table.concat(lut_fname))
+end
+
+function libVision.update (img)
+
+  -- Update the motion elements
+  update_head()
+
+  -- Data to send on the channel
+  local debug_data = {}
+
+  -- Images to labels
+  local labelA = ImageProc2.yuyv_to_label(img, lut_t:data())
+  local labelB = ImageProc2.block_bitor(labelA)
+  -- Detection System
+  -- NOTE: Muse entry each time since on webots, we switch cameras
+  -- In camera wizard, we do not switch cameras, so call only once
+  local cc = ImageProc2.color_count(labelA)
+  local ball_fails, ball = lV.ball(labelA, labelB, cc)
+  local post_fails, posts = lV.goal(labelA, labelB, cc)
+  --if posts then print('\nCamera '..id..': '..#posts..' posts.') end
+  --print(post_fails)
+  if posts then util.ptable(posts[1]) end
+
+  -- Send the detection information
+  meta_detect.ball = ball
+  meta_detect.posts = posts and posts[1]
+  meta_detect.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
+  if meta_detect.posts then util.ptable(meta_detect.posts) end
+
+  -- LabelA
+  table.insert(debug_data, mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ))
+  -- LabelB
+  table.insert(debug_data, mp.pack(meta_b)..c_zlib( labelB:data(), nB, true ))
+  -- YUYV
+  table.insert(debug_data, mp.pack(meta_yuyv)..c_yuyv:compress(im,w,h))
+  -- Detection
+  table.insert(debug_data, mp.pack(meta_detect))
+
+  return debug_data, meta_detect
 end
 
 return libVision

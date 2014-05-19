@@ -1,7 +1,5 @@
+assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
-local DEG_TO_RAD = math.pi/180
-
-local Config = {}
 
 Config.IS_LONGARM =true
 --Config.IS_LONGARM =false
@@ -10,7 +8,7 @@ Config.IS_LONGARM =true
 -- For the arm FSM
 local arm = {}
 
-arm.default_hand_mass = 0.4 
+arm.default_hand_mass = 0.4
 
 
 
@@ -70,7 +68,7 @@ arm.vel_linear_limit = vector.new({0.02,0.02,0.02, 15*DEG_TO_RAD,15*DEG_TO_RAD,1
 -- Angular velocity limit at servo
 arm.vel_angular_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD
 
---testing for speeding up 
+--testing for speeding up
 arm.overspeed_factor = 3
 --arm.overspeed_factor = 1
 
@@ -149,14 +147,14 @@ armfsm.debrisgrip.default_model = {
   0.30,-0.40,-0.20,  0*DEG_TO_RAD}
 
 armfsm.debrisgrip.arminit={
----0.02 -0.30 -0.44 
+---0.02 -0.30 -0.44
   {0.15,-0.30,-0.40, unpack(armfsm.debrisgrip.rhand_rpy)},
 
 }
 
 armfsm.debrisgrip.armpull={
-  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},    
-  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
+  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.33,-0.10,-0.20, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
 
@@ -200,7 +198,7 @@ armfsm.debrisgrip.arminit={
 ---0.20 -0.30 -0.32  (0 30 0)
   {0.40,-0.40,-0.30, 0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD},
 --  {0.40,-0.40,-0.20, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},
-  {0.40,-0.40,-0.10, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},  
+  {0.40,-0.40,-0.10, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},
 
 --for returning
   {0.22, -0.40, -0.41, 0.0, 85*DEG_TO_RAD, 0}
@@ -211,7 +209,7 @@ armfsm.debrisgrip.larminit={
 ---0.20 -0.30 -0.32  (0 30 0)
   {0.40,0.40,-0.30, 0*DEG_TO_RAD,30*DEG_TO_RAD, 0*DEG_TO_RAD},
 --  {0.40,0.40,-0.20, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},
-  {0.40,0.40,-0.10, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},  
+  {0.40,0.40,-0.10, 0*DEG_TO_RAD,85*DEG_TO_RAD, 0*DEG_TO_RAD},
 
   --for returning
   {0.22, 0.40, -0.41, 0.0, 85*DEG_TO_RAD, 0}
@@ -228,15 +226,15 @@ armfsm.debrisgrip.larminit={
 armfsm.doorpushside = {}
 
 armfsm.doorpushside.larminit = {
-  {0.32,0.26,-0.05,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.32,0.26,-0.05,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},
   {0.22,0.26,-0.03,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},
-  {0.22,0.26,-0.03,  0,-15*DEG_TO_RAD, 90*DEG_TO_RAD},  
+  {0.22,0.26,-0.03,  0,-15*DEG_TO_RAD, 90*DEG_TO_RAD},
 --going back
   {0.0,0.64,-0.14,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD}, --last tr
 }
 
 armfsm.doorpushside.rarminit = {
-  {0.32,-0.30,-0.05,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.32,-0.30,-0.05,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},
   {0.47,-0.30,-0.03,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},
   {0.47,-0.30,-0.03,  0,-15*DEG_TO_RAD, 0*DEG_TO_RAD},
 --going back
@@ -246,10 +244,10 @@ armfsm.doorpushside.rarminit = {
 
 --new rarm pos
 
- 
+
 
 armfsm.doorpushside.rarminit = {
-  {0.32,-0.30,-0.05,  0,75*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.32,-0.30,-0.05,  0,75*DEG_TO_RAD, 0*DEG_TO_RAD},
   --0.15 -0.30 -0.51
   {0.20, -0.30, -0.51,  0,75*DEG_TO_RAD, 0*DEG_TO_RAD},
   {0.20, -0.30, -0.51,  0,75*DEG_TO_RAD, 0*DEG_TO_RAD},
@@ -260,7 +258,7 @@ armfsm.doorpushside.rarminit = {
 --FOR CAMERA
 
 armfsm.doorpushside.rarminit = {
-  {0.32,-0.30,-0.05,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},    
+  {0.32,-0.30,-0.05,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   --0.24 -0.06 -0.14
   {0.32, -0.15, -0.14,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.32, -0.15, -0.14,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
@@ -302,12 +300,12 @@ armfsm.doorpullside = {}
 
 armfsm.doorpullside.larminit = {
  --0.32 0.30 -0.32 (0 30 0)
-  {0.15,0.30,-0.32,  0,30*DEG_TO_RAD, 0*DEG_TO_RAD},     
+  {0.15,0.30,-0.32,  0,30*DEG_TO_RAD, 0*DEG_TO_RAD},
 }
 
 armfsm.doorpullside.rarminit = {
   --0.32 -0.30 -0.32 (0 30 0)
-  {0.42,-0.30,-0.32,  0,30*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.42,-0.30,-0.32,  0,30*DEG_TO_RAD, 0*DEG_TO_RAD},
   {0.38,-0.10,0.07,  0,0*DEG_TO_RAD, 90*DEG_TO_RAD},
 
 --going back
@@ -338,7 +336,7 @@ armfsm.doorpullside.unit_yaw = 2*DEG_TO_RAD
 
 
 ---------------------------------------------------------------
-------   Drill pickup 
+------   Drill pickup
 ---------------------------------------------------------------
 armfsm.toolgrip = {}
 --armfsm.toolgrip.lhand_rpy = {0,0*DEG_TO_RAD, -45*DEG_TO_RAD}
@@ -351,7 +349,7 @@ armfsm.toolgrip.default_model_target = {
 
 --Conservative initial model (away from target)
 armfsm.toolgrip.default_model = {
-  0.42,-0.06,0.20,  0*DEG_TO_RAD}    
+  0.42,-0.06,0.20,  0*DEG_TO_RAD}
 
 
 armfsm.toolgrip.tool_clearance={-0.05,0,0}
@@ -376,12 +374,12 @@ armfsm.toolgrip.armchecktrigger={
 armfsm.toolgrip.arminit={
   {0.33,-0.25,-0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.46,-0.35,0.07,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.46,-0.35, 0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
-  {0.46,-0.25, 0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},  
+  {0.46,-0.35, 0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.46,-0.25, 0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
 
 armfsm.toolgrip.armpull={
-  --0.55 -0.06 0.25 
+  --0.55 -0.06 0.25
   {0.46, -0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.46, -0.35, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.32, -0.35, -0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
@@ -412,12 +410,12 @@ armfsm.toolgrip.armhold={0.25,0.0,-0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
 --FOR 2nd CAMERA
 --Roll Pitch Yaw
 armfsm.toolgrip.larm={
-  {0.29,-0.40,-0.15,-45*DEG_TO_RAD,0*DEG_TO_RAD, -10*DEG_TO_RAD},  
+  {0.29,-0.40,-0.15,-45*DEG_TO_RAD,0*DEG_TO_RAD, -10*DEG_TO_RAD},
 }
 
 
-armfsm.toolgrip.default_model = 
---{0.42,-0.06,0.15,  0*DEG_TO_RAD}    
+armfsm.toolgrip.default_model =
+--{0.42,-0.06,0.15,  0*DEG_TO_RAD}
 {0.42,-0.3,0.15,  0*DEG_TO_RAD}    --shoulder position
 
 --[[
@@ -438,7 +436,7 @@ armfsm.toolgrip.armpull={
   {0.42,-0.40, 0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.50,-0.53, 0.17,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
   {0.45,-0.53,0.01,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
-  {0.31,-0.50,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},  
+  {0.31,-0.50,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
 }
 --]]
 
@@ -462,17 +460,17 @@ armfsm.toolleftgrip.default_model_target = {
 
 --Conservative initial model (away from target)
 armfsm.toolleftgrip.default_model = {
-  0.42,0.06,0.20,  0*DEG_TO_RAD}    
+  0.42,0.06,0.20,  0*DEG_TO_RAD}
 
 armfsm.toolleftgrip.arminit={
   {0.33,0.25,-0.15, 0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
   {0.46,0.35,0.07,  0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
-  {0.46,0.35, 0.17, 0,0*DEG_TO_RAD, -45*DEG_TO_RAD},  
-  {0.46,0.25, 0.17, 0,0*DEG_TO_RAD, -45*DEG_TO_RAD},  
+  {0.46,0.35, 0.17, 0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  {0.46,0.25, 0.17, 0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
 }
 
 armfsm.toolleftgrip.armpull={
-  --0.55 -0.06 0.25 
+  --0.55 -0.06 0.25
   {0.46, 0.25, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.46, 0.35, 0.17, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.32, 0.35, -0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
@@ -497,8 +495,8 @@ armfsm.toolchop.drill_offset = {0,0,0.10}
 --armfsm.toolgrip.armhold={0.25,0.0,-0.20}
 
 armfsm.toolchop.arminit={
-  {0.25,-0.16,-0.20},  
-  {0.25,-0.16,-0.20},  
+  {0.25,-0.16,-0.20},
+  {0.25,-0.16,-0.20},
   {0.30,-0.16,-0.07},
 }
 
@@ -548,7 +546,7 @@ armfsm.hosegrip.arminit={
 }
 
 --RIGHT ARM (FOR CAMERA SUPPORT)
---init pose: 0.20 -0.30 
+--init pose: 0.20 -0.30
 armfsm.hosegrip.arminit_support={
 --  {0.30,-0.24,-0.15,0*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 --  {0.38,-0.24,0.025,0*DEG_TO_RAD,0*DEG_TO_RAD, 45*DEG_TO_RAD},
@@ -575,15 +573,15 @@ armfsm.hosegrip.armhosepull={
   {-0.30,0.05,-0.30,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
   {-0.25,0.30,-0.30,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
   {-0.0,0.35,-0.43,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
---  {0.23,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
- 
-  {0.43,0.35,-0.20,135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+--  {0.23,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+
+  {0.43,0.35,-0.20,135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},
 }
 
 armfsm.hosegrip.armhoseattachinit={
   {0.43,0.35,-0.20,135*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
---  {0.43,0.35,-0.20,90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},        
-  {0.43,0.15,0.0,90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},        
+--  {0.43,0.35,-0.20,90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  {0.43,0.15,0.0,90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
 }
 
 
@@ -593,9 +591,9 @@ armfsm.hosegrip.armhosepull={
   {-0.30,0.05,-0.30,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
   {-0.25,0.40,-0.30,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
   {-0.0,0.45,-0.43,135*DEG_TO_RAD,89*DEG_TO_RAD, 0*DEG_TO_RAD},
---  {0.23,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
- 
-  {0.43,0.40,-0.20,135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+--  {0.23,0.35,-0.20,179*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},
+
+  {0.43,0.40,-0.20,135*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD},
 }
 
 
@@ -622,9 +620,9 @@ armfsm.hosetap.larminit={
 
   {0.33,0.25,-0.15, 90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
   {0.46,0.35, 0.07,  90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
-  {0.46,0.35, 0.17, 90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},  
-  {0.46,0.05, 0.17, 90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},  
-  
+  {0.46,0.35, 0.17, 90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+  {0.46,0.05, 0.17, 90*DEG_TO_RAD,0*DEG_TO_RAD, -45*DEG_TO_RAD},
+
 }
 
 
@@ -815,7 +813,7 @@ armfsm.dooropenleft.default_model = {
 }
 
 armfsm.dooropenleft.rhand_push={
-  {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD}, 
+  {0,0,0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
 --0.21 -0.06 -0.16
   {0.31, -0.0, -0.10,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.45, -0.05, -0.0,0*DEG_TO_RAD,-0*DEG_TO_RAD, 45*DEG_TO_RAD},
@@ -841,16 +839,16 @@ armfsm.valveonearm.arminit={
   {0.40,0.21,-0.15, 0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
   {0.55,0.28,0.07,  0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
   {0.60,0.01,0.07,  0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
-  {0.72,0.30,0.09,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.72,0.30,0.09,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
 }
 --]]
 armfsm.valveonearm.turnUnit = 15*DEG_TO_RAD
 
-armfsm.valveonearm.default_model_small= 
+armfsm.valveonearm.default_model_small=
   {0.72,0.30,0.09, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
 
-armfsm.valveonearm.default_model_small= 
+armfsm.valveonearm.default_model_small=
   {0.67,0.30,0.09, 0, -60*DEG_TO_RAD, 60*DEG_TO_RAD }
 
 
@@ -859,7 +857,7 @@ armfsm.valveonearm.arminit={
   {0.40,0.25,-0.15, 0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
   {0.53,0.28,0.03,  0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
   {0.53,0.01,0.03,  0,0*DEG_TO_RAD, -45*DEG_TO_RAD},
-  {0.67,0.30,0.03,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.67,0.30,0.03,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
 }
 
 
@@ -875,7 +873,7 @@ armfsm.valveonearm.arminit_mirror={
   {0.40,-0.25,-0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.53,-0.28,0.03,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.53,-0.01,0.03,  0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-  {0.67,-0.30,0.03,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},    
+  {0.67,-0.30,0.03,  0,0*DEG_TO_RAD, 0*DEG_TO_RAD},
 }
 
 
@@ -893,7 +891,7 @@ armfsm.valveonearm.velInsert = 0.01 * speed_factor
 ------   Bar valve turning with single hand w/ chopstick
 ---------------------------------------------------------------
 armfsm.valvebar = {}
---Axel XYZ, radius, current valve angle, final valve angle, hand fit angle, 
+--Axel XYZ, radius, current valve angle, final valve angle, hand fit angle,
 --valve angle zero: straight UP
 
 --armfsm.valvebar.handtightangle0 = -45*DEG_TO_RAD
@@ -906,12 +904,12 @@ armfsm.valvebar.velInsert = 0.01 * speed_factor
 --With updated chopstick IK
 
 
-armfsm.valvebar.default_model= {0.73,0.25,0.09,   
+armfsm.valvebar.default_model= {0.73,0.25,0.09,
   0.05, 0, 0*DEG_TO_RAD, -10*DEG_TO_RAD  }
 
 
 --RIGHT ARM
-armfsm.valvebar.default_model_right= {0.73,-0.25,0.09,   
+armfsm.valvebar.default_model_right= {0.73,-0.25,0.09,
   0.05, 0, 0*DEG_TO_RAD, -10*DEG_TO_RAD  }
 
 
@@ -955,7 +953,7 @@ armfsm.rocky.rhand_rpy = {0*DEG_TO_RAD,-0*DEG_TO_RAD, 90*DEG_TO_RAD}
 armfsm.rocky.larminit={
   {0.30,0.35,-0.20, unpack(armfsm.rocky.lhand_rpy0)},
   {0.40,0.18,-0.15, unpack(armfsm.rocky.lhand_rpy1)},
-  --0.23 0.11 -0.15 
+  --0.23 0.11 -0.15
   {0.23,0.11,-0.05, unpack(armfsm.rocky.lhand_rpy)},
 }
 armfsm.rocky.rarminit={
@@ -1041,10 +1039,7 @@ armfsm.doorpass.rarminit={
 
 ------------------------------------
 -- Associate with the table
-Config.walk    = walk
 Config.arm     = arm
 Config.armfsm  = armfsm
-Config.stance  = stance
-Config.zmpstep = zmpstep
 
 return Config

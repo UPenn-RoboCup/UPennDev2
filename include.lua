@@ -6,7 +6,7 @@
 USE_LOCALHOST = true
 
 -- Locate the Modules
-CWD = assert(os.getenv('PWD'),'No PWD variable set!')
+CWD = assert(os.getenv'PWD','No PWD variable set!')
 IS_WEBOTS = false
 HOME = CWD:gsub('Player.*$','')
 HOME = HOME:gsub('Robots.*$','')
@@ -52,27 +52,39 @@ package.path = HOME..'/Player/World/?.lua;'..package.path
 -- include Config files to path
 package.path = HOME..'/Config/?.lua;'..package.path
 
--- Config is global now!
-Config = require'Config'
-
--- include platform specific modules
-ROBOT_HOME = HOME..'/Robots/'..Config.PLATFORM_NAME..'/'
-package.path  = ROBOT_HOME..'?.lua;'..package.path
-package.cpath = ROBOT_HOME..'?.so;'..package.cpath
-
-KEYFRAME_DIR = HOME.."/Player/Keyframes"
-LOG_DIR = HOME.."/Logs/"
-
 -- Save the hostname
 unix = require'unix'
 HOSTNAME = unix.gethostname()
 OPERATING_SYSTEM = unix.uname():lower()
 
 -- Check for LuaJit and add to the global namespace
-local ok, myffi = pcall(require,'ffi')
+local ok, myffi = pcall(require, 'ffi')
 if ok then
-	ffi = myffi
-	C = ffi.C
+  ffi = myffi
+  C = ffi.C
+end
+
+-- Some other directories
+KEYFRAME_DIR = HOME.."/Player/Keyframes"
+LOG_DIR = HOME.."/Logs"
+
+-- Config is global now!
+Config = require'Config'
+
+-- include platform specific modules
+ROBOT_HOME = HOME..'/Robots/'..Config.PLATFORM_NAME
+package.path  = ROBOT_HOME..'/?.lua;'..package.path
+package.cpath = ROBOT_HOME..'/?.so;'..package.cpath
+
+-- NOTE: We can somehow require multiple same FSMs, now... (i.e. for two hands)
+function load_fsm (name)
+  -- Set some temporary globals
+  fsm_name, transitions = name, Config.fsm[name]
+  -- Load the state machine
+	local my_fsm = dofile(HOME..'/Util/fsm_helper.lua')
+  -- Unset the temporary globals
+	fsm_name, transitions = nil, nil
+	return my_fsm
 end
 
 -- Print out the globally available variables, when using include.lua
@@ -89,4 +101,8 @@ function print_env()
 	print( 'package path:', package.path )
 	print( 'package cpath:', package.cpath )
 end
+print_env()
 --]]
+
+-- Run the garbage collector after done the include
+collectgarbage()

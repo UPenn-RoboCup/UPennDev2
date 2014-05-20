@@ -485,14 +485,14 @@ function Body.entry ()
 			si.new_thread(ROBOT_HOME..'/run_imu.lua', 'imu', v)
 		ch.callback = imu_cb
 		table.insert(dev_chs, imu_ch)
-		table.insert(body_chs, ch)
+		table.insert(body_chs, imu_ch)
 		imu_thread:start()
 	end
 	-- Body requests
 	-- Listens from everybody
 	local body_ch = si.new_subscriber'body!'
 	body_ch.callback = body_cb
-	table.insert(body_chs, ch)
+	table.insert(body_chs, body_ch)
 	-- Polling object
 	body_poll = si.wait_on_channels(body_chs)
 end

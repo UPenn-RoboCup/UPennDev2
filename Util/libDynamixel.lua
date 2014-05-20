@@ -17,26 +17,26 @@ local WRITE_TIMEOUT = 1/200
 
 --------------------
 -- Convienence functions for reading dynamixel packets
-function DP1.parse_status_packet (pkt) -- 1.0 protocol
-  return {
-     id = pkt:byte(3),
-     length = pkt:byte(4),
-     error = pkt:byte(5),
-     parameter = {pkt:byte(6,t.length+3)},
-     checksum = pkt:byte(t.length+4),
-   }
+DP1.parse_status_packet = function(pkt) -- 1.0 protocol
+   local t = {}
+   t.id = pkt:byte(3)
+   t.length = pkt:byte(4)
+   t.error = pkt:byte(5)
+   t.parameter = {pkt:byte(6,t.length+3)}
+   t.checksum = pkt:byte(t.length+4)
+   return t
 end
 
-function DP2.parse_status_packet (pkt) -- 2.0 protocol
+DP2.parse_status_packet = function(pkt) -- 2.0 protocol
   --print('status pkt',pkt:byte(1,#pkt) )
-  return {
-    id = pkt:byte(5),
-    length = pkt:byte(6) + (2 ^ 8) * pkt:byte(7),
-    instruction = pkt:byte(8),
-    error = pkt:byte(9),
-    parameter = {pkt:byte(10, t.length + 5)},
-    checksum = string.char(pkt:byte(t.length + 6), pkt:byte(t.length + 7)),
-  }
+  local t = {}
+  t.id = pkt:byte(5)
+  t.length = pkt:byte(6)+2^8*pkt:byte(7)
+  t.instruction = pkt:byte(8)
+  t.error = pkt:byte(9)
+  t.parameter = {pkt:byte(10,t.length+5)}
+  t.checksum = string.char( pkt:byte(t.length+6), pkt:byte(t.length+7) );
+  return t
 end
 
 -- RX (uses 1.0)

@@ -5,6 +5,7 @@ dofile'include.lua'
 assert(ffi, 'DCM | Please use LuaJIT :). Lua support in the near future')
 -- Going to be threading this
 local si = require'simple_ipc'
+local vector = require'vector'
 -- Import the context
 --print('CTX',CTX,type(CTX))
 local parent_ch, IS_THREAD
@@ -150,8 +151,8 @@ local function do_parent ()
 end
 -- Initially, copy the command positions from the read positions
 for _, m_id in ipairs(m_ids) do
-	local status = {}
-	while not status[1] do status = p_read(m_id, bus) end
+	local status, s = {}
+	while not s do status = p_read(m_id, bus); s = status[1] end
 	local p = p_parse(unpack(s.parameter))
 	local j_id = m_to_j[s.id]
 	local r = step_to_radian(j_id, p)
@@ -182,7 +183,7 @@ while running do
 	---------------------
 	-- Write Positions --
 	---------------------
-	do_write()
+	--do_write()
 	---------------------
 	-- Parent Commands --
 	---------------------

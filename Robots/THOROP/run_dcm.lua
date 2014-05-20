@@ -122,7 +122,8 @@ local function do_parent ()
 	local f = parent_cb[cmd]
 	if f then return f(msg) end
 	-- Else, access something from the motor
-	local ptr, set = dcm.actuatorPtr[cmd], libDynamixel['set_nx_'..k]
+	local ptr, set = dcm.actuatorPtr[cmd], libDynamixel['set_nx_'..cmd]
+	if not set then return end
 	-- TODO: Check if we need the motors torqued off for the command to work
 	-- Send individually to the motors, waiting for the status return
 	local j_id, status

@@ -20,7 +20,7 @@ end
 -- Fallback on undefined metadata
 assert(metadata, 'IMU | No metadata found!')
 -- Modules
-require'jcm'
+require'dcm'
 local lM = require'libMicrostrain'
 -- TODO: Remove carray when using LuaJIT
 local carray = require'carray'
@@ -32,8 +32,8 @@ local microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
 -- TODO: Read and check settings...
 microstrain:ahrs_on()
 -- Cache the typical commands quickly
-local rpy_ptr   = jcm.sensorPtr.rpy
-local gyro_ptr  = jcm.sensorPtr.gyro
+local rpy_ptr   = dcm.sensorPtr.rpy
+local gyro_ptr  = dcm.sensorPtr.gyro
 local gyro, rpy = {}, {}
 local function do_read ()
 	unix.select({microstrain.fd})
@@ -46,8 +46,8 @@ local function do_read ()
 		rpy = {_rpy[2], _rpy[3], -_rpy[1]}
 		gyro = {_gyro[2],_gyro[3],-_gyro[1]}
 		-- set to memory
-		jcm.set_sensor_rpy(rpy)
-		jcm.set_sensor_gyro(gyro)
+		dcm.set_sensor_rpy(rpy)
+		dcm.set_sensor_gyro(gyro)
 	end
 end
 -- Collect garbage before starting

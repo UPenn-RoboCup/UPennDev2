@@ -80,10 +80,9 @@ local p_read  = lD.get_nx_position
 local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 -- Define reading
 local positions = vector.zeros(n_motors)
-local function do_read (is_strict)
+local function do_read ()
 	-- TODO: Strict should just be one motor at a time...
 	local status = p_read(m_ids, bus)
-	if is_strict and #status~=n_motors then return end
 	for _,s in ipairs(status) do
 		local p = p_parse(unpack(s.parameter))
 		local j_id = m_to_j[s.id]
@@ -95,7 +94,6 @@ local function do_read (is_strict)
 		-- TODO: Send this copy back to the master thread?
 		positions[j_id] = r
 	end
-	return true
 end
 -- Define writing
 -- TODO: Add MX support
@@ -109,18 +107,35 @@ local function do_write ()
 end
 -- Define parent interaction. NOTE: Openly subscribing to ANYONE. fiddle even
 local parent_cb = {
-	exit = function (msg)
+	exit = function ()
 		running = false
 		bus:close()
 		if IS_THREAD then parent_msg:send'done' end
 	end,
 }
+
+-- Check the F/T based on the name of the chain
+-- Declare the struct
+ffi.cdef[[ typedef struct { int16_t a, b, c, d; } ft; ]]
+if metadata.name=='lleg' then
+	parent_cb.ft = function ()
+		local ptr, read = dcm.actuatorPtr[cmd], libDynamixel.get_nx_data
+		local status = read({24, 26}, bus)
+		-- Should be 4 16-bit integers, so 8 bytes
+		local l_ft = ffi.cast('ft*', ffi.new('int8_t[8]', status[1].parameter))
+		-- Just do a sync read here; can try reliable later, if desired...
+		print('DCM | ft', 3.3 * l_ft.a / 4096 - 1.65)
+	end
+elseif metadata.name=='rleg' then
+
+end
+
 local function do_parent ()
 	local cmd = parent_ch:receive(true)
 	if not cmd then return end
 	-- Check if there is something special
 	local f = parent_cb[cmd]
-	if f then return f(msg) end
+	if f then return f() end
 	-- Else, access something from the motor
 	local ptr, set = dcm.actuatorPtr[cmd], libDynamixel['set_nx_'..cmd]
 	if not set then return end
@@ -134,16 +149,15 @@ local function do_parent ()
 	end
 end
 -- Initially, copy the command positions from the read positions
--- Try 5 times to get all joints at once
-local did_read_all
-for i=1,5 do
-	did_read_all = do_read(true)
-	if did_read_all then
-		-- FFI is 0 indexed
-		for _,j_id in ipairs(j_ids) do cp_ptr[j_id-1] = p_ptr[j_id-1] end
-	end
+for _, m_id in ipairs(m_ids) do
+	local status = {}
+	while not status[1] do status = p_read(m_id, bus) end
+	local p = p_parse(unpack(s.parameter))
+	local j_id = m_to_j[s.id]
+	local r = step_to_radian(j_id, p)
+	p_ptr[j_id-1] = r
+	positions[j_id] = r
 end
-assert(did_read_all, 'Did not initialize the motors properly!')
 -- Collect garbage before starting
 collectgarbage()
 -- Begin infinite loop

@@ -12,10 +12,8 @@ local stty = require'stty'
 local using_status_return = true
 -- 75ms default timeout
 local READ_TIMEOUT = 0.002
-
--- TODO: Make this a parameter to set externally
--- TODO: This should be tuned based on the byte size written?
-local WRITE_TIMEOUT = 1/200 -- 200Hz timeout
+-- 200Hz timeout
+local WRITE_TIMEOUT = 1/200
 
 --------------------
 -- Convienence functions for reading dynamixel packets

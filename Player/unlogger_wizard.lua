@@ -14,7 +14,6 @@ local unloggers = {}
 
 ---------------------------------
 -- Shared Memory
-require'jcm'
 require'hcm'
 require'vcm'
 local head_camera, lwrist_camera, joint_positions

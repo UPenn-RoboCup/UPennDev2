@@ -22,7 +22,6 @@ print('RPC | UDP Receiving on',Config.net.unreliable_rpc)
 
 -- Require all necessary modules
 require'vcm'
-require'jcm'
 require'mcm'
 require'hcm'
 require'wcm'
@@ -142,8 +141,8 @@ local feedback_udp_ch =
 local function send_status_feedback()
   local data = {}
 	data.pose = wcm.get_robot_pose()
-	data.battery = jcm.get_sensor_battery()
-	data.rpy = jcm.get_sensor_rpy()
+	data.battery = Body.get_sensor_battery()
+	data.rpy = Body.get_sensor_rpy()
   data.t   = unix.time()
 
   local ret, err = feedback_udp_ch:send( mp.pack(data) )

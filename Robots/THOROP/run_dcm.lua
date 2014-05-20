@@ -46,7 +46,7 @@ end
 local n_motors = #m_ids
 -- Verify that the m_ids are present
 for _,m_id in pairs(m_ids) do
-	print('PING', m_id)
+	--print('PING', m_id)
 	local p = bus:ping(m_id)
 	assert(p[1], string.format('DCM | ID %d not present.', m_id))
 	--ptable(p[1])
@@ -111,7 +111,7 @@ local parent_cb = {
 	exit = function ()
 		running = false
 		bus:close()
-		if IS_THREAD then parent_msg:send'done' end
+		if IS_THREAD then parent_ch:send'done' end
 	end,
 }
 
@@ -132,13 +132,14 @@ elseif metadata.name=='rleg' then
 end
 
 local function do_parent ()
-	local cmd = parent_ch:receive(true)
-	if not cmd then return end
+	local cmds = parent_ch:receive(true)
+  	if not cmds then return end
+for i, cmd in ipairs(cmds) do
 	-- Check if there is something special
 	local f = parent_cb[cmd]
 	if f then return f() end
 	-- Else, access something from the motor
-	local ptr, set = dcm.actuatorPtr[cmd], libDynamixel['set_nx_'..cmd]
+	local ptr, set = dcm.actuatorPtr[cmd], lD['set_nx_'..cmd]
 	if not set then return end
 	-- TODO: Check if we need the motors torqued off for the command to work
 	-- Send individually to the motors, waiting for the status return
@@ -148,6 +149,7 @@ local function do_parent ()
 		status = set(m_id, ptr[j_id], bus)
 		-- TODO: check the status, and repeat if necessary...
 	end
+end
 end
 -- Initially, copy the command positions from the read positions
 for _, m_id in ipairs(m_ids) do
@@ -172,8 +174,8 @@ while running do
 	-- Periodic Debug --
 	--------------------
   if t - t_debug>1 then
-	  print('\nDCM | t_diff', t_diff, 1 / t_diff)
-    ptable(positions)
+	  --print('\nDCM | t_diff', t_diff, 1 / t_diff)
+    --ptable(positions)
     t_debug = t
   end
 	--------------------

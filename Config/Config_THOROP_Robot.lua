@@ -5,7 +5,7 @@ local vector = require'vector'
 -- IMU --
 ---------
 Config.imu = {
-  enabled = true,
+  enabled = false,
   device = '/dev/ttyACM0',
   -- TODO: Add some mapping, etc.
 

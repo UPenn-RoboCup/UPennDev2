@@ -50,8 +50,8 @@ end
 -- RPC engine
 rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
 
--- Mesh requester
-mesh_req_ch = simple_ipc.new_requester(Config.net.reliable_mesh)
+-- Body channel
+body_ch = simple_ipc.new_publisher'body!'
 
 print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
 print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )

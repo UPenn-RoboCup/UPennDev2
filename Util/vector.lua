@@ -46,9 +46,10 @@ end
 
 local function slice(v1, istart, iend)
   local v = {}
+  istart = istart or 1
   iend = iend or #v1
   for i = 1,iend-istart+1 do
-    v[i] = v1[istart+i-1]
+    v[i] = v1[istart+i-1] or (0 / 0)
   end
   return setmetatable(v, mt)
 end

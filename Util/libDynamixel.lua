@@ -3,8 +3,6 @@
 -- (c) 2013 Daniel D. Lee
 -- Support: http://support.robotis.com/en/product/dynamixel_pro/communication/instruction_status_packet.htm
 
-local util = require'util'
-
 local libDynamixel = {}
 local DP1 = require'DynamixelPacket1' -- 1.0 protocol
 local DP2 = require'DynamixelPacket2' -- 2.0 protocol
@@ -17,34 +15,30 @@ local READ_TIMEOUT = 0.002
 
 -- TODO: Make this a parameter to set externally
 -- TODO: This should be tuned based on the byte size written?
-local WRITE_TIMEOUT = 1/200 -- 250Hz timeout
---local WRITE_TIMEOUT = 1/150 -- 250Hz timeout
---local WRITE_TIMEOUT = 1/125 -- 120Hz timeout
---local WRITE_TIMEOUT = 1/120 -- 60Hz timeout
---local WRITE_TIMEOUT = 0 -- Instant timeout
+local WRITE_TIMEOUT = 1/200 -- 200Hz timeout
 
 --------------------
 -- Convienence functions for reading dynamixel packets
-DP1.parse_status_packet = function(pkt) -- 1.0 protocol
-   local t = {}
-   t.id = pkt:byte(3)
-   t.length = pkt:byte(4)
-   t.error = pkt:byte(5)
-   t.parameter = {pkt:byte(6,t.length+3)}
-   t.checksum = pkt:byte(t.length+4)
-   return t
+function DP1.parse_status_packet (pkt) -- 1.0 protocol
+  return {
+     id = pkt:byte(3),
+     length = pkt:byte(4),
+     error = pkt:byte(5),
+     parameter = {pkt:byte(6,t.length+3)},
+     checksum = pkt:byte(t.length+4),
+   }
 end
 
-DP2.parse_status_packet = function(pkt) -- 2.0 protocol
+function DP2.parse_status_packet (pkt) -- 2.0 protocol
   --print('status pkt',pkt:byte(1,#pkt) )
-  local t = {}
-  t.id = pkt:byte(5)
-  t.length = pkt:byte(6)+2^8*pkt:byte(7)
-  t.instruction = pkt:byte(8)
-  t.error = pkt:byte(9)
-  t.parameter = {pkt:byte(10,t.length+5)}
-  t.checksum = string.char( pkt:byte(t.length+6), pkt:byte(t.length+7) );
-  return t
+  return {
+    id = pkt:byte(5),
+    length = pkt:byte(6) + (2 ^ 8) * pkt:byte(7),
+    instruction = pkt:byte(8),
+    error = pkt:byte(9),
+    parameter = {pkt:byte(10, t.length + 5)},
+    checksum = string.char(pkt:byte(t.length + 6), pkt:byte(t.length + 7)),
+  }
 end
 
 -- RX (uses 1.0)
@@ -87,26 +81,26 @@ local mx_registers = {
   ['status_return_level'] = {string.char(16,0),1},
   ['torque_enable'] = {string.char(24,0),1},
   ['led'] = {string.char(25,0),1},
-  
+
   -- Position PID Gains (position control mode)
   ['position_p'] = {string.char(28,0),1},
   ['position_i'] = {string.char(27,0),1},
   ['position_d'] = {string.char(26,0),1},
-  
+
   ['command_position'] = {string.char(30,0),2},
   ['velocity'] = {string.char(32,0),2},
   ['position'] = {string.char(36,0),2},
   ['speed'] = {string.char(38,0),2},
   ['load'] = {string.char(40,0),2},
-  
+
   ['battery'] = {string.char(42,0),2},
   ['temperature'] = {string.char(43,0),1},
-  
+
   -- For the MX-106
   torque_mode = {string.char(70,0),1},
   command_torque = {string.char(71,0),2},
   command_acceleration = {string.char(73,0),1},
-  
+
   -- all dat!
   everything = {string.char(36,0),8},
 }
@@ -117,7 +111,7 @@ libDynamixel.mx_registers = mx_registers
 -- Convention: string.char( LOW_BYTE, HIGH_BYTE )
 -- http://support.robotis.com/en/product/dynamixel_pro/control_table.htm
 local nx_registers = {
-  
+
   -- New API --
   -- ENTER EEPROM AREA
 
@@ -134,7 +128,7 @@ local nx_registers = {
   ['baud'] = {string.char(0x08,0x00),1},
   -- Delay in us: wish to have zero
   ['delay'] = {string.char(9,0),1},
-  
+
   -- Operation Mode
   -- Mode 0: Torque Control
   -- Mode 1: Velocity Control
@@ -142,7 +136,7 @@ local nx_registers = {
   -- Mode 3: position-Velocity Control
   ['mode'] = {string.char(0x0B,0x00),1},
   ['homing_offset'] = {string.char(13,0x00),4},
-  
+
   -- Limits
   ['max_temperature'] = {string.char(0x15,0x00,1)},
   ['max_voltage'] = {string.char(0x16,0x00),2},
@@ -159,7 +153,7 @@ local nx_registers = {
   ['data4_mode'] = {string.char(47,0x00),1},
   --
   ['shutdown'] = {string.char(0x30,0x00),1},
-  
+
   -- ENTER RAM AREA
   ['torque_enable'] = {string.char(0x32,0x02),1},
   -- Position Options --
@@ -175,14 +169,14 @@ local nx_registers = {
   ['velocity_p'] = {string.char(0x46,0x02),2},
   ['velocity_i'] = {string.char(0x4A,0x02),2},
   ['velocity_d'] = {string.char(0x4C,0x02),2},
-  
+
   -- Low Pass Fitler settings
   ['position_lpf'] = {string.char(0x42,0x02),4},
   ['velocity_lpf'] = {string.char(0x46,0x02),4},
   -- Feed Forward mechanism
   ['acceleration_ff'] = {string.char(0x3A,0x02),4},
   ['velocity_ff'] = {string.char(0x3E,0x02),4},
-  
+
   -- Torque options --
   -- Commanded Torque (torque control mode)
   ['command_torque'] = {string.char(0x5C,0x02),4},
@@ -195,7 +189,7 @@ local nx_registers = {
   ['led_red'] = {string.char(0x33,0x02),1},
   ['led_green'] = {string.char(0x34,0x02),1},
   ['led_blue'] = {string.char(0x35,0x02),1},
-  
+
   -- Present information
   ['position'] = {string.char(0x63,0x02),4},
   ['velocity'] = {string.char(0x67,0x02),4},
@@ -211,24 +205,29 @@ local nx_registers = {
   ['data4'] = {string.char(0x78,0x02),2},
   --
   ['data']  = {string.char(0x72,0x02),8},
-  
+
   -- Status return
   ['status_return_level'] = {string.char(0x7B,0x03),1},
 }
 libDynamixel.nx_registers = nx_registers
 
+-- Assume MX and NX are at least similar here
+libDynamixel.registers_sensor = {
+  'position', 'velocity', 'current', 'load', 'voltage', 'temperature',
+}
+
 --------------------
 -- Convienence functions for constructing Sync Write instructions
-local function sync_write_byte(ids, addr, data)
+local function sync_write_byte (ids, addr, data)
   local all_data = nil
   local nid = #ids
   -- All get the same value
-  if type(data)=='number' then 
+  if type(data)=='number' then
     all_data = data
   else
     assert(nid==#data,'Incongruent ids and data')
   end
-  
+
   local t = {}
   local n = 1
   local len = 1 -- byte
@@ -237,11 +236,11 @@ local function sync_write_byte(ids, addr, data)
     t[n+1] = all_data or data[i]
     n = n + len + 1
   end
-  
+
   return t
 end
 
-local function sync_write_word(ids, addr, data)
+local function sync_write_word (ids, addr, data)
   local all_data = nil
   local nid = #ids
   if type(data)=='number' then
@@ -264,7 +263,7 @@ local function sync_write_word(ids, addr, data)
   return t
 end
 
-local function sync_write_dword(ids, addr, data)
+local function sync_write_dword (ids, addr, data)
   local all_data = nil
   local nid = #ids
   local len = 4
@@ -314,7 +313,7 @@ byte_to_number[4] = DP2.byte_to_dword
 libDynamixel.byte_to_number = byte_to_number
 
 -- Old get status method
-local function get_status( fd, npkt, protocol, timeout )
+local function get_status (fd, npkt, protocol, timeout)
   -- TODO: Is this the best default timeout for the new PRO series?
   timeout = timeout or READ_TIMEOUT
 	npkt = npkt or 1
@@ -356,21 +355,22 @@ end
 
 --------------------
 -- Set NX functions: returns the command to send on the chain
-for k,v in pairs( nx_registers ) do
-  libDynamixel['set_nx_'..k] = function( motor_ids, values, bus)
-    local addr = v[1]
-    local sz = v[2]
-    
+for k,v in pairs(nx_registers) do
+  local addr = v[1]
+  local sz = v[2]
+  local single_wr, sync_wr = nx_single_write[sz], sync_write[sz]
+  libDynamixel['set_nx_'..k] = function(motor_ids, values, bus)
+
     -- Construct the instruction (single or sync)
     local single = type(motor_ids)=='number'
     local instruction = nil
     if single then
-      instruction = nx_single_write[sz](motor_ids, addr, values)
+      instruction = single_wr(motor_ids, addr, values)
     else
-      local msg = sync_write[sz](motor_ids, addr, values)
+      local msg = sync_wr(motor_ids, addr, values)
       instruction = DP2.sync_write(addr, sz, string.char(unpack(msg)))
     end
-    
+
 		if not bus then return instruction end
 
 		-- Clear the reading
@@ -386,11 +386,11 @@ for k,v in pairs( nx_registers ) do
 		else
 			return ret
 		end
-    
+
   end --function
 end
 
-libDynamixel.mx_nx_bulk_write = 
+libDynamixel.mx_nx_bulk_write =
 function( register, mx_ids, mx_vals, nx_ids, nx_vals, bus)
   -- Form the bulk packet
   local bulk_pkt = {}
@@ -408,7 +408,7 @@ function( register, mx_ids, mx_vals, nx_ids, nx_vals, bus)
   local nx_sz   = nx_reg[2]
   print('nx_sz',nx_sz)
   for i,id in ipairs(nx_ids) do
-    table.insert( bulk_pkt, {id,nx_addr,nx_sz,nx_vals[i]} )
+    table.insert(bulk_pkt, {id,nx_addr, nx_sz, nx_vals[i]})
   end
   -- Form and return the packet
   local instruction = DP2.bulk_write(bulk_pkt)
@@ -418,7 +418,7 @@ function( register, mx_ids, mx_vals, nx_ids, nx_vals, bus)
   -- Clear the reading
   local clr = unix.read(bus.fd)
 
-  -- Write the instruction to the bus 
+  -- Write the instruction to the bus
   stty.flush(bus.fd)
   local ret = unix.write(bus.fd, instruction)
 
@@ -426,7 +426,7 @@ end
 
 --------------------
 -- Get NX functions
-for k,v in pairs( nx_registers ) do
+for k,v in pairs(nx_registers) do
   local addr = v[1]
   local sz   = v[2]
   libDynamixel['get_nx_'..k] = function( motor_ids, bus )
@@ -445,7 +445,7 @@ for k,v in pairs( nx_registers ) do
     if not bus then return instruction end
     -- Clear old status packets
     repeat buf = unix.read(bus.fd) until not buf
-    -- Write the instruction to the bus 
+    -- Write the instruction to the bus
     stty.flush(bus.fd)
     local ret = unix.write(bus.fd, instruction)
     -- Grab the status of the register
@@ -459,7 +459,7 @@ for k,v in pairs( mx_registers ) do
   libDynamixel['set_mx_'..k] = function( motor_ids, values, bus )
     local addr = v[1]
     local sz = v[2]
-    
+
     -- Construct the instruction (single or sync)
     local single = type(motor_ids)=='number'
     local instruction = nil
@@ -469,13 +469,13 @@ for k,v in pairs( mx_registers ) do
       local msg = sync_write[sz](motor_ids, addr, values)
       instruction = DP2.sync_write(addr, sz, string.char(unpack(msg)))
     end
-    
+
     if not bus then return instruction end
 
     -- Write the instruction to the bus
     stty.flush(bus.fd)
     local ret = unix.write(bus.fd, instruction)
-    
+
     -- Grab any status returns
     if using_status_return and single then
       local status = get_status( bus.fd )
@@ -483,7 +483,7 @@ for k,v in pairs( mx_registers ) do
       local value = byte_to_number[sz]( unpack(status.parameter) )
       return status, value
     end
-    
+
   end --function
 end
 
@@ -504,17 +504,17 @@ for k,v in pairs( mx_registers ) do
       instruction = DP2.sync_read(string.char(unpack(motor_ids)), addr, sz)
       nids = #motor_ids
     end
-    
+
     if not bus then return instruction end
-    
+
     -- Clear old status packets
     local clear = unix.read( bus.fd )
-    
-    -- Write the instruction to the bus 
+
+    -- Write the instruction to the bus
     stty.flush(bus.fd)
     local ret = unix.write( bus.fd, instruction)
 
-    -- Grab the status of the register    
+    -- Grab the status of the register
     return get_status( bus.fd, nids )
 
   end --function
@@ -526,7 +526,7 @@ for k,v in pairs( rx_registers ) do
   libDynamixel['set_rx_'..k] = function( motor_ids, values, bus)
     local addr = v[1]
     local sz = v[2]
-    
+
     -- Construct the instruction (single or sync)
     local single = type(motor_ids)=='number'
     local instruction = nil
@@ -536,19 +536,19 @@ for k,v in pairs( rx_registers ) do
       local msg = sync_write[sz](motor_ids, addr, values)
       instruction = DP1.sync_write(addr, sz, string.char(unpack(msg)))
     end
-    
+
     if not bus then return instruction end
 
     -- Write the instruction to the bus
     stty.flush(bus.fd)
     local ret = unix.write(bus.fd, instruction)
-    
+
     -- Grab any status returns
     if using_status_return and single then
       local status = get_status( bus.fd, 1 )
       return status
     end
-    
+
   end --function
 end
 
@@ -563,7 +563,7 @@ for k,v in pairs( rx_registers ) do
     if not bus then return instruction end
     -- Clear old status packets
     local clear = unix.read(bus.fd)
-    -- Write the instruction to the bus 
+    -- Write the instruction to the bus
     stty.flush(bus.fd)
     local ret = unix.write(bus.fd, instruction)
     -- Grab the status of the register
@@ -679,7 +679,7 @@ function libDynamixel.new_bus( ttyname, ttybaud )
   obj.ping_probe = ping_probe
 	obj.ping = send_ping
   -------------------
-  
+
   -------------------
   -- Add libDynamixel functions
   --[[
@@ -691,7 +691,7 @@ function libDynamixel.new_bus( ttyname, ttybaud )
   obj.service = nil
   --]]
   -------------------
-  
+
   -------------------
   -- Read/write properties
   obj.t_cmd = 0
@@ -710,14 +710,14 @@ function libDynamixel.new_bus( ttyname, ttybaud )
   obj.message = nil
   obj.is_reading = false
   -------------------
-  
+
   return obj
 end
 
 ---------------------------
 -- Service multiple Dynamixel buses
 libDynamixel.service = function( dynamixels, main )
-  
+
   -- Enable the main function as a coroutine thread
   local main_thread = nil
   if main then
@@ -737,7 +737,7 @@ libDynamixel.service = function( dynamixels, main )
       -- time is the parameter
       -- Make a read all NX command
       local DP = DP2
-      
+
       local did_command = false
       local did_request = false
       -- The coroutine should never end
@@ -794,7 +794,7 @@ libDynamixel.service = function( dynamixels, main )
           -- Set a timeout for this request
           dynamixel.timeout = t + READ_TIMEOUT
           -- Yield for others on their FDs
-          
+
           -- Accrue values from the status packets
           local values = {}
           local pkts = {}
@@ -853,7 +853,7 @@ libDynamixel.service = function( dynamixels, main )
     dynamixel.status, dynamixel.t_waiting = coroutine.resume(dynamixel.thread,false,unix.time() )
     dynamixel.t_waiting = dynamixel.t_waiting+unix.time()
   end
-  
+
   local select_timeout = WRITE_TIMEOUT
   -- While servicing the dynamixel fds
   while #dynamixel_fds>0 do
@@ -909,7 +909,7 @@ libDynamixel.service = function( dynamixels, main )
           status_code, param = coroutine.resume(who_to_service.thread,str,t)
           --print(status_code,'status_code',param)
           assert(status_code,'dead chain '..who_to_service.name..param)
-          who_to_service.t_waiting = param+t      
+          who_to_service.t_waiting = param+t
         end
       end -- if resuming
       --print('waiting',who_to_service.t_waiting-t)
@@ -936,18 +936,18 @@ libDynamixel.service = function( dynamixels, main )
       end
       --]]
       select_timeout = math.max(0,select_timeout)
-      
+
 
 --]]
     end -- pairs(ready)
-    
+
     --------------------
     -- Process the main thread after each coroutine yields
     -- This main loop should update the dynamixel chain commands
     local status_code, main_param = coroutine.resume( main_thread )
     assert(status_code,'Dead main coroutine! '..main_param)
     --io.flush(stdout)
-    
+
   end -- while servicing
   print'Nothing left to service!'
 end
@@ -996,7 +996,7 @@ libDynamixel.straight_service = function( dynamixel, main )
     local t_request = unix.time()
     -- If -1 returned, the bus may be detached - throw an error
     assert(req_ret==#inst, string.format('BAD READ REQ on %s',dynamixel.name))
-    
+
     -- Accrue values from the status packets
     local values = {}
     local pkts

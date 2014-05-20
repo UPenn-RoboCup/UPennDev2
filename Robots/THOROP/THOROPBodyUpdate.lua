@@ -2,11 +2,9 @@
 -- Body abstraction for THOR-OP
 -- (c) 2013,2014 Stephen McGill, Seung-Joon Yi
 --------------------------------
-
--- if reading the grippers
-local READ_GRIPPERS = true
+assert(ffi, 'Need LuaJIT to run. Lua support in the future')
 -- Shared memory for the joints
-require'jcm'
+require'dcm'
 -- Shared memory for world
 require'wcm'
 
@@ -15,15 +13,15 @@ local unix   = require'unix'
 local vector = require'vector'
 local util   = require'util'
 local si     = require'simple_ipc'
+local Kinematics = require'THOROPKinematics'
 
 local Body = {}
+local dev_chs, dcm_chs, body_chs, body_poll = {}, {
+	si.new_publisher'body!'
+	}, {}
 local get_time = unix.time
 
--- How fast to update the body (seconds)
--- 100Hz
-Body.update_cycle = 0.010
-
---------------------------------
+-- TODO: Body or Config?
 -- Shared memory layout
 local indexHead = 1   -- Head: 1 2
 local nJointHead = 2
@@ -46,7 +44,7 @@ local nJointRGrip = 2
 -- One motor for lidar panning
 local indexLidar = 35
 local nJointLidar = 1
-local nJoint = 35 --33
+local nJoint = 35
 
 local parts = {
 	Head=vector.count(indexHead,nJointHead),
@@ -57,301 +55,150 @@ local parts = {
 	Waist=vector.count(indexWaist,nJointWaist),
 	LGrip=vector.count(indexLGrip,nJointLGrip),
   RGrip=vector.count(indexRGrip,nJointRGrip),
-  ['Lidar']=vector.count(indexLidar,nJointLidar)
+  Lidar=vector.count(indexLidar,nJointLidar)
 }
-local inv_parts = {}
-for name,list in pairs(parts) do
-	for _,idx in ipairs(list) do inv_parts[idx]=name end
-end
 
---------------------------------
--- Legacy API
-Body.set_syncread_enable = function()
-end
-
-----------------------
--- Body sensor positions
--- jcm should be the API compliance test
-for sensor, pointer in pairs(jcm.sensorPtr) do
-  local tread_ptr = jcm.treadPtr[sensor]
-  local treq_ptr  = jcm.trequestPtr[sensor]
-  local get_key  = 'get_sensor_'..sensor
-  if tread_ptr then
-  	local get_func = function(idx,idx2)
-  		if idx then
-        -- Return the values from idx to idx2
-        if idx2 then
-          local up2date = true
-          for i=idx,idx2 do
-            if treq_ptr[i]>tread_ptr[i] then up2date=false break end
-          end
-					local tbl = {}
-					for i=idx-1,idx2-1 do
-						table.insert(tbl, pointer[i])
-					end
-          return vector.new(tbl), up2date
-        end
-        return pointer[idx], tread_ptr[idx]>treq_ptr[idx]
-      end
-      -- If no idx is supplied, then return the values of all joints
-      local up2date = true
-      for i=1,nJoint do
-        if treq_ptr[i]>tread_ptr[i] then up2date=false break end
-      end
-  		return vector.new(pointer:table()), up2date
-  	end
-    Body[get_key] = get_func
-    -- Do not set these as anthropomorphic
-    -- overwrite if foot
-    if sensor:find'foot' then
-      Body[get_key] = function()
-        return vector.new(pointer:table()), treq_ptr[1]<tread_ptr[1]
-      end
-    end
-    --------------------------------
-    -- Anthropomorphic access to jcm
-    -- TODO: Do not use string concatenation to call the get/set methods of Body
-    for part,jlist in pairs( parts ) do
-      local a = jlist[1]
-      local b = jlist[#jlist]
-      Body['get_'..part:lower()..'_'..sensor] = function(idx)
-        if idx then return get_func(jlist[idx]) end
-        return get_func(a,b)
-      end -- Get
-    end -- anthropomorphic
-    --------------------------------
-  else
-    -- Override for non-dynamixel (non-anthropomorphic) sensors
-    local get_func = function(idx,idx2)
-      if idx then
-        -- Return the values from idx to idx2
-        if idx2 then return vector.new(pointer:table(idx,idx2)) end
-        return pointer[idx]
-      end
-      -- If no idx is supplied, then return the values of all joints
-      return vector.new(pointer:table())
-    end
-    Body[get_key] = get_func
-  end -- if treadptr
-end
-
-----------------------
--- Body sensor read requests
--- jcm should be the API compliance test
-for sensor, pointer in pairs(jcm.readPtr) do
-  local treq_ptr = jcm.trequestPtr[sensor]
-  local req_key = 'request_'..sensor
-  local req_func = function(idx)
-    local t = get_time()
-    local qt = type(idx)
-    if qt=='number' then
-      pointer[idx] = 1
-      treq_ptr[idx] = t
-    elseif qt=='table' then
-      for _,i in ipairs(idx) do
-        pointer[i] = 1
-        treq_ptr[i] = t
-      end
-    else
-      -- All joint request
-      for i=1,nJoint do
-        pointer[i] = 1
-        treq_ptr[i] = t
-      end
-    end
-    return
+------------------
+-- Body sensors --
+------------------
+for sensor, ptr in pairs(dcm.sensorPtr) do
+	local function get(idx1, idx2)
+		-- For cdata, use -1
+		return vector.slice(ptr, (idx1 or 1)-1, (idx2 or nJoint)-1)
 	end
-  Body[req_key] = req_func
-  -- overwrite if foot
-  if sensor:find'foot' then
-    Body[req_key] = function()
-      pointer[1] = 1
-      treq_ptr[1] = get_time()
-    end
+	Body['get_'..sensor] = get
+  -- Anthropomorphic access to dcm
+	-- TODO: get_lleg_rpy is illegal, for instance
+  for part, jlist in pairs(parts) do
+		-- For cdata, use -1
+    local idx1, idx2 = jlist[1]-1, jlist[#jlist]-1
+    Body['get_'..part:lower()..'_'..sensor] = function(idx)
+      if idx then return get(jlist[idx]) else return get(idx1, idx2) end
+    end -- Get
   end
-  ---------------------
-  if not sensor:find'foot' then
-    -- Anthropomorphic --
-    for part,jlist in pairs( parts ) do
-    	local a = jlist[1]
-    	local b = jlist[#jlist]
-      local read_key = 'read_'..sensor
-    	Body['request_'..part:lower()..'_'..sensor] = function(idx)
-    		if idx then return req_func(jlist[idx]) end
-    		return req_func(jlist)
-    	end -- Set
-    end -- anthropomorphic
-  ----------------------
-  end
-  ----------------------
+	-- End anthropomorphic
 end
 
-----------------------
--- Body actuator commands
--- jcm should be the API compliance test
-for actuator, pointer in pairs(jcm.actuatorPtr) do
-  local get_key = 'get_actuator_'..actuator
-  local set_key = 'set_actuator_'..actuator
-  local write_ptr = jcm.writePtr[actuator]
-
-	 local set_func = function(val,idx)
-   --print('setting a write')
-    if type(val)=='number' then
-      if type(idx)=='number' then
-        pointer[idx]   = val
-        write_ptr[idx] = 1
-        return
-      else
-        for _,i in ipairs(idx) do
-          pointer[i]   = val
-          write_ptr[i] = 1
-        end
-        return
-      end
-    end
-    if not idx then
-      for i,v in ipairs(val) do
-        pointer[i]   = v
-        write_ptr[i] = 1
-      end
-      return
-    end
-    if type(idx)=='number' then
-      for i,v in ipairs(val) do
-        local offset = idx+i-1
-        pointer[offset]   = v
-        write_ptr[offset] = 1
-      end
-      return
-    else
-      -- ji: joint index. vi: value index
-      for vi,ji in ipairs(idx) do
-        pointer[ji]   = val[vi]
-        write_ptr[ji] = 1
-      end
-      return
-    end
+--------------------
+-- Body actuators --
+--------------------
+for actuator, ptr in pairs(dcm.actuatorPtr) do
+	-- Only command_position is constantly synced
+	-- Other commands need to be specially sent to the Body
+	local not_synced = actuator~='command_position'
+	local function set (val, idx1, idx2)
+		-- cdata is -1
+		if idx2 then
+			if type(val)=='number' then
+				for i=idx1, idx2 do ptr[i - 1] = val end
+			else
+				local idx
+				for i,v in ipairs(val) do
+					idx = idx1 + i - 1
+					if idx>idx2 then break else ptr[idx - 1] = v end
+				end
+			end
+		elseif idx1 then
+			if type(val)=='number' then
+				ptr[idx1 - 1] = val
+			else
+				for i,v in ipairs(val) do ptr[idx1 + i - 2] = v end
+			end
+		else
+			-- No index means set all actuators... Uncommon
+			if type(val)=='number' then
+				for i=0, nJoint-1 do ptr[i] = val end
+			else
+				for i, v in ipairs(val) do ptr[i - 1] = v end
+			end
+		end
+		-- Send msg to the dcm, just string of the id
+		if not_synced then
+			for _, ch in ipairs(dcm_chs) do ch:send(actuator) end
+		end
 	end
-  Body[set_key] = set_func
-	local get_func = function(idx,idx2)
-		if idx then
-      -- Return the values from idx to idx2
-      if idx2 then return vector.new(pointer:table(idx,idx2)) end
-      return pointer[idx]
-    end
-    -- If no idx is supplied, then return the values of all joints
-    -- TODO: return as a table or carray?
-		return vector.new(pointer:table())
+	local function get (idx1, idx2)
+		idx1 = idx1 or 1
+		idx2 = idx2 or nJoint
+		-- For cdata, use -1
+		return vector.slice(ptr, idx1 - 1, idx2 - 1)
 	end
-  Body[get_key] = get_func
+	-- Export
+  Body['set_'..actuator] = set
+  Body['get_'..actuator] = get
   --------------------------------
-  -- Anthropomorphic access to jcm
+  -- Anthropomorphic access to dcm
   -- TODO: Do not use string concatenation to call the get/set methods of Body
-  for part,jlist in pairs( parts ) do
-  	local a = jlist[1]
-  	local b = jlist[#jlist]
-  	Body['get_'..part:lower()..'_'..actuator] = function(idx)
-  		if idx then return get_func(jlist[idx]) end
-  		return get_func(a,b)
-  	end -- Get
-  	Body['set_'..part:lower()..'_'..actuator] = function(val,i)
-  		if type(i)=='number' then
-        local idx = jlist[i]
-        if actuator=='command_position' then val = radian_clamp(idx,val) end
-        set_func(val,idx)
-        return val
-      end
-      -- With no idx, val is number or table
-      -- Make sure to clamp this value
-      -- If val is a number to set all limb joints
-      if type(val)=='number' then
-        local values
-        -- clamp just for command position!
-        if actuator=='command_position' then
-          values = {}
-          for i,idx in ipairs(jlist) do values[i]=radian_clamp(idx,val) end
-        else
-          values = val*vector.ones(#jlist)
-        end
-        set_func(values,a)
-        return values
-      end
-      -- If val is a set of values for each limb joints
-      if actuator=='command_position' then
-        for i,idx in ipairs(jlist) do val[i]=radian_clamp(idx,val[i]) end
-      end
-  		set_func(val,a)
-      return val
-  	end -- Set
-  end -- anthropomorphic
-
-  -- Overwrite torque_enable
-  if actuator=='command_torque' then
-    Body['set_'..part:lower()..'_'..actuator] = function(val,i) end
-    Body['get_'..part:lower()..'_'..actuator] = function(val,i) end
-    Body[set_key] = function() end
-    Body[get_key] = function() end
+  for part, jlist in pairs(parts) do
+		local idx1, idx2, idx = jlist[1], jlist[#jlist], nil
+		Body['get_'..part:lower()..'_'..actuator] = function(idx)
+			if idx then return get(jlist[idx]) else return get(idx1, idx2) end
+		end
+		Body['set_'..part:lower()..'_'..actuator] = function(val, i)
+			idx = jlist[i]
+			if idx then return set(val, idx) else return set(val, idx1, idx2) end
+		end
   end
-
-  --------------------------------
+	-- End anthropomorphic
 end
 
+-- TODO: Set if this is the right approach...
 Body.set_rgrip_percent = function( percent, is_torque )
   -- Convex combo
   percent = math.min(math.max(percent,0),1)
   --
   local thumb = indexRGrip
   local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
-  jcm.actuatorPtr.command_position[thumb] = radian
-  jcm.writePtr.command_position[thumb] = 1
+  dcm.actuatorPtr.command_position[thumb] = radian
+  dcm.writePtr.command_position[thumb] = 1
   -- Set the command_torque
-  jcm.gripperPtr.torque_mode[3] = 0
+  dcm.gripperPtr.torque_mode[3] = 0
   -- Set the command_torque to zero
-  jcm.gripperPtr.command_torque[3] = 0
+  dcm.gripperPtr.command_torque[3] = 0
 end
 -- For torque control (no reading from the motor just yet)
 Body.set_rgrip_command_torque = function(val)
   -- Set the command_torque
-  jcm.gripperPtr.command_torque[3] = -1*val
+  dcm.gripperPtr.command_torque[3] = -1*val
   -- Set the command_torque
-  jcm.gripperPtr.torque_mode[3] = 1
+  dcm.gripperPtr.torque_mode[3] = 1
 end
 -- For torque control (no reading from the motor just yet)
 Body.get_rgrip_command_torque_step = function()
-  local val = jcm.gripperPtr.command_torque[3]
+  local val = dcm.gripperPtr.command_torque[3]
   -- Not too large/small
   val = util.procFunc(val,0,1023)
   if val<0 then val=1024-val end
   -- Return the value and the mode
-  return val, jcm.gripperPtr.torque_mode[3]
+  return val, dcm.gripperPtr.torque_mode[3]
 end
 Body.set_rtrigger_percent = function( percent, is_torque )
   local thumb = indexRGrip+1
   percent = math.min(math.max(percent,0),1)
   -- Convex combo
   local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
-  jcm.actuatorPtr.command_position[thumb] = radian
-  jcm.writePtr.command_position[thumb] = 1
+  dcm.actuatorPtr.command_position[thumb] = radian
+  dcm.writePtr.command_position[thumb] = 1
   -- Set the command_torque to position
-  jcm.gripperPtr.torque_mode[4] = 0
+  dcm.gripperPtr.torque_mode[4] = 0
   -- Set the command_torque to zero
-  jcm.gripperPtr.command_torque[4] = 0
+  dcm.gripperPtr.command_torque[4] = 0
 end
 -- For torque control (no reading from the motor just yet)
 Body.set_rtrigger_command_torque = function(val)
   -- Set the command_torque
-  jcm.gripperPtr.command_torque[4] = val
+  dcm.gripperPtr.command_torque[4] = val
   -- Set the command_torque
-  jcm.gripperPtr.torque_mode[4] = 1
+  dcm.gripperPtr.torque_mode[4] = 1
 end
 -- For torque control (no reading from the motor just yet)
 Body.get_rtrigger_command_torque_step = function()
-  local val = jcm.gripperPtr.command_torque[4]
+  local val = dcm.gripperPtr.command_torque[4]
   -- Not too large/small
   val = util.procFunc(val,0,1023)
   if val<0 then val=1024-val end
   -- Return the value and the mode
-  return val, jcm.gripperPtr.torque_mode[4]
+  return val, dcm.gripperPtr.torque_mode[4]
 end
 
 -- left --
@@ -362,80 +209,58 @@ Body.set_lgrip_percent = function( percent, is_torque )
   percent = math.min(math.max(percent,0),1)
   -- Convex combo
   local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
-  jcm.actuatorPtr.command_position[thumb] = radian
-  jcm.writePtr.command_position[thumb] = 1
+  dcm.actuatorPtr.command_position[thumb] = radian
+  dcm.writePtr.command_position[thumb] = 1
   -- Set the command_torque to position
-  jcm.gripperPtr.torque_mode[1] = 0
+  dcm.gripperPtr.torque_mode[1] = 0
   -- Set the command_torque to zero
-  jcm.gripperPtr.command_torque[1] = 0
+  dcm.gripperPtr.command_torque[1] = 0
 end
 -- For torque control (no reading from the motor just yet)
 Body.set_lgrip_command_torque = function(val)
   -- Set the command_torque
-  jcm.gripperPtr.command_torque[1] = val
+  dcm.gripperPtr.command_torque[1] = val
   -- Set the command_torque
-  jcm.gripperPtr.torque_mode[1] = 1
+  dcm.gripperPtr.torque_mode[1] = 1
 end
 -- For torque control (no reading from the motor just yet)
 Body.get_lgrip_command_torque_step = function()
-  local val = jcm.gripperPtr.command_torque[1]
+  local val = dcm.gripperPtr.command_torque[1]
   -- Not too large/small
   val = util.procFunc(val,0,1023)
   if val<0 then val=1024-val end
   -- Return the value and the mode
-  return val, jcm.gripperPtr.torque_mode[1]
+  return val, dcm.gripperPtr.torque_mode[1]
 end
 Body.set_ltrigger_percent = function( percent, is_torque )
   local thumb = indexLGrip+1
   percent = math.min(math.max(percent,0),1)
   -- Convex combo
   local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
-  jcm.actuatorPtr.command_position[thumb] = radian
-  jcm.writePtr.command_position[thumb] = 1
+  dcm.actuatorPtr.command_position[thumb] = radian
+  dcm.writePtr.command_position[thumb] = 1
   -- Set the command_torque to position
-  jcm.gripperPtr.torque_mode[2] = 0
+  dcm.gripperPtr.torque_mode[2] = 0
   -- Set the command_torque to zero
-  jcm.gripperPtr.command_torque[2] = 0
+  dcm.gripperPtr.command_torque[2] = 0
 end
 -- For torque control (no reading from the motor just yet)
 Body.set_ltrigger_command_torque = function(val)
 --print('val!',val)
   -- Set the command_torque
-  jcm.gripperPtr.command_torque[2] = -1*val
+  dcm.gripperPtr.command_torque[2] = -1*val
   -- Set the command_torque
-  jcm.gripperPtr.torque_mode[2] = 1
+  dcm.gripperPtr.torque_mode[2] = 1
 end
 -- For torque control (no reading from the motor just yet)
 Body.get_ltrigger_command_torque_step = function()
-  local val = jcm.gripperPtr.command_torque[2]
+  local val = dcm.gripperPtr.command_torque[2]
   -- Not too large/small
   val = util.procFunc(val,0,1023)
   if val<0 then val=1024-val end
   -- Return the value and the mode
-  return val, jcm.gripperPtr.torque_mode[2]
+  return val, dcm.gripperPtr.torque_mode[2]
 end
-
---------------------------------
--- TODO: Hardness
-Body['set_actuator_hardness'] = function(val,idx)
--- TODO
-end
-Body['get_actuator_hardness'] = function(idx,idx2)
-  -- TODO
-end
-for part,jlist in pairs( parts ) do
-	Body['get_'..part:lower()..'_hardness'] = function(idx)
-    -- TODO
-	end -- Get
-	Body['set_'..part:lower()..'_hardness'] = function(val,idx)
-		-- TODO
-	end -- Set
-end -- anthropomorphic
---------------------------------
-
-----------------------
--- Inverse Kinematics
-local Kinematics = require'THOROPKinematics'
 
 -- Check the error from a desired transform tr
 -- to a forwards kinematics of in IK solution q
@@ -632,21 +457,25 @@ end
 local function imu_cb ()
 
 end
-local function body_cb ()
-
+local function body_cb (c_ch)
+	-- Externally call some sort of sync
+	for _, msg in ipairs(b_ch:receive()) do
+		for i, ch in ipairs(dcm_chs) do ch:send(actuator) end
+	end
 end
 
-----------------------
--- More standard api functions
-local channels, dev_poll = {}, nil
 function Body.entry ()
+	-- Reset the tables
+	dev_chs, dcm_chs, body_chs, body_poll = {}, {}, {}
 	-- Start all the threads
 	-- TODO: Check if already running as a separate process
 	for i, v in ipairs(Config.chain) do
 		local ch, thread =
 			si.new_thread(ROBOT_HOME..'/run_dcm.lua', 'dcm'..i, v)
 		ch.callback = chain_cb
-		table.insert(channels, ch)
+		table.insert(dev_chs, ch)
+		table.insert(dcm_chs, ch)
+		table.insert(body_chs, ch)
 		thread:start()
 	end
 	-- IMU
@@ -654,23 +483,24 @@ function Body.entry ()
 		local imu_ch, imu_thread =
 			si.new_thread(ROBOT_HOME..'/run_imu.lua', 'imu', v)
 		ch.callback = imu_cb
-		table.insert(channels, imu_ch)
+		table.insert(dev_chs, imu_ch)
+		table.insert(body_chs, ch)
 		imu_thread:start()
 	end
 	-- Body requests
 	-- Listens from everybody
 	local body_ch = si.new_subscriber'body!'
 	body_ch.callback = body_cb
-	table.insert(channels, body_ch)
+	table.insert(body_chs, ch)
 	-- Polling object
-	dev_poll = si.wait_on_channels(channels)
+	body_poll = si.wait_on_channels(body_chs)
 end
 
 function Body.update ()
 	-- Poll for events
 	-- Return immediately if nothing happening
 	-- NOTE: Most of the time, nothing will happen...
-	dev_poll:poll(0)
+	body_poll:poll(0)
 end
 
 function Body.exit ()
@@ -699,8 +529,8 @@ if IS_TESTING then
 
     local t = Body.get_time()
 
-    local rad = jcm.get_actuator_command_position()
-    jcm.set_sensor_position(rad)
+    local rad = dcm.get_actuator_command_position()
+    dcm.set_sensor_position(rad)
 
   end
   Body.exit=function()
@@ -906,7 +736,7 @@ elseif IS_WEBOTS then
 	Body.entry = function()
 
     -- Request @ t=0 to always be earlier than position reads
-    jcm.set_trequest_position( vector.zeros(nJoint) )
+    dcm.set_trequest_position( vector.zeros(nJoint) )
 
 		-- Grab the tags from the joint names
 		tags.joints = {}
@@ -948,10 +778,10 @@ elseif IS_WEBOTS then
       if jtag>0 then
         local val = webots.wb_motor_get_position( jtag )
         local rad = servo.direction[idx] * val - servo.rad_offset[idx]
-        jcm.sensorPtr.position[idx] = rad
-        jcm.actuatorPtr.command_position[idx] = rad
-        jcm.treadPtr.position[idx] = t
-        jcm.twritePtr.command_position[idx] = t
+        dcm.sensorPtr.position[idx] = rad
+        dcm.actuatorPtr.command_position[idx] = rad
+        dcm.treadPtr.position[idx] = t
+        dcm.twritePtr.command_position[idx] = t
       end
     end
 
@@ -1006,7 +836,7 @@ elseif IS_WEBOTS then
         else
           webots.wb_motor_set_position(jtag, pos )
         end
-        jcm.twritePtr.command_position[idx] = t
+        dcm.twritePtr.command_position[idx] = t
       end
 		end --for
 
@@ -1016,22 +846,22 @@ elseif IS_WEBOTS then
     if ENABLE_IMU then
       -- Accelerometer data (verified)
       local accel = webots.wb_accelerometer_get_values(tags.accelerometer)
-      jcm.sensorPtr.accelerometer[1] = (accel[1]-512)/128
-      jcm.sensorPtr.accelerometer[2] = (accel[2]-512)/128
-      jcm.sensorPtr.accelerometer[3] = (accel[3]-512)/128
+      dcm.sensorPtr.accelerometer[1] = (accel[1]-512)/128
+      dcm.sensorPtr.accelerometer[2] = (accel[2]-512)/128
+      dcm.sensorPtr.accelerometer[3] = (accel[3]-512)/128
 
       -- Gyro data (verified)
       local gyro = webots.wb_gyro_get_values(tags.gyro)
 
-      jcm.sensorPtr.gyro[1] = -(gyro[1]-512)/512*39.24
-      jcm.sensorPtr.gyro[2] = -(gyro[2]-512)/512*39.24
-      jcm.sensorPtr.gyro[3] = (gyro[3]-512)/512*39.24
+      dcm.sensorPtr.gyro[1] = -(gyro[1]-512)/512*39.24
+      dcm.sensorPtr.gyro[2] = -(gyro[2]-512)/512*39.24
+      dcm.sensorPtr.gyro[3] = (gyro[3]-512)/512*39.24
     end
 
     -- FSR
     if ENABLE_FSR then
-      jcm.sensorPtr.lfoot[1] = webots.wb_touch_sensor_get_value(tags.l_fsr)*4
-      jcm.sensorPtr.rfoot[1] = webots.wb_touch_sensor_get_value(tags.r_fsr)*4
+      dcm.sensorPtr.lfoot[1] = webots.wb_touch_sensor_get_value(tags.l_fsr)*4
+      dcm.sensorPtr.rfoot[1] = webots.wb_touch_sensor_get_value(tags.r_fsr)*4
     end
 
     -- GPS and compass data
@@ -1048,7 +878,7 @@ elseif IS_WEBOTS then
       local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
 
       --SJ: we need to remap rpy for webots
-      jcm.sensorPtr.rpy[1],jcm.sensorPtr.rpy[2],jcm.sensorPtr.rpy[3] =
+      dcm.sensorPtr.rpy[1],dcm.sensorPtr.rpy[2],dcm.sensorPtr.rpy[3] =
         rpy[2],rpy[1],-rpy[3]
 
       --[[
@@ -1066,8 +896,8 @@ elseif IS_WEBOTS then
 			if jtag>0 then
 				local val = webots.wb_motor_get_position( jtag )
 				local rad = servo.direction[idx] * val - servo.rad_offset[idx]
-        jcm.sensorPtr.position[idx] = rad
-        jcm.treadPtr.position[idx] = t
+        dcm.sensorPtr.position[idx] = rad
+        dcm.treadPtr.position[idx] = t
 			end
 		end
 
@@ -1126,7 +956,7 @@ elseif IS_WEBOTS then
 
   local FSR_threshold = 200
   Body.get_lfoot_touched = function()
-    local LFSR = jcm.get-sensor_lfoot()
+    local LFSR = dcm.get-sensor_lfoot()
     if (LFSR[1]+LFSR[2]+LFSR[3]+LFSR[4])>FSR_threshold then
       return true
     else
@@ -1134,7 +964,7 @@ elseif IS_WEBOTS then
     end
   end
   Body.get_rfoot_touched = function()
-    local RFSR = jcm.get-sensor_rfoot()
+    local RFSR = dcm.get-sensor_rfoot()
     if (RFSR[1]+RFSR[2]+RFSR[3]+RFSR[4])>FSR_threshold then
       return true
     else

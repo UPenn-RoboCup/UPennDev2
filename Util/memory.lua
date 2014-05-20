@@ -59,19 +59,12 @@ function memory.init_shm_segment (name, shared, shsize, tid, pid)
 		local shmPointerName = shtable..'Ptr';
 		fenv[shmPointerName] = {};
 		local shmPointer = fenv[shmPointerName]
-		if ffi then
-			-- Add an iterator
-			--
-		else
-			-- generate accessors and pointers
-
-		end
-
     for k,v in pairs(shared[shtable]) do
 			local ptr, tp, n = shmHandle:pointer(k)
+
       -- If FFI, then give raw access to the SHM pointer
 			if ffi then
-				shmPointer[k] = ffi.cast(tp..'*',ptr)
+				shmPointer[k] = ffi.cast(tp..'*', ptr)
 			--else
 			--	shmPointer[k] = carray.cast(ptr, tp, n)
 			end

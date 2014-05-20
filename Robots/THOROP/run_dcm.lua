@@ -30,10 +30,11 @@ metadata = metadata or {}
 -- Debug
 if metadata.name then print('DCM | Running', metadata.name) end
 -- Modules
-require'jcm'
+require'dcm'
 local lD = require'libDynamixel'
 local ptable = require'util'.ptable
 local usleep, get_time = unix.usleep, unix.time
+local running = true
 -- Corresponding Motor ids
 local bus = lD.new_bus(metadata.device)
 local m_ids = metadata.m_ids
@@ -72,14 +73,15 @@ local function step_to_radian (idx, step)
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
 -- Cache the typical commands quickly
-local cp_ptr  = jcm.actuatorPtr.command_position
+local cp_ptr  = dcm.actuatorPtr.command_position
 local cp_cmd  = lD.set_nx_command_position
-local p_ptr   = jcm.sensorPtr.position
+local p_ptr   = dcm.sensorPtr.position
 local p_read  = lD.get_nx_position
 local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 -- Define reading
 local positions = vector.zeros(n_motors)
 local function do_read (is_strict)
+	-- TODO: Strict should just be one motor at a time...
 	local status = p_read(m_ids, bus)
 	if is_strict and #status~=n_motors then return end
 	for _,s in ipairs(status) do
@@ -99,15 +101,36 @@ end
 -- TODO: Add MX support
 local commands = vector.zeros(n_motors)
 local function do_write ()
-	for _,j_id in ipairs(j_ids) do
+	for i,j_id in ipairs(j_ids) do
 		commands[i] = radian_to_step(cp_ptr[j_id-1])
 	end
 	-- Perform the sync write
 	cp_cmd(m_ids, commands, bus)
 end
 -- Define parent interaction. NOTE: Openly subscribing to ANYONE. fiddle even
-local function process_parent (msg)
-
+local parent_cb = {
+	exit = function (msg)
+		running = false
+		bus:close()
+		if IS_THREAD then parent_msg:send'done' end
+	end,
+}
+local function do_parent ()
+	local cmd = parent_ch:receive(true)
+	if not cmd then return end
+	-- Check if there is something special
+	local f = parent_cb[cmd]
+	if f then return f(msg) end
+	-- Else, access something from the motor
+	local ptr, set = dcm.actuatorPtr[cmd], libDynamixel['set_nx_'..k]
+	-- TODO: Check if we need the motors torqued off for the command to work
+	-- Send individually to the motors, waiting for the status return
+	local j_id, status
+	for _, m_id in ipairs(m_ids) do
+		j_id = m_to_j[m_id] - 1
+		status = set(m_id, ptr[j_id], bus)
+		-- TODO: check the status, and repeat if necessary...
+	end
 end
 -- Initially, copy the command positions from the read positions
 -- Try 5 times to get all joints at once
@@ -125,7 +148,7 @@ collectgarbage()
 -- Begin infinite loop
 local t0 = get_time()
 local t_debug = t0
-while true do
+while running do
 	local t = get_time()
 	local t_diff = t-t0
 	t0 = t
@@ -148,14 +171,5 @@ while true do
 	---------------------
 	-- Parent Commands --
 	---------------------
-	local parent_msg = parent_ch:receive(true)
-	if parent_msg then
-		if parent_msg=='exit' then
-			bus:close()
-			if IS_THREAD then parent_msg:send'done' end
-			return
-		else
-			process_parent(parent_msg)
-		end
-	end
+	do_parent()
 end

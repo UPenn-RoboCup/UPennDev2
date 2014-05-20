@@ -2,8 +2,6 @@
 -- (c) 2014 Stephen McGill
 -- General Detection methods
 local libVision = {}
--- Know our joints
-require'jcm'
 -- Detection and HeadTransform information
 local ImageProc = require'ImageProc'
 local ImageProc2 = require'ImageProc.ffi'
@@ -29,7 +27,7 @@ local color = {
 -- Update the Head transform
 -- Input: Head angles
 function libVision.update_head ()
-  -- TODO: get from jcm
+	-- Get from Body...
   local head = vector.zeros(2)
   -- TODO: Smarter memory allocation
   -- TODO: Add any bias for each robot

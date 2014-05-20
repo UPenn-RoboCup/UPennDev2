@@ -457,10 +457,9 @@ end
 local function imu_cb ()
 print('imu cb')
 end
-local function body_cb (b_ch)
-print('body_cb!')
+local function body_cb (b_skt)
 	-- Externally call some sort of sync
-	for _, msg in ipairs(b_ch:receive()) do
+	for _, msg in ipairs(b_skt:recv_all()) do
 		for i, ch in ipairs(dcm_chs) do ch:send(actuator) end
 	end
 end

@@ -132,7 +132,7 @@ local line_iter = function(self, qArm0, trGoal, res_pos, res_ang, use_safe_inver
 	return function(cur_qArm,human)
 		local cur_trArm, is_singular = K.forward_arm(cur_qArm)
 		--if skip_angles==false and is_singular then print('PLAN SINGULARITY') end
-		
+
 		local trStep, dAng, dAxis, quatArm, posArm
 		if skip_angles==true then
 			posArm = vector.new{cur_trArm[1][4],cur_trArm[2][4],cur_trArm[3][4]}
@@ -140,7 +140,7 @@ local line_iter = function(self, qArm0, trGoal, res_pos, res_ang, use_safe_inver
 			quatArm, posArm = T.to_quaternion(cur_trArm)
 			dAng, dAxis = q.diff(quatArm,quatGoal)
 		end
-		
+
 		--
 		local dPos = posGoal - posArm
 		local distance = vector.norm(dPos)
@@ -171,7 +171,7 @@ local line_iter = function(self, qArm0, trGoal, res_pos, res_ang, use_safe_inver
 	end, qGoal
 end
 
-local joint_stack = function(self, qArm, qGoal, res_q)
+local function joint_stack (self, qArm, qGoal, res_q)
 	res_q = res_q or 2*DEG_TO_RAD
 	qGoal = util.clamp_vector(qGoal,self.min_q,self.max_q)
 	--
@@ -186,10 +186,10 @@ local joint_stack = function(self, qArm, qGoal, res_q)
 	return setmetatable(qStack, mt)
 end
 
-local joint_iter = function(self, qArm0, qGoal, res_q)
-	res_q = res_q or 2*DEG_TO_RAD
-	qGoal = util.clamp_vector(qGoal,self.min_q,self.max_q)
-	return function(cur_qArm,human)
+local function joint_iter (self, qArm0, qGoal, res_q)
+	res_q = res_q or 2 * DEG_TO_RAD
+	qGoal = util.clamp_vector(qGoal, self.min_q, self.max_q)
+	return function(cur_qArm, human)
 		local dq = qGoal - cur_qArm
 		local distance = vector.norm(dq)
 		local ddq = res_q / distance * dq

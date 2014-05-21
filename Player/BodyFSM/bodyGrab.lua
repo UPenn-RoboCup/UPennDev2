@@ -8,7 +8,7 @@ local vector = require'vector'
 local util = require'util'
 local quaternion = require'quaternion'
 local P = require'libPlan'
-local planner = P.new_planner(K,Body.servo.min_rad,Body.servo.max_rad)
+local planner = P.new_planner(K,Config.servo.min_rad,Config.servo.max_rad)
 local pathIter, qGoal, relative_pick_tr0
 
 local timeout = 10.0
@@ -27,7 +27,7 @@ local function get_pick_transform()
 	-- FOR DEBUG ONLY
 	if DEBUG then pose_rel = vector.pose{.25,.1,0} end
 
-	local relative_pick_tr = 
+	local relative_pick_tr =
 		T.trans(pose_rel.x,pose_rel.y,-0.2) * T.rotY(180*DEG_TO_RAD)
 	return relative_pick_tr
 end

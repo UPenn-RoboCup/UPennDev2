@@ -9,72 +9,45 @@ local Body   = require'Body'
 local util   = require'util'
 local vector = require'vector'
 local t_entry, t_update, t_finish
-local timeout = 15.0
+local timeout = 10.0
+local get_time = Body.get_time
 
--- Goal position is arm Init, with hands in front, ready to manipulate
-
-local qLArmTarget, qRArmTarget
+local lP, pathIter = require'libPlan', pathIter
+local planner = lP.new_planner(Body.Kinematics, Config.servo.min_rad, Config.servo.max_rad)
+local qLArm_goal = Config.fsm.armInit.qLArm
 
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
-  t_entry = Body.get_time()
+  t_entry = get_time()
   t_update = t_entry
   t_finish = t
-
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-
-
-  local qLWrist = Body.get_inverse_lwrist(
-    qLArm,
-    Config.arm.pLWristTarget0,
-    Config.arm.lShoulderYaw0)
-  local qRWrist = Body.get_inverse_rwrist(
-    qRArm,
-    Config.arm.pRWristTarget0,
-    Config.arm.rShoulderYaw0)
-
-  qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)
-  qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
-
-
-  print(string.format("qLArmr: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
-  unpack(qLArm*RAD_TO_DEG)
-  ))
-  print(string.format("QLArmTarget: %.2f %.2f %.2f %.2f",
-  unpack( vector.new(qLArmTarget)*RAD_TO_DEG)
-  ))
-
-  mcm.set_stance_enable_torso_track(0)
-
-  mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit)
-  mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit)
-
+  -- Form the planner
+  local qLArm = Body.get_larm_position()
+  pathIter = planner:joint_iter(qLArm, qLArm_goal)
 end
 
 function state.update()
   --print(state._NAME..' Update' )
-  local t  = Body.get_time()
+  local t  = get_time()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-
-  -- Slowly close all fingers
-  local l_closed, r_closed = Body.close_l_gripper(), Body.close_r_gripper()
-
+  -- Find where we should go now
   local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-  local ret = movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)
-  if ret==1 then return "done" end
+  local qLArm_wp = pathIter(qLArm)
+  if not qLArm_wp then
+    Body.set_larm_command_position(qLArm_goal)
+    -- We do not *need* to transition here, but we have achieved our init state
+    return'done'
+  end
+  -- Go to the waypoint
+  Body.set_larm_command_position(qLArm_wp)
 end
 
 function state.exit()
   print(state._NAME..' Exit' )
-  local libArmPlan = require 'libArmPlan'
-  local arm_planner = libArmPlan.new_planner()
-  arm_planner:reset_torso_comp(qLArmTarget,qRArmTarget)
 end
 
 return state

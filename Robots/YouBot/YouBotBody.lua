@@ -4,38 +4,25 @@
 local Body = {}
 
 require'wcm'
-require'dcm'
 require'mcm'
 
 local K = require'YouBotKinematics'
+Body.Kinematics = K
 local si = require'simple_ipc'
 local util = require'util'
 local vector = require'vector'
 
 -- Five degree of freedom arm
-local nJoint = 5
-assert(nJoint==Config.nJoint,
-	'Config file and Body must agree on number of joints!')
+local nJoint = Config.nJoint
 
 -- Table of servo properties
-local servo = {
-	min_rad = DEG_TO_RAD * vector.new({-165, -57, -142, -95, -150}),
-	max_rad = DEG_TO_RAD * vector.new({165, 89, 142, 95, 150}),
-	offset  = DEG_TO_RAD * vector.new({-167, -58, -143, -97, -168}),
-	direction = vector.new({1, -1, 1, -1, 1}),
-}
-assert(#servo.min_rad==nJoint, 'Bad servo min_rad!')
-assert(#servo.max_rad==nJoint, 'Bad servo min_rad!')
-assert(#servo.direction==nJoint, 'Bad servo direction!')
-assert(#servo.offset==nJoint, 'Bad servo offsets!')
+local servo = Config.servo
 
 -- Hold our sensors and commands locally
 -- Only use the shared memory API sparingly
 local actuator, sensor = {}, {}
-for i,v in ipairs{'torque', 'velocity', 'position'} do
-	actuator[v] = vector.zeros(nJoint)
-	sensor[v]   = vector.zeros(nJoint)
-end
+for i,v in ipairs(Config.sensors) do sensor[v] = vector.zeros(nJoint) end
+for i,v in ipairs(Config.actuators) do actuator[v] = vector.zeros(nJoint) end
 -- Add the gripper
 actuator.gripper = 0
 sensor.gripper = 0
@@ -44,15 +31,32 @@ actuator.base = vector.zeros(3)
 sensor.base = vector.zeros(3)
 
 -- Commanding the arm position
-function Body.set_command_position (val)
+-- YouBot can have two arms, so we call a single arm 'left' for now...
+function Body.set_larm_command_position (val)
 	assert(type(val)=='table' and #val==nJoint, 'Bad set_command!')
-	local clamped = util.clamp_vector(val, servo.min_rad, servo.max_rad)
-	dcm.set_actuator_command_position(clamped)
+	for idx,v in ipairs(val) do actuator.command_position[idx] = v end
 end
-Body.get_command_position = dcm.get_actuator_command_position
+Body.get_larm_command_position = function ()
+	return actuator.command_position
+end
+Body.get_larm_position = function ()
+	return sensor.position
+end
+-- Right arm does nothing atm
+function Body.set_rarm_command_position ()
+end
+function Body.get_rarm_command_position ()
+end
+function Body.get_rarm_position ()
+end
+
+-- Other API wrappers
+Body.set_walk_velocity = function(vx, vy, va)
+	mcm.set_walk_velocity{vx, vy, va}
+end
 
 if not IS_WEBOTS then
-
+	require'dcm'
 	local get_time = require'unix'.time
 	Body.get_time = get_time
 	local youbot
@@ -65,10 +69,11 @@ if not IS_WEBOTS then
 		youbot.calibrate_gripper()
 
 	  -- Set the initial joint command angles, so we have no jerk initially
+		local pos, rad
 	  for i=1,nJoint do
 			local lower, upper, en = youbot.get_arm_joint_limit(i)
-			local pos = youbot.get_arm_position(i)
-	    local rad = (pos - servo.offset[i]) * servo.direction[i]
+			pos = youbot.get_arm_position(i)
+	    rad = (pos - servo.offset[i]) * servo.direction[i]
 			sensor.position[idx] = rad
 			rad = math.max(servo.min_rad[i], math.min(servo.max_rad[i], v))
 			actuator.position[idx] = rad
@@ -90,7 +95,7 @@ if not IS_WEBOTS then
 	  dcm.set_sensor_torque(nm)
 
 	  -- Set the gripper from shared memory
-	  local spacing = dcm.get_actuator_command_gripper()[1]
+	  local spacing = dcm.get_actuator_command_gripper()
 		if spacing~=gripper_pos then
 			youbot.set_gripper_spacing(
 				math.max(math.min(spacing,0.023),0)
@@ -263,12 +268,13 @@ else
 	end
 
   function Body.entry ()
+
     -- Grab the joints
   	for i=1,nJoint do
   		tags.joints[i] = webots.wb_robot_get_device('arm'..i)
   		assert(tags.joints[i]>0, 'Arm '..i..' not found')
-      webots.wb_motor_set_velocity(tags.joints[i], 0.5)
       webots.wb_motor_enable_position(tags.joints[i], timeStep)
+			webots.wb_motor_set_position(tags.joints[i], 0)
   	end
     -- Grab the wheels
   	for i=1,4 do
@@ -279,7 +285,7 @@ else
   	for i=1,2 do
   		tags.gripper[i] = webots.wb_robot_get_device('finger'..i)
 			assert(tags.gripper[i]>0, 'Finger '..i..' not found')
-      webots.wb_motor_set_velocity(tags.gripper[i], 0.03)
+      --webots.wb_motor_set_velocity(tags.gripper[i], 0.03)
   	end
     -- Acquire sensor tags
 		tags.gps = webots.wb_robot_get_device("GPS")
@@ -304,13 +310,14 @@ else
     webots.wb_robot_step(timeStep)
 
     -- Read values
+		local pos, rad
     for idx, jtag in pairs(tags.joints) do
-      local pos = webots.wb_motor_get_position( jtag )
+      pos = webots.wb_motor_get_position( jtag )
       -- Take care of nan
       if pos~=pos then pos = 0 end
-			local rad = (pos - servo.offset[idx]) * servo.direction[idx]
+			rad = (pos - servo.offset[idx]) * servo.direction[idx]
 			sensor.position[idx] = rad
-			actuator.position[idx] = math.max(servo.min_rad[idx], math.min(servo.max_rad[idx], rad))
+			actuator.command_position[idx] = math.max(servo.min_rad[idx], math.min(servo.max_rad[idx], rad))
     end
 		-- Zero the base velocity
 		actuator.base = actuator.base * 0
@@ -386,28 +393,13 @@ else
 		lidar0_ch:send{mp.pack(meta),tostring(lidar_array)}
 	end
 
-	local function update_shm ()
-		dcm.set_sensor_position(sensor.positions)
-		dcm.set_actuator_command_position(actuator.positions)
-	end
-
   function Body.update ()
 		local t = get_time()
-		-- TODO: Check all requests, which have some priority with them...
-
-
     -- Write arm commands
-    --local cmds = dcm.get_actuator_command_position()
-		local cmds = {}
-    for i,v in ipairs(cmds) do
-      local jtag = tags.joints[i]
-      if jtag then
-        -- Push to webots
-				local rad = v * servo.direction[i] + servo.offset[i]
-				rad = math.max(servo.min_rad[i], math.min(servo.max_rad[i], rad))
-				actuator.position[i] = rad
-        webots.wb_motor_set_position( jtag, rad )
-      end
+		local rad
+		for idx, jtag in ipairs(tags.joints) do
+			rad = actuator.command_position[idx] * servo.direction[idx] + servo.offset[idx]
+      webots.wb_motor_set_position(jtag, math.max(servo.min_rad[idx], math.min(servo.max_rad[idx], rad)))
     end
 
     -- Base
@@ -415,7 +407,8 @@ else
     wheel_helper(unpack(vel))
 
     -- Gripper
-    local spacing = dcm.get_actuator_command_gripper()[1]
+    --local spacing = dcm.get_actuator_command_gripper()
+		local spacing = 0
     local width = math.max(math.min(spacing, 0.025), 0)
     webots.wb_motor_set_position(tags.gripper[1], width)
     webots.wb_motor_set_position(tags.gripper[2], width)
@@ -427,10 +420,8 @@ else
 		end
 
     -- Read values
-    for idx, jtag in pairs(tags.joints) do
-      local pos = webots.wb_motor_get_position( jtag )
-			local rad = (pos - servo.offset[idx]) * servo.direction[idx]
-			sensor.position[idx] = rad
+    for idx, jtag in ipairs(tags.joints) do
+			sensor.position[idx] = (webots.wb_motor_get_position(jtag) - servo.offset[idx]) * servo.direction[idx]
     end
 
     -- Get sensors
@@ -450,19 +441,11 @@ else
       t_last_keypress = t
     end
 
-		-- Update the shared memory, so that other processes can know our readings
-		update_shm()
-
   end
 
   function Body.exit ()
   end
 
 end
-
--- Exports
-Body.servo = servo
-Body.nJoint = nJoint
-Body.Kinematics = K
 
 return Body

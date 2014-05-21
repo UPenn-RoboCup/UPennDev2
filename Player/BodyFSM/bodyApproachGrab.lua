@@ -8,7 +8,7 @@ local vector = require'vector'
 local util = require'util'
 local quaternion = require'quaternion'
 local P = require'libPlan'
-local planner = P.new_planner(K,Body.servo.min_rad,Body.servo.max_rad)
+local planner = P.new_planner(K,Config.servo.min_rad,Config.servo.max_rad)
 local pathIter, qGoal, relative_pick_pos0
 
 local timeout = 10.0

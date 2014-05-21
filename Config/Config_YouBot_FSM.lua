@@ -1,4 +1,5 @@
 assert(Config, 'Need a pre-existing Config table!')
+local vector = require'vector'
 
 Config.fsm = {}
 -- Update rate in Hz
@@ -11,9 +12,15 @@ Config.fsm.enabled = {
 
 Config.fsm.Arm = {
   {'armIdle', 'timeout', 'armIdle'},
-  --{'armIdle', 'init', 'armInit'},
+  {'armIdle', 'init', 'armInit'},
   --
+  {'armInit', 'timeout', 'armInit'},
   --{'armInit', 'teleop', 'armTeleop'},
+}
+
+-- State specific tuning params
+Config.fsm.armInit = {
+  qLArm = vector.zeros(Config.nJoint)
 }
 
 Config.fsm.Body = {

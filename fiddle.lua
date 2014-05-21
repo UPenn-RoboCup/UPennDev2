@@ -19,20 +19,28 @@ mp = require'msgpack'
 ok, ffi = pcall(require,'ffi')
 ok = nil
 
+local si = require'simple_ipc'
+
 -- FSM communicationg
+local fsm_chs = {}
+--[[
 local listing = unix.readdir(HOME..'/Player')
 -- Add all FSM directories that are in Player
-local simple_ipc = require'simple_ipc'
-local fsm_ch_vars = {}
 for _,sm in ipairs(listing) do
   local found = sm:find'FSM'
   if found then
     -- make GameFSM to game_ch
     local name = sm:sub(1,found-1):lower()..'_ch'
-    table.insert(fsm_ch_vars,name)
+    table.insert(fsm_chs,name)
     -- Put into the global space
-    _G[name] = simple_ipc.new_publisher(sm.."!")
+    _G[name] = si.new_publisher(sm.."!")
   end
+end
+--]]
+for _,sm in ipairs(Config.fsm.enabled) do
+  local fsm_name = sm..'FSM'
+  table.insert(fsm_chs, fsm_name)
+  _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")
 end
 
 -- Shared memory
@@ -48,12 +56,12 @@ for _,mem in ipairs(listing) do
 end
 
 -- RPC engine
-rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
+rpc_ch = si.new_requester(Config.net.reliable_rpc)
 
 -- Body channel
-body_ch = simple_ipc.new_publisher'body!'
+body_ch = si.new_publisher'body!'
 
-print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
+print( util.color('FSM Channel','yellow'), table.concat(fsm_chs,' ') )
 print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
 
 if arg and arg[-1]=='-i' and jit then

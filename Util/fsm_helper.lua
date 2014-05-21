@@ -41,7 +41,7 @@ end
 -- Setup the FSM object --
 --------------------------
 local obj = {}
-obj._NAME = fsm_name
+obj._NAME = fsm_name..'FSM'
 obj.sm = sm
 -- Simple IPC for remote state triggers
 -- Add ! to invert
@@ -53,11 +53,14 @@ function obj:update ()
   -- Check for out of process events in non-blocking fashion
   local events = self.evts:receive(true)
   -- Event is a table now... :(
-  if events then for _, event in ipairs(events) do
-    --print(util.color(obj._NAME..' Event:','green'), event)
-    print(obj._NAME, event)
-    self.sm:add_event(event)
-  end end
+  if events then
+    print('EVENTS')
+    for _, event in ipairs(events) do
+      --print(util.color(obj._NAME..' Event:','green'), event)
+      print(obj._NAME, event)
+      self.sm:add_event(event)
+    end
+  end
   return self.sm:update()
 end
 function obj.exit ()

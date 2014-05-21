@@ -22,7 +22,7 @@
 #  define LZMQ_AUTOCLOSE_SOCKET 1
 #endif
 
-#define LUAZMQ_PREFIX  "LuaZMQ3: "
+#define LUAZMQ_PREFIX  "LuaZMQ: "
 
 typedef unsigned char uchar;
 #define LUAZMQ_FLAG_CLOSED       (uchar)(0x01 << 0)
@@ -108,4 +108,3 @@ int luazmq_fail_no(lua_State *L, zsocket *skt);
 int luazmq_allocfail(lua_State *L);
 
 #endif
-

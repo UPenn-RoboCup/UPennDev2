@@ -4,7 +4,7 @@
 local Body = {}
 
 require'wcm'
-require'jcm'
+require'dcm'
 require'mcm'
 
 local K = require'YouBotKinematics'
@@ -47,9 +47,9 @@ sensor.base = vector.zeros(3)
 function Body.set_command_position (val)
 	assert(type(val)=='table' and #val==nJoint, 'Bad set_command!')
 	local clamped = util.clamp_vector(val, servo.min_rad, servo.max_rad)
-	jcm.set_actuator_command_position(clamped)
+	dcm.set_actuator_command_position(clamped)
 end
-Body.get_command_position = jcm.get_actuator_command_position
+Body.get_command_position = dcm.get_actuator_command_position
 
 if not IS_WEBOTS then
 
@@ -76,9 +76,6 @@ if not IS_WEBOTS then
 	  mcm.set_walk_vel(vector.zeros(3))
 	end
 
-	-- Update speaks to the hardware of the robot
-	Body.update_cycle = 0.001
-	-- cnt of 0 is a reset
 	function Body.update ()
 	  -- Get joint readings
 	  local rad, mps, nm = {},{},{}
@@ -88,12 +85,12 @@ if not IS_WEBOTS then
 	    nm[i]  = youbot.get_arm_torque(i)
 	  end
 	  -- Set shm
-	  jcm.set_sensor_position(rad)
-	  jcm.set_sensor_velocity(mps)
-	  jcm.set_sensor_torque(nm)
+	  dcm.set_sensor_position(rad)
+	  dcm.set_sensor_velocity(mps)
+	  dcm.set_sensor_torque(nm)
 
 	  -- Set the gripper from shared memory
-	  local spacing = jcm.get_gripper_command_position()[1]
+	  local spacing = dcm.get_actuator_command_gripper()[1]
 		if spacing~=gripper_pos then
 			youbot.set_gripper_spacing(
 				math.max(math.min(spacing,0.023),0)
@@ -102,7 +99,7 @@ if not IS_WEBOTS then
 			gripper_pos = spacing
 		else
 			-- Set joints from shared memory when not using the gripper
-			local desired_pos = jcm.get_actuator_command_position()
+			local desired_pos = dcm.get_actuator_command_position()
 			for i,v in ipairs(desired_pos) do
 				-- Correct the direction and the offset
 				local val = v * servo.direction[i] + servo.offset[i]
@@ -118,9 +115,6 @@ if not IS_WEBOTS then
 		-- Get Odometry measurements
 		local dx, dy, da = youbot.get_base_position()
 		wcm.set_robot_odometry{dx,dy,da}
-
-		-- Increment the counter... why?
-		if cnt then return cnt+1 end
 
 	end
 
@@ -393,8 +387,8 @@ else
 	end
 
 	local function update_shm ()
-		jcm.set_sensor_position(sensor.positions)
-		jcm.set_actuator_command_position(actuator.positions)
+		dcm.set_sensor_position(sensor.positions)
+		dcm.set_actuator_command_position(actuator.positions)
 	end
 
   function Body.update ()
@@ -403,7 +397,7 @@ else
 
 
     -- Write arm commands
-    --local cmds = jcm.get_actuator_command_position()
+    --local cmds = dcm.get_actuator_command_position()
 		local cmds = {}
     for i,v in ipairs(cmds) do
       local jtag = tags.joints[i]
@@ -421,8 +415,8 @@ else
     wheel_helper(unpack(vel))
 
     -- Gripper
-    local spacing = jcm.get_gripper_command_position()
-    local width = math.max(math.min(spacing[1],0.025),0)
+    local spacing = dcm.get_actuator_command_gripper()[1]
+    local width = math.max(math.min(spacing, 0.025), 0)
     webots.wb_motor_set_position(tags.gripper[1], width)
     webots.wb_motor_set_position(tags.gripper[2], width)
 

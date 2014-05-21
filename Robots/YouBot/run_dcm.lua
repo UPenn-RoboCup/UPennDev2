@@ -32,10 +32,15 @@ metadata = metadata or {}
 if metadata.name then print('DCM | Running', metadata.name) end
 -- Modules
 require'dcm'
-local lD = require'libDynamixel'
-local ptable = require'util'.ptable
-local usleep, get_time = unix.usleep, unix.time
+local get_time = unix.time
 local running = true
+
+
+
+
+
+
+
 -- Corresponding Motor ids
 local bus = lD.new_bus(metadata.device)
 local m_ids = metadata.m_ids
@@ -110,6 +115,8 @@ end
 local parent_cb = {
 	exit = function ()
 		running = false
+		bus:close()
+		if IS_THREAD then parent_ch:send'done' end
 	end,
 }
 
@@ -189,5 +196,5 @@ while running do
 end
 
 -- Exiting
-bus:close()
-if IS_THREAD then parent_ch:send'done' end
+youbot.shutdown_arm()
+youbot.shutdown_base()

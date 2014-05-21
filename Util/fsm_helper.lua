@@ -8,7 +8,7 @@ assert(type(fsm_name)=='string', 'Need an fsm_name for the channel')
 -- Necessary modules
 local si = require'simple_ipc'
 local fsm = require'fsm'
-local util = require'util'
+--local util = require'util'
 
 -- Set up our transitions
 local states, sm = {}
@@ -19,7 +19,7 @@ for _, v in ipairs(transitions) do
     state0 = require(v[1])
     states[v[1]] = state0
     if not sm then sm = fsm.new(state0) else sm:add_state(state0) end
-    print(util.color('Loaded '..v[1], 'yellow'))
+    --print(util.color('Loaded '..v[1], 'yellow'))
   end
   local state1 = states[v[3]]
   if not state1 then
@@ -27,7 +27,7 @@ for _, v in ipairs(transitions) do
     state1 = require(v[3])
     states[v[3]] = state1
     if not sm then sm = fsm.new(state1) else sm:add_state(state1) end
-    print(util.color('Loaded '..v[3], 'yellow'))
+    --print(util.color('Loaded '..v[3], 'yellow'))
   end
   local trigger = v[2]
   assert(type(trigger)=='string', 'Bad trigger')
@@ -51,12 +51,13 @@ function obj:entry ()
 end
 function obj:update ()
   -- Check for out of process events in non-blocking fashion
-  local event = self.evts:receive(true)
+  local events = self.evts:receive(true)
   -- Event is a table now... :(
-  if event then
-    print(util.color(obj._NAME..' Event:','green'), event)
+  if events then for _, event in ipairs(events) do
+    --print(util.color(obj._NAME..' Event:','green'), event)
+    print(obj._NAME, event)
     self.sm:add_event(event)
-  end
+  end end
   return self.sm:update()
 end
 function obj.exit ()

@@ -52,15 +52,10 @@ local type2prefix = {
 }
 
 -- Set up the sending object
--- Supported: string, userdata, array of strings
-local function ch_send (self, messages, sz)
+local function ch_send (self, messages)
 	local tmsg, s, ret = type(messages), self.socket, nil
 	if tmsg == "string" then
-		ret = s:send( messages )
-  elseif tmsg=="cdata" then
-    ret = s:send_ffi( messages, sz )
-	elseif tmsg=="userdata" then
-		-- TODO
+		ret = s:send(messages)
 	elseif tmsg=="table" then
 		ret = s:send_all(messages)
 	end
@@ -68,8 +63,8 @@ local function ch_send (self, messages, sz)
 end
 
 -- Set up receiving object
-local function ch_receive (self, noblock)
-	return self.socket:recv_all(noblock and zmq.DONTWAIT)
+local function ch_receive (self, nonblock)
+	return self.socket:recv_all(nonblock and zmq.DONTWAIT)
 end
 
 -- Make a new publisher

@@ -1,4 +1,4 @@
-local LZMQ_VERSION = "0.3.6-dev"
+local LZMQ_VERSION = "0.3.7-dev"
 
 local lua_version_t
 local function lua_version()
@@ -578,7 +578,9 @@ end
 if api.zmq_recv_event then
 function Socket:recv_event(flags)
   assert(not self:closed())
-  return api.zmq_recv_event(self._private.skt, flags)
+  local event, value, address = api.zmq_recv_event(self._private.skt, flags)
+  if not event then return nil, zerror() end
+  return event, value, address
 end
 end
 
@@ -671,6 +673,13 @@ function Socket:monitor(addr, events)
   if -1 == ret then return nil, zerror() end
 
   return addr
+end
+
+function Socket:reset_monitor()
+  local ret = api.zmq_socket_monitor(self._private.skt, api.NULL, 0)
+  if -1 == ret then return nil, zerror() end
+
+  return true
 end
 
 local poll_item = ffi.new(api.vla_pollitem_t, 1)
@@ -1038,8 +1047,6 @@ function Poller:start()
     if not status then
       return nil, err
     end
-    -- If no more items, then stop the poller
-    if self._private.nitems<1 then self:stop() end
   end
   return true
 end

@@ -1,0 +1,14 @@
+# plastic orange appearance
+#
+# Author: fabien.rohrer@cyberbotics.com
+
+PROTO OrangeAppearance [
+]
+{
+Appearance {
+  material Material {
+    diffuseColor 1.0 0.4 0.0
+    specularColor 0.2 0.2 0.2
+  }
+}
+}

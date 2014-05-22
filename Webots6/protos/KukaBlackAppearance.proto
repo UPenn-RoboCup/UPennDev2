@@ -1,0 +1,19 @@
+# kuka logo on a black background appearance
+#
+# Author: fabien.rohrer@cyberbotics.com
+
+PROTO KukaBlackAppearance [
+]
+{
+Appearance {
+  material Material {
+    diffuseColor 0.8 0.8 0.8
+    specularColor 0.2 0.2 0.2
+  }
+  texture ImageTexture {
+    url [
+      "textures/kuka_black.png"
+    ]
+  }
+}
+}

@@ -1,0 +1,14 @@
+# satiny metal appearance
+#
+# Author: fabien.rohrer@cyberbotics.com
+
+PROTO MetalAppearance [
+]
+{
+Appearance {
+  material Material {
+    diffuseColor 0.5 0.5 0.5
+    specularColor 0.3 0.3 0.3
+  }
+}
+}

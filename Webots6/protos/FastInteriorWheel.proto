@@ -1,0 +1,77 @@
+# omnidirectionnal wheel containing 6 passive servos
+# Requires the fast_wheel plugin physics
+#
+# Author: fabien.rohrer@cyberbotics.com
+
+PROTO FastInteriorWheel [
+  field SFVec3f translation 0 0 0
+  field SFString name "wheel"
+]
+{
+  Servo {
+    translation IS translation
+    children [
+      WheelMesh {
+      }
+      Transform {
+        translation 0 0 0.036
+        rotation 0 0 1 0.785402
+        children [
+          SubWheelMesh {
+          }
+        ]
+      }
+      Transform {
+        translation 0.0311 0 0.018
+        rotation 0.318977 0.770074 0.552484 1.28666
+        children [
+          SubWheelMesh {
+          }
+        ]
+      }
+      Transform {
+        translation 0.0311 0 -0.018
+        rotation 0.373673 0.902122 0.21574 2.18123
+        children [
+          SubWheelMesh {
+          }
+        ]
+      }
+      Transform {
+        translation 0 0 -0.036
+        rotation 0.382685 0.923879 0 3.14159
+        children [
+          SubWheelMesh {
+          }
+        ]
+      }
+      Transform {
+        translation -0.0311 0 -0.018
+        rotation 0.373673 0.902122 -0.21574 4.10195
+        children [
+          SubWheelMesh {
+          }
+        ]
+      }
+      Transform {
+        translation -0.0311 0 0.018
+        rotation 0.318977 0.770074 -0.552484 4.99652
+        children [
+          SubWheelMesh {
+          }
+        ]
+      }
+    ]
+    name IS name
+    boundingObject Cylinder {
+      height 0.072
+      radius 0.05
+      subdivision 24
+    }
+    physics Physics {
+      density -1
+      mass 0.4
+    }
+    maxVelocity 14.81
+  }
+}

@@ -136,11 +136,11 @@ else
   local ENABLE_CAMERA = false
   local ENABLE_LIDAR  = false
   local ENABLE_KINECT = false
-	local ENABLE_POSE   = true
+	local ENABLE_POSE   = false
 
 	-- New modules
 	local webots = require'webots'
-	assert(webots.wb_motor_set_position, 'BAD WEBOTS 7 MODULE')
+	local WEBOTS_VERSION = webots.wb_motor_set_position and 7 or 6
 	local mp = require'msgpack.MessagePack'
 	local lidar0_ch = si.new_publisher'lidar0'
 
@@ -235,11 +235,23 @@ else
 	local neg_inf, pos_inf = -1 / 0, 1 / 0
 	local function wb_wheel_speed (tag, speed)
 		if speed > 0 then
-			webots.wb_motor_set_position(tag,pos_inf)
+			if WEBOTS_VERSION==7 then
+				webots.wb_motor_set_position(tag,pos_inf)
+			else
+				webots.wb_servo_set_position(tag,pos_inf)
+			end
 		else
-			webots.wb_motor_set_position(tag,neg_inf)
+			if WEBOTS_VERSION==7 then
+				webots.wb_motor_set_position(tag,neg_inf)
+			else
+				webots.wb_servo_set_position(tag,neg_inf)
+			end
 		end
-		webots.wb_motor_set_velocity(tag,math.abs(speed))
+		if WEBOTS_VERSION==7 then
+			webots.wb_motor_set_velocity(tag,math.abs(speed))
+		else
+			webots.wb_servo_set_position(tag,math.abs(speed))
+		end
 	end
 
 	local function wheel_helper (vx, vy, va)
@@ -261,10 +273,10 @@ else
 		v3 = v3 - vy * K3
 		v4 = v4 + vy * K3
 		-- Set the speeds
-		wb_wheel_speed(tags.wheels[1],v1)
-		wb_wheel_speed(tags.wheels[2],v2)
-		wb_wheel_speed(tags.wheels[3],v3)
-		wb_wheel_speed(tags.wheels[4],v4)
+		wb_wheel_speed(tags.wheels[1], v1)
+		wb_wheel_speed(tags.wheels[2], v2)
+		wb_wheel_speed(tags.wheels[3], v3)
+		wb_wheel_speed(tags.wheels[4], v4)
 	end
 
   function Body.entry ()
@@ -273,8 +285,11 @@ else
   	for i=1,nJoint do
   		tags.joints[i] = webots.wb_robot_get_device('arm'..i)
   		assert(tags.joints[i]>0, 'Arm '..i..' not found')
-      webots.wb_motor_enable_position(tags.joints[i], timeStep)
-			webots.wb_motor_set_position(tags.joints[i], 0)
+			if WEBOTS_VERSION==7 then
+      	webots.wb_motor_enable_position(tags.joints[i], timeStep)
+			else
+				webots.wb_servo_enable_position(tags.joints[i], timeStep)
+			end
   	end
     -- Grab the wheels
   	for i=1,4 do
@@ -285,34 +300,38 @@ else
   	for i=1,2 do
   		tags.gripper[i] = webots.wb_robot_get_device('finger'..i)
 			assert(tags.gripper[i]>0, 'Finger '..i..' not found')
-      --webots.wb_motor_set_velocity(tags.gripper[i], 0.03)
   	end
     -- Acquire sensor tags
-		tags.gps = webots.wb_robot_get_device("GPS")
-		tags.compass = webots.wb_robot_get_device("compass")
-		tags.hand_camera = webots.wb_robot_get_device("HandCamera")
-		tags.lidar = webots.wb_robot_get_device("lidar")
-		tags.kinect = webots.wb_robot_get_device("kinect")
-
-		-- Enable sensors
-		key_action.p(ENABLE_POSE)
-		key_action.c(ENABLE_CAMERA)
-		key_action.l(ENABLE_LIDAR)
-		key_action.k(ENABLE_KINECT)
+		if WEBOTS_VERSION==7 then
+			tags.gps = webots.wb_robot_get_device("GPS")
+			tags.compass = webots.wb_robot_get_device("compass")
+			tags.hand_camera = webots.wb_robot_get_device("HandCamera")
+			tags.lidar = webots.wb_robot_get_device("lidar")
+			tags.kinect = webots.wb_robot_get_device("kinect")
+			-- Enable sensors
+			key_action.p(ENABLE_POSE)
+			key_action.c(ENABLE_CAMERA)
+			key_action.l(ENABLE_LIDAR)
+			key_action.k(ENABLE_KINECT)
+		end
 
 		-- Step the simulation
 		webots.wb_robot_step(timeStep)
 
 		-- Form and set the pose
-		wcm.set_robot_initialpose(get_pose())
+		--wcm.set_robot_initialpose(get_pose())
 
 		-- Step it again
-    webots.wb_robot_step(timeStep)
+    --webots.wb_robot_step(timeStep)
 
     -- Read values
 		local pos, rad
-    for idx, jtag in pairs(tags.joints) do
-      pos = webots.wb_motor_get_position( jtag )
+    for idx, jtag in ipairs(tags.joints) do
+			if WEBOTS_VERSION==7 then
+      	pos = webots.wb_motor_get_position(jtag)
+			else
+				pos = webots.wb_servo_get_position(jtag)
+			end
       -- Take care of nan
       if pos~=pos then pos = 0 end
 			rad = (pos - servo.offset[idx]) * servo.direction[idx]
@@ -399,7 +418,11 @@ else
 		local rad
 		for idx, jtag in ipairs(tags.joints) do
 			rad = actuator.command_position[idx] * servo.direction[idx] + servo.offset[idx]
-      webots.wb_motor_set_position(jtag, math.max(servo.min_rad[idx], math.min(servo.max_rad[idx], rad)))
+			if WEBOTS_VERSION==7 then
+      	webots.wb_motor_set_position(jtag, math.max(servo.min_rad[idx], math.min(servo.max_rad[idx], rad)))
+			else
+				webots.wb_servo_set_position(jtag, math.max(servo.min_rad[idx], math.min(servo.max_rad[idx], rad)))
+			end
     end
 
     -- Base
@@ -410,8 +433,8 @@ else
     --local spacing = dcm.get_actuator_command_gripper()
 		local spacing = 0
     local width = math.max(math.min(spacing, 0.025), 0)
-    webots.wb_motor_set_position(tags.gripper[1], width)
-    webots.wb_motor_set_position(tags.gripper[2], width)
+    --webots.wb_motor_set_position(tags.gripper[1], width)
+    --webots.wb_motor_set_position(tags.gripper[2], width)
 
 		-- Step the simulation, and shutdown if the update fails
 		if webots.wb_robot_step(timeStep) < 0 then
@@ -421,15 +444,22 @@ else
 
     -- Read values
     for idx, jtag in ipairs(tags.joints) do
-			sensor.position[idx] = (webots.wb_motor_get_position(jtag) - servo.offset[idx]) * servo.direction[idx]
+			if WEBOTS_VERSION==7 then
+				sensor.position[idx] = (webots.wb_motor_get_position(jtag) - servo.offset[idx]) * servo.direction[idx]
+			else
+				sensor.position[idx] = (webots.wb_servo_get_position(jtag) - servo.offset[idx]) * servo.direction[idx]
+			end
+
     end
 
     -- Get sensors
-		if ENABLE_POSE then wcm.set_robot_gps(get_pose()) end
-    -- Update our vision system
-    update_vision()
-		update_kinect()
-    update_lidar()
+		if WEBOTS_VERSION==7 then
+			if ENABLE_POSE then wcm.set_robot_gps(get_pose()) end
+	    -- Update our vision system
+	    update_vision()
+			update_kinect()
+	    update_lidar()
+		end
 
     -- Grab keyboard input, for modifying items
     local key_code = webots.wb_robot_keyboard_get_key()

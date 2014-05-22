@@ -1,0 +1,93 @@
+# omnidirectionnal wheel containing 6 passive servos
+#
+# Author: fabien.rohrer@cyberbotics.com
+
+PROTO RealisticInteriorWheel [
+  field SFVec3f translation 0 0 0
+  field SFString name "wheel"
+]
+{
+  Servo {
+    translation IS translation
+    children [
+      WheelMesh {
+      }
+      Solid {
+        translation 0 0 0.036
+        rotation 0 0 1 0.785402
+        children [
+          SubWheel {
+          }
+        ]
+        boundingObject DEF FAKE_BO Sphere {
+          radius 0.01
+        }
+        physics DEF FAKE_PHYSICS Physics {
+          density -1
+          mass 0.05
+        }
+      }
+      Solid {
+        translation 0.0311 0 0.018
+        rotation 0.318977 0.770074 0.552484 1.28666
+        children [
+          SubWheel {
+          }
+        ]
+        boundingObject USE FAKE_BO
+        physics USE FAKE_PHYSICS
+      }
+      Solid {
+        translation 0.0311 0 -0.018
+        rotation 0.373673 0.902122 0.21574 2.18123
+        children [
+          SubWheel {
+          }
+        ]
+        boundingObject USE FAKE_BO
+        physics USE FAKE_PHYSICS
+      }
+      Solid {
+        translation 0 0 -0.036
+        rotation 0.382685 0.923879 0 3.14159
+        children [
+          SubWheel {
+          }
+        ]
+        boundingObject USE FAKE_BO
+        physics USE FAKE_PHYSICS
+      }
+      Solid {
+        translation -0.0311 0 -0.018
+        rotation 0.373673 0.902122 -0.21574 4.10195
+        children [
+          SubWheel {
+          }
+        ]
+        boundingObject USE FAKE_BO
+        physics USE FAKE_PHYSICS
+      }
+      Solid {
+        translation -0.0311 0 0.018
+        rotation 0.318977 0.770074 -0.552484 4.99652
+        children [
+          SubWheel {
+          }
+        ]
+        boundingObject USE FAKE_BO
+        physics USE FAKE_PHYSICS
+      }
+    ]
+    name IS name
+    boundingObject Cylinder {
+      height 0.072
+      radius 0.047
+      subdivision 24
+    }
+    physics Physics {
+      density -1
+      mass 0.4
+    }
+    maxVelocity 14.81
+  }
+}

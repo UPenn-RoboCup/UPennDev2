@@ -1,0 +1,14 @@
+# black metal appearance
+#
+# Author: fabien.rohrer@cyberbotics.com
+
+PROTO BlackMetalAppearance [
+]
+{
+Appearance {
+  material Material {
+    diffuseColor 0.15 0.15 0.15
+    specularColor 0.6 0.6 0.6
+  }
+}
+}

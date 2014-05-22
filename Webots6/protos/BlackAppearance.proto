@@ -1,0 +1,14 @@
+# plastic metal appearance
+#
+# Author: fabien.rohrer@cyberbotics.com
+
+PROTO BlackAppearance [
+]
+{
+Appearance {
+  material Material {
+    diffuseColor 0.15 0.15 0.15
+    specularColor 0.1 0.1 0.1
+  }
+}
+}

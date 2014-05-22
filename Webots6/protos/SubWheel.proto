@@ -1,0 +1,38 @@
+# subwheel of the omnidirectionnal wheel
+#
+# Author: fabien.rohrer@cyberbotics.com
+
+PROTO SubWheel [
+]
+{
+  Servo {
+    children [
+      SubWheelMesh {
+      }
+    ]
+    boundingObject Group {
+      children [
+        Sphere {
+          radius 0.014
+          subdivision 2
+        }
+        Capsule {
+          radius 0.0125
+          height 0.035
+          subdivision 24
+        }
+        Capsule {
+          radius 0.008
+          height 0.065
+          subdivision 24
+        }
+      ]
+    }
+    physics Physics {
+      density -1
+      mass 0.05
+    }
+    dampingConstant 0.000005
+    maxForce 0
+  }
+}

@@ -35,7 +35,7 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   -- Find where we should go now
-  local qLArm = Body.get_larm_command_position()
+  local qLArm = Body.get_larm_position()
   local qLArm_wp = pathIter(qLArm)
   if not qLArm_wp then
     Body.set_larm_command_position(qLArm_goal)

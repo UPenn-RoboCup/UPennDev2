@@ -3,6 +3,7 @@
 
 local Body = {}
 
+require'dcm'
 require'wcm'
 require'mcm'
 
@@ -34,13 +35,16 @@ sensor.base = vector.zeros(3)
 -- YouBot can have two arms, so we call a single arm 'left' for now...
 function Body.set_larm_command_position (val)
 	assert(type(val)=='table' and #val==nJoint, 'Bad set_command!')
-	for idx,v in ipairs(val) do actuator.command_position[idx] = v end
+	--for idx,v in ipairs(val) do actuator.command_position[idx] = v end
+	dcm.set_actuator_command_position(val)
 end
 Body.get_larm_command_position = function ()
-	return actuator.command_position
+	--return actuator.command_position
+	return dcm.get_actuator_command_position()
 end
 Body.get_larm_position = function ()
-	return sensor.position
+	--return sensor.position
+	return dcm.get_sensor_position()
 end
 -- Right arm does nothing atm
 function Body.set_rarm_command_position ()
@@ -49,6 +53,14 @@ function Body.get_rarm_command_position ()
 end
 function Body.get_rarm_position ()
 end
+--
+function Body.get_lgrip_position ()
+end
+function Body.get_lgrip_command_position ()
+	return dcm.get_actuator_command_gripper()
+end
+function Body.set_lgrip_command_position ()
+end
 
 -- Other API wrappers
 Body.set_walk_velocity = function(vx, vy, va)
@@ -56,7 +68,6 @@ Body.set_walk_velocity = function(vx, vy, va)
 end
 
 if not IS_WEBOTS then
-	require'dcm'
 	local get_time = require'unix'.time
 	Body.get_time = get_time
 	local youbot
@@ -86,16 +97,16 @@ if not IS_WEBOTS then
 	  local rad, mps, nm = {},{},{}
 	  for i=1,nJoint do
 	    rad[i] = (youbot.get_arm_position(i) - servo.offset[i]) * servo.direction[i]
-	    mps[i] = youbot.get_arm_velocity(i)
-	    nm[i]  = youbot.get_arm_torque(i)
+	    --mps[i] = youbot.get_arm_velocity(i)
+	    --nm[i]  = youbot.get_arm_torque(i)
 	  end
 	  -- Set shm
 	  dcm.set_sensor_position(rad)
-	  dcm.set_sensor_velocity(mps)
-	  dcm.set_sensor_torque(nm)
+	  --dcm.set_sensor_velocity(mps)
+	  --dcm.set_sensor_torque(nm)
 
 	  -- Set the gripper from shared memory
-	  local spacing = dcm.get_actuator_command_gripper()
+	  local spacing = Body.get_lgrip_command_position()
 		if spacing~=gripper_pos then
 			youbot.set_gripper_spacing(
 				math.max(math.min(spacing,0.023),0)
@@ -104,8 +115,8 @@ if not IS_WEBOTS then
 			gripper_pos = spacing
 		else
 			-- Set joints from shared memory when not using the gripper
-			local desired_pos = dcm.get_actuator_command_position()
-			for i,v in ipairs(desired_pos) do
+			actuator.command_position = Body.get_larm_command_position()
+			for i,v in ipairs(actuator.command_position) do
 				-- Correct the direction and the offset
 				local val = v * servo.direction[i] + servo.offset[i]
 				-- Set the youbot arm
@@ -338,6 +349,8 @@ else
 			sensor.position[idx] = rad
 			actuator.command_position[idx] = math.max(servo.min_rad[idx], math.min(servo.max_rad[idx], rad))
     end
+		dcm.set_actuator_command_position(actuator.command_position)
+		dcm.set_sensor_position(sensor.position)
 		-- Zero the base velocity
 		actuator.base = actuator.base * 0
 		sensor.base = sensor.base * 0
@@ -415,6 +428,7 @@ else
   function Body.update ()
 		local t = get_time()
     -- Write arm commands
+		actuator.command_position = Body.get_larm_command_position()
 		local rad
 		for idx, jtag in ipairs(tags.joints) do
 			rad = actuator.command_position[idx] * servo.direction[idx] + servo.offset[idx]
@@ -449,8 +463,8 @@ else
 			else
 				sensor.position[idx] = (webots.wb_servo_get_position(jtag) - servo.offset[idx]) * servo.direction[idx]
 			end
-
     end
+		dcm.set_sensor_position(sensor.position)
 
     -- Get sensors
 		if WEBOTS_VERSION==7 then
@@ -463,13 +477,15 @@ else
 
     -- Grab keyboard input, for modifying items
     local key_code = webots.wb_robot_keyboard_get_key()
-    local key_char = string.char(key_code)
-    local key_char_lower = string.lower(key_char)
-    local key_toggle = key_action[key_char_lower]
-    if key_toggle and t-t_last_keypress>1 then
-      key_toggle()
-      t_last_keypress = t
-    end
+		if type(key_code)=='number' and t-t_last_keypress>1 then
+	    local key_char = string.char(key_code)
+	    local key_char_lower = string.lower(key_char)
+	    local key_toggle = key_action[key_char_lower]
+	    if key_toggle then
+	      key_toggle()
+	      t_last_keypress = t
+	    end
+		end
 
   end
 

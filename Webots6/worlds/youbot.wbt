@@ -10,7 +10,7 @@ WorldInfo {
   ]
   physics "fast_wheels"
   #basicTimeStep 16
-  basicTimeStep 40
+  basicTimeStep 32
   runRealTime FALSE
 }
 Viewpoint {

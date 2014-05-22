@@ -20,7 +20,7 @@ Config.fsm.Arm = {
 
 -- State specific tuning params
 Config.fsm.armInit = {
-  qLArm = vector.zeros(Config.nJoint)
+  qLArm = vector.new{0, -55, 110, 55, 0} * DEG_TO_RAD
 }
 
 Config.fsm.Body = {

@@ -15,7 +15,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation 0.0511013 0.982835 0.177269 3.71169
-  position -0.668662 0.789395 -1.09725
+  position -0.668662 .8 -1.09725
   follow "robot"
 }
 Background {
@@ -33,17 +33,32 @@ DirectionalLight {
   direction 0.65 -1 0.93
   intensity 0.4
 }
+
+DEF CYL Solid {
+  translation 0.6 0.2 0
+  rotation 1 0 0 .2
+  children [
+    DEF CYL_SHAPE Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor .8 .1 .3
+        }
+      }
+      geometry Cylinder {
+        height 0.4
+        radius 0.010
+      }
+    }
+  ]
+  boundingObject USE CYL_SHAPE
+}
+
 DEF GROUND Solid {
   children [
     DEF GROUND_SHAPE Shape {
       appearance Appearance {
-        texture ImageTexture {
-          url [
-            "textures/parquetry.png"
-          ]
-        }
-        textureTransform TextureTransform {
-          scale 200 200
+        material Material {
+          diffuseColor .2 .4 .3
         }
       }
       geometry Plane {
@@ -92,6 +107,15 @@ Robot {
                           translation 0 0 0.081
                           rotation 0 0 1 0
                           children [
+Camera {
+  rotation 0.707107 -0.707107 0 3.14159
+  translation -0.05 0 0.06
+  name "HandCamera"
+  windowPosition 1 1
+  width 320
+  height 240
+  near 0.02
+}
                             Arm5Mesh {
                             }
                             Servo {

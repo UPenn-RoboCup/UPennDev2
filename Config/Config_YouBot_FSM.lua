@@ -7,7 +7,7 @@ Config.fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
 Config.fsm.enabled = {
-  'Body', 'Arm',
+  'Arm',
 }
 
 -- Timeouts are generally not needed, but in planning places, it is
@@ -17,18 +17,20 @@ Config.fsm.Arm = {
   --{'armIdle', 'timeout', 'armIdle'},
   {'armIdle', 'init', 'armInit'},
   --
-  --{'armInit', 'timeout', 'armInit'},
+  {'armInit', 'timeout', 'armInit'},
   {'armInit', 'done', 'armStance'},
+  {'armInit', 'init', 'armInit'},
   --
-  --{'armStance', 'timeout', 'armStance'},
+  {'armStance', 'timeout', 'armStance'},
   {'armStance', 'wire', 'armWireLook'},
+  {'armStance', 'init', 'armInit'},
   --{'armStance', 'teleop', 'armTeleop'},
   --
-  --{'armWireLook', 'timeout', 'armWireLook'},
+  {'armWireLook', 'timeout', 'armWireLook'},
   {'armWireLook', 'lost', 'armInit'}, -- Initial pose if lost the wire
   {'armWireLook', 'done', 'armWireApproach'}, -- Initial pose if lost the wire
   --
-  --{'armWireApproach', 'timeout', 'armWireApproach'},
+  {'armWireApproach', 'timeout', 'armWireApproach'},
   {'armWireApproach', 'lost', 'armInit'},
   {'armWireApproach', 'far', 'armWireLook'}, -- If not well aligned, realign
 }
@@ -44,19 +46,19 @@ Config.fsm.armStance = {
 -- Constantly look at the wire, lining it up to be centered and vertical
 Config.fsm.armWireLook = {
   lost_timeout = 2.0,
-  thresh_yaw = 5 * DEG_TO_RAD,
-  thresh_roll = 10 * DEG_TO_RAD,
-  roll_rate = 1,
-  yaw_rate = 1,
+  thresh_yaw = 3 * DEG_TO_RAD,
+  thresh_roll = 3 * DEG_TO_RAD,
+  roll_rate = 0.200,
+  yaw_rate = 0.050,
 }
 --
 Config.fsm.armWireApproach = {
   lost_timeout = 1.0,
-  thresh_yaw = 4 * DEG_TO_RAD,
-  thresh_roll = 8 * DEG_TO_RAD,
-  roll_rate = 1,
-  yaw_rate = 1,
-  approach_rate = 0.005, -- 5 mm/s
+  thresh_yaw = 5 * DEG_TO_RAD,
+  thresh_roll = 6 * DEG_TO_RAD,
+  roll_rate = 0.100,
+  yaw_rate = 0.020,
+  approach_rate = 0.01, -- 1 cm/s
 }
 
 Config.fsm.Body = {

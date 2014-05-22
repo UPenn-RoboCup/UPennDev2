@@ -18,7 +18,6 @@ shared.wire.rpy = vector.zeros(3)
 -- Roll, Pitch Yaw in the camera frame
 shared.wire.cam_rpy = vector.zeros(3)
 
-
 ------------------------
 -- Initialize the segment
 memory.init_shm_segment(..., shared, shsize)

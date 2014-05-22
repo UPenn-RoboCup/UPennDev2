@@ -10,7 +10,7 @@ lua_webots.c: lua_webots.i
 
 WEBOTS_HOME=/usr/local/webots
 ifeq ($(OSTYPE),darwin)
-WEBOTS_HOME=/Applications/Webots
+WEBOTS_HOME=/Applications/Webots6
 endif
 INCLUDES+=-I$(WEBOTS_HOME)/include/controller/c
 LDFLAGS+=-L$(WEBOTS_HOME)/lib -lController

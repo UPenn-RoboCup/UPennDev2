@@ -38,7 +38,7 @@ Config.net.team           = 44444
 Config.net.state          = 44445
 --
 Config.net.camera = {}
-Config.net.camera.head     = 33333
+Config.net.camera.larm     = 33333
 --
 Config.net.reliable_camera = {}
 Config.net.reliable_camera.head     = 33334

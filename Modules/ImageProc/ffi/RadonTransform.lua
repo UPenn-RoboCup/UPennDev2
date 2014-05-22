@@ -16,7 +16,7 @@ local NTH = 45 -- Number of angles (4 degree res)
 --local NTH = 36 -- 5 degree resolution
 --local NTH = 180 -- (1 degree res)
 
-local count_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
+local count_d    = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local line_sum_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local line_min_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local line_max_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
@@ -27,8 +27,8 @@ RadonTransform.NTH = NTH
 RadonTransform.NR = NR
 
 -- Save our lookup table discretization
-local th = ffi.new('double[?]',NTH)
-local sin_d, cos_d = ffi.new('double[?]',NTH), ffi.new('double[?]',NTH)
+local th = ffi.new('double[?]', NTH)
+local sin_d, cos_d = ffi.new('double[?]', NTH), ffi.new('double[?]', NTH)
 for i = 0, NTH-1 do
   -- We only need 0 to Pi
   -- TODO: Change based on the prior
@@ -54,7 +54,6 @@ end
 function RadonTransform.init (w, h)
   -- Resize for the image
   NR = math.ceil(math.sqrt(w*w+h*h))
-  MAXR = NR
   -- Update the export
   RadonTransform.NR = NR
   -- Size of the zeroing

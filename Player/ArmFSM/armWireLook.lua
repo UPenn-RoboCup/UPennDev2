@@ -40,17 +40,19 @@ function state.update()
   local wire_dt = t - vcm.get_wire_t()
   if wire_dt>lost_timeout then return'lost' end
   -- Is the wire within threshold in the camera frame?
-  local cam_roll, cam_pitch, cam_yaw = unpack(vcm.get_wire_cam_ry())
+  local cam_roll, cam_pitch, cam_yaw = unpack(vcm.get_wire_cam_rpy())
   local done_yaw = math.abs(cam_yaw)<thresh_yaw
   local done_roll = math.abs(cam_roll)<thresh_roll
   -- If aligned, then we are done, and ready to approach the wire
   if done_roll and done_yaw then return'done' end
+  --if done_roll then return'done' end
   -- Where are we now, in camera roll/yaw?
   -- TODO: Assume that the camera timestamp is not too far from the motor ts
   local qLArm = Body.get_larm_position()
   -- Use a simple P controller. TODO: Is PID worht it?
-  local roll_correction = (qLArm[5] - cam_roll) * dt * roll_rate
-  local yaw_correction = (qLArm[1] - cam_yaw) * dt * yaw_rate
+  local roll_correction = (qLArm[5] - cam_roll) * roll_rate * dt
+  local yaw_correction = (qLArm[1] - cam_yaw) * yaw_rate * dt
+  --print('roll_correction', roll_correction)
   -- Apply the correction
   qLArm[1] = qLArm[1] + yaw_correction
   qLArm[5] = qLArm[5] + roll_correction

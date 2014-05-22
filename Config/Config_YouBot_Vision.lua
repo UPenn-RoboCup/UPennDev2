@@ -25,4 +25,17 @@ table.insert(Config.camera,
   }
 })
 
+-- Webots override
+if IS_WEBOTS then
+  Config.camera = {
+  {
+    name = 'larm',
+    width = 320,
+    height = 240,
+    focal_length = 184.75,
+    detection_pipeline = {'detectWire'}
+  }
+  }
+end
+
 return Config

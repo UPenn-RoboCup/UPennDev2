@@ -144,7 +144,7 @@ if not IS_WEBOTS then
 else
 
   -- Default configuration (toggle during run time)
-  local ENABLE_CAMERA = false
+  local ENABLE_CAMERA = true
   local ENABLE_LIDAR  = false
   local ENABLE_KINECT = false
 	local ENABLE_POSE   = false
@@ -154,6 +154,14 @@ else
 	local WEBOTS_VERSION = webots.wb_motor_set_position and 7 or 6
 	local mp = require'msgpack.MessagePack'
 	local lidar0_ch = si.new_publisher'lidar0'
+
+	-- Form the detection pipeline
+	require'jpeg'
+	local udp = require'udp'
+	local pipeline, cam_metadata = {}, Config.camera[1]
+	local operator = Config.net.operator.wired
+	local udp_port = Config.net.camera[cam_metadata.name]
+	cam_udp_ch = udp.new_sender(operator, udp_port)
 
   -- Start the system
   webots.wb_robot_init()
@@ -178,6 +186,8 @@ else
 		gripper = {},
 		wheels = {},
 	}
+
+
 
   -- Ability to turn on/off items
   local t_last_keypress = get_time()
@@ -313,15 +323,16 @@ else
 			assert(tags.gripper[i]>0, 'Finger '..i..' not found')
   	end
     -- Acquire sensor tags
+		tags.hand_camera = webots.wb_robot_get_device("HandCamera")
+		key_action.c(ENABLE_CAMERA)
+
 		if WEBOTS_VERSION==7 then
 			tags.gps = webots.wb_robot_get_device("GPS")
 			tags.compass = webots.wb_robot_get_device("compass")
-			tags.hand_camera = webots.wb_robot_get_device("HandCamera")
 			tags.lidar = webots.wb_robot_get_device("lidar")
 			tags.kinect = webots.wb_robot_get_device("kinect")
 			-- Enable sensors
 			key_action.p(ENABLE_POSE)
-			key_action.c(ENABLE_CAMERA)
 			key_action.l(ENABLE_LIDAR)
 			key_action.k(ENABLE_KINECT)
 		end
@@ -354,30 +365,38 @@ else
 		-- Zero the base velocity
 		actuator.base = actuator.base * 0
 		sensor.base = sensor.base * 0
+
+		-- Setup the vision pipeline
+		for _, d in ipairs(cam_metadata.detection_pipeline) do
+			local detect = require(d)
+			-- Send which camera we are using
+			detect.entry(cam_metadata)
+			table.insert(pipeline, detect)
+		end
+		-- TODO: Remove the ImageProc 1.0 version
+		require'ImageProc'
+
+
+
   end
 
-	-- Simple vision routine for webots
-	--[[
-	local lV = require'libVision'
-	local meta_b = {
-		id = 'labelB',
-		w = w / sA / sB,
-		h = h / sA / sB,
-		c = 'zlib',
-	}
-	local s_t = simple_ipc.new_publisher('top')
-	local zlib = require'zlib.ffi'
-	local c_zlib = zlib.compress_cdata
-	--]]
 	local function update_vision ()
 		if not ENABLE_CAMERA then return end
 		local w = webots.wb_camera_get_width(tags.hand_camera)
 		local h = webots.wb_camera_get_height(tags.hand_camera)
-		local yuyv = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.hand_camera), w, h)
-		lV.entry(Config.vision[1])
-		local dbg_top = lV.update(im_top)
-		-- Send all the debug information
-		s_t:send(top_debug)
+		local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.hand_camera), w, h)
+		for _, p in ipairs(pipeline) do p.update(img) end
+		local c_yuyv = jpeg.compressor('yuyv')
+		local c_img = c_yuyv:compress(img, w, h)
+		local meta = {
+			t = get_time(),
+			sz = #c_img,
+			w = w,
+			h = h,
+			name = cam_metadata.name..'_camera',
+			c = 'jpeg',
+		}
+		local udp_ret, err = cam_udp_ch:send( mp.pack(meta)..c_img )
 	end
 
 	local function update_kinect ()
@@ -467,10 +486,9 @@ else
 		dcm.set_sensor_position(sensor.position)
 
     -- Get sensors
+		update_vision()
 		if WEBOTS_VERSION==7 then
 			if ENABLE_POSE then wcm.set_robot_gps(get_pose()) end
-	    -- Update our vision system
-	    update_vision()
 			update_kinect()
 	    update_lidar()
 		end

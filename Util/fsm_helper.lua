@@ -55,7 +55,7 @@ function obj:update ()
   -- Event is a table now... :(
   if events then
     for _, event in ipairs(events) do
-      --print(util.color(obj._NAME..' Event:','green'), event)
+      --print(util.color(self._NAME..' Event:','green'), event)
       print(obj._NAME, event)
       self.sm:add_event(event)
     end

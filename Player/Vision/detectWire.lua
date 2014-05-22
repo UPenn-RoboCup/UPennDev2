@@ -1,3 +1,18 @@
+
+-- Simple vision routine for webots
+--[[
+local lV = require'libVision'
+local meta_b = {
+  id = 'labelB',
+  w = w / sA / sB,
+  h = h / sA / sB,
+  c = 'zlib',
+}
+local s_t = simple_ipc.new_publisher('top')
+local zlib = require'zlib.ffi'
+local c_zlib = zlib.compress_cdata
+--]]
+
 local torch = require'torch'
 local ImageProc2 = require'ImageProc.ffi'
 local util = require'util'
@@ -5,21 +20,27 @@ local vector = require'vector'
 local Body = require'Body'
 local K = Body.Kinematics
 local T = require'libTransform'
+local si = require'simple_ipc'
+local mp = require'msgpack.MessagePack'
 local sin, cos = math.sin, math.cos
 local w, h, focal_length
 
-local edge_ch = si.new_publisher('edge')
-local tou_che = si.new_subscriber('touche')
-local tou_che2 = si.new_subscriber(55588)
-local line_ch = si.new_publisher('line')
-local line_ch_remote = si.new_publisher(55589,'25.25.1.109')
+local edge_ch, tou_che, tou_che2, line_ch, line_ch_remote
 
 -- Variables
-local kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel('v'), false, true
-util.ptorch(kernel_t)
+local kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel(), true, true
 -- Form the default bounding box (in scaled down space...)
-local bbox = {51, 101, 21, 111}
+local bbox = {1, 160, 1, 120}
+--local bbox = {51, 101, 21, 111}
 --local bbox = {101, 201, 41, 221}
+
+local function setup_channels ()
+  edge_ch = si.new_publisher('edge')
+  tou_che = si.new_subscriber('touche')
+  tou_che2 = si.new_subscriber(55588)
+  line_ch = si.new_publisher('line')
+  line_ch_remote = si.new_publisher(55589,'25.25.1.109')
+end
 
 local last_measurement
 local function update_dist (pline1, pline2, tr, t, line_radon)
@@ -111,7 +132,7 @@ local function update_bbox ()
 end
 
 
-local function send ()
+local function send (pline1,pline2,bbox)
   local mmm = mp.pack({
     name = 'pline',
     l1 = {
@@ -126,7 +147,7 @@ local function send ()
       },
     -- Relative placement
     bbox = bbox,
-    })
+  })
 
 
   line_ch:send(mmm)
@@ -146,9 +167,10 @@ end
 local detectWire = {}
 
 function detectWire.entry (metadata)
-  w, h = metadata.w, metadata.h
+  w, h = metadata.width, metadata.height
   focal_length = metadata.focal_length
   ImageProc2.setup(w, h, 2, 2)
+  setup_channels()
 end
 
 function detectWire.update (img)
@@ -180,16 +202,28 @@ function detectWire.update (img)
   -- Find the angles for servoing
   local camera_roll = line_radon.ith / line_radon.NTH * math.pi
   camera_roll = camera_roll > (math.pi / 2) and (camera_roll - math.pi) or camera_roll
+  camera_roll = -camera_roll
   -- Place iMean in the center of the frame horizontally
   -- Remember, we massaged plines to be in the original resolution
   local i_px = (pline1.iMean + pline2.iMean) / 2 - (w / 2)
   local j_px = (pline1.jMean + pline2.jMean) / 2 - (h / 2)
   local camera_yaw = math.atan(i_px / focal_length)
   local camera_pitch = math.atan(j_px / focal_length)
-  -- Set in sahred memory
-  vcm.set_wire_cam_rpy{camera_roll,camera_pitch,camera_yaw}
+  -- Set in shared memory
+  vcm.set_wire_t(Body.get_time())
+  vcm.set_wire_cam_rpy{camera_roll, camera_pitch, camera_yaw}
   -- Update the distance to the wire and the wire's radius
-  update_dist(pline1, pline2, fk, t, line_radon)
+  --update_dist(pline1, pline2, fk, t, line_radon)
+
+  --[[
+  print('line_radon', line_radon)
+  --util.ptable(line_radon)
+  util.ptable(pline1)
+  print()
+  util.ptable(pline2)
+  print()
+  --]]
+  send(pline1, pline2, bbox)
 end
 
 function detectWire.exit ()

@@ -6,13 +6,12 @@ local torch  = require'torch'
 torch.Tensor = torch.DoubleTensor
 local vector = require'vector'
 local q = require'quaternion'
-local carray = require 'carray'
 local util = require 'util'
 local T = require'libTransform'
 -- Intimate relationship with SHM maybe
 require'wcm'
 
-local function is_1d_semicircle(xs,ys,nps)
+local function is_1d_semicircle (xs, ys, nps)
 	if nps<8 then return("FAIL: nps: "..nps) end
 	local first = vector.new{xs[1],ys[1]}
 	local last = vector.new{xs[nps],ys[nps]}
@@ -58,7 +57,7 @@ end
 
 -- Give a channel that has lidar return information
 -- Give a Connected compoments segmentation obj
-libDetect.lidar_circles = function(ch,cc)
+function libDetect.lidar_circles (ch, cc)
 	-- Run the components if not done yet
 	cc = cc or slam.connected_components(ch.raw,0.05)
 	local pose = wcm.get_robot_pose()

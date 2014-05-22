@@ -46,6 +46,17 @@ Config.fsm.armWireLook = {
   lost_timeout = 2.0,
   thresh_yaw = 5 * DEG_TO_RAD,
   thresh_roll = 10 * DEG_TO_RAD,
+  roll_rate = 1,
+  yaw_rate = 1,
+}
+--
+Config.fsm.armWireApproach = {
+  lost_timeout = 1.0,
+  thresh_yaw = 4 * DEG_TO_RAD,
+  thresh_roll = 8 * DEG_TO_RAD,
+  roll_rate = 1,
+  yaw_rate = 1,
+  approach_rate = 0.005, -- 5 mm/s
 }
 
 Config.fsm.Body = {

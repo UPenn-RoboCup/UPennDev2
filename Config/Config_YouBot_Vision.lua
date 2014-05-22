@@ -15,9 +15,14 @@ table.insert(Config.camera,
   height = 240,
   fps = 30,
   focal_length = 184.75,
-  params = {
-
+  param = {
+    {'Brightness', 100},
+    {'Contrast', 25},
+    {'Saturation', 190},
   },
+  detection_pipeline = {
+    'detectWire'
+  }
 })
 
 return Config

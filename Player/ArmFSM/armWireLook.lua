@@ -40,7 +40,7 @@ function state.update()
   local wire_dt = t - vcm.get_wire_t()
   if wire_dt>lost_timeout then return'lost' end
   -- Is the wire within threshold in the camera frame?
-  local cam_roll, cam_yaw = unpack(vcm.get_wire_cam_ry())
+  local cam_roll, cam_pitch, cam_yaw = unpack(vcm.get_wire_cam_ry())
   local done_yaw = math.abs(cam_yaw)<thresh_yaw
   local done_roll = math.abs(cam_roll)<thresh_roll
   -- If aligned, then we are done, and ready to approach the wire

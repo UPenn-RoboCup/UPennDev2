@@ -12,12 +12,6 @@ local t_entry, t_update, t_finish
 local timeout = 10.0
 local get_time = Body.get_time
 
-local pathIter
-local qLArm_goal = Config.fsm.armInit.qLArm
-local planner = require'libPlan'.new_planner(
-  Body.Kinematics, Config.servo.min_rad, Config.servo.max_rad
-)
-
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -25,9 +19,6 @@ function state.entry()
   t_entry = get_time()
   t_update = t_entry
   t_finish = t
-  -- Form the planner
-  local qLArm = Body.get_larm_position()
-  pathIter = planner:joint_iter(qLArm, qLArm_goal)
 end
 
 function state.update()
@@ -40,13 +31,17 @@ function state.update()
   t_update = t
   -- Find where we should go now
   local qLArm = Body.get_larm_position()
-  local qLArm_wp = pathIter(qLArm)
-  if not qLArm_wp then
-    Body.set_larm_command_position(qLArm_goal)
-    return'done'
-  end
+  -- Find the kinematics
+  local fkLArm = K.forward_arm(qLArm)
+  -- Step in the direction of the gripper (z for youbot...)
+  local fkLArm_next = fkLArm * T.trans(0, 0, ds)
+  local iqArm_next = vector.new(K.inverse_arm(desired_tr, qLArm))
+  -- TODO: Add small changes on the local camera roll and camera yaw
+  -- These are independent of the IK in the local z direction
+  iqArm_next[1] = qLArm[1]
+  iqArm_next[5] = qLArm[5]
   -- Go to the waypoint
-  Body.set_larm_command_position(qLArm_wp)
+  Body.set_larm_command_position(iqArm_next)
 end
 
 function state.exit()

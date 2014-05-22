@@ -25,6 +25,7 @@ end
 -- If we wish to log
 -- TODO: arg or in config?
 local ENABLE_LOG = false
+local ENABLE_NET = false
 
 local uvc = require'uvc'
 local udp = require'udp'
@@ -36,15 +37,23 @@ local jpeg = require'jpeg'
 local w = metadata.width
 local h = metadata.height
 local name = metadata.name
-local focal_length = metadata.focal_length
 -- Who to send to
 local operator = Config.net.operator.wired
 local udp_port = Config.net.camera[name]
 
+-- Form the detection pipeline
+local pipeline = {}
+for _, d in ipairs(metadata.detection_pipeline) do
+	local detect = require(d)
+	-- Send which camera we are using
+	detect.entry(metadata)
+	table.insert(pipeline, detect)
+end
+
 -- Open the camera
 local camera = uvc.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
 -- Set the params
-for k, v in pairs(metadata.params) do
+for k, v in pairs(metadata.param) do
 	camera:set_param(k, v)
 	unix.usleep(1e4)
 	assert(camera:get_param(k)==v, 'Failed to set '..k)
@@ -97,8 +106,14 @@ while true do
 	end
 
 	-- Check if we are sending to the operator
-	local c_img = c_yuyv:compress( img, w, h)
-	meta.sz = #c_img
+	if ENABLE_NET then
+		local c_img = c_yuyv:compress(img, w, h)
+		meta.sz = #c_img
+		local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
+	end
+
+	-- Update the vision routines
+	for _, p in ipairs(pipeline) do p.update(img) end
 
 	-- Collect garbage every cycle
 	collectgarbage()

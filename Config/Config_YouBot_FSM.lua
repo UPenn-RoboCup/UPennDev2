@@ -10,17 +10,42 @@ Config.fsm.enabled = {
   'Body', 'Arm',
 }
 
+-- Timeouts are generally not needed, but in planning places, it is
+-- Less clutter if not transitions here. But always program them in the state
+-- For instance, lineIter from libPlan should *always* have a timeout
 Config.fsm.Arm = {
-  {'armIdle', 'timeout', 'armIdle'},
+  --{'armIdle', 'timeout', 'armIdle'},
   {'armIdle', 'init', 'armInit'},
   --
-  {'armInit', 'timeout', 'armInit'},
-  --{'armInit', 'teleop', 'armTeleop'},
+  --{'armInit', 'timeout', 'armInit'},
+  {'armInit', 'done', 'armStance'},
+  --
+  --{'armStance', 'timeout', 'armStance'},
+  {'armStance', 'wire', 'armWireLook'},
+  --{'armStance', 'teleop', 'armTeleop'},
+  --
+  --{'armWireLook', 'timeout', 'armWireLook'},
+  {'armWireLook', 'lost', 'armInit'}, -- Initial pose if lost the wire
+  {'armWireLook', 'done', 'armWireApproach'}, -- Initial pose if lost the wire
+  --
+  --{'armWireApproach', 'timeout', 'armWireApproach'},
+  {'armWireApproach', 'lost', 'armInit'},
+  {'armWireApproach', 'far', 'armWireLook'}, -- If not well aligned, realign
 }
 
 -- State specific tuning params
 Config.fsm.armInit = {
   qLArm = vector.new{0, -55, 110, 55, 0} * DEG_TO_RAD
+}
+-- This state machine has stance and init with same goal
+Config.fsm.armStance = {
+  qLArm = Config.fsm.armInit.qLArm
+}
+-- Constantly look at the wire, lining it up to be centered and vertical
+Config.fsm.armWireLook = {
+  lost_timeout = 2.0,
+  thresh_yaw = 5 * DEG_TO_RAD,
+  thresh_roll = 10 * DEG_TO_RAD,
 }
 
 Config.fsm.Body = {

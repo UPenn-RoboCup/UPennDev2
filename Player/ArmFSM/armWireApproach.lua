@@ -1,6 +1,6 @@
 --------------------------------
--- Humanoid arm state
--- (c) 2013 Stephen McGill, Seung-Joon Yi
+-- Approach Wire
+-- (c) 2014 Stephen McGill
 --------------------------------
 local state = {}
 state._NAME = ...
@@ -12,9 +12,11 @@ local t_entry, t_update, t_finish
 local timeout = 10.0
 local get_time = Body.get_time
 
-local lP, pathIter = require'libPlan', pathIter
-local planner = lP.new_planner(Body.Kinematics, Config.servo.min_rad, Config.servo.max_rad)
+local pathIter
 local qLArm_goal = Config.fsm.armInit.qLArm
+local planner = require'libPlan'.new_planner(
+  Body.Kinematics, Config.servo.min_rad, Config.servo.max_rad
+)
 
 function state.entry()
   print(state._NAME..' Entry' )

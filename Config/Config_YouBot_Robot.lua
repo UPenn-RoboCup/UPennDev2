@@ -9,6 +9,8 @@ Config.actuators = {
   'command_position',
 }
 
+Config.nJoint = 5
+
 Config.servo = {
   min_rad = DEG_TO_RAD * vector.new({-165, -57, -142, -95, -150}),
   max_rad = DEG_TO_RAD * vector.new({165, 89, 142, 95, 150}),
@@ -19,5 +21,10 @@ assert(#Config.servo.min_rad==Config.nJoint, 'Bad servo min_rad!')
 assert(#Config.servo.max_rad==Config.nJoint, 'Bad servo min_rad!')
 assert(#Config.servo.direction==Config.nJoint, 'Bad servo direction!')
 assert(#Config.servo.offset==Config.nJoint, 'Bad servo offsets!')
+
+---------------
+-- Keyframes --
+---------------
+Config.km = {}
 
 return Config

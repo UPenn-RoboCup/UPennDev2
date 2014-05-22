@@ -17,9 +17,10 @@ function state.update()
   -- Get the time of update
   local t  = get_time()
   local dt = t - t_update
+  local dt_entry = t - t_entry
+  if dt_entry>timeout then return'timeout' end
   -- Save this at the last update time
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
 end
 
 function state.exit()

@@ -54,7 +54,6 @@ function obj:update ()
   local events = self.evts:receive(true)
   -- Event is a table now... :(
   if events then
-    print('EVENTS')
     for _, event in ipairs(events) do
       --print(util.color(obj._NAME..' Event:','green'), event)
       print(obj._NAME, event)

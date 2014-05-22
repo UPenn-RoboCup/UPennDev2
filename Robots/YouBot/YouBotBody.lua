@@ -477,7 +477,7 @@ else
 
     -- Grab keyboard input, for modifying items
     local key_code = webots.wb_robot_keyboard_get_key()
-		if type(key_code)=='number' and t-t_last_keypress>1 then
+		if type(key_code)=='number' and t-t_last_keypress>1 and key_code<256 then
 	    local key_char = string.char(key_code)
 	    local key_char_lower = string.lower(key_char)
 	    local key_toggle = key_action[key_char_lower]

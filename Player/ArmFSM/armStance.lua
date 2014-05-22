@@ -12,9 +12,7 @@ local t_entry, t_update, t_finish
 local timeout = 10.0
 local get_time = Body.get_time
 
-local lP, pathIter = require'libPlan', pathIter
-local planner = lP.new_planner(Body.Kinematics, Config.servo.min_rad, Config.servo.max_rad)
-local qLArm_goal = Config.fsm.armInit.qLArm
+local qLArm_goal = Config.fsm.armStance.qLArm
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -23,13 +21,11 @@ function state.entry()
   t_entry = get_time()
   t_update = t_entry
   t_finish = t
-  -- Form the planner
-  local qLArm = Body.get_larm_position()
-  pathIter = planner:joint_iter(qLArm, qLArm_goal)
+  -- Just set our position
+  Body.set_larm_command_position(qLArm_goal)
 end
 
 function state.update()
-  --print(state._NAME..' Update' )
   local t  = get_time()
   local dt = t - t_update
   local dt_entry = t - t_entry
@@ -38,13 +34,10 @@ function state.update()
   t_update = t
   -- Find where we should go now
   local qLArm = Body.get_larm_position()
-  local qLArm_wp = pathIter(qLArm)
-  if not qLArm_wp then
-    Body.set_larm_command_position(qLArm_goal)
-    return'done'
-  end
-  -- Go to the waypoint
-  Body.set_larm_command_position(qLArm_wp)
+  -- Check if we are too far from where we wish to be
+  local sum = 0
+  for _,v in ipairs(qLArm - qLArm_goal) do sum = sum + v end
+  if sum>5*DEG_TO_RAD then return'far' end
 end
 
 function state.exit()

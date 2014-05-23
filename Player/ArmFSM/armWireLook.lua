@@ -19,6 +19,9 @@ local thresh_yaw = Config.fsm.armWireLook.thresh_yaw
 local thresh_roll = Config.fsm.armWireLook.thresh_roll
 local roll_rate = Config.fsm.armWireLook.roll_rate
 local yaw_rate = Config.fsm.armWireLook.yaw_rate
+-- Need the camera information
+local cam_metadata = Config.camera[1]
+local hfov, cam_width = cam_metadata.hfov, cam_metadata.width
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -50,9 +53,18 @@ function state.update()
   -- TODO: Assume that the camera timestamp is not too far from the motor ts
   local qLArm = Body.get_larm_position()
   -- Use a simple P controller. TODO: Is PID worth it?
-  qLArm[5] = qLArm[5] + (cam_roll - 0) * roll_rate * dt
-  qLArm[1] = qLArm[1] + (cam_yaw - 0)* yaw_rate * dt
-  --print('roll_correction', roll_correction)
+  local roll_corr = (cam_roll - 0) * roll_rate * dt
+  local yaw_corr = (cam_yaw - 0) * yaw_rate * dt
+  qLArm[5] = qLArm[5] + roll_corr
+  qLArm[1] = qLArm[1] + yaw_corr
+  -- Move the bounding box attention
+  --[[
+  local bbox = vcm.get_wire_bbox()
+  -- Move the yaw a bit
+  local i_corr = cam_width * yaw_corr / hfov / 4
+  bbox[1], bbox[2] = bbox[1] + i_corr, bbox[2] + i_corr
+  vcm.set_wire_bbox(bbox)
+  --]]
   -- Set the command
   Body.set_larm_command_position(qLArm)
 end

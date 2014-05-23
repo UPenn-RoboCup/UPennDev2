@@ -15,8 +15,10 @@ shared.wire = {}
 shared.wire.t = vector.zeros(1)
 -- Roll, Pitch Yaw in the camera frame
 shared.wire.cam_rpy = vector.zeros(3)
--- Mode: Radius and Distance to the wire, from the camera, last model time
+-- Model: Radius and Distance to the wire, from the camera, last model time
 shared.wire.model = vector.zeros(3)
+-- Bounding box of where we are looking currently
+shared.wire.bbox = vector.zeros(4)
 
 ------------------------
 -- Initialize the segment

@@ -13,9 +13,9 @@ local DECAY = .7
 
 -- Initialize the Kalman filters:
 
-local function generate_kalman()
+local function generate_kalman ()
 	-- TODO: Tune these somehow
-	local filter = libKalman.initialize_filter( 4 )
+	local filter = libKalman.initialize_filter(4)
 	-----------------
 	-- Modify the Dynamics update
 	-----------------
@@ -31,11 +31,11 @@ local function generate_kalman()
 	-- Modify the Measurement update
 	-----------------
 	-- We only measure the state positions, not velocities
-	filter.R = torch.eye( 2 )
-	filter.H = torch.Tensor( 2, 4 ):zero()
+	filter.R = torch.eye(2)
+	filter.H = torch.Tensor(2, 4):zero()
 	filter.H:sub(1,2, 1,2):eye(2)
 	--
-	libKalman.initialize_temporary_variables( filter )
+	libKalman.initialize_temporary_variables(filter)
 	return filter
 end
 

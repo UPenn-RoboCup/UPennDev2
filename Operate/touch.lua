@@ -10,7 +10,7 @@ local util = require'util'
 local mp = require'msgpack'
 local simple_ipc, poller = require'simple_ipc'
 local tou_ch = simple_ipc.new_subscriber(Config.human.touch.ch)
-local tou_che = simple_ipc.new_publisher(Config.human.touch.bbox_ch)
+local bbox_ch = simple_ipc.new_publisher(Config.human.touch.bbox_ch)
 local libTouch = require'libTouch'
 -- Allow logging
 local DO_LOG, libLog, logger = false
@@ -35,7 +35,7 @@ local function form_bbox (contact)
 		x1 = contact.x
 		y1 = contact.y
 		local x_diff, y_diff = x1-x0, y1-y0
-		local len = math.sqrt( x_diff^2 + y_diff^2 )
+		local len = math.sqrt(x_diff^2 + y_diff^2)
 		if has_new_bbox then
 			-- Was the major axis
 			bb_angle = math.atan2(y_diff, x_diff)
@@ -73,7 +73,7 @@ local function form_bbox (contact)
 			print('touch bbox', bb_major, bb_minor, RAD_TO_DEG * bb_angle, bb_xc, bb_yc)
 			print('bbox',unpack(bbox))
 			-- Send to JavaScript to communicate that we have calculated just fine
-			tou_che:send(mp.pack({
+			bbox_ch:send(mp.pack({
 				id = 'bbox',
 				xc = bb_xc,
 				yc = bb_yc,
@@ -101,6 +101,7 @@ function tou_ch.callback (s)
 			evt.TIMESTAMP = t
 			logger:record(evt)
 		end
+		-- Check if just receiving a new bbox from the robot
 		-- Process and send back the bounding box
 		libTouch.update(evt, form_bbox)
 	end

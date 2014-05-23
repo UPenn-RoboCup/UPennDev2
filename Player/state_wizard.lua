@@ -30,6 +30,7 @@ local function load_fsm ()
       my_fsm.sm:set_state_debug_handle(function(cur_state_name, event)
         set_gcm_fsm(cur_state_name)
       end)
+      set_gcm_fsm('UNKNOWN')
     end
     state_machines[sm] = my_fsm
     print('FSM | Loaded', sm)

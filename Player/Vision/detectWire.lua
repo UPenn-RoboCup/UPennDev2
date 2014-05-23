@@ -9,20 +9,14 @@ local si = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
 local sin, cos = math.sin, math.cos
 local w, h, focal_length, bbox
-local bbox_ch, line_ch
+local bbox_ch, wire_ch
 local kernel_t, use_horiz, use_vert
 
 
 local last_measurement
-local function update_dist (pline1, pline2, line_radon)
+local function update_dist(pline1, pline2, line_radon)
 
-  if gcm.get_fsm_Arm()~='armWireApproach' then
-    if gcm.get_fsm_Arm()~='armWireLook' then
-      last_measurement = nil
-      vcm.set_wire_model{0,0,0}
-    end
-    return
-  end
+  if gcm.get_fsm_Arm()~='armWireApproach' then return end
 
   -- Scale up
   local px_width = 2 * math.abs(line_radon.ir1 - line_radon.ir2)
@@ -79,14 +73,14 @@ local function update_dist (pline1, pline2, line_radon)
   local r = (s_a * sin(last_measurement.angle_width)) / sin_diff * p_diff
   local d = (s_a * cos(last_measurement.angle_width)) / sin_diff * p_diff
   -- Update the last_measurment
-  --print("\nr, d", r, d, d-p_diff)
+  print("\nr, d", r, d, d-p_diff)
   --print('p_diff', p_diff)
   --print('a_diff', RAD_TO_DEG*angle_width, RAD_TO_DEG*last_measurement.angle_width)
   --print('p_diff', p_diff - p_diff0, d - d0)
   --print()
 
   -- Set the distance and radius of the object
-  vcm.set_wire_model({r, d-p_diff, Body.get_time()-last_measurement.t})
+  vcm.set_wire_model{r, d - p_diff, Body.get_time() - last_measurement.t}
 
   -- Return the distance measurement
   return r, d
@@ -95,32 +89,33 @@ end
 -- Updating stuff
 local function update_bbox ()
   local bbox_data = bbox_ch:receive(true)
-  if not bbox_data then return end
-  -- Evaluate all bbox change requests
-  for _, bbox_request in ipairs(bbox_data) do
-    local bb = mp.unpack(bbox_request)
-    --
-    local dir = bb.dir
-    kernel_t = ImageProc2.dir_to_kernel(dir)
-    --util.ptorch(kernel_t)
-    if dir=='v' then
-      use_horiz, use_vert = false, true
-    elseif dir=='h' then
-        use_horiz, use_vert = true, false
-    else
-        use_horiz, use_vert = true, true
+  if not bbox_data then
+    -- Use the SHM value
+    --bbox = vcm.get_wire_bbox()
+  else
+    local bb = mp.unpack(bbox_data[#bbox_data])
+    if bb.id=='bbox' then
+      local dir = bb.dir
+      kernel_t = ImageProc2.dir_to_kernel(dir)
+      use_horiz, use_vert = true, true
+      if dir=='v' then use_horiz=false elseif dir=='h' then use_vert=false end
+      bbox = vector.new(bb.bbox) / 2
     end
-    --
-    bbox = vector.new(bb.bbox) / 2
-    for i,v in ipairs(bbox) do bbox[i] = math.ceil(v) end
   end
 
-  print('BBOX', unpack(bbox))
+  bbox[1] = math.max(1, math.ceil(bbox[1]))
+  bbox[2] = math.min(w/2, math.ceil(bbox[2]))
+  bbox[3] = math.max(1, math.ceil(bbox[3]))
+  bbox[4] = math.min(h/2, math.ceil(bbox[4]))
 
+  --print('BBOX', unpack(bbox))
+
+  -- Set into shm
+  vcm.set_wire_bbox(bbox)
 end
 
 
-local function send (pline1,pline2,bbox)
+local function send (pline1, pline2, bbox)
   local mmm = mp.pack({
     name = 'pline',
     l1 = {
@@ -136,7 +131,7 @@ local function send (pline1,pline2,bbox)
     -- Relative placement
     bbox = bbox,
   })
-  line_ch:send(mmm)
+  wire_ch:send(mmm)
 end
 
 
@@ -147,20 +142,28 @@ function detectWire.entry (metadata)
   focal_length = metadata.focal_length
   ImageProc2.setup(w, h, 2, 2)
   bbox_ch = si.new_subscriber(Config.human.touch.bbox_ch)
-  line_ch = si.new_publisher(Config.vision.wire.ch)
+  wire_ch = si.new_publisher(Config.vision.wire.ch)
   -- Default is the whole image (scale down of 2)
   bbox = {1, w/2, 1, h/2}
+  vcm.set_wire_bbox(bbox)
   --
   kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel(), true, true
 end
 
 function detectWire.update (img)
 
+  local arm_state = gcm.get_fsm_Arm()
+  if not (arm_state=='armWireLook' or arm_state=='armWireApproach') then
+    last_measurement = nil
+    vcm.set_wire_model{0,0,0}
+    return
+  end
+
   -- Check if their is a new bounding box to use
   update_bbox()
 
   -- Process line stuff
-  local edge_t, grey_t, grey_bt = ImageProc2.yuyv_to_edge(img, bbox, false, kernel_t)
+  local edge_t, grey_t, grey_bt = ImageProc2.yuyv_to_edge(img, bbox, true, kernel_t)
   local RT = ImageProc2.radon_lines(edge_t, use_horiz, use_vert)
   local pline1, pline2, line_radon = RT.get_parallel_lines()
   if not pline1 then return end
@@ -196,6 +199,13 @@ function detectWire.update (img)
 
   -- Only update the distance measurements in the approach state
   update_dist(pline1, pline2, line_radon)
+
+  -- Update the bounding box on the line found?
+
+  -- TODO: Only if vertical line, else a horiz should change the j
+  local wbuf = 12
+  bbox[1] = math.min(pline1.iMin/2-wbuf, pline2.iMin/2-wbuf, pline1.iMax/2-wbuf, pline2.iMax/2-wbuf)
+  bbox[2] = math.max(pline1.iMax/2+wbuf, pline2.iMax/2+wbuf, pline1.iMin/2+wbuf, pline2.iMin/2+wbuf)
 
 
   --[[

@@ -7,6 +7,7 @@ local vector = require'vector'
 Config.vision = {}
 Config.vision.wire = {
   ch = 'wire',
+  rbox_ch = 'rbox' -- Robot guess bbox
 }
 
 -------------
@@ -25,7 +26,10 @@ table.insert(Config.camera,
   width = 320,
   height = 240,
   fps = 30,
-  focal_length = 184.75,
+  --focal_length = 184.75,
+  focal_length = 320,
+  hfov = 50 * DEG_TO_RAD,
+  vfov = 50 * DEG_TO_RAD,
   param = {
     {'Brightness', 100},
     {'Contrast', 25},

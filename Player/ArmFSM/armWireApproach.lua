@@ -20,6 +20,7 @@ local thresh_roll = Config.fsm.armWireApproach.thresh_roll
 local roll_rate = Config.fsm.armWireApproach.roll_rate
 local yaw_rate = Config.fsm.armWireApproach.yaw_rate
 local approach_rate = Config.fsm.armWireApproach.approach_rate
+local wire_close = Config.fsm.armWireApproach.wire_close
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -56,7 +57,7 @@ function state.update()
   -- Camera is mounted this far from the gripper
   -- TODO: Place this magic number in a Config file somewhere
   --print(wire_r, wire_d, wire_t)
-  if wire_d < 0.03 and wire_t > 1 then
+  if wire_d < wire_close and wire_t > 1 then
     return 'close'
   end
 

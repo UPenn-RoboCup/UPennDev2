@@ -35,13 +35,15 @@ DirectionalLight {
 }
 
 DEF CYL Solid {
-  translation 0.6 0.2 -.125
+  translation 0.6 0.2 -.1
   rotation 1 0 0 .2
   children [
     DEF CYL_SHAPE Shape {
       appearance Appearance {
         material Material {
           diffuseColor .8 .1 .3
+          ambientIntensity 0.5
+          shininess 0
         }
       }
       geometry Cylinder {
@@ -53,12 +55,34 @@ DEF CYL Solid {
   boundingObject USE CYL_SHAPE
 }
 
+#DEF GROUND Solid {
+#  children [
+#    DEF GROUND_SHAPE Shape {
+#      appearance Appearance {
+#        material Material {
+#          diffuseColor .1 .1 .1
+#          shininess 0
+#        }
+#      }
+#      geometry Plane {
+#        size 100 100
+#      }
+#    }
+#  ]
+#  boundingObject USE GROUND_SHAPE
+#}
+
 DEF GROUND Solid {
   children [
     DEF GROUND_SHAPE Shape {
       appearance Appearance {
         material Material {
-          diffuseColor .2 .4 .3
+          diffuseColor 1 1 1
+        }
+        texture ImageTexture {
+          url [
+            "textures/grass.png"
+          ]
         }
       }
       geometry Plane {
@@ -68,6 +92,8 @@ DEF GROUND Solid {
   ]
   boundingObject USE GROUND_SHAPE
 }
+
+
 Robot {
   translation 0 0.102838 0
   rotation 1 0 0 -1.5708

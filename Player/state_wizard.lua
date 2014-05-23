@@ -57,7 +57,7 @@ while running do
   -- If time for debug
   if t-t_debug>debug_interval then
     t_debug = t
-    --print('Joints', Body.get_larm_position())
+    print('Wire', vcm.get_wire_model())
   end
   -- If not webots, then wait the update cycle rate
   if not IS_WEBOTS then

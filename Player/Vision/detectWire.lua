@@ -73,7 +73,7 @@ local function update_dist(pline1, pline2, line_radon)
   local r = (s_a * sin(last_measurement.angle_width)) / sin_diff * p_diff
   local d = (s_a * cos(last_measurement.angle_width)) / sin_diff * p_diff
   -- Update the last_measurment
-  print("\nr, d", r, d, d-p_diff)
+  --print("\nr, d", r, d, d-p_diff)
   --print('p_diff', p_diff)
   --print('a_diff', RAD_TO_DEG*angle_width, RAD_TO_DEG*last_measurement.angle_width)
   --print('p_diff', p_diff - p_diff0, d - d0)

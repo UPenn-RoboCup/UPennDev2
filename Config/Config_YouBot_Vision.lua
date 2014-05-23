@@ -7,7 +7,6 @@ local vector = require'vector'
 Config.vision = {}
 Config.vision.wire = {
   ch = 'wire',
-
 }
 
 -------------

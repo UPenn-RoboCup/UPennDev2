@@ -8,21 +8,10 @@ local T = require'libTransform'
 local si = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
 local sin, cos = math.sin, math.cos
-local w, h, focal_length
+local w, h, focal_length, bbox
+local bbox_ch, line_ch
+local kernel_t, use_horiz, use_vert
 
-local tou_che, line_ch, line_ch_remote
-
--- Variables
-local kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel(), true, true
--- Form the default bounding box (in scaled down space...)
-local bbox = {1, 160, 1, 120}
---local bbox = {51, 101, 21, 111}
---local bbox = {101, 201, 41, 221}
-
-local function setup_channels ()
-  tou_che = si.new_subscriber(Config.human.touch.ch)
-  line_ch = si.new_publisher(Config.vision.wire.ch)
-end
 
 local last_measurement
 local function update_dist (pline1, pline2, line_radon)
@@ -105,7 +94,7 @@ end
 
 -- Updating stuff
 local function update_bbox ()
-  local bbox_data = tou_che:receive(true)
+  local bbox_data = bbox_ch:receive(true)
   if not bbox_data then return end
   -- Evaluate all bbox change requests
   for _, bbox_request in ipairs(bbox_data) do
@@ -124,8 +113,10 @@ local function update_bbox ()
     --
     bbox = vector.new(bb.bbox) / 2
     for i,v in ipairs(bbox) do bbox[i] = math.ceil(v) end
-    --print('BBOX', bbox, dir)
   end
+
+  print('BBOX', unpack(bbox))
+
 end
 
 
@@ -155,7 +146,12 @@ function detectWire.entry (metadata)
   w, h = metadata.width, metadata.height
   focal_length = metadata.focal_length
   ImageProc2.setup(w, h, 2, 2)
-  setup_channels()
+  bbox_ch = si.new_subscriber(Config.human.touch.bbox_ch)
+  line_ch = si.new_publisher(Config.vision.wire.ch)
+  -- Default is the whole image (scale down of 2)
+  bbox = {1, w/2, 1, h/2}
+  --
+  kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel(), true, true
 end
 
 function detectWire.update (img)

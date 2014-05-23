@@ -9,11 +9,9 @@ local unix = require'unix'
 local util = require'util'
 local mp = require'msgpack'
 local simple_ipc, poller = require'simple_ipc'
-local tou_ch = simple_ipc.new_subscriber'touch'
--- Processed
-local tou_che = simple_ipc.new_publisher'touche'
-local tou_che = simple_ipc.new_publisher(Config.net.reliable_touch)
-local libTouch2 = require'libTouch2'
+local tou_ch = simple_ipc.new_subscriber(Config.human.touch.ch)
+local tou_che = simple_ipc.new_publisher(Config.human.touch.bbox_ch)
+local libTouch = require'libTouch'
 -- Allow logging
 local DO_LOG, libLog, logger = false
 if DO_LOG then
@@ -93,7 +91,7 @@ end
 
 -- Callback for processing
 -- Only get the full swipe information
-tou_ch.callback = function(s)
+function tou_ch.callback (s)
 	local t = unix.time()
 	local data = tou_ch:receive()
 	for _, d in ipairs(data) do
@@ -104,12 +102,12 @@ tou_ch.callback = function(s)
 			logger:record(evt)
 		end
 		-- Process and send back the bounding box
-		libTouch2.update(evt, form_bbox)
+		libTouch.update(evt, form_bbox)
 	end
 end
 
 local signal = require'signal'
-local function shutdown()
+function shutdown ()
 	-- Stop the poller
 	poller:stop()
 	-- Save the logs

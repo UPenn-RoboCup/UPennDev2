@@ -3,8 +3,9 @@ local vector = require'vector'
 
 Config.human = {}
 Config.human.touch = {
-  ch = 'touche',
+  ch = 'touch',
   reliable = 55588,
+  bbox_ch = 'bbox'
 }
 
 return Config

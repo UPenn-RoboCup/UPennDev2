@@ -14,7 +14,7 @@ Config.dev.body = 'YouBotBody'
 ---------------------------
 -- Complementary Configs --
 ---------------------------
-local exo = {'Net', 'FSM', 'Robot', 'Vision'}
+local exo = {'Net', 'FSM', 'Robot', 'Vision', 'Human'}
 -- Perform the load
 for i, v in ipairs(exo) do
 	local fname = {HOME, '/Config/Config_', Config.PLATFORM_NAME, '_', v, '.lua'}

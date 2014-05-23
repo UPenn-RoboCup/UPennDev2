@@ -29,10 +29,16 @@ Config.fsm.Arm = {
   {'armWireLook', 'timeout', 'armWireLook'},
   {'armWireLook', 'lost', 'armInit'}, -- Initial pose if lost the wire
   {'armWireLook', 'done', 'armWireApproach'}, -- Initial pose if lost the wire
+  {'armWireLook', 'init', 'armInit'},
   --
   {'armWireApproach', 'timeout', 'armWireApproach'},
   {'armWireApproach', 'lost', 'armInit'},
   {'armWireApproach', 'far', 'armWireLook'}, -- If not well aligned, realign
+  {'armWireApproach', 'close', 'armWireGrip'}, -- If not well aligned, realign
+  {'armWireApproach', 'init', 'armInit'},
+  --
+  {'armWireGrip', 'timeout', 'armInit'},
+  {'armWireGrip', 'init', 'armInit'},
 }
 
 -- State specific tuning params
@@ -48,17 +54,17 @@ Config.fsm.armWireLook = {
   lost_timeout = 2.0,
   thresh_yaw = 3 * DEG_TO_RAD,
   thresh_roll = 3 * DEG_TO_RAD,
-  roll_rate = 0.200,
-  yaw_rate = 0.050,
+  roll_rate = 0.500,
+  yaw_rate = 0.500,
 }
 --
 Config.fsm.armWireApproach = {
   lost_timeout = 1.0,
   thresh_yaw = 5 * DEG_TO_RAD,
   thresh_roll = 6 * DEG_TO_RAD,
-  roll_rate = 0.100,
-  yaw_rate = 0.020,
-  approach_rate = 0.01, -- 1 cm/s
+  roll_rate = 0.200,
+  yaw_rate = 0.200,
+  approach_rate = 0.10,
 }
 
 Config.fsm.Body = {

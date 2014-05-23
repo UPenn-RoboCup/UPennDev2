@@ -35,7 +35,7 @@ DirectionalLight {
 }
 
 DEF CYL Solid {
-  translation 0.6 0.2 0
+  translation 0.6 0.2 -.125
   rotation 1 0 0 .2
   children [
     DEF CYL_SHAPE Shape {

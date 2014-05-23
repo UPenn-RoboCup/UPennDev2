@@ -49,13 +49,10 @@ function state.update()
   -- Where are we now, in camera roll/yaw?
   -- TODO: Assume that the camera timestamp is not too far from the motor ts
   local qLArm = Body.get_larm_position()
-  -- Use a simple P controller. TODO: Is PID worht it?
-  local roll_correction = (qLArm[5] - cam_roll) * roll_rate * dt
-  local yaw_correction = (qLArm[1] - cam_yaw) * yaw_rate * dt
+  -- Use a simple P controller. TODO: Is PID worth it?
+  qLArm[5] = qLArm[5] + (cam_roll - 0) * roll_rate * dt
+  qLArm[1] = qLArm[1] + (cam_yaw - 0)* yaw_rate * dt
   --print('roll_correction', roll_correction)
-  -- Apply the correction
-  qLArm[1] = qLArm[1] + yaw_correction
-  qLArm[5] = qLArm[5] + roll_correction
   -- Set the command
   Body.set_larm_command_position(qLArm)
 end

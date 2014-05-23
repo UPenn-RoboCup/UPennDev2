@@ -55,11 +55,13 @@ function Body.get_rarm_position ()
 end
 --
 function Body.get_lgrip_position ()
+	return dcm.get_sensor_gripper(val)
 end
 function Body.get_lgrip_command_position ()
 	return dcm.get_actuator_command_gripper()
 end
-function Body.set_lgrip_command_position ()
+function Body.set_lgrip_command_position (val)
+	return dcm.set_actuator_command_gripper(val)
 end
 
 -- Other API wrappers
@@ -186,8 +188,6 @@ else
 		gripper = {},
 		wheels = {},
 	}
-
-
 
   -- Ability to turn on/off items
   local t_last_keypress = get_time()
@@ -463,11 +463,17 @@ else
     wheel_helper(unpack(vel))
 
     -- Gripper
-    --local spacing = dcm.get_actuator_command_gripper()
-		local spacing = 0
+    local spacing = dcm.get_actuator_command_gripper()
+		-- Just copy...
+		dcm.set_sensor_gripper(spacing)
     local width = math.max(math.min(spacing, 0.025), 0)
-    --webots.wb_motor_set_position(tags.gripper[1], width)
-    --webots.wb_motor_set_position(tags.gripper[2], width)
+		if WEBOTS_VERSION==7 then
+	    webots.wb_motor_set_position(tags.gripper[1], width)
+	    webots.wb_motor_set_position(tags.gripper[2], width)
+		else
+			webots.wb_servo_set_position(tags.gripper[1], width)
+			webots.wb_servo_set_position(tags.gripper[2], width)
+		end
 
 		-- Step the simulation, and shutdown if the update fails
 		if webots.wb_robot_step(timeStep) < 0 then
@@ -484,6 +490,18 @@ else
 			end
     end
 		dcm.set_sensor_position(sensor.position)
+
+		--[[
+		if WEBOTS_VERSION==7 then
+			local g1 = webots.wb_motor_get_position(tags.gripper[1])
+			local g2 = webots.wb_motor_get_position(tags.gripper[2])
+			print('g',g1,g2)
+		else
+			local g1 = webots.wb_servo_get_position(tags.gripper[1])
+			local g2 = webots.wb_servo_get_position(tags.gripper[2])
+		end
+		--]]
+
 
     -- Get sensors
 		update_vision()

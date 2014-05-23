@@ -39,7 +39,7 @@ local h = metadata.height
 local name = metadata.name
 -- Who to send to
 local operator = Config.net.operator.wired
-local udp_port = Config.net.camera[name]
+local udp_port = metadata.unreliable
 
 -- Form the detection pipeline
 local pipeline = {}

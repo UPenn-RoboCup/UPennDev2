@@ -1,6 +1,15 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
+------------
+-- Vision --
+------------
+Config.vision = {}
+Config.vision.wire = {
+  ch = 'wire',
+
+}
+
 -------------
 -- Cameras --
 -------------
@@ -10,6 +19,9 @@ table.insert(Config.camera,
 {
   name = 'larm',
   dev = '/dev/video1',
+  unreliable = 33333,
+  reliable = 33333,
+  ch = 'camera'..(#Config.camera + 1),
   fmt = 'yuyv',
   width = 320,
   height = 240,
@@ -27,15 +39,7 @@ table.insert(Config.camera,
 
 -- Webots override
 if IS_WEBOTS then
-  Config.camera = {
-  {
-    name = 'larm',
-    width = 320,
-    height = 240,
-    focal_length = 184.75,
-    detection_pipeline = {'detectWire'}
-  }
-  }
+
 end
 
 return Config

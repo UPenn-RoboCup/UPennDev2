@@ -1,18 +1,3 @@
-
--- Simple vision routine for webots
---[[
-local lV = require'libVision'
-local meta_b = {
-  id = 'labelB',
-  w = w / sA / sB,
-  h = h / sA / sB,
-  c = 'zlib',
-}
-local s_t = simple_ipc.new_publisher('top')
-local zlib = require'zlib.ffi'
-local c_zlib = zlib.compress_cdata
---]]
-
 local torch = require'torch'
 local ImageProc2 = require'ImageProc.ffi'
 local util = require'util'
@@ -25,7 +10,7 @@ local mp = require'msgpack.MessagePack'
 local sin, cos = math.sin, math.cos
 local w, h, focal_length
 
-local edge_ch, tou_che, tou_che2, line_ch, line_ch_remote
+local tou_che, line_ch, line_ch_remote
 
 -- Variables
 local kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel(), true, true
@@ -35,30 +20,39 @@ local bbox = {1, 160, 1, 120}
 --local bbox = {101, 201, 41, 221}
 
 local function setup_channels ()
-  edge_ch = si.new_publisher('edge')
-  tou_che = si.new_subscriber('touche')
-  tou_che2 = si.new_subscriber(55588)
-  line_ch = si.new_publisher('line')
-  line_ch_remote = si.new_publisher(55589,'25.25.1.109')
+  tou_che = si.new_subscriber(Config.human.touch.ch)
+  line_ch = si.new_publisher(Config.vision.wire.ch)
 end
 
 local last_measurement
-local function update_dist (pline1, pline2, tr, t, line_radon)
+local function update_dist (pline1, pline2, line_radon)
+
+  if gcm.get_fsm_Arm()~='armWireApproach' then
+    if gcm.get_fsm_Arm()~='armWireLook' then
+      last_measurement = nil
+      vcm.set_wire_model{0,0,0}
+    end
+    return
+  end
+
   -- Scale up
   local px_width = 2 * math.abs(line_radon.ir1 - line_radon.ir2)
 
   -- Assume in the center
   local angle_width = math.atan(px_width / 2 / focal_length)
 
+  -- Get the arm position
+  local tr = K.forward_arm(Body.get_larm_position())
+
   --print('angle_width',angle_width*RAD_TO_DEG)
   -- See if this is our first mesaurment
   if not last_measurement then
-    print("UPDATE", T.get_pos(tr))
+    --print("UPDATE", T.get_pos(tr))
     last_measurement = {
       px_width = px_width,
       tr = tr,
       angle_width = angle_width,
-      t = t,
+      t = Body.get_time(),
     }
     return
   end
@@ -96,19 +90,22 @@ local function update_dist (pline1, pline2, tr, t, line_radon)
   local r = (s_a * sin(last_measurement.angle_width)) / sin_diff * p_diff
   local d = (s_a * cos(last_measurement.angle_width)) / sin_diff * p_diff
   -- Update the last_measurment
-  print("\nr, d", r, d)
-  print('p_diff', p_diff)
+  --print("\nr, d", r, d, d-p_diff)
+  --print('p_diff', p_diff)
   --print('a_diff', RAD_TO_DEG*angle_width, RAD_TO_DEG*last_measurement.angle_width)
   --print('p_diff', p_diff - p_diff0, d - d0)
-  print()
+  --print()
+
+  -- Set the distance and radius of the object
+  vcm.set_wire_model({r, d-p_diff, Body.get_time()-last_measurement.t})
+
   -- Return the distance measurement
   return r, d
 end
 
 -- Updating stuff
 local function update_bbox ()
-  --local bbox_data = tou_che:receive(true)
-  local bbox_data = tou_che2:receive(true)
+  local bbox_data = tou_che:receive(true)
   if not bbox_data then return end
   -- Evaluate all bbox change requests
   for _, bbox_request in ipairs(bbox_data) do
@@ -148,19 +145,7 @@ local function send (pline1,pline2,bbox)
     -- Relative placement
     bbox = bbox,
   })
-
-
   line_ch:send(mmm)
-  line_ch_remote:send(mmm)
-
-  -- Send to the human user
-  --[[
-  local c_img = c_grey:compress(grey_bt)
-  local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
-  --print('udp img',img,sz,cnt,t,udp_ret)
-  if err then print(name,'udp error',err) end
-  --]]
-
 end
 
 
@@ -202,18 +187,20 @@ function detectWire.update (img)
   -- Find the angles for servoing
   local camera_roll = line_radon.ith / line_radon.NTH * math.pi
   camera_roll = camera_roll > (math.pi / 2) and (camera_roll - math.pi) or camera_roll
-  camera_roll = -camera_roll
+  --camera_roll = -camera_roll
   -- Place iMean in the center of the frame horizontally
   -- Remember, we massaged plines to be in the original resolution
   local i_px = (pline1.iMean + pline2.iMean) / 2 - (w / 2)
   local j_px = (pline1.jMean + pline2.jMean) / 2 - (h / 2)
-  local camera_yaw = math.atan(i_px / focal_length)
+  local camera_yaw = -math.atan(i_px / focal_length)
   local camera_pitch = math.atan(j_px / focal_length)
   -- Set in shared memory
   vcm.set_wire_t(Body.get_time())
   vcm.set_wire_cam_rpy{camera_roll, camera_pitch, camera_yaw}
-  -- Update the distance to the wire and the wire's radius
-  --update_dist(pline1, pline2, fk, t, line_radon)
+
+  -- Only update the distance measurements in the approach state
+  update_dist(pline1, pline2, line_radon)
+
 
   --[[
   print('line_radon', line_radon)

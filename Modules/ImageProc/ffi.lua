@@ -198,7 +198,7 @@ end
 -- TODO: Support more subsample levels, too. This may work:
 -- yuyv_sub = yuyv_t:reshape(h/4,w,4):sub(1,-1,1,w/4)
 -- yuyv_sub = yuyv_t:reshape(h/8,w,4):sub(1,-1,1,w/8)
-local function yuyv_planes (yuyv_ptr, w0, h0)
+local function yuyv_planes(yuyv_ptr, w0, h0)
 	-- Must be userdata or cdata
 	local ty = type(yuyv_ptr)
 	assert(ty=='userdata' or ty=='cdata', 'Bad YUYV pointer: '..ty)
@@ -225,8 +225,8 @@ end
 -- Use PCA for finding a better color space
 local function pca(x)
 	-- From: https://github.com/koraykv/unsup
-	local mean = torch.mean(x,1)
-	local xm = x - torch.ger(torch.ones(x:size(1)),mean:squeeze())
+	local mean = torch.mean(x, 1)
+	local xm = x - torch.ger(torch.ones(x:size(1)), mean:squeeze())
 	xm:div(math.sqrt(x:size(1)-1))
 	local w,s,v = torch.svd(xm:t())
 	s:cmul(s)
@@ -234,7 +234,7 @@ local function pca(x)
 end
 
 -- Learn a grayspace from three color components
-local function learn_greyspace (samples_t, output_t)
+local function learn_greyspace(samples_t, output_t)
 	-- Scale the samples for importance
 	-- TODO: See what is actually a valid approach here!
   local a = samples_t:select(2,1)
@@ -250,7 +250,7 @@ local function learn_greyspace (samples_t, output_t)
 	torch.mv(output_t, samples_0_mean, eigenvectors:select(2,1))
 end
 
-function ImageProc.dir_to_kernel (dir)
+function ImageProc.dir_to_kernel(dir)
 	if dir=='h' then
 		return torch.Tensor({
 			{1}, {4}, {-10}, {4}, {1},
@@ -283,41 +283,122 @@ function ImageProc.dir_to_kernel (dir)
 	--]]
 end
 
--- TODO: Select which pixels to add
-function ImageProc.radon_lines (edge_t, use_horiz, use_vert)
-	-- Take care of noise with a threshold, relating to the standard deviation
-	local THRESH = 2 * torch.std(edge_t)
-	-- Use pixel directions
-	local j, i, label_nw, label_ne, label_sw, label_se
-	-- Clear out any old transform
-	RadonTransform.init(edge_t:size(1), edge_t:size(2))
-	-- Cache the functions
-	local fabs = math.abs
-	local aH = RadonTransform.addHorizontalPixel
-	local aV = RadonTransform.addVerticalPixel
-	-- Start the pointers
-	local e_ptr_l = edge_t:data()
-	local e_ptr_r = e_ptr_l + edge_t:size(2)
-	-- Loop is -2 since we do not hit the boundary
-	for j=0, edge_t:size(1)-2 do
-		for i=0, edge_t:size(2)-2 do
-			label_nw = e_ptr_l[0]
-			e_ptr_l = e_ptr_l + 1
-			label_ne = e_ptr_l[0]
-			label_sw = e_ptr_r[0]
-			e_ptr_r = e_ptr_r + 1
-			label_se = e_ptr_r[0]
-			-- Strong zero crossings
-			-- TODO: Add both j and j+1 (nw and sw pixels are edges, maybe?)
-			if use_horiz and fabs(label_nw - label_sw) > THRESH then aH(i, j+.5) end
-			if use_vert  and fabs(label_nw - label_ne) > THRESH then aV(i+.5, j) end
-		end
-		-- Must have one more increment to get to the next line
-		e_ptr_l = e_ptr_l + 1
-		e_ptr_r = e_ptr_r + 1
-	end
-	-- Yield the Radon Transform
-	return RadonTransform
+-- Find parallel lines in the Radon space
+function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width)
+  -- Have a minimum width of the line (in pixel space)
+  min_width = min_width or 4
+  local i_monotonic_max, monotonic_max, val
+  local ithMax, irMax1, irMax2
+  local cntMax1, cntMax2 = 0, 0
+  local found = false
+
+  local props = RadonTransform.radon_lines(edge_t, use_horiz, use_vert, bbox)
+  local count_d = props.count_d
+  local line_sum_d = props.line_sum_d
+  local line_min_d = props.line_min_d
+  local line_max_d = props.line_max_d
+  local NTH = props.NTH
+  local NR = props.NR
+  local cos_d = props.cos_d
+  local sin_d = props.sin_d
+  local i0 = props.i0
+  local j0 = props.j0
+  local r0 = props.r
+
+  for ith=0, NTH-1 do
+    i_monotonic_max = 0
+    monotonic_max = 0
+    local i_arr, c_arr = {}, {}
+    for ir=0, NR-1 do
+      val = count_d[ith][ir]
+      if val > monotonic_max then
+        monotonic_max = val
+        i_monotonic_max = ir
+      else
+        -- End of monotonicity
+        if #c_arr<2 then
+          table.insert(i_arr, i_monotonic_max)
+          table.insert(c_arr, monotonic_max)
+          i_monotonic_max = ir
+          monotonic_max = 0
+        elseif (ir-i_monotonic_max)>min_width then
+          if monotonic_max>c_arr[1]  then
+            c_arr[1] = monotonic_max
+            i_arr[1] = i_monotonic_max
+          elseif monotonic_max>c_arr[#c_arr]  then
+            c_arr[#c_arr] = monotonic_max
+            i_arr[#i_arr] = i_monotonic_max
+          end
+          i_monotonic_max = ir
+          monotonic_max = 0
+        end
+      end
+    end
+    -- Save the parallel lines
+    if #i_arr==2 then
+      --print(ith,'ith',unpack(c_arr))
+      -- Dominate the previous maxes
+      if c_arr[1]>cntMax1 and c_arr[2]>cntMax2 then
+        irMax1, irMax2, ithMax = i_arr[1], i_arr[2], ith
+        cntMax1, cntMax2 = c_arr[1], c_arr[2]
+        found = true
+      elseif c_arr[1]>cntMax1 and c_arr[2]>cntMax2 then
+        irMax1, irMax2, ithMax = i_arr[2], i_arr[1], ith
+        cntMax1, cntMax2 = c_arr[2], c_arr[1]
+        found = true
+      end
+    end
+  end
+  -- Yield the parallel lines
+  if not found then return end
+
+  --print('PARALLEL',ithMax,irMax1-irMax2)
+
+  local s, c = sin_d[ithMax], cos_d[ithMax]
+  -- Find the image indices
+  local iR1 = irMax1 * c
+  local iR2 = irMax2 * c
+  local jR1 = irMax1 * s
+  local jR2 = irMax2 * s
+
+  -- Add i0, j0 to go back into image space
+  iR1, iR2 = iR1 + i0, iR2 + i0
+  jR1, jR2 = jR1 + j0, jR2 + j0
+
+  local lMean1 = line_sum_d[ithMax][irMax1] / count_d[ithMax][irMax1]
+  local lMin1 = line_min_d[ithMax][irMax1]
+  local lMax1 = line_max_d[ithMax][irMax1]
+  local lMean2 = line_sum_d[ithMax][irMax2] / count_d[ithMax][irMax2]
+  local lMin2 = line_min_d[ithMax][irMax2]
+  local lMax2 = line_max_d[ithMax][irMax2]
+
+  return {
+      iMean = iR1 - lMean1 * s,
+      jMean = jR1 + lMean1 * c,
+      iMin = iR1 - lMin1 * s,
+      jMin = jR1 + lMin1 * c,
+      iMax = iR1 - lMax1 * s,
+      jMax = jR1 + lMax1 * c,
+    },
+    {
+      iMean = iR2 - lMean1 * s,
+      jMean = jR2 + lMean1 * c,
+      iMin = iR2 - lMin1 * s,
+      jMin = jR2 + lMin1 * c,
+      iMax = iR2 - lMax1 * s,
+      jMax = jR2 + lMax1 * c,
+    },
+    {
+      ith = ithMax,
+      ir1 = irMax1,
+      ir2 = irMax2,
+      c1 = cntMax1,
+      c2 = cntMax2,
+      NTH = NTH,
+      NR = NR,
+    },
+    props
+
 end
 
 -- TODO: Take in some swipe information.

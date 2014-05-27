@@ -405,13 +405,13 @@ else
 		local h = webots.wb_camera_get_height(tags.kinect)
 		local color_fr = webots.to_rgb(tags.kinect)
 		local depth_fr = webots.wb_camera_get_range_image(tags.kinect)
-		local sz = w*h
-		local depth_array = carray.float( depth_fr, sz )
+		local sz = w * h
+		local depth_array = carray.float(depth_fr, sz)
 		if not depth_torch then
 			-- Perform the initial allocation
-			depth_torch = torch.FloatTensor( sz ):zero()
-			depth_byte  = torch.ByteTensor( sz ):zero()
-			depth_adj   = torch.FloatTensor( sz ):zero()
+			depth_torch = torch.FloatTensor(sz):zero()
+			depth_byte  = torch.ByteTensor(sz):zero()
+			depth_adj   = torch.FloatTensor(sz):zero()
 		end
 		depth_array:tensor(depth_torch)
 		local near, far = .1, 2

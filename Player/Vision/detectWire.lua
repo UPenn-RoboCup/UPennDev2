@@ -12,6 +12,10 @@ local w, h, focal_length, bbox
 local bbox_ch, wire_ch
 local kernel_t, use_horiz, use_vert
 
+local DEBUG, radon_ch = true
+if DEBUG then
+  radon_ch = si.new_publisher('radon')
+end
 
 local last_measurement
 local function update_dist(pline1, pline2, line_radon)
@@ -164,8 +168,17 @@ function detectWire.update (img)
 
   -- Process line stuff
   local edge_t, grey_t, grey_bt = ImageProc2.yuyv_to_edge(img, bbox, true, kernel_t)
-  local RT = ImageProc2.radon_lines(edge_t, use_horiz, use_vert)
-  local pline1, pline2, line_radon = RT.get_parallel_lines()
+  local pline1, pline2, line_radon, rt_props = ImageProc2.parallel_lines(edge_t, use_horiz, use_vert)
+  -- Send to MATLAB
+  if DEBUG then
+    local counts_str = ffi.string(rt_props.count_d, rt_props.MAXR * rt_props.NTH * ffi.sizeof'int32_t')
+    local meta = {}
+    for k,v in pairs(rt_props) do
+      if type(v)~='cdata' and type(v)~='userdata' then meta[k] = v end
+    end
+    local ret = radon_ch:send({mp.pack(meta), counts_str})
+  end
+
   if not pline1 then return end
 
   -- massage from bbox region to image region

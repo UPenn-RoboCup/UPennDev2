@@ -3,6 +3,9 @@ local RadonTransform = {}
 local ok, ffi = pcall(require,'ffi')
 assert(ok, 'No ffi!')
 local torch = require'torch'
+-- Cache
+local std = torch.std
+local fabs, min, max, floor = math.abs, math.min, math.max, math.floor
 
 -- These are the integer constants for avoiding floating point precision
 -- Max radius: the diagonal of the image
@@ -16,15 +19,13 @@ local NTH = 45 -- Number of angles (4 degree res)
 --local NTH = 36 -- 5 degree resolution
 --local NTH = 180 -- (1 degree res)
 
+local i0, j0, r0, th0 = 0, 0, 0, 0
+
 local count_d    = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local line_sum_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local line_min_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local line_max_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
-
--- Export a bit
-RadonTransform.count_d = count_d
-RadonTransform.NTH = NTH
-RadonTransform.NR = NR
+-- TODO: Automatically wrap into torch
 
 -- Save our lookup table discretization
 local th = ffi.new('double[?]', NTH)
@@ -36,6 +37,22 @@ for i = 0, NTH-1 do
   cos_d[i] = math.cos(th[i])
   sin_d[i] = math.sin(th[i])
 end
+
+-- Export a bit
+local props = {
+  count_d = count_d,
+  line_sum_d = line_sum_d,
+  line_min_d = line_min_d,
+  line_max_d = line_max_d,
+  cos_d = cos_d,
+  sin_d = sin_d,
+  NTH = NTH,
+  MAXR = MAXR,
+  NR = NR,
+  i0 = i0,
+  j0 = j0,
+  r0 = r0,
+}
 
 -- a horizontal pixel could be part of a 45 degree line
 -- NOTE: This we can change based on the prior
@@ -50,12 +67,18 @@ for ith = 0, NTH-1 do
   end
 end
 
--- TODO: Make smarter? Seems somewhat ok...
-function RadonTransform.init (w, h)
+-- i, j get a center coordinate
+function RadonTransform.init (w, h, i_center, j_center)
+  i0 = i_center or i0
+  j0 = j_center or j0
+  r0 = math.sqrt(i0 ^ 2 + j0 ^ 2)
   -- Resize for the image
   NR = math.ceil(math.sqrt(w*w+h*h))
   -- Update the export
-  RadonTransform.NR = NR
+  props.NR = NR
+  props.i0 = i0
+  props.j0 = j0
+  props.r0 = r0
   -- Size of the zeroing
   local b_size32 = NTH * MAXR * ffi.sizeof'int32_t'
   -- Zero the counts
@@ -69,12 +92,10 @@ end
 -- TODO: Respect the integer method, since since lua converts back to double
 -- NOTE: Maybe have two ways - one in double, and one in int
 
-local fabs, min, max, floor = math.abs, math.min, math.max, math.floor
-
-function RadonTransform.addPixelToRay (i, j, ith)
+local function addPixelToRay (i, j, ith)
   local s, c = sin_d[ith], cos_d[ith]
   -- Counts
-  local ir = fabs(c * i + s * j)
+  local ir = c * i + s * j
   count_d[ith][ir] = count_d[ith][ir] + 1
   -- Line statistics
   local iline = -s * i + c * j
@@ -82,131 +103,91 @@ function RadonTransform.addPixelToRay (i, j, ith)
   if iline > line_max_d[ith][ir] then line_max_d[ith][ir] = iline end
   if iline < line_min_d[ith][ir] then line_min_d[ith][ir] = iline end
 end
-local addPixelToRay = RadonTransform.addPixelToRay
 
-function RadonTransform.addHorizontalPixel (i, j)
-  for _, ith in ipairs(sin_index_thresh) do addPixelToRay(i,j,ith) end
+local function addPixelToRay2 (i, j, ith)
+  local s, c = sin_d[ith], cos_d[ith]
+  -- Center based on the human guess
+  i, j = i - i0, j - j0
+  -- Counts
+  local ir = c * i + s * j + r0
+  count_d[ith][ir] = count_d[ith][ir] + 1
+  -- Line statistics
+  local iline = -s * i + c * j
+  line_sum_d[ith][ir] = line_sum_d[ith][ir] + iline
+  if iline > line_max_d[ith][ir] then line_max_d[ith][ir] = iline end
+  if iline < line_min_d[ith][ir] then line_min_d[ith][ir] = iline end
 end
 
-function RadonTransform.addVerticalPixel (i, j)
-  for ii, ith in ipairs(cos_index_thresh) do addPixelToRay(i,j,ith) end
-  --[[
-  for ith = 0, NTH-1 do
-    if math.abs(cos_d[ith]) >= DIAGONAL_THRESHOLD then
-      addPixelToRay(i,j,ith)
-    end
-  end
-  --]]
+local function addHorizontalPixel (i, j)
+  --for _, ith in ipairs(sin_index_thresh) do addPixelToRay(i, j, ith) end
+  for _, ith in ipairs(sin_index_thresh) do addPixelToRay2(i, j, ith) end
 end
 
--- Find parallel lines in the Radon space
-function RadonTransform.get_parallel_lines (min_width)
-  -- Have a minimum width of the line (in pixel space)
-  min_width = min_width or 4
-  local i_monotonic_max, monotonic_max, val
+local function addVerticalPixel (i, j)
+  --for _, ith in ipairs(cos_index_thresh) do addPixelToRay(i, j, ith) end
+  for _, ith in ipairs(cos_index_thresh) do addPixelToRay2(i, j, ith) end
+end
 
-  local ithMax, irMax1, irMax2
-  local cntMax1, cntMax2 = 0, 0
-  local found = false
-
-  for ith=0, NTH-1 do
-    i_monotonic_max = 0
-    monotonic_max = 0
-    local i_arr, c_arr = {}, {}
-    for ir=0, NR-1 do
-      val = count_d[ith][ir]
-      if val > monotonic_max then
-        monotonic_max = val
-        i_monotonic_max = ir
-      else
-        -- End of monotonicity
-        if #c_arr<2 then
-          table.insert(i_arr, i_monotonic_max)
-          table.insert(c_arr, monotonic_max)
-          i_monotonic_max = ir
-          monotonic_max = 0
-        elseif (ir-i_monotonic_max)>min_width then
-          if monotonic_max>c_arr[1]  then
-            c_arr[1] = monotonic_max
-            i_arr[1] = i_monotonic_max
-          elseif monotonic_max>c_arr[#c_arr]  then
-            c_arr[#c_arr] = monotonic_max
-            i_arr[#i_arr] = i_monotonic_max
-          end
-          i_monotonic_max = ir
-          monotonic_max = 0
-        end
-      end
-    end
-    -- Save the parallel lines
-    if #i_arr==2 then
-      --print(ith,'ith',unpack(c_arr))
-      -- Dominate the previous maxes
-      if c_arr[1]>cntMax1 and c_arr[2]>cntMax2 then
-        irMax1, irMax2, ithMax = i_arr[1], i_arr[2], ith
-        cntMax1, cntMax2 = c_arr[1], c_arr[2]
-        found = true
-      elseif c_arr[1]>cntMax1 and c_arr[2]>cntMax2 then
-        irMax1, irMax2, ithMax = i_arr[2], i_arr[1], ith
-        cntMax1, cntMax2 = c_arr[2], c_arr[1]
-        found = true
-      end
-    end
+function RadonTransform.radon_lines (edge_t, use_horiz, use_vert, bbox)
+  -- Use pixel directions
+  local j, i, label_nw, label_ne, label_sw, label_se
+  -- Take care of noise with a threshold, relating to the standard deviation
+  local THRESH = 2 * std(edge_t)
+  local x_sz, y_sz = edge_t:size(2), edge_t:size(1)
+  -- Start the pointers
+  local e_ptr_l = edge_t:data()
+  local e_ptr_r = e_ptr_l + x_sz
+  -- Form the strides
+  local ni, nj, stride
+  if bbox then
+    local x0, x1, y0, y1 = unpack(bbox)
+    x0, x1 = math.max(1, x0), math.min(x1, x_sz)
+    y0, y1 = math.max(1, y0), math.min(y1, y_sz)
+    ni, nj = x1 - x0 - 1, y1 - y0 - 1
+    --if ni<1 or nj<1 then return end
+    e_ptr_l = e_ptr_l + y0 * x_sz + x0 - 1
+    e_ptr_r = e_ptr_r + y0 * x_sz + x0 - 1
+    stride = x_sz - ni - 1
+  else
+    -- Loop is -2 since we do not hit the boundary
+    ni, nj = x_sz - 2, y_sz - 2
+    -- After every row, the next row immediately starts
+    stride = 1
   end
-  -- Yield the parallel lines
-  if not found then return end
-
-  --print('PARALLEL',ithMax,irMax1-irMax2)
-
-  local s, c = sin_d[ithMax], cos_d[ithMax]
-  -- Find the image indices
-  local iR1 = irMax1 * c
-  local iR2 = irMax2 * c
-  local jR1 = irMax1 * s
-  local jR2 = irMax2 * s
-  local lMean1 = line_sum_d[ithMax][irMax1] / count_d[ithMax][irMax1]
-  local lMin1 = line_min_d[ithMax][irMax1]
-  local lMax1 = line_max_d[ithMax][irMax1]
-  local lMean2 = line_sum_d[ithMax][irMax2] / count_d[ithMax][irMax2]
-  local lMin2 = line_min_d[ithMax][irMax2]
-  local lMax2 = line_max_d[ithMax][irMax2]
-
-  return {
-      iMean = iR1 - lMean1 * s,
-      jMean = jR1 + lMean1 * c,
-      iMin = iR1 - lMin1 * s,
-      jMin = jR1 + lMin1 * c,
-      iMax = iR1 - lMax1 * s,
-      jMax = jR1 + lMax1 * c,
-    },
-    {
-      iMean = iR2 - lMean1 * s,
-      jMean = jR2 + lMean1 * c,
-      iMin = iR2 - lMin1 * s,
-      jMin = jR2 + lMin1 * c,
-      iMax = iR2 - lMax1 * s,
-      jMax = jR2 + lMax1 * c,
-    },
-    {
-      ith = ithMax,
-      ir1 = irMax1,
-      ir2 = irMax2,
-      c1 = cntMax1,
-      c2 = cntMax2,
-      NTH = NTH,
-      NR = NR,
-    }
-
+  -- Clear out any old transform
+  RadonTransform.init(x_sz, y_sz)
+  for j=0, nj do
+    for i=0, ni do
+      label_nw = e_ptr_l[0]
+      e_ptr_l = e_ptr_l + 1
+      label_ne = e_ptr_l[0]
+      label_sw = e_ptr_r[0]
+      e_ptr_r = e_ptr_r + 1
+      label_se = e_ptr_r[0]
+      -- Strong zero crossings
+      -- TODO: Add both j and j+1 (nw and sw pixels are edges, maybe?)
+      if use_horiz and fabs(label_nw - label_sw) > THRESH then
+        addHorizontalPixel(i, j+.5)
+      end
+      if use_vert and fabs(label_nw - label_ne) > THRESH then
+        addVerticalPixel(i+.5, j)
+      end
+    end
+    -- Must have one more increment to get to the next line
+    e_ptr_l = e_ptr_l + stride
+    e_ptr_r = e_ptr_r + stride
+  end
+  -- Yield the Radon Transform
+  return props
 end
 
 -- Converts to torch
 function RadonTransform.get_population ()
-  local torch = require'torch'
   --Int
   local count_t = torch.IntTensor(NTH, NR)
   local count_s = count_t:storage()
   local tmp_s = torch.IntStorage(
-  NTH*NR,
+  NTH * NR,
   tonumber(ffi.cast("intptr_t",count_d))
   )
   count_s:copy(tmp_s)
@@ -214,7 +195,7 @@ function RadonTransform.get_population ()
   local line_sum_t = torch.IntTensor(NTH, NR)
   local line_sum_s = line_sum_t:storage()
   local tmp_s = torch.IntStorage(
-  NTH*NR,
+  NTH * NR,
   tonumber(ffi.cast("intptr_t",line_sum_d))
   )
   line_sum_s:copy(tmp_s)
@@ -222,7 +203,7 @@ function RadonTransform.get_population ()
   local line_min_t = torch.IntTensor(NTH, NR)
   local line_min_s = line_min_t:storage()
   local tmp_s = torch.IntStorage(
-  NTH*NR,
+  NTH * NR,
   tonumber(ffi.cast("intptr_t",line_min_d))
   )
   line_min_s:copy(tmp_s)
@@ -230,7 +211,7 @@ function RadonTransform.get_population ()
   local line_max_t = torch.IntTensor(NTH, NR)
   local line_max_s = line_max_t:storage()
   local tmp_s = torch.IntStorage(
-  NTH*NR,
+  NTH * NR,
   tonumber(ffi.cast("intptr_t",line_max_d))
   )
   line_max_s:copy(tmp_s)

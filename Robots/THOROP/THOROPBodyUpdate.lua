@@ -114,7 +114,10 @@ for actuator, ptr in pairs(dcm.actuatorPtr) do
 		end
 		-- Send msg to the dcm, just string of the id
 		if not_synced then
-			for _, ch in ipairs(dcm_chs) do ch:send(actuator) end
+			for _, ch in ipairs(dcm_chs) do
+--        print('SET', ch, actuator)
+        ch:send(actuator)
+      end
 		end
 	end
 	local function get (idx1, idx2)
@@ -451,8 +454,9 @@ end
 --
 
 -- If receiving data from a chain
-local function chain_cb ()
+local function chain_cb (c_skt)
 print('chain cb')
+for _, msg in ipairs(c_skt:recv_all()) do print(msg) end
 end
 local function imu_cb ()
 print('imu cb')
@@ -460,7 +464,17 @@ end
 local function body_cb (b_skt)
 	-- Externally call some sort of sync
 	for _, msg in ipairs(b_skt:recv_all()) do
-		for i, ch in ipairs(dcm_chs) do ch:send(actuator) end
+		for i, ch in ipairs(dcm_chs) do
+--print('body_ch',msg,i,ch)
+--util.ptable(ch)
+ch:send(msg)
+end
+--util.ptable(dcm1)
+--util.ptable(dcm2)
+--util.ptable(dcm3)
+--dcm1:send(msg)
+--dcm2:send(actuator)
+--dcm3:send(actuator)
 	end
 end
 
@@ -500,7 +514,7 @@ function Body.update ()
 	-- Poll for events
 	-- Return immediately if nothing happening
 	-- NOTE: Most of the time, nothing will happen...
-	body_poll:poll(0)
+	body_poll:poll(1)
 end
 
 function Body.exit ()

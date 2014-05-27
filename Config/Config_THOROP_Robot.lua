@@ -44,7 +44,7 @@ local one_chain = {
   m_ids = {},
 }
 for _,v in ipairs(right_arm.m_ids) do table.insert(one_chain.m_ids, v) end
-for _,v in ipairs(left_arm.m_ids)  do table.insert(one_chain.m_ids, v) end
+--for _,v in ipairs(left_arm.m_ids)  do table.insert(one_chain.m_ids, v) end
 for _,v in ipairs(right_leg.m_ids) do table.insert(one_chain.m_ids, v) end
 for _,v in ipairs(left_leg.m_ids)  do table.insert(one_chain.m_ids, v) end
 
@@ -63,7 +63,7 @@ if ONE_CHAIN then
   left_leg  = nil
 else
   table.insert(Config.chain, right_arm)
-  table.insert(Config.chain, left_arm)
+  --table.insert(Config.chain, left_arm)
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)
   one_chain = nil

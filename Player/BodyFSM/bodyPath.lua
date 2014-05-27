@@ -7,9 +7,10 @@ local util = require'util'
 local vector = require'vector'
 require'wcm'
 
-USE_GPS = true
-DO_EXPORT = false
-USE_ODOM = false
+-- TODO: Should be in the Config
+local USE_GPS = true
+local DO_EXPORT = false
+local USE_ODOM = false
 
 -- Replan every timeout
 local timeout = 5.0
@@ -28,7 +29,7 @@ if DO_EXPORT==true then
 	libMap.export(map.cost_to_go,'cost_to_go.raw')
 end
 
-local function robocup_follow( pose, target_pose )
+local function robocup_follow(pose, target_pose)
   local maxStep = 0.5
   local maxTurn = 0.2
   local dist_threshold = 0.025
@@ -74,7 +75,7 @@ function state.entry()
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-	
+
 	-- Check the goal, and update if needed
 	local obj_pose = wcm.get_ball_pose()
 	local obj_offset = vector.pose{-0.3,-0.2,0}
@@ -85,24 +86,10 @@ function state.entry()
 		cur_goal = target_pose
 		map:new_goal(target_pose)
 	end
-	
-	-- Plan the from our current position
-	local pose
-	if USE_GPS==true then
-		pose = wcm.get_robot_gps()
-	elseif USE_ODOM==true then
-		local odom = wcm.get_robot_pose()
-		local start = wcm.get_robot_initialpose()
-		pose = util.pose_global(odom,start)
-	else
-		pose = wcm.get_robot_pose()
-	end
 
-	if DO_EXPORT==true then
-		path = map:new_path(pose,'path.raw')
-	else
-		path = map:new_path(pose)
-	end
+	-- Plan the from our current position
+	local pose = Body.get_pose()
+	path = map:new_path(pose, DO_EXPORT and 'path.raw')
 	path_sz = #path
 	cur_wp = table.remove(path)
 	wp_id = 1
@@ -121,16 +108,7 @@ function state.update()
   if t-t_entry > timeout then return'timeout' end
 
 	-- Grab the pose
-	local pose
-	if USE_GPS==true then
-		pose = wcm.get_robot_gps()
-	elseif USE_ODOM==true then
-		local odom = wcm.get_robot_pose()
-		local start = wcm.get_robot_initialpose()
-		pose = util.pose_global(odom,start)
-	else
-		pose = wcm.get_robot_pose()
-	end
+	local pose = Body.get_pose()
 
 	-- Find our velocity
 	local velocity, near_wp = robocup_follow(pose,cur_wp)

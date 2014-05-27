@@ -11,6 +11,7 @@ local sin, cos = math.sin, math.cos
 local w, h, focal_length, bbox
 local bbox_ch, wire_ch
 local kernel_t, use_horiz, use_vert
+local bb_angle = nil -- no prior
 
 local DEBUG, radon_ch = true
 if DEBUG then
@@ -98,6 +99,13 @@ local function update_bbox ()
     --bbox = vcm.get_wire_bbox()
   else
     local bb = mp.unpack(bbox_data[#bbox_data])
+    bb_angle = bb.a > 0 and bb.a - math.pi/2 or bb.a + math.pi/2
+    if DEBUG then
+      --print('NEW BB')
+      --util.ptable(bb)
+      -- Format for the RT coordinates
+      print('BB ANGLE', bb_angle * RAD_TO_DEG)
+    end
     if bb.id=='bbox' then
       local dir = bb.dir
       kernel_t = ImageProc2.dir_to_kernel(dir)
@@ -106,13 +114,12 @@ local function update_bbox ()
       bbox = vector.new(bb.bbox) / 2
     end
   end
-
   bbox[1] = math.max(1, math.ceil(bbox[1]))
   bbox[2] = math.min(w/2, math.ceil(bbox[2]))
   bbox[3] = math.max(1, math.ceil(bbox[3]))
   bbox[4] = math.min(h/2, math.ceil(bbox[4]))
 
-  --print('BBOX', unpack(bbox))
+  if DEBUG then print('update_bbox', bbox) end
 
   -- Set into shm
   vcm.set_wire_bbox(bbox)
@@ -148,7 +155,7 @@ function detectWire.entry (metadata)
   bbox_ch = si.new_subscriber(Config.human.touch.bbox_ch)
   wire_ch = si.new_publisher(Config.vision.wire.ch)
   -- Default is the whole image (scale down of 2)
-  bbox = {1, w/2, 1, h/2}
+  bbox = vector.new{1, w/2, 1, h/2}
   vcm.set_wire_bbox(bbox)
   --
   kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel(), true, true
@@ -160,7 +167,16 @@ function detectWire.update (img)
   if not (arm_state=='armWireLook' or arm_state=='armWireApproach') then
     last_measurement = nil
     vcm.set_wire_model{0,0,0}
+    bbox = vector.new{1, w/2, 1, h/2}
+    vcm.set_wire_bbox(bbox)
+    -- Reset prior
+    bb_angle = nil
     return
+  end
+
+  if DEBUG then
+    print('\nUpdate')
+    print('KERNEL', kernel_t:size(1), kernel_t:size(2))
   end
 
   -- Check if their is a new bounding box to use
@@ -168,9 +184,19 @@ function detectWire.update (img)
 
   -- Process line stuff
   local edge_t, grey_t, grey_bt = ImageProc2.yuyv_to_edge(img, bbox, true, kernel_t)
-  local pline1, pline2, line_radon, rt_props = ImageProc2.parallel_lines(edge_t, use_horiz, use_vert)
+  -- Refine due to the convolution with the kernel
+  local reduced_x, reduced_y = (kernel_t:size(1)-1) / 2, (kernel_t:size(2)-1)/2
+  local bbox2 = vector.new(bbox) - vector.new{reduced_x, 0, reduced_y, 0}
+  bbox2[1] = math.max(bbox2[1], 1)
+  bbox2[3] = math.max(bbox2[3], 1)
+  bbox2[2] = math.min(bbox2[2], w / 2 - 2 * reduced_x)
+  bbox2[4] = math.min(bbox2[4], h / 2 - 2 * reduced_y)
+  -- Give the angle prior
+  local rt_props, pline1, pline2, line_radon =
+    ImageProc2.parallel_lines(edge_t, use_horiz, use_vert, bbox2, nil, bb_angle)
   -- Send to MATLAB
   if DEBUG then
+    print('BBOX', bbox)
     local counts_str = ffi.string(rt_props.count_d, rt_props.MAXR * rt_props.NTH * ffi.sizeof'int32_t')
     local meta = {}
     for k,v in pairs(rt_props) do
@@ -197,7 +223,7 @@ function detectWire.update (img)
   pline2.jMax  = 2 * (pline2.jMax  + bbox[3])
 
   -- Find the angles for servoing
-  local camera_roll = line_radon.ith / line_radon.NTH * math.pi
+  local camera_roll = line_radon.ith_true / line_radon.NTH * math.pi
   camera_roll = camera_roll > (math.pi / 2) and (camera_roll - math.pi) or camera_roll
   --camera_roll = -camera_roll
   -- Place iMean in the center of the frame horizontally
@@ -216,10 +242,17 @@ function detectWire.update (img)
   -- Update the bounding box on the line found?
 
   -- TODO: Only if vertical line, else a horiz should change the j
+  if DEBUG then
+    print('pline1')
+    util.ptable(pline1)
+    print('pline2')
+    util.ptable(pline2)
+  end
+  ----[[
   local wbuf = 12
   bbox[1] = math.min(pline1.iMin/2-wbuf, pline2.iMin/2-wbuf, pline1.iMax/2-wbuf, pline2.iMax/2-wbuf)
   bbox[2] = math.max(pline1.iMax/2+wbuf, pline2.iMax/2+wbuf, pline1.iMin/2+wbuf, pline2.iMin/2+wbuf)
-
+  --]]
 
   --[[
   print('line_radon', line_radon)

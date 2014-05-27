@@ -284,7 +284,7 @@ function ImageProc.dir_to_kernel(dir)
 end
 
 -- Find parallel lines in the Radon space
-function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width)
+function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width, angle_prior)
   -- Have a minimum width of the line (in pixel space)
   min_width = min_width or 4
   local i_monotonic_max, monotonic_max, val
@@ -301,9 +301,10 @@ function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width)
   local NR = props.NR
   local cos_d = props.cos_d
   local sin_d = props.sin_d
+  local th_d = props.th_d
   local i0 = props.i0
   local j0 = props.j0
-  local r0 = props.r
+  local r0 = props.r0
 
   for ith=0, NTH-1 do
     i_monotonic_max = 0
@@ -350,16 +351,21 @@ function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width)
     end
   end
   -- Yield the parallel lines
-  if not found then return end
+  if not found then return props end
 
   --print('PARALLEL',ithMax,irMax1-irMax2)
 
-  local s, c = sin_d[ithMax], cos_d[ithMax]
+  local ith_true = ithMax - NTH / 2
+  if ith_true < 0 then ith_true = ith_true + NTH end
+
+  --local s, c = sin_d[ithMax], cos_d[ithMax]
+  local s, c = sin_d[ith_true], cos_d[ith_true]
+
   -- Find the image indices
-  local iR1 = irMax1 * c
-  local iR2 = irMax2 * c
-  local jR1 = irMax1 * s
-  local jR2 = irMax2 * s
+  local iR1 = (irMax1 - r0) * c
+  local iR2 = (irMax2 - r0) * c
+  local jR1 = (irMax1 - r0) * s
+  local jR2 = (irMax2 - r0) * s
 
   -- Add i0, j0 to go back into image space
   iR1, iR2 = iR1 + i0, iR2 + i0
@@ -372,7 +378,8 @@ function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width)
   local lMin2 = line_min_d[ithMax][irMax2]
   local lMax2 = line_max_d[ithMax][irMax2]
 
-  return {
+  return props,
+    {
       iMean = iR1 - lMean1 * s,
       jMean = jR1 + lMean1 * c,
       iMin = iR1 - lMin1 * s,
@@ -396,8 +403,9 @@ function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width)
       c2 = cntMax2,
       NTH = NTH,
       NR = NR,
-    },
-    props
+      ith_true = ith_true,
+      r0 = r0,
+    }
 
 end
 

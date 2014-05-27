@@ -120,12 +120,13 @@ local parent_cb = {
 ffi.cdef[[ typedef struct { int16_t a, b, c, d; } ft; ]]
 if metadata.name=='lleg' then
 	parent_cb.ft = function ()
-		local ptr, read = dcm.actuatorPtr[cmd], libDynamixel.get_nx_data
+		local ptr, read = dcm.actuatorPtr[cmd], lD.get_nx_data
 		local status = read({24, 26}, bus)
 		-- Should be 4 16-bit integers, so 8 bytes
 		local l_ft = ffi.cast('ft*', ffi.new('int8_t[8]', status[1].parameter))
 		-- Just do a sync read here; can try reliable later, if desired...
 		print('DCM | ft', 3.3 * l_ft.a / 4096 - 1.65)
+    print(l_ft.a,l_ft.b,l_ft.c,l_ft.d)
 	end
 elseif metadata.name=='rleg' then
 

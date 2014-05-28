@@ -12,6 +12,8 @@ local w, h, focal_length, bbox
 local bbox_ch, wire_ch
 local kernel_t, use_horiz, use_vert
 local bb_angle = nil -- no prior
+require"vcm"
+require"gcm"
 
 local DEBUG, radon_ch = true
 if DEBUG then

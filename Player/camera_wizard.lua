@@ -25,7 +25,7 @@ end
 -- If we wish to log
 -- TODO: arg or in config?
 local ENABLE_LOG = false
-local ENABLE_NET = false
+local ENABLE_NET = true
 
 local uvc = require'uvc'
 local udp = require'udp'
@@ -53,10 +53,11 @@ end
 -- Open the camera
 local camera = uvc.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
 -- Set the params
-for k, v in pairs(metadata.param) do
-	camera:set_param(k, v)
+for i, param in ipairs(metadata.param) do
+	local name, value = unpack(param)
+	camera:set_param(name, value)
 	unix.usleep(1e4)
-	assert(camera:get_param(k)==v, 'Failed to set '..k)
+	assert(camera:get_param(name)==value, 'Failed to set '..name)
 end
 
 -- Channels
@@ -92,7 +93,7 @@ local c_grey = jpeg.compressor('gray')
 metadata = nil
 Config = nil
 collectgarbage()
-
+local t_debug = unix.time()
 while true do
 	-- Grab and compress
 	local img, sz, cnt, t = camera:get_image()
@@ -114,6 +115,11 @@ while true do
 
 	-- Update the vision routines
 	for _, p in ipairs(pipeline) do p.update(img) end
+
+	if t-t_debug>1 then
+		t_debug = t
+		print("DEBUG",t)
+	end
 
 	-- Collect garbage every cycle
 	collectgarbage()

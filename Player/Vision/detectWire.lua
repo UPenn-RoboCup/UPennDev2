@@ -87,7 +87,9 @@ local function update_dist(pline1, pline2, line_radon)
   --print()
 
   -- Set the distance and radius of the object
-  vcm.set_wire_model{r, d - p_diff, Body.get_time() - last_measurement.t}
+	local model = {r, d - p_diff, Body.get_time() - last_measurement.t}
+	print("Wire",unpack(model))
+  vcm.set_wire_model(model)
 
   -- Return the distance measurement
   return r, d
@@ -121,7 +123,7 @@ local function update_bbox()
   bbox[3] = math.max(1, math.ceil(bbox[3]))
   bbox[4] = math.min(h/2, math.ceil(bbox[4]))
 
-  if DEBUG then print('update_bbox', bbox) end
+  --if DEBUG then print('update_bbox', bbox) end
 
   -- Set into shm
   vcm.set_wire_bbox(bbox)
@@ -177,9 +179,10 @@ function detectWire.update(img)
     return
   end
 
+
   if DEBUG then
     print('\nUpdate')
-    print('KERNEL', kernel_t:size(1), kernel_t:size(2))
+--    print('KERNEL', kernel_t:size(1), kernel_t:size(2))
   end
 
   -- Check if their is a new bounding box to use
@@ -198,9 +201,11 @@ function detectWire.update(img)
   local rt_props, pline1, pline2, line_radon =
     ImageProc2.parallel_lines(edge_t, use_horiz, use_vert, bbox2, nil, bb_angle)
   -- Send to MATLAB
+	
   if DEBUG then
-    print('BBOX', bbox)
-    local counts_str = ffi.string(rt_props.count_d, rt_props.MAXR * rt_props.NTH * ffi.sizeof'int32_t')
+    --print('BBOX', bbox)
+    local counts_str = ffi.string(
+		rt_props.count_d, rt_props.MAXR * rt_props.NTH * ffi.sizeof'int32_t')
     local meta = {}
     for k,v in pairs(rt_props) do
       if type(v)~='cdata' and type(v)~='userdata' then meta[k] = v end
@@ -227,7 +232,8 @@ function detectWire.update(img)
 
   -- Find the angles for servoing
   local camera_roll = line_radon.ith_true / line_radon.NTH * math.pi
-  camera_roll = camera_roll > (math.pi / 2) and (camera_roll - math.pi) or camera_roll
+  camera_roll = camera_roll > (math.pi / 2) and 
+	(camera_roll - math.pi) or camera_roll
   --camera_roll = -camera_roll
   -- Place iMean in the center of the frame horizontally
   -- Remember, we massaged plines to be in the original resolution
@@ -244,15 +250,17 @@ function detectWire.update(img)
 
   -- Update the bounding box on the line found?
 
-  -- TODO: Only if vertical line, else a horiz should change the j
+	--[[
   if DEBUG then
     print('pline1')
     util.ptable(pline1)
     print('pline2')
     util.ptable(pline2)
   end
+	--]]
   ----[[
-  local wbuf = 12
+  -- TODO: Only if vertical line, else a horiz should change the j
+  local wbuf = 24
   bbox[1] = math.min(pline1.iMin/2-wbuf, pline2.iMin/2-wbuf, pline1.iMax/2-wbuf, pline2.iMax/2-wbuf)
   bbox[2] = math.max(pline1.iMax/2+wbuf, pline2.iMax/2+wbuf, pline1.iMin/2+wbuf, pline2.iMin/2+wbuf)
   --]]

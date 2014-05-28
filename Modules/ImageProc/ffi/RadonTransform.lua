@@ -14,8 +14,8 @@ local fabs, min, max, floor = math.abs, math.min, math.max, math.floor
 -- so that we do not malloc each time
 local MAXR, NR = 222
 
---local NTH = 90 -- Number of angles (2 degree res)
-local NTH = 45 -- Number of angles (4 degree res)
+local NTH = 90 -- Number of angles (2 degree res)
+--local NTH = 45 -- Number of angles (4 degree res)
 --local NTH = 36 -- 5 degree resolution
 --local NTH = 180 -- (1 degree res)
 
@@ -75,7 +75,6 @@ local function init(w, h)
   r0 = floor(math.sqrt(i0 ^ 2 + j0 ^ 2))
   -- Resize for the image
   NR = math.ceil(math.sqrt(w * w + h * h))
-  print('RT | INIT OFFSETS', w, h, i0, j0, r0, NR)
   -- Update the export
   props.NR = NR
   props.i0 = i0

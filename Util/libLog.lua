@@ -26,7 +26,7 @@ end
 
 -- User should pass :data() of a torch object
 -- For proper recording
-local function record(self,meta,raw,n_raw)
+local function record(self, meta, raw, n_raw)
 	-- Record the metadata
 	local mtype, m_ok = type(meta), false
 	if mtype=='string' then
@@ -59,7 +59,7 @@ end
 
 
 -- Factory
-function libLog.new(prefix,has_raw)
+function libLog.new(prefix, has_raw)
 	-- Set up log file handles
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
   local meta_filename = string.format('%s/%s_m_%s.log',LOG_DIR,prefix,filetime)

@@ -100,7 +100,7 @@ local function update_bbox()
   local bbox_data = bbox_ch:receive(true)
   if not bbox_data then
     -- Use the SHM value
-    --bbox = vcm.get_wire_bbox()
+    bbox = vcm.get_wire_bbox()
   else
     local bb = mp.unpack(bbox_data[#bbox_data])
     bb_angle = bb.a > 0 and bb.a - math.pi/2 or bb.a + math.pi/2
@@ -285,7 +285,13 @@ function detectWire.get_metadata()
   return {
     bbox = bbox,
     bb_angle = bb_angle,
+    arm_fsm = gcm.get_fsm_Arm(),
   }
+end
+
+function detectWire.set_metadata(meta)
+  gcm.set_fsm_Arm(meta.arm_fsm)
+  vcm.set_wire_bbox(bbox)
 end
 
 return detectWire

@@ -24,10 +24,11 @@ else
 end
 -- If we wish to log
 -- TODO: arg or in config?
-local ENABLE_LOG = true
-local ENABLE_NET = true
+local ENABLE_LOG = false
+local ENABLE_NET = false
+local FROM_LOG, LOG_DATE = true, '05.28.2014.16.18.44'
+local libLog, logger
 
-local uvc = require'uvc'
 local udp = require'udp'
 local si = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
@@ -50,16 +51,6 @@ for _, d in ipairs(metadata.detection_pipeline) do
 	pipeline[d] = detect
 end
 
--- Open the camera
-local camera = uvc.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
--- Set the params
-for i, param in ipairs(metadata.param) do
-	local name, value = unpack(param)
-	camera:set_param(name, value)
-	unix.usleep(1e4)
-	assert(camera:get_param(name)==value, 'Failed to set '..name)
-end
-
 -- Channels
 -- UDP Sending
 --local camera_ch = si.new_publisher('camera0')
@@ -77,14 +68,6 @@ local meta = {
 	c = 'jpeg',
 }
 
--- LOGGING
-local libLog, logger
-if ENABLE_LOG then
-	libLog = require'libLog'
-	-- Make the logger
-	logger = libLog.new('uvc',true)
-end
-
 -- JPEG Compressor
 local c_yuyv = jpeg.compressor('yuyv')
 local c_grey = jpeg.compressor('gray')
@@ -94,6 +77,63 @@ metadata = nil
 Config = nil
 collectgarbage()
 local t_debug = unix.time()
+
+if FROM_LOG then
+
+	local libLog = require'libLog'
+	local replay = libLog.open(HOME..'/Logs/', LOG_DATE, 'uvc')
+	local metadata = replay:unroll_meta()
+	local util = require'util'
+	print('Unlogging', #metadata, 'images from', LOG_DATE)
+	local logged_data = replay:log_iter()
+	for i, m, yuyv_t in logged_data do
+		assert(m.w==w, 'Bad width')
+		assert(m.h==h, 'Bad height')
+		util.ptable(m)
+		local t = unix.time()
+		-- Check if we are sending to the operator
+		if ENABLE_NET then
+			local c_img = c_yuyv:compress(yuyv_t, w, h)
+			meta.sz = #c_img
+			local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
+		end
+		-- Set the stuff from the log
+		for pname, p in pairs(pipeline) do p.set_metadata(m[pname]) end
+		-- Update the vision routines
+		for _, p in pairs(pipeline) do p.update(yuyv_t:data()) end
+		-- Debugging
+		if t-t_debug>1 then
+			t_debug = t
+			print("DEBUG")
+		end
+		-- Collect garbage every cycle
+		collectgarbage()
+		-- Sleep a little
+		unix.usleep(1e6/30)
+	end
+	-- Finish
+	os.exit()
+end
+
+local uvc = require'uvc'
+-- LOGGING
+if ENABLE_LOG then
+	libLog = require'libLog'
+	-- Make the logger
+	logger = libLog.new('uvc', true)
+end
+
+-- Open the camera
+local camera = uvc.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
+-- Set the params
+for i, param in ipairs(metadata.param) do
+	local name, value = unpack(param)
+	camera:set_param(name, value)
+	unix.usleep(1e4)
+	assert(camera:get_param(name)==value, 'Failed to set '..name)
+end
+
+
 while true do
 	-- Grab and compress
 	local img, sz, cnt, t = camera:get_image()
@@ -116,7 +156,7 @@ while true do
 	-- Do the logging if we wish
 	if ENABLE_LOG then
 		meta.rsz = sz
-		for pname, p in ipairs(pipeline) do meta[pname] = p.get_metadata() end
+		for pname, p in pairs(pipeline) do meta[pname] = p.get_metadata() end
 		meta.larm = Body.get_larm_position()
 		logger:record(meta, img, sz)
 	end

@@ -87,10 +87,12 @@ if not IS_WEBOTS then
 			local lower, upper, en = youbot.get_arm_joint_limit(i)
 			pos = youbot.get_arm_position(i)
 	    rad = (pos - servo.offset[i]) * servo.direction[i]
-			sensor.position[idx] = rad
-			rad = math.max(servo.min_rad[i], math.min(servo.max_rad[i], v))
-			actuator.position[idx] = rad
+			sensor.position[i] = rad
+			rad = math.max(servo.min_rad[i], math.min(servo.max_rad[i], rad))
+			actuator.command_position[i] = rad
 	  end
+		dcm.set_actuator_command_position(actuator.command_position)
+		dcm.set_sensor_position(sensor.position)
 	  mcm.set_walk_vel(vector.zeros(3))
 	end
 

@@ -37,7 +37,7 @@ local function load_fsm ()
   end
 end
 
---if Config.fsm.enabled then load_fsm() end
+if Config.fsm.enabled then load_fsm() end
 
 -- Timing
 local t_sleep = 1 / Config.fsm.update_rate
@@ -47,7 +47,6 @@ local debug_interval, t_debug = 1.0, t0
 -- Entry
 Body.entry()
 for _,my_fsm in pairs(state_machines) do my_fsm:entry() end
-print('LOOP')
 -- Update loop
 while running do
   t = get_time()
@@ -59,13 +58,13 @@ while running do
   if t-t_debug>debug_interval then
     t_debug = t
     --print('Wire', vcm.get_wire_model())
-print('DEBUG', t)
-  end
+		print('DEBUG', t)
+	end
   -- If not webots, then wait the update cycle rate
   if not IS_WEBOTS then
     --collectgarbage()
     local t_s = (t_sleep - (get_time() - t))
-    usleep(1e6 * t_s)
+    if t_s>0 then usleep(1e6 * t_s) end
   end
 end
 

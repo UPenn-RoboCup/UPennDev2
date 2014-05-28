@@ -97,10 +97,11 @@ if FROM_LOG then
 			meta.sz = #c_img
 			local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
 		end
-		-- Set the stuff from the log
-		for pname, p in pairs(pipeline) do p.set_metadata(m[pname]) end
 		-- Update the vision routines
-		for _, p in pairs(pipeline) do p.update(yuyv_t:data()) end
+		for pname, p in pairs(pipeline) do
+			p.set_metadata(m[pname])
+			p.update(yuyv_t:data())
+		end
 		-- Debugging
 		if t-t_debug>1 then
 			t_debug = t
@@ -148,17 +149,16 @@ while true do
 		local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
 	end
 
-	-- Update the vision routines
-	for _, p in pairs(pipeline) do
-		p.update(img)
-	end
-
 	-- Do the logging if we wish
 	if ENABLE_LOG then
 		meta.rsz = sz
 		for pname, p in pairs(pipeline) do meta[pname] = p.get_metadata() end
-		meta.larm = Body.get_larm_position()
 		logger:record(meta, img, sz)
+	end
+
+	-- Update the vision routines
+	for pname, p in pairs(pipeline) do
+		p.update(img)
 	end
 
 	if t-t_debug>1 then

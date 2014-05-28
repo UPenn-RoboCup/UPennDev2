@@ -286,12 +286,14 @@ function detectWire.get_metadata()
     bbox = bbox,
     bb_angle = bb_angle,
     arm_fsm = gcm.get_fsm_Arm(),
+    larm = Body.get_larm_position(),
   }
 end
 
 function detectWire.set_metadata(meta)
   gcm.set_fsm_Arm(meta.arm_fsm)
-  vcm.set_wire_bbox(bbox)
+  vcm.set_wire_bbox(meta.bbox)
+  Body.get_larm_position(meta.larm)
 end
 
 return detectWire

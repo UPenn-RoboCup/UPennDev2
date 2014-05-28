@@ -94,7 +94,7 @@ local function update_dist(pline1, pline2, line_radon)
 end
 
 -- Updating stuff
-local function update_bbox ()
+local function update_bbox()
   local bbox_data = bbox_ch:receive(true)
   if not bbox_data then
     -- Use the SHM value
@@ -150,7 +150,7 @@ end
 
 local detectWire = {}
 
-function detectWire.entry (metadata)
+function detectWire.entry(metadata)
   w, h = metadata.width, metadata.height
   focal_length = metadata.focal_length
   ImageProc2.setup(w, h, 2, 2)
@@ -163,7 +163,8 @@ function detectWire.entry (metadata)
   kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel(), true, true
 end
 
-function detectWire.update (img)
+function detectWire.update(img)
+	if not img then print("NO IMAGE"); return end
 
   local arm_state = gcm.get_fsm_Arm()
   if not (arm_state=='armWireLook' or arm_state=='armWireApproach') then

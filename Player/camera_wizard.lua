@@ -114,7 +114,9 @@ while true do
 	end
 
 	-- Update the vision routines
-	for _, p in ipairs(pipeline) do p.update(img) end
+	for _, p in ipairs(pipeline) do
+		p.update(img)
+	end
 
 	if t-t_debug>1 then
 		t_debug = t

@@ -64,7 +64,7 @@ Config.fsm.armWireApproach = {
   thresh_roll = 6 * DEG_TO_RAD,
   roll_rate = 0.200,
   yaw_rate = 0.200,
-  approach_rate = 0.10,
+  approach_rate = 0.0001,
   wire_close = 0.05,
 }
 

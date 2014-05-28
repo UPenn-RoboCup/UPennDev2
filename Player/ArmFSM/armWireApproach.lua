@@ -62,11 +62,13 @@ function state.update()
   end
 
   -- Find where we should go now
-  local qLArm = Body.get_larm_position()
+  --local qLArm = .25 * Body.get_larm_position() + .75 * Body.get_larm_command_position()
+  local qLArm = 0 * Body.get_larm_position() + 1 * Body.get_larm_command_position()
   -- Find the kinematics
   local fkLArm = K.forward_arm(qLArm)
   -- Step in the direction of the gripper (z for youbot...)
-  local fkLArm_next = fkLArm * T.trans(0, 0, approach_rate * dt)
+  --local fkLArm_next = fkLArm * T.trans(0, 0, approach_rate * dt)
+  local fkLArm_next = fkLArm * T.trans(0, 0, approach_rate)
   local iqArm_next = vector.new(K.inverse_arm(fkLArm_next, qLArm))
   -- TODO: Add small changes on the local camera roll and camera yaw
   -- These are independent of the IK in the local z direction

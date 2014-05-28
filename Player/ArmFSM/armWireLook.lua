@@ -33,7 +33,7 @@ function state.entry()
 end
 
 function state.update()
-  local t  = get_time()
+  local t  = Body.get_time()
   local dt = t - t_update
   local dt_entry = t - t_entry
   if dt_entry>timeout then return'timeout' end
@@ -41,7 +41,10 @@ function state.update()
   t_update = t
   -- Have we seen the wire recently?
   local wire_dt = t - vcm.get_wire_t()
-  if wire_dt>lost_timeout then return'lost' end
+  if wire_dt>lost_timeout and dt_entry>1 then
+		print("LOST", wire_dt,t,vcm.get_wire_t())
+		return'lost'
+	end
   -- Is the wire within threshold in the camera frame?
   local cam_roll, cam_pitch, cam_yaw = unpack(vcm.get_wire_cam_rpy())
   local done_yaw = math.abs(cam_yaw)<thresh_yaw

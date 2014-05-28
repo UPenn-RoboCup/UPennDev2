@@ -66,7 +66,7 @@ Config.fsm.armWireApproach = {
   roll_rate = 0.200,
   yaw_rate = 0.300,
   approach_rate = 0.0001,
-  wire_close = 0.08,
+  wire_close = .16--0.075, --closest
 }
 
 Config.fsm.Body = {

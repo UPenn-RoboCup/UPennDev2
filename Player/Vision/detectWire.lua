@@ -181,7 +181,7 @@ function detectWire.update(img)
 
 
   if DEBUG then
-    print('\nUpdate')
+    --print('\nUpdate')
 --    print('KERNEL', kernel_t:size(1), kernel_t:size(2))
   end
 

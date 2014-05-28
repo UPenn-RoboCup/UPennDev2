@@ -26,7 +26,7 @@ table.insert(Config.camera,
   width = 640,
   height = 480,
   fps = 30,
-  focal_length = 369.5, --260,--184.75,
+  focal_length = 500, --400, --380, --320, --240, --200, --183.75,
   hfov = 50 * DEG_TO_RAD,
   vfov = 50 * DEG_TO_RAD,
   param = {

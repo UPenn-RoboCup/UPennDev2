@@ -74,7 +74,7 @@ function state.update()
   -- These are independent of the IK in the local z direction
   -- Use a simple P controller. TODO: Is PID worth it?
   iqArm_next[5] = qLArm[5] + (cam_roll - 0) * roll_rate * dt
-  --iqArm_next[1] = qLArm[1] + (cam_yaw - 0)* yaw_rate * dt
+  iqArm_next[1] = qLArm[1] + (cam_yaw - 0)* yaw_rate * dt
   -- Go to the waypoint
   Body.set_larm_command_position(iqArm_next)
 end

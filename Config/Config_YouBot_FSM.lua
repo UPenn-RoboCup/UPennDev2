@@ -37,7 +37,8 @@ Config.fsm.Arm = {
   {'armWireApproach', 'close', 'armWireGrip'}, -- If not well aligned, realign
   {'armWireApproach', 'init', 'armInit'},
   --
-  {'armWireGrip', 'timeout', 'armInit'},
+  --{'armWireGrip', 'timeout', 'armInit'},
+  {'armWireGrip', 'timeout', 'armIdle'},
   {'armWireGrip', 'init', 'armInit'},
 }
 
@@ -63,9 +64,9 @@ Config.fsm.armWireApproach = {
   thresh_yaw = 5 * DEG_TO_RAD,
   thresh_roll = 6 * DEG_TO_RAD,
   roll_rate = 0.200,
-  yaw_rate = 0.200,
+  yaw_rate = 0.300,
   approach_rate = 0.0001,
-  wire_close = 0.05,
+  wire_close = 0.075,
 }
 
 Config.fsm.Body = {

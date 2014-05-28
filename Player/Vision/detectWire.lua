@@ -260,7 +260,8 @@ function detectWire.update(img)
 	--]]
   ----[[
   -- TODO: Only if vertical line, else a horiz should change the j
-  local wbuf = 24
+	local wbuf = math.abs(line_radon.ir1 - line_radon.ir2) / 2
+  --local wbuf = 36
   bbox[1] = math.min(pline1.iMin/2-wbuf, pline2.iMin/2-wbuf, pline1.iMax/2-wbuf, pline2.iMax/2-wbuf)
   bbox[2] = math.max(pline1.iMax/2+wbuf, pline2.iMax/2+wbuf, pline1.iMin/2+wbuf, pline2.iMin/2+wbuf)
   --]]

@@ -24,7 +24,7 @@ else
 end
 -- If we wish to log
 -- TODO: arg or in config?
-local ENABLE_LOG = false
+local ENABLE_LOG = true
 local ENABLE_NET = true
 
 local uvc = require'uvc'
@@ -47,7 +47,7 @@ for _, d in ipairs(metadata.detection_pipeline) do
 	local detect = require(d)
 	-- Send which camera we are using
 	detect.entry(metadata)
-	table.insert(pipeline, detect)
+	pipeline[d] = detect
 end
 
 -- Open the camera
@@ -100,11 +100,6 @@ while true do
 	-- Update metadata
 	meta.t = t
 	meta.n = cnt
-	-- Do the logging if we wish
-	if ENABLE_LOG then
-		meta.rsz = sz
-		logger:record(meta, img, sz)
-	end
 
 	-- Check if we are sending to the operator
 	if ENABLE_NET then
@@ -114,8 +109,16 @@ while true do
 	end
 
 	-- Update the vision routines
-	for _, p in ipairs(pipeline) do
+	for _, p in pairs(pipeline) do
 		p.update(img)
+	end
+
+	-- Do the logging if we wish
+	if ENABLE_LOG then
+		meta.rsz = sz
+		for pname, p in ipairs(pipeline) do meta[pname] = p.get_metadata() end
+		meta.larm = Body.get_larm_position()
+		logger:record(meta, img, sz)
 	end
 
 	if t-t_debug>1 then

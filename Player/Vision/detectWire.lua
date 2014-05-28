@@ -201,7 +201,7 @@ function detectWire.update(img)
   local rt_props, pline1, pline2, line_radon =
     ImageProc2.parallel_lines(edge_t, use_horiz, use_vert, bbox2, nil, bb_angle)
   -- Send to MATLAB
-	
+
   if DEBUG then
     --print('BBOX', bbox)
     local counts_str = ffi.string(
@@ -232,7 +232,7 @@ function detectWire.update(img)
 
   -- Find the angles for servoing
   local camera_roll = line_radon.ith_true / line_radon.NTH * math.pi
-  camera_roll = camera_roll > (math.pi / 2) and 
+  camera_roll = camera_roll > (math.pi / 2) and
 	(camera_roll - math.pi) or camera_roll
   --camera_roll = -camera_roll
   -- Place iMean in the center of the frame horizontally
@@ -277,8 +277,15 @@ function detectWire.update(img)
   send(pline1, pline2, bbox)
 end
 
-function detectWire.exit ()
+function detectWire.exit()
 
+end
+
+function detectWire.get_metadata()
+  return {
+    bbox = bbox,
+    bb_angle = bb_angle,
+  }
 end
 
 return detectWire

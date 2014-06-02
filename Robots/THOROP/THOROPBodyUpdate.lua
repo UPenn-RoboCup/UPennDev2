@@ -85,6 +85,8 @@ end
 -- Body actuators --
 --------------------
 for actuator, ptr in pairs(dcm.actuatorPtr) do
+	local cur = dcm['get_actuator_'..actuator]()
+	local n_el = type(cur)=='table' and #cur or 1
 	-- Only command_position is constantly synced
 	-- Other commands need to be specially sent to the Body
 	local not_synced = actuator~='command_position'
@@ -109,7 +111,7 @@ for actuator, ptr in pairs(dcm.actuatorPtr) do
 		else
 			-- No index means set all actuators... Uncommon
 			if type(val)=='number' then
-				for i=0, nJoint-1 do ptr[i] = val end
+				for i=0, n_el-1 do ptr[i] = val end
 			else
 				for i, v in ipairs(val) do ptr[i - 1] = v end
 			end
@@ -124,7 +126,7 @@ for actuator, ptr in pairs(dcm.actuatorPtr) do
 	end
 	local function get(idx1, idx2)
 		idx1 = idx1 or 1
-		idx2 = idx2 or nJoint
+		idx2 = idx2 or n_el
 		-- For cdata, use -1
 		return vector.slice(ptr, idx1 - 1, idx2 - 1)
 	end

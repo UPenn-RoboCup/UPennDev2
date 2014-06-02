@@ -5,7 +5,7 @@ local vector = require'vector'
 -- IMU --
 ---------
 Config.imu = {
-  enabled = false,
+  enabled = true,
   device = '/dev/ttyACM0',
   -- TODO: Add some mapping, etc.
 
@@ -15,7 +15,9 @@ Config.imu = {
 -- DCM Chains --
 ----------------
 -- NOTE: Ignore the MX motors for now
-Config.chain = {}
+Config.chain = {
+	enabled = false
+}
 local right_arm = {
   name = 'rarm',
   device = '/dev/ttyUSB0',

@@ -6,7 +6,6 @@ dofile'include.lua'
 -- Going to be threading this
 local si = require'simple_ipc'
 -- Import the context
-print('CTX',CTX,type(CTX))
 local parent_ch, IS_THREAD
 if CTX and not arg then
 	IS_THREAD = true
@@ -27,7 +26,7 @@ local carray = require'carray'
 local ptable = require'util'.ptable
 local usleep, get_time = unix.usleep, unix.time
 -- Open the device
-local microstrain = libMicrostrain.new_microstrain'/dev/ttyACM0'
+local microstrain = lM.new_microstrain'/dev/ttyACM0'
 -- Turn it on
 -- TODO: Read and check settings...
 microstrain:ahrs_on()
@@ -63,8 +62,7 @@ while true do
 	-- Periodic Debug --
 	--------------------
   if t - t_debug>1 then
-	  print('\IMU | t_diff', t_diff, 1 / t_diff)
-    ptable(positions)
+	  print('IMU | t_diff', t_diff, 1 / t_diff)
     t_debug = t
   end
 	-----------------

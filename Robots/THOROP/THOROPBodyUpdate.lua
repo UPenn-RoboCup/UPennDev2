@@ -480,21 +480,23 @@ function Body.entry ()
 	dev_chs, dcm_chs, body_chs, body_poll = {}, {}, {}
 	-- Start all the threads
 	-- TODO: Check if already running as a separate process
-	for i, v in ipairs(Config.chain) do
-		local ch, thread =
+	if Config.chain.enabled then
+		for i, v in ipairs(Config.chain) do
+			local ch, thread =
 			si.new_thread(ROBOT_HOME..'/run_dcm.lua', 'dcm'..i, v)
-		ch.callback = chain_cb
-    ch.id = i
-		table.insert(dev_chs, ch)
-		table.insert(dcm_chs, ch)
-		table.insert(body_chs, ch)
-		thread:start()
+			ch.callback = chain_cb
+			ch.id = i
+			table.insert(dev_chs, ch)
+			table.insert(dcm_chs, ch)
+			table.insert(body_chs, ch)
+			thread:start()
+		end
 	end
 	-- IMU
 	if Config.imu.enabled then
 		local imu_ch, imu_thread =
 			si.new_thread(ROBOT_HOME..'/run_imu.lua', 'imu', v)
-		ch.callback = imu_cb
+		imu_ch.callback = imu_cb
 		table.insert(dev_chs, imu_ch)
 		table.insert(body_chs, imu_ch)
 		imu_thread:start()

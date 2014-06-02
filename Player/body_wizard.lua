@@ -42,5 +42,4 @@ end
 -- Exit
 print'Exiting body wizard...'
 Body.exit()
-
 os.exit()

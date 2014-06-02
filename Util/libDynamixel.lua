@@ -34,8 +34,15 @@ DP2.parse_status_packet = function(pkt) -- 2.0 protocol
   t.length = pkt:byte(6)+2^8*pkt:byte(7)
   t.instruction = pkt:byte(8)
   t.error = pkt:byte(9)
-  t.parameter = {pkt:byte(10,t.length+5)}
-  t.checksum = string.char( pkt:byte(t.length+6), pkt:byte(t.length+7) );
+	if #pkt<t.length+7 then
+		print('status pkt',pkt:byte(1,#pkt) )
+	end
+	if t.error==0 then
+	  t.parameter = {pkt:byte(10,t.length+5)}
+	  t.checksum = string.char( pkt:byte(t.length+6), pkt:byte(t.length+7) )
+	else
+	  t.checksum = string.char( pkt:byte(10), pkt:byte(11) )
+	end
   return t
 end
 
@@ -271,10 +278,10 @@ local function sync_write_dword (ids, addr, data)
   local len = 4
   if type(data)=='number' then
     -- All get the same value
-  all_data = data
-  else
-    assert(nid==#data,'Incongruent ids and data')
-  end
+		all_data = data
+	else
+		assert(nid==#data,'Incongruent ids and data. nids:'..nid..' #:'..#data)
+	end
   local t = {};
   local n = 1;
   for i = 1,nid do
@@ -362,10 +369,8 @@ for k,v in pairs(nx_registers) do
   local sz = v[2]
   local single_wr, sync_wr = nx_single_write[sz], sync_write[sz]
   libDynamixel['set_nx_'..k] = function(motor_ids, values, bus)
-
     -- Construct the instruction (single or sync)
-    local single = type(motor_ids)=='number'
-    local instruction = nil
+    local single, instruction = type(motor_ids)=='number'
     if single then
       instruction = single_wr(motor_ids, addr, values)
     else

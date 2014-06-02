@@ -42,28 +42,33 @@ local bus = lD.new_bus(metadata.device)
 local m_ids = metadata.m_ids
 if not m_ids then
 	m_ids = bus:ping_probe()
-	print('DCM | FOUND', unpack(m_ids))
+	print('DCM '..metadata.name..'| FOUND', unpack(m_ids))
 end
 local n_motors = #m_ids
 -- Verify that the m_ids are present
 for _,m_id in pairs(m_ids) do
 	--print('PING', m_id)
 	local p = bus:ping(m_id)
-	assert(p[1], string.format('DCM | ID %d not present.', m_id))
+	assert(p[1], string.format('DCM %s | ID %d not present.', metadata.name, m_id))
 	--ptable(p[1])
-	usleep(1e3)
+	usleep(5e3)
 end
 -- Cache some settings from the Config
 local min_rad, max_rad, is_unclamped = Config.servo.min_rad, Config.servo.max_rad, Config.servo.is_unclamped
 local direction, to_steps, step_zero = Config.servo.direction, Config.servo.to_steps, Config.servo.step_offset
 local to_radians, step_offset, m_to_j = Config.servo.to_radians, Config.servo.step_zero, Config.servo.motor_to_joint
 -- Make the reverse mapping for our motor ids of this thread
-local j_ids = {}
-for i,m_id in ipairs(m_ids) do j_ids[i] = m_to_j[m_id] end
+local j_ids, m_to_order, j_to_order = {}, {}, {}
+for i,m_id in ipairs(m_ids) do
+  local j_id = m_to_j[m_id]
+  j_ids[i] = j_id
+  m_to_order[m_id] = i
+  j_to_order[j_id] = i
+end
 -- Clamp the radian within the min and max
 -- Used when sending packets and working with actuator commands
 local function radian_clamp (idx, radian)
-	if is_unclampled[idx] then return radian end
+	if is_unclamped[idx] then return radian end
 	return math.min(math.max(radian, min_rad[idx]), max_rad[idx])
 end
 -- Radian to step, using offsets and biases
@@ -72,46 +77,76 @@ local function radian_to_step (idx, radian)
 end
 -- Step to radian
 local function step_to_radian (idx, step)
+  assert(idx, 'NO MOTOR IDX')
+  assert(step, 'NO STEP '..idx)
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
 -- Cache the typical commands quickly
 local cp_ptr  = dcm.actuatorPtr.command_position
+local tq_ptr  = dcm.actuatorPtr.torque_enable
 local cp_cmd  = lD.set_nx_command_position
+local tq_cmd  = lD.set_nx_torque_enable
 local p_ptr   = dcm.sensorPtr.position
 local p_read  = lD.get_nx_position
 local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
+local tq_read  = lD.get_nx_torque_enable
+local tq_parse = lD.byte_to_number[lD.nx_registers.torque_enable[2]]
 -- Define reading
+local tq_enable = vector.zeros(n_motors)
 local positions = vector.zeros(n_motors)
-local function do_read ()
+local read_status, read_pkt, read_j_id
+local function do_read()
 	-- TODO: Strict should just be one motor at a time...
-	local status = p_read(m_ids, bus)
-	for _,s in ipairs(status) do
-		local p = p_parse(unpack(s.parameter))
-		local j_id = m_to_j[s.id]
-		local r = step_to_radian(j_id, p)
-		-- Set in SHM
-		-- TODO: Worry about the cache charing among threads
-		p_ptr[j_id-1] = r
-		-- Keep a local copy
-		-- TODO: Send this copy back to the master thread?
-		positions[j_id] = r
+	read_status = p_read(m_ids, bus)
+  local rad
+	for _,s in ipairs(read_status) do
+    if s.error>0 then
+      print('DCM | ', metadata.name, 'READ ERROR', s.error, s.id)
+    else
+		  read_pkt, read_j_id = p_parse(unpack(s.parameter)), m_to_j[s.id]
+  		rad = step_to_radian(read_j_id, read_pkt)
+	  	-- Set in SHM
+		  -- TODO: Worry about the cache charing among threads
+  		p_ptr[read_j_id-1] = rad
+	  	-- Keep a local copy
+		  -- TODO: Send this copy back to the master thread?
+  		positions[j_to_order[read_j_id]] = rad
+    end
 	end
 end
 -- Define writing
 -- TODO: Add MX support
 local commands = vector.zeros(n_motors)
-local function do_write ()
+local function do_write()
 	for i,j_id in ipairs(j_ids) do
-		commands[i] = radian_to_step(cp_ptr[j_id-1])
+		commands[i] = radian_to_step(j_id, cp_ptr[j_id-1]) or commands[i]
 	end
+  --error( string.format('%s | %s : %s', metadata.name, table.concat(m_ids, ' '), tostring(commands)) )
 	-- Perform the sync write
 	cp_cmd(m_ids, commands, bus)
 end
 -- Define parent interaction. NOTE: Openly subscribing to ANYONE. fiddle even
 local parent_cb = {
-	exit = function ()
+	exit = function()
 		running = false
 	end,
+  torque_enable = function()
+    local j_id, status, val
+    local valid_tries = 0
+    for _, m_id in ipairs(m_ids) do
+      j_id = m_to_j[m_id] - 1
+      val = tq_ptr[j_id]
+			-- Safely copy over the position to command_position
+			cp_ptr[j_id] = p_ptr[j_id]
+      while not valid do
+        status = tq_cmd(m_id, val, bus)
+        if status[1] and status[1].error==0 then break end
+        valid_tries = valid_tries + 1
+        assert(valid_tries<5, metadata.name..' CANNOT SET TORQUE! Motor_id '..m_id)
+      end
+      tq_enable[m_to_order[m_id]] = val
+    end
+  end
 }
 
 -- Check the F/T based on the name of the chain
@@ -133,10 +168,8 @@ end
 
 local function do_parent (p_skt)
   local cmds = p_skt:recv_all()
---	local cmds = parent_ch:receive(true)
 	if not cmds then return end
 	for i, cmd in ipairs(cmds) do
---print('PARENT | ', cmd)
 		-- Check if there is something special
 		local f = parent_cb[cmd]
 		if f then return f() end
@@ -157,22 +190,37 @@ end
 for _, m_id in ipairs(m_ids) do
 	local status, s = {}
 	while not s do status = p_read(m_id, bus); s = status[1] end
-	local p = p_parse(unpack(s.parameter))
-	local j_id = m_to_j[s.id]
-	local r = step_to_radian(j_id, p)
-	p_ptr[j_id-1] = r
-	positions[j_id] = r
+	if not s.parameter then
+		print('DCM | ',metadata.name,'ERROR initial', s.error, s.id)
+	else
+		local p = p_parse(unpack(s.parameter))
+		local j_id = m_to_j[s.id]
+		local r = step_to_radian(j_id, p)
+		p_ptr[j_id-1] = r
+		cp_ptr[j_id-1] = r
+		local idx = j_to_order[j_id]
+		positions[idx] = r
+		commands[idx] = r
+		-- Read the current torque states
+		s = nil
+		while not s do status = tq_read(m_id, bus); s = status[1] end
+		local tq_en = tq_parse(unpack(s.parameter))
+		j_id = m_to_j[s.id]
+		idx = j_to_order[j_id]
+		tq_enable[idx] = tq_en
+	end
 end
 
 parent_ch.callback = do_parent
 local poller = si.wait_on_channels{parent_ch}
 
 -- Begin infinite loop
+print('DCM | Begin loop')
 local t0 = get_time()
-local t_debug = t0
+local t_debug, t, t_diff = t0
 while running do
-	local t = get_time()
-	local t_diff = t-t0
+	t = get_time()
+	t_diff = t-t0
 	t0 = t
 	--------------------
 	-- Periodic Debug --
@@ -182,20 +230,26 @@ while running do
     --ptable(positions)
     t_debug = t
   end
-	--------------------
-	-- Read Positions --
-	--------------------
-	do_read()
-	---------------------
-	-- Write Positions --
-	---------------------
-	--do_write()
 	---------------------
 	-- Parent Commands --
 	---------------------
-  poller:poll(0)
+  local n = poller:poll(0)
+	if n==0 then
+		--------------------
+		-- Read Positions --
+		--------------------
+		do_read()
+		unix.usleep(2e3)
+		---------------------
+		-- Write Positions --
+		---------------------
+		do_write()
+	end
+  -- Keep stable timing
+  collectgarbage('step')
 end
 
 -- Exiting
+print("DCM | Cleaning up...")
 bus:close()
 if IS_THREAD then parent_ch:send'done' end

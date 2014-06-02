@@ -61,7 +61,7 @@ while running do
 	end
   -- If not webots, then wait the update cycle rate
   if not IS_WEBOTS then
-    --collectgarbage()
+    collectgarbage('step')
     local t_s = (t_sleep - (get_time() - t))
     if t_s>0 then usleep(1e6 * t_s) end
   end

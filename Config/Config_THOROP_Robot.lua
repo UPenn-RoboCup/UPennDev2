@@ -44,7 +44,7 @@ local one_chain = {
   m_ids = {},
 }
 for _,v in ipairs(right_arm.m_ids) do table.insert(one_chain.m_ids, v) end
---for _,v in ipairs(left_arm.m_ids)  do table.insert(one_chain.m_ids, v) end
+for _,v in ipairs(left_arm.m_ids)  do table.insert(one_chain.m_ids, v) end
 for _,v in ipairs(right_leg.m_ids) do table.insert(one_chain.m_ids, v) end
 for _,v in ipairs(left_leg.m_ids)  do table.insert(one_chain.m_ids, v) end
 
@@ -62,7 +62,7 @@ if ONE_CHAIN then
   right_leg = nil
   left_leg  = nil
 else
-  table.insert(Config.chain, right_arm)
+  --table.insert(Config.chain, right_arm)
   --table.insert(Config.chain, left_arm)
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)
@@ -163,14 +163,15 @@ servo.max_rad = vector.new({
 })*DEG_TO_RAD
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
 -- If the motor can rotate in extended mode
-local is_unclampled = {}
+local is_unclamped = {}
 for idx=1,#servo.min_rad do
   if servo.max_rad[idx] == 180*DEG_TO_RAD and servo.min_rad[idx]==-180*DEG_TO_RAD then
-    is_unclampled[idx] = true
+    is_unclamped[idx] = true
   else
-    is_unclampled[idx] = false
+    is_unclamped[idx] = false
   end
 end
+servo.is_unclamped = is_unclamped
 
 -- Convienence tables to go between steps and radians
 servo.moveRange = 360 * DEG_TO_RAD * vector.ones(nJoint)

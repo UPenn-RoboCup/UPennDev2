@@ -62,21 +62,20 @@ local parts = {
 -- Body sensors --
 ------------------
 for sensor, ptr in pairs(dcm.sensorPtr) do
-	local function get(idx1, idx2)
+	local get = function(idx1, idx2)
 		-- For cdata, use -1
 		return vector.slice(ptr, (idx1 or 1)-1, (idx2 or nJoint)-1)
 	end
-	Body['get_'..sensor] = get
+  Body['get_'..sensor] = get
   -- Anthropomorphic access to dcm
 	-- TODO: get_lleg_rpy is illegal, for instance
   for part, jlist in pairs(parts) do
 		-- For cdata, use -1
-    local idx1, idx2 = jlist[1]-1, jlist[#jlist]-1
+    local idx1, idx2 = jlist[1], jlist[#jlist]
     Body['get_'..part:lower()..'_'..sensor] = function(idx)
       if idx then return get(jlist[idx]) else return get(idx1, idx2) end
     end -- Get
   end
-	print('Setting up', sensor, get)
 	-- End anthropomorphic
 end
 
@@ -517,7 +516,8 @@ end
 function Body.exit ()
 	-- Tell the devices to exit cleanly
   for _,ch in pairs(dev_chs) do
-		if ch.send then ch:send'exit' end
+		ch:send'exit'
+		unix.usleep(1e4)
 	end
 end
 

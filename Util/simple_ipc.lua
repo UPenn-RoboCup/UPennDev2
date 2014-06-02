@@ -281,6 +281,7 @@ simple_ipc.new_thread = function(scriptname, channel, metadata)
 	-- (Should just check if it was given a context...
 	-- Must call import_context in the thread to achieve communication
 	local pair = simple_ipc.new_pair(metadata.ch_name,true)
+	pair.thread = thread
 
 	return pair, thread
 end

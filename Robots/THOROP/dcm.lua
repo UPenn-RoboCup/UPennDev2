@@ -40,7 +40,12 @@ shared_data.actuator = {}
 -- Setup from libDynamixel every write item
 -- TODO: Separate parameters? RAM/ROM
 for reg, v in pairs(lD.nx_registers) do
-  if not lD.registers_sensor[reg] then
+  -- Check that it is not a sensor
+  local is_sensor
+  for _, s in ipairs(lD.registers_sensor) do
+    if s==reg then is_sensor = true; break; end
+  end
+  if not is_sensor then
     shared_data.actuator[reg] = vector.zeros(nJoint)
   end
 end

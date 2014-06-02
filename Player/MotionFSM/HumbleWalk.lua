@@ -230,8 +230,6 @@ function walk.update()
     local rfoot = Body.get_sensor_rfoot()
     -- ask for the foot sensor values
   
-    Body.request_lfoot()
-    Body.request_rfoot()
     -- write the log
     local log_entry = string.format('%f %f %d %s\n',t,ph,supportLeg,table.concat(lfoot,' '))
     LOG_F_SENSOR:write(log_entry)

@@ -62,9 +62,11 @@ local parts = {
 -- Body sensors --
 ------------------
 for sensor, ptr in pairs(dcm.sensorPtr) do
+	local cur = dcm['get_sensor_'..sensor]()
+	local n_el = type(cur)=='table' and #cur or 1
 	local get = function(idx1, idx2)
 		-- For cdata, use -1
-		return vector.slice(ptr, (idx1 or 1)-1, (idx2 or nJoint)-1)
+		return vector.slice(ptr, (idx1 or 1)-1, (idx2 or n_el)-1)
 	end
   Body['get_'..sensor] = get
   -- Anthropomorphic access to dcm

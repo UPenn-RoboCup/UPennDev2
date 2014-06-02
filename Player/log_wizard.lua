@@ -77,7 +77,7 @@ local function body_logger()
   body.command_position = Body.get_command_position()
   body.position = Body.get_position()
   body.rpy  = Body.get_sensor_rpy()
-  body.gyro = Body.get_sensor_gyro()
+  body.gyro = Body.get_gyro()
   body.lfoot = Body.get_sensor_lfoot()
   body.rfoot = Body.get_sensor_rfoot()
   -- Log the temperature of the gripper only

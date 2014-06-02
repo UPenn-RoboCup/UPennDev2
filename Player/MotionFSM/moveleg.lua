@@ -38,7 +38,7 @@ function moveleg.get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
   -- Ankle stabilization using gyro feedback
   --local imu_roll0, imu_pitch0, imu_yaw0 = unpack(Body.get_sensor_imu())
   --math.sin(imuPitch)*bodyHeight, -math.sin(imuRoll)*bodyHeight
-  local gyro_roll0, gyro_pitch0, gyro_yaw0 = unpack(Body.get_sensor_gyro())
+  local gyro_roll0, gyro_pitch0, gyro_yaw0 = unpack(Body.get_gyro())
   -- Get effective gyro angle considering body yaw offset
   -- Rotate the Roll and pitch about the intended body yaw
   local gyro_roll  = gyro_roll0  * math.cos(body_yaw) - gyro_pitch0 * math.sin(body_yaw)

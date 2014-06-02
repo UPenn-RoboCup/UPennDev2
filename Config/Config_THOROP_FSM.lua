@@ -37,12 +37,14 @@ Config.fsm.Body = {
   {'bodyStepWiden', 'done', 'bodyIdle'},
   {'bodyStepPlan2', 'done', 'bodyIdle'},
 }
-
+assert(Config.dev.walk, 'Need a walk engine specification')
 Config.fsm.Motion = {
   {'motionIdle', 'timeout', 'motionIdle'},
   {'motionIdle', 'stand', 'motionInit'},
   {'motionIdle', 'drive', 'motionDrive'},
   {'motionIdle', 'bias', 'motionBiasInit'},
+  --  
+  {'motionInit', 'done', 'motionStance'},
   --
   {'motionIdle', 'bias', 'motionBiasInit'},
   --
@@ -50,8 +52,11 @@ Config.fsm.Motion = {
   --
   {'motionStance', 'bias', 'motionBiasInit'},
   {'motionStance', 'preview', 'motionStepPreview'},
+  {'motionStance', 'walk', Config.dev.walk},
   --
   {'motionStepPreview', 'done', 'motionStance'},
+  --
+  {Config.dev.walk, 'done', 'motionStance'},
 }
 
 -- Add all FSM directories that are in Player

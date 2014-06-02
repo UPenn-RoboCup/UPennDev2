@@ -142,10 +142,6 @@ function walk.entry()
 
   debugdata=''
  
-  if read_test then
-    Body.request_lleg_position()
-    Body.request_rleg_position()
-  end
   hcm.set_motion_estop(0)
 end
 
@@ -267,8 +263,6 @@ function walk.update()
     if read_test then
       qLLeg = Body.get_lleg_position()
       qRLeg = Body.get_rleg_position()
-      Body.request_lleg_position()
-      Body.request_rleg_position()
     else
       qLLeg = Body.get_lleg_command_position()
       qRLeg = Body.get_rleg_command_position()

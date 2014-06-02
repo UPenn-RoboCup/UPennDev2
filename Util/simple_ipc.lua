@@ -21,7 +21,7 @@ end
 local simple_ipc = {}
 
 -- Available for simple_ipc
-local N_THREAD_POOL = 1
+local N_THREAD_POOL = 2
 
 -- Lookup table helper
 -- Easily specify the channel
@@ -86,12 +86,14 @@ simple_ipc.new_publisher = function( channel, target )
 		is_bind = true
   end
 	-- Return the table
-  return {
+  local obj = {
 		socket = ch_socket,
 		send = ch_send,
 		name = ch_name,
 		is_bind = is_bind,
 	}
+  ch_socket.obj = obj
+  return obj
 end
 
 -- Make a new subscriber
@@ -115,12 +117,14 @@ simple_ipc.new_subscriber = function( channel, target )
     ch_socket:connect( ch_name )
   end
 	-- Return the table
-  return {
+  local obj = {
 		socket = ch_socket,
 		receive = ch_receive,
 		name = ch_name,
 		is_bind = is_bind,
 	}
+  ch_socket.obj = obj
+  return obj
 end
 
 -- Make a new requester
@@ -142,13 +146,15 @@ simple_ipc.new_requester = function( channel, target )
     ch_socket:connect( ch_name )
   end
 	-- Return the table
-  return {
+  local obj = {
 		socket = ch_socket,
 		send = ch_send,
 		receive = ch_receive,
 		name = ch_name,
 		is_bind = is_bind,
 	}
+  ch_socket.obj = obj
+  return obj
 end
 
 -- Make a new replier
@@ -198,13 +204,15 @@ simple_ipc.new_pair = function( channel, is_parent )
     ch_socket:connect( ch_name )
   end
 	-- Return the table
-  return {
+  local obj = {
 		socket = ch_socket,
 		send = ch_send,
 		receive = ch_receive,
 		name = ch_name,
 		is_bind = is_bind,
 	}
+  ch_socket.obj = obj
+  return obj
 end
 
 -- Return a ZMQ Poller object based on the set of channels

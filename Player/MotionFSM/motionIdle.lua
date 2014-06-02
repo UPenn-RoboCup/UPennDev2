@@ -11,7 +11,6 @@ local t_entry, t_update
 -- Running estimate of where the legs are
 local qLLeg, qRLeg, qWaist
 
-
 function state.entry()
   print(state._NAME..' Entry' ) 
 
@@ -25,15 +24,10 @@ function state.entry()
   Body.set_lleg_torque_enable(0)
   Body.set_rleg_torque_enable(0)
 
-  -- Request new readings
-  Body.request_lleg_position()
-  Body.request_rleg_position()
-  Body.request_waist_position()
-
   -- Commanded at first
-  qLLeg = Body.get_lleg_command()
-  qRLeg = Body.get_rleg_command()
-  qWaist = Body.get_waist_command()
+  qLLeg = Body.get_lleg_command_position()
+  qRLeg = Body.get_rleg_command_position()
+  qWaist = Body.get_waist_command_position()
   if Config.walk.legBias then
     mcm.set_leg_bias(Config.walk.legBias)
     print("BIAS SET:",unpack(Config.walk.legBias))
@@ -43,9 +37,10 @@ end
 ---
 --Set actuator commands to resting position, as gotten from joint encoders.
 function state.update()
-  
+--  print(state._NAME..' Update')
   -- Get the time of update
   local t = Body.get_time()
+
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
@@ -57,20 +52,8 @@ function state.update()
   qRLeg, updatedR = Body.get_rleg_position()
   qWaist, updatedW = Body.get_waist_position()
 
-  -- Constantly request
-  Body.request_lleg_position()
-  Body.request_rleg_position()
-  Body.request_waist_position()
-
-
-  qLLeg = Body.get_lleg_position()
-  qRLeg = Body.get_rleg_position()
-
-
-  Body.set_lleg_command(qLLeg)  
-  Body.set_rleg_command(qRLeg)
-
-
+  Body.set_lleg_command_position(qLLeg)
+  Body.set_rleg_command_position(qRLeg)
 
 end
 

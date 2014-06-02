@@ -14,8 +14,7 @@ if CTX and not arg then
 	si.import_context(CTX)
 	-- Communicate with the master thread
 	parent_ch = si.new_pair(metadata.ch_name)
-print('metadata.ch_name',metadata.ch_name)
-parent_ch:send'init'
+  parent_ch:send'init'
 else
 	-- Set metadata based on command line arguments
 	local chain_id, chain = tonumber(arg[1])
@@ -31,7 +30,7 @@ end
 -- Fallback on undefined metadata
 metadata = metadata or {}
 -- Debug
-if metadata.name then print('DCM | Running', metadata.name) end
+print('DCM '..metadata.name, 'running')
 -- Modules
 require'dcm'
 local lD = require'libDynamixel'
@@ -48,7 +47,7 @@ end
 local n_motors = #m_ids
 -- Verify that the m_ids are present
 for _,m_id in pairs(m_ids) do
-	print('PING', m_id)
+	--print('PING', m_id)
 	local p = bus:ping(m_id)
 	assert(p[1], string.format('DCM | ID %d not present.', m_id))
 	--ptable(p[1])
@@ -133,7 +132,7 @@ elseif metadata.name=='rleg' then
 end
 
 local function do_parent (p_skt)
-local cmds = p_skt:recv_all()
+  local cmds = p_skt:recv_all()
 --	local cmds = parent_ch:receive(true)
 	if not cmds then return end
 	for i, cmd in ipairs(cmds) do
@@ -179,7 +178,7 @@ while running do
 	-- Periodic Debug --
 	--------------------
   if t - t_debug>1 then
-	  --print('\nDCM | t_diff', t_diff, 1 / t_diff)
+    --print('DCM '..metadata.name..' |', t_diff)
     --ptable(positions)
     t_debug = t
   end
@@ -194,8 +193,7 @@ while running do
 	---------------------
 	-- Parent Commands --
 	---------------------
-	--do_parent()
-poller:poll(0)
+  poller:poll(0)
 end
 
 -- Exiting

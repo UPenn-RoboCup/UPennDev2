@@ -8,7 +8,7 @@ assert(type(fsm_name)=='string', 'Need an fsm_name for the channel')
 -- Necessary modules
 local si = require'simple_ipc'
 local fsm = require'fsm'
---local util = require'util'
+local util = require'util'
 
 -- Set up our transitions
 local states, sm = {}
@@ -55,14 +55,14 @@ function obj:update ()
   -- Event is a table now... :(
   if events then
     for _, event in ipairs(events) do
-      --print(util.color(self._NAME..' Event:','green'), event)
-      print(obj._NAME, event)
+      print(util.color(self._NAME..' Event:','green'), event)
+      --print(obj._NAME, event)
       self.sm:add_event(event)
     end
   end
   return self.sm:update()
 end
-function obj.exit ()
+function obj:exit ()
   return self.sm:exit()
 end
 

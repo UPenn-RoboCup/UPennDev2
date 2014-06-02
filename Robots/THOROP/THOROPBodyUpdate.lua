@@ -62,18 +62,18 @@ local parts = {
 -- Body sensors --
 ------------------
 for sensor, ptr in pairs(dcm.sensorPtr) do
-	local function get(idx1, idx2)
+	local function get_s(idx1, idx2)
 		-- For cdata, use -1
 		return vector.slice(ptr, (idx1 or 1)-1, (idx2 or nJoint)-1)
 	end
-	Body['get_'..sensor] = get
+	Body['get_'..sensor] = get_s
   -- Anthropomorphic access to dcm
 	-- TODO: get_lleg_rpy is illegal, for instance
   for part, jlist in pairs(parts) do
 		-- For cdata, use -1
     local idx1, idx2 = jlist[1]-1, jlist[#jlist]-1
     Body['get_'..part:lower()..'_'..sensor] = function(idx)
-      if idx then return get(jlist[idx]) else return get(idx1, idx2) end
+      if idx then return get(jlist[idx]) else return get_s(idx1, idx2) end
     end -- Get
   end
 	-- End anthropomorphic
@@ -115,7 +115,7 @@ for actuator, ptr in pairs(dcm.actuatorPtr) do
 		-- Send msg to the dcm, just string of the id
 		if not_synced then
 			for _, ch in ipairs(dcm_chs) do
---        print('SET', ch, actuator)
+        --print('SET', ch, actuator)
         ch:send(actuator)
       end
 		end
@@ -455,27 +455,22 @@ end
 
 -- If receiving data from a chain
 local function chain_cb (c_skt)
-print('chain cb')
-for _, msg in ipairs(c_skt:recv_all()) do print(msg) end
+  for _, msg in ipairs(c_skt:recv_all()) do
+    print('DCM '..c_skt.obj.id..' | ', msg)
+  end
 end
 local function imu_cb ()
-print('imu cb')
+  print('imu cb')
 end
 local function body_cb (b_skt)
 	-- Externally call some sort of sync
-	for _, msg in ipairs(b_skt:recv_all()) do
+  local msgs = b_skt:recv_all()
+	for _, msg in ipairs(msgs) do
 		for i, ch in ipairs(dcm_chs) do
---print('body_ch',msg,i,ch)
---util.ptable(ch)
-ch:send(msg)
-end
---util.ptable(dcm1)
---util.ptable(dcm2)
---util.ptable(dcm3)
---dcm1:send(msg)
---dcm2:send(actuator)
---dcm3:send(actuator)
+      ch:send(msg)
+    end
 	end
+
 end
 
 function Body.entry ()
@@ -487,6 +482,7 @@ function Body.entry ()
 		local ch, thread =
 			si.new_thread(ROBOT_HOME..'/run_dcm.lua', 'dcm'..i, v)
 		ch.callback = chain_cb
+    ch.id = i
 		table.insert(dev_chs, ch)
 		table.insert(dcm_chs, ch)
 		table.insert(body_chs, ch)

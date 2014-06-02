@@ -13,9 +13,6 @@ local vector     = require'vector'
 local timeout    = 20.0
 local t_readings = 0.20
 local t_settle   = 0.10
--- Declare local so as not to pollute the global namespace
--- This is 5.1 and 5.2 compatible
--- NOTE: http://www.luafaq.org/#T1.37.1
 local t_entry, t_update, t_finish
 
   -- Set the desired leg and torso poses
@@ -54,8 +51,8 @@ function state.entry()
   
   --SJ: Now we only use commanded positions
   --As the actual values are read at motionIdle state
-  qLLeg = Body.get_lleg_command()
-  qRLeg = Body.get_rleg_command()
+  qLLeg = Body.get_lleg_command_position()
+  qRLeg = Body.get_rleg_command_position()
 
   -- How far away from the torso are the legs currently?
   local dpLLeg = K.torso_lleg(qLLeg)
@@ -70,6 +67,7 @@ function state.entry()
 
   stage = 1
   if not IS_WEBOTS then
+print('INIT setting params')
     for i=1,10 do
       Body.set_waist_command_velocity({500,500})
       unix.usleep(1e6*0.01);
@@ -84,9 +82,6 @@ function state.entry()
     end
   end
 
-  Body.request_lleg_position()
-  Body.request_rleg_position()
-  Body.request_waist_position()
 
 end
 
@@ -108,10 +103,10 @@ function state.update()
   
   -- Zero the waist  
 
-  local qWaist = Body.get_waist_command()
+  local qWaist = Body.get_waist_command_position()
   local qWaist_approach, doneWaist = 
     util.approachTol( qWaist, qWaist_desired, dqWaistLimit, dt )
-  Body.set_waist_command(qWaist_approach)
+  Body.set_waist_command_position(qWaist_approach)
  
 
   -- Ensure that we do not move motors too quickly
@@ -134,20 +129,17 @@ function state.update()
   qLLegMove,doneL = util.approachTol(qLLeg,qLLegTarget, dqLegLimit, dt )
   qRLegMove,doneR = util.approachTol(qRLeg,qRLegTarget, dqLegLimit, dt )
 
-  Body.set_lleg_command(qLLegMove)
-  Body.set_rleg_command(qRLegMove)
+  Body.set_lleg_command_position(qLLegMove)
+  Body.set_rleg_command_position(qRLegMove)
 
   local qLLegActual = Body.get_lleg_position()
   local qRLegActual = Body.get_rleg_position()
   local qWaistActual = Body.get_waist_position()
 
-  local qLLegCommand = Body.get_lleg_command()
-  local qRLegCommand = Body.get_rleg_command()
-  local qWaistCommand = Body.get_waist_command()
+  local qLLegCommand = Body.get_lleg_command_position()
+  local qRLegCommand = Body.get_rleg_command_position()
+  local qWaistCommand = Body.get_waist_command_position()
 
-  Body.request_lleg_position()
-  Body.request_rleg_position()
-  Body.request_waist_position()
 
   local err = 0;
   for i=1,4 do --hack: skip ankle angles for now

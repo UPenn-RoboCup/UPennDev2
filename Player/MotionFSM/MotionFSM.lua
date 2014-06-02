@@ -1,3 +1,8 @@
+if true then
+print('MOTION TIME')
+return load_fsm'Motion'
+end
+
 -- Config guides special situations
 local Config = require'Config'
 -- Use the fsm module

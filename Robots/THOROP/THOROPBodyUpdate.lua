@@ -62,20 +62,21 @@ local parts = {
 -- Body sensors --
 ------------------
 for sensor, ptr in pairs(dcm.sensorPtr) do
-	local function get_s(idx1, idx2)
+	local function get(idx1, idx2)
 		-- For cdata, use -1
 		return vector.slice(ptr, (idx1 or 1)-1, (idx2 or nJoint)-1)
 	end
-	Body['get_'..sensor] = get_s
+	Body['get_'..sensor] = get
   -- Anthropomorphic access to dcm
 	-- TODO: get_lleg_rpy is illegal, for instance
   for part, jlist in pairs(parts) do
 		-- For cdata, use -1
     local idx1, idx2 = jlist[1]-1, jlist[#jlist]-1
     Body['get_'..part:lower()..'_'..sensor] = function(idx)
-      if idx then return get(jlist[idx]) else return get_s(idx1, idx2) end
+      if idx then return get(jlist[idx]) else return get(idx1, idx2) end
     end -- Get
   end
+	print('Setting up', sensor, get)
 	-- End anthropomorphic
 end
 
@@ -86,7 +87,7 @@ for actuator, ptr in pairs(dcm.actuatorPtr) do
 	-- Only command_position is constantly synced
 	-- Other commands need to be specially sent to the Body
 	local not_synced = actuator~='command_position'
-	local function set (val, idx1, idx2)
+	local function set(val, idx1, idx2)
 		-- cdata is -1
 		if idx2 then
 			if type(val)=='number' then
@@ -120,7 +121,7 @@ for actuator, ptr in pairs(dcm.actuatorPtr) do
       end
 		end
 	end
-	local function get (idx1, idx2)
+	local function get(idx1, idx2)
 		idx1 = idx1 or 1
 		idx2 = idx2 or nJoint
 		-- For cdata, use -1

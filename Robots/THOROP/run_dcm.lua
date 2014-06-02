@@ -244,6 +244,7 @@ while running do
 		-- Write Positions --
 		---------------------
 		do_write()
+		unix.usleep(2e3)
 	end
   -- Keep stable timing
   collectgarbage('step')

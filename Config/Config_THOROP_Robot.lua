@@ -16,7 +16,7 @@ Config.imu = {
 ----------------
 -- NOTE: Ignore the MX motors for now
 Config.chain = {
-	enabled = false
+	enabled = true
 }
 local right_arm = {
   name = 'rarm',

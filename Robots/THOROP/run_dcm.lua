@@ -233,12 +233,12 @@ local poller = si.wait_on_channels{parent_ch}
 
 -- Begin infinite loop
 print(debug_prefix, 'Begin loop')
-local t0 = get_time()
-local t_debug, t, t_diff = t0
+local t0, t = get_time()
+local t_debug, t_last, t_diff = t0, t0
+local t_sleep = 1/100
 while running do
+	t_last = t
 	t = get_time()
-	t_diff = t-t0
-	t0 = t
 	--------------------
 	-- Periodic Debug --
 	--------------------
@@ -256,10 +256,12 @@ while running do
 		--------------------
 		-- Read Positions --
 		--------------------
-		do_read()
+		--do_read()
 	end
   -- Keep stable timing
   collectgarbage('step')
+	t_diff = get_time() - t
+	unix.usleep(1e6*(t_sleep-t_diff))
 end
 
 -- Exiting

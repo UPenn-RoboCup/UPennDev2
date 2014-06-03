@@ -41,13 +41,25 @@ local microstrain = lM.new_microstrain('/dev/ttyACM0', OPERATING_SYSTEM~='darwin
 -- TODO: Read and check settings...
 microstrain:ahrs_on()
 -- Cache the typical commands quickly
-local rpy_ptr   = dcm.sensorPtr.rpy
-local gyro_ptr  = dcm.sensorPtr.gyro
-local acc, gyro, mag, rpy
---local do_debug = false
+local acc_ptr  = dcm.sensorPtr.accelerometer
+local gyro_ptr = dcm.sensorPtr.gyro
+local mag_ptr  = dcm.sensorPtr.magnetometer
+local rpy_ptr  = dcm.sensorPtr.rpy
+local acc, gyro, mag, rpy = vector.new(3), vector.new(3), vector.new(3), vector.new(3)
 local function do_read ()
 	-- Get the accelerometer, gyro, magnetometer, and euler angles
 	local a, g, m, e = microstrain:read_ahrs()
+	-- Quickly set in shared memory
+	acc_ptr[0], acc_ptr[1], acc_ptr[2] = a[1], a[2], -a[0]
+	gyro_ptr[0], gyro_ptr[1], gyro_ptr[2] = g[1], g[2], -g[0]
+	mag_ptr[0], mag_ptr[1], mag_ptr[2] = m[1], m[2], -m[0]
+	rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], e[2], -e[0]
+	-- Save locally
+	acc[1], acc[2], acc[3] = a[1], a[2], -a[0]
+	gyro[1], gyro[2], gyro[3] = g[1], g[2], -g[0]
+	mag[1], mag[2], mag[3] = m[1], m[2], -m[0]
+	rpy[1], rpy[2], rpy[3] = e[1], e[2], -e[0]
+	--[[
 	-- Save locally
 	acc  = {a[1], a[2], -a[0]}
 	gyro = {g[1], g[2], -g[0]}
@@ -58,17 +70,6 @@ local function do_read ()
 	dcm.set_sensor_gyro(gyro)
 	dcm.set_sensor_magnetometer(mag)
 	dcm.set_sensor_rpy(rpy)
-	--[[
-	local buf = microstrain:read_ahrs()
-	if do_debug then
-		do_debug = false
-		local hex = {}
-		local bytes = {buf:byte(1, -1)}
-		for i,v in ipairs(bytes) do
-			table.insert(hex, string.format('0x%02X', v))
-		end
-		print(table.concat(hex,' '))
-	end
 	--]]
 end
 -- Collect garbage before starting
@@ -93,7 +94,6 @@ while running do
 			string.format('RPY:  %.2f %.2f %.2f', unpack(rpy)),
 		}
 		print(table.concat(debug_str,'\n'))
-		--do_debug = true
     t_debug = t
   end
 	-----------------

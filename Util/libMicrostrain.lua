@@ -158,6 +158,15 @@ local function read_ahrs(self)
   local _gyro = carray.float(buf:sub( 7,18):reverse())
   local _rpy  = carray.float(buf:sub(21,32):reverse())
   --]]
+  --[[
+  -- Debugging
+  local hex = {}
+  local bytes = {buf:byte(1, -1)}
+  for i,v in ipairs(bytes) do
+    table.insert(hex, string.format('0x%02X', v))
+  end
+  print(table.concat(hex,' '))
+  --]]
 end
 
 ---------------------------

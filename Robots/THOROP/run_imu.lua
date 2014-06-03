@@ -26,7 +26,7 @@ local carray = require'carray'
 local ptable = require'util'.ptable
 local usleep, get_time = unix.usleep, unix.time
 -- Open the device
-local microstrain = lM.new_microstrain'/dev/ttyACM0'
+local microstrain = lM.new_microstrain('/dev/ttyACM0', OPERATING_SYSTEM~='darwin' and 921600)
 -- Turn it on
 -- TODO: Read and check settings...
 microstrain:ahrs_on()
@@ -82,6 +82,7 @@ while true do
 			process_parent(parent_msg)
 		end
 	end
+	collectgarbage('step')
 end
 
 microstrain:ahrs_off()

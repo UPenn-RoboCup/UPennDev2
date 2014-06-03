@@ -25,7 +25,7 @@ end
 
 -------------------------
 -- Write a command to a microstrain
-local function write_command(fd,cmd)
+local function write_command(fd, cmd)
   local str = generate_packet(cmd)
   local ret = unix.write(fd,str)
   assert(ret==#str,'Bad save write!')
@@ -36,8 +36,8 @@ local function write_command(fd,cmd)
   return {res:byte(1,-1)}
 end
 
-local function get_information(fd)
-  local response = write_command(fd,{ 0x75, 0x65, 0x01, 0x02, 0x02, 0x03 })
+local function get_info(self)
+  local response = write_command(self.fd, {0x75, 0x65, 0x01, 0x02, 0x02, 0x03})
   -- Parse information
   local pkt1_idx = 5
   local pkt1_sz  = response[5]
@@ -51,7 +51,7 @@ local function get_information(fd)
 end
 
 -- Go to high speed baud
-libMicrostrain.change_baud = function (microstrain)
+local function change_baud(microstrain)
   local baud = 921600 -- 921600 only for now...
   local baud_cmd = { 0x75, 0x65, 0x0C,
     0x07, -- Command length
@@ -80,19 +80,21 @@ libMicrostrain.change_baud = function (microstrain)
   --]]
 end
 
-libMicrostrain.configure = function(microstrain,do_permanent)
+local function configure(self, do_permanent)
   -- Set the mode for reading data
   -- 100Hz of gyro & rpy
 
   -- New AHRS format
   local stream_fmt = { 0x75, 0x65, 0x0C,
-    0x0A, -- Command length
-    0x0A, 0x08, -- Length and command description
-    0x01, 0x02, -- Set 2 messages
-    0x05, 0x00, 0x01, -- Gyro Message @ 100Hz
+    0x10, -- Command length
+    0x10, 0x08, -- Field Length, and Field Desctiption (AHRS)
+    0x01, 0x04, -- Set 4 messages
+    0x04, 0x00, 0x01, -- Accel Scaled Message @ 100Hz
+    0x05, 0x00, 0x01, -- Gyro Scaled Message @ 100Hz
+    0x06, 0x00, 0x01 -- Magnetometer Message @ 100Hz
     0x0C, 0x00, 0x01 -- Euler Angles Message @ 100Hz
   }
-  local response = write_command(microstrain.fd,stream_fmt)
+  local response = write_command(self.fd,stream_fmt)
   --[[
   for k,v in ipairs(response) do
     print(string.format('%d: %02X',k,v))
@@ -106,7 +108,7 @@ libMicrostrain.configure = function(microstrain,do_permanent)
       0x04, 0x08, -- Packet length
       0x03, 0x00 -- 3 to perform the save
     }
-    local response = write_command(microstrain.fd,save_fmt)
+    local response = write_command(self.fd,save_fmt)
     --[[
     for k,v in ipairs(response) do
       print(string.format('%d: %02X',k,v))
@@ -115,12 +117,30 @@ libMicrostrain.configure = function(microstrain,do_permanent)
   end
 end
 
+local function close(self)
+  return unix.close(self.fd) == 0
+end
+
+local function ahrs_on(self)
+  -- Turn on the ahrs stream
+  local response = write_command(self.fd, {
+    0x75, 0x65, 0x0C, 0x05, 0x05, 0x11, 0x01, 0x01, 0x01
+  })
+end
+local function ahrs_off(self)
+  -- Turn off the ahrs stream
+  local response = write_command(self.fd, {
+    0x75, 0x65, 0x0C, 0x05, 0x05, 0x11, 0x01, 0x01, 0x00
+  })
+  --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
+end
+
 ---------------------------
 -- Service multiple microstrains
-libMicrostrain.new_microstrain = function(ttyname, ttybaud, obj )
-  
+function libMicrostrain.new_microstrain(ttyname, ttybaud)
+
   local baud = ttybaud or 115200
-  
+
 	if not ttyname then
 		local ttys = unix.readdir("/dev")
 		for _,tty in ipairs(ttys) do
@@ -134,78 +154,57 @@ libMicrostrain.new_microstrain = function(ttyname, ttybaud, obj )
 
 	-----------
 	-- Open the Serial device with the proper settings
-	local fd = unix.open( ttyname, unix.O_RDWR + unix.O_NOCTTY)
+	local fd = unix.open(ttyname, unix.O_RDWR + unix.O_NOCTTY)
 	-- Check if opened correctly
 	if fd<3 then
     print(string.format("Open: %s, (%d)\n", ttyname, fd))
 		return nil
 	end
-  
-  -----------
+
   -- Serial port settings
 	stty.raw(fd)
 	stty.serial(fd)
 	stty.speed(fd, baud)
-
-  -----------
-  -- Set the device to idle
-  write_command(fd,idle_cmd)
   unix.usleep(1e5)
-  write_command(fd,idle_cmd)
+
+  -- Set the device to idle
+  write_command(fd, idle_cmd)
 
 	-----------
-	-- Begin the Microstrain object
-	local obj = obj or {}
+	-- Yield the Microstrain object
+	return {
+    fd = fd,
+    ttyname = ttyname,
+    baud = baud,
+    configure = configure,
+    close = close,
+    ahrs_on = ahrs_on,
+    ahrs_off = ahrs_off,
+    get_info = get_info,
+  }
 
-	-----------
-	-- Set the serial port data
-	obj.fd = fd
-  -- Get device information
-  obj.information = get_information(fd)
-	obj.ttyname = ttyname
-	obj.baud = baud
-	obj.close = function(self)
-		return unix.close(self.fd) == 0
-	end
-  obj.ahrs_on = function(self)
-    -- Turn on the ahrs stream
-    local response = write_command(fd,{
-      0x75, 0x65, 0x0C, 0x05, 0x05, 0x11, 0x01, 0x01, 0x01
-    })
-  end
-  obj.ahrs_off = function(self)
-    -- Turn off the ahrs stream
-    local response = write_command(fd,{
-      0x75, 0x65, 0x0C, 0x05, 0x05, 0x11, 0x01, 0x01, 0x00
-    })
-    --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
-  end
-
-	-----------
-	-- Return the microstrain object
-	return obj
 end
 
 ---------------------------
 -- Service multiple microstrains
 -- TODO: This seems pretty generic already - make it more so
-libMicrostrain.service = function( microstrain, main )
+function libMicrostrain.service(microstrain, main)
   -- Ensure a callback
   assert(type(microstrain.callback)=='function','Need a callback!')
 
   -- Go as fast as possible
-  libMicrostrain.change_baud(microstrain)
+  microstrain:change_baud()
 
   -- Configure to have the right format
-  libMicrostrain.configure(microstrain)
-  
+  microstrain:configure()
+
   -- Enable the main function as a coroutine thread
   local main_thread
   if type(main)=='function' then
     main_thread = coroutine.create( main )
   end
 
-  local thread = coroutine.create( 
+  local thread = coroutine.create(
     function()
       while true do
         local ret = unix.select({microstrain.fd})

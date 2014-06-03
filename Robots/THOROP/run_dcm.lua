@@ -29,6 +29,7 @@ else
 end
 -- Fallback on undefined metadata
 metadata = metadata or {}
+local DISABLE_READ = true
 local debug_prefix = 'DCM '..metadata.name..' |'
 -- Debug
 print(debug_prefix, 'running')
@@ -97,6 +98,11 @@ local tq_enable = vector.zeros(n_motors)
 local positions = vector.zeros(n_motors)
 local read_status, read_pkt, read_j_id
 local function do_read()
+	if DISABLE_READ then
+		for i,j_id in ipairs(j_ids) do
+			p_ptr[j_id-1] = cp_ptr[j_id-1]
+		end
+	end
 	-- TODO: Strict should just be one motor at a time...
 	read_status = p_read(m_ids, bus)
   local rad
@@ -114,6 +120,7 @@ local function do_read()
   		positions[j_to_order[read_j_id]] = rad
     end
 	end
+	usleep(2e3)
 end
 -- Define writing
 -- TODO: Add MX support
@@ -122,9 +129,10 @@ local function do_write()
 	for i,j_id in ipairs(j_ids) do
 		commands[i] = radian_to_step(j_id, cp_ptr[j_id-1]) or commands[i]
 	end
-  --error( string.format('%s | %s : %s', metadata.name, table.concat(m_ids, ' '), tostring(commands)) )
+  --error(string.format('%s | %s : %s', metadata.name, table.concat(m_ids, ' '), tostring(commands)) )
 	-- Perform the sync write
 	cp_cmd(m_ids, commands, bus)
+	usleep(2e3)
 end
 -- Define parent interaction. NOTE: Openly subscribing to ANYONE. fiddle even
 local parent_cb = {
@@ -238,12 +246,10 @@ while running do
 		-- Write Positions --
 		---------------------
 		do_write()
-		usleep(1e3)
 		--------------------
 		-- Read Positions --
 		--------------------
 		do_read()
-		usleep(1e3)
 	end
   -- Keep stable timing
   collectgarbage('step')

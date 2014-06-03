@@ -396,15 +396,17 @@ function Body.update ()
 	-- Poll for events
 	-- Return immediately if nothing happening
 	-- NOTE: Most of the time, nothing will happen...
-	body_poll:poll(1)
+	body_poll:poll(0)
 end
 
 function Body.exit ()
 	-- Tell the devices to exit cleanly
-  for _,ch in pairs(dev_chs) do
-		ch:send'exit'
-		unix.usleep(1e4)
-	end
+  for _,ch in pairs(dev_chs) do ch:send'exit' end
+	-- Wait for everyone to exit cleanly
+	unix.usleep(1e4)
+	-- Check if we get those messages
+	body_poll:poll(0)
+	-- TODO: Should join the thread...
 end
 
 ----------------------

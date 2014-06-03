@@ -34,11 +34,13 @@ local right_leg = {
   name = 'rleg',
   device = '/dev/ttyUSB2',
   m_ids = {15,17,19,21,23,25, --[[waist pitch]]28},
+  enable_read = true,
 }
 local left_leg = {
   name = 'lleg',
   device = '/dev/ttyUSB3',
   m_ids = {16,18,20,22,24,26, --[[waist yaw]]27}
+  enable_read = true,
 }
 -- Add the one chain support
 local one_chain = {

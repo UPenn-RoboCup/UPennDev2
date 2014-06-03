@@ -5,7 +5,6 @@ dofile'include.lua'
 assert(ffi, 'DCM | Please use LuaJIT :). Lua support in the near future')
 -- Going to be threading this
 local si = require'simple_ipc'
-local vector = require'vector'
 -- Import the context
 --print('CTX',CTX,type(CTX))
 local parent_ch, IS_THREAD
@@ -29,7 +28,7 @@ else
 end
 -- Fallback on undefined metadata
 metadata = metadata or {}
-local DISABLE_READ = false
+local ENABLE_READ = metadata.enable_read
 local debug_prefix = 'DCM '..metadata.name..' |'
 -- Debug
 print(debug_prefix, 'running')
@@ -37,7 +36,8 @@ print(debug_prefix, 'running')
 require'dcm'
 local lD = require'libDynamixel'
 local ptable = require'util'.ptable
-local usleep, get_time = unix.usleep, unix.time
+local vector = require'vector'
+local usleep, get_time, max = unix.usleep, unix.time, math.max
 local running = true
 -- Corresponding Motor ids
 local bus = lD.new_bus(metadata.device)
@@ -103,13 +103,9 @@ local tq_parse = lD.byte_to_number[lD.nx_registers.torque_enable[2]]
 -- Define reading
 local tq_enable = vector.zeros(n_motors)
 local positions = vector.zeros(n_motors)
+local commands = vector.zeros(n_motors)
 local read_status, read_pkt, read_j_id
 local function do_read()
-	if DISABLE_READ then
-		for i,j_id in ipairs(j_ids) do
-			p_ptr[j_id-1] = cp_ptr[j_id-1]
-		end
-	end
 	-- TODO: Strict should just be one motor at a time...
 	read_status = p_read(m_ids, bus)
   local rad
@@ -127,61 +123,67 @@ local function do_read()
   		positions[j_to_order[read_j_id]] = rad
     end
 	end
-	--usleep(1e3)
 end
 -- Define writing
 -- TODO: Add MX support
-local commands = vector.zeros(n_motors)
 local function do_write()
 	for i,j_id in ipairs(j_ids) do
 		commands[i] = radian_to_step(j_id, cp_ptr[j_id-1]) or commands[i]
 	end
-  --error(string.format('%s | %s: %s', metadata.name, table.concat(m_ids, ' '), tostring(commands)) )
 	-- Perform the sync write
 	cp_cmd(m_ids, commands, bus)
-	--usleep(2e3)
 end
 -- Define parent interaction. NOTE: Openly subscribing to ANYONE. fiddle even
 local parent_cb = {
 	exit = function()
-		running = false
+		running = false,
 	end,
   torque_enable = function()
-    local j_id, status, val
-    local valid_tries = 0
-    for _, m_id in ipairs(m_ids) do
+    local valid_tries, j_id, status, val = 0
+    for i, m_id in ipairs(m_ids) do
       j_id = m_to_j[m_id] - 1
       val = tq_ptr[j_id]
 			-- Safely copy over the position to command_position
-			cp_ptr[j_id] = p_ptr[j_id]
+			cp_ptr[j_id] = positions[i]
       while not valid do
         status = tq_cmd(m_id, val, bus)
         if status[1] and status[1].error==0 then break end
         valid_tries = valid_tries + 1
         assert(valid_tries<5, debug_prefix..' CANNOT SET TORQUE! Motor_id '..m_id)
       end
-      tq_enable[m_to_order[m_id]] = val
+      tq_enable[i] = val
     end
   end
 }
 
 -- Check the F/T based on the name of the chain
--- Declare the struct
-ffi.cdef[[ typedef struct { int16_t a, b, c, d; } ft; ]]
-local l_ft, l_ft, ft_sz = ffi.new('ft'), ffi.new('ft'), ffi.sizeof('ft')
-if metadata.name=='lleg' then
-	parent_cb.ft = function()
-		local ptr, read = dcm.actuatorPtr[cmd], lD.get_nx_data
-		local status = read({24, 26}, bus)
-		-- Should be 4 16-bit integers, so 8 bytes
-		--local l_ft = ffi.cast('ft*', ffi.new('int8_t[8]', status[1].parameter))
-		ffi.copy(l_ft, status[1].raw_parameter, ft_sz)
-		-- Just do a sync read here; can try reliable later, if desired...
-		print('DCM | ft', 3.3 * l_ft.a / 4096 - 1.65)
-    print(l_ft.a,l_ft.b,l_ft.c,l_ft.d)
+if metadata.name=='lleg' or metadata.name=='rleg' then
+	-- Declare the struct
+	ffi.cdef[[ typedef struct { int16_t a, b, c, d; } ft; ]]
+	local ft1_c, ft2_c ft_sz, ft_ptr = ffi.new'ft', ffi.new'ft', ffi.sizeof'ft'
+	if metadata.name=='lleg' then
+		ft_ptr = dcm.sensorPtr.lfoot
+		ft_ms = {24, 26}
+	else
+		ft_ptr = dcm.sensorPtr.rfoot
+		ft_ms = {23, 25}
 	end
-elseif metadata.name=='rleg' then
-
+	function parent_cb.ft()
+		local status = lD.get_nx_data(ft_ms, bus)
+		--local l_ft = ffi.cast('ft*', ffi.new('int8_t[8]', status[1].parameter))
+		ffi.copy(ft1_c, status[1].raw_parameter, ft_sz)
+		ffi.copy(ft2_c, status[2].raw_parameter, ft_sz)
+		-- Just do a sync read here; can try reliable later, if desired...
+		ft_ptr[0] = 3.3 * ft1_c.a / 4096 - 1.65
+		ft_ptr[1] = 3.3 * ft1_c.b / 4096 - 1.65
+		ft_ptr[2] = 3.3 * ft1_c.c / 4096 - 1.65
+		ft_ptr[3] = 3.3 * ft1_c.d / 4096 - 1.65
+		--
+		ft_ptr[4] = 3.3 * ft2_c.a / 4096 - 1.65
+		ft_ptr[5] = 3.3 * ft2_c.b / 4096 - 1.65
+		ft_ptr[6] = 3.3 * ft2_c.c / 4096 - 1.65
+		ft_ptr[7] = 3.3 * ft2_c.d / 4096 - 1.65
+	end
 end
 
 local function do_parent (p_skt)
@@ -197,7 +199,7 @@ local function do_parent (p_skt)
 		-- TODO: Check if we need the motors torqued off for the command to work
 		-- Send individually to the motors, waiting for the status return
 		local j_id, status
-		for _, m_id in ipairs(m_ids) do
+		for i, m_id in ipairs(m_ids) do
 			j_id = m_to_j[m_id] - 1
 			status = set(m_id, ptr[j_id], bus)
 			-- TODO: check the status, and repeat if necessary...
@@ -237,34 +239,38 @@ local poller = si.wait_on_channels{parent_ch}
 print(debug_prefix, 'Begin loop')
 local t0, t = get_time()
 local t_debug, t_last, t_diff = t0, t0
-local t_sleep = 1/125
+local t_sleep = 1 / 125
 while running do
 	t_last = t
 	t = get_time()
-	--------------------
-	-- Periodic Debug --
-	--------------------
-  if t - t_debug>1 then
-    print(debug_prefix)
-    --ptable(positions)
-    t_debug = t
-  end
 	-- If no parent commands, then perform a read/write cycle
 	if poller:poll(0)==0 then
-		---------------------
-		-- Write Positions --
-		---------------------
+		-- Write Positions
 		do_write()
-		--------------------
-		-- Read Positions --
-		--------------------
-		do_read()
+		if ENABLE_READ then
+			-- Read Positions
+			usleep(1e6)
+			do_read()
+		else
+			-- Copy the command positions as the read positions
+			for i,j_id in ipairs(j_ids) do p_ptr[j_id-1] = commands[i] end
+		end
+	end
+	-- Periodic Debug
+	if t - t_debug>1 then
+		local kb = collectgarbage'count'
+		local debug_str = {
+			string.format('\n%s Uptime: %.2f sec, Mem: %d kB', debug_prefix, t - t0, kb)),
+		}
+		print(table.concat(debug_str))
+		dcm.set_actuator_lfoot
+		t_debug = t
 	end
   -- Keep stable timing
-  collectgarbage('step')
-	--t_diff = get_time() - t
-	--unix.usleep(1e6*(t_sleep-t_diff))
-	usleep(1e6*t_sleep)
+  collectgarbage'step'
+	t_diff = get_time() - t
+	usleep(1e6 * max(t_sleep-t_diff, 0))
+	--usleep(1e6 * t_sleep)
 end
 
 -- Exiting

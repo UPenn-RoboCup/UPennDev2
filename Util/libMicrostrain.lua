@@ -61,7 +61,7 @@ local function change_baud(microstrain)
   }
 
   -- Set the device to idle
-  local response = write_command(microstrain.fd,idle_cmd)
+  write_command(microstrain.fd, idle_cmd)
 
   -- Write the command
   --local response = write_command(microstrain.fd,baud_cmd)
@@ -72,7 +72,7 @@ local function change_baud(microstrain)
   --libMicrostrain.new_microstrain(microstrain.ttyname,baud,microstrain)
 
   -- Ping the microstrain
-  local response = write_command(microstrain.fd,ping_cmd)
+  write_command(microstrain.fd, ping_cmd)
   --[[
   for k,v in ipairs(response) do
     print(string.format('%d: %02X',k,v))
@@ -118,6 +118,7 @@ local function configure(self, do_permanent)
 end
 
 local function close(self)
+  write_command(microstrain.fd, idle_cmd)
   return unix.close(self.fd) == 0
 end
 

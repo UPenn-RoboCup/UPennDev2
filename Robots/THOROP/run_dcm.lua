@@ -168,12 +168,14 @@ local parent_cb = {
 -- Check the F/T based on the name of the chain
 -- Declare the struct
 ffi.cdef[[ typedef struct { int16_t a, b, c, d; } ft; ]]
+local l_ft, l_ft, ft_sz = ffi.new('ft'), ffi.new('ft'), ffi.sizeof('ft')
 if metadata.name=='lleg' then
-	parent_cb.ft = function ()
+	parent_cb.ft = function()
 		local ptr, read = dcm.actuatorPtr[cmd], lD.get_nx_data
 		local status = read({24, 26}, bus)
 		-- Should be 4 16-bit integers, so 8 bytes
-		local l_ft = ffi.cast('ft*', ffi.new('int8_t[8]', status[1].parameter))
+		--local l_ft = ffi.cast('ft*', ffi.new('int8_t[8]', status[1].parameter))
+		ffi.copy(l_ft, status[1].raw_parameter, ft_sz)
 		-- Just do a sync read here; can try reliable later, if desired...
 		print('DCM | ft', 3.3 * l_ft.a / 4096 - 1.65)
     print(l_ft.a,l_ft.b,l_ft.c,l_ft.d)

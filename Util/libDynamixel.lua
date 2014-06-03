@@ -29,21 +29,26 @@ end
 
 DP2.parse_status_packet = function(pkt) -- 2.0 protocol
   --print('status pkt',pkt:byte(1,#pkt) )
-  local t = {}
-  t.id = pkt:byte(5)
-  t.length = pkt:byte(6)+2^8*pkt:byte(7)
-  t.instruction = pkt:byte(8)
-  t.error = pkt:byte(9)
-	if #pkt<t.length+7 then
-		print('status pkt',pkt:byte(1,#pkt) )
-	end
-	if t.error==0 then
-	  t.parameter = {pkt:byte(10,t.length+5)}
-	  t.checksum = string.char( pkt:byte(t.length+6), pkt:byte(t.length+7) )
-	else
-	  t.checksum = string.char( pkt:byte(10), pkt:byte(11) )
-	end
-  return t
+  local err, len = pkt:byte(9), pkt:byte(6) + 256 * pkt:byte(7)
+  if err>0 then
+    return {
+      id = pkt:byte(5),
+      length = len,
+      instruction = pkt:byte(8),
+      error = err,
+      checksum = string.char(pkt:byte(10), pkt:byte(11))
+    }
+  else
+    return {
+      id = pkt:byte(5),
+      length = len,
+      instruction = pkt:byte(8),
+      error = err,
+      parameter = {pkt:byte(10, len+5)},
+      raw_parameter = pkt:sub(10, len+5),
+      checksum = string.char(pkt:byte(len+6), pkt:byte(len+7))
+    }
+  end
 end
 
 -- RX (uses 1.0)

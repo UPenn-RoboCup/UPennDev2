@@ -53,9 +53,13 @@ for _,m_id in pairs(m_ids) do
 	local p = bus:ping(m_id)
 	assert(p[1], string.format('%s ID %d not present.', debug_prefix, m_id))
 	-- Check the status return level
-	local s = lD.get_nx_status_return_level()
-	local srl = lD.byte_to_number[lD.nx_registers.status_return_level[2]](unpack(s[1].parameter))
-	print('SRL', srl)
+	local s = lD.get_nx_return_delay_time(m_id, bus)
+	local rdt = lD.byte_to_number[lD.nx_registers.return_delay_time[2]](unpack(s[1].parameter))
+	if rdt~=0 then
+		usleep(5e3)
+		lD.set_nx_return_delay_time(m_id, 0, bus)
+	end
+	print('Return delay', rdt, m_id)
 	usleep(5e3)
 end
 -- Cache some settings from the Config
@@ -123,7 +127,7 @@ local function do_read()
   		positions[j_to_order[read_j_id]] = rad
     end
 	end
-	usleep(2e3)
+	--usleep(1e3)
 end
 -- Define writing
 -- TODO: Add MX support
@@ -132,10 +136,10 @@ local function do_write()
 	for i,j_id in ipairs(j_ids) do
 		commands[i] = radian_to_step(j_id, cp_ptr[j_id-1]) or commands[i]
 	end
-  --error(string.format('%s | %s : %s', metadata.name, table.concat(m_ids, ' '), tostring(commands)) )
+  --error(string.format('%s | %s: %s', metadata.name, table.concat(m_ids, ' '), tostring(commands)) )
 	-- Perform the sync write
 	cp_cmd(m_ids, commands, bus)
-	usleep(2e3)
+	--usleep(2e3)
 end
 -- Define parent interaction. NOTE: Openly subscribing to ANYONE. fiddle even
 local parent_cb = {

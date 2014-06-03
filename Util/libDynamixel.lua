@@ -136,7 +136,7 @@ local nx_registers = {
   --]]
   ['baud'] = {string.char(0x08,0x00),1},
   -- Delay in us: wish to have zero
-  ['delay'] = {string.char(9,0),1},
+  ['return_delay_time'] = {string.char(9,0),1},
 
   -- Operation Mode
   -- Mode 0: Torque Control

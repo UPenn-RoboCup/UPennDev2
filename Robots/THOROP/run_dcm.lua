@@ -29,7 +29,7 @@ else
 end
 -- Fallback on undefined metadata
 metadata = metadata or {}
-local DISABLE_READ = true
+local DISABLE_READ = false
 local debug_prefix = 'DCM '..metadata.name..' |'
 -- Debug
 print(debug_prefix, 'running')
@@ -235,7 +235,7 @@ local poller = si.wait_on_channels{parent_ch}
 print(debug_prefix, 'Begin loop')
 local t0, t = get_time()
 local t_debug, t_last, t_diff = t0, t0
-local t_sleep = 1/100
+local t_sleep = 1/125
 while running do
 	t_last = t
 	t = get_time()
@@ -243,7 +243,7 @@ while running do
 	-- Periodic Debug --
 	--------------------
   if t - t_debug>1 then
-    --print('DCM '..metadata.name..' |', t_diff)
+    print(debug_prefix)
     --ptable(positions)
     t_debug = t
   end
@@ -256,12 +256,13 @@ while running do
 		--------------------
 		-- Read Positions --
 		--------------------
-		--do_read()
+		do_read()
 	end
   -- Keep stable timing
   collectgarbage('step')
-	t_diff = get_time() - t
-	unix.usleep(1e6*(t_sleep-t_diff))
+	--t_diff = get_time() - t
+	--unix.usleep(1e6*(t_sleep-t_diff))
+	usleep(1e6*t_sleep)
 end
 
 -- Exiting

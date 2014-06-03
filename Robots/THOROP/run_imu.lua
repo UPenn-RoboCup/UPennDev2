@@ -49,10 +49,10 @@ local function do_read ()
 	-- Get the accelerometer, gyro, magnetometer, and euler angles
 	local a, g, m, e = microstrain:read_ahrs()
 	-- Save locally
-	acc = {a[2], a[3], -a[1]}
-	gyro  = {g[2], g[3], -g[1]}
-	mag   = {m[2], m[3], -m[1]}
-	rpy   = {e[1], e[2], -e[0]}
+	acc  = {a[1], a[2], -a[0]}
+	gyro = {g[1], g[2], -g[0]}
+	mag  = {m[1], m[2], -m[0]}
+	rpy  = {e[1], e[2], -e[0]}
 	-- Set to memory
 	dcm.set_sensor_accelerometer(acc)
 	dcm.set_sensor_gyro(gyro)

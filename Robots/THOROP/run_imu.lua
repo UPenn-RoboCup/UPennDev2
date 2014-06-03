@@ -31,10 +31,8 @@ end
 -- Modules
 require'dcm'
 local lM = require'libMicrostrain'
--- TODO: Remove carray when using LuaJIT
-local carray = require'carray'
-local ptable = require'util'.ptable
-local usleep, get_time = unix.usleep, unix.time
+local vector = require'vector'
+local get_time = unix.time
 -- Open the device
 local microstrain = lM.new_microstrain('/dev/ttyACM0', OPERATING_SYSTEM~='darwin' and 921600)
 -- Turn it on
@@ -75,12 +73,11 @@ end
 -- Collect garbage before starting
 collectgarbage()
 -- Begin infinite loop
-local t0 = get_time()
-local t_debug, t, t_diff = t0
+local t0, t = get_time()
+local t_debug, t_last = t0, t0
 while running do
+	t_last = t
 	t = get_time()
-	t_diff = t-t0
-	t0 = t
 	--------------------
 	-- Periodic Debug --
 	--------------------

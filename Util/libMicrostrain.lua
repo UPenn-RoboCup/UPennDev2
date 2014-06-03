@@ -135,19 +135,28 @@ local function ahrs_off(self)
   --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
 end
 
+local acc_tmp, gyr_tmp, mag_tmp, euler_tmp =
+	ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]'
+local cpy_sz = 3 * ffi.sizeof('float')
 local function read_ahrs(self)
   local fd = self.fd
   unix.select({fd})
   local buf = unix.read(fd)
   if not buf then return end
-  return buf
+	-- Try to select some stuff
+	-- Accel
+	ffi.copy(acc_tmp, buf:sub(7, 18):reverse(), cpy_sz)
+	-- Gyro
+	ffi.copy(gyr_tmp, buf:sub(21, 32):reverse(), cpy_sz)
+	-- Mag
+	ffi.copy(mag_tmp, buf:sub(35, 46):reverse(), cpy_sz)
+	-- Euler
+	ffi.copy(euler_tmp, buf:sub(49, 60):reverse(), cpy_sz)
+  return acc_tmp, gyr_tmp, mag_tmp, euler_tmp
   --[[
-  -- TODO: Check the size of the buffer, too
+	-- Using the non-FFI API
   local _gyro = carray.float(buf:sub( 7,18):reverse())
   local _rpy  = carray.float(buf:sub(21,32):reverse())
-  -- Save locally
-  rpy = {_rpy[2], _rpy[3], -_rpy[1]}
-  gyro = {_gyro[2],_gyro[3],-_gyro[1]}
   --]]
 end
 
@@ -185,10 +194,11 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
 
   -- Set the device to idle
   write_command(fd, idle_cmd)
+  unix.usleep(1e5)
 
 	-----------
-	-- Yield the Microstrain object
-	return {
+	-- The Microstrain object
+	local dev = {
     fd = fd,
     ttyname = ttyname,
     baud = baud,
@@ -199,6 +209,12 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
     get_info = get_info,
     read_ahrs = read_ahrs,
   }
+
+	-- Configure the device
+	dev:configure()
+	unix.usleep(1e5)
+
+	return dev
 
 end
 

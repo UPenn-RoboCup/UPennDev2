@@ -43,23 +43,33 @@ microstrain:ahrs_on()
 -- Cache the typical commands quickly
 local rpy_ptr   = dcm.sensorPtr.rpy
 local gyro_ptr  = dcm.sensorPtr.gyro
-local gyro, rpy = {}, {}
-local do_debug = false
+local acc, gyro, mag, rpy
+--local do_debug = false
 local function do_read ()
 	-- Get the accelerometer, gyro, magnetometer, and euler angles
-	--local accel, gyro, mag, euler = microstrain:read()
-	local buf = microstrain:read()
-	-- set to memory
-	--dcm.set_sensor_rpy(rpy)
-	--dcm.set_sensor_gyro(gyro)
+	local a, g, m, e = microstrain:read_ahrs()
+	-- Save locally
+	acc = {a[2], a[3], -a[1]}
+	gyro  = {g[2], g[3], -g[1]}
+	mag   = {m[2], m[3], -m[1]}
+	rpy   = {e[1], e[2], -e[0]}
+	-- Set to memory
+	dcm.set_sensor_accelerometer(acc)
+	dcm.set_sensor_gyro(gyro)
+	dcm.set_sensor_magnetometer(mag)
+	dcm.set_sensor_rpy(rpy)
+	--[[
+	local buf = microstrain:read_ahrs()
 	if do_debug then
 		do_debug = false
 		local hex = {}
-		for i,v in ipairs(buf:byte(1, -1)) do
+		local bytes = {buf:byte(1, -1)}
+		for i,v in ipairs(bytes) do
 			table.insert(hex, string.format('0x%02X', v))
 		end
 		print(table.concat(hex,' '))
 	end
+	--]]
 end
 -- Collect garbage before starting
 collectgarbage()
@@ -75,10 +85,15 @@ while running do
 	--------------------
   if t - t_debug>1 then
 		local kb = collectgarbage('count')
-	  print(string.format('IMU | Uptime %.2f sec, Mem: %d kB', t-t0, kb))
-		--print(string.format('Gyro (rad/s): %.2f %.2f %.2f', unpack(gyro)))
-		--print(string.format('RPY:  %.2f %.2f %.2f', unpack(rpy)))
-		do_debug = true
+		local debug_str = {
+			string.format('\nIMU | Uptime %.2f sec, Mem: %d kB', t-t0, kb),
+			string.format('Acc (g): %.2f %.2f %.2f', unpack(acc)),
+			string.format('Gyro (rad/s): %.2f %.2f %.2f', unpack(gyro)),
+			string.format('Mag (Gauss): %.2f %.2f %.2f', unpack(mag)),
+			string.format('RPY:  %.2f %.2f %.2f', unpack(rpy)),
+		}
+		print(table.concat(debug_str,'\n'))
+		--do_debug = true
     t_debug = t
   end
 	-----------------

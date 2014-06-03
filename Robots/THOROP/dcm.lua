@@ -29,11 +29,12 @@ shared_data.sensor.rfoot = vector.zeros(8)
 -- Raw inertial readings
 shared_data.sensor.accelerometer = vector.zeros(3)
 shared_data.sensor.gyro          = vector.zeros(3)
-shared_data.sensor.compass       = vector.zeros(3)
+shared_data.sensor.magnetometer  = vector.zeros(3)
 -- Filtered Roll/Pitch/Yaw
 shared_data.sensor.rpy           = vector.zeros(3)
 -- Battery level (in volts)
 shared_data.sensor.battery       = vector.zeros(1)
+shared_data.sensor.compass       = vector.zeros(3)
 
 --  Write to the motors
 shared_data.actuator = {}

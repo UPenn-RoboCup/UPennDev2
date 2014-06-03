@@ -29,8 +29,9 @@ else
 end
 -- Fallback on undefined metadata
 metadata = metadata or {}
+local debug_prefix = 'DCM '..metadata.name..' |'
 -- Debug
-print('DCM '..metadata.name, 'running')
+print(debug_prefix, 'running')
 -- Modules
 require'dcm'
 local lD = require'libDynamixel'
@@ -42,14 +43,14 @@ local bus = lD.new_bus(metadata.device)
 local m_ids = metadata.m_ids
 if not m_ids then
 	m_ids = bus:ping_probe()
-	print('DCM '..metadata.name..'| FOUND', unpack(m_ids))
+	print(debug_prefix, 'FOUND', unpack(m_ids))
 end
 local n_motors = #m_ids
 -- Verify that the m_ids are present
 for _,m_id in pairs(m_ids) do
 	--print('PING', m_id)
 	local p = bus:ping(m_id)
-	assert(p[1], string.format('DCM %s | ID %d not present.', metadata.name, m_id))
+	assert(p[1], string.format('%s ID %d not present.', debug_prefix, m_id))
 	--ptable(p[1])
 	usleep(5e3)
 end
@@ -77,8 +78,8 @@ local function radian_to_step (idx, radian)
 end
 -- Step to radian
 local function step_to_radian (idx, step)
-  assert(idx, 'NO MOTOR IDX')
-  assert(step, 'NO STEP '..idx)
+  assert(idx, debug_prefix..'NO MOTOR IDX')
+  assert(step, debug_prefix..'NO STEP '..idx)
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
 -- Cache the typical commands quickly
@@ -101,7 +102,7 @@ local function do_read()
   local rad
 	for _,s in ipairs(read_status) do
     if s.error>0 then
-      print('DCM | ', metadata.name, 'READ ERROR', s.error, s.id)
+      print(debug_prefix, 'READ ERROR', s.error, s.id)
     else
 		  read_pkt, read_j_id = p_parse(unpack(s.parameter)), m_to_j[s.id]
   		rad = step_to_radian(read_j_id, read_pkt)
@@ -142,7 +143,7 @@ local parent_cb = {
         status = tq_cmd(m_id, val, bus)
         if status[1] and status[1].error==0 then break end
         valid_tries = valid_tries + 1
-        assert(valid_tries<5, metadata.name..' CANNOT SET TORQUE! Motor_id '..m_id)
+        assert(valid_tries<5, debug_prefix..' CANNOT SET TORQUE! Motor_id '..m_id)
       end
       tq_enable[m_to_order[m_id]] = val
     end
@@ -184,7 +185,7 @@ local function do_parent (p_skt)
 			status = set(m_id, ptr[j_id], bus)
 			-- TODO: check the status, and repeat if necessary...
 		end
-		usleep(2e3)
+		usleep(1e3)
 	end
 end
 -- Initially, copy the command positions from the read positions
@@ -192,7 +193,7 @@ for _, m_id in ipairs(m_ids) do
 	local status, s = {}
 	while not s do status = p_read(m_id, bus); s = status[1] end
 	if not s.parameter then
-		print('DCM | ',metadata.name,'ERROR initial', s.error, s.id)
+		print(debug_prefix, 'ERROR initial', s.error, s.id)
 	else
 		local p = p_parse(unpack(s.parameter))
 		local j_id = m_to_j[s.id]
@@ -216,7 +217,7 @@ parent_ch.callback = do_parent
 local poller = si.wait_on_channels{parent_ch}
 
 -- Begin infinite loop
-print('DCM | Begin loop')
+print(debug_prefix, 'Begin loop')
 local t0 = get_time()
 local t_debug, t, t_diff = t0
 while running do
@@ -231,27 +232,24 @@ while running do
     --ptable(positions)
     t_debug = t
   end
-	---------------------
-	-- Parent Commands --
-	---------------------
-  local n = poller:poll(0)
-	if n==0 then
-		--------------------
-		-- Read Positions --
-		--------------------
-		do_read()
-		usleep(2e3)
+	-- If no parent commands, then perform a read/write cycle
+	if poller:poll(0)==0 then
 		---------------------
 		-- Write Positions --
 		---------------------
 		do_write()
-		usleep(2e3)
+		usleep(1e3)
+		--------------------
+		-- Read Positions --
+		--------------------
+		do_read()
+		usleep(1e3)
 	end
   -- Keep stable timing
   collectgarbage('step')
 end
 
 -- Exiting
-print("DCM | Cleaning up...")
+print(debug_prefix, "Cleaning up")
 bus:close()
 if IS_THREAD then parent_ch:send'done' end

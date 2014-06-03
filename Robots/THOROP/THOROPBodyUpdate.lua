@@ -149,126 +149,6 @@ for actuator, ptr in pairs(dcm.actuatorPtr) do
 	-- End anthropomorphic
 end
 
--- TODO: Set if this is the right approach...
-Body.set_rgrip_percent = function( percent, is_torque )
-  -- Convex combo
-  percent = math.min(math.max(percent,0),1)
-  --
-  local thumb = indexRGrip
-  local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
-  dcm.actuatorPtr.command_position[thumb] = radian
-  dcm.writePtr.command_position[thumb] = 1
-  -- Set the command_torque
-  dcm.gripperPtr.torque_mode[3] = 0
-  -- Set the command_torque to zero
-  dcm.gripperPtr.command_torque[3] = 0
-end
--- For torque control (no reading from the motor just yet)
-Body.set_rgrip_command_torque = function(val)
-  -- Set the command_torque
-  dcm.gripperPtr.command_torque[3] = -1*val
-  -- Set the command_torque
-  dcm.gripperPtr.torque_mode[3] = 1
-end
--- For torque control (no reading from the motor just yet)
-Body.get_rgrip_command_torque_step = function()
-  local val = dcm.gripperPtr.command_torque[3]
-  -- Not too large/small
-  val = util.procFunc(val,0,1023)
-  if val<0 then val=1024-val end
-  -- Return the value and the mode
-  return val, dcm.gripperPtr.torque_mode[3]
-end
-Body.set_rtrigger_percent = function( percent, is_torque )
-  local thumb = indexRGrip+1
-  percent = math.min(math.max(percent,0),1)
-  -- Convex combo
-  local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
-  dcm.actuatorPtr.command_position[thumb] = radian
-  dcm.writePtr.command_position[thumb] = 1
-  -- Set the command_torque to position
-  dcm.gripperPtr.torque_mode[4] = 0
-  -- Set the command_torque to zero
-  dcm.gripperPtr.command_torque[4] = 0
-end
--- For torque control (no reading from the motor just yet)
-Body.set_rtrigger_command_torque = function(val)
-  -- Set the command_torque
-  dcm.gripperPtr.command_torque[4] = val
-  -- Set the command_torque
-  dcm.gripperPtr.torque_mode[4] = 1
-end
--- For torque control (no reading from the motor just yet)
-Body.get_rtrigger_command_torque_step = function()
-  local val = dcm.gripperPtr.command_torque[4]
-  -- Not too large/small
-  val = util.procFunc(val,0,1023)
-  if val<0 then val=1024-val end
-  -- Return the value and the mode
-  return val, dcm.gripperPtr.torque_mode[4]
-end
-
--- left --
-
--- For position control
-Body.set_lgrip_percent = function( percent, is_torque )
-  local thumb = indexLGrip
-  percent = math.min(math.max(percent,0),1)
-  -- Convex combo
-  local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
-  dcm.actuatorPtr.command_position[thumb] = radian
-  dcm.writePtr.command_position[thumb] = 1
-  -- Set the command_torque to position
-  dcm.gripperPtr.torque_mode[1] = 0
-  -- Set the command_torque to zero
-  dcm.gripperPtr.command_torque[1] = 0
-end
--- For torque control (no reading from the motor just yet)
-Body.set_lgrip_command_torque = function(val)
-  -- Set the command_torque
-  dcm.gripperPtr.command_torque[1] = val
-  -- Set the command_torque
-  dcm.gripperPtr.torque_mode[1] = 1
-end
--- For torque control (no reading from the motor just yet)
-Body.get_lgrip_command_torque_step = function()
-  local val = dcm.gripperPtr.command_torque[1]
-  -- Not too large/small
-  val = util.procFunc(val,0,1023)
-  if val<0 then val=1024-val end
-  -- Return the value and the mode
-  return val, dcm.gripperPtr.torque_mode[1]
-end
-Body.set_ltrigger_percent = function( percent, is_torque )
-  local thumb = indexLGrip+1
-  percent = math.min(math.max(percent,0),1)
-  -- Convex combo
-  local radian = (1-percent)*servo.min_rad[thumb] + percent*servo.max_rad[thumb]
-  dcm.actuatorPtr.command_position[thumb] = radian
-  dcm.writePtr.command_position[thumb] = 1
-  -- Set the command_torque to position
-  dcm.gripperPtr.torque_mode[2] = 0
-  -- Set the command_torque to zero
-  dcm.gripperPtr.command_torque[2] = 0
-end
--- For torque control (no reading from the motor just yet)
-Body.set_ltrigger_command_torque = function(val)
---print('val!',val)
-  -- Set the command_torque
-  dcm.gripperPtr.command_torque[2] = -1*val
-  -- Set the command_torque
-  dcm.gripperPtr.torque_mode[2] = 1
-end
--- For torque control (no reading from the motor just yet)
-Body.get_ltrigger_command_torque_step = function()
-  local val = dcm.gripperPtr.command_torque[2]
-  -- Not too large/small
-  val = util.procFunc(val,0,1023)
-  if val<0 then val=1024-val end
-  -- Return the value and the mode
-  return val, dcm.gripperPtr.torque_mode[2]
-end
-
 -- Check the error from a desired transform tr
 -- to a forwards kinematics of in IK solution q
 local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
@@ -458,15 +338,15 @@ end
 --
 
 -- If receiving data from a chain
-local function chain_cb (c_skt)
+local function chain_cb(c_skt)
   for _, msg in ipairs(c_skt:recv_all()) do
     print('DCM '..c_skt.obj.id..' | ', msg)
   end
 end
-local function imu_cb ()
+local function imu_cb()
   print('imu cb')
 end
-local function body_cb (b_skt)
+local function body_cb(b_skt)
 	-- Externally call some sort of sync
   local msgs = b_skt:recv_all()
 	for _, msg in ipairs(msgs) do
@@ -477,7 +357,7 @@ local function body_cb (b_skt)
 
 end
 
-function Body.entry ()
+function Body.entry()
 	-- Reset the tables
 	dev_chs, dcm_chs, body_chs, body_poll = {}, {}, {}
 	-- Start all the threads

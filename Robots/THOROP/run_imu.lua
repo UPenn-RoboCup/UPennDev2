@@ -103,11 +103,7 @@ while running do
 	local parent_msg = parent_ch:receive(true)
 	if parent_msg then
 		if parent_msg=='exit' then
-			bus:close()
-			if IS_THREAD then parent_msg:send'done' end
-			return
-		else
-			process_parent(parent_msg)
+			running = false
 		end
 	end
 	collectgarbage('step')
@@ -115,3 +111,4 @@ end
 
 microstrain:ahrs_off()
 microstrain:close()
+if IS_THREAD then parent_msg:send'done' end

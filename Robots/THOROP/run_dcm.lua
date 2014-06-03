@@ -184,6 +184,7 @@ local function do_parent (p_skt)
 			status = set(m_id, ptr[j_id], bus)
 			-- TODO: check the status, and repeat if necessary...
 		end
+		usleep(2e3)
 	end
 end
 -- Initially, copy the command positions from the read positions
@@ -239,12 +240,12 @@ while running do
 		-- Read Positions --
 		--------------------
 		do_read()
-		unix.usleep(2e3)
+		usleep(2e3)
 		---------------------
 		-- Write Positions --
 		---------------------
 		do_write()
-		unix.usleep(2e3)
+		usleep(2e3)
 	end
   -- Keep stable timing
   collectgarbage('step')

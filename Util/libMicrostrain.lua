@@ -91,8 +91,8 @@ local function configure(self, do_permanent)
     0x01, 0x04, -- Set 4 messages
     0x04, 0x00, 0x01, -- Accel Scaled Message @ 100Hz
     0x05, 0x00, 0x01, -- Gyro Scaled Message @ 100Hz
-    0x06, 0x00, 0x01 -- Magnetometer Message @ 100Hz
-    0x0C, 0x00, 0x01 -- Euler Angles Message @ 100Hz
+    0x06, 0x00, 0x01, -- Magnetometer Message @ 100Hz
+    0x0C, 0x00, 0x01, -- Euler Angles Message @ 100Hz
   }
   local response = write_command(self.fd,stream_fmt)
   --[[

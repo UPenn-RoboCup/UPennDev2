@@ -18,6 +18,16 @@ else
 end
 -- Fallback on undefined metadata
 assert(metadata, 'IMU | No metadata found!')
+local running = true
+if not IS_THREAD then
+  signal = require'signal'
+  function shutdown ()
+    running = false
+  end
+  signal.signal("SIGINT", shutdown)
+  signal.signal("SIGTERM", shutdown)
+end
+
 -- Modules
 require'dcm'
 local lM = require'libMicrostrain'
@@ -53,16 +63,19 @@ end
 collectgarbage()
 -- Begin infinite loop
 local t0 = get_time()
-local t_debug = t0
-while true do
-	local t = get_time()
-	local t_diff = t-t0
+local t_debug, t, t_diff = t0
+while running do
+	t = get_time()
+	t_diff = t-t0
 	t0 = t
 	--------------------
 	-- Periodic Debug --
 	--------------------
   if t - t_debug>1 then
-	  print('IMU | t_diff', t_diff, 1 / t_diff)
+		local kb = collectgarbage('count')
+	  print(string.format('IMU | Uptime %.2f sec, Mem: %d kB', t-t0, kb))
+		print(string.format('Gyro (rad/s): %.2f %.2f %.2f', unpack(gyro)))
+		print(string.format('RPY:  %.2f %.2f %.2f', unpack(rpy)))
     t_debug = t
   end
 	-----------------

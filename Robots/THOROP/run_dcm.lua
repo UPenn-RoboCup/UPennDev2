@@ -52,7 +52,10 @@ for _,m_id in pairs(m_ids) do
 	--print('PING', m_id)
 	local p = bus:ping(m_id)
 	assert(p[1], string.format('%s ID %d not present.', debug_prefix, m_id))
-	--ptable(p[1])
+	-- Check the status return level
+	local s = lD.get_nx_status_return_level()
+	local srl = lD.byte_to_number[lD.nx_registers.status_return_level[2]](unpack(s[1].parameter))
+	print('SRL', srl)
 	usleep(5e3)
 end
 -- Cache some settings from the Config

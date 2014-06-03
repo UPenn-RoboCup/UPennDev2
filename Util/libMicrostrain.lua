@@ -135,6 +135,22 @@ local function ahrs_off(self)
   --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
 end
 
+local function read_ahrs(self)
+  local fd = self.fd
+  unix.select({fd})
+  local buf = unix.read(fd)
+  if not buf then return end
+  return buf
+  --[[
+  -- TODO: Check the size of the buffer, too
+  local _gyro = carray.float(buf:sub( 7,18):reverse())
+  local _rpy  = carray.float(buf:sub(21,32):reverse())
+  -- Save locally
+  rpy = {_rpy[2], _rpy[3], -_rpy[1]}
+  gyro = {_gyro[2],_gyro[3],-_gyro[1]}
+  --]]
+end
+
 ---------------------------
 -- Service multiple microstrains
 function libMicrostrain.new_microstrain(ttyname, ttybaud)
@@ -181,6 +197,7 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
     ahrs_on = ahrs_on,
     ahrs_off = ahrs_off,
     get_info = get_info,
+    read_ahrs = read_ahrs,
   }
 
 end

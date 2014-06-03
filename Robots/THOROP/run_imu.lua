@@ -44,19 +44,21 @@ microstrain:ahrs_on()
 local rpy_ptr   = dcm.sensorPtr.rpy
 local gyro_ptr  = dcm.sensorPtr.gyro
 local gyro, rpy = {}, {}
+local do_debug = false
 local function do_read ()
-	unix.select({microstrain.fd})
-	local buf = unix.read(microstrain.fd)
-	-- TODO: Check the size of the buffer, too
-	if buf then
-		local _gyro = carray.float(buf:sub( 7,18):reverse())
-		local _rpy  = carray.float(buf:sub(21,32):reverse())
-		-- Save locally
-		rpy = {_rpy[2], _rpy[3], -_rpy[1]}
-		gyro = {_gyro[2],_gyro[3],-_gyro[1]}
-		-- set to memory
-		dcm.set_sensor_rpy(rpy)
-		dcm.set_sensor_gyro(gyro)
+	-- Get the accelerometer, gyro, magnetometer, and euler angles
+	--local accel, gyro, mag, euler = microstrain:read()
+	local buf = microstrain:read()
+	-- set to memory
+	--dcm.set_sensor_rpy(rpy)
+	--dcm.set_sensor_gyro(gyro)
+	if do_debug then
+		do_debug = false
+		local hex = {}
+		for i,v in ipairs(buf:byte(1, -1)) do
+			table.insert(hex, string.format('0x%02X', v))
+		end
+		print(table.concat(hex,' '))
 	end
 end
 -- Collect garbage before starting
@@ -74,8 +76,9 @@ while running do
   if t - t_debug>1 then
 		local kb = collectgarbage('count')
 	  print(string.format('IMU | Uptime %.2f sec, Mem: %d kB', t-t0, kb))
-		print(string.format('Gyro (rad/s): %.2f %.2f %.2f', unpack(gyro)))
-		print(string.format('RPY:  %.2f %.2f %.2f', unpack(rpy)))
+		--print(string.format('Gyro (rad/s): %.2f %.2f %.2f', unpack(gyro)))
+		--print(string.format('RPY:  %.2f %.2f %.2f', unpack(rpy)))
+		do_debug = true
     t_debug = t
   end
 	-----------------

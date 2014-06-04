@@ -43,9 +43,9 @@ fsm.Head = {
   {'headTrack', 'timeout', 'headLookGoal'},
   {'headTrack', 'sweep', 'headSweep'},
   --
-  {'headLookGoal', 'timeout', 'headTrack'}
-  {'headLookGoal', 'lost', 'headSweep'}
-  {'headSweep', 'done', 'headTrack'}
+  {'headLookGoal', 'timeout', 'headTrack'},
+  {'headLookGoal', 'lost', 'headSweep'},
+  {'headSweep', 'done', 'headTrack'},
 }
 
 --[[
@@ -71,7 +71,7 @@ fsm.Body = {
   --
   {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
   {'bodyRobocupIdle', 'follow', 'bodyStepWaypoint'},
-  {'bodyRobocupIdle', 'stepplan2', 'bodyStepPlan2'}
+  {'bodyRobocupIdle', 'stepplan2', 'bodyStepPlan2'},
   --
   {'bodyRobocupFollow', 'done', 'bodyRobocupIdle'},
   --

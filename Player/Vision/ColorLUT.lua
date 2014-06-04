@@ -1,5 +1,9 @@
-module(..., package.seeall);
+--simplified from yida's code
+--SJ, 2014/2
 
+local ColorLUT={}
+
+dofile 'include.lua'
 local Config = require('Config')
 local carray = require('carray')
 local ImageProc = require('ImageProc')
@@ -7,53 +11,46 @@ require('vcm')
 
 LUT = {};
 
+--[[
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
   local Camera = require('Camera')
   webots = 1;
 end
+--]]
 
-enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
-
-function load_LUT()
-  vcm.set_camera_learned_new_lut(0)
-
+function ColorLUT.load_LUT()
   print('loading lut: '..Config.camera.lut_file);
   LUT.Detection = carray.new('c', 262144);
-  load_lutfile(vcm.get_camera_lut_filename(), LUT.Detection);
-  vcm.set_image_lut( carray.pointer(LUT.Detection));
+  --local fname = vcm.get_camera_lut_filename()
+  local fname = Config.camera.lut_file
 
-  --ADDED to prevent crashing with old camera config
-  if Config.camera.lut_file_obs == null then
-    Config.camera.lut_file_obs = Config.camera.lut_file;
-  end
-
-  -- Load the obstacle LUT as well
-  if enable_lut_for_obstacle == 1 then
-    print('loading obs lut: '..Config.camera.lut_file_obs);
-    LUT.Obstacle = carray.new('c', 262144);
-    load_lutfile(Config.camera.lut_file_obs, LUT.Obstacle);
-  end
-
-end
-
-function load_lutfile(fname, lut)
   if not string.find(fname,'.raw') then
     fname = fname..'.raw';
   end
+
   local cwd = unix.getcwd();
+  --[[
   if string.find(cwd, "WebotsController") then
     cwd = cwd.."/Run";
   end
+  --]]
   cwd = cwd.."/Data/";
+   
+
   local f = io.open(cwd..fname, "r");
   assert(f, "Could not open lut file");
   local s = f:read("*a");
   for i = 1,string.len(s) do
-    lut[i] = string.byte(s,i,i);
+    LUT.Detection[i] = string.byte(s,i,i);
   end
+
+
+  vcm.set_image_lut( carray.pointer(LUT.Detection));
+
 end
 
+--[[
 function save_lutfile(fname, lut)
   if not string.find(fname, '.raw') then
     fname = fname..'.raw';
@@ -70,6 +67,8 @@ function save_lutfile(fname, lut)
   end
   f:close();
 end
+
+
 
 function save_rgb(rgb)
   saveCount = saveCount + 1;
@@ -125,3 +124,6 @@ function learn_lut_from_mask()
   -- vcm.set_camera_reload_LUT(1)
   vcm.set_camera_learned_new_lut(1)
 end
+--]]
+
+return ColorLUT

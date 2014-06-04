@@ -1,8 +1,10 @@
 dofile'../include.lua'
 local signal = require'signal'
+local si = require'simple_ipc'
 local libLog = require'libLog'
 local Body = require(Config.dev.body)
 local logger = libLog.new'joint'
+local body_ch = si.new_publisher'body!'
 
 function shutdown()
   logger:stop()
@@ -33,6 +35,9 @@ while true do
     rpy = Body.get_rpy(),
     mag = Body.get_magnetometer(),
   }
+	-- Ask for ft readings
+	body_ch:send'ft'
+	-- Write the log
   logger:record(entry)
 	--
 	if t - t_debug>1 then

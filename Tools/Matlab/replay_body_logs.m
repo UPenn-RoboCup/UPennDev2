@@ -1,6 +1,4 @@
-%% Access to JPEG and msgpack mex files
-addpath( genpath('.') );
-
+clear all;
 %% Joint angle helpers
 jointNames = { ...
 	'Neck','Head', ...
@@ -17,18 +15,20 @@ jointNames = { ...
 };
 
 joint = 'AnkleL';
-idx = 1;
+joint_idx = 1;
 for i=1:numel(jointNames)
     str = jointNames{i};
     if strncmp(str, joint, 4)==1
-        idx = i;
+        joint_idx = i;
     end
 end
+clear str;
 
 %% Aquire the body joint angles
 fid = fopen('Logs/joint_m_06.04.2014.13.54.20.log');
 msg = fread(fid,inf,'*uchar');
 fclose(fid);
+clear fid;
 jobjs = msgpack('unpacker', msg);
 clear msg;
 
@@ -46,22 +46,26 @@ acc = zeros(numel(jobjs), numel(jobjs{1}.acc));
 rpy = zeros(numel(jobjs), numel(jobjs{1}.rpy));
 for i=1:numel(jobjs)
     jobj = jobjs{i};
-    ts(i)    = jobjs{i}.t - t0;
-    pos(i,:) = jobjs{i}.p;
-    cmd(i,:) = jobjs{i}.cp;
-    ft_l(i,:) = jobjs{i}.ft_l;
-    ft_r(i,:) = jobjs{i}.ft_r;
-    gyro(i,:) = jobjs{i}.gyro;
-    acc(i,:) = jobjs{i}.acc;
-    rpy(i,:) = jobjs{i}.rpy;
+    ts(i)    = jobj.t - t0;
+    pos(i,:) = jobj.p;
+    cmd(i,:) = jobj.cp;
+    ft_l(i,:) = jobj.ft_l;
+    ft_r(i,:) = jobj.ft_r;
+    gyro(i,:) = jobj.gyro;
+    acc(i,:) = jobj.acc;
+    rpy(i,:) = jobj.rpy;
 end
-
+clear jobj
+%% Save
+% clear jobjs;
+%save('Logs/joint_06.04.2014.13.54.20.mat')
 %% Plot a joint
+%load('Logs/joint_06.04.2014.13.54.20.mat')
 figure(1);
-h_p = plot( ts, pos(:, idx), ...
-    ts, cmd(:, idx) ...
+plot( ts, pos(:, joint_idx), ...
+    ts, cmd(:, joint_idx) ...
     );
-h_l = legend(h_p, 'Position', 'Command');
+legend('Position', 'Command');
 title('Command vs. Position');
 
 figure(2);

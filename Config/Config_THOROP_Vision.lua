@@ -1,4 +1,3 @@
-
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
@@ -71,28 +70,6 @@ camera.lut_file = '308_wide_night.raw'
 camera.lut_file = '308_narrow_night.raw'
 
 camera.jpeg_quality = 60
-
---[[
--- Forehead (wide angle)
-Config.camera.forehead = {}
-Config.camera.forehead.device = '/dev/video1'
-Config.camera.forehead.format = 'yuyv'
---Config.camera.forehead.format = 'mjpeg'
---Config.camera.forehead.resolution = {160,120}
-Config.camera.forehead.resolution = {320,240}
-Config.camera.forehead.fps = 10
---]]
-
---[[
-Config.camera.forehead2 = {}
-Config.camera.forehead2.device = '/dev/video2'
-Config.camera.forehead2.format = 'yuyv'
---Config.camera.forehead2.format = 'mjpeg'
-Config.camera.forehead2.resolution = {320,240}
-Config.camera.forehead2.fps = 5
---]]
-
-
 
 local vision = {}
 
@@ -218,9 +195,6 @@ if WEBOTS_VISION then
   vision.scaleB = 2
   camera.lut_file = 'lutWebots74.raw'
 end
-
-
-
 
 
 -- Associate with the table

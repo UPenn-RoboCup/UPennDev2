@@ -1,4 +1,4 @@
-function colortable(action, varargin)
+function thor_colortable(action, varargin)
 %
 % main function for the colortable/lut training gui
 %
@@ -343,7 +343,8 @@ return;
       DATA.iImage = min(max(DATA.iImage, 1), nMontage);
 
       % the yuv color data for the current image
-      DATA.yuv = DATA.montage(:, :, :, DATA.iImage);
+      %DATA.yuv = DATA.montage(:, :, :, DATA.iImage);
+      DATA.yuv = rgb2ycbcr(DATA.montage(:, :, :, DATA.iImage));
       % convert the yuyv data into the index values
       % these are the indices of the LUT 
       DATA.cindex = yuv2index(DATA.yuv, COLORTABLE.size);
@@ -531,7 +532,8 @@ return;
       % make sure it has a yuyvMontage
       if (isfield(s, 'yuyvMontage'))
         % convert the yuyv montage to yuv data
-        yuvMontage = yuyv2yuv(s.yuyvMontage);
+        %yuvMontage = yuyv2yuv(s.yuyvMontage);
+        yuvMontage = s.yuyvMontage;
         
         % check the image size
         sz = size(yuvMontage);

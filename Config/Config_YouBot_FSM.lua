@@ -1,19 +1,19 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
-Config.fsm = {}
+local fsm = {}
 -- Update rate in Hz
-Config.fsm.update_rate = 100
+fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
-Config.fsm.enabled = {
+fsm.enabled = {
   'Arm',
 }
 
 -- Timeouts are generally not needed, but in planning places, it is
 -- Less clutter if not transitions here. But always program them in the state
 -- For instance, lineIter from libPlan should *always* have a timeout
-Config.fsm.Arm = {
+fsm.Arm = {
   --{'armIdle', 'timeout', 'armIdle'},
   {'armIdle', 'init', 'armInit'},
   --
@@ -43,15 +43,15 @@ Config.fsm.Arm = {
 }
 
 -- State specific tuning params
-Config.fsm.armInit = {
+fsm.armInit = {
   qLArm = vector.new{0, -55, 110, 55, 0} * DEG_TO_RAD
 }
 -- This state machine has stance and init with same goal
-Config.fsm.armStance = {
-  qLArm = Config.fsm.armInit.qLArm
+fsm.armStance = {
+  qLArm = fsm.armInit.qLArm
 }
 -- Constantly look at the wire, lining it up to be centered and vertical
-Config.fsm.armWireLook = {
+fsm.armWireLook = {
   lost_timeout = 2.0,
   thresh_yaw = 3 * DEG_TO_RAD,
   thresh_roll = 3 * DEG_TO_RAD,
@@ -59,7 +59,7 @@ Config.fsm.armWireLook = {
   yaw_rate = 0.500,
 }
 --
-Config.fsm.armWireApproach = {
+fsm.armWireApproach = {
   lost_timeout = 1.0,
   thresh_yaw = 5 * DEG_TO_RAD,
   thresh_roll = 6 * DEG_TO_RAD,
@@ -69,7 +69,7 @@ Config.fsm.armWireApproach = {
   wire_close = .16--0.075, --closest
 }
 
-Config.fsm.Body = {
+fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   {'bodyIdle', 'timeout', 'bodyIdle'},
   --
@@ -86,8 +86,10 @@ Config.fsm.Body = {
   {'bodyGrab', 'done', 'bodyInit'}, -- Go to the initial pose
 }
 
+Config.fsm = fsm
+
 -- Add all FSM directories that are in Player
-for _,sm in ipairs(Config.fsm.enabled) do
+for _,sm in ipairs(fsm.enabled) do
   local pname = {HOME, '/Player/', sm, 'FSM', '/?.lua;', package.path}
   package.path = table.concat(pname)
 end

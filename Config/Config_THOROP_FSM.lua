@@ -1,22 +1,22 @@
 assert(Config, 'Need a pre-existing Config table!')
 
-Config.fsm = {}
+local fsm = {}
 
 -- Do we disable FSMs?
-Config.fsm.disabled = false
+fsm.disabled = false
 
 -- Update rate in Hz
-Config.fsm.update_rate = 100
+fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
-Config.fsm.enabled = {
+fsm.enabled = {
 --'Arm',
 --'Body',
 --'Lidar',
 'Motion'
 }
 
-Config.fsm.Arm = {
+fsm.Arm = {
   {'armIdle', 'timeout', 'armIdle'},
   --
   {'armIdle', 'init', 'armInit'},
@@ -24,7 +24,7 @@ Config.fsm.Arm = {
   --{'armInit', 'teleop', 'armTeleop'},
 }
 
-Config.fsm.Body = {
+fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   {'bodyIdle', 'drive', 'bodyDrive'},
   {'bodyIdle', 'follow', 'bodyStepWaypoint'},
@@ -38,12 +38,12 @@ Config.fsm.Body = {
   {'bodyStepPlan2', 'done', 'bodyIdle'},
 }
 assert(Config.dev.walk, 'Need a walk engine specification')
-Config.fsm.Motion = {
+fsm.Motion = {
   {'motionIdle', 'timeout', 'motionIdle'},
   {'motionIdle', 'stand', 'motionInit'},
   {'motionIdle', 'drive', 'motionDrive'},
   {'motionIdle', 'bias', 'motionBiasInit'},
-  --  
+  --
   {'motionInit', 'done', 'motionStance'},
   --
   {'motionIdle', 'bias', 'motionBiasInit'},
@@ -58,6 +58,45 @@ Config.fsm.Motion = {
   --
   {Config.dev.walk, 'done', 'motionStance'},
 }
+
+fsm.dqNeckLimit = {90*DEG_TO_RAD,90*DEG_TO_RAD}
+
+fsm.headScan = {
+  pitch0 = 30*DEG_TO_RAD,
+  pitchMag = 20*DEG_TO_RAD,
+  yawMag = 60*DEG_TO_RAD,
+  tScan = 8, --sec
+}
+
+--HeadReady
+fsm.headReady = {
+  dist = 3
+}
+
+--HeadTrack
+fsm.headTrack = {}
+fsm.headTrack.tLost = 2
+fsm.headTrack.timeout = 3
+
+--HeadLookGoal: Look up to see the goal
+fsm.headLookGoal = {
+  yawSweep = 50*DEG_TO_RAD,
+  tScan = 1.0,
+  minDist = 0.40,
+}
+
+--HeadLookGoal: Look up to see the goal
+fsm.headLookGoal = {}
+fsm.headLookGoal.yawSweep = 50*DEG_TO_RAD
+fsm.headLookGoal.tScan = 1.0
+fsm.headLookGoal.minDist = 0.40
+
+--HeadSweep: Look around to find the goal
+fsm.headSweep = {}
+fsm.headSweep.tScan = 1.0
+fsm.headSweep.tWait = 0.25
+
+Config.fsm = fsm
 
 -- Add all FSM directories that are in Player
 for _,sm in ipairs(Config.fsm.enabled) do

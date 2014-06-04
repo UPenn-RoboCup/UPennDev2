@@ -185,6 +185,8 @@ local function do_parent (p_skt)
   local cmds = p_skt:recv_all()
 	if not cmds then return end
 	for i, cmd in ipairs(cmds) do
+		-- Sleep, since a write just performed
+		usleep(1e6 * t_sleep)
 		-- Check if there is something special
 		local f = parent_cb[cmd]
 		if f then return f() end
@@ -199,7 +201,6 @@ local function do_parent (p_skt)
 			status = set(m_id, ptr[j_id], bus)
 			-- TODO: check the status, and repeat if necessary...
 		end
-		usleep(1e3)
 	end
 end
 -- Initially, copy the command positions from the read positions
@@ -245,10 +246,10 @@ while running do
 	count = count + 1
 	t_last = t
 	t = get_time()
-	-- If no parent commands, then perform a read/write cycle
+	-- Write Command positions
+	do_write()
+	-- If no parent commands, then perform a read
 	if poller:poll(0)==0 then
-		-- Write Positions
-		do_write()
 		if ENABLE_READ then
 			-- Sleep a bit
 			t_diff = get_time() - t

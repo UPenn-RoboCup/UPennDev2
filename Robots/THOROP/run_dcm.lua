@@ -42,24 +42,17 @@ local running = true
 -- Corresponding Motor ids
 local bus = lD.new_bus(metadata.device)
 local m_ids = metadata.m_ids
-if not m_ids then
+--if not m_ids then
+	print(debug_prefix, 'Finding IDs...')
 	m_ids = bus:ping_probe()
 	print(debug_prefix, 'FOUND', unpack(m_ids))
-end
+--end
 local n_motors = #m_ids
 -- Verify that the m_ids are present
+print(debug_prefix, 'Checking IDs...')
 for _,m_id in pairs(m_ids) do
-	--print('PING', m_id)
 	local p = bus:ping(m_id)
 	assert(p[1], string.format('%s ID %d not present.', debug_prefix, m_id))
-	-- Check the status return level
-	local s = lD.get_nx_return_delay_time(m_id, bus)
-	local rdt = lD.byte_to_number[lD.nx_registers.return_delay_time[2]](unpack(s[1].parameter))
-	if rdt~=0 then
-		usleep(5e3)
-		lD.set_nx_return_delay_time(m_id, 0, bus)
-	end
-	print('Return delay', rdt, m_id)
 	usleep(5e3)
 end
 -- Cache some settings from the Config

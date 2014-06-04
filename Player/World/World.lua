@@ -1,537 +1,374 @@
-local PoseFilter = require('PoseFilter');
-local Filter2D = require('Filter2D');
-local Body = require('Body');
-local vector = require('vector');
-local util = require('util');
-require('wcm')
-require('vcm');
-require('gcm');
-require('mcm');
+local Body = require'Body'
+local vector = require'vector'
+local util = require'util'
+local ballFilter = require'ballFilter'
+local poseFilter = require'poseFilter'
+
+require'wcm'
+require'vcm'
+require'gcm'
+require'mcm'
 
 local world = {}
 
--- intialize sound localization if needed
-local useSoundLocalization = Config.world.enable_sound_localization or 0;
-if (useSoundLocalization > 0) then
-  local SoundFilter = require('SoundFilter');
-end
 
 --SJ: Velocity filter is always on
 --We can toggle whether to use velocity to update ball position estimate
---In Filter2D.lua
 
-mod_angle = util.mod_angle;
+mod_angle = util.mod_angle
 
-local Velocity = require('Velocity');	
+-- local Velocity = require('Velocity')  
 
 --Are we using same colored goals?
-use_same_colored_goal = Config.world.use_same_colored_goal or 0;
+use_same_colored_goal = Config.world.use_same_colored_goal or 0
 --Use ground truth pose and ball information for webots?
-use_gps_only = Config.use_gps_only or 0;
-gps_enable = Body.gps_enable or 0;
+use_gps_only = Config.use_gps_only or 0
+gps_enable = Body.gps_enable or 0
 
---Use team vision information when we cannot find the ball ourselves
-tVisionBall = 0;
-use_team_ball = Config.team.use_team_ball or 0;
-team_ball_timeout = Config.team.team_ball_timeout or 0;
-team_ball_threshold = Config.team.team_ball_threshold or 0;
 
 
 --For NSL, eye LED is not allowed during match
-led_on = Config.led_on or 1; --Default is ON
+led_on = Config.led_on or 1 --Default is ON
 
-ballFilter = Filter2D.new();
-ball = {};
-ball.t = 0;  --Detection time
-ball.x = 1.0;
-ball.y = 0;
-ball.vx = 0;
-ball.vy = 0;
-ball.p = 0; 
+-- ball = {}
+-- ball.t = 0  --Detection time
+-- ball.x = 1.0
+-- ball.y = 0
+-- ball.vx = 0
+-- ball.vy = 0
+-- ball.p = 0 
 
-pose = {};
-pose.x = 0;
-pose.y = 0;
-pose.a = 0;
-pose.tGoal = 0; --Goal detection time
+pose = {}
+pose.x = 0
+pose.y = 0
+pose.a = 0
 
-uOdometry0 = vector.new({0, 0, 0});
-count = 0;
-cResample = Config.world.cResample; 
+uOdometry0 = vector.new({0, 0, 0})
+count = 0
+cResample = Config.world.cResample 
 
-playerID = Config.game.playerID;
 
-odomScale = Config.walk.odomScale or Config.world.odomScale;
-wcm.set_robot_odomScale(odomScale);
+odomScale = Config.walk.odomScale or Config.world.odomScale
 
 --SJ: they are for IMU based navigation
-imuYaw = Config.world.imuYaw or 0;
-yaw0 =0;
+imuYaw = Config.world.imuYaw or 0
+yaw0 = 0
 
 --Track gcm state
-gameState = 0;
+gameState = 0
+
+-- Debugging info
+local debug_str
+local function add_debug_msg(str)
+  debug_str = debug_str..str
+end
+
 
 function world.init_particles()
-  if use_same_colored_goal>0 then
-    goalDefend= world.get_goal_defend();
-    PoseFilter.initialize_unified(
-      vector.new({goalDefend[1]/2, -2,  math.pi/2}),
-      vector.new({goalDefend[1]/2,  2, -math.pi/2}));
-    if (useSoundLocalization > 0) then
-      SoundFilter.reset();
-    end
-  else
-    PoseFilter.initialize(nil, nil);  
-  end
+  -- if wcm.get_robot_role()==1 then  -- attacker
+  --   poseFilter.initialize(nil, nil)  
+  -- elseif wcm.get_robot_role()==2  then-- defender
+  --   poseFilter.initialize({postFilter.postYellow[1][1], 0, math.pi})
+  -- end
+  
+  poseFilter.initialize_unified(nil, nil)
+  --TODO: else unknown
 end
 
 function world.entry()
-  count = 0;
-  world.init_particles();
-  Velocity.entry();
+  count = 0
+  world.init_particles()
+  -- Velocity.entry()
 end
 
-function world.init_particles_manual_placement()
-  if gcm.get_team_role() == 0 then
-  -- goalie initialized to different place
-    goalDefend= world.get_goal_defend();
-    util.ptable(goalDefend);
-    dp = vector.new({0.04,0.04,math.pi/8});
-    if goalDefend[1] > 0 then
-      PoseFilter.initialize(vector.new({goalDefend[1],0,math.pi}), dp);
-    else
-      PoseFilter.initialize(vector.new({goalDefend[1],0,0}), dp);
-    end
-  else
-    PoseFilter.initialize_manual_placement();
-    if (useSoundLocalization > 0) then
-      SoundFilter.reset();
-    end
-  end
-end
+-- -- Not in need for adult size
+-- function world.init_particles_manual_placement()
+--   if gcm.get_team_role() == 0 then
+--   -- goalie initialized to different place
+--     goalDefend= world.get_goal_defend()
+--     util.ptable(goalDefend)
+--     dp = vector.new({0.04,0.04,math.pi/8})
+--     if goalDefend[1] > 0 then
+--       poseFilter.initialize(vector.new({goalDefend[1],0,math.pi}), dp)
+--     else
+--       poseFilter.initialize(vector.new({goalDefend[1],0,0}), dp)
+--     end
+--   else
+--     poseFilter.initialize_manual_placement()
+--     if (useSoundLocalization > 0) then
+--       SoundFilter.reset()
+--     end
+--   end
+-- end
 
-function world.allLessThanTenth(table)
-  for k,v in pairs(table) do
-    if v >= .1 then
-      return false
-    end
-  end
-  return true
-end
-
-function world.allZeros(table)
-  for k,v in pairs(table) do
-    if v~=0 then
-      return false
-    end
-  end
-  return true
-end
+-- 
+-- function world.allLessThanTenth(table)
+--   for k,v in pairs(table) do
+--     if v >= .1 then
+--       return false
+--     end
+--   end
+--   return true
+-- end
+-- 
+-- function world.allZeros(table)
+--   for k,v in pairs(table) do
+--     if v~=0 then
+--       return false
+--     end
+--   end
+--   return true
+-- end
 
 
 function world.update_odometry()
+  debug_str = ''
 
-  odomScale = wcm.get_robot_odomScale();
-  count = count + 1;
-  uOdometry, uOdometry0 = mcm.get_odometry(uOdometry0);
+  count = count + 1
+  uOdometry = Body.get_odometry()
 
-  uOdometry[1] = odomScale[1]*uOdometry[1];
-  uOdometry[2] = odomScale[2]*uOdometry[2];
-  uOdometry[3] = odomScale[3]*uOdometry[3];
+  uOdometry[1] = odomScale[1]*uOdometry[1]
+  uOdometry[2] = odomScale[2]*uOdometry[2]
+  uOdometry[3] = odomScale[3]*uOdometry[3]*Body.DEG_TO_RAD
+
+  add_debug_msg(string.format('Odom_dx: %.2f  Odom_dy: %.2f Odom_da: %.2f\n', 
+    uOdometry[1], uOdometry[2], uOdometry[3]))
 
   --Gyro integration based IMU
   if imuYaw==1 then
-    yaw = Body.get_sensor_imuAngle(3);
-    uOdometry[3] = yaw-yaw0;
-    yaw0 = yaw;
+    yaw = Body.get_sensor_imuAngle(3)
+    uOdometry[3] = yaw-yaw0
+    yaw0 = yaw
     --print("Body yaw:",yaw*180/math.pi, " Pose yaw ",pose.a*180/math.pi)
   end
 
-  ballFilter:odometry(uOdometry[1], uOdometry[2], uOdometry[3]);
-  PoseFilter.odometry(uOdometry[1], uOdometry[2], uOdometry[3]);
-  if (useSoundLocalization > 0) then
-    SoundFilter.odometry(uOdometry[1], uOdometry[2], uOdometry[3]);
-    SoundFilter.update();
-  end
+  ballFilter.odometry(uOdometry[1], uOdometry[2], uOdometry[3])
+  poseFilter.odometry(uOdometry[1], uOdometry[2], uOdometry[3])
 end
 
 
 function world.update_pos()
   -- update localization without vision (for odometry testing)
   if count % cResample == 0 then
-    PoseFilter.resample();
+    poseFilter.resample()
   end
 
-  pose.x,pose.y,pose.a = PoseFilter.get_pose();
-  update_shm();
+  pose.x,pose.y,pose.a = poseFilter.get_pose()
+  update_shm()
 end
 
-
-function world.update_vision()
-
+-- TODO: vcm or called through reference?
+function world.update_vision(ball, goal, line)
+  debug_str = ''
+  
   --update ground truth
 	if gps_enable>0 then
-    gps_pose0=Body.get_sensor_gps();
+    gps_pose0 = Body.get_sensor_gps()
     --GPS is attached at torso, so we should discount body offset
-    uBodyOffset = mcm.get_walk_bodyOffset();
-    gps_pose = util.pose_global(-uBodyOffset,gps_pose0);
+    uBodyOffset = mcm.get_walk_bodyOffset()
+    gps_pose = util.pose_global(-uBodyOffset,gps_pose0)
 
     gps_pose_xya={}
-    gps_pose_xya.x=gps_pose[1];
-    gps_pose_xya.y=gps_pose[2];
-    gps_pose_xya.a=gps_pose[3];
-    gps_attackBearing = world.get_attack_bearing_pose(gps_pose_xya);
+    gps_pose_xya.x=gps_pose[1]
+    gps_pose_xya.y=gps_pose[2]
+    gps_pose_xya.a=gps_pose[3]
+    gps_attackBearing = world.get_attack_bearing_pose(gps_pose_xya)
 
-    wcm.set_robot_gpspose(gps_pose);
-    wcm.set_robot_gps_attackbearing(gps_attackBearing);
+    wcm.set_robot_pose_gps(gps_pose)
+    wcm.set_robot_gps_attackbearing(gps_attackBearing)
   else
-    wcm.set_robot_gpspose({pose.x,pose.y,pose.a});
-    wcm.set_robot_gps_attackbearing(world.get_attack_bearing());
+    wcm.set_robot_pose_gps({pose.x,pose.y,pose.a})
+    -- wcm.set_robot_gps_attackbearing(world.get_attack_bearing())
   end
 
-  --We may use ground truth data only (for behavior testing)
   if use_gps_only>0 then
     --Use GPS pose instead of using particle filter
-    pose.x,pose.y,pose.a=gps_pose[1],gps_pose[2],gps_pose[3];
+    pose.x,pose.y,pose.a=gps_pose[1],gps_pose[2],gps_pose[3]
     --Use GPS ball pose instead of ball filter
-    ballGlobal=wcm.get_robot_gps_ball();    
-    ballLocal = util.pose_relative(ballGlobal,gps_pose);
-    ball.x, ball.y = ballLocal[1],ballLocal[2];
-    wcm.set_ball_v_inf({ball.x,ball.y}); --for bodyAnticipate
+    ballGlobal=wcm.get_robot_gps_ball()    
+    ballLocal = util.pose_relative(ballGlobal,gps_pose)
+    ball.x, ball.y = ballLocal[1],ballLocal[2]
+    wcm.set_ball_v_inf({ball.x,ball.y}) --for bodyAnticipate
 
-    ball_gamma = 0.3;
+    ball_gamma = 0.3
     if vcm.get_ball_detect()==1 then
-      ball.p = (1-ball_gamma)*ball.p+ball_gamma;
-      ball.t = Body.get_time();
+      ball.p = (1-ball_gamma)*ball.p+ball_gamma
+      ball.t = Body.get_time()
       -- Update the velocity
-      Velocity.update(ball.x,ball.y);
-      ball.vx, ball.vy, dodge  = Velocity.getVelocity();
+      Velocity.update(ball.x,ball.y)
+      ball.vx, ball.vy, dodge  = Velocity.getVelocity()
     else
-      ball.p = (1-ball_gamma)*ball.p;
-      Velocity.update_noball();--notify that ball is missing
+      ball.p = (1-ball_gamma)*ball.p
+      Velocity.update_noball()--notify that ball is missing
     end
-    update_shm();
+    update_shm()
 
-    return;
+    return
   end
 
   -- resample?
+  WEBOTS = true
+  WEBOTS = false
   if count % cResample == 0 then
-    PoseFilter.resample();
-    PoseFilter.add_noise();
+    poseFilter.resample()
+    if not WEBOTS then
+      poseFilter.addNoise()
+    end
   end
 
   -- Reset heading if robot is down
-  if (mcm.get_walk_isFallDown() == 1) then
-    PoseFilter.reset_heading();
+  -- if (mcm.get_walk_isFallDown() == 1) then
+  --   poseFilter.reset_heading()
+  -- 
+  --   if (useSoundLocalization > 0) then
+  --     SoundFilter.reset()
+  --   end
+  -- end
 
-    if (useSoundLocalization > 0) then
-      SoundFilter.reset();
-    end
-  end
-
-  gameState = gcm.get_game_state();
-  if (gameState == 0) then
-    init_particles();
-
-  end
-
-  --If robot was in penalty and game switches to set, initialize particles
-  --for manual placement
-  if wcm.get_robot_penalty() == 1 and gcm.get_game_state() == 2 then
-    init_particles_manual_placement()
-  elseif gcm.in_penalty() then
-    init_particles()
-  end
-
-  -- Penalized?
-  if gcm.in_penalty() then
-    wcm.set_robot_penalty(1);
-  else
-    wcm.set_robot_penalty(0);
-  end
-
-  webots = Config.webots
-  if not webots or webots==0 then
-    fsrRight = Body.get_sensor_fsrRight()
-    fsrLeft = Body.get_sensor_fsrLeft()
-
-    --reset particle to face opposite goal when getting manual placement on set
-    if gcm.get_game_state() ==2 then
-      if (not allZeros(fsrRight)) and (not allZeros(fsrLeft)) then --Do not do this if sensor is broken
-        if allLessThanTenth(fsrRight) and allLessThanTenth(fsrLeft) then
-          init_particles_manual_placement()
-        end
-      end
-    end
-
-  end
     
   -- ball
-  ball_gamma = 0.3;
-  if (vcm.get_ball_detect() == 1) then
-    tVisionBall = Body.get_time();
-    ball.t = Body.get_time();
-    ball.p = (1-ball_gamma)*ball.p+ball_gamma;
-    local v = vcm.get_ball_v();
-    local dr = vcm.get_ball_dr();
-    local da = vcm.get_ball_da();
-    ballFilter:observation_xy(v[1], v[2], dr, da);
-    --Green insted of red for indicating
-    --As OP tend to detect red eye as balls
-    ball_led={0,1,0}; 
+  ball_gamma = 0.3
+  if (ball.detect == 1) then
+    -- ball.t = Body.get_time()
+    -- TODO: use ball.t or Body.get_time()??
+    ballFilter.observation_xy(ball.v[1],ball.v[2],ball.dr,ball.da, ball.t)
+    
+    -- ball.p = (1-ball_gamma)*ball.p+ball_gamma
 
     -- Update the velocity
---    Velocity.update(v[1],v[2]);
+--    Velocity.update(v[1],v[2])
+
     -- use centroid info only
-    ball_v_inf = wcm.get_ball_v_inf();
-    Velocity.update(ball_v_inf[1],ball_v_inf[2]);
-
-    ball.vx, ball.vy, dodge  = Velocity.getVelocity();
+    -- ball_v_inf = wcm.get_ball_v_inf()
+    -- Velocity.update(ball_v_inf[1],ball_v_inf[2])
+    -- ball.vx, ball.vy, dodge  = Velocity.getVelocity()
   else
-    ball.p = (1-ball_gamma)*ball.p;
-    Velocity.update_noball();--notify that ball is missing
-    ball_led={0,0,0};
+    -- ball.p = (1-ball_gamma)*ball.p
+    -- Velocity.update_noball()--notify that ball is missing
   end
-  -- TODO: handle goal detections more generically
+
+
+  if goal.detect == 1 then
+    --TODO:
+    wcm.set_goal_t(goal.t)
+    wcm.set_goal_t(Body.get_time())
+
+    if (goal.type == 0) then
+    	add_debug_msg('Single unknown post...\n')
+      poseFilter.post_unknown(goal.v)
+    elseif(goal.type == 1) then
+    	add_debug_msg('Left post...\n')
+      poseFilter.post_left(goal.v)
+    elseif(goal.type == 2) then
+    	add_debug_msg('Right post...\n')
+      poseFilter.post_right(goal.v)
+    elseif(goal.type == 3) then
+    	add_debug_msg('Both posts...\n')
+      poseFilter.post_both(goal.v)
+    end
   
-  if vcm.get_goal_detect() == 1 then
-    pose.tGoal = Body.get_time();
-    local color = vcm.get_goal_color();
-    local goalType = vcm.get_goal_type();
-    local v1 = vcm.get_goal_v1();
-    local v2 = vcm.get_goal_v2();
-    local v = {v1, v2};
-
-    if (use_same_colored_goal > 0) then
-      -- resolve attacking/defending goal using the goalie sound localization
-      --  0 - unknown
-      -- -1 - defending
-      -- +1 - attacking
-      local attackingOrDefending = 0;
-      if (useSoundLocalization > 0) then
-        attackingOrDefending = SoundFilter.resolve_goal_detection(goalType, v); 
-      end
-      
-      if (attackingOrDefending == 1) then
-        -- attacking goal
-        if (gcm.get_team_color() == 1) then
-          -- we are the red team, shooting on cyan goal
-          if (goalType == 0) then
-            PoseFilter.post_cyan_unknown(v);
-          elseif(goalType == 1) then
-            PoseFilter.post_cyan_left(v);
-          elseif(goalType == 2) then
-            PoseFilter.post_cyan_right(v);
-          elseif(goalType == 3) then
-            PoseFilter.goal_cyan(v);
-          end
-          -- indicator
-          Body.set_indicator_goal({0,0,1});
-        else
-          -- we are the blue team, shooting on yellow goal
-          if (goalType == 0) then
-            PoseFilter.post_yellow_unknown(v);
-          elseif(goalType == 1) then
-            PoseFilter.post_yellow_left(v);
-          elseif(goalType == 2) then
-            PoseFilter.post_yellow_right(v);
-          elseif(goalType == 3) then
-            PoseFilter.goal_yellow(v);
-          end
-          -- indicator
-          Body.set_indicator_goal({1,1,0});
-        end
-      
-      elseif (attackingOrDefending == -1) then
-        -- defending goal
-        if (gcm.get_team_color() == 1) then
-          -- we are the red team, defending the yellow goal
-          if (goalType == 0) then
-            PoseFilter.post_yellow_unknown(v);
-          elseif(goalType == 1) then
-            PoseFilter.post_yellow_left(v);
-          elseif(goalType == 2) then
-            PoseFilter.post_yellow_right(v);
-          elseif(goalType == 3) then
-            PoseFilter.goal_yellow(v);
-          end
-          -- indicator
-          Body.set_indicator_goal({1,1,0});
-        else
-          if (goalType == 0) then
-            PoseFilter.post_cyan_unknown(v);
-          elseif(goalType == 1) then
-            PoseFilter.post_cyan_left(v);
-          elseif(goalType == 2) then
-            PoseFilter.post_cyan_right(v);
-          elseif(goalType == 3) then
-            PoseFilter.goal_cyan(v);
-          end
-          -- indicator
-          Body.set_indicator_goal({0,0,1});
-        end
-
-      else
-        -- we dont know which goal it is
-        if (goalType == 0) then
-          PoseFilter.post_unified_unknown(v);
-          Body.set_indicator_goal({1,1,0});
-        elseif(goalType == 1) then
-          PoseFilter.post_unified_left(v);
-          Body.set_indicator_goal({1,1,0});
-        elseif(goalType == 2) then
-          PoseFilter.post_unified_right(v);
-          Body.set_indicator_goal({1,1,0});
-        elseif(goalType == 3) then
-          PoseFilter.goal_unified(v);
-          Body.set_indicator_goal({0,0,1});
-        end
-      end
-
-    else
-      --Goal observation with colors
-      if color == Config.color.yellow then
-        if (goalType == 0) then
-          PoseFilter.post_yellow_unknown(v);
-        elseif(goalType == 1) then
-          PoseFilter.post_yellow_left(v);
-        elseif(goalType == 2) then
-          PoseFilter.post_yellow_right(v);
-        elseif(goalType == 3) then
-          PoseFilter.goal_yellow(v);
-        end
-        -- indicator
-	goal_led={1,1,0};
-      elseif color == Config.color.cyan then
-        if (goalType == 0) then
-          PoseFilter.post_cyan_unknown(v);
-        elseif(goalType == 1) then
-          PoseFilter.post_cyan_left(v);
-        elseif(goalType == 2) then
-          PoseFilter.post_cyan_right(v);
-        elseif(goalType == 3) then
-          PoseFilter.goal_cyan(v);
-        end
-        -- indicator
-	goal_led={0,0,1};
-      end
-    end
-  else
   end
 
-  -- line update
-  if vcm.get_line_detect() == 1 then
-    local v = vcm.get_line_v();
-    local a = vcm.get_line_angle();
 
-    PoseFilter.line(v, a);--use longest line in the view
-  end
 
-  if vcm.get_corner_detect() == 1 then
-    local v=vcm.get_corner_v();
-    PoseFilter.corner(v);
-  end
-
-  if vcm.get_landmark_detect() == 1 then
-    local color = vcm.get_landmark_color();
-    local v = vcm.get_landmark_v();
-    if color == Config.color.yellow then
-        PoseFilter.landmark_yellow(v);
-	goal_led={1,1,0.5};
-    else
-        PoseFilter.landmark_cyan(v);
-	goal_led={0,1,1};
-    end
-  else
-    if vcm.get_goal_detect() == 0 then
-      goal_led={0,0,0};
-    end
-  end
-
-  ball.x, ball.y = ballFilter:get_xy();
-  pose.x,pose.y,pose.a = PoseFilter.get_pose();
-
---Use team vision information when we cannot find the ball ourselves
-
-  team_ball = wcm.get_robot_team_ball();
-  team_ball_score = wcm.get_robot_team_ball_score();
-
-  t=Body.get_time();
-  if use_team_ball>0 and
-    (t-tVisionBall)>team_ball_timeout and
-    team_ball_score > team_ball_threshold then
-
-    ballLocal = util.pose_relative(
-	{team_ball[1],team_ball[2],0},{pose.x,pose.y,pose.a}); 
-    ball.x = ballLocal[1];
-    ball.y = ballLocal[2];
-    ball.t = t;
-    ball_led={0,1,1}; 
---print("TEAMBALL")
-  end
+  -- TODO: can we make sure that we use the longest one?
+  -- if line.detect == 1 then
+  --   local v = vcm.get_line_v()
+  --   local a = vcm.get_line_angle()
+  -- 
+  --   poseFilter.line(v, a)--use longest line in the view
+  -- end
   
-  world.update_led();
-  world.update_shm();
+  -- if vcm.get_corner_detect() == 1 then
+  --   local v=vcm.get_corner_v()
+  --   poseFilter.corner(v)
+  -- end
+  
+  -- if vcm.get_landmark_detect() == 1 then
+  --   local color = vcm.get_landmark_color()
+  --   local v = vcm.get_landmark_v()
+  --   if color == Config.color.yellow then
+  --       poseFilter.landmark_yellow(v)
+  --   else
+  --       poseFilter.landmark_cyan(v)
+  --   end
+  -- else
+  --   if vcm.get_goal_detect() == 0 then
+  --     goal_led={0,0,0}
+  --   end
+  -- end
+
+  pose.x,pose.y,pose.a = poseFilter.get_pose()
+  
+  local pose_odom = wcm.get_robot_pose()
+  add_debug_msg(string.format('Pose odom: %.2f %.2f %.2f\n', 
+    pose_odom[1], pose_odom[2], pose_odom[3]))
+  add_debug_msg(string.format('Pose vision: %.2f %.2f %.2f\n', 
+    pose.x, pose.y, pose.a))
+    
+  -- world.update_led()
+  world.update_shm()
+  
+  return debug_str
 end
 
-function world.update_led()
-  --Turn on the eye light according to team color
-  --If gamecontroller is down
-  if gcm.get_game_state()~=3 and
-     gcm.get_game_gc_latency() > 10.0 then
 
-    if gcm.get_team_color() == 0 then --Blue team
-      Body.set_indicator_goal({0,0,0});
-      Body.set_indicator_ball({0,0,1});
-    else --Red team
-      Body.set_indicator_goal({0,0,0});
-      Body.set_indicator_ball({0,0,1});
-    end
-    return;
-  end
 
-  --Only disable eye LED during playing
---  if led_on>0 and gcm.get_game_state()~=3 then
-  if led_on>0 then
-    Body.set_indicator_goal(goal_led);
-    Body.set_indicator_ball(ball_led);
-  else
-    Body.set_indicator_goal({0,0,0});
-    Body.set_indicator_ball({0,0,0});
-  end
-end
+-- function world.update_led()
+--   --Turn on the eye light according to team color
+--   --If gamecontroller is down
+--   if gcm.get_game_state()~=3 and
+--      gcm.get_game_gc_latency() > 10.0 then
+-- 
+--     if gcm.get_team_color() == 0 then --Blue team
+--       Body.set_indicator_goal({0,0,0})
+--       Body.set_indicator_ball({0,0,1})
+--     else --Red team
+--       Body.set_indicator_goal({0,0,0})
+--       Body.set_indicator_ball({0,0,1})
+--     end
+--     return
+--   end
+-- 
+--   --Only disable eye LED during playing
+-- --  if led_on>0 and gcm.get_game_state()~=3 then
+--   if led_on>0 then
+--     Body.set_indicator_goal(goal_led)
+--     Body.set_indicator_ball(ball_led)
+--   else
+--     Body.set_indicator_goal({0,0,0})
+--     Body.set_indicator_ball({0,0,0})
+--   end
+-- end
+
+
 
 function world.update_shm()
   -- update shm values
 
-  --print(string.format( 
-  wcm.set_robot_pose({pose.x, pose.y, pose.a});
-  wcm.set_robot_time(Body.get_time());
+  wcm.set_robot_pose_vision({pose.x, pose.y, pose.a})
+  wcm.set_robot_time(Body.get_time())
 
-  wcm.set_ball_x(ball.x);
-  wcm.set_ball_y(ball.y);
-  wcm.set_ball_t(ball.t);
-  wcm.set_ball_velx(ball.vx);
-  wcm.set_ball_vely(ball.vy);
-  wcm.set_ball_p(ball.p);
+  -- wcm.set_ball_velx(ball.vx)
+  -- wcm.set_ball_vely(ball.vy)
+  -- wcm.set_ball_p(ball.p)
 
-  wcm.set_goal_t(pose.tGoal);
-  wcm.set_goal_attack(world.get_goal_attack());
-  wcm.set_goal_defend(world.get_goal_defend());
-  wcm.set_goal_attack_bearing(world.get_attack_bearing());
-  wcm.set_goal_attack_angle(world.get_attack_angle());
-  wcm.set_goal_defend_angle(world.get_defend_angle());
+  -- wcm.set_goal_attack(world.get_goal_attack())
+  -- wcm.set_goal_defend(world.get_goal_defend())
+  -- wcm.set_goal_attack_bearing(world.get_attack_bearing())
+  wcm.set_goal_attack_angle(world.get_attack_angle())
+  wcm.set_goal_defend_angle(world.get_defend_angle())
 
-  wcm.set_goal_attack_post1(world.get_attack_posts()[1]);
-  wcm.set_goal_attack_post2(world.get_attack_posts()[2]);
+  -- wcm.set_goal_attack_post1(world.get_attack_posts()[1])
+  -- wcm.set_goal_attack_post2(world.get_attack_posts()[2])
 
-  wcm.set_robot_is_fall_down(mcm.get_walk_isFallDown());
+  -- wcm.set_robot_is_fall_down(mcm.get_walk_isFallDown())
+  
   --Particle information
-  wcm.set_particle_x(PoseFilter.xp);
-  wcm.set_particle_y(PoseFilter.yp);
-  wcm.set_particle_a(PoseFilter.ap);
-  wcm.set_particle_w(PoseFilter.wp);
+  wcm.set_particle_x(poseFilter.xp)
+  wcm.set_particle_y(poseFilter.yp)
+  wcm.set_particle_a(poseFilter.ap)
+  wcm.set_particle_w(poseFilter.wp)
 
 end
 
@@ -540,90 +377,60 @@ end
 
 
 function world.get_ball()
-  return ball;
+  return ball
 end
 
 function world.get_pose()
-  return pose;
+  return pose
 end
 
 function world.zero_pose()
-  PoseFilter.zero_pose();
+  poseFilter.zero_pose()
 end
 
 function world.get_attack_bearing()
-  return world.get_attack_bearing_pose(pose);
+  return world.get_attack_bearing_pose(pose)
 end
 
 --Get attack bearing from pose0
 function world.get_attack_bearing_pose(pose0)
   if gcm.get_team_color() == 1 then
     -- red attacks cyan goal
-    postAttack = PoseFilter.postCyan;
+    postAttack = poseFilter.postCyan
   else
     -- blue attack yellow goal
-    postAttack = PoseFilter.postYellow;
+    postAttack = poseFilter.postYellow
   end
   -- make sure not to shoot back towards defensive goal:
-  local xPose = math.min(math.max(pose0.x, -0.99*PoseFilter.xLineBoundary),
-                          0.99*PoseFilter.xLineBoundary);
-  local yPose = pose0.y;
+  local xPose = math.min(math.max(pose0.x, -0.99*poseFilter.xLineBoundary),
+                          0.99*poseFilter.xLineBoundary)
+  local yPose = pose0.y
   local aPost = {}
-  aPost[1] = math.atan2(postAttack[1][2]-yPose, postAttack[1][1]-xPose);
-  aPost[2] = math.atan2(postAttack[2][2]-yPose, postAttack[2][1]-xPose);
-  local daPost = math.abs(PoseFilter.mod_angle(aPost[1]-aPost[2]));
-  attackHeading = aPost[2] + .5*daPost;
-  attackBearing = PoseFilter.mod_angle(attackHeading - pose0.a);
+  aPost[1] = math.atan2(postAttack[1][2]-yPose, postAttack[1][1]-xPose)
+  aPost[2] = math.atan2(postAttack[2][2]-yPose, postAttack[2][1]-xPose)
+  local daPost = math.abs(poseFilter.mod_angle(aPost[1]-aPost[2]))
+  attackHeading = aPost[2] + .5*daPost
+  attackBearing = poseFilter.mod_angle(attackHeading - pose0.a)
 
-  return attackBearing, daPost;
+  return attackBearing, daPost
 end
 
-function world.get_goal_attack()
-  if gcm.get_team_color() == 1 then
-    -- red attacks cyan goal
-    return {PoseFilter.postCyan[1][1], 0, 0};
-  else
-    -- blue attack yellow goal
-    return {PoseFilter.postYellow[1][1], 0, 0};
-  end
-end
-
-function world.get_goal_defend()
-  if gcm.get_team_color() == 1 then
-    -- red defends yellow goal
-    return {PoseFilter.postYellow[1][1], 0, 0};
-  else
-    -- blue defends cyan goal
-    return {PoseFilter.postCyan[1][1], 0, 0};
-  end
-end
-
-function world.get_attack_posts()
-  if gcm.get_team_color() == 1 then
-    return Config.world.postCyan;
-  else
-    return Config.world.postYellow;
-  end
-end
 
 function world.get_attack_angle()
-  goalAttack = world.get_goal_attack();
+  goalAttack = {Config.world.goalUpper[1][1], 0, 0}
 
-  dx = goalAttack[1] - pose.x;
-  dy = goalAttack[2] - pose.y;
-  return mod_angle(math.atan2(dy, dx) - pose.a);
+  dx = goalAttack[1] - pose.x
+  dy = goalAttack[2] - pose.y
+  return mod_angle(math.atan2(dy, dx) - pose.a)
 end
 
 function world.get_defend_angle()
-  goalDefend = world.get_goal_defend();
+  goalDefend = {Config.world.goalLower[1][1], 0, 0}
 
-  dx = goalDefend[1] - pose.x;
-  dy = goalDefend[2] - pose.y;
-  return mod_angle(math.atan2(dy, dx) - pose.a);
+  dx = goalDefend[1] - pose.x
+  dy = goalDefend[2] - pose.y
+  return mod_angle(math.atan2(dy, dx) - pose.a)
 end
 
-function world.get_team_color()
-  return gcm.get_team_color();
-end
 
 return world

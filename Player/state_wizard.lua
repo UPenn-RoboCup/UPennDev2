@@ -48,6 +48,10 @@ local debug_interval, t_debug = 1.0, t0
 for _, my_fsm in pairs(state_machines) do
   my_fsm:entry()
 end
+if IS_WEBOTS then
+  Body.entry()
+  Body.update()
+end
 -- Update loop
 while running do
   t = get_time()
@@ -60,7 +64,9 @@ while running do
     --print('Wire', vcm.get_wire_model())
 	end
   -- If not webots, then wait the update cycle rate
-  if not IS_WEBOTS then
+  if IS_WEBOTS then
+    Body.update()
+  else
     collectgarbage('step')
     local t_s = (t_sleep - (get_time() - t))
     if t_s>0 then usleep(1e6 * t_s) end

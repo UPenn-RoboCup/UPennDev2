@@ -55,10 +55,12 @@ for i=1:numel(jobjs)
     acc(i,:) = jobj.acc;
     rpy(i,:) = jobj.rpy;
 end
-clear jobjs jobj
+clear jobj
 %% Save
-save('Logs/joint_06.04.2014.13.54.20.mat')
+% clear jobjs;
+%save('Logs/joint_06.04.2014.13.54.20.mat')
 %% Plot a joint
+%load('Logs/joint_06.04.2014.13.54.20.mat')
 figure(1);
 plot( ts, pos(:, joint_idx), ...
     ts, cmd(:, joint_idx) ...

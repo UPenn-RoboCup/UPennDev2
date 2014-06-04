@@ -12,7 +12,7 @@ if not one_chain then
     right_leg = lD.new_bus'/dev/cu.usbserial-FTVTLUY0C'
     left_leg  = lD.new_bus'/dev/cu.usbserial-FTVTLUY0D'
   else
-    right_arm = lD.new_bus('/dev/ttyUSB0')
+    right_arm = lD.new_bus('/dev/ttyUSB0', 4.5e6 --[[38400]])
     left_arm  = lD.new_bus'/dev/ttyUSB1'
     right_leg = lD.new_bus'/dev/ttyUSB2'
     left_leg  = lD.new_bus'/dev/ttyUSB3'

@@ -239,8 +239,15 @@ local poller = si.wait_on_channels{parent_ch}
 print(debug_prefix, 'Begin loop')
 local t0, t = get_time()
 local t_debug, t_last, t_diff = t0, t0
-local t_sleep = 1 / 125
+local count, t_elapsed, t_d_elapsed, kb = 0
+local t_sleep = 1 / (metadata.hz or 125)
+-- Garbarge collect before beginning
+Config = nil
+metadata = nil
+collectgarbage()
+-- Begin
 while running do
+	count = count + 1
 	t_last = t
 	t = get_time()
 	-- If no parent commands, then perform a read/write cycle
@@ -248,8 +255,10 @@ while running do
 		-- Write Positions
 		do_write()
 		if ENABLE_READ then
+			-- Sleep a bit
+			t_diff = get_time() - t
+			usleep(1e6 * max(t_sleep - t_diff, 0))
 			-- Read Positions
-			usleep(1e6)
 			do_read()
 		else
 			-- Copy the command positions as the read positions
@@ -257,20 +266,19 @@ while running do
 		end
 	end
 	-- Periodic Debug
-	if t - t_debug>1 then
-		local kb = collectgarbage'count'
-		local debug_str = {
-			string.format('\n%s Uptime: %.2f sec, Mem: %d kB', debug_prefix, t - t0, kb)),
-		}
-		print(table.concat(debug_str))
-		dcm.set_actuator_lfoot
+	t_d_elapsed = t - t_debug
+	if t_d_elapsed > 1 then
+		t_elapsed = t - t0
+		kb = collectgarbage'count'
+		print(string.format('\n%s Uptime: %.2f sec, Mem: %d kB, %.1f Hz',
+			debug_prefix, t_elapsed, kb, count / t_d_elapsed)))
 		t_debug = t
+		count = 0
 	end
   -- Keep stable timing
   collectgarbage'step'
 	t_diff = get_time() - t
-	usleep(1e6 * max(t_sleep-t_diff, 0))
-	--usleep(1e6 * t_sleep)
+	usleep(1e6 * max(t_sleep - t_diff, 0))
 end
 
 -- Exiting

@@ -706,6 +706,7 @@ elseif IS_WEBOTS then
     for idx, jtag in ipairs(tags.joints) do
       if jtag>0 then
         local val = webots.wb_motor_get_position( jtag )
+				if val~=val then val = 0 end
         local rad = servo.direction[idx] * val - servo.rad_offset[idx]
         dcm.sensorPtr.position[idx] = rad
         dcm.actuatorPtr.command_position[idx] = rad
@@ -726,14 +727,15 @@ elseif IS_WEBOTS then
     --Body.update_finger(tDelta)
 
 		-- Set actuator commands from shared memory
+		local cmds = Body.get_command_position()
+		local poss = Body.get_position()
 		for idx, jtag in ipairs(tags.joints) do
-			local cmd = Body.get_command_position(idx,idx)  -- TODO
-      -- local pos = Body.get_position(idx, idx)
-      local pos = Body.get_command_position(idx, idx)
+			local cmd, pos = cmds[idx], poss[idx]
+			print(idx,cmd,pos)
       
 			-- TODO: What is velocity?
-			local vel = 0 or Body.get_command_velocity(idx)
-			local en  = 1 or Body.get_torque_enable(idx)
+			local vel = 0 or Body.get_command_velocity()[idx]
+			local en  = 1 or Body.get_torque_enable()[idx]
 			local deltaMax = tDelta * vel
 			-- Only update the joint if the motor is torqued on
 
@@ -754,14 +756,16 @@ elseif IS_WEBOTS then
 
 			-- Only set in webots if Torque Enabled
 			if en>0 and jtag>0 then
-        local pos = servo.direction[idx] * (new_pos[1] + servo.rad_offset[idx])
+        local pos = servo.direction[idx] * (new_pos + servo.rad_offset[idx])
         --SJ: Webots is STUPID so we should set direction correctly to prevent flip
         local val = webots.wb_motor_get_position( jtag )
 
         if pos>val+math.pi then
-          webots.wb_motor_set_position(jtag, pos-2*math.pi )
+					pos = pos - 2 * math.pi
+          webots.wb_motor_set_position(jtag, pos )
         elseif pos<val-math.pi then
-          webots.wb_motor_set_position(jtag, pos+2*math.pi )
+					pos = pos + 2 * math.pi
+          webots.wb_motor_set_position(jtag, pos )
         else
           webots.wb_motor_set_position(jtag, pos )
         end
@@ -821,6 +825,7 @@ elseif IS_WEBOTS then
 		for idx, jtag in ipairs(tags.joints) do
 			if jtag>0 then
 				local val = webots.wb_motor_get_position( jtag )
+				if val~=val then val = 0 end
 				local rad = servo.direction[idx] * val - servo.rad_offset[idx]
         dcm.sensorPtr.position[idx-1] = rad
 			end

@@ -1,0 +1,15 @@
+PROTO RegularAppearance [
+]
+{
+Appearance {
+  material Material {
+    diffuseColor 0.8 0.8 0.8
+    specularColor 1.0 1.0 1.0
+  }
+  texture ImageTexture {
+    url [
+      "textures/atlas.png"
+    ]
+  }
+}
+}

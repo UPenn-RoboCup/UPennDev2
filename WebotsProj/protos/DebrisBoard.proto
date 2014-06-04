@@ -1,0 +1,48 @@
+#
+#  DARPA Trials Debris: Boards
+#  heqin@seas.upenn.edu
+#
+
+
+PROTO DebrisBoard [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+]
+
+#Balsa density: 0.16 g / cm3
+#Board size: 2in * 4in * 36 in 
+#  =  5.08 * 10.16 * 91.44 cm
+# Mass = 0.755kg
+#Post size: 4in * 4in * 24 in 
+#  =  10.16 * 10.16 * 60.96 cm
+# Mass = 1.006kg
+
+
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+	  Shape {
+	     appearance DEF POS_APP Appearance {
+	       material Material {
+	         diffuseColor 1 1 0.5
+	         specularColor 0 0 0
+	       }
+	     }
+	     geometry Box { size 0.9144 0.0508 0.1016 }
+	  }			
+  ]
+	
+	physics Physics {
+		mass 0.755
+	}
+	
+  boundingObject Group {
+		children[
+			Box { size 0.9144 0.0508 0.1016 }
+		]
+  }  
+#  locked TRUE
+}
+}

@@ -292,7 +292,7 @@ function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width, 
   local cntMax1, cntMax2 = 0, 0
   local found = false
 
-  local props = RadonTransform.radon_lines(edge_t, use_horiz, use_vert, bbox)
+  local props = RadonTransform.radon_lines(edge_t, use_horiz, use_vert, bbox, angle_prior)
   local count_d = props.count_d
   local line_sum_d = props.line_sum_d
   local line_min_d = props.line_min_d
@@ -355,11 +355,11 @@ function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width, 
 
   --print('PARALLEL',ithMax,irMax1-irMax2)
 
-  local ith_true = ithMax - NTH / 2
-  if ith_true < 0 then ith_true = ith_true + NTH end
+  --local ith_true = ithMax - NTH / 2
+  --if ith_true < 0 then ith_true = ith_true + NTH end
+  --local s, c = sin_d[ith_true], cos_d[ith_true]
 
-  --local s, c = sin_d[ithMax], cos_d[ithMax]
-  local s, c = sin_d[ith_true], cos_d[ith_true]
+  local s, c = sin_d[ithMax], cos_d[ithMax]
 
   -- Find the image indices
   local iR1 = (irMax1 - r0) * c
@@ -368,8 +368,9 @@ function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width, 
   local jR2 = (irMax2 - r0) * s
 
   -- Add i0, j0 to go back into image space
-  iR1, iR2 = iR1 + i0, iR2 + i0
-  jR1, jR2 = jR1 + j0, jR2 + j0
+  -- THIS IS BETA
+  --iR1, iR2 = iR1 + i0, iR2 + i0
+  --jR1, jR2 = jR1 + j0, jR2 + j0
 
   local lMean1 = line_sum_d[ithMax][irMax1] / count_d[ithMax][irMax1]
   local lMin1 = line_min_d[ithMax][irMax1]
@@ -403,7 +404,7 @@ function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width, 
       c2 = cntMax2,
       NTH = NTH,
       NR = NR,
-      ith_true = ith_true,
+      ith_true = ithMax, --ith_true,
       r0 = r0,
     }
 

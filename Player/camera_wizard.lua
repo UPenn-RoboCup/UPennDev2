@@ -26,7 +26,7 @@ end
 -- TODO: arg or in config?
 local ENABLE_LOG = false
 local ENABLE_NET = false
-local FROM_LOG, LOG_DATE = true, '05.28.2014.16.18.44'
+local FROM_LOG, LOG_DATE = true, '05.28.2014.17.14.05'
 local libLog, logger
 
 local udp = require'udp'
@@ -89,7 +89,6 @@ if FROM_LOG then
 	for i, m, yuyv_t in logged_data do
 		assert(m.w==w, 'Bad width')
 		assert(m.h==h, 'Bad height')
-		util.ptable(m)
 		local t = unix.time()
 		-- Check if we are sending to the operator
 		if ENABLE_NET then
@@ -110,7 +109,7 @@ if FROM_LOG then
 		-- Collect garbage every cycle
 		collectgarbage()
 		-- Sleep a little
-		unix.usleep(1e6/30)
+		--unix.usleep(1e6/30)
 	end
 	-- Finish
 	os.exit()

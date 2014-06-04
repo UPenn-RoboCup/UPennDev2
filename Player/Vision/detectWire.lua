@@ -179,9 +179,8 @@ function detectWire.update(img)
     return
   end
 
-
   if DEBUG then
-    --print('\nUpdate')
+    print('\nUpdate', bbox)
 --    print('KERNEL', kernel_t:size(1), kernel_t:size(2))
   end
 
@@ -291,9 +290,10 @@ function detectWire.get_metadata()
 end
 
 function detectWire.set_metadata(meta)
+  meta.bbox = {120, 200, 60, 180}
   gcm.set_fsm_Arm(meta.arm_fsm)
   vcm.set_wire_bbox(meta.bbox)
-  Body.get_larm_position(meta.larm)
+  --Body.set_larm_position(meta.larm)
 end
 
 return detectWire

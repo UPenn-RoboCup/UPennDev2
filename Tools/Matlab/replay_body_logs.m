@@ -1,6 +1,4 @@
-%% Access to JPEG and msgpack mex files
-addpath( genpath('.') );
-
+clear all;
 %% Joint angle helpers
 jointNames = { ...
 	'Neck','Head', ...
@@ -17,33 +15,69 @@ jointNames = { ...
 };
 
 joint = 'AnkleL';
-idx = find(strncmp(joint,jointNames,4));
+joint_idx = 1;
+for i=1:numel(jointNames)
+    str = jointNames{i};
+    if strncmp(str, joint, 4)==1
+        joint_idx = i;
+    end
+end
+clear str;
 
 %% Aquire the body joint angles
-%fid = fopen('logs/body_10.24.2013.20.28.32_meta.log');
-fid = fopen('logs/body_10.24.2013.20.31.04_meta.log');
+fid = fopen('Logs/joint_m_06.04.2014.13.54.20.log');
 msg = fread(fid,inf,'*uchar');
 fclose(fid);
+clear fid;
 jobjs = msgpack('unpacker', msg);
 clear msg;
 
+%% Time
+t0 = jobjs{1}.t;
+
 %% Reformat the data
-pos = zeros(numel(jobjs),numel(jobjs{1}.position) );
-cmd = zeros(numel(jobjs),numel(jobjs{1}.command_position) );
-ts  = zeros(numel(jobjs),1);
-trds  = zeros(numel(jobjs),1);
+ts  = zeros(numel(jobjs), 1);
+pos = zeros(numel(jobjs), numel(jobjs{1}.p));
+cmd = zeros(numel(jobjs), numel(jobjs{1}.cp));
+ft_l = zeros(numel(jobjs), numel(jobjs{1}.ft_l));
+ft_r = zeros(numel(jobjs), numel(jobjs{1}.ft_r));
+gyro = zeros(numel(jobjs), numel(jobjs{1}.gyro));
+acc = zeros(numel(jobjs), numel(jobjs{1}.acc));
+rpy = zeros(numel(jobjs), numel(jobjs{1}.rpy));
 for i=1:numel(jobjs)
     jobj = jobjs{i};
-    trds(i)  = jobjs{i}.tread(1);
-    ts(i)    = jobjs{i}.t;
-    pos(i,:) = jobjs{i}.position;
-    cmd(i,:) = jobjs{i}.command_position;
+    ts(i)    = jobj.t - t0;
+    pos(i,:) = jobj.p;
+    cmd(i,:) = jobj.cp;
+    ft_l(i,:) = jobj.ft_l;
+    ft_r(i,:) = jobj.ft_r;
+    gyro(i,:) = jobj.gyro;
+    acc(i,:) = jobj.acc;
+    rpy(i,:) = jobj.rpy;
 end
-
+clear jobjs jobj
+%% Save
+save('Logs/joint_06.04.2014.13.54.20.mat')
 %% Plot a joint
 figure(1);
-clf;
-plot( ts, pos(:,idx), 'b' );
-hold on;
-plot( ts, cmd(:,idx), 'r' );
-hold off;
+plot( ts, pos(:, joint_idx), ...
+    ts, cmd(:, joint_idx) ...
+    );
+legend('Position', 'Command');
+title('Command vs. Position');
+
+figure(2);
+plot(ft_l);
+title('Left Force Torque');
+
+figure(3);
+plot(ft_r);
+title('Right Force Torque');
+
+figure(4);
+plot(gyro);
+title('Gyro');
+
+figure(5);
+plot(rpy);
+title('RPY');

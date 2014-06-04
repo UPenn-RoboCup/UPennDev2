@@ -5,9 +5,12 @@ local vector = require'vector'
 local shared = {};
 local shsize = {};
 
---[[
 shared.game = {};
 shared.game.state = vector.zeros(1);
+-- 0: goalie   1: attacker
+shared.game.role = vector.ones(1)
+
+--[[
 shared.game.nplayers = vector.zeros(1);
 shared.game.kickoff = vector.zeros(1);
 shared.game.half = vector.zeros(1);

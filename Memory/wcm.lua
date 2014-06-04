@@ -4,37 +4,69 @@
 --------------------------------
 local vector = require'vector'
 local memory = require'memory'
+
 -- shared properties
 local shared = {}
 local shsize = {}
 
 shared.robot = {}
--- Initial Pose
-shared.robot.initialpose = vector.zeros(3)
--- Combined pose
+-- Webot pose
+shared.robot.pose_gps = vector.zeros(3)
+shared.robot.time = vector.zeros(1)
+-- 0: unknown, 1: attack, 2: defend
+shared.robot.role = vector.ones(1)
+shared.robot.pose_vision = vector.zeros(3)
+
+--Combined pose (either odom only / slam only / combined)
 shared.robot.pose = vector.zeros(3)
--- Webot pose from GPS
-shared.robot.gps = vector.zeros(3)
--- (Full) Accumulated Odometry
-shared.robot.odometry = vector.zeros(3)
--- Walking Odometry
+
+--Odometry 
 shared.robot.utorso0 = vector.zeros(3)
 shared.robot.utorso1 = vector.zeros(3)
-shared.robot.t = vector.zeros(1)
 
--- Get the map goal
-shared.map = {}
-shared.map.goal = vector.zeros(3)
-shared.map.waypoint = vector.zeros(3)
-shared.map.enable_slam = vector.zeros(1)
+--Odometry pose
+shared.robot.pose_odom = vector.zeros(3)
+-- 0: only odom
+-- 1: only slam
+-- 2: slam + odom
+shared.robot.odom_mode = vector.zeros(1)
 
--- Picking up the ball
--- These are global coordinates
-shared.ball = {}
-shared.ball.pose = vector.zeros(3)
-shared.ball.t = vector.zeros(1)
-shared.ball.pos = vector.zeros(3)
-shared.ball.rot = vector.new({1,0,0,0,1,0,0,0,1})
+-- SLAM pose
+shared.slam = {}
+shared.slam.pose = vector.zeros(3)
+
+
+-- Particles for pose estimation
+shared.particle = {}
+shared.particle.x = vector.zeros(Config.world.nParticle)
+shared.particle.y = vector.zeros(Config.world.nParticle)
+shared.particle.a = vector.zeros(Config.world.nParticle)
+shared.particle.w = vector.zeros(Config.world.nParticle)
+
+
+-- Auto detected objects
+shared.ballfilter = {}
+shared.ballfilter.r = vector.zeros(1)
+shared.ballfilter.a = vector.zeros(1)
+shared.ballfilter.rvar = vector.zeros(1)
+shared.ballfilter.avar = vector.zeros(1)
+
+
+shared.ball = {};
+shared.ball.x = vector.zeros(1);
+shared.ball.y = vector.zeros(1);
+shared.ball.t = vector.zeros(1);
+shared.ball.velx = vector.zeros(1);
+shared.ball.vely = vector.zeros(1);
+shared.ball.dodge = vector.zeros(1);
+shared.ball.locked_on = vector.zeros(1);
+shared.ball.p = vector.zeros(1);
+
+
+shared.goal = {}
+shared.goal.t = vector.zeros(1)
+shared.goal.attack_angle = vector.zeros(1)
+shared.goal.defend_angle = vector.zeros(1)
 
 -- Call the initializer
 memory.init_shm_segment(..., shared, shsize)

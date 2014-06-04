@@ -4,6 +4,9 @@
 --------------------------------
 local vector = require'vector'
 local memory = require'memory'
+local DEG_TO_RAD = math.pi/180
+
+
 local shared_data = {}
 local shared_data_sz = {}
 
@@ -12,36 +15,51 @@ shared_data.audio.request = vector.zeros(0)
 
 shared_data.drive={}
 shared_data.drive.gas_pedal = vector.zeros(2)
+shared_data.drive.gas_pedal_time = vector.zeros(1)
 shared_data.drive.wheel_angle = vector.zeros(1)
 shared_data.drive.pedal_ankle_pitch = vector.zeros(1)
 shared_data.drive.pedal_knee_pitch = vector.zeros(1)
 
+
+-- For robocup ball approach demo
+local ball = {}
+ball.approach = vector.zeros(0)
+shared_data.ball = ball
+
+
+
 shared_data.state={}
 shared_data.state.proceed = vector.zeros(0)
+
 --Now we use TWO sets of params (both are INCREMENTS)
+
 --override variables are (x,y,z, r,p,y, TASK)
 --unit of x,y,z is in meters
 --unit of r,p,y is radians
 --unit of TASK is 1
 shared_data.state.override=vector.zeros(7)
+
 shared_data.state.override_support=vector.zeros(7)
+
+
+
+
 --Not used any more
 shared_data.state.override_target=vector.zeros(7)
---These variables are only used for offline testing of arm states
-shared_data.state.success = vector.zeros(0)
-shared_data.state.tstartrobot = vector.zeros(0)
-shared_data.state.tstartactual = vector.zeros(0)
 
 --This variable is used for target transform based tele-op and fine tuning
 shared_data.hands={}
+
 --This variable should contain CURRENT hand transforms
 shared_data.hands.left_tr = vector.zeros(6)
 shared_data.hands.right_tr = vector.zeros(6)
+
 --This variable should contain TARGET hand transforms
 shared_data.hands.left_tr_target = vector.zeros(6)
 shared_data.hands.right_tr_target = vector.zeros(6)
 -- for the left and right hands
 shared_data.hands.read = vector.zeros(2)
+
 
 -- Desired joint properties
 shared_data.joints = {}
@@ -54,21 +72,30 @@ shared_data.joints.qrarm  = vector.zeros( 7 )
 -- 3 finger joint angles
 shared_data.joints.qlgrip = vector.zeros( 3 )
 shared_data.joints.qrgrip = vector.zeros( 3 )
+
 shared_data.joints.qlshoulderyaw = vector.zeros( 1 )
 shared_data.joints.qrshoulderyaw = vector.zeros( 1 )
 -- Teleop mode
 -- 1: joint, 2: IK
 shared_data.joints.teleop = vector.ones( 1 )
 
+
+
+
+
 -- Motion directives
 shared_data.motion = {}
 shared_data.motion.velocity = vector.zeros(3)
 -- Emergency stop of motion
 shared_data.motion.estop = vector.zeros(1)
+
 --Head look angle
 shared_data.motion.headangle = vector.zeros(2)
+
 --Body height Target
 shared_data.motion.bodyHeightTarget = vector.zeros(1)
+
+
 -- Waypoints
 -- {[x y a][x y a][x y a][x y a]...}
 shared_data.motion.waypoints  = vector.zeros(3)
@@ -84,6 +111,8 @@ shared_data.motion.waypoint_frame = vector.zeros(1)
 -- Task specific information --
 -------------------------------
 
+
+
 -------------------------------------------------------------------
 -- OLD VALVE MODEL (which can have nonzero yaw and pitch)
 shared_data.wheel = {}
@@ -93,6 +122,9 @@ shared_data.wheel.model = vector.new({0.36,0.00,0.02, 0, 0*DEG_TO_RAD,0.20})
 -- Target angle of wheel
 shared_data.wheel.turnangle = vector.zeros(1)
 -------------------------------------------------------------------
+
+
+
 
 --Small valve (which requires one handed operation)
 shared_data.smallvalve = {}
@@ -108,22 +140,32 @@ shared_data.largevalve={}
 shared_data.largevalve.model = vector.new({0.55,0.15,0.02,
 	0.13, -60*DEG_TO_RAD, 60*DEG_TO_RAD})
 
+
 shared_data.barvalve={}
 --pos(3) radius turnangle wristangle
 shared_data.barvalve.model = vector.new({0.55,0.20,0.02,
    0.05, 0, 70*DEG_TO_RAD })
+
 
 --Debris model
 shared_data.debris = {}
 -- {pos(3) yaw}
 shared_data.debris.model = vector.new({0.50,0.25,0.02, 0})
 
+
+
 --Hose model
 shared_data.hose = {}
 shared_data.hose.model = vector.new({0.35,-0.25,0.0, 0})
 
+
 shared_data.hoseattach = {}
 shared_data.hoseattach.model = vector.new({0.35,0.30,-0.10, 0})
+
+
+
+
+
 
 -- Door Opening
 shared_data.door = {}
@@ -139,16 +181,61 @@ shared_data.door.model = vector.new({
 shared_data.door.yaw = vector.zeros(1) --The current angle of the door
 shared_data.door.yaw_target = vector.new({-20*math.pi/180}) --The target angle of the door 
 
+
+
 -- Drill gripping
 shared_data.tool={}
+
 --The model of drill for pickup,  posxyz(3), yawangle
 shared_data.tool.model = vector.new({0.45,0.15,-0.05,  0*DEG_TO_RAD})
+
 -- The positions to start and end cutting
 shared_data.tool.cutpos = vector.new({0.40,0.20,0, 0})
 shared_data.tool.yaw = vector.zeros(1)
 
 
-------------------------
+
+-- Fire suppression
+shared_data.fire={}
+shared_data.fire.model = vector.new({0.45,0,-0.05, 0,0})
+
+-- Range of panning
+shared_data.fire.panangle = vector.new({30*DEG_TO_RAD})
+shared_data.fire.yaw = vector.zeros(1)
+
+
+
+-- Dipoles for arbitrary grabbing
+-- TODO: Use this in place of the wheel/door?
+shared_data.left = {}
+shared_data.left.cathode = vector.zeros(3)
+shared_data.left.anode = vector.zeros(3)
+-- strata (girth) / angle of attack / climb (a->c percentage)
+shared_data.left.grip = vector.zeros(3)
+----
+shared_data.right = {}
+shared_data.right.cathode = vector.zeros(3)
+shared_data.right.anode = vector.zeros(3)
+-- strata (girth) / angle of attack / climb (a->c percentage)
+shared_data.right.grip = vector.zeros(3)
+
+
+
+--These variables are only used for offline testing of arm states
+shared_data.state.success = vector.zeros(0)
+shared_data.state.tstartrobot = vector.zeros(0)
+shared_data.state.tstartactual = vector.zeros(0)
+
+
+
+
+
+
+
+
+
+
+
+
 -- Call the initializer
 memory.init_shm_segment(..., shared_data, shared_data_sz)
-------------------------

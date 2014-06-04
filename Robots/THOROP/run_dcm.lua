@@ -165,20 +165,40 @@ if metadata.name=='lleg' or metadata.name=='rleg' then
 	end
 	function parent_cb.ft()
 		local status = lD.get_nx_data(ft_ms, bus)
-		local ft1_c = ffi.cast('ft*', ffi.new('int8_t[8]', status[1].parameter))
-		local ft2_c = ffi.cast('ft*', ffi.new('int8_t[8]', status[2].parameter))
-		--ffi.copy(ft1_c, status[1].raw_parameter, ft_sz)
-		--ffi.copy(ft2_c, status[2].raw_parameter, ft_sz)
-		-- Just do a sync read here; can try reliable later, if desired...
-		ft_ptr[0] = 3.3 * ft1_c.a / 4096 - 1.65
-		ft_ptr[1] = 3.3 * ft1_c.b / 4096 - 1.65
-		ft_ptr[2] = 3.3 * ft1_c.c / 4096 - 1.65
-		ft_ptr[3] = 3.3 * ft1_c.d / 4096 - 1.65
+		if not status then return end
+		local s1, s2 = status[1], status[2]
+		if s1 then
+			ft1_c = ffi.cast('ft*', ffi.new('int8_t[8]', s1.parameter))
+			--ffi.copy(ft1_c, status[1].raw_parameter, ft_sz)
+			--ffi.copy(ft2_c, status[2].raw_parameter, ft_sz)
+			-- Just do a sync read here; can try reliable later, if desired...
+			if s1.id==ft_ms[1] then
+				ft_ptr[0] = 3.3 * ft1_c.a / 4096 - 1.65
+				ft_ptr[1] = 3.3 * ft1_c.b / 4096 - 1.65
+				ft_ptr[2] = 3.3 * ft1_c.c / 4096 - 1.65
+				ft_ptr[3] = 3.3 * ft1_c.d / 4096 - 1.65
+			else
+				ft_ptr[4] = 3.3 * ft1_c.a / 4096 - 1.65
+				ft_ptr[5] = 3.3 * ft1_c.b / 4096 - 1.65
+				ft_ptr[6] = 3.3 * ft1_c.c / 4096 - 1.65
+				ft_ptr[7] = 3.3 * ft1_c.d / 4096 - 1.65
+			end
+		end
 		--
-		ft_ptr[4] = 3.3 * ft2_c.a / 4096 - 1.65
-		ft_ptr[5] = 3.3 * ft2_c.b / 4096 - 1.65
-		ft_ptr[6] = 3.3 * ft2_c.c / 4096 - 1.65
-		ft_ptr[7] = 3.3 * ft2_c.d / 4096 - 1.65
+		if status[2] then
+			ft2_c = ffi.cast('ft*', ffi.new('int8_t[8]', s2.parameter))
+			if s2.id==ft_ms[1] then
+				ft_ptr[0] = 3.3 * ft2_c.a / 4096 - 1.65
+				ft_ptr[1] = 3.3 * ft2_c.b / 4096 - 1.65
+				ft_ptr[2] = 3.3 * ft2_c.c / 4096 - 1.65
+				ft_ptr[3] = 3.3 * ft2_c.d / 4096 - 1.65
+			else
+				ft_ptr[4] = 3.3 * ft2_c.a / 4096 - 1.65
+				ft_ptr[5] = 3.3 * ft2_c.b / 4096 - 1.65
+				ft_ptr[6] = 3.3 * ft2_c.c / 4096 - 1.65
+				ft_ptr[7] = 3.3 * ft2_c.d / 4096 - 1.65
+			end
+		end
 	end
 end
 

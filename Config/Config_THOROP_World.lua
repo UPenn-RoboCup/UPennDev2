@@ -1,7 +1,7 @@
 local vector = require'vector'
 local DEG_TO_RAD = math.pi/180
 
-local Config = {}
+assert(Config, 'Need a pre-existing Config table!')
 local world = {}
 
 -- Ball

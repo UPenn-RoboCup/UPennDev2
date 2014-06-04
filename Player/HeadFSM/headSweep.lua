@@ -5,11 +5,11 @@ local Body = require'Body'
 local HT = require'HeadTransform'
 local util = require'util'
 
-local t_entry, t_update 
-local dqNeckLimit = Config.behavior.dqNeckLimit
-local tScan = Config.behavior.headSweep.tScan; 
+local t_entry, t_update
+local dqNeckLimit = Config.fsm.dqNeckLimit
+local tScan = Config.fsm.headSweep.tScan;
 local yawMag = Config.head.yawMax;  --TODO: put in behavior
-local dist = Config.behavior.headReady.dist;
+local dist = Config.fsm.headReady.dist;
 
 -- min_eta_look = Config.min_eta_look or 2.0;
 
@@ -30,7 +30,7 @@ function state.update()
   local t = Body.get_time()
   local dt = t-t_update
   t_update = t
-  
+
   local ph = (t-t_entry)/tScan;
   local height = vcm.get_head_camera_height();
   local yaw0 = direction*(ph-0.5)*2*yawMag;
@@ -39,7 +39,7 @@ function state.update()
 
   -- Grab where we are
   local qNeck = Body.get_head_command_position()
-  local qNeck_approach, doneNeck = 
+  local qNeck_approach, doneNeck =
     util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, dt )
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)

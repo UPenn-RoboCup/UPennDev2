@@ -9,11 +9,11 @@ require'vcm'
 require'wcm'
 
 local t0, t_update
-local dqNeckLimit = Config.behavior.dqNeckLimit
-local yawSweep = Config.behavior.headLookGoal.yawSweep;
-local dist = Config.behavior.headReady.dist;
-local tScan = Config.behavior.headLookGoal.tScan;
-local minDist = Config.behavior.headLookGoal.minDist;
+local dqNeckLimit = Config.fsm.dqNeckLimit
+local yawSweep = Config.fsm.headLookGoal.yawSweep;
+local dist = Config.fsm.headReady.dist;
+local tScan = Config.fsm.headLookGoal.tScan;
+local minDist = Config.fsm.headLookGoal.minDist;
 -- local min_eta_look = Config.min_eta_look or 2.0;
 local yawMax = Config.head.yawMax or 90*Body.DEG_TO_RAD
 local fovMargin = 30*Body.DEG_TO_RAD
@@ -37,7 +37,7 @@ function state.entry()
   local defendAngle = wcm.get_goal_defend_angle();
 
   --Can we see both goals?
-  if math.abs(attackAngle)<yawMax + fovMargin and 
+  if math.abs(attackAngle)<yawMax + fovMargin and
      math.abs(defendAngle)<yawMax + fovMargin  then
     --Choose the closer one
     if dAttackGoal < dDefendGoal then
@@ -70,15 +70,15 @@ function state.update()
   local yaw1 = math.min(math.max(yaw0+yawbias, -yawMax), yawMax);
   local yaw, pitch = HT.ikineCam(
   	dist*math.cos(yaw1),dist*math.sin(yaw1), height);
-  
+
   -- Grab where we are
   local qNeck = Body.get_head_command_position()
-  local qNeck_approach, doneNeck = 
+  local qNeck_approach, doneNeck =
     util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, tpassed )
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
 
-  
+
   if (t - t0 > tScan) then
     local tGoal = wcm.get_goal_t();
     if (tGoal - t0 > 0) then

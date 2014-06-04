@@ -1,8 +1,8 @@
-local Body = require'Body'
-require'vcm'
-
 local state = {}
 state._NAME = ...
+
+local Body = require'Body'
+require'vcm'
 
 local min_tilt, max_tilt, mid_tilt, mag_tilt
 local t_entry, t_update, ph_speed, ph, forward, pre_dir
@@ -32,16 +32,16 @@ local function radians_to_ph( rad )
 end
 
 function state.entry()
-  print(state._NAME..' Entry' ) 
+  print(state._NAME..' Entry' )
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
-  
+
   -- Grab the updated tilt paramters
   update_tilt_params()
-  
+
   -- Ascertain the phase, from the current position of the lidar
   --local cur_angle = Body.get_head_position()[2]
   --ph, forward = radians_to_ph( cur_angle )
@@ -56,10 +56,10 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
-  
+
   -- Grab the updated tilt paramters
   update_tilt_params()
-  
+
   -- Update the direction
   forward = (forward and ph<1) or ph<=0
   -- If direction changes, send a mesh image

@@ -9,8 +9,8 @@ require'gcm'
 local util = require'util'
 local HeadTransform = require'HeadTransform'
 
-local tLost = Config.behavior.headTrack.tLost
-local timeout = Config.behavior.headTrack.timeout
+local tLost = Config.fsm.headTrack.tLost
+local timeout = Config.fsm.headTrack.timeout
 
 -- Neck limits
 --TODO: put into Config
@@ -23,7 +23,7 @@ end
 
 
 function state.entry()
-  print(state._NAME..' Entry' ) 
+  print(state._NAME..' Entry' )
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
@@ -37,13 +37,13 @@ function state.update()
   local t = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
-  t_update = t 
+  t_update = t
 
   local ball_elapsed = Body.get_time()-wcm.get_ball_t()
   if  ball_elapsed> tLost then --ball lost
     return 'balllost'
   end
-  
+
   local ballX, ballY = wcm.get_ball_x(),wcm.get_ball_y()
   local yaw,pitch = HeadTransform.ikineCam(
     ballX, ballY,
@@ -56,23 +56,23 @@ function state.update()
 
   -- Grab where we are
   local qNeck = Body.get_head_command_position()
-  local qNeck_approach, doneNeck = 
+  local qNeck_approach, doneNeck =
     util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, dt )
-    
+
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
-  
-  if t-t_entry > timeout then 
+
+  if t-t_entry > timeout then
     if gcm.get_game_role() == 0 then -- Goalie
       -- return 'sweep'
     else
-      -- return 'timeout' 
+      -- return 'timeout'
     end
   end
-  
+
 end
 
-function state.exit()  
+function state.exit()
   print(state._NAME..' Exit' )
 end
 

@@ -8,12 +8,12 @@ require'vcm'
 local util = require'util'
 
 -- Neck limits
-local dqNeckLimit = Config.behavior.dqNeckLimit
-local pitch0=Config.behavior.headScan.pitch0;
-local pitchMag=Config.behavior.headScan.pitchMag;
-local yawMag=Config.behavior.headScan.yawMag;
+local dqNeckLimit = Config.fsm.dqNeckLimit
+local pitch0 = Config.fsm.headScan.pitch0;
+local pitchMag = Config.fsm.headScan.pitchMag;
+local yawMag = Config.fsm.headScan.yawMag;
 
-local tScan = Config.behavior.headScan.tScan;
+local tScan = Config.fsm.headScan.tScan;
 local timeout = tScan * 2;
 
 local t0
@@ -21,7 +21,7 @@ local direction = 1
 local pitchDir = 1
 
 function state.entry()
-  print(state._NAME..' Entry' ) 
+  print(state._NAME..' Entry' )
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
@@ -35,7 +35,7 @@ function state.update()
   local t = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
-  t_update = t 
+  t_update = t
 
   local ph = (t-t0)/tScan;
   ph = ph - math.floor(ph);
@@ -53,7 +53,7 @@ function state.update()
 
   local qNeck = Body.get_head_command_position()
   -- Go!
-  local qNeck_approach, doneNeck = 
+  local qNeck_approach, doneNeck =
     util.approachTol( qNeck, {yaw,pitch}, dqNeckLimit, dt )
 
   -- Update the motors
@@ -67,7 +67,7 @@ function state.update()
 
 end
 
-function state.exit()  
+function state.exit()
   print(state._NAME..' Exit' )
 end
 

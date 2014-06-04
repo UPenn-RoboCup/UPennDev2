@@ -10,10 +10,11 @@ fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
 fsm.enabled = {
---'Arm',
---'Body',
---'Lidar',
-'Motion'
+  'Arm',
+  --'Lidar',
+  'Body',
+  'Head',
+  'Motion',
 }
 
 fsm.Arm = {
@@ -24,6 +25,31 @@ fsm.Arm = {
   --{'armInit', 'teleop', 'armTeleop'},
 }
 
+fsm.Head = {
+  {'headIdle', 'teleop', 'headTeleop'},
+  {'headIdle', 'center', 'headCenter'},
+  {'headIdle', 'scan', 'headScan'},
+  --
+  {'headTeleop', 'reset', 'headIdle'},
+  {'headTeleop', 'center', 'headCenter'},
+  --
+  {'headCenter', 'done', 'headIdle'},
+  --
+  {'headScan', 'ballfound', 'headTrack'},
+  {'headScan', 'center', 'headCenter'},
+  --
+  {'headTrack', 'balllost', 'headScan'},
+  {'headTrack', 'center', 'headCenter'},
+  {'headTrack', 'timeout', 'headLookGoal'},
+  {'headTrack', 'sweep', 'headSweep'},
+  --
+  {'headLookGoal', 'timeout', 'headTrack'}
+  {'headLookGoal', 'lost', 'headSweep'}
+  {'headSweep', 'done', 'headTrack'}
+}
+
+--[[
+-- For DRC
 fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   {'bodyIdle', 'drive', 'bodyDrive'},
@@ -37,6 +63,23 @@ fsm.Body = {
   {'bodyStepWiden', 'done', 'bodyIdle'},
   {'bodyStepPlan2', 'done', 'bodyIdle'},
 }
+--]]
+
+-- For RoboCup
+fsm.Body = {
+  {'bodyInit', 'done', 'bodyRobocupIdle'},
+  --
+  {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
+  {'bodyRobocupIdle', 'follow', 'bodyStepWaypoint'},
+  {'bodyRobocupIdle', 'stepplan2', 'bodyStepPlan2'}
+  --
+  {'bodyRobocupFollow', 'done', 'bodyRobocupIdle'},
+  --
+  {'bodyStepWaypoint',   'done', 'bodyRobocupIdle'},
+  --
+  {'bodyStepPlan2',   'done', 'bodyRobocupIdle'}
+}
+
 assert(Config.dev.walk, 'Need a walk engine specification')
 fsm.Motion = {
   {'motionIdle', 'timeout', 'motionIdle'},
@@ -59,7 +102,9 @@ fsm.Motion = {
   {Config.dev.walk, 'done', 'motionStance'},
 }
 
-fsm.dqNeckLimit = {90*DEG_TO_RAD,90*DEG_TO_RAD}
+fsm.dqNeckLimit = {
+  90 * DEG_TO_RAD, 90 * DEG_TO_RAD
+}
 
 fsm.headScan = {
   pitch0 = 30*DEG_TO_RAD,
@@ -74,9 +119,10 @@ fsm.headReady = {
 }
 
 --HeadTrack
-fsm.headTrack = {}
-fsm.headTrack.tLost = 2
-fsm.headTrack.timeout = 3
+fsm.headTrack = {
+  tLost = 2,
+  timeout = 3,
+}
 
 --HeadLookGoal: Look up to see the goal
 fsm.headLookGoal = {
@@ -86,15 +132,17 @@ fsm.headLookGoal = {
 }
 
 --HeadLookGoal: Look up to see the goal
-fsm.headLookGoal = {}
-fsm.headLookGoal.yawSweep = 50*DEG_TO_RAD
-fsm.headLookGoal.tScan = 1.0
-fsm.headLookGoal.minDist = 0.40
+fsm.headLookGoal = {
+  yawSweep = 50*DEG_TO_RAD,
+  tScan = 1.0,
+  minDist = 0.40,
+}
 
 --HeadSweep: Look around to find the goal
-fsm.headSweep = {}
-fsm.headSweep.tScan = 1.0
-fsm.headSweep.tWait = 0.25
+fsm.headSweep = {
+  tScan = 1.0,
+  tWait = 0.25,
+}
 
 Config.fsm = fsm
 

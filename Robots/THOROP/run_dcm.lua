@@ -19,6 +19,7 @@ else
 	local chain_id, chain = tonumber(arg[1])
 	if chain_id then
 		metadata = Config.chain[chain_id]
+		print(chain_id,metadata)
 		-- Make reverse subscriber for the chain
 		parent_ch = si.new_subscriber('dcm'..chain_id..'!')
 	else
@@ -42,24 +43,17 @@ local running = true
 -- Corresponding Motor ids
 local bus = lD.new_bus(metadata.device)
 local m_ids = metadata.m_ids
-if not m_ids then
+--if not m_ids then
+	print(debug_prefix, 'Finding IDs...')
 	m_ids = bus:ping_probe()
 	print(debug_prefix, 'FOUND', unpack(m_ids))
-end
+--end
 local n_motors = #m_ids
 -- Verify that the m_ids are present
+print(debug_prefix, 'Checking IDs...')
 for _,m_id in pairs(m_ids) do
-	--print('PING', m_id)
 	local p = bus:ping(m_id)
 	assert(p[1], string.format('%s ID %d not present.', debug_prefix, m_id))
-	-- Check the status return level
-	local s = lD.get_nx_return_delay_time(m_id, bus)
-	local rdt = lD.byte_to_number[lD.nx_registers.return_delay_time[2]](unpack(s[1].parameter))
-	if rdt~=0 then
-		usleep(5e3)
-		lD.set_nx_return_delay_time(m_id, 0, bus)
-	end
-	print('Return delay', rdt, m_id)
 	usleep(5e3)
 end
 -- Cache some settings from the Config
@@ -136,7 +130,7 @@ end
 -- Define parent interaction. NOTE: Openly subscribing to ANYONE. fiddle even
 local parent_cb = {
 	exit = function()
-		running = false,
+		running = false
 	end,
   torque_enable = function()
     local valid_tries, j_id, status, val = 0
@@ -271,7 +265,7 @@ while running do
 		t_elapsed = t - t0
 		kb = collectgarbage'count'
 		print(string.format('\n%s Uptime: %.2f sec, Mem: %d kB, %.1f Hz',
-			debug_prefix, t_elapsed, kb, count / t_d_elapsed)))
+			debug_prefix, t_elapsed, kb, count / t_d_elapsed))
 		t_debug = t
 		count = 0
 	end

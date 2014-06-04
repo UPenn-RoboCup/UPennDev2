@@ -10,10 +10,8 @@ libDynamixel.DP2 = DP2
 local unix = require'unix'
 local stty = require'stty'
 local using_status_return = true
--- 75ms default timeout
-local READ_TIMEOUT = 0.002
--- 200Hz timeout
-local WRITE_TIMEOUT = 1/200
+-- 120Hz default timeout
+local READ_TIMEOUT = 1 / 120
 
 --------------------
 -- Convienence functions for reading dynamixel packets
@@ -71,7 +69,7 @@ local rx_registers = {
 }
 libDynamixel.rx_registers = rx_registers
 
-libDynamixel.model_num_lookup = {
+libDynamixel.model_number_lookup = {
   [-14336] = 'H42-20-S300-R',
   [1] = 'H54-100-S500-R',
   [1] = 'H54-200-S500-R',
@@ -83,7 +81,7 @@ libDynamixel.model_num_lookup = {
 -- http://support.robotis.com/en/product/dynamixel/mx_series/mx-28.htm
 -- Convention: {string.char( ADDR_LOW_BYTE, ADDR_HIGH_BYTE ), n_bytes_of_value}
 local mx_registers = {
-  ['model_num'] = {string.char(0,0),2},
+  ['model_number'] = {string.char(0,0),2},
   ['firmware'] = {string.char(2,0),1},
   ['id'] = {string.char(3,0),1},
   ['baud'] = {string.char(4,0),1},
@@ -130,8 +128,8 @@ local nx_registers = {
   -- ENTER EEPROM AREA
 
   -- General Operation information
-  ['model_num']  = {string.char(0x00,0x00),2},
-  ['model_info'] = {string.char(0x02,0x00),4},
+  ['model_number']  = {string.char(0x00,0x00),2},
+  ['model_information'] = {string.char(0x02,0x00),4},
   ['firmware'] =   {string.char(0x06,0x00),1},
   ['id'] =   {string.char(0x07,0x00),1},
   -- Baud
@@ -139,7 +137,7 @@ local nx_registers = {
   0: 2400 ,1: 57600, 2: 115200, 3: 1Mbps, 4: 2Mbps
   5: 3Mbps, 6: 4Mbps, 7: 4.5Mbps, 8: 10.5Mbps
   --]]
-  ['baud'] = {string.char(0x08,0x00),1},
+  ['baud_rate'] = {string.char(0x08,0x00),1},
   -- Delay in us: wish to have zero
   ['return_delay_time'] = {string.char(9,0),1},
 
@@ -367,11 +365,9 @@ local function get_status (fd, npkt, protocol, timeout)
   return statuses, full_status_str
 end
 
---------------------
--- Set NX functions: returns the command to send on the chain
+-- Set functions: returns the command to send on the chain
 for k,v in pairs(nx_registers) do
-  local addr = v[1]
-  local sz = v[2]
+  local addr, sz = unpack(v)
   local single_wr, sync_wr = nx_single_write[sz], sync_write[sz]
   libDynamixel['set_nx_'..k] = function(motor_ids, values, bus)
     -- Construct the instruction (single or sync)
@@ -382,23 +378,45 @@ for k,v in pairs(nx_registers) do
       local msg = sync_wr(motor_ids, addr, values)
       instruction = DP2.sync_write(addr, sz, string.char(unpack(msg)))
     end
-
 		if not bus then return instruction end
-
 		-- Clear the reading
 		local clr = unix.read(bus.fd)
-
 		-- Write the instruction to the bus
 		stty.flush(bus.fd)
 		local ret = unix.write(bus.fd, instruction)
-
 		-- Grab any status returns
 		if using_status_return and single then
-			return get_status( bus.fd, 1 )
+			return get_status(bus.fd, 1)
 		else
 			return ret
 		end
+  end --function
+end
 
+-- Get NX functions
+for k,v in pairs(nx_registers) do
+  local addr, sz = unpack(v)
+  libDynamixel['get_nx_'..k] = function( motor_ids, bus )
+    -- Construct the instruction (single or sync)
+    local instruction, nids
+    if type(motor_ids)=='number' then
+      -- Single motor
+      instruction = DP2.read_data(motor_ids, addr, sz)
+			nids = 1
+    else
+      instruction = DP2.sync_read(string.char(unpack(motor_ids)), addr, sz)
+      nids = #motor_ids
+    end
+    -- If no pre-existing bus is specified, just return the instruction
+    if not bus then return instruction end
+    -- Clear old status packets
+    local buf
+    repeat buf = unix.read(bus.fd) until not buf
+    -- Write the instruction to the bus
+    stty.flush(bus.fd)
+    local ret = unix.write(bus.fd, instruction)
+    -- Grab the status of the register
+    return get_status( bus.fd, nids )
   end --function
 end
 
@@ -437,41 +455,10 @@ function( register, mx_ids, mx_vals, nx_ids, nx_vals, bus)
 end
 
 --------------------
--- Get NX functions
-for k,v in pairs(nx_registers) do
-  local addr = v[1]
-  local sz   = v[2]
-  libDynamixel['get_nx_'..k] = function( motor_ids, bus )
-    -- Construct the instruction (single or sync)
-    local instruction
-    local nids
-    if type(motor_ids)=='number' then
-      -- Single motor
-      instruction = DP2.read_data(motor_ids, addr, sz)
-			nids = 1
-    else
-      instruction = DP2.sync_read(string.char(unpack(motor_ids)), addr, sz)
-      nids = #motor_ids
-    end
-    -- If no pre-existing bus is specified, just return the instruction
-    if not bus then return instruction end
-    -- Clear old status packets
-    repeat buf = unix.read(bus.fd) until not buf
-    -- Write the instruction to the bus
-    stty.flush(bus.fd)
-    local ret = unix.write(bus.fd, instruction)
-    -- Grab the status of the register
-    return get_status( bus.fd, nids )
-  end --function
-end
-
---------------------
 -- Set MX functions
 for k,v in pairs( mx_registers ) do
+  local addr, sz = unpack(v)
   libDynamixel['set_mx_'..k] = function( motor_ids, values, bus )
-    local addr = v[1]
-    local sz = v[2]
-
     -- Construct the instruction (single or sync)
     local single = type(motor_ids)=='number'
     local instruction = nil
@@ -534,7 +521,7 @@ end
 
 --------------------
 -- Set RX functions
-for k,v in pairs( rx_registers ) do
+for k,v in pairs(rx_registers) do
   libDynamixel['set_rx_'..k] = function( motor_ids, values, bus)
     local addr = v[1]
     local sz = v[2]
@@ -566,7 +553,7 @@ end
 
 --------------------
 -- Get RX functions
-for k,v in pairs( rx_registers ) do
+for k,v in pairs(rx_registers) do
   libDynamixel['get_rx_'..k] = function( motor_id, bus )
     local addr = v[1]
     local sz = v[2]
@@ -631,24 +618,52 @@ local function ping_probe(self, protocol, twait)
   local found_ids = {}
   protocol = protocol or 2
   twait = twait or READ_TIMEOUT
-  for id=0,253 do
+	local lD = libDynamixel
+  local parse_model = byte_to_number[lD.nx_registers.model_number[2]]
+  local parse_firmware = byte_to_number[lD.nx_registers.firmware[2]]
+  local parse_delay = byte_to_number[lD.nx_registers.return_delay_time[2]]
+  for id=0, 253 do
     local status = send_ping( self, id, protocol, twait )
--- TODO: PING PRINT
---    print(id, 'STATUS', status, #status)
     if status and #status>0 then
 			status = status[1]
-      print( string.format('Found %d.0 Motor: %d\n',protocol,status.id) )
+      print( string.format('\nFound %d.0 Motor: %d',protocol, status.id) )
       table.insert( found_ids, status.id )
+      -- Check the model number
+			unix.usleep(1e4)
+      status = lD.get_nx_model_number(status.id, self)
+      status = status[1]
+      --local model = parse_model(unpack(status.parameter))
+      print('\tModel: ',string.format('0x%02X%02X',unpack(status.parameter)))
+      -- Check the firmware
+      status = lD.get_nx_firmware(status.id, self)
+      status = status[1]
+      local firmware = parse_firmware(unpack(status.parameter))
+      print('\tFirmware: '..firmware)
+      -- Check the status return level
+      status = lD.get_nx_return_delay_time(status.id, self)
+      status = status[1]
+      local delay = parse_delay(unpack(status.parameter))
+      print('\tReturn Delay: '..delay)
     end
     -- Wait .1 ms
-    unix.usleep(1e4)
+    unix.usleep(READ_TIMEOUT * 1e6)
   end
   return found_ids
 end
 
+local function close(self)
+  return unix.close(self.fd)==0
+end
+
+local function reset(self)
+  self:close()
+  unix.usleep( 1e3 )
+  self.fd = libDynamixel.open( self.ttyname )
+end
+
 --------------------
 -- Generator of a new bus
-function libDynamixel.new_bus( ttyname, ttybaud )
+function libDynamixel.new_bus(ttyname, ttybaud)
   -------------------------------
   -- Find the device
   local baud = ttybaud or 3000000;
@@ -676,380 +691,21 @@ function libDynamixel.new_bus( ttyname, ttybaud )
 
   -------------------
   -- Object of the Dynamixel
-  local obj = {}
-  obj.fd = fd
-  obj.ttyname = ttyname
-  obj.baud = baud
-  -- Close out the device
-  obj.close = function (self) return unix.close( self.fd )==0 end
-  -- Reset the device
-  obj.reset = function(self)
-    self:close()
-    unix.usleep( 1e3 )
-    self.fd = libDynamixel.open( self.ttyname )
-  end
-  obj.ping_probe = ping_probe
-	obj.ping = send_ping
-  -------------------
-
-  -------------------
-  -- Add libDynamixel functions
-  --[[
-  for name,func in pairs( libDynamixel ) do
-    obj[name] = func
-  end
-  -- new_bus not allowed on a current bus
-  obj.new_bus = nil
-  obj.service = nil
-  --]]
-  -------------------
-
-  -------------------
-  -- Read/write properties
-  obj.t_cmd = 0
-  obj.t_read = 0
-  obj.t_diff_cmd = 0
-  obj.t_diff_read = 0
-  obj.t_waiting = 0
-  --
-  obj.commands = {}
-  obj.requests = {}
-  obj.is_syncing = true
-  obj.nx_on_bus = nil -- ids of nx
-  obj.mx_on_bus = nil -- ids of mx
-  obj.ids_on_bus = nil --all on the bus
-  obj.name = 'Default'
-  obj.message = nil
-  obj.is_reading = false
-  -------------------
+  local obj = {
+    fd = fd,
+    ttyname = ttyname,
+    baud = baud,
+    close = close,
+    reset = reset,
+    ping_probe = ping_probe,
+    ping = send_ping,
+    nx_on_bus = nil, -- ids of nx
+    mx_on_bus = nil, -- ids of mx
+    ids_on_bus = nil, --all on the bus
+    name = 'Default',
+  }
 
   return obj
-end
-
----------------------------
--- Service multiple Dynamixel buses
-libDynamixel.service = function( dynamixels, main )
-
-  -- Enable the main function as a coroutine thread
-  local main_thread = nil
-  if main then
-    main_thread = coroutine.create( main )
-  end
-
-  -- Start the streaming of each dynamixel
-  -- Instantiate the dynamixel coroutine thread
-  local dynamixel_fds = {}
-  local fd_to_dynamixel = {}
-  for i,dynamixel in ipairs(dynamixels) do
-    -- Set up easy access to select IDs
-    table.insert(dynamixel_fds,dynamixel.fd)
-    fd_to_dynamixel[dynamixel.fd] = dynamixel
-    dynamixel.thread = coroutine.create(
-    function(data_str,t)
-      -- time is the parameter
-      -- Make a read all NX command
-      local DP = DP2
-
-      local did_command = false
-      local did_request = false
-      -- The coroutine should never end
-      local fd = dynamixel.fd
-      -- Update the time after every yield
-      -- See what we got
-      data_str, t = coroutine.yield(0)
-
-      while true do -- read/write loop
-
-        --------------------
-        -- Sync write an command in the queue
-        dynamixel.is_reading = false
-        --print(type(dynamixel.commands))
-        --util.ptable(dynamixel.commands)
-        for _,cmd in ipairs(dynamixel.commands) do
-
-          --util.ptable(cmd)
-          -- flush out old things in the buffer
-          local flush_ret = stty.flush(fd)
-          -- write the new command
-          local t_write = unix.time()
-          local cmd_ret = unix.write( fd, cmd.pkt )
-          -- possibly need a drain? Robotis does not
-          local flush_ret = stty.drain(fd)
-          -- check if it wrote
-          assert(#cmd.pkt==cmd_ret, string.format('BAD INST WRITE: %s %d',dynamixel.name,cmd_ret))
-          -- What if there was data on the bus... that is in the non-sync read
-          -- It would be an error status
-          -- run the callback
-          cmd.callback(t_write,cmd.reg)
-          -- save the time
-          local t_cmd = unix.time()
-          dynamixel.t_diff_cmd = t_cmd-dynamixel.t_cmd
-          dynamixel.t_cmd = t_cmd
-          -- yield time remaining
-          data_str, t = coroutine.yield( math.max(WRITE_TIMEOUT-(t_cmd-t_write),0) )
-          --data_str, t = coroutine.yield( WRITE_TIMEOUT )
-        end -- If sent command
-
-        --------------------
-        -- Request data from the chain
-        for _,request in ipairs(dynamixel.requests) do
-          dynamixel.is_reading = true
-          -- Non-block saving a leftovers (if any)
-          local leftovers = unix.read(fd)
-          assert(leftovers~=-1, 'BAD Clearing READ')
-          -- Write the read request command to the chain
-          local inst = request.inst
-          stty.flush(fd)
-          local req_ret = unix.write(fd, inst)
-          -- If -1 returned, the bus may be detached - throw an error
-          assert(req_ret==#inst,string.format('BAD READ REQ on %s',dynamixel.name))
-          -- Set a timeout for this request
-          dynamixel.timeout = t + READ_TIMEOUT
-          -- Yield for others on their FDs
-
-          -- Accrue values from the status packets
-          local values = {}
-          local pkts = {}
-          local nids = request.nids
-          local n_recv = 0
-          local new_status_str
-          --print('Expecting',nids)
-          local reg = request.reg
-          --print('reg',reg,#dynamixel.requests)
-          status_str = ''
-          repeat
-            did_request = true
-            new_status_str, t = coroutine.yield(READ_TIMEOUT)
-            assert(new_status_str~=-1,string.format('BAD READ: %s',dynamixel.name))
-            -- What is the meaning of a non-read here?
-            if not new_status_str then
-              --print('READ TIMEOUT',n_recv,nids,dynamixel.name)
-              break
-            end
-            --assert(new_status_str, string.format('NO READ: %s',dynamixel.name))
-            -- Process the status string into a packet
-            pkts, status_str = DP.input( status_str..new_status_str )
-            n_recv = n_recv + #pkts
-            --print('npkts',#pkts,n_recv)
-            -- For each packet, append to the values table
-            for _,pkt in ipairs(pkts) do
-              local status = DP.parse_status_packet( pkt )
-              local read_parser = byte_to_number[ #status.parameter ]
-              -- Convert the value into a number from bytes if a parser exists!
-              if read_parser then
-                values[status.id] = read_parser( unpack(status.parameter) )
-              else
-                values[status.id] = status.parameter
-              end
-            end
-            -- Remember the read time
-            dynamixel.t_diff_read = t-dynamixel.t_read
-            dynamixel.t_read = t
-
-            if dynamixel.callback then dynamixel:callback(values,reg) end
-          until n_recv==nids
-        end -- if requested data
-
-        -- when done reading, clear the list
-        for i,_ in ipairs(dynamixel.requests) do
-          dynamixel.requests[i] = nil
-        end
-
-        dynamixel.is_reading = false
-
-        -- Get right back into the game
-        data_str, t = coroutine.yield(1e-6)
-
-      end -- read/write loop
-    end) -- coroutine function
-    dynamixel.status, dynamixel.t_waiting = coroutine.resume(dynamixel.thread,false,unix.time() )
-    dynamixel.t_waiting = dynamixel.t_waiting+unix.time()
-  end
-
-  local select_timeout = WRITE_TIMEOUT
-  -- While servicing the dynamixel fds
-  while #dynamixel_fds>0 do
-    --------------------
-    -- Perform select on all dynamixels
-    local t00 = unix.time()
-    local status, ready = unix.select( dynamixel_fds, select_timeout )
-    --unix.usleep(WRITE_TIMEOUT)
-    local t = unix.time()
-    --print('sleep',t-t00)
-    local old_to = select_timeout
-    select_timeout = WRITE_TIMEOUT
-
-    --util.ptable(ready)
-    --print(status)
---print('\n\n\n\nHIHIHIHselect_timeout',select_timeout,old_to)
-    --------------------
-    -- Loop through the dynamixel chains
-    --for i_fd,is_ready in pairs(ready) do
-    -- Grab the dynamixel chain
-    --local who_to_service = fd_to_dynamixel[i_fd]
-    for i_fd,who_to_service in pairs(fd_to_dynamixel) do
-      --local is_ready = ready[i_fd]
-
-      -- Grab data
-      local str = unix.read(i_fd)
-      local status_code, param
---[[
-      print(who_to_service.name,'ncmd',
-        #who_to_service.commands,#who_to_service.requests,
-        type(str))
---]]
-
-      -- Check if the Dynamixel has information available
-      if who_to_service.is_reading and (not str) and who_to_service.t_waiting>t then
-        --print('waiting...',who_to_service.name)
-        -- do not resume, since we are waiting on the data
-      elseif (not who_to_service.is_reading) and str then
-        -- We also have nothing to send...
-        --print('what???',str)
-        -- Non-block saving a leftovers (if any)
-        assert(unix.read(i_fd)~=-1,'Unplugged?')
-      elseif str then
-        status_code, param = coroutine.resume(who_to_service.thread,str,t)
-        assert(status_code,'dead chain '..who_to_service.name)
-        who_to_service.t_waiting = param+t
-      elseif (#who_to_service.commands>0) or (#who_to_service.requests>0) then
-        -- Resume the thread if not too soon
-        local t_diff_next = who_to_service.t_waiting-t
-        --print('Resuming...',who_to_service.name,t_diff_next)
-        if t_diff_next<=0 then
-          --print('Resuming...',who_to_service.name,t_diff_next)
-          status_code, param = coroutine.resume(who_to_service.thread,str,t)
-          --print(status_code,'status_code',param)
-          assert(status_code,'dead chain '..who_to_service.name..param)
-          who_to_service.t_waiting = param+t
-        end
-      end -- if resuming
-      --print('waiting',who_to_service.t_waiting-t)
-
---[[
-      -- If a bad status code
-          if not status_code then
-            print( 'Dead dynamixel coroutine!', who_to_service.name, param )
-            who_to_service:close()
-            who_to_service.message = param
-            local i_to_remove = 0
-            for i,fd in ipairs(dynamixel_fds) do
-              if fd==i_fd then i_to_remove = i end
-            end
-            table.remove(dynamixel_fds,i_to_remove)
-          end
-          --]]
-
-      -- Update the timeout
-      select_timeout = math.min(select_timeout,who_to_service.t_waiting-t)
-      --[[
-      if param then
-        print('select_timeout',select_timeout,'param',param,who_to_service.t_waiting-t)
-      end
-      --]]
-      select_timeout = math.max(0,select_timeout)
-
-
---]]
-    end -- pairs(ready)
-
-    --------------------
-    -- Process the main thread after each coroutine yields
-    -- This main loop should update the dynamixel chain commands
-    local status_code, main_param = coroutine.resume( main_thread )
-    assert(status_code,'Dead main coroutine! '..main_param)
-    --io.flush(stdout)
-
-  end -- while servicing
-  print'Nothing left to service!'
-end
-
-libDynamixel.straight_service = function( dynamixel, main )
-  local fd = dynamixel.fd
-  -------------
-  -- WRITING --
-  -------------
-  for i,cmd in pairs(dynamixel.commands) do
-    -- flush out old things in the buffer
-    local flush_ret = stty.flush(fd)
-    -- write the new command
-    local t_write = unix.time()
-    local cmd_ret = unix.write( fd, cmd )
-    -- possibly need a drain? Robotis does not
-    local flush_ret = stty.drain(fd)
-    -- save the time
-    local t_cmd = unix.time()
-    dynamixel.t_diff_cmd = t_cmd-dynamixel.t_cmd
-    dynamixel.t_cmd = t_cmd
-    -- Double check
-    assert(#cmd==cmd_ret,
-      string.format('BAD INST WRITE: %s',dynamixel.name))
-    -- Sleep for the next write
-    --print('write time in ms',(t_cmd-t_write)*1000 )
-    if i<#dynamixel.commands then
-      --print('here',i,#cmd)
-      unix.usleep( (WRITE_TIMEOUT-(t_cmd-t_write))*1e6 )
-    end
-  end -- If sent command
-
-  -------------
-  -- READING --
-  -------------
-  --[[
-  for _,request in pairs(dynamixel.requests) do
-    -- Non-block saving a leftovers (if any)
-    local leftovers = unix.read(fd)
-    assert(leftovers~=-1, 'BAD Clearing READ')
-    -- Write the read request command to the chain
-    local inst = request.inst
-    stty.flush(fd)
-    local req_ret = unix.write(fd, inst)
-    -- save the time of request
-    local t_request = unix.time()
-    -- If -1 returned, the bus may be detached - throw an error
-    assert(req_ret==#inst, string.format('BAD READ REQ on %s',dynamixel.name))
-
-    -- Accrue values from the status packets
-    local values = {}
-    local pkts
-    local nids = request.nids
-    local n_recv = 0
-    --print('Expecting',nids)
-    local register = request.reg
-    status_str = ''
-    repeat
-      local status = unix.select({fd},READ_TIMEOUT)
-      if status==0 then break end
-      local t_read = unix.time()
-      local new_status_str = unix.read(fd)
-      -- Check if timing out
-      if not new_status_str then break end
-      -- Check for a bad string
-      assert(new_status_str~=-1,string.format('BAD READ: %s',dynamixel.name))
-      -- Process the status string into a packet
-      pkts, status_str = DP2.input( status_str..new_status_str )
-      n_recv = n_recv + #pkts
-      --print('npkts',#pkts,n_recv)
-      -- For each packet, append to the values table
-      for _,pkt in ipairs(pkts) do
-        local status      = DP2.parse_status_packet( pkt )
-        local read_parser = byte_to_number[ #status.parameter ]
-        -- Convert the value into a number from bytes if a parser exists!
-        if read_parser then
-          values[status.id] = read_parser( unpack(status.parameter) )
-        else
-          values[status.id] = status.parameter
-        end
-      end
-      -- Callback handling
-      if dynamixel.callback then dynamixel:callback(values,register) end
-    until n_recv==nids
-    -- Remember the read time
-    dynamixel.t_diff_read = t_request-dynamixel.t_read
-    dynamixel.t_read = t_request
-  end -- if requested data
-  --]]
-
 end
 
 return libDynamixel

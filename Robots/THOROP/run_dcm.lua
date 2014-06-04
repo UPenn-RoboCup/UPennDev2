@@ -164,9 +164,10 @@ if metadata.name=='lleg' or metadata.name=='rleg' then
 	end
 	function parent_cb.ft()
 		local status = lD.get_nx_data(ft_ms, bus)
-		--local l_ft = ffi.cast('ft*', ffi.new('int8_t[8]', status[1].parameter))
-		ffi.copy(ft1_c, status[1].raw_parameter, ft_sz)
-		ffi.copy(ft2_c, status[2].raw_parameter, ft_sz)
+		local ft1_c = ffi.cast('ft*', ffi.new('int8_t[8]', status[1].parameter))
+		local ft2_c = ffi.cast('ft*', ffi.new('int8_t[8]', status[2].parameter))
+		--ffi.copy(ft1_c, status[1].raw_parameter, ft_sz)
+		--ffi.copy(ft2_c, status[2].raw_parameter, ft_sz)
 		-- Just do a sync read here; can try reliable later, if desired...
 		ft_ptr[0] = 3.3 * ft1_c.a / 4096 - 1.65
 		ft_ptr[1] = 3.3 * ft1_c.b / 4096 - 1.65

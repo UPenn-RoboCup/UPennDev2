@@ -49,6 +49,7 @@ local m_ids = metadata.m_ids
 	print(debug_prefix, 'FOUND', unpack(m_ids))
 --end
 local n_motors = #m_ids
+local t_sleep = 1 / (metadata.hz or 125)
 -- Verify that the m_ids are present
 print(debug_prefix, 'Checking IDs...')
 for _,m_id in pairs(m_ids) do
@@ -236,7 +237,6 @@ print(debug_prefix, 'Begin loop')
 local t0, t = get_time()
 local t_debug, t_last, t_diff = t0, t0
 local count, t_elapsed, t_d_elapsed, kb = 0
-local t_sleep = 1 / (metadata.hz or 125)
 -- Garbarge collect before beginning
 Config = nil
 metadata = nil

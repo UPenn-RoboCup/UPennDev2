@@ -622,6 +622,7 @@ local function ping_probe(self, protocol, twait)
   local parse_model = byte_to_number[lD.nx_registers.model_number[2]]
   local parse_firmware = byte_to_number[lD.nx_registers.firmware[2]]
   local parse_delay = byte_to_number[lD.nx_registers.return_delay_time[2]]
+  local parse_mode = byte_to_number[lD.nx_registers.mode[2]]
   for id=0, 253 do
     local status = send_ping( self, id, protocol, twait )
     if status and #status>0 then
@@ -644,6 +645,11 @@ local function ping_probe(self, protocol, twait)
       status = status[1]
       local delay = parse_delay(unpack(status.parameter))
       print('\tReturn Delay: '..delay)
+      -- Check the Operating Mode
+      status = lD.get_nx_mode(status.id, self)
+      status = status[1]
+      local mode = parse_delay(unpack(status.parameter))
+      print('\tOperating Mode: '..mode)
     end
     -- Wait .1 ms
     unix.usleep(READ_TIMEOUT * 1e6)

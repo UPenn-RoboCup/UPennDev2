@@ -19,11 +19,11 @@ end
 -- Fallback on undefined metadata
 assert(metadata, 'IMU | No metadata found!')
 local running = true
+local function shutdown()
+	running = false
+end
 if not IS_THREAD then
   signal = require'signal'
-  function shutdown ()
-    running = false
-  end
   signal.signal("SIGINT", shutdown)
   signal.signal("SIGTERM", shutdown)
 end
@@ -47,6 +47,7 @@ local acc, gyro, mag, rpy = vector.new(3), vector.new(3), vector.new(3), vector.
 local function do_read ()
 	-- Get the accelerometer, gyro, magnetometer, and euler angles
 	local a, g, m, e = microstrain:read_ahrs()
+	if not a then return end
 	-- Quickly set in shared memory
 	acc_ptr[0], acc_ptr[1], acc_ptr[2] = a[1], a[2], -a[0]
 	gyro_ptr[0], gyro_ptr[1], gyro_ptr[2] = g[1], g[2], -g[0]
@@ -100,10 +101,12 @@ while running do
 	---------------------
 	-- Parent Commands --
 	---------------------
-	local parent_msg = parent_ch:receive(true)
-	if parent_msg then
-		if parent_msg=='exit' then
-			running = false
+	local parent_msgs = parent_ch:receive(true)
+	if parent_msgs then
+		for _, msg in ipairs(parent_msgs) do
+			if msg=='exit' then
+				shutdown()
+			end
 		end
 	end
 	collectgarbage('step')
@@ -111,4 +114,5 @@ end
 
 microstrain:ahrs_off()
 microstrain:close()
-if IS_THREAD then parent_msg:send'done' end
+if IS_THREAD then parent_ch:send'done' end
+print('IMU | Exit')

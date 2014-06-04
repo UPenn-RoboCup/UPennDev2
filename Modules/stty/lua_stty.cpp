@@ -123,11 +123,10 @@ static int lua_stty_serial(lua_State *L) {
 
 static int lua_stty_speed(lua_State *L) {
 	int fd = lua_tofd(L, 1);
-	unsigned int speed = luaL_checkint(L,2);
+	speed_t speed = luaL_checkint(L, 2);
 
 #ifdef __APPLE__
-	speed_t sp = speed;
-	if (ioctl(fd, IOSSIOSPEED, &sp) == -1){
+	if (ioctl(fd, IOSSIOSPEED, &speed) == -1){
 		//fprintf( stdout, "Error %d calling ioctl. %d\n", errno, speed);
 		//fflush(stdout);
 		return luaL_error(L, "Could not set apple speed.");

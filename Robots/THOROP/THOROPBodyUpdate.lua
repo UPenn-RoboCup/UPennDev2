@@ -403,7 +403,7 @@ function Body.exit ()
 	-- Tell the devices to exit cleanly
   for _,ch in pairs(dev_chs) do ch:send'exit' end
 	-- Wait for everyone to exit cleanly
-	unix.usleep(1e4)
+	unix.usleep(1e5)
 	-- Check if we get those messages
 	body_poll:poll(0)
 	-- TODO: Should join the thread...

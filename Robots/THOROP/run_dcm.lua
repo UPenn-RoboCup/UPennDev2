@@ -43,11 +43,11 @@ local running = true
 -- Corresponding Motor ids
 local bus = lD.new_bus(metadata.device)
 local m_ids = metadata.m_ids
---if not m_ids then
+if not m_ids then
 	print(debug_prefix, 'Finding IDs...')
 	m_ids = bus:ping_probe()
 	print(debug_prefix, 'FOUND', unpack(m_ids))
---end
+end
 local n_motors = #m_ids
 local t_sleep = 1 / (metadata.hz or 125)
 -- Verify that the m_ids are present

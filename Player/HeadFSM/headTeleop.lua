@@ -7,7 +7,7 @@ require'hcm'
 local util = require('util')
 
 -- Neck limits
-local dqNeckLimit = {45*DEG_TO_RAD,45*DEG_TO_RAD}
+local dqNeckLimit = {45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD}
 
 function state.entry()
   print(state._NAME..' Entry' ) 

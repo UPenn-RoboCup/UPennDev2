@@ -9,6 +9,11 @@ local headTiltScan = require'headTiltScan'
 local headTeleop = require'headTeleop'
 local headCenter = require'headCenter'
 
+local headScan = require'headScan'
+local headTrack = require'headTrack'
+local headLookGoal = require'headLookGoal'
+local headSweep = require'headSweep'
+
 -- Instantiate a new state machine with an initial state
 -- This will be returned to the user
 local sm = fsm.new(headIdle)
@@ -16,19 +21,34 @@ sm:add_state(headTiltScan)
 sm:add_state(headTeleop)
 sm:add_state(headCenter)
 
+sm:add_state(headScan)
+sm:add_state(headTrack)
+sm:add_state(headLookGoal)
+sm:add_state(headSweep)
+
+
 -- Setup the transistions for this FSM
---sm:set_transition(headIdle, 'tiltscan', headTiltScan)
 sm:set_transition(headIdle, 'teleop', headTeleop)
 sm:set_transition(headIdle, 'center', headCenter)
---
---sm:set_transition(headTiltScan, 'tiltscan', headTiltScan)
---sm:set_transition(headTiltScan, 'reset', headIdle)
---sm:set_transition(headTiltScan, 'center', headCenter)
 --
 sm:set_transition(headTeleop, 'reset', headIdle)
 sm:set_transition(headTeleop, 'center', headCenter)
 --
 sm:set_transition(headCenter, 'done', headIdle)
+--
+sm:set_transition(headIdle, 'scan', headScan)
+sm:set_transition(headScan, 'ballfound', headTrack)
+sm:set_transition(headScan, 'center', headCenter)
+--
+sm:set_transition(headTrack, 'balllost', headScan)
+sm:set_transition(headTrack, 'center', headCenter)
+sm:set_transition(headTrack, 'timeout', headLookGoal)
+sm:set_transition(headTrack, 'sweep', headSweep)
+--
+sm:set_transition(headLookGoal, 'timeout', headTrack)
+sm:set_transition(headLookGoal, 'lost', headSweep)
+--
+sm:set_transition(headSweep, 'done', headTrack)
 
 --------------------------
 -- Setup the FSM object --

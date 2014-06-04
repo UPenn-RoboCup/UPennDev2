@@ -8,32 +8,13 @@ local simple_ipc = require'simple_ipc'
 --local timeout = 10.0
 local t_entry, t_update, t_exit
 
--- Require all necessary fsm channels
-local arm_ch    = simple_ipc.new_publisher('ArmFSM',true)
-local head_ch   = simple_ipc.new_publisher('HeadFSM',true)
-local lidar_ch  = simple_ipc.new_publisher('LidarFSM',true)
-local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
-
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-  
-  -- Torque on the motors...
-  Body.set_larm_torque_enable(1)
-  Body.set_rarm_torque_enable(1)
-
-  arm_ch:send'init'
-  lidar_ch:send'pan'
-  --head_ch:send'teleop'
-  head_ch:send'scan'
-  motion_ch:send'stand'
-
-  --Reset pose
-  wcm.set_robot_odometry({0,0,0})
-  wcm.set_robot_pose({0,0,0})
+  hcm.set_ball_approach(0)
 end
 
 function state.update()
@@ -45,9 +26,25 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-  --TODO: Check whether all FSMs have done initialzing 
-  return 'done'
 
+  --if we see ball right now and ball is far away start moving
+
+  local ball_elapsed = Body.get_time()-wcm.get_ball_t()
+  if ball_elapsed<0.1 then --ball found
+    local ballx = wcm.get_ball_x()
+    local bally = wcm.get_ball_y()
+    local ballr = math.sqrt(ballx*ballx+bally*bally)
+    local balla = math.atan2(bally,ballx)
+    -- if ballr>0.6 then
+    --   if hcm.get_ball_approach()==1 then return "ballfound" end
+    -- end
+    
+    if hcm.get_ball_approach()==1 then return 'ballfound' end
+  end
+
+
+  --TODO: Check whether all FSMs have done initialzing 
+--  return 'done'
 end
 
 function state.exit()

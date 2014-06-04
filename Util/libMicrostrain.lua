@@ -118,7 +118,7 @@ local function configure(self, do_permanent)
 end
 
 local function close(self)
-  write_command(microstrain.fd, idle_cmd)
+  write_command(self.fd, idle_cmd)
   return unix.close(self.fd) == 0
 end
 

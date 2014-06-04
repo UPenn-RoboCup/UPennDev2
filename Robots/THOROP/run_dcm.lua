@@ -19,6 +19,7 @@ else
 	local chain_id, chain = tonumber(arg[1])
 	if chain_id then
 		metadata = Config.chain[chain_id]
+		print(chain_id,metadata)
 		-- Make reverse subscriber for the chain
 		parent_ch = si.new_subscriber('dcm'..chain_id..'!')
 	else
@@ -129,7 +130,7 @@ end
 -- Define parent interaction. NOTE: Openly subscribing to ANYONE. fiddle even
 local parent_cb = {
 	exit = function()
-		running = false,
+		running = false
 	end,
   torque_enable = function()
     local valid_tries, j_id, status, val = 0
@@ -264,7 +265,7 @@ while running do
 		t_elapsed = t - t0
 		kb = collectgarbage'count'
 		print(string.format('\n%s Uptime: %.2f sec, Mem: %d kB, %.1f Hz',
-			debug_prefix, t_elapsed, kb, count / t_d_elapsed)))
+			debug_prefix, t_elapsed, kb, count / t_d_elapsed))
 		t_debug = t
 		count = 0
 	end

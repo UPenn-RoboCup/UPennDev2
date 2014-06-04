@@ -618,27 +618,29 @@ local function ping_probe(self, protocol, twait)
   local found_ids = {}
   protocol = protocol or 2
   twait = twait or READ_TIMEOUT
-  local parse_model = lD.byte_to_number[lD.nx_registers.model_number[2]]
-  local parse_firmware = lD.byte_to_number[lD.nx_registers.firmware[2]]
-  local parse_delay = lD.byte_to_number[lD.nx_registers.return_delay_time[2]]
+	local lD = libDynamixel
+  local parse_model = byte_to_number[lD.nx_registers.model_number[2]]
+  local parse_firmware = byte_to_number[lD.nx_registers.firmware[2]]
+  local parse_delay = byte_to_number[lD.nx_registers.return_delay_time[2]]
   for id=0, 253 do
     local status = send_ping( self, id, protocol, twait )
     if status and #status>0 then
 			status = status[1]
-      print( string.format('Found %d.0 Motor: %d\n',protocol, status.id) )
+      print( string.format('\nFound %d.0 Motor: %d',protocol, status.id) )
       table.insert( found_ids, status.id )
       -- Check the model number
-      status = lD.get_nx_model_number(status.id, bus)
+			unix.usleep(1e4)
+      status = lD.get_nx_model_number(status.id, self)
       status = status[1]
-      local model = parse_model(unpack(status.parameter))
-      print('\tModel: '..model)
+      --local model = parse_model(unpack(status.parameter))
+      print('\tModel: ',string.format('0x%02X%02X',unpack(status.parameter)))
       -- Check the firmware
-      status = lD.get_nx_firmware(status.id, bus)
+      status = lD.get_nx_firmware(status.id, self)
       status = status[1]
       local firmware = parse_firmware(unpack(status.parameter))
       print('\tFirmware: '..firmware)
       -- Check the status return level
-      status = lD.get_nx_return_delay_time(m_id, bus)
+      status = lD.get_nx_return_delay_time(status.id, self)
       status = status[1]
       local delay = parse_delay(unpack(status.parameter))
       print('\tReturn Delay: '..delay)

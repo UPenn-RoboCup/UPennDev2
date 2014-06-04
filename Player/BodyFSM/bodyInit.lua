@@ -9,10 +9,10 @@ local simple_ipc = require'simple_ipc'
 local t_entry, t_update, t_exit
 
 -- Require all necessary fsm channels
-local arm_ch    = simple_ipc.new_publisher('ArmFSM',true)
-local head_ch   = simple_ipc.new_publisher('HeadFSM',true)
-local lidar_ch  = simple_ipc.new_publisher('LidarFSM',true)
-local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
+local arm_ch    = simple_ipc.new_publisher('ArmFSM!')
+local head_ch   = simple_ipc.new_publisher('HeadFSM!')
+local lidar_ch  = simple_ipc.new_publisher('LidarFSM!')
+local motion_ch = simple_ipc.new_publisher('MotionFSM!')
 
 function state.entry()
   print(state._NAME..' Entry' )

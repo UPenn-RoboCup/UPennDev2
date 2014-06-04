@@ -42,7 +42,7 @@ if not Config.fsm.disabled then load_fsm() end
 -- Timing
 local t_sleep = 1 / Config.fsm.update_rate
 local t0, t = get_time()
-local debug_interval, t_debug = 1.0, t0
+local debug_interval, t_debug = 2.0, t0
 
 -- Entry
 for _, my_fsm in pairs(state_machines) do

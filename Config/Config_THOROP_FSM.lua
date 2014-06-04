@@ -4,16 +4,17 @@ local fsm = {}
 
 -- Do we disable FSMs?
 fsm.disabled = false
+-- fsm.disabled = true
 
 -- Update rate in Hz
 fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
 fsm.enabled = {
-  --'Arm',
+  'Arm',
   --'Lidar',
-  --'Body',
-  --'Head',
+  'Body',
+  'Head',
   'Motion',
 }
 

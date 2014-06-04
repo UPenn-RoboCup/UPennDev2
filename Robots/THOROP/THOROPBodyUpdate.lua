@@ -547,8 +547,8 @@ elseif IS_WEBOTS then
   local ENABLE_CHEST_LIDAR  = false
   local ENABLE_HEAD_LIDAR = false
   local ENABLE_KINECT = false
-  local ENABLE_POSE   = false
-  local ENABLE_IMU   = false
+  local ENABLE_POSE   = true
+  local ENABLE_IMU   = true
 
   local torch = require'torch'
   torch.Tensor = torch.DoubleTensor
@@ -727,7 +727,9 @@ elseif IS_WEBOTS then
 		-- Set actuator commands from shared memory
 		for idx, jtag in ipairs(tags.joints) do
 			local cmd = Body.get_command_position(idx,idx)  -- TODO
-      local pos = Body.get_position(idx, idx)
+      -- local pos = Body.get_position(idx, idx)
+      local pos = Body.get_command_position(idx, idx)
+      
 			-- TODO: What is velocity?
 			local vel = 0 or Body.get_command_velocity(idx)
 			local en  = 1 or Body.get_torque_enable(idx)
@@ -771,22 +773,21 @@ elseif IS_WEBOTS then
     if ENABLE_IMU then
       -- Accelerometer data (verified)
       local accel = webots.wb_accelerometer_get_values(tags.accelerometer)
-      dcm.sensorPtr.accelerometer[1] = (accel[1]-512)/128
-      dcm.sensorPtr.accelerometer[2] = (accel[2]-512)/128
-      dcm.sensorPtr.accelerometer[3] = (accel[3]-512)/128
+      dcm.sensorPtr.accelerometer[0] = (accel[1]-512)/128
+      dcm.sensorPtr.accelerometer[1] = (accel[2]-512)/128
+      dcm.sensorPtr.accelerometer[2] = (accel[3]-512)/128
 
       -- Gyro data (verified)
       local gyro = webots.wb_gyro_get_values(tags.gyro)
-
-      dcm.sensorPtr.gyro[1] = -(gyro[1]-512)/512*39.24
-      dcm.sensorPtr.gyro[2] = -(gyro[2]-512)/512*39.24
-      dcm.sensorPtr.gyro[3] = (gyro[3]-512)/512*39.24
+      dcm.sensorPtr.gyro[0] = -(gyro[1]-512)/512*39.24
+      dcm.sensorPtr.gyro[1] = -(gyro[2]-512)/512*39.24
+      dcm.sensorPtr.gyro[2] = (gyro[3]-512)/512*39.24
     end
 
     -- FSR
     if ENABLE_FSR then
-      dcm.sensorPtr.lfoot[1] = webots.wb_touch_sensor_get_value(tags.l_fsr)*4
-      dcm.sensorPtr.rfoot[1] = webots.wb_touch_sensor_get_value(tags.r_fsr)*4
+      dcm.sensorPtr.lfoot[0] = webots.wb_touch_sensor_get_value(tags.l_fsr)*4
+      dcm.sensorPtr.rfoot[0] = webots.wb_touch_sensor_get_value(tags.r_fsr)*4
     end
 
     -- GPS and compass data
@@ -803,7 +804,7 @@ elseif IS_WEBOTS then
       local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
 
       --SJ: we need to remap rpy for webots
-      dcm.sensorPtr.rpy[1],dcm.sensorPtr.rpy[2],dcm.sensorPtr.rpy[3] =
+      dcm.sensorPtr.rpy[0],dcm.sensorPtr.rpy[1],dcm.sensorPtr.rpy[2] =
         rpy[2],rpy[1],-rpy[3]
 
       --[[
@@ -821,15 +822,16 @@ elseif IS_WEBOTS then
 			if jtag>0 then
 				local val = webots.wb_motor_get_position( jtag )
 				local rad = servo.direction[idx] * val - servo.rad_offset[idx]
-        dcm.sensorPtr.position[idx] = rad
+        dcm.sensorPtr.position[idx-1] = rad
 			end
 		end
+    dcm.set_sensor_position(dcm.get_actuator_command_position())
 
     -- Grab a camera frame
     if ENABLE_CAMERA then
-      local camera_fr = webots.to_rgb(tags.hand_camera)
-      local w = webots.wb_camera_get_width(tags.hand_camera)
-      local h = webots.wb_camera_get_height(tags.hand_camera)
+      local camera_fr = webots.to_rgb(tags.head_camera)
+      local w = webots.wb_camera_get_width(tags.head_camera)
+      local h = webots.wb_camera_get_height(tags.head_camera)
       local jpeg_fr  = jpeg.compress_rgb(camera_fr,w,h)
     end
     -- Grab a lidar scan

@@ -562,6 +562,7 @@ elseif IS_WEBOTS then
 	local lidar1_ch = simple_ipc.new_publisher'lidar1'
 
   local webots = require'webots'
+	local carray = require'carray'
   -- Start the system
   webots.wb_robot_init()
   -- Acquire the timesteps
@@ -800,12 +801,11 @@ elseif IS_WEBOTS then
       local pose    = vector.pose{gps[3], gps[1], angle}
       --wcm.set_robot_pose( pose )
       wcm.set_robot_pose_gps( pose )
-
       local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
 
       --SJ: we need to remap rpy for webots
       dcm.sensorPtr.rpy[0],dcm.sensorPtr.rpy[1],dcm.sensorPtr.rpy[2] =
-        rpy[2],rpy[1],-rpy[3]
+        rpy[2], rpy[1], -rpy[3]
 
       --[[
       print('rpy',unpack(rpy) )
@@ -825,7 +825,8 @@ elseif IS_WEBOTS then
         dcm.sensorPtr.position[idx-1] = rad
 			end
 		end
-    dcm.set_sensor_position(dcm.get_actuator_command_position())
+		--print('pos', dcm.get_sensor_position())
+    --dcm.set_sensor_position(dcm.get_actuator_command_position())
 
     -- Grab a camera frame
     if ENABLE_CAMERA then

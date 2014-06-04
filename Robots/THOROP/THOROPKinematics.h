@@ -85,7 +85,7 @@ const double comPelvisZ = -0.1208;
 
 const double comUpperLegX = -0.0082;
 const double comUpperLegY = 0.0211;
-const double comUpperLegZ = -0.124;;
+const double comUpperLegZ = -0.124;
 
 const double comLowerLegX = 0.0074;
 const double comLowerLegY = -0.0313;

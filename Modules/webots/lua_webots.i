@@ -9,13 +9,6 @@
 %}
 %include <webots/types.h>
 
-/* This is Webots7 only!! */
-%{
-#include <webots/inertial_unit.h>
-#include <webots/motor.h>
-%}
-%include <webots/inertial_unit.h>
-%include <webots/motor.h>
 
 %{
 #include <webots/accelerometer.h>
@@ -192,3 +185,12 @@ unsigned char * to_rgb( int tag ) {
 %typemap(in) (const double values[4]);
 
 %include <webots/touch_sensor.h>
+
+
+/* This is Webots7 only!! */
+%{
+#include <webots/inertial_unit.h>
+#include <webots/motor.h>
+%}
+%include <webots/inertial_unit.h>
+%include <webots/motor.h>

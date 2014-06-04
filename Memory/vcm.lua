@@ -26,11 +26,16 @@ shared.wire.bbox = vector.zeros(4)
 --Added for vision processing (mainly for robocup)
 shared.image={}
 
-local processed_img_width = Config.camera.head.resolution[1]
-local processed_img_height = Config.camera.head.resolution[2]
+-- For head camera
+local processed_img_width = Config.camera[1].w
+local processed_img_height = Config.camera[1].h
+
+-- local processed_img_width = Config.camera.head.resolution[1]
+-- local processed_img_height = Config.camera.head.resolution[2]
+
 
 shared.image.lut = 262144
-shared.image.yuyv = 2*Config.camera.head.resolution[1]*Config.camera.head.resolution[2]
+shared.image.yuyv = 2*processed_img_width*processed_img_height
 shared.image.labelA = (processed_img_width/Config.vision.scaleA)*(processed_img_height/Config.vision.scaleA)
 shared.image.labelB = (processed_img_width/Config.vision.scaleB)*(processed_img_height/Config.vision.scaleB)
 

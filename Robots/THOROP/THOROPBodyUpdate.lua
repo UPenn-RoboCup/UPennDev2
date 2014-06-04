@@ -428,7 +428,7 @@ if IS_TESTING then
 
     local t = Body.get_time()
 
-    local rad = dcm.get_actuator_command_position()
+    local rad = dcm.get_command_position()
     dcm.set_sensor_position(rad)
 
   end
@@ -487,31 +487,61 @@ elseif IS_WEBOTS then
   }
   assert(nJoint==#jointNames,'bad jointNames!')
 
+  --TODO: need to tweak for webots
+  local servo = Config.servo 
+  
+-- servo.direction = vector.new({
+--     -1,-1, -- Head
+--     1,1,1,  1,  -1,-1,-1, --LArm
+--     --[[Yaw/Roll:]] -1, 1, --[[3 Pitch:]] 1,1,1, 1, --LLeg
+--     --[[Yaw/Roll:]] -1, 1, --[[3 Pitch:]] 1,1,1, 1, --RLeg
+--     1,1,1,  1,  -1,-1,-1, --RArm
+--     -- TODO: Check the gripper
+--     -1,1, -- Waist
+--     1,-1, -- left gripper
+--     -1,-1, -- right gripper
+-- 
+--     1, -- Lidar pan
+--   })
+--   
+--   servo.rad_offset = vector.new({
+--     0,0, -- head
+--     -90,0,0,  0,  0,0,0,
+--     0,0,0,0,0,0,
+--     0,0,0,0,0,0,
+--     -90,0,0,  0,  0,0,0,
+--     0,0,
+--     0,0,
+--     0,0,
+--     60,
+--   })*DEG_TO_RAD
+  
+  -- from dev-robocup
   servo.direction = vector.new({
-    -1,-1, -- Head
-    1,1,1,  1,  -1,-1,-1, --LArm
-    --[[Yaw/Roll:]] -1, 1, --[[3 Pitch:]] 1,1,1, 1, --LLeg
-    --[[Yaw/Roll:]] -1, 1, --[[3 Pitch:]] 1,1,1, 1, --RLeg
-    1,1,1,  1,  -1,-1,-1, --RArm
-    -- TODO: Check the gripper
-    -1,1, -- Waist
-    1,-1, -- left gripper
-    -1,-1, -- right gripper
+      1,1, -- Head
+      1,1,1,  1,  -1,-1,-1, --LArm
+      --[[Yaw/Roll:]] 1, 1, --[[3 Pitch:]] 1,1,1, 1, --LLeg
+      --[[Yaw/Roll:]] 1, 1, --[[3 Pitch:]] 1,1,1, 1, --RLeg
+      1,1,1,  1,  -1,-1,-1, --RArm
+      -- TODO: Check the gripper
+      -1,1, -- Waist
+      1,-1, -- left gripper
+      -1,-1, -- right gripper
 
-    1, -- Lidar pan
-  })
-  servo.rad_offset = vector.new({
-    0,0, -- head
-    -90,0,0,  0,  0,0,0,
-    0,0,0,0,0,0,
-    0,0,0,0,0,0,
-    -90,0,0,  0,  0,0,0,
-    0,0,
-    0,0,
-    0,0,
-    60,
-  })*DEG_TO_RAD
-
+      1, -- Lidar pan
+    })
+    servo.rad_offset = vector.new({
+      0,0, -- head
+      -90,0,0,  0,  0,0,0,
+      0,0,0,0,0,0,
+      0,0,0,0,0,0,
+      -90,0,0,  0,  0,0,0,
+      0,0,
+      0,0,
+      0,0,
+      60,
+    })*DEG_TO_RAD
+  
   -- Default configuration (toggle during run time)
   local ENABLE_CAMERA = false
   local ENABLE_CHEST_LIDAR  = false
@@ -635,7 +665,6 @@ elseif IS_WEBOTS then
 	Body.entry = function()
 
     -- Request @ t=0 to always be earlier than position reads
-    dcm.set_trequest_position( vector.zeros(nJoint) )
 
 		-- Grab the tags from the joint names
 		tags.joints = {}
@@ -679,8 +708,6 @@ elseif IS_WEBOTS then
         local rad = servo.direction[idx] * val - servo.rad_offset[idx]
         dcm.sensorPtr.position[idx] = rad
         dcm.actuatorPtr.command_position[idx] = rad
-        dcm.treadPtr.position[idx] = t
-        dcm.twritePtr.command_position[idx] = t
       end
     end
 
@@ -699,11 +726,11 @@ elseif IS_WEBOTS then
 
 		-- Set actuator commands from shared memory
 		for idx, jtag in ipairs(tags.joints) do
-			local cmd = Body.get_actuator_command_position(idx)
-			local pos = Body.get_sensor_position(idx)
+			local cmd = Body.get_command_position(idx,idx)  -- TODO
+      local pos = Body.get_position(idx, idx)
 			-- TODO: What is velocity?
-			local vel = 0 or Body.get_actuator_command_velocity(idx)
-			local en  = 1 or Body.get_actuator_torque_enable(idx)
+			local vel = 0 or Body.get_command_velocity(idx)
+			local en  = 1 or Body.get_torque_enable(idx)
 			local deltaMax = tDelta * vel
 			-- Only update the joint if the motor is torqued on
 
@@ -724,7 +751,7 @@ elseif IS_WEBOTS then
 
 			-- Only set in webots if Torque Enabled
 			if en>0 and jtag>0 then
-        local pos = servo.direction[idx] * (new_pos + servo.rad_offset[idx])
+        local pos = servo.direction[idx] * (new_pos[1] + servo.rad_offset[idx])
         --SJ: Webots is STUPID so we should set direction correctly to prevent flip
         local val = webots.wb_motor_get_position( jtag )
 
@@ -735,7 +762,6 @@ elseif IS_WEBOTS then
         else
           webots.wb_motor_set_position(jtag, pos )
         end
-        dcm.twritePtr.command_position[idx] = t
       end
 		end --for
 
@@ -796,7 +822,6 @@ elseif IS_WEBOTS then
 				local val = webots.wb_motor_get_position( jtag )
 				local rad = servo.direction[idx] * val - servo.rad_offset[idx]
         dcm.sensorPtr.position[idx] = rad
-        dcm.treadPtr.position[idx] = t
 			end
 		end
 
@@ -957,17 +982,6 @@ else
   Body.move_rgrip1 = Body.set_rtrigger_command_torque
   Body.move_rgrip2 = Body.set_rgrip_command_torque
 end
-
-
-
-
-
-
-
-
-
-
-
 
 
 

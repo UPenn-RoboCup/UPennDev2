@@ -15,8 +15,8 @@ then
 	eval `/usr/libexec/path_helper -s`
 fi
 
-LUA=lua
-#LUA=luajit
+#LUA=lua
+LUA=luajit
 TERM=`which xterm`
 LPATH=`/usr/local/bin/lua -e 'print(package.path)'`
 

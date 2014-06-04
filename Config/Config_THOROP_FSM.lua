@@ -4,16 +4,17 @@ local fsm = {}
 
 -- Do we disable FSMs?
 fsm.disabled = false
+-- fsm.disabled = true
 
 -- Update rate in Hz
 fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
 fsm.enabled = {
-  --'Arm',
+  'Arm',
   --'Lidar',
-  --'Body',
-  --'Head',
+  'Body',
+  'Head',
   'Motion',
 }
 
@@ -23,6 +24,11 @@ fsm.Arm = {
   {'armIdle', 'init', 'armInit'},
   --
   --{'armInit', 'teleop', 'armTeleop'},
+}
+
+local vector = require'vector'
+fsm.armInit = {
+  qLArm = vector.new({118.96025904076,9.0742631178663,-5,-81.120944928286,81,14.999999999986, 9})*DEG_TO_RAD
 }
 
 fsm.Head = {
@@ -67,6 +73,7 @@ fsm.Body = {
 
 -- For RoboCup
 fsm.Body = {
+  {'bodyIdle', 'init', 'bodyInit'},
   {'bodyInit', 'done', 'bodyRobocupIdle'},
   --
   {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},

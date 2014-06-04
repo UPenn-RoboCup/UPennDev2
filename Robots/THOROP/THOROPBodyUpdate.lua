@@ -487,6 +487,8 @@ elseif IS_WEBOTS then
   }
   assert(nJoint==#jointNames,'bad jointNames!')
 
+  --TODO: is global servo defined somewhere else?
+  local servo = {}
   servo.direction = vector.new({
     -1,-1, -- Head
     1,1,1,  1,  -1,-1,-1, --LArm

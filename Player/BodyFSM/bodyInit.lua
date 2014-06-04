@@ -26,7 +26,7 @@ function state.entry()
   Body.set_rarm_torque_enable(1)
 
   arm_ch:send'init'
-  lidar_ch:send'pan'
+  -- lidar_ch:send'pan'
   --head_ch:send'teleop'
   head_ch:send'scan'
   motion_ch:send'stand'

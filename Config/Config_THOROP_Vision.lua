@@ -1,7 +1,6 @@
-local vector = require'vector'
-local DEG_TO_RAD = math.pi/180
 
-local Config = {}
+assert(Config, 'Need a pre-existing Config table!')
+local vector = require'vector'
 
 ------------------------------------
 
@@ -118,7 +117,7 @@ vision.nonwhite_wall_max_rate = 0.15
 
 
 vision.ball = {}
-vision.ball.diameter = 0.22 
+vision.ball.diameter = 0.22
 vision.ball.th_min_color = 50 --100
 vision.ball.th_min_color2 = 6
 vision.ball.th_min_fill_rate = 0.35
@@ -141,7 +140,7 @@ vision.goal.height_min = -0.9 --bodyHeight: 0.928
 vision.goal.th_aspect_ratio = {2.5,35}
 vision.goal.th_edge_margin = 5
 vision.goal.th_bottom_boundingbox = 0.9
-vision.goal.th_ground_boundingbox = {-15,15,-15,10} 
+vision.goal.th_ground_boundingbox = {-15,15,-15,10}
 vision.goal.th_min_green_ratio = 0.2
 vision.goal.th_min_bad_color_ratio = 0.1
 vision.goal.th_goal_separation = {0.35,2.0}
@@ -149,10 +148,10 @@ vision.goal.th_goal_separation = {0.35,3.0} --FOR OP
 vision.goal.th_min_area_unknown_post = 100  -- TODO
 
 vision.goal.far_goal_threshold= 4.0 --The range we triangulate
---vision.goal.distanceFactorCyan = 1 
---vision.goal.distanceFactorYellow = 1 
+--vision.goal.distanceFactorCyan = 1
+--vision.goal.distanceFactorYellow = 1
 vision.goal.use_centerpost = 1
-vision.goal.min_crossbar_ratio = 0.6 -- TODO 
+vision.goal.min_crossbar_ratio = 0.6 -- TODO
 vision.goal.check_for_ground = 1
 
 
@@ -192,7 +191,7 @@ head.yawMax = 135*math.pi/180
 head.cameraPos = {0.034, 0.0, 0.1} --TODO:need to be recalibrated
 head.cameraAngle = {0.0,0} -- We set it zero here
 head.neckZ=.165+.161 --From CoM to neck joint; for darwin camera
-head.neckZ=.165+.161 --TODO: for camera of wider FOV 
+head.neckZ=.165+.161 --TODO: for camera of wider FOV
 head.neckX= 0 --From CoM to neck joint
 ------------------------------------
 
@@ -201,7 +200,7 @@ WEBOTS_VISION = true
 WEBOTS_VISION = false
 
 --Webots use 1/2 resolution but 2x label resolution
-if WEBOTS_VISION then  
+if WEBOTS_VISION then
   camera.head.resolution = {320,180}
   camera.head.x_center = 160
   camera.head.y_center = 90
@@ -209,8 +208,8 @@ if WEBOTS_VISION then
 
   camera.head.focal_base = 320
 	head.neckX= 0 --From CoM to neck joint
-  
-  head.cameraPos = {0.0785, 0, 0.072}  
+
+  head.cameraPos = {0.0785, 0, 0.072}
 
   vision.scaleA = 1
   vision.scaleB = 4

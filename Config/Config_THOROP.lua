@@ -29,7 +29,7 @@ Config.dev.gender       = 'boy'
 ---------------------------
 -- Complementary Configs --
 ---------------------------
-local exo = {'Robot', 'Walk', 'Net', 'Manipulation', 'FSM'}
+local exo = {'Robot', 'Walk', 'Net', 'Manipulation', 'FSM', 'World', 'Vision'}
 
 -- Load each exogenous Config file
 for _,v in ipairs(exo) do

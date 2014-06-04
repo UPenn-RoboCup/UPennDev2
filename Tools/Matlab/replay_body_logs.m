@@ -17,33 +17,65 @@ jointNames = { ...
 };
 
 joint = 'AnkleL';
-idx = find(strncmp(joint,jointNames,4));
+idx = 1;
+for i=1:numel(jointNames)
+    str = jointNames{i};
+    if strncmp(str, joint, 4)==1
+        idx = i;
+    end
+end
 
 %% Aquire the body joint angles
-%fid = fopen('logs/body_10.24.2013.20.28.32_meta.log');
-fid = fopen('logs/body_10.24.2013.20.31.04_meta.log');
+fid = fopen('Logs/joint_m_06.04.2014.13.54.20.log');
 msg = fread(fid,inf,'*uchar');
 fclose(fid);
 jobjs = msgpack('unpacker', msg);
 clear msg;
 
+%% Time
+t0 = jobjs{1}.t;
+
 %% Reformat the data
-pos = zeros(numel(jobjs),numel(jobjs{1}.position) );
-cmd = zeros(numel(jobjs),numel(jobjs{1}.command_position) );
-ts  = zeros(numel(jobjs),1);
-trds  = zeros(numel(jobjs),1);
+ts  = zeros(numel(jobjs), 1);
+pos = zeros(numel(jobjs), numel(jobjs{1}.p));
+cmd = zeros(numel(jobjs), numel(jobjs{1}.cp));
+ft_l = zeros(numel(jobjs), numel(jobjs{1}.ft_l));
+ft_r = zeros(numel(jobjs), numel(jobjs{1}.ft_r));
+gyro = zeros(numel(jobjs), numel(jobjs{1}.gyro));
+acc = zeros(numel(jobjs), numel(jobjs{1}.acc));
+rpy = zeros(numel(jobjs), numel(jobjs{1}.rpy));
 for i=1:numel(jobjs)
     jobj = jobjs{i};
-    trds(i)  = jobjs{i}.tread(1);
-    ts(i)    = jobjs{i}.t;
-    pos(i,:) = jobjs{i}.position;
-    cmd(i,:) = jobjs{i}.command_position;
+    ts(i)    = jobjs{i}.t - t0;
+    pos(i,:) = jobjs{i}.p;
+    cmd(i,:) = jobjs{i}.cp;
+    ft_l(i,:) = jobjs{i}.ft_l;
+    ft_r(i,:) = jobjs{i}.ft_r;
+    gyro(i,:) = jobjs{i}.gyro;
+    acc(i,:) = jobjs{i}.acc;
+    rpy(i,:) = jobjs{i}.rpy;
 end
 
 %% Plot a joint
 figure(1);
-clf;
-plot( ts, pos(:,idx), 'b' );
-hold on;
-plot( ts, cmd(:,idx), 'r' );
-hold off;
+h_p = plot( ts, pos(:, idx), ...
+    ts, cmd(:, idx) ...
+    );
+h_l = legend(h_p, 'Position', 'Command');
+title('Command vs. Position');
+
+figure(2);
+plot(ft_l);
+title('Left Force Torque');
+
+figure(3);
+plot(ft_r);
+title('Right Force Torque');
+
+figure(4);
+plot(gyro);
+title('Gyro');
+
+figure(5);
+plot(rpy);
+title('RPY');

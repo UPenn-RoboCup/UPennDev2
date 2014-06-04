@@ -49,6 +49,7 @@ local m_ids = metadata.m_ids
 	print(debug_prefix, 'FOUND', unpack(m_ids))
 --end
 local n_motors = #m_ids
+local t_sleep = 1 / (metadata.hz or 125)
 -- Verify that the m_ids are present
 print(debug_prefix, 'Checking IDs...')
 for _,m_id in pairs(m_ids) do
@@ -164,19 +165,40 @@ if metadata.name=='lleg' or metadata.name=='rleg' then
 	end
 	function parent_cb.ft()
 		local status = lD.get_nx_data(ft_ms, bus)
-		--local l_ft = ffi.cast('ft*', ffi.new('int8_t[8]', status[1].parameter))
-		ffi.copy(ft1_c, status[1].raw_parameter, ft_sz)
-		ffi.copy(ft2_c, status[2].raw_parameter, ft_sz)
-		-- Just do a sync read here; can try reliable later, if desired...
-		ft_ptr[0] = 3.3 * ft1_c.a / 4096 - 1.65
-		ft_ptr[1] = 3.3 * ft1_c.b / 4096 - 1.65
-		ft_ptr[2] = 3.3 * ft1_c.c / 4096 - 1.65
-		ft_ptr[3] = 3.3 * ft1_c.d / 4096 - 1.65
+		if not status then return end
+		local s1, s2 = status[1], status[2]
+		if s1 then
+			ft1_c = ffi.cast('ft*', ffi.new('int8_t[8]', s1.parameter))
+			--ffi.copy(ft1_c, status[1].raw_parameter, ft_sz)
+			--ffi.copy(ft2_c, status[2].raw_parameter, ft_sz)
+			-- Just do a sync read here; can try reliable later, if desired...
+			if s1.id==ft_ms[1] then
+				ft_ptr[0] = 3.3 * ft1_c.a / 4096 - 1.65
+				ft_ptr[1] = 3.3 * ft1_c.b / 4096 - 1.65
+				ft_ptr[2] = 3.3 * ft1_c.c / 4096 - 1.65
+				ft_ptr[3] = 3.3 * ft1_c.d / 4096 - 1.65
+			else
+				ft_ptr[4] = 3.3 * ft1_c.a / 4096 - 1.65
+				ft_ptr[5] = 3.3 * ft1_c.b / 4096 - 1.65
+				ft_ptr[6] = 3.3 * ft1_c.c / 4096 - 1.65
+				ft_ptr[7] = 3.3 * ft1_c.d / 4096 - 1.65
+			end
+		end
 		--
-		ft_ptr[4] = 3.3 * ft2_c.a / 4096 - 1.65
-		ft_ptr[5] = 3.3 * ft2_c.b / 4096 - 1.65
-		ft_ptr[6] = 3.3 * ft2_c.c / 4096 - 1.65
-		ft_ptr[7] = 3.3 * ft2_c.d / 4096 - 1.65
+		if status[2] then
+			ft2_c = ffi.cast('ft*', ffi.new('int8_t[8]', s2.parameter))
+			if s2.id==ft_ms[1] then
+				ft_ptr[0] = 3.3 * ft2_c.a / 4096 - 1.65
+				ft_ptr[1] = 3.3 * ft2_c.b / 4096 - 1.65
+				ft_ptr[2] = 3.3 * ft2_c.c / 4096 - 1.65
+				ft_ptr[3] = 3.3 * ft2_c.d / 4096 - 1.65
+			else
+				ft_ptr[4] = 3.3 * ft2_c.a / 4096 - 1.65
+				ft_ptr[5] = 3.3 * ft2_c.b / 4096 - 1.65
+				ft_ptr[6] = 3.3 * ft2_c.c / 4096 - 1.65
+				ft_ptr[7] = 3.3 * ft2_c.d / 4096 - 1.65
+			end
+		end
 	end
 end
 
@@ -184,6 +206,8 @@ local function do_parent (p_skt)
   local cmds = p_skt:recv_all()
 	if not cmds then return end
 	for i, cmd in ipairs(cmds) do
+		-- Sleep, since a write just performed
+		usleep(1e6 * t_sleep)
 		-- Check if there is something special
 		local f = parent_cb[cmd]
 		if f then return f() end
@@ -198,7 +222,6 @@ local function do_parent (p_skt)
 			status = set(m_id, ptr[j_id], bus)
 			-- TODO: check the status, and repeat if necessary...
 		end
-		usleep(1e3)
 	end
 end
 -- Initially, copy the command positions from the read positions
@@ -234,7 +257,6 @@ print(debug_prefix, 'Begin loop')
 local t0, t = get_time()
 local t_debug, t_last, t_diff = t0, t0
 local count, t_elapsed, t_d_elapsed, kb = 0
-local t_sleep = 1 / (metadata.hz or 125)
 -- Garbarge collect before beginning
 Config = nil
 metadata = nil
@@ -244,10 +266,10 @@ while running do
 	count = count + 1
 	t_last = t
 	t = get_time()
-	-- If no parent commands, then perform a read/write cycle
+	-- Write Command positions
+	do_write()
+	-- If no parent commands, then perform a read
 	if poller:poll(0)==0 then
-		-- Write Positions
-		do_write()
 		if ENABLE_READ then
 			-- Sleep a bit
 			t_diff = get_time() - t

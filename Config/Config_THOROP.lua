@@ -47,6 +47,7 @@ Config.km.standup_back  = 'km_Charli_StandupFromBack.lua'
 -------------
 -- Cameras --
 -------------
+--[[
 Config.camera = {}
 table.insert(Config.camera,
 	{
@@ -109,5 +110,5 @@ table.insert(Config.camera,
       {'Backlight Compensation', 1},
     },
 	})
-
+--]]
 return Config

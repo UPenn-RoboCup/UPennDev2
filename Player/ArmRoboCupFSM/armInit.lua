@@ -11,6 +11,7 @@ local vector = require'vector'
 local movearm = require'movearm'
 local t_entry, t_update, t_finish
 local timeout = 15.0
+local arm_planner = require 'libArmPlan'.new_planner()
 
 -- Goal position is arm Init, with hands in front, ready to manipulate
 
@@ -40,9 +41,6 @@ function state.entry()
     unpack(qLArm*RAD_TO_DEG)
   ))
 
-
-
-
   local qLWrist = Body.get_inverse_lwrist(
     qLArm,
     Config.arm.pLWristTarget0,
@@ -59,11 +57,6 @@ function state.entry()
 print(string.format("QLArmTarget: %.2f %.2f %.2f %.2f",
 unpack( vector.new(qLArmTarget)*RAD_TO_DEG)
 ))
-
-
-
-
-
 
   mcm.set_stance_enable_torso_track(0)
 
@@ -93,8 +86,8 @@ function state.update()
   t_update = t
 --  print(state._NAME..' Update' )
 
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
+  local qLArm = Body.get_larm_position()
+  local qRArm = Body.get_rarm_position()
 
 --[[
 print(string.format("Cur: %.2f %.2f %.2f %.2f" ,
@@ -112,13 +105,13 @@ qLArmTarget[4]*Body.RAD_TO_DEG
 
 ))
 --]]
-  local ret = movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)
-  if ret==1 then return "done" end
+  if movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)==1 then
+    return "done"
+  end
 end
 
 function state.exit()
-  local libArmPlan = require 'libArmPlan'
-  local arm_planner = libArmPlan.new_planner()
+
   --print("qLArm:",unpack(qLArmTarget))
   arm_planner:reset_torso_comp(qLArmTarget,qRArmTarget)
 --[[

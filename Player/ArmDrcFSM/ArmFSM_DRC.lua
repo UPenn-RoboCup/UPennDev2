@@ -220,10 +220,10 @@ sm:set_transition(armTeleop, 'done', armPose1)
 
 
 --sm:set_transition(armPose1, 'rocky', armRocky)
---sm:set_transition(armRocky, 'done', armPose1) 
+--sm:set_transition(armRocky, 'done', armPose1)
 
 sm:set_transition(armPose1, 'rocky', armDoorPass)
-sm:set_transition(armDoorPass, 'done', armPose1) 
+sm:set_transition(armDoorPass, 'done', armPose1)
 
 
 --Force reset states is used for offline testing only

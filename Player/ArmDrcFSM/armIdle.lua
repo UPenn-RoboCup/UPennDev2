@@ -1,6 +1,6 @@
 local state = {}
 state._NAME = ...
-local vector = require'vector' 
+local vector = require'vector'
 
 local Body = require'Body'
 local t_entry, t_update, t_finish
@@ -21,25 +21,14 @@ function state.entry()
   Body.set_larm_torque_enable(0)
   Body.set_rarm_torque_enable(0)
 
-  -- Request new readings
-  Body.request_larm_position()
-  Body.request_rarm_position()
-
-  -- Commanded at first
-  qLArm = Body.get_larm_command_position()
-  qRArm = Body.get_rarm_command_position()
-
-  Body.set_lgrip_percent(0.5)
-  Body.set_rgrip_percent(0.5)
-
-  Body.request_larm_position()
-  Body.request_rarm_position()
+  qLArm = Body.get_larm_position()
+  qRArm = Body.get_rarm_position()
 
   mcm.set_arm_handoffset(Config.arm.handoffset.gripper)
 end
 
 function state.update()
---  print(state._NAME..' Update' ) 
+--  print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update
@@ -47,19 +36,15 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-  -- TODO: What if exit before first 
+  -- TODO: What if exit before first
   -- read request arrives?
   qLArm = Body.get_larm_position()
   qRArm = Body.get_rarm_position()
 
-  -- Always request the angles
-  Body.request_larm_position()
-  Body.request_rarm_position()
-
-  Body.set_larm_command_position(qLArm)  
+  Body.set_larm_command_position(qLArm)
   Body.set_rarm_command_position(qRArm)
   --print("LArm jangle:",vector.new(qLArm)*RAD_TO_DEG)
-  
+
 end
 
 function state.exit()

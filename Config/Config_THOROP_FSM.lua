@@ -11,7 +11,7 @@ fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
 fsm.enabled = {
-  'Arm',
+  'ArmRoboCup',
   --'Lidar',
   'Body',
   'Head',
@@ -20,10 +20,10 @@ fsm.enabled = {
 
 fsm.Arm = {
   {'armIdle', 'timeout', 'armIdle'},
-  --
   {'armIdle', 'init', 'armInit'},
   --
-  --{'armInit', 'teleop', 'armTeleop'},
+  {'armInit', 'done', 'armPose1'},
+
 }
 
 local vector = require'vector'

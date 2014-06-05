@@ -631,7 +631,7 @@ elseif IS_WEBOTS then
 	        webots.wb_servo_set_velocity(tag, 4)
 				else
 					webots.wb_motor_enable_position(tag, timeStep)
-					webots.wb_motor_set_velocity(tag, 0.5)
+					webots.wb_motor_set_velocity(tag, 4)
 				end
         tags.joints[i] = tag
 			end
@@ -679,10 +679,7 @@ elseif IS_WEBOTS then
 	function Body.update()
 
     local t = Body.get_time()
-
-		local tDelta = .001 * Body.timeStep
-
-    --Body.update_finger(tDelta)
+    --Body.update_finger(timeStep)
 
 		-- Set actuator commands from shared memory
 		local cmds = Body.get_command_position()
@@ -693,7 +690,7 @@ elseif IS_WEBOTS then
 			-- TODO: What is velocity?
 			local vel = 0 or Body.get_command_velocity()[idx]
 			local en  = 1 or Body.get_torque_enable()[idx]
-			local deltaMax = tDelta * vel
+			local deltaMax = timeStep * vel
 			-- Only update the joint if the motor is torqued on
 
 			-- If the joint is moving

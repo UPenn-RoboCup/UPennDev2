@@ -9,24 +9,35 @@ local T = require'libTransform'
 local vector = require'vector'
 -- Important local variables
 local w, h, wa, wb, ha, hab, scaleA, scaleB, lut_t
+-- Hold on to these
+local labelA_t, labelB_t
 -- Head transform
 local trHead, trNeck, trNeck0, dtrCamera
 -- Camera information
 local x0A, y0A, focalA, focal_length, focal_base
 -- Object properties (TODO: Should this be a config, or not?)
 local b_diameter, b_dist, b_height
+--
+local colors
+-- For broadcasting the labeled image
+local zlib = require'zlib.ffi'
+local c_zlib = zlib.compress_cdata
 
-local color = {
-  orange = 1,
-  yellow = 2,
-  cyan = 4,
-  field = 8,
-  white = 16,
-}
+-- Should have a common API (meta/raw)
+function libVision.send()
+  local raw = c_zlib(labelA_t:data(), labelA_t:nElement(), true)
+  local meta = {
+    w = labelA_t:size(2),
+    h = labelA_t:size(1),
+    c = 'zlib',
+    id = 'labelA',
+  }
+  return meta, raw
+end
 
 -- Update the Head transform
 -- Input: Head angles
-function libVision.update_head ()
+local function update_head()
 	-- Get from Body...
   local head = vector.zeros(2)
   -- TODO: Smarter memory allocation
@@ -43,7 +54,7 @@ end
 
 -- Simple bbox with no tilted color stats
 -- TODO: Use the FFI for color stats, should be super fast
-local function bboxStats (color, bboxB, labelA_t)
+local function bboxStats(color, bboxB, labelA_t)
   local bboxA = {
     scaleB * bboxB[1],
     scaleB * bboxB[2] + scaleB - 1,
@@ -76,16 +87,16 @@ local function check_coordinate(centroid, scale, maxD, maxH)
   v = trHead * v / v[4]
   -- Check the distance
   if v[1]*v[1] + v[2]*v[2] > maxD*maxD then
-    return"Distance"
+    return'Distance'
   elseif v[3] > maxH then
-    return"Height"
+    return'Height'
   end
   return v
 end
 
-function libVision.ball (labelA_t, labelB_t, cc_t)
+function libVision.ball(labelA_t, labelB_t, cc_t)
   -- The ball is color 1
-  local cc = cc_t[color.orange]
+  local cc = cc_t[colors.orange]
   if cc<6 then return'Color count' end
   -- Connect the regions in labelB
   local ballPropsB = ImageProc.connected_regions(labelB_t, 1)
@@ -98,7 +109,7 @@ function libVision.ball (labelA_t, labelB_t, cc_t)
     local fail = {}
     -- Check the image properties
     local propsB = ballPropsB[i]
-    local propsA = check_prop(color.orange, propsB, 4, 0.35, labelA_t)
+    local propsA = check_prop(colors.orange, propsB, 4, 0.35, labelA_t)
     if type(propsA)=='string' then
       table.insert(fail, propsA)
     else
@@ -128,16 +139,16 @@ function libVision.ball (labelA_t, labelB_t, cc_t)
 end
 
 -- TODO: Allow the loop to run many times
-function libVision.goal (labelA_t, labelB_t, cc_t)
+function libVision.goal(labelA_t, labelB_t, cc_t)
   -- Form the initial goal check
-  local postB = ImageProc.goal_posts(labelB_t, color.yellow, th_nPostB)
+  local postB = ImageProc.goal_posts(labelB_t, colors.yellow, th_nPostB)
   if not postB then return'None detected' end
   -- Now process each goal post
   -- Store failures in the array
   local failures, successes = {}, {}
   for i, post in ipairs(postB) do
     local fail, has_stats = {}, true
-    local postStats = check_prop(color.yellow, post, 25, 0, labelA_t)
+    local postStats = check_prop(colors.yellow, post, 25, 0, labelA_t)
     if type(postStats)=='string' then
       table.insert(fail, propsA)
     else
@@ -182,38 +193,41 @@ function libVision.goal (labelA_t, labelB_t, cc_t)
 end
 
 -- Set the variables based on the config file
-function libVision.entry (cfg)
-  -- Save the scale paramter
-  scaleA, scaleB = cfg.scaleA, cfg.scaleB
-  focal_length, focal_base = cfg.focal_length, cfg.focal_base
+function libVision.entry(cfg)
   -- Recompute the width and height of the images
   w, h = cfg.w, cfg.h
   -- Set up ImageProc
   ImageProc2.setup(w, h)
+  focal_length, focal_base = cfg.focal_length, cfg.focal_base
+
+  -- Save the scale paramter
+  scaleA, scaleB = cfg.vision.scaleA, cfg.vision.scaleB
+  colors = cfg.vision.colors
+
   wa, ha = w / scaleA, h / scaleA
   wb, hb = wa / scaleB, ha / scaleB
   -- Information for the HeadTransform
   x0A, y0A = 0.5 * (wa - 1), 0.5 * (ha - 1)
   -- Delta transform from neck to camera
-  dtrCamera = T.trans(unpack(cfg.pCamera))
-  * T.rotY(cfg.pitchCamera)
+  dtrCamera = T.trans(unpack(cfg.head.cameraPos or {0,0,0}))
+  * T.rotY(cfg.head.pitchCamera or 0)
   focalA = focal_length / (focal_base / wa)
-  -- TODO: check tilt, height, etc. with walk config
-  trNeck0 = T.trans(-cfg.footX, 0, cfg.bodyHeight)
-  * T.rotY(cfg.bodyTilt)
-  * T.trans(cfg.neckX, 0, cfg.neckZ)
+  -- TODO: get from shm maybe?
+  trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
+  * T.rotY(Config.walk.bodyTilt)
+  * T.trans(cfg.head.neckX, 0, cfg.head.neckZ)
   -- Load ball
   if cfg.ball then
-    b_diameter = cfg.ball.diameter
-    b_dist = cfg.ball.max_distance
-    b_height = cfg.ball.max_height
+    b_diameter = cfg.vision.ball.diameter
+    b_dist = cfg.vision.ball.max_distance
+    b_height = cfg.vision.ball.max_height
   end
   -- Load the lookup table
   local lut_fname = {HOME, "/Data/", "lut_", cfg.lut, ".raw"}
   lut_t = ImageProc2.load_lut (table.concat(lut_fname))
 end
 
-function libVision.update (img)
+function libVision.update(img)
 
   -- Update the motion elements
   update_head()
@@ -222,24 +236,26 @@ function libVision.update (img)
   local debug_data = {}
 
   -- Images to labels
-  local labelA = ImageProc2.yuyv_to_label(img, lut_t:data())
-  local labelB = ImageProc2.block_bitor(labelA)
+  labelA_t = ImageProc2.yuyv_to_label(img, lut_t:data())
+  labelB_t = ImageProc2.block_bitor(labelA_t)
   -- Detection System
   -- NOTE: Muse entry each time since on webots, we switch cameras
   -- In camera wizard, we do not switch cameras, so call only once
-  local cc = ImageProc2.color_count(labelA)
-  local ball_fails, ball = lV.ball(labelA, labelB, cc)
-  local post_fails, posts = lV.goal(labelA, labelB, cc)
+  local cc = ImageProc2.color_count(labelA_t)
+  local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc)
+  local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
   --if posts then print('\nCamera '..id..': '..#posts..' posts.') end
   --print(post_fails)
   if posts then util.ptable(posts[1]) end
 
   -- Send the detection information
+	local meta_detect = {}
   meta_detect.ball = ball
   meta_detect.posts = posts and posts[1]
   meta_detect.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
   if meta_detect.posts then util.ptable(meta_detect.posts) end
 
+	--[[
   -- LabelA
   table.insert(debug_data, mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ))
   -- LabelB
@@ -248,6 +264,7 @@ function libVision.update (img)
   table.insert(debug_data, mp.pack(meta_yuyv)..c_yuyv:compress(im,w,h))
   -- Detection
   table.insert(debug_data, mp.pack(meta_detect))
+	--]]
 
   return debug_data, meta_detect
 end

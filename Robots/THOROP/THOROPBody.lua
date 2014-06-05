@@ -524,6 +524,18 @@ elseif IS_WEBOTS then
   local tags = {}
   local t_last_error = -math.huge
 
+	-- Just use one camera
+	local cam_cfg = Config.camera[1]
+	local cam_udp_ch = udp.new_sender(operator, cam_cfg.udp_port)
+	-- Just use one detection routine
+	local vision = require(cam_cfg.detection_pipeline[1])
+	vision.entry(cam_cfg)
+	local function update_vision(yuyv)
+		vision.update(yuyv)
+		local meta, raw = vision.send()
+		cam_udp_ch:send(mp.pack(meta)..raw)
+	end
+
   -- Ability to turn on/off items
   local t_last_keypress = get_time()
   -- Enable the keyboard 100ms
@@ -787,10 +799,10 @@ elseif IS_WEBOTS then
 
     -- Grab a camera frame
     if ENABLE_CAMERA then
-      local camera_fr = webots.to_rgb(tags.head_camera)
       local w = webots.wb_camera_get_width(tags.head_camera)
       local h = webots.wb_camera_get_height(tags.head_camera)
-      Body.get_image = function() return camera_fr end
+			local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.head_camera), w, h)
+      update_vision(img)
     end
     -- Grab a lidar scan
     if ENABLE_CHEST_LIDAR then

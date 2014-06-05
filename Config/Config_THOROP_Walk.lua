@@ -45,6 +45,7 @@ if IS_WEBOTS then
   walk.bodyHeight = 0.9285318
   walk.bodyTilt = 11*math.pi/180
   walk.footY = 0.1095
+	walk.footX = 0
   walk.torsoX = 0.00    -- com-to-body-center offset
 
   walk.stepHeight = 0.04
@@ -87,6 +88,7 @@ else
   walk.bodyHeight = 0.9285318
 --  walk.supportX = 0.0515184
   walk.footY = 0.1095
+  walk.footX = 0
   walk.bodyTilt = 11*math.pi/180
   walk.torsoX = 0.00    -- com-to-body-center offset
 
@@ -186,6 +188,7 @@ if HOSTNAME=="alvin" then
 
 --Narrower stance, robotis value, 12/14 10:10PM
   walk.footY = 0.095
+  walk.footX = 0
   walk.torsoX = -0.04
   walk.hipRollCompensation = 2*math.pi/180
   walk.hipRollCompensationLeft = 2*math.pi/180
@@ -308,6 +311,7 @@ elseif HOSTNAME=="teddy" then
 
 --New values
   walk.footY = 0.095
+  walk.footX = 0
   walk.torsoX = -0.04
   walk.hipRollCompensation = 2*math.pi/180
 

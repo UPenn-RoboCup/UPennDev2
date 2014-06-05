@@ -490,58 +490,6 @@ elseif IS_WEBOTS then
   --TODO: need to tweak for webots
   local servo = Config.servo
 
--- servo.direction = vector.new({
---     -1,-1, -- Head
---     1,1,1,  1,  -1,-1,-1, --LArm
---     --[[Yaw/Roll:]] -1, 1, --[[3 Pitch:]] 1,1,1, 1, --LLeg
---     --[[Yaw/Roll:]] -1, 1, --[[3 Pitch:]] 1,1,1, 1, --RLeg
---     1,1,1,  1,  -1,-1,-1, --RArm
---     -- TODO: Check the gripper
---     -1,1, -- Waist
---     1,-1, -- left gripper
---     -1,-1, -- right gripper
---
---     1, -- Lidar pan
---   })
---
---   servo.rad_offset = vector.new({
---     0,0, -- head
---     -90,0,0,  0,  0,0,0,
---     0,0,0,0,0,0,
---     0,0,0,0,0,0,
---     -90,0,0,  0,  0,0,0,
---     0,0,
---     0,0,
---     0,0,
---     60,
---   })*DEG_TO_RAD
-
-  -- from dev-robocup
-  servo.direction = vector.new({
-      1,1, -- Head
-      1,1,1,  1,  -1,-1,-1, --LArm
-      --[[Yaw/Roll:]] 1, 1, --[[3 Pitch:]] 1,1,1, 1, --LLeg
-      --[[Yaw/Roll:]] 1, 1, --[[3 Pitch:]] 1,1,1, 1, --RLeg
-      1,1,1,  1,  -1,-1,-1, --RArm
-      -- TODO: Check the gripper
-      -1,1, -- Waist
-      1,-1, -- left gripper
-      -1,-1, -- right gripper
-
-      1, -- Lidar pan
-    })
-    servo.rad_offset = vector.new({
-      0,0, -- head
-      -90,0,0,  0,  0,0,0,
-      0,0,0,0,0,0,
-      0,0,0,0,0,0,
-      -90,0,0,  0,  0,0,0,
-      0,0,
-      0,0,
-      0,0,
-      60,
-    })*DEG_TO_RAD
-
   -- Default configuration (toggle during run time)
   local ENABLE_CAMERA = false
   local ENABLE_CHEST_LIDAR  = false
@@ -668,7 +616,7 @@ elseif IS_WEBOTS then
 		set_pos = webots.wb_servo_set_position
 		get_pos = webots.wb_servo_get_position
 	end
-	Body.entry = function()
+	function Body.entry()
 
     -- Request @ t=0 to always be earlier than position reads
 
@@ -688,7 +636,6 @@ elseif IS_WEBOTS then
         tags.joints[i] = tag
 			end
 		end
-
 
 		-- Add Sensor Tags
 		tags.accelerometer = webots.wb_robot_get_device("Accelerometer")
@@ -713,25 +660,23 @@ elseif IS_WEBOTS then
 
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
-    webots.wb_robot_step(timeStep)
 
 		local rad, val
+		local positions = {}
     for idx, jtag in ipairs(tags.joints) do
       if jtag>0 then
 				val = get_pos(jtag)
         rad = servo.direction[idx] * val - servo.rad_offset[idx]
 				rad = rad==rad and rad or 0
-        dcm.sensorPtr.position[idx] = rad
-        dcm.actuatorPtr.command_position[idx] = rad
+				positions[idx] = rad
       end
     end
+		dcm.set_sensor_position(positions)
+		dcm.set_actuator_command_position(positions)
 
 	end
-  Body.nop = function()
-    -- Step only
-    if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
-  end
-	Body.update = function()
+
+	function Body.update()
 
     local t = Body.get_time()
 

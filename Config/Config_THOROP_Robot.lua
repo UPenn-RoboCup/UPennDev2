@@ -199,5 +199,35 @@ servo.step_offset = vector.zeros(nJoint)
 for i, offset in ipairs(servo.rad_offset) do
   servo.step_offset[i] = offset * servo.to_steps[i]
 end
+
+if IS_WEBOTS then
+  -- Webots overrides tested in Webots 7.2.4, with ShortNewHand
+  servo.direction = vector.new({
+    -1,-1, -- Head
+    1,1,1,  1,  -1,-1,-1, --LArm
+    --[[Yaw/Roll:]] -1, -1, --[[3 Pitch:]] -1,-1,1, 1, --LLeg
+    --[[Yaw/Roll:]] -1, -1, --[[3 Pitch:]] 1,1,-1, 1, --RLeg
+    1,1,1,  1,  -1,-1,-1, --RArm
+    -- TODO: Check the gripper
+    -1,1, -- Waist
+    1,-1, -- left gripper
+    -1,-1, -- right gripper
+
+    1, -- Lidar pan
+  })
+
+  servo.rad_offset = vector.new({
+    0,0, -- head
+    -90,0,0,  0,  0,0,0,
+    0,0,0,0,0,0,
+    0,0,0,0,0,0,
+    -90,0,0,  0,  0,0,0,
+    0,0,
+    0,0,
+    0,0,
+    60,
+  })*DEG_TO_RAD
+end
+
 -- Export
 Config.servo = servo

@@ -23,8 +23,8 @@ else
 	end
 end
 
+local ENABLE_NET = true
 local ENABLE_LOG, LOG_INTERVAL, t_log = false, 1 / 5, 0
-local ENABLE_NET = false
 local FROM_LOG, LOG_DATE = false, '05.28.2014.16.18.44'
 local libLog, logger
 
@@ -39,7 +39,6 @@ local h = metadata.height
 local name = metadata.name
 -- Who to send to
 local operator = Config.net.operator.wired
-local udp_port = metadata.unreliable
 
 -- Form the detection pipeline
 local pipeline = {}
@@ -53,8 +52,7 @@ end
 -- Channels
 -- UDP Sending
 --local camera_ch = si.new_publisher('camera0')
-local udp_ch
-if udp_port then udp_ch = udp.new_sender(operator, udp_port) end
+local udp_ch = metadata.udp_port and udp.new_sender(operator, metadata.udp_port)
 
 -- Metadata for the operator
 local meta = {
@@ -165,6 +163,10 @@ while true do
 	-- Update the vision routines
 	for pname, p in pairs(pipeline) do
 		p.update(img)
+		if ENABLE_NET and vision.send then
+			local meta, raw = vision.send()
+			udp_ch:send(mp.pack(meta)..raw)
+		end
 	end
 
 	if t-t_debug>1 then

@@ -9,6 +9,8 @@ local T = require'libTransform'
 local vector = require'vector'
 -- Important local variables
 local w, h, wa, wb, ha, hab, scaleA, scaleB, lut_t
+-- Hold on to these
+local labelA_t, labelB_t
 -- Head transform
 local trHead, trNeck, trNeck0, dtrCamera
 -- Camera information
@@ -17,6 +19,21 @@ local x0A, y0A, focalA, focal_length, focal_base
 local b_diameter, b_dist, b_height
 --
 local colors
+-- For broadcasting the labeled image
+local zlib = require'zlib.ffi'
+local c_zlib = zlib.compress_cdata
+
+-- Should have a common API (meta/raw)
+function libVision.send()
+  local raw = c_zlib(labelA_t:data(), labelA_t:nElement(), true)
+  local meta = {
+    w = labelA_t:size(2),
+    h = labelA_t:size(1),
+    c = 'zlib',
+    id = 'labelA',
+  }
+  return meta, raw
+end
 
 -- Update the Head transform
 -- Input: Head angles
@@ -219,14 +236,14 @@ function libVision.update(img)
   local debug_data = {}
 
   -- Images to labels
-  local labelA = ImageProc2.yuyv_to_label(img, lut_t:data())
-  local labelB = ImageProc2.block_bitor(labelA)
+  labelA_t = ImageProc2.yuyv_to_label(img, lut_t:data())
+  labelB_t = ImageProc2.block_bitor(labelA_t)
   -- Detection System
   -- NOTE: Muse entry each time since on webots, we switch cameras
   -- In camera wizard, we do not switch cameras, so call only once
-  local cc = ImageProc2.color_count(labelA)
-  local ball_fails, ball = libVision.ball(labelA, labelB, cc)
-  local post_fails, posts = libVision.goal(labelA, labelB, cc)
+  local cc = ImageProc2.color_count(labelA_t)
+  local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc)
+  local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
   --if posts then print('\nCamera '..id..': '..#posts..' posts.') end
   --print(post_fails)
   if posts then util.ptable(posts[1]) end

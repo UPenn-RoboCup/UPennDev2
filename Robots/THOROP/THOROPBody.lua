@@ -526,11 +526,14 @@ elseif IS_WEBOTS then
 
 	-- Just use one camera
 	local cam_cfg = Config.camera[1]
+	local cam_udp_ch = udp.new_sender(operator, cam_cfg.udp_port)
 	-- Just use one detection routine
 	local vision = require(cam_cfg.detection_pipeline[1])
 	vision.entry(cam_cfg)
 	local function update_vision(yuyv)
 		vision.update(yuyv)
+		local meta, raw = vision.send()
+		cam_udp_ch:send(mp.pack(meta)..raw)
 	end
 
   -- Ability to turn on/off items

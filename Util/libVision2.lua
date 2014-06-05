@@ -184,7 +184,7 @@ function libVision.entry(cfg)
   focal_length, focal_base = cfg.focal_length, cfg.focal_base
 
   -- Save the scale paramter
-  scaleA, scaleB = cfg.scaleA, cfg.scaleB
+  scaleA, scaleB = cfg.vision.scaleA, cfg.vision.scaleB
   colors = cfg.vision.colors
 
   wa, ha = w / scaleA, h / scaleA
@@ -197,7 +197,7 @@ function libVision.entry(cfg)
   focalA = focal_length / (focal_base / wa)
   -- TODO: get from shm maybe?
   trNeck0 = T.trans(-cfg.walk.footX, 0, cfg.walk.bodyHeight)
-  * T.rotY(cfg.bodyTilt)
+  * T.rotY(cfg.walk.bodyTilt)
   * T.trans(cfg.head.neckX, 0, cfg.head.neckZ)
   -- Load ball
   if cfg.ball then
@@ -210,7 +210,7 @@ function libVision.entry(cfg)
   lut_t = ImageProc2.load_lut (table.concat(lut_fname))
 end
 
-function libVision.update (img)
+function libVision.update(img)
 
   -- Update the motion elements
   update_head()

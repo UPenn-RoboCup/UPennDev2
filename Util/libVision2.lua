@@ -232,11 +232,13 @@ function libVision.update(img)
   if posts then util.ptable(posts[1]) end
 
   -- Send the detection information
+	local meta_detect = {}
   meta_detect.ball = ball
   meta_detect.posts = posts and posts[1]
   meta_detect.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
   if meta_detect.posts then util.ptable(meta_detect.posts) end
 
+	--[[
   -- LabelA
   table.insert(debug_data, mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ))
   -- LabelB
@@ -245,6 +247,7 @@ function libVision.update(img)
   table.insert(debug_data, mp.pack(meta_yuyv)..c_yuyv:compress(im,w,h))
   -- Detection
   table.insert(debug_data, mp.pack(meta_detect))
+	--]]
 
   return debug_data, meta_detect
 end

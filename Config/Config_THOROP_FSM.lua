@@ -11,7 +11,7 @@ fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
 fsm.enabled = {
-  'ArmRoboCup',
+  'Arm',
   --'Lidar',
   'Body',
   'Head',

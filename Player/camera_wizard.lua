@@ -22,9 +22,8 @@ else
 		assert(metadata, 'Bad camera name')
 	end
 end
--- If we wish to log
--- TODO: arg or in config?
-local ENABLE_LOG = false
+
+local ENABLE_LOG, LOG_INTERVAL, t_log = false, 1 / 5, 0
 local ENABLE_NET = false
 local FROM_LOG, LOG_DATE = true, '05.28.2014.16.18.44'
 local libLog, logger
@@ -121,7 +120,7 @@ local uvc = require'uvc'
 if ENABLE_LOG then
 	libLog = require'libLog'
 	-- Make the logger
-	logger = libLog.new('uvc', true)
+	logger = libLog.new('yuyv', true)
 end
 
 -- Open the camera
@@ -133,7 +132,6 @@ for i, param in ipairs(metadata.param) do
 	unix.usleep(1e4)
 	assert(camera:get_param(name)==value, 'Failed to set '..name)
 end
-
 
 while true do
 	-- Grab and compress
@@ -150,10 +148,11 @@ while true do
 	end
 
 	-- Do the logging if we wish
-	if ENABLE_LOG then
+	if ENABLE_LOG and t - t_log > LOG_INTERVAL then
 		meta.rsz = sz
 		for pname, p in pairs(pipeline) do meta[pname] = p.get_metadata() end
 		logger:record(meta, img, sz)
+		t_log = t
 	end
 
 	-- Update the vision routines
@@ -167,5 +166,5 @@ while true do
 	end
 
 	-- Collect garbage every cycle
-	collectgarbage()
+	collectgarbage('step')
 end

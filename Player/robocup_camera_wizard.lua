@@ -170,7 +170,7 @@ local function initialize()
 	vcm.set_goal_detect(0)
 	vcm.set_goal_type(0)
 	vcm.set_goal_enable(0)
-	
+
 	--World.entry()
 end
 
@@ -219,7 +219,8 @@ local function send_overlay(ball, goal, line)
 	if err then print(ret, err) end
 end
 
-
+-- TODO: Get rid of cutil
+local cutil = require'cutil'
 initialize()
 while true do
 	-- Grab and compress
@@ -227,14 +228,13 @@ while true do
 	-- Update metadata
 	meta.t = t
 	meta.n = cnt
-	
+
 	-- Generate label
 	labelA_t = ImageProc2.yuyv_to_label(img, lut)
 	labelB_t = ImageProc2.block_bitor(labelA_t)
 	cc_t = ImageProc2.color_count(labelA_t)
 	-- convert to light userdata
 	--TODO: get rid of this, just use torch tensor
-	local cutil = require'cutil'
 	labelA.data = cutil.torch_to_userdata(labelA_t)
 	colorCount  = cc_t
 	labelB.data = cutil.torch_to_userdata(labelB_t)
@@ -253,8 +253,8 @@ while true do
 	-- Detection
 	ball = detectBall.detect(colorOrange,colorCount,labelA,labelB,HT,t)
 	goal = detectGoal.detect(colorYellow,colorCount,labelA,labelB,HT,t)
-	
-	
+
+
 	-- Check if we are sending to the operator
 	if ENABLE_NET then
 		if udp_ch then
@@ -291,5 +291,5 @@ while true do
 	end
 
 	-- Collect garbage every cycle
-	collectgarbage()
+	collectgarbage('step')
 end

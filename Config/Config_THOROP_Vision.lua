@@ -1,75 +1,65 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
-------------------------------------
-
-local camera = {}
-
-------------
+-------------
 -- Cameras --
 -------------
 
--- Head
-camera.head = {}
-camera.head.device = '/dev/video0'
---camera.head.device = '/dev/video1'
-camera.head.format = 'yuyv'
-camera.head.resolution = {640,360}
-camera.head.x_center = 320
-camera.head.y_center = 180
-camera.head.focal_length = 533
---hack for THOROP--
-camera.head.focal_length = 333
-camera.head.focal_base = 640
--- f = 640/2/tan(60/180*pi / 2)
--- OR
--- f = 360/2/tan(45/180*pi / 2) smaller
--- TODO: check C905: diagonal FOV: 75 degree?
-camera.head.focal_length = 554.256  --horizontal
--- camera.head.focal_length = 434.56  -- vertical
-camera.head.focal_base = 640  -- just use width ratio
--- Logitech C920: horizontal FOV: 78 degree
---------
-camera.head.fps = 30
-
-
-
-
---Head camera parameters
-
-camera.head.auto_param={}
-camera.head.auto_param[1] = {key='White Balance Temperature, Auto', val={0}}
-camera.head.auto_param[2] = {key='Power Line Frequency',   val={0}}
-camera.head.auto_param[3] = {key='Backlight Compensation', val={0}}
-camera.head.auto_param[4] = {key='Exposure, Auto',val={1}} --1 for manual
-camera.head.auto_param[5] = {key="Exposure, Auto Priority",val={0}}
-
-camera.head.param = {}
--- Wider FOV camera
-camera.head.param[1] = {key='Brightness',    val={76}}
-camera.head.param[2] = {key='Contrast',      val={117}}
-camera.head.param[3] = {key='Saturation',    val={130}}
-camera.head.param[4] = {key='Gain',          val={105}}
-camera.head.param[5] = {key='White Balance Temperature', val={2885}}
-camera.head.param[6] = {key='Sharpness',     val={0}}
-camera.head.param[7] = {key='Exposure (Absolute)',      val={90}}
--- Darwin Camera
-camera.head.param[1] = {key='Brightness',    val={0}}
-camera.head.param[2] = {key='Contrast',      val={10}}
-camera.head.param[3] = {key='Saturation',    val={18}}
-camera.head.param[4] = {key='Gain',          val={255}}
-camera.head.param[5] = {key='White Balance Temperature', val={1000}}
-camera.head.param[6] = {key='Sharpness',     val={0}}
-camera.head.param[7] = {key='Exposure (Absolute)',      val={2000}}
-
--- Lookup table
-camera.lut_file = 'thorTestGrasp_MonFeb10_14.raw'
-camera.lut_file = 'lut_low_contrast_pink_n_green.raw'
-camera.lut_file = 'field_C_noon_corrected.raw'  --works best for now
-camera.lut_file = '308_wide_night.raw'
-camera.lut_file = '308_narrow_night.raw'
-
-camera.jpeg_quality = 60
+Config.camera = {
+  jpeg_quality = 60,
+}
+table.insert(Config.camera,
+  {
+    name = 'head',
+    dev = '/dev/video0',
+    format = 'yuyv',
+    w = 640,
+    h = 360, --480,
+    fps = 30,
+    udp_port = 33333,
+    lA_port = 33335,
+    --[[LogiTech C920
+    lut = '308_wide_night.raw',
+    focal_length = 533,
+    focal_base = 640,
+    auto_param = {
+      {'White Balance Temperature, Auto', 0},
+      {'Power Line Frequency', 0},
+      {'Exposure, Auto', 1},  -- 1 for manual?
+      {'Exposure, Auto Priority', 0},
+    },
+    param = {
+      {'Brightness', 76},
+      {'Contrast', 117},
+      {'Saturation', 130},
+      --{'Exposure (Absolute)', 90},
+      {'Gain', 105},
+      {'Sharpness', 0},
+      {'White Balance Temperature', 2885},
+      --{'Backlight Compensation', 1},
+    },
+    --]]
+    ---[[LogiTech C905
+    lut = '308_narrow_night.raw',
+    focal_length = 554.256,
+    focal_base = 640,
+    auto_param = {
+      {'White Balance Temperature, Auto', 0},
+      {'Power Line Frequency', 0},
+      {'Exposure, Auto', 1},
+      {'Exposure, Auto Priority', 0},
+    },
+    param = {
+      {'Brightness', 0},
+      {'Contrast', 10},
+      {'Saturation', 18},
+      {'Exposure (Absolute)', 800},
+      {'Gain', 255},
+      {'Sharpness', 0},
+      {'White Balance Temperature', 1000},
+    },
+    --]]
+  })
 
 local vision = {}
 
@@ -93,19 +83,19 @@ vision.nonwhite_wall_min_area = 3000
 vision.nonwhite_wall_max_rate = 0.15
 
 
-vision.ball = {}
-vision.ball.diameter = 0.22
-vision.ball.th_min_color = 50 --100
-vision.ball.th_min_color2 = 6
-vision.ball.th_min_fill_rate = 0.35
-vision.ball.th_height_max  = 0.20
-vision.ball.th_ground_boundingbox = {-30,30,0,20}
-vision.ball.th_min_green1 = 400
-vision.ball.th_min_green2 = 150
-vision.ball.check_for_ground = 1
-vision.ball.check_for_field = 1
-vision.ball.field_margin = 2.0
-
+vision.ball = {
+  diameter = 0.22,
+  th_min_color = 50, --100
+  th_min_color2 = 6,
+  th_min_fill_rate = 0.35,
+  th_height_max  = 0.20,
+  th_ground_boundingbox = {-30,30,0,20},
+  th_min_green1 = 400,
+  th_min_green2 = 150,
+  check_for_ground = 1,
+  check_for_field = 1,
+  field_margin = 2.0,
+}
 
 vision.goal={}
 vision.goal.th_min_color = 120 --TODO

@@ -165,8 +165,13 @@ while true do
 	for pname, p in pairs(pipeline) do
 		p.update(img)
 		if ENABLE_NET and p.send then
-			local meta, raw = p.send()
-			local ret, err = udp_ch:send(mp.pack(meta)..raw)
+			for _,v in ipairs(p.send()) do
+				if v[2] then
+					udp_ch:send(mp.pack(v[1])..v[2])
+				else
+					udp_ch:send(mp.pack(v[1]))
+				end
+			end
 		end
 	end
 

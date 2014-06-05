@@ -17,6 +17,10 @@ local trHead, trNeck, trNeck0, dtrCamera
 local x0A, y0A, focalA, focal_length, focal_base
 -- Object properties (TODO: Should this be a config, or not?)
 local b_diameter, b_dist, b_height
+-- Store information about what was detected
+local detected = {
+  id = 'detect',
+}
 --
 local colors
 -- For broadcasting the labeled image
@@ -25,14 +29,18 @@ local c_zlib = zlib.compress_cdata
 
 -- Should have a common API (meta/raw)
 function libVision.send()
-  local raw = c_zlib(labelA_t:data(), labelA_t:nElement(), true)
-  local meta = {
+  local to_send = {}
+  local lA_raw = c_zlib(labelA_t:data(), labelA_t:nElement(), true)
+  local lA_meta = {
     w = labelA_t:size(2),
     h = labelA_t:size(1),
+    sz = #raw,
     c = 'zlib',
     id = 'labelA',
   }
-  return meta, raw
+  to_send[1] = {lA_meta, lA_raw}
+  to_send[2] = detected
+  return to_send
 end
 
 -- Update the Head transform
@@ -232,9 +240,6 @@ function libVision.update(img)
   -- Update the motion elements
   update_head()
 
-  -- Data to send on the channel
-  local debug_data = {}
-
   -- Images to labels
   labelA_t = ImageProc2.yuyv_to_label(img, lut_t:data())
   labelB_t = ImageProc2.block_bitor(labelA_t)
@@ -244,29 +249,13 @@ function libVision.update(img)
   local cc = ImageProc2.color_count(labelA_t)
   local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
-  --if posts then print('\nCamera '..id..': '..#posts..' posts.') end
-  --print(post_fails)
-  if posts then util.ptable(posts[1]) end
 
-  -- Send the detection information
-	local meta_detect = {}
-  meta_detect.ball = ball
-  meta_detect.posts = posts and posts[1]
-  meta_detect.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
-  if meta_detect.posts then util.ptable(meta_detect.posts) end
+  -- Save the detection information
+  detected.ball = ball
+  detected.posts = posts
+  detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
+  if detected.posts then util.ptable(detected.posts) end
 
-	--[[
-  -- LabelA
-  table.insert(debug_data, mp.pack(meta_a)..c_zlib( labelA:data(), nA, true ))
-  -- LabelB
-  table.insert(debug_data, mp.pack(meta_b)..c_zlib( labelB:data(), nB, true ))
-  -- YUYV
-  table.insert(debug_data, mp.pack(meta_yuyv)..c_yuyv:compress(im,w,h))
-  -- Detection
-  table.insert(debug_data, mp.pack(meta_detect))
-	--]]
-
-  return debug_data, meta_detect
 end
 
 return libVision

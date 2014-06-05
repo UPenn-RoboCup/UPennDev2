@@ -196,8 +196,8 @@ function libVision.entry(cfg)
   * T.rotY(cfg.head.pitchCamera or 0)
   focalA = focal_length / (focal_base / wa)
   -- TODO: get from shm maybe?
-  trNeck0 = T.trans(-cfg.walk.footX, 0, cfg.walk.bodyHeight)
-  * T.rotY(cfg.walk.bodyTilt)
+  trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
+  * T.rotY(Config.walk.bodyTilt)
   * T.trans(cfg.head.neckX, 0, cfg.head.neckZ)
   -- Load ball
   if cfg.ball then

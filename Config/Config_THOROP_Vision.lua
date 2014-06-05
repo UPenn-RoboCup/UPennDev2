@@ -21,7 +21,7 @@ local vision = {
     cyan = 4,
     field = 8,
     white = 16,
-  }
+  },
   -- TODO: vision.colorBlack for obstacles
   scaleA = 2,
   scaleB = 4,
@@ -120,7 +120,7 @@ table.insert(Config.camera,
     -- Run the standard RoboCup vision processing
     detection_pipeline = {
       'libVision2',
-    }
+    },
     --[[
     -- Logitech C920
     lut = '308_wide_night.raw',
@@ -187,7 +187,6 @@ if IS_WEBOTS then
 end
 
 -- Associate with the table
-Config.camera = camera
 Config.vision = vision
 Config.head = head
 

@@ -7,6 +7,8 @@ dofile'../include.lua'
 local metadata
 if not arg or type(arg[1])~='string' then
 	-- TODO: Find the next available camera
+	local pt = require'util'.ptable
+	pt(Config)
 	metadata = Config.camera[1]
 else
 	local cam_id = arg[1]

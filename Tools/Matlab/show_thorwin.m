@@ -9,11 +9,11 @@ figure(1);
 clf;
 % (top)
 % LabelA
-f_lA = subplot(2,2,1);
+f_lA = subplot(1,2,1);
 im_lA = image(zeros(1));
 colormap(cmap);
 % yuyv
-f_yuyv = subplot(2,2,2);
+f_yuyv = subplot(1,2,2);
 im_yuyv = image(zeros(1));
 hold on;
 p_ball = plot([0],[0],'m*');
@@ -34,7 +34,6 @@ while 1
     for s=1:numel(idx)
         s_idx = idx(s);
         s_idx_m = s_idx + 1;
-        cam = cams{s_idx_m};
         [s_data, has_more] = zmq( 'receive', s_idx );
         while udp_recv('getQueueSize',fd) > 0
             udp_data = udp_recv('receive',fd);

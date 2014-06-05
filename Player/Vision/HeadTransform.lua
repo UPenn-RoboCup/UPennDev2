@@ -19,17 +19,6 @@ cameraAngle = Config.head.cameraAngle
 neckX    = Config.head.neckX 
 neckZ    = Config.head.neckZ 
 
-labelA = {}
---[[
-if( webots ) then
-  labelA.m = Config.camera.width
-  labelA.n = Config.camera.height
-else
-  labelA.m = Config.camera.width/2
-  labelA.n = Config.camera.height/2
-end
---]]
-
 
 local horizonA, horizonB, horizonDir
 local x0A,x0B,y0A,y0B,focalA,focalB
@@ -95,15 +84,14 @@ end
 
 
 
-function HeadTransform.update(headAngles,labelA,labelB)
+function HeadTransform.update(headAngles,labelA,labelB, focal_length, focal_base)
   
   local scaleA = Config.vision.scaleA
   nxA = labelA.m
   x0A = 0.5 * (nxA-1)
   nyA = labelA.n
   y0A = 0.5 * (nyA-1)
-  focalA = Config.camera.head.focal_length/
-        (Config.camera.head.focal_base/nxA)
+  focalA = focal_length/(focal_base/nxA)
 
   scaleB = Config.vision.scaleB  
   nxB = labelB.m
@@ -136,7 +124,7 @@ function HeadTransform.update(headAngles,labelA,labelB)
   local vHead=vector.new({0,0,0,1})
   vHead=tHead*vHead
   vHead=vHead/vHead[4]
-  vcm.set_head_camera_height(vHead[3])
+  --vcm.set_head_camera_height(vHead[3])
 
   -- update horizon
   pa = headAngles[2] + cameraAngle[2] -- + bodyTilt   --TODO

@@ -45,6 +45,7 @@ net.camera = {}
 net.camera.head     = 33333
 net.camera.forehead = 33335
 net.camera.forehead2 = 33337
+net.detect = 33331
 --
 net.reliable_camera = {}
 net.reliable_camera.head     = 33334

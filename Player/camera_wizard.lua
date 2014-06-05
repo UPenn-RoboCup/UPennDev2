@@ -34,8 +34,8 @@ local mp = require'msgpack.MessagePack'
 local jpeg = require'jpeg'
 
 -- Extract metadata information
-local w = metadata.width
-local h = metadata.height
+local w = metadata.w
+local h = metadata.h
 local name = metadata.name
 -- Who to send to
 local operator = Config.net.operator.wired
@@ -53,6 +53,7 @@ end
 -- UDP Sending
 --local camera_ch = si.new_publisher('camera0')
 local udp_ch = metadata.udp_port and udp.new_sender(operator, metadata.udp_port)
+print('UDP',operator, metadata.udp_port)
 
 -- Metadata for the operator
 local meta = {
@@ -163,9 +164,9 @@ while true do
 	-- Update the vision routines
 	for pname, p in pairs(pipeline) do
 		p.update(img)
-		if ENABLE_NET and vision.send then
-			local meta, raw = vision.send()
-			udp_ch:send(mp.pack(meta)..raw)
+		if ENABLE_NET and p.send then
+			local meta, raw = p.send()
+			local ret, err = udp_ch:send(mp.pack(meta)..raw)
 		end
 	end
 

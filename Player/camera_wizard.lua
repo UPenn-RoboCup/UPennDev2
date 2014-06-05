@@ -7,8 +7,6 @@ dofile'../include.lua'
 local metadata
 if not arg or type(arg[1])~='string' then
 	-- TODO: Find the next available camera
-	local pt = require'util'.ptable
-	pt(Config)
 	metadata = Config.camera[1]
 else
 	local cam_id = arg[1]
@@ -27,7 +25,7 @@ end
 
 local ENABLE_LOG, LOG_INTERVAL, t_log = false, 1 / 5, 0
 local ENABLE_NET = false
-local FROM_LOG, LOG_DATE = true, '05.28.2014.16.18.44'
+local FROM_LOG, LOG_DATE = false, '05.28.2014.16.18.44'
 local libLog, logger
 
 local udp = require'udp'
@@ -74,8 +72,6 @@ local c_yuyv = jpeg.compressor('yuyv')
 local c_grey = jpeg.compressor('gray')
 
 -- Garbage collection before starting
-metadata = nil
-Config = nil
 collectgarbage()
 local t_debug = unix.time()
 
@@ -128,11 +124,20 @@ end
 -- Open the camera
 local camera = uvc.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
 -- Set the params
+for i, param in ipairs(metadata.auto_param) do
+	local name, value = unpack(param)
+	camera:set_param(name, value)
+	unix.usleep(1e4)
+	local now = camera:get_param(name)
+	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
+end
+-- Set the params
 for i, param in ipairs(metadata.param) do
 	local name, value = unpack(param)
 	camera:set_param(name, value)
 	unix.usleep(1e4)
-	assert(camera:get_param(name)==value, 'Failed to set '..name)
+	local now = camera:get_param(name)
+	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
 end
 
 while true do

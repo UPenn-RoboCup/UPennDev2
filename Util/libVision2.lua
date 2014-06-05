@@ -20,7 +20,7 @@ local colors
 
 -- Update the Head transform
 -- Input: Head angles
-function libVision.update_head()
+local function update_head()
 	-- Get from Body...
   local head = vector.zeros(2)
   -- TODO: Smarter memory allocation
@@ -225,8 +225,8 @@ function libVision.update(img)
   -- NOTE: Muse entry each time since on webots, we switch cameras
   -- In camera wizard, we do not switch cameras, so call only once
   local cc = ImageProc2.color_count(labelA)
-  local ball_fails, ball = lV.ball(labelA, labelB, cc)
-  local post_fails, posts = lV.goal(labelA, labelB, cc)
+  local ball_fails, ball = libVision.ball(labelA, labelB, cc)
+  local post_fails, posts = libVision.goal(labelA, labelB, cc)
   --if posts then print('\nCamera '..id..': '..#posts..' posts.') end
   --print(post_fails)
   if posts then util.ptable(posts[1]) end

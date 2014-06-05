@@ -145,7 +145,7 @@ table.insert(Config.camera,
     --]]
     ---[[
     --Logitech C905
-    lut = '308_narrow_night.raw',
+    lut = '308_narrow_night',
     focal_length = 554.256,
     focal_base = 640,
     auto_param = {
@@ -155,13 +155,13 @@ table.insert(Config.camera,
       {'Exposure, Auto Priority', 0},
     },
     param = {
+      --{'White Balance Temperature', 1000},
+      --{'Exposure (Absolute)', 800},
       {'Brightness', 0},
       {'Contrast', 10},
       {'Saturation', 18},
-      {'Exposure (Absolute)', 800},
       {'Gain', 255},
       {'Sharpness', 0},
-      {'White Balance Temperature', 1000},
     },
     --]]
   })

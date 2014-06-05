@@ -525,8 +525,10 @@ elseif IS_WEBOTS then
   local t_last_error = -math.huge
 
 	-- Just use one camera
+  local udp = require'udp'
 	local cam_cfg = Config.camera[1]
-	local cam_udp_ch = udp.new_sender(operator, cam_cfg.udp_port)
+  print('cam_cfg', cam_cfg.w, cam_cfg.detection_pipeline, cam_cfg.lut)
+	local cam_udp_ch = udp.new_sender(Config.net.operator.wired, cam_cfg.udp_port)
 	-- Just use one detection routine
 	local vision = require(cam_cfg.detection_pipeline[1])
 	vision.entry(cam_cfg)

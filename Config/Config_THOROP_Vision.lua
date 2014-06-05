@@ -168,12 +168,15 @@ table.insert(Config.camera,
 
 --Webots use 1/2 resolution but 2x label resolution
 if IS_WEBOTS then
-  camera.head.resolution = {320,180}
-  camera.head.x_center = 160
-  camera.head.y_center = 90
-  camera.head.focal_length = 554.256/2
+  Config.camera[1].w = 320
+  Config.camera[1].h = 180
+  Config.camera[1].lut = 'webots'
+  
 
-  camera.head.focal_base = 320
+  Config.camera[1].x_center = 160
+  Config.camera[1].y_center = 90
+  Config.camera[1].focal_length = 554.256/2
+  Config.camera[1].focal_base = 320
 	head.neckX= 0 --From CoM to neck joint
 
   head.cameraPos = {0.0785, 0, 0.072}
@@ -183,7 +186,6 @@ if IS_WEBOTS then
   -- Karen: smaller labelA resolution reduces vcm burden
   vision.scaleA = 2
   vision.scaleB = 2
-  camera.lut_file = 'lutWebots74.raw'
 end
 
 -- Associate with the table

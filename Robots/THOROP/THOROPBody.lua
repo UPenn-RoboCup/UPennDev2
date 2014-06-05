@@ -790,7 +790,7 @@ elseif IS_WEBOTS then
       local camera_fr = webots.to_rgb(tags.head_camera)
       local w = webots.wb_camera_get_width(tags.head_camera)
       local h = webots.wb_camera_get_height(tags.head_camera)
-      local jpeg_fr  = jpeg.compress_rgb(camera_fr,w,h)
+      Body.get_image = function() return camera_fr end
     end
     -- Grab a lidar scan
     if ENABLE_CHEST_LIDAR then

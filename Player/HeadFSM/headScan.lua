@@ -48,7 +48,7 @@ function state.update()
     return 'ballfound'
   end
 
-  local ph = (t - t0) / tScan
+  local ph = (t - t_entry) / tScan
   ph = ph - math.floor(ph)
 
   local yaw, pitch
@@ -63,17 +63,18 @@ function state.update()
     pitch = pitch0 + pitchMag * pitchDir
   end
 
-  local qNeck = Body.get_head_position()
   -- Go!
   --[[
+  local qNeck = Body.get_head_position()
   local qNeck_approach, doneNeck =
     util.approachTol(qNeck, {yaw, pitch}, dqNeckLimit, dt)
+  Body.set_head_command_position(qNeck_approach)
 print("YP", yaw, pitch)
 print("act",qNeck_approach)
 print("lim",unpack(dqNeckLimit))
+
 --]]
-  -- Update the motors
---  Body.set_head_command_position(qNeck_approach)
+
   Body.set_head_command_position({yaw, pitch})
 
 end

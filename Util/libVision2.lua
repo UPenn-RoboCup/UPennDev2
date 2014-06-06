@@ -153,11 +153,11 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       return tostring(propsA.v), propsA
     else
       -- Add another failure
-      table.insert(failures, table.concat(fail,'\n'))
+      table.insert(failures, table.concat(fail,', '))
     end
   end
   -- Assume failure
-  return table.concat(failures,'\n')
+  return table.concat(failures,', ')
 end
 
 -- TODO: Allow the loop to run many times
@@ -170,9 +170,9 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
   local failures, successes = {}, {}
   for i, post in ipairs(postB) do
     local fail, has_stats = {}, true
-    local postStats = check_prop(colors.yellow, post, 25, 0, labelA_t)
+    local postStats = check_prop(colors.yellow, post, 60, 0.35, labelA_t)
     if type(postStats)=='string' then
-      table.insert(fail, propsA)
+      table.insert(fail, postStats)
     else
       -- TODO: Add lower goal post bbox check
       -- Orientation check
@@ -202,13 +202,14 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
     if #fail==0 then
       table.insert(successes, postStats)
       table.insert(failures, 'SUCCESS')
+			--util.ptable(postStats)
     else
-      table.insert(failures, table.concat(fail,'\n'))
+      table.insert(failures, table.concat(fail,', '))
     end
   end
   -- Yield the failure messages and the success tables
   if #successes<1 then successes = nil end
-  return table.concat(failures,'\n'), successes
+  return table.concat(failures,','), successes
 end
 
 -- Set the variables based on the config file

@@ -1,5 +1,5 @@
 -- libVision
--- (c) 2014 Stephen McGill
+--TODO: this file exists only because ImageProc won't work on mac for now...
 -- General Detection methods
 local libVision = {}
 -- Detection and HeadTransform information
@@ -84,8 +84,14 @@ local function bboxStats(color, bboxB, labelA_t)
     scaleB * bboxB[4] + scaleB - 1
   }
   local area = (bboxA[2] - bboxA[1] + 1) * (bboxA[4] - bboxA[3] + 1)
-	local stats = ImageProc.color_stats(labelA_t, color, bboxA)
-  return stats, area
+  if not cutil then
+  	local stats = ImageProc.color_stats(labelA_t, color, bboxA)
+    return stats, area
+  else
+    local stats = ImageProc.color_stats(labelA_t,wa,ha,colors.white,bboxA,0)
+    return stats, area
+  end    
+    
 end
 
 local function check_prop(color, prop, th_area, th_fill, labelA_t)
@@ -125,7 +131,13 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
   local cc = cc_t[colors.orange]
   if cc<6 then return'Color count' end
   -- Connect the regions in labelB
-  local ballPropsB = ImageProc.connected_regions(labelB_t, 1)
+  local ballPropsB
+  if not cutil then
+    ballPropsB = ImageProc.connected_regions(labelB_t, 1)
+  else
+    ballPropsB = ImageProc.connected_regions(labelB_t, wb, hb, colors.orange)
+  end
+  
   if not ballPropsB then return'No connected regions' end
   local nProps = #ballPropsB
   if nProps==0 then return'0 connected regions' end
@@ -165,10 +177,18 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
   return table.concat(failures,', ')
 end
 
+--TODO: temp workaround for running webots on Mac
+local cutil = require'cutil'
+
 -- TODO: Allow the loop to run many times
 function libVision.goal(labelA_t, labelB_t, cc_t)
   -- Form the initial goal check
-  local postB = ImageProc.goal_posts(labelB_t, colors.yellow, th_nPostB)
+  local postB
+  if not cutil then
+    postB = ImageProc.goal_posts(labelB_t, colors.yellow, th_nPostB)
+  else
+    postB = ImageProc.goal_posts(labelB_t,wb,hb,colors.yellow,th_nPostB)
+  end
   if not postB then return'None detected' end
   -- Now process each goal post
   -- Store failures in the array
@@ -275,12 +295,22 @@ function libVision.update(img)
   -- Images to labels
   labelA_t = ImageProc2.yuyv_to_label(img, lut_t:data())
   labelB_t = ImageProc2.block_bitor(labelA_t)
-  -- Detection System
-  -- NOTE: Muse entry each time since on webots, we switch cameras
-  -- In camera wizard, we do not switch cameras, so call only once
   local cc = ImageProc2.color_count(labelA_t)
-  local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc)
-  local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
+  
+  local ball_fails, ball, post_fails, posts
+  if cutil then
+    labelA_u = cutil.torch_to_userdata(labelA_t)
+    labelB_u = cutil.torch_to_userdata(labelB_t)
+    
+    ball_fails, ball = libVision.ball(labelA_u, labelB_u, cc)
+    post_fails, posts = libVision.goal(labelA_u, labelB_u, cc)
+  else
+    -- Detection System
+    -- NOTE: Muse entry each time since on webots, we switch cameras
+    -- In camera wizard, we do not switch cameras, so call only once
+    ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc)
+    post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
+  end
 
   -- Save the detection information
   detected.ball = ball

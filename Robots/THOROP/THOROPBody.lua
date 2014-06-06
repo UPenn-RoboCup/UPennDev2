@@ -528,14 +528,22 @@ elseif IS_WEBOTS then
   local udp = require'udp'
 	local cam_cfg = Config.camera[1]
   print('cam_cfg', cam_cfg.w, cam_cfg.detection_pipeline, cam_cfg.lut)
-	local cam_udp_ch = udp.new_sender(Config.net.operator.wired, cam_cfg.udp_port)
+  local operator = Config.net.operator.wired
+	local cam_udp_ch = udp.new_sender(operator, cam_cfg.udp_port)
 	-- Just use one detection routine
-	local vision = require(cam_cfg.detection_pipeline[1])
+  local vision = require(cam_cfg.detection_pipeline[1])
 	vision.entry(cam_cfg, Body)
 	local function update_vision(yuyv)
 		vision.update(yuyv)
-		local meta, raw = vision.send()
-		cam_udp_ch:send(mp.pack(meta)..raw)
+    local udp_data, udp_ret, udp_err 
+		for _,v in ipairs(vision.send()) do
+			if v[2] then
+				udp_data = mp.pack(v[1])..v[2]
+			else
+				udp_data = mp.pack(v[1])
+			end
+			udp_ret, udp_err = cam_udp_ch:send(udp_data)
+    end
 	end
 
   -- Ability to turn on/off items

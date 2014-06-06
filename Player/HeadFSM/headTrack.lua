@@ -99,29 +99,6 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  local ball_elapsed = Body.get_time()-wcm.get_ball_t()
-  if ball_elapsed> tLost then --ball lost
-    return 'balllost'
-  end
-
-  local ballX, ballY = wcm.get_ball_x(), wcm.get_ball_y()
-  local yaw, pitch = ikineCam( ballX, ballY, ball_radius)
-
-  --TODO: a hack
-  -- when ball is close to body, look down to avoid losing the visual
-  local ballR = math.sqrt(ballX*ballX + ballY*ballY)
-  if ballR < 0.3 then pitch = pitch + 5*DEG_TO_RAD end
-
-  -- Grab where we are
-  local qNeck = Body.get_head_position()
-  --[[
-  local qNeck_approach, doneNeck =
-    util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, dt )
-  -- Update the motors
-  Body.set_head_command_position(qNeck_approach)
-  --]]
-  Body.set_head_command_position({yaw, pitch})
-
   if t-t_entry > timeout then
     if gcm.get_game_role() == 0 then -- Goalie
       -- return 'sweep'
@@ -129,6 +106,31 @@ function state.update()
       -- return 'timeout'
     end
   end
+
+  local ball_elapsed = Body.get_time()-wcm.get_ball_t()
+  if ball_elapsed> tLost then --ball lost
+    return 'balllost'
+  end
+
+  update_head()
+
+  local ballX, ballY = wcm.get_ball_x(), wcm.get_ball_y()
+  local yaw, pitch = ikineCam(ballX, ballY, ball_radius)
+
+  --TODO: a hack
+  -- when ball is close to body, look down to avoid losing the visual
+  local ballR = math.sqrt(ballX*ballX + ballY*ballY)
+  if ballR < 0.3 then pitch = pitch + 5*DEG_TO_RAD end
+
+--[[
+  -- Grab where we are
+  local qNeck = Body.get_head_position()
+  local qNeck_approach, doneNeck =
+    util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, dt )
+  -- Update the motors
+  Body.set_head_command_position(qNeck_approach)
+  --]]
+  Body.set_head_command_position({yaw, pitch})
 
 end
 

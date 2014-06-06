@@ -77,6 +77,7 @@ fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   {'bodyInit', 'done', 'bodyRobocupIdle'},
   --
+  {'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
   {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
   {'bodyRobocupIdle', 'follow', 'bodyStepWaypoint'},
   {'bodyRobocupIdle', 'stepplan2', 'bodyStepPlan2'},

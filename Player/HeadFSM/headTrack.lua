@@ -21,6 +21,8 @@ local yawMin = Config.head.yawMin
 local yawMax = Config.head.yawMax
 
 -- Assume one head for now...
+local dtrCamera = T.trans(unpack(Config.head.cameraPos or {0,0,0}))
+  * T.rotY(Config.head.pitchCamera or 0)
 local trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
 * T.rotY(Config.walk.bodyTilt)
 * T.trans(Config.head.neckX, 0, Config.head.neckZ)
@@ -103,7 +105,7 @@ function state.update()
   end
 
   local ballX, ballY = wcm.get_ball_x(), wcm.get_ball_y()
-  local yaw, pitch = HeadTransform.ikineCam( ballX, ballY, ball_radius)
+  local yaw, pitch = ikineCam( ballX, ballY, ball_radius)
 
   --TODO: a hack
   -- when ball is close to body, look down to avoid losing the visual

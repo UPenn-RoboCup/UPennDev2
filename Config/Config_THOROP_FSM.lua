@@ -42,7 +42,8 @@ fsm.Head = {
 --  {'headCenter', 'done', 'headIdle'},
   --
   {'headScan', 'ballfound', 'headTrack'},
-  {'headScan', 'center', 'headCenter'},
+  {'headScan', 'timeout', 'headScan'},
+--  {'headScan', 'center', 'headCenter'},
   --
   {'headTrack', 'balllost', 'headScan'},
 --  {'headTrack', 'center', 'headCenter'},

@@ -59,7 +59,10 @@ world.use_new_goalposts=1
 world.nParticle = 100
 world.initPosition = {0,0}
 world.odomScale = {1,1,1} -- For now IMU not in use
-world.cResample = 20 --Resampling interval
+world.use_imu_yaw = false
+-- Particle resampling intervals
+world.resample_period = 0.3 -- seconds
+world.resample_count = 20 -- partile filter cycles
 
 -- Associate with the table
 Config.world = world

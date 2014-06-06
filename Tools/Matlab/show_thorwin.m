@@ -19,8 +19,14 @@ f_yuyv = subplot(1,2,2);
 im_yuyv = image(zeros(1));
 hold on;
 p_ball = plot([0],[0], 'k*');
+% Remove from the plot
+set(p_ball,'Xdata', []);
+set(p_ball,'Ydata', []);
 r_ball = rectangle('Position', [0 0 1 1], 'Curvature',[1,1]);
 p_post1 = plot([0],[0], 'b-', 'LineWidth', 2);
+% Remove from the plot
+set(p_post1,'Xdata', []);
+set(p_post1,'Ydata', []);
 hold off;
 drawnow;
 

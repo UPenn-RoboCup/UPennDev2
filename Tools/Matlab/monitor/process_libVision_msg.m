@@ -22,22 +22,23 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         end
         if isfield(metadata,'posts')
             % Show on the plot
+            % TODO: array of plot handles, for two goal posts
             postStats = metadata.posts{1};
-            post_c = postStats.centroid' * cam.scale;
-            x0 = post_c(1);
-            y0 = post_c(2);
-            w0 = postStats.axisMajor * cam.scale / 2;
-            h0 = postStats.axisMinor * cam.scale / 2;
+            post_c = postStats.centroid * cam.scale;
+            w0 = postStats.axisMajor / 2 * cam.scale;
+            h0 = postStats.axisMinor / 2 * cam.scale;
             post_o = postStats.orientation;
-            rot = [cos(post_o) sin(post_o); -sin(post_o) cos(post_o)];
-            x11 = [x0 y0] + (rot*[w0 h0]')';
-            x12 = [x0 y0] + (rot*[-w0 h0]')';
-            x21 = [x0 y0] + (rot*[w0 -h0]')';
-            x22 = [x0 y0] + (rot*[-w0 -h0]')';
+            rot = [cos(post_o) sin(post_o); -sin(post_o) cos(post_o)]';
+            x11 = post_c + [w0 h0] * rot;
+            x12 = post_c + [-w0 h0] * rot;
+            x21 = post_c + [w0 -h0] * rot;
+            x22 = post_c + [-w0 -h0] * rot;
             post_box = [x11; x12; x22; x21; x11];
             set(cam.p_post1, 'XData', post_box(:,1), 'YData', post_box(:,2));
         else
             % Remove from the plot
+            set(cam.p_post1,'Xdata', []);
+            set(cam.p_post1,'Ydata', []);
         end
         
     elseif strcmp(msg_id,'world')

@@ -110,7 +110,7 @@ fsm.Motion = {
 }
 
 fsm.dqNeckLimit = {
-  90 * DEG_TO_RAD, 90 * DEG_TO_RAD
+  60 * DEG_TO_RAD, 60 * DEG_TO_RAD
 }
 
 fsm.headScan = {
@@ -129,13 +129,6 @@ fsm.headReady = {
 fsm.headTrack = {
   tLost = 2,
   timeout = 3,
-}
-
---HeadLookGoal: Look up to see the goal
-fsm.headLookGoal = {
-  yawSweep = 50*DEG_TO_RAD,
-  tScan = 1.0,
-  minDist = 0.40,
 }
 
 --HeadLookGoal: Look up to see the goal

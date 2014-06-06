@@ -38,13 +38,13 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-if t - t_entry > timeout then
-return 'timeout'
-end
+  if t - t_entry > timeout then
+    return 'timeout'
+  end
 
 	-- Check if we found the ball
   local ball_elapsed = Body.get_time() - wcm.get_ball_t()
-  if  ball_elapsed < 0.1 then --ball found
+  if ball_elapsed < 0.1 then --ball found
     return 'ballfound'
   end
 
@@ -66,11 +66,10 @@ end
   local qNeck = Body.get_head_position()
   -- Go!
   local qNeck_approach, doneNeck =
-    util.approachTol(qNeck, {yaw,pitch}, dqNeckLimit, dt)
+    util.approachTol(qNeck, {yaw, pitch}, dqNeckLimit, dt)
 
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
-
 
 end
 

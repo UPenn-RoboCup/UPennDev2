@@ -7,21 +7,78 @@ require'wcm'
 require'gcm'
 
 local vector = require'vector'
-local ball_radius = Config.world.ballDiameter / 2
-
 local util = require'util'
-local HeadTransform = require'HeadTransform'
+local T = require'libTransform'
 
+local ball_radius = Config.world.ballDiameter / 2
 local tLost = Config.fsm.headTrack.tLost
 local timeout = Config.fsm.headTrack.timeout
+local dqNeckLimit = Config.fsm.dqNeckLimit
 
--- Neck limits
---TODO: put into Config
-local dqNeckLimit = vector.new{15, 15} * DEG_TO_RAD
-if IS_WEBOTS then
-  dqNeckLimit = vector.new{45,45} * DEG_TO_RAD
+local pitchMin = Config.head.pitchMin
+local pitchMax = Config.head.pitchMax
+local yawMin = Config.head.yawMin
+local yawMax = Config.head.yawMax
+
+-- Assume one head for now...
+local trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
+* T.rotY(Config.walk.bodyTilt)
+* T.trans(Config.head.neckX, 0, Config.head.neckZ)
+
+-- Update the Head transform
+-- Input: Head angles
+local function update_head()
+  if not Body then return end
+  -- Get from Body...
+  local head = Body.get_head_position()
+  -- TODO: Smarter memory allocation
+  -- TODO: Add any bias for each robot
+  trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
+  trHead = trNeck * dtrCamera
+  -- Grab the position only
+  local vHead = T.get_pos(trHead)
+  return vHead
 end
 
+--Camera IK without headangle limit
+local function ikineCam0(x0, y0, z0)
+  local pitch0 = 0
+  --Look at ground by default
+  z0 = z0 or 0
+
+  local vNeck = update_head()
+  x0 = x0 - vNeck[1]
+  z0 = z0 - vNeck[3]
+
+  -- Cancel out body tilt angle
+  local v = T.rotY(-Config.walk.bodyTilt) * torch.Tensor{x0,y0,z0,1}
+  v = v / v[4]
+
+  local x, y, z = v[1], v[2], v[3]
+  local yaw = math.atan2(y, x)
+  local norm = math.sqrt(x^2 + y^2 + z^2)
+
+  --new IKcam that takes camera offset into account
+  -------------------------------------------------------------
+  -- sin(pitch)x + cos (pitch) z = c , c=camera z offset
+  -- pitch = atan2(x,z) - acos(b/r),  r= sqrt(x^2+z^2)
+  -- r*sin(pitch) = z *cos(pitch) + c,
+  -------------------------------------------------------------
+  local c = Config.head.cameraPos[3]
+  local r = math.sqrt(x ^ 2 + y ^ 2)
+  local d = math.sqrt(r ^ 2 + z ^ 2)
+  local p0 = math.atan2(r, z) - math.acos(c / (d + 1E-10))
+
+  local pitch = p0 - Config.head.cameraAngle[2] - pitch0
+  return yaw, pitch
+end
+
+local function ikineCam(x, y, z)
+  yaw,pitch=ikineCam0(x,y,z)
+  yaw = math.min(math.max(yaw, yawMin), yawMax)
+  pitch = math.min(math.max(pitch, pitchMin), pitchMax)
+  return yaw,pitch
+end
 
 function state.entry()
   print(state._NAME..' Entry' )

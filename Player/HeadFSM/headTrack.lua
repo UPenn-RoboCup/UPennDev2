@@ -6,6 +6,8 @@ require'hcm'
 require'wcm'
 require'gcm'
 
+local ball_radius = Config.world.ballDiameter / 2
+
 local util = require'util'
 local HeadTransform = require'HeadTransform'
 
@@ -14,11 +16,9 @@ local timeout = Config.fsm.headTrack.timeout
 
 -- Neck limits
 --TODO: put into Config
-local dqNeckLimit
+local dqNeckLimit = vector.new{15, 15} * DEG_TO_RAD
 if IS_WEBOTS then
-  dqNeckLimit = {45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD}
-else
-	dqNeckLimit = {15*Body.DEG_TO_RAD,15*Body.DEG_TO_RAD}
+  dqNeckLimit = vector.new{45,45} * DEG_TO_RAD
 end
 
 
@@ -40,14 +40,12 @@ function state.update()
   t_update = t
 
   local ball_elapsed = Body.get_time()-wcm.get_ball_t()
-  if  ball_elapsed> tLost then --ball lost
+  if ball_elapsed> tLost then --ball lost
     return 'balllost'
   end
 
   local ballX, ballY = wcm.get_ball_x(),wcm.get_ball_y()
-  local yaw,pitch = HeadTransform.ikineCam(
-    ballX, ballY,
-    Config.world.ballDiameter/2)
+  local yaw,pitch = HeadTransform.ikineCam( ballX, ballY, ball_radius)
 
   --TODO: a hack
   -- when ball is close to body, look down to avoid losing the visual

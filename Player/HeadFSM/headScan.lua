@@ -37,30 +37,30 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  local ph = (t-t0)/tScan;
-  ph = ph - math.floor(ph);
+  local ph = (t - t0) / tScan
+  ph = ph - math.floor(ph)
 
+  local yaw, pitch
   if ph<0.25 then --phase 0 to 0.25
-      yaw=yawMag*(ph*4)* direction;
-      pitch=pitch0+pitchMag*pitchDir;
-    elseif ph<0.75 then --phase 0.25 to 0.75
-      yaw=yawMag*(1-(ph-0.25)*4)* direction;
-      pitch=pitch0-pitchMag*pitchDir;
-    else --phase 0.75 to 1
-      yaw=yawMag*(-1+(ph-0.75)*4)* direction;
-      pitch=pitch0+pitchMag*pitchDir;
-    end
+    yaw = yawMag * (ph * 4) * direction
+    pitch = pitch0 + pitchMag * pitchDir
+  elseif ph<0.75 then --phase 0.25 to 0.75
+    yaw = yawMag * (1 - (ph - 0.25) * 4) * direction
+    pitch = pitch0 - pitchMag * pitchDir
+  else --phase 0.75 to 1
+    yaw = yawMag * (-1 + (ph - 0.75) * 4) * direction
+    pitch = pitch0 + pitchMag * pitchDir
+  end
 
-  local qNeck = Body.get_head_command_position()
+  local qNeck = Body.get_head_position()
   -- Go!
   local qNeck_approach, doneNeck =
-    util.approachTol( qNeck, {yaw,pitch}, dqNeckLimit, dt )
+    util.approachTol(qNeck, {yaw,pitch}, dqNeckLimit, dt)
 
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
 
-
-  local ball_elapsed = Body.get_time()-vcm.get_ball_t()
+  local ball_elapsed = Body.get_time() - vcm.get_ball_t()
   if  ball_elapsed< 0.1 then --ball found
     return 'ballfound'
   end
@@ -68,7 +68,7 @@ function state.update()
 end
 
 function state.exit()
-  print(state._NAME..' Exit' )
+  print(state._NAME..' Exit')
 end
 
 return state

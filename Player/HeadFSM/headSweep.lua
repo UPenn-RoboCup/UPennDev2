@@ -13,7 +13,6 @@ local dist = Config.fsm.headReady.dist;
 
 -- min_eta_look = Config.min_eta_look or 2.0;
 
-
 function state.entry()
   print(state._NAME..' entry');
   t_entry = Body.get_time();
@@ -32,19 +31,19 @@ function state.update()
   t_update = t
 
   local ph = (t-t_entry)/tScan;
-  local height = vcm.get_head_camera_height();
-  local yaw0 = direction*(ph-0.5)*2*yawMag;
+  local height = vcm.get_head_camera_height()
+  local yaw0 = direction * (ph - 0.5) * 2 * yawMag
   local yaw, pitch = HT.ikineCam(
-  	dist*math.cos(yaw0),dist*math.sin(yaw0), height);
+  	dist * math.cos(yaw0), dist * math.sin(yaw0), height)
 
   -- Grab where we are
-  local qNeck = Body.get_head_command_position()
+  local qNeck = Body.get_head_position()
   local qNeck_approach, doneNeck =
-    util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, dt )
+    util.approachTol(qNeck, {yaw, pitch}, dqNeckLimit, dt)
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
 
-  if (t-t_entry > tScan) then
+  if t-t_entry > tScan then
     return 'done'
   end
 end

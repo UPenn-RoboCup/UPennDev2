@@ -62,7 +62,7 @@ local meta = {
 	sz = 0,
 	w = w,
 	h = h,
-	name = name..'_camera',
+	id = name..'_camera',
 	c = 'jpeg',
 }
 
@@ -126,7 +126,7 @@ local camera = uvc.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
 for i, param in ipairs(metadata.auto_param) do
 	local name, value = unpack(param)
 	camera:set_param(name, value)
-	unix.usleep(1e4)
+	unix.usleep(1e5)
 	local now = camera:get_param(name)
 	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
 end
@@ -134,11 +134,14 @@ end
 for i, param in ipairs(metadata.param) do
 	local name, value = unpack(param)
 	camera:set_param(name, value)
-	unix.usleep(1e4)
+	unix.usleep(1e5)
 	local now = camera:get_param(name)
 	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
 end
 
+local nlog = 0
+local udp_ret, udp_err, udp_data
+local t0 = unix.time()
 while true do
 	-- Grab and compress
 	local img, sz, cnt, t = camera:get_image()
@@ -150,7 +153,8 @@ while true do
 	if ENABLE_NET then
 		local c_img = c_yuyv:compress(img, w, h)
 		meta.sz = #c_img
-		local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
+		udp_data = mp.pack(meta)..c_img
+		udp_ret, udp_err = udp_ch:send(udp_data)
 	end
 
 	-- Do the logging if we wish
@@ -159,6 +163,7 @@ while true do
 		for pname, p in pairs(pipeline) do meta[pname] = p.get_metadata() end
 		logger:record(meta, img, sz)
 		t_log = t
+		nlog = nlog + 1
 	end
 
 	-- Update the vision routines
@@ -167,17 +172,23 @@ while true do
 		if ENABLE_NET and p.send then
 			for _,v in ipairs(p.send()) do
 				if v[2] then
-					udp_ch:send(mp.pack(v[1])..v[2])
+					udp_data = mp.pack(v[1])..v[2]
 				else
-					udp_ch:send(mp.pack(v[1]))
+					udp_data = mp.pack(v[1])
 				end
+				udp_ret, udp_err = udp_ch:send(udp_data)
 			end
 		end
 	end
 
 	if t-t_debug>1 then
 		t_debug = t
-		print("DEBUG",t)
+		local kb = collectgarbage('count')
+		local debug_str = {
+			string.format("Camera | %s Uptime: %.2f Mem: %d kB", name, t-t0, kb),
+			"# logs: "..nlog
+		}
+		print(table.concat(debug_str,'\n'))
 	end
 
 	-- Collect garbage every cycle

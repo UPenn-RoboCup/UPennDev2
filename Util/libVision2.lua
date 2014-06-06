@@ -7,6 +7,7 @@ local ImageProc = require'ImageProc'
 local ImageProc2 = require'ImageProc.ffi'
 local T = require'libTransform'
 local vector = require'vector'
+local util = require'util'
 -- Body should be optional...
 local Body
 -- Important local variables
@@ -29,6 +30,9 @@ local colors
 local zlib = require'zlib.ffi'
 local c_zlib = zlib.compress_cdata
 
+function libVision.get_metadata()
+end
+
 -- Should have a common API (meta/raw)
 function libVision.send()
   local to_send = {}
@@ -36,12 +40,12 @@ function libVision.send()
   local lA_meta = {
     w = labelA_t:size(2),
     h = labelA_t:size(1),
-    sz = #raw,
+    sz = #lA_raw,
     c = 'zlib',
     id = 'labelA',
   }
   to_send[1] = {lA_meta, lA_raw}
-  to_send[2] = detected
+  to_send[2] = {detected}
   return to_send
 end
 
@@ -264,7 +268,7 @@ function libVision.update(img)
   detected.ball = ball
   detected.posts = posts
   detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
-  if detected.posts then util.ptable(detected.posts) end
+  --if detected.posts then util.ptable(detected.posts) end
 
 end
 

@@ -145,19 +145,19 @@ table.insert(Config.camera,
     --]]
     ---[[
     --Logitech C905
-    lut = 'low_contrast_pink_n_green',
+    lut = 'm308_9am',
     focal_length = 554.256,
     focal_base = 640,
     auto_param = {
       {'White Balance Temperature, Auto', 0},
+      {'Exposure, Auto', 0},
       {'Power Line Frequency', 0},
-      {'Exposure, Auto', 1},
       {'Exposure, Auto Priority', 0},
 			{'Focus, Auto', 0}
     },
     param = {
       {'White Balance Temperature', 3600},
-      {'Exposure (Absolute)', 300},
+      {'Exposure (Absolute)', 100},
 			{'Focus (absolute)', 0},
       {'Brightness', 128},
       {'Contrast', 128},

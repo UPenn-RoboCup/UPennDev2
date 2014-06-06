@@ -1,14 +1,12 @@
 local t_entry, t_update
 local state = {}
 state._NAME = ...
-require'hcm'
-require'wcm'
-require'gcm'
 
 local Body = require'Body'
 local vector = require'vector'
-local util = require'util'
 local T = require'libTransform'
+require'wcm'
+require'gcm'
 
 local ball_radius = Config.world.ballDiameter / 2
 local tLost = Config.fsm.headTrack.tLost
@@ -44,14 +42,14 @@ local function update_head()
 end
 
 --Camera IK without headangle limit
-local function ikineCam0(x0, y0, z0)
+local function ikineCam(x0, y0, z0)
 
   local vNeck = update_head()
   x0 = x0 - vNeck[1]
   z0 = (z0 or 0) - vNeck[3]
 
   -- Cancel out body tilt angle
-  local v = T.rotY(-Config.walk.bodyTilt) * torch.Tensor{x0, y0, z0, 1}
+  local v = torch.mv(T.rotY(-Config.walk.bodyTilt), torch.Tensor{x0, y0, z0, 1})
   v = v / v[4]
 
   local x, y, z = v[1], v[2], v[3]
@@ -70,13 +68,6 @@ local function ikineCam0(x0, y0, z0)
 
   local pitch = p0 - Config.head.cameraAngle[2]
   return yaw, pitch
-end
-
-local function ikineCam(x, y, z)
-  local yaw, pitch = ikineCam0(x, y, z)
-  yaw = math.min(math.max(yaw, yawMin), yawMax)
-  pitch = math.min(math.max(pitch, pitchMin), pitchMax)
-  return yaw,pitch
 end
 
 function state.entry()
@@ -104,8 +95,8 @@ function state.update()
     end
   end
 
-  local ball_elapsed = Body.get_time()-wcm.get_ball_t()
-  if ball_elapsed> tLost then --ball lost
+  local ball_elapsed = t - wcm.get_ball_t()
+  if ball_elapsed > tLost then --ball lost
     return 'balllost'
   end
 
@@ -114,17 +105,13 @@ function state.update()
 
   --TODO: a hack
   -- when ball is close to body, look down to avoid losing the visual
-  --local ballR = math.sqrt(ballX*ballX + ballY*ballY)
-  --if ballR < 0.3 then pitch = pitch + 5*DEG_TO_RAD end
+  local ballR = math.sqrt(ballX*ballX + ballY*ballY)
+  if ballR < 0.3 then pitch = pitch + 5 * DEG_TO_RAD end
 
---[[
-  -- Grab where we are
-  local qNeck = Body.get_head_position()
-  local qNeck_approach, doneNeck =
-    util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, dt )
-  -- Update the motors
-  Body.set_head_command_position(qNeck_approach)
-  --]]
+  -- Clamp
+  yaw = math.min(math.max(yaw, yawMin), yawMax)
+  pitch = math.min(math.max(pitch, pitchMin), pitchMax)
+
   Body.set_head_command_position({yaw, pitch})
 
 end

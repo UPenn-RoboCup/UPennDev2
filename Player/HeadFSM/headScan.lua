@@ -1,32 +1,24 @@
-local Body = require'Body'
-local t_entry, t_update
 local state = {}
 state._NAME = ...
-require'hcm'
-require'vcm'
 
-local util = require'util'
+local Body = require'Body'
+require'wcm'
+local t_entry, t_update
 
--- Neck limits
 local dqNeckLimit = Config.fsm.dqNeckLimit
 local pitch0 = Config.fsm.headScan.pitch0
 local pitchMag = Config.fsm.headScan.pitchMag
 local yawMag = Config.fsm.headScan.yawMag
-
 local tScan = Config.fsm.headScan.tScan
 local timeout = tScan * 2
+local direction, pitchDir = 1, 1
 
-local t0
-local direction = 1
-local pitchDir = 1
-local t_entry
 function state.entry()
   print(state._NAME..' Entry' )
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
-  t0 = Body.get_time()
-  t_entry = t0
+  t_entry = Body.get_time()
   t_update = t_entry
 end
 
@@ -43,11 +35,12 @@ function state.update()
   end
 
 	-- Check if we found the ball
-  local ball_elapsed = Body.get_time() - wcm.get_ball_t()
-  if ball_elapsed < 0.1 then --ball found
+  local ball_elapsed = t - wcm.get_ball_t()
+  if ball_elapsed < 0.1 then
     return 'ballfound'
   end
 
+  -- Find the phase
   local ph = (t - t_entry) / tScan
   ph = ph - math.floor(ph)
 
@@ -62,21 +55,7 @@ function state.update()
     yaw = yawMag * (-1 + (ph - 0.75) * 4) * direction
     pitch = pitch0 + pitchMag * pitchDir
   end
-
-  -- Go!
-  --[[
-  local qNeck = Body.get_head_position()
-  local qNeck_approach, doneNeck =
-    util.approachTol(qNeck, {yaw, pitch}, dqNeckLimit, dt)
-  Body.set_head_command_position(qNeck_approach)
-print("YP", yaw, pitch)
-print("act",qNeck_approach)
-print("lim",unpack(dqNeckLimit))
-
---]]
-
   Body.set_head_command_position({yaw, pitch})
-
 end
 
 function state.exit()

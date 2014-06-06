@@ -114,11 +114,13 @@ function state.update()
 
   -- Grab where we are
   local qNeck = Body.get_head_position()
+  --[[
   local qNeck_approach, doneNeck =
     util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, dt )
-
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
+  --]]
+  Body.set_head_command_position({yaw, pitch})
 
   if t-t_entry > timeout then
     if gcm.get_game_role() == 0 then -- Goalie

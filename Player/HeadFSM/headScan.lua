@@ -65,9 +65,9 @@ function state.update()
 
   local qNeck = Body.get_head_position()
   -- Go!
+  --[[
   local qNeck_approach, doneNeck =
     util.approachTol(qNeck, {yaw, pitch}, dqNeckLimit, dt)
---[[
 print("YP", yaw, pitch)
 print("act",qNeck_approach)
 print("lim",unpack(dqNeckLimit))

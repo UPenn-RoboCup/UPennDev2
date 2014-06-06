@@ -32,25 +32,25 @@ fsm.armInit = {
 }
 
 fsm.Head = {
-  {'headIdle', 'teleop', 'headTeleop'},
-  {'headIdle', 'center', 'headCenter'},
+--  {'headIdle', 'teleop', 'headTeleop'},
+--  {'headIdle', 'center', 'headCenter'},
   {'headIdle', 'scan', 'headScan'},
   --
-  {'headTeleop', 'reset', 'headIdle'},
-  {'headTeleop', 'center', 'headCenter'},
+--  {'headTeleop', 'reset', 'headIdle'},
+--  {'headTeleop', 'center', 'headCenter'},
   --
-  {'headCenter', 'done', 'headIdle'},
+--  {'headCenter', 'done', 'headIdle'},
   --
   {'headScan', 'ballfound', 'headTrack'},
   {'headScan', 'center', 'headCenter'},
   --
   {'headTrack', 'balllost', 'headScan'},
-  {'headTrack', 'center', 'headCenter'},
-  {'headTrack', 'timeout', 'headLookGoal'},
+--  {'headTrack', 'center', 'headCenter'},
+  --{'headTrack', 'timeout', 'headLookGoal'},
   {'headTrack', 'sweep', 'headSweep'},
   --
-  {'headLookGoal', 'timeout', 'headTrack'},
-  {'headLookGoal', 'lost', 'headSweep'},
+  --{'headLookGoal', 'timeout', 'headTrack'},
+  --{'headLookGoal', 'lost', 'headSweep'},
   {'headSweep', 'done', 'headTrack'},
 }
 

@@ -6,6 +6,7 @@ require'hcm'
 require'wcm'
 require'gcm'
 
+local vector = require'vector'
 local ball_radius = Config.world.ballDiameter / 2
 
 local util = require'util'

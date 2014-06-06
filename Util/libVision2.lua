@@ -55,8 +55,9 @@ end
 -- Update the Head transform
 -- Input: Head angles
 local function update_head()
+	if not Body then return end
 	-- Get from Body...
-  local head = Body and Body.get_head_position() or vector.zeros(2)
+  local head = Body.get_head_position()
   -- TODO: Smarter memory allocation
   -- TODO: Add any bias for each robot
   trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
@@ -103,13 +104,13 @@ end
 -- Yield coordinates in the labelA space
 -- Returns an error message if max limits are given
 local function check_coordinateA(centroid, scale, maxD, maxH)
-  local v = torch.Tensor({
+  local v0 = torch.Tensor({
     focalA,
     -(centroid[1] - x0A),
     -(centroid[2] - y0A),
     scale,
   })
-  v = trHead * v / v[4]
+  local v = torch.mv(trHead, v0) / v0[4]
   -- Check the distance
   if maxD and v[1]*v[1] + v[2]*v[2] > maxD*maxD then
     return'Distance'
@@ -241,6 +242,9 @@ function libVision.entry(cfg, body)
   trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
   * T.rotY(Config.walk.bodyTilt)
   * T.trans(cfg.head.neckX, 0, cfg.head.neckZ)
+	-- Initial guess
+  trNeck = trNeck0 * T.rotZ(0) * T.rotY(0)
+  trHead = trNeck * dtrCamera
   -- Load ball
   if cfg.vision.ball then
     b_diameter = cfg.vision.ball.diameter

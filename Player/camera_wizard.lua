@@ -32,6 +32,7 @@ local udp = require'udp'
 local si = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
 local jpeg = require'jpeg'
+local Body = require'Body'
 
 -- Extract metadata information
 local w = metadata.w

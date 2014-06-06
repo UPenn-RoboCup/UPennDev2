@@ -20,8 +20,9 @@ local labelA_t, labelB_t
 local trHead, trNeck, trNeck0, dtrCamera
 -- Camera information
 local x0A, y0A, focalA, focal_length, focal_base
--- Object properties (TODO: Should this be a config, or not?)
-local b_diameter, b_dist, b_height
+-- Object properties
+local b_diameter, b_dist, b_height, b_fill_rate, b_area
+local g_ared, g_fill_rate, g_orientation
 -- Store information about what was detected
 local detected = {
   id = 'detect',
@@ -132,7 +133,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
     local fail = {}
     -- Check the image properties
     local propsB = ballPropsB[i]
-    local propsA = check_prop(colors.orange, propsB, 20, 0.35, labelA_t)
+    local propsA = check_prop(colors.orange, propsB, b_area, b_fill_rate, labelA_t)
     if type(propsA)=='string' then
       table.insert(fail, propsA)
     else
@@ -171,19 +172,19 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
   local failures, successes = {}, {}
   for i, post in ipairs(postB) do
     local fail, has_stats = {}, true
-    local postStats = check_prop(colors.yellow, post, 60, 0.35, labelA_t)
+    local postStats = check_prop(colors.yellow, post, g_area, g_fill_rate, labelA_t)
     if type(postStats)=='string' then
       table.insert(fail, postStats)
     else
       -- TODO: Add lower goal post bbox check
       -- Orientation check
-      if math.abs(postStats.orientation) < 60*DEG_TO_RAD then
+      if math.abs(postStats.orientation) < g_orientation then
         table.insert(fail, 'Orientation '..postStats.orientation)
       end
-      -- Fill extent check
-      local extent = postStats.area / (postStats.axisMajor * postStats.axisMinor)
-      if extent < 0.35 then
-        table.insert(fail, 'Fill Extent '..extent)
+      -- Fill rate check
+      local fill_rate = postStats.area / (postStats.axisMajor * postStats.axisMinor)
+      if fill_rate < g_fill_rate then
+        table.insert(fail, 'Fill Extent '..fill_rate)
       end
       -- Aspect Ratio check
       local aspect = postStats.axisMajor / postStats.axisMinor;
@@ -244,7 +245,15 @@ function libVision.entry(cfg, body)
     b_diameter = cfg.vision.ball.diameter
     b_dist = cfg.vision.ball.max_distance
     b_height = cfg.vision.ball.max_height
+    b_fill_rate = cfg.vision.ball.th_min_fill_rate
+    b_area = cfg.vision.ball.th_min_ared
   end
+  -- Goal thresholds
+  if cfg.vision.goal then
+    g_area = cfg.vision.goal.th_min_area
+    g_fill_rate = cfg.vision.goal.th_min_fill_rate
+    g_orientation = cfg.vision.goal.th_min_orientation
+  end  
   -- Load the lookup table
   local lut_fname = {HOME, "/Data/", "lut_", cfg.lut, ".raw"}
   lut_t = ImageProc2.load_lut (table.concat(lut_fname))

@@ -37,7 +37,7 @@ local vision = {
 
 vision.ball = {
   diameter = 0.22,
-  th_min_color = 50, --100
+  th_min_ared = 20, --50
   th_min_color2 = 6,
   th_min_fill_rate = 0.35,
   th_height_max  = 0.20,
@@ -52,7 +52,7 @@ vision.ball = {
 vision.goal = {
   th_min_color = 120,
   th_nPostB = 5,
-  th_min_area = 40,
+  th_min_area = 60,
   th_min_orientation = 60*math.pi/180,
   th_min_fill_rate = 0.4,
   height_min = -0.9,

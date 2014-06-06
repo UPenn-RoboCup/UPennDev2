@@ -531,7 +531,7 @@ elseif IS_WEBOTS then
 	local cam_udp_ch = udp.new_sender(Config.net.operator.wired, cam_cfg.udp_port)
 	-- Just use one detection routine
 	local vision = require(cam_cfg.detection_pipeline[1])
-	vision.entry(cam_cfg)
+	vision.entry(cam_cfg, Body)
 	local function update_vision(yuyv)
 		vision.update(yuyv)
 		local meta, raw = vision.send()

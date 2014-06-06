@@ -7,6 +7,8 @@ local ImageProc = require'ImageProc'
 local ImageProc2 = require'ImageProc.ffi'
 local T = require'libTransform'
 local vector = require'vector'
+-- Body should be optional...
+local Body
 -- Important local variables
 local w, h, wa, wb, ha, hab, scaleA, scaleB, lut_t
 -- Hold on to these
@@ -47,16 +49,20 @@ end
 -- Input: Head angles
 local function update_head()
 	-- Get from Body...
-  local head = vector.zeros(2)
+  local head = Body and Body.get_head_position() or vector.zeros(2)
   -- TODO: Smarter memory allocation
   -- TODO: Add any bias for each robot
   trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
   trHead = trNeck * dtrCamera
+  -- Grab the position only
+  --vHead = T.get_pos(trHead)
+  -- Horizon
   --[[
-  --update camera position
-  local vHead=vector.new({0,0,0,1});
-  vHead=tHead*vHead;
-  vHead=vHead/vHead[4];
+  local pa = headAngles[2] + cameraAngle[2] -- + bodyTilt   --TODO
+  horizonA = (labelA.n/2.0) - focalA*math.tan(pa) - 2
+  horizonA = math.min(labelA.n, math.max(math.floor(horizonA), 0))
+  horizonB = (labelB.n/2.0) - focalB*math.tan(pa) - 1
+  horizonB = math.min(labelB.n, math.max(math.floor(horizonB), 0))
   --]]
 end
 
@@ -85,7 +91,9 @@ local function check_prop (color, prop, th_area, th_fill, labelA_t)
   return stats
 end
 
-local function check_coordinate(centroid, scale, maxD, maxH)
+-- Yield coordinates in the labelA space
+-- Returns an error message if max limits are given
+local function check_coordinateA(centroid, scale, maxD, maxH)
   local v = torch.Tensor({
     focalA,
     -(centroid[1] - x0A),
@@ -94,9 +102,9 @@ local function check_coordinate(centroid, scale, maxD, maxH)
   })
   v = trHead * v / v[4]
   -- Check the distance
-  if v[1]*v[1] + v[2]*v[2] > maxD*maxD then
+  if maxD and v[1]*v[1] + v[2]*v[2] > maxD*maxD then
     return'Distance'
-  elseif v[3] > maxH then
+  elseif maxH and v[3] > maxH then
     return'Height'
   end
   return v
@@ -124,7 +132,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       -- Check the coordinate on the field
       local dArea = math.sqrt((4/math.pi) * propsA.area)
       local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
-      local v = check_coordinate(propsA.centroid, scale, b_dist, b_height)
+      local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height)
       if type(v)=='string' then
         table.insert(fail, v)
       else
@@ -196,12 +204,14 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
   if #successes>0 then
     return table.concat(failures,'\n\n'), successes
   else
-    return table.concat(failures,'\n\n')
+    return table.concat(failures,'\n\n'), #successes>0
   end
 end
 
 -- Set the variables based on the config file
-function libVision.entry(cfg)
+function libVision.entry(cfg, body)
+  -- Dynamically load the body
+  Body = body
   -- Recompute the width and height of the images
   w, h = cfg.w, cfg.h
   -- Set up ImageProc

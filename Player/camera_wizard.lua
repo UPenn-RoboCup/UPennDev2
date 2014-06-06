@@ -45,7 +45,7 @@ local pipeline = {}
 for _, d in ipairs(metadata.detection_pipeline) do
 	local detect = require(d)
 	-- Send which camera we are using
-	detect.entry(metadata)
+	detect.entry(metadata, Body)
 	pipeline[d] = detect
 end
 

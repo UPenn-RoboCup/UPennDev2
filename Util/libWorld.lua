@@ -58,7 +58,7 @@ local function update_vision(detected)
   -- If the ball is detected
 	local ball = detected.ball
   if ball then
-    ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr,ball.da, ball.t)
+    ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
   end
   -- If the goal is detected
 	local goal = detected.goal

@@ -148,6 +148,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       else
         -- Found the ball position
         propsA.v = vector.new(v)
+        propsA.t = Body and Body.get_time() or 0
         -- TODO: Check if outside the field
         -- TODO: Ground color check
       end
@@ -258,7 +259,7 @@ function libVision.entry(cfg, body)
     g_area = cfg.vision.goal.th_min_area
     g_fill_rate = cfg.vision.goal.th_min_fill_rate
     g_orientation = cfg.vision.goal.th_min_orientation
-  end  
+  end
   -- Load the lookup table
   local lut_fname = {HOME, "/Data/", "lut_", cfg.lut, ".raw"}
   lut_t = ImageProc2.load_lut (table.concat(lut_fname))

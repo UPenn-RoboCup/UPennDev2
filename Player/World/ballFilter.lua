@@ -15,7 +15,7 @@ function ballFilter.reset()
   wcm.set_ballfilter_avar(1E10)
 end
 
-function ballFilter.observation_ra(r1,a1,rErr,aErr,t)
+function ballFilter.observation_ra(r1, a1, rErr, aErr, t)
   local r = wcm.get_ballfilter_r()
   local a = wcm.get_ballfilter_a()
   local rvar = wcm.get_ballfilter_rvar()
@@ -52,12 +52,12 @@ function ballFilter.observation_ra(r1,a1,rErr,aErr,t)
   --print("ball pos:",x,y)
 end
 
-function ballFilter.observation_xy(x,y,rErr,aErr,t)
+function ballFilter.observation_xy(x, y, rErr, aErr, t)
   rErr = rErr or 1
   aErr = aErr or 1
   local r = math.sqrt(x^2 + y^2)
   local a = math.atan2(y, x)
-  return ballFilter.observation_ra(r, a, rErr, aErr,t)
+  return ballFilter.observation_ra(r, a, rErr, aErr, t)
 end
 
 -- TODO: not in need

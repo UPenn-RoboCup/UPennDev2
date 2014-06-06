@@ -37,6 +37,12 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+	-- Check if we found the ball
+  local ball_elapsed = Body.get_time() - wcm.get_ball_t()
+  if  ball_elapsed < 0.1 then --ball found
+    return 'ballfound'
+  end
+
   local ph = (t - t0) / tScan
   ph = ph - math.floor(ph)
 
@@ -60,10 +66,6 @@ function state.update()
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
 
-  local ball_elapsed = Body.get_time() - vcm.get_ball_t()
-  if  ball_elapsed< 0.1 then --ball found
-    return 'ballfound'
-  end
 
 end
 

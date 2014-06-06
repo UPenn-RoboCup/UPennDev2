@@ -114,10 +114,10 @@ fsm.dqNeckLimit = {
 }
 
 fsm.headScan = {
-  pitch0 = 30*DEG_TO_RAD,
-  pitchMag = 20*DEG_TO_RAD,
-  yawMag = 60*DEG_TO_RAD,
-  tScan = 8, --sec
+  pitch0 = 30 * DEG_TO_RAD,
+  pitchMag = 30 * DEG_TO_RAD,
+  yawMag = 80 * DEG_TO_RAD,
+  tScan = 5, --sec
 }
 
 --HeadReady

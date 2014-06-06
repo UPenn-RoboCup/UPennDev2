@@ -45,8 +45,8 @@ function state.update()
     return 'balllost'
   end
 
-  local ballX, ballY = wcm.get_ball_x(),wcm.get_ball_y()
-  local yaw,pitch = HeadTransform.ikineCam( ballX, ballY, ball_radius)
+  local ballX, ballY = wcm.get_ball_x(), wcm.get_ball_y()
+  local yaw, pitch = HeadTransform.ikineCam( ballX, ballY, ball_radius)
 
   --TODO: a hack
   -- when ball is close to body, look down to avoid losing the visual
@@ -54,7 +54,7 @@ function state.update()
   if ballR < 0.3 then pitch = pitch + 5*DEG_TO_RAD end
 
   -- Grab where we are
-  local qNeck = Body.get_head_command_position()
+  local qNeck = Body.get_head_position()
   local qNeck_approach, doneNeck =
     util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, dt )
 

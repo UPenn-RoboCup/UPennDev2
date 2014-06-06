@@ -19,14 +19,15 @@ local timeout = tScan * 2
 local t0
 local direction = 1
 local pitchDir = 1
-
+local t_entry
 function state.entry()
   print(state._NAME..' Entry' )
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
   t0 = Body.get_time()
-  t_update = t0
+  t_entry = t0
+  t_update = t_entry
 end
 
 function state.update()
@@ -36,6 +37,10 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
+
+if t - t_entry > timeout then
+return 'timeout'
+end
 
 	-- Check if we found the ball
   local ball_elapsed = Body.get_time() - wcm.get_ball_t()
@@ -47,10 +52,10 @@ function state.update()
   ph = ph - math.floor(ph)
 
   local yaw, pitch
-  if ph<0.25 then --phase 0 to 0.25
+  if ph < 0.25 then --phase 0 to 0.25
     yaw = yawMag * (ph * 4) * direction
     pitch = pitch0 + pitchMag * pitchDir
-  elseif ph<0.75 then --phase 0.25 to 0.75
+  elseif ph < 0.75 then --phase 0.25 to 0.75
     yaw = yawMag * (1 - (ph - 0.25) * 4) * direction
     pitch = pitch0 - pitchMag * pitchDir
   else --phase 0.75 to 1

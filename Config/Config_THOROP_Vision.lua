@@ -24,7 +24,7 @@ local vision = {
   },
   -- TODO: vision.colorBlack for obstacles
   scaleA = 2,
-  scaleB = 4,
+  scaleB = 2,
   use_white_wall = 1,
   white_wall_is_blue = 0,
   white_wall_min_count = 3000,

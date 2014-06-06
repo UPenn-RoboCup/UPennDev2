@@ -80,12 +80,14 @@ local function bboxStats(color, bboxB, labelA_t)
     scaleB * bboxB[4] + scaleB - 1
   }
   local area = (bboxA[2] - bboxA[1] + 1) * (bboxA[4] - bboxA[3] + 1)
-  return ImageProc.color_stats(labelA_t, color, bboxA), area
+	local stats = ImageProc.color_stats(labelA_t, color, bboxA)
+  return stats, area
 end
 
-local function check_prop (color, prop, th_area, th_fill, labelA_t)
+local function check_prop(color, prop, th_area, th_fill, labelA_t)
   -- Grab the statistics in labelA
-  local stats, box_area = bboxStats(color, prop.boundingBox, labelA_t);
+  local stats, box_area = bboxStats(color, prop.boundingBox, labelA_t)
+  if box_area < th_area then return'Box Area' end
   local area = stats.area
   -- If no pixels then return
   if area < th_area then return'Area' end
@@ -129,7 +131,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
     local fail = {}
     -- Check the image properties
     local propsB = ballPropsB[i]
-    local propsA = check_prop(colors.orange, propsB, 4, 0.35, labelA_t)
+    local propsA = check_prop(colors.orange, propsB, 20, 0.35, labelA_t)
     if type(propsA)=='string' then
       table.insert(fail, propsA)
     else
@@ -236,7 +238,7 @@ function libVision.entry(cfg, body)
   * T.rotY(Config.walk.bodyTilt)
   * T.trans(cfg.head.neckX, 0, cfg.head.neckZ)
   -- Load ball
-  if cfg.ball then
+  if cfg.vision.ball then
     b_diameter = cfg.vision.ball.diameter
     b_dist = cfg.vision.ball.max_distance
     b_height = cfg.vision.ball.max_height

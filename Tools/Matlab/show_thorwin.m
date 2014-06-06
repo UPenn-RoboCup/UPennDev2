@@ -3,7 +3,7 @@ clear all;
 close all;
 startup;
 
-%% Figures
+%% Camera Figure
 % Colormap for the labeled image
 cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
 cmap = [cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
@@ -34,6 +34,31 @@ cam.p_ball = p_ball;
 scale = 2;
 cam.scale = 2;
 
+%% Localization
+figure(2);
+clf;
+h_field = subplot(2,2,1);
+% Show the field here
+plot_field(h_field,2)
+% Camera 1 Debug messages
+cam.a_debug = annotation('textbox',...
+    [0.5 0.5 0.5 0.5],...
+    'String','Top Camera',...
+    'FontSize',14,...
+    'FontName','Arial',...
+    'LineStyle','--',...
+    'EdgeColor',[1 1 0],...
+    'LineWidth',2,...
+    'BackgroundColor',[0.9  0.9 0.9],...
+    'Color',[0.84 0.16 0]);
+% World debug
+cam.w_debug = annotation('textbox',...
+    [0 0 0.5 0.5],...
+    'String','Localization',...
+    'FontSize',14,...
+    'FontName','Arial'...
+);
+
 %% Network
 % Add the UDP network
 fd = udp_recv('new', 33333);
@@ -41,7 +66,13 @@ s_top = zmq('fd', fd);
 
 %% Loop
 running = 1;
+do_draw = 1;
 while running
+    % Drawing
+    if do_draw==1
+        do_draw = 0;
+        drawnow;
+    end
     % 1 second timeout
     idx = zmq('poll', 1000);
     for s=1:numel(idx)
@@ -50,13 +81,11 @@ while running
         [s_data, has_more] = zmq( 'receive', s_idx );
         while udp_recv('getQueueSize', fd) > 0
             udp_data = udp_recv('receive',fd);
-        end
-        [metadata, offset] = msgpack('unpack', udp_data);
-        % This must be uint8
-        raw = udp_data(offset+1:end);
-        is_draw = process_libVision_msg(metadata, raw, cam);
-        if is_draw==1
-            drawnow;
+            [metadata, offset] = msgpack('unpack', udp_data);
+            % This must be uint8
+            raw = udp_data(offset+1:end);
+            is_draw = process_libVision_msg(metadata, raw, cam);
+            do_draw = do_draw || is_draw;
         end
     end
 end

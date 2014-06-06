@@ -18,14 +18,14 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         end
         if isfield(metadata,'posts')
             % Show on the plot
-            metadata.posts
+            %metadata.posts
         else
             % Remove from the plot
         end
         
     elseif strcmp(msg_id,'world')
 
-    elseif strcmp(msg_id,'yuyv')
+    elseif strcmp(msg_id,'head_camera')
         % Assume always JPEG
         cam.yuyv = djpeg(raw);
         set(cam.im_yuyv,'Cdata', cam.yuyv);

@@ -125,7 +125,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
   if nProps==0 then return'0 connected regions' end
   --
   local failures, successes = {}, {}
-  for i=1,math.min(5,nProps) do
+  for i=1,math.min(5, nProps) do
     local fail = {}
     -- Check the image properties
     local propsB = ballPropsB[i]
@@ -155,7 +155,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
     end
   end
   -- Assume failure
-  return table.concat(failures)
+  return table.concat(failures,'\n')
 end
 
 -- TODO: Allow the loop to run many times
@@ -172,7 +172,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
     if type(postStats)=='string' then
       table.insert(fail, propsA)
     else
-    -- TODO: Add lower goal post bbox check
+      -- TODO: Add lower goal post bbox check
       -- Orientation check
       if math.abs(postStats.orientation) < 60*DEG_TO_RAD then
         table.insert(fail, 'Orientation '..postStats.orientation)
@@ -205,11 +205,8 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
     end
   end
   -- Yield the failure messages and the success tables
-  if #successes>0 then
-    return table.concat(failures,'\n\n'), successes
-  else
-    return table.concat(failures,'\n\n'), #successes>0
-  end
+  if #successes<1 then successes = nil end
+  return table.concat(failures,'\n'), successes
 end
 
 -- Set the variables based on the config file

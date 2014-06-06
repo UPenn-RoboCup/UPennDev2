@@ -6,6 +6,7 @@ dofile'include.lua'
 local Body = require(Config.dev.body)
 local lW = require'libWorld'
 local si = require'simple_ipc'
+local mp = require'msgpack.MessagePack'
 -- Cache some functions
 local get_time, usleep = Body.get_time, unix.usleep
 -- Subscribe to important messages
@@ -24,7 +25,7 @@ local function shutdown ()
 end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
-
+util = require'util'
 local uOdometry
 vision_ch.callback = function(skt)
   local detections = skt:recv_all()
@@ -33,8 +34,14 @@ vision_ch.callback = function(skt)
   lW.update_odometry(uOdometry)
   local pose_odom = lW.get_pose()
   -- Only use the last vision detection
-  lW.update_vision(detections[#detections])
-  local pose = lW.get_pose()
+	local detection = mp.unpack(detections[#detections])
+	--[[
+	if type(detection.ball)=='table' then
+		util.ptable(detection.ball)
+	end
+	--]]
+	lW.update_vision(detection)
+	local pose = lW.get_pose()
   wcm.set_robot_pose(pose)
 end
 
@@ -44,7 +51,7 @@ lW.entry()
 local TIMEOUT = 1 / 10
 -- Timeout in milliseconds
 local TIMEOUT_MS = TIMEOUT * 1e3
-local poller.wait_on_channels{vision_ch}
+local poller = si.wait_on_channels{vision_ch}
 local npoll
 local t0, t = get_time()
 local debug_interval, t_debug = 1, t0

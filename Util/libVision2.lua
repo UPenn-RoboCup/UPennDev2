@@ -6,6 +6,7 @@ local libVision = {}
 local ImageProc = require'ImageProc'
 local ImageProc2 = require'ImageProc.ffi'
 local T = require'libTransform'
+local mp = require'msgpack.MessagePack'
 local vector = require'vector'
 local util = require'util'
 local zlib = require'zlib.ffi'

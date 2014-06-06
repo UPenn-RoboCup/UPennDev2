@@ -3,7 +3,7 @@ local libWorld = {}
 
 -- TODO: Add Attack bearing
 -- TODO: Add Webots ground truth knowledge
-
+local vector = require'vector'
 local ballFilter = require'ballFilter'
 local poseFilter = require'poseFilter'
 local odomScale = Config.world.odomScale
@@ -40,13 +40,13 @@ end
 
 local goal_type_to_filter = {
   -- Single unknown post
-  0 = poseFilter.post_unknown,
+  [0] = poseFilter.post_unknown,
   -- Left
-  1 = poseFilter.post_left,
+  [1] = poseFilter.post_left,
   -- Right
-  2 = poseFilter.post_right,
+  [2] = poseFilter.post_right,
   -- Both
-  3 = poseFilter.post_both,
+  [3] = poseFilter.post_both,
 }
 
 local function update_vision(detected)
@@ -56,11 +56,13 @@ local function update_vision(detected)
     poseFilter.addNoise()
   end
   -- If the ball is detected
-  if detected.ball then
+	local ball = detected.ball
+  if ball then
     ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr,ball.da, ball.t)
   end
   -- If the goal is detected
-  if detected.goal then
+	local goal = detected.goal
+  if goal then
     goal_type_to_filter[goal.type](goal.v)
   end
 end

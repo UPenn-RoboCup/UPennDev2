@@ -68,7 +68,7 @@ if ONE_CHAIN then
   right_leg = nil
   left_leg  = nil
 else
-  --table.insert(Config.chain, right_arm)
+  table.insert(Config.chain, right_arm)
   --table.insert(Config.chain, left_arm)
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)

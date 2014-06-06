@@ -22,9 +22,8 @@ local uOdometry0 = vector.zeros(3)
 -- Save the resampling times
 local t_resample = 0
 
-local function update_odometry()
-  -- First, grab the odometry
-  local uOdometry = mcm.get_status_odometry()
+local function update_odometry(uOdometry)
+  -- Scale the odometry
   uOdometry[1] = odomScale[1] * uOdometry[1]
   uOdometry[2] = odomScale[2] * uOdometry[2]
   uOdometry[3] = odomScale[3] * uOdometry[3] * DEG_TO_RAD
@@ -50,16 +49,20 @@ local goal_type_to_filter = {
   3 = poseFilter.post_both,
 }
 
-local function update_vision()
+local function update_vision(detected)
   local t = unix.time()
   if t - t_resample > RESAMPLE_PERIOD or count>RESAMPLE_COUNT then
     poseFilter.resample()
     poseFilter.addNoise()
   end
-  -- TODO: If the ball is detected
-  ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr,ball.da, ball.t)
-  -- TODO: If the goal is detected
-  goal_type_to_filter[goal.type](goal.v)
+  -- If the ball is detected
+  if detected.ball then
+    ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr,ball.da, ball.t)
+  end
+  -- If the goal is detected
+  if detected.goal then
+    goal_type_to_filter[goal.type](goal.v)
+  end
 end
 
 function libWorld.entry()
@@ -68,7 +71,7 @@ function libWorld.entry()
   poseFilter.initialize_unified()
   -- Save this resampling time
   t_resample = t_entry
-  -- TODO: Set the initial odometry from mcm
+  -- TODO: Set the initial odometry
   -- Processing count
   count = 0
 end
@@ -89,11 +92,16 @@ function libWorld.update()
   count = count + 1
   -- Grab the pose after updating
   local pose = vector.pose{poseFilter.get_pose()}
-  -- Set the pose into SHM
-  wcm.set_robot_pose(pose)
 end
 
 function libWorld.exit()
 end
+
+function libWorld.get_pose()
+  return vector.pose{poseFilter.get_pose()}
+end
+
+libWorld.update_odometry = update_odometry
+libWorld.update_vision = update_vision
 
 return libWorld

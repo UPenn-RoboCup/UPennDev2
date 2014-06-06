@@ -8,6 +8,8 @@ local ImageProc2 = require'ImageProc.ffi'
 local T = require'libTransform'
 local vector = require'vector'
 local util = require'util'
+local zlib = require'zlib.ffi'
+local si = require'simple_ipc'
 -- Body should be optional...
 local Body
 -- Important local variables
@@ -26,9 +28,8 @@ local detected = {
 }
 --
 local colors
--- For broadcasting the labeled image
-local zlib = require'zlib.ffi'
 local c_zlib = zlib.compress_cdata
+local vision_ch = si.new_publisher'vision'
 
 function libVision.get_metadata()
 end
@@ -269,6 +270,9 @@ function libVision.update(img)
   detected.posts = posts
   detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
   --if detected.posts then util.ptable(detected.posts) end
+
+  -- Send the detected stuff over the channel every cycle
+  vision_ch:send(mp.pack(detected))
 
 end
 

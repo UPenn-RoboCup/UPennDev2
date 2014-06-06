@@ -1,5 +1,7 @@
 local ballFilter = {}
 
+-- TODO: Remove shared memory usage
+
 local vector = require'vector'
 local util = require'util'
 require'wcm'

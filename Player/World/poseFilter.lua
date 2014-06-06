@@ -2,58 +2,43 @@ local poseFilter = {}
 
 local vector = require'vector'
 local util = require 'util'
-require'vcm'
 
-N = Config.world.nParticle
-xBoundary = Config.world.xBoundary
-yBoundary = Config.world.yBoundary
-xMax = Config.world.xMax
-yMax = Config.world.yMax
-
-goalWidth = Config.world.goalWidth
-goalUpper = Config.world.goalUpper
-goalLower = Config.world.goalLower
-postAll = {goalUpper[1], goalUpper[2], goalLower[1], goalLower[2]}
-postLeft = vector.new({goalUpper[1], goalLower[1]})
-postRight = vector.new({goalUpper[2], goalLower[2]})
-
-landmarkYellow = Config.world.landmarkYellow
-landmarkCyan = Config.world.landmarkCyan
--- spot = Config.world.spot
-Lcorner = Config.world.Lcorner
-
---Triangulation method selection
-use_new_goalposts= Config.world.use_new_goalposts or 0
-
-
-rGoalFilter = Config.world.rGoalFilter
-aGoalFilter = Config.world.aGoalFilter
-rPostFilter = Config.world.rPostFilter
-aPostFilter = Config.world.aPostFilter
 --TODO: remove unnecessary stuff
-rKnownGoalFilter = Config.world.rKnownGoalFilter or Config.world.rGoalFilter
-aKnownGoalFilter = Config.world.aKnownGoalFilter or Config.world.aGoalFilter
-rKnownPostFilter = Config.world.rKnownPostFilter or Config.world.rPostFilter
-aKnownPostFilter = Config.world.aKnownPostFilter or Config.world.aPostFilter
-rUnknownGoalFilter = Config.world.rUnknownGoalFilter or Config.world.rGoalFilter
-aUnknownGoalFilter = Config.world.aUnknownGoalFilter or Config.world.aGoalFilter
-rUnknownPostFilter = Config.world.rUnknownPostFilter or Config.world.rPostFilter
-aUnknownPostFilter = Config.world.aUnknownPostFilter or Config.world.aPostFilter
-
-rLandmarkFilter = Config.world.rLandmarkFilter
-aLandmarkFilter = Config.world.aLandmarkFilter
-
-rCornerFilter = Config.world.rCornerFilter
-aCornerFilter = Config.world.aCornerFilter
-
-
-
-xp = .5*xMax*vector.new(util.randn(N)) -- x coordinate of each particle
-yp = .5*yMax*vector.new(util.randn(N)) -- y coordinate
-ap = 2*math.pi*vector.new(util.randu(N)) -- angle
-wp = vector.zeros(N) -- weight
-
-
+local N = Config.world.nParticle
+local xBoundary = Config.world.xBoundary
+local yBoundary = Config.world.yBoundary
+local xMax = Config.world.xMax
+local yMax = Config.world.yMax
+local goalWidth = Config.world.goalWidth
+local goalUpper = Config.world.goalUpper
+local goalLower = Config.world.goalLower
+local postAll = {goalUpper[1], goalUpper[2], goalLower[1], goalLower[2]}
+local postLeft = vector.new({goalUpper[1], goalLower[1]})
+local postRight = vector.new({goalUpper[2], goalLower[2]})
+local landmarkYellow = Config.world.landmarkYellow
+local landmarkCyan = Config.world.landmarkCyan
+local Lcorner = Config.world.Lcorner
+local use_new_goalposts= Config.world.use_new_goalposts or 0 --Triangulation method selection
+local rGoalFilter = Config.world.rGoalFilter
+local aGoalFilter = Config.world.aGoalFilter
+local rPostFilter = Config.world.rPostFilter
+local aPostFilter = Config.world.aPostFilter
+local rKnownGoalFilter = Config.world.rKnownGoalFilter or Config.world.rGoalFilter
+local aKnownGoalFilter = Config.world.aKnownGoalFilter or Config.world.aGoalFilter
+local rKnownPostFilter = Config.world.rKnownPostFilter or Config.world.rPostFilter
+local aKnownPostFilter = Config.world.aKnownPostFilter or Config.world.aPostFilter
+local rUnknownGoalFilter = Config.world.rUnknownGoalFilter or Config.world.rGoalFilter
+local aUnknownGoalFilter = Config.world.aUnknownGoalFilter or Config.world.aGoalFilter
+local rUnknownPostFilter = Config.world.rUnknownPostFilter or Config.world.rPostFilter
+local aUnknownPostFilter = Config.world.aUnknownPostFilter or Config.world.aPostFilter
+local rLandmarkFilter = Config.world.rLandmarkFilter
+local aLandmarkFilter = Config.world.aLandmarkFilter
+local rCornerFilter = Config.world.rCornerFilter
+local aCornerFilter = Config.world.aCornerFilter
+local xp = .5*xMax*vector.new(util.randn(N)) -- x coordinate of each particle
+local yp = .5*yMax*vector.new(util.randn(N)) -- y coordinate
+local ap = 2*math.pi*vector.new(util.randu(N)) -- angle
+local wp = vector.zeros(N) -- weight
 
 ---Initializes a gaussian distribution of particles centered at p0
 --@param p0 center of distribution
@@ -89,12 +74,12 @@ function poseFilter.initialize_unified(p0,p1,dp)
   --Half of the particles at p1
   p0 = p0 or {0, 0, 0}
   p1 = p1 or {0, 0, 0}
-  --Low spread  
+  --Low spread
   dp = dp or {.15*xMax, .15*yMax, math.pi/6}
 
   for i=1,N/2 do
     -- TODO: uniform rather than normal distribution?
-    xp[i]=p0[1]+dp[1]*(math.random()-.5) 
+    xp[i]=p0[1]+dp[1]*(math.random()-.5)
     yp[i]=p0[2]+dp[2]*(math.random()-.5)
     ap[i]=p0[3]+dp[3]*(math.random()-.5)
 
@@ -149,7 +134,7 @@ end
 --@param v x and y coordinates of detected landmark relative to robot
 --@param rLandmarkFilter How much to adjust particles according to
 --distance to landmark
---@param aLandmarkFilter How much to adjust particles according to 
+--@param aLandmarkFilter How much to adjust particles according to
 --angle to landmark
 local function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
   local r = math.sqrt(v[1]^2 + v[2]^2)
@@ -246,7 +231,7 @@ function poseFilter.triangulate(pos,v)
   pose.x=x
   pose.y=y
   pose.a=a
- 
+
   aGoal = util.mod_angle((aPost[1]+aPost[2])/2)
 
   return pose,dGoal,aGoal
@@ -268,8 +253,8 @@ triangulate2 = function (pos,v)
   --    vcm.add_debug_message(string.format(
   -- "===\n World: triangulation 2\nGoal dist: %.1f / %.1f\nGoal width: %.1f\n",
   -- d1, d2 ,goalWidth ))
-  -- 
-  -- 
+  --
+  --
   --    vcm.add_debug_message(string.format(
   -- "Measured goal width: %.1f\n",
   --  math.sqrt((v[1][1]-v[2][1])^2+(v[1][2]-v[2][2])^2)
@@ -280,7 +265,7 @@ triangulate2 = function (pos,v)
 
    if postfix>0 then
 
-     if d1>d2 then 
+     if d1>d2 then
        --left post correction based on right post
        -- v1=kcos(a1),ksin(a1)
        -- k^2 - 2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
@@ -295,21 +280,21 @@ triangulate2 = function (pos,v)
 
          k1=b-math.sqrt(b*b-c)
          k2=b+math.sqrt(b*b-c)
-         
+
     --          vcm.add_debug_message(string.format("d1: %.1f v1: %.1f %.1f\n",
     --         d1,v[1][1],v[1][2]))
     --          vcm.add_debug_message(string.format("k1: %.1f v1_1: %.1f %.1f\n",
     -- k1,k1*ca,k1*sa ))
     --          vcm.add_debug_message(string.format("k2: %.1f v1_2: %.1f %.1f\n",
     -- k2,k2*ca,k2*sa ))
-    
+
          if math.abs(d2-k1)<math.abs(d2-k2) then
   	        v[1][1],v[1][2]=k1*ca,k1*sa
          else
 	          v[1][1],v[1][2]=k2*ca,k2*sa
          end
        end
-     else 
+     else
        --right post correction based on left post
        -- v2=kcos(a2),ksin(a2)
        -- k^2 - 2k(v[1][1]cos(a2)+v[1][2]sin(a2)) + d2Post[1]-goalWidth^2 = 0
@@ -317,18 +302,18 @@ triangulate2 = function (pos,v)
        local sa=math.sin(aPost[2])
        local b=v[1][1]*ca+ v[1][2]*sa
        local c=d2Post[1]-goalWidth^2
-    
+
        if b*b-c>0 then
          k1=b-math.sqrt(b*b-c)
          k2=b+math.sqrt(b*b-c)
-         
+
       --        vcm.add_debug_message(string.format("d2: %.1f v2: %.1f %.1f\n",
       --     d2,v[2][1],v[2][2]))
       --        vcm.add_debug_message(string.format("k1: %.1f v2_1: %.1f %.1f\n",
       -- k1,k1*ca,k1*sa ))
       --        vcm.add_debug_message(string.format("k2: %.1f v2_2: %.1f %.1f\n",
       -- k2,k2*ca,k2*sa ))
-    
+
          if math.abs(d2-k1)<math.abs(d2-k2) then
             v[2][1],v[2][2]=k1*ca,k1*sa
          else
@@ -345,14 +330,14 @@ triangulate2 = function (pos,v)
    rGoal = math.sqrt(vGoalX^2+vGoalY^2)
 
    if aPost[1]<aPost[2] then
-     aGoal=-math.atan2 ( v[1][1]-v[2][1] , -(v[1][2]-v[2][2]) ) 
+     aGoal=-math.atan2 ( v[1][1]-v[2][1] , -(v[1][2]-v[2][2]) )
    else
-     aGoal=-math.atan2 ( v[2][1]-v[1][1] , -(v[2][2]-v[1][2]) ) 
-   end   
+     aGoal=-math.atan2 ( v[2][1]-v[1][1] , -(v[2][2]-v[1][2]) )
+   end
 
    ca=math.cos(aGoal)
    sa=math.sin(aGoal)
-   
+
    local dx = ca*vGoalX-sa*vGoalY
    local dy = sa*vGoalX+ca*vGoalY
 
@@ -478,8 +463,8 @@ function poseFilter.line(v, a)
     local xGlobal = v[1]*ca - v[2]*sa + xp[ip]
     local yGlobal = v[1]*sa + v[2]*ca + yp[ip]
 
-    wBounds = math.max(xGlobal - xBoundary, 0) + 
-              math.max(-xGlobal - xBoundary, 0) + 
+    wBounds = math.max(xGlobal - xBoundary, 0) +
+              math.max(-xGlobal - xBoundary, 0) +
               math.max(yGlobal - yBoundary, 0) +
               math.max(-yGlobal - yBoundary, 0)
     wp[ip] = wp[ip] - (wBounds/.20)
@@ -553,7 +538,7 @@ function poseFilter.resample()
 
   local nEffective = (wSum^2) / wSum2
   if nEffective > .25*N then
-    return 
+    return
   end
 
   -- cum sum of weights
@@ -573,7 +558,7 @@ function poseFilter.resample()
   --Add n more particles and resample high n weighted particles
   local rx = util.randu(N)
   local wSum_sz = #wSum
-  for i = 1,N do 
+  for i = 1,N do
     table.insert(wSum, {rx[i], N+i})
   end
 
@@ -581,7 +566,7 @@ function poseFilter.resample()
   table.sort(wSum, function(a,b) return a[1] < b[1] end)
 
   -- resample (replace low weighted particles)
-  xp2 = vector.zeros(N) 
+  xp2 = vector.zeros(N)
   yp2 = vector.zeros(N)
   ap2 = vector.zeros(N)
   nsampleSum = 1

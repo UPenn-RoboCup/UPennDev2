@@ -37,8 +37,8 @@ local vision = {
 
 vision.ball = {
   diameter = 0.22,
-  th_min_ared = 20, --50
-  th_min_color2 = 6,
+  th_min_bbox_area = 20, --50
+  th_min_area = 3,  --6,
   th_min_fill_rate = 0.35,
   th_height_max  = 0.20,
   th_ground_boundingbox = {-30,30,0,20},
@@ -50,7 +50,7 @@ vision.ball = {
 }
 
 vision.goal = {
-  th_min_color = 120,
+  th_min_bbox_area = 120, 
   th_nPostB = 5,
   th_min_area = 60,
   th_min_orientation = 60*math.pi/180,
@@ -173,7 +173,8 @@ if IS_WEBOTS then
   Config.camera[1].w = 320
   Config.camera[1].h = 180
   Config.camera[1].lut = 'webots'
-  
+  Config.camera[1].detection_pipeline[1] = 'libVision3'
+
 
   Config.camera[1].x_center = 160
   Config.camera[1].y_center = 90
@@ -183,9 +184,6 @@ if IS_WEBOTS then
 
   head.cameraPos = {0.0785, 0, 0.072}
 
-  vision.scaleA = 1
-  vision.scaleB = 4
-  -- Karen: smaller labelA resolution reduces vcm burden
   vision.scaleA = 2
   vision.scaleB = 2
 end

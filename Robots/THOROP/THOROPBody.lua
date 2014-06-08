@@ -505,7 +505,7 @@ elseif IS_WEBOTS then
 
 	-- Publish sensor data
 	local simple_ipc = require'simple_ipc'
-	local mp = require'msgpack'
+	local mp = require'msgpack.MessagePack'
 	local lidar0_ch = simple_ipc.new_publisher'lidar0'
 	local lidar1_ch = simple_ipc.new_publisher'lidar1'
 
@@ -524,10 +524,10 @@ elseif IS_WEBOTS then
   local tags = {}
   local t_last_error = -math.huge
 
-	-- Just use one camera
+	-- Vision routines
   local udp = require'udp'
 	local cam_cfg = Config.camera[1]
-  print('cam_cfg', cam_cfg.w, cam_cfg.detection_pipeline, cam_cfg.lut)
+  print('Color table loaded', cam_cfg.lut)
   local operator = Config.net.operator.wired
 	local cam_udp_ch = udp.new_sender(operator, cam_cfg.udp_port)
 	-- Just use one detection routine

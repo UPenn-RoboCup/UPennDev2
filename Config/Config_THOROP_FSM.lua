@@ -147,6 +147,11 @@ fsm.headSweep = {
   tWait = 0.25,
 }
 
+
+if IS_WEBOTS then
+  fsm.headScan.tScan = 10
+end
+
 Config.fsm = fsm
 
 -- Add all FSM directories that are in Player

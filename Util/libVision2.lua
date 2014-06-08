@@ -22,8 +22,8 @@ local trHead, trNeck, trNeck0, dtrCamera
 -- Camera information
 local x0A, y0A, focalA, focal_length, focal_base
 -- Object properties
-local b_diameter, b_dist, b_height, b_fill_rate, b_area
-local g_ared, g_fill_rate, g_orientation, g_aspect_ratio, g_margin
+local b_diameter, b_dist, b_height, b_fill_rate, b_bbox_area, b_area
+local g_area, g_bbox_area, g_fill_rate, g_orientation, g_aspect_ratio, g_margin
 -- Store information about what was detected
 local detected = {
   id = 'detect',
@@ -88,16 +88,21 @@ local function bboxStats(color, bboxB, labelA_t)
   return stats, area
 end
 
-local function check_prop(color, prop, th_area, th_fill, labelA_t)
+local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_t)
   -- Grab the statistics in labelA
   local stats, box_area = bboxStats(color, prop.boundingBox, labelA_t)
-  if box_area < th_area then return'Box Area' end
+  --TODO: bbox area check seems redundant
+  if box_area < th_bbox_area then return 'Box Area' end
   local area = stats.area
   -- If no pixels then return
-  if area < th_area then return'Area' end
+  if area < th_area then 
+    return string.format('Area: %d < %d', area, th_area) 
+  end
   -- Get the fill rate
   local fill_rate = area / box_area
-  if fill_rate < th_fill then return'Fill rate' end
+  if fill_rate < th_fill then 
+    return string.format('Fill rate: %.2f < %.2f', fill_rate, th_fill) 
+  end
   return stats
 end
 
@@ -135,7 +140,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
     local fail = {}
     -- Check the image properties
     local propsB = ballPropsB[i]
-    local propsA = check_prop(colors.orange, propsB, b_area, b_fill_rate, labelA_t)
+    local propsA = check_prop(colors.orange, propsB, b_bbox_area, b_area, b_fill_rate, labelA_t)
     if type(propsA)=='string' then
       table.insert(fail, propsA)
     else
@@ -175,7 +180,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
   local failures, successes = {}, {}
   for i, post in ipairs(postB) do
     local fail, has_stats = {}, true
-    local postStats = check_prop(colors.yellow, post, g_area, g_fill_rate, labelA_t)
+    local postStats = check_prop(colors.yellow, post, g_bbox_area, g_area, g_fill_rate, labelA_t)
     if type(postStats)=='string' then
       table.insert(fail, postStats)
     else
@@ -224,7 +229,7 @@ function libVision.entry(cfg, body)
   -- Recompute the width and height of the images
   w, h = cfg.w, cfg.h
   -- Set up ImageProc
-  ImageProc2.setup(w, h)
+  ImageProc2.setup(w, h, scaleA, scaleB)
   focal_length, focal_base = cfg.focal_length, cfg.focal_base
 
   -- Save the scale paramter
@@ -252,10 +257,12 @@ function libVision.entry(cfg, body)
     b_dist = cfg.vision.ball.max_distance
     b_height = cfg.vision.ball.max_height
     b_fill_rate = cfg.vision.ball.th_min_fill_rate
-    b_area = cfg.vision.ball.th_min_ared
+    b_bbox_area = cfg.vision.ball.th_min_bbox_area
+    b_area = cfg.vision.ball.th_min_area
   end
   -- Goal thresholds
   if cfg.vision.goal then
+    g_bbox_area = cfg.vision.goal.th_min_bbox_area
     g_area = cfg.vision.goal.th_min_area
     g_fill_rate = cfg.vision.goal.th_min_fill_rate
     g_orientation = cfg.vision.goal.th_min_orientation

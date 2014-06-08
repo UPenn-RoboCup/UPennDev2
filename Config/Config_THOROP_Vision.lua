@@ -6,8 +6,8 @@ local head = {
   pitchMax = 45 * math.pi/180,
   yawMin = -135 * math.pi/180,
   yawMax = 135 * math.pi/180,
-  --TODO: Need to recalibrate position
-  cameraPos = {0.034, 0.0, 0.1},
+  --cameraPos = {0.034, 0.0, 0.09}, --C905
+  cameraPos = {0.075, 0.0, 0}, --C920
   cameraAngle = {0, 0},
   --From CoM to neck joint
   neckZ = .165 + .161,
@@ -52,9 +52,9 @@ vision.ball = {
 vision.goal = {
   th_min_bbox_area = 120, 
   th_nPostB = 5,
-  th_min_area = 60,
+  th_min_area = 40,
   th_min_orientation = 60*math.pi/180,
-  th_min_fill_rate = 0.4,
+  th_min_fill_rate = 0.3,
   height_min = -0.9,
   th_aspect_ratio = {2.5,35},
   th_edge_margin = 5,
@@ -146,7 +146,8 @@ table.insert(Config.camera,
     ---[[
     --Logitech C905
     lut = 'm308_9am',
-    focal_length = 554.256,
+		-- f = 640/2/tan(78/180*pi / 2)
+    focal_length = 395.17,
     focal_base = 640,
     auto_param = {
       {'White Balance Temperature, Auto', 0},

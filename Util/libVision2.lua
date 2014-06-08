@@ -154,6 +154,10 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
         -- Found the ball position
         propsA.v = vector.new(v)
         propsA.t = Body and Body.get_time() or 0
+				-- For ballFilter
+			  propsA.r = math.sqrt(v[1]*v[1]+v[2]*v[2])
+				propsA.dr = 0.25*propsA.r --TODO: tweak 
+				propsA.da = 10*math.pi/180
         -- TODO: Check if outside the field
         -- TODO: Ground color check
       end
@@ -293,6 +297,8 @@ function libVision.update(img)
   detected.ball = ball
   detected.posts = posts
   detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
+	--TODO: posts debug msg is troublesome... should use string instead of array
+  --detected.debug = table.concat({'Ball',ball_fails},'\n')
   --if detected.posts then util.ptable(detected.posts) end
 
   -- Send the detected stuff over the channel every cycle

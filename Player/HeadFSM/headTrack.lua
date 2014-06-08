@@ -21,7 +21,7 @@ local c = Config.head.cameraPos[3]
 
 -- Assume one head for now...
 local dtrCamera = T.trans(unpack(Config.head.cameraPos or {0,0,0}))
-  * T.rotY(Config.head.pitchCamera or 0)
+  * T.rotY(Config.head.cameraAngle[2] or 0)
 local trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
 * T.rotY(Config.walk.bodyTilt)
 * T.trans(Config.head.neckX, 0, Config.head.neckZ)

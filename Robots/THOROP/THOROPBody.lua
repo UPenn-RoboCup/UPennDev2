@@ -505,7 +505,7 @@ elseif IS_WEBOTS then
 
 	-- Publish sensor data
 	local simple_ipc = require'simple_ipc'
-	local mp = require'msgpack'
+	local mp = require'msgpack.MessagePack'
 	local lidar0_ch = simple_ipc.new_publisher'lidar0'
 	local lidar1_ch = simple_ipc.new_publisher'lidar1'
 
@@ -524,18 +524,26 @@ elseif IS_WEBOTS then
   local tags = {}
   local t_last_error = -math.huge
 
-	-- Just use one camera
+	-- Vision routines
   local udp = require'udp'
 	local cam_cfg = Config.camera[1]
-  print('cam_cfg', cam_cfg.w, cam_cfg.detection_pipeline, cam_cfg.lut)
-	local cam_udp_ch = udp.new_sender(Config.net.operator.wired, cam_cfg.udp_port)
+  print('Color table loaded', cam_cfg.lut)
+  local operator = Config.net.operator.wired
+	local cam_udp_ch = udp.new_sender(operator, cam_cfg.udp_port)
 	-- Just use one detection routine
-	local vision = require(cam_cfg.detection_pipeline[1])
+  local vision = require(cam_cfg.detection_pipeline[1])
 	vision.entry(cam_cfg, Body)
 	local function update_vision(yuyv)
 		vision.update(yuyv)
-		local meta, raw = vision.send()
-		cam_udp_ch:send(mp.pack(meta)..raw)
+    local udp_data, udp_ret, udp_err 
+		for _,v in ipairs(vision.send()) do
+			if v[2] then
+				udp_data = mp.pack(v[1])..v[2]
+			else
+				udp_data = mp.pack(v[1])
+			end
+			udp_ret, udp_err = cam_udp_ch:send(udp_data)
+    end
 	end
 
   -- Ability to turn on/off items

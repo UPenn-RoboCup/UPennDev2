@@ -60,9 +60,9 @@ local update_odometry = function(uTorso_in)
 
   --update odometry pose
   local odometry_step = util.pose_relative(uTorso_in,uTorso1)
-  local pose_odom0 = wcm.get_robot_pose_odom()
+  local pose_odom0 = wcm.get_robot_odometry()
   local pose_odom = util.pose_global(odometry_step, pose_odom0)
-  wcm.set_robot_pose_odom(pose_odom)
+  wcm.set_robot_odometry(pose_odom)
 
   local odom_mode = wcm.get_robot_odom_mode();
   if odom_mode==0 then
@@ -238,8 +238,8 @@ function walk.update()
       zLeft,zRight,delta_legs)    
 --print("Y:",uLeft[2],uTorso[2],uRight[2])
 
-    local rpy = Body.get_sensor_rpy()
-    local roll = rpy[1] * Body.RAD_TO_DEG
+    local rpy = Body.get_rpy()
+    local roll = rpy[1] * RAD_TO_DEG
     
     if math.abs(roll)>roll_max then
       roll_max = math.abs(roll)

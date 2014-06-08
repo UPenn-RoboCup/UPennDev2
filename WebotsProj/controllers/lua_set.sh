@@ -4,14 +4,9 @@
 ##### USER ADJUSTABLE SETTINGS
 ##############################
 EXT_TERM=0
-if [ $1 == 0 ]
-then
-  LUA=luajit
-  TESTFILE=state_wizard.lua
-else
-  LUA=luajit
-  TESTFILE=webots_wizard.lua
-fi
+LUA=luajit
+#TESTFILE=state_wizard.lua
+TESTFILE=new_webots_wizard.lua
 echo $LUA $TESTFILE
 
 # Go into the Player directory

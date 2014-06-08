@@ -77,11 +77,13 @@ fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   {'bodyInit', 'done', 'bodyRobocupIdle'},
   --
+  {'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
   {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
   {'bodyRobocupIdle', 'follow', 'bodyStepWaypoint'},
   {'bodyRobocupIdle', 'stepplan2', 'bodyStepPlan2'},
   --
   {'bodyRobocupFollow', 'done', 'bodyRobocupIdle'},
+  {'bodyRobocupFollow', 'timeout', 'bodyRobocupFollow'},
   --
   {'bodyStepWaypoint',   'done', 'bodyRobocupIdle'},
   --
@@ -144,6 +146,11 @@ fsm.headSweep = {
   tScan = 1.0,
   tWait = 0.25,
 }
+
+
+if IS_WEBOTS then
+  fsm.headScan.tScan = 10
+end
 
 Config.fsm = fsm
 

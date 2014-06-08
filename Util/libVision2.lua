@@ -21,13 +21,17 @@ local labelA_t, labelB_t
 local trHead, trNeck, trNeck0, dtrCamera
 -- Camera information
 local x0A, y0A, focalA, focal_length, focal_base
--- Object properties
+-- Detection thresholds
 local b_diameter, b_dist, b_height, b_fill_rate, b_bbox_area, b_area
 local th_nPostB, g_area, g_bbox_area, g_fill_rate, g_orientation, g_aspect_ratio, g_margin
 -- Store information about what was detected
 local detected = {
   id = 'detect',
 }
+-- World config
+local postDiameter = Config.world.postDiameter
+local postHeight = Config.world.goalHeight
+
 --
 local colors
 local c_zlib = zlib.compress_cdata
@@ -174,9 +178,6 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
   return table.concat(failures,', ')
 end
 
-local function add_fail_msg(fail_str, str)
-	return fail_str..str
-end
 
 -- TODO: Allow the loop to run many times
 function libVision.goal(labelA_t, labelB_t, cc_t)
@@ -186,21 +187,19 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
   -- Now process each goal post
   -- Store failures in the array
   local failures, successes = {}, {}
-  --for i, post in ipairs(postB) do
+	local nPosts, i_validB, valid_posts = 0, {}, {}
 	for i=1, math.min(#postB, th_nPostB) do
 		local post = postB[i]
-    local fail, has_stats = '', true
+    local fail, has_stats = {}, true
     local postStats = check_prop(colors.yellow, post, g_bbox_area, g_area, g_fill_rate, labelA_t)
     if type(postStats)=='string' then
-			fail = add_fail_msg(fail, postStats)
-      --table.insert(fail, postStats)
+      table.insert(fail, postStats)
     else
 			local check_passed = true
       -- TODO: Add lower goal post bbox check
       -- Orientation check
       if check_passed and math.abs(postStats.orientation) < g_orientation then
-        --table.insert(fail, 'Orientation '..postStats.orientation)
-				fail = add_fail_msg(fail,
+        table.insert(fail, 
 					string.format('Orientation:%.1f < %.1f ', postStats.orientation, g_orientation) )
 				check_passed = false
       end
@@ -208,9 +207,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 			if check_passed then
 				local fill_rate = postStats.area / (postStats.axisMajor * postStats.axisMinor)
 				if fill_rate < g_fill_rate then
-					--table.insert(fail, 'Fill Extent '..fill_rate)
-					fail = add_fail_msg(fail,
-						string.format('Fill rate:%.2f < %.2f ', fill_rate, g_fill_rate) )
+					table.insert(fail, string.format('Fill rate:%.2f < %.2f ', fill_rate, g_fill_rate))
 					check_passed = false
 				end
 			end
@@ -218,8 +215,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 			if check_passed then
 				local aspect = postStats.axisMajor / postStats.axisMinor;
 				if (aspect < g_aspect_ratio[1]) or (aspect > g_aspect_ratio[2]) then
-					--table.insert(fail, 'Aspect Ratio '..aspect)
-					fail = add_fail_msg(fail,
+					table.insert(fail, 
 						string.format('Aspect ratio:%.2f, [%.2f %.2f] ', aspect, unpack(g_aspect_ratio)) )
 					check_passed = false
 				end
@@ -230,23 +226,86 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 				local rightPoint= postStats.centroid[1] + postStats.axisMinor / 2
 				local margin = math.min(leftPoint, wa - rightPoint)
 				if margin <= g_margin then
-					--table.insert(fail, 'Edge Margin '..margin)
-					fail = add_fail_msg(fail,
-						string.format('Edge margin:%.1f < %.1f', margin, g_margin) )
+					table.insert(fail, string.format('Edge margin:%.1f < %.1f', margin, g_margin))
 					check_passed = false
 				end
 			end
-    end
-    -- TODO: Add ground check
-    -- TODO: Add height check
-		-- TODO: add goal type detection
-    if #fail==0 then
-      table.insert(successes, postStats)
-      table.insert(failures, 'SUCCESS')
-    else
-      table.insert(failures, table.concat({fail},', '))
-    end
-  end
+			-- TODO: Add ground check
+
+			-- Height Check
+			if check_passed then
+				local scale = postStats.axisMinor / postDiameter 
+				local v = check_coordinateA(postStats.centroid, scale)
+				if v[3] < Config.vision.goal.height_min then
+					table.insert(fail,string.format("Height fail:%.2f\n",v[3]))
+					check_passed = false 
+				end
+			end
+
+			-- Check # of valid postB
+			if check_passed then 
+				nPosts = nPosts + 1 
+				i_validB[#i_validB + 1] = i
+				valid_posts[nPosts] = postStats
+			end
+    end  -- End of check on this postB
+		table.insert(failures, table.concat(fail, ',') )
+	end -- End of checks on all postB
+
+	-- Goal type detection
+	local post_detected = true
+	if nPosts>2 or nPosts<1 then
+		--TODO: this might have problem when robot see goal posts on other fields
+		table.insert(failures, table.concat({'Bad post number'},','))
+		post_detected = false
+	end
+
+	-- 0:unknown 1:left 2:right 3:double
+	local goal_type, goalStats = 0, {}
+	goalStats.posts, goalStats.v = {}, {}
+	if post_detected then
+		-- Convert to body coordinate
+		for i=1,nPosts do
+			local good_postB = postB[i_validB[1]]
+			local good_post = valid_posts[i]
+
+			local scale1 = good_post.axisMinor / postDiameter
+			local scale2 = good_post.axisMajor / postHeight
+			local scale3 = math.sqrt(good_post.area / (postDiameter*postHeight))
+			local scale
+			if good_postB.boundingBox[3]<2 then 
+				--This post is touching the top, so we can only use diameter
+				scale = scale1
+			else
+			  scale = math.max(scale1,scale2,scale3)
+			end
+			if scale == scale1 then
+				goalStats.v[i] = check_coordinateA(good_post.centroid, scale1)
+			elseif scale == scale2 then
+				goalStats.v[i] = check_coordinateA(good_post.centroid, scale2)
+			else
+				goalStats.v[i] = check_coordinateA(good_post.centroid, scale3)
+			end
+			--TODO: distanceFactor
+			goalStats.posts[1] = good_post
+		end
+
+		-- Check goal type
+		if nPosts==2 then
+			goal_type = 3
+			--TODO: width check
+		else
+			goalStats.v[2] = vector.new({0,0,0,1})
+			--TODO: use crossbar to determin left or right
+		end
+	end
+
+	if post_detected then
+		--TODO
+		table.insert(successes, goalStats.posts[1])
+		table.insert(failures, 'SUCCESS')
+	end
+
   -- Yield the failure messages and the success tables
   if #successes<1 then successes = nil end
   return table.concat(failures,','), successes
@@ -326,7 +385,7 @@ function libVision.update(img)
   --detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
 	--TODO: posts debug msg is intense... or it's just Matlab sucks..
   detected.debug = table.concat({'Ball',ball_fails},'\n')
-  --if detected.posts then util.ptable(detected.posts) end
+  if not posts then util.ptable({post_fails}) end
 
   -- Send the detected stuff over the channel every cycle
   vision_ch:send(mp.pack(detected))

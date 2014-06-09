@@ -202,32 +202,58 @@ for i, offset in ipairs(servo.rad_offset) do
 end
 
 if IS_WEBOTS then
-  -- Webots overrides tested in Webots 7.2.4, with ShortNewHand
+  -- Webots overrides tested in Webots 7.2.3, with ShortNewHand
   servo.direction = vector.new({
     -1,-1, -- Head
-    1,1,1,  1,  -1,-1,-1, --LArm
+    1,-1,-1,  1,  -1,-1,-1, --LArm
     --[[Yaw/Roll:]] -1, -1, --[[3 Pitch:]] -1,-1,1, 1, --LLeg
-    --[[Yaw/Roll:]] -1, -1, --[[3 Pitch:]] 1,1,-1, 1, --RLeg
-    1,1,1,  1,  -1,-1,-1, --RArm
+    --[[Yaw/Roll:]] 1, -1, --[[3 Pitch:]] 1,1,-1, 1, --RLeg
+    1,-1,-1,  -1,  -1,-1,-1, --RArm
     -- TODO: Check the gripper
     -1,1, -- Waist
     1,-1, -- left gripper
     -1,-1, -- right gripper
-
+  
     1, -- Lidar pan
   })
-
+  
   servo.rad_offset = vector.new({
     0,0, -- head
     -90,0,0,  0,  0,0,0,
     0,0,0,0,0,0,
     0,0,0,0,0,0,
-    -90,0,0,  0,  0,0,0,
+    -180,0,0,  0,  0,0,0,
     0,0,
     0,0,
     0,0,
     60,
   })*DEG_TO_RAD
+  
+  servo.min_rad = vector.new({
+      -90,-80, -- Head
+      -90, 0, -90, -160,      -180,-87,-180, --LArm
+      -175,-175,-175,-175,-175,-175, --LLeg
+      -175,-175,-175,-175,-175,-175, --RLeg
+      -90,-180,-90,-160,       -180,-87,-180, --RArm
+      -90,-45, -- Waist
+      120,80, --lhand    
+      120,60,--rhand
+
+      -60, -- Lidar pan
+    })*DEG_TO_RAD
+  
+    servo.max_rad = vector.new({
+      90, 80, -- Head
+      160,180,90,0,     180,87,180, --LArm
+      175,175,175,175,175,175, --LLeg
+      175,175,175,175,175,175, --RLeg
+      160,-0,90,0,     180,87,180, --RArm
+      90,79, -- Waist
+      0,45,  --lhand
+      0,45,    --rhand
+      60, -- Lidar pan
+    })*DEG_TO_RAD
+  
 end
 
 -- Export

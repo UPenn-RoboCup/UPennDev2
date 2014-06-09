@@ -487,7 +487,6 @@ elseif IS_WEBOTS then
   }
   assert(nJoint==#jointNames,'bad jointNames!')
 
-  --TODO: need to tweak for webots
   local servo = Config.servo
 
   -- Default configuration (toggle during run time)

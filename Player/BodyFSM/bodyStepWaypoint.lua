@@ -430,19 +430,6 @@ local function calculate_footsteps_new(self)
 end
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -453,17 +440,16 @@ function state.entry()
   -- Grab the pose
   local pose = {0,0,0}
   pose = wcm.get_robot_pose();
-
-
-  
+ 
   -- Grab the waypoints
-  nwaypoints = hcm.get_motion_nwaypoints()
-  --==== HACK =====
-  --nwaypoints = nwaypoints + 1
-  --===============
+  local ballx = wcm.get_ball_x()
+  local bally = wcm.get_ball_y()
+  local balla = math.atan2(bally,ballx)
+  -- nwaypoints = hcm.get_motion_nwaypoints()
+  nwaypoints = 1
   print('# of waypoints:', nwaypoints)
-  print('waypoints', unpack(hcm.get_motion_waypoints()))
-  local raw_waypoints = vector.slice(hcm.get_motion_waypoints(),1,3*nwaypoints)
+  print('waypoints', unpack({ballx, bally, balla}))
+  local raw_waypoints = vector.slice({ballx, bally, balla},1,3*nwaypoints)
 
   -- Check the frame of reference
   local waypoint_frame = hcm.get_motion_waypoint_frame()
@@ -494,7 +480,7 @@ function state.entry()
   local uTorso0 = util.pose_global({-Config.walk.supportX,0,0},uTorso)
   local target_pose_local = util.pose_relative(target_pose,uTorso0)
 
-  if math.abs(target_pose_local[3])>10*Body.DEG_TO_RAD then
+  if math.abs(target_pose_local[3])>10*DEG_TO_RAD then
     print("OLD STEP")
     calculate_footsteps()    
   else
@@ -520,7 +506,7 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  if mcm.get_walk_ismoving()==0 then
+  if arrived and mcm.get_walk_ismoving()==0 then
     return 'done'
   end
 end

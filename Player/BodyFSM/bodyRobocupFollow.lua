@@ -447,14 +447,13 @@ local function approach_plan()
 
   local walk_target_local = {ballx/ballr*walkdist,bally/ballr*walkdist,balla}
   hcm.set_motion_waypoints(walk_target_local)
-  hcm.set_motion_nwaypoints(1)
   hcm.set_motion_waypoint_frame(0) --Relative movement
   -- Grab the waypoints
-  nwaypoints = hcm.get_motion_nwaypoints()
+  nwaypoints = 1
 
   print('# of waypoints:', nwaypoints)
-  print('waypoints', unpack(hcm.get_motion_waypoints()))
-  local raw_waypoints = vector.slice(hcm.get_motion_waypoints(),1,3*nwaypoints)
+  print('waypoints', unpack(walk_target_local))
+  local raw_waypoints = vector.slice(walk_target_local,1,3*nwaypoints)
 
   -- Check the frame of reference
   local waypoint_frame = hcm.get_motion_waypoint_frame()

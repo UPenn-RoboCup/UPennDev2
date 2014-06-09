@@ -149,7 +149,7 @@ fsm.headSweep = {
 
 
 if IS_WEBOTS then
-  fsm.headScan.tScan = 10
+  fsm.headScan.tScan = 16
 end
 
 Config.fsm = fsm

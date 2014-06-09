@@ -35,7 +35,7 @@ if IS_WEBOTS then
 
   walk.maxTurnSpeed = 0.20
   walk.aTurnSpeed = 0.25
-  walk.maxStepCount = 30
+  walk.maxStepCount = 10
 
 
 

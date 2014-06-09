@@ -3,7 +3,7 @@ local vector = require'vector'
 
 local head = {
   pitchMin = 0 * math.pi/180,
-  pitchMax = 45 * math.pi/180,
+  pitchMax = 60 * math.pi/180,  -- TODO: be careful on real robot
   yawMin = -135 * math.pi/180,
   yawMax = 135 * math.pi/180,
   --cameraPos = {0.034, 0.0, 0.09}, --C905

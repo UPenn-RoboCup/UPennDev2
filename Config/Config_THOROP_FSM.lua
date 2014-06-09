@@ -142,6 +142,11 @@ fsm.headSweep = {
   tWait = 0.25,
 }
 
+fsm.bodyRobocupFollow = {
+  th_lfoot = 0.001,
+  th_rfoot = 0.001,
+  th_dist = 0.08,  --TODO
+}
 
 if IS_WEBOTS then
   fsm.headScan.tScan = 16

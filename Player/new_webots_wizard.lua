@@ -53,7 +53,8 @@ vision_ch.callback = function(skt)
 	--]]
 	lW.update_vision(detection)
 	local pose = lW.get_pose()
-  wcm.set_robot_pose(pose)
+  --TODO:no vision localization yet
+  -- wcm.set_robot_pose(pose)
 end
 
 

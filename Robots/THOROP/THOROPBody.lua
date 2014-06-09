@@ -490,7 +490,7 @@ elseif IS_WEBOTS then
   local servo = Config.servo
 
   -- Default configuration (toggle during run time)
-  local ENABLE_CAMERA = false
+  local ENABLE_CAMERA = true --false
   local ENABLE_CHEST_LIDAR  = false
   local ENABLE_HEAD_LIDAR = false
   local ENABLE_KINECT = false

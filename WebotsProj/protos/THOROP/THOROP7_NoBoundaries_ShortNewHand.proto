@@ -92,23 +92,23 @@ Robot {
 
       translation 0 -0.045 0.05
       rotation 0 1 0 -1.046 #60 deg
-      children [
-        Solid{
-          translation 0 0 0.01 #lidar chest offset
-          rotation 0 0 1 1.57
-	        children [
-            hokuyo_thor_chest{
-              name "ChestLidar"
-              width 361
-              #fieldOfView 3.14159
-             }            
-          ]
-          physics Physics{
-					  density -1
-				    mass 0.1
-				  } 
-        }
-      ]
+      # children [
+      #   Solid{
+      #     translation 0 0 0.01 #lidar chest offset
+      #     rotation 0 0 1 1.57
+      #           children [
+      #       hokuyo_thor_chest{
+      #         name "ChestLidar"
+      #         width 361
+      #         #fieldOfView 3.14159
+      #        }            
+      #     ]
+      #     physics Physics{
+      #             density -1
+      #             mass 0.1
+      #           } 
+      #   }
+      # ]
       name "ChestLidarPan"
       physics Physics {
         density -1

@@ -16,6 +16,13 @@ local motion_ch = simple_ipc.new_publisher('MotionFSM!')
 
 function state.entry()
   print(state._NAME..' Entry' )
+  --Reset pose
+  wcm.set_robot_odometry({0,0,0})
+  wcm.set_robot_pose({0,0,0})
+  --Reset ball pose
+  wcm.set_ball_x(0)
+  wcm.set_ball_y(0)
+  
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
@@ -31,9 +38,6 @@ function state.entry()
   head_ch:send'scan'
   motion_ch:send'stand'
 
-  --Reset pose
-  wcm.set_robot_odometry({0,0,0})
-  wcm.set_robot_pose({0,0,0})
 end
 
 function state.update()

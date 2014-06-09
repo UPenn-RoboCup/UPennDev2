@@ -31,13 +31,14 @@ local supportLeg
 local function robocup_follow( pose, target_pose)
   local maxStep = 0.05
   local maxTurn = 0.15
-  local dist_threshold = 0.025
+  local dist_threshold = Config.fsm.bodyRobocupFollow.th_dist
   local angle_threshold = .1
 
 
   -- Distance to the waypoint
   rel_pose = util.pose_relative(target_pose,pose)
-  rel_pose[3] = util.mod_angle(rel_pose[3])
+  -- rel_pose[3] = util.mod_angle(rel_pose[3])
+  rel_pose[3] = util.mod_angle(math.atan2(wcm.get_ball_y(), wcm.get_ball_x()))
 
   local rel_dist = math.sqrt(rel_pose[1]*rel_pose[1] + rel_pose[2]*rel_pose[2])
 
@@ -58,7 +59,7 @@ local function robocup_follow( pose, target_pose)
   -- TODO: Only with the last point do we care about the angle
   --print('Relative distances',rel_dist,rel_wp.a*180/math.pi)
 
-print("rotation needed:",rel_pose[3]*180/math.pi)
+  print("rotation needed:",rel_pose[3]*180/math.pi)
 
   if rel_dist<dist_threshold then
     if math.abs(rel_pose[3])<angle_threshold then
@@ -90,9 +91,9 @@ local function calculate_footsteps()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
       step_planner:init_stance()
 
-  print("CUrrent uLeft:",unpack(uLeft_now))
-  print("CUrrent uTorso:",unpack(uTorso_now))
-  print("CUrrent uRight:",unpack(uRight_now))
+  -- print("CUrrent uLeft:",unpack(uLeft_now))
+  -- print("CUrrent uTorso:",unpack(uTorso_now))
+  -- print("CUrrent uRight:",unpack(uRight_now))
 
   --Select initial foot based on velocity
   if target_pose[2]>0 then --sidestep to the left
@@ -154,8 +155,6 @@ local function calculate_footsteps()
   end
 
   local pose_end = {uTorso_next[1],uTorso_next[2],uTorso_next[3]}
-
-  print("Target relative pose:",unpack(util.pose_relative(target_pose,pose_initial)))
 
   step_queue[step_queue_count+1] = {{0,0,0},2,  0.1,1,0.1,{0,0,0},{0,0,0}}
 
@@ -293,7 +292,7 @@ local function calculate_footsteps_new(self)
         leg_movement = util.pose_relative(uLeft_next,uLeft_now)
       end
 
---        if step_queue_count==2 then arrived = true end
+       -- if step_queue_count==2 then arrived = true end
     else
       local uTorso0 = util.pose_global({-Config.walk.supportX,0,0},uTorso_now)
       local uLeftTarget = util.pose_global({0,Config.walk.footY,0},target_pose)
@@ -356,7 +355,10 @@ local function calculate_footsteps_new(self)
       local d_lfoot = math.sqrt(rel_lfoot[1]^2+rel_lfoot[2]^2)
       local d_rfoot = math.sqrt(rel_rfoot[1]^2+rel_rfoot[2]^2)
 
-      if d_lfoot<0.001 and d_rfoot<0.001 then
+      local th_lfoot = Config.fsm.bodyRobocupFollow.th_lfoot
+      local th_rfoot = Config.fsm.bodyRobocupFollow.th_rfoot
+      
+      if d_lfoot<th_lfoot and d_rfoot<th_rfoot then
         print('ARRIVED!!')
         arrived=true
       end
@@ -397,8 +399,8 @@ local function calculate_footsteps_new(self)
 
   local pose_end = {uTorso_next[1],uTorso_next[2],uTorso_next[3]}
 
-  print("Target pose:",unpack(target_pose_local))
-  print("Actual pose:",unpack(util.pose_relative(pose_end,pose_initial)))
+  print("Ideal target pose:",unpack(target_pose_local))
+  print("Actual target pose:",unpack(util.pose_relative(pose_end,pose_initial)))
 
 
   step_queue[step_queue_count+1] = {{0,0,0},2,  0.1,1,0.1,{0,0,0},{0,0,0}}
@@ -434,6 +436,8 @@ end
 local function approach_plan()
   -- Grab the pose
   local pose = wcm.get_robot_pose()
+  print(string.format('ROBOT POSE: %.1f, %.1f, %.1f DEG', 
+    pose[1], pose[2], pose[3]*RAD_TO_DEG))
 
   -- Aim at the ball
   local ballx = wcm.get_ball_x()
@@ -442,17 +446,18 @@ local function approach_plan()
   local balla = math.atan2(bally,ballx)
 
   -- For testing on real THOR, prevent walking too much..
-  local walkdist = 0.5
-  if IS_WEBOTS then walkdist = ballr end
+  -- local walkdist = 0.5
+  -- if IS_WEBOTS then walkdist = ballr end
 
-  local walk_target_local = {ballx/ballr*walkdist,bally/ballr*walkdist,balla}
+  local walk_target_local = {ballx,bally,balla}
   hcm.set_motion_waypoints(walk_target_local)
   hcm.set_motion_waypoint_frame(0) --Relative movement
   -- Grab the waypoints
   nwaypoints = 1
 
-  print('# of waypoints:', nwaypoints)
-  print('waypoints', unpack(walk_target_local))
+  -- print('# of waypoints:', nwaypoints)
+  print(string.format('Local waypoints: %.1f, %.1f, %.1f DEG \n', 
+    walk_target_local[1],walk_target_local[2],walk_target_local[3]*RAD_TO_DEG) )
   local raw_waypoints = vector.slice(walk_target_local,1,3*nwaypoints)
 
   -- Check the frame of reference
@@ -477,6 +482,9 @@ local function approach_plan()
   end
 
   target_pose = waypoints[1] --Single-waypoint approach for now
+  print(string.format('Global waypoints: %.1f, %.1f, %.1f DEG \n', 
+    target_pose[1],target_pose[2],target_pose[3]*RAD_TO_DEG) )
+  
 
   local uTorso = mcm.get_status_uTorso()
   local uTorso0 = util.pose_global({-Config.walk.supportX,0,0}, uTorso)

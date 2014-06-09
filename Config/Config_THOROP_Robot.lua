@@ -21,7 +21,8 @@ Config.chain = {
 local right_arm = {
   name = 'rarm',
   device = '/dev/ttyUSB0',
-  m_ids = {1,3,5,7,9,11,13, --[[head]] 29,30},
+  --m_ids = {1,3,5,7,9,11,13, --[[head]] 29,30},
+  m_ids = {29,30},
 	enable_read = true, -- for the head...
   --mx_ids = { 70,65 },
 }

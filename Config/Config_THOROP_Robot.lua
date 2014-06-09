@@ -207,7 +207,7 @@ if IS_WEBOTS then
     -1,-1, -- Head
     1,-1,-1,  1,  -1,-1,-1, --LArm
     --[[Yaw/Roll:]] -1, -1, --[[3 Pitch:]] -1,-1,1, 1, --LLeg
-    --[[Yaw/Roll:]] 1, -1, --[[3 Pitch:]] 1,1,-1, 1, --RLeg
+    --[[Yaw/Roll:]] -1, -1, --[[3 Pitch:]] 1,1,-1, 1, --RLeg
     1,-1,-1,  -1,  -1,-1,-1, --RArm
     -- TODO: Check the gripper
     -1,1, -- Waist

@@ -183,8 +183,6 @@ if IS_WEBOTS then
   Config.camera[1].focal_base = 320
 	head.neckX= 0 --From CoM to neck joint
 
-  head.cameraPos = {0.0785, 0, 0.072}
-
   vision.scaleA = 2
   vision.scaleB = 2
 end

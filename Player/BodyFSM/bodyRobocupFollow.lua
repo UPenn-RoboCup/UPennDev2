@@ -36,11 +36,8 @@ local function robocup_follow( pose, target_pose)
 
 
   -- Distance to the waypoint
-  rel_pose = util.pose_relative(target_pose,pose)
-  -- rel_pose[3] = util.mod_angle(rel_pose[3])
-  rel_pose[3] = util.mod_angle(math.atan2(wcm.get_ball_y(), wcm.get_ball_x()))
-
-  local rel_dist = math.sqrt(rel_pose[1]*rel_pose[1] + rel_pose[2]*rel_pose[2])
+  local rel_pose = util.pose_relative(target_pose,pose)
+  local rel_dist = math.sqrt(rel_pose[1]*rel_pose[1]+rel_pose[2]*rel_pose[2])
 
   -- Angle towards the waypoint
   local aTurn = util.mod_angle(math.atan2(rel_pose[2],rel_pose[1]))
@@ -52,6 +49,7 @@ local function robocup_follow( pose, target_pose)
   vStep[2] = .25 * rel_pose[2]
 
   -- Reduce speed based on how far away from the waypoint we are
+  if rel_dist < 0.1 then maxStep = 0.02 end
   local scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1)
   vStep = scale * vStep
 
@@ -59,26 +57,26 @@ local function robocup_follow( pose, target_pose)
   -- TODO: Only with the last point do we care about the angle
   --print('Relative distances',rel_dist,rel_wp.a*180/math.pi)
 
-  print("rotation needed:",rel_pose[3]*180/math.pi)
+  print("rotation needed:",aTurn*180/math.pi)
 
   if rel_dist<dist_threshold then
-    if math.abs(rel_pose[3])<angle_threshold then
+    if math.abs(aTurn)<angle_threshold then
     -- if not the last waypoint, then we are done with this waypoint
       return {0,0,0}, true
     else
       vStep[3] = math.min(
          Config.walk.maxTurnSpeed,
          math.max(-Config.walk.maxTurnSpeed,
-         Config.walk.aTurnSpeed * rel_pose[3]))
+         Config.walk.aTurnSpeed * aTurn))
 
         print("rotation speed:",vStep[3]*180/math.pi)
     end
   else
-    if math.abs(rel_pose[3])>angle_threshold then
+    if math.abs(aTurn)>angle_threshold then
       vStep[3] = math.min(
          Config.walk.maxTurnSpeed,
          math.max(-Config.walk.maxTurnSpeed,
-         Config.walk.aTurnSpeed * rel_pose[3]))
+         Config.walk.aTurnSpeed * aTurn))
       vStep[1],vStep[2] = 0,0
     end
   end
@@ -440,7 +438,9 @@ local function approach_plan()
     pose[1], pose[2], pose[3]*RAD_TO_DEG))
 
   -- Aim at the ball
-  local ballx = wcm.get_ball_x()
+  --TODO: somehow a hack due to foot size
+  local foot_xOffset = 0.1
+  local ballx = wcm.get_ball_x() - foot_xOffset
   local bally = wcm.get_ball_y()
   local ballr = math.sqrt(ballx*ballx+bally*bally)
   local balla = math.atan2(bally,ballx)

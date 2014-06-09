@@ -150,6 +150,7 @@ fsm.bodyRobocupFollow = {
 
 if IS_WEBOTS then
   fsm.headScan.tScan = 16
+  fsm.bodyRobocupFollow.th_dist = 0.2
 end
 
 Config.fsm = fsm

@@ -38,6 +38,8 @@ local function robocup_follow( pose, target_pose)
   -- Distance to the waypoint
   local rel_pose = util.pose_relative(target_pose,pose)
   local rel_dist = math.sqrt(rel_pose[1]*rel_pose[1]+rel_pose[2]*rel_pose[2])
+  
+  print('RELATIVE DIST:', rel_dist)
 
   -- Angle towards the waypoint
   local aTurn = util.mod_angle(math.atan2(rel_pose[2],rel_pose[1]))
@@ -120,6 +122,7 @@ local function calculate_footsteps()
   while step_queue_count<max_step_count and not arrived do
     if step_queue_count<=2 then
       step_planner.velCurrent = vector.new({0.0,0,0})
+      arrived = true
     else
       step_planner.velCurrent,arrived = robocup_follow(uTorso_now,target_pose)
     end

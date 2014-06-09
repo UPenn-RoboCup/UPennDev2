@@ -103,11 +103,6 @@ function state.update()
   local ballX, ballY = wcm.get_ball_x(), wcm.get_ball_y()
   local yaw, pitch = ikineCam(ballX, ballY, ball_radius)
 
-  --TODO: a hack
-  -- when ball is close to body, look down to avoid losing the visual
-  local ballR = math.sqrt(ballX*ballX + ballY*ballY)
-  if ballR < 0.3 then pitch = pitch + 5 * DEG_TO_RAD end
-
   -- Clamp
   yaw = math.min(math.max(yaw, yawMin), yawMax)
   pitch = math.min(math.max(pitch, pitchMin), pitchMax)

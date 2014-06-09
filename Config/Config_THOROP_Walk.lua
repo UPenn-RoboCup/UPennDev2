@@ -34,10 +34,8 @@ walk.stanceLimitA = {-10*math.pi/180,30*math.pi/180}
 if IS_WEBOTS then
 
   walk.maxTurnSpeed = 0.20
-  walk.aTurnSpeed = 0.25
+  walk.aTurnSpeed = 0.2
   walk.maxStepCount = 12
-
-
 
   walk.foot_traj = 2; --square step
 

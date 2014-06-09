@@ -68,17 +68,15 @@ local function robocup_follow( pose, target_pose)
          Config.walk.maxTurnSpeed,
          math.max(-Config.walk.maxTurnSpeed,
          Config.walk.aTurnSpeed * aTurn))
+         vStep[1],vStep[2] = 0,0
 
         print("rotation speed:",vStep[3]*180/math.pi)
     end
   else
-    if math.abs(aTurn)>angle_threshold then
-      vStep[3] = math.min(
-         Config.walk.maxTurnSpeed,
-         math.max(-Config.walk.maxTurnSpeed,
-         Config.walk.aTurnSpeed * aTurn))
-      vStep[1],vStep[2] = 0,0
-    end
+    vStep[3] = math.min(
+       Config.walk.maxTurnSpeed,
+       math.max(-Config.walk.maxTurnSpeed,
+       Config.walk.aTurnSpeed * aTurn))
   end
 
   return vStep, false
@@ -438,8 +436,8 @@ local function approach_plan()
     pose[1], pose[2], pose[3]*RAD_TO_DEG))
 
   -- Aim at the ball
-  --TODO: somehow a hack due to foot size
-  local foot_xOffset = 0.1
+  --TODO: somewhat a hack due to foot size
+  local foot_xOffset = 0.15
   local ballx = wcm.get_ball_x() - foot_xOffset
   local bally = wcm.get_ball_y()
   local ballr = math.sqrt(ballx*ballx+bally*bally)

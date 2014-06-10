@@ -162,15 +162,15 @@ if metadata.name=='lleg' or metadata.name=='rleg' then
 	if metadata.name=='lleg' then
 		ft_ptr = dcm.sensorPtr.lfoot
 		ft_ms = {24, 26}
-		unloaded_voltage_c = ffi.new('double[6]', Config.l_ft.unloaded)
-		calib_matrix_c = ffi.new('double[6][6]', Config.l_ft.matrix)
-		calib_matrix_gain = Config.l_ft.gain
+		unloaded_voltage_c = ffi.new('double[6]', Config.left_ft.unloaded)
+		calib_matrix_c = ffi.new('double[6][6]', Config.left_ft.matrix)
+		calib_matrix_gain = Config.left_ft.gain
 	else
 		ft_ptr = dcm.sensorPtr.rfoot
 		ft_ms = {23, 25}
-		unloaded_voltage_c = ffi.new('double[6]', Config.r_ft.unloaded)
-		calib_matrix_c = ffi.new('double[6][6]', Config.r_ft.matrix)
-		calib_matrix_gain = Config.r_ft.gain
+		unloaded_voltage_c = ffi.new('double[6]', Config.right_ft.unloaded)
+		calib_matrix_c = ffi.new('double[6][6]', Config.right_ft.matrix)
+		calib_matrix_gain = Config.right_ft.gain
 	end
 	function parent_cb.ft()
 		local status = lD.get_nx_data(ft_ms, bus)

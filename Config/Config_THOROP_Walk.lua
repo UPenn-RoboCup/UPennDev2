@@ -454,6 +454,8 @@ if IS_WEBOTS then
 
   --Webots uses different tZMP
 
+print("HEREHERE")
+
   zmpstep.param_k1_px={-449.159605,-373.126940,-79.851979}
   zmpstep.param_a={
     {1.000000,0.010000,0.000050},

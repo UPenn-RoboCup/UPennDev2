@@ -49,9 +49,9 @@ vision.ball = {
 }
 
 vision.goal = {
-  th_min_bbox_area = 120, 
+  th_min_bbox_area = 300, 
   th_nPostB = 8,
-  th_min_area = 40,
+  th_min_area = 100,
   th_min_orientation = 60*math.pi/180,
   th_min_fill_rate = 0.19, --0.25,
   height_min = -0.9,  --TODO
@@ -62,7 +62,7 @@ vision.goal = {
   th_min_green_ratio = 0.2,
   th_min_bad_color_ratio = 0.1,
   th_goal_separation = {0.35,3.0},
-  th_min_area_unknown_post = 100,
+  th_min_area_unknown_post = 80,
   -- The range we triangulate:
   far_goal_threshold= 4.0,
   use_centerpost = 1,

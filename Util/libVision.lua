@@ -31,6 +31,7 @@ local detected = {
 -- World config
 local postDiameter = Config.world.postDiameter
 local postHeight = Config.world.goalHeight
+local goalWidth = Config.world.goalWidth
 
 --
 local colors
@@ -90,6 +91,15 @@ local function bboxStats(color, bboxB, labelA_t)
   local area = (bboxA[2] - bboxA[1] + 1) * (bboxA[4] - bboxA[3] + 1)
 	local stats = ImageProc.color_stats(labelA_t, color, bboxA)
   return stats, area
+end
+
+local function bboxB2A(bboxB)
+  local bboxA = {}
+  bboxA[1] = scaleB * bboxB[1];
+  bboxA[2] = scaleB * bboxB[2] + scaleB - 1;
+  bboxA[3] = scaleB * bboxB[3];
+  bboxA[4] = scaleB * bboxB[4] + scaleB - 1;
+  return bboxA
 end
 
 local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_t)
@@ -261,11 +271,12 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 	end
 
 	-- 0:unknown 1:left 2:right 3:double
-	local goal_type, goalStats = 0, {}
-	goalStats.posts, goalStats.v = {}, {}
+	local goalStats = {}
 	if post_detected then
 		-- Convert to body coordinate
 		for i=1,nPosts do
+      goalStats[i] = {}
+    	goalStats[i].post, goalStats[i].postB, goalStats[i].v = {}, {}, {}
 			local good_postB = postB[i_validB[1]]
 			local good_post = valid_posts[i]
 
@@ -280,29 +291,78 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 			  scale = math.max(scale1,scale2,scale3)
 			end
 			if scale == scale1 then
-				goalStats.v[i] = check_coordinateA(good_post.centroid, scale1)
+				goalStats[i].v = check_coordinateA(good_post.centroid, scale1)
 			elseif scale == scale2 then
-				goalStats.v[i] = check_coordinateA(good_post.centroid, scale2)
+				goalStats[i].v = check_coordinateA(good_post.centroid, scale2)
 			else
-				goalStats.v[i] = check_coordinateA(good_post.centroid, scale3)
+				goalStats[i].v = check_coordinateA(good_post.centroid, scale3)
 			end
 			--TODO: distanceFactor
-			goalStats.posts[1] = good_post
+			goalStats[i].post = good_post
+			goalStats[i].postB = good_postB
 		end
 
 		-- Check goal type
+    local fail_msg = {}
 		if nPosts==2 then
-			goal_type = 3
-			--TODO: width check
-		else
-			goalStats.v[2] = vector.new({0,0,0,1})
-			--TODO: use crossbar to determin left or right
-		end
+			goalStats[1].type = 3
+      goalStats[2].type = 3
+      
+      -- Goal width check in x-y space
+      local dx = goalStats[1].v[1]-goalStats[2].v[1]
+      local dy = goalStats[1].v[2]-goalStats[2].v[2]
+      local dist = math.sqrt(dx*dx+dy*dy)
+      if dist > goalWidth * 2 then
+        local fail_str = string.format("Goal too wide: %.1f > %.1f\n", dist, goalWidth*2)
+        print(fail_str)
+        return table.insert(fail_msg, fail_str)
+      elseif dist<goalWidth * 0.2 then
+        local fail_str = string.format("Goal too wide: %.1f < %.1f\n", dist, goalWidth*0.2)
+        print(fail_str)
+        return table.insert(fail_msg, fail_str)
+      end
+     
+    else  -- Only single post is detected
+      -- look for crossbar stats
+      local dxCrossbar, crossbar_ratio
+      --If the post touches the top, it should be an unknown post
+      if goalStats[1].postB.boundingBox[3]<2 then --touching the top
+        dxCrossbar = 0 --Should be unknown post
+        crossbar_ratio = 0
+      else
+        -- The crossbar should be seen
+        local postWidth = goalStats[1].post.axisMinor
+
+        local leftX = goalStats[1].post.boundingBox[1]-5*postWidth
+        local rightX = goalStats[1].post.boundingBox[2]+5*postWidth
+        local topY = goalStats[1].post.boundingBox[3]-5*postWidth
+        local bottomY = goalStats[1].post.boundingBox[3]+5*postWidth    
+        local bboxA = {leftX, rightX, topY, bottomY}
+
+        local crossbarStats = ImageProc.color_stats(labelA_t, colors.yellow, bboxA)
+        dxCrossbar = crossbarStats.centroid[1] - goalStats[1].post.centroid[1]
+        crossbar_ratio = dxCrossbar / postWidth
+      end
+      -- Determine left/right/unknown
+      if (math.abs(crossbar_ratio) > min_crossbar_ratio) then
+        if crossbar_ratio>0 then goalStats[1].type = 1
+        else goalStats[1].type = 2 end
+      else
+        -- Eliminate small post without cross bars
+        if goalStats[1].post.area < th_min_area_unknown_post then
+          print("Post size too small")
+          return table.insert(fail_msg, 'single post size too small')
+        end
+        -- unknown post
+        goalStats[1].type = 0
+      end
+      
+    end  --End of goal type check
 	end
 
 	if post_detected then
-		--TODO
-		table.insert(successes, goalStats.posts[1])
+    -- print('GOAL DETECTED', #goalStats)
+		table.insert(successes, goalStats)
 		table.insert(failures, 'SUCCESS')
 	end
 
@@ -358,6 +418,8 @@ function libVision.entry(cfg, body)
     g_aspect_ratio = cfg.vision.goal.th_aspect_ratio
     g_margin = cfg.vision.goal.th_edge_margin
 		th_nPostB = cfg.vision.goal.th_nPostB
+    min_crossbar_ratio = cfg.vision.goal.min_crossbar_ratio
+    th_min_area_unknown_post = cfg.vision.goal.th_min_area_unknown_post
   end
   -- Load the lookup table
   local lut_fname = {HOME, "/Data/", "lut_", cfg.lut, ".raw"}
@@ -381,12 +443,13 @@ function libVision.update(img)
 
   -- Save the detection information
   detected.ball = ball
-  detected.posts = posts
+  -- detected.posts = posts  --MSGPACK doesn't support userdata...
+  
 	--TODO: posts debug msg is intense... or it's just Matlab sucks..
   -- TODO: ending debug while running webots is killing monitor
   -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
   -- detected.debug = table.concat({'Ball',ball_fails},'\n')
-  -- detected.debug = table.concat({'Ball'},'\n')
+  detected.debug = table.concat({'Ball'},'\n')
 
   --if not posts then util.ptable({post_fails}) end
 

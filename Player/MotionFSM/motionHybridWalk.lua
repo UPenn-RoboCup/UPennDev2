@@ -105,9 +105,10 @@ function walk.entry()
     local log_entry = string.format('t ph supportLeg values\n')
     LOG_F_SENSOR:write(log_entry)
   end
-
+  
   --Check the initial torso velocity
-  local uTorsoVel = mcm.get_status_uTorsoVel()
+  local uTorsoVel = util.pose_relative(mcm.get_status_uTorsoVel(), {0,0,uTorso_now[3]})
+
   local velTorso = math.sqrt(uTorsoVel[1]*uTorsoVel[1]+
                           uTorsoVel[2]*uTorsoVel[2])
 

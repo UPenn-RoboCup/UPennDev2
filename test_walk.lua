@@ -102,6 +102,10 @@ function process_keyinput()
     elseif byte==string.byte("8") then  
       motion_ch:send'stand'
       arm_ch:send'init'
+      if mcm.get_walk_ismoving()>0 then 
+        print("requesting stop")
+        mcm.set_walk_stoprequest(1) 
+      end
     elseif byte==string.byte("9") then  
       motion_ch:send'walk'
     elseif byte==string.byte("g") then  

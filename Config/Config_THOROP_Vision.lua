@@ -173,8 +173,6 @@ if IS_WEBOTS then
   Config.camera[1].w = 320
   Config.camera[1].h = 180
   Config.camera[1].lut = 'webots'
-  Config.camera[1].detection_pipeline[1] = 'libVision3'
--- Config.camera[1].detection_pipeline[1] = 'libVision2'
 
   Config.camera[1].x_center = 160
   Config.camera[1].y_center = 90

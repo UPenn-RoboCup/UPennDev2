@@ -19,7 +19,8 @@ INCLUDES=-I/usr/local/include -I/usr/include/lua5.1
 
 # OS Specific overrides
 ifeq ($(OSTYPE),darwin)
-  LD=ld -macosx_version_min 10.8
+  LD=g++
+  #LD=ld -macosx_version_min 10.8
 	#LDFLAGS=-lc++ -bundle -undefined dynamic_lookup
 	LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup
   LIBRT=

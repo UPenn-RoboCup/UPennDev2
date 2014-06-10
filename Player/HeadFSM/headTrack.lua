@@ -96,6 +96,7 @@ function state.update()
   end
 
   local ball_elapsed = t - wcm.get_ball_t()
+
   if ball_elapsed > tLost then --ball lost
     return 'balllost'
   end

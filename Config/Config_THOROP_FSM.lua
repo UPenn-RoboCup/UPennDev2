@@ -75,6 +75,16 @@ fsm.Motion = {
 
   {'motionStepPreview', 'done', 'motionStance'},
   {Config.dev.walk, 'done', 'motionStance'},
+
+
+--For new hybrid walk
+  {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
+  {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
+--  {'motionHybridWalkInit', 'done', 'motionStance'},
+
+  {'motionHybridWalk', 'stop', 'motionHybridWalkEnd'},
+  {'motionHybridWalkEnd', 'done', 'motionStance'},
+
 }
 
 fsm.dqNeckLimit = {

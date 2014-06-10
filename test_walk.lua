@@ -93,6 +93,9 @@ function process_keyinput()
     elseif byte==string.byte("2") then      
       body_ch:send'stepinplace'
 
+    elseif byte==string.byte("3") then      
+      motion_ch:send'hybridwalk'
+
 
     elseif byte==string.byte("7") then      
       motion_ch:send'done'

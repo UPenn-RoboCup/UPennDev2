@@ -80,10 +80,10 @@ fsm.Motion = {
 --For new hybrid walk
   {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
   {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
---  {'motionHybridWalkInit', 'done', 'motionStance'},
 
-  {'motionHybridWalk', 'stop', 'motionHybridWalkEnd'},
   {'motionHybridWalk', 'done', 'motionStance'},
+  {'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
+  
   {'motionHybridWalkEnd', 'done', 'motionStance'},
 
 }

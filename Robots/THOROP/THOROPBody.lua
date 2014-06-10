@@ -491,8 +491,13 @@ elseif IS_WEBOTS then
 
   -- Default configuration (toggle during run time)
   local ENABLE_CAMERA = true --false
-  local ENABLE_CHEST_LIDAR  = false
-  local ENABLE_HEAD_LIDAR = false
+
+  --Added to config rather than hard-code 
+  local ENABLE_CHEST_LIDAR  = Config.sensors.chest_lidar
+  local ENABLE_HEAD_LIDAR = Config.sensors.head_lidar
+  local ENABLE_FSR = Config.sensors.fsr
+  local ENABLE_FT = Config.sensors.ft
+
   local ENABLE_KINECT = false
   local ENABLE_POSE   = true
   local ENABLE_IMU   = true
@@ -552,11 +557,11 @@ elseif IS_WEBOTS then
   local key_action = {
 		h = function(override)
 			if override~=nil then en=override else en=ENABLE_HEAD_LIDAR==false end
-      if en==false then
+      if en==false and tags.head_lidar then
         print(util.color('HEAD_LIDAR disabled!','yellow'))
         webots.wb_camera_disable(tags.head_lidar)
         ENABLE_HEAD_LIDAR = false
-      else
+      elseif tags.head_lidar then
         print(util.color('HEAD_LIDAR enabled!','green'))
         webots.wb_camera_enable(tags.head_lidar,lidar_timeStep)
         ENABLE_HEAD_LIDAR = true
@@ -564,11 +569,11 @@ elseif IS_WEBOTS then
     end,
     l = function(override)
 			if override~=nil then en=override else en=ENABLE_CHEST_LIDAR==false end
-      if en==false then
+      if en==false and tags.chest_lidar then
         print(util.color('CHEST_LIDAR disabled!','yellow'))
         webots.wb_camera_disable(tags.chest_lidar)
         ENABLE_CHEST_LIDAR = false
-      else
+      elseif tags.chest_lidar then
         print(util.color('CHEST_LIDAR enabled!','green'))
         webots.wb_camera_enable(tags.chest_lidar,lidar_timeStep)
         ENABLE_CHEST_LIDAR = true
@@ -664,11 +669,24 @@ elseif IS_WEBOTS then
 		tags.gps = webots.wb_robot_get_device("GPS")
 		tags.compass = webots.wb_robot_get_device("Compass")
 		tags.inertialunit = webots.wb_robot_get_device("InertialUnit")
+
+    if Config.sensors.head_lidar then
+      tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
+    end
+    if Config.sensors.chest_lidar then
+      tags.head_lidar = webots.wb_robot_get_device("HeadLidar")
+    end
+    if Config.sensors.fsr then
+      tags.l_fsr = webots.wb_robot_get_device("L_FSR")
+      tags.r_fsr = webots.wb_robot_get_device("R_FSR")
+    end
+    if Config.sensors.ft then
+
+    end
 		tags.head_camera = webots.wb_robot_get_device("HeadCamera")
-    tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
-    tags.head_lidar = webots.wb_robot_get_device("HeadLidar")
-		tags.l_fsr = webots.wb_robot_get_device("L_FSR")
-    tags.r_fsr = webots.wb_robot_get_device("R_FSR")
+    
+    
+		
 
 		-- Enable or disable the sensors
 		key_action.i(ENABLE_IMU)

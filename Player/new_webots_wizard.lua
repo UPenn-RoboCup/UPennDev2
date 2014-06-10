@@ -99,7 +99,9 @@ while running do
   -- If time for debug
   if t-t_debug>debug_interval then
     t_debug = t
-		print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, collectgarbage('count')))
+    if Config.debug.webots_wizard then
+		  print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, collectgarbage('count')))
+    end
     --print('Wire', vcm.get_wire_model())
 	end
   

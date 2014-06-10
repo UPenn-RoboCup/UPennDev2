@@ -11,6 +11,13 @@ Config.imu = {
 
 }
 
+Config.sensors = {
+  head_lidar = false,
+  chest_lidar = false,
+  fsr = false,
+  ft = false,
+}
+
 ----------------
 -- DCM Chains --
 ----------------

@@ -1,0 +1,59 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Simulation of the Robocup Standard Platform League"
+    "Authors: Olivier Michel, Yvan Bourquin, Fabien Rohrer"
+    "Webpage: http://www.robotstadium.org"
+  ]
+  title "Robotstadium"
+  basicTimeStep 10
+  FPS 15
+}
+Viewpoint {
+  orientation 0.00646375 0.958504 0.285007 3.12818
+  position 0.123477 7.02417 -10.6827
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  ambientIntensity 1
+  direction 0.5 -0.5 0.5
+  intensity 0.8
+}
+SoccerField2013 {
+}
+Walls2013 {
+}
+DEF YELLOW_GOAL TeenGoal {
+  translation 4.5 0 0
+  postColor 0.992157 0.854902 0.219608
+}
+DEF YELLOW_GOAL TeenGoal {
+  translation -4.5 0 0
+  rotation 0 1 0 3.14159
+  postColor 0.992157 0.854902 0.219608
+  #postColor 0.152941 0.505882 0.733333
+}
+DEF BALL Ball {
+  translation -1 0 0
+  radius 0.10
+}
+#Obstacle {
+#	translation -2 0.45 0
+#}
+# THOROP7_Update {
+THOROP7_RoboCup_New{
+  translation 0 1.15535 0
+  rotation 0 1 0 -1.57
+  controller "thorop"
+  controllerArgs "0 32"
+}

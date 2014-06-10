@@ -43,4 +43,9 @@ Config.km = {}
 Config.km.standup_front = 'km_Charli_StandupFromFront.lua'
 Config.km.standup_back  = 'km_Charli_StandupFromBack.lua'
 
+--I hate debug msgs....
+Config.debug={
+	webots_wizard=false,	
+}
+
 return Config

@@ -118,7 +118,7 @@ table.insert(Config.camera,
     vision = vision,
     -- Run the standard RoboCup vision processing
     detection_pipeline = {
-      'libVision2',
+      'libVision',
     },
     --[[
     -- Logitech C920

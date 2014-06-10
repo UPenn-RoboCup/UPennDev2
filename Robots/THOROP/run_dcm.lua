@@ -153,53 +153,65 @@ local parent_cb = {
 
 -- Check the F/T based on the name of the chain
 if metadata.name=='lleg' or metadata.name=='rleg' then
-	-- Declare the struct
-	ffi.cdef[[ typedef struct { int16_t a, b, c, d; } ft; ]]
-	local ft1_c, ft2_c ft_sz, ft_ptr = ffi.new'ft', ffi.new'ft', ffi.sizeof'ft'
+	local ft_raw_c, ft_ptr = ffi.new'int16_t[4]'
+	local ft_component_c = ffi.new'double[6]'
+	local ft_readings_c = ffi.new'double[6]'
+	local ft_sz = ffi.sizeof(ft_readings_c)
+	local calib_matrix_gain, unloaded_voltage_c, calib_matrix_c
+	local ft_ms, ft_ptr
 	if metadata.name=='lleg' then
 		ft_ptr = dcm.sensorPtr.lfoot
 		ft_ms = {24, 26}
+		unloaded_voltage_c = ffi.new('double[6]', Config.l_ft.unloaded)
+		calib_matrix_c = ffi.new('double[6][6]', Config.l_ft.matrix)
+		calib_matrix_gain = Config.l_ft.gain
 	else
 		ft_ptr = dcm.sensorPtr.rfoot
 		ft_ms = {23, 25}
+		unloaded_voltage_c = ffi.new('double[6]', Config.r_ft.unloaded)
+		calib_matrix_c = ffi.new('double[6][6]', Config.r_ft.matrix)
+		calib_matrix_gain = Config.r_ft.gain
 	end
 	function parent_cb.ft()
 		local status = lD.get_nx_data(ft_ms, bus)
+		-- Return if receive nothing
 		if not status then return end
 		local s1, s2 = status[1], status[2]
-		if s1 then
-			ft1_c = ffi.cast('ft*', ffi.new('int8_t[8]', s1.parameter))
-			--ffi.copy(ft1_c, status[1].raw_parameter, ft_sz)
-			--ffi.copy(ft2_c, status[2].raw_parameter, ft_sz)
-			-- Just do a sync read here; can try reliable later, if desired...
-			if s1.id==ft_ms[1] then
-				ft_ptr[0] = 3.3 * ft1_c.a / 4096 - 1.65
-				ft_ptr[1] = 3.3 * ft1_c.b / 4096 - 1.65
-				ft_ptr[2] = 3.3 * ft1_c.c / 4096 - 1.65
-				ft_ptr[3] = 3.3 * ft1_c.d / 4096 - 1.65
-			else
-				ft_ptr[4] = 3.3 * ft1_c.a / 4096 - 1.65
-				ft_ptr[5] = 3.3 * ft1_c.b / 4096 - 1.65
-				ft_ptr[6] = 3.3 * ft1_c.c / 4096 - 1.65
-				ft_ptr[7] = 3.3 * ft1_c.d / 4096 - 1.65
+		-- Need both readings for an actual FT reading
+		if not s1 or not s2 then return end
+		-- Lower ID has the 2 components
+		if s1.id==ft_ms[1] then
+			ffi.copy(ft_raw_c, s2.raw_parameter, 8)
+			ft_component_c[0] = 3.3 * ft_raw_c[0] / 4095
+			ft_component_c[1] = 3.3 * ft_raw_c[1] / 4095
+			ft_component_c[2] = 3.3 * ft_raw_c[2] / 4095
+			ft_component_c[3] = 3.3 * ft_raw_c[3] / 4095
+			ffi.copy(ft_raw_c, s1.raw_parameter, 8)
+			ft_component_c[4] = 3.3 * ft_raw_c[0] / 4095
+			ft_component_c[5] = 3.3 * ft_raw_c[1] / 4095
+		else
+			ffi.copy(ft_raw_c, s2.raw_parameter, 8)
+			ft_component_c[0] = 3.3 * ft_raw_c[0] / 4095
+			ft_component_c[1] = 3.3 * ft_raw_c[1] / 4095
+			ft_component_c[2] = 3.3 * ft_raw_c[2] / 4095
+			ft_component_c[3] = 3.3 * ft_raw_c[3] / 4095
+			ffi.copy(ft_raw_c, s1.raw_parameter, 8)
+			ft_component_c[4] = 3.3 * ft_raw_c[0] / 4095
+			ft_component_c[5] = 3.3 * ft_raw_c[1] / 4095
+		end
+		-- New is always zeroed
+		ffi.fill(ft_readings_c, ft_sz)
+		for i=0,6 do
+			for j=0,6 do
+				ft_readings_c[i] = ft_readings_c[i]
+					+ calib_matrix_c[i][j]
+					* (ft_component_c[j] - unloaded_voltage_c[j])
+					* calib_matrix_gain
 			end
 		end
-		--
-		if status[2] then
-			ft2_c = ffi.cast('ft*', ffi.new('int8_t[8]', s2.parameter))
-			if s2.id==ft_ms[1] then
-				ft_ptr[0] = 3.3 * ft2_c.a / 4096 - 1.65
-				ft_ptr[1] = 3.3 * ft2_c.b / 4096 - 1.65
-				ft_ptr[2] = 3.3 * ft2_c.c / 4096 - 1.65
-				ft_ptr[3] = 3.3 * ft2_c.d / 4096 - 1.65
-			else
-				ft_ptr[4] = 3.3 * ft2_c.a / 4096 - 1.65
-				ft_ptr[5] = 3.3 * ft2_c.b / 4096 - 1.65
-				ft_ptr[6] = 3.3 * ft2_c.c / 4096 - 1.65
-				ft_ptr[7] = 3.3 * ft2_c.d / 4096 - 1.65
-			end
-		end
-	end
+		-- Copy into SHM
+		ffi.copy(ft_ptr, ft_readings_c, ft_sz)
+	end -- function
 end
 
 local function do_parent (p_skt)
@@ -286,6 +298,7 @@ while running do
 	if t_d_elapsed > 1 then
 		t_elapsed = t - t0
 		kb = collectgarbage'count'
+		local Fx, Fy, Fz, Tx, Ty, Tz = unpack(dcm.get_sensor_lfoot())
 		print(string.format('\n%s Uptime: %.2f sec, Mem: %d kB, %.1f Hz',
 			debug_prefix, t_elapsed, kb, count / t_d_elapsed))
 		t_debug = t

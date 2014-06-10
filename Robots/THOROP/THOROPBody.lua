@@ -530,6 +530,9 @@ elseif IS_WEBOTS then
 
 	-- Vision routines
   local udp = require'udp'
+  local jpeg = require'jpeg'
+  local c_yuyv = jpeg.compressor('yuyv')
+  -- Load vision config
 	local cam_cfg = Config.camera[1]
   print('Color table loaded', cam_cfg.lut)
   local operator = Config.net.operator.wired
@@ -828,7 +831,24 @@ elseif IS_WEBOTS then
     if ENABLE_CAMERA then
       local w = webots.wb_camera_get_width(tags.head_camera)
       local h = webots.wb_camera_get_height(tags.head_camera)
-			local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.head_camera), w, h)
+      local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.head_camera), w, h)
+      -- Update metadata
+      -- Well we don't need camera image on monitor when running webots
+      --[[ Send camera image
+      local meta = {
+        t = t,
+        sz = 0,
+        w = w,
+        h = h,
+        id = 'head_camera',
+        c = 'jpeg',
+      }
+      local c_img = c_yuyv:compress(img, w, h)
+      meta.sz = #c_img
+      local udp_data = mp.pack(meta)..c_img
+      local udp_ret, udp_err = cam_udp_ch:send(udp_data)
+      --]]
+      -- Vision routines
       update_vision(img)
     end
     -- Grab a lidar scan

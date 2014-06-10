@@ -7,7 +7,7 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         set(cam.a_debug, 'String', char(metadata.debug));
         % Process the ball detection result
         if isfield(metadata,'ball')
-            % Show our ball on the YUYV image plot
+            %{ Show our ball on the YUYV image plot
             ball_c = metadata.ball.centroid * cam.scale;
             ball_radius = (metadata.ball.axisMajor / 2) * cam.scale;
             ball_box = [ball_c(1)-ball_radius ball_c(2)-ball_radius...
@@ -15,6 +15,17 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
             set(cam.p_ball, 'Xdata', ball_c(1));
             set(cam.p_ball, 'Ydata', ball_c(2));
             set(cam.r_ball, 'Position', ball_box);
+            %}
+
+            % Show ball on label image
+            ball_c = metadata.ball.centroid;
+            ball_radius = (metadata.ball.axisMajor / 2);
+            ball_box = [ball_c(1)-ball_radius ball_c(2)-ball_radius...
+                2*ball_radius 2*ball_radius];
+            set(cam.p_ball, 'Xdata', ball_c(1));
+            set(cam.p_ball, 'Ydata', ball_c(2));
+            set(cam.r_ball, 'Position', ball_box);
+
         else
             % Remove from the plot
             set(cam.p_ball,'Xdata', []);
@@ -24,9 +35,17 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
             % Show on the plot
             % TODO: array of plot handles, for two goal posts
             postStats = metadata.posts{1};
+
+            %{ % Plot on YUYV image
             post_c = postStats.centroid * cam.scale;
             w0 = postStats.axisMajor / 2 * cam.scale;
             h0 = postStats.axisMinor / 2 * cam.scale;
+            %}
+            % Plot on label image
+            post_c = postStats.centroid;
+            w0 = postStats.axisMajor / 2;
+            h0 = postStats.axisMinor / 2;
+
             post_o = postStats.orientation;
             rot = [cos(post_o) sin(post_o); -sin(post_o) cos(post_o)]';
             x11 = post_c + [w0 h0] * rot;

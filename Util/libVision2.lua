@@ -382,9 +382,12 @@ function libVision.update(img)
   -- Save the detection information
   detected.ball = ball
   detected.posts = posts
-  --detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
 	--TODO: posts debug msg is intense... or it's just Matlab sucks..
-  detected.debug = table.concat({'Ball',ball_fails},'\n')
+  -- TODO: ending debug while running webots is killing monitor
+  -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
+  -- detected.debug = table.concat({'Ball',ball_fails},'\n')
+  -- detected.debug = table.concat({'Ball'},'\n')
+
   --if not posts then util.ptable({post_fails}) end
 
   -- Send the detected stuff over the channel every cycle

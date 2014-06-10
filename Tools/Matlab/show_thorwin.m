@@ -14,20 +14,22 @@ clf;
 f_lA = subplot(1,2,1);
 im_lA = image(zeros(1));
 colormap(cmap);
-% yuyv
-f_yuyv = subplot(1,2,2);
-im_yuyv = image(zeros(1));
 hold on;
-p_ball = plot([0],[0], 'k*');
+p_ball = plot([0],[0], 'y*');
 % Remove from the plot
 set(p_ball,'Xdata', []);
 set(p_ball,'Ydata', []);
-r_ball = rectangle('Position', [0 0 1 1], 'Curvature',[1,1]);
+r_ball = rectangle('Position', [0 0 1 1],... 
+  'Curvature',[1,1], 'EdgeColor', 'b');
 p_post1 = plot([0],[0], 'b-', 'LineWidth', 2);
 % Remove from the plot
 set(p_post1,'Xdata', []);
 set(p_post1,'Ydata', []);
 hold off;
+% yuyv
+f_yuyv = subplot(1,2,2);
+im_yuyv = image(zeros(1));
+
 drawnow;
 
 % Save the camera handles

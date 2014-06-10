@@ -59,7 +59,7 @@ end
 rpc_ch = si.new_requester(Config.net.reliable_rpc)
 
 -- Body channel
---body_ch = si.new_publisher'body!'
+body_ch = si.new_publisher'body!'
 
 print( util.color('FSM Channel','yellow'), table.concat(fsm_chs,' ') )
 print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )

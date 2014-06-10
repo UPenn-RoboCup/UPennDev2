@@ -271,7 +271,6 @@ local t_debug, t_last, t_diff = t0, t0
 local count, t_elapsed, t_d_elapsed, kb = 0
 -- Garbarge collect before beginning
 Config = nil
-metadata = nil
 collectgarbage()
 -- Begin
 while running do
@@ -298,9 +297,22 @@ while running do
 	if t_d_elapsed > 1 then
 		t_elapsed = t - t0
 		kb = collectgarbage'count'
-		local Fx, Fy, Fz, Tx, Ty, Tz = unpack(dcm.get_sensor_lfoot())
-		print(string.format('\n%s Uptime: %.2f sec, Mem: %d kB, %.1f Hz',
-			debug_prefix, t_elapsed, kb, count / t_d_elapsed))
+		local debug_str = {
+			string.format('\n%s Uptime: %.2f sec, Mem: %d kB, %.1f Hz',
+				debug_prefix, t_elapsed, kb, count / t_d_elapsed),
+		}
+		if metadata.name=='lleg' then
+			local Fx, Fy, Fz, Tx, Ty, Tz = unpack(dcm.get_sensor_lfoot())
+			table.insert(debug_str,
+			string.format("FT: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f", Fx, Fy, Fz, Tx, Ty, Tz)
+			)
+		else
+			local Fx, Fy, Fz, Tx, Ty, Tz = unpack(dcm.get_sensor_rfoot())
+			table.insert(debug_str,
+			string.format("FT: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f", Fx, Fy, Fz, Tx, Ty, Tz)
+			)
+		end
+		print(table.concat(debug_str,'\n'))
 		t_debug = t
 		count = 0
 	end

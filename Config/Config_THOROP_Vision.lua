@@ -3,11 +3,10 @@ local vector = require'vector'
 
 local head = {
   pitchMin = 0 * math.pi/180,
-  pitchMax = 60 * math.pi/180,  -- TODO: be careful on real robot
+  pitchMax = 45 * math.pi/180,
   yawMin = -135 * math.pi/180,
   yawMax = 135 * math.pi/180,
-  --cameraPos = {0.034, 0.0, 0.09}, --C905
-  cameraPos = {0.075, 0.0, 0}, --C920
+  cameraPos = {0.075, 0.0, 0.13}, --C920
   cameraAngle = {0, 0},
   --From CoM to neck joint
   neckZ = .165 + .161,

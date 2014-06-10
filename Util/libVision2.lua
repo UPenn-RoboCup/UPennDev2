@@ -385,7 +385,7 @@ function libVision.update(img)
   --detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
 	--TODO: posts debug msg is intense... or it's just Matlab sucks..
   detected.debug = table.concat({'Ball',ball_fails},'\n')
-  if not posts then util.ptable({post_fails}) end
+  --if not posts then util.ptable({post_fails}) end
 
   -- Send the detected stuff over the channel every cycle
   vision_ch:send(mp.pack(detected))

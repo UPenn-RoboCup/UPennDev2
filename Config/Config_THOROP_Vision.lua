@@ -120,30 +120,7 @@ table.insert(Config.camera,
     detection_pipeline = {
       'libVision',
     },
-    --[[
-    -- Logitech C920
-    lut = '308_wide_night.raw',
-    focal_length = 533,
-    focal_base = 640,
-    auto_param = {
-      {'White Balance Temperature, Auto', 0},
-      {'Power Line Frequency', 0},
-      {'Exposure, Auto', 1},  -- 1 for manual?
-      {'Exposure, Auto Priority', 0},
-    },
-    param = {
-      {'Brightness', 76},
-      {'Contrast', 117},
-      {'Saturation', 130},
-      --{'Exposure (Absolute)', 90},
-      {'Gain', 105},
-      {'Sharpness', 0},
-      {'White Balance Temperature', 2885},
-      --{'Backlight Compensation', 1},
-    },
-    --]]
-    ---[[
-    --Logitech C905
+    --Logitech C920
     lut = 'm308_9am',
 		-- f = 640/2/tan(78/180*pi / 2)
     focal_length = 395.17,
@@ -165,7 +142,6 @@ table.insert(Config.camera,
       {'Gain', 0},
       {'Sharpness', 0},
     },
-    --]]
   })
 
 --Webots use 1/2 resolution but 2x label resolution

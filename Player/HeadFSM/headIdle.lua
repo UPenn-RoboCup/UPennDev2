@@ -14,7 +14,7 @@ function state.entry()
 
   -- Torque OFF the motors
   Body.set_head_torque_enable(0)
-
+  wcm.set_ball_t(Body.get_time()-10.0) --to fix bad shm value
 end
 
 function state.update()

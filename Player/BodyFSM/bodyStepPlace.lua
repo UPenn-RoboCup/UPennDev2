@@ -15,7 +15,7 @@ require'mcm'
 
 -- FSM coordination
 local simple_ipc = require'simple_ipc'
-local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
+local motion_ch = simple_ipc.new_publisher('MotionFSM!')
 
 local t_entry, t_update, t_exit
 local nwaypoints, wp_id

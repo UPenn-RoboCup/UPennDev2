@@ -39,16 +39,22 @@ fsm.Head = {
 
 fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
-  {'bodyInit', 'done', 'bodyRobocupIdle'},
-  --
+  {'bodyInit', 'done', 'bodyStop'},
+
+  {'bodyStop', 'stepinplace', 'bodyStepPlace'},
+  {'bodyStop', 'stepwaypoint', 'bodyStepWaypoint'},
+  {'bodyStop', 'play', 'bodyRobocupIdle'},
+
+  {'bodyStepPlace',   'done', 'bodyStop'},
+  {'bodyStepWaypoint',   'done', 'bodyStop'},
+  
   {'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
   {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
 
   {'bodyRobocupFollow', 'done', 'bodyRobocupIdle'},
   {'bodyRobocupFollow', 'timeout', 'bodyRobocupFollow'},
 
-  {'bodyRobocupIdle', 'stepinplace', 'bodyStepPlace'},
-  {'bodyStepPlace',   'done', 'bodyRobocupIdle'},
+  
 
 --  {'bodyStepWaypoint',   'done', 'bodyRobocupIdle'},
 --  {'bodyStepPlan2',   'done', 'bodyRobocupIdle'}

@@ -17,7 +17,7 @@ require'mcm'
 
 -- FSM coordination
 local simple_ipc = require'simple_ipc'
-local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
+local motion_ch = simple_ipc.new_publisher('MotionFSM!')
 
 local t_entry, t_update, t_exit
 local nwaypoints, wp_id
@@ -440,17 +440,15 @@ function state.entry()
   -- Grab the pose
   local pose = {0,0,0}
   pose = wcm.get_robot_pose();
- 
-  -- Grab the waypoints
-  local ballx = wcm.get_ball_x()
-  local bally = wcm.get_ball_y()
-  local balla = math.atan2(bally,ballx)
+   
   -- nwaypoints = hcm.get_motion_nwaypoints()
   nwaypoints = 1
-  print('# of waypoints:', nwaypoints)
-  print('waypoints', unpack({ballx, bally, balla}))
-  local raw_waypoints = vector.slice({ballx, bally, balla},1,3*nwaypoints)
+  waypoints = hcm.get_motion_waypoints()
 
+  print('# of waypoints:', nwaypoints)
+  
+  local raw_waypoints = vector.slice(waypoints,1,3*nwaypoints)
+  print('waypoints', unpack(raw_waypoints))
   -- Check the frame of reference
   local waypoint_frame = hcm.get_motion_waypoint_frame()
 	if waypoint_frame==0 then print('Waypoint Frame: LOCAL')
@@ -488,9 +486,6 @@ function state.entry()
     calculate_footsteps_new()
   end
 
-
---  calculate_footsteps()
---  calculate_footsteps_new()
   motion_ch:send'preview'  
 end
 
@@ -506,7 +501,8 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  if arrived and mcm.get_walk_ismoving()==0 then
+--  if arrived and mcm.get_walk_ismoving()==0 then
+  if  mcm.get_walk_ismoving()==0 then
     return 'done'
   end
 end
@@ -516,27 +512,3 @@ function state.exit()
 end
 
 return state
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

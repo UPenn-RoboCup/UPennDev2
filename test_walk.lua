@@ -79,14 +79,19 @@ function process_keyinput()
     elseif byte==string.byte(";") then  targetvel_new[2]=targetvel[2]-0.02;
 
 
-    elseif byte==string.byte("e") then  targetwp_new[1]=targetwp[1]+0.02;
+    elseif byte==string.byte("e") then  targetwp_new[1]=targetwp[1]+0.1;
     elseif byte==string.byte("s") then  targetwp_new[3]=targetwp[3]+0.1;
     elseif byte==string.byte("d") then  targetwp_new[1],targetwp_new[2],targetwp_new[3]=0,0,0;
     elseif byte==string.byte("f") then  targetwp_new[3]=targetwp[3]-0.1;
-    elseif byte==string.byte("c") then  targetwp_new[1]=targetwp[1]-0.02;
-    elseif byte==string.byte("a") then  targetwp_new[2]=targetwp[2]+0.02;
-    elseif byte==string.byte("f") then  targetwp_new[2]=targetwp[2]-0.02;
+    elseif byte==string.byte("c") then  targetwp_new[1]=targetwp[1]-0.1;
+    elseif byte==string.byte("a") then  targetwp_new[2]=targetwp[2]+0.1;
+    elseif byte==string.byte("f") then  targetwp_new[2]=targetwp[2]-0.1;
 
+
+    elseif byte==string.byte("1") then      
+      body_ch:send'init'
+    elseif byte==string.byte("2") then      
+      body_ch:send'stepinplace'
 
 
     elseif byte==string.byte("7") then      
@@ -97,11 +102,14 @@ function process_keyinput()
     elseif byte==string.byte("9") then  
       motion_ch:send'walk'
     elseif byte==string.byte("g") then  
-      body_ch:send'init'
+      body_ch:send'play'
     elseif byte==string.byte(" ") then  
-      
-
-      body_ch:send'preview'
+      hcm.set_motion_waypoints(targetwp)
+      hcm.set_motion_nwaypoints(1)
+      hcm.set_motion_waypoint_frame(0) --Relative movement
+      targetwp[1],targetwp[2],targetwp[3]=0,0,0
+      targetwp_new[1],targetwp_new[2],targetwp_new[3]=0,0,0
+      body_ch:send'stepwaypoint'
     end
 
     local vel_diff = (targetvel_new[1]-targetvel[1])^2+(targetvel_new[2]-targetvel[2])^2+(targetvel_new[3]-targetvel[3])^2
@@ -113,7 +121,8 @@ function process_keyinput()
     local wp_diff = (targetwp_new[1]-targetwp[1])^2+(targetwp_new[2]-targetwp[2])^2+(targetwp_new[3]-targetwp[3])^2
     if wp_diff>0 then
       targetwp[1],targetwp[2],targetwp[3]=targetwp_new[1],targetwp_new[2],targetwp_new[3]
-      print(string.format("Target waypoint: %.3f %.3f %.3f",unpack(targetvel)))      
+      print(string.format("Target waypoint: %.3f %.3f %.3f",unpack(targetwp)))      
+      
     end
   end
 end

@@ -157,7 +157,7 @@ function walk.update()
     zmp_solver:compute( uSupport, uTorso_now, uTorso_next )
     t_last_step = Body.get_time() -- Update t_last_step
 
-    print( util.color('Walk velocity','blue'), string.format("%g, %g, %g",unpack(step_planner.velCurrent)) )
+--    print( util.color('Walk velocity','blue'), string.format("%g, %g, %g",unpack(step_planner.velCurrent)) )
   end
 
   local uTorso = zmp_solver:get_com(ph)

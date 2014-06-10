@@ -52,25 +52,68 @@ print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
 
 
 targetvel={0,0,0}
+targetvel_new={0,0,0}
+
+targetwp={0,0,0}
+targetwp_new={0,0,0}
 
 function process_keyinput()
   local byte=getch.block();
   if byte then
     -- Walk velocity setting
-    if byte==string.byte("i") then      targetvel[1]=targetvel[1]+0.02;
-    elseif byte==string.byte("j") then  targetvel[3]=targetvel[3]+0.1;
-    elseif byte==string.byte("k") then  targetvel[1],targetvel[2],targetvel[3]=0,0,0;
-    elseif byte==string.byte("l") then  targetvel[3]=targetvel[3]-0.1;
-    elseif byte==string.byte(",") then  targetvel[1]=targetvel[1]-0.02;
-    elseif byte==string.byte("h") then  targetvel[2]=targetvel[2]+0.02;
-    elseif byte==string.byte(";") then  targetvel[2]=targetvel[2]-0.02;
 
+
+
+
+
+
+
+
+
+    if byte==string.byte("i") then      targetvel_new[1]=targetvel[1]+0.02;
+    elseif byte==string.byte("j") then  targetvel_new[3]=targetvel[3]+0.1;
+    elseif byte==string.byte("k") then  targetvel_new[1],targetvel_new[2],targetvel_new[3]=0,0,0;
+    elseif byte==string.byte("l") then  targetvel_new[3]=targetvel[3]-0.1;
+    elseif byte==string.byte(",") then  targetvel_new[1]=targetvel[1]-0.02;
+    elseif byte==string.byte("h") then  targetvel_new[2]=targetvel[2]+0.02;
+    elseif byte==string.byte(";") then  targetvel_new[2]=targetvel[2]-0.02;
+
+
+    elseif byte==string.byte("e") then  targetwp_new[1]=targetwp[1]+0.02;
+    elseif byte==string.byte("s") then  targetwp_new[3]=targetwp[3]+0.1;
+    elseif byte==string.byte("d") then  targetwp_new[1],targetwp_new[2],targetwp_new[3]=0,0,0;
+    elseif byte==string.byte("f") then  targetwp_new[3]=targetwp[3]-0.1;
+    elseif byte==string.byte("c") then  targetwp_new[1]=targetwp[1]-0.02;
+    elseif byte==string.byte("a") then  targetwp_new[2]=targetwp[2]+0.02;
+    elseif byte==string.byte("f") then  targetwp_new[2]=targetwp[2]-0.02;
+
+
+
+    elseif byte==string.byte("7") then      
+      motion_ch:send'done'
     elseif byte==string.byte("8") then  
       motion_ch:send'stand'
       arm_ch:send'init'
-    
+    elseif byte==string.byte("9") then  
+      motion_ch:send'walk'
     elseif byte==string.byte("g") then  
       body_ch:send'init'
+    elseif byte==string.byte(" ") then  
+      
+
+      body_ch:send'preview'
+    end
+
+    local vel_diff = (targetvel_new[1]-targetvel[1])^2+(targetvel_new[2]-targetvel[2])^2+(targetvel_new[3]-targetvel[3])^2
+    if vel_diff>0 then
+      targetvel[1],targetvel[2],targetvel[3] = targetvel_new[1],targetvel_new[2],targetvel_new[3]
+      print(string.format("Target velocity: %.3f %.3f %.3f",unpack(targetvel)))
+      mcm.set_walk_vel(targetvel)
+    end
+    local wp_diff = (targetwp_new[1]-targetwp[1])^2+(targetwp_new[2]-targetwp[2])^2+(targetwp_new[3]-targetwp[3])^2
+    if wp_diff>0 then
+      targetwp[1],targetwp[2],targetwp[3]=targetwp_new[1],targetwp_new[2],targetwp_new[3]
+      print(string.format("Target waypoint: %.3f %.3f %.3f",unpack(targetvel)))      
     end
   end
 end

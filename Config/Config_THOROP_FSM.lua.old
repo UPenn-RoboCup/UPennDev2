@@ -12,6 +12,7 @@ fsm.update_rate = 100
 -- Which FSMs should be enabled?
 fsm.enabled = {
   'Arm',
+  --'Lidar',
   'Body',
   'Head',
   'Motion',
@@ -37,6 +38,7 @@ fsm.Head = {
   {'headSweep', 'done', 'headTrack'},
 }
 
+-- For RoboCup
 fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   {'bodyInit', 'done', 'bodyRobocupIdle'},
@@ -47,20 +49,37 @@ fsm.Body = {
   {'bodyRobocupFollow', 'done', 'bodyRobocupIdle'},
   {'bodyRobocupFollow', 'timeout', 'bodyRobocupFollow'},
 
-  {'bodyRobocupIdle', 'stepinplace', 'bodyStepPlace'},
-  {'bodyStepPlace',   'done', 'bodyRobocupIdle'},
 
 --  {'bodyStepWaypoint',   'done', 'bodyRobocupIdle'},
 --  {'bodyStepPlan2',   'done', 'bodyRobocupIdle'}
 }
 
+--[[
+-- For DRC
+fsm.Body = {
+  {'bodyIdle', 'init', 'bodyInit'},
+  {'bodyIdle', 'drive', 'bodyDrive'},
+  {'bodyIdle', 'follow', 'bodyStepWaypoint'},
+  {'bodyIdle', 'stepover', 'bodyStepOver'},
+  {'bodyIdle', 'stepplan2', 'bodyStepPlan2'},
+  --
+  {'bodyInit', 'done', 'bodyIdle'},
+  {'bodyStepWaypoint', 'done', 'bodyIdle'},
+  {'bodyStepOver', 'done', 'bodyIdle'},
+  {'bodyStepWiden', 'done', 'bodyIdle'},
+  {'bodyStepPlan2', 'done', 'bodyIdle'},
+}
+--]]
+
+
 assert(Config.dev.walk, 'Need a walk engine specification')
 fsm.Motion = {
   {'motionIdle', 'timeout', 'motionIdle'},
   {'motionIdle', 'stand', 'motionInit'},
+--  {'motionIdle', 'drive', 'motionDrive'},
   {'motionIdle', 'bias', 'motionBiasInit'},
-
   {'motionBiasInit', 'bias', 'motionInit'},  
+  --
   {'motionInit', 'done', 'motionStance'},
 
   {'motionStance', 'bias', 'motionBiasInit'},
@@ -68,6 +87,7 @@ fsm.Motion = {
   {'motionStance', 'walk', Config.dev.walk},
 
   {'motionStepPreview', 'done', 'motionStance'},
+
   {Config.dev.walk, 'done', 'motionStance'},
 }
 

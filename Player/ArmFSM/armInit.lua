@@ -28,10 +28,10 @@ function state.entry()
   stage = 1
 
   --Slowly close all fingers
-  Body.move_lgrip1(Config.arm.torque.movement)
-  Body.move_lgrip2(Config.arm.torque.movement)
-  Body.move_rgrip1(Config.arm.torque.movement)
-  Body.move_rgrip2(Config.arm.torque.movement)
+--  Body.move_lgrip1(Config.arm.torque.movement)
+--  Body.move_lgrip2(Config.arm.torque.movement)
+--  Body.move_rgrip1(Config.arm.torque.movement)
+--  Body.move_rgrip2(Config.arm.torque.movement)
 
   local qLArm = Body.get_larm_position()
   local qRArm = Body.get_rarm_position()

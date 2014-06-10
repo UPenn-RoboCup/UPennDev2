@@ -3,7 +3,7 @@ local vector = require'vector'
 
 local head = {
   pitchMin = 0 * math.pi/180,
-  pitchMax = 45 * math.pi/180,
+  pitchMax = 75 * math.pi/180,
   yawMin = -135 * math.pi/180,
   yawMax = 135 * math.pi/180,
   cameraPos = {0.075, 0.0, 0.13}, --C920
@@ -173,8 +173,8 @@ if IS_WEBOTS then
   Config.camera[1].w = 320
   Config.camera[1].h = 180
   Config.camera[1].lut = 'webots'
---  Config.camera[1].detection_pipeline[1] = 'libVision3'
-Config.camera[1].detection_pipeline[1] = 'libVision2'
+  Config.camera[1].detection_pipeline[1] = 'libVision3'
+-- Config.camera[1].detection_pipeline[1] = 'libVision2'
 
   Config.camera[1].x_center = 160
   Config.camera[1].y_center = 90

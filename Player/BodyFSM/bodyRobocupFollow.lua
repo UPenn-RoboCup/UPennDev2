@@ -122,7 +122,7 @@ local function calculate_footsteps()
   while step_queue_count<max_step_count and not arrived do
     if step_queue_count<=2 then
       step_planner.velCurrent = vector.new({0.0,0,0})
-      arrived = true
+      -- arrived = true
     else
       step_planner.velCurrent,arrived = robocup_follow(uTorso_now,target_pose)
     end

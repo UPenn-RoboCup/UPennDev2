@@ -276,7 +276,6 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 		-- Convert to body coordinate
 		for i=1,nPosts do
       goalStats[i] = {}
-    	goalStats[i].post, goalStats[i].postB, goalStats[i].v = {}, {}, {}
 			local good_postB = postB[i_validB[1]]
 			local good_post = valid_posts[i]
 
@@ -312,8 +311,8 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
       local dx = goalStats[1].v[1]-goalStats[2].v[1]
       local dy = goalStats[1].v[2]-goalStats[2].v[2]
       local dist = math.sqrt(dx*dx+dy*dy)
-      if dist > goalWidth * 2 then
-        local fail_str = string.format("Goal too wide: %.1f > %.1f\n", dist, goalWidth*2)
+      if dist > goalWidth * 3 then --TODO: put into Config
+        local fail_str = string.format("Goal too wide: %.1f > %.1f\n", dist, goalWidth*3)
         print(fail_str)
         return table.insert(fail_msg, fail_str)
       elseif dist<goalWidth * 0.2 then
@@ -358,17 +357,21 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
       end
       
     end  --End of goal type check
+    
+    -- Convert torch tensor to table
+    for i=1,#goalStats do
+      goalStats[i].v = vector.new(goalStats[i].v)
+    end
+    
 	end
-
+    
 	if post_detected then
-    -- print('GOAL DETECTED', #goalStats)
-		table.insert(successes, goalStats)
-		table.insert(failures, 'SUCCESS')
+    -- print(#goalStats,'GOAL DETECTED')
+    return tostring(#goalStats,'GOAL DETECTED'), goalStats
 	end
 
   -- Yield the failure messages and the success tables
-  if #successes<1 then successes = nil end
-  return table.concat(failures,','), successes
+  return table.concat(failures,',')
 end
 
 -- Set the variables based on the config file
@@ -443,7 +446,7 @@ function libVision.update(img)
 
   -- Save the detection information
   detected.ball = ball
-  -- detected.posts = posts  --MSGPACK doesn't support userdata...
+  detected.posts = posts
   
 	--TODO: posts debug msg is intense... or it's just Matlab sucks..
   -- TODO: ending debug while running webots is killing monitor

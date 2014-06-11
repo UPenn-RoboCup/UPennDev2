@@ -21,10 +21,13 @@ set(p_ball,'Xdata', []);
 set(p_ball,'Ydata', []);
 r_ball = rectangle('Position', [0 0 1 1],... 
   'Curvature',[1,1], 'EdgeColor', 'b');
-p_post1 = plot([0],[0], 'b-', 'LineWidth', 2);
-% Remove from the plot
-set(p_post1,'Xdata', []);
-set(p_post1,'Ydata', []);
+p_post = cell(2,1);
+for i=1,2
+    p_post{i} = plot([0],[0], 'b-', 'LineWidth', 2);
+    % Remove from the plot
+    set(p_post{i},'Xdata', []);
+    set(p_post{i},'Ydata', []);
+end
 hold off;
 % yuyv
 f_yuyv = subplot(1,2,2);
@@ -40,7 +43,7 @@ cam.f_yuyv = f_yuyv;
 cam.im_yuyv = im_yuyv;
 cam.p_ball = p_ball;
 cam.r_ball = r_ball;
-cam.p_post1 = p_post1;
+cam.p_post = p_post;
 % Plot scale
 % Default: labelA is half size, so scale twice
 scale = 2;

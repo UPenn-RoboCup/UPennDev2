@@ -7,15 +7,14 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         set(cam.a_debug, 'String', char(metadata.debug));
         % Process the ball detection result
         if isfield(metadata,'ball')
-            %{ Show our ball on the YUYV image plot
-            ball_c = metadata.ball.centroid * cam.scale;
-            ball_radius = (metadata.ball.axisMajor / 2) * cam.scale;
-            ball_box = [ball_c(1)-ball_radius ball_c(2)-ball_radius...
-                2*ball_radius 2*ball_radius];
-            set(cam.p_ball, 'Xdata', ball_c(1));
-            set(cam.p_ball, 'Ydata', ball_c(2));
-            set(cam.r_ball, 'Position', ball_box);
-            %}
+            % Show our ball on the YUYV image plot
+            % ball_c = metadata.ball.centroid * cam.scale;
+            % ball_radius = (metadata.ball.axisMajor / 2) * cam.scale;
+            % ball_box = [ball_c(1)-ball_radius ball_c(2)-ball_radius...
+            %     2*ball_radius 2*ball_radius];
+            % set(cam.p_ball, 'Xdata', ball_c(1));
+            % set(cam.p_ball, 'Ydata', ball_c(2));
+            % set(cam.r_ball, 'Position', ball_box);
 
             % Show ball on label image
             ball_c = metadata.ball.centroid;
@@ -36,36 +35,35 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
             % TODO: array of plot handles, for two goal posts
             for i=1:numel(metadata.posts)
               postStats = metadata.posts{i};
-
-              %{ % Plot on YUYV image
-              post_c = postStats.centroid * cam.scale;
-              w0 = postStats.axisMajor / 2 * cam.scale;
-              h0 = postStats.axisMinor / 2 * cam.scale;
-              %}
+              
+              % Plot on YUYV image
+              % post_c = postStats.centroid * cam.scale;
+              % w0 = postStats.axisMajor / 2 * cam.scale;
+              % h0 = postStats.axisMinor / 2 * cam.scale;
+              
               % Plot on label image
-              post_c = postStats.centroid;
-              w0 = postStats.axisMajor / 2;
-              h0 = postStats.axisMinor / 2;
+              post_c = postStats.post.centroid;
+              w0 = postStats.post.axisMajor / 2;
+              h0 = postStats.post.axisMinor / 2;
 
-              post_o = postStats.orientation;
+              post_o = postStats.post.orientation;
               rot = [cos(post_o) sin(post_o); -sin(post_o) cos(post_o)]';
               x11 = post_c + [w0 h0] * rot;
               x12 = post_c + [-w0 h0] * rot;
               x21 = post_c + [w0 -h0] * rot;
               x22 = post_c + [-w0 -h0] * rot;
               post_box = [x11; x12; x22; x21; x11];
-              %TODO: make a struct of p_post
-              if i==1
-                set(cam.p_post1, 'XData', post_box(:,1), 'YData', post_box(:,2));
-              elseif i==2
-                set(cam.p_post2, 'XData', post_box(:,1), 'YData', post_box(:,2));
-              end
+              % Draw
+              set(cam.p_post{i}, 'XData', post_box(:,1), 'YData', post_box(:,2));
+
             end
             
         else
             % Remove from the plot
-            set(cam.p_post1,'Xdata', []);
-            set(cam.p_post1,'Ydata', []);
+            set(cam.p_post{1},'Xdata', []);
+            set(cam.p_post{1},'Ydata', []);
+            set(cam.p_post{2},'Xdata', []);
+            set(cam.p_post{2},'Ydata', []);
         end
         
     elseif strcmp(msg_id,'world')

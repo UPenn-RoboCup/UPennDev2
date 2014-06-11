@@ -36,6 +36,7 @@ print(debug_prefix, 'running')
 -- Modules
 require'dcm'
 local lD = require'libDynamixel'
+local registers_sensor = lD.registers_sensor
 local ptable = require'util'.ptable
 local vector = require'vector'
 local usleep, get_time, max = unix.usleep, unix.time, math.max
@@ -223,16 +224,30 @@ local function do_parent (p_skt)
 		-- Check if there is something special
 		local f = parent_cb[cmd]
 		if f then return f() end
-		-- Else, access something from the motor
-		local ptr, set = dcm.actuatorPtr[cmd], lD['set_nx_'..cmd]
-		if not set then return end
-		-- TODO: Check if we need the motors torqued off for the command to work
-		-- Send individually to the motors, waiting for the status return
 		local j_id, status
-		for i, m_id in ipairs(m_ids) do
-			j_id = m_to_j[m_id] - 1
-			status = set(m_id, ptr[j_id], bus)
-			-- TODO: check the status, and repeat if necessary...
+		if registers_sensor[cmd] then
+			local ptr, get, parse = dcm.sensorPtr[cmd], lD['get_nx_'..cmd], lD.byte_to_number[lD.nx_registers[cmd][2]]
+			if not ptr then return end
+			for i, m_id in ipairs(m_ids) do
+				status = get(m_id, bus)
+				-- TODO: check the status, and repeat if necessary...
+				local s = status[1]
+				if s then
+					local val = parse(unpack(s.parameter))
+					j_id = m_to_j[s.id] - 1
+					ptr[j_id] = val
+				end
+			end
+		else
+			local ptr, set = dcm.actuatorPtr[cmd], lD['set_nx_'..cmd]
+			if not ptr then return end
+			-- TODO: Check if we need the motors torqued off for the command to work
+			-- Send individually to the motors, waiting for the status return
+			for i, m_id in ipairs(m_ids) do
+				j_id = m_to_j[m_id] - 1
+				status = set(m_id, ptr[j_id], bus)
+				-- TODO: check the status, and repeat if necessary...
+			end
 		end
 	end
 end

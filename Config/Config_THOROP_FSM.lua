@@ -53,11 +53,13 @@ fsm.Body = {
 
   {'bodyRobocupFollow', 'done', 'bodyRobocupIdle'},
   {'bodyRobocupFollow', 'timeout', 'bodyRobocupFollow'},
-
+  {'bodyRobocupFollow', 'ballclose', 'bodyRobocupApproach'},
   
+--  {'bodyRobocupApproach', 'done', 'bodyRobocupKick'},
+  {'bodyRobocupApproach', 'done', 'bodyStop'}, --we just stop in front of the ball to test code
 
---  {'bodyStepWaypoint',   'done', 'bodyRobocupIdle'},
---  {'bodyStepPlan2',   'done', 'bodyRobocupIdle'}
+
+  {'bodyRobocupKick', 'done', 'bodyRobocupIdle'},
 }
 
 assert(Config.dev.walk, 'Need a walk engine specification')
@@ -72,10 +74,11 @@ fsm.Motion = {
   {'motionStance', 'bias', 'motionBiasInit'},
   {'motionStance', 'preview', 'motionStepPreview'},
   {'motionStance', 'walk', Config.dev.walk},
+  {'motionStance', 'kick', 'motionKick'},
 
   {'motionStepPreview', 'done', 'motionStance'},
   {Config.dev.walk, 'done', 'motionStance'},
-
+  {'motionKick', 'done', 'motionStance'},
 
 --For new hybrid walk
   {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},

@@ -15,6 +15,9 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
+  if mcm.get_walk_ismoving()>0 then
+    mcm.set_walk_stoprequest(1) --stop if we're walking
+  end
 end
 
 function state.update()

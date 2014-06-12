@@ -20,7 +20,7 @@ p_ball = plot([0],[0], 'y*');
 set(p_ball,'Xdata', []);
 set(p_ball,'Ydata', []);
 r_ball = rectangle('Position', [0 0 1 1],... 
-  'Curvature',[1,1], 'EdgeColor', 'b');
+  'Curvature',[1,1], 'EdgeColor', 'b', 'LineWidth', 2);
 p_post = cell(2,1);
 for i=1,2
     p_post{i} = plot([0],[0], 'b-', 'LineWidth', 2);

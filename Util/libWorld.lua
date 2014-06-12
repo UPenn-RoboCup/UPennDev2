@@ -51,7 +51,7 @@ local goal_type_to_filter = {
 
 local function update_vision(detected)
   local t = unix.time()
-  if t - t_resample > RESAMPLE_PERIOD or count>RESAMPLE_COUNT then
+  if t - t_resample > RESAMPLE_PERIOD or count%RESAMPLE_COUNT==0 then
     poseFilter.resample()
     poseFilter.addNoise()
   end
@@ -63,12 +63,15 @@ local function update_vision(detected)
     ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
     -- print(string.format('ball AFTER filter: %.1f, %.1f\n',
       -- wcm.get_ball_x(), wcm.get_ball_y()))
-
   end
   -- If the goal is detected
-	local goal = detected.goal
+	local goal = detected.posts
   if goal then
-    goal_type_to_filter[goal.type](goal.v)
+    if goal[1].type == 3 then
+      goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
+    else
+      goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+    end
   end
 end
 
@@ -83,7 +86,7 @@ function libWorld.entry()
   count = 0
 end
 
-function libWorld.update()
+function libWorld.update(detection)
   local t = unix.time()
   -- Grab the pose before updating
   local pose0 = vector.pose{poseFilter.get_pose()}
@@ -91,14 +94,11 @@ function libWorld.update()
   if IS_WEBOTS then
     -- TODO: Add webots specific functions
     -- For SJ: This includes any GPS usage
-  else
-    update_vision()
-    update_odometry()
   end
-  -- Increment the process count
+  update_vision(detection)
+  update_odometry()
+    -- Increment the process count
   count = count + 1
-  -- Grab the pose after updating
-  local pose = vector.pose{poseFilter.get_pose()}
 end
 
 function libWorld.exit()

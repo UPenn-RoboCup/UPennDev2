@@ -8,9 +8,8 @@ world.ballDiameter = 0.22
 -- Goal post
 world.postDiameter = 0.1
 world.goalHeight = 1.8
--- Rules says 3, the one in 308 is 2.6
-world.goalWidth = 2.6
-world.goalWidth = 3
+world.goalWidth = 2.6  -- in m308
+world.goalWidth = 3  -- in webots, based on rules
 world.goalUpper = {} -- Goal in use
 world.goalUpper[1] = {4.5, 1.5}
 world.goalUpper[2] = {4.5, -1.5}

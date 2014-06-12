@@ -37,6 +37,8 @@ local function load_fsm ()
   end
 end
 
+local vector = require'vector'
+
 local uOdometry
 vision_ch.callback = function(skt)
   local detections = skt:recv_all()
@@ -46,13 +48,10 @@ vision_ch.callback = function(skt)
   local pose_odom = lW.get_pose()
   -- Only use the last vision detection
 	local detection = mp.unpack(detections[#detections])
-	--[[
-	if type(detection.ball)=='table' then
-		util.ptable(detection.ball)
-	end
-	--]]
 	lW.update_vision(detection)
+  print('pose BEFOER world:', vector.pose{wcm.get_robot_pose()})
 	local pose = lW.get_pose()
+  print('pose AFTER world:', pose)
   --TODO:no vision localization yet
   -- wcm.set_robot_pose(pose)
 end

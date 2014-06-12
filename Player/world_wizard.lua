@@ -29,17 +29,13 @@ util = require'util'
 local uOdometry
 vision_ch.callback = function(skt)
   local detections = skt:recv_all()
+  -- Only use the last vision detection
+	local detection = mp.unpack(detections[#detections])
+
   -- First, update the odometry
   uOdometry = mcm.get_status_odometry()
   lW.update_odometry(uOdometry)
-  local pose_odom = lW.get_pose()
-  -- Only use the last vision detection
-	local detection = mp.unpack(detections[#detections])
-	--[[
-	if type(detection.ball)=='table' then
-		util.ptable(detection.ball)
-	end
-	--]]
+
 	lW.update_vision(detection)
 	local pose = lW.get_pose()
   wcm.set_robot_pose(pose)

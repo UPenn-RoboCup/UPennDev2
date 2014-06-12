@@ -451,9 +451,8 @@ function libVision.update(img)
 	--TODO: posts debug msg is intense... or it's just Matlab sucks..
   -- TODO: ending debug while running webots is killing monitor
   -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
-  -- detected.debug = table.concat({'Ball',ball_fails},'\n')
-  detected.debug = table.concat({'Ball'},'\n')
 
+  -- if not ball then util.ptable({ball_fails}) end
   --if not posts then util.ptable({post_fails}) end
 
   -- Send the detected stuff over the channel every cycle

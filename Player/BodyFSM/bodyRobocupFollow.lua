@@ -113,7 +113,7 @@ function state.update()
 
 
  local ball_elapsed = t - wcm.get_ball_t()
- if ball_elapsed <0.5 and ballr < 1.0 then
+ if ball_elapsed <0.5 and ballr < 0.6 then
    return 'ballclose'
  end
 

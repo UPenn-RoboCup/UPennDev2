@@ -81,6 +81,9 @@ shared.walk.ismoving= vector.zeros(1)
 shared.walk.steprequest= vector.zeros(1)
 shared.walk.step_supportleg= vector.zeros(1)
 
+-- kick type
+shared.walk.kicktype = vector.zeros(1)
+shared.walk.kickfoot = vector.zeros(1)
 
 
 

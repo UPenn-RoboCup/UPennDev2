@@ -97,6 +97,17 @@ function process_keyinput()
       motion_ch:send'hybridwalk'
 
 
+
+    elseif byte==string.byte("5") then      
+      mcm.set_walk_kickfoot(0)
+      body_ch:send'kick'
+
+    elseif byte==string.byte("6") then      
+      mcm.set_walk_kickfoot(1)
+      body_ch:send'kick'
+
+
+
     elseif byte==string.byte("7") then      
       motion_ch:send'done'
     elseif byte==string.byte("8") then  

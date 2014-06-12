@@ -92,12 +92,18 @@ function state.update()
   local vStep,arrived = robocup_approach( pose, target_pose)
   mcm.set_walk_vel(vStep)
 
+  if ballr > 1.0 then return 'ballfar' end
 
  local ball_elapsed = t - wcm.get_ball_t()
  if ball_elapsed <0.5 and 
     ballx<0.10 and
     bally<0.02 and bally > -0.02 then
     print("Ball pos:",wcm.get_ball_x(),wcm.get_ball_y())
+    if ball_side==1 then
+      mcm.set_walk_kickfoot(0)--left foot kick
+    else
+      mcm.set_walk_kickfoot(1)--right foot kick
+    end
    return 'done'
  end
 

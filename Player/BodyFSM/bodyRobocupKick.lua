@@ -16,6 +16,82 @@ require'wcm'
 
 require'mcm'
 
+
+
+
+
+
+
+local function calculate_footsteps()
+  local step_queue
+
+  if mcm.get_walk_kickfoot()==0 then --left foot kick
+
+    if IS_WEBOTS then
+      step_queue={
+        {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
+        {{0.20,0,0},1,  0.25,   1, 0.25, {0,0.02,0},  {0,0.05,0.0}},    --RS
+        {{0,0,0,},  2,   0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
+      }
+    else  
+    step_queue={
+        {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
+        {{0.20,0,0},1,  0.5, 2.2,   1,   {0,0.01,0}, {0,0.10,0.0}},   --RS
+        {{0,0,0,},  2,   0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
+      }
+    end
+
+  else
+
+    if IS_WEBOTS then
+      step_queue={
+        {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
+        {{0.20,0,0},0,  0.25, 1,   0.5,   {0,-0.02,0}, {0,0.10,0.0}},   --LS
+  --      {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
+  --      {{0.27,0,0},1,  0.5,   1.1, 0.5,    {0,0.0,0},  {0,0.05,0.0}},    --RS
+        {{0,0,0,},  2,   0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
+      }
+    else  
+    step_queue={
+        {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
+        {{0.20,0,0},0,  0.5, 2.2,   1,   {0,-0.01,0}, {0,0.10,0.0}},   --LS
+  --      {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
+  --      {{0.22,0,0},1,  1,   2.2, 1,    {0.0,0.0,0},  {0,0.10,0.0}},    --RS
+        {{0,0,0,},  2,   0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
+      }
+    end
+
+  end  
+
+--Write to SHM
+  local maxSteps = 40
+  step_queue_vector = vector.zeros(12*maxSteps)
+  for i=1,#step_queue do    
+    local offset = (i-1)*13;
+    step_queue_vector[offset+1] = step_queue[i][1][1]
+    step_queue_vector[offset+2] = step_queue[i][1][2]
+    step_queue_vector[offset+3] = step_queue[i][1][3]
+
+    step_queue_vector[offset+4] = step_queue[i][2]
+
+    step_queue_vector[offset+5] = step_queue[i][3]
+    step_queue_vector[offset+6] = step_queue[i][4]    
+    step_queue_vector[offset+7] = step_queue[i][5]    
+
+    step_queue_vector[offset+8] = step_queue[i][6][1]
+    step_queue_vector[offset+9] = step_queue[i][6][2]
+    step_queue_vector[offset+10] = step_queue[i][6][3]
+
+    step_queue_vector[offset+11] = step_queue[i][7][1]
+    step_queue_vector[offset+12] = step_queue[i][7][2]
+    step_queue_vector[offset+13] = step_queue[i][7][3]
+  end
+  mcm.set_step_footholds(step_queue_vector)
+  mcm.set_step_nfootholds(#step_queue)
+end
+
+
+
 local kick_started
 
 function state.entry()
@@ -39,7 +115,11 @@ function state.update()
     if kick_started then 
       return 'done'
     else
-      motion_ch:send'kick'
+--      motion_ch:send'kick'
+
+      calculate_footsteps()
+      motion_ch:send'preview'
+      kick_started = true
     end
   end
 end

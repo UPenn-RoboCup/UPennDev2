@@ -93,16 +93,19 @@ function process_keyinput()
     elseif byte==string.byte("2") then      
       body_ch:send'stepinplace'
 
+    
+    
+
+
+
     elseif byte==string.byte("3") then      
-      motion_ch:send'hybridwalk'
-
-
-
-    elseif byte==string.byte("5") then      
+      mcm.set_walk_kicktype(1) --this means testing mode (don't run body fsm)      
       mcm.set_walk_kickfoot(0)
       body_ch:send'kick'
 
-    elseif byte==string.byte("6") then      
+    elseif byte==string.byte("4") then      
+    
+      mcm.set_walk_kicktype(1) --this means testing mode (don't run body fsm)
       mcm.set_walk_kickfoot(1)
       body_ch:send'kick'
 
@@ -112,13 +115,15 @@ function process_keyinput()
       motion_ch:send'done'
     elseif byte==string.byte("8") then  
       motion_ch:send'stand'
+      body_ch:send'stop'
 --      arm_ch:send'init'
       if mcm.get_walk_ismoving()>0 then 
         print("requesting stop")
         mcm.set_walk_stoprequest(1) 
       end
     elseif byte==string.byte("9") then  
-      motion_ch:send'walk'
+--      motion_ch:send'walk'      
+      motion_ch:send'hybridwalk'
     elseif byte==string.byte("g") then  
       body_ch:send'play'
     elseif byte==string.byte(" ") then  

@@ -53,17 +53,22 @@ fsm.Body = {
   
   {'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
   {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
+  {'bodyRobocupIdle','stop','bodyStop'},
 
   {'bodyRobocupFollow', 'done', 'bodyRobocupIdle'},
   {'bodyRobocupFollow', 'timeout', 'bodyRobocupFollow'},
   {'bodyRobocupFollow', 'ballclose', 'bodyRobocupApproach'},
+  {'bodyRobocupFollow','stop','bodyStop'},
   
   {'bodyRobocupApproach', 'done', 'bodyRobocupKick'},
   {'bodyRobocupApproach', 'ballfar', 'bodyRobocupFollow'},
+  {'bodyRobocupApproach','stop','bodyStop'},
 --  {'bodyRobocupApproach', 'done', 'bodyStop'}, --we just stop in front of the ball to test code
 
 
   {'bodyRobocupKick', 'done', 'bodyRobocupIdle'},
+  {'bodyRobocupKick', 'testdone', 'bodyStop'},
+
 }
 
 assert(Config.dev.walk, 'Need a walk engine specification')

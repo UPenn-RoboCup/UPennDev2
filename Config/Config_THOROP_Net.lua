@@ -7,8 +7,8 @@ local vector = require'vector'
 local net = {}
 -- Robot IP addresses
 net.robot = {
-['wired']    = '192.168.123.26',
-['wireless'] = '192.168.1.26',
+['wired']    = '192.168.123.24',
+['wireless'] = '192.168.1.24',
 }
 
 -- Remote Operator IP addresses
@@ -45,6 +45,7 @@ net.camera = {}
 net.camera.head     = 33333
 net.camera.forehead = 33335
 net.camera.forehead2 = 33337
+net.detect = 33331
 --
 net.reliable_camera = {}
 net.reliable_camera.head     = 33334

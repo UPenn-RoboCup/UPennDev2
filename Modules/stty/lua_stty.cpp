@@ -123,11 +123,10 @@ static int lua_stty_serial(lua_State *L) {
 
 static int lua_stty_speed(lua_State *L) {
 	int fd = lua_tofd(L, 1);
-	unsigned int speed = luaL_checkint(L,2);
+	speed_t speed = luaL_checkint(L, 2);
 
 #ifdef __APPLE__
-	speed_t sp = speed;
-	if (ioctl(fd, IOSSIOSPEED, &sp) == -1){
+	if (ioctl(fd, IOSSIOSPEED, &speed) == -1){
 		//fprintf( stdout, "Error %d calling ioctl. %d\n", errno, speed);
 		//fflush(stdout);
 		return luaL_error(L, "Could not set apple speed.");
@@ -139,31 +138,27 @@ static int lua_stty_speed(lua_State *L) {
 		return luaL_error(L, "Could not get termios");
 	}
 	if (cfsetspeed(&tio, speed) != 0) {
-		return luaL_error(L, "Could not set termios speed");
+		// Try a custom divisor
+		struct serial_struct serinfo;
+		if (ioctl(fd, TIOCGSERIAL, &serinfo) != 0){
+			return luaL_error(L, "Could not get serial info for custom divisor.");
+		}
+		serinfo.flags &= ~ASYNC_SPD_MASK;
+		serinfo.flags |= ASYNC_SPD_CUST;
+		serinfo.flags |= ASYNC_LOW_LATENCY; // ftdi latency
+
+		serinfo.custom_divisor = serinfo.baud_base/((float)speed);
+		fprintf(stdout,"CUST | BASE: %d, DIVISOR: %d\n", serinfo.baud_base, serinfo.custom_divisor);
+		if (ioctl(fd, TIOCSSERIAL, &serinfo) < 0){
+			fprintf(stdout,"BAD STTY: %d\n",errno);
+			return luaL_error(L, "Could not set termios speed");
+		}
+
 	}
 	if (tcsetattr(fd, TCSANOW, &tio) != 0) {
 		return luaL_error(L, "Could not set termios");
 	}
 
-/*
-	// custom divisor
-	struct serial_struct serinfo;
-	int ret = ioctl(fd, TIOCGSERIAL, &serinfo);
-	if (ret < 0){
-		return luaL_error(L, "Could not get serial info.");
-	}
-
-	if (ret == 0) {
-		serinfo.flags &= ~ASYNC_SPD_MASK;
-		serinfo.flags |= ASYNC_SPD_CUST;
-		serinfo.flags |= ASYNC_LOW_LATENCY; // ftdi latency
-		serinfo.custom_divisor = serinfo.baud_base/((float)speed);
-		if (ioctl(fd, TIOCSSERIAL, &serinfo) < 0){
-			//fprintf(stdout,"BAD STTY: %d\n",errno);
-			return luaL_error(L, "Could not set serial info.");
-		}
-	}
-*/
 	/*
 	// robotis code
 	// http://stackoverflow.com/questions/4968529/how-to-set-baud-rate-to-307200-on-linux

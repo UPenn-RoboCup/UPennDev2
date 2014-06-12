@@ -19,10 +19,9 @@ for _, sensor in ipairs(lD.registers_sensor) do
   shared_data.sensor[sensor] = vector.zeros(nJoint)
 end
 
--- Foot sensors (strain gauges; should be just 6, not quite 8...)
--- 8 is because 2 motors, with 4 ext data each
-shared_data.sensor.lfoot = vector.zeros(8)
-shared_data.sensor.rfoot = vector.zeros(8)
+-- Force Torque
+shared_data.sensor.lfoot = vector.zeros(6)
+shared_data.sensor.rfoot = vector.zeros(6)
 
 -- These should not be tied in with the motor readings,
 -- so they come after the read/tread setup

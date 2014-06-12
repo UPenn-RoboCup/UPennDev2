@@ -1,0 +1,21 @@
+#VRML V2.0 utf8
+
+PROTO atlas [
+  field SFVec3f    translation 0 1 0
+  field SFRotation rotation 0 1 0 0
+]
+ {
+  Robot  {
+    translation IS translation
+    rotation IS rotation
+    children [
+      pelvis  {
+        translation 0 0 0        
+        children [
+          DEF ltorso_pelvis Servo {
+          }
+        ]
+      }
+    ]
+  }
+}

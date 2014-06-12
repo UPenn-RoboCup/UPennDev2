@@ -6,7 +6,11 @@
 
 %{
 #include <webots/types.h>
+%}
+%include <webots/types.h>
 
+
+%{
 #include <webots/accelerometer.h>
 #include <webots/camera.h>
 #include <webots/compass.h>
@@ -19,8 +23,8 @@
 #include <webots/gyro.h>
 #include <webots/led.h>
 #include <webots/light_sensor.h>
-#include <webots/microphone.h>
 #include <webots/nodes.h>
+#include <webots/microphone.h>
 #include <webots/pen.h>
 #include <webots/radio.h>
 #include <webots/receiver.h>
@@ -31,7 +35,7 @@
 #include <webots/touch_sensor.h>
 %}
 
-%include <webots/types.h>
+
 
 %{
 #include <string.h>
@@ -145,11 +149,7 @@ unsigned char * to_rgb( int tag ) {
 %include <webots/pen.h>
 %include <webots/radio.h>
 
-/* This is Webots7 only!! */
-/*
-%include <webots/inertial_unit.h>
-%include <webots/motor.h>
-*/
+%include <webots/servo.h>
 
 # Receiver:
 %typemap(out) const void * {
@@ -160,7 +160,6 @@ unsigned char * to_rgb( int tag ) {
 %typemap(out) const void *;
 
 %include <webots/robot.h>
-%include <webots/servo.h>
 %include <webots/speaker.h>
 
 %{
@@ -186,3 +185,12 @@ unsigned char * to_rgb( int tag ) {
 %typemap(in) (const double values[4]);
 
 %include <webots/touch_sensor.h>
+
+
+/* This is Webots7 only!! */
+%{
+#include <webots/inertial_unit.h>
+#include <webots/motor.h>
+%}
+%include <webots/inertial_unit.h>
+%include <webots/motor.h>

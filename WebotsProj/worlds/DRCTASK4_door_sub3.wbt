@@ -1,0 +1,107 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Valve operating test for DRC"
+  ]
+  title "doortest"
+  basicTimeStep 40
+  FPS 15
+}
+Viewpoint {
+  orientation 0.0391553 0.997453 0.0596119 4.19266
+  position -6.74538 2.04378 -2.498
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR MetricFloor {
+  color 0.95 0.95 0.95
+}
+THOROP7_NoBoundaries_LongClaw2 {  
+  translation -0.55 1.15535 -0.09
+#  translation 1.25 1.15535 -0.09
+  rotation 0 1 0 1.57
+  controller "thorop"
+  controllerArgs "0 32"
+}
+
+SingleDoorCommonPush_37 {
+  translation -2 0 0.6
+  rotation 0 1 0 1.57
+}
+#SingleDoorEntreeHandleUp {
+SingleDoorEntreeHandleUpWeighted_37 {
+  translation 0.2 0 0.6
+  rotation 0 1 0 1.57
+}
+SingleDoorEntreeHandleUp_37 {
+#SingleDoorEntreeHandleUpWeighted {
+  translation 2 0 0.6
+  rotation 0 1 0 1.57
+}
+Solid {
+  translation 0 1 1.8
+  children [
+    Shape {
+      geometry Box {
+        size 6.3 2 0.1
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 6.3 2 0.1
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 3.2 1 0.6
+  children [
+    Shape {
+      geometry Box {
+        size 0.1 2 2.5
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.1 2 2.5
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation -3.2 1 0.6
+  children [
+    Shape {
+      geometry Box {
+        size 0.1 2 2.5
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.1 2 2.5
+      }
+    ]
+  }
+  locked TRUE
+}

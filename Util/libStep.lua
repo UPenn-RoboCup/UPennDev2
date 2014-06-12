@@ -25,13 +25,13 @@ local stanceLimitY2 = 2* Config.walk.footY-stanceLimitMarginY
 local footY    = Config.walk.footY
 local supportX = Config.walk.supportX
 local supportY = Config.walk.supportY
-local torsoX   = Config.walk.torsoX
+local torsoX    = Config.walk.torsoX
 
 ------------------------------------------------------------------------
 
 local velocityBias = vector.new(Config.walk.velocityBias or {0,0,0})
 
-local function update_velocity(self,vel)
+local function update_velocity(self,vel)  
   -- Grab from the shared memory the desired walking speed
   local vx,vy,va = unpack(vel)
 --  local vx,vy,va = unpack(hcm.get_motion_velocity())
@@ -57,24 +57,25 @@ local function update_velocity(self,vel)
   velDiff[3] = util.procFunc(velDiff[3],0,velDelta[3])
 
   -- Update the current velocity command
-  self.velCurrent = self.velCurrent+velDiff
+  self.velCurrent = self.velCurrent+velDiff    
   return self.velCurrent
 end
 
 local function init_stance(self)
-  local uTorso = mcm.get_status_uTorso()
+  local uTorso = mcm.get_status_uTorso()  
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
   return uLeft,uRight,uTorso,uLeft,uRight,uTorso
 end
 
 local function save_stance(self,uLeft,uRight,uTorso)
+  supportFoot = supportFoot or 0;
   mcm.set_status_uLeft(uLeft)
   mcm.set_status_uRight(uRight)
   mcm.set_status_uTorso(uTorso)
 end
 
-local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, supportLeg, initialStep,lastStep)
+local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, supportLeg, initialStep,lastStep)  
   local uLeft_next, uRight_next, uTorso_next = uLeft_now, uRight_now, uTorso_now
   local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
   local uSupport
@@ -89,25 +90,25 @@ velocityBias = vector.new({0,0,0})
 
 
   if initialStep then
-    if supportLeg == 0 then    -- Left support
-      uSupport = util.se2_interpolate(0.3,uLSupport,uTorso_next)
-    else    -- Right support
-      uSupport = util.se2_interpolate(0.3,uRSupport,uTorso_next)
-    end
+    if supportLeg == 0 then    -- Left support      
+      uSupport = util.se2_interpolate(0.3,uLSupport,uTorso_next)      
+    else    -- Right support      
+      uSupport = util.se2_interpolate(0.3,uRSupport,uTorso_next)      
+    end  
   else
     if supportLeg == 0 then    -- Left support
       uSupport = uLSupport
-      uRight_next = self.step_destination_right(velWalk, uLeft_now, uRight_now,lastStep)
+      uRight_next = self.step_destination_right(velWalk, uLeft_now, uRight_now,lastStep)    
       local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
       uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
     else    -- Right support
       uSupport = uRSupport
-      uLeft_next = self.step_destination_left(velWalk, uLeft_now, uRight_now,lastStep)
+      uLeft_next = self.step_destination_left(velWalk, uLeft_now, uRight_now,lastStep)    
       local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
       uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
-    end
+    end  
   end
-  return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport
+  return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport 
 end
 
 
@@ -128,7 +129,7 @@ local function get_next_step_increment(self,uLeft_now, uRight_now, uTorso_now, s
       local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
       uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
   end
-  return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport
+  return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport 
 end
 
 --------------------------------------------------------------
@@ -164,7 +165,7 @@ local function step_enque_trapezoid(self,uFoot,supportLeg, t0,t1,t2, zmpMod, ste
   step_ss.supportLeg = supportLeg
   step_ss.tStep = tStep
   step_ss.zmpMod = zmpMod or vector.new({0,0,0})
-  step_ss.stepParams = stepParams
+  step_ss.stepParams = stepParams  
   table.insert(self.stepqueue,step_ss)
 --]]
   local step={}
@@ -176,20 +177,20 @@ local function step_enque_trapezoid(self,uFoot,supportLeg, t0,t1,t2, zmpMod, ste
   step.t1 = t1
   step.t2 = t2
   step.zmpMod = zmpMod or vector.new({0,0,0})
-  step.stepParams = stepParams
+  step.stepParams = stepParams  
   step.is_last = is_last --transition signal
   table.insert(self.stepqueue,step)
 
 end
 
 
-local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initialStep, uSupport_now)
+local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initialStep, uSupport_now)  
   if #self.stepqueue==0 then return end
 
   local uLeft_next, uRight_next, uTorso_next = uLeft_now, uRight_now, uTorso_now
   local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
   local uSupport, uSupport_next
-  local current_step =table.remove(self.stepqueue,1)
+  local current_step =table.remove(self.stepqueue,1) 
   supportLeg = current_step.supportLeg
   --Foot position based step positions
   if supportLeg==0 then --Left support
@@ -197,12 +198,12 @@ local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initi
     uRight_next = util.pose_global(current_step.uFoot,uRight_now)
     local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
     uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
-  elseif supportLeg==1 then
+  elseif supportLeg==1 then    
     uSupport = util.pose_global(current_step.zmpMod,uRSupport)
     uLeft_next =  util.pose_global(current_step.uFoot,uLeft_now)
     local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
     uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
-  else --Double support
+  else --Double support    
     uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
   end
   local trapezoidparams={}
@@ -218,7 +219,7 @@ local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initi
 end
 
 
-local function get_supports(uLeft,uRight)
+local function get_supports(uLeft,uRight)    
   local uLSupport = util.pose_global({supportX, supportY, 0}, uLeft)
   local uRSupport = util.pose_global({supportX, -supportY, 0}, uRight)
   return uLSupport,uRSupport
@@ -297,7 +298,7 @@ libStep.new_planner = function (params)
   --member variables
   s.stepqueue = {}
   s.velCurrent = vector.new({0,0,0})
-
+  
   --Functions
   s.update_velocity = update_velocity
   s.get_next_step_velocity = get_next_step_velocity
@@ -315,7 +316,7 @@ libStep.new_planner = function (params)
   s.step_destination_right = step_destination_right
 
   s.init_stance = init_stance
-  s.save_stance = save_stance
+  s.save_stance = save_stance 
   return s
 end
 

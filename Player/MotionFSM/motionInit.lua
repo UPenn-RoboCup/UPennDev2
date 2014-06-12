@@ -21,24 +21,17 @@ local pRLeg_desired = vector.new{-Config.walk.supportX,  -Config.walk.footY, 0, 
 local pTorso_desired = vector.new{-Config.walk.torsoX, 0, Config.walk.bodyHeight, 0,Config.walk.bodyTilt,0}
 
 
-  -- Set the desired waist
+-- Set the desired waist
 local qWaist_desired = Config.stance.qWaist
 
-  -- Set movement speed limits
+-- Set movement speed limits
 local dpMaxDelta = Config.stance.dpLimitStance
-local dqWaistLimit   = Config.stance.dqWaistLimit
+local dqWaistLimit = Config.stance.dqWaistLimit
 local dqLegLimit = Config.stance.dqLegLimit
-
-
---local dqLegLimit = vector.new{10,10,10,10,10,10}*DEG_TO_RAD
-
-dpMaxDelta = vector.new{.04, .03, .03, .4, .1, .4}
-
-
 
 local pTorso, qLLeg, qRLeg
 
-stage = 1
+local stage = 1
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -48,16 +41,16 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   t_finish = t_entry
-  
+
   --SJ: Now we only use commanded positions
   --As the actual values are read at motionIdle state
-  qLLeg = Body.get_lleg_command_position()
-  qRLeg = Body.get_rleg_command_position()
+  qLLeg = Body.get_lleg_position()
+  qRLeg = Body.get_rleg_position()
 
   -- How far away from the torso are the legs currently?
   local dpLLeg = K.torso_lleg(qLLeg)
   local dpRLeg = K.torso_rleg(qRLeg)
-  
+
   local pTorsoL = pLLeg_desired + dpLLeg
   local pTorsoR = pRLeg_desired + dpRLeg
   pTorso = (pTorsoL+pTorsoR)/2
@@ -67,14 +60,14 @@ function state.entry()
 
   stage = 1
   if not IS_WEBOTS then
-print('INIT setting params')
+    print('INIT setting params')
     for i=1,10 do
       Body.set_waist_command_velocity({500,500})
       unix.usleep(1e6*0.01);
       Body.set_lleg_command_velocity({500,500,500,500,500,500})
       unix.usleep(1e6*0.01);
       Body.set_rleg_command_velocity({500,500,500,500,500,500})
-      unix.usleep(1e6*0.01);  
+      unix.usleep(1e6*0.01);
       Body.set_rleg_command_acceleration({50,50,50,50,50,50})
       unix.usleep(1e6*0.01);
       Body.set_lleg_command_acceleration({50,50,50,50,50,50})
@@ -88,40 +81,39 @@ end
 ---
 --Set actuator commands to resting position, as gotten from joint encoders.
 function state.update()
-  
+
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
-  
+
   if IS_WEBOTS then
     print('hi')
     return'done'
   end
-  
-  -- Zero the waist  
 
-  local qWaist = Body.get_waist_command_position()
-  local qWaist_approach, doneWaist = 
+  -- Zero the waist
+
+  local qWaist = Body.get_waist_position()
+  local qWaist_approach, doneWaist =
     util.approachTol( qWaist, qWaist_desired, dqWaistLimit, dt )
   Body.set_waist_command_position(qWaist_approach)
- 
 
   -- Ensure that we do not move motors too quickly
-  local pTorso_approach, doneTorso = 
+  local pTorso_approach, doneTorso =
     util.approachTol( pTorso, pTorso_desired, dpMaxDelta, dt )
   -- If not yet within tolerance, then update the last known finish time
 
   if not doneTorso or not doneWaist then t_finish = t end --do we need this?
-  
-  -- Command the body  
+
+  -- Command the body
   local qLegsTarget = Kinematics.inverse_legs( pLLeg_desired, pRLeg_desired, pTorso_approach, 0 )
 
- 
+
   local legBias = vector.new(mcm.get_leg_bias())
-  qLegsTarget = vector.new(qLegsTarget) + legBias  
+  qLegsTarget = vector.new(qLegsTarget) + legBias
 
   local qLLegTarget = vector.slice(qLegsTarget,1,6)
   local qRLegTarget = vector.slice(qLegsTarget,7,12)
@@ -152,8 +144,8 @@ function state.update()
   --print("err: ",err, doneL,doneR)
 
   local err_th = 1*DEG_TO_RAD
-  
-  if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end        
+
+  if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end
 end
 
 function state.exit()
@@ -174,20 +166,20 @@ function state.exit()
   --Generate current 2D pose for feet and torso
   local uTorso = vector.new({supportX, 0, 0})
   local uLeft  = util.pose_global(vector.new({-supportX, footY, 0}),uTorso)
-  local uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso)    
+  local uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso)
   mcm.set_status_uLeft(uLeft)
   mcm.set_status_uRight(uRight)
   mcm.set_status_uTorso(uTorso)
   mcm.set_status_uTorsoVel(vector.new{0,0,0})
 
   mcm.set_stance_bodyHeight(Config.walk.bodyHeight)
-  mcm.set_stance_bodyHeightTarget(Config.walk.bodyHeight)  
+  mcm.set_stance_bodyHeightTarget(Config.walk.bodyHeight)
 
-  
+
 
   mcm.set_stance_uTorsoComp({0,0})
   mcm.set_status_iskneeling(0)
-  
+
   local pg = Config.walk.leg_p_gain or 64
   local ag = Config.walk.ankle_p_gain or 64
 
@@ -199,7 +191,7 @@ function state.exit()
       unix.usleep(1e6*0.01);
 
       Body.set_rleg_command_velocity({17000,17000,17000,17000,17000,17000})
-      unix.usleep(1e6*0.01);  
+      unix.usleep(1e6*0.01);
 
       Body.set_rleg_command_acceleration({200,200,200,200,200,200})
       unix.usleep(1e6*0.01);
@@ -216,7 +208,7 @@ function state.exit()
       unix.usleep(1e6*0.01);
 
       Body.set_rleg_command_velocity({0,0,0,0,0,0})
-      unix.usleep(1e6*0.01);  
+      unix.usleep(1e6*0.01);
 
       Body.set_rleg_command_acceleration({0,0,0,0,0,0})
       unix.usleep(1e6*0.01);

@@ -19,6 +19,7 @@ else
 	local chain_id, chain = tonumber(arg[1])
 	if chain_id then
 		metadata = Config.chain[chain_id]
+		print(chain_id,metadata)
 		-- Make reverse subscriber for the chain
 		parent_ch = si.new_subscriber('dcm'..chain_id..'!')
 	else
@@ -35,6 +36,7 @@ print(debug_prefix, 'running')
 -- Modules
 require'dcm'
 local lD = require'libDynamixel'
+local registers_sensor = lD.registers_sensor
 local ptable = require'util'.ptable
 local vector = require'vector'
 local usleep, get_time, max = unix.usleep, unix.time, math.max
@@ -43,23 +45,17 @@ local running = true
 local bus = lD.new_bus(metadata.device)
 local m_ids = metadata.m_ids
 if not m_ids then
+	print(debug_prefix, 'Finding IDs...')
 	m_ids = bus:ping_probe()
 	print(debug_prefix, 'FOUND', unpack(m_ids))
 end
 local n_motors = #m_ids
+local t_sleep = 1 / (metadata.hz or 125)
 -- Verify that the m_ids are present
+print(debug_prefix, 'Checking IDs...')
 for _,m_id in pairs(m_ids) do
-	--print('PING', m_id)
 	local p = bus:ping(m_id)
 	assert(p[1], string.format('%s ID %d not present.', debug_prefix, m_id))
-	-- Check the status return level
-	local s = lD.get_nx_return_delay_time(m_id, bus)
-	local rdt = lD.byte_to_number[lD.nx_registers.return_delay_time[2]](unpack(s[1].parameter))
-	if rdt~=0 then
-		usleep(5e3)
-		lD.set_nx_return_delay_time(m_id, 0, bus)
-	end
-	print('Return delay', rdt, m_id)
 	usleep(5e3)
 end
 -- Cache some settings from the Config
@@ -136,7 +132,7 @@ end
 -- Define parent interaction. NOTE: Openly subscribing to ANYONE. fiddle even
 local parent_cb = {
 	exit = function()
-		running = false,
+		running = false
 	end,
   torque_enable = function()
     local valid_tries, j_id, status, val = 0
@@ -158,53 +154,101 @@ local parent_cb = {
 
 -- Check the F/T based on the name of the chain
 if metadata.name=='lleg' or metadata.name=='rleg' then
-	-- Declare the struct
-	ffi.cdef[[ typedef struct { int16_t a, b, c, d; } ft; ]]
-	local ft1_c, ft2_c ft_sz, ft_ptr = ffi.new'ft', ffi.new'ft', ffi.sizeof'ft'
+	local ft_raw_c, ft_ptr = ffi.new'int16_t[4]'
+	local ft_component_c = ffi.new'double[6]'
+	local ft_readings_c = ffi.new'double[6]'
+	local ft_sz = ffi.sizeof(ft_readings_c)
+	local calib_matrix_gain, unloaded_voltage_c, calib_matrix_c
+	local ft_ms, ft_ptr
 	if metadata.name=='lleg' then
 		ft_ptr = dcm.sensorPtr.lfoot
 		ft_ms = {24, 26}
+		unloaded_voltage_c = ffi.new('double[6]', Config.left_ft.unloaded)
+		calib_matrix_c = ffi.new('double[6][6]', Config.left_ft.matrix)
+		calib_matrix_gain = Config.left_ft.gain
 	else
 		ft_ptr = dcm.sensorPtr.rfoot
 		ft_ms = {23, 25}
+		unloaded_voltage_c = ffi.new('double[6]', Config.right_ft.unloaded)
+		calib_matrix_c = ffi.new('double[6][6]', Config.right_ft.matrix)
+		calib_matrix_gain = Config.right_ft.gain
 	end
 	function parent_cb.ft()
 		local status = lD.get_nx_data(ft_ms, bus)
-		--local l_ft = ffi.cast('ft*', ffi.new('int8_t[8]', status[1].parameter))
-		ffi.copy(ft1_c, status[1].raw_parameter, ft_sz)
-		ffi.copy(ft2_c, status[2].raw_parameter, ft_sz)
-		-- Just do a sync read here; can try reliable later, if desired...
-		ft_ptr[0] = 3.3 * ft1_c.a / 4096 - 1.65
-		ft_ptr[1] = 3.3 * ft1_c.b / 4096 - 1.65
-		ft_ptr[2] = 3.3 * ft1_c.c / 4096 - 1.65
-		ft_ptr[3] = 3.3 * ft1_c.d / 4096 - 1.65
-		--
-		ft_ptr[4] = 3.3 * ft2_c.a / 4096 - 1.65
-		ft_ptr[5] = 3.3 * ft2_c.b / 4096 - 1.65
-		ft_ptr[6] = 3.3 * ft2_c.c / 4096 - 1.65
-		ft_ptr[7] = 3.3 * ft2_c.d / 4096 - 1.65
-	end
+		-- Return if receive nothing
+		if not status then return end
+		local s1, s2 = status[1], status[2]
+		-- Need both readings for an actual FT reading
+		if not s1 or not s2 then return end
+		-- Lower ID has the 2 components
+		if s1.id==ft_ms[1] then
+			ffi.copy(ft_raw_c, s2.raw_parameter, 8)
+			ft_component_c[0] = 3.3 * ft_raw_c[0] / 4095
+			ft_component_c[1] = 3.3 * ft_raw_c[1] / 4095
+			ft_component_c[2] = 3.3 * ft_raw_c[2] / 4095
+			ft_component_c[3] = 3.3 * ft_raw_c[3] / 4095
+			ffi.copy(ft_raw_c, s1.raw_parameter, 8)
+			ft_component_c[4] = 3.3 * ft_raw_c[0] / 4095
+			ft_component_c[5] = 3.3 * ft_raw_c[1] / 4095
+		else
+			ffi.copy(ft_raw_c, s2.raw_parameter, 8)
+			ft_component_c[0] = 3.3 * ft_raw_c[0] / 4095
+			ft_component_c[1] = 3.3 * ft_raw_c[1] / 4095
+			ft_component_c[2] = 3.3 * ft_raw_c[2] / 4095
+			ft_component_c[3] = 3.3 * ft_raw_c[3] / 4095
+			ffi.copy(ft_raw_c, s1.raw_parameter, 8)
+			ft_component_c[4] = 3.3 * ft_raw_c[0] / 4095
+			ft_component_c[5] = 3.3 * ft_raw_c[1] / 4095
+		end
+		-- New is always zeroed
+		ffi.fill(ft_readings_c, ft_sz)
+		for i=0,6 do
+			for j=0,6 do
+				ft_readings_c[i] = ft_readings_c[i]
+					+ calib_matrix_c[i][j]
+					* (ft_component_c[j] - unloaded_voltage_c[j])
+					* calib_matrix_gain
+			end
+		end
+		-- Copy into SHM
+		ffi.copy(ft_ptr, ft_readings_c, ft_sz)
+	end -- function
 end
 
 local function do_parent (p_skt)
   local cmds = p_skt:recv_all()
 	if not cmds then return end
 	for i, cmd in ipairs(cmds) do
+		-- Sleep, since a write just performed
+		usleep(1e6 * t_sleep)
 		-- Check if there is something special
 		local f = parent_cb[cmd]
 		if f then return f() end
-		-- Else, access something from the motor
-		local ptr, set = dcm.actuatorPtr[cmd], lD['set_nx_'..cmd]
-		if not set then return end
-		-- TODO: Check if we need the motors torqued off for the command to work
-		-- Send individually to the motors, waiting for the status return
 		local j_id, status
-		for i, m_id in ipairs(m_ids) do
-			j_id = m_to_j[m_id] - 1
-			status = set(m_id, ptr[j_id], bus)
-			-- TODO: check the status, and repeat if necessary...
+		if registers_sensor[cmd] then
+			local ptr, get, parse = dcm.sensorPtr[cmd], lD['get_nx_'..cmd], lD.byte_to_number[lD.nx_registers[cmd][2]]
+			if not ptr then return end
+			for i, m_id in ipairs(m_ids) do
+				status = get(m_id, bus)
+				-- TODO: check the status, and repeat if necessary...
+				local s = status[1]
+				if s then
+					local val = parse(unpack(s.parameter))
+					j_id = m_to_j[s.id] - 1
+					ptr[j_id] = val
+				end
+			end
+		else
+			local ptr, set = dcm.actuatorPtr[cmd], lD['set_nx_'..cmd]
+			if not ptr then return end
+			-- TODO: Check if we need the motors torqued off for the command to work
+			-- Send individually to the motors, waiting for the status return
+			for i, m_id in ipairs(m_ids) do
+				j_id = m_to_j[m_id] - 1
+				status = set(m_id, ptr[j_id], bus)
+				-- TODO: check the status, and repeat if necessary...
+			end
 		end
-		usleep(1e3)
 	end
 end
 -- Initially, copy the command positions from the read positions
@@ -240,20 +284,18 @@ print(debug_prefix, 'Begin loop')
 local t0, t = get_time()
 local t_debug, t_last, t_diff = t0, t0
 local count, t_elapsed, t_d_elapsed, kb = 0
-local t_sleep = 1 / (metadata.hz or 125)
 -- Garbarge collect before beginning
 Config = nil
-metadata = nil
 collectgarbage()
 -- Begin
 while running do
 	count = count + 1
 	t_last = t
 	t = get_time()
-	-- If no parent commands, then perform a read/write cycle
+	-- Write Command positions
+	do_write()
+	-- If no parent commands, then perform a read
 	if poller:poll(0)==0 then
-		-- Write Positions
-		do_write()
 		if ENABLE_READ then
 			-- Sleep a bit
 			t_diff = get_time() - t
@@ -270,8 +312,22 @@ while running do
 	if t_d_elapsed > 1 then
 		t_elapsed = t - t0
 		kb = collectgarbage'count'
-		print(string.format('\n%s Uptime: %.2f sec, Mem: %d kB, %.1f Hz',
-			debug_prefix, t_elapsed, kb, count / t_d_elapsed)))
+		local debug_str = {
+			string.format('\n%s Uptime: %.2f sec, Mem: %d kB, %.1f Hz',
+				debug_prefix, t_elapsed, kb, count / t_d_elapsed),
+		}
+		if metadata.name=='lleg' then
+			local Fx, Fy, Fz, Tx, Ty, Tz = unpack(dcm.get_sensor_lfoot())
+			table.insert(debug_str,
+			string.format("FT: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f", Fx, Fy, Fz, Tx, Ty, Tz)
+			)
+		else
+			local Fx, Fy, Fz, Tx, Ty, Tz = unpack(dcm.get_sensor_rfoot())
+			table.insert(debug_str,
+			string.format("FT: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f", Fx, Fy, Fz, Tx, Ty, Tz)
+			)
+		end
+		print(table.concat(debug_str,'\n'))
 		t_debug = t
 		count = 0
 	end

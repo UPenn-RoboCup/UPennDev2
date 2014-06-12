@@ -96,14 +96,71 @@ const double comFootZ = -0.0429;
 
 
 
+//////////////////////////////////////////////////////////////////////////
+// New values for calculate the multi-body COM and ZMP of the robot
+// Based on latest robotis information for THOR-OP
 
 
+//Coordinate:   Y Z
 
+/*
+//robotis new masses
+const double Mass[22] = {
+	0.165, 1.122, 3.432, 2.464, 0.946, 1.133, // Mass of Each Right Leg Part
+	0.165, 1.122, 3.432, 2.464, 0.946, 1.133, // Mass of Each Left Leg Part
+	3.179, 0.13*1.1, 0.81*1.1, 1.067, // Mass of Each Right Arm Part
+	3.179, 0.13*1.1, 0.81*1.1, 1.067, // Mass of Each Left Arm Part
+	8.8, 10.131}; // Mass of Each Body Part
+*/
+
+const double Mass[22]={
+	mUpperLeg,mLowerLeg,mFoot,0,0,0,
+	mUpperLeg,mLowerLeg,mFoot,0,0,0,
+	mUpperArm,mElbow,mLowerArm,mWrist,
+	mUpperArm,mElbow,mLowerArm,mWrist,
+	mTorso,
+	mPelvis
+};
+
+
+const double comOffsetMm[22][3]={//in mm
+	//RLEG
+	{0,-18.8,47.8}, 
+	{0,21.6,0},
+	{-129.22547,-13.9106,-29.4},
+	{-119.0632,-19.3734,31.3},
+	{0,0,-11.2},
+	{-31.49254,0.-5.3},
+	//LLEG
+	{0,-18.8,47.8}, //in mm?
+	{0,-21.6,0},
+	{-129.22547,13.9106,-29.4},
+	{-119.0632,19.3734,31.3},
+	{0,0,-11.2},
+	{-31.49254,0.-5.3},
+	//RARM
+	{-22,143.3,0.0}, 
+	{0,0,35.1},
+	{0,46.4,0},
+	{3.9,146,0},
+	//LARM
+	{-22,-143.3,0.0}, 
+	{0,0,35.1},
+	{0,-46.4,0},
+	{3.9,146,0},
+	//Body upper
+	{-26.4,0,161.2},
+	//Body lower
+	{-20.8,0,155.7}
+};
 
 const double servoOffset[] = {
   0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
   0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 };
+
+//void printTransform(Transform tr);
+//void printVector(std::vector<double> v);
 
 Transform THOROP_kinematics_forward_head(const double *q);
 //Transform THOROP_kinematics_forward_l_arm(const double *q);
@@ -140,12 +197,26 @@ std::vector<double> THOROP_kinematics_inverse_l_leg(const Transform trLeg);
 std::vector<double> THOROP_kinematics_inverse_joints(const double *q);
 
 std::vector<double> THOROP_kinematics_com_upperbody(const double *qWaist,const double *qLArm,const double *qRArm, double bodyPitch, double mLHand, double mRHand); 
-std::vector<double> THOROP_kinematics_com_leg(const double *q, double bodyPitch, int is_left);  
-std::vector<double> THOROP_kinematics_calculate_support_torque(
-	const double *qWaist,  const double *qLArm,  const double *qRArm,
-  	const double *qLLeg,  const double *qRLeg,  
-  	double bodyPitch,   int supportLeg,
-  	const double *uTorsoAcc, double mLHand, double mRHand); 
+
+
+std::vector<double> THOROP_kinematics_calculate_com_positions(
+    const double *qWaist,  const double *qLArm,   const double *qRArm,
+    const double *qLLeg,   const double *qRLeg,   double bodyPitch);
+
+std::vector<double> THOROP_kinematics_calculate_com_positions_global(
+    const double *qWaist,  const double *qLArm,   const double *qRArm,
+    const double *qLLeg,   const double *qRLeg,   
+    const double *uSupport, int supportLeg);
+
+
+
+std::vector<double> THOROP_kinematics_com_upperbody_2(
+	const double *com_pos_current, double mLHand, double mRHand);
+
+std::vector<double> THOROP_kinematics_calculate_zmp(
+	const double *com0, const double *com1, const double *com2,
+	double dt0, double dt1
+	);
 
 
 double THOROP_kinematics_calculate_knee_height(const double *q); 

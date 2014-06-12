@@ -1,0 +1,113 @@
+#
+#  DARPA Trials Terrain: Chevron Hurdle
+#  heqin@seas.upenn.edu
+#
+
+
+PROTO Hurdle [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+]
+
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+		DEF block1 Transform{
+		  translation 1 0.0762 0
+		  rotation 0 1 0 -0.785
+		  children [		
+			  DEF cinderblock Shape {
+			     appearance Appearance {
+			       material Material {
+			         diffuseColor 0.5 0.5 0.5
+			       }
+			     }
+			     geometry Box { size 0.4064 0.1524 0.2032 }
+			  }
+				
+				Transform{
+				  translation -0.3074 0 0.1036
+				  rotation 0 1 0 1.57
+				  children [		
+						USE cinderblock   # Shape
+						Transform{
+						  translation -0.3074 0 -0.1036
+						  rotation 0 1 0 1.57
+						  children [		
+							  Shape {
+							     appearance Appearance {
+							       material Material {
+							         diffuseColor 0.5 0.5 0.5
+							       }
+							     }
+							     geometry Box { size 0.4064 0.1524 0.2032 }
+							  }
+								
+								Transform{
+								  translation 0.3074 0 -0.1036
+								  rotation 0 1 0 1.57
+								  children [		
+										USE cinderblock   # Shape
+										Transform{
+										  translation 0.3074 0 0.1036
+										  rotation 0 1 0 1.57
+										  children [		
+											  Shape {
+											     appearance Appearance {
+											       material Material {
+											         diffuseColor 0.5 0.5 0.5
+											       }
+											     }
+											     geometry Box { size 0.4064 0.1524 0.2032 }
+											  }
+												
+												Transform{
+												  translation -0.3074 0 0.1036
+												  rotation 0 1 0 1.57
+												  children [		
+														USE cinderblock   # Shape
+														Transform{
+														  translation -0.3074 0 -0.1036
+														  rotation 0 1 0 1.57
+														  children [		
+																USE cinderblock   # Shape
+																Transform{
+																  translation 0.3074 0 -0.1036
+																  rotation 0 1 0 1.57
+																  children [		
+																		USE cinderblock   # Shape
+																	]					
+																}
+																
+															]					
+														}
+														
+													]					
+												}
+												
+											]					
+										}
+										
+									]					
+								}
+								
+							]					
+						}
+						
+					]					
+				}
+			]					
+		}
+		
+	]
+	
+  boundingObject Group {
+		children[
+			USE block1
+		]
+  }  
+ locked TRUE
+}
+}

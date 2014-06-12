@@ -9,13 +9,20 @@ local simple_ipc = require'simple_ipc'
 local t_entry, t_update, t_exit
 
 -- Require all necessary fsm channels
-local arm_ch    = simple_ipc.new_publisher('ArmFSM',true)
-local head_ch   = simple_ipc.new_publisher('HeadFSM',true)
-local lidar_ch  = simple_ipc.new_publisher('LidarFSM',true)
-local motion_ch = simple_ipc.new_publisher('MotionFSM',true)
+local arm_ch    = simple_ipc.new_publisher('ArmFSM!')
+local head_ch   = simple_ipc.new_publisher('HeadFSM!')
+local lidar_ch  = simple_ipc.new_publisher('LidarFSM!')
+local motion_ch = simple_ipc.new_publisher('MotionFSM!')
 
 function state.entry()
   print(state._NAME..' Entry' )
+  --Reset pose
+  wcm.set_robot_odometry({0,0,0})
+  wcm.set_robot_pose({0,0,0})
+  --Reset ball pose
+  wcm.set_ball_x(0)
+  wcm.set_ball_y(0)
+  
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
@@ -26,13 +33,11 @@ function state.entry()
   Body.set_rarm_torque_enable(1)
 
   arm_ch:send'init'
-  lidar_ch:send'pan'
-  head_ch:send'teleop'
+  -- lidar_ch:send'pan'
+  --head_ch:send'teleop'
+  head_ch:send'scan'
   motion_ch:send'stand'
 
-  --Reset pose
-  wcm.set_robot_odometry({0,0,0})
-  wcm.set_robot_pose({0,0,0})
 end
 
 function state.update()

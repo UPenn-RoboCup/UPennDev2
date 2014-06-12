@@ -1,9 +1,9 @@
-/* 
+/*
  * MessagePack for Matlab
  *
  * Copyright [2013] [ Yida Zhang <yida@seas.upenn.edu> ]
  *              University of Pennsylvania
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -59,7 +59,7 @@ mxArrayRes * mxArrayRes_new(mxArrayRes * head, mxArray* res) {
 
 void mxArrayRes_free(mxArrayRes * head) {
   mxArrayRes * cur_ptr = head;
-  mxArrayRes * ptr = head; 
+  mxArrayRes * ptr = head;
   while (cur_ptr != NULL) {
     ptr = ptr->next;
     mxFree(cur_ptr);
@@ -104,7 +104,7 @@ mxArray* mex_unpack_double(msgpack_object obj) {
 mxArray* mex_unpack_raw(msgpack_object obj) {
 
   mxArray* ret = mxCreateNumericMatrix(1,obj.via.raw.size, mxUINT8_CLASS, mxREAL);
-  uint8_t *ptr = (uint8_t*)mxGetPr(ret); 
+  uint8_t *ptr = (uint8_t*)mxGetPr(ret);
   memcpy(ptr, obj.via.raw.ptr, obj.via.raw.size * sizeof(uint8_t));
 
 /*
@@ -147,20 +147,64 @@ mxArray* mex_unpack_map(msgpack_object obj) {
   }
   for (int i = 0; i < nfields; i++)
     mxFree((void *)field_name[i]);
-  mxFree(field_name); 
+  mxFree(field_name);
   return ret;
 }
 
 mxArray* mex_unpack_array(msgpack_object obj) {
+
+  bool is_numerical = true;
+  for (int i = 0; i < obj.via.array.size; i++) {
+    // See if a number
+    if ((obj.via.array.ptr[i].type < 0) || (obj.via.array.ptr[i].type > 5)) {
+      is_numerical = false;
+      break;
+    }
+  }
+  if(is_numerical){
+    // just make them all double
+    mxArray *ret = mxCreateNumericMatrix(1, obj.via.array.size, mxDOUBLE_CLASS, mxREAL);
+    double *ptrd = mxGetPr(ret);
+    double val;
+    for (int i = 0; i < obj.via.array.size; i++){
+      msgpack_object ob = obj.via.array.ptr[i];
+      switch (ob.type) {
+        case 2:
+        val = (double)obj.via.array.ptr[i].via.u64;
+        break;
+        case 3:
+        val = (double)obj.via.array.ptr[i].via.i64;
+        break;
+        case 4:
+        val = (double)obj.via.array.ptr[i].via.dec;
+        break;
+        default:
+        val = 13.37;
+        break;
+      }
+      ptrd[i] = val;
+    }
+    return ret;
+  } else {
+    mxArray *ret = mxCreateCellMatrix(1, obj.via.array.size);
+    for (int i = 0; i < obj.via.array.size; i++) {
+      msgpack_object ob = obj.via.array.ptr[i];
+      mxSetCell(ret, i, (*unPackMap[ob.type])(ob));
+    }
+    return ret;
+  }
+
   /* validate array element type */
+  /*
   int types = 0;
   int unique_type = -1;
-  for (int i = 0; i < obj.via.array.size; i++)
+  for (int i = 0; i < obj.via.array.size; i++){
     if ((obj.via.array.ptr[i].type > 0) && (obj.via.array.ptr[i].type < 5) &&
         (obj.via.array.ptr[i].type != unique_type)) {
       unique_type = obj.via.array.ptr[i].type;
       types ++;
     }
+  }
   if (types == 1) {
     mxArray *ret = NULL;
     bool * ptrb = NULL;
@@ -193,8 +237,7 @@ mxArray* mex_unpack_array(msgpack_object obj) {
         break;
     }
     return ret;
-  }
-  else {
+  } else {
     // just make them all double
     mxArray *ret = mxCreateNumericMatrix(1, obj.via.array.size, mxDOUBLE_CLASS, mxREAL);
     double *ptrd = mxGetPr(ret);
@@ -217,18 +260,20 @@ mxArray* mex_unpack_array(msgpack_object obj) {
       }
       ptrd[i] = val;
     }
+    */
     /*
     mxArray *ret = mxCreateCellMatrix(1, obj.via.array.size);
     for (int i = 0; i < obj.via.array.size; i++) {
       msgpack_object ob = obj.via.array.ptr[i];
       mxSetCell(ret, i, (*unPackMap[ob.type])(ob));
     }
-    */
+
     return ret;
   }
+  */
 }
 
-void mex_unpack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) 
+void mex_unpack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   const char *str = (const char*)mxGetPr(prhs[0]);
   int size = mxGetM(prhs[0]) * mxGetN(prhs[0]);
@@ -359,7 +404,7 @@ void mex_pack_logical(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
 
 void mex_pack_char(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
   mwSize str_len = mxGetNumberOfElements(prhs);
-  
+
   /* Add the NULL terminator for MATLAB */
   char *buf = (char *)mxCalloc(str_len+1, sizeof(char));
   if (mxGetString(prhs, buf, str_len+1) != 0)
@@ -373,7 +418,7 @@ void mex_pack_char(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
 
 /* uint8 input
   int nElements = mxGetNumberOfElements(prhs);
-  uint8_t *data = (uint8_t*)mxGetPr(prhs); 
+  uint8_t *data = (uint8_t*)mxGetPr(prhs);
 */
   /* matlab char type is actually uint16 -> 2 * uint8 */
 /* uint8 input
@@ -465,7 +510,7 @@ void mex_unpacker(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     msgpack_unpacker_reserve_buffer(&pac, size);
     memcpy(msgpack_unpacker_buffer(&pac), str, size);
     msgpack_unpacker_buffer_consumed(&pac, size);
-  
+
     /* start streaming deserialization */
     msgpack_unpacked msg;
     msgpack_unpacked_init(&msg);
@@ -494,7 +539,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     unPackMap[MSGPACK_OBJECT_DOUBLE] = mex_unpack_double;
     unPackMap[MSGPACK_OBJECT_RAW] = mex_unpack_raw;
     unPackMap[MSGPACK_OBJECT_ARRAY] = mex_unpack_array;
-    unPackMap[MSGPACK_OBJECT_MAP] = mex_unpack_map; 
+    unPackMap[MSGPACK_OBJECT_MAP] = mex_unpack_map;
 
     PackMap[mxUNKNOWN_CLASS] = mex_pack_unknown;
     PackMap[mxVOID_CLASS] = mex_pack_void;
@@ -536,4 +581,3 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   else
     mexErrMsgTxt("Unknown function argument");
 }
-

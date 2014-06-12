@@ -1,0 +1,115 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Default world for the THOR-OP"
+  ]
+  title "handletest"
+  basicTimeStep 40
+  FPS 10
+}
+Viewpoint {
+  orientation 0.00401439 -0.999928 0.01132 1.69476
+  position -3.55912 0.693492 -0.324645
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR MetricFloor {
+  color 0.95 0.95 0.95
+}
+#THOROP7_NoBoundaries_LongGripperOnly {
+THOROP7_NoBoundaries_LongClaw2 {
+  translation -0.000680663 1.14138 -0.515759
+  rotation 0.998942 0.00118706 -0.0459678 -0.0130681
+  controller "thorop"
+  controllerArgs "0 32"
+  cameraWindowPosition 0.76912 0.128205
+}
+PartialWalls {
+  translation 0.65 0 1.5
+  rotation 0 1 0 -1.5708
+}
+PartialWalls {
+  translation -0.65 0 1.5
+  rotation 0 1 0 -1.5708
+}
+DebrisTruss {
+  translation 0 0.15 1.5
+}
+DebrisBoard {
+  translation 0.142013 0.4 1.48
+  rotation 0 0 1 0.998
+}
+DebrisBoard {
+  translation -0.164072 0.372324 1.34323
+  rotation 0.000649465 0.00127696 -0.999999 0.894009
+}
+DebrisBoard {
+  translation -0.0175388 0.322203 0.802245
+  rotation 0.0243518 0.979403 0.20044 0.00495102
+}
+DebrisBoard {
+  translation -0.198807 0.304467 1.14191
+  rotation 0.00339971 0.00620153 -0.999975 -0.672457
+}
+DebrisBoard {
+  translation 0.188439 0.287419 1.01636
+  rotation -0.00316172 0.0126498 0.999915 -0.624483
+}
+DebrisPost {
+  translation -0.386549 0.29229 1.80479
+  rotation -2.81701e-06 9.68059e-07 1 -1.0841
+}
+DebrisPost {
+  translation -0.0229153 0.347886 1.62445
+  rotation -0.0492808 0.979752 0.194054 0.00856419
+}
+DebrisPost {
+  translation -0.264106 0.270422 2.00558
+  rotation 0.00513935 0.00287048 -0.999983 -0.904654
+}
+DebrisPost {
+  translation 0.298693 0.226887 1.89957
+  rotation -0.0142558 0.170971 0.985173 -0.667032
+}
+DebrisPost {
+  translation 0.348433 0.273148 1.75874
+  rotation -0.0174801 0.0670807 -0.997594 -0.924681
+}
+DEF WALL Solid {
+  translation 1 1 0.6
+  children [
+    Shape {
+      geometry Box {
+        size 0.1 2 5
+      }
+    }
+  ]
+}
+DEF STARTLINE Solid {
+  translation 0 -0.095 -0.3
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 1 0
+        }
+      }
+      geometry Box {
+        size 1 0.2 0.05
+      }
+    }
+  ]
+}

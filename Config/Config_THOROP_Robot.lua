@@ -11,6 +11,39 @@ Config.imu = {
 
 }
 
+Config.sensors = {
+  head_lidar = false,
+  chest_lidar = false,
+  fsr = false,
+  ft = false,
+}
+
+Config.left_ft = {
+  unloaded = {1.633886719,2.041552734,1.728955078,2.221618652,1.980322266,2.08425293},
+  matrix = {
+    {2.891145944, 1.952410267, 12.16354176, -353.8982028, -22.83263201, 332.4023596,},
+    {-27.24742752,418.1117317,19.27221547,-203.7230186,-4.191511111,-193.4096575,},
+    {555.0487287,33.30382696,565.428478,4.694309386,548.7347669,17.39183413,},
+    {-0.781385227,5.906159073,-11.36879277,-3.070569682,12.10082004,-2.335516893,},
+    {13.50667692,0.838353468,-7.268127443,4.929060231,-6.259577486,-4.959357264,},
+    {0.590124577,-6.524081745,-0.01473672,-6.256832088,0.469615745,-5.887507744,},
+    },
+  gain = 1.556943243,
+}
+
+Config.right_ft = {
+  unloaded = {1.653222656, 1.728149414, 1.762792969, 1.56862793, 1.647180176, 1.889685059},
+  matrix = {
+    {22.24512752, 3.52319111, 28.328385, -362.319417, -28.27411124, 363.7154308},
+    {8.361978169, 406.1224392, 20.42296338, -206.7187762, 30.68868534, -209.0100171, },
+    {562.2800788, 25.64039793, 558.264003, 44.90876394, 542.0300456, 28.76348109,},
+    {0.018317069, 5.80239175, -11.37752081, -3.975201314, 12.53141658, -2.259373509,},
+    {13.18015427, 0.655083305, -7.086161955, 4.577413702, -6.44142778, -5.53117315,},
+    {-0.57439984, -6.312910806, 1.385922678, -6.259500022, 0.100189535, -6.528184117,},
+  },
+  gain = 1.613322338,
+}
+
 ----------------
 -- DCM Chains --
 ----------------
@@ -21,7 +54,9 @@ Config.chain = {
 local right_arm = {
   name = 'rarm',
   device = '/dev/ttyUSB0',
-  m_ids = {1,3,5,7,9,11,13, --[[head]] 29,30},
+  --m_ids = {1,3,5,7,9,11,13, --[[head]] 29,30},
+  m_ids = {29,30},
+	enable_read = true, -- for the head...
   --mx_ids = { 70,65 },
 }
 local left_arm = {
@@ -35,12 +70,14 @@ local right_leg = {
   device = '/dev/ttyUSB2',
   m_ids = {15,17,19,21,23,25, --[[waist pitch]]28},
   enable_read = true,
+  hz = 250,
 }
 local left_leg = {
   name = 'lleg',
   device = '/dev/ttyUSB3',
-  m_ids = {16,18,20,22,24,26, --[[waist yaw]]27}
+  m_ids = {16,18,20,22,24,26, --[[waist yaw]]27},
   enable_read = true,
+  hz = 250,
 }
 -- Add the one chain support
 local one_chain = {
@@ -66,7 +103,7 @@ if ONE_CHAIN then
   right_leg = nil
   left_leg  = nil
 else
-  --table.insert(Config.chain, right_arm)
+  table.insert(Config.chain, right_arm)
   --table.insert(Config.chain, left_arm)
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)
@@ -197,5 +234,61 @@ servo.step_offset = vector.zeros(nJoint)
 for i, offset in ipairs(servo.rad_offset) do
   servo.step_offset[i] = offset * servo.to_steps[i]
 end
+
+if IS_WEBOTS then
+  -- Webots overrides tested in Webots 7.2.3, with ShortNewHand
+  servo.direction = vector.new({
+    -1,-1, -- Head
+    1,-1,-1,  1,  -1,-1,-1, --LArm
+    --[[Yaw/Roll:]] -1, -1, --[[3 Pitch:]] -1,-1,1, 1, --LLeg
+    --[[Yaw/Roll:]] -1, -1, --[[3 Pitch:]] 1,1,-1, 1, --RLeg
+    1,-1,-1,  -1,  -1,-1,-1, --RArm
+    -- TODO: Check the gripper
+    -1,1, -- Waist
+    1,-1, -- left gripper
+    -1,-1, -- right gripper
+
+    1, -- Lidar pan
+  })
+
+  servo.rad_offset = vector.new({
+    0,0, -- head
+    -90,0,0,  0,  0,0,0,
+    0,0,0,0,0,0,
+    0,0,0,0,0,0,
+    -180,0,0,  0,  0,0,0,
+    0,0,
+    0,0,
+    0,0,
+    60,
+  })*DEG_TO_RAD
+
+  servo.min_rad = vector.new({
+      -90,-80, -- Head
+      -90, 0, -90, -160,      -180,-87,-180, --LArm
+      -175,-175,-175,-175,-175,-175, --LLeg
+      -175,-175,-175,-175,-175,-175, --RLeg
+      -90,-180,-90,-160,       -180,-87,-180, --RArm
+      -90,-45, -- Waist
+      120,80, --lhand
+      120,60,--rhand
+
+      -60, -- Lidar pan
+    })*DEG_TO_RAD
+
+    servo.max_rad = vector.new({
+      90, 80, -- Head
+      160,180,90,0,     180,87,180, --LArm
+      175,175,175,175,175,175, --LLeg
+      175,175,175,175,175,175, --RLeg
+      160,-0,90,0,     180,87,180, --RArm
+      90,79, -- Waist
+      0,45,  --lhand
+      0,45,    --rhand
+      60, -- Lidar pan
+    })*DEG_TO_RAD
+
+end
+
 -- Export
 Config.servo = servo

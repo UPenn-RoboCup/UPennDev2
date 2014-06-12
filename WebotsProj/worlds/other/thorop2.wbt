@@ -1,0 +1,71 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Simulation of the Robocup Standard Platform League"
+    "Authors: Olivier Michel, Yvan Bourquin, Fabien Rohrer"
+    "Webpage: http://www.robotstadium.org"
+  ]
+  title "Robotstadium"
+  basicTimeStep 15
+  displayRefresh 3
+}
+Viewpoint {
+  orientation -0.570406 -0.772963 -0.277786 1.12441
+  position -1.85696 2.59764 1.28767
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+Background {
+  skyColor [
+    0.580392 0.705882 0.772549
+  ]
+}
+DirectionalLight {
+  ambientIntensity 4
+  direction -0.22 -1 0.56
+  intensity 1.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.65 -1 0.93
+  intensity 0.4
+}
+DEF GROUND Solid {
+  children [
+    DEF GROUND_SHAPE Shape {
+      appearance Appearance {
+        texture ImageTexture {
+          url [
+            "textures/parquetry.png"
+          ]
+        }
+        textureTransform TextureTransform {
+          scale 200 200
+        }
+      }
+      geometry Plane {
+        size 100 100
+      }
+    }
+  ]
+  boundingObject USE GROUND_SHAPE
+}
+WoodBox {
+  translation 0.605448 0.2 -0.00121984
+  boxSize 0.6 0.4 0.6
+}
+THOROP_Robotis {
+  translation 0 1.168 0
+  controller "thor"
+#  controller "void"
+  controllerArgs "0 98"
+}

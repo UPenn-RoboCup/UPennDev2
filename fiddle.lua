@@ -22,7 +22,7 @@ ok = nil
 local si = require'simple_ipc'
 
 -- FSM communicationg
-local fsm_chs = {}
+fsm_chs = {}
 --[[
 local listing = unix.readdir(HOME..'/Player')
 -- Add all FSM directories that are in Player
@@ -56,13 +56,13 @@ for _,mem in ipairs(listing) do
 end
 
 -- RPC engine
-rpc_ch = si.new_requester(Config.net.reliable_rpc)
+--rpc_ch = si.new_requester(Config.net.reliable_rpc)
 
 -- Body channel
 body_ch = si.new_publisher'body!'
 
-print( util.color('FSM Channel','yellow'), table.concat(fsm_chs,' ') )
-print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
+print(util.color('FSM Channel','yellow'), table.concat(fsm_chs,' '))
+print(util.color('SHM access','blue'), table.concat(shm_vars,' '))
 
 if arg and arg[-1]=='-i' and jit then
   -- Interactive LuaJIT

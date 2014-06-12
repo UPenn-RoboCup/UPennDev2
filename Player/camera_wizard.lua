@@ -22,7 +22,6 @@ else
 		assert(metadata, 'Bad camera name')
 	end
 end
-
 local ENABLE_NET = true
 local ENABLE_LOG, LOG_INTERVAL, t_log = false, 1 / 5, 0
 local FROM_LOG, LOG_DATE = false, '05.28.2014.16.18.44'
@@ -86,7 +85,6 @@ if FROM_LOG then
 	for i, m, yuyv_t in logged_data do
 		assert(m.w==w, 'Bad width')
 		assert(m.h==h, 'Bad height')
-		util.ptable(m)
 		local t = unix.time()
 		-- Check if we are sending to the operator
 		if ENABLE_NET then
@@ -107,7 +105,7 @@ if FROM_LOG then
 		-- Collect garbage every cycle
 		collectgarbage()
 		-- Sleep a little
-		unix.usleep(1e6/30)
+		--unix.usleep(1e6/30)
 	end
 	-- Finish
 	os.exit()

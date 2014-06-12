@@ -20,6 +20,7 @@ local NTH = 90 -- Number of angles (2 degree res)
 --local NTH = 180 -- (1 degree res)
 
 local i0, j0, r0, th0 = 0, 0, 0, 0
+local flip_center = false
 
 local count_d    = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local line_sum_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
@@ -69,10 +70,13 @@ for ith = 0, NTH-1 do
 end
 
 -- i, j get a center coordinate
-local function init(w, h)
+local function init(w, h, angle_prior)
   i0 = floor(w / 2)
   j0 = floor(h / 2)
   r0 = floor(math.sqrt(i0 ^ 2 + j0 ^ 2))
+
+  flip_center = angle_prior and angle_prior>45 and angle_prior<135
+
   -- Resize for the image
   NR = math.ceil(math.sqrt(w * w + h * h))
   -- Update the export
@@ -95,24 +99,29 @@ end
 
 local function addPixelToRay (i, j, ith)
   local s, c = sin_d[ith], cos_d[ith]
-  -- Counts
-  local ir = fabs(c * i + s * j)
+  -- Counts and Line statistics
+  local ir, iline = fabs(c * i + s * j), -s * i + c * j
   count_d[ith][ir] = count_d[ith][ir] + 1
-  -- Line statistics
-  local iline = -s * i + c * j
   line_sum_d[ith][ir] = line_sum_d[ith][ir] + iline
   if iline > line_max_d[ith][ir] then line_max_d[ith][ir] = iline end
   if iline < line_min_d[ith][ir] then line_min_d[ith][ir] = iline end
 end
 
+-- Check our centering...
 local function addPixelToRay2 (i, j, ith)
-  local s, c = sin_d[ith], cos_d[ith]
-  ith = ith + NTH / 2; if ith >= NTH then ith = ith - NTH end
+  local s, c, ir, iline
+  if flip_center then
+    ith = ith + NTH / 2
+    if ith > NTH then ith = ith - NTH end
+    c, s = sin_d[ith], cos_d[ith]
+  else
+    s, c = sin_d[ith], cos_d[ith]
+  end
+  ir = r0 + c * (i - i0) + s * (j - j0)
   -- Counts
-  local ir = c * (i - i0) + s * (j - j0) + r0
   count_d[ith][ir] = count_d[ith][ir] + 1
   -- Line statistics
-  local iline = -s * i + c * j
+  iline = -s * i + c * j
   line_sum_d[ith][ir] = line_sum_d[ith][ir] + iline
   if iline > line_max_d[ith][ir] then line_max_d[ith][ir] = iline end
   if iline < line_min_d[ith][ir] then line_min_d[ith][ir] = iline end
@@ -128,7 +137,7 @@ local function addVerticalPixel (i, j)
   for _, ith in ipairs(cos_index_thresh) do addPixelToRay2(i, j, ith) end
 end
 
-function RadonTransform.radon_lines (edge_t, use_horiz, use_vert, bbox)
+function RadonTransform.radon_lines (edge_t, use_horiz, use_vert, bbox, angle_prior)
   -- Use pixel directions
   local j, i, label_nw, label_ne, label_sw, label_se
   -- Take care of noise with a threshold, relating to the standard deviation
@@ -140,7 +149,7 @@ function RadonTransform.radon_lines (edge_t, use_horiz, use_vert, bbox)
   local e_ptr_l = edge_t:data()
   local e_ptr_r = e_ptr_l + x_sz
   -- Clear out any old transform
-  init(x_sz, y_sz)
+  init(x_sz, y_sz, angle_prior)
   for j=0, nj do
     for i=0, ni do
       label_nw = e_ptr_l[0]

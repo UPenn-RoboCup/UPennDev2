@@ -34,9 +34,11 @@ vision_ch.callback = function(skt)
 
   -- First, update the odometry
   uOdometry = mcm.get_status_odometry()
-  lW.update_odometry(uOdometry)
-
-	lW.update_vision(detection)
+  
+  lW.update(uOdometry, detection)
+  
+  --   lW.update_odometry(uOdometry)
+  -- lW.update_vision(detection)
 	local pose = lW.get_pose()
   wcm.set_robot_pose(pose)
 end

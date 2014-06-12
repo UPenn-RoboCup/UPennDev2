@@ -86,7 +86,7 @@ function libWorld.entry()
   count = 0
 end
 
-function libWorld.update(detection)
+function libWorld.update(uOdom, detection)
   local t = unix.time()
   -- Grab the pose before updating
   local pose0 = vector.pose{poseFilter.get_pose()}
@@ -95,9 +95,10 @@ function libWorld.update(detection)
     -- TODO: Add webots specific functions
     -- For SJ: This includes any GPS usage
   end
+  update_odometry(uOdom)
   update_vision(detection)
-  update_odometry()
-    -- Increment the process count
+
+  -- Increment the process count
   count = count + 1
 end
 

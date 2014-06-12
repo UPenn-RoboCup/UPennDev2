@@ -44,11 +44,13 @@ vision_ch.callback = function(skt)
   local detections = skt:recv_all()
   -- First, update the odometry
   uOdometry = mcm.get_status_odometry()
-  lW.update_odometry(uOdometry)
-  local pose_odom = lW.get_pose()
   -- Only use the last vision detection
 	local detection = mp.unpack(detections[#detections])
-	lW.update_vision(detection)
+
+  lW.update(uOdometry, detection)
+  --   lW.update_odometry(uOdometry)
+  -- lW.update_vision(detection)
+  
   print('pose BEFOER world:', vector.pose{wcm.get_robot_pose()})
 	local pose = lW.get_pose()
   print('pose AFTER world:', pose)

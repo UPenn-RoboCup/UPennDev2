@@ -8,6 +8,7 @@ local libStep = require'libStep'
 local simple_ipc = require'simple_ipc'
 local motion_ch = simple_ipc.new_publisher('MotionFSM!')
 
+local robocupplanner = require'robocupplanner'
 
 -- Get the human guided approach
 require'hcm'
@@ -17,7 +18,7 @@ require'wcm'
 require'mcm'
 
 
-local step_planner
+
 local t_entry, t_update, t_exit
 local nwaypoints, wp_id
 local waypoints = {}
@@ -25,6 +26,12 @@ local waypoints = {}
 local target_pose
 local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local supportLeg
+
+
+
+
+
+
 
 
 
@@ -96,20 +103,39 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+  local ballr
+  if IS_WEBOTS then
+    local pose = wcm.get_robot_pose_gps()
+--    print(pose[1],pose[2],pose[3]*180/math.pi)
+    local foot_xOffset = 0.15
+    local ballx = wcm.get_ball_x() - foot_xOffset
+    local bally = wcm.get_ball_y()
+    ballr = math.sqrt(ballx*ballx+bally*bally)
+    local balla = math.atan2(bally,ballx)
+    local walk_target_local = {ballx,bally,balla}
+    local ballGlobal = util.pose_global(walk_target_local, pose)
 
-  local pose = wcm.get_robot_pose()
+    local target_pose = robocupplanner.getTargetPose(pose,ballGlobal)
 
-  local foot_xOffset = 0.15
-  local ballx = wcm.get_ball_x() - foot_xOffset
-  local bally = wcm.get_ball_y()
-  local ballr = math.sqrt(ballx*ballx+bally*bally)
-  local balla = math.atan2(bally,ballx)
-  local walk_target_local = {ballx,bally,balla}
 
-  local target_pose = util.pose_global(walk_target_local, pose)
+    local vStep = robocup_follow( pose, target_pose)
+    mcm.set_walk_vel(vStep)
 
-  local vStep = robocup_follow( pose, target_pose)
-  mcm.set_walk_vel(vStep)
+  else
+    local pose = wcm.get_robot_pose()
+
+    local foot_xOffset = 0.15
+    local ballx = wcm.get_ball_x() - foot_xOffset
+    local bally = wcm.get_ball_y()
+    ballr = math.sqrt(ballx*ballx+bally*bally)
+    local balla = math.atan2(bally,ballx)
+    local walk_target_local = {ballx,bally,balla}
+
+    local target_pose = util.pose_global(walk_target_local, pose)
+
+    local vStep = robocup_follow( pose, target_pose)
+    mcm.set_walk_vel(vStep)
+  end
 
 
  local ball_elapsed = t - wcm.get_ball_t()

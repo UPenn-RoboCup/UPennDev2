@@ -79,12 +79,17 @@ if IS_WEBOTS then
   walk.velDelta  = {0.025,0.02,0.1}
 
 
-  walk.stepHeight = 0.02--shorter step height
-  walk.tZMP = 0.28
-
   --Webots-only params 
+
+  walk.stepHeight = 0.02--shorter step height
   walk.tZMP = 0.40 
   walk.footY = 0.09
+
+  walk.velLimitX = {-.10,.10}
+  walk.velLimitY = {-.04,.04}
+  walk.velLimitA = {-.2,.2}
+  walk.velDelta  = {0.025,0.02,0.1}
+
 
 else
 ------------------------------------

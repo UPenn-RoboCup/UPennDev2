@@ -75,7 +75,8 @@ local update_odometry = function(uTorso_in)
 end
 
 local function calculate_footsteps()
-  local nFootHolds = 2
+  local nFootHolds = 2 --double step stop
+  local nFootHolds = 1 --single step stop
 
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
   local supportLeg = 0
@@ -101,7 +102,9 @@ local function calculate_footsteps()
     supportLeg = 1-supportLeg
     step_queue_count = step_queue_count + 1
     initial_step = false
-    last_step = false
+    --last_step = false
+    last_step = true
+
 
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step,last_step)

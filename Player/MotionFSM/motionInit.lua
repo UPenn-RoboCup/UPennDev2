@@ -62,6 +62,11 @@ function state.entry()
   if not IS_WEBOTS then
     print('INIT setting params')
     for i=1,10 do
+
+      Body.set_head_command_velocity({500,500})
+      unix.usleep(1e6*0.01);
+
+
       Body.set_waist_command_velocity({500,500})
       unix.usleep(1e6*0.01);
       Body.set_lleg_command_velocity({500,500,500,500,500,500})
@@ -145,7 +150,8 @@ function state.update()
 
   local err_th = 1*DEG_TO_RAD
 
-  if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end
+--  if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end
+  if (err<err_th or IS_WEBOTS) then return'done' end
 end
 
 function state.exit()
@@ -202,7 +208,17 @@ function state.exit()
 
 
 --set to zero = max value
+
+
+
+
+
+      Body.set_head_command_velocity({1000,1000})
+      unix.usleep(1e6*0.01);
+
+
       Body.set_waist_command_velocity({0,0})
+      unix.usleep(1e6*0.01);
 
       Body.set_lleg_command_velocity({0,0,0,0,0,0})
       unix.usleep(1e6*0.01);
@@ -217,12 +233,14 @@ function state.exit()
       unix.usleep(1e6*0.01);
 
 
-
+--SJ: this somehow locks down head movement!!!!!!!!
+--[[
       Body.set_rleg_position_p({pg,pg,pg,pg,pg,ag})
       unix.usleep(1e6*0.01);
 
       Body.set_lleg_position_p({pg,pg,pg,pg,pg,ag})
       unix.usleep(1e6*0.01);
+--]]
     end
   end
   mcm.set_walk_ismoving(0) --We are stopped

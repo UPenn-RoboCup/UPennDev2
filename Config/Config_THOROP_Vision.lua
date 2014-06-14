@@ -4,8 +4,12 @@ local vector = require'vector'
 local head = {
   pitchMin = 0 * math.pi/180,
   pitchMax = 75 * math.pi/180,
-  yawMin = -135 * math.pi/180,
-  yawMax = 135 * math.pi/180,
+--  yawMin = -135 * math.pi/180,
+--  yawMax = 135 * math.pi/180,
+	
+	yawMin = -45 * math.pi/180,
+  yawMax = 45 * math.pi/180,
+
   cameraPos = {0.075, 0.0, 0.13}, --C920
   cameraAngle = {0, 0},
   --From CoM to neck joint

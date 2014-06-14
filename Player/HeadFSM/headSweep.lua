@@ -2,7 +2,7 @@ local state = {}
 state._NAME = ...
 
 local Body = require'Body'
-local HT = require'HeadTransform'
+local HT = require'libHeadTransform'
 local util = require'util'
 
 local t_entry, t_update

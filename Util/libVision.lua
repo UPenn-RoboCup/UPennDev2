@@ -393,8 +393,8 @@ function libVision.entry(cfg, body)
 
   wa, ha = w / scaleA, h / scaleA
   wb, hb = wa / scaleB, ha / scaleB
-  -- Information for the HeadTransform
-  x0A, y0A = 0.5 * (wa - 1), 0.5 * (ha - 1)
+  -- Center should be calibrated and saved in Config
+  x0A, y0A = 0.5*(wa-1)+cfg.cx_offset, 0.5*(ha-1)+cfg.cy_offset
   -- Delta transform from neck to camera
   dtrCamera = T.trans(unpack(cfg.head.cameraPos or {0,0,0}))
   * T.rotY(cfg.head.pitchCamera or 0)

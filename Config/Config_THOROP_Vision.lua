@@ -112,6 +112,8 @@ table.insert(Config.camera,
     format = 'yuyv',
     w = 640,
     h = 360, --480,
+    cx_offset = 5,
+    cy_offset = 0,
     fps = 30,
     udp_port = 33333,
     lA_port = 33335,
@@ -154,8 +156,8 @@ if IS_WEBOTS then
   Config.camera[1].h = 180
   Config.camera[1].lut = 'webots'
 
-  Config.camera[1].x_center = 160
-  Config.camera[1].y_center = 90
+  Config.camera[1].cx_offset = 0
+  Config.camera[1].cy_offset = 0
   Config.camera[1].focal_length = 554.256/2
   Config.camera[1].focal_base = 320
 	head.neckX= 0 --From CoM to neck joint

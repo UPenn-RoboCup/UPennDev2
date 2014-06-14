@@ -4,7 +4,7 @@ state._NAME = ...
 
 local Body = require'Body'
 local vector = require'vector'
-local HT = require'HeadTransform'
+local HT = require'libHeadTransform'
 local util = require'util'
 require'wcm'
 require'gcm'

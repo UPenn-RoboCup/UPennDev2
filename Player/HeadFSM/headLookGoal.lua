@@ -3,7 +3,7 @@ state._NAME = ...
 
 local Body = require'Body'
 local util = require'util'
-local HT = require'HeadTransform'
+local HT = require'libHeadTransform'
 require'hcm'
 require'vcm'
 require'wcm'

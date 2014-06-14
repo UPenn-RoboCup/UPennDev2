@@ -61,15 +61,6 @@ function process_keyinput()
   local byte=getch.block();
   if byte then
     -- Walk velocity setting
-
-
-
-
-
-
-
-
-
     if byte==string.byte("i") then      targetvel_new[1]=targetvel[1]+0.02;
     elseif byte==string.byte("j") then  targetvel_new[3]=targetvel[3]+0.1;
     elseif byte==string.byte("k") then  targetvel_new[1],targetvel_new[2],targetvel_new[3]=0,0,0;
@@ -93,23 +84,15 @@ function process_keyinput()
     elseif byte==string.byte("2") then      
       body_ch:send'stepinplace'
 
-    
-    
-
-
-
     elseif byte==string.byte("3") then      
       mcm.set_walk_kicktype(1) --this means testing mode (don't run body fsm)      
       mcm.set_walk_kickfoot(0)
       body_ch:send'kick'
 
     elseif byte==string.byte("4") then      
-    
       mcm.set_walk_kicktype(1) --this means testing mode (don't run body fsm)
       mcm.set_walk_kickfoot(1)
       body_ch:send'kick'
-
-
 
     elseif byte==string.byte("7") then      
       motion_ch:send'done'

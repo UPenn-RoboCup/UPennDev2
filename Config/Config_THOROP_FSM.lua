@@ -25,17 +25,23 @@ fsm.Arm = {
 
 fsm.Head = {
   {'headIdle', 'scan', 'headScan'},
+  {'headIdle', 'teleop', 'headTeleop'},
   --
   {'headScan', 'ballfound', 'headTrack'},
   {'headScan', 'timeout', 'headScan'},
+  {'headScan', 'teleop', 'headTeleop'},
   --
   {'headTrack', 'balllost', 'headScan'},
   {'headTrack', 'timeout', 'headLookGoal'},
   {'headTrack', 'sweep', 'headSweep'},
-
+  {'headTrack', 'teleop', 'headTeleop'},
+  --
   {'headLookGoal', 'timeout', 'headTrack'},
   --{'headLookGoal', 'lost', 'headSweep'},
+  --
   {'headSweep', 'done', 'headTrack'},
+  --
+  {'headTeleop', 'scan', 'headScan'},
 }
 
 fsm.Body = {

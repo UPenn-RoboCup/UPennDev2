@@ -3,11 +3,10 @@ local t_entry, t_update
 local state = {}
 state._NAME = ...
 require'hcm'
-
-local util = require('util')
+local util = require'util'
 
 -- Neck limits
-local dqNeckLimit = {45*Body.DEG_TO_RAD,45*Body.DEG_TO_RAD}
+local dqNeckLimit = {45*DEG_TO_RAD,45*DEG_TO_RAD}
 
 function state.entry()
   print(state._NAME..' Entry' ) 
@@ -17,7 +16,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   -- Reset the human position
-  hcm.set_motion_headangle(Body.get_head_command_position())
+  hcm.set_motion_headangle(Body.get_head_position())
 end
 
 function state.update()

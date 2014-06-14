@@ -58,11 +58,11 @@ local function update_vision(detected)
   -- If the ball is detected
 	local ball = detected.ball
   if ball then
-     print(string.format('ball BEFORE filter: %.1f, %.1f\n',
-       ball.v[1], ball.v[2]))
+     -- print(string.format('ball BEFORE filter: %.1f, %.1f\n',
+     --   ball.v[1], ball.v[2]))
     ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
-     print(string.format('ball AFTER filter: %.1f, %.1f\n',
-       wcm.get_ball_x(), wcm.get_ball_y()))
+     -- print(string.format('ball AFTER filter: %.1f, %.1f\n',
+     --   wcm.get_ball_x(), wcm.get_ball_y()))
   end
   -- If the goal is detected
 	local goal = detected.posts

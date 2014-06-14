@@ -48,13 +48,8 @@ vision_ch.callback = function(skt)
 	local detection = mp.unpack(detections[#detections])
 
   lW.update(uOdometry, detection)
-  --   lW.update_odometry(uOdometry)
-  -- lW.update_vision(detection)
   
-  -- print('pose BEFOER world:', vector.pose{wcm.get_robot_pose()})
 	local pose = lW.get_pose()
-  -- print('pose AFTER world:', pose)
-  --TODO:no vision localization yet
   wcm.set_robot_pose(pose)
 end
 

@@ -5,9 +5,9 @@ state._NAME = ...
 local Body = require'Body'
 local vector = require'vector'
 local T = require'libTransform'
+local util = require'util'
 require'wcm'
 require'gcm'
-local util = require('util')
 
 local ball_radius = Config.world.ballDiameter / 2
 local tLost = Config.fsm.headTrack.tLost
@@ -109,8 +109,6 @@ function state.update()
   yaw = math.min(math.max(yaw, yawMin), yawMax)
   pitch = math.min(math.max(pitch, pitchMin), pitchMax)
 
---  Body.set_head_command_position({yaw, pitch})
-
   -- Grab where we are
   local qNeck = Body.get_head_command_position()
   -- Go!
@@ -119,8 +117,6 @@ function state.update()
     
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
-
-
 
 end
 

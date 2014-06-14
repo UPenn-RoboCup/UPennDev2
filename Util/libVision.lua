@@ -364,6 +364,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
     for i=1,#goalStats do
       goalStats[i].v = vector.new(goalStats[i].v)
     end
+    wcm.set_goal_t(Body.get_time())
     
 	end
     

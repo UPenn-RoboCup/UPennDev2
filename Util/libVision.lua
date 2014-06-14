@@ -106,7 +106,9 @@ local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_t)
   -- Grab the statistics in labelA
   local stats, box_area = bboxStats(color, prop.boundingBox, labelA_t)
   --TODO: bbox area check seems redundant
-  if box_area < th_bbox_area then return 'Box Area' end
+  if box_area < th_bbox_area then 
+    return string.format('Box area: %d<%d\n',box_area,th_bbox_area)  
+  end
   local area = stats.area
   -- If no pixels then return
   if area < th_area then 
@@ -362,6 +364,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
     for i=1,#goalStats do
       goalStats[i].v = vector.new(goalStats[i].v)
     end
+    wcm.set_goal_t(Body.get_time())
     
 	end
     
@@ -452,10 +455,22 @@ function libVision.update(img)
   -- TODO: ending debug while running webots is killing monitor
   -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
   -- This is to avoid crash in monitor
-  detected.debug = table.concat({'Ball', '\n'})
+  if posts then
+    detected.debug = table.concat({'Post # ', tostring(#posts)})
+  else
+    detected.debug = table.concat({'Post # ', 0})
+  end
 
   -- if not ball then util.ptable({ball_fails}) end
-  --if not posts then util.ptable({post_fails}) end
+  --[[ Print out debug msg in console
+  if not posts then 
+    util.ptable({post_fails}) 
+  else
+    for i, item in ipairs(posts) do
+      print(i, posts[i].v[1], posts[i].v[2], posts[i].v[3])
+    end
+  end
+  --]]
 
   -- Send the detected stuff over the channel every cycle
   vision_ch:send(mp.pack(detected))

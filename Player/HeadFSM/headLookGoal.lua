@@ -2,8 +2,8 @@ local state = {}
 state._NAME = ...
 
 local Body = require'Body'
-local HT = require'HeadTransform'
 local util = require'util'
+local HT = require'HeadTransform'
 require'hcm'
 require'vcm'
 require'wcm'
@@ -16,8 +16,10 @@ local tScan = Config.fsm.headLookGoal.tScan;
 local minDist = Config.fsm.headLookGoal.minDist;
 -- local min_eta_look = Config.min_eta_look or 2.0;
 local yawMax = Config.head.yawMax or 90*Body.DEG_TO_RAD
-local fovMargin = 30*Body.DEG_TO_RAD
+local fovMargin = 30*DEG_TO_RAD
 
+--TODO: since several head FSMs use head transform, make it
+-- a single file may be better
 
 function state.entry()
   print(state._NAME.." entry");
@@ -61,15 +63,13 @@ end
 
 function state.update()
   local t = Body.get_time();
-  local tpassed=t-t0;
-  local ph= tpassed/tScan;
-  local yawbias = (ph-0.5)* yawSweep;
+  local tpassed=t-t0
+  local ph = tpassed/tScan
+  ph = ph - math.floor(ph)
+  local yawbias = (ph-0.5) * yawSweep
 
-  local height = vcm.get_head_camera_height()
-
-  local yaw1 = math.min(math.max(yaw0+yawbias, -yawMax), yawMax);
-  local yaw, pitch = HT.ikineCam(
-  	dist*math.cos(yaw1),dist*math.sin(yaw1), height);
+  local yaw1 = math.min(math.max(yaw0+yawbias, -yawMax), yawMax)
+  local yaw, pitch = HT.ikineCam(dist*math.cos(yaw1),dist*math.sin(yaw1))
 
   -- Grab where we are
   local qNeck = Body.get_head_command_position()
@@ -77,7 +77,6 @@ function state.update()
     util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, tpassed )
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
-
 
   if (t - t0 > tScan) then
     local tGoal = wcm.get_goal_t();

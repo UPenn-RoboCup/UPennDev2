@@ -9,6 +9,12 @@ local vector = require'vector'
 local shared = {}
 local shsize = {}
 
+
+--Now we use shm variable here to toggle dcm leg reading (which is needed only for init)
+shared.servo={}
+shared.servo.read=vector.zeros(1)
+
+
 --Leg bias info
 shared.leg={}
 shared.leg.bias=vector.zeros(12)

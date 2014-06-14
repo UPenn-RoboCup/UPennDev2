@@ -2,6 +2,7 @@
 local CTX, metadata = ...
 -- Still need our library paths set
 dofile'include.lua'
+require'mcm'
 assert(ffi, 'DCM | Please use LuaJIT :). Lua support in the near future')
 -- Going to be threading this
 local si = require'simple_ipc'
@@ -296,7 +297,11 @@ while running do
 	do_write()
 	-- If no parent commands, then perform a read
 	if poller:poll(0)==0 then
-		if ENABLE_READ then
+    local read_enable = true
+		if (metadata.name=='lleg' or metadata.name=='rleg') and mcm.get_servo_read()==0 then read_enable = false end
+
+--		if ENABLE_READ then
+		if read_enable then
 			-- Sleep a bit
 			t_diff = get_time() - t
 			usleep(1e6 * max(t_sleep - t_diff, 0))

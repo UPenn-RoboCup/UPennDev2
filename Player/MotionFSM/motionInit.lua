@@ -213,7 +213,7 @@ function state.exit()
 
 
 
-      Body.set_head_command_velocity({1000,1000})
+      Body.set_head_command_velocity({2000,2000})
       unix.usleep(1e6*0.01);
 
 
@@ -234,16 +234,19 @@ function state.exit()
 
 
 --SJ: this somehow locks down head movement!!!!!!!!
---[[
+      Body.set_head_position_p({pg,pg})
+      unix.usleep(1e6*0.01);
+
       Body.set_rleg_position_p({pg,pg,pg,pg,pg,ag})
       unix.usleep(1e6*0.01);
 
       Body.set_lleg_position_p({pg,pg,pg,pg,pg,ag})
       unix.usleep(1e6*0.01);
---]]
     end
   end
   mcm.set_walk_ismoving(0) --We are stopped
+  mcm.set_servo_read(0) --now disable leg joint reading
+
 end
 
 return state

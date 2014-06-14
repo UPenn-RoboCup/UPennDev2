@@ -1,6 +1,6 @@
 local state = {}
 state._NAME = ...
-
+require'mcm'
 -- IDLE IS A RELAX STATE
 -- NOTHING SHOULD BE TORQUED ON HERE!
 
@@ -13,6 +13,8 @@ local qLLeg, qRLeg, qWaist
 
 function state.entry()
   print(state._NAME..' Entry' ) 
+  mcm.set_servo_read(1) --enable leg joint reading
+ 
 
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called

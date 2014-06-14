@@ -40,7 +40,7 @@ function state.update()
     if gcm.get_game_role() == 0 then -- Goalie
       -- return 'sweep'
     else
-      return 'timeout'
+      --return 'timeout'
     end
   end
 

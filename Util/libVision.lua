@@ -365,7 +365,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
       goalStats[i].v = vector.new(goalStats[i].v)
     end
     wcm.set_goal_t(Body.get_time())
-    
+
 	end
     
 	if post_detected then

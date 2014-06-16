@@ -6,12 +6,28 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
 % Level 4: show position, vision info and particles
 % Level 5: wireless (level 2 + robot name)
 
-persistent hr hb hrb;
+  % cla(h_field);
+  % plot_field(h_field,2);
+  
+  persistent hr hb hrb hg1 hrg1 hg2 hrg2;
 
   x0 = robot_struct.pose(1);
   y0 = robot_struct.pose(2);
   ca = cos(robot_struct.pose(3));
   sa = sin(robot_struct.pose(3));
+  
+  % % Robot
+  % hr = fill([0 0 0], [0 0 0], 'b');
+  % % Ball
+  % hb = plot([0], [0], 'ro');
+  % hrb = plot([0 0],[0 0],'r');  
+  % % Goal
+  % marker = 'm';
+  % marker2 = strcat(marker,'--');
+  % hg1 = plot([0],[0],marker,'MarkerSize',12/scale);
+  % hrg1 = plot([0 0],[0 0], marker2);
+  % hg2 = hg1;
+  % hrg2 = hrg1;
       
   hold on;
 
@@ -26,9 +42,10 @@ persistent hr hb hrb;
   else
     if drawlevel==1 
       %simple position and pose
-      plot_robot(robot_struct,scale);
+      plot_robot(robot_struct, scale);
       % plot_info(robot_struct,scale,1);
-      plot_ball(robot_struct,scale);
+      plot_ball(robot_struct, scale);
+      plot_goal(robot_struct, scale);
       % plot_sound(robot_struct,scale);
       % plot_obstacle(robot_struct,scale);
       %plot_gps_robot(robot_struct,scale);
@@ -39,7 +56,7 @@ persistent hr hb hrb;
       plot_robot(robot_struct,scale);
       plot_info(robot_struct,scale,1);
       plot_ball(robot_struct,scale);
-      plot_goal_team(robot_struct,scale);
+      plot_goal(robot_struct,scale);
       plot_landmark_team(robot_struct,scale);
       plot_corner_team(robot_struct,scale);
       plot_gps_robot(robot_struct,scale);
@@ -50,7 +67,7 @@ persistent hr hb hrb;
       plot_robot(robot_struct,scale);
       plot_info(robot_struct,scale,2,name);
       plot_ball(robot_struct,scale);
-      plot_goal_team(robot_struct,scale);
+      plot_goal(robot_struct,scale);
       plot_landmark_team(robot_struct,scale);
       plot_corner_team(robot_struct,scale);
       plot_gps_robot(robot_struct,scale);
@@ -146,9 +163,6 @@ persistent hr hb hrb;
 
 
   function plot_robot(robot,scale,name)
-    % if exist hr delete(hr); end
-    delete(hr);
-      
 %    xRobot = [0 -.25 -.25]*2/scale;
 %    yRobot = [0 -.10 +.10]*2/scale;
     xRobot = [.125 -.125 -.125]*2/scale;
@@ -166,7 +180,10 @@ persistent hr hb hrb;
 
     % teamColors = ['b', 'r'];
     % hr = fill(xr, yr, teamColors(max(1,robot.teamColor+1)));
+
+    delete(hr);
     hr = fill(xr, yr, 'b');
+    % set(hr, 'XData', xr, 'YData', yr);
 
     if robot.role>1 
       h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role+1});
@@ -190,65 +207,51 @@ persistent hr hb hrb;
   end
 
   function plot_ball(robot,scale)
-    % if exist hb delete(hb); end
-    delete([hb hrb]);
     if (~isempty(robot.ball))
       ball = [robot.ball.x robot.ball.y robot.time-robot.ball.t];
       ballt=ball(3);
       xb = x0 + ball(1)*ca - ball(2)*sa;   
       yb = y0 + ball(1)*sa + ball(2)*ca;
-      %hb = plot(xb, yb, [idColors(robot_struct.id) 'o']);
+
+      delete([hb hrb])
       hb = plot(xb, yb, 'ro');
       hrb = plot([x0 xb],[y0 yb],'r');
-      
-%       if ballt<0.5 
-%         % if exist hrb delete(hrb); end
-%         hrb = plot([x0 xb],[y0 yb],'r');
-%         set(hb, 'MarkerSize', 8/scale);
-% %{
-%         ball_vel=[robot.ball.vx robot.ball.vy];
-%         xbv =  ball_vel(1)*ca - ball_vel(2)*sa;   
-%         ybv =  ball_vel(1)*sa + ball_vel(2)*ca;
-%         qvscale = 2;
-%         quiver(xb, yb, qvscale*xbv/scale, qvscale*ybv/scale,...
-%      0,'r','LineWidth',2/scale );
-% %}
-%       else
-%         %TODO: add last seen time info
-%       end
+      % set(hb, 'XData', xb, 'YData', yb);
+      % set(hrb, 'XData', [x0 xb], 'YData', [y0 yb]);
     end
   end
 
 
-  function plot_goal_team(robot,scale)
-    goal=robot.goal;
-    if( goal>0) 
-      marker='m';
+  function plot_goal(robot, scale)
+    if isfield(robot, 'goal')
+      delete([hg1 hrg1])
+      goal = robot.goal;
+      marker = 'm';
       marker2 = strcat(marker,'--');
 
-%      if(goal.color==2) marker = 'm';% yellow
-%      else marker = 'b';end
-%      marker2 = strcat(marker,'--');
-      if goal ==1 
+      if goal.type == 0
         marker1 = strcat(marker,'+');%Unknown post
-      elseif goal==3
+      elseif goal.type == 2
           marker1 = strcat(marker,'>');%Right post
       else
           marker1 = strcat(marker,'<');%Left or two post
       end
-      x1 = robot.goalv1(1)*ca - robot.goalv1(2)*sa + robot_struct.pose.x;
-      y1 = robot.goalv1(1)*sa + robot.goalv1(2)*ca + robot_struct.pose.y;
-      plot(x1,y1,marker1,'MarkerSize',12/scale);
-      plot([x0 x1],[y0 y1],marker2);
+      x1 = goal.v1(1)*ca - goal.v1(2)*sa + robot_struct.pose(1);
+      y1 = goal.v1(1)*sa + goal.v1(2)*ca + robot_struct.pose(2);
 
-      if goal==4 
+      hg1 = plot(x1, y1, marker1,'MarkerSize',12/scale);
+      hrg1 = plot([x0 x1],[y0 y1], marker2);
+      
+      if goal.type == 3
+        delete([hg2 hrg2])
         marker1 = strcat(marker,'>');%Left post
-        x2 = robot.goalv2(1)*ca - robot.goalv2(2)*sa + robot_struct.pose.x;
-        y2 = robot.goalv2(1)*sa + robot.goalv2(2)*ca + robot_struct.pose.y;
-        plot(x2,y2,marker1,'MarkerSize',12/scale);
-        plot([x0 x2],[y0 y2],marker2);
+        x2 = goal.v2(1)*ca - goal.v2(2)*sa + robot_struct.pose(1);
+        y2 = goal.v2(1)*sa + goal.v2(2)*ca + robot_struct.pose(2);
+        hg2 = plot(x2, y2, marker1,'MarkerSize',12/scale);
+        hrg2 = plot([x0 x2],[y0 y2], marker2);
       end
     end
+    
   end
 
   function plot_landmark_team(robot,scale)
@@ -301,7 +304,8 @@ persistent hr hb hrb;
     plot([x0 x2],[y0 y2], 'k--');
   end
   
-  function plot_goal(goal,scale)
+  % Duplicated...?
+  function plot_goal_dup(goal,scale)
     if( goal.detect==1 )
       if(goal.color==2) marker = 'm';% yellow
       else marker = 'b';end

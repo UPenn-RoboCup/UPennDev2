@@ -100,9 +100,6 @@ function libWorld.update(uOdom, detection)
   update_odometry(uOdom)
   update_vision(detection)
   
-  -- Send world info to monitor
-  
-
   -- Increment the process count
   count = count + 1
 end

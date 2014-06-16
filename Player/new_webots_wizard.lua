@@ -46,6 +46,8 @@ end
 local vector = require'vector'
 
 local uOdometry
+local metadata = {}
+local SEND_WORLD = false
 vision_ch.callback = function(skt)
   local detections = skt:recv_all()
   -- First, update the odometry
@@ -54,9 +56,24 @@ vision_ch.callback = function(skt)
 	local detection = mp.unpack(detections[#detections])
 
   lW.update(uOdometry, detection)
-  
-	local pose = lW.get_pose()
+ 	local pose = lW.get_pose()
   wcm.set_robot_pose(pose)
+  
+  -- Send localization info to monitor
+  metadata.id = 'world'
+  metadata.world = lW.send()
+  if detection.posts then
+    local goal = {}
+    goal.type = detection.posts[1].type
+    goal.v1 = detection.posts[1].v
+    if goal.type==3 then
+      goal.v2 = detection.posts[2].v
+    end
+    metadata.world.goal = goal
+  end
+
+  SEND_WORLD = true
+  
 end
 
 
@@ -96,11 +113,11 @@ while running do
     wcm.set_robot_pose(lW.get_pose())
   end
   
-  -- Send localization info to monitor
-  local metadata = {}
-  metadata.id = 'world'
-  metadata.world = lW.send()
-  udp_ch:send(mp.pack(metadata))
+  --TODO: tried send in callback, yet there was some clogging
+  if SEND_WORLD then 
+    udp_ch:send(mp.pack(metadata)) 
+    SEND_WORLD = false
+  end
   
   t = get_time()
   -- Update the state machines

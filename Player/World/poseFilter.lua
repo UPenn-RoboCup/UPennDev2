@@ -45,7 +45,7 @@ local wp = vector.zeros(N) -- weight
 --@param dp scales how wide the distrubution is
 function poseFilter.initialize(p0, dp)
   p0 = p0 or {0, 0, 0}
-  dp = dp or {.5*xMax, .5*yMax, 2*math.pi}
+  dp = dp or {.1*xMax, .1*yMax, math.pi/9}
 
   -- TODO: why -0.5 upon a standard normal distribution?
   -- xp = p0[1]*vector.ones(N) + dp[1]*(vector.new(util.randn(N))-0.5*vector.ones(N))

@@ -1,20 +1,21 @@
-function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
+function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlevel,name)
 % This function shows the robot over the field map
 % Level 1: show position only
 % Level 2: show position and vision info
 % Level 3: show position, vision info and fov info
 % Level 4: show position, vision info and particles
-
 % Level 5: wireless (level 2 + robot name)
 
-  x0 = robot_struct.pose.x;
-  y0 = robot_struct.pose.y;
-  ca = cos(robot_struct.pose.a);
-  sa = sin(robot_struct.pose.a);
+persistent hr hb hrb;
+
+  x0 = robot_struct.pose(1);
+  y0 = robot_struct.pose(2);
+  ca = cos(robot_struct.pose(3));
+  sa = sin(robot_struct.pose(3));
       
   hold on;
 
-  if robot_struct.fall
+  if isfield(robot_struct, 'fall') && robot_struct.fall
     ca=1;sa=0;
     plot_fallen_robot(robot_struct,scale)
     if drawlevel==5
@@ -26,10 +27,10 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
     if drawlevel==1 
       %simple position and pose
       plot_robot(robot_struct,scale);
-      plot_info(robot_struct,scale,1);
+      % plot_info(robot_struct,scale,1);
       plot_ball(robot_struct,scale);
-      plot_sound(robot_struct,scale);
-      plot_obstacle(robot_struct,scale);
+      % plot_sound(robot_struct,scale);
+      % plot_obstacle(robot_struct,scale);
       %plot_gps_robot(robot_struct,scale);
 
     elseif drawlevel==2 
@@ -145,6 +146,9 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
 
 
   function plot_robot(robot,scale,name)
+    % if exist hr delete(hr); end
+    delete(hr);
+      
 %    xRobot = [0 -.25 -.25]*2/scale;
 %    yRobot = [0 -.10 +.10]*2/scale;
     xRobot = [.125 -.125 -.125]*2/scale;
@@ -160,21 +164,15 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
     % Role:  0:Goalie 1:Attack / 2:Defend / 3:Support / 4: R.player 5: R.goalie
     roleColors = {'g','r','k', 'k--','r--','g--'};
 
-    teamColors = ['b', 'r'];
-    hr = fill(xr, yr, teamColors(max(1,robot.teamColor+1)));
+    % teamColors = ['b', 'r'];
+    % hr = fill(xr, yr, teamColors(max(1,robot.teamColor+1)));
+    hr = fill(xr, yr, 'b');
 
     if robot.role>1 
       h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role+1});
       set(h_role,'LineWidth',3);
     end
 
-    % disp attack bearing
-    %{
-    xab = cos(robot.attackBearing)*ca - sin(robot.attackBearing)*sa;
-    yab = cos(robot.attackBearing)*sa + sin(robot.attackBearing)*ca;
-    ab_scale = 1/scale;
-    quiver(x0, y0, xab*ab_scale,yab*ab_scale, 'k' );
-    %}
   end
   
   function plot_info(robot,angle,plottype,name)
@@ -192,6 +190,8 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
   end
 
   function plot_ball(robot,scale)
+    % if exist hb delete(hb); end
+    delete([hb hrb]);
     if (~isempty(robot.ball))
       ball = [robot.ball.x robot.ball.y robot.time-robot.ball.t];
       ballt=ball(3);
@@ -199,26 +199,26 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
       yb = y0 + ball(1)*sa + ball(2)*ca;
       %hb = plot(xb, yb, [idColors(robot_struct.id) 'o']);
       hb = plot(xb, yb, 'ro');
- 
-
-      if ballt<0.5 
-        plot([x0 xb],[y0 yb],'r');
-        set(hb, 'MarkerSize', 8/scale);
-%{
-        ball_vel=[robot.ball.vx robot.ball.vy];
-        xbv =  ball_vel(1)*ca - ball_vel(2)*sa;   
-        ybv =  ball_vel(1)*sa + ball_vel(2)*ca;
-        qvscale = 2;
-        quiver(xb, yb, qvscale*xbv/scale, qvscale*ybv/scale,...
-		 0,'r','LineWidth',2/scale );
-%}
-      else
-        %TODO: add last seen time info
-      end
+      hrb = plot([x0 xb],[y0 yb],'r');
+      
+%       if ballt<0.5 
+%         % if exist hrb delete(hrb); end
+%         hrb = plot([x0 xb],[y0 yb],'r');
+%         set(hb, 'MarkerSize', 8/scale);
+% %{
+%         ball_vel=[robot.ball.vx robot.ball.vy];
+%         xbv =  ball_vel(1)*ca - ball_vel(2)*sa;   
+%         ybv =  ball_vel(1)*sa + ball_vel(2)*ca;
+%         qvscale = 2;
+%         quiver(xb, yb, qvscale*xbv/scale, qvscale*ybv/scale,...
+%      0,'r','LineWidth',2/scale );
+% %}
+%       else
+%         %TODO: add last seen time info
+%       end
     end
   end
 
-%duplicated.. should be fixed soon
 
   function plot_goal_team(robot,scale)
     goal=robot.goal;

@@ -13,7 +13,6 @@ local RESAMPLE_COUNT = Config.world.resample_count
 
 -- Timestamps
 local t_entry
-
 -- Cycle count
 local count
 
@@ -78,7 +77,8 @@ end
 function libWorld.entry()
   t_entry = unix.time()
   -- Initialize the pose filter
-  poseFilter.initialize_unified()
+  -- poseFilter.initialize_unified()
+  poseFilter.initialize()
   -- Save this resampling time
   t_resample = t_entry
   -- TODO: Set the initial odometry
@@ -97,9 +97,28 @@ function libWorld.update(uOdom, detection)
   end
   update_odometry(uOdom)
   update_vision(detection)
+  
+  -- Send world info to monitor
+  
 
   -- Increment the process count
   count = count + 1
+end
+
+function libWorld.send()
+  local to_send = {}
+  -- Robot info
+  -- to_send.pose = vector.pose{poseFilter.get_pose()}
+  -- odom seems better
+  to_send.pose = vector.pose{wcm.get_robot_odometry()}
+  to_send.role = vector.pose{gcm.get_game_role()}
+  to_send.time = Body.get_time()
+  -- Ball info
+  to_send.ball = {}
+  to_send.ball.x = wcm.get_ball_x()
+  to_send.ball.y = wcm.get_ball_y()
+  to_send.ball.t = wcm.get_ball_t()
+  return to_send
 end
 
 function libWorld.exit()

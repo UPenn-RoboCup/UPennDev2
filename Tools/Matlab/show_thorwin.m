@@ -52,9 +52,9 @@ cam.scale = 2;
 %% Localization
 figure(2);
 clf;
-h_field = subplot(2,2,1);
+cam.h_field = subplot(2,2,1);
 % Show the field here
-plot_field(h_field,2)
+plot_field(cam.h_field,2);
 % Camera 1 Debug messages
 cam.a_debug = annotation('textbox',...
     [0.5 0.5 0.5 0.5],...

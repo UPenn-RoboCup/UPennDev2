@@ -14,6 +14,12 @@ local vision_ch = si.new_subscriber'vision'
 require'wcm'
 require'mcm'
 
+-- UDP channel
+local udp = require'udp'
+local operator = Config.net.operator.wired
+-- TODO: may be conflicting
+local udp_ch = udp.new_sender(operator, Config.camera[1].udp_port)
+
 -- Cache some functions
 local get_time, usleep = Body.get_time, unix.usleep
 
@@ -86,8 +92,15 @@ while running do
     uOdometry = mcm.get_status_odometry()
     lW.update_odometry(uOdometry)
     -- Update the pose here
+    -- TODO: should put into libWorld
     wcm.set_robot_pose(lW.get_pose())
   end
+  
+  -- Send localization info to monitor
+  local metadata = {}
+  metadata.id = 'world'
+  metadata.world = lW.send()
+  udp_ch:send(mp.pack(metadata))
   
   t = get_time()
   -- Update the state machines
@@ -98,7 +111,6 @@ while running do
     if Config.debug.webots_wizard then
 		  print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, collectgarbage('count')))
     end
-    --print('Wire', vcm.get_wire_model())
 	end
   
   -- If not webots, then wait the update cycle rate

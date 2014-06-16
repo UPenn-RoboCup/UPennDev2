@@ -11,6 +11,8 @@ local use_imu_yaw = Config.world.use_imu_yaw
 local RESAMPLE_PERIOD = Config.world.resample_period
 local RESAMPLE_COUNT = Config.world.resample_count
 
+require'wcm'
+
 -- Timestamps
 local t_entry
 -- Cycle count
@@ -108,9 +110,10 @@ end
 function libWorld.send()
   local to_send = {}
   -- Robot info
-  -- to_send.pose = vector.pose{poseFilter.get_pose()}
-  -- odom seems better
-  to_send.pose = vector.pose{wcm.get_robot_odometry()}
+  -- TODO: the poseFilter return huge error
+  -- to_send.pose = vector.new(poseFilter.get_pose())
+  to_send.pose = vector.new(wcm.get_robot_odometry())
+  -- print('libWorld, odom:', unpack(wcm.get_robot_odometry()))
   to_send.role = vector.pose{gcm.get_game_role()}
   to_send.time = Body.get_time()
   -- Ball info

@@ -16,6 +16,7 @@ local libStep = require'libStep'
 local step_planner
 
 require'mcm'
+require'wcm'
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
@@ -44,14 +45,17 @@ local init_odometry = function(uTorso)
 end
 
 local update_odometry = function(uTorso_in)
-	if true then return end
+  -- if true then return end
   local uTorso1 = wcm.get_robot_utorso1()
 
   --update odometry pose
   local odometry_step = util.pose_relative(uTorso_in,uTorso1)
-  local pose_odom0 = wcm.get_robot_pose_odom()
+  --local pose_odom0 = wcm.get_robot_pose_odom()
+  local pose_odom0 = wcm.get_robot_odometry()
   local pose_odom = util.pose_global(odometry_step, pose_odom0)
-  wcm.set_robot_pose_odom(pose_odom)
+  --wcm.set_robot_pose_odom(pose_odom)
+  wcm.set_robot_odometry(pose_odom)
+  -- print('H walk, odom', unpack(wcm.get_robot_odometry()))
 
   local odom_mode = wcm.get_robot_odom_mode();
   if odom_mode==0 then
@@ -185,10 +189,6 @@ function walk.update()
   mcm.set_status_t(t)
 
 
-
-
-
-
 --Robotis-style simple feedback (which seems to be better :[])
 --  delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,phSingle,gyro_rpy, angleShift)
 
@@ -225,7 +225,6 @@ function walk.update()
   moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
       zLeft,zRight,delta_legs)    
 
-
   if is_logging then
 -- Grab the sensor values
     local lfoot = Body.get_sensor_lfoot()
@@ -239,7 +238,6 @@ function walk.update()
 
   --Update the odometry variable
   update_odometry(uTorso)
-  --print("odometry pose:",unpack(wcm.get_robot_pose_odom()))
 
 --[[
   --COM testing

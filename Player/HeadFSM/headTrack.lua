@@ -37,16 +37,15 @@ function state.update()
   t_update = t
 
   if t-t_entry > timeout then
-    if gcm.get_game_role() == 0 then -- Goalie
-      -- return 'sweep'
-    else
-      --return 'timeout'
-    end
+   
+      --return 'timeout' 
+
   end
 
   local ball_elapsed = t - wcm.get_ball_t()
 
   if ball_elapsed > tLost then --ball lost
+    print "Ball lost"
     return 'balllost'
   end
 

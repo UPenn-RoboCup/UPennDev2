@@ -4,7 +4,7 @@
 
 -- Are we locally testing?
 USE_LOCALHOST = false
---USE_LOCALHOST = true
+USE_LOCALHOST = true
 
 -- Locate the Modules
 CWD = assert(os.getenv'PWD','No PWD variable set!')

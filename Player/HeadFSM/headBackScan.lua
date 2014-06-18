@@ -39,31 +39,35 @@ function state.update()
 
   local qNeck0 = Body.get_head_command_position()
   local yawTarget, pitchTarget
-
   if stage==1 then
-    pitchTarget = 55*DEG_TO_RAD
-    yawTarget = 45*DEG_TO_RAD
+    pitchTarget = 25*DEG_TO_RAD
+    yawTarget = 135*DEG_TO_RAD
   elseif stage==2 then
-    pitchTarget = 55*DEG_TO_RAD
-    yawTarget = -45*DEG_TO_RAD
+    pitchTarget = 60*DEG_TO_RAD
+    yawTarget = 135*DEG_TO_RAD
   elseif stage==3 then
-    pitchTarget = 25*DEG_TO_RAD        
-    yawTarget = -45*DEG_TO_RAD
+    pitchTarget = 60*DEG_TO_RAD
+    yawTarget = 0*DEG_TO_RAD
   elseif stage==4 then
-    pitchTarget = 25*DEG_TO_RAD    
-    yawTarget = 45*DEG_TO_RAD
+    pitchTarget = 60*DEG_TO_RAD
+    yawTarget = -135*DEG_TO_RAD
+  elseif stage==5 then
+    pitchTarget = 25*DEG_TO_RAD
+    yawTarget = -135*DEG_TO_RAD
   else
-    return 'noball'
+    return 'noball' --couldn't find the ball. Ball should be right behind the robot!
   end
+
 
   local qNeck_approach, doneNeck = 
     util.approachTol( qNeck0, {yawTarget,pitchTarget}, dqNeckLimit, dt )
+
   if doneNeck then stage = stage+1 end
 
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
 
-  -- Check if we found the ball
+	-- Check if we found the ball
   local ball_elapsed = t - wcm.get_ball_t()
   if ball_elapsed < 0.1 then
     return 'ballfound' --if ball found exit

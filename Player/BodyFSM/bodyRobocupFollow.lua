@@ -33,7 +33,7 @@ local supportLeg
 
 
 
-
+--[[
 
 local function robocup_follow( pose, target_pose)
   local maxStep = 0.05
@@ -42,9 +42,7 @@ local function robocup_follow( pose, target_pose)
   local angle_threshold = .1
 
 
-  -- Distance to the waypoint
-  local rel_pose = util.pose_relative(target_pose,pose)
-  local rel_dist = math.sqrt(rel_pose[1]*rel_pose[1]+rel_pose[2]*rel_pose[2])
+
    
 
   -- Angle towards the waypoint
@@ -84,7 +82,7 @@ local function robocup_follow( pose, target_pose)
   return vStep, false
 end
 
-
+--]]
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -103,7 +101,8 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  local ballr
+  local ballr, vStep
+  local reached = false
   if IS_WEBOTS then
     local pose = wcm.get_robot_pose_gps()
 --    print(pose[1],pose[2],pose[3]*180/math.pi)
@@ -118,7 +117,8 @@ function state.update()
     local target_pose = robocupplanner.getTargetPose(pose,ballGlobal)
 
 
-    local vStep = robocup_follow( pose, target_pose)
+--    local vStep = robocup_follow( pose, target_pose)
+    vStep,reached = robocupplanner.getVelocity(pose,target_pose)
     mcm.set_walk_vel(vStep)
 
   else
@@ -133,13 +133,13 @@ function state.update()
 
     local target_pose = util.pose_global(walk_target_local, pose)
 
-    local vStep = robocup_follow( pose, target_pose)
+--    local vStep = robocup_follow( pose, target_pose)
+    vStep,reached = robocupplanner.getVelocity(pose,target_pose)
     mcm.set_walk_vel(vStep)
   end
 
-
  local ball_elapsed = t - wcm.get_ball_t()
- if ball_elapsed <0.5 and ballr < 0.6 then
+ if ball_elapsed <0.5 and reached then
    return 'ballclose'
  end
 

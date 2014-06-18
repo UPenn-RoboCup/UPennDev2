@@ -20,13 +20,16 @@ Background {
 }
 DirectionalLight {
   ambientIntensity 1
+  #direction -0.5 -2 -0.5
+  #intensity 0.3
   direction -0.5 -2 -0.5
-  intensity 0.3
-  castShadows TRUE
+  intensity 0.8
+  #castShadows TRUE
 }
 DirectionalLight {
   ambientIntensity 1
-  direction -0.5 -0.5 0.5
+  #direction -0.5 -0.5 0.5
+  direction 0.5 0.5 0.5
   intensity 0.8
 }
 SoccerField2013 {
@@ -44,7 +47,7 @@ DEF YELLOW_GOAL TeenGoal {
   #postColor 0.152941 0.505882 0.733333
 }
 DEF BALL Ball {
-  translation -1 0 0
+  translation 2 0 0
   radius 0.10
 }
 #Obstacle {

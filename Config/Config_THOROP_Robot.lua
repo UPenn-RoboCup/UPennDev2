@@ -179,7 +179,8 @@ assert(#servo.rad_offset==nJoint,'Bad servo rad_offset!')
 
 --SJ: Arm servos should at least move up to 90 deg
 servo.min_rad = vector.new({
-  -90,-80, -- Head
+  ---90,-80, -- Head
+  -135,-80, -- Head
   -90, 0, -90,    -160,   -180,-87,-180, --LArm
   -175,-175,-175,-175,-175,-175, --LLeg
   -175,-175,-175,-175,-175,-175, --RLeg
@@ -192,7 +193,8 @@ servo.min_rad = vector.new({
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 
 servo.max_rad = vector.new({
-  90,80, -- Head
+  --90,80, -- Head
+  135,80, -- Head
   160,87,90,   0,     180,87,180, --LArm
   175,175,175,175,175,175, --LLeg
   175,175,175,175,175,175, --RLeg

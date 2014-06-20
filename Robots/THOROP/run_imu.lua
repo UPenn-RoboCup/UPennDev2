@@ -89,7 +89,9 @@ while running do
 			string.format('Acc (g): %.2f %.2f %.2f', unpack(acc)),
 			string.format('Gyro (rad/s): %.2f %.2f %.2f', unpack(gyro)),
 			string.format('Mag (Gauss): %.2f %.2f %.2f', unpack(mag)),
-			string.format('RPY:  %.2f %.2f %.2f', unpack(rpy)),
+			string.format('RPY:  %.2f %.2f %.2f', 
+rpy[1]*180/math.pi, rpy[2]*180/math.pi, rpy[3]*180/math.pi
+),
 		}
 		print(table.concat(debug_str,'\n'))
     t_debug = t

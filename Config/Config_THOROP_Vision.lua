@@ -1,8 +1,9 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
+-- TODO: put this into FSM config, and state-specific
 local head = {
-  pitchMin = 0 * math.pi/180,
+  pitchMin = -10 * math.pi/180,
   pitchMax = 75 * math.pi/180,
   yawMin = -135 * math.pi/180,
   yawMax = 135 * math.pi/180,

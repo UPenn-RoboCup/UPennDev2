@@ -47,10 +47,8 @@ vision_ch.callback = function(skt)
   local metadata = {}
   metadata.id = 'world'
   metadata.world = lW.send()
-  print('WORLD WIZARD DEBUGGING...')
   
   if detection.posts then
-    print('posts detected!')
     local goal = {}
     goal.type = detection.posts[1].type
     goal.v1 = detection.posts[1].v
@@ -60,7 +58,8 @@ vision_ch.callback = function(skt)
     metadata.world.goal = goal
   end
   -- Send!
-  udp_ch:send(mp.pack(metadata))
+  local ret, err = udp_ch:send(mp.pack(metadata))
+	if err then print(ret, err) end
 end
 
 -- Entry

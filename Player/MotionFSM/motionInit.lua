@@ -213,7 +213,8 @@ function state.exit()
 
 
 
-      Body.set_head_command_velocity({2000,2000})
+--      Body.set_head_command_velocity({2000,2000})
+      Body.set_head_command_velocity({6000,6000})
       unix.usleep(1e6*0.01);
 
 

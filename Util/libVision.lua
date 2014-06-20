@@ -455,8 +455,16 @@ function libVision.update(img)
   -- TODO: ending debug while running webots is killing monitor
   -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
   -- This is to avoid crash in monitor
+
   if posts then
-    detected.debug = table.concat({'Post # ', tostring(#posts)})
+		if #posts < 2 then
+			detected.debug = table.concat({'Post ', 
+				string.format('%.2f %.2f', posts[1].v[1], posts[1].v[2])}, '\n')
+		else
+			detected.debug = table.concat({'Post ', 
+				string.format('%.2f %.2f \n', posts[1].v[1], posts[1].v[2]), 
+				string.format('%.2f %.2f', posts[2].v[1], posts[2].v[2])}, '\n')
+		end
   else
     detected.debug = table.concat({'Post # ', 0})
   end

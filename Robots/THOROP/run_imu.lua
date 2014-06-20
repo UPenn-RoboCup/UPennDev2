@@ -30,6 +30,7 @@ end
 
 -- Modules
 require'dcm'
+require'mcm'
 local lM = require'libMicrostrain'
 local vector = require'vector'
 local get_time = unix.time
@@ -44,6 +45,8 @@ local gyro_ptr = dcm.sensorPtr.gyro
 local mag_ptr  = dcm.sensorPtr.magnetometer
 local rpy_ptr  = dcm.sensorPtr.rpy
 local acc, gyro, mag, rpy = vector.new(3), vector.new(3), vector.new(3), vector.new(3)
+local read_count, last_read_count = 0,0 --to get hz
+
 local function do_read ()
 	-- Get the accelerometer, gyro, magnetometer, and euler angles
 	local a, g, m, e = microstrain:read_ahrs()
@@ -58,6 +61,8 @@ local function do_read ()
 	gyro[1], gyro[2], gyro[3] = g[1], g[2], -g[0]
 	mag[1], mag[2], mag[3] = m[1], m[2], -m[0]
 	rpy[1], rpy[2], rpy[3] = e[1], e[2], -e[0]
+
+  read_count = read_count + 1
 	--[[
 	-- Save locally
 	acc  = {a[1], a[2], -a[0]}
@@ -76,24 +81,42 @@ collectgarbage()
 -- Begin infinite loop
 local t0, t = get_time()
 local t_debug, t_last = t0, t0
+local uptime, kb, fps = 0,0,0
+
 while running do
 	t_last = t
 	t = get_time()
 	--------------------
 	-- Periodic Debug --
 	--------------------
+
+  mcm.set_servo_imu({
+    uptime, kb, fps,
+    acc[1],acc[2],acc[3],
+    gyro[1],gyro[2],gyro[3],
+    mag[1],mag[2],mag[3],
+    rpy[1],rpy[2],rpy[3]
+  })
+
+
   if t - t_debug>1 then
-		local kb = collectgarbage('count')
+		kb = collectgarbage('count')
+    uptime = t-t0
+    fps = (read_count-last_read_count) / (t-t_debug)
+
+    last_read_count = read_count
+--[[
 		local debug_str = {
 			string.format('\nIMU | Uptime %.2f sec, Mem: %d kB', t-t0, kb),
 			string.format('Acc (g): %.2f %.2f %.2f', unpack(acc)),
 			string.format('Gyro (rad/s): %.2f %.2f %.2f', unpack(gyro)),
 			string.format('Mag (Gauss): %.2f %.2f %.2f', unpack(mag)),
 			string.format('RPY:  %.2f %.2f %.2f', 
-rpy[1]*180/math.pi, rpy[2]*180/math.pi, rpy[3]*180/math.pi
-),
+      rpy[1]*180/math.pi, rpy[2]*180/math.pi, rpy[3]*180/math.pi
+      ),
 		}
 		print(table.concat(debug_str,'\n'))
+--]]
     t_debug = t
   end
 	-----------------

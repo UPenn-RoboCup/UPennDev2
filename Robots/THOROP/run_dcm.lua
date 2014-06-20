@@ -289,6 +289,10 @@ local count, t_elapsed, t_d_elapsed, kb = 0
 Config = nil
 collectgarbage()
 -- Begin
+
+
+t_elapsed, kb = 0,0
+
 while running do
 	count = count + 1
 	t_last = t
@@ -317,6 +321,23 @@ while running do
 	if t_d_elapsed > 1 then
 		t_elapsed = t - t0
 		kb = collectgarbage'count'
+
+
+		if metadata.name=='lleg' then
+      mcm.set_servo_lleg({t_elapsed, kb, count/t_d_elapsed})
+    elseif metadata.name=='rleg' then
+      mcm.set_servo_rleg({t_elapsed, kb, count/t_d_elapsed})
+    elseif metadata.name=='larm' then
+      mcm.set_servo_larm({t_elapsed, kb, count/t_d_elapsed})
+    elseif metadata.name=='rarm' then
+      mcm.set_servo_rarm({t_elapsed, kb, count/t_d_elapsed})
+    end
+
+
+--[[
+
+
+    
 		local debug_str = {
 			string.format('\n%s Uptime: %.2f sec, Mem: %d kB, %.1f Hz',
 				debug_prefix, t_elapsed, kb, count / t_d_elapsed),
@@ -333,6 +354,7 @@ while running do
 			)
 		end
 		print(table.concat(debug_str,'\n'))
+--]]
 		t_debug = t
 		count = 0
 	end

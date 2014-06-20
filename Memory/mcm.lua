@@ -14,6 +14,15 @@ local shsize = {}
 shared.servo={}
 shared.servo.read=vector.zeros(1)
 
+--Now we put debug messages to DCM first
+--So that we can show them in synchronous way
+shared.servo.larm = vector.zeros(3)
+shared.servo.rarm = vector.zeros(3)
+shared.servo.lleg = vector.zeros(3)
+shared.servo.rleg = vector.zeros(3)
+shared.servo.imu = vector.zeros(16)
+
+
 
 --Leg bias info
 shared.leg={}

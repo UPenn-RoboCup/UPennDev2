@@ -17,7 +17,6 @@ require'mcm'
 -- UDP channel
 local udp = require'udp'
 local operator = Config.net.operator.wired
--- TODO: may be conflicting
 local udp_ch = udp.new_sender(operator, Config.camera[1].udp_port)
 
 -- Cache some functions

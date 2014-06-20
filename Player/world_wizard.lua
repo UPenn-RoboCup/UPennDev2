@@ -11,6 +11,10 @@ local mp = require'msgpack.MessagePack'
 local get_time, usleep = Body.get_time, unix.usleep
 -- Subscribe to important messages
 local vision_ch = si.new_subscriber'vision'
+-- UDP channel
+local udp = require'udp'
+local operator = Config.net.operator.wired
+local udp_ch = udp.new_sender(operator, Config.camera[1].udp_port)
 -- SHM
 require'wcm'
 require'mcm'
@@ -32,15 +36,28 @@ vision_ch.callback = function(skt)
   -- Only use the last vision detection
 	local detection = mp.unpack(detections[#detections])
 
-  -- First, update the odometry
+  -- Update localization based onodometry and vision
   uOdometry = mcm.get_status_odometry()
-  
   lW.update(uOdometry, detection)
-  
-  --   lW.update_odometry(uOdometry)
-  -- lW.update_vision(detection)
+  -- Update pose
 	local pose = lW.get_pose()
   wcm.set_robot_pose(pose)
+  
+  -- Send localization info to monitor
+  local metadata = {}
+  metadata.id = 'world'
+  metadata.world = lW.send()
+  if detection.posts then
+    local goal = {}
+    goal.type = detection.posts[1].type
+    goal.v1 = detection.posts[1].v
+    if goal.type==3 then
+      goal.v2 = detection.posts[2].v
+    end
+    metadata.world.goal = goal
+  end
+  -- Send!
+  udp_ch:send(mp.pack(metadata))
 end
 
 -- Entry

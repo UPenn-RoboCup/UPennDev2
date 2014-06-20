@@ -28,7 +28,7 @@ DirectionalLight {
 }
 DirectionalLight {
   ambientIntensity 1
-  direction -0.5 -0.5 0.5
+  direction -0.5 0.5 0.5
   # direction 0.5 0.5 0.5
   intensity 0.8
 }

@@ -27,17 +27,14 @@ fsm.Head = {
 --  {'headIdle', 'scan', 'headScan'},
 
   {'headIdle', 'scan', 'headBackScan'},
-
   {'headIdle', 'teleop', 'headTeleop'},
 
   {'headBackScan', 'ballfound', 'headTrack'},
   {'headBackScan', 'noball', 'headBackScan'},
+  {'headBackScan', 'teleop', 'headTeleop'},
 
   {'headScan', 'ballfound', 'headTrack'},
   {'headScan', 'noball', 'headBackScan'},
-  --
---  {'headScan', 'ballfound', 'headTrack'},
---  {'headScan', 'timeout', 'headScan'},
   {'headScan', 'teleop', 'headTeleop'},
   --
   {'headTrack', 'balllost', 'headScan'},
@@ -50,7 +47,7 @@ fsm.Head = {
   --
   {'headSweep', 'done', 'headTrack'},
   --
-  {'headTeleop', 'scan', 'headScan'},
+  {'headTeleop', 'scan', 'headBackScan'},
 }
 
 fsm.Body = {

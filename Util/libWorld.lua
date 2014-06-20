@@ -3,6 +3,7 @@ local libWorld = {}
 
 -- TODO: Add Attack bearing
 -- TODO: Add Webots ground truth knowledge
+local Body = require'Body'
 local vector = require'vector'
 local ballFilter = require'ballFilter'
 local poseFilter = require'poseFilter'
@@ -12,6 +13,7 @@ local RESAMPLE_PERIOD = Config.world.resample_period
 local RESAMPLE_COUNT = Config.world.resample_count
 
 require'wcm'
+require'gcm'
 
 -- Timestamps
 local t_entry

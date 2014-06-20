@@ -20,7 +20,7 @@ shared.servo.larm = vector.zeros(3)
 shared.servo.rarm = vector.zeros(3)
 shared.servo.lleg = vector.zeros(3)
 shared.servo.rleg = vector.zeros(3)
-shared.servo.imu = vector.zeros(16)
+shared.servo.imu = vector.zeros(17)
 
 
 

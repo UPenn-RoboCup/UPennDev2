@@ -50,13 +50,14 @@ while running do
 
 
     print(string.format('IMU | Uptime %.2f sec, Mem %d kB, %.2f Hz\n'..
-                        'Acc: %.2f %.2f %.2f\nGyro: %.2f,%.2f,%.2f\n'..
-                        'Mag: %.2f %.2f %.2f\nRPY (deg): %.2f,%.2f,%.2f\n',
+                        'Acc: %.2f %.2f %.2f\nGyro: %.3f,%.3f,%.3f\n'..
+                        'Mag: %.2f %.2f %.2f\nRPY (deg): %.2f,%.2f,%.2f (%.2f)\n',
       imu_msg[1],imu_msg[2],imu_msg[3],
       imu_msg[4],imu_msg[5],imu_msg[6],
       imu_msg[7],imu_msg[8],imu_msg[9],
       imu_msg[10],imu_msg[11],imu_msg[12],
-      imu_msg[13]*180/math.pi,imu_msg[14]*180/math.pi,imu_msg[15]*180/math.pi
+      imu_msg[13]*180/math.pi,imu_msg[14]*180/math.pi,imu_msg[15]*180/math.pi,
+      imu_msg[16]*180/math.pi
 
 ))
 

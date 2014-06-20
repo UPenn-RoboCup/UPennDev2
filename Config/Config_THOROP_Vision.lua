@@ -127,8 +127,8 @@ table.insert(Config.camera,
       'libVision',
     },
     --Logitech C920
-    lut = 'm308_9am',
-    --lut = '308_lightson',
+    --lut = 'm308_9am',
+    lut = '308_lightson',
 		-- f = 640/2/tan(78/180*pi / 2)
     focal_length = 395.17,
     focal_base = 640,

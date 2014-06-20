@@ -24,6 +24,7 @@ else
 end
 local ENABLE_NET = true
 local ENABLE_LOG, LOG_INTERVAL, t_log = false, 1 / 5, 0
+--local ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
 local FROM_LOG, LOG_DATE = false, '05.28.2014.16.18.44'
 local libLog, logger
 

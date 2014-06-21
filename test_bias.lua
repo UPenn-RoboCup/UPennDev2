@@ -10,6 +10,8 @@ local libs = {
 	'fun',
 }
 
+local RAD_TO_DEG = 180/math.pi
+
 -- Load the libraries
 for _,lib in ipairs(libs) do _G[lib] = require(lib) end
 if torch then torch.Tensor = torch.DoubleTensor end
@@ -52,10 +54,25 @@ print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
 
 targetvel={0,0,0}
 targetvel_new={0,0,0}
+local servo_names={
+  "hipyaw",
+  "hiproll",
+  "hippitch",
+  "kneepitch",
+  "anklepitch",
+  "ankleroll"
+}
+
+local selected_servo = 1
+local bias_mag = 0.0675*math.pi/180
 
 function process_keyinput()
   local byte=getch.block();
+  local bias_edited = false
+
   if byte then
+    local legBias = mcm.get_leg_bias()
+  
     -- Walk velocity setting
     if byte==string.byte("i") then      targetvel_new[1]=targetvel[1]+0.02;
     elseif byte==string.byte("j") then  targetvel_new[3]=targetvel[3]+0.1;
@@ -67,10 +84,9 @@ function process_keyinput()
 
     elseif byte==string.byte("1") then      
       body_ch:send'init'
-    elseif byte==string.byte("2") then      
+
+    elseif byte==string.byte("-") then      
       motion_ch:send'bias'
-
-
     elseif byte==string.byte("8") then  
       motion_ch:send'stand'
       body_ch:send'stop'
@@ -80,6 +96,53 @@ function process_keyinput()
       end
     elseif byte==string.byte("9") then  
       motion_ch:send'hybridwalk'
+
+
+    elseif byte==string.byte("2") then
+      selected_servo = 1
+      bias_edited = true
+    elseif byte==string.byte("3") then
+      selected_servo = 2
+      bias_edited = true      
+    elseif byte==string.byte("4") then
+      selected_servo = 3        
+      bias_edited = true      
+    elseif byte==string.byte("5") then
+      selected_servo = 4
+      bias_edited = true      
+    elseif byte==string.byte("6") then
+      selected_servo = 5
+      bias_edited = true      
+    elseif byte==string.byte("7") then
+      selected_servo = 6      
+      bias_edited = true      
+
+    elseif byte==string.byte("q") then
+      legBias[selected_servo]=legBias[selected_servo]-bias_mag
+      bias_edited = true        
+    elseif byte==string.byte("w") then
+      legBias[selected_servo]=legBias[selected_servo]+bias_mag
+      bias_edited = true      
+    elseif byte==string.byte("[") then    
+      legBias[selected_servo+6]=legBias[selected_servo+6]-bias_mag
+      bias_edited = true      
+    elseif byte==string.byte("]") then        
+      legBias[selected_servo+6]=legBias[selected_servo+6]+bias_mag
+      bias_edited = true      
+
+    elseif byte==string.byte("0") then
+      print(string.format("Current bias: \n%.2f %.2f %.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f %.2f %.2f ",
+      unpack(vector.new(legBias)*Body.RAD_TO_DEG)))
+    
+
+    end
+
+    if bias_edited then
+      mcm.set_leg_bias(legBias)
+      print(servo_names[selected_servo]," : ",
+        legBias[selected_servo]*RAD_TO_DEG,
+        legBias[selected_servo+6]*RAD_TO_DEG
+    )
     end
 
     local vel_diff = (targetvel_new[1]-targetvel[1])^2+(targetvel_new[2]-targetvel[2])^2+(targetvel_new[3]-targetvel[3])^2

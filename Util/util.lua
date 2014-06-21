@@ -76,6 +76,14 @@ function util.se3_interpolate(t, u1, u2, u3)
   end
 end
 
+function util.shallow_copy(a)
+  --copy the table by value
+  local ret={}
+  for k,v in pairs(a) do ret[k]=v end
+  return ret
+end
+
+
 --Piecewise linear function for IMU feedback
 function util.procFunc(a,deadband,maxvalue)
   local b = math.min( math.max(0,math.abs(a)-deadband), maxvalue)

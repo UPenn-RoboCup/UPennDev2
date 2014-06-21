@@ -57,9 +57,7 @@ fsm.Body = {
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
   {'bodyStop', 'stepwaypoint', 'bodyStepWaypoint'},
   {'bodyStop', 'play', 'bodyRobocupIdle'},
-
   {'bodyStop', 'kick', 'bodyRobocupKick'},
-
 
   {'bodyStepPlace',   'done', 'bodyStop'},
   {'bodyStepWaypoint',   'done', 'bodyStop'},
@@ -77,7 +75,6 @@ fsm.Body = {
   {'bodyRobocupApproach', 'ballfar', 'bodyRobocupFollow'},
   {'bodyRobocupApproach','stop','bodyStop'},
 --  {'bodyRobocupApproach', 'done', 'bodyStop'}, --we just stop in front of the ball to test code
-
 
   {'bodyRobocupKick', 'done', 'bodyRobocupIdle'},
   {'bodyRobocupKick', 'testdone', 'bodyStop'},

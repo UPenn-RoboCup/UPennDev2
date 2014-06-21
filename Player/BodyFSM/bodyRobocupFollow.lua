@@ -104,7 +104,12 @@ function state.update()
   local ballr, vStep
   local reached = false
   if IS_WEBOTS then
-    local pose = wcm.get_robot_pose_gps()
+    local pose
+    if USE_GPS_ONLY then
+      pose = wcm.get_robot_pose_gps()
+    else
+      pose = wcm.get_robot_pose()
+    end
 --    print(pose[1],pose[2],pose[3]*180/math.pi)
     local foot_xOffset = 0.15
     local ballx = wcm.get_ball_x() - foot_xOffset

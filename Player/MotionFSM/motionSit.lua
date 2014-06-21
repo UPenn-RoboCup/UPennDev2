@@ -55,7 +55,7 @@ function state.update()
   local bodyHeightTarget = hcm.get_motion_bodyHeightTarget()
   bodyHeightTarget = math.max(0.75,math.min(Config.walk.bodyHeight,bodyHeightTarget))
 
-  bodyHeightTarget = 0.75
+  bodyHeightTarget = 0.65
 
   local bodyHeight = util.approachTol( bodyHeight_now,bodyHeightTarget, Config.stance.dHeight, t_diff )
   

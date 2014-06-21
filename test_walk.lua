@@ -95,7 +95,7 @@ function process_keyinput()
       body_ch:send'kick'
 
     elseif byte==string.byte("7") then      
-      motion_ch:send'done'
+      motion_ch:send'sit'
     elseif byte==string.byte("8") then  
       motion_ch:send'stand'
       body_ch:send'stop'

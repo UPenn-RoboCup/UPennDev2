@@ -739,9 +739,12 @@ elseif IS_WEBOTS then
 			-- Clamp the difference between commanded and actuated
 			-- so that we don't have huge jumped
 			-- NOTE: This *should* be handled by the simulator?
+
+
+
 			local new_pos = cmd
 			if vel > 0 then
-				local delta = cmd - pos
+        local delta = util.mod_angle(cmd - pos)
 				if delta > deltaMax then
 					delta = deltaMax
 				elseif delta < -deltaMax then
@@ -750,18 +753,25 @@ elseif IS_WEBOTS then
 				new_pos = pos + delta
 			end
 
+      
 			if en>0 and jtag>0 then
         local rad = servo.direction[idx] * (new_pos + servo.rad_offset[idx])
-        --SJ: Webots is STUPID so we should set direction correctly to prevent flip
+                
+--SJ: Webots is STUPID so we should set direction correctly to prevent flip        
+--[[        
         local val = get_pos(jtag)
-
         if pos > val + math.pi then
 					rad = rad - 2 * math.pi
         elseif rad < val - math.pi then
 					rad = rad + 2 * math.pi
         end
 				rad = rad==rad and rad or 0
-				set_pos(jtag, rad)
+        set_pos(jtag, rad)
+--]]        
+				--Fixed
+        local val = get_pos(jtag)
+        local delta = util.mod_angle(rad-val)
+        set_pos(jtag, rad+delta)
       end
 		end --for
 

@@ -87,7 +87,10 @@ fsm.Motion = {
   {'motionIdle', 'stand', 'motionInit'},
   {'motionIdle', 'bias', 'motionBiasInit'},
 
-  {'motionBiasInit', 'bias', 'motionInit'},  
+  {'motionBiasInit', 'done', 'motionBiasIdle'}, 
+
+  {'motionBiasIdle', 'stand', 'motionInit'}, 
+
   {'motionInit', 'done', 'motionStance'},
 
   {'motionStance', 'bias', 'motionBiasInit'},

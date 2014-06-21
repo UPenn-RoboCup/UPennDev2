@@ -34,6 +34,18 @@ function state.entry()
     mcm.set_leg_bias(Config.walk.legBias)
     print("BIAS SET:",unpack(Config.walk.legBias))
   end
+
+  --Set up initial walk parameters
+  mcm.set_walk_tStep(Config.walk.tStep)
+  mcm.set_walk_tZmp(Config.walk.tZmp)
+  mcm.set_walk_bodyHeight(Config.walk.bodyHeight)
+  mcm.set_walk_stepHeight(Config.walk.stepHeight)
+  mcm.set_walk_torsoX(Config.walk.torsoX)
+  mcm.set_walk_footY(Config.walk.footY)
+  mcm.set_walk_supportX(Config.walk.supportX)
+  mcm.set_walk_supportY(Config.walk.supportY)
+  mcm.set_walk_hipRollCompensation(Config.walk.hipRollCompensation)
+
 end
 
 ---

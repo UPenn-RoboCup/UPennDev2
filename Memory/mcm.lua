@@ -22,11 +22,10 @@ shared.servo.lleg = vector.zeros(3)
 shared.servo.rleg = vector.zeros(3)
 shared.servo.imu = vector.zeros(17)
 
-
-
---Leg bias info
+--Leg bias and walk params info
 shared.leg={}
 shared.leg.bias=vector.zeros(12)
+
 
 
 -- Storing current stance info
@@ -77,20 +76,29 @@ shared.arm.lhandoffset = vector.new(Config.arm.handoffset.gripper)
 shared.arm.rhandoffset = vector.new(Config.arm.handoffset.gripper)
 
 
--- Walk Parameters
+-- Walk Parameters (for tuning on the fly)
 shared.walk = {}
-shared.walk.bodyOffset = vector.zeros(3)
 shared.walk.tStep      = vector.zeros(1)
+shared.walk.tZmp 	   = vector.zeros(1)
 shared.walk.bodyHeight = vector.zeros(1)
 shared.walk.stepHeight = vector.zeros(1)
+shared.walk.torsoX     = vector.zeros(1)
 shared.walk.footY      = vector.zeros(1)
 shared.walk.supportX   = vector.zeros(1)
 shared.walk.supportY   = vector.zeros(1)
+shared.walk.hipRollCompensation = vector.zeros(1)
+
+
+
+
+
+
+--Walk state variables
+shared.walk.bodyOffset = vector.zeros(3)
 shared.walk.vel        = vector.zeros(3)
 shared.walk.bipedal    = vector.zeros(1)
 shared.walk.stoprequest= vector.zeros(1)
 shared.walk.ismoving= vector.zeros(1)
-
 
 -- Walk-step transition
 shared.walk.steprequest= vector.zeros(1)

@@ -18,6 +18,7 @@ local udp_ch = udp.new_sender(operator, Config.camera[1].udp_port)
 -- SHM
 require'wcm'
 require'mcm'
+require'hcm'
 
 -- Cleanly exit on Ctrl-C
 local running, signal = true, nil
@@ -29,8 +30,9 @@ local function shutdown ()
 end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
-util = require'util'
+
 local uOdometry
+local t_send, send_interval = 0
 vision_ch.callback = function(skt)
   local detections = skt:recv_all()
   -- Only use the last vision detection
@@ -43,23 +45,27 @@ vision_ch.callback = function(skt)
 	local pose = lW.get_pose()
   wcm.set_robot_pose(pose)
   
-  -- Send localization info to monitor
-  local metadata = {}
-  metadata.id = 'world'
-  metadata.world = lW.send()
-  
-  if detection.posts then
-    local goal = {}
-    goal.type = detection.posts[1].type
-    goal.v1 = detection.posts[1].v
-    if goal.type==3 then
-      goal.v2 = detection.posts[2].v
-    end
-    metadata.world.goal = goal
-  end
-  -- Send!
-  local ret, err = udp_ch:send(mp.pack(metadata))
-	if err then print(ret, err) end
+	local t = get_time()
+	if t-t_send > send_interval then
+		-- Send localization info to monitor
+		local metadata = {}
+		metadata.id = 'world'
+		metadata.world = lW.send()
+		
+		if detection.posts then
+			local goal = {}
+			goal.type = detection.posts[1].type
+			goal.v1 = detection.posts[1].v
+			if goal.type==3 then
+				goal.v2 = detection.posts[2].v
+			end
+			metadata.world.goal = goal
+		end
+		-- Send!
+		local ret, err = udp_ch:send(mp.pack(metadata))
+		if err then print(ret, err) end
+		t_send = t
+	end
 end
 
 -- Entry
@@ -73,6 +79,7 @@ local npoll
 local t0, t = get_time()
 local debug_interval, t_debug = 1, t0
 while running do
+	send_interval = 1 / hcm.get_monitor_fps()
   npoll = poller:poll(TIMEOUT_MS)
   if npoll==0 then
     -- If no frames, then just update by odometry

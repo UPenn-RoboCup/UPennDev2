@@ -1,6 +1,11 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
+local monitor = {
+	minFPS = 0.5,
+	maxFPS = 15,
+}
+
 -- TODO: put this into FSM config, and state-specific
 local head = {
   pitchMin = -10 * math.pi/180,
@@ -57,7 +62,7 @@ vision.goal = {
   th_nPostB = 8,
   th_min_area = 80,
   th_min_orientation = 60*math.pi/180,
-  th_min_fill_rate = 0.19, --0.25,
+  th_min_fill_rate = 0.13, --0.19,
   height_min = -0.9,  --TODO
   th_aspect_ratio = {2.5,100},
   th_edge_margin = 5,
@@ -128,7 +133,7 @@ table.insert(Config.camera,
     },
     --Logitech C920
     --lut = 'm308_9am',
-    lut = '308_lightson',
+    lut = 'm308_lightson',
 		-- f = 640/2/tan(78/180*pi / 2)
     focal_length = 395.17,
     focal_base = 640,
@@ -172,5 +177,6 @@ end
 -- Associate with the table
 Config.vision = vision
 Config.head = head
+Config.monitor = monitor
 
 return Config

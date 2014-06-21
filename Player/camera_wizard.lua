@@ -22,7 +22,8 @@ else
 		assert(metadata, 'Bad camera name')
 	end
 end
-local ENABLE_NET = true
+require'hcm'
+local ENABLE_NET, SEND_INTERVAL, t_send = true, 1/hcm.get_monitor_fps(), 0
 local ENABLE_LOG, LOG_INTERVAL, t_log = false, 1 / 5, 0
 --local ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
 local FROM_LOG, LOG_DATE = false, '05.28.2014.16.18.44'
@@ -136,13 +137,16 @@ for i, param in ipairs(metadata.param) do
 	camera:set_param(name, value)
 	unix.usleep(1e5)
 	local now = camera:get_param(name)
-	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
+	-- TODO: exposure
+	local count = 0
+	assert(now==value, string.format('Failed to set %s: %d -> %d'    ,name, value, now))
 end
 
 local nlog = 0
 local udp_ret, udp_err, udp_data
 local t0 = unix.time()
 while true do
+	SEND_INTERVAL = 1 / hcm.get_monitor_fps()
 	-- Grab and compress
 	local img, sz, cnt, t = camera:get_image()
 	-- Update metadata
@@ -150,7 +154,7 @@ while true do
 	meta.n = cnt
 
 	-- Check if we are sending to the operator
-	if ENABLE_NET then
+	if ENABLE_NET and t-t_send > SEND_INTERVAL then
 		local c_img = c_yuyv:compress(img, w, h)
 		meta.sz = #c_img
 		udp_data = mp.pack(meta)..c_img
@@ -169,7 +173,7 @@ while true do
 	-- Update the vision routines
 	for pname, p in pairs(pipeline) do
 		p.update(img)
-		if ENABLE_NET and p.send then
+		if ENABLE_NET and p.send and t-t_send>SEND_INTERVAL then
 			for _,v in ipairs(p.send()) do
 				if v[2] then
 					udp_data = mp.pack(v[1])..v[2]
@@ -178,6 +182,7 @@ while true do
 				end
 				udp_ret, udp_err = udp_ch:send(udp_data)
 			end
+			t_send = t
 		end
 	end
 

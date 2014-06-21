@@ -220,21 +220,15 @@ shared_data.right.anode = vector.zeros(3)
 shared_data.right.grip = vector.zeros(3)
 
 
+-- Monitor
+shared_data.monitor = {}
+shared_data.monitor.fps = vector.new({10}) 
+
 
 --These variables are only used for offline testing of arm states
 shared_data.state.success = vector.zeros(0)
 shared_data.state.tstartrobot = vector.zeros(0)
 shared_data.state.tstartactual = vector.zeros(0)
-
-
-
-
-
-
-
-
-
-
 
 
 -- Call the initializer

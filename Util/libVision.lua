@@ -351,7 +351,6 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
       else
         -- Eliminate small post without cross bars
         if goalStats[1].post.area < th_min_area_unknown_post then
-          print("Post size too small")
           return table.insert(fail_msg, 'single post size too small')
         end
         -- unknown post
@@ -363,14 +362,15 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
     -- Convert torch tensor to table
     for i=1,#goalStats do
       goalStats[i].v = vector.new(goalStats[i].v)
+			table.insert(failures, table.concat({'\n Goal Position',
+				string.format('%.2f %.2f', goalStats[i].v[1], goalStats[i].v[2])},'\n') )
     end
     wcm.set_goal_t(Body.get_time())
 
 	end
     
 	if post_detected then
-    -- print(#goalStats,'GOAL DETECTED')
-    return tostring(#goalStats,'GOAL DETECTED'), goalStats
+		return table.concat(failures, ','), goalStats
 	end
 
   -- Yield the failure messages and the success tables
@@ -454,31 +454,26 @@ function libVision.update(img)
 	--TODO: posts debug msg is intense... or it's just Matlab sucks..
   -- TODO: ending debug while running webots is killing monitor
   -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
-  -- This is to avoid crash in monitor
+  detected.debug = table.concat({'Posts',post_fails},'\n')
 
+
+	--[[
   if posts then
 		if #posts < 2 then
-			detected.debug = table.concat({'Post ', 
+			detected.debug = table.concat({'1 Post ', 
 				string.format('%.2f %.2f', posts[1].v[1], posts[1].v[2])}, '\n')
 		else
-			detected.debug = table.concat({'Post ', 
+			detected.debug = table.concat({'2 Posts ', 
 				string.format('%.2f %.2f \n', posts[1].v[1], posts[1].v[2]), 
 				string.format('%.2f %.2f', posts[2].v[1], posts[2].v[2])}, '\n')
 		end
   else
     detected.debug = table.concat({'Post # ', 0})
   end
+	--]]
 
-  -- if not ball then util.ptable({ball_fails}) end
-  --[[ Print out debug msg in console
-  if not posts then 
-    util.ptable({post_fails}) 
-  else
-    for i, item in ipairs(posts) do
-      print(i, posts[i].v[1], posts[i].v[2], posts[i].v[3])
-    end
-  end
-  --]]
+	-- Debug in console
+	--util.ptable({post_fails})
 
   -- Send the detected stuff over the channel every cycle
   vision_ch:send(mp.pack(detected))

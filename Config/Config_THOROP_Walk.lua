@@ -96,15 +96,10 @@ if IS_WEBOTS then
   walk.velLimitA = {-.2,.2}
   walk.velDelta  = {0.04,0.03,0.1}
 
-else
-------------------------------------
--- Stance parameters
-------------------------------------
+else --REAL ROBOT
 
---Robotis default walk parameters
-  walk.bodyHeight = 0.9285318
---  walk.supportX = 0.0515184
-  walk.footY = 0.1095
+  walk.bodyHeight = 0.93
+  walk.footY = 0.095
   walk.footX = 0
   walk.bodyTilt = 11*math.pi/180
   walk.torsoX = 0.00    -- com-to-body-center offset
@@ -129,16 +124,7 @@ else
   walk.ankleImuParamY={1, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
   walk.hipImuParamY  ={1, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
 
-  --Compensation testing values
-  --[[
-  walk.hipRollCompensation = 1*math.pi/180
-  walk.ankleRollCompensation = 1.2*math.pi/180
-  walk.hipPitchCompensation = -1.0*math.pi/180
-  walk.kneePitchCompensation = 1.0*math.pi/180
-  walk.anklePitchCompensation = 1.5*math.pi/180
-  --]]
-
-  walk.hipRollCompensation = 3*math.pi/180
+  walk.hipRollCompensation = 2*math.pi/180
   walk.ankleRollCompensation = 0*math.pi/180
   walk.hipPitchCompensation = 0*math.pi/180
   walk.kneePitchCompensation = 0*math.pi/180
@@ -146,280 +132,36 @@ else
   --
   walk.phComp = {0.1,0.9}
   walk.phCompSlope = 0.2
-
-
  ------------------------------------
 
   walk.foot_traj = 1; --curved step
   walk.foot_traj = 2; --square step
 
   --To get rid of drifting
-  walk.velocityBias = {0.005,0,0}
   walk.velocityBias = {0.00,0,0}
-  walk.velLimitX = {-.05,.05}
-  walk.velLimitY = {-.02,.02}
-  walk.velLimitA = {-.2,.2}
-  walk.velDelta  = {0.025,0.02,0.1}
-end
 
-
-if HOSTNAME=="alvin" then
-  walk.legBias =
-    vector.new({
-      0,  1.0,  -1.0,  -1.0,  0, 0, --LLEG
-      0,  -0.50, 0,0,0, 0,  --RLEG
-    })*DEG_TO_RAD
-
---New bias 12/14 9:12 PM
-
-  walk.legBias =
-    vector.new({
-      0.875, 0.875, -0.625, -1.75, 0.00, -0.75,
-      0.625, -0.50, 0.375, 0.125, 0.00, 0.125
-    })*DEG_TO_RAD
-
-
---For alvin
-  walk.hipRollCompensation = 1*math.pi/180
   walk.stepHeight = 0.03
   walk.supportX = 0.02
   walk.supportY = 0.03
 
+  --Narrower stance, robotis value, 12/14 10:10PM
+
+
+  walk.velLimitX = {-.05,.05}
   walk.velLimitY = {-.01,.01}
   walk.velLimitA = {-.2,.2}
   walk.velDelta  = {0.025,0.02,0.1}
-
---with battery
-  walk.torsoX = -0.02
-
-
---Narrower stance, robotis value, 12/14 10:10PM
-  walk.footY = 0.095
-  walk.footX = 0
-  walk.torsoX = -0.04
-  walk.hipRollCompensation = 2*math.pi/180
-  walk.hipRollCompensationLeft = 2*math.pi/180
-  walk.hipRollCompensationRight = 2*math.pi/180
-
-  walk.supportY = 0.05
-
-
-  walk.velLimitA = {-.4,.4}
-
-  --JK's bias 10:54PM
---hiproll: 1 -0.4325
---kneepitch: -2.155 -0.3475
---ankleroll: -0.345 1.0025
-
-  walk.legBias =
-    vector.new({
-      0.875, 1, -0.625, -2.155, 0.00, -0.345,
-      0.625, -0.4325, 0.375, -0.3475, 0.00, 1.0025
-    })*DEG_TO_RAD
-
-  --Faster turn testing
-  walk.maxTurnSpeed = 0.20
-
-  walk.maxTurnSpeed = 0.10
-
+  walk.maxTurnSpeed = 0.1
   walk.aTurnSpeed = 0.25
   walk.maxStepCount = 30
 
-
-  --ankle roll tweak
   walk.legBias =
-    vector.new({
-      0.875, 1, -0.625, -2.155, 0.00, -0.615,
-      0.625, -0.4325, 0.375, -0.3475, 0.00, 1.0025
-    })*DEG_TO_RAD
+  vector.new({
+    0.875,  2.1475, -0.49, -1.9525,       1.48, -0.615,
+    -0.2525, -1.1075, 1.25, -0.752,   0.740, 0.41
+  })*DEG_TO_RAD
 
-  walk.torsoX3 = -0.04
-  walk.torsoX = -0.02
-
-
-
---19th, 9:02AM
-  walk.legBias =
-    vector.new({
-      0.875, 2.35, -0.625, -2.155,       0.00, -0.615,
-      0.1525, -1.2425, 0.375, -0.3475,   0.00, 0.41
-    })*DEG_TO_RAD
-
-
---D-day, 7:31AM
-
-  walk.legBias =
-    vector.new({
-      0.875,  2.1475, -0.625, -1.5475,       0.00, -0.615,
-      -0.2525, -1.58, 1.1175, -0.3475,   0.00, 0.41
-    })*DEG_TO_RAD
-
-
-
-
---hiproll: 2.1475 -1.58
---hippitch: -0.625 1.1175
---kneepitch: -1.5475 -0.3475
-
-
---hipyaw:0.875 -0.2525
-
-  walk.legBias =
-    vector.new({
-      0.875,  2.1475, -0.625, -1.5475,       1.2775, -0.615,
-      -0.2525, -1.58, 1.1175, -0.3475,   0.940, 0.41
-    })*DEG_TO_RAD
-
-
-
---AFTER HIP SWAP
---hiproll: 2.1475 -1.1075
---hippitch -0.8275 0.915
---kneepitch -1.9525 -0.7525
-
-  walk.legBias =
-    vector.new({
-      0.875,  2.1475, -0.8275, -1.9525,       1.2775, -0.615,
-      -0.2525, -1.1075, 0.915, -0.752,   0.940, 0.41
-    })*DEG_TO_RAD
-
---angle fune tuning
-
-  walk.legBias =
-    vector.new({
-      0.875,  2.1475, -0.49, -1.9525,       1.48, -0.615,
-      -0.2525, -1.1075, 1.25, -0.752,   0.740, 0.41
-    })*DEG_TO_RAD
-
-
-
-elseif HOSTNAME=="teddy" then
---for teddy
-  walk.hipRollCompensation = 1*math.pi/180
-  walk.stepHeight = 0.03
-  walk.supportX = 0.02
-  walk.supportY = 0.03
-
-  print("TEDDY")
-  walk.legBias =
-    vector.new({1, 0.50,    -0, -0.25,  0.25, 0.25,
-                0, 0,    0.75,   -1,  0, -0.50,
-    })*DEG_TO_RAD
---JK bias 12/14
-
-  --hiproll 0.25 0.125
-  --hippitch -0.25 0.375
-  --kneepitch -0.5 -0.875
-
-  walk.legBias =
-    vector.new({1, 0.25,-0.25, -0.50,  0.25, 0.25,
-                0, 0.125,0.375,-0.875,  0, -0.50,
-    })*DEG_TO_RAD
-
---New values
-  walk.footY = 0.095
-  walk.footX = 0
-  walk.torsoX = -0.04
-  walk.hipRollCompensation = 2*math.pi/180
-
-  walk.hipRollCompensationLeft = 2*math.pi/180
-  walk.hipRollCompensationRight = 2*math.pi/180
-
-  walk.supportY = 0.05
-
-  walk.maxTurnSpeed = 0.20
-  walk.aTurnSpeed = 0.25
-  walk.maxStepCount = 30
-
-
-
---Little less torso shift (with hands on)
-  walk.torsoX = -0.04
-  walk.torsoX = -0.02
-
---ankle roll tweak
-  walk.legBias =
-    vector.new({1, 0.25,-0.25, -0.50,  0.25, 0.5875,
-                0, 0.125,0.375,-0.875,  0, -0.7025,
-    })*DEG_TO_RAD
-
---ankle pitch tweak
-  walk.legBias =
-    vector.new({1, 0.25,-0.25, -0.50,  0.52, 0.25,
-                0, 0.125,0.375,-0.875,  0, -0.50,
-    })*DEG_TO_RAD
-
---Support Y reduce
-  walk.supportY = 0.05
-  walk.supportY = 0.03
-
---ankle roll untweak
-
-  walk.legBias =
-    vector.new({1, 0.25,-0.25, -0.50,  0.52, 0.25,
-                0, 0.125,0.375,-0.875,  0, -0.50,
-    })*DEG_TO_RAD
-
-
---Roll fix after collapse
-
-  walk.legBias =
-    vector.new({1, 1.26,-0.25, -0.50,  1.06, 0.2475,
-                0, -0.415,0.375,-0.875,  0, -0.50,
-    })*DEG_TO_RAD
-
-
-
-
-
-
-
-
-
-
---DRC site, 12/18 3:21PM
---HY  1 -0.27
---HP -.495 1.455
---AP -0.4925 -0.945
---AR .01125 0.175
-
-  walk.legBias =
-    vector.new({1, 1.26,    0.495,   -0.50,  -0.4925, 0.1125,
-            -0.27, -0.415,  1.455,   -0.875,  -0.945, 0.175,
-    })*DEG_TO_RAD
-
-
-  walk.torsoX = -0.02
-  walk.torsoX = -0.00
-
-
-
-  walk.supportY = 0.05
---Ankle tweak, 5:26PM
-  walk.legBias =
-    vector.new({1, 1.26,    0.495,   -0.50,  -0.02, 0.5175,
-            -0.27, -0.415,  1.455,   -0.875,  -0.945, 0.175,
-    })*DEG_TO_RAD
-
-
-
-  walk.maxTurnSpeed = 0.10
-
-
-else
-  print("UNKNOWN ROBOT")
-  walk.legBias =
-    vector.new({0,0,0,0,0,0,
-        0,0,0,0,0,0,
-    })*DEG_TO_RAD
 end
-
-
-
-
-
-
-
 
 
 
@@ -446,7 +188,6 @@ stance.dqLegLimit = vector.new{10,10,45,90,45,10}*DEG_TO_RAD
 
 stance.sitHeight = 0.75
 stance.dHeight = 0.01 --4cm per sec
-
 
 ------------------------------------
 -- ZMP preview stepping values

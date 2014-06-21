@@ -87,13 +87,19 @@ fsm.Motion = {
   {'motionIdle', 'stand', 'motionInit'},
   {'motionIdle', 'bias', 'motionBiasInit'},
 
-  {'motionBiasInit', 'bias', 'motionInit'},  
+  {'motionBiasInit', 'done', 'motionBiasIdle'}, 
+  {'motionBiasIdle', 'stand', 'motionInit'}, 
+
   {'motionInit', 'done', 'motionStance'},
 
   {'motionStance', 'bias', 'motionBiasInit'},
   {'motionStance', 'preview', 'motionStepPreview'},
   {'motionStance', 'walk', Config.dev.walk},
   {'motionStance', 'kick', 'motionKick'},
+
+  {'motionStance', 'sit', 'motionSit'},
+  {'motionSit', 'stand', 'motionStandup'},
+  {'motionStandup', 'done', 'motionStance'},
 
   {'motionStepPreview', 'done', 'motionStance'},
   {Config.dev.walk, 'done', 'motionStance'},

@@ -132,9 +132,20 @@ function process_keyinput()
 
     elseif byte==string.byte("0") then
       print(string.format("Current bias: \n%.2f %.2f %.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f %.2f %.2f ",
-      unpack(vector.new(legBias)*Body.RAD_TO_DEG)))
-    
+      unpack(vector.new(legBias)*RAD_TO_DEG)))
 
+      --Append at the end of calibration file
+      outfile=assert(io.open("./Config/calibration.lua","a+"));
+      --TODO: which one should we use?
+      data=string.format("\n\n-- Updated date: %s\n" , os.date() );
+      data=data..string.format("cal[\"%s\"].legBias=vector.new({\n   ",unix.gethostname());
+      for i=1,6 do data=data..string.format("%f,",legBias[i]*180/math.pi) end
+      data=data..'\n   '
+      for i=7,12 do data=data..string.format("%f,",legBias[i]*180/math.pi) end
+      data=data..'\n   })*math.pi/180\n';
+      outfile:write(data);
+      outfile:flush();
+      outfile:close();
     end
 
     if bias_edited then
@@ -154,6 +165,7 @@ function process_keyinput()
   end
 end
 
+mcm.set_leg_bias(Config.walk.legBias)
 local t_last = Body.get_time()
 local tDelay = 0.005*1E6
 

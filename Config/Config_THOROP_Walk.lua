@@ -31,8 +31,7 @@ walk.stanceLimitX = {-0.50,0.50}
 walk.stanceLimitY = {0.16,0.30}
 walk.stanceLimitA = {-10*math.pi/180,30*math.pi/180}
 
-if IS_WEBOTS then
-
+if IS_WEBOTS or HOSTNAME ~="alvin" then
   walk.maxTurnSpeed = 0.20
   walk.aTurnSpeed = 0.2
   walk.maxStepCount = 12
@@ -80,6 +79,8 @@ if IS_WEBOTS then
   walk.velDelta  = {0.025,0.02,0.1}
 
 
+walk.legBias =
+  vector.new({0,0,0,0,0,0, 0,0,0,0,0,0})*DEG_TO_RAD
   --Webots-only params 
 
   walk.stepHeight = 0.02--shorter step height
@@ -168,7 +169,6 @@ else --REAL ROBOT
     0.875,  2.1475, -0.49, -1.9525,       1.48, -0.615,
     -0.2525, -1.1075, 1.25, -0.752,   0.740, 0.41
   })*DEG_TO_RAD
-
 end
 
 
@@ -355,6 +355,14 @@ else
       0.007734,-0.001906,-0.030876,-0.114606,-0.353382,
       }
 end
+
+
+--Load robot specific configs
+c=require'calibration'
+
+if c.cal[HOSTNAME].legBias then 
+  walk.legBias = c.cal[HOSTNAME].legBias end
+
 
 ------------------------------------
 -- Associate with the table

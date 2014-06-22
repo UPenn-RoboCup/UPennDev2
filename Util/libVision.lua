@@ -112,12 +112,14 @@ local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_t)
   local area = stats.area
   -- If no pixels then return
   if area < th_area then 
-    return string.format('Area: %d < %d', area, th_area) 
+    return string.format('Area: %d < %d \t', area, th_area) 
   end
   -- Get the fill rate
-  local fill_rate = area / box_area
+	-- TODO: depend on ball or goal
+  --local fill_rate = area / box_area
+	local fill_rate = area / (stats.axisMajor * stats.axisMinor)
   if fill_rate < th_fill then 
-    return string.format('Fill rate: %.2f < %.2f', fill_rate, th_fill) 
+    return string.format('Fill rate: %.2f < %.2f\n', fill_rate, th_fill) 
   end
   return stats
 end
@@ -207,6 +209,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
     if type(postStats)=='string' then
       table.insert(fail, postStats)
     else
+			table.insert(fail, string.format('\n Post # %d ', i))
 			local check_passed = true
       -- TODO: Add lower goal post bbox check
       -- Orientation check
@@ -215,7 +218,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 					string.format('Orientation:%.1f < %.1f ', postStats.orientation, g_orientation) )
 				check_passed = false
       end
-			-- Fill rate check
+			--[[ Fill rate check  ALREADY DONE IN CHECK_PROP
 			if check_passed then
 				local fill_rate = postStats.area / (postStats.axisMajor * postStats.axisMinor)
 				if fill_rate < g_fill_rate then
@@ -223,6 +226,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 					check_passed = false
 				end
 			end
+			--]]
       -- Aspect Ratio check
 			if check_passed then
 				local aspect = postStats.axisMajor / postStats.axisMinor;
@@ -362,7 +366,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
     -- Convert torch tensor to table
     for i=1,#goalStats do
       goalStats[i].v = vector.new(goalStats[i].v)
-			table.insert(failures, table.concat({'\n Goal Position',
+			table.insert(failures, table.concat({'\n\n Goal Position',
 				string.format('%.2f %.2f', goalStats[i].v[1], goalStats[i].v[2])},'\n') )
     end
     wcm.set_goal_t(Body.get_time())
@@ -455,7 +459,6 @@ function libVision.update(img)
   -- TODO: ending debug while running webots is killing monitor
   -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
   detected.debug = table.concat({'Posts',post_fails},'\n')
-
 
 	--[[
   if posts then

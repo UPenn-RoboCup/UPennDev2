@@ -5,7 +5,7 @@ local T      = require'Transform'
 local util   = require'util'
 local vector = require'vector'
 
---[[
+---[[
 function robocupplanner.getTargetPose(pose,ballGlobal)
 
   local goalL = {4.5,Config.world.goalWidth/2}
@@ -61,6 +61,7 @@ function robocupplanner.getTargetPose(pose,ballGlobal)
 end
 --]]
 
+--[[
 function robocupplanner.getTargetPose(pose,ballGlobal)
   --Direct pose (not turning to the post)
   local angleRobotBall = math.atan2(pose[2]-ballGlobal[2],pose[1]-ballGlobal[1])
@@ -75,6 +76,7 @@ function robocupplanner.getTargetPose(pose,ballGlobal)
   return kickpos
 
 end
+--]]
 
 function robocupplanner.getVelocity(pose,target_pose )
 

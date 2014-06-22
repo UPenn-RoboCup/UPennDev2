@@ -54,6 +54,7 @@ local head_new = head_now
 local monitor_fps = hcm.get_monitor_fps()
 local monitor_fps_new = monitor_fps
 local minFPS, maxFPS = Config.monitor.minFPS, Config.monitor.maxFPS
+local dFPS = 3
 
 local dq = 5*DEG_TO_RAD
 function process_keyinput()
@@ -76,9 +77,9 @@ function process_keyinput()
 
 		-- Frame rate for monitoring
     elseif byte==string.byte("=") then
-			monitor_fps_new = monitor_fps + 5
+			monitor_fps_new = monitor_fps + dFPS
 		elseif byte==string.byte("-") then
-			monitor_fps_new = monitor_fps - 5
+			monitor_fps_new = monitor_fps - dFPS
     end
     
     -- Clamp

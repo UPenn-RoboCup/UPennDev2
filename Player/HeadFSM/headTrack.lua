@@ -38,7 +38,7 @@ function state.update()
 
   if t-t_entry > timeout then
    
-      --return 'timeout' 
+      return 'timeout' 
 
   end
 

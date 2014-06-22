@@ -42,6 +42,7 @@ if IS_WEBOTS then
   --Robotis style walk
   walk.bodyHeight = 0.9285318
   walk.bodyTilt = 11*math.pi/180
+  walk.bodyTilt = 0*math.pi/180
   walk.footY = 0.1095
 	walk.footX = 0
   walk.torsoX = 0.00    -- com-to-body-center offset
@@ -101,7 +102,8 @@ else --REAL ROBOT
   walk.bodyHeight = 0.93
   walk.footY = 0.095
   walk.footX = 0
-  walk.bodyTilt = 11*math.pi/180
+  --walk.bodyTilt = 11*math.pi/180
+  walk.bodyTilt = 3*math.pi/180
   walk.torsoX = 0.00    -- com-to-body-center offset
 
 ------------------------------------
@@ -147,6 +149,12 @@ else --REAL ROBOT
   --Narrower stance, robotis value, 12/14 10:10PM
 
 
+
+--Clown feet
+  walk.torsoX = 0.02
+  walk.supportX = 0.07
+
+
   walk.velLimitX = {-.05,.05}
   walk.velLimitY = {-.01,.01}
   walk.velLimitA = {-.2,.2}
@@ -187,7 +195,7 @@ stance.dpLimitStance = vector.new{.04, .03, .03, .4, .4, .4}
 stance.dqLegLimit = vector.new{10,10,45,90,45,10}*DEG_TO_RAD
 
 stance.sitHeight = 0.75
-stance.dHeight = 0.01 --4cm per sec
+stance.dHeight = 0.04 --4cm per sec
 
 ------------------------------------
 -- ZMP preview stepping values

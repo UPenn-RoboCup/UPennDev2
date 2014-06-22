@@ -2,7 +2,7 @@ assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
 local monitor = {
-	minFPS = 0.5,
+	minFPS = 1,
 	maxFPS = 15,
 }
 
@@ -45,8 +45,8 @@ local vision = {
 
 vision.ball = {
   diameter = 0.22,
-  th_min_bbox_area = 20, --50
-  th_min_area = 3,  --6,
+  th_min_bbox_area = 40, --50
+  th_min_area = 10,  --6,
   th_min_fill_rate = 0.35,
   th_height_max  = 0.20,
   th_ground_boundingbox = {-30,30,0,20},
@@ -59,10 +59,10 @@ vision.ball = {
 
 vision.goal = {
   th_min_bbox_area = 150, 
-  th_nPostB = 8,
+  th_nPostB = 10,
   th_min_area = 80,
-  th_min_orientation = 60*math.pi/180,
-  th_min_fill_rate = 0.13, --0.19,
+  th_min_orientation = 80*math.pi/180,
+  th_min_fill_rate = 0.28, --0.28,
   height_min = -0.9,  --TODO
   th_aspect_ratio = {2.5,100},
   th_edge_margin = 5,

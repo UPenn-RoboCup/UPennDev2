@@ -136,13 +136,13 @@ fsm.headReady = {
 --HeadTrack
 fsm.headTrack = {
   tLost = 2,
-  timeout = 10,
+  timeout = 8,
 }
 
 --HeadLookGoal: Look up to see the goal
 fsm.headLookGoal = {
   yawSweep = 50*DEG_TO_RAD,
-  tScan = 1.0,
+  tScan = 2,
   minDist = 0.40,
 }
 

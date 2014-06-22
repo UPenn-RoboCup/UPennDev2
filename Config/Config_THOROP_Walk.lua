@@ -154,6 +154,7 @@ else --REAL ROBOT
 --Clown feet
   walk.torsoX = 0.02
   walk.supportX = 0.07
+  walk.supportY = 0.06
 
 
   walk.velLimitX = {-.05,.05}
@@ -166,9 +167,19 @@ else --REAL ROBOT
 
   walk.legBias =
   vector.new({
-    0.875,  2.1475, -0.49, -1.9525,       1.48, -0.615,
-    -0.2525, -1.1075, 1.25, -0.752,   0.740, 0.41
+    0,0,0,0,0,0,
+    0,0,0,0,0,0,
   })*DEG_TO_RAD
+
+
+--We tested 10cm frontal walk, and the robot drifted rotationally 
+--  walk.velLimitX = {-.05,.10}
+  walk.velLimitX = {-.05,.07}
+  walk.velLimitY = {-.04,.04}
+
+--testing curved step
+  walk.foot_traj = 1; --curved step
+
 end
 
 

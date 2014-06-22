@@ -109,6 +109,7 @@ function process_keyinput()
       motion_ch:send'hybridwalk'
     elseif byte==string.byte("g") then  
       body_ch:send'play'
+      head_ch:send'scan'
     elseif byte==string.byte(" ") then  
       hcm.set_motion_waypoints(targetwp)
       hcm.set_motion_nwaypoints(1)

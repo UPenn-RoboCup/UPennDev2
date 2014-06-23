@@ -493,6 +493,12 @@ elseif IS_WEBOTS then
 
   -- Default configuration (toggle during run time)
   local ENABLE_CAMERA = true --false
+  local ENABLE_LOG, t_log = false, 0
+  if ENABLE_LOG then
+  	libLog = require'libLog'
+  	logger = libLog.new('yuyv', true)
+  end
+  
 
   --Added to config rather than hard-code 
   local ENABLE_CHEST_LIDAR  = Config.sensors.chest_lidar
@@ -529,7 +535,7 @@ elseif IS_WEBOTS then
   -- Setup the webots tags
   local tags = {}
   local t_last_error = -math.huge
-
+    
 	-- Vision routines
   local udp = require'udp'
   local jpeg = require'jpeg'
@@ -870,6 +876,29 @@ elseif IS_WEBOTS then
       local udp_data = mp.pack(meta)..c_img
       local udp_ret, udp_err = cam_udp_ch:send(udp_data)
       --]]
+
+      -- Logs for making colortable
+      local meta = {
+        t = t,
+        sz = 0,
+        w = w,
+        h = h,
+        id = 'head_camera',
+        c = 'jpeg',
+      }
+      
+      local t_now = Body.get_time()
+      local LOG_INTERVAL = 1/20
+      if logger and t_now - t_log> LOG_INTERVAL then
+        meta.t = t_now
+        --TODO: meta.cnt?
+        local sz = 4/2*w*h  -- 4 bytes per 2 pixels
+    		meta.rsz = sz
+        meta[1] = vision.get_metadata()
+        logger:record(meta, img, sz)
+        t_log = t_now
+      end
+
       -- Vision routines
       SEND_VISION_INTERVAL = 1 / hcm.get_monitor_fps()
       update_vision(img)

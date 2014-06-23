@@ -1,4 +1,4 @@
-datestamp = '06.20.2014.17.31.21';
+datestamp = '06.23.2014.18.55.57'
 % Metadata
 fid = fopen(sprintf('logs/yuyv_m_%s.log',datestamp));
 yuyvMeta = fread(fid,Inf,'*uint8');
@@ -10,6 +10,9 @@ yuyvMeta = msgpack('unpacker',yuyvMeta,'uint8');
 % Grab the YUYV logged information
 f_raw = fopen(sprintf('logs/yuyv_r_%s.log',datestamp));
 yuyvMontage = fread(f_raw,Inf,'*uint32');
+%disp(yuyvMeta{1}.w)
+%disp( yuyvMeta{1}.h)
+%disp( numel(yuyvMeta))
 yuyvMontage = reshape( ...
     yuyvMontage, ...
     [yuyvMeta{1}.w/2, yuyvMeta{1}.h, 1, numel(yuyvMeta)] ...

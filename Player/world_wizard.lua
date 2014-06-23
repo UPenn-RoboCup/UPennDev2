@@ -31,16 +31,22 @@ end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
-local uOdometry
+local uOdometry0, uOdometry
 local t_send, send_interval = 0
+
 vision_ch.callback = function(skt)
   local detections = skt:recv_all()
   -- Only use the last vision detection
 	local detection = mp.unpack(detections[#detections])
 
-  -- Update localization based onodometry and vision
+-- Update localization based onodometry and vision
+--Should use the differential of odometry!
+  if not uOdometry0 then uOdometry0 = mcm.get_status_odometry()
+  else uOdometry0 = uOdometry end
   uOdometry = mcm.get_status_odometry()
-  lW.update(uOdometry, detection)
+  dOdometry = util.pose_relative(uOdometry,uOdometry0)
+  
+  lW.update(dOdometry, detection)
   
 	local t = get_time()
 	if t-t_send > send_interval then
@@ -70,8 +76,13 @@ while running do
   npoll = poller:poll(TIMEOUT_MS)
   if npoll==0 then
     -- If no frames, then just update by odometry
+    --Should use the differential of odometry!
+    if not uOdometry0 then uOdometry0 = mcm.get_status_odometry()
+    else uOdometry0 = uOdometry end
     uOdometry = mcm.get_status_odometry()
-    lW.update_odometry(uOdometry)
+    dOdometry = util.pose_relative(uOdometry,uOdometry0)
+    lW.update_odometry(dOdometry)
+    
     -- Update the pose here
     wcm.set_robot_pose(lW.get_pose())
   end

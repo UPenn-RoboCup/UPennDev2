@@ -3,6 +3,7 @@ local libWorld = {}
 
 -- TODO: Add Attack bearing
 -- TODO: Add Webots ground truth knowledge
+local Body   = require'Body'
 local vector = require'vector'
 local ballFilter = require'ballFilter'
 local poseFilter = require'poseFilter'
@@ -10,6 +11,7 @@ local odomScale = Config.world.odomScale
 local use_imu_yaw = Config.world.use_imu_yaw
 local RESAMPLE_PERIOD = Config.world.resample_period
 local RESAMPLE_COUNT = Config.world.resample_count
+
 
 require'wcm'
 require'gcm'
@@ -27,17 +29,24 @@ local uOdometry0 = vector.zeros(3)
 -- Save the resampling times
 local t_resample = 0
 
+
+--WHY IS THIS NOT WORKING ANYMORE?
+--local yaw0 = Body.get_sensor_rpy()[3]
+
+
 local function update_odometry(uOdometry)
   -- Scale the odometry
   uOdometry[1] = odomScale[1] * uOdometry[1]
   uOdometry[2] = odomScale[2] * uOdometry[2]
-  uOdometry[3] = odomScale[3] * uOdometry[3] * DEG_TO_RAD
+  uOdometry[3] = odomScale[3] * uOdometry[3]
   -- Next, grab the gyro yaw
-  if use_imu_yaw then
-    local yaw = Body.get_gyro(3)
-    yaw0 = yaw
+--[[
+  if use_imu_yaw then    
+    local yaw = Body.get_sensor_rpy()[3]
     uOdometry[3] = yaw - yaw0
+    yaw0 = yaw
   end
+--]]  
   -- Update the filters based on the new odometry
   ballFilter.odometry(unpack(uOdometry))
   poseFilter.odometry(unpack(uOdometry))
@@ -59,7 +68,10 @@ local function update_vision(detected)
   if t - t_resample > RESAMPLE_PERIOD or count%RESAMPLE_COUNT==0 then
     poseFilter.resample()
     if mcm.get_walk_ismoving()==1 then
-      poseFilter.addNoise()
+
+
+--HACK... maybe we're adding too much noise?      
+--      poseFilter.addNoise()
     end
   end
   -- If the ball is detected
@@ -104,6 +116,7 @@ function libWorld.update(uOdom, detection)
     -- TODO: Add webots specific functions
     -- For SJ: This includes any GPS usage
   end
+
   update_odometry(uOdom)
   update_vision(detection)
   

@@ -232,7 +232,6 @@ end
 
 triangulate2 = function (pos,v)
 
-  --New code (for OP)
    local aPost = {}
    local d2Post = {}
 
@@ -243,15 +242,6 @@ triangulate2 = function (pos,v)
    d1 = math.sqrt(d2Post[1])
    d2 = math.sqrt(d2Post[2])
 
-  --    vcm.add_debug_message(string.format(
-  -- "===\n World: triangulation 2\nGoal dist: %.1f / %.1f\nGoal width: %.1f\n",
-  -- d1, d2 ,goalWidth ))
-  --
-  --
-  --    vcm.add_debug_message(string.format(
-  -- "Measured goal width: %.1f\n",
-  --  math.sqrt((v[1][1]-v[2][1])^2+(v[1][2]-v[2][2])^2)
-  -- ))
 
    postfix=1
    --postfix=0
@@ -364,6 +354,14 @@ local function goal_observation(pos1,pos2,v)
   local x1,y1,a1=pose1.x,pose1.y,pose1.a
   local x2,y2,a2=pose2.x,pose2.y,pose2.a
 
+--[[
+  print(string.format("pos: %.2f %.2f  / %.2f %.2f",
+    v[1][1],v[1][2], v[2][1],v[2][2]))
+
+  print(string.format("Pose1: %.2f %.2f %.2f",x1,y1,a1*180/math.pi))
+  print(string.format("Pose2: %.2f %.2f %.2f",x2,y2,a2*180/math.pi))
+--]]
+
   local rSigma1 = .25*dGoal1 + 0.20
   local rSigma2 = .25*dGoal2 + 0.20
   local aSigma = 5*math.pi/180
@@ -400,6 +398,8 @@ end
 
 
 
+--SJ: temp disable single goal detections
+
 function poseFilter.post_both(v)
   goal_observation(goalUpper, goalLower, v)
 end
@@ -416,8 +416,17 @@ function poseFilter.post_right(v)
   landmark_observation(postRight, v[1], rPostFilter, aPostFilter)
 end
 
+
+
+
+
+
+
+
+
+
 function poseFilter.corner(v,a)
-  landmark_observation(Lcorner,v,rCornerFilter,aCornerFilter)
+--  landmark_observation(Lcorner,v,rCornerFilter,aCornerFilter)
 --  line(v,a)--Fix heading
 end
 

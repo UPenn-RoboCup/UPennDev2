@@ -48,9 +48,9 @@ function state.update()
 
   -- print('Ball dist:', math.sqrt(ballX*ballX + ballY*ballY))
   -- Look at Goal
-  if t-t_entry > timeout then
+  if not USE_GPS_ONLY and t-t_entry > timeout then
     -- If robot is close to the ball then do not look up
-    if math.sqrt(ballX*ballX + ballY*ballY) > 0.8 then
+    if math.sqrt(ballX*ballX + ballY*ballY) > 1 then
       return 'timeout' 
     end
   end

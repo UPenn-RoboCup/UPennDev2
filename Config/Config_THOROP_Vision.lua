@@ -172,6 +172,29 @@ if IS_WEBOTS then
 
   vision.scaleA = 2
   vision.scaleB = 2
+  
+  vision.goal = {
+    th_min_bbox_area = 80, 
+    th_nPostB = 10,
+    th_min_area = 35,
+    th_min_orientation = 80*math.pi/180,
+    th_min_fill_rate = 0.28, --0.28,
+    height_min = -0.9,  --TODO
+    th_aspect_ratio = {2.5,110},
+    th_edge_margin = 5,
+    th_bottom_boundingbox = 0.9,
+    th_ground_boundingbox = {-15,15,-15,10},
+    th_min_green_ratio = 0.2,
+    th_min_bad_color_ratio = 0.1,
+    th_goal_separation = {0.35,3.0},
+    th_min_area_unknown_post = 80,
+    -- The range we triangulate:
+    far_goal_threshold= 4.0,
+    use_centerpost = 1,
+    min_crossbar_ratio = 0.6,
+    check_for_ground = 1,
+  }
+  
 end
 
 -- Associate with the table

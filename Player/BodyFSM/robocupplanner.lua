@@ -101,10 +101,10 @@ function robocupplanner.getVelocity(pose,target_pose )
 
   if rHomeRelative>1.0 and va < 0.2 then
     maxStep = 0.20
-    maxA = 0.1
+    maxA = 0.05
   elseif rHomeRelative > 0.5 then 
     maxStep = 0.10
-    maxA = 0.2
+    maxA = 0.1
   else
     maxStep = 0.05
   end

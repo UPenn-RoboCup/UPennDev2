@@ -458,8 +458,8 @@ function libVision.update(img)
 	--TODO: webots runs everything in single thread, so send debug msg
   -- is a pain
   -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
-  -- detected.debug = table.concat({'Posts',post_fails},'\n')
-  detected.debug = table.concat({'Posts', 0})
+  detected.debug = table.concat({'Posts',post_fails},'\n')
+  -- detected.debug = table.concat({'Posts', 0})
 
 	--[[
   if posts then

@@ -9,7 +9,6 @@ world.ballDiameter = 0.22
 world.postDiameter = 0.1
 world.goalHeight = 1.8
 world.goalWidth = 2.6  -- in m308
-world.goalWidth = 3  -- in webots, based on rules
 world.goalUpper = {} -- Goal in use
 world.goalUpper[1] = {4.5, 1.5}
 world.goalUpper[2] = {4.5, -1.5}
@@ -64,6 +63,12 @@ world.use_imu_yaw = false
 -- Particle resampling intervals
 world.resample_period = 0.3 -- seconds
 world.resample_count = 20 -- partile filter cycles
+
+
+-- For webots
+if IS_WEBOTS then
+  world.goalWidth = 3
+end
 
 -- Associate with the table
 Config.world = world

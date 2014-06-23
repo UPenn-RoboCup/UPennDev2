@@ -136,8 +136,13 @@ function libWorld.send()
     to_send.goal = {}
     to_send.goal.type = goal[1].type
     to_send.goal.v1 = goal[1].v
+    to_send.info = to_send.info..string.format(
+      'Post1: %.1f %.1f\n', to_send.goal.v1[1], to_send.goal.v1[2])
+    
     if goal[1].type==3 then
       to_send.goal.v2 = goal[2].v
+      to_send.info = to_send.info..string.format(
+        'Post2: %.1f %.1f\n', to_send.goal.v2[1], to_send.goal.v2[2])
     end
   end  
 

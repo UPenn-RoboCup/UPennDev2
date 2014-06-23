@@ -84,7 +84,7 @@ function state.update()
       return 'timeout'
     else
       print('Goal lost!!')
-      --return 'lost'
+      return 'lost'
     end
   end
 end

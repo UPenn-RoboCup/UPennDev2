@@ -7,6 +7,8 @@ assert(ffi, 'Need LuaJIT to run. Lua support in the future')
 require'dcm'
 -- Shared memory for world
 require'wcm'
+-- SHM for human interface
+require'hcm'
 
 -- Utilities
 local unix   = require'unix'
@@ -540,16 +542,21 @@ elseif IS_WEBOTS then
 	-- Just use one detection routine
   local vision = require(cam_cfg.detection_pipeline[1])
 	vision.entry(cam_cfg, Body)
+  local t_vision_send, SEND_VISION_INTERVAL = 0
 	local function update_vision(yuyv)
 		vision.update(yuyv)
-    local udp_data, udp_ret, udp_err 
-		for _,v in ipairs(vision.send()) do
-			if v[2] then
-				udp_data = mp.pack(v[1])..v[2]
-			else
-				udp_data = mp.pack(v[1])
-			end
-			udp_ret, udp_err = cam_udp_ch:send(udp_data)
+    local t_now = Body.get_time()
+    if t_now - t_vision_send > SEND_VISION_INTERVAL then
+      t_vision_send = t_now
+      local udp_data, udp_ret, udp_err 
+  		for _,v in ipairs(vision.send()) do
+  			if v[2] then
+  				udp_data = mp.pack(v[1])..v[2]
+  			else
+  				udp_data = mp.pack(v[1])
+  			end
+  			udp_ret, udp_err = cam_udp_ch:send(udp_data)
+      end
     end
 	end
 
@@ -864,6 +871,7 @@ elseif IS_WEBOTS then
       local udp_ret, udp_err = cam_udp_ch:send(udp_data)
       --]]
       -- Vision routines
+      SEND_VISION_INTERVAL = 1 / hcm.get_monitor_fps()
       update_vision(img)
     end
     -- Grab a lidar scan

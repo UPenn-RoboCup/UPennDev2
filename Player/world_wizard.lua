@@ -51,16 +51,6 @@ vision_ch.callback = function(skt)
 		local metadata = {}
 		metadata.id = 'world'
 		metadata.world = lW.send()
-		
-		if detection.posts then
-			local goal = {}
-			goal.type = detection.posts[1].type
-			goal.v1 = detection.posts[1].v
-			if goal.type==3 then
-				goal.v2 = detection.posts[2].v
-			end
-			metadata.world.goal = goal
-		end
 		-- Send!
 		local ret, err = udp_ch:send(mp.pack(metadata))
 		if err then print(ret, err) end

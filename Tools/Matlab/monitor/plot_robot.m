@@ -6,29 +6,15 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
 % Level 4: show position, vision info and particles
 % Level 5: wireless (level 2 + robot name)
 
-  % cla(h_field);
-  % plot_field(h_field,2);
+  cla(h_field);
+  plot_field(h_field,2);
+  gca;
   
-  persistent hr hb hrb hg1 hrg1 hg2 hrg2;
-
   x0 = robot_struct.pose(1);
   y0 = robot_struct.pose(2);
   ca = cos(robot_struct.pose(3));
   sa = sin(robot_struct.pose(3));
   
-  % % Robot
-  % hr = fill([0 0 0], [0 0 0], 'b');
-  % % Ball
-  % hb = plot([0], [0], 'ro');
-  % hrb = plot([0 0],[0 0],'r');  
-  % % Goal
-  % marker = 'm';
-  % marker2 = strcat(marker,'--');
-  % hg1 = plot([0],[0],marker,'MarkerSize',12/scale);
-  % hrg1 = plot([0 0],[0 0], marker2);
-  % hg2 = hg1;
-  % hrg2 = hrg1;
-      
   hold on;
 
   if isfield(robot_struct, 'fall') && robot_struct.fall
@@ -44,8 +30,12 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       %simple position and pose
       plot_robot(robot_struct, scale);
       % plot_info(robot_struct,scale,1);
-      plot_ball(robot_struct, scale);
-      plot_goal(robot_struct, scale);
+      if isfield(robot_struct, 'ball')
+        plot_ball(robot_struct, scale);
+      end
+      if isfield(robot_struct, 'goal')
+        plot_goal(robot_struct, scale);
+      end
       % plot_sound(robot_struct,scale);
       % plot_obstacle(robot_struct,scale);
       %plot_gps_robot(robot_struct,scale);
@@ -181,7 +171,6 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
     % teamColors = ['b', 'r'];
     % hr = fill(xr, yr, teamColors(max(1,robot.teamColor+1)));
 
-    delete(hr);
     hr = fill(xr, yr, 'b');
     % set(hr, 'XData', xr, 'YData', yr);
 
@@ -213,7 +202,6 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       xb = x0 + ball(1)*ca - ball(2)*sa;   
       yb = y0 + ball(1)*sa + ball(2)*ca;
 
-      delete([hb hrb])
       hb = plot(xb, yb, 'ro');
       hrb = plot([x0 xb],[y0 yb],'r');
       % set(hb, 'XData', xb, 'YData', yb);
@@ -223,33 +211,29 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
 
 
   function plot_goal(robot, scale)
-    if isfield(robot, 'goal')
-      delete([hg1 hrg1])
-      goal = robot.goal;
-      marker = 'm';
-      marker2 = strcat(marker,'--');
+    goal = robot.goal;
+    marker = 'm';
+    marker2 = strcat(marker,'--');
 
-      if goal.type == 0
-        marker1 = strcat(marker,'+');%Unknown post
-      elseif goal.type == 2
-          marker1 = strcat(marker,'>');%Right post
-      else
-          marker1 = strcat(marker,'<');%Left or two post
-      end
-      x1 = goal.v1(1)*ca - goal.v1(2)*sa + robot_struct.pose(1);
-      y1 = goal.v1(1)*sa + goal.v1(2)*ca + robot_struct.pose(2);
+    if goal.type == 0
+      marker1 = strcat(marker,'+');%Unknown post
+    elseif goal.type == 2
+        marker1 = strcat(marker,'>');%Right post
+    else
+        marker1 = strcat(marker,'<');%Left or two post
+    end
+    x1 = goal.v1(1)*ca - goal.v1(2)*sa + robot_struct.pose(1);
+    y1 = goal.v1(1)*sa + goal.v1(2)*ca + robot_struct.pose(2);
 
-      hg1 = plot(x1, y1, marker1,'MarkerSize',12/scale);
-      hrg1 = plot([x0 x1],[y0 y1], marker2);
-      
-      if goal.type == 3
-        delete([hg2 hrg2])
-        marker1 = strcat(marker,'>');%Left post
-        x2 = goal.v2(1)*ca - goal.v2(2)*sa + robot_struct.pose(1);
-        y2 = goal.v2(1)*sa + goal.v2(2)*ca + robot_struct.pose(2);
-        hg2 = plot(x2, y2, marker1,'MarkerSize',12/scale);
-        hrg2 = plot([x0 x2],[y0 y2], marker2);
-      end
+    hg1 = plot(x1, y1, marker1,'MarkerSize',12/scale);
+    hrg1 = plot([x0 x1],[y0 y1], marker2);
+    
+    if goal.type == 3
+      marker1 = strcat(marker,'>');%Left post
+      x2 = goal.v2(1)*ca - goal.v2(2)*sa + robot_struct.pose(1);
+      y2 = goal.v2(1)*sa + goal.v2(2)*ca + robot_struct.pose(2);
+      hg2 = plot(x2, y2, marker1,'MarkerSize',12/scale);
+      hrg2 = plot([x0 x2],[y0 y2], marker2);
     end
     
   end

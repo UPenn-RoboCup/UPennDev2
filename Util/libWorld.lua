@@ -3,7 +3,6 @@ local libWorld = {}
 
 -- TODO: Add Attack bearing
 -- TODO: Add Webots ground truth knowledge
-local Body = require'Body'
 local vector = require'vector'
 local ballFilter = require'ballFilter'
 local poseFilter = require'poseFilter'
@@ -19,6 +18,8 @@ require'gcm'
 local t_entry
 -- Cycle count
 local count
+-- Objects
+local ball, goal
 
 -- Initial odometry
 local uOdometry0 = vector.zeros(3)
@@ -59,7 +60,7 @@ local function update_vision(detected)
     poseFilter.addNoise()
   end
   -- If the ball is detected
-	local ball = detected.ball
+	ball = detected.ball
   if ball then
      -- print(string.format('ball BEFORE filter: %.1f, %.1f\n',
      --   ball.v[1], ball.v[2]))
@@ -68,7 +69,7 @@ local function update_vision(detected)
      --   wcm.get_ball_x(), wcm.get_ball_y()))
   end
   -- If the goal is detected
-	local goal = detected.posts
+	goal = detected.posts
   if goal then
     if goal[1].type == 3 then
       goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
@@ -108,18 +109,39 @@ end
 
 function libWorld.send()
   local to_send = {}
+  to_send.info = ''
   -- Robot info
   -- TODO: the poseFilter return huge error
   -- to_send.pose = vector.new(poseFilter.get_pose())
-  to_send.pose = vector.new(wcm.get_robot_odometry())
-  -- print('libWorld, odom:', unpack(wcm.get_robot_odometry()))
+  to_send.pose = vector.new(wcm.get_robot_odometry())  
+  to_send.info = to_send.info..string.format(
+    'Pose: %.1f %.1f %.1f\n', unpack(to_send.pose))
+    
+    -- print('libWorld, odom:', unpack(wcm.get_robot_odometry()))
+  
   to_send.role = vector.pose{gcm.get_game_role()}
   to_send.time = Body.get_time()
+  
   -- Ball info
-  to_send.ball = {}
-  to_send.ball.x = wcm.get_ball_x()
-  to_send.ball.y = wcm.get_ball_y()
-  to_send.ball.t = wcm.get_ball_t()
+  if ball then
+    to_send.ball = {}
+    to_send.ball.x = wcm.get_ball_x()
+    to_send.ball.y = wcm.get_ball_y()
+    to_send.ball.t = wcm.get_ball_t()
+    to_send.info = to_send.info..string.format(
+      'Ball: %.1f %.1f\n', to_send.ball.x, to_send.ball.y)
+  end
+  -- Goal info
+  if goal then
+    to_send.goal = {}
+    to_send.goal.type = goal[1].type
+    to_send.goal.v1 = goal[1].v
+    if goal[1].type==3 then
+      to_send.goal.v2 = goal[2].v
+    end
+  end  
+
+  local util = require'util'
   return to_send
 end
 

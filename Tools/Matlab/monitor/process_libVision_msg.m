@@ -69,10 +69,11 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
     elseif strcmp(msg_id,'world')
       if isfield(metadata, 'world')
         % msg_struct, vision_struct, scale, drawlevel, name
-        % TODO: scale  OFFSET!!!
         drawlevel = 1;
         name = 'alvin';
         plot_robot(cam.h_field, metadata.world, [], 1.5, drawlevel, name);
+        % Show messages
+        set(cam.w_debug, 'String', char(metadata.world.info));
       end
 
     elseif strcmp(msg_id,'head_camera')

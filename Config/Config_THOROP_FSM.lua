@@ -43,7 +43,7 @@ fsm.Head = {
   {'headTrack', 'teleop', 'headTeleop'},
   --
   {'headLookGoal', 'timeout', 'headTrack'},
-  --{'headLookGoal', 'lost', 'headSweep'},
+  {'headLookGoal', 'lost', 'headSweep'},
   --
   {'headSweep', 'done', 'headTrack'},
   --

@@ -11,7 +11,7 @@ figure(1);
 clf;
 % (top)
 % LabelA
-f_lA = subplot(1,2,1);
+f_lA = subplot(2,1,1);
 im_lA = image(zeros(1));
 colormap(cmap);
 hold on;
@@ -28,10 +28,10 @@ for i=1:2
     set(p_post{i},'Xdata', []);
     set(p_post{i},'Ydata', []);
 end
-hold off;
 % yuyv
-f_yuyv = subplot(1,2,2);
+f_yuyv = subplot(2,1,2);
 im_yuyv = image(zeros(1));
+hold off;
 
 drawnow;
 
@@ -99,6 +99,9 @@ while running
             [metadata, offset] = msgpack('unpack', udp_data);
             % This must be uint8
             raw = udp_data(offset+1:end);
+            if strcmp( char(metadata.id), 'world')
+                blah = 1;
+            end
             is_draw = process_libVision_msg(metadata, raw, cam);
             do_draw = do_draw || is_draw;
         end

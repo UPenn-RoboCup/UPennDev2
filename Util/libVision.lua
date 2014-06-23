@@ -455,10 +455,11 @@ function libVision.update(img)
   detected.ball = ball
   detected.posts = posts
   
-	--TODO: posts debug msg is intense... or it's just Matlab sucks..
-  -- TODO: ending debug while running webots is killing monitor
+	--TODO: webots runs everything in single thread, so send debug msg
+  -- is a pain
   -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
-  detected.debug = table.concat({'Posts',post_fails},'\n')
+  -- detected.debug = table.concat({'Posts',post_fails},'\n')
+  detected.debug = table.concat({'Posts', 0})
 
 	--[[
   if posts then

@@ -36,12 +36,6 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  if t-t_entry > timeout then
-   
-      return 'timeout' 
-
-  end
-
   local ball_elapsed = t - wcm.get_ball_t()
 
   if ball_elapsed > tLost then --ball lost
@@ -51,6 +45,15 @@ function state.update()
 
   local ballX, ballY = wcm.get_ball_x(), wcm.get_ball_y()
   local yaw, pitch = HT.ikineCam(ballX, ballY, ball_radius)
+
+  -- print('Ball dist:', math.sqrt(ballX*ballX + ballY*ballY))
+  -- Look at Goal
+  if t-t_entry > timeout then
+    -- If robot is close to the ball then do not look up
+    if math.sqrt(ballX*ballX + ballY*ballY) > 0.8 then
+      return 'timeout' 
+    end
+  end
 
   -- Clamp
   yaw = math.min(math.max(yaw, yawMin), yawMax)

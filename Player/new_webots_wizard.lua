@@ -13,6 +13,7 @@ local vision_ch = si.new_subscriber'vision'
 -- SHM
 require'wcm'
 require'mcm'
+require'hcm'
 
 -- UDP channel
 local udp = require'udp'
@@ -45,8 +46,8 @@ end
 local vector = require'vector'
 
 local uOdometry
-local metadata = {}
-local SEND_WORLD = false
+local t_send, SEND_INTERVAL = 0
+
 vision_ch.callback = function(skt)
   local detections = skt:recv_all()
   -- First, update the odometry
@@ -59,20 +60,16 @@ vision_ch.callback = function(skt)
   wcm.set_robot_pose(pose)
   
   -- Send localization info to monitor
-  metadata.id = 'world'
-  metadata.world = lW.send()
-  if detection.posts then
-    local goal = {}
-    goal.type = detection.posts[1].type
-    goal.v1 = detection.posts[1].v
-    if goal.type==3 then
-      goal.v2 = detection.posts[2].v
-    end
-    metadata.world.goal = goal
+  local t = get_time()
+  if t-t_send > SEND_INTERVAL then
+    local metadata = {}
+    metadata.id = 'world'
+    metadata.world = lW.send()
+    -- Send!
+    udp_ch:send(mp.pack(metadata)) 
+    t_send = t
   end
 
-  SEND_WORLD = true
-  
 end
 
 
@@ -102,6 +99,7 @@ lW.entry()
 
 -- Update loop
 while running do
+  SEND_INTERVAL = 1 / hcm.get_monitor_fps()
   npoll = poller:poll(TIMEOUT_MS)
   if npoll==0 then
     -- If no frames, then just update by odometry
@@ -110,12 +108,6 @@ while running do
     -- Update the pose here
     -- TODO: should put into libWorld
     wcm.set_robot_pose(lW.get_pose())
-  end
-  
-  --TODO: tried send in callback, yet there was some clogging
-  if SEND_WORLD then 
-    udp_ch:send(mp.pack(metadata)) 
-    SEND_WORLD = false
   end
   
   t = get_time()

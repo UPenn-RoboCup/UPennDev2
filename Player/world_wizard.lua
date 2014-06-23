@@ -42,8 +42,8 @@ vision_ch.callback = function(skt)
   uOdometry = mcm.get_status_odometry()
   lW.update(uOdometry, detection)
   -- Update pose
-	local pose = lW.get_pose()
-  wcm.set_robot_pose(pose)
+  -- local pose = lW.get_pose()
+  --   wcm.set_robot_pose(pose)
   
 	local t = get_time()
 	if t-t_send > send_interval then

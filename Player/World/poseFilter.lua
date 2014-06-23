@@ -25,10 +25,6 @@ local rPostFilter = Config.world.rPostFilter
 local aPostFilter = Config.world.aPostFilter
 local rKnownGoalFilter = Config.world.rKnownGoalFilter or Config.world.rGoalFilter
 local aKnownGoalFilter = Config.world.aKnownGoalFilter or Config.world.aGoalFilter
-local rKnownPostFilter = Config.world.rKnownPostFilter or Config.world.rPostFilter
-local aKnownPostFilter = Config.world.aKnownPostFilter or Config.world.aPostFilter
-local rUnknownGoalFilter = Config.world.rUnknownGoalFilter or Config.world.rGoalFilter
-local aUnknownGoalFilter = Config.world.aUnknownGoalFilter or Config.world.aGoalFilter
 local rUnknownPostFilter = Config.world.rUnknownPostFilter or Config.world.rPostFilter
 local aUnknownPostFilter = Config.world.aUnknownPostFilter or Config.world.aPostFilter
 local rLandmarkFilter = Config.world.rLandmarkFilter
@@ -45,11 +41,8 @@ local wp = vector.zeros(N) -- weight
 --@param dp scales how wide the distrubution is
 function poseFilter.initialize(p0, dp)
   p0 = p0 or {0, 0, 0}
-  dp = dp or {.1*xMax, .1*yMax, math.pi/9}
+  dp = dp or {.1*xMax, .1*yMax, 5*DEG_TO_RAD}
 
-  -- TODO: why -0.5 upon a standard normal distribution?
-  -- xp = p0[1]*vector.ones(N) + dp[1]*(vector.new(util.randn(N))-0.5*vector.ones(N))
-  -- yp = p0[2]*vector.ones(N) + dp[2]*(vector.new(util.randn(N))-0.5*vector.ones(N))
   xp = p0[1]*vector.ones(N) + dp[1]*vector.new(util.randn(N))
   yp = p0[2]*vector.ones(N) + dp[2]*vector.new(util.randn(N))
   ap = p0[3]*vector.ones(N) + dp[3]*(vector.new(util.randu(N))-0.5*vector.ones(N))
@@ -136,13 +129,13 @@ end
 --distance to landmark
 --@param aLandmarkFilter How much to adjust particles according to
 --angle to landmark
-local function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
+local function landmark_observation(pos, v, rFilter, aFilter)
   local r = math.sqrt(v[1]^2 + v[2]^2)
   local a = math.atan2(v[2], v[1])
-  local rSigma = .15*r + 0.10
-  local aSigma = 5*math.pi/180
-  local rFilter = rLandmarkFilter or 0.02
-  local aFilter = aLandmarkFilter or 0.04
+  local rSigma = .15*r -- + 0.10
+  local aSigma = 2*math.pi/180
+  local rFilter = rFilter or 0.02
+  local aFilter = aFilter or 0.04
 
   --Calculate best matching landmark pos to each particle
   local dxp = {}
@@ -365,13 +358,8 @@ end
 local function goal_observation(pos1,pos2,v)
 
   --Get pose estimate from two goalpost locations
-  if use_new_goalposts==1 then
-    pose1,dGoal1=triangulate2(pos1,v)
-    pose2,dGoal2=triangulate2(pos2,v)
-  else
-    pose1,dGoal1=triangulate(pos1,v)
-    pose2,dGoal2=triangulate(pos2,v)
-  end
+  local pose1,dGoal1 = triangulate2(pos1,v)
+  local pose2,dGoal2 = triangulate2(pos2,v)
 
   local x1,y1,a1=pose1.x,pose1.y,pose1.a
   local x2,y2,a2=pose2.x,pose2.y,pose2.a
@@ -379,8 +367,8 @@ local function goal_observation(pos1,pos2,v)
   local rSigma1 = .25*dGoal1 + 0.20
   local rSigma2 = .25*dGoal2 + 0.20
   local aSigma = 5*math.pi/180
-  local rFilter = rUnknownGoalFilter
-  local aFilter = aUnknownGoalFilter
+  local rFilter = rGoalFilter
+  local aFilter = aGoalFilter
 
   for ip = 1,N do
     local xErr1 = x1 - xp[ip]
@@ -421,19 +409,11 @@ function poseFilter.post_unknown(v)
 end
 
 function poseFilter.post_left(v)
-  landmark_observation(postLeft, v[1], rUnknownPostFilter, aUnknownPostFilter)
+  landmark_observation(postLeft, v[1], rPostFilter, aPostFilter)
 end
 
 function poseFilter.post_right(v)
-  landmark_observation(postRight, v[1], rUnknownPostFilter, aUnknownPostFilter)
-end
-
-
----Updates weights of particles according to the detection of a line
---@param v z and y coordinates of center of line relative to robot
---@param a angle of line relative to angle of robot
-function poseFilter.landmark_yellow(v)
-  landmark_observation({landmarkYellow}, v, rLandmarkFilter, aLandmarkFilter)
+  landmark_observation(postRight, v[1], rPostFilter, aPostFilter)
 end
 
 function poseFilter.corner(v,a)

@@ -38,10 +38,17 @@ world.Lcorner[6]={0,-3.0}
 
 
 -- Filter weights
-world.rGoalFilter = 0.02*3
-world.aGoalFilter = 0.05*3
-world.rPostFilter = 0.02*3
-world.aPostFilter = 0.10*3
+-- world.rGoalFilter = 0.02*3
+-- world.aGoalFilter = 0.05*3
+-- world.rPostFilter = 0.02*3
+-- world.aPostFilter = 0.10*3
+
+world.rGoalFilter = 0.02
+world.aGoalFilter = 0.05
+world.rPostFilter = 0.02
+world.aPostFilter = 0.10
+world.rUnknownPostFilter = 0.05
+world.aUnknownPostFilter = 0.15
 -- TODO
 world.rLandmarkFilter = 0.05*3
 world.aLandmarkFilter = 0.10*3

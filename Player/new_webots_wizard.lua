@@ -56,8 +56,8 @@ vision_ch.callback = function(skt)
 	local detection = mp.unpack(detections[#detections])
 
   lW.update(uOdometry, detection)
- 	local pose = lW.get_pose()
-  wcm.set_robot_pose(pose)
+   -- local pose = lW.get_pose()
+   --   wcm.set_robot_pose(pose)
   
   -- Send localization info to monitor
   local t = get_time()
@@ -106,7 +106,6 @@ while running do
     uOdometry = mcm.get_status_odometry()
     lW.update_odometry(uOdometry)
     -- Update the pose here
-    -- TODO: should put into libWorld
     wcm.set_robot_pose(lW.get_pose())
   end
   

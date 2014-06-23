@@ -8,7 +8,7 @@ USE_LOCALHOST = true
 
 -- Do we use GPS pose in webots?
 USE_GPS_ONLY = true
---USE_GPS_ONLY = false
+USE_GPS_ONLY = false
 
 -- Locate the Modules
 CWD = assert(os.getenv'PWD','No PWD variable set!')

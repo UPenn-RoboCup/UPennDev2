@@ -13,6 +13,7 @@ local RESAMPLE_COUNT = Config.world.resample_count
 
 require'wcm'
 require'gcm'
+require'mcm'
 
 -- Timestamps
 local t_entry
@@ -57,7 +58,9 @@ local function update_vision(detected)
   local t = unix.time()
   if t - t_resample > RESAMPLE_PERIOD or count%RESAMPLE_COUNT==0 then
     poseFilter.resample()
-    poseFilter.addNoise()
+    if mcm.get_walk_ismoving()==1 then
+      poseFilter.addNoise()
+    end
   end
   -- If the ball is detected
 	ball = detected.ball
@@ -69,8 +72,9 @@ local function update_vision(detected)
      --   wcm.get_ball_x(), wcm.get_ball_y()))
   end
   -- If the goal is detected
+  -- If robot is static then do not use posts for localization
 	goal = detected.posts
-  if goal then
+  if goal and mcm.get_walk_ismoving()==1 then
     if goal[1].type == 3 then
       goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
     else
@@ -86,15 +90,15 @@ function libWorld.entry()
   poseFilter.initialize()
   -- Save this resampling time
   t_resample = t_entry
-  -- TODO: Set the initial odometry
+  -- Set the initial odometry
+  wcm.set_robot_pose({0,0,0})
+  wcm.set_robot_odometry({0,0,0})
   -- Processing count
   count = 0
 end
 
 function libWorld.update(uOdom, detection)
   local t = unix.time()
-  -- Grab the pose before updating
-  local pose0 = vector.pose{poseFilter.get_pose()}
   -- Run the updates
   if IS_WEBOTS then
     -- TODO: Add webots specific functions
@@ -102,6 +106,9 @@ function libWorld.update(uOdom, detection)
   end
   update_odometry(uOdom)
   update_vision(detection)
+  
+  -- Update pose in wcm
+  wcm.set_robot_pose(vector.pose{poseFilter.get_pose()})
   
   -- Increment the process count
   count = count + 1
@@ -112,10 +119,10 @@ function libWorld.send()
   to_send.info = ''
   -- Robot info
   -- TODO: the poseFilter return huge error
-  -- to_send.pose = vector.new(poseFilter.get_pose())
-  to_send.pose = vector.new(wcm.get_robot_odometry())  
+  to_send.pose = vector.new(wcm.get_robot_pose())
+  -- to_send.pose = vector.new(wcm.get_robot_odometry())
   to_send.info = to_send.info..string.format(
-    'Pose: %.1f %.1f %.1f\n', unpack(to_send.pose))
+    'Pose: %.1f %.1f %.1f\n', to_send.pose[1], to_send.pose[2], to_send.pose[3]*RAD_TO_DEG)
     
     -- print('libWorld, odom:', unpack(wcm.get_robot_odometry()))
   
@@ -135,6 +142,9 @@ function libWorld.send()
   if goal then
     to_send.goal = {}
     to_send.goal.type = goal[1].type
+    to_send.info = to_send.info..string.format(
+      'Post type: %d \n', goal[1].type )
+    
     to_send.goal.v1 = goal[1].v
     to_send.info = to_send.info..string.format(
       'Post1: %.1f %.1f\n', to_send.goal.v1[1], to_send.goal.v1[2])
@@ -146,7 +156,6 @@ function libWorld.send()
     end
   end  
 
-  local util = require'util'
   return to_send
 end
 

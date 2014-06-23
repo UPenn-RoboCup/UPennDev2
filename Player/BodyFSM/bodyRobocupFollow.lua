@@ -108,7 +108,8 @@ function state.update()
     if USE_GPS_ONLY then
       pose = wcm.get_robot_pose_gps()
     else
-      pose = wcm.get_robot_pose()
+      -- pose = wcm.get_robot_pose()
+      pose = wcm.get_robot_odometry()
     end
 --    print(pose[1],pose[2],pose[3]*180/math.pi)
     local foot_xOffset = 0.15

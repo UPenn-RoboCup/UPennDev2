@@ -7,6 +7,7 @@ local Body = require(Config.dev.body)
 local lW = require'libWorld'
 local si = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
+local util = require'util'
 -- Cache some functions
 local get_time, usleep = Body.get_time, unix.usleep
 -- Subscribe to important messages
@@ -48,17 +49,6 @@ vision_ch.callback = function(skt)
   
   lW.update(dOdometry, detection)
   
-	local t = get_time()
-	if t-t_send > send_interval then
-		-- Send localization info to monitor
-		local metadata = {}
-		metadata.id = 'world'
-		metadata.world = lW.send()
-		-- Send!
-		local ret, err = udp_ch:send(mp.pack(metadata))
-		if err then print(ret, err) end
-		t_send = t
-	end
 end
 
 -- Entry
@@ -87,6 +77,17 @@ while running do
     wcm.set_robot_pose(lW.get_pose())
   end
   t = get_time()
+	if t-t_send > send_interval then
+		-- Send localization info to monitor
+		local metadata = {}
+		metadata.id = 'world'
+		metadata.world = lW.send()
+		-- Send!
+		local ret, err = udp_ch:send(mp.pack(metadata))
+		if err then print(ret, err) end
+		t_send = t
+	end
+
   if t - t_debug > debug_interval then
     t_debug = t
     print(string.format('World | Uptime: %.2f sec, Mem: %d kB', t-t0, collectgarbage('count')))

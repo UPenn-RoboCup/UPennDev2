@@ -99,9 +99,6 @@ while running
             [metadata, offset] = msgpack('unpack', udp_data);
             % This must be uint8
             raw = udp_data(offset+1:end);
-            if strcmp( char(metadata.id), 'world')
-                blah = 1;
-            end
             is_draw = process_libVision_msg(metadata, raw, cam);
             do_draw = do_draw || is_draw;
         end

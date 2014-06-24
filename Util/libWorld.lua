@@ -131,15 +131,13 @@ function libWorld.send()
   local to_send = {}
   to_send.info = ''
   -- Robot info
-  -- TODO: the poseFilter return huge error
   to_send.pose = vector.new(wcm.get_robot_pose())
-  -- to_send.pose = vector.new(wcm.get_robot_odometry())
   to_send.info = to_send.info..string.format(
     'Pose: %.1f %.1f %.1f\n', to_send.pose[1], to_send.pose[2], to_send.pose[3]*RAD_TO_DEG)
     
     -- print('libWorld, odom:', unpack(wcm.get_robot_odometry()))
   
-  to_send.role = vector.pose{gcm.get_game_role()}
+  to_send.role = gcm.get_game_role()
   to_send.time = Body.get_time()
   
   -- Ball info

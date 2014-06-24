@@ -18,7 +18,7 @@ PROTO Obstacle [
   field SFRotation rotation 0 1 0 0
   field SFFloat postRadius 0.10
   field SFColor postColor1 0 0 0 
-  field SFBool locked TRUE
+  #field SFBool locked TRUE
 ]
 {
 Solid {

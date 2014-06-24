@@ -6,7 +6,7 @@
 EXT_TERM=0
 LUA=luajit
 #TESTFILE=state_wizard.lua
-TESTFILE=new_webots_wizard.lua
+TESTFILE=webots_wizard.lua
 echo $LUA $TESTFILE
 
 # Go into the Player directory

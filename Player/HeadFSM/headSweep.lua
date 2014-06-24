@@ -31,10 +31,9 @@ function state.update()
   t_update = t
 
   local ph = (t-t_entry)/tScan;
-  local height = vcm.get_head_camera_height()
   local yaw0 = direction * (ph - 0.5) * 2 * yawMag
   local yaw, pitch = HT.ikineCam(
-  	dist * math.cos(yaw0), dist * math.sin(yaw0), height)
+  	dist * math.cos(yaw0), dist * math.sin(yaw0))
 
   -- Grab where we are
   local qNeck = Body.get_head_position()

@@ -144,6 +144,10 @@ local function check_coordinateA(centroid, scale, maxD, maxH)
 end
 
 function libVision.ball(labelA_t, labelB_t, cc_t)
+  -- print('Black pixels?', cc_t[colors.black])
+  -- print('Red pixels?', cc_t[colors.orange])
+  -- print('Yellow pixels?', cc_t[colors.yellow])
+
   -- The ball is color 1
   local cc = cc_t[colors.orange]
   if cc<6 then return'Color count' end

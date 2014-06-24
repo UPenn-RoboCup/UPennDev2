@@ -74,6 +74,7 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         plot_robot(cam.h_field, metadata.world, [], 1.5, drawlevel, name);
         % Show messages
         set(cam.w_debug, 'String', char(metadata.world.info));
+        needs_draw = 1;
       end
 
     elseif strcmp(msg_id,'head_camera')

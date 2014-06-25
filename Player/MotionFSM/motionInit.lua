@@ -44,8 +44,14 @@ function state.entry()
 
   --SJ: Now we only use commanded positions
   --As the actual values are read at motionIdle state
-  qLLeg = Body.get_lleg_position()
-  qRLeg = Body.get_rleg_position()
+
+  local legBias = vector.new(mcm.get_leg_bias())
+  local legBiasL = vector.slice(legBias,1,6)
+  local legBiasR = vector.slice(legBias,7,12)
+
+
+  qLLeg = Body.get_lleg_position()-legBiasL
+  qRLeg = Body.get_rleg_position()-legBiasR
 
   -- How far away from the torso are the legs currently?
   local dpLLeg = K.torso_lleg(qLLeg)
@@ -118,6 +124,8 @@ function state.update()
 
 
   local legBias = vector.new(mcm.get_leg_bias())
+  local legBiasL = vector.slice(legBias,1,6)
+  local legBiasR = vector.slice(legBias,7,12)
   qLegsTarget = vector.new(qLegsTarget) + legBias
 
   local qLLegTarget = vector.slice(qLegsTarget,1,6)
@@ -129,9 +137,14 @@ function state.update()
   Body.set_lleg_command_position(qLLegMove)
   Body.set_rleg_command_position(qRLegMove)
 
-  local qLLegActual = Body.get_lleg_position()
-  local qRLegActual = Body.get_rleg_position()
+  local qLLegActual = Body.get_lleg_position() - legBiasL
+  local qRLegActual = Body.get_rleg_position() - legBiasR
   local qWaistActual = Body.get_waist_position()
+
+
+print("LLEG:",unpack(vector.new(qLLegActual)*180/math.pi) )
+print("RLEG:",unpack(vector.new(qRLegActual)*180/math.pi) )
+
 
   local qLLegCommand = Body.get_lleg_command_position()
   local qRLegCommand = Body.get_rleg_command_position()
@@ -151,7 +164,11 @@ function state.update()
   local err_th = 1*DEG_TO_RAD
 
 --  if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end
-  if (err<err_th or IS_WEBOTS) then return'done' end
+
+--hack
+--  if (err<err_th or IS_WEBOTS) then return'done' end
+
+
 end
 
 function state.exit()

@@ -88,8 +88,6 @@ function ImageProc.color_count (label_t)
   local l_ptr, color = label_t:data()
   for i=0,np_a-1 do
     color = l_ptr[0]
-    -- Black: avoid useing 0 as index
-    if color == 0 then color = 32 end
     cc_d[color] = cc_d[color] + 1
     l_ptr = l_ptr + 1
   end

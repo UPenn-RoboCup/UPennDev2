@@ -59,10 +59,10 @@ vision.ball = {
 
 vision.goal = {
   th_min_bbox_area = 150, 
-  th_nPostB = 10,
+  th_nPostB = 15,
   th_min_area = 80,
   th_min_orientation = 80*math.pi/180,
-  th_min_fill_rate = 0.28, --0.28,
+  th_min_fill_rate = 0.55,
   height_min = -0.9,  --TODO
   th_aspect_ratio = {2.5,100},
   th_edge_margin = 5,

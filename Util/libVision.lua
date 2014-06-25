@@ -206,7 +206,8 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
   -- Store failures in the array
   local failures, successes = {}, {}
 	local nPosts, i_validB, valid_posts = 0, {}, {}
-	for i=1, math.min(#postB, th_nPostB) do
+	--for i=1, math.min(#postB, th_nPostB) do
+	for i=1, #postB do
 		local post = postB[i]
     local fail, has_stats = {}, true
     local postStats = check_prop(colors.yellow, post, g_bbox_area, g_area, g_fill_rate, labelA_t)
@@ -222,15 +223,6 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 					string.format('Orientation:%.1f < %.1f ', postStats.orientation, g_orientation) )
 				check_passed = false
       end
-			--[[ Fill rate check  ALREADY DONE IN CHECK_PROP
-			if check_passed then
-				local fill_rate = postStats.area / (postStats.axisMajor * postStats.axisMinor)
-				if fill_rate < g_fill_rate then
-					table.insert(fail, string.format('Fill rate:%.2f < %.2f ', fill_rate, g_fill_rate))
-					check_passed = false
-				end
-			end
-			--]]
       -- Aspect Ratio check
 			if check_passed then
 				local aspect = postStats.axisMajor / postStats.axisMinor;
@@ -264,6 +256,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 
 			-- Check # of valid postB
 			if check_passed then 
+				table.insert(fail, 'is good\n')
 				nPosts = nPosts + 1 
 				i_validB[#i_validB + 1] = i
 				valid_posts[nPosts] = postStats

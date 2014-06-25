@@ -139,7 +139,13 @@ for i, param in ipairs(metadata.param) do
 	local now = camera:get_param(name)
 	-- TODO: exposure
 	local count = 0
-	assert(now==value, string.format('Failed to set %s: %d -> %d'    ,name, value, now))
+	while count<5 and now~=value do
+		camera:set_param(name, value)
+		unix.usleep(1e6)
+		count = count + 1
+		now = camera:get_param(name)
+	end
+	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
 end
 
 local nlog = 0

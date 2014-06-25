@@ -70,7 +70,7 @@ local right_leg = {
   device = '/dev/ttyUSB2',
   m_ids = {15,17,19,21,23,25, --[[waist pitch]]28},
   enable_read = true,
-  hz = 250,
+  hz = 125, --250,
 }
 local left_leg = {
   name = 'lleg',
@@ -78,7 +78,7 @@ local left_leg = {
   --m_ids = {16,18,20,22,24,26, --[[waist yaw]]27},
   m_ids = {16,18,20, 22,24,26, --[[waist yaw]]27},
   enable_read = true,
-  hz = 250,
+  hz = 125, --250,
 }
 -- Add the one chain support
 local one_chain = {

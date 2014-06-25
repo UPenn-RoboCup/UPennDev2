@@ -93,7 +93,7 @@ vision.goal = {
 
 vision.obstacle = {
   grid_scale = 10, 
-  min_fill_rate = 0.8,
+  min_fill_rate = 0.6,
 }
 
 -- Line

@@ -11,7 +11,7 @@ figure(1);
 clf;
 % (top)
 % LabelA
-f_lA = subplot(2,1,1);
+f_lA = subplot(2,3,2);
 im_lA = image(zeros(1));
 colormap(cmap);
 hold on;
@@ -38,11 +38,9 @@ for i=1:numel(h_obstacle)
 end
 
 % yuyv
-f_yuyv = subplot(2,1,2);
+f_yuyv = subplot(2,3,5);
 im_yuyv = image(zeros(1));
-hold off;
 
-drawnow;
 
 % Save the camera handles
 cam = {};
@@ -60,14 +58,12 @@ scale = 2;
 cam.scale = 2;
 
 %% Localization
-figure(2);
-clf;
-cam.h_field = subplot(2,2,1);
+cam.h_field = subplot(2,3,1);
 % Show the field here
 plot_field(cam.h_field,2);
 % Camera 1 Debug messages
 cam.a_debug = annotation('textbox',...
-    [0.5 0.5 0.5 0.5],...
+    [0.7 0 0.3 1],...
     'String','Top Camera',...
     'FontSize',10,...
     'FontName','Arial',...
@@ -78,11 +74,14 @@ cam.a_debug = annotation('textbox',...
     'Color',[0.84 0.16 0]);
 % World debug
 cam.w_debug = annotation('textbox',...
-    [0 0 0.5 0.5],...
+    [0 0 0.3 0.5],...
     'String','Localization',...
     'FontSize',12,...
     'FontName','Arial'...
 );
+
+hold off;
+drawnow;
 
 %% Network
 % Add the UDP network

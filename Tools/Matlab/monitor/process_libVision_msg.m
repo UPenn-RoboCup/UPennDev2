@@ -2,7 +2,20 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
 % Process each type of message
     msg_id = char(metadata.id);
     needs_draw = 0;
+    
     if strcmp(msg_id,'detect')
+        % Clear graphics objects
+        % ball
+        set(cam.p_ball,'Xdata', [],'Ydata', []);
+        for i=1:3 
+          % posts
+          if i<3 
+            set(cam.p_post{i},'Xdata', [],'Ydata', []);
+          end
+          % obstacles
+          set(cam.h_obstacle{i}, 'Xdata', [], 'Ydata', []);
+        end      
+      
         % Set the debug information
         set(cam.a_debug, 'String', char(metadata.debug));
         % Process the ball detection result
@@ -24,11 +37,6 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
             set(cam.p_ball, 'Xdata', ball_c(1));
             set(cam.p_ball, 'Ydata', ball_c(2));
             set(cam.r_ball, 'Position', ball_box);
-
-        else
-            % Remove from the plot
-            set(cam.p_ball,'Xdata', []);
-            set(cam.p_ball,'Ydata', []);
         end
         if isfield(metadata,'posts')
             % Show on the plot
@@ -55,15 +63,7 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
               post_box = [x11; x12; x22; x21; x11];
               % Draw
               set(cam.p_post{i}, 'XData', post_box(:,1), 'YData', post_box(:,2));
-
             end
-            
-        else
-            % Remove from the plot
-            set(cam.p_post{1},'Xdata', []);
-            set(cam.p_post{1},'Ydata', []);
-            set(cam.p_post{2},'Xdata', []);
-            set(cam.p_post{2},'Ydata', []);
         end
         
         if isfield(metadata, 'obstacles')
@@ -72,7 +72,7 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
             obs_c = obstacles.iv{i};
             % TODO: just a dummy rectangular for now
             w0 = 5;
-            h0 = 5;
+            h0 = 15;
             x11 = obs_c + [w0 h0];
             x12 = obs_c + [-w0 h0];
             x21 = obs_c + [w0 -h0];

@@ -22,7 +22,7 @@ local t_entry
 -- Cycle count
 local count
 -- Objects
-local ball, goal
+local ball, goal, obstacle
 
 -- Initial odometry
 local uOdometry0 = vector.zeros(3)
@@ -93,6 +93,8 @@ local function update_vision(detected)
       goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
     end
   end
+  -- If the obstacle is detected
+  obstacle = detected.obstacles
 end
 
 function libWorld.entry()
@@ -166,7 +168,16 @@ function libWorld.send()
         'Post2: %.1f %.1f\n', to_send.goal.v2[1], to_send.goal.v2[2])
     end
   end  
-
+  
+  if obstacle then
+    local obs = {}
+    for i=1, #obstacle.v do
+      obs[i] = obstacle.v
+      to_send.info = to_send.info..string.format(
+        'Obstacle: %.1f %.1f\n', unpack(obstacle.v[i]) )
+    end
+    to_send.obstacle = obs
+  end
   return to_send
 end
 

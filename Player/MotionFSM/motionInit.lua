@@ -142,12 +142,12 @@ function state.update()
   local qWaistActual = Body.get_waist_position()
 
 
-print("LLEG:",unpack(vector.new(qLLegActual)*180/math.pi) )
-print("RLEG:",unpack(vector.new(qRLegActual)*180/math.pi) )
+--print("LLEG:",unpack(vector.new(qLLegActual)*180/math.pi) )
+--print("RLEG:",unpack(vector.new(qRLegActual)*180/math.pi) )
 
 
-  local qLLegCommand = Body.get_lleg_command_position()
-  local qRLegCommand = Body.get_rleg_command_position()
+  local qLLegCommand = Body.get_lleg_command_position() - legBiasL
+  local qRLegCommand = Body.get_rleg_command_position() - legBiasR
   local qWaistCommand = Body.get_waist_command_position()
 
 
@@ -165,8 +165,7 @@ print("RLEG:",unpack(vector.new(qRLegActual)*180/math.pi) )
 
 --  if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end
 
---hack
---  if (err<err_th or IS_WEBOTS) then return'done' end
+  if (err<err_th or IS_WEBOTS) then return'done' end
 
 
 end

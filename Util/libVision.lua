@@ -542,30 +542,12 @@ function libVision.update(img)
   -- Save the detection information
   detected.ball = ball
   detected.posts = posts
+  detected.obstacles = obstacles
   
-	--TODO: webots runs everything in single thread, so send debug msg
-  -- is a pain
+  -- Debug messages
   -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
   detected.debug = table.concat({'Posts',post_fails},'\n')
   -- detected.debug = table.concat({'Posts', 0})
-
-	--[[
-  if posts then
-		if #posts < 2 then
-			detected.debug = table.concat({'1 Post ', 
-				string.format('%.2f %.2f', posts[1].v[1], posts[1].v[2])}, '\n')
-		else
-			detected.debug = table.concat({'2 Posts ', 
-				string.format('%.2f %.2f \n', posts[1].v[1], posts[1].v[2]), 
-				string.format('%.2f %.2f', posts[2].v[1], posts[2].v[2])}, '\n')
-		end
-  else
-    detected.debug = table.concat({'Post # ', 0})
-  end
-	--]]
-
-	-- Debug in console
-	--util.ptable({post_fails})
 
   -- Send the detected stuff over the channel every cycle
   vision_ch:send(mp.pack(detected))

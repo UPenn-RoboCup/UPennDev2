@@ -22,12 +22,21 @@ set(p_ball,'Ydata', []);
 r_ball = rectangle('Position', [0 0 1 1],... 
   'Curvature',[1,1], 'EdgeColor', 'b', 'LineWidth', 2);
 p_post = cell(2,1);
-for i=1:2
+for i=1:numel(p_post)
     p_post{i} = plot([0],[0], 'b-', 'LineWidth', 2);
     % Remove from the plot
     set(p_post{i},'Xdata', []);
     set(p_post{i},'Ydata', []);
 end
+% Assume up to 3 obstacles
+h_obstacle = cell(3,1);
+for i=1:numel(h_obstacle)
+    h_obstacle{i} = plot([0],[0], 'r-', 'LineWidth', 2);
+    % Remove from the plot
+    set(h_obstacle{i},'Xdata', []);
+    set(h_obstacle{i},'Ydata', []);
+end
+
 % yuyv
 f_yuyv = subplot(2,1,2);
 im_yuyv = image(zeros(1));
@@ -44,6 +53,7 @@ cam.im_yuyv = im_yuyv;
 cam.p_ball = p_ball;
 cam.r_ball = r_ball;
 cam.p_post = p_post;
+cam.h_obstacle = h_obstacle;
 % Plot scale
 % Default: labelA is half size, so scale twice
 scale = 2;

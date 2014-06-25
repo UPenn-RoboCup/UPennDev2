@@ -45,8 +45,8 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
               post_c = postStats.post.centroid;
               w0 = postStats.post.axisMajor / 2;
               h0 = postStats.post.axisMinor / 2;
-
               post_o = postStats.post.orientation;
+              
               rot = [cos(post_o) sin(post_o); -sin(post_o) cos(post_o)]';
               x11 = post_c + [w0 h0] * rot;
               x12 = post_c + [-w0 h0] * rot;
@@ -64,6 +64,23 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
             set(cam.p_post{1},'Ydata', []);
             set(cam.p_post{2},'Xdata', []);
             set(cam.p_post{2},'Ydata', []);
+        end
+        
+        if isfield(metadata, 'obstacles')
+          obstacles = metadata.obstacles;
+          for i=1:min(3, numel(obstacles.iv))
+            obs_c = obstacles.iv{i};
+            % TODO: just a dummy rectangular for now
+            w0 = 5;
+            h0 = 5;
+            x11 = obs_c + [w0 h0];
+            x12 = obs_c + [-w0 h0];
+            x21 = obs_c + [w0 -h0];
+            x22 = obs_c + [-w0 -h0];
+            obs_box = [x11; x12; x22; x21; x11];
+            
+            set(cam.h_obstacle{i}, 'XData', obs_box(:,1), 'YData', obs_box(:,2));
+          end
         end
         
     elseif strcmp(msg_id,'world')

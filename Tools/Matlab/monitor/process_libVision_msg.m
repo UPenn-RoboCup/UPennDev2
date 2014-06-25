@@ -2,7 +2,20 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
 % Process each type of message
     msg_id = char(metadata.id);
     needs_draw = 0;
+    
     if strcmp(msg_id,'detect')
+        % Clear graphics objects
+        % ball
+        set(cam.p_ball,'Xdata', [],'Ydata', []);
+        for i=1:3 
+          % posts
+          if i<3 
+            set(cam.p_post{i},'Xdata', [],'Ydata', []);
+          end
+          % obstacles
+          set(cam.h_obstacle{i}, 'Xdata', [], 'Ydata', []);
+        end      
+      
         % Set the debug information
         set(cam.a_debug, 'String', char(metadata.debug));
         % Process the ball detection result
@@ -24,11 +37,6 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
             set(cam.p_ball, 'Xdata', ball_c(1));
             set(cam.p_ball, 'Ydata', ball_c(2));
             set(cam.r_ball, 'Position', ball_box);
-
-        else
-            % Remove from the plot
-            set(cam.p_ball,'Xdata', []);
-            set(cam.p_ball,'Ydata', []);
         end
         if isfield(metadata,'posts')
             % Show on the plot
@@ -45,8 +53,8 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
               post_c = postStats.post.centroid;
               w0 = postStats.post.axisMajor / 2;
               h0 = postStats.post.axisMinor / 2;
-
               post_o = postStats.post.orientation;
+              
               rot = [cos(post_o) sin(post_o); -sin(post_o) cos(post_o)]';
               x11 = post_c + [w0 h0] * rot;
               x12 = post_c + [-w0 h0] * rot;
@@ -55,15 +63,24 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
               post_box = [x11; x12; x22; x21; x11];
               % Draw
               set(cam.p_post{i}, 'XData', post_box(:,1), 'YData', post_box(:,2));
-
             end
+        end
+        
+        if isfield(metadata, 'obstacles')
+          obstacles = metadata.obstacles;
+          for i=1:min(3, numel(obstacles.iv))
+            obs_c = obstacles.iv{i};
+            % TODO: just a dummy rectangular for now
+            w0 = 5;
+            h0 = 15;
+            x11 = obs_c + [w0 h0];
+            x12 = obs_c + [-w0 h0];
+            x21 = obs_c + [w0 -h0];
+            x22 = obs_c + [-w0 -h0];
+            obs_box = [x11; x12; x22; x21; x11];
             
-        else
-            % Remove from the plot
-            set(cam.p_post{1},'Xdata', []);
-            set(cam.p_post{1},'Ydata', []);
-            set(cam.p_post{2},'Xdata', []);
-            set(cam.p_post{2},'Ydata', []);
+            set(cam.h_obstacle{i}, 'XData', obs_box(:,1), 'YData', obs_box(:,2));
+          end
         end
         
     elseif strcmp(msg_id,'world')

@@ -421,13 +421,13 @@ function libVision.obstacle(labelB_t, cc)
   obstacle.iv, obstacle.v = {}, {}
   -- Parameters  TODO: put into entry()
   local grid_scale = Config.vision.obstacle.grid_scale
-  local fill_rate = Config.vision.obstacle.min_fill_rate
+  local th_fill_rate = Config.vision.obstacle.min_fill_rate
   
   -- TODO: no need to care about the upper part of the image
   local blockX = wb / grid_scale
   local blockY = hb / grid_scale
   for i=1, blockX do
-    for j=1, blockY do
+    for j=4, blockY do
       local leftX = (i-1)* (wb/blockX)+1
       local topY = (j-1)* (hb/blockY)+1
       local rightX = i* (wb/blockX)
@@ -437,18 +437,23 @@ function libVision.obstacle(labelB_t, cc)
       local centerY = (j-0.5)* (hb/blockY)
 
       local bboxB = {leftX, rightX, topY, bottomY}
-    	local colorStats = ImageProc.color_stats(labelB_t, colors.black, bboxB)
+      -- local colorStats = ImageProc.color_stats(labelB_t, colors.black, bboxB)
+    	local colorStats = ImageProc.color_stats(labelB_t, colors.field, bboxB)
 
     	local scale = 1 --long projection
     	local v = check_coordinateB(vector.new({centerX,centerY}), scale);
-      if v[3]<-0.9 then --TODO
-  	    if colorStats.area > 
-      		(wb*hb/blockX/blockY) * fill_rate then
+      if v[3]<0 then --TODO: other threshold
+        local fill_rate = colorStats.area / (wb*hb/blockX/blockY) 
+        print('GREEN FILL RATE', fill_rate)
+  	    if fill_rate < th_fill_rate then
             v = projectGround(v,0)  --TODO
         		obs_count = obs_count + 1
         		obstacle.iv[obs_count] = {centerX*scaleB, centerY*scaleB}
         		obstacle.v[obs_count] = v
         		obstacle.detect = 1 
+        else
+          obs_debug = obs_debug..string.format('fill rate: %.2f > %.2f\n',
+            fill_rate, th_fill_rate)
   	    end
       else
         obs_debug = obs_debug..'obstacle too high'
@@ -457,7 +462,7 @@ function libVision.obstacle(labelB_t, cc)
     end -- end blockY
   end -- end blockX
   if obstacle.detect == 1 then
-    return 'Obstacle!', obstacle
+    return 'Detected', obstacle
   else
     return obs_debug
   end
@@ -542,30 +547,12 @@ function libVision.update(img)
   -- Save the detection information
   detected.ball = ball
   detected.posts = posts
+  detected.obstacles = obstacles
   
-	--TODO: webots runs everything in single thread, so send debug msg
-  -- is a pain
+  -- Debug messages
   -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
-  detected.debug = table.concat({'Posts',post_fails},'\n')
-  -- detected.debug = table.concat({'Posts', 0})
-
-	--[[
-  if posts then
-		if #posts < 2 then
-			detected.debug = table.concat({'1 Post ', 
-				string.format('%.2f %.2f', posts[1].v[1], posts[1].v[2])}, '\n')
-		else
-			detected.debug = table.concat({'2 Posts ', 
-				string.format('%.2f %.2f \n', posts[1].v[1], posts[1].v[2]), 
-				string.format('%.2f %.2f', posts[2].v[1], posts[2].v[2])}, '\n')
-		end
-  else
-    detected.debug = table.concat({'Post # ', 0})
-  end
-	--]]
-
-	-- Debug in console
-	--util.ptable({post_fails})
+  -- detected.debug = table.concat({'Posts',post_fails},'\n')
+  detected.debug = table.concat({'Obstacle', obstacle_fails},'\n')
 
   -- Send the detected stuff over the channel every cycle
   vision_ch:send(mp.pack(detected))

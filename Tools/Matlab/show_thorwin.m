@@ -11,7 +11,7 @@ figure(1);
 clf;
 % (top)
 % LabelA
-f_lA = subplot(2,1,1);
+f_lA = subplot(2,3,2);
 im_lA = image(zeros(1));
 colormap(cmap);
 hold on;
@@ -22,18 +22,25 @@ set(p_ball,'Ydata', []);
 r_ball = rectangle('Position', [0 0 1 1],... 
   'Curvature',[1,1], 'EdgeColor', 'b', 'LineWidth', 2);
 p_post = cell(2,1);
-for i=1:2
+for i=1:numel(p_post)
     p_post{i} = plot([0],[0], 'b-', 'LineWidth', 2);
     % Remove from the plot
     set(p_post{i},'Xdata', []);
     set(p_post{i},'Ydata', []);
 end
-% yuyv
-f_yuyv = subplot(2,1,2);
-im_yuyv = image(zeros(1));
-hold off;
+% Assume up to 3 obstacles
+h_obstacle = cell(3,1);
+for i=1:numel(h_obstacle)
+    h_obstacle{i} = plot([0],[0], 'r-', 'LineWidth', 2);
+    % Remove from the plot
+    set(h_obstacle{i},'Xdata', []);
+    set(h_obstacle{i},'Ydata', []);
+end
 
-drawnow;
+% yuyv
+f_yuyv = subplot(2,3,5);
+im_yuyv = image(zeros(1));
+
 
 % Save the camera handles
 cam = {};
@@ -44,20 +51,19 @@ cam.im_yuyv = im_yuyv;
 cam.p_ball = p_ball;
 cam.r_ball = r_ball;
 cam.p_post = p_post;
+cam.h_obstacle = h_obstacle;
 % Plot scale
 % Default: labelA is half size, so scale twice
 scale = 2;
 cam.scale = 2;
 
 %% Localization
-figure(2);
-clf;
-cam.h_field = subplot(2,2,1);
+cam.h_field = subplot(2,3,1);
 % Show the field here
 plot_field(cam.h_field,2);
 % Camera 1 Debug messages
 cam.a_debug = annotation('textbox',...
-    [0.5 0.5 0.5 0.5],...
+    [0.7 0 0.3 1],...
     'String','Top Camera',...
     'FontSize',10,...
     'FontName','Arial',...
@@ -68,11 +74,14 @@ cam.a_debug = annotation('textbox',...
     'Color',[0.84 0.16 0]);
 % World debug
 cam.w_debug = annotation('textbox',...
-    [0 0 0.5 0.5],...
+    [0 0 0.3 0.5],...
     'String','Localization',...
     'FontSize',12,...
     'FontName','Arial'...
 );
+
+hold off;
+drawnow;
 
 %% Network
 % Add the UDP network

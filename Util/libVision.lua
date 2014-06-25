@@ -18,9 +18,10 @@ local w, h, wa, wb, ha, hab, scaleA, scaleB, lut_t
 -- Hold on to these
 local labelA_t, labelB_t
 -- Head transform
-local trHead, trNeck, trNeck0, dtrCamera
+local trHead, vHead, trNeck, trNeck0, dtrCamera
 -- Camera information
 local x0A, y0A, focalA, focal_length, focal_base
+local x0B, y0B, focalB
 -- Detection thresholds
 local b_diameter, b_dist, b_height, b_fill_rate, b_bbox_area, b_area
 local th_nPostB, g_area, g_bbox_area, g_fill_rate, g_orientation, g_aspect_ratio, g_margin
@@ -63,12 +64,11 @@ local function update_head()
 	if not Body then return end
 	-- Get from Body...
   local head = Body.get_head_position()
-  -- TODO: Smarter memory allocation
   -- TODO: Add any bias for each robot
   trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
   trHead = trNeck * dtrCamera
   -- Grab the position only
-  --vHead = T.get_pos(trHead)
+  vHead = T.get_pos(trHead)
   -- Horizon
   --[[
   local pa = headAngles[2] + cameraAngle[2] -- + bodyTilt   --TODO
@@ -142,6 +142,26 @@ local function check_coordinateA(centroid, scale, maxD, maxH)
   end
   return v
 end
+
+-- Yield coordinates in the labelB space
+-- Returns an error message if max limits are given
+local function check_coordinateB(centroid, scale, maxD, maxH)
+  local v0 = torch.Tensor({
+    focalB,
+    -(centroid[1] - x0B),
+    -(centroid[2] - y0B),
+    scale,
+  })
+  local v = torch.mv(trHead, v0) / v0[4]
+  -- Check the distance
+  if maxD and v[1]*v[1] + v[2]*v[2] > maxD*maxD then
+    return'Distance'
+  elseif maxH and v[3] > maxH then
+    return'Height'
+  end
+  return v
+end
+
 
 function libVision.ball(labelA_t, labelB_t, cc_t)
   -- print('Black pixels?', cc_t[colors.black])
@@ -385,6 +405,72 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
   return table.concat(failures,',')
 end
 
+local function projectGround(v,targetheight)
+  targetheight = targetheight or 0
+  local vout = vector.new(v)
+  local vHead_homo = vector.new({vHead[1], vHead[2], vHead[3], 1})
+  --Project to plane
+  if vHead[3]>targetheight then
+    vout = vHead_homo +
+      (vout-vHead_homo)*( (vHead[3]-targetheight) / (vHead[3]-vout[3]) )
+  end
+
+  return vout
+end
+
+
+-- Obstacle detection
+function libVision.obstacle(labelB_t, cc)
+  -- If no black pixels
+  if cc[colors.black]<20 then return 'No obstacle' end
+  -- Obstacle table
+  local obstacle, obs_count, obs_debug = {}, 0, ''
+  obstacle.iv, obstacle.v = {}, {}
+  -- Parameters  TODO: put into entry()
+  local grid_scale = Config.vision.obstacle.grid_scale
+  local fill_rate = Config.vision.obstacle.min_fill_rate
+  
+  -- TODO: no need to care about the upper part of the image
+  local blockX = wb / grid_scale
+  local blockY = hb / grid_scale
+  for i=1, blockX do
+    for j=1, blockY do
+      local leftX = (i-1)* (wb/blockX)+1
+      local topY = (j-1)* (hb/blockY)+1
+      local rightX = i* (wb/blockX)
+      local bottomY = j* (hb/blockY)
+
+      local centerX = (i-0.5)* (wb/blockX)
+      local centerY = (j-0.5)* (hb/blockY)
+
+      local bboxB = {leftX, rightX, topY, bottomY}
+    	local colorStats = ImageProc.color_stats(labelB_t, colors.black, bboxB)
+
+    	local scale = 1 --long projection
+    	local v = check_coordinateB(vector.new({centerX,centerY}), scale);
+      if v[3]<-0.9 then --TODO
+  	    if colorStats.area > 
+      		(wb*hb/blockX/blockY) * fill_rate then
+            v = projectGround(v,0)  --TODO
+        		obs_count = obs_count + 1
+        		obstacle.iv[obs_count] = {centerX*scaleB, centerY*scaleB}
+        		obstacle.v[obs_count] = v
+        		obstacle.detect = 1 
+  	    end
+      else
+        obs_debug = obs_debug..'obstacle too high'
+      end
+    
+    end -- end blockY
+  end -- end blockX
+  if obstacle.detect == 1 then
+    return 'Obstacle!', obstacle
+  else
+    return obs_debug
+  end
+end
+
+
 -- Set the variables based on the config file
 function libVision.entry(cfg, body)
   -- Dynamically load the body
@@ -403,10 +489,12 @@ function libVision.entry(cfg, body)
   wb, hb = wa / scaleB, ha / scaleB
   -- Center should be calibrated and saved in Config
   x0A, y0A = 0.5*(wa-1)+cfg.cx_offset, 0.5*(ha-1)+cfg.cy_offset
+  x0B, y0B = 0.5*(wb-1)+cfg.cx_offset/scaleB, 0.5*(hb-1)+cfg.cy_offset/scaleB
   -- Delta transform from neck to camera
   dtrCamera = T.trans(unpack(cfg.head.cameraPos or {0,0,0}))
   * T.rotY(cfg.head.pitchCamera or 0)
   focalA = focal_length / (focal_base / wa)
+  focalB = focalA / scaleB
   -- TODO: get from shm maybe?
   trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
   * T.rotY(Config.walk.bodyTilt)
@@ -454,7 +542,10 @@ function libVision.update(img)
   local cc = ImageProc2.color_count(labelA_t)
   local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
-
+  local obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc)
+  
+  if obstacles then print(#obstacles.v, obstacles.v[1]) end
+  
   -- Save the detection information
   detected.ball = ball
   detected.posts = posts

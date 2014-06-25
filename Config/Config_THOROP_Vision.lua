@@ -29,10 +29,11 @@ local vision = {
     cyan = 4,
     field = 8,
     white = 16,
-    black = 32,
+    black = 0, --32,
   },
   scaleA = 2,
   scaleB = 2,
+  --TODO: clean up unused stuff
   use_white_wall = 1,
   white_wall_is_blue = 0,
   white_wall_min_count = 3000,
@@ -79,15 +80,20 @@ vision.goal = {
   check_for_ground = 1,
 }
 
--- Black obstacle
+-- -- Black obstacle
+-- vision.obstacle = {
+--   th_min_color = 300,
+--   th_min_area = 60,
+--   th_min_orientation = 60*math.pi/180,
+--   th_fill_rate = 0.5,
+--   height_min = -0.9,
+--   height_max = -0.5,
+--   th_aspect_ratio = {2.5, 6},
+-- }
+
 vision.obstacle = {
-  th_min_color = 300,
-  th_min_area = 60,
-  th_min_orientation = 60*math.pi/180,
-  th_fill_rate = 0.5,
-  height_min = -0.9,
-  height_max = -0.5,
-  th_aspect_ratio = {2.5, 6},
+  grid_scale = 10, 
+  min_fill_rate = 0.8,
 }
 
 -- Line

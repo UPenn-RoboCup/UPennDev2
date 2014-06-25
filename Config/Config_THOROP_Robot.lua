@@ -75,7 +75,8 @@ local right_leg = {
 local left_leg = {
   name = 'lleg',
   device = '/dev/ttyUSB3',
-  m_ids = {16,18,20,22,24,26, --[[waist yaw]]27},
+  --m_ids = {16,18,20,22,24,26, --[[waist yaw]]27},
+  m_ids = {16,18,20, 22,24,26, --[[waist yaw]]27},
   enable_read = true,
   hz = 250,
 }

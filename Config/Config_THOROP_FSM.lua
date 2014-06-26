@@ -39,7 +39,6 @@ fsm.Head = {
   --
   {'headTrack', 'balllost', 'headScan'},
   {'headTrack', 'timeout', 'headLookGoal'},
-  {'headTrack', 'sweep', 'headSweep'},
   {'headTrack', 'teleop', 'headTeleop'},
   --
   {'headLookGoal', 'timeout', 'headTrack'},
@@ -141,9 +140,8 @@ fsm.headTrack = {
 
 --HeadLookGoal: Look up to see the goal
 fsm.headLookGoal = {
-  yawSweep = 50*DEG_TO_RAD,
+  yawSweep = 80*DEG_TO_RAD,
   tScan = 2,
-  minDist = 0.40,
 }
 
 --HeadSweep: Look around to find the goal

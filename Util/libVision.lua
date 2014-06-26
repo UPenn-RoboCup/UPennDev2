@@ -445,7 +445,6 @@ function libVision.obstacle(labelB_t, cc)
     	local v = check_coordinateB(vector.new({centerX,centerY}), scale);
       if v[3]<0 then --TODO: other threshold
         local fill_rate = colorStats.area / (wb*hb/blockX/blockY) 
-
         if Config.debug.obstacle  then print('GREEN FILL RATE', fill_rate) end
   	    if fill_rate < th_fill_rate then
             v = projectGround(v,0)  --TODO

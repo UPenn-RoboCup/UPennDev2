@@ -397,9 +397,6 @@ local function goal_observation(pos1,pos2,v)
 end
 
 
-
---SJ: temp disable single goal detections
-
 function poseFilter.post_both(v)
   goal_observation(goalUpper, goalLower, v)
 end
@@ -488,11 +485,12 @@ end
 
 ---Adds noise to particle x,y coordinates and angle.
 function poseFilter.addNoise()
-  da = 2.0*math.pi/180.0
-  dr = 0.01
+  da = 1.0*math.pi/180.0
+  dr = 0.005
   xp = xp + dr * vector.new(util.randn(N))
   yp = yp + dr * vector.new(util.randn(N))
-  ap = ap + da * vector.new(util.randn(N))
+  --KAREN: noise in yaw makes localization worse
+  -- ap = ap + da * vector.new(util.randn(N))
 end
 
 ---Resample particles.

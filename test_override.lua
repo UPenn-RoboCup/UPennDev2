@@ -7,7 +7,7 @@ local libs = {
   'unix',
   'util',
   'vector',
-  'torch',
+  --'torch',
   'getch',
   'msgpack'
 }

@@ -172,13 +172,15 @@ else --REAL ROBOT
   })*DEG_TO_RAD
 
 
---We tested 10cm frontal walk, and the robot drifted rotationally 
---  walk.velLimitX = {-.05,.10}
   walk.velLimitX = {-.05,.07}
   walk.velLimitY = {-.04,.04}
 
 --testing curved step
   walk.foot_traj = 1; --curved step
+
+
+  walk.velLimitX = {-.06,.10} --was fine with curved foot trajectory
+
 
 end
 

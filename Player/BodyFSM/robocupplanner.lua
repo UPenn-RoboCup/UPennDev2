@@ -107,6 +107,7 @@ function robocupplanner.getVelocity(pose,target_pose )
     maxA = 0.1
   else
     maxStep = 0.05
+  	maxA = 0.2
   end
   
 

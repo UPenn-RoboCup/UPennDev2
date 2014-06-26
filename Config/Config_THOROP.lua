@@ -54,5 +54,6 @@ Config.use_gps_pose = false
 Config.use_gps_pose = true
 
 Config.demo = true
+Config.demo = false
 
 return Config

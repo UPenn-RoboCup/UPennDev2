@@ -41,7 +41,7 @@ if IS_WEBOTS or HOSTNAME ~="alvin" then
   --Robotis style walk
   walk.bodyHeight = 0.9285318
   -- walk.bodyTilt = 11*math.pi/180
-  walk.bodyTilt = 0*math.pi/180
+  walk.bodyTilt = 3*math.pi/180
   walk.footY = 0.1095
 	walk.footX = 0  -- TODO: tweak for new feet
   walk.torsoX = 0.00    -- com-to-body-center offset

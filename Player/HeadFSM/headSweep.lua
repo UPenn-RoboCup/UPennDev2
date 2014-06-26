@@ -8,7 +8,7 @@ local util = require'util'
 local t_entry, t_update
 local dqNeckLimit = Config.fsm.dqNeckLimit
 local tScan = Config.fsm.headSweep.tScan;
-local yawMag = Config.head.yawMax;  --TODO: put in behavior
+local yawMag = Config.head.yawMax
 local dist = Config.fsm.headReady.dist;
 
 -- min_eta_look = Config.min_eta_look or 2.0;
@@ -31,9 +31,8 @@ function state.update()
   t_update = t
 
   local ph = (t-t_entry)/tScan;
-  local yaw0 = direction * (ph - 0.5) * 2 * yawMag
-  local yaw, pitch = HT.ikineCam(
-  	dist * math.cos(yaw0), dist * math.sin(yaw0))
+  local yaw = direction * (ph - 0.5) * 2 * yawMag
+  local pitch = -5*DEG_TO_RAD
 
   -- Grab where we are
   local qNeck = Body.get_head_position()

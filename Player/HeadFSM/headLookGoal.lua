@@ -13,13 +13,8 @@ local dqNeckLimit = Config.fsm.dqNeckLimit
 local yawSweep = Config.fsm.headLookGoal.yawSweep;
 local dist = Config.fsm.headReady.dist;
 local tScan = Config.fsm.headLookGoal.tScan;
-local minDist = Config.fsm.headLookGoal.minDist;
--- local min_eta_look = Config.min_eta_look or 2.0;
 local yawMax = Config.head.yawMax or 90*Body.DEG_TO_RAD
 local fovMargin = 30*DEG_TO_RAD
-
---TODO: since several head FSMs use head transform, make it
--- a single file may be better
 
 function state.entry()
   print(state._NAME.." entry");
@@ -68,8 +63,9 @@ function state.update()
   ph = ph - math.floor(ph)
   local yawbias = (ph-0.5) * yawSweep
 
-  local yaw1 = math.min(math.max(yaw0+yawbias, -yawMax), yawMax)
-  local yaw, pitch = HT.ikineCam(dist*math.cos(yaw1),dist*math.sin(yaw1))
+  local yaw = math.min(math.max(yaw0+yawbias, -yawMax), yawMax)
+  local pitch = -5*DEG_TO_RAD
+  -- local yaw, pitch = HT.ikineCam(dist*math.cos(yaw1),dist*math.sin(yaw1))
 
   -- Grab where we are
   local qNeck = Body.get_head_command_position()

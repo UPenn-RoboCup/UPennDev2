@@ -68,10 +68,7 @@ local function update_vision(detected)
   if t - t_resample > RESAMPLE_PERIOD or count%RESAMPLE_COUNT==0 then
     poseFilter.resample()
     if mcm.get_walk_ismoving()==1 then
-
-
---HACK... maybe we're adding too much noise?      
---      poseFilter.addNoise()
+      poseFilter.addNoise()
     end
   end
   -- If the ball is detected

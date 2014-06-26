@@ -46,6 +46,13 @@ Config.km.standup_back  = 'km_Charli_StandupFromBack.lua'
 --I hate debug msgs....
 Config.debug={
 	webots_wizard=false,	
+	obstacle = false,
+	approach = true,
 }
+
+Config.use_gps_pose = false
+Config.use_gps_pose = true
+
+Config.demo = true
 
 return Config

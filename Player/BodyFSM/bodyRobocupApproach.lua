@@ -92,9 +92,16 @@ function state.update()
   local vStep,arrived = robocup_approach( pose, target_pose)
   mcm.set_walk_vel(vStep)
 
-  if ballr > 1.0 then return 'ballfar' end
-
- local ball_elapsed = t - wcm.get_ball_t()
+  if ballr > 1.0 then 
+    print("Ball distance too away at:",ballr)
+    return 'ballfar' 
+  end
+  local ball_elapsed = t - wcm.get_ball_t()
+  if Config.debug.approach then
+    print(string.format("Ball pos: x %.3f y %.3f",wcm.get_ball_x(), wcm.get_ball_y() ))
+    print(string.format("Ball err: x %.3f y%.3f   %.2f elapsed", ballx,bally,ball_elapsed))
+  end
+ 
  if ball_elapsed <0.5 and 
     ballx<0.10 and
     bally<0.02 and bally > -0.02 then

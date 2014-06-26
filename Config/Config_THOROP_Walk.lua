@@ -92,11 +92,19 @@ walk.legBias =
   walk.velLimitA = {-.2,.2}
   walk.velDelta  = {0.025,0.02,0.1}
 
+--The same as the real robot
+  walk.velLimitX = {-.05,.07}
+  walk.velLimitY = {-.04,.04}
+  walk.velLimitA = {-.2,.2}
+
+
 --Faster
   walk.velLimitX = {-.20,.20}
   walk.velLimitY = {-.08,.08}
   walk.velLimitA = {-.2,.2}
   walk.velDelta  = {0.04,0.03,0.1}
+
+
 
 else --REAL ROBOT
 
@@ -135,51 +143,35 @@ else --REAL ROBOT
   --
   walk.phComp = {0.1,0.9}
   walk.phCompSlope = 0.2
- ------------------------------------
-
-  walk.foot_traj = 1; --curved step
-  walk.foot_traj = 2; --square step
-
+  -----------------------------------
+  
   --To get rid of drifting
-  walk.velocityBias = {0.00,0,0}
-
+  walk.velocityBias = {0.0,0,0}
   walk.stepHeight = 0.03
-  walk.supportX = 0.02
-  walk.supportY = 0.03
-
-  --Narrower stance, robotis value, 12/14 10:10PM
-
-
 
 --Clown feet
   walk.torsoX = 0.02
   walk.supportX = 0.07
   walk.supportY = 0.06
 
-
-  walk.velLimitX = {-.05,.05}
-  walk.velLimitY = {-.01,.01}
-  walk.velLimitA = {-.2,.2}
+  
   walk.velDelta  = {0.025,0.02,0.1}
   walk.maxTurnSpeed = 0.1
   walk.aTurnSpeed = 0.25
   walk.maxStepCount = 30
 
-  walk.legBias =
-  vector.new({
-    0,0,0,0,0,0,
-    0,0,0,0,0,0,
-  })*DEG_TO_RAD
-
+  walk.legBias = vector.new({0,0,0,0,0,0,0,0,0,0,0,0,})*DEG_TO_RAD
 
   walk.velLimitX = {-.05,.07}
   walk.velLimitY = {-.04,.04}
+  walk.velLimitA = {-.2,.2}
+  walk.velDelta  = {0.025,0.02,0.1}
 
---testing curved step
   walk.foot_traj = 1; --curved step
+--  walk.foot_traj = 2; --square step
 
 
-  walk.velLimitX = {-.06,.10} --was fine with curved foot trajectory
+--  walk.velLimitX = {-.06,.10} --was fine with curved foot trajectory
 
 
 end

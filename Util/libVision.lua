@@ -39,6 +39,7 @@ local colors
 local c_zlib = zlib.compress_cdata
 local vision_ch = si.new_publisher'vision'
 
+
 function libVision.get_metadata()
 end
 
@@ -444,7 +445,8 @@ function libVision.obstacle(labelB_t, cc)
     	local v = check_coordinateB(vector.new({centerX,centerY}), scale);
       if v[3]<0 then --TODO: other threshold
         local fill_rate = colorStats.area / (wb*hb/blockX/blockY) 
-        print('GREEN FILL RATE', fill_rate)
+
+        if Config.debug.obstacle  then print('GREEN FILL RATE', fill_rate) end
   	    if fill_rate < th_fill_rate then
             v = projectGround(v,0)  --TODO
         		obs_count = obs_count + 1
@@ -542,7 +544,9 @@ function libVision.update(img)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
   local obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc)
   
-  if obstacles then print(#obstacles.v, obstacles.v[1]) end
+  if Config.debug.obstacle then 
+    if obstacles then print(#obstacles.v, obstacles.v[1]) end
+  end
   
   -- Save the detection information
   detected.ball = ball

@@ -105,7 +105,7 @@ function state.update()
   local reached = false
   if IS_WEBOTS then
     local pose
-    if USE_GPS_ONLY then
+    if Config.use_gps_pose then
       pose = wcm.get_robot_pose_gps()
     else
       pose = wcm.get_robot_pose()
@@ -118,6 +118,8 @@ function state.update()
     local balla = math.atan2(bally,ballx)
     local walk_target_local = {ballx,bally,balla}
     local ballGlobal = util.pose_global(walk_target_local, pose)
+
+
 
     local target_pose = robocupplanner.getTargetPose(pose,ballGlobal)
 

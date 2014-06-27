@@ -559,8 +559,8 @@ function libVision.update(img)
   local cc = ImageProc2.color_count(labelA_t)
   local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
+	local obstacle_fails, obstacles
 	if IS_WEBOTS then
-		local obstacle_fails, obstacles
 		local head_angle = Body.get_head_position()
 		-- If looking down, then do not detect obstacles
 		if head_angle[2]>50*DEG_TO_RAD then

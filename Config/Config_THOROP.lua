@@ -31,7 +31,7 @@ Config.dev.gender       = 'boy'
 Config.debug={
 	webots_wizard=false,	
 	obstacle = false,
-	approach = true,
+	approach = false,
 }
 
 Config.use_gps_pose = false

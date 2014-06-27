@@ -99,9 +99,14 @@ function robocupplanner.getVelocity(pose,target_pose )
 
   va = 0.5* (aTurn*homeRelative[3]) + (1-aTurn)*aHomeRelative
 
-  if rHomeRelative>1.0 and va < 0.2 then
-    maxStep = 0.20
-    maxA = 0.05
+  if rHomeRelative>1.0 then
+    if math.abs(va)<0.2 then
+      maxStep = 0.20
+      maxA = 0.05
+    else
+      maxStep = 0
+      maxA = 0.2
+    end
   elseif rHomeRelative > 0.5 then 
     maxStep = 0.10
     maxA = 0.1
@@ -110,18 +115,12 @@ function robocupplanner.getVelocity(pose,target_pose )
   	maxA = 0.2
   end
   
-
-  
-  --[[
-  walk.velLimitX = {-.20,.20}
-  walk.velLimitY = {-.08,.08}
-  walk.velLimitA = {-.2,.2}
-  walk.velDelta  = {0.04,0.03,0.1}
-  --]]
-  
   vx = maxStep * homeRelative[1]/rHomeRelative
   vy = maxStep * homeRelative[2]/rHomeRelative
   va = math.min(maxA, math.max(-maxA, va))
+
+  --print("rHomeRelative:",rHomeRelative)
+  --print("V:",vx,vy,va)
 
   return{vx,vy,va},false
 end

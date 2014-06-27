@@ -79,8 +79,7 @@ if IS_WEBOTS or HOSTNAME ~="alvin" then
   walk.velDelta  = {0.025,0.02,0.1}
 
 
-walk.legBias =
-  vector.new({0,0,0,0,0,0, 0,0,0,0,0,0})*DEG_TO_RAD
+  walk.legBias = vector.new({0,0,0,0,0,0, 0,0,0,0,0,0})*DEG_TO_RAD
   --Webots-only params 
 
   walk.stepHeight = 0.02--shorter step height
@@ -93,17 +92,17 @@ walk.legBias =
   walk.velDelta  = {0.025,0.02,0.1}
 
 --The same as the real robot
-  walk.velLimitX = {-.05,.07}
+  walk.velLimitX = {-.06,.10} 
   walk.velLimitY = {-.04,.04}
   walk.velLimitA = {-.2,.2}
 
-
+--[[
 --Faster
   walk.velLimitX = {-.20,.20}
   walk.velLimitY = {-.08,.08}
   walk.velLimitA = {-.2,.2}
   walk.velDelta  = {0.04,0.03,0.1}
-
+--]]
 
 
 else --REAL ROBOT

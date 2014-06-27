@@ -12,6 +12,7 @@
 #11/5: re-enabled low leg bounding box (for kneeling)
 #11/22: get rid of head lidar, some boundingboxes
 #6/10: got rid of fsr sensors, finger bounding boxes
+#6/26: got rid of shoulder mesh, enlarged foot size
 
 PROTO THOROP7_RoboCup_New [
   field SFVec3f    translation 0 1 0
@@ -148,7 +149,7 @@ Robot {
           translation 0.05 0 0
           rotation 0 0 1 -1.5708
           scale 0.001 0.001 0.001
-          children [RIGHT_SHOULDER_PITCH{}]
+          #children [RIGHT_SHOULDER_PITCH{}]
         }
         DEF Right_shoulder_roll Servo {
           rotation 0 0 -1 0
@@ -353,7 +354,7 @@ Robot {
             DEF Right_shoulder_roll Transform {
               translation 0 0 0.024
               scale 0.001 0.001 0.001
-              children [RIGHT_SHOULDER_ROLL{}]
+             # children [RIGHT_SHOULDER_ROLL{}]
             }
           ]
           name "ArmUpperR"
@@ -577,7 +578,7 @@ Robot {
             DEF Right_shoulder_roll Transform {
               translation 0 0 0.024
               scale 0.001 0.001 0.001
-              children [RIGHT_SHOULDER_ROLL{}]
+              #children [RIGHT_SHOULDER_ROLL{}]
             }
           ]
           name "ArmUpperL"
@@ -592,7 +593,7 @@ Robot {
           translation -0.05 0 0
           rotation 0 0 1 1.5708
           scale 0.001 0.001 0.001
-          children [LEFT_SHOULDER_PITCH{}]
+          #children [LEFT_SHOULDER_PITCH{}]
         }
       ]
       name "ShoulderL"
@@ -651,7 +652,24 @@ Robot {
                                   children[
                                     DEF Foot Transform {
                                       scale 0.001 0.001 0.001
-                                      children [FOOT{}]
+                                      children [
+                                        FOOT{}
+                #translation -0.02 -0.1115 0.287                                        
+                #Shape {geometry Box {0.184 0.012 0.28}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                      ]
                                     } 
                                   ]
                                   name "FootR"
@@ -663,8 +681,10 @@ Robot {
                                   maxForce 100
                                   controlP 16
                                   boundingObject Transform {
-                                    translation 0 -0.1115 0.018
-                                    children[Box {size 0.145 0.012 0.26}]
+                                    #translation 0 -0.1115 0.018
+                                    #children[Box {size 0.145 0.012 0.26}]
+                                    translation -0.02 -0.1115 0.0287
+                                    children[Box {size 0.184 0.012 0.28}]
                                   }
                                 }
                                 DEF Left_ankle Transform {
@@ -771,8 +791,8 @@ Robot {
                                   maxForce 100
                                   controlP 16
                                   boundingObject Transform {
-                                    translation 0 -0.1115 0.018
-                                   children[Box {size 0.145 0.012 0.26}]
+                                    translation 0.02 -0.1115 0.0287
+                                    children[Box {size 0.184 0.012 0.28}]
                                   }
                                 }
                                 DEF Left_ankle Transform {

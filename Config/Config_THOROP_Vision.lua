@@ -82,11 +82,11 @@ vision.goal = {
 
 -- TODO: these are just webots values
 vision.obstacle = {
-  grid_x = 10, 
-  grid_y = 15,
+  grid_x = 16, 
+  grid_y = 18,
   th_min_area = 4,
-  th_green_fill_rate = 0.93,
-  th_max_height = 1.3,
+  th_green_fill_rate = 0.4,
+  th_max_height = 1,
 }
 
 -- Line
@@ -165,7 +165,8 @@ if IS_WEBOTS then
 
   Config.camera[1].cx_offset = 0
   Config.camera[1].cy_offset = 0
-  Config.camera[1].focal_length = 554.256/2
+--  Config.camera[1].focal_length = 554.256/2
+  Config.camera[1].focal_length = 220
   Config.camera[1].focal_base = 320
 	head.neckX= 0 --From CoM to neck joint
 

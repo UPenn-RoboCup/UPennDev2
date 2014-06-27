@@ -63,6 +63,7 @@ vision_ch.callback = function(skt)
 	local detection = mp.unpack(detections[#detections])
 
   lW.update(dOdometry, detection)
+  print("odom update with vision")
 
   -- Send localization info to monitor
   local t = get_time()
@@ -114,6 +115,7 @@ while running do
     uOdometry = mcm.get_status_odometry()
     dOdometry = util.pose_relative(uOdometry,uOdometry0)
     lW.update_odometry(dOdometry)
+    print("odom update")
 
     -- Update the pose here
     wcm.set_robot_pose(lW.get_pose())

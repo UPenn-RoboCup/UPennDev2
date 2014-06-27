@@ -122,6 +122,92 @@ function poseFilter.get_sv(x0, y0, a0)
 end
 
 
+
+local function calculate_pose_angle(pos,v,pose3,debug)
+  --Calculate the closest target pose with same posea
+  local a = math.atan2(v[2], v[1]) --We only use this! 
+  local ca = math.cos(a+pose3[3])
+  local sa = math.sin(a+pose3[3])
+
+  --Line from each particle
+  --{x,y} + t*{cos(a + posea ), sin(a+posea)} = pos
+  --Closest point to (posex,posey)
+  --t = ca*(v[1]+posex) + sa*(v[2]+posey
+
+  local t_min = ca*(pos[1]+pose3[1])+sa*(pos[2]+pose3[2])
+  local x_min = pos[1]-t_min*ca
+  local y_min = pos[2]-t_min*sa
+
+  if debug then    
+    print("Landmark pose:",pos[1],pos[2])
+    print("Calculated pose:",x_min,y_min,pose3[3])
+    print("t:",t_min)
+  end
+
+  return {x_min,y_min,pose3[3]},t_min
+end
+
+
+local function landmark_observation_angle(pos, v, rFilter, aFilter)
+  --Update particles only using the landmark angle
+  local r = math.sqrt(v[1]^2 + v[2]^2)
+  local a = math.atan2(v[2], v[1]) --We only use this! 
+  local rSigma = .15*r -- + 0.10
+  local aSigma = 2*math.pi/180
+  local rFilter = rFilter or 0.02
+  local aFilter = aFilter or 0.04
+
+  --Calculate best matching landmark pos to each particle
+  local dxp = {}
+  local dyp = {}
+  local dap = {}
+
+  for ip = 1,N do
+    local dx = {}
+    local dy = {}
+    local dr = {}
+    local da = {}
+    local err = {}    
+    for ipos = 1,#pos do
+--      local pose_target,t = calculate_pose_angle(pos[ipos],v,{xp[ip],yp[ip],ap[ip]},ip==1)
+      local pose_target,t = calculate_pose_angle(pos[ipos],v,{xp[ip],yp[ip],ap[ip]})      
+      if t>0 then
+        dx[ipos] = pose_target[1] - xp[ip]
+        dy[ipos] = pose_target[2] - yp[ip]
+        dr[ipos] = math.sqrt(dx[ipos]^2 + dy[ipos]^2) - r      
+        da[ipos] = mod_angle(math.atan2(dy[ipos],dx[ipos]) - (ap[ip] + a))
+        err[ipos] = (dr[ipos]/rSigma)^2 + (da[ipos]/aSigma)^2
+      else
+        dx[ipos],dy[ipos],dr[ipos],da[ipos] = 0,0,0,0
+        err[ipos] = math.huge
+      end
+    end
+    local errMin, imin = util.min(err)
+
+    --Update particle weights:
+    wp[ip] = wp[ip] - errMin
+    dxp[ip] = dx[imin]
+    dyp[ip] = dy[imin]
+    dap[ip] = da[imin]
+
+  end
+
+  --Filter toward best matching landmark position:  
+  for ip = 1,N do
+--print(string.format("%d %.1f %.1f %.1f",ip,xp[ip],yp[ip],ap[ip]))
+--    xp[ip] = xp[ip] + rFilter * (dxp[ip] - r * math.cos(ap[ip] + a))
+--    yp[ip] = yp[ip] + rFilter * (dyp[ip] - r * math.sin(ap[ip] + a))
+    xp[ip] = xp[ip] + rFilter * dxp[ip]
+    yp[ip] = yp[ip] + rFilter * dyp[ip]
+--    ap[ip] = ap[ip] + aFilter * dap[ip]
+    -- check boundary
+    xp[ip] = math.min(xMax, math.max(-xMax, xp[ip]))
+    yp[ip] = math.min(yMax, math.max(-yMax, yp[ip]))
+  end
+end
+
+
+
 ---Updates particles with respect to the detection of a landmark
 --@param pos Table of possible positions for a landmark
 --@param v x and y coordinates of detected landmark relative to robot
@@ -130,6 +216,11 @@ end
 --@param aLandmarkFilter How much to adjust particles according to
 --angle to landmark
 local function landmark_observation(pos, v, rFilter, aFilter)
+
+  if Config.use_angle_localization then
+    return landmark_observation_angle(pos,v,rFilter,aFilter)
+  end
+
   local r = math.sqrt(v[1]^2 + v[2]^2)
   local a = math.atan2(v[2], v[1])
   local rSigma = .15*r -- + 0.10
@@ -355,9 +446,6 @@ local function goal_triangulate_angle(pos,v,posea,debug)
   local s1 = math.sin(posea+aPost[1])
   local c2 = math.cos(posea+aPost[2])
   local s2 = math.sin(posea+aPost[2])
-
-
-
   --Assumption: pos[1][1] = pos[2][1], pos[1][2] = -pos[2][2]
   local t1 = 2*pos[1][2] *c2 / (s1*c2-s2*c1)
 
@@ -416,6 +504,10 @@ local function goal_observation_angle(pos1,pos2,v)
     end
   end
 end
+
+
+
+
 
 
 local function goal_observation(pos1,pos2,v)
@@ -479,7 +571,12 @@ function poseFilter.post_both(v)
 end
 
 function poseFilter.post_unknown(v)
-  landmark_observation(postAll, v[1], rUnknownPostFilter, aUnknownPostFilter)
+  --TODO: this kills the angle-based localization
+  if Config.use_angle_localization then
+
+  else
+    landmark_observation(postAll, v[1], rUnknownPostFilter, aUnknownPostFilter)
+  end
 end
 
 function poseFilter.post_left(v)

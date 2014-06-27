@@ -112,14 +112,17 @@ end
 function libWorld.update(uOdom, detection)
   local t = unix.time()
   -- Run the updates
-  if IS_WEBOTS then
-    -- TODO: Add webots specific functions
-    -- For SJ: This includes any GPS usage
-  end
 
-  update_odometry(uOdom)
-  update_vision(detection)
-  
+  if wcm.get_robot_reset_pose()==1 then
+    --Attacker initial pose
+    poseFilter.initialize({0,0,0},{0,0,0})
+    wcm.set_robot_pose({0,0,0})
+    wcm.set_robot_odometry({0,0,0})
+  else
+    update_odometry(uOdom)
+    update_vision(detection)
+  end
+ 
   -- Update pose in wcm
   wcm.set_robot_pose(vector.pose{poseFilter.get_pose()})
   

@@ -31,6 +31,13 @@ shared.robot.odometry = vector.zeros(3)
 -- 2: slam + odom
 shared.robot.odom_mode = vector.zeros(1)
 
+shared.robot.reset_pose = vector.zeros(1)
+
+
+
+
+
+
 -- SLAM pose
 shared.slam = {}
 shared.slam.pose = vector.zeros(3)

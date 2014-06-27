@@ -27,11 +27,14 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
+
+  wcm.set_robot_reset_pose(1)  
 end
 
 function state.exit()
   print(state._NAME..' Exit' )
   t_exit = Body.get_time()
+  wcm.set_robot_reset_pose(0)  
 end
 
 return state

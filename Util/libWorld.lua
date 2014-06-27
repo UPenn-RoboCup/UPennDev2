@@ -120,9 +120,9 @@ function libWorld.update(uOdom, detection)
     wcm.set_robot_odometry({0,0,0})
   else
     update_odometry(uOdom)
-    update_vision(detection)
   end
- 
+
+	update_vision(detection)
   -- Update pose in wcm
   wcm.set_robot_pose(vector.pose{poseFilter.get_pose()})
   

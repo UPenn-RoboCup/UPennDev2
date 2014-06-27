@@ -116,6 +116,7 @@ function state.entry()
 end
 
 function state.update()
+	if Config.fsm.disable_kick then return end
   --print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()

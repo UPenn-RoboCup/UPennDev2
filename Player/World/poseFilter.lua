@@ -343,9 +343,86 @@ triangulate2 = function (pos,v)
    return pose,dGoal,aGoal
 end
 
+local function goal_triangulate_angle(pos,v,posea,debug)
+--For this triangulation, we PRESEVER pose angle
+--And we use the observaion only as angles (ignore distances)
+  local aPost = {}  
+  aPost[1] = math.atan2(v[1][2], v[1][1])
+  aPost[2] = math.atan2(v[2][2], v[2][1])
+  --line 1: (pose.x,pose.y) + ( cos(pos.a + aPost[1]), sin(pos.a+aPost[1])*t1
+  --line 2: (pose.x,pose.y) + ( cos(pos.a + aPost[1]), sin(pos.a+aPost[1])*t2
+  local c1 = math.cos(posea+aPost[1])
+  local s1 = math.sin(posea+aPost[1])
+  local c2 = math.cos(posea+aPost[2])
+  local s2 = math.sin(posea+aPost[2])
+
+
+
+  --Assumption: pos[1][1] = pos[2][1], pos[1][2] = -pos[2][2]
+  local t1 = 2*pos[1][2] *c2 / (s1*c2-s2*c1)
+
+  if debug then
+    print("aPosts:",aPost[1]*180/math.pi,aPost[2]*180/math.pi)
+    print("t1:",t1)
+    print("t2:",t1*c1/c2)
+  end
+
+  local pose={}
+  pose.x = pos[1][1] - c1*t1
+  pose.y = pos[1][2] - s1*t1
+  pose.a = posea
+
+  local dGoal = math.sqrt((pose.x-pos[1][1])^2, pose.y^2)
+  return pose, dGoal, t1
+end
+
+
+
+local function goal_observation_angle(pos1,pos2,v)
+  local rFilter = rGoalFilter  
+  for ip = 1,N do
+
+    local pose1,dGoal1,t1 = goal_triangulate_angle(pos1,v,ap[ip],ip==1)
+    local pose2,dGoal2,t2 = goal_triangulate_angle(pos2,v,ap[ip],ip==1)
+    if ip==1 then
+      print("Pose1:",pose1.x,pose1.y,pose1.a*180/math.pi)
+      print("Pose2:",pose2.x,pose2.y,pose2.a*180/math.pi)
+    end
+
+    local rSigma1 = .25*dGoal1 + 0.20
+    local rSigma2 = .25*dGoal2 + 0.20
+
+    local xErr1 = pose1.x - xp[ip]
+    local yErr1 = pose1.y - yp[ip]
+    local rErr1 = math.sqrt(xErr1^2 + yErr1^2)
+    local err1 = (rErr1/rSigma1)^2
+    if t1<0 then err1 = math.huge end
+
+    local xErr2 = pose2.x - xp[ip]
+    local yErr2 = pose2.y - yp[ip]
+    local rErr2 = math.sqrt(xErr2^2 + yErr2^2)    
+    local err2 = (rErr2/rSigma2)^2
+    if t2<0 then err2 = math.huge end
+
+    --Filter towards best matching goal:
+    if err1>err2 then
+      wp[ip] = wp[ip] - err2
+      xp[ip] = xp[ip] + rFilter*xErr2
+      yp[ip] = yp[ip] + rFilter*yErr2
+    else
+      wp[ip] = wp[ip] - err1
+      xp[ip] = xp[ip] + rFilter*xErr1
+      yp[ip] = yp[ip] + rFilter*yErr1
+    end
+  end
+end
 
 
 local function goal_observation(pos1,pos2,v)
+
+  if Config.use_angle_localization then
+    return goal_observation_angle(pos1,pos2,v)
+  end
 
   --Get pose estimate from two goalpost locations
   local pose1,dGoal1 = triangulate2(pos1,v)

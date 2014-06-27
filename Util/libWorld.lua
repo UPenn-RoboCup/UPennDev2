@@ -40,13 +40,13 @@ local function update_odometry(uOdometry)
   uOdometry[2] = odomScale[2] * uOdometry[2]
   uOdometry[3] = odomScale[3] * uOdometry[3]
   -- Next, grab the gyro yaw
---[[
+
   if use_imu_yaw then    
     local yaw = Body.get_sensor_rpy()[3]
     uOdometry[3] = yaw - yaw0
     yaw0 = yaw
   end
---]]  
+
   -- Update the filters based on the new odometry
   ballFilter.odometry(unpack(uOdometry))
   poseFilter.odometry(unpack(uOdometry))
@@ -69,7 +69,7 @@ local function update_vision(detected)
     poseFilter.resample()
     if mcm.get_walk_ismoving()==1 then
       poseFilter.addNoise()
-    end
+    end    
   end
   -- If the ball is detected
 	ball = detected.ball
@@ -83,11 +83,16 @@ local function update_vision(detected)
   -- If the goal is detected
   -- If robot is static then do not use posts for localization
 	goal = detected.posts
-  if goal and mcm.get_walk_ismoving()==1 then
+--  if goal and mcm.get_walk_ismoving()==1 then
+  if goal then
     if goal[1].type == 3 then
       goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
     else
-      goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+      if Config.use_angle_localization then 
+        --temporary hack (only use two post for localization)
+      else
+        goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+      end
     end
   end
   -- If the obstacle is detected

@@ -45,7 +45,7 @@ Solid {
           }
           geometry Cylinder {
             bottom FALSE
-            height 3.1
+            height 3.0
             radius IS postRadius
             top FALSE
           }

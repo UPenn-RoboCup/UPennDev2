@@ -81,46 +81,6 @@ function world.entry()
   -- Velocity.entry()
 end
 
--- -- Not in need for adult size
--- function world.init_particles_manual_placement()
---   if gcm.get_team_role() == 0 then
---   -- goalie initialized to different place
---     goalDefend= world.get_goal_defend()
---     util.ptable(goalDefend)
---     dp = vector.new({0.04,0.04,math.pi/8})
---     if goalDefend[1] > 0 then
---       poseFilter.initialize(vector.new({goalDefend[1],0,math.pi}), dp)
---     else
---       poseFilter.initialize(vector.new({goalDefend[1],0,0}), dp)
---     end
---   else
---     poseFilter.initialize_manual_placement()
---     if (useSoundLocalization > 0) then
---       SoundFilter.reset()
---     end
---   end
--- end
-
--- 
--- function world.allLessThanTenth(table)
---   for k,v in pairs(table) do
---     if v >= .1 then
---       return false
---     end
---   end
---   return true
--- end
--- 
--- function world.allZeros(table)
---   for k,v in pairs(table) do
---     if v~=0 then
---       return false
---     end
---   end
---   return true
--- end
-
-
 function world.update_odometry()
   debug_str = ''
 
@@ -215,16 +175,6 @@ function world.update_vision(ball, goal, line)
       poseFilter.addNoise()
     end
   end
-
-  -- Reset heading if robot is down
-  -- if (mcm.get_walk_isFallDown() == 1) then
-  --   poseFilter.reset_heading()
-  -- 
-  --   if (useSoundLocalization > 0) then
-  --     SoundFilter.reset()
-  --   end
-  -- end
-
     
   -- ball
   ball_gamma = 0.3
@@ -311,37 +261,6 @@ function world.update_vision(ball, goal, line)
   
   return debug_str
 end
-
-
-
--- function world.update_led()
---   --Turn on the eye light according to team color
---   --If gamecontroller is down
---   if gcm.get_game_state()~=3 and
---      gcm.get_game_gc_latency() > 10.0 then
--- 
---     if gcm.get_team_color() == 0 then --Blue team
---       Body.set_indicator_goal({0,0,0})
---       Body.set_indicator_ball({0,0,1})
---     else --Red team
---       Body.set_indicator_goal({0,0,0})
---       Body.set_indicator_ball({0,0,1})
---     end
---     return
---   end
--- 
---   --Only disable eye LED during playing
--- --  if led_on>0 and gcm.get_game_state()~=3 then
---   if led_on>0 then
---     Body.set_indicator_goal(goal_led)
---     Body.set_indicator_ball(ball_led)
---   else
---     Body.set_indicator_goal({0,0,0})
---     Body.set_indicator_ball({0,0,0})
---   end
--- end
-
-
 
 function world.update_shm()
   -- update shm values

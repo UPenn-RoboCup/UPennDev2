@@ -34,7 +34,7 @@ local t_resample = 0
 --local yaw0 = Body.get_sensor_rpy()[3]
 
 
-local function update_odometry(uOdometry)
+local function update_odometry(uOdometry)  
   -- Scale the odometry
   uOdometry[1] = odomScale[1] * uOdometry[1]
   uOdometry[2] = odomScale[2] * uOdometry[2]
@@ -88,11 +88,7 @@ local function update_vision(detected)
     if goal[1].type == 3 then
       goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
     else
-      if Config.use_angle_localization then 
-        --temporary hack (only use two post for localization)
-      else
-        goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
-      end
+      goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
     end
   end
   -- If the obstacle is detected
@@ -116,14 +112,17 @@ end
 function libWorld.update(uOdom, detection)
   local t = unix.time()
   -- Run the updates
-  if IS_WEBOTS then
-    -- TODO: Add webots specific functions
-    -- For SJ: This includes any GPS usage
-  end
 
-  update_odometry(uOdom)
-  update_vision(detection)
-  
+  if wcm.get_robot_reset_pose()==1 then
+    --Attacker initial pose
+    poseFilter.initialize({0,0,0},{0,0,0})
+    wcm.set_robot_pose({0,0,0})
+    wcm.set_robot_odometry({0,0,0})
+  else
+    update_odometry(uOdom)
+    update_vision(detection)
+  end
+ 
   -- Update pose in wcm
   wcm.set_robot_pose(vector.pose{poseFilter.get_pose()})
   

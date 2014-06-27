@@ -38,7 +38,7 @@ Config.use_gps_pose = false
 --Config.demo = true
 Config.demo = false
 Config.use_localhost = false
---Config.use_angle_localization = true
+Config.use_angle_localization = true
 
 if IS_WEBOTS then
   --Config.use_gps_pose = true

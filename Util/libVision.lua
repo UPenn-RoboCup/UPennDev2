@@ -147,6 +147,19 @@ local function check_coordinateA(centroid, scale, maxD, maxH)
   return v
 end
 
+local function projectGround(v,targetheight)
+  targetheight = targetheight or 0
+  local vout = vector.new(v)
+  local vHead_homo = vector.new({vHead[1], vHead[2], vHead[3], 1})
+  --Project to plane
+  if vHead[3]>targetheight then
+    vout = vHead_homo +
+      (vout-vHead_homo)*( (vHead[3]-targetheight) / (vHead[3]-vout[3]) )
+  end
+
+  return vout
+end
+
 -- Yield coordinates in the labelB space
 -- Returns an error message if max limits are given
 local function check_coordinateB(centroid, scale, maxD, maxH)
@@ -197,8 +210,11 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       if type(v)=='string' then
         table.insert(fail, v)
       else
-        -- Found the ball position
-        propsA.v = vector.new(v)
+        --SJ: WE SHOULD PROJECT THE BALL TO THE GROUND
+        --BECAUSE OFTEN THE BALL IS DETECTED TOO SMALL (FAR)
+
+        --propsA.v = vector.new(v)
+        propsA.v = projectGround(v,b_diameter/2)
         propsA.t = Body and Body.get_time() or 0
 				-- For ballFilter
 			  propsA.r = math.sqrt(v[1]*v[1]+v[2]*v[2])
@@ -402,18 +418,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
   return table.concat(failures,',')
 end
 
-local function projectGround(v,targetheight)
-  targetheight = targetheight or 0
-  local vout = vector.new(v)
-  local vHead_homo = vector.new({vHead[1], vHead[2], vHead[3], 1})
-  --Project to plane
-  if vHead[3]>targetheight then
-    vout = vHead_homo +
-      (vout-vHead_homo)*( (vHead[3]-targetheight) / (vHead[3]-vout[3]) )
-  end
 
-  return vout
-end
 
 
 -- Obstacle detection

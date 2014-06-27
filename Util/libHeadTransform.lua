@@ -41,6 +41,13 @@ HeadTransform.ikineCam = function(x0, y0, z0)
   local p0 = math.atan2(r, z) - math.acos(cam_z/(d + 1E-10))
 
   local pitch = p0 - Config.head.cameraAngle[2]
+
+  --If the ball is right in front of the robot, fix yaw angle
+
+  if pitch>45*math.pi/180 and math.abs(yaw)<45*math.pi/180 then
+    yaw = 0
+  end
+
   return yaw, pitch
 end
 

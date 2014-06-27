@@ -132,7 +132,7 @@ function libWorld.send()
   -- Robot info
   to_send.pose = vector.new(wcm.get_robot_pose())
   to_send.info = to_send.info..string.format(
-    'Pose: %.1f %.1f %.1f\n', to_send.pose[1], to_send.pose[2], to_send.pose[3]*RAD_TO_DEG)
+    'Pose: %.2f %.2f (%.1f)\n', to_send.pose[1], to_send.pose[2], to_send.pose[3]*RAD_TO_DEG)
     
     -- print('libWorld, odom:', unpack(wcm.get_robot_odometry()))
   
@@ -146,7 +146,7 @@ function libWorld.send()
     to_send.ball.y = wcm.get_ball_y()
     to_send.ball.t = wcm.get_ball_t()
     to_send.info = to_send.info..string.format(
-      'Ball: %.1f %.1f\n', to_send.ball.x, to_send.ball.y)
+      'Ball: %.2f %.2f\n', to_send.ball.x, to_send.ball.y)
   end
   -- Goal info
   if goal then
@@ -157,12 +157,12 @@ function libWorld.send()
     
     to_send.goal.v1 = goal[1].v
     to_send.info = to_send.info..string.format(
-      'Post1: %.1f %.1f\n', to_send.goal.v1[1], to_send.goal.v1[2])
+      'Post1: %.2f %.2f\n', to_send.goal.v1[1], to_send.goal.v1[2])
     
     if goal[1].type==3 then
       to_send.goal.v2 = goal[2].v
       to_send.info = to_send.info..string.format(
-        'Post2: %.1f %.1f\n', to_send.goal.v2[1], to_send.goal.v2[2])
+        'Post2: %.2f %.2f\n', to_send.goal.v2[1], to_send.goal.v2[2])
     end
   end  
   

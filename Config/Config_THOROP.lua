@@ -25,6 +25,24 @@ Config.dev.crawl        = 'ScrambleCrawl'
 Config.dev.largestep    = 'ZMPStepStair'
 Config.dev.gender       = 'boy'
 
+
+
+--I hate debug msgs....
+Config.debug={
+	webots_wizard=false,	
+	obstacle = false,
+	approach = true,
+}
+
+Config.use_gps_pose = false
+Config.demo = true
+Config.use_localhost = false
+if IS_WEBOTS then
+  Config.use_gps_pose = true
+  Config.demo = false
+  Config.use_localhost = true
+end
+
 ---------------------------
 -- Complementary Configs --
 ---------------------------
@@ -35,25 +53,5 @@ for _,v in ipairs(exo) do
   local fname = {HOME, '/Config/Config_', Config.PLATFORM_NAME, '_', v, '.lua'}
   dofile(table.concat(fname))
 end
-
----------------
--- Keyframes --
----------------
-Config.km = {}
-Config.km.standup_front = 'km_Charli_StandupFromFront.lua'
-Config.km.standup_back  = 'km_Charli_StandupFromBack.lua'
-
---I hate debug msgs....
-Config.debug={
-	webots_wizard=false,	
-	obstacle = false,
-	approach = true,
-}
-
-Config.use_gps_pose = false
--- Config.use_gps_pose = true
-
-Config.demo = true
-Config.demo = false
 
 return Config

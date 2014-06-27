@@ -82,8 +82,8 @@ function state.update()
   local pose = wcm.get_robot_pose()
 
   local foot_xOffset = 0.30
-  local ballx = wcm.get_ball_x() - foot_xOffset
-  local bally = wcm.get_ball_y() - (ball_side*0.12)
+  local ballx = wcm.get_ball_x() - Config.fsm.bodyRobocupApproach.target[1]
+  local bally = wcm.get_ball_y() - ball_side*Config.fsm.bodyRobocupApproach.target[2]
   local ballr = math.sqrt(ballx*ballx+bally*bally)
   local balla = math.atan2(bally,ballx)
   local walk_target_local = {ballx,bally,balla}
@@ -102,9 +102,9 @@ function state.update()
     print(string.format("Ball err: x %.3f y%.3f   %.2f elapsed", ballx,bally,ball_elapsed))
   end
  
- if ball_elapsed <0.5 and 
-    ballx<0.10 and
-    bally<0.02 and bally > -0.02 then
+ if ball_elapsed <0.5 
+    and ballx<Config.fsm.bodyRobocupApproach.th[1]
+    and math.abs(bally)<Config.fsm.bodyRobocupApproach.th[2] then
     print("Ball pos:",wcm.get_ball_x(),wcm.get_ball_y())
     if ball_side==1 then
       mcm.set_walk_kickfoot(0)--left foot kick

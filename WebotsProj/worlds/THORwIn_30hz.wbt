@@ -50,9 +50,13 @@ DEF BALL Ball {
   translation 2 0 0
   radius 0.10
 }
-Obstacle {
-  translation -2 0.45 -1
+DEF OBS1 Obstacle {
+  translation -2 0 -1
 }
+DEF OBS2 Obstacle {
+  translation 1.5 0 1
+}
+
 THOROP7_RoboCup_New{
   translation 0 1.15535 0
   rotation 0 1 0 -1.57

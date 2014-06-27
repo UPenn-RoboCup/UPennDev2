@@ -21,8 +21,6 @@ net.operator = {
 }
 
 -- For use only when testing in webots on a local computer
---if USE_LOCALHOST then
-
 if Config.use_localhost then	
   -- wired
   net.robot.wired = 'localhost'

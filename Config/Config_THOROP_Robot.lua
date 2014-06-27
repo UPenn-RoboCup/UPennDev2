@@ -267,7 +267,7 @@ if IS_WEBOTS then
   })*DEG_TO_RAD
 
   servo.min_rad = vector.new({
-      -90,-80, -- Head
+      -135,-80, -- Head
       -90, 0, -90, -160,      -180,-87,-180, --LArm
       -175,-175,-175,-175,-175,-175, --LLeg
       -175,-175,-175,-175,-175,-175, --RLeg
@@ -280,7 +280,7 @@ if IS_WEBOTS then
     })*DEG_TO_RAD
 
     servo.max_rad = vector.new({
-      90, 80, -- Head
+      135, 80, -- Head
       160,180,90,0,     180,87,180, --LArm
       175,175,175,175,175,175, --LLeg
       175,175,175,175,175,175, --RLeg

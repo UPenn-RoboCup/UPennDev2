@@ -70,14 +70,6 @@ local function update_head()
   trHead = trNeck * dtrCamera
   -- Grab the position only
   vHead = T.get_pos(trHead)
-  -- Horizon
-  --[[
-  local pa = headAngles[2] + cameraAngle[2] -- + bodyTilt   --TODO
-  horizonA = (labelA.n/2.0) - focalA*math.tan(pa) - 2
-  horizonA = math.min(labelA.n, math.max(math.floor(horizonA), 0))
-  horizonB = (labelB.n/2.0) - focalB*math.tan(pa) - 1
-  horizonB = math.min(labelB.n, math.max(math.floor(horizonB), 0))
-  --]]
 end
 
 -- Simple bbox with no tilted color stats
@@ -433,33 +425,35 @@ function libVision.obstacle(labelB_t, cc)
   local grid_y = Config.vision.obstacle.grid_y
   local th_min_area = Config.vision.obstacle.th_min_area
   local th_green_fill_rate = Config.vision.obstacle.th_green_fill_rate
+  local th_max_height = Config.vision.obstacle.th_max_height
   
-  local blockX = wb / grid_x
-  local blockY = hb / grid_y 
-  for i=1, blockX do
-    for j=1,blockY do  --TODO
-      local leftX = (i-1)* (wb/blockX)+1
-      local topY = (j-1)* (hb/blockY)+1
-      local rightX = i* (wb/blockX)
-      local bottomY = j* (hb/blockY)
+  local col = wb / grid_x
+  local row = hb / grid_y 
+  for i=1, col do
+    for j=1,row do  --TODO
+      local leftX = (i-1)* grid_x+1
+      local topY = (j-1)* grid_y+1
+      local rightX = i* grid_x
+      local bottomY = j* grid_y
 
       local bboxB = {leftX, rightX, topY, bottomY}
       local blackStats = bboxStats(false, colors.black, bboxB, labelB_t)
 
       -- Checks
-      local check_passed, v, cx, cy = true
+      local check_passed, v = true
       if blackStats.area < 10 then
         check_passed = false
         obs_debug = obs_debug..string.format('FAIL black area:%.1f < %.1f',
           blackStats.area, th_min_area)
       else
-        -- local scale = 1
         local scale = math.max(1, blackStats.axisMinor / Config.world.obsDiameter)
-        cx, cy = blackStats.centroid[1], blackStats.centroid[2]
-      	v = check_coordinateB(vector.new({cx, cy}), scale)
+      	v = check_coordinateB(blackStats.centroid, scale)
+        
+        if Config.debug.obstacle then print('obs v[3]:',v[3]) end
+        
       end
       -- Height check
-      if check_passed and v[3]>1.5 then
+      if check_passed and v[3]>th_max_height then
         check_passed = false
         obs_debug = obs_debug..'obstacle too high'
       end
@@ -472,19 +466,18 @@ function libVision.obstacle(labelB_t, cc)
           obs_debug = obs_debug..string.format('green fill rate: %.2f > %.2f\n',
             fill_rate, th_green_fill_rate)
         else
-          v = projectGround(v,0.5)  --TODO
+          v = projectGround(v,0.45)  
+          --TODO: distance factor?
           obs_count = obs_count + 1
-          obstacle.iv[obs_count] = {cx*scaleB, cy*scaleB}
+          obstacle.iv[obs_count] = vector.new(blackStats.centroid)*scaleB
           obstacle.bbox[obs_count] = vector.new(blackStats.boundingBox)*scaleB
           obstacle.v[obs_count] = v
           obstacle.detect = 1
         end
       end
-      --TODO: avoid self body, i.e. when head is looking down do not detect obs
-      
           
-    end -- end blockY
-  end -- end blockX
+    end -- end row
+  end -- end col
   
   if obstacle.detect == 1 then
     return 'Detected', obstacle
@@ -565,7 +558,14 @@ function libVision.update(img)
   local cc = ImageProc2.color_count(labelA_t)
   local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
-  local obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc)
+  -- If looking down, then do not detect obstacles
+  local obstacle_fails, obstacles
+  local head_angle = Body.get_head_position()
+  if head_angle[2]>50*DEG_TO_RAD then
+    obstacle_fails = 'looking down'
+  else
+    obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc)
+  end
   
   if Config.debug.obstacle then 
     if obstacles then print(#obstacles.v, obstacles.v[1]) end

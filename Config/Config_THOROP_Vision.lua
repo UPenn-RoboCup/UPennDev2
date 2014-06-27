@@ -86,6 +86,7 @@ vision.obstacle = {
   grid_y = 15,
   th_min_area = 4,
   th_green_fill_rate = 0.93,
+  th_max_height = 1.3,
 }
 
 -- Line
@@ -194,10 +195,11 @@ if IS_WEBOTS then
   }
   
   vision.obstacle = {
-    grid_x = 10, 
+    grid_x = 10, --10 
     grid_y = 15,
     th_min_area = 4,
     th_green_fill_rate = 0.93,
+    th_max_height = 1.2,
   }
   
 end

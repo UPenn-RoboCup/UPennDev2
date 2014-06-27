@@ -82,11 +82,11 @@ vision.goal = {
 
 -- TODO: these are just webots values
 vision.obstacle = {
-  grid_x = 10, 
-  grid_y = 15,
+  grid_x = 16, 
+  grid_y = 18,
   th_min_area = 4,
-  th_green_fill_rate = 0.93,
-  th_max_height = 1.3,
+  th_green_fill_rate = 0.4,
+  th_max_height = 1,
 }
 
 -- Line

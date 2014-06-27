@@ -30,12 +30,13 @@ Config.dev.gender       = 'boy'
 --I hate debug msgs....
 Config.debug={
 	webots_wizard=false,	
-  -- obstacle = true,
+  --obstacle = true,
 	approach = false,
 }
 
 Config.use_gps_pose = false
-Config.demo = true
+--Config.demo = true
+Config.demo = false
 Config.use_localhost = false
 --Config.use_angle_localization = true
 

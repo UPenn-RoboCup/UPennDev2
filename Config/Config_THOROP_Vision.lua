@@ -80,20 +80,12 @@ vision.goal = {
   check_for_ground = 1,
 }
 
--- -- Black obstacle
--- vision.obstacle = {
---   th_min_color = 300,
---   th_min_area = 60,
---   th_min_orientation = 60*math.pi/180,
---   th_fill_rate = 0.5,
---   height_min = -0.9,
---   height_max = -0.5,
---   th_aspect_ratio = {2.5, 6},
--- }
-
+-- TODO: these are just webots values
 vision.obstacle = {
-  grid_scale = 10, 
-  min_fill_rate = 0.6,
+  grid_x = 10, 
+  grid_y = 15,
+  th_min_area = 4,
+  th_green_fill_rate = 0.93,
 }
 
 -- Line
@@ -166,9 +158,9 @@ table.insert(Config.camera,
 if IS_WEBOTS then
   Config.camera[1].w = 320
   Config.camera[1].h = 180
-  Config.camera[1].lut = 'webots'
+  -- Config.camera[1].lut = 'webots'
   --Config.camera[1].lut = 'webots2'
-  -- Config.camera[1].lut = 'webots74'
+  Config.camera[1].lut = 'webots74'
 
   Config.camera[1].cx_offset = 0
   Config.camera[1].cy_offset = 0
@@ -199,6 +191,13 @@ if IS_WEBOTS then
     use_centerpost = 1,
     min_crossbar_ratio = 0.6,
     check_for_ground = 1,
+  }
+  
+  vision.obstacle = {
+    grid_x = 10, 
+    grid_y = 15,
+    th_min_area = 4,
+    th_green_fill_rate = 0.93,
   }
   
 end

@@ -65,7 +65,6 @@ function state.update()
 
   local yaw = math.min(math.max(yaw0+yawbias, -yawMax), yawMax)
   local pitch = -5*DEG_TO_RAD
-  -- local yaw, pitch = HT.ikineCam(dist*math.cos(yaw1),dist*math.sin(yaw1))
 
   -- Grab where we are
   local qNeck = Body.get_head_command_position()

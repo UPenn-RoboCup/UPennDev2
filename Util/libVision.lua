@@ -82,15 +82,18 @@ end
 
 -- Simple bbox with no tilted color stats
 -- TODO: Use the FFI for color stats, should be super fast
-local function bboxStats(color, bboxB, labelA_t)
-  local bboxA = {
-    scaleB * bboxB[1],
-    scaleB * bboxB[2] + scaleB - 1,
-    scaleB * bboxB[3],
-    scaleB * bboxB[4] + scaleB - 1
-  }
-  local area = (bboxA[2] - bboxA[1] + 1) * (bboxA[4] - bboxA[3] + 1)
-	local stats = ImageProc.color_stats(labelA_t, color, bboxA)
+local function bboxStats(use_lA, color, bbox, label_t)
+  if use_lA then
+    bbox = {
+      scaleB * bbox[1],
+      scaleB * bbox[2] + scaleB - 1,
+      scaleB * bbox[3],
+      scaleB * bbox[4] + scaleB - 1
+    }
+  end
+  
+  local area = (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1)
+	local stats = ImageProc.color_stats(label_t, color, bbox)
   return stats, area
 end
 
@@ -105,7 +108,7 @@ end
 
 local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_t)
   -- Grab the statistics in labelA
-  local stats, box_area = bboxStats(color, prop.boundingBox, labelA_t)
+  local stats, box_area = bboxStats(true, color, prop.boundingBox, labelA_t)
   --TODO: bbox area check seems redundant
   if box_area < th_bbox_area then 
     return string.format('Box area: %d<%d\n',box_area,th_bbox_area)  
@@ -419,49 +422,65 @@ function libVision.obstacle(labelB_t, cc)
   if cc[colors.black]<20 then return 'No obstacle' end
   -- Obstacle table
   local obstacle, obs_count, obs_debug = {}, 0, ''
-  obstacle.iv, obstacle.v = {}, {}
+  obstacle.iv, obstacle.v, obstacle.bbox = {}, {}, {}
   -- Parameters  TODO: put into entry()
-  local grid_scale = Config.vision.obstacle.grid_scale
-  local th_fill_rate = Config.vision.obstacle.min_fill_rate
+  local grid_x = Config.vision.obstacle.grid_x
+  local grid_y = Config.vision.obstacle.grid_y
+  local th_min_area = Config.vision.obstacle.th_min_area
+  local th_green_fill_rate = Config.vision.obstacle.th_green_fill_rate
   
-  -- TODO: no need to care about the upper part of the image
-  local blockX = wb / grid_scale
-  local blockY = hb / grid_scale
+  local blockX = wb / grid_x
+  local blockY = hb / grid_y 
   for i=1, blockX do
-    for j=4, blockY do
+    for j=1,blockY do  --TODO
       local leftX = (i-1)* (wb/blockX)+1
       local topY = (j-1)* (hb/blockY)+1
       local rightX = i* (wb/blockX)
       local bottomY = j* (hb/blockY)
 
-      local centerX = (i-0.5)* (wb/blockX)
-      local centerY = (j-0.5)* (hb/blockY)
-
       local bboxB = {leftX, rightX, topY, bottomY}
-      -- local colorStats = ImageProc.color_stats(labelB_t, colors.black, bboxB)
-    	local colorStats = ImageProc.color_stats(labelB_t, colors.field, bboxB)
+      local blackStats = bboxStats(false, colors.black, bboxB, labelB_t)
 
-    	local scale = 1 --long projection
-    	local v = check_coordinateB(vector.new({centerX,centerY}), scale);
-      if v[3]<0 then --TODO: other threshold
-        local fill_rate = colorStats.area / (wb*hb/blockX/blockY) 
-        if Config.debug.obstacle  then print('GREEN FILL RATE', fill_rate) end
-  	    if fill_rate < th_fill_rate then
-            v = projectGround(v,0)  --TODO
-        		obs_count = obs_count + 1
-        		obstacle.iv[obs_count] = {centerX*scaleB, centerY*scaleB}
-        		obstacle.v[obs_count] = v
-        		obstacle.detect = 1 
-        else
-          obs_debug = obs_debug..string.format('fill rate: %.2f > %.2f\n',
-            fill_rate, th_fill_rate)
-  	    end
+      -- Checks
+      local check_passed, v, cx, cy = true
+      if blackStats.area < 10 then
+        check_passed = false
+        obs_debug = obs_debug..string.format('FAIL black area:%.1f < %.1f',
+          blackStats.area, th_min_area)
       else
+        -- local scale = 1
+        local scale = math.max(1, blackStats.axisMinor / Config.world.obsDiameter)
+        cx, cy = blackStats.centroid[1], blackStats.centroid[2]
+      	v = check_coordinateB(vector.new({cx, cy}), scale)
+      end
+      -- Height check
+      if check_passed and v[3]>1.5 then
+        check_passed = false
         obs_debug = obs_debug..'obstacle too high'
       end
-    
+      -- Green fill rate
+      if check_passed then
+        local greenStats, bbox_area = bboxStats(false, colors.field, bboxB, labelB_t)
+        local fill_rate = greenStats.area / bbox_area 
+  	    if fill_rate > th_green_fill_rate then
+          check_passed = false
+          obs_debug = obs_debug..string.format('green fill rate: %.2f > %.2f\n',
+            fill_rate, th_green_fill_rate)
+        else
+          v = projectGround(v,0.5)  --TODO
+          obs_count = obs_count + 1
+          obstacle.iv[obs_count] = {cx*scaleB, cy*scaleB}
+          obstacle.bbox[obs_count] = vector.new(blackStats.boundingBox)*scaleB
+          obstacle.v[obs_count] = v
+          obstacle.detect = 1
+        end
+      end
+      --TODO: avoid self body, i.e. when head is looking down do not detect obs
+      
+          
     end -- end blockY
   end -- end blockX
+  
   if obstacle.detect == 1 then
     return 'Detected', obstacle
   else

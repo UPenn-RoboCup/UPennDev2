@@ -472,10 +472,12 @@ local function goal_observation_angle(pos1,pos2,v)
 
     local pose1,dGoal1,t1 = goal_triangulate_angle(pos1,v,ap[ip],ip==1)
     local pose2,dGoal2,t2 = goal_triangulate_angle(pos2,v,ap[ip],ip==1)
+		--[[
     if ip==1 then
       print("Pose1:",pose1.x,pose1.y,pose1.a*180/math.pi)
       print("Pose2:",pose2.x,pose2.y,pose2.a*180/math.pi)
     end
+		--]]
 
     local rSigma1 = .25*dGoal1 + 0.20
     local rSigma2 = .25*dGoal2 + 0.20

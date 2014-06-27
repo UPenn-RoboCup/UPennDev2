@@ -6,6 +6,9 @@ local fsm = {}
 fsm.disabled = false
 -- fsm.disabled = true
 
+-- Do we disable Kick?
+fsm.disable_kick = true
+
 -- Update rate in Hz
 fsm.update_rate = 100
 

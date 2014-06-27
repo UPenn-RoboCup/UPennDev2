@@ -107,7 +107,7 @@ local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_t)
   local area = stats.area
   -- If no pixels then return
   if area < th_area then 
-    return string.format('Area: %d < %d \t', area, th_area) 
+    return string.format('Area: %d < %d \n', area, th_area) 
   end
   -- Get the fill rate
 	-- TODO: depend on ball or goal
@@ -259,7 +259,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
       -- Orientation check
       if check_passed and math.abs(postStats.orientation) < g_orientation then
         table.insert(fail, 
-					string.format('Orientation:%.1f < %.1f ', postStats.orientation, g_orientation) )
+					string.format('Orientation:%.1f < %.1f \n', postStats.orientation, g_orientation) )
 				check_passed = false
       end
       -- Aspect Ratio check
@@ -267,7 +267,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 				local aspect = postStats.axisMajor / postStats.axisMinor;
 				if (aspect < g_aspect_ratio[1]) or (aspect > g_aspect_ratio[2]) then
 					table.insert(fail, 
-						string.format('Aspect ratio:%.2f, [%.2f %.2f] ', aspect, unpack(g_aspect_ratio)) )
+						string.format('Aspect ratio:%.2f, [%.2f %.2f]\n', aspect, unpack(g_aspect_ratio)) )
 					check_passed = false
 				end
 			end
@@ -277,7 +277,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 				local rightPoint= postStats.centroid[1] + postStats.axisMinor / 2
 				local margin = math.min(leftPoint, wa - rightPoint)
 				if margin <= g_margin then
-					table.insert(fail, string.format('Edge margin:%.1f < %.1f', margin, g_margin))
+					table.insert(fail, string.format('Edge margin:%.1f < %.1f\n', margin, g_margin))
 					check_passed = false
 				end
 			end
@@ -588,8 +588,8 @@ function libVision.update(img)
   
   -- Debug messages
   -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
-  -- detected.debug = table.concat({'Posts',post_fails},'\n')
-  detected.debug = table.concat({'Obstacle', obstacle_fails},'\n')
+  detected.debug = table.concat({'Posts',post_fails},'\n')
+  --detected.debug = table.concat({'Obstacle', obstacle_fails},'\n')
 
   -- Send the detected stuff over the channel every cycle
   vision_ch:send(mp.pack(detected))

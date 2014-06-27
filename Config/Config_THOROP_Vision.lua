@@ -60,13 +60,13 @@ vision.ball = {
 }
 
 vision.goal = {
-  th_min_bbox_area = 100, 
+  th_min_bbox_area = 80, --100, 
   th_nPostB = 15,
   th_min_area = 40,
   th_min_orientation = 80*math.pi/180,
-  th_min_fill_rate = 0.5,
+  th_min_fill_rate = 0.45,
   height_min = -0.9,  --TODO
-  th_aspect_ratio = {2.5,100},
+  th_aspect_ratio = {2.5,120},
   th_edge_margin = 5,
   th_bottom_boundingbox = 0.9,
   th_ground_boundingbox = {-15,15,-15,10},
@@ -132,8 +132,8 @@ table.insert(Config.camera,
       'libVision',
     },
     --Logitech C920
-    --lut = 'm308_9am',
-    lut = 'm308_lightson',
+    --lut = 'm308_lightson',
+    lut = '0627_m308',
 		-- f = 640/2/tan(78/180*pi / 2)
     focal_length = 395.17,
     focal_base = 640,

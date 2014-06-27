@@ -165,7 +165,8 @@ if IS_WEBOTS then
 
   Config.camera[1].cx_offset = 0
   Config.camera[1].cy_offset = 0
-  Config.camera[1].focal_length = 554.256/2
+--  Config.camera[1].focal_length = 554.256/2
+  Config.camera[1].focal_length = 220
   Config.camera[1].focal_base = 320
 	head.neckX= 0 --From CoM to neck joint
 

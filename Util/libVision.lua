@@ -73,7 +73,6 @@ local function update_head()
 end
 
 -- Simple bbox with no tilted color stats
--- TODO: Use the FFI for color stats, should be super fast
 local function bboxStats(use_lA, color, bbox, label_t)
   if use_lA then
     bbox = {
@@ -132,8 +131,28 @@ local function check_coordinateA(centroid, scale, maxD, maxH)
   local v = torch.mv(trHead, v0) / v0[4]
   -- Check the distance
   if maxD and v[1]*v[1] + v[2]*v[2] > maxD*maxD then
+    return'TOO FAR'
+  elseif maxH and v[3] > maxH then
+    return'TOO HEIGH'
+  end
+  return v
+end
+
+-- Yield coordinates in the labelB space
+-- Returns an error message if max limits are given
+local function check_coordinateB(centroid, scale, maxD, maxH)
+  local v0 = torch.Tensor({
+    focalB,
+    -(centroid[1] - x0B),
+    -(centroid[2] - y0B),
+    scale,
+  })
+  local v = torch.mv(trHead, v0) / v0[4]
+  -- Check the distance
+  if maxD and v[1]*v[1] + v[2]*v[2] > maxD*maxD then
     return'Distance'
   elseif maxH and v[3] > maxH then
+    print(v[3])
     return'Height'
   end
   return v
@@ -151,26 +170,6 @@ local function projectGround(v,targetheight)
 
   return vout
 end
-
--- Yield coordinates in the labelB space
--- Returns an error message if max limits are given
-local function check_coordinateB(centroid, scale, maxD, maxH)
-  local v0 = torch.Tensor({
-    focalB,
-    -(centroid[1] - x0B),
-    -(centroid[2] - y0B),
-    scale,
-  })
-  local v = torch.mv(trHead, v0) / v0[4]
-  -- Check the distance
-  if maxD and v[1]*v[1] + v[2]*v[2] > maxD*maxD then
-    return'Distance'
-  elseif maxH and v[3] > maxH then
-    return'Height'
-  end
-  return v
-end
-
 
 function libVision.ball(labelA_t, labelB_t, cc_t)
   -- print('Black pixels?', cc_t[colors.black])
@@ -201,12 +200,19 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height)
       if type(v)=='string' then
         table.insert(fail, v)
-      else
-        --SJ: WE SHOULD PROJECT THE BALL TO THE GROUND
-        --BECAUSE OFTEN THE BALL IS DETECTED TOO SMALL (FAR)
-				--TODO: height check
+      else        
+  			-- Height Check
+  			if check_passed then
+  				local scale = postStats.axisMinor / postDiameter 
+  				local v = check_coordinateA(postStats.centroid, scale)
+  				if v[3] < Config.vision.goal.height_min then
+  					table.insert(fail,string.format("Height fail:%.2f\n",v[3]))
+  					check_passed = false 
+  				end
+  			end
+        
 
-        --propsA.v = vector.new(v)
+        -- Project the ball to the ground
         propsA.v = projectGround(v,b_diameter/2)
         propsA.t = Body and Body.get_time() or 0
 				-- For ballFilter
@@ -476,6 +482,8 @@ function libVision.obstacle(labelB_t, cc)
           obstacle.detect = 1
         end
       end
+      
+      -- TODO: if not touching the bottom, ground check?
           
     end -- end row
   end -- end col

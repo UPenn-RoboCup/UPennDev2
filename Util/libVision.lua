@@ -129,6 +129,7 @@ local function check_coordinateA(centroid, scale, maxD, maxH)
     scale,
   })
   local v = torch.mv(trHead, v0) / v0[4]
+    
   -- Check the distance
   if maxD and v[1]*v[1] + v[2]*v[2] > maxD*maxD then
     return'TOO FAR'
@@ -152,7 +153,6 @@ local function check_coordinateB(centroid, scale, maxD, maxH)
   if maxD and v[1]*v[1] + v[2]*v[2] > maxD*maxD then
     return'Distance'
   elseif maxH and v[3] > maxH then
-    print(v[3])
     return'Height'
   end
   return v

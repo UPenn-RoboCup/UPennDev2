@@ -204,6 +204,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       else
         --SJ: WE SHOULD PROJECT THE BALL TO THE GROUND
         --BECAUSE OFTEN THE BALL IS DETECTED TOO SMALL (FAR)
+				--TODO: height check
 
         --propsA.v = vector.new(v)
         propsA.v = projectGround(v,b_diameter/2)
@@ -558,19 +559,20 @@ function libVision.update(img)
   local cc = ImageProc2.color_count(labelA_t)
   local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
-  -- If looking down, then do not detect obstacles
-  local obstacle_fails, obstacles
-  local head_angle = Body.get_head_position()
-  if head_angle[2]>50*DEG_TO_RAD then
-    obstacle_fails = 'looking down'
-  else
-    obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc)
-  end
-  
-  if Config.debug.obstacle then 
-    if obstacles then print(#obstacles.v, obstacles.v[1]) end
-  end
-  
+	if IS_WEBOTS then
+		local obstacle_fails, obstacles
+		local head_angle = Body.get_head_position()
+		-- If looking down, then do not detect obstacles
+		if head_angle[2]>50*DEG_TO_RAD then
+			obstacle_fails = 'looking down'
+		else
+			obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc)
+		end
+		
+		if Config.debug.obstacle then 
+			if obstacles then print(#obstacles.v, obstacles.v[1]) end
+		end
+	end
   -- Save the detection information
   detected.ball = ball
   detected.posts = posts

@@ -35,7 +35,8 @@ Config.debug={
 }
 
 Config.use_gps_pose = false
-Config.demo = true
+--Config.demo = true
+Config.demo = false
 Config.use_localhost = false
 --Config.use_angle_localization = true
 

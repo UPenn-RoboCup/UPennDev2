@@ -74,12 +74,16 @@ fsm.Body = {
   {'bodyRobocupFollow','stop','bodyStop'},
   
   {'bodyRobocupApproach', 'done', 'bodyRobocupKick'},
+  {'bodyRobocupApproach', 'walkkick', 'bodyRobocupWalkKick'},
   {'bodyRobocupApproach', 'ballfar', 'bodyRobocupFollow'},
   {'bodyRobocupApproach','stop','bodyStop'},
 --  {'bodyRobocupApproach', 'done', 'bodyStop'}, --we just stop in front of the ball to test code
 
   {'bodyRobocupKick', 'done', 'bodyRobocupIdle'},
   {'bodyRobocupKick', 'testdone', 'bodyStop'},
+
+  {'bodyRobocupWalkKick', 'done', 'bodyRobocupIdle'},
+  {'bodyRobocupWalkKick', 'testdone', 'bodyStop'},
 
 }
 
@@ -113,7 +117,16 @@ fsm.Motion = {
 
   {'motionHybridWalk', 'done', 'motionStance'},
   {'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
+
+  {'motionHybridWalk', 'done_step', 'motionHybridWalkKick'},
+  {'motionHybridWalkKick', 'done', 'motionStance'},
   
+--  {'motionHybridWalk', 'done_step', 'motionStepNonstop'},
+--  {'motionStepNonstop', 'done', 'motionStance'},
+  
+
+
+
   {'motionHybridWalkEnd', 'done', 'motionStance'},
 
 }

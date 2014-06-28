@@ -76,39 +76,34 @@ function walk.entry()
   local torsoVel = mcm.get_status_uTorsoVel()
   zmp_solver.x[2][1] = torsoVel[1]
   zmp_solver.x[2][2] = torsoVel[2]
-      
+
+  local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
+  local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
+
+  local uTorsoVelLocal = util.pose_relative(mcm.get_status_uTorsoVel(), {0,0,uTorso_now[3]})
+  if uTorsoVelLocal[2]>0 then --Torso moving to left
+    supportLeg = 1
+
+  step_planner:step_enque_trapezoid(
+    {0.10,0,0},1,    tSlope1, Config.walk.tStep-tSlope1-tSlope2,tSlope2, {0,0.0,0}, {0,0.05,0}) --LS  
+  step_planner:step_enque_trapezoid(
+    {0.10,0,0},0,    tSlope1, Config.walk.tStep-tSlope1-tSlope2,tSlope2, {0,0.0,0}, {0,0.05,0}) --LS  
+  step_planner:step_enque_trapezoid(
+    {0,0,0},2,    1, 3,1,    {0,0.0,0}, {0,0.05,0}) --DS  
 
 
---little slower motion for 40ms world
 
-  step_planner:step_enque_trapezoid({0.27,0,0},0,  0.5, 1, {0,-0.05,0}, {0,0.05,0}) --LS  
-  step_planner:step_enque_trapezoid({0.27,0,0},1,  1, 1,   {0,0.05,0}, {0,0.05,0}) --RS  
---  step_planner:step_enque_trapezoid({},2,         0.5, 0.01,  {0,0.0,0}) --DS  
+  else
+    supportLeg = 0
 
+    step_planner:step_enque_trapezoid(
+    {0.10,0,0},0,    tSlope1, Config.walk.tStep-tSlope1-tSlope2,tSlope2, {0,0.0,0}, {0,0.05,0}) --LS  
+  step_planner:step_enque_trapezoid(
+    {0.10,0,0},1,    tSlope1, Config.walk.tStep-tSlope1-tSlope2,tSlope2, {0,0.0,0}, {0,0.05,0}) --LS  
+  step_planner:step_enque_trapezoid(
+    {0,0,0},2,    1, 3,1,    {0,0.0,0}, {0,0.05,0}) --DS  
+  end
 
-
-
-  local tS0 = Config.walk.phZmp[1]*Config.walk.tStep
-  local tS1 = (Config.walk.phZmp[2]-Config.walk.phZmp[1])*Config.walk.tStep
-  local tS2 = (1-Config.walk.phZmp[2])*Config.walk.tStep
-
-  step_planner:step_enque_trapezoid({0,0,0},0,  tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --LS  
-  step_planner:step_enque_trapezoid({0,0,0},1,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --RS  
-
-  step_planner:step_enque_trapezoid({0,0,0},0,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0},true) --RS  
-  step_planner:step_enque_trapezoid({0,0,0},1,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --RS  
-
-  step_planner:step_enque_trapezoid({0,0,0},0,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --RS  
-  step_planner:step_enque_trapezoid({0,0,0},1,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --RS  
-
-  step_planner:step_enque_trapezoid({0,0,0},0,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --RS  
-  step_planner:step_enque_trapezoid({0,0,0},1,  tS2+tS0, tS1, {0,0.0,0}, {0,Config.walk.stepHeight,0}) --RS  
-
-  step_planner:step_enque_trapezoid({0,0,0},0,  tS2+tS0, tS1, {0,0.0,0}, {0,0.05,0}) --RS  
-  step_planner:step_enque_trapezoid({0,0,0},1,  tS2+tS0, tS1, {0,0.0,0}, {0,0.05,0}) --RS  
-
-  step_planner:step_enque_trapezoid({0,0,0},2,  tS2, 0.0001, {0,0.0,0}, {0,0.05,0}) --RS  
-    
 
   t = Body.get_time()
   time_discrete_shift = zmp_solver:trim_preview_queue(step_planner,t )  

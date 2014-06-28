@@ -44,10 +44,9 @@ if IS_WEBOTS then
 --Config.use_gps_pose = false	
   Config.demo = false
   Config.use_localhost = true
---  Config.disable_kick = false
-
-
-
+  Config.disable_kick = false
+  Config.use_walkkick = true
+  --Config.use_walkkick = false
 end
 
 ---------------------------

@@ -352,7 +352,7 @@ end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')  
-
+  wcm.set_robot_reset_pose(0)  --Start updating localization
 end
 
 return walk

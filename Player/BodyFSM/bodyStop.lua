@@ -18,6 +18,7 @@ function state.entry()
   if mcm.get_walk_ismoving()>0 then
     mcm.set_walk_stoprequest(1) --stop if we're walking
   end
+  wcm.set_robot_reset_pose(1)  
 end
 
 function state.update()
@@ -26,15 +27,12 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
-  t_update = t
-
-  wcm.set_robot_reset_pose(1)  
+  t_update = t  
 end
 
 function state.exit()
   print(state._NAME..' Exit' )
-  t_exit = Body.get_time()
-  wcm.set_robot_reset_pose(0)  
+  t_exit = Body.get_time()  
 end
 
 return state

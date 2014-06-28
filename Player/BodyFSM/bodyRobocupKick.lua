@@ -116,7 +116,17 @@ function state.entry()
 end
 
 function state.update()
-	if Config.fsm.disable_kick then return end
+  if Config.disable_kick then
+
+    local ballx = wcm.get_ball_x() - Config.fsm.bodyRobocupApproach.target[1]
+    local bally = wcm.get_ball_y()
+    local ballr = math.sqrt(ballx*ballx+bally*bally)
+    if ballr > 0.6 then
+      return 'done'
+    end
+    return
+  end
+
   --print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()

@@ -34,16 +34,20 @@ Config.debug={
 	approach = false,
 }
 
-Config.use_gps_pose = false
---Config.demo = true
+
+Config.use_angle_localization = true
 Config.demo = false
 Config.use_localhost = false
-Config.use_angle_localization = true
+Config.disable_kick = true
 
 if IS_WEBOTS then
-  --Config.use_gps_pose = true
+--Config.use_gps_pose = false	
   Config.demo = false
   Config.use_localhost = true
+--  Config.disable_kick = false
+
+
+
 end
 
 ---------------------------
@@ -55,6 +59,15 @@ local exo = {'Robot', 'Walk', 'Net', 'Manipulation', 'FSM', 'World', 'Vision'}
 for _,v in ipairs(exo) do
   local fname = {HOME, '/Config/Config_', Config.PLATFORM_NAME, '_', v, '.lua'}
   dofile(table.concat(fname))
+end
+
+
+--Vision parameter hack (robot losing ball in webots)
+if IS_WEBOTS then
+  Config.vision.ball.th_min_fill_rate = 0.25 
+  Config.fsm.headLookGoal.yawSweep = 30*math.pi/180
+  Config.fsm.headLookGoal.tScan = 2.0
+
 end
 
 return Config

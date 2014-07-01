@@ -133,12 +133,14 @@ local function landmark_observation_angle(pos, v, rFilter, aFilter)
 
   --Filter toward best matching landmark position:  
   for ip = 1,N do
-    xp[ip] = xp[ip] + rFilter * dxp[ip]
-    yp[ip] = yp[ip] + rFilter * dyp[ip]
---    ap[ip] = ap[ip] + aFilter * dap[ip]
-    -- check boundary
-    xp[ip] = math.min(xMax, math.max(-xMax, xp[ip]))
-    yp[ip] = math.min(yMax, math.max(-yMax, yp[ip]))
+    if dxp[ip] then
+      xp[ip] = xp[ip] + rFilter * dxp[ip]
+      yp[ip] = yp[ip] + rFilter * dyp[ip]
+  --    ap[ip] = ap[ip] + aFilter * dap[ip]
+      -- check boundary
+      xp[ip] = math.min(xMax, math.max(-xMax, xp[ip]))
+      yp[ip] = math.min(yMax, math.max(-yMax, yp[ip]))
+    end
   end
 end
 

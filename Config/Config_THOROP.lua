@@ -45,7 +45,12 @@ if IS_WEBOTS then
   Config.demo = false
   Config.use_localhost = true
   Config.disable_kick = false
+--  Config.disable_kick = true
   Config.use_walkkick = true
+  Config.use_walkkick = false
+
+  Config.demo = true
+  
   --Config.use_walkkick = false
 end
 
@@ -66,6 +71,10 @@ if IS_WEBOTS then
   Config.vision.ball.th_min_fill_rate = 0.25 
   Config.fsm.headLookGoal.yawSweep = 30*math.pi/180
   Config.fsm.headLookGoal.tScan = 2.0
+
+  --for walkkick
+  Config.fsm.bodyRobocupApproach.target={0.50,0.12}
+  Config.fsm.bodyRobocupApproach.th = {0.10, 0.02}
 
 end
 

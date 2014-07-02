@@ -51,7 +51,7 @@ function state.update()
   if not Config.use_gps_pose and t-t_entry > timeout then
     -- If robot is close to the ball then do not look up
     if math.sqrt(ballX*ballX + ballY*ballY) > Config.fsm.headTrack.dist_th then
-      return 'timeout' 
+      --return 'timeout' 
     end
   end
 

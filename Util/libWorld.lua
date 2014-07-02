@@ -173,7 +173,7 @@ function libWorld.send()
   if obstacle then
     local obs = {}
     for i=1, #obstacle.v do
-      obs[i] = obstacle.v
+      obs[i] = vector.new(obstacle.v[i])
       to_send.info = to_send.info..string.format(
         'Obstacle: %.2f %.2f\n', unpack(obstacle.v[i]) )
     end

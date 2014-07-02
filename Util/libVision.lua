@@ -518,7 +518,7 @@ function libVision.obstacle(labelB_t, cc)
         end
       end
       
-      -- TODO: if not touching the bottom, ground check?
+      -- TODO: if not touching the bottom, field check?
       --TODO: only care about the most biggest/closest obstacles?
           
     end -- end row

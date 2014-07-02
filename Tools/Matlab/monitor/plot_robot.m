@@ -36,8 +36,11 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       if isfield(robot_struct, 'goal')
         plot_goal(robot_struct, scale);
       end
+      if isfield(robot_struct, 'obstacle')
+        plot_obstacle(robot_struct,scale);
+      end
+
       % plot_sound(robot_struct,scale);
-      % plot_obstacle(robot_struct,scale);
       %plot_gps_robot(robot_struct,scale);
 
     elseif drawlevel==2 
@@ -427,16 +430,15 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
   end
   
   function plot_obstacle(robot, scale)
-    if (isfield(robot, 'obstacle'))
-%      disp('find obstacle and display')
-      for cnt = 1 : robot.obstacle.num
+    % if (isfield(robot, 'obstacle'))
+      for cnt = 1 : numel(robot.obstacle)
 %        xob = x0 + robot.obstacle.centroid_x(cnt)*ca - robot.obstacle.centroid_y(cnt)*sa;
 %        yob = y0 + robot.obstacle.centroid_x(cnt)*sa + robot.obstacle.centroid_y(cnt)*ca;
-        xobn = x0 + robot.obstacle.nearest_x(cnt)*ca - robot.obstacle.nearest_y(cnt)*sa;
-        yobn = y0 + robot.obstacle.nearest_x(cnt)*sa + robot.obstacle.nearest_y(cnt)*ca;
-        plot(xobn,yobn,'b*');
+        xobn = x0 + robot.obstacle{cnt}(1)*ca - robot.obstacle{cnt}(2)*sa;
+        yobn = y0 + robot.obstacle{cnt}(1)*sa + robot.obstacle{cnt}(2)*ca;
+        plot(xobn,yobn,'k*');
       end
-    end
+    % end
   end
 
 end

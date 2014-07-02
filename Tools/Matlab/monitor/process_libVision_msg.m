@@ -7,6 +7,7 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         % Clear graphics objects
         % ball
         set(cam.p_ball,'Xdata', [],'Ydata', []);
+        %TODO: assume up to 3 obstacls for now
         for i=1:3 
           % posts
           if i<3 
@@ -71,15 +72,6 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
           for i=1:min(3, numel(obstacles.iv))
             obs_c = obstacles.iv{i};
             obs_bbox = obstacles.bbox{i};
-            % TODO: just a dummy rectangular for now
-            %{
-            w0 = 5;
-            h0 = 15;
-            x11 = obs_c + [w0 h0];
-            x12 = obs_c + [-w0 h0];
-            x21 = obs_c + [w0 -h0];
-            x22 = obs_c + [-w0 -h0];
-            %}
 
             left_x = obs_bbox(1);
             right_x = obs_bbox(2);

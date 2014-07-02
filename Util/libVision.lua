@@ -73,7 +73,6 @@ local function update_head()
 end
 
 -- Simple bbox with no tilted color stats
--- TODO: Use the FFI for color stats, should be super fast
 local function bboxStats(use_lA, color, bbox, label_t)
   if use_lA then
     bbox = {
@@ -130,26 +129,14 @@ local function check_coordinateA(centroid, scale, maxD, maxH)
     scale,
   })
   local v = torch.mv(trHead, v0) / v0[4]
+    
   -- Check the distance
   if maxD and v[1]*v[1] + v[2]*v[2] > maxD*maxD then
-    return'Distance'
+    return'TOO FAR'
   elseif maxH and v[3] > maxH then
-    return'Height'
+    return'TOO HEIGH'
   end
   return v
-end
-
-local function projectGround(v,targetheight)
-  targetheight = targetheight or 0
-  local vout = vector.new(v)
-  local vHead_homo = vector.new({vHead[1], vHead[2], vHead[3], 1})
-  --Project to plane
-  if vHead[3]>targetheight then
-    vout = vHead_homo +
-      (vout-vHead_homo)*( (vHead[3]-targetheight) / (vHead[3]-vout[3]) )
-  end
-
-  return vout
 end
 
 -- Yield coordinates in the labelB space
@@ -171,6 +158,18 @@ local function check_coordinateB(centroid, scale, maxD, maxH)
   return v
 end
 
+local function projectGround(v,targetheight)
+  targetheight = targetheight or 0
+  local vout = vector.new(v)
+  local vHead_homo = vector.new({vHead[1], vHead[2], vHead[3], 1})
+  --Project to plane
+  if vHead[3]>targetheight then
+    vout = vHead_homo +
+      (vout-vHead_homo)*( (vHead[3]-targetheight) / (vHead[3]-vout[3]) )
+  end
+
+  return vout
+end
 
 function libVision.ball(labelA_t, labelB_t, cc_t)
   -- print('Black pixels?', cc_t[colors.black])
@@ -201,12 +200,19 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height)
       if type(v)=='string' then
         table.insert(fail, v)
-      else
-        --SJ: WE SHOULD PROJECT THE BALL TO THE GROUND
-        --BECAUSE OFTEN THE BALL IS DETECTED TOO SMALL (FAR)
-				--TODO: height check
+      else        
+  			-- Height Check
+  			if check_passed then
+  				local scale = postStats.axisMinor / postDiameter 
+  				local v = check_coordinateA(postStats.centroid, scale)
+  				if v[3] < Config.vision.goal.height_min then
+  					table.insert(fail,string.format("Height fail:%.2f\n",v[3]))
+  					check_passed = false 
+  				end
+  			end
+        
 
-        --propsA.v = vector.new(v)
+        -- Project the ball to the ground
         propsA.v = projectGround(v,b_diameter/2)
         propsA.t = Body and Body.get_time() or 0
 				-- For ballFilter
@@ -476,6 +482,8 @@ function libVision.obstacle(labelB_t, cc)
           obstacle.detect = 1
         end
       end
+      
+      -- TODO: if not touching the bottom, ground check?
           
     end -- end row
   end -- end col
@@ -559,8 +567,8 @@ function libVision.update(img)
   local cc = ImageProc2.color_count(labelA_t)
   local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
+	local obstacle_fails, obstacles
 	if IS_WEBOTS then
-		local obstacle_fails, obstacles
 		local head_angle = Body.get_head_position()
 		-- If looking down, then do not detect obstacles
 		if head_angle[2]>50*DEG_TO_RAD then

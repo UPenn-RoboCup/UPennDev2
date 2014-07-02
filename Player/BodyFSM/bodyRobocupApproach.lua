@@ -112,7 +112,11 @@ function state.update()
       mcm.set_walk_kickfoot(1)--right foot kick
     end
     mcm.set_walk_kicktype(0) --this means real mode (keep run body fsm after kicking)
-   return 'done'
+    if Config.use_walkkick then
+      return "walkkick"
+    else
+      return 'done'
+    end
  end
 
 end

@@ -14,7 +14,9 @@ local yawSweep = Config.fsm.headLookGoal.yawSweep;
 local dist = Config.fsm.headReady.dist;
 local tScan = Config.fsm.headLookGoal.tScan;
 local yawMax = Config.head.yawMax or 90*Body.DEG_TO_RAD
-local fovMargin = 30*DEG_TO_RAD
+local fovMargin = 10*DEG_TO_RAD
+
+local stage, scandir
 
 function state.entry()
   print(state._NAME.." entry");
@@ -23,15 +25,27 @@ function state.entry()
 
   --SJ: Check which goal to look at
   --Now we look at the NEARER goal
-  local pose = wcm.get_robot_pose()
-  --TODO
-  local defendGoal = {Config.world.goalLower[1][1],0}
+  local pose = wcm.get_robot_pose()  
+  
   local attackGoal = {Config.world.goalUpper[1][1],0}
+  local defendGoal = {Config.world.goalLower[1][1],0}
 
   local dDefendGoal= math.sqrt((pose[1]-defendGoal[1])^2 + (pose[2]-defendGoal[2])^2);
   local dAttackGoal= math.sqrt((pose[1]-attackGoal[1])^2 + (pose[2]-attackGoal[2])^2);
-  local attackAngle = wcm.get_goal_attack_angle();
-  local defendAngle = wcm.get_goal_defend_angle();
+
+--TODO: THOSE ANGLES ARE NOT UPDATED!!!!!!!!!!
+--  local attackAngle = wcm.get_goal_attack_angle();
+--  local defendAngle = wcm.get_goal_defend_angle();
+
+
+  local attackAngle = util.mod_angle(
+    math.atan2(attackGoal[2]-pose[2],attackGoal[1]-pose[1])-pose[3])
+  local defendAngle = util.mod_angle(
+    math.atan2(defendGoal[2]-pose[2],defendGoal[1]-pose[1])-pose[3])
+
+
+
+print("AttackAngle:",attackAngle)
 
   --Can we see both goals?
   if math.abs(attackAngle)<yawMax + fovMargin and
@@ -54,32 +68,49 @@ function state.entry()
       yaw0 = defendAngle;
     end
   end
+
+  stage,scandir = 1,1
+  local qNeck = Body.get_head_command_position()
+  local yaw1 = yaw0-0.5*yawSweep
+  local yaw2 = yaw0+0.5*yawSweep
+  if math.abs(qNeck[1]-yaw1)>math.abs(qNeck[1]-yaw2) then scandir = -1 end
+  t_update = Body.get_time()
 end
 
 function state.update()
   local t = Body.get_time();
-  local tpassed=t-t0
-  local ph = tpassed/tScan
-  ph = ph - math.floor(ph)
-  local yawbias = (ph-0.5) * yawSweep
+  local tpassed=t-t_update
+  t_update = t
 
-  local yaw = math.min(math.max(yaw0+yawbias, -yawMax), yawMax)
   local pitch = -5*DEG_TO_RAD
+  if stage==1 then
+    local yawbias = -0.5*yawSweep*scandir
+    local yaw = math.min(math.max(yaw0+yawbias, -yawMax), yawMax)
+    local qNeck = Body.get_head_command_position()
+    local qNeck_approach, doneNeck =util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, tpassed )
+    Body.set_head_command_position(qNeck_approach)    
+    if doneNeck then
+      t0 = t
+      stage = 2
+    end
+  else
+    local tpassed1=t-t0
+    local ph = math.min(1,tpassed1/tScan)    
+    local yawbias = (ph-0.5) * yawSweep*scandir
 
-  -- Grab where we are
-  local qNeck = Body.get_head_command_position()
-  local qNeck_approach, doneNeck =
-    util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, tpassed )
-  -- Update the motors
-  Body.set_head_command_position(qNeck_approach)
+    local yaw = math.min(math.max(yaw0+yawbias, -yawMax), yawMax)
+    local qNeck = Body.get_head_command_position()
+    local qNeck_approach, doneNeck =util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, tpassed )
+    Body.set_head_command_position(qNeck_approach)
 
-  if (t - t0 > tScan) then
-    local tGoal = wcm.get_goal_t();
-    if (tGoal - t0 > 0) then
-      return 'timeout'
-    else
-      print('Goal lost!!')
-      return 'lost'
+    if doneNeck and ph==1 then
+      local tGoal = wcm.get_goal_t();
+      if (tGoal - t0 > 0) then
+        return 'timeout'
+      else
+        print('Goal lost!!')
+        return 'lost'
+      end
     end
   end
 end

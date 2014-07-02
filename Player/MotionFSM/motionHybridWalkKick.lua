@@ -79,25 +79,49 @@ local update_odometry = function(uTorso_in)
 end
 
 local function calculate_footsteps()
-  local nFootHolds = 4
-  uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
-  local supportLeg = 0
-
-  local step_queue={}
   local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
   local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
+  local tStepMid = Config.walk.tStep-tSlope1-tSlope2
+  uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
+  local uTorsoVel = util.pose_relative(mcm.get_status_uTorsoVel(), {0,0,uTorso_now[3]})
 
-  step_queue[1] = {{0,0,0},2, 0.1,1,0.1,{0,0,0},{0,0,0}}
-  local step_queue_count = 1;
+  local supportLeg = 0
+  if uTorsoVel[2]>0 then supportLeg = 1 end --Torso moving to left, right support
 
-  for i=1,nFootHolds  do
-    step_planner.velCurrent = vector.new({0,0,0})
+  local step_queue={}
+
+
+  print("Kick foot:",mcm.get_walk_kickfoot())
+  print("Next support:",supportLeg)
+
+  local kickvel={
+    {0.06,0,0},
+    {0.12,0,0},
+    {0.06,0,0}
+  }
+  if mcm.get_walk_kickfoot()==supportLeg then
+    kickvel={
+      {0,0,0},
+      {0.06,0,0},
+      {0.12,0,0},
+      {0.06,0,0}
+    }
+  end
+
+  
+  
+
+  local step_queue_count = 0;
+  for i=1,#kickvel  do
+    step_planner.velCurrent = vector.new(kickvel[i])
 
     local new_step
     supportLeg = 1-supportLeg
     step_queue_count = step_queue_count + 1
     initial_step = false
+
     last_step = false
+    if i==nFootHolds then last_step = true end
 
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step,last_step)
@@ -107,15 +131,7 @@ local function calculate_footsteps()
     else
       leg_movement = util.pose_relative(uLeft_next,uLeft_now)  
     end
-    new_step={leg_movement, 
-              supportLeg, 
-              tSlope1, 
-              Config.walk.tStep-tSlope1-tSlope2,
-              tSlope2,
-              {0,0,0},
-              {0,Config.walk.stepHeight,0}
-             }
-    
+    new_step={leg_movement, supportLeg, tSlope1,tStepMid,tSlope2,{0,0,0},{0,Config.walk.stepHeight,0}}
     step_queue[step_queue_count]=new_step
   end
 
@@ -177,6 +193,11 @@ function walk.entry()
 
   zmp_solver:init_preview_queue(uLeft_now,uRight_now, uTorso_now, Body.get_time(), step_planner)
   
+  --initialize torso velocity correctly
+  local torsoVel = mcm.get_status_uTorsoVel()
+  zmp_solver.x[2][1] = torsoVel[1]
+  zmp_solver.x[2][2] = torsoVel[2]
+
   iStep = 1   -- Initialize the step index  
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
@@ -325,34 +346,12 @@ function walk.update()
       hcm.set_motion_estop(1)
     end
 
-
-
-    --Check if torso crossed the center position
-    local relL = util.pose_relative(uLeft,uTorso)
-    local relR = util.pose_relative(uRight,uTorso)
-    local distL = relL[1]*relL[1]+relL[2]*relL[2]
-    local distR = relR[1]*relR[1]+relR[2]*relR[2]
-    local current_side
-    if distL<distR then current_side = 1
-    else current_side = 0 end
-
-    if current_side~=last_side then
-      crossing_num = crossing_num + 1
-      last_side=current_side
-      print("Crossing #:",crossing_num)
-      if crossing_num==2 then        
-        mcm.set_status_uTorsoVel({zmp_solver.x[2][1],zmp_solver.x[2][2],0})
-        return "done" 
-      end
-
-    end
-
   end  
 end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')  
-  wcm.set_robot_reset_pose(0)  --Start updating localization
+
 end
 
 return walk

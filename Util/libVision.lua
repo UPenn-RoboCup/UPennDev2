@@ -40,6 +40,10 @@ local c_zlib = zlib.compress_cdata
 local vision_ch = si.new_publisher'vision'
 
 
+-- Debug printing in terminal
+local DEBUG = Config.debug.obstacle
+
+
 function libVision.get_metadata()
 end
 
@@ -72,22 +76,6 @@ local function update_head()
   vHead = T.get_pos(trHead)
 end
 
--- Simple bbox with no tilted color stats
-local function bboxStats(use_lA, color, bbox, label_t)
-  if use_lA then
-    bbox = {
-      scaleB * bbox[1],
-      scaleB * bbox[2] + scaleB - 1,
-      scaleB * bbox[3],
-      scaleB * bbox[4] + scaleB - 1
-    }
-  end
-  
-  local area = (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1)
-	local stats = ImageProc.color_stats(label_t, color, bbox)
-  return stats, area
-end
-
 local function bboxB2A(bboxB)
   local bboxA = {}
   bboxA[1] = scaleB * bboxB[1];
@@ -97,9 +85,25 @@ local function bboxB2A(bboxB)
   return bboxA
 end
 
+-- Simple bbox with no tilted color stats
+-- Assume always input bboxB
+local function bboxStats(label, color, bboxB)
+  if label=='a' then 
+    bbox = bboxB2A(bboxB) 
+    local area = (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1)
+  	local stats = ImageProc.color_stats(labelA_t, color, bbox)
+    return stats, area
+  else
+    local area = (bboxB[2] - bboxB[1] + 1) * (bboxB[4] - bboxB[3] + 1)
+  	local stats = ImageProc.color_stats(labelB_t, color, bboxB)
+    return stats, area
+  end
+end
+
+
 local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_t)
   -- Grab the statistics in labelA
-  local stats, box_area = bboxStats(true, color, prop.boundingBox, labelA_t)
+  local stats, box_area = bboxStats('a', color, prop.boundingBox)
   --TODO: bbox area check seems redundant
   if box_area < th_bbox_area then 
     return string.format('Box area: %d<%d\n',box_area,th_bbox_area)  
@@ -423,7 +427,7 @@ end
 -- Obstacle detection
 function libVision.obstacle(labelB_t, cc)
   -- If no black pixels
-  if cc[colors.black]<20 then return 'No obstacle' end
+  if cc[colors.black]<100 then return 'Not much black pixels' end
   -- Obstacle table
   local obstacle, obs_count, obs_debug = {}, 0, ''
   obstacle.iv, obstacle.v, obstacle.bbox = {}, {}, {}
@@ -433,57 +437,89 @@ function libVision.obstacle(labelB_t, cc)
   local th_min_area = Config.vision.obstacle.th_min_area
   local th_green_fill_rate = Config.vision.obstacle.th_green_fill_rate
   local th_max_height = Config.vision.obstacle.th_max_height
+  local th_min_height = Config.vision.obstacle.th_min_height
+  local th_green_black_ratio = Config.vision.obstacle.th_green_black_ratio
+  
   
   local col = wb / grid_x
   local row = hb / grid_y 
   for i=1, col do
-    for j=1,row do  --TODO
+    for j=1,row do
       local leftX = (i-1)* grid_x+1
       local topY = (j-1)* grid_y+1
-      local rightX = i* grid_x
-      local bottomY = j* grid_y
+      local rightX = math.min(wb, i* grid_x)
+      local bottomY = math.min(hb, j* grid_y)
 
       local bboxB = {leftX, rightX, topY, bottomY}
-      local blackStats = bboxStats(false, colors.black, bboxB, labelB_t)
+      -- local blackStats = bboxStats('b', colors.black, bboxB)
+      local blackStats, greenStats = bboxStats('a', colors.black, bboxB)
 
       -- Checks
       local check_passed, v = true
-      if blackStats.area < 10 then
+            
+      if blackStats.area < th_min_area then
         check_passed = false
-        obs_debug = obs_debug..string.format('FAIL black area:%.1f < %.1f',
+        obs_debug = obs_debug..string.format('FAIL black area:%.1f < %.1f\n',
           blackStats.area, th_min_area)
       else
+        --TODO: if quite close to the obs, the axisMinor > grid_x
         local scale = math.max(1, blackStats.axisMinor / Config.world.obsDiameter)
-      	v = check_coordinateB(blackStats.centroid, scale)
-        
-        if Config.debug.obstacle then print('obs v[3]:',v[3]) end
-        
+        -- v = check_coordinateB(blackStats.centroid, scale)
+      	v = check_coordinateA(blackStats.centroid, scale)
       end
       -- Height check
       if check_passed and v[3]>th_max_height then
         check_passed = false
-        obs_debug = obs_debug..'obstacle too high'
+        obs_debug = obs_debug..string.format('TOO Height:%.2f > %.2f\n',
+          v[3], th_max_height)
       end
+      if check_passed and v[3]<th_min_height then
+        check_passed = false
+        obs_debug = obs_debug..string.format('TOO low:%.2f<%.2f\n',
+          v[3], th_max_height)
+      end
+      
       -- Green fill rate
       if check_passed then
-        local greenStats, bbox_area = bboxStats(false, colors.field, bboxB, labelB_t)
-        local fill_rate = greenStats.area / bbox_area 
-  	    if fill_rate > th_green_fill_rate then
+        greenStats, bbox_area = bboxStats(false, colors.field, bboxB, labelB_t)
+        greenStats, bbox_area = bboxStats('a', colors.field, bboxB)
+        local fill_rate = greenStats.area / bbox_area
+        if fill_rate > th_green_fill_rate then
           check_passed = false
           obs_debug = obs_debug..string.format('green fill rate: %.2f > %.2f\n',
             fill_rate, th_green_fill_rate)
+        end
+      end
+      -- Green/black ratio check
+      -- To screen out false positives when big black region is close
+      if check_passed then
+        local dist_ratio = grid_x/blackStats.axisMinor
+        local green_black_ratio =  greenStats.area / (blackStats.axisMinor*blackStats.axisMajor)
+        if dist_ratio<1.2 and green_black_ratio > th_green_black_ratio*dist_ratio then
+          check_passed = false
+          obs_debug = obs_debug..string.format('Too much green: %.2f > %.2f\n',
+            green_black_ratio, th_green_black_ratio*dist_ratio)
         else
-          v = projectGround(v,0.45)  
-          --TODO: distance factor?
+          if DEBUG then 
+            print('\ngrid_x/axisMinor:', dist_ratio)
+            print('green black ratio', green_black_ratio,th_green_black_ratio*dist_ratio)
+            print('black pixels',cc[colors.black], 'black area', blackStats.area)
+            print('green fill:', greenStats.area / bbox_area)
+            print('obs v no proj:', vector.new(v)) 
+            print('axisminor:', blackStats.axisMinor, 'grid_x', grid_x*scaleB)
+          end
+          
+          v = projectGround(v, 0.7) --TODO
           obs_count = obs_count + 1
-          obstacle.iv[obs_count] = vector.new(blackStats.centroid)*scaleB
-          obstacle.bbox[obs_count] = vector.new(blackStats.boundingBox)*scaleB
+          obstacle.iv[obs_count] = vector.new(blackStats.centroid) --*scaleB
+          obstacle.bbox[obs_count] = vector.new(blackStats.boundingBox) --*scaleB
           obstacle.v[obs_count] = v
           obstacle.detect = 1
         end
       end
       
       -- TODO: if not touching the bottom, ground check?
+      --TODO: only care about the most biggest/closest obstacles?
           
     end -- end row
   end -- end col
@@ -576,10 +612,6 @@ function libVision.update(img)
 		else
 			obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc)
 		end
-		
-		if Config.debug.obstacle then 
-			if obstacles then print(#obstacles.v, obstacles.v[1]) end
-		end
 	end
   -- Save the detection information
   detected.ball = ball
@@ -588,8 +620,8 @@ function libVision.update(img)
   
   -- Debug messages
   -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
-  detected.debug = table.concat({'Posts',post_fails},'\n')
-  --detected.debug = table.concat({'Obstacle', obstacle_fails},'\n')
+  -- detected.debug = table.concat({'Posts',post_fails},'\n')
+  detected.debug = table.concat({'Obstacle', obstacle_fails},'\n')
 
   -- Send the detected stuff over the channel every cycle
   vision_ch:send(mp.pack(detected))

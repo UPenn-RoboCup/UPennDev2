@@ -175,7 +175,7 @@ function libWorld.send()
     for i=1, #obstacle.v do
       obs[i] = obstacle.v
       to_send.info = to_send.info..string.format(
-        'Obstacle: %.1f %.1f\n', unpack(obstacle.v[i]) )
+        'Obstacle: %.2f %.2f\n', unpack(obstacle.v[i]) )
     end
     to_send.obstacle = obs
   end

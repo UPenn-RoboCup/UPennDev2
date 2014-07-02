@@ -30,7 +30,7 @@ Config.dev.gender       = 'boy'
 --I hate debug msgs....
 Config.debug={
 	webots_wizard=false,	
-  --obstacle = true,
+  -- obstacle = true,
 	approach = false,
 }
 

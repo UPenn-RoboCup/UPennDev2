@@ -75,5 +75,12 @@ shared.goal.t = vector.zeros(1)
 shared.goal.attack_angle = vector.zeros(1)
 shared.goal.defend_angle = vector.zeros(1)
 
+shared.obstacle = {}
+shared.obstacle.detect = vector.zeros(1)
+shared.obstacle.count = vector.zeros(1)
+shared.obstacle.v1 = vector.zeros(2)
+shared.obstacle.v2 = vector.zeros(2)
+shared.obstacle.v3 = vector.zeros(2)
+
 -- Call the initializer
 memory.init_shm_segment(..., shared, shsize)

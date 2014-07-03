@@ -176,6 +176,7 @@ function libWorld.send()
       obs[i] = vector.new(obstacle.v[i])
       to_send.info = to_send.info..string.format(
         'Obstacle: %.2f %.2f\n', unpack(obstacle.v[i]) )
+		  wcm['set_obstacle_v'..i](obstacle.v[i])
     end
     to_send.obstacle = obs
   end

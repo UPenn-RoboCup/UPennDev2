@@ -17,7 +17,8 @@ world.goalLower[1] = {-4.5, -1.5}
 world.goalLower[2] = {-4.5, 1.5}
 
 -- Obstacle
-world.obsDiameter = 0.2
+world.obsDiameter = 0.15  -- our purchased ones
+if IS_WEBOTS then world.obsDiameter = 0.2 end
 world.obsHeight = 0.9
 
 -- Field

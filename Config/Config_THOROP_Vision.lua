@@ -81,13 +81,17 @@ vision.goal = {
   check_for_ground = 1,
 }
 
--- TODO: these are just webots values
+-- Testing in M308 with thinner obstacles
 vision.obstacle = {
-  grid_x = 16, 
-  grid_y = 18,
-  th_min_area = 4,
-  th_green_fill_rate = 0.4,
-  th_max_height = 1,
+  grid_x = 20, --16, 
+  grid_y = 40, --30,
+	th_min_area = 42,
+  th_green_fill_rate = 0.88,  --0.82
+  th_max_height = 1.3,
+  th_min_height = -0.2,
+  th_min_orientation = 70/180*math.pi,
+  th_green_black_ratio = 2,
+	th_near_check = 2,
 }
 
 -- Line

@@ -439,7 +439,7 @@ function libVision.obstacle(labelB_t, cc)
   local th_min_height = Config.vision.obstacle.th_min_height
   local th_green_black_ratio = Config.vision.obstacle.th_green_black_ratio
   local th_min_orientation = Config.vision.obstacle.th_min_orientation
-  
+  local th_near_check = Config.vision.obstacle.th_near_check
   
   local col = wb / grid_x
   local row = hb / grid_y 
@@ -495,7 +495,7 @@ function libVision.obstacle(labelB_t, cc)
       -- Height check
       if check_passed and v[3]>th_max_height then
         check_passed = false
-        obs_debug = obs_debug..string.format('TOO Height:%.2f > %.2f\n',
+        obs_debug = obs_debug..string.format('TOO High:%.2f > %.2f\n',
           v[3], th_max_height)
       end
       if check_passed and v[3]<th_min_height then
@@ -517,16 +517,16 @@ function libVision.obstacle(labelB_t, cc)
       -- Green/black ratio check
       -- To screen out false positives when big black region is close
       if check_passed then
-        local dist_ratio = grid_x/blackStats.axisMinor
+        local dist_th = grid_x/blackStats.axisMinor
         local green_black_ratio =  greenStats.area / (blackStats.axisMinor*blackStats.axisMajor)
-        if dist_ratio<1.5 and green_black_ratio > th_green_black_ratio*dist_ratio then
+        if dist_th<th_near_check and green_black_ratio > th_green_black_ratio*dist_th then
           check_passed = false
           obs_debug = obs_debug..string.format('Too much green: %.2f > %.2f\n',
-            green_black_ratio, th_green_black_ratio*dist_ratio)
+            green_black_ratio, th_green_black_ratio*dist_th)
         else
           if DEBUG then 
-            print('\ngrid_x/axisMinor:', dist_ratio)
-            print('green black ratio', green_black_ratio,th_green_black_ratio*dist_ratio)
+            print('\ngrid_x/axisMinor:', dist_th)
+            print('green black ratio', green_black_ratio,th_green_black_ratio*dist_th)
             print('black pixels',cc[colors.black], 'black area', blackStats.area)
             print('green fill:', greenStats.area / bbox_area)
             print('obs v no proj:', vector.new(v)) 
@@ -561,7 +561,8 @@ function libVision.obstacle(labelB_t, cc)
       obsStats.bbox[i] = obstacle.bbox[obstacle.dist[i]]
     end    
     
-    return 'Detected', obsStats
+    --return 'Detected', obsStats
+    return obs_debug, obsStats
   else
     return obs_debug
   end
@@ -640,7 +641,7 @@ function libVision.update(img)
   local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
 	local obstacle_fails, obstacles
-	if IS_WEBOTS then
+	--if IS_WEBOTS then
 		local head_angle = Body.get_head_position()
 		-- If looking down, then do not detect obstacles
 		if head_angle[2]>50*DEG_TO_RAD then
@@ -648,7 +649,7 @@ function libVision.update(img)
 		else
 			obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc)
 		end
-	end
+	--end
   -- Save the detection information
   detected.ball = ball
   detected.posts = posts

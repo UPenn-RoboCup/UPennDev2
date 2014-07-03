@@ -175,8 +175,7 @@ fsm.bodyRobocupFollow = {
 }
 
 fsm.bodyRobocupApproach = {
---  target={0.40,0.12},  
-  target={0.45,0.12},  
+  target={0.40,0.12},  
   th = {0.10, 0.02},
 }
 

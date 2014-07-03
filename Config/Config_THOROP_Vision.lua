@@ -12,8 +12,6 @@ local head = {
   pitchMax = 75 * math.pi/180,
   yawMin = -135 * math.pi/180,
   yawMax = 135 * math.pi/180,
---	yawMin = -45 * math.pi/180,
---  yawMax = 45 * math.pi/180,
 
   cameraPos = {0.075, 0.0, 0.13}, --C920
   cameraAngle = {0, 0},
@@ -136,7 +134,6 @@ table.insert(Config.camera,
       'libVision',
     },
     --Logitech C920
-    --lut = 'm308_lightson',
     lut = '0627_m308',
 		-- f = 640/2/tan(78/180*pi / 2)
     focal_length = 395.17,
@@ -148,16 +145,30 @@ table.insert(Config.camera,
       {'Exposure, Auto Priority', 0},
 			{'Focus, Auto', 0}
     },
+      --     -- M308
+      --     param = {
+      --       {'White Balance Temperature', 3600},
+      --       {'Exposure (Absolute)', 100},
+      -- {'Focus (absolute)', 0},
+      --       {'Brightness', 128},
+      --       {'Contrast', 128},
+      --       {'Saturation', 150},
+      --       {'Gain', 0},
+      --       {'Sharpness', 0},
+      --     },
+      
+    -- GRASP
     param = {
-      {'White Balance Temperature', 3600},
-      {'Exposure (Absolute)', 100},
+      {'White Balance Temperature', 2900},
+      {'Exposure (Absolute)', 95},
 			{'Focus (absolute)', 0},
-      {'Brightness', 128},
+      {'Brightness', 135},
       {'Contrast', 128},
-      {'Saturation', 150},
-      {'Gain', 0},
+      {'Saturation', 160},
+      {'Gain', 70},
       {'Sharpness', 0},
     },
+    
   })
 
 --Webots use 1/2 resolution but 2x label resolution

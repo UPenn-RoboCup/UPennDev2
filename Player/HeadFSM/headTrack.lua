@@ -48,10 +48,10 @@ function state.update()
 
   -- print('Ball dist:', math.sqrt(ballX*ballX + ballY*ballY))
   -- Look at Goal
-  if not Config.use_gps_pose and t-t_entry > timeout then
+  if not Config.demo and not Config.use_gps_pose and t-t_entry > timeout then
     -- If robot is close to the ball then do not look up
     if math.sqrt(ballX*ballX + ballY*ballY) > Config.fsm.headTrack.dist_th then
-      --return 'timeout' 
+    	return 'timeout'
     end
   end
 

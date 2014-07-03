@@ -421,9 +421,6 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
   return table.concat(failures,',')
 end
 
-
-
-
 -- Obstacle detection
 function libVision.obstacle(labelB_t, cc)
   -- If no black pixels
@@ -431,6 +428,8 @@ function libVision.obstacle(labelB_t, cc)
   -- Obstacle table
   local obstacle, obs_count, obs_debug = {}, 0, ''
   obstacle.iv, obstacle.v, obstacle.bbox = {}, {}, {}
+  obstacle.dist = {}
+  
   -- Parameters  TODO: put into entry()
   local grid_x = Config.vision.obstacle.grid_x
   local grid_y = Config.vision.obstacle.grid_y
@@ -439,6 +438,7 @@ function libVision.obstacle(labelB_t, cc)
   local th_max_height = Config.vision.obstacle.th_max_height
   local th_min_height = Config.vision.obstacle.th_min_height
   local th_green_black_ratio = Config.vision.obstacle.th_green_black_ratio
+  local th_min_orientation = Config.vision.obstacle.th_min_orientation
   
   
   local col = wb / grid_x
@@ -456,17 +456,42 @@ function libVision.obstacle(labelB_t, cc)
 
       -- Checks
       local check_passed, v = true
-            
+      -- Check black area       
       if blackStats.area < th_min_area then
         check_passed = false
         obs_debug = obs_debug..string.format('FAIL black area:%.1f < %.1f\n',
           blackStats.area, th_min_area)
-      else
+      end
+      -- Check orientation
+      if check_passed then
+        if math.abs(blackStats.orientation)<th_min_orientation then
+          check_passed = false
+          obs_debug = obs_debug..string.format('Orientation: %.2f < %.2f\n',
+            math.abs(blackStats.orientation), th_min_orientation)
+        end
+      end
+      -- Check aspect ratio
+      if check_passed and blackStats.axisMinor<grid_x then
+        local aspect_ratio = blackStats.axisMajor / blackStats.axisMinor
+        local th_aspect = {1.1, 10}
+        if aspect_ratio < th_aspect[1] then
+          check_passed = false
+          obs_debug = obs_debug..string.format('Aspect ratio: %.2f < %.2f\n',
+            aspect_ratio, th_aspect[1])
+        elseif aspect_ratio > th_aspect[2] then
+          check_passed = false
+          obs_debug = obs_debug..string.format('Aspect ratio: %.2f > %.2f\n',
+            aspect_ratio, th_aspect[2])
+        end  
+      end
+
+      if check_passed then
         --TODO: if quite close to the obs, the axisMinor > grid_x
         local scale = math.max(1, blackStats.axisMinor / Config.world.obsDiameter)
         -- v = check_coordinateB(blackStats.centroid, scale)
       	v = check_coordinateA(blackStats.centroid, scale)
       end
+      
       -- Height check
       if check_passed and v[3]>th_max_height then
         check_passed = false
@@ -475,13 +500,12 @@ function libVision.obstacle(labelB_t, cc)
       end
       if check_passed and v[3]<th_min_height then
         check_passed = false
-        obs_debug = obs_debug..string.format('TOO low:%.2f<%.2f\n',
-          v[3], th_max_height)
+        obs_debug = obs_debug..string.format('TOO low: %.2f < %.2f\n',
+          v[3], th_min_height)
       end
       
       -- Green fill rate
       if check_passed then
-        greenStats, bbox_area = bboxStats(false, colors.field, bboxB, labelB_t)
         greenStats, bbox_area = bboxStats('a', colors.field, bboxB)
         local fill_rate = greenStats.area / bbox_area
         if fill_rate > th_green_fill_rate then
@@ -495,7 +519,7 @@ function libVision.obstacle(labelB_t, cc)
       if check_passed then
         local dist_ratio = grid_x/blackStats.axisMinor
         local green_black_ratio =  greenStats.area / (blackStats.axisMinor*blackStats.axisMajor)
-        if dist_ratio<1.2 and green_black_ratio > th_green_black_ratio*dist_ratio then
+        if dist_ratio<1.5 and green_black_ratio > th_green_black_ratio*dist_ratio then
           check_passed = false
           obs_debug = obs_debug..string.format('Too much green: %.2f > %.2f\n',
             green_black_ratio, th_green_black_ratio*dist_ratio)
@@ -511,21 +535,33 @@ function libVision.obstacle(labelB_t, cc)
           
           v = projectGround(v, 0.7) --TODO
           obs_count = obs_count + 1
-          obstacle.iv[obs_count] = vector.new(blackStats.centroid) --*scaleB
-          obstacle.bbox[obs_count] = vector.new(blackStats.boundingBox) --*scaleB
-          obstacle.v[obs_count] = v
+          
+          local obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
+          table.insert(obstacle.dist, obstacle_dist)
+          obstacle.iv[obstacle_dist] = vector.new(blackStats.centroid)
+          obstacle.bbox[obstacle_dist] = vector.new(blackStats.boundingBox)
+          obstacle.v[obstacle_dist] = v
           obstacle.detect = 1
+          obstacle.count = obs_count
         end
       end
       
-      -- TODO: if not touching the bottom, field check?
-      --TODO: only care about the most biggest/closest obstacles?
-          
     end -- end row
   end -- end col
-  
+    
   if obstacle.detect == 1 then
-    return 'Detected', obstacle
+    -- Might be not necessary?
+    -- Sort to get the closest three 
+    local obsStats = {}
+    obsStats.iv, obsStats.bbox, obsStats.v = {},{},{}
+    table.sort(obstacle.dist)
+    for i=1, math.min(3, obstacle.count) do
+      obsStats.iv[i] = obstacle.iv[obstacle.dist[i]]
+      obsStats.v[i] = obstacle.v[obstacle.dist[i]]
+      obsStats.bbox[i] = obstacle.bbox[obstacle.dist[i]]
+    end    
+    
+    return 'Detected', obsStats
   else
     return obs_debug
   end

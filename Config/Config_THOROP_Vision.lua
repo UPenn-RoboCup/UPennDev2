@@ -214,12 +214,13 @@ if IS_WEBOTS then
   vision.obstacle = {
     grid_x = 10, 
     grid_y = 15,
-    th_min_area = 42,
+    th_min_area = 80, --42,
     th_green_fill_rate = 0.88,  --0.82
-    th_max_height = 1.2,
+    th_max_height = 1.25,
     th_min_height = -0.2,
-    th_min_orientation = 70/180*math.pi,
-    th_green_black_ratio = 0.8,
+    th_min_orientation = 60/180*math.pi,
+    th_green_black_ratio = 2, --0.8,
+  	th_near_check = 1.5,
   }
   
 end

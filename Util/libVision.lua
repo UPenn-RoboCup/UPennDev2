@@ -11,6 +11,7 @@ local vector = require'vector'
 local util = require'util'
 local zlib = require'zlib.ffi'
 local si = require'simple_ipc'
+require'wcm'
 -- Body should be optional...
 local Body
 -- Important local variables
@@ -33,6 +34,9 @@ local detected = {
 local postDiameter = Config.world.postDiameter
 local postHeight = Config.world.goalHeight
 local goalWidth = Config.world.goalWidth
+-- Field
+local xMax = Config.world.xMax
+local yMax = Config.world.yMax
 
 --
 local colors
@@ -454,8 +458,9 @@ function libVision.obstacle(labelB_t, cc)
       -- local blackStats = bboxStats('b', colors.black, bboxB)
       local blackStats, greenStats = bboxStats('a', colors.black, bboxB)
 
-      -- Checks
-      local check_passed, v = true
+      ----------- Checks -----------
+      local check_passed, v, obstacle_dist = true
+      
       -- Check black area       
       if blackStats.area < th_min_area then
         check_passed = false
@@ -470,7 +475,7 @@ function libVision.obstacle(labelB_t, cc)
             math.abs(blackStats.orientation), th_min_orientation)
         end
       end
-      -- Check aspect ratio
+      -- Check aspect ratio TODO: might be not necessary
       if check_passed and blackStats.axisMinor<grid_x then
         local aspect_ratio = blackStats.axisMajor / blackStats.axisMinor
         local th_aspect = {1.1, 10}
@@ -503,6 +508,49 @@ function libVision.obstacle(labelB_t, cc)
         obs_debug = obs_debug..string.format('TOO low: %.2f < %.2f\n',
           v[3], th_min_height)
       end
+
+      if check_passed then
+        v = projectGround(v, v[3]) --TODO
+        obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
+      end      
+      
+      -- Field bounds check
+      if check_passed then
+        local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
+        if math.abs(global_v[1])>xMax or math.abs(global_v[2])>yMax then
+          check_passed = false
+          obs_debug = obs_debug..'OUTSIDE FIELD!'
+        end
+      end
+      -- Distance check
+      if check_passed and obstacle_dist>7 then  --TODO
+        check_passed = false
+        obs_debug = obs_debug..string.format('TOO FAR:%.2f >%.2f\n', obstacle_dist, 5)
+      end
+      
+      --TODO: due to the way we split image into blocks, this has some issue 
+      -- AND we are not actually looking for obstacles when head pitch < 30 deg
+      -- --Ground check: might be slow?
+      -- if check_passed and ha-blackStats.boundingBox[4]>10 then
+      --   -- local left_x = blackStats.boundingBox[1]
+      --   -- local right_x = blackStats.boundingBox[2]
+      --   -- local top_y = blackStats.boundingBox[4]
+      --   -- local bot_y = blackStats.boundingBox[4]+10
+      --
+      --   local left_x = leftX
+      --   local right_x = rightX
+      --   local top_y = topY
+      --   local bot_y = math.min(ha, bottomY+20)
+      --   local ground_bbox = {left_x, right_x, top_y, bot_y}
+      --
+      --   local groundStats, bbox_area = bboxStats('b', colors.field, ground_bbox)
+      --   if groundStats.area/bbox_area < 0.5 then  --TODO
+      --     check_passed = false
+      --     obs_debug = obs_debug..string.format('GROUND CHECK FAIL: %.2f < %.2f\n',
+      --       groundStats.area/bbox_area, 0.5)
+      --   end
+      -- end
+      
       
       -- Green fill rate
       if check_passed then
@@ -533,10 +581,7 @@ function libVision.obstacle(labelB_t, cc)
             print('axisminor:', blackStats.axisMinor, 'grid_x', grid_x*scaleB)
           end
           
-          v = projectGround(v, 0.7) --TODO
           obs_count = obs_count + 1
-          
-          local obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
           table.insert(obstacle.dist, obstacle_dist)
           obstacle.iv[obstacle_dist] = vector.new(blackStats.centroid)
           obstacle.bbox[obstacle_dist] = vector.new(blackStats.boundingBox)
@@ -641,20 +686,20 @@ function libVision.update(img)
   local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
 	local obstacle_fails, obstacles
-	--if IS_WEBOTS then
-		local head_angle = Body.get_head_position()
-		-- If looking down, then do not detect obstacles
-		if head_angle[2]>50*DEG_TO_RAD then
-			obstacle_fails = 'looking down'
-		else
-			obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc)
-		end
-	--end
+  
+	local head_angle = Body.get_head_position()
+	-- If looking down, then do not detect obstacles
+	if head_angle[2]>50*DEG_TO_RAD then
+		obstacle_fails = 'looking down'
+	else
+		obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc)
+	end
+
   -- Save the detection information
   detected.ball = ball
   detected.posts = posts
   detected.obstacles = obstacles
-  
+    
   -- Debug messages
   -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
   -- detected.debug = table.concat({'Posts',post_fails},'\n')

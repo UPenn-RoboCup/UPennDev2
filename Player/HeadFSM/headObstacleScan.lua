@@ -6,9 +6,8 @@ local util = require'util'
 
 local t_entry, t_update
 local dqNeckLimit = Config.fsm.dqNeckLimit
-local tScan = Config.fsm.headSweep.tScan;
+local tScan = Config.fsm.headObstacleScan.tScan
 local yawMag = Config.head.yawMax
-local dist = Config.fsm.headReady.dist;
 
 function state.entry()
   print(state._NAME..' entry');
@@ -29,7 +28,8 @@ function state.update()
 
   local ph = (t-t_entry)/tScan;
   local yaw = direction * (ph - 0.5) * 2 * yawMag
-  local pitch = 15*DEG_TO_RAD --TODO
+  --Based on webots, 30 deg can basically cover the whole field
+  local pitch = 30*DEG_TO_RAD
 
   -- Grab where we are
   local qNeck = Body.get_head_position()

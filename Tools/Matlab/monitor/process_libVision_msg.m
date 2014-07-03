@@ -70,9 +70,9 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         if isfield(metadata, 'obstacles')
           obstacles = metadata.obstacles;
           for i=1:min(3, numel(obstacles.iv))
-            obs_c = obstacles.iv{i};
             obs_bbox = obstacles.bbox{i};
 
+            % TODO:use centroid and axisMajor/axisMinor 
             left_x = obs_bbox(1);
             right_x = obs_bbox(2);
             top_y = obs_bbox(3);

@@ -30,10 +30,6 @@ local uOdometry0 = vector.zeros(3)
 local t_resample = 0
 
 
---WHY IS THIS NOT WORKING ANYMORE?
---local yaw0 = Body.get_sensor_rpy()[3]
-
-
 local function update_odometry(uOdometry)  
   -- Scale the odometry
   uOdometry[1] = odomScale[1] * uOdometry[1]
@@ -93,6 +89,12 @@ local function update_vision(detected)
   end
   -- If the obstacle is detected
   obstacle = detected.obstacles
+  if obstacle then
+    for i=1,#obstacle.v do
+      wcm['set_obstacle_v'..i](obstacle.v[i])
+    end
+  end
+  
 end
 
 function libWorld.entry()
@@ -176,7 +178,6 @@ function libWorld.send()
       obs[i] = vector.new(obstacle.v[i])
       to_send.info = to_send.info..string.format(
         'Obstacle: %.2f %.2f\n', unpack(obstacle.v[i]) )
-		  wcm['set_obstacle_v'..i](obstacle.v[i])
     end
     to_send.obstacle = obs
   end

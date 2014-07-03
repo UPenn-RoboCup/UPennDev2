@@ -32,6 +32,12 @@ fsm.Head = {
 
   {'headIdle', 'scan', 'headBackScan'},
   {'headIdle', 'teleop', 'headTeleop'},
+  -- 
+  -- {'headIdle', 'scanobs', 'headObstacleScan'},
+  -- -- {'headObstacleScan', 'noobs', 'headSweep'},
+  -- {'headObstacleScan', 'done', 'headTrack'},
+  -- {'headObstacleScan', 'teleop', 'headTeleop'},
+  
 
   {'headBackScan', 'ballfound', 'headTrack'},
   {'headBackScan', 'noball', 'headBackScan'},
@@ -166,6 +172,10 @@ fsm.headLookGoal = {
 fsm.headSweep = {
   tScan = 2.0,
   tWait = 0.25,
+}
+
+fsm.headObstacleScan = {
+  tScan = 5,
 }
 
 fsm.bodyRobocupFollow = {

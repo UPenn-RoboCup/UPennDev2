@@ -81,6 +81,7 @@ function process_keyinput()
 
     elseif byte==string.byte("1") then      
       body_ch:send'init'
+      head_ch:send'teleop'      
     elseif byte==string.byte("2") then      
       body_ch:send'stepinplace'
 
@@ -118,6 +119,8 @@ function process_keyinput()
     elseif byte==string.byte("g") then  
       body_ch:send'play'
       head_ch:send'scan'
+    elseif byte==string.byte("f") then        
+      head_ch:send'scan'      
 --[[      
     elseif byte==string.byte(" ") then  
       hcm.set_motion_waypoints(targetwp)

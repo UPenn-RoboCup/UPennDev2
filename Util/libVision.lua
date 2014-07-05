@@ -48,6 +48,12 @@ local vision_ch = si.new_publisher'vision'
 local DEBUG = Config.debug.obstacle
 
 
+
+local ball_debug=''
+local function debug_ball_clear() ball_debug='' end
+local function debug_ball(str)  ball_debug = ball_debug..str end
+
+
 function libVision.get_metadata()
 end
 
@@ -110,26 +116,26 @@ local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_t)
   local stats, box_area = bboxStats('a', color, prop.boundingBox)
   --TODO: bbox area check seems redundant
   if box_area < th_bbox_area then 
-    return string.format('Box area: %d<%d\n',box_area,th_bbox_area)  
+    return string.format('Box area: %d<%d\n',box_area,th_bbox_area)
   end
   local area = stats.area
   -- If no pixels then return
-  if area < th_area then 
-    return string.format('Area: %d < %d \n', area, th_area) 
+  if area < th_area then     
+    return string.format('Area: %d < %d \n', area, th_area)
   end
   -- Get the fill rate
 	-- TODO: depend on ball or goal
   --local fill_rate = area / box_area
 	local fill_rate = area / (stats.axisMajor * stats.axisMinor)
-  if fill_rate < th_fill then 
-    return string.format('Fill rate: %.2f < %.2f\n', fill_rate, th_fill) 
+  if fill_rate < th_fill then     
+    return string.format('Fill rate: %.2f < %.2f\n', fill_rate, th_fill)
   end
   return stats
 end
 
 -- Yield coordinates in the labelA space
 -- Returns an error message if max limits are given
-local function check_coordinateA(centroid, scale, maxD, maxH)
+local function check_coordinateA(centroid, scale, maxD, maxH,balldebug)
   local v0 = torch.Tensor({
     focalA,
     -(centroid[1] - x0A),
@@ -137,19 +143,20 @@ local function check_coordinateA(centroid, scale, maxD, maxH)
     scale,
   })
   local v = torch.mv(trHead, v0) / v0[4]
-    
+  if balldebug then debug_ball(string.format("Ball v0:%.2f %.2f %.2f\n",v[1],v[2],v[3])) end
+
   -- Check the distance
   if maxD and v[1]*v[1] + v[2]*v[2] > maxD*maxD then
-    return'TOO FAR'
+    return string.format("Distance:%.2f>%.2f",math.sqrt(v[1]*v[1] + v[2]*v[2]),maxD) 
   elseif maxH and v[3] > maxH then
-    return'TOO HEIGH'
+    return string.format("Height:%.2f>%.2f",v[3],maxH)
   end
   return v
 end
 
 -- Yield coordinates in the labelB space
 -- Returns an error message if max limits are given
-local function check_coordinateB(centroid, scale, maxD, maxH)
+local function check_coordinateB(centroid, scale, maxD, maxH, balldebug)
   local v0 = torch.Tensor({
     focalB,
     -(centroid[1] - x0B),
@@ -157,11 +164,12 @@ local function check_coordinateB(centroid, scale, maxD, maxH)
     scale,
   })
   local v = torch.mv(trHead, v0) / v0[4]
+  if balldebug then debug_ball(string.format("Ball v0:%.2f %.2f %.2f\n",v[1],v[2],v[3])) end
   -- Check the distance
   if maxD and v[1]*v[1] + v[2]*v[2] > maxD*maxD then
-    return'Distance'
-  elseif maxH and v[3] > maxH then
-    return'Height'
+    return debug_ball(string.format("Distance:%.2f>%.2f",math.sqrt(v[1]*v[1] + v[2]*v[2]),maxD) )
+  elseif maxH and v[3] > maxH then    
+    return string.format("Height:%.2f>%.2f",v[3],maxH) 
   end
   return v
 end
@@ -183,8 +191,11 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
   -- print('Black pixels?', cc_t[colors.black])
   -- print('Red pixels?', cc_t[colors.orange])
   -- print('Yellow pixels?', cc_t[colors.yellow])
-
   -- The ball is color 1
+  
+  debug_ball_clear() 
+  
+
   local cc = cc_t[colors.orange]
   if cc<6 then return'Color count' end
   -- Connect the regions in labelB
@@ -195,31 +206,23 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
   --
   local failures, successes = {}, {}
   for i=1,math.min(5, nProps) do
-    local fail = {}
+    debug_ball("Checking "..i.." / "..nProps.."\n")
+    local check_fail = false
     -- Check the image properties
     local propsB = ballPropsB[i]
     local propsA = check_prop(colors.orange, propsB, b_bbox_area, b_area, b_fill_rate, labelA_t)
-    if type(propsA)=='string' then
-      table.insert(fail, propsA)
+    if type(propsA)=='string' then 
+      debug_ball(propsA)
+      check_fail = true
     else
       -- Check the coordinate on the field
       local dArea = math.sqrt((4/math.pi) * propsA.area)
       local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
-      local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height)
-      if type(v)=='string' then
-        table.insert(fail, v)
+      local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height,true)
+      if type(v)=='string' then 
+        check_fail = true
+        debug_ball(v)
       else        
-  			-- Height Check
-  			if check_passed then
-  				local scale = postStats.axisMinor / postDiameter 
-  				local v = check_coordinateA(postStats.centroid, scale)
-  				if v[3] < Config.vision.goal.height_min then
-  					table.insert(fail,string.format("Height fail:%.2f\n",v[3]))
-  					check_passed = false 
-  				end
-  			end
-        
-
         -- Project the ball to the ground
         propsA.v = projectGround(v,b_diameter/2)
         propsA.t = Body and Body.get_time() or 0
@@ -232,15 +235,14 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       end
     end
     -- Did we succeed in finding a ball?
-    if #fail==0 then
-      return tostring(propsA.v), propsA
-    else
-      -- Add another failure
-      table.insert(failures, table.concat(fail,', '))
+    if check_fail==false then 
+      debug_ball(string.format('Ball detected at %.2f, %.2f',propsA.v[1],propsA.v[2]))
+      return tostring(propsA.v), propsA 
     end
+    
   end
-  -- Assume failure
-  return table.concat(failures,', ')
+  -- Assume failure 
+  return ball_debug
 end
 
 
@@ -699,12 +701,12 @@ function libVision.update(img)
   detected.ball = ball
   detected.posts = posts
   detected.obstacles = obstacles
-    
-  -- Debug messages
-  -- detected.debug = table.concat({'Ball',ball_fails,'Posts',post_fails},'\n')
-  -- detected.debug = table.concat({'Posts',post_fails},'\n')
-  detected.debug = table.concat({'Obstacle', obstacle_fails},'\n')
 
+  detected.debug={}
+  detected.debug.ball = ball_debug or ' '
+  detected.debug.post = post_fails or ' '
+  detected.debug.obstacle = obstacle_fails or ' '
+    
   -- Send the detected stuff over the channel every cycle
   vision_ch:send(mp.pack(detected))
 

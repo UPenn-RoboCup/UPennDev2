@@ -16,14 +16,12 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
           % obstacles
           set(cam.h_obstacle{i}, 'Xdata', [], 'Ydata', []);
         end      
-      
+
         % Set the debug information
         set(cam.a_debug_ball, 'String', char(metadata.debug.ball));
         set(cam.a_debug_goal, 'String', char(metadata.debug.post));
+        set(cam.a_debug_obstacle, 'String', char(metadata.debug.obstacle));
 
-
-char(metadata.debug.obstacle)
-%        set(cam.a_debug_obstacle, 'String', char(metadata.debug.obstacle));
         % Process the ball detection result
         if isfield(metadata,'ball')
             % Show our ball on the YUYV image plot
@@ -112,13 +110,13 @@ char(metadata.debug.obstacle)
         ylim(cam.f_yuyv,[0 metadata.h]);
         needs_draw = 1;
     elseif strcmp(msg_id,'labelA')
-        cam.labelA = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';
+        cam.labelA = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';%'
         set(cam.im_lA,'Cdata', cam.labelA);
         xlim(cam.f_lA,[0 metadata.w]);
         ylim(cam.f_lA,[0 metadata.h]);
         needs_draw = 1;
     elseif strcmp(msg_id,'labelB')
-        cam.labelB = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';
+        cam.labelB = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';%'
         set(cam.im_lB,'Cdata', cam.labelB);
         xlim(cam.f_lB,[0 metadata.w]);
         ylim(cam.f_lB,[0 metadata.h]);

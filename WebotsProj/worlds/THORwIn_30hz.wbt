@@ -75,14 +75,14 @@ DEF YELLOW_GOAL TeenGoal {
   #postColor 0.152941 0.505882 0.733333
 }
 DEF BALL Ball {
-  translation -2 0 2
+  translation 2.4 0 2
   radius 0.10
 }
 DEF OBS1 Obstacle {
-  translation -2 0 -1
+  translation -2.4 0 -1
 }
 DEF OBS2 Obstacle {
-  translation 1.5 0 1
+  translation 1.2 0 -3
 }
 
 THOROP7_RoboCup_New{

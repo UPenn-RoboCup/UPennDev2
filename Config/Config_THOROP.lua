@@ -52,6 +52,10 @@ if IS_WEBOTS then
   Config.use_walkkick = false
 end
 
+
+--Config.backward_approach = true
+
+
 ---------------------------
 -- Complementary Configs --
 ---------------------------

@@ -112,8 +112,8 @@ s_top = zmq('fd', fd);
 %% Loop
 running = 1;
 
-
-t0 = tic;
+tic;
+t0 = toc;
 count_world = 0;
 count_detect = 0;
 count_labelA = 0;

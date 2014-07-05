@@ -467,6 +467,18 @@ if IS_TESTING then
 
 elseif IS_WEBOTS then
 
+
+  --SJ: I put test_walk capabality here
+  local fsm_chs = {}
+  for _,sm in ipairs(Config.fsm.enabled) do
+    local fsm_name = sm..'FSM'
+    table.insert(fsm_chs, fsm_name)
+    _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")
+  end
+
+
+
+
   local jointNames = {
     "Neck","Head", -- Head (Yaw,pitch)
     -- Left Arm
@@ -708,8 +720,8 @@ elseif IS_WEBOTS then
 		key_action.i(ENABLE_IMU)
 		key_action.p(ENABLE_POSE)
 		key_action.c(ENABLE_CAMERA)
-		key_action.h(ENABLE_HEAD_LIDAR)
-		key_action.l(ENABLE_CHEST_LIDAR)
+		--key_action.h(ENABLE_HEAD_LIDAR)
+		--key_action.l(ENABLE_CHEST_LIDAR)
 		--key_action.k(ENABLE_KINECT)
 		--key_action.f(ENABLE_FSR)
 
@@ -934,12 +946,34 @@ elseif IS_WEBOTS then
     local key_code = webots.wb_robot_keyboard_get_key()
     local key_char = string.char(key_code)
     local key_char_lower = string.lower(key_char)
+
+    if t-t_last_keypress>1 then
+      if key_char_lower=='1' then
+        body_ch:send'init'
+        head_ch:send'teleop'           
+        t_last_keypress = t
+      elseif key_char_lower=='8' then        
+        motion_ch:send'stand'
+        body_ch:send'stop'   
+        t_last_keypress = t        
+      elseif key_char_lower=='f' then
+        head_ch:send'scan'
+        t_last_keypress = t
+      elseif key_char_lower=='g' then
+        body_ch:send'play'
+        head_ch:send'scan'    
+        t_last_keypress = t        
+      end
+    end
+
+    --No need to toggle anything for robocup testing
+--[[
 		local key_toggle = key_action[key_char_lower]
     if key_toggle and t-t_last_keypress>1 then
       key_toggle()
       t_last_keypress = t
     end
-
+--]]
 	end -- update
 
 	Body.exit = function()

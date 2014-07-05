@@ -32,16 +32,14 @@ local angleShift = vector.new{0,0,0,0}
 local iStep
 
 -- What foot trajectory are we using?
---[[
-local foot_traj_func  
---foot_traj_func = moveleg.foot_trajectory_base
---foot_traj_func = moveleg.foot_trajectory_square
-foot_traj_func = moveleg.foot_trajectory_square_stair
---foot_traj_func = moveleg.foot_trajectory_square_stair_2
---]]
+
 local foot_traj_func  
 if Config.walk.foot_traj==1 then foot_traj_func = moveleg.foot_trajectory_base
 else foot_traj_func = moveleg.foot_trajectory_square end
+kick_traj_func = moveleg.foot_trajectory_kick
+walkkick_traj_func = moveleg.foot_trajectory_walkkick
+
+--kick_traj_func = moveleg.foot_trajectory_base
 
 local crossing_num
 local last_side = 1
@@ -78,7 +76,7 @@ local update_odometry = function(uTorso_in)
   wcm.set_robot_utorso1(uTorso_in)
 end
 
-local function calculate_footsteps()
+local function calculate_footsteps1()
   local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
   local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
   local tStepMid = Config.walk.tStep-tSlope1-tSlope2
@@ -140,6 +138,121 @@ local function calculate_footsteps()
   step_queue_vector = vector.zeros(12*maxSteps)
   for i=1,#step_queue do    
     local offset = (i-1)*13;
+    --Leg movent, (x,y,a)
+    step_queue_vector[offset+1] = step_queue[i][1][1]
+    step_queue_vector[offset+2] = step_queue[i][1][2]
+    step_queue_vector[offset+3] = step_queue[i][1][3]
+
+    --supportLeg
+    step_queue_vector[offset+4] = step_queue[i][2]
+
+    --tSlope1, tStepMid, tSlope2
+    step_queue_vector[offset+5] = step_queue[i][3]
+    step_queue_vector[offset+6] = step_queue[i][4]    
+    step_queue_vector[offset+7] = step_queue[i][5]    
+
+    --ZMP mod
+    step_queue_vector[offset+8] = step_queue[i][6][1]
+    step_queue_vector[offset+9] = step_queue[i][6][2]
+    step_queue_vector[offset+10] = step_queue[i][6][3]
+
+    --Step height
+    step_queue_vector[offset+11] = step_queue[i][7][1]
+    step_queue_vector[offset+12] = step_queue[i][7][2]
+    step_queue_vector[offset+13] = step_queue[i][7][3]
+  end
+
+  mcm.set_step_footholds(step_queue_vector)
+  mcm.set_step_nfootholds(#step_queue)
+end
+
+
+
+
+
+local function calculate_footsteps()
+  local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
+  local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
+  local tStepMid = Config.walk.tStep-tSlope1-tSlope2
+  uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
+  local uTorsoVel = util.pose_relative(mcm.get_status_uTorsoVel(), {0,0,uTorso_now[3]})
+  local supportLeg = 0
+  if math.abs(uTorsoVel[2])<0.001 then supportLeg=2 
+  elseif uTorsoVel[2]>0 then supportLeg = 1 end --Torso moving to left, right support
+
+
+  print("Kick foot:",mcm.get_walk_kickfoot())
+  print("Next support:",supportLeg)
+  local step_queue={}
+
+  if mcm.get_walk_kickfoot()==0 then --left foot kick
+    if supportLeg==0 then --Need one step in place before kick
+      step_queue={
+        {{0,0,0},  1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
+        {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
+        {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rf kick
+        {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
+        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+      }
+
+    elseif supportLeg==1 then
+      step_queue={
+        {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
+        {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rf kick
+        {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
+        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+      }
+    else
+      step_queue={
+        {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
+        {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
+        {{0.12,0,0},1,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{-1,Config.walk.stepHeight,0}}, --rf kick
+        {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
+        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+      }
+
+
+      --stationary kick test
+      step_queue={
+        {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
+        {{0.06,0,0},1,  0.5,2,0.5,   {0,0,0},{-2,Config.walk.stepHeight,0}}, --rf kick
+        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+      }
+
+
+    end
+  else 
+    if supportLeg==1 then --Need one step in place before kick
+      step_queue={
+        {{0,0,0},  0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
+        {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
+        {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rf kick
+        {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
+        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+      }
+    elseif supportLeg==0 then
+      step_queue={
+        {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
+        {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rf kick
+        {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
+        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+      }
+    else
+      step_queue={
+        {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
+        {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
+        {{0.12,0,0},0,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{-1,Config.walk.stepHeight,0}}, --rf kick
+        {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
+        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+      }      
+    end  
+  end
+
+--Write to SHM
+  local maxSteps = 40
+  step_queue_vector = vector.zeros(12*maxSteps)
+  for i=1,#step_queue do    
+    local offset = (i-1)*13;
     step_queue_vector[offset+1] = step_queue[i][1][1]
     step_queue_vector[offset+2] = step_queue[i][1][2]
     step_queue_vector[offset+3] = step_queue[i][1][3]
@@ -158,10 +271,19 @@ local function calculate_footsteps()
     step_queue_vector[offset+12] = step_queue[i][7][2]
     step_queue_vector[offset+13] = step_queue[i][7][3]
   end
-
   mcm.set_step_footholds(step_queue_vector)
   mcm.set_step_nfootholds(#step_queue)
 end
+
+
+
+
+
+
+
+
+
+
 
 
 ---------------------------
@@ -170,26 +292,18 @@ end
 function walk.entry()
   print(walk._NAME..' Entry' )
   -- Update the time of entry
+
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
- 
   mcm.set_walk_vel({0,0,0})--reset target speed
-
   tStep = Config.walk.tStep
-
   -- Initiate the ZMP solver
-  zmp_solver = libZMP.new_solver({
-    ['tStep'] = Config.walk.tStep,
-    ['tZMP']  = Config.walk.tZMP,    
-  })
+  zmp_solver = libZMP.new_solver({['tStep'] = Config.walk.tStep,['tZMP']  = Config.walk.tZMP,})
   zmp_solver:precompute()
-
   step_planner = libStep.new_planner()
-
   zLeft, zRight = 0,0
-  uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
-      step_planner:init_stance()
+  uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
 
   zmp_solver:init_preview_queue(uLeft_now,uRight_now, uTorso_now, Body.get_time(), step_planner)
   
@@ -247,11 +361,7 @@ function walk.update()
   local discrete_updated = false
   local com_pos 
 
-
-  if hcm.get_motion_estop()==1 then
-    zmp_solver:emergency_stop(step_planner,t_discrete + time_discrete_shift)
-  end
-
+  if hcm.get_motion_estop()==1 then zmp_solver:emergency_stop(step_planner,t_discrete + time_discrete_shift) end
 
   while t_discrete<t do
     zmp_solver:update_preview_queue_steps(step_planner,t_discrete + time_discrete_shift)
@@ -259,14 +369,12 @@ function walk.update()
     discrete_updated = true
 
     --Get step information
-    uLeft_now, uRight_now, uLeft_next, uRight_next,
-      supportLeg, ph, ended, walkParam = zmp_solver:get_current_step_info(t_discrete + time_discrete_shift)
+    uLeft_now, uRight_now, uLeft_next, uRight_next, supportLeg, ph, ended, walkParam = 
+      zmp_solver:get_current_step_info(t_discrete + time_discrete_shift)
 
     if ended and zmp_solver:can_stop() then return "done"  end
-  
-    --Get the current COM position
+     --Get the current COM position
     com_pos,zmp_pos = zmp_solver:update_state()
-  
   end
 
   if discrete_updated then
@@ -278,11 +386,21 @@ function walk.update()
     local uLeft, uRight = uLeft_now, uRight_now
     
     if supportLeg == 0 then  -- Left support    
-      uRight,zRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
---      if walkParam then print(unpack(walkParam))end
+      if walkParam[1]==-1 then --WalkKick phase
+        uRight,zRight = walkkick_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
+      elseif walkParam[1] == -2 then --Longkick phase
+        uRight,zRight = kick_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
+      else
+        uRight,zRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
+      end
     elseif supportLeg==1 then    -- Right support    
-      uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)    
---      if walkParam then print(unpack(walkParam))end
+      if walkParam[1]==-1 then --Kick phase
+        uLeft,zLeft = walkkick_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)    
+      elseif walkParam[1]==-2 then --Kick phase
+        uLeft,zLeft = kick_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)            
+      else
+        uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)    
+      end
     elseif supportLeg == 2 then --Double support
     end
     step_planner:save_stance(uLeft,uRight,uTorso)  
@@ -295,50 +413,27 @@ function walk.update()
     mcm.set_status_uZMP(uZMP)
     mcm.set_status_t(t)
 
-
     --Calculate how close the ZMP is to each foot
     local uLeftSupport,uRightSupport = step_planner.get_supports(uLeft,uRight)
-    local dZmpL = math.sqrt(
-      (uZMP[1]-uLeftSupport[1])^2+
-      (uZMP[2]-uLeftSupport[2])^2);
-
-    local dZmpR = math.sqrt(
-      (uZMP[1]-uRightSupport[1])^2+
-      (uZMP[2]-uRightSupport[2])^2);
-
+    local dZmpL = math.sqrt((uZMP[1]-uLeftSupport[1])^2+(uZMP[2]-uLeftSupport[2])^2)
+    local dZmpR = math.sqrt((uZMP[1]-uRightSupport[1])^2+(uZMP[2]-uRightSupport[2])^2)
     local supportRatio = dZmpL/(dZmpL+dZmpR);
 
 --print(unpack(uTorso),unpack(uLeft),unpack(uRight))
 
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
-
-    --delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,ph,gyro_rpy, angleShift)
-
-    delta_legs, angleShift = moveleg.get_leg_compensation_new(
-      supportLeg,
-      ph,
-      gyro_rpy, 
-      angleShift,
-      supportRatio)
+    delta_legs, angleShift = moveleg.get_leg_compensation_new(supportLeg,ph,gyro_rpy, angleShift,supportRatio)
 
     --Move legs
     local uTorsoComp = mcm.get_stance_uTorsoComp()
     local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
-
-    moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
-      zLeft,zRight,delta_legs)    
---print("Y:",uLeft[2],uTorso[2],uRight[2])
-
+    moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,zLeft,zRight,delta_legs)    
     local rpy = Body.get_rpy()
     local roll = rpy[1] * RAD_TO_DEG
     
-    if math.abs(roll)>roll_max then
-      roll_max = math.abs(roll)
-      --print("IMU roll angle:",roll_max)
-    end
-
-    local roll_threshold = 5 --this is degree
+    if math.abs(roll)>roll_max then roll_max = math.abs(roll) end
+    local roll_threshold = 10 --this is degree
 
     if roll_max>roll_threshold and hcm.get_motion_estop()==0 then
       print("EMERGENCY STOPPING")
@@ -349,9 +444,9 @@ function walk.update()
   end  
 end -- walk.update
 
-function walk.exit()
-  print(walk._NAME..' Exit')  
-
+function walk.exit() 
+  print(walk._NAME..' Exit') 
+  mcm.set_walk_steprequest(0)
 end
 
 return walk

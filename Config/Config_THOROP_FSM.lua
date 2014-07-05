@@ -109,6 +109,7 @@ fsm.Motion = {
   {'motionStance', 'preview', 'motionStepPreview'},
   {'motionStance', 'walk', Config.dev.walk},
   {'motionStance', 'kick', 'motionKick'},
+  {'motionStance', 'done_step', 'motionHybridWalkKick'},
 
   {'motionStance', 'sit', 'motionSit'},
   {'motionSit', 'stand', 'motionStandup'},

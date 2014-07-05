@@ -303,6 +303,70 @@ function moveleg.get_ph_single(ph,phase1,phase2)
   return math.min(1, math.max(0, (ph-phase1)/(phase2-phase1) ))
 end
 
+
+local function eval_spline(breaks,coefs,ph)
+  local x_offset, xf = 0,0
+  for i=1,#breaks do
+    if ph<=breaks[i] then
+      local x=ph - x_offset
+      xf = coefs[i][1]*x^3 + coefs[i][2]*x^2 + coefs[i][3]*x + coefs[i][4]
+      break;
+    end
+    x_offset = breaks[i]    
+  end
+  return xf
+end
+
+
+
+--a=csapi([0 0.1 0.3 0.6 0.8 0.9 1],[0 -0.1 -0.3 1 1.5 1.2 1])
+function moveleg.foot_trajectory_walkkick(phSingle,uStart,uEnd,stepHeight)
+  local breaksX={0.1,0.3,0.6,0.8,0.9,1}
+  local coefsX = {
+    {36.9313,-14.7725,0.1079,0},
+    {36.9313,-3.6931,-1.7386,-0.10},
+    {-26.9139,18.4637,1.2159,-0.3000},
+    {-34.4293,-5.7568,5.0285,1},
+    {104.7146,-26.4144,-1.4057,1.5},
+    {104.7146,5,-3.5471,1.2},
+  }
+  local xf=eval_spline(breaksX, coefsX,phSingle)*0.8  
+  local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
+  local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight * zf*1.5
+  return uFoot, zFoot
+end
+
+--csapi([0 0.1 0.3 0.7 0.8 0.9 1],[0 -0.2 -1 2  2 1.4 1])
+function moveleg.foot_trajectory_kick(phSingle,uStart,uEnd,stepHeight)
+  local breaksX={0.1,0.3,0.7,0.8,0.9,1}
+  local coefsX = {
+      {100.4549 , -46.8486  ,  1.6803  ,       0},
+      {100.4549 , -16.7122 ,  -4.6758  , -0.2000},
+      {-66.3641 ,  43.5608  ,  0.6940  , -1.0000},
+      {-8.0158 , -36.0762  ,  3.6878   , 2.0000},
+      { 161.6032 , -38.4809  , -3.7679  ,  2.0000},
+      {161.6032 ,  10.0000 ,  -6.6160   , 1.4000},
+    }
+  local xf=eval_spline(breaksX, coefsX,phSingle)*0.8  
+  local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
+  local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight * zf*2.5
+  return uFoot, zFoot
+end
+
+
+
+
+
+
+
+
+
+
+
 function moveleg.foot_trajectory_base(phSingle,uStart,uEnd,stepHeight)
   local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
   local xf = .5*(1-math.cos(math.pi*phSingleSkew))

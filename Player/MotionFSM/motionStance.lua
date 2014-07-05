@@ -32,6 +32,7 @@ function state.entry()
   t_update = t_entry
 
   mcm.set_walk_bipedal(1)
+  mcm.set_walk_steprequest(0)
 end
 
 function state.update()
@@ -74,6 +75,9 @@ function state.update()
   mcm.set_stance_bodyHeight(bodyHeight)  
   moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
     0,0,delta_legs)
+  mcm.set_status_uTorsoVel({0,0,0})
+  local steprequest = mcm.get_walk_steprequest()    
+  if steprequest>0 then return "done_step" end
 end -- walk.update
 
 function state.exit()

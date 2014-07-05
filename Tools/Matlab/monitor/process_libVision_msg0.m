@@ -18,12 +18,7 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         end      
       
         % Set the debug information
-        set(cam.a_debug_ball, 'String', char(metadata.debug.ball));
-        set(cam.a_debug_goal, 'String', char(metadata.debug.post));
-%        set(cam.a_debug_obstacle, 'String', char(metadata.debug.obstacle));
-
-
-
+        set(cam.a_debug, 'String', char(metadata.debug.obstacle));
         % Process the ball detection result
         if isfield(metadata,'ball')
             % Show our ball on the YUYV image plot
@@ -61,7 +56,7 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
               h0 = postStats.post.axisMinor / 2;
               post_o = postStats.post.orientation;
               
-              rot = [cos(post_o) sin(post_o); -sin(post_o) cos(post_o)]'; %'
+              rot = [cos(post_o) sin(post_o); -sin(post_o) cos(post_o)]';
               x11 = post_c + [w0 h0] * rot;
               x12 = post_c + [-w0 h0] * rot;
               x21 = post_c + [w0 -h0] * rot;
@@ -111,6 +106,7 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         xlim(cam.f_yuyv,[0 metadata.w]);
         ylim(cam.f_yuyv,[0 metadata.h]);
         needs_draw = 1;
+        
     elseif strcmp(msg_id,'labelA')
         cam.labelA = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';
         set(cam.im_lA,'Cdata', cam.labelA);

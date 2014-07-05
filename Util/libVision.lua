@@ -57,8 +57,14 @@ local function debug_ball(str)  ball_debug = ball_debug..str end
 function libVision.get_metadata()
 end
 
+t_last_sent = unix.time()
+
 -- Should have a common API (meta/raw)
 function libVision.send()
+
+--  print("label sent delay: ms",(unix.time()-t_last_sent ) *1000 )
+  t_last_sent = unix.time()
+
   local to_send = {}
   local lA_raw = c_zlib(labelA_t:data(), labelA_t:nElement(), true)
   local lA_meta = {
@@ -673,7 +679,13 @@ function libVision.entry(cfg, body)
   lut_t = ImageProc2.load_lut (table.concat(lut_fname))
 end
 
+t_last = unix.time()
+
 function libVision.update(img)
+
+  t=unix.time()
+--  print("vision fps:",1/(t-t_last))
+  t_last = t
 
   -- Update the motion elements
   update_head()

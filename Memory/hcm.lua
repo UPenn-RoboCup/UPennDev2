@@ -222,7 +222,7 @@ shared_data.right.grip = vector.zeros(3)
 
 -- Monitor
 shared_data.monitor = {}
-shared_data.monitor.fps = vector.new({5}) 
+shared_data.monitor.fps = vector.new({30}) 
 
 
 --These variables are only used for offline testing of arm states

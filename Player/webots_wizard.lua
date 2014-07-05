@@ -49,6 +49,9 @@ local vector = require'vector'
 local uOdometry0, uOdometry
 local t_send, SEND_INTERVAL = 0
 
+
+
+
 vision_ch.callback = function(skt)
   local detections = skt:recv_all()
   -- First, update the odometry
@@ -67,6 +70,8 @@ vision_ch.callback = function(skt)
   -- Send localization info to monitor
   local t = get_time()
   if t-t_send > SEND_INTERVAL then
+
+--  print("World data sent at fps:",1/(t-t_send))
     local metadata = {}
     metadata.id = 'world'
     metadata.world = lW.send()

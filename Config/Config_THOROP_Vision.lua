@@ -82,14 +82,14 @@ vision.goal = {
 -- Testing in M308 with thinner obstacles
 vision.obstacle = {
   label = 'b',
-  grid_x = 20, --16, 
-  grid_y = 40, --30,
+  grid_x = 32, --20,  
+  grid_y = 20, --18,
 	th_min_area = 42,
-  min_black_fill_rate = 0.7,
-  th_aspect_ratio = {2, 10},
+  min_black_fill_rate = 0.6,
+  th_aspect_ratio = {1.8, 10},
   th_max_height = 1.3,
   th_min_height = -0.2,
-  th_min_orientation = 70/180*math.pi,
+  th_min_orientation = 66/180*math.pi,
   th_green_black_ratio = 2,
   min_ground_fill_rate = 0.6,  
 }
@@ -147,29 +147,29 @@ table.insert(Config.camera,
       {'Exposure, Auto Priority', 0},
 			{'Focus, Auto', 0}
     },
-      --     -- M308
-      --     param = {
-      --       {'White Balance Temperature', 3600},
-      --       {'Exposure (Absolute)', 100},
-      -- {'Focus (absolute)', 0},
-      --       {'Brightness', 128},
-      --       {'Contrast', 128},
-      --       {'Saturation', 150},
-      --       {'Gain', 0},
-      --       {'Sharpness', 0},
-      --     },
+      -- M308
+      param = {
+             {'White Balance Temperature', 3600},
+             {'Exposure (Absolute)', 100},
+      			 {'Focus (absolute)', 0},
+             {'Brightness', 128},
+             {'Contrast', 128},
+             {'Saturation', 150},
+             {'Gain', 0},
+             {'Sharpness', 0},
+           },
       
     -- GRASP
-    param = {
-      {'White Balance Temperature', 2900},
-      {'Exposure (Absolute)', 95},
-			{'Focus (absolute)', 0},
-      {'Brightness', 135},
-      {'Contrast', 128},
-      {'Saturation', 160},
-      {'Gain', 70},
-      {'Sharpness', 0},
-    },
+    --param = {
+    --  {'White Balance Temperature', 2900},
+    --  {'Exposure (Absolute)', 95},
+	  --	{'Focus (absolute)', 0},
+    --  {'Brightness', 135},
+    --  {'Contrast', 128},
+    --  {'Saturation', 160},
+    --  {'Gain', 70},
+    --  {'Sharpness', 0},
+    --},
     
   })
 

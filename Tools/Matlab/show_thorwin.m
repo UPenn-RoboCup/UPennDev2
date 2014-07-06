@@ -121,11 +121,13 @@ count_cam = 0;
 
 t_last = toc;
 
+data_yuyv=[];
+data_yuyv.meta = [];
+data_yuyv.raw = [];
 
 data_world=[];
 data_world.meta = [];
 data_world.raw = [];
-
 
 data_detect=[];
 data_detect.meta = [];
@@ -138,6 +140,7 @@ data_labelA.raw = [];
 last_draw_time = toc;
 last_draw_duration = 0
 
+data_yuyv.recv = false;
 data_world.recv = false;
 data_detect.recv = false;
 data_labelA.recv = false;
@@ -179,6 +182,9 @@ while running
             end
             if strcmp(msg_id,'head_camera')
               count_cam = count_cam + 1;
+              data_yuyv.meta = metadata;
+              data_yuyv.raw = raw;
+              data_yuyv.recv = true;
             end            
         end
     end
@@ -192,6 +198,7 @@ while running
       if data_world.recv process_libVision_msg(data_world.meta,data_world.raw,cam); end
       if data_detect.recv process_libVision_msg(data_detect.meta,data_detect.raw,cam); end
       if data_labelA.recv process_libVision_msg(data_labelA.meta,data_labelA.raw,cam); end
+      if data_yuyv.recv process_libVision_msg(data_yuyv.meta,data_yuyv.raw,cam); end
       drawnow; 
       t1=toc;
       last_draw_duration = t1-t_last;    

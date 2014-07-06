@@ -20,7 +20,7 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         % Set the debug information
         set(cam.a_debug_ball, 'String', char(metadata.debug.ball));
         set(cam.a_debug_goal, 'String', char(metadata.debug.post));
-%        set(cam.a_debug_obstacle, 'String', char(metadata.debug.obstacle));
+        set(cam.a_debug_obstacle, 'String', char(metadata.debug.obstacle));
 
 
 
@@ -75,18 +75,31 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         if isfield(metadata, 'obstacles')
           obstacles = metadata.obstacles;
           for i=1:min(3, numel(obstacles.iv))
-            obs_bbox = obstacles.bbox{i};
-
-            % TODO:use centroid and axisMajor/axisMinor 
-            left_x = obs_bbox(1);
-            right_x = obs_bbox(2);
-            top_y = obs_bbox(3);
-            bot_y = obs_bbox(4);
-            x11 = [left_x top_y]; 
-            x12 = [right_x top_y];
-            x21 = [left_x bot_y];
-            x22 = [right_x bot_y];
+            obs_c = obstacles.iv{i};
+            wo = obstacles.axisMajor(i)/2;
+            ho = obstacles.axisMinor(i)/2;
+            obs_o = obstacles.orientation(i);
+            
+            obs_rot = [cos(obs_o) sin(obs_o); -sin(obs_o) cos(obs_o)]';
+            x11 = obs_c + [wo ho] * obs_rot;
+            x12 = obs_c + [-wo ho] * obs_rot;
+            x21 = obs_c + [wo -ho] * obs_rot;
+            x22 = obs_c + [-wo -ho] * obs_rot;
             obs_box = [x11; x12; x22; x21; x11];
+            
+            
+            % obs_bbox = obstacles.bbox{i};
+            %
+            % % TODO:use centroid and axisMajor/axisMinor
+            % left_x = obs_bbox(1);
+            % right_x = obs_bbox(2);
+            % top_y = obs_bbox(3);
+            % bot_y = obs_bbox(4);
+            % x11 = [left_x top_y];
+            % x12 = [right_x top_y];
+            % x21 = [left_x bot_y];
+            % x22 = [right_x bot_y];
+            % obs_box = [x11; x12; x22; x21; x11];
             
             set(cam.h_obstacle{i}, 'XData', obs_box(:,1), 'YData', obs_box(:,2));
           end

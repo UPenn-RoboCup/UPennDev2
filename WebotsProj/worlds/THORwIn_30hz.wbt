@@ -79,10 +79,13 @@ DEF BALL Ball {
   radius 0.10
 }
 DEF OBS1 Obstacle {
-  translation -2.4 0 -1
+  translation -2.5 0 -1
 }
 DEF OBS2 Obstacle {
-  translation 1.2 0 -3
+  translation 1.2 0 1.5
+}
+DEF OBS3 Obstacle {
+  translation -1.2 0 0.8
 }
 
 THOROP7_RoboCup_New{

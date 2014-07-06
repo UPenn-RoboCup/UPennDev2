@@ -18,7 +18,6 @@ world.goalLower[2] = {-4.5, 1.5}
 
 -- Obstacle
 world.obsDiameter = 0.15  -- our purchased ones
-if IS_WEBOTS then world.obsDiameter = 0.2 end
 world.obsHeight = 0.9
 
 -- Field
@@ -76,6 +75,7 @@ world.resample_count = 20 -- partile filter cycles
 -- For webots
 if IS_WEBOTS then
   world.goalWidth = 3
+  world.obsDiameter = 0.2
 end
 
 -- Associate with the table

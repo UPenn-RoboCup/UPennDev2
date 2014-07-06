@@ -290,36 +290,6 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
     plot([x0 x1],[y0 y1], 'k--');
     plot([x0 x2],[y0 y2], 'k--');
   end
-  
-  % Duplicated...?
-  function plot_goal_dup(goal,scale)
-    if( goal.detect==1 )
-      if(goal.color==2) marker = 'm';% yellow
-      else marker = 'b';end
-      marker2 = strcat(marker,'--');
-      if( goal.v1.scale ~= 0 )
-
-        if goal.type==0 
-          marker1 = strcat(marker,'+');%Unknown post
-	elseif goal.type==2
-          marker1 = strcat(marker,'>');%Right post
-	else
-          marker1 = strcat(marker,'<');%Left or two post
-	end
-        x1 = goal.v1.x*ca - goal.v1.y*sa + robot_struct.pose.x;
-        y1 = goal.v1.x*sa + goal.v1.y*ca + robot_struct.pose.y;
-        plot(x1,y1,marker1,'MarkerSize',12/scale);
-        plot([x0 x1],[y0 y1],marker2);
-      end
-      if( goal.v2.scale ~= 0 )
-        marker1 = strcat(marker,'>');%Left post
-        x2 = goal.v2.x*ca - goal.v2.y*sa + robot_struct.pose.x;
-        y2 = goal.v2.x*sa + goal.v2.y*ca + robot_struct.pose.y;
-        plot(x2,y2,marker1,'MarkerSize',12/scale);
-        plot([x0 x2],[y0 y2],marker2);
-      end
-    end
-  end
 
   function plot_landmark(landmark,scale)
     if (landmark.detect==1)

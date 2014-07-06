@@ -81,15 +81,17 @@ vision.goal = {
 
 -- Testing in M308 with thinner obstacles
 vision.obstacle = {
+  label = 'b',
   grid_x = 20, --16, 
   grid_y = 40, --30,
 	th_min_area = 42,
-  th_green_fill_rate = 0.88,  --0.82
+  min_black_fill_rate = 0.7,
+  th_aspect_ratio = {2, 10},
   th_max_height = 1.3,
   th_min_height = -0.2,
   th_min_orientation = 70/180*math.pi,
   th_green_black_ratio = 2,
-	th_near_check = 2,
+  min_ground_fill_rate = 0.6,  
 }
 
 -- Line
@@ -212,15 +214,16 @@ if IS_WEBOTS then
   }
   
   vision.obstacle = {
+    label = 'b',
     grid_x = 10, 
     grid_y = 15,
-    th_min_area = 80, --42,
-    th_green_fill_rate = 0.88,  --0.82
+    th_min_area = 42,
+    th_min_orientation = 70/180*math.pi,
+    th_aspect_ratio = {2, 8},
+    min_black_fill_rate = 0.7,
     th_max_height = 1.25,
     th_min_height = -0.2,
-    th_min_orientation = 60/180*math.pi,
-    th_green_black_ratio = 2, --0.8,
-  	th_near_check = 1.5,
+    min_ground_fill_rate = 0.7,
   }
   
 end

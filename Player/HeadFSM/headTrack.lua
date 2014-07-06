@@ -43,7 +43,7 @@ function state.update()
     return 'balllost'
   end
 
-  local ballX, ballY = wcm.get_ball_x(), wcm.get_ball_y()
+  local ballX, ballY = wcm.get_ball_x() - 0.5 , wcm.get_ball_y()
   local yaw, pitch = HT.ikineCam(ballX, ballY, ball_radius)
 
   -- print('Ball dist:', math.sqrt(ballX*ballX + ballY*ballY))
@@ -55,9 +55,15 @@ function state.update()
     end
   end
 
+
+
+
   -- Clamp
   yaw = math.min(math.max(yaw, yawMin), yawMax)
   pitch = math.min(math.max(pitch, pitchMin), pitchMax)
+
+  --If ball is in front just look down
+  if math.sqrt(ballX*ballX + ballY*ballY) <0.5  then yaw = 0 end
 
   -- Grab where we are
   local qNeck = Body.get_head_command_position()

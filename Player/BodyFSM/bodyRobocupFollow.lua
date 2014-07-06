@@ -26,7 +26,7 @@ local waypoints = {}
 local target_pose
 local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local supportLeg
-
+local last_ph = 0
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -35,65 +35,44 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   motion_ch:send'hybridwalk'
+  last_ph = 0
 end
+
+local function update_velocity()
+  local pose = wcm.get_robot_pose()
+  if IS_WEBOTS and Config.use_gps_pose then pose = wcm.get_robot_pose_gps() end
+
+  local ballx = wcm.get_ball_x()
+  local bally = wcm.get_ball_y()  
+  local balla = math.atan2(bally,ballx)
+
+  local walk_target_local = {ballx,bally,balla}
+  local ballGlobal = util.pose_global(walk_target_local, pose)
+  local target_pose = robocupplanner.getTargetPose(pose,ballGlobal)    
+  local vStep,reached = robocupplanner.getVelocity(pose,target_pose)
+  mcm.set_walk_vel(vStep)
+
+  
+  return reached
+end
+
+
 
 function state.update()
   --print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update
+  local reached=false
   -- Save this at the last update time
   t_update = t
+  local check_ph = 0.95
 
-  local ballr, vStep
-  local reached = false
-  if IS_WEBOTS then
-    local pose
-    if Config.use_gps_pose then
-      pose = wcm.get_robot_pose_gps()
-    else
-      pose = wcm.get_robot_pose()
-    end
---    print(pose[1],pose[2],pose[3]*180/math.pi)
-    local foot_xOffset = 0.15
-    local ballx = wcm.get_ball_x() - foot_xOffset
-    local bally = wcm.get_ball_y()
-    ballr = math.sqrt(ballx*ballx+bally*bally)
-    local balla = math.atan2(bally,ballx)
-    local walk_target_local = {ballx,bally,balla}
-    local ballGlobal = util.pose_global(walk_target_local, pose)
-
-
-
-    local target_pose = robocupplanner.getTargetPose(pose,ballGlobal)
-
-
---    local vStep = robocup_follow( pose, target_pose)
-    vStep,reached = robocupplanner.getVelocity(pose,target_pose)
-    mcm.set_walk_vel(vStep)
-
-  else
-    local pose = wcm.get_robot_pose()
-
-    local foot_xOffset = 0.15
-    local ballx = wcm.get_ball_x() - foot_xOffset
-    local bally = wcm.get_ball_y()
-    ballr = math.sqrt(ballx*ballx+bally*bally)
-    local balla = math.atan2(bally,ballx)
-    local walk_target_local = {ballx,bally,balla}
-
-    local target_pose = util.pose_global(walk_target_local, pose)
-
---    local vStep = robocup_follow( pose, target_pose)
-    vStep,reached = robocupplanner.getVelocity(pose,target_pose)
-    mcm.set_walk_vel(vStep)
-  end
-
- local ball_elapsed = t - wcm.get_ball_t()
- if ball_elapsed <0.5 and reached then
-   return 'ballclose'
- end
-
+  local ph = mcm.get_status_ph()
+  if last_ph<check_ph and ph>=check_ph then reached=update_velocity() end
+  last_ph = ph
+  local ball_elapsed = t - wcm.get_ball_t()
+  if ball_elapsed <0.5 and reached then return 'ballclose' end
 end
 
 function state.exit()

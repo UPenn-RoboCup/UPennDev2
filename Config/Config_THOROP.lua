@@ -31,7 +31,8 @@ Config.dev.gender       = 'boy'
 Config.debug={
 	webots_wizard=false,	
   -- obstacle = true,
-	approach = false,
+	--approach = false,
+  approach = true,
 }
 
 
@@ -53,7 +54,7 @@ if IS_WEBOTS then
 end
 
 
---Config.backward_approach = true
+
 
 
 ---------------------------
@@ -68,6 +69,11 @@ for _,v in ipairs(exo) do
 end
 
 
+
+
+
+
+
 --Vision parameter hack (robot losing ball in webots)
 if IS_WEBOTS then
   Config.vision.ball.th_min_fill_rate = 0.25 
@@ -77,6 +83,24 @@ if IS_WEBOTS then
   --for walkkick
   Config.fsm.bodyRobocupApproach.target={0.50,0.12}
   Config.fsm.bodyRobocupApproach.th = {0.10, 0.02}
+
+
+  Config.walk.velLimitX = {-.10,.10} 
+  Config.walk.velLimitY = {-.04,.04}
+  Config.walk.velLimitA = {-.2,.2}
+  Config.walk.velDelta  = {0.025,0.02,0.1}
+
+--[[
+  Config.backward_approach = true
+  Config.fsm.bodyRobocupFollow.circleR = 1.0
+  Config.fsm.bodyRobocupFollow.kickoffset = 0.5
+--]]
+  Config.fsm.bodyRobocupFollow.circleR = 1.5
+  Config.fsm.bodyRobocupFollow.kickoffset = 0.8
+
+  Config.fsm.bodyRobocupApproach.target={0.50,0.14}
+  Config.fsm.bodyRobocupApproach.th = {0.10, 0.02}
+
 
 end
 

@@ -131,15 +131,12 @@ function walk.update()
 
     --Update walk coefficients
     zmp_solver:set_param()
-
-
-
-
     -- Compute the ZMP coefficients for the next step
     zmp_solver:compute( uSupport, uTorso_now, uTorso_next )
     t_last_step = Body.get_time() -- Update t_last_step
   end
 
+  mcm.set_status_ph(ph)
   local uTorso = zmp_solver:get_com(ph)
   uTorso[3] = ph*(uLeft_next[3]+uRight_next[3])/2 + (1-ph)*(uLeft_now[3]+uRight_now[3])/2
 

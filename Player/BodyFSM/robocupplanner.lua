@@ -103,14 +103,16 @@ function robocupplanner.getTargetPoseBackward(pose,ballGlobal)
   local angleRobotBall = math.atan2(pose[2]-ballGlobal[2],pose[1]-ballGlobal[1])
   local distRobotBall = math.sqrt( (pose[1]-ballGlobal[1])^2+(pose[2]-ballGlobal[2])^2 )
   
-  local circleR = 1.5
+  local circleR = Config.fsm.bodyRobocupFollow.circleR or 1.5
+  local kickoffset = Config.fsm.bodyRobocupFollow.kickoffset or 0.5
+
+
   local angle_tangent = math.acos(circleR / math.max(circleR,distRobotBall))
   local angleCircle = util.mod_angle(angleRobotBall-angleGoalBall)
 
-
   if math.abs(angleCircle)>150*math.pi/180 then --Robot is behind the ball!
     --Just approach
-    local kickoffset = 0.5
+    
     kickpos = ballGlobal - kickoffset * goaldir/goaldist
     kickpos[3] = angleGoalBall
 
@@ -175,13 +177,18 @@ function robocupplanner.getVelocity(pose,target_pose )
     math.abs(util.mod_angle(pose[3]-target_pose[3]))<0.1 then
   	return {0,0,0},true
   end
+
   rTurn = 0.6
+  if Config.backward_approach and homeRot>homeRotBack then --walking backward means less turning
+    aHomeRelative = util.mod_angle(aHomeRelative - math.pi) --turn to face back to the target
+    rTurn = 1.5 
+  end
+
+  
   aTurn = math.exp(-0.5*(rHomeRelative/rTurn)^2)
   local vx,vy,va = 0,0,0
 
-  if Config.backward_approach and homeRot>homeRotBack then --walking backward means less turning
-    aHomeRelative = util.mod_angle(aHomeRelative - math.pi) --turn to face back to the target
-  end
+  
 
   va = 0.5* (aTurn*homeRelative[3]) + (1-aTurn)*aHomeRelative
   if rHomeRelative>1.0 then

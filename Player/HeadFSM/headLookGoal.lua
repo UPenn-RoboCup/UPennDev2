@@ -33,19 +33,12 @@ function state.entry()
   local dDefendGoal= math.sqrt((pose[1]-defendGoal[1])^2 + (pose[2]-defendGoal[2])^2);
   local dAttackGoal= math.sqrt((pose[1]-attackGoal[1])^2 + (pose[2]-attackGoal[2])^2);
 
---TODO: THOSE ANGLES ARE NOT UPDATED!!!!!!!!!!
---  local attackAngle = wcm.get_goal_attack_angle();
---  local defendAngle = wcm.get_goal_defend_angle();
-
-
   local attackAngle = util.mod_angle(
     math.atan2(attackGoal[2]-pose[2],attackGoal[1]-pose[1])-pose[3])
   local defendAngle = util.mod_angle(
     math.atan2(defendGoal[2]-pose[2],defendGoal[1]-pose[1])-pose[3])
 
-
-
-print("AttackAngle:",attackAngle)
+--print("AttackAngle:",attackAngle)
 
   --Can we see both goals?
   if math.abs(attackAngle)<yawMax + fovMargin and

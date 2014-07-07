@@ -74,6 +74,9 @@ function process_keyinput()
       head_ch:send'teleop'
     elseif byte==string.byte("3") then    
       head_ch:send'scan'
+		elseif byte==string.byte("4") then    
+			wcm.set_obstacle_enable(1)
+      head_ch:send'scanobs'
 
 		-- Frame rate for monitoring
     elseif byte==string.byte("=") then

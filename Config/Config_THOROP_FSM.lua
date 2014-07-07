@@ -55,6 +55,7 @@ fsm.Head = {
   {'headSweep', 'done', 'headTrack'},
   --
   {'headTeleop', 'scan', 'headBackScan'},
+  {'headTeleop', 'scanobs', 'headObstacleScan'},
 }
 
 fsm.Body = {
@@ -175,7 +176,7 @@ fsm.headSweep = {
 
 fsm.headObstacleScan = {
   tScan = 6,
-  yawMag = 50*DEG_TO_RAD,
+  yawMag = 65*DEG_TO_RAD,
 }
 
 fsm.bodyRobocupFollow = {

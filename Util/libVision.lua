@@ -16,10 +16,10 @@ require'wcm'
 
 -- Occ for map
 local MAP = {}
-MAP.res = 0.5
+MAP.res = 0.2
 MAP.sizex = 9/MAP.res
 MAP.sizey = 6/MAP.res
-MAP.grid = torch.Tensor(MAP.sizex, MAP.sizey):zero()
+MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
 
 
 -- Body should be optional...
@@ -447,7 +447,7 @@ function libVision.obstacle(labelB_t, cc)
   if cc[colors.black]<100 then return 'Not much black pixels' end
   -- Obstacle table
   local obstacle, obs_count, obs_debug = {}, 0, ''
-  obstacle.iv, obstacle.v, obstacle.bbox = {}, {}, {}
+  obstacle.iv, obstacle.v = {}, {}
   obstacle.axisMinor, obstacle.axisMajor, obstacle.orientation = {}, {}, {}
   obstacle.dist = {}
   
@@ -605,12 +605,13 @@ function libVision.obstacle(labelB_t, cc)
           obstacle.orientation[obstacle_dist] = blackStats.orientation
         end
         
-        -- -- UPDATE MAP
-        -- local xi, yi = math.floor(v[1]/MAP.res), math.floor(v[2]/MAP.res)
-        -- xi = math.min(math.max(1, xi), MAP.sizex)
-        -- yi = math.min(math.max(1, yi), MAP.sizey)
-        -- MAP.grid[xi][yi] = MAP.grid[xi][yi] + 1
-        
+        -- UPDATE MAP
+        local xi, yi = math.floor(v[1]/MAP.res), math.floor(v[2]/MAP.res)
+        xi = math.min(math.max(1, xi), MAP.sizex)
+        yi = math.min(math.max(1, yi), MAP.sizey)
+        MAP.xp[xi] = MAP.xp[xi] + 1
+        MAP.yp[yi] = MAP.yp[yi] + 1
+                
         obstacle.v[obstacle_dist] = v
         obstacle.detect = 1
         obstacle.count = obs_count
@@ -632,6 +633,8 @@ function libVision.obstacle(labelB_t, cc)
       obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 
       obsStats.orientation[i] = obstacle.orientation[obstacle.dist[i]]
     end    
+    obsStats.xp, obsStats.yp = MAP.xp, MAP.yp
+    obsStats.res = MAP.res
     
     return 'Detected', obsStats
     -- return obs_debug, obsStats

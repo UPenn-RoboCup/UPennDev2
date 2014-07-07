@@ -48,6 +48,18 @@ local function update_odometry(uOdometry)
   poseFilter.odometry(unpack(uOdometry))
 end
 
+
+
+local function sort_obs(t0)
+  local function comp(x1,x2) return x1>x2 end 
+  local t1, t2 = {}, {}
+  for i=1,#t0 do t1[t0[i]] = i end
+  table.sort(t0, comp)
+  for i=1,2 do t2[i] = t1[t0[i]] end
+  return t2
+end
+
+
 local goal_type_to_filter = {
   -- Single unknown post
   [0] = poseFilter.post_unknown,
@@ -89,9 +101,16 @@ local function update_vision(detected)
   end
   -- If the obstacle is detected
   obstacle = detected.obstacles
+  --TODO: if use grid map
+  
   if obstacle then
-    for i=1,#obstacle.v do
-      wcm['set_obstacle_v'..i](obstacle.v[i])
+    local xs = sort_obs(obstacle.xp)
+    local ys = sort_obs(obstacle.yp)
+    
+    for i=1,2 do
+      local x = (xs[i]-1)*obstacle.res + obstacle.res/2
+      local y = (ys[i]-1)*obstacle.res + obstacle.res/2
+      wcm['set_obstacle_v'..i]({x, y})
     end
   end
   
@@ -131,6 +150,7 @@ function libWorld.update(uOdom, detection)
   -- Increment the process count
   count = count + 1
 end
+
 
 function libWorld.send()
   local to_send = {}
@@ -174,9 +194,7 @@ function libWorld.send()
   
   if obstacle then
     local obs = {}
-    -- for i=1, #obstacle.v do
     for i=1,2 do
-      -- obs[i] = vector.new(obstacle.v[i])
       obs[i] = wcm['get_obstacle_v'..i]()
       to_send.info = to_send.info..string.format(
         'Obstacle: %.2f %.2f\n', unpack(obs[i]) )

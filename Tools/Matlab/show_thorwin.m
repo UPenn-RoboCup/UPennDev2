@@ -30,7 +30,7 @@ for i=1:numel(p_post)
     set(p_post{i},'Ydata', []);
 end
 % Assume up to 3 obstacles
-h_obstacle = cell(3,1);
+h_obstacle = cell(2,1);
 for i=1:numel(h_obstacle)
     h_obstacle{i} = plot([0],[0], 'r-', 'LineWidth', 2);
     % Remove from the plot

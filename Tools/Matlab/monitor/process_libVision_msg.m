@@ -72,7 +72,7 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         
         if isfield(metadata, 'obstacles')
           obstacles = metadata.obstacles;
-          for i=1:min(3, numel(obstacles.iv))
+          for i=1:min(2, numel(obstacles.iv))
             obs_c = obstacles.iv{i};
             wo = obstacles.axisMajor(i)/2;
             ho = obstacles.axisMinor(i)/2;

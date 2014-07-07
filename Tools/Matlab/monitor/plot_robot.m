@@ -7,7 +7,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
 % Level 5: wireless (level 2 + robot name)
 
   persistent obsStats;
-  
+
   cla(h_field);
   plot_field(h_field,2);
   gca;
@@ -39,14 +39,12 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
         plot_goal(robot_struct, scale);
       end
       if isfield(robot_struct, 'obstacle')
-        plot_obstacle(robot_struct.obstacle, scale);
+        obsStats = robot_struct.obstacle;
       end
-
-      % if numel(obsStats)>0
-      %   plot_obstacle(obsStats,scale);
-      % end
-
-
+      if numel(obsStats)>0
+        plot_obstacle(obsStats, scale);
+      end
+      
     elseif drawlevel==2 
       %additional simple vision info for team monitor
 

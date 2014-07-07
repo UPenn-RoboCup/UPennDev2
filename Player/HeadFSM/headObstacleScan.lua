@@ -3,13 +3,15 @@ state._NAME = ...
 
 local Body = require'Body'
 local util = require'util'
+require'wcm'
 
 local t_entry, t_update
 local dqNeckLimit = Config.fsm.dqNeckLimit
 local tScan = Config.fsm.headObstacleScan.tScan
-local yawMag = Config.head.yawMax
+local yawMag = Config.fsm.headObstacleScan.yawMag
 
 function state.entry()
+  wcm.set_obstacle_enable(1)
   print(state._NAME..' entry');
   t_entry = Body.get_time();
   t_update = t_entry
@@ -19,6 +21,7 @@ function state.entry()
   else
     direction = -1;
   end
+  print('Enable obstacle detection?', wcm.get_obstacle_enable())
 end
 
 function state.update()
@@ -28,8 +31,9 @@ function state.update()
 
   local ph = (t-t_entry)/tScan;
   local yaw = direction * (ph - 0.5) * 2 * yawMag
-  --Based on webots, 30 deg can basically cover the whole field
-  local pitch = 30*DEG_TO_RAD
+  --Based on webots, 25 deg can basically cover the whole field
+  -- And according to rules, two obs will only be in the upper half
+  local pitch = 25*DEG_TO_RAD
 
   -- Grab where we are
   local qNeck = Body.get_head_position()
@@ -44,6 +48,8 @@ function state.update()
 end
 
 function state.exit()
+  wcm.set_obstacle_enable(0)
+  print('Obstacle detection disabled?', wcm.get_obstacle_enable())
 end
 
 return state

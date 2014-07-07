@@ -8,11 +8,9 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         % ball
         set(cam.p_ball,'Xdata', [],'Ydata', []);
         %TODO: assume up to 3 obstacls for now
-        for i=1:3 
+        for i=1:2 
           % posts
-          if i<3 
-            set(cam.p_post{i},'Xdata', [],'Ydata', []);
-          end
+          set(cam.p_post{i},'Xdata', [],'Ydata', []);
           % obstacles
           set(cam.h_obstacle{i}, 'Xdata', [], 'Ydata', []);
         end      

@@ -35,7 +35,7 @@ function state.entry()
   arm_ch:send'init'
   -- lidar_ch:send'pan'
 --  head_ch:send'scan'
-  head_ch:send'teleop'
+  head_ch:send'scanobs'
   motion_ch:send'stand'
 
 end

@@ -174,10 +174,12 @@ function libWorld.send()
   
   if obstacle then
     local obs = {}
-    for i=1, #obstacle.v do
-      obs[i] = vector.new(obstacle.v[i])
+    -- for i=1, #obstacle.v do
+    for i=1,2 do
+      -- obs[i] = vector.new(obstacle.v[i])
+      obs[i] = wcm['get_obstacle_v'..i]()
       to_send.info = to_send.info..string.format(
-        'Obstacle: %.2f %.2f\n', unpack(obstacle.v[i]) )
+        'Obstacle: %.2f %.2f\n', unpack(obs[i]) )
     end
     to_send.obstacle = obs
   end

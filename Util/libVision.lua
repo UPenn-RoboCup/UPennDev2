@@ -12,6 +12,16 @@ local util = require'util'
 local zlib = require'zlib.ffi'
 local si = require'simple_ipc'
 require'wcm'
+
+
+-- Occ for map
+local MAP = {}
+MAP.res = 0.5
+MAP.sizex = 9/MAP.res
+MAP.sizey = 6/MAP.res
+MAP.grid = torch.Tensor(MAP.sizex, MAP.sizey):zero()
+
+
 -- Body should be optional...
 local Body
 -- Important local variables
@@ -578,6 +588,7 @@ function libVision.obstacle(labelB_t, cc)
           -- print('obs v no proj:', vector.new(v))
         end
         
+        --TODO: if use grid map, no need to use dist as key
         obs_count = obs_count + 1
         table.insert(obstacle.dist, obstacle_dist)
         if label_flag == 'b' then
@@ -593,6 +604,13 @@ function libVision.obstacle(labelB_t, cc)
           obstacle.axisMajor[obstacle_dist] = blackStats.axisMajor
           obstacle.orientation[obstacle_dist] = blackStats.orientation
         end
+        
+        -- -- UPDATE MAP
+        -- local xi, yi = math.floor(v[1]/MAP.res), math.floor(v[2]/MAP.res)
+        -- xi = math.min(math.max(1, xi), MAP.sizex)
+        -- yi = math.min(math.max(1, yi), MAP.sizey)
+        -- MAP.grid[xi][yi] = MAP.grid[xi][yi] + 1
+        
         obstacle.v[obstacle_dist] = v
         obstacle.detect = 1
         obstacle.count = obs_count
@@ -602,8 +620,7 @@ function libVision.obstacle(labelB_t, cc)
   end -- end col
     
   if obstacle.detect == 1 then
-    -- Might be not necessary?
-    -- Sort to get the closest three 
+    -- Sort to get the closest two 
     local obsStats = {}
     obsStats.iv, obsStats.bbox, obsStats.v = {},{},{}
     obsStats.axisMinor, obsStats.axisMajor, obsStats.orientation = {}, {}, {}
@@ -611,7 +628,6 @@ function libVision.obstacle(labelB_t, cc)
     for i=1, math.min(3, obstacle.count) do
       obsStats.iv[i] = obstacle.iv[obstacle.dist[i]]
       obsStats.v[i] = obstacle.v[obstacle.dist[i]]
-      -- obsStats.bbox[i] = obstacle.bbox[obstacle.dist[i]]
       obsStats.axisMinor[i] = obstacle.axisMinor[obstacle.dist[i]]
       obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 
       obsStats.orientation[i] = obstacle.orientation[obstacle.dist[i]]
@@ -706,8 +722,9 @@ function libVision.update(img)
   
 	local head_angle = Body.get_head_position()
 	-- If looking down, then do not detect obstacles
-	if head_angle[2]>50*DEG_TO_RAD then
-		obstacle_fails = 'looking down'
+  -- if head_angle[2]>50*DEG_TO_RAD then
+  if wcm.get_obstacle_enable()==0 then  
+		obstacle_fails = 'Disabled'
 	else
 		obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc)
 	end

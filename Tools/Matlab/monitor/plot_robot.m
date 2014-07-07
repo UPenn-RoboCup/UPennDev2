@@ -6,6 +6,8 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
 % Level 4: show position, vision info and particles
 % Level 5: wireless (level 2 + robot name)
 
+  persistent obsStats;
+  
   cla(h_field);
   plot_field(h_field,2);
   gca;
@@ -37,11 +39,13 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
         plot_goal(robot_struct, scale);
       end
       if isfield(robot_struct, 'obstacle')
-        plot_obstacle(robot_struct,scale);
+        plot_obstacle(robot_struct.obstacle, scale);
       end
 
-      % plot_sound(robot_struct,scale);
-      %plot_gps_robot(robot_struct,scale);
+      % if numel(obsStats)>0
+      %   plot_obstacle(obsStats,scale);
+      % end
+
 
     elseif drawlevel==2 
       %additional simple vision info for team monitor
@@ -399,10 +403,10 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
     end
   end
   
-  function plot_obstacle(robot, scale)
-    for cnt = 1 : numel(robot.obstacle)
-      xobn = x0 + robot.obstacle{cnt}(1)*ca - robot.obstacle{cnt}(2)*sa;
-      yobn = y0 + robot.obstacle{cnt}(1)*sa + robot.obstacle{cnt}(2)*ca;
+  function plot_obstacle(obstacle, scale)
+    for cnt = 1 : numel(obstacle)
+      xobn = x0 + obstacle{cnt}(1)*ca - obstacle{cnt}(2)*sa;
+      yobn = y0 + obstacle{cnt}(1)*sa + obstacle{cnt}(2)*ca;
       plot(xobn,yobn,'k*');
     end
   end

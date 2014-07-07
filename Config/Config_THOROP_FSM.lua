@@ -28,15 +28,13 @@ fsm.Arm = {
 }
 
 fsm.Head = {
---  {'headIdle', 'scan', 'headScan'},
-
   {'headIdle', 'scan', 'headBackScan'},
   {'headIdle', 'teleop', 'headTeleop'},
   -- 
-  -- {'headIdle', 'scanobs', 'headObstacleScan'},
-  -- -- {'headObstacleScan', 'noobs', 'headSweep'},
-  -- {'headObstacleScan', 'done', 'headTrack'},
-  -- {'headObstacleScan', 'teleop', 'headTeleop'},
+  {'headIdle', 'scanobs', 'headObstacleScan'},
+  -- {'headObstacleScan', 'noobs', 'headSweep'},
+  {'headObstacleScan', 'done', 'headTrack'},
+  {'headObstacleScan', 'teleop', 'headTeleop'},
   
 
   {'headBackScan', 'ballfound', 'headTrack'},
@@ -176,7 +174,8 @@ fsm.headSweep = {
 }
 
 fsm.headObstacleScan = {
-  tScan = 5,
+  tScan = 6,
+  yawMag = 50*DEG_TO_RAD,
 }
 
 fsm.bodyRobocupFollow = {

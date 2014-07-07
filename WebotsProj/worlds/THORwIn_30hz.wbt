@@ -82,10 +82,7 @@ DEF OBS1 Obstacle {
   translation -2.5 0 -1
 }
 DEF OBS2 Obstacle {
-  translation 1.2 0 1.5
-}
-DEF OBS3 Obstacle {
-  translation -1.2 0 0.8
+  translation -1.2 0 1.5
 }
 
 THOROP7_RoboCup_New{

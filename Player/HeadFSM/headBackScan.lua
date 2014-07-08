@@ -17,7 +17,8 @@ local DEG_TO_RAD = math.pi/180
 local dqNeckLimit = {90*DEG_TO_RAD,90*DEG_TO_RAD}
 local dqNeckLimit = {45*DEG_TO_RAD,45*DEG_TO_RAD}
 
---Pitch: 25 degree down can see up to 5 meters 
+--Pitch: 25 degree down can see up to 5 meters
+-- 25 is not enough from test in webots
 --60 degree down can see ball right in front
 
 function state.entry()
@@ -41,7 +42,7 @@ function state.update()
   local qNeck0 = Body.get_head_command_position()
   local yawTarget, pitchTarget
   if stage==1 then
-    pitchTarget = 25*DEG_TO_RAD
+    pitchTarget = 20*DEG_TO_RAD
     yawTarget = 135*DEG_TO_RAD
   elseif stage==2 then
     pitchTarget = 60*DEG_TO_RAD
@@ -53,7 +54,7 @@ function state.update()
     pitchTarget = 60*DEG_TO_RAD
     yawTarget = -135*DEG_TO_RAD
   elseif stage==5 then
-    pitchTarget = 25*DEG_TO_RAD
+    pitchTarget = 20*DEG_TO_RAD
     yawTarget = -135*DEG_TO_RAD
   else
     return 'noball' --couldn't find the ball. Ball should be right behind the robot!

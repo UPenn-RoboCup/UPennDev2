@@ -28,17 +28,7 @@ function state.update()
   --25 deg can basically cover the whole field
   local pitch, yaw = 25*DEG_TO_RAD
 
-	--[[
-	if stage == 0 then yaw = 0
-	elseif stage == 1 then 
-		yaw = yawMag
-  	wcm.set_obstacle_enable(1)
-	elseif stage == 2 then yaw = 0
-	elseif stage == 3 then yaw = -yawMag
-	elseif stage == 4 then yaw = 0
-	else return 'done' end
-	--]]
-	
+	-- A single sweep
 	if stage == 0 then yaw = yawMag
 	elseif stage == 1 then 
   	wcm.set_obstacle_enable(1)
@@ -61,7 +51,7 @@ function state.update()
 end
 
 function state.exit()
-  wcm.set_obstacle_enable(0)
+	wcm.set_obstacle_enable(0)
   print('Obstacle detection disabled?', wcm.get_obstacle_enable())
 end
 

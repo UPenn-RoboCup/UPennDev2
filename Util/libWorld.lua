@@ -5,6 +5,7 @@ local libWorld = {}
 -- TODO: Add Webots ground truth knowledge
 local Body   = require'Body'
 local vector = require'vector'
+local util = require'util'
 local ballFilter = require'ballFilter'
 local poseFilter = require'poseFilter'
 local odomScale = Config.world.odomScale
@@ -185,13 +186,16 @@ function libWorld.send()
   end  
   
   if obstacle then
-    local obs = {}
+    local obs_global = {}, {}
     for i=1,2 do
-      obs[i] = wcm['get_obstacle_v'..i]()
+      local obs = wcm['get_obstacle_v'..i]()
+      -- We store the global position of obstacles
+      obs_global[i] = util.pose_global({obs[1],obs[2],0}, wcm.get_robot_pose())
+      
       to_send.info = to_send.info..string.format(
-        'Obstacle: %.2f %.2f\n', unpack(obs[i]) )
+        'Obstacle: %.2f %.2f\n', unpack(obs) )
     end
-    to_send.obstacle = obs
+    to_send.obstacle = {obs_global[1], obs_global[2]}
   end
   return to_send
 end

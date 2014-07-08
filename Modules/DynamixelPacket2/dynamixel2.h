@@ -67,7 +67,7 @@ extern "C" {
 		uint16_t length; // Needs to be copied at end of parameters
 	} DynamixelPacket;
 
-	// General Instruciton formation
+	// General Instruction formation
 	DynamixelPacket *dynamixel_instruction(uint8_t id,
 	uint8_t inst,
 	uint8_t *parameter,

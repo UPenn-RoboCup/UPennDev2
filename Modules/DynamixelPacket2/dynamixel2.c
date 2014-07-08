@@ -77,7 +77,7 @@ int dynamixel_input(DynamixelPacket *pkt, uint8_t c, int n) {
 	((uint8_t *)pkt)[n] = c;
 	
 	// Process the Header and identifier materials
-	if( n < N_PACKET_HEADERS ) {
+	if (n < N_PACKET_HEADERS) {
 		// Check headers
 		if ((n == 0) && (c != DYNAMIXEL_PACKET_HEADER))
 			return 0;

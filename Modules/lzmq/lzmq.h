@@ -108,3 +108,4 @@ int luazmq_fail_no(lua_State *L, zsocket *skt);
 int luazmq_allocfail(lua_State *L);
 
 #endif
+

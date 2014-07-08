@@ -205,14 +205,8 @@ local function projectGround(v,targetheight)
 end
 
 function libVision.ball(labelA_t, labelB_t, cc_t)
-  -- print('Black pixels?', cc_t[colors.black])
-  -- print('Red pixels?', cc_t[colors.orange])
-  -- print('Yellow pixels?', cc_t[colors.yellow])
-  -- The ball is color 1
-  
   debug_ball_clear() 
   
-
   local cc = cc_t[colors.orange]
   if cc<6 then return'Color count' end
   -- Connect the regions in labelB
@@ -248,9 +242,44 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
 				propsA.dr = 0.25*propsA.r --TODO: tweak 
 				propsA.da = 10*math.pi/180
         -- TODO: Check if outside the field
-        -- TODO: Ground color check
-      end
-    end
+        
+        
+        -- Ground check
+        if headAngle[2] < Config.vision.ball.th_ground_head_pitch then
+          local th_ground_boundingbox = Config.vision.ball.th_ground_boundingbox
+          local ballCentroid = propsA.centroid
+          local vmargin = ha-ballCentroid[2] 
+          --When robot looks down they may fail to pass the green check
+          --So increase the bottom margin threshold
+          if vmargin > dArea * 2.0 then
+            -- Bounding box in labelA below the ball
+            local fieldBBox = {} 
+            fieldBBox[1] = ballCentroid[1] + th_ground_boundingbox[1] 
+            fieldBBox[2] = ballCentroid[1] + th_ground_boundingbox[2] 
+            fieldBBox[3] = ballCentroid[2] + .5*dArea 
+  				     + th_ground_boundingbox[3] 
+            fieldBBox[4] = ballCentroid[2] + .5*dArea 
+   				     + th_ground_boundingbox[4] 
+            -- color stats for the bbox
+            local fieldBBoxStats = ImageProc.color_stats(labelA_t, colors.field, fieldBBox)
+            if (fieldBBoxStats.area < Config.vision.ball.th_ground_green) then
+              -- if there is no field under the ball 
+        	    -- it may be because its on a white line
+              local whiteBBoxStats = ImageProc.color_stats(labelA_t, colors.white,fieldBBox) 
+              if (whiteBBoxStats.area < Config.vision.ball.th_ground_white) then
+                debug_ball("Green check fail\n")
+                check_fail = true 
+              end
+            end --end white line check
+          end 
+        end --end bottom margin check
+        
+        if not check_fail then
+          break 
+        end
+      end -- end of the check on a single propA
+    end -- end of loop
+    
     -- Did we succeed in finding a ball?
     if check_fail==false then 
       debug_ball(string.format('Ball detected at %.2f, %.2f',propsA.v[1],propsA.v[2]))

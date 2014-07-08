@@ -234,48 +234,47 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
         check_fail = true
         debug_ball(v)
       else        
-        -- Project the ball to the ground
-        propsA.v = projectGround(v,b_diameter/2)
-        propsA.t = Body and Body.get_time() or 0
-				-- For ballFilter
-			  propsA.r = math.sqrt(v[1]*v[1]+v[2]*v[2])
-				propsA.dr = 0.25*propsA.r --TODO: tweak 
-				propsA.da = 10*math.pi/180
         -- TODO: Check if outside the field
         
-        
         -- Ground check
-        if headAngle[2] < Config.vision.ball.th_ground_head_pitch then
+        if Body.get_head_position()[2] < Config.vision.ball.th_ground_head_pitch then
           local th_ground_boundingbox = Config.vision.ball.th_ground_boundingbox
           local ballCentroid = propsA.centroid
-          local vmargin = ha-ballCentroid[2] 
+          local vmargin = ha-ballCentroid[2]
           --When robot looks down they may fail to pass the green check
           --So increase the bottom margin threshold
           if vmargin > dArea * 2.0 then
             -- Bounding box in labelA below the ball
-            local fieldBBox = {} 
-            fieldBBox[1] = ballCentroid[1] + th_ground_boundingbox[1] 
-            fieldBBox[2] = ballCentroid[1] + th_ground_boundingbox[2] 
-            fieldBBox[3] = ballCentroid[2] + .5*dArea 
-  				     + th_ground_boundingbox[3] 
-            fieldBBox[4] = ballCentroid[2] + .5*dArea 
-   				     + th_ground_boundingbox[4] 
+            local fieldBBox = {}
+            fieldBBox[1] = ballCentroid[1] + th_ground_boundingbox[1]
+            fieldBBox[2] = ballCentroid[1] + th_ground_boundingbox[2]
+            fieldBBox[3] = ballCentroid[2] + .5*dArea
+                       + th_ground_boundingbox[3]
+            fieldBBox[4] = ballCentroid[2] + .5*dArea
+                        + th_ground_boundingbox[4]
             -- color stats for the bbox
             local fieldBBoxStats = ImageProc.color_stats(labelA_t, colors.field, fieldBBox)
             if (fieldBBoxStats.area < Config.vision.ball.th_ground_green) then
-              -- if there is no field under the ball 
-        	    -- it may be because its on a white line
-              local whiteBBoxStats = ImageProc.color_stats(labelA_t, colors.white,fieldBBox) 
+              -- if there is no field under the ball
+              -- it may be because its on a white line
+              local whiteBBoxStats = ImageProc.color_stats(labelA_t, colors.white,fieldBBox)
               if (whiteBBoxStats.area < Config.vision.ball.th_ground_white) then
                 debug_ball("Green check fail\n")
-                check_fail = true 
+                check_fail = true
               end
             end --end white line check
-          end 
+          end
         end --end bottom margin check
         
         if not check_fail then
-          break 
+          -- Project the ball to the ground
+          propsA.v = projectGround(v,b_diameter/2)
+          propsA.t = Body and Body.get_time() or 0
+  				-- For ballFilter
+  			  propsA.r = math.sqrt(v[1]*v[1]+v[2]*v[2])
+  				propsA.dr = 0.25*propsA.r --TODO: tweak 
+  				propsA.da = 10*math.pi/180
+          break
         end
       end -- end of the check on a single propA
     end -- end of loop

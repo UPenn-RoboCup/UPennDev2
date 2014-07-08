@@ -45,8 +45,8 @@ local vision = {
 vision.ball = {
   diameter = 0.22,
   th_min_bbox_area = 40, --50
-  th_min_area = 10,  --6,
-  th_min_fill_rate = 0.35,
+  th_min_area = 20, --10,
+  th_min_fill_rate = 0.45, --0.35,
   max_height  = 0.7,
   max_distance = 9, 
   th_ground_boundingbox = {-30,30,0,20},
@@ -82,14 +82,14 @@ vision.goal = {
 -- Testing in M308 with thinner obstacles
 vision.obstacle = {
   label = 'b',
-  grid_x = 32, --20,  
+  grid_x = 40, --32,
   grid_y = 20, --18,
-	th_min_area = 42,
-  min_black_fill_rate = 0.6,
+	th_min_area = 40,
+  min_black_fill_rate = 0.44, --0.5, --0.6,
   th_aspect_ratio = {1.8, 10},
   th_max_height = 1.3,
   th_min_height = -0.2,
-  th_min_orientation = 66/180*math.pi,
+  th_min_orientation = 60/180*math.pi,
   th_green_black_ratio = 2,
   min_ground_fill_rate = 0.6,  
 }
@@ -136,7 +136,8 @@ table.insert(Config.camera,
       'libVision',
     },
     --Logitech C920
-    lut = '0627_m308',
+    --lut = '0627_m308',
+    lut = 'm308_night',
 		-- f = 640/2/tan(78/180*pi / 2)
     focal_length = 395.17,
     focal_base = 640,

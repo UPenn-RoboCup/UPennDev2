@@ -175,8 +175,7 @@ fsm.headSweep = {
 }
 
 fsm.headObstacleScan = {
-  tScan = 6,
-  yawMag = 65*DEG_TO_RAD,
+  yawMag = 55*DEG_TO_RAD,
 }
 
 fsm.bodyRobocupFollow = {

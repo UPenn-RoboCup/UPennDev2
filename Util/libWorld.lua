@@ -82,16 +82,11 @@ local function update_vision(detected)
   -- If the ball is detected
 	ball = detected.ball
   if ball then
-     -- print(string.format('ball BEFORE filter: %.1f, %.1f\n',
-     --   ball.v[1], ball.v[2]))
     ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
-     -- print(string.format('ball AFTER filter: %.1f, %.1f\n',
-     --   wcm.get_ball_x(), wcm.get_ball_y()))
   end
+
   -- If the goal is detected
-  -- If robot is static then do not use posts for localization
 	goal = detected.posts
---  if goal and mcm.get_walk_ismoving()==1 then
   if goal then
     if goal[1].type == 3 then
       goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
@@ -99,17 +94,16 @@ local function update_vision(detected)
       goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
     end
   end
+
   -- If the obstacle is detected
   obstacle = detected.obstacles
-  --TODO: if use grid map
-  
   if obstacle then
     local xs = sort_obs(obstacle.xp)
     local ys = sort_obs(obstacle.yp)
     
     for i=1,2 do
-      local x = (xs[i]-1)*obstacle.res + obstacle.res/2
-      local y = (ys[i]-1)*obstacle.res + obstacle.res/2
+      local x = (xs[i]-1)*obstacle.res + obstacle.res/2 - 4.5
+      local y = (ys[i]-1)*obstacle.res + obstacle.res/2 - 3
       wcm['set_obstacle_v'..i]({x, y})
     end
   end
@@ -159,9 +153,6 @@ function libWorld.send()
   to_send.pose = vector.new(wcm.get_robot_pose())
   to_send.info = to_send.info..string.format(
     'Pose: %.2f %.2f (%.1f)\n', to_send.pose[1], to_send.pose[2], to_send.pose[3]*RAD_TO_DEG)
-    
-    -- print('libWorld, odom:', unpack(wcm.get_robot_odometry()))
-  
   to_send.role = gcm.get_game_role()
   to_send.time = Body.get_time()
   
@@ -174,6 +165,7 @@ function libWorld.send()
     to_send.info = to_send.info..string.format(
       'Ball: %.2f %.2f\n', to_send.ball.x, to_send.ball.y)
   end
+
   -- Goal info
   if goal then
     to_send.goal = {}

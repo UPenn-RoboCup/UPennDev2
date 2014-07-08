@@ -16,9 +16,10 @@ require'wcm'
 
 -- Occ for map
 local MAP = {}
-MAP.res = 0.2
+MAP.res = 0.25 --0.2
 MAP.sizex = 9/MAP.res
 MAP.sizey = 6/MAP.res
+MAP.xmin, MAP.ymin = -4.5, -3
 MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
 
 
@@ -560,7 +561,7 @@ function libVision.obstacle(labelB_t, cc)
       
       -- Project to ground
       if check_passed then
-        v = projectGround(v, v[3]) --TODO
+        v = projectGround(v, v[3]*0.8) --TODO
 
         obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
       end      
@@ -593,24 +594,15 @@ function libVision.obstacle(labelB_t, cc)
         table.insert(obstacle.dist, obstacle_dist)
         if label_flag == 'b' then
           obstacle.iv[obstacle_dist] = vector.new(blackStats.centroid)*scaleB
-          -- obstacle.bbox[obstacle_dist] = vector.new(blackStats.boundingBox)*scaleB
           obstacle.axisMinor[obstacle_dist] = blackStats.axisMinor*scaleB 
           obstacle.axisMajor[obstacle_dist] = blackStats.axisMajor*scaleB 
           obstacle.orientation[obstacle_dist] = blackStats.orientation
         else
           obstacle.iv[obstacle_dist] = vector.new(blackStats.centroid)
-          -- obstacle.bbox[obstacle_dist] = vector.new(blackStats.boundingBox)
           obstacle.axisMinor[obstacle_dist] = blackStats.axisMinor 
           obstacle.axisMajor[obstacle_dist] = blackStats.axisMajor
           obstacle.orientation[obstacle_dist] = blackStats.orientation
         end
-        
-        -- UPDATE MAP
-        local xi, yi = math.floor(v[1]/MAP.res), math.floor(v[2]/MAP.res)
-        xi = math.min(math.max(1, xi), MAP.sizex)
-        yi = math.min(math.max(1, yi), MAP.sizey)
-        MAP.xp[xi] = MAP.xp[xi] + 1
-        MAP.yp[yi] = MAP.yp[yi] + 1
                 
         obstacle.v[obstacle_dist] = v
         obstacle.detect = 1
@@ -628,7 +620,16 @@ function libVision.obstacle(labelB_t, cc)
     table.sort(obstacle.dist)
     for i=1, math.min(3, obstacle.count) do
       obsStats.iv[i] = obstacle.iv[obstacle.dist[i]]
-      obsStats.v[i] = obstacle.v[obstacle.dist[i]]
+      --obsStats.v[i] = obstacle.v[obstacle.dist[i]]
+	    local pos = obstacle.v[obstacle.dist[i]]
+			local xi = math.ceil((pos[1]-MAP.xmin) / MAP.res)
+			local yi = math.ceil((pos[2]-MAP.ymin) / MAP.res)
+
+      xi = math.min(math.max(1, xi), MAP.sizex)
+      yi = math.min(math.max(1, yi), MAP.sizey)
+      MAP.xp[xi] = MAP.xp[xi] + 1
+      MAP.yp[yi] = MAP.yp[yi] + 1
+
       obsStats.axisMinor[i] = obstacle.axisMinor[obstacle.dist[i]]
       obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 
       obsStats.orientation[i] = obstacle.orientation[obstacle.dist[i]]
@@ -724,8 +725,10 @@ function libVision.update(img)
 	local obstacle_fails, obstacles
   
 	local head_angle = Body.get_head_position()
-	-- If looking down, then do not detect obstacles
-  -- if head_angle[2]>50*DEG_TO_RAD then
+	if wcm.get_obstacle_reset()==1 then
+		MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
+		wcm.set_obstacle_reset(0)
+	end
   if wcm.get_obstacle_enable()==0 then  
 		obstacle_fails = 'Disabled'
 	else

@@ -22,11 +22,6 @@ local function oload(t)
   error(err)
 end
 
-local function IF(cond, true_v, false_v)
-  if cond then return true_v end
-  return false_v
-end
-
 local bit     = orequire("bit32", "bit")
 
 local zlibs if IS_WINDOWS then
@@ -75,10 +70,37 @@ if IS_WINDOWS and ffi.arch == 'x64' then
 else
   fd_t, afd_t = "int", aint_t
 end
+local fd_size         = ffi.sizeof(fd_t)
 
-ffi.cdef[[
+-- !Note! this allocator could return same buffer more then once.
+-- So you can not use this function to allocate 2 different buffers.
+local function create_tmp_allocator(array_size, array_type)
+  assert(type(array_size) == "number")
+  assert(array_size > 0)
+
+  if type(array_type) == 'string' then
+    array_type = ffi.typeof(array_type)
+  else
+    array_type = array_type or vla_char_t
+  end
+
+  local buffer
+
+  return function(len)
+    if len <= array_size then
+      if not buffer then
+        buffer = ffi.new(array_type, array_size)
+      end
+      return buffer
+    end
+    return ffi.new(array_type, len)
+  end
+end
+
+local header = [[
   void zmq_version (int *major, int *minor, int *patch);
 ]]
+ffi.cdef(header)
 
 local _M = {}
 _M.libzmq3 = libzmq3
@@ -111,16 +133,18 @@ local is_zmq_ge = function (major, minor, patch)
 end
 
 if is_zmq_ge(4, 1, 0) then
-  ffi.cdef[[
+  header = [[
     typedef struct zmq_msg_t {unsigned char _ [48];} zmq_msg_t;
   ]]
+  ffi.cdef(header)
 else
-  ffi.cdef[[
+  header = [[
     typedef struct zmq_msg_t {unsigned char _ [32];} zmq_msg_t;
   ]]
+  ffi.cdef(header)
 end
 
-ffi.cdef[[
+header = [[
   int zmq_errno (void);
   const char *zmq_strerror (int errnum);
 
@@ -159,6 +183,7 @@ ffi.cdef[[
   int    zmq_msg_get       (zmq_msg_t *msg, int option);
   int    zmq_msg_set       (zmq_msg_t *msg, int option, int optval);
 ]]
+ffi.cdef(header)
 
 if is_zmq_ge(4, 1, 0) then
   ffi.cdef[[
@@ -166,33 +191,42 @@ if is_zmq_ge(4, 1, 0) then
   ]]
 end
 
-ffi.cdef([[
+header = [[
 typedef struct {
   void *socket;
-  ]] .. IF(IS_WINDOWS, "uint32_t", "int") .. [[ fd;
+  ]] .. fd_t .. [[ fd;
   short events;
   short revents;
 } zmq_pollitem_t;
 
 int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
-]])
+]]
+ffi.cdef(header)
 
-ffi.cdef[[
+header = [[
+  int zmq_has (const char *capability);
+]]
+ffi.cdef(header)
+
+header = [[
   int zmq_proxy  (void *frontend, void *backend, void *capture);
   int zmq_device (int type, void *frontend, void *backend);
   int zmq_proxy_steerable (void *frontend, void *backend, void *capture, void *control);
 ]]
+ffi.cdef(header)
 
-ffi.cdef[[
+header = [[
   char *zmq_z85_encode (char *dest, const char *data, size_t size);
   char *zmq_z85_decode (char *dest, const char *string);
   int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
 ]]
+ffi.cdef(header)
 
-ffi.cdef[[
+header = [[
   void *zmq_stopwatch_start (void);
   unsigned long zmq_stopwatch_stop (void *watch_);
 ]]
+ffi.cdef(header)
 
 local zmq_msg_t       = ffi.typeof("zmq_msg_t")
 local vla_pollitem_t  = ffi.typeof("zmq_pollitem_t[?]")
@@ -242,7 +276,7 @@ local function pget(lib, elem)
   return nil, err
 end
 
--- zmq_errno, zmq_strerror, zmq_poll, zmq_device, zmq_proxy
+-- zmq_errno, zmq_strerror, zmq_poll, zmq_device, zmq_proxy, zmq_has
 do
 
 function _M.zmq_errno()
@@ -270,6 +304,16 @@ if pget(libzmq3, "zmq_proxy_steerable") then
 
 function _M.zmq_proxy_steerable(frontend, backend, capture, control)
   return libzmq3.zmq_proxy_steerable(frontend, backend, capture, control)
+end
+
+end
+
+if pget(libzmq3, "zmq_has") then
+
+function _M.zmq_has(capability)
+  local v = libzmq3.zmq_has(capability)
+  if v == 1 then return true end
+  return false
 end
 
 end
@@ -330,7 +374,7 @@ function _M.zmq_close(skt)
 end
 
 local function gen_setopt_int(t, ct)
-  return function (skt, option, optval) 
+  return function (skt, option, optval)
     local size = ffi.sizeof(t)
     local val  = ffi.new(ct, optval)
     return libzmq3.zmq_setsockopt(skt, option, val, size)
@@ -338,7 +382,7 @@ local function gen_setopt_int(t, ct)
 end
 
 local function gen_getopt_int(t, ct)
-  return function (skt, option) 
+  return function (skt, option)
     local size = ffi.new(asize_t, ffi.sizeof(t))
     local val  = ffi.new(ct, 0)
     if -1 ~= libzmq3.zmq_getsockopt(skt, option, val, size) then
@@ -372,6 +416,22 @@ function _M.zmq_skt_getopt_str(skt, option)
     return ""
   end
   return
+end
+
+function _M.zmq_skt_getopt_identity_fd(skt, option, id)
+  local buffer_len = 255
+  assert(#id <= buffer_len, "identity too big")
+
+  local size   = ffi.new(asize_t, #id)
+  local buffer = ffi.new(vla_char_t, buffer_len)
+  local val    = ffi.new(afd_t, 0)
+
+  ffi.copy(buffer, id)
+
+  if -1 ~= libzmq3.zmq_getsockopt(skt, option, buffer, size) then
+    ffi.copy(val, buffer, fd_size)
+    return val[0]
+  end
 end
 
 function _M.zmq_connect(skt, addr)
@@ -524,18 +584,7 @@ end
 if pget(libzmq3, "zmq_z85_encode") then
 
 -- we alloc buffers for CURVE encoded key size
-local TMP_BUF_SIZE = 41
-local tmp_buf
-
-local function alloc_z85_buff(len)
-  if len <= TMP_BUF_SIZE then
-    if not tmp_buf then
-      tmp_buf = ffi.new(vla_char_t, TMP_BUF_SIZE)
-    end
-    return tmp_buf
-  end
-  return ffi.new(vla_char_t, len)
-end
+local alloc_z85_buff = create_tmp_allocator(41)
 
 function _M.zmq_z85_encode(data)
   local len = math.floor(#data * 1.25 + 1.0001)
@@ -583,7 +632,7 @@ do
 local msg = ffi.new(zmq_msg_t)
 
 if ZMQ_VERSION_MAJOR == 3 then
-  ffi.cdef([[
+  local header = [[
     typedef struct {
         int event;
         union {
@@ -629,7 +678,8 @@ if ZMQ_VERSION_MAJOR == 3 then
         } disconnected;
         } data;
     } zmq_event_t;
-  ]])
+  ]]
+  ffi.cdef(header)
   local zmq_event_t = ffi.typeof("zmq_event_t")
   local event_size  = ffi.sizeof(zmq_event_t)
   local event = ffi.new(zmq_event_t)
@@ -774,6 +824,18 @@ _M.SOCKET_OPTIONS = {
   ZMQ_REQ_RELAXED             = {53, "WO", "int"},
   ZMQ_CONFLATE                = {54, "WO", "int"},
   ZMQ_ZAP_DOMAIN              = {55, "RW", "str"},
+  ZMQ_ROUTER_HANDOVER         = {56, "WO", "int"},
+  ZMQ_TOS                     = {57, "RW", "int"},
+  ZMQ_IPC_FILTER_PID          = {58, "WO", "int"}, --@fixme use pid_t
+  ZMQ_IPC_FILTER_UID          = {59, "WO", "int"}, --@fixme use uid_t
+  ZMQ_IPC_FILTER_GID          = {60, "WO", "int"}, --@fixme use gid_t
+  ZMQ_CONNECT_RID             = {61, "WO", "str"},
+  ZMQ_GSSAPI_SERVER           = {62, "RW", "int"},
+  ZMQ_GSSAPI_PRINCIPAL        = {63, "RW", "str"},
+  ZMQ_GSSAPI_SERVICE_PRINCIPAL= {64, "RW", "str"},
+  ZMQ_GSSAPI_PLAINTEXT        = {65, "RW", "str"},
+  ZMQ_HANDSHAKE_IVL           = {66, "RW", "int"},
+  ZMQ_IDENTITY_FD             = {67, "RO", "fdt"},
 }
 
 _M.SOCKET_TYPES = {

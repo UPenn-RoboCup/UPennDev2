@@ -106,7 +106,7 @@ local function do_read()
 	-- TODO: Strict should just be one motor at a time...
 	read_status = p_read(m_ids, bus)
   local rad
-	for _,s in ipairs(read_status) do
+	for _, s in ipairs(read_status) do
     if s.error>0 then
       print(debug_prefix, 'READ ERROR', s.error, s.id)
     else
@@ -342,6 +342,7 @@ while running do
 			string.format('\n%s Uptime: %.2f sec, Mem: %d kB, %.1f Hz',
 				debug_prefix, t_elapsed, kb, count / t_d_elapsed),
 		}
+		--[[
 		if metadata.name=='lleg' then
 			local Fx, Fy, Fz, Tx, Ty, Tz = unpack(dcm.get_sensor_lfoot())
 			table.insert(debug_str,
@@ -353,6 +354,7 @@ while running do
 			string.format("FT: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f", Fx, Fy, Fz, Tx, Ty, Tz)
 			)
 		end
+		--]]
 		print(table.concat(debug_str,'\n'))
 --]]
 		t_debug = t

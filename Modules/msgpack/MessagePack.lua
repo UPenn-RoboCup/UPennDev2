@@ -27,8 +27,9 @@ local tostring = tostring
 local type = type
 local char = require'string'.char
 local floor = require'math'.floor
-local frexp = require'math'.frexp
-local ldexp = require'math'.ldexp
+local ifloor = require'math'.ifloor or floor
+local frexp = require'math'.frexp or require'mathx'.frexp
+local ldexp = require'math'.ldexp or require'mathx'.ldexp
 local huge = require'math'.huge
 local tconcat = require'table'.concat
 
@@ -481,10 +482,10 @@ end
 m.set_number = set_number
 
 for k = 0, 4 do
-    local n = 2^k
+    local n = ifloor(2^k)
     local fixext = 0xD4 + k
-    packers['fixext' .. n] = function (buffer, tag, data)
-        assert(#data == n, "bad length for fixext" .. n)
+    packers['fixext' .. tostring(n)] = function (buffer, tag, data)
+        assert(#data == n, "bad length for fixext" .. tostring(n))
         buffer[#buffer+1] = char(fixext,
                                  tag < 0 and tag + 0x100 or tag)
         buffer[#buffer+1] = data
@@ -568,7 +569,7 @@ local types_map = setmetatable({
         elseif k > 0xDF then
             return 'fixnum_neg'
         else
-            return 'reserved' .. k
+            return 'reserved' .. tostring(k)
         end
 end })
 m.types_map = types_map
@@ -801,6 +802,7 @@ unpackers['fixstr'] = function (c, val)
     if e > j then
         c:underflow(e)
         s, i, j = c.s, c.i, c.j
+        e = i+n-1
     end
     c.i = i+n
     return s:sub(i, e)
@@ -819,6 +821,7 @@ unpackers['str8'] = function (c)
     if e > j then
         c:underflow(e)
         s, i, j = c.s, c.i, c.j
+        e = i+n-1
     end
     c.i = i+n
     return s:sub(i, e)
@@ -838,6 +841,7 @@ unpackers['str16'] = function (c)
     if e > j then
         c:underflow(e)
         s, i, j = c.s, c.i, c.j
+        e = i+n-1
     end
     c.i = i+n
     return s:sub(i, e)
@@ -857,6 +861,7 @@ unpackers['str32'] = function (c)
     if e > j then
         c:underflow(e)
         s, i, j = c.s, c.i, c.j
+        e = i+n-1
     end
     c.i = i+n
     return s:sub(i, e)
@@ -923,8 +928,8 @@ function m.build_ext (tag, data)
 end
 
 for k = 0, 4 do
-    local n = 2^k
-    unpackers['fixext' .. n] = function (c)
+    local n = ifloor(2^k)
+    unpackers['fixext' .. tostring(n)] = function (c)
         local s, i, j = c.s, c.i, c.j
         if i > j then
             c:underflow(i)
@@ -937,6 +942,7 @@ for k = 0, 4 do
         if e > j then
             c:underflow(e)
             s, i, j = c.s, c.i, c.j
+            e = i+n-1
         end
         c.i = i+n
         return m.build_ext(tag < 0x80 and tag or tag - 0x100, s:sub(i, e))
@@ -963,6 +969,7 @@ unpackers['ext8'] = function (c)
     if e > j then
         c:underflow(e)
         s, i, j = c.s, c.i, c.j
+        e = i+n-1
     end
     c.i = i+n
     return m.build_ext(tag < 0x80 and tag or tag - 0x100, s:sub(i, e))
@@ -989,6 +996,7 @@ unpackers['ext16'] = function (c)
     if e > j then
         c:underflow(e)
         s, i, j = c.s, c.i, c.j
+        e = i+n-1
     end
     c.i = i+n
     return m.build_ext(tag < 0x80 and tag or tag - 0x100, s:sub(i, e))
@@ -1015,6 +1023,7 @@ unpackers['ext32'] = function (c)
     if e > j then
         c:underflow(e)
         s, i, j = c.s, c.i, c.j
+        e = i+n-1
     end
     c.i = i+n
     return m.build_ext(tag < 0x80 and tag or tag - 0x100, s:sub(i, e))
@@ -1098,9 +1107,9 @@ else
 end
 set_array'without_hole'
 
-m._VERSION = "0.3.0"
+m._VERSION = "0.3.1"
 m._DESCRIPTION = "lua-MessagePack : a pure Lua implementation"
-m._COPYRIGHT = "Copyright (c) 2012-2013 Francois Perrad"
+m._COPYRIGHT = "Copyright (c) 2012-2014 Francois Perrad"
 return m
 --
 -- This library is licensed under the terms of the MIT/X11 license,

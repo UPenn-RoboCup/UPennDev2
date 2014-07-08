@@ -10,7 +10,7 @@ local mp = require'msgpack.MessagePack'
 local sin, cos = math.sin, math.cos
 local w, h, focal_length, bbox
 local bbox_ch, wire_ch
-local kernel_t, use_horiz, use_vert
+local kernel_t, use_horiz, use_vert, use_pca
 local bb_angle = nil -- no prior
 require"vcm"
 require"gcm"
@@ -79,6 +79,7 @@ local function update_dist(pline1, pline2, line_radon)
   local s_a = sin(math.pi - angle_width)
   local r = (s_a * sin(last_measurement.angle_width)) / sin_diff * p_diff
   local d = (s_a * cos(last_measurement.angle_width)) / sin_diff * p_diff
+	d = d - p_diff
   -- Update the last_measurment
   --print("\nr, d", r, d, d-p_diff)
   --print('p_diff', p_diff)
@@ -87,8 +88,17 @@ local function update_dist(pline1, pline2, line_radon)
   --print()
 
   -- Set the distance and radius of the object
-	local model = {r, d - p_diff, Body.get_time() - last_measurement.t}
-	print("Wire",unpack(model))
+	local prev_r, prev_d, prev_t = unpack(vcm.get_wire_model(model))
+	if math.abs(prev_r - r) > 0.02 then
+		print('DISCARD r', prev_r, '->', r)
+		return
+	end
+	if math.abs(prev_d - d) > 0.02 then
+		print('DISCARD d', prev_d, '->', d)
+	end
+
+	local model = {r, d, Body.get_time() - last_measurement.t}
+	print("Wire", unpack(model))
   vcm.set_wire_model(model)
 
   -- Return the distance measurement
@@ -104,16 +114,10 @@ local function update_bbox()
   else
     local bb = mp.unpack(bbox_data[#bbox_data])
     bb_angle = bb.a > 0 and bb.a - math.pi/2 or bb.a + math.pi/2
-    if DEBUG then
-      --print('NEW BB')
-      --util.ptable(bb)
-      -- Format for the RT coordinates
-      print('BB ANGLE', bb_angle * RAD_TO_DEG)
-    end
     if bb.id=='bbox' then
       local dir = bb.dir
       kernel_t = ImageProc2.dir_to_kernel(dir)
-      use_horiz, use_vert = true, true
+      use_horiz, use_vert, use_pca = true, true, true
       if dir=='v' then use_horiz=false elseif dir=='h' then use_vert=false end
       bbox = vector.new(bb.bbox) / 2
     end
@@ -122,8 +126,6 @@ local function update_bbox()
   bbox[2] = math.min(w/2, math.ceil(bbox[2]))
   bbox[3] = math.max(1, math.ceil(bbox[3]))
   bbox[4] = math.min(h/2, math.ceil(bbox[4]))
-
-  --if DEBUG then print('update_bbox', bbox) end
 
   -- Set into shm
   vcm.set_wire_bbox(bbox)
@@ -163,32 +165,28 @@ function detectWire.entry(metadata)
   vcm.set_wire_bbox(bbox)
   --
   kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel(), true, true
+	--kernel_t, use_horiz, use_vert = ImageProc2.dir_to_kernel('v'), false, true
+	use_pca = false
 end
 
 function detectWire.update(img)
 	if not img then print("NO IMAGE"); return end
-
   local arm_state = gcm.get_fsm_Arm()
-  if not (arm_state=='armWireLook' or arm_state=='armWireApproach') then
+
+  if not (arm_state~='armWireLook' or arm_state=='armWireApproach') then
     last_measurement = nil
     vcm.set_wire_model{0,0,0}
     bbox = vector.new{1, w/2, 1, h/2}
     vcm.set_wire_bbox(bbox)
-    -- Reset prior
+		use_pca = false
     bb_angle = nil
-    return
-  end
-
-  if DEBUG then
-    print('\nUpdate', bbox)
---    print('KERNEL', kernel_t:size(1), kernel_t:size(2))
   end
 
   -- Check if their is a new bounding box to use
   update_bbox()
 
   -- Process line stuff
-  local edge_t, grey_t, grey_bt = ImageProc2.yuyv_to_edge(img, bbox, true, kernel_t)
+  local color_tr = ImageProc2.yuyv_to_edge(img, bbox, use_pca, kernel_t)
   -- Refine due to the convolution with the kernel
   local reduced_x, reduced_y = (kernel_t:size(1)-1) / 2, (kernel_t:size(2)-1)/2
   local bbox2 = vector.new(bbox) - vector.new{reduced_x, 0, reduced_y, 0}
@@ -198,10 +196,10 @@ function detectWire.update(img)
   bbox2[4] = math.min(bbox2[4], h / 2 - 2 * reduced_y)
   -- Give the angle prior
   local rt_props, pline1, pline2, line_radon =
-    ImageProc2.parallel_lines(edge_t, use_horiz, use_vert, bbox2, nil, bb_angle)
-  -- Send to MATLAB
+    ImageProc2.parallel_lines(use_horiz, use_vert, bbox2, nil, bb_angle)
 
   if DEBUG then
+		-- Send to MATLAB
     --print('BBOX', bbox)
     local counts_str = ffi.string(
 		rt_props.count_d, rt_props.MAXR * rt_props.NTH * ffi.sizeof'int32_t')
@@ -210,6 +208,7 @@ function detectWire.update(img)
       if type(v)~='cdata' and type(v)~='userdata' then meta[k] = v end
     end
     local ret = radon_ch:send({mp.pack(meta), counts_str})
+		print('SENT radon_ch', ret)
   end
 
   if not pline1 then return end
@@ -229,6 +228,11 @@ function detectWire.update(img)
   pline2.jMean = 2 * (pline2.jMean + bbox[3])
   pline2.jMax  = 2 * (pline2.jMax  + bbox[3])
 
+	send(pline1, pline2, bbox)
+	vcm.set_wire_t(Body.get_time())
+
+	if arm_state~='armWireApproach' then return end
+
   -- Find the angles for servoing
   local camera_roll = line_radon.ith_true / line_radon.NTH * math.pi
   camera_roll = camera_roll > (math.pi / 2) and
@@ -241,39 +245,20 @@ function detectWire.update(img)
   local camera_yaw = -math.atan(i_px / focal_length)
   local camera_pitch = math.atan(j_px / focal_length)
   -- Set in shared memory
-  vcm.set_wire_t(Body.get_time())
   vcm.set_wire_cam_rpy{camera_roll, camera_pitch, camera_yaw}
 
   -- Only update the distance measurements in the approach state
   update_dist(pline1, pline2, line_radon)
 
-  -- Update the bounding box on the line found?
-
-	--[[
-  if DEBUG then
-    print('pline1')
-    util.ptable(pline1)
-    print('pline2')
-    util.ptable(pline2)
-  end
-	--]]
+  -- Update the bounding box on the line found
   ----[[
   -- TODO: Only if vertical line, else a horiz should change the j
 	local wbuf = math.abs(line_radon.ir1 - line_radon.ir2) / 2
   --local wbuf = 36
-  bbox[1] = math.min(pline1.iMin/2-wbuf, pline2.iMin/2-wbuf, pline1.iMax/2-wbuf, pline2.iMax/2-wbuf)
-  bbox[2] = math.max(pline1.iMax/2+wbuf, pline2.iMax/2+wbuf, pline1.iMin/2+wbuf, pline2.iMin/2+wbuf)
+  bbox[1] = math.min(pline1.iMin/2-wbuf, pline2.iMin/2-wbuf, pline1.iMax / 2 - wbuf, pline2.iMax / 2 - wbuf)
+  bbox[2] = math.max(pline1.iMax/2+wbuf, pline2.iMax/2+wbuf, pline1.iMin / 2 + wbuf, pline2.iMin / 2 + wbuf)
   --]]
 
-  --[[
-  print('line_radon', line_radon)
-  --util.ptable(line_radon)
-  util.ptable(pline1)
-  print()
-  util.ptable(pline2)
-  print()
-  --]]
-  send(pline1, pline2, bbox)
 end
 
 function detectWire.exit()
@@ -290,7 +275,6 @@ function detectWire.get_metadata()
 end
 
 function detectWire.set_metadata(meta)
-  meta.bbox = {120, 200, 60, 180}
   gcm.set_fsm_Arm(meta.arm_fsm)
   vcm.set_wire_bbox(meta.bbox)
   --Body.set_larm_position(meta.larm)

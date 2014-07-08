@@ -3,6 +3,7 @@
 -- General Detection methods
 local ImageProc = {}
 local torch  = require'torch'
+local vector  = require'vector'
 local bit    = require'bit'
 local lshift = bit.lshift
 local rshift = bit.rshift
@@ -27,11 +28,10 @@ local log2 = {[1] = 0, [2] = 1, [4] = 2, [8] = 3,}
 -- For the edge system
 local edge_t = torch.Tensor()
 local grey_t = torch.Tensor()
-local grey_bt = torch.ByteTensor()
-local yuv_samples_t = torch.DoubleTensor()
+local yuv_samples_t = torch.Tensor()
 
 -- Load LookUp Table for Color -> Label
-function ImageProc.load_lut (filename)
+function ImageProc.load_lut(filename)
   local f_lut = torch.DiskFile(filename, 'r')
   f_lut.binary(f_lut)
   -- We know the size of the LUT, so load the storage
@@ -44,14 +44,16 @@ function ImageProc.load_lut (filename)
   return lut_t, #luts
 end
 -- Return the pointer to the LUT
-function ImageProc.get_lut (lut_id) return luts[lut_id] end
+function ImageProc.get_lut(lut_id)
+  return luts[lut_id]
+end
 
 -- Take in a pointer (or string) to the image
 -- Take in the lookup table, too
 -- Return labelA and the color count
 -- Assumes a subscale of 2 (i.e. drop every other column and row)
 -- Should be dropin for previous method
-function ImageProc.yuyv_to_label (yuyv_ptr, lut_ptr)
+function ImageProc.yuyv_to_label(yuyv_ptr, lut_ptr)
   -- The yuyv pointer changes each time
   -- Cast the lightuserdata to cdata
   local yuyv_d = ffi.cast("uint32_t*", yuyv_ptr)
@@ -81,7 +83,7 @@ function ImageProc.yuyv_to_label (yuyv_ptr, lut_ptr)
   return labelA_t
 end
 
-function ImageProc.color_count (label_t)
+function ImageProc.color_count(label_t)
   -- Reset the color count
   cc_t:zero()
   -- Loop variables
@@ -95,7 +97,7 @@ function ImageProc.color_count (label_t)
 end
 
 -- Bit OR on blocks of NxN to get to labelB from labelA
-local function block_bitorN (label_t)
+local function block_bitorN(label_t)
   -- Zero the downsampled image
   labelB_t:zero()
   local a_ptr, b_ptr = label_t:data(), labelB_t:data()
@@ -114,7 +116,7 @@ local function block_bitorN (label_t)
 end
 
 -- Bit OR on blocks of 2x2 to get to labelB from labelA
-local function block_bitor2 (label_t)
+local function block_bitor2(label_t)
   -- Zero the downsampled image
   labelB_t:zero()
   local a_ptr, b_ptr = label_t:data(), labelB_t:data()
@@ -140,7 +142,7 @@ end
 -- Get the color stats for a bounding box
 -- TODO: Add tilted color stats if needed
 -- TODO: use the bbox in the for loop
-function ImageProc.color_stats (label_t, bbox, color)
+function ImageProc.color_stats(label_t, bbox, color)
   local ni, nj = label_t:size(1), label_t:size(2)
   local i0 = 0
   local i1 = ni - 1
@@ -234,7 +236,7 @@ local function pca(x)
 end
 
 -- Learn a grayspace from three color components
-local function learn_greyspace(samples_t, output_t)
+local function learn_greyspace(output_t, samples_t)
 	-- Scale the samples for importance
 	-- TODO: See what is actually a valid approach here!
   local a = samples_t:select(2,1)
@@ -245,9 +247,10 @@ local function learn_greyspace(samples_t, output_t)
   c:add(-torch.min(c)):mul(255/torch.max(c))
 	-- Run PCA
 	local eigenvalues, eigenvectors, mean, samples_0_mean = pca(samples_t)
+  local color_tr = eigenvectors:select(2,1)
 	-- Transform into the grey space
-	-- TODO: Need to figure out which eigenvector to use...
-	torch.mv(output_t, samples_0_mean, eigenvectors:select(2,1))
+	torch.mv(output_t, samples_0_mean, color_tr)
+  return vector.new(color_tr)
 end
 
 function ImageProc.dir_to_kernel(dir)
@@ -270,23 +273,12 @@ function ImageProc.dir_to_kernel(dir)
 		{0,   1,    4,    1,  0,},
 		{0,   0,    1,    0,  0,}
 	})
-
-	--[[
-	-- Diagonal ;)
-	local kernel = {
-		{1, 0,   0, 0, 0},
-		{0, 4,   0, 0, 0},
-		{0, 0, -10, 0, 0},
-		{0, 0,   0, 4, 0},
-		{0, 0,   0, 0, 1},
-	}
-	--]]
 end
 
 -- Find parallel lines in the Radon space
-function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width, angle_prior)
+function ImageProc.parallel_lines(use_horiz, use_vert, bbox, min_width, angle_prior)
   -- Have a minimum width of the line (in pixel space)
-  min_width = min_width or 4
+  min_width = min_width or 1
   local i_monotonic_max, monotonic_max, val
   local ithMax, irMax1, irMax2
   local cntMax1, cntMax2 = 0, 0
@@ -322,7 +314,7 @@ function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width, 
           table.insert(c_arr, monotonic_max)
           i_monotonic_max = ir
           monotonic_max = 0
-        elseif (ir-i_monotonic_max)>min_width then
+        elseif (ir - i_monotonic_max) > min_width then
           if monotonic_max>c_arr[1]  then
             c_arr[1] = monotonic_max
             i_arr[1] = i_monotonic_max
@@ -411,7 +403,7 @@ function ImageProc.parallel_lines(edge_t, use_horiz, use_vert, bbox, min_width, 
 end
 
 -- TODO: Take in some swipe information.
-function ImageProc.yuyv_to_edge (yuyv_ptr, bbox, use_pca, kernel_t)
+function ImageProc.yuyv_to_edge(yuyv_ptr, bbox, use_pca, kernel_t)
 	-- Grab the planes
 	local y_plane, u_plane, y1_plane, v_plane = yuyv_planes(yuyv_ptr, w, h)
   -- Form the greyscale image
@@ -428,6 +420,7 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, bbox, use_pca, kernel_t)
     vs = v_plane
   end
 	-- This is the structure on which to perform convolution
+  local color_tr
 	if use_pca then
 	  -- Copy into our samples, with a precision change, too
 	  -- TODO: Just use resize instead of making a new tensor
@@ -438,27 +431,28 @@ function ImageProc.yuyv_to_edge (yuyv_ptr, bbox, use_pca, kernel_t)
 		-- Resize the output tensor for holding the transformed pixels
 		grey_t:resize(ys:nElement())
 		-- Find a greyscale image for use in edge detection
-		learn_greyspace(yuv_samples_t, grey_t)
+		color_tr = learn_greyspace(grey_t, yuv_samples_t)
 	  -- Resize the output grey samples back to an image
 		-- NOTE: This is only ok if we KNOW that the memory layout is still ok
 		-- We are OK in this situation
 		grey_t:resize(ys:size())
 	else
 		-- Just use a single plane
+    color_tr = vector.new{1, 0, 0}
 		grey_t:resize(ys:size()):copy(ys)
     local min, max = torch.min(grey_t), torch.max(grey_t)
-    grey_t:add(-min):mul(255/max)
-    grey_bt:resize(y_plane:size()):copy(y_plane)
+    grey_t:add(-min):mul(255 / max)
+    --grey_bt:resize(y_plane:size()):copy(y_plane)
 	end
-  -- Perform the convolution in integer space
+  -- Perform the convolution
 	edge_t:conv2(grey_t, kernel_t, 'V')
-  return edge_t, grey_t, grey_bt
+  return color_tr
 end
 
 -- Setup should be able to quickly switch between cameras
 -- i.e. not much overhead here.
 -- Resize should be expensive at most n_cameras times (if all increase the sz)
-function ImageProc.setup (w0, h0, sA, sB)
+function ImageProc.setup(w0, h0, sA, sB)
   -- Save the scale paramter
   scaleA = sA or 2
   scaleB = sB or 2
@@ -478,6 +472,29 @@ function ImageProc.setup (w0, h0, sA, sB)
   else
     ImageProc.block_bitor = block_bitorN
   end
+end
+
+-- The model is the probabilistic state estimate
+
+function ImageProc.parallel_lines2(img, model)
+  -- Understand the model
+  -- BBOX is the full image, since we are probabilistic
+  -- w and h are from the setup
+  local bbox = {1, w, 1, h}
+  -- Should always use PCA, since it seems to work just fine
+  local use_pca = true
+  -- The kernel for the edges should be discovered
+  -- For now, it is the default  isotropic kernel
+  local kernel_t = ImageProc.dir_to_kernel()
+  -- Grab the edges
+  local color_tr = ImageProc.yuyv_to_edge(img, bbox, use_pca, kernel_t)
+  -- For now, use both horiz and vertical
+  local use_horiz, use_vert = true, true
+  -- Reduce the bbox, since the edge image is half size?
+  bbox[2] = math.max(math.floor(bbox[2] / 2), 1)
+  bbox[4] = math.max(math.floor(bbox[4] / 2), 1)
+  -- Our edge tensor is global
+  local props = RadonTransform.radon_lines(edge_t, use_horiz, use_vert, bbox, angle_prior)
 end
 
 return ImageProc

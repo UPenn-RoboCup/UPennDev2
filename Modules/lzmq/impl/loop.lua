@@ -3,6 +3,8 @@ return function(ZMQ_NAME)
 local zmq      = require (ZMQ_NAME)
 local zpoller  = require (ZMQ_NAME .. ".poller")
 local ztimer   = require (ZMQ_NAME .. ".timer")
+local ok, zthreads = pcall(require, ZMQ_NAME .. ".threads")
+if not ok then zthreads = nil end
 
 local ZMQ_POLL_MSEC = 1000
 do local ver = zmq.version()
@@ -222,7 +224,12 @@ local zmq_loop = class() do
 -- static
 function zmq_loop.sleep(ms) ztimer.sleep(ms) end
 
-function zmq_loop:init(N, ctx)
+function zmq_loop:init(...)
+  local N, ctx = ...
+  if (select('#', ...) == 1) and type(N) ~= 'number' then
+    ctx, N = N, nil
+  end
+
   self.private_ = self.private_ or {}
   self.private_.sockets = {}
   self.private_.event_list = event_list:new()
@@ -232,8 +239,12 @@ function zmq_loop:init(N, ctx)
   self.private_.poller = poller
 
   local context, err
-  if not ctx then context, err = zmq.init(1)
-  else context, err = ctx end
+  if not ctx then
+    if zthreads then context, err = zthreads.context()
+    else context, err = zmq.init(1) end
+  else
+    context, err = ctx
+  end
   if not context then self:destroy() return nil, err end
   self.private_.context = context
 
@@ -254,7 +265,6 @@ function zmq_loop:destroy()
       s:close()
     end
   end
-  if self.private_.context  then self.private_.context:term() end
 
   self.private_.sockets = nil
   self.private_.event_list = nil

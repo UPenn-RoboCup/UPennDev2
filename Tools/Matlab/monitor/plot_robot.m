@@ -403,9 +403,12 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
   
   function plot_obstacle(obstacle, scale)
     for cnt = 1 : numel(obstacle)
-      xobn = x0 + obstacle{cnt}(1)*ca - obstacle{cnt}(2)*sa;
-      yobn = y0 + obstacle{cnt}(1)*sa + obstacle{cnt}(2)*ca;
-      plot(xobn,yobn,'k*');
+      xob = x0 + obstacle{cnt}(1)*ca - obstacle{cnt}(2)*sa;
+      yob = y0 + obstacle{cnt}(1)*sa + obstacle{cnt}(2)*ca;
+      plot(xob,yob,'k*');
+      % text(xob-1.5, yob-0.5, num2str([xob yob]), 'FontSize', 10);
+      text(xob-1, yob-0.5, sprintf('%.2f, %.2f', xob, yob), 'FontSize', 10);
+
     end
   end
 

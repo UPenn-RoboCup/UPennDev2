@@ -49,7 +49,7 @@ static int lua_sleep(lua_State *L) {
 static int lua_uname(lua_State *L) {
 	struct utsname unameData;
 	uname(&unameData);
-	lua_pushstring(L,unameData.sysname);
+	lua_pushstring(L, unameData.sysname);
 	return 1;
 }
 

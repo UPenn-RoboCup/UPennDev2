@@ -14,8 +14,8 @@ local fabs, min, max, floor = math.abs, math.min, math.max, math.floor
 -- so that we do not malloc each time
 local MAXR, NR = 222
 
-local NTH = 90 -- Number of angles (2 degree res)
---local NTH = 45 -- Number of angles (4 degree res)
+--local NTH = 90 -- Number of angles (2 degree res)
+local NTH = 45 -- Number of angles (4 degree res)
 --local NTH = 36 -- 5 degree resolution
 --local NTH = 180 -- (1 degree res)
 
@@ -73,9 +73,10 @@ end
 local function init(w, h, angle_prior)
   i0 = floor(w / 2)
   j0 = floor(h / 2)
-  r0 = floor(math.sqrt(i0 ^ 2 + j0 ^ 2))
+  --r0 = floor(math.sqrt(i0 ^ 2 + j0 ^ 2))
+	r0 = 0
 
-  flip_center = angle_prior and angle_prior>45 and angle_prior<135
+  --flip_center = angle_prior and angle_prior>45 and angle_prior<135
 
   -- Resize for the image
   NR = math.ceil(math.sqrt(w * w + h * h))
@@ -128,16 +129,16 @@ local function addPixelToRay2 (i, j, ith)
 end
 
 local function addHorizontalPixel (i, j)
-  --for _, ith in ipairs(sin_index_thresh) do addPixelToRay(i, j, ith) end
-  for _, ith in ipairs(sin_index_thresh) do addPixelToRay2(i, j, ith) end
+  for _, ith in ipairs(sin_index_thresh) do addPixelToRay(i, j, ith) end
+  --for _, ith in ipairs(sin_index_thresh) do addPixelToRay2(i, j, ith) end
 end
 
-local function addVerticalPixel (i, j)
-  --for _, ith in ipairs(cos_index_thresh) do addPixelToRay(i, j, ith) end
-  for _, ith in ipairs(cos_index_thresh) do addPixelToRay2(i, j, ith) end
+local function addVerticalPixel(i, j)
+  for _, ith in ipairs(cos_index_thresh) do addPixelToRay(i, j, ith) end
+  --for _, ith in ipairs(cos_index_thresh) do addPixelToRay2(i, j, ith) end
 end
 
-function RadonTransform.radon_lines (edge_t, use_horiz, use_vert, bbox, angle_prior)
+function RadonTransform.radon_lines(edge_t, use_horiz, use_vert, bbox, angle_prior)
   -- Use pixel directions
   local j, i, label_nw, label_ne, label_sw, label_se
   -- Take care of noise with a threshold, relating to the standard deviation

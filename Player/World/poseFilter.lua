@@ -2,6 +2,7 @@ local poseFilter = {}
 
 local vector = require'vector'
 local util = require 'util'
+local mod_angle = util.mod_angle
 
 --TODO: remove unnecessary stuff
 local N = Config.world.nParticle
@@ -48,6 +49,7 @@ end
 ---Returns best pose out of all particles
 function poseFilter.get_pose()
   local wmax, imax = util.max(wp)
+	if ap[imax] == nil then print('ap?', #ap, 'xp?', #xp) end
   return xp[imax], yp[imax], mod_angle(ap[imax])
 end
 

@@ -274,18 +274,18 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
   			  propsA.r = math.sqrt(v[1]*v[1]+v[2]*v[2])
   				propsA.dr = 0.25*propsA.r --TODO: tweak 
   				propsA.da = 10*math.pi/180
-          break
         end
-      end -- end of the check on a single propA
-    end -- end of loop
+      end
+
+    end -- end of the check on a single propsA
     
     -- Did we succeed in finding a ball?
     if check_fail==false then 
       debug_ball(string.format('Ball detected at %.2f, %.2f',propsA.v[1],propsA.v[2]))
       return tostring(propsA.v), propsA 
     end
-    
-  end
+  end  -- end of loop
+
   -- Assume failure 
   return ball_debug
 end

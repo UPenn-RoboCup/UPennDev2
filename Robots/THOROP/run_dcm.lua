@@ -355,7 +355,7 @@ while running do
 			)
 		end
 		--]]
-		print(table.concat(debug_str,'\n'))
+		--print(table.concat(debug_str,'\n'))
 --]]
 		t_debug = t
 		count = 0

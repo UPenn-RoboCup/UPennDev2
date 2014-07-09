@@ -19,16 +19,17 @@ table.insert(Config.camera,
 {
   name = 'larm',
   dev = '/dev/video1',
-  unreliable = 33333,
-  reliable = 33333,
+  udp_port = 33333,
   ch = 'camera'..(#Config.camera + 1),
   fmt = 'yuyv',
-  width = 640,
-  height = 480,
+  width = 320,
+  height = 240,
   fps = 30,
   focal_length = 500, --400, --380, --320, --240, --200, --183.75,
   hfov = 50 * DEG_TO_RAD,
   vfov = 50 * DEG_TO_RAD,
+  auto_param = {
+  },
   param = {
     {'Brightness', 100},
     {'Contrast', 25},
@@ -41,8 +42,8 @@ table.insert(Config.camera,
 
 -- Webots override
 if IS_WEBOTS then
-	Config.camera[1].width = 320
-	Config.camera[1].height = 240
+	Config.camera[1].w = 320
+	Config.camera[1].h = 240
 	Config.camera[1].focal_length = 320
 end
 

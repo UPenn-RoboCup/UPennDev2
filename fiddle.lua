@@ -7,12 +7,12 @@ local libs = {
   'unix',
   'util',
   'vector',
-	'fun'
+  'torch',
+	'fun',
 }
 
 -- Load the libraries
 for _,lib in ipairs(libs) do _G[lib] = require(lib) end
-if torch then torch.Tensor = torch.DoubleTensor end
 -- mp
 mp = require'msgpack'
 -- ffi
@@ -60,6 +60,7 @@ end
 
 -- Body channel
 body_ch = si.new_publisher'body!'
+dcm_ch = si.new_publisher'dcm!'
 
 print(util.color('FSM Channel','yellow'), table.concat(fsm_chs,' '))
 print(util.color('SHM access','blue'), table.concat(shm_vars,' '))

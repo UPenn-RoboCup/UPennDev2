@@ -76,7 +76,7 @@ DEF YELLOW_GOAL TeenGoal {
 }
 DEF BALL Ball {
   translation 2.4 0 2
-  radius 0.10
+  radius 0.11
 }
 DEF OBS1 Obstacle {
   translation -2.5 0 -1

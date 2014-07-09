@@ -18,6 +18,7 @@ local head = {
   --From CoM to neck joint
   neckZ = .165 + .161,
   neckX = 0,
+
 }
 
 local vision = {
@@ -39,6 +40,11 @@ local vision = {
   use_nonwhite_wall = 0,
   nonwhite_wall_min_area = 3000,
   nonwhite_wall_max_rate = 0.15,
+
+  --To compensate for the body flexing backward
+  --Use this angle instead of walk.bodyTilt
+  bodyTilt = -3*DEG_TO_RAD, 
+
   --
 }
 
@@ -47,7 +53,11 @@ vision.ball = {
   th_min_bbox_area = 40, --50
   th_min_area = 20, --10,
   th_min_fill_rate = 0.45, --0.35,
-  max_height  = 0.7,
+--  max_height  = 0.7,
+
+  max_height0 = 0.4,    --Max height = max_height0 + dist*max_height1
+  max_height1 = 0.2,
+
   max_distance = 9, 
   th_ground_head_pitch = 50*DEG_TO_RAD,
   th_ground_boundingbox = {-30,30,0,20},
@@ -140,6 +150,11 @@ table.insert(Config.camera,
     --lut = '0627_m308',
     lut = 'm308_night',
 		-- f = 640/2/tan(78/180*pi / 2)
+
+--fov = 2*arctan(d/2f)
+-- f = d/2/tan(fov/2)
+--webots fov: 1.3613
+
     focal_length = 395.17,
     focal_base = 640,
     auto_param = {
@@ -228,11 +243,28 @@ if IS_WEBOTS then
     min_ground_fill_rate = 0.7,
   }
   
+  vision.ball = {
+  diameter = 0.22,
+  th_min_bbox_area = 10,
+  th_min_area = 5,
+  th_min_fill_rate = 0.35,
+  max_height0 = 0.4,    --Max height = max_height0 + dist*max_height1
+  max_height1 = 0.2,
+  max_distance = 9, 
+  th_ground_head_pitch = 50*DEG_TO_RAD,
+  th_ground_boundingbox = {-30,30,0,20},
+  th_ground_green = 400,  --TODO
+  th_ground_white = 150,  --TODO
+  check_for_ground = 1,
+  check_for_field = 1,
+  field_margin = 2.0,
+}
 end
 
 -- Associate with the table
 Config.vision = vision
 Config.head = head
 Config.monitor = monitor
+
 
 return Config

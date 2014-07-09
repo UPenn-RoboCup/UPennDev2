@@ -35,7 +35,7 @@ local trHead, vHead, trNeck, trNeck0, dtrCamera
 local x0A, y0A, focalA, focal_length, focal_base
 local x0B, y0B, focalB
 -- Detection thresholds
-local b_diameter, b_dist, b_height, b_fill_rate, b_bbox_area, b_area
+local b_diameter, b_dist, b_height0, b_height1, b_fill_rate, b_bbox_area, b_area
 local th_nPostB, g_area, g_bbox_area, g_fill_rate, g_orientation, g_aspect_ratio, g_margin
 -- Store information about what was detected
 local detected = {
@@ -152,15 +152,19 @@ end
 
 -- Yield coordinates in the labelA space
 -- Returns an error message if max limits are given
-local function check_coordinateA(centroid, scale, maxD, maxH,balldebug)
+local function check_coordinateA(centroid, scale, maxD, maxH1, maxH2,balldebug)
   local v0 = torch.Tensor({
     focalA,
     -(centroid[1] - x0A),
     -(centroid[2] - y0A),
     scale,
   })
+
   local v = torch.mv(trHead, v0) / v0[4]
   if balldebug then debug_ball(string.format("Ball v0:%.2f %.2f %.2f\n",v[1],v[2],v[3])) end
+
+  local maxH
+  if maxH1 and maxH2 then maxH = maxH1 + math.sqrt(v[1]^2+v[2]^2)*maxH2 end
 
   -- Check the distance
   if maxD and v[1]*v[1] + v[2]*v[2] > maxD*maxD then
@@ -196,7 +200,7 @@ local function projectGround(v,targetheight)
   local vout = vector.new(v)
   local vHead_homo = vector.new({vHead[1], vHead[2], vHead[3], 1})
   --Project to plane
-  if vHead[3]>targetheight then
+  if vHead[3]>targetheight and v[3]<targetheight then
     vout = vHead_homo +
       (vout-vHead_homo)*( (vHead[3]-targetheight) / (vHead[3]-vout[3]) )
   end
@@ -227,9 +231,13 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       check_fail = true
     else
       -- Check the coordinate on the field
+
+--Ball position is totally wrong with webots!!!!
+
       local dArea = math.sqrt((4/math.pi) * propsA.area)
       local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
-      local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height,true)
+
+      local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height0,b_height1,true)
       if type(v)=='string' then 
         check_fail = true
         debug_ball(v)
@@ -699,7 +707,7 @@ function libVision.entry(cfg, body)
   focalB = focalA / scaleB
   -- TODO: get from shm maybe?
   trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
-  * T.rotY(Config.walk.bodyTilt)
+  * T.rotY(Config.vision.bodyTilt)
   * T.trans(cfg.head.neckX, 0, cfg.head.neckZ)
 	-- Initial guess
   trNeck = trNeck0 * T.rotZ(0) * T.rotY(0)
@@ -708,7 +716,8 @@ function libVision.entry(cfg, body)
   if cfg.vision.ball then
     b_diameter = cfg.vision.ball.diameter
     b_dist = cfg.vision.ball.max_distance
-    b_height = cfg.vision.ball.max_height
+    b_height0 = cfg.vision.ball.max_height0
+    b_height1 = cfg.vision.ball.max_height1
     b_fill_rate = cfg.vision.ball.th_min_fill_rate
     b_bbox_area = cfg.vision.ball.th_min_bbox_area
     b_area = cfg.vision.ball.th_min_area
@@ -740,6 +749,7 @@ function libVision.update(img)
 
   -- Update the motion elements
   update_head()
+  
 
   -- Images to labels
   labelA_t = ImageProc2.yuyv_to_label(img, lut_t:data())

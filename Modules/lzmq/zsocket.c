@@ -1,3 +1,13 @@
+/*
+  Author: Alexey Melnichuk <mimir@newmail.ru>
+
+  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
+
+  Licensed according to the included 'LICENCE' document
+
+  This file is part of lua-lzqm library.
+ */
+
 #include "zsocket.h"
 #include "zmsg.h"
 #include "lzutils.h"
@@ -934,6 +944,9 @@ static int luazmq_skt_set_str_arr (lua_State *L, int option_name) {
 #if defined(ZMQ_IDENTITY_FD)
   DEFINE_SKT_OPT_RO(identity_fd,              ZMQ_IDENTITY_FD,                    fdt       )
 #endif
+#if defined(ZMQ_SOCKS_PROXY)
+  DEFINE_SKT_OPT_RW(socks_proxy,              ZMQ_SOCKS_PROXY,                    str       )
+#endif
 
 //}
 
@@ -1182,6 +1195,9 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
 #if defined(ZMQ_IDENTITY_FD)
   REGISTER_SKT_OPT_RO(identity_fd               ),
 #endif
+#if defined(ZMQ_SOCKS_PROXY)
+  REGISTER_SKT_OPT_RW(socks_proxy               ),
+#endif
   //}
 
   {NULL,NULL}
@@ -1395,6 +1411,9 @@ static const luazmq_int_const skt_options[] ={
 #endif
 #if defined(ZMQ_IDENTITY_FD)
   DEFINE_ZMQ_CONST(IDENTITY_FD               ),
+#endif
+#if defined(ZMQ_SOCKS_PROXY)
+  DEFINE_ZMQ_CONST(SOCKS_PROXY               ),
 #endif
 
   {NULL, 0}

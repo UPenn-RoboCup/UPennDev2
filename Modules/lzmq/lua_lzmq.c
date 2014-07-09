@@ -1,3 +1,13 @@
+/*
+  Author: Alexey Melnichuk <mimir@newmail.ru>
+
+  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
+
+  Licensed according to the included 'LICENCE' document
+
+  This file is part of lua-lzqm library.
+ */
+
 #include "zmq.h"
 #include "zmq_utils.h"
 #include "lzutils.h"
@@ -13,7 +23,7 @@
 
 #define LUAZMQ_VERSION_MAJOR 0
 #define LUAZMQ_VERSION_MINOR 4
-#define LUAZMQ_VERSION_PATCH 0
+#define LUAZMQ_VERSION_PATCH 1
 #define LUAZMQ_VERSION_COMMENT "dev"
 
 const char *LUAZMQ_CONTEXT = LUAZMQ_PREFIX "Context";

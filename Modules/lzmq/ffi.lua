@@ -1,4 +1,14 @@
-local LZMQ_VERSION = "0.4.0-dev"
+--
+--  Author: Alexey Melnichuk <mimir@newmail.ru>
+--
+--  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
+--
+--  Licensed according to the included 'LICENCE' document
+--
+--  This file is part of lua-lzqm library.
+--
+
+local LZMQ_VERSION = "0.4.1-dev"
 
 local lua_version_t
 local function lua_version()
@@ -957,6 +967,18 @@ function Poller:ensure(n)
   return true
 end
 
+local function get_socket(skt)
+  if type(skt) == "number" then
+    return skt
+  end
+
+  if skt.socket then
+     return skt:socket()
+  end
+
+  return skt
+end
+
 local function skt2id(skt)
   if type(skt) == "number" then
     return skt
@@ -971,17 +993,23 @@ local function item2id(item)
   return api.serialize_ptr(item.socket)
 end
 
+-- Poller.add method assume that zmq socket does not contain
+-- `socket` method. So it can use this method to retreive real
+-- zmq socket from any object that provide this method.
+assert(Socket.socket == nil)
+
 function Poller:add(skt, events, cb)
   assert(type(events) == 'number')
   assert(cb)
   self:ensure(1)
   local n = self._private.nitems
-  local h = skt2id(skt)
-  if type(skt) == "number" then
+  local s = get_socket(skt)
+  local h = skt2id(s)
+  if type(s) == "number" then
     self._private.items[n].socket = api.NULL
-    self._private.items[n].fd     = skt
+    self._private.items[n].fd     = s
   else
-    self._private.items[n].socket = skt:handle()
+    self._private.items[n].socket = s:handle()
     self._private.items[n].fd     = 0
   end
   self._private.items[n].events  = events
@@ -993,7 +1021,7 @@ end
 
 function Poller:remove(skt)
   local items, nitems, sockets = self._private.items, self._private.nitems, self._private.sockets
-  local h = skt2id(skt)
+  local h = skt2id(get_socket(skt))
   local params = sockets[h]
   if not params  then return true end
 

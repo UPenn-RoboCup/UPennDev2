@@ -85,6 +85,10 @@ DEF OBS2 Obstacle {
   translation -1.2 0 1.5
 }
 
+DEF OPPONENT Block {
+  translation -4.2 0.5 0
+}
+
 THOROP7_RoboCup_New{
   translation 0 1.15535 0
   rotation 0 1 0 -1.57

@@ -16,7 +16,8 @@ require'wcm'
 
 -- Occ for map
 local MAP = {}
-MAP.res = 0.25 --0.2
+MAP.res = 0.25
+if IS_WEBOTS then MAP.res = 0.2 end
 MAP.sizex = 9/MAP.res
 MAP.sizey = 6/MAP.res
 MAP.xmin, MAP.ymin = -4.5, -3
@@ -478,6 +479,16 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
   return table.concat(failures,',')
 end
 
+
+function libVision.obstacle_new(labelB_t, colorField)
+  --blah
+  local obsProps = ImageProc.obstacles(labelB_t, colorField);
+  for i=1,math.min(10, #obsProps) do
+    print(i, obsProps[i].width, unpack(obsProps[i].position))
+  end
+end
+
+
 -- Obstacle detection
 function libVision.obstacle(labelB_t, cc)
   -- If no black pixels
@@ -499,6 +510,16 @@ function libVision.obstacle(labelB_t, cc)
   local th_min_height = Config.vision.obstacle.th_min_height
   local th_min_orientation = Config.vision.obstacle.th_min_orientation
   local min_ground_fill_rate = Config.vision.obstacle.min_ground_fill_rate
+  
+  
+  --TODO: with pitch=25 deg, do we need horizon?
+  -- update horizon
+  -- local pa = Body.get_head_position()[2] + Config.walk.bodyTilt
+  -- horizonA = (ha/2.0) - focalA*math.tan(pa) - 2
+  -- horizonA = math.min(ha, math.max(math.floor(horizonA), 0))
+  -- horizonB = (hb/2.0) - focalB*math.tan(pa) - 1
+  -- horizonB = math.min(hb, math.max(math.floor(horizonB), 0))
+  
   
   local col = wb / grid_x
   local row = hb / grid_y 
@@ -757,21 +778,22 @@ function libVision.update(img)
   -- Detection System
   -- NOTE: Muse entry each time since on webots, we switch cameras
   -- In camera wizard, we do not switch cameras, so call only once
-  local cc = ImageProc2.color_count(labelA_t)
-  local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc)
-  local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc)
+  local cc_t = ImageProc2.color_count(labelA_t)
+  local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc_t)
+  local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc_t)
 	local obstacle_fails, obstacles
   
-	local head_angle = Body.get_head_position()
 	if wcm.get_obstacle_reset()==1 then
 		MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
 		wcm.set_obstacle_reset(0)
 	end
-  if wcm.get_obstacle_enable()==0 then  
-		obstacle_fails = 'Disabled'
-	else
-		obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc)
-	end
+  
+  if wcm.get_obstacle_enable()==0 then
+    obstacle_fails = 'Disabled'
+  else
+    obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc_t)
+    -- obstacle_fails = libVision.obstacle_new(labelB_t, colors.field)
+  end
 
   -- Save the detection information
   detected.ball = ball

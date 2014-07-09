@@ -26,6 +26,7 @@
 #include "lua_field_occupancy.h"
 #include "lua_robots.h"
 #include "lua_fast_12.h"
+#include "lua_obstacles.h"
 
 #include <iostream>
 
@@ -547,6 +548,8 @@ static const luaL_Reg imageProc_lib [] = {
   {"subsample_yuyv2yuyv", lua_subsample_yuyv2yuyv},
 
   {"fast12", lua_fast_12},
+
+  {"obstacles", lua_obstacles},
   {NULL, NULL}
 };
 

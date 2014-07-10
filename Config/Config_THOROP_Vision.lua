@@ -52,7 +52,7 @@ vision.ball = {
   diameter = 0.22,
   th_min_bbox_area = 40, --50
   th_min_area = 20, --10,
-  th_min_fill_rate = 0.45, --0.35,
+  th_min_fill_rate = 0.35,
 --  max_height  = 0.7,
 
   max_height0 = 0.4,    --Max height = max_height0 + dist*max_height1

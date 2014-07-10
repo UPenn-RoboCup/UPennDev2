@@ -36,7 +36,7 @@ if IS_WEBOTS or HOSTNAME ~="alvin" then
   walk.aTurnSpeed = 0.2
   walk.maxStepCount = 12
 
-  walk.foot_traj = 2; --square step
+  walk.foot_traj = 1; --square step
 
   --Robotis style walk
   walk.bodyHeight = 0.9285318

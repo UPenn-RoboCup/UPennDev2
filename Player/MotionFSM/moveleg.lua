@@ -321,7 +321,7 @@ end
 
 --a=csapi([0 0.1 0.3 0.6 0.8 0.9 1],[0 -0.1 -0.3 1 1.5 1.2 1])
 function moveleg.foot_trajectory_walkkick(phSingle,uStart,uEnd,stepHeight)
-  local breaksX={0.1,0.3,0.6,0.8,0.9,1}
+  local breaksX={0.1 ,0.3 ,0.6,0.8,0.9,1}
   local coefsX = {
     {36.9313,-14.7725,0.1079,0},
     {36.9313,-3.6931,-1.7386,-0.10},
@@ -330,11 +330,12 @@ function moveleg.foot_trajectory_walkkick(phSingle,uStart,uEnd,stepHeight)
     {104.7146,-26.4144,-1.4057,1.5},
     {104.7146,5,-3.5471,1.2},
   }
-  local xf=eval_spline(breaksX, coefsX,phSingle)*0.8  
+  local xf=eval_spline(breaksX, coefsX,phSingle)
   local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
   local zFoot = stepHeight * zf*1.5
+
   return uFoot, zFoot
 end
 
@@ -349,7 +350,7 @@ function moveleg.foot_trajectory_kick(phSingle,uStart,uEnd,stepHeight)
       { 161.6032 , -38.4809  , -3.7679  ,  2.0000},
       {161.6032 ,  10.0000 ,  -6.6160   , 1.4000},
     }
-  local xf=eval_spline(breaksX, coefsX,phSingle)*0.8  
+  local xf=eval_spline(breaksX, coefsX,phSingle)  
   local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
@@ -359,20 +360,13 @@ end
 
 
 
-
-
-
-
-
-
-
-
 function moveleg.foot_trajectory_base(phSingle,uStart,uEnd,stepHeight)
   local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
   local xf = .5*(1-math.cos(math.pi*phSingleSkew))
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
   local zFoot = stepHeight * zf
+
   return uFoot, zFoot
 end
 

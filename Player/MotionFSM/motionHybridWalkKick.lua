@@ -202,7 +202,7 @@ local function calculate_footsteps()
         {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
         {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
       }
-    else
+    else --double support
       step_queue={
         {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
         {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
@@ -211,14 +211,12 @@ local function calculate_footsteps()
         {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
       }
 
-
       --stationary kick test
       step_queue={
         {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
         {{0.06,0,0},1,  0.5,2,0.5,   {0,0,0},{-2,Config.walk.stepHeight,0}}, --rf kick
         {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
       }
-
 
     end
   else 
@@ -237,7 +235,7 @@ local function calculate_footsteps()
         {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
         {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
       }
-    else
+    else --double support
       step_queue={
         {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
         {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
@@ -385,6 +383,7 @@ function walk.update()
     local phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
     local uLeft, uRight = uLeft_now, uRight_now
     
+
     if supportLeg == 0 then  -- Left support    
       if walkParam[1]==-1 then --WalkKick phase
         uRight,zRight = walkkick_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
@@ -418,7 +417,6 @@ function walk.update()
     local dZmpL = math.sqrt((uZMP[1]-uLeftSupport[1])^2+(uZMP[2]-uLeftSupport[2])^2)
     local dZmpR = math.sqrt((uZMP[1]-uRightSupport[1])^2+(uZMP[2]-uRightSupport[2])^2)
     local supportRatio = dZmpL/(dZmpL+dZmpR);
-
 --print(unpack(uTorso),unpack(uLeft),unpack(uRight))
 
   -- Grab gyro feedback for these joint angles
@@ -431,6 +429,8 @@ function walk.update()
     moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,zLeft,zRight,delta_legs)    
     local rpy = Body.get_rpy()
     local roll = rpy[1] * RAD_TO_DEG
+
+
     
     if math.abs(roll)>roll_max then roll_max = math.abs(roll) end
     local roll_threshold = 10 --this is degree

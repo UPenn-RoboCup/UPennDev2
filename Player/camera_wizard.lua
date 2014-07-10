@@ -34,15 +34,13 @@ end
 
 local ENABLE_NET, SEND_INTERVAL, t_send = true, 1/hcm.get_monitor_fps(), 0
 local ENABLE_LOG, LOG_INTERVAL, t_log = false, 1 / 5, 0
---local ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
 
 --local FROM_LOG, LOG_DATE = true, '07.10.2014.11.54.17'
 --local FROM_LOG, LOG_DATE = true, '07.10.2014.11.54.58'
-local FROM_LOG, LOG_DATE = true, '07.10.2014.12.09.01'
---local FROM_LOG, LOG_DATE = false, '07.07.2014.22.06.09'
+--local FROM_LOG, LOG_DATE = true, '07.10.2014.12.09.01'
+local FROM_LOG, LOG_DATE = false, '07.07.2014.22.06.09'
 
 local libLog, logger
-
 
 
 -- Extract metadata information

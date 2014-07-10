@@ -52,7 +52,7 @@ vision.ball = {
   diameter = 0.22,
   th_min_bbox_area = 40, --50
   th_min_area = 20, --10,
-  th_min_fill_rate = 0.45, --0.35,
+  th_min_fill_rate = 0.35,
 --  max_height  = 0.7,
 
   max_height0 = 0.4,    --Max height = max_height0 + dist*max_height1
@@ -151,7 +151,8 @@ table.insert(Config.camera,
     },
     --Logitech C920
     --lut = '0627_m308',
-    lut = 'm308_night',
+    --lut = 'm308_night',
+		lut = 'grasp_afternoon',
 		-- f = 640/2/tan(78/180*pi / 2)
 
 --fov = 2*arctan(d/2f)
@@ -167,7 +168,7 @@ table.insert(Config.camera,
       {'Exposure, Auto Priority', 0},
 			{'Focus, Auto', 0}
     },
-      -- M308
+      --[[ M308
       param = {
              {'White Balance Temperature', 3600},
              {'Exposure (Absolute)', 100},
@@ -178,18 +179,18 @@ table.insert(Config.camera,
              {'Gain', 0},
              {'Sharpness', 0},
            },
-      
-    -- GRASP
-    --param = {
-    --  {'White Balance Temperature', 2900},
-    --  {'Exposure (Absolute)', 95},
-	  --	{'Focus (absolute)', 0},
-    --  {'Brightness', 135},
-    --  {'Contrast', 128},
-    --  {'Saturation', 160},
-    --  {'Gain', 70},
-    --  {'Sharpness', 0},
-    --},
+      --]]
+    -- GRASP afternoon
+    param = {
+      {'White Balance Temperature', 3300},
+      {'Exposure (Absolute)', 170},
+	  	{'Focus (absolute)', 0},
+      {'Brightness', 128},
+      {'Contrast', 128},
+      {'Saturation', 150},
+      {'Gain', 66},
+      {'Sharpness', 0},
+    },
     
   })
 

@@ -480,12 +480,116 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 end
 
 
-function libVision.obstacle_new(labelB_t, colorField)
-  --blah
-  local obsProps = ImageProc.obstacles(labelB_t, colorField);
-  for i=1,math.min(10, #obsProps) do
-    print(i, obsProps[i].width, unpack(obsProps[i].position))
+function libVision.obstacle_new(labelB_t)
+  -- Obstacle table
+  local obstacle, obs_count, obs_debug = {}, 0, ''
+  obstacle.iv, obstacle.v, obstacle.detect = {}, {}, 0
+  obstacle.axisMinor, obstacle.axisMajor, obstacle.orientation = {}, {}, {}
+  obstacle.dist = {}
+  
+  -- Parameters  TODO: put into entry()
+  local label_flag = Config.vision.obstacle.label
+  local grid_x = Config.vision.obstacle.grid_x
+  local grid_y = Config.vision.obstacle.grid_y
+  local th_min_area = Config.vision.obstacle.th_min_area
+  local min_black_fill_rate = Config.vision.obstacle.min_black_fill_rate
+  local th_aspect_ratio = Config.vision.obstacle.th_aspect_ratio
+  local th_max_height = Config.vision.obstacle.th_max_height
+  local th_min_height = Config.vision.obstacle.th_min_height
+  local th_min_orientation = Config.vision.obstacle.th_min_orientation
+  local min_ground_fill_rate = Config.vision.obstacle.min_ground_fill_rate
+  
+  
+  local obsProps = ImageProc.obstacles(labelB_t, colors.black)
+  
+  if #obsProps == 0 then return 'NO OBS' end
+  
+  for i=1,math.min(20, #obsProps) do
+    local check_passed, v = true
+    -- Convert to local frame
+    local scale = math.max(1, obsProps[i].width / Config.world.obsDiameter)
+    if label_flag == 'b' then
+      v = check_coordinateB(obsProps[i].position, scale)
+    else
+    	v = check_coordinateA(obsProps[i].position, scale)
+    end
+    local obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
+    
+    -- Ground check
+    if check_passed and hb-obsProps[i].position[2]>10 then
+      local left_x = obsProps[i].position[1] - obsProps[i].width/2
+      local right_x = obsProps[i].position[1] + obsProps[i].width/2
+      local top_y = obsProps[i].position[2]
+      local bot_y = math.min(hb, obsProps[i].position[2]+20)
+
+      local ground_bbox = {left_x, right_x, top_y, bot_y}
+      local groundStats, bbox_area = bboxStats('b', colors.field, ground_bbox)
+      if groundStats.area/bbox_area < min_ground_fill_rate then  --TODO
+        check_passed = false
+        obs_debug = obs_debug..string.format('GROUND CHECK FAIL: %.2f < %.2f\n',
+          groundStats.area/bbox_area, min_ground_fill_rate)
+      end
+    end
+    
+    -- Field bounds check
+    if check_passed then
+      local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
+      if math.abs(global_v[1])>xMax or math.abs(global_v[2])>yMax then
+        check_passed = false
+        obs_debug = obs_debug..'OUTSIDE FIELD!\n'
+      end
+    end
+    -- Distance check
+    if check_passed and obstacle_dist>7 then  --TODO
+      check_passed = false
+      obs_debug = obs_debug..string.format('TOO FAR:%.2f >%.2f\n', obstacle_dist, 7)
+    end
+    
+    if check_passed then
+      obs_count = obs_count + 1
+      table.insert(obstacle.dist, obstacle_dist)
+      obstacle.iv[obstacle_dist] = vector.new(obsProps[i].position)*scaleB
+      --TODO: dummy values
+      obstacle.axisMinor[obstacle_dist] = obsProps[i].width
+      obstacle.axisMajor[obstacle_dist] = 20 
+      obstacle.orientation[obstacle_dist] = math.pi/2
+              
+      obstacle.v[obstacle_dist] = v
+      obstacle.detect = 1
+      obstacle.count = obs_count
+    end
+    
+  end -- end loop
+  
+  if obstacle.detect == 1 then
+    -- Sort to get the closest two 
+    local obsStats = {}
+    obsStats.iv, obsStats.v = {},{}
+    obsStats.axisMinor, obsStats.axisMajor, obsStats.orientation = {}, {}, {}
+    table.sort(obstacle.dist)
+    for i=1, math.min(3, obstacle.count) do
+      obsStats.iv[i] = obstacle.iv[obstacle.dist[i]]
+	    local pos = obstacle.v[obstacle.dist[i]]
+			local xi = math.ceil((pos[1]-MAP.xmin) / MAP.res)
+			local yi = math.ceil((pos[2]-MAP.ymin) / MAP.res)
+
+      xi = math.min(math.max(1, xi), MAP.sizex)
+      yi = math.min(math.max(1, yi), MAP.sizey)
+      MAP.xp[xi] = MAP.xp[xi] + 1
+      MAP.yp[yi] = MAP.yp[yi] + 1
+
+      obsStats.axisMinor[i] = obstacle.axisMinor[obstacle.dist[i]]
+      obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 
+      obsStats.orientation[i] = obstacle.orientation[obstacle.dist[i]]
+    end    
+    obsStats.xp, obsStats.yp = MAP.xp, MAP.yp
+    obsStats.res = MAP.res
+    
+    return 'Detected', obsStats
+  else
+    return obs_debug, obsStats
   end
+  
 end
 
 
@@ -791,8 +895,8 @@ function libVision.update(img)
   if wcm.get_obstacle_enable()==0 then
     obstacle_fails = 'Disabled'
   else
-    obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc_t)
-    -- obstacle_fails = libVision.obstacle_new(labelB_t, colors.field)
+    -- obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc_t)
+    obstacle_fails, obstacles = libVision.obstacle_new(labelB_t)
   end
 
   -- Save the detection information

@@ -28,7 +28,7 @@ local vision = {
     cyan = 4,
     field = 8,
     white = 16,
-    black = 0, --32,
+    black = 0,
   },
   scaleA = 2,
   scaleB = 2,
@@ -240,7 +240,7 @@ if IS_WEBOTS then
     min_black_fill_rate = 0.7,
     th_max_height = 1.25,
     th_min_height = -0.2,
-    min_ground_fill_rate = 0.7,
+    min_ground_fill_rate = 0.4,
   }
   
   vision.ball = {

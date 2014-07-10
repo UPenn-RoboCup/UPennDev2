@@ -35,8 +35,8 @@ end
 local ENABLE_NET, SEND_INTERVAL, t_send = true, 1/hcm.get_monitor_fps(), 0
 local ENABLE_LOG, LOG_INTERVAL, t_log = false, 1 / 5, 0
 --local ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
-local FROM_LOG, LOG_DATE = true, '07.07.2014.22.06.09'
--- local FROM_LOG, LOG_DATE = false, '07.07.2014.22.06.09'
+--local FROM_LOG, LOG_DATE = true, '07.07.2014.22.06.09'
+local FROM_LOG, LOG_DATE = false, '07.07.2014.22.06.09'
 
 local libLog, logger
 
@@ -61,7 +61,10 @@ end
 -- Channels
 -- UDP Sending
 --local camera_ch = si.new_publisher('camera0')
-if FROM_LOG then operator = 'localhost' end
+if FROM_LOG then 
+	operator = 'localhost' 
+	print('operator IP:', operator)
+end
 local udp_ch = metadata.udp_port and udp.new_sender(operator, metadata.udp_port)
 print('UDP',operator, metadata.udp_port)
 

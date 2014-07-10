@@ -167,7 +167,7 @@ table.insert(Config.camera,
       {'Exposure, Auto Priority', 0},
 			{'Focus, Auto', 0}
     },
-      -- M308
+      --[[ M308
       param = {
              {'White Balance Temperature', 3600},
              {'Exposure (Absolute)', 100},
@@ -178,18 +178,18 @@ table.insert(Config.camera,
              {'Gain', 0},
              {'Sharpness', 0},
            },
-      
-    -- GRASP
-    --param = {
-    --  {'White Balance Temperature', 2900},
-    --  {'Exposure (Absolute)', 95},
-	  --	{'Focus (absolute)', 0},
-    --  {'Brightness', 135},
-    --  {'Contrast', 128},
-    --  {'Saturation', 160},
-    --  {'Gain', 70},
-    --  {'Sharpness', 0},
-    --},
+      --]]
+    -- GRASP afternoon
+    param = {
+      {'White Balance Temperature', 3300},
+      {'Exposure (Absolute)', 170},
+	  	{'Focus (absolute)', 0},
+      {'Brightness', 128},
+      {'Contrast', 128},
+      {'Saturation', 150},
+      {'Gain', 66},
+      {'Sharpness', 0},
+    },
     
   })
 

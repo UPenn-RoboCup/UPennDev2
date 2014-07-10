@@ -151,7 +151,8 @@ table.insert(Config.camera,
     },
     --Logitech C920
     --lut = '0627_m308',
-    lut = 'm308_night',
+    --lut = 'm308_night',
+		lut = 'grasp_afternoon',
 		-- f = 640/2/tan(78/180*pi / 2)
 
 --fov = 2*arctan(d/2f)

@@ -62,6 +62,9 @@ local ok, myffi = pcall(require, 'ffi')
 if ok then
   ffi = myffi
   C = ffi.C
+	unix = require'unix.ffi'
+else
+	unix = require'unix'
 end
 
 -- Some other directories

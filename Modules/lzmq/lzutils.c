@@ -1,3 +1,13 @@
+/*
+  Author: Alexey Melnichuk <mimir@newmail.ru>
+
+  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
+
+  Licensed according to the included 'LICENCE' document
+
+  This file is part of lua-lzqm library.
+ */
+
 #include "lzutils.h"
 #include <memory.h>
 #include <assert.h>
@@ -200,4 +210,3 @@ void luazmq_stack_dump (lua_State *L){
   }
   fprintf(stderr, " ------------ Stack Dump Finished ------------\n" );
 }
-

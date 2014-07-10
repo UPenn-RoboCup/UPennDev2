@@ -1,4 +1,150 @@
-function [needs_draw] = process_libVision_msg(metadata, raw, cam)
+function h = show_monitor_thorwin
+  global cam 
+
+  h = []
+  h.init = @init;
+  h.process_msg = @process_msg;
+
+  
+
+
+
+  function init()
+    figure(1);
+    clf;
+    set(gcf,'position',[1 1 1200 900]);
+    f_mainA = gca;
+    f_lA = axes('Units','Normalized','position',[0 0.5 0.3 0.5]);
+    f_yuyv = axes('Units','Normalized','position',[0.3 0.5 0.3 0.5]);
+    f_field = axes('Units','Normalized','position',[0.3 0 0.3 0.5]);
+
+    cam = {};
+
+    % Colormap for the labeled image
+    cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
+    cam.cmap = [cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
+
+    % LABELA
+    set(gcf,'CurrentAxes',f_lA);
+    im_lA = image(zeros(1));
+    colormap(cam.cmap);
+    hold on;
+    p_ball = plot([0],[0], 'y*');
+    % Remove from the plot
+    set(p_ball,'Xdata', []);
+    set(p_ball,'Ydata', []);
+    r_ball = rectangle('Position', [0 0 1 1],... 
+      'Curvature',[1,1], 'EdgeColor', 'b', 'LineWidth', 2);
+    p_post = cell(2,1);
+    for i=1:numel(p_post)
+        p_post{i} = plot([0],[0], 'b-', 'LineWidth', 2);
+        % Remove from the plot
+        set(p_post{i},'Xdata', []);
+        set(p_post{i},'Ydata', []);
+    end
+    % Assume up to 3 obstacles
+    h_obstacle = cell(2,1);
+    for i=1:numel(h_obstacle)
+        h_obstacle{i} = plot([0],[0], 'r-', 'LineWidth', 2);
+        % Remove from the plot
+        set(h_obstacle{i},'Xdata', []);
+        set(h_obstacle{i},'Ydata', []);
+    end
+
+    % yuyv
+    set(gcf,'CurrentAxes',f_yuyv);
+    im_yuyv = image(zeros(1));
+
+    % Show the field here
+    set(gcf,'CurrentAxes',f_field);
+    plot_field(gca,2);
+    cam.h_field = gca;
+    % Camera 1 Debug messages
+
+
+    set(gcf,'CurrentAxes',f_mainA);    
+    cam.a_debug_ball=uicontrol('Style','text','Units','Normalized',...
+       'Position',[0.6 0 0.13 1],'FontSize',10, ...
+       'BackgroundColor',[0.9  0.9 0.9],...
+        'FontName','Arial');
+
+    cam.a_debug_goal=uicontrol('Style','text','Units','Normalized',...
+       'Position',[0.73 0 0.13 1],'FontSize',10, ...
+       'BackgroundColor',[0.9  0.9 0.9],...
+        'FontName','Arial');
+
+    cam.a_debug_obstacle=uicontrol('Style','text','Units','Normalized',...
+       'Position',[0.86 0 0.14 1],'FontSize',10, ...
+       'BackgroundColor',[0.9  0.9 0.9],...
+        'FontName','Arial');
+
+    cam.w_debug = uicontrol('Style','text','Units','Normalized',...
+       'Position',[0 0 0.3 0.5],'FontSize',10, ...
+       'BackgroundColor',[0.9  0.9 0.9],...
+        'FontName','Arial');
+
+
+
+%{
+    cam.a_debug_ball = annotation('textbox',...
+        [0.6 0 0.13 1],...
+        'String','Top Camera',...
+        'FontSize',10,...
+        'FontName','Arial',...
+        'LineStyle','--',...
+        'EdgeColor',[1 1 0],...
+        'LineWidth',2,...
+        'BackgroundColor',[0.9  0.9 0.9],...
+        'Color',[0.84 0.16 0]);
+
+    cam.a_debug_goal = annotation('textbox',...
+        [0.73 0 0.13 1],...
+        'String','Top Camera',...
+        'FontSize',10,...
+        'FontName','Arial',...
+        'LineStyle','--',...
+        'EdgeColor',[1 1 0],...
+        'LineWidth',2,...
+        'BackgroundColor',[0.9  0.9 0.9],...
+        'Color',[0.84 0.16 0]);
+    cam.a_debug_obstacle = annotation('textbox',...
+        [0.86 0 0.14 1],...
+        'String','Top Camera',...
+        'FontSize',10,...
+        'FontName','Arial',...
+        'LineStyle','--',...
+        'EdgeColor',[1 1 0],...
+        'LineWidth',2,...
+        'BackgroundColor',[0.9  0.9 0.9],...
+        'Color',[0.84 0.16 0]);
+ 
+    % World debug
+    cam.w_debug = annotation('textbox',...
+        [0 0 0.3 0.5],...
+        'String','Localization',...
+        'FontSize',12,...
+        'FontName','Arial'...
+    );
+%}  
+    % Save the camera handles
+    
+    cam.f_lA = f_lA;
+    cam.im_lA = im_lA;
+    cam.f_yuyv = f_yuyv;
+    cam.f_field = f_field;
+    cam.im_yuyv = im_yuyv;
+    cam.p_ball = p_ball;
+    cam.r_ball = r_ball;
+    cam.p_post = p_post;
+    cam.h_obstacle = h_obstacle;
+    % Plot scale
+    % Default: labelA is half size, so scale twice
+    scale = 2;
+    cam.scale = 2;
+  end
+
+
+  function [needs_draw] = process_msg(metadata, raw, cam)
 % Process each type of message
     msg_id = char(metadata.id);
     needs_draw = 0;
@@ -108,6 +254,7 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         % msg_struct, vision_struct, scale, drawlevel, name
         drawlevel = 1;
         name = 'alvin';
+        set(gcf,'CurrentAxes',cam.f_field);
         plot_robot(cam.h_field, metadata.world, [], 1.5, drawlevel, name);
         % Show messages
         set(cam.w_debug, 'String', char(metadata.world.info));
@@ -135,4 +282,5 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         ylim(cam.f_lB,[0 metadata.h]);
         needs_draw = 1;
     end
+  end
 end

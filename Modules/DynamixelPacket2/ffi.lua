@@ -81,11 +81,12 @@ function DP2.input_co(bus, buf)
 	end
 	local pkt_obj, pkt_raw = bus.rx_pkt, bus.rx_raw
 	local raw, n = ffi.cast('uint8_t*', buf), #buf
+	local c
 	coroutine.yield()
 ::LBL_PROC_INPUT::
 	for i=1, n do
 		-- Populate the packet
-		local c = raw[0]
+		c = raw[0]
 		raw = raw + 1
 		pkt_raw[rx_i] = c
 		if rx_i < N_PACKET_HEADERS then

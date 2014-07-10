@@ -23,7 +23,7 @@ local min_rad, max_rad, is_unclamped = Config.servo.min_rad, Config.servo.max_ra
 local direction, to_steps, step_zero = Config.servo.direction, Config.servo.to_steps, Config.servo.step_offset
 local to_radians, step_offset, m_to_j = Config.servo.to_radians, Config.servo.step_zero, Config.servo.motor_to_joint
 local j_to_m = Config.servo.joint_to_motor
-local dcm_chains, name_to_chain = Config.chain, {}
+local dcm_chains, name_to_bus = Config.chain, {}
 local left_ft, right_ft = Config.left_ft, Config.right_ft
 Config = nil
 
@@ -60,6 +60,8 @@ local sel, re, wr, get_time, usleep = unix.select, unix.read, unix.wr, unix.time
 -- Timeouts
 local WRITE_TIMEOUT = 1 / 200
 local READ_TIMEOUT = 1 / 62.5
+-- 1ms loop threshold
+local READ_THRESH = 0.001
 
 --------------------
 -- Context Import --
@@ -99,15 +101,16 @@ end
 ---------------------
 -- Position Packet --
 ---------------------
-local function parse_read_position(pkt, IS_MX)
+local function parse_read_position(pkt, bus)
 	-- Nothing to do if an error
 	if pkt.error ~= 0 then return end
 	-- Assume just reading position, for now
-	local read_j_id = m_to_j[pkt.id]
+	local m_id = pkt.id
+	local read_j_id = m_to_j[m_id]
 	local read_val
-	if IS_MX then
-		read_val = p_parse(unpack(pkt.parameter)) 
-	else
+	if bus.has_mx_id[m_id] then
+		read_val = p_parse_mx(unpack(pkt.parameter)) 
+	elseif bus.has_nx_id[m_id] then
 		read_val = p_parse(unpack(pkt.parameter))
 	end
 	local read_rad = step_to_radian(read_j_id, read_val)
@@ -119,13 +122,14 @@ end
 -------------------------
 -- General Read Packet --
 -------------------------
-local function parse_read_packet(pkt, reg_name, IS_MX)
+local function parse_read_packet(pkt, bus)
 	-- Nothing to do if an error
 	if pkt.error ~= 0 then return end
-	local reg
-	if IS_MX then
+	local reg_name = bus.read_reg
+	local m_id = pkt.id
+	if bus.has_mx_id[m_id] then
 		reg = lD.mx_registers[reg_name]
-	else
+	elseif bus.has_nx_id[m_id] then
 		reg = lD.nx_registers[reg_name]
 	end
 	if not reg then
@@ -134,7 +138,7 @@ local function parse_read_packet(pkt, reg_name, IS_MX)
 	end
 	local parse = lD.byte_to_number[reg[2]]
 	-- Assume just reading position, for now
-	local j_val, read_j_id = parse(unpack(pkt.parameter)), m_to_j[pkt.id]
+	local j_val, read_j_id = parse(unpack(pkt.parameter)), m_to_j[m_id]
 	-- Set in Shared memory
 	local ptr = dcm.sensorPtr[reg]
 	ptr[read_j_id - 1] = j_val
@@ -200,39 +204,39 @@ end
 -- Initial startup --
 ---------------------
 local function entry(bus)
-	-- Populate the m_ids in the bus
+	-- Populate the IDs of the bus
 	bus:ping_probe()
-	bus.has_m = {}
-	local IS_MX = bus.chain.is_mx
+	local status, s
 	for _, m_id in ipairs(bus.m_ids) do
-		bus.has_m[m_id] = true
-		local status, s = {}
+		s, status = nil, nil
 		while not s do
-			if IS_MX then
+			if bus.has_mx_id[m_id] then
 				status = p_read_mx(m_id, bus)
-			else
+			elseif bus.has_nx_id[m_id] then
 				status = p_read(m_id, bus)
+      else
+        print("Unclassified motor ID", m_id)
 			end
 			s = status[1]
 		end
 		assert(s.parameter, 'Bad initial')
 		assert(s.id==m_id, 'bad id coherence, pos')
-		local j_id, rad = parse_read_position(s, IS_MX)
+		local j_id, rad = parse_read_position(s, bus)
 		cp_ptr[j_id-1] = rad
 		-- Read the current torque states
-		s = nil
+		s, status = nil, nil
 		while not s do
-			if IS_MX then
+			if bus.has_mx_id[m_id] then
 				status = tq_read_mx(m_id, bus)
-			else
+			elseif bus.has_nx_id[m_id] then
 				status = tq_read(m_id, bus)
 			end
 			s = status[1]
 		end
 		local tq_en
-		if IS_MX then
+		if bus.has_mx_id[m_id] then
 			tq_en = tq_parse_mx(unpack(s.parameter))
-		else
+		elseif bus.has_nx_id[m_id] then
 			tq_en = tq_parse(unpack(s.parameter))
 		end
 		assert(s.id==m_id, 'bad id coherence, tq')
@@ -247,16 +251,25 @@ end
 local function do_parent(request, bus)
 	-- Check if writing to the motors
 	local wr_reg, rd_reg = request.wr_reg, request.rd_reg
-	local chain_name = request.chain_name
+	local bus_name = request.bus
+	--ptable(request)
 	local m_id
 	if wr_reg then
 		local ptr = dcm.actuatorPtr[wr_reg]
-		local m_ids, vals = {}, {}
+		local mx_ids, mx_vals = {}, {}
+		local nx_ids, nx_vals = {}, {}
 		for _, j_id in ipairs(request.ids) do
 			m_id = j_to_m[j_id]
-			if bus.has_m[m_id] then
-				table.insert(m_ids, m_id)
-				table.insert(vals, ptr[j_id-1])
+			if bus.has_mx_id[m_id] then
+				table.insert(mx_ids, m_id)
+				table.insert(mx_vals, ptr[j_id-1])
+				-- if TQ then copy stuff
+				if wr_reg=='torque_enable' then
+					cp_ptr[j_id-1] = p_ptr[j_id-1]
+				end
+			elseif bus.has_nx_id[m_id] then
+				table.insert(nx_ids, m_id)
+				table.insert(nx_vals, ptr[j_id-1])
 				-- if TQ then copy stuff
 				if wr_reg=='torque_enable' then
 					cp_ptr[j_id-1] = p_ptr[j_id-1]
@@ -264,49 +277,59 @@ local function do_parent(request, bus)
 			end
 		end
 		-- Send to the bus in sync fashion, for now
-		if bus.chain.is_mx then
-			lD['set_mx_'..wr_reg](m_ids, vals, bus, true)
-		else
-			lD['set_nx_'..wr_reg](m_ids, vals, bus, true)
+		if #mx_ids > 0 then
+			lD['set_mx_'..wr_reg](mx_ids, mx_vals, bus, true)
+			return 0
 		end
-		coroutine.yield(0)
+		-- TODO: Add a wait?
+		if #nx_ids > 0 then
+			lD['set_nx_'..wr_reg](nx_ids, nx_vals, bus, true)
+			return 0
+		end
 	elseif rd_reg then
+		-- TODO: Add bulk read if mix mx and nx
+		-- FOR NOW: Just do one, and re-enqueue the other
 		local j_ids = request.ids
-		local m_ids = {}
+		local mx_ids, nx_ids = {}, {}
 		for _, j_id in ipairs(request.ids) do
 			m_id = j_to_m[j_id]
-			if bus.has_m[m_id] then
-				table.insert(m_ids, m_id)
+			if bus.has_mx_id[m_id] then
+				table.insert(mx_ids, m_id)
+			elseif bus.has_nx_id[m_id] then
+				table.insert(nx_ids, m_id)
 			end
 		end
-		if bus.chain.is_mx then
-			lD['get_mx_'..rd_reg](m_ids, bus, true)
-		else
-			lD['get_nx_'..rd_reg](m_ids, bus, true)
+    -- Check if reading already
+    local already_reading = rd_reg=='position' and bus.enable_read
+		if #nx_ids > 0 and not already_reading then
+			lD['get_nx_'..rd_reg](nx_ids, bus, true)
+			if #mx_ids > 0 then
+				-- Two types, so re-enqueue at the front
+				request.ids = mx_ids
+				table.insert(bus.parent_queue, 1, request)
+			end
+			return #nx_ids, rd_reg
+		elseif #mx_ids > 0 then
+			lD['get_mx_'..rd_reg](mx_ids, bus, true)
+			return #mx_ids, rd_reg
 		end
-		coroutine.yield(#m_ids, rd_reg)
-	elseif chain_name then
-		local chain = name_to_chain[chain_name]
-		if chain then
-			chain[request.key] = request.val
-		end
+	elseif bus_name then
+		local bus = name_to_bus[bus_name]
+		if not bus then return end
+		bus[request.key] = request.val
 	elseif request.ft then
-		if bus.chain.name=='lleg' then
+		if bus.name=='lleg' then
 			local ft_reading = get_ft({24, 26}, left_ft, bus)
 			print("FT LEFT", ft_reading)
+			if not ft_reading then return end
 			-- Copy into SHM
-			if ft_reading then
-				ffi.copy(dcm.sensorPtr.lfoot, ft_reading, ffi.sizeof(ft_reading))
-			end
-			coroutine.yield(0)
-		elseif bus.chain.name=='rleg' then
+			ffi.copy(dcm.sensorPtr.lfoot, ft_reading, ffi.sizeof(ft_reading))
+		elseif bus.name=='rleg' then
 			local ft_reading = get_ft({23, 25}, right_ft, bus)
 			print("FT RIGHT", ft_reading)
+			if not ft_reading then return end
 			-- Copy into SHM
-			if ft_reading then
-				ffi.copy(dcm.sensorPtr.rfoot, ft_reading, ffi.sizeof(ft_reading))
-			end
-			coroutine.yield(0)
+			ffi.copy(dcm.sensorPtr.rfoot, ft_reading, ffi.sizeof(ft_reading))
 		end
 	end
 end
@@ -315,49 +338,40 @@ end
 -- Default Read/Write --
 ------------------------
 local function output_co(bus)
-	local m_ids = bus.m_ids
+	local mx_ids = bus.mx_ids
+	local nx_ids = bus.nx_ids
 	local commands = {}
 	local chain = bus.chain
-	local IS_MX = chain.is_mx
+	local j_id
 	coroutine.yield()
-	bus.cmds_t0 = get_time()
 	bus.cmds_cnt = 0
 	while true do
+		-- TODO: For now... just NX motors
 		-- Send the position commands
-		for i, m_id in ipairs(m_ids) do
-			local j_id = m_to_j[m_id]
+		for i, m_id in ipairs(nx_ids) do
+			j_id = m_to_j[m_id]
 			commands[i] = radian_to_step(j_id, cp_ptr[j_id - 1])
 		end
 		-- Perform the sync write
-		if IS_MX then
-			cp_cmd_mx(m_ids, commands, bus)
-		else
-			cp_cmd(m_ids, commands, bus)
-		end
+		cp_cmd(nx_ids, commands, bus)
 		bus.cmds_cnt = bus.cmds_cnt + 1
 		coroutine.yield(0)
 		-- Either read the position or perform a parent command
 		while #bus.parent_queue>0 do
-			local parent_cmd = table.remove(bus.parent_queue)
-			local n, reg = do_parent(parent_cmd, bus)
+			local n, reg = do_parent(table.remove(bus.parent_queue), bus)
 			if n then
 				coroutine.yield(n, reg)
 				break
 			end
 		end
-		if chain.enable_read then
+		if bus.enable_read then
+			-- TODO: For now... just NX motors
 			-- Send a position read command to the bus
-			if IS_MX then
-				p_read_mx(m_ids, bus, true)
-			else
-				p_read(m_ids, bus, true)
-			end
-			-- Set the timeout
-			bus.read_to = get_time() + READ_TIMEOUT
-			coroutine.yield(#m_ids, 'position')
+			p_read(nx_ids, bus, true)
+			coroutine.yield(#nx_ids, 'position')
 		else
 			-- Copy from command position
-			for i, m_id in ipairs(m_ids) do
+			for i, m_id in ipairs(nx_ids) do
 				j_id = m_to_j[m_id]
 				p_ptr[j_id-1] = cp_ptr[j_id-1]
 			end
@@ -381,15 +395,25 @@ local function loop(buses)
 	end
 	local t0 = get_time()
 	local t_debug = t0
-	local t_end, t_write, t_read
+	local t_end, t_write, t_read, t_sleep, t_start
 	local running, pkt, _co
-	local npkt, read_reg, requests, req
+	local npkt, read_reg
+	-- For reading
+	local status, ready, bus, data, msg
+	-- DCM requests loop
+	local requests, req
+	---
 	-- Begin the master loop
+	---
 	while true do
+    t_start = get_time()
+		---
 		-- Check the general dcm channel
+		---
 		requests = dcm_ch:receive(true)
 		if requests then
 			for _, request in ipairs(requests) do
+				-- Requests are messagepacked
 				req = munpack(request)
 				for bus_id, bus in ipairs(buses) do
 					-- Queue for the bus
@@ -397,97 +421,133 @@ local function loop(buses)
 				end
 			end
 		end
+		---
 		-- Resume the write coroutines
+		---
 		for bus_id, bus in ipairs(buses) do
 			-- Only if we are not in the read cycle
 			if not bus.input_co or coroutine.status(bus.input_co)=='dead' then
 				running, npkt, read_reg = coroutine.resume(bus.output_co)
 				if not running then
-					print(bus_id, bus.name, 'Error', npkt, '\n\tRestarting...')
+					print('Error', bus_id, bus.name, npkt, '\n\tRestarting...')
 					bus.output_co = coroutine.create(output_co)
 					coroutine.resume(bus.output_co, bus)
 					bus.npkt_to_expect = 0
 				else
 					bus.npkt_to_expect = npkt
+          if npkt>0 then
+            bus.read_to = get_time() + READ_TIMEOUT
+          end
 					bus.read_reg = read_reg
 				end
 			end
 		end
-		-- Save the timeof write
+		-- Save the time of write
 		t_write = get_time()
-		-- Resume the read coroutines
+		---
+		-- Resume the read coroutines, loading with data
+		---
+local sel_wait = WRITE_TIMEOUT
+::READER::
 		-- Wait for packets until we have to write again
-		local status, ready = sel(_fds, WRITE_TIMEOUT)
+		status, ready = sel(_fds, sel_wait)
 		-- Save the time of read
 		t_read = get_time()
 		-- Process any reads that are left
 		for bus_id, _ready in ipairs(ready) do
-			local bus = buses[bus_id]
+			bus = buses[bus_id]
 			if _ready then
 				-- Update the read coroutines only if ready
 				if not bus.input_co or coroutine.status(bus.input_co)=='dead' then
 					-- If suspended, it means within timeout
+					-- TODO: This seems expensive
 					bus.input_co = coroutine.create(input_co)
 				end
-				local data = re(bus.fd)
-				local status, msg = coroutine.resume(bus.input_co, bus, data)
+				data = re(bus.fd)
+				status, msg = coroutine.resume(bus.input_co, bus, data)
 				if not status then print('DCM | In err', msg) end
 			elseif bus.read_reg and t_read > bus.read_to then
 				-- Not ready and out of timeout, so force a termination
-				print("DCM | TIMEOUT", bus.chain.name, bus.read_reg)
+				print("DCM | TIMEOUT", bus.name, bus.read_reg)
 				bus.input_co = nil
 				bus.read_reg = nil
 			end
 		end
+		---
 		-- Process the read coroutines
+		---
 		for bus_id, bus in ipairs(buses) do
 			_co = bus.input_co
 			if _co then
 				running, pkt = coroutine.resume(_co)
 				while pkt do
 					if bus.read_reg=='position' then
-						parse_read_position(pkt, bus.chain.is_mx)
+						parse_read_position(pkt, bus)
 					else
-						parse_read_packet(pkt, bus.read_reg, bus.chain.is_mx)
+						parse_read_packet(pkt, bus)
 					end
 					if coroutine.status(_co)=='dead' then break end
 					running, pkt = coroutine.resume(_co)
 				end
 			end
 		end
+		---
 		-- Debug
-		t_end = get_time()
-		if t_end - t_debug > 1 then
+		---
+		if t_start - t_debug > 2 then
 			local kb = collectgarbage('count')
 			local debug_str = {
-				string.format('\nDCM | Uptime %.2f sec, Mem: %d kB', t_end - t0, kb),
+				string.format('\nDCM | Uptime %.2f sec, Mem: %d kB', t_start - t0, kb),
 			}
 			for bus_id, bus in ipairs(buses) do
 				table.insert(debug_str, string.format(
-					'%s Command Rate %.1f', bus.chain.name, bus.cmds_cnt / (t_end - bus.cmds_t0)
-				))
+					'%s Command Rate %.1f Hz', bus.name, bus.cmds_cnt / 2)
+				)
 				bus.cmds_cnt = 0
-				bus.cmds_t0 = t_end
 			end
 			print(table.concat(debug_str, '\n'))
-			t_debug = t_end
+			t_debug = t_start
 		end
-		-- Steady timing
+		---
+		-- Loop maintenence
+		---
 		collectgarbage('step')
 		-- Sleep until it is the write cycle
-		local t_sleep = WRITE_TIMEOUT - (t_read - t_write)
-		if t_sleep>0 then usleep(t_sleep * 1e6) end
+		t_end = get_time()
+		t_sleep = WRITE_TIMEOUT - (t_end - t_start)
+		--[[
+		if t_sleep > READ_THRESH then
+			sel_wait = t_sleep
+			goto READER
+		end
+		--]]
+		--[[
+		if t_sleep > 0 then
+      print("SLEEP", t_sleep, t_end - t_start)
+      usleep(t_sleep * 1e6)
+    end
+		--]]
+		if t_sleep > 0 then
+			sel_wait = t_sleep
+			goto READER
+		end
+
 	end
 end
 
 local buses = {}
 for chain_id, chain in ipairs(dcm_chains) do
-	print("Opening", chain.name, chain.device)
-	local bus = lD.new_bus(chain.device)
-	table.insert(buses, bus)
+	print("========\nOpening\n=======\n", chain.name, chain.ttyname)
+	local bus = lD.new_bus(chain.ttyname)
 	-- Point to the configuration
-	bus.chain = chain
-	name_to_chain[chain.name] = chain
+	for k, v in pairs(chain) do
+		bus[k] = v
+	end
+	-- Add to our table
+	table.insert(buses, bus)
+	-- Lookup table
+	assert(bus.name, 'No bus name identifier!')
+	name_to_bus[bus.name] = bus
 	-- Initialize the bus
 	entry(bus)
 end

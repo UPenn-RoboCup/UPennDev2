@@ -1,3 +1,13 @@
+/*
+  Author: Alexey Melnichuk <mimir@newmail.ru>
+
+  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
+
+  Licensed according to the included 'LICENCE' document
+
+  This file is part of lua-lzqm library.
+ */
+
 #ifndef _LZMQ_H_
 #define _LZMQ_H_
 #include "lua.h"
@@ -108,4 +118,3 @@ int luazmq_fail_no(lua_State *L, zsocket *skt);
 int luazmq_allocfail(lua_State *L);
 
 #endif
-

@@ -76,7 +76,7 @@ shared.goal.attack_angle = vector.zeros(1)
 shared.goal.defend_angle = vector.zeros(1)
 
 shared.obstacle = {}
-shared.obstacle.enable = vector.zeros(1)
+shared.obstacle.enable = vector.ones(1)
 shared.obstacle.reset = vector.zeros(1)
 shared.obstacle.detect = vector.zeros(1)
 shared.obstacle.v1 = vector.zeros(2)

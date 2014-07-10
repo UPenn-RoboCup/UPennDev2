@@ -11,6 +11,7 @@ local mp = require'msgpack.MessagePack'
 local jpeg = require'jpeg'
 local Body = require'Body'
 require'hcm'
+require'wcm'
 
 local metadata
 if not arg or type(arg[1])~='string' then
@@ -34,8 +35,8 @@ end
 local ENABLE_NET, SEND_INTERVAL, t_send = true, 1/hcm.get_monitor_fps(), 0
 local ENABLE_LOG, LOG_INTERVAL, t_log = false, 1 / 5, 0
 --local ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
--- local FROM_LOG, LOG_DATE = true, '07.07.2014.22.06.09'
-local FROM_LOG, LOG_DATE = false, '07.07.2014.22.06.09'
+local FROM_LOG, LOG_DATE = true, '07.07.2014.22.06.09'
+-- local FROM_LOG, LOG_DATE = false, '07.07.2014.22.06.09'
 
 local libLog, logger
 
@@ -95,6 +96,10 @@ if FROM_LOG then
 	for i, m, yuyv_t in logged_data do
 		assert(m.w==w, 'Bad width')
 		assert(m.h==h, 'Bad height')
+    
+    -- Flag to toggle on/off obstacle detection
+    if m.obs then wcm.set_obstacle_enable(m.obs) end
+    
 		local t = unix.time()
 		-- Check if we are sending to the operator
 		if ENABLE_NET then
@@ -128,7 +133,7 @@ if FROM_LOG then
 		-- Collect garbage every cycle
 		collectgarbage()
 		-- Sleep a little
-		unix.usleep(1e5)
+		unix.usleep(2e5)
 	end
 	-- Finish
 	os.exit()
@@ -191,6 +196,7 @@ while true do
 	-- Do the logging if we wish
 	if ENABLE_LOG and t - t_log > LOG_INTERVAL then
 		meta.rsz = sz
+    meta.obs = wcm.get_obstacle_enable()
 		for pname, p in pairs(pipeline) do meta[pname] = p.get_metadata() end
 		logger:record(meta, img, sz)
 		t_log = t

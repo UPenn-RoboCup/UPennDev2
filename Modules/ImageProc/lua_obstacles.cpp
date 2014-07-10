@@ -1,7 +1,3 @@
-//#include "lua.h"
-//#include "lualib.h"
-//#include "lauxlib.h"
-
 #include <lua.hpp>
 #include <stdint.h>
 #include <math.h>
@@ -26,8 +22,7 @@ static int minJ[NMAX];
 static const int NOBS = 30;
 
 //TODO: put into Config
-static const int widthMin = 2;
-static const int widthMax = 20;
+static int widthMin, widthMax;
 
 // Loop through scan lines and check connected black regions
 int obstacleState (bool is_lower) {
@@ -85,8 +80,10 @@ int lua_obstacles(lua_State *L) {
     n = b_t->size[0];
     m = b_t->size[1];
     mask = luaL_optinteger(L, 2, 0); // 8 - field
-    tiltAngle = luaL_optnumber(L, 3, 0.0);
-    max_gap = luaL_optinteger(L, 4, 1);
+		widthMin = luaL_optinteger(L, 3, 5);
+		widthMax = luaL_optinteger(L, 4, 25);
+    tiltAngle = luaL_optnumber(L, 5, 0.0);
+    max_gap = luaL_optinteger(L, 6, 1);
   }
   #endif
   else {
@@ -98,14 +95,16 @@ int lua_obstacles(lua_State *L) {
 
   // Initialize arrays
   for (int i = 0;i<m; i++ ){
-    minJ[i] = 0;
+    //minJ[i] = 0;
+    minJ[i] = n;
   }
 
   // Iterate through image getting projection statistics
   for (int i = -index_offset; i < m+index_offset; i++) {
     int flag = 0; //0 for initial, 1 for scanning, 2 for ended
     int gap = 0;
-    for (int j = 0; j <n ; j++) {
+    //for (int j = 0; j <n ; j++) {
+    for (int j = n-1; j>=0 ; j--) {
     	// if scan on this column is ended
       if (flag == 2) {
       	flag = 0;
@@ -120,7 +119,8 @@ int lua_obstacles(lua_State *L) {
         int pixel = (int) *(im_ptr+index_ij);
         if (pixel == mask) {
           flag=1;
-          if (j>minJ[index_i]) minJ[index_i]=j;
+          //if (j>minJ[index_i]) minJ[index_i]=j;
+          if (j<minJ[index_i]) minJ[index_i]=j;
         }else{
           if (flag==1) {
             gap++;
@@ -138,11 +138,10 @@ int lua_obstacles(lua_State *L) {
   	sumJ += minJ[i];
   	if (minJ[i]>lowest) lowest = minJ[i];
   }
-  //int threshold = (int) sumJ/m*2; //TODO
-  //threshold = (threshold<n)? threshold:n;
-
-  int threshold = (int) lowest*0.65;
-
+  int threshold = (int) sumJ/m*1.5; //TODO
+  threshold = (threshold<n)? threshold:n;
+	//printf("THRESHOLD: %d\n", threshold);
+	
   int obstacleW[NOBS];
   int obstacleI[NOBS];
   int obstacleJ[NOBS];
@@ -153,8 +152,10 @@ int lua_obstacles(lua_State *L) {
   	int obs_width = obstacleState( minJ[i] >= threshold );
   	//printf("obs_width:%d\n", obs_width);
   	if ( (obs_width>=widthMin) && (obs_width<=widthMax) ) {
+			//printf("width? %d widthMin: %d, widthMax: %d\n", obs_width, widthMin, widthMax);
   	  int iObstacle = i - (obs_width+1)/2;
-  	  int jObstacle = (j0 + minJ[i])/2; // TODO: improve later
+  	  //int jObstacle = (j0 + minJ[i])/2; // TODO: improve later
+  	  int jObstacle = minJ[iObstacle];
   		obstacleW[obs_count] = obs_width;
   		obstacleI[obs_count] = iObstacle;
   		obstacleJ[obs_count] = jObstacle;

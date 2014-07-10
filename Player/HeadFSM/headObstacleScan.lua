@@ -28,17 +28,31 @@ function state.update()
   --25 deg can basically cover the whole field
   local pitch, yaw = 25*DEG_TO_RAD
 
-	-- A single sweep
+	--[[ A single sweep
 	if stage == 0 then yaw = yawMag
 	elseif stage == 1 then 
   	wcm.set_obstacle_enable(1)
 		yaw = 0
 	elseif stage == 2 then yaw = -yawMag
-	elseif stage == 4 then 
+	elseif stage == 3 then 
 		yaw = 0
   	wcm.set_obstacle_enable(0)
 	else return 'done' end
-
+--]]
+---[[
+	if stage == 0 then yaw = 0
+	elseif stage == 1 then 
+  	wcm.set_obstacle_enable(1)
+		yaw = -yawMag
+	elseif stage == 2 then yaw = 0
+	elseif stage == 3 then 
+		yaw = yawMag
+	elseif stage == 4 then yaw = 0
+	else 
+  	wcm.set_obstacle_enable(0)
+		return 'done' 
+	end
+--]]
   -- Grab where we are
   --local qNeck = Body.get_head_position()
   local qNeck_approach, doneNeck =

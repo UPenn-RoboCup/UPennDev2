@@ -102,7 +102,10 @@ vision.obstacle = {
   th_min_height = -0.2,
   th_min_orientation = 60/180*math.pi,
   th_green_black_ratio = 2,
-  min_ground_fill_rate = 0.6,  
+  min_ground_fill_rate = 0.4,  
+	--
+	min_width = 5, 
+	max_width = 16,
 }
 
 -- Line
@@ -241,6 +244,9 @@ if IS_WEBOTS then
     th_max_height = 1.25,
     th_min_height = -0.2,
     min_ground_fill_rate = 0.4,
+		--
+		min_width = 3, 
+		max_width = 15,
   }
   
   vision.ball = {

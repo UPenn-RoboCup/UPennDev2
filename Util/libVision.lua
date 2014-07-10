@@ -500,20 +500,32 @@ function libVision.obstacle_new(labelB_t)
   local min_ground_fill_rate = Config.vision.obstacle.min_ground_fill_rate
   
   
-  local obsProps = ImageProc.obstacles(labelB_t, colors.black)
+  --local obsProps = ImageProc.obstacles(labelB_t, colors.black, Config.vision.obstacle.min_width, Config.vision.obstacle.max_width)
+  local obsProps = ImageProc.obstacles(labelB_t, colors.field, Config.vision.obstacle.min_width, Config.vision.obstacle.max_width)
   
   if #obsProps == 0 then return 'NO OBS' end
   
-  for i=1,math.min(20, #obsProps) do
-    local check_passed, v = true
+  --for i=1,math.min(30, #obsProps) do
+  for i=1, #obsProps do
+    local check_passed, v, obstacle_dist = true
+		-- Black check
+		local lx = obsProps[i].position[1] - obsProps[i].width/2
+		local rx = obsProps[i].position[1] + obsProps[i].width/2 
+		local ty = obsProps[i].position[2] - 2*obsProps[i].width
+		local by = obsProps[i].position[2]
+		local black_box = {lx, rx, ty, by}
+		local blackStats, box_area = bboxStats('b', colors.black, black_box)
+		if blackStats.area / box_area < 0.7 then
+			check_passed = false
+			obs_debug = obs_debug.."TO LITTLE BLACK PIXEL"
+		end
+		
     -- Convert to local frame
-    local scale = math.max(1, obsProps[i].width / Config.world.obsDiameter)
-    if label_flag == 'b' then
-      v = check_coordinateB(obsProps[i].position, scale)
-    else
-    	v = check_coordinateA(obsProps[i].position, scale)
-    end
-    local obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
+		if check_passed then
+    	local scale = math.max(1, obsProps[i].width / Config.world.obsDiameter)
+    	v = check_coordinateB(obsProps[i].position, scale)
+    	obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
+		end
     
     -- Ground check
     if check_passed and hb-obsProps[i].position[2]>10 then

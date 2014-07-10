@@ -4,6 +4,14 @@
 -----------------------------------
 -- Something there is non-reentrant
 dofile'../include.lua'
+
+local udp = require'udp'
+local si = require'simple_ipc'
+local mp = require'msgpack.MessagePack'
+local jpeg = require'jpeg'
+local Body = require'Body'
+require'hcm'
+
 local metadata
 if not arg or type(arg[1])~='string' then
 	-- TODO: Find the next available camera
@@ -22,18 +30,16 @@ else
 		assert(metadata, 'Bad camera name')
 	end
 end
-require'hcm'
+
 local ENABLE_NET, SEND_INTERVAL, t_send = true, 1/hcm.get_monitor_fps(), 0
 local ENABLE_LOG, LOG_INTERVAL, t_log = false, 1 / 5, 0
 --local ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
-local FROM_LOG, LOG_DATE = false, '05.28.2014.16.18.44'
+-- local FROM_LOG, LOG_DATE = true, '07.07.2014.22.06.09'
+local FROM_LOG, LOG_DATE = false, '07.07.2014.22.06.09'
+
 local libLog, logger
 
-local udp = require'udp'
-local si = require'simple_ipc'
-local mp = require'msgpack.MessagePack'
-local jpeg = require'jpeg'
-local Body = require'Body'
+
 
 -- Extract metadata information
 local w = metadata.w
@@ -54,6 +60,7 @@ end
 -- Channels
 -- UDP Sending
 --local camera_ch = si.new_publisher('camera0')
+if FROM_LOG then operator = 'localhost' end
 local udp_ch = metadata.udp_port and udp.new_sender(operator, metadata.udp_port)
 print('UDP',operator, metadata.udp_port)
 
@@ -79,7 +86,8 @@ local t_debug = unix.time()
 if FROM_LOG then
 
 	local libLog = require'libLog'
-	local replay = libLog.open(HOME..'/Logs/', LOG_DATE, 'uvc')
+	--local replay = libLog.open(HOME..'/Logs/', LOG_DATE, 'uvc')
+	local replay = libLog.open(HOME..'/Logs/', LOG_DATE, 'yuyv')
 	local metadata = replay:unroll_meta()
 	local util = require'util'
 	print('Unlogging', #metadata, 'images from', LOG_DATE)
@@ -93,12 +101,25 @@ if FROM_LOG then
 			local c_img = c_yuyv:compress(yuyv_t, w, h)
 			meta.sz = #c_img
 			local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
+      if err then print(err) end
 		end
+
 		-- Update the vision routines
 		for pname, p in pairs(pipeline) do
-			p.set_metadata(m[pname])
 			p.update(yuyv_t:data())
+      
+  		if ENABLE_NET and p.send then
+  			for _,v in ipairs(p.send()) do
+  				if v[2] then
+  					udp_data = mp.pack(v[1])..v[2]
+  				else
+  					udp_data = mp.pack(v[1])
+  				end
+  				udp_ret, udp_err = udp_ch:send(udp_data)
+  			end
+  		end
 		end
+
 		-- Debugging
 		if t-t_debug>1 then
 			t_debug = t
@@ -107,7 +128,7 @@ if FROM_LOG then
 		-- Collect garbage every cycle
 		collectgarbage()
 		-- Sleep a little
-		--unix.usleep(1e6/30)
+		unix.usleep(1e5)
 	end
 	-- Finish
 	os.exit()

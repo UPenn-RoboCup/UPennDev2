@@ -501,7 +501,8 @@ function libVision.obstacle_new(labelB_t)
   
   
   --local obsProps = ImageProc.obstacles(labelB_t, colors.black, Config.vision.obstacle.min_width, Config.vision.obstacle.max_width)
-  local obsProps = ImageProc.obstacles(labelB_t, colors.field, Config.vision.obstacle.min_width, Config.vision.obstacle.max_width)
+  local obsProps = ImageProc.obstacles(labelB_t, colors.field, 
+    Config.vision.obstacle.min_width, Config.vision.obstacle.max_width)
   
   if #obsProps == 0 then return 'NO OBS' end
   
@@ -515,9 +516,11 @@ function libVision.obstacle_new(labelB_t)
 		local by = obsProps[i].position[2]
 		local black_box = {lx, rx, ty, by}
 		local blackStats, box_area = bboxStats('b', colors.black, black_box)
-		if blackStats.area / box_area < 0.7 then
+    local black_fill_rate = blackStats.area / box_area
+		if black_fill_rate < min_black_fill_rate then
 			check_passed = false
-			obs_debug = obs_debug.."TO LITTLE BLACK PIXEL"
+			obs_debug = obs_debug..string.format("blak fillrate: %.2f<%.2f", 
+        black_fill_rate, min_black_fill_rate)
 		end
 		
     -- Convert to local frame
@@ -561,9 +564,8 @@ function libVision.obstacle_new(labelB_t)
       obs_count = obs_count + 1
       table.insert(obstacle.dist, obstacle_dist)
       obstacle.iv[obstacle_dist] = vector.new(obsProps[i].position)*scaleB
-      --TODO: dummy values
       obstacle.axisMinor[obstacle_dist] = obsProps[i].width
-      obstacle.axisMajor[obstacle_dist] = 20 
+      obstacle.axisMajor[obstacle_dist] = obsProps[i].width 
       obstacle.orientation[obstacle_dist] = math.pi/2
               
       obstacle.v[obstacle_dist] = v

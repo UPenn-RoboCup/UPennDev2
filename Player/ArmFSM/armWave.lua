@@ -79,7 +79,8 @@ function state.update()
       trLArm1 = Body.get_forward_larm(qLArm1)
       trRArm1 = Body.get_forward_rarm(qRArm1)  
       trRArm1[1],trRArm1[2],trRArm1[3]=0.35,-0.20,-0.02
-      trRArm1[6] = 10*Body.DEG_TO_RAD
+      trRArm1[1],trRArm1[2],trRArm1[3]=0.40,-0.20,0.05
+      trRArm1[6] = 5*Body.DEG_TO_RAD
       local arm_seq = {{'move',trLArm1, trRArm1}}      
       if arm_planner:plan_arm_sequence2(arm_seq) then 
         stage="wave2" 
@@ -93,7 +94,8 @@ function state.update()
       trLArm1 = Body.get_forward_larm(qLArm1)
       trRArm1 = Body.get_forward_rarm(qRArm1)  
       trRArm1[1],trRArm1[2],trRArm1[3]=0.35,-0.30,-0.02
-      trRArm1[6] = -10*Body.DEG_TO_RAD
+      trRArm1[1],trRArm1[2],trRArm1[3]=0.40,-0.40,0.05
+      trRArm1[6] = -5*Body.DEG_TO_RAD
       local arm_seq = {{'move',trLArm1, trRArm1}}      
       if arm_planner:plan_arm_sequence2(arm_seq) then 
         stage="wave1" 

@@ -51,12 +51,12 @@ end
 
 
 
-local function sort_obs(t0)
+local function sort_obs(t0, num)
   local function comp(x1,x2) return x1>x2 end 
   local t1, t2 = {}, {}
   for i=1,#t0 do t1[t0[i]] = i end
   table.sort(t0, comp)
-  for i=1,2 do t2[i] = t1[t0[i]] end
+  for i=1,num do t2[i] = t1[t0[i]] end
   return t2
 end
 
@@ -99,10 +99,10 @@ local function update_vision(detected)
   -- If the obstacle is detected
   obstacle = detected.obstacles
   if obstacle then
-    local xs = sort_obs(obstacle.xp)
-    local ys = sort_obs(obstacle.yp)
+    local xs = sort_obs(obstacle.xp, 3)
+    local ys = sort_obs(obstacle.yp, 3)
     
-    for i=1,2 do
+    for i=1,3 do
       local x = (xs[i]-1)*obstacle.res + obstacle.res/2 - 4.5
       local y = (ys[i]-1)*obstacle.res + obstacle.res/2 - 3
       wcm['set_obstacle_v'..i]({x, y})
@@ -186,8 +186,8 @@ function libWorld.send()
   end  
   
   if obstacle then
-    local obs_global = {}, {}
-    for i=1,2 do
+    local obs_global = {}
+    for i=1,3 do
       local obs = wcm['get_obstacle_v'..i]()
       -- We store the global position of obstacles
       obs_global[i] = util.pose_global({obs[1],obs[2],0}, wcm.get_robot_pose())
@@ -195,7 +195,8 @@ function libWorld.send()
       to_send.info = to_send.info..string.format(
         'Obstacle: %.2f %.2f\n', unpack(obs) )
     end
-    to_send.obstacle = {obs_global[1], obs_global[2]}
+    -- to_send.obstacle = {obs_global[1], obs_global[2]}
+    to_send.obstacle = obs_global
   end
   return to_send
 end

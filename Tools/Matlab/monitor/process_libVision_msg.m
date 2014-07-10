@@ -7,12 +7,11 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         % Clear graphics objects
         % ball
         set(cam.p_ball,'Xdata', [],'Ydata', []);
-        %TODO: assume up to 3 obstacls for now
-        for i=1:2 
-          % posts
-          set(cam.p_post{i},'Xdata', [],'Ydata', []);
-          % obstacles
-          set(cam.h_obstacle{i}, 'Xdata', [], 'Ydata', []);
+        % posts
+        for i=1:2 set(cam.p_post{i},'Xdata', [],'Ydata', []); end
+        % obstacles
+        for i=1:numel(cam.h_obstacle) 
+          set(cam.h_obstacle{i}, 'Xdata', [], 'Ydata', []); 
         end      
       
         % Set the debug information
@@ -72,7 +71,7 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
         
         if isfield(metadata, 'obstacles')
           obstacles = metadata.obstacles;
-          for i=1:min(2, numel(obstacles.iv))
+          for i=1:numel(obstacles.iv)
             obs_c = obstacles.iv{i};
             wo = obstacles.axisMajor(i)/2;
             ho = obstacles.axisMinor(i)/2;
@@ -84,21 +83,7 @@ function [needs_draw] = process_libVision_msg(metadata, raw, cam)
             x21 = obs_c + [wo -ho] * obs_rot;
             x22 = obs_c + [-wo -ho] * obs_rot;
             obs_box = [x11; x12; x22; x21; x11];
-            
-            
-            % obs_bbox = obstacles.bbox{i};
-            %
-            % % TODO:use centroid and axisMajor/axisMinor
-            % left_x = obs_bbox(1);
-            % right_x = obs_bbox(2);
-            % top_y = obs_bbox(3);
-            % bot_y = obs_bbox(4);
-            % x11 = [left_x top_y];
-            % x12 = [right_x top_y];
-            % x21 = [left_x bot_y];
-            % x22 = [right_x bot_y];
-            % obs_box = [x11; x12; x22; x21; x11];
-            
+                        
             set(cam.h_obstacle{i}, 'XData', obs_box(:,1), 'YData', obs_box(:,2));
           end
         end

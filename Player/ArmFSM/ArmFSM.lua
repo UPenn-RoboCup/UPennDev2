@@ -76,7 +76,7 @@ local armDebrisGrip = require'armDebrisGrip'
 --local armSupportDoor = require'armSupportDoor'
 
 local armForceReset = require'armForceReset'
-
+local armWave = require'armWave'
 
 
 local sm = fsm.new(armIdle);
@@ -122,6 +122,7 @@ sm:add_state(armDoorPass)
 
 
 sm:add_state(armIKTest)
+sm:add_state(armWave)
 
 --sm:add_state(armLargeValveGrip)
 --sm:add_state(armLargeValveGripTwohand)
@@ -144,6 +145,9 @@ sm:set_transition(armInit, 'done', armPose1)
 --sm:set_transition(armPose1, 'teleop', armTeleop)
 sm:set_transition(armPose1, 'teleop', armIKTest)
 sm:set_transition(armIKTest, 'teleop', armPose1)
+
+sm:set_transition(armPose1, 'wave', armWave)
+sm:set_transition(armWave, 'done', armPose1)
 
 --[[
 sm:set_transition(armPose1, 'doorgrab', armDoorGrip)

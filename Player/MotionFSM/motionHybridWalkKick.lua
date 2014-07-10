@@ -214,7 +214,7 @@ local function calculate_footsteps()
       --stationary kick test
       step_queue={
         {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
-        {{0.06,0,0},1,  0.5,2,0.5,   {0,0,0},{-2,Config.walk.stepHeight,0}}, --rf kick
+        {{0.12,0,0},1,  0.3,1.5,0.3,   {0,0,0},{-2,Config.walk.stepHeight,0}}, --rf kick
         {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
       }
 

@@ -520,6 +520,10 @@ end
 --@param dy distance moved in y direction since last update
 --@param da angle turned since last update
 function poseFilter.odometry(dx, dy, da)
+  if not da then
+    print ("ODOMETRY A NIL")
+    return
+  end
   for ip = 1,N do
     ca = math.cos(ap[ip])
     sa = math.sin(ap[ip])

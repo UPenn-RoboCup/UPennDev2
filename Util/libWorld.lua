@@ -124,8 +124,8 @@ local function update_vision(detected)
     --Most of the time only one obstacle will be detected...
     -- TODO: Check the pos_global[1]>4 for opponent??
     if #obstacle.v == 1 then
-      --TODO: better way of doing this...
-      local margin = 10*DEG_TO_RAD
+      --TODO: i know this is silly...
+      local margin = 8*DEG_TO_RAD
       if Body.get_head_position()[1]>margin then
         OF[1]:observation_xy(obstacle.v[1][1], obstacle.v[1][2],
           obstacle.dr[1], obstacle.da[1])

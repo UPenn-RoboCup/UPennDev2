@@ -52,7 +52,7 @@ static uint16_t crc_table[256] = {0x0000,
 };
 
 // Modified ever so slightly from Robotis' code
-uint16_t dynamixel_crc( uint16_t crc_accum, const unsigned char *data_blk_ptr, uint16_t data_blk_size ){
+uint16_t dynamixel_crc(uint16_t crc_accum, const unsigned char *data_blk_ptr, uint16_t data_blk_size) {
 	uint16_t i, j;
 	for(j=0; j<data_blk_size; j++) {
 		i = ((uint16_t)(crc_accum >> 8) ^ *data_blk_ptr++) & 0xff;
@@ -181,6 +181,57 @@ uint16_t n) {
 	return dynamixel_instruction(id, inst, parameter, nparameter);
 }
 
+void dynamixel_instruction_init_bulk_read() {
+  /* add the header as always */
+  inst_pkt.header1 = DYNAMIXEL_PACKET_HEADER;
+  inst_pkt.header2 = DYNAMIXEL_PACKET_HEADER_2;
+  inst_pkt.header3 = DYNAMIXEL_PACKET_HEADER_3;
+  inst_pkt.stuffing = DYNAMIXEL_PACKET_STUFFING;
+  /* broadcasting to many IDs */
+  inst_pkt.id = DYNAMIXEL_BROADCAST_ID;
+  /* add the instruction */
+  inst_pkt.instruction = INST_BULK_READ;
+  inst_pkt.length = 0;
+}
+
+/* Input:
+ * array of ids
+ * address to read
+ * length to read
+ */
+void dynamixel_instruction_add_bulk_read(
+	uint8_t id, uint8_t address_l, uint8_t address_h, uint16_t len
+) {
+	uint8_t* params = inst_pkt.parameter + inst_pkt.length;
+
+	params[0] = id;
+	params[1] = address_l;
+	params[2] = address_h;
+	params[3] = len & 0x00FF;
+	params[4] = (len >> 8) & 0x00FF;
+	
+	inst_pkt.length += 5;
+
+}
+
+DynamixelPacket *dynamixel_instruction_finalize_bulk_read(){
+  uint16_t nparameter = inst_pkt.length;
+  
+  /* set the length at the end */
+  inst_pkt.length += 3; // 2 checksum + 1 instruction byte
+  inst_pkt.len[0] = inst_pkt.length & 0x00FF; // low byte
+  inst_pkt.len[1] = (inst_pkt.length>>8) & 0x00FF; // high byte
+
+  /* Place checksum after parameters */
+  inst_pkt.checksum = dynamixel_checksum(&inst_pkt);
+  inst_pkt.parameter[nparameter]   = inst_pkt.checksum & 0x00FF;
+  inst_pkt.parameter[nparameter+1] = (inst_pkt.checksum>>8) & 0x00FF;
+
+  /* Give the pointer to the instruction */
+	return &inst_pkt;
+  
+}
+
 /* Input:
  * array of ids
  * address to read
@@ -191,16 +242,16 @@ uint8_t address_l, uint8_t address_h, uint16_t len,
 	uint8_t ids[], uint8_t nids){
 
 	uint8_t id   = DYNAMIXEL_BROADCAST_ID;
-	uint8_t inst = INST_BULK_READ;
-	uint8_t nparameter = nids*5;
+	uint8_t inst = INST_SYNC_READ;
+	uint8_t nparameter = nids + 4;
 	uint8_t parameter[nparameter];
+	parameter[0] = address_l;
+	parameter[1] = address_h;
+	parameter[2] = len & 0x00FF;
+	parameter[3] = (len >> 8) & 0x00FF;
 	int i;
 	for (i = 0; i < nids; i++) {
-		parameter[5*i+0] = ids[i];
-		parameter[5*i+1] = address_l;
-		parameter[5*i+2] = address_h;
-		parameter[5*i+3] = len & 0x00FF;
-		parameter[5*i+4] = (len>>8) & 0x00FF;
+		parameter[i+4] = ids[i];
 	}
 
 	return dynamixel_instruction(id, inst, parameter, nparameter);
@@ -221,7 +272,7 @@ void dynamixel_instruction_init_bulk_write(){
 
 void dynamixel_instruction_add_bulk_write(
   uint8_t id, uint8_t address_l, uint8_t address_h, uint8_t reg_sz, int32_t val
-){
+) {
   /* save the pointer to the current parameters */
   uint8_t *params;
   //uint16_t d;

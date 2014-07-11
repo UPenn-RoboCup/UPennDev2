@@ -250,6 +250,11 @@ end
 ----------------------
 -- Webots compatibility
 if IS_WEBOTS then
+  
+  Body.enable_read = function(chain)
+  end
+  Body.disable_read = function(chain)
+  end
 
   --SJ: I put test_walk capabality here
   local fsm_chs = {}

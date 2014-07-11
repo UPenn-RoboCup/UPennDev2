@@ -51,6 +51,7 @@ local p_parse_mx = lD.byte_to_number[lD.mx_registers.position[2]]
 local min, max, floor = math.min, math.max, math.floor
 local schar = string.char
 local sel, re, wr, get_time, usleep = unix.select, unix.read, unix.wr, unix.time, unix.usleep
+local tinsert = table.insert
 
 -- Timeouts
 local WRITE_TIMEOUT = 1 / 200
@@ -249,10 +250,10 @@ local function entry(bus)
 		dcm.actuatorPtr.torque_enable[j_id - 1] = tq_en
 		--
 		if is_nx then
-			table.insert(rd_addrs, lD.nx_registers.position)
+			tinsert(rd_addrs, lD.nx_registers.position)
 			has_nx = true
 		else
-			table.insert(rd_addrs, lD.mx_registers.position)
+			tinsert(rd_addrs, lD.mx_registers.position)
 			has_mx = true
 		end
 	end
@@ -283,18 +284,18 @@ local function do_parent(request, bus)
 			m_id = j_to_m[j_id]
 			if bus.has_mx_id[m_id] then
 				has_mx = true
-				table.insert(m_ids, m_id)
-				table.insert(m_vals, ptr[j_id-1])
-				table.insert(addr_n_len, lD.mx_registers[wr_reg])
+				tinsert(m_ids, m_id)
+				tinsert(m_vals, ptr[j_id-1])
+				tinsert(addr_n_len, lD.mx_registers[wr_reg])
 				-- if TQ then copy stuff
 				if wr_reg=='torque_enable' then
 					cp_ptr[j_id-1] = p_ptr[j_id-1]
 				end
 			elseif bus.has_nx_id[m_id] then
 				has_nx = true
-				table.insert(m_ids, m_id)
-				table.insert(m_vals, ptr[j_id-1])
-				table.insert(addr_n_len, lD.nx_registers[wr_reg])
+				tinsert(m_ids, m_id)
+				tinsert(m_vals, ptr[j_id-1])
+				tinsert(addr_n_len, lD.nx_registers[wr_reg])
 				-- if TQ then copy stuff
 				if wr_reg=='torque_enable' then
 					cp_ptr[j_id-1] = p_ptr[j_id-1]
@@ -311,7 +312,6 @@ local function do_parent(request, bus)
           tq_status = lD.set_nx_torque_enable(m_id, m_vals[i], bus)
         end
         if #tq_status==1 then
-          print("TQ", m_id)
           ptable(tq_status[1])
         else
           print("BAD TQ", m_id)
@@ -342,12 +342,12 @@ local function do_parent(request, bus)
 			m_id = j_to_m[j_id]
 			if bus.has_mx_id[m_id] then
 				has_mx = true
-				table.insert(m_ids, m_id)
-				table.insert(addr_n_len, lD.mx_registers[rd_reg])
+				tinsert(m_ids, m_id)
+				tinsert(addr_n_len, lD.mx_registers[rd_reg])
 			elseif bus.has_nx_id[m_id] then
 				has_nx = true
-				table.insert(m_ids, m_id)
-				table.insert(addr_n_len, lD.nx_registers[rd_reg])
+				tinsert(m_ids, m_id)
+				tinsert(addr_n_len, lD.nx_registers[rd_reg])
 			end
 		end
     -- Check if reading position already
@@ -405,9 +405,9 @@ local function output_co(bus)
 			j_id = m_to_j[m_id]
 			-- Only ad position commands if torque enabled
 			if tq_ptr[j_id-1]==1 then
-				table.insert(send_ids, m_id)
-				table.insert(commands, radian_to_step(j_id, cp_ptr[j_id - 1]))
-				table.insert(cmd_addrs,
+				tinsert(send_ids, m_id)
+				tinsert(commands, radian_to_step(j_id, cp_ptr[j_id - 1]))
+				tinsert(cmd_addrs,
 					is_mx and lD.mx_registers.command_position or lD.nx_registers.command_position
 				)
 			end
@@ -463,9 +463,12 @@ local function consolidate_queue(request_queue, req)
 			break
 		end
 	end
-	if is_merge then return end
+	if is_merge then
+    print("MERGED", req.rd_reg or req.wr_reg)
+    return
+  end
 	-- Enqueue for the bus if not merged to previous
-	table.insert(request_queue, req)
+	tinsert(request_queue, req)
 end
 
 local function process_parent(buses)
@@ -491,7 +494,7 @@ local function loop(buses)
 	local _fds = {}
 	for bus_id, bus in ipairs(buses) do
 		-- Add the fd
-		table.insert(_fds, bus.fd)
+		tinsert(_fds, bus.fd)
 		-- Make the output coroutine
 		bus.output_co = coroutine.create(output_co)
 		local status, msg = coroutine.resume(bus.output_co, bus)
@@ -594,7 +597,7 @@ local function loop(buses)
 				string.format('\nDCM | Uptime %.2f sec, Mem: %d kB', t_start - t0, kb),
 			}
 			for bus_id, bus in ipairs(buses) do
-				table.insert(debug_str, string.format(
+				tinsert(debug_str, string.format(
 					'%s Command Rate %.1f Hz', bus.name, bus.cmds_cnt / 2)
 				)
 				bus.cmds_cnt = 0
@@ -625,7 +628,7 @@ for chain_id, chain in ipairs(dcm_chains) do
 	-- Point to the configuration
 	for k, v in pairs(chain) do bus[k] = v end
 	-- Add to our table
-	table.insert(buses, bus)
+	tinsert(buses, bus)
 	-- Lookup table
 	assert(bus.name, 'No bus name identifier!')
 	name_to_bus[bus.name] = bus

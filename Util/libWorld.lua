@@ -102,6 +102,7 @@ local function update_vision(detected)
   -- If the obstacle is detected
   obstacle = detected.obstacles
   if obstacle then
+    -- Old silly way
     -- local xs = sort_obs(obstacle.xp, 3)
     -- local ys = sort_obs(obstacle.yp, 3)
     --
@@ -117,7 +118,7 @@ local function update_vision(detected)
     --   local pos_local = util.pose_relative({x,y,0}, wcm.get_robot_pose())
     --   wcm['set_obstacle_v'..i](pos_local)
     -- end
-    
+
 
     -- If use 2D filter
     --Most of the time only one obstacle will be detected...

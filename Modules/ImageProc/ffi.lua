@@ -190,8 +190,7 @@ end
 
 
 -- Assume 3 obstacles (2 + one opponent)
-function ImageProc.grid_map(grid_t, res)
-  --TODO: be careful about the dimension...
+function ImageProc.grid_filter(grid_t, res)
   local m, n = grid_t:size(1), grid_t:size(2)
   local n_grid = m*n
   local max_cnt = vector.zeros(3)
@@ -209,19 +208,19 @@ function ImageProc.grid_map(grid_t, res)
     end
     g_ptr = g_ptr + 1
   end
-  
-  -- Ind2sub and conver to global pos
+    
+  -- Ind2sub and convert to position
   local x, y = {}, {}
   for i=1,3 do
-    local yi = math.ceil( inds[i]/m )
-    local xi = inds[i] - yi*m
-    --TODO: plus or minus, check...
-    x[i] = (xi-1)*res + res/2 - 4.5
+    -- Torch goes row by row
+    local xi = math.ceil( inds[i]/n )
+    local yi = inds[i] - (xi-1)*n
+    -- x[i] = (xi-1)*res + res/2 - 4.5
+    x[i] = 4.5 - (xi-1)*res + res/2
     y[i] = (yi-1)*res + res/2 - 3
   end
-  
+
   return x, y
-  
 end
 
 

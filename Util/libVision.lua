@@ -18,9 +18,10 @@ require'wcm'
 local MAP = {}
 MAP.res = 0.25
 if IS_WEBOTS then MAP.res = 0.2 end
+--TODO: don't need to care about the other half
 MAP.sizex = 9/MAP.res
 MAP.sizey = 6/MAP.res
-MAP.xmin, MAP.ymin = -4.5, -3
+MAP.xmax, MAP.ymin = 4.5, -3
 MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
 -- TODO: if use grid map, use C or ffi.lua to speed up
 MAP.grid = torch.Tensor(MAP.sizex, MAP.sizey):zero()
@@ -584,14 +585,17 @@ function libVision.obstacle_new(labelB_t)
     table.sort(obstacle.dist)
     for i=1, math.min(3, obstacle.count) do
       obsStats.iv[i] = obstacle.iv[obstacle.dist[i]]
-	    local pos = obstacle.v[obstacle.dist[i]]
+	    local pos = obstacle.v[obstacle.dist[i]]  -- LOCAL
       obsStats.v[i] = vector.new(pos)
       obsStats.dr[i] = 0.25*obstacle.dist[i]  --TODO
       obsStats.da[i] = 5*DEG_TO_RAD -- TODO
 
       ------------
-			local xi = math.ceil((pos[1]-MAP.xmin) / MAP.res)
-			local yi = math.ceil((pos[2]-MAP.ymin) / MAP.res)
+      -- local xi = math.ceil((pos[1]-MAP.xmin) / MAP.res)
+      -- pos is local
+      local global_pos = util.pose_global({pos[1], pos[2], 0}, wcm.get_robot_pose())
+      local xi = math.ceil((MAP.xmax-global_pos[1]) / MAP.res)
+			local yi = math.ceil((global_pos[2]-MAP.ymin) / MAP.res)
       xi = math.min(math.max(1, xi), MAP.sizex)
       yi = math.min(math.max(1, yi), MAP.sizey)
       -- MAP.xp[xi] = MAP.xp[xi] + 1
@@ -606,7 +610,8 @@ function libVision.obstacle_new(labelB_t)
     -- obsStats.xp, obsStats.yp = MAP.xp, MAP.yp
     -- obsStats.res = MAP.res
     
-    obsStats.xs, obsStats.ys = ImageProc2.grid_map(MAP.grid, MAP.res)
+    -- There are global position
+    obsStats.xs, obsStats.ys = ImageProc2.grid_filter(MAP.grid, MAP.res)
     
     return 'Detected', obsStats
   else
@@ -911,7 +916,8 @@ function libVision.update(img)
 	local obstacle_fails, obstacles
   
 	if wcm.get_obstacle_reset()==1 then
-		MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
+    -- MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
+    MAP.grid:zero()
 		wcm.set_obstacle_reset(0)
 	end
   

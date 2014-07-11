@@ -112,15 +112,15 @@ local function update_vision(detected)
     --   wcm['set_obstacle_v'..i]({x, y})
     -- end
     
-    -- -- If use grid map
-    -- for i=1,#obstacle.xs do
-    --   local x, y = obstacle.xs[i], obstacle.ys[i]
-    --   local pos_local = util.pose_relative({x,y,0}, wcm.get_robot_pose())
-    --   wcm['set_obstacle_v'..i](pos_local)
-    -- end
+    -- If use grid map
+    for i=1,#obstacle.xs do
+      local x, y = obstacle.xs[i], obstacle.ys[i]
+      local pos_local = util.pose_relative({x,y,0}, wcm.get_robot_pose())
+      wcm['set_obstacle_v'..i](pos_local)
+    end
 
 
-    -- If use 2D filter
+    --[[ If use 2D filter
     --Most of the time only one obstacle will be detected...
     -- TODO: Check the pos_global[1]>4 for opponent??
     if #obstacle.v == 1 then
@@ -153,6 +153,7 @@ local function update_vision(detected)
           obstacle.dr[2], obstacle.da[2])
       end
     end
+    --]]
      
   end  -- end of obstacle
   

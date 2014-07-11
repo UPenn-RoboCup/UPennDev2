@@ -212,7 +212,9 @@ function state.exit()
     end
   end
   mcm.set_walk_ismoving(0) --We are stopped
-  mcm.set_servo_read(0) --now disable leg joint reading
+  --now disable leg joint reading
+  Body.disable_read'lleg'
+  Body.disable_read'rleg'
 end
 
 return state

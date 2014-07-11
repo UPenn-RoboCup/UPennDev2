@@ -451,6 +451,7 @@ end
 
 local function consolidate_queue(request_queue, req)
 	-- Consolidate the queue
+  --[[
 	local is_merge = false
 	for _, v in ipairs(request_queue) do
 		if v.rd_reg and req.rd_reg and v.rd_reg==req.rd_reg then
@@ -467,6 +468,7 @@ local function consolidate_queue(request_queue, req)
     print("MERGED", req.rd_reg or req.wr_reg)
     return
   end
+  --]]
 	-- Enqueue for the bus if not merged to previous
 	tinsert(request_queue, req)
 end

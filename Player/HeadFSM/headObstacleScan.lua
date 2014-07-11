@@ -27,7 +27,8 @@ function state.update()
 
   local qNeck = Body.get_head_command_position()
   --25 deg can basically cover the whole field
-  local pitch, yaw = 25*DEG_TO_RAD
+	-- but not enough for detecting obs near center circle
+  local pitch, yaw = 28*DEG_TO_RAD
 
 	---[[ A single sweep
 	if stage == 0 then yaw = yawMag

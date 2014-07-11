@@ -16,7 +16,7 @@ function h = show_monitor_thorwin
     f_mainA = gca;
     f_lA = axes('Units','Normalized','position',[0 0.5 0.3 0.5]);
     f_yuyv = axes('Units','Normalized','position',[0.3 0.5 0.3 0.5]);
-    f_field = axes('Units','Normalized','position',[0.3 0 0.3 0.5]);
+    f_field = axes('Units','Normalized','position',[0.3 -0.05 0.3 0.5]);
 
     cam = {};
 

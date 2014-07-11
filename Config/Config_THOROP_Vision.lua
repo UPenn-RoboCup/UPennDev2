@@ -244,7 +244,7 @@ if IS_WEBOTS then
     min_black_fill_rate = 0.6,
     th_max_height = 1.25,
     th_min_height = -0.2,
-    min_ground_fill_rate = 0.4,
+    min_ground_fill_rate = 0.55,
 		--
 		min_width = 3, 
 		max_width = 15,

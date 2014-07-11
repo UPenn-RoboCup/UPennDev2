@@ -22,6 +22,8 @@ MAP.sizex = 9/MAP.res
 MAP.sizey = 6/MAP.res
 MAP.xmin, MAP.ymin = -4.5, -3
 MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
+-- TODO: if use grid map, use C or ffi.lua to speed up
+-- MAP.grid = torch.Tensor(MAP.sizex, MAP.sizey):zero()
 
 
 -- Body should be optional...
@@ -498,9 +500,7 @@ function libVision.obstacle_new(labelB_t)
   local th_min_height = Config.vision.obstacle.th_min_height
   local th_min_orientation = Config.vision.obstacle.th_min_orientation
   local min_ground_fill_rate = Config.vision.obstacle.min_ground_fill_rate
-  
-  
-  --local obsProps = ImageProc.obstacles(labelB_t, colors.black, Config.vision.obstacle.min_width, Config.vision.obstacle.max_width)
+    
   local obsProps = ImageProc.obstacles(labelB_t, colors.field, 
     Config.vision.obstacle.min_width, Config.vision.obstacle.max_width)
   
@@ -530,6 +530,21 @@ function libVision.obstacle_new(labelB_t)
     	obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
 		end
     
+    -- Field bounds check
+    if check_passed then
+      local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
+      --TODO: for now ignore opponent
+      if math.abs(global_v[1])>xMax-0.3 or math.abs(global_v[2])>yMax then
+        check_passed = false
+        obs_debug = obs_debug..'OUTSIDE FIELD!\n'
+      end
+    end
+    -- Distance check
+    if check_passed and obstacle_dist>7 then  --TODO
+      check_passed = false
+      obs_debug = obs_debug..string.format('TOO FAR:%.2f >%.2f\n', obstacle_dist, 7)
+    end
+    
     -- Ground check
     if check_passed and hb-obsProps[i].position[2]>10 then
       local left_x = obsProps[i].position[1] - obsProps[i].width/2
@@ -546,27 +561,12 @@ function libVision.obstacle_new(labelB_t)
       end
     end
     
-    -- Field bounds check
-    if check_passed then
-      local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
-      if math.abs(global_v[1])>xMax or math.abs(global_v[2])>yMax then
-        check_passed = false
-        obs_debug = obs_debug..'OUTSIDE FIELD!\n'
-      end
-    end
-    -- Distance check
-    if check_passed and obstacle_dist>7 then  --TODO
-      check_passed = false
-      obs_debug = obs_debug..string.format('TOO FAR:%.2f >%.2f\n', obstacle_dist, 7)
-    end
-    
     if check_passed then
       obs_count = obs_count + 1
       table.insert(obstacle.dist, obstacle_dist)
       obstacle.iv[obstacle_dist] = vector.new(obsProps[i].position)*scaleB
       obstacle.axisMinor[obstacle_dist] = obsProps[i].width
       obstacle.axisMajor[obstacle_dist] = obsProps[i].width 
-      obstacle.orientation[obstacle_dist] = math.pi/2
               
       obstacle.v[obstacle_dist] = v
       obstacle.detect = 1
@@ -580,21 +580,27 @@ function libVision.obstacle_new(labelB_t)
     local obsStats = {}
     obsStats.iv, obsStats.v = {},{}
     obsStats.axisMinor, obsStats.axisMajor, obsStats.orientation = {}, {}, {}
+    obsStats.dr, obsStats.da = {},{}
     table.sort(obstacle.dist)
     for i=1, math.min(3, obstacle.count) do
       obsStats.iv[i] = obstacle.iv[obstacle.dist[i]]
 	    local pos = obstacle.v[obstacle.dist[i]]
+      obsStats.v[i] = vector.new(pos)
+      obsStats.dr[i] = 0.25*obstacle.dist[i]  --TODO
+      obsStats.da[i] = 5*DEG_TO_RAD -- TODO
+
+      ------------
 			local xi = math.ceil((pos[1]-MAP.xmin) / MAP.res)
 			local yi = math.ceil((pos[2]-MAP.ymin) / MAP.res)
-
       xi = math.min(math.max(1, xi), MAP.sizex)
       yi = math.min(math.max(1, yi), MAP.sizey)
       MAP.xp[xi] = MAP.xp[xi] + 1
       MAP.yp[yi] = MAP.yp[yi] + 1
-
+      ------------
+      
       obsStats.axisMinor[i] = obstacle.axisMinor[obstacle.dist[i]]
       obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 
-      obsStats.orientation[i] = obstacle.orientation[obstacle.dist[i]]
+      obsStats.orientation[i] = math.pi/2
     end    
     obsStats.xp, obsStats.yp = MAP.xp, MAP.yp
     obsStats.res = MAP.res

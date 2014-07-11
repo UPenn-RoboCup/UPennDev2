@@ -38,6 +38,7 @@ local ENABLE_LOG, LOG_INTERVAL, t_log = false, 1 / 5, 0
 --local FROM_LOG, LOG_DATE = true, '07.10.2014.11.54.17'
 --local FROM_LOG, LOG_DATE = true, '07.10.2014.11.54.58'
 --local FROM_LOG, LOG_DATE = true, '07.10.2014.12.09.01'
+--local FROM_LOG, LOG_DATE = true, '07.10.2014.17.45.55'
 local FROM_LOG, LOG_DATE = false, '07.07.2014.22.06.09'
 
 local libLog, logger
@@ -92,7 +93,7 @@ if FROM_LOG then
 
 	local libLog = require'libLog'
 	--local replay = libLog.open(HOME..'/Logs/', LOG_DATE, 'uvc')
-	local replay = libLog.open(HOME..'/Logs/', LOG_DATE, 'yuyv')
+	local replay = libLog.open(HOME..'/Logs/grasp0710/', LOG_DATE, 'yuyv')
 	local metadata = replay:unroll_meta()
 	local util = require'util'
 	print('Unlogging', #metadata, 'images from', LOG_DATE)
@@ -102,7 +103,9 @@ if FROM_LOG then
 		assert(m.h==h, 'Bad height')
     
     -- Flag to toggle on/off obstacle detection
-    if m.obs then wcm.set_obstacle_enable(m.obs) end
+    if m.obs then 
+    	wcm.set_obstacle_enable(m.obs) 
+    end
     
 		local t = unix.time()
 		-- Check if we are sending to the operator
@@ -132,7 +135,7 @@ if FROM_LOG then
 		-- Debugging
 		if t-t_debug>1 then
 			t_debug = t
-			print("DEBUG")
+    	print('Obstacle enable?:', wcm.get_obstacle_enable())
 		end
 		-- Collect garbage every cycle
 		collectgarbage()

@@ -274,7 +274,7 @@ local function do_parent(request, bus)
 	-- Check if writing to the motors
 	local wr_reg, rd_reg = request.wr_reg, request.rd_reg
 	local bus_name = request.bus
-	--ptable(request)
+	ptable(request)
 	local m_id
 	if wr_reg then
 		local ptr = dcm.actuatorPtr[wr_reg]
@@ -311,12 +311,14 @@ local function do_parent(request, bus)
               lD.get_mx_torque_enable(m_id, bus) or
               lD.get_nx_torque_enable(m_id, bus)
             if #p_status==1 and p_status[1].error==0 then
+ptable(p_status)
           		read_val = is_mx and
-                p_parse_mx(unpack(pkt.parameter)) or
-            		p_parse(unpack(pkt.parameter))
-            	p_ptr[j_id - 1] = step_to_radian(j_id, read_val)
-            	p_ptr_t[j_id - 1] = get_time()
-              cp_ptr[j_id - 1] = p_ptr[j_id - 1]
+                p_parse_mx(unpack(p_status[1].parameter)) or
+            		p_parse(unpack(p_status[1].parameter))
+print("STEP2RAD", j_id, read_val)
+--            	p_ptr[j_id - 1] = step_to_radian(j_id, read_val)
+--            	p_ptr_t[j_id - 1] = get_time()
+--              cp_ptr[j_id - 1] = p_ptr[j_id - 1]
             else
               print("BAD TQ P", m_id)
             end
@@ -371,9 +373,11 @@ local function do_parent(request, bus)
 		end
 		return #m_ids, rd_reg
 	elseif bus_name then
+    print("SETTING", request.key, request.val, bus_name)
 		local bus = name_to_bus[bus_name]
 		if not bus then return end
 		bus[request.key] = request.val
+    print("SETTING", request.key, request.val)
 	elseif request.ft then
 		if bus.name=='lleg' then
 			local ft_reading = get_ft({24, 26}, left_ft, bus)
@@ -492,6 +496,10 @@ local function process_parent(buses)
 			for bus_id, bus in ipairs(buses) do
 				consolidate_queue(bus.request_queue, req)
 			end
+    else
+			for bus_id, bus in ipairs(buses) do
+        tinsert(bus.request_queue, req)
+      end
 		end
 	end
 end

@@ -88,7 +88,7 @@ local left_leg = {
   ttyname = '/dev/ttyUSB3',
 	-- waist yaw
   m_ids = {16,18,20, 22, 24,26, 27},
-  enable_read = true,
+  enable_read = false,
 }
 -- For RoboCup, use an MX only chain for the arms
 local upper_body_rc = {

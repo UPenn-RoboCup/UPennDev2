@@ -239,10 +239,12 @@ end
 -- Special functions
 ---
 function Body.enable_read(chain)
-  dcm_ch:send(mp.pack({bus=chain,key='enable_read', val=true}))
+print("EN READ")
+  dcm_ch:send(mpack({bus=chain,key='enable_read', val=true}))
 end
 function Body.disable_read(chain)
-  dcm_ch:send(mp.pack({bus=chain,key='enable_read', val=false}))
+print("DIS READ")
+  dcm_ch:send(mpack({bus=chain,key='enable_read', val=false}))
 end
 
 ----------------------

@@ -502,7 +502,7 @@ function libVision.obstacle_new(labelB_t)
   local th_min_orientation = Config.vision.obstacle.th_min_orientation
   local min_ground_fill_rate = Config.vision.obstacle.min_ground_fill_rate
     
-  local obsProps = ImageProc.obstacles(labelB_t, colors.field, 
+  local obsProps = ImageProc.obstacles(labelB_t,
     Config.vision.obstacle.min_width, Config.vision.obstacle.max_width)
   
   if #obsProps == 0 then return 'NO OBS' end

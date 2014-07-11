@@ -62,13 +62,14 @@ int lua_obstacles(lua_State *L) {
 	uint8_t *im_ptr;
 	int m, n, max_gap;
 	double tiltAngle;
-	int mask;
+  // int mask;
+  uint8_t mask_g, mask_r, mask_w;
   
   if (lua_islightuserdata(L, 1)) {
     im_ptr = (uint8_t *) lua_touserdata(L, 1);
     m = luaL_checkint(L, 2);
     n = luaL_checkint(L, 3);
-    mask = luaL_optinteger(L, 4, 0); //black
+    mask_g = luaL_optinteger(L, 4, 8); //black
     tiltAngle = luaL_optnumber(L, 5, 0.0);
     max_gap = luaL_optinteger(L, 6, 1 );
   }
@@ -79,11 +80,16 @@ int lua_obstacles(lua_State *L) {
     im_ptr = b_t->storage->data;
     n = b_t->size[0];
     m = b_t->size[1];
-    mask = luaL_optinteger(L, 2, 0); // 8 - field
-		widthMin = luaL_optinteger(L, 3, 5);
-		widthMax = luaL_optinteger(L, 4, 25);
-    tiltAngle = luaL_optnumber(L, 5, 0.0);
-    max_gap = luaL_optinteger(L, 6, 1);
+		widthMin = luaL_optinteger(L, 2, 5);
+		widthMax = luaL_optinteger(L, 3, 25);
+    tiltAngle = luaL_optnumber(L, 4, 0.0);
+    
+    // No need to input args
+    mask_g = luaL_optinteger(L, 5, 8); //field green
+    mask_r = luaL_optinteger(L, 6, 1); //orange ball
+    mask_w = luaL_optinteger(L, 7, 16); //line white
+    
+    max_gap = luaL_optinteger(L, 8, 1);
   }
   #endif
   else {
@@ -95,7 +101,6 @@ int lua_obstacles(lua_State *L) {
 
   // Initialize arrays
   for (int i = 0;i<m; i++ ){
-    //minJ[i] = 0;
     minJ[i] = n;
   }
 
@@ -116,10 +121,9 @@ int lua_obstacles(lua_State *L) {
       //check current pixel that is in the image
       if ( (index_i>=0) && (index_i<m) ) {
         int index_ij = j*m + index_i;
-        int pixel = (int) *(im_ptr+index_ij);
-        if (pixel == mask) {
+        uint8_t pixel = *(im_ptr+index_ij);
+        if ((pixel&mask_g) || (pixel&mask_r) || (pixel&mask_w)) {
           flag=1;
-          //if (j>minJ[index_i]) minJ[index_i]=j;
           if (j<minJ[index_i]) minJ[index_i]=j;
         }else{
           if (flag==1) {

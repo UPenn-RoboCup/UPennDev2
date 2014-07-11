@@ -151,194 +151,6 @@ for actuator, ptr in pairs(dcm.actuatorPtr) do
 	-- End anthropomorphic
 end
 
--- Check the error from a desired transform tr
--- to a forwards kinematics of in IK solution q
-local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
-
-  -- Tolerate a 1mm error in distance
-  pos_tol = pos_tol or 0.001
-  ang_tol = ang_tol or 0.1*DEG_TO_RAD
-
-	local position_error = math.sqrt(
-	( tr_check[1]-tr[1] )^2 +
-	( tr_check[2]-tr[2] )^2 +
-	( tr_check[3]-tr[3] )^2 )
-
-	local angle_error = math.sqrt(
-	util.mod_angle( tr_check[4]-tr[4] )^2 +
-	util.mod_angle( tr_check[5]-tr[5] )^2 +
-	util.mod_angle( tr_check[6]-tr[6] )^2 )
-
-	-- If within tolerance, return true
-  local in_tolerance = true
-	if position_error>pos_tol then in_tolerance=false end
-  if angle_error>ang_tol then in_tolerance=false end
-
---  if not in_tolerance then
-if false then
-    print("IK ERROR")
-    print(string.format("tr0:%.2f %.2f %.2f %.2f %.2f %.2f tr:%.2f %.2f %.2f %.2f %.2f %.2f",
-    tr_check[1],
-    tr_check[2],
-    tr_check[3],
-    tr_check[4]*RAD_TO_DEG,
-    tr_check[5]*RAD_TO_DEG,
-    tr_check[6]*RAD_TO_DEG,
-    tr[1],
-    tr[2],
-    tr[3],
-    tr[4]*RAD_TO_DEG,
-    tr[5]*RAD_TO_DEG,
-    tr[6]*RAD_TO_DEG
-    ))
-    print(string.format("LArm: %.1f %.1f %.1f %.1f %.1f %.1f %.1f",unpack(
-      vector.new(Body.get_larm_command_position())*RAD_TO_DEG     ) ))
-    print(string.format("RArm: %.1f %.1f %.1f %.1f %.1f %.1f %.1f",unpack(
-      vector.new(Body.get_rarm_command_position())*RAD_TO_DEG     ) ))
-    print()
---    print(string.format("perr:%.4f aerr:%.2f",position_error, angle_error*Body.RAD_TO_DEG))
-  end
-	return in_tolerance
-end
-
-local function check_larm_bounds(qL)
-  for i=1,nJointLArm do
-    if qL[i]<servo.min_rad[indexLArm+i-1] or qL[i]>servo.max_rad[indexLArm+i-1] then
---      print("out of range",i,"at ",qL_target[i]*RAD_TO_DEG)
-      return false
-    end
-  end
-  return true
-end
-
-local function check_rarm_bounds(qR)
-  for i=1,nJointRArm do
-    if qR[i]<servo.min_rad[indexRArm+i-1] or qR[i]>servo.max_rad[indexRArm+i-1] then
---      print("out of range",i,"at ",qR_target[i]*RAD_TO_DEG)
-      return false
-    end
-  end
-  return true
-end
-
---SJ: Now we consider waist angle and bodyTilt into FK/IK calculation
---Which is read from SHM
-
-
-
-
--- Take in joint angles and output an {x,y,z,r,p,yaw} table
--- SJ: Now separated into two functions to get rid of directly calling IK
-Body.get_forward_larm = function(qL, bodyTilt, qWaist)
-  local pLArm = Kinematics.l_arm_torso_7( qL,
-    bodyTilt or mcm.get_stance_bodyTilt(),
-    qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_lhandoffset()[1],mcm.get_arm_lhandoffset()[2],
-    mcm.get_arm_lhandoffset()[3]
-    )
-  return pLArm
-end
-
-Body.get_forward_rarm = function(qR, bodyTilt, qWaist)
-  local pRArm = Kinematics.r_arm_torso_7( qR,
-    bodyTilt or mcm.get_stance_bodyTilt(),
-    qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_rhandoffset()[1],mcm.get_arm_rhandoffset()[2],
-    mcm.get_arm_rhandoffset()[3]
-    )
-  return pRArm
-end
-
---Return the WRIST position (to test self collision)
-Body.get_forward_lwrist = function(qL, bodyTilt, qWaist)
-  local pLArm = Kinematics.l_wrist_torso( qL,
-      bodyTilt or mcm.get_stance_bodyTilt(),
-      qWaist or Body.get_waist_command_position())
-  return pLArm
-end
-
-Body.get_forward_rwrist = function(qR, bodyTilt, qWaist)
-  local pRArm = Kinematics.r_wrist_torso( qR,
-      bodyTilt or mcm.get_stance_bodyTilt(),
-      qWaist or Body.get_waist_command_position())
-  return pRArm
-end
-
-Body.get_inverse_rwrist = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)
-  local qR_target = Kinematics.inverse_r_wrist(trR, qR,rShoulderYaw or qR[3],
-      bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
-  return qR_target
-end
-
-Body.get_inverse_lwrist = function( qL, trL, lShoulderYaw, bodyTilt, qWaist)
-  local qL_target = Kinematics.inverse_l_wrist(trL, qL, lShoulderYaw or qL[3],
-      bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
-  return qL_target
-end
-
-Body.get_inverse_arm_given_wrist = function( q, tr, bodyTilt, qWaist)
-  local q_target = Kinematics.inverse_arm_given_wrist(tr,q,
-    bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
-  return q_target
-end
-
-
-Body.get_inverse_larm = function( qL, trL, lShoulderYaw, bodyTilt, qWaist)
-  local shoulder_flipped = 0
-  if qL[2]>math.pi/2 then shoulder_flipped=1 end
-
-  local qL_target = Kinematics.inverse_l_arm_7(
-    trL,qL,
-    lShoulderYaw or qL[3],
-    bodyTilt or mcm.get_stance_bodyTilt(),
-    qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_lhandoffset()[1],
-    mcm.get_arm_lhandoffset()[2],
-    mcm.get_arm_lhandoffset()[3],
-    shoulder_flipped
-    )
-
-  local trL_check = Kinematics.l_arm_torso_7(
-    qL_target,
-    bodyTilt or mcm.get_stance_bodyTilt(),
-    qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_lhandoffset()[1],
-    mcm.get_arm_lhandoffset()[2],
-    mcm.get_arm_lhandoffset()[3]
-    )
-
-  local passed = check_larm_bounds(qL_target) and check_ik_error( trL, trL_check)
-  if passed then return qL_target end
-end
---
-Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)
-  local shoulder_flipped = 0
-  if qR[2]<-math.pi/2 then shoulder_flipped=1 end
-  local qR_target = Kinematics.inverse_r_arm_7(
-    trR, qR,
-    rShoulderYaw or qR[3],
-    bodyTilt or mcm.get_stance_bodyTilt(),
-    qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_rhandoffset()[1],
-    mcm.get_arm_rhandoffset()[2],
-    mcm.get_arm_rhandoffset()[3],
-    shoulder_flipped
-    )
-
-  local trR_check = Kinematics.r_arm_torso_7(
-    qR_target,
-    bodyTilt or mcm.get_stance_bodyTilt(),
-    qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_rhandoffset()[1],
-    mcm.get_arm_rhandoffset()[2],
-    mcm.get_arm_rhandoffset()[3]
-    )
-
-  local passed = check_rarm_bounds(qR_target) and check_ik_error( trR, trR_check)
-  if passed then return qR_target end
-end
---
-
 -- If receiving data from a chain
 local function chain_cb(c_skt)
   for _, msg in ipairs(c_skt:recv_all()) do
@@ -413,60 +225,7 @@ end
 
 ----------------------
 -- Webots compatibility
-
-
-if IS_TESTING then
-  print("TESTING")
-  local Config     = require'Config'
-  local jpeg       = require'jpeg'
-  local png        = require'png'
-  local udp        = require'udp'
-  local mp         = require'msgpack'
-  Body.entry = function ()
-  end
-  Body.update = function()
-
-
-
-    local t = Body.get_time()
-
-    local rad = dcm.get_command_position()
-    dcm.set_sensor_position(rad)
-
-  end
-  Body.exit=function()
-  end
-  get_time = function()
-    return global_clock
-  end
-
-  servo.min_rad = vector.new({
-    -90,-80, -- Head
-    -90, 0, -90, -160,      -180,-87,-180, --LArm
-    -175,-175,-175,-175,-175,-175, --LLeg
-    -175,-175,-175,-175,-175,-175, --RLeg
-    -90,-87,-90,-160,       -180,-87,-180, --RArm
-    -90,-45, -- Waist
-    80,80,80,
-    80,80,80,
-
-    -60, -- Lidar pan
-  })*DEG_TO_RAD
-
-  servo.max_rad = vector.new({
-    90, 80, -- Head
-    160,87,90,0,     180,87,180, --LArm
-    175,175,175,175,175,175, --LLeg
-    175,175,175,175,175,175, --RLeg
-    160,-0,90,0,     180,87,180, --RArm
-    90,79, -- Waist
-    45,45,45,
-    45,45,45,
-    60, -- Lidar pan
-  })*DEG_TO_RAD
-
-elseif IS_WEBOTS then
-
+if IS_WEBOTS then
 
   --SJ: I put test_walk capabality here
   local fsm_chs = {}
@@ -475,8 +234,6 @@ elseif IS_WEBOTS then
     table.insert(fsm_chs, fsm_name)
     _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")
   end
-
-
 
 
   local jointNames = {
@@ -1045,6 +802,194 @@ Body.Kinematics = Kinematics
 -- For supporting the THOR repo
 require'mcm'
 Body.set_walk_velocity = mcm.set_walk_vel
+
+-- Check the error from a desired transform tr
+-- to a forwards kinematics of in IK solution q
+local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
+
+  -- Tolerate a 1mm error in distance
+  pos_tol = pos_tol or 0.001
+  ang_tol = ang_tol or 0.1*DEG_TO_RAD
+
+	local position_error = math.sqrt(
+	( tr_check[1]-tr[1] )^2 +
+	( tr_check[2]-tr[2] )^2 +
+	( tr_check[3]-tr[3] )^2 )
+
+	local angle_error = math.sqrt(
+	util.mod_angle( tr_check[4]-tr[4] )^2 +
+	util.mod_angle( tr_check[5]-tr[5] )^2 +
+	util.mod_angle( tr_check[6]-tr[6] )^2 )
+
+	-- If within tolerance, return true
+  local in_tolerance = true
+	if position_error>pos_tol then in_tolerance=false end
+  if angle_error>ang_tol then in_tolerance=false end
+
+--  if not in_tolerance then
+if false then
+    print("IK ERROR")
+    print(string.format("tr0:%.2f %.2f %.2f %.2f %.2f %.2f tr:%.2f %.2f %.2f %.2f %.2f %.2f",
+    tr_check[1],
+    tr_check[2],
+    tr_check[3],
+    tr_check[4]*RAD_TO_DEG,
+    tr_check[5]*RAD_TO_DEG,
+    tr_check[6]*RAD_TO_DEG,
+    tr[1],
+    tr[2],
+    tr[3],
+    tr[4]*RAD_TO_DEG,
+    tr[5]*RAD_TO_DEG,
+    tr[6]*RAD_TO_DEG
+    ))
+    print(string.format("LArm: %.1f %.1f %.1f %.1f %.1f %.1f %.1f",unpack(
+      vector.new(Body.get_larm_command_position())*RAD_TO_DEG     ) ))
+    print(string.format("RArm: %.1f %.1f %.1f %.1f %.1f %.1f %.1f",unpack(
+      vector.new(Body.get_rarm_command_position())*RAD_TO_DEG     ) ))
+    print()
+--    print(string.format("perr:%.4f aerr:%.2f",position_error, angle_error*Body.RAD_TO_DEG))
+  end
+	return in_tolerance
+end
+
+local function check_larm_bounds(qL)
+  for i=1,nJointLArm do
+    if qL[i]<servo.min_rad[indexLArm+i-1] or qL[i]>servo.max_rad[indexLArm+i-1] then
+--      print("out of range",i,"at ",qL_target[i]*RAD_TO_DEG)
+      return false
+    end
+  end
+  return true
+end
+
+local function check_rarm_bounds(qR)
+  for i=1,nJointRArm do
+    if qR[i]<servo.min_rad[indexRArm+i-1] or qR[i]>servo.max_rad[indexRArm+i-1] then
+--      print("out of range",i,"at ",qR_target[i]*RAD_TO_DEG)
+      return false
+    end
+  end
+  return true
+end
+
+--SJ: Now we consider waist angle and bodyTilt into FK/IK calculation
+--Which is read from SHM
+
+
+
+
+-- Take in joint angles and output an {x,y,z,r,p,yaw} table
+-- SJ: Now separated into two functions to get rid of directly calling IK
+Body.get_forward_larm = function(qL, bodyTilt, qWaist)
+  local pLArm = Kinematics.l_arm_torso_7( qL,
+    bodyTilt or mcm.get_stance_bodyTilt(),
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_lhandoffset()[1],mcm.get_arm_lhandoffset()[2],
+    mcm.get_arm_lhandoffset()[3]
+    )
+  return pLArm
+end
+
+Body.get_forward_rarm = function(qR, bodyTilt, qWaist)
+  local pRArm = Kinematics.r_arm_torso_7( qR,
+    bodyTilt or mcm.get_stance_bodyTilt(),
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_rhandoffset()[1],mcm.get_arm_rhandoffset()[2],
+    mcm.get_arm_rhandoffset()[3]
+    )
+  return pRArm
+end
+
+--Return the WRIST position (to test self collision)
+Body.get_forward_lwrist = function(qL, bodyTilt, qWaist)
+  local pLArm = Kinematics.l_wrist_torso( qL,
+      bodyTilt or mcm.get_stance_bodyTilt(),
+      qWaist or Body.get_waist_command_position())
+  return pLArm
+end
+
+Body.get_forward_rwrist = function(qR, bodyTilt, qWaist)
+  local pRArm = Kinematics.r_wrist_torso( qR,
+      bodyTilt or mcm.get_stance_bodyTilt(),
+      qWaist or Body.get_waist_command_position())
+  return pRArm
+end
+
+Body.get_inverse_rwrist = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)
+  local qR_target = Kinematics.inverse_r_wrist(trR, qR,rShoulderYaw or qR[3],
+      bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
+  return qR_target
+end
+
+Body.get_inverse_lwrist = function( qL, trL, lShoulderYaw, bodyTilt, qWaist)
+  local qL_target = Kinematics.inverse_l_wrist(trL, qL, lShoulderYaw or qL[3],
+      bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
+  return qL_target
+end
+
+Body.get_inverse_arm_given_wrist = function( q, tr, bodyTilt, qWaist)
+  local q_target = Kinematics.inverse_arm_given_wrist(tr,q,
+    bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
+  return q_target
+end
+
+
+Body.get_inverse_larm = function( qL, trL, lShoulderYaw, bodyTilt, qWaist)
+  local shoulder_flipped = 0
+  if qL[2]>math.pi/2 then shoulder_flipped=1 end
+
+  local qL_target = Kinematics.inverse_l_arm_7(
+    trL,qL,
+    lShoulderYaw or qL[3],
+    bodyTilt or mcm.get_stance_bodyTilt(),
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_lhandoffset()[1],
+    mcm.get_arm_lhandoffset()[2],
+    mcm.get_arm_lhandoffset()[3],
+    shoulder_flipped
+    )
+
+  local trL_check = Kinematics.l_arm_torso_7(
+    qL_target,
+    bodyTilt or mcm.get_stance_bodyTilt(),
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_lhandoffset()[1],
+    mcm.get_arm_lhandoffset()[2],
+    mcm.get_arm_lhandoffset()[3]
+    )
+
+  local passed = check_larm_bounds(qL_target) and check_ik_error( trL, trL_check)
+  if passed then return qL_target end
+end
+--
+Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)
+  local shoulder_flipped = 0
+  if qR[2]<-math.pi/2 then shoulder_flipped=1 end
+  local qR_target = Kinematics.inverse_r_arm_7(
+    trR, qR,
+    rShoulderYaw or qR[3],
+    bodyTilt or mcm.get_stance_bodyTilt(),
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_rhandoffset()[1],
+    mcm.get_arm_rhandoffset()[2],
+    mcm.get_arm_rhandoffset()[3],
+    shoulder_flipped
+    )
+
+  local trR_check = Kinematics.r_arm_torso_7(
+    qR_target,
+    bodyTilt or mcm.get_stance_bodyTilt(),
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_rhandoffset()[1],
+    mcm.get_arm_rhandoffset()[2],
+    mcm.get_arm_rhandoffset()[3]
+    )
+
+  local passed = check_rarm_bounds(qR_target) and check_ik_error( trR, trR_check)
+  if passed then return qR_target end
+end
+--
 
 ---------------------------------------------
 -- New hand API

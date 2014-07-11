@@ -92,6 +92,10 @@ local mx_registers = {
   ['status_return_level'] = {char(16,0),1},
   ['torque_enable'] = {char(24,0),1},
   ['led'] = {char(25,0),1},
+  -- Support for new API
+  ['led_red'] = {char(25,0),1},
+  ['led_green'] = {char(25,0),1},
+  ['led_blue'] = {char(25,0),1},
 
   -- Position PID Gains (position control mode)
   ['position_p'] = {char(28,0),1},

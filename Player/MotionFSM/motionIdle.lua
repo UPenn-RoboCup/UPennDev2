@@ -23,9 +23,11 @@ function state.entry()
   t_update = t_entry
 
   -- Torque OFF the motors
+  --[[
   Body.set_waist_torque_enable(0)
   Body.set_lleg_torque_enable(0)
   Body.set_rleg_torque_enable(0)
+  --]]
 
   -- Commanded at first
   qLLeg = Body.get_lleg_command_position()

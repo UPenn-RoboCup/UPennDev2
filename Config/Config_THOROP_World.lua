@@ -80,6 +80,7 @@ world.resample_count = 20 -- partile filter cycles
 -- For webots
 if IS_WEBOTS then
   world.goalWidth = 3
+  world.goalHeight = 1.8
   world.obsDiameter = 0.2
 end
 

@@ -69,6 +69,14 @@ fsm.Body = {
 
   {'bodyStepPlace',   'done', 'bodyStop'},
   {'bodyStepWaypoint',   'done', 'bodyStop'},
+
+
+
+
+
+  -------------------------------
+  --ATTACKER SMs-----------------------------
+  -------------------------------
   
   {'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
   {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
@@ -90,6 +98,16 @@ fsm.Body = {
 
   {'bodyRobocupWalkKick', 'done', 'bodyRobocupIdle'},
   {'bodyRobocupWalkKick', 'testdone', 'bodyStop'},
+
+  -------------------------------
+  --Goalie SMs-----------------------------
+  -------------------------------
+
+  {'bodyRobocupGoalieIdle', 'timeout', 'bodyRobocupGoalieIdle'},
+  {'bodyRobocupGoalieAnticipate', 'timeout', 'bodyRobocupGoalieAnticipate'},
+  {'bodyRobocupGoalieAnticipate', 'reposition', 'bodyRobocupGoalieReposition'},
+  {'bodyRobocupGoalieReposition', 'done', 'bodyRobocupGoalieAnticipate'},
+
 
 }
 

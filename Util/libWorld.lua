@@ -178,12 +178,17 @@ end
 function libWorld.update(uOdom, detection)
   local t = unix.time()
   -- Run the updates
-
-  if wcm.get_robot_reset_pose()==1 then
-    --Attacker initial pose
-    poseFilter.initialize({0,0,0},{0,0,0})
-    wcm.set_robot_pose({0,0,0})
-    wcm.set_robot_odometry({0,0,0})
+  if wcm.get_robot_reset_pose()==1 then    
+    if gcm.get_game_role()==0 then
+      --Goalie initial pos
+      poseFilter.initialize({-4.5,0,0},{0,0,0})
+      wcm.set_robot_pose({-4.5,0,0})
+      wcm.set_robot_odometry({-4.5,0,0})
+    else --Attacker initial pos
+      poseFilter.initialize({0,0,0},{0,0,0})
+      wcm.set_robot_pose({0,0,0})
+      wcm.set_robot_odometry({0,0,0})
+    end
   else
     update_odometry(uOdom)
   end

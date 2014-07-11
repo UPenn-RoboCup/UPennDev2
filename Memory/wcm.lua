@@ -38,6 +38,9 @@ shared.robot.reset_pose = vector.zeros(1)
 
 
 
+
+
+
 -- SLAM pose
 shared.slam = {}
 shared.slam.pose = vector.zeros(3)

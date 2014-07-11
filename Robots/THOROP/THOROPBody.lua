@@ -735,9 +735,46 @@ if IS_WEBOTS then
     local key_char_lower = string.lower(key_char)
 
     if t-t_last_keypress>1 then
+--[[      
       if key_char_lower=='1' then
         body_ch:send'init'
         head_ch:send'teleop'           
+        t_last_keypress = t
+--]]
+
+      if key_char_lower=='1' then
+        gcm.set_game_state(0) --Initial
+        print("Initial")
+        t_last_keypress = t
+
+      elseif key_char_lower=='2' then
+        gcm.set_game_state(1) --Ready
+        print("READY")
+        t_last_keypress = t
+
+      elseif key_char_lower=='3' then
+        gcm.set_game_state(2) --Set
+        print("SET")
+        t_last_keypress = t
+
+      elseif key_char_lower=='4' then
+        gcm.set_game_state(3) --Playing
+        print("PLAYING")
+        t_last_keypress = t
+
+      elseif key_char_lower=='5' then
+        gcm.set_game_state(4) --Finished
+        print("FINISH")
+        t_last_keypress = t
+
+
+      elseif key_char_lower=='r' then
+        gcm.set_game_role(1-gcm.get_game_role())
+        if gcm.get_game_role()==0 then 
+          print("GOALIE")
+        else
+          print("ATTACKER")
+        end
         t_last_keypress = t
       elseif key_char_lower=='8' then        
         motion_ch:send'stand'

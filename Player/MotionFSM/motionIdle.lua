@@ -13,7 +13,8 @@ local qLLeg, qRLeg, qWaist
 
 function state.entry()
   print(state._NAME..' Entry' ) 
-  mcm.set_servo_read(1) --enable leg joint reading
+  Body.enable_read'lleg'
+  Body.enable_read'rleg'
  
 
   -- Update the time of entry

@@ -301,17 +301,37 @@ local function do_parent(request, bus)
 				end
 			end
 		end
-		-- Send to the bus in sync fashion, for now
-		if has_nx and has_mx then
-			lD.set_bulk(m_ids, addr_n_len, m_vals, bus, true)
-			return 0
-		elseif has_nx then
-			lD['set_nx_'..wr_reg](m_ids, m_vals, bus, true)
-			return 0
-		elseif has_mx then
-			lD['set_mx_'..wr_reg](m_ids, m_vals, bus, true)
-			return 0
-		end
+    if wr_reg=='torque_enable' then
+      -- Need this to work well
+      local tq_status
+      for i, m_id in ipairs(m_ids) do
+  			if bus.has_mx_id[m_id] then
+          tq_status = lD.set_mx_torque_enable(m_id, m_vals[i], bus)
+        else
+          tq_status = lD.set_nx_torque_enable(m_id, m_vals[i], bus)
+        end
+        if #tq_status==1 then
+          print("TQ", m_id)
+          ptable(tq_status[1])
+        else
+          print("BAD TQ", m_id)
+        end
+      end
+      -- Done the cycle
+      return
+    else
+  		-- Send to the bus in sync fashion, for now
+  		if has_nx and has_mx then
+  			lD.set_bulk(m_ids, addr_n_len, m_vals, bus, true)
+  			return 0
+  		elseif has_nx then
+  			lD['set_nx_'..wr_reg](m_ids, m_vals, bus, true)
+  			return 0
+  		elseif has_mx then
+  			lD['set_mx_'..wr_reg](m_ids, m_vals, bus, true)
+  			return 0
+  		end
+    end
 	elseif rd_reg then
 		-- TODO: Add bulk read if mix mx and nx
 		-- FOR NOW: Just do one, and re-enqueue the other

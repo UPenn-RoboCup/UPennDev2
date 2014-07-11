@@ -287,32 +287,40 @@ local function do_parent(request, bus)
 				tinsert(m_ids, m_id)
 				tinsert(m_vals, ptr[j_id-1])
 				tinsert(addr_n_len, lD.mx_registers[wr_reg])
-				-- if TQ then copy stuff
-				if wr_reg=='torque_enable' then
-					cp_ptr[j_id-1] = p_ptr[j_id-1]
-				end
 			elseif bus.has_nx_id[m_id] then
 				has_nx = true
 				tinsert(m_ids, m_id)
 				tinsert(m_vals, ptr[j_id-1])
 				tinsert(addr_n_len, lD.nx_registers[wr_reg])
-				-- if TQ then copy stuff
-				if wr_reg=='torque_enable' then
-					cp_ptr[j_id-1] = p_ptr[j_id-1]
-				end
 			end
 		end
     if wr_reg=='torque_enable' then
       -- Need this to work well
-      local tq_status
+      local tq_status, is_mx, tq_val, p_status, j_id
       for i, m_id in ipairs(m_ids) do
-  			if bus.has_mx_id[m_id] then
-          tq_status = lD.set_mx_torque_enable(m_id, m_vals[i], bus)
-        else
-          tq_status = lD.set_nx_torque_enable(m_id, m_vals[i], bus)
-        end
-        if #tq_status==1 then
-          ptable(tq_status[1])
+        is_mx = bus.has_mx_id[m_id]
+        j_id = m_to_j[m_id]
+        tq_val = m_vals[i]
+        tq_status = is_mx and
+          lD.set_mx_torque_enable(m_id, tq_val, bus) or
+          lD.set_nx_torque_enable(m_id, tq_val, bus)
+        if #tq_status==1 and tq_status[1].error==0 then
+          -- Set the CP and the P
+          if tq_val==1 then
+            p_status = is_mx and
+              lD.get_mx_torque_enable(m_id, bus) or
+              lD.get_nx_torque_enable(m_id, bus)
+            if #p_status==1 and p_status[1].error==0 then
+          		read_val = is_mx and
+                p_parse_mx(unpack(pkt.parameter)) or
+            		p_parse(unpack(pkt.parameter))
+            	p_ptr[j_id - 1] = step_to_radian(j_id, read_val)
+            	p_ptr_t[j_id - 1] = get_time()
+              cp_ptr[j_id - 1] = p_ptr[j_id - 1]
+            else
+              print("BAD TQ P", m_id)
+            end
+          end
         else
           print("BAD TQ", m_id)
         end

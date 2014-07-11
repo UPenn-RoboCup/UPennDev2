@@ -188,6 +188,43 @@ function ImageProc.color_stats(label_t, bbox, color)
 
 end
 
+
+-- Assume 3 obstacles (2 + one opponent)
+function ImageProc.grid_map(grid_t, res)
+  --TODO: be careful about the dimension...
+  local m, n = grid_t:size(1), grid_t:size(2)
+  local n_grid = m*n
+  local max_cnt = vector.zeros(3)
+  local inds = vector.zeros(3)
+  
+  local g_ptr, cnt = grid_t:data()
+  for i=1, n_grid do
+    cnt = g_ptr[0]
+    if cnt>max_cnt[1] then
+      max_cnt[1], inds[1] = cnt, i
+    elseif cnt>max_cnt[2] then
+      max_cnt[2], inds[2] = cnt, i
+    elseif cnt>max_cnt[3] then
+      max_cnt[3], inds[3] = cnt, i
+    end
+    g_ptr = g_ptr + 1
+  end
+  
+  -- Ind2sub and conver to global pos
+  local x, y = {}, {}
+  for i=1,3 do
+    local yi = math.ceil( inds[i]/m )
+    local xi = inds[i] - yi*m
+    --TODO: plus or minus, check...
+    x[i] = (xi-1)*res + res/2 - 4.5
+    y[i] = (yi-1)*res + res/2 - 3
+  end
+  
+  return x, y
+  
+end
+
+
 -- Subsample 1 row and one column
 -- TODO: Take other subsample options
 -- NOTE: This references the same memory, still

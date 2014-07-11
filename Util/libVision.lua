@@ -23,7 +23,7 @@ MAP.sizey = 6/MAP.res
 MAP.xmin, MAP.ymin = -4.5, -3
 MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
 -- TODO: if use grid map, use C or ffi.lua to speed up
--- MAP.grid = torch.Tensor(MAP.sizex, MAP.sizey):zero()
+MAP.grid = torch.Tensor(MAP.sizex, MAP.sizey):zero()
 
 
 -- Body should be optional...
@@ -594,16 +594,19 @@ function libVision.obstacle_new(labelB_t)
 			local yi = math.ceil((pos[2]-MAP.ymin) / MAP.res)
       xi = math.min(math.max(1, xi), MAP.sizex)
       yi = math.min(math.max(1, yi), MAP.sizey)
-      MAP.xp[xi] = MAP.xp[xi] + 1
-      MAP.yp[yi] = MAP.yp[yi] + 1
+      -- MAP.xp[xi] = MAP.xp[xi] + 1
+      -- MAP.yp[yi] = MAP.yp[yi] + 1
+      MAP.grid[xi][yi] = MAP.grid[xi][yi] + 1
       ------------
       
       obsStats.axisMinor[i] = obstacle.axisMinor[obstacle.dist[i]]
       obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 
       obsStats.orientation[i] = math.pi/2
     end    
-    obsStats.xp, obsStats.yp = MAP.xp, MAP.yp
-    obsStats.res = MAP.res
+    -- obsStats.xp, obsStats.yp = MAP.xp, MAP.yp
+    -- obsStats.res = MAP.res
+    
+    obsStats.xs, obsStats.ys = ImageProc2.grid_map(MAP.grid, MAP.res)
     
     return 'Detected', obsStats
   else

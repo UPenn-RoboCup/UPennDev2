@@ -111,9 +111,17 @@ local function update_vision(detected)
     --   wcm['set_obstacle_v'..i]({x, y})
     -- end
     
+    -- -- If use grid map
+    -- for i=1,#obstacle.xs do
+    --   local x, y = obstacle.xs[i], obstacle.ys[i]
+    --   local pos_local = util.pose_relative({x,y,0}, wcm.get_robot_pose())
+    --   wcm['set_obstacle_v'..i](pos_local)
+    -- end
+    
 
-    --Most of the time only one obstacle will be detected...   
-    -- TODO: Check the pos_global[1]>4 for opponent?? 
+    -- If use 2D filter
+    --Most of the time only one obstacle will be detected...
+    -- TODO: Check the pos_global[1]>4 for opponent??
     if #obstacle.v == 1 then
       --TODO: better way of doing this...
       local margin = 10*DEG_TO_RAD
@@ -126,7 +134,7 @@ local function update_vision(detected)
       end
     else -- 2 or 3 obstacles detected
       local pos_global = {}
-      for i=1,2 do 
+      for i=1,2 do
         -- Determine which one is left
         local pos_local = obstacle.v[i]
         pos_global[i] = util.pose_global({pos_local[1],pos_local[2],0}, wcm.get_robot_pose())

@@ -28,7 +28,7 @@ local function observation_ra(self, r1, a1, rErr, aErr)
   local t = t
 
   wcm['set_obstacle_v'..self.id]({x, y})
-  print(string.format("OBS %d: %.2f   %.2f", self.id, x, y))
+  --print(string.format("OBS %d: %.2f   %.2f", self.id, x, y))
 end
 
 local function observation_xy(self, x, y, rErr, aErr)

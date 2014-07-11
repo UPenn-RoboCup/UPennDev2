@@ -33,6 +33,7 @@ local uOdometry0 = vector.zeros(3)
 -- Save the resampling times
 local t_resample = 0
 
+local yaw0 = 0
 
 local function update_odometry(uOdometry)  
   -- Scale the odometry
@@ -41,10 +42,17 @@ local function update_odometry(uOdometry)
   uOdometry[3] = odomScale[3] * uOdometry[3]
   -- Next, grab the gyro yaw
 
+
   if use_imu_yaw then    
-    local yaw = Body.get_sensor_rpy()[3]
-    uOdometry[3] = yaw - yaw0
-    yaw0 = yaw
+    if IS_WEBOTS then
+      gps_pose = wcm.get_robot_pose_gps()
+      uOdometry[3] = gps_pose[3] - yaw0
+      yaw0 = gps_pose[3]
+    else
+      local yaw = Body.get_sensor_rpy()[3]
+      uOdometry[3] = yaw - yaw0
+      yaw0 = yaw
+    end
   end
 
   -- Update the filters based on the new odometry
@@ -171,6 +179,15 @@ function libWorld.entry()
   for i=1,2 do OF[i] = obsFilter.new(i) end
   -- Processing count
   count = 0
+  if use_imu_yaw then    
+    if IS_WEBOTS then
+      gps_pose = wcm.get_robot_pose_gps()
+      yaw0 = gps_pose[3]
+    else
+      local yaw = Body.get_sensor_rpy()[3]
+      yaw0 = yaw
+    end
+  end
 end
 
 function libWorld.update(uOdom, detection)

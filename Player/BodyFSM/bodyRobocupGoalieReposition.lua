@@ -16,9 +16,6 @@ function state.entry()
 end
 
 function state.update()
-  local role = gcm.get_game_role()
-  if role==0 then return 'goalie' end
-  
   --  print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()

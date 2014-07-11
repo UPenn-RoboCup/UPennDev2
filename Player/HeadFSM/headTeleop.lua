@@ -3,6 +3,7 @@ local t_entry, t_update
 local state = {}
 state._NAME = ...
 require'hcm'
+require'gcm'
 local util = require'util'
 
 -- Neck limits
@@ -38,6 +39,10 @@ function state.update()
     
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
+
+  if gcm.get_game_state()==1 then
+    return 'scan'
+  end
 
 end
 

@@ -16,9 +16,6 @@ function state.entry()
 end
 
 function state.update()
-  local role = gcm.get_game_role()
-  if role==0 then return 'goalie' end
-  
   --  print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()
@@ -32,20 +29,24 @@ function state.update()
   -- if we see ball right now and ball is far away start moving
   local ball_elapsed = t - wcm.get_ball_t()
   if ball_elapsed < 0.1 then --ball found
-    return 'ballfound'
-    --[[
+    local pose = wcm.get_robot_pose()
     local ballx = wcm.get_ball_x()
-    local bally = wcm.get_ball_y()
+    local bally = wcm.get_ball_y()    
     local ballr = math.sqrt(ballx*ballx+bally*bally)
     local balla = math.atan2(bally,ballx)
-    -- if ballr>0.6 then
-    --   if hcm.get_ball_approach()==1 then return "ballfound" end
-    -- end
+    local ball_local = {ballx,bally,balla}
+    local ballGlobal = util.pose_global(walk_target_local, pose)
+  
+    --our goal should be always at (-4.5,0,0)
 
-    if hcm.get_ball_approach()==1 then
-      return 'ballfound'
-    end
-    --]]
+    local ballFromGoal = {ballGlobal[1] +4.5, ballGlobal[2]}
+    local ballGoalAngle = math.atan2(ballFromGlobal[2],ballFromGlobal[1])
+
+
+
+
+
+--      return 'reposition'
   end
 
 end

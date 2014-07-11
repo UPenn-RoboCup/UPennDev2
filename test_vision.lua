@@ -76,7 +76,11 @@ function process_keyinput()
       head_ch:send'scan'
 		elseif byte==string.byte("4") then    
 			wcm.set_obstacle_enable(1)
+			wcm.set_obstacle_reset(1)
       head_ch:send'scanobs'
+		elseif byte==string.byte("o") then    
+			wcm.set_obstacle_enable(1)
+			wcm.set_obstacle_reset(1)
 
 		-- Frame rate for monitoring
     elseif byte==string.byte("=") then

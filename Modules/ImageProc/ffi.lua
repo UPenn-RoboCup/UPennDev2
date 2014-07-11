@@ -188,6 +188,42 @@ function ImageProc.color_stats(label_t, bbox, color)
 
 end
 
+
+-- Assume 3 obstacles (2 + one opponent)
+function ImageProc.grid_filter(grid_t, res)
+  local m, n = grid_t:size(1), grid_t:size(2)
+  local n_grid = m*n
+  local max_cnt = vector.zeros(3)
+  local inds = vector.zeros(3)
+  
+  local g_ptr, cnt = grid_t:data()
+  for i=1, n_grid do
+    cnt = g_ptr[0]
+    if cnt>max_cnt[1] then
+      max_cnt[1], inds[1] = cnt, i
+    elseif cnt>max_cnt[2] then
+      max_cnt[2], inds[2] = cnt, i
+    elseif cnt>max_cnt[3] then
+      max_cnt[3], inds[3] = cnt, i
+    end
+    g_ptr = g_ptr + 1
+  end
+    
+  -- Ind2sub and convert to position
+  local x, y = {}, {}
+  for i=1,3 do
+    -- Torch goes row by row
+    local xi = math.ceil( inds[i]/n )
+    local yi = inds[i] - (xi-1)*n
+    -- x[i] = (xi-1)*res + res/2 - 4.5
+    x[i] = 4.5 - (xi-1)*res + res/2
+    y[i] = (yi-1)*res + res/2 - 3
+  end
+
+  return x, y
+end
+
+
 -- Subsample 1 row and one column
 -- TODO: Take other subsample options
 -- NOTE: This references the same memory, still

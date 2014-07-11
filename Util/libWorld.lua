@@ -8,6 +8,7 @@ local vector = require'vector'
 local util = require'util'
 local ballFilter = require'ballFilter'
 local poseFilter = require'poseFilter'
+local obsFilter = require'obstacleFilter'
 local odomScale = Config.world.odomScale
 local use_imu_yaw = Config.world.use_imu_yaw
 local RESAMPLE_PERIOD = Config.world.resample_period
@@ -24,6 +25,8 @@ local t_entry
 local count
 -- Objects
 local ball, goal, obstacle
+-- Obstacle filters
+local OF = {}
 
 -- Initial odometry
 local uOdometry0 = vector.zeros(3)
@@ -99,15 +102,59 @@ local function update_vision(detected)
   -- If the obstacle is detected
   obstacle = detected.obstacles
   if obstacle then
-    local xs = sort_obs(obstacle.xp, 3)
-    local ys = sort_obs(obstacle.yp, 3)
+    -- Old silly way
+    -- local xs = sort_obs(obstacle.xp, 3)
+    -- local ys = sort_obs(obstacle.yp, 3)
+    --
+    -- for i=1,3 do
+    --   local x = (xs[i]-1)*obstacle.res + obstacle.res/2 - 4.5
+    --   local y = (ys[i]-1)*obstacle.res + obstacle.res/2 - 3
+    --   wcm['set_obstacle_v'..i]({x, y})
+    -- end
     
-    for i=1,3 do
-      local x = (xs[i]-1)*obstacle.res + obstacle.res/2 - 4.5
-      local y = (ys[i]-1)*obstacle.res + obstacle.res/2 - 3
-      wcm['set_obstacle_v'..i]({x, y})
+    -- -- If use grid map
+    -- for i=1,#obstacle.xs do
+    --   local x, y = obstacle.xs[i], obstacle.ys[i]
+    --   local pos_local = util.pose_relative({x,y,0}, wcm.get_robot_pose())
+    --   wcm['set_obstacle_v'..i](pos_local)
+    -- end
+
+
+    -- If use 2D filter
+    --Most of the time only one obstacle will be detected...
+    -- TODO: Check the pos_global[1]>4 for opponent??
+    if #obstacle.v == 1 then
+      --TODO: i know this is silly...
+      local margin = 8*DEG_TO_RAD
+      if Body.get_head_position()[1]>margin then
+        OF[1]:observation_xy(obstacle.v[1][1], obstacle.v[1][2],
+          obstacle.dr[1], obstacle.da[1])
+      elseif Body.get_head_position()[1]<-margin then
+        OF[2]:observation_xy(obstacle.v[1][1], obstacle.v[1][2],
+          obstacle.dr[1], obstacle.da[1])
+      end
+    else -- 2 or 3 obstacles detected
+      local pos_global = {}
+      for i=1,2 do
+        -- Determine which one is left
+        local pos_local = obstacle.v[i]
+        pos_global[i] = util.pose_global({pos_local[1],pos_local[2],0}, wcm.get_robot_pose())
+      end
+
+      if pos_global[1][2]>pos_global[2][2] then
+        OF[1]:observation_xy(obstacle.v[1][1], obstacle.v[1][2],
+          obstacle.dr[1], obstacle.da[1])
+        OF[2]:observation_xy(obstacle.v[2][1], obstacle.v[2][2],
+          obstacle.dr[2], obstacle.da[2])
+      else
+        OF[2]:observation_xy(obstacle.v[1][1], obstacle.v[1][2],
+          obstacle.dr[1], obstacle.da[1])
+        OF[1]:observation_xy(obstacle.v[2][1], obstacle.v[2][2],
+          obstacle.dr[2], obstacle.da[2])
+      end
     end
-  end
+     
+  end  -- end of obstacle
   
 end
 
@@ -121,6 +168,8 @@ function libWorld.entry()
   -- Set the initial odometry
   wcm.set_robot_pose({0,0,0})
   wcm.set_robot_odometry({0,0,0})
+  -- Setup obstacle filters
+  for i=1,2 do OF[i] = obsFilter.new(i) end
   -- Processing count
   count = 0
 end
@@ -192,7 +241,7 @@ function libWorld.send()
   
   if obstacle then
     local obs_global = {}
-    for i=1,3 do
+    for i=1,2 do
       local obs = wcm['get_obstacle_v'..i]()
       -- We store the global position of obstacles
       obs_global[i] = util.pose_global({obs[1],obs[2],0}, wcm.get_robot_pose())
@@ -200,7 +249,6 @@ function libWorld.send()
       to_send.info = to_send.info..string.format(
         'Obstacle: %.2f %.2f\n', unpack(obs) )
     end
-    -- to_send.obstacle = {obs_global[1], obs_global[2]}
     to_send.obstacle = obs_global
   end
   return to_send

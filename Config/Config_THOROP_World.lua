@@ -9,6 +9,11 @@ world.ballDiameter = 0.22
 world.postDiameter = 0.1
 world.goalHeight = 1.8
 world.goalWidth = 2.6  -- in m308
+
+-- GRASP LAB SPL GOAL
+world.goalHeight = 0.85
+world.goalWidth = 1.6
+
 world.goalUpper = {} -- Goal in use
 world.goalUpper[1] = {4.5, 1.5}
 world.goalUpper[2] = {4.5, -1.5}

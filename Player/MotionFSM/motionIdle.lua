@@ -13,7 +13,8 @@ local qLLeg, qRLeg, qWaist
 
 function state.entry()
   print(state._NAME..' Entry' ) 
-  mcm.set_servo_read(1) --enable leg joint reading
+  Body.enable_read'lleg'
+  Body.enable_read'rleg'
  
 
   -- Update the time of entry
@@ -22,9 +23,11 @@ function state.entry()
   t_update = t_entry
 
   -- Torque OFF the motors
+  --[[
   Body.set_waist_torque_enable(0)
   Body.set_lleg_torque_enable(0)
   Body.set_rleg_torque_enable(0)
+  --]]
 
   -- Commanded at first
   qLLeg = Body.get_lleg_command_position()

@@ -10,56 +10,44 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-  orientation 0.00646375 0.958504 0.285007 3.12818
-  position 0.123477 7.02417 -10.6827
+  orientation 0.0293898 0.870598 0.491116 3.21271
+  position -0.622069 18.9387 -10.3437
 }
 Background {
   skyColor [
     0.678431 0.847059 0.901961
   ]
 }
-
 DirectionalLight {
   ambientIntensity 0.3
   direction -1 -0.5 0
-  intensity 0.5  
+  intensity 0.5
 }
-
 DirectionalLight {
   ambientIntensity 0.3
   direction 1 -0.5 0
-  intensity 0.5    
+  intensity 0.5
 }
-
 DirectionalLight {
   ambientIntensity 0.4
   direction 0 -0.5 -1
-  intensity 0.5    
+  intensity 0.5
 }
-
 DirectionalLight {
   ambientIntensity 0.4
   direction 0 -0.5 1
   intensity 0.5
 }
-
 DirectionalLight {
   ambientIntensity 0.3
   direction -1 0.5 0
-  intensity 0.2    
+  intensity 0.2
 }
-
 DirectionalLight {
   ambientIntensity 0.3
   direction 1 0.5 0
-  intensity 0.2    
+  intensity 0.2
 }
-
-
-
-
-
-
 SoccerField2013 {
 }
 Walls2013 {
@@ -72,26 +60,25 @@ DEF YELLOW_GOAL TeenGoal {
   translation -4.5 0 0
   rotation 0 1 0 3.14159
   postColor 0.992157 0.854902 0.219608
-  #postColor 0.152941 0.505882 0.733333
 }
 DEF BALL Ball {
-  translation 2.4 0 2
+  translation 2.4 0.109919 2
   radius 0.11
 }
 DEF OBS1 Obstacle {
-  translation -2.5 0 -1
+  translation -2.5 -0.000919687 -1
+  rotation 6.4642e-09 1 -3.46783e-09 2.14519e-08
 }
 DEF OBS2 Obstacle {
-  translation -1.2 0 1.5
+  translation -1.03443 -0.000919687 1.04758
+  rotation 8.10982e-09 1 6.437e-10 2.14519e-08
 }
-
 DEF OPPONENT Block {
   translation -4.2 0.5 0
 }
-
-THOROP7_RoboCup_New{
-  translation 0 1.15535 0
-  rotation 0 1 0 -1.57
+THOROP7_RoboCup_New {
+  translation 0.0645096 1.07203 -0.000882515
+  rotation 0.004289 0.999987 0.00286921 -1.57032
   controller "thorop"
   controllerArgs "0 32"
 }

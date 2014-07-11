@@ -35,6 +35,8 @@ local stage = 1
 
 function state.entry()
   print(state._NAME..' Entry' )
+  Body.enable_read'lleg'
+  Body.enable_read'rleg'
 
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
@@ -262,7 +264,9 @@ function state.exit()
     end
   end
   mcm.set_walk_ismoving(0) --We are stopped
-  mcm.set_servo_read(0) --now disable leg joint reading
+  --now disable leg joint reading
+  Body.disable_read'lleg'
+  Body.disable_read'rleg'
 
 end
 

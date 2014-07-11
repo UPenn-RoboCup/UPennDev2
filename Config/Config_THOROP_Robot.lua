@@ -8,7 +8,6 @@ Config.imu = {
   enabled = true,
   device = '/dev/ttyACM0',
   -- TODO: Add some mapping, etc.
-
 }
 
 Config.sensors = {
@@ -18,8 +17,15 @@ Config.sensors = {
   ft = false,
 }
 
-Config.left_ft = {
-  unloaded = {1.633886719,2.041552734,1.728955078,2.221618652,1.980322266,2.08425293},
+Config.right_ft = {
+	unloaded = {
+		1.5335531135531,
+		1.6407326007326,
+		1.3336996336996,
+		1.0774358974359,
+		1.6624908424908,
+		1.8196336996337,
+	},
   matrix = {
     {2.891145944, 1.952410267, 12.16354176, -353.8982028, -22.83263201, 332.4023596,},
     {-27.24742752,418.1117317,19.27221547,-203.7230186,-4.191511111,-193.4096575,},
@@ -31,8 +37,15 @@ Config.left_ft = {
   gain = 1.556943243,
 }
 
-Config.right_ft = {
-  unloaded = {1.653222656, 1.728149414, 1.762792969, 1.56862793, 1.647180176, 1.889685059},
+Config.left_ft = {
+	unloaded = {
+		1.2402197802198,
+		1.5311355311355,
+		1.3022710622711,
+		1.4884249084249,
+		1.1378754578755,
+		1.3288644688645,
+	},
   matrix = {
     {22.24512752, 3.52319111, 28.328385, -362.319417, -28.27411124, 363.7154308},
     {8.361978169, 406.1224392, 20.42296338, -206.7187762, 30.68868534, -209.0100171, },
@@ -53,61 +66,67 @@ Config.chain = {
 }
 local right_arm = {
   name = 'rarm',
-  device = '/dev/ttyUSB0',
+  ttyname = '/dev/ttyUSB0',
   --m_ids = {1,3,5,7,9,11,13, --[[head]] 29,30},
-  m_ids = {29,30},
 	enable_read = true, -- for the head...
-  --mx_ids = { 70,65 },
 }
 local left_arm = {
   name = 'larm',
-  device = '/dev/ttyUSB1',
-  m_ids = {2,4,6,8,10,12,14,},
+  ttyname = '/dev/ttyUSB1',
+  --m_ids = {2,4,6,8,10,12,14,},
   --mx_ids = { 66,67,37, --[[lidar]] },
 }
 local right_leg = {
   name = 'rleg',
-  device = '/dev/ttyUSB2',
-  m_ids = {15,17,19,21,23,25, --[[waist pitch]]28},
+  ttyname = '/dev/ttyUSB2',
+	-- waist pitch
+  m_ids = {15,17,19, 21, 23,25, 28},
   enable_read = true,
-  hz = 125, --250,
 }
 local left_leg = {
   name = 'lleg',
-  device = '/dev/ttyUSB3',
-  --m_ids = {16,18,20,22,24,26, --[[waist yaw]]27},
-  m_ids = {16,18,20, 22,24,26, --[[waist yaw]]27},
+  ttyname = '/dev/ttyUSB3',
+	-- waist yaw
+  m_ids = {16,18,20, 22, 24,26, 27},
+  enable_read = false,
+}
+-- For RoboCup, use an MX only chain for the arms
+local upper_body_rc = {
+  name = 'upper_body',
+  ttyname = '/dev/ttyUSB0',
+  m_ids = {29, 30, 37},
   enable_read = true,
-  hz = 125, --250,
 }
--- Add the one chain support
-local one_chain = {
-  device = '/dev/ttyUSB0',
-  m_ids = {},
-}
-for _,v in ipairs(right_arm.m_ids) do table.insert(one_chain.m_ids, v) end
-for _,v in ipairs(left_arm.m_ids)  do table.insert(one_chain.m_ids, v) end
-for _,v in ipairs(right_leg.m_ids) do table.insert(one_chain.m_ids, v) end
-for _,v in ipairs(left_leg.m_ids)  do table.insert(one_chain.m_ids, v) end
 
 if OPERATING_SYSTEM=='darwin' then
   right_arm.device = '/dev/cu.usbserial-FTVTLUY0A'
   left_arm.device  = '/dev/cu.usbserial-FTVTLUY0B'
   right_leg.device = '/dev/cu.usbserial-FTVTLUY0C'
   left_leg.device  = '/dev/cu.usbserial-FTVTLUY0D'
-  one_chain.device = '/dev/cu.usbserial-FTVTLUY0A'
 end
 if ONE_CHAIN then
+  -- Add the one chain support
+  local one_chain = {
+    device = '/dev/ttyUSB0',
+  }
+	if OPERATING_SYSTEM=='darwin' then
+		one_chain.device = '/dev/cu.usbserial-FTVTLUY0A'
+	end
+  for _,v in ipairs(right_arm.m_ids) do table.insert(one_chain.m_ids, v) end
+  for _,v in ipairs(left_arm.m_ids)  do table.insert(one_chain.m_ids, v) end
+  for _,v in ipairs(right_leg.m_ids) do table.insert(one_chain.m_ids, v) end
+  for _,v in ipairs(left_leg.m_ids)  do table.insert(one_chain.m_ids, v) end
   table.insert(Config.chain, one_chain)
   right_arm = nil
   left_arm  = nil
   right_leg = nil
   left_leg  = nil
 else
-  table.insert(Config.chain, right_arm)
+  --table.insert(Config.chain, right_arm)
   --table.insert(Config.chain, left_arm)
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)
+	table.insert(Config.chain, upper_body_rc)
   one_chain = nil
 end
 

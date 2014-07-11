@@ -79,9 +79,7 @@ local function update_vision(detected)
   local t = unix.time()
   if t - t_resample > RESAMPLE_PERIOD or count%RESAMPLE_COUNT==0 then
     poseFilter.resample()
-    if mcm.get_walk_ismoving()==1 then
-      poseFilter.addNoise()
-    end    
+    if mcm.get_walk_ismoving()==1 then poseFilter.addNoise() end    
   end
   -- If the ball is detected
 	ball = detected.ball
@@ -177,7 +175,7 @@ end
 function libWorld.update(uOdom, detection)
   local t = unix.time()
   -- Run the updates
-  if wcm.get_robot_reset_pose()==1 then    
+  if wcm.get_robot_reset_pose()==1 or gcm.get_game_state()~=3 then    
     if gcm.get_game_role()==0 then
       --Goalie initial pos
       poseFilter.initialize({-4.5,0,0},{0,0,0})

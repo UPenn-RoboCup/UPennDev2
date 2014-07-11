@@ -25,6 +25,10 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+  local gamestate = gcm.get_game_state()
+  if gamestate~=5 then --5 is idle state
+    return 'teleop'
+  end
 end
 
 function state.exit()

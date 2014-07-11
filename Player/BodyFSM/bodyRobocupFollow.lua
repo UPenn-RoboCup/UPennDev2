@@ -16,7 +16,7 @@ require'hcm'
 require'wcm'
 
 require'mcm'
-
+require'gcm'
 
 
 local t_entry, t_update, t_exit
@@ -59,6 +59,9 @@ end
 
 
 function state.update()
+  --not playing?
+  if gcm.get_game_state()~=3 then return'stop' end
+
   --print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()
@@ -73,6 +76,8 @@ function state.update()
   last_ph = ph
   local ball_elapsed = t - wcm.get_ball_t()
   if ball_elapsed <0.5 and reached then return 'ballclose' end
+
+
 end
 
 function state.exit()

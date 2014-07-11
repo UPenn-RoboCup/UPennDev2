@@ -57,6 +57,7 @@ function state.update()
     if gcm.get_game_role()==0 then
       --goalie shouldn't don't look behind
       stage = 1
+      return
     else
       --Attaker look around more
       return 'noball'
@@ -75,6 +76,8 @@ function state.update()
   if ball_elapsed < 0.1 then
     return 'ballfound' --if ball found exit
   end
+
+  if gcm.get_game_state()==4 then return'teleop' end
   
 end
 

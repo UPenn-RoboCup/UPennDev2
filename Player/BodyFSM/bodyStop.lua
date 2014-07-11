@@ -1,10 +1,12 @@
 local state = {}
 state._NAME = ...
 
+
 local Body = require'Body'
 
 local timeout = 10.0
 local t_entry, t_update, t_exit
+require'gcm'
 
 --Tele-op state for testing various stuff
 --Don't do anything until commanded
@@ -28,6 +30,15 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t  
+  if gcm.get_game_state()==3 then
+    if gcm.get_game_role()==0 then --goalie
+      print("Goalie start!")
+      return'goalie'
+    else
+      print("Attacker start!")
+      return'play'
+    end
+  end
 end
 
 function state.exit()

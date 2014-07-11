@@ -140,6 +140,10 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+--not playing?
+  if gcm.get_game_state()~=3 then return'stop' end
+
+
   local check_ph = 0.95
   local ph = mcm.get_status_ph()
   if last_ph<check_ph and ph>=check_ph then ret=update_velocity() end

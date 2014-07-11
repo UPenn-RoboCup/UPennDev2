@@ -128,94 +128,41 @@ static int lua_dynamixel_instruction_sync_write(lua_State *L) {
 }
 
 static int lua_dynamixel_instruction_bulk_write(lua_State *L) {
-  uint16_t i, nids;
-  uint8_t id, reg_sz, *addr;
-  int32_t val;
-  size_t naddr;
+  // How many IDs to read from
+  size_t nids, naddr;
+	int i;
+	uint8_t id;
+  // Which ids to read from
+  const char *ids = luaL_checklstring(L, 1, &nids);
+	// Initialize the header
+	dynamixel_instruction_init_bulk_write();
+	const char *addr;
+	uint16_t addr_len;
+	// Table of addr/len pairs
+  luaL_checktype(L, 2, LUA_TTABLE);
+	// Table of values
+	luaL_checktype(L, 3, LUA_TTABLE);
+	for (i = 1; i<=nids; i++) {
+		id = ids[i-1];
+    // first, put the table element on the top of the stack
+    lua_rawgeti(L, 2, i);
+		// Get the bulk elements
+		// Address is the first element
+		lua_rawgeti(L, -1, 1);
+		addr = luaL_checklstring(L, -1, &naddr);
+		lua_pop(L, 1);
+		// How many bytes to read is the second element
+		lua_rawgeti(L, -1, 2);
+		addr_len = luaL_checkint(L, -1);
+		lua_pop(L, 1);
+		// Get the values from table at 3
+		lua_rawgeti(L, 3, i);
+		int32_t value = luaL_checknumber(L, -1);
+		lua_pop(L, 1);
+		dynamixel_instruction_add_bulk_write(id, addr[0], addr[1], addr_len, value);
+	}
 
-  // Make sure we are dealing with a table of values
-  luaL_checktype(L, 1, LUA_TTABLE);
-
-#if LUA_VERSION_NUM == 502
-  nids = lua_rawlen(L, 1);
-#else
-  nids = lua_objlen(L, 1);
-#endif
-
-dynamixel_instruction_init_bulk_write();
-
-/*
-  int tp;
-*/
-  for (i = 1; i<=nids; i++) {
-    // first, put the table on the top of the stack
-    lua_rawgeti(L,1,i);
-    // put each element of this table on the top of the stack
-    // id
-    
-    /*
-    tp = lua_type(L, -1);
-    printf( "%d: %s\n", tp, lua_typename(L,tp) );
-    */
-
-    lua_rawgeti(L,-1,1); 
-
-    /*
-    tp = lua_type(L, -1);
-    printf( "%d: %s\n", tp, lua_typename(L,tp) );
-    */
-
-    // the ID is now on the top of the stack
-    id = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-
-    /*
-    printf("ID: %d\n",id);
-    */
-
-    // addr
-    lua_rawgeti(L,-1,2); 
-
-/*
-    tp = lua_type(L, -1);
-    printf( "%d: %s\n", tp, lua_typename(L,tp) );
-*/
-
-    // TODO: ensure that naddr==2
-    addr = (uint8_t*)luaL_checklstring(L, -1, &naddr);
-
-    /*
-    printf("Address: %d %d\n", addr[0], addr[1] );
-    */
-
-    lua_pop(L, 1);
-    // register size
-    lua_rawgeti(L,-1,3); 
-
-/*
-    tp = lua_type(L, -1);
-    printf( "%d: %s\n", tp, lua_typename(L,tp) );
-*/
-
-    reg_sz = luaL_checkinteger(L, -1);
-/*
-    printf("Reg sz: %d\n", reg_sz);
-*/
-
-    lua_pop(L, 1);
-    // data value, as an integer
-    lua_rawgeti(L,-1,4);
-    val = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    
-    // Do something with the data
-    dynamixel_instruction_add_bulk_write(id,addr[0],addr[1],reg_sz,val);
-
-    // pop off the table of this instruction
-    lua_pop(L, 1);
-  }
-
-  DynamixelPacket *p = dynamixel_instruction_finalize_bulk_write();
+	DynamixelPacket *p = dynamixel_instruction_finalize_bulk_write();
 
   return lua_pushpacket(L, p);
 }
@@ -242,6 +189,40 @@ static int lua_dynamixel_instruction_sync_read(lua_State *L) {
   uint16_t len = luaL_checkint(L, 3);
   DynamixelPacket *p = dynamixel_instruction_sync_read
     (addr[0], addr[1], len, (uint8_t *)ids, (uint8_t)nids);
+  return lua_pushpacket(L, p);
+}
+
+static int lua_dynamixel_instruction_bulk_read(lua_State *L) {
+  // How many IDs to read from
+  size_t nids, naddr;
+	int i;
+	uint8_t id;
+  // Which ids to read from
+  const char *ids = luaL_checklstring(L, 1, &nids);
+	// Initialize the header
+	dynamixel_instruction_init_bulk_read();
+	const char *addr;
+	uint16_t addr_len;
+	// Make sure we are dealing with a table of values
+  luaL_checktype(L, 2, LUA_TTABLE);
+	for (i = 1; i<=nids; i++) {
+		id = ids[i-1];
+    // first, put the table element on the top of the stack
+    lua_rawgeti(L, 2, i);
+		// Get the bulk elements
+		// Address is the first element
+		lua_rawgeti(L, -1, 1);
+		addr = luaL_checklstring(L, -1, &naddr);
+		lua_pop(L, 1);
+		// How many bytes to read is the second element
+		lua_rawgeti(L, -1, 2);
+		addr_len = luaL_checkint(L, -1);
+		lua_pop(L, 1);
+		dynamixel_instruction_add_bulk_read(id, addr[0], addr[1], addr_len);
+	}
+
+	DynamixelPacket *p = dynamixel_instruction_finalize_bulk_read();
+
   return lua_pushpacket(L, p);
 }
 
@@ -354,6 +335,7 @@ static const struct luaL_reg dynamixelpacket_functions[] = {
   {"sync_write", lua_dynamixel_instruction_sync_write},
   {"sync_read",  lua_dynamixel_instruction_sync_read},
   {"bulk_write", lua_dynamixel_instruction_bulk_write},
+	{"bulk_read", lua_dynamixel_instruction_bulk_read},
   {"word_to_byte", lua_dynamixel_word_to_byte},
   {"dword_to_byte", lua_dynamixel_dword_to_byte},
   {"byte_to_word", lua_dynamixel_byte_to_word},

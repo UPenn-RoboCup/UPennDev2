@@ -7,8 +7,6 @@ assert(ffi, 'Need LuaJIT to run. Lua support in the future')
 require'dcm'
 -- Shared memory for world
 require'wcm'
--- SHM for human interface
-require'hcm'
 
 -- Utilities
 local unix   = require'unix'
@@ -16,12 +14,13 @@ local vector = require'vector'
 local util   = require'util'
 local si     = require'simple_ipc'
 local Kinematics = require'THOROPKinematics'
+local mpack  = require'msgpack'.pack
 
 local Body = {}
-local dev_chs, dcm_chs, body_chs, body_poll = {}, {
-	si.new_publisher'body!'
-	}, {}
+local dev_chs, body_chs, body_poll = {}, {}
+local dcm_ch = si.new_publisher'dcm!'
 local get_time = unix.time
+local vslice = vector.slice
 
 -- TODO: Body or Config?
 -- Shared memory layout
@@ -63,21 +62,32 @@ local parts = {
 ------------------
 -- Body sensors --
 ------------------
+local nx_registers = require'libDynamixel'.nx_registers
 for sensor, ptr in pairs(dcm.sensorPtr) do
 	local cur = dcm['get_sensor_'..sensor]()
+	local ptr_t = dcm.tsensorPtr[sensor]
 	local n_el = type(cur)=='table' and #cur or 1
-	local get = function(idx1, idx2)
-		-- For cdata, use -1
-		return vector.slice(ptr, (idx1 or 1)-1, (idx2 or n_el)-1)
+  local is_motor = nx_registers[sensor]
+	local get = function(idx1, idx2, needs_wait)
+		local start, stop = idx1 or 1, idx2 or n_el
+    if is_motor and needs_wait then
+			local ids = {}
+			for id = start, stop do ids[id] = true end
+			dcm_ch:send(mpack({rd_reg=sensor, ids=ids}))
+    end
+  	-- For cdata, use -1
+		-- Return the time of the reading
+	  return vslice(ptr, start-1, stop-1), vslice(ptr_t, start-1, stop-1)
 	end
   Body['get_'..sensor] = get
   -- Anthropomorphic access to dcm
 	-- TODO: get_lleg_rpy is illegal, for instance
   for part, jlist in pairs(parts) do
 		-- For cdata, use -1
+	  local not_synced = sensor~='position'
     local idx1, idx2 = jlist[1], jlist[#jlist]
-    Body['get_'..part:lower()..'_'..sensor] = function(idx)
-      if idx then return get(jlist[idx]) else return get(idx1, idx2) end
+    Body['get_'..part:lower()..'_'..sensor] = function(idx, skip_wait)
+			return get(idx1, idx2, not_synced and not skip_wait)
     end -- Get
   end
 	-- End anthropomorphic
@@ -92,45 +102,58 @@ for actuator, ptr in pairs(dcm.actuatorPtr) do
 	-- Only command_position is constantly synced
 	-- Other commands need to be specially sent to the Body
 	local not_synced = actuator~='command_position'
+	local idx
 	local function set(val, idx1, idx2)
+		local changed_ids = {}
 		-- cdata is -1
 		if idx2 then
 			if type(val)=='number' then
-				for i=idx1, idx2 do ptr[i - 1] = val end
+				for idx=idx1, idx2 do
+					changed_ids[idx] = true
+					ptr[idx - 1] = val
+				end
 			else
-				local idx
 				for i,v in ipairs(val) do
 					idx = idx1 + i - 1
+					changed_ids[idx] = true
 					if idx>idx2 then break else ptr[idx - 1] = v end
 				end
 			end
 		elseif idx1 then
 			if type(val)=='number' then
+				changed_ids[idx1] = true
 				ptr[idx1 - 1] = val
 			else
-				for i,v in ipairs(val) do ptr[idx1 + i - 2] = v end
+				for i, v in ipairs(val) do
+					idx = idx1 + i - 1
+					changed_ids[idx] = true
+					ptr[idx - 1] = v
+				end
 			end
 		else
 			-- No index means set all actuators... Uncommon
 			if type(val)=='number' then
-				for i=0, n_el-1 do ptr[i] = val end
+				for i=0, n_el-1 do
+					changed_ids[i + 1] = true
+					ptr[i] = val
+				end
 			else
-				for i, v in ipairs(val) do ptr[i - 1] = v end
+				for i, v in ipairs(val) do
+					changed_ids[i] = true
+					ptr[i - 1] = v
+				end
 			end
 		end
 		-- Send msg to the dcm, just string of the id
 		if not_synced then
-			for _, ch in ipairs(dcm_chs) do
-        --print('SET', ch, actuator)
-        ch:send(actuator)
-      end
+			dcm_ch:send(mpack({wr_reg=actuator, ids=changed_ids}))
 		end
 	end
 	local function get(idx1, idx2)
 		idx1 = idx1 or 1
 		idx2 = idx2 or n_el
 		-- For cdata, use -1
-		return vector.slice(ptr, idx1 - 1, idx2 - 1)
+		return vslice(ptr, idx1 - 1, idx2 - 1)
 	end
 	-- Export
   Body['set_'..actuator] = set
@@ -153,9 +176,7 @@ end
 
 -- If receiving data from a chain
 local function chain_cb(c_skt)
-  for _, msg in ipairs(c_skt:recv_all()) do
-    print('DCM '..c_skt.obj.id..' | ', msg)
-  end
+	local dcm_msgs = c_skt:recv_all()
 end
 local function imu_cb()
   print('imu cb')
@@ -163,30 +184,21 @@ end
 local function body_cb(b_skt)
 	-- Externally call some sort of sync
   local msgs = b_skt:recv_all()
-	for _, msg in ipairs(msgs) do
-		for i, ch in ipairs(dcm_chs) do
-      ch:send(msg)
-    end
-	end
-
 end
 
 function Body.entry()
 	-- Reset the tables
-	dev_chs, dcm_chs, body_chs, body_poll = {}, {}, {}
+	dev_chs, body_chs, body_poll = {}, {}
 	-- Start all the threads
 	-- TODO: Check if already running as a separate process
+	local dcm_thread
 	if Config.chain.enabled then
-		for i, v in ipairs(Config.chain) do
-			local ch, thread =
-			si.new_thread(ROBOT_HOME..'/run_dcm.lua', 'dcm'..i, v)
-			ch.callback = chain_cb
-			ch.id = i
-			table.insert(dev_chs, ch)
-			table.insert(dcm_chs, ch)
-			table.insert(body_chs, ch)
-			thread:start()
-		end
+		dcm_ch, dcm_thread =
+		si.new_thread(ROBOT_HOME..'/run_co_dcm.lua', 'dcm', v)
+		ch.callback = chain_cb
+		table.insert(dev_chs, dcm_ch)
+		table.insert(body_chs, dcm_ch)
+		thread:start()
 	end
 	-- IMU
 	if Config.imu.enabled then
@@ -206,14 +218,14 @@ function Body.entry()
 	body_poll = si.wait_on_channels(body_chs)
 end
 
-function Body.update ()
+function Body.update()
 	-- Poll for events
 	-- Return immediately if nothing happening
 	-- NOTE: Most of the time, nothing will happen...
-	body_poll:poll(0)
+	body_poll:poll()
 end
 
-function Body.exit ()
+function Body.exit()
 	-- Tell the devices to exit cleanly
   for _,ch in pairs(dev_chs) do ch:send'exit' end
 	-- Wait for everyone to exit cleanly
@@ -268,6 +280,7 @@ if IS_WEBOTS then
   	logger = libLog.new('yuyv', true)
   end
   
+  require'hcm'
 
   --Added to config rather than hard-code 
   local ENABLE_CHEST_LIDAR  = Config.sensors.chest_lidar

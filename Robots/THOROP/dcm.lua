@@ -35,6 +35,13 @@ shared_data.sensor.rpy           = vector.zeros(3)
 shared_data.sensor.battery       = vector.zeros(1)
 shared_data.sensor.compass       = vector.zeros(3)
 
+-- Sensors from the robot
+shared_data.tsensor = {}
+-- Setup from libDynamixel the read only sensor values
+for name, vec in pairs(shared_data.sensor) do
+  shared_data.tsensor[name] = vector.zeros(#vec)
+end
+
 --  Write to the motors
 shared_data.actuator = {}
 -- Setup from libDynamixel every write item
@@ -49,20 +56,6 @@ for reg, v in pairs(lD.nx_registers) do
     shared_data.actuator[reg] = vector.zeros(nJoint)
   end
 end
-
--- Gripper only data Left, Right
--- NOTE: NX Motor must go through a sequence to change modes...
-shared_data.gripper = {}
--- Position of joints (just for the gripper)
-shared_data.gripper.command_position = vector.zeros(4)
--- Torque of joints is in mA (just for the gripper)
-shared_data.gripper.command_torque = vector.zeros(4)
--- 0: Position mode, 1: torque mode
-shared_data.gripper.torque_mode = vector.zeros(4)
--- Last grip reading
-shared_data.gripper.t = vector.zeros(1)
--- Reading rate (seconds between reads): 1 sec default
-shared_data.gripper.rate = vector.ones(1)
 
 ------------------------
 -- Call the initializer

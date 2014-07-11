@@ -66,12 +66,12 @@ DEF BALL Ball {
   radius 0.11
 }
 DEF OBS1 Obstacle {
-  translation -2.5 -0.000919687 -1
-  rotation 6.4642e-09 1 -3.46783e-09 2.14519e-08
+  translation -2.5 0 -1
+  rotation 0 1 0 0
 }
 DEF OBS2 Obstacle {
-  translation -1.03443 -0.000919687 1.04758
-  rotation 8.10982e-09 1 6.437e-10 2.14519e-08
+  translation -1 0 1
+  rotation 0 1 0 0
 }
 DEF OPPONENT Block {
   translation -4.2 0.5 0

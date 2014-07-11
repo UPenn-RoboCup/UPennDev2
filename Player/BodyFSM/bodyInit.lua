@@ -22,6 +22,8 @@ function state.entry()
   --Reset ball pose
   wcm.set_ball_x(0)
   wcm.set_ball_y(0)
+  -- Reset obstacle pos
+	wcm.set_obstacle_reset(1)
   
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called

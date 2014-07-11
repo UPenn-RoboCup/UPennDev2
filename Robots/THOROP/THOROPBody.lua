@@ -235,6 +235,16 @@ function Body.exit()
 	-- TODO: Should join the thread...
 end
 
+---
+-- Special functions
+---
+function Body.enable_read(chain)
+  dcm_ch:send(mp.pack({bus=chain,key='enable_read', val=true}))
+end
+function Body.disable_read(chain)
+  dcm_ch:send(mp.pack({bus=chain,key='enable_read', val=false}))
+end
+
 ----------------------
 -- Webots compatibility
 if IS_WEBOTS then

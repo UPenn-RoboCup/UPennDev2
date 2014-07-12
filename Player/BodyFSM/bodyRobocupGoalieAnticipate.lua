@@ -2,6 +2,8 @@ local state = {}
 state._NAME = ...
 
 local Body = require'Body'
+local util   = require'util'
+local robocupplanner = require'robocupplanner'
 
 local timeout = 10.0
 local t_entry, t_update, t_exit
@@ -22,9 +24,6 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  if t-t_entry > timeout then
-    return'timeout'
-  end
 
   -- if we see ball right now and ball is far away start moving
   local ball_elapsed = t - wcm.get_ball_t()
@@ -32,21 +31,20 @@ function state.update()
     local pose = wcm.get_robot_pose()
     local ballx = wcm.get_ball_x()
     local bally = wcm.get_ball_y()    
-    local ballr = math.sqrt(ballx*ballx+bally*bally)
     local balla = math.atan2(bally,ballx)
     local ball_local = {ballx,bally,balla}
-    local ballGlobal = util.pose_global(walk_target_local, pose)
+    local ballGlobal = util.pose_global(ball_local, pose)
   
+    local target_pose = robocupplanner.getGoalieTargetPose(pose,ballGlobal)
     --our goal should be always at (-4.5,0,0)
+ 
+    local move_vel,reached = robocupplanner.getVelocityGoalie(pose,target_pose,0.3)
 
-    local ballFromGoal = {ballGlobal[1] +4.5, ballGlobal[2]}
-    local ballGoalAngle = math.atan2(ballFromGlobal[2],ballFromGlobal[1])
-
-
-
-
-
---      return 'reposition'
+    if not reached then
+      print("Current pose:",pose[1],pose[2])
+      print("Move target:",target_pose[1],target_pose[2])      
+      return 'reposition'
+    end
   end
 
 end

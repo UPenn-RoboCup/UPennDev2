@@ -107,9 +107,13 @@ fsm.Body = {
   --Goalie SMs-----------------------------
   -------------------------------
 
+  {'bodyRobocupGoalieIdle', 'attacker', 'bodyRobocupIdle'},
   {'bodyRobocupGoalieIdle', 'timeout', 'bodyRobocupGoalieIdle'},
+  {'bodyRobocupGoalieIdle', 'ballfound', 'bodyRobocupGoalieAnticipate'},
+
   {'bodyRobocupGoalieAnticipate', 'timeout', 'bodyRobocupGoalieAnticipate'},
   {'bodyRobocupGoalieAnticipate', 'reposition', 'bodyRobocupGoalieReposition'},
+
   {'bodyRobocupGoalieReposition', 'done', 'bodyRobocupGoalieAnticipate'},
 
 

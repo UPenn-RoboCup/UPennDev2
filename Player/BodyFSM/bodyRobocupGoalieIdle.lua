@@ -19,7 +19,7 @@ end
 function state.update()
 
   local role = gcm.get_game_role()
-  if role==0 then return 'goalie' end
+  if role==1 then return 'attacker' end
 
   --  print(state._NAME..' Update' )
   -- Get the time of update
@@ -28,9 +28,7 @@ function state.update()
 
   -- Save this at the last update time
   t_update = t
-  if t-t_entry > timeout then
-    return'timeout'
-  end
+  
   -- if we see ball right now and ball is far away start moving
   local ball_elapsed = t - wcm.get_ball_t()
   if ball_elapsed < 0.1 then --ball found

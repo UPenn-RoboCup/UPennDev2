@@ -42,7 +42,6 @@ local function update_odometry(uOdometry)
   uOdometry[3] = odomScale[3] * uOdometry[3]
   -- Next, grab the gyro yaw
 
-
   if use_imu_yaw then    
     if IS_WEBOTS then
       gps_pose = wcm.get_robot_pose_gps()
@@ -179,15 +178,7 @@ function libWorld.entry()
   for i=1,2 do OF[i] = obsFilter.new(i) end
   -- Processing count
   count = 0
-  if use_imu_yaw then    
-    if IS_WEBOTS then
-      gps_pose = wcm.get_robot_pose_gps()
-      yaw0 = gps_pose[3]
-    else
-      local yaw = Body.get_sensor_rpy()[3]
-      yaw0 = yaw
-    end
-  end
+  
 end
 
 function libWorld.update(uOdom, detection)
@@ -204,6 +195,19 @@ function libWorld.update(uOdom, detection)
       wcm.set_robot_pose({0,0,0})
       wcm.set_robot_odometry({0,0,0})
     end
+
+    if use_imu_yaw then    
+      if IS_WEBOTS then
+        gps_pose = wcm.get_robot_pose_gps()
+        yaw0 = gps_pose[3]
+      else
+        local yaw = Body.get_sensor_rpy()[3]
+        yaw0 = yaw
+      end
+    end
+
+
+
   else
     update_odometry(uOdom)
   end

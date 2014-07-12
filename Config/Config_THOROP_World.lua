@@ -45,12 +45,7 @@ world.goalWidth = 1.6
 
 
 
-world.goalUpper = {} -- Goal in use
-world.goalUpper[1] = {4.5, world.goalWidth/2}
-world.goalUpper[2] = {4.5, -world.goalWidth/2}
-world.goalLower = {}  -- Goal not in use
-world.goalLower[1] = {-4.5, -world.goalWidth/2}
-world.goalLower[2] = {-4.5, world.goalWidth/2}
+
 
 
 -- Field
@@ -67,6 +62,25 @@ world.Lcorner[4]={-4.5,-3.0}
 --Center T edge
 world.Lcorner[5]={0,3.0}
 world.Lcorner[6]={0,-3.0}
+
+
+
+
+
+
+
+
+
+
+world.goalUpper = {} -- Attacking goal
+world.goalUpper[1] = {world.xBoundary, world.goalWidth/2}
+world.goalUpper[2] = {world.xBoundary, -world.goalWidth/2}
+
+
+world.goalLower = {}  -- Defending goal
+world.goalLower[1] = {-world.xBoundary, -world.goalWidth/2}
+world.goalLower[2] = {-world.xBoundary, world.goalWidth/2}
+
 
 
 

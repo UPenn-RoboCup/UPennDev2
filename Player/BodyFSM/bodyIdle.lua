@@ -3,6 +3,7 @@ state._NAME = ...
 local Body  = require'Body'
 local t_entry, t_update, t_exit
 local timeout = 10.0
+require'gcm'
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -19,7 +20,9 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
+
+  local gamestate = gcm.get_game_state()
+  if gamestate~=5 then return 'init' end --5 is idle state 
 end
 
 function state.exit()

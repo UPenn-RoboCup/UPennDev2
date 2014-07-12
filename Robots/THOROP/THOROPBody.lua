@@ -602,6 +602,16 @@ if IS_WEBOTS then
       dcm.sensorPtr.gyro[0] = -(gyro[1]-512)/512*39.24
       dcm.sensorPtr.gyro[1] = -(gyro[2]-512)/512*39.24
       dcm.sensorPtr.gyro[2] = (gyro[3]-512)/512*39.24
+
+
+
+
+
+
+
+
+
+
     end
 
     -- FSR
@@ -780,6 +790,9 @@ if IS_WEBOTS then
         motion_ch:send'stand'
         body_ch:send'stop'   
         t_last_keypress = t        
+	  elseif key_char_lower=='9' then        
+        motion_ch:send'hybridwalk'
+        t_last_keypress = t                
       elseif key_char_lower=='f' then
         head_ch:send'scan'
         t_last_keypress = t

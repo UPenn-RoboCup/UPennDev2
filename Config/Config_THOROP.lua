@@ -101,7 +101,7 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupApproach.target={0.50,0.14}
   Config.fsm.bodyRobocupApproach.th = {0.10, 0.02}
 
-
+  Config.world.use_imu_yaw = true
 end
 
 return Config

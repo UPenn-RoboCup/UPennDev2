@@ -30,20 +30,27 @@ fsm.Arm = {
 fsm.Head = {
   {'headIdle', 'scan', 'headBackScan'},
   {'headIdle', 'teleop', 'headTeleop'},
-  -- 
   {'headIdle', 'scanobs', 'headObstacleScan'},
+  --
+
+  {'headScan', 'ballfound', 'headTrack'},
+  {'headScan', 'noball', 'headBackScan'},
+  {'headScan', 'teleop', 'headTeleop'},
+
+  -- 
+  {'headTeleop', 'scan', 'headBackScan'},
+  {'headTeleop', 'scanobs', 'headObstacleScan'},
+  -- 
   -- {'headObstacleScan', 'noobs', 'headSweep'},
   {'headObstacleScan', 'done', 'headTrack'},
   {'headObstacleScan', 'teleop', 'headTeleop'},
-  
+ 
 
   {'headBackScan', 'ballfound', 'headTrack'},
   {'headBackScan', 'noball', 'headBackScan'},
   {'headBackScan', 'teleop', 'headTeleop'},
 
-  {'headScan', 'ballfound', 'headTrack'},
-  {'headScan', 'noball', 'headBackScan'},
-  {'headScan', 'teleop', 'headTeleop'},
+  
   --
   {'headTrack', 'balllost', 'headScan'},
   {'headTrack', 'timeout', 'headLookGoal'},
@@ -54,8 +61,7 @@ fsm.Head = {
   --
   {'headSweep', 'done', 'headTrack'},
   --
-  {'headTeleop', 'scan', 'headBackScan'},
-  {'headTeleop', 'scanobs', 'headObstacleScan'},
+  
 }
 
 fsm.Body = {
@@ -63,16 +69,14 @@ fsm.Body = {
   {'bodyInit', 'done', 'bodyStop'},
 
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
-  {'bodyStop', 'stepwaypoint', 'bodyStepWaypoint'},
-  {'bodyStop', 'play', 'bodyRobocupIdle'},
+--  {'bodyStop', 'stepwaypoint', 'bodyStepWaypoint'},
   {'bodyStop', 'kick', 'bodyRobocupKick'},
+  {'bodyStop', 'play', 'bodyRobocupIdle'},
+  {'bodyStop', 'goalie', 'bodyRobocupGoalieIdle'},
 
+--test stuff
   {'bodyStepPlace',   'done', 'bodyStop'},
-  {'bodyStepWaypoint',   'done', 'bodyStop'},
-
-
-
-
+--  {'bodyStepWaypoint',   'done', 'bodyStop'},
 
   -------------------------------
   --ATTACKER SMs-----------------------------
@@ -103,10 +107,17 @@ fsm.Body = {
   --Goalie SMs-----------------------------
   -------------------------------
 
+  {'bodyRobocupGoalieIdle', 'attacker', 'bodyRobocupIdle'},
   {'bodyRobocupGoalieIdle', 'timeout', 'bodyRobocupGoalieIdle'},
+  {'bodyRobocupGoalieIdle', 'ballfound', 'bodyRobocupGoalieAnticipate'},
+
   {'bodyRobocupGoalieAnticipate', 'timeout', 'bodyRobocupGoalieAnticipate'},
   {'bodyRobocupGoalieAnticipate', 'reposition', 'bodyRobocupGoalieReposition'},
+  {'bodyRobocupGoalieAnticipate', 'stop', 'bodyStop'},
+
+
   {'bodyRobocupGoalieReposition', 'done', 'bodyRobocupGoalieAnticipate'},
+  {'bodyRobocupGoalieReposition', 'stop', 'bodyStop'},
 
 
 }

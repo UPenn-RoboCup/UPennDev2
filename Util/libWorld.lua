@@ -33,6 +33,7 @@ local uOdometry0 = vector.zeros(3)
 -- Save the resampling times
 local t_resample = 0
 
+local yaw0 = 0
 
 local function update_odometry(uOdometry)  
   -- Scale the odometry
@@ -42,9 +43,15 @@ local function update_odometry(uOdometry)
   -- Next, grab the gyro yaw
 
   if use_imu_yaw then    
-    local yaw = Body.get_sensor_rpy()[3]
-    uOdometry[3] = yaw - yaw0
-    yaw0 = yaw
+    if IS_WEBOTS then
+      gps_pose = wcm.get_robot_pose_gps()
+      uOdometry[3] = gps_pose[3] - yaw0
+      yaw0 = gps_pose[3]
+    else
+      local yaw = Body.get_sensor_rpy()[3]
+      uOdometry[3] = yaw - yaw0
+      yaw0 = yaw
+    end
   end
 
   -- Update the filters based on the new odometry
@@ -79,9 +86,7 @@ local function update_vision(detected)
   local t = unix.time()
   if t - t_resample > RESAMPLE_PERIOD or count%RESAMPLE_COUNT==0 then
     poseFilter.resample()
-    if mcm.get_walk_ismoving()==1 then
-      poseFilter.addNoise()
-    end    
+    if mcm.get_walk_ismoving()==1 then poseFilter.addNoise() end    
   end
   -- If the ball is detected
 	ball = detected.ball
@@ -173,21 +178,33 @@ function libWorld.entry()
   for i=1,2 do OF[i] = obsFilter.new(i) end
   -- Processing count
   count = 0
+  
 end
 
 function libWorld.update(uOdom, detection)
   local t = unix.time()
   -- Run the updates
-  if wcm.get_robot_reset_pose()==1 then    
+  if wcm.get_robot_reset_pose()==1 or gcm.get_game_state()~=3 then    
     if gcm.get_game_role()==0 then
       --Goalie initial pos
-      poseFilter.initialize({-4.5,0,0},{0,0,0})
-      wcm.set_robot_pose({-4.5,0,0})
-      wcm.set_robot_odometry({-4.5,0,0})
+      local factor2 = Config.world.goalieFactor or 0.88 --Goalie pos
+      poseFilter.initialize({-Config.world.xBoundary*factor2,0,0},{0,0,0})
+      wcm.set_robot_pose({-Config.world.xBoundary*factor2,0,0})
+      wcm.set_robot_odometry({-Config.world.xBoundary*factor2,0,0})
     else --Attacker initial pos
       poseFilter.initialize({0,0,0},{0,0,0})
       wcm.set_robot_pose({0,0,0})
       wcm.set_robot_odometry({0,0,0})
+    end
+
+    if use_imu_yaw then    
+      if IS_WEBOTS then
+        gps_pose = wcm.get_robot_pose_gps()
+        yaw0 = gps_pose[3]
+      else
+        local yaw = Body.get_sensor_rpy()[3]
+        yaw0 = yaw
+      end
     end
   else
     update_odometry(uOdom)

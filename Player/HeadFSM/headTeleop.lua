@@ -40,8 +40,10 @@ function state.update()
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
 
-  if gcm.get_game_state()==1 then
-    return 'scan'
+  --5 is the idle state! 
+  -- Ready, set, playing states
+  if gcm.get_game_state()==1 or gcm.get_game_state()==2 and gcm.get_game_state()==3 then 
+    return 'scan' 
   end
 
 end

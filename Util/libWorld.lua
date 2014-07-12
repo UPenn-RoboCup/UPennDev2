@@ -174,7 +174,7 @@ end
 function libWorld.update(uOdom, detection)
   local t = unix.time()
   -- Run the updates
-  if wcm.get_robot_reset_pose()==1 or gcm.get_game_state()~=3 then    
+  if wcm.get_robot_reset_pose()==1 or (gcm.get_game_state()~=3 and gcm.get_game_state()~=6) then    
     if gcm.get_game_role()==0 then
       --Goalie initial pos
       local factor2 = Config.world.goalieFactor or 0.88 --Goalie pos

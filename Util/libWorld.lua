@@ -107,16 +107,6 @@ local function update_vision(detected)
   -- If the obstacle is detected
   obstacle = detected.obstacles
   if obstacle then
-    -- Old silly way
-    -- local xs = sort_obs(obstacle.xp, 3)
-    -- local ys = sort_obs(obstacle.yp, 3)
-    --
-    -- for i=1,3 do
-    --   local x = (xs[i]-1)*obstacle.res + obstacle.res/2 - 4.5
-    --   local y = (ys[i]-1)*obstacle.res + obstacle.res/2 - 3
-    --   wcm['set_obstacle_v'..i]({x, y})
-    -- end
-    
     -- If use grid map
     for i=1,#obstacle.xs do
       local x, y = obstacle.xs[i], obstacle.ys[i]
@@ -259,7 +249,7 @@ function libWorld.send()
   
   if obstacle then
     local obs_global = {}
-    for i=1,2 do
+    for i=1,2 do  --TODO: add to 3
       local obs = wcm['get_obstacle_v'..i]()
       -- We store the global position of obstacles
       obs_global[i] = util.pose_global({obs[1],obs[2],0}, wcm.get_robot_pose())

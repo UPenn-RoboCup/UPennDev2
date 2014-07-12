@@ -22,7 +22,6 @@ if IS_WEBOTS then MAP.res = 0.2 end
 MAP.sizex = 9/MAP.res
 MAP.sizey = 6/MAP.res
 MAP.xmax, MAP.ymin = 4.5, -3
-MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
 --TODO: put wraparound on occupancy
 MAP.grid = torch.Tensor(MAP.sizex, MAP.sizey):zero()
 
@@ -591,15 +590,12 @@ function libVision.obstacle_new(labelB_t)
       obsStats.da[i] = 5*DEG_TO_RAD -- TODO
 
       ------------
-      -- local xi = math.ceil((pos[1]-MAP.xmin) / MAP.res)
       -- pos is local
       local global_pos = util.pose_global({pos[1], pos[2], 0}, wcm.get_robot_pose())
       local xi = math.ceil((MAP.xmax-global_pos[1]) / MAP.res)
 			local yi = math.ceil((global_pos[2]-MAP.ymin) / MAP.res)
       xi = math.min(math.max(1, xi), MAP.sizex)
       yi = math.min(math.max(1, yi), MAP.sizey)
-      -- MAP.xp[xi] = MAP.xp[xi] + 1
-      -- MAP.yp[yi] = MAP.yp[yi] + 1
       MAP.grid[xi][yi] = MAP.grid[xi][yi] + 1
       ------------
       
@@ -607,10 +603,8 @@ function libVision.obstacle_new(labelB_t)
       obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 
       obsStats.orientation[i] = math.pi/2
     end    
-    -- obsStats.xp, obsStats.yp = MAP.xp, MAP.yp
-    -- obsStats.res = MAP.res
     
-    -- There are global position
+    -- These are global position
     obsStats.xs, obsStats.ys = ImageProc2.grid_filter(MAP.grid, MAP.res)
     
     return 'Detected', obsStats

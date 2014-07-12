@@ -40,7 +40,7 @@ static int lua_gamecontrolpacket_parse(lua_State *L, RoboCupGameControlData *dat
   lua_pushstring(L, "time");
   lua_pushnumber(L, recvTime);
   lua_settable(L, -3);
-  // version field
+  // version 
   lua_pushstring(L, "version");
   lua_pushnumber(L, data->version);
   lua_settable(L, -3);
@@ -48,110 +48,6 @@ static int lua_gamecontrolpacket_parse(lua_State *L, RoboCupGameControlData *dat
   lua_pushstring(L, "state");
   lua_pushnumber(L, data->state);
   lua_settable(L, -3);
-
-  /* number incremented with each packet sent (with wraparound)
-  lua_pushstring(L, "packetNumber");
-  lua_pushnumber(L, data->packetNumber);
-  lua_settable(L, -3);
-
-  lua_pushstring(L, "playersPerTeam");
-  lua_pushnumber(L, data->playersPerTeam);
-  lua_settable(L, -3);
-
-  lua_pushstring(L, "firstHalf");
-  lua_pushnumber(L, data->firstHalf);
-  lua_settable(L, -3);
-
-  lua_pushstring(L, "kickOffTeam");
-  lua_pushnumber(L, data->kickOffTeam);
-  lua_settable(L, -3);
-
-  lua_pushstring(L, "secondaryState");
-  lua_pushnumber(L, data->secondaryState);
-  lua_settable(L, -3);
-
-  lua_pushstring(L, "dropInTeam");
-  lua_pushnumber(L, data->dropInTeam);
-  lua_settable(L, -3);
-
-  lua_pushstring(L, "dropInTime");
-  lua_pushnumber(L, data->dropInTime);
-  lua_settable(L, -3);
-
-  lua_pushstring(L, "secsRemaining");
-  lua_pushnumber(L, data->secsRemaining);
-  lua_settable(L, -3);
-
-  lua_pushstring(L, "secondaryTime");
-  lua_pushnumber(L, data->secondaryTime);
-  lua_settable(L, -3);
-
-  lua_pushstring(L, "teams");
-  lua_createtable(L, 2, 0);
-
-  for (int iteam = 0; iteam < 2; iteam++) {
-		struct TeamInfo ti = data->teams[iteam];
-    lua_createtable(L, 0, 6);
-
-    lua_pushstring(L, "teamNumber");
-    lua_pushnumber(L, ti.teamNumber);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "teamColour");
-    lua_pushnumber(L, ti.teamColour);
-    lua_settable(L, -3);
- 
-    lua_pushstring(L, "score");
-    lua_pushnumber(L, ti.score);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "penaltyShot");
-    lua_pushnumber(L, ti.penaltyShot);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "singleShots");
-    lua_pushnumber(L, ti.singleShots);
-    lua_settable(L, -3);
-
-    // coach message
-    lua_pushstring(L, "coachMessage");
-    // NOTE: Assume \0 terminated
-    lua_pushstring(L, (const char*)ti.coachMessage);
-    lua_settable(L, -3);
-
-    // Coach
-    lua_pushstring(L, "coach");
-    lua_createtable(L, 0, 2);
-    lua_pushstring(L, "penalty");
-    lua_pushnumber(L, ti.coach.penalty);
-    lua_settable(L, -3);
-    lua_pushstring(L, "secsRemaining");
-    lua_pushnumber(L, ti.coach.secsTillUnpenalised);
-    lua_settable(L, -3);
-    lua_settable(L,-3);
-    
-    lua_pushstring(L, "player");
-    lua_createtable(L, MAX_NUM_PLAYERS, 0);
-
-    for (int iplayer = 0; iplayer < MAX_NUM_PLAYERS; iplayer++) {
-      lua_createtable(L, 0, 2);
-
-      lua_pushstring(L, "penalty");
-      lua_pushnumber(L, ti.players[iplayer].penalty);
-      lua_settable(L, -3);
-
-      lua_pushstring(L, "secsRemaining");
-      lua_pushnumber(L, ti.players[iplayer].secsTillUnpenalised);
-      lua_settable(L, -3);
-
-      lua_rawseti(L, -2, iplayer+1);
-    }
-    lua_settable(L, -3);
-
-    lua_rawseti(L, -2, iteam+1);
-  }
-  lua_settable(L, -3);
-	*/
 
   return 1;
 }

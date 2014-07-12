@@ -113,8 +113,11 @@ fsm.Body = {
 
   {'bodyRobocupGoalieAnticipate', 'timeout', 'bodyRobocupGoalieAnticipate'},
   {'bodyRobocupGoalieAnticipate', 'reposition', 'bodyRobocupGoalieReposition'},
+  {'bodyRobocupGoalieAnticipate', 'stop', 'bodyStop'},
+
 
   {'bodyRobocupGoalieReposition', 'done', 'bodyRobocupGoalieAnticipate'},
+  {'bodyRobocupGoalieReposition', 'stop', 'bodyStop'},
 
 
 }

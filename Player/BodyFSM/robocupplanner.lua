@@ -25,8 +25,9 @@ function robocupplanner.getGoalieTargetPose(pose,ballGlobal)
   -- x = ball(1) + t*cos(angle) = -Config.world.xBoundary
   -- y = ball(2) + t*sin(angle) 
 
-  local factor1 = 0.86 --max ball pos
-  local factor2 = 0.88 --Goalie pos
+  
+  local factor2 = Config.world.goalieFactor or 0.88 --Goalie pos
+  local factor1 = factor2 - 0.02 --max ball pos
 
 
   ballGlobal[1] = math.max(  -Config.world.xBoundary * factor1, ballGlobal[1])

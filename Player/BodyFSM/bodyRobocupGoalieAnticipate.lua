@@ -18,6 +18,7 @@ function state.entry()
 end
 
 function state.update()
+  if gcm.get_game_state()~=3 then return'stop' end
   --  print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()

@@ -187,9 +187,10 @@ function libWorld.update(uOdom, detection)
   if wcm.get_robot_reset_pose()==1 or gcm.get_game_state()~=3 then    
     if gcm.get_game_role()==0 then
       --Goalie initial pos
-      poseFilter.initialize({-4.5,0,0},{0,0,0})
-      wcm.set_robot_pose({-4.5,0,0})
-      wcm.set_robot_odometry({-4.5,0,0})
+      local factor2 = Config.world.goalieFactor or 0.88 --Goalie pos
+      poseFilter.initialize({-Config.world.xBoundary*factor2,0,0},{0,0,0})
+      wcm.set_robot_pose({-Config.world.xBoundary*factor2,0,0})
+      wcm.set_robot_odometry({-Config.world.xBoundary*factor2,0,0})
     else --Attacker initial pos
       poseFilter.initialize({0,0,0},{0,0,0})
       wcm.set_robot_pose({0,0,0})
@@ -205,9 +206,6 @@ function libWorld.update(uOdom, detection)
         yaw0 = yaw
       end
     end
-
-
-
   else
     update_odometry(uOdom)
   end

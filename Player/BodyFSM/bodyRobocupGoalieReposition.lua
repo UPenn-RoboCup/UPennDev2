@@ -11,9 +11,10 @@ local simple_ipc = require'simple_ipc'
 local motion_ch = simple_ipc.new_publisher('MotionFSM!')
 
 
-local target_pose
+
 
 function state.entry()
+  if gcm.get_game_state()~=3 then return'stop' end
   print(state._NAME..' Entry' )
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
@@ -21,15 +22,6 @@ function state.entry()
   t_update = t_entry
   --hcm.set_ball_approach(0)
 
-  local pose = wcm.get_robot_pose()
-  local ballx = wcm.get_ball_x()
-  local bally = wcm.get_ball_y()    
-  local balla = math.atan2(bally,ballx)
-  local ball_local = {ballx,bally,balla}
-  local ballGlobal = util.pose_global(ball_local, pose)
-
-  target_pose = robocupplanner.getGoalieTargetPose(pose,ballGlobal)
- 
 end
 
 function state.update()
@@ -49,6 +41,14 @@ function state.update()
   end
 --]]
   local pose = wcm.get_robot_pose()
+  local ballx = wcm.get_ball_x()
+  local bally = wcm.get_ball_y()    
+  local balla = math.atan2(bally,ballx)
+  local ball_local = {ballx,bally,balla}
+  local ballGlobal = util.pose_global(ball_local, pose)
+
+  local target_pose = robocupplanner.getGoalieTargetPose(pose,ballGlobal)
+ 
   local move_vel,reached = robocupplanner.getVelocityGoalie(pose,target_pose)
   if not reached then
     mcm.set_walk_vel(move_vel)    

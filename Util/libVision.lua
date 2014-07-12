@@ -23,7 +23,7 @@ MAP.sizex = 9/MAP.res
 MAP.sizey = 6/MAP.res
 MAP.xmax, MAP.ymin = 4.5, -3
 MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
--- TODO: if use grid map, use C or ffi.lua to speed up
+--TODO: put wraparound on occupancy
 MAP.grid = torch.Tensor(MAP.sizex, MAP.sizey):zero()
 
 

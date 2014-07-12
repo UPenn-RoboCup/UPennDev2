@@ -13,7 +13,8 @@ shared.game = {};
 
 -- 0 for initial / 1 for ready 
 -- 2 for set / 3 for play / 4 fin
--- 5: Pre-initialized 
+-- 5: Pre-initialized (idle)
+
 
 shared.game.state = vector.zeros(1);
 

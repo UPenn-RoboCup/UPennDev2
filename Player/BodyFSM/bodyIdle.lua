@@ -11,6 +11,7 @@ function state.entry()
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
+  gcm.set_game_state(5)-- Always start as the idle state  
 end
 
 function state.update()

@@ -231,12 +231,9 @@ function robocupplanner.getVelocity(pose,target_pose )
     aHomeRelative = util.mod_angle(aHomeRelative - math.pi) --turn to face back to the target
     rTurn = 1.5 
   end
-
   
   aTurn = math.exp(-0.5*(rHomeRelative/rTurn)^2)
   local vx,vy,va = 0,0,0
-
-  
 
   va = 0.5* (aTurn*util.mod_angle(homeRelative[3])) + (1-aTurn)*aHomeRelative
   if rHomeRelative>1.0 then

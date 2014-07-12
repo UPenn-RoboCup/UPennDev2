@@ -10,8 +10,8 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-  orientation 0.0293898 0.870598 0.491116 3.21271
-  position -0.622069 18.9387 -10.3437
+  orientation 0.00568828 0.921427 0.388509 3.12685
+  position 0.29857 16.325 -14.4806
 }
 Background {
   skyColor [
@@ -67,11 +67,9 @@ DEF BALL Ball {
 }
 DEF OBS1 Obstacle {
   translation -2.5 0 -1
-  rotation 0 1 0 0
 }
 DEF OBS2 Obstacle {
   translation -1 0 1
-  rotation 0 1 0 0
 }
 DEF OPPONENT Block {
   translation -4.2 0.5 0

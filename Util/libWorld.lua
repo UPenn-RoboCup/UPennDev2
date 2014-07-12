@@ -48,7 +48,7 @@ local function update_odometry(uOdometry)
       uOdometry[3] = gps_pose[3] - yaw0
       yaw0 = gps_pose[3]
     else
-      local yaw = Body.get_sensor_rpy()[3]
+      local yaw = Body.get_rpy()[3]
       uOdometry[3] = yaw - yaw0
       yaw0 = yaw
     end
@@ -192,7 +192,7 @@ function libWorld.update(uOdom, detection)
         gps_pose = wcm.get_robot_pose_gps()
         yaw0 = gps_pose[3]
       else
-        local yaw = Body.get_sensor_rpy()[3]
+        local yaw = Body.get_rpy()[3]
         yaw0 = yaw
       end
     end

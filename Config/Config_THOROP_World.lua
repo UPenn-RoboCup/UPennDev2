@@ -21,6 +21,22 @@ world.goalHeight = 1.8
 world.goalWidth = 3
 world.postDiameter = 0.1
 world.obsDiameter = 0.2
+
+-- Field
+world.xBoundary = 4.5
+world.yBoundary = 3.0
+world.xMax = 4.8
+world.yMax = 3.3
+--Field corners
+world.Lcorner={}
+world.Lcorner[1]={4.5,3.0}
+world.Lcorner[2]={4.5,-3.0}
+world.Lcorner[3]={-4.5,3.0}
+world.Lcorner[4]={-4.5,-3.0}
+--Center T edge
+world.Lcorner[5]={0,3.0}
+world.Lcorner[6]={0,-3.0}
+
 -------------------------------------------
 
 -- Obstacle
@@ -38,38 +54,10 @@ world.goalWidth = 2.6  -- in m308
 
 --GRASP small post
 ------------------------------------------------
---[[
+---[[
 world.goalHeight = 0.85
 world.goalWidth = 1.6
 --]]
-
-
-
-
-
-
--- Field
-world.xBoundary = 4.5
-world.yBoundary = 3.0
-world.xMax = 4.8
-world.yMax = 3.3
---Field corners
-world.Lcorner={}
-world.Lcorner[1]={4.5,3.0}
-world.Lcorner[2]={4.5,-3.0}
-world.Lcorner[3]={-4.5,3.0}
-world.Lcorner[4]={-4.5,-3.0}
---Center T edge
-world.Lcorner[5]={0,3.0}
-world.Lcorner[6]={0,-3.0}
-
-
-
-
-
-
-
-
 
 
 world.goalUpper = {} -- Attacking goal

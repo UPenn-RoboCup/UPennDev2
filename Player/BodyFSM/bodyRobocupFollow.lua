@@ -48,12 +48,45 @@ local function update_velocity()
 
   local walk_target_local = {ballx,bally,balla}
   local ballGlobal = util.pose_global(walk_target_local, pose)
-  local target_pose = robocupplanner.getTargetPose(pose,ballGlobal)    
-  local vStep,reached = robocupplanner.getVelocity(pose,target_pose)
+  local target_pose,rotate = robocupplanner.getTargetPose(pose,ballGlobal)    
+  local vStep,reached = robocupplanner.getVelocity(pose,target_pose,rotate)
   mcm.set_walk_vel(vStep)
-
   
   return reached
+end
+
+local function plan_whole()
+
+  local pose = wcm.get_robot_pose()
+
+  local ballx = wcm.get_ball_x()
+  local bally = wcm.get_ball_y()  
+  local balla = math.atan2(bally,ballx)
+  local walk_target_local = {ballx,bally,balla}
+  local ballGlobal = util.pose_global(walk_target_local, pose)
+
+  local max_plan_step = 100
+  local count = 0
+  local reached = false
+  local v
+
+  local xtrail=wcm.get_robot_trajx()
+  local ytrail=wcm.get_robot_trajy()
+  local lpose={pose[1],pose[2],pose[3]}
+  while (not reached) and (count<max_plan_step) do
+    local target_pose,rotate = robocupplanner.getTargetPose(lpose,{ballGlobal[1],ballGlobal[2],0})    
+    v,reached = robocupplanner.getVelocity(lpose,target_pose,rotate)
+    lpose = util.pose_global({v[1],v[2],v[3]} , {lpose[1],lpose[2],lpose[3]})
+    count = count+1
+    xtrail[count] = lpose[1]
+    ytrail[count] = lpose[2]
+    if rotate~=0 then reached = false end
+  end
+  print("Plan steps: ",count)
+
+  wcm.set_robot_traj_num(count)
+  wcm.set_robot_trajx(xtrail)
+  wcm.set_robot_trajy(ytrail)
 end
 
 
@@ -71,8 +104,13 @@ function state.update()
   t_update = t
   local check_ph = 0.95
 
+
+
   local ph = mcm.get_status_ph()
-  if last_ph<check_ph and ph>=check_ph then reached=update_velocity() end
+  if last_ph<check_ph and ph>=check_ph then 
+    plan_whole()
+    reached=update_velocity() 
+  end
   last_ph = ph
   local ball_elapsed = t - wcm.get_ball_t()
   if ball_elapsed <0.5 and reached then return 'ballclose' end

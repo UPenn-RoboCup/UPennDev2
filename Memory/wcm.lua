@@ -34,6 +34,13 @@ shared.robot.odom_mode = vector.zeros(1)
 shared.robot.reset_pose = vector.zeros(1)
 
 
+shared.robot.kickto = vector.zeros(2)
+shared.robot.moveto = vector.zeros(2)
+
+shared.robot.traj_num = vector.zeros(1)
+shared.robot.trajx = vector.zeros(100)
+shared.robot.trajy = vector.zeros(100)
+
 
 
 

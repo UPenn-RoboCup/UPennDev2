@@ -48,7 +48,7 @@ data_labelA.meta = [];
 data_labelA.raw = [];
 
 last_draw_time = toc;
-last_draw_duration = 0
+last_draw_duration = 0;
 
 data_yuyv.recv = false;
 data_world.recv = false;

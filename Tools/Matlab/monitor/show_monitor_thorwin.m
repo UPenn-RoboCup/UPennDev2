@@ -12,11 +12,15 @@ function h = show_monitor_thorwin
   function init()
     figure(1);
     clf;
-    set(gcf,'position',[1 1 1200 900]);
+    set(gcf,'position',[1 1 600 450]);
     f_mainA = gca;
-    f_lA = axes('Units','Normalized','position',[0 0.5 0.3 0.5]);
-    f_yuyv = axes('Units','Normalized','position',[0.3 0.5 0.3 0.5]);
-    f_field = axes('Units','Normalized','position',[0.3 -0.05 0.3 0.5]);
+    f_lA = axes('Units','Normalized','position',[0 0.6 0.3 0.4]);
+    f_yuyv = axes('Units','Normalized','position',[0.3 0.6 0.3 0.4]);
+
+
+    %    f_field = axes('Units','Normalized','position',[0.3 -0.05 0.3 0.5]);
+
+    f_field = axes('Units','Normalized','position',[0 0 0.6 0.6]);
 
     cam = {};
 
@@ -56,30 +60,32 @@ function h = show_monitor_thorwin
     im_yuyv = image(zeros(1));
 
     % Show the field here
-    set(gcf,'CurrentAxes',f_field);
-    plot_field(gca,2);
-    cam.h_field = gca;
+    %set(gcf,'CurrentAxes',f_field);
+    
+    cam.h_field = f_field
+    hold on;
+ 
     % Camera 1 Debug messages
 
 
     set(gcf,'CurrentAxes',f_mainA);    
     cam.a_debug_ball=uicontrol('Style','text','Units','Normalized',...
-       'Position',[0.6 0 0.13 1],'FontSize',10, ...
+       'Position',[0.6 0.3 0.13 0.7],'FontSize',10, ...
        'BackgroundColor',[0.9  0.9 0.9],...
         'FontName','Arial');
 
     cam.a_debug_goal=uicontrol('Style','text','Units','Normalized',...
-       'Position',[0.73 0 0.13 1],'FontSize',10, ...
+       'Position',[0.73 0.3 0.13 0.7],'FontSize',10, ...
        'BackgroundColor',[0.9  0.9 0.9],...
         'FontName','Arial');
 
     cam.a_debug_obstacle=uicontrol('Style','text','Units','Normalized',...
-       'Position',[0.86 0 0.14 1],'FontSize',10, ...
+       'Position',[0.86 0.3 0.14 0.7],'FontSize',10, ...
        'BackgroundColor',[0.9  0.9 0.9],...
         'FontName','Arial');
 
     cam.w_debug = uicontrol('Style','text','Units','Normalized',...
-       'Position',[0 0 0.3 0.5],'FontSize',10, ...
+       'Position',[0.6 0 0.4 0.3],'FontSize',10, ...
        'BackgroundColor',[0.9  0.9 0.9],...
         'FontName','Arial');
 
@@ -136,7 +142,7 @@ function h = show_monitor_thorwin
     cam.p_ball = p_ball;
     cam.r_ball = r_ball;
     cam.p_post = p_post;
-    cam.h_obstacle = h_obstacle;
+    cam.h_obstacle = h_obstacle;    
     % Plot scale
     % Default: labelA is half size, so scale twice
     scale = 2;
@@ -170,6 +176,8 @@ function h = show_monitor_thorwin
 
         % Process the ball detection result
         if isfield(metadata,'ball')
+            %TODO: use ball t to remove old ball
+
             % Show our ball on the YUYV image plot
             % ball_c = metadata.ball.centroid * cam.scale;
             % ball_radius = (metadata.ball.axisMajor / 2) * cam.scale;
@@ -255,7 +263,19 @@ function h = show_monitor_thorwin
         drawlevel = 1;
         name = 'alvin';
         set(gcf,'CurrentAxes',cam.f_field);
-        plot_robot(cam.h_field, metadata.world, [], 1.5, drawlevel, name);
+
+        %plot_robot(cam.h_field, metadata.world, [], 1.5, drawlevel, name);
+        plot_robot(gca,metadata.world, [], 1.5, drawlevel, name);
+        hold on;
+        if isfield(metadata.world,'traj')
+          num=metadata.world.traj.num;
+          num=min(50,num);
+          trajx = metadata.world.traj.x;
+          trajy = metadata.world.traj.y;
+          plot(trajx(1:num),trajy(1:num),'r');
+        end
+        hold off;
+
         % Show messages
         set(cam.w_debug, 'String', char(metadata.world.info));
         needs_draw = 1;

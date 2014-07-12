@@ -269,6 +269,14 @@ function libWorld.send()
     end
     to_send.obstacle = obs_global
   end
+
+  --TRAJECTORY INFO
+  local traj = {}
+  traj.num = wcm.get_robot_traj_num()
+  traj.x = wcm.get_robot_trajx()
+  traj.y = wcm.get_robot_trajy()
+  to_send.traj = traj
+
   return to_send
 end
 

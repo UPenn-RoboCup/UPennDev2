@@ -110,8 +110,7 @@ local function update_vision(detected)
     -- If use grid map
     for i=1,#obstacle.xs do
       local x, y = obstacle.xs[i], obstacle.ys[i]
-      local pos_local = util.pose_relative({x,y,0}, wcm.get_robot_pose())
-      wcm['set_obstacle_v'..i](pos_local)
+      wcm['set_obstacle_v'..i]({x,y})  -- global
     end
 
 
@@ -248,16 +247,13 @@ function libWorld.send()
   end  
   
   if obstacle then
-    local obs_global = {}
-    for i=1,2 do  --TODO: add to 3
-      local obs = wcm['get_obstacle_v'..i]()
-      -- We store the global position of obstacles
-      obs_global[i] = util.pose_global({obs[1],obs[2],0}, wcm.get_robot_pose())
-      
+    local obs = {}
+    for i=1,3 do  --TODO: add more
+      obs[i] = wcm['get_obstacle_v'..i]()
       to_send.info = to_send.info..string.format(
-        'Obstacle: %.2f %.2f\n', unpack(obs) )
+        'Obstacle: %.2f %.2f\n', unpack(obs[i]) )
     end
-    to_send.obstacle = obs_global
+    to_send.obstacle = obs
   end
 
   --TRAJECTORY INFO

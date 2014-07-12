@@ -595,7 +595,7 @@ function libVision.obstacle_new(labelB_t)
 			local yi = math.ceil((global_pos[2]-MAP.ymin) / MAP.res)
       xi = math.min(math.max(1, xi), MAP.sizex)
       yi = math.min(math.max(1, yi), MAP.sizey)
-      MAP.grid[xi][yi] = math.min(MAP.grid[xi][yi]+1, 1e5)
+      MAP.grid[xi][yi] = math.min(MAP.grid[xi][yi]+5, 1e5)
       ------------
       
       obsStats.axisMinor[i] = obstacle.axisMinor[obstacle.dist[i]]

@@ -652,7 +652,7 @@ local function ping_probe(self, protocol, twait)
 			table.insert(found_ids, id)
 			local lsb, msb = unpack(status.parameter)
       print(string.format('\nFound %d.0 Motor: %d, Model (%d, %d)', protocol, id, msb, lsb))
-			if msb>0 then
+			if msb>1 then
 				-- NX
 				table.insert(nx_ids, id)
 				has_nx_id[id] = true

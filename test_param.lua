@@ -36,6 +36,30 @@ rpc_ch = si.new_requester(Config.net.reliable_rpc)
 
 targetvel={0,0,0}
 targetvel_new={0,0,0}
+--Name show_factor value increment
+local params={
+  {'tStep',1,'0'},
+  {'tZMP',1,'0'},
+  {'stepHeight',1,'0'},
+  {'torsoX',1,'0'},
+  {'supportX',1,'0'},
+  {'supportY',1,'0'},
+  {'hipRollCompensation',180/math.pi,'0'},
+  {'ankleRollCompensation',180/math.pi,'0'},
+}
+
+
+for i=1,#params do params[i][3]=Config.walk[params[i][1]] or 0 end
+local selected_param = 1
+
+
+
+
+
+
+
+
+
 
 function process_keyinput()
   local byte=getch.block();
@@ -49,6 +73,17 @@ function process_keyinput()
       elseif byte==string.byte("h") then  targetvel_new[2]=targetvel[2]+0.02;
       elseif byte==string.byte(";") then  targetvel_new[2]=targetvel[2]-0.02;
       
+      --Cycle through selected params
+      elseif byte==string.byte("w") then 
+        selected_param = selected_param%#params + 1
+      elseif byte==string.byte("q") then  
+        selected_param = (selected_param + #params-2) %#params + 1
+
+
+
+
+
+
     elseif byte==string.byte("4") then      
       mcm.set_walk_kicktype(1) --this means testing mode (don't run body fsm)
       mcm.set_walk_kickfoot(1)
@@ -108,14 +143,26 @@ local gcm_names={
 local command1=''
 
 local command2=''
-  
+ 
+
 
 function show_status()
   os.execute('clear')
   local outstring=''
-  outstring= outstring..command1..string.format(
-"Target velocity: %.3f %.3f %.3f",unpack(targetvel)
-)
+  outstring= outstring..command1
+
+--  outstring=outstring..string.format("Target velocity: %.3f %.3f %.3f\n",unpack(targetvel))
+
+  for i=1,#params do
+
+    local paramstr = string.format('%s : %.2f\n',
+        params[i][1],params[i][2]*params[i][3])
+    if i==selected_param then
+      paramstr = util.color(paramstr,'green')
+    end
+    outstring=outstring..paramstr
+  end
+
   print(outstring)
 end
 

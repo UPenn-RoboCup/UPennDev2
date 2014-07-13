@@ -201,6 +201,9 @@ function walk.entry()
     local t2 = footQueue[offset+7]
     local zmp_mod = {footQueue[offset+8],footQueue[offset+9],footQueue[offset+10]}
     local footparam = {footQueue[offset+11],footQueue[offset+12],footQueue[offset+13]}    
+
+    print("tStep:",t0+t1+t2)
+
     step_planner:step_enque_trapezoid(foot_movement, supportLeg, t0,t1,t2,zmp_mod,footparam)
   end
 

@@ -479,7 +479,7 @@ local function initialize(bus)
       if is_mx then
   			status = lD.get_mx_torque_enable(m_id, bus)[1]
       else
-        status = D.get_nx_torque_enable(m_id, bus)[1]
+        status = lD.get_nx_torque_enable(m_id, bus)[1]
       end
       if status and status.error==0 then break end
 			n = n + 1
@@ -487,10 +487,13 @@ local function initialize(bus)
 		assert(n<=5, "Too many attempts")
 		assert(status.id==m_id, 'bad id coherence, tq')
     j_id = m_to_j[m_id]
-		local tq_parse = is_mx and
-      lD.byte_to_number[lD.mx_registers.torque_enable[2]] or
-      lD.byte_to_number[lD.nx_registers.torque_enable[2]]
-		dcm.actuatorPtr.torque_enable[j_id - 1] = tq_parse(unpack(s.parameter))
+		local tq_parse
+    if is_mx then
+      tq_parse = lD.byte_to_number[lD.mx_registers.torque_enable[2]]
+    else
+      tq_parse = lD.byte_to_number[lD.nx_registers.torque_enable[2]]
+    end
+		dcm.actuatorPtr.torque_enable[j_id - 1] = tq_parse(unpack(status.parameter))
 		--
 		if is_mx then
 			tinsert(rd_addrs, lD.mx_registers.position)
@@ -522,10 +525,10 @@ for chain_id, chain in ipairs(dcm_chains) do
 	initialize(bus)
 	-- Make the output coroutine
 	bus.output_co = coroutine.wrap(output_co)
-  bus.output_co()
+  bus.output_co(bus)
 	-- Make the input coroutine
 	bus.input_co = coroutine.wrap(input_co)
-  bus.input_co()
+  bus.input_co(bus)
 end
 
 local t0 = get_time()

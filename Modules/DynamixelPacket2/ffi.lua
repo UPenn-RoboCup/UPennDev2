@@ -84,7 +84,7 @@ function DP2.input_co(bus)
   while true do
     repeat
       -- Give 'em what we got
-      buf = coroutine.yield(pkts)
+      buf = coroutine.yield(pkts, rx_i)
       pkts = {}
       -- Timeout resets things
       if buf==false then rx_i, npkt_processed = 0, 0 end

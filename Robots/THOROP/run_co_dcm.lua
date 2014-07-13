@@ -15,9 +15,8 @@ local vector = require'vector'
 --------------
 -- Timeouts --
 --------------
-local WRITE_TIMEOUT = 1 / 180
-local READ_TIMEOUT = 1 / 60
---local READ_TIMEOUT = 1
+local WRITE_TIMEOUT = 1 / 200
+local READ_TIMEOUT = 1 / 200
 
 --------------------
 -- Context Import --
@@ -365,7 +364,6 @@ local function output_co(bus)
 				lD.set_nx_command_position(send_ids, commands, bus)
 			end
 		end
-		bus.cmds_cnt = bus.cmds_cnt + 1
 		coroutine.yield(0)
 		-- Run the parent queue until a write to the bus
 		request = table.remove(bus.request_queue)
@@ -380,8 +378,8 @@ local function output_co(bus)
 		if bus.enable_read then
 			-- Send a position read command to the bus
       bus:send_instruction(bus.read_cmd_str)
-      bus.read_to = get_time() + READ_TIMEOUT
-			coroutine.yield(#bus.m_ids, 'position')
+      bus.read_to = get_time() + READ_TIMEOUT * bus.n_read
+			coroutine.yield(bus.n_read, 'position')
 		else
 			-- Copy from command position
 			for i, m_id in ipairs(m_ids) do
@@ -437,9 +435,12 @@ end
 -- Initial startup --
 ---------------------
 local function initialize(bus)
+  bus.to = 0
 	bus.read_to = 0
   bus.npkt_to_expect = 0
 	bus.request_queue = {}
+  bus.cmds_cnt = 0
+  bus.reads_cnt = 0
 	-- Add the fd
 	tinsert(_fds, bus.fd)
 	-- Populate the IDs of the bus
@@ -448,7 +449,6 @@ local function initialize(bus)
 	else
 		bus:ping_probe()
 	end
-  bus.cmds_cnt = 0
 	local status, n
 	local has_mx, has_nx = false, false
 	local rd_addrs = {}
@@ -507,8 +507,10 @@ local function initialize(bus)
 	elseif has_nx then
 		bus.read_cmd_str = lD.get_nx_position(bus.m_ids)
 	else
-		bus.read_cmd_str = lD.get_mx_position(bus.m_ids)
+--		bus.read_cmd_str = lD.get_mx_position(bus.m_ids)
+bus.read_cmd_str = lD.get_bulk(string.char(unpack(bus.m_ids)), rd_addrs)
 	end
+  bus.n_read = #bus.m_ids
   local hex, dec = lD.tostring(bus.read_cmd_str)
   io.write(hex,'\n',dec)
 end
@@ -551,7 +553,8 @@ while true do
 	t_write = get_time()
 	for bname, bus in pairs(named_buses) do
     if bus.npkt_to_expect > 0 and t_write > bus.read_to then
-      print("READ TIMEOUT", bname, bus.read_reg, bus.npkt_to_expect)
+      --print("READ TIMEOUT", bname, bus.read_reg, bus.npkt_to_expect)
+      bus.to = bus.to + bus.npkt_to_expect
       bus.read_reg = nil
       bus.npkt_to_expect = 0
       bus.input_co(false)
@@ -559,6 +562,11 @@ while true do
 		-- Only if we are not in the read cycle
     if bus.npkt_to_expect==0 then
 			bus.npkt_to_expect, bus.read_reg = bus.output_co()
+      if bus.npkt_to_expect == 0 then
+    		bus.cmds_cnt = bus.cmds_cnt + 1
+      else
+    		bus.reads_cnt = bus.reads_cnt + bus.npkt_to_expect
+      end
     end
 	end
 	-- Load data from the bus into the input coroutine
@@ -567,17 +575,20 @@ while true do
   -- Loop until the write timeout is expired
   while sel_wait > 0 do
 		status, ready = sel(_fds, sel_wait)
+    if status==0 then break end
 		t_read = get_time()
+    local pkts, rxi
 		for bnum, is_ready in ipairs(ready) do
       if is_ready then
   			bus = numbered_buses[bnum]
-        pkts = bus.input_co(re(bus.fd))
+        pkts, rxi = bus.input_co(re(bus.fd))
         bus.npkt_to_expect = bus.npkt_to_expect - #pkts
         for _, pkt in ipairs(pkts) do
           -- TODO: Check if bus.read_reg is nil
           -- That means you get unexpected data
           parse[bus.read_reg](pkt, bus.has_mx_id[pkt.id])
         end
+--print("RXI", rxi, bus.npkt_to_expect)
       end
 		end
 		-- Loop maintenence
@@ -597,9 +608,11 @@ while true do
 		}
 		for bname, bus in pairs(named_buses) do
 			tinsert(debug_str, string.format(
-				'%s Command Rate %.1f Hz', bname, bus.cmds_cnt / dt_debug)
+				'%s Command Rate %.1f Hz with %d timeouts of %d reads', bname, bus.cmds_cnt / dt_debug, bus.to, bus.reads_cnt)
 			)
+      bus.reads_cnt = 0
 			bus.cmds_cnt = 0
+      bus.to = 0
 		end
     debug_str = table.concat(debug_str, '\n')
     print(debug_str)

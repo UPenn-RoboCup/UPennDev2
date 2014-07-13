@@ -33,7 +33,8 @@ local w, h, wa, wb, ha, hab, scaleA, scaleB, lut_t
 -- Hold on to these
 local labelA_t, labelB_t
 -- Head transform
-local trHead, vHead, trNeck, trNeck0, dtrCamera
+local trHead, vHead, trNeck, trNeck0
+local dtrCamera, cameraPitch, cameraRoll, cameraPos
 -- Camera information
 local x0A, y0A, focalA, focal_length, focal_base
 local x0B, y0B, focalB
@@ -105,6 +106,13 @@ local function update_head()
   * T.rotY(rpy[2])
   * T.trans(Config.head.neckX, 0, Config.head.neckZ)
   trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
+	
+	cameraPitch = hcm.get_camera_pitch()
+	cameraRoll = hcm.get_camera_roll()
+	dtrCamera = T.trans(unpack(cameraPos))
+  * T.rotY(cameraPitch or 0)
+  * T.rotX(cameraRoll or 0)
+
   trHead = trNeck * dtrCamera
   -- Grab the position only
   vHead = T.get_pos(trHead)
@@ -643,8 +651,11 @@ function libVision.entry(cfg, body)
   x0A, y0A = 0.5*(wa-1)+cfg.cx_offset, 0.5*(ha-1)+cfg.cy_offset
   x0B, y0B = 0.5*(wb-1)+cfg.cx_offset/scaleB, 0.5*(hb-1)+cfg.cy_offset/scaleB
   -- Delta transform from neck to camera
-  dtrCamera = T.trans(unpack(cfg.head.cameraPos or {0,0,0}))
-  * T.rotY(cfg.head.pitchCamera or 0)
+	cameraPitch = cfg.head.cameraPitch or 0
+	cameraRoll = cfg.head.cameraRoll or 0
+	cameraPos = cfg.head.cameraPos or {0,0,0}
+  dtrCamera = T.trans(unpack(cameraPos))
+  * T.rotY(cameraPitch or 0)
   focalA = focal_length / (focal_base / wa)
   focalB = focalA / scaleB
 
@@ -704,14 +715,6 @@ function libVision.update(img)
   local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc_t)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc_t)
 	local obstacle_fails, obstacles
-  
-
-	if wcm.get_obstacle_reset()==1 then
-    -- MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
-    MAP.grid:zero()
-    --SJ: Now handled in world
-		--wcm.set_obstacle_reset(0)
-	end
 
   if wcm.get_obstacle_enable()==0 then
     obstacle_fails = 'Disabled'

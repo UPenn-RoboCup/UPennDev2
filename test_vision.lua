@@ -41,6 +41,11 @@ local yawMax = Config.head.yawMax
 local head_now = Body.get_head_position()
 local head_new = head_now
 
+-- Camera pitch
+local cameraPitch = hcm.get_camera_pitch()
+local cameraRoll = hcm.get_camera_roll()
+local camera_changed = false
+-- Monitor FPS
 local monitor_fps = hcm.get_monitor_fps()
 local monitor_fps_new = monitor_fps
 local minFPS, maxFPS = Config.monitor.minFPS, Config.monitor.maxFPS
@@ -66,11 +71,33 @@ function process_keyinput()
       head_ch:send'scan'
 		elseif byte==string.byte("4") then    
 			wcm.set_obstacle_enable(1)
-			--wcm.set_obstacle_reset(1)
       head_ch:send'scanobs'
 		elseif byte==string.byte("o") then    
 			wcm.set_obstacle_enable(1)
 			wcm.set_obstacle_reset(1)
+		
+		-- camera angles
+		elseif byte==string.byte("i") then
+			camera_changed = true
+			cameraPitch = hcm.get_camera_pitch() + 1*DEG_TO_RAD
+			hcm.set_camera_pitch(cameraPitch)
+		elseif byte==string.byte(",") then
+			camera_changed = true
+			cameraPitch = hcm.get_camera_pitch() - 1*DEG_TO_RAD
+			hcm.set_camera_pitch(cameraPitch)
+		elseif byte==string.byte("j") then
+			camera_changed = true
+			cameraRoll = hcm.get_camera_roll() + 1*DEG_TO_RAD
+			hcm.set_camera_roll(cameraRoll)
+		elseif byte==string.byte("l") then
+			camera_changed = true
+			cameraRoll = hcm.get_camera_roll() - 1*DEG_TO_RAD
+			hcm.set_camera_roll(cameraRoll)
+		elseif byte==string.byte("k") then
+			camera_changed = true
+			cameraPitch, cameraRoll = 0, 0
+			hcm.set_camera_pitch(cameraPitch)
+			hcm.set_camera_roll(cameraRoll)
 
 		-- Frame rate for monitoring
     elseif byte==string.byte("=") then
@@ -93,6 +120,12 @@ function process_keyinput()
       head_new[1]*RAD_TO_DEG, head_new[2]*RAD_TO_DEG))
     
     print(string.format("Monitor FPS:   %.1f", monitor_fps_new))
+
+		if camera_changed then
+			camera_changed = false
+			print(string.format("Camera pitch: %.1f  deg,  roll: %.1f  deg \n",
+      	cameraPitch*RAD_TO_DEG, cameraRoll*RAD_TO_DEG))
+		end
   end
 end
 

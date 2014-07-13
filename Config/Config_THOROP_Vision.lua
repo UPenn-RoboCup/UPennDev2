@@ -14,7 +14,8 @@ local head = {
   yawMax = 135 * math.pi/180,
 
   cameraPos = {0.075, 0.0, 0.13}, --C920
-  cameraAngle = {0, 0},
+	cameraPitch = 5*DEG_TO_RAD,
+	cameraRoll = 0*DEG_TO_RAD,
   --From CoM to neck joint
   neckZ = .165 + .161,
   neckX = 0,
@@ -96,7 +97,7 @@ vision.obstacle = {
   grid_x = 40, --32,
   grid_y = 20, --18,
 	th_min_area = 40,
-  min_black_fill_rate = 0.5, --0.66,
+  min_black_fill_rate = 0.48,
   th_aspect_ratio = {1.8, 10},
   th_max_height = 1.3,
   th_min_height = -0.2,

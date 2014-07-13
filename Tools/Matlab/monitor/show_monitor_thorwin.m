@@ -62,7 +62,7 @@ function h = show_monitor_thorwin
     % Show the field here
     %set(gcf,'CurrentAxes',f_field);
     
-    cam.h_field = f_field
+    cam.h_field = f_field;
     hold on;
  
     % Camera 1 Debug messages
@@ -195,6 +195,12 @@ function h = show_monitor_thorwin
             set(cam.p_ball, 'Xdata', ball_c(1));
             set(cam.p_ball, 'Ydata', ball_c(2));
             set(cam.r_ball, 'Position', ball_box);
+        else
+            %REMOVE BALL IF WE CANNOT SEE IT!
+            set(cam.p_ball, 'Xdata', []);
+            set(cam.p_ball, 'Ydata', []);
+        
+
         end
         if isfield(metadata,'posts')
             % Show on the plot
@@ -273,6 +279,14 @@ function h = show_monitor_thorwin
           trajx = metadata.world.traj.x;
           trajy = metadata.world.traj.y;
           plot(trajx(1:num),trajy(1:num),'r');
+
+          kickto = metadata.world.traj.kickto;
+          goalto = metadata.world.traj.goalto;
+          ballglobal = metadata.world.traj.ballglobal;
+
+          plot([ballglobal(1) kickto(1)],[ballglobal(2) kickto(2)],'b','LineWidth',2);
+          plot([ballglobal(1) goalto(1)],[ballglobal(2) goalto(2)],'k--');
+
         end
         hold off;
 

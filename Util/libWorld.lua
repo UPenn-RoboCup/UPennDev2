@@ -35,6 +35,74 @@ local t_resample = 0
 
 local yaw0 = 0
 
+
+local obstacles={}
+
+local function reset_obstacles()
+  obstacles={}
+  wcm.set_obstacle_num(0)  
+end
+
+local function new_obstacle(a,r)
+  --2nd order stat for the obstacle group
+  local obstacle={asum=a,rsum=r,asqsum=a*a,rsqsum=r*r,count=1,aave=a,rave=r}  
+  return obstacle
+end
+
+
+local function add_obstacle(a,r)
+  local min_dist = math.huge
+  local min_index=0
+  for i=1,#obstacles do
+    --Just check angle to cluster observation
+    --TODO: we can use distance too
+    local adist = math.abs(util.mod_angle(obstacles[i].aave-a))
+    if adist<min_dist then min_dist,min_index = adist,i end
+  end
+  if min_index==0 or min_dist>20*math.pi/180 then 
+    obstacles[#obstacles+1]=new_obstacle(a,r)
+  else
+    obstacles[min_index].count = obstacles[min_index].count+1
+    obstacles[min_index].asum = obstacles[min_index].asum+a
+    obstacles[min_index].rsum = obstacles[min_index].rsum+r
+    obstacles[min_index].asqsum = obstacles[min_index].asum+a*a
+    obstacles[min_index].rsqsum = obstacles[min_index].rsum+r*r
+    obstacles[min_index].aave = obstacles[min_index].asum/obstacles[min_index].count
+    obstacles[min_index].rave = obstacles[min_index].rsum/obstacles[min_index].count
+  end
+end
+
+local function update_obstacles()  
+  local counts={}
+  for i=1,#obstacles do
+--    print(string.format("Obstacle %d angle: %d dist: %.1f count: %d",
+--      i,obstacles[i].aave*180/math.pi, obstacles[i].rave, obstacles[i].count))
+    counts[i]=obstacles[i].count
+  end
+  --Sort the obstacles by their count
+  table.sort(counts, function (a,b) return a>b end)
+  --write top 3 obstacles to wcm
+  local pose = wcm.get_robot_pose()
+  for i=1, math.min(3,#obstacles) do
+    local not_found,j=true,1
+    while not_found and j< #obstacles+1 do
+      if obstacles[j].count==counts[i] then
+        local x = obstacles[j].rave * math.cos(obstacles[j].aave )
+        local y = obstacles[j].rave * math.sin(obstacles[j].aave )
+        local obs_global = util.pose_global({x,y,0},pose)
+        wcm['set_obstacle_v'..i]({obs_global[1],obs_global[2]})
+        not_found=false
+      end
+      j=j+1
+    end
+  end
+  wcm.set_obstacle_num(math.min(3,#obstacles))
+end
+
+
+
+
+
 local function update_odometry(uOdometry)  
   -- Scale the odometry
   uOdometry[1] = odomScale[1] * uOdometry[1]
@@ -104,15 +172,31 @@ local function update_vision(detected)
     end
   end
 
+  if wcm.get_obstacle_reset()==1 then
+    reset_obstacles()
+    wcm.set_obstacle_reset(0)
+  end
+
   -- If the obstacle is detected
   obstacle = detected.obstacles
   if obstacle then
+    --SJ: we keep polar coordinate statstics of the observed obstacles
+    print("detected obstacles:",#obstacle.xs)
+    for i=1,#obstacle.xs do
+      local x, y = obstacle.xs[i], obstacle.ys[i]
+      local r =math.sqrt(x^2+y^2)
+      local a = math.atan2(y,x)
+      add_obstacle(a,r)
+    end    
+    update_obstacles()
+
     -- If use grid map
+    --[[    
     for i=1,#obstacle.xs do
       local x, y = obstacle.xs[i], obstacle.ys[i]
       wcm['set_obstacle_v'..i]({x,y})  -- global
     end
-
+  --]]
 
     --[[ If use 2D filter
     --Most of the time only one obstacle will be detected...
@@ -245,14 +329,19 @@ function libWorld.send()
         'Post2: %.2f %.2f\n', to_send.goal.v2[1], to_send.goal.v2[2])
     end
   end  
-  
-  if obstacle then
+    
+--  if obstacle then 
+  if wcm.get_obstacle_num()>0 then
     local obs = {}
-    for i=1,3 do  --TODO: add more
+    for i=1,wcm.get_obstacle_num() do  --TODO: add more
       obs[i] = wcm['get_obstacle_v'..i]()
       to_send.info = to_send.info..string.format(
         'Obstacle: %.2f %.2f\n', unpack(obs[i]) )
     end
+    to_send.obstacle = obs
+  else
+    --WE HAVE TO CLEAR OBSTACLE
+    local obs = {}
     to_send.obstacle = obs
   end
 
@@ -261,7 +350,11 @@ function libWorld.send()
   traj.num = wcm.get_robot_traj_num()
   traj.x = wcm.get_robot_trajx()
   traj.y = wcm.get_robot_trajy()
+  traj.kickto = wcm.get_robot_kickto()
+  traj.goalto = wcm.get_robot_goalto()
+  traj.ballglobal = wcm.get_robot_ballglobal()  
   to_send.traj = traj
+
 
   return to_send
 end

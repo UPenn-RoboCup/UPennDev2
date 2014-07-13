@@ -27,20 +27,10 @@ for _,sm in ipairs(Config.fsm.enabled) do
   _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")
 end
 
--- Shared memory
-local listing = unix.readdir(HOME..'/Memory')
-local shm_vars = {}
-for _,mem in ipairs(listing) do
-  local found, found_end = mem:find'cm'
-  if found then
-    local name = mem:sub(1,found_end)
-    table.insert(shm_vars,name)
-    require(name)
-  end
-end
-
-print( util.color('FSM Channel','yellow'), table.concat(fsm_chs,' ') )
-print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
+require'mcm'
+require'gcm'
+require'wcm'
+require'hcm'
 
 -- Head angle limits
 local pitchMin = Config.head.pitchMin

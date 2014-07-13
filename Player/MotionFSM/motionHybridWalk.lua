@@ -171,7 +171,8 @@ function walk.update()
       ph,
       gyro_rpy, 
       angleShift,
-      supportRatio)
+      supportRatio,
+      t_diff)
 
   local uTorsoComp = mcm.get_stance_uTorsoComp()
   local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)

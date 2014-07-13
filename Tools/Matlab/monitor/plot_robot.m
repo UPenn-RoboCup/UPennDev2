@@ -388,7 +388,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       cs = cos(robot.soundOdomPose.a);
       ss = sin(robot.soundOdomPose.a);
       wRr = [cr -sr; sr cr];
-      rRs = [cs -ss; ss cs]';
+      rRs = [cs -ss; ss cs]';%'
       wRs = wRr * rRs;
 
       u = sound .* cos(-pi+thdiv/2:thdiv:pi-thdiv/2);

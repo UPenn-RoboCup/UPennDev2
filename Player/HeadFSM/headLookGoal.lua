@@ -8,7 +8,7 @@ require'hcm'
 require'vcm'
 require'wcm'
 
-local t0, t_update
+local t0, t_update, t_entry
 local dqNeckLimit = Config.fsm.dqNeckLimit
 local yawSweep = Config.fsm.headLookGoal.yawSweep;
 local dist = Config.fsm.headReady.dist;
@@ -21,6 +21,7 @@ local stage, scandir
 function state.entry()
   print(state._NAME.." entry");
   t0 = Body.get_time();
+  t_entry = Body.get_time()
   t_update = t0
 
   --SJ: Check which goal to look at
@@ -109,7 +110,7 @@ function state.update()
 end
 
 function state.exit()
-  print(state._NAME..' Exit' )
+  print(state._NAME..' Exit'..' total time:'..Body.get_time()-t_entry  )
 end
 
 return state

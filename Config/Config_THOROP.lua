@@ -41,6 +41,7 @@ Config.demo = false
 Config.use_localhost = false
 Config.disable_kick = true
 
+
 if IS_WEBOTS then
   -- Config.use_gps_pose = false
   Config.demo = false

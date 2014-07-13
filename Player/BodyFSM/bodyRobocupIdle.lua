@@ -5,6 +5,7 @@ local Body = require'Body'
 
 local timeout = 10.0
 local t_entry, t_update, t_exit
+require'wcm'
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -13,6 +14,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   --hcm.set_ball_approach(0)
+  wcm.set_robot_traj_num(0)
 end
 
 function state.update()

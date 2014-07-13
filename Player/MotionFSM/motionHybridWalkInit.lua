@@ -299,7 +299,8 @@ function walk.update()
       ph,
       gyro_rpy, 
       angleShift,
-      supportRatio)
+      supportRatio,
+      t_diff)
 
     --Move legs
     local uTorsoComp = mcm.get_stance_uTorsoComp()
@@ -307,7 +308,6 @@ function walk.update()
 
     moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
       zLeft,zRight,delta_legs)    
---print("Y:",uLeft[2],uTorso[2],uRight[2])
 
     local rpy = Body.get_rpy()
     local roll = rpy[1] * RAD_TO_DEG
@@ -324,8 +324,6 @@ function walk.update()
       print("IMU roll angle:",roll_max)
       hcm.set_motion_estop(1)
     end
-
-
 
     --Check if torso crossed the center position
     local relL = util.pose_relative(uLeft,uTorso)

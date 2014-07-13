@@ -609,7 +609,7 @@ function libVision.obstacle_new(labelB_t)
     
     -- These are global position
     obsStats.xs, obsStats.ys = ImageProc2.grid_filter(MAP.grid, MAP.res)
-    
+
     return 'Detected', obsStats
   else
     return obs_debug, obsStats
@@ -903,12 +903,14 @@ function libVision.update(img)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc_t)
 	local obstacle_fails, obstacles
   
+
 	if wcm.get_obstacle_reset()==1 then
     -- MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
     MAP.grid:zero()
-		wcm.set_obstacle_reset(0)
+    --SJ: Now handled in world
+		--wcm.set_obstacle_reset(0)
 	end
-  
+
   if wcm.get_obstacle_enable()==0 then
     obstacle_fails = 'Disabled'
   else

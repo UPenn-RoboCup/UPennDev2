@@ -794,7 +794,8 @@ if IS_WEBOTS then
         motion_ch:send'hybridwalk'
         t_last_keypress = t                
       elseif key_char_lower=='f' then
-        head_ch:send'scan'
+        --head_ch:send'scan'
+        head_ch:send'scanobs'
         t_last_keypress = t
       elseif key_char_lower=='g' then
         body_ch:send'play'

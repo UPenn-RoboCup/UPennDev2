@@ -43,6 +43,9 @@ world.Lcorner[6]={0,-3.0}
 world.obsDiameter = 0.15  -- our purchased ones
 world.obsHeight = 0.9
 
+
+
+
 -- M308 post
 --[[
 --------------------------------------------
@@ -59,6 +62,12 @@ world.goalHeight = 0.85
 world.goalWidth = 1.6
 --]]
 
+if IS_WEBOTS then
+  world.goalHeight = 1.8
+  world.goalWidth = 3
+end
+
+
 
 world.goalUpper = {} -- Attacking goal
 world.goalUpper[1] = {world.xBoundary, world.goalWidth/2}
@@ -68,15 +77,6 @@ world.goalUpper[2] = {world.xBoundary, -world.goalWidth/2}
 world.goalLower = {}  -- Defending goal
 world.goalLower[1] = {-world.xBoundary, -world.goalWidth/2}
 world.goalLower[2] = {-world.xBoundary, world.goalWidth/2}
-
-
-
-
--- Filter weights
--- world.rGoalFilter = 0.02*3
--- world.aGoalFilter = 0.05*3
--- world.rPostFilter = 0.02*3
--- world.aPostFilter = 0.10*3
 
 world.rGoalFilter = 0.02
 world.aGoalFilter = 0.05

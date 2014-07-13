@@ -232,6 +232,7 @@ function walk.entry()
   debugdata=''
  
   hcm.set_motion_estop(0)
+  t_update= Body.get_time()
 end
 
 function walk.update()
@@ -315,7 +316,8 @@ function walk.update()
       ph,
       gyro_rpy, 
       angleShift,
-      supportRatio)
+      supportRatio,
+      t_diff)
 
     --Move legs
     local uTorsoComp = mcm.get_stance_uTorsoComp()

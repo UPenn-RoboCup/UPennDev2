@@ -17,6 +17,7 @@ function state.entry()
   t_update = t_entry
 	stage = 0
 	wcm.set_obstacle_enable(0)
+	wcm.set_obstacle_reset(1)
 end
 
 function state.update()
@@ -29,22 +30,12 @@ function state.update()
 	-- but not enough for detecting obs near center circle
   local pitch, yaw = Config.fsm.headObstacleScan.pitch
 
-	--[[ A single sweep
-	if stage == 0 then yaw = yawMag
-	elseif stage == 1 then 
-  	wcm.set_obstacle_enable(1)
-		yaw = 0
-	elseif stage == 2 then yaw = -yawMag
-	elseif stage == 3 then 
-		yaw = 0
-  	wcm.set_obstacle_enable(0)
-	else return 'done' end
-  --]]
-  
----[[ Double scan
+  --SJ: now we just clear old obstacle
+  --Because now we use local coordinate
 	if stage == 0 then yaw = 0
+
 	elseif stage == 1 then 
-  	wcm.set_obstacle_enable(1)
+    wcm.set_obstacle_enable(1)
 		yaw = -yawMag
 	elseif stage == 2 then yaw = 0
 	elseif stage == 3 then 
@@ -52,7 +43,7 @@ function state.update()
 	elseif stage == 4 then yaw = 0
 	else 
   	wcm.set_obstacle_enable(0)
-		return 'done' 
+	return 'done' 
 	end
 --]]
   -- Grab where we are

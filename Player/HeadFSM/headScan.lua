@@ -74,7 +74,9 @@ function state.update()
 end
 
 function state.exit()
-  print(state._NAME..' Exit')
+
+  
+  print(state._NAME..' Exit'..' total time:'..Body.get_time()-t_entry )
 end
 
 return state

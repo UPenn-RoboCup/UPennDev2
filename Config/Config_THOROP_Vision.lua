@@ -241,7 +241,9 @@ if IS_WEBOTS then
     th_min_area = 42,
     th_min_orientation = 70/180*math.pi,
     th_aspect_ratio = {2, 8},
-    min_black_fill_rate = 0.6,
+--    min_black_fill_rate = 0.6,
+    min_black_fill_rate = 0.4,
+
     th_max_height = 1.25,
     th_min_height = -0.2,
     min_ground_fill_rate = 0.55,

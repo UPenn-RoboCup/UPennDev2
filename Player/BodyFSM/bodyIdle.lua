@@ -4,6 +4,7 @@ local Body  = require'Body'
 local t_entry, t_update, t_exit
 local timeout = 10.0
 require'gcm'
+require'wcm'
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -12,6 +13,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   gcm.set_game_state(5)-- Always start as the idle state  
+  wcm.set_robot_traj_num(0)
 end
 
 function state.update()

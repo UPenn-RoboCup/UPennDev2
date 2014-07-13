@@ -550,8 +550,8 @@ while true do
 	-- Resume the write coroutines
 	t_write = get_time()
 	for bname, bus in pairs(named_buses) do
-    if t_write > bus.read_to then
-      print("READ TIMEOUT", bname, bus.read_reg)
+    if bus.read_reg and t_write > bus.read_to then
+      print("READ TIMEOUT", bname, bus.read_reg, t_write, bus.read_to)
       bus.is_reading = false
       bus.input_co(false)
     end

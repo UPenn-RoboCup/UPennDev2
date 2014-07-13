@@ -3,50 +3,21 @@ dofile'../../include.lua'
 local lD = require'libDynamixel'
 local util = require'util'
 
---[[
-local function instruction_tostring(instruction)
-	local instruction_bytes = {}
-	local instruction_ints = {}
-	for i, v in ipairs({instruction:byte(1,-1)}) do
-		table.insert(instruction_bytes, string.format(' %02X', v))
-		table.insert(instruction_ints, string.format('%3d', v))
-	end
-	return table.concat(instruction_bytes, ' '), table.concat(instruction_ints, ' ')
-end
-
-local p_instruction = lD.get_bulk(string.char(unpack({29, 30, 37})), {
-		lD.nx_registers.position,
-		lD.nx_registers.position,
-		lD.mx_registers.position
-	})
-
-local cp_instruction = lD.set_bulk(
-	string.char(unpack({29, 30, 37})),
-	{ lD.nx_registers.command_position,
-		lD.nx_registers.command_position,
-		lD.mx_registers.command_position,
-	},
-	{ 0,
-		0,
-		2048,
-	}
+local p_instruction = lD.get_bulk(
+  string.char(unpack({29, 30, 37})),
+  { lD.nx_registers.position,
+	  lD.nx_registers.position,
+	  lD.mx_registers.position,
+  }
 )
 print('Position Bulk')
-local hex, int = instruction_tostring(p_instruction)
+local hex, dec = lD.tostring(p_instruction)
 print(hex)
 print()
-print(int)
+print(dec)
 print()
-print('Command Position Bulk')
-local hex, int = instruction_tostring(cp_instruction)
-print(hex)
-print()
-print(int)
---]]
 
 --os.exit()
-
---one_chain = libDynamixel.new_bus()
 
 if not one_chain then
   if OPERATING_SYSTEM=='darwin' then
@@ -59,7 +30,6 @@ if not one_chain then
     left_arm  = lD.new_bus'/dev/ttyUSB1'
     right_leg = lD.new_bus'/dev/ttyUSB2'
     left_leg  = lD.new_bus'/dev/ttyUSB3'
---    grippers  = lD.new_bus('/dev/ttyUSB4',1000000)
   end
 end
 -- Get the positions
@@ -67,19 +37,25 @@ local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 local p_parse_mx = lD.byte_to_number[lD.mx_registers.position[2]]
 
 -- Bulk read testing
-left_arm:ping_probe()
+right_arm:ping_probe()
+print("done")
 local read_items, read_ids = {}, {}
-for _, id in ipairs(left_arm.m_ids) do
-	if left_arm.has_mx_id[id] then
+for _, id in ipairs(right_arm.m_ids) do
+	if right_arm.has_mx_id[id] then
 		table.insert(read_items, lD.mx_registers.position)
 		table.insert(read_ids, id)
-	elseif left_arm.has_nx_id[id] then
+  else
 		table.insert(read_items, lD.nx_registers.position)
 		table.insert(read_ids, id)
 	end
 end
 
---os.exit()
+ret = unix.write(right_arm.fd, p_instruction)
+print("RET", ret)
+status, ready = unix.select({right_arm.fd})
+print('status',status, unpack(ready))
+
+os.exit()
 
 --[[
 local statuses = lD.get_bulk(string.char(unpack(read_ids)), read_items, right_arm)

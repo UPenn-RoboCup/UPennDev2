@@ -764,17 +764,16 @@ end
 local function reset(self)
   self:close()
   unix.usleep( 1e3 )
-  self.fd = libDynamixel.open( self.ttyname )
+  self.fd = libDynamixel.open(self.ttyname)
 end
 
 local function send_instruction(bus, instruction)
-	local fd = bus.fd
+	local fd, buf = bus.fd
 	-- Clear the reading
-	local buf
 	repeat buf = unix.read(fd) until not buf
 	-- Write the instruction to the bus
 	stty.flush(fd)
-	unix.write(fd, instruction)
+	return unix.write(fd, instruction)
 end
 
 --------------------
@@ -820,6 +819,16 @@ function libDynamixel.new_bus(ttyname, ttybaud)
   }
 
   return obj
+end
+
+function libDynamixel.tostring(instruction)
+  local instruction_bytes = {}
+  local instruction_ints = {}
+  for i, v in ipairs({instruction:byte(1,-1)}) do
+    table.insert(instruction_bytes, string.format(' %02X', v))
+    table.insert(instruction_ints, string.format('%3d', v))
+  end
+  return table.concat(instruction_bytes, ' '), table.concat(instruction_ints, ' ')
 end
 
 return libDynamixel

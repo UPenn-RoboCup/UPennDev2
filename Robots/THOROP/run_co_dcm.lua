@@ -1,13 +1,9 @@
------------------------------
--- Standard Initialization --
------------------------------
+-- Communication with multiple dynamixel chains --
 local CTX, metadata = ...
 dofile'include.lua'
 assert(ffi, 'DCM | Please use LuaJIT :). Lua support in the near future')
 
-----------------------
--- Required Modules --
-----------------------
+-- Required Modules
 require'dcm'
 local lD = require'libDynamixel'
 local si = require'simple_ipc'
@@ -19,8 +15,9 @@ local vector = require'vector'
 --------------
 -- Timeouts --
 --------------
-local WRITE_TIMEOUT = 1 / 200
-local READ_TIMEOUT = 1 / 62.5
+local WRITE_TIMEOUT = 1 / 180
+local READ_TIMEOUT = 1 / 60
+--local READ_TIMEOUT = 1
 
 --------------------
 -- Context Import --
@@ -74,7 +71,7 @@ local p_parse_mx = lD.byte_to_number[lD.mx_registers.position[2]]
 ------------------------
 local min, max, floor = math.min, math.max, math.floor
 local schar = string.char
-local sel, re, wr, get_time, usleep = unix.select, unix.read, unix.wr, unix.time, unix.usleep
+local sel, re, get_time, usleep = unix.select, unix.read, unix.time, unix.usleep
 local tinsert = table.insert
 
 ----------------------
@@ -382,7 +379,7 @@ local function output_co(bus)
 		end
 		if bus.enable_read then
 			-- Send a position read command to the bus
-			bus:send_instruction(bus.read_cmd_str)
+      bus:send_instruction(bus.read_cmd_str)
       bus.read_to = get_time() + READ_TIMEOUT
 			coroutine.yield(#bus.m_ids, 'position')
 		else
@@ -441,6 +438,7 @@ end
 ---------------------
 local function initialize(bus)
 	bus.read_to = 0
+  bus.npkt_to_expect = 0
 	bus.request_queue = {}
 	-- Add the fd
 	tinsert(_fds, bus.fd)
@@ -511,6 +509,8 @@ local function initialize(bus)
 	else
 		bus.read_cmd_str = lD.get_mx_position(bus.m_ids)
 	end
+  local hex, dec = lD.tostring(bus.read_cmd_str)
+  io.write(hex,'\n',dec)
 end
 
 for chain_id, chain in ipairs(dcm_chains) do
@@ -550,13 +550,14 @@ while true do
 	-- Resume the write coroutines
 	t_write = get_time()
 	for bname, bus in pairs(named_buses) do
-    if bus.read_reg and t_write > bus.read_to then
-      print("READ TIMEOUT", bname, bus.read_reg, t_write, bus.read_to)
+    if bus.npkt_to_expect > 0 and t_write > bus.read_to then
+      print("READ TIMEOUT", bname, bus.read_reg, bus.npkt_to_expect)
       bus.read_reg = nil
+      bus.npkt_to_expect = 0
       bus.input_co(false)
     end
 		-- Only if we are not in the read cycle
-    if not bus.read_reg then
+    if bus.npkt_to_expect==0 then
 			bus.npkt_to_expect, bus.read_reg = bus.output_co()
     end
 	end
@@ -571,6 +572,7 @@ while true do
       if is_ready then
   			bus = numbered_buses[bnum]
         pkts = bus.input_co(re(bus.fd))
+        bus.npkt_to_expect = bus.npkt_to_expect - #pkts
         for _, pkt in ipairs(pkts) do
           -- TODO: Check if bus.read_reg is nil
           -- That means you get unexpected data
@@ -600,5 +602,6 @@ while true do
 			bus.cmds_cnt = 0
 		end
     debug_str = table.concat(debug_str, '\n')
+    print(debug_str)
 	end
 end

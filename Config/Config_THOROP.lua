@@ -25,8 +25,6 @@ Config.dev.crawl        = 'ScrambleCrawl'
 Config.dev.largestep    = 'ZMPStepStair'
 Config.dev.gender       = 'boy'
 
-
-
 --I hate debug msgs....
 Config.debug={
 	webots_wizard=false,	
@@ -35,7 +33,8 @@ Config.debug={
   approach = true,
 }
 
-
+-- Dummy arms are the two MX-106R motors per arm
+Config.USE_DUMMY_ARMS = true
 Config.use_angle_localization = true
 Config.demo = false
 Config.use_localhost = false

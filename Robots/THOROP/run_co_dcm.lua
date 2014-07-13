@@ -11,6 +11,7 @@ local ptable = require'util'.ptable
 local input_co = require'DynamixelPacket2.ffi'.input_co
 local munpack  = require'msgpack'.unpack
 local vector = require'vector'
+local signal = require'signal'
 
 --------------
 -- Timeouts --
@@ -52,12 +53,20 @@ local p_ptr_t = dcm.tsensorPtr.position
 --------------------------
 local t_end, t_write, t_read, t_start
 local t_debug, dt_debug = 0, 0
-local running, pkt, _co
 local status, ready, bus, data, msg, requests
 local sel_wait, debug_str
 local _fds = {}
 local numbered_buses = {}
 local named_buses = {}
+local running = true
+
+-- Clean up
+local function shutdown ()
+  running = false
+  --os.exit()
+end
+signal.signal("SIGINT", shutdown)
+signal.signal("SIGTERM", shutdown)
 
 ------------------------
 -- libDynamixel Cache --
@@ -545,7 +554,7 @@ end
 
 local t0 = get_time()
 -- Begin the master loop
-while true do
+while running do
   t_start = get_time()
 	-- Check the general dcm channel
 	requests = dcm_ch:receive(true)
@@ -627,4 +636,9 @@ while true do
     debug_str = table.concat(debug_str, '\n')
     print(debug_str)
 	end
+end
+
+-- Exit
+for bname, bus in pairs(named_buses) do
+  bus:close()
 end

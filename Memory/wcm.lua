@@ -34,6 +34,9 @@ shared.robot.odom_mode = vector.zeros(1)
 shared.robot.reset_pose = vector.zeros(1)
 
 shared.robot.ballglobal = vector.zeros(2)
+shared.robot.goal1 = vector.zeros(2)
+shared.robot.goal2 = vector.zeros(2)
+
 shared.robot.kickto = vector.zeros(2)
 shared.robot.goalto = vector.zeros(2)
 shared.robot.moveto = vector.zeros(2)

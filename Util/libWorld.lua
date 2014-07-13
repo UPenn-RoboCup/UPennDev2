@@ -352,7 +352,13 @@ function libWorld.send()
   traj.y = wcm.get_robot_trajy()
   traj.kickto = wcm.get_robot_kickto()
   traj.goalto = wcm.get_robot_goalto()
+  traj.goal1 = wcm.get_robot_goal1()
+  traj.goal2 = wcm.get_robot_goal2()
   traj.ballglobal = wcm.get_robot_ballglobal()  
+
+
+  traj.goalangles={}
+
   to_send.traj = traj
 
 

@@ -37,27 +37,7 @@ function robocupplanner.getGoalieTargetPose(pose,ballGlobal)
 end
 
 
-function getKickAngle(ballGlobal)
-  local goalL = {Config.world.xBoundary,Config.world.goalWidth/2}
-  local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2}
-  local goal = {Config.world.xBoundary,0}
-
-  local goaldir = vector.new({goal[1]-ballGlobal[1],goal[2]-ballGlobal[2],0})
-  local goaldist = math.sqrt(goaldir[1]*goaldir[1]+goaldir[2]*goaldir[2])
-  
-
-  local goaldirL = vector.new({goalL[1]-ballGlobal[1],goalL[2]-ballGlobal[2],0})
-  local goaldistL = math.sqrt(goaldirL[1]*goaldirL[1]+goaldirL[2]*goaldirL[2])
-  local angleGoalBallL = math.atan2(goaldirL[2],goaldirL[1])
-
-  local goaldirR = vector.new({goalR[1]-ballGlobal[1],goalR[2]-ballGlobal[2],0})
-  local goaldistR = math.sqrt(goaldirR[1]*goaldirR[1]+goaldirR[2]*goaldirR[2])
-  local angleGoalBallR = math.atan2(goaldirR[2],goaldirR[1])
-
-
-  local kickangle = math.atan2(goaldir[2],goaldir[1])
-
-
+function evaluateKickAngle(ballGlobal,kickangle)
   obstacle_num = wcm.get_obstacle_num()
   local angle_offset = 0
   for i=1,obstacle_num do 
@@ -67,15 +47,9 @@ function getKickAngle(ballGlobal)
     local obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)
     local obs_angle = math.atan2(rel_obs_y, rel_obs_x)
 
-
-
     local closest_th = 1.50
-
     local angle_diff = util.mod_angle(obs_angle-kickangle)
-
     local closest_dist = math.abs(angle_diff) * obs_dist
-
-    
 
     local angle_th = closest_th / obs_dist
 
@@ -89,15 +63,72 @@ function getKickAngle(ballGlobal)
     end
   end
 
+  return angle_offset 
+end
+
+
+
+function getKickAngle(pose,ballGlobal)
+  local goalL = {Config.world.xBoundary,Config.world.goalWidth/2}
+  local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2}
+  local goal = {Config.world.xBoundary,0}
+
+  local goaldirC = vector.new({goal[1]-ballGlobal[1],goal[2]-ballGlobal[2],0})
+  local goaldist = math.sqrt(goaldirC[1]*goaldirC[1]+goaldirC[2]*goaldirC[2])
+  local angleGoalBallC = math.atan2(goaldirC[2],goaldirC[1])
+
+  local goaldirL = vector.new({goalL[1]-ballGlobal[1],goalL[2]-ballGlobal[2],0})
+  local goaldistL = math.sqrt(goaldirL[1]*goaldirL[1]+goaldirL[2]*goaldirL[2])
+  local angleGoalBallL = math.atan2(goaldirL[2],goaldirL[1])
+
+  local goaldirR = vector.new({goalR[1]-ballGlobal[1],goalR[2]-ballGlobal[2],0})
+  local goaldistR = math.sqrt(goaldirR[1]*goaldirR[1]+goaldirR[2]*goaldirR[2])
+  local angleGoalBallR = math.atan2(goaldirR[2],goaldirR[1])
+
+
+  local kickangle,offset
+  if goaldist>4.5 then --If ball's far from goal, we just shoot for the center 
+    kickangle = (angleGoalBallL + angleGoalBallR)/2
+    offset = evaluateKickAngle(ballGlobal,kickangle)
+  else
+    --Now we're close... test two possible angles that avoids goalie
+    local kickangle1 = (angleGoalBallL + angleGoalBallC)/2
+    local kickangle2 = (angleGoalBallC + angleGoalBallR)/2
+    local offset1 = evaluateKickAngle(ballGlobal,kickangle1)
+    local offset2 = evaluateKickAngle(ballGlobal,kickangle2)
+
+    --Criteria: pick one that's LESS blocked
+    if math.abs(offset1)==math.abs(offset2) then
+      --they are equally blocked, choose one that requires less turning
+      if math.abs(util.mod_angle(kickangle1-pose[3]))<
+        math.abs(util.mod_angle(kickangle2-pose[3])) then
+        kickangle,offset = kickangle1,offset1
+      else
+        kickangle,offset = kickangle2,offset2
+      end
+    elseif math.abs(offset1)<math.abs(offset2) then
+      kickangle,offset = kickangle1,offset1
+    else
+      kickangle,offset = kickangle2,offset2
+    end
+  end
+  
   wcm.set_robot_kickto(
-    {ballGlobal[1] + math.cos(kickangle+angle_offset)*2.5,
-    ballGlobal[2] + math.sin(kickangle+angle_offset)*2.5}
+    {ballGlobal[1] + math.cos(kickangle+offset)*3,
+    ballGlobal[2] + math.sin(kickangle+offset)*3}
     )
 
-  wcm.set_robot_goalto({Config.world.xBoundary,0})
+  wcm.set_robot_goal1({goalL[1],goalL[2]})
+  wcm.set_robot_goal2({goalR[1],goalR[2]})
+
+  wcm.set_robot_goalto(
+    {ballGlobal[1] + math.cos(kickangle)*3,
+    ballGlobal[2] + math.sin(kickangle)*3}
+    )
+
   wcm.set_robot_ballglobal({ballGlobal[1],ballGlobal[2]})
 
-  return kickangle+angle_offset,goaldist
+  return kickangle+offset,goaldist
 end
 
 
@@ -105,7 +136,7 @@ function robocupplanner.getTargetPose(pose,ballGlobal)
   if Config.demo  then return robocupplanner.getDemoTargetPose(pose,ballGlobal) end
   if Config.backward_approach then return robocupplanner.getTargetPoseBackward(pose,ballGlobal) end
 
-  local kickangle, goaldist = getKickAngle(ballGlobal)
+  local kickangle, goaldist = getKickAngle(pose,ballGlobal)
   local angleRobotBall = math.atan2(pose[2]-ballGlobal[2],pose[1]-ballGlobal[1])
   local distRobotBall = math.sqrt( (pose[1]-ballGlobal[1])^2+(pose[2]-ballGlobal[2])^2 )
   

@@ -282,11 +282,15 @@ function h = show_monitor_thorwin
 
           kickto = metadata.world.traj.kickto;
           goalto = metadata.world.traj.goalto;
+          goal1 = metadata.world.traj.goal1;
+          goal2 = metadata.world.traj.goal2;
           ballglobal = metadata.world.traj.ballglobal;
 
           plot([ballglobal(1) kickto(1)],[ballglobal(2) kickto(2)],'b','LineWidth',2);
-          plot([ballglobal(1) goalto(1)],[ballglobal(2) goalto(2)],'k--');
+          plot([ballglobal(1) goalto(1)],[ballglobal(2) goalto(2)],'k-');
 
+          plot([ballglobal(1) goal1(1)],[ballglobal(2) goal1(2)],'k--');
+          plot([ballglobal(1) goal2(1)],[ballglobal(2) goal2(2)],'k--');
         end
         hold off;
 

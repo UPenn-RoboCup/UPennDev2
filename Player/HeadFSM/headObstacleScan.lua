@@ -53,6 +53,10 @@ function state.update()
 
 	if doneNeck then stage = stage+1 end
 
+  if wcm.get_ball_t()>wcm.get_ball_tlook() then
+    wcm.set_ball_tlook(wcm.get_ball_t())
+  end
+
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
 end

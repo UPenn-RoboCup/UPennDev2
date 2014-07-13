@@ -79,7 +79,7 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupApproach.target={0.50,0.12}
   Config.fsm.bodyRobocupApproach.th = {0.10, 0.02}
 
-Config.backward_approach = true
+--Config.backward_approach = true
 --[[
   
   Config.fsm.bodyRobocupFollow.circleR = 1.0

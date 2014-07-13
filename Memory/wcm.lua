@@ -81,6 +81,8 @@ shared.ball.dodge = vector.zeros(1);
 shared.ball.locked_on = vector.zeros(1);
 shared.ball.p = vector.zeros(1);
 
+shared.ball.tlook = vector.zeros(1); --the last time we TRIED to look at the ball (scan/track)
+
 
 shared.goal = {}
 shared.goal.t = vector.zeros(1)

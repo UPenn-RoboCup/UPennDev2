@@ -192,13 +192,12 @@ function robocupplanner.getTargetPoseBackward(pose,ballGlobal)
   local angleRobotBall = math.atan2(pose[2]-ballGlobal[2],pose[1]-ballGlobal[1])
   local distRobotBall = math.sqrt( (pose[1]-ballGlobal[1])^2+(pose[2]-ballGlobal[2])^2 )
   
-  local circleR = Config.fsm.bodyRobocupFollow.circleR or 1.5
+  local circleR = Config.fsm.bodyRobocupFollow.circleR or 1
   local kickoffset = Config.fsm.bodyRobocupFollow.kickoffset or 0.5
-
 
   local angle_tangent = math.acos(circleR / math.max(circleR,distRobotBall))
   local angleCircle = util.mod_angle(angleRobotBall-angleGoalBall)
-
+  local rotate = 0
   if math.abs(angleCircle)>150*math.pi/180 then --Robot is behind the ball!
     --Just approach
 
@@ -219,6 +218,7 @@ function robocupplanner.getTargetPoseBackward(pose,ballGlobal)
     kickpos[1] = kickpos[1] + math.cos(angleTarget)*circleR
     kickpos[2] = kickpos[2] + math.sin(angleTarget)*circleR
     kickpos[3] = angleGoalBall
+    rotate = 1
   else --Robot is on the left side 
     local angleTangent = angleRobotBall + angle_tangent
     local angleTarget = angleTangent
@@ -233,9 +233,10 @@ function robocupplanner.getTargetPoseBackward(pose,ballGlobal)
     kickpos[1] = kickpos[1] + math.cos(angleTarget)*circleR
     kickpos[2] = kickpos[2] + math.sin(angleTarget)*circleR
     kickpos[3] = angleGoalBall
+    rotate = -1
   end
 
-  return kickpos
+  return kickpos,rotate
 end
 
 function robocupplanner.getDemoTargetPose(pose,ballGlobal)

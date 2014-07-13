@@ -20,11 +20,11 @@ local kneeImuParamX  = Config.walk.kneeImuParamX
 local hipImuParamY   = Config.walk.hipImuParamY
 
 -- Hip sag compensation parameters
-local hipRollCompensation = Config.walk.hipRollCompensation
-local ankleRollCompensation = Config.walk.ankleRollCompensation
-local anklePitchCompensation = Config.walk.anklePitchCompensation
-local kneePitchCompensation = Config.walk.kneePitchCompensation
-local hipPitchCompensation = Config.walk.hipPitchCompensation
+local hipRollCompensation = Config.walk.hipRollCompensation or 0
+local ankleRollCompensation = Config.walk.ankleRollCompensation or 0
+local anklePitchCompensation = Config.walk.anklePitchCompensation or 0
+local kneePitchCompensation = Config.walk.kneePitchCompensation or 0
+local hipPitchCompensation = Config.walk.hipPitchCompensation or 0
 
 
 

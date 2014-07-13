@@ -26,7 +26,9 @@ shared.servo.imu = vector.zeros(17)
 shared.leg={}
 shared.leg.bias=vector.zeros(12)
 
-
+-- Head servo bias
+shared.head = {}
+shared.head.bias = vector.zeros(2)
 
 -- Storing current stance info
 shared.stance = {}

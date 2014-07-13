@@ -145,7 +145,7 @@ int lua_obstacles(lua_State *L) {
   	sumJ += minJ[i];
   	if (minJ[i]>lowest) lowest = minJ[i];
   }
-  int threshold = (int) sumJ/m*1.2; //TODO
+  int threshold = (int) sumJ/m*1; //TODO
   threshold = (threshold<n)? threshold:n;
 	//printf("THRESHOLD: %d\n", threshold);
 	

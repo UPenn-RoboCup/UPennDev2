@@ -45,6 +45,8 @@ local head_new = head_now
 local cameraPitch = hcm.get_camera_pitch()
 local cameraRoll = hcm.get_camera_roll()
 local camera_changed = false
+-- Head angle bias
+local headYawBias = mcm.get_head_bias()[1]
 -- Monitor FPS
 local monitor_fps = hcm.get_monitor_fps()
 local monitor_fps_new = monitor_fps
@@ -99,6 +101,16 @@ function process_keyinput()
 			hcm.set_camera_pitch(cameraPitch)
 			hcm.set_camera_roll(cameraRoll)
 
+		-- Head angles offset
+		elseif byte==string.byte("[") then
+			head_changed = true
+			headYawBias = mcm.get_head_bias()[1] + 0.05*DEG_TO_RAD
+			mcm.get_head_bias({headYawBias,0})
+		elseif byte==string.byte("]") then
+			head_changed = true
+			headYawBias = mcm.get_head_bias()[1] - 0.05*DEG_TO_RAD
+			mcm.get_head_bias({headYawBias,0})
+
 		-- Frame rate for monitoring
     elseif byte==string.byte("=") then
 			monitor_fps_new = monitor_fps + dFPS
@@ -126,6 +138,12 @@ function process_keyinput()
 			print(string.format("Camera pitch: %.1f  deg,  roll: %.1f  deg \n",
       	cameraPitch*RAD_TO_DEG, cameraRoll*RAD_TO_DEG))
 		end
+		if head_changed then
+			head_changed = false
+			print(string.format("Head pitch bias: %.2f  deg\n",
+      	headYawBias*RAD_TO_DEG))
+		end
+
   end
 end
 

@@ -94,7 +94,8 @@ print("DONE", microstrain)
 -- Turn it on
 -- TODO: Read and check settings...
 print("Turn on IMU streaming...")
-microstrain:ahrs_on()
+--microstrain:ahrs_on()
+microstrain:ahrs_and_nav_on()
 t_last_read = get_time()
 print("DONE")
 

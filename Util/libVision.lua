@@ -501,9 +501,15 @@ function libVision.obstacle_new(labelB_t)
   local th_min_orientation = Config.vision.obstacle.th_min_orientation
   local min_ground_fill_rate = Config.vision.obstacle.min_ground_fill_rate
     
-  local obsProps = ImageProc.obstacles(labelB_t,
+  local obsProps = ImageProc.obstacles(labelB_t, horizonB,
     Config.vision.obstacle.min_width, Config.vision.obstacle.max_width)
   
+  -- Update horizon
+  local pa = Body.get_head_position()[2] + Config.walk.bodyTilt
+  local horizonB = (hb/2.0) - focalB*math.tan(pa) - 1
+  horizonB = math.min(hb, math.max(math.floor(horizonB), 0))
+  --TODO: plot it in monitor
+
   if #obsProps == 0 then return 'NO OBS' end
   
   --for i=1,math.min(30, #obsProps) do
@@ -586,17 +592,15 @@ function libVision.obstacle_new(labelB_t)
       obsStats.iv[i] = obstacle.iv[obstacle.dist[i]]
 	    local pos = obstacle.v[obstacle.dist[i]]  -- LOCAL
       obsStats.v[i] = vector.new(pos)
-      obsStats.dr[i] = 0.25*obstacle.dist[i]  --TODO
-      obsStats.da[i] = 5*DEG_TO_RAD -- TODO
+      -- obsStats.dr[i] = 0.25*obstacle.dist[i]  --TODO
+      -- obsStats.da[i] = 5*DEG_TO_RAD -- TODO
 
-      ------------
       local global_pos = util.pose_global({pos[1], pos[2], 0}, wcm.get_robot_pose())
       local xi = math.ceil((MAP.xmax-global_pos[1]) / MAP.res)
 			local yi = math.ceil((global_pos[2]-MAP.ymin) / MAP.res)
       xi = math.min(math.max(1, xi), MAP.sizex)
       yi = math.min(math.max(1, yi), MAP.sizey)
       MAP.grid[xi][yi] = math.min(MAP.grid[xi][yi]+5, 1e5)
-      ------------
       
       obsStats.axisMinor[i] = obstacle.axisMinor[obstacle.dist[i]]
       obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 
@@ -635,15 +639,6 @@ function libVision.obstacle(labelB_t, cc)
   local th_min_height = Config.vision.obstacle.th_min_height
   local th_min_orientation = Config.vision.obstacle.th_min_orientation
   local min_ground_fill_rate = Config.vision.obstacle.min_ground_fill_rate
-  
-  
-  --TODO: with pitch=25 deg, do we need horizon?
-  -- update horizon
-  -- local pa = Body.get_head_position()[2] + Config.walk.bodyTilt
-  -- horizonA = (ha/2.0) - focalA*math.tan(pa) - 2
-  -- horizonA = math.min(ha, math.max(math.floor(horizonA), 0))
-  -- horizonB = (hb/2.0) - focalB*math.tan(pa) - 1
-  -- horizonB = math.min(hb, math.max(math.floor(horizonB), 0))
   
   
   local col = wb / grid_x

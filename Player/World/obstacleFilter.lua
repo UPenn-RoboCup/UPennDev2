@@ -27,7 +27,8 @@ local function observation_ra(self, r1, a1, rErr, aErr)
   local y = self.r * math.sin(self.a)
   local t = t
 
-  wcm['set_obstacle_v'..self.id]({x, y})
+	return x, y
+  --wcm['set_obstacle_v'..self.id]({x, y})
   --print(string.format("OBS %d: %.2f   %.2f", self.id, x, y))
 end
 
@@ -49,7 +50,7 @@ local function odometry(self, dx, dy, da, drErr, daErr)
   self.rvar = self.rvar + drErr
   self.avar = self.avar + daErr
 
-  wcm['set_obstacle_v'..self.id]({x, y})
+  --wcm['set_obstacle_v'..self.id]({x, y})
 end
 
 function obstacleFilter.new(id)
@@ -60,7 +61,7 @@ function obstacleFilter.new(id)
   f.a = 0
   f.rvar = 1e10
   f.avar = 1e10
-  f.id = id -- 1:left 2:right
+  f.id = id
   -- Methods
   f.observation_ra = observation_ra
   f.observation_xy = observation_xy

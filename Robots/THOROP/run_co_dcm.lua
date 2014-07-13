@@ -99,14 +99,14 @@ end
 ---------------------
 -- Position Packet --
 ---------------------
-local function parse_read_position(pkt, is_mx)
+local function parse_read_position(pkt, bus)
 	-- Nothing to do if an error
 	if pkt.error ~= 0 then return end
 	-- Assume just reading position, for now
 	local m_id = pkt.id
 	local read_j_id = m_to_j[m_id]
 	local read_val
-	if is_mx then
+  if bus.has_mx_id[m_id] then
 		read_val = p_parse_mx(unpack(pkt.parameter)) 
 	else
 		read_val = p_parse(unpack(pkt.parameter))
@@ -125,6 +125,11 @@ local function parse_read_packet(pkt, bus)
 	-- Nothing to do if an error
 	if pkt.error ~= 0 then return end
 	local reg_name = bus.read_reg
+  if not reg_name then
+    --print("No read expected...")
+    --ptable(pkt)
+    return
+  end
 	local m_id = pkt.id
 	if bus.has_mx_id[m_id] then
 		reg = lD.mx_registers[reg_name]
@@ -214,6 +219,7 @@ local function do_parent(request, bus)
 	local wr_reg, rd_reg = request.wr_reg, request.rd_reg
 	local bus_name = request.bus
 	ptable(request)
+  print("BUSNAME", bus.name)
 	local m_id
 	if wr_reg then
 		local ptr = dcm.actuatorPtr[wr_reg]
@@ -222,11 +228,13 @@ local function do_parent(request, bus)
 		for j_id, is_changed in pairs(request.ids) do
 			m_id = j_to_m[j_id]
 			if bus.has_mx_id[m_id] then
+print("MX_ID", m_id)
 				has_mx = true
 				tinsert(m_ids, m_id)
 				tinsert(m_vals, ptr[j_id-1])
 				tinsert(addr_n_len, lD.mx_registers[wr_reg])
 			elseif bus.has_nx_id[m_id] then
+print("NX_ID", m_id)
 				has_nx = true
 				tinsert(m_ids, m_id)
 				tinsert(m_vals, ptr[j_id-1])
@@ -253,7 +261,7 @@ local function do_parent(request, bus)
             else
               status = lD.get_nx_position(m_id, bus)[1]
             end
-            j_id, pos = parse_read_position(status, is_mx)
+            j_id, pos = parse_read_position(status, bus)
             cp_ptr[j_id - 1] = p_ptr[j_id - 1]
           end
         else
@@ -364,7 +372,8 @@ local function output_co(bus)
 				lD.set_nx_command_position(send_ids, commands, bus)
 			end
 		end
-		coroutine.yield(0)
+    -- One command gets a status return
+		coroutine.yield(#commands==1 and 1 or 0)
 		-- Run the parent queue until a write to the bus
 		request = table.remove(bus.request_queue)
 		while request do
@@ -392,7 +401,7 @@ local function output_co(bus)
 end
 
 local function consolidate_queue(request_queue, req)
-  ----[[
+if true then tinsert(request_queue, req); return; end
 	local is_merge = false
 	for _, v in ipairs(request_queue) do
 		if v.rd_reg and req.rd_reg and v.rd_reg==req.rd_reg then
@@ -407,11 +416,10 @@ local function consolidate_queue(request_queue, req)
 	end
 	if is_merge then
     print("MERGED", req.rd_reg or req.wr_reg)
-    return
+  else
+  	-- Enqueue for the bus if not merged to previous
+	  tinsert(request_queue, req)
   end
-  --]]
-	-- Enqueue for the bus if not merged to previous
-	tinsert(request_queue, req)
 end
 
 local function process_parent(requests)
@@ -420,7 +428,9 @@ local function process_parent(requests)
 		-- Requests are messagepacked
 		req = munpack(request)
 		if req.ids then
+print("REQ")
 			for bname, bus in pairs(named_buses) do
+print("INTO", bname)
 				consolidate_queue(bus.request_queue, req)
 			end
     else
@@ -469,7 +479,7 @@ local function initialize(bus)
 		assert(n<=5, "Too many attempts")
 		assert(status.id==m_id, 'bad id coherence, pos')
 		t_read = get_time()
-		local j_id, rad = parse_read_position(status, bus.has_mx_id[m_id])
+		local j_id, rad = parse_read_position(status, bus)
 		cp_ptr[j_id-1] = rad
 		-- Read the current torque states
 		n = 0
@@ -507,12 +517,13 @@ local function initialize(bus)
 	elseif has_nx then
 		bus.read_cmd_str = lD.get_nx_position(bus.m_ids)
 	else
---		bus.read_cmd_str = lD.get_mx_position(bus.m_ids)
-bus.read_cmd_str = lD.get_bulk(string.char(unpack(bus.m_ids)), rd_addrs)
+    -- Sync read with just MX does not work for some reason
+    -- bus.read_cmd_str = lD.get_mx_position(bus.m_ids)
+    bus.read_cmd_str = lD.get_bulk(string.char(unpack(bus.m_ids)), rd_addrs)
 	end
   bus.n_read = #bus.m_ids
-  local hex, dec = lD.tostring(bus.read_cmd_str)
-  io.write(hex,'\n',dec)
+--  local hex, dec = lD.tostring(bus.read_cmd_str)
+--  io.write(hex,'\n',dec)
 end
 
 for chain_id, chain in ipairs(dcm_chains) do
@@ -560,7 +571,8 @@ while true do
       bus.input_co(false)
     end
 		-- Only if we are not in the read cycle
-    if bus.npkt_to_expect==0 then
+    --print("busname",bname, bus.npkt_to_expect)
+    if bus.npkt_to_expect < 1 then
 			bus.npkt_to_expect, bus.read_reg = bus.output_co()
       if bus.npkt_to_expect == 0 then
     		bus.cmds_cnt = bus.cmds_cnt + 1
@@ -586,7 +598,7 @@ while true do
         for _, pkt in ipairs(pkts) do
           -- TODO: Check if bus.read_reg is nil
           -- That means you get unexpected data
-          parse[bus.read_reg](pkt, bus.has_mx_id[pkt.id])
+          parse[bus.read_reg](pkt, bus, bus)
         end
 --print("RXI", rxi, bus.npkt_to_expect)
       end

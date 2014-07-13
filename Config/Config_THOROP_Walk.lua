@@ -72,6 +72,11 @@ walk.velLimitA = {-.2,.2}
 walk.velDelta  = {0.025,0.02,0.1}
 walk.foot_traj = 1 --curved step
 
+walk.velLimitX = {-.05,.10} --tested, and quite good
+walk.velLimitX = {-.10,.10} --tested, and quite good
+--walk.velLimitX = {-.05,.15} --tested, and quite good
+
+
 
 if IS_WEBOTS or HOSTNAME ~="alvin" then
   walk.foot_traj = 2 --square step
@@ -226,9 +231,9 @@ kick.stepqueue["LeftWalkKick_From_DS"]=
 kick.stepqueue["LeftKick_From_DS"]=
   {
     {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
-    {{0.12,0,0},1,  0.3,2,0.3,   {0,0.02,0},{-2,walk.stepHeight,0}}, --rf kick
-    {{0,0,0,},  2,   0.1, 1, 0.1,     {0,0.0,0},  {0, 0, 0}},                  
-    {{0.08,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0.12,0,0},1,  0.3,2,0.3,   {-0.02,0.02,0},{-2,walk.stepHeight,0}}, --rf kick
+    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.02,0.0,0},  {0, 0, 0}},                  
+    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
     {{0,0,0,},  2,   0.1, 1, 0.1,     {0,0.0,0},  {0, 0, 0}},                  
   }
 
@@ -264,9 +269,9 @@ kick.stepqueue["RightKick_From_DS"]=
 
   {
     {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
-    {{0.12,0,0},0,  0.3,2,0.3,   {0,-0.02,0},{-2,walk.stepHeight,0}}, --rf kick
-    {{0,0,0,},  2,   0.1, 1, 0.1,     {0,0.0,0},  {0, 0, 0}},                  
-    {{0.08,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0.12,0,0},0,  0.3,2,0.3,   {-0.02,-0.02,0},{-2,walk.stepHeight,0}}, --rf kick
+    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.02,0.0,0},  {0, 0, 0}},                  
+    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
     {{0,0,0,},  2,   0.1, 1, 0.1,     {0,0.0,0},  {0, 0, 0}},                  
   }
 

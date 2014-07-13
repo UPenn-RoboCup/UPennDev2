@@ -161,9 +161,6 @@ fsm.Motion = {
   
 --  {'motionHybridWalk', 'done_step', 'motionStepNonstop'},
 --  {'motionStepNonstop', 'done', 'motionStance'},
-  
-
-
 
   {'motionHybridWalkEnd', 'done', 'motionStance'},
 
@@ -191,7 +188,6 @@ fsm.headTrack = {
   tLost = 2,
   timeout = 6,
 	dist_th = 0.35,
-	headBias = {0,0},
 }
 
 --HeadLookGoal: Look up to see the goal

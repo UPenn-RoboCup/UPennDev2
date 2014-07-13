@@ -6,22 +6,26 @@ local vector = require'vector'
 
 local walk = {}
 
+print("Robot hostname:",HOSTNAME)
+walk.legBias = vector.new({0,0,0,0,0,0,0,0,0,0,0,0,})*DEG_TO_RAD
+walk.velocityBias = {0.0,0,0} --To get rid of drifting
+
+-- Servo params
 walk.init_command_velocity = 500
 walk.init_command_accelleration = 50
-
-
-
 walk.leg_p_gain = 64
 walk.ankle_p_gain = 64
 
 --Default-y vaue
-walk.maxTurnSpeed = 0.10
+walk.maxTurnSpeed = 0.1
 walk.aTurnSpeed = 0.25
-walk.maxStepCount = 8
+walk.maxStepCount = 30
 
 
+----------------------------------------------------------------------
+-- Param for robot
+----------------------------------------------------------------------
 
-print("Robot hostname:",HOSTNAME)
 
 ------------------------------------
 -- Stance and velocity limit values
@@ -31,151 +35,69 @@ walk.stanceLimitX = {-0.50,0.50}
 walk.stanceLimitY = {0.16,0.30}
 walk.stanceLimitA = {-10*math.pi/180,30*math.pi/180}
 
-if IS_WEBOTS or HOSTNAME ~="alvin" then
-  walk.maxTurnSpeed = 0.20
-  walk.aTurnSpeed = 0.2
-  walk.maxStepCount = 12
 
-  walk.foot_traj = 1; --square step
-
-  --Robotis style walk
-  walk.bodyHeight = 0.9285318
-  -- walk.bodyTilt = 11*math.pi/180
-  walk.bodyTilt = 3*math.pi/180
-  walk.footY = 0.1095
-	walk.footX = 0  -- TODO: tweak for new feet
-  walk.torsoX = 0.00    -- com-to-body-center offset
-
-  walk.stepHeight = 0.04
-  walk.supportX = 0.01
-  walk.supportY = 0.03
-  walk.tZMP = 0.28
-
-  walk.tStep = 0.80
-  walk.supportY = 0.03
-  walk.tZMP = 0.28
-  walk.phSingle = {0.15,0.85}
-  walk.phZmp = {0.15,0.85}
-
-  gyroFactorX = 490.23/(251000/180)*0
-  gyroFactorY = 490.23/(251000/180)*0
-  walk.ankleImuParamX={1, 0.9*gyroFactorX,  0*math.pi/180, 5*math.pi/180}
-  walk.kneeImuParamX= {1, 0.3*gyroFactorX,    0*math.pi/180, 5*math.pi/180}
-  walk.ankleImuParamY={1, 1.0*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
-  walk.hipImuParamY  ={1, 0.5*gyroFactorY,  0*math.pi/180, 5*math.pi/180}
-
-  walk.hipRollCompensation = 1*math.pi/180
-  walk.ankleRollCompensation = 1.2*math.pi/180
-  walk.hipPitchCompensation = 0*math.pi/180
-  walk.kneePitchCompensation = 0*math.pi/180
-  walk.anklePitchCompensation = 0*math.pi/180
-  walk.phComp = {0.1,0.9}
-  walk.phCompSlope = 0.2
-
-
-  walk.velLimitX = {-.05,.05}
-  walk.velLimitY = {-.025,.025}
-  walk.velLimitA = {-.2,.2}
-  walk.velDelta  = {0.025,0.02,0.1}
-
-
-  walk.legBias = vector.new({0,0,0,0,0,0, 0,0,0,0,0,0})*DEG_TO_RAD
-  --Webots-only params 
-
-  walk.stepHeight = 0.02--shorter step height
-  walk.tZMP = 0.40 
-  walk.footY = 0.09
-
-  walk.velLimitX = {-.10,.10}
-  walk.velLimitY = {-.04,.04}
-  walk.velLimitA = {-.2,.2}
-  walk.velDelta  = {0.025,0.02,0.1}
-
---The same as the real robot
-  walk.velLimitX = {-.06,.10} 
-  walk.velLimitY = {-.04,.04}
-  walk.velLimitA = {-.2,.2}
-
---[[
---Faster
-  walk.velLimitX = {-.20,.20}
-  walk.velLimitY = {-.08,.08}
-  walk.velLimitA = {-.2,.2}
-  walk.velDelta  = {0.04,0.03,0.1}
---]]
-
-
-else --REAL ROBOT
-
-  walk.bodyHeight = 0.93
-  walk.footY = 0.095
-  walk.footX = 0
-  --walk.bodyTilt = 11*math.pi/180
-  walk.bodyTilt = 3*math.pi/180
-  walk.torsoX = 0.00    -- com-to-body-center offset
+--Walk config for actual robot
+walk.bodyHeight = 0.93
+walk.footY = 0.095
+walk.footX = 0
+walk.bodyTilt = 3*math.pi/180
+walk.torsoX = 0.02     -- com-to-body-center offset
 
 ------------------------------------
 -- Gait parameters
 ------------------------------------
-  walk.tStep = 0.80
-  walk.tZMP = 0.33
-  walk.stepHeight = 0.04
-  walk.phSingle = {0.15,0.85}
-  walk.phZmp = {0.15,0.85}
-  walk.supportX = 0.03
-  walk.supportY = 0.04
+walk.tStep = 0.80
+walk.tZMP = 0.33
+walk.stepHeight = 0.03
+walk.phSingle = {0.15,0.85}
+walk.phZmp = {0.15,0.85}
+walk.phComp = {0.1,0.9}
+walk.phCompSlope = 0.2
+walk.supportX = 0.07 --With clown feet, good for forward walking
+walk.supportY = 0.06
+
 ------------------------------------
 -- Compensation parameters
 ------------------------------------
-  gyroFactorX = 490.23/(251000/180)*0.5
-  gyroFactorY = 490.23/(251000/180)*0.5
-  walk.ankleImuParamX={1, 0.9*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
-  walk.kneeImuParamX= {1, -0.3*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
-  walk.ankleImuParamY={1, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
-  walk.hipImuParamY  ={1, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
+gyroFactorX = 490.23/(251000/180)*0.5
+gyroFactorY = 490.23/(251000/180)*0.5
+walk.ankleImuParamX={1, 0.9*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
+walk.kneeImuParamX= {1, -0.3*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
+walk.ankleImuParamY={1, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
+walk.hipImuParamY  ={1, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
+walk.dShift = {30*math.pi/180,30*math.pi/180,30*math.pi/180,30*math.pi/180}
 
-  walk.hipRollCompensation = 2*math.pi/180
-  walk.ankleRollCompensation = 0*math.pi/180
-  walk.hipPitchCompensation = 0*math.pi/180
-  walk.kneePitchCompensation = 0*math.pi/180
-  walk.anklePitchCompensation = 0*math.pi/180
-  --
-  walk.phComp = {0.1,0.9}
-  walk.phCompSlope = 0.2
-  -----------------------------------
-  
-  --To get rid of drifting
-  walk.velocityBias = {0.0,0,0}
-  walk.stepHeight = 0.03
+walk.hipRollCompensation = 2*math.pi/180
+walk.ankleRollCompensation = 0*math.pi/180
+walk.hipPitchCompensation = 0*math.pi/180
+walk.kneePitchCompensation = 0*math.pi/180
+walk.anklePitchCompensation = 0*math.pi/180
 
---Clown feet
-  walk.torsoX = 0.02
-  walk.supportX = 0.07
-  walk.supportY = 0.06
+-----------------------------------
+walk.velLimitX = {-.05,.07}
+walk.velLimitY = {-.04,.04}
+walk.velLimitA = {-.2,.2}
+walk.velDelta  = {0.025,0.02,0.1}
+walk.foot_traj = 1 --curved step
 
-  
-  walk.velDelta  = {0.025,0.02,0.1}
-  walk.maxTurnSpeed = 0.1
-  walk.aTurnSpeed = 0.25
-  walk.maxStepCount = 30
 
-  walk.legBias = vector.new({0,0,0,0,0,0,0,0,0,0,0,0,})*DEG_TO_RAD
+if IS_WEBOTS or HOSTNAME ~="alvin" then
+  walk.foot_traj = 2 --square step
+  walk.tZMP = 0.40 
+  walk.dShift = {30*math.pi/180,30*math.pi/180,30*math.pi/180,30*math.pi/180}
 
-  walk.velLimitX = {-.05,.07}
-  walk.velLimitY = {-.04,.04}
+  walk.hipRollCompensation = 1*math.pi/180
+  walk.ankleRollCompensation = 1.2*math.pi/180
+
+  walk.velLimitX = {-.10,.10} 
+  walk.velLimitY = {-.06,.06}
   walk.velLimitA = {-.2,.2}
   walk.velDelta  = {0.025,0.02,0.1}
 
-  walk.foot_traj = 1; --curved step
---  walk.foot_traj = 2; --square step
-
-
---  walk.velLimitX = {-.06,.10} --was fine with curved foot trajectory
-
-
+--faster
+  walk.velLimitX = {-.20,.20} 
+  walk.velLimitY = {-.08,.08}
 end
-
-
 
 -----------------------------------------------------------
 -- Stance parameters
@@ -183,21 +105,13 @@ end
 
 local stance={}
 
---TEMPORARY HACK FOR PERCEPTION TESTING
---walk.bodyTilt = 0*math.pi/180
-
---Should we move torso back for compensation?
-stance.enable_torso_compensation = 1
---stance.enable_torso_compensation = 0
-
+stance.enable_torso_compensation = 1 --Should we move torso back for compensation?
 stance.enable_sit = false
 stance.enable_legs = true   -- centaur has no legs
 stance.qWaist = vector.zeros(2)
-
 stance.dqWaistLimit = 10*DEG_TO_RAD*vector.ones(2)
 stance.dpLimitStance = vector.new{.04, .03, .03, .4, .4, .4}
 stance.dqLegLimit = vector.new{10,10,45,90,45,10}*DEG_TO_RAD
-
 stance.sitHeight = 0.75
 stance.dHeight = 0.04 --4cm per sec
 
@@ -214,11 +128,7 @@ zmpstep.preview_interval = 3.0 --3s needed for slow step (with tStep ~3s)
 zmpstep.params = true;
 
 if IS_WEBOTS then
-
   --Webots uses different tZMP
-
-print("HEREHERE")
-
   zmpstep.param_k1_px={-449.159605,-373.126940,-79.851979}
   zmpstep.param_a={
     {1.000000,0.010000,0.000050},
@@ -366,7 +276,6 @@ c=require'calibration'
 
 if c.cal[HOSTNAME].legBias then 
   walk.legBias = c.cal[HOSTNAME].legBias end
-
 
 ------------------------------------
 -- Associate with the table

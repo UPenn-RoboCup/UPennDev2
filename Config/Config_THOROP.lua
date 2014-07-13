@@ -85,12 +85,6 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupApproach.target={0.50,0.12}
   Config.fsm.bodyRobocupApproach.th = {0.10, 0.02}
 
-
-  Config.walk.velLimitX = {-.10,.10} 
-  Config.walk.velLimitY = {-.04,.04}
-  Config.walk.velLimitA = {-.2,.2}
-  Config.walk.velDelta  = {0.025,0.02,0.1}
-
 --[[
   Config.backward_approach = true
   Config.fsm.bodyRobocupFollow.circleR = 1.0

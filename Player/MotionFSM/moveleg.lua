@@ -72,7 +72,7 @@ function moveleg.get_leg_compensation(supportLeg, ph, gyro_rpy,angleShift)
   local hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
   angleShift[4] = angleShift[4]+hipImuParamY[1]*(hipShiftY-angleShift[4])
 
-  local delta_legs = vector.zeros(Body.nJointLLeg+Body.nJointRLeg)
+  local delta_legs = vector.zeros(12)
   -- Change compensation in the beginning of the phase (first 10%)
   -- Saturate compensation afterwards
   -- Change compensation at the beginning of the phase (first 10%)
@@ -165,7 +165,7 @@ function moveleg.get_leg_compensation_simple(supportLeg, phSingle, gyro_rpy,angl
   local hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
   angleShift[4] = angleShift[4]+hipImuParamY[1]*(hipShiftY-angleShift[4])
 
-  local delta_legs = vector.zeros(Body.nJointLLeg+Body.nJointRLeg)
+  local delta_legs = vector.zeros(12)
   -- Change compensation in the beginning of the phase (first 10%)
   -- Saturate compensation afterwards
   -- Change compensation at the beginning of the phase (first 10%)
@@ -590,7 +590,7 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   angleShift[4] = angleShift[4] + math.max(-dShift[4]*dt,math.min(dShift[4]*dt,dShiftTarget[4])) 
 
 
-  local delta_legs = vector.zeros(Body.nJointLLeg+Body.nJointRLeg)
+  local delta_legs = vector.zeros(12)
 
   --How much do we need to apply the compensation?
   local supportRatioRight = supportRatio;

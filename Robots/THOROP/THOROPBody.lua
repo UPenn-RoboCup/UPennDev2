@@ -226,7 +226,7 @@ if IS_WEBOTS then
     _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")
   end
 
-
+local nJoint = Config.nJoint
   local jointNames = {
     "Neck","Head", -- Head (Yaw,pitch)
     -- Left Arm

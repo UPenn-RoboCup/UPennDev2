@@ -42,6 +42,7 @@ Config.disable_kick = true
 
 
 if IS_WEBOTS then
+Config.USE_DUMMY_ARMS = false
   -- Config.use_gps_pose = false
   Config.demo = false
   -- Config.demo = true
@@ -68,12 +69,6 @@ for _,v in ipairs(exo) do
   dofile(table.concat(fname))
 end
 
-
-
-
-
-
-
 --Vision parameter hack (robot losing ball in webots)
 if IS_WEBOTS then
   Config.vision.ball.th_min_fill_rate = 0.25 
@@ -84,8 +79,9 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupApproach.target={0.50,0.12}
   Config.fsm.bodyRobocupApproach.th = {0.10, 0.02}
 
+Config.backward_approach = true
 --[[
-  Config.backward_approach = true
+  
   Config.fsm.bodyRobocupFollow.circleR = 1.0
   Config.fsm.bodyRobocupFollow.kickoffset = 0.5
 --]]

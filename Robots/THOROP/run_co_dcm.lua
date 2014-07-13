@@ -35,7 +35,7 @@ local is_unclamped, direction = Config.servo.is_unclamped, Config.servo.directio
 local to_steps, to_radians  = Config.servo.to_steps, Config.servo.to_radians
 local step_zero, step_offset = Config.servo.step_zero, Config.servo.step_offset
 local m_to_j, j_to_m = Config.servo.motor_to_joint, Config.servo.joint_to_motor
-local dcm_chains, name_to_bus = Config.chain, {}
+local dcm_chains = Config.chain
 local left_ft, right_ft = Config.left_ft, Config.right_ft
 Config = nil
 
@@ -219,7 +219,6 @@ local function do_parent(request, bus)
 	local wr_reg, rd_reg = request.wr_reg, request.rd_reg
 	local bus_name = request.bus
 	ptable(request)
-  print("BUSNAME", bus.name)
 	local m_id
 	if wr_reg then
 		local ptr = dcm.actuatorPtr[wr_reg]
@@ -228,13 +227,13 @@ local function do_parent(request, bus)
 		for j_id, is_changed in pairs(request.ids) do
 			m_id = j_to_m[j_id]
 			if bus.has_mx_id[m_id] then
-print("MX_ID", m_id)
+--print("MX_ID", m_id)
 				has_mx = true
 				tinsert(m_ids, m_id)
 				tinsert(m_vals, ptr[j_id-1])
 				tinsert(addr_n_len, lD.mx_registers[wr_reg])
 			elseif bus.has_nx_id[m_id] then
-print("NX_ID", m_id)
+--print("NX_ID", m_id)
 				has_nx = true
 				tinsert(m_ids, m_id)
 				tinsert(m_vals, ptr[j_id-1])
@@ -314,9 +313,11 @@ print("NX_ID", m_id)
 		return #m_ids, rd_reg
 	elseif bus_name then
     print("PARENT SETTING", request.key, request.val, bus_name)
-		local bus = name_to_bus[bus_name]
+		local bus = named_buses[bus_name]
 		if not bus then return end
 		bus[request.key] = request.val
+    print("DONE PARENT SETTING")
+    return
 	elseif request.ft then
     print("FORCE/TORQUE READING")
 		if bus.name=='lleg' then
@@ -401,7 +402,7 @@ local function output_co(bus)
 end
 
 local function consolidate_queue(request_queue, req)
-if true then tinsert(request_queue, req); return; end
+  if true then tinsert(request_queue, req); return; end
 	local is_merge = false
 	for _, v in ipairs(request_queue) do
 		if v.rd_reg and req.rd_reg and v.rd_reg==req.rd_reg then
@@ -428,9 +429,7 @@ local function process_parent(requests)
 		-- Requests are messagepacked
 		req = munpack(request)
 		if req.ids then
-print("REQ")
 			for bname, bus in pairs(named_buses) do
-print("INTO", bname)
 				consolidate_queue(bus.request_queue, req)
 			end
     else
@@ -571,7 +570,6 @@ while true do
       bus.input_co(false)
     end
 		-- Only if we are not in the read cycle
-    --print("busname",bname, bus.npkt_to_expect)
     if bus.npkt_to_expect < 1 then
 			bus.npkt_to_expect, bus.read_reg = bus.output_co()
       if bus.npkt_to_expect == 0 then

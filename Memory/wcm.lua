@@ -33,6 +33,18 @@ shared.robot.odom_mode = vector.zeros(1)
 
 shared.robot.reset_pose = vector.zeros(1)
 
+shared.robot.ballglobal = vector.zeros(2)
+shared.robot.kickto = vector.zeros(2)
+shared.robot.goalto = vector.zeros(2)
+shared.robot.moveto = vector.zeros(2)
+
+shared.robot.traj_num = vector.zeros(1)
+shared.robot.trajx = vector.zeros(100)
+shared.robot.trajy = vector.zeros(100)
+
+
+
+
 
 
 
@@ -76,12 +88,18 @@ shared.goal.attack_angle = vector.zeros(1)
 shared.goal.defend_angle = vector.zeros(1)
 
 shared.obstacle = {}
-shared.obstacle.enable = vector.ones(1)
+shared.obstacle.enable = vector.zeros(1)
 shared.obstacle.reset = vector.zeros(1)
 shared.obstacle.detect = vector.zeros(1)
+
+shared.obstacle.num = vector.zeros(1)
 shared.obstacle.v1 = vector.zeros(2)
 shared.obstacle.v2 = vector.zeros(2)
 shared.obstacle.v3 = vector.zeros(2)
+
+
+
+
 
 -- Call the initializer
 memory.init_shm_segment(..., shared, shsize)

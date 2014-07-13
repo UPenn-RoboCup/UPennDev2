@@ -5,11 +5,8 @@
 assert(ffi, 'Need LuaJIT to run. Lua support in the future')
 -- Shared memory for the joints
 require'dcm'
--- Shared memory for world
-require'wcm'
 
 -- Utilities
-local unix   = require'unix'
 local vector = require'vector'
 local util   = require'util'
 local si     = require'simple_ipc'
@@ -18,48 +15,15 @@ local mpack  = require'msgpack'.pack
 
 local Body = {}
 local dcm_ch, imu_ch, imu_thread, dcm_thread
-local get_time = unix.time
-local vslice = vector.slice
-
 -- Default is not in thread for dcm_ch
-dcm_ch = si.new_publisher'dcm!'
-
--- TODO: Body or Config?
--- Shared memory layout
-local indexHead = 1   -- Head: 1 2
-local nJointHead = 2
-local indexLArm = 3   --LArm: 3 4 5 6 7 8 9
-local nJointLArm = 7
-local indexLLeg = 10  --LLeg: 10 11 12 13 14 15
-local nJointLLeg = 6
-local indexRLeg = 16  --RLeg: 16 17 18 19 20 21
-local nJointRLeg = 6
-local indexRArm = 22  --RArm: 22 23 24 25 26 27 28
-local nJointRArm = 7
-local indexWaist = 29  --Waist: 29 30
-local nJointWaist = 2
--- 4 Servos for gripping
--- 1 servo for lidar panning
-local indexLGrip = 31
-local nJointLGrip = 2
-local indexRGrip = 33
-local nJointRGrip = 2
--- One motor for lidar panning
-local indexLidar = 35
-local nJointLidar = 1
-local nJoint = 35
-
-local parts = {
-	Head=vector.count(indexHead,nJointHead),
-	LArm=vector.count(indexLArm,nJointLArm),
-	LLeg=vector.count(indexLLeg,nJointLLeg),
-	RLeg=vector.count(indexRLeg,nJointRLeg),
-	RArm=vector.count(indexRArm,nJointRArm),
-	Waist=vector.count(indexWaist,nJointWaist),
-	LGrip=vector.count(indexLGrip,nJointLGrip),
-  RGrip=vector.count(indexRGrip,nJointRGrip),
-  Lidar=vector.count(indexLidar,nJointLidar)
-}
+local dcm_ch = si.new_publisher'dcm!'
+local get_time
+if not unix then
+	get_time = require'unix'.time
+else
+	get_time = unix.time
+end
+local vslice = vector.slice
 
 ------------------
 -- Body sensors --
@@ -84,7 +48,7 @@ for sensor, ptr in pairs(dcm.sensorPtr) do
   Body['get_'..sensor] = get
   -- Anthropomorphic access to dcm
 	-- TODO: get_lleg_rpy is illegal, for instance
-  for part, jlist in pairs(parts) do
+  for part, jlist in pairs(Config.parts) do
 		-- For cdata, use -1
 	  local not_synced = sensor~='position'
     local idx1, idx2 = jlist[1], jlist[#jlist]
@@ -163,7 +127,7 @@ for actuator, ptr in pairs(dcm.actuatorPtr) do
   --------------------------------
   -- Anthropomorphic access to dcm
   -- TODO: Do not use string concatenation to call the get/set methods of Body
-  for part, jlist in pairs(parts) do
+  for part, jlist in pairs(Config.parts) do
 		local idx1, idx2, idx = jlist[1], jlist[#jlist], nil
 		Body['get_'..part:lower()..'_'..actuator] = function(idx)
 			if idx then return get(jlist[idx]) else return get(idx1, idx2) end
@@ -235,6 +199,8 @@ end
 ----------------------
 -- Webots compatibility
 if IS_WEBOTS then
+	-- Shared memory for world
+	require'wcm'
   
   Body.enable_read = function(chain)
   end
@@ -587,6 +553,16 @@ if IS_WEBOTS then
       dcm.sensorPtr.gyro[0] = -(gyro[1]-512)/512*39.24
       dcm.sensorPtr.gyro[1] = -(gyro[2]-512)/512*39.24
       dcm.sensorPtr.gyro[2] = (gyro[3]-512)/512*39.24
+
+
+
+
+
+
+
+
+
+
     end
 
     -- FSR
@@ -720,16 +696,57 @@ if IS_WEBOTS then
     local key_char_lower = string.lower(key_char)
 
     if t-t_last_keypress>1 then
+--[[      
       if key_char_lower=='1' then
         body_ch:send'init'
         head_ch:send'teleop'           
+        t_last_keypress = t
+--]]
+
+      if key_char_lower=='1' then
+        gcm.set_game_state(0) --Initial
+        print("Initial")
+        t_last_keypress = t
+
+      elseif key_char_lower=='2' then
+        gcm.set_game_state(1) --Ready
+        print("READY")
+        t_last_keypress = t
+
+      elseif key_char_lower=='3' then
+        gcm.set_game_state(2) --Set
+        print("SET")
+        t_last_keypress = t
+
+      elseif key_char_lower=='4' then
+        gcm.set_game_state(3) --Playing
+        print("PLAYING")
+        t_last_keypress = t
+
+      elseif key_char_lower=='5' then
+        gcm.set_game_state(4) --Finished
+        print("FINISH")
+        t_last_keypress = t
+
+
+      elseif key_char_lower=='r' then
+        gcm.set_game_role(1-gcm.get_game_role())
+        if gcm.get_game_role()==0 then 
+          print("GOALIE")
+        else
+          print("ATTACKER")
+        end
         t_last_keypress = t
       elseif key_char_lower=='8' then        
         motion_ch:send'stand'
         body_ch:send'stop'   
         t_last_keypress = t        
+	  elseif key_char_lower=='9' then        
+        motion_ch:send'hybridwalk'
+        t_last_keypress = t                
       elseif key_char_lower=='f' then
-        head_ch:send'scan'
+        --head_ch:send'scan'
+        head_ch:send'scanobs'
         t_last_keypress = t
       elseif key_char_lower=='g' then
         body_ch:send'play'
@@ -783,40 +800,12 @@ else -- webots check
   end
 end
 
-
 -- Exports for use in other functions
 Body.get_time = get_time
--- Real THOR-OP (Cenatur uses ankles for wheels, maybe?)
-Body.indexHead = indexHead   -- Head: 1 2
-Body.nJointHead = nJointHead
-Body.indexLArm = indexLArm   --LArm: 5 6 7 8 9 10
-Body.nJointLArm = nJointLArm
-Body.indexLLeg = indexLLeg  --LLeg: 11 12 13 14 15 16
-Body.nJointLLeg = nJointLLeg
-Body.indexRLeg = indexRLeg  --RLeg: 17 18 19 20 21 22
-Body.nJointRLeg = nJointRLeg
-Body.indexRArm = indexRArm  --RArm: 23 24 25 26 27 28
-Body.nJointRArm = nJointRArm
-Body.indexWaist = indexWaist  --Waist: 3 4
-Body.nJointWaist = nJointWaist
--- 6 Fingers for gripping
--- 1 servo for lidar panning
-Body.indexLGrip = indexLGrip
-Body.nLGrip = nLGrip
-Body.indexRGrip = indexRGrip
-Body.nRGrip = nRGrip
-Body.indexLidar = indexLidar
-Body.nJointLidar = nJointLidar
 Body.nJoint = nJoint
 Body.jointNames = jointNames
-Body.parts = parts
-Body.inv_parts = inv_parts
-
+Body.parts = Config.parts
 Body.Kinematics = Kinematics
-
--- For supporting the THOR repo
-require'mcm'
-Body.set_walk_velocity = mcm.set_walk_vel
 
 -- Check the error from a desired transform tr
 -- to a forwards kinematics of in IK solution q

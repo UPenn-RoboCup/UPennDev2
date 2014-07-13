@@ -30,32 +30,40 @@ fsm.Arm = {
 fsm.Head = {
   {'headIdle', 'scan', 'headBackScan'},
   {'headIdle', 'teleop', 'headTeleop'},
-  -- 
   {'headIdle', 'scanobs', 'headObstacleScan'},
-  -- {'headObstacleScan', 'noobs', 'headSweep'},
-  {'headObstacleScan', 'done', 'headTrack'},
-  {'headObstacleScan', 'teleop', 'headTeleop'},
-  
-
-  {'headBackScan', 'ballfound', 'headTrack'},
-  {'headBackScan', 'noball', 'headBackScan'},
-  {'headBackScan', 'teleop', 'headTeleop'},
+  --
 
   {'headScan', 'ballfound', 'headTrack'},
   {'headScan', 'noball', 'headBackScan'},
   {'headScan', 'teleop', 'headTeleop'},
+  {'headScan', 'scanobs', 'headObstacleScan'},
+  -- 
+  {'headTeleop', 'scan', 'headBackScan'},
+  {'headTeleop', 'scanobs', 'headObstacleScan'},
+  -- 
+  -- {'headObstacleScan', 'noobs', 'headSweep'},
+  {'headObstacleScan', 'done', 'headTrack'},
+  {'headObstacleScan', 'teleop', 'headTeleop'},
+ 
+
+  {'headBackScan', 'ballfound', 'headTrack'},
+  {'headBackScan', 'noball', 'headBackScan'},
+  {'headBackScan', 'teleop', 'headTeleop'},
+  {'headBackScan', 'scanobs', 'headObstacleScan'},
+  
   --
   {'headTrack', 'balllost', 'headScan'},
   {'headTrack', 'timeout', 'headLookGoal'},
   {'headTrack', 'teleop', 'headTeleop'},
+  {'headTrack', 'scanobs', 'headObstacleScan'},
   --
   {'headLookGoal', 'timeout', 'headTrack'},
   {'headLookGoal', 'lost', 'headSweep'},
+  {'headLookGoal', 'scanobs', 'headObstacleScan'},
   --
   {'headSweep', 'done', 'headTrack'},
   --
-  {'headTeleop', 'scan', 'headBackScan'},
-  {'headTeleop', 'scanobs', 'headObstacleScan'},
+  
 }
 
 fsm.Body = {
@@ -63,12 +71,18 @@ fsm.Body = {
   {'bodyInit', 'done', 'bodyStop'},
 
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
-  {'bodyStop', 'stepwaypoint', 'bodyStepWaypoint'},
-  {'bodyStop', 'play', 'bodyRobocupIdle'},
+--  {'bodyStop', 'stepwaypoint', 'bodyStepWaypoint'},
   {'bodyStop', 'kick', 'bodyRobocupKick'},
+  {'bodyStop', 'play', 'bodyRobocupIdle'},
+  {'bodyStop', 'goalie', 'bodyRobocupGoalieIdle'},
 
+--test stuff
   {'bodyStepPlace',   'done', 'bodyStop'},
-  {'bodyStepWaypoint',   'done', 'bodyStop'},
+--  {'bodyStepWaypoint',   'done', 'bodyStop'},
+
+  -------------------------------
+  --ATTACKER SMs-----------------------------
+  -------------------------------
   
   {'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
   {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
@@ -90,6 +104,23 @@ fsm.Body = {
 
   {'bodyRobocupWalkKick', 'done', 'bodyRobocupIdle'},
   {'bodyRobocupWalkKick', 'testdone', 'bodyStop'},
+
+  -------------------------------
+  --Goalie SMs-----------------------------
+  -------------------------------
+
+  {'bodyRobocupGoalieIdle', 'attacker', 'bodyRobocupIdle'},
+  {'bodyRobocupGoalieIdle', 'timeout', 'bodyRobocupGoalieIdle'},
+  {'bodyRobocupGoalieIdle', 'ballfound', 'bodyRobocupGoalieAnticipate'},
+
+  {'bodyRobocupGoalieAnticipate', 'timeout', 'bodyRobocupGoalieAnticipate'},
+  {'bodyRobocupGoalieAnticipate', 'reposition', 'bodyRobocupGoalieReposition'},
+  {'bodyRobocupGoalieAnticipate', 'stop', 'bodyStop'},
+
+
+  {'bodyRobocupGoalieReposition', 'done', 'bodyRobocupGoalieAnticipate'},
+  {'bodyRobocupGoalieReposition', 'stop', 'bodyStop'},
+
 
 }
 
@@ -176,6 +207,7 @@ fsm.headSweep = {
 
 fsm.headObstacleScan = {
   yawMag = 55*DEG_TO_RAD,
+  pitch = 28*DEG_TO_RAD,
 }
 
 fsm.bodyRobocupFollow = {

@@ -29,6 +29,9 @@ function state.entry()
 end
 
 function state.update()
+
+  if gcm.get_game_state()==4 then return'teleop' end
+  
   -- print(_NAME..' Update' )
   -- Get the time of update
   local t = Body.get_time()
@@ -51,7 +54,11 @@ function state.update()
   if not Config.demo and not Config.use_gps_pose and t-t_entry > timeout then
     -- If robot is close to the ball then do not look up
     if math.sqrt(ballX*ballX + ballY*ballY) > Config.fsm.headTrack.dist_th then
-    	return 'timeout'
+      if gcm.get_game_role()==0 then
+        --Goalie don't look goals
+      else
+    	  return 'timeout'
+      end
     end
   end
 

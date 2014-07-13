@@ -53,7 +53,7 @@ function state.update()
     pitchTarget = 25*DEG_TO_RAD    
     yawTarget = 45*DEG_TO_RAD
   else
-    return 'noball'
+    return 'noball'    
   end
 
   local qNeck_approach, doneNeck = 
@@ -68,11 +68,15 @@ function state.update()
   if ball_elapsed < 0.1 then
     return 'ballfound' --if ball found exit
   end
+
+  if gcm.get_game_state()==4 then return'teleop' end
   
 end
 
 function state.exit()
-  print(state._NAME..' Exit')
+
+  
+  print(state._NAME..' Exit'..' total time:'..Body.get_time()-t_entry )
 end
 
 return state

@@ -2,10 +2,11 @@ local state = {}
 state._NAME = ...
 
 local Body = require'Body'
+local util   = require'util'
+local robocupplanner = require'robocupplanner'
 
 local timeout = 10.0
 local t_entry, t_update, t_exit
-require'wcm'
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -14,40 +15,37 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   --hcm.set_ball_approach(0)
-  wcm.set_robot_traj_num(0)
 end
 
 function state.update()
-  local role = gcm.get_game_role()
-  if role==0 then return 'goalie' end
-  
+  if gcm.get_game_state()~=3 then return'stop' end
   --  print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  if t-t_entry > timeout then
-    return'timeout'
-  end
 
   -- if we see ball right now and ball is far away start moving
   local ball_elapsed = t - wcm.get_ball_t()
   if ball_elapsed < 0.1 then --ball found
-    return 'ballfound'
-    --[[
+    local pose = wcm.get_robot_pose()
     local ballx = wcm.get_ball_x()
-    local bally = wcm.get_ball_y()
-    local ballr = math.sqrt(ballx*ballx+bally*bally)
+    local bally = wcm.get_ball_y()    
     local balla = math.atan2(bally,ballx)
-    -- if ballr>0.6 then
-    --   if hcm.get_ball_approach()==1 then return "ballfound" end
-    -- end
+    local ball_local = {ballx,bally,balla}
+    local ballGlobal = util.pose_global(ball_local, pose)
+  
+    local target_pose = robocupplanner.getGoalieTargetPose(pose,ballGlobal)
+    --our goal should be always at (-4.5,0,0)
+ 
+    local move_vel,reached = robocupplanner.getVelocityGoalie(pose,target_pose,0.3)
 
-    if hcm.get_ball_approach()==1 then
-      return 'ballfound'
+    if not reached then
+      print("Current pose:",pose[1],pose[2])
+      print("Move target:",target_pose[1],target_pose[2])      
+      return 'reposition'
     end
-    --]]
   end
 
 end

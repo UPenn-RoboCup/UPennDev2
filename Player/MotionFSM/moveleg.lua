@@ -35,7 +35,7 @@ function moveleg.get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
   else
     body_yaw = uRight[3] - uTorsoActual[3]
   end
-  -- Ankle stabilization using gyro feedback
+  -- Ankle stabilization  gyro feedback
   --local imu_roll0, imu_pitch0, imu_yaw0 = unpack(Body.get_sensor_imu())
   --math.sin(imuPitch)*bodyHeight, -math.sin(imuRoll)*bodyHeight
   local gyro, gyro_t = Body.get_gyro()
@@ -557,10 +557,14 @@ end
 
 
 
-function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,supportRatio)
+function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,supportRatio,dt)
 
 --New compensation code to cancelout backlash on ALL leg joints
+  dt= dt or 0.010
 
+  --Now we limit the angular velocity of compensation angles 
+  local DEG_TO_RAD = math.pi/180
+  local dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
 
   local gyro_pitch = gyro_rpy[2]
   local gyro_roll = gyro_rpy[1]
@@ -568,18 +572,23 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   -- Ankle feedback
   local ankleShiftX = util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4])
   local ankleShiftY = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])
-
-  -- Ankle shift is filtered... thus a global
-  angleShift[1] = angleShift[1] + ankleImuParamX[1]*(ankleShiftX-angleShift[1])
-  angleShift[2] = angleShift[2] + ankleImuParamY[1]*(ankleShiftY-angleShift[2])
-
   -- Knee feedback
   local kneeShiftX = util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4])
-  angleShift[3] = angleShift[3] + kneeImuParamX[1]*(kneeShiftX-angleShift[3])
-
   -- Hip feedback
   local hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
-  angleShift[4] = angleShift[4]+hipImuParamY[1]*(hipShiftY-angleShift[4])
+
+  local dShiftTarget = {}
+  dShiftTarget[1]=ankleImuParamX[1]*(ankleShiftX-angleShift[1])
+  dShiftTarget[2]=ankleImuParamY[1]*(ankleShiftY-angleShift[2])
+  dShiftTarget[3]=kneeImuParamX[1]*(kneeShiftX-angleShift[3])
+  dShiftTarget[4]=hipImuParamY[1]*(hipShiftY-angleShift[4])
+  
+-- Ankle shift is filtered... thus a global
+  angleShift[1] = angleShift[1] + math.max(-dShift[1]*dt,math.min(dShift[1]*dt,dShiftTarget[1]))
+  angleShift[2] = angleShift[2] + math.max(-dShift[2]*dt,math.min(dShift[2]*dt,dShiftTarget[2])) 
+  angleShift[3] = angleShift[3] + math.max(-dShift[3]*dt,math.min(dShift[3]*dt,dShiftTarget[3])) 
+  angleShift[4] = angleShift[4] + math.max(-dShift[4]*dt,math.min(dShift[4]*dt,dShiftTarget[4])) 
+
 
   local delta_legs = vector.zeros(Body.nJointLLeg+Body.nJointRLeg)
 

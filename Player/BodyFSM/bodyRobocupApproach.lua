@@ -32,7 +32,8 @@ local last_ph = 0
 
 
 local function robocup_approach( pose, target_pose)
-  local maxStep = 0.04
+  --local maxStep = 0.04
+  local maxStep = 0.08
   local maxTurn = 0.15
   local dist_threshold = Config.fsm.bodyRobocupFollow.th_dist
   local angle_threshold = .1
@@ -44,12 +45,14 @@ local function robocup_approach( pose, target_pose)
   -- calculate walk step velocity based on ball position
   local vStep = vector.zeros(3)
   -- TODO: Adjust these constants
-  vStep[1] = math.min(maxStep,math.max(-maxStep,rel_pose[1]))
-  vStep[2] = math.min(maxStep,math.max(-maxStep,rel_pose[2]))
+ 
+
+  vStep[1] = math.min(maxStep,math.max(-maxStep,rel_pose[1]*0.5))
+  vStep[2] = math.min(maxStep,math.max(-maxStep,rel_pose[2]*0.5))
   vStep[3]=0
 
   -- Reduce speed based on how far away from the waypoint we are
-  if rel_dist < 0.1 then maxStep = 0.02 end
+  if rel_dist < 0.04 then maxStep = 0.02 end
   local scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1)
   vStep = scale * vStep
  
@@ -66,16 +69,23 @@ local function update_velocity()
   local walk_target_local = {ballx,bally,balla}
   local target_pose = util.pose_global(walk_target_local, pose)
 
-  
-
   local vStep,arrived = robocup_approach( pose, target_pose)
   mcm.set_walk_vel(vStep)
-
 
   local t  = Body.get_time()
   local ball_elapsed = t - wcm.get_ball_t()
 
   if Config.debug.approach then
+
+    local uLeft = mcm.get_status_uLeft()
+    local uRight = mcm.get_status_uRight()
+    local uTorso = mcm.get_status_uTorso()
+
+    local supportLeg = mcm.get_status_supportLeg()
+
+    print("support:",supportLeg)
+    print("LR:",uLeft[1],uRight[1])
+
     print(string.format("Ball pos: x %.3f y %.3f",wcm.get_ball_x(), wcm.get_ball_y() ))
     print(string.format("Ball err: x %.3f y%.3f   %.2f elapsed", ballx,bally,ball_elapsed))
     print("Approach vel:",vStep[1],vStep[2],vStep[3])
@@ -139,6 +149,10 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
+
+--not playing?
+  if gcm.get_game_state()~=3 then return'stop' end
+
 
   local check_ph = 0.95
   local ph = mcm.get_status_ph()

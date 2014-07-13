@@ -215,7 +215,6 @@ function ImageProc.grid_filter(grid_t, res)
     -- Torch goes row by row
     local xi = math.ceil( inds[i]/n )
     local yi = inds[i] - (xi-1)*n
-    -- x[i] = (xi-1)*res + res/2 - 4.5
     x[i] = 4.5 - (xi-1)*res + res/2
     y[i] = (yi-1)*res + res/2 - 3
   end

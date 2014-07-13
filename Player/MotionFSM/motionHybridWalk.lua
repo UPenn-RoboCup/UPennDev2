@@ -152,8 +152,13 @@ function walk.update()
 
   local uZMP = zmp_solver:get_zmp(ph)
   mcm.set_status_uTorso(uTorso) --For external monitoring
+  mcm.set_status_uLeft(uLeft)
+  mcm.set_status_uRight(uRight)
+  mcm.set_status_supportLeg(supportLeg)
+
   mcm.set_status_uZMP(uZMP)
   mcm.set_status_t(t)
+
 
   --Calculate how close the ZMP is to each foot
   local uLeftSupport,uRightSupport = step_planner.get_supports(uLeft,uRight)
@@ -166,7 +171,8 @@ function walk.update()
       ph,
       gyro_rpy, 
       angleShift,
-      supportRatio)
+      supportRatio,
+      t_diff)
 
   local uTorsoComp = mcm.get_stance_uTorsoComp()
   local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)

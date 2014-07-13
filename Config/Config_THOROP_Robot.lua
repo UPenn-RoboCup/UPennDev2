@@ -91,10 +91,17 @@ local left_leg = {
   enable_read = false,
 }
 -- For RoboCup, use an MX only chain for the arms
-local upper_body_rc = {
-  name = 'upper_body',
+local head_rc = {
+  name = 'head',
   ttyname = '/dev/ttyUSB0',
   m_ids = {29, 30, 37},
+  enable_read = true,
+}
+-- For RoboCup, use an MX only chain for the arms
+local arms_rc = {
+  name = 'arms',
+  ttyname = '/dev/ttyUSB1',
+  m_ids = {67, 68, 83, 84},
   enable_read = true,
 }
 
@@ -122,18 +129,54 @@ if ONE_CHAIN then
   right_leg = nil
   left_leg  = nil
 else
-  --table.insert(Config.chain, right_arm)
-  --table.insert(Config.chain, left_arm)
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)
-	table.insert(Config.chain, upper_body_rc)
+  if Config.USE_DUMMY_ARMS then
+	  table.insert(Config.chain, arms_rc)
+  	table.insert(Config.chain, head_rc)
+  else
+    table.insert(Config.chain, right_arm)
+    table.insert(Config.chain, left_arm)
+  end
   one_chain = nil
 end
+
+-- Shared memory layout for default THOR-OP
+local indexHead = 1   -- Head: 1 2
+local nJointHead = 2
+local indexLArm = 3   --LArm: 3 4 5 6 7 8 9
+local nJointLArm = 7
+local indexLLeg = 10  --LLeg: 10 11 12 13 14 15
+local nJointLLeg = 6
+local indexRLeg = 16  --RLeg: 16 17 18 19 20 21
+local nJointRLeg = 6
+local indexRArm = 22  --RArm: 22 23 24 25 26 27 28
+local nJointRArm = 7
+local indexWaist = 29  --Waist: 29 30
+local nJointWaist = 2
+local indexLGrip = 31 -- Grippers
+local nJointLGrip = 2
+local indexRGrip = 33
+local nJointRGrip = 2
+local indexLidar = 35 -- Lidar
+local nJointLidar = 1
+local nJoint = 35
+
+Config.parts = {
+	Head=vector.count(indexHead,nJointHead),
+	LArm=vector.count(indexLArm,nJointLArm),
+	LLeg=vector.count(indexLLeg,nJointLLeg),
+	RLeg=vector.count(indexRLeg,nJointRLeg),
+	RArm=vector.count(indexRArm,nJointRArm),
+	Waist=vector.count(indexWaist,nJointWaist),
+	LGrip=vector.count(indexLGrip,nJointLGrip),
+  RGrip=vector.count(indexRGrip,nJointRGrip),
+  Lidar=vector.count(indexLidar,nJointLidar)
+}
 
 ----------------------
 -- Servo Properties --
 ----------------------
-local nJoint = 35
 local servo = {}
 servo.joint_to_motor={
   29,30,  --Head yaw/pitch
@@ -146,10 +189,6 @@ servo.joint_to_motor={
   70,65, -- right gripper/trigger
   37, -- Lidar pan
 }
-assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
--- Make the reverse map
-servo.motor_to_joint = {}
-for j,m in ipairs(servo.joint_to_motor) do servo.motor_to_joint[m] = j end
 
 --http://support.robotis.com/en/product/dynamixel_pro/control_table.htm#Actuator_Address_611
 -- TODO: Use some loop based upon MX/NX
@@ -165,7 +204,6 @@ servo.steps = 2 * vector.new({
   2048,2048, -- Right gripper
   2048, -- Lidar pan
 })
-assert(#servo.steps==nJoint,'Bad servo steps!')
 
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
@@ -181,7 +219,6 @@ servo.direction = vector.new({
   1,1, -- right gripper TODO
   -1, -- Lidar pan
 })
-assert(#servo.direction==nJoint,'Bad servo direction!')
 
 -- TODO: Offset in addition to bias?
 servo.rad_offset = vector.new({
@@ -195,7 +232,6 @@ servo.rad_offset = vector.new({
   0,0, -- right gripper
   0, -- Lidar pan
 })*DEG_TO_RAD
-assert(#servo.rad_offset==nJoint,'Bad servo rad_offset!')
 
 --SJ: Arm servos should at least move up to 90 deg
 servo.min_rad = vector.new({
@@ -210,7 +246,6 @@ servo.min_rad = vector.new({
   0, -90,
   -60, -- Lidar pan
 })*DEG_TO_RAD
-assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 
 servo.max_rad = vector.new({
   --90,80, -- Head
@@ -224,7 +259,100 @@ servo.max_rad = vector.new({
   90,20,
   60, -- Lidar pan
 })*DEG_TO_RAD
-assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
+
+if Config.USE_DUMMY_ARMS then
+	indexHead = 1   -- Head: 1 2
+	nJointHead = 2
+	indexLArm = 3   --LArm: 3 4
+	nJointLArm = 2
+	indexLLeg = 5  --LLeg:  5 6 7 8 9 10
+	nJointLLeg = 6
+	indexRLeg = 11  --RLeg: 16 17 18 19 20 21
+	nJointRLeg = 6
+	indexRArm = 17  --RArm: 22 23 24 25 26 27 28
+	nJointRArm = 2
+	indexWaist = 19  --Waist: 29 30
+	nJointWaist = 2
+	indexLidar = 21
+	nJointLidar = 1
+	nJoint = 21
+	--
+	Config.parts = {
+		Head=vector.count(indexHead,nJointHead),
+		LArm=vector.count(indexLArm,nJointLArm),
+		LLeg=vector.count(indexLLeg,nJointLLeg),
+		RLeg=vector.count(indexRLeg,nJointRLeg),
+		RArm=vector.count(indexRArm,nJointRArm),
+		Waist=vector.count(indexWaist,nJointWaist),
+		Lidar=vector.count(indexLidar,nJointLidar)
+	}
+	--
+	servo.joint_to_motor={
+		29,30,  --Head yaw/pitch
+		83,84,  --LArm
+		16,18,20,22,24,26, -- left leg
+		15,17,19,21,23,25, -- right leg
+		67,68, --RArm
+		27,28, --Waist yaw/pitch
+		37, -- Lidar pan
+	}
+	--
+	servo.steps = 2 * vector.new({
+		151875,151875, -- Head
+		2048,2048, --LArm
+		251000,251000,251000,251000,251000,251000, --LLeg
+		251000,251000,251000,251000,251000,251000, --RLeg
+		2048,2048, --RArm
+		251000,251000, -- Waist
+		2048, -- Lidar pan
+	})
+	--
+	servo.direction = vector.new({
+		1,1, -- Head
+		1,1, --LArm
+		------
+		-1, -1,1,   1,  -1,1, --LLeg
+		-1, -1,-1, -1,  1,1, --RLeg
+		------
+		1,1, --RArm
+		1,1, -- Waist
+		-1, -- Lidar pan
+	})
+	--
+	servo.rad_offset = vector.new({
+		0,0, -- Head
+		0,0, --LArm
+		0,0,0,-45,0,0, --LLeg
+		0,0,0,45,0,0, --RLeg
+		0,0, --RArm
+		0,0, -- Waist
+		0, -- Lidar pan
+	})*DEG_TO_RAD
+
+	--SJ: Arm servos should at least move up to 90 deg
+	servo.min_rad = vector.new({
+		---90,-80, -- Head
+		-135,-80, -- Head
+		-90, -90, --LArm
+		-175,-175,-175,-175,-175,-175, --LLeg
+		-175,-175,-175,-175,-175,-175, --RLeg
+		-90,-90, --RArm
+		-90,-45, -- Waist
+		-60, -- Lidar pan
+	})*DEG_TO_RAD
+
+	servo.max_rad = vector.new({
+		--90,80, -- Head
+		135,80, -- Head
+		90,90, --LArm
+		175,175,175,175,175,175, --LLeg
+		175,175,175,175,175,175, --RLeg
+		90,90, --RArm
+		90,45, -- Waist
+		60, -- Lidar pan
+	})*DEG_TO_RAD
+end
+
 -- If the motor can rotate in extended mode
 local is_unclamped = {}
 for idx=1,#servo.min_rad do
@@ -286,31 +414,41 @@ if IS_WEBOTS then
   })*DEG_TO_RAD
 
   servo.min_rad = vector.new({
-      -135,-80, -- Head
-      -90, 0, -90, -160,      -180,-87,-180, --LArm
-      -175,-175,-175,-175,-175,-175, --LLeg
-      -175,-175,-175,-175,-175,-175, --RLeg
-      -90,-180,-90,-160,       -180,-87,-180, --RArm
-      -90,-45, -- Waist
-      120,80, --lhand
-      120,60,--rhand
+		-135,-80, -- Head
+		-90, 0, -90, -160,      -180,-87,-180, --LArm
+		-175,-175,-175,-175,-175,-175, --LLeg
+		-175,-175,-175,-175,-175,-175, --RLeg
+		-90,-180,-90,-160,       -180,-87,-180, --RArm
+		-90,-45, -- Waist
+		120,80, --lhand
+		120,60,--rhand
 
-      -60, -- Lidar pan
-    })*DEG_TO_RAD
+		-60, -- Lidar pan
+	})*DEG_TO_RAD
 
-    servo.max_rad = vector.new({
-      135, 80, -- Head
-      160,180,90,0,     180,87,180, --LArm
-      175,175,175,175,175,175, --LLeg
-      175,175,175,175,175,175, --RLeg
-      160,-0,90,0,     180,87,180, --RArm
-      90,79, -- Waist
-      0,45,  --lhand
-      0,45,    --rhand
-      60, -- Lidar pan
-    })*DEG_TO_RAD
+	servo.max_rad = vector.new({
+		135, 80, -- Head
+		160,180,90,0,     180,87,180, --LArm
+		175,175,175,175,175,175, --LLeg
+		175,175,175,175,175,175, --RLeg
+		160,-0,90,0,     180,87,180, --RArm
+		90,79, -- Waist
+		0,45,  --lhand
+		0,45,    --rhand
+		60, -- Lidar pan
+	})*DEG_TO_RAD
 
 end
+
+assert(#servo.rad_offset==nJoint,'Bad servo rad_offset!')
+assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
+assert(#servo.max_rad==nJoint,'Bad servo max_rad!')
+assert(#servo.steps==nJoint,'Bad servo steps!')
+assert(#servo.direction==nJoint,'Bad servo direction!')
+assert(#servo.joint_to_motor==nJoint,'Bad servo id map!')
+-- Make the reverse map
+servo.motor_to_joint = {}
+for j,m in ipairs(servo.joint_to_motor) do servo.motor_to_joint[m] = j end
 
 -- Export
 Config.servo = servo

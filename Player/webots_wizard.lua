@@ -107,6 +107,9 @@ local npoll
 Body.entry()
 lW.entry()
 
+gcm.set_game_role(1) --ATTACKER
+gcm.set_game_state(5) --Pre-init
+
 -- Update loop
 while running do
   SEND_INTERVAL = 1 / hcm.get_monitor_fps()

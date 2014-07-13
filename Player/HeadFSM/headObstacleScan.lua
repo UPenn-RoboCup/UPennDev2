@@ -6,7 +6,7 @@ local util = require'util'
 require'wcm'
 
 local t_entry, t_update, stage
-local dqNeckLimit = {15*DEG_TO_RAD,20*DEG_TO_RAD}
+local dqNeckLimit = {20*DEG_TO_RAD,20*DEG_TO_RAD}
 local tScan = Config.fsm.headObstacleScan.tScan
 local yawMag = Config.fsm.headObstacleScan.yawMag
 
@@ -28,24 +28,14 @@ function state.update()
   local qNeck = Body.get_head_command_position()
   --25 deg can basically cover the whole field
 	-- but not enough for detecting obs near center circle
-  local pitch, yaw = 28*DEG_TO_RAD
+  local pitch, yaw = Config.fsm.headObstacleScan.pitch
 
-	---[[ A single sweep
-	if stage == 0 then yaw = yawMag
-	elseif stage == 1 then 
-  	wcm.set_obstacle_enable(1)
-		yaw = 0
-	elseif stage == 2 then yaw = -yawMag
-	elseif stage == 3 then 
-		yaw = 0
-  	wcm.set_obstacle_enable(0)
-	else return 'done' end
---]]
-  
---[[ Double scan
+  --SJ: now we just clear old obstacle
+  --Because now we use local coordinate
 	if stage == 0 then yaw = 0
+
 	elseif stage == 1 then 
-  	wcm.set_obstacle_enable(1)
+    wcm.set_obstacle_enable(1)
 		yaw = -yawMag
 	elseif stage == 2 then yaw = 0
 	elseif stage == 3 then 
@@ -53,7 +43,7 @@ function state.update()
 	elseif stage == 4 then yaw = 0
 	else 
   	wcm.set_obstacle_enable(0)
-		return 'done' 
+	return 'done' 
 	end
 --]]
   -- Grab where we are

@@ -144,6 +144,7 @@ local function landmark_observation_angle(pos, v, rFilter, aFilter)
       yp[ip] = math.min(yMax, math.max(-yMax, yp[ip]))
     end
   end
+
 end
 
 ---Updates particles with respect to the detection of a landmark
@@ -203,6 +204,7 @@ local function landmark_observation(pos, v, rFilter, aFilter)
     xp[ip] = math.min(xMax, math.max(-xMax, xp[ip]))
     yp[ip] = math.min(yMax, math.max(-yMax, yp[ip]))
   end
+
 end
 
 ---Update particles according to a goal detection

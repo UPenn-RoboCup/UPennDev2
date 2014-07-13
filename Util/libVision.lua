@@ -22,8 +22,7 @@ if IS_WEBOTS then MAP.res = 0.2 end
 MAP.sizex = 9/MAP.res
 MAP.sizey = 6/MAP.res
 MAP.xmax, MAP.ymin = 4.5, -3
-MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
--- TODO: if use grid map, use C or ffi.lua to speed up
+--TODO: put wraparound on occupancy
 MAP.grid = torch.Tensor(MAP.sizex, MAP.sizey):zero()
 
 
@@ -591,28 +590,22 @@ function libVision.obstacle_new(labelB_t)
       obsStats.da[i] = 5*DEG_TO_RAD -- TODO
 
       ------------
-      -- local xi = math.ceil((pos[1]-MAP.xmin) / MAP.res)
-      -- pos is local
       local global_pos = util.pose_global({pos[1], pos[2], 0}, wcm.get_robot_pose())
       local xi = math.ceil((MAP.xmax-global_pos[1]) / MAP.res)
 			local yi = math.ceil((global_pos[2]-MAP.ymin) / MAP.res)
       xi = math.min(math.max(1, xi), MAP.sizex)
       yi = math.min(math.max(1, yi), MAP.sizey)
-      -- MAP.xp[xi] = MAP.xp[xi] + 1
-      -- MAP.yp[yi] = MAP.yp[yi] + 1
-      MAP.grid[xi][yi] = MAP.grid[xi][yi] + 1
+      MAP.grid[xi][yi] = math.min(MAP.grid[xi][yi]+5, 1e5)
       ------------
       
       obsStats.axisMinor[i] = obstacle.axisMinor[obstacle.dist[i]]
       obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 
       obsStats.orientation[i] = math.pi/2
     end    
-    -- obsStats.xp, obsStats.yp = MAP.xp, MAP.yp
-    -- obsStats.res = MAP.res
     
-    -- There are global position
+    -- These are global position
     obsStats.xs, obsStats.ys = ImageProc2.grid_filter(MAP.grid, MAP.res)
-    
+
     return 'Detected', obsStats
   else
     return obs_debug, obsStats
@@ -915,12 +908,14 @@ function libVision.update(img)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc_t)
 	local obstacle_fails, obstacles
   
+
 	if wcm.get_obstacle_reset()==1 then
     -- MAP.xp, MAP.yp = vector.zeros(MAP.sizex), vector.zeros(MAP.sizey)
     MAP.grid:zero()
-		wcm.set_obstacle_reset(0)
+    --SJ: Now handled in world
+		--wcm.set_obstacle_reset(0)
 	end
-  
+
   if wcm.get_obstacle_enable()==0 then
     obstacle_fails = 'Disabled'
   else

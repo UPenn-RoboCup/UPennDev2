@@ -7,9 +7,18 @@ local stty = require'stty'
 local unix = require'unix'
 
 -- Reading properties
-local TIMEOUT = 0.05 -- (uses select)
 local ping_cmd = { 0x75, 0x65, 0x01, 0x02, 0x02, 0x01 }
 local idle_cmd = { 0x75, 0x65, 0x01, 0x02, 0x02, 0x02 }
+
+local function cmd2string(cmd)
+  local instruction_bytes = {}
+  local instruction_decs = {}
+  for i, v in ipairs(cmd) do
+    table.insert(instruction_bytes, string.format(' %02X', v))
+    table.insert(instruction_decs, string.format('%03d', v))
+  end
+  return table.concat(instruction_bytes, ' '), table.concat(instruction_decs, ' ')
+end
 
 -- Checksum formation (slow, but speed is unneeded)
 local function generate_packet(byte_array)
@@ -27,12 +36,13 @@ end
 -- Write a command to a microstrain
 local function write_command(fd, cmd)
   local str = generate_packet(cmd)
-  local ret = unix.write(fd,str)
-  assert(ret==#str,'Bad save write!')
-  local fd_id = unix.select( {fd}, TIMEOUT )
-  assert(fd_id==1,'Timeout!')
+  local ret = unix.write(fd, str)
+  assert(ret==#str,'Bad write of command!')
+  local status, ready = unix.select( {fd}, 0.1 )
+  assert(status>0,'Timeout! '..status)
   local res = unix.read(fd)
-  assert(res,'No data!')
+  assert(res, 'No data!')
+  if not res then return end
   return {res:byte(1,-1)}
 end
 
@@ -53,28 +63,37 @@ end
 local function enable_magnetometer_compensation(microstrain)
   local bit = require'bit'
   -- disables magnetometer and north
-  --local data_conditioning_flags = bit.bor( 0x0100, 0x0400)
-  -- Disables only north
   local data_conditioning_flags = bit.bor( 0x0100, 0x0400)
+  -- Disables only north
+  --local data_conditioning_flags = bit.bor( 0x0400)
   local hex_flags = bit.tohex(data_conditioning_flags):gmatch('%d%d')
   local flag_bytes = {}
-  for hex in hex_flags do table.insert(flag_bytes, hex) end
   local disable_north_compensation_cmd = {
     0x75, 0x65, 0x0C, 0x10, 0x10, 0x35,
     0x01, -- Apply new settings
-    unpack{ 0x00, 0x0A}, -- default decimation
-    unpack(flag_bytes),
+    0x00, 0x0A, -- default decimation
+  }
+  for hex in hex_flags do table.insert(disable_north_compensation_cmd, hex) end
+  for _, v in ipairs(
+  {
     0x0E, -- New Accel/Gyro Filter Width
     0x11, -- New Mag Filter Width
-    unpack{ 0x00, 0x0A}, -- New Up Compensation
-    unpack{ 0x00, 0x0A}, -- New North Compensation
+    0x00, 0x0A, -- New Up Compensation
+    0x00, 0x0A, -- New North Compensation
     0x01, -- New Mag Bandwidth/Power
-    unpack{ 0x00, 0x00}, -- Reserved
-  }
+    0x00, 0x00, -- Reserved
+  })
+  do
+    table.insert(disable_north_compensation_cmd, v)
+  end
+--[[
+  local hex, dec = cmd2string(disable_north_compensation_cmd)
+  print('hex', hex)
+  print('dec', dec)
+  print("len", #disable_north_compensation_cmd - 6)
+--]]
   -- Send to the device
   write_command(microstrain.fd, disable_north_compensation_cmd)
-  -- Ping the microstrain
-  write_command(microstrain.fd, ping_cmd)
 end
 
 -- Go to high speed baud
@@ -233,19 +252,8 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
 	stty.speed(fd, baud)
   unix.usleep(1e4)
 
-  -- Set the device to idle
-  idle(dev)
-  unix.usleep(1e4)
-  
-	-- Configure the device
-	configure(dev)
-  unix.usleep(1e4)
-  
-  -- Configure params
-  enable_magnetometer_compensation()
-  unix.usleep(1e4)
 
-	return {
+	local dev = {
     fd = fd,
     ttyname = ttyname,
     baud = baud,
@@ -256,6 +264,22 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
     get_info = get_info,
     read_ahrs = read_ahrs,
   }
+
+  -- Set the device to idle
+  idle(dev)
+  unix.usleep(1e5)
+  
+	-- Configure the device
+	configure(dev)
+  unix.usleep(1e5)
+  
+  idle(dev)
+  unix.usleep(1e5)
+  -- Configure params
+  enable_magnetometer_compensation(dev)
+  unix.usleep(1e5)
+
+  return dev
 
 end
 

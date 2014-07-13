@@ -3,6 +3,7 @@ dofile'../../include.lua'
 local lD = require'libDynamixel'
 local util = require'util'
 
+--[[
 local function instruction_tostring(instruction)
 	local instruction_bytes = {}
 	local instruction_ints = {}
@@ -41,6 +42,7 @@ local hex, int = instruction_tostring(cp_instruction)
 print(hex)
 print()
 print(int)
+--]]
 
 --os.exit()
 
@@ -60,38 +62,26 @@ if not one_chain then
 --    grippers  = lD.new_bus('/dev/ttyUSB4',1000000)
   end
 end
-
--- Choose a chain
-local bus = assert(right_leg, 'Bus does not exist')
-
 -- Get the positions
 local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 local p_parse_mx = lD.byte_to_number[lD.mx_registers.position[2]]
---[[
-print('Ping Probe', bus.ttyname)
-local found = bus:ping_probe()
-print('Inspecting', table.concat(found, ','))
-unix.usleep(1e4)
-local positions = lD.get_nx_position(bus.m_ids, bus)
-for _, status in pairs(positions) do
-  local val = p_parse(unpack(status.parameter))
-  print('==', val)
-  util.ptable(status)
-end
---]]
 
 -- Bulk read testing
-right_arm:ping_probe()
+left_arm:ping_probe()
 local read_items, read_ids = {}, {}
-for _, id in ipairs(right_arm.m_ids) do
-	if right_arm.has_mx_id[id] then
+for _, id in ipairs(left_arm.m_ids) do
+	if left_arm.has_mx_id[id] then
 		table.insert(read_items, lD.mx_registers.position)
 		table.insert(read_ids, id)
-	elseif right_arm.has_nx_id[id] then
+	elseif left_arm.has_nx_id[id] then
 		table.insert(read_items, lD.nx_registers.position)
 		table.insert(read_ids, id)
 	end
 end
+
+--os.exit()
+
+--[[
 local statuses = lD.get_bulk(string.char(unpack(read_ids)), read_items, right_arm)
 if type(statuses)=='table' then
   print('Got', #statuses)
@@ -111,8 +101,10 @@ elseif type(statuses)=='string' then
 else
   print('statuses', statuses)
 end
+--]]
 
 -- Set torque enable
+--[[
 lD.set_bulk(
 	string.char(unpack({29, 30, 37})),
 	{ lD.nx_registers.torque_enable,
@@ -125,6 +117,8 @@ lD.set_bulk(
 	},
   right_arm
 )
+--]]
+
 --[[
 -- Set Command position - BE CAREFUL
 local cp_instruction = lD.set_bulk(

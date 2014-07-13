@@ -91,10 +91,17 @@ local left_leg = {
   enable_read = false,
 }
 -- For RoboCup, use an MX only chain for the arms
-local upper_body_rc = {
-  name = 'upper_body',
+local head_rc = {
+  name = 'head',
   ttyname = '/dev/ttyUSB0',
   m_ids = {29, 30, 37},
+  enable_read = true,
+}
+-- For RoboCup, use an MX only chain for the arms
+local arms_rc = {
+  name = 'arms',
+  ttyname = '/dev/ttyUSB1',
+  m_ids = {67, 68, 83, 84},
   enable_read = true,
 }
 
@@ -122,11 +129,15 @@ if ONE_CHAIN then
   right_leg = nil
   left_leg  = nil
 else
-  --table.insert(Config.chain, right_arm)
-  --table.insert(Config.chain, left_arm)
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)
-	table.insert(Config.chain, upper_body_rc)
+  if Config.USE_DUMMY_ARMS then
+	  table.insert(Config.chain, arms_rc)
+  	table.insert(Config.chain, head_rc)
+  else
+    table.insert(Config.chain, right_arm)
+    table.insert(Config.chain, left_arm)
+  end
   one_chain = nil
 end
 
@@ -278,10 +289,10 @@ if Config.USE_DUMMY_ARMS then
 	--
 	servo.joint_to_motor={
 		29,30,  --Head yaw/pitch
-		67,68, --LArm
+		83,84,  --LArm
 		16,18,20,22,24,26, -- left leg
 		15,17,19,21,23,25, -- right leg
-		83,84,  --RArm
+		67,68, --RArm
 		27,28, --Waist yaw/pitch
 		37, -- Lidar pan
 	}

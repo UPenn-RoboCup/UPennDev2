@@ -107,4 +107,10 @@ if IS_WEBOTS then
   Config.world.use_imu_yaw = true
 end
 
+
+Config.torque_legs = true
+
+
+
+
 return Config

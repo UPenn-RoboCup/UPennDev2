@@ -21,8 +21,8 @@ static int minJ[NMAX];
 // Limit on number of obstacles we check
 static const int NOBS = 30;
 
-//TODO: put into Config
 static int widthMin, widthMax;
+static int horizon;
 
 // Loop through scan lines and check connected black regions
 int obstacleState (bool is_lower) {
@@ -60,7 +60,8 @@ int obstacleState (bool is_lower) {
 //and return the lower boundary for every scaned lines
 int lua_obstacles(lua_State *L) {
 	uint8_t *im_ptr;
-	int m, n, max_gap;
+	int m, n;
+  int max_gap = 1;
 	double tiltAngle;
   // int mask;
   uint8_t mask_g, mask_r, mask_w;
@@ -82,14 +83,13 @@ int lua_obstacles(lua_State *L) {
     m = b_t->size[1];
 		widthMin = luaL_optinteger(L, 2, 5);
 		widthMax = luaL_optinteger(L, 3, 25);
-    tiltAngle = luaL_optnumber(L, 4, 0.0);
+    horizon = luaL_optinteger(L, 4, 22);
+    tiltAngle = luaL_optnumber(L, 5, 0.0);
     
     // No need to input args
-    mask_g = luaL_optinteger(L, 5, 8); //field green
-    mask_r = luaL_optinteger(L, 6, 1); //orange ball
-    mask_w = luaL_optinteger(L, 7, 16); //line white
-    
-    max_gap = luaL_optinteger(L, 8, 1);
+    mask_g = luaL_optinteger(L, 6, 8); //field green
+    mask_r = luaL_optinteger(L, 7, 1); //orange ball
+    mask_w = luaL_optinteger(L, 8, 16); //line white
   }
   #endif
   else {

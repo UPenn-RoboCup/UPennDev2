@@ -198,15 +198,13 @@ table.insert(Config.camera,
 if IS_WEBOTS then
   Config.camera[1].w = 320
   Config.camera[1].h = 180
-  -- Config.camera[1].lut = 'webots'
-  --Config.camera[1].lut = 'webots2'
   Config.camera[1].lut = 'webots74'
 
   Config.camera[1].cx_offset = 0
   Config.camera[1].cy_offset = 0
 --  Config.camera[1].focal_length = 554.256/2
   Config.camera[1].focal_length = 220
-  Config.camera[1].focal_base = 320
+  Config.camera[1].focal_base = 160 --320: tho we should not use yuyv_to_label for webots
 	head.neckX= 0 --From CoM to neck joint
 
   vision.scaleA = 2
@@ -241,7 +239,6 @@ if IS_WEBOTS then
     th_min_area = 42,
     th_min_orientation = 70/180*math.pi,
     th_aspect_ratio = {2, 8},
---    min_black_fill_rate = 0.6,
     min_black_fill_rate = 0.4,
 
     th_max_height = 1.25,

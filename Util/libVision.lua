@@ -487,7 +487,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 end
 
 
-function libVision.obstacle_new(labelB_t)
+function libVision.obstacle(labelB_t)
   -- Obstacle table
   local obstacle, obs_count, obs_debug = {}, 0, ''
   obstacle.iv, obstacle.v, obstacle.detect = {}, {}, 0
@@ -506,14 +506,15 @@ function libVision.obstacle_new(labelB_t)
   local th_min_orientation = Config.vision.obstacle.th_min_orientation
   local min_ground_fill_rate = Config.vision.obstacle.min_ground_fill_rate
     
-  local obsProps = ImageProc.obstacles(labelB_t, horizonB,
-    Config.vision.obstacle.min_width, Config.vision.obstacle.max_width)
-  
   -- Update horizon
-  local pa = Body.get_head_position()[2] + Config.walk.bodyTilt
-  local horizonB = (hb/2.0) - focalB*math.tan(pa) - 1
+  local pa = Body.get_head_position()[2]   -- + Config.walk.bodyTilt
+  local horizonB = (hb/2.0) - focalB*math.tan(pa - 10*DEG_TO_RAD)
   horizonB = math.min(hb, math.max(math.floor(horizonB), 0))
   --TODO: plot it in monitor
+  local obsProps = ImageProc.obstacles(labelB_t,
+    Config.vision.obstacle.min_width, Config.vision.obstacle.max_width, horizonB)
+  
+    -- print("HORIZON: ", horizonB, 'hb:', hb)  
 
   if #obsProps == 0 then return 'NO OBS' end
   
@@ -589,31 +590,29 @@ function libVision.obstacle_new(labelB_t)
   if obstacle.detect == 1 then
     -- Sort to get the closest two 
     local obsStats = {}
-    obsStats.iv, obsStats.v = {},{}
+    obsStats.iv, obsStats.xs, obsStats.ys = {},{},{}
     obsStats.axisMinor, obsStats.axisMajor, obsStats.orientation = {}, {}, {}
-    obsStats.dr, obsStats.da = {},{}
     table.sort(obstacle.dist)
     for i=1, math.min(3, obstacle.count) do
       obsStats.iv[i] = obstacle.iv[obstacle.dist[i]]
-	    local pos = obstacle.v[obstacle.dist[i]]  -- LOCAL
-      obsStats.v[i] = vector.new(pos)
-      -- obsStats.dr[i] = 0.25*obstacle.dist[i]  --TODO
-      -- obsStats.da[i] = 5*DEG_TO_RAD -- TODO
+	    local pos = vector.new(obstacle.v[obstacle.dist[i]])  -- LOCAL
+      obsStats.xs[i] = pos[1]
+      obsStats.ys[i] = pos[2]
 
-      local global_pos = util.pose_global({pos[1], pos[2], 0}, wcm.get_robot_pose())
-      local xi = math.ceil((MAP.xmax-global_pos[1]) / MAP.res)
-			local yi = math.ceil((global_pos[2]-MAP.ymin) / MAP.res)
-      xi = math.min(math.max(1, xi), MAP.sizex)
-      yi = math.min(math.max(1, yi), MAP.sizey)
-      MAP.grid[xi][yi] = math.min(MAP.grid[xi][yi]+5, 1e5)
+      --       local global_pos = util.pose_global({pos[1], pos[2], 0}, wcm.get_robot_pose())
+      --       local xi = math.ceil((MAP.xmax-global_pos[1]) / MAP.res)
+      -- local yi = math.ceil((global_pos[2]-MAP.ymin) / MAP.res)
+      --       xi = math.min(math.max(1, xi), MAP.sizex)
+      --       yi = math.min(math.max(1, yi), MAP.sizey)
+      --       MAP.grid[xi][yi] = math.min(MAP.grid[xi][yi]+5, 1e5)
       
       obsStats.axisMinor[i] = obstacle.axisMinor[obstacle.dist[i]]
       obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 
       obsStats.orientation[i] = math.pi/2
     end    
     
-    -- These are global position
-    obsStats.xs, obsStats.ys = ImageProc2.grid_filter(MAP.grid, MAP.res)
+    -- -- These are global position
+    -- obsStats.xs, obsStats.ys = ImageProc2.grid_filter(MAP.grid, MAP.res)
 
     return 'Detected', obsStats
   else
@@ -622,209 +621,6 @@ function libVision.obstacle_new(labelB_t)
   
 end
 
-
--- Obstacle detection
-function libVision.obstacle(labelB_t, cc)
-  -- If no black pixels
-  if cc[colors.black]<100 then return 'Not much black pixels' end
-  -- Obstacle table
-  local obstacle, obs_count, obs_debug = {}, 0, ''
-  obstacle.iv, obstacle.v = {}, {}
-  obstacle.axisMinor, obstacle.axisMajor, obstacle.orientation = {}, {}, {}
-  obstacle.dist = {}
-  
-  -- Parameters  TODO: put into entry()
-  local label_flag = Config.vision.obstacle.label
-  local grid_x = Config.vision.obstacle.grid_x
-  local grid_y = Config.vision.obstacle.grid_y
-  local th_min_area = Config.vision.obstacle.th_min_area
-  local min_black_fill_rate = Config.vision.obstacle.min_black_fill_rate
-  local th_aspect_ratio = Config.vision.obstacle.th_aspect_ratio
-  local th_max_height = Config.vision.obstacle.th_max_height
-  local th_min_height = Config.vision.obstacle.th_min_height
-  local th_min_orientation = Config.vision.obstacle.th_min_orientation
-  local min_ground_fill_rate = Config.vision.obstacle.min_ground_fill_rate
-  
-  
-  local col = wb / grid_x
-  local row = hb / grid_y 
-  for i=1, col do
-    for j=1,row do
-      local leftX = (i-1)* grid_x+1
-      local topY = (j-1)* grid_y+1
-      local rightX = math.min(wb, i* grid_x)
-      local bottomY = math.min(hb, j* grid_y)
-
-      local bboxB = {leftX, rightX, topY, bottomY}
-      local blackStats, greenStats
-      if label_flag == 'b' then
-        blackStats = bboxStats('b', colors.black, bboxB)
-      else
-        blackStats = bboxStats('a', colors.black, bboxB)
-      end
-
-      ----------- Checks -----------
-      local check_passed, v, obstacle_dist = true
-      
-      -- Check black area       
-      if blackStats.area < th_min_area then
-        check_passed = false
-        obs_debug = obs_debug..string.format('FAIL black area:%.1f < %.1f\n',
-          blackStats.area, th_min_area)
-      end
-      -- Check black fill rate
-      if check_passed then
-        local black_fill_rate = blackStats.area/(blackStats.axisMajor*blackStats.axisMinor)
-        if black_fill_rate < min_black_fill_rate then
-          check_passed = false
-          obs_debug = obs_debug..string.format('Black fillrate: %.2f < %.1f\n', 
-            black_fill_rate, min_black_fill_rate)
-        end
-      end
-      -- Check orientation
-      if check_passed then
-        if math.abs(blackStats.orientation)<th_min_orientation then
-          check_passed = false
-          obs_debug = obs_debug..string.format('Orientation: %.1f < %.1f\n',
-            math.abs(blackStats.orientation)*RAD_TO_DEG, th_min_orientation*RAD_TO_DEG)
-        end
-      end
-      -- Check aspect ratio
-      if check_passed and blackStats.axisMinor<grid_x then
-        local aspect_ratio = blackStats.axisMajor / blackStats.axisMinor
-        if aspect_ratio < th_aspect_ratio[1] then
-          check_passed = false
-          obs_debug = obs_debug..string.format('Aspect ratio: %.2f < %.2f\n',
-            aspect_ratio, th_aspect_ratio[1])
-        elseif aspect_ratio > th_aspect_ratio[2] then
-          check_passed = false
-          obs_debug = obs_debug..string.format('Aspect ratio: %.2f > %.2f\n',
-            aspect_ratio, th_aspect_ratio[2])
-        end  
-      end
-      -- Get local position
-      if check_passed then
-        --TODO: if quite close to the obs, the axisMinor > grid_x
-        local scale = math.max(1, blackStats.axisMinor / Config.world.obsDiameter)
-        if label_flag == 'b' then
-          v = check_coordinateB(blackStats.centroid, scale)
-        else
-        	v = check_coordinateA(blackStats.centroid, scale)
-        end
-      end
-      -- Height check
-      if check_passed and v[3]>th_max_height then
-        check_passed = false
-        obs_debug = obs_debug..string.format('TOO High:%.2f > %.2f\n',
-          v[3], th_max_height)
-      end
-      if check_passed and v[3]<th_min_height then
-        check_passed = false
-        obs_debug = obs_debug..string.format('TOO low: %.2f < %.2f\n',
-          v[3], th_min_height)
-      end
-      
-      -- Ground check
-      if check_passed and hb-blackStats.boundingBox[4]>10 then
-        local left_x = blackStats.boundingBox[1]
-        local right_x = blackStats.boundingBox[2]
-        local top_y = blackStats.boundingBox[4]
-        local bot_y = math.min(hb, blackStats.boundingBox[4]+20)
-
-        local ground_bbox = {left_x, right_x, top_y, bot_y}
-        local groundStats, bbox_area = bboxStats('b', colors.field, ground_bbox)
-        BLAH = groundStats.area/bbox_area         --TODO: TEMP GLOBAL
-        if groundStats.area/bbox_area < min_ground_fill_rate then  --TODO
-          check_passed = false
-          obs_debug = obs_debug..string.format('GROUND CHECK FAIL: %.2f < %.2f\n',
-            groundStats.area/bbox_area, min_ground_fill_rate)
-        end
-      end
-      
-      -- Project to ground
-      if check_passed then
-        v = projectGround(v, v[3]*0.8) --TODO
-
-        obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
-      end      
-      -- Field bounds check
-      if check_passed then
-        local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
-        if math.abs(global_v[1])>xMax or math.abs(global_v[2])>yMax then
-          check_passed = false
-          obs_debug = obs_debug..'OUTSIDE FIELD!'
-        end
-      end
-      -- Distance check
-      if check_passed and obstacle_dist>7 then  --TODO
-        check_passed = false
-        obs_debug = obs_debug..string.format('TOO FAR:%.2f >%.2f\n', obstacle_dist, 5)
-      end
-      ----------- Checks End -----------
-      
-      if check_passed then
-        if DEBUG then 
-          print('Orientation:', blackStats.orientation/math.pi*180)
-          print('ground fill rate:', BLAH)
-          -- print('black pixels',cc[colors.black], 'black area', blackStats.area)
-          -- print('green fill:', greenStats.area / bbox_area)
-          -- print('obs v no proj:', vector.new(v))
-        end
-        
-        --TODO: if use grid map, no need to use dist as key
-        obs_count = obs_count + 1
-        table.insert(obstacle.dist, obstacle_dist)
-        if label_flag == 'b' then
-          obstacle.iv[obstacle_dist] = vector.new(blackStats.centroid)*scaleB
-          obstacle.axisMinor[obstacle_dist] = blackStats.axisMinor*scaleB 
-          obstacle.axisMajor[obstacle_dist] = blackStats.axisMajor*scaleB 
-          obstacle.orientation[obstacle_dist] = blackStats.orientation
-        else
-          obstacle.iv[obstacle_dist] = vector.new(blackStats.centroid)
-          obstacle.axisMinor[obstacle_dist] = blackStats.axisMinor 
-          obstacle.axisMajor[obstacle_dist] = blackStats.axisMajor
-          obstacle.orientation[obstacle_dist] = blackStats.orientation
-        end
-                
-        obstacle.v[obstacle_dist] = v
-        obstacle.detect = 1
-        obstacle.count = obs_count
-      end
-      
-    end -- end row
-  end -- end col
-    
-  if obstacle.detect == 1 then
-    -- Sort to get the closest two 
-    local obsStats = {}
-    obsStats.iv, obsStats.bbox, obsStats.v = {},{},{}
-    obsStats.axisMinor, obsStats.axisMajor, obsStats.orientation = {}, {}, {}
-    table.sort(obstacle.dist)
-    for i=1, math.min(3, obstacle.count) do
-      obsStats.iv[i] = obstacle.iv[obstacle.dist[i]]
-      --obsStats.v[i] = obstacle.v[obstacle.dist[i]]
-	    local pos = obstacle.v[obstacle.dist[i]]
-			local xi = math.ceil((pos[1]-MAP.xmin) / MAP.res)
-			local yi = math.ceil((pos[2]-MAP.ymin) / MAP.res)
-
-      xi = math.min(math.max(1, xi), MAP.sizex)
-      yi = math.min(math.max(1, yi), MAP.sizey)
-      MAP.xp[xi] = MAP.xp[xi] + 1
-      MAP.yp[yi] = MAP.yp[yi] + 1
-
-      obsStats.axisMinor[i] = obstacle.axisMinor[obstacle.dist[i]]
-      obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 
-      obsStats.orientation[i] = obstacle.orientation[obstacle.dist[i]]
-    end    
-    obsStats.xp, obsStats.yp = MAP.xp, MAP.yp
-    obsStats.res = MAP.res
-    
-    return 'Detected', obsStats
-    -- return obs_debug, obsStats
-  else
-    return obs_debug
-  end
-end
 
 
 -- Set the variables based on the config file
@@ -851,7 +647,6 @@ function libVision.entry(cfg, body)
   * T.rotY(cfg.head.pitchCamera or 0)
   focalA = focal_length / (focal_base / wa)
   focalB = focalA / scaleB
-  -- TODO: get from shm maybe?
 
   local rpy = Body.get_rpy()
   trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
@@ -921,8 +716,7 @@ function libVision.update(img)
   if wcm.get_obstacle_enable()==0 then
     obstacle_fails = 'Disabled'
   else
-    -- obstacle_fails, obstacles = libVision.obstacle(labelB_t, cc_t)
-    obstacle_fails, obstacles = libVision.obstacle_new(labelB_t)
+    obstacle_fails, obstacles = libVision.obstacle(labelB_t)
   end
 
   -- Save the detection information

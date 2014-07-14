@@ -8,7 +8,7 @@ local vector = require'vector'
 local util = require'util'
 local ballFilter = require'ballFilter'
 local poseFilter = require'poseFilter'
-local obsFilter = require'obstacleFilter'
+-- local obsFilter = require'obstacleFilter'
 local odomScale = Config.world.odomScale
 local use_imu_yaw = Config.world.use_imu_yaw
 local RESAMPLE_PERIOD = Config.world.resample_period
@@ -245,8 +245,6 @@ function libWorld.entry()
   -- Set the initial odometry
   wcm.set_robot_pose({0,0,0})
   wcm.set_robot_odometry({0,0,0})
-  -- Setup obstacle filters
-  for i=1,2 do OF[i] = obsFilter.new(i) end
   -- Processing count
   count = 0
   
@@ -285,8 +283,8 @@ function libWorld.update(uOdom, detection)
   if Config.use_gps_pose then
     wcm.set_robot_pose(wcm.get_robot_pose_gps())
     wcm.set_obstacle_num(2)
-    wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
-    wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
+    -- wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
+    -- wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
 
     local pose = wcm.get_robot_pose_gps()
     local ballglobal = wcm.get_robot_gpsball()
@@ -356,10 +354,9 @@ function libWorld.send()
     end
   end  
     
---  if obstacle then 
   if wcm.get_obstacle_num()>0 then
     local obs = {}
-    for i=1,wcm.get_obstacle_num() do  --TODO: add more
+    for i=1,wcm.get_obstacle_num() do
       obs[i] = wcm['get_obstacle_v'..i]()
       to_send.info = to_send.info..string.format(
         'Obstacle: %.2f %.2f\n', unpack(obs[i]) )

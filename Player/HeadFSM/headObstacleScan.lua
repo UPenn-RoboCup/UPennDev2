@@ -25,6 +25,7 @@ function state.update()
   local dt = t-t_update
   t_update = t
 
+  -- Grab where we are
   local qNeck = Body.get_head_command_position()
   --25 deg can basically cover the whole field
 	-- but not enough for detecting obs near center circle
@@ -45,9 +46,7 @@ function state.update()
   	wcm.set_obstacle_enable(0)
 	return 'done' 
 	end
---]]
-  -- Grab where we are
-  --local qNeck = Body.get_head_position()
+
   local qNeck_approach, doneNeck =
     util.approachTol(qNeck, {yaw, pitch}, dqNeckLimit, dt)
 

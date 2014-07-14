@@ -40,6 +40,12 @@ Config.lua
 *.wbproj
 *.cache
 
+# webots binary objects
+WebotsProj/controllers/ballGPS/ballGPS
+WebotsProj/controllers/ballGPS/build/
+WebotsProj/controllers/objectGPS/objectGPS
+WebotsProj/controllers/objectGPS/build/
+
 # Temp and Swap files
 *~
 *.swp

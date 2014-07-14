@@ -49,16 +49,16 @@ Config = nil
 local cp_ptr = dcm.actuatorPtr.command_position
 local tq_ptr = dcm.actuatorPtr.torque_enable
 local p_ptr  = dcm.sensorPtr.position
-local p_ptr_t  = dcm.tsensorPtr.position
+local p_ptr_t = dcm.tsensorPtr.position
 
 --------------------------
 -- Global tmp variables --
 --------------------------
 local t_end, t_write, t_read, t_start
 local t_debug, dt_debug = 0, 0
-local running, pkt, _co, npkt, read_reg
+local running, pkt, _co
 local status, ready, bus, data, msg, requests
-local sel_wait, kb, debug_str
+local sel_wait, debug_str
 local _fds = {}
 local numbered_buses = {}
 local named_buses = {}
@@ -349,10 +349,10 @@ local function output_co(bus)
 			has_mx = has_mx or is_mx
 			has_nx = has_nx or (not is_mx)
 			j_id = m_to_j[m_id]
-			-- Only ad position commands if torque enabled
+			-- Only add position commands if torque enabled
 			if tq_ptr[j_id-1]==1 then
 				tinsert(send_ids, m_id)
-				tinsert(commands, radian_to_step(j_id, cp_ptr[j_id - 1]))
+				tinsert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))
 				tinsert(cmd_addrs,
 					is_mx and lD.mx_registers.command_position or lD.nx_registers.command_position
 				)
@@ -383,6 +383,7 @@ local function output_co(bus)
 		if bus.enable_read then
 			-- Send a position read command to the bus
 			bus:send_instruction(bus.read_cmd_str)
+      bus.read_to = get_time() + READ_TIMEOUT
 			coroutine.yield(#bus.m_ids, 'position')
 		else
 			-- Copy from command position
@@ -396,7 +397,6 @@ local function output_co(bus)
 end
 
 local function consolidate_queue(request_queue, req)
-	-- Consolidate the queue
   ----[[
 	local is_merge = false
 	for _, v in ipairs(request_queue) do
@@ -493,7 +493,7 @@ local function initialize(bus)
     else
       tq_parse = lD.byte_to_number[lD.nx_registers.torque_enable[2]]
     end
-		dcm.actuatorPtr.torque_enable[j_id - 1] = tq_parse(unpack(status.parameter))
+		dcm.actuatorPtr.torque_enable[j_id-1] = tq_parse(unpack(status.parameter))
 		--
 		if is_mx then
 			tinsert(rd_addrs, lD.mx_registers.position)
@@ -552,18 +552,12 @@ while true do
 	for bname, bus in pairs(named_buses) do
     if bus.read_reg and t_write > bus.read_to then
       print("READ TIMEOUT", bname, bus.read_reg, t_write, bus.read_to)
-      bus.is_reading = false
+      bus.read_reg = nil
       bus.input_co(false)
     end
 		-- Only if we are not in the read cycle
-    if not bus.is_reading then
-			npkt, read_reg = bus.output_co()
-      bus.read_reg = read_reg
-      bus.npkt_to_expect = npkt
-      if npkt > 0 then
-        bus.read_to = get_time() + READ_TIMEOUT
-        bus.is_reading = true
-      end
+    if not bus.read_reg then
+			bus.npkt_to_expect, bus.read_reg = bus.output_co()
     end
 	end
 	-- Load data from the bus into the input coroutine
@@ -578,14 +572,16 @@ while true do
   			bus = numbered_buses[bnum]
         pkts = bus.input_co(re(bus.fd))
         for _, pkt in ipairs(pkts) do
+          -- TODO: Check if bus.read_reg is nil
+          -- That means you get unexpected data
           parse[bus.read_reg](pkt, bus.has_mx_id[pkt.id])
         end
       end
 		end
 		-- Loop maintenence
     if do_collect then
-      collectgarbage('step')
       do_collect = false
+      collectgarbage('step')
     end
 		t_end = get_time()
 		sel_wait = WRITE_TIMEOUT - (t_end - t_start)
@@ -594,9 +590,8 @@ while true do
   dt_debug = t_start - t_debug
 	if dt_debug > 2 then
     t_debug = t_start
-		kb = collectgarbage('count')
 		debug_str = {
-			string.format('\nDCM | Uptime %.2f sec, Mem: %d kB', t_start - t0, kb),
+			string.format('\nDCM | Uptime %.2f sec, Mem: %d kB', t_start - t0, collectgarbage('count')),
 		}
 		for bname, bus in pairs(named_buses) do
 			tinsert(debug_str, string.format(

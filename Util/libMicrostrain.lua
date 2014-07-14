@@ -141,12 +141,21 @@ local function configure(self, do_permanent)
     0x0C, 0x00, 0x01, -- Euler Angles Message @ 100Hz
     0x07, 0x00, 0x01, -- Delta Theta Message @ 100Hz
   }
-  local response = write_command(self.fd,stream_fmt)
+  local response = write_command(self.fd, stream_fmt)
   --[[
   for k,v in ipairs(response) do
     print(string.format('%d: %02X',k,v))
   end
   --]]
+  -- New AHRS format
+  local stream_fmt = { 0x75, 0x65, 0x0C,
+    0x13, -- Command length
+    0x13, 0x0A, -- Field Length, and Field Desctiption (AHRS)
+    0x01, 0x02, -- Set 2 messages
+    0x05, 0x00, 0x01, -- Estimated Orientation, Euler Angles @ 100Hz
+    0x05, 0x00, 0x01, -- Estimated Gyro Bias
+  }
+  local response = write_command(self.fd, stream_fmt)
 
   if do_permanent then
     -- Save only once! Maybe in the eeprom, so lots of saving could be bad...
@@ -183,6 +192,14 @@ local function ahrs_off(self)
   --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
 end
 
+local function ahrs_and_nav_on(self)
+  -- Turn on the ahrs stream
+  local response = write_command(self.fd, {
+    0x75, 0x65, 0x0C, 0x0A,
+    0x05, 0x11, 0x01, 0x01, 0x01, -- ahrs
+    0x05, 0x11, 0x01, 0x03, 0x01, -- nav
+  })
+end
 
 -- TODO: Make this like input_co of libDynamixel
 local acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp=
@@ -264,6 +281,7 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
     close = close,
     ahrs_on = ahrs_on,
     ahrs_off = ahrs_off,
+    ahrs_and_nav_on = ahrs_and_nav_on,
     get_info = get_info,
     read_ahrs = read_ahrs,
   }

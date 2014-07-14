@@ -43,7 +43,7 @@ local vision = {
 
   --To compensate for the body flexing backward
   --Use this angle instead of walk.bodyTilt
-  bodyTilt = -3*DEG_TO_RAD, 
+  bodyTilt = 3*DEG_TO_RAD, 
 
   --
 }

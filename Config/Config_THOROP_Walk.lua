@@ -192,6 +192,86 @@ else
     }
 end
 
+local kick = {}
+
+local tSlope1 = walk.tStep*walk.phSingle[1]
+local tSlope2 = walk.tStep*(1-walk.phSingle[2])
+local tStepMid =walk.tStep-tSlope1-tSlope2
+
+kick.stepqueue={}
+kick.stepqueue["LeftWalkKick_From_LS"]=
+  {
+    {{0,0,0},  1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
+    {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs, left foot kick
+    {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --final step
+    {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+  }
+
+kick.stepqueue["LeftWalkKick_From_RS"]=
+  {
+    {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs, left foot kick
+    {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --final step
+    {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+  }
+
+kick.stepqueue["LeftWalkKick_From_DS"]=
+  {
+    {{0.0,0,0},2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+--    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs, left foot kick
+    {{0.18,0,0},1,  tSlope1, tStepMid*1.5, tSlope2,   {0,0,0},{-1,walk.stepHeight,0}}, --rs, left foot kick
+    {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --final step
+    {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+  }
+
+kick.stepqueue["LeftKick_From_DS"]=
+  {
+    {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
+    {{0.12,0,0},1,  0.3,1.5,0.3,   {0,0,0},{-2,walk.stepHeight,0}}, --rf kick
+    {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+  }
+
+
+kick.stepqueue["RightWalkKick_From_RS"]=
+  {
+    {{0,0,0},  0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
+    {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rf kick
+    {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --final step
+    {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+  }
+
+kick.stepqueue["RightWalkKick_From_LS"]=
+  {
+    {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rf kick
+    {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --final step
+    {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+  }
+
+kick.stepqueue["RightWalkKick_From_DS"]=
+  {
+    {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
+    {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+--    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rf kick
+    {{0.18,0,0},0,  tSlope1, tStepMid*1.5, tSlope2,   {0,0,0},{-1,walk.stepHeight,0}}, --rf kick    
+    {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --final step
+    {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+  }
+
+
+kick.stepqueue["RightKick_From_DS"]=
+  {
+    {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
+    {{0.12,0,0},0,  0.3,1.5,0.3,   {0,0,0},{-2,walk.stepHeight,0}}, --lf kick
+    {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
+  }      
+
+
+
+
 
 --Load robot specific configs
 c=require'calibration'
@@ -202,6 +282,7 @@ if c.cal[HOSTNAME].legBias then
 ------------------------------------
 -- Associate with the table
 Config.walk    = walk
+Config.kick  = kick
 Config.stance  = stance
 Config.zmpstep = zmpstep
 

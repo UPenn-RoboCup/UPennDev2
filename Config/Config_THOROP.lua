@@ -42,8 +42,10 @@ Config.disable_kick = true
 
 
 if IS_WEBOTS then
-Config.USE_DUMMY_ARMS = false
-  -- Config.use_gps_pose = false
+  Config.USE_DUMMY_ARMS = false
+  Config.use_gps_pose = false
+  Config.use_gps_pose = true
+
   Config.demo = false
   -- Config.demo = true
   
@@ -88,8 +90,10 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupFollow.circleR = 1.5
   Config.fsm.bodyRobocupFollow.kickoffset = 0.8
 
-  Config.fsm.bodyRobocupApproach.target={0.50,0.14}
-  Config.fsm.bodyRobocupApproach.th = {0.10, 0.02}
+
+  Config.fsm.bodyRobocupApproach.target={0.25,0.12}  
+  Config.fsm.bodyRobocupApproach.th = {0.30, 0.02}
+
 
   Config.world.use_imu_yaw = true
 end

@@ -6,20 +6,10 @@
 PROTO ObjectGPS [
   field SFVec3f translation 0 0.0325 0
   field SFRotation rotation 0 1 0 0
-  field SFColor color 1.0 0.54 0.08
-#  field SFFloat radius 0.0325
-#  field SFFloat height 0.065
-
-  field SFFloat radius 0.03175
-  field SFFloat height 0.12
-
-
-#  field SFFloat mass 0.055
+  field SFColor color 0 0 0
+  field SFFloat radius 0.10
+  field SFFloat height 0.90
   field SFFloat mass 0.35
-
-  field SFVec3f centerOfMass 0 -0.0001 0
-  field SFFloat linearDamping 0.17
-  field SFFloat angularDamping 0.33
   field SFString contactMaterial "default"
   field SFString controller "objectGPS"
   field SFString controllerArgs ""
@@ -49,10 +39,6 @@ PROTO ObjectGPS [
             specularColor 1 1 1
           }
         }
-#        geometry Sphere {
-#          radius IS radius
-#          subdivision 2
-#        }
         geometry Cylinder {
           radius IS radius
           height IS height
@@ -69,11 +55,6 @@ PROTO ObjectGPS [
     physics Physics {
       density -1
       mass IS mass
-#      centerOfMass IS centerOfMass
-#      damping Damping {
-#        linear IS linearDamping
-#        angular IS angularDamping
-#      }
     }
   }
 }

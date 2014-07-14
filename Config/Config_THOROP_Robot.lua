@@ -402,7 +402,11 @@ if IS_WEBOTS then
   })
 
   servo.rad_offset = vector.new({
-    0,0, -- head
+--    0,0, -- head
+-- I don't know why but the webots model has stupid 10 degree offset...
+-- And this killed all our webots vision for months!
+
+    0,-10 ,
     -90,0,0,  0,  0,0,0,
     0,0,0,0,0,0,
     0,0,0,0,0,0,

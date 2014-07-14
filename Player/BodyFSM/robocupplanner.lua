@@ -94,23 +94,39 @@ function getKickAngle(pose,ballGlobal)
     --Now we're close... test two possible angles that avoids goalie
     local kickangle1 = (angleGoalBallL + angleGoalBallC)/2
     local kickangle2 = (angleGoalBallC + angleGoalBallR)/2
+
+    local kickarc1 = math.abs(util.mod_angle(angleGoalBallL - angleGoalBallC))
+    local kickarc2 = math.abs(util.mod_angle(angleGoalBallC - angleGoalBallR))
+
     local offset1 = evaluateKickAngle(ballGlobal,kickangle1)
     local offset2 = evaluateKickAngle(ballGlobal,kickangle2)
 
+
     --Criteria: pick one that's LESS blocked
     if math.abs(offset1)==math.abs(offset2) then
-      --they are equally blocked, choose one that requires less turning
+      --they are equally blocked, choose one with wider angle
+      --[[
       if math.abs(util.mod_angle(kickangle1-pose[3]))<
         math.abs(util.mod_angle(kickangle2-pose[3])) then
         kickangle,offset = kickangle1,offset1
       else
         kickangle,offset = kickangle2,offset2
       end
+      --]]
+      if kickarc1>kickarc2 then
+        kickangle,offset = kickangle1,offset1
+      else
+        kickangle,offset = kickangle2,offset2
+      end
+
     elseif math.abs(offset1)<math.abs(offset2) then
       kickangle,offset = kickangle1,offset1
     else
       kickangle,offset = kickangle2,offset2
     end
+
+
+
   end
   
   wcm.set_robot_kickto(

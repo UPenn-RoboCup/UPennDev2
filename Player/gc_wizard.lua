@@ -24,25 +24,26 @@ end
 -- Timing
 local t_sleep = 1 / Config.fsm.update_rate
 local t0, t = get_time()
-local debug_interval, t_debug = 2.0, t0
+local debug_interval, t_debug = 1.0, t0
 
 -- Update loop
-local gc_pktNum = 0
+local gc_pktNum, gc_state = 0
 while running do
   t = get_time()
 	-- Listen to game controller
 	local gc_packet = GC.receive()
 	if gc_packet and gc_packet.packetNumber>gc_pktNum then
-		--print('gc:', gc_packet.state)
-		gcm.set_game_state(gc_packet.state)
+		gc_state = gc_packet.state
+		gcm.set_game_state(gc_state)
 		gc_pktNum = gc_packet.packetNumber
 	end
 
   -- If time for debug
   if t-t_debug>debug_interval then
-    os.execute('clear')
+    --os.execute('clear')
     t_debug = t
-		print(string.format('Game state: %d | Uptime: %.2f sec',gcm.get_game_state(), t-t0))
+		print(string.format('Game state: %d | pktNum %d',
+			gcm.get_game_state(), gc_pktNum))
 	end
 	collectgarbage('step')
 	local t_s = (t_sleep - (get_time() - t))

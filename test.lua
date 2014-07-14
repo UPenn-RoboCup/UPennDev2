@@ -151,6 +151,12 @@ local command2=
   util.color('Test mode\n','blue')
   ..'Key commands:\n'
 ..'i/j/k/l/,/h/; : control walk velocity\n'
+
+..'3 : Left kick\n'
+..'4 : Right kick\n'
+..'5 : Left Walkkick\n'
+..'6 : Right Walkkick\n'
+
 ..'8 : stop walking\n'
 ..'9 : start walking\n'
 ..'0 : Enter game mode\n'

@@ -33,7 +33,7 @@ local last_ph = 0
 
 local function robocup_approach( pose, target_pose)
   --local maxStep = 0.04
-  local maxStep = 0.04
+  local maxStep = 0.08
   local maxTurn = 0.15
   local dist_threshold = Config.fsm.bodyRobocupFollow.th_dist
   local angle_threshold = .1

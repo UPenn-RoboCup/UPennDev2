@@ -93,8 +93,15 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupFollow.kickoffset = 0.5
 
 
+--[[
   Config.fsm.bodyRobocupApproach.target={0.25,0.12}  
-  Config.fsm.bodyRobocupApproach.th = {0.30, 0.02}
+  Config.fsm.bodyRobocupApproach.th = {0.30, 0.02} 
+--]]
+
+
+  --Even closer!
+  Config.fsm.bodyRobocupApproach.target={0.20,0.12}  
+  Config.fsm.bodyRobocupApproach.th = {0.25, 0.02}
 
 
   Config.world.use_imu_yaw = true

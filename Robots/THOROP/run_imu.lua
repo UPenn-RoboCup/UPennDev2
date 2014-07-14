@@ -28,7 +28,7 @@ if not IS_THREAD then
   signal.signal("SIGTERM", shutdown)
 end
 
-local OVERRIDE_YAW = true
+local OVERRIDE_YAW = false
 local CALIBRATE_GYRO_BIAS = true
 
 -- Modules
@@ -92,7 +92,8 @@ t_debug, t_last, t = t0, t0, t0
 t_last_read = t0
 
 if CALIBRATE_GYRO_BIAS then
-  print("Calibrating the gyro bias...")
+  local n = 5
+  print("Calibrating the gyro bias for "..n.." seconds")
   local gyro_accumulated, count_accumulated = vector.zeros(3), 0
   local t_diff
   repeat
@@ -100,7 +101,7 @@ if CALIBRATE_GYRO_BIAS then
     t_diff = t - t0
     gyro_accumulated = gyro_accumulated + dcm.get_sensor_gyro()
     count_accumulated = count_accumulated + 1
-  until t_diff > 3
+  until t_diff > n
   yaw = 0
   gyro_yaw_bias = gyro_accumulated / count_accumulated
   print("BIAS:", gyro_yaw_bias, gyro_accumulated)

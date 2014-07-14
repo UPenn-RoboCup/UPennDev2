@@ -50,6 +50,33 @@ local function get_info(self)
   return info
 end
 
+local function enable_magnetometer_compensation(microstrain)
+  local bit = require'bit'
+  -- disables magnetometer and north
+  --local data_conditioning_flags = bit.bor( 0x0100, 0x0400)
+  -- Disables only north
+  local data_conditioning_flags = bit.bor( 0x0100, 0x0400)
+  local hex_flags = bit.tohex(data_conditioning_flags):gmatch('%d%d')
+  local flag_bytes = {}
+  for hex in hex_flags do table.insert(flag_bytes, hex) end
+  local disable_north_compensation_cmd = {
+    0x75, 0x65, 0x0C, 0x10, 0x10, 0x35,
+    0x01, -- Apply new settings
+    unpack{ 0x00, 0x0A}, -- default decimation
+    unpack(flag_bytes),
+    0x0E, -- New Accel/Gyro Filter Width
+    0x11, -- New Mag Filter Width
+    unpack{ 0x00, 0x0A}, -- New Up Compensation
+    unpack{ 0x00, 0x0A}, -- New North Compensation
+    0x01, -- New Mag Bandwidth/Power
+    unpack{ 0x00, 0x00}, -- Reserved
+  }
+  -- Send to the device
+  write_command(microstrain.fd, disable_north_compensation_cmd)
+  -- Ping the microstrain
+  write_command(microstrain.fd, ping_cmd)
+end
+
 -- Go to high speed baud
 local function change_baud(microstrain)
   local baud = 921600 -- 921600 only for now...
@@ -136,9 +163,12 @@ local function ahrs_off(self)
   --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
 end
 
+
+-- TODO: Make this like input_co of libDynamixel
 local acc_tmp, gyr_tmp, mag_tmp, euler_tmp =
 	ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]'
 local cpy_sz = 3 * ffi.sizeof('float')
+
 local function read_ahrs(self)
   local fd = self.fd
   unix.select({fd})
@@ -170,6 +200,10 @@ local function read_ahrs(self)
   --]]
 end
 
+local function idle(dev)
+  write_command(dev.fd, idle_cmd)
+end
+
 ---------------------------
 -- Service multiple microstrains
 function libMicrostrain.new_microstrain(ttyname, ttybaud)
@@ -191,96 +225,37 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
 	-- Open the Serial device with the proper settings
 	local fd = unix.open(ttyname, unix.O_RDWR + unix.O_NOCTTY)
 	-- Check if opened correctly
-	if fd<3 then
-    print(string.format("Open: %s, (%d)\n", ttyname, fd))
-		return nil
-	end
+	assert(fd>2, string.format("Open: %s, (%d)\n", ttyname, fd))
 
   -- Serial port settings
 	stty.raw(fd)
 	stty.serial(fd)
 	stty.speed(fd, baud)
-  unix.usleep(1e5)
+  unix.usleep(1e4)
 
   -- Set the device to idle
-  write_command(fd, idle_cmd)
-  unix.usleep(1e5)
+  idle(dev)
+  unix.usleep(1e4)
+  
+	-- Configure the device
+	configure(dev)
+  unix.usleep(1e4)
+  
+  -- Configure params
+  enable_magnetometer_compensation()
+  unix.usleep(1e4)
 
-	-----------
-	-- The Microstrain object
-	local dev = {
+	return {
     fd = fd,
     ttyname = ttyname,
     baud = baud,
-    configure = configure,
+    idle = idle,
     close = close,
     ahrs_on = ahrs_on,
     ahrs_off = ahrs_off,
     get_info = get_info,
     read_ahrs = read_ahrs,
   }
-
-	-- Configure the device
-	dev:configure()
-	unix.usleep(1e5)
-
-	return dev
-
-end
-
----------------------------
--- Service multiple microstrains
--- TODO: This seems pretty generic already - make it more so
-function libMicrostrain.service(microstrain, main)
-  -- Ensure a callback
-  assert(type(microstrain.callback)=='function','Need a callback!')
-
-  -- Go as fast as possible
-  microstrain:change_baud()
-
-  -- Configure to have the right format
-  microstrain:configure()
-
-  -- Enable the main function as a coroutine thread
-  local main_thread
-  if type(main)=='function' then
-    main_thread = coroutine.create( main )
-  end
-
-  local thread = coroutine.create(
-    function()
-      while true do
-        local ret = unix.select({microstrain.fd})
-        res = unix.read(microstrain.fd)
-        assert(res,'Bad response!'..type(ret))
-        coroutine.yield(
-          carray.float(res:sub(7,18):reverse()), -- gyro
-          carray.float(res:sub(21,32):reverse()) -- rpy
-          )
-      end
-    end
-  )
-  assert(thread,'Could not create thread')
-  --print('thread!',thread,coroutine.status(thread))
-
-  -- Turn on streaming
-  microstrain:ahrs_on()
-
-  -- Loop while the microstrain is alive
-	repeat
-    local status, ready = unix.select( {microstrain.fd} )
-    local status_code, acc, gyr = coroutine.resume( thread )
-    -- Check if there were errors in the coroutine
-    if status_code then
-      microstrain.callback(acc,gyr)
-    else
-      print( 'Dead microstrain coroutine!', acc)
-      microstrain:ahrs_off()
-      microstrain:close()
-    end
-    -- Resume the main thread
-    if main_thread then coroutine.resume( main_thread ) end
-  until not status_code
 
 end
 

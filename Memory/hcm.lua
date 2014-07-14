@@ -226,8 +226,9 @@ shared_data.monitor.fps = vector.new({30})
 
 -- Camera
 shared_data.camera = {}
-shared_data.camera.bias = vector.zeros(3)
---Neck yaw, Camera pitch, Camera roll
+shared_data.camera.bias = vector.zeros(4)
+--Neck yaw
+--Camera roll, pitch, yaw
 
 
 --These variables are only used for offline testing of arm states

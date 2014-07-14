@@ -37,7 +37,8 @@ Config.debug={
 -- Dummy arms are the two MX-106R motors per arm
 Config.USE_DUMMY_ARMS = true
 Config.use_angle_localization = true
-Config.demo = false
+--Config.demo = false
+Config.demo = true
 Config.use_localhost = false
 Config.disable_kick = true
 

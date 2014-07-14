@@ -124,7 +124,10 @@ int lua_obstacles(lua_State *L) {
         uint8_t pixel = *(im_ptr+index_ij);
         if ((pixel&mask_g) || (pixel&mask_r) || (pixel&mask_w)) {
           flag=1;
-          if (j<minJ[index_i]) minJ[index_i]=j;
+          if (j<minJ[index_i]) {
+            if (j>horizon) minJ[index_i]=j;
+            else minJ[index_i] = horizon;
+          }
         }else{
           if (flag==1) {
             gap++;

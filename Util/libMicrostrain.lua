@@ -154,7 +154,7 @@ local function configure(self, do_permanent)
     0x06, 0x00, 0x01, -- Estimated Gyro Bias
   }
   local response = write_command(self.fd, stream_fmt)
-  for k,v in ipairs(response) do print(string.format('%d: %02X',k,v)) end
+--  for k,v in ipairs(response) do print(string.format('%d: %02X',k,v)) end
 
 
   if do_permanent then
@@ -209,7 +209,7 @@ local function ahrs_and_nav_on(self)
     0x05, 0x11, 0x01, 0x01, 0x01, -- ahrs
     0x05, 0x11, 0x01, 0x03, 0x01, -- nav
   })
-  for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
+  --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
 end
 
 -- TODO: Make this like input_co of libDynamixel

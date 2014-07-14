@@ -90,6 +90,7 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
 
   local kicktype = mcm.get_walk_kicktype()
   print("Kick foot:",mcm.get_walk_kickfoot())
+  print("Kick type:",kicktype)
   print("Next support:",supportLeg)
   local step_queue={}
 

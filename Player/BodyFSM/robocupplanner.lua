@@ -156,8 +156,8 @@ function robocupplanner.getTargetPose(pose,ballGlobal)
   local angleRobotBall = math.atan2(pose[2]-ballGlobal[2],pose[1]-ballGlobal[1])
   local distRobotBall = math.sqrt( (pose[1]-ballGlobal[1])^2+(pose[2]-ballGlobal[2])^2 )
   
-  local circleR = 1
-  local kickoffset = 0.75
+  local circleR = Config.fsm.bodyRobocupFollow.circleR or 1
+  local kickoffset = Config.fsm.bodyRobocupFollow.kickoffset or 0.75
 
 
   local angle_tangent = math.acos(circleR / math.max(circleR,distRobotBall))
@@ -181,7 +181,7 @@ function robocupplanner.getTargetPose(pose,ballGlobal)
   elseif angleCircle<0 then --Robot is on the right side
     local angleTangent = angleRobotBall - angle_tangent
     local angleTarget = angleTangent
-    local angleMargin = 20*math.pi/180
+    local angleMargin = 45*math.pi/180
 
     --Make the robot circle around, if it already reached the tangent point    
     if angleRobotBall<angleTangent + angleMargin then
@@ -197,7 +197,7 @@ function robocupplanner.getTargetPose(pose,ballGlobal)
   else --Robot is on the left side 
     local angleTangent = angleRobotBall + angle_tangent
     local angleTarget = angleTangent
-    local angleMargin = 20*math.pi/180
+    local angleMargin = 45*math.pi/180
     
     --Make the robot circle around, if it already reached the tangent point    
     if angleRobotBall>angleTangent - angleMargin then

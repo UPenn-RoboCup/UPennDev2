@@ -37,6 +37,9 @@ rpc_ch = si.new_requester(Config.net.reliable_rpc)
 targetvel={0,0,0}
 targetvel_new={0,0,0}
 
+
+print("Game state:",gcm.get_game_state())
+
 function process_keyinput()
   local byte=getch.block();
 
@@ -50,22 +53,27 @@ function process_keyinput()
       elseif byte==string.byte(",") then  targetvel_new[1]=targetvel[1]-0.02;
       elseif byte==string.byte("h") then  targetvel_new[2]=targetvel[2]+0.02;
       elseif byte==string.byte(";") then  targetvel_new[2]=targetvel[2]-0.02;
+
+
       elseif byte==string.byte("3") then      
-        mcm.set_walk_kicktype(1) --this means testing mode (don't run body fsm)      
         mcm.set_walk_kickfoot(0)
-        body_ch:send'kick'
+        mcm.set_walk_kicktype(1)
+        mcm.set_walk_steprequest(1)
 
       elseif byte==string.byte("4") then      
-        mcm.set_walk_kicktype(1) --this means testing mode (don't run body fsm)
         mcm.set_walk_kickfoot(1)
-        body_ch:send'kick'
+        mcm.set_walk_kicktype(1)
+        mcm.set_walk_steprequest(1)
 
       elseif byte==string.byte("5") then      
         mcm.set_walk_kickfoot(0)
+        mcm.set_walk_kicktype(0)
+
         mcm.set_walk_steprequest(1)
 
       elseif byte==string.byte("6") then      
         mcm.set_walk_kickfoot(1)
+        mcm.set_walk_kicktype(0)
         mcm.set_walk_steprequest(1)
 
       elseif byte==string.byte("7") then      

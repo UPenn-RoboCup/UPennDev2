@@ -29,6 +29,7 @@ Config.dev.gender       = 'boy'
 Config.debug={
 	webots_wizard=false,	
   -- obstacle = true,
+  follow = false,
 	--approach = false,
   approach = true,
 }
@@ -87,8 +88,9 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupFollow.circleR = 1.0
   Config.fsm.bodyRobocupFollow.kickoffset = 0.5
 --]]
-  Config.fsm.bodyRobocupFollow.circleR = 1.5
-  Config.fsm.bodyRobocupFollow.kickoffset = 0.8
+
+  Config.fsm.bodyRobocupFollow.circleR = 1
+  Config.fsm.bodyRobocupFollow.kickoffset = 0.5
 
 
   Config.fsm.bodyRobocupApproach.target={0.25,0.12}  

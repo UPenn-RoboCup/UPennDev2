@@ -14,7 +14,8 @@ local Kinematics = require'THOROPKinematics'
 local mpack  = require'msgpack'.pack
 
 local Body = {}
-local dev_chs, body_chs, body_poll = {}, {}
+local dcm_ch, imu_ch, imu_thread, dcm_thread
+-- Default is not in thread for dcm_ch
 local dcm_ch = si.new_publisher'dcm!'
 local get_time
 if not unix then
@@ -140,47 +141,28 @@ for actuator, ptr in pairs(dcm.actuatorPtr) do
 end
 
 -- If receiving data from a chain
-local function chain_cb(c_skt)
-	local dcm_msgs = c_skt:recv_all()
+local function dcm_cb()
+  dcm_ch:receive()
 end
 local function imu_cb()
-  print('imu cb')
-end
-local function body_cb(b_skt)
-	-- Externally call some sort of sync
-  local msgs = b_skt:recv_all()
+  local msgs = imu_ch:receive()
+  for _, msg in ipairs(msgs) do print(msg) end
 end
 
 function Body.entry()
-	-- Reset the tables
-	dev_chs, body_chs, body_poll = {}, {}
-	-- Start all the threads
-	-- TODO: Check if already running as a separate process
-	local dcm_thread
-	if Config.chain.enabled then
-		dcm_ch, dcm_thread =
-		si.new_thread(ROBOT_HOME..'/run_co_dcm.lua', 'dcm', v)
-		ch.callback = chain_cb
-		table.insert(dev_chs, dcm_ch)
-		table.insert(body_chs, dcm_ch)
-		thread:start()
-	end
+	-- DCM
+	dcm_ch, dcm_thread =
+	  si.new_thread(ROBOT_HOME..'/run_co_dcm.lua', 'dcm')
+	ch.callback = dcm_cb
 	-- IMU
-	if Config.imu.enabled then
-		local imu_ch, imu_thread =
-			si.new_thread(ROBOT_HOME..'/run_imu.lua', 'imu', v)
-		imu_ch.callback = imu_cb
-		table.insert(dev_chs, imu_ch)
-		table.insert(body_chs, imu_ch)
-		imu_thread:start()
-	end
-	-- Body requests
-	-- Listens from everybody
-	local body_ch = si.new_subscriber'body!'
-	body_ch.callback = body_cb
-	table.insert(body_chs, body_ch)
+	imu_ch, imu_thread =
+		si.new_thread(ROBOT_HOME..'/run_imu.lua', 'imu', v)
+	imu_ch.callback = imu_cb
 	-- Polling object
-	body_poll = si.wait_on_channels(body_chs)
+	body_poll = si.wait_on_channels({dcm_ch, imu_ch})
+  -- Start the threads
+  dcm_thread:start()
+	imu_thread:start()
 end
 
 function Body.update()
@@ -192,7 +174,14 @@ end
 
 function Body.exit()
 	-- Tell the devices to exit cleanly
-  for _,ch in pairs(dev_chs) do ch:send'exit' end
+  if imu_thread then
+    imu_ch:send'exit'
+    imu_thread:join()
+  end
+  if dcm_thread then
+    dcm_ch:send'exit'
+    dcm_thread:join()
+  end
 end
 
 ---

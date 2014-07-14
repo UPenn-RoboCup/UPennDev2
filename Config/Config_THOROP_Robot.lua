@@ -95,7 +95,7 @@ local head_rc = {
   name = 'head',
   ttyname = '/dev/ttyUSB0',
   m_ids = {29, 30, 37},
-  enable_read = false,
+  enable_read = true,
 }
 -- For RoboCup, use an MX only chain for the arms
 local arms_rc = {

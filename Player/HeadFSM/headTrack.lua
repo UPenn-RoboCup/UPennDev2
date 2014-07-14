@@ -35,11 +35,16 @@ function state.update()
   -- print(_NAME..' Update' )
   -- Get the time of update
   local t = Body.get_time()
+
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
 
-  local ball_elapsed = t - wcm.get_ball_t()
+
+
+  --local ball_elapsed = t - wcm.get_ball_t()
+  --How long time we have TRIED to look at the ball but couldn't detect the ball?
+  local ball_elapsed = wcm.get_ball_tlook() - wcm.get_ball_t()
 
   if ball_elapsed > tLost then --ball lost
     print "Ball lost"
@@ -80,7 +85,7 @@ function state.update()
     
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
-
+  wcm.set_ball_tlook(t)
 end
 
 function state.exit()

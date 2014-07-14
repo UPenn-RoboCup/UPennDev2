@@ -215,7 +215,7 @@ if IS_WEBOTS then
     _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")
   end
 
-
+local nJoint = Config.nJoint
   local jointNames = {
     "Neck","Head", -- Head (Yaw,pitch)
     -- Left Arm
@@ -283,8 +283,12 @@ if IS_WEBOTS then
   get_time = webots.wb_robot_get_time
 
   -- Setup the webots tags
-  local tags = {}
+  local tags = {}  
   local t_last_error = -math.huge
+
+  tags.receiver = webots.wb_robot_get_device("receiver")
+  webots.wb_receiver_enable(tags.receiver,timeStep)
+  webots.wb_receiver_set_channel(tags.receiver,13)
     
 	-- Vision routines
   local udp = require'udp'
@@ -739,7 +743,10 @@ if IS_WEBOTS then
         t_last_keypress = t
       elseif key_char_lower=='8' then        
         motion_ch:send'stand'
-        body_ch:send'stop'   
+        if mcm.get_walk_ismoving()>0 then 
+          print("requesting stop")
+          mcm.set_walk_stoprequest(1) 
+        end
         t_last_keypress = t        
 	  elseif key_char_lower=='9' then        
         motion_ch:send'hybridwalk'
@@ -763,6 +770,29 @@ if IS_WEBOTS then
       t_last_keypress = t
     end
 --]]
+
+
+	--Receive webot messaging
+		while (webots.wb_receiver_get_queue_length(tags.receiver) > 0) do
+	    -- get first message on the queue
+	    ndata = webots.wb_receiver_get_data_size(tags.receiver)
+	    msg = webots.wb_receiver_get_data(tags.receiver)
+	    if #msg==14 then 
+	    	local ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2
+	    	local ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2
+	    	wcm.set_robot_gpsball({ball_gpsx,ball_gpsy});
+--	    	print("ball:",ball_gpsx,ball_gpsy)
+	  	elseif #msg==16 then     		
+    		local obsx=(tonumber(string.sub(msg,2,6))-5)*2
+    		local obsy=(tonumber(string.sub(msg,8,12))-5)*2
+    		local obsid = tonumber(string.sub(msg,14,14))
+--    		print("obs:",obsid,obsx,obsy)
+				if obsid==1 then wcm.set_robot_gpsobs1({obsx,obsy})
+				else wcm.set_robot_gpsobs2({obsx,obsy}) end
+    	end	    
+	    webots.wb_receiver_next_packet(tags.receiver)
+	  end
+	
 	end -- update
 
 	Body.exit = function()

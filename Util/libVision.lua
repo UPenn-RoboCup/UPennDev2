@@ -99,7 +99,11 @@ local function update_head()
 	if not Body then return end
 	-- Get from Body...
   local head = Body.get_head_position()
-  -- TODO: Add any bias for each robot
+  local rpy = Body.get_rpy()
+  --SJ: let's use imu value to recalculate camera transform every frame
+  trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
+  * T.rotY(rpy[2])
+  * T.trans(Config.head.neckX, 0, Config.head.neckZ)
   trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
   trHead = trNeck * dtrCamera
   -- Grab the position only
@@ -163,7 +167,9 @@ local function check_coordinateA(centroid, scale, maxD, maxH1, maxH2,balldebug)
     scale,
   })
 
-  local v = torch.mv(trHead, v0) / v0[4]
+ local v = torch.mv(trHead, v0) / v0[4]
+
+--  if balldebug then debug_ball(string.format("Ball pre-v0:%.2f %.2f %.2f\n",v0[1]/scale,v0[2]/scale,v0[3]/scale)) end
   if balldebug then debug_ball(string.format("Ball v0:%.2f %.2f %.2f\n",v[1],v[2],v[3])) end
 
   local maxH
@@ -235,12 +241,11 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
     else
       -- Check the coordinate on the field
 
---Ball position is totally wrong with webots!!!!
-
       local dArea = math.sqrt((4/math.pi) * propsA.area)
       local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
 
       local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height0,b_height1,true)
+
       if type(v)=='string' then 
         check_fail = true
         debug_ball(v)
@@ -852,6 +857,8 @@ function libVision.entry(cfg, body)
   focalA = focal_length / (focal_base / wa)
   focalB = focalA / scaleB
   -- TODO: get from shm maybe?
+
+  local rpy = Body.get_rpy()
   trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
   * T.rotY(Config.vision.bodyTilt)
   * T.trans(cfg.head.neckX, 0, cfg.head.neckZ)

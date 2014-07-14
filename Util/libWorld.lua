@@ -35,7 +35,6 @@ local t_resample = 0
 
 local yaw0 = 0
 
-
 local obstacles={}
 
 local function reset_obstacles()
@@ -48,7 +47,6 @@ local function new_obstacle(a,r)
   local obstacle={asum=a,rsum=r,asqsum=a*a,rsqsum=r*r,count=1,aave=a,rave=r}  
   return obstacle
 end
-
 
 local function add_obstacle(a,r)
   local min_dist = math.huge
@@ -283,9 +281,29 @@ function libWorld.update(uOdom, detection)
     update_odometry(uOdom)
   end
 
-	update_vision(detection)
-  -- Update pose in wcm
-  wcm.set_robot_pose(vector.pose{poseFilter.get_pose()})
+  update_vision(detection)
+  if Config.use_gps_pose then
+    wcm.set_robot_pose(wcm.get_robot_pose_gps())
+    wcm.set_obstacle_num(2)
+    wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
+    wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
+
+    local pose = wcm.get_robot_pose_gps()
+    local ballglobal = wcm.get_robot_gpsball()
+    wcm.set_robot_ballglobal(ballglobal)
+
+    local balllocal = util.pose_relative({ballglobal[1],ballglobal[2],0},pose)
+    wcm.set_ball_x(balllocal[1])
+    wcm.set_ball_y(balllocal[2])
+    wcm.set_ball_t(Body.get_time())
+  else
+    
+    -- Update pose in wcm
+    wcm.set_robot_pose(vector.pose{poseFilter.get_pose()})
+  end
+
+
+
   
   -- Increment the process count
   count = count + 1
@@ -297,6 +315,14 @@ function libWorld.send()
   to_send.info = ''
   -- Robot info
   to_send.pose = vector.new(wcm.get_robot_pose())
+
+  if IS_WEBOTS then
+    to_send.gpspose = wcm.get_robot_pose_gps()
+    to_send.gpsball = wcm.get_robot_gpsball()
+    to_send.gpsobs1 = wcm.get_robot_gpsobs1()
+    to_send.gpsobs2 = wcm.get_robot_gpsobs2()
+  end
+
   to_send.info = to_send.info..string.format(
     'Pose: %.2f %.2f (%.1f)\n', to_send.pose[1], to_send.pose[2], to_send.pose[3]*RAD_TO_DEG)
   to_send.role = gcm.get_game_role()
@@ -352,7 +378,12 @@ function libWorld.send()
   traj.y = wcm.get_robot_trajy()
   traj.kickto = wcm.get_robot_kickto()
   traj.goalto = wcm.get_robot_goalto()
+  traj.goal1 = wcm.get_robot_goal1()
+  traj.goal2 = wcm.get_robot_goal2()
   traj.ballglobal = wcm.get_robot_ballglobal()  
+
+  traj.goalangles={}
+
   to_send.traj = traj
 
 

@@ -46,7 +46,6 @@ local function robocup_approach( pose, target_pose)
   local vStep = vector.zeros(3)
   -- TODO: Adjust these constants
  
-
   vStep[1] = math.min(maxStep,math.max(-maxStep,rel_pose[1]*0.5))
   vStep[2] = math.min(maxStep,math.max(-maxStep,rel_pose[2]*0.5))
   vStep[3]=0
@@ -61,7 +60,6 @@ end
 
 local function update_velocity()
   local pose = wcm.get_robot_pose()
-  local foot_xOffset = 0.30
   local ballx = wcm.get_ball_x() - Config.fsm.bodyRobocupApproach.target[1]
   local bally = wcm.get_ball_y() - ball_side*Config.fsm.bodyRobocupApproach.target[2]
   local ballr = math.sqrt(ballx*ballx+bally*bally)
@@ -99,7 +97,7 @@ local function update_velocity()
 
 
   if ball_elapsed <0.5 
-    and ballx<Config.fsm.bodyRobocupApproach.th[1]
+    and wcm.get_ball_x()<Config.fsm.bodyRobocupApproach.th[1]
     and math.abs(bally)<Config.fsm.bodyRobocupApproach.th[2] then
 
     print("Final ball pos:",wcm.get_ball_x(),wcm.get_ball_y())
@@ -152,7 +150,6 @@ function state.update()
 
 --not playing?
   if gcm.get_game_state()~=3 then return'stop' end
-
 
   local check_ph = 0.95
   local ph = mcm.get_status_ph()

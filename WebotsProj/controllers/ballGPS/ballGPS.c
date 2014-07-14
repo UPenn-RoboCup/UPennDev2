@@ -23,7 +23,8 @@ int main(int argc, char **argv)
    gps_value = wb_gps_get_values(gps);
    //Something's wrong with deserialization 
    //So we make a fixed width string here
-   sprintf(message,"{%0.3f,%0.3f}",gps_value[0]/2+5.0,-gps_value[2]/2+5.0);
+   //sprintf(message,"{%0.3f,%0.3f}",gps_value[0]/2+5.0,-gps_value[2]/2+5.0);
+   sprintf(message,"{%0.3f,%0.3f}",-gps_value[0]/2+5.0,gps_value[2]/2+5.0);
    wb_emitter_send(emitter,message,strlen(message)+1);
 //   printf("%s\n",message);
   }

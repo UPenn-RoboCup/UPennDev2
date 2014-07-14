@@ -29,6 +29,7 @@ Config.dev.gender       = 'boy'
 Config.debug={
 	webots_wizard=false,	
   -- obstacle = true,
+  follow = false,
 	--approach = false,
   approach = true,
 }
@@ -42,7 +43,10 @@ Config.disable_kick = true
 
 
 if IS_WEBOTS then
-  -- Config.use_gps_pose = false
+  Config.USE_DUMMY_ARMS = false
+  Config.use_gps_pose = false
+  Config.use_gps_pose = true
+
   Config.demo = false
   -- Config.demo = true
   
@@ -68,12 +72,6 @@ for _,v in ipairs(exo) do
   dofile(table.concat(fname))
 end
 
-
-
-
-
-
-
 --Vision parameter hack (robot losing ball in webots)
 if IS_WEBOTS then
   Config.vision.ball.th_min_fill_rate = 0.25 
@@ -84,22 +82,27 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupApproach.target={0.50,0.12}
   Config.fsm.bodyRobocupApproach.th = {0.10, 0.02}
 
-
-  Config.walk.velLimitX = {-.10,.10} 
-  Config.walk.velLimitY = {-.04,.04}
-  Config.walk.velLimitA = {-.2,.2}
-  Config.walk.velDelta  = {0.025,0.02,0.1}
-
+--Config.backward_approach = true
 --[[
-  Config.backward_approach = true
+  
   Config.fsm.bodyRobocupFollow.circleR = 1.0
   Config.fsm.bodyRobocupFollow.kickoffset = 0.5
 --]]
-  Config.fsm.bodyRobocupFollow.circleR = 1.5
-  Config.fsm.bodyRobocupFollow.kickoffset = 0.8
 
-  Config.fsm.bodyRobocupApproach.target={0.50,0.14}
-  Config.fsm.bodyRobocupApproach.th = {0.10, 0.02}
+  Config.fsm.bodyRobocupFollow.circleR = 1
+  Config.fsm.bodyRobocupFollow.kickoffset = 0.5
+
+
+--[[
+  Config.fsm.bodyRobocupApproach.target={0.25,0.12}  
+  Config.fsm.bodyRobocupApproach.th = {0.30, 0.02} 
+--]]
+
+
+  --Even closer!
+  Config.fsm.bodyRobocupApproach.target={0.20,0.12}  
+  Config.fsm.bodyRobocupApproach.th = {0.25, 0.02}
+
 
   Config.world.use_imu_yaw = true
 end

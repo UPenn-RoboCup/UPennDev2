@@ -81,7 +81,7 @@ local right_leg = {
   ttyname = '/dev/ttyUSB2',
 	-- waist pitch
   m_ids = {15,17,19, 21, 23,25, 28},
-  enable_read = true,
+  enable_read = false,
 }
 local left_leg = {
   name = 'lleg',
@@ -95,7 +95,7 @@ local head_rc = {
   name = 'head',
   ttyname = '/dev/ttyUSB0',
   m_ids = {29, 30, 37},
-  enable_read = true,
+  enable_read = false,
 }
 -- For RoboCup, use an MX only chain for the arms
 local arms_rc = {
@@ -402,7 +402,11 @@ if IS_WEBOTS then
   })
 
   servo.rad_offset = vector.new({
-    0,0, -- head
+--    0,0, -- head
+-- I don't know why but the webots model has stupid 10 degree offset...
+-- And this killed all our webots vision for months!
+
+    0,-10 ,
     -90,0,0,  0,  0,0,0,
     0,0,0,0,0,0,
     0,0,0,0,0,0,

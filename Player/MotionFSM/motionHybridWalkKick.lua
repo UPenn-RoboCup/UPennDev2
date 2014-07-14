@@ -76,173 +76,47 @@ local update_odometry = function(uTorso_in)
   wcm.set_robot_utorso1(uTorso_in)
 end
 
-local function calculate_footsteps1()
-  local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
-  local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
-  local tStepMid = Config.walk.tStep-tSlope1-tSlope2
-  uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
-  local uTorsoVel = util.pose_relative(mcm.get_status_uTorsoVel(), {0,0,uTorso_now[3]})
-
-  local supportLeg = 0
-  if uTorsoVel[2]>0 then supportLeg = 1 end --Torso moving to left, right support
-
-  local step_queue={}
-
-
-  print("Kick foot:",mcm.get_walk_kickfoot())
-  print("Next support:",supportLeg)
-
-  local kickvel={
-    {0.06,0,0},
-    {0.12,0,0},
-    {0.06,0,0}
-  }
-  if mcm.get_walk_kickfoot()==supportLeg then
-    kickvel={
-      {0,0,0},
-      {0.06,0,0},
-      {0.12,0,0},
-      {0.06,0,0}
-    }
-  end
-
-  
-  
-
-  local step_queue_count = 0;
-  for i=1,#kickvel  do
-    step_planner.velCurrent = vector.new(kickvel[i])
-
-    local new_step
-    supportLeg = 1-supportLeg
-    step_queue_count = step_queue_count + 1
-    initial_step = false
-
-    last_step = false
-    if i==nFootHolds then last_step = true end
-
-    uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
-      step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step,last_step)
-    local leg_movemet
-    if supportLeg==0 then --Left support
-      leg_movement = util.pose_relative(uRight_next,uRight_now)  
-    else
-      leg_movement = util.pose_relative(uLeft_next,uLeft_now)  
-    end
-    new_step={leg_movement, supportLeg, tSlope1,tStepMid,tSlope2,{0,0,0},{0,Config.walk.stepHeight,0}}
-    step_queue[step_queue_count]=new_step
-  end
-
---Write to the SHM
-  local maxSteps = 40
-  step_queue_vector = vector.zeros(12*maxSteps)
-  for i=1,#step_queue do    
-    local offset = (i-1)*13;
-    --Leg movent, (x,y,a)
-    step_queue_vector[offset+1] = step_queue[i][1][1]
-    step_queue_vector[offset+2] = step_queue[i][1][2]
-    step_queue_vector[offset+3] = step_queue[i][1][3]
-
-    --supportLeg
-    step_queue_vector[offset+4] = step_queue[i][2]
-
-    --tSlope1, tStepMid, tSlope2
-    step_queue_vector[offset+5] = step_queue[i][3]
-    step_queue_vector[offset+6] = step_queue[i][4]    
-    step_queue_vector[offset+7] = step_queue[i][5]    
-
-    --ZMP mod
-    step_queue_vector[offset+8] = step_queue[i][6][1]
-    step_queue_vector[offset+9] = step_queue[i][6][2]
-    step_queue_vector[offset+10] = step_queue[i][6][3]
-
-    --Step height
-    step_queue_vector[offset+11] = step_queue[i][7][1]
-    step_queue_vector[offset+12] = step_queue[i][7][2]
-    step_queue_vector[offset+13] = step_queue[i][7][3]
-  end
-
-  mcm.set_step_footholds(step_queue_vector)
-  mcm.set_step_nfootholds(#step_queue)
-end
-
-
-
-
 
 local function calculate_footsteps()
-  local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
-  local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
-  local tStepMid = Config.walk.tStep-tSlope1-tSlope2
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
   local uTorsoVel = util.pose_relative(mcm.get_status_uTorsoVel(), {0,0,uTorso_now[3]})
   local supportLeg = 0
   if math.abs(uTorsoVel[2])<0.001 then supportLeg=2 
   elseif uTorsoVel[2]>0 then supportLeg = 1 end --Torso moving to left, right support
 
+local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
+local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
+local tStepMid =Config.walk.tStep-tSlope1-tSlope2
 
+  local kicktype = mcm.get_walk_kicktype()
   print("Kick foot:",mcm.get_walk_kickfoot())
+  print("Kick type:",kicktype)
   print("Next support:",supportLeg)
   local step_queue={}
 
   if mcm.get_walk_kickfoot()==0 then --left foot kick
     if supportLeg==0 then --Need one step in place before kick
-      step_queue={
-        {{0,0,0},  1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
-        {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
-        {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rf kick
-        {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
-        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
-      }
-
+      step_queue=Config.kick.stepqueue["LeftWalkKick_From_LS"]
     elseif supportLeg==1 then
-      step_queue={
-        {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
-        {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rf kick
-        {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
-        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
-      }
+      step_queue=Config.kick.stepqueue["LeftWalkKick_From_RS"]
     else --double support
-      step_queue={
-        {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
-        {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
-        {{0.12,0,0},1,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{-1,Config.walk.stepHeight,0}}, --rf kick
-        {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
-        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
-      }
-
-      --stationary kick test
-      step_queue={
-        {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
-        {{0.12,0,0},1,  0.3,1.5,0.3,   {0,0,0},{-2,Config.walk.stepHeight,0}}, --rf kick
-        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
-      }
-
+      if kicktype==0 then
+        step_queue=Config.kick.stepqueue["LeftWalkKick_From_DS"]
+      else
+        step_queue=Config.kick.stepqueue["LeftKick_From_DS"]
+      end
     end
   else 
     if supportLeg==1 then --Need one step in place before kick
-      step_queue={
-        {{0,0,0},  0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
-        {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
-        {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rf kick
-        {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
-        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
-      }
+      step_queue=Config.kick.stepqueue["RightWalkKick_From_RS"]
     elseif supportLeg==0 then
-      step_queue={
-        {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
-        {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rf kick
-        {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
-        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
-      }
+      step_queue=Config.kick.stepqueue["RightWalkKick_From_LS"]
     else --double support
-      step_queue={
-        {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rs
-        {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
-        {{0.12,0,0},0,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{-1,Config.walk.stepHeight,0}}, --rf kick
-        {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --final step
-        {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
-      }      
+      if kicktype==0 then
+        step_queue=Config.kick.stepqueue["RightWalkKick_From_DS"]
+      else
+        step_queue=Config.kick.stepqueue["RightKick_From_DS"]
+      end
     end  
   end
 
@@ -272,17 +146,6 @@ local function calculate_footsteps()
   mcm.set_step_footholds(step_queue_vector)
   mcm.set_step_nfootholds(#step_queue)
 end
-
-
-
-
-
-
-
-
-
-
-
 
 ---------------------------
 -- State machine methods --
@@ -382,7 +245,7 @@ function walk.update()
     --Calculate Leg poses 
     local phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
     local uLeft, uRight = uLeft_now, uRight_now
-    
+   
 
     if supportLeg == 0 then  -- Left support    
       if walkParam[1]==-1 then --WalkKick phase
@@ -421,7 +284,7 @@ function walk.update()
 
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
-    delta_legs, angleShift = moveleg.get_leg_compensation_new(supportLeg,ph,gyro_rpy, angleShift,supportRatio)
+    delta_legs, angleShift = moveleg.get_leg_compensation_new(supportLeg,ph,gyro_rpy, angleShift,supportRatio,t_diff)
 
     --Move legs
     local uTorsoComp = mcm.get_stance_uTorsoComp()
@@ -429,8 +292,6 @@ function walk.update()
     moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,zLeft,zRight,delta_legs)    
     local rpy = Body.get_rpy()
     local roll = rpy[1] * RAD_TO_DEG
-
-
     
     if math.abs(roll)>roll_max then roll_max = math.abs(roll) end
     local roll_threshold = 10 --this is degree
@@ -447,6 +308,8 @@ end -- walk.update
 function walk.exit() 
   print(walk._NAME..' Exit') 
   mcm.set_walk_steprequest(0)
+  print("kick is over!!")
+  mcm.set_walk_kickphase(2) --kick is over
 end
 
 return walk

@@ -217,8 +217,8 @@ fsm.bodyRobocupFollow = {
 }
 
 fsm.bodyRobocupApproach = {
-  target={0.40,0.12},  
-  th = {0.10, 0.02},
+  target={0.30,0.12} ,
+  th = {0.34, 0.02}
 }
 
 if IS_WEBOTS then

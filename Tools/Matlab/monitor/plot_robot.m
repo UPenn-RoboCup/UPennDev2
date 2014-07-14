@@ -19,6 +19,26 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
   
   hold on;
 
+
+  if isfield(robot_struct, 'gpsball')
+    plot(robot_struct.gpsball(1),robot_struct.gpsball(2),'O',...
+      'MarkerSize',10,'MarkerFaceColor',[1 0 0]...
+      );
+  end
+
+  if isfield(robot_struct, 'gpsobs1')
+    plot(robot_struct.gpsobs1(1),robot_struct.gpsobs1(2),'s',...
+      'MarkerSize',10,'MarkerFaceColor',[0 1 0]...
+      );
+  end
+
+  if isfield(robot_struct, 'gpsobs2')
+    plot(robot_struct.gpsobs2(1),robot_struct.gpsobs2(2),'s',...
+      'MarkerSize',10,'MarkerFaceColor',[0 1 0]...
+      );
+  end
+
+
   if isfield(robot_struct, 'fall') && robot_struct.fall
     ca=1;sa=0;
     plot_fallen_robot(robot_struct,scale)
@@ -44,6 +64,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       if numel(obsStats)>0
         plot_obstacle(obsStats, scale);
       end
+      plot_gps_robot(robot_struct,scale);
       
     elseif drawlevel==2 
       %additional simple vision info for team monitor
@@ -123,36 +144,22 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
   end
 
   function plot_gps_robot(robot,scale)
+  
     if (~isfield(robot, 'gpspose'))
       return
     end
-    xgps = robot_struct.gpspose.x;
-    ygps = robot_struct.gpspose.y;
-    rErr = sqrt((x0-xgps)^2+(y0-ygps)^2);
-    if rErr>0
-      cagps = cos(robot_struct.gpspose.a);
-      sagps = sin(robot_struct.gpspose.a);
 
-      pl_len=1/scale;
-      dx=cagps*pl_len;
-      dy=sagps*pl_len;
-      quiver(xgps,ygps,dx,dy,0,'b');
-      plot(xgps,ygps,'bo');
+    ca1 = cos(robot.gpspose(3));
+    sa1 = sin(robot.gpspose(3));
 
-      %Draw error circle
-      errBox = [xgps-rErr ygps-rErr 2*rErr 2*rErr];
-      rectangle('Position', errBox, 'Curvature',[1,1], ...
-	'LineStyle','--');
+    xRobot = [.125 -.125 -.125 .125]*2/scale;
+    yRobot = [0 -.10 +.10 0]*2/scale;
 
-      aErr=abs(robot.attackBearing-robot.gps_attackbearing);
-      a1 = robot.gps_attackbearing + aErr + robot_struct.gpspose.a;
-      a2 = robot.gps_attackbearing - aErr + robot_struct.gpspose.a;
-      rPie = 1/scale;
-
-      plot([xgps xgps+rPie*cos(a1)],[ygps ygps+rPie*sin(a1)]);
-      plot([xgps xgps+rPie*cos(a2)],[ygps ygps+rPie*sin(a2)]);
-
-    end
+    xr  = xRobot*ca1 - yRobot*sa1 + robot.gpspose(1);
+    yr =  xRobot*sa1 + yRobot*ca1 + robot.gpspose(2);
+   
+    hr = plot(xr, yr, 'b');
+    set(hr,'LineWidth',3);
 
   end
 

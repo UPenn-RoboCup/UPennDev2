@@ -402,6 +402,7 @@ end
 local function save_param(self)
   local outfile=assert(io.open(HOME.."/Data/zmpparams.lua","w")); 
   local data=''
+  data=data..string.format("-- tZmp: %.2f\n",self.tZmp)
   data=data..string.format("zmpstep.params = true;\n")
   data=data..string.format("zmpstep.param_k1_px={%f,%f,%f}\n",
    self.param_k1_px[1][1],self.param_k1_px[1][2],self.param_k1_px[1][3]);
@@ -417,7 +418,7 @@ local function save_param(self)
 
   for i=1,self.preview_steps do
     data=data..string.format("%f,",self.param_k1[1][i]);
-    if i%5==0 then   data=data.."\n    " ;end
+    if i%10==0 then   data=data.."\n    " ;end
   end
   data=data..string.format("}\n");
   outfile:write(data);
@@ -433,11 +434,16 @@ local function precompute(self)
   -- param_a : 3x3
   -- param_b : 4x1
   ------------------------------------
+
+  local timeStep = self.preview_tStep
+  self.param_a=matrix {{1,timeStep,timeStep^2/2},{0,1,timeStep},{0,0,1}}
+  self.param_b=matrix.transpose({{timeStep^3/6, timeStep^2/2, timeStep,timeStep}})  
+  
   if Config.zmpstep.params then
     self.param_k1_px = matrix:new({Config.zmpstep.param_k1_px});
     self.param_k1 = matrix:new({Config.zmpstep.param_k1});
-    self.param_a = matrix:new(Config.zmpstep.param_a);
-    self.param_b = matrix.transpose(matrix:new({Config.zmpstep.param_b}));
+--    self.param_a = matrix:new(Config.zmpstep.param_a);
+--    self.param_b = matrix.transpose(matrix:new({Config.zmpstep.param_b}));
     print("ZMP parameters loaded")
   else
     print("Generating ZMP parameters")
@@ -474,8 +480,8 @@ local function precompute(self)
 
     self.param_k1_px = param_k1_px
     self.param_k1 = param_k1
-    self.param_a = param_a
-    self.param_b = param_b
+--    self.param_a = param_a
+--    self.param_b = param_b
 
     self:save_param()
     print("ZMP parameters saved")

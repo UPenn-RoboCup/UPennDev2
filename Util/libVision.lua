@@ -650,10 +650,13 @@ function libVision.entry(cfg, body)
   -- Center should be calibrated and saved in Config
   x0A, y0A = 0.5*(wa-1)+cfg.cx_offset, 0.5*(ha-1)+cfg.cy_offset
   x0B, y0B = 0.5*(wb-1)+cfg.cx_offset/scaleB, 0.5*(hb-1)+cfg.cy_offset/scaleB
+  
   -- Delta transform from neck to camera
 	cameraPitch = cfg.head.cameraPitch or 0
 	cameraRoll = cfg.head.cameraRoll or 0
 	cameraPos = cfg.head.cameraPos or {0,0,0}
+  hcm.set_camera_pitch(cameraPitch)
+  hcm.set_camera_roll(cameraRoll)
   dtrCamera = T.trans(unpack(cameraPos))
   * T.rotY(cameraPitch or 0)
   focalA = focal_length / (focal_base / wa)

@@ -4,7 +4,8 @@ local Body = require'Body'
 
 -- Configuration
 local dtrCamera = T.trans(unpack(Config.head.cameraPos or {0,0,0}))
-  * T.rotY(Config.head.cameraAngle[2] or 0)
+  * T.rotY(Config.head.cameraPitch or 0)
+  * T.rotX(Config.head.cameraRoll or 0)
 local trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
 * T.rotY(Config.vision.bodyTilt)
 * T.trans(Config.head.neckX, 0, Config.head.neckZ)
@@ -40,7 +41,7 @@ HeadTransform.ikineCam = function(x0, y0, z0)
   local d = math.sqrt(r ^ 2 + z ^ 2)
   local p0 = math.atan2(r, z) - math.acos(cam_z/(d + 1E-10))
 
-  local pitch = p0 - Config.head.cameraAngle[2]
+  local pitch = p0 - Config.head.cameraPitch
 
   --If the ball is right in front of the robot, fix yaw angle
   if pitch>45*math.pi/180 and math.abs(yaw)<45*math.pi/180 then

@@ -211,6 +211,9 @@ if IS_WEBOTS then
   vision.scaleA = 2
   vision.scaleB = 2
   
+  head.cameraPitch = 0
+  head.cameraRoll = 0
+  
   vision.goal = {
     th_min_bbox_area = 80, 
     th_nPostB = 10,

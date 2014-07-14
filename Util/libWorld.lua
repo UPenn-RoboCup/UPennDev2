@@ -179,7 +179,7 @@ local function update_vision(detected)
   obstacle = detected.obstacles
   if obstacle then
     --SJ: we keep polar coordinate statstics of the observed obstacles
-    print("detected obstacles:",#obstacle.xs)
+    -- print("detected obstacles:",#obstacle.xs)
     for i=1,#obstacle.xs do
       local x, y = obstacle.xs[i], obstacle.ys[i]
       local r =math.sqrt(x^2+y^2)

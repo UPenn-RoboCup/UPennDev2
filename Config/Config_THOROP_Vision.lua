@@ -15,7 +15,7 @@ local head = {
 
   cameraPos = {0.075, 0.0, 0.13}, --C920
 	cameraPitch = 5*DEG_TO_RAD,
-	cameraRoll = 0*DEG_TO_RAD,
+	cameraRoll = 14*DEG_TO_RAD,
   --From CoM to neck joint
   neckZ = .165 + .161,
   neckX = 0,

@@ -7,6 +7,7 @@ local vector = require'vector'
 local HT = require'libHeadTransform'
 local util = require'util'
 require'wcm'
+require'mcm'
 require'gcm'
 
 local ball_radius = Config.world.ballDiameter / 2
@@ -21,6 +22,7 @@ local yawMax = Config.head.yawMax
 
 function state.entry()
   print(state._NAME..' Entry' )
+	mcm.set_head_bias(Config.fsm.headTrack.headBias)
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
@@ -67,10 +69,9 @@ function state.update()
     end
   end
 
-
-
-
   -- Clamp
+	yaw = yaw - mcm.get_head_bias()[1]
+	pitch = pitch - mcm.get_head_bias()[2]
   yaw = math.min(math.max(yaw, yawMin), yawMax)
   pitch = math.min(math.max(pitch, pitchMin), pitchMax)
 

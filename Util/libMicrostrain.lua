@@ -53,7 +53,7 @@ local function get_info(self)
   local pkt1_sz  = response[5]
   local pkt2_idx = 5+pkt1_sz --4+pkt1_sz+1
   local pk2_sz   = response[pkt2_idx]
-  local firmware_version = 256*response[pkt2_idx+2]+response[pkt2_idx+3]
+  local firmware_version = 256 * response[pkt2_idx+2]+response[pkt2_idx+3]
   local information = string.char(unpack(response,pkt2_idx+4,pkt2_idx+pk2_sz-1))
   local info = {firmware_version}
   for k in information:gmatch('[^%s]+') do table.insert(info,k) end
@@ -142,28 +142,38 @@ local function configure(self, do_permanent)
     0x07, 0x00, 0x01, -- Delta Theta Message @ 100Hz
   }
   local response = write_command(self.fd, stream_fmt)
-  --[[
-  for k,v in ipairs(response) do
-    print(string.format('%d: %02X',k,v))
-  end
-  --]]
-  -- New AHRS format
-  local stream_fmt = { 0x75, 0x65, 0x0C,
-    0x13, -- Command length
-    0x13, 0x0A, -- Field Length, and Field Desctiption (AHRS)
-    0x01, 0x02, -- Set 2 messages
+  unix.usleep(1e5)
+
+  -- New NAV format
+  stream_fmt = { 0x75, 0x65, 0x0C,
+    0x0A, -- Command length
+    0x0D, 0x0D, -- Field Length, and Field Desctiption (NAV)
+    0x01, 0x03, -- Set 3 messages
+    0x10, 0x00, 0x01, -- status
     0x05, 0x00, 0x01, -- Estimated Orientation, Euler Angles @ 100Hz
-    0x05, 0x00, 0x01, -- Estimated Gyro Bias
+    0x06, 0x00, 0x01, -- Estimated Gyro Bias
   }
   local response = write_command(self.fd, stream_fmt)
+  for k,v in ipairs(response) do print(string.format('%d: %02X',k,v)) end
+
 
   if do_permanent then
     -- Save only once! Maybe in the eeprom, so lots of saving could be bad...
+--[[
     local save_fmt = { 0x75, 0x65, 0x0C,
       0x04, -- Command length
       0x04, 0x08, -- Packet length
       0x03, 0x00 -- 3 to perform the save
     }
+--]]
+    local save_fmt = { 0x75, 0x65, 0x0C,
+      0x08, -- Command length
+      0x04, 0x08, -- Packet length
+      0x03, 0x00, -- 3 to perform the save
+      0x04, 0x0A, -- Packet length
+      0x03, 0x00 -- 3 to perform the save
+    }
+
     local response = write_command(self.fd,save_fmt)
     --[[
     for k,v in ipairs(response) do
@@ -199,6 +209,7 @@ local function ahrs_and_nav_on(self)
     0x05, 0x11, 0x01, 0x01, 0x01, -- ahrs
     0x05, 0x11, 0x01, 0x03, 0x01, -- nav
   })
+  for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
 end
 
 -- TODO: Make this like input_co of libDynamixel
@@ -222,21 +233,22 @@ local function read_ahrs(self)
 	ffi.copy(euler_tmp, buf:sub(49, 60):reverse(), cpy_sz)
 	-- Delta
 	ffi.copy(del_gyr_tmp, buf:sub(63, 74):reverse(), cpy_sz)
-  return acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp
   --[[
 	-- Using the non-FFI API
   local _gyro = carray.float(buf:sub( 7,18):reverse())
   local _rpy  = carray.float(buf:sub(21,32):reverse())
   --]]
-  --[[
+
   -- Debugging
   local hex = {}
-  local bytes = {buf:byte(1, -1)}
-  for i,v in ipairs(bytes) do
-    table.insert(hex, string.format('0x%02X', v))
-  end
-  print(table.concat(hex,' '))
-  --]]
+  local bytes = {buf:byte(77, -1)}
+  for i,v in ipairs(bytes) do table.insert(hex, string.format('0x%02X', v)) end
+--  print("HI", #buf)
+--  print(table.concat(hex,' '))
+--  print()
+
+  return acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp
+
 end
 
 local function idle(dev)

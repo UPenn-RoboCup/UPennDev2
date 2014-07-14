@@ -132,13 +132,14 @@ local function configure(self, do_permanent)
 
   -- New AHRS format
   local stream_fmt = { 0x75, 0x65, 0x0C,
-    0x10, -- Command length
-    0x10, 0x08, -- Field Length, and Field Desctiption (AHRS)
-    0x01, 0x04, -- Set 4 messages
+    0x13, -- Command length
+    0x13, 0x08, -- Field Length, and Field Desctiption (AHRS)
+    0x01, 0x05, -- Set 5 messages
     0x04, 0x00, 0x01, -- Accel Scaled Message @ 100Hz
     0x05, 0x00, 0x01, -- Gyro Scaled Message @ 100Hz
     0x06, 0x00, 0x01, -- Magnetometer Message @ 100Hz
     0x0C, 0x00, 0x01, -- Euler Angles Message @ 100Hz
+    0x07, 0x00, 0x01, -- Delta Theta Message @ 100Hz
   }
   local response = write_command(self.fd,stream_fmt)
   --[[
@@ -184,8 +185,8 @@ end
 
 
 -- TODO: Make this like input_co of libDynamixel
-local acc_tmp, gyr_tmp, mag_tmp, euler_tmp =
-	ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]'
+local acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp=
+	ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]'
 local cpy_sz = 3 * ffi.sizeof('float')
 
 local function read_ahrs(self)
@@ -202,7 +203,9 @@ local function read_ahrs(self)
 	ffi.copy(mag_tmp, buf:sub(35, 46):reverse(), cpy_sz)
 	-- Euler
 	ffi.copy(euler_tmp, buf:sub(49, 60):reverse(), cpy_sz)
-  return acc_tmp, gyr_tmp, mag_tmp, euler_tmp
+	-- Delta
+	ffi.copy(del_gyr_tmp, buf:sub(63, 74):reverse(), cpy_sz)
+  return acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp
   --[[
 	-- Using the non-FFI API
   local _gyro = carray.float(buf:sub( 7,18):reverse())

@@ -86,11 +86,7 @@ if IS_WEBOTS or HOSTNAME ~="alvin" then
   walk.velLimitA = {-.2,.2}
   walk.velDelta  = {0.025,0.02,0.1}
 
---[[
---faster
-  walk.velLimitX = {-.20,.20} 
-  walk.velLimitY = {-.08,.08}
-  --]]
+
 end
 
 -----------------------------------------------------------
@@ -218,30 +214,24 @@ kick.stepqueue["LeftWalkKick_From_RS"]=
     {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
   }
 
---[[
-
 kick.stepqueue["LeftWalkKick_From_DS"]=
   {
-    {{0.0,0,0},2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
     {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
---    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs, left foot kick
-    {{0.18,0,0},1,  tSlope1, tStepMid*1.5, tSlope2,   {0,0,0},{-1,walk.stepHeight,0}}, --rs, left foot kick
-    {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --final step
+    {{0.07,0,0},1,  tSlope1, 1.5, tSlope2,   {0,0,0},{-2,walk.stepHeight,0}}, --rf kick    
     {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
   }
 
---]]
 
 kick.stepqueue["LeftKick_From_DS"]=
   {
     {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
-    {{0.12,0,0},1,  0.3,2,0.3,   {0,0,0},{-2,walk.stepHeight,0}}, --rf kick
+    {{0.12,0,0},1,  0.3,2,0.3,   {0,0.02,0},{-2,walk.stepHeight,0}}, --rf kick
     {{0,0,0,},  2,   0.1, 1, 0.1,     {0,0.0,0},  {0, 0, 0}},                  
     {{0.08,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
     {{0,0,0,},  2,   0.1, 1, 0.1,     {0,0.0,0},  {0, 0, 0}},                  
   }
 
-kick.stepqueue["LeftWalkKick_From_DS"]= kick.stepqueue["LeftKick_From_DS"]
 
 
 kick.stepqueue["RightWalkKick_From_RS"]=
@@ -266,24 +256,43 @@ kick.stepqueue["RightWalkKick_From_DS"]=
     {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
     {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
     {{0.07,0,0},0,  tSlope1, 1.5, tSlope2,   {0,0,0},{-2,walk.stepHeight,0}}, --rf kick    
---    {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --final step
     {{0,0,0,},  2,   0.1, 1, 1,     {0,0.0,0},  {0, 0, 0}},                  
   }
 
 
-kick.stepqueue["RightKick_From_DS"]=kick.stepqueue["RightWalkKick_From_DS"]
+kick.stepqueue["RightKick_From_DS"]=
 
---[[
+  {
+    {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
+    {{0.12,0,0},0,  0.3,2,0.3,   {0,-0.02,0},{-2,walk.stepHeight,0}}, --rf kick
+    {{0,0,0,},  2,   0.1, 1, 0.1,     {0,0.0,0},  {0, 0, 0}},                  
+    {{0.08,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0,0,0,},  2,   0.1, 1, 0.1,     {0,0.0,0},  {0, 0, 0}},                  
+  }
+
+if IS_WEBOTS then
+
+kick.stepqueue["LeftKick_From_DS"]=
+  {
+    {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
+    {{0.12,0,0},1,  0.3,1.5,0.3,   {0,0.03,0},{-2,walk.stepHeight,0}}, --lf kick
+    {{0,0,0,},  2,   0.1, 1, 0.1,     {0,0.0,0},  {0, 0, 0}},                  
+    {{0.08,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0,0,0,},  2,   0.1, 1, 0.1,     {0,0.0,0},  {0, 0, 0}},                  
+  }
+
 kick.stepqueue["RightKick_From_DS"]=
   {
     {{0,0,0},  2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
-    {{0.12,0,0},0,  0.3,1.5,0.3,   {0,0,0},{-2,walk.stepHeight,0}}, --lf kick
+    {{0.12,0,0},0,  0.3,1.5,0.3,   {0,-0.03,0},{-2,walk.stepHeight,0}}, --rf kick
     {{0,0,0,},  2,   0.1, 1, 0.1,     {0,0.0,0},  {0, 0, 0}},                  
+    {{0.08,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0,0,0,},  2,   0.1, 1, 0.1,     {0,0.0,0},  {0, 0, 0}},                  
+  }
 
-    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rs
-    {{0,0,0,},  2,   0.1, 1, 0.1,     {0,0.0,0},  {0, 0, 0}},                  
-  }      
---]]
+
+end
+
 
 
 

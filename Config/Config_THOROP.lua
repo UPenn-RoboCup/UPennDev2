@@ -54,7 +54,7 @@ if IS_WEBOTS then
   Config.disable_kick = false
 --  Config.disable_kick = true
   Config.use_walkkick = true
---  Config.use_walkkick = false
+  Config.use_walkkick = false
 end
 
 
@@ -105,6 +105,12 @@ if IS_WEBOTS then
 
 
   Config.world.use_imu_yaw = true
+
+
+--faster
+  Config.walk.velLimitX = {-.20,.20} 
+  Config.walk.velLimitY = {-.08,.08}
+  
 end
 
 

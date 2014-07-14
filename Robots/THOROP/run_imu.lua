@@ -28,7 +28,8 @@ if not IS_THREAD then
   signal.signal("SIGTERM", shutdown)
 end
 
-local OVERRIDE_YAW = false
+local USE_MAG = false
+local OVERRIDE_YAW = true
 local CALIBRATE_GYRO_BIAS = true
 
 -- Modules
@@ -40,8 +41,8 @@ local vector = require'vector'
 local get_time = unix.time
 local acc_ptr  = dcm.sensorPtr.accelerometer
 local gyro_ptr = dcm.sensorPtr.gyro
-local mag_ptr  = dcm.sensorPtr.magnetometer
 local rpy_ptr  = dcm.sensorPtr.rpy
+local mag_ptr  = dcm.sensorPtr.magnetometer
 local acc, gyro, mag, rpy = vector.zeros(3), vector.zeros(3), vector.zeros(3), vector.zeros(3)
 local read_count, last_read_count = 0,0 --to get hz
 local sformat = string.format
@@ -59,7 +60,7 @@ collectgarbage()
 
 local function do_read()
 	-- Get the accelerometer, gyro, magnetometer, and euler angles
-	local a, g, m, e, dg = microstrain:read_ahrs()
+	local a, g, dg, e, m = microstrain:read_ahrs()
   t_read = get_time()
 	if not a then return end
 
@@ -67,14 +68,20 @@ local function do_read()
 	acc_ptr[0], acc_ptr[1], acc_ptr[2] = a[1], a[2], -a[0]
 	gyro_ptr[0], gyro_ptr[1], gyro_ptr[2] =
     g[1] - gyro_yaw_bias[1], g[2] - gyro_yaw_bias[2], -g[0] - gyro_yaw_bias[3]
-	mag_ptr[0], mag_ptr[1], mag_ptr[2] = m[1], m[2], -m[0]
-	rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], e[2], -e[0]
+  if USE_MAG then
+	  mag_ptr[0], mag_ptr[1], mag_ptr[2] = m[1], m[2], -m[0]
+  end
   -- delta yaw in that episode, less the initial offset
   local del_yaw = -dg[0]
   yaw = yaw + (del_yaw - gyro_yaw_bias[3] * (t_read - t_last_read) )
   
   -- Overwrite the RPY value
-  if OVERRIDE_YAW then rpy_ptr[2] = yaw end
+  if OVERRIDE_YAW then
+  	rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], e[2], yaw
+  else
+    rpy0_yaw = rpy0_yaw or -e[0]
+  	rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], e[2], -e[0] - rpy0_yaw
+  end
 
   -- Save the time and count
   read_count = read_count + 1
@@ -86,7 +93,7 @@ end
 microstrain = lM.new_microstrain('/dev/ttyACM0', OPERATING_SYSTEM~='darwin' and 921600)
 -- Turn it on
 microstrain:ahrs_on()
-microstrain:ahrs_and_nav_on()
+--microstrain:ahrs_and_nav_on()
 t0 = get_time()
 t_debug, t_last, t = t0, t0, t0
 t_last_read = t0
@@ -98,10 +105,11 @@ if CALIBRATE_GYRO_BIAS then
   local t_diff
   repeat
     t = do_read()
+    if not t then break end
     t_diff = t - t0
     gyro_accumulated = gyro_accumulated + dcm.get_sensor_gyro()
     count_accumulated = count_accumulated + 1
-  until t_diff > n
+  until t_diff > n or not running
   yaw = 0
   gyro_yaw_bias = gyro_accumulated / count_accumulated
   print("BIAS:", gyro_yaw_bias, gyro_accumulated)
@@ -130,10 +138,12 @@ while running do
 			sformat('\nIMU | Uptime %.2f sec, Mem: %d kB', t-t0, kb),
 			sformat('Acc (g): %.2f %.2f %.2f', unpack(acc)),
 			sformat('Gyro (rad/s): %.2f %.2f %.2f', unpack(gyro)),
-			sformat('Mag (Gauss): %.2f %.2f %.2f', unpack(mag)),
 			sformat('RPY:  %.2f %.2f %.2f', unpack(RAD_TO_DEG * rpy)),
-      sformat('Yaw: %.2f, Integration: %.2f', RAD_TO_DEG * rpy[3], RAD_TO_DEG * yaw),
+--      sformat('Yaw: %.2f, Integration: %.2f', RAD_TO_DEG * rpy[3], RAD_TO_DEG * yaw),
 		}
+    if USE_MAG then
+      table.insert(debug_str, sformat('Mag (Gauss): %.2f %.2f %.2f', unpack(mag)))
+    end
     debug_str = table.concat(debug_str, '\n')
     if parent_ch then
       parent_ch:send(debug_str)

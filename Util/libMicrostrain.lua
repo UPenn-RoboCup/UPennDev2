@@ -5,6 +5,7 @@
 local libMicrostrain = {}
 local stty = require'stty'
 local unix = require'unix'
+local bit = require'bit'
 
 --for k,v in ipairs(response) do print(string.format('%d: %02X',k,v)) end
 local function cmd2string(cmd, do_print)
@@ -16,6 +17,7 @@ local function cmd2string(cmd, do_print)
   end
   local hex, dec = table.concat(instruction_bytes, ' '), table.concat(instruction_decs, ' ')
   if do_print then
+    print("Packet Length:", #cmd)
     print('hex', hex)
     print('dec', dec)
   end
@@ -33,8 +35,9 @@ local function generate_packet(byte_array)
   table.insert(byte_array,checksum_byte2)
   -- Check the length
   if #byte_array-6 ~= byte_array[4] then
-    print("BAD PAYLOAD LENGTH")
+    print("BAD PAYLOAD LENGTH", #byte_array-6, byte_array[4])
     cmd2string(byte_array, true)
+    os.exit()
   end
   return string.char(unpack(byte_array))
 end
@@ -96,19 +99,27 @@ local function change_baud(microstrain)
 end
 
 local function enable_magnetometer_compensation(microstrain)
-  local bit = require'bit'
+  local DISABLE_MAG = true
   -- Disables magnetometer and north
   local data_conditioning_flags = bit.bor( 0x0100, 0x0400)
   -- Disables only north
-  --local data_conditioning_flags = bit.bor( 0x0400)
-  local hex_flags = bit.tohex(data_conditioning_flags):gmatch('%d%d')
+  --local data_conditioning_flags = 0x0400
+  local hex_flags = bit.tohex(data_conditioning_flags, 4):gmatch('%d%d')
   local flag_bytes = {}
-  local disable_north_compensation_cmd = {
-    0x75, 0x65, 0x0C, 0x10, 0x10, 0x35,
+  local disable_north_compensation_cmd = { 0x75, 0x65, 0x0C,
+    0x10,
+    0x10, 0x35,
     0x01, -- Apply new settings
     0x00, 0x0A, -- default decimation
   }
-  for hex in hex_flags do table.insert(disable_north_compensation_cmd, hex) end
+  if DISABLE_MAG then
+    for hex in hex_flags do
+      table.insert(disable_north_compensation_cmd, tonumber(hex, 16) )
+    end
+  else
+    table.insert(disable_north_compensation_cmd, 0x04)
+    table.insert(disable_north_compensation_cmd, 0x00)
+  end
   for _, v in ipairs(
   {
     0x0E, -- New Accel/Gyro Filter Width
@@ -121,6 +132,7 @@ local function enable_magnetometer_compensation(microstrain)
   do
     table.insert(disable_north_compensation_cmd, v)
   end
+  --cmd2string(disable_north_compensation_cmd, true)
   -- Send to the device
   write_command(microstrain.fd, disable_north_compensation_cmd)
 end
@@ -136,17 +148,17 @@ local function configure(self, do_permanent)
     0x01, 0x05, -- Set 5 messages
     0x04, 0x00, 0x01, -- Accel Scaled Message @ 100Hz
     0x05, 0x00, 0x01, -- Gyro Scaled Message @ 100Hz
-    0x06, 0x00, 0x01, -- Magnetometer Message @ 100Hz
-    0x0C, 0x00, 0x01, -- Euler Angles Message @ 100Hz
     0x07, 0x00, 0x01, -- Delta Theta Message @ 100Hz
+    0x0C, 0x00, 0x01, -- Euler Angles Message @ 100Hz
+    0x06, 0x00, 0x01, -- Magnetometer Message @ 100Hz
   }
   local response = write_command(self.fd, stream_fmt)
   unix.usleep(1e5)
 
   -- New NAV format
   stream_fmt = { 0x75, 0x65, 0x0C,
-    0x0A, -- Command length
-    0x0D, 0x0D, -- Field Length, and Field Desctiption (NAV)
+    0x0D, -- Command length
+    0x0D, 0x0A, -- Field Length, and Field Desctiption (NAV)
     0x01, 0x03, -- Set 3 messages
     0x10, 0x00, 0x01, -- status
     0x05, 0x00, 0x01, -- Estimated Orientation, Euler Angles @ 100Hz
@@ -154,16 +166,15 @@ local function configure(self, do_permanent)
   }
   local response = write_command(self.fd, stream_fmt)
   
-  --[[
   -- Just AHRS
-      local save_fmt = { 0x75, 0x65, 0x0C,
-        0x04, -- Command length
-        0x04, 0x08, -- Packet length
-        0x03, 0x00 -- 3 to perform the save
-      }
-  --]]
+  local save_fmt = { 0x75, 0x65, 0x0C,
+    0x04, -- Command length
+    0x04, 0x08, -- Packet length
+    0x03, 0x00 -- 3 to perform the save
+  }
   
   -- AHRS and NAV
+--[[
   local save_fmt = { 0x75, 0x65, 0x0C,
     0x08, -- Command length
     0x04, 0x08, -- Packet length
@@ -171,7 +182,27 @@ local function configure(self, do_permanent)
     0x04, 0x0A, -- Packet length
     0x03, 0x00 -- 3 to perform the save
   }
+--]]
   local response = write_command(self.fd,save_fmt)
+
+  -- Set the initial heading to zero
+  local init_heading = { 0x75, 0x65, 0x0D,
+    0x06, -- Command length
+    0x06, 0x03, -- Packet length
+    0x00, 0x00,
+    0x00, 0x00,
+  }
+  local response = write_command(self.fd, init_heading)
+
+  -- Set the initial attitude
+  local init_att = { 0x75, 0x65, 0x0D,
+    0x06, -- Command length
+    0x06, 0x04, -- Packet length
+    0x00, 0x00,
+    0x00, 0x00,
+  }
+  local response = write_command(self.fd, init_att)
+
   if do_permanent then
     -- Device startup settings
   end
@@ -207,6 +238,7 @@ end
 -- TODO: Make this like input_co of libDynamixel
 local acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp=
 	ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]'
+local nav_stat = ffi.new"uint16_t[3]"
 local cpy_sz = 3 * ffi.sizeof('float')
 
 local function read_ahrs(self)
@@ -219,22 +251,29 @@ local function read_ahrs(self)
 	ffi.copy(acc_tmp, buf:sub(7, 18):reverse(), cpy_sz)
 	-- Gyro
 	ffi.copy(gyr_tmp, buf:sub(21, 32):reverse(), cpy_sz)
-	-- Mag
-	ffi.copy(mag_tmp, buf:sub(35, 46):reverse(), cpy_sz)
+	-- Delta
+	ffi.copy(del_gyr_tmp, buf:sub(35, 46):reverse(), cpy_sz)
 	-- Euler
 	ffi.copy(euler_tmp, buf:sub(49, 60):reverse(), cpy_sz)
-	-- Delta
-	ffi.copy(del_gyr_tmp, buf:sub(63, 74):reverse(), cpy_sz)
+	-- Mag
+	ffi.copy(mag_tmp, buf:sub(63, 74):reverse(), cpy_sz)
+
+  -- NAV stuff
+--[[
+  if #buf>76 then
+    -- Debugging
+--    cmd2string({buf:byte(77, -1)}, true)
+    ffi.copy(nav_stat, buf:sub(83, 88):reverse(), 3 * ffi.sizeof('uint16_t'))
+  end
+--]]
+
   --[[
 	-- Using the non-FFI API
   local _gyro = carray.float(buf:sub( 7,18):reverse())
   local _rpy  = carray.float(buf:sub(21,32):reverse())
   --]]
 
-  -- Debugging
-  cmd2string({buf:byte(1, -1)}, true)
-
-  return acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp
+  return acc_tmp, gyr_tmp, del_gyr_tmp, euler_tmp, mag_tmp
 end
 
 ---------------------------
@@ -285,11 +324,9 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
   
   -- Configure params
   enable_magnetometer_compensation(dev)
-  unix.usleep(1e5)
   
 	-- Configure the device
 	configure(dev)
-  unix.usleep(1e5)
 
   return dev
 

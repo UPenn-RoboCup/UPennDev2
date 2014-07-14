@@ -31,6 +31,9 @@ function state.entry()
   kick_started = false
 end
 
+
+--TODO: if the robot cannot touch the ball, it cannot escape bodykick
+
 function state.update()
   if Config.disable_kick then
     local ballx = wcm.get_ball_x() - Config.fsm.bodyRobocupApproach.target[1]

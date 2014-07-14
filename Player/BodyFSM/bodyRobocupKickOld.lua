@@ -26,11 +26,6 @@ function state.entry()
   t_update = t_entry
   mcm.set_walk_stoprequest(1)
   kick_started = false
-  mcm.set_walk_kickphase(0)
-  mcm.set_walk_stoprequest(1)
-
-
-  mcm.set_walk_kicktype(1)
 end
 
 function state.update()
@@ -49,25 +44,22 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-
-  if mcm.get_walk_kickphase()==0 then    
-    if mcm.get_walk_ismoving()==0 then
-      mcm.set_walk_steprequest(1)
-      mcm.set_walk_kickphase(1)
-    end
-  elseif mcm.get_walk_kickphase()==2 then
-    print("bodykick done!")
-    if mcm.get_walk_kicktype()==1 then
-      return 'testdone' --this means testing mode (don't run body fsm)      
+  if mcm.get_walk_ismoving()==0 then
+    if kick_started then 
+      if mcm.get_walk_kicktype()==1 then
+        return 'testdone' --this means testing mode (don't run body fsm)      
+      else
+        return 'done'
+      end
     else
-      return 'done'
+      mcm.set_walk_steprequest(1)
+      kick_started = true
     end
-  end 
+  end
 end
 
 function state.exit()
   print(state._NAME..' Exit' )
-  mcm.set_walk_kickphase(0) --now can kick again
 end
 
 return state

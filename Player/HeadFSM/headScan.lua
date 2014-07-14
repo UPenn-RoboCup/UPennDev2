@@ -65,7 +65,13 @@ function state.update()
 
   -- Check if we found the ball
   local ball_elapsed = t - wcm.get_ball_t()
-  if ball_elapsed < 0.1 then
+
+  wcm.set_ball_tlook(t)
+  if wcm.get_ball_t()>wcm.get_ball_tlook() then
+    wcm.set_ball_tlook(wcm.get_ball_t())
+  end
+
+  if ball_elapsed < 0.1 then    
     return 'ballfound' --if ball found exit
   end
 

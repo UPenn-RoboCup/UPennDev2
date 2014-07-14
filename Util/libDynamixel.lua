@@ -486,6 +486,7 @@ for k,v in pairs(mx_registers) do
     if using_status_return and single then
       local status = get_status(bus.fd)
       if not status then return end
+      if status.error~=0 then return status end
       local value = byte_to_number[sz](unpack(status.parameter))
       return status, value
     end
@@ -652,7 +653,7 @@ local function ping_probe(self, protocol, twait)
 			table.insert(found_ids, id)
 			local lsb, msb = unpack(status.parameter)
       print(string.format('\nFound %d.0 Motor: %d, Model (%d, %d)', protocol, id, msb, lsb))
-			if msb>0 then
+			if msb > 2 then
 				-- NX
 				table.insert(nx_ids, id)
 				has_nx_id[id] = true
@@ -715,7 +716,7 @@ local function ping_verify(self, m_ids, protocol, twait)
 			table.insert(found_ids, id)
 			local lsb, msb = unpack(status.parameter)
       print(string.format('\nFound %d.0 Motor: %d, Model (%d, %d)', protocol, id, msb, lsb))
-			if msb>0 then
+			if msb>2 then
 				-- NX
 				table.insert(nx_ids, id)
 				has_nx_id[id] = true

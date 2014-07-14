@@ -34,6 +34,9 @@ shared.robot.odom_mode = vector.zeros(1)
 shared.robot.reset_pose = vector.zeros(1)
 
 shared.robot.ballglobal = vector.zeros(2)
+shared.robot.goal1 = vector.zeros(2)
+shared.robot.goal2 = vector.zeros(2)
+
 shared.robot.kickto = vector.zeros(2)
 shared.robot.goalto = vector.zeros(2)
 shared.robot.moveto = vector.zeros(2)
@@ -42,6 +45,9 @@ shared.robot.traj_num = vector.zeros(1)
 shared.robot.trajx = vector.zeros(100)
 shared.robot.trajy = vector.zeros(100)
 
+shared.robot.gpsball=vector.zeros(2)
+shared.robot.gpsobs1 = vector.zeros(2)
+shared.robot.gpsobs2 = vector.zeros(2)
 
 
 
@@ -82,6 +88,10 @@ shared.ball.locked_on = vector.zeros(1);
 shared.ball.p = vector.zeros(1);
 
 
+
+shared.ball.tlook = vector.zeros(1); --the last time we TRIED to look at the ball (scan/track)
+
+
 shared.goal = {}
 shared.goal.t = vector.zeros(1)
 shared.goal.attack_angle = vector.zeros(1)
@@ -96,7 +106,6 @@ shared.obstacle.num = vector.zeros(1)
 shared.obstacle.v1 = vector.zeros(2)
 shared.obstacle.v2 = vector.zeros(2)
 shared.obstacle.v3 = vector.zeros(2)
-
 
 
 

@@ -10,8 +10,8 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-  orientation 0.00568828 0.921427 0.388509 3.12685
-  position 0.29857 16.325 -14.4806
+  orientation 0.0126713 0.999908 0.00486125 4.08221
+  position -2.59113 1.14895 -1.94936
 }
 Background {
   skyColor [
@@ -61,15 +61,17 @@ DEF YELLOW_GOAL TeenGoal {
   rotation 0 1 0 3.14159
   postColor 0.992157 0.854902 0.219608
 }
-DEF BALL Ball {
+DEF BALL BallGPS {
   translation 2.4 0.109919 2
   radius 0.11
 }
-DEF OBS1 Obstacle {
-  translation -2.5 0 -1
+DEF OBS1 ObjectGPS {
+  translation -2.56736 0.45 -3.27277
+  controllerArgs "1"
 }
-DEF OBS2 Obstacle {
-  translation -1 0 1
+DEF OBS1 ObjectGPS {
+  translation -2.5 0.45 2
+  controllerArgs "2"
 }
 DEF OPPONENT Block {
   translation -4.2 0.5 0

@@ -82,7 +82,9 @@ local function plan_whole()
     ytrail[count] = lpose[2]
     if rotate~=0 then reached = false end
   end
-  print("Plan steps: ",count)
+  if Config.debug.follow then
+    print("Plan steps: ",count)
+  end
 
   wcm.set_robot_traj_num(count)
   wcm.set_robot_trajx(xtrail)

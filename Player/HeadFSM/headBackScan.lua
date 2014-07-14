@@ -68,6 +68,7 @@ function state.update()
 
   -- Update the motors
   Body.set_head_command_position(qNeck_approach)
+  wcm.set_ball_tlook(t)
 
 	-- Check if we found the ball
   local ball_elapsed = t - wcm.get_ball_t()

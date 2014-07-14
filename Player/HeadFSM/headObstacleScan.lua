@@ -29,19 +29,24 @@ function state.update()
   local qNeck = Body.get_head_command_position()
   --25 deg can basically cover the whole field
 	-- but not enough for detecting obs near center circle
-  local pitch, yaw = Config.fsm.headObstacleScan.pitch
+  local pitchUp = Config.fsm.headObstacleScan.pitchUp
+  local pitchDown = Config.fsm.headObstacleScan.pitchDown
+  local yaw
 
-  --SJ: now we just clear old obstacle
-  --Because now we use local coordinate
-	if stage == 0 then yaw = 0
-
+	if stage == 0 then 
+    yaw = 0
+    pitch = pitchUp
 	elseif stage == 1 then 
     wcm.set_obstacle_enable(1)
 		yaw = -yawMag
-	elseif stage == 2 then yaw = 0
+	elseif stage == 2 then 
+    yaw = 0
+    pitch = pitchDown
 	elseif stage == 3 then 
 		yaw = yawMag
-	elseif stage == 4 then yaw = 0
+	elseif stage == 4 then 
+    yaw = 0
+    pitch = pitchUp
 	else 
   	wcm.set_obstacle_enable(0)
 	return 'done' 

@@ -1,3 +1,5 @@
+#!/usr/bin/env python -i
+
 # Very important for linux, via:
 # http://stackoverflow.com/questions/8361437/linker-error-lunatic-python-lua-requiresocket-undefined-symbol-lua-getme
 import sys

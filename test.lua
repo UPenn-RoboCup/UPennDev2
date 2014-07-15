@@ -1,3 +1,4 @@
+#!/usr/bin/env luajit
 dofile'include.lua'
 
 -- Important libraries in the global space

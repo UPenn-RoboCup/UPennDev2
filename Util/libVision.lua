@@ -114,9 +114,12 @@ local function update_head()
 	
 	cameraPitch = headBias[2]
 	cameraRoll = headBias[3]
+	cameraYaw = headBias[4]
+
 	dtrCamera = T.trans(unpack(cameraPos))
   * T.rotY(cameraPitch or 0)
   * T.rotX(cameraRoll or 0)
+  * T.rotZ(cameraYaw or 0)
 
   trHead = trNeck * dtrCamera
   -- Grab the position only

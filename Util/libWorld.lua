@@ -8,7 +8,7 @@ local vector = require'vector'
 local util = require'util'
 local ballFilter = require'ballFilter'
 local poseFilter = require'poseFilter'
--- local obsFilter = require'obstacleFilter'
+local obsFilter = require'obstacleFilter'
 local odomScale = Config.world.odomScale
 local use_imu_yaw = Config.world.use_imu_yaw
 local RESAMPLE_PERIOD = Config.world.resample_period
@@ -33,10 +33,8 @@ local uOdometry0 = vector.zeros(3)
 -- Save the resampling times
 local t_resample = 0
 
-local yaw0 = 0
 
 local obstacles={}
-
 local function reset_obstacles()
   obstacles={}
   wcm.set_obstacle_num(0)  
@@ -44,8 +42,7 @@ end
 
 local function new_obstacle(a,r)
   --2nd order stat for the obstacle group
-  local obstacle={asum=a,rsum=r,asqsum=a*a,rsqsum=r*r,count=1,aave=a,rave=r}  
-  return obstacle
+  return {asum=a,rsum=r,asqsum=a*a,rsqsum=r*r,count=1,aave=a,rave=r}  
 end
 
 local function add_obstacle(a,r)
@@ -58,13 +55,14 @@ local function add_obstacle(a,r)
     if adist<min_dist then min_dist,min_index = adist,i end
   end
   if min_index==0 or min_dist>20*math.pi/180 then 
-    obstacles[#obstacles+1]=new_obstacle(a,r)
+    obstacles[#obstacles+1] = new_obstacle(a,r)
   else
-    obstacles[min_index].count = obstacles[min_index].count+1
-    obstacles[min_index].asum = obstacles[min_index].asum+a
-    obstacles[min_index].rsum = obstacles[min_index].rsum+r
-    obstacles[min_index].asqsum = obstacles[min_index].asum+a*a
-    obstacles[min_index].rsqsum = obstacles[min_index].rsum+r*r
+    obstacles[min_index].count = obstacles[min_index].count + 1
+    obstacles[min_index].asum = obstacles[min_index].asum + a
+    obstacles[min_index].rsum = obstacles[min_index].rsum + r
+		-- TODO: these are not used for filtering
+    obstacles[min_index].asqsum = obstacles[min_index].asqsum + a*a
+    obstacles[min_index].rsqsum = obstacles[min_index].rsqsum + r*r
     obstacles[min_index].aave = obstacles[min_index].asum/obstacles[min_index].count
     obstacles[min_index].rave = obstacles[min_index].rsum/obstacles[min_index].count
   end
@@ -82,25 +80,23 @@ local function update_obstacles()
   --write top 3 obstacles to wcm
   local pose = wcm.get_robot_pose()
   for i=1, math.min(3,#obstacles) do
-    local not_found,j=true,1
+    local not_found,j = true,1
     while not_found and j< #obstacles+1 do
       if obstacles[j].count==counts[i] then
         local x = obstacles[j].rave * math.cos(obstacles[j].aave )
         local y = obstacles[j].rave * math.sin(obstacles[j].aave )
         local obs_global = util.pose_global({x,y,0},pose)
         wcm['set_obstacle_v'..i]({obs_global[1],obs_global[2]})
-        not_found=false
+        not_found = false
       end
       j=j+1
     end
   end
-  wcm.set_obstacle_num(math.min(3,#obstacles))
+  wcm.set_obstacle_num(math.min(2,#obstacles))
 end
 
 
-
-
-
+local yaw0 = 0
 local function update_odometry(uOdometry)  
   -- Scale the odometry
   uOdometry[1] = odomScale[1] * uOdometry[1]
@@ -282,7 +278,7 @@ function libWorld.update(uOdom, detection)
   update_vision(detection)
   if Config.use_gps_pose then
     wcm.set_robot_pose(wcm.get_robot_pose_gps())
-    wcm.set_obstacle_num(2)
+    -- wcm.set_obstacle_num(2)
     -- wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
     -- wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
 

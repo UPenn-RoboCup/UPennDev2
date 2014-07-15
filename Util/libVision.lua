@@ -12,6 +12,7 @@ local util = require'util'
 local zlib = require'zlib.ffi'
 local si = require'simple_ipc'
 require'wcm'
+require'hcm'
 
 
 -- Occ for map
@@ -99,7 +100,9 @@ end
 local function update_head()
 	if not Body then return end
 	-- Get from Body...
+	local headYawBias = hcm.get_headbias_yaw()
   local head = Body.get_head_position()
+	head[1] = head[1] + headYawBias
   local rpy = Body.get_rpy()
   --SJ: let's use imu value to recalculate camera transform every frame
   trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
@@ -633,6 +636,10 @@ end
 
 -- Set the variables based on the config file
 function libVision.entry(cfg, body)
+	-- Set up bias params
+	hcm.set_headbias_yaw(Config.head.yawBias)
+  hcm.set_camera_pitch(Config.head.cameraPitch)
+  hcm.set_camera_roll(Config.head.cameraRoll)
   -- Dynamically load the body
   Body = body
   -- Recompute the width and height of the images
@@ -652,11 +659,8 @@ function libVision.entry(cfg, body)
   x0B, y0B = 0.5*(wb-1)+cfg.cx_offset/scaleB, 0.5*(hb-1)+cfg.cy_offset/scaleB
   
   -- Delta transform from neck to camera
-	cameraPitch = cfg.head.cameraPitch or 0
-	cameraRoll = cfg.head.cameraRoll or 0
+	cameraRoll = hcm.get_camera_roll()
 	cameraPos = cfg.head.cameraPos or {0,0,0}
-  hcm.set_camera_pitch(cameraPitch)
-  hcm.set_camera_roll(cameraRoll)
   dtrCamera = T.trans(unpack(cameraPos))
   * T.rotY(cameraPitch or 0)
   focalA = focal_length / (focal_base / wa)

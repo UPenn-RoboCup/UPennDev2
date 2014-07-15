@@ -78,8 +78,12 @@ function state.exit()
   print(state._NAME..' Exit' ) 
   -- Torque on the motors
   Body.set_waist_torque_enable(1)
-  Body.set_lleg_torque_enable(1)
-  Body.set_rleg_torque_enable(1)
+
+
+  if Config.torque_legs then
+    Body.set_lleg_torque_enable(1)
+    Body.set_rleg_torque_enable(1)
+  end
 end
 
 return state

@@ -26,8 +26,6 @@ shared.servo.imu = vector.zeros(17)
 shared.leg={}
 shared.leg.bias=vector.zeros(12)
 
-
-
 -- Storing current stance info
 shared.stance = {}
 shared.stance.bodyTilt   = vector.zeros(1)

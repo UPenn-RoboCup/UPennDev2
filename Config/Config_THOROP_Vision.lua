@@ -12,10 +12,12 @@ local head = {
   pitchMax = 75 * math.pi/180,
   yawMin = -135 * math.pi/180,
   yawMax = 135 * math.pi/180,
-
+	-- Head angle bias
+	yawBias = 0,
+	-- Camera bias
   cameraPos = {0.075, 0.0, 0.13}, --C920
 	cameraPitch = 5*DEG_TO_RAD,
-	cameraRoll = 0*DEG_TO_RAD,
+	cameraRoll = 0, --14*DEG_TO_RAD,
   --From CoM to neck joint
   neckZ = .165 + .161,
   neckX = 0,
@@ -136,7 +138,7 @@ table.insert(Config.camera,
     format = 'yuyv',
     w = 640,
     h = 360, --480,
-    cx_offset = -6,
+    cx_offset = 8, ---6,
     cy_offset = 0,
     fps = 30,
     udp_port = 33333,
@@ -213,6 +215,7 @@ if IS_WEBOTS then
   
   head.cameraPitch = 0
   head.cameraRoll = 0
+	head.yawBias = 0
   
   vision.goal = {
     th_min_bbox_area = 80, 

@@ -105,6 +105,19 @@ if IS_WEBOTS then
 
 
   Config.world.use_imu_yaw = true
+
+
+--faster
+  Config.walk.velLimitX = {-.20,.20} 
+  Config.walk.velLimitY = {-.08,.08}
+  
 end
+
+
+Config.torque_legs = true
+--Config.torque_legs = false
+
+
+
 
 return Config

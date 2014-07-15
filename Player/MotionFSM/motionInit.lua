@@ -121,54 +121,53 @@ function state.update()
 
   if not doneTorso or not doneWaist then t_finish = t end --do we need this?
 
-  -- Command the body
-  local qLegsTarget = Kinematics.inverse_legs( pLLeg_desired, pRLeg_desired, pTorso_approach, 0 )
+
+  if Config.torque_legs then
 
 
-  local legBias = vector.new(mcm.get_leg_bias())
-  local legBiasL = vector.slice(legBias,1,6)
-  local legBiasR = vector.slice(legBias,7,12)
-  qLegsTarget = vector.new(qLegsTarget) + legBias
+    -- Command the body
+    local qLegsTarget = Kinematics.inverse_legs( pLLeg_desired, pRLeg_desired, pTorso_approach, 0 )
 
-  local qLLegTarget = vector.slice(qLegsTarget,1,6)
-  local qRLegTarget = vector.slice(qLegsTarget,7,12)
+    local legBias = vector.new(mcm.get_leg_bias())
+    local legBiasL = vector.slice(legBias,1,6)
+    local legBiasR = vector.slice(legBias,7,12)
+    qLegsTarget = vector.new(qLegsTarget) + legBias
 
-  qLLegMove,doneL = util.approachTol(qLLeg,qLLegTarget, dqLegLimit, dt )
-  qRLegMove,doneR = util.approachTol(qRLeg,qRLegTarget, dqLegLimit, dt )
+    local qLLegTarget = vector.slice(qLegsTarget,1,6)
+    local qRLegTarget = vector.slice(qLegsTarget,7,12)
 
-  Body.set_lleg_command_position(qLLegMove)
-  Body.set_rleg_command_position(qRLegMove)
+    qLLegMove,doneL = util.approachTol(qLLeg,qLLegTarget, dqLegLimit, dt )
+    qRLegMove,doneR = util.approachTol(qRLeg,qRLegTarget, dqLegLimit, dt )
 
-  local qLLegActual = Body.get_lleg_position() - legBiasL
-  local qRLegActual = Body.get_rleg_position() - legBiasR
-  local qWaistActual = Body.get_waist_position()
+    Body.set_lleg_command_position(qLLegMove)
+    Body.set_rleg_command_position(qRLegMove)
 
+    local qLLegActual = Body.get_lleg_position() - legBiasL
+    local qRLegActual = Body.get_rleg_position() - legBiasR
+    local qWaistActual = Body.get_waist_position()
 
---print("LLEG:",unpack(vector.new(qLLegActual)*180/math.pi) )
---print("RLEG:",unpack(vector.new(qRLegActual)*180/math.pi) )
+    local qLLegCommand = Body.get_lleg_command_position() - legBiasL
+    local qRLegCommand = Body.get_rleg_command_position() - legBiasR
+    local qWaistCommand = Body.get_waist_command_position()
 
+    local err = 0;
+    for i=1,4 do --hack: skip ankle angles for now
+      err = err + math.abs(qLLegActual[i]- qLLegCommand[i])
+      err = err + math.abs(qRLegActual[i]- qRLegCommand[i])
+    end
+    err = err + math.abs(qWaistActual[1]- qWaistCommand[1])
+    err = err + math.abs(qWaistActual[2]- qWaistCommand[2])
 
-  local qLLegCommand = Body.get_lleg_command_position() - legBiasL
-  local qRLegCommand = Body.get_rleg_command_position() - legBiasR
-  local qWaistCommand = Body.get_waist_command_position()
+    --print("err: ",err, doneL,doneR)
 
+    local err_th = 1*DEG_TO_RAD
 
-  local err = 0;
-  for i=1,4 do --hack: skip ankle angles for now
-    err = err + math.abs(qLLegActual[i]- qLLegCommand[i])
-    err = err + math.abs(qRLegActual[i]- qRLegCommand[i])
+  --  if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end
+
+    if (err<err_th or IS_WEBOTS) then return'done' end
+  else
+    if doneTorso and doneWaist then return 'done' end
   end
-  err = err + math.abs(qWaistActual[1]- qWaistCommand[1])
-  err = err + math.abs(qWaistActual[2]- qWaistCommand[2])
-
-  --print("err: ",err, doneL,doneR)
-
-  local err_th = 1*DEG_TO_RAD
-
---  if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end
-
-  if (err<err_th or IS_WEBOTS) then return'done' end
-
 
 end
 
@@ -235,32 +234,35 @@ function state.exit()
       Body.set_head_command_velocity({6000,6000})
       unix.usleep(1e6*0.01);
 
-
       Body.set_waist_command_velocity({0,0})
       unix.usleep(1e6*0.01);
 
-      Body.set_lleg_command_velocity({0,0,0,0,0,0})
-      unix.usleep(1e6*0.01);
 
-      Body.set_rleg_command_velocity({0,0,0,0,0,0})
-      unix.usleep(1e6*0.01);
+      if Config.torque_legs then
 
-      Body.set_rleg_command_acceleration({0,0,0,0,0,0})
-      unix.usleep(1e6*0.01);
+        Body.set_lleg_command_velocity({0,0,0,0,0,0})
+        unix.usleep(1e6*0.01);
 
-      Body.set_lleg_command_acceleration({0,0,0,0,0,0})
-      unix.usleep(1e6*0.01);
+        Body.set_rleg_command_velocity({0,0,0,0,0,0})
+        unix.usleep(1e6*0.01);
+
+        Body.set_rleg_command_acceleration({0,0,0,0,0,0})
+        unix.usleep(1e6*0.01);
+
+        Body.set_lleg_command_acceleration({0,0,0,0,0,0})
+        unix.usleep(1e6*0.01);
 
 
---SJ: this somehow locks down head movement!!!!!!!!
-      Body.set_head_position_p({pg,pg})
-      unix.usleep(1e6*0.01);
+  --SJ: this somehow locks down head movement!!!!!!!!
+        Body.set_head_position_p({pg,pg})
+        unix.usleep(1e6*0.01);
 
-      Body.set_rleg_position_p({pg,pg,pg,pg,pg,ag})
-      unix.usleep(1e6*0.01);
+        Body.set_rleg_position_p({pg,pg,pg,pg,pg,ag})
+        unix.usleep(1e6*0.01);
 
-      Body.set_lleg_position_p({pg,pg,pg,pg,pg,ag})
-      unix.usleep(1e6*0.01);
+        Body.set_lleg_position_p({pg,pg,pg,pg,pg,ag})
+        unix.usleep(1e6*0.01);
+      end
     end
   end
   mcm.set_walk_ismoving(0) --We are stopped

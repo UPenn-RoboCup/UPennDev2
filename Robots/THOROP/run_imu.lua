@@ -91,6 +91,7 @@ end
 microstrain = lM.new_microstrain('/dev/ttyACM0', OPERATING_SYSTEM~='darwin' and 921600)
 -- Turn it on
 microstrain:ahrs_on()
+microstrain:ahrs_and_nav_on()
 t0 = get_time()
 t_debug, t_last, t = t0, t0, t0
 t_last_read = t0

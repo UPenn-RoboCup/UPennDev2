@@ -161,9 +161,6 @@ fsm.Motion = {
   
 --  {'motionHybridWalk', 'done_step', 'motionStepNonstop'},
 --  {'motionStepNonstop', 'done', 'motionStance'},
-  
-
-
 
   {'motionHybridWalkEnd', 'done', 'motionStance'},
 
@@ -207,7 +204,8 @@ fsm.headSweep = {
 
 fsm.headObstacleScan = {
   yawMag = 55*DEG_TO_RAD,
-  pitch = 28*DEG_TO_RAD,
+  pitchUp = 25*DEG_TO_RAD,
+  pitchDown = 35*DEG_TO_RAD,
 }
 
 fsm.bodyRobocupFollow = {

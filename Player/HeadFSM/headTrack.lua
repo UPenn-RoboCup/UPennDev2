@@ -67,9 +67,6 @@ function state.update()
     end
   end
 
-
-
-
   -- Clamp
   yaw = math.min(math.max(yaw, yawMin), yawMax)
   pitch = math.min(math.max(pitch, pitchMin), pitchMax)

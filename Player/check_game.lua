@@ -7,6 +7,8 @@ local processes = {
   'run_co_dcm',
   'run_imu',
   'state_wizard',
+	'world_wizard',
+	'camera_wizard',
 }
 local is_running = {}
 for _, v in ipairs(processes) do

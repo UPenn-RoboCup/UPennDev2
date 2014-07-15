@@ -84,7 +84,7 @@ while running do
 		metadata.world = lW.send()
 		-- Send!
 		local ret, err = udp_ch:send(mp.pack(metadata))
-		if err then print(ret, err) end
+		--if err then print(ret, err) end
 		t_send = t
 	end
 

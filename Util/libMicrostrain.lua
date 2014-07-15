@@ -6,38 +6,44 @@ local libMicrostrain = {}
 local stty = require'stty'
 local unix = require'unix'
 
--- Reading properties
-local ping_cmd = { 0x75, 0x65, 0x01, 0x02, 0x02, 0x01 }
-local idle_cmd = { 0x75, 0x65, 0x01, 0x02, 0x02, 0x02 }
-
-local function cmd2string(cmd)
+--for k,v in ipairs(response) do print(string.format('%d: %02X',k,v)) end
+local function cmd2string(cmd, do_print)
   local instruction_bytes = {}
   local instruction_decs = {}
   for i, v in ipairs(cmd) do
     table.insert(instruction_bytes, string.format(' %02X', v))
     table.insert(instruction_decs, string.format('%03d', v))
   end
-  return table.concat(instruction_bytes, ' '), table.concat(instruction_decs, ' ')
+  local hex, dec = table.concat(instruction_bytes, ' '), table.concat(instruction_decs, ' ')
+  if do_print then
+    print('hex', hex)
+    print('dec', dec)
+  end
+  return hex, dec
 end
 
--- Checksum formation (slow, but speed is unneeded)
+-- Checksum formation
 local function generate_packet(byte_array)
   local checksum_byte1, checksum_byte2 = 0, 0
   for _,val in ipairs(byte_array) do
-    checksum_byte1 = (checksum_byte1 + val)%256
-    checksum_byte2 = (checksum_byte2 + checksum_byte1)%256
+    checksum_byte1 = (checksum_byte1 + val) % 256
+    checksum_byte2 = (checksum_byte2 + checksum_byte1) % 256
   end
   table.insert(byte_array,checksum_byte1)
   table.insert(byte_array,checksum_byte2)
-  return string.char( unpack(byte_array) )
+  -- Check the length
+  if #byte_array-6 ~= byte_array[4] then
+    print("BAD PAYLOAD LENGTH")
+    cmd2string(byte_array, true)
+  end
+  return string.char(unpack(byte_array))
 end
 
--------------------------
 -- Write a command to a microstrain
 local function write_command(fd, cmd)
   local str = generate_packet(cmd)
   local ret = unix.write(fd, str)
-  assert(ret==#str,'Bad write of command!')
+  assert(ret==#str, 'Bad write of command!')
   local status, ready = unix.select( {fd}, 0.1 )
   assert(status>0,'Timeout! '..status)
   local res = unix.read(fd)
@@ -46,9 +52,13 @@ local function write_command(fd, cmd)
   return {res:byte(1,-1)}
 end
 
+local function idle(dev)
+  write_command(dev.fd, { 0x75, 0x65, 0x01, 0x02, 0x02, 0x02 })
+end
+
+-- Model number, etc.
 local function get_info(self)
   local response = write_command(self.fd, {0x75, 0x65, 0x01, 0x02, 0x02, 0x03})
-  -- Parse information
   local pkt1_idx = 5
   local pkt1_sz  = response[5]
   local pkt2_idx = 5+pkt1_sz --4+pkt1_sz+1
@@ -60,9 +70,34 @@ local function get_info(self)
   return info
 end
 
+-- Go to high speed baud
+local function change_baud(microstrain)
+  local baud = 921600 -- 921600 only for now...
+  local baud_cmd = { 0x75, 0x65, 0x0C,
+    0x07, -- Command length
+    0x07, 0x40, -- Length and command description
+    0x01, -- USE this setting (not saved at boot, tho...)
+    0x00, 0x0E, 0x10, 0x00
+  }
+
+  -- Set the device to idle
+  idle(microstrain)
+
+  -- Write the command
+  --local response = write_command(microstrain.fd,baud_cmd)
+  --for k,v in ipairs(response) do print(string.format('%d: %02X',k,v)) end
+  --microstrain:close()
+  --unix.usleep(1e6)
+  -- Open with new baud
+  --libMicrostrain.new_microstrain(microstrain.ttyname,baud,microstrain)
+
+  -- Ping the microstrain
+  write_command(microstrain.fd, { 0x75, 0x65, 0x01, 0x02, 0x02, 0x01 })
+end
+
 local function enable_magnetometer_compensation(microstrain)
   local bit = require'bit'
-  -- disables magnetometer and north
+  -- Disables magnetometer and north
   local data_conditioning_flags = bit.bor( 0x0100, 0x0400)
   -- Disables only north
   --local data_conditioning_flags = bit.bor( 0x0400)
@@ -86,44 +121,8 @@ local function enable_magnetometer_compensation(microstrain)
   do
     table.insert(disable_north_compensation_cmd, v)
   end
---[[
-  local hex, dec = cmd2string(disable_north_compensation_cmd)
-  print('hex', hex)
-  print('dec', dec)
-  print("len", #disable_north_compensation_cmd - 6)
---]]
   -- Send to the device
   write_command(microstrain.fd, disable_north_compensation_cmd)
-end
-
--- Go to high speed baud
-local function change_baud(microstrain)
-  local baud = 921600 -- 921600 only for now...
-  local baud_cmd = { 0x75, 0x65, 0x0C,
-    0x07, -- Command length
-    0x07, 0x40, -- Length and command description
-    0x01, -- USE this setting (not saved at boot, tho...)
-    0x00, 0x0E, 0x10, 0x00
-  }
-
-  -- Set the device to idle
-  write_command(microstrain.fd, idle_cmd)
-
-  -- Write the command
-  --local response = write_command(microstrain.fd,baud_cmd)
-  --for k,v in ipairs(response) do print(string.format('%d: %02X',k,v)) end
-  --microstrain:close()
-  --unix.usleep(1e6)
-  -- Open with new baud
-  --libMicrostrain.new_microstrain(microstrain.ttyname,baud,microstrain)
-
-  -- Ping the microstrain
-  write_command(microstrain.fd, ping_cmd)
-  --[[
-  for k,v in ipairs(response) do
-    print(string.format('%d: %02X',k,v))
-  end
-  --]]
 end
 
 local function configure(self, do_permanent)
@@ -154,37 +153,32 @@ local function configure(self, do_permanent)
     0x06, 0x00, 0x01, -- Estimated Gyro Bias
   }
   local response = write_command(self.fd, stream_fmt)
---  for k,v in ipairs(response) do print(string.format('%d: %02X',k,v)) end
-
-
+  
+  --[[
+  -- Just AHRS
+      local save_fmt = { 0x75, 0x65, 0x0C,
+        0x04, -- Command length
+        0x04, 0x08, -- Packet length
+        0x03, 0x00 -- 3 to perform the save
+      }
+  --]]
+  
+  -- AHRS and NAV
+  local save_fmt = { 0x75, 0x65, 0x0C,
+    0x08, -- Command length
+    0x04, 0x08, -- Packet length
+    0x03, 0x00, -- 3 to perform the save
+    0x04, 0x0A, -- Packet length
+    0x03, 0x00 -- 3 to perform the save
+  }
+  local response = write_command(self.fd,save_fmt)
   if do_permanent then
-    -- Save only once! Maybe in the eeprom, so lots of saving could be bad...
---[[
-    local save_fmt = { 0x75, 0x65, 0x0C,
-      0x04, -- Command length
-      0x04, 0x08, -- Packet length
-      0x03, 0x00 -- 3 to perform the save
-    }
---]]
-    local save_fmt = { 0x75, 0x65, 0x0C,
-      0x08, -- Command length
-      0x04, 0x08, -- Packet length
-      0x03, 0x00, -- 3 to perform the save
-      0x04, 0x0A, -- Packet length
-      0x03, 0x00 -- 3 to perform the save
-    }
-
-    local response = write_command(self.fd,save_fmt)
-    --[[
-    for k,v in ipairs(response) do
-      print(string.format('%d: %02X',k,v))
-    end
-    --]]
+    -- Device startup settings
   end
 end
 
 local function close(self)
-  write_command(self.fd, idle_cmd)
+  idle(self)
   return unix.close(self.fd) == 0
 end
 
@@ -199,7 +193,6 @@ local function ahrs_off(self)
   local response = write_command(self.fd, {
     0x75, 0x65, 0x0C, 0x05, 0x05, 0x11, 0x01, 0x01, 0x00
   })
-  --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
 end
 
 local function ahrs_and_nav_on(self)
@@ -209,7 +202,6 @@ local function ahrs_and_nav_on(self)
     0x05, 0x11, 0x01, 0x01, 0x01, -- ahrs
     0x05, 0x11, 0x01, 0x03, 0x01, -- nav
   })
-  --for i,b in ipairs(response) do print( string.format('%d: %02X',i,b) ) end
 end
 
 -- TODO: Make this like input_co of libDynamixel
@@ -240,19 +232,9 @@ local function read_ahrs(self)
   --]]
 
   -- Debugging
-  local hex = {}
-  local bytes = {buf:byte(77, -1)}
-  for i,v in ipairs(bytes) do table.insert(hex, string.format('0x%02X', v)) end
---  print("HI", #buf)
---  print(table.concat(hex,' '))
---  print()
+  cmd2string({buf:byte(1, -1)}, true)
 
   return acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp
-
-end
-
-local function idle(dev)
-  write_command(dev.fd, idle_cmd)
 end
 
 ---------------------------
@@ -284,7 +266,6 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
 	stty.speed(fd, baud)
   unix.usleep(1e4)
 
-
 	local dev = {
     fd = fd,
     ttyname = ttyname,
@@ -302,14 +283,12 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
   idle(dev)
   unix.usleep(1e5)
   
-	-- Configure the device
-	configure(dev)
-  unix.usleep(1e5)
-  
-  idle(dev)
-  unix.usleep(1e5)
   -- Configure params
   enable_magnetometer_compensation(dev)
+  unix.usleep(1e5)
+  
+	-- Configure the device
+	configure(dev)
   unix.usleep(1e5)
 
   return dev

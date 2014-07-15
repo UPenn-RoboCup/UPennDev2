@@ -6,7 +6,7 @@ local util = require'util'
 require'wcm'
 
 local t_entry, t_update, stage
-local dqNeckLimit = {20*DEG_TO_RAD,20*DEG_TO_RAD}
+local dqNeckLimit = {50*DEG_TO_RAD,50*DEG_TO_RAD}
 local tScan = Config.fsm.headObstacleScan.tScan
 local yawMag = Config.fsm.headObstacleScan.yawMag
 

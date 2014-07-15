@@ -54,6 +54,7 @@ if IS_WEBOTS then
   Body.update()
 end
 -- Update loop
+local gc_pktNum = 0
 while running do
   t = get_time()
   -- Update the state machines
@@ -70,9 +71,10 @@ while running do
     Body.update()
   else
   	local gc_packet = GC.receive()
-  	if gc_packet.state and gc_packet.state~=0 then
+		if gc_packet and gc_packet.packetNumber>gc_pktNum then
   		-- 0; 2-set; 3-play; 4-finish
   		gcm.set_game_state(gc_packet.state)
+			gc_pktNum = gc_packet.packetNumber
   	end
     collectgarbage('step')
     local t_s = (t_sleep - (get_time() - t))

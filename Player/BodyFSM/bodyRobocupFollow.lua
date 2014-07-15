@@ -106,8 +106,6 @@ function state.update()
   t_update = t
   local check_ph = 0.95
 
-
-
   local ph = mcm.get_status_ph()
   if last_ph<check_ph and ph>=check_ph then 
     plan_whole()
@@ -116,8 +114,6 @@ function state.update()
   last_ph = ph
   local ball_elapsed = t - wcm.get_ball_t()
   if ball_elapsed <0.5 and reached then return 'ballclose' end
-
-
 end
 
 function state.exit()

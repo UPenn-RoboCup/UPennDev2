@@ -6,37 +6,6 @@ local util   = require'util'
 local vector = require'vector'
 require'wcm'
 
-function robocupplanner.getGoalieTargetPose(pose,ballGlobal)
-  --Defending goal is ALWAYS at (-4.5,0,0)
-  local goalL = {-Config.world.xBoundary,-Config.world.goalWidth/2}
-  local goalR = {-Config.world.xBoundary,Config.world.goalWidth/2}
-  local ballFromGoalL = {ballGlobal[1] -goalL[1], ballGlobal[2]-goalL[2]}
-  local ballFromGoalR = {ballGlobal[1] -goalR[1], ballGlobal[2]-goalR[2]}
-  local ballGoalAngleL = math.atan2(-ballFromGoalL[2],-ballFromGoalL[1])
-  local ballGoalAngleR = math.atan2(-ballFromGoalR[2],-ballFromGoalR[1])
-  local ballGoalAngleCenter = (ballGoalAngleL+ballGoalAngleR)/2
-  -- x = ball(1) + t*cos(angle) = -Config.world.xBoundary
-  -- y = ball(2) + t*sin(angle) 
-  local factor2 = Config.world.goalieFactor or 0.88 --Goalie pos
-  local factor1 = factor2 - 0.02 --max ball pos
-  ballGlobal[1] = math.max(  -Config.world.xBoundary * factor1, ballGlobal[1])
-  local t = (-Config.world.xBoundary*factor2 - ballGlobal[1])/math.cos(ballGoalAngleCenter) 
-  local target_position_x = -Config.world.xBoundary * factor2
-  local target_position_y = ballGlobal[2] + math.sin(ballGoalAngleCenter)*t
-  local target_position_a = pose[3]
-  target_position_y = math.max(
-    -Config.world.goalWidth/2 * 0.8, math.min(
-      Config.world.goalWidth/2 * 0.8 , target_position_y))
-  --
-  --Facing towards the ball
-  local ballfromtarget = {ballGlobal[1]-target_position_x,ballGlobal[2]-target_position_y}
-  target_position_a = math.atan2(ballfromtarget[2],ballfromtarget[1])
- --]] 
-
-  return {target_position_x, target_position_y, target_position_a}
-end
-
-
 function evaluateKickAngle(ballGlobal,kickangle)
   obstacle_num = wcm.get_obstacle_num()
   local angle_offset = 0
@@ -62,7 +31,6 @@ function evaluateKickAngle(ballGlobal,kickangle)
       end
     end
   end
-
   return angle_offset 
 end
 
@@ -149,8 +117,6 @@ end
 
 
 function robocupplanner.getTargetPose(pose,ballGlobal)
-  if Config.demo  then return robocupplanner.getDemoTargetPose(pose,ballGlobal) end
-  if Config.backward_approach then return robocupplanner.getTargetPoseBackward(pose,ballGlobal) end
 
   local kickangle, goaldist = getKickAngle(pose,ballGlobal)
   local angleRobotBall = math.atan2(pose[2]-ballGlobal[2],pose[1]-ballGlobal[1])
@@ -163,6 +129,13 @@ function robocupplanner.getTargetPose(pose,ballGlobal)
   local angle_tangent = math.acos(circleR / math.max(circleR,distRobotBall))
   local angleCircle = util.mod_angle(angleRobotBall-kickangle)
   local rotate = 0
+
+  if Config.demo  then 
+    kickpos = ballGlobal - kickoffset * vector.new({math.cos(angleRobotBall),math.sin(angleRobotBall),0})
+    return robocupplanner.getDemoTargetPose(pose,ballGlobal),0 
+  end
+  
+  if Config.backward_approach then return robocupplanner.getTargetPoseBackward(pose,ballGlobal) end
 
   if math.abs(angleCircle)>90*math.pi/180 and math.abs(util.mod_angle(pose[3]-kickangle))<90*math.pi/180 then
     --Behind the ball and approximately facing the goalpost
@@ -336,6 +309,36 @@ function robocupplanner.getVelocity(pose,target_pose,rotate)
   vy = maxStep * homeRelative[2]/rHomeRelative
   va = math.min(maxA, math.max(-maxA, va))
   return{vx,vy,va},false
+end
+
+function robocupplanner.getGoalieTargetPose(pose,ballGlobal)
+  --Defending goal is ALWAYS at (-4.5,0,0)
+  local goalL = {-Config.world.xBoundary,-Config.world.goalWidth/2}
+  local goalR = {-Config.world.xBoundary,Config.world.goalWidth/2}
+  local ballFromGoalL = {ballGlobal[1] -goalL[1], ballGlobal[2]-goalL[2]}
+  local ballFromGoalR = {ballGlobal[1] -goalR[1], ballGlobal[2]-goalR[2]}
+  local ballGoalAngleL = math.atan2(-ballFromGoalL[2],-ballFromGoalL[1])
+  local ballGoalAngleR = math.atan2(-ballFromGoalR[2],-ballFromGoalR[1])
+  local ballGoalAngleCenter = (ballGoalAngleL+ballGoalAngleR)/2
+  -- x = ball(1) + t*cos(angle) = -Config.world.xBoundary
+  -- y = ball(2) + t*sin(angle) 
+  local factor2 = Config.world.goalieFactor or 0.88 --Goalie pos
+  local factor1 = factor2 - 0.02 --max ball pos
+  ballGlobal[1] = math.max(  -Config.world.xBoundary * factor1, ballGlobal[1])
+  local t = (-Config.world.xBoundary*factor2 - ballGlobal[1])/math.cos(ballGoalAngleCenter) 
+  local target_position_x = -Config.world.xBoundary * factor2
+  local target_position_y = ballGlobal[2] + math.sin(ballGoalAngleCenter)*t
+  local target_position_a = pose[3]
+  target_position_y = math.max(
+    -Config.world.goalWidth/2 * 0.8, math.min(
+      Config.world.goalWidth/2 * 0.8 , target_position_y))
+  --
+  --Facing towards the ball
+  local ballfromtarget = {ballGlobal[1]-target_position_x,ballGlobal[2]-target_position_y}
+  target_position_a = math.atan2(ballfromtarget[2],ballfromtarget[1])
+ --]] 
+
+  return {target_position_x, target_position_y, target_position_a}
 end
 
 function robocupplanner.getVelocityGoalie(pose,target_pose , threshold)  

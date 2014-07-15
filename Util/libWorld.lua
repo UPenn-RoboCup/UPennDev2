@@ -42,22 +42,27 @@ end
 
 local function new_obstacle(a,r)
   --2nd order stat for the obstacle group
-  return {asum=a,rsum=r,asqsum=a*a,rsqsum=r*r,count=1,aave=a,rave=r}  
+  -- return {asum=a,rsum=r,asqsum=a*a,rsqsum=r*r,count=1,aave=a,rave=r}
+  return {filter=obsFilter.new(a,r), count=1}
 end
 
-local function add_obstacle(a,r)
+local function add_obstacle(a, r, da, dr)
   local min_dist = math.huge
   local min_index=0
   for i=1,#obstacles do
     --Just check angle to cluster observation
     --TODO: we can use distance too
-    local adist = math.abs(util.mod_angle(obstacles[i].aave-a))
+    -- local adist = math.abs(util.mod_angle(obstacles[i].aave-a))
+    local adist = math.abs(util.mod_angle(obstacles[i].filter.a - a))
     if adist<min_dist then min_dist,min_index = adist,i end
   end
-  if min_index==0 or min_dist>20*math.pi/180 then 
+  if min_index==0 or min_dist>10*DEG_TO_RAD then 
     obstacles[#obstacles+1] = new_obstacle(a,r)
   else
+    obstacles[min_index].filter:observation_ra(r, a, dr, da)
     obstacles[min_index].count = obstacles[min_index].count + 1
+    
+--[[    
     obstacles[min_index].asum = obstacles[min_index].asum + a
     obstacles[min_index].rsum = obstacles[min_index].rsum + r
 		-- TODO: these are not used for filtering
@@ -65,6 +70,7 @@ local function add_obstacle(a,r)
     obstacles[min_index].rsqsum = obstacles[min_index].rsqsum + r*r
     obstacles[min_index].aave = obstacles[min_index].asum/obstacles[min_index].count
     obstacles[min_index].rave = obstacles[min_index].rsum/obstacles[min_index].count
+--]]
   end
 end
 
@@ -83,8 +89,12 @@ local function update_obstacles()
     local not_found,j = true,1
     while not_found and j< #obstacles+1 do
       if obstacles[j].count==counts[i] then
-        local x = obstacles[j].rave * math.cos(obstacles[j].aave )
-        local y = obstacles[j].rave * math.sin(obstacles[j].aave )
+        -- local x = obstacles[j].rave * math.cos(obstacles[j].aave )
+        -- local y = obstacles[j].rave * math.sin(obstacles[j].aave )
+        
+        local x = obstacles[j].filter.r * math.cos(obstacles[j].filter.a)
+        local y = obstacles[j].filter.r * math.sin(obstacles[j].filter.a)
+        
         local obs_global = util.pose_global({x,y,0},pose)
         wcm['set_obstacle_v'..i]({obs_global[1],obs_global[2]})
         not_found = false
@@ -180,53 +190,11 @@ local function update_vision(detected)
       local x, y = obstacle.xs[i], obstacle.ys[i]
       local r =math.sqrt(x^2+y^2)
       local a = math.atan2(y,x)
-      add_obstacle(a,r)
+      local dr, da = 0.25*r, 15*DEG_TO_RAD -- TODO
+      add_obstacle(a,r, da,dr)
     end    
     update_obstacles()
 
-    -- If use grid map
-    --[[    
-    for i=1,#obstacle.xs do
-      local x, y = obstacle.xs[i], obstacle.ys[i]
-      wcm['set_obstacle_v'..i]({x,y})  -- global
-    end
-  --]]
-
-    --[[ If use 2D filter
-    --Most of the time only one obstacle will be detected...
-    -- TODO: Check the pos_global[1]>4 for opponent??
-    if #obstacle.v == 1 then
-      --TODO: i know this is silly...
-      local margin = 8*DEG_TO_RAD
-      if Body.get_head_position()[1]>margin then
-        OF[1]:observation_xy(obstacle.v[1][1], obstacle.v[1][2],
-          obstacle.dr[1], obstacle.da[1])
-      elseif Body.get_head_position()[1]<-margin then
-        OF[2]:observation_xy(obstacle.v[1][1], obstacle.v[1][2],
-          obstacle.dr[1], obstacle.da[1])
-      end
-    else -- 2 or 3 obstacles detected
-      local pos_global = {}
-      for i=1,2 do
-        -- Determine which one is left
-        local pos_local = obstacle.v[i]
-        pos_global[i] = util.pose_global({pos_local[1],pos_local[2],0}, wcm.get_robot_pose())
-      end
-
-      if pos_global[1][2]>pos_global[2][2] then
-        OF[1]:observation_xy(obstacle.v[1][1], obstacle.v[1][2],
-          obstacle.dr[1], obstacle.da[1])
-        OF[2]:observation_xy(obstacle.v[2][1], obstacle.v[2][2],
-          obstacle.dr[2], obstacle.da[2])
-      else
-        OF[2]:observation_xy(obstacle.v[1][1], obstacle.v[1][2],
-          obstacle.dr[1], obstacle.da[1])
-        OF[1]:observation_xy(obstacle.v[2][1], obstacle.v[2][2],
-          obstacle.dr[2], obstacle.da[2])
-      end
-    end
-    --]]
-     
   end  -- end of obstacle
   
 end

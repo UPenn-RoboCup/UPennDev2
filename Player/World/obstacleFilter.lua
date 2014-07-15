@@ -7,8 +7,8 @@ require'wcm'
 
 
 local function observation_ra(self, r1, a1, rErr, aErr)
-  local rErr = rErr or 1
-  local aErr = aErr or 1
+  local rErr = rErr
+  local aErr = aErr
   local rvar1 = rErr^2
   local avar1 = aErr^2
 
@@ -23,13 +23,6 @@ local function observation_ra(self, r1, a1, rErr, aErr)
   self.avar = (self.avar * avar1)/(self.avar + avar1)
   if (self.avar + avar1 < da^2) then self.avar = da^2 end
 
-  local x = self.r * math.cos(self.a)
-  local y = self.r * math.sin(self.a)
-  local t = t
-
-	return x, y
-  --wcm['set_obstacle_v'..self.id]({x, y})
-  --print(string.format("OBS %d: %.2f   %.2f", self.id, x, y))
 end
 
 local function observation_xy(self, x, y, rErr, aErr)
@@ -49,23 +42,20 @@ local function odometry(self, dx, dy, da, drErr, daErr)
   local daErr = daErr or 0.10 * math.abs(da)
   self.rvar = self.rvar + drErr
   self.avar = self.avar + daErr
-
-  --wcm['set_obstacle_v'..self.id]({x, y})
 end
 
-function obstacleFilter.new(id)
+function obstacleFilter.new(a,r)
   -- Set up the object
   local f = {}
   -- Variables
-  f.r = 1
-  f.a = 0
+  f.r = r --1
+  f.a = a --0
   f.rvar = 1e10
   f.avar = 1e10
-  f.id = id
   -- Methods
   f.observation_ra = observation_ra
   f.observation_xy = observation_xy
-  f.odometry = odometry
+  -- f.odometry = odometry
   return f
 end
 

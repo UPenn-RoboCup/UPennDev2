@@ -93,7 +93,9 @@ function simple_ipc.new_publisher(channel, target)
 		is_bind = is_bind,
 		kind = 'pub',
 	}
-  ch_socket.obj = obj
+  if type(ch_socket)=='table' then
+    ch_socket.obj = obj
+  end
   return obj
 end
 
@@ -125,7 +127,9 @@ function simple_ipc.new_subscriber(channel, target)
 		is_bind = is_bind,
 		kind = 'sub',
 	}
-  ch_socket.obj = obj
+  if type(ch_socket)=='table' then
+    ch_socket.obj = obj
+  end
   return obj
 end
 
@@ -156,7 +160,9 @@ function simple_ipc.new_requester(channel, target)
 		is_bind = is_bind,
 		kind = 'req',
 	}
-  ch_socket.obj = obj
+  if type(ch_socket)=='table' then
+    ch_socket.obj = obj
+  end
   return obj
 end
 
@@ -187,7 +193,9 @@ function simple_ipc.new_replier(channel, target)
 		is_bind = is_bind,
 		kind = 'rep',
 	}
-	ch_socket.obj = obj
+  if type(ch_socket)=='table' then
+    ch_socket.obj = obj
+  end
 	return obj
 end
 
@@ -218,7 +226,9 @@ function simple_ipc.new_pair(channel, is_parent)
 		is_bind = is_bind,
 		kind = 'pair',
 	}
-  ch_socket.obj = obj
+  if type(ch_socket)=='table' then
+    ch_socket.obj = obj
+  end
   return obj
 end
 

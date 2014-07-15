@@ -1,11 +1,5 @@
--- TODO: Make an FFI version (may be faster?)
--- TODO: Just replace carray with FFI?
---
 local shm    = require'shm'
 local vector = require'vector'
-local carray
-if not ffi then carray = require'carray' end
-
 local memory = {}
 
 local function init_shm_keys (shmHandle, shmTable)
@@ -55,19 +49,17 @@ function memory.init_shm_segment (name, shared, shsize, tid, pid)
     init_shm_keys(shmHandle, shared[shtable]);
 
 		-- Add more direct memory access
-		-- Default is LuaJIT FFI, with carray fallback
-		local shmPointerName = shtable..'Ptr';
-		fenv[shmPointerName] = {};
-		local shmPointer = fenv[shmPointerName]
+    local shmPointerName, shmPointer
+    if ffi then
+		  shmPointerName = shtable..'Ptr';
+		  fenv[shmPointerName] = {};
+		  shmPointer = fenv[shmPointerName]
+    end
     for k,v in pairs(shared[shtable]) do
 			local ptr, tp, n = shmHandle:pointer(k)
 
       -- If FFI, then give raw access to the SHM pointer
-			if ffi then
-				shmPointer[k] = ffi.cast(tp..'*', ptr)
-			--else
-			--	shmPointer[k] = carray.cast(ptr, tp, n)
-			end
+			if shmPointer then shmPointer[k] = ffi.cast(tp..'*', ptr) end
       local kind = type(v)
       if kind=='string' then
         -- Get String
@@ -80,7 +72,6 @@ function memory.init_shm_segment (name, shared, shsize, tid, pid)
             end
             return string.char(unpack(bytes));
           end
-        -- Set string. Never trust FFI here... since expansion may need to happen
         fenv['set_'..shtable..'_'..k] = function(val)
           return shmHandle:set(k, {string.byte(val, 1, string.len(val))});
         end

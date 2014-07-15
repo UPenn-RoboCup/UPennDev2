@@ -6,20 +6,24 @@ dofile'include.lua'
 local libs = {
   'Config',
   'Body',
-  'unix',
   'util',
   'vector',
   'torch',
 	'fun',
+  'ffi'
 }
 
 -- Load the libraries
-for _,lib in ipairs(libs) do _G[lib] = require(lib) end
+for _,lib in ipairs(libs) do
+  local ok, lib_tbl = pcall(require, lib)
+  if ok then
+    _G[lib] = lib_tbl
+  else
+    print("Failed to load", lib)
+  end
+end
 -- mp
 mp = require'msgpack'
--- ffi
-ok, ffi = pcall(require,'ffi')
-ok = nil
 
 local si = require'simple_ipc'
 

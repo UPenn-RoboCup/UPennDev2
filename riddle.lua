@@ -4,31 +4,37 @@ dofile'include.lua'
 -- Important libraries in the global space
 local libs = {
   'Config',
-  'unix',
+  'Body',
   'util',
   'vector',
   'torch',
-  'simple_ipc',
-  'udp'
+  'udp',
+  'ffi',
 }
 
-mp = require'msgpack'
-Body = require'Body'
-
 -- Load the libraries
-for _,lib in ipairs(libs) do _G[lib] = require(lib) end
-if torch then torch.Tensor = torch.DoubleTensor end
+for _,lib in ipairs(libs) do
+  local ok, lib_tbl = pcall(require, lib)
+  if ok then
+    _G[lib] = lib_tbl
+  else
+    print("Failed to load", lib)
+  end
+end
+
+mp = require'msgpack'
+local si = require'simple_ipc'
 
 -- Requester
 print('REQ |',Config.net.robot.wired,Config.net.reliable_rpc)
 local rpc_req =
-  simple_ipc.new_requester(Config.net.reliable_rpc,Config.net.robot.wired)
+  si.new_requester(Config.net.reliable_rpc,Config.net.robot.wired)
 unix.usleep(1e5)
 
 -- Publisher
 print('PUB |',Config.net.robot.wired,Config.net.reliable_rpc2)
 local rpc_pub =
-  simple_ipc.new_publisher(Config.net.reliable_rpc2,true,Config.net.robot.wired)
+  si.new_publisher(Config.net.reliable_rpc2,true,Config.net.robot.wired)
 unix.usleep(1e5)
 
 -- UDP
@@ -36,22 +42,14 @@ print('UDP |',Config.net.robot.wired,Config.net.unreliable_rpc)
 local rpc_udp = udp.new_sender(Config.net.robot.wired,Config.net.unreliable_rpc)
 
 -- FSM communicationg
+fsm_chs = {}
 local fsm_send = function(t,evt)
   local ret = rpc_req:send(mp.pack({fsm=t.fsm,evt=evt}))
 end
-
-local listing = unix.readdir(HOME..'/Player')
--- Add all FSM directories that are in Player
-local fsm_ch_vars = {}
-for _,sm in ipairs(listing) do
-  local found = sm:find'FSM'
-  if found then
-    -- make GameFSM to game_ch
-    local name = sm:sub(1,found-1):lower()..'_ch'
-    table.insert(fsm_ch_vars,name)
-    -- Put into the global space
-    _G[name] = {fsm=sm,send=fsm_send}
-  end
+for _,sm in ipairs(Config.fsm.enabled) do
+  local fsm_name = sm..'FSM'
+  table.insert(fsm_chs, fsm_name)
+  _G[sm:lower()..'_ch'] = {fsm=fsm_name, send=fsm_send}
 end
 
 -- Shared memory
@@ -92,12 +90,8 @@ for _,mem in ipairs(listing) do
   end
 end
 
--- Useful constants
-DEG_TO_RAD = math.pi/180
-RAD_TO_DEG = 180/math.pi
-
-print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
-print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
+print(util.color('FSM Channel', 'yellow'), table.concat(fsm_chs, ' '))
+print(util.color('SHM access', 'blue'), table.concat(shm_vars, ' '))
 
 if arg and arg[-1]=='-i' and jit then
   -- Interactive LuaJIT

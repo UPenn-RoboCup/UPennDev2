@@ -1,5 +1,4 @@
 #!/usr/bin/env luajit -i
-
 dofile'include.lua'
 
 -- Important libraries in the global space
@@ -9,8 +8,7 @@ local libs = {
   'util',
   'vector',
   'torch',
-	'fun',
-  'ffi'
+  'ffi',
 }
 
 -- Load the libraries
@@ -22,6 +20,7 @@ for _,lib in ipairs(libs) do
     print("Failed to load", lib)
   end
 end
+
 -- mp
 mp = require'msgpack'
 

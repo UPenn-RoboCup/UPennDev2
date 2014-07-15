@@ -2,7 +2,7 @@
 -- Body abstraction for THOR-OP
 -- (c) 2013,2014 Stephen McGill, Seung-Joon Yi
 --------------------------------
-assert(ffi, 'Need LuaJIT to run. Lua support in the future')
+--assert(ffi, 'Need LuaJIT to run. Lua support in the future')
 -- Shared memory for the joints
 require'dcm'
 
@@ -29,12 +29,16 @@ local vslice = vector.slice
 -- Body sensors --
 ------------------
 local nx_registers = require'libDynamixel'.nx_registers
-for sensor, ptr in pairs(dcm.sensorPtr) do
+for _, sensor in ipairs(dcm.sensorKeys) do
 	local cur = dcm['get_sensor_'..sensor]()
-	local ptr_t = dcm.tsensorPtr[sensor]
 	local n_el = type(cur)=='table' and #cur or 1
   local is_motor = nx_registers[sensor]
-	local get = function(idx1, idx2, needs_wait)
+  local ptr, ptr_t
+  if ffi then
+    ptr = dcm.sensorPtr[sensor]
+    ptr_t = dcm.tsensorPtr[sensor]
+  end
+  local get = function(idx1, idx2, needs_wait)
 		local start, stop = idx1 or 1, idx2 or n_el
     if is_motor and needs_wait then
 			local ids = {}
@@ -45,11 +49,11 @@ for sensor, ptr in pairs(dcm.sensorPtr) do
 		-- Return the time of the reading
 	  return vslice(ptr, start-1, stop-1), vslice(ptr_t, start-1, stop-1)
 	end
+  
   Body['get_'..sensor] = get
   -- Anthropomorphic access to dcm
 	-- TODO: get_lleg_rpy is illegal, for instance
   for part, jlist in pairs(Config.parts) do
-		-- For cdata, use -1
 	  local not_synced = sensor~='position'
     local idx1, idx2 = jlist[1], jlist[#jlist]
     Body['get_'..part:lower()..'_'..sensor] = function(idx, skip_wait)
@@ -62,13 +66,16 @@ end
 --------------------
 -- Body actuators --
 --------------------
-for actuator, ptr in pairs(dcm.actuatorPtr) do
+--for actuator, ptr in pairs(dcm.actuatorPtr) do
+for _, actuator in ipairs(dcm.actuatorKeys) do
 	local cur = dcm['get_actuator_'..actuator]()
 	local n_el = type(cur)=='table' and #cur or 1
 	-- Only command_position is constantly synced
 	-- Other commands need to be specially sent to the Body
 	local not_synced = actuator~='command_position'
-	local idx
+  local ptr
+  if ffi then ptr = dcm.actuatorPtr[sensor] end
+  local idx
 	local function set(val, idx1, idx2)
 		local changed_ids = {}
 		-- cdata is -1

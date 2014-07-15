@@ -35,31 +35,38 @@ function memory.init_shm_segment (name, shared, shsize, tid, pid)
   -- initialize shm segments from the *cm format
   for shtable, shval in pairs(shared) do
     -- create shared memory segment
-    local shmHandleName = shtable..'Shm';
+    local shmHandleName = shtable..'Shm'
     -- segment names are constructed as follows:
     -- [file_name][shared_table_name][team_number][player_id][username]
     -- ex. vcmBall01brindza is the segment for shared.ball table in vcm.lua
     -- NOTE: the first letter of the shared_table_name is capitalized
-    local shmName = name..string.upper(string.sub(shtable, 1, 1))..string.sub(shtable, 2)..tid..pid..(os.getenv('USER') or '');
+    local shmName = name..string.upper(string.sub(shtable, 1, 1))..string.sub(shtable, 2)..tid..pid..(os.getenv('USER') or '')
 
-    fenv[shmHandleName] = shm.new(shmName, shsize[shtable]);
-    local shmHandle = fenv[shmHandleName];
+    fenv[shmHandleName] = shm.new(shmName, shsize[shtable])
+    local shmHandle = fenv[shmHandleName]
 
     -- intialize shared memory
-    init_shm_keys(shmHandle, shared[shtable]);
+    init_shm_keys(shmHandle, shared[shtable])
 
 		-- Add more direct memory access
     local shmPointerName, shmPointer
     if ffi then
-		  shmPointerName = shtable..'Ptr';
-		  fenv[shmPointerName] = {};
+		  shmPointerName = shtable..'Ptr'
+		  fenv[shmPointerName] = {}
 		  shmPointer = fenv[shmPointerName]
     end
+    
+    -- Save names
+    local shmKeysName, shmKeys = shtable..'Keys'
+    fenv[shmKeysName] = {}
+    shmKeys = fenv[shmKeysName]
+    
     for k,v in pairs(shared[shtable]) do
 			local ptr, tp, n = shmHandle:pointer(k)
 
       -- If FFI, then give raw access to the SHM pointer
 			if shmPointer then shmPointer[k] = ffi.cast(tp..'*', ptr) end
+      table.insert(shmKeys, k)
       local kind = type(v)
       if kind=='string' then
         -- Get String

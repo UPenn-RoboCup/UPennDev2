@@ -114,9 +114,12 @@ local function update_head()
 	
 	cameraPitch = headBias[2]
 	cameraRoll = headBias[3]
+	cameraYaw = headBias[4]
+
 	dtrCamera = T.trans(unpack(cameraPos))
   * T.rotY(cameraPitch or 0)
   * T.rotX(cameraRoll or 0)
+  * T.rotZ(cameraYaw or 0)
 
   trHead = trNeck * dtrCamera
   -- Grab the position only
@@ -611,13 +614,6 @@ function libVision.obstacle(labelB_t)
 	    local pos = vector.new(obstacle.v[obstacle.dist[i]])  -- LOCAL
       obsStats.xs[i] = pos[1]
       obsStats.ys[i] = pos[2]
-
-      --       local global_pos = util.pose_global({pos[1], pos[2], 0}, wcm.get_robot_pose())
-      --       local xi = math.ceil((MAP.xmax-global_pos[1]) / MAP.res)
-      -- local yi = math.ceil((global_pos[2]-MAP.ymin) / MAP.res)
-      --       xi = math.min(math.max(1, xi), MAP.sizex)
-      --       yi = math.min(math.max(1, yi), MAP.sizey)
-      --       MAP.grid[xi][yi] = math.min(MAP.grid[xi][yi]+5, 1e5)
       
       obsStats.axisMinor[i] = obstacle.axisMinor[obstacle.dist[i]]
       obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 

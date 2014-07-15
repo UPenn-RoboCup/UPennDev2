@@ -138,7 +138,7 @@ table.insert(Config.camera,
     format = 'yuyv',
     w = 640,
     h = 360, --480,
-    cx_offset = 8, ---6,
+    cx_offset = 0,
     cy_offset = 0,
     fps = 30,
     udp_port = 33333,
@@ -201,7 +201,7 @@ table.insert(Config.camera,
 if IS_WEBOTS then
   Config.camera[1].w = 320
   Config.camera[1].h = 180
-  Config.camera[1].lut = 'webots'
+  Config.camera[1].lut = 'webots74'
 
   Config.camera[1].cx_offset = 0
   Config.camera[1].cy_offset = 0

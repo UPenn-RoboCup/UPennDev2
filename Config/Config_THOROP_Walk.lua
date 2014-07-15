@@ -321,10 +321,19 @@ end
 
 --Load robot specific configs
 c=require'calibration'
-
 if c.cal[HOSTNAME].legBias then 
   walk.legBias = c.cal[HOSTNAME].legBias end
+if c.cal[HOSTNAME].headBias then 
+  walk.headBias = c.cal[HOSTNAME].headBias end
 
+--[[
+if c.cal[HOSTNAME] then
+  for i,k in ipairs(c.cal[HOSTNAME]) do
+    print("Reading robot specific config:"..i.." value "..k)
+    walk[i]=k
+  end
+end
+--]]
 ------------------------------------
 -- Associate with the table
 Config.walk    = walk

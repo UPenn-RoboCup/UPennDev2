@@ -50,6 +50,9 @@ local minFPS, maxFPS = Config.monitor.minFPS, Config.monitor.maxFPS
 local dFPS = 3
 
 local dq = 5*DEG_TO_RAD
+
+local db = 0.5*DEG_TO_RAD
+
 function process_keyinput()
   local byte=getch.block();
   if byte then
@@ -79,28 +82,35 @@ function process_keyinput()
 
 		
 		-- camera angles
-		elseif byte==string.byte("i") then
-			headBias[2]=headBias[2] + 1*DEG_TO_RAD						
+		elseif byte==string.byte("i") then  --Pitch
+			headBias[2]=headBias[2] + db
 			bias_changed = true
 		elseif byte==string.byte(",") then
-			headBias[2]=headBias[2] - 1*DEG_TO_RAD			
+			headBias[2]=headBias[2] - db			
 			hcm.set_camera_pitch(headBias)
 			bias_changed = true
-		elseif byte==string.byte("j") then
-			headBias[2]=headBias[3] - 1*DEG_TO_RAD						
+		elseif byte==string.byte("j") then  --Yaw
+			headBias[4]=headBias[4] - db						
 			bias_changed = true
 		elseif byte==string.byte("l") then
-			headBias[2]=headBias[3] + 1*DEG_TO_RAD			
-			
+			headBias[4]=headBias[4] + db			
+		  bias_changed = true
+
+		elseif byte==string.byte("u") then  --Roll
+			headBias[3]=headBias[3] - db						
 			bias_changed = true
+		elseif byte==string.byte("m") then
+			headBias[3]=headBias[3] + db			
+
+
 		elseif byte==string.byte("k") then
-			headBias={0,0,0}			
+			headBias={0,0,0,0}			
 			bias_changed = true
 		elseif byte==string.byte("[") then
-			headBias[1]=headBias[1] + 1*DEG_TO_RAD						
+			headBias[1]=headBias[1] + db						
 			bias_changed = true
 		elseif byte==string.byte("]") then
-			headBias[1]=headBias[1] - 1*DEG_TO_RAD						
+			headBias[1]=headBias[1] - db						
 			bias_changed = true
 
 		-- Frame rate for monitoring
@@ -127,8 +137,8 @@ function process_keyinput()
 
     if bias_changed then
     	bias_changed = false
-		print(string.format("Bias neck: %.2f cam pitch: %.2f roll:%.2f deg\n",
-      	headBias[1]*RAD_TO_DEG,headBias[2]*RAD_TO_DEG,headBias[3]*RAD_TO_DEG))
+		print(string.format("Bias neck: %.2f cam pitch: %.2f roll:%.2f yaw: %.2fdeg\n",
+      	headBias[1]*RAD_TO_DEG,headBias[2]*RAD_TO_DEG,headBias[3]*RAD_TO_DEG,headBias[4]*RAD_TO_DEG))
       	hcm.set_camera_bias(headBias)
 	end
   end

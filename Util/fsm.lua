@@ -131,6 +131,9 @@ end
 
 function entry(self)
   local state = self.currentState
+  if self.state_debug_handle then
+    self.state_debug_handle(self.currentState._NAME,event)
+  end
   return state.entry()
 end
 
@@ -185,14 +188,17 @@ function update(self)
   return ret
 end
 
-function set_state_debug_handle(self, h)
-  self.state_debug_handle = h
-end
-
 function exit(self)
   local state = self.currentState
   state.exit()
   self.currentState = self.initialState
+  if self.state_debug_handle then
+    self.state_debug_handle(self.currentState._NAME,event)
+  end
+end
+
+function set_state_debug_handle(self, h)
+  self.state_debug_handle = h
 end
 
 return setmetatable(fsm, mt)

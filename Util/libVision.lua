@@ -609,7 +609,7 @@ function libVision.obstacle(labelB_t)
     obsStats.iv, obsStats.xs, obsStats.ys = {},{},{}
     obsStats.axisMinor, obsStats.axisMajor, obsStats.orientation = {}, {}, {}
     table.sort(obstacle.dist)
-    for i=1, math.min(3, obstacle.count) do
+    for i=1, math.min(5, obstacle.count) do
       obsStats.iv[i] = obstacle.iv[obstacle.dist[i]]
 	    local pos = vector.new(obstacle.v[obstacle.dist[i]])  -- LOCAL
       obsStats.xs[i] = pos[1]
@@ -619,9 +619,6 @@ function libVision.obstacle(labelB_t)
       obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 
       obsStats.orientation[i] = math.pi/2
     end    
-    
-    -- -- These are global position
-    -- obsStats.xs, obsStats.ys = ImageProc2.grid_filter(MAP.grid, MAP.res)
 
     return 'Detected', obsStats
   else

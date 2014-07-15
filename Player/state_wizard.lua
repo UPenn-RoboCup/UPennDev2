@@ -4,6 +4,7 @@
 ---------------------------
 dofile'include.lua'
 --require'gcm'
+local GC = require'GameControlReceiver'
 local Body = require(Config.dev.body)
 -- Cache some functions
 local get_time, usleep = Body.get_time, unix.usleep
@@ -68,6 +69,11 @@ while running do
   if IS_WEBOTS then
     Body.update()
   else
+  	local gc_packet = GC.receive()
+  	if gc_packet.state and gc_packet.state~=0 then
+  		-- 0; 2-set; 3-play; 4-finish
+  		gcm.set_game_state(gc_packet.state)
+  	end
     collectgarbage('step')
     local t_s = (t_sleep - (get_time() - t))
     if t_s>0 then usleep(1e6 * t_s) end

@@ -33,12 +33,25 @@ function state.update()
   --print('Neck angle',unpack(neckAngleTarget))
   -- Grab where we are
   local qNeck = Body.get_head_command_position()
+  local headBias = hcm.get_camera_bias()
+  qNeck[1] = qNeck[1] - headBias[1]  
+
+
   -- Go!
   local qNeck_approach, doneNeck = 
     util.approachTol( qNeck, neckAngleTarget, dqNeckLimit, dt )
     
   -- Update the motors
-  Body.set_head_command_position(qNeck_approach)
+
+
+
+  local headBias = hcm.get_camera_bias()
+
+  local RAD_TO_DEG = 180/math.pi
+print(string.format("Bias neck: %.2f cam pitch: %.2f roll:%.2f deg\n",
+        headBias[1]*RAD_TO_DEG,headBias[2]*RAD_TO_DEG,headBias[3]*RAD_TO_DEG))
+
+  Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
 
   --5 is the idle state! 
   -- Ready, set, playing states

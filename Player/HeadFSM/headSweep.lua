@@ -35,7 +35,10 @@ function state.update()
   local pitch = -5*DEG_TO_RAD
 
   -- Grab where we are
-  local qNeck = Body.get_head_position()
+  local qNeck = Body.get_head_command_position()
+  local headBias = hcm.get_camera_bias()
+  qNeck[1] = qNeck[1] - headBias[1]  
+
   local qNeck_approach, doneNeck =
     util.approachTol(qNeck, {yaw, pitch}, dqNeckLimit, dt)
   -- Update the motors

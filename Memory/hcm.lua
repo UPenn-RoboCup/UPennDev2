@@ -226,12 +226,9 @@ shared_data.monitor.fps = vector.new({30})
 
 -- Camera
 shared_data.camera = {}
-shared_data.camera.pitch = vector.new({5*DEG_TO_RAD})
-shared_data.camera.roll = vector.new({0*DEG_TO_RAD})
+shared_data.camera.bias = vector.zeros(3)
+--Neck yaw, Camera pitch, Camera roll
 
--- Head bias
-shared_data.headbias = {}
-shared_data.headbias.yaw = vector.zeros(1)
 
 --These variables are only used for offline testing of arm states
 shared_data.state.success = vector.zeros(0)

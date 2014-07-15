@@ -40,13 +40,9 @@ local yawMax = Config.head.yawMax
 local head_now = Body.get_head_position()
 local head_new = head_now
 
--- Camera pitch
-local cameraPitch = hcm.get_camera_pitch()
-local cameraRoll = hcm.get_camera_roll()
-local camera_changed = false
--- Head angle bias
-local headYawBias = hcm.get_headbias_yaw()
-local head_changed = false
+local headBias = hcm.get_camera_bias()
+local bias_changed = false
+
 -- Monitor FPS
 local monitor_fps = hcm.get_monitor_fps()
 local monitor_fps_new = monitor_fps
@@ -77,39 +73,35 @@ function process_keyinput()
 		elseif byte==string.byte("o") then    
 			wcm.set_obstacle_enable(1)
 			wcm.set_obstacle_reset(1)
+
+
+
+
 		
 		-- camera angles
 		elseif byte==string.byte("i") then
-			camera_changed = true
-			cameraPitch = hcm.get_camera_pitch() + 1*DEG_TO_RAD
-			hcm.set_camera_pitch(cameraPitch)
+			headBias[2]=headBias[2] + 1*DEG_TO_RAD						
+			bias_changed = true
 		elseif byte==string.byte(",") then
-			camera_changed = true
-			cameraPitch = hcm.get_camera_pitch() - 1*DEG_TO_RAD
-			hcm.set_camera_pitch(cameraPitch)
+			headBias[2]=headBias[2] - 1*DEG_TO_RAD			
+			hcm.set_camera_pitch(headBias)
+			bias_changed = true
 		elseif byte==string.byte("j") then
-			camera_changed = true
-			cameraRoll = hcm.get_camera_roll() + 1*DEG_TO_RAD
-			hcm.set_camera_roll(cameraRoll)
+			headBias[2]=headBias[3] - 1*DEG_TO_RAD						
+			bias_changed = true
 		elseif byte==string.byte("l") then
-			camera_changed = true
-			cameraRoll = hcm.get_camera_roll() - 1*DEG_TO_RAD
-			hcm.set_camera_roll(cameraRoll)
+			headBias[2]=headBias[3] + 1*DEG_TO_RAD			
+			
+			bias_changed = true
 		elseif byte==string.byte("k") then
-			camera_changed = true
-			cameraPitch, cameraRoll = 0, 0
-			hcm.set_camera_pitch(cameraPitch)
-			hcm.set_camera_roll(cameraRoll)
-
-		-- Head angles offset
+			headBias={0,0,0}			
+			bias_changed = true
 		elseif byte==string.byte("[") then
-			head_changed = true
-			headYawBias = hcm.get_headbias_yaw() + 0.05*DEG_TO_RAD
-			hcm.set_headbias_yaw(headYawBias)
+			headBias[1]=headBias[1] + 1*DEG_TO_RAD						
+			bias_changed = true
 		elseif byte==string.byte("]") then
-			head_changed = true
-			headYawBias = hcm.get_headbias_yaw() - 0.05*DEG_TO_RAD
-			hcm.set_headbias_yaw(headYawBias)
+			headBias[1]=headBias[1] - 1*DEG_TO_RAD						
+			bias_changed = true
 
 		-- Frame rate for monitoring
     elseif byte==string.byte("=") then
@@ -133,17 +125,12 @@ function process_keyinput()
     
     print(string.format("Monitor FPS:   %.1f", monitor_fps_new))
 
-		if camera_changed then
-			camera_changed = false
-			print(string.format("Camera pitch: %.1f  deg,  roll: %.1f  deg \n",
-      	cameraPitch*RAD_TO_DEG, cameraRoll*RAD_TO_DEG))
-		end
-		if head_changed then
-			head_changed = false
-			print(string.format("Head yaw bias: %.2f  deg\n",
-      	headYawBias*RAD_TO_DEG))
-		end
-
+    if bias_changed then
+    	bias_changed = false
+		print(string.format("Bias neck: %.2f cam pitch: %.2f roll:%.2f deg\n",
+      	headBias[1]*RAD_TO_DEG,headBias[2]*RAD_TO_DEG,headBias[3]*RAD_TO_DEG))
+      	hcm.set_camera_bias(headBias)
+	end
   end
 end
 

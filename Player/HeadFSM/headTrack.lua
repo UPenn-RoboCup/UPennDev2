@@ -76,12 +76,18 @@ function state.update()
 
   -- Grab where we are
   local qNeck = Body.get_head_command_position()
+  local headBias = hcm.get_camera_bias()
+  qNeck[1] = qNeck[1] - headBias[1]  
+
   -- Go!
   local qNeck_approach, doneNeck = 
     util.approachTol( qNeck, {yaw,pitch}, dqNeckLimit, dt )
     
   -- Update the motors
-  Body.set_head_command_position(qNeck_approach)
+--  Body.set_head_command_position(qNeck_approach)
+
+  local headBias = hcm.get_camera_bias()
+  Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
   wcm.set_ball_tlook(t)
 end
 

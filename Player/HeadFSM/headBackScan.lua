@@ -40,6 +40,10 @@ function state.update()
   t_update = t
 
   local qNeck0 = Body.get_head_command_position()
+  local headBias = hcm.get_camera_bias()
+  qNeck0[1] = qNeck0[1] - headBias[1]  
+
+
   local yawTarget, pitchTarget
   if stage==1 then
     pitchTarget = 20*DEG_TO_RAD
@@ -67,7 +71,9 @@ function state.update()
   if doneNeck then stage = stage+1 end
 
   -- Update the motors
-  Body.set_head_command_position(qNeck_approach)
+--  Body.set_head_command_position(qNeck_approach)
+  local headBias = hcm.get_camera_bias()  
+  Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
   wcm.set_ball_tlook(t)
 
 	-- Check if we found the ball

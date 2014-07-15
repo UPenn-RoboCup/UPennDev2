@@ -76,13 +76,20 @@ function state.update()
   local tpassed=t-t_update
   t_update = t
 
+
+  local qNeck = Body.get_head_command_position()
+  local headBias = hcm.get_camera_bias()
+  qNeck[1] = qNeck[1] - headBias[1]  
+
   local pitch = -5*DEG_TO_RAD
   if stage==1 then
     local yawbias = -0.5*yawSweep*scandir
     local yaw = math.min(math.max(yaw0+yawbias, -yawMax), yawMax)
-    local qNeck = Body.get_head_command_position()
     local qNeck_approach, doneNeck =util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, tpassed )
-    Body.set_head_command_position(qNeck_approach)    
+--    Body.set_head_command_position(qNeck_approach)    
+
+    local headBias = hcm.get_camera_bias()
+    Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
     if doneNeck then
       t0 = t
       stage = 2
@@ -93,9 +100,10 @@ function state.update()
     local yawbias = (ph-0.5) * yawSweep*scandir
 
     local yaw = math.min(math.max(yaw0+yawbias, -yawMax), yawMax)
-    local qNeck = Body.get_head_command_position()
     local qNeck_approach, doneNeck =util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, tpassed )
-    Body.set_head_command_position(qNeck_approach)
+    --Body.set_head_command_position(qNeck_approach)
+    local headBias = hcm.get_camera_bias()
+    Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
 
     if doneNeck and ph==1 then
       local tGoal = wcm.get_goal_t();

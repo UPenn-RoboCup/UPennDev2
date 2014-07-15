@@ -100,9 +100,11 @@ end
 local function update_head()
 	if not Body then return end
 	-- Get from Body...
-	local headYawBias = hcm.get_headbias_yaw()
+	
   local head = Body.get_head_position()
-	head[1] = head[1] + headYawBias
+  local headBias = hcm.get_camera_bias()
+  head[1] = head[1] - headBias[1]  
+	
   local rpy = Body.get_rpy()
   --SJ: let's use imu value to recalculate camera transform every frame
   trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
@@ -110,8 +112,8 @@ local function update_head()
   * T.trans(Config.head.neckX, 0, Config.head.neckZ)
   trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
 	
-	cameraPitch = hcm.get_camera_pitch()
-	cameraRoll = hcm.get_camera_roll()
+	cameraPitch = headBias[2]
+	cameraRoll = headBias[3]
 	dtrCamera = T.trans(unpack(cameraPos))
   * T.rotY(cameraPitch or 0)
   * T.rotX(cameraRoll or 0)
@@ -636,10 +638,8 @@ end
 
 -- Set the variables based on the config file
 function libVision.entry(cfg, body)
-	-- Set up bias params
-	hcm.set_headbias_yaw(Config.head.yawBias)
-  hcm.set_camera_pitch(Config.head.cameraPitch)
-  hcm.set_camera_roll(Config.head.cameraRoll)
+	-- Set up bias params	
+  hcm.set_camera_bias(Config.walk.headBias or {0,0,0})
   -- Dynamically load the body
   Body = body
   -- Recompute the width and height of the images
@@ -657,9 +657,8 @@ function libVision.entry(cfg, body)
   -- Center should be calibrated and saved in Config
   x0A, y0A = 0.5*(wa-1)+cfg.cx_offset, 0.5*(ha-1)+cfg.cy_offset
   x0B, y0B = 0.5*(wb-1)+cfg.cx_offset/scaleB, 0.5*(hb-1)+cfg.cy_offset/scaleB
-  
-  -- Delta transform from neck to camera
-	cameraRoll = hcm.get_camera_roll()
+    
+
 	cameraPos = cfg.head.cameraPos or {0,0,0}
   dtrCamera = T.trans(unpack(cameraPos))
   * T.rotY(cameraPitch or 0)

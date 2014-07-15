@@ -27,6 +27,9 @@ function state.update()
 
   -- Grab where we are
   local qNeck = Body.get_head_command_position()
+  local headBias = hcm.get_camera_bias()
+  qNeck[1] = qNeck[1] - headBias[1]  
+
   --25 deg can basically cover the whole field
 	-- but not enough for detecting obs near center circle
   local pitchUp = Config.fsm.headObstacleScan.pitchUp
@@ -62,7 +65,10 @@ function state.update()
   end
 
   -- Update the motors
-  Body.set_head_command_position(qNeck_approach)
+--  Body.set_head_command_position(qNeck_approach)
+
+  local headBias = hcm.get_camera_bias()
+  Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
 end
 
 function state.exit()

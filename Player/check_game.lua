@@ -6,16 +6,19 @@ local util = require'util'
 local processes = {
   'run_dcm',
   'run_imu',
+  'camera_wizard',
+  'world_wizard',
   'state_wizard',
+  'gc_wizard',
 }
 local is_running = {}
 for _, v in ipairs(processes) do
   is_running[v] = false
 end
 
-x = io.popen("pgrep -fl luajit")
+local pgrep = io.popen("pgrep -fl luajit")
 
-for l in x:lines() do
+for l in pgrep:lines() do
   local m = l:match("luajit%s+(.+)")
   for _, p in ipairs(processes) do
     if m:find(p) then

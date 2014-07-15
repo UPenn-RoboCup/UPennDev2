@@ -36,8 +36,8 @@ Config.debug={
 -- Dummy arms are the two MX-106R motors per arm
 Config.USE_DUMMY_ARMS = true
 Config.use_angle_localization = true
---Config.demo = false
-Config.demo = true
+Config.demo = false
+--Config.demo = true
 Config.use_localhost = false
 --Config.disable_kick = true
 Config.disable_kick = false
@@ -105,6 +105,13 @@ if IS_WEBOTS then
   Config.walk.velDelta  = {0.04,0.02,0.1}
   
 end
+
+
+
+
+  Config.walk.velLimitX = {-.10,.15} 
+  Config.fsm.bodyRobocupApproach.target={0.28,0.12}  
+  Config.use_walkkick = true
 
 
 Config.torque_legs = true

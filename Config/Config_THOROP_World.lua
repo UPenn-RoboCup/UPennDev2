@@ -57,7 +57,7 @@ world.goalWidth = 2.6  -- in m308
 
 --GRASP small post
 ------------------------------------------------
----[[
+--[[
 world.goalHeight = 0.85
 world.goalWidth = 1.6
 --]]

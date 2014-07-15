@@ -9,7 +9,7 @@ require'vcm'
 require'wcm'
 
 local t0, t_update, t_entry
-local dqNeckLimit = Config.fsm.dqNeckLimit
+local dqNeckLimit = {80*DEG_TO_RAD, 80*DEG_TO_RAD}
 local yawSweep = Config.fsm.headLookGoal.yawSweep;
 local dist = Config.fsm.headReady.dist;
 local tScan = Config.fsm.headLookGoal.tScan;

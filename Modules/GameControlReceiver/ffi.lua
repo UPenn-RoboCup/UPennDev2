@@ -218,7 +218,8 @@ local function init(team, player, gc_addr)
 end
 libGC.init = init
 
-local gc = libGC.init(5, 1)
+--local gc = libGC.init(5, 1)
+local gc = libGC.init(22, 1, '192.168.1.255')
 
 local function test_loop()
   local ret, msg
@@ -235,7 +236,7 @@ local function test_loop()
       t_send = t
       ret, msg = gc:send_return()
       if msg then print("Bad return", msg) end
-      ret, msg = gc:send_coach("go team!")
+			ret, msg = gc:send_coach("go team!")
       if msg then print("Bad coach", msg) end
       send_count = send_count + 1
     end

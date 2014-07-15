@@ -1,3 +1,5 @@
+#!/usr/bin/env luajit
+
 -- DCM is a thread or standalone
 local CTX, metadata = ...
 -- Still need our library paths set

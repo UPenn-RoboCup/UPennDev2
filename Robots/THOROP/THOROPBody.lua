@@ -170,7 +170,7 @@ end
 function Body.entry()
 	-- DCM
 	dcm_ch, dcm_thread =
-	  si.new_thread(ROBOT_HOME..'/run_co_dcm.lua', 'dcm')
+	  si.new_thread(ROBOT_HOME..'/run_dcm.lua', 'dcm')
 	ch.callback = dcm_cb
 	-- IMU
 	imu_ch, imu_thread =

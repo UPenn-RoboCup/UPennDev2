@@ -1,3 +1,4 @@
+#!/usr/bin/env luajit
 ---------------------------
 -- World Manager --
 -- (c) Stephen McGill 2014    --

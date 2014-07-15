@@ -4,7 +4,7 @@ dofile'../include.lua'
 local util = require'util'
 
 local processes = {
-  'run_co_dcm',
+  'run_dcm',
   'run_imu',
   'state_wizard',
 }

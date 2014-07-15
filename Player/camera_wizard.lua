@@ -1,3 +1,4 @@
+#!/usr/bin/env luajit
 -----------------------------------
 -- Camera manager for finding lines
 -- (c) Stephen McGill, 2014

@@ -1,3 +1,4 @@
+#!/usr/bin/env luajit
 ---------------------------
 -- State Machine Manager --
 -- (c) Stephen McGill    --

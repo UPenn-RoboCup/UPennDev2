@@ -1,4 +1,6 @@
 assert(Config, 'Need a pre-existing Config table!')
+--print("Robot hostname:",HOSTNAME)
+
 local vector = require'vector'
 
 ------------------------------------
@@ -6,7 +8,6 @@ local vector = require'vector'
 
 local walk = {}
 
-print("Robot hostname:",HOSTNAME)
 walk.legBias = vector.new({0,0,0,0,0,0,0,0,0,0,0,0,})*DEG_TO_RAD
 walk.velocityBias = {0.0,0,0} --To get rid of drifting
 

@@ -133,8 +133,26 @@ for actuator, ptr in pairs(dcm.actuatorPtr) do
 			if idx then return get(jlist[idx]) else return get(idx1, idx2) end
 		end
 		Body['set_'..part:lower()..'_'..actuator] = function(val, i)
-			idx = jlist[i]
-			if idx then return set(val, idx) else return set(val, idx1, idx2) end
+			if i then
+        return set(val, jlist[i])
+      else
+        -- Check the ankle on a full set of lleg/rleg
+        -- Do not set the last 2 (ankle) values
+        --[[
+        if part=='LLeg' then
+          if (val[6]>0 and val[5]>0) or (val[6]>0 and val[5]>0)
+          then
+            return set(val, idx1, idx2-2)
+          end
+        elseif part=='RLeg' then
+          if (val[6]>0 and val[5]>0) or (val[6]>0 and val[5]>0)
+          then
+            return set(val, idx1, idx2-2)
+          end
+        end
+        --]]
+        return set(val, idx1, idx2)
+      end
 		end
   end
 	-- End anthropomorphic

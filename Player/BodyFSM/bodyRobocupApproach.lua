@@ -81,12 +81,12 @@ local function update_velocity()
 
     local supportLeg = mcm.get_status_supportLeg()
 
-    print("support:",supportLeg)
-    print("LR:",uLeft[1],uRight[1])
+    print(string.format("support:%d L:%.1d R:%.1d",
+      supportLeg,uLeft[1],uRight[1]))
 
     print(string.format("Ball pos: x %.3f y %.3f",wcm.get_ball_x(), wcm.get_ball_y() ))
     print(string.format("Ball err: x %.3f y%.3f   %.2f elapsed", ballx,bally,ball_elapsed))
-    print("Approach vel:",vStep[1],vStep[2],vStep[3])
+--    print("Approach vel:",vStep[1],vStep[2],vStep[3])
   end
 
 

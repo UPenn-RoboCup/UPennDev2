@@ -181,8 +181,12 @@ function walk.entry()
   init_odometry(uTorso_now)  
   roll_max = 0
 
+  --Checking out transition
   crossing_num = 0
-  last_side = 1
+  last_side = -1 
+
+
+
 
   --This is for the initial step only, so we can hardcode footholds here
   calculate_footsteps()
@@ -248,7 +252,6 @@ function walk.update()
     --Calculate Leg poses 
     local phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
     local uLeft, uRight = uLeft_now, uRight_now
-   
 
     if supportLeg == 0 then  -- Left support    
       if walkParam[1]==-1 then --WalkKick phase
@@ -303,6 +306,27 @@ function walk.update()
       print("EMERGENCY STOPPING")
       print("IMU roll angle:",roll_max)
       hcm.set_motion_estop(1)
+    end
+
+    --Check if torso crossed the center position
+    local relL = util.pose_relative(uLeft,uTorso)
+    local relR = util.pose_relative(uRight,uTorso)
+    local distL = relL[1]*relL[1]+relL[2]*relL[2]
+    local distR = relR[1]*relR[1]+relR[2]*relR[2]
+    local current_side
+    if distL<distR then current_side = 1
+    else current_side = 0 end
+
+    if walkParam and walkParam[1]==-9 then --Smooth transition into hybridwalk
+      if current_side ~= last_side then
+        crossing_num = crossing_num + 1
+        last_side = current_side
+        print("Crossing #:",crossing_num)
+        if crossing_num==2 then        
+          mcm.set_status_uTorsoVel({zmp_solver.x[2][1],zmp_solver.x[2][2],0})
+          return "walkalong" 
+        end
+      end
     end
 
   end  

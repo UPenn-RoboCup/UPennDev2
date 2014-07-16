@@ -29,9 +29,8 @@ Config.dev.gender       = 'boy'
 Config.debug={
 	webots_wizard=false,	
   -- obstacle = true,
-  follow = false,
-	--approach = false,
-  approach = true,
+  follow = false,	
+  --approach = true,
 }
 
 -- Dummy arms are the two MX-106R motors per arm
@@ -57,7 +56,7 @@ if IS_WEBOTS then
 --  Config.disable_kick = true
 
   Config.use_walkkick = true
-  --Config.use_walkkick = false
+  Config.use_walkkick = false
 
   --Config.backward_approach = true
 end
@@ -82,11 +81,7 @@ if IS_WEBOTS then
   Config.vision.ball.th_min_fill_rate = 0.25 
   Config.fsm.headLookGoal.yawSweep = 30*math.pi/180
   Config.fsm.headLookGoal.tScan = 2.0
-
-  --for walkkick
-  Config.fsm.bodyRobocupApproach.target={0.50,0.12}
-  Config.fsm.bodyRobocupApproach.th = {0.10, 0.02}
-
+  
 --Config.backward_approach = true
 --[[
   
@@ -98,23 +93,15 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupFollow.kickoffset = 0.5
 
 
---[[
   Config.fsm.bodyRobocupApproach.target={0.25,0.12}  
-  Config.fsm.bodyRobocupApproach.th = {0.30, 0.02} 
---]]
-
-
-  --Even closer!
-  Config.fsm.bodyRobocupApproach.target={0.20,0.12}  
-  Config.fsm.bodyRobocupApproach.th = {0.25, 0.02}
-
-
+  Config.fsm.bodyRobocupApproach.th = {0.01, 0.01}
   Config.world.use_imu_yaw = true
 
 
---faster
-  Config.walk.velLimitX = {-.20,.20} 
-  Config.walk.velLimitY = {-.08,.08}
+  Config.walk.velLimitX = {-.10,.10} 
+  Config.walk.velLimitX = {-.10,.15} 
+  Config.walk.velLimitY = {-.04,.04}
+  Config.walk.velDelta  = {0.04,0.02,0.1}
   
 end
 

@@ -29,6 +29,11 @@ local ball_side = 1
 
 local last_ph = 0
 
+local uTorso0 = nil
+local pose0 = nil
+
+local last_step = 0
+
 
 
 local function robocup_approach( pose, target_pose)
@@ -54,53 +59,148 @@ local function robocup_approach( pose, target_pose)
   if rel_dist < 0.04 then maxStep = 0.02 end
   local scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1)
   vStep = scale * vStep
+
  
   return vStep, false
 end
 
+
+local function robocup_approach2(uLeftGlobalTarget, uRightGlobalTarget)
+
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  local uTorso = mcm.get_status_uTorso()
+  local supportLeg = mcm.get_status_supportLeg()
+  local uTorsoNext
+
+  local uLSupport = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeft)
+  local uRSupport = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRight)
+  local uTorsoCurrent = util.se2_interpolate(0.5, uLSupport, uRSupport)
+
+  local pose = wcm.get_robot_pose()
+
+  --uLeft and uRight from uTorso0
+  local uLeftFromTorso = util.pose_relative(uLeft,uTorsoCurrent)
+  local uRightFromTorso = util.pose_relative(uRight,uTorsoCurrent)
+
+  local uLeftTargetFromTorso = util.pose_relative(uLeftGlobalTarget,pose)
+  local uRightTargetFromTorso = util.pose_relative(uRightGlobalTarget,pose)
+  
+  local supportStr
+
+  if last_step==1 then
+    if supportLeg==0 then 
+      uRightTargetFromTorso = util.pose_global({0, -2*Config.walk.footY,0},uLeftFromTorso)
+      uLSupportNext = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeftFromTorso)
+      uRSupportNext = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRightTargetFromTorso)
+      uTorsoNext = util.se2_interpolate(0.5, uLSupportNext, uRSupportNext)
+    else
+      uLeftTargetFromTorso = util.pose_global({0, 2*Config.walk.footY,0},uRightFromTorso)
+      uLSupportNext = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeftFromTorso)
+      uRSupportNext = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRightTargetFromTorso)
+      uTorsoNext = util.se2_interpolate(0.5, uLSupportNext, uRSupportNext)
+    end
+    local vStep = {uTorsoNext[1],uTorsoNext[2],0}    
+    last_step=2
+    return vStep,false
+  elseif last_step==2 then
+    return {0,0,0},true
+  end
+
+  if supportLeg==0 then 
+    --Last step was left support step (right foot movement)
+    --Next step should be left foot movement
+    supportStr='Left foot move next'
+    uLSupportNext = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeftFromTorso)
+    uRSupportNext = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRightTargetFromTorso)
+    uTorsoNext = util.se2_interpolate(0.5, uLSupportNext, uRSupportNext)
+  else
+    supportStr='Right foot move next'
+    uLSupportNext = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeftFromTorso)
+    uRSupportNext = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRightTargetFromTorso)
+    uTorsoNext = util.se2_interpolate(0.5, uLSupportNext, uRSupportNext)
+  end
+  
+  local vStepTarget = {uTorsoNext[1],uTorsoNext[2],0}
+
+  local maxStep = 0.06
+  vStep={0,0,0}
+  vStep[1] = math.min(Config.walk.velLimitX[2],math.max(Config.walk.velLimitX[1],vStepTarget[1]))
+  vStep[2] = math.min(Config.walk.velLimitY[2],math.max(Config.walk.velLimitY[1],vStepTarget[2]))
+
+  velMag = math.sqrt(vStep[1]^2+vStep[2]^2)
+  vStep[1]=vStep[1]/velMag * math.min(maxStep,velMag)
+  vStep[2]=vStep[2]/velMag * math.min(maxStep,velMag)
+  vStep[3]=0
+
+  if Config.debug.approach then
+    print("=====\n"..supportStr)
+    print(string.format("Ball xy: %.2f %.2f",wcm.get_ball_x(),wcm.get_ball_y() ))
+    print(string.format("Current: L (%.2f %.2f)  T (%.2f, %.2f)R (%.2f %.2f)",
+      uLeftFromTorso[1],uLeftFromTorso[2],
+      0,0,      
+      uRightFromTorso[1],uRightFromTorso[2]))
+    print(string.format("Target:  L (%.2f %.2f)  T (%.2f %.2f) R (%.2f %.2f)",
+      uLeftTargetFromTorso[1],uLeftTargetFromTorso[2],
+      uTorsoNext[1],uTorsoNext[2],
+      uRightTargetFromTorso[1],uRightTargetFromTorso[2]))
+  end
+
+  if math.abs(vStep[1]-vStepTarget[1])<0.005 and
+    math.abs(vStep[2]-vStepTarget[2])<0.005 then
+    last_step = 1    
+  end
+  return vStep,false
+end
+
+
+
+
+
+
 local function update_velocity()
   local pose = wcm.get_robot_pose()
-  local ballx = wcm.get_ball_x() - Config.fsm.bodyRobocupApproach.target[1]
-  local bally = wcm.get_ball_y() - ball_side*Config.fsm.bodyRobocupApproach.target[2]
+  local ballx = wcm.get_ball_x() 
+  local bally = wcm.get_ball_y() 
+
+  local uLeftGlobalTarget, uRightGlobalTarget
+  if ball_side>0 then
+    uLeftGlobalTarget = util.pose_global({
+        ballx - Config.fsm.bodyRobocupApproach.target[1] - Config.walk.supportX,
+             bally,0},pose)
+    uRightGlobalTarget = util.pose_global({
+        ballx - Config.fsm.bodyRobocupApproach.target[1] - Config.walk.supportX,
+          bally-2*Config.walk.footY,0},pose)
+  else
+    uLeftGlobalTarget = util.pose_global({
+      ballx - Config.fsm.bodyRobocupApproach.target[1] - Config.walk.supportX,
+      bally+2*Config.walk.footY,0},pose)
+    uRightGlobalTarget = util.pose_global({
+      ballx - Config.fsm.bodyRobocupApproach.target[1] - Config.walk.supportX,
+      bally,0},pose)
+  end
+
+  local vStep,arrived = robocup_approach2(uLeftGlobalTarget, uRightGlobalTarget)
+  
+
   local ballr = math.sqrt(ballx*ballx+bally*bally)
   local balla = math.atan2(bally,ballx)
   local walk_target_local = {ballx,bally,balla}
   local target_pose = util.pose_global(walk_target_local, pose)
 
-  local vStep,arrived = robocup_approach( pose, target_pose)
   mcm.set_walk_vel(vStep)
 
   local t  = Body.get_time()
   local ball_elapsed = t - wcm.get_ball_t()
-
-  if Config.debug.approach then
-
-    local uLeft = mcm.get_status_uLeft()
-    local uRight = mcm.get_status_uRight()
-    local uTorso = mcm.get_status_uTorso()
-
-    local supportLeg = mcm.get_status_supportLeg()
-
-    print(string.format("support:%d L:%.1d R:%.1d",
-      supportLeg,uLeft[1],uRight[1]))
-
-    print(string.format("Ball pos: x %.3f y %.3f",wcm.get_ball_x(), wcm.get_ball_y() ))
-    print(string.format("Ball err: x %.3f y%.3f   %.2f elapsed", ballx,bally,ball_elapsed))
---    print("Approach vel:",vStep[1],vStep[2],vStep[3])
-  end
-
+  
 
   if ballr > 1.0 then 
     print("Ball distance too away at:",ballr)
     return 'ballfar' 
   end
 
-
-  if ball_elapsed <0.5 
-    and wcm.get_ball_x()<Config.fsm.bodyRobocupApproach.th[1]
-    and math.abs(bally)<Config.fsm.bodyRobocupApproach.th[2] then
-
-    print("Final ball pos:",wcm.get_ball_x(),wcm.get_ball_y())
+  if ball_elapsed <0.5 and arrived then
+    print(string.format("Final ball pos: %.2f, %.2f",wcm.get_ball_x(),wcm.get_ball_y() )) 
     if ball_side==1 then
       mcm.set_walk_kickfoot(0)--left foot kick
     else
@@ -136,7 +236,8 @@ function state.entry()
     print("Ball left")
     ball_side = 1
   end
-  last_ph = 0
+  last_ph = 0  
+  last_step = 0
 end
 
 function state.update()

@@ -111,7 +111,8 @@ function state.update()
         return 'timeout'
       else
         print('Goal lost!!')
-        return 'lost'
+        return 'timeout' -- SWEEP NOT HELPFUL AND SLOW
+        --return 'lost'
       end
     end
   end

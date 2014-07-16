@@ -379,7 +379,9 @@ local function output_co(bus)
 			elseif has_nx then
 				lD.set_nx_command_position(send_ids, commands, bus)
 			else
-				lD.set_nx_command_position(send_ids, commands, bus)
+--print("HERE")
+				lD.set_bulk(schar(unpack(send_ids)), cmd_addrs, commands, bus)
+--				lD.set_nx_command_position(send_ids, commands, bus)
 			end
 		end
     -- One command gets a status return

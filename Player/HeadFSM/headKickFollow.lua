@@ -12,7 +12,7 @@ require'gcm'
 local ball_radius = Config.world.ballDiameter / 2
 local tLost = Config.fsm.headTrack.tLost
 local timeout = Config.fsm.headTrack.timeout
-local dqNeckLimit = Config.fsm.dqNeckLimit or {180*DEG_TO_RAD, 180*DEG_TO_RAD}
+local dqNeckLimit = Config.fsm.dqNeckLimit or {90*DEG_TO_RAD, 90*DEG_TO_RAD}
 
 
 local pitchMin = Config.head.pitchMin
@@ -46,50 +46,21 @@ function state.update()
   --local ball_elapsed = t - wcm.get_ball_t()
   --How long time we have TRIED to look at the ball but couldn't detect the ball?
   local ball_elapsed = wcm.get_ball_tlook() - wcm.get_ball_t()
-
-  if ball_elapsed > tLost then --ball lost
-    print "Ball lost"
-    return 'balllost'
-  end
-
-  local ballX, ballY = wcm.get_ball_x() - 0.5 , wcm.get_ball_y()
-  local yaw, pitch = HT.ikineCam(ballX, ballY, ball_radius)
-
-  -- print('Ball dist:', math.sqrt(ballX*ballX + ballY*ballY))
-  -- Look at Goal
-  if not Config.demo and not Config.use_gps_pose and t-t_entry > timeout then
-    -- If robot is close to the ball then do not look up
-    if math.sqrt(ballX*ballX + ballY*ballY) > Config.fsm.headTrack.dist_th then
-      if gcm.get_game_role()==0 then
-        --Goalie don't look goals
-      else
-    	  return 'timeout'
-      end
-    end
-  end
-
-  -- Clamp
-  yaw = math.min(math.max(yaw, yawMin), yawMax)
-  pitch = math.min(math.max(pitch, pitchMin), pitchMax)
-
-  --If ball is in front just look down
-  if math.sqrt(ballX*ballX + ballY*ballY) <0.5  then yaw = 0 end
-
+  
   -- Grab where we are
   local qNeck = Body.get_head_command_position()
   local headBias = hcm.get_camera_bias()
   qNeck[1] = qNeck[1] - headBias[1]  
 
+  yaw,pitch = 0,0
+
   -- Go!
   local qNeck_approach, doneNeck = 
     util.approachTol( qNeck, {yaw,pitch}, dqNeckLimit, dt )
-    
-  -- Update the motors
---  Body.set_head_command_position(qNeck_approach)
-
+  
   local headBias = hcm.get_camera_bias()
   Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
-  wcm.set_ball_tlook(t)
+  if doneNeck then return "done" end
 end
 
 function state.exit()

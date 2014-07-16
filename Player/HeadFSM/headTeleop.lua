@@ -7,7 +7,7 @@ require'gcm'
 local util = require'util'
 
 -- Neck limits
-local dqNeckLimit = {45*DEG_TO_RAD,45*DEG_TO_RAD}
+local dqNeckLimit = Config.fsm.dqNeckLimit or {60*DEG_TO_RAD, 60*DEG_TO_RAD}
 
 function state.entry()
   print(state._NAME..' Entry' ) 
@@ -46,16 +46,11 @@ function state.update()
 
 
   local headBias = hcm.get_camera_bias()
-
-  local RAD_TO_DEG = 180/math.pi
-print(string.format("Bias neck: %.2f cam pitch: %.2f roll:%.2f deg\n",
-        headBias[1]*RAD_TO_DEG,headBias[2]*RAD_TO_DEG,headBias[3]*RAD_TO_DEG))
-
   Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
 
   --5 is the idle state! 
   -- Ready, set, playing states
-  if gcm.get_game_state()==1 or gcm.get_game_state()==2 and gcm.get_game_state()==3 then 
+  if gcm.get_game_state()==1 or gcm.get_game_state()==2 or gcm.get_game_state()==3 then 
     return 'scan' 
   end
 

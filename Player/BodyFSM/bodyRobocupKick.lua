@@ -15,22 +15,24 @@ require'hcm'
 require'wcm'
 
 require'mcm'
-
-local kick_started
+local head_ch   = simple_ipc.new_publisher('HeadFSM!')
 
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
-  t_update = t_entry
-  mcm.set_walk_stoprequest(1)
-  kick_started = false
-  mcm.set_walk_kickphase(0)
-  mcm.set_walk_stoprequest(1)
-
-
+  t_update = t_entry  
+  
   mcm.set_walk_kicktype(1)
+
+  if Config.disable_kick or not Config.use_walkkick then
+    mcm.set_walk_kickphase(0)
+    mcm.set_walk_stoprequest(1)
+  else
+    mcm.set_walk_kickphase(0)    
+  end
+
 end
 
 function state.update()
@@ -50,19 +52,21 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  if mcm.get_walk_kickphase()==0 then    
-    if mcm.get_walk_ismoving()==0 then
+  if mcm.get_walk_kickphase()==2 then
+    head_ch:send'kickfollow'
+    print("bodykick done!")
+    return 'done'
+  end 
+
+  if mcm.get_walk_kickphase()==0 then
+    if Config.use_walkkick then
+      mcm.set_walk_steprequest(1)
+      mcm.set_walk_kickphase(1)
+    elseif mcm.get_walk_ismoving()==0 then
       mcm.set_walk_steprequest(1)
       mcm.set_walk_kickphase(1)
     end
-  elseif mcm.get_walk_kickphase()==2 then
-    print("bodykick done!")
-    if mcm.get_walk_kicktype()==1 then
-      return 'testdone' --this means testing mode (don't run body fsm)      
-    else
-      return 'done'
-    end
-  end 
+  end
 end
 
 function state.exit()

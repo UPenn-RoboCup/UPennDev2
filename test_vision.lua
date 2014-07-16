@@ -87,7 +87,6 @@ function process_keyinput()
 			bias_changed = true
 		elseif byte==string.byte(",") then
 			headBias[2]=headBias[2] - db			
-			hcm.set_camera_pitch(headBias)
 			bias_changed = true
 		elseif byte==string.byte("j") then  --Yaw
 			headBias[4]=headBias[4] - db						
@@ -101,8 +100,6 @@ function process_keyinput()
 			bias_changed = true
 		elseif byte==string.byte("m") then
 			headBias[3]=headBias[3] + db			
-
-
 		elseif byte==string.byte("k") then
 			headBias={0,0,0,0}			
 			bias_changed = true

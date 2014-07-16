@@ -4,8 +4,8 @@
 ---------------------------
 dofile'include.lua'
 local GC = require'GameControlReceiver'
-require'gcm'
 local Body = require(Config.dev.body)
+require'gcm'
 -- Cache some functions
 local get_time, usleep = Body.get_time, unix.usleep
 
@@ -21,7 +21,6 @@ if not IS_WEBOTS then
   signal.signal("SIGTERM", shutdown)
 end
 
-
 -- Timing
 local t_sleep = 1 / Config.fsm.update_rate
 local t0, t = get_time()
@@ -30,10 +29,11 @@ local debug_interval, t_debug = 1.0, t0
 -- Update loop
 local gc_pktNum, gc_state = 0
 while running do
+	collectgarbage('step')
   t = get_time()
 	-- Listen to game controller
 	local gc_packet = GC.receive()
-	if gc_packet and gc_packet.packetNumber>gc_pktNum then
+	if gc_packet then --and gc_packet.packetNumber>gc_pktNum then
 		gc_state = gc_packet.state
 		gcm.set_game_state(gc_state)
 		gc_pktNum = gc_packet.packetNumber
@@ -46,7 +46,6 @@ while running do
 		print(string.format('Game state: %d | pktNum %d',
 			gcm.get_game_state(), gc_pktNum))
 	end
-	collectgarbage('step')
 	local t_s = (t_sleep - (get_time() - t))
 	--if t_s>0 then usleep(1e6 * t_s) end
 end

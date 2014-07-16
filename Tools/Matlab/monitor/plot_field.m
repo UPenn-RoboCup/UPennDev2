@@ -38,11 +38,12 @@ function h = plot_field(handle,type)
     spotX=1.2;
     circleR = .6;
     fieldB=[-3.5 3.5 -2.5 2.5];
+
   elseif type==2 % Teensize
     fieldX = [-4.50  4.50 4.50 -4.50 -4.50];
     fieldY = [-3.00 -3.00 3.00  3.00 -3.00];
     goalX = [4.50 (4.50+0.40) (4.50+0.40) 4.50];
-    goalY = [-1.35 -1.35 1.35 1.35];
+    goalY = [-1.55 -1.55 1.55 1.55];
     penaltyX = [4.50 (4.50-1.00) (4.50-1.00) 4.50];
     penaltyY = [-2.25 -2.25 2.25 2.25];
     spotX=2.4;

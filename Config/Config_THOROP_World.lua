@@ -18,7 +18,7 @@ world.ballDiameter = 0.22
 -- Standard field
 
 world.goalHeight = 1.8
-world.goalWidth = 3
+world.goalWidth = 3.1 --3.0 for I-I, 3.1 for C-C
 world.postDiameter = 0.1
 world.obsDiameter = 0.2
 
@@ -57,7 +57,7 @@ world.goalWidth = 2.6  -- in m308
 
 --GRASP small post
 ------------------------------------------------
----[[
+--[[
 world.goalHeight = 0.85
 world.goalWidth = 1.6
 --]]
@@ -65,6 +65,8 @@ world.goalWidth = 1.6
 if IS_WEBOTS then
   world.goalHeight = 1.8
   world.goalWidth = 3
+  world.xBoundary = 4.5
+  world.yBoundary = 3.0
 end
 
 

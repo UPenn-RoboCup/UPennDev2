@@ -211,6 +211,7 @@ function libWorld.entry()
   -- Set the initial odometry
   wcm.set_robot_pose({0,0,0})
   wcm.set_robot_odometry({0,0,0})
+  wcm.set_robot_traj_num(0)
   -- Processing count
   count = 0
   

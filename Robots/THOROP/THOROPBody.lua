@@ -806,6 +806,25 @@ local nJoint = Config.nJoint
 	    	local ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2
 	    	local ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2
 	    	wcm.set_robot_gpsball({ball_gpsx,ball_gpsy});
+
+
+        local timestarted = wcm.get_robot_timestarted()
+        if Config.stop_after_score and timestarted~=0 and ball_gpsx>4.5 then
+          print("=========================================")
+          print("=========================================")
+          local score_time = get_time()-timestarted
+          local score_min = math.floor(score_time/60)
+          local score_sec = score_time%60          
+          print(string.format(
+            "SCORED AT %d min %d sec",score_min, score_sec))
+          print("=========================================")
+          print("=========================================")
+          wcm.set_robot_timestarted(0)
+          gcm.set_game_state(0)
+          head_ch:send'teleop'
+        end
+
+
 --	    	print("ball:",ball_gpsx,ball_gpsy)
 	  	elseif #msg==16 then     		
     		local obsx=(tonumber(string.sub(msg,2,6))-5)*2

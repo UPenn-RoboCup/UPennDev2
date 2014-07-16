@@ -124,30 +124,39 @@ function robocupplanner.getTargetPose(pose,ballGlobal)
   
   local circleR = Config.fsm.bodyRobocupFollow.circleR or 1
   local kickoffset = Config.fsm.bodyRobocupFollow.kickoffset or 0.75
-
+  local kickoffsetMin = Config.fsm.bodyRobocupFollow.kickoffsetMin or 0.4
 
   local angle_tangent = math.acos(circleR / math.max(circleR,distRobotBall))
   local angleCircle = util.mod_angle(angleRobotBall-kickangle)
   local rotate = 0
 
+
+
+  
+
+
   if Config.demo  then 
-    kickpos = ballGlobal - kickoffset * vector.new({math.cos(angleRobotBall),math.sin(angleRobotBall),0})
-    return robocupplanner.getDemoTargetPose(pose,ballGlobal),0 
+    kickpos = ballGlobal + kickoffset * vector.new({math.cos(angleRobotBall),math.sin(angleRobotBall),0})
+    kickpos[3] = util.mod_angle(angleRobotBall+math.pi)
+    return kickpos,0 
   end
   
+
   if Config.backward_approach then return robocupplanner.getTargetPoseBackward(pose,ballGlobal) end
 
   if math.abs(angleCircle)>90*math.pi/180 and math.abs(util.mod_angle(pose[3]-kickangle))<90*math.pi/180 then
     --Behind the ball and approximately facing the goalpost
     --Directly approach to the kick position
-    
-    kickpos = ballGlobal - kickoffset * vector.new({math.cos(kickangle),math.sin(kickangle),0})
+  
+    local kickoffset2 = math.max(math.min(distRobotBall,kickoffset),kickoffsetMin)   
+    kickpos = ballGlobal - kickoffset2 * vector.new({math.cos(kickangle),math.sin(kickangle),0})
     kickpos[3] = kickangle
     rotate = 0
 
   elseif math.abs(angleCircle)>150*math.pi/180 then --Robot is behind the ball!
     --Just approach
-    kickpos = ballGlobal - kickoffset * vector.new({math.cos(kickangle),math.sin(kickangle),0})
+    local kickoffset2 = math.max(math.min(distRobotBall,kickoffset),kickoffsetMin)   
+    kickpos = ballGlobal - kickoffset2 * vector.new({math.cos(kickangle),math.sin(kickangle),0})
     kickpos[3] = kickangle
     rotate = 0
 
@@ -259,21 +268,6 @@ function robocupplanner.getTargetPoseBackward(pose,ballGlobal)
   return kickpos,rotate
 end
 
-function robocupplanner.getDemoTargetPose(pose,ballGlobal)
-  --Direct pose (not turning to the post)
-  local angleRobotBall = math.atan2(pose[2]-ballGlobal[2],pose[1]-ballGlobal[1])
-  local distRobotBall = math.sqrt( (pose[1]-ballGlobal[1])^2+(pose[2]-ballGlobal[2])^2 )
-  local kickoffset = 0.50
-
-  kickpos = ballGlobal
-  kickpos[1] = kickpos[1] + math.cos(angleRobotBall)*kickoffset
-  kickpos[2] = kickpos[2] + math.sin(angleRobotBall)*kickoffset
-  kickpos[3] = util.mod_angle(angleRobotBall+math.pi)
-
-  return kickpos
-
-end
-
 
 function robocupplanner.getVelocity(pose,target_pose,rotate)  
   -- Distance to the waypoint
@@ -300,11 +294,14 @@ function robocupplanner.getVelocity(pose,target_pose,rotate)
   local vx,vy,va = 0,0,0
 
   va = 0.5* (aTurn*util.mod_angle(homeRelative[3])) + (1-aTurn)*aHomeRelative
-  if rHomeRelative>1.0 then
+
+  if rHomeRelative>0.6 then
     if math.abs(va)<0.2 then maxStep,maxA = 0.20,0.05
     else maxStep,maxA = 0, 0.2 end
-  elseif rHomeRelative > 0.5 then  maxStep,maxA = 0.10, 0.1
+  elseif rHomeRelative > 0.3 then  maxStep,maxA = 0.10, 0.1
   else  maxStep,maxA = 0.05,0.2 end
+
+
   vx = maxStep * homeRelative[1]/rHomeRelative
   vy = maxStep * homeRelative[2]/rHomeRelative
   va = math.min(maxA, math.max(-maxA, va))

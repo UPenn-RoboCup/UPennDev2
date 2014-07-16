@@ -5,17 +5,14 @@ local vector = require'vector'
 local shared = {};
 local shsize = {};
 
-shared.game = {};
-
-
 --SJ: Let's use this SHM for robocup behavior testing
-
 
 -- 0 for initial / 1 for ready 
 -- 2 for set / 3 for play / 4 fin
 -- 5: Pre-initialized (idle)
 
 
+shared.game = {};
 shared.game.state = vector.zeros(1);
 
 -- 0: goalie   1: attacker

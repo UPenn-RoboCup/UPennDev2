@@ -551,10 +551,22 @@ function libVision.obstacle(labelB_t)
         black_fill_rate, min_black_fill_rate)
 		end
 		
+    
+
+
     -- Convert to local frame
 		if check_passed then
     	local scale = math.max(1, obsProps[i].width / Config.world.obsDiameter)
-    	v = check_coordinateB(obsProps[i].position, scale)
+--    	v = check_coordinateB(obsProps[i].position, scale)
+
+    --Instead of the width-based distance 
+    --Let's just project the bottom position to the ground
+      v = check_coordinateB(
+        { obsProps[i].position[1],  obsProps[i].position[2]}, 0.1) 
+      v = projectGround(v,0)
+
+
+
     	obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
 		end
     

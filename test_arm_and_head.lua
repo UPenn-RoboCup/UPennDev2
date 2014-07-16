@@ -31,43 +31,45 @@ function tasks.g()
 	return "Done"
 end
 
+local function delta(delta)
+  local cur = Body['get_'..active_arm..'_command_position']()
+	Body['set_'..active_arm..'_command_position'](cur + delta)
+end
+
 tasks['+'] = function()
 	local delta = vector.new({5, 0}) * DEG_TO_RAD
-	Body.set_larm_command_position(
-		Body.get_larm_command_position() + delta
-	)
+  delta(delta)
 	return "Increase Roll"
 end
 tasks['='] = function()
 	local delta = vector.new({0, 5}) * DEG_TO_RAD
-	Body.set_larm_command_position(
-		Body.get_larm_command_position() + delta
-	)
+  delta(delta)
 	return "Increase Pitch"
 end
 
 tasks['_'] = function()
 	local delta = -1*vector.new({5, 0}) * DEG_TO_RAD
-	Body.set_larm_command_position(
-		Body.get_larm_command_position() + delta
-	)
+  delta(delta)
 	return "Increase Roll"
 end
 tasks['-'] = function()
 	local delta = -1*vector.new({0, 5}) * DEG_TO_RAD
-	Body.set_larm_command_position(
-		Body.get_larm_command_position() + delta
-	)
+  delta(delta)
 	return "Increase Pitch"
 end
 
-local tq = Body.get_larm_torque_enable()
-tasks.t = function()
+local tq = {
+  larm = Body.get_larm_torque_enable()[1],
+  rarm = Body.get_rarm_torque_enable()[1],
+}
+function tasks.t()
 	local delta = vector.new({0, 5}) * DEG_TO_RAD
+  local tq = Body['get_'..active_arm..'_torque_enable']()
 	tq = vector.ones(#tq) - tq
-	Body.set_larm_torque_enable(
+	Body['set_'..active_arm..'_torque_enable'](
 		tq
 	)
+  tq[active_arm] = tq[1]
 	return tq[1]==0 and "Torquing off..." or "Torquing on..."
 end
 
@@ -89,10 +91,10 @@ local function print_menu(msg)
 		color("Head LED Green", 'green')..": Press g",
 		color("Head LED Blue", 'blue')..": Press b",
 		color( active_arm=='larm' and 'Right Arm' or 'Left Arm' , 'yellow').." Press a to swap",
-		color("Torque "..(tq[1]==0 and 'ON' or 'OFF'), "magenta"),
+		color("Torque "..(tq[active_arm]==0 and 'ON' or 'OFF'), "magenta"),
 		"Quit: g",
 		'',
-		"LArm: "..tostring(Body.get_larm_position()),
+		"LArm: "..tostring(Body.get..active_arm..position()),
 		"RArm: "..tostring(Body.get_rarm_position()),
 		'',
 		msg or '',

@@ -628,6 +628,84 @@ function libVision.obstacle(labelB_t)
 end
 
 
+function libVision.line(labelB_t)
+  local line_cfg = Config.vision.line
+  local lines, line_debug = {}, ''
+  
+    lines.detect = 0
+    local linePropsB = ImageProc.field_lines(labelB_t, line_cfg.max_width,
+        line_cfg.connect_th, line_cfg.max_gap, line_cfg.min_length)
+
+    if #linePropsB==0 then 
+      return 'no linePropsB'
+    end
+
+    lines.propsB = linePropsB
+    lines.v, lines.endpoint = {},{}
+    lines.angle, lines.length= {},{}
+
+    local num_line = 4
+    for i = 1,num_line do
+      lines.endpoint[i] = vector.zeros(4)
+      lines.v[i] = {}
+      lines.v[i][1] = vector.zeros(4)
+      lines.v[i][2] = vector.zeros(4)
+      lines.angle[i] = 0
+    end
+
+    local bestindex = 1
+    local bestlength = 0
+    local linecount = 0
+
+
+    local length, vendpoint, vHeight = 0, {}, 0
+    for i=1, #linePropsB do
+      length = math.sqrt(
+      	(lines.propsB[i].endpoint[1]-lines.propsB[i].endpoint[2])^2+
+      	(lines.propsB[i].endpoint[3]-lines.propsB[i].endpoint[4])^2);
+
+        vendpoint = {}
+        vendpoint[1] = HeadTransform.coordinatesB(vector.new(
+      		{lines.propsB[i].endpoint[1],lines.propsB[i].endpoint[3]}),1);
+        vendpoint[2] = HeadTransform.coordinatesB(vector.new(
+      		{lines.propsB[i].endpoint[2],lines.propsB[i].endpoint[4]}),1);
+
+      vHeight = 0.5*(vendpoint[1][3]+vendpoint[2][3])
+
+      local vHeightMax = 0.50 --TODO
+
+      if length>min_length and linecount<num_line and vHeight<vHeightMax then
+        linecount = linecount + 1
+        lines.length[linecount] = length
+        lines.endpoint[linecount] = lines.propsB[i].endpoint
+        vendpoint[1] = projectGround(vendpoint[1],0)
+        vendpoint[2] = projectGround(vendpoint[2],0)
+        lines.v[linecount] = {}
+        lines.v[linecount][1] = vendpoint[1]
+        lines.v[linecount][2] = vendpoint[2]
+        lines.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2],
+  			    vendpoint[1][1]-vendpoint[2][1]));
+      end
+    end
+    lines.nLines = linecount
+
+    sumx=0;
+    sumxx=0;
+    for i=1,nLines do 
+      --angle: -pi to pi
+      sumx=sumx+lines.angle[i];
+      sumxx=sumxx+lines.angle[i]*lines.angle[i];
+    end
+
+    if nLines>0 then
+      lines.detect = 1;
+    end
+    return
+  
+  
+  
+end
+
 
 -- Set the variables based on the config file
 function libVision.entry(cfg, body)

@@ -239,12 +239,26 @@ void addVerticalPixel(int i, int j, double connect_th, int max_gap, int width){
 //Instead of one best long line
 
 int lua_field_lines(lua_State *L) {
-  uint8_t *im_ptr = (uint8_t *) lua_touserdata(L, 1);
-  if ((im_ptr == NULL) || !lua_islightuserdata(L, 1)) {
-    return luaL_error(L, "Input image not light user data");
-  }
-  int ni = luaL_checkint(L, 2);
-  int nj = luaL_checkint(L, 3);
+  uint8_t *im_ptr;
+  int ni, nj;
+	if( lua_islightuserdata(L,1) ){
+		im_ptr = (uint8_t *) lua_touserdata(L, 1);
+		ni = luaL_checkint(L, 2);
+		nj = luaL_checkint(L, 3);
+	}
+#ifdef TORCH
+	else if(luaT_isudata(L,1,"torch.ByteTensor")){
+		THByteTensor* b_t =
+			(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+		im_ptr = b_t->storage->data;
+		nj = b_t->size[0];
+		ni = b_t->size[1];
+	}
+#endif
+	else {
+		return luaL_error(L, "Input image invalid");
+	}
+  
   if (lua_gettop(L) >= 4)
     widthMax = luaL_checkint(L, 4);
 

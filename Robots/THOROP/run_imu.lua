@@ -98,8 +98,12 @@ t0 = get_time()
 t_debug, t_last, t = t0, t0, t0
 t_last_read = t0
 
+
+--SJ: We need to add check to see whether the robot was not moving
+--TODO
+
 if CALIBRATE_GYRO_BIAS then
-  local n = 5
+  local n = 1
   print("Calibrating the gyro bias for "..n.." seconds")
   local gyro_accumulated, count_accumulated = vector.zeros(3), 0
   local t_diff

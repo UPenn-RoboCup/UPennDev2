@@ -13,6 +13,7 @@ local zlib = require'zlib.ffi'
 local si = require'simple_ipc'
 require'wcm'
 require'hcm'
+require'gcm'
 
 
 -- Occ for map

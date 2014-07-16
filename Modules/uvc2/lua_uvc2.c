@@ -138,44 +138,56 @@ static int lua_uvc2_get_param(lua_State *L) {
   res = uvc_get_ae_mode(devh, &mode8, UVC_GET_CUR);
   if (res < 0) { uvc_perror(res, "uvc_get_ae_mode!!!"); } else
   printf("uvc_ae mode %d\n", mode8);
+  
   res = uvc_get_ae_priority(devh, &mode8, UVC_GET_CUR);
   if (res < 0) { uvc_perror(res, "uvc_get_ae_priority!!!"); } else
   printf("uvc_get_ae_priority %d\n", mode8);
-  res = uvc_get_focus_auto(devh, &mode8, UVC_GET_CUR);
-  if (res < 0) { uvc_perror(res, "uvc_get_focus_auto!!!"); } else
-  printf("uvc_get_focus_auto %d\n", mode8);
-  res = uvc_get_white_balance_temperature_auto(devh, &mode8, UVC_GET_CUR);
-  if (res < 0) { uvc_perror(res, "uvc_get_white_balance_temperature_auto!!!"); } else
-  printf("uvc_get_white_balance_temperature_auto %d\n", mode8);
-  //
-  res = uvc_get_contrast_auto(devh, &mode8, UVC_GET_CUR);
-  if (res < 0) { uvc_perror(res, "uvc_get_contrast_auto!!!"); } else
-  printf("uvc_get_contrast_auto %u\n", mode8);
-  //
-  res = uvc_get_brightness(devh, &mode16s, UVC_GET_CUR);
-  if (res < 0) { uvc_perror(res, "uvc brightness!!!"); } else
-  printf("uvc_get_brightness %d\n", mode16s);
-  res = uvc_get_contrast(devh, &mode16, UVC_GET_CUR);
-  if (res < 0) { uvc_perror(res, "uvc contrast!!!"); } else
-  printf("uvc_get_contrast %u\n", mode16);
+  
   res = uvc_get_exposure_abs(devh, &mode32, UVC_GET_CUR);
   if (res < 0) { uvc_perror(res, "uvc exposure!!!"); } else
   printf("uvc_get_exposure_abs %u\n", mode32);
+  
+  res = uvc_get_focus_auto(devh, &mode8, UVC_GET_CUR);
+  if (res < 0) { uvc_perror(res, "uvc_get_focus_auto!!!"); } else
+  printf("uvc_get_focus_auto %d\n", mode8);
+  
   res = uvc_get_focus_abs(devh, &mode16, UVC_GET_CUR);
   if (res < 0) { uvc_perror(res, "uvc_get_focus_abs!!!"); } else
   printf("uvc_get_focus_abs %u\n", mode16);
-  res = uvc_get_gain(devh, &mode16, UVC_GET_CUR);
-  if (res < 0) { uvc_perror(res, "uvc_get_gain!!!"); } else
-  printf("uvc_get_gain %d\n", mode16);
-  res = uvc_get_saturation(devh, &mode16, UVC_GET_CUR);
-  if (res < 0) { uvc_perror(res, "uvc_get_saturation!!!"); } else
-  printf("uvc_get_saturation %d\n", mode16);
+
+  res = uvc_get_brightness(devh, &mode16s, UVC_GET_DEF);
+  if (res < 0) { uvc_perror(res, "uvc brightness!!!"); } else
+  printf("uvc_get_brightness %d\n", mode16s);
+  
   res = uvc_get_sharpness(devh, &mode16, UVC_GET_CUR);
   if (res < 0) { uvc_perror(res, "uvc_get_sharpness!!!"); } else
   printf("uvc_get_sharpness %d\n", mode16);
+  
+  res = uvc_get_contrast(devh, &mode16, UVC_GET_CUR);
+  if (res < 0) { uvc_perror(res, "uvc contrast!!!"); } else
+  printf("uvc_get_contrast %u\n", mode16);
+  
+  // Problems
+  res = uvc_get_saturation(devh, &mode16, UVC_GET_CUR);
+  if (res < 0) { uvc_perror(res, "uvc_get_saturation!!!"); } else
+  printf("uvc_get_saturation %d\n", mode16);
+  
+  res = uvc_get_backlight_compensation(devh, &mode16, UVC_GET_CUR);
+  if (res < 0) { uvc_perror(res, "uvc_get_backlight_compensation!!!"); } else
+  printf("uvc_get_backlight_compensation %u\n", mode16);
+  
+  res = uvc_get_gain(devh, &mode16, UVC_GET_CUR);
+  if (res < 0) { uvc_perror(res, "uvc_get_gain!!!"); } else
+  printf("uvc_get_gain %d\n", mode16);
+  
+  res = uvc_get_white_balance_temperature_auto(devh, &mode8, UVC_GET_CUR);
+  if (res < 0) { uvc_perror(res, "uvc_get_white_balance_temperature_auto!!!"); } else
+  printf("uvc_get_white_balance_temperature_auto %d\n", mode8);
+  
   res = uvc_get_white_balance_temperature(devh, &mode16, UVC_GET_CUR);
   if (res < 0) { uvc_perror(res, "uvc_get_white_balance_temperature!!!"); } else
   printf("uvc_get_white_balance_temperature %d\n", mode16);
+  
   return 0;
 }
 
@@ -186,31 +198,57 @@ static int lua_uvc2_set_param(lua_State *L) {
   //uint8_t val = luaL_checknumber(L, 2);
   /* e.g., turn off auto exposure */
   uvc_error_t res;
-  res = uvc_set_ae_mode(devh, 1);
+  
+  uint8_t m = 1;
+  res = uvc_set_ae_mode(devh, m);
   if (res < 0) { uvc_perror(res, "uvc_ae mode"); }
-  res = uvc_set_ae_priority(devh, 0);
+  
+  // No effect in manual exposure
+  /*
+  uint8_t p = 0;
+  res = uvc_set_ae_priority(devh, p);
   if (res < 0) { uvc_perror(res, "uvc_ae priority"); }
-  res = uvc_set_focus_auto(devh, 0);
-  if (res < 0) { uvc_perror(res, "uvc focus auto"); }
-  res = uvc_set_white_balance_temperature_auto(devh, 0);
-  if (res < 0) { uvc_perror(res, "uvc auto white balance"); }
-  //
-  res = uvc_set_brightness(devh, (int16_t)128);
-  if (res < 0) { uvc_perror(res, "uvc brightness"); }
-  res = uvc_set_contrast(devh, (int16_t)128);
-  if (res < 0) { uvc_perror(res, "uvc contrast"); }
-  res = uvc_set_exposure_abs(devh, 170);
+  */
+
+  // units of 0.0001 seconds
+  uint32_t e = 66;
+  res = uvc_set_exposure_abs(devh, e);
   if (res < 0) { uvc_perror(res, "uvc exposure"); }
-  res = uvc_set_focus_abs(devh, 0);
+  
+  uint8_t af = 0;
+  res = uvc_set_focus_auto(devh, af);
+  if (res < 0) { uvc_perror(res, "uvc focus auto"); }
+  
+  uint16_t f = 0;
+  res = uvc_set_focus_abs(devh, f);
   if (res < 0) { uvc_perror(res, "uvc focus abs"); }
-  res = uvc_set_gain(devh, 66);
-  if (res < 0) { uvc_perror(res, "uvc gain"); }
-  res = uvc_set_saturation(devh, 150);
-  if (res < 0) { uvc_perror(res, "uvc saturation"); }
-  res = uvc_set_sharpness(devh, 0);
+  
+  // Problems
+  uint16_t sh = 128;
+  res = uvc_set_sharpness(devh, sh);
   if (res < 0) { uvc_perror(res, "uvc sharpness"); }
+  
+  uint16_t c = 100; // 1 works
+  res = uvc_set_contrast(devh, c);
+  if (res < 0) { uvc_perror(res, "uvc contrast"); }
+  
+  int16_t b = 1; // 1 works
+  res = uvc_set_brightness(devh, b);
+  if (res < 0) { uvc_perror(res, "uvc brightness"); }
+  
+  uint16_t g = 0; // 66 works
+  res = uvc_set_gain(devh, g);
+  if (res < 0) { uvc_perror(res, "uvc gain"); }
+  
+  uint16_t s = 150;
+  res = uvc_set_saturation(devh, s);
+  if (res < 0) { uvc_perror(res, "uvc_set_saturation!!!"); }
+  
+  res = uvc_set_white_balance_temperature_auto(devh, 1);
+  if (res < 0) { uvc_perror(res, "uvc_set_white_balance_temperature_auto!!!"); }
+  
   res = uvc_set_white_balance_temperature(devh, 3300);
-  if (res < 0) { uvc_perror(res, "uvc white balance"); }
+  if (res < 0) { uvc_perror(res, "uvc_set_white_balance_temperature!!!"); }
   
   return 0;
 }

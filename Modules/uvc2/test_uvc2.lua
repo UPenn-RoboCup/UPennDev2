@@ -2,6 +2,7 @@ dofile'../../include.lua'
 
 uvc2 = require'uvc2'
 cam = uvc2.init()
+unix.usleep(1e6)
 mt = getmetatable(cam)
 print("Cam and metatable", cam, mt)
 
@@ -12,6 +13,12 @@ end
 for k, v in pairs(mt) do
   print("metatable",k,v)
 end
+
+print()
+print('Get params...')
+cam:get_param()
+
+unix.usleep(1e6)
 
 print()
 print('Set parameters...')

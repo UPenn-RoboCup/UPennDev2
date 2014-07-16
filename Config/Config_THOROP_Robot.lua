@@ -309,22 +309,22 @@ if Config.USE_DUMMY_ARMS then
 	--
 	servo.direction = vector.new({
 		1,1, -- Head
-		1,1, --LArm
+		-1,1, --LArm
 		------
 		-1, -1,1,   1,  -1,1, --LLeg
 		-1, -1,-1, -1,  1,1, --RLeg
 		------
-		1,1, --RArm
+		-1, -1, --RArm
 		1,1, -- Waist
 		-1, -- Lidar pan
 	})
 	--
 	servo.rad_offset = vector.new({
 		0,0, -- Head
-		0,0, --LArm
+		0, -70, --LArm
 		0,0,0,-45,0,0, --LLeg
 		0,0,0,45,0,0, --RLeg
-		0,0, --RArm
+		0, 70, --RArm
 		0,0, -- Waist
 		0, -- Lidar pan
 	})*DEG_TO_RAD

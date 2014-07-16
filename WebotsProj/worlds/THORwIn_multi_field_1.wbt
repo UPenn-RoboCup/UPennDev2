@@ -6,7 +6,7 @@ WorldInfo {
     "Webpage: http://www.robotstadium.org"
   ]
   title "Robotstadium"
-  basicTimeStep 30
+  basicTimeStep 30  #if too fast, the robot will fall..
   FPS 15
 }
 Viewpoint {

@@ -49,7 +49,11 @@ end
 ---Returns best pose out of all particles
 function poseFilter.get_pose()
   local wmax, imax = util.max(wp)
-	if ap[imax] == nil then print('ap?', #ap, 'xp?', #xp) end
+	if ap[imax] == nil then 
+		--print('ap?', #ap, 'xp?', #xp) 
+		print('IMAX?', imax)
+		print(unpack(ap))
+	end
   return xp[imax], yp[imax], mod_angle(ap[imax])
 end
 
@@ -67,6 +71,10 @@ end
 local function calculate_pose_angle(pos,v,pose3,debug)
   --Calculate the closest target pose with same posea
   local a = math.atan2(v[2], v[1]) --We only use this! 
+  if a==nil or pose3[3] == nil then 
+  	print('pose3', pose3) 
+  	print('v', unpack(v))
+  end
   local ca = math.cos(a+pose3[3])
   local sa = math.sin(a+pose3[3])
 
@@ -110,8 +118,11 @@ local function landmark_observation_angle(pos, v, rFilter, aFilter)
     local da = {}
     local err = {}    
     for ipos = 1,#pos do
-      local pose_target,t = calculate_pose_angle(pos[ipos],v,{xp[ip],yp[ip],ap[ip]},ip==1)
---      local pose_target,t = calculate_pose_angle_old(pos[ipos],v,{xp[ip],yp[ip],ap[ip]},ip==1)
+    	local pose3 = vector.new({xp[ip],yp[ip],ap[ip]})
+    	if pose3[1]==nil or pose3[2]==nil or pose3[3]==nil then
+    		print('POSE 3 NIL:', pose3)
+    	end
+      local pose_target,t = calculate_pose_angle(pos[ipos],v,pose3,ip==1)
 --      local pose_target,t = calculate_pose_angle(pos[ipos],v,{xp[ip],yp[ip],ap[ip]})      
       if t>0 then
         dx[ipos] = pose_target[1] - xp[ip]

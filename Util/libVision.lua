@@ -698,6 +698,7 @@ function libVision.line(labelB_t)
     lines.nLines = linecount
     if lines.nLines>0 then
       lines.detect = 1
+      print('line v:', unpack(lines.v[1][1]), unpack(lines.v[1][2]))
     end
     return 'blah', lines
 end

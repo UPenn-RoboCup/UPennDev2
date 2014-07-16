@@ -411,12 +411,18 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
   function plot_obstacle(obstacle, scale)
     % We are receiving global position of obstacles
     for cnt = 1 : numel(obstacle)
-      % xob = x0 + obstacle{cnt}(1)*ca - obstacle{cnt}(2)*sa;
-      % yob = y0 + obstacle{cnt}(1)*sa + obstacle{cnt}(2)*ca;
       xob = obstacle{cnt}(1);
       yob = obstacle{cnt}(2);
       plot(xob,yob,'r*');
-      text(xob-1, yob-0.5, sprintf('%.2f, %.2f', xob, yob), 'FontSize', 10);
+
+      % Print out the local position
+      px = xob - x0;
+      py = yob - y0;
+      pa = 0 - robot_struct.pose(3); 
+      xob_l = ca*px + sa*py;
+      yob_l = -sa*px + ca*py;
+
+      text(xob-1, yob-0.5, sprintf('%.2f, %.2f', xob_l, yob_l), 'FontSize', 10);
     end
   end
 

@@ -36,12 +36,11 @@ end
 function util.max(t)
   -- find the maximum element in the array table
   -- returns the min value and its index
-  local imax = 0
-  local tmax = -math.huge
+  local imax = 1 --0
+  local tmax = -1*math.huge
   for i=1,#t do
-    local v = t[i]
-    if v > tmax then
-      tmax = v
+    if t[i] > tmax then
+      tmax = t[i]
       imax = i
     end
   end

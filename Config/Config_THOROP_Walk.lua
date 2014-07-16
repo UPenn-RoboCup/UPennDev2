@@ -252,6 +252,30 @@ kick.stepqueue["RightKick"]=
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
   }
 
+
+
+
+
+
+--Testing goalie leg spread
+kick.stepqueue["GoalieSpread"]=
+  {
+    {{0,-0.08,-15*math.pi/180},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0,0.08,15*math.pi/180},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,1.5*walk.stepHeight,0}}, --rf kick    
+    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.02,0.0,0},  {0, 0, 0}},                  
+  }
+
+kick.stepqueue["GoalieUnspread"]=
+  {
+    {{0,0.03,15*math.pi/180},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0,-0.03,-15*math.pi/180},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,1.5*walk.stepHeight,0}}, --rf kick    
+    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.02,0.0,0},  {0, 0, 0}},                  
+  }
+
+
+
+
+
 --Load robot specific configs
 c=require'calibration'
 if c.cal[HOSTNAME].legBias then 

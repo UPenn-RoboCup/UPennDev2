@@ -6,7 +6,6 @@
 #include <lualib.h>
 #include <lauxlib.h>
 #include <libuvc/libuvc.h>
-#include "timeScalar.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -14,8 +13,15 @@
 /* metatable name for uvc */
 #define MT_NAME "uvc_mt"
 
-void cb(uvc_frame_t *frame, void *ptr) {
+static inline double time_scalar() {
+  static struct timeval t;
+  gettimeofday(&t, NULL);
+  return t.tv_sec + 1E-6*t.tv_usec;
+}
 
+void cb(uvc_frame_t *frame, void *ptr) {
+  double t = time_scalar();
+  printf("GOT frame @ %lf\n", t);
 }
 
 static int lua_uvc_init(lua_State *L) {
@@ -63,7 +69,7 @@ static int lua_uvc_init(lua_State *L) {
   /* Start the video stream. The library will call user function cb:
    *   cb(frame, (void*) 12345)
    */
-  res = uvc_start_streaming(devh, &ctrl, cb, 12345, 0);
+  res = uvc_start_streaming(devh, &ctrl, cb, NULL, 0);
   if (res < 0) {
     /* unable to start stream */
     uvc_perror(res, "start_streaming");

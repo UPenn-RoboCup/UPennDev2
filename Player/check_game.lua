@@ -18,7 +18,7 @@ x = io.popen("pgrep -fl luajit")
 for l in x:lines() do
   local m = l:match("luajit%s+(.+)")
   for _, p in ipairs(processes) do
-    if m:find(p) then
+    if m and m:find(p) then
       is_running[p] = true
     end
   end

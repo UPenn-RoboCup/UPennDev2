@@ -39,7 +39,8 @@ Config.use_angle_localization = true
 --Config.demo = false
 Config.demo = true
 Config.use_localhost = false
-Config.disable_kick = true
+--Config.disable_kick = true
+Config.disable_kick = false
 
 
 if IS_WEBOTS then

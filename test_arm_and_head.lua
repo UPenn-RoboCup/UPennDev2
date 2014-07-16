@@ -97,24 +97,28 @@ local function process_kb()
 end
 
 local lleg_temp = {}
+local head_volt = {}
 local function print_menu(msg)
 	os.execute("clear")
   local t = unix.time()
+  local tq_on = tq[active_arm]==0
 	local menu_tbl = {
     string.format("Arm & Head %.2fs uptime", t - t0),
 		color("Head LED Red", 'red')..": Press r",
 --		color("Head LED Green", 'green')..": Press g",
 		color("Head LED Blue", 'blue')..": Press b",
-		color( active_arm=='larm' and 'Left Arm' or 'Righ Arm' , 'yellow').." Press a to swap",
-		color("Torque "..(tq[active_arm]==0 and 'ON' or 'OFF'), "magenta"),
-    "-/= to decrease",
-    "SHIFT and -/= to increase",
-		"Quit: g",
-    color("Temperature: ",'cyan')..tostring(lleg_temp),
+    '',
+		color( active_arm=='larm' and '** Left Arm **' or '** Right Arm **' , 'yellow').." Press a to swap",
+		"Torque "..(tq[active_arm]==0 and 'ON' or 'OFF').." Press t to toggle",
+    "Press -/= to decrease angle",
+    "Hold SHIFT and Press -/= to increase angle",
+		"Quit: Press g",
+    '',
+    color("Voltage (V): ",'cyan')..tostring(head_volt),
+    color("Temperature (C): ",'magenta')..tostring(lleg_temp),
 		'',
 		"LArm (deg): "..tostring(Body.get_larm_position() * RAD_TO_DEG),
 		"RArm (deg): "..tostring(Body.get_rarm_position() * RAD_TO_DEG),
-		'',
 		"Lidar (deg): "..tostring(Body.get_lidar_position() * RAD_TO_DEG),
 		'',
 		msg or '',
@@ -128,12 +132,12 @@ print_menu()
 while running do
   
   local t = unix.time()
---[[
   if t - t_last_temp > 1 then
+    t_last_temp = t
     lleg_temp = Body.get_lleg_temperature()
     rleg_temp = Body.get_rleg_temperature()
+    head_volt = Body.get_head_voltage() / 10
   end
---]]
 
 	print_menu( process_kb() )
   unix.usleep(1e5)

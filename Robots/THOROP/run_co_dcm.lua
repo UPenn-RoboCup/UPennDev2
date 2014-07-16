@@ -229,7 +229,7 @@ local function do_parent(request, bus)
 	-- Check if writing to the motors
 	local wr_reg, rd_reg = request.wr_reg, request.rd_reg
 	local bus_name = request.bus
-	ptable(request)
+	--ptable(request)
 	local m_id
 	if wr_reg then
 		local ptr = dcm.actuatorPtr[wr_reg]

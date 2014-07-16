@@ -2,6 +2,7 @@ dofile'include.lua'
 local Body = require'Body'
 local getch = require'getch'
 local util = require'util'
+local vector = require'vector'
 local color = util.color
 local running = true
 local tasks = {}
@@ -20,14 +21,54 @@ function tasks.b()
 	return is_blue>0 and "BLUE ON" or "BLUE OFF"
 end
 
-local active_arm = 'left'
+local active_arm = 'larm'
 function tasks.a()
-	active_arm = active_arm=='left' and 'right' or 'left'
+	active_arm = active_arm=='larm' and 'rarm' or 'larm'
 end
 
 function tasks.g()
 	running = false
 	return "Done"
+end
+
+tasks['+'] = function()
+	local delta = vector.new({5, 0}) * DEG_TO_RAD
+	Body.set_larm_command_position(
+		Body.get_larm_command_position() + delta
+	)
+	return "Increase Roll"
+end
+tasks['='] = function()
+	local delta = vector.new({0, 5}) * DEG_TO_RAD
+	Body.set_larm_command_position(
+		Body.get_larm_command_position() + delta
+	)
+	return "Increase Pitch"
+end
+
+tasks['_'] = function()
+	local delta = -1*vector.new({5, 0}) * DEG_TO_RAD
+	Body.set_larm_command_position(
+		Body.get_larm_command_position() + delta
+	)
+	return "Increase Roll"
+end
+tasks['-'] = function()
+	local delta = -1*vector.new({0, 5}) * DEG_TO_RAD
+	Body.set_larm_command_position(
+		Body.get_larm_command_position() + delta
+	)
+	return "Increase Pitch"
+end
+
+local tq = Body.get_larm_torque_enable()
+tasks.t = function()
+	local delta = vector.new({0, 5}) * DEG_TO_RAD
+	tq = vector.ones(#tq) - tq
+	Body.set_larm_torque_enable(
+		tq
+	)
+	return tq[1]==0 and "Torquing off..." or "Torquing on..."
 end
 
 local function process_kb()
@@ -47,12 +88,14 @@ local function print_menu(msg)
 		color("Head LED Red", 'red')..": Press r",
 		color("Head LED Green", 'green')..": Press g",
 		color("Head LED Blue", 'blue')..": Press b",
-		color("Active arm: ", 'yellow')..active_arm.." Press a to swap",
+		color( active_arm=='larm' and 'Right Arm' or 'Left Arm' , 'yellow').." Press a to swap",
+		color("Torque "..(tq[1]==0 and 'ON' or 'OFF'), "magenta"),
 		"Quit: g",
-		msg or '',
 		'',
 		"LArm: "..tostring(Body.get_larm_position()),
 		"RArm: "..tostring(Body.get_rarm_position()),
+		'',
+		msg or '',
 	}
 	print(table.concat(menu_tbl, '\n'))
 end

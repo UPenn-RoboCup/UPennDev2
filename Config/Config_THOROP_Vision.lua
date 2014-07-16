@@ -113,9 +113,9 @@ vision.obstacle = {
 
 -- Line
 vision.line = {
-  min_white_pixel = 300,
-  min_green_pixel = 5000,
-  max_width = 8,
+  -- min_white_pixel = 300,
+  -- min_green_pixel = 5000,
+  max_width = 8,  --15
   connect_th = 1.4,
   max_gap = 1,
   -- labelB space
@@ -123,7 +123,7 @@ vision.line = {
   min_length = 10,
   max_height = 0.3,
   min_aspect_ratio = 2.5,
-  min_angle_diff = 15,
+  min_angle_diff = 10,
   max_angle_diff = 85,
 }
 
@@ -158,9 +158,9 @@ table.insert(Config.camera,
 		lut = 'grasp_afternoon',
 		-- f = 640/2/tan(78/180*pi / 2)
 
---webots fov: 1.3613
--- f = d/2/tan(fov/2) = 
 --fov = 2*arctan(d/2f)
+-- f = d/2/tan(fov/2)
+--webots fov: 1.3613
 
     focal_length = 395.17,
     focal_base = 640,
@@ -205,17 +205,9 @@ if IS_WEBOTS then
 
   Config.camera[1].cx_offset = 0
   Config.camera[1].cy_offset = 0
-
---THOSE VALUES ARE VERY WRONG!
 --  Config.camera[1].focal_length = 554.256/2
---  Config.camera[1].focal_base = 160 --320: tho we should not use yuyv_to_label for webots
-
---Camera FOV: 1.3613
--- FOV = 2 arctan (d/2f)
--- f = d/2/tan(FOV/2) = 98.7975
-  Config.camera[1].focal_length = 98.7975
-  Config.camera[1].focal_base = 160
-
+  Config.camera[1].focal_length = 220
+  Config.camera[1].focal_base = 160 --320: tho we should not use yuyv_to_label for webots
 	head.neckX= 0 --From CoM to neck joint
 
   vision.scaleA = 2

@@ -205,9 +205,10 @@ if IS_WEBOTS then
 
   Config.camera[1].cx_offset = 0
   Config.camera[1].cy_offset = 0
---  Config.camera[1].focal_length = 554.256/2
-  Config.camera[1].focal_length = 220
-  Config.camera[1].focal_base = 160 --320: tho we should not use yuyv_to_label for webots
+
+  focal_length = 395.17
+  focal_base = 640
+  
 	head.neckX= 0 --From CoM to neck joint
 
   vision.scaleA = 2

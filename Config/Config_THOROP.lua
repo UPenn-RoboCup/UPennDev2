@@ -98,7 +98,7 @@ end
 
 --FOR real robot
   Config.walk.velLimitX = {-.10,.15} 
-  Config.fsm.bodyRobocupApproach.target={0.28,0.14}  
+  Config.fsm.bodyRobocupApproach.target={0.26,0.14}  
   Config.use_walkkick = true
 
   Config.torque_legs = true

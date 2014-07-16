@@ -64,7 +64,7 @@ fsm.Head = {
   {'headLookGoal', 'lost', 'headSweep'},
   {'headLookGoal', 'scanobs', 'headObstacleScan'},
   --
-  {'headSweep', 'done', 'headTrack'},
+--  {'headSweep', 'done', 'headTrack'},
   --
   
 }
@@ -186,7 +186,7 @@ fsm.headReady = {
 
 --HeadTrack
 fsm.headTrack = {
-  tLost = 2,
+  tLost = 5,
   timeout = 6,
 	dist_th = 0.5,
 }
@@ -194,7 +194,6 @@ fsm.headTrack = {
 --HeadLookGoal: Look up to see the goal
 fsm.headLookGoal = {
   yawSweep = 80*DEG_TO_RAD,
-  tScan = 3,
 }
 
 --HeadSweep: Look around to find the goal

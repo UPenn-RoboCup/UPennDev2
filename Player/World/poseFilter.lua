@@ -118,9 +118,11 @@ local function landmark_observation_angle(pos, v, rFilter, aFilter)
     local da = {}
     local err = {}    
     for ipos = 1,#pos do
+      --Now 
     	local pose3 = vector.new({xp[ip],yp[ip],ap[ip]})
     	if pose3[1]==nil or pose3[2]==nil or pose3[3]==nil then
     		print('POSE 3 NIL:', pose3)
+        return
     	end
       local pose_target,t = calculate_pose_angle(pos[ipos],v,pose3,ip==1)
 --      local pose_target,t = calculate_pose_angle(pos[ipos],v,{xp[ip],yp[ip],ap[ip]})      

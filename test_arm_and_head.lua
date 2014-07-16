@@ -14,10 +14,10 @@ function tasks.r()
 	return is_red>0 and "RED ON" or "RED OFF"
 end
 
-local is_blue = Body.get_head_led_blue()[1]
+local is_blue = Body.get_head_led_green()[1]
 function tasks.b()
 	is_blue = 255 - is_blue
-	Body.set_head_led_blue(is_blue)
+	Body.set_head_led_green(is_blue)
 	return is_blue>0 and "BLUE ON" or "BLUE OFF"
 end
 
@@ -31,30 +31,30 @@ function tasks.g()
 	return "Done"
 end
 
-local function delta(delta)
+local function arm_delta(delta)
   local cur = Body['get_'..active_arm..'_command_position']()
 	Body['set_'..active_arm..'_command_position'](cur + delta)
 end
 
 tasks['+'] = function()
 	local delta = vector.new({5, 0}) * DEG_TO_RAD
-  delta(delta)
+  arm_delta(delta)
 	return "Increase Roll"
 end
 tasks['='] = function()
 	local delta = vector.new({0, 5}) * DEG_TO_RAD
-  delta(delta)
+  arm_delta(delta)
 	return "Increase Pitch"
 end
 
 tasks['_'] = function()
 	local delta = -1*vector.new({5, 0}) * DEG_TO_RAD
-  delta(delta)
+  arm_delta(delta)
 	return "Increase Roll"
 end
 tasks['-'] = function()
 	local delta = -1*vector.new({0, 5}) * DEG_TO_RAD
-  delta(delta)
+  arm_delta(delta)
 	return "Increase Pitch"
 end
 
@@ -74,7 +74,8 @@ function tasks.t()
 end
 
 local function process_kb()
-	local keycode = getch.block()
+  local keycode = getch.nonblock()
+--	local keycode = getch.block()
 	if not keycode then return end
 	local char = string.char(keycode)
 	local char_lower = string.lower(char)
@@ -88,14 +89,16 @@ local function print_menu(msg)
 	os.execute("clear")
 	local menu_tbl = {
 		color("Head LED Red", 'red')..": Press r",
-		color("Head LED Green", 'green')..": Press g",
+--		color("Head LED Green", 'green')..": Press g",
 		color("Head LED Blue", 'blue')..": Press b",
-		color( active_arm=='larm' and 'Right Arm' or 'Left Arm' , 'yellow').." Press a to swap",
+		color( active_arm=='larm' and 'Left Arm' or 'Righ Arm' , 'yellow').." Press a to swap",
 		color("Torque "..(tq[active_arm]==0 and 'ON' or 'OFF'), "magenta"),
 		"Quit: g",
 		'',
-		"LArm: "..tostring(Body.get..active_arm..position()),
-		"RArm: "..tostring(Body.get_rarm_position()),
+		"LArm (deg): "..tostring(Body.get_larm_position() * RAD_TO_DEG),
+		"RArm (deg): "..tostring(Body.get_rarm_position() * RAD_TO_DEG),
+		'',
+		"Lidar (deg): "..tostring(Body.get_lidar_position() * RAD_TO_DEG),
 		'',
 		msg or '',
 	}
@@ -106,4 +109,5 @@ local msg
 print_menu()
 while running do
 	print_menu( process_kb() )
+  unix.usleep(1e5)
 end

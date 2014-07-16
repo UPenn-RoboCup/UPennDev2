@@ -206,12 +206,8 @@ local function update_velocity()
     else
       mcm.set_walk_kickfoot(1)--right foot kick
     end
-    mcm.set_walk_kicktype(0) --this means real mode (keep run body fsm after kicking)
-    if Config.use_walkkick then
-      return "walkkick"
-    else
-      return 'done'
-    end
+    
+    return 'done'
   end
 end
 

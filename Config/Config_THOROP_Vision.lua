@@ -158,9 +158,9 @@ table.insert(Config.camera,
 		lut = 'grasp_afternoon',
 		-- f = 640/2/tan(78/180*pi / 2)
 
---fov = 2*arctan(d/2f)
--- f = d/2/tan(fov/2)
 --webots fov: 1.3613
+-- f = d/2/tan(fov/2) = 
+--fov = 2*arctan(d/2f)
 
     focal_length = 395.17,
     focal_base = 640,
@@ -205,9 +205,17 @@ if IS_WEBOTS then
 
   Config.camera[1].cx_offset = 0
   Config.camera[1].cy_offset = 0
+
+--THOSE VALUES ARE VERY WRONG!
 --  Config.camera[1].focal_length = 554.256/2
-  Config.camera[1].focal_length = 220
-  Config.camera[1].focal_base = 160 --320: tho we should not use yuyv_to_label for webots
+--  Config.camera[1].focal_base = 160 --320: tho we should not use yuyv_to_label for webots
+
+--Camera FOV: 1.3613
+-- FOV = 2 arctan (d/2f)
+-- f = d/2/tan(FOV/2) = 98.7975
+  Config.camera[1].focal_length = 98.7975
+  Config.camera[1].focal_base = 160
+
 	head.neckX= 0 --From CoM to neck joint
 
   vision.scaleA = 2

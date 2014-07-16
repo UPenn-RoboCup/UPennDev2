@@ -14,7 +14,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   --hcm.set_ball_approach(0)
-  wcm.set_robot_traj_num(0)
+  wcm.set_robot_traj_num(0)  
 end
 
 function state.update()
@@ -33,7 +33,7 @@ function state.update()
 
   -- if we see ball right now and ball is far away start moving
   local ball_elapsed = t - wcm.get_ball_t()
-  if ball_elapsed < 0.1 then --ball found
+  if ball_elapsed < 0.1 then --ball found    
     return 'ballfound'
     --[[
     local ballx = wcm.get_ball_x()

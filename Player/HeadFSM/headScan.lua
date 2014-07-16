@@ -14,7 +14,7 @@ local DEG_TO_RAD = math.pi/180
 --SJ: Adult sized league doesn't need too complicated stuff
 --SO let's just define params directly on the fsm files
 
-local dqNeckLimit = {90*DEG_TO_RAD,90*DEG_TO_RAD}
+local dqNeckLimit = {180*DEG_TO_RAD, 180*DEG_TO_RAD}
 
 --Pitch: 25 degree down can see up to 5 meters 
 --60 degree down can see ball right in front
@@ -47,6 +47,7 @@ function state.update()
     pitchTarget = 55*DEG_TO_RAD
     yawTarget = 45*DEG_TO_RAD
   elseif stage==2 then
+    dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}
     pitchTarget = 55*DEG_TO_RAD
     yawTarget = -45*DEG_TO_RAD
   elseif stage==3 then

@@ -50,6 +50,8 @@ shared.robot.gpsobs1 = vector.zeros(2)
 shared.robot.gpsobs2 = vector.zeros(2)
 
 
+shared.robot.timestarted =vector.zeros(1)
+
 
 
 

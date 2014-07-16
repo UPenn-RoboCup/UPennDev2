@@ -7,7 +7,7 @@ require'gcm'
 local util = require'util'
 
 -- Neck limits
-local dqNeckLimit = {45*DEG_TO_RAD,45*DEG_TO_RAD}
+local dqNeckLimit = Config.fsm.dqNeckLimit or {60*DEG_TO_RAD, 60*DEG_TO_RAD}
 
 function state.entry()
   print(state._NAME..' Entry' ) 

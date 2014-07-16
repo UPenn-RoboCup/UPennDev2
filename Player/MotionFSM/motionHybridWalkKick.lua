@@ -94,37 +94,55 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
   print("Next support:",supportLeg)
   local step_queue={}
 
+  local pre_step = nil
+  local post_step = nil
+
   if mcm.get_walk_kickfoot()==0 then --left foot kick
-    if supportLeg==0 then --Need one step in place before kick
-      step_queue=Config.kick.stepqueue["LeftWalkKick_From_LS"]
-    elseif supportLeg==1 then
-      step_queue=Config.kick.stepqueue["LeftWalkKick_From_RS"]
-    else --double support
-      if kicktype==0 then
-        step_queue=Config.kick.stepqueue["LeftWalkKick_From_DS"]
-      else
-        step_queue=Config.kick.stepqueue["LeftKick_From_DS"]
-      end
+    if kicktype==0 then
+      step_queue=Config.kick.stepqueue["LeftWalkKick"]
+    else
+      step_queue=Config.kick.stepqueue["LeftKick"]
     end
-  else 
-    if supportLeg==1 then --Need one step in place before kick
-      step_queue=Config.kick.stepqueue["RightWalkKick_From_RS"]
-    elseif supportLeg==0 then
-      step_queue=Config.kick.stepqueue["RightWalkKick_From_LS"]
-    else --double support
-      if kicktype==0 then
-        step_queue=Config.kick.stepqueue["RightWalkKick_From_DS"]
-      else
-        step_queue=Config.kick.stepqueue["RightKick_From_DS"]
-      end
-    end  
+  else
+    if kicktype==0 then
+      step_queue=Config.kick.stepqueue["RightWalkKick"]
+    else
+      step_queue=Config.kick.stepqueue["RightKick"]
+    end
+
+  end
+
+
+  local next_support = step_queue[1][2]
+  if supportLeg==2 then  --Starting from DS
+    print("Pre stance")
+    pre_step = 2
+  elseif supportLeg==next_support then
+    print("Pre step")
+    pre_step = 1-supportLeg --Take anonther step
   end
 
 --Write to SHM
+  local offset0 = 0
   local maxSteps = 40
   step_queue_vector = vector.zeros(12*maxSteps)
+
+  --Enque another step in front of kick steps
+  if pre_step then
+    local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
+    local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
+    local tStepMid =Config.walk.tStep-tSlope1-tSlope2
+
+    for i=1,13 do step_queue_vector[i] = 0 end
+    step_queue_vector[4] = pre_step
+    step_queue_vector[5] = tSlope1
+    step_queue_vector[6] = tStepMid
+    step_queue_vector[7] = tSlope2
+    offset0 = 13
+  end
+  
   for i=1,#step_queue do    
-    local offset = (i-1)*13;
+    local offset = (i-1)*13 + offset0;
     step_queue_vector[offset+1] = step_queue[i][1][1]
     step_queue_vector[offset+2] = step_queue[i][1][2]
     step_queue_vector[offset+3] = step_queue[i][1][3]

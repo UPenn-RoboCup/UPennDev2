@@ -136,8 +136,9 @@ function robocupplanner.getTargetPose(pose,ballGlobal)
 
 
   if Config.demo  then 
-    kickpos = ballGlobal - kickoffset * vector.new({math.cos(angleRobotBall),math.sin(angleRobotBall),0})
-    return robocupplanner.getDemoTargetPose(pose,ballGlobal),0 
+    kickpos = ballGlobal + kickoffset * vector.new({math.cos(angleRobotBall),math.sin(angleRobotBall),0})
+    kickpos[3] = util.mod_angle(angleRobotBall+math.pi)
+    return kickpos,0 
   end
   
 

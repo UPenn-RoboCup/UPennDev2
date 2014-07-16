@@ -56,7 +56,10 @@ fsm.Head = {
   {'headTrack', 'timeout', 'headLookGoal'},
   {'headTrack', 'teleop', 'headTeleop'},
   {'headTrack', 'scanobs', 'headObstacleScan'},
+  {'headTrack', 'kickfollow', 'headKickFollow'},
   --
+  {'headKickFollow', 'done', 'headTrack'},
+
   {'headLookGoal', 'timeout', 'headTrack'},
   {'headLookGoal', 'lost', 'headSweep'},
   {'headLookGoal', 'scanobs', 'headObstacleScan'},
@@ -94,7 +97,6 @@ fsm.Body = {
   {'bodyRobocupFollow','stop','bodyStop'},
   
   {'bodyRobocupApproach', 'done', 'bodyRobocupKick'},
-  {'bodyRobocupApproach', 'walkkick', 'bodyRobocupWalkKick'},
   {'bodyRobocupApproach', 'ballfar', 'bodyRobocupFollow'},
   {'bodyRobocupApproach','stop','bodyStop'},
 --  {'bodyRobocupApproach', 'done', 'bodyStop'}, --we just stop in front of the ball to test code
@@ -102,8 +104,6 @@ fsm.Body = {
   {'bodyRobocupKick', 'done', 'bodyRobocupIdle'},
   {'bodyRobocupKick', 'testdone', 'bodyStop'},
 
-  {'bodyRobocupWalkKick', 'done', 'bodyRobocupIdle'},
-  {'bodyRobocupWalkKick', 'testdone', 'bodyStop'},
 
   -------------------------------
   --Goalie SMs-----------------------------
@@ -188,7 +188,7 @@ fsm.headReady = {
 fsm.headTrack = {
   tLost = 2,
   timeout = 6,
-	dist_th = 0.35,
+	dist_th = 0.5,
 }
 
 --HeadLookGoal: Look up to see the goal

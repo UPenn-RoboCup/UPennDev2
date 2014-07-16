@@ -46,19 +46,11 @@ Config.disable_kick = false
 if IS_WEBOTS then
   Config.USE_DUMMY_ARMS = false
   Config.use_gps_pose = false
-  Config.use_gps_pose = true
-
-  Config.demo = false
---  Config.demo = true
+  --Config.use_gps_pose = true
   
   Config.use_localhost = true
-
-  Config.disable_kick = false
---  Config.disable_kick = true
-
   Config.use_walkkick = true
-  Config.use_walkkick = false
-
+  --Config.use_walkkick = false
   --Config.backward_approach = true
 end
 
@@ -82,13 +74,6 @@ if IS_WEBOTS then
   Config.vision.ball.th_min_fill_rate = 0.25 
   Config.fsm.headLookGoal.yawSweep = 30*math.pi/180
   Config.fsm.headLookGoal.tScan = 2.0
-  
---Config.backward_approach = true
---[[
-  
-  Config.fsm.bodyRobocupFollow.circleR = 1.0
-  Config.fsm.bodyRobocupFollow.kickoffset = 0.5
---]]
 
   Config.fsm.bodyRobocupFollow.circleR = 1
   Config.fsm.bodyRobocupFollow.kickoffset = 0.5
@@ -103,18 +88,21 @@ if IS_WEBOTS then
   Config.walk.velLimitX = {-.10,.15} 
   Config.walk.velLimitY = {-.04,.04}
   Config.walk.velDelta  = {0.04,0.02,0.1}
+
+  Config.stop_after_score = false
+  Config.stop_after_score = true
   
 end
 
 
 
-
+--FOR real robot
   Config.walk.velLimitX = {-.10,.15} 
   Config.fsm.bodyRobocupApproach.target={0.28,0.12}  
-  Config.use_walkkick = true
+--  Config.use_walkkick = true
 
 
-Config.torque_legs = true
+  Config.torque_legs = true
 --Config.torque_legs = false
 
 

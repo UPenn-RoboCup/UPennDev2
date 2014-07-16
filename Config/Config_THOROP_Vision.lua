@@ -115,12 +115,12 @@ vision.obstacle = {
 vision.line = {
   -- min_white_pixel = 300,
   -- min_green_pixel = 5000,
-  max_width = 8,  --15
+  max_width = 15,
   connect_th = 1.4,
   max_gap = 1,
   -- labelB space
   min_count = 20,
-  min_length = 10,
+  min_length = 5,--10,
   max_height = 0.3,
   min_aspect_ratio = 2.5,
   min_angle_diff = 10,

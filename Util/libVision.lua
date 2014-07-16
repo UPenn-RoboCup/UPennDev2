@@ -557,16 +557,11 @@ function libVision.obstacle(labelB_t)
     -- Convert to local frame
 		if check_passed then
     	local scale = math.max(1, obsProps[i].width / Config.world.obsDiameter)
---    	v = check_coordinateB(obsProps[i].position, scale)
-
     --Instead of the width-based distance 
     --Let's just project the bottom position to the ground
       v = check_coordinateB(
         { obsProps[i].position[1],  obsProps[i].position[2]}, 0.1) 
       v = projectGround(v,0)
-
-
-
     	obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
 		end
     
@@ -639,7 +634,7 @@ function libVision.obstacle(labelB_t)
   
 end
 
-
+-- FOR GOALIE
 function libVision.line(labelB_t)
   local line_cfg = Config.vision.line
   local lines, line_debug = {}, ''
@@ -669,7 +664,6 @@ function libVision.line(labelB_t)
     local bestlength = 0
     local linecount = 0
 
-
     local length, vendpoint, vHeight = 0, {}, 0
     for i=1, #linePropsB do
       length = math.sqrt(
@@ -677,16 +671,17 @@ function libVision.line(labelB_t)
       	(lines.propsB[i].endpoint[3]-lines.propsB[i].endpoint[4])^2);
 
         vendpoint = {}
-        vendpoint[1] = HeadTransform.coordinatesB(vector.new(
+        vendpoint[1] = check_coordinateB(vector.new(
       		{lines.propsB[i].endpoint[1],lines.propsB[i].endpoint[3]}),1);
-        vendpoint[2] = HeadTransform.coordinatesB(vector.new(
+        vendpoint[2] = check_coordinateB(vector.new(
       		{lines.propsB[i].endpoint[2],lines.propsB[i].endpoint[4]}),1);
 
       vHeight = 0.5*(vendpoint[1][3]+vendpoint[2][3])
 
       local vHeightMax = 0.50 --TODO
 
-      if length>min_length and linecount<num_line and vHeight<vHeightMax then
+      --TODO: added debug message
+      if length>line_cfg.min_length and linecount<num_line and vHeight<vHeightMax then          
         linecount = linecount + 1
         lines.length[linecount] = length
         lines.endpoint[linecount] = lines.propsB[i].endpoint
@@ -699,23 +694,12 @@ function libVision.line(labelB_t)
   			    vendpoint[1][1]-vendpoint[2][1]));
       end
     end
+    
     lines.nLines = linecount
-
-    sumx=0;
-    sumxx=0;
-    for i=1,nLines do 
-      --angle: -pi to pi
-      sumx=sumx+lines.angle[i];
-      sumxx=sumxx+lines.angle[i]*lines.angle[i];
+    if lines.nLines>0 then
+      lines.detect = 1
     end
-
-    if nLines>0 then
-      lines.detect = 1;
-    end
-    return
-  
-  
-  
+    return 'blah', lines
 end
 
 
@@ -804,11 +788,17 @@ function libVision.update(img)
   local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc_t)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc_t)
 	local obstacle_fails, obstacles
+  local line_fails, lines
 
   if wcm.get_obstacle_enable()==0 then
     obstacle_fails = 'Disabled'
   else
     obstacle_fails, obstacles = libVision.obstacle(labelB_t)
+  end
+  
+  if gcm.get_game_role()==0 then
+    line_fails, lines = libVision.line(labelB_t)
+    print(line_fails)
   end
 
   -- Save the detection information

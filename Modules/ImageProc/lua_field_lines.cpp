@@ -20,7 +20,7 @@ static RadonTransform radonTransform;
 
 static uint8_t colorLine = 0x10;
 static uint8_t colorField = 0x08;
-static int widthMin = 2;
+static int widthMin = 2;  //TODO
 static int widthMax = 10;
 
 /*
@@ -50,7 +50,9 @@ int lineState(uint8_t label)
     }
     break;
   case STATE_LINE:
-    if ( !(label & colorField) ) {
+    // if ( !(label & colorField) ) {
+    if (label & colorField){
+      
       state = STATE_FIELD;
       return width;
     }
@@ -82,7 +84,7 @@ struct SegmentStats {
   double invgrad; //inv gradient, dx/dy
   int x,y,xy,xx,yy; //for gradient stats
   int updated;
-  int length;
+  int length;  //TODO: double?
   int max_width; 
 };
 
@@ -259,12 +261,12 @@ int lua_field_lines(lua_State *L) {
 		return luaL_error(L, "Input image invalid");
 	}
   
-  if (lua_gettop(L) >= 4)
-    widthMax = luaL_checkint(L, 4);
+  if (lua_gettop(L) >= 2)
+    widthMax = luaL_checkint(L, 2);
 
-  double connect_th = luaL_optnumber(L, 5, 1.4);
-  int max_gap = luaL_optinteger(L, 6, 1);
-  int min_length = luaL_optinteger(L, 7, 3);
+  double connect_th = luaL_optnumber(L, 3, 1.4);
+  int max_gap = luaL_optinteger(L, 4, 1);
+  int min_length = luaL_optinteger(L, 5, 3);
 
   segment_init();
   // Scan for vertical line pixels:
@@ -312,6 +314,7 @@ int lua_field_lines(lua_State *L) {
   int seg_count=0;
   for (int k=0;k<num_segments;k++){
     if (segments[k].count>3){
+
       lua_createtable(L, 0, 3);
 
       // count field
@@ -341,146 +344,5 @@ int lua_field_lines(lua_State *L) {
       seg_count++;
     }
   }
-  return 1;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-int lua_field_lines_old(lua_State *L) {
-	uint8_t *im_ptr;
-	int ni, nj;
-	if( lua_islightuserdata(L,1) ){
-		im_ptr = (uint8_t *) lua_touserdata(L, 1);
-		ni = luaL_checkint(L, 2);
-		nj = luaL_checkint(L, 3);
-	}
-#ifdef TORCH
-	else if(luaT_isudata(L,1,"torch.ByteTensor")){
-		THByteTensor* b_t =
-			(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
-		im_ptr = b_t->storage->data;
-		nj = b_t->size[0];
-		ni = b_t->size[1];
-	}
-#endif
-	else {
-		return luaL_error(L, "Input image invalid");
-	}
-  if (lua_gettop(L) >= 4)
-    widthMax = luaL_checkint(L, 4);
-
-  radonTransform.clear();
-  // Scan for vertical line pixels:
-  for (int j = 0; j < nj; j++) {
-    uint8_t *im_col = im_ptr + ni*j;
-    lineState(0); // Initialize
-    for (int i = 0; i < ni; i++) {
-      uint8_t label = *im_col++;
-      int width = lineState(label);
-			//printf("label %d -> %d\n",label,width);
-      if ((width >= widthMin) && (width <= widthMax)) {
-				int iline = i - (width+1)/2;
-				radonTransform.addVerticalPixel(iline, j);
-      }
-    }
-  }
-
-  // Scan for horizontal field line pixels:
-  for (int i = 0; i < ni; i++) {
-    uint8_t *im_row = im_ptr + i;
-    lineState(0); //Initialize
-    for (int j = 0; j < nj; j++) {
-      uint8_t label = *im_row;
-      im_row += ni;
-      int width = lineState(label);
-      if ((width >= widthMin) && (width <= widthMax)) {
-				int jline = j - (width+1)/2;
-				radonTransform.addHorizontalPixel(i, jline);
-      }
-    }
-  }
-//	printf("Done search...");
-
-	//LineStats bestLine0 = radonTransform.getLineStats();
-  LineStats bestLine[10];
-  bestLine[0] = radonTransform.getLineStats();
-
-//  LineStats* bestLine = 
-//  radonTransform.getMultiLineStats(ni,nj,im_ptr);
-
-  int lines_num=0;
-  for (int i=0;i<MAXLINES;i++){
-//		printf("(i:%d).",i);
-//		fflush(stdout);
-    if (bestLine[i].count>5){
-			//printf("huh? %d\n",i);
-			lines_num=i;
-		}
-  }
-//	printf("Pushing table...\n");
-  
-  lua_createtable(L, lines_num+1, 0);
-  for (int i = 0; i <= lines_num; i++) {
-      lua_createtable(L, 0, 3);
-
-      // count field
-      lua_pushstring(L, "count");
-      lua_pushnumber(L, bestLine[i].count);
-      lua_settable(L, -3);
-
-      // centroid field
-      lua_pushstring(L, "centroid");
-      double centroidI = bestLine[i].iMean;
-      double centroidJ = bestLine[i].jMean;
-      lua_createtable(L, 2, 0);
-      lua_pushnumber(L, centroidI);
-      lua_rawseti(L, -2, 1);
-      lua_pushnumber(L, centroidJ);
-      lua_rawseti(L, -2, 2);
-      lua_settable(L, -3);
-
-      // endpoint field
-      lua_pushstring(L, "endpoint");
-      lua_createtable(L, 4, 0);
-      lua_pushnumber(L, bestLine[i].iMin);
-      lua_rawseti(L, -2, 1);
-      lua_pushnumber(L, bestLine[i].iMax);
-      lua_rawseti(L, -2, 2);
-      lua_pushnumber(L, bestLine[i].jMin);
-      lua_rawseti(L, -2, 3);
-      lua_pushnumber(L, bestLine[i].jMax);
-      lua_rawseti(L, -2, 4);
-      lua_settable(L, -3);
-
-      lua_rawseti(L, -2, i+1);
-  }
-
   return 1;
 }

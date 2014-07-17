@@ -249,9 +249,9 @@ function libWorld.update(uOdom, detection)
   update_vision(detection)
   if Config.use_gps_pose then
     wcm.set_robot_pose(wcm.get_robot_pose_gps())
-    -- wcm.set_obstacle_num(2)
-    -- wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
-    -- wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
+    wcm.set_obstacle_num(2)
+    wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
+    wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
 
     local pose = wcm.get_robot_pose_gps()
     local ballglobal = wcm.get_robot_gpsball()

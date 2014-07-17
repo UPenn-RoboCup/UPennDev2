@@ -6,6 +6,154 @@ local util   = require'util'
 local vector = require'vector'
 require'wcm'
 
+function evaluate_goal_kickangle(ballGlobal)
+  local obstacle_dist_threshold = 1.0
+  local kick_deviation_angle = 5*math.pi/180
+
+  local goalL = {Config.world.xBoundary,Config.world.goalWidth/2}
+  local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2}
+  local goalC = {Config.world.xBoundary,0}
+
+  local goalAngleL = math.atan2(goalL[2]-ballGlobal[2],goalL[1]-ballGlobal[1])-kick_deviation_angle
+  local goalAngleR = math.atan2(goalR[2]-ballGlobal[2],goalR[1]-ballGlobal[1])+kick_deviation_angle
+  local goalAngleC = math.atan2(goalC[2]-ballGlobal[2],goalC[1]-ballGlobal[1])
+
+  if goalAngleL-goalAngleR<0 then return 0 end
+
+  obstacle_num = wcm.get_obstacle_num()
+
+  max_obstacle_dist = 0
+  max_obstacle_dist_angle = nil
+
+  obs_clear_angle_count = 0
+
+  for a=0,10 do 
+    local angle = goalAngleR +  (a/10) * (goalAngleL-goalAngleR)
+    local obs_dist_min = 999
+    for i=1,obstacle_num do   
+      local v =wcm['get_obstacle_v'..i]()
+      local rel_obs_x = v[1]-ballGlobal[1]
+      local rel_obs_y = v[2]-ballGlobal[2]
+      local obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)
+      local obs_angle = math.atan2(rel_obs_y, rel_obs_x)
+      local angle_diff = math.max(0, math.abs(util.mod_angle(obs_angle-angle)) - kick_deviation_angle)
+
+      local obs_closest_dist = math.sin(angle_diff)*obs_dist
+      if angle_diff>math.pi/2 then obs_closest_dist = 999 end
+      obs_dist_min = math.min(obs_dist_min, obs_closest_dist)  
+    end
+
+    if max_obstacle_dist<obs_dist_min then
+      max_obstacle_dist=obs_dist_min
+      max_obstacle_dist_angle = angle
+    end
+
+    if obs_dist_min>0.5 then obs_clear_angle_count = obs_clear_angle_count + 1 end
+  end
+
+  print(string.format("Kick angle 2: %d with min obstacle dist %.2f",
+    max_obstacle_dist_angle*180/math.pi,
+    max_obstacle_dist))
+
+
+  return (goalAngleL-goalAngleR) * (obs_clear_angle_count) / 11
+end
+
+
+
+
+
+
+
+
+
+
+
+function evaluate_kickangle(ballGlobal,angle)
+  local kick_distance = 4.0
+  local kick_distance_max = 5.0
+  local kick_deviation_angle = 5*math.pi/180
+  local obstacle_dist_threshold = 1.0
+  local min_obs_dist = math.huge
+
+  local ballEndPos={ballGlobal[1]+kick_distance*math.cos(angle),ballGlobal[2]+kick_distance*math.sin(angle)}
+  local ballEndPosMax={ballGlobal[1]+kick_distance_max*math.cos(angle),ballGlobal[2]+kick_distance_max*math.sin(angle)}
+
+  obstacle_num = wcm.get_obstacle_num()
+  for i=1,obstacle_num do 
+    local v =wcm['get_obstacle_v'..i]()
+    local rel_obs_x = v[1]-ballGlobal[1]
+    local rel_obs_y = v[2]-ballGlobal[2]
+    local obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)
+    local obs_angle = math.atan2(rel_obs_y, rel_obs_x)
+
+    local obs_tangent_dist = obs_dist * math.cos(math.abs(obs_angle-angle))
+    local angle_diff = math.max(0, math.abs(util.mod_angle(obs_angle-angle)) - kick_deviation_angle)
+    local obs_closest_dist 
+
+    if kick_distance_max<obs_tangent_dist then
+      local ballClosestPosRel = {
+        obs_dist - kick_distance_max*math.cos(angle_diff),  
+        kick_distance_max*math.sin(angle_diff)  
+      }
+      obs_closest_dist = math.sqrt(ballClosestPosRel[1]^2+ballClosestPosRel[2]^2)
+    else
+      obs_closest_dist = math.sin(angle_diff)*obs_dist
+      if angle_diff>math.pi/2 then obs_closest_dist = math.huge end
+    end
+    min_obs_dist = math.min(min_obs_dist, obs_closest_dist)
+  end
+
+  local maxY_R = ballGlobal[2] + kick_distance_max * math.sin(angle-kick_deviation_angle)
+  local maxY_L = ballGlobal[2] + kick_distance_max * math.sin(angle+kick_deviation_angle)
+  local Ydist_L = Config.world.yBoundary - maxY_R
+  local Ydist_R = maxY_L + Config.world.yBoundary
+  local min_borderY_dist = math.max(0, math.min(Ydist_L,Ydist_R))
+
+  if min_obs_dist>0 and min_borderY_dist>0 then
+    print(string.format("testing angle %d :obs %.2f border %.2f",angle*180/math.pi, min_obs_dist, min_borderY_dist))
+    daGoal = evaluate_goal_kickangle(ballEndPos)
+    if daGoal>0 then 
+      print("goalAngle:",daGoal*180/math.pi)
+      return daGoal 
+    else
+      print("Goal not in sight")
+    end
+  else
+    return
+  end  
+end
+
+
+function getAttackAngleRange2(ballGlobal)
+  local max_score = -math.huge
+  local max_score_angle = nil
+
+  print("=====")
+  for a = -8,8 do
+    local angle = a*10*math.pi/180
+    local score = evaluate_kickangle(ballGlobal,angle)
+
+    if score then
+      print("score:",score)
+      if score>max_score then
+        max_score_angle = angle
+        max_score = score
+      end
+    end
+  end
+
+  if max_score_angle then
+    print("Best kick angle:",max_score_angle*180/math.pi)
+  else
+    print("No possible route")
+  end
+
+  return max_score_angle
+end
+
+
+
 function evaluateKickAngle(ballGlobal,kickangle)
   obstacle_num = wcm.get_obstacle_num()
   local angle_offset = 0
@@ -37,6 +185,9 @@ end
 
 
 function getKickAngle(pose,ballGlobal)
+
+  getAttackAngleRange2(ballGlobal)
+
   local goalL = {Config.world.xBoundary,Config.world.goalWidth/2}
   local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2}
   local goal = {Config.world.xBoundary,0}

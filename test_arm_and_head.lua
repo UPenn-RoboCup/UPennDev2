@@ -6,11 +6,20 @@ local vector = require'vector'
 local color = util.color
 local running = true
 local tasks = {}
+local t0 = unix.time()
+
 
 local is_red = Body.get_head_led_red()[1]
 function tasks.r()
 	is_red = 255 - is_red
 	Body.set_head_led_red( is_red )
+	Body.set_lleg_led_red(is_red)
+	Body.set_rleg_led_red(is_red)
+
+	Body.set_larm_command_position({90*math.pi/180,10*math.pi/180})
+	Body.set_rarm_command_position({90*math.pi/180,10*math.pi/180})
+
+
 	return is_red>0 and "RED ON" or "RED OFF"
 end
 
@@ -18,6 +27,8 @@ local is_blue = Body.get_head_led_green()[1]
 function tasks.b()
 	is_blue = 255 - is_blue
 	Body.set_head_led_green(is_blue)
+	Body.set_lleg_led_green(is_blue)
+	Body.set_rleg_led_green(is_blue)
 	return is_blue>0 and "BLUE ON" or "BLUE OFF"
 end
 
@@ -85,15 +96,21 @@ local function process_kb()
 	if func then return func() end
 end
 
+local lleg_temp = {}
 local function print_menu(msg)
 	os.execute("clear")
+  local t = unix.time()
 	local menu_tbl = {
+    string.format("Arm & Head %.2fs uptime", t - t0),
 		color("Head LED Red", 'red')..": Press r",
 --		color("Head LED Green", 'green')..": Press g",
 		color("Head LED Blue", 'blue')..": Press b",
 		color( active_arm=='larm' and 'Left Arm' or 'Righ Arm' , 'yellow').." Press a to swap",
 		color("Torque "..(tq[active_arm]==0 and 'ON' or 'OFF'), "magenta"),
+    "-/= to decrease",
+    "SHIFT and -/= to increase",
 		"Quit: g",
+    color("Temperature: ",'cyan')..tostring(lleg_temp),
 		'',
 		"LArm (deg): "..tostring(Body.get_larm_position() * RAD_TO_DEG),
 		"RArm (deg): "..tostring(Body.get_rarm_position() * RAD_TO_DEG),
@@ -105,9 +122,19 @@ local function print_menu(msg)
 	print(table.concat(menu_tbl, '\n'))
 end
 
+local t_last_temp = 0
 local msg
 print_menu()
 while running do
+  
+  local t = unix.time()
+--[[
+  if t - t_last_temp > 1 then
+    lleg_temp = Body.get_lleg_temperature()
+    rleg_temp = Body.get_rleg_temperature()
+  end
+--]]
+
 	print_menu( process_kb() )
   unix.usleep(1e5)
 end

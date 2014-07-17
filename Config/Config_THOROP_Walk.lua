@@ -216,8 +216,8 @@ kick.stepqueue["LeftWalkKick"]={
 kick.stepqueue["LeftWalkKick"]=
   {
     {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
-    {{0.24,0,0},1,  tSlope1, 1.5, tSlope2,   {0,0,0},{0,1.5*walk.stepHeight,0}}, --rf kick    
-    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}},
+    {{0.18,0,0},1,  tSlope1, 1.2, tSlope2,   {-0.02,0.02,0},{-1,1.5*walk.stepHeight,0}}, --rf kick    
+    {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}},
     {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
   }
@@ -236,8 +236,8 @@ kick.stepqueue["LeftKick"]=
 kick.stepqueue["RightWalkKick"]=
   {
     {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
-    {{0.24,0,0},0,  tSlope1, 1.5, tSlope2,   {0,0,0},{0,1.5*walk.stepHeight,0}}, --rf kick    
-    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, --ls
+    {{0.18,0,0},0,  tSlope1, 1.5, tSlope2,   {-0.02,-0.02,0},{-1,1.5*walk.stepHeight,0}}, --rf kick    
+    {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, --ls
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
   }
@@ -260,15 +260,15 @@ kick.stepqueue["RightKick"]=
 --Testing goalie leg spread
 kick.stepqueue["GoalieSpread"]=
   {
-    {{0,-0.08,-15*math.pi/180},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
-    {{0,0.08,15*math.pi/180},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,1.5*walk.stepHeight,0}}, --rf kick    
+    {{0,-0.08,-15*math.pi/180},0,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0,0.08,15*math.pi/180},1,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,1.5*walk.stepHeight,0}}, --rf kick    
     {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.02,0.0,0},  {0, 0, 0}},                  
   }
 
 kick.stepqueue["GoalieUnspread"]=
   {
-    {{0,0.03,15*math.pi/180},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
-    {{0,-0.03,-15*math.pi/180},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,1.5*walk.stepHeight,0}}, --rf kick    
+    {{0,0.03,15*math.pi/180},0,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0,-0.03,-15*math.pi/180},1,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,1.5*walk.stepHeight,0}}, --rf kick    
     {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.02,0.0,0},  {0, 0, 0}},                  
   }
 

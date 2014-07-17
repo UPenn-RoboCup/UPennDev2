@@ -9,14 +9,17 @@ require'vcm'
 require'wcm'
 
 local t0, t_update, t_entry
-local dqNeckLimit = Config.fsm.dqNeckLimit or {180*DEG_TO_RAD, 180*DEG_TO_RAD}
+local dqNeckLimit = {180*DEG_TO_RAD, 180*DEG_TO_RAD}
 local yawSweep = Config.fsm.headLookGoal.yawSweep;
 local dist = Config.fsm.headReady.dist;
 local tScan = Config.fsm.headLookGoal.tScan;
 local yawMax = Config.head.yawMax or 90*Body.DEG_TO_RAD
 local fovMargin = 10*DEG_TO_RAD
-
 local stage, scandir
+
+
+local yaw1,yaw2
+
 
 function state.entry()
   print(state._NAME.." entry");
@@ -65,9 +68,17 @@ function state.entry()
 
   stage,scandir = 1,1
   local qNeck = Body.get_head_command_position()
-  local yaw1 = yaw0-0.5*yawSweep
-  local yaw2 = yaw0+0.5*yawSweep
-  if math.abs(qNeck[1]-yaw1)>math.abs(qNeck[1]-yaw2) then scandir = -1 end
+  yaw1 = yaw0-0.5*yawSweep
+  yaw1 = math.min(math.max(yaw1, -yawMax), yawMax)
+
+  yaw2 = yaw0+0.5*yawSweep
+  yaw2 = math.min(math.max(yaw2, -yawMax), yawMax)
+
+  if math.abs(qNeck[1]-yaw1)>math.abs(qNeck[1]-yaw2) then 
+    local temp= yaw2
+    yaw2=yaw1
+    yaw1 = temp
+  end
   t_update = Body.get_time()
 end
 
@@ -83,36 +94,23 @@ function state.update()
 
   local pitch = -5*DEG_TO_RAD
   if stage==1 then
-    local yawbias = -0.5*yawSweep*scandir
-    local yaw = math.min(math.max(yaw0+yawbias, -yawMax), yawMax)
-    local qNeck_approach, doneNeck =util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, tpassed )
---    Body.set_head_command_position(qNeck_approach)    
-
-    local headBias = hcm.get_camera_bias()
+    local qNeck_approach, doneNeck =util.approachTol( qNeck, {yaw1, pitch}, dqNeckLimit, tpassed )
     Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
-    if doneNeck then
+    local qNeckActual = Body.get_head_position()
+
+    if doneNeck 
+        and math.abs(qNeckActual[1]-yaw1-headBias[1]) <10*math.pi/180 
+        and math.abs(qNeckActual[2]-pitch) <10*math.pi/180 
+       then
       t0 = t
       stage = 2
     end
   else
-    local tpassed1=t-t0
-    local ph = math.min(1,tpassed1/tScan)    
-    local yawbias = (ph-0.5) * yawSweep*scandir
-
-    local yaw = math.min(math.max(yaw0+yawbias, -yawMax), yawMax)
-    local qNeck_approach, doneNeck =util.approachTol( qNeck, {yaw, pitch}, dqNeckLimit, tpassed )
-    --Body.set_head_command_position(qNeck_approach)
-    local headBias = hcm.get_camera_bias()
+    local dqNeckLimit2 = Config.fsm.dqNeckLimit or {60*DEG_TO_RAD, 180*DEG_TO_RAD}
+    local qNeck_approach, doneNeck =util.approachTol( qNeck, {yaw2, pitch}, dqNeckLimit2, tpassed )
     Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
-
-    if doneNeck and ph==1 then
-      local tGoal = wcm.get_goal_t();
-      if (tGoal - t0 > 0) then
-        return 'timeout'
-      else
-        print('Goal lost!!')
-        return 'lost'
-      end
+    if doneNeck then
+      return 'timeout'
     end
   end
 end

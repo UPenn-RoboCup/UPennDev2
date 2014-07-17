@@ -162,6 +162,7 @@ end
 
 local parse = {
   position = parse_read_position,
+  temperature = parse_temp,
 }
 local parse_mt = {
   __index = function(t, k)
@@ -304,6 +305,8 @@ local function do_parent(request, bus)
 				tinsert(m_ids, m_id)
 				tinsert(addr_n_len, lD.mx_registers[rd_reg])
 			elseif bus.has_nx_id[m_id] then
+--if rd_reg~='position' then print("rdd", m_id) end
+
 				has_nx = true
 				tinsert(m_ids, m_id)
 				tinsert(addr_n_len, lD.nx_registers[rd_reg])
@@ -582,6 +585,7 @@ while running do
 		-- Only if we are not in the read cycle
     if bus.npkt_to_expect < 1 then
 			bus.npkt_to_expect, bus.read_reg = bus.output_co()
+--print(bus.name, "EXX", bus.npkt_to_expect)
       if bus.npkt_to_expect == 0 then
     		bus.cmds_cnt = bus.cmds_cnt + 1
       else

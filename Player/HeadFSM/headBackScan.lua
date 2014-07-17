@@ -64,12 +64,16 @@ function state.update()
     return 'noball' --couldn't find the ball. Ball should be right behind the robot!
   end
 
-
+  local qNeckActual = Body.get_head_position()
   local qNeck_approach, doneNeck = 
     util.approachTol( qNeck0, {yawTarget,pitchTarget}, dqNeckLimit, dt )
 
-  if doneNeck then stage = stage+1 end
+  local angleErr = math.sqrt(
+    (qNeckActual[1]-yawTarget-headBias[1])^2+
+    (qNeckActual[2]-yawTarget)^2
+  )
 
+  if doneNeck then stage = stage+1 end
   -- Update the motors
 --  Body.set_head_command_position(qNeck_approach)
   local headBias = hcm.get_camera_bias()  

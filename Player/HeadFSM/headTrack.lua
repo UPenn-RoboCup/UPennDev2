@@ -55,6 +55,24 @@ function state.update()
   local ballX, ballY = wcm.get_ball_x() - 0.5 , wcm.get_ball_y()
   local yaw, pitch = HT.ikineCam(ballX, ballY, ball_radius)
 
+
+  local qNeckActual =  Body.get_head_position()
+
+  local angleErr = math.sqrt(
+      (yaw-qNeckActual[1])^2+
+      (pitch-qNeckActual[1])^2)
+
+  if angleErr>30*math.pi/180 then
+    dqNeckLimit = {180*DEG_TO_RAD, 180*DEG_TO_RAD}
+  else
+    dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}
+  end
+
+--TEMPORART FIX FOR HT ISSUE
+  pitch = math.max(0*math.pi/180, pitch-9*math.pi/180)
+
+
+
   -- print('Ball dist:', math.sqrt(ballX*ballX + ballY*ballY))
   -- Look at Goal
   if not Config.demo and not Config.use_gps_pose and t-t_entry > timeout then

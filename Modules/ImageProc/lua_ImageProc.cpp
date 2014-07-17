@@ -27,6 +27,7 @@
 #include "lua_robots.h"
 #include "lua_fast_12.h"
 #include "lua_obstacles.h"
+#include "lua_goal.h"
 
 #include <iostream>
 
@@ -550,6 +551,7 @@ static const luaL_Reg imageProc_lib [] = {
   {"fast12", lua_fast_12},
 
   {"obstacles", lua_obstacles},
+  //{"goal", lua_goal},
   {NULL, NULL}
 };
 

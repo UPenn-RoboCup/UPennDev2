@@ -504,6 +504,18 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 end
 
 
+function libVision.goal_low(labelB_t)
+  local goals = {}
+  goals.detect = 0
+  -- Parameters
+  local min_width, max_width = 2, 8
+  
+  local goalProps = ImageProc.goal(labelB_t, min_width, max_width)
+  
+end
+
+
+
 function libVision.obstacle(labelB_t)
   -- Obstacle table
   local obstacle, obs_count, obs_debug = {}, 0, ''
@@ -528,6 +540,7 @@ function libVision.obstacle(labelB_t)
   local horizonB = (hb/2.0) - focalB*math.tan(pa - 10*DEG_TO_RAD)
   horizonB = math.min(hb, math.max(math.floor(horizonB), 0))
   --TODO: plot it in monitor
+  
   local obsProps = ImageProc.obstacles(labelB_t,
     Config.vision.obstacle.min_width, Config.vision.obstacle.max_width, horizonB)
   
@@ -800,7 +813,6 @@ function libVision.update(img)
   
   if gcm.get_game_role()==0 then
     line_fails, lines = libVision.line(labelB_t)
-    print(line_fails)
   end
 
   -- Save the detection information

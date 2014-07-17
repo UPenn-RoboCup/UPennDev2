@@ -116,8 +116,10 @@ local function parse_read_position(pkt, bus)
 	local read_j_id = m_to_j[m_id]
 	local read_val
   if bus.has_mx_id[m_id] then
+    if #pkt.parameter~=lD.mx_registers.position[2] then return end
 		read_val = p_parse_mx(unpack(pkt.parameter)) 
 	else
+    if #pkt.parameter~=lD.nx_registers.position[2] then return end
 		read_val = p_parse(unpack(pkt.parameter))
 	end
 	local read_rad = step_to_radian(read_j_id, read_val)
@@ -145,10 +147,8 @@ local function parse_read_packet(pkt, bus)
 	else
 		reg = lD.nx_registers[reg_name]
 	end
-	if not reg then
-		print("PARSE PKT REG NOT FOUND", reg_name)
-		return
-	end
+	if not reg then return end
+  if #pkt.parameter~=reg[2] then return end
 	local parse = lD.byte_to_number[reg[2]]
 	-- Assume just reading position, for now
 	local j_val, read_j_id = parse(unpack(pkt.parameter)), m_to_j[m_id]
@@ -272,6 +272,7 @@ local function do_parent(request, bus)
               status = lD.get_nx_position(m_id, bus)[1]
             end
             j_id, pos = parse_read_position(status, bus)
+            if not j_id then print("Bad pos read in tq_en") end
             cp_ptr[j_id - 1] = p_ptr[j_id - 1]
           end
         else
@@ -492,6 +493,7 @@ local function initialize(bus)
 		assert(status.id==m_id, 'bad id coherence, pos')
 		t_read = get_time()
 		local j_id, rad = parse_read_position(status, bus)
+    assert(j_id, "Bad pos read in initialize")
 		cp_ptr[j_id-1] = rad
 		-- Read the current torque states
 		n = 0

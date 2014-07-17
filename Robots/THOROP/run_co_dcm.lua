@@ -153,7 +153,8 @@ local function parse_read_packet(pkt, bus)
 	-- Assume just reading position, for now
 	local j_val, read_j_id = parse(unpack(pkt.parameter)), m_to_j[m_id]
 	-- Set in Shared memory
-	local ptr, ptr_t = dcm.sensorPtr[reg], dcm.tsensorPtr[reg]
+	local ptr, ptr_t = dcm.sensorPtr[reg_name], dcm.tsensorPtr[reg_name]
+  if not ptr or not ptr_t then return end
 	ptr[read_j_id - 1] = j_val
 	ptr_t[read_j_id - 1] = t_read
 	return read_j_id, j_val
@@ -296,7 +297,7 @@ local function do_parent(request, bus)
 		local j_ids = request.ids
 		local m_ids, addr_n_len = {}, {}
 		local has_nx, has_mx = false, false
-		for _, j_id in ipairs(request.ids) do
+		for j_id, is_changed in pairs(request.ids) do
 			m_id = j_to_m[j_id]
 			if bus.has_mx_id[m_id] then
 				has_mx = true
@@ -309,9 +310,7 @@ local function do_parent(request, bus)
 			end
 		end
     -- Check if reading position already
-    if rd_reg=='position' and bus.enable_read then
-			return
-		end
+    if rd_reg=='position' and bus.enable_read then return end
 		if has_mx and has_nx then
 			lD.get_bulk(m_ids, addr_n_len, bus, true)
 		elseif has_nx then

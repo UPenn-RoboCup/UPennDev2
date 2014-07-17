@@ -344,10 +344,10 @@ if Config.USE_DUMMY_ARMS then
 	servo.max_rad = vector.new({
 		--90,80, -- Head
 		135,80, -- Head
-		90,90, --LArm
+		90, 135, --LArm
 		175,175,175,175,175,175, --LLeg
 		175,175,175,175,175,175, --RLeg
-		90,90, --RArm
+		90, 135, --RArm
 		90,45, -- Waist
 		60, -- Lidar pan
 	})*DEG_TO_RAD

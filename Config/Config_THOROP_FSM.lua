@@ -41,7 +41,7 @@ fsm.Head = {
   {'headTeleop', 'scan', 'headBackScan'},
   {'headTeleop', 'scanobs', 'headObstacleScan'},
   -- 
-  -- {'headObstacleScan', 'noobs', 'headSweep'},
+  
   {'headObstacleScan', 'done', 'headTrack'},
   {'headObstacleScan', 'teleop', 'headTeleop'},
  
@@ -61,10 +61,8 @@ fsm.Head = {
   {'headKickFollow', 'done', 'headTrack'},
 
   {'headLookGoal', 'timeout', 'headTrack'},
-  {'headLookGoal', 'lost', 'headSweep'},
   {'headLookGoal', 'scanobs', 'headObstacleScan'},
   --
---  {'headSweep', 'done', 'headTrack'},
   --
   
 }

@@ -69,7 +69,7 @@ function state.update()
     util.approachTol( qNeck0, {yawTarget,pitchTarget}, dqNeckLimit, dt )
 
   local angleErr = math.sqrt(
-    (qNeckActual[1]-yawTarget-headBias[1])^2
+    (qNeckActual[1]-yawTarget-headBias[1])^2+
     (qNeckActual[2]-yawTarget)^2
   )
 

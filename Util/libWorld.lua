@@ -24,7 +24,7 @@ local t_entry
 -- Cycle count
 local count
 -- Objects
-local ball, goal, obstacle
+local ball, goal, obstacle, line
 -- Obstacle filters
 local OF = {}
 
@@ -321,6 +321,7 @@ function libWorld.send()
     end
   end  
     
+  -- Obstacles
   if wcm.get_obstacle_num()>0 then
     local obs = {}
     for i=1,wcm.get_obstacle_num() do
@@ -333,6 +334,11 @@ function libWorld.send()
     --WE HAVE TO CLEAR OBSTACLE
     local obs = {}
     to_send.obstacle = obs
+  end
+  
+  -- Lines
+  if line then
+    --blah
   end
 
   --TRAJECTORY INFO

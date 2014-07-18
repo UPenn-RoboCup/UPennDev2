@@ -684,7 +684,6 @@ function libVision.line(labelB_t)
       	(lines.propsB[i].endpoint[1]-lines.propsB[i].endpoint[2])^2+
       	(lines.propsB[i].endpoint[3]-lines.propsB[i].endpoint[4])^2);
 
-        vendpoint = {}
         vendpoint[1] = check_coordinateB(vector.new(
       		{lines.propsB[i].endpoint[1],lines.propsB[i].endpoint[3]}),1);
         vendpoint[2] = check_coordinateB(vector.new(
@@ -698,7 +697,7 @@ function libVision.line(labelB_t)
       if length>line_cfg.min_length and linecount<num_line and vHeight<vHeightMax then          
         linecount = linecount + 1
         lines.length[linecount] = length
-        lines.endpoint[linecount] = lines.propsB[i].endpoint
+        lines.endpoint[linecount] = vector.new(lines.propsB[i].endpoint)*scaleB
         vendpoint[1] = projectGround(vendpoint[1],0)
         vendpoint[2] = projectGround(vendpoint[2],0)
         lines.v[linecount] = {}
@@ -712,7 +711,7 @@ function libVision.line(labelB_t)
     lines.nLines = linecount
     if lines.nLines>0 then
       lines.detect = 1
-      print('line v:', unpack(lines.v[1][1]), unpack(lines.v[1][2]))
+      -- print('line v:', unpack(lines.v[1][1]), unpack(lines.v[1][2]))
     end
     return 'blah', lines
 end
@@ -819,11 +818,13 @@ function libVision.update(img)
   detected.ball = ball
   detected.posts = posts
   detected.obstacles = obstacles
+  detected.line = lines
 
   detected.debug={}
   detected.debug.ball = ball_debug or ' '
   detected.debug.post = post_fails or ' '
   detected.debug.obstacle = obstacle_fails or ' '
+  detected.debug.line = line_fails or ' '
     
   -- Send the detected stuff over the channel every cycle
   vision_ch:send(mp.pack(detected))

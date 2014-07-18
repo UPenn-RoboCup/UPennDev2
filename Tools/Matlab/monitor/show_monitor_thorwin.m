@@ -54,6 +54,8 @@ function h = show_monitor_thorwin
         set(h_obstacle{i},'Xdata', []);
         set(h_obstacle{i},'Ydata', []);
     end
+    h_line = plot([0], [0], 'm--', 'LineWidth', 3);
+    set(h_line, 'Xdata',[], 'Ydata', []);
 
     % yuyv
     set(gcf,'CurrentAxes',f_yuyv);
@@ -143,6 +145,7 @@ function h = show_monitor_thorwin
     cam.r_ball = r_ball;
     cam.p_post = p_post;
     cam.h_obstacle = h_obstacle;    
+    cam.h_line = h_line;
     % Plot scale
     % Default: labelA is half size, so scale twice
     scale = 2;
@@ -244,23 +247,16 @@ function h = show_monitor_thorwin
             x21 = obs_c + [wo -ho] * obs_rot;
             x22 = obs_c + [-wo -ho] * obs_rot;
             obs_box = [x11; x12; x22; x21; x11];
-            
-            
-            % obs_bbox = obstacles.bbox{i};
-            %
-            % % TODO:use centroid and axisMajor/axisMinor
-            % left_x = obs_bbox(1);
-            % right_x = obs_bbox(2);
-            % top_y = obs_bbox(3);
-            % bot_y = obs_bbox(4);
-            % x11 = [left_x top_y];
-            % x12 = [right_x top_y];
-            % x21 = [left_x bot_y];
-            % x22 = [right_x bot_y];
-            % obs_box = [x11; x12; x22; x21; x11];
-            
+
             set(cam.h_obstacle{i}, 'XData', obs_box(:,1), 'YData', obs_box(:,2));
           end
+        end
+        
+        if isfield(metadata, 'line')
+          %TODO: for now just plot one line?
+          endpoint = metadata.line.endpoint{1};  %+0.5
+          set(cam.h_line,'Xdata', [endpoint(1) endpoint(2)]);
+          set(cam.h_line,'Ydata', [endpoint(3) endpoint(4)]);
         end
         
     elseif strcmp(msg_id,'world')
@@ -268,9 +264,8 @@ function h = show_monitor_thorwin
         % msg_struct, vision_struct, scale, drawlevel, name
         drawlevel = 1;
         name = 'alvin';
-        set(gcf,'CurrentAxes',cam.f_field);
 
-        %plot_robot(cam.h_field, metadata.world, [], 1.5, drawlevel, name);
+        set(gcf,'CurrentAxes',cam.f_field);
         plot_robot(gca,metadata.world, [], 1.5, drawlevel, name);
         hold on;
         if isfield(metadata.world,'traj')

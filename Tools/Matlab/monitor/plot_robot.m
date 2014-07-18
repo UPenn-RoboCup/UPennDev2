@@ -64,6 +64,9 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       if numel(obsStats)>0
         plot_obstacle(obsStats, scale);
       end
+      if isfield(robot_struct, 'line')
+        plot_line(robot_struct, scale);
+      end
       plot_gps_robot(robot_struct,scale);
       
     elseif drawlevel==2 
@@ -313,18 +316,18 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
     end
   end
 
-  function plot_line(line,scale)
+  function plot_line(lines,scale)
 
     if( line.detect==1 )
-      nLines=line.nLines;
+      nLines=lines.nLines;
       for i=1:nLines
-        v1=line.v1{i};
-        v2=line.v2{i};
+        v1=lines.v1{i};
+        v2=lines.v2{i};
 
-        x1 = v1(1)*ca - v1(2)*sa + robot_struct.pose.x;
-        y1 = v1(1)*sa + v1(2)*ca + robot_struct.pose.y;
-        x2 = v2(1)*ca - v2(2)*sa + robot_struct.pose.x;
-        y2 = v2(1)*sa + v2(2)*ca + robot_struct.pose.y;
+        x1 = v1(1)*ca - v1(2)*sa + x0;
+        y1 = v1(1)*sa + v1(2)*ca + y0;
+        x2 = v2(1)*ca - v2(2)*sa + x0;
+        y2 = v2(1)*sa + v2(2)*ca + y0;
 
         plot([x0 (x1+x2)/2],[y0 (y1+y2)/2],'k');
         plot([x1 x2],[y1 y2],'k','LineWidth',2);

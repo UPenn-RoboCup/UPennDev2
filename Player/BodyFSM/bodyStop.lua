@@ -84,7 +84,7 @@ function state.update()
     end
 
     if gcm.get_game_role()==1 and gcm.get_game_state()>0 then
-      plan_whole()
+--      plan_whole()
     end
   end
 
@@ -104,6 +104,8 @@ function state.update()
       print("Attacker start!")
       return'play'
     elseif gcm.get_game_role()==2 then
+      --Tester does nothing
+    end
 
     if t-t_plan>1 and gcm.get_game_state()>0 then
 --      plan_whole()

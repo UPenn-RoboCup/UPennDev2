@@ -54,6 +54,14 @@ if IS_WEBOTS then
 end
 -- Update loop
 local gc_pktNum = 0
+
+local t_switch = get_time()
+local last_position = nil
+
+local rgb = {255,255,255}
+gcm.set_game_role(Config.default_role or 2) --Testing
+gcm.set_game_state(Config.default_state or 5) --Pre-init
+
 while running do
   t = get_time()
   -- Update the state machines
@@ -65,6 +73,49 @@ while running do
 		print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, collectgarbage('count')))
     --print('Wire', vcm.get_wire_model())
 	end
+
+  local  current_lidar_deg = Body.get_lidar_position()[1] * RAD_TO_DEG
+--print(current_lidar_deg)
+
+--[[
+  if t-t_switch>1.0 then
+    t_switch = t
+    local  current_lidar_deg = Body.get_lidar_position()[1] * RAD_TO_DEG
+--print(current_lidar_deg)
+    local cur_position 
+    if current_lidar_deg>45 then
+      cur_position=1
+      rgb={255,0,0}
+      gcm.set_game_role(1)
+      gcm.set_game_state(0)
+    elseif current_lidar_deg<-45 then
+      cur_position = -1
+      rgb={0,0,255}
+      gcm.set_game_role(2) --tester role
+      gcm.set_game_state(6) --tester state
+    else
+      cur_position = 0
+      rgb={255,0,255}
+      gcm.set_game_role(0)
+      gcm.set_game_state(0)
+    end
+    print(cur_position, rgb[1],rgb[3])
+    if cur_position~=last_position then
+      last_position = cur_position
+
+
+  local intensity = 1.0
+  Body.set_head_led_red(rgb[1]*intensity)
+  Body.set_head_led_blue(rgb[3]*intensity)
+  Body.set_head_led_green(rgb[3]*intensity)
+
+
+    end
+
+  end
+--]]
+
+
   -- If not webots, then wait the update cycle rate
   if IS_WEBOTS then
     Body.update()

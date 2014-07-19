@@ -69,7 +69,9 @@ function state.update()
   end
 
 --TEMPORART FIX FOR HT ISSUE
-  pitch = math.max(0*math.pi/180, pitch-9*math.pi/180)
+  if pitch < 60*DEG_TO_RAD then
+  	pitch = math.max(0*math.pi/180, pitch-9*math.pi/180)
+	end
 
 
 

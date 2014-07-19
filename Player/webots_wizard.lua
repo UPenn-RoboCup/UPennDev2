@@ -107,8 +107,8 @@ local npoll
 Body.entry()
 lW.entry()
 
-gcm.set_game_role(2) --Testing
-gcm.set_game_state(5) --Pre-init
+gcm.set_game_role(Config.default_role or 2) --Testing
+gcm.set_game_state(Config.default_state or 5) --Pre-init
 
 
 --[[

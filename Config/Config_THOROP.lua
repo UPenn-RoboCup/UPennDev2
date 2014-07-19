@@ -56,8 +56,10 @@ if IS_WEBOTS then
 end
 
 
-Config.auto_state_advance = true
-
+--Config.auto_state_advance = true
+Config.auto_state_advance = false
+Config.default_role = 2 --0 goalie / 1 attacker / 2 tester
+Config.default_state = 5 -- 0 1 2 3 4 for init~finished, 5 for untorqued, 6 for testing
 
 ---------------------------
 -- Complementary Configs --
@@ -100,7 +102,8 @@ end
 --FOR real robot
   Config.walk.velLimitX = {-.10,.15} 
   Config.fsm.bodyRobocupApproach.target={0.26,0.14}  
-  Config.use_walkkick = true
+--  Config.use_walkkick = true
+  Config.use_walkkick = false
 
   Config.torque_legs = true
 --Config.torque_legs = false

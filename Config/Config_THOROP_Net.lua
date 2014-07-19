@@ -14,8 +14,8 @@ net.robot = {
 -- Remote Operator IP addresses
 net.operator = {
 --['wired']              = '192.168.123.23', --Steve's
-['wired']              = '192.168.123.200', --SJ's
---['wired']              = '192.168.123.30',  --Karen's
+--['wired']              = '192.168.123.200', --SJ's
+['wired']              = '192.168.123.30',  --Karen's
 ['wired_broadcast']    = '192.168.123.255',
 --
 ['wireless']           = '192.168.1.23',

@@ -94,14 +94,14 @@ local left_leg = {
 local head_rc = {
   name = 'head',
   ttyname = '/dev/ttyUSB0',
-  m_ids = {29, 30, 37},
+  m_ids = {29, 30, 37, 11, 12, 13, 14},
   enable_read = true,
 }
 -- For RoboCup, use an MX only chain for the arms
 local arms_rc = {
   name = 'arms',
   ttyname = '/dev/ttyUSB1',
-  --m_ids = {67, 68, 83, 84},
+  m_ids = {11, 12, 13, 14},
   enable_read = true,
 }
 
@@ -290,10 +290,10 @@ if Config.USE_DUMMY_ARMS then
 	--
 	servo.joint_to_motor={
 		29,30,  --Head yaw/pitch
-		83,84,  --LArm
+		11,13,  --LArm
 		16,18,20,22,24,26, -- left leg
 		15,17,19,21,23,25, -- right leg
-		67,68, --RArm
+		12,14, --RArm
 		27,28, --Waist yaw/pitch
 		37, -- Lidar pan
 	}
@@ -322,10 +322,10 @@ if Config.USE_DUMMY_ARMS then
 	--
 	servo.rad_offset = vector.new({
 		0,0, -- Head
-		0, -70, --LArm
+		0, -90, --LArm
 		0,0,0,-45,0,0, --LLeg
 		0,0,0,45,0,0, --RLeg
-		0, 70, --RArm
+		0, 90, --RArm
 		0,0, -- Waist
 		0, -- Lidar pan
 	})*DEG_TO_RAD

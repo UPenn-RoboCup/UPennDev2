@@ -14,8 +14,8 @@ local get_time, usleep = Body.get_time, unix.usleep
 local vision_ch = si.new_subscriber'vision'
 -- UDP channel
 local udp = require'udp'
-local operator = Config.net.operator.wired
-operator = 'localhost'
+--local operator = Config.net.operator.wired
+local operator = Config.net.operator.wired_broadcast
 local udp_ch = udp.new_sender(operator, Config.camera[1].udp_port)
 -- SHM
 require'wcm'

@@ -54,7 +54,8 @@ local w = metadata.w
 local h = metadata.h
 local name = metadata.name
 -- Who to send to
-local operator = Config.net.operator.wired
+--local operator = Config.net.operator.wired
+local operator = Config.net.operator.wired_broadcast
 
 -- Form the detection pipeline
 local pipeline = {}

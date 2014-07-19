@@ -40,7 +40,7 @@ world.Lcorner[6]={0,-3.0}
 -------------------------------------------
 
 -- Obstacle
-world.obsDiameter = 0.16 --0.15  -- our purchased ones
+world.obsDiameter = 0.25 --0.15  -- our purchased ones
 world.obsHeight = 0.9
 
 

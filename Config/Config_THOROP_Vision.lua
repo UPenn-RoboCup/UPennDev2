@@ -135,6 +135,7 @@ table.insert(Config.camera,
   {
     name = 'head',
     dev = '/dev/video0',
+    --dev = '/dev/video1',
     format = 'yuyv',
     w = 640,
     h = 360, --480,
@@ -153,7 +154,7 @@ table.insert(Config.camera,
       'libVision',
     },
     --Logitech C920
-    lut = 'brazil_noon',
+    lut = 'brazil_2',
 		-- f = 640/2/tan(78/180*pi / 2)
 
 --fov = 2*arctan(d/2f)

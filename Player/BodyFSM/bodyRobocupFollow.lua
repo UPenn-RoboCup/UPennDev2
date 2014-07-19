@@ -10,6 +10,7 @@ local motion_ch = simple_ipc.new_publisher('MotionFSM!')
 
 local robocupplanner = require'robocupplanner'
 
+
 -- Get the human guided approach
 require'hcm'
 -- Get the robot guided approach

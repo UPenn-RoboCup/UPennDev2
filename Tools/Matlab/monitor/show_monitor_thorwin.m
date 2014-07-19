@@ -275,17 +275,19 @@ function h = show_monitor_thorwin
             trajy = metadata.world.traj.y;
             plot(trajx(1:num),trajy(1:num),'r');
 
-            kickto = metadata.world.traj.kickto;
-            goalto = metadata.world.traj.goalto;
+            kickneeded = metadata.world.traj.kickneeded;            
             goal1 = metadata.world.traj.goal1;
             goal2 = metadata.world.traj.goal2;
             ballglobal = metadata.world.traj.ballglobal;
+            ballglobal2 = metadata.world.traj.ballglobal2;
+            ballglobal3 = metadata.world.traj.ballglobal3;
 
-            plot([ballglobal(1) kickto(1)],[ballglobal(2) kickto(2)],'b','LineWidth',2);
-            plot([ballglobal(1) goalto(1)],[ballglobal(2) goalto(2)],'k-');
-
-            plot([ballglobal(1) goal1(1)],[ballglobal(2) goal1(2)],'k--');
-            plot([ballglobal(1) goal2(1)],[ballglobal(2) goal2(2)],'k--');
+            plot([ballglobal(1) ballglobal2(1) ballglobal3(1)],...
+                [ballglobal(2) ballglobal2(2) ballglobal3(2)],...
+                'b','LineWidth',2);
+            
+            plot([ballglobal2(1) goal1(1)],[ballglobal2(2) goal1(2)],'k--');
+            plot([ballglobal2(1) goal2(1)],[ballglobal2(2) goal2(2)],'k--');
           end
         end
         hold off;

@@ -31,6 +31,7 @@ Config.debug={
   -- obstacle = true,
   follow = false,	
   --approach = true,
+  planning = true,
 }
 
 -- Dummy arms are the two MX-106R motors per arm

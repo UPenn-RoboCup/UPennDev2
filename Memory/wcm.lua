@@ -36,8 +36,8 @@ shared.robot.reset_pose = vector.zeros(1)
 shared.robot.ballglobal = vector.zeros(2)
 shared.robot.goal1 = vector.zeros(2)
 shared.robot.goal2 = vector.zeros(2)
+shared.robot.goal3 = vector.zeros(2)
 
-shared.robot.kickto = vector.zeros(2)
 shared.robot.goalto = vector.zeros(2)
 shared.robot.moveto = vector.zeros(2)
 
@@ -51,6 +51,13 @@ shared.robot.gpsobs2 = vector.zeros(2)
 
 
 shared.robot.timestarted =vector.zeros(1)
+
+
+shared.robot.kickneeded = vector.zeros(1)
+shared.robot.kickangle1 = vector.zeros(1)
+shared.robot.kickangle2 = vector.zeros(1)
+shared.robot.ballglobal2 = vector.zeros(2)
+shared.robot.ballglobal3 = vector.zeros(2)
 
 
 

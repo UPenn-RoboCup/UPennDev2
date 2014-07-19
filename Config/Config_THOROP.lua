@@ -47,7 +47,7 @@ Config.disable_kick = false
 if IS_WEBOTS then
   Config.USE_DUMMY_ARMS = false
   Config.use_gps_pose = false
-  Config.use_gps_pose = true
+--  Config.use_gps_pose = true
   
   Config.use_localhost = true
   Config.use_walkkick = true
@@ -56,7 +56,7 @@ if IS_WEBOTS then
 end
 
 
-
+Config.auto_state_advance = true
 
 
 ---------------------------

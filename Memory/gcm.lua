@@ -10,12 +10,12 @@ local shsize = {};
 -- 0 for initial / 1 for ready 
 -- 2 for set / 3 for play / 4 fin
 -- 5: Pre-initialized (idle)
-
+-- 6 for testing
 
 shared.game = {};
 shared.game.state = vector.zeros(1);
 
--- 0: goalie   1: attacker   2:Force stop   3: Testing
+-- 0: goalie   1: attacker   2:Force stop and go to Testing
 shared.game.role = vector.ones(1)
 
 -- Keep track of every state machine

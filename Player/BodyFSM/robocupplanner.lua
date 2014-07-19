@@ -88,7 +88,8 @@ function evaluate_kickangle(ballGlobal,angle)
   local ballEndPos={ballGlobal[1]+kick_distance*math.cos(angle),ballGlobal[2]+kick_distance*math.sin(angle)}
   local ballEndPosMax={ballGlobal[1]+kick_distance_max*math.cos(angle),ballGlobal[2]+kick_distance_max*math.sin(angle)}
 
-  obstacle_num = wcm.get_obstacle_num()
+  obstacle_num = wcm.get_obstacle_num()  
+
   for i=1,obstacle_num do 
     local v =wcm['get_obstacle_v'..i]()
     local rel_obs_x = v[1]-ballGlobal[1]
@@ -142,6 +143,11 @@ function getKickAngle(pose,ballGlobal)
     --Ball close, do a single-stage planning
     daGoal, kickAngle = evaluate_goal_kickangle(ballGlobal)
 
+    if not kickAngle then 
+      kickAngle = 0
+      kickAngle2 = 0
+    end
+
     wcm.set_robot_kickneeded(1)
     wcm.set_robot_kickangle1(kickAngle)
     wcm.set_robot_kickangle2(kickAngle)
@@ -190,7 +196,10 @@ function getKickAngle(pose,ballGlobal)
         })
       return max_score_angle
     else
-      if Config.debug.planning then print("No possible route") end
+      print("No possible route")
+      print("No possible route")
+      print("No possible route")
+      print("No possible route")
     end
 
    end

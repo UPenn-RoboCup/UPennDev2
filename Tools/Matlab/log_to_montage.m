@@ -1,6 +1,6 @@
-datestamp = '07.19.2014.14.11.36'
+datestamp = '07.18.2014.22.52.35'
 % Metadata
-fid = fopen(sprintf('logs/brazil/yuyv_m_%s.log',datestamp));
+fid = fopen(sprintf('logs/brazil_robot/yuyv_m_%s.log',datestamp));
 yuyvMeta = fread(fid,Inf,'*uint8');
 fclose(fid);
 clear fid;
@@ -8,7 +8,7 @@ yuyvMeta = msgpack('unpacker',yuyvMeta,'uint8');
 
 % Setup the colortable item
 % Grab the YUYV logged information
-f_raw = fopen(sprintf('logs/brazil/yuyv_r_%s.log',datestamp));
+f_raw = fopen(sprintf('logs/brazil_robot/yuyv_r_%s.log',datestamp));
 yuyvMontage = fread(f_raw,Inf,'*uint32');
 %disp(yuyvMeta{1}.w)
 %disp( yuyvMeta{1}.h)

@@ -33,12 +33,18 @@ else
 end
 
 local ENABLE_NET, SEND_INTERVAL, t_send = true, 1/hcm.get_monitor_fps(), 0
-local ENABLE_LOG, LOG_INTERVAL, t_log = false, 1 / 5, 0
 
---local FROM_LOG, LOG_DATE = true, '07.10.2014.17.45.55'
---local FROM_LOG, LOG_DATE = true, '07.10.2014.17.48.57'
---local FROM_LOG, LOG_DATE = true, '07.10.2014.18.41.58'
-local FROM_LOG, LOG_DATE = false, '07.07.2014.22.06.09'
+
+local ENABLE_LOG, LOG_INTERVAL, t_log
+if hcm.set_camera_log()==0 then
+  ENABLE_LOG = false
+else
+  ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
+end
+
+
+--local FROM_LOG, LOG_DATE = true, '07.18.2014.22.52.35'
+local FROM_LOG, LOG_DATE = false
 
 local libLog, logger
 
@@ -91,8 +97,7 @@ local t_debug = unix.time()
 if FROM_LOG then
 
 	local libLog = require'libLog'
-	--local replay = libLog.open(HOME..'/Logs/', LOG_DATE, 'uvc')
-	local replay = libLog.open(HOME..'/Logs/grasp0710/', LOG_DATE, 'yuyv')
+	local replay = libLog.open(HOME..'/Logs/', LOG_DATE, 'yuyv')
 	local metadata = replay:unroll_meta()
 	local util = require'util'
 	print('Unlogging', #metadata, 'images from', LOG_DATE)

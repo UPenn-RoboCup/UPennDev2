@@ -62,6 +62,11 @@ function process_keyinput()
     elseif byte==string.byte("d") then head_new[1]=head_now[1] - dq
     elseif byte==string.byte("a") then head_new[1]=head_now[1] + dq
     elseif byte==string.byte("s") then head_new = {0,0}
+    -- Toggle yuyv log
+    elseif byte==string.byte("r") then
+      local to_log = 1 - hcm.get_camera_log()
+      hcm.set_camera_log(to_log)
+      print('Enable camera log?:', to_log)
     
 	  -- Head FSM
     elseif byte==string.byte("1") then

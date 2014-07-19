@@ -269,6 +269,7 @@ function state.exit()
   --now disable leg joint reading
   Body.disable_read'lleg'
   Body.disable_read'rleg'
+  wcm.set_robot_initdone(1)
 
 end
 

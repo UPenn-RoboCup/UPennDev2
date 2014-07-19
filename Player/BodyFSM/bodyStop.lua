@@ -35,6 +35,8 @@ local function plan_whole()
   local walk_target_local = {ballx,bally,balla}
   local ballGlobal = util.pose_global(walk_target_local, pose)
 
+  wcm.set_robot_ballglobal({ballGlobal[1],ballGlobal[2]})
+
   local max_plan_step = 100
   local count = 0
   local reached = false
@@ -69,29 +71,41 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t  
-  if gcm.get_game_state()==3 then
-    if old_state~=3 then
-      --Just into play, reset pose
-      wcm.set_robot_reset_pose(1)  
+
+
+  if t-t_plan>1 then
+    t_plan = t
+    if Config.auto_state_advance and gcm.get_game_role()~= 2 then
+      if gcm.get_game_state()<3 then
+        gcm.set_game_state(gcm.get_game_state()+1)
+      elseif gcm.get_game_state()==5 then 
+        gcm.set_game_state(0)
+      end
     end
+
+    if gcm.get_game_role()==1 and gcm.get_game_state()>0 then
+      plan_whole()
+    end
+  end
+
+  if gcm.get_game_state()<3 then
+    --Just into play, reset pose
+    wcm.set_robot_reset_pose(1) 
+  end 
+
+  if gcm.get_game_state()==3 then
     if wcm.get_robot_timestarted()==0 then
       wcm.set_robot_timestarted(t)
     end
     if gcm.get_game_role()==0 then --goalie
       print("Goalie start!")
       return'goalie'
-    else
+    elseif gcm.get_game_role()==1 then
       print("Attacker start!")
       return'play'
-    end
-  else
+    elseif gcm.get_game_role()==2 then
 
-    
-    if t-t_plan>1 and gcm.get_game_state()>0 then
-      plan_whole()
-      t_plan = t
     end
-
     wcm.set_robot_timestarted(0)    
   end
 end

@@ -212,6 +212,7 @@ function libWorld.entry()
   wcm.set_robot_pose({0,0,0})
   wcm.set_robot_odometry({0,0,0})
   wcm.set_robot_traj_num(0)
+  wcm.set_obstacle_num(0)  
   -- Processing count
   count = 0
   

@@ -61,6 +61,7 @@ shared.robot.ballglobal3 = vector.zeros(2)
 
 
 
+shared.robot.initdone = vector.zeros(1)
 
 
 

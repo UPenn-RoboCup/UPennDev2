@@ -120,16 +120,17 @@ function evaluate_kickangle(ballGlobal,angle)
   local min_borderY_dist = math.max(0, math.min(Ydist_L,Ydist_R))
 
   local outstr=string.format("Kick angle %d :obs %.2f border %.2f",angle*180/math.pi, min_obs_dist, min_borderY_dist)
-  if Config.debug.planning then 
-    if min_obs_dist>0.5 and min_borderY_dist>0.5 then   
+  
+  if min_obs_dist>0.5 and min_borderY_dist>0.5 then   
     daGoal, kickAngle2 = evaluate_goal_kickangle(ballEndPos)
+    if Config.debug.planning then 
       print(string.format("%s goalAngle %d",outstr,daGoal*180/math.pi))            
-      if daGoal>0 then return daGoal, kickAngle2 , ballEndPos end
-    else
-      print(outstr)            
-      return
-    end  
-  end
+    end
+    if daGoal>0 then return daGoal, kickAngle2 , ballEndPos end
+  else
+    if Config.debug.planning then  print(outstr) end
+    return
+  end    
 end
 
 
@@ -177,20 +178,19 @@ function getKickAngle(pose,ballGlobal)
       if Config.debug.planning then
         print(string.format("Best kick angle: first %d and then %d",
           max_score_angle*180/math.pi, max_score_angle2*180/math.pi))
-        wcm.set_robot_kickneeded(2)
-        wcm.set_robot_kickangle1(max_score_angle)
-        wcm.set_robot_kickangle2(max_score_angle2)
-        wcm.set_robot_ballglobal2({best_ballEndPos1[1],best_ballEndPos1[2]})
-
-        wcm.set_robot_ballglobal3({
-          best_ballEndPos1[1] + 3.0 *math.cos(max_score_angle2),
-          best_ballEndPos1[2] + 3.0 *math.sin(max_score_angle2)
-          })
-
       end
+      wcm.set_robot_kickneeded(2)
+      wcm.set_robot_kickangle1(max_score_angle)
+      wcm.set_robot_kickangle2(max_score_angle2)
+      wcm.set_robot_ballglobal2({best_ballEndPos1[1],best_ballEndPos1[2]})
+
+      wcm.set_robot_ballglobal3({
+        best_ballEndPos1[1] + 3.0 *math.cos(max_score_angle2),
+        best_ballEndPos1[2] + 3.0 *math.sin(max_score_angle2)
+        })
       return max_score_angle
     else
-      print("No possible route")
+      if Config.debug.planning then print("No possible route") end
     end
 
    end

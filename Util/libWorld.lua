@@ -337,8 +337,8 @@ function libWorld.send()
   end
   
   -- Lines
-  if line then
-    --blah
+  if line and gcm.get_game_role()==0 then
+    wcm.set_line_detect(1)
   end
 
   --TRAJECTORY INFO
@@ -359,10 +359,6 @@ function libWorld.send()
   traj.kickangle2 = wcm.get_robot_kickangle2()
   traj.ballglobal2 = wcm.get_robot_ballglobal2() 
   traj.ballglobal3 = wcm.get_robot_ballglobal3()
-
-
-
-
 
 
   traj.goalangles={}

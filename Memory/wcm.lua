@@ -116,7 +116,9 @@ shared.obstacle.v1 = vector.zeros(2)
 shared.obstacle.v2 = vector.zeros(2)
 shared.obstacle.v3 = vector.zeros(2)
 
-
+-- line for goalie
+shared.line = {}
+shared.line.detect = vector.zeros(1)
 
 
 -- Call the initializer

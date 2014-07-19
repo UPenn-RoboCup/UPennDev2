@@ -196,7 +196,7 @@ table.insert(Config.camera,
     },
 --]]
 
-     --RoboCup 2014 Brazil
+     --RoboCup 2014 Brazil noon
     param = {
       {'White Balance Temperature', 4300},
       {'Exposure (Absolute)', 125},

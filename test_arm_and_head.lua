@@ -15,11 +15,6 @@ function tasks.r()
 	Body.set_head_led_red( is_red )
 	Body.set_lleg_led_red(is_red)
 	Body.set_rleg_led_red(is_red)
-
-	Body.set_larm_command_position({90*math.pi/180,10*math.pi/180})
-	Body.set_rarm_command_position({90*math.pi/180,10*math.pi/180})
-
-
 	return is_red>0 and "RED ON" or "RED OFF"
 end
 

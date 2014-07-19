@@ -134,7 +134,8 @@ Config.camera = {}
 table.insert(Config.camera,
   {
     name = 'head',
-    dev = '/dev/video0',
+    --dev = '/dev/video0',
+    dev = '/dev/video1',
     format = 'yuyv',
     w = 640,
     h = 360, --480,
@@ -183,7 +184,7 @@ table.insert(Config.camera,
              {'Sharpness', 0},
            },
       --]]
-    --[[ GRASP afternoon
+    -- GRASP afternoon
     param = {
       {'White Balance Temperature', 3300},
       {'Exposure (Absolute)', 170},
@@ -194,20 +195,7 @@ table.insert(Config.camera,
       {'Gain', 66},
       {'Sharpness', 0},
     },
---]]
-
-     --RoboCup 2014 Brazil
-    param = {
-      {'White Balance Temperature', 4300},
-      {'Exposure (Absolute)', 125},
-      {'Focus (absolute)', 0},
-      {'Brightness', 128},
-      {'Contrast', 128},
-      {'Saturation', 150},
-      {'Gain', 42},
-      {'Sharpness', 0},
-    },
-   
+    
   })
 
 --Webots use 1/2 resolution but 2x label resolution

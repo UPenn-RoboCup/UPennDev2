@@ -215,8 +215,8 @@ kick.stepqueue["LeftWalkKick"]={
 --Testing end transition
 kick.stepqueue["LeftWalkKick"]=
   {
-    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
-    {{0.18,0,0},1,  tSlope1, 1.2, tSlope2,   {-0.02,0.02,0},{-1,1.5*walk.stepHeight,0}}, --rf kick    
+    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {-0.02,0.02,0},{0,walk.stepHeight,0}}, --ls
+    {{0.18,0,0},1,  tSlope1, 1.2, tSlope2,   {-0.02,0.04,0},{-1,1.5*walk.stepHeight,0}}, --rf kick    
     {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}},
     {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
@@ -224,8 +224,8 @@ kick.stepqueue["LeftWalkKick"]=
 
 kick.stepqueue["LeftKick"]=
   {
-    {{0.12,0,0},1,  0.3,2,0.3,   {-0.03,0.02,0},{-2,walk.stepHeight,0}}, --rf kick
-    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.04,0.0,0},  {0, 0, 0}},                  
+    {{0.12,0,0},1,  0.3,2,0.3,   {-0.02,0.02,0},{-2,walk.stepHeight,0}}, --rf kick
+    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.03,0.0,0},  {0, 0, 0}},                  
     {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
     {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
@@ -235,8 +235,8 @@ kick.stepqueue["LeftKick"]=
 
 kick.stepqueue["RightWalkKick"]=
   {
-    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
-    {{0.18,0,0},0,  tSlope1, 1.5, tSlope2,   {-0.02,-0.02,0},{-1,1.5*walk.stepHeight,0}}, --rf kick    
+    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {-0.02,-0.02,0},{0,walk.stepHeight,0}}, --ls
+    {{0.18,0,0},0,  tSlope1, 1.2, tSlope2,   {-0.02,-0.04,0},{-1,1.5*walk.stepHeight,0}}, --rf kick    
     {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, --ls
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
@@ -244,8 +244,8 @@ kick.stepqueue["RightWalkKick"]=
 
 kick.stepqueue["RightKick"]=
   {
-    {{0.12,0,0},0,  0.3,2,0.3,   {-0.03,-0.02,0},{-2,walk.stepHeight,0}}, --rf kick
-    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.04,0.0,0},  {0, 0, 0}},                  
+    {{0.12,0,0},0,  0.3,2,0.3,   {-0.02,-0.02,0},{-2,walk.stepHeight,0}}, --rf kick
+    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.03,0.0,0},  {0, 0, 0}},                  
     {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
@@ -291,6 +291,41 @@ if c.cal[HOSTNAME] then
   end
 end
 --]]
+
+
+
+--quick param reset
+walk.tZMP = 0.40 
+walk.dShift = {30*math.pi/180,30*math.pi/180,30*math.pi/180,30*math.pi/180}
+
+walk.hipRollCompensation = 1.5*math.pi/180
+walk.supportX = 0.07 --With clown feet, good for forward walking
+walk.supportY = 0.06
+
+walk.velLimitY = {-.06,.06}
+walk.supportX = 0.05 --better
+
+
+
+walk.tStep = 0.80
+
+walk.hipRollCompensation = 1.5*math.pi/180
+walk.supportY = 0.07
+
+walk.supportX = 0.06 --better
+
+kick.stepqueue["LeftKick"]=
+  {
+    {{0.12,0,0},1,  0.3,1.5,0.3,   {-0.02,0.02,0},{-2,walk.stepHeight,0}}, --rf kick
+    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.03,0.0,0},  {0, 0, 0}},                  
+    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
+    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
+    {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
+  }
+
+
+
 ------------------------------------
 -- Associate with the table
 Config.walk    = walk

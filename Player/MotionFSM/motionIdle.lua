@@ -16,6 +16,7 @@ function state.entry()
   Body.enable_read'lleg'
   Body.enable_read'rleg'
  
+  wcm.set_robot_initdone(0)
 
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called

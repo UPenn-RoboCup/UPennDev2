@@ -51,6 +51,7 @@ function state.update()
   --5 is the idle state! 
   -- Ready, set, playing states
   if gcm.get_game_state()==1 or gcm.get_game_state()==2 or gcm.get_game_state()==3 then 
+    print("Headteleop: game state",gcm.get_game_state())
     return 'scan' 
   end
 

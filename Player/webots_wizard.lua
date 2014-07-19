@@ -107,8 +107,17 @@ local npoll
 Body.entry()
 lW.entry()
 
-gcm.set_game_role(1) --ATTACKER
+gcm.set_game_role(2) --Testing
 gcm.set_game_state(5) --Pre-init
+
+
+--[[
+gcm.set_game_role(1) --Attacker
+gcm.set_game_state(5) --Pre-init
+--]]
+
+
+
 
 -- Update loop
 while running do

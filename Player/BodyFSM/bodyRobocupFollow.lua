@@ -59,7 +59,6 @@ end
 local function plan_whole()
 
   local pose = wcm.get_robot_pose()
-
   local ballx = wcm.get_ball_x()
   local bally = wcm.get_ball_y()  
   local balla = math.atan2(bally,ballx)

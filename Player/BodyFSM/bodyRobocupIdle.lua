@@ -4,7 +4,7 @@ state._NAME = ...
 local Body = require'Body'
 
 local timeout = 10.0
-local t_entry, t_update, t_exit
+local t_entry, t_update, t_exit, t_plan
 require'wcm'
 
 function state.entry()
@@ -13,18 +13,23 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
+  t_plan = t_entry
   --hcm.set_ball_approach(0)
   wcm.set_robot_traj_num(0)  
 end
 
 function state.update()
-  local role = gcm.get_game_role()
-  if role==0 then return 'goalie' end
-  
+
   --  print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update
+
+
+
+  local role = gcm.get_game_role()
+  if role==0 then return 'goalie' end
+  
   -- Save this at the last update time
   t_update = t
   if t-t_entry > timeout then

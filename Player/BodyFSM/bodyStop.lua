@@ -88,7 +88,7 @@ function state.update()
 
     
     if t-t_plan>1 and gcm.get_game_state()>0 then
-      plan_whole()
+--      plan_whole()
       t_plan = t
     end
 

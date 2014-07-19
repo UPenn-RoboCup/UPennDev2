@@ -1,4 +1,4 @@
-(c) 2014 Team THORwIn
+-- (c) 2014 Team THORwIn
 
 dofile'include.lua'
 

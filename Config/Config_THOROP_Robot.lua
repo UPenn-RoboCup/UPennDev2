@@ -101,7 +101,7 @@ local head_rc = {
 local arms_rc = {
   name = 'arms',
   ttyname = '/dev/ttyUSB1',
-  m_ids = {67, 68, 83, 84},
+  --m_ids = {67, 68, 83, 84},
   enable_read = true,
 }
 
@@ -132,7 +132,8 @@ else
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)
   if Config.USE_DUMMY_ARMS then
-	  table.insert(Config.chain, arms_rc)
+    -- Not set up yet...
+	  --table.insert(Config.chain, arms_rc)
   	table.insert(Config.chain, head_rc)
   else
     table.insert(Config.chain, right_arm)

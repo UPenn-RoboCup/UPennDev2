@@ -227,6 +227,7 @@ shared_data.monitor.fps = vector.new({30})
 -- Camera
 shared_data.camera = {}
 shared_data.camera.bias = vector.zeros(4)
+shared_data.camera.log = vector.zeros(1)
 --Neck yaw
 --Camera roll, pitch, yaw
 

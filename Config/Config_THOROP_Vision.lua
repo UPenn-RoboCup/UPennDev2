@@ -153,9 +153,7 @@ table.insert(Config.camera,
       'libVision',
     },
     --Logitech C920
-    --lut = '0627_m308',
-    --lut = 'm308_night',
-     lut = 'ob_new',
+    lut = 'brazil_noon',
 		-- f = 640/2/tan(78/180*pi / 2)
 
 --fov = 2*arctan(d/2f)

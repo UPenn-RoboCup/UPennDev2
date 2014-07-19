@@ -68,16 +68,19 @@ while running do
   for _,my_fsm in pairs(state_machines) do my_fsm:update() end
   -- If time for debug
   if t-t_debug>debug_interval then
-    os.execute('clear')
+--    os.execute('clear')
     t_debug = t
 		print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, collectgarbage('count')))
     --print('Wire', vcm.get_wire_model())
+    print("GCM ROLE:",gcm.get_game_role())
+    print("GCM STATE:",gcm.get_game_state())
+
+
 	end
 
   local  current_lidar_deg = Body.get_lidar_position()[1] * RAD_TO_DEG
 --print(current_lidar_deg)
 
---[[
   if t-t_switch>1.0 then
     t_switch = t
     local  current_lidar_deg = Body.get_lidar_position()[1] * RAD_TO_DEG
@@ -86,22 +89,27 @@ while running do
     if current_lidar_deg>45 then
       cur_position=1
       rgb={255,0,0}
-      gcm.set_game_role(1)
-      gcm.set_game_state(0)
     elseif current_lidar_deg<-45 then
       cur_position = -1
       rgb={0,0,255}
-      gcm.set_game_role(2) --tester role
-      gcm.set_game_state(6) --tester state
     else
       cur_position = 0
       rgb={255,0,255}
-      gcm.set_game_role(0)
-      gcm.set_game_state(0)
+
     end
     print(cur_position, rgb[1],rgb[3])
     if cur_position~=last_position then
       last_position = cur_position
+      if cur_position == 1 then
+        gcm.set_game_role(1)
+        gcm.set_game_state(0)
+      elseif cur_position == -1 then
+        gcm.set_game_role(0) --Zero: goalie
+        gcm.set_game_state(0)
+      else
+        gcm.set_game_role(2) --tester role
+        gcm.set_game_state(6) --tester state
+      end
 
 
   local intensity = 1.0
@@ -113,7 +121,6 @@ while running do
     end
 
   end
---]]
 
 
   -- If not webots, then wait the update cycle rate

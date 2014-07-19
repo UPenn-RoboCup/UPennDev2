@@ -15,7 +15,7 @@ local shsize = {};
 shared.game = {};
 shared.game.state = vector.zeros(1);
 
--- 0: goalie   1: attacker
+-- 0: goalie   1: attacker   2:Force stop   3: Testing
 shared.game.role = vector.ones(1)
 
 -- Keep track of every state machine

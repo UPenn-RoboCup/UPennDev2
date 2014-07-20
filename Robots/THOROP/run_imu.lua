@@ -31,6 +31,7 @@ end
 local USE_MAG = false
 local OVERRIDE_YAW = true
 local CALIBRATE_GYRO_BIAS = true
+local CALIBRATION_THRESHOLD = 0.01
 
 -- Modules
 require'dcm'
@@ -73,7 +74,9 @@ local function do_read()
   end
   -- delta yaw in that episode, less the initial offset
   local del_yaw = -dg[0]
-  yaw = yaw + (del_yaw - gyro_yaw_bias[3] * (t_read - t_last_read) )
+  --yaw = yaw + (del_yaw - gyro_yaw_bias[3] * (t_read - t_last_read) )
+  -- NOTE: Assume a 100Hz update rate, as timestamps may be inaccurate
+  yaw = yaw + (del_yaw - gyro_yaw_bias[3] * 0.01 )
   
   -- Overwrite the RPY value
   if OVERRIDE_YAW then
@@ -106,12 +109,20 @@ if CALIBRATE_GYRO_BIAS then
   local n = 1
   print("Calibrating the gyro bias for "..n.." seconds")
   local gyro_accumulated, count_accumulated = vector.zeros(3), 0
-  local t_diff
+  local t_diff, cur_reading, max_reading
   repeat
     t = do_read()
     if not t then break end
     t_diff = t - t0
-    gyro_accumulated = gyro_accumulated + dcm.get_sensor_gyro()
+    cur_reading = dcm.get_sensor_gyro()
+    max_reading = math.abs(math.max(unpack(cur_reading))
+    if max_reading > CALIBRATION_THRESHOLD then
+      print("\n!!! Bad calibration !!"
+      print("Please run IMU again")
+      print(string.format("Value %f exceeds %f limit\n", max_reading, CALIBRATION_THRESHOLD))
+      running = false
+    end
+    gyro_accumulated = gyro_accumulated + cur_reading
     count_accumulated = count_accumulated + 1
   until t_diff > n or not running
   yaw = 0

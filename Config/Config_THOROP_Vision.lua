@@ -78,8 +78,10 @@ vision.goal = {
   th_min_area = 40,
   th_min_orientation = 80*math.pi/180,
   th_min_fill_rate = 0.45,
-  height_min = -0.9,  --TODO
-  th_aspect_ratio = {2.5,120},
+  -- TODO: need to test on real robot
+  height_min = -0.5, --1.5, 
+  height_max = 3, --8, 
+  th_aspect_ratio = {30,120},
   th_edge_margin = 5,
   th_bottom_boundingbox = 0.9,
   th_ground_boundingbox = {-15,15,-15,10},

@@ -254,6 +254,8 @@ if IS_WEBOTS then
     use_centerpost = 1,
     min_crossbar_ratio = 0.6,
     check_for_ground = 1,
+
+    height_max = 9, 
   }
   
   vision.obstacle = {

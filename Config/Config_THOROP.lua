@@ -113,7 +113,8 @@ end
   Config.fsm.bodyRobocupApproach.target={0.35,-0.06,0.06}    
   Config.fsm.bodyRobocupApproach.target={0.40,-0.06,0.06}    
 
-  Config.fsm.bodyRobocupApproach.target={0.40,-0.07,0.09}    
+--  Config.fsm.bodyRobocupApproach.target={0.40,-0.07,0.09}    
+  Config.fsm.bodyRobocupApproach.target={0.37,-0.07,0.09}    
 
 
 
@@ -125,7 +126,7 @@ end
   Config.enable_obstacle_scan = true
   Config.disable_goal_vision = false
 
---Config.auto_state_advance = true
+--  Config.auto_state_advance = true
   Config.auto_state_advance = false
 
   --Config.enable_goalie_legspread = true

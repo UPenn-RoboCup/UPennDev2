@@ -160,7 +160,7 @@ table.insert(Config.camera,
     --lut = 'brazil_2',  -- for afternoon
     -- lut = 'brazil_obs_noon',  -- for afternoon
     lut = 'brazil_day3_morning',
-	--	lut = 'match1_sgm_b',
+		--lut = 'match1_sgm_b',
 		-- f = 640/2/tan(78/180*pi / 2)
 
 --fov = 2*arctan(d/2f)

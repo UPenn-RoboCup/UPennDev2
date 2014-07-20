@@ -9,6 +9,7 @@ local processes = {
   'state_wizard',
 	'world_wizard',
 	'camera_wizard',
+  'gc_wizard'
 }
 local is_running = {}
 for _, v in ipairs(processes) do

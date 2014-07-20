@@ -209,6 +209,11 @@ while true do
 	if ENABLE_LOG and t - t_log > LOG_INTERVAL then
 		meta.rsz = sz
     meta.obs = wcm.get_obstacle_enable()
+    meta.head = Body.get_head_command_position()
+    meta.head = Body.get_head_position() --TODO: which one?
+    meta.rpy = Body.get_rpy()
+    meta.pose = wcm.get_robot_pose()
+    --TODO: log joint angles
 		for pname, p in pairs(pipeline) do meta[pname] = p.get_metadata() end
 		logger:record(meta, img, sz)
 		t_log = t

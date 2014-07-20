@@ -71,13 +71,22 @@ function process_keyinput()
       elseif byte==string.byte("5") then      
         mcm.set_walk_kickfoot(0)
         mcm.set_walk_kicktype(0)
-
         mcm.set_walk_steprequest(1)
 
       elseif byte==string.byte("6") then      
         mcm.set_walk_kickfoot(1)
         mcm.set_walk_kicktype(0)
         mcm.set_walk_steprequest(1)
+
+
+      elseif byte==string.byte("t") then      
+        mcm.set_walk_kicktype(3)
+        mcm.set_walk_steprequest(1)
+      elseif byte==string.byte("y") then      
+        mcm.set_walk_kicktype(4)
+        mcm.set_walk_steprequest(1)
+
+
 
       elseif byte==string.byte("7") then      
         motion_ch:send'sit'

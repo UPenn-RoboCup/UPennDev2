@@ -63,7 +63,7 @@ shared.robot.ballglobal3 = vector.zeros(2)
 
 shared.robot.initdone = vector.zeros(1)
 
-
+shared.robot.legspread =vector.zeros(1)
 
 
 -- SLAM pose
@@ -98,8 +98,10 @@ shared.ball.locked_on = vector.zeros(1);
 shared.ball.p = vector.zeros(1);
 
 
-
 shared.ball.tlook = vector.zeros(1); --the last time we TRIED to look at the ball (scan/track)
+
+--If we cannot find the ball after full scan, we assume the ball is right behind us
+shared.ball.notvisible = vector.zeros(1)
 
 
 shared.goal = {}

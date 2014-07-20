@@ -252,24 +252,49 @@ kick.stepqueue["RightKick"]=
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
   }
 
+kick.stepqueue["null"]=
+  {
+    {{0.0,0,0},2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,0,0}}, 
+  }
 
 
+--prev value: 15 deg, 0.08
 
+local spread_angle = 10*math.pi/180
+local spread_width = 0.06
 
+if IS_WEBOTS then
+  spread_angle = 45*math.pi/180
+  spread_width = 0.08
+end
 
 --Testing goalie leg spread
 kick.stepqueue["GoalieSpread"]=
   {
-    {{0,-0.08,-15*math.pi/180},0,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
-    {{0,0.08,15*math.pi/180},1,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,1.5*walk.stepHeight,0}}, --rf kick    
+    {{0,-spread_width,-spread_angle},0,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{0,spread_width,spread_angle},1,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --rf kick    
     {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.02,0.0,0},  {0, 0, 0}},                  
   }
 
 kick.stepqueue["GoalieUnspread"]=
   {
-    {{0,0.03,15*math.pi/180},0,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
-    {{0,-0.03,-15*math.pi/180},1,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,1.5*walk.stepHeight,0}}, --rf kick    
-    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.02,0.0,0},  {0, 0, 0}},                  
+    {
+      {-spread_width * math.sin(spread_angle),
+      spread_width * math.cos(spread_angle),
+      spread_angle},
+      0,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,walk.stepHeight,0}
+    }, --ls
+
+    {
+      {-spread_width * math.sin(spread_angle),
+      -spread_width * math.cos(spread_angle),
+      -spread_angle},
+      1,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,walk.stepHeight,0}
+    }, --ls
+    
+    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
+    {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
+    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
   }
 
 

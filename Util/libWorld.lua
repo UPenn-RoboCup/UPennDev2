@@ -166,6 +166,17 @@ local function update_vision(detected)
   if ball then
     ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
   end
+        
+
+  -- We cannot find the ball. 
+  --add fake observation at behind the robot so that robot can start turning
+  if wcm.get_ball_notvisible()==1 then
+    wcm.set_ball_notvisible(0)
+    if gcm.get_game_role()==1 then
+      ballFilter.observation_xy(-0.5,0, 0.5, 20*math.pi/180, t)
+    end
+  end
+
 
 
 --------------------------------------------------------------------------------
@@ -235,6 +246,7 @@ function libWorld.entry()
   wcm.set_robot_odometry({0,0,0})
   wcm.set_robot_traj_num(0)
   wcm.set_obstacle_num(0)  
+  wcm.set_ball_notvisible(0)
   -- Processing count
   count = 0
   

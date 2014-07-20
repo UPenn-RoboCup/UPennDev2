@@ -48,7 +48,7 @@ function state.entry()
   local walk_target_local = {ballx,bally,balla}
   local ballGlobal = util.pose_global(walk_target_local, pose)
   
-  kickAngle = robocupplanner.getKickAngle(pose,ballGlobal)
+  kickAngle = robocupplanner.getKickAngle(pose,ballGlobal) or 0
 end
 
 local function update_velocity()
@@ -62,7 +62,9 @@ local function update_velocity()
   local walk_target_local = {ballx,bally,balla}
   local ballGlobal = util.pose_global(walk_target_local, pose)
 
-  kickAngle = robocupplanner.getKickAngle(pose,ballGlobal)
+  local kickAngleNew = robocupplanner.getKickAngle(pose,ballGlobal)
+  if kickAngleNew then kickAngle = kickAngleNew end
+ 
 
   local target_pose,rotate = robocupplanner.getTargetPose(pose,ballGlobal,kickAngle)    
   local vStep,reached = robocupplanner.getVelocity(pose,target_pose,rotate)

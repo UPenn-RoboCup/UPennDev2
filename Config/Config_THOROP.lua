@@ -117,5 +117,6 @@ end
 
   Config.disable_goal_vision = false
 
+  Config.enable_goalie_legspread = true
 
 return Config

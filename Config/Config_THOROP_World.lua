@@ -64,7 +64,7 @@ world.goalWidth = 1.6
 
 if IS_WEBOTS then
   world.goalHeight = 1.8
-  world.goalWidth = 3
+  world.goalWidth = 3.1
   world.xBoundary = 4.5
   world.yBoundary = 3.0
 end

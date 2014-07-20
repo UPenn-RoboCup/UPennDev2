@@ -61,6 +61,7 @@ function state.update()
     pitchTarget = 20*DEG_TO_RAD
     yawTarget = -135*DEG_TO_RAD
   else
+    wcm.set_ball_notvisible(1)
     return 'noball' --couldn't find the ball. Ball should be right behind the robot!
   end
 

@@ -203,6 +203,7 @@ function robocupplanner.getKickAngle(pose,ballGlobal)
       print("No possible route")
       print("No possible route")
       print("No possible route")
+      return 0
     end
 
    end

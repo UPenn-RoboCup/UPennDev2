@@ -73,12 +73,14 @@ function state.update()
   if t-t_plan>1 then
     t_plan = t
 
+
     if gcm.get_game_role()~=2 and 
       gcm.get_game_state()~=3 and 
       mcm.get_motion_state()==4 then
        mcm.set_walk_stoprequest(1) --stop if we're in walk state
     end
 
+--[[
     --just force stop the robot in the testing mode
     if gcm.get_game_role()==2 and mcm.get_motion_state()==4 and Config.stop_at_neutral then
       mcm.set_walk_stoprequest(1)
@@ -94,6 +96,8 @@ function state.update()
     if gcm.get_game_role()==1 and gcm.get_game_state()>0 then
 --      plan_whole()
     end
+--]]
+
   end
 
 

@@ -171,7 +171,7 @@ local function update_velocity()
         0},pose)
     uRightGlobalTarget = util.pose_global({
         ballx - Config.fsm.bodyRobocupApproach.target[1] - Config.walk.supportX,
-        bally + Config.fsm.bodyRobocupApproach.target[2],-2*Config.walk.footY,
+        bally + Config.fsm.bodyRobocupApproach.target[2] -2*Config.walk.footY,
         0},pose)
   else --Align to the right foot
     uLeftGlobalTarget = util.pose_global({

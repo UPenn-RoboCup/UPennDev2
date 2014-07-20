@@ -102,7 +102,8 @@ end
 --FOR real robot
   Config.walk.velLimitX = {-.10,.15} 
   --X Loffset ROffset
-  Config.fsm.bodyRobocupApproach.target={0.26,0.04,-0.02}  
+    
+  Config.fsm.bodyRobocupApproach.target={0.26,-0.06,0.0}    
 
 --  Config.use_walkkick = true
   Config.use_walkkick = false

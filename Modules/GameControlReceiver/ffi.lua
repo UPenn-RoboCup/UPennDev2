@@ -128,7 +128,6 @@ struct SPLCoachMessage
 
 ]]
 
-dofile'../../include.lua'
 local ffi = require'ffi'
 local udp = require'udp'
 local SEND_RATE = 1 / 10
@@ -220,8 +219,9 @@ local function init(team, player, gc_addr)
 end
 libGC.init = init
 
+--[[
+dofile'../../include.lua'
 local gc = libGC.init(43, 1, '192.168.100.1')
-
 local function test_loop()
   local ret, msg
   local send_count, recv_count = 0, 0
@@ -235,19 +235,19 @@ local function test_loop()
       recv_count = recv_count + 1
     end
     t = unix.time()
-		--[[
     if t - t_send > SEND_RATE then
       t_send = t
 			ret, msg = gc:send_coach("go team!")
       if msg then print("Bad coach", msg) end
       send_count = send_count + 1
     end
-		--]]
     if t - t_debug > 2 then
       t_debug = t
       print("Counts", send_count, recv_count)
     end
   end
 end
-
 test_loop()
+--]]
+
+return libGC

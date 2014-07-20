@@ -37,7 +37,7 @@ while running do
 		gcm.set_game_state(gc_state)
     cur_pkt = gc_pkt.packetNumber
     local debug_str = table.concat({
-      color("State: "..gc_state, 'yellow'),
+      color("State: "..libGC.state_to_name[gc_state], 'yellow'),
       color('Packet '..gc_pkt.packetNumber, 'green'),
       color(gc_pkt.secsRemaining..' seconds left', 'red'),
       ''
@@ -57,8 +57,9 @@ while running do
   if t - t_debug > 2 then
     t_debug = t
     if cur_pkt==last_pkt then
-		  print(string.format('TIMEOUT | Game state: %d | Received %d',
-			  gcm.get_game_state(), recv_count))
+      local cur_state = gcm.get_game_state()
+		  print(string.format('TIMEOUT | Game state: %d (%s) | Received %d',
+			  cur_state, libGC.state_to_name[cur_state], recv_count))
     end
     last_pkt = cur_pkt
   end

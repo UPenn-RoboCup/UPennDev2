@@ -200,7 +200,7 @@ table.insert(Config.camera,
     },
 --]]
 
-     --RoboCup 2014 Brazil noon
+    --[[ RoboCup 2014 Brazil noon
     param = {
       {'White Balance Temperature', 4300},
       {'Exposure (Absolute)', 125},
@@ -211,7 +211,20 @@ table.insert(Config.camera,
       {'Gain', 42},
       {'Sharpness', 0},
     },
-   
+    --]]
+
+    --RoboCup 2014 Brazil evening
+    param = {
+      {'White Balance Temperature', 3500},
+      {'Exposure (Absolute)', 230},
+      {'Focus (absolute)', 0},
+      {'Brightness', 128},
+      {'Contrast', 144},
+      {'Saturation', 216}, --170:cloudy 150:sunny
+      {'Gain', 0},
+      {'Sharpness', 255},
+    },
+  
   })
 
 --Webots use 1/2 resolution but 2x label resolution

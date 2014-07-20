@@ -111,6 +111,11 @@ end
   Config.fsm.dqNeckLimit ={40*DEG_TO_RAD, 180*DEG_TO_RAD}
   Config.fsm.bodyRobocupApproach.target={0.28,-0.06,0.06}    
 
+--emergency fix
+  Config.fsm.bodyRobocupApproach.target={0.28,-0.06,0.06}    
+  Config.fsm.bodyRobocupApproach.target={0.35,-0.06,0.06}    
+
+
 
 --  Config.use_walkkick = true
   Config.use_walkkick = false
@@ -126,6 +131,8 @@ end
 
   Config.enable_goalie_legspread = true
 
+--Config.auto_state_advance = true
+  Config.auto_state_advance = false
 
 
 return Config

@@ -21,7 +21,7 @@ if not IS_WEBOTS then
   signal.signal("SIGTERM", shutdown)
 end
 
-local gc = libGC.init(43, 1, '192.168.100.1')
+local gc = libGC.init(36, 1, '192.168.100.1')
 local util = require'util'
 local color = util.color
 

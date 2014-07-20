@@ -333,6 +333,8 @@ walk.supportY = 0.07
 walk.supportX = 0.06 --better
 walk.velLimitY = {-.06,.06}
 
+walk.supportX = 0.05 --After fixing the waist
+
 
 
 ------------------------------------

@@ -49,7 +49,7 @@ local ENABLE_LOG, LOG_INTERVAL, t_log
 --if hcm.set_camera_log()==0 then
   ENABLE_LOG = false
 --else
-  --ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
+  ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
 --end
 
 
@@ -199,7 +199,7 @@ end
 local nlog = 0
 local udp_ret, udp_err, udp_data
 local t0 = unix.time()
-while true do
+while running do
 	SEND_INTERVAL = 1 / hcm.get_monitor_fps()
 	-- Grab and compress
 	local img, sz, cnt, t = camera:get_image()

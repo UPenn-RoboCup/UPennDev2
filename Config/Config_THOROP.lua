@@ -115,10 +115,10 @@ end
 
 --emergency fix
   Config.fsm.bodyRobocupApproach.target={0.35,-0.06,0.06}    
-  Config.fsm.bodyRobocupApproach.target={0.40,-0.06,0.06}    
 
---  Config.fsm.bodyRobocupApproach.target={0.40,-0.07,0.09}    
-  Config.fsm.bodyRobocupApproach.target={0.37,-0.07,0.09}    
+
+--With straight waist, emergency fix
+  Config.fsm.bodyRobocupApproach.target={0.40,-0.07,0.09}    
 
 
 
@@ -135,5 +135,9 @@ end
 
   --Config.enable_goalie_legspread = true
   Config.enable_goalie_legspread = false
+
+  Config.stop_at_neutral = true --false for walk testing
+--  Config.stop_at_neutral = false --false for walk testing
+
 
 return Config

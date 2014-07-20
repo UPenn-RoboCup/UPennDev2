@@ -20,9 +20,6 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry    
   t_plan = t_entry
-  if mcm.get_walk_ismoving()>0 then
-    mcm.set_walk_stoprequest(1) --stop if we're walking
-  end
   old_state = gcm.get_game_state()
 end
 
@@ -75,6 +72,11 @@ function state.update()
 
   if t-t_plan>1 then
     t_plan = t
+
+    if gcm.get_game_state()~=3 and mcm.get_motion_state()==4 then
+       mcm.set_walk_stoprequest(1) --stop if we're in walk state
+    end
+
     if Config.auto_state_advance and gcm.get_game_role()~= 2 then
       if gcm.get_game_state()<3 then
         gcm.set_game_state(gcm.get_game_state()+1)
@@ -82,20 +84,25 @@ function state.update()
         gcm.set_game_state(0)
       end
     end
-
     if gcm.get_game_role()==1 and gcm.get_game_state()>0 then
 --      plan_whole()
     end
   end
 
+
+
   if gcm.get_game_state()<3 then
-    --Just into play, reset pose
+    --Reset pose at initial, ready and set states
     wcm.set_robot_reset_pose(1) 
+    wcm.set_robot_timestarted(0)
   end 
 
+
+
   if gcm.get_game_state()==3 then
-    if wcm.get_robot_timestarted()==0 then
+    if wcm.get_robot_timestarted()==0 then 
       wcm.set_robot_timestarted(t)
+      print("COUNTING STARTED!!!")
     end
     if gcm.get_game_role()==0 then --goalie
       print("Goalie start!")
@@ -105,11 +112,6 @@ function state.update()
       return'play'
     elseif gcm.get_game_role()==2 then
       --Tester does nothing
-    end
-
-    if t-t_plan>1 and gcm.get_game_state()>0 then
---      plan_whole()
-      t_plan = t
     end
     wcm.set_robot_timestarted(0)    
   end

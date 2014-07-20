@@ -31,7 +31,7 @@ end
 
 function state.update()
 
-  if gcm.get_game_state()==4 then return'teleop' end
+  if gcm.get_game_state()~=3 and gcm.get_game_state()~=6 then return'teleop' end
   
   -- print(_NAME..' Update' )
   -- Get the time of update

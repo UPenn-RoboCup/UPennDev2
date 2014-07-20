@@ -98,6 +98,7 @@ function walk.entry()
     else iStep = 4; --Torso moving to the right, skip the initial step handling
     end
   end
+  mcm.set_motion_state(4)
 end
 
 function walk.update()

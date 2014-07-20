@@ -216,6 +216,7 @@ function walk.entry()
   debugdata=''
  
   hcm.set_motion_estop(0)
+  mcm.set_motion_state(3)
 end
 
 function walk.update()

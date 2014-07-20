@@ -804,7 +804,7 @@ local nJoint = Config.nJoint
           print("=========================================")
           print("=========================================")
           wcm.set_robot_timestarted(0)
-          gcm.set_game_state(0)
+          gcm.set_game_state(4) --Set to finished
           head_ch:send'teleop'
         end
 

@@ -321,23 +321,14 @@ end
 
 --quick param reset
 walk.tZMP = 0.40 
+walk.tStep = 0.80
 walk.dShift = {30*math.pi/180,30*math.pi/180,30*math.pi/180,30*math.pi/180}
 
 walk.hipRollCompensation = 1.5*math.pi/180
 walk.supportX = 0.07 --With clown feet, good for forward walking
-walk.supportY = 0.06
-
-walk.velLimitY = {-.06,.06}
-walk.supportX = 0.05 --better
-
-
-
-walk.tStep = 0.80
-
-walk.hipRollCompensation = 1.5*math.pi/180
 walk.supportY = 0.07
-
 walk.supportX = 0.06 --better
+walk.velLimitY = {-.06,.06}
 
 kick.stepqueue["LeftKick"]=
   {
@@ -348,8 +339,6 @@ kick.stepqueue["LeftKick"]=
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
   }
-
-
 
 ------------------------------------
 -- Associate with the table

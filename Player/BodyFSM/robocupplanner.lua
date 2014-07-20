@@ -12,7 +12,12 @@ function evaluate_goal_kickangle(ballGlobal)
 
   local goalL = {Config.world.xBoundary,Config.world.goalWidth/2}
   local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2}
+
+--Make goal smaller (to compensate for the localization error)
+  local goalL = {Config.world.xBoundary,Config.world.goalWidth/2 * 0.9}
+  local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2 * 0.9}
   local goalC = {Config.world.xBoundary,0}
+
 
   wcm.set_robot_goal1({goalL[1],goalL[2]})
   wcm.set_robot_goal2({goalR[1],goalR[2]})

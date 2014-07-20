@@ -1,5 +1,7 @@
 Config = {}
 
+local DEG_TO_RAD = math.pi/180
+
 ------------------------
 -- General parameters --
 ------------------------
@@ -101,11 +103,13 @@ end
 
 --FOR real robot
   Config.walk.velLimitX = {-.10,.15} 
+  Config.walk.velLimitY = {-.06,.06}
   --X Loffset ROffset
-    
+
+  --Config.fsm.headTrack.timeout = 6  --ORG value
+  Config.fsm.headTrack.timeout = 3  
+  Config.fsm.dqNeckLimit ={40*DEG_TO_RAD, 180*DEG_TO_RAD}
   Config.fsm.bodyRobocupApproach.target={0.28,-0.06,0.06}    
-
-
 
 
 --  Config.use_walkkick = true

@@ -238,6 +238,7 @@ function state.entry()
   end
   last_ph = 0  
   last_step = 0
+  wcm.set_robot_etastep(-1) --we're in approach
 end
 
 function state.update()
@@ -261,6 +262,7 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' )
+  wcm.set_robot_etastep(0) --out of approach
 end
 
 return state

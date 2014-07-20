@@ -41,6 +41,7 @@ shared.robot.goal3 = vector.zeros(2)
 shared.robot.goalto = vector.zeros(2)
 shared.robot.moveto = vector.zeros(2)
 
+shared.robot.etastep = vector.zeros(1)
 shared.robot.traj_num = vector.zeros(1)
 shared.robot.trajx = vector.zeros(100)
 shared.robot.trajy = vector.zeros(100)

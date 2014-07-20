@@ -104,6 +104,7 @@ local function plan_whole()
   end
 
   wcm.set_robot_traj_num(count)
+  wcm.set_robot_etastep(count)
   wcm.set_robot_trajx(xtrail)
   wcm.set_robot_trajy(ytrail)
 end

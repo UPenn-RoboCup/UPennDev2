@@ -42,8 +42,10 @@ function state.entry()
   local defendAngle = util.mod_angle(
     math.atan2(defendGoal[2]-pose[2],defendGoal[1]-pose[1])-pose[3])
 
---print("AttackAngle:",attackAngle)
 
+  --Goal selection (to look at)
+
+--[[
   --Can we see both goals?
   if math.abs(attackAngle)<yawMax + fovMargin and
      math.abs(defendAngle)<yawMax + fovMargin  then
@@ -65,6 +67,17 @@ function state.entry()
       yaw0 = defendAngle;
     end
   end
+--]]
+  local qNeck = Body.get_head_command_position()
+  if math.abs(util.mod_angle(attackAngle-qNeck[1]))<math.abs(util.mod_angle(defendAngle-qNeck[1])) and
+    math.abs(attackAngle)<yawMax + fovMargin then
+    yaw0 = attackAngle;
+  else
+    yaw0 = defendAngle;
+  end
+
+
+
 
   stage,scandir = 1,1
   local qNeck = Body.get_head_command_position()
@@ -86,6 +99,11 @@ function state.update()
   local t = Body.get_time();
   local tpassed=t-t_update
   t_update = t
+
+  --escape lookgoal if we're about to reach the destination
+  if wcm.get_robot_traj_num(count)<(Config.min_steps_lookdown or 5) then
+    return"timeout"
+  end
 
 
   local qNeck = Body.get_head_command_position()

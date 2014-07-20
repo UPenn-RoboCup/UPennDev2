@@ -111,6 +111,11 @@ end
 
 --emergency fix
   Config.fsm.bodyRobocupApproach.target={0.35,-0.06,0.06}    
+  Config.fsm.bodyRobocupApproach.target={0.40,-0.06,0.06}    
+
+  Config.fsm.bodyRobocupApproach.target={0.40,-0.07,0.09}    
+
+
 
 --  Config.use_walkkick = true
   Config.use_walkkick = false

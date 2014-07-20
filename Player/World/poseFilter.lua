@@ -634,17 +634,17 @@ end
 
 function poseFilter.post_unknown(v)
   --TODO: this kills the angle-based localization for whatever reason!
-  landmark_observation(postAll, v[1], rUnknownPostFilter, aUnknownPostFilter)  
+--  landmark_observation(postAll, v[1], rUnknownPostFilter, aUnknownPostFilter)  
 end
 
 function poseFilter.post_left(v)
 --  landmark_observation(postLeft, v[1], rPostFilter, aPostFilter)
-  landmark_observation(postAll, v[1], rPostFilter, aPostFilter)
+--  landmark_observation(postAll, v[1], rPostFilter, aPostFilter)
 end
 
 function poseFilter.post_right(v)
 --  landmark_observation(postRight, v[1], rPostFilter, aPostFilter)
-  landmark_observation(postAll, v[1], rPostFilter, aPostFilter)
+--  landmark_observation(postAll, v[1], rPostFilter, aPostFilter)
 end
 
 

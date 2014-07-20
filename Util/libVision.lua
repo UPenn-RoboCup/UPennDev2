@@ -815,7 +815,7 @@ function libVision.update(img)
   end
   
   if gcm.get_game_role()==0 then
-    line_fails, lines = libVision.line(labelB_t)
+    --line_fails, lines = libVision.line(labelB_t)
   end
 
   -- Save the detection information

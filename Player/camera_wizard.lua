@@ -36,11 +36,11 @@ local ENABLE_NET, SEND_INTERVAL, t_send = true, 1/hcm.get_monitor_fps(), 0
 
 
 local ENABLE_LOG, LOG_INTERVAL, t_log
-if hcm.set_camera_log()==0 then
+--if hcm.set_camera_log()==0 then
   ENABLE_LOG = false
-else
-  ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
-end
+--else
+  --ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
+--end
 
 
 --local FROM_LOG, LOG_DATE = true, '07.18.2014.22.52.35'

@@ -80,7 +80,7 @@ vision.goal = {
   th_min_fill_rate = 0.4, --0.45,
   -- TODO: need to test on real robot
   height_min = 1, 
-  height_max = 9, 
+  height_max = 2, 
   th_aspect_ratio = {13,120},
   th_edge_margin = 5,
   th_bottom_boundingbox = 0.9,
@@ -159,7 +159,8 @@ table.insert(Config.camera,
     --Logitech C920
     --lut = 'brazil_2',  -- for afternoon
     -- lut = 'brazil_obs_noon',  -- for afternoon
-    lut = 'brazil_eve',
+    lut = 'brazil_day3_morning',
+	--	lut = 'match1_sgm_b',
 		-- f = 640/2/tan(78/180*pi / 2)
 
 --fov = 2*arctan(d/2f)
@@ -216,7 +217,8 @@ table.insert(Config.camera,
     --RoboCup 2014 Brazil evening
     param = {
       {'White Balance Temperature', 3500},
-      {'Exposure (Absolute)', 230},
+      --{'Exposure (Absolute)', 200},
+      {'Exposure (Absolute)', 190},
       {'Focus (absolute)', 0},
       {'Brightness', 128},
       {'Contrast', 144},

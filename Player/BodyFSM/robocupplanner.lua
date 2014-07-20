@@ -26,14 +26,15 @@ function evaluate_goal_kickangle(ballGlobal)
 
   obstacle_num = wcm.get_obstacle_num()
 
-  max_obstacle_dist = 0
-  max_obstacle_dist_angle = nil
+  --max_obstacle_dist = 0
+  --max_obstacle_dist_angle = nil
 
-  obs_clear_angle_count = 0
+  max_obstacle_angle = 0
+  max_obstacle_angle_kickangle = nil
 
   for a=0,10 do 
     local angle = goalAngleR +  (a/10) * (goalAngleL-goalAngleR)
-    local obs_dist_min = 999
+    local obs_angle_min = math.pi
     for i=1,obstacle_num do   
       local v =wcm['get_obstacle_v'..i]()
       local rel_obs_x = v[1]-ballGlobal[1]
@@ -41,39 +42,40 @@ function evaluate_goal_kickangle(ballGlobal)
       local obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)
       local obs_angle = math.atan2(rel_obs_y, rel_obs_x)
       local angle_diff = math.max(0, math.abs(util.mod_angle(obs_angle-angle)) - kick_deviation_angle)
-      local obs_closest_dist = math.sin(angle_diff)*obs_dist
-      if angle_diff>math.pi/2 then obs_closest_dist = 999 end
-      obs_dist_min = math.min(obs_dist_min, obs_closest_dist)  
+      --local obs_closest_dist = math.sin(angle_diff)*obs_dist
+      --if angle_diff>math.pi/2 then obs_closest_dist = 999 end
+      --obs_dist_min = math.min(obs_dist_min, obs_closest_dist)  
+      obs_angle_min = math.min(angle_diff, obs_angle_min)
     end
 
---TODO: avoid goalie
-    for i=1,2 do   
+    --Goalie and two goalposts
+    for i=1,3 do   
       local v =wcm['get_robot_goal'..i]()
       local rel_obs_x = v[1]-ballGlobal[1]
       local rel_obs_y = v[2]-ballGlobal[2]
       local obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)
       local obs_angle = math.atan2(rel_obs_y, rel_obs_x)
       local angle_diff = math.max(0, math.abs(util.mod_angle(obs_angle-angle)) - kick_deviation_angle)
-      local obs_closest_dist = math.sin(angle_diff)*obs_dist
-      if angle_diff>math.pi/2 then obs_closest_dist = 999 end
-      obs_dist_min = math.min(obs_dist_min, obs_closest_dist)  
+      --local obs_closest_dist = math.sin(angle_diff)*obs_dist
+      --if angle_diff>math.pi/2 then obs_closest_dist = 999 end
+      --obs_dist_min = math.min(obs_dist_min, obs_closest_dist)  
+      obs_angle_min = math.min(angle_diff, obs_angle_min)
     end
 
-
+    --[[
     if max_obstacle_dist<obs_dist_min then
       max_obstacle_dist=obs_dist_min
       max_obstacle_dist_angle = angle
     end
-
-    if obs_dist_min>obstacle_dist_threshold then obs_clear_angle_count = obs_clear_angle_count + 1 end
+    --]]
+    if max_obstacle_angle < obs_angle_min then
+      max_obstacle_angle = obs_angle_min
+      max_obstacle_angle_kickangle = angle
+    end    
   end
 
---[[
-  print(string.format("Kick angle 2: %d with min obstacle dist %.2f",
-    max_obstacle_dist_angle*180/math.pi,
-    max_obstacle_dist))
---]]
-  return (goalAngleL-goalAngleR) * (obs_clear_angle_count) / 11, max_obstacle_dist_angle
+--  return (goalAngleL-goalAngleR) * (obs_clear_angle_count) / 11, max_obstacle_dist_angle
+  return max_obstacle_angle, max_obstacle_angle_kickangle
 end
 
 function evaluate_kickangle(ballGlobal,angle)
@@ -126,6 +128,7 @@ function evaluate_kickangle(ballGlobal,angle)
     daGoal, kickAngle2 = evaluate_goal_kickangle(ballEndPos)
     if Config.debug.planning then 
       print(string.format("%s goalAngle %d",outstr,daGoal*180/math.pi))            
+--      print(string.format("%s max obstacle dist: %d",outstr,daGoal*180/math.pi))            
     end
     if daGoal>0 then return daGoal, kickAngle2 , ballEndPos end
   else
@@ -135,7 +138,7 @@ function evaluate_kickangle(ballGlobal,angle)
 end
 
 
-function getKickAngle(pose,ballGlobal)
+function robocupplanner.getKickAngle(pose,ballGlobal)
   local max_score = -math.huge
   local max_score_angle, max_score_angle2, best_ballEndPos1
 
@@ -212,9 +215,9 @@ end
 
 
 
-function robocupplanner.getTargetPose(pose,ballGlobal)
+function robocupplanner.getTargetPose(pose,ballGlobal,kickangle)
 
-  local kickangle, goaldist = getKickAngle(pose,ballGlobal)
+
   local angleRobotBall = math.atan2(pose[2]-ballGlobal[2],pose[1]-ballGlobal[1])
   local distRobotBall = math.sqrt( (pose[1]-ballGlobal[1])^2+(pose[2]-ballGlobal[2])^2 )
   
@@ -225,11 +228,6 @@ function robocupplanner.getTargetPose(pose,ballGlobal)
   local angle_tangent = math.acos(circleR / math.max(circleR,distRobotBall))
   local angleCircle = util.mod_angle(angleRobotBall-kickangle)
   local rotate = 0
-
-
-
-  
-
 
   if Config.demo  then 
     kickpos = ballGlobal + kickoffset * vector.new({math.cos(angleRobotBall),math.sin(angleRobotBall),0})

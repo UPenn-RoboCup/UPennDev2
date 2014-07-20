@@ -28,6 +28,8 @@ local target_pose
 local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local supportLeg
 local last_ph = 0
+local kickAngle
+
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -37,6 +39,16 @@ function state.entry()
   t_update = t_entry
   motion_ch:send'hybridwalk'
   last_ph = 0
+
+  local pose = wcm.get_robot_pose()
+  if IS_WEBOTS and Config.use_gps_pose then pose = wcm.get_robot_pose_gps() end
+  local ballx = wcm.get_ball_x()
+  local bally = wcm.get_ball_y()  
+  local balla = math.atan2(bally,ballx)
+  local walk_target_local = {ballx,bally,balla}
+  local ballGlobal = util.pose_global(walk_target_local, pose)
+  
+  kickAngle = robocupplanner.getKickAngle(pose,ballGlobal)
 end
 
 local function update_velocity()
@@ -49,7 +61,10 @@ local function update_velocity()
 
   local walk_target_local = {ballx,bally,balla}
   local ballGlobal = util.pose_global(walk_target_local, pose)
-  local target_pose,rotate = robocupplanner.getTargetPose(pose,ballGlobal)    
+
+  kickAngle = robocupplanner.getKickAngle(pose,ballGlobal)
+
+  local target_pose,rotate = robocupplanner.getTargetPose(pose,ballGlobal,kickAngle)    
   local vStep,reached = robocupplanner.getVelocity(pose,target_pose,rotate)
   mcm.set_walk_vel(vStep)
   
@@ -74,7 +89,7 @@ local function plan_whole()
   local ytrail=wcm.get_robot_trajy()
   local lpose={pose[1],pose[2],pose[3]}
   while (not reached) and (count<max_plan_step) do
-    local target_pose,rotate = robocupplanner.getTargetPose(lpose,{ballGlobal[1],ballGlobal[2],0})    
+    local target_pose,rotate = robocupplanner.getTargetPose(lpose,{ballGlobal[1],ballGlobal[2],0},kickAngle)    
     v,reached = robocupplanner.getVelocity(lpose,target_pose,rotate)
     lpose = util.pose_global({v[1],v[2],v[3]} , {lpose[1],lpose[2],lpose[3]})
     count = count+1

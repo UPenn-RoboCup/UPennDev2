@@ -263,7 +263,14 @@ function libWorld.update(uOdom, detection)
     wcm.set_ball_y(balllocal[2])
     wcm.set_ball_t(Body.get_time())
   else
-    
+
+    local pose =wcm.get_robot_pose()
+    local ball_x = wcm.get_ball_x()
+    local ball_y = wcm.get_ball_y()
+
+    local ballglobal = util.pose_global({ball_x,ball_y,0},pose)
+
+    wcm.set_robot_ballglobal(ballglobal)
     -- Update pose in wcm
     wcm.set_robot_pose(vector.pose{poseFilter.get_pose()})
   end

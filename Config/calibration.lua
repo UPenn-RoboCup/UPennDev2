@@ -50,5 +50,12 @@ cal["alvin"].legBias=vector.new({
    0.472500,-2.025000,0.000000,-0.810000,0.000000,0.877500,
    })*math.pi/180
 
-cal["alvin"].headBias = vector.new({-3,5,0,4})*math.pi/180
+cal["alvin"].headBias = vector.new({-0.5,-6,0,2})*math.pi/180
 
+
+
+-- Updated date: Sat Jul 19 02:43:12 2014
+cal["alvin"].legBias=vector.new({
+   1.417500,0.405000,-0.945000,-1.552500,-0.540000,1.755000,
+   0.472500,-2.025000,0.405000,-0.810000,0.000000,1.012500,
+   })*math.pi/180

@@ -171,9 +171,9 @@ local function update_vision(detected)
 	goal = detected.posts
   if goal then
     if goal[1].type == 3 then
-      goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
+      --goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
     else
-      goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+      --goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
     end
   end
 

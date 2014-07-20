@@ -167,15 +167,37 @@ local function update_vision(detected)
     ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
   end
 
+
+--------------------------------------------------------------------------------
+-- TODO: fix nan bug with this
   -- If the goal is detected
 	goal = detected.posts
   if goal then
     if goal[1].type == 3 then
-      --goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
+      if Config.debug.goalpost then
+        print(string.format("Two post observation: type %d v1(%.2f %.2f) v2(%.2f %.2f)",
+          goal[1].type,
+          goal[1].v[1],goal[1].v[2],
+          goal[2].v[1],goal[2].v[2]
+          ))
+      end
+      if not Config.disable_goal_vision then
+        goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
+      end
     else
-      --goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+      if Config.debug.goalpost then
+        print(string.format("Single post observation: type %d v(%.2f %.2f)",
+          goal[1].type,
+          goal[1].v[1],goal[1].v[2]        
+          ))
+      end
+      if not Config.disable_goal_vision then
+        goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+      end
     end
   end
+--------------------------------------------------------------------------------
+
 
   if wcm.get_obstacle_reset()==1 then
     reset_obstacles()

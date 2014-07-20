@@ -375,7 +375,7 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 			if check_passed then
 				local scale = postStats.axisMinor / postDiameter 
 				local v = check_coordinateA(postStats.centroid, scale)
-        -- print('GOAL HEIGHT:', v[3])
+         --print('GOAL HEIGHT:', v[3])
 				if v[3] < Config.vision.goal.height_min then
 					table.insert(fail, 'TOO LOW\n')
 					check_passed = false 

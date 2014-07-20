@@ -107,7 +107,8 @@ DEF OPPONENT Block {
   translation -4.2 0.5 0
 }
 THOROP7_RoboCup_New {
-  translation 0.0645096 1.07203 -0.000882515
+#  translation 0.0645096 1.07203 -0.000882515
+  translation 0.0645096 1.0 -0.000882515
   rotation 0.004289 0.999987 0.00286921 -1.57032
   controller "thorop"
   controllerArgs "0 32"

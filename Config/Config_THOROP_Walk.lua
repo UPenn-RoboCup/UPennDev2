@@ -224,13 +224,15 @@ kick.stepqueue["LeftWalkKick"]=
 
 kick.stepqueue["LeftKick"]=
   {
-    {{0.12,0,0},1,  0.3,2,0.3,   {-0.02,0.02,0},{-2,walk.stepHeight,0}}, --rf kick
+--    {{0.12,0,0},1,  0.3,2,0.3,   {-0.02,0.02,0},{-2,walk.stepHeight,0}}, --rf kick
+    {{0.12,0,0},1,  0.3,1.5,0.3,   {-0.02,0.02,0},{-2,walk.stepHeight,0}}, --rf kick    
     {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.03,0.0,0},  {0, 0, 0}},                  
     {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
     {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
   }
+
 
 
 kick.stepqueue["RightWalkKick"]=
@@ -244,7 +246,8 @@ kick.stepqueue["RightWalkKick"]=
 
 kick.stepqueue["RightKick"]=
   {
-    {{0.12,0,0},0,  0.3,2,0.3,   {-0.02,-0.02,0},{-2,walk.stepHeight,0}}, --rf kick
+--    {{0.12,0,0},0,  0.3,2,0.3,   {-0.02,-0.02,0},{-2,walk.stepHeight,0}}, --rf kick
+    {{0.12,0,0},0,  0.3,1.5,0.3,   {-0.02,-0.02,0},{-2,walk.stepHeight,0}}, --rf kick    
     {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.03,0.0,0},  {0, 0, 0}},                  
     {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
@@ -264,7 +267,7 @@ local spread_angle = 10*math.pi/180
 local spread_width = 0.06
 
 if IS_WEBOTS then
-  spread_angle = 45*math.pi/180
+--  spread_angle = 45*math.pi/180
   spread_width = 0.08
 end
 
@@ -330,15 +333,7 @@ walk.supportY = 0.07
 walk.supportX = 0.06 --better
 walk.velLimitY = {-.06,.06}
 
-kick.stepqueue["LeftKick"]=
-  {
-    {{0.12,0,0},1,  0.3,1.5,0.3,   {-0.02,0.02,0},{-2,walk.stepHeight,0}}, --rf kick
-    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.03,0.0,0},  {0, 0, 0}},                  
-    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
-    {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-  }
+
 
 ------------------------------------
 -- Associate with the table

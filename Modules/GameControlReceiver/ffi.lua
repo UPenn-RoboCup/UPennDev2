@@ -182,12 +182,14 @@ local function send_return(self)
   return self.sender:send(ffi.string(pkt, ffi.sizeof(pkt)))
 end
 
+local gc_data = ffi.new('struct RoboCupGameControlData')
 local function receive(self, buf)
   buf = buf or self.receiver:receive()
   if not buf then return end
   local sz = #buf
   if sz==ffi.sizeof('struct RoboCupGameControlData') then
-    return ffi.new('struct RoboCupGameControlData', buf)
+		ffi.copy(gc_data, buf, sz)
+    return gc_data
   elseif sz==ffi.sizeof('struct RoboCupGameControlReturnData') then
     -- ignore
   elseif sz==ffi.sizeof('struct SPLCoachMessage') then
@@ -218,8 +220,7 @@ local function init(team, player, gc_addr)
 end
 libGC.init = init
 
---local gc = libGC.init(5, 1)
-local gc = libGC.init(22, 1, '192.168.1.255')
+local gc = libGC.init(43, 1, '192.168.100.1')
 
 local function test_loop()
   local ret, msg
@@ -228,18 +229,20 @@ local function test_loop()
   while true do
     local gc_pkt = gc:wait_for_gc()
     if gc_pkt then
-      print('Got', gc_pkt)
+      ret, msg = gc:send_return()
+      if msg then print("Bad return", msg) end
+      print('Got', gc_pkt, gc_pkt.packetNumber)
       recv_count = recv_count + 1
     end
     t = unix.time()
+		--[[
     if t - t_send > SEND_RATE then
       t_send = t
-      ret, msg = gc:send_return()
-      if msg then print("Bad return", msg) end
 			ret, msg = gc:send_coach("go team!")
       if msg then print("Bad coach", msg) end
       send_count = send_count + 1
     end
+		--]]
     if t - t_debug > 2 then
       t_debug = t
       print("Counts", send_count, recv_count)

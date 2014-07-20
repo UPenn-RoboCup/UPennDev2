@@ -6,7 +6,7 @@ local libGC = require'GameControlReceiver.ffi'
 require'gcm'
 local Body = require(Config.dev.body)
 -- Cache some functions
-local get_time, usleep = Body.get_time, unix.usleep
+local get_time = Body.get_time
 local ENABLE_COACH = false
 
 -- Cleanly exit on Ctrl-C
@@ -23,6 +23,7 @@ end
 
 local gc = libGC.init(43, 1, '192.168.100.1')
 local util = require'util'
+local color = util.color
 
 local ret, msg
 local send_count, recv_count = 0, 0
@@ -35,11 +36,13 @@ while running do
 		gc_state = tonumber(gc_pkt.state)
 		gcm.set_game_state(gc_state)
     cur_pkt = gc_pkt.packetNumber
-    print(
-      "\t",
-      util.color("State: "..gc_state,'yellow'),
-      util.color('Packet '..gc_pkt.packetNumber, 'green')
-    )
+    local debug_str = table.concat({
+      color("State: "..gc_state, 'yellow'),
+      color('Packet '..gc_pkt.packetNumber, 'green'),
+      color(gc_pkt.secsRemaining..' seconds left', 'red'),
+      ''
+      }, '\n')
+    print(debug_str)
     ret, msg = gc:send_return()
     if msg then print("Bad return", msg) end
     recv_count = recv_count + 1

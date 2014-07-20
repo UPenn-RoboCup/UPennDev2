@@ -31,7 +31,7 @@ Config.debug={
   -- obstacle = true,
   follow = false,	
   --approach = true,
-  --planning = true,
+  planning = true,
 }
 
 -- Dummy arms are the two MX-106R motors per arm
@@ -98,18 +98,20 @@ if IS_WEBOTS then
 end
 
 
-
 --FOR real robot
   Config.walk.velLimitX = {-.10,.15} 
   --X Loffset ROffset
-  Config.fsm.bodyRobocupApproach.target={0.26,0.04,-0.02}  
+    
+  Config.fsm.bodyRobocupApproach.target={0.26,-0.06,0.0}    
 
 --  Config.use_walkkick = true
   Config.use_walkkick = false
+  
 
-  Config.torque_legs = true
 --Config.torque_legs = false
+  Config.torque_legs = true
 
+  Config.enable_obstacle_scan = true
 
 
 

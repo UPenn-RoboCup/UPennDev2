@@ -115,7 +115,8 @@ end
 
   Config.approachTargetX = {
     0.45, --for kick 0 (walkkick)
-    0.30, --for kick 1 (st kick)
+--    0.30, --for kick 1 (st kick)
+    0.28, --for kick 1 (st kick)
     0.35  --for kick 2 (weak walkkick)
   }
 
@@ -128,9 +129,8 @@ if IS_WEBOTS then
   }
 end
 
-
-
-  Config.approachTargetY= {-0.07,0.05}  --L/R aiming offsets
+--  Config.approachTargetY= {-0.07,0.05}  --L/R aiming offsets
+  Config.approachTargetY= {-0.07,0.02}  --L/R aiming offsets
 
   Config.ballX_threshold1 = -1.5 --The threshold we use walkkick
   Config.ballX_threshold2 = 0.5 --The threshold we start using strong kick

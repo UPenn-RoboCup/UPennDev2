@@ -144,4 +144,6 @@ end
   Config.enable_single_goalpost_detection = true
 
 
+
+ Config.enable_weaker_kick = true
 return Config

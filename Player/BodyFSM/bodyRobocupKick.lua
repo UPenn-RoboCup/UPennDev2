@@ -23,8 +23,22 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry  
-  
+
+
   mcm.set_walk_kicktype(1)
+
+  if Config.enable_weaker_kick then
+    local ballx = wcm.get_ball_x()
+    local bally = wcm.get_ball_y()
+    local pose = wcm.get_robot_pose()
+    local ballGlobal = util.pose_global({ballx,bally,0},pose)
+    if ballGlobal[1]<0.5 then
+      mcm.set_walk_kicktype(0)
+    end
+  end
+
+
+
 
   if Config.disable_kick or not Config.use_walkkick then
     mcm.set_walk_kickphase(0)

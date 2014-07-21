@@ -105,6 +105,9 @@ shared.ball.tlook = vector.zeros(1); --the last time we TRIED to look at the bal
 shared.ball.notvisible = vector.zeros(1)
 
 
+shared.ball.disable = vector.zeros(1)
+
+
 shared.goal = {}
 shared.goal.t = vector.zeros(1)
 shared.goal.attack_angle = vector.zeros(1)

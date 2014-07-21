@@ -57,6 +57,17 @@ function process_keyinput()
       elseif byte==string.byte("h") then  targetvel_new[2]=targetvel[2]+0.02;
       elseif byte==string.byte(";") then  targetvel_new[2]=targetvel[2]-0.02;
 
+      elseif byte==string.byte("1") then      
+        gcm.set_game_role(2)
+        gcm.set_game_state(6)
+        body_ch:send'init'
+        
+      elseif byte==string.byte("2") then      
+        head_ch:send'scan'
+      
+      elseif byte==string.byte("q") then      
+        body_ch:send'approach'
+      
 
       elseif byte==string.byte("3") then      
         mcm.set_walk_kickfoot(0)

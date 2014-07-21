@@ -251,7 +251,7 @@ function state.update()
   t_update = t
 
 --not playing?
-  if gcm.get_game_state()~=3 then return'stop' end
+  if gcm.get_game_state()~=3 and gcm.get_game_state()~=5 and gcm.get_game_state()~=6 then return'stop' end
 
   local check_ph = 0.95
   local ph = mcm.get_status_ph()

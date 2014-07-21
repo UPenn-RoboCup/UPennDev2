@@ -316,6 +316,26 @@ function libWorld.update(uOdom, detection)
   count = count + 1
 end
 
+local game_state_names={
+  "Initial",
+  "Ready",
+  "Set",
+  "Playing",
+  "Finished",
+  "Untorqued",
+  "Testing"
+}
+
+local motion_state_names={
+  "Idle",
+  "Init",
+  "Stance",
+  "WalkInit",
+  "Walk",
+  "WalkEnd",
+  "WalkKick"
+}
+
 
 function libWorld.send()
   local to_send = {}
@@ -330,8 +350,33 @@ function libWorld.send()
     to_send.gpsobs2 = wcm.get_robot_gpsobs2()
   end
 
+  to_send.role = gcm.get_game_role()
+  to_send.time = Body.get_time()
+  
+
+  if gcm.get_game_role()==0 then
+    to_send.info=to_send.info.."Role: Goalie\n"
+  elseif gcm.get_game_role()==1 then
+    to_send.info=to_send.info.."Role: ATTACKER\n"
+  else
+    to_send.info=to_send.info.."Role: IDLE\n"
+  end
+
+  to_send.gamestate = gcm.get_game_state()
+  to_send.info=to_send.info.."Game :"..game_state_names[to_send.gamestate+1]
+  to_send.info=to_send.info.."\n"
+
+  to_send.motionstate = mcm.get_motion_state()
+  to_send.info=to_send.info.."Motion :"..motion_state_names[to_send.motionstate +1]
+  to_send.info=to_send.info.."\n"
+
+
+
   to_send.info = to_send.info..string.format(
     'Pose: %.2f %.2f (%.1f)\n', to_send.pose[1], to_send.pose[2], to_send.pose[3]*RAD_TO_DEG)
+
+  
+
   to_send.role = gcm.get_game_role()
   to_send.time = Body.get_time()
   

@@ -29,7 +29,7 @@ function state.entry()
 end
 
 function state.update()
-  
+  if gcm.get_game_state()~=3 then return'stop' end
   --  print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()
@@ -68,8 +68,7 @@ function state.exit()
   t_exit = Body.get_time()
   if Config.enable_goalie_legspread then
     mcm.set_walk_kicktype(3) --SPREAD
-    mcm.set_walk_steprequest(1)
-    
+    mcm.set_walk_steprequest(1)    
     wcm.set_robot_legspread(1)
   else
     mcm.set_walk_stoprequest(1)    

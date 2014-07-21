@@ -88,7 +88,7 @@ function state.entry()
     end
   end
 
-
+  mcm.set_motion_state(1)
 end
 
 ---

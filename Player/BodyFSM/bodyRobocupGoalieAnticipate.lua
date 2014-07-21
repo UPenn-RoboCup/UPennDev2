@@ -36,15 +36,17 @@ function state.update()
     local ball_local = {ballx,bally,balla}
     local ballGlobal = util.pose_global(ball_local, pose)
   
-    local target_pose = robocupplanner.getGoalieTargetPose(pose,ballGlobal)
-    --our goal should be always at (-4.5,0,0)
+    if ballGlobal[1]<-0.5 then
+      local target_pose = robocupplanner.getGoalieTargetPose(pose,ballGlobal)
+      --our goal should be always at (-4.5,0,0)
  
-    local move_vel,reached = robocupplanner.getVelocityGoalie(pose,target_pose,0.3)
+      local move_vel,reached = robocupplanner.getVelocityGoalie(pose,target_pose,0.3)
 
-    if not reached then
-      print("Current pose:",pose[1],pose[2])
-      print("Move target:",target_pose[1],target_pose[2])      
-      return 'reposition'
+      if not reached then
+        print("Current pose:",pose[1],pose[2])
+        print("Move target:",target_pose[1],target_pose[2])      
+        return 'reposition'
+      end
     end
   end
 

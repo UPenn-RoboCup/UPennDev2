@@ -233,6 +233,7 @@ function walk.entry()
  
   hcm.set_motion_estop(0)
   t_update= Body.get_time()
+  mcm.set_motion_state(5)
 end
 
 function walk.update()

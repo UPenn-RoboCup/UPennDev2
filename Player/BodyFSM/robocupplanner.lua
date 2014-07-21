@@ -423,13 +423,19 @@ function robocupplanner.getGoalieTargetPose(pose,ballGlobal)
   local factor1 = factor2 - 0.02 --max ball pos
   ballGlobal[1] = math.max(  -Config.world.xBoundary * factor1, ballGlobal[1])
   local t = (-Config.world.xBoundary*factor2 - ballGlobal[1])/math.cos(ballGoalAngleCenter) 
-  local target_position_x = -Config.world.xBoundary * factor2
+--  local target_position_x = -Config.world.xBoundary * factor2
+
+  local target_position_x = pose[1]
+
   local target_position_y = ballGlobal[2] + math.sin(ballGoalAngleCenter)*t
   local target_position_a = pose[3]
   target_position_y = math.max(
-    -Config.world.goalWidth/2 * 0.8, math.min(
-      Config.world.goalWidth/2 * 0.8 , target_position_y))
-  --
+    -Config.world.goalWidth/2 * 0.7, math.min(
+      Config.world.goalWidth/2 * 0.7 , target_position_y))
+  target_position_a = pose[3]
+
+
+--[[
   --Facing towards the ball
   local ballfromtarget = {ballGlobal[1]-target_position_x,ballGlobal[2]-target_position_y}
   target_position_a = math.atan2(ballfromtarget[2],ballfromtarget[1])

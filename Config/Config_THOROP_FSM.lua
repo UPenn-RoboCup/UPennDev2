@@ -88,6 +88,7 @@ fsm.Body = {
   {'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
   {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
   {'bodyRobocupIdle','stop','bodyStop'},
+  {'bodyRobocupIdle','goalie','bodyRobocupGoalieIdle'},
 
   {'bodyRobocupFollow', 'done', 'bodyRobocupIdle'},
   {'bodyRobocupFollow', 'timeout', 'bodyRobocupFollow'},

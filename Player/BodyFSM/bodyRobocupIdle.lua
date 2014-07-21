@@ -26,6 +26,9 @@ function state.update()
   local dt = t - t_update
 
 
+  if gcm.get_game_state()~=3 and mcm.get_motion_state()==4 then
+    mcm.set_walk_stoprequest(1) --stop if we're in walk state
+  end
 
   local role = gcm.get_game_role()
   if role==0 then return 'goalie' end

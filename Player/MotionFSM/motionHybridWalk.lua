@@ -30,6 +30,9 @@ local angleShift = vector.new{0,0,0,0}
 
 local iStep
 
+
+local zmp_param_set = false
+
 -- What foot trajectory are we using?
 local foot_traj_func  
 if Config.walk.foot_traj==1 then foot_traj_func = moveleg.foot_trajectory_base
@@ -99,6 +102,7 @@ function walk.entry()
     end
   end
   mcm.set_motion_state(4)
+  zmp_param_set = false
 end
 
 function walk.update()
@@ -132,6 +136,7 @@ function walk.update()
 
     --Update walk coefficients
     zmp_solver:set_param()
+    zmp_param_set = true
     -- Compute the ZMP coefficients for the next step
     zmp_solver:compute( uSupport, uTorso_now, uTorso_next )
     t_last_step = Body.get_time() -- Update t_last_step
@@ -183,10 +188,15 @@ function walk.update()
 end -- walk.update
 
 function walk.exit()
-  print(walk._NAME..' Exit')
-  local uTorsoVel = zmp_solver:get_com_vel(1)   --Get the final COM velocity
-  step_planner:save_stance(uLeft_next,uRight_next,uTorso_next)
-  mcm.set_status_uTorsoVel(uTorsoVel)
+  print(walk._NAME..' Exit') 
+  print("Total time: ",Body.get_time()-t_entry) 
+  if zmp_param_set then
+    local uTorsoVel = zmp_solver:get_com_vel(1)   --Get the final COM velocity
+    mcm.set_status_uTorsoVel(uTorsoVel)
+  else
+    print("ZMP PARMAM NOT SET YET")
+  end
+  step_planner:save_stance(uLeft_next,uRight_next,uTorso_next)  
 end
 
 return walk

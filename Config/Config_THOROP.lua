@@ -100,6 +100,10 @@ if IS_WEBOTS then
   --Config.auto_state_advance = false
 end
 
+  Config.stop_at_neutral = true
+
+
+
 --FOR real robot
   Config.walk.velLimitX = {-.10,.15} 
   Config.walk.velLimitY = {-.06,.06}

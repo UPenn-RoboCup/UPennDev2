@@ -80,7 +80,7 @@ function state.update()
     end
 
     --just force stop the robot in the testing mode
-    if gcm.get_game_role()==2 and mcm.get_motion_state()==4 then
+    if gcm.get_game_role()==2 and mcm.get_motion_state()==4 and Config.stop_at_neutral then
       mcm.set_walk_stoprequest(1)
     end
 

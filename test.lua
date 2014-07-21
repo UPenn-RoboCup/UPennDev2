@@ -95,11 +95,17 @@ function process_keyinput()
         mcm.set_walk_steprequest(1)
 
 
+
+
+
+
+
+
       elseif byte==string.byte("t") then      
-        mcm.set_walk_kicktype(3)
+        mcm.set_walk_kicktype(9)
         mcm.set_walk_steprequest(1)
       elseif byte==string.byte("y") then      
-        mcm.set_walk_kicktype(4)
+        mcm.set_walk_kicktype(10)
         mcm.set_walk_steprequest(1)
 
 

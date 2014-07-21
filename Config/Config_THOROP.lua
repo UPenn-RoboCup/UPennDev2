@@ -136,8 +136,12 @@ end
   --Config.enable_goalie_legspread = true
   Config.enable_goalie_legspread = false
 
-  Config.stop_at_neutral = true --false for walk testing
+--  Config.stop_at_neutral = true --false for walk testing
 --  Config.stop_at_neutral = false --false for walk testing
+
+
+  Config.enable_single_goalpost_detection = false
+  Config.enable_single_goalpost_detection = true
 
 
 return Config

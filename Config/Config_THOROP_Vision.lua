@@ -158,8 +158,8 @@ table.insert(Config.camera,
     },
     --Logitech C920
     --lut = 'brazil_2',  -- for afternoon
-    lut = 'brazil_obs_noon',  -- for afternoon
-    --lut = 'ob_new',
+    -- lut = 'brazil_obs_noon',  -- for afternoon
+    lut = 'brazil_eve',
 		-- f = 640/2/tan(78/180*pi / 2)
 
 --fov = 2*arctan(d/2f)

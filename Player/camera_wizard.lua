@@ -49,7 +49,7 @@ local ENABLE_LOG, LOG_INTERVAL, t_log
 --if hcm.set_camera_log()==0 then
   ENABLE_LOG = false
 --else
-  ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
+  --ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
 --end
 
 
@@ -65,7 +65,8 @@ local h = metadata.h
 local name = metadata.name
 -- Who to send to
 --local operator = Config.net.operator.wired
-local operator = Config.net.operator.wired_broadcast
+--local operator = Config.net.operator.wired_broadcast
+local operator = Config.net.operator.wireless
 
 -- Form the detection pipeline
 local pipeline = {}

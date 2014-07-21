@@ -15,7 +15,8 @@ local vision_ch = si.new_subscriber'vision'
 -- UDP channel
 local udp = require'udp'
 --local operator = Config.net.operator.wired
-local operator = Config.net.operator.wired_broadcast
+--local operator = Config.net.operator.wired_broadcast
+local operator = Config.net.operator.wireless
 --local operator = 'localhost'
 local udp_ch = udp.new_sender(operator, Config.camera[1].udp_port)
 -- SHM

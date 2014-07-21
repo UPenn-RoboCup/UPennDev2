@@ -160,7 +160,7 @@ end
 
 -- Config.enable_weaker_kick = true
 
---  Config.use_walkkick = true
-  Config.use_walkkick = false
+  Config.use_walkkick = true
+--  Config.use_walkkick = false
 
 return Config

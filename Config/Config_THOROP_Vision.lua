@@ -218,7 +218,7 @@ table.insert(Config.camera,
     param = {
       {'White Balance Temperature', 3500},
       --{'Exposure (Absolute)', 200},
-      {'Exposure (Absolute)', 180},  --200:day  160:night
+      {'Exposure (Absolute)', 200},  --200:day  160:night
       {'Focus (absolute)', 0},
       {'Brightness', 128},
       {'Contrast', 144},

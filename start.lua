@@ -15,6 +15,8 @@ if kind=='motion' then
   for p in imu_ps do table.insert(ps, p) end
   local dcm_ps = io.popen("pgrep -f run_co_dcm"):lines()
   for p in dcm_ps do table.insert(ps, p) end
+  local state_ps = io.popen("pgrep -f state_wizard"):lines()
+  for p in state_ps do table.insert(ps, p) end
   if #ps>0 then
     --print(color("Killing Motion processes...",'red'))
     local kill_cmd = 'kill '..table.concat(ps,' ')
@@ -28,7 +30,13 @@ if kind=='motion' then
   --
   print("Starting DCM...")
   status_code = os.execute('screen -S dcm -L -dm luajit run_co_dcm.lua')
-  assert(status_code, 'DCM failed to start')
+  assert(status_code, 'DCM failed to start')  
+	
+  unix.chdir(HOME..'/Player')
+	print('state_wizard')
+  os.execute('screen -S state -L -dm luajit state_wizard.lua')
+  unix.usleep(1e6)
+
   --
   os.exit()
 elseif kind=='vision' then
@@ -36,8 +44,6 @@ elseif kind=='vision' then
   unix.chdir(HOME..'/Player')
   -- Kill old stuff
   local ps = {}
-  local imu_ps = io.popen("pgrep -f state_wizard"):lines()
-  for p in imu_ps do table.insert(ps, p) end
   local dcm_ps = io.popen("pgrep -f camera_wizard"):lines()
   for p in dcm_ps do table.insert(ps, p) end
   local dcm_ps = io.popen("pgrep -f world_wizard"):lines()
@@ -49,17 +55,15 @@ elseif kind=='vision' then
     local kill_cmd = 'kill '..table.concat(ps,' ')
     status_code = os.execute(kill_cmd)
   end
-  print('state_wizard')
-  os.execute('screen -S state -L -dm luajit state_wizard.lua')
-  unix.usleep(1e6)
+
+  print("Fixing Auto Exposure issue...")
+  os.execute('uvcdynctrl -s "Exposure, Auto Priority" 0')
 
   print('camera_wizard')
   os.execute('screen -S camera -L -dm luajit camera_wizard.lua')
-  unix.usleep(1e6)
 
   print('world_wizard')
   os.execute('screen -S world -L -dm luajit world_wizard.lua')
-  unix.usleep(1e6)
 
   print('gamecontrol_wizard')
   os.execute('screen -S gc -L -dm luajit gc_wizard.lua')

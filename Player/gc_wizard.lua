@@ -21,7 +21,8 @@ if not IS_WEBOTS then
   signal.signal("SIGTERM", shutdown)
 end
 
-local gc = libGC.init(36, 1, '192.168.100.1')
+local teamId = 36
+local gc = libGC.init(teamId, 1, '192.168.100.1')
 local util = require'util'
 local color = util.color
 
@@ -33,6 +34,12 @@ while running do
   collectgarbage('step')
   local gc_pkt = gc:wait_for_gc()
   if gc_pkt then
+
+    -- Check team id
+    if gc_pkt.teams[0].teamNumber~=teamId or gc_pkt.teams[0].teamNumber~=teamId then
+      print("Not our team!")
+    end
+
 		gc_state = tonumber(gc_pkt.state)
 		gcm.set_game_state(gc_state)
     cur_pkt = gc_pkt.packetNumber

@@ -268,17 +268,17 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
         check_fail = true
         debug_ball(v)
       else        
-        -- TODO: Check if outside the field
         
-        
-        -- Field bounds check
+        ---[[ Field bounds check
         if not check_fail then
+					local margin = 0.5
           local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
-          if math.abs(global_v[1])>xMax+0.3 or math.abs(global_v[2])>yMax+0.3 then
-            check_fail = true
+          if math.abs(global_v[1])>xMax+margin or math.abs(global_v[2])>yMax+margin then
+            --check_fail = true
             debug_ball('OUTSIDE FIELD!\n')
           end
         end
+				--]]
 
         -- Ground check
         if not check_fail and Body.get_head_position()[2] < Config.vision.ball.th_ground_head_pitch then

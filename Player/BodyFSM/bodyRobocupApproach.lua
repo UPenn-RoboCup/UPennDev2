@@ -257,12 +257,18 @@ function state.entry()
   local pose = wcm.get_robot_pose()
   local ballGlobal = util.pose_global({ballx,bally,0},pose)
 
+
+  if gcm.get_game_state()==3 then  --Only during actual playing
+
+
   if ballGlobal[1]<ballX_threshold1 then
       mcm.set_walk_kicktype(0) --Walkkick 
   elseif ballGlobal[1]<ballX_threshold2 then
       mcm.set_walk_kicktype(2) --Weaker Walkkick 
   else
     mcm.set_walk_kicktype(1) --strong kick default
+  end
+
   end
 
 end

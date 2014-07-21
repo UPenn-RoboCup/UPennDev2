@@ -116,7 +116,7 @@ end
   Config.approachTargetX = {
     0.45, --for kick 0 (walkkick)
     0.30, --for kick 1 (st kick)
-    0.45  --for kick 2 (weak walkkick)
+    0.35  --for kick 2 (weak walkkick)
   }
 
 

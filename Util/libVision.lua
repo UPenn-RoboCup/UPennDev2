@@ -325,7 +325,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
     
     -- Did we succeed in finding a ball?
     if check_fail==false then 
-      debug_ball(string.format('Ball detected at %.2f, %.2f',propsA.v[1],propsA.v[2]))
+      debug_ball(string.format('Ball detected at %.2f, %.2f (z = %.2f)',propsA.v[1],propsA.v[2], propsA.v[3]))
       return tostring(propsA.v), propsA 
     end
   end  -- end of loop

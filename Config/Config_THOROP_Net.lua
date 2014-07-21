@@ -7,6 +7,7 @@ local vector = require'vector'
 local net = {}
 -- Use wired or wireless
 net.use_wireless = false
+--net.use_wireless = true
 
 -- Robot IP addresses
 net.robot = {

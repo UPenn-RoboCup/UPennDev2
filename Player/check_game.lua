@@ -27,6 +27,8 @@ for l in x:lines() do
   end
 end
 
+print(util.color("==== CHECKING STATUS ===",'yellow'))
+
 local is_done = true
 for k, v in pairs(is_running) do
   if not v then

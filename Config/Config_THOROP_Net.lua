@@ -5,6 +5,9 @@ local vector = require'vector'
 -- Network settings --
 ----------------------
 local net = {}
+-- Use wired or wireless
+net.use_wireless = false
+
 -- Robot IP addresses
 net.robot = {
 ['wired']    = '192.168.123.24',

@@ -262,7 +262,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
 
       local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height0,b_height1,true)
-      --print('BALL HEIGHT:', v[3])
+      print('BALL HEIGHT:', v[3])
 
       if type(v)=='string' then 
         check_fail = true
@@ -274,7 +274,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
 					local margin = 0.5
           local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
           if math.abs(global_v[1])>xMax+margin or math.abs(global_v[2])>yMax+margin then
-            --check_fail = true
+            check_fail = true
             debug_ball('OUTSIDE FIELD!\n')
           end
         end

@@ -58,6 +58,7 @@ elseif kind=='vision' then
 
   print("Fixing Auto Exposure issue...")
   os.execute('uvcdynctrl -s "Exposure, Auto Priority" 0')
+	unix.usleep(1e6)
 
   print('camera_wizard')
   os.execute('screen -S camera -L -dm luajit camera_wizard.lua')

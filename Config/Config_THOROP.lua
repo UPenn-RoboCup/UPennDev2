@@ -120,6 +120,14 @@ end
 --With straight waist, emergency fix
   Config.fsm.bodyRobocupApproach.target={0.40,-0.07,0.09}    
 
+  --Fixed right leg approach
+  Config.fsm.bodyRobocupApproach.target={0.40,-0.04,0.09}    
+
+
+  --larger dist for walkkick
+  Config.fsm.bodyRobocupApproach.target={0.45,-0.07,0.05}    
+
+
 
 
 --  Config.use_walkkick = true
@@ -146,4 +154,8 @@ end
 
 
  Config.enable_weaker_kick = true
+
+  Config.use_walkkick = true
+--  Config.use_walkkick = false
+
 return Config

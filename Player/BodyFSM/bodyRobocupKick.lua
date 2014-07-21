@@ -25,8 +25,8 @@ function state.entry()
   t_update = t_entry  
 
 
+--[[
   mcm.set_walk_kicktype(1)
-
   if Config.enable_weaker_kick then
     local ballx = wcm.get_ball_x()
     local bally = wcm.get_ball_y()
@@ -36,7 +36,7 @@ function state.entry()
       mcm.set_walk_kicktype(0)
     end
   end
-
+--]]
 
 
 

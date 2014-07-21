@@ -99,7 +99,7 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
   local post_step = nil
 
 
-  if kicktype==3 then
+  if kicktype==9 then
     --safety check
     local spread_angle = util.mod_angle(uLeft_now[3]-uRight_now[3])
     print("SPREAD ANGLE:",spread_angle)
@@ -108,7 +108,7 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
     else
       step_queue=Config.kick.stepqueue["null"]
     end
-  elseif kicktype==4 then
+  elseif kicktype==10 then
     local spread_angle = util.mod_angle(uLeft_now[3]-uRight_now[3])
     print("SPREAD ANGLE:",spread_angle)
     if spread_angle>5*math.pi/180 then
@@ -116,20 +116,14 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
     else
       step_queue=Config.kick.stepqueue["null"]
     end
-  else    
+  else
+    local kickname = 'RightKick'
     if mcm.get_walk_kickfoot()==0 then --left foot kick
-      if kicktype==0 then
-        step_queue=Config.kick.stepqueue["LeftWalkKick"]
-      else
-        step_queue=Config.kick.stepqueue["LeftKick"]
-      end
-    else
-      if kicktype==0 then
-        step_queue=Config.kick.stepqueue["RightWalkKick"]
-      else
-        step_queue=Config.kick.stepqueue["RightKick"]
-      end
+      kickname = 'LeftKick'
     end
+    kickname = kickname..kicktype
+    step_queue = Config.kick.stepqueue[kickname]
+    if not step_queue then step_queue=Config.kick.stepqueue["null"] end
   end
 
   local next_support = step_queue[1][2]

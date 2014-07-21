@@ -21,7 +21,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   if wcm.get_robot_legspread()==1 then
-    mcm.set_walk_kicktype(4) --UNSPREAD
+    mcm.set_walk_kicktype(10) --UNSPREAD
     mcm.set_walk_steprequest(1)
     wcm.set_robot_legspread(0)
   end
@@ -67,7 +67,7 @@ function state.exit()
   print(state._NAME..' Exit' )
   t_exit = Body.get_time()
   if Config.enable_goalie_legspread then
-    mcm.set_walk_kicktype(3) --SPREAD
+    mcm.set_walk_kicktype(9) --SPREAD
     mcm.set_walk_steprequest(1)    
     wcm.set_robot_legspread(1)
   else

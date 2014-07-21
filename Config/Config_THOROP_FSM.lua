@@ -43,6 +43,7 @@ fsm.Head = {
   -- 
   
   {'headObstacleScan', 'done', 'headTrack'},
+  {'headObstacleScan', 'backscan', 'headBackScan'},
   {'headObstacleScan', 'teleop', 'headTeleop'},
  
 

@@ -54,7 +54,12 @@ function state.update()
 	else 
   	wcm.set_obstacle_enable(0)
     dqNeckLimit = {180*DEG_TO_RAD, 180*DEG_TO_RAD}
-	return 'done' 
+    local t_ball = Body.get_time() - wcm.get_ball_t()
+    if t_ball>10.0 then
+      return 'backscan' 
+    else
+      return 'done' 
+    end	  
 	end
 
   local qNeck_approach, doneNeck =
@@ -74,6 +79,7 @@ function state.update()
 end
 
 function state.exit()
+  print("HeadObs time: ",Body.get_time()-t_entry)
 	wcm.set_obstacle_enable(0)
   print('Obstacle detection disabled?', wcm.get_obstacle_enable())
 end

@@ -66,7 +66,6 @@ function state.entry()
       Body.set_head_command_velocity({500,500})
       unix.usleep(1e6*0.01);
 
-
       Body.set_waist_command_velocity({500,500})
       unix.usleep(1e6*0.01);
       Body.set_lleg_command_velocity({500,500,500,500,500,500})

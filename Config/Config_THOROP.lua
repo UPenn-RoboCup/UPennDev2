@@ -94,13 +94,13 @@ if IS_WEBOTS then
   Config.walk.velDelta  = {0.04,0.02,0.1}
 
   Config.stop_after_score = false
-  Config.stop_after_score = true
+--  Config.stop_after_score = true
 
 --  Config.auto_state_advance = true
   --Config.auto_state_advance = false
 end
 
-  Config.stop_at_neutral = true
+  Config.stop_at_neutral = true --false for walk testing
 
 
 

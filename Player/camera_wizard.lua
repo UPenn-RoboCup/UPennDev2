@@ -13,6 +13,16 @@ local Body = require'Body'
 require'hcm'
 require'wcm'
 
+-- Cleanly exit on Ctrl-C
+local running, signal = true, nil
+local signal = require'signal'
+local function shutdown ()
+  running = false
+  --os.exit()
+end
+signal.signal("SIGINT", shutdown)
+signal.signal("SIGTERM", shutdown)
+
 local metadata
 if not arg or type(arg[1])~='string' then
 	-- TODO: Find the next available camera

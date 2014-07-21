@@ -160,8 +160,20 @@ local function landmark_observation_angle(pos, v, rFilter, aFilter)
       if t>0 then
         local xx =  pos[ipos][1] - xp[ip]
         local yy =  pos[ipos][2] - yp[ip]
+
+        --global direction to the observation
+        global_angle = math.atan2(v[2],v[1])+ap[ip]
+--[[
         dx[ipos] = pose_target[1] - xp[ip]
         dy[ipos] = pose_target[2] - yp[ip]
+--]]
+        local dx0 = pose_target[1] - xp[ip]
+        local dy0 = pose_target[2] - yp[ip]
+        --Now we only update along the perpendicular axis (ignore the distance)
+        local da = math.atan2(dy0,dx0)
+        local y_project = math.cos(global_angle) *dy0 - math.sin(global_angle)*dx0
+        dx[ipos]= y_project *math.sin(global_angle) 
+        dy[ipos]= y_project *math.cos(global_angle) 
 
         --angle to the observation based on local observation: a
         --angle to the observation based on global landmark: 
@@ -634,17 +646,23 @@ end
 
 function poseFilter.post_unknown(v)
   --TODO: this kills the angle-based localization for whatever reason!
---  landmark_observation(postAll, v[1], rUnknownPostFilter, aUnknownPostFilter)  
+  if Config.enable_single_goalpost_detection then
+    landmark_observation(postAll, v[1], rPostFilter, aPostFilter)
+  end
 end
 
 function poseFilter.post_left(v)
 --  landmark_observation(postLeft, v[1], rPostFilter, aPostFilter)
---  landmark_observation(postAll, v[1], rPostFilter, aPostFilter)
+  if Config.enable_single_goalpost_detection then
+    landmark_observation(postAll, v[1], rPostFilter, aPostFilter)
+  end
 end
 
 function poseFilter.post_right(v)
 --  landmark_observation(postRight, v[1], rPostFilter, aPostFilter)
---  landmark_observation(postAll, v[1], rPostFilter, aPostFilter)
+  if Config.enable_single_goalpost_detection then
+    landmark_observation(postAll, v[1], rPostFilter, aPostFilter)
+  end
 end
 
 

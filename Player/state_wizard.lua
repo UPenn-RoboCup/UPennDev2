@@ -97,7 +97,7 @@ while running do
       rgb={255,0,255}
 
     end
-    print(cur_position, rgb[1],rgb[3])
+--    print(cur_position, rgb[1],rgb[3])
     if cur_position~=last_position then
       last_position = cur_position
       if cur_position == 1 then

@@ -105,7 +105,7 @@ local meta = {
 -- JPEG Compressor
 local c_yuyv = jpeg.compressor('yuyv')
 -- Downsampling...
---c_yuyv:downsampling(2)
+c_yuyv:downsampling(2)
 local c_grey = jpeg.compressor('gray')
 
 -- Garbage collection before starting

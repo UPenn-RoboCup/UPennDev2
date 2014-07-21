@@ -168,6 +168,8 @@ local function update_velocity()
   approachTargetX = Config.approachTargetX[kicktype+1] or 0.35
   approachTargetY = Config.approachTargetY
 
+  print("Kicktype "..kicktype.."TargetX:"..approachTargetX)
+
   local uLeftGlobalTarget, uRightGlobalTarget
   if ball_side>0 then --Align to the left foot
     uLeftGlobalTarget = util.pose_global({
@@ -247,7 +249,7 @@ function state.entry()
 
 
   --Determine kick types here!
---
+--[[
   mcm.set_walk_kicktype(1) --strong kick default
   if Config.enable_weaker_kick then
     local ballx = wcm.get_ball_x()

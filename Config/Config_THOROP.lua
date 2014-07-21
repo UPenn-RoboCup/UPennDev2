@@ -128,10 +128,11 @@ end
   Config.fsm.bodyRobocupApproach.target={0.45,-0.07,0.05}    
 
 
+
   Config.approachTargetX = {
-    0.40, --for kick 0 (stationary kick)
-    0.40, --for kick 1 (walkkick)
-    0.40  --for kick 2 ()
+    0.45, --for kick 0 (walkkick)
+    0.30, --for kick 1 (st kick)
+    0.45  --for kick 2 ()
   }
 
   Config.approachTargetY= {-0.07,0.05}  --L/R aiming offsets
@@ -160,7 +161,7 @@ end
 
 
 
- Config.enable_weaker_kick = true
+-- Config.enable_weaker_kick = true
 
 --  Config.use_walkkick = true
   Config.use_walkkick = false

@@ -72,6 +72,10 @@ function process_keyinput()
       elseif byte==string.byte("w") then      
         mcm.set_walk_kicktype(1)
         body_ch:send'approach'
+
+      elseif byte==string.byte("e") then      
+        mcm.set_walk_kicktype(2)
+        body_ch:send'approach'
       
 
       elseif byte==string.byte("3") then      

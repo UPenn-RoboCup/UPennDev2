@@ -262,7 +262,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
 
       local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height0,b_height1,true)
-      print('BALL HEIGHT:', v[3])
+      --print('BALL HEIGHT:', v[3])
 
       if type(v)=='string' then 
         check_fail = true

@@ -202,7 +202,7 @@ function h = show_monitor_thorwin
             %REMOVE BALL IF WE CANNOT SEE IT!
             set(cam.p_ball, 'Xdata', []);
             set(cam.p_ball, 'Ydata', []);
-        
+            set(cam.r_ball, 'Position', [0 0 0.0001 0.0001]);
 
         end
         if isfield(metadata,'posts')

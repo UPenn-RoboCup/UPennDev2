@@ -262,6 +262,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
 
       local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height0,b_height1,true)
+      --print('BALL HEIGHT:', v[3])
 
       if type(v)=='string' then 
         check_fail = true
@@ -269,8 +270,18 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       else        
         -- TODO: Check if outside the field
         
+        
+        -- Field bounds check
+        if not check_fail then
+          local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
+          if math.abs(global_v[1])>xMax+0.3 or math.abs(global_v[2])>yMax+0.3 then
+            check_fail = true
+            debug_ball('OUTSIDE FIELD!\n')
+          end
+        end
+
         -- Ground check
-        if Body.get_head_position()[2] < Config.vision.ball.th_ground_head_pitch then
+        if not check_fail and Body.get_head_position()[2] < Config.vision.ball.th_ground_head_pitch then
           local th_ground_boundingbox = Config.vision.ball.th_ground_boundingbox
           local ballCentroid = propsA.centroid
           local vmargin = ha-ballCentroid[2]

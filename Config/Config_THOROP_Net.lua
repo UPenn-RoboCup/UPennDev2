@@ -18,8 +18,8 @@ net.operator = {
 ['wired']              = '192.168.123.30',  --Karen's
 ['wired_broadcast']    = '192.168.123.255',
 --
-['wireless']           = '192.168.123.30',
-['wireless_broadcast'] = '192.168.123.255'
+['wireless']           = '192.168.136.30',
+['wireless_broadcast'] = '192.168.136.255'
 }
 
 -- For use only when testing in webots on a local computer

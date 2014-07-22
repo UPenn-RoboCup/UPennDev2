@@ -107,12 +107,21 @@ local function calculate_footsteps()
     else
       leg_movement = util.pose_relative(uLeft_next,uLeft_now)  
     end
+
+    local supportMod = {0,0,0}
+    if supportLeg==0 then
+      supportMod = {0,Config.supportY_preview or 0,0}
+    elseif supportLeg==1 then
+      supportMod = {0,-Config.supportY_preview or 0,0}
+    end
+
     new_step={leg_movement, 
               supportLeg, 
               tSlope1, 
               Config.walk.tStep-tSlope1-tSlope2,
               tSlope2,
-              {0,0,0},
+              supportMod,
+--              {0,0,0},
               {0,Config.walk.stepHeight,0}
              }
     

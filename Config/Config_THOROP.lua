@@ -165,9 +165,12 @@ end
 
   Config.disable_ball_when_lookup = true
 
-  Config.maxStepApproachTh = 0.20
+  Config.maxStepApproachTh = 0.30
   Config.maxStepApproach1 = 0.10
-  Config.maxStepApproach2 = 0.10
+  Config.maxStepApproach2 = 0.06
+
+
+  Config.supportY_preview = 0.02
 
 
 return Config

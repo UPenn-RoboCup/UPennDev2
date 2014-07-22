@@ -165,7 +165,8 @@ function process_keyinput()
         gcm.set_game_state(1)
       elseif byte==string.byte("3") then      
         gcm.set_game_state(2)
-      elseif byte==string.byte("4") then      
+      elseif byte==string.byte("4") then
+unix.usleep(5e6)      
         gcm.set_game_state(3)      
       elseif byte==string.byte("5") then      
         gcm.set_game_state(4)            

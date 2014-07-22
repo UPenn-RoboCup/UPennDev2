@@ -267,7 +267,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
         check_fail = true
         debug_ball(v)
       else        
-			print(string.format('ball height:%.2f, thr: %.2f', v[3], b_height0+b_height1*math.sqrt(v[1]*v[1]+v[2]*v[2])))
+--			print(string.format('ball height:%.2f, thr: %.2f', v[3], b_height0+b_height1*math.sqrt(v[1]*v[1]+v[2]*v[2])))
        
         ---[[ Field bounds check
         if not check_fail and math.sqrt(v[1]*v[1]+v[2]*v[2])>3 then

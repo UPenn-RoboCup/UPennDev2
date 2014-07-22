@@ -108,6 +108,9 @@ function process_keyinput()
         mcm.set_walk_steprequest(1)
 
 
+      elseif byte==string.byte("z") then              
+        body_ch:send'footrace'
+
 --[[
 
 

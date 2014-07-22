@@ -170,7 +170,8 @@ end
   Config.maxStepApproach2 = 0.06
 
 
-  Config.supportY_preview = 0.02
+  Config.supportY_preview = -0.02
+  Config.supportY_preview2 = -0.01
 
 
 return Config

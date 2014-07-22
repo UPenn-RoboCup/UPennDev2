@@ -276,35 +276,12 @@ kick.stepqueue["RightKick1"]=
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
   }
 
---[[
---Higher kick testing
-
-kick.stepqueue["LeftKick1"]=
-  {
-    {{0.12,0,0},1,  0.3,kickdur,0.3,   {-0.0,yShift,0},{-2,walk.stepHeight*1.6,0}}, --rf kick    
-    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.01,0.0,0},  {0, 0, 0}},                  
-    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
-    {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-  }
-
-kick.stepqueue["RightKick1"]=
-  {
-    {{0.12,0,0},0,  0.3,kickdur,0.3,   {-0.0,-yShift,0},{-2,walk.stepHeight*1.6,0}}, --rf kick    
-    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.01,0.0,0},  {0, 0, 0}},                  
-    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
-    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-  }
---]]
 
 --Stop after kick
 
 kick.stepqueue["LeftKick1"]=
   {
-    {{0.12,0,0},1,  0.3,kickdur,0.3,   {-0.0,yShift,0},{-2,walk.stepHeight*1,0}}, --rf kick    
+    {{0.12,0,0},1,  0.3,kickdur,0.3,   {0.0,yShift,0},{-2,walk.stepHeight*1,0}}, --rf kick    
     {{0,0,0,},  2,   0.1, 3, 0.1,     {-0.01,0.0,0},  {0, 0, 0}},                  
     {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
     {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
@@ -314,7 +291,7 @@ kick.stepqueue["LeftKick1"]=
 
 kick.stepqueue["RightKick1"]=
   {
-    {{0.12,0,0},0,  0.3,kickdur,0.3,   {-0.0,-yShift,0},{-2,walk.stepHeight*1,0}}, --rf kick    
+    {{0.12,0,0},0,  0.3,kickdur,0.3,   {0.00,-yShift,0},{-2,walk.stepHeight*1,0}}, --rf kick    
     {{0,0,0,},  2,   0.1, 3, 0.1,     {-0.01,0.0,0},  {0, 0, 0}},                  
     {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 

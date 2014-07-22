@@ -237,6 +237,14 @@ function walk.entry()
     local zmp_mod = {footQueue[offset+8],footQueue[offset+9],footQueue[offset+10]}
     local footparam = {footQueue[offset+11],footQueue[offset+12],footQueue[offset+13]}    
 
+
+
+    if supportLeg==0 then
+      zmp_mod[2] = zmp_mod[2] + (Config.supportY_preview2 or 0)
+    elseif supportLeg==1 then
+      zmp_mod[2] = zmp_mod[2] + (-Config.supportY_preview2 or 0)
+    end
+
     --print("tStep:",t0+t1+t2)
 
     step_planner:step_enque_trapezoid(foot_movement, supportLeg, t0,t1,t2,zmp_mod,footparam)

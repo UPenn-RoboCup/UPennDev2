@@ -105,8 +105,9 @@ local function plan_whole()
   local xtrail=wcm.get_robot_trajx()
   local ytrail=wcm.get_robot_trajy()
   local lpose={pose[1],pose[2],pose[3]}
+  local kickAngleTemp = kickAngle or 0
   while (not reached) and (count<max_plan_step) do
-    local target_pose,rotate = robocupplanner.getTargetPose(lpose,{ballGlobal[1],ballGlobal[2],0},kickAngle)    
+    local target_pose,rotate = robocupplanner.getTargetPose(lpose,{ballGlobal[1],ballGlobal[2],0},kickAngleTemp)    
     v,reached = robocupplanner.getVelocity(lpose,target_pose,rotate)
     lpose = util.pose_global({v[1],v[2],v[3]} , {lpose[1],lpose[2],lpose[3]})
     count = count+1

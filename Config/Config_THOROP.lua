@@ -47,6 +47,12 @@ Config.use_localhost = false
 Config.disable_kick = false
 
 
+-- Monitor and logging
+Config.enable_monitor = true
+Config.to_log = false
+Config.use_log = false
+
+
 if IS_WEBOTS then
   Config.USE_DUMMY_ARMS = false
   Config.use_gps_pose = false

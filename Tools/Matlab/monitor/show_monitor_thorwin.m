@@ -298,12 +298,15 @@ function h = show_monitor_thorwin
       end
 
     elseif strcmp(msg_id,'head_camera')
+        nr = 320;
+        nc = 180;
         % Assume always JPEG
         cam.yuyv = djpeg(raw);
-        set(cam.im_yuyv,'Cdata', cam.yuyv);
+        yuyv_scaled = imresize(cam.yuyv, [nr nc]);
+        set(cam.im_yuyv,'Cdata', yuyv_scaled);
         % Set limits always, should not cost much CPU
-        xlim(cam.f_yuyv,[0 metadata.w]);
-        ylim(cam.f_yuyv,[0 metadata.h]);
+        xlim(cam.f_yuyv,[0 nc]);
+        ylim(cam.f_yuyv,[0 nr]);
         needs_draw = 1;
     elseif strcmp(msg_id,'labelA')
         cam.labelA = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';%'

@@ -20,20 +20,26 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
+  if wcm.get_robot_legspread()==1 then
+    mcm.set_walk_kicktype(4) --UNSPREAD
+    mcm.set_walk_steprequest(1)
+    wcm.set_robot_legspread(0)
+  end
   --hcm.set_ball_approach(0)
-
 end
 
 function state.update()
-  if mcm.get_walk_ismoving()==0 then
-    motion_ch:send'hybridwalk'
-  end
+  if gcm.get_game_state()~=3 then return'stop' end
   --  print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
+  
+  if mcm.get_walk_ismoving()==0 then
+    motion_ch:send'hybridwalk'
+  end
 
   --[[
   if t-t_entry > timeout then
@@ -60,7 +66,14 @@ end
 function state.exit()
   print(state._NAME..' Exit' )
   t_exit = Body.get_time()
-  mcm.set_walk_stoprequest(1)
+  if Config.enable_goalie_legspread then
+    mcm.set_walk_kicktype(3) --SPREAD
+    mcm.set_walk_steprequest(1)    
+    wcm.set_robot_legspread(1)
+  else
+    mcm.set_walk_stoprequest(1)    
+  end
+  
 end
 
 return state

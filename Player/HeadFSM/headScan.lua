@@ -82,7 +82,7 @@ function state.update()
     return 'ballfound' --if ball found exit
   end
 
-  if gcm.get_game_state()==4 then return'teleop' end
+  if gcm.get_game_state()~=3 and gcm.get_game_state()~=6 then return'teleop' end
   
 end
 

@@ -6,9 +6,9 @@ local util = require'util'
 local processes = {
   'run_dcm',
   'run_imu',
+  'state_wizard',
   'camera_wizard',
   'world_wizard',
-  'state_wizard',
   'gc_wizard',
 }
 local is_running = {}
@@ -26,6 +26,8 @@ for l in pgrep:lines() do
     end
   end
 end
+
+print(util.color("==== CHECKING STATUS ===",'yellow'))
 
 local is_done = true
 for k, v in pairs(is_running) do

@@ -8,18 +8,18 @@ local net = {}
 -- Robot IP addresses
 net.robot = {
 ['wired']    = '192.168.123.24',
-['wireless'] = '192.168.1.24',
+['wireless'] = '192.168.136.24',
 }
 
 -- Remote Operator IP addresses
 net.operator = {
 --['wired']              = '192.168.123.23', --Steve's
-['wired']              = '192.168.123.200', --SJ's
+--['wired']              = '192.168.123.200', --SJ's
 ['wired']              = '192.168.123.30',  --Karen's
 ['wired_broadcast']    = '192.168.123.255',
 --
-['wireless']           = '192.168.1.23',
-['wireless_broadcast'] = '192.168.1.255'
+['wireless']           = '192.168.123.30',
+['wireless_broadcast'] = '192.168.123.255'
 }
 
 -- For use only when testing in webots on a local computer

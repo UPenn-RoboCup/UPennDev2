@@ -51,7 +51,6 @@ function state.entry()
   local legBiasL = vector.slice(legBias,1,6)
   local legBiasR = vector.slice(legBias,7,12)
 
-
   qLLeg = Body.get_lleg_position()-legBiasL
   qRLeg = Body.get_rleg_position()-legBiasR
 
@@ -88,7 +87,7 @@ function state.entry()
     end
   end
 
-
+  mcm.set_motion_state(1)
 end
 
 ---
@@ -112,7 +111,8 @@ function state.update()
   local qWaist = Body.get_waist_position()
   local qWaist_approach, doneWaist =
     util.approachTol( qWaist, qWaist_desired, dqWaistLimit, dt )
-  Body.set_waist_command_position(qWaist_approach)
+--  Body.set_waist_command_position(qWaist_approach)
+  Body.set_waist_command_position({0,0})
 
   -- Ensure that we do not move motors too quickly
   local pTorso_approach, doneTorso =
@@ -269,6 +269,7 @@ function state.exit()
   --now disable leg joint reading
   Body.disable_read'lleg'
   Body.disable_read'rleg'
+  wcm.set_robot_initdone(1)
 
 end
 

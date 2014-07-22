@@ -1,9 +1,20 @@
 %X coordinates for kicks
 breakTX = [0  0.1   0.3 0.6 0.7 0.8   0.9 1];
 breakX = [0 -0.2    -1  2  2.1  2    1.3 1];
-
 breakTY = [0  0.1   0.3   0.5    0.7 0.8   0.9   1];
 breakY = [0   0.7    1     1     0.9   0.7   0.3     0];
+
+
+%For walkkick
+breakTX = [0   0.3 0.6 0.7 0.8   0.9 1];
+breakX = [0     0.7   1.5  1.5  1.45   1.15 1];
+
+breakTY = [0    0.3   0.5    0.7 0.8   0.9   1];
+breakY = [0      0.9     1     0.9   0.7   0.4     0];
+
+
+
+
 
 
 p=csapi(breakTX,breakX);

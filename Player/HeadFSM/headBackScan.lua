@@ -45,31 +45,53 @@ function state.update()
 
   local yawTarget, pitchTarget
   if stage==1 then
+    dqNeckLimit = {180*DEG_TO_RAD, 180*DEG_TO_RAD}
     pitchTarget = 20*DEG_TO_RAD
-    yawTarget = 135*DEG_TO_RAD
+    yawTarget = -120*DEG_TO_RAD
+  elseif stage==2 then
+    dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}    
+    pitchTarget = 20*DEG_TO_RAD
+    yawTarget = -135*DEG_TO_RAD
   elseif stage==2 then
     dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}    
     pitchTarget = 60*DEG_TO_RAD
-    yawTarget = 135*DEG_TO_RAD
-  elseif stage==3 then
+    yawTarget = -135*DEG_TO_RAD
+  elseif stage==3 then        
     pitchTarget = 60*DEG_TO_RAD
-    yawTarget = 0*DEG_TO_RAD
+    yawTarget = -120*DEG_TO_RAD
   elseif stage==4 then
+    dqNeckLimit = {180*DEG_TO_RAD, 180*DEG_TO_RAD}    
     pitchTarget = 60*DEG_TO_RAD
-    yawTarget = -135*DEG_TO_RAD
+    yawTarget = 120*DEG_TO_RAD
   elseif stage==5 then
-    pitchTarget = 20*DEG_TO_RAD
-    yawTarget = -135*DEG_TO_RAD
+    dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}        
+    pitchTarget = 60*DEG_TO_RAD
+    yawTarget = 135*DEG_TO_RAD
+  elseif stage==5 then
+    dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}        
+    pitchTarget = 20*DEG_TO_RAD        
+    yawTarget = 135*DEG_TO_RAD
+  elseif stage==6 then
+    dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}        
+    pitchTarget = 20*DEG_TO_RAD            
+    yawTarget = 120*DEG_TO_RAD
   else
+    wcm.set_ball_notvisible(1)
+    print("Couldn't find the ball!!!!")
     return 'noball' --couldn't find the ball. Ball should be right behind the robot!
   end
 
-
+  local qNeckActual = Body.get_head_position()
   local qNeck_approach, doneNeck = 
     util.approachTol( qNeck0, {yawTarget,pitchTarget}, dqNeckLimit, dt )
 
-  if doneNeck then stage = stage+1 end
+  local angleErr = math.sqrt(
+    (qNeckActual[1]-yawTarget-headBias[1])^2+
+    (qNeckActual[2]-pitchTarget)^2
+  )
 
+  --print(angleErr*180/math.pi)
+  if doneNeck and angleErr< 5*math.pi/180 then stage = stage+1 end
   -- Update the motors
 --  Body.set_head_command_position(qNeck_approach)
   local headBias = hcm.get_camera_bias()  
@@ -79,12 +101,14 @@ function state.update()
 	-- Check if we found the ball
   local ball_elapsed = t - wcm.get_ball_t()
   if ball_elapsed < 0.1 then
+    print("Ball found")
     return 'ballfound' --if ball found exit
   end
   
 end
 
 function state.exit()
+  print("HeadBackScan time: ",Body.get_time()-t_entry)
   print(state._NAME..' Exit')
 end
 

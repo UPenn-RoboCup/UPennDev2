@@ -14,7 +14,7 @@ local yMax = Config.world.yMax
 local goalWidth = Config.world.goalWidth
 local goalUpper = Config.world.goalUpper
 local goalLower = Config.world.goalLower
-local postAll = {goalUpper[1], goalUpper[2], goalLower[1], goalLower[2]}
+local postAll = vector.new({goalUpper[1], goalUpper[2], goalLower[1], goalLower[2]})
 local postLeft = vector.new({goalUpper[1], goalLower[1]})
 local postRight = vector.new({goalUpper[2], goalLower[2]})
 
@@ -33,6 +33,28 @@ local yp = .5*yMax*vector.new(util.randn(N)) -- y coordinate
 local ap = 2*math.pi*vector.new(util.randu(N)) -- angle
 local wp = vector.zeros(N) -- weight
 
+
+function check_particles(funcname)
+  for ip = 1,N do
+    if xp[ip]==nil or yp[ip]==nil or ap[ip]==nil then
+      print("POSEFILTER P NIL at "..funcname)
+      print("num:"..ip)
+      print(xp[ip])
+      print(yp[ip])
+      print(ap[ip])
+      --SJ: quick fix
+      --Swap that particle with the best particle for now
+      xp[ip]=xp[1]
+      yp[ip]=yp[1]
+      ap[ip]=ap[1]
+--      return true
+    end
+  end
+  return false
+end
+
+
+
 ---Initializes a gaussian distribution of particles centered at p0
 --@param p0 center of distribution
 --@param dp scales how wide the distrubution is
@@ -44,10 +66,12 @@ function poseFilter.initialize(p0, dp)
   yp = p0[2]*vector.ones(N) + dp[2]*vector.new(util.randn(N))
   ap = p0[3]*vector.ones(N) + dp[3]*(vector.new(util.randu(N))-0.5*vector.ones(N))
   wp = vector.zeros(N)
+  check_particles("init2")
 end
 
 ---Returns best pose out of all particles
 function poseFilter.get_pose()
+  check_particles("get_pose")
   local wmax, imax = util.max(wp)
 	if ap[imax] == nil then 
 		--print('ap?', #ap, 'xp?', #xp) 
@@ -65,6 +89,7 @@ local function calculate_pose_angle_old(pos,v,pose3,debug)
   local sa = math.sin(a+pose3[3])
   local x = pos[1] - r*ca
   local y = pos[2] - r*sa  
+  check_particles("whatever")
   return {x,y,pose3[3]},1
 end
 
@@ -94,8 +119,17 @@ local function calculate_pose_angle(pos,v,pose3,debug)
     print("t:",t_min)
   end
 
+  check_particles("whatever")
   return {x_min,y_min,pose3[3]},t_min
 end
+
+
+
+
+
+
+
+
 
 local function landmark_observation_angle(pos, v, rFilter, aFilter)
   --Update particles only using the landmark angle
@@ -111,6 +145,8 @@ local function landmark_observation_angle(pos, v, rFilter, aFilter)
   local dyp = {}
   local dap = {}
 
+  check_particles("onegoal1")
+
   for ip = 1,N do
     local dx = {}
     local dy = {}
@@ -118,10 +154,88 @@ local function landmark_observation_angle(pos, v, rFilter, aFilter)
     local da = {}
     local err = {}    
     for ipos = 1,#pos do
-    	local pose3 = vector.new({xp[ip],yp[ip],ap[ip]})
-    	if pose3[1]==nil or pose3[2]==nil or pose3[3]==nil then
-    		print('POSE 3 NIL:', pose3)
-    	end
+      --Now 
+      local pose3 = vector.new({xp[ip],yp[ip],ap[ip]})      
+      local pose_target,t = calculate_pose_angle(pos[ipos],v,pose3,ip==1)
+      if t>0 then
+        local xx =  pos[ipos][1] - xp[ip]
+        local yy =  pos[ipos][2] - yp[ip]
+
+        --global direction to the observation
+        global_angle = math.atan2(v[2],v[1])+ap[ip]
+--[[
+        dx[ipos] = pose_target[1] - xp[ip]
+        dy[ipos] = pose_target[2] - yp[ip]
+--]]
+        local dx0 = pose_target[1] - xp[ip]
+        local dy0 = pose_target[2] - yp[ip]
+        --Now we only update along the perpendicular axis (ignore the distance)
+        local da = math.atan2(dy0,dx0)
+        local y_project = math.cos(global_angle) *dy0 - math.sin(global_angle)*dx0
+        dx[ipos]= y_project *math.sin(global_angle) 
+        dy[ipos]= y_project *math.cos(global_angle) 
+
+        --angle to the observation based on local observation: a
+        --angle to the observation based on global landmark: 
+        --math.atan2(pos[2]-yp[ip], pos[1]-xp[ip]) - ap[ip]
+        --angle error: 
+
+        local angle_error = mod_angle(math.atan2(yy,xx) - (ap[ip] + a))
+        err[ipos] = (math.abs(angle_error)/aSigma)^2
+      else
+         dx[ipos],dy[ipos],dr[ipos],da[ipos] = 0,0,0,0
+        err[ipos] = math.huge
+      end
+    end
+    local errMin, imin = util.min(err)
+
+    --Update particle weights:
+    wp[ip] = wp[ip] - errMin
+    dxp[ip] = dx[imin]
+    dyp[ip] = dy[imin]    
+  end
+
+  --Filter toward best matching landmark position:  
+  for ip = 1,N do
+    if dxp[ip] then
+      xp[ip] = xp[ip] + rFilter * dxp[ip]
+      yp[ip] = yp[ip] + rFilter * dyp[ip]
+        -- check boundary
+      xp[ip] = math.min(xMax, math.max(-xMax, xp[ip]))
+      yp[ip] = math.min(yMax, math.max(-yMax, yp[ip]))
+    end
+  end
+
+  check_particles("onegoal2")
+end
+
+
+local function landmark_observation_angle_old(pos, v, rFilter, aFilter)
+  
+  --Update particles only using the landmark angle
+  local r = math.sqrt(v[1]^2 + v[2]^2)
+  local a = math.atan2(v[2], v[1]) --We only use this! 
+  local rSigma = .15*r -- + 0.10
+  local aSigma = 2*math.pi/180
+  local rFilter = rFilter or 0.02
+  local aFilter = aFilter or 0.04
+
+  --Calculate best matching landmark pos to each particle
+  local dxp = {}
+  local dyp = {}
+  local dap = {}
+
+  check_particles("onegoal1")
+
+  for ip = 1,N do
+    local dx = {}
+    local dy = {}
+    local dr = {}
+    local da = {}
+    local err = {}    
+    for ipos = 1,#pos do
+      --Now 
+      local pose3 = vector.new({xp[ip],yp[ip],ap[ip]})      
       local pose_target,t = calculate_pose_angle(pos[ipos],v,pose3,ip==1)
 --      local pose_target,t = calculate_pose_angle(pos[ipos],v,{xp[ip],yp[ip],ap[ip]})      
       if t>0 then
@@ -136,7 +250,6 @@ local function landmark_observation_angle(pos, v, rFilter, aFilter)
       end
     end
     local errMin, imin = util.min(err)
-
     --Update particle weights:
     wp[ip] = wp[ip] - errMin
     dxp[ip] = dx[imin]
@@ -156,7 +269,16 @@ local function landmark_observation_angle(pos, v, rFilter, aFilter)
     end
   end
 
+  check_particles("onegoal2")
 end
+
+
+
+
+
+
+
+
 
 ---Updates particles with respect to the detection of a landmark
 --@param pos Table of possible positions for a landmark
@@ -215,8 +337,16 @@ local function landmark_observation(pos, v, rFilter, aFilter)
     xp[ip] = math.min(xMax, math.max(-xMax, xp[ip]))
     yp[ip] = math.min(yMax, math.max(-yMax, yp[ip]))
   end
-
 end
+
+
+
+
+
+
+
+
+
 
 ---Update particles according to a goal detection
 --@param pos All possible positions of the goals
@@ -418,6 +548,9 @@ end
 
 
 local function goal_observation_angle(pos1,pos2,v)
+
+  check_particles("twogoal1")
+
   local rFilter = rGoalFilter  
   for ip = 1,N do
     local pose1,dGoal1,t1 = goal_triangulate_angle(pos1,v,ap[ip],ip==1)
@@ -449,6 +582,9 @@ local function goal_observation_angle(pos1,pos2,v)
       yp[ip] = yp[ip] + rFilter*yErr1
     end
   end
+
+
+  check_particles("twogoal2")
 end
 
 
@@ -510,20 +646,26 @@ end
 
 function poseFilter.post_unknown(v)
   --TODO: this kills the angle-based localization for whatever reason!
-  if Config.use_angle_localization then
-
-  else
-    landmark_observation(postAll, v[1], rUnknownPostFilter, aUnknownPostFilter)
+  if Config.enable_single_goalpost_detection then
+    landmark_observation(postAll, v[1], rPostFilter, aPostFilter)
   end
 end
 
 function poseFilter.post_left(v)
-  landmark_observation(postLeft, v[1], rPostFilter, aPostFilter)
+--  landmark_observation(postLeft, v[1], rPostFilter, aPostFilter)
+  if Config.enable_single_goalpost_detection then
+    landmark_observation(postAll, v[1], rPostFilter, aPostFilter)
+  end
 end
 
 function poseFilter.post_right(v)
-  landmark_observation(postRight, v[1], rPostFilter, aPostFilter)
+--  landmark_observation(postRight, v[1], rPostFilter, aPostFilter)
+  if Config.enable_single_goalpost_detection then
+    landmark_observation(postAll, v[1], rPostFilter, aPostFilter)
+  end
 end
+
+
 
 
 ---Updates particles according to the movement of the robot.
@@ -533,10 +675,7 @@ end
 --@param dy distance moved in y direction since last update
 --@param da angle turned since last update
 function poseFilter.odometry(dx, dy, da)
-  if not da then
-    print ("ODOMETRY A NIL")
-    return
-  end
+ if check_particles("odometry") then return end
   for ip = 1,N do
     ca = math.cos(ap[ip])
     sa = math.sin(ap[ip])
@@ -544,6 +683,7 @@ function poseFilter.odometry(dx, dy, da)
     yp[ip] = yp[ip] + dx*sa + dy*ca
     ap[ip] = ap[ip] + da
   end
+  check_particles("odometry2")
 end
 
 ---Set all particles to x,y,a=0,0,0.
@@ -558,6 +698,7 @@ end
 
 ---Adds noise to particle x,y coordinates and angle.
 function poseFilter.addNoise()
+  check_particles("addnoise")
   da = 1.0*math.pi/180.0
   dr = 0.005
   xp = xp + dr * vector.new(util.randn(N))
@@ -572,6 +713,7 @@ end
 --and new particles that are nearby high-weighted particles
 function poseFilter.resample()
   -- resample particles
+  check_particles("resample")
 
   local wLog = {}
   for i = 1,N do

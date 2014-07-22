@@ -13,6 +13,7 @@ local zlib = require'zlib.ffi'
 local si = require'simple_ipc'
 require'wcm'
 require'hcm'
+require'gcm'
 
 
 -- Occ for map
@@ -261,6 +262,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
 
       local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height0,b_height1,true)
+      --print('BALL HEIGHT:', v[3])
 
       if type(v)=='string' then 
         check_fail = true
@@ -268,8 +270,18 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       else        
         -- TODO: Check if outside the field
         
+        
+        -- Field bounds check
+        if not check_fail then
+          local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
+          if math.abs(global_v[1])>xMax+0.3 or math.abs(global_v[2])>yMax+0.3 then
+            check_fail = true
+            debug_ball('OUTSIDE FIELD!\n')
+          end
+        end
+
         -- Ground check
-        if Body.get_head_position()[2] < Config.vision.ball.th_ground_head_pitch then
+        if not check_fail and Body.get_head_position()[2] < Config.vision.ball.th_ground_head_pitch then
           local th_ground_boundingbox = Config.vision.ball.th_ground_boundingbox
           local ballCentroid = propsA.centroid
           local vmargin = ha-ballCentroid[2]
@@ -374,8 +386,12 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 			if check_passed then
 				local scale = postStats.axisMinor / postDiameter 
 				local v = check_coordinateA(postStats.centroid, scale)
+         --print('GOAL HEIGHT:', v[3])
 				if v[3] < Config.vision.goal.height_min then
-					table.insert(fail,string.format("Height fail:%.2f\n",v[3]))
+					table.insert(fail, 'TOO LOW\n')
+					check_passed = false 
+        elseif v[3]>Config.vision.goal.height_max then
+					table.insert(fail, 'TO HIGH\n')
 					check_passed = false 
 				end
 			end
@@ -503,6 +519,18 @@ function libVision.goal(labelA_t, labelB_t, cc_t)
 end
 
 
+function libVision.goal_low(labelB_t)
+  local goals = {}
+  goals.detect = 0
+  -- Parameters
+  local min_width, max_width = 2, 8
+  
+  local goalProps = ImageProc.goal(labelB_t, min_width, max_width)
+  
+end
+
+
+
 function libVision.obstacle(labelB_t)
   -- Obstacle table
   local obstacle, obs_count, obs_debug = {}, 0, ''
@@ -527,6 +555,7 @@ function libVision.obstacle(labelB_t)
   local horizonB = (hb/2.0) - focalB*math.tan(pa - 10*DEG_TO_RAD)
   horizonB = math.min(hb, math.max(math.floor(horizonB), 0))
   --TODO: plot it in monitor
+  
   local obsProps = ImageProc.obstacles(labelB_t,
     Config.vision.obstacle.min_width, Config.vision.obstacle.max_width, horizonB)
   
@@ -557,16 +586,11 @@ function libVision.obstacle(labelB_t)
     -- Convert to local frame
 		if check_passed then
     	local scale = math.max(1, obsProps[i].width / Config.world.obsDiameter)
---    	v = check_coordinateB(obsProps[i].position, scale)
-
     --Instead of the width-based distance 
     --Let's just project the bottom position to the ground
       v = check_coordinateB(
         { obsProps[i].position[1],  obsProps[i].position[2]}, 0.1) 
       v = projectGround(v,0)
-
-
-
     	obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
 		end
     
@@ -639,7 +663,7 @@ function libVision.obstacle(labelB_t)
   
 end
 
-
+-- FOR GOALIE
 function libVision.line(labelB_t)
   local line_cfg = Config.vision.line
   local lines, line_debug = {}, ''
@@ -669,27 +693,26 @@ function libVision.line(labelB_t)
     local bestlength = 0
     local linecount = 0
 
-
     local length, vendpoint, vHeight = 0, {}, 0
     for i=1, #linePropsB do
       length = math.sqrt(
       	(lines.propsB[i].endpoint[1]-lines.propsB[i].endpoint[2])^2+
       	(lines.propsB[i].endpoint[3]-lines.propsB[i].endpoint[4])^2);
 
-        vendpoint = {}
-        vendpoint[1] = HeadTransform.coordinatesB(vector.new(
+        vendpoint[1] = check_coordinateB(vector.new(
       		{lines.propsB[i].endpoint[1],lines.propsB[i].endpoint[3]}),1);
-        vendpoint[2] = HeadTransform.coordinatesB(vector.new(
+        vendpoint[2] = check_coordinateB(vector.new(
       		{lines.propsB[i].endpoint[2],lines.propsB[i].endpoint[4]}),1);
 
       vHeight = 0.5*(vendpoint[1][3]+vendpoint[2][3])
 
       local vHeightMax = 0.50 --TODO
 
-      if length>min_length and linecount<num_line and vHeight<vHeightMax then
+      --TODO: added debug message
+      if length>line_cfg.min_length and linecount<num_line and vHeight<vHeightMax then          
         linecount = linecount + 1
         lines.length[linecount] = length
-        lines.endpoint[linecount] = lines.propsB[i].endpoint
+        lines.endpoint[linecount] = vector.new(lines.propsB[i].endpoint)*scaleB
         vendpoint[1] = projectGround(vendpoint[1],0)
         vendpoint[2] = projectGround(vendpoint[2],0)
         lines.v[linecount] = {}
@@ -699,23 +722,13 @@ function libVision.line(labelB_t)
   			    vendpoint[1][1]-vendpoint[2][1]));
       end
     end
+    
     lines.nLines = linecount
-
-    sumx=0;
-    sumxx=0;
-    for i=1,nLines do 
-      --angle: -pi to pi
-      sumx=sumx+lines.angle[i];
-      sumxx=sumxx+lines.angle[i]*lines.angle[i];
+    if lines.nLines>0 then
+      lines.detect = 1
+      -- print('line v:', unpack(lines.v[1][1]), unpack(lines.v[1][2]))
     end
-
-    if nLines>0 then
-      lines.detect = 1;
-    end
-    return
-  
-  
-  
+    return 'blah', lines
 end
 
 
@@ -804,22 +817,29 @@ function libVision.update(img)
   local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc_t)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc_t)
 	local obstacle_fails, obstacles
+  local line_fails, lines
 
   if wcm.get_obstacle_enable()==0 then
     obstacle_fails = 'Disabled'
   else
     obstacle_fails, obstacles = libVision.obstacle(labelB_t)
   end
+  
+  if gcm.get_game_role()==0 then
+    --line_fails, lines = libVision.line(labelB_t)
+  end
 
   -- Save the detection information
   detected.ball = ball
   detected.posts = posts
   detected.obstacles = obstacles
+  detected.line = lines
 
   detected.debug={}
   detected.debug.ball = ball_debug or ' '
   detected.debug.post = post_fails or ' '
   detected.debug.obstacle = obstacle_fails or ' '
+  detected.debug.line = line_fails or ' '
     
   -- Send the detected stuff over the channel every cycle
   vision_ch:send(mp.pack(detected))

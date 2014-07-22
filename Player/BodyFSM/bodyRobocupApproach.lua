@@ -164,20 +164,24 @@ local function update_velocity()
   local bally = wcm.get_ball_y() 
 
   local uLeftGlobalTarget, uRightGlobalTarget
-  if ball_side>0 then
+  if ball_side>0 then --Align to the left foot
     uLeftGlobalTarget = util.pose_global({
         ballx - Config.fsm.bodyRobocupApproach.target[1] - Config.walk.supportX,
-             bally,0},pose)
+        bally + Config.fsm.bodyRobocupApproach.target[2],
+        0},pose)
     uRightGlobalTarget = util.pose_global({
         ballx - Config.fsm.bodyRobocupApproach.target[1] - Config.walk.supportX,
-          bally-2*Config.walk.footY,0},pose)
-  else
+        bally + Config.fsm.bodyRobocupApproach.target[2] -2*Config.walk.footY,
+        0},pose)
+  else --Align to the right foot
     uLeftGlobalTarget = util.pose_global({
       ballx - Config.fsm.bodyRobocupApproach.target[1] - Config.walk.supportX,
-      bally+2*Config.walk.footY,0},pose)
+      bally + Config.fsm.bodyRobocupApproach.target[3] +2*Config.walk.footY,
+      0},pose)
     uRightGlobalTarget = util.pose_global({
       ballx - Config.fsm.bodyRobocupApproach.target[1] - Config.walk.supportX,
-      bally,0},pose)
+      bally + Config.fsm.bodyRobocupApproach.target[3],
+      0},pose)
   end
 
   local vStep,arrived = robocup_approach2(uLeftGlobalTarget, uRightGlobalTarget)
@@ -234,6 +238,7 @@ function state.entry()
   end
   last_ph = 0  
   last_step = 0
+  wcm.set_robot_etastep(-1) --we're in approach
 end
 
 function state.update()
@@ -257,6 +262,7 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' )
+  wcm.set_robot_etastep(0) --out of approach
 end
 
 return state

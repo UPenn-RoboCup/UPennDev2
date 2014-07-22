@@ -14,6 +14,16 @@ local Body = require'Body'
 require'hcm'
 require'wcm'
 
+-- Cleanly exit on Ctrl-C
+local running, signal = true, nil
+local signal = require'signal'
+local function shutdown ()
+  running = false
+  --os.exit()
+end
+signal.signal("SIGINT", shutdown)
+signal.signal("SIGTERM", shutdown)
+
 local metadata
 if not arg or type(arg[1])~='string' then
 	-- TODO: Find the next available camera
@@ -34,12 +44,18 @@ else
 end
 
 local ENABLE_NET, SEND_INTERVAL, t_send = true, 1/hcm.get_monitor_fps(), 0
-local ENABLE_LOG, LOG_INTERVAL, t_log = false, 1 / 5, 0
 
---local FROM_LOG, LOG_DATE = true, '07.10.2014.17.45.55'
---local FROM_LOG, LOG_DATE = true, '07.10.2014.17.48.57'
---local FROM_LOG, LOG_DATE = true, '07.10.2014.18.41.58'
-local FROM_LOG, LOG_DATE = false, '07.07.2014.22.06.09'
+
+local ENABLE_LOG, LOG_INTERVAL, t_log
+--if hcm.set_camera_log()==0 then
+  ENABLE_LOG = false
+--else
+  --ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
+--end
+
+
+--local FROM_LOG, LOG_DATE = true, '07.18.2014.22.52.35'
+local FROM_LOG, LOG_DATE = false
 
 local libLog, logger
 
@@ -49,7 +65,9 @@ local w = metadata.w
 local h = metadata.h
 local name = metadata.name
 -- Who to send to
-local operator = Config.net.operator.wired
+--local operator = Config.net.operator.wired
+--local operator = Config.net.operator.wired_broadcast
+local operator = Config.net.operator.wireless
 
 -- Form the detection pipeline
 local pipeline = {}
@@ -92,8 +110,7 @@ local t_debug = unix.time()
 if FROM_LOG then
 
 	local libLog = require'libLog'
-	--local replay = libLog.open(HOME..'/Logs/', LOG_DATE, 'uvc')
-	local replay = libLog.open(HOME..'/Logs/grasp0710/', LOG_DATE, 'yuyv')
+	local replay = libLog.open(HOME..'/Logs/', LOG_DATE, 'yuyv')
 	local metadata = replay:unroll_meta()
 	local util = require'util'
 	print('Unlogging', #metadata, 'images from', LOG_DATE)
@@ -184,7 +201,7 @@ end
 local nlog = 0
 local udp_ret, udp_err, udp_data
 local t0 = unix.time()
-while true do
+while running do
 	SEND_INTERVAL = 1 / hcm.get_monitor_fps()
 	-- Grab and compress
 	local img, sz, cnt, t = camera:get_image()
@@ -204,6 +221,11 @@ while true do
 	if ENABLE_LOG and t - t_log > LOG_INTERVAL then
 		meta.rsz = sz
     meta.obs = wcm.get_obstacle_enable()
+    meta.head = Body.get_head_command_position()
+    meta.head = Body.get_head_position() --TODO: which one?
+    meta.rpy = Body.get_rpy()
+    meta.pose = wcm.get_robot_pose()
+    --TODO: log joint angles
 		for pname, p in pairs(pipeline) do meta[pname] = p.get_metadata() end
 		logger:record(meta, img, sz)
 		t_log = t

@@ -1,3 +1,8 @@
+local libGC = {}
+local ffi = require'ffi'
+local udp = require'udp'
+local SEND_RATE = 1 / 10
+
 local gc_constants = [[
 
 #define GAMECONTROLLER_PORT            3838
@@ -23,6 +28,18 @@ local gc_constants = [[
 #define STATE2_PENALTYSHOOT         1
 #define STATE2_OVERTIME             2
 #define STATE2_TIMEOUT              3
+
+]]
+
+libGC.state_to_name = {
+  [0] = 'Initial',
+  [1] = 'Ready',
+  [2] = 'Set',
+  [3] = 'Playing',
+  [4] = 'Finished',
+}
+
+gc_constants = gc_constants..[[
 
 #define PENALTY_NONE                        0
 // SPL
@@ -102,7 +119,7 @@ struct RoboCupGameControlData
   uint8_t secondaryState;       // Extra state information - (STATE2_NORMAL, STATE2_PENALTYSHOOT, etc)
   uint8_t dropInTeam;           // team that caused last drop in
   uint16_t dropInTime;          // number of seconds passed since the last drop in.  -1 before first dropin
-  uint16_t secsRemaining;       // estimate of number of seconds remaining in the half
+  int16_t secsRemaining;       // estimate of number of seconds remaining in the half
   uint16_t secondaryTime;       // number of seconds shown as secondary time (remaining ready, until free ball, etc)
   struct TeamInfo teams[2];
 };
@@ -128,24 +145,19 @@ struct SPLCoachMessage
 
 ]]
 
-dofile'../../include.lua'
-local ffi = require'ffi'
-local udp = require'udp'
-local SEND_RATE = 1 / 10
-
-local function define_to_vars(define)
+local function define_to_vars(define, tbl)
   local define_iterator = "#define (%S+)%s+(%S+)"
-  local defines = {}
+  local defines = tbl or {}
   for name, value in define:gmatch(define_iterator) do
     defines[name] = tonumber(value) or value:match('"(%S+)"')
   end
   return defines
 end
 
-local function def_structs(structs, defines)
+local function def_structs(structs, defines, tbl)
   local constants
   if defines then
-    constants = define_to_vars(defines)
+    constants = define_to_vars(defines, tbl)
     for k, v in pairs(constants) do
       structs = structs:gsub(k, v)
     end
@@ -155,8 +167,7 @@ local function def_structs(structs, defines)
   return constants
 end
 
--- Define them
-local libGC = def_structs(gc_structs, gc_constants)
+def_structs(gc_structs, gc_constants, libGC)
 
 local function send_coach(self, msg)
   if #msg > libGC.SPL_COACH_MESSAGE_SIZE then
@@ -182,12 +193,14 @@ local function send_return(self)
   return self.sender:send(ffi.string(pkt, ffi.sizeof(pkt)))
 end
 
+local gc_data = ffi.new('struct RoboCupGameControlData')
 local function receive(self, buf)
   buf = buf or self.receiver:receive()
   if not buf then return end
   local sz = #buf
   if sz==ffi.sizeof('struct RoboCupGameControlData') then
-    return ffi.new('struct RoboCupGameControlData', buf)
+		ffi.copy(gc_data, buf, sz)
+    return gc_data
   elseif sz==ffi.sizeof('struct RoboCupGameControlReturnData') then
     -- ignore
   elseif sz==ffi.sizeof('struct SPLCoachMessage') then
@@ -218,9 +231,9 @@ local function init(team, player, gc_addr)
 end
 libGC.init = init
 
---local gc = libGC.init(5, 1)
-local gc = libGC.init(22, 1, '192.168.1.255')
-
+--[[
+dofile'../../include.lua'
+local gc = libGC.init(43, 1, '192.168.100.1')
 local function test_loop()
   local ret, msg
   local send_count, recv_count = 0, 0
@@ -228,14 +241,14 @@ local function test_loop()
   while true do
     local gc_pkt = gc:wait_for_gc()
     if gc_pkt then
-      print('Got', gc_pkt)
+      ret, msg = gc:send_return()
+      if msg then print("Bad return", msg) end
+      print('Got', gc_pkt, gc_pkt.packetNumber)
       recv_count = recv_count + 1
     end
     t = unix.time()
     if t - t_send > SEND_RATE then
       t_send = t
-      ret, msg = gc:send_return()
-      if msg then print("Bad return", msg) end
 			ret, msg = gc:send_coach("go team!")
       if msg then print("Bad coach", msg) end
       send_count = send_count + 1
@@ -246,5 +259,7 @@ local function test_loop()
     end
   end
 end
-
 test_loop()
+--]]
+
+return libGC

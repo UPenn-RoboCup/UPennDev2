@@ -31,7 +31,7 @@ end
 
 function state.update()
 
-  if gcm.get_game_state()==4 then return'teleop' end
+  if gcm.get_game_state()~=3 and gcm.get_game_state()~=6 then return'teleop' end
   
   -- print(_NAME..' Update' )
   -- Get the time of update
@@ -55,11 +55,32 @@ function state.update()
   local ballX, ballY = wcm.get_ball_x() - 0.5 , wcm.get_ball_y()
   local yaw, pitch = HT.ikineCam(ballX, ballY, ball_radius)
 
+
+  local qNeckActual =  Body.get_head_position()
+
+  local angleErr = math.sqrt(
+      (yaw-qNeckActual[1])^2+
+      (pitch-qNeckActual[1])^2)
+
+  if angleErr>30*math.pi/180 then
+    dqNeckLimit = {180*DEG_TO_RAD, 180*DEG_TO_RAD}
+  else
+    dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}
+  end
+
+--TEMPORART FIX FOR HT ISSUE
+  if pitch < 60*DEG_TO_RAD then
+  	pitch = math.max(0*math.pi/180, pitch-9*math.pi/180)
+	end
+
+
+
   -- print('Ball dist:', math.sqrt(ballX*ballX + ballY*ballY))
   -- Look at Goal
   if not Config.demo and not Config.use_gps_pose and t-t_entry > timeout then
     -- If robot is close to the ball then do not look up
-    if math.sqrt(ballX*ballX + ballY*ballY) > Config.fsm.headTrack.dist_th then
+--    if math.sqrt(ballX*ballX + ballY*ballY) > Config.fsm.headTrack.dist_th then
+    if wcm.get_robot_traj_num(count)>=(Config.min_steps_lookdown or 5) then
       if gcm.get_game_role()==0 then
         --Goalie don't look goals
       else

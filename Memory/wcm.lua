@@ -36,11 +36,12 @@ shared.robot.reset_pose = vector.zeros(1)
 shared.robot.ballglobal = vector.zeros(2)
 shared.robot.goal1 = vector.zeros(2)
 shared.robot.goal2 = vector.zeros(2)
+shared.robot.goal3 = vector.zeros(2)
 
-shared.robot.kickto = vector.zeros(2)
 shared.robot.goalto = vector.zeros(2)
 shared.robot.moveto = vector.zeros(2)
 
+shared.robot.etastep = vector.zeros(1)
 shared.robot.traj_num = vector.zeros(1)
 shared.robot.trajx = vector.zeros(100)
 shared.robot.trajy = vector.zeros(100)
@@ -53,9 +54,17 @@ shared.robot.gpsobs2 = vector.zeros(2)
 shared.robot.timestarted =vector.zeros(1)
 
 
+shared.robot.kickneeded = vector.zeros(1)
+shared.robot.kickangle1 = vector.zeros(1)
+shared.robot.kickangle2 = vector.zeros(1)
+shared.robot.ballglobal2 = vector.zeros(2)
+shared.robot.ballglobal3 = vector.zeros(2)
 
 
 
+shared.robot.initdone = vector.zeros(1)
+
+shared.robot.legspread =vector.zeros(1)
 
 
 -- SLAM pose
@@ -90,8 +99,10 @@ shared.ball.locked_on = vector.zeros(1);
 shared.ball.p = vector.zeros(1);
 
 
-
 shared.ball.tlook = vector.zeros(1); --the last time we TRIED to look at the ball (scan/track)
+
+--If we cannot find the ball after full scan, we assume the ball is right behind us
+shared.ball.notvisible = vector.zeros(1)
 
 
 shared.goal = {}
@@ -109,7 +120,9 @@ shared.obstacle.v1 = vector.zeros(2)
 shared.obstacle.v2 = vector.zeros(2)
 shared.obstacle.v3 = vector.zeros(2)
 
-
+-- line for goalie
+shared.line = {}
+shared.line.detect = vector.zeros(1)
 
 
 -- Call the initializer

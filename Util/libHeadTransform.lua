@@ -12,11 +12,32 @@ local trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
 local cam_z = Config.head.cameraPos[3]
 local trNeck, trHead
 
+require'hcm'
+hcm.set_camera_bias(Config.walk.headBias or {0,0,0})
+
+
 -- Update the Head transform
 local function update_head()  
   -- Grab head angles
+  local headBias = hcm.get_camera_bias()
   local head = Body.get_head_position()
+  head[1] = head[1] - headBias[1]  
+  
+	local cameraPitch = headBias[2]
+	local cameraRoll = headBias[3]
+	local cameraYaw = headBias[4]
+  
+  local rpy = Body.get_rpy()
+  trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
+  * T.rotY(rpy[2])
+  * T.trans(Config.head.neckX, 0, Config.head.neckZ)
   trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
+	
+	dtrCamera = T.trans(unpack(Config.head.cameraPos))
+  * T.rotY(cameraPitch or 0)
+  * T.rotX(cameraRoll or 0)
+  * T.rotZ(cameraYaw or 0)
+  
   trHead = trNeck * dtrCamera
   -- Grab the position only
   local vHead = T.get_pos(trHead)

@@ -15,6 +15,7 @@ local libStep = require'libStep'
 local step_planner
 
 require'mcm'
+require'gcm'
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
@@ -97,21 +98,39 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
   local pre_step = nil
   local post_step = nil
 
-  if mcm.get_walk_kickfoot()==0 then --left foot kick
-    if kicktype==0 then
-      step_queue=Config.kick.stepqueue["LeftWalkKick"]
-    else
-      step_queue=Config.kick.stepqueue["LeftKick"]
-    end
-  else
-    if kicktype==0 then
-      step_queue=Config.kick.stepqueue["RightWalkKick"]
-    else
-      step_queue=Config.kick.stepqueue["RightKick"]
-    end
 
+  if kicktype==3 then
+    --safety check
+    local spread_angle = util.mod_angle(uLeft_now[3]-uRight_now[3])
+    print("SPREAD ANGLE:",spread_angle)
+    if spread_angle<5*math.pi/180 then
+      step_queue=Config.kick.stepqueue["GoalieSpread"]
+    else
+      step_queue=Config.kick.stepqueue["null"]
+    end
+  elseif kicktype==4 then
+    local spread_angle = util.mod_angle(uLeft_now[3]-uRight_now[3])
+    print("SPREAD ANGLE:",spread_angle)
+    if spread_angle>5*math.pi/180 then
+      step_queue=Config.kick.stepqueue["GoalieUnspread"]
+    else
+      step_queue=Config.kick.stepqueue["null"]
+    end
+  else    
+    if mcm.get_walk_kickfoot()==0 then --left foot kick
+      if kicktype==0 then
+        step_queue=Config.kick.stepqueue["LeftWalkKick"]
+      else
+        step_queue=Config.kick.stepqueue["LeftKick"]
+      end
+    else
+      if kicktype==0 then
+        step_queue=Config.kick.stepqueue["RightWalkKick"]
+      else
+        step_queue=Config.kick.stepqueue["RightKick"]
+      end
+    end
   end
-
 
   local next_support = step_queue[1][2]
   if supportLeg==2 then  --Starting from DS
@@ -237,6 +256,7 @@ function walk.entry()
   debugdata=''
  
   hcm.set_motion_estop(0)
+  mcm.set_motion_state(6)
 end
 
 function walk.update()

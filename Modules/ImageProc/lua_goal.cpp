@@ -18,15 +18,15 @@ extern "C"
 
 static const int NMAX = 320;
 static int minJ[NMAX];
-// Limit on number of obstacles we check
-static const int NOBS = 30;
+// Limit on number of goal we check
+static const int NPOSTS = 10;
 
 //TODO: put into Config
 static int widthMin, widthMax;
 
-// Loop through scan lines and check connected black regions
-int obstacleState (bool is_lower) {
-	enum {STATE_NONE, STATE_FIELD, STATE_OBS};
+// Loop through scan lines and check connected regions
+int connectRegion (bool is_lower) {
+	enum {STATE_NONE, STATE_FIELD, STATE_POST};
 	static int state = STATE_NONE;
 	static int width = 0;
 
@@ -35,16 +35,16 @@ int obstacleState (bool is_lower) {
       if (!is_lower) {
         state = STATE_FIELD;
       } else {
-      	state = STATE_OBS;
+      	state = STATE_POST;
       }
       break;
     case STATE_FIELD:
       if (is_lower) {
-      	state = STATE_OBS;
+      	state = STATE_POST;
       	width = 1;
       }
       break;
-    case STATE_OBS:
+    case STATE_POST:
       if (is_lower) {
       	width++;
       } else {
@@ -58,18 +58,17 @@ int obstacleState (bool is_lower) {
 
 //Do a tilted scan at labelB image
 //and return the lower boundary for every scaned lines
-int lua_obstacles(lua_State *L) {
+int lua_goal(lua_State *L) {
 	uint8_t *im_ptr;
 	int m, n, max_gap;
 	double tiltAngle;
-  // int mask;
-  uint8_t mask_g, mask_r, mask_w, mask_y;
+  uint8_t mask_y;
   
   if (lua_islightuserdata(L, 1)) {
     im_ptr = (uint8_t *) lua_touserdata(L, 1);
     m = luaL_checkint(L, 2);
     n = luaL_checkint(L, 3);
-    mask_g = luaL_optinteger(L, 4, 8); //black
+    mask_y = luaL_optinteger(L, 4, 8);
     tiltAngle = luaL_optnumber(L, 5, 0.0);
     max_gap = luaL_optinteger(L, 6, 1 );
   }
@@ -84,13 +83,8 @@ int lua_obstacles(lua_State *L) {
 		widthMax = luaL_optinteger(L, 3, 25);
     tiltAngle = luaL_optnumber(L, 4, 0.0);
     
-    // No need to input args
-    mask_g = luaL_optinteger(L, 5, 8); //field green
-    mask_r = luaL_optinteger(L, 6, 1); //orange ball
-    mask_w = luaL_optinteger(L, 7, 16); //line white
-    mask_y = luaL_optinteger(L, 7, 2); //yellow white
-    
-    max_gap = luaL_optinteger(L, 8, 1);
+    mask_y = luaL_optinteger(L, 5, 2); //yellow
+    max_gap = luaL_optinteger(L, 6, 1);
   }
   #endif
   else {
@@ -108,8 +102,6 @@ int lua_obstacles(lua_State *L) {
   // Iterate through image getting projection statistics
   for (int i = -index_offset; i < m+index_offset; i++) {
     int flag = 0; //0 for initial, 1 for scanning, 2 for ended
-    int gap = 0;
-    //for (int j = 0; j <n ; j++) {
     for (int j = n-1; j>=0 ; j--) {
     	// if scan on this column is ended
       if (flag == 2) {
@@ -123,21 +115,20 @@ int lua_obstacles(lua_State *L) {
       if ( (index_i>=0) && (index_i<m) ) {
         int index_ij = j*m + index_i;
         uint8_t pixel = *(im_ptr+index_ij);
-        //if ((pixel&mask_g) || (pixel&mask_r) || (pixel&mask_w)) {
-        if (!(pixel&mask_y)) {
+        if (!(pixel&mask_y)) {  // not yellow
           flag=1;
           if (j<minJ[index_i]) minJ[index_i]=j;
         }else{
           if (flag==1) {
-            gap++;
-            if (gap>max_gap) flag=2; //end scan
+            // if (gap>max_gap) flag=2; //end scan
+            flag = 2;
           }
         } // check if within mask
       } // check if in image
     } // scan j
   } // scan i
   
-  // A threshold for filtering obstacles
+  // A threshold for filtering goal
   int sumJ = 0;
   int lowest = 0;
   for (int i=0; i<m; i++) {
@@ -148,45 +139,44 @@ int lua_obstacles(lua_State *L) {
   threshold = (threshold<n)? threshold:n;
 	//printf("THRESHOLD: %d\n", threshold);
 	
-  int obstacleW[NOBS];
-  int obstacleI[NOBS];
-  int obstacleJ[NOBS];
+  int postW[NPOSTS];
+  int postI[NPOSTS];
+  int postJ[NPOSTS];
 
   static int j0 = 0;
-  int obs_count = 0;
+  int post_count = 0;
   for (int i=0; i<m; i++) {
-  	int obs_width = obstacleState( minJ[i] >= threshold );
-  	//printf("obs_width:%d\n", obs_width);
-  	if ( (obs_width>=widthMin) && (obs_width<=widthMax) ) {
-			//printf("width? %d widthMin: %d, widthMax: %d\n", obs_width, widthMin, widthMax);
-  	  int iObstacle = i - (obs_width+1)/2;
-  	  //int jObstacle = (j0 + minJ[i])/2; // TODO: improve later
-  	  int jObstacle = minJ[iObstacle];
-  		obstacleW[obs_count] = obs_width;
-  		obstacleI[obs_count] = iObstacle;
-  		obstacleJ[obs_count] = jObstacle;
-      obs_count = obs_count + 1;
-      if (obs_count==NOBS) break;
+  	int post_width = connectRegion( minJ[i] >= threshold );
+  	//printf("post_width:%d\n", post_width);
+  	if ( (post_width>=widthMin) && (post_width<=widthMax) ) {
+			//printf("width? %d widthMin: %d, widthMax: %d\n", post_width, widthMin, widthMax);
+  	  int iPost = i - (post_width+1)/2;
+  	  int jPost = minJ[iPost];
+  		postW[post_count] = post_width;
+  		postI[post_count] = iPost;
+  		postJ[post_count] = jPost;
+      post_count = post_count + 1;
+      if (post_count==NPOSTS) break;
     } else {
       j0 = minJ[i];	
     }
   }
 
-  lua_createtable(L, obs_count, 0);
-  for (int i=0; i<obs_count; i++) {
+  lua_createtable(L, post_count, 0);
+  for (int i=0; i<post_count; i++) {
   	lua_createtable(L, 0, 2);
   	// width field
-  	//printf("obs count:%d, OBS WIDTH: %d\n", obs_count, obstacleW[i]);
+  	//printf("obs count:%d, OBS WIDTH: %d\n", post_count, postW[i]);
   	lua_pushstring(L, "width");
-  	lua_pushnumber(L, obstacleW[i]);
+  	lua_pushnumber(L, postW[i]);
   	lua_settable(L, -3);
 
   	// position field
   	lua_pushstring(L, "position");
   	lua_createtable(L, 2, 0);
-  	lua_pushnumber(L, obstacleI[i]);
+  	lua_pushnumber(L, postI[i]);
   	lua_rawseti(L, -2, 1);
-  	lua_pushnumber(L, obstacleJ[i]);
+  	lua_pushnumber(L, postJ[i]);
   	lua_rawseti(L, -2, 2);
   	lua_settable(L, -3);
 

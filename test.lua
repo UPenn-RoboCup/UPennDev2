@@ -1,4 +1,6 @@
 #!/usr/bin/env luajit
+
+-- (c) 2014 Team THORwIn
 dofile'include.lua'
 
 -- Important libraries in the global space
@@ -38,14 +40,15 @@ rpc_ch = si.new_requester(Config.net.reliable_rpc)
 targetvel={0,0,0}
 targetvel_new={0,0,0}
 
-
+print("Game role:",gcm.get_game_role())
 print("Game state:",gcm.get_game_state())
 
 function process_keyinput()
   local byte=getch.block();
 
   if byte then
-    if gcm.get_game_state()==6 then --Testing state
+    --if gcm.get_game_state()==6 then --Testing state
+    if gcm.get_game_role()==2 then --Testing state
     -- Walk velocity setting
       if byte==string.byte("i") then      targetvel_new[1]=targetvel[1]+0.02;
       elseif byte==string.byte("j") then  targetvel_new[3]=targetvel[3]+0.1;
@@ -69,13 +72,22 @@ function process_keyinput()
       elseif byte==string.byte("5") then      
         mcm.set_walk_kickfoot(0)
         mcm.set_walk_kicktype(0)
-
         mcm.set_walk_steprequest(1)
 
       elseif byte==string.byte("6") then      
         mcm.set_walk_kickfoot(1)
         mcm.set_walk_kicktype(0)
         mcm.set_walk_steprequest(1)
+
+
+      elseif byte==string.byte("t") then      
+        mcm.set_walk_kicktype(3)
+        mcm.set_walk_steprequest(1)
+      elseif byte==string.byte("y") then      
+        mcm.set_walk_kicktype(4)
+        mcm.set_walk_steprequest(1)
+
+
 
       elseif byte==string.byte("7") then      
         motion_ch:send'sit'
@@ -91,7 +103,11 @@ function process_keyinput()
   --      body_ch:send'stepinplace'
       elseif byte==string.byte("f") then        
         head_ch:send'scan'      
-      elseif byte==string.byte("0") then      
+      elseif byte==string.byte("a") then      
+        gcm.set_game_role(1)
+        gcm.set_game_state(0)
+      elseif byte==string.byte("g") then      
+        gcm.set_game_role(0)
         gcm.set_game_state(0)
       end
 
@@ -104,6 +120,8 @@ function process_keyinput()
       end
     else  --Game state! 
       if byte==string.byte("0") then      
+        head_ch:send'teleop'
+        gcm.set_game_role(2)
         gcm.set_game_state(6) --GO to test state     
       elseif byte==string.byte("1") then      
         gcm.set_game_state(0)      
@@ -115,7 +133,7 @@ function process_keyinput()
         gcm.set_game_state(3)      
       elseif byte==string.byte("5") then      
         gcm.set_game_state(4)            
-      elseif byte==string.byte("r") then  
+      elseif byte==string.byte("r") then          
         gcm.set_game_role(1-gcm.get_game_role())
       end
     end
@@ -141,7 +159,6 @@ local gcm_names={
 }
 local command1='\nKey commands:\n'
   ..'1 : game Initial\n'
-  ..'2 : game Ready\n'
   ..'3 : game Set\n'
   ..'4 : game Playing\n'
   ..'5 : game Finished\n'
@@ -160,13 +177,18 @@ local command2=
 
 ..'8 : stop walking\n'
 ..'9 : start walking\n'
-..'0 : Enter game mode\n'
+..'a : Enter attacker mode\n'
+..'g : Enter goalie mode\n'
   
 
 function show_status()
   os.execute('clear')
+  print("Game role:",gcm.get_game_role())
+  print("Game state:",gcm.get_game_state())
+
   local outstring=''
-  if gcm.get_game_state()==6 then --Testing state
+--  if gcm.get_game_state()==6 then --Testing state
+  if gcm.get_game_role()==2 then --Testing state
     outstring= outstring..command2..string.format(
     "Target velocity: %.3f %.3f %.3f",unpack(targetvel)
     )

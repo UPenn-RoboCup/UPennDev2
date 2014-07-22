@@ -27,6 +27,7 @@
 #include "lua_robots.h"
 #include "lua_fast_12.h"
 #include "lua_obstacles.h"
+#include "lua_goal.h"
 
 #include <iostream>
 
@@ -540,7 +541,7 @@ static const luaL_Reg imageProc_lib [] = {
   {"goal_posts", lua_goal_posts},
   {"tilted_goal_posts", lua_tilted_goal_posts},
   {"field_lines", lua_field_lines},
-  {"field_lines_old", lua_field_lines_old},
+  //{"field_lines_old", lua_field_lines_old},
   {"field_spots", lua_field_spots},
   {"field_occupancy", lua_field_occupancy},
   {"robots", lua_robots},
@@ -550,6 +551,7 @@ static const luaL_Reg imageProc_lib [] = {
   {"fast12", lua_fast_12},
 
   {"obstacles", lua_obstacles},
+  //{"goal", lua_goal},
   {NULL, NULL}
 };
 

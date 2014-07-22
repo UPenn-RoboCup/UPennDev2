@@ -1,3 +1,5 @@
+--(c) 2014 Team THORwIn
+
 dofile'include.lua'
 
 -- Important libraries in the global space

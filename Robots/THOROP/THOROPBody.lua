@@ -733,18 +733,23 @@ local nJoint = Config.nJoint
 --]]
 
       if key_char_lower=='1' then
-        gcm.set_game_state(0) --Initial
-        print("Initial")
+        --Attacker start
+        gcm.set_game_role(1)
+        gcm.set_game_state(0)
+
         t_last_keypress = t
 
       elseif key_char_lower=='2' then
-        gcm.set_game_state(1) --Ready
-        print("READY")
+
+        --Goalie start
+        gcm.set_game_role(0) --Zero: goalie
+        gcm.set_game_state(0)
         t_last_keypress = t
 
       elseif key_char_lower=='3' then
-        gcm.set_game_state(2) --Set
-        print("SET")
+        --Tester start
+        gcm.set_game_role(2) --tester role
+        gcm.set_game_state(6) --tester state
         t_last_keypress = t
 
       elseif key_char_lower=='4' then
@@ -752,20 +757,6 @@ local nJoint = Config.nJoint
         print("PLAYING")
         t_last_keypress = t
 
-      elseif key_char_lower=='5' then
-        gcm.set_game_state(4) --Finished
-        print("FINISH")
-        t_last_keypress = t
-
-
-      elseif key_char_lower=='r' then
-        gcm.set_game_role(1-gcm.get_game_role())
-        if gcm.get_game_role()==0 then 
-          print("GOALIE")
-        else
-          print("ATTACKER")
-        end
-        t_last_keypress = t
       elseif key_char_lower=='8' then        
         motion_ch:send'stand'
         if mcm.get_walk_ismoving()>0 then 
@@ -820,7 +811,7 @@ local nJoint = Config.nJoint
           print("=========================================")
           print("=========================================")
           wcm.set_robot_timestarted(0)
-          gcm.set_game_state(0)
+          gcm.set_game_state(4) --Set to finished
           head_ch:send'teleop'
         end
 

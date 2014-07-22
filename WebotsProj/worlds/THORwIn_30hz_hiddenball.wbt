@@ -6,12 +6,12 @@ WorldInfo {
     "Webpage: http://www.robotstadium.org"
   ]
   title "Robotstadium"
-  basicTimeStep 30  #if too fast, the robot will fall..
+  basicTimeStep 30
   FPS 15
 }
 Viewpoint {
-  orientation 0.00568828 0.921427 0.388509 3.12685
-  position 0.29857 16.325 -14.4806
+  orientation -0.0214241 0.877637 0.478847 3.02922
+  position 1.04054 18.27 -11.1037
 }
 Background {
   skyColor [
@@ -50,10 +50,7 @@ DirectionalLight {
 }
 SoccerField2013 {
 }
-# Walls2013 {
-# }
-WhiteWall {
-  translation -5 0.4 0
+Walls2013 {
 }
 DEF YELLOW_GOAL TeenGoal {
   translation 4.5 0 0
@@ -64,35 +61,8 @@ DEF YELLOW_GOAL TeenGoal {
   rotation 0 1 0 3.14159
   postColor 0.992157 0.854902 0.219608
 }
-# Other fields
-DEF FIELD1 SoccerField2013{
-  translation 0 0 8
-}
-DEF YELLOW_GOAL KidGoal {
-  translation 4.5 0 8
-  postColor 0.992157 0.854902 0.219608
-}
-DEF YELLOW_GOAL KidGoal {
-  translation -4.5 0 8
-  rotation 0 1 0 3.14159
-  postColor 0.992157 0.854902 0.219608
-}
-
-DEF FIELD1 SoccerField2013{
-  translation -11 0 0
-}
-DEF YELLOW_GOAL KidGoal {
-  translation -6.5 0 0
-  postColor 0.992157 0.854902 0.219608
-}
-DEF YELLOW_GOAL KidGoal {
-  translation -15.5 0 0
-  rotation 0 1 0 3.14159
-  postColor 0.992157 0.854902 0.219608
-}
-
 DEF BALL BallGPS {
-  translation 2.4 0.109919 2
+  translation -4.53733 0.109919 -0.00396407
   radius 0.11
 }
 DEF OBS1 ObjectGPS {
@@ -107,8 +77,7 @@ DEF OPPONENT Block {
   translation -4.2 0.5 0
 }
 THOROP7_RoboCup_New {
-#  translation 0.0645096 1.07203 -0.000882515
-  translation 0.0645096 1.0 -0.000882515
+  translation 0.0645096 1.07203 -0.000882515
   rotation 0.004289 0.999987 0.00286921 -1.57032
   controller "thorop"
   controllerArgs "0 32"

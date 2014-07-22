@@ -76,6 +76,9 @@ shared.arm.rhandoffset = vector.new(Config.arm.handoffset.gripper)
 
 -- Walk Parameters (for tuning on the fly)
 shared.walk = {}
+
+
+
 shared.walk.tStep      = vector.zeros(1)
 shared.walk.tZmp 	   = vector.zeros(1)
 shared.walk.bodyHeight = vector.zeros(1)
@@ -92,6 +95,9 @@ shared.walk.hipRollCompensation = vector.zeros(1)
 
 
 --Walk state variables
+
+
+
 shared.walk.bodyOffset = vector.zeros(3)
 shared.walk.vel        = vector.zeros(3)
 shared.walk.bipedal    = vector.zeros(1)
@@ -163,6 +169,18 @@ shared.support.uTorso_now  = vector.zeros(3)
 shared.support.uLeft_next  = vector.zeros(3)
 shared.support.uRight_next = vector.zeros(3)
 shared.support.uTorso_next = vector.zeros(3)
+
+
+--Motion states
+shared.motion={}
+shared.motion.state = vector.zeros(1)
+--Idle 0
+--Init 1
+--Stance 2
+--HybridWalkInit 3
+--HybridWalk 4
+--HybridWalkEnd 5
+--HybridWalkKick 6
 
 
 

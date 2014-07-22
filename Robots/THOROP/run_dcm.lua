@@ -118,8 +118,10 @@ local function parse_read_position(pkt, bus)
 	local read_j_id = m_to_j[m_id]
 	local read_val
   if bus.has_mx_id[m_id] then
+    if #pkt.parameter~=lD.mx_registers.position[2] then return end
 		read_val = p_parse_mx(unpack(pkt.parameter)) 
 	else
+    if #pkt.parameter~=lD.nx_registers.position[2] then return end
 		read_val = p_parse(unpack(pkt.parameter))
 	end
 	local read_rad = step_to_radian(read_j_id, read_val)
@@ -147,15 +149,14 @@ local function parse_read_packet(pkt, bus)
 	else
 		reg = lD.nx_registers[reg_name]
 	end
-	if not reg then
-		print("PARSE PKT REG NOT FOUND", reg_name)
-		return
-	end
+	if not reg then return end
+  if #pkt.parameter~=reg[2] then return end
 	local parse = lD.byte_to_number[reg[2]]
 	-- Assume just reading position, for now
 	local j_val, read_j_id = parse(unpack(pkt.parameter)), m_to_j[m_id]
 	-- Set in Shared memory
-	local ptr, ptr_t = dcm.sensorPtr[reg], dcm.tsensorPtr[reg]
+	local ptr, ptr_t = dcm.sensorPtr[reg_name], dcm.tsensorPtr[reg_name]
+  if not ptr or not ptr_t then return end
 	ptr[read_j_id - 1] = j_val
 	ptr_t[read_j_id - 1] = t_read
 	return read_j_id, j_val
@@ -163,6 +164,7 @@ end
 
 local parse = {
   position = parse_read_position,
+  temperature = parse_temp,
 }
 local parse_mt = {
   __index = function(t, k)
@@ -229,7 +231,7 @@ local function do_parent(request, bus)
 	-- Check if writing to the motors
 	local wr_reg, rd_reg = request.wr_reg, request.rd_reg
 	local bus_name = request.bus
-	ptable(request)
+	--ptable(request)
 	local m_id
 	if wr_reg then
 		local ptr = dcm.actuatorPtr[wr_reg]
@@ -272,6 +274,7 @@ local function do_parent(request, bus)
               status = lD.get_nx_position(m_id, bus)[1]
             end
             j_id, pos = parse_read_position(status, bus)
+            if not j_id then print("Bad pos read in tq_en") end
             cp_ptr[j_id - 1] = p_ptr[j_id - 1]
           end
         else
@@ -298,22 +301,22 @@ local function do_parent(request, bus)
 		local j_ids = request.ids
 		local m_ids, addr_n_len = {}, {}
 		local has_nx, has_mx = false, false
-		for _, j_id in ipairs(request.ids) do
+		for j_id, is_changed in pairs(request.ids) do
 			m_id = j_to_m[j_id]
 			if bus.has_mx_id[m_id] then
 				has_mx = true
 				tinsert(m_ids, m_id)
 				tinsert(addr_n_len, lD.mx_registers[rd_reg])
 			elseif bus.has_nx_id[m_id] then
+--if rd_reg~='position' then print("rdd", m_id) end
+
 				has_nx = true
 				tinsert(m_ids, m_id)
 				tinsert(addr_n_len, lD.nx_registers[rd_reg])
 			end
 		end
     -- Check if reading position already
-    if rd_reg=='position' and bus.enable_read then
-			return
-		end
+    if rd_reg=='position' and bus.enable_read then return end
 		if has_mx and has_nx then
 			lD.get_bulk(m_ids, addr_n_len, bus, true)
 		elseif has_nx then
@@ -381,7 +384,9 @@ local function output_co(bus)
 			elseif has_nx then
 				lD.set_nx_command_position(send_ids, commands, bus)
 			else
-				lD.set_nx_command_position(send_ids, commands, bus)
+--print("HERE")
+				lD.set_bulk(schar(unpack(send_ids)), cmd_addrs, commands, bus)
+--				lD.set_nx_command_position(send_ids, commands, bus)
 			end
 		end
     -- One command gets a status return
@@ -490,6 +495,7 @@ local function initialize(bus)
 		assert(status.id==m_id, 'bad id coherence, pos')
 		t_read = get_time()
 		local j_id, rad = parse_read_position(status, bus)
+    assert(j_id, "Bad pos read in initialize")
 		cp_ptr[j_id-1] = rad
 		-- Read the current torque states
 		n = 0
@@ -583,6 +589,7 @@ while running do
 		-- Only if we are not in the read cycle
     if bus.npkt_to_expect < 1 then
 			bus.npkt_to_expect, bus.read_reg = bus.output_co()
+--print(bus.name, "EXX", bus.npkt_to_expect)
       if bus.npkt_to_expect == 0 then
     		bus.cmds_cnt = bus.cmds_cnt + 1
       else

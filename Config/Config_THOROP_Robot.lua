@@ -94,14 +94,14 @@ local left_leg = {
 local head_rc = {
   name = 'head',
   ttyname = '/dev/ttyUSB0',
-  m_ids = {29, 30, 37},
+  m_ids = {29, 30, 37, 11, 12, 13, 14},
   enable_read = true,
 }
 -- For RoboCup, use an MX only chain for the arms
 local arms_rc = {
   name = 'arms',
   ttyname = '/dev/ttyUSB1',
-  m_ids = {67, 68, 83, 84},
+  m_ids = {11, 12, 13, 14},
   enable_read = true,
 }
 
@@ -132,7 +132,8 @@ else
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)
   if Config.USE_DUMMY_ARMS then
-	  table.insert(Config.chain, arms_rc)
+    -- Not set up yet...
+	  --table.insert(Config.chain, arms_rc)
   	table.insert(Config.chain, head_rc)
   else
     table.insert(Config.chain, right_arm)
@@ -289,42 +290,42 @@ if Config.USE_DUMMY_ARMS then
 	--
 	servo.joint_to_motor={
 		29,30,  --Head yaw/pitch
-		83,84,  --LArm
+		11,13,  --LArm
 		16,18,20,22,24,26, -- left leg
 		15,17,19,21,23,25, -- right leg
-		67,68, --RArm
+		12,14, --RArm
 		27,28, --Waist yaw/pitch
 		37, -- Lidar pan
 	}
 	--
 	servo.steps = 2 * vector.new({
-		151875,151875, -- Head
-		2048,2048, --LArm
+		151875, 151875, -- Head
+		151875, 151875, --LArm
 		251000,251000,251000,251000,251000,251000, --LLeg
 		251000,251000,251000,251000,251000,251000, --RLeg
-		2048,2048, --RArm
-		251000,251000, -- Waist
+		151875, 151875, --RArm
+		251000, 251000, -- Waist
 		2048, -- Lidar pan
 	})
 	--
 	servo.direction = vector.new({
 		1,1, -- Head
-		1,1, --LArm
+		-1,1, --LArm
 		------
 		-1, -1,1,   1,  -1,1, --LLeg
 		-1, -1,-1, -1,  1,1, --RLeg
 		------
-		1,1, --RArm
+		-1, -1, --RArm
 		1,1, -- Waist
 		-1, -- Lidar pan
 	})
 	--
 	servo.rad_offset = vector.new({
 		0,0, -- Head
-		0,0, --LArm
+		0, -90, --LArm
 		0,0,0,-45,0,0, --LLeg
 		0,0,0,45,0,0, --RLeg
-		0,0, --RArm
+		0, 90, --RArm
 		0,0, -- Waist
 		0, -- Lidar pan
 	})*DEG_TO_RAD
@@ -344,10 +345,10 @@ if Config.USE_DUMMY_ARMS then
 	servo.max_rad = vector.new({
 		--90,80, -- Head
 		135,80, -- Head
-		90,90, --LArm
+		90, 135, --LArm
 		175,175,175,175,175,175, --LLeg
 		175,175,175,175,175,175, --RLeg
-		90,90, --RArm
+		90, 135, --RArm
 		90,45, -- Waist
 		60, -- Lidar pan
 	})*DEG_TO_RAD

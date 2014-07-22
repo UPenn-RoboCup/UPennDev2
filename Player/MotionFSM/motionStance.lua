@@ -33,6 +33,7 @@ function state.entry()
 
   mcm.set_walk_bipedal(1)
   mcm.set_walk_steprequest(0)
+  mcm.set_motion_state(2)
 end
 
 function state.update()

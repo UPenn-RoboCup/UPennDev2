@@ -15,7 +15,8 @@ local head = {
 	-- Head angle bias
 	yawBias = 0,
 	-- Camera bias
-  cameraPos = {0.075, 0.0, 0.13}, --C920
+  -- cameraPos = {0.05, 0.0, 0.13}, --C920
+  cameraPos = {0.045, 0.0, 0.155}, --RC14 brazil
 	cameraPitch = 5*DEG_TO_RAD,
 	cameraRoll = 0, --14*DEG_TO_RAD,
   --From CoM to neck joint
@@ -56,10 +57,10 @@ vision.ball = {
   th_min_bbox_area = 40, --50
   th_min_area = 20, --10,
   th_min_fill_rate = 0.35,
---  max_height  = 0.7,
 
-  max_height0 = 0.4,    --Max height = max_height0 + dist*max_height1
-  max_height1 = 0.2,
+  --TODO: to test on real robot
+  max_height0 = 0.33, --0.4,    --Max height = max_height0 + dist*max_height1
+  max_height1 = 0.15,
 
   max_distance = 9, 
   th_ground_head_pitch = 50*DEG_TO_RAD,
@@ -76,9 +77,11 @@ vision.goal = {
   th_nPostB = 15,
   th_min_area = 40,
   th_min_orientation = 80*math.pi/180,
-  th_min_fill_rate = 0.45,
-  height_min = -0.9,  --TODO
-  th_aspect_ratio = {2.5,120},
+  th_min_fill_rate = 0.4, --0.45,
+  -- TODO: need to test on real robot
+  height_min = 1, 
+  height_max = 2, 
+  th_aspect_ratio = {13,120},
   th_edge_margin = 5,
   th_bottom_boundingbox = 0.9,
   th_ground_boundingbox = {-15,15,-15,10},
@@ -115,12 +118,12 @@ vision.obstacle = {
 vision.line = {
   -- min_white_pixel = 300,
   -- min_green_pixel = 5000,
-  max_width = 8,  --15
+  max_width = 15,
   connect_th = 1.4,
   max_gap = 1,
   -- labelB space
   min_count = 20,
-  min_length = 10,
+  min_length = 5,--10,
   max_height = 0.3,
   min_aspect_ratio = 2.5,
   min_angle_diff = 10,
@@ -135,6 +138,7 @@ table.insert(Config.camera,
   {
     name = 'head',
     dev = '/dev/video0',
+    --dev = '/dev/video1',
     format = 'yuyv',
     w = 640,
     h = 360, --480,
@@ -153,9 +157,10 @@ table.insert(Config.camera,
       'libVision',
     },
     --Logitech C920
-    --lut = '0627_m308',
-    --lut = 'm308_night',
-		lut = 'grasp_afternoon',
+    --lut = 'brazil_2',  -- for afternoon
+    -- lut = 'brazil_obs_noon',  -- for afternoon
+    lut = 'brazil_day3_morning',
+		--lut = 'match1_sgm_b',
 		-- f = 640/2/tan(78/180*pi / 2)
 
 --fov = 2*arctan(d/2f)
@@ -183,7 +188,7 @@ table.insert(Config.camera,
              {'Sharpness', 0},
            },
       --]]
-    -- GRASP afternoon
+    --[[ GRASP afternoon
     param = {
       {'White Balance Temperature', 3300},
       {'Exposure (Absolute)', 170},
@@ -194,7 +199,34 @@ table.insert(Config.camera,
       {'Gain', 66},
       {'Sharpness', 0},
     },
-    
+--]]
+
+    --[[ RoboCup 2014 Brazil noon
+    param = {
+      {'White Balance Temperature', 4300},
+      {'Exposure (Absolute)', 125},
+      {'Focus (absolute)', 0},
+      {'Brightness', 128},
+      {'Contrast', 128},
+      {'Saturation', 150}, --170:cloudy 150:sunny
+      {'Gain', 42},
+      {'Sharpness', 0},
+    },
+    --]]
+
+    --RoboCup 2014 Brazil evening
+    param = {
+      {'White Balance Temperature', 3500},
+      --{'Exposure (Absolute)', 200},
+      {'Exposure (Absolute)', 190},
+      {'Focus (absolute)', 0},
+      {'Brightness', 128},
+      {'Contrast', 144},
+      {'Saturation', 216}, --170:cloudy 150:sunny
+      {'Gain', 0},
+      {'Sharpness', 255},
+    },
+  
   })
 
 --Webots use 1/2 resolution but 2x label resolution
@@ -238,6 +270,8 @@ if IS_WEBOTS then
     use_centerpost = 1,
     min_crossbar_ratio = 0.6,
     check_for_ground = 1,
+
+    height_max = 9, 
   }
   
   vision.obstacle = {

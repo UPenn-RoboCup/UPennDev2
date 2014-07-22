@@ -10,6 +10,7 @@ local motion_ch = simple_ipc.new_publisher('MotionFSM!')
 
 local robocupplanner = require'robocupplanner'
 
+
 -- Get the human guided approach
 require'hcm'
 -- Get the robot guided approach
@@ -27,6 +28,8 @@ local target_pose
 local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local supportLeg
 local last_ph = 0
+local kickAngle
+
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -36,6 +39,16 @@ function state.entry()
   t_update = t_entry
   motion_ch:send'hybridwalk'
   last_ph = 0
+
+  local pose = wcm.get_robot_pose()
+  if IS_WEBOTS and Config.use_gps_pose then pose = wcm.get_robot_pose_gps() end
+  local ballx = wcm.get_ball_x()
+  local bally = wcm.get_ball_y()  
+  local balla = math.atan2(bally,ballx)
+  local walk_target_local = {ballx,bally,balla}
+  local ballGlobal = util.pose_global(walk_target_local, pose)
+  
+  kickAngle = robocupplanner.getKickAngle(pose,ballGlobal) or 0
 end
 
 local function update_velocity()
@@ -48,7 +61,12 @@ local function update_velocity()
 
   local walk_target_local = {ballx,bally,balla}
   local ballGlobal = util.pose_global(walk_target_local, pose)
-  local target_pose,rotate = robocupplanner.getTargetPose(pose,ballGlobal)    
+
+  local kickAngleNew = robocupplanner.getKickAngle(pose,ballGlobal)
+  if kickAngleNew then kickAngle = kickAngleNew end
+ 
+
+  local target_pose,rotate = robocupplanner.getTargetPose(pose,ballGlobal,kickAngle)    
   local vStep,reached = robocupplanner.getVelocity(pose,target_pose,rotate)
   mcm.set_walk_vel(vStep)
   
@@ -58,7 +76,6 @@ end
 local function plan_whole()
 
   local pose = wcm.get_robot_pose()
-
   local ballx = wcm.get_ball_x()
   local bally = wcm.get_ball_y()  
   local balla = math.atan2(bally,ballx)
@@ -74,7 +91,7 @@ local function plan_whole()
   local ytrail=wcm.get_robot_trajy()
   local lpose={pose[1],pose[2],pose[3]}
   while (not reached) and (count<max_plan_step) do
-    local target_pose,rotate = robocupplanner.getTargetPose(lpose,{ballGlobal[1],ballGlobal[2],0})    
+    local target_pose,rotate = robocupplanner.getTargetPose(lpose,{ballGlobal[1],ballGlobal[2],0},kickAngle)    
     v,reached = robocupplanner.getVelocity(lpose,target_pose,rotate)
     lpose = util.pose_global({v[1],v[2],v[3]} , {lpose[1],lpose[2],lpose[3]})
     count = count+1
@@ -87,6 +104,7 @@ local function plan_whole()
   end
 
   wcm.set_robot_traj_num(count)
+  wcm.set_robot_etastep(count)
   wcm.set_robot_trajx(xtrail)
   wcm.set_robot_trajy(ytrail)
 end
@@ -95,7 +113,15 @@ end
 
 function state.update()
   --not playing?
-  if gcm.get_game_state()~=3 then return'stop' end
+  if gcm.get_game_state()~=3 then 
+print("NOT PLAYING")
+print("NOT PLAYING")
+print("NOT PLAYING")
+print("NOT PLAYING")
+print("NOT PLAYING")
+print("NOT PLAYING")
+return'stop' 
+end
 
   --print(state._NAME..' Update' )
   -- Get the time of update

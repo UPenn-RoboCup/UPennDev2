@@ -24,7 +24,7 @@ local t_entry
 -- Cycle count
 local count
 -- Objects
-local ball, goal, obstacle
+local ball, goal, obstacle, line
 -- Obstacle filters
 local OF = {}
 
@@ -166,16 +166,49 @@ local function update_vision(detected)
   if ball then
     ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
   end
+        
 
+  -- We cannot find the ball. 
+  --add fake observation at behind the robot so that robot can start turning
+  if wcm.get_ball_notvisible()==1 then
+    wcm.set_ball_notvisible(0)
+    if gcm.get_game_role()==1 then
+      ballFilter.observation_xy(-0.5,0, 0.5, 20*math.pi/180, t)
+    end
+  end
+
+
+
+--------------------------------------------------------------------------------
+-- TODO: fix nan bug with this
   -- If the goal is detected
 	goal = detected.posts
   if goal then
     if goal[1].type == 3 then
-      goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
+      if Config.debug.goalpost then
+        print(string.format("Two post observation: type %d v1(%.2f %.2f) v2(%.2f %.2f)",
+          goal[1].type,
+          goal[1].v[1],goal[1].v[2],
+          goal[2].v[1],goal[2].v[2]
+          ))
+      end
+      if not Config.disable_goal_vision then
+        goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
+      end
     else
-      goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+      if Config.debug.goalpost then
+        print(string.format("Single post observation: type %d v(%.2f %.2f)",
+          goal[1].type,
+          goal[1].v[1],goal[1].v[2]        
+          ))
+      end
+      if not Config.disable_goal_vision then
+        goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+      end
     end
   end
+--------------------------------------------------------------------------------
+
 
   if wcm.get_obstacle_reset()==1 then
     reset_obstacles()
@@ -212,6 +245,8 @@ function libWorld.entry()
   wcm.set_robot_pose({0,0,0})
   wcm.set_robot_odometry({0,0,0})
   wcm.set_robot_traj_num(0)
+  wcm.set_obstacle_num(0)  
+  wcm.set_ball_notvisible(0)
   -- Processing count
   count = 0
   
@@ -223,7 +258,7 @@ function libWorld.update(uOdom, detection)
   if wcm.get_robot_reset_pose()==1 or (gcm.get_game_state()~=3 and gcm.get_game_state()~=6) then    
     if gcm.get_game_role()==0 then
       --Goalie initial pos
-      local factor2 = Config.world.goalieFactor or 0.88 --Goalie pos
+      local factor2 = 0.99
       poseFilter.initialize({-Config.world.xBoundary*factor2,0,0},{0,0,0})
       wcm.set_robot_pose({-Config.world.xBoundary*factor2,0,0})
       wcm.set_robot_odometry({-Config.world.xBoundary*factor2,0,0})
@@ -249,9 +284,9 @@ function libWorld.update(uOdom, detection)
   update_vision(detection)
   if Config.use_gps_pose then
     wcm.set_robot_pose(wcm.get_robot_pose_gps())
-    -- wcm.set_obstacle_num(2)
-    -- wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
-    -- wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
+    wcm.set_obstacle_num(2)
+    wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
+    wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
 
     local pose = wcm.get_robot_pose_gps()
     local ballglobal = wcm.get_robot_gpsball()
@@ -262,7 +297,14 @@ function libWorld.update(uOdom, detection)
     wcm.set_ball_y(balllocal[2])
     wcm.set_ball_t(Body.get_time())
   else
-    
+
+    local pose =wcm.get_robot_pose()
+    local ball_x = wcm.get_ball_x()
+    local ball_y = wcm.get_ball_y()
+
+    local ballglobal = util.pose_global({ball_x,ball_y,0},pose)
+
+    wcm.set_robot_ballglobal(ballglobal)
     -- Update pose in wcm
     wcm.set_robot_pose(vector.pose{poseFilter.get_pose()})
   end
@@ -273,6 +315,26 @@ function libWorld.update(uOdom, detection)
   -- Increment the process count
   count = count + 1
 end
+
+local game_state_names={
+  "Initial",
+  "Ready",
+  "Set",
+  "Playing",
+  "Finished",
+  "Untorqued",
+  "Testing"
+}
+
+local motion_state_names={
+  "Idle",
+  "Init",
+  "Stance",
+  "WalkInit",
+  "Walk",
+  "WalkEnd",
+  "WalkKick"
+}
 
 
 function libWorld.send()
@@ -288,8 +350,33 @@ function libWorld.send()
     to_send.gpsobs2 = wcm.get_robot_gpsobs2()
   end
 
+  to_send.role = gcm.get_game_role()
+  to_send.time = Body.get_time()
+  
+
+  if gcm.get_game_role()==0 then
+    to_send.info=to_send.info.."Role: Goalie\n"
+  elseif gcm.get_game_role()==1 then
+    to_send.info=to_send.info.."Role: ATTACKER\n"
+  else
+    to_send.info=to_send.info.."Role: IDLE\n"
+  end
+
+  to_send.gamestate = gcm.get_game_state()
+  to_send.info=to_send.info.."Game :"..game_state_names[to_send.gamestate+1]
+  to_send.info=to_send.info.."\n"
+
+  to_send.motionstate = mcm.get_motion_state()
+  to_send.info=to_send.info.."Motion :"..motion_state_names[to_send.motionstate +1]
+  to_send.info=to_send.info.."\n"
+
+
+
   to_send.info = to_send.info..string.format(
     'Pose: %.2f %.2f (%.1f)\n', to_send.pose[1], to_send.pose[2], to_send.pose[3]*RAD_TO_DEG)
+
+  
+
   to_send.role = gcm.get_game_role()
   to_send.time = Body.get_time()
   
@@ -321,6 +408,7 @@ function libWorld.send()
     end
   end  
     
+  -- Obstacles
   if wcm.get_obstacle_num()>0 then
     local obs = {}
     for i=1,wcm.get_obstacle_num() do
@@ -334,17 +422,31 @@ function libWorld.send()
     local obs = {}
     to_send.obstacle = obs
   end
+  
+  -- Lines
+  if line and gcm.get_game_role()==0 then
+    wcm.set_line_detect(1)
+  end
 
   --TRAJECTORY INFO
   local traj = {}
   traj.num = wcm.get_robot_traj_num()
   traj.x = wcm.get_robot_trajx()
   traj.y = wcm.get_robot_trajy()
-  traj.kickto = wcm.get_robot_kickto()
+  
+
   traj.goalto = wcm.get_robot_goalto()
   traj.goal1 = wcm.get_robot_goal1()
   traj.goal2 = wcm.get_robot_goal2()
+
   traj.ballglobal = wcm.get_robot_ballglobal()  
+
+  traj.kickneeded = wcm.get_robot_kickneeded()
+  traj.kickangle1 = wcm.get_robot_kickangle1()
+  traj.kickangle2 = wcm.get_robot_kickangle2()
+  traj.ballglobal2 = wcm.get_robot_ballglobal2() 
+  traj.ballglobal3 = wcm.get_robot_ballglobal3()
+
 
   traj.goalangles={}
 

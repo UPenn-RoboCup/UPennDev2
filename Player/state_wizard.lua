@@ -73,8 +73,8 @@ while running do
     t_debug = t
 		print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, collectgarbage('count')))
     --print('Wire', vcm.get_wire_model())
-    print("GCM ROLE:",gcm.get_game_role())
-    print("GCM STATE:",gcm.get_game_state())
+--    print("GCM ROLE:",gcm.get_game_role())
+--    print("GCM STATE:",gcm.get_game_state())
 
 
 	end

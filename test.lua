@@ -58,6 +58,26 @@ function process_keyinput()
       elseif byte==string.byte("h") then  targetvel_new[2]=targetvel[2]+0.02;
       elseif byte==string.byte(";") then  targetvel_new[2]=targetvel[2]-0.02;
 
+      elseif byte==string.byte("1") then      
+        gcm.set_game_role(2)
+        gcm.set_game_state(6)
+        body_ch:send'init'
+        
+      elseif byte==string.byte("2") then      
+        head_ch:send'scan'
+      
+      elseif byte==string.byte("q") then      
+        mcm.set_walk_kicktype(0)
+        body_ch:send'approach'
+
+      elseif byte==string.byte("w") then      
+        mcm.set_walk_kicktype(1)
+        body_ch:send'approach'
+
+      elseif byte==string.byte("e") then      
+        mcm.set_walk_kicktype(2)
+        body_ch:send'approach'
+      
 
       elseif byte==string.byte("3") then      
         mcm.set_walk_kickfoot(0)
@@ -80,11 +100,17 @@ function process_keyinput()
         mcm.set_walk_steprequest(1)
 
 
+
+
+
+
+
+
       elseif byte==string.byte("t") then      
-        mcm.set_walk_kicktype(3)
+        mcm.set_walk_kicktype(9)
         mcm.set_walk_steprequest(1)
       elseif byte==string.byte("y") then      
-        mcm.set_walk_kicktype(4)
+        mcm.set_walk_kicktype(10)
         mcm.set_walk_steprequest(1)
 
 

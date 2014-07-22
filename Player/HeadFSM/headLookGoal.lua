@@ -93,6 +93,7 @@ function state.entry()
     yaw1 = temp
   end
   t_update = Body.get_time()
+  wcm.set_ball_disable(1)  
 end
 
 function state.update()
@@ -135,6 +136,7 @@ end
 
 function state.exit()
   print(state._NAME..' Exit'..' total time:'..Body.get_time()-t_entry  )
+  wcm.set_ball_disable(0)
 end
 
 return state

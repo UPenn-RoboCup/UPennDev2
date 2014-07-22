@@ -163,24 +163,31 @@ local function update_velocity()
   local ballx = wcm.get_ball_x() 
   local bally = wcm.get_ball_y() 
 
+  local kicktype = mcm.get_walk_kicktype()
+
+  approachTargetX = Config.approachTargetX[kicktype+1] or 0.35
+  approachTargetY = Config.approachTargetY
+
+  print("Kicktype "..kicktype.."TargetX:"..approachTargetX)
+
   local uLeftGlobalTarget, uRightGlobalTarget
   if ball_side>0 then --Align to the left foot
     uLeftGlobalTarget = util.pose_global({
-        ballx - Config.fsm.bodyRobocupApproach.target[1] - Config.walk.supportX,
-        bally + Config.fsm.bodyRobocupApproach.target[2],
+        ballx - approachTargetX - Config.walk.supportX,
+        bally + approachTargetY[1],
         0},pose)
     uRightGlobalTarget = util.pose_global({
-        ballx - Config.fsm.bodyRobocupApproach.target[1] - Config.walk.supportX,
-        bally + Config.fsm.bodyRobocupApproach.target[2] -2*Config.walk.footY,
+        ballx - approachTargetX - Config.walk.supportX,
+        bally + approachTargetY[1] -2*Config.walk.footY,
         0},pose)
   else --Align to the right foot
     uLeftGlobalTarget = util.pose_global({
-      ballx - Config.fsm.bodyRobocupApproach.target[1] - Config.walk.supportX,
-      bally + Config.fsm.bodyRobocupApproach.target[3] +2*Config.walk.footY,
+      ballx - approachTargetX - Config.walk.supportX,
+      bally + approachTargetY[2] +2*Config.walk.footY,
       0},pose)
     uRightGlobalTarget = util.pose_global({
-      ballx - Config.fsm.bodyRobocupApproach.target[1] - Config.walk.supportX,
-      bally + Config.fsm.bodyRobocupApproach.target[3],
+      ballx - approachTargetX - Config.walk.supportX,
+      bally + approachTargetY[2],
       0},pose)
   end
 
@@ -239,6 +246,23 @@ function state.entry()
   last_ph = 0  
   last_step = 0
   wcm.set_robot_etastep(-1) --we're in approach
+
+
+  --Determine kick types here!
+--[[
+  mcm.set_walk_kicktype(1) --strong kick default
+  if Config.enable_weaker_kick then
+    local ballx = wcm.get_ball_x()
+    local bally = wcm.get_ball_y()
+    local pose = wcm.get_robot_pose()
+    local ballGlobal = util.pose_global({ballx,bally,0},pose)
+    if ballGlobal[1]<0.5 then
+      mcm.set_walk_kicktype(0)
+    end
+  end
+--]]
+
+
 end
 
 function state.update()
@@ -251,7 +275,7 @@ function state.update()
   t_update = t
 
 --not playing?
-  if gcm.get_game_state()~=3 then return'stop' end
+  if gcm.get_game_state()~=3 and gcm.get_game_state()~=5 and gcm.get_game_state()~=6 then return'stop' end
 
   local check_ph = 0.95
   local ph = mcm.get_status_ph()

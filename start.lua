@@ -26,11 +26,12 @@ if kind=='motion' then
   print("Starting IMU...")
   status_code = os.execute('screen -S imu -L -dm luajit run_imu.lua')
   assert(status_code, 'IMU failed to start')
-  unix.usleep(1e6)
+  unix.usleep(2e6)
   --
   print("Starting DCM...")
   status_code = os.execute('screen -S dcm -L -dm luajit run_co_dcm.lua')
   assert(status_code, 'DCM failed to start')  
+  unix.usleep(1e6)
 	
   unix.chdir(HOME..'/Player')
 	print('state_wizard')

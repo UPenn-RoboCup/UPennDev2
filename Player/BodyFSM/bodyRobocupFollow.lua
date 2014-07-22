@@ -29,7 +29,7 @@ local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local supportLeg
 local last_ph = 0
 local kickAngle
-
+local count
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -49,9 +49,11 @@ function state.entry()
   local ballGlobal = util.pose_global(walk_target_local, pose)
   
   kickAngle = robocupplanner.getKickAngle(pose,ballGlobal) or 0
+  count = 0
 end
 
 local function update_velocity()
+  count = count + 1
   local pose = wcm.get_robot_pose()
   if IS_WEBOTS and Config.use_gps_pose then pose = wcm.get_robot_pose_gps() end
 
@@ -62,8 +64,19 @@ local function update_velocity()
   local walk_target_local = {ballx,bally,balla}
   local ballGlobal = util.pose_global(walk_target_local, pose)
 
+
+  local ballx = wcm.get_ball_x()
+  local bally = wcm.get_ball_y()  
+  local ballr = math.sqrt(ballx^2 + bally^2)
+
+  count = count + 1
+
   local kickAngleNew = robocupplanner.getKickAngle(pose,ballGlobal)
-  if kickAngleNew then kickAngle = kickAngleNew end
+
+--Recalculate every 5 steps
+
+--  if kickAngleNew then kickAngle = kickAngleNew end
+  if kickAngleNew and count%5 ==0 then kickAngle = kickAngleNew end
  
 
   local target_pose,rotate = robocupplanner.getTargetPose(pose,ballGlobal,kickAngle)    
@@ -109,7 +122,7 @@ local function plan_whole()
   wcm.set_robot_trajy(ytrail)
 end
 
-
+local count 
 
 function state.update()
   --not playing?

@@ -89,8 +89,8 @@ if FROM_LOG then
 	operator = 'localhost' 
 	print('operator IP:', operator)
 end
-local udp_ch = metadata.udp_port and udp.new_sender(operator, metadata.udp_port)
 print('UDP',operator, metadata.udp_port)
+local udp_ch = metadata.udp_port and udp.new_sender(operator, metadata.udp_port)
 
 -- Metadata for the operator
 local meta = {
@@ -105,6 +105,8 @@ local meta = {
 
 -- JPEG Compressor
 local c_yuyv = jpeg.compressor('yuyv')
+-- Downsampling...
+c_yuyv:downsampling(2)
 local c_grey = jpeg.compressor('gray')
 
 -- Garbage collection before starting

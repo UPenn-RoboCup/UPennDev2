@@ -237,7 +237,7 @@ function walk.entry()
     local zmp_mod = {footQueue[offset+8],footQueue[offset+9],footQueue[offset+10]}
     local footparam = {footQueue[offset+11],footQueue[offset+12],footQueue[offset+13]}    
 
-    print("tStep:",t0+t1+t2)
+    --print("tStep:",t0+t1+t2)
 
     step_planner:step_enque_trapezoid(foot_movement, supportLeg, t0,t1,t2,zmp_mod,footparam)
   end
@@ -353,7 +353,7 @@ function walk.update()
       if current_side ~= last_side then
         crossing_num = crossing_num + 1
         last_side = current_side
-        print("Crossing #:",crossing_num)
+        --print("Crossing #:",crossing_num)
         if crossing_num==2 then        
           mcm.set_status_uTorsoVel({zmp_solver.x[2][1],zmp_solver.x[2][2],0})
           return "walkalong" 

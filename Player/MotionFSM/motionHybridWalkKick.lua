@@ -334,11 +334,13 @@ function walk.update()
     if math.abs(roll)>roll_max then roll_max = math.abs(roll) end
     local roll_threshold = 10 --this is degree
 
+--[[
     if roll_max>roll_threshold and hcm.get_motion_estop()==0 then
       print("EMERGENCY STOPPING")
       print("IMU roll angle:",roll_max)
       hcm.set_motion_estop(1)
     end
+--]]
 
     --Check if torso crossed the center position
     local relL = util.pose_relative(uLeft,uTorso)

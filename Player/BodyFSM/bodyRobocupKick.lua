@@ -29,6 +29,11 @@ function state.entry()
     mcm.set_walk_kickphase(0)
     mcm.set_walk_stoprequest(1)
   else
+
+    if mcm.get_walk_kicktype()==1 then --strong kick default
+      mcm.set_walk_stoprequest(1)
+    end
+
     mcm.set_walk_kickphase(0)    
   end
 
@@ -58,7 +63,7 @@ function state.update()
   end 
 
   if mcm.get_walk_kickphase()==0 then
-    if Config.use_walkkick then
+    if Config.use_walkkick and mcm.get_walk_kicktype()~=1 then 
       mcm.set_walk_steprequest(1)
       mcm.set_walk_kickphase(1)
     elseif mcm.get_walk_ismoving()==0 then

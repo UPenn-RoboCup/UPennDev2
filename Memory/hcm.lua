@@ -222,7 +222,7 @@ shared_data.right.grip = vector.zeros(3)
 
 -- Monitor
 shared_data.monitor = {}
-shared_data.monitor.fps = vector.new({30}) 
+shared_data.monitor.fps = vector.new({5}) 
 
 -- Camera
 shared_data.camera = {}

@@ -113,30 +113,27 @@ end
   Config.fsm.headTrack.timeout = 3  
   Config.fsm.dqNeckLimit ={40*DEG_TO_RAD, 180*DEG_TO_RAD}
 
---emergency fix
-  Config.fsm.bodyRobocupApproach.target={0.35,-0.06,0.06}    
-
-
---With straight waist, emergency fix
-  Config.fsm.bodyRobocupApproach.target={0.40,-0.07,0.09}    
-
-  --Fixed right leg approach
-  Config.fsm.bodyRobocupApproach.target={0.40,-0.04,0.09}    
-
-
-  --larger dist for walkkick
-  Config.fsm.bodyRobocupApproach.target={0.45,-0.07,0.05}    
-
-
-
   Config.approachTargetX = {
     0.45, --for kick 0 (walkkick)
     0.30, --for kick 1 (st kick)
-    0.45  --for kick 2 ()
+    0.45  --for kick 2 (weak walkkick)
   }
+
+
+if IS_WEBOTS then 
+    Config.approachTargetX = {
+    0.35, --for kick 0 (walkkick)
+    0.30, --for kick 1 (st kick)
+    0.35  --for kick 2 (weak walkkick)
+  }
+end
+
+
 
   Config.approachTargetY= {-0.07,0.05}  --L/R aiming offsets
 
+  Config.ballX_threshold1 = -1.5 --The threshold we use walkkick
+  Config.ballX_threshold2 = 0.5 --The threshold we start using strong kick
 
 --  Config.use_walkkick = true
   Config.use_walkkick = false

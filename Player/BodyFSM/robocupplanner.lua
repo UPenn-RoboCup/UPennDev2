@@ -55,7 +55,8 @@ function evaluate_goal_kickangle(ballGlobal)
     end
 
     --Goalie and two goalposts
-    for i=1,3 do   
+    --for i=1,3 do   
+    for i=1,2 do
       local v =wcm['get_robot_goal'..i]()
       local rel_obs_x = v[1]-ballGlobal[1]
       local rel_obs_y = v[2]-ballGlobal[2]
@@ -133,7 +134,7 @@ function evaluate_kickangle(ballGlobal,angle, kick_deviation_angle)
     local angle_diff = math.max(0, math.abs(util.mod_angle(obs_angle-angle)) - kick_deviation_angle)
     local obs_closest_dist 
 
-    if kick_distance_max<obs_tangent_dist then
+    if false and kick_distance_max<obs_tangent_dist then
       local ballClosestPosRel = {
         obs_dist - kick_distance_max*math.cos(angle_diff),  
         kick_distance_max*math.sin(angle_diff)  
@@ -177,7 +178,7 @@ function robocupplanner.getKickAngle(pose,ballGlobal)
 
   local ballX_threshold2 = Config.ballX_threshold2 or 0.5
 
-  if ballGlobal[1]>ballX_threshold2 then
+  if false and ballGlobal[1]>ballX_threshold2 then
     if Config.debug.planning then print("Ball close, one stage planning") end
     --Ball close, do a single-stage planning
     daGoal, kickAngle = evaluate_goal_kickangle(ballGlobal)

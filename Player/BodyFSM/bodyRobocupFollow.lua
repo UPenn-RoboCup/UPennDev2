@@ -50,7 +50,7 @@ function state.entry()
   
   kickAngle = robocupplanner.getKickAngle(pose,ballGlobal) --can be nil!
 
-  print("Initial kickAngle:",kickAngle*180/math.pi)
+  if kickAngle then print("Initial kickAngle:",kickAngle*180/math.pi) end
   count = 0
 end
 

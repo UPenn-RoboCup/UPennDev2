@@ -99,9 +99,20 @@ function process_keyinput()
         mcm.set_walk_kicktype(0)
         mcm.set_walk_steprequest(1)
 
+      elseif byte==string.byte("t") then      
+        mcm.set_walk_kicktype(2)
+        mcm.set_walk_kickfoot(0)
+        mcm.set_walk_steprequest(1)
+      elseif byte==string.byte("y") then      
+        mcm.set_walk_kicktype(2)
+        mcm.set_walk_kickfoot(1)
+        mcm.set_walk_steprequest(1)
 
 
+      elseif byte==string.byte("z") then              
+        body_ch:send'footrace'
 
+--[[
 
 
 
@@ -112,7 +123,7 @@ function process_keyinput()
       elseif byte==string.byte("y") then      
         mcm.set_walk_kicktype(10)
         mcm.set_walk_steprequest(1)
-
+--]]
 
 
       elseif byte==string.byte("7") then      

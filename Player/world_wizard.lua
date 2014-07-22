@@ -15,10 +15,8 @@ local get_time, usleep = Body.get_time, unix.usleep
 local vision_ch = si.new_subscriber'vision'
 -- UDP channel
 local udp = require'udp'
---local operator = Config.net.operator.wired
---local operator = Config.net.operator.wired_broadcast
 local operator
-if Config.net.use_wiress then
+if Config.net.use_wireless then
 	operator = Config.net.operator.wireless
 else
 	operator = Config.net.operator.wired_broadcast

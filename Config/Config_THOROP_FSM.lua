@@ -72,6 +72,10 @@ fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   {'bodyInit', 'done', 'bodyStop'},
 
+  {'bodyStop', 'footrace', 'bodyFootRace'},
+  {'bodyFootRace', 'done', 'bodyStop'},
+
+
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
 --  {'bodyStop', 'stepwaypoint', 'bodyStepWaypoint'},
   {'bodyStop', 'kick', 'bodyRobocupKick'},

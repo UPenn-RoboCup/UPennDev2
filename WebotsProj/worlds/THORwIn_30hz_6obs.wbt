@@ -1,0 +1,101 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Simulation of the Robocup Standard Platform League"
+    "Authors: Olivier Michel, Yvan Bourquin, Fabien Rohrer"
+    "Webpage: http://www.robotstadium.org"
+  ]
+  title "Robotstadium"
+  basicTimeStep 30
+  FPS 15
+}
+Viewpoint {
+  orientation -0.0282314 0.988233 0.15033 2.66545
+  position 6.25456 6.49118 -11.6548
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 0.3
+  direction -1 -0.5 0
+  intensity 0.5
+}
+DirectionalLight {
+  ambientIntensity 0.3
+  direction 1 -0.5 0
+  intensity 0.5
+}
+DirectionalLight {
+  ambientIntensity 0.4
+  direction 0 -0.5 -1
+  intensity 0.5
+}
+DirectionalLight {
+  ambientIntensity 0.4
+  direction 0 -0.5 1
+  intensity 0.5
+}
+DirectionalLight {
+  ambientIntensity 0.3
+  direction -1 0.5 0
+  intensity 0.2
+}
+DirectionalLight {
+  ambientIntensity 0.3
+  direction 1 0.5 0
+  intensity 0.2
+}
+SoccerField2013 {
+}
+Walls2013 {
+}
+DEF YELLOW_GOAL TeenGoal {
+  translation 4.5 0 0
+  postColor 0.992157 0.854902 0.219608
+}
+DEF YELLOW_GOAL TeenGoal {
+  translation -4.5 0 0
+  rotation 0 1 0 3.14159
+  postColor 0.992157 0.854902 0.219608
+}
+DEF BALL BallGPS {
+  translation 2.818 0.109919 -0.0997866
+  radius 0.11
+}
+DEF OBS1 ObjectGPS {
+  translation 1.87607 0.45 -0.931284
+  controllerArgs "1"
+}
+DEF OBS2 ObjectGPS {
+  translation -0.114047 0.45 -1.3917
+  controllerArgs "2"
+}
+DEF OBS3 ObjectGPS {
+  translation 2.10866 0.45 0.527748
+  controllerArgs "1"
+}
+DEF OBS4 ObjectGPS {
+  translation -1.26984 0.45 -0.0169267
+  controllerArgs "2"
+}
+DEF OBS5 ObjectGPS {
+  translation -2.17646 0.45 -0.738642
+  controllerArgs "1"
+}
+DEF OBS6 ObjectGPS {
+  translation -0.541389 0.45 1.78704
+  controllerArgs "2"
+}
+DEF OPPONENT Block {
+  translation -4.2 0.5 0
+}
+THOROP7_RoboCup_New {
+  translation 3.69159 1.07203 -0.164192
+  rotation 0.004289 0.999987 0.00286921 -1.57032
+  controller "thorop"
+  controllerArgs "0 32"
+  cameraWindowPosition 0.72028 0.640288
+}

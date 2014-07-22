@@ -8,7 +8,8 @@ require'wcm'
 
 function evaluate_goal_kickangle(ballGlobal)
   local obstacle_dist_threshold = 0.1
-  local kick_deviation_angle = 10*math.pi/180
+--  local kick_deviation_angle = 10*math.pi/180
+  local kick_deviation_angle = 5*math.pi/180
 
   local goalL = {Config.world.xBoundary,Config.world.goalWidth/2}
   local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2}
@@ -83,10 +84,34 @@ function evaluate_goal_kickangle(ballGlobal)
   return max_obstacle_angle, max_obstacle_angle_kickangle
 end
 
-function evaluate_kickangle(ballGlobal,angle)
+function evaluate_kickangle(ballGlobal,angle, kick_deviation_angle)
+  local ballX_threshold1 = Config.ballX_threshold1 or -2.5
+  local ballX_threshold2 = Config.ballX_threshold2 or 0.5
+
   local kick_distance = 4.0
   local kick_distance_max = 5.0
-  local kick_deviation_angle = 10*math.pi/180
+
+
+
+  if ballGlobal[1]<ballX_threshold1 then
+    if Config.debug.planning then print("Ball pos 0",ballGlobal[1]) end
+    kick_distance = 4.0
+    kick_distance_max = 5.0
+  elseif ballGlobal[1]<ballX_threshold2 then
+    if Config.debug.planning then  print("Ball pos 1",ballGlobal[1]) end
+    kick_distance = 2.0
+    kick_distance_max = 3.0
+  else
+    if Config.debug.planning then print("Ball pos for final kick",ballGlobal[1]) end
+    kick_distance = 5.0
+    kick_distance_max = 5.0
+  end
+
+--  local kick_deviation_angle = 10*math.pi/180
+ 
+--  if not kick_deviation_angle then kick_deviation_angle = 5*math.pi/180 end
+  if not kick_deviation_angle then kick_deviation_angle = 10*math.pi/180 end
+ 
   --ball radius: 0.11, obstacle radius 0.10
 
   local obstacle_dist_threshold = 0.22
@@ -129,7 +154,10 @@ function evaluate_kickangle(ballGlobal,angle)
 
   local outstr=string.format("Kick angle %d :obs %.2f border %.2f",angle*180/math.pi, min_obs_dist, min_borderY_dist)
   
-  if min_obs_dist>0.5 and min_borderY_dist>0.5 then   
+--  if min_obs_dist>0.5 and min_borderY_dist>0.5 then   
+
+  if min_obs_dist>0.5 and min_borderY_dist>0.9 then       
+
     daGoal, kickAngle2 = evaluate_goal_kickangle(ballEndPos)
     if Config.debug.planning then 
       print(string.format("%s goalAngle %d",outstr,daGoal*180/math.pi))            
@@ -147,7 +175,10 @@ function robocupplanner.getKickAngle(pose,ballGlobal)
   local max_score = -math.huge
   local max_score_angle, max_score_angle2, best_ballEndPos1
 
-  if ballGlobal[1]>0 then
+  local ballX_threshold2 = Config.ballX_threshold2 or 0.5
+
+  if ballGlobal[1]>ballX_threshold2 then
+    if Config.debug.planning then print("Ball close, one stage planning") end
     --Ball close, do a single-stage planning
     daGoal, kickAngle = evaluate_goal_kickangle(ballGlobal)
 
@@ -204,10 +235,7 @@ function robocupplanner.getKickAngle(pose,ballGlobal)
         })
       return max_score_angle
     else
-      print("No possible route")
-      print("No possible route")
-      print("No possible route")
-      print("No possible route")
+      print("No possible route")      
       return
     end
 

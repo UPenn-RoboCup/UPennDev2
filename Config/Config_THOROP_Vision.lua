@@ -59,8 +59,8 @@ vision.ball = {
   th_min_fill_rate = 0.35,
 
   --TODO: to test on real robot
-  max_height0 = 0.4,    --Max height = max_height0 + dist*max_height1
-  max_height1 = 0.15,
+  max_height0 = 0.3,    --Max height = max_height0 + dist*max_height1
+  max_height1 = 0.12,
 
   max_distance = 9, 
   th_ground_head_pitch = 50*DEG_TO_RAD,
@@ -218,7 +218,7 @@ table.insert(Config.camera,
     param = {
       {'White Balance Temperature', 3500},
       --{'Exposure (Absolute)', 200},
-      {'Exposure (Absolute)', 190},
+      {'Exposure (Absolute)', 200},  --200:day  160:night
       {'Focus (absolute)', 0},
       {'Brightness', 128},
       {'Contrast', 144},
@@ -296,8 +296,8 @@ if IS_WEBOTS then
   th_min_bbox_area = 10,
   th_min_area = 5,
   th_min_fill_rate = 0.35,
-  max_height0 = 0.4,    --Max height = max_height0 + dist*max_height1
-  max_height1 = 0.2,
+  max_height0 = 0.34,    --Max height = max_height0 + dist*max_height1
+  max_height1 = 0.19,
   max_distance = 9, 
   th_ground_head_pitch = 50*DEG_TO_RAD,
   th_ground_boundingbox = {-30,30,0,20},

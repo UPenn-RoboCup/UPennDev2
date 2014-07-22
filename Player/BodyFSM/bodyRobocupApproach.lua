@@ -243,25 +243,55 @@ function state.entry()
     print("Ball left")
     ball_side = 1
   end
+
+  
+  local ballx = wcm.get_ball_x()
+  local bally = wcm.get_ball_y()
+  local pose = wcm.get_robot_pose()
+  local ballGlobal = util.pose_global({ballx,bally,0},pose)
+
+
+  obstacle_num = wcm.get_obstacle_num()
+  for i=1,obstacle_num do   
+    local v =wcm['get_obstacle_v'..i]()
+    local rel_obs_x = v[1]-ballGlobal[1]
+    local rel_obs_y = v[2]-ballGlobal[2]
+    local obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)
+    local obs_angle = math.atan2(rel_obs_y, rel_obs_x)
+
+    if obs_dist<1.0 then
+      print("Obstacle close!!!")
+      if obs_angle>0 then --obstacle at left
+        ball_side = 1 --kick with the left kick
+      else
+        ball_side = -1 --kick with right kick
+      end
+    end
+  end
+
   last_ph = 0  
   last_step = 0
   wcm.set_robot_etastep(-1) --we're in approach
 
+  local ballX_threshold1 = Config.ballX_threshold1 or -2.5
+  local ballX_threshold2 = Config.ballX_threshold2 or 0.5
 
   --Determine kick types here!
---[[
-  mcm.set_walk_kicktype(1) --strong kick default
-  if Config.enable_weaker_kick then
-    local ballx = wcm.get_ball_x()
-    local bally = wcm.get_ball_y()
-    local pose = wcm.get_robot_pose()
-    local ballGlobal = util.pose_global({ballx,bally,0},pose)
-    if ballGlobal[1]<0.5 then
-      mcm.set_walk_kicktype(0)
-    end
-  end
---]]
 
+
+
+  if gcm.get_game_state()==3 then  --Only during actual playing
+
+
+  if ballGlobal[1]<ballX_threshold1 then
+      mcm.set_walk_kicktype(0) --Walkkick 
+  elseif ballGlobal[1]<ballX_threshold2 then
+      mcm.set_walk_kicktype(2) --Weaker Walkkick 
+  else
+    mcm.set_walk_kicktype(1) --strong kick default
+  end
+
+  end
 
 end
 

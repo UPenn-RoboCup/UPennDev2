@@ -60,8 +60,7 @@ local function update_velocity(self,vel)
   self.velCurrent = self.velCurrent+velDiff    
 
 
-  print(string.format("Walk vel:%.2f %.2f %.2f",
-    unpack(self.velCurrent)))
+--  print(string.format("Walk vel:%.2f %.2f %.2f",unpack(self.velCurrent)))
   return self.velCurrent
 end
 

@@ -182,7 +182,7 @@ int ConnectRegions_obs(std::vector <RegionProps> &props,
     for (int i = 0; i < m; i++) {
       
       uint8 pixel = *image++;
-      if (!(pixel & mask)) {
+      if (!(pixel == mask)) {
         label_array[i][j] = 0;
         continue;
       }

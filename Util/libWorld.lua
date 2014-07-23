@@ -75,17 +75,22 @@ local function add_obstacle(a, r, da, dr)
 end
 
 local function update_obstacles()  
+  local nObs = math.min(6,#obstacles)
   local counts={}
   for i=1,#obstacles do
---    print(string.format("Obstacle %d angle: %d dist: %.1f count: %d",
---      i,obstacles[i].aave*180/math.pi, obstacles[i].rave, obstacles[i].count))
+    print(string.format("Obstacle %d angle: %d dist: %.1f count: %d",
+      i,obstacles[i].aave*180/math.pi, obstacles[i].rave, obstacles[i].count))
     counts[i]=obstacles[i].count
   end
   --Sort the obstacles by their count
   table.sort(counts, function (a,b) return a>b end)
   --write top 3 obstacles to wcm
   local pose = wcm.get_robot_pose()
-  for i=1, math.min(3,#obstacles) do
+  -- print('?????', unpack(pose))
+  if IS_WEBOTS then
+    pose = wcm.get_robot_pose_gps()
+  end
+  for i=1, nObs do
     local not_found,j = true,1
     while not_found and j< #obstacles+1 do
       if obstacles[j].count==counts[i] then
@@ -103,7 +108,8 @@ local function update_obstacles()
       j=j+1
     end
   end
-  wcm.set_obstacle_num(math.min(2,#obstacles))
+  wcm.set_obstacle_num(nObs)
+  --print("I AM SET to obs count", nObs)
 end
 
 
@@ -263,7 +269,12 @@ function libWorld.update(uOdom, detection)
       wcm.set_robot_pose({-Config.world.xBoundary*factor2,0,0})
       wcm.set_robot_odometry({-Config.world.xBoundary*factor2,0,0})
     else --Attacker initial pos
-      poseFilter.initialize({0,0,0},{0,0,0})
+      -- poseFilter.initialize({0,0,0},{0,0,0})
+      if IS_WEBOTS then
+        poseFilter.initialize(vector.new(wcm.get_robot_pose_gps()), {0,0,0}) 
+      else
+        poseFilter.initialize({-3.5,0,0},{0,0,0})
+      end
       wcm.set_robot_pose({0,0,0})
       wcm.set_robot_odometry({0,0,0})
     end
@@ -284,9 +295,9 @@ function libWorld.update(uOdom, detection)
   update_vision(detection)
   if Config.use_gps_pose then
     wcm.set_robot_pose(wcm.get_robot_pose_gps())
-    wcm.set_obstacle_num(2)
-    wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
-    wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
+    -- wcm.set_obstacle_num(6)
+    -- wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
+    -- wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
 
     local pose = wcm.get_robot_pose_gps()
     local ballglobal = wcm.get_robot_gpsball()
@@ -409,9 +420,11 @@ function libWorld.send()
   end  
     
   -- Obstacles
-  if wcm.get_obstacle_num()>0 then
+  local nObs = wcm.get_obstacle_num()
+  --print("SENDING", nObs)
+  if nObs>0 then
     local obs = {}
-    for i=1,wcm.get_obstacle_num() do
+    for i=1,nObs do
       obs[i] = wcm['get_obstacle_v'..i]()
       to_send.info = to_send.info..string.format(
         'Obstacle: %.2f %.2f\n', unpack(obs[i]) )

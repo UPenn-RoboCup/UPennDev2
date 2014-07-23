@@ -260,7 +260,9 @@ local nJoint = Config.nJoint
 
   -- Default configuration (toggle during run time)
   local ENABLE_CAMERA = true --false
-  local ENABLE_LOG, t_log = false, 0
+  local ENABLE_LOG, t_log, img_cnt = false, 0, 0
+  -- local ENABLE_LOG, t_log, img_cnt = true, 0, 0
+
   if ENABLE_LOG then
   	libLog = require'libLog'
   	logger = libLog.new('yuyv', true)
@@ -658,22 +660,27 @@ local nJoint = Config.nJoint
       local udp_data = mp.pack(meta)..c_img
       local udp_ret, udp_err = cam_udp_ch:send(udp_data)
       --]]
-
+      
+      
       -- Logs for making colortable
       local meta = {
         t = t,
+        n = 0,
         sz = 0,
         w = w,
         h = h,
         id = 'head_camera',
         c = 'jpeg',
       }
-      
+            
       local t_now = Body.get_time()
       local LOG_INTERVAL = 1/20
-      if logger and t_now - t_log> LOG_INTERVAL then
+      if ENABLE_LOG and t_now - t_log> LOG_INTERVAL then
+        print('LOGGING...')
+        img_cnt = img_cnt + 1
         meta.t = t_now
-        --TODO: meta.cnt?
+        meta.n = img_cnt
+        --TODO:correct?
         local sz = 4/2*w*h  -- 4 bytes per 2 pixels
     		meta.rsz = sz
         meta[1] = vision.get_metadata()

@@ -10,8 +10,8 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-  orientation -0.0282314 0.988233 0.15033 2.66545
-  position 6.25456 6.49118 -11.6548
+  orientation -0.0507892 0.955386 0.290959 2.75509
+  position 6.33165 12.8024 -15.5201
 }
 Background {
   skyColor [
@@ -62,39 +62,52 @@ DEF YELLOW_GOAL TeenGoal {
   postColor 0.992157 0.854902 0.219608
 }
 DEF BALL BallGPS {
-  translation 2.818 0.109919 -0.0997866
+  translation 2.84082 0.109919 -0.211802
   radius 0.11
+  channel 13
 }
 DEF OBS1 ObjectGPS {
-  translation 1.87607 0.45 -0.931284
+  translation 1.87607 0.449871 -0.93129
+  rotation 1 5.45625e-06 -1.36622e-05 7.63672e-13
   controllerArgs "1"
+  channel 13
 }
 DEF OBS2 ObjectGPS {
-  translation -0.114047 0.45 -1.3917
+  translation -0.114047 0.449871 -1.39171
+  rotation 1 3.75602e-05 -7.13916e-06 7.63681e-13
   controllerArgs "2"
+  channel 13
 }
 DEF OBS3 ObjectGPS {
-  translation 2.10866 0.45 0.527748
+  translation 2.10866 0.449871 0.527742
+  rotation 1 5.64123e-05 -1.53816e-06 7.6367e-13
   controllerArgs "1"
+  channel 13
 }
 DEF OBS4 ObjectGPS {
-  translation -1.26984 0.45 -0.0169267
+  translation -1.26984 0.449871 -0.0169325
+  rotation 1 2.7799e-05 -1.20988e-05 7.63666e-13
   controllerArgs "2"
+  channel 13
 }
 DEF OBS5 ObjectGPS {
-  translation -2.17646 0.45 -0.738642
+  translation -2.17646 0.449871 -0.738648
+  rotation 1 5.39302e-06 9.08274e-06 7.63688e-13
   controllerArgs "1"
+  channel 13
 }
 DEF OBS6 ObjectGPS {
-  translation -0.541389 0.45 1.78704
+  translation -0.541389 0.449871 1.78703
+  rotation 1 3.65993e-05 3.67768e-05 7.63668e-13
   controllerArgs "2"
+  channel 13
 }
 DEF OPPONENT Block {
   translation -4.2 0.5 0
 }
 THOROP7_RoboCup_New {
-  translation 3.69159 1.07203 -0.164192
-  rotation 0.004289 0.999987 0.00286921 -1.57032
+  translation 3.70676 1.14318 -0.262187
+  rotation 0.00654174 0.999958 0.00637828 -1.57035
   controller "thorop"
   controllerArgs "0 32"
   cameraWindowPosition 0.72028 0.640288

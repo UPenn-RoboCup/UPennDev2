@@ -290,6 +290,8 @@ function state.entry()
   else
     mcm.set_walk_kicktype(1) --strong kick default
   end
+  
+  mcm.set_walk_kicktype(2)
 
   end
 

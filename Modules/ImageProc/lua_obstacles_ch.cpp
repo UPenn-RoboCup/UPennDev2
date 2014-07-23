@@ -90,7 +90,7 @@ int lua_obstacles(lua_State *L) {
     mask_g = luaL_optinteger(L, 6, 8); //field green
     mask_r = luaL_optinteger(L, 7, 1); //orange ball
     mask_w = luaL_optinteger(L, 8, 16); //line white
-    mask_c = luaL_optinteger(L, 8, 4); //cyan
+    mask_w = luaL_optinteger(L, 8, 4); //cyan
   }
   #endif
   else {
@@ -124,7 +124,7 @@ int lua_obstacles(lua_State *L) {
         int index_ij = j*m + index_i;
         uint8_t pixel = *(im_ptr+index_ij);
         //if ((pixel&mask_g) || (pixel&mask_r) || (pixel&mask_w)) {
-        if (!(pixel & mask_c)) {
+        if (!(pixel&mask_c)) {
           flag=1;
           if (j<minJ[index_i]) {
             if (j>horizon) minJ[index_i]=j;

@@ -122,6 +122,9 @@ shared.obstacle.num = vector.zeros(1)
 shared.obstacle.v1 = vector.zeros(2)
 shared.obstacle.v2 = vector.zeros(2)
 shared.obstacle.v3 = vector.zeros(2)
+shared.obstacle.v4 = vector.zeros(2)
+shared.obstacle.v5 = vector.zeros(2)
+shared.obstacle.v6 = vector.zeros(2)
 
 -- line for goalie
 shared.line = {}

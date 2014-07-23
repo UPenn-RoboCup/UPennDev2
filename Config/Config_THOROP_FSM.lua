@@ -54,7 +54,7 @@ fsm.Head = {
   
   --
   {'headTrack', 'balllost', 'headScan'},
-  {'headTrack', 'timeout', 'headLookGoal'},
+  {'headTrack', 'timeout', 'headObstacleScan'},
   {'headTrack', 'teleop', 'headTeleop'},
   {'headTrack', 'scanobs', 'headObstacleScan'},
   {'headTrack', 'kickfollow', 'headKickFollow'},

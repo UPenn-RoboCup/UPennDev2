@@ -19,21 +19,40 @@ extern "C"
 #endif
 
 int lua_connected_regions_obs(lua_State *L) {
-  static std::vector<RegionProps> props;
-
-  uint8_t *x = (uint8_t *) lua_touserdata(L, 1);
-  if ((x == NULL) || !lua_islightuserdata(L, 1)) {
-    return luaL_error(L, "Input image not light user data");
-  }
-  int mx = luaL_checkint(L, 2);
-  int nx = luaL_checkint(L, 3);
-  int8_t mask = luaL_optinteger(L, 4, 1);
 
   // horizon attempt
   //int no = luaL_checkint(L, 4);
   //uint8_t mask = luaL_optinteger(L, 5, 1);
   //int rowOffset = no * mx * sizeof(uint8);
   //int nlabel = ConnectRegions(props, x+rowOffset, mx, nx-no, mask);
+
+
+
+  static std::vector<RegionProps> props;
+  uint8_t *x;
+  int mx, nx;
+  int8_t mask;
+
+	if( lua_islightuserdata(L,1) ){
+		x = (uint8_t *) lua_touserdata(L, 1);
+		mx = luaL_checkint(L, 2);
+		nx = luaL_checkint(L, 3);
+    mask = luaL_optinteger(L, 4, 1);
+	}
+#ifdef TORCH
+	else if(luaT_isudata(L,1,"torch.ByteTensor")){
+		THByteTensor* b_t =
+			(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+		x = b_t->storage->data;
+    nx = b_t->size[0];
+		mx = b_t->size[1];
+    mask = luaL_optinteger(L, 2, 1);
+	}
+#endif
+	else {
+		return luaL_error(L, "Input image invalid");
+	}
+
 
   int nlabel = ConnectRegions_obs(props, x, mx, nx, mask);
   if (nlabel <= 0) {

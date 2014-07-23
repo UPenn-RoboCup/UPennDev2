@@ -234,24 +234,29 @@ local function projectGround(v,targetheight)
   return vout
 end
 
+
 function libVision.ball(labelA_t, labelB_t, cc_t)
   debug_ball_clear() 
   
-  local cc = cc_t[colors.orange]
-  if cc<6 then return'Color count' end
+  local cc = cc_t[colors.black]
+  -- print(cc)
+  if cc<100 then return'Color count' end
+  
   -- Connect the regions in labelB
-  local ballPropsB = ImageProc.connected_regions(labelB_t, 1)
-  if not ballPropsB then return'No connected regions' end
+  local ballPropsB = ImageProc.connected_regions_obs(labelB_t, colors.black)
+  -- print('ballProps', ballPropsB)
+  if not ballPropsB then return 'No connected regions' end
   local nProps = #ballPropsB
-  if nProps==0 then return'0 connected regions' end
-  --
+  if nProps==0 then return '0 connected regions' end
+  --  
   local failures, successes = {}, {}
   for i=1,math.min(5, nProps) do
+    
     debug_ball("Checking "..i.." / "..nProps.."\n")
     local check_fail = false
     -- Check the image properties
     local propsB = ballPropsB[i]
-    local propsA = check_prop(colors.orange, propsB, b_bbox_area, b_area, b_fill_rate, labelA_t)
+    local propsA = check_prop(colors.black, propsB, b_bbox_area, b_area, b_fill_rate, labelA_t)
     if type(propsA)=='string' then 
       debug_ball(propsA)
       check_fail = true
@@ -572,7 +577,7 @@ function libVision.obstacle(labelB_t)
 		local ty = obsProps[i].position[2] - 2*obsProps[i].width
 		local by = obsProps[i].position[2]
 		local black_box = {lx, rx, ty, by}
-		local blackStats, box_area = bboxStats('b', colors.black, black_box)
+		local blackStats, box_area = bboxStats('b', colors.cyan, black_box)
     local black_fill_rate = blackStats.area / box_area
 		if black_fill_rate < min_black_fill_rate then
 			check_passed = false
@@ -645,7 +650,7 @@ function libVision.obstacle(labelB_t)
     obsStats.iv, obsStats.xs, obsStats.ys = {},{},{}
     obsStats.axisMinor, obsStats.axisMajor, obsStats.orientation = {}, {}, {}
     table.sort(obstacle.dist)
-    for i=1, math.min(5, obstacle.count) do
+    for i=1, math.min(6, obstacle.count) do
       obsStats.iv[i] = obstacle.iv[obstacle.dist[i]]
 	    local pos = vector.new(obstacle.v[obstacle.dist[i]])  -- LOCAL
       obsStats.xs[i] = pos[1]
@@ -815,6 +820,7 @@ function libVision.update(img)
   -- In camera wizard, we do not switch cameras, so call only once
   local cc_t = ImageProc2.color_count(labelA_t)
   local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc_t)
+  -- local ball_fails, ball = libVision.ball_new(labelB_t, cc_t)
   local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc_t)
 	local obstacle_fails, obstacles
   local line_fails, lines

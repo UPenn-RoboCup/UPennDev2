@@ -75,7 +75,7 @@ function state.update()
 
   -- print('Ball dist:', math.sqrt(ballX*ballX + ballY*ballY))
   -- Look at Goal
-  if not Config.demo and not Config.use_gps_pose and t-t_entry > timeout then
+  if not Config.demo and t-t_entry > timeout then
     -- If robot is close to the ball then do not look up
 --    if math.sqrt(ballX*ballX + ballY*ballY) > Config.fsm.headTrack.dist_th then
     if wcm.get_robot_traj_num(count)>=(Config.min_steps_lookdown or 5) then

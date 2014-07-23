@@ -456,15 +456,26 @@ function robocupplanner.getGoalieTargetPose(pose,ballGlobal)
   local ballGoalAngleL = math.atan2(-ballFromGoalL[2],-ballFromGoalL[1])
   local ballGoalAngleR = math.atan2(-ballFromGoalR[2],-ballFromGoalR[1])
   local ballGoalAngleCenter = (ballGoalAngleL+ballGoalAngleR)/2
+
+
+  
+  local ballAngleFactor = Config.ballAngleFactor or 1.0
+  ballGoalAngleCenter = ballGoalAngleCenter * ballAngleFactor
+
   -- x = ball(1) + t*cos(angle) = -Config.world.xBoundary
   -- y = ball(2) + t*sin(angle) 
   local factor2 = Config.world.goalieFactor or 0.88 --Goalie pos
   local factor1 = factor2 - 0.02 --max ball pos
   ballGlobal[1] = math.max(  -Config.world.xBoundary * factor1, ballGlobal[1])
-  local t = (-Config.world.xBoundary*factor2 - ballGlobal[1])/math.cos(ballGoalAngleCenter) 
---  local target_position_x = -Config.world.xBoundary * factor2
 
-  local target_position_x = pose[1]
+
+  local goaliePosX = Config.goaliePosX or 0.08
+  local t = (-Config.world.xBoundary+ goaliePosX - ballGlobal[1])/math.cos(ballGoalAngleCenter) 
+
+
+
+  local target_position_x = -Config.world.xBoundary+ goaliePosX
+--  local target_position_x = pose[1]
 
   local target_position_y = ballGlobal[2] + math.sin(ballGoalAngleCenter)*t
   local target_position_a = pose[3]
@@ -474,11 +485,10 @@ function robocupplanner.getGoalieTargetPose(pose,ballGlobal)
   target_position_a = pose[3]
 
 
---[[
-  --Facing towards the ball
-  local ballfromtarget = {ballGlobal[1]-target_position_x,ballGlobal[2]-target_position_y}
-  target_position_a = math.atan2(ballfromtarget[2],ballfromtarget[1])
- --]] 
+  if Config.goalie_turn_to_ball then  --Facing towards the ball
+    local ballfromtarget = {ballGlobal[1]-target_position_x,ballGlobal[2]-target_position_y}
+    target_position_a = math.atan2(ballfromtarget[2],ballfromtarget[1])
+  end
 
   return {target_position_x, target_position_y, target_position_a}
 end
@@ -502,7 +512,7 @@ function robocupplanner.getVelocityGoalie(pose,target_pose , threshold)
   local vx,vy,va = 0,0,0
 
   va = 0.3*util.mod_angle(homeRelative[3])
-  maxStep,maxA = 0.05,0.2
+  maxStep,maxA = 0.06,0.2
   vx = maxStep * homeRelative[1]/rHomeRelative
   vy = maxStep * homeRelative[2]/rHomeRelative
   va = math.min(maxA, math.max(-maxA, va))

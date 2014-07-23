@@ -89,7 +89,6 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupFollow.circleR = 1
   Config.fsm.bodyRobocupFollow.kickoffset = 0.5
 
-
   Config.fsm.bodyRobocupApproach.target={0.25,0.12}  
   Config.fsm.bodyRobocupApproach.th = {0.01, 0.01}
   Config.world.use_imu_yaw = true
@@ -108,8 +107,6 @@ if IS_WEBOTS then
 end
 
   Config.stop_at_neutral = true --false for walk testing
-
-
 
 --FOR real robot
   Config.walk.velLimitX = {-.10,.15} 
@@ -151,10 +148,7 @@ end
 
 --  Config.auto_state_advance = true
   Config.auto_state_advance = false
-
-  --Config.enable_goalie_legspread = true
-  Config.enable_goalie_legspread = false
-
+  
   Config.enable_single_goalpost_detection = false
   Config.enable_single_goalpost_detection = true
 
@@ -169,9 +163,22 @@ end
   Config.maxStepApproach1 = 0.10
   Config.maxStepApproach2 = 0.06
 
-
   Config.supportY_preview = -0.02
   Config.supportY_preview2 = -0.01
+
+---------------------------------------------------------------
+--Semi-final config end
+---------------------------------------------------------------
+
+
+  Config.goalie_odometry_only = true
+  Config.goaliePosX = 0.20
+
+  Config.goalie_turn_to_ball = true
+  Config.ballAngleFactor = 1.2
+
+  Config.enable_goalie_legspread = true --NOT WORKING FOR NOW
+  Config.enable_goalie_legspread = false
 
 
 return Config

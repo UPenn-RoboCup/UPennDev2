@@ -21,6 +21,13 @@ function state.entry()
   t_update = t_entry    
   t_plan = t_entry
   old_state = gcm.get_game_state()
+
+
+  if Config.enable_goalie_legspread and wcm.get_robot_legspread()==1 then
+    mcm.set_walk_kicktype(10) --UNSPREAD
+    mcm.set_walk_steprequest(1)    
+    wcm.set_robot_legspread(0)
+  end
 end
 
 local function plan_whole()

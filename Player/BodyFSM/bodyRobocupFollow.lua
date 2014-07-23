@@ -75,7 +75,8 @@ local function update_velocity()
 
 --Recalculate every 5 steps
 
---  if kickAngleNew then kickAngle = kickAngleNew end
+  if kickAngleNew then kickAngle = kickAngleNew end
+--[[  
   if kickAngleNew then
     if not kickAngle then kickAngle=kickAngleNew 
     else
@@ -86,7 +87,7 @@ local function update_velocity()
       end
     end
   end
- 
+ --]]
 
   local kickAngleTemp = kickAngle or 0
   local target_pose,rotate = robocupplanner.getTargetPose(pose,ballGlobal,kickAngleTemp)    

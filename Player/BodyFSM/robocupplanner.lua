@@ -134,7 +134,7 @@ function evaluate_kickangle(ballGlobal,angle, kick_deviation_angle)
     local angle_diff = math.max(0, math.abs(util.mod_angle(obs_angle-angle)) - kick_deviation_angle)
     local obs_closest_dist 
 
-    if false and kick_distance_max<obs_tangent_dist then
+    if kick_distance_max<obs_tangent_dist then
       local ballClosestPosRel = {
         obs_dist - kick_distance_max*math.cos(angle_diff),  
         kick_distance_max*math.sin(angle_diff)  
@@ -164,9 +164,9 @@ function evaluate_kickangle(ballGlobal,angle, kick_deviation_angle)
       print(string.format("%s goalAngle %d",outstr,daGoal*180/math.pi))            
 --      print(string.format("%s max obstacle dist: %d",outstr,daGoal*180/math.pi))            
     end
-    if daGoal>0 then return daGoal, kickAngle2 , ballEndPos end
+    if daGoal>0 then return daGoal, kickAngle2, ballEndPos end
   else
-    if Config.debug.planning then  print(outstr) end
+    if Config.debug.planning then print(outstr) end
     return
   end    
 end
@@ -207,9 +207,10 @@ function robocupplanner.getKickAngle(pose,ballGlobal)
     --Two-stage planning
 
     local score,kickangle2, ballEndPos
-    for a = -8,8 do
+--    for a = -8,8 do
+  for _, a in ipairs{-8, -6, -4, -2, 8, 6, 4, 2} do
       local angle = a*10*DEG_TO_RAD
-      score, kickangle2, ballEndPos = evaluate_kickangle(ballGlobal,angle)
+      score, kickangle2, ballEndPos = evaluate_kickangle(ballGlobal, angle)
       if score and score > max_score then
         max_score_angle = angle
         max_score_angle2 = kickangle2

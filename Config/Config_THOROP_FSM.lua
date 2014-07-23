@@ -193,7 +193,7 @@ fsm.headReady = {
 --HeadTrack
 fsm.headTrack = {
   tLost = 5,
-  timeout = 6,
+  timeout = 8,
 	dist_th = 0.5,
 }
 
@@ -209,8 +209,9 @@ fsm.headSweep = {
 }
 
 fsm.headObstacleScan = {
-  yawMag = 55*DEG_TO_RAD,
-  pitchUp = 25*DEG_TO_RAD,
+  --yawMag = 55*DEG_TO_RAD,
+  yawMag = 5*DEG_TO_RAD,
+  pitchUp = 20*DEG_TO_RAD,
   pitchDown = 35*DEG_TO_RAD,
 }
 

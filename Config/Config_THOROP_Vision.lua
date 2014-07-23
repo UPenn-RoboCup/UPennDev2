@@ -54,17 +54,19 @@ local vision = {
 
 vision.ball = {
   diameter = 0.22,
-  th_min_bbox_area = 40, --50
-  th_min_area = 20, --10,
-  th_min_fill_rate = 0.35,
+  th_min_bbox_area = 50, --50
+  th_min_area = 30, --10,
+  th_min_fill_rate = 0.45,
 
   --TODO: to test on real robot
   max_height0 = 0.3,    --Max height = max_height0 + dist*max_height1
   max_height1 = 0.12,
+  
+  th_aspect_ratio = {0.65, 1.35}, 
 
   max_distance = 9, 
   th_ground_head_pitch = 50*DEG_TO_RAD,
-  th_ground_boundingbox = {-30,30,0,20},
+  th_ground_boundingbox = {-40,40,0,35},
   th_ground_green = 400,  --TODO
   th_ground_white = 150,  --TODO
   check_for_ground = 1,
@@ -234,7 +236,7 @@ if IS_WEBOTS then
   Config.camera[1].w = 320
   Config.camera[1].h = 180
   -- Config.camera[1].lut = 'webots74'
-  Config.camera[1].lut = 'webots_w_white'
+  Config.camera[1].lut = 'webots_w_whiteyuyv_07.22.2014.03.54.06.mat'
   -- Config.camera[1].lut = 'webots_challenge'
   
 

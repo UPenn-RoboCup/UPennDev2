@@ -166,7 +166,7 @@ local function update_vision(detected)
 
 
   if Config.disable_ball_when_lookup and wcm.get_ball_disable()>0 then
-    print("BALL DISABLED")
+--    print("BALL DISABLED")
   else
     if ball then
       ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)

@@ -26,10 +26,13 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+--[[
   if wcm.get_robot_legspread()==1 then
         --If we spread legs apart already, we won't reposition
     return
   end
+--]]
+
 
   -- if we see ball right now and ball is far away start moving
   local ball_elapsed = t - wcm.get_ball_t()
@@ -42,6 +45,8 @@ function state.update()
     local ballGlobal = util.pose_global(ball_local, pose)
   
     goalieBallX_th = Config.goalieBallX_th or 0.5
+
+print("Ball pos:",ballGlobal[1],ballGlobal[2])
 
     if ballGlobal[1]<-goalieBallX_th then
       local target_pose = robocupplanner.getGoalieTargetPose(pose,ballGlobal)

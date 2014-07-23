@@ -20,6 +20,8 @@ shared.game.role = vector.ones(1)
 
 shared.game.gctime = vector.ones(1)
 
+shared.game.autoadvance = vector.ones(1)
+
 -- Keep track of every state machine
 -- Use the Config'd FSMs
 shared.fsm = {}

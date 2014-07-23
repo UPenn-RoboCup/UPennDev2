@@ -129,15 +129,15 @@ local count
 
 function state.update()
   --not playing?
-  if gcm.get_game_state()~=3 then 
-print("NOT PLAYING")
-print("NOT PLAYING")
-print("NOT PLAYING")
-print("NOT PLAYING")
-print("NOT PLAYING")
-print("NOT PLAYING")
-return'stop' 
-end
+  if gcm.get_game_state()~=3 or gcm.get_game_role()==2 then 
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    return'stop' 
+  end
 
   --print(state._NAME..' Update' )
   -- Get the time of update

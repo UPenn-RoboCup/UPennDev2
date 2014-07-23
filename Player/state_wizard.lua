@@ -62,7 +62,9 @@ local rgb = {255,255,255}
 gcm.set_game_role(Config.default_role or 2) --Testing
 gcm.set_game_state(Config.default_state or 5) --Pre-init
 
-
+--To stop the head movement for tester role
+local simple_ipc = require'simple_ipc'
+local head_ch   = simple_ipc.new_publisher('HeadFSM!')
 
 local led_count = 0
 
@@ -108,6 +110,8 @@ while running do
       else
         gcm.set_game_role(2) --tester role
         gcm.set_game_state(6) --tester state
+        head_ch:send'teleop'
+        gcm.set_game_autoadvance(0)
       end
     end
 
@@ -123,6 +127,9 @@ while running do
     local gamecontroller_timeout = Config.gamecontroller_timeout or 10.0
     if Body.get_time() - gcm.get_game_gctime() < gamecontroller_timeout  then
       intensity = led_count%2
+      gcm.set_game_autoadvance(1)
+    else
+      gcm.set_game_autoadvance(0)
     end
 
     Body.set_head_led_red(rgb[1]*intensity)

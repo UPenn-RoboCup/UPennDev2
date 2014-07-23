@@ -273,8 +273,8 @@ kick.stepqueue["RightKick2"]=
 
   kick.stepqueue["LeftKick3"]=
     {
-      {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {-0.02,0.02,0},{0,walk.stepHeight,0}}, --ls
-      {{0.12,0,0},1,  tSlope1, tStepMid * 1.2, tSlope2,   {-0.02,0.04,0}, {-1,1.5*walk.stepHeight,0}}, --rf kick    
+      {{0.08,0,0},0,  tSlope1, tStepMid, tSlope2,   {-0.02,0.02,0},{0,walk.stepHeight,0}}, --ls
+      {{0.09,0,0},1,  tSlope1, tStepMid * 3, tSlope2,   {-0.02,0.04,0}, {-1,1.5*walk.stepHeight,0}}, --rf kick    
       {{0.00,0,0},0, tSlope1, tStepMid, tSlope2, {0,0,0}, {-9,walk.stepHeight,0}},
       {{0.0,0,0},1, tSlope1, tStepMid, tSlope2, {0,0,0}, {-9,walk.stepHeight,0}}, 
       {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2, {0,0,0}, {-9,walk.stepHeight,0}}, 
@@ -283,9 +283,9 @@ kick.stepqueue["RightKick2"]=
   kick.stepqueue["RightKick3"]=
     {
       -- left support
-      { {0.12,0,0}, 1, tSlope1, tStepMid, tSlope2, {-0.02,-0.02,0},{0,walk.stepHeight,0}}, 
+      { {0.08,0,0}, 1, tSlope1, tStepMid, tSlope2, {-0.02,-0.02,0},{0,walk.stepHeight,0}}, 
       -- right foot kick
-      {{0.12,0,0},0, tSlope1, tStepMid * 1.2, tSlope2, {-0.02,-0.04,0},{-1, 1.5*walk.stepHeight,0}},
+      {{0.09,0,0},0, tSlope1, tStepMid * 3, tSlope2, {-0.02,-0.04,0},{-1, 1.5*walk.stepHeight,0}},
       -- left support
       {{0.00,0,0},1, tSlope1, tStepMid, tSlope2, {0,0,0},{-9,walk.stepHeight,0}},
       {{0.0,0,0},0, tSlope1, tStepMid, tSlope2, {0,0,0},{-9,walk.stepHeight,0}}, 

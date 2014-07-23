@@ -78,8 +78,8 @@ local function update_obstacles()
   local nObs = math.min(6,#obstacles)
   local counts={}
   for i=1,#obstacles do
-    print(string.format("Obstacle %d angle: %d dist: %.1f count: %d",
-      i,obstacles[i].aave*180/math.pi, obstacles[i].rave, obstacles[i].count))
+    -- print(string.format("Obstacle %d angle: %d dist: %.1f count: %d",
+    --   i,obstacles[i].aave*180/math.pi, obstacles[i].rave, obstacles[i].count))
     counts[i]=obstacles[i].count
   end
   --Sort the obstacles by their count

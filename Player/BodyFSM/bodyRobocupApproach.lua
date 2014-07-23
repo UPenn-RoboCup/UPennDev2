@@ -291,7 +291,8 @@ function state.entry()
     mcm.set_walk_kicktype(1) --strong kick default
   end
   
-  mcm.set_walk_kicktype(2)
+  -- FOR DRIBBLING
+  mcm.set_walk_kicktype(3)
 
   end
 

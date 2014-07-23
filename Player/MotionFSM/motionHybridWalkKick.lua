@@ -140,7 +140,7 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
   local maxSteps = 40
   step_queue_vector = vector.zeros(12*maxSteps)
 
-  --Enque another step in front of kick steps
+  --Enqueue another step in front of kick steps
   if pre_step then
     local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
     local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])

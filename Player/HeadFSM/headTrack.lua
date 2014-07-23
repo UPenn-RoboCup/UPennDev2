@@ -27,6 +27,7 @@ function state.entry()
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
+  wcm.set_ball_disable(0)  
 end
 
 function state.update()
@@ -50,9 +51,10 @@ function state.update()
     return 'balllost'
   end
 
-  local ballX, ballY = wcm.get_ball_x() - 0.5 , wcm.get_ball_y()
-  local yaw, pitch = HT.ikineCam(ballX, ballY, ball_radius)
 
+
+  local ballX, ballY = wcm.get_ball_x() , wcm.get_ball_y()
+  local yaw, pitch = HT.ikineCam(ballX, ballY, ball_radius)
 
   local qNeckActual =  Body.get_head_position()
 
@@ -66,11 +68,12 @@ function state.update()
     dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}
   end
 
+--[[
 --TEMPORART FIX FOR HT ISSUE
   if pitch < 60*DEG_TO_RAD then
   	pitch = math.max(0*math.pi/180, pitch-9*math.pi/180)
 	end
-
+--]]
 
 
   -- print('Ball dist:', math.sqrt(ballX*ballX + ballY*ballY))

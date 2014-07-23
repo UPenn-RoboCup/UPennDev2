@@ -121,7 +121,6 @@ end
 
   Config.approachTargetX = {
     0.45, --for kick 0 (walkkick)
---    0.30, --for kick 1 (st kick)
     0.28, --for kick 1 (st kick)
     0.35  --for kick 2 (weak walkkick)
   }
@@ -155,18 +154,19 @@ end
   --Config.enable_goalie_legspread = true
   Config.enable_goalie_legspread = false
 
---  Config.stop_at_neutral = true --false for walk testing
---  Config.stop_at_neutral = false --false for walk testing
-
-
   Config.enable_single_goalpost_detection = false
   Config.enable_single_goalpost_detection = true
-
-
 
 -- Config.enable_weaker_kick = true
 
   Config.use_walkkick = true
 --  Config.use_walkkick = false
+
+  Config.disable_ball_when_lookup = true
+
+  Config.maxStepApproachTh = 0.20
+  Config.maxStepApproach1 = 0.10
+  Config.maxStepApproach2 = 0.10
+
 
 return Config

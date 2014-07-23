@@ -27,6 +27,7 @@ function state.entry()
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
+  wcm.set_ball_disable(0)  
 end
 
 function state.update()

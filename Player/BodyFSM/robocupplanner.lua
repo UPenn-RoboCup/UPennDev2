@@ -474,15 +474,30 @@ function robocupplanner.getGoalieTargetPose(pose,ballGlobal)
 
 
 
+
+
   local target_position_x = -Config.world.xBoundary+ goaliePosX
 --  local target_position_x = pose[1]
 
   local target_position_y = ballGlobal[2] + math.sin(ballGoalAngleCenter)*t
   local target_position_a = pose[3]
+
+  local max_goalie_y = Config.max_goalie_y or 0.7
+
   target_position_y = math.max(
-    -Config.world.goalWidth/2 * 0.7, math.min(
-      Config.world.goalWidth/2 * 0.7 , target_position_y* ballYFactor ))
-  target_position_a = pose[3]
+    -Config.world.goalWidth/2 * max_goalie_y, math.min(
+      Config.world.goalWidth/2 * max_goalie_y , target_position_y* ballYFactor ))
+
+
+  local goalie_y_ratio = math.abs(target_position_y / (Config.world.goalWidth/2))
+
+  local x_diff_side = -0.20
+
+
+  target_position_x = target_position_x + (x_diff_side*goalie_y_ratio)
+
+--  target_position_a = pose[3]
+  target_position_a = 0 --this fixes drifting
 
   if Config.goalie_turn_to_ball then  --Facing towards the ball
     local ballfromtarget = {ballGlobal[1]-target_position_x,ballGlobal[2]-target_position_y}
@@ -502,7 +517,10 @@ function robocupplanner.getVelocityGoalie(pose,target_pose , threshold)
   local homeRot = math.abs(aHomeRelative)
   local homeRotBack = math.abs(util.mod_angle(aHomeRelative - math.pi))
 
-  if math.abs(homeRelative[1])<threshold and 
+  local goalie_threshold_x = Config.goalie_threshold_x or 0.10
+
+
+  if math.abs(homeRelative[1])<goalie_threshold_x and 
     math.abs(homeRelative[2])<threshold and
     math.abs(util.mod_angle(homeRelative[2])) < 20*math.pi/180     then
     return {0,0,0},true

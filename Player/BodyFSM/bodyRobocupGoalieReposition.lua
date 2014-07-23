@@ -41,6 +41,21 @@ function state.update()
     motion_ch:send'hybridwalk'
   end
 
+
+  --not playing?
+  if gcm.get_game_state()~=3 or gcm.get_game_role()==2 then 
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    mcm.set_walk_stoprequest(1)    
+    return'stop' 
+  end
+
+
+
   --[[
   if t-t_entry > timeout then
     return'timeout'

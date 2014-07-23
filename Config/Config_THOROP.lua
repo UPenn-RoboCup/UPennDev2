@@ -168,6 +168,7 @@ end
 
 --Config.enable_goalie_legspread = true --NOT WORKING FOR NOW
   --Config.enable_goalie_legspread = false
+  --Config.goalie_turn_to_ball = true
 
 ---------------------------------------------------------------
 --Semi-final config end
@@ -176,15 +177,19 @@ end
 
   Config.goalieBallX_th = -0.5
   Config.goalie_odometry_only = true
-  --Config.goaliePosX = 0.20
   Config.goaliePosX = 0.40
-
-  --Config.goalie_turn_to_ball = true
-  Config.ballYFactor = 1.2
-  
-
+  Config.ballYFactor = 1.4
   Config.gamecontroller_detect = true
   Config.gamecontroller_timeout = 5.0
+
+
+  Config.max_goalie_y = 0.7
+---------------------------------------------------
+-- testing
+
+  Config.goalie_threshold_x = 0.10
+
+
   
 
 return Config

@@ -206,17 +206,15 @@ function robocupplanner.getKickAngle(pose,ballGlobal)
   else
     --Two-stage planning
 
-    local score,kickangle2 
+    local score,kickangle2, ballEndPos
     for a = -8,8 do
       local angle = a*10*DEG_TO_RAD
-      local score, kickangle2,ballEndPos = evaluate_kickangle(ballGlobal,angle)
-      if score then
-        if score>max_score then
-          max_score_angle = angle
-          max_score_angle2 = kickangle2
-          best_ballEndPos1 = ballEndPos
-          max_score = score
-        end
+      score, kickangle2, ballEndPos = evaluate_kickangle(ballGlobal,angle)
+      if score and score > max_score then
+        max_score_angle = angle
+        max_score_angle2 = kickangle2
+        best_ballEndPos1 = ballEndPos
+        max_score = score
       end
     end
 
@@ -236,7 +234,27 @@ function robocupplanner.getKickAngle(pose,ballGlobal)
         })
       return max_score_angle
     else
-      print("No possible route")      
+      print("No possible route...")
+      print("Selecting away from nearby obstacle...")
+      
+      local nObs = wcm.get_obstacle_num()  
+      local v, rel_obs_x, rel_obs_y, obs_dist, obs_angle
+      local closest_obs_angle, closest_obs_dist = 0, math.huge
+      for i=1,nObs do 
+        v = wcm['get_obstacle_v'..i]()
+        rel_obs_x = v[1]-ballGlobal[1]
+        rel_obs_y = v[2]-ballGlobal[2]
+        obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)
+        obs_angle = math.atan2(rel_obs_y, rel_obs_x)
+        if obs_dist<closest_obs_dist then closest_obs_angle = obs_angle end
+      end
+      -- Go somewhat away
+      if closest_obs_angle>0 then
+        return closest_obs_angle - math.pi / 3
+      else
+        return closest_obs_angle + math.pi / 3
+      end
+      print("Should not be here...")
       return
     end
 

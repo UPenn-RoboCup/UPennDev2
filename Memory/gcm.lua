@@ -13,7 +13,10 @@ local shsize = {};
 -- 6 for testing
 
 shared.game = {};
-shared.game.state = vector.zeros(1);
+-- Share the game state
+shared.game.state = vector.zeros(1)
+-- Save the game time
+shared.game.timeleft = vector.zeros(1)
 
 -- 0: goalie   1: attacker   2:Force stop and go to Testing
 shared.game.role = vector.ones(1)

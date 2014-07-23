@@ -171,7 +171,7 @@ function evaluate_kickangle(ballGlobal,angle, kick_deviation_angle)
 end
 
 
-function robocupplanner.getKickAngle(pose,ballGlobal)
+function robocupplanner.getKickAngle(pose,ballGlobal,prevKickAngle)
   local max_score = -math.huge
   local max_score_angle, max_score_angle2, best_ballEndPos1
 
@@ -183,8 +183,8 @@ function robocupplanner.getKickAngle(pose,ballGlobal)
     daGoal, kickAngle = evaluate_goal_kickangle(ballGlobal)
 
     if not kickAngle then 
-      kickAngle = 0
-      kickAngle2 = 0
+      kickAngle = prevKickAngle or 0
+      kickAngle2 = prevKickAngle or 0
     end
 
     wcm.set_robot_kickneeded(1)
@@ -224,16 +224,27 @@ function robocupplanner.getKickAngle(pose,ballGlobal)
         print(string.format("Best kick angle: first %d and then %d",
           max_score_angle*180/math.pi, max_score_angle2*180/math.pi))
       end
-      wcm.set_robot_kickneeded(2)
-      wcm.set_robot_kickangle1(max_score_angle)
-      wcm.set_robot_kickangle2(max_score_angle2)
-      wcm.set_robot_ballglobal2({best_ballEndPos1[1],best_ballEndPos1[2]})
 
-      wcm.set_robot_ballglobal3({
-        best_ballEndPos1[1] + 3.0 *math.cos(max_score_angle2),
-        best_ballEndPos1[2] + 3.0 *math.sin(max_score_angle2)
-        })
-      return max_score_angle
+      local use_new_angle = false
+      if not prevKickAngle then use_new_angle = true 
+      else
+        local anglediff1 = math.abs(util.mod_angle(max_score_angle-prevKickAngle))
+        if anglediff1<20*math.pi/180 then use_new_angle = true end
+      end
+      if use_new_angle then
+        wcm.set_robot_kickneeded(2)
+        wcm.set_robot_kickangle1(max_score_angle)
+        wcm.set_robot_kickangle2(max_score_angle2)
+        wcm.set_robot_ballglobal2({best_ballEndPos1[1],best_ballEndPos1[2]})
+
+        wcm.set_robot_ballglobal3({
+          best_ballEndPos1[1] + 3.0 *math.cos(max_score_angle2),
+          best_ballEndPos1[2] + 3.0 *math.sin(max_score_angle2)
+          })
+        return max_score_angle
+      else
+        return prevKickAngle
+      end
     else
       print("No possible route")      
       return

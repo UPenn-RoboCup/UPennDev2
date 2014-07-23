@@ -42,7 +42,7 @@ while running do
 
 		gc_state = tonumber(gc_pkt.state)
 		gcm.set_game_state(gc_state)
-    gcm.set_gctime(Body.get_time())
+    gcm.set_game_gctime(Body.get_time())
 
 
     cur_pkt = gc_pkt.packetNumber

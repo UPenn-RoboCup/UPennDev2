@@ -218,7 +218,7 @@ fsm.headObstacleScan = {
 fsm.bodyRobocupFollow = {
   th_lfoot = 0.001,
   th_rfoot = 0.001,
-  th_dist = 0.08,  --TODO
+  th_dist = 0.12,  --TODO
 }
 
 fsm.bodyRobocupApproach = {
@@ -228,7 +228,7 @@ fsm.bodyRobocupApproach = {
 
 if IS_WEBOTS then
   fsm.headScan.tScan = 16
-  fsm.bodyRobocupFollow.th_dist = 0.18
+  fsm.bodyRobocup.th_dist = 0.18
 end
 
 Config.fsm = fsm

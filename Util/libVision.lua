@@ -287,7 +287,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
         
         -- Distance check
         if not check_fail then
-          if math.sqrt(v[1]*v[1]+v[2]*v[2])>2 then
+          if math.sqrt(v[1]*v[1]+v[2]*v[2])>3.5 then
             debug_ball('TOO FAR')
             check_fail = true
           end

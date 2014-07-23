@@ -166,6 +166,11 @@ end
   Config.supportY_preview = -0.02
   Config.supportY_preview2 = -0.01
 
+local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
+local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
+local tStepMid =Config.walk.tStep-tSlope1-tSlope2
+
+
 ---------------------------------------------------------------
 --Semi-final config end
 ---------------------------------------------------------------
@@ -186,10 +191,6 @@ end
 local spread_angle = 10*math.pi/180
 local spread_width = 0.06
 
-local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
-local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
-local tStepMid =Config.walk.tStep-tSlope1-tSlope2
-
 --Testing goalie leg spread
   Config.kick.stepqueue["GoalieSpread"]=  {
     {{0,-spread_width,-spread_angle},0,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
@@ -203,5 +204,9 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
           1,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}    }, --ls
     {{0,0,0},2,  0.1,1, 0.1,   {0,0,0},{0,0,0}}, 
   }
+
+  Config.gamecontroller_detect = true
+  Config.gamecontroller_timeout = 10.0
+  
 
 return Config

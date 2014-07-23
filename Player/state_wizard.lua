@@ -62,6 +62,10 @@ local rgb = {255,255,255}
 gcm.set_game_role(Config.default_role or 2) --Testing
 gcm.set_game_state(Config.default_state or 5) --Pre-init
 
+
+
+local led_count = 0
+
 while running do
   t = get_time()
   -- Update the state machines
@@ -74,28 +78,23 @@ while running do
     --print('Wire', vcm.get_wire_model())
 --    print("GCM ROLE:",gcm.get_game_role())
 --    print("GCM STATE:",gcm.get_game_state())
-
-
 	end
 
   local  current_lidar_deg = Body.get_lidar_position()[1] * RAD_TO_DEG
 --print(current_lidar_deg)
 
   if t-t_switch>1.0 then
+    led_count = led_count +1
     t_switch = t
     local  current_lidar_deg = Body.get_lidar_position()[1] * RAD_TO_DEG
 --print(current_lidar_deg)
     local cur_position 
     if current_lidar_deg>45 then
       cur_position=1
-      rgb={255,0,0}
     elseif current_lidar_deg<-45 then
       cur_position = -1
-      rgb={0,0,255}
     else
       cur_position = 0
-      rgb={255,0,255}
-
     end
 --    print(cur_position, rgb[1],rgb[3])
     if cur_position~=last_position then
@@ -110,16 +109,25 @@ while running do
         gcm.set_game_role(2) --tester role
         gcm.set_game_state(6) --tester state
       end
-
-
-  local intensity = 1.0
-  Body.set_head_led_red(rgb[1]*intensity)
-  Body.set_head_led_blue(rgb[3]*intensity)
-  Body.set_head_led_green(rgb[3]*intensity)
-
-
     end
 
+    if gcm.get_game_role()==0 then
+      rgb={0,0,255}      
+    elseif gcm.get_game_role()==1 then
+      rgb={255,0,0}
+    else
+      rgb={255,0,255}
+    end
+
+    local intensity = 1.0
+    local gamecontroller_timeout = Config.gamecontroller_timeout or 10.0
+    if Body.get_time() - gcm.get_game_gctime() < gamecontroller_timeout  then
+      intensity = led_count%2
+    end
+
+    Body.set_head_led_red(rgb[1]*intensity)
+    Body.set_head_led_blue(rgb[3]*intensity)
+    Body.set_head_led_green(rgb[3]*intensity)
   end
 
 

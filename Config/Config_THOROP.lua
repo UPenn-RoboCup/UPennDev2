@@ -171,6 +171,8 @@ end
 ---------------------------------------------------------------
 
 
+  Config.goalieBallX_th = 1.0 
+
   Config.goalie_odometry_only = true
   Config.goaliePosX = 0.20
 
@@ -178,7 +180,28 @@ end
   Config.ballAngleFactor = 1.2
 
   Config.enable_goalie_legspread = true --NOT WORKING FOR NOW
-  Config.enable_goalie_legspread = false
+  --Config.enable_goalie_legspread = false
 
+
+local spread_angle = 10*math.pi/180
+local spread_width = 0.06
+
+local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
+local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
+local tStepMid =Config.walk.tStep-tSlope1-tSlope2
+
+--Testing goalie leg spread
+  Config.kick.stepqueue["GoalieSpread"]=  {
+    {{0,-spread_width,-spread_angle},0,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --ls
+    {{0,spread_width,spread_angle},1,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}}, --rf kick    
+    {{0,0,0,},  2,   0.1, 1, 0.1,     {-0.02,0.0,0},  {0, 0, 0}},                    }
+
+  Config.kick.stepqueue["GoalieUnspread"]=  {
+    { {-spread_width * math.sin(spread_angle),   spread_width * math.cos(spread_angle),spread_angle},
+      0,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}  }, --ls
+    {  {-spread_width * math.sin(spread_angle),   -spread_width * math.cos(spread_angle),-spread_angle},
+          1,  tSlope1, tStepMid*1.2, tSlope2,   {0,0,0},{0,Config.walk.stepHeight,0}    }, --ls
+    {{0,0,0},2,  0.1,1, 0.1,   {0,0,0},{0,0,0}}, 
+  }
 
 return Config

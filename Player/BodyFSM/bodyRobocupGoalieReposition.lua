@@ -59,21 +59,23 @@ function state.update()
   if not reached then
     mcm.set_walk_vel(move_vel)    
   else
-    return 'done'
+    if mcm.get_motion_state()==4 then
+      mcm.set_walk_stoprequest(1)    
+    end
+    if mcm.get_motion_state()==2 then
+      if Config.enable_goalie_legspread then
+        mcm.set_walk_kicktype(9) --SPREAD
+        mcm.set_walk_steprequest(1)    
+        wcm.set_robot_legspread(1)
+      end
+      return 'done'
+    end
   end
 end
 
 function state.exit()
   print(state._NAME..' Exit' )
   t_exit = Body.get_time()
-  if Config.enable_goalie_legspread then
-    mcm.set_walk_kicktype(9) --SPREAD
-    mcm.set_walk_steprequest(1)    
-    wcm.set_robot_legspread(1)
-  else
-    mcm.set_walk_stoprequest(1)    
-  end
-  
 end
 
 return state

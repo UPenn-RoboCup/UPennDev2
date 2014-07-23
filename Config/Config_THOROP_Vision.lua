@@ -157,10 +157,9 @@ table.insert(Config.camera,
       'libVision',
     },
     --Logitech C920
-    --lut = 'brazil_2',  -- for afternoon
-    -- lut = 'brazil_obs_noon',  -- for afternoon
-    lut = 'brazil_day5_noon',
-		--lut = 'match1_sgm_b',
+    --lut = 'brazil_day5_noon',  --THIS IS GOOD FOR FINAL 
+    lut = 'brazil_final',
+
 		-- f = 640/2/tan(78/180*pi / 2)
 
 --fov = 2*arctan(d/2f)
@@ -218,7 +217,7 @@ table.insert(Config.camera,
     param = {
       {'White Balance Temperature', 3500},
       --{'Exposure (Absolute)', 200},
-      {'Exposure (Absolute)', 200},  --200:day  160:night
+      {'Exposure (Absolute)', 190},  --200:day  160:night
       {'Focus (absolute)', 0},
       {'Brightness', 128},
       {'Contrast', 144},

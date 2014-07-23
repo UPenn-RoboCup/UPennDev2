@@ -236,7 +236,7 @@ if IS_WEBOTS then
   Config.camera[1].w = 320
   Config.camera[1].h = 180
   -- Config.camera[1].lut = 'webots74'
-  Config.camera[1].lut = 'webots_w_whiteyuyv_07.22.2014.03.54.06.mat'
+  Config.camera[1].lut = 'webots_w_white'
   -- Config.camera[1].lut = 'webots_challenge'
   
 

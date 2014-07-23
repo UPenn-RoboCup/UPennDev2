@@ -46,6 +46,7 @@ function process_keyinput()
   local byte=getch.block();
 
   if byte then
+unix.usleep(1e6)
     --if gcm.get_game_state()==6 then --Testing state
     if gcm.get_game_role()==2 then --Testing state
     -- Walk velocity setting
@@ -83,7 +84,7 @@ function process_keyinput()
         mcm.set_walk_kicktype(1)
         mcm.set_walk_steprequest(1)
 
-      elseif byte==string.byte("4") then      
+      elseif byte==string.byte("4") then
         mcm.set_walk_kickfoot(1)
         mcm.set_walk_kicktype(1)
         mcm.set_walk_steprequest(1)

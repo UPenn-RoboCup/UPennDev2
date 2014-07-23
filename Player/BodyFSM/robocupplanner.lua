@@ -208,7 +208,7 @@ function robocupplanner.getKickAngle(pose,ballGlobal)
 
     local score,kickangle2, ballEndPos
 --    for a = -8,8 do
-  for _, a in ipairs{-8, -6, -4, -2, 8, 6, 4, 2} do
+  for _, a in ipairs{-8, -6, -4, -2, 8, 6, 4, 2, 0} do
       local angle = a*10*DEG_TO_RAD
       score, kickangle2, ballEndPos = evaluate_kickangle(ballGlobal, angle)
       if score and score > max_score then

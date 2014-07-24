@@ -124,13 +124,18 @@ while running do
     end
 
     local intensity = 1.0
-    local gamecontroller_timeout = Config.gamecontroller_timeout or 10.0
-    if Body.get_time() - gcm.get_game_gctime() < gamecontroller_timeout  then
+    local gamecontroller_timeout = Config.gamecontroller_timeout or 5.0
+    if Body.get_time() - gcm.get_game_gctime() > gamecontroller_timeout  then
       intensity = led_count%2
-      gcm.set_game_autoadvance(1)
+--      gcm.set_game_autoadvance(1)
     else
-      gcm.set_game_autoadvance(0)
+--      gcm.set_game_autoadvance(0)
     end
+--[[
+    if Body.get_time()<gcm.get_game_gctime() then
+      gcm.get_game_gctime(Body.get_time())
+    end
+--]]
 
     Body.set_head_led_red(rgb[1]*intensity)
     Body.set_head_led_blue(rgb[3]*intensity)

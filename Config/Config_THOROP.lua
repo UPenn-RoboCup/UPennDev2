@@ -184,7 +184,7 @@ end
   
 
   Config.gamecontroller_detect = true
-  Config.gamecontroller_timeout = 10.0
+  Config.gamecontroller_timeout = 5.0
   
 
 return Config

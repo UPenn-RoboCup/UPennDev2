@@ -47,12 +47,16 @@ function state.update()
     goalieBallX_th = Config.goalieBallX_th or 0.5
 
 print("Ball pos:",ballGlobal[1],ballGlobal[2])
+--ballGlobal: 0 at centerline, -2.5 at the penalty mark
+    local ball_dist = math.abs(ballGlobal[1] - pose[1])
+    local threshold = 0.1 + 0.3* (math.min(1.0, math.max(0,    ((ball_dist-1.0)/2)   )))
+print("Ball dist:",ball_dist, threshold)
 
     if ballGlobal[1]<-goalieBallX_th then
       local target_pose = robocupplanner.getGoalieTargetPose(pose,ballGlobal)
       --our goal should be always at (-4.5,0,0)
  
-      local move_vel,reached = robocupplanner.getVelocityGoalie(pose,target_pose,0.3)
+      local move_vel,reached = robocupplanner.getVelocityGoalie(pose,target_pose,threshold)
 
       if not reached then
         print("Current pose:",pose[1],pose[2])

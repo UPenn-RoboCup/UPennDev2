@@ -55,7 +55,10 @@ function state.update()
 
   local target_pose = robocupplanner.getGoalieTargetPose(pose,ballGlobal)
  
-  local move_vel,reached = robocupplanner.getVelocityGoalie(pose,target_pose)
+  local ball_dist = math.abs(ballGlobal[1] - pose[1])
+  local threshold = 0.1 + 0.3* (math.min(1.0, math.max(0,    ((ball_dist-1.0)/2)   )))
+
+  local move_vel,reached = robocupplanner.getVelocityGoalie(pose,target_pose,threshold)
   if not reached then
     mcm.set_walk_vel(move_vel)    
   else

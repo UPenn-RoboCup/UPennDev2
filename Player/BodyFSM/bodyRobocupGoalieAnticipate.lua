@@ -46,7 +46,7 @@ function state.update()
 
   count=count+1
   if t_elapsed_playing<goalie_t_startmove then
-    if count%50 then
+    if count%50 ==0 then
       print("Countdown to move", goalie_t_startmove-t_elapsed_playing)
     end
     return

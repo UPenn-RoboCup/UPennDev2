@@ -188,8 +188,9 @@ end
 -- testing
 
   Config.goalie_threshold_x = 0.10
+  Config.goalie_t_startmove = 10.0
 
 
-  
-
+  Config.assume_goalie_blocking = true
+  Config.enemy_goalie_shift_factor = 0.15
 return Config

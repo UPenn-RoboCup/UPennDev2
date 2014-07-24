@@ -54,18 +54,62 @@ function evaluate_goal_kickangle(ballGlobal)
       obs_angle_min = math.min(angle_diff, obs_angle_min)
     end
 
-    --Goalie and two goalposts
-    for i=1,3 do   
-      local v =wcm['get_robot_goal'..i]()
-      local rel_obs_x = v[1]-ballGlobal[1]
-      local rel_obs_y = v[2]-ballGlobal[2]
-      local obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)
-      local obs_angle = math.atan2(rel_obs_y, rel_obs_x)
-      local angle_diff = math.max(0, math.abs(util.mod_angle(obs_angle-angle)) - kick_deviation_angle)
-      --local obs_closest_dist = math.sin(angle_diff)*obs_dist
-      --if angle_diff>math.pi/2 then obs_closest_dist = 999 end
-      --obs_dist_min = math.min(obs_dist_min, obs_closest_dist)  
-      obs_angle_min = math.min(angle_diff, obs_angle_min)
+    if Config.assume_goalie_blocking then
+        local v =wcm.get_robot_goal1()
+        local rel_obs_x = v[1]-ballGlobal[1]
+        local rel_obs_y = v[2]-ballGlobal[2]
+        local obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)
+        local obs_angle = math.atan2(rel_obs_y, rel_obs_x)
+        local angle_diff = math.max(0, math.abs(util.mod_angle(obs_angle-angle)) - kick_deviation_angle)
+
+        --local obs_closest_dist = math.sin(angle_diff)*obs_dist
+        --if angle_diff>math.pi/2 then obs_closest_dist = 999 end
+        --obs_dist_min = math.min(obs_dist_min, obs_closest_dist)  
+        obs_angle_min = math.min(angle_diff, obs_angle_min)
+
+        local goal_angle1 = obs_angle
+
+        local v =wcm.get_robot_goal2()
+        local rel_obs_x = v[1]-ballGlobal[1]
+        local rel_obs_y = v[2]-ballGlobal[2]
+        local obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)
+        local obs_angle = math.atan2(rel_obs_y, rel_obs_x)
+
+        local angle_diff = math.max(0, math.abs(util.mod_angle(obs_angle-angle)) - kick_deviation_angle)
+        --local obs_closest_dist = math.sin(angle_diff)*obs_dist
+        --if angle_diff>math.pi/2 then obs_closest_dist = 999 end
+        --obs_dist_min = math.min(obs_dist_min, obs_closest_dist)  
+        obs_angle_min = math.min(angle_diff, obs_angle_min)
+        local goal_angle2 = obs_angle
+
+        local goal_anglec = (goal_angle1+goal_angle2)/2
+
+        local shift_factor = Config.enemy_goalie_shift_factor or 0.2
+        if goal_anglec>0 then --we're on the right side
+          goal_anglec = (1-shift_factor)*goal_anglec +shift_factor*goal_angle2
+        else
+          goal_anglec = (1-shift_factor)*goal_anglec +shift_factor*goal_angle1
+        end
+
+--      print("angles:",goal_angle1*180/math.pi,goal_anglec*180/math.pi,goal_angle2*180/math.pi)
+
+        local angle_diff = math.max(0, 
+          math.abs(util.mod_angle(goal_anglec-angle)) - kick_deviation_angle)
+        obs_angle_min = math.min(angle_diff, obs_angle_min)
+    else
+      --Goalie and two goalposts
+      for i=1,3 do   
+        local v =wcm['get_robot_goal'..i]()
+        local rel_obs_x = v[1]-ballGlobal[1]
+        local rel_obs_y = v[2]-ballGlobal[2]
+        local obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)
+        local obs_angle = math.atan2(rel_obs_y, rel_obs_x)
+        local angle_diff = math.max(0, math.abs(util.mod_angle(obs_angle-angle)) - kick_deviation_angle)
+        --local obs_closest_dist = math.sin(angle_diff)*obs_dist
+        --if angle_diff>math.pi/2 then obs_closest_dist = 999 end
+        --obs_dist_min = math.min(obs_dist_min, obs_closest_dist)  
+        obs_angle_min = math.min(angle_diff, obs_angle_min)
+      end
     end
 
     --[[

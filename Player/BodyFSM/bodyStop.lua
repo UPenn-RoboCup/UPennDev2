@@ -74,6 +74,15 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
+
+  if gcm.get_game_role()==2 or 
+      gcm.get_game_state()~=3 then
+    gcm.set_game_tplaying(0)
+  end 
+
+
+
+  
   t_update = t  
 
 

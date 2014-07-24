@@ -496,6 +496,10 @@ function robocupplanner.getGoalieTargetPose(pose,ballGlobal)
 
   target_position_x = target_position_x + (x_diff_side*goalie_y_ratio)
 
+
+
+print(target_position_x)
+
 --  target_position_a = pose[3]
   target_position_a = 0 --this fixes drifting
 

@@ -8,6 +8,8 @@ local robocupplanner = require'robocupplanner'
 local timeout = 10.0
 local t_entry, t_update, t_exit
 
+
+local count
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -15,6 +17,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   --hcm.set_ball_approach(0)
+  count = 0
 end
 
 function state.update()
@@ -32,6 +35,23 @@ function state.update()
     return
   end
 --]]
+
+  --We're now playing!!!
+  if gcm.get_game_tplaying()==0 then
+    gcm.set_game_tplaying(t)
+  end
+
+  local t_elapsed_playing = t-gcm.get_game_tplaying()
+  goalie_t_startmove = Config.goalie_t_startmove or 10.0
+
+  count=count+1
+  if t_elapsed_playing<goalie_t_startmove then
+    if count%50 then
+      print("Countdown to move", goalie_t_startmove-t_elapsed_playing)
+    end
+    return
+  end
+  
 
 
   -- if we see ball right now and ball is far away start moving

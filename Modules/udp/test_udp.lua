@@ -1,6 +1,6 @@
 print('\n\t== UDP Test ==')
 -- Send data to MATLAB
-local two_port = true
+local two_port = false
 
 local msg = 'hello';
 local udp = require 'udp'
@@ -27,9 +27,10 @@ for i=1,4 do
 	else
 		print('!!! LOCAL |  Sent '..ret..' bytes out of '..#msg..' !!!')
 	end
-	while udp_receiver:size()>0 do
-		local data = udp_receiver:receive()
+  local data = udp_receiver:receive()
+	while data do
 		print(string.format('\tLOCAL | Received %d bytes:',#data),data )
+    data = udp_receiver:receive()
 	end
 
 	if udp_sender_matlab then

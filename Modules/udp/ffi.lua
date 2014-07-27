@@ -8,6 +8,8 @@ local C = ffi.C
 local bit = require'bit'
 local bor = bit.bor
 
+local tinsert = table.insert
+
 -- Constants
 local AF_INET = 2
 local INADDR_ANY = 0
@@ -15,6 +17,12 @@ local SOCK_DGRAM = 2
 local O_NONBLOCK = 4
 local F_GETFL = 3
 local F_SETFL = 4
+-- Jumbo UDP packet
+local MAX_LENGTH = 65536
+--
+local SOL_SOCKET = 0xffff
+local SO_BROADCAST = 0x0020
+local SO_REUSEADDR = 0x0004
 
 ffi.cdef[[
 typedef struct hostent {
@@ -29,6 +37,7 @@ typedef struct in_addr {
   uint32_t s_addr;
 } in_addr;
 
+//#define h_addr  h_addr_list[0]  /* address, for backward compatibility */
 typedef struct sockaddr_in {
   uint8_t sin_len;
   uint8_t sin_family;
@@ -45,14 +54,35 @@ uint32_t htonl(uint32_t hostlong);
 uint16_t htons(uint16_t hostshort);
 int bind(int socket, const struct sockaddr *address, uint32_t address_len);
 int fcntl(int fildes, int cmd, ...);
-//
 struct hostent * gethostbyname(const char *name);
-//
-long recvfrom(int socket, void *restrict buffer, size_t length, int flags,
-struct sockaddr *restrict address, uint32_t *restrict address_len);
+long recv(int socket, void *buffer, size_t length, int flags);
+int setsockopt(int socket, int level, int option_name, const void *option_value, uint32_t option_len);
+int connect(int socket, const struct sockaddr *address, uint32_t address_len);
+long send(int socket, const void *buffer, size_t length, int flags);
+int close(int fildes);
 ]]
 
-local function receive()
+-- TODO: Set the metatable correctly for Garbage collection
+-- For now, this is OK - our open sockets are long lived
+local function close(self) return C.close(self.fd)==0 end
+
+-- Return a table of all the data received (Each element is a packet)
+local recv_buffer = ffi.new('uint8_t[?]', MAX_LENGTH)
+local function receive(self)
+  local len = tonumber(C.recv(self.fd, recv_buffer, MAX_LENGTH, 0))
+  if len > 0 then return ffi.string(recv_buffer, len) end
+end
+
+local function recv_all(self)
+  local len = tonumber(C.recv(self.fd, recv_buffer, MAX_LENGTH, 0))
+  -- Insert into the buffer
+  local skt_buffer = {}
+  while len>0 do
+    tinsert(skt_buffer, ffi.string(recv_buffer, len))
+    len = tonumber(C.recv(self.fd, recv_buffer, MAX_LENGTH, 0))
+  end
+  -- Remove the first packet
+  return skt_buffer
 end
 
 function udp.new_receiver(port)
@@ -63,27 +93,53 @@ function udp.new_receiver(port)
 	local_addr.sin_family = AF_INET
 	local_addr.sin_addr.s_addr = C.htonl(INADDR_ANY)
 	local_addr.sin_port = C.htons(port)
-  --local ret = C.bind(ud->recv_fd, (struct sockaddr *) &local_addr, sizeof(local_addr))
   local ret = C.bind(fd, ffi.cast('const struct sockaddr *', local_addr), ffi.sizeof(local_addr))
   assert(ret==0, "Could not bind to port!")
-  
 	-- Nonblocking receive
 	local flags = C.fcntl(fd, F_GETFL, 0)
 	if flags == -1 then flags = 0 end
-  
-  ret = C.fcntl(fd, F_SETFL, bor(flags, O_NONBLOCK))
-  assert(ret>=0, "Could not set non-blocking mode")
-  
+  ret = C.fcntl(fd, F_SETFL, ffi.new('int', bor(flags, O_NONBLOCK)))
+  assert(ret==0, "Could not set non-blocking mode")
+  -- Object
   local obj = {
-    kind = 'receiver',
     port = port,
     fd = fd,
     receive = receive,
-    --std::deque<std::string> *recv_queue;
-    --std::deque<std::string> *raw_recv_queue;
+    recv_all = recv_all,
   }
   return obj
 end
 
---]]
+local function send(self, data, len)
+local sz = len or #data
+  local ret = C.send(self.fd, data, sz, 0)
+  if ret==size then return ret end
+  --return C.strerror(errno)
+end
+
+function udp.new_sender(ip, port)
+  local hostptr = assert(C.gethostbyname(ip), "Could not get hostname")
+  local fd = C.socket(AF_INET, SOCK_DGRAM, 0)
+  assert(fd > 0, "Could not open datagram send socket\n")
+  local i, ret = ffi.new('int[1]', 1)
+  ret = C.setsockopt(fd, SOL_SOCKET, SO_BROADCAST, ffi.cast('const char *', i), ffi.sizeof(i))
+  assert(ret==0)
+  i[0] = 1
+  ret = C.setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, ffi.cast('const char *', i), ffi.sizeof(i))
+  assert(ret==0)
+  local dest_addr = ffi.new('struct sockaddr_in')
+  dest_addr.sin_family = AF_INET
+  ffi.copy(hostptr.h_addr_list[0], ffi.cast('char*', dest_addr.sin_addr), hostptr.h_length)
+  dest_addr.sin_port = C.htons(port)
+  ret = C.connect(fd, ffi.cast('struct sockaddr *', dest_addr), ffi.sizeof(dest_addr))
+  assert(ret==0,"Could not connect to destination address")
+  return {
+    ip = ip,
+    port = port,
+    fd = fd,
+    send = send,
+    close = close,
+  }
+end
+
 return udp

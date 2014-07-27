@@ -11,6 +11,7 @@ if type(jit)=='table' then
 	zmq    = require'lzmq.ffi'
 	poller = require'lzmq.ffi.poller'
 	llthreads = require'llthreads'
+  udp = require'udp.ffi'
 else
 	-- lzmq
 	zmq    = require'lzmq'
@@ -50,6 +51,12 @@ local type2prefix = {
 		return name, is_inverted
 	end,
 }
+
+-- Use UDP directly
+if udp then
+  simple_ipc.new_sender = udp.new_sender
+  simple_ipc.new_receiver = udp.new_receiver
+end
 
 -- Set up the sending object
 local function ch_send(self, messages)
@@ -249,14 +256,14 @@ function simple_ipc.new_thread(scriptname, channel, metadata)
 	-- pass in the ctx, since it is thread safe
 	metadata = metadata or {}
 	metadata.ch_name = '#'..channel
-	local thread = llthreads.new(script_str, CTX:lightuserdata(), metadata )
+	local thread = llthreads.new(script_str, CTX:lightuserdata(), metadata)
 
 	-- Must add the communication...
 	-- NOTE: It is the job of the script to
 	-- ascertain if it was called as a thread
 	-- (Should just check if it was given a context...
 	-- Must call import_context in the thread to achieve communication
-	local pair = simple_ipc.new_pair(metadata.ch_name,true)
+	local pair = simple_ipc.new_pair(metadata.ch_name, true)
 	pair.thread = thread
 
 	return pair, thread
@@ -278,13 +285,14 @@ function simple_ipc.wait_on_channels(channels)
 	local n_ch = #channels
 	local poll_obj = poller.new(n_ch)
 	-- Add lookup table for keeping track of duplicates
-	local lut = {}
+	local lut, s = {}
 	for i, ch in ipairs(channels) do
-		local s = ch.socket
+    -- UDP case is FD as a number
+		s = ch.socket or ch.fd
 		assert(s, 'No socket for poller!')
 		assert(not lut[s], 'Duplicate poller channel!')
 		assert(ch.callback, 'No callback for poller!')
-		poll_obj:add( s, zmq.POLLIN, ch.callback )
+		poll_obj:add(s, zmq.POLLIN, ch.callback)
 		lut[s] = ch
 	end
 	poll_obj.lut = lut

@@ -25,6 +25,11 @@ local SO_BROADCAST = 0x0020
 local SO_REUSEADDR = 0x0004
 
 ffi.cdef[[
+extern int errno;
+]]
+local function strerror() return ffi.string(C.strerror(C.errno)) end
+
+ffi.cdef[[
 typedef struct hostent {
   char    *h_name;        /* official name of host */
   char    **h_aliases;    /* alias list */
@@ -94,7 +99,7 @@ function udp.new_receiver(port)
 	local_addr.sin_addr.s_addr = C.htonl(INADDR_ANY)
 	local_addr.sin_port = C.htons(port)
   local ret = C.bind(fd, ffi.cast('const struct sockaddr *', local_addr), ffi.sizeof(local_addr))
-  assert(ret==0, "Could not bind to port!")
+  assert(ret==0, "Bind: "..strerror())
 	-- Nonblocking receive
 	local flags = C.fcntl(fd, F_GETFL, 0)
 	if flags == -1 then flags = 0 end
@@ -111,10 +116,10 @@ function udp.new_receiver(port)
 end
 
 local function send(self, data, len)
-local sz = len or #data
+  local sz = len or #data
   local ret = C.send(self.fd, data, sz, 0)
   if ret==size then return ret end
-  --return C.strerror(errno)
+  return ret, strerror()
 end
 
 function udp.new_sender(ip, port)

@@ -1,3 +1,13 @@
+--
+--  Author: Alexey Melnichuk <mimir@newmail.ru>
+--
+--  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
+--
+--  Licensed according to the included 'LICENCE' document
+--
+--  This file is part of lua-lzqm library.
+--
+
 return function(ZMQ_NAME)
 
 local zmq      = require (ZMQ_NAME)
@@ -255,14 +265,18 @@ function zmq_loop:destroyed()
   return nil == self.private_.event_list
 end
 
-function zmq_loop:destroy()
+function zmq_loop:destroy(no_close_sockets)
   if self:destroyed() then return end
 
   self.private_.event_list:destroy()
-  for s in pairs(self.private_.sockets) do
-    self.private_.poller:remove(s)
-    if( type(s) ~= 'number' ) then
-      s:close()
+  if not no_close_sockets then
+    for s in pairs(self.private_.sockets) do
+      self.private_.poller:remove(s)
+      if( type(s) ~= 'number' ) then
+        if s.close then
+          s:close()
+        end
+      end
     end
   end
 

@@ -1,13 +1,12 @@
 -- UNIX FFI library
 -- (c) Stephen McGill 2014
-local udp = {}
---
-local ffi = require'ffi'
-local C = ffi.C
+local ok, ffi = pcall(require, 'ffi')
+if not ok then return require'udp' end
 
+local udp = {}
+local C = ffi.C
 local bit = require'bit'
 local bor = bit.bor
-
 local tinsert = table.insert
 
 -- Constants

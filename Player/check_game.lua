@@ -1,5 +1,5 @@
 #!/usr/bin/env lua
-
+-- (c) 2014 Stephen McGill
 dofile'../include.lua'
 local util = require'util'
 

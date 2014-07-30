@@ -1,7 +1,7 @@
 dofile'include.lua'
+-- (c) 2013, 2014 Stephen McGill
 require'hcm'
-local unix = require'unix'
-local mp = require'msgpack'
+local mp = require'msgpack.MessagePack'
 local simple_ipc = require'simple_ipc'
 local audio_tcp_ch = simple_ipc.new_publisher(Config.net.audio,false,'*')
 

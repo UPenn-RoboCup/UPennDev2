@@ -1,4 +1,6 @@
 #!/usr/bin/env luajit
+-- (c) 2014 Stephen McGill
+
 ---------------------------
 -- Game State Manager --
 ---------------------------
@@ -10,14 +12,15 @@ local Body = require(Config.dev.body)
 local get_time = Body.get_time
 local ENABLE_COACH = false
 
+local running = true
+local function shutdown()
+	running = false
+end
+
 -- Cleanly exit on Ctrl-C
-local running, signal = true, nil
+local signal
 if not IS_WEBOTS then
   signal = require'signal'
-  function shutdown ()
-    running = false
-    --os.exit()
-  end
   signal.signal("SIGINT", shutdown)
   signal.signal("SIGTERM", shutdown)
 end

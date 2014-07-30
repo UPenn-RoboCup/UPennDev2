@@ -1,16 +1,16 @@
 -- UNIX FFI library
 -- (c) Stephen McGill 2014
+
+local ok, ffi = pcall(require, 'ffi')
+if not ok then return require'unix' end
+
 local unix = {}
---
-local ffi = require'ffi'
 local C = ffi.C
---
 local bit    = require'bit'
 local lshift = bit.lshift
 local rshift = bit.rshift
 local band   = bit.band
 local bor    = bit.bor
---
 local floor  = math.floor
 
 ffi.cdef[[

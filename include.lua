@@ -1,3 +1,4 @@
+-- (c) 2014 Stephen McGill
 -- Include script to be run at the top of each file
 -- This mainly sets the paths
 -- It also adds very useful globals
@@ -52,20 +53,12 @@ package.path = HOME..'/Player/Vision/?.lua;'..package.path
 -- include Config files to path
 package.path = HOME..'/Config/?.lua;'..package.path
 
+-- Unix should be global.  the ffi.lua file provides a fallback
+unix = require'unix.ffi'
+
 -- Save the hostname
-unix = require'unix'
 HOSTNAME = unix.gethostname()
 OPERATING_SYSTEM = unix.uname():lower()
-
--- Check for LuaJit and add to the global namespace
-local ok, myffi = pcall(require, 'ffi')
-if ok then
-  ffi = myffi
-  C = ffi.C
-	unix = require'unix.ffi'
-else
-	unix = require'unix'
-end
 
 -- Some other directories
 KEYFRAME_DIR = HOME.."/Player/Keyframes"
@@ -106,6 +99,3 @@ function print_env()
 end
 print_env()
 --]]
-
--- Run the garbage collector after done the include
-collectgarbage()

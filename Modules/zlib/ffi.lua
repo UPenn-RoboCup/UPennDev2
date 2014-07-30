@@ -1,5 +1,7 @@
 -- Pretty much exactly this:
 -- http://luajit.org/ext_ffi_tutorial.html
+local ok, ffi = pcall(require, 'ffi')
+if not ok then return require'zlib' end
 
 ffi.cdef[[
 unsigned long compressBound(unsigned long sourceLen);
@@ -11,42 +13,27 @@ local z = ffi.load'z'
 local zlib = {}
 
 local nBound = 8
+local n, sz, res
 local buf = ffi.new("uint8_t[?]", nBound)
 local buflen = ffi.new("unsigned long[1]", nBound)
 
-function zlib.compress(txt)
-  local n = z.compressBound(#txt)
-  if n>nBound then
+function zlib.compress(txt, len)
+  sz = len or #txt
+  n = z.compressBound(sz)
+  if n > nBound then
     nBound = n
     buf = ffi.new("uint8_t[?]", nBound)
-    buflen = ffi.new("unsigned long[1]", n)
+    --buflen = ffi.new("unsigned long[1]", n)
+    buflen[0] = n
   end
   -- Just make fast, so use 1 for level
-  local res = z.compress2(buf, buflen, txt, #txt, 1)
-  assert(res == 0)
-  return ffi.string(buf, buflen[0])
-end
-
-function zlib.compress_cdata (ptr, len, to_str)
-  local n = z.compressBound(len)
-  if n>nBound then
-    nBound = n
-    buf = ffi.new("uint8_t[?]", nBound)
-    buflen = ffi.new("unsigned long[1]", nBound)
-  end
-  -- Just make fast, so use 1 for level
-  local res = z.compress2(buf, buflen, ptr, len, 1)
-  -- Check if a bad compress
+  res = z.compress2(buf, buflen, txt, #txt, 1)
   if res~=0 then return end
   -- Reset the bounds
   n = buflen[0]
   buflen[0] = nBound
-  -- Return the string or cdata
-  if to_str then
-    return ffi.string(buf, n)
-  else
-    return buf, n
-  end
+  -- Return a string
+  return ffi.string(buf, n)
 end
 
 return zlib

@@ -1,7 +1,7 @@
 local libGC = {}
 local ffi = require'ffi'
 local udp = require'udp'
-local SEND_RATE = 1 / 10
+local GC_TIMEOUT = 1 / 10
 
 local gc_constants = [[
 
@@ -210,11 +210,11 @@ end
 
 local function wait_for_gc(self)
   local fd = self.receiver:descriptor()
-  local status, ready = unix.select({fd}, SEND_RATE)
+  local status, ready = unix.select({fd}, GC_TIMEOUT)
   return self:receive()
 end
 
-local function init(team, player, gc_addr)
+function libGC.init(team, player, gc_addr)
   local udp_sender = udp.new_sender(gc_addr or 'localhost', libGC.GAMECONTROLLER_PORT)
   local udp_receiver = udp.new_receiver(libGC.GAMECONTROLLER_PORT)
   local gc = {
@@ -229,37 +229,5 @@ local function init(team, player, gc_addr)
   }
   return gc
 end
-libGC.init = init
-
---[[
-dofile'../../include.lua'
-local gc = libGC.init(43, 1, '192.168.100.1')
-local function test_loop()
-  local ret, msg
-  local send_count, recv_count = 0, 0
-  local t, t_send, t_debug = unix.time(), 0, 0
-  while true do
-    local gc_pkt = gc:wait_for_gc()
-    if gc_pkt then
-      ret, msg = gc:send_return()
-      if msg then print("Bad return", msg) end
-      print('Got', gc_pkt, gc_pkt.packetNumber)
-      recv_count = recv_count + 1
-    end
-    t = unix.time()
-    if t - t_send > SEND_RATE then
-      t_send = t
-			ret, msg = gc:send_coach("go team!")
-      if msg then print("Bad coach", msg) end
-      send_count = send_count + 1
-    end
-    if t - t_debug > 2 then
-      t_debug = t
-      print("Counts", send_count, recv_count)
-    end
-  end
-end
-test_loop()
---]]
 
 return libGC

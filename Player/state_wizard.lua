@@ -3,20 +3,17 @@
 -- State Machine Manager --
 -- (c) Stephen McGill    --
 ---------------------------
-dofile'include.lua'
---require'gcm'
+dofile'../include.lua'
+require'gcm'
 local Body = require(Config.dev.body)
 -- Cache some functions
 local get_time, usleep = Body.get_time, unix.usleep
-
 -- Cleanly exit on Ctrl-C
-local running, signal = true, nil
+local running = true
+local function shutdown () running = false end
+local signal
 if not IS_WEBOTS then
   signal = require'signal'
-  function shutdown ()
-    running = false
-    --os.exit()
-  end
   signal.signal("SIGINT", shutdown)
   signal.signal("SIGTERM", shutdown)
 end
@@ -54,95 +51,17 @@ if IS_WEBOTS then
   Body.update()
 end
 -- Update loop
-local gc_pktNum = 0
-
-local t_switch = get_time()
-local last_position = nil
-
-local rgb = {255,255,255}
-gcm.set_game_role(Config.default_role or 2) --Testing
-gcm.set_game_state(Config.default_state or 5) --Pre-init
-
---To stop the head movement for tester role
-local simple_ipc = require'simple_ipc'
-local head_ch   = simple_ipc.new_publisher('HeadFSM!')
-
-local led_count = 0
-
 while running do
   t = get_time()
   -- Update the state machines
   for _,my_fsm in pairs(state_machines) do my_fsm:update() end
-  -- If time for debug
-  if t-t_debug>debug_interval then
---    os.execute('clear')
-    t_debug = t
-		print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, collectgarbage('count')))
-    --print('Wire', vcm.get_wire_model())
---    print("GCM ROLE:",gcm.get_game_role())
---    print("GCM STATE:",gcm.get_game_state())
-	end
-
-  local  current_lidar_deg = Body.get_lidar_position()[1] * RAD_TO_DEG
---print(current_lidar_deg)
-
-  if t-t_switch>1.0 then
-    led_count = led_count +1
-    t_switch = t
-    local  current_lidar_deg = Body.get_lidar_position()[1] * RAD_TO_DEG
---print(current_lidar_deg)
-    local cur_position 
-    if current_lidar_deg>45 then
-      cur_position=1
-    elseif current_lidar_deg<-45 then
-      cur_position = -1
-    else
-      cur_position = 0
-    end
---    print(cur_position, rgb[1],rgb[3])
-    if cur_position~=last_position then
-      last_position = cur_position
-      if cur_position == 1 then
-        gcm.set_game_role(1)
-        gcm.set_game_state(0)
-      elseif cur_position == -1 then
-        gcm.set_game_role(0) --Zero: goalie
-        gcm.set_game_state(0)
-      else
-        gcm.set_game_role(2) --tester role
-        gcm.set_game_state(6) --tester state
-        head_ch:send'teleop'
-        gcm.set_game_autoadvance(0)
-      end
-    end
-
-    if gcm.get_game_role()==0 then
-      rgb={0,0,255}      
-    elseif gcm.get_game_role()==1 then
-      rgb={255,0,0}
-    else
-      rgb={255,0,255}
-    end
-
-    local intensity = 1.0
-    local gamecontroller_timeout = Config.gamecontroller_timeout or 5.0
-    if Body.get_time() - gcm.get_game_gctime() > gamecontroller_timeout  then
-      intensity = led_count%2
---      gcm.set_game_autoadvance(1)
-    else
---      gcm.set_game_autoadvance(0)
-    end
---[[
-    if Body.get_time()<gcm.get_game_gctime() then
-      gcm.get_game_gctime(Body.get_time())
-    end
---]]
-
-    Body.set_head_led_red(rgb[1]*intensity)
-    Body.set_head_led_blue(rgb[3]*intensity)
-    Body.set_head_led_green(rgb[3]*intensity)
+		-- If time for debug
+		if t-t_debug>debug_interval then
+			t_debug = t
+			local kb = collectgarbage('count')
+			print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, kb))
+		end
   end
-
 
   -- If not webots, then wait the update cycle rate
   if IS_WEBOTS then
@@ -159,5 +78,3 @@ print'Exiting state wizard...'
 for _,my_fsm in pairs(state_machines) do
   my_fsm:exit()
 end
-
-os.exit()

@@ -4,7 +4,6 @@ local fsm = {}
 
 -- Do we disable FSMs?
 fsm.disabled = false
--- fsm.disabled = true
 
 -- Do we disable Kick?
 --fsm.disable_kick = true

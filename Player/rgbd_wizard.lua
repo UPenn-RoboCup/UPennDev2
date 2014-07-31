@@ -1,3 +1,4 @@
+#!/usr/bin/env luajit
 dofile'../include.lua'
 local Body   = require'Body'
 local openni = require 'openni'

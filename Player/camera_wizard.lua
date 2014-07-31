@@ -5,8 +5,6 @@
 -----------------------------------
 -- Something there is non-reentrant
 dofile'../include.lua'
-
-local udp = require'udp'
 local si = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
 local jpeg = require'jpeg'
@@ -15,12 +13,11 @@ require'hcm'
 require'wcm'
 
 -- Cleanly exit on Ctrl-C
-local running, signal = true, nil
-local signal = require'signal'
-local function shutdown ()
+local running = true
+local function shutdown()
   running = false
-  --os.exit()
 end
+local signal = require'signal'
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
@@ -91,7 +88,7 @@ if FROM_LOG then
 	print('operator IP:', operator)
 end
 print('UDP',operator, metadata.udp_port)
-local udp_ch = metadata.udp_port and udp.new_sender(operator, metadata.udp_port)
+local udp_ch = metadata.udp_port and si.new_sender(operator, metadata.udp_port)
 
 -- Metadata for the operator
 local meta = {

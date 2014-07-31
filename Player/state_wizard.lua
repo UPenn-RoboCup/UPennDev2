@@ -10,7 +10,7 @@ local Body = require(Config.dev.body)
 local get_time, usleep = Body.get_time, unix.usleep
 -- Cleanly exit on Ctrl-C
 local running = true
-local function shutdown () running = false end
+local function shutdown() running = false end
 local signal
 if not IS_WEBOTS then
   signal = require'signal'

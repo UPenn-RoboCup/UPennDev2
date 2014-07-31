@@ -1,5 +1,7 @@
+#!/usr/bin/env luajit
 ---------------------------
--- Game State Manager --
+-- Game State Manager
+-- (c) 2014 Stephen McGill
 ---------------------------
 dofile'include.lua'
 local libGC = require'GameControlReceiver.ffi'

@@ -1,3 +1,4 @@
+#!/usr/bin/env luajit
 -- (c) 2013, 2014 Stephen McGill, Seung-Joon Yi
 dofile'../include.lua'
 local si = require'simple_ipc'

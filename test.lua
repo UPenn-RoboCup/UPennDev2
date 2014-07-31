@@ -1,40 +1,6 @@
 #!/usr/bin/env luajit
-
 -- (c) 2014 Team THORwIn
-dofile'include.lua'
-
--- Important libraries in the global space
-local libs = {
-  'Config',
-  'Body',
-  'unix',
-  'util',
-  'vector',
-}
-
--- Load the libraries
-for _,lib in ipairs(libs) do _G[lib] = require(lib) end
-
--- mp
-local mp = require'msgpack'
-local getch=require'getch'
-local si = require'simple_ipc'
-require'mcm'
-require'gcm'
-
--- FSM communicationg
-local fsm_chs = {}
-
-for _,sm in ipairs(Config.fsm.enabled) do
-  local fsm_name = sm..'FSM'
-  table.insert(fsm_chs, fsm_name)
-  _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")
-end
-
-
-
--- RPC engine
-rpc_ch = si.new_requester(Config.net.reliable_rpc)
+dofile'fiddle.lua'
 
 
 targetvel={0,0,0}

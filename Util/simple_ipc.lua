@@ -7,16 +7,15 @@
 ---------------------------------
 local zmq, poller, llthreads, CTX
 if type(jit)=='table' then
-	-- lzmq with luajit FFI
 	zmq    = require'lzmq.ffi'
 	poller = require'lzmq.ffi.poller'
 	llthreads = require'llthreads'
   udp = require'udp.ffi'
 else
-	-- lzmq
 	zmq    = require'lzmq'
 	poller = require'lzmq.poller'
 	llthreads = require'llthreads'
+  udp = require'udp'
 end
 
 local simple_ipc = {}
@@ -77,7 +76,7 @@ end
 -- Make a new publisher
 function simple_ipc.new_publisher(channel, target)
 	-- Form the prefix
-  local ch_name, inverted = type2prefix[type(channel)](channel,target)
+  local ch_name, inverted = type2prefix[type(channel)](channel, target)
 	assert(ch_name,'PUBLISH | Bad prefix!')
 	-- Grab or create the context
 	CTX = CTX or zmq.init(N_THREAD_POOL)

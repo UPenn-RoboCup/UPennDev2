@@ -1,17 +1,16 @@
 #!/usr/bin/env luajit -i
 dofile'include.lua'
-
 -- Important libraries in the global space
+mp = require'msgpack.MessagePack'
+si = require'simple_ipc'
 local libs = {
   'Config',
   'Body',
   'util',
   'vector',
   'torch',
-  'udp',
   'ffi',
 }
-
 -- Load the libraries
 for _,lib in ipairs(libs) do
   local ok, lib_tbl = pcall(require, lib)
@@ -22,29 +21,24 @@ for _,lib in ipairs(libs) do
   end
 end
 
-mp = require'msgpack'
-local si = require'simple_ipc'
-
+local ip, port
 -- Requester
-print('REQ |',Config.net.robot.wired,Config.net.reliable_rpc)
-local rpc_req =
-  si.new_requester(Config.net.reliable_rpc,Config.net.robot.wired)
-unix.usleep(1e5)
-
+ip, port = Config.net.robot.wired, Config.net.reliable_rpc
+print('REQ |', ip, port)
+local rpc_req = si.new_requester(port, ip)
 -- Publisher
-print('PUB |',Config.net.robot.wired,Config.net.reliable_rpc2)
-local rpc_pub =
-  si.new_publisher(Config.net.reliable_rpc2,true,Config.net.robot.wired)
-unix.usleep(1e5)
-
+ip, port = Config.net.robot.wired, Config.net.reliable_rpc2
+print('PUB |', ip, port)
+local rpc_pub = si.new_publisher(port, ip)
 -- UDP
-print('UDP |',Config.net.robot.wired,Config.net.unreliable_rpc)
-local rpc_udp = udp.new_sender(Config.net.robot.wired,Config.net.unreliable_rpc)
+ip, port = Config.net.robot.wired, Config.net.unreliable_rpc
+print('UDP |', ip, port)
+local rpc_udp = require'udp.ffi'.new_sender(ip, port)
 
 -- FSM communicationg
 fsm_chs = {}
-local fsm_send = function(t,evt)
-  local ret = rpc_req:send(mp.pack({fsm=t.fsm,evt=evt}))
+local fsm_send = function(t, evt)
+  rpc_req:send(mp.pack({fsm=t.fsm,evt=evt}))
 end
 for _,sm in ipairs(Config.fsm.enabled) do
   local fsm_name = sm..'FSM'
@@ -53,28 +47,22 @@ for _,sm in ipairs(Config.fsm.enabled) do
 end
 
 -- Shared memory
-local shm_send = function(t,func)
-  local tbl = {}
-  tbl.shm = t.shm
-  tbl.access = func
-  
+local shm_send = function(t, func)
+  local tbl = {shm = t.shm, access = func}
   return function(val)
 		if val then tbl.val=val end
 		local packed = mp.pack(tbl)
-		----[[
 		if val then
 			-- Just PUB to the robot for shm set
 			tbl.val=val
 			local ret = rpc_pub:send(mp.pack(tbl))
 			return
 		end
-		--]]
 		-- Use REQ/REP to get data
 		rpc_req:send(packed)
 		local data = rpc_req:receive()
     local result = mp.unpack(data)
-    if type(result)=='table' then return vector.new(result) end
-    return result
+    return type(result)=='table' and vector.new(result) or result
   end
 end
 

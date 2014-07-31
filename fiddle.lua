@@ -1,7 +1,8 @@
 #!/usr/bin/env luajit -i
 dofile'include.lua'
-
 -- Important libraries in the global space
+mp = require'msgpack.MessagePack'
+si = require'simple_ipc'
 local libs = {
   'Config',
   'Body',
@@ -10,7 +11,6 @@ local libs = {
   'torch',
   'ffi',
 }
-
 -- Load the libraries
 for _,lib in ipairs(libs) do
   local ok, lib_tbl = pcall(require, lib)
@@ -18,13 +18,8 @@ for _,lib in ipairs(libs) do
     _G[lib] = lib_tbl
   else
     print("Failed to load", lib)
-    --print(tbl_tbl)
   end
 end
-
--- IPC stuff
-mp = require'msgpack.MessagePack'
-si = require'simple_ipc'
 
 -- FSM communicationg
 fsm_chs = {}
@@ -45,10 +40,6 @@ for _,mem in ipairs(listing) do
     require(name)
   end
 end
-
--- Body channel
-body_ch = si.new_publisher'body!'
-dcm_ch = si.new_publisher'dcm!'
 
 print(util.color('FSM Channel', 'yellow'), table.concat(fsm_chs, ' '))
 print(util.color('SHM access', 'blue'), table.concat(shm_vars,  ' '))

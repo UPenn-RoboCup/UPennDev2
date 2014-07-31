@@ -124,6 +124,15 @@ local function robocup_approach2(uLeftGlobalTarget, uRightGlobalTarget)
   local vStepTarget = {uTorsoNext[1],uTorsoNext[2],0}
 
   local maxStep = 0.06
+  if Config.maxStepApproach1 then
+    if vStepTarget[1]>(Config.maxStepApproachTh or 0.20) then
+      maxStep = Config.maxStepApproach1 or 0.10
+    else
+      maxStep = Config.maxStepApproach2 or 0.06
+    end
+  end
+
+
   vStep={0,0,0}
   vStep[1] = math.min(Config.walk.velLimitX[2],math.max(Config.walk.velLimitX[1],vStepTarget[1]))
   vStep[2] = math.min(Config.walk.velLimitY[2],math.max(Config.walk.velLimitY[1],vStepTarget[2]))
@@ -278,19 +287,14 @@ function state.entry()
 
   --Determine kick types here!
 
-
-
   if gcm.get_game_state()==3 then  --Only during actual playing
-
-
-  if ballGlobal[1]<ballX_threshold1 then
-      mcm.set_walk_kicktype(0) --Walkkick 
-  elseif ballGlobal[1]<ballX_threshold2 then
-      mcm.set_walk_kicktype(2) --Weaker Walkkick 
-  else
-    mcm.set_walk_kicktype(1) --strong kick default
-  end
-
+    if ballGlobal[1]<ballX_threshold1 then
+        mcm.set_walk_kicktype(0) --Walkkick 
+    elseif ballGlobal[1]<ballX_threshold2 then
+        mcm.set_walk_kicktype(2) --Weaker Walkkick 
+    else
+      mcm.set_walk_kicktype(1) --strong kick default
+    end
   end
 
 end

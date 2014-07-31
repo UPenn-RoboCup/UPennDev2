@@ -8,6 +8,8 @@ local robocupplanner = require'robocupplanner'
 local timeout = 10.0
 local t_entry, t_update, t_exit
 
+
+local count
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -15,6 +17,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   --hcm.set_ball_approach(0)
+  count = 0
 end
 
 function state.update()
@@ -26,6 +29,31 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+--[[
+  if wcm.get_robot_legspread()==1 then
+        --If we spread legs apart already, we won't reposition
+    return
+  end
+--]]
+
+  --We're now playing!!!
+  if gcm.get_game_tplaying()==0 then
+    gcm.set_game_tplaying(t)
+  end
+
+  local t_elapsed_playing = t-gcm.get_game_tplaying()
+  goalie_t_startmove = Config.goalie_t_startmove or 10.0
+
+  count=count+1
+  if t_elapsed_playing<goalie_t_startmove then
+    if count%50 ==0 then
+      print("Countdown to move", goalie_t_startmove-t_elapsed_playing)
+    end
+    return
+  end
+  
+
+
   -- if we see ball right now and ball is far away start moving
   local ball_elapsed = t - wcm.get_ball_t()
   if ball_elapsed < 0.1 then --ball found
@@ -36,11 +64,17 @@ function state.update()
     local ball_local = {ballx,bally,balla}
     local ballGlobal = util.pose_global(ball_local, pose)
   
-    if ballGlobal[1]<-0.5 then
+    goalieBallX_th = Config.goalieBallX_th or 0.5
+
+--ballGlobal: 0 at centerline, -2.5 at the penalty mark
+    local ball_dist = math.abs(ballGlobal[1] - pose[1])
+    local threshold = 0.1 + 0.3* (math.min(1.0, math.max(0,    ((ball_dist-1.0)/2)   )))
+
+    if ballGlobal[1]<-goalieBallX_th then
       local target_pose = robocupplanner.getGoalieTargetPose(pose,ballGlobal)
       --our goal should be always at (-4.5,0,0)
  
-      local move_vel,reached = robocupplanner.getVelocityGoalie(pose,target_pose,0.3)
+      local move_vel,reached = robocupplanner.getVelocityGoalie(pose,target_pose,threshold)
 
       if not reached then
         print("Current pose:",pose[1],pose[2])

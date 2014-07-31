@@ -46,6 +46,9 @@ while running do
 
 		gc_state = tonumber(gc_pkt.state)
 		gcm.set_game_state(gc_state)
+    gcm.set_game_gctime(Body.get_time())
+
+
     cur_pkt = gc_pkt.packetNumber
     local debug_str = table.concat({
       color("State: "..libGC.state_to_name[gc_state], 'yellow'),

@@ -163,8 +163,14 @@ local function update_vision(detected)
   end
   -- If the ball is detected
 	ball = detected.ball
-  if ball then
-    ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
+
+
+  if Config.disable_ball_when_lookup and wcm.get_ball_disable()>0 then
+--    print("BALL DISABLED")
+  else
+    if ball then
+      ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
+    end
   end
         
 
@@ -192,8 +198,12 @@ local function update_vision(detected)
           goal[2].v[1],goal[2].v[2]
           ))
       end
-      if not Config.disable_goal_vision then
-        goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
+      if (not Config.disable_goal_vision) then
+        if Config.goalie_odometry_only and gcm.get_game_role()==0 then
+          print("Goalie, goal update disabled")
+        else
+          goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
+        end
       end
     else
       if Config.debug.goalpost then
@@ -203,7 +213,11 @@ local function update_vision(detected)
           ))
       end
       if not Config.disable_goal_vision then
-        goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+        if Config.goalie_odometry_only and gcm.get_game_role()==0 then
+          print("Goalie, goal update disabled")
+        else
+          goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+        end
       end
     end
   end

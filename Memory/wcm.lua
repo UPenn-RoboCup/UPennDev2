@@ -104,7 +104,7 @@ shared.ball.tlook = vector.zeros(1); --the last time we TRIED to look at the bal
 --If we cannot find the ball after full scan, we assume the ball is right behind us
 shared.ball.notvisible = vector.zeros(1)
 
-
+--Use this to disable ball detection when robot looks up and scanning around
 shared.ball.disable = vector.zeros(1)
 
 

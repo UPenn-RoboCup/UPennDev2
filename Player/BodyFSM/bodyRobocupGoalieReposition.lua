@@ -41,6 +41,21 @@ function state.update()
     motion_ch:send'hybridwalk'
   end
 
+
+  --not playing?
+  if gcm.get_game_state()~=3 or gcm.get_game_role()==2 then 
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    print("NOT PLAYING")
+    mcm.set_walk_stoprequest(1)    
+    return'stop' 
+  end
+
+
+
   --[[
   if t-t_entry > timeout then
     return'timeout'
@@ -55,25 +70,30 @@ function state.update()
 
   local target_pose = robocupplanner.getGoalieTargetPose(pose,ballGlobal)
  
-  local move_vel,reached = robocupplanner.getVelocityGoalie(pose,target_pose)
+  local ball_dist = math.abs(ballGlobal[1] - pose[1])
+  local threshold = 0.1 + 0.3* (math.min(1.0, math.max(0,    ((ball_dist-1.0)/2)   )))
+
+  local move_vel,reached = robocupplanner.getVelocityGoalie(pose,target_pose,threshold)
   if not reached then
     mcm.set_walk_vel(move_vel)    
   else
-    return 'done'
+    if mcm.get_motion_state()==4 then
+      mcm.set_walk_stoprequest(1)    
+    end
+    if mcm.get_motion_state()==2 then
+      if Config.enable_goalie_legspread then
+        mcm.set_walk_kicktype(9) --SPREAD
+        mcm.set_walk_steprequest(1)    
+        wcm.set_robot_legspread(1)
+      end
+      return 'done'
+    end
   end
 end
 
 function state.exit()
   print(state._NAME..' Exit' )
   t_exit = Body.get_time()
-  if Config.enable_goalie_legspread then
-    mcm.set_walk_kicktype(9) --SPREAD
-    mcm.set_walk_steprequest(1)    
-    wcm.set_robot_legspread(1)
-  else
-    mcm.set_walk_stoprequest(1)    
-  end
-  
 end
 
 return state

@@ -49,7 +49,8 @@ Config.disable_kick = false
 
 -- Monitor and logging
 Config.enable_monitor = true
-Config.to_log = false
+Config.enable_log = false
+Config.enable_log = true
 Config.use_log = false
 
 
@@ -88,7 +89,6 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupFollow.circleR = 1
   Config.fsm.bodyRobocupFollow.kickoffset = 0.5
 
-
   Config.fsm.bodyRobocupApproach.target={0.25,0.12}  
   Config.fsm.bodyRobocupApproach.th = {0.01, 0.01}
   Config.world.use_imu_yaw = true
@@ -108,8 +108,6 @@ end
 
   Config.stop_at_neutral = true --false for walk testing
 
-
-
 --FOR real robot
   Config.walk.velLimitX = {-.10,.15} 
   Config.walk.velLimitY = {-.06,.06}
@@ -121,7 +119,6 @@ end
 
   Config.approachTargetX = {
     0.45, --for kick 0 (walkkick)
---    0.30, --for kick 1 (st kick)
     0.28, --for kick 1 (st kick)
     0.35  --for kick 2 (weak walkkick)
   }
@@ -151,22 +148,49 @@ end
 
 --  Config.auto_state_advance = true
   Config.auto_state_advance = false
-
-  --Config.enable_goalie_legspread = true
-  Config.enable_goalie_legspread = false
-
---  Config.stop_at_neutral = true --false for walk testing
---  Config.stop_at_neutral = false --false for walk testing
-
-
+  
   Config.enable_single_goalpost_detection = false
   Config.enable_single_goalpost_detection = true
-
-
 
 -- Config.enable_weaker_kick = true
 
   Config.use_walkkick = true
 --  Config.use_walkkick = false
 
+  Config.disable_ball_when_lookup = true
+
+  Config.maxStepApproachTh = 0.30
+  Config.maxStepApproach1 = 0.10
+  Config.maxStepApproach2 = 0.06
+
+  Config.supportY_preview = -0.02
+  Config.supportY_preview2 = -0.01
+
+--Config.enable_goalie_legspread = true --NOT WORKING FOR NOW
+  --Config.enable_goalie_legspread = false
+  --Config.goalie_turn_to_ball = true
+
+---------------------------------------------------------------
+--Semi-final config end
+---------------------------------------------------------------
+
+
+  Config.goalieBallX_th = -0.5
+  Config.goalie_odometry_only = true
+  Config.goaliePosX = 0.40
+  Config.ballYFactor = 1.4
+  Config.gamecontroller_detect = true
+  Config.gamecontroller_timeout = 5.0
+
+
+  Config.max_goalie_y = 0.7
+---------------------------------------------------
+-- testing
+
+  Config.goalie_threshold_x = 0.10
+  Config.goalie_t_startmove = 10.0
+
+
+  Config.assume_goalie_blocking = true
+  Config.enemy_goalie_shift_factor = 0.15
 return Config

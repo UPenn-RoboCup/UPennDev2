@@ -21,6 +21,13 @@ shared.game.timeleft = vector.zeros(1)
 -- 0: goalie   1: attacker   2:Force stop and go to Testing
 shared.game.role = vector.ones(1)
 
+shared.game.gctime = vector.zeros(1)
+
+shared.game.autoadvance = vector.zeros(1)
+
+
+shared.game.tplaying = vector.zeros(1)
+
 -- Keep track of every state machine
 -- Use the Config'd FSMs
 shared.fsm = {}

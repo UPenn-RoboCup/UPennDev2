@@ -237,6 +237,14 @@ function walk.entry()
     local zmp_mod = {footQueue[offset+8],footQueue[offset+9],footQueue[offset+10]}
     local footparam = {footQueue[offset+11],footQueue[offset+12],footQueue[offset+13]}    
 
+
+
+    if supportLeg==0 then
+      zmp_mod[2] = zmp_mod[2] + (Config.supportY_preview2 or 0)
+    elseif supportLeg==1 then
+      zmp_mod[2] = zmp_mod[2] + (-Config.supportY_preview2 or 0)
+    end
+
     --print("tStep:",t0+t1+t2)
 
     step_planner:step_enque_trapezoid(foot_movement, supportLeg, t0,t1,t2,zmp_mod,footparam)
@@ -334,11 +342,13 @@ function walk.update()
     if math.abs(roll)>roll_max then roll_max = math.abs(roll) end
     local roll_threshold = 10 --this is degree
 
+--[[
     if roll_max>roll_threshold and hcm.get_motion_estop()==0 then
       print("EMERGENCY STOPPING")
       print("IMU roll angle:",roll_max)
       hcm.set_motion_estop(1)
     end
+--]]
 
     --Check if torso crossed the center position
     local relL = util.pose_relative(uLeft,uTorso)

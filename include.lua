@@ -2,8 +2,6 @@
 -- Include script to be run at the top of each file
 -- This mainly sets the paths
 -- It also adds very useful globals
-collectgarbage()
-print(collectgarbage('count'))
 
 -- Locate the Modules
 CWD = assert(os.getenv'PWD','No PWD variable set!')
@@ -55,7 +53,7 @@ package.path = HOME..'/Player/Vision/?.lua;'..package.path
 -- include Config files to path
 package.path = HOME..'/Config/?.lua;'..package.path
 
--- Unix should be global.  the ffi.lua file provides a fallback
+-- Unix should be global; the ffi.lua file provides a fallback
 unix = require'unix.ffi'
 
 -- Save the hostname
@@ -76,7 +74,7 @@ package.path  = ROBOT_HOME..'/?.lua;'..package.path
 package.cpath = ROBOT_HOME..'/?.so;'..package.cpath
 
 collectgarbage()
-print('Post-include', collectgarbage('count'))
+--print('Post-include', collectgarbage('count'))
 
 -- Print out the globally available variables, when using include.lua
 --[[

@@ -1,4 +1,4 @@
-dofile'include.lua'
+dofile'../include.lua'
 -- (c) 2013, 2014 Stephen McGill
 require'hcm'
 local mp = require'msgpack.MessagePack'

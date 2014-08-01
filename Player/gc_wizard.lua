@@ -3,7 +3,7 @@
 -- Game State Manager
 -- (c) 2014 Stephen McGill
 ---------------------------
-dofile'include.lua'
+dofile'../include.lua'
 local libGC = require'GameControlReceiver.ffi'
 require'gcm'
 local Body = require(Config.dev.body)

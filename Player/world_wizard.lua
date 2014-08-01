@@ -3,7 +3,7 @@
 -- World Manager --
 -- (c) Stephen McGill 2014    --
 ---------------------------
-dofile'include.lua'
+dofile'../include.lua'
 local Body = require(Config.dev.body)
 local lW = require'libWorld'
 local si = require'simple_ipc'

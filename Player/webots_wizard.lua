@@ -2,7 +2,7 @@
 --       Webots Manager       --
 -- (c) Stephen McGill, Qin He --
 --------------------------------
-dofile'include.lua'
+dofile'../include.lua'
 --require'gcm'
 local Body = require(Config.dev.body)
 local lW = require'libWorld'

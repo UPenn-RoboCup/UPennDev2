@@ -56,6 +56,9 @@ package.path = HOME..'/Config/?.lua;'..package.path
 -- include Player wizards for webots require
 package.path = HOME..'/Player/?.lua;'..package.path
 
+-- include test scripts to path
+package.path = HOME..'/Test/?.lua;'..package.path
+
 -- Unix should be global; the ffi.lua file provides a fallback
 unix = require'unix.ffi'
 

@@ -1,14 +1,16 @@
 #!/usr/bin/env luajit -i
-dofile'include.lua'
+local ok = pcall(dofile, 'include.lua')
+if not ok then pcall(dofile, '../include.lua') end
+
 -- Important libraries in the global space
 mp = require'msgpack.MessagePack'
 si = require'simple_ipc'
 local libs = {
-  'Body',
+	'ffi',
+	'torch',
   'util',
   'vector',
-  'torch',
-  'ffi',
+	'Body',
 }
 -- Load the libraries
 for _,lib in ipairs(libs) do
@@ -17,6 +19,7 @@ for _,lib in ipairs(libs) do
     _G[lib] = lib_tbl
   else
     print("Failed to load", lib)
+		print(lib_tbl)
   end
 end
 

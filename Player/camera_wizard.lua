@@ -87,7 +87,6 @@ if FROM_LOG then
 	operator = 'localhost' 
 	print('operator IP:', operator)
 end
-print('UDP',operator, metadata.udp_port)
 local udp_ch = metadata.udp_port and si.new_sender(operator, metadata.udp_port)
 
 -- Metadata for the operator
@@ -164,16 +163,6 @@ local function update(img, sz, cnt, t)
 			t_send = t
 		end
 	end
-
-	if t-t_debug>1 then
-		t_debug = t
-		local kb = collectgarbage('count')
-		local debug_str = {
-			string.format("Camera | %s Uptime: %.2f Mem: %d kB", name, t-t0, kb),
-			"# logs: "..nlog
-		}
-		print(table.concat(debug_str,'\n'))
-	end
 end
 
 -- If required from Webots, return the table
@@ -212,5 +201,14 @@ end
 while running do
 	local img, sz, cnt, t = camera:get_image()
 	update(img, sz, cnt, t)
+	if t-t_debug>1 then
+		t_debug = t
+		local kb = collectgarbage('count')
+		local debug_str = {
+			string.format("Camera | %s Uptime: %.2f Mem: %d kB", name, t-t0, kb),
+			"# logs: "..nlog
+		}
+		print(table.concat(debug_str,'\n'))
+	end
 	collectgarbage'step'
 end

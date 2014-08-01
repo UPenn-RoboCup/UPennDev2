@@ -1,5 +1,6 @@
 #!/usr/bin/env luajit -i
-dofile'include.lua'
+local ok = pcall(dofile, 'include.lua')
+if not ok then pcall(dofile, '../include.lua') end
 -- Important libraries in the global space
 mp = require'msgpack.MessagePack'
 si = require'simple_ipc'

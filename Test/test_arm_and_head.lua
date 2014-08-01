@@ -79,9 +79,7 @@ function tasks.t()
 	return tq[1]==0 and "Torquing off..." or "Torquing on..."
 end
 
-local function process_kb()
-  local keycode = getch.nonblock()
---	local keycode = getch.block()
+local function update(keycode)
 	if not keycode then return end
 	local char = string.char(keycode)
 	local char_lower = string.lower(char)
@@ -125,7 +123,6 @@ local t_last_temp = 0
 local msg
 print_menu()
 while running do
-  
   local t = unix.time()
   if t - t_last_temp > 1 then
     t_last_temp = t
@@ -133,7 +130,8 @@ while running do
     rleg_temp = Body.get_rleg_temperature()
     head_volt = Body.get_head_voltage() / 10
   end
-
-	print_menu( process_kb() )
+  local keycode = getch.nonblock()
+--	local keycode = getch.block()
+	print_menu(update(keycode))
   unix.usleep(1e5)
 end

@@ -3,8 +3,6 @@
 -- (c) 2013,2014 Stephen McGill, Seung-Joon Yi
 --------------------------------
 --assert(ffi, 'Need LuaJIT to run. Lua support in the future')
--- Shared memory for the joints
-require'dcm'
 
 -- Utilities
 local vector = require'vector'
@@ -14,16 +12,11 @@ local Kinematics = require'THOROPKinematics'
 local mpack  = require'msgpack'.pack
 
 local Body = {}
-local dcm_ch, imu_ch, imu_thread, dcm_thread
--- Default is not in thread for dcm_ch
 local dcm_ch = si.new_publisher'dcm!'
-local get_time
-if not unix then
-	get_time = require'unix'.time
-else
-	get_time = unix.time
-end
+local get_time = require'unix'.time
 local vslice = vector.slice
+
+require'dcm'
 
 ------------------
 -- Body sensors --
@@ -164,83 +157,40 @@ for _, actuator in ipairs(dcm.actuatorKeys) do
 	-- End anthropomorphic
 end
 
--- If receiving data from a chain
-local function dcm_cb()
-  dcm_ch:receive()
-end
-local function imu_cb()
-  local msgs = imu_ch:receive()
-  for _, msg in ipairs(msgs) do print(msg) end
-end
-
 function Body.entry()
-	-- DCM
-	dcm_ch, dcm_thread =
-	  si.new_thread(ROBOT_HOME..'/run_dcm.lua', 'dcm')
-	ch.callback = dcm_cb
-	-- IMU
-	imu_ch, imu_thread =
-		si.new_thread(ROBOT_HOME..'/run_imu.lua', 'imu', v)
-	imu_ch.callback = imu_cb
-	-- Polling object
-	body_poll = si.wait_on_channels({dcm_ch, imu_ch})
-  -- Start the threads
-  dcm_thread:start()
-	imu_thread:start()
 end
 
 function Body.update()
-	-- Poll for events
-	-- Return immediately if nothing happening
-	-- NOTE: Most of the time, nothing will happen...
-	body_poll:poll()
 end
 
 function Body.exit()
-	-- Tell the devices to exit cleanly
-  if imu_thread then
-    imu_ch:send'exit'
-    imu_thread:join()
-  end
-  if dcm_thread then
-    dcm_ch:send'exit'
-    dcm_thread:join()
-  end
 end
 
 ---
 -- Special functions
 ---
 function Body.enable_read(chain)
-print("EN READ")
   dcm_ch:send(mpack({bus=chain,key='enable_read', val=true}))
 end
 function Body.disable_read(chain)
-print("DIS READ")
   dcm_ch:send(mpack({bus=chain,key='enable_read', val=false}))
 end
 
 ----------------------
 -- Webots compatibility
 if IS_WEBOTS then
-	local WebotsBody
-	-- Shared memory for world
 	require'wcm'
+	local WebotsBody
+  local torch = require'torch'
+  torch.Tensor = torch.DoubleTensor
+  local webots = require'webots'
   
   Body.enable_read = function(chain)
   end
   Body.disable_read = function(chain)
   end
 
-  --SJ: I put test_walk capabality here
-  local fsm_chs = {}
-  for _,sm in ipairs(Config.fsm.enabled) do
-    local fsm_name = sm..'FSM'
-    table.insert(fsm_chs, fsm_name)
-    _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")
-  end
-
-local nJoint = Config.nJoint
+	local nJoint = Config.nJoint
   local jointNames = {
     "Neck","Head", -- Head (Yaw,pitch)
     -- Left Arm
@@ -272,8 +222,6 @@ local nJoint = Config.nJoint
   	libLog = require'libLog'
   	logger = libLog.new('yuyv', true)
   end
-  
-  require'hcm'
 
   --Added to config rather than hard-code 
   local ENABLE_CHEST_LIDAR  = Config.sensors.chest_lidar
@@ -285,19 +233,6 @@ local nJoint = Config.nJoint
   local ENABLE_POSE   = true
   local ENABLE_IMU   = true
 
-  local torch = require'torch'
-  torch.Tensor = torch.DoubleTensor
-  local carray = require'carray'
-  local jpeg = require'jpeg'
-
-	-- Publish sensor data
-	local simple_ipc = require'simple_ipc'
-	local mp = require'msgpack.MessagePack'
-	local lidar0_ch = simple_ipc.new_publisher'lidar0'
-	local lidar1_ch = simple_ipc.new_publisher'lidar1'
-
-  local webots = require'webots'
-	local carray = require'carray'
   -- Start the system
   webots.wb_robot_init()
   -- Acquire the timesteps
@@ -315,10 +250,6 @@ local nJoint = Config.nJoint
   webots.wb_receiver_enable(tags.receiver,timeStep)
   webots.wb_receiver_set_channel(tags.receiver,13)
     
-	-- Vision routines
-  local udp = require'udp'
-  local jpeg = require'jpeg'
-  local c_yuyv = jpeg.compressor('yuyv')
   -- Load vision config
 	local cam_cfg = Config.camera[1]
   print('Color table loaded', cam_cfg.lut)
@@ -503,10 +434,8 @@ local nJoint = Config.nJoint
     end
 		dcm.set_sensor_position(positions)
 		dcm.set_actuator_command_position(positions)
-		
 		WebotsBody = require'WebotsBody'
 		WebotsBody.entry()
-
 	end
 
 	function Body.update()
@@ -637,127 +566,19 @@ local nJoint = Config.nJoint
       local h = webots.wb_camera_get_height(tags.head_camera)
       local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.head_camera), w, h)
 			WebotsBody.update_head_camera(img, 2*w*h, 0, t)
-			--[[
-      -- Logs for making colortable
-      local meta = {
-        t = t,
-        sz = 0,
-        w = w,
-        h = h,
-        id = 'head_camera',
-        c = 'jpeg',
-      }
-      local t_now = Body.get_time()
-      local LOG_INTERVAL = 1/20
-      if logger and t_now - t_log> LOG_INTERVAL then
-        meta.t = t_now
-        --TODO: meta.cnt?
-        local sz = 4/2*w*h  -- 4 bytes per 2 pixels
-    		meta.rsz = sz
-        meta[1] = vision.get_metadata()
-        logger:record(meta, img, sz)
-        t_log = t_now
-      end
-
-      -- Vision routines
-      SEND_VISION_INTERVAL = 1 / hcm.get_monitor_fps()
-      update_vision(img)
-			--]]
     end
     -- Grab a lidar scan
     if ENABLE_CHEST_LIDAR then
       local w = webots.wb_camera_get_width(tags.chest_lidar)
       local lidar_fr = webots.wb_camera_get_range_image(tags.chest_lidar)
-      local lidar_array = carray.float( lidar_fr, w )
-			-- Send the message on the lidar channel
-			local meta = {}
-			meta.t     = Body.get_time()
-			meta.n     = w
-			meta.res   = 360 / 1440
-			meta.pose  = wcm.get_robot_pose()
-			lidar0_ch:send{mp.pack(meta),tostring(lidar_array)}
+      --local lidar_array = carray.float( lidar_fr, w )
     end
     -- Grab a lidar scan
     if ENABLE_HEAD_LIDAR then
       local w = webots.wb_camera_get_width(tags.head_lidar)
       local lidar_fr = webots.wb_camera_get_range_image(tags.head_lidar)
-      local lidar_array = carray.float( lidar_fr, w )
-			-- Send the message on the lidar channel
-			local meta = {}
-			meta.t     = Body.get_time()
-			meta.n     = w
-			meta.res   = 360 / 1440
-			meta.pose  = wcm.get_robot_pose()
-			lidar1_ch:send{mp.pack(meta),tostring(lidar_array)}
+      --local lidar_array = carray.float( lidar_fr, w )
     end
-
-    -- Grab keyboard input, for modifying items
-    local key_code = webots.wb_robot_keyboard_get_key()
-    local key_char = string.char(key_code)
-    local key_char_lower = string.lower(key_char)
-
-    if t-t_last_keypress>1 then
---[[      
-      if key_char_lower=='1' then
-        body_ch:send'init'
-        head_ch:send'teleop'           
-        t_last_keypress = t
---]]
-
-      if key_char_lower=='1' then
-        --Attacker start
-        gcm.set_game_role(1)
-        gcm.set_game_state(0)
-
-        t_last_keypress = t
-
-      elseif key_char_lower=='2' then
-
-        --Goalie start
-        gcm.set_game_role(0) --Zero: goalie
-        gcm.set_game_state(0)
-        t_last_keypress = t
-
-      elseif key_char_lower=='3' then
-        --Tester start
-        gcm.set_game_role(2) --tester role
-        gcm.set_game_state(6) --tester state
-        t_last_keypress = t
-
-      elseif key_char_lower=='4' then
-        gcm.set_game_state(3) --Playing
-        print("PLAYING")
-        t_last_keypress = t
-
-      elseif key_char_lower=='8' then        
-        motion_ch:send'stand'
-        if mcm.get_walk_ismoving()>0 then 
-          print("requesting stop")
-          mcm.set_walk_stoprequest(1) 
-        end
-        t_last_keypress = t        
-	  elseif key_char_lower=='9' then        
-        motion_ch:send'hybridwalk'
-        t_last_keypress = t                
-      elseif key_char_lower=='f' then
-        --head_ch:send'scan'
-        head_ch:send'scanobs'
-        t_last_keypress = t
-      elseif key_char_lower=='g' then
-        body_ch:send'play'
-        head_ch:send'scan'    
-        t_last_keypress = t        
-      end
-    end
-
-    --No need to toggle anything for robocup testing
---[[
-		local key_toggle = key_action[key_char_lower]
-    if key_toggle and t-t_last_keypress>1 then
-      key_toggle()
-      t_last_keypress = t
-    end
---]]
 
 
 	--Receive webot messaging
@@ -796,7 +617,18 @@ local nJoint = Config.nJoint
 	    webots.wb_receiver_next_packet(tags.receiver)
 	  end
 		
-		WebotsBody.update()
+		-- Grab keyboard input, for modifying items
+    local key_code = webots.wb_robot_keyboard_get_key()
+
+    --No need to toggle anything for robocup testing
+		--[[
+		local key_toggle = key_action[key_char_lower]
+    if key_toggle and t-t_last_keypress>1 then
+      key_toggle()
+      t_last_keypress = t
+    end
+		--]]
+		WebotsBody.update(key_code)
 	
 	end -- update
 

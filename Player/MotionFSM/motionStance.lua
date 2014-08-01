@@ -53,7 +53,7 @@ function state.update()
   mcm.set_walk_ismoving(0) --We stopped moving
 
   --Adjust body height
-  local bodyHeight_now = mcm.get_stance_bodyHeight()  
+  local bodyHeight_now = mcm.get_stance_bodyHeight()
   local bodyHeightTarget = hcm.get_motion_bodyHeightTarget()
   bodyHeightTarget = math.max(0.75,math.min(Config.walk.bodyHeight,bodyHeightTarget))
 

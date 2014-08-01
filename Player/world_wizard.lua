@@ -10,7 +10,7 @@ local si = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
 local util = require'util'
 -- Cache some functions
-local get_time, usleep = Body.get_time, unix.usleep
+local get_time = Body.get_time
 -- Subscribe to important messages
 local vision_ch = si.new_subscriber'vision'
 -- UDP channel

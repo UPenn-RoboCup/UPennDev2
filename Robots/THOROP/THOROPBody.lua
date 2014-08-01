@@ -603,7 +603,7 @@ local nJoint = Config.nJoint
       local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
 
       --SJ: we need to remap rpy for webots
-      dcm.sensorPtr.rpy[0],dcm.sensorPtr.rpy[1],dcm.sensorPtr.rpy[2] =
+      dcm.sensorPtr.rpy[0], dcm.sensorPtr.rpy[1], dcm.sensorPtr.rpy[2] =
         rpy[2], rpy[1], -rpy[3]
 
       --[[

@@ -21,6 +21,8 @@ local pRLeg_desired = vector.new{-Config.walk.supportX,  -Config.walk.footY, 0, 
 local pTorso_desired = vector.new{-Config.walk.torsoX, 0, Config.walk.bodyHeight, 0,Config.walk.bodyTilt,0}
 
 
+local err_th = 1*DEG_TO_RAD
+if IS_WEBOTS then err_th = 5*DEG_TO_RAD end
 -- Set the desired waist
 local qWaist_desired = Config.stance.qWaist
 
@@ -69,11 +71,8 @@ function state.entry()
   if not IS_WEBOTS then
     print('INIT setting params')
     for i=1,10 do
-
       Body.set_head_command_velocity({500,500})
       unix.usleep(1e6*0.01);
-
-
       Body.set_waist_command_velocity({500,500})
       unix.usleep(1e6*0.01);
       Body.set_lleg_command_velocity({500,500,500,500,500,500})
@@ -101,10 +100,12 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
+  --[[
   if IS_WEBOTS then
-    print('hi')
+    print("WEBOTS INSTANT RETURN FROM MOTION INIT")
     return'done'
   end
+  --]]
 
   -- Zero the waist
 
@@ -123,7 +124,6 @@ function state.update()
 
 
   if Config.torque_legs then
-
 
     -- Command the body
     local qLegsTarget = Kinematics.inverse_legs( pLLeg_desired, pRLeg_desired, pTorso_approach, 0 )
@@ -146,11 +146,11 @@ function state.update()
     local qRLegActual = Body.get_rleg_position() - legBiasR
     local qWaistActual = Body.get_waist_position()
 
-    local qLLegCommand = Body.get_lleg_command_position() - legBiasL
-    local qRLegCommand = Body.get_rleg_command_position() - legBiasR
+    local qLLegCommand = qLLegMove - legBiasL
+    local qRLegCommand = qRLegMove - legBiasR
     local qWaistCommand = Body.get_waist_command_position()
 
-    local err = 0;
+    local err = 0
     for i=1,4 do --hack: skip ankle angles for now
       err = err + math.abs(qLLegActual[i]- qLLegCommand[i])
       err = err + math.abs(qRLegActual[i]- qRLegCommand[i])
@@ -158,13 +158,13 @@ function state.update()
     err = err + math.abs(qWaistActual[1]- qWaistCommand[1])
     err = err + math.abs(qWaistActual[2]- qWaistCommand[2])
 
-    --print("err: ",err, doneL,doneR)
-
-    local err_th = 1*DEG_TO_RAD
+    --print("err: ", err, doneL, doneR, err_th, t-t_entry)
 
   --  if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end
 
-    if (err<err_th or IS_WEBOTS) then return'done' end
+    if err<err_th and t-t_entry > 1 then return'done' end
+    --if IS_WEBOTS then return'done' end
+    
   else
     if doneTorso and doneWaist then return 'done' end
   end

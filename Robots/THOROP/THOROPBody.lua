@@ -73,7 +73,7 @@ for _, actuator in ipairs(dcm.actuatorKeys) do
 	-- Only command_position is constantly synced
 	-- Other commands need to be specially sent to the Body
 	local not_synced = actuator~='command_position'
-  local ptr = ffi and dcm.actuatorPtr[actuator]
+  local ptr = dcm.actuatorPtr and dcm.actuatorPtr[actuator]
   local idx
 	local function set(val, idx1, idx2)
 		local changed_ids = {}
@@ -223,6 +223,7 @@ end
 ----------------------
 -- Webots compatibility
 if IS_WEBOTS then
+	local WebotsBody
 	-- Shared memory for world
 	require'wcm'
   
@@ -437,7 +438,6 @@ local nJoint = Config.nJoint
 		get_pos = webots.wb_servo_get_position
 	end
 	function Body.entry()
-
     -- Request @ t=0 to always be earlier than position reads
 
 		-- Grab the tags from the joint names
@@ -503,6 +503,9 @@ local nJoint = Config.nJoint
     end
 		dcm.set_sensor_position(positions)
 		dcm.set_actuator_command_position(positions)
+		
+		WebotsBody = require'WebotsBody'
+		WebotsBody.entry()
 
 	end
 
@@ -631,23 +634,6 @@ local nJoint = Config.nJoint
       local w = webots.wb_camera_get_width(tags.head_camera)
       local h = webots.wb_camera_get_height(tags.head_camera)
       local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.head_camera), w, h)
-      -- Update metadata
-      -- Well we don't need camera image on monitor when running webots
-      --[[ Send camera image
-      local meta = {
-        t = t,
-        sz = 0,
-        w = w,
-        h = h,
-        id = 'head_camera',
-        c = 'jpeg',
-      }
-      local c_img = c_yuyv:compress(img, w, h)
-      meta.sz = #c_img
-      local udp_data = mp.pack(meta)..c_img
-      local udp_ret, udp_err = cam_udp_ch:send(udp_data)
-      --]]
-
       -- Logs for making colortable
       local meta = {
         t = t,
@@ -657,7 +643,6 @@ local nJoint = Config.nJoint
         id = 'head_camera',
         c = 'jpeg',
       }
-      
       local t_now = Body.get_time()
       local LOG_INTERVAL = 1/20
       if logger and t_now - t_log> LOG_INTERVAL then
@@ -771,7 +756,7 @@ local nJoint = Config.nJoint
 
 
 	--Receive webot messaging
-		while (webots.wb_receiver_get_queue_length(tags.receiver) > 0) do
+		while webots.wb_receiver_get_queue_length(tags.receiver) > 0 do
 	    -- get first message on the queue
 	    ndata = webots.wb_receiver_get_data_size(tags.receiver)
 	    msg = webots.wb_receiver_get_data(tags.receiver)
@@ -779,8 +764,6 @@ local nJoint = Config.nJoint
 	    	local ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2
 	    	local ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2
 	    	wcm.set_robot_gpsball({ball_gpsx,ball_gpsy});
-
-
         local timestarted = wcm.get_robot_timestarted()
         if Config.stop_after_score and timestarted~=0 and ball_gpsx>4.5 then
           print("=========================================")
@@ -796,8 +779,6 @@ local nJoint = Config.nJoint
           gcm.set_game_state(4) --Set to finished
           head_ch:send'teleop'
         end
-
-
 --	    	print("ball:",ball_gpsx,ball_gpsy)
 	  	elseif #msg==16 then     		
     		local obsx=(tonumber(string.sub(msg,2,6))-5)*2
@@ -809,6 +790,8 @@ local nJoint = Config.nJoint
     	end	    
 	    webots.wb_receiver_next_packet(tags.receiver)
 	  end
+		
+		WebotsBody.update()
 	
 	end -- update
 

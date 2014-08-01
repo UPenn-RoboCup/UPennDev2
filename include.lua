@@ -53,6 +53,9 @@ package.path = HOME..'/Player/Vision/?.lua;'..package.path
 -- include Config files to path
 package.path = HOME..'/Config/?.lua;'..package.path
 
+-- include Player wizards for webots require
+package.path = HOME..'/Player/?.lua;'..package.path
+
 -- Unix should be global; the ffi.lua file provides a fallback
 unix = require'unix.ffi'
 

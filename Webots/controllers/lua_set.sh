@@ -20,14 +20,6 @@ LUA=luajit
 TERM=`which xterm`
 LPATH=`/usr/local/bin/lua -e 'print(package.path)'`
 
-#echo pwd $PWD
-#echo path $PATH
-#echo os $OSTYPE
-#echo lua $LUA
-#echo lpath $LPATH
-#echo term $TERM
-#echo compute $COMPUTER
-
 # On Linux, need to verify that xterm is not setgid
 # Otherwise, LD_LIBRARY_PATH gets unset in xterm
 export PLAYER_ID=$1
@@ -37,6 +29,15 @@ export PLATFORM=webots
 #TESTFILE=state_wizard.lua
 #TESTFILE=body_wizard.lua
 TESTFILE=webots_wizard.lua
+
+echo pwd $PWD
+#echo path $PATH
+#echo os $OSTYPE
+#echo lua $LUA
+echo lpath $LPATH
+echo term $TERM
+echo compute $COMPUTER
+echo testfile $TESTFILE
 
 # Spawn the right terminal
 if [ "$EXT_TERM" -gt "0" ]

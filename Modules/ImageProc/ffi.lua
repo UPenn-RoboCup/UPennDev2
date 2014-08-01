@@ -4,6 +4,7 @@
 local ImageProc = {}
 local torch  = require'torch'
 local vector  = require'vector'
+local ffi = require'ffi'
 local bit    = require'bit'
 local lshift = bit.lshift
 local rshift = bit.rshift

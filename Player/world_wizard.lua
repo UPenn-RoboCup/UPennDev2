@@ -58,23 +58,16 @@ vision_ch.callback = function(skt)
   
 end
 
--- Entry
-lW.entry()
-
-if args then print('CMD LINE') end
-
-
--- Timing
-local TIMEOUT = 1 / 10
 -- Timeout in milliseconds
-local TIMEOUT_MS = TIMEOUT * 1e3
+local TIMEOUT = 1 / 10 * 1e3
 local poller = si.wait_on_channels{vision_ch}
 local npoll
 local t0, t = get_time()
 local debug_interval, t_debug = 1, t0
-while running do
+
+local function update()
 	send_interval = 1 / hcm.get_monitor_fps()
-  npoll = poller:poll(TIMEOUT_MS)
+  npoll = poller:poll(TIMEOUT)
   if npoll==0 then
     -- If no frames, then just update by odometry
     --Should use the differential of odometry!
@@ -105,4 +98,10 @@ while running do
   end
 end
 
+if type(...)=='string' then
+	return {entry=lW.entry, update=update, exit=lW.exit}
+end
+
+lW.entry()
+while running do update() end
 lW.exit()

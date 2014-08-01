@@ -2,6 +2,8 @@
 -- Include script to be run at the top of each file
 -- This mainly sets the paths
 -- It also adds very useful globals
+collectgarbage()
+print(collectgarbage('count'))
 
 -- Locate the Modules
 CWD = assert(os.getenv'PWD','No PWD variable set!')
@@ -21,11 +23,11 @@ if HOME:find'Webots' ~= nil then
 end
 
 -- Useful constants
-DEG_TO_RAD = math.pi/180
-RAD_TO_DEG = 180/math.pi
+DEG_TO_RAD = math.pi / 180
+RAD_TO_DEG = 180 / math.pi
 
 -- SJ: This removes the output buffer
-io.stdout:setvbuf("no")
+io.stdout:setvbuf'no'
 
 -- include C modules to cpath
 -- For copying to the Nao and just dumping into one directory
@@ -64,24 +66,17 @@ OPERATING_SYSTEM = unix.uname():lower()
 KEYFRAME_DIR = HOME.."/Player/Keyframes"
 LOG_DIR = HOME.."/Logs"
 
--- Config is global now!
-Config = require'Config'
+-- Use functional idioms
+--require "fun" ()
 
 -- include platform specific modules
-ROBOT_HOME = HOME..'/Robots/'..Config.PLATFORM_NAME
+PLATFORM_NAME = require('Config').PLATFORM_NAME
+ROBOT_HOME = HOME..'/Robots/'..PLATFORM_NAME
 package.path  = ROBOT_HOME..'/?.lua;'..package.path
 package.cpath = ROBOT_HOME..'/?.so;'..package.cpath
 
--- NOTE: We can somehow require multiple same FSMs, now... (i.e. for two hands)
-function load_fsm (name)
-  -- Set some temporary globals
-  fsm_name, transitions = name, Config.fsm[name]
-  -- Load the state machine
-	local my_fsm = dofile(HOME..'/Util/fsm_helper.lua')
-  -- Unset the temporary globals
-	fsm_name, transitions = nil, nil
-	return my_fsm
-end
+collectgarbage()
+print('Post-include', collectgarbage('count'))
 
 -- Print out the globally available variables, when using include.lua
 --[[

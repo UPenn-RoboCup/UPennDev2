@@ -76,8 +76,12 @@ local exo = {'Robot', 'Walk', 'Net', 'Manipulation', 'FSM', 'World', 'Vision'}
 
 -- Load each exogenous Config file
 for _,v in ipairs(exo) do
+	--[[
   local fname = {HOME, '/Config/Config_', Config.PLATFORM_NAME, '_', v, '.lua'}
   dofile(table.concat(fname))
+	--]]
+	local fname = {'Config_', Config.PLATFORM_NAME, '_', v}
+  require(table.concat(fname))
 end
 
 --Vision parameter hack (robot losing ball in webots)

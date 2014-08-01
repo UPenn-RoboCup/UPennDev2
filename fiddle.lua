@@ -4,7 +4,6 @@ dofile'include.lua'
 mp = require'msgpack.MessagePack'
 si = require'simple_ipc'
 local libs = {
-  'Config',
   'Body',
   'util',
   'vector',

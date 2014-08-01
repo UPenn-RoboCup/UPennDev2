@@ -1,5 +1,3 @@
-local util = require'util'
-
 -- Generate a new fsm generator object
 local fsm = {}
 
@@ -35,17 +33,16 @@ local mt = getfenv()
 mt.__index = mt
 
 function new(state1, ...)
-  if type(state1) ~= "table" then error("No initial state") end
-
-  local o = {}
-  o.states = {state1, ...}
-  o.reverseStates = {}
-  o.statesNames = {}
-  o.statesHash = {}
-  o.transitions = {}
-  o.actions = {}
+  assert(type(state1) == "table", "No initial state")
+  local o = {
+		states = {state1, ...},
+		reverseStates = {},
+		statesNames = {},
+		statesHash = {},
+		transitions = {},
+		actions = {},
+	}
   for i = 1,#o.states do
-    
     -- Reverse indexes of states
     o.reverseStates[o.states[i]] = i
     o.statesNames[i] = o.states[i]._NAME
@@ -116,9 +113,7 @@ function add_event(self, event)
 end
 
 function set_state(self, nextState)
-  if self.statesHash[nextState] == nil then
-    error('unkown state '..nextState)
-  end
+	assert(self.statesHash[nextState], 'unkown state '..nextState)
   self.nextState = self.states[self.statesHash[nextState]]
 end
 
@@ -193,12 +188,23 @@ function exit(self)
   state.exit()
   self.currentState = self.initialState
   if self.state_debug_handle then
-    self.state_debug_handle(self.currentState._NAME,event)
+    self.state_debug_handle(self.currentState._NAME, event)
   end
 end
 
 function set_state_debug_handle(self, h)
   self.state_debug_handle = h
+end
+
+-- NOTE: We can somehow require multiple same FSMs, now... (i.e. for two hands)
+function fsm.load(name)
+  -- Set some temporary globals
+  fsm_name, transitions = name, Config.fsm[name]
+  -- Load the state machine
+	local my_fsm = dofile(HOME..'/Util/fsm_helper.lua')
+  -- Unset the temporary globals
+	fsm_name, transitions = nil, nil
+	return my_fsm
 end
 
 return setmetatable(fsm, mt)

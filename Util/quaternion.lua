@@ -9,6 +9,14 @@ local util=require'util'
 local quaternion = {}
 local mt = {}
 
+local function cross(v1, v2)
+  return vector.new{
+  ( (v1[2] * v2[3]) - (v1[3] * v2[2]) ),
+  - ( (v1[1] * v2[3]) - (v1[3] * v2[1]) ),
+  ( (v1[1] * v2[2]) - (v1[2] * v2[1]) ),
+	}
+end
+
 -- New quaternion from a 3 or 4 element table
 function quaternion.new(t,alpha)
   if not t then return setmetatable({1,0,0,0}, mt) end
@@ -95,8 +103,8 @@ end
 -- dipole must be normalized, first
 function quaternion.from_dipole( dipole )
   local z_axis = vector.new{0,0,1}
---  local axis   = vector.cross(dipole,z_axis)
-  local axis   = vector.cross(z_axis,dipole)
+--  local axis   = cross(dipole,z_axis)
+  local axis   = cross(z_axis,dipole)
   local angle  = math.acos(dipole * z_axis)
   return quaternion.from_angle_axis(angle,axis)
 end

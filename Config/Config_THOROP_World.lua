@@ -1,5 +1,4 @@
 assert(Config, 'Need a pre-existing Config table!')
-local vector = require'vector'
 
 local world = {}
 

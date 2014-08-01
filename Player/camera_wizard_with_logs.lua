@@ -11,7 +11,6 @@ local jpeg = require'jpeg'
 local Body = require'Body'
 require'hcm'
 require'wcm'
-local get_time = Body.get_time
 
 -- Cleanly exit on Ctrl-C
 local running = true
@@ -71,6 +70,7 @@ else
 	operator = Config.net.operator.wired_broadcast
 end
 
+
 -- Form the detection pipeline
 local pipeline = {}
 for _, d in ipairs(metadata.detection_pipeline) do
@@ -107,8 +107,67 @@ local c_yuyv = jpeg.compressor('yuyv')
 c_yuyv:downsampling(2)
 local c_grey = jpeg.compressor('gray')
 
-local t_debug = get_time()
+-- Garbage collection before starting
+collectgarbage()
+local t_debug = unix.time()
 
+if FROM_LOG then
+
+	local libLog = require'libLog'
+	local replay = libLog.open(HOME..'/Logs/', LOG_DATE, 'yuyv')
+	local metadata = replay:unroll_meta()
+	local util = require'util'
+	print('Unlogging', #metadata, 'images from', LOG_DATE)
+	local logged_data = replay:log_iter()
+	for i, m, yuyv_t in logged_data do
+		assert(m.w==w, 'Bad width')
+		assert(m.h==h, 'Bad height')
+    
+    -- Flag to toggle on/off obstacle detection
+    if m.obs then 
+    	--wcm.set_obstacle_enable(m.obs) 
+    end
+    
+		local t = unix.time()
+		-- Check if we are sending to the operator
+		if ENABLE_NET then
+			local c_img = c_yuyv:compress(yuyv_t, w, h)
+			meta.sz = #c_img
+			local udp_ret, err = udp_ch:send( mp.pack(meta)..c_img )
+      if err then print(err) end
+		end
+
+		-- Update the vision routines
+		for pname, p in pairs(pipeline) do
+			p.update(yuyv_t:data())
+      
+  		if ENABLE_NET and p.send then
+  			for _,v in ipairs(p.send()) do
+  				if v[2] then
+  					udp_data = mp.pack(v[1])..v[2]
+  				else
+  					udp_data = mp.pack(v[1])
+  				end
+  				udp_ret, udp_err = udp_ch:send(udp_data)
+  			end
+  		end
+		end
+
+		-- Debugging
+		if t-t_debug>1 then
+			t_debug = t
+    	print('Obstacle enable?:', wcm.get_obstacle_enable())
+		end
+		-- Collect garbage every cycle
+		collectgarbage()
+		-- Sleep a little
+		unix.usleep(2e5)
+	end
+	-- Finish
+	os.exit()
+end
+
+local uvc = require'uvc'
 -- LOGGING
 if ENABLE_LOG then
 	libLog = require'libLog'
@@ -116,17 +175,45 @@ if ENABLE_LOG then
 	logger = libLog.new('yuyv', true)
 end
 
+-- Open the camera
+local camera = uvc.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
+-- Set the params
+for i, param in ipairs(metadata.auto_param) do
+	local name, value = unpack(param)
+	camera:set_param(name, value)
+	unix.usleep(1e5)
+	local now = camera:get_param(name)
+	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
+end
+-- Set the params
+for i, param in ipairs(metadata.param) do
+	local name, value = unpack(param)
+	camera:set_param(name, value)
+	unix.usleep(1e5)
+	local now = camera:get_param(name)
+	-- TODO: exposure
+	local count = 0
+	while count<5 and now~=value do
+		camera:set_param(name, value)
+		unix.usleep(1e6)
+		count = count + 1
+		now = camera:get_param(name)
+	end
+	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
+end
+
 local nlog = 0
 local udp_ret, udp_err, udp_data
-local t0 = get_time()
-
-local function update(img, sz, cnt, t)
+local t0 = unix.time()
+while running do
+	SEND_INTERVAL = 1 / hcm.get_monitor_fps()
+	-- Grab and compress
+	local img, sz, cnt, t = camera:get_image()
 	-- Update metadata
 	meta.t = t
 	meta.n = cnt
 
 	-- Check if we are sending to the operator
-	SEND_INTERVAL = 1 / hcm.get_monitor_fps()
 	if ENABLE_NET and t-t_send > SEND_INTERVAL then
 		local c_img = c_yuyv:compress(img, w, h)
 		meta.sz = #c_img
@@ -174,43 +261,7 @@ local function update(img, sz, cnt, t)
 		}
 		print(table.concat(debug_str,'\n'))
 	end
-end
 
--- If required from Webots, return the table
-if type(...)=='string' then
-	return {entry=nil, update=update, exit=nil}
-end
-
-
--- Open the camera
-local camera = require'uvc'.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
--- Set the params
-for i, param in ipairs(metadata.auto_param) do
-	local name, value = unpack(param)
-	camera:set_param(name, value)
-	unix.usleep(1e5)
-	local now = camera:get_param(name)
-	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
-end
--- Set the params
-for i, param in ipairs(metadata.param) do
-	local name, value = unpack(param)
-	camera:set_param(name, value)
-	unix.usleep(1e5)
-	local now = camera:get_param(name)
-	-- TODO: exposure
-	local count = 0
-	while count<5 and now~=value do
-		camera:set_param(name, value)
-		unix.usleep(1e6)
-		count = count + 1
-		now = camera:get_param(name)
-	end
-	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
-end
-
-while running do
-	local img, sz, cnt, t = camera:get_image()
-	update(img, sz, cnt, t)
-	collectgarbage'step'
+	-- Collect garbage every cycle
+	collectgarbage('step')
 end

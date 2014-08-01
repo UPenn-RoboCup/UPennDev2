@@ -630,10 +630,14 @@ local nJoint = Config.nJoint
     --dcm.set_sensor_position(dcm.get_actuator_command_position())
 
     -- Grab a camera frame
+		
     if ENABLE_CAMERA then
+			
       local w = webots.wb_camera_get_width(tags.head_camera)
       local h = webots.wb_camera_get_height(tags.head_camera)
       local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.head_camera), w, h)
+			WebotsBody.update_head_camera(img, 2*w*h, 0, t)
+			--[[
       -- Logs for making colortable
       local meta = {
         t = t,
@@ -658,6 +662,7 @@ local nJoint = Config.nJoint
       -- Vision routines
       SEND_VISION_INTERVAL = 1 / hcm.get_monitor_fps()
       update_vision(img)
+			--]]
     end
     -- Grab a lidar scan
     if ENABLE_CHEST_LIDAR then

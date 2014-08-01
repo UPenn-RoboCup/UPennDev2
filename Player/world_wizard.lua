@@ -99,6 +99,7 @@ local function update()
 end
 
 if type(...)=='string' then
+	TIMEOUT = 0
 	return {entry=lW.entry, update=update, exit=lW.exit}
 end
 

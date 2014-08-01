@@ -43,7 +43,6 @@ Config.disable_kick = false
 -- Monitor and logging
 Config.enable_monitor = true
 Config.enable_log = false
-Config.enable_log = true
 Config.use_log = false
 
 if IS_WEBOTS then

@@ -71,25 +71,25 @@ Robot {
          27.925 1024 0
       ]
     }
-#    DEF RECEIVER Receiver {
-#      name "receiver"
-#      channel IS channel
-#    }
-#    DEF EMITTER Emitter {
-#      name "emitter"
-#      channel IS channel
-#    }
-#    DEF PHYSICS_RECEIVER Receiver {
-#      name "physics_receiver"
-#      type "serial"
-#      channel 10
-#      byteSize 192
-#    }
-#    DEF PHYSICS_EMITTER Emitter {
-#      name "physics_emitter"
-#      type "serial"
-#      byteSize 96
-#    }
+    DEF RECEIVER Receiver {
+      name "receiver"
+      channel IS channel
+    }
+    DEF EMITTER Emitter {
+      name "emitter"
+      channel IS channel
+    }
+    DEF PHYSICS_RECEIVER Receiver {
+      name "physics_receiver"
+      type "serial"
+      channel 10
+      byteSize 192
+    }
+    DEF PHYSICS_EMITTER Emitter {
+      name "physics_emitter"
+      type "serial"
+      byteSize 96
+    }
     ## End of sensors that are children of the root
     
     ## The Head is a root child

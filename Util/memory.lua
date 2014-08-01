@@ -1,5 +1,6 @@
 local shm    = require'shm'
 local vector = require'vector'
+local ok, ffi = pcall(require, 'ffi')
 local memory = {}
 
 local function init_shm_keys (shmHandle, shmTable)

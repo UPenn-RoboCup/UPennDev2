@@ -57,7 +57,7 @@ local yMax = 3   --Config.world.yMax
 
 --
 local colors
-local c_zlib = zlib.compress_cdata
+local c_zlib = zlib.compress
 local vision_ch = si.new_publisher'vision'
 
 
@@ -83,7 +83,7 @@ function libVision.send()
   t_last_sent = unix.time()
 
   local to_send = {}
-  local lA_raw = c_zlib(labelA_t:data(), labelA_t:nElement(), true)
+  local lA_raw = c_zlib(labelA_t:data(), labelA_t:nElement())
   local lA_meta = {
     w = labelA_t:size(2),
     h = labelA_t:size(1),

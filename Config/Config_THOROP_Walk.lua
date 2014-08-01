@@ -32,12 +32,12 @@ walk.maxStepCount = 30
 ------------------------------------
 walk.stanceLimitX = {-0.30,0.30}
 walk.stanceLimitY = {0.16,0.30}
-walk.stanceLimitA = {-10*math.pi/180,30*math.pi/180}
+walk.stanceLimitA = {-10*DEG_TO_RAD,30*DEG_TO_RAD}
 
 walk.bodyHeight = 0.93
 walk.footY = 0.095
 walk.footX = 0
-walk.bodyTilt = 3*math.pi/180
+walk.bodyTilt = 3*DEG_TO_RAD
 walk.torsoX = 0.02     -- com-to-body-center offset
 
 ------------------------------------
@@ -58,41 +58,31 @@ walk.supportY = 0.06
 ------------------------------------
 gyroFactorX = 490.23/(251000/180)*0.5
 gyroFactorY = 490.23/(251000/180)*0.5
-walk.ankleImuParamX={1, 0.9*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
-walk.kneeImuParamX= {1, -0.3*gyroFactorX,  1*math.pi/180, 5*math.pi/180}
-walk.ankleImuParamY={1, 1.0*gyroFactorY,  1*math.pi/180, 5*math.pi/180}
-walk.hipImuParamY  ={1, 0.5*gyroFactorY,  2*math.pi/180, 5*math.pi/180}
-walk.dShift = {30*math.pi/180,30*math.pi/180,30*math.pi/180,30*math.pi/180}
+walk.ankleImuParamX={1, 0.9*gyroFactorX,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
+walk.kneeImuParamX= {1, -0.3*gyroFactorX,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
+walk.ankleImuParamY={1, 1.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
+walk.hipImuParamY  ={1, 0.5*gyroFactorY,  2*DEG_TO_RAD, 5*DEG_TO_RAD}
+walk.dShift = DEG_TO_RAD*vector.new{30,30,30,30}
 
-walk.hipRollCompensation = 2*math.pi/180
+walk.hipRollCompensation = 2*DEG_TO_RAD
 
 -----------------------------------
-walk.velLimitX = {-.05,.07}
-walk.velLimitY = {-.04,.04}
+walk.velLimitX = {-.10,.15} 
+walk.velLimitY = {-.06,.06}
 walk.velLimitA = {-.2,.2}
 walk.velDelta  = {0.025,0.02,0.1}
 walk.foot_traj = 1 --curved step
 
-walk.velLimitX = {-.05,.10} --tested, and quite good
-walk.velLimitX = {-.10,.10} --tested, and quite good
---walk.velLimitX = {-.05,.15} --tested, and quite good
-
-
-
 if IS_WEBOTS or HOSTNAME ~="alvin" then
   walk.foot_traj = 2 --square step
   walk.tZMP = 0.40 
-  walk.dShift = {30*math.pi/180,30*math.pi/180,30*math.pi/180,30*math.pi/180}
-
-  walk.hipRollCompensation = 1*math.pi/180
-  walk.ankleRollCompensation = 1.2*math.pi/180
-
+  walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
+  walk.hipRollCompensation = 1*DEG_TO_RAD
+  walk.ankleRollCompensation = 1.2*DEG_TO_RAD
   walk.velLimitX = {-.10,.10} 
   walk.velLimitY = {-.06,.06}
   walk.velLimitA = {-.2,.2}
   walk.velDelta  = {0.025,0.02,0.1}
-
-
 end
 
 -----------------------------------------------------------
@@ -337,11 +327,11 @@ kick.stepqueue["null"]=
 
 --prev value: 15 deg, 0.08
 
-local spread_angle = 10*math.pi/180
+local spread_angle = 10*DEG_TO_RAD
 local spread_width = 0.06
 
 if IS_WEBOTS then
---  spread_angle = 45*math.pi/180
+--  spread_angle = 45*DEG_TO_RAD
   spread_width = 0.08
 end
 
@@ -399,9 +389,9 @@ end
 --quick param reset
 walk.tZMP = 0.40 
 walk.tStep = 0.80
-walk.dShift = {30*math.pi/180,30*math.pi/180,30*math.pi/180,30*math.pi/180}
+walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
 
-walk.hipRollCompensation = 1.5*math.pi/180
+walk.hipRollCompensation = 1.5*DEG_TO_RAD
 walk.supportX = 0.07 --With clown feet, good for forward walking
 walk.supportY = 0.07
 walk.supportX = 0.06 --better

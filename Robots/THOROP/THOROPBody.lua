@@ -34,7 +34,7 @@ for _, sensor in ipairs(dcm.sensorKeys) do
 	local n_el = type(cur)=='table' and #cur or 1
   local is_motor = nx_registers[sensor]
   local ptr, ptr_t
-  if ffi then
+  if dcm.sensorPtr then
     ptr = dcm.sensorPtr[sensor]
     ptr_t = dcm.tsensorPtr[sensor]
   end
@@ -73,8 +73,7 @@ for _, actuator in ipairs(dcm.actuatorKeys) do
 	-- Only command_position is constantly synced
 	-- Other commands need to be specially sent to the Body
 	local not_synced = actuator~='command_position'
-  local ptr
-  if ffi then ptr = dcm.actuatorPtr[sensor] end
+  local ptr = ffi and dcm.actuatorPtr[actuator]
   local idx
 	local function set(val, idx1, idx2)
 		local changed_ids = {}
@@ -431,7 +430,7 @@ local nJoint = Config.nJoint
       end
     end,
   }
-	local OLD_API = true
+	local OLD_API = false
 	local set_pos, get_pos = webots.wb_motor_set_position, webots.wb_motor_get_position
 	if OLD_API then
 		set_pos = webots.wb_servo_set_position
@@ -480,9 +479,6 @@ local nJoint = Config.nJoint
     end
 		tags.head_camera = webots.wb_robot_get_device("HeadCamera")
     
-    
-		
-
 		-- Enable or disable the sensors
 		key_action.i(ENABLE_IMU)
 		key_action.p(ENABLE_POSE)
@@ -532,8 +528,6 @@ local nJoint = Config.nJoint
 			-- so that we don't have huge jumped
 			-- NOTE: This *should* be handled by the simulator?
 
-
-
 			local new_pos = cmd
 			if vel > 0 then
         local delta = util.mod_angle(cmd - pos)
@@ -545,7 +539,6 @@ local nJoint = Config.nJoint
 				new_pos = pos + delta
 			end
 
-      
 			if en>0 and jtag>0 then
         local rad = servo.direction[idx] * (new_pos + servo.rad_offset[idx])
                 
@@ -576,22 +569,11 @@ local nJoint = Config.nJoint
       dcm.sensorPtr.accelerometer[0] = (accel[1]-512)/128
       dcm.sensorPtr.accelerometer[1] = (accel[2]-512)/128
       dcm.sensorPtr.accelerometer[2] = (accel[3]-512)/128
-
       -- Gyro data (verified)
       local gyro = webots.wb_gyro_get_values(tags.gyro)
       dcm.sensorPtr.gyro[0] = -(gyro[1]-512)/512*39.24
       dcm.sensorPtr.gyro[1] = -(gyro[2]-512)/512*39.24
       dcm.sensorPtr.gyro[2] = (gyro[3]-512)/512*39.24
-
-
-
-
-
-
-
-
-
-
     end
 
     -- FSR

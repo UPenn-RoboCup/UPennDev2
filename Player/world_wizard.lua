@@ -60,6 +60,10 @@ end
 
 -- Entry
 lW.entry()
+
+if args then print('CMD LINE') end
+
+
 -- Timing
 local TIMEOUT = 1 / 10
 -- Timeout in milliseconds

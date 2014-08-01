@@ -1,6 +1,6 @@
 #!/usr/bin/env luajit
 -----------------------------------
--- Camera manager for finding lines
+-- Camera manager
 -- (c) Stephen McGill, 2014
 -----------------------------------
 -- Something there is non-reentrant

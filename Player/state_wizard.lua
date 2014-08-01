@@ -56,11 +56,10 @@ while running do
   -- Update the state machines
   for _,my_fsm in pairs(state_machines) do my_fsm:update() end
 		-- If time for debug
-		if t-t_debug>debug_interval then
-			t_debug = t
-			local kb = collectgarbage('count')
-			print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, kb))
-		end
+	if t-t_debug>debug_interval then
+		t_debug = t
+		local kb = collectgarbage('count')
+		print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, kb))
   end
 
   -- If not webots, then wait the update cycle rate

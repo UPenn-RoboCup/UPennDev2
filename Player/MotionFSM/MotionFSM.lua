@@ -1,2 +1,2 @@
-return load_fsm'Motion'
+return require'fsm'.load'Motion'
 

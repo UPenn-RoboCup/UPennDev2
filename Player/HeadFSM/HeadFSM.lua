@@ -1,1 +1,1 @@
-return load_fsm('Head')
+return require'fsm'.load'Head'

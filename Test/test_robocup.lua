@@ -4,9 +4,10 @@ dofile'../fiddle.lua'
 
 local targetvel = {0,0,0}
 local targetvel_new = {0,0,0}
+local WAS_REQUIRED
 
 function update(key_code)
-  if type(key_code)~='number' then return end
+  if type(key_code)~='number' or key_code==0 then return end
 	local key_char = string.char(key_code)
 	local key_char_lower = string.lower(key_char)
 	--if gcm.get_game_state()==6 then --Testing state
@@ -20,11 +21,10 @@ function update(key_code)
 		elseif key_char_lower==("h") then  targetvel_new[2]=targetvel[2]+0.02;
 		elseif key_char_lower==(";") then  targetvel_new[2]=targetvel[2]-0.02;
 
-		elseif key_char_lower==("1") then      
+		elseif key_char_lower==("1") then
 			gcm.set_game_role(2)
 			gcm.set_game_state(6)
 			body_ch:send'init'
-
 		elseif key_char_lower==("2") then      
 			head_ch:send'scan'
 
@@ -119,6 +119,7 @@ function update(key_code)
 end
 
 if ... and type(...)=='string' then
+	WAS_REQUIRED = true
 	return {entry=nil, update=update, exit=nil}
 end
 

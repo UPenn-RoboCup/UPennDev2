@@ -1,6 +1,6 @@
 local shm    = require'shm'
 local vector = require'vector'
-local ok, ffi = pcall(require, 'ffi')
+local ffi_ok, ffi = pcall(require, 'ffi')
 local memory = {}
 
 local function init_shm_keys (shmHandle, shmTable)
@@ -51,7 +51,7 @@ function memory.init_shm_segment (name, shared, shsize, tid, pid)
 
 		-- Add more direct memory access
     local shmPointerName, shmPointer
-    if ffi then
+    if ffi_ok then
 		  shmPointerName = shtable..'Ptr'
 		  fenv[shmPointerName] = {}
 		  shmPointer = fenv[shmPointerName]

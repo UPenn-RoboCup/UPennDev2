@@ -91,11 +91,6 @@ local function update()
 		--if err then print(ret, err) end
 		t_send = t
 	end
-
-  if t - t_debug > debug_interval then
-    t_debug = t
-    print(string.format('World | Uptime: %.2f sec, Mem: %d kB', t-t0, collectgarbage('count')))
-  end
 end
 
 if type(...)=='string' then
@@ -104,5 +99,11 @@ if type(...)=='string' then
 end
 
 lW.entry()
-while running do update() end
+while running do
+	update()
+	if t - t_debug > debug_interval then
+    t_debug = t
+    print(string.format('World | Uptime: %.2f sec, Mem: %d kB', t-t0, collectgarbage('count')))
+  end
+end
 lW.exit()

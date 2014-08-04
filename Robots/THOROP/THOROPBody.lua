@@ -619,16 +619,16 @@ if IS_WEBOTS then
 		
 		-- Grab keyboard input, for modifying items
     local key_code = webots.wb_robot_keyboard_get_key()
-
-    --No need to toggle anything for robocup testing
-		--[[
-		local key_toggle = key_action[key_char_lower]
-    if key_toggle and t-t_last_keypress>1 then
-      key_toggle()
-      t_last_keypress = t
-    end
-		--]]
-		WebotsBody.update(key_code)
+		if WebotsBody.USING_KB then
+			WebotsBody.update(key_code)
+		else
+			WebotsBody.update()
+			local key_toggle = key_action[key_char_lower]
+			if key_toggle and t-t_last_keypress>1 then
+				key_toggle()
+				t_last_keypress = t
+			end
+		end
 	
 	end -- update
 

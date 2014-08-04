@@ -2,7 +2,10 @@ local WebotsBody = {}
 
 local ww = require'world_wizard'
 local cw = require'camera_wizard'
---local kb = require'test_robocup'
+
+local kb = require'test_robocup'
+local USING_KB = type(kb)=='table' and type(kb.update)=='function'
+WebotsBody.USING_KB = USING_KB
 
 function WebotsBody.entry()
 	ww.entry()
@@ -14,7 +17,7 @@ end
 
 function WebotsBody.update(keycode)
 	ww.update()
-	--kb.update(keycode)
+	if USING_KB then kb.update(keycode) end
 end
 
 function WebotsBody.exit()

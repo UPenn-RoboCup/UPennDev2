@@ -23,6 +23,7 @@ local state_machines = {}
 local function load_fsm ()
   for _,sm in ipairs(Config.fsm.enabled) do
     local my_fsm = require(sm..'FSM')
+		assert(type(my_fsm)=='table', "Bad FSM: "..sm)
     local set_gcm_fsm = gcm and gcm['set_fsm_'..sm]
     if set_gcm_fsm then
       my_fsm.sm:set_state_debug_handle(function(cur_state_name, event)

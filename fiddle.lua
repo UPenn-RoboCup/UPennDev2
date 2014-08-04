@@ -1,4 +1,5 @@
 #!/usr/bin/env luajit -i
+if IS_FIDDLE then return end
 local ok = pcall(dofile, 'include.lua')
 if not ok then pcall(dofile, '../include.lua') end
 
@@ -19,7 +20,7 @@ for _,lib in ipairs(libs) do
     _G[lib] = lib_tbl
   else
     print("Failed to load", lib)
-		print(lib_tbl)
+		--print(lib_tbl)
   end
 end
 
@@ -45,6 +46,8 @@ end
 
 print(util.color('FSM Channel', 'yellow'), table.concat(fsm_chs, ' '))
 print(util.color('SHM access', 'blue'), table.concat(shm_vars,  ' '))
+
+IS_FIDDLE = true
 
 if arg and arg[-1]=='-i' and jit then
   -- Interactive LuaJIT

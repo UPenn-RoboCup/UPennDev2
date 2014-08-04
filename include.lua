@@ -2,6 +2,7 @@
 -- Include script to be run at the top of each file
 -- This mainly sets the paths
 -- It also adds very useful globals
+if DONE_INCLUDE then return end
 
 -- Locate the Modules
 CWD = assert(os.getenv'PWD','No PWD variable set!')
@@ -78,6 +79,8 @@ PLATFORM_NAME = require('Config').PLATFORM_NAME
 ROBOT_HOME = HOME..'/Robots/'..PLATFORM_NAME
 package.path  = ROBOT_HOME..'/?.lua;'..package.path
 package.cpath = ROBOT_HOME..'/?.so;'..package.cpath
+
+DONE_INCLUDE = true
 
 collectgarbage()
 --print('Post-include', collectgarbage('count'))

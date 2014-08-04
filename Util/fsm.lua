@@ -29,10 +29,11 @@ local fsm = {}
 
 -- TODO: Remove getfenv, as it just 
 -- associates each function in fsm.lua with an fsm:new() object
-local mt = getfenv()
+--local mt = getfenv()
+local mt = {}
 mt.__index = mt
 
-function new(state1, ...)
+function fsm.new(state1, ...)
   assert(type(state1) == "table", "No initial state")
   local o = {
 		states = {state1, ...},
@@ -58,13 +59,11 @@ function new(state1, ...)
   o.nextState = nil
   o.nextAction = nil
 
-  setmetatable(o, mt)
-
-  return o
+  return setmetatable(o, mt)
 end
 
 -- Remove a transition
-function remove_transition(self, fromState, event, toState)
+function mt.remove_transition(self, fromState, event, toState)
   -- Make sure we are valid
   assert(self.reverseStates[fromState], "Unknown from state")
   assert(type(event) == "string", "Unknown event")
@@ -82,7 +81,7 @@ function remove_transition(self, fromState, event, toState)
 end
 
 -- Add a transition
-function set_transition(self, fromState, event, toState, action)
+function mt.set_transition(self, fromState, event, toState, action)
   assert(self.reverseStates[fromState], "Unknown from state")
   assert(type(event) == "string", "Unknown event")
   assert(self.reverseStates[toState], "Unknown to state")
@@ -98,7 +97,7 @@ function set_transition(self, fromState, event, toState, action)
   self.actions[fromState][event] = action
 end
 
-function add_state(self, newState)
+function mt.add_state(self, newState)
   local n = #self.states
   self.states[n+1] = newState
   self.reverseStates[newState] = n+1
@@ -108,23 +107,24 @@ function add_state(self, newState)
   self.actions[newState] = {}
 end
 
-function add_event(self, event)
-  self.events[#self.events+1] = event
+function mt.add_event(self, event)
+  --self.events[#self.events+1] = event
+	table.insert(self.events, event)
 end
 
-function set_state(self, nextState)
-	assert(self.statesHash[nextState], 'unkown state '..nextState)
+function mt.set_state(self, nextState)
+	assert(self.statesHash[nextState], 'Unkown state '..nextState)
   self.nextState = self.states[self.statesHash[nextState]]
 end
 
-function get_current_state(self)
+function mt.get_current_state(self)
   return self.currentState
 end
-function get_previous_state(self)
+function mt.get_previous_state(self)
   return self.previousState
 end
 
-function entry(self)
+function mt.entry(self)
   local state = self.currentState
   if self.state_debug_handle then
     self.state_debug_handle(self.currentState._NAME,event)
@@ -132,7 +132,7 @@ function entry(self)
   return state.entry()
 end
 
-function update(self)
+function mt.update(self)
   local ret, event
   local state = self.currentState
 
@@ -183,7 +183,7 @@ function update(self)
   return ret
 end
 
-function exit(self)
+function mt.exit(self)
   local state = self.currentState
   state.exit()
   self.currentState = self.initialState
@@ -192,19 +192,9 @@ function exit(self)
   end
 end
 
-function set_state_debug_handle(self, h)
+function mt.set_state_debug_handle(self, h)
   self.state_debug_handle = h
 end
 
--- NOTE: We can somehow require multiple same FSMs, now... (i.e. for two hands)
-function fsm.load(name)
-  -- Set some temporary globals
-  fsm_name, transitions = name, Config.fsm[name]
-  -- Load the state machine
-	local my_fsm = dofile(HOME..'/Util/fsm_helper.lua')
-  -- Unset the temporary globals
-	fsm_name, transitions = nil, nil
-	return my_fsm
-end
-
-return setmetatable(fsm, mt)
+--return setmetatable(fsm, mt)
+return fsm

@@ -1,5 +1,3 @@
---------------------------------
--- Body State Machine
+-- Body State Machine Loader
 -- (c) 2014 Stephen McGill
---------------------------------
-return require'fsm'.load'Body'
+return require'fsm_helper'.load'Body'

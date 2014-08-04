@@ -1,0 +1,34 @@
+#VRML_SIM V7.4.3 utf8
+#
+#  RoboCup: mock-up opponent
+#
+
+
+PROTO Block [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+]
+
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+	  Shape {
+	     appearance DEF POS_APP Appearance {
+	       material Material {
+	         diffuseColor 0 0 0
+	         specularColor 0 0 0
+	       }
+	     }
+	     geometry Box { size 0.15 1 0.3 }
+	  }			
+  ]
+	
+  boundingObject Group {
+		children[
+			Box { size 0.15 1 0.3 }
+		]
+  }  
+}
+}

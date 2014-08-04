@@ -1,0 +1,63 @@
+#VRML_SIM V7.4.0 utf8
+WorldInfo {
+  info [
+    "Default world for the THOR-OP"
+  ]
+  title "THOR-OP Only"
+  basicTimeStep 10
+  FPS 15
+}
+Viewpoint {
+  orientation -0.137632 -0.985812 -0.0960849 1.29914
+  position -6.1152 1.95377 1.97281
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 0.8
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+SoccerField {
+}
+Walls {
+}
+DEF YELLOW_GOAL TeenGoal {
+  translation 4.5 0 0
+  postColor 0.992157 0.854902 0.219608
+}
+DEF YELLOW_GOAL TeenGoal {
+  translation -4.5 0 0
+  rotation 0 1 0 3.14159
+  postColor 0.992157 0.854902 0.219608
+}
+DEF BALL BallGPS {
+  translation 2.4 0.109919 2
+  radius 0.11
+}
+DEF OBS1 ObjectGPS {
+  translation -2.56736 0.45 -3.27277
+  controllerArgs "1"
+}
+DEF OBS1 ObjectGPS {
+  translation -2.5 0.45 2
+  controllerArgs "2"
+}
+DEF OPPONENT Block {
+  translation -4.2 0.5 0
+}
+#THOROP7_Kinematic {
+THOROP7_Update {
+#THOROP7_NoBoundaries {
+  translation 0 1.155 0
+  controller "thorop"
+  controllerArgs "0 32"
+}

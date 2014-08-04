@@ -24,6 +24,7 @@ shared.wire.bbox = vector.zeros(4)
 
 -- TODO: I really prefer not to have images in shm, or large chunks of memory for that matter
 --Added for vision processing (mainly for robocup)
+--[[
 shared.image={}
 
 -- For head camera
@@ -33,14 +34,13 @@ local processed_img_height = Config.camera[1].h
 -- local processed_img_width = Config.camera.head.resolution[1]
 -- local processed_img_height = Config.camera.head.resolution[2]
 
-
 shared.image.lut = 262144
 shared.image.yuyv = 2*processed_img_width*processed_img_height
 shared.image.labelA = (processed_img_width/Config.vision.scaleA)*(processed_img_height/Config.vision.scaleA)
 shared.image.labelB = (processed_img_width/Config.vision.scaleB)*(processed_img_height/Config.vision.scaleB)
-
 shsize.image = shared.image.lut + shared.image.yuyv
 			+ shared.image.labelA + shared.image.labelB +2^16
+--]]
 -------------------
 
 shared.ball = {}

@@ -6,7 +6,7 @@ Config = {}
 Config.PLATFORM_NAME = 'THOROP'
 Config.nJoint = 35
 -- Dummy arms are the two MX-106R motors per arm
-Config.USE_DUMMY_ARMS = true
+Config.USE_DUMMY_ARMS = false
 
 -----------------------
 -- Device Interfaces --

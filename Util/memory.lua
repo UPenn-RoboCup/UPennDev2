@@ -9,15 +9,16 @@ local function init_shm_keys (shmHandle, shmTable)
     -- create the key if needed
     if type(v) == 'string' then
       if not memory.shm_key_exists(shmHandle, k) then
-        shmHandle:set(k, {string.byte(v, 1, string.len(v))});
+        shmHandle:set(k, {string.byte(v, 1, string.len(v))})
       end
     elseif type(v) == 'number' then
       if not memory.shm_key_exists(shmHandle, k) or shmHandle:size(k) ~= v then
-        shmHandle:empty(k, v);
+				print("EMPTYING", k, v)
+        shmHandle:empty(k, v)
       end
     elseif type(v) == 'table' then
       if not memory.shm_key_exists(shmHandle, k, #v) then
-        shmHandle[k] = v;
+        shmHandle[k] = v
       end
     end
   end
@@ -138,8 +139,7 @@ function memory.shm_key_exists(shmHandle, k, nvals)
       end
     end
   end
-
   -- key does not exist
-  return false;
+  return false
 end
 return memory

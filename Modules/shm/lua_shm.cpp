@@ -4,7 +4,8 @@
 
 #include <boost/utility/binary.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
-#include <boost/interprocess/allocators/allocator.hpp>
+//#include <boost/interprocess/allocators/allocator.hpp>
+#include <boost/interprocess/exceptions.hpp>
 #include <vector>
 #include <string>
 #include <lua.hpp>
@@ -35,7 +36,13 @@ static int lua_shm_create(lua_State *L) {
 
   managed_shared_memory **ud = (managed_shared_memory **)
     lua_newuserdata(L, sizeof(managed_shared_memory *));
-  *ud = new managed_shared_memory(open_or_create, name, size);
+	try {
+		*ud = new managed_shared_memory(open_or_create, name, size);
+	}
+	catch (boost::interprocess::bad_alloc &ex) {
+		std::cerr << ex.what() << std::endl; 
+	}
+  
   luaL_getmetatable(L, "shm_mt");
   lua_setmetatable(L, -2);
   return 1;
@@ -46,7 +53,12 @@ static int lua_shm_open(lua_State *L) {
 
   managed_shared_memory **ud = (managed_shared_memory **)
     lua_newuserdata(L, sizeof(managed_shared_memory *));
-  *ud = new managed_shared_memory(open_only, name);
+	try {
+		*ud = new managed_shared_memory(open_only, name);
+	}
+	catch (boost::interprocess::bad_alloc &ex) {
+		std::cerr << ex.what() << std::endl; 
+	}
   luaL_getmetatable(L, "shm_mt");
   lua_setmetatable(L, -2);
   return 1;

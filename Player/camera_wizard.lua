@@ -41,16 +41,21 @@ else
 	end
 end
 
-local ENABLE_NET, SEND_INTERVAL, t_send
-local ENABLE_LOG, LOG_INTERVAL, t_log
+local ENABLE_NET, SEND_INTERVAL
+local ENABLE_LOG, LOG_INTERVAL
 local FROM_LOG, LOG_DATE = false
+local t_send, t_log = 0, 0
+LOG_INTERVAL = 1/5
+SEND_INTERVAL = .5
 
 if Config.enable_monitor then
-  ENABLE_NET, SEND_INTERVAL, t_send = true, 1/hcm.get_monitor_fps(), 0
+  ENABLE_NET = true
 end
 if Config.enable_log then
-  ENABLE_LOG, LOG_INTERVAL, t_log = true, 1 / 5, 0
+  ENABLE_LOG = true
 end
+
+ENABLE_LOG = true
 
 if Config.from_log then
   FROM_LOG, LOG_DATE = true, ''
@@ -146,6 +151,7 @@ local function update(img, sz, cnt, t)
 		logger:record(meta, img, sz)
 		t_log = t
 		nlog = nlog + 1
+		if nlog % 10 == 0 then print("# camera logs: "..nlog) end
 	end
 
 	-- Update the vision routines

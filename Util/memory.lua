@@ -13,7 +13,7 @@ local function init_shm_keys (shmHandle, shmTable)
       end
     elseif type(v) == 'number' then
       if not memory.shm_key_exists(shmHandle, k) or shmHandle:size(k) ~= v then
-				print("EMPTYING", k, v)
+				--print("EMPTYING", k, v)
         shmHandle:empty(k, v)
       end
     elseif type(v) == 'table' then

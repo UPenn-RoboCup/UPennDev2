@@ -10,13 +10,12 @@ local util   = require'util'
 local si     = require'simple_ipc'
 local Kinematics = require'THOROPKinematics'
 local mpack  = require'msgpack'.pack
+require'dcm'
 
 local Body = {}
 local dcm_ch = si.new_publisher'dcm!'
 local get_time = require'unix'.time
 local vslice = vector.slice
-
-require'dcm'
 
 ------------------
 -- Body sensors --
@@ -423,7 +422,7 @@ if IS_WEBOTS then
 		webots.wb_robot_step(timeStep)
 
 		local rad, val
-		local positions = {}
+		local positions = vector.zeros(nJoint)
     for idx, jtag in ipairs(tags.joints) do
       if jtag>0 then
 				val = get_pos(jtag)

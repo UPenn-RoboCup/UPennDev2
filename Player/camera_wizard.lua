@@ -55,8 +55,6 @@ if Config.enable_log then
   ENABLE_LOG = true
 end
 
-ENABLE_LOG = true
-
 if Config.from_log then
   FROM_LOG, LOG_DATE = true, ''
 end

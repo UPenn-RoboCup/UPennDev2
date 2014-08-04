@@ -3,7 +3,7 @@ local vector = require'vector'
 local ffi_ok, ffi = pcall(require, 'ffi')
 local memory = {}
 
-local function init_shm_keys (shmHandle, shmTable)
+local function init_shm_keys(shmHandle, shmTable)
   -- initialize a shared memory block (creating the entries if needed)
   for k,v in pairs(shmTable) do
     -- create the key if needed
@@ -13,7 +13,6 @@ local function init_shm_keys (shmHandle, shmTable)
       end
     elseif type(v) == 'number' then
       if not memory.shm_key_exists(shmHandle, k) or shmHandle:size(k) ~= v then
-				--print("EMPTYING", k, v)
         shmHandle:empty(k, v)
       end
     elseif type(v) == 'table' then
@@ -24,7 +23,7 @@ local function init_shm_keys (shmHandle, shmTable)
   end
 end
 
-function memory.init_shm_segment (name, shared, shsize, tid, pid)
+function memory.init_shm_segment(name, shared, shsize, tid, pid)
   local tid = tid or 0
   local pid = pid or 1
 
@@ -36,6 +35,7 @@ function memory.init_shm_segment (name, shared, shsize, tid, pid)
 
   -- initialize shm segments from the *cm format
   for shtable, shval in pairs(shared) do
+		
     -- create shared memory segment
     local shmHandleName = shtable..'Shm'
     -- segment names are constructed as follows:
@@ -43,13 +43,12 @@ function memory.init_shm_segment (name, shared, shsize, tid, pid)
     -- ex. vcmBall01brindza is the segment for shared.ball table in vcm.lua
     -- NOTE: the first letter of the shared_table_name is capitalized
     local shmName = name..string.upper(string.sub(shtable, 1, 1))..string.sub(shtable, 2)..tid..pid..(os.getenv('USER') or '')
-
     fenv[shmHandleName] = shm.new(shmName, shsize[shtable])
     local shmHandle = fenv[shmHandleName]
-
+		
     -- intialize shared memory
     init_shm_keys(shmHandle, shared[shtable])
-
+		
 		-- Add more direct memory access
     local shmPointerName, shmPointer
     if ffi_ok then
@@ -65,7 +64,6 @@ function memory.init_shm_segment (name, shared, shsize, tid, pid)
     
     for k,v in pairs(shared[shtable]) do
 			local ptr, tp, n = shmHandle:pointer(k)
-
       -- If FFI, then give raw access to the SHM pointer
 			if shmPointer then shmPointer[k] = ffi.cast(tp..'*', ptr) end
       table.insert(shmKeys, k)
@@ -84,13 +82,11 @@ function memory.init_shm_segment (name, shared, shsize, tid, pid)
         fenv['set_'..shtable..'_'..k] = function(val)
           return shmHandle:set(k, {string.byte(val, 1, string.len(val))});
         end
-
       elseif kind=='number' then
         -- Get userdata
         fenv['get_'..shtable..'_'..k] = function() return shmHandle:pointer(k) end
         -- Set userdata (Can accept a string for memcpy'ing the string)
         fenv['set_'..shtable..'_'..k] = function(val) return shmHandle:set(k, val, v) end
-
       elseif kind=='table' then
         -- setup accessors for a number/vector
         fenv['get_'..shtable..'_'..k] = function()
@@ -102,27 +98,15 @@ function memory.init_shm_segment (name, shared, shsize, tid, pid)
         fenv['set_'..shtable..'_'..k] = function(val, ...)
           return shmHandle:set(k, val, ...)
         end
-        --[[
-        -- Delta table if we have a vector of numbers
-        fenv['delta_'..shtable..'_'..k] = function(delta, ...)
-          local val = shmHandle:get(k)
-          local tv = type(val)
-          -- Must both be vectors
-          if tv~=type(delta) then return end
-          val = vector.new(val)
-          delta = vector.new(delta)
-          -- Must be the same size
-          if tv=='table' and #val~=#delta then return end
-          -- Set in memory
-          return shmHandle:set(k, val + delta, ...)
-        end
-        --]]
       else
         -- unsupported type
         error('Unsupported shm type: '..kind);
       end
+			-- end of determining the type for memory (if/then)
     end
+		-- End of for k,v
   end
+	-- End of for shtable, shval
 end
 
 function memory.shm_key_exists(shmHandle, k, nvals)

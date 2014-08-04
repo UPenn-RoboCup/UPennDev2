@@ -1,15 +1,15 @@
-#VRML_SIM V7.4.0 utf8
+#VRML_SIM V7.4.3 utf8
 WorldInfo {
   info [
-    "Default world for the THOR-OP"
+    "World for the Adult size soccer league"
   ]
-  title "THOR-OP Only"
+  title "THORwIn RoboCup"
   basicTimeStep 10
   FPS 15
 }
 Viewpoint {
-  orientation -0.137632 -0.985812 -0.0960849 1.29914
-  position -6.1152 1.95377 1.97281
+  orientation -0.810117 0.567092 0.148719 0.577312
+  position 3.67577 5.99298 9.90101
 }
 Background {
   skyColor [
@@ -54,10 +54,9 @@ DEF OBS1 ObjectGPS {
 DEF OPPONENT Block {
   translation -4.2 0.5 0
 }
-#THOROP7_Kinematic {
 THOROP7_Update {
-#THOROP7_NoBoundaries {
   translation 0 1.155 0
+  rotation 0 1 0 -1.5708
   controller "thorop"
   controllerArgs "0 32"
 }

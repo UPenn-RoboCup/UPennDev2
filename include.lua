@@ -7,7 +7,8 @@ if DONE_INCLUDE then return end
 -- Locate the Modules
 CWD = assert(os.getenv'PWD','No PWD variable set!')
 IS_WEBOTS = false
-HOME = CWD:gsub('Player.*$','')
+HOME = CWD:gsub('sur','UPennDev')
+HOME = HOME:gsub('Player.*$','')
 HOME = HOME:gsub('Robots.*$','')
 HOME = HOME:gsub('Operate.*$','')
 HOME = HOME:gsub('Modules.*$','')
@@ -83,7 +84,6 @@ package.cpath = ROBOT_HOME..'/?.so;'..package.cpath
 DONE_INCLUDE = true
 
 collectgarbage()
---print('Post-include', collectgarbage('count'))
 
 -- Print out the globally available variables, when using include.lua
 --[[
@@ -101,3 +101,5 @@ function print_env()
 end
 print_env()
 --]]
+return Config
+

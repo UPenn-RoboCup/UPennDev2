@@ -1,47 +1,34 @@
 dofile'../fiddle.lua'
-
+local ports = Config.net.rpc
 -- Must reply to these TCP requests
-local rpc_rep =
-	si.new_replier(Config.net.reliable_rpc)
-print('RPC | REP Receiving on', Config.net.reliable_rpc)
---util.ptable(rpc_rep)
+local tcp_rep = si.new_replier(ports.tcp_reply)
+print('RPC | REP Receiving on', ports.tcp_reply)
 -- Need not reply to these TCP requests
-local rpc_sub =
-	si.new_subscriber(Config.net.reliable_rpc2)
-print('RPC | SUB Receiving on', Config.net.reliable_rpc2)
---util.ptable(rpc_sub)
+local tcp_sub = si.new_subscriber(ports.tcp_subscribe)
+print('RPC | SUB Receiving on', ports.tcp_subscribe)
 -- Need not reply to these UDP requests
-local rpc_udp =
-	si.new_receiver(Config.net.unreliable_rpc)
-print('RPC | UDP Receiving on', Config.net.unreliable_rpc)
-
--- SJ: with ubuntu, every string contains a byte 0 padding at the end
-local function trim_string(str)
-	if type(str)=='string' and str:byte(#str)==0 then
-		str = string.sub(str, 1, #str-1)
-	end
-	return str
+local udp_sub = si.new_receiver(ports.udp)
+print('RPC | UDP Receiving on', ports.udp)
+-- Must reply to these UNIX domain socket requests
+local uds_rep = si.new_replier(ports.uds)
+print('RPC | REP Receiving on', ports.uds)
+-- Setup the poller
+local wait_channels = {tcp_rep, tcp_sub, udp_sub, uds_rep}
+local channel_poll
+-- Gracefully exit on Ctrl-C
+local function shutdown()
+	print('\nShutting down the RPC handler')
+	channel_poll:stop()
 end
+local signal = require'signal'
+signal.signal("SIGINT", shutdown)
+signal.signal("SIGTERM", shutdown)
 
 --NOTE: Can do memory AND fsm event.  In that order
 local function process_rpc(rpc)
   local status, reply
   -- Debugging the request
 	--util.ptable(rpc)
-
-  -- TODO: Remove the stupid trim_string necessity
-  rpc.fsm = trim_string(rpc.fsm)
-  rpc.evt = trim_string(rpc.evt)
-  rpc.special = trim_string(rpc.special)
-  --
-  rpc.shm = trim_string(rpc.shm)
-  rpc.access = trim_string(rpc.access)
-  rpc.val = trim_string(rpc.val)
-  --
-  rpc.body = trim_string(rpc.body)
-  rpc.bargs = trim_string(rpc.bargs)
-  -- Experimental raw support
-  rpc.raw = trim_string(rpc.raw)
 
   -- Shared memory modification
   if rpc.shm then
@@ -103,14 +90,14 @@ local function process_rpc(rpc)
 end
 
 local function process_zmq(skt)
-	local requests, kind = skt:recv_all(), skt.obj.kind
+	local requests, ch = skt:recv_all(), skt.obj
 	local rpc, reply, ret
 	for _, request in ipairs(requests) do
 		rpc   = mp.unpack(request)
 		reply = process_rpc(rpc)
-		if kind=='rep' then
+		if ch.kind=='rep' then
 			-- if REQ/REP then reply
-			ret = rpc_rep:send(mp.pack(reply))
+			ret = ch:send(mp.pack(reply))
 		end
 	end
 end
@@ -124,14 +111,12 @@ local function process_udp()
   end
 end
 
-rpc_rep.callback = process_zmq
-rpc_sub.callback = process_zmq
-rpc_udp.callback = process_udp
-local wait_channels = {rpc_rep, rpc_udp, rpc_sub}
-local channel_poll = si.wait_on_channels(wait_channels)
+-- Assign the callback
+tcp_rep.callback = process_zmq
+tcp_sub.callback = process_zmq
+uds_rep.callback = process_zmq
+udp_sub.callback = process_udp
 
--- 2Hz joint feedback
-local channel_timeout = 500
-while true do
-  local npoll = channel_poll:poll(channel_timeout)
-end
+-- Run the poller
+channel_poll = si.wait_on_channels(wait_channels)
+channel_poll:start()

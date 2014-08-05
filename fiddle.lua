@@ -44,8 +44,8 @@ for _,mem in ipairs(listing) do
   end
 end
 
-print(util.color('FSM Channel', 'yellow'), table.concat(fsm_chs, ' '))
-print(util.color('SHM access', 'blue'), table.concat(shm_vars,  ' '))
+--print(util.color('FSM Channel', 'yellow'), table.concat(fsm_chs, ' '))
+--print(util.color('SHM access', 'blue'), table.concat(shm_vars,  ' '))
 
 IS_FIDDLE = true
 

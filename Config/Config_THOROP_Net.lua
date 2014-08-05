@@ -1,48 +1,48 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
-----------------------
 -- Network settings --
-----------------------
-local net = {}
--- Use wired or wireless
-net.use_wireless = false
---net.use_wireless = true
-
--- Robot IP addresses
-net.robot = {
-['wired']    = '192.168.123.24',
-['wireless'] = '192.168.136.24',
+local net = {
+	use_wireless = false,
 }
 
--- Remote Operator IP addresses
-net.operator = {
---['wired']              = '192.168.123.23', --Steve's
---['wired']              = '192.168.123.200', --SJ's
-['wired']              = '192.168.123.30',  --Karen's
-['wired_broadcast']    = '192.168.123.255',
---
-['wireless']           = '192.168.136.30',
-['wireless_broadcast'] = '192.168.136.255'
-}
-
--- For use only when testing in webots on a local computer
+-- IP Addresses
+-- TODO: Find IP of this computer
 if Config.use_localhost then	
-  -- wired
-  net.robot.wired = 'localhost'
-  net.operator.wired = 'localhost'
-  net.operator.wired_broadcast = 'localhost'
-  -- wireless
-  net.robot.wireless = 'localhost'
-  net.operator.wireless = 'localhost'
-  net.operator.wireless_broadcast = 'localhost'
+  net.robot = {
+		['wired']    = 'localhost',
+		['wireless'] = 'localhost',
+	}
+	net.operator = {
+		['wired']              = 'localhost',
+		['wired_broadcast']    = 'localhost',
+		--
+		['wireless']           = 'localhost',
+		['wireless_broadcast'] = 'localhost',
+	}
+else
+	net.robot = {
+		['wired']    = '192.168.123.24',
+		['wireless'] = '192.168.1.24',
+	}
+	net.operator = {
+		['wired']              = '192.168.123.23',
+		['wired_broadcast']    = '192.168.123.255',
+		--
+		['wireless']           = '192.168.1.23',
+		['wireless_broadcast'] = '192.168.1.255'
+	}
 end
 
--- Ports
-net.reliable_rpc   = 55555 -- REP
-net.unreliable_rpc = 55556 -- UDP
+-- Ports for Remote Procedure Calls
+net.rpc = {
+	tcp_reply = 55555,
+	tcp_subscribe = 55558,
+	udp = 55556,
+	uds = 'rpc',
+}
+--[[
 net.audio = 55557
-net.reliable_rpc2  = 55558 -- SUB
 --
 net.team           = 44444
 net.state          = 44445
@@ -67,6 +67,93 @@ net.omap           = 22222
 net.hmap           = 22223
 
 net.feedback       = 54329
+
+
+mesh = {
+	name : 'mesh', // reliable name
+	ws : 9001,
+	udp: 33344,
+}
+
+bridges.push({
+  name : 'camera0',
+  ws : 9003,
+  udp: 33333,
+  //tcp : 33334,
+	sub : 'camera0',
+  clients : []
+});
+
+bridges.push({
+  name : 'camera1',
+  ws : 9004,
+  udp: 33335,
+  //tcp: 33336,
+  clients : []
+});
+
+bridges.push({
+	name : 'feedback',
+	ws : 9013,
+	udp: 54329,
+	clients : []
+});
+
+bridges.push({
+	name : 'audio',
+	ws : 9014,
+  //tcp: 55557,
+	clients : []
+});
+
+bridges.push({
+	name : 'lidar0',
+	ws : 9015,
+	sub: 'lidar0',
+	clients : []
+});
+
+bridges.push({
+	name : 'touch',
+	ws : 9064,
+	pub: 'touch',
+	sub: 'bbox', // listen for the bounding box
+	/*tcp: '55588',*/
+	clients : []
+});
+
+bridges.push({
+	name : 'wire',
+	ws : 9065,
+	sub: 'wire',
+	tcp: '55589',
+	clients : []
+});
+
+/*
+bridges.push({
+	name : 'rgbd_depth',
+	ws : 9010,
+	udp: 33346,
+	clients : []
+});
+
+bridges.push({
+  name : 'rgbd_color',
+  ws : 9011,
+  udp: 33347,
+  clients : []
+});
+
+bridges.push({
+	name : 'spacemouse',
+	ws : 9012,
+	sub: 'spacemouse',
+	clients : []
+});
+*/
+--]]
+
 
 -- Export
 Config.net = net

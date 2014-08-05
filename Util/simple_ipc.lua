@@ -10,8 +10,8 @@ if type(jit)=='table' then
 	zmq    = require'lzmq.ffi'
 	poller = require'lzmq.ffi.poller'
 	llthreads = require'llthreads'
-  --udp = require'udp.ffi'
-  udp = require'udp'
+  udp = require'udp.ffi'
+  --udp = require'udp'
 else
 	zmq    = require'lzmq'
 	poller = require'lzmq.poller'

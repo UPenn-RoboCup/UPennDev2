@@ -18,15 +18,20 @@ local F_GETFL = 3
 local F_SETFL = 4
 -- Jumbo UDP packet
 local MAX_LENGTH = 65536
---
+-- OSX
 local SOL_SOCKET = 0xffff
-local SO_BROADCAST = 0x0020
 local SO_REUSEADDR = 0x0004
+local SO_BROADCAST = 0x0020
+if ffi.os=='Linux' then
+  SOL_SOCKET = 1
+  SO_REUSEADDR = 2
+  SO_BROADCAST = 6
+end
 
-ffi.cdef[[
-extern int errno;
-]]
-local function strerror() return ffi.string(C.strerror(C.errno)) end
+--ffi.cdef("extern int errno;")
+local function strerror()
+  return ffi.string(C.strerror(ffi.errno()))
+end
 
 ffi.cdef[[
 typedef struct hostent {
@@ -40,17 +45,29 @@ typedef struct hostent {
 typedef struct in_addr {
   uint32_t s_addr;
 } in_addr;
-
-//#define h_addr  h_addr_list[0]  /* address, for backward compatibility */
-typedef struct sockaddr_in {
-  uint8_t sin_len;
-  uint8_t sin_family;
-  uint16_t sin_port;
-  struct in_addr sin_addr;
-  char sin_zero[8];
-} sockaddr_in;
-
 ]]
+
+if ffi.os=='Linux' then
+  ffi.cdef[[
+  typedef struct sockaddr_in {
+    uint8_t sin_len;
+    uint16_t sin_family;
+    uint16_t sin_port;
+    struct in_addr sin_addr;
+    char sin_zero[8];
+  } sockaddr_in;
+  ]]
+elseif ffi.os=='OSX' then
+  ffi.cdef[[
+  typedef struct sockaddr_in {
+    uint8_t sin_len;
+    uint8_t sin_family;
+    uint16_t sin_port;
+    struct in_addr sin_addr;
+    char sin_zero[8];
+  } sockaddr_in;
+  ]]
+end
 
 ffi.cdef[[
 int socket(int domain, int type, int protocol);
@@ -103,7 +120,7 @@ function udp.new_receiver(port)
 	local flags = C.fcntl(fd, F_GETFL, 0)
 	if flags == -1 then flags = 0 end
   ret = C.fcntl(fd, F_SETFL, ffi.new('int', bor(flags, O_NONBLOCK)))
-  assert(ret==0, "Could not set non-blocking mode")
+  assert(ret==0, "Could not set non-blocking mode"..strerror())
   -- Object
   local obj = {
     port = port,
@@ -117,26 +134,26 @@ end
 local function send(self, data, len)
   local sz = len or #data
   local ret = C.send(self.fd, data, sz, 0)
-  if ret==size then return ret end
+  if ret==sz then return ret end
   return ret, strerror()
 end
 
 function udp.new_sender(ip, port)
   local hostptr = assert(C.gethostbyname(ip), "Could not get hostname")
   local fd = C.socket(AF_INET, SOCK_DGRAM, 0)
-  assert(fd > 0, "Could not open datagram send socket\n")
+  assert(fd > 0, "Could not open datagram send socket")
   local i, ret = ffi.new('int[1]', 1)
   ret = C.setsockopt(fd, SOL_SOCKET, SO_BROADCAST, ffi.cast('const char *', i), ffi.sizeof(i))
-  assert(ret==0, "Could not set broadcast! "..strerror())
+  assert(ret==0, "Bad set broadcast "..strerror())
   i[0] = 1
   ret = C.setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, ffi.cast('const char *', i), ffi.sizeof(i))
-  assert(ret==0)
+  assert(ret==0, "Re-use address"..strerror())
   local dest_addr = ffi.new('struct sockaddr_in')
   dest_addr.sin_family = AF_INET
   ffi.copy(hostptr.h_addr_list[0], ffi.cast('char*', dest_addr.sin_addr), hostptr.h_length)
   dest_addr.sin_port = C.htons(port)
   ret = C.connect(fd, ffi.cast('struct sockaddr *', dest_addr), ffi.sizeof(dest_addr))
-  assert(ret==0,"Could not connect to destination address")
+  assert(ret==0,"Could not connect to destination address: "..strerror())
   return {
     ip = ip,
     port = port,

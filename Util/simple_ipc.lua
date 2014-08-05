@@ -5,11 +5,12 @@
 -- Version 2 adds pthreads with llthreads2 from moteus
 -- (c) Stephen McGill, 2014
 ---------------------------------
-local zmq, poller, llthreads, CTX
+local zmq, poller, llthreads, udp, CTX
 if type(jit)=='table' then
 	zmq    = require'lzmq.ffi'
 	poller = require'lzmq.ffi.poller'
 	llthreads = require'llthreads'
+  --udp = require'udp.ffi'
   udp = require'udp'
 else
 	zmq    = require'lzmq'

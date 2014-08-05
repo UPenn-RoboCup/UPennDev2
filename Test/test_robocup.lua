@@ -6,7 +6,72 @@ local targetvel = {0,0,0}
 local targetvel_new = {0,0,0}
 local WAS_REQUIRED
 
-function update(key_code)
+local t_last = Body.get_time()
+local tDelay = 0.005*1E6
+local role_names={
+  util.color('Goalie','green'),
+  util.color('Attacker','red'),  
+  'Test'}
+local gcm_names={
+  util.color('Initial','green'),
+  util.color('Ready','green'),
+  util.color('Set','green'),
+  util.color('Playing','blue'),
+  util.color('Finished','green'),
+  util.color('Untorqued','red'),    
+  util.color('Test','blue'),    
+}
+local command1='\nKey commands:\n'
+  ..'1 : game Initial\n'
+  ..'3 : game Set\n'
+  ..'4 : game Playing\n'
+  ..'5 : game Finished\n'
+  ..'r : Toggle role\n'
+  ..'0 : Enter test mode\n'
+
+local command2=
+  util.color('Test mode\n','blue')
+  ..'Key commands:\n'
+..'i/j/k/l/,/h/; : control walk velocity\n'
+
+..'3 : Left kick\n'
+..'4 : Right kick\n'
+..'5 : Left Walkkick\n'
+..'6 : Right Walkkick\n'
+
+..'8 : stop walking\n'
+..'9 : start walking\n'
+..'a : Enter attacker mode\n'
+..'g : Enter goalie mode\n'
+  
+
+local function show_status()
+  os.execute('clear')
+  print("Game role:",gcm.get_game_role())
+  print("Game state:",gcm.get_game_state())
+
+  local outstring=''
+--  if gcm.get_game_state()==6 then --Testing state
+  if gcm.get_game_role()==2 then --Testing state
+    outstring= outstring..command2..string.format(
+    "Target velocity: %.3f %.3f %.3f",unpack(targetvel)
+    )
+
+  else
+    outstring = string.format(
+    "Role: %s\nGame state: %s\nMotion state: %s\nBody state: %s\nHead state:%s \n",
+    role_names[gcm.get_game_role()+1],    
+    gcm_names[gcm.get_game_state()+1],
+    gcm.get_fsm_Motion(),
+    gcm.get_fsm_Body(),
+    gcm.get_fsm_Head()
+    )..command1
+  end
+ 
+  print(outstring)
+end
+
+local function update(key_code)
   if type(key_code)~='number' or key_code==0 then return end
 	local key_char = string.char(key_code)
 	local key_char_lower = string.lower(key_char)
@@ -116,80 +181,13 @@ function update(key_code)
 			gcm.set_game_role(1-gcm.get_game_role())
 		end
 	end
+	show_status()
 end
 
+show_status()
 if ... and type(...)=='string' then
 	WAS_REQUIRED = true
 	return {entry=nil, update=update, exit=nil}
-end
-
-
-
-local t_last = Body.get_time()
-local tDelay = 0.005*1E6
-local role_names={
-  util.color('Goalie','green'),
-  util.color('Attacker','red'),  
-  'Test'}
-local gcm_names={
-  util.color('Initial','green'),
-  util.color('Ready','green'),
-  util.color('Set','green'),
-  util.color('Playing','blue'),
-  util.color('Finished','green'),
-  util.color('Untorqued','red'),    
-  util.color('Test','blue'),    
-}
-local command1='\nKey commands:\n'
-  ..'1 : game Initial\n'
-  ..'3 : game Set\n'
-  ..'4 : game Playing\n'
-  ..'5 : game Finished\n'
-  ..'r : Toggle role\n'
-  ..'0 : Enter test mode\n'
-
-local command2=
-  util.color('Test mode\n','blue')
-  ..'Key commands:\n'
-..'i/j/k/l/,/h/; : control walk velocity\n'
-
-..'3 : Left kick\n'
-..'4 : Right kick\n'
-..'5 : Left Walkkick\n'
-..'6 : Right Walkkick\n'
-
-..'8 : stop walking\n'
-..'9 : start walking\n'
-..'a : Enter attacker mode\n'
-..'g : Enter goalie mode\n'
-  
-
-local function show_status()
-  os.execute('clear')
-  print("Game role:",gcm.get_game_role())
-  print("Game state:",gcm.get_game_state())
-
-  local outstring=''
---  if gcm.get_game_state()==6 then --Testing state
-  if gcm.get_game_role()==2 then --Testing state
-    outstring= outstring..command2..string.format(
-    "Target velocity: %.3f %.3f %.3f",unpack(targetvel)
-    )
-
-  else
-    outstring = string.format(
-    "Role: %s\nGame state: %s\nMotion state: %s\nBody state: %s\nHead state:%s \n",
-    role_names[gcm.get_game_role()+1],    
-    gcm_names[gcm.get_game_state()+1],
-    gcm.get_fsm_Motion(),
-    gcm.get_fsm_Body(),
-    gcm.get_fsm_Head()
-    )..command1
-  end
- 
-  
-  print(outstring)
-
 end
 
 print("Game role:",gcm.get_game_role())
@@ -199,7 +197,6 @@ local getch = require'getch'
 local running = true
 local key_code
 while running do
-  show_status()
 	key_code = getch.block()
   update(key_code)
 end

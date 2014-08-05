@@ -1,0 +1,72 @@
+#VRML_SIM V7.4.3 utf8
+#  DARPA Trials Terrain: Cinder Blocks
+#  heqin@seas.upenn.edu
+# 16in = 0.4064m
+# 8in = 0.2032m
+# 6in = 0.1524m
+PROTO CinderBlockLevel2 [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+]
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+		DEF block Transform{
+			translation 0 0.0762 0
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {
+			       material Material {
+			         diffuseColor 0.5 0.5 0.5
+			       }
+			     }
+			     geometry Box { size 0.4064 0.1524 2.032 }
+			  }
+				Transform{
+					translation 0.4064 0 0.4064
+					children[
+						USE cinderblock
+						Transform{
+							translation 0.4064 0 0.4064
+							children[
+								USE cinderblock
+								Transform{
+									translation 0.4064 0 0.4064
+									children[
+										USE cinderblock
+										Transform{
+											translation 0.4064 0 0.4064
+											children[
+												USE cinderblock
+												Transform{
+													translation 0.4064 0 0.4064
+													children[
+														USE cinderblock												
+													]
+												}
+																								
+											]
+										}
+										
+									]
+								}
+								
+							]
+						}
+						
+					]
+				}
+				
+			]		
+		}	
+  ]
+	
+	
+  boundingObject Group {
+		children [USE block]
+  }  
+ locked TRUE
+}
+}

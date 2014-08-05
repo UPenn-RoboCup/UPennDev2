@@ -183,6 +183,7 @@ if IS_WEBOTS then
   local torch = require'torch'
   torch.Tensor = torch.DoubleTensor
   local webots = require'webots'
+	local ImageProc = require'ImageProc'
   
   Body.enable_read = function(chain)
   end
@@ -249,31 +250,6 @@ if IS_WEBOTS then
   webots.wb_receiver_enable(tags.receiver,timeStep)
   webots.wb_receiver_set_channel(tags.receiver,13)
     
-  -- Load vision config
-	local cam_cfg = Config.camera[1]
-  print('Color table loaded', cam_cfg.lut)
-  local operator = Config.net.operator.wired
-	local cam_udp_ch = udp.new_sender(operator, cam_cfg.udp_port)
-	-- Just use one detection routine
-  local vision = require(cam_cfg.detection_pipeline[1])
-	vision.entry(cam_cfg, Body)
-  local t_vision_send, SEND_VISION_INTERVAL = 0
-	local function update_vision(yuyv)
-		vision.update(yuyv)
-    local t_now = Body.get_time()
-    if t_now - t_vision_send > SEND_VISION_INTERVAL then
-      t_vision_send = t_now
-      local udp_data, udp_ret, udp_err 
-  		for _,v in ipairs(vision.send()) do
-  			if v[2] then
-  				udp_data = mp.pack(v[1])..v[2]
-  			else
-  				udp_data = mp.pack(v[1])
-  			end
-  			udp_ret, udp_err = cam_udp_ch:send(udp_data)
-      end
-    end
-	end
 
   -- Ability to turn on/off items
   local t_last_keypress = get_time()

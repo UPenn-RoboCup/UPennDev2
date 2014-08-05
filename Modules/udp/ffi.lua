@@ -127,7 +127,7 @@ function udp.new_sender(ip, port)
   assert(fd > 0, "Could not open datagram send socket\n")
   local i, ret = ffi.new('int[1]', 1)
   ret = C.setsockopt(fd, SOL_SOCKET, SO_BROADCAST, ffi.cast('const char *', i), ffi.sizeof(i))
-  assert(ret==0)
+  assert(ret==0, "Could not set broadcast! "..strerror())
   i[0] = 1
   ret = C.setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, ffi.cast('const char *', i), ffi.sizeof(i))
   assert(ret==0)

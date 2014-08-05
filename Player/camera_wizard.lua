@@ -90,6 +90,8 @@ if FROM_LOG then
 	operator = 'localhost' 
 	print('operator IP:', operator)
 end
+
+print("Camera Wizard Operator", operator, metadata.udp_port)
 local udp_ch = metadata.udp_port and si.new_sender(operator, metadata.udp_port)
 
 -- Metadata for the operator

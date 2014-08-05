@@ -18,7 +18,7 @@ fi
 #LUA=lua
 LUA=luajit
 TERM=`which xterm`
-LPATH=`/usr/local/bin/lua -e 'print(package.path)'`
+#LPATH=`/usr/local/bin/lua -e 'print(package.path)'`
 
 #echo pwd $PWD
 #echo path $PATH

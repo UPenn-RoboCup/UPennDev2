@@ -145,8 +145,6 @@ table.insert(Config.camera,
     cx_offset = 0,
     cy_offset = 0,
     fps = 30,
-    udp_port = 33333,
-    lA_port = 33335,
     jpeg_quality = 60,
     -- Use the standard head properties
     head = head,
@@ -157,14 +155,11 @@ table.insert(Config.camera,
       'libVision',
     },
     --Logitech C920
-    --lut = 'brazil_day5_noon',  --THIS IS GOOD FOR FINAL 
-    lut = 'brazil_final',
-
+    lut = 'empty',
 		-- f = 640/2/tan(78/180*pi / 2)
-
---fov = 2*arctan(d/2f)
--- f = d/2/tan(fov/2)
---webots fov: 1.3613
+		--fov = 2*arctan(d/2f)
+		-- f = d/2/tan(fov/2)
+		--webots fov: 1.3613
 
     focal_length = 395.17,
     focal_base = 640,

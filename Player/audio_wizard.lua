@@ -3,7 +3,8 @@ dofile'../include.lua'
 require'hcm'
 local mp = require'msgpack.MessagePack'
 local simple_ipc = require'simple_ipc'
-local audio_tcp_ch = simple_ipc.new_publisher(Config.net.audio,false,'*')
+-- TODO: Inverted, I think
+local audio_tcp_ch = simple_ipc.new_publisher(Config.net.streams.audio)
 
 -- Listen forever
 while true do

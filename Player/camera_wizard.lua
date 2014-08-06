@@ -22,17 +22,20 @@ local signal = require'signal'
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
-local metadata
-if not arg or type(arg[1])~='string' then
+-- Grab the metadata for this camera
+local metadata, camera_id
+if not arg or not arg[1] then
 	-- TODO: Find the next available camera
+	camera_id = 1
 	metadata = Config.camera[1]
 else
-	local cam_id = arg[1]
-	if tonumber(cam_id) then
-		metadata = assert(Config.camera[tonumber(cam_id)], 'Bad # ID')
+	camera_id = tonumber(arg[1])
+	if camera_id then
+		metadata = assert(Config.camera[camera_id], 'Bad Camera ID')
 	else
-		for _, c in ipairs(Config.camera) do
-			if c.name ==cam_id then
+		for id, c in ipairs(Config.camera) do
+			if arg[1] == c.name then
+				camera_id = id
 				metadata = c
 				break
 			end
@@ -41,22 +44,17 @@ else
 	end
 end
 
-local ENABLE_NET, SEND_INTERVAL
-local ENABLE_LOG, LOG_INTERVAL
-local FROM_LOG, LOG_DATE = false
 local t_send, t_log = 0, 0
-LOG_INTERVAL = 1/5
-SEND_INTERVAL = .5
+local LOG_INTERVAL = 1/5
+local SEND_INTERVAL = .5
 
+local ENABLE_NET
+local ENABLE_LOG
 if Config.enable_monitor then
   ENABLE_NET = true
 end
 if Config.enable_log then
   ENABLE_LOG = true
-end
-
-if Config.from_log then
-  FROM_LOG, LOG_DATE = true, ''
 end
 
 local libLog, logger
@@ -73,26 +71,12 @@ if Config.net.use_wireless then
 else
 	operator = Config.net.operator.wired_broadcast
 end
-
--- Form the detection pipeline
-local pipeline = {}
-for _, d in ipairs(metadata.detection_pipeline) do
-	local detect = require(d)
-	-- Send which camera we are using
-	detect.entry(metadata, Body)
-	pipeline[d] = detect
-end
-
--- Channels
--- UDP Sending
---local camera_ch = si.new_publisher('camera0')
-if FROM_LOG then 
-	operator = 'localhost' 
-	print('operator IP:', operator)
-end
-
-print("Camera Wizard Operator", operator, metadata.udp_port)
-local udp_ch = metadata.udp_port and si.new_sender(operator, metadata.udp_port)
+-- Network Channels/Streams
+local camera_identifier = 'camera'..(camera_id-1)
+local stream = Config.net.streams[camera_identifier]
+print('Camera | ', operator, camera_identifier)
+local udp_ch = udp_port and stream.udp and si.new_sender(operator, stream.udp)
+local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
 
 -- Metadata for the operator
 local meta = {
@@ -105,13 +89,20 @@ local meta = {
 	c = 'jpeg',
 }
 
+-- Form the detection pipeline
+local pipeline = {}
+for _, d in ipairs(metadata.detection_pipeline) do
+	local detect = require(d)
+	-- Send which camera we are using
+	detect.entry(metadata, Body)
+	pipeline[d] = detect
+end
+
 -- JPEG Compressor
 local c_yuyv = jpeg.compressor('yuyv')
 -- Downsampling...
 c_yuyv:downsampling(2)
 local c_grey = jpeg.compressor('gray')
-
-local t_debug = get_time()
 
 -- LOGGING
 if ENABLE_LOG then
@@ -123,6 +114,7 @@ end
 local nlog = 0
 local udp_ret, udp_err, udp_data
 local t0 = get_time()
+local t_debug = 0
 
 local function update(img, sz, cnt, t)
 	-- Update metadata
@@ -172,7 +164,7 @@ local function update(img, sz, cnt, t)
 end
 
 -- If required from Webots, return the table
-if type(...)=='string' then
+if ... and type(...)=='string' then
 	return {entry=nil, update=update, exit=nil}
 end
 

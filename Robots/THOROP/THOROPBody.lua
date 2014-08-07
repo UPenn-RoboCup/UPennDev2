@@ -17,13 +17,11 @@ local dcm_ch = si.new_publisher'dcm!'
 local get_time = require'unix'.time
 local vslice = vector.slice
 
-------------------
--- Body sensors --
-------------------
+-- Body sensors
 local nx_registers = require'libDynamixel'.nx_registers
-for _, sensor in ipairs(dcm.sensorKeys) do
-	local cur = dcm['get_sensor_'..sensor]()
-	local n_el = type(cur)=='table' and #cur or 1
+for sensor, n_el in pairs(dcm.sensorKeys) do
+	--local cur = dcm['get_sensor_'..sensor]()
+	--local n_el = type(cur)=='table' and #cur or 1
   local is_motor = nx_registers[sensor]
   local ptr, ptr_t
   if dcm.sensorPtr then
@@ -55,13 +53,10 @@ for _, sensor in ipairs(dcm.sensorKeys) do
 	-- End anthropomorphic
 end
 
---------------------
--- Body actuators --
---------------------
---for actuator, ptr in pairs(dcm.actuatorPtr) do
-for _, actuator in ipairs(dcm.actuatorKeys) do
-	local cur = dcm['get_actuator_'..actuator]()
-	local n_el = type(cur)=='table' and #cur or 1
+-- Body actuators
+for actuator, n_el in pairs(dcm.actuatorKeys) do
+	--local cur = dcm['get_actuator_'..actuator]()
+	--local n_el = type(cur)=='table' and #cur or 1
 	-- Only command_position is constantly synced
 	-- Other commands need to be specially sent to the Body
 	local not_synced = actuator~='command_position'

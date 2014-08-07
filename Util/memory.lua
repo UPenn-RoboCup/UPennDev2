@@ -66,7 +66,7 @@ function memory.init_shm_segment(name, shared, shsize, tid, pid)
 			local ptr, tp, n = shmHandle:pointer(k)
       -- If FFI, then give raw access to the SHM pointer
 			if shmPointer then shmPointer[k] = ffi.cast(tp..'*', ptr) end
-      table.insert(shmKeys, k)
+      shmKeys[k] = n
       local kind = type(v)
       if kind=='string' then
         -- Get String

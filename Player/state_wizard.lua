@@ -39,7 +39,10 @@ end
 if not Config.fsm.disabled then load_fsm() end
 
 -- Timing
-local t_sleep = 1 / Config.fsm.update_rate
+local t_sleep
+if not IS_WEBOTS then
+	t_sleep = 1 / Config.fsm.update_rate
+end
 local t0, t = get_time()
 local debug_interval, t_debug = 5.0, t0
 

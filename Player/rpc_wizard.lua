@@ -1,3 +1,4 @@
+#!/usr/bin/env luajit
 dofile'../fiddle.lua'
 local ports = Config.net.rpc
 -- Must reply to these TCP requests
@@ -23,42 +24,46 @@ end
 local signal = require'signal'
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
+local ptable = require'util'.ptable
 
 --NOTE: Can do memory AND fsm event.  In that order
 local function process_rpc(rpc)
   local status, reply
   -- Debugging the request
-	--util.ptable(rpc)
+	--ptable(rpc)
 
   -- Shared memory modification
   if rpc.shm then
     local mem = _G[rpc.shm]
+    local seg = rpc.seg
     if type(mem)~='table' then return'Invalid memory' end
-    local func = mem[rpc.access]
-    if type(func)~='function' then return'Invalid access function' end
-    status, reply = pcall(func, rpc.val)
-    print('SHM |',rpc.shm,rpc.access,rpc.val,status,reply)
+    if type(seg)~='string' then return'Invalid memory segment' end
+    local segment = mem[seg..'Keys']
+    if type(rpc.key)~='string' then return'Invalid memory segment key' end
+    local n_el = segment[rpc.key]
+    if type(n_el)~='number' then return'Non-existent memory segment' end
+    local val = rpc.val
+    if val then
+      local func = mem['set_'..seg..'_'..rpc.key]
+      if type(func)~='function' then return'Invalid set function' end
+      if type(val)~='table' then return'Bad shm data' end
+      if  #val~=n_el then return'Bad shm length' end
+      reply = pcall(func, val)
+    else
+      local func = mem['get_'..seg..'_'..rpc.key]
+      if type(func)~='function' then return'Invalid get function' end
+      status, reply = pcall(func)
+    end
   end
 
   -- State machine events
-	local ch = rpc.fsm and type(rpc.evt)=='string' and fsm_chs[rpc.fsm]
-	if ch then
-		ch:send( rpc.special and {rpc.evt,rpc.special} or rpc.evt  )
-		print('FSM |', rpc.fsm, rpc.evt, rpc.special)
+  if rpc.fsm then
+    if type(rpc.fsm)~='string' then return'Bad FSM' end
+    if type(rpc.evt)~='string' then return'Bad FSM event' end
+    local ch = fsm_chs[rpc.fsm..'FSM']
+    if type(ch)~='table' or type(ch.send)~='function' then return'Bad FSM channel' end
+    reply = ch:send(rpc.evt)
 	end
-	--[[
-  if rpc.fsm and type(rpc.evt)=='string' then
-    local ch = fsm_chs[rpc.fsm]
-    if ch then
-      if rpc.special then
-        ch:send{rpc.evt,rpc.special}
-      else
-        ch:send(rpc.evt)
-      end
-      print('FSM |',rpc.fsm,rpc.evt,rpc.special,status,reply)
-    end
-  end
-	--]]
 
   -- Body functions
   local body_call = rpc.body
@@ -68,15 +73,6 @@ local function process_rpc(rpc)
 		status, reply = pcall(func, body_args)
 		print('Body |',body_call,body_args,status,reply)
 	end
-	--[[
-  if type(body_call)=='string' then
-    local func = Body[body_call]
-    if type(func)=='function' then
-      status, reply = pcall(func, body_args)
-      print('Body |',body_call,body_args,status,reply)
-    end
-  end
-	--]]
 
   -- Raw commands
   local raw_call = rpc.raw

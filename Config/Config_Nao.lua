@@ -1,4 +1,4 @@
-local Config = {}
+Config = {}
 
 ------------------------
 -- General parameters --
@@ -26,21 +26,6 @@ Config.dev.kinematics = 'NaoKinematics'
 Config.fsm = {}
 -- Which FSMs should be enabled?
 Config.fsm.enabled = {}
-
---[[
-if HOME then
-  -- Check if include has set some variables
-  local unix = require'unix'
-  local listing = unix.readdir(HOME..'/Player')
-  -- Add all FSM directories that are in Player
-  for _,sm in ipairs(listing) do
-    if sm:find'FSM' and sm:find'Motion' then
-      package.path = CWD..'/'..sm..'/?.lua;'..package.path
-      table.insert(Config.fsm.enabled,sm)
-    end
-  end
-end
---]]
 
 ---------------------------
 -- Complementary Configs --

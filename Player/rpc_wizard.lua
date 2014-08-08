@@ -65,22 +65,39 @@ local function process_rpc(rpc)
     reply = ch:send(rpc.evt)
 	end
 
-  -- Body functions
-  local body_call = rpc.body
-  local body_args = rpc.bargs
-	local func = body_call and Body[body_call]
-	if type(func)=='function' then
-		status, reply = pcall(func, body_args)
-		print('Body |',body_call,body_args,status,reply)
+  -- Body get/set parts functions
+  if rpc.body then
+    if type(rpc.body)~='string' then return'Bad body call' end
+    local ids = Config.parts[rpc.body]
+    if not ids then return'Not a body part' end
+    if not rpc.comp then return'Missing Body component' end
+    if type(rpc.comp)~='string' then return'Bad body component' end
+    if rpc.val then
+      if not dcm.actuatorKeys[rpc.comp] then return'Not a body component' end
+      local func = Body['set_'..rpc.body:lower()..'_'..rpc.comp]
+      if type(func)~='function' then return'Invalid set function' end
+      if type(rpc.val)~='table' then return'Bad shm data' end
+      if #rpc.val~=#ids then return'Bad shm length' end
+      reply = pcall(func, rpc.val)
+    else
+      if not dcm.actuatorKeys[rpc.comp] and not dcm.sensorKeys[rpc.comp] then
+        return'Not a body component'
+      end
+      local func = Body['get_'..rpc.body:lower()..'_'..rpc.comp]
+      if type(func)~='function' then return'Invalid get function' end
+      status, reply = pcall(func)
+    end
 	end
 
-  -- Raw commands
+  -- TODO: Raw commands
+  --[[
   local raw_call = rpc.raw
   if type(raw_call)=='string' then
     local res = loadstring('return '..raw_call)
     status, reply = pcall(res)
-    print('RAW |',raw_call,status,reply)
+    print('RAW |', raw_call, status, reply)
   end
+  --]]
 
   return reply
 end

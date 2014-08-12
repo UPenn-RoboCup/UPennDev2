@@ -27,10 +27,10 @@ DirectionalLight {
   intensity 0.5
 }
 DEF FLOOR Floor {
+  texture "textures/texture_grid.png"
+  tileSize 2 2
 }
-#THOROP7_Kinematic {
 THOROP7_Update {
-#THOROP7_NoBoundaries {
   translation 0 1.155 0
   controller "thorop"
   controllerArgs "0 32"

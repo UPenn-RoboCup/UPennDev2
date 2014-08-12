@@ -1,5 +1,6 @@
 #!/usr/bin/env luajit
 dofile'../fiddle.lua'
+local ptable = require'util'.ptable
 local ports = Config.net.rpc
 -- Must reply to these TCP requests
 local tcp_rep = si.new_replier(ports.tcp_reply)
@@ -24,7 +25,6 @@ end
 local signal = require'signal'
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
-local ptable = require'util'.ptable
 
 --NOTE: Can do memory AND fsm event.  In that order
 local function process_rpc(rpc)

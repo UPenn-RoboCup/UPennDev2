@@ -20,7 +20,7 @@ if Config.net.use_wireless then
 else
 	operator = Config.net.operator.wired_broadcast
 end
-local udp_ch = si.new_sender(operator, Config.net.streams.camera0)
+local udp_ch = si.new_sender(operator, Config.net.streams.camera0.udp)
 -- SHM
 require'wcm'
 require'mcm'

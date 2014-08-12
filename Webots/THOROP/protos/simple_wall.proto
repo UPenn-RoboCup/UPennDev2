@@ -3,6 +3,10 @@ PROTO simple_wall [
   field SFVec3f translation 0 .1 0
   field SFRotation rotation  0 1 0 3.14
   field SFString name "Wall"
+  field SFVec3f diffuseColor 0.5 0.3 0.3
+  field SFVec3f emissiveColor 0.01 0.01 0.01
+  field SFVec3f specularColor 0.1 0.1 0.1
+  field SFFloat shininess 0.5
   #field SFFloat noise 0.0
   #field SFInt32 width 1081
 ]
@@ -16,6 +20,14 @@ Solid {
     DEF WALL_SHAPE Shape {
       geometry Box {
         size IS size
+      }
+      appearance Appearance {
+        material Material {
+          diffuseColor IS diffuseColor
+          emissiveColor IS emissiveColor
+          specularColor IS specularColor
+          shininess IS shininess
+        }
       }
     }
   ]

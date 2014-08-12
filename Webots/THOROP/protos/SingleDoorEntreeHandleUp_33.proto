@@ -8,17 +8,11 @@ PROTO SingleDoorEntreeHandleUp_33 [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
   field SFColor mainColor 1 1 1
-  field MFString mainTextureUrl [
-    "textures/single_door_entree.png"
-  ]
-  field SFColor frameColor 1 1 1
-  field MFString frameTextureUrl [
-    "textures/metal.png"
-  ]
+  #field MFString mainTextureUrl [ "textures/single_door_entree.png" ]
+  #field SFColor frameColor 1 1 1
+  #field MFString frameTextureUrl [  "textures/metal.png"]
   field SFColor handleColor 1 1 1
-  field MFString handleTextureUrl [
-    "textures/metal.png"
-  ]
+  field MFString handleTextureUrl [ "textures/metal.png" ]
 ]
 {
   Solid {
@@ -165,9 +159,7 @@ PROTO SingleDoorEntreeHandleUp_33 [
                   diffuseColor IS mainColor
                   specularColor 0.4 0.4 0.4
                 }
-                texture ImageTexture {
-                  url IS mainTextureUrl
-                }
+                #texture ImageTexture { url IS mainTextureUrl }
               }
               geometry IndexedFaceSet {
                 coord Coordinate {

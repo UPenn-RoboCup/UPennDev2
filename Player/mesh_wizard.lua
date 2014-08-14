@@ -15,31 +15,17 @@ local util = require'util'
 local p_compress = require'png'.compress
 local j_compress = require'jpeg'.compressor'gray'
 
--- Grab the metadata for this lidar mesh
-local metadata, lidar_id
-if not arg or not arg[1] then
-	-- TODO: Find the next available camera
-	lidar_id = 1
-	metadata = Config.lidar[1]
-else
-	lidar_id = tonumber(arg[1])
-	if lidar_id then
-		metadata = assert(Config.lidar[lidar_id], 'Bad LIDAR ID')
-	else
-		for id, c in ipairs(Config.lidar) do
-			if arg[1] == c.name then
-				lidar_id = id
-				metadata = c
-				break
-			end
-		end
-		assert(metadata, 'Bad camera name')
-	end
-end
-
 -- Open up channels to send/receive data
-local mesh_tcp_ch = si.new_publisher(Config.net.reliable_mesh)
-local mesh_udp_ch = si.new_sender(Config.net.operator.wired, Config.net.mesh)
+-- Who to send to
+local operator
+if Config.net.use_wireless then
+	operator = Config.net.operator.wireless
+else
+	operator = Config.net.operator.wired_broadcast
+end
+local stream = Config.net.streams['mesh']
+local mesh_tcp_ch = si.new_publisher(stream.tcp, operator)
+local mesh_udp_ch = si.new_sender(operator, stream.udp)
 
 local metadata = {
 	name = v,
@@ -158,11 +144,13 @@ local function update(meta, ranges)
   -- TODO: Save the body pose info
   --local px, py, pa = unpack(meta.pose)
   -- Insert into the correct column
-  local scanlines = angle_to_scanlines( meta.angle )
+  local scanlines = angle_to_scanlines(meta.angle)
   -- Update each outdated scanline in the mesh
   for _,line in ipairs(scanlines) do
 		-- Copy lidar readings to the torch object for fast modification
-		cutil.string2tensor(ranges, mesh:select(1,line), mesh:size(2), offset_idx)
+		--cutil.string2tensor(ranges, mesh:select(1,line), mesh:size(2), offset_idx)
+		-- TODO: FFI
+		
 		-- Save the pan angle
 		scan_angles[line] = meta.angle or scan_angles[line] or 0
     -- TODO: Save the pose into each scanline

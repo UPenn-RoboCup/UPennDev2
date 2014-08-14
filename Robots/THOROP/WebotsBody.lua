@@ -2,7 +2,7 @@ local WebotsBody = {}
 
 --local ww = require'world_wizard'
 local cw = require'camera_wizard'
---local mw = require'mesh_wizard'
+local mw = require'mesh_wizard'
 
 local kb = require'test_robocup'
 WebotsBody.USING_KB = type(kb)=='table' and type(kb.update)=='function'

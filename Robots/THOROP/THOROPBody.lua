@@ -364,10 +364,11 @@ if IS_WEBOTS then
 		tags.gps = webots.wb_robot_get_device("GPS")
 		tags.compass = webots.wb_robot_get_device("Compass")
 		tags.inertialunit = webots.wb_robot_get_device("InertialUnit")
+		tags.head_camera = webots.wb_robot_get_device("HeadCamera")
 
     if Config.sensors.chest_lidar then
       tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
-    end
+    end		
     if Config.sensors.head_lidar then
       tags.head_lidar = webots.wb_robot_get_device("HeadLidar")
     end
@@ -378,7 +379,6 @@ if IS_WEBOTS then
     if Config.sensors.ft then
 
     end
-		tags.head_camera = webots.wb_robot_get_device("HeadCamera")
     
 		-- Enable or disable the sensors
 		key_action.i(ENABLE_IMU)
@@ -515,23 +515,20 @@ if IS_WEBOTS then
     end
 
 		-- Update the sensor readings of the joint positions
-		-- TODO: If a joint is not found?
-		local val, rad
-		for idx, jtag in ipairs(tags.joints) do
-			if jtag>0 then
+		local rad, val
+		local positions = dcm.get_sensor_position()
+    for idx, jtag in ipairs(tags.joints) do
+      if jtag>0 then
 				val = get_pos(jtag)
-				if val~=val then val = 0 end
-				rad = servo.direction[idx] * val - servo.rad_offset[idx]
-        dcm.sensorPtr.position[idx-1] = rad
-			end
-		end
-		--print('pos', dcm.get_sensor_position())
-    --dcm.set_sensor_position(dcm.get_actuator_command_position())
+        rad = servo.direction[idx] * val - servo.rad_offset[idx]
+				rad = rad==rad and rad or 0
+				positions[idx] = rad
+      end
+    end
+		dcm.set_sensor_position(positions)
 
     -- Grab a camera frame
-		
     if ENABLE_CAMERA then
-			
       local w = webots.wb_camera_get_width(tags.head_camera)
       local h = webots.wb_camera_get_height(tags.head_camera)
       local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.head_camera), w, h)
@@ -539,8 +536,13 @@ if IS_WEBOTS then
     end
     -- Grab a lidar scan
     if ENABLE_CHEST_LIDAR then
-      local w = webots.wb_camera_get_width(tags.chest_lidar)
-      local lidar_fr = webots.wb_camera_get_range_image(tags.chest_lidar)
+      local n = webots.wb_camera_get_width(tags.chest_lidar)
+			local fov = webots.wb_camera_get_fov(tags.chest_lidar)
+			local res = fov / n
+      local ranges = webots.wb_camera_get_range_image(tags.chest_lidar)
+			WebotsBody.update_chest_lidar(
+				{n=n,res=res,t=t,angle=Body.get_lidar_position()},
+				ranges)
       --local lidar_array = carray.float( lidar_fr, w )
     end
     -- Grab a lidar scan

@@ -45,6 +45,7 @@ function vector.slice(v1, istart, iend)
   local v = {}
   istart = istart or 1
   iend = iend or #v1
+	if istart==iend then return v1[istart] end
   for i = 1,iend-istart+1 do
     v[i] = v1[istart+i-1] or (0 / 0)
   end

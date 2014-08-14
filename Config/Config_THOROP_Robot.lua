@@ -164,15 +164,15 @@ local nJointLidar = 1
 local nJoint = 35
 
 Config.parts = {
-	Head=vector.count(indexHead,nJointHead),
-	LArm=vector.count(indexLArm,nJointLArm),
-	LLeg=vector.count(indexLLeg,nJointLLeg),
-	RLeg=vector.count(indexRLeg,nJointRLeg),
-	RArm=vector.count(indexRArm,nJointRArm),
-	Waist=vector.count(indexWaist,nJointWaist),
-	LGrip=vector.count(indexLGrip,nJointLGrip),
-  RGrip=vector.count(indexRGrip,nJointRGrip),
-  Lidar=vector.count(indexLidar,nJointLidar)
+	Head = vector.count(indexHead,nJointHead),
+	LArm = vector.count(indexLArm,nJointLArm),
+	LLeg = vector.count(indexLLeg,nJointLLeg),
+	RLeg = vector.count(indexRLeg,nJointRLeg),
+	RArm = vector.count(indexRArm,nJointRArm),
+	Waist = vector.count(indexWaist,nJointWaist),
+	LGrip = vector.count(indexLGrip,nJointLGrip),
+  RGrip = vector.count(indexRGrip,nJointRGrip),
+  Lidar = vector.count(indexLidar,nJointLidar)
 }
 
 ----------------------

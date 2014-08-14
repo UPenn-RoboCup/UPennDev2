@@ -46,6 +46,7 @@ net.streams = streams
 streams.mesh = {
 	ws = 9001,
 	udp= 33344,
+	tcp= 43344,
 }
 streams.camera0 = {
   ws = 9003,

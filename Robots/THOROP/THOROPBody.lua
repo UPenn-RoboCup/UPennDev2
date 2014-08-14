@@ -218,7 +218,7 @@ if IS_WEBOTS then
   	logger = libLog.new('yuyv', true)
   end
 
-  --Added to config rather than hard-code 
+  -- Added to Config rather than hard-code 
   local ENABLE_CHEST_LIDAR  = Config.sensors.chest_lidar
   local ENABLE_HEAD_LIDAR = Config.sensors.head_lidar
   local ENABLE_FSR = Config.sensors.fsr
@@ -365,10 +365,10 @@ if IS_WEBOTS then
 		tags.compass = webots.wb_robot_get_device("Compass")
 		tags.inertialunit = webots.wb_robot_get_device("InertialUnit")
 
-    if Config.sensors.head_lidar then
+    if Config.sensors.chest_lidar then
       tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
     end
-    if Config.sensors.chest_lidar then
+    if Config.sensors.head_lidar then
       tags.head_lidar = webots.wb_robot_get_device("HeadLidar")
     end
     if Config.sensors.fsr then
@@ -385,7 +385,7 @@ if IS_WEBOTS then
 		key_action.p(ENABLE_POSE)
 		key_action.c(ENABLE_CAMERA)
 		--key_action.h(ENABLE_HEAD_LIDAR)
-		--key_action.l(ENABLE_CHEST_LIDAR)
+		key_action.l(ENABLE_CHEST_LIDAR)
 		--key_action.k(ENABLE_KINECT)
 		--key_action.f(ENABLE_FSR)
 

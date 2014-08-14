@@ -9,7 +9,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.437111 -0.865413 -0.244938 1.17608
-  position -2.10453 2.61675 1.45717
+  position -3.92231 3.94097 2.50242
 }
 Background {
   skyColor [
@@ -31,6 +31,9 @@ DEF FLOOR Floor {
   texture [
     "textures/texture_grid.png"
   ]
+}
+WoodBox {
+  translation 0.198543 0.3 1.13574
 }
 THOROP7_Update {
   translation 0 1.155 0

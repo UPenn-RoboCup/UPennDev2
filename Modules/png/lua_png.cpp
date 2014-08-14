@@ -24,6 +24,11 @@
 #define MT_NAME "png_mt"
 #include <png.h>
 
+#ifdef TORCH
+#include <torch/luaT.h>
+#include <torch/TH/TH.h>
+#endif
+
  typedef struct {
   int width, height, stride;
   png_byte color_type;
@@ -454,20 +459,41 @@ static int lua_png_compress(lua_State *L) {
 
   unsigned char * data = NULL;
   size_t sz = 0;
+	int w, h, bytes_per_pixel;
+	int bit_depth = 8;
+	
   if (lua_isstring(L, 1)) {
     data = (uint8_t *) lua_tolstring(L, 1, &sz); 
+		w = lua_tointeger(L, 2);
+		h = lua_tointeger(L, 3);
+		bytes_per_pixel = luaL_optinteger(L, 4, 3);
   } else if (lua_islightuserdata(L, 1)) {
     if ( (data=(uint8_t *)lua_touserdata(L, 1))==NULL ){
       return luaL_error(L, "NULL userdata");
     }
-  } else {
+		w = lua_tointeger(L, 2);
+		h = lua_tointeger(L, 3);
+		bytes_per_pixel = luaL_optinteger(L, 4, 3);
+  }
+#ifdef TORCH
+	else if ( luaT_isudata(L, 1, "torch.ByteTensor") ) {
+		// TODO: Make a bit more type safe
+		THByteTensor* b_t = 
+			(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+		// TODO: Check continguous (or add stride support)
+		data = b_t->storage->data;
+		// TODO: Ensure nDimension is 2
+		// Use Torch dims if none given
+		w  = luaL_optint(L, 2, b_t->size[1]);
+		h = luaL_optint(L, 3, b_t->size[0]);
+		// Must give dims to set this, else assumed to be a byte tensor
+		bytes_per_pixel = luaL_optinteger(L, 4, 1);
+	}
+#endif
+	else {
+		//printf("luaT_typename(L, 1): %s\n", luaT_typename(L, 1));
     return luaL_error(L, "Bad PNG Compress input");
   }
-
-  int bit_depth = 8;
-  int w = lua_tointeger(L, 2);
-  int h = lua_tointeger(L, 3);
-  int bytes_per_pixel = luaL_optinteger(L, 4, 3);
 
   png_byte color_type;
   switch(bytes_per_pixel) {

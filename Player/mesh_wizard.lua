@@ -15,14 +15,14 @@ local util = require'util'
 local p_compress = require'png'.compress
 local j_compress = require'jpeg'.compressor'gray'
 
-
--- Make this in the Config: time to complete one scan
--- NOTE: Maybe should be with LidarFSM
-local t_scan = 1 / 40 -- Time to gather returns
+-- Shared with LidarFSM
 local t_sweep = 5 -- Time (seconds) to fulfill scan angles in one sweep
 local mag_sweep = 90 * DEG_TO_RAD -- How much will we sweep over
+--
+local ranges_fov = {-60*DEG_TO_RAD, 60*DEG_TO_RAD} -- In a single scan, which ranges to use
+--
+local t_scan = 1 / 40 -- Time to gather returns
 local half_mag_sweep = mag_sweep / 2
-local ranges_fov = {-60*DEG_TO_RAD,60*DEG_TO_RAD}
 
 -- Open up channels to send/receive data
 -- Who to send to
@@ -35,12 +35,11 @@ end
 local stream = Config.net.streams['mesh']
 local mesh_tcp_ch = si.new_publisher(stream.tcp, operator)
 local mesh_udp_ch = si.new_sender(operator, stream.udp)
---local mesh_ch = si.new_publisher(stream.rep)
 
 local metadata = {
 	name = v,
-	dynrange = {.1,1}, -- Dynamic range of depths when compressing
-	c = 'jpeg', -- Type of compression
+	dynrange = {.1, 1}, -- Dynamic range of depths when compressing
+	c = 'png', -- Type of compression
 	t = 0,
 }
 
@@ -138,6 +137,44 @@ local function angle_to_scanlines(rad)
   return scanlines
 end
 
+local function send_mesh(destination)
+	-- TODO: Somewhere check that far>near
+  local near, far = unpack(metadata.dynrange)
+  -- Enhance the dynamic range of the mesh image
+  mesh_adj:copy(mesh):add(-near)
+  mesh_adj:mul(255/(far-near))
+  -- Ensure that we are between 0 and 255
+  mesh_adj[torch.lt(mesh_adj,0)] = 0
+  mesh_adj[torch.gt(mesh_adj,255)] = 255
+  mesh_byte:copy(mesh_adj)
+  -- Compression
+  local c_mesh 
+  local dim = mesh_byte:size()
+  if metadata.c=='jpeg' then
+		c_mesh = j_compress:compress(mesh_byte)
+  elseif metadata.c=='png' then
+    c_mesh = p_compress(mesh_byte)
+  else
+    -- raw data?
+		-- Maybe needed for sending a mesh to another process
+    return
+  end
+	-- NOTE: Metadata should be packed only when it changes...
+	if type(destination)=='string' then
+		local f_img = io.open(destination..'.'..metadata.c, 'w')
+		local f_meta = io.open(destination..'.meta', 'w')
+		f_img:write(c_mesh)
+		f_img:close()
+		f_meta:write(mpack(metadata))
+		f_meta:close()
+	elseif destination then
+		mesh_tcp_ch:send{mpack(metadata), c_mesh}
+	else
+		local ret, err = mesh_udp_ch:send(mpack(metadata)..c_mesh)
+		if err then return err end
+	end
+end
+
 local function update(meta, ranges)
 	-- Update the points
 	if not mesh then setup_mesh(meta) end
@@ -161,6 +198,17 @@ local function update(meta, ranges)
 		scan_angles[line] = rad_angle
     -- TODO: Save the pose into each scanline
   end
+	-- DEBUG ONLY
+	--[[
+	t = unix.time()
+	t0 = t0 or t
+	if t-t0 > 1 then
+		cnt = cnt and cnt + 1 or 1
+		t0 = t
+		print('SAVING!!', cnt)
+		send_mesh('/tmp/mesh_'..cnt)
+	end
+	--]]
 end
 
 -- If required from Webots, return the table
@@ -173,40 +221,6 @@ function lidar_ch.callback(skt)
 	local mdata, ranges = unpack(skt:recv_all())
 	local meta = munpack(mdata)
 	update(meta, ranges)
-end
-
-local function send_mesh(use_reliable)
-	-- TODO: Somewhere check that far>near
-  local near, far = unpack(metadata.dynrange)
-  -- Enhance the dynamic range of the mesh image
-  mesh_adj:copy(mesh.mesh):add(-near)
-  mesh_adj:mul( 255/(far-near) )
-  -- Ensure that we are between 0 and 255
-  mesh_adj[torch.lt(mesh_adj,0)] = 0
-  mesh_adj[torch.gt(mesh_adj,255)] = 255
-  mesh_byte:copy( mesh_adj )
-  -- Compression
-  local c_mesh 
-  local dim = mesh_byte:size()
-  if metadata.c=='jpeg' then
-    -- jpeg
-		c_mesh = j_compress:compress(mesh_byte:storage():pointer(), dim[2], dim[1])
-  elseif metadata.c=='png' then
-    -- png
-    mesh.meta.c = 'png'
-    c_mesh = p_compress(mesh_byte:storage():pointer(), dim[2], dim[1], 1)
-  else
-    -- raw data?
-		-- Maybe needed for sending a mesh to another process
-    return
-  end
-	-- NOTE: Metadata should be packed only when it changes...
-	if use_reliable then
-		mesh_tcp_ch:send{mpack(metadata), c_mesh}
-	else
-		local ret, err = mesh_udp_ch:send(mpack(metadata)..c_mesh)
-		if err then return err end
-	end
 end
 
 -- TODO: Listen for mesh requests on a separate channel (mesh_ch as REP/REQ)

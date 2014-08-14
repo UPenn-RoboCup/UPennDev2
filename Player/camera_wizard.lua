@@ -13,15 +13,6 @@ require'hcm'
 require'wcm'
 local get_time = Body.get_time
 
--- Cleanly exit on Ctrl-C
-local running = true
-local function shutdown()
-  running = false
-end
-local signal = require'signal'
-signal.signal("SIGINT", shutdown)
-signal.signal("SIGTERM", shutdown)
-
 -- Grab the metadata for this camera
 local metadata, camera_id
 if not arg or not arg[1] then
@@ -59,7 +50,6 @@ end
 
 local libLog, logger
 
-
 -- Extract metadata information
 local w = metadata.w
 local h = metadata.h
@@ -74,9 +64,9 @@ end
 -- Network Channels/Streams
 local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[camera_identifier]
-print('Camera | ', operator, camera_identifier)
-local udp_ch = udp_port and stream.udp and si.new_sender(operator, stream.udp)
+local udp_ch = stream and stream.udp and si.new_sender(operator, stream.udp)
 local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
+print('Camera | ', operator, camera_identifier)
 
 -- Metadata for the operator
 local meta = {
@@ -123,7 +113,7 @@ local function update(img, sz, cnt, t)
 
 	-- Check if we are sending to the operator
 	SEND_INTERVAL = 1 / hcm.get_monitor_fps()
-	if ENABLE_NET and t-t_send > SEND_INTERVAL then
+	if ENABLE_NET and udp_ch and t-t_send > SEND_INTERVAL then
 		local c_img = c_yuyv:compress(img, w, h)
 		meta.sz = #c_img
 		udp_data = mp.pack(meta)..c_img
@@ -149,7 +139,7 @@ local function update(img, sz, cnt, t)
 	-- Update the vision routines
 	for pname, p in pairs(pipeline) do
 		p.update(img)
-		if ENABLE_NET and p.send and t-t_send>SEND_INTERVAL then
+		if ENABLE_NET and udp_ch and p.send and t-t_send>SEND_INTERVAL then
 			for _,v in ipairs(p.send()) do
 				if v[2] then
 					udp_data = mp.pack(v[1])..v[2]
@@ -195,6 +185,16 @@ for i, param in ipairs(metadata.param) do
 	end
 	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
 end
+
+-- Cleanly exit on Ctrl-C
+local running = true
+local function shutdown()
+  running = false
+end
+
+local signal = require'signal'.signal
+signal("SIGINT", shutdown)
+signal("SIGTERM", shutdown)
 
 while running do
 	local img, sz, cnt, t = camera:get_image()

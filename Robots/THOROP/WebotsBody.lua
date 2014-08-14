@@ -1,27 +1,31 @@
 local WebotsBody = {}
 
-local ww = require'world_wizard'
+--local ww = require'world_wizard'
 local cw = require'camera_wizard'
+local mw = require'mesh_wizard'
 
 local kb = require'test_robocup'
-local USING_KB = type(kb)=='table' and type(kb.update)=='function'
-WebotsBody.USING_KB = USING_KB
+WebotsBody.USING_KB = type(kb)=='table' and type(kb.update)=='function'
 
 function WebotsBody.entry()
-	ww.entry()
+	if ww then ww.entry() end
 end
 
 function WebotsBody.update_head_camera(img, sz, cnt, t)
 	if cw then cw.update(img, sz, cnt, t) end
 end
 
+function WebotsBody.update_chest_lidar(metadata, ranges)
+	if mw then mw.update(metadata, ranges) end
+end
+
 function WebotsBody.update(keycode)
-	ww.update()
-	if USING_KB then kb.update(keycode) end
+	if ww then ww.update() end
+	if WebotsBody.USING_KB then kb.update(keycode) end
 end
 
 function WebotsBody.exit()
-	ww.exit()
+	if ww then ww.exit() end
 end
 
 return WebotsBody

@@ -30,7 +30,7 @@ signal.signal("SIGTERM", shutdown)
 local function process_rpc(rpc)
   local status, reply
   -- Debugging the request
-	--ptable(rpc)
+	ptable(rpc)
 
   -- Shared memory modification
   if rpc.shm then

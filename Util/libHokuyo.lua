@@ -9,8 +9,8 @@ local unix = require'unix'
 local tcp = require'tcp'
 
 -- Reading properties
---local N_SCAN_BYTES = 3372
-local N_SCAN_BYTES = 1578
+local N_SCAN_BYTES = 3372
+--local N_SCAN_BYTES = 1578
 
 local TIMEOUT = 0.05 -- (uses select)
 
@@ -173,7 +173,7 @@ local get_sensor_params = function(self)
 	sensor_params.angular_resolution = tonumber(params[4])
 	sensor_params.min_angle_count = tonumber(params[5])
 	sensor_params.max_angle_count = tonumber(params[6])
-	sensor_params.frint_angle_count = tonumber(params[7])
+	sensor_params.front_angle_count = tonumber(params[7])
 	sensor_params.scan_rate = tonumber(params[8])
 
 	return sensor_params
@@ -322,7 +322,7 @@ function(ttyname, serial_number, ttybaud, char_encoding )
 		-- URG-04LX
 		obj.scan_request = create_scan_request(44, 725, 1, self.char_encoding, 0, 0)
 		obj.parse = HokuyoPacket.parse2
-		obj.update_time = 1/10
+		obj.update_time = 1 / 10
 		hokuyo.res = 360 / 1024
 	else
 		-- UTM-30LX

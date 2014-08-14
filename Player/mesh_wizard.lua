@@ -15,6 +15,15 @@ local util = require'util'
 local p_compress = require'png'.compress
 local j_compress = require'jpeg'.compressor'gray'
 
+
+-- Make this in the Config: time to complete one scan
+-- NOTE: Maybe should be with LidarFSM
+local t_scan = 1 / 40 -- Time to gather returns
+local t_sweep = 5 -- Time (seconds) to fulfill scan angles in one sweep
+local mag_sweep = 90 * DEG_TO_RAD -- How much will we sweep over
+local half_mag_sweep = mag_sweep / 2
+local ranges_fov = {-60*DEG_TO_RAD,60*DEG_TO_RAD}
+
 -- Open up channels to send/receive data
 -- Who to send to
 local operator
@@ -26,6 +35,7 @@ end
 local stream = Config.net.streams['mesh']
 local mesh_tcp_ch = si.new_publisher(stream.tcp, operator)
 local mesh_udp_ch = si.new_sender(operator, stream.udp)
+--local mesh_ch = si.new_publisher(stream.rep)
 
 local metadata = {
 	name = v,
@@ -33,14 +43,6 @@ local metadata = {
 	c = 'jpeg', -- Type of compression
 	t = 0,
 }
-
--- Make this in the Config: time to complete one scan
--- NOTE: Maybe should be with LidarFSM
-local t_scan = 1 / 40 -- Time to gather returns
-local t_sweep = 5 -- Time (seconds) to fulfill scan angles in one sweep
-local mag_sweep = 90 * DEG_TO_RAD -- How much will we sweep over
-local half_mag_sweep = mag_sweep / 2
-local ranges_fov = {-60*DEG_TO_RAD,60*DEG_TO_RAD}
 
 -- Setup metadata and tensors for a lidar mesh
 local mesh, mesh_byte, mesh_adj, scan_angles, offset_idx
@@ -125,7 +127,7 @@ local function angle_to_scanlines(rad)
     if direction>0 then
       -- going away from 1 to end
       local start_line = math.min(prev_scanline+1,scanline)
-      for s=start_line,res do table.insert(scanlines,i) end
+      for s=start_line,n_scanlines do table.insert(scanlines,i) end
     else
       -- going away from end to 1
       local end_line = math.max(prev_scanline-1,scanline)

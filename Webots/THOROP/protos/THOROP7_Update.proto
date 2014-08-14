@@ -178,6 +178,7 @@ Robot {
     
     ## Begin the Chest lidar chain
     DEF Chest_Pan Solid {
+			translation 0 0 0.1
       children [
         ## Chest lidar is root child    
         HingeJoint {
@@ -197,7 +198,7 @@ Robot {
             anchor 0 0.081 0
           } # End of the ChestLidarPan HingeJointParameters
           endPoint Solid {
-            translation 0 0 0.10 # lidar chest offset
+            translation 0 0 0.010 # lidar chest offset
 						rotation 0.707107 -0.707107 0 3.14159
 						#rotation 0.707107 0.707107 0 3.14159
             children [

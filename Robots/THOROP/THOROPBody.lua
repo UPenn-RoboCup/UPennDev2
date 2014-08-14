@@ -245,7 +245,6 @@ if IS_WEBOTS then
   webots.wb_receiver_enable(tags.receiver,timeStep)
   webots.wb_receiver_set_channel(tags.receiver,13)
     
-
   -- Ability to turn on/off items
   local t_last_keypress = get_time()
   -- Enable the keyboard 100ms
@@ -343,9 +342,9 @@ if IS_WEBOTS then
 
 		-- Grab the tags from the joint names
 		tags.joints = {}
-
 		for i,v in ipairs(jointNames) do
       local tag = webots.wb_robot_get_device(v)
+			tags.joints[i] = tag
 			if tag>0 then
 				if OLD_API then
 					webots.wb_servo_enable_position(tag, timeStep)
@@ -354,7 +353,6 @@ if IS_WEBOTS then
 					webots.wb_motor_enable_position(tag, timeStep)
 					webots.wb_motor_set_velocity(tag, 4)
 				end
-        tags.joints[i] = tag
 			end
 		end
 

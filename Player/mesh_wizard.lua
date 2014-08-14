@@ -29,44 +29,50 @@ local mesh_udp_ch = si.new_sender(operator, stream.udp)
 
 local metadata = {
 	name = v,
-	fov = {-60*DEG_TO_RAD,60*DEG_TO_RAD},
-	scanlines = {-45*DEG_TO_RAD,45*DEG_TO_RAD},
-	density = 10*RAD_TO_DEG, -- #scanlines per radian on actuated motor
 	dynrange = {.1,1}, -- Dynamic range of depths when compressing
 	c = 'jpeg', -- Type of compression
 	t = 0,
 }
 
+-- Make this in the Config: time to complete one scan
+-- NOTE: Maybe should be with LidarFSM
+local t_scan = 1 / 40 -- Time to gather returns
+local t_sweep = 5 -- Time (seconds) to fulfill scan angles in one sweep
+local mag_sweep = 90 * DEG_TO_RAD -- How much will we sweep over
+local half_mag_sweep = mag_sweep / 2
+local ranges_fov = {-60*DEG_TO_RAD,60*DEG_TO_RAD}
+
 -- Setup metadata and tensors for a lidar mesh
-local reading_per_radian, scan_resolution, fov_resolution
 local mesh, mesh_byte, mesh_adj, scan_angles, offset_idx
 local current_scanline, current_direction
+local n_returns, n_scanlines
 local function setup_mesh(meta)
 	local n, res = meta.n, meta.res
 	local fov = n * res
-  -- Find the resolutions
-  scan_resolution = math.ceil(
-		metadata.density * math.abs(metadata.scanlines[2]
-			-metadata.scanlines[1])
-	)
-  -- Set our resolution
-	-- NOTE: This has been changed in the lidar msgs...
-  reading_per_radian = (n-1)/(fov*DEG_TO_RAD)
-  fov_resolution = reading_per_radian * math.abs(metadata.fov[2]-metadata.fov[1])
-  fov_resolution = math.ceil(fov_resolution)
+	-- Check that we can access enough FOV
+	local min_view, max_view = unpack(ranges_fov)
+	assert(fov > max_view-min_view, 'Not enough FOV available')
 	-- Find the offset for copying lidar readings into the mesh
   -- if fov is from -fov/2 to fov/2 degrees, then offset_idx is zero
   -- if fov is from 0 to fov/2 degrees, then offset_idx is sensor_width/2
-  local fov_offset = (n-1)/2+math.ceil( reading_per_radian*metadata.fov[1] )
-  offset_idx = math.floor(fov_offset)
+  local fov_offset = min_view / res + n / 2
+	-- Round the offset (0 based offset)
+  offset_idx = math.floor(fov_offset + 0.5)
+	-- Round to get the number of returns for each scanline
+	n_returns = math.floor((max_view - min_view) / res + 0.5)
+	-- Check the number of scanlines in each mesh
+	-- Indexed by the actuator angle
+	-- Depends on the speed we use
+	n_scanlines = math.floor(t_sweep / t_scan + 0.5)
+	--print('Tracking', n_scanlines, 'scanlines with ', n_returns, 'returns each')
   -- TODO: Pose information for each scanline
   -- In-memory mesh
-  mesh = torch.FloatTensor( scan_resolution, fov_resolution ):zero()
+  mesh = torch.FloatTensor(n_scanlines, n_returns):zero()
   -- Mesh buffers for compressing and sending to the user
-	mesh_adj  = torch.FloatTensor( scan_resolution, fov_resolution )
-  mesh_byte = torch.ByteTensor( scan_resolution, fov_resolution )
+	mesh_adj  = torch.FloatTensor(n_scanlines, n_returns)
+  mesh_byte = torch.ByteTensor(n_scanlines, n_returns)
   -- Save the exact actuator angles of every scan
-  scan_angles  = torch.DoubleTensor( scan_resolution ):zero()
+  scan_angles = torch.DoubleTensor(n_scanlines):zero()
 	-- No direction information yet
 	current_direction, current_scanline = nil, nil
 end
@@ -77,19 +83,15 @@ end
 local function angle_to_scanlines(rad)
   -- Get the most recent direction the lidar was moving
   local prev_scanline = current_scanline
-  -- Get the metadata for calculations
-  local start, stop = unpack(metadata.scanlines)
-  local ratio = (rad-start)/(stop-start)
-  -- Round...? Why??
-	-- TODO: Make this simpler/smarter
-  local scanline = math.floor(ratio*scan_resolution+.5)
+  local ratio = (rad + half_mag_sweep)/mag_sweep
+  local scanline = math.floor(ratio*n_scanlines+.5)
   -- Return a bounded value
-  scanline = math.max( math.min(scanline, scan_resolution), 1 )
+  scanline = math.max( math.min(scanline, n_scanlines), 1 )
   --SJ: I have no idea why, but this fixes the scanline tilting problem
   if current_direction and current_direction<0 then
 		scanline = math.max(1, scanline-1)
 	else
-		scanline = math.min(scan_resolution, scanline + 1)
+		scanline = math.min(n_scanlines, scanline + 1)
   end
   -- Save in our table
   current_scanline = scanline
@@ -144,15 +146,17 @@ local function update(meta, ranges)
   -- TODO: Save the body pose info
   --local px, py, pa = unpack(meta.pose)
   -- Insert into the correct column
-  local scanlines = angle_to_scanlines(meta.angle)
+	local rad_angle = meta.angle
+  local scanlines = angle_to_scanlines(rad_angle)
   -- Update each outdated scanline in the mesh
+	local byte_sz = n_returns * ffi.sizeof'float'
   for _,line in ipairs(scanlines) do
 		-- Copy lidar readings to the torch object for fast modification
 		--cutil.string2tensor(ranges, mesh:select(1,line), mesh:size(2), offset_idx)
-		-- TODO: FFI
-		
+		-- Perform the copy. NOTE: mesh:select(1, line) must be contiguous!
+		ffi.copy(mesh:select(1, line):data(), ffi.cast('float*', ranges) + offset_idx, byte_sz)
 		-- Save the pan angle
-		scan_angles[line] = meta.angle or scan_angles[line] or 0
+		scan_angles[line] = rad_angle
     -- TODO: Save the pose into each scanline
   end
 end

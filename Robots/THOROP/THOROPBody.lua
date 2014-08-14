@@ -540,10 +540,9 @@ if IS_WEBOTS then
 			local fov = webots.wb_camera_get_fov(tags.chest_lidar)
 			local res = fov / n
       local ranges = webots.wb_camera_get_range_image(tags.chest_lidar)
-			WebotsBody.update_chest_lidar(
-				{n=n,res=res,t=t,angle=Body.get_lidar_position()},
-				ranges)
-      --local lidar_array = carray.float( lidar_fr, w )
+			local metadata = {n=n,res=res,t=t,angle=Body.get_lidar_position()}
+			WebotsBody.update_chest_lidar(metadata,ranges)
+      --local lidar_array = require'carray'.float(ranges, w)
     end
     -- Grab a lidar scan
     if ENABLE_HEAD_LIDAR then
@@ -552,8 +551,7 @@ if IS_WEBOTS then
       --local lidar_array = carray.float( lidar_fr, w )
     end
 
-
-	--Receive webot messaging
+		-- Receive webot messaging
 		while webots.wb_receiver_get_queue_length(tags.receiver) > 0 do
 	    -- get first message on the queue
 	    ndata = webots.wb_receiver_get_data_size(tags.receiver)

@@ -13,7 +13,7 @@ PROTO THOROP7_Update [
   field SFString   controllerArgs ""
   field SFBool     synchronization TRUE
 	field SFFloat    lidarFov 3.1415926536
-	field SFInt32    lidarRays 721
+	field SFInt32    lidarRays 720
   field SFString   name "THOR-OP"
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0

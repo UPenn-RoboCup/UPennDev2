@@ -1,6 +1,7 @@
 local state = {}
 state._NAME = ...
 local Body = require'Body'
+require'vcm'
 local t_entry, t_update, t_exit
 local min_pan, max_pan, mid_pan, mag_sweep
 local t_sweep, ph, forward
@@ -8,8 +9,10 @@ local t_sweep, ph, forward
 -- Sync mesh parameters
 local function update_pan_params()
 	-- Necessary variables
-	mag_sweep = 90 * DEG_TO_RAD
-	t_sweep = 5
+	mag_sweep, t_sweep = unpack(vcm.get_mesh_sweep())
+	-- Some simple safety checks
+	mag_sweep = math.min(math.max(mag_sweep, 10 * DEG_TO_RAD), math.pi)
+	t_sweep = math.min(math.max(t_sweep, 1), 20)
 	-- Convenience variables
 	min_pan = -mag_sweep/2
   max_pan = mag_sweep/2
@@ -38,9 +41,7 @@ function state.entry()
 		-- Check if we are *way* out of phase
 		if ph>1.1 or ph<.1 then print('LIDAR WAY OUT OF PHASE') end
 	end
-	
-	-- TODO: Send to the mesh channel our behavior
-	
+
 end
 
 function state.update()
@@ -62,6 +63,15 @@ function state.update()
 	if forward ~= is_forward then
 		forward = is_forward
 		ph = ph > 0.5 and 1 or 0
+		-- If streaming, then send on the switches only
+		local dir = vcm.get_mesh_state()
+		vcm.set_mesh_state({forward and 1 or -1})
+		local net = vcm.get_mesh_net()
+		if net[4]==1 then
+			print('REQUEST MESH')
+			net[1] = 1
+			vcm.set_mesh_net(net)
+		end
 		return'switch'
 	end
 	

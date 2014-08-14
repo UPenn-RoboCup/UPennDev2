@@ -14,15 +14,15 @@ local torch = require'torch'
 local util = require'util'
 local p_compress = require'png'.compress
 local j_compress = require'jpeg'.compressor'gray'
+require'vcm'
 
 -- Shared with LidarFSM
-local t_sweep = 5 -- Time (seconds) to fulfill scan angles in one sweep
-local mag_sweep = 90 * DEG_TO_RAD -- How much will we sweep over
---
-local ranges_fov = {-60*DEG_TO_RAD, 60*DEG_TO_RAD} -- In a single scan, which ranges to use
---
+-- t_sweep: Time (seconds) to fulfill scan angles in one sweep
+-- mag_sweep: How much will we sweep over
+-- ranges_fov: In a single scan, which ranges to use
+local t_sweep, mag_sweep, ranges_fov
+-- NOTE: The following is LIDAR dependent
 local t_scan = 1 / 40 -- Time to gather returns
-local half_mag_sweep = mag_sweep / 2
 
 -- Open up channels to send/receive data
 -- Who to send to
@@ -38,9 +38,6 @@ local mesh_udp_ch = si.new_sender(operator, stream.udp)
 
 local metadata = {
 	name = v,
-	dynrange = {.1, 1}, -- Dynamic range of depths when compressing
-	c = 'png', -- Type of compression
-	t = 0,
 }
 
 -- Setup metadata and tensors for a lidar mesh
@@ -84,7 +81,7 @@ end
 local function angle_to_scanlines(rad)
   -- Get the most recent direction the lidar was moving
   local prev_scanline = current_scanline
-  local ratio = (rad + half_mag_sweep)/mag_sweep
+  local ratio = (rad + mag_sweep / 2)/mag_sweep
   local scanline = math.floor(ratio*n_scanlines+.5)
   -- Return a bounded value
   scanline = math.max( math.min(scanline, n_scanlines), 1 )
@@ -137,9 +134,9 @@ local function angle_to_scanlines(rad)
   return scanlines
 end
 
-local function send_mesh(destination)
+local function send_mesh(destination, compression, dynrange)
 	-- TODO: Somewhere check that far>near
-  local near, far = unpack(metadata.dynrange)
+  local near, far = unpack(dynrange)
   -- Enhance the dynamic range of the mesh image
   mesh_adj:copy(mesh):add(-near)
   mesh_adj:mul(255/(far-near))
@@ -150,16 +147,20 @@ local function send_mesh(destination)
   -- Compression
   local c_mesh 
   local dim = mesh_byte:size()
-  if metadata.c=='jpeg' then
+  if compression=='jpeg' then
 		c_mesh = j_compress:compress(mesh_byte)
-  elseif metadata.c=='png' then
+  elseif compression=='png' then
     c_mesh = p_compress(mesh_byte)
   else
     -- raw data?
 		-- Maybe needed for sending a mesh to another process
     return
   end
-	-- NOTE: Metadata should be packed only when it changes...
+	-- Set the metadata
+	metadata.c = compression
+	metadata.t = Body.get_time()
+	metadata.dr = dynrange
+	
 	if type(destination)=='string' then
 		local f_img = io.open(destination..'.'..metadata.c, 'w')
 		local f_meta = io.open(destination..'.meta', 'w')
@@ -175,9 +176,33 @@ local function send_mesh(destination)
 	end
 end
 
+local function check_send_mesh()
+	local net = vcm.get_mesh_net()
+	local request, destination, compression = unpack(net)
+	if request==0 then return end
+	local dynrange = vcm.get_mesh_dynrange()
+	send_mesh(destination==1, compression==1 and 'png' or 'jpeg', dynrange)
+	-- Reset the request
+	net[1] = 0
+	vcm.set_mesh_net(net)
+	print('SENT MESH')
+end
+
 local function update(meta, ranges)
+	-- Check shared parameters
+	local mag_sweep0, t_sweep0 = unpack(vcm.get_mesh_sweep())
+	local ranges_fov0 = vcm.get_mesh_fov()
+	-- Some simple safety checks
+	mag_sweep0 = math.min(math.max(mag_sweep0, 10 * DEG_TO_RAD), math.pi)
+	t_sweep0 = math.min(math.max(t_sweep0, 1), 20)
 	-- Update the points
-	if not mesh then setup_mesh(meta) end
+	if not mesh or mag_sweep~=mag_sweep0 or t_sweep~=t_sweep0 or ranges_fov~=ranges_fov0 then
+		mag_sweep = mag_sweep0
+		t_sweep = t_sweep0
+		ranges_fov = ranges_fov0
+		setup_mesh(meta)
+		print('UPDATED MESH')
+	end
 	-- Save the latest lidar timestamp
 	metadata.t = meta.t
 	-- TODO: Save the rpy of the body
@@ -209,6 +234,8 @@ local function update(meta, ranges)
 		send_mesh('/tmp/mesh_'..cnt)
 	end
 	--]]
+	-- Check for sending out on the wire
+	check_send_mesh()
 end
 
 -- If required from Webots, return the table

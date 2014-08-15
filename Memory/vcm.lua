@@ -37,20 +37,21 @@ shared.us.distance  = vector.zeros(2)
 -- Mesh formation
 shared.mesh = {}
 -- Sweep: Field of View (radians), time to complete sweep (seconds)
-shared.mesh.sweep = {math.pi/2, 5}
+shared.mesh.sweep = {math.pi/2, 3}
 -- fov: In a single scan, which ranges to use (field of view)
-shared.mesh.fov = {-math.pi/3, math.pi/3}
+-- Like pitch: positive is down, negative is up. 90 deg is straight down
+shared.mesh.fov = {0, math.pi/2}
 -- Net: {request, destination, compression}
 -- request: 1 means mesh needs to be sent to destination
 -- destination: 0 is udp, 1 is tcp PUB
 -- compression: 0 is JPEG, 1 is PNG
 -- is_streaming: 1 is LidarFSM setting mesh_net on each sweep
-shared.mesh.net = {0, 0, 0, 0}
+shared.mesh.net = {0, 0, 1, 1}
 -- Net: {direction}
 -- direction (set by LidarFSM): -1 left, 0 unknown, 1 right
 shared.mesh.state = {0}
 -- Dynamic range
-shared.mesh.dynrange = {0.1, 1}
+shared.mesh.dynrange = {0.1, 2}
 
 -- Initialize the segment
 memory.init_shm_segment(..., shared, shsize)

@@ -8,8 +8,8 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-  orientation -0.437111 -0.865413 -0.244938 1.17608
-  position -3.92231 3.94097 2.50242
+  orientation -0.919353 -0.360365 -0.157881 0.930193
+  position -0.994031 5.3268 3.82571
 }
 Background {
   skyColor [
@@ -33,7 +33,7 @@ DEF FLOOR Floor {
   ]
 }
 WoodBox {
-  translation 0.198543 0.3 1.13574
+  translation 0.0108684 0.3 1.04426
 }
 THOROP7_Update {
   translation 0 1.155 0

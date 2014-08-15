@@ -31,7 +31,7 @@ local mesh_tcp_ch = si.new_publisher(stream.tcp, operator)
 local mesh_udp_ch = si.new_sender(operator, stream.udp)
 
 local metadata = {
-	name = v,
+	name = 'mesh0',
 }
 
 -- Setup tensors for a lidar mesh
@@ -121,11 +121,12 @@ local function send_mesh(destination, compression, dynrange)
 		-- Maybe needed for sending a mesh to another process
     return
   end
-	-- Set the metadata
+	-- Update relevant metadata
 	metadata.c = compression
-	metadata.t = Body.get_time()
 	metadata.dr = dynrange
-	
+	metadata.rfov = ranges_fov
+	metadata.sfov = {-mag_sweep / 2, mag_sweep / 2}
+	-- Send away
 	if type(destination)=='string' then
 		local f_img = io.open(destination..'.'..metadata.c, 'w')
 		local f_meta = io.open(destination..'.meta', 'w')

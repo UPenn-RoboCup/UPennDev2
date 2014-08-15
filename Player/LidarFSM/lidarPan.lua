@@ -36,8 +36,8 @@ function state.entry()
 		-- Take a given radian and back convert to find the current phase
 		-- Direction is the side of the mid point, as a boolean (forward is true)
 		-- Dir: forward is true, backward is false
-		rad = math.max( math.min(rad, max_pan), min_pan )
-  	ph, forward = ( rad - min_pan ) / mag_sweep, rad>mid_pan
+		rad = math.max(math.min(rad, max_pan), min_pan)
+  	ph, forward = (rad - min_pan) / mag_sweep, rad>mid_pan
 		-- Check if we are *way* out of phase
 		if ph>1.1 or ph<.1 then print('LIDAR WAY OUT OF PHASE') end
 	end
@@ -67,8 +67,8 @@ function state.update()
 		local dir = vcm.get_mesh_state()
 		vcm.set_mesh_state({forward and 1 or -1})
 		local net = vcm.get_mesh_net()
+		-- If streaming, then LidarFSM should request a mesh be sent
 		if net[4]==1 then
-			print('REQUEST MESH')
 			net[1] = 1
 			vcm.set_mesh_net(net)
 		end

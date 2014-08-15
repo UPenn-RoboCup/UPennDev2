@@ -42,7 +42,6 @@ local metadata = {
 
 -- Setup metadata and tensors for a lidar mesh
 local mesh, mesh_byte, mesh_adj, scan_angles, offset_idx
-local current_scanline, current_direction
 local n_returns, n_scanlines
 local function setup_mesh(meta)
 	local n, res = meta.n, meta.res
@@ -71,65 +70,41 @@ local function setup_mesh(meta)
   mesh_byte = torch.ByteTensor(n_scanlines, n_returns)
   -- Save the exact actuator angles of every scan
   scan_angles = torch.DoubleTensor(n_scanlines):zero()
-	-- No direction information yet
-	current_direction, current_scanline = nil, nil
 end
 
-------------------------------
 -- Data copying helpers
 -- Convert a pan angle to a column of the chest mesh image
+local scanline, direction
 local function angle_to_scanlines(rad)
-  -- Get the most recent direction the lidar was moving
-  local prev_scanline = current_scanline
+	-- Find the scanline
   local ratio = (rad + mag_sweep / 2)/mag_sweep
-  local scanline = math.floor(ratio*n_scanlines+.5)
-  -- Return a bounded value
-  scanline = math.max( math.min(scanline, n_scanlines), 1 )
-  --SJ: I have no idea why, but this fixes the scanline tilting problem
-  if current_direction and current_direction<0 then
-		scanline = math.max(1, scanline-1)
-	else
-		scanline = math.min(n_scanlines, scanline + 1)
-  end
-  -- Save in our table
-  current_scanline = scanline
-	-- Initialize if no previous scanline
-  -- If not moving, assume we are staying in the previous direction
-	if not prev_scanline then return {scanline} end
-  -- Grab the most recent scanline saved in the mesh
-  local prev_direction = current_direction
-  if not prev_direction then
-    current_direction = 1
-    return {scanline}
-  end
-  -- Grab the direction
-  local direction
-  local diff_scanline = scanline - prev_scanline
-  if diff_scanline==0 then
-    direction = prev_direction
-  else
-    direction = util.sign(diff_scanline)
-  end
-  -- Save the directions
-  current_direction = direction
+  local scanline_now = math.floor(ratio*n_scanlines+.5)
+  scanline_now = math.max(math.min(scanline_now, n_scanlines), 1)
+	local prev_scanline = scanline or scanline_now
+	scanline = scanline_now
+	-- Find the direction
+	local direction_now = vcm.get_mesh_state()
+	local prev_direction = direction or direction_now
+	direction = direction_now
+	-- If unknown, then only populate a single scanline
+	if direction == 0 then return {scanline} end
   -- Find the set of scanlines for copying the lidar reading
   local scanlines = {}
+	-- No direction change
   if direction==prev_direction then
-    -- fill all lines between previous and now
-    for s=prev_scanline+1,scanline,direction do table.insert(scanlines,s) end
-  else
-    -- Changed directions!
-    -- Populate the borders, too
-    if direction>0 then
-      -- going away from 1 to end
-      local start_line = math.min(prev_scanline+1,scanline)
-      for s=start_line,n_scanlines do table.insert(scanlines,i) end
-    else
-      -- going away from end to 1
-      local end_line = math.max(prev_scanline-1,scanline)
-      for s=1,end_line do table.insert(scanlines,i) end        
-    end
-  end
+    -- Fill all lines between previous and now
+		--if prev_scanline>=n_scanlines then print('prev_scanline', prev_scanline, scanline, direction) end
+    for s=prev_scanline+direction,scanline,direction do table.insert(scanlines,s) end
+		return scanlines
+	end
+	-- Changed directions, so populate the borders, too
+	if direction > 0 then
+		local fill_line = math.max(prev_scanline-1, scanline)
+		for s=1,fill_line do table.insert(scanlines, s) end
+	else
+		local fill_line = math.min(prev_scanline+1, scanline)
+		for s=fill_line,n_scanlines do table.insert(scanlines, s) end
+	end
   -- Return for populating
   return scanlines
 end
@@ -185,7 +160,7 @@ local function check_send_mesh()
 	-- Reset the request
 	net[1] = 0
 	vcm.set_mesh_net(net)
-	print('SENT MESH')
+	print('Mesh | Sent')
 end
 
 local function update(meta, ranges)
@@ -201,7 +176,7 @@ local function update(meta, ranges)
 		t_sweep = t_sweep0
 		ranges_fov = ranges_fov0
 		setup_mesh(meta)
-		print('UPDATED MESH')
+		print('Mesh | Updated containers')
 	end
 	-- Save the latest lidar timestamp
 	metadata.t = meta.t
@@ -214,14 +189,16 @@ local function update(meta, ranges)
   local scanlines = angle_to_scanlines(rad_angle)
   -- Update each outdated scanline in the mesh
 	local byte_sz = n_returns * ffi.sizeof'float'
+	
   for _,line in ipairs(scanlines) do
-		-- Copy lidar readings to the torch object for fast modification
-		--cutil.string2tensor(ranges, mesh:select(1,line), mesh:size(2), offset_idx)
+		-- TODO: Save the pose into each scanline
 		-- Perform the copy. NOTE: mesh:select(1, line) must be contiguous!
-		ffi.copy(mesh:select(1, line):data(), ffi.cast('float*', ranges) + offset_idx, byte_sz)
-		-- Save the pan angle
-		scan_angles[line] = rad_angle
-    -- TODO: Save the pose into each scanline
+		if line >= 1 and line<=n_scanlines then
+			--cutil.string2tensor(ranges, mesh:select(1,line), mesh:size(2), offset_idx)
+			ffi.copy(mesh:select(1, line):data(), ffi.cast('float*', ranges) + offset_idx, byte_sz)
+			-- Save the pan angle
+			scan_angles[line] = rad_angle
+		end
   end
 	-- DEBUG ONLY
 	--[[

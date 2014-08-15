@@ -1,12 +1,7 @@
------------------------------------------------------------------
--- Combined Lidar manager for Team THOR
--- Reads and sends raw lidar data
--- As well as accumulate them as a map
--- and send to UDP/TCP
--- (c) Stephen McGill, Seung Joon Yi, 2013
----------------------------------
+-- Mesh Wizard for Team THOR
+-- Accumulate lidar readings into an image for mesh viewing
+-- (c) Stephen McGill, Seung Joon Yi, 2013, 2014
 dofile'../include.lua'
--- Going to be threading this
 local si = require'simple_ipc'
 local mpack = require'msgpack.MessagePack'.pack
 local munpack = require('msgpack.MessagePack')['unpack']
@@ -25,7 +20,6 @@ local t_sweep, mag_sweep, ranges_fov
 local t_scan = 1 / 40 -- Time to gather returns
 
 -- Open up channels to send/receive data
--- Who to send to
 local operator
 if Config.net.use_wireless then
 	operator = Config.net.operator.wireless
@@ -40,7 +34,7 @@ local metadata = {
 	name = v,
 }
 
--- Setup metadata and tensors for a lidar mesh
+-- Setup tensors for a lidar mesh
 local mesh, mesh_byte, mesh_adj, scan_angles, offset_idx
 local n_returns, n_scanlines
 local function setup_mesh(meta)
@@ -72,7 +66,6 @@ local function setup_mesh(meta)
   scan_angles = torch.DoubleTensor(n_scanlines):zero()
 end
 
--- Data copying helpers
 -- Convert a pan angle to a column of the chest mesh image
 local scanline, direction
 local function angle_to_scanlines(rad)
@@ -93,7 +86,6 @@ local function angle_to_scanlines(rad)
 	-- No direction change
   if direction==prev_direction then
     -- Fill all lines between previous and now
-		--if prev_scanline>=n_scanlines then print('prev_scanline', prev_scanline, scanline, direction) end
     for s=prev_scanline+direction,scanline,direction do table.insert(scanlines,s) end
 		return scanlines
 	end
@@ -105,13 +97,12 @@ local function angle_to_scanlines(rad)
 		local fill_line = math.min(prev_scanline+1, scanline)
 		for s=fill_line,n_scanlines do table.insert(scanlines, s) end
 	end
-  -- Return for populating
   return scanlines
 end
 
 local function send_mesh(destination, compression, dynrange)
-	-- TODO: Somewhere check that far>near
   local near, far = unpack(dynrange)
+	if near>far then return end
   -- Enhance the dynamic range of the mesh image
   mesh_adj:copy(mesh):add(-near)
   mesh_adj:mul(255/(far-near))
@@ -120,8 +111,7 @@ local function send_mesh(destination, compression, dynrange)
   mesh_adj[torch.gt(mesh_adj,255)] = 255
   mesh_byte:copy(mesh_adj)
   -- Compression
-  local c_mesh 
-  local dim = mesh_byte:size()
+  local c_mesh
   if compression=='jpeg' then
 		c_mesh = j_compress:compress(mesh_byte)
   elseif compression=='png' then
@@ -200,17 +190,6 @@ local function update(meta, ranges)
 			scan_angles[line] = rad_angle
 		end
   end
-	-- DEBUG ONLY
-	--[[
-	t = unix.time()
-	t0 = t0 or t
-	if t-t0 > 1 then
-		cnt = cnt and cnt + 1 or 1
-		t0 = t
-		print('SAVING!!', cnt)
-		send_mesh('/tmp/mesh_'..cnt)
-	end
-	--]]
 	-- Check for sending out on the wire
 	check_send_mesh()
 end
@@ -220,12 +199,11 @@ if ... and type(...)=='string' then
 	return {entry=nil, update=update, exit=nil}
 end
 
-local lidar_ch = si.new_subscriber(metadata.name)
+local lidar_ch = si.new_subscriber'lidar0'
 function lidar_ch.callback(skt)
 	local mdata, ranges = unpack(skt:recv_all())
 	local meta = munpack(mdata)
 	update(meta, ranges)
 end
 
--- TODO: Listen for mesh requests on a separate channel (mesh_ch as REP/REQ)
 si.wait_on_channels({lidar_ch}):start()

@@ -64,6 +64,8 @@ local function setup_mesh(meta)
   mesh_byte = torch.ByteTensor(n_scanlines, n_returns)
   -- Save the exact actuator angles of every scan
   scan_angles = torch.DoubleTensor(n_scanlines):zero()
+	-- Metadata
+	--metadata.w, metadata.h = 
 end
 
 -- Convert a pan angle to a column of the chest mesh image

@@ -176,7 +176,6 @@ if IS_WEBOTS then
 	require'wcm'
 	local WebotsBody
   local torch = require'torch'
-  torch.Tensor = torch.DoubleTensor
   local webots = require'webots'
 	local ImageProc = require'ImageProc'
   

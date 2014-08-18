@@ -5,6 +5,7 @@
 -----------------------------------
 -- Something there is non-reentrant
 dofile'../include.lua'
+if type(arg)~='table' then IS_WEBOTS=true end
 local si = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
 local jpeg = require'jpeg'
@@ -15,7 +16,7 @@ local get_time = Body.get_time
 
 -- Grab the metadata for this camera
 local metadata, camera_id
-if not arg or not arg[1] then
+if type(arg)~='table' or not arg[1] then
 	-- TODO: Find the next available camera
 	camera_id = 1
 	metadata = Config.camera[1]
@@ -68,15 +69,15 @@ local udp_ch = stream and stream.udp and si.new_sender(operator, stream.udp)
 local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
 print('Camera | ', operator, camera_identifier)
 
--- Metadata for the operator
-local meta = {
-	t = 0,
-	n = 0,
+-- Metadata for the operator for compressed image data
+local c_meta = {
+	-- Required for rendering
 	sz = 0,
-	w = w,
-	h = h,
-	id = name..'_camera',
 	c = 'jpeg',
+	-- Extra information
+	t = 0,
+	id = name..'_camera',
+	n = 0,
 }
 
 -- Form the detection pipeline
@@ -89,10 +90,11 @@ for _, d in ipairs(metadata.detection_pipeline) do
 end
 
 -- JPEG Compressor
-local c_yuyv = jpeg.compressor('yuyv')
--- Downsampling...
-c_yuyv:downsampling(2)
 local c_grey = jpeg.compressor('gray')
+local c_yuyv = jpeg.compressor('yuyv')
+-- TODO: Control the downsampling mode
+--c_yuyv:downsampling(2)
+--c_yuyv:downsampling(1)
 
 -- LOGGING
 if ENABLE_LOG then
@@ -108,15 +110,15 @@ local t_debug = 0
 
 local function update(img, sz, cnt, t)
 	-- Update metadata
-	meta.t = t
-	meta.n = cnt
+	c_meta.t = t
+	c_meta.n = cnt
 
 	-- Check if we are sending to the operator
 	SEND_INTERVAL = 1 / hcm.get_monitor_fps()
 	if ENABLE_NET and udp_ch and t-t_send > SEND_INTERVAL then
 		local c_img = c_yuyv:compress(img, w, h)
 		meta.sz = #c_img
-		udp_data = mp.pack(meta)..c_img
+		udp_data = mp.pack(c_meta)..c_img
 		udp_ret, udp_err = udp_ch:send(udp_data)
 	end
 

@@ -117,7 +117,7 @@ local function update(img, sz, cnt, t)
 	SEND_INTERVAL = 1 / hcm.get_monitor_fps()
 	if ENABLE_NET and udp_ch and t-t_send > SEND_INTERVAL then
 		local c_img = c_yuyv:compress(img, w, h)
-		meta.sz = #c_img
+		c_meta.sz = #c_img
 		udp_data = mp.pack(c_meta)..c_img
 		udp_ret, udp_err = udp_ch:send(udp_data)
 	end

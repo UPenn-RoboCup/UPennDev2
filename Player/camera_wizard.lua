@@ -115,11 +115,15 @@ local function update(img, sz, cnt, t)
 
 	-- Check if we are sending to the operator
 	SEND_INTERVAL = 1 / hcm.get_monitor_fps()
-	if ENABLE_NET and udp_ch and t-t_send > SEND_INTERVAL then
+	if ENABLE_NET and t-t_send > SEND_INTERVAL then
 		local c_img = c_yuyv:compress(img, w, h)
 		c_meta.sz = #c_img
-		udp_data = mp.pack(c_meta)..c_img
-		udp_ret, udp_err = udp_ch:send(udp_data)
+		if IS_WEBOTS and camera_ch then
+			camera_ch:send({mp.pack(c_meta), c_img})
+		elseif udp_ch then
+			udp_data = mp.pack(c_meta)..c_img
+			udp_ret, udp_err = udp_ch:send(udp_data)
+		end
 	end
 
 	-- Do the logging if we wish
@@ -141,16 +145,23 @@ local function update(img, sz, cnt, t)
 	-- Update the vision routines
 	for pname, p in pairs(pipeline) do
 		p.update(img)
-		if ENABLE_NET and udp_ch and p.send and t-t_send>SEND_INTERVAL then
-			for _,v in ipairs(p.send()) do
-				if v[2] then
-					udp_data = mp.pack(v[1])..v[2]
-				else
-					udp_data = mp.pack(v[1])
+		if ENABLE_NET and p.send and t-t_send>SEND_INTERVAL then
+			if IS_WEBOTS and camera_ch then
+				for _,v in ipairs(p.send()) do
+					camera_ch:send({mp.pack(v[1]), v[2]})
 				end
-				udp_ret, udp_err = udp_ch:send(udp_data)
+				t_send = t
+			elseif udp_ch then
+				for _,v in ipairs(p.send()) do
+					if v[2] then
+						udp_data = mp.pack(v[1])..v[2]
+					else
+						udp_data = mp.pack(v[1])
+					end
+					udp_ret, udp_err = udp_ch:send(udp_data)
+				end
+				t_send = t
 			end
-			t_send = t
 		end
 	end
 end

@@ -3,7 +3,8 @@
 -- Communication with multiple dynamixel chains --
 local CTX, metadata = ...
 dofile'include.lua'
-assert(ffi, 'DCM | Please use LuaJIT :). Lua support in the near future')
+local ffi = require'ffi'
+--assert(ffi, 'DCM | Please use LuaJIT :). Lua support in the near future')
 
 -- Required Modules
 require'dcm'

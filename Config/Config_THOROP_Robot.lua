@@ -131,6 +131,7 @@ if ONE_CHAIN then
 else
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)
+--[[
   if Config.USE_DUMMY_ARMS then
     -- Not set up yet...
 	  --table.insert(Config.chain, arms_rc)
@@ -139,6 +140,7 @@ else
     table.insert(Config.chain, right_arm)
     table.insert(Config.chain, left_arm)
   end
+--]]
   one_chain = nil
 end
 

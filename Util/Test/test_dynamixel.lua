@@ -37,8 +37,11 @@ local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 local p_parse_mx = lD.byte_to_number[lD.mx_registers.position[2]]
 
 -- Bulk read testing
-right_arm:ping_probe()
-print("done")
+print('Running Ping Probe...')
+local probe = left_leg:ping_probe()
+print("done", probe and unpack(probe))
+os.exit()
+
 local read_items, read_ids = {}, {}
 for _, id in ipairs(right_arm.m_ids) do
 	if right_arm.has_mx_id[id] then

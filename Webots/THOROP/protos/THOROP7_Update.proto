@@ -12,8 +12,8 @@ PROTO THOROP7_Update [
   field SFString   controller "void"
   field SFString   controllerArgs ""
   field SFBool     synchronization TRUE
-	#field SFFloat    lidarFov 3.1415926536
-	#field SFInt32    lidarRays 721
+	field SFFloat    lidarFov 3.1415926536
+	field SFInt32    lidarRays 720
   field SFString   name "THOR-OP"
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
@@ -178,6 +178,7 @@ Robot {
     
     ## Begin the Chest lidar chain
     DEF Chest_Pan Solid {
+			translation 0 0 0.1
       children [
         ## Chest lidar is root child    
         HingeJoint {
@@ -197,14 +198,15 @@ Robot {
             anchor 0 0.081 0
           } # End of the ChestLidarPan HingeJointParameters
           endPoint Solid {
-            translation 0 0 0.010 #lidar chest offset
-            rotation 0 0 1 1.57
+            translation 0 0 0.010 # lidar chest offset
+						rotation 0.707107 -0.707107 0 3.14159
+						#rotation 0.707107 0.707107 0 3.14159
             children [
-              #hokuyo {
-              #  name "ChestLidar"
-              #  width IS lidarRays
-							#	fieldOfView IS lidarFov
-              #}
+              hokuyo {
+                name "ChestLidar"
+                width IS lidarRays
+								fieldOfView IS lidarFov
+              }
             ] # End of the ChestLidarPan Children
           } # End of the ChestLidarPan endpoint
         } # End of the ChestLidarPan HingeJoint

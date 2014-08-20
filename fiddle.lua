@@ -28,8 +28,9 @@ end
 fsm_chs = {}
 for _,sm in ipairs(Config.fsm.enabled) do
   local fsm_name = sm..'FSM'
-  table.insert(fsm_chs, fsm_name)
-  _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")
+  local ch = si.new_publisher(fsm_name.."!")
+  _G[sm:lower()..'_ch'] = ch
+  fsm_chs[fsm_name] = ch
 end
 
 -- Shared memory
@@ -44,8 +45,11 @@ for _,mem in ipairs(listing) do
   end
 end
 
-print(util.color('FSM Channel', 'yellow'), table.concat(fsm_chs, ' '))
-print(util.color('SHM access', 'blue'), table.concat(shm_vars,  ' '))
+-- Local RPC for testing
+rpc_ch = si.new_requester'rpc'
+
+--print(util.color('FSM Channel', 'yellow'), table.concat(fsm_chs, ' '))
+--print(util.color('SHM access', 'blue'), table.concat(shm_vars,  ' '))
 
 IS_FIDDLE = true
 

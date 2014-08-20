@@ -12,7 +12,7 @@ Config.imu = {
 
 Config.sensors = {
   head_lidar = false,
-  chest_lidar = false,
+  chest_lidar = true,
   fsr = false,
   ft = false,
 }
@@ -164,15 +164,15 @@ local nJointLidar = 1
 local nJoint = 35
 
 Config.parts = {
-	Head=vector.count(indexHead,nJointHead),
-	LArm=vector.count(indexLArm,nJointLArm),
-	LLeg=vector.count(indexLLeg,nJointLLeg),
-	RLeg=vector.count(indexRLeg,nJointRLeg),
-	RArm=vector.count(indexRArm,nJointRArm),
-	Waist=vector.count(indexWaist,nJointWaist),
-	LGrip=vector.count(indexLGrip,nJointLGrip),
-  RGrip=vector.count(indexRGrip,nJointRGrip),
-  Lidar=vector.count(indexLidar,nJointLidar)
+	Head = vector.count(indexHead,nJointHead),
+	LArm = vector.count(indexLArm,nJointLArm),
+	LLeg = vector.count(indexLLeg,nJointLLeg),
+	RLeg = vector.count(indexRLeg,nJointRLeg),
+	RArm = vector.count(indexRArm,nJointRArm),
+	Waist = vector.count(indexWaist,nJointWaist),
+	LGrip = vector.count(indexLGrip,nJointLGrip),
+  RGrip = vector.count(indexRGrip,nJointRGrip),
+  Lidar = vector.count(indexLidar,nJointLidar)
 }
 
 ----------------------
@@ -415,7 +415,7 @@ if IS_WEBOTS then
     0,0,
     0,0,
     0,0,
-    60,
+    0,
   })*DEG_TO_RAD
 
   servo.min_rad = vector.new({

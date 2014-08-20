@@ -18,13 +18,6 @@ fsm.enabled = {
   'Body',
   'Head',
   'Motion',
-	'Lidar'
-}
-
-fsm.Lidar = {
-  {'lidarIdle', 'pan', 'lidarPan'},
-	{'lidarPan', 'switch', 'lidarPan'},
-  {'lidarPan', 'stop', 'lidarIdle'},
 }
 
 fsm.Arm = {

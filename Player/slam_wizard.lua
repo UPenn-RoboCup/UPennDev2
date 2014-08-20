@@ -11,7 +11,6 @@ local util = require'util'
 local cutil = require'cutil'
 local Body = require'Body'
 local torch = require'torch'
-torch.Tensor = torch.DoubleTensor
 local libMap = require'libMap'
 local libDetect = require'libDetect'
 

@@ -8,7 +8,7 @@ local t_sleep = 1e6 / 2
 
 local running = true
 local feedback_udp_ch =
-si.new_sender(Config.net.operator.wired, Config.net.feedback)
+si.new_sender(Config.net.operator.wired, Config.net.streams.feedback.tcp)
 
 local data, ret, err
 local function send_status_feedback()

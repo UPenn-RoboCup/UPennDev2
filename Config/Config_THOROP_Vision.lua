@@ -130,10 +130,30 @@ vision.line = {
   max_angle_diff = 85,
 }
 
--------------
--- Cameras --
--------------
+-- Cameras
 Config.camera = {}
+
+local m308_param = {
+	{'White Balance Temperature', 3600},
+	{'Exposure (Absolute)', 100},
+	{'Focus (absolute)', 0},
+	{'Brightness', 128},
+	{'Contrast', 128},
+	{'Saturation', 150},
+	{'Gain', 0},
+	{'Sharpness', 0},
+}
+local grasp_afternoon_param = {
+	{'White Balance Temperature', 3300},
+	{'Exposure (Absolute)', 170},
+	{'Focus (absolute)', 0},
+	{'Brightness', 128},
+	{'Contrast', 128},
+	{'Saturation', 150},
+	{'Gain', 66},
+	{'Sharpness', 0},
+}
+
 table.insert(Config.camera,
   {
     name = 'head',
@@ -145,8 +165,6 @@ table.insert(Config.camera,
     cx_offset = 0,
     cy_offset = 0,
     fps = 30,
-    udp_port = 33333,
-    lA_port = 33335,
     jpeg_quality = 60,
     -- Use the standard head properties
     head = head,
@@ -157,14 +175,11 @@ table.insert(Config.camera,
       'libVision',
     },
     --Logitech C920
-    --lut = 'brazil_day5_noon',  --THIS IS GOOD FOR FINAL 
-    lut = 'brazil_final',
-
+    lut = 'empty',
 		-- f = 640/2/tan(78/180*pi / 2)
-
---fov = 2*arctan(d/2f)
--- f = d/2/tan(fov/2)
---webots fov: 1.3613
+		--fov = 2*arctan(d/2f)
+		-- f = d/2/tan(fov/2)
+		--webots fov: 1.3613
 
     focal_length = 395.17,
     focal_base = 640,
@@ -175,57 +190,8 @@ table.insert(Config.camera,
       {'Exposure, Auto Priority', 0},
 			{'Focus, Auto', 0}
     },
-      --[[ M308
-      param = {
-             {'White Balance Temperature', 3600},
-             {'Exposure (Absolute)', 100},
-      			 {'Focus (absolute)', 0},
-             {'Brightness', 128},
-             {'Contrast', 128},
-             {'Saturation', 150},
-             {'Gain', 0},
-             {'Sharpness', 0},
-           },
-      --]]
-    --[[ GRASP afternoon
-    param = {
-      {'White Balance Temperature', 3300},
-      {'Exposure (Absolute)', 170},
-	  	{'Focus (absolute)', 0},
-      {'Brightness', 128},
-      {'Contrast', 128},
-      {'Saturation', 150},
-      {'Gain', 66},
-      {'Sharpness', 0},
-    },
---]]
-
-    --[[ RoboCup 2014 Brazil noon
-    param = {
-      {'White Balance Temperature', 4300},
-      {'Exposure (Absolute)', 125},
-      {'Focus (absolute)', 0},
-      {'Brightness', 128},
-      {'Contrast', 128},
-      {'Saturation', 150}, --170:cloudy 150:sunny
-      {'Gain', 42},
-      {'Sharpness', 0},
-    },
-    --]]
-
-    --RoboCup 2014 Brazil evening
-    param = {
-      {'White Balance Temperature', 3500},
-      --{'Exposure (Absolute)', 200},
-      {'Exposure (Absolute)', 190},  --200:day  160:night
-      {'Focus (absolute)', 0},
-      {'Brightness', 128},
-      {'Contrast', 144},
-      {'Saturation', 216}, --170:cloudy 150:sunny
-      {'Gain', 0},
-      {'Sharpness', 255},
-    },
-  
+		param = m308_param,
+    --param = grasp_afternoon_param,
   })
 
 --Webots use 1/2 resolution but 2x label resolution
@@ -312,6 +278,5 @@ end
 Config.vision = vision
 Config.head = head
 Config.monitor = monitor
-
 
 return Config

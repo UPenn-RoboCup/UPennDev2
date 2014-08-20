@@ -5,6 +5,7 @@
 -----------------------------------
 -- Something there is non-reentrant
 dofile'../include.lua'
+if type(arg)~='table' then IS_WEBOTS=true end
 local si = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
 local jpeg = require'jpeg'
@@ -13,26 +14,20 @@ require'hcm'
 require'wcm'
 local get_time = Body.get_time
 
--- Cleanly exit on Ctrl-C
-local running = true
-local function shutdown()
-  running = false
-end
-local signal = require'signal'
-signal.signal("SIGINT", shutdown)
-signal.signal("SIGTERM", shutdown)
-
-local metadata
-if not arg or type(arg[1])~='string' then
+-- Grab the metadata for this camera
+local metadata, camera_id
+if type(arg)~='table' or not arg[1] then
 	-- TODO: Find the next available camera
+	camera_id = 1
 	metadata = Config.camera[1]
 else
-	local cam_id = arg[1]
-	if tonumber(cam_id) then
-		metadata = assert(Config.camera[tonumber(cam_id)], 'Bad # ID')
+	camera_id = tonumber(arg[1])
+	if camera_id then
+		metadata = assert(Config.camera[camera_id], 'Bad Camera ID')
 	else
-		for _, c in ipairs(Config.camera) do
-			if c.name ==cam_id then
+		for id, c in ipairs(Config.camera) do
+			if arg[1] == c.name then
+				camera_id = id
 				metadata = c
 				break
 			end
@@ -41,13 +36,12 @@ else
 	end
 end
 
-local ENABLE_NET, SEND_INTERVAL
-local ENABLE_LOG, LOG_INTERVAL
-local FROM_LOG, LOG_DATE = false
 local t_send, t_log = 0, 0
-LOG_INTERVAL = 1/5
-SEND_INTERVAL = .5
+local LOG_INTERVAL = 1/5
+local SEND_INTERVAL = .5
 
+local ENABLE_NET
+local ENABLE_LOG
 if Config.enable_monitor then
   ENABLE_NET = true
 end
@@ -55,12 +49,7 @@ if Config.enable_log then
   ENABLE_LOG = true
 end
 
-if Config.from_log then
-  FROM_LOG, LOG_DATE = true, ''
-end
-
 local libLog, logger
-
 
 -- Extract metadata information
 local w = metadata.w
@@ -73,6 +62,23 @@ if Config.net.use_wireless then
 else
 	operator = Config.net.operator.wired_broadcast
 end
+-- Network Channels/Streams
+local camera_identifier = 'camera'..(camera_id-1)
+local stream = Config.net.streams[camera_identifier]
+local udp_ch = stream and stream.udp and si.new_sender(operator, stream.udp)
+local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
+print('Camera | ', operator, camera_identifier)
+
+-- Metadata for the operator for compressed image data
+local c_meta = {
+	-- Required for rendering
+	sz = 0,
+	c = 'jpeg',
+	-- Extra information
+	t = 0,
+	id = name..'_camera',
+	n = 0,
+}
 
 -- Form the detection pipeline
 local pipeline = {}
@@ -83,35 +89,12 @@ for _, d in ipairs(metadata.detection_pipeline) do
 	pipeline[d] = detect
 end
 
--- Channels
--- UDP Sending
---local camera_ch = si.new_publisher('camera0')
-if FROM_LOG then 
-	operator = 'localhost' 
-	print('operator IP:', operator)
-end
-
-print("Camera Wizard Operator", operator, metadata.udp_port)
-local udp_ch = metadata.udp_port and si.new_sender(operator, metadata.udp_port)
-
--- Metadata for the operator
-local meta = {
-	t = 0,
-	n = 0,
-	sz = 0,
-	w = w,
-	h = h,
-	id = name..'_camera',
-	c = 'jpeg',
-}
-
 -- JPEG Compressor
-local c_yuyv = jpeg.compressor('yuyv')
--- Downsampling...
-c_yuyv:downsampling(2)
 local c_grey = jpeg.compressor('gray')
-
-local t_debug = get_time()
+local c_yuyv = jpeg.compressor('yuyv')
+-- TODO: Control the downsampling mode
+--c_yuyv:downsampling(2)
+--c_yuyv:downsampling(1)
 
 -- LOGGING
 if ENABLE_LOG then
@@ -123,19 +106,24 @@ end
 local nlog = 0
 local udp_ret, udp_err, udp_data
 local t0 = get_time()
+local t_debug = 0
 
 local function update(img, sz, cnt, t)
 	-- Update metadata
-	meta.t = t
-	meta.n = cnt
+	c_meta.t = t
+	c_meta.n = cnt
 
 	-- Check if we are sending to the operator
 	SEND_INTERVAL = 1 / hcm.get_monitor_fps()
 	if ENABLE_NET and t-t_send > SEND_INTERVAL then
 		local c_img = c_yuyv:compress(img, w, h)
-		meta.sz = #c_img
-		udp_data = mp.pack(meta)..c_img
-		udp_ret, udp_err = udp_ch:send(udp_data)
+		c_meta.sz = #c_img
+		if IS_WEBOTS and camera_ch then
+			camera_ch:send({mp.pack(c_meta), c_img})
+		elseif udp_ch then
+			udp_data = mp.pack(c_meta)..c_img
+			udp_ret, udp_err = udp_ch:send(udp_data)
+		end
 	end
 
 	-- Do the logging if we wish
@@ -158,21 +146,28 @@ local function update(img, sz, cnt, t)
 	for pname, p in pairs(pipeline) do
 		p.update(img)
 		if ENABLE_NET and p.send and t-t_send>SEND_INTERVAL then
-			for _,v in ipairs(p.send()) do
-				if v[2] then
-					udp_data = mp.pack(v[1])..v[2]
-				else
-					udp_data = mp.pack(v[1])
+			if IS_WEBOTS and camera_ch then
+				for _,v in ipairs(p.send()) do
+					camera_ch:send({mp.pack(v[1]), v[2]})
 				end
-				udp_ret, udp_err = udp_ch:send(udp_data)
+				t_send = t
+			elseif udp_ch then
+				for _,v in ipairs(p.send()) do
+					if v[2] then
+						udp_data = mp.pack(v[1])..v[2]
+					else
+						udp_data = mp.pack(v[1])
+					end
+					udp_ret, udp_err = udp_ch:send(udp_data)
+				end
+				t_send = t
 			end
-			t_send = t
 		end
 	end
 end
 
 -- If required from Webots, return the table
-if type(...)=='string' then
+if ... and type(...)=='string' then
 	return {entry=nil, update=update, exit=nil}
 end
 
@@ -203,6 +198,16 @@ for i, param in ipairs(metadata.param) do
 	end
 	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
 end
+
+-- Cleanly exit on Ctrl-C
+local running = true
+local function shutdown()
+  running = false
+end
+
+local signal = require'signal'.signal
+signal("SIGINT", shutdown)
+signal("SIGTERM", shutdown)
 
 while running do
 	local img, sz, cnt, t = camera:get_image()

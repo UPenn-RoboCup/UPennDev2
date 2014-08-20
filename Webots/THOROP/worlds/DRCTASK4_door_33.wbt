@@ -1,4 +1,4 @@
-#VRML_SIM V6.0 utf8
+#VRML_SIM V7.4.3 utf8
 WorldInfo {
   info [
     "Valve operating test for DRC"
@@ -8,8 +8,8 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-  orientation 0.0391553 0.997453 0.0596119 4.19266
-  position -6.74538 2.04378 -2.498
+  orientation -0.0104052 0.9591 0.282876 3.04732
+  position -1.36084 5.74903 -7.05003
 }
 Background {
   skyColor [
@@ -17,7 +17,7 @@ Background {
   ]
 }
 DirectionalLight {
-  ambientIntensity 1.6
+  ambientIntensity 0.6
   direction -0.5 -2 -0.5
   intensity 0.3
   castShadows TRUE
@@ -26,17 +26,20 @@ DirectionalLight {
   direction 0.5 -0.5 0.5
   intensity 0.5
 }
-DEF FLOOR MetricFloor {
-  color 0.95 0.95 0.95
+DEF FLOOR Floor {
+  tileSize 2 2
+  texture [
+    "textures/texture_grid.png"
+  ]
 }
-THOROP7_NoBoundaries_LongClaw2 {  
-  translation -2.9 1.15535 0.6  
+THOROP7_Update {
+  translation -2.9 1.15535 0.6
   rotation 0 1 0 1.57
   controller "thorop"
   controllerArgs "0 32"
 }
 SingleDoorCommonPush_33 {
-  translation -2.0 0 0.6
+  translation -2 0 0.6
   rotation 0 1 0 1.57
 }
 SingleDoorEntreeHandleUp_33 {
@@ -44,34 +47,71 @@ SingleDoorEntreeHandleUp_33 {
   rotation 0 1 0 1.57
 }
 SingleDoorEntreeHandleUpWeighted_33 {
-  translation 2.0 0 0.6
+  translation 2 0 0.6
   rotation 0 1 0 1.57
 }
 
+simple_wall {}
 
 Solid {
   translation 0 1 1.8
-  children [Shape {geometry Box {size 6.3 2 0.1}}]
+  children [
+    Shape {
+      geometry Box {
+        size 6.3 2 0.1
+      }
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.243 0.243
+          emissiveColor 0.08 0.08 0.08
+          shininess 0.5
+          specularColor 0.1 0.1 0.1
+        }
+      }
+    }
+  ]
   boundingObject Transform {
-    children [Box {size 6.3 2 0.1}]
+    children [
+      Box {
+        size 6.3 2 0.1
+      }
+    ]
   }
   locked TRUE
 }
-
 Solid {
   translation 3.2 1 0.6
-  children [Shape {geometry Box {size 0.1 2 2.5}}]
+  children [
+    Shape {
+      geometry Box {
+        size 0.1 2 2.5
+      }
+    }
+  ]
   boundingObject Transform {
-    children [Box {size 0.1 2 2.5}]
+    children [
+      Box {
+        size 0.1 2 2.5
+      }
+    ]
   }
   locked TRUE
 }
-
 Solid {
   translation -3.2 1 0.6
-  children [Shape {geometry Box {size 0.1 2 2.5}}]
+  children [
+    Shape {
+      geometry Box {
+        size 0.1 2 2.5
+      }
+    }
+  ]
   boundingObject Transform {
-    children [Box {size 0.1 2 2.5}]
+    children [
+      Box {
+        size 0.1 2 2.5
+      }
+    ]
   }
   locked TRUE
 }

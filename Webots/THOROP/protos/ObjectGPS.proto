@@ -12,7 +12,7 @@ PROTO ObjectGPS [
   field SFFloat height 0.90
   field SFFloat mass 0.35
   field SFString contactMaterial "default"
-  field SFString controller "objectGPS"
+  field SFString controller "void"
   field SFString controllerArgs ""
   field SFInt32  channel 0
 ]

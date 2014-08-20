@@ -10,8 +10,8 @@ if type(jit)=='table' then
 	zmq    = require'lzmq.ffi'
 	poller = require'lzmq.ffi.poller'
 	llthreads = require'llthreads'
-  --udp = require'udp.ffi'
-  udp = require'udp'
+  udp = require'udp.ffi'
+  --udp = require'udp'
 else
 	zmq    = require'lzmq'
 	poller = require'lzmq.poller'
@@ -71,7 +71,21 @@ end
 
 -- Set up receiving object
 local function ch_receive(self, nonblock)
-	return self.socket:recv_all(nonblock and zmq.DONTWAIT)
+  return self.socket:recv_all(nonblock and zmq.DONTWAIT)
+  --[[
+  local ret = self.socket:recv_all(nonblock and zmq.DONTWAIT)
+  if type(ret)=='table' and #ret==1 then
+    return ret[1]
+  else
+    return ret
+  end
+  --]]
+end
+
+-- Set up receiving object
+local function ch_send_and_receive(self, messages)
+  ch_send(self, messages)
+  return ch_receive(self)
 end
 
 -- Make a new publisher
@@ -163,6 +177,7 @@ function simple_ipc.new_requester(channel, target)
 		socket = ch_socket,
 		send = ch_send,
 		receive = ch_receive,
+    send_recv = ch_send_and_receive,
 		name = ch_name,
 		is_bind = is_bind,
 		kind = 'req',

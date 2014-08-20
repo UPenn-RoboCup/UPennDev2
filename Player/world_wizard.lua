@@ -14,15 +14,13 @@ local get_time = Body.get_time
 -- Subscribe to important messages
 local vision_ch = si.new_subscriber'vision'
 -- UDP channel
-local udp = require'udp'
 local operator
 if Config.net.use_wireless then
 	operator = Config.net.operator.wireless
 else
 	operator = Config.net.operator.wired_broadcast
 end
---local operator = 'localhost'
-local udp_ch = udp.new_sender(operator, Config.camera[1].udp_port)
+local udp_ch = si.new_sender(operator, Config.net.streams.camera0.udp)
 -- SHM
 require'wcm'
 require'mcm'
@@ -32,9 +30,8 @@ require'hcm'
 local running, signal = true, nil
 
 local signal = require'signal'
-local function shutdown ()
+local function shutdown()
   running = false
-  --os.exit()
 end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
@@ -93,7 +90,7 @@ local function update()
 	end
 end
 
-if type(...)=='string' then
+if ... and type(...)=='string' then
 	TIMEOUT = 0
 	return {entry=lW.entry, update=update, exit=lW.exit}
 end

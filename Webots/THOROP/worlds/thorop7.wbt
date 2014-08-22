@@ -1,4 +1,4 @@
-#VRML_SIM V7.4.3 utf8
+#VRML_SIM V6.0 utf8
 WorldInfo {
   info [
     "Default world for the THOR-OP"
@@ -28,6 +28,7 @@ DirectionalLight {
 }
 DEF FLOOR Floor {
   tileSize 2 2
+	size 10 10
   texture [
     "textures/texture_grid.png"
   ]

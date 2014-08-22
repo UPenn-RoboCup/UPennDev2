@@ -509,7 +509,8 @@ for chain_id, chain in ipairs(dcm_chains) do
 	-- Lookup tables
 	assert(bus.name, 'No bus name identifier!')
 	named_buses[bus.name] = bus
-  insert(numbered_buses, bus)
+  --insert(numbered_buses, bus)
+  numbered_buses[bus.fd] = bus
 	initialize(bus)
 	-- Make the output coroutine
 	bus.output_co = coroutine.wrap(output_co)
@@ -557,7 +558,7 @@ while is_running do
 		-- Read in packets if we received data from the bus
 		t_read = get_time()
     local pkts, rxi
-		for bnum, is_ready in ipairs(ready) do
+		for bnum, is_ready in pairs(ready) do
       if is_ready then
   			bus = numbered_buses[bnum]
 				-- Place the data into packet structs

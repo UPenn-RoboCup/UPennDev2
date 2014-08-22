@@ -1,4 +1,5 @@
-#!/usr/bin/env luajit -i
+#!/usr/local/bin/luajit -i
+
 if IS_FIDDLE then return end
 local ok = pcall(dofile, 'include.lua')
 if not ok then pcall(dofile, '../include.lua') end

@@ -176,7 +176,8 @@ function unix.select(fds, timeout)
 	local set = {}
 	for _, fd in ipairs(fds) do
     --table.insert(set, C.FD_ISSET(fd, fds)~=0)
-		table.insert(set, band(fdset.fds_bits[fd / 32], lshift(1, fd % 32)) ~= 0)
+		--table.insert(set, band(fdset.fds_bits[fd / 32], lshift(1, fd % 32)) ~= 0)
+		set[fd] = band(fdset.fds_bits[fd / 32], lshift(1, fd % 32)) ~= 0
   end
 	return status, set
 end

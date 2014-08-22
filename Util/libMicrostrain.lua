@@ -5,6 +5,7 @@
 local libMicrostrain = {}
 local stty = require'stty'
 local unix = require'unix'
+local ffi = require'ffi'
 local bit = require'bit'
 
 --for k,v in ipairs(response) do print(string.format('%d: %02X',k,v)) end

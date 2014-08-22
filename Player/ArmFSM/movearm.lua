@@ -15,8 +15,10 @@ local rShoulderYaw = 45*DEG_TO_RAD;
 
 function movearm.setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim)
 
-  local qLArm = Body.get_larm_position()
-  local qRArm = Body.get_rarm_position()
+--  local qLArm = Body.get_larm_position()
+--  local qRArm = Body.get_rarm_position()
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
 
   local dqVelLeft = mcm.get_arm_dqVelLeft()
   local dqVelRight = mcm.get_arm_dqVelRight()

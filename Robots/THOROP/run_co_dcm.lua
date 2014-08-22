@@ -1,8 +1,7 @@
-#!/usr/bin/env luajit
-
 -- Communication with multiple dynamixel chains --
 local CTX, metadata = ...
 dofile'include.lua'
+assert(ffi, 'DCM | Please use LuaJIT :). Lua support in the near future')
 
 -- Required Modules
 require'dcm'
@@ -13,21 +12,25 @@ local input_co = require'DynamixelPacket2.ffi'.input_co
 local munpack  = require'msgpack'.unpack
 local vector = require'vector'
 local signal = require'signal'
-local ffi = require'ffi'
 
--- Timeouts
+--------------
+-- Timeouts --
+--------------
 local WRITE_TIMEOUT = 1 / 200
 local READ_TIMEOUT = 1 / 200
 
--- Setup the channels
-local IS_THREAD = CTX and not arg
-if IS_THREAD then
+--------------------
+-- Context Import --
+--------------------
+local IS_THREAD
+if CTX and not arg then
+	IS_THREAD = true
 	si.import_context(CTX)
-	parent_ch = si.new_pair(metadata.ch_name)
 end
-local dcm_ch = si.new_subscriber'dcm!'
 
--- Config Cache
+------------------
+-- Config Cache --
+------------------
 local min_rad, max_rad = Config.servo.min_rad, Config.servo.max_rad
 local is_unclamped, direction = Config.servo.is_unclamped, Config.servo.direction
 local to_steps, to_radians  = Config.servo.to_steps, Config.servo.to_radians
@@ -35,8 +38,11 @@ local step_zero, step_offset = Config.servo.step_zero, Config.servo.step_offset
 local m_to_j, j_to_m = Config.servo.motor_to_joint, Config.servo.joint_to_motor
 local dcm_chains = Config.chain
 local left_ft, right_ft = Config.left_ft, Config.right_ft
+Config = nil
 
--- DCM Cache
+---------------
+-- DCM Cache --
+---------------
 local cp_ptr = dcm.actuatorPtr.command_position
 local tq_ptr = dcm.actuatorPtr.torque_enable
 local p_ptr  = dcm.sensorPtr.position
@@ -52,26 +58,42 @@ local sel_wait, debug_str
 local _fds = {}
 local numbered_buses = {}
 local named_buses = {}
-local is_running = true
+local running = true
 
 -- Clean up
 local function shutdown ()
-  is_running = false
+  running = false
+  --os.exit()
 end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
--- libDynamixel Cache
+------------------------
+-- libDynamixel Cache --
+------------------------
 local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 local p_parse_mx = lD.byte_to_number[lD.mx_registers.position[2]]
 
--- Standard Lua Cache
+------------------------
+-- Standard Lua Cache --
+------------------------
 local min, max, floor = math.min, math.max, math.floor
-local char = string.char
-local sel, uread, get_time, usleep = unix.select, unix.read, unix.time, unix.usleep
-local insert = table.insert
+local schar = string.char
+local sel, re, get_time, usleep = unix.select, unix.read, unix.time, unix.usleep
+local tinsert = table.insert
 
--- Packet Processing Helpers
+----------------------
+-- Process Metadata --
+----------------------
+local parent_ch
+if IS_THREAD then
+	parent_ch = si.new_pair(metadata.ch_name)
+end
+local dcm_ch = si.new_subscriber('dcm!')
+
+-------------------------------
+-- Packet Processing Helpers --
+-------------------------------
 local function radian_clamp(idx, radian)
 	if is_unclamped[idx] then return radian end
 	return min(max(radian, min_rad[idx]), max_rad[idx])
@@ -83,7 +105,9 @@ local function step_to_radian(idx, step)
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
 
--- Position Packet
+---------------------
+-- Position Packet --
+---------------------
 local function parse_read_position(pkt, bus)
 	-- Nothing to do if an error
 	if pkt.error ~= 0 then return end
@@ -105,11 +129,18 @@ local function parse_read_position(pkt, bus)
 	return read_j_id, read_rad
 end
 
--- General Read Packet
+-------------------------
+-- General Read Packet --
+-------------------------
 local function parse_read_packet(pkt, bus)
+	-- Nothing to do if an error
 	if pkt.error ~= 0 then return end
 	local reg_name = bus.read_reg
-  if not reg_name then return end
+  if not reg_name then
+    --print("No read expected...")
+    --ptable(pkt)
+    return
+  end
 	local m_id = pkt.id
 	if bus.has_mx_id[m_id] then
 		reg = lD.mx_registers[reg_name]
@@ -129,41 +160,16 @@ local function parse_read_packet(pkt, bus)
 	return read_j_id, j_val
 end
 
--- Packet parsing lookup
-local parse = setmetatable({}, {
+local parse = {
+  position = parse_read_position,
+  temperature = parse_temp,
+}
+local parse_mt = {
   __index = function(t, k)
     return parse_read_packet
   end
-})
-parse.position = parse_read_position
-
--- Be able to form the read loop command on-demand
--- For now, just have the position
-local function form_read_loop_cmd(bus, cmd)
-	local rd_addrs, has_mx, has_nx = {}, false, false
-	for _, m_id in ipairs(bus.m_ids) do
-		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
-		if is_mx then
-			insert(rd_addrs, lD.mx_registers.position)
-			has_mx = true
-		else
-			insert(rd_addrs, lD.nx_registers.position)
-			has_nx = true
-		end
-	end
-	-- Set the default reading command for the bus
-	if has_mx and has_nx then
-		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
-	elseif has_nx then
-		bus.read_loop_cmd_str = lD.get_nx_position(bus.m_ids)
-	else
-    -- Sync read with just MX does not work for some reason
-    -- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
-    bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
-	end
-  bus.read_loop_cmd_n = #bus.m_ids
-	bus.read_loop_cmd = cmd
-end
+}
+setmetatable(parse, parse_mt)
 
 ------------------------
 -- Get Force & Torque --
@@ -216,11 +222,14 @@ local function get_ft(ft_motors, ft_config, bus)
 	return ft_readings_c
 end
 
--- Parent command handling
-local function do_external(request, bus)
+-----------------------------
+-- Parent command handling --
+-----------------------------
+local function do_parent(request, bus)
 	-- Check if writing to the motors
 	local wr_reg, rd_reg = request.wr_reg, request.rd_reg
 	local bus_name = request.bus
+	--ptable(request)
 	local m_id
 	if wr_reg then
 		local ptr = dcm.actuatorPtr[wr_reg]
@@ -229,15 +238,17 @@ local function do_external(request, bus)
 		for j_id, is_changed in pairs(request.ids) do
 			m_id = j_to_m[j_id]
 			if bus.has_mx_id[m_id] then
+--print("MX_ID", m_id)
 				has_mx = true
-				insert(m_ids, m_id)
-				insert(m_vals, ptr[j_id-1])
-				insert(addr_n_len, lD.mx_registers[wr_reg])
+				tinsert(m_ids, m_id)
+				tinsert(m_vals, ptr[j_id-1])
+				tinsert(addr_n_len, lD.mx_registers[wr_reg])
 			elseif bus.has_nx_id[m_id] then
+--print("NX_ID", m_id)
 				has_nx = true
-				insert(m_ids, m_id)
-				insert(m_vals, ptr[j_id-1])
-				insert(addr_n_len, lD.nx_registers[wr_reg])
+				tinsert(m_ids, m_id)
+				tinsert(m_vals, ptr[j_id-1])
+				tinsert(addr_n_len, lD.nx_registers[wr_reg])
 			end
 		end
     if wr_reg=='torque_enable' then
@@ -283,8 +294,6 @@ local function do_external(request, bus)
 			return 0
 		end
 	elseif rd_reg then
-		-- Check if reading position already
-    if rd_reg=='position' and bus.enable_read then return end
 		-- TODO: Add bulk read if mix mx and nx
 		-- FOR NOW: Just do one, and re-enqueue the other
 		local j_ids = request.ids
@@ -294,14 +303,18 @@ local function do_external(request, bus)
 			m_id = j_to_m[j_id]
 			if bus.has_mx_id[m_id] then
 				has_mx = true
-				insert(m_ids, m_id)
-				insert(addr_n_len, lD.mx_registers[rd_reg])
+				tinsert(m_ids, m_id)
+				tinsert(addr_n_len, lD.mx_registers[rd_reg])
 			elseif bus.has_nx_id[m_id] then
+--if rd_reg~='position' then print("rdd", m_id) end
+
 				has_nx = true
-				insert(m_ids, m_id)
-				insert(addr_n_len, lD.nx_registers[rd_reg])
+				tinsert(m_ids, m_id)
+				tinsert(addr_n_len, lD.nx_registers[rd_reg])
 			end
 		end
+    -- Check if reading position already
+    if rd_reg=='position' and bus.enable_read then return end
 		if has_mx and has_nx then
 			lD.get_bulk(m_ids, addr_n_len, bus, true)
 		elseif has_nx then
@@ -311,10 +324,11 @@ local function do_external(request, bus)
 		end
 		return #m_ids, rd_reg
 	elseif bus_name then
-    print("Externally set", request.key, request.val, bus_name)
+    print("PARENT SETTING", request.key, request.val, bus_name)
 		local bus = named_buses[bus_name]
 		if not bus then return end
 		bus[request.key] = request.val
+    print("DONE PARENT SETTING")
     return
 	elseif request.ft then
     print("FORCE/TORQUE READING")
@@ -354,9 +368,9 @@ local function output_co(bus)
 			j_id = m_to_j[m_id]
 			-- Only add position commands if torque enabled
 			if tq_ptr[j_id-1]==1 then
-				insert(send_ids, m_id)
-				insert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))
-				insert(cmd_addrs,
+				tinsert(send_ids, m_id)
+				tinsert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))
+				tinsert(cmd_addrs,
 					is_mx and lD.mx_registers.command_position or lD.nx_registers.command_position
 				)
 			end
@@ -364,33 +378,34 @@ local function output_co(bus)
 		-- Perform the sync write
 		if #commands>0 then
 			if has_nx and has_mx then
-				lD.set_bulk(char(unpack(send_ids)), cmd_addrs, commands, bus)
+				lD.set_bulk(schar(unpack(send_ids)), cmd_addrs, commands, bus)
 			elseif has_nx then
 				lD.set_nx_command_position(send_ids, commands, bus)
 			else
-				lD.set_bulk(char(unpack(send_ids)), cmd_addrs, commands, bus)
+--print("HERE")
+				lD.set_bulk(schar(unpack(send_ids)), cmd_addrs, commands, bus)
 --				lD.set_nx_command_position(send_ids, commands, bus)
 			end
 		end
     -- One command gets a status return
 		coroutine.yield(#commands==1 and 1 or 0)
 		-- Run the parent queue until a write to the bus
-		request = table.remove(bus.request_queue, 1)
+		request = table.remove(bus.request_queue)
 		while request do
-			n, reg = do_external(request, bus)
+			n, reg = do_parent(request, bus)
 			if n then
 				coroutine.yield(n, reg)
 				break
 			end
-			request = table.remove(bus.request_queue, 1)
+			request = table.remove(bus.request_queue)
 		end
-		-- Copy the command positions if reading is not enabled,
-		-- otherwise, send a read instruction
 		if bus.enable_read then
-      bus:send_instruction(bus.read_loop_cmd_str)
-      bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_n
-			coroutine.yield(bus.read_loop_cmd_n, bus.read_loop_cmd)
+			-- Send a position read command to the bus
+      bus:send_instruction(bus.read_cmd_str)
+      bus.read_to = get_time() + READ_TIMEOUT * bus.n_read
+			coroutine.yield(bus.n_read, 'position')
 		else
+			-- Copy from command position
 			for i, m_id in ipairs(m_ids) do
 				j_id = m_to_j[m_id]
 				p_ptr[j_id-1] = cp_ptr[j_id-1]
@@ -400,53 +415,57 @@ local function output_co(bus)
 	end
 end
 
--- Consolidate the commands for a given bus
---[[
-> x = {1,2,3,4,5}; i = 1
-> while i<=#x do print(i, x[i], #x); if x[i]==3 then print("rem",table.remove(x,i)) else i=i+1 end end
---]]
-local function consolidate(queue)
-	local i, req0, req1, ids0 = 2
-	while i <= #queue do
-		req0 = queue[i-1]
-		req1 = queue[i]
-		if (req0.rd_reg and req0.rd_reg==req1.rd_reg) or 
-			(req0.wr_reg and req0.wr_reg==req1.wr_reg) 
-		then
-			table.remove(queue, i)
-			ids0 = req0.ids
-			for _, id in ipairs(req1.ids) do ids0[id] = true end
-		else
-			i = i + 1
+local function consolidate_queue(request_queue, req)
+  if true then tinsert(request_queue, req); return; end
+	local is_merge = false
+	for _, v in ipairs(request_queue) do
+		if v.rd_reg and req.rd_reg and v.rd_reg==req.rd_reg then
+			for _, id in ipairs(req.ids) do v.ids[id] = true end
+			is_merge = true
+			break
+		elseif v.wr_reg and req.wr_reg and v.wr_reg==req.wr_reg then
+			for _, id in ipairs(req.ids) do v.ids[id] = true end
+			is_merge = true
+			break
 		end
 	end
+	if is_merge then
+    print("MERGED", req.rd_reg or req.wr_reg)
+  else
+  	-- Enqueue for the bus if not merged to previous
+	  tinsert(request_queue, req)
+  end
 end
 
--- Listen for command packets in non-blocking mode
-local function process_external()
-	local requests = dcm_ch:receive(true)
-	if not requests then return end
-	local req, queue
+local function process_parent(requests)
+	local req
 	for _, request in ipairs(requests) do
+		-- Requests are messagepacked
 		req = munpack(request)
-		for bname, bus in pairs(named_buses) do
-			queue = bus.request_queue
-			insert(queue, req)
-			--if req.ids then consolidate(queue) end
+		if req.ids then
+			for bname, bus in pairs(named_buses) do
+				consolidate_queue(bus.request_queue, req)
+			end
+    else
+			for bname, bus in pairs(named_buses) do
+        tinsert(bus.request_queue, req)
+      end
 		end
 	end
 end
 
--- Initialize a bus object with useful variables
+---------------------
+-- Initial startup --
+---------------------
 local function initialize(bus)
-  bus.n_read_timeouts = 0
-	bus.read_timeout_t = 0
+  bus.to = 0
+	bus.read_to = 0
   bus.npkt_to_expect = 0
 	bus.request_queue = {}
   bus.cmds_cnt = 0
   bus.reads_cnt = 0
 	-- Add the fd
-	insert(_fds, bus.fd)
+	tinsert(_fds, bus.fd)
 	-- Populate the IDs of the bus
 	if bus.m_ids then
 		bus:ping_verify(bus.m_ids)
@@ -455,6 +474,7 @@ local function initialize(bus)
 	end
 	local status, n
 	local has_mx, has_nx = false, false
+	local rd_addrs = {}
 	for _, m_id in ipairs(bus.m_ids) do
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
 		assert(is_mx or is_nx, "Unclassified motor ID "..m_id)
@@ -469,11 +489,11 @@ local function initialize(bus)
       if status and status.error==0 then break end
 			n = n + 1
 		until n > 5
-		assert(n<=5, 'Too many attempts at reading position')
-		assert(status.id==m_id, 'Bad id coherence, position')
+		assert(n<=5, "Too many attempts")
+		assert(status.id==m_id, 'bad id coherence, pos')
 		t_read = get_time()
 		local j_id, rad = parse_read_position(status, bus)
-    assert(j_id, 'Bad pos read in initialize')
+    assert(j_id, "Bad pos read in initialize")
 		cp_ptr[j_id-1] = rad
 		-- Read the current torque states
 		n = 0
@@ -486,8 +506,8 @@ local function initialize(bus)
       if status and status.error==0 then break end
 			n = n + 1
 		until n > 5
-		assert(n<=5, 'Too many attempts at reading torque enable')
-		assert(status.id==m_id, 'Bad id coherence, torque enable')
+		assert(n<=5, "Too many attempts")
+		assert(status.id==m_id, 'bad id coherence, tq')
     j_id = m_to_j[m_id]
 		local tq_parse
     if is_mx then
@@ -496,9 +516,28 @@ local function initialize(bus)
       tq_parse = lD.byte_to_number[lD.nx_registers.torque_enable[2]]
     end
 		dcm.actuatorPtr.torque_enable[j_id-1] = tq_parse(unpack(status.parameter))
+		--
+		if is_mx then
+			tinsert(rd_addrs, lD.mx_registers.position)
+			has_mx = true
+		else
+			tinsert(rd_addrs, lD.nx_registers.position)
+			has_nx = true
+		end
 	end
-	-- Set the default reading command for the bus
-	form_read_loop_cmd(bus, 'position')
+	-- Set the reading command for the bus and write addrs if needed
+	if has_mx and has_nx then
+		bus.read_cmd_str = lD.get_bulk(string.char(unpack(bus.m_ids)), rd_addrs)
+	elseif has_nx then
+		bus.read_cmd_str = lD.get_nx_position(bus.m_ids)
+	else
+    -- Sync read with just MX does not work for some reason
+    -- bus.read_cmd_str = lD.get_mx_position(bus.m_ids)
+    bus.read_cmd_str = lD.get_bulk(string.char(unpack(bus.m_ids)), rd_addrs)
+	end
+  bus.n_read = #bus.m_ids
+--  local hex, dec = lD.tostring(bus.read_cmd_str)
+--  io.write(hex,'\n',dec)
 end
 
 for chain_id, chain in ipairs(dcm_chains) do
@@ -509,8 +548,7 @@ for chain_id, chain in ipairs(dcm_chains) do
 	-- Lookup tables
 	assert(bus.name, 'No bus name identifier!')
 	named_buses[bus.name] = bus
-  --insert(numbered_buses, bus)
-  numbered_buses[bus.fd] = bus
+  tinsert(numbered_buses, bus)
 	initialize(bus)
 	-- Make the output coroutine
 	bus.output_co = coroutine.wrap(output_co)
@@ -522,25 +560,34 @@ end
 
 local t0 = get_time()
 -- Begin the master loop
-while is_running do
+while running do
   t_start = get_time()
-	-- Check for commands for the DCM from external sources
-	process_external()
+	-- Check the general dcm channel
+	requests = dcm_ch:receive(true)
+	if requests then
+    process_parent(requests)
+  end
+	-- Check the parent thread dcm channel
+  if parent_ch then
+  	requests = parent_ch:receive(true)
+  	if requests then
+      process_parent(requests)
+    end
+  end
 	-- Resume the write coroutines
 	t_write = get_time()
 	for bname, bus in pairs(named_buses) do
-		-- Check if we await packets and have expired the timeout
-    if bus.npkt_to_expect > 0 and t_write > bus.read_timeout_t then
-      bus.n_read_timeouts = bus.n_read_timeouts + bus.npkt_to_expect
+    if bus.npkt_to_expect > 0 and t_write > bus.read_to then
+      --print("READ TIMEOUT", bname, bus.read_reg, bus.npkt_to_expect)
+      bus.to = bus.to + bus.npkt_to_expect
       bus.read_reg = nil
       bus.npkt_to_expect = 0
       bus.input_co(false)
     end
-		-- Check if we are not expecting any packets
-		-- We now output to the bus
-		-- We may output a read request
+		-- Only if we are not in the read cycle
     if bus.npkt_to_expect < 1 then
 			bus.npkt_to_expect, bus.read_reg = bus.output_co()
+--print(bus.name, "EXX", bus.npkt_to_expect)
       if bus.npkt_to_expect == 0 then
     		bus.cmds_cnt = bus.cmds_cnt + 1
       else
@@ -555,25 +602,25 @@ while is_running do
   while sel_wait > 0 do
 		status, ready = sel(_fds, sel_wait)
     if status==0 then break end
-		-- Read in packets if we received data from the bus
 		t_read = get_time()
     local pkts, rxi
-		for bnum, is_ready in pairs(ready) do
+		for bnum, is_ready in ipairs(ready) do
       if is_ready then
   			bus = numbered_buses[bnum]
-				-- Place the data into packet structs
-        pkts, rxi = bus.input_co(uread(bus.fd))
-				-- Parse the packets into shared memory
+        pkts, rxi = bus.input_co(re(bus.fd))
         bus.npkt_to_expect = bus.npkt_to_expect - #pkts
         for _, pkt in ipairs(pkts) do
+          -- TODO: Check if bus.read_reg is nil
+          -- That means you get unexpected data
           parse[bus.read_reg](pkt, bus, bus)
         end
+--print("RXI", rxi, bus.npkt_to_expect)
       end
 		end
 		-- Loop maintenence
     if do_collect then
       do_collect = false
-      collectgarbage'step'
+      collectgarbage('step')
     end
 		t_end = get_time()
 		sel_wait = WRITE_TIMEOUT - (t_end - t_start)
@@ -586,12 +633,12 @@ while is_running do
 			string.format('\nDCM | Uptime %.2f sec, Mem: %d kB', t_start - t0, collectgarbage('count')),
 		}
 		for bname, bus in pairs(named_buses) do
-			insert(debug_str, string.format(
-				'%s Command Rate %.1f Hz with %d timeouts of %d reads', bname, bus.cmds_cnt / dt_debug, bus.n_read_timeouts, bus.reads_cnt)
+			tinsert(debug_str, string.format(
+				'%s Command Rate %.1f Hz with %d timeouts of %d reads', bname, bus.cmds_cnt / dt_debug, bus.to, bus.reads_cnt)
 			)
       bus.reads_cnt = 0
 			bus.cmds_cnt = 0
-      bus.n_read_timeouts = 0
+      bus.to = 0
 		end
     debug_str = table.concat(debug_str, '\n')
     print(debug_str)

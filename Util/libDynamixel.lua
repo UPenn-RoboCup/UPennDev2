@@ -166,7 +166,9 @@ local nx_registers = {
   ['data3_mode'] = {char(46,0x00),1},
   ['data4_mode'] = {char(47,0x00),1},
   --
-  ['shutdown'] = {char(0x30,0x00),1},
+  ['shutdown'] = {char(48,0x00),1},
+	--
+	indirect_address = {char(49,0), 1},
 
   -- ENTER RAM AREA
   ['torque_enable'] = {char(0x32,0x02),1},
@@ -219,11 +221,20 @@ local nx_registers = {
   ['data4'] = {char(0x78,0x02),2},
   --
   ['data']  = {char(0x72,0x02),8},
+	
+	-- Indirect data
+	indirect_data = {char(0x7A,2), 1},
 
   -- Status return
   ['status_return_level'] = {char(0x7B,0x03),1},
 }
 libDynamixel.nx_registers = nx_registers
+--[[
+libDynamixel.nx_registers = setmetatble(nx_registers,{
+	__index = function(t, k)
+  end
+})
+--]]
 
 -- Assume MX and NX are at least similar
 libDynamixel.registers_sensor = {

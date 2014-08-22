@@ -231,8 +231,8 @@ if IS_WEBOTS then
   webots.wb_robot_init()
   -- Acquire the timesteps
   local timeStep = webots.wb_robot_get_basic_time_step()
-  local camera_timeStep = math.max(33,timeStep)
-  local lidar_timeStep = math.max(25,timeStep)
+  local camera_timeStep = math.max(33, timeStep)
+  local lidar_timeStep = math.max(25, timeStep)
   Body.timeStep = timeStep
   get_time = webots.wb_robot_get_time
 
@@ -241,8 +241,10 @@ if IS_WEBOTS then
   local t_last_error = -math.huge
 
   tags.receiver = webots.wb_robot_get_device("receiver")
-  webots.wb_receiver_enable(tags.receiver,timeStep)
-  webots.wb_receiver_set_channel(tags.receiver,13)
+	if tags.receiver>0 then
+		webots.wb_receiver_enable(tags.receiver, timeStep)
+		webots.wb_receiver_set_channel(tags.receiver, 13)
+	end
     
   -- Ability to turn on/off items
   local t_last_keypress = get_time()
@@ -330,7 +332,8 @@ if IS_WEBOTS then
       end
     end,
   }
-	local OLD_API = true
+	-- Check if we are using the OLD api
+	local OLD_API = webots.wb_device_get_type(webots.wb_robot_get_device(jointNames[1]))==89
 	local set_pos, get_pos = webots.wb_motor_set_position, webots.wb_motor_get_position
 	if OLD_API then
 		set_pos = webots.wb_servo_set_position

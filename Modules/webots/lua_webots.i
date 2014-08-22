@@ -6,8 +6,10 @@
 
 %{
 #include <webots/types.h>
+#include <webots/device.h>
 %}
 %include <webots/types.h>
+%include <webots/device.h>
 
 
 %{

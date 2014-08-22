@@ -685,7 +685,7 @@ Robot {
             }
             DEF Right_hip_yaw Servo {
               translation -0.072 -0.232 0
-              rotation 0 -1 0 0
+              rotation 0 1 0 0
               children [
                 DEF Right_hip_roll Servo {
                   rotation 0 0 1 0
@@ -817,7 +817,7 @@ Robot {
             }
             DEF Left_hip_yaw Servo {
               translation 0.072 -0.232 0
-              rotation 0 -1 0 0
+              rotation 0 1 0 0
               children [
                 DEF Left_hip_roll Servo {
                   rotation 0 0 1 0

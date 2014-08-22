@@ -1,5 +1,3 @@
---------------------------------
--- Arm State Machine
+-- Body State Machine Loader
 -- (c) 2014 Stephen McGill
---------------------------------
-return load_fsm('Arm')
+return require'fsm_helper'.load'Arm'

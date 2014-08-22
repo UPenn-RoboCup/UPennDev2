@@ -247,7 +247,7 @@ if IS_WEBOTS then
   -- Ability to turn on/off items
   local t_last_keypress = get_time()
   -- Enable the keyboard 100ms
-  webots.wb_robot_keyboard_enable( 100 )
+  webots.wb_robot_keyboard_enable(100)
   local key_action = {
 		h = function(override)
 			if override~=nil then en=override else en=ENABLE_HEAD_LIDAR==false end
@@ -330,7 +330,7 @@ if IS_WEBOTS then
       end
     end,
   }
-	local OLD_API = false
+	local OLD_API = true
 	local set_pos, get_pos = webots.wb_motor_set_position, webots.wb_motor_get_position
 	if OLD_API then
 		set_pos = webots.wb_servo_set_position

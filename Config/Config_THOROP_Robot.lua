@@ -67,14 +67,17 @@ Config.chain = {
 local right_arm = {
   name = 'rarm',
   ttyname = '/dev/ttyUSB0',
-  --m_ids = {1,3,5,7,9,11,13, --[[head]] 29,30},
-	enable_read = true, -- for the head...
+  m_ids = {1,3,5,7,9,11,13,
+        --head
+        --29,30
+        },
+	enable_read = true,
 }
 local left_arm = {
   name = 'larm',
   ttyname = '/dev/ttyUSB1',
-  --m_ids = {2,4,6,8,10,12,14,},
-  --mx_ids = { 66,67,37, --[[lidar]] },
+  m_ids = {2,4,6,8,10,12,14,},
+  enable_read = true
 }
 local right_leg = {
   name = 'rleg',
@@ -88,7 +91,7 @@ local left_leg = {
   ttyname = '/dev/ttyUSB3',
 	-- waist yaw
   m_ids = {16,18,20, 22, 24,26, 27},
-  enable_read = false,
+  enable_read = true,
 }
 -- For RoboCup, use an MX only chain for the arms
 local head_rc = {
@@ -130,7 +133,6 @@ if ONE_CHAIN then
   left_leg  = nil
 else
   table.insert(Config.chain, right_leg)
-	--[[
   table.insert(Config.chain, left_leg)
   if Config.USE_DUMMY_ARMS then
     -- Not set up yet...
@@ -140,7 +142,6 @@ else
     table.insert(Config.chain, right_arm)
     table.insert(Config.chain, left_arm)
   end
-	--]]
   one_chain = nil
 end
 

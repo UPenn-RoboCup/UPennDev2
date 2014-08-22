@@ -76,7 +76,10 @@ local right_arm = {
 local left_arm = {
   name = 'larm',
   ttyname = '/dev/ttyUSB1',
-  m_ids = {2,4,6,8,10,12,14,},
+  m_ids = {2,4,6,8,10,12,14,
+  -- lidar
+  37,
+},
   enable_read = true
 }
 local right_leg = {

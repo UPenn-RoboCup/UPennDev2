@@ -81,7 +81,7 @@ local right_leg = {
   ttyname = '/dev/ttyUSB2',
 	-- waist pitch
   m_ids = {15,17,19, 21, 23,25, 28},
-  enable_read = false,
+  enable_read = true,
 }
 local left_leg = {
   name = 'lleg',
@@ -130,6 +130,7 @@ if ONE_CHAIN then
   left_leg  = nil
 else
   table.insert(Config.chain, right_leg)
+	--[[
   table.insert(Config.chain, left_leg)
   if Config.USE_DUMMY_ARMS then
     -- Not set up yet...
@@ -139,6 +140,7 @@ else
     table.insert(Config.chain, right_arm)
     table.insert(Config.chain, left_arm)
   end
+	--]]
   one_chain = nil
 end
 

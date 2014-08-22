@@ -3,7 +3,6 @@
 -- Communication with multiple dynamixel chains --
 local CTX, metadata = ...
 dofile'include.lua'
-assert(ffi, 'DCM | Please use LuaJIT :). Lua support in the near future')
 
 -- Required Modules
 require'dcm'
@@ -14,6 +13,7 @@ local input_co = require'DynamixelPacket2.ffi'.input_co
 local munpack  = require'msgpack'.unpack
 local vector = require'vector'
 local signal = require'signal'
+local ffi = require'ffi'
 
 --------------
 -- Timeouts --

@@ -95,10 +95,8 @@ Robot {
           translation 0 0 0.01 #lidar chest offset
           rotation 0 0 1 1.57
 	        children [
-            hokuyo_thor_chest{
+            hokuyo {
               name "ChestLidar"
-              width 361
-              #fieldOfView 3.14159
              }            
           ]
           physics Physics{
@@ -690,7 +688,7 @@ Robot {
               rotation 0 -1 0 0
               children [
                 DEF Right_hip_roll Servo {
-                  rotation 0 0 -1 0
+                  rotation 0 0 1 0
                   children [
                     DEF Right_hip_pitch Servo {
                       rotation 1 0 0 0
@@ -712,7 +710,7 @@ Robot {
                             }
                             DEF Right_ankle_pitch Servo {
                               translation 0 -0.3 0.03
-                              rotation -1 0 0 0
+                              rotation 1 0 0 0
                               children [
                                 DEF Right_ankle_roll Servo {
                                   rotation 0 0 1 0
@@ -822,10 +820,10 @@ Robot {
               rotation 0 -1 0 0
               children [
                 DEF Left_hip_roll Servo {
-                  rotation 0 0 -1 0
+                  rotation 0 0 1 0
                   children [
                     DEF Left_hip_pitch Servo {
-                      rotation -1 0 0 0
+                      rotation 1 0 0 0
                       children [
                         DEF L_thigh Transform {
                           scale 0.001 0.001 0.001
@@ -833,7 +831,7 @@ Robot {
                         }
                         DEF Left_knee_pitch Servo {
                           translation 0 -0.3 -0.03
-                          rotation -1 0 0 0
+                          rotation 1 0 0 0
                           children [
                             DEF L_leg Transform {
                               translation 0 0 0.03
@@ -990,7 +988,7 @@ Robot {
             Camera {
 						  rotation 0 1 0 3.14159
               translation 0 0.072 0.0785
-              name "Camera"
+              name "HeadCamera"
               windowPosition IS cameraWindowPosition
               fieldOfView IS cameraFov
               width IS cameraWidth

@@ -27,7 +27,7 @@ DirectionalLight {
   intensity 0.5
 }
 DEF FLOOR Floor {
-  #tileSize 2 2
+  tileSize 2 2
 	size 10 10
   texture [
     "textures/texture_grid.png"
@@ -40,4 +40,5 @@ THOROP7_Update {
   translation 0 1.155 0
   controller "thorop"
   controllerArgs "0 32"
+	lidarRays 360
 }

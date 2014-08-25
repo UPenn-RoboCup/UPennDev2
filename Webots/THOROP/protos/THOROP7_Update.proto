@@ -310,10 +310,10 @@ Robot {
                             } # End of the ArmLowerR HingeJointParameters
                             endPoint Solid {
                               ## Begin Wrist Yaw
-                              translation 0 -0.186 -0.030
+                              translation 0 -0.186 -0.03
                               children [
 																RIGHT_ELBOW {
-																	translation 0 0.186 0.030
+																	translation 0 0.186 0.0
 																	rotation 0 1 0 3.14159
 																	scale 0.001 0.001 0.001
 																}
@@ -329,7 +329,7 @@ Robot {
                                   } # End of the RightWristYaw RotationalMotor
                                   jointParameters HingeJointParameters {
                                     # Straight up in the y-axis for webots
-                                    axis 0 1 0
+                                    axis 0 -1 0
                                     anchor 0 0.081 0
                                   } # End of the RightWristYaw HingeJointParameters
                                   endPoint Solid {
@@ -466,7 +466,7 @@ Robot {
                 } # End of the ArmUpperR RotationalMotor
                 jointParameters HingeJointParameters {
                   # Straight up in the y-axis for webots
-                  axis 0 0 1
+                  axis 0 0 -1
                   # I think anchor means the up direction?
                   anchor 0 0 0.081
                 } # End of the ArmUpperR HingeJointParameters
@@ -498,7 +498,7 @@ Robot {
                         translation 0 -0.246 0.030
                         children [
                           LEFT_ARM {
-                            translation 0 0.219 0
+                            translation 0 0.219 -0.03
                             rotation 0 1 0 0
                             scale 0.001 0.001 0.001
                           }
@@ -522,7 +522,7 @@ Robot {
                               translation 0 -0.186 -0.030
                               children [
                                 LEFT_ELBOW {
-                                  translation 0 0.186 0.03
+                                  translation 0 0.186 0.0
                                   rotation 0 1 0 0
                                   scale 0.001 0.001 0.001
                                 }

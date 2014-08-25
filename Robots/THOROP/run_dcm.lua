@@ -16,8 +16,8 @@ local signal = require'signal'
 local ffi = require'ffi'
 
 -- Timeouts
-local WRITE_TIMEOUT = 1 / 200
-local READ_TIMEOUT = 1 / 200
+local WRITE_TIMEOUT = 1 / 320
+local READ_TIMEOUT = 1 / 250
 
 -- Setup the channels
 local IS_THREAD = CTX and not arg
@@ -45,7 +45,7 @@ local p_ptr_t = dcm.tsensorPtr.position
 --------------------------
 -- Global tmp variables --
 --------------------------
-local t_end, t_write, t_read, t_start
+local t_write, t_read, t_start
 local t_debug, dt_debug = 0, 0
 local status, ready, bus, data, msg, requests
 local sel_wait, debug_str
@@ -371,9 +371,10 @@ local function output_co(bus)
 				lD.set_bulk(char(unpack(send_ids)), cmd_addrs, commands, bus)
 --				lD.set_nx_command_position(send_ids, commands, bus)
 			end
+			coroutine.yield(0)
+		else
+			coroutine.yield(0)
 		end
-    -- One command gets a status return
-		coroutine.yield(#commands==1 and 1 or 0)
 		-- Run the parent queue until a write to the bus
 		request = table.remove(bus.request_queue, 1)
 		while request do
@@ -541,20 +542,27 @@ while is_running do
 		-- We may output a read request
     if bus.npkt_to_expect < 1 then
 			bus.npkt_to_expect, bus.read_reg = bus.output_co()
-      if bus.npkt_to_expect == 0 then
+			--if bname=='larm' then print(bus.npkt_to_expect) end
+			if bus.npkt_to_expect == 0 then
     		bus.cmds_cnt = bus.cmds_cnt + 1
-      else
+			else
     		bus.reads_cnt = bus.reads_cnt + bus.npkt_to_expect
       end
     end
 	end
 	-- Load data from the bus into the input coroutine
-	sel_wait = WRITE_TIMEOUT
-  do_collect = true
+	--[[
+		usleep(1e6/250)
+		status, ready = sel(_fds, 0)
+	--]]
   -- Loop until the write timeout is expired
+	----[[
+  do_collect = true
+	sel_wait = WRITE_TIMEOUT
   while sel_wait > 0 do
 		status, ready = sel(_fds, sel_wait)
     if status==0 then break end
+    --]]
 		-- Read in packets if we received data from the bus
 		t_read = get_time()
     local pkts, rxi
@@ -575,9 +583,10 @@ while is_running do
       do_collect = false
       collectgarbage'step'
     end
-		t_end = get_time()
-		sel_wait = WRITE_TIMEOUT - (t_end - t_start)
+----[[
+		sel_wait = WRITE_TIMEOUT - (get_time() - t_start) - 1e-3
   end
+--]]
 	-- Debug messages for the user
   dt_debug = t_start - t_debug
 	if dt_debug > 2 then

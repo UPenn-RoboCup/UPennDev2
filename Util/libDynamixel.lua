@@ -410,10 +410,12 @@ for k,v in pairs(nx_registers) do
     local single, instruction = type(motor_ids)=='number'
     if single then
       instruction = single_wr(motor_ids, addr, values)
+--[[
 		elseif #motor_ids==1 then
       -- Single motor
       instruction =
 				single_wr(motor_ids[1], addr, type(values)=='table' and values[1] or values)
+--]]
     else
       instruction =
 				DP2.sync_write(addr, sz, char(unpack(sync_wr(motor_ids, addr, values))))

@@ -3,7 +3,7 @@
 -- Reads lidar scans and saves to shared memory
 -- (c) Stephen McGill 2013, 2014
 ---------------------------------
-dofile'include.lua'
+dofile'../include.lua'
 
 local libHokuyo  = require'libHokuyo'
 local signal = require'signal'.signal
@@ -27,8 +27,9 @@ end
 local hokuyos = {}
 
 -- Initialize the Hokuyos
-local h0 = libHokuyo.new_hokuyo('/dev/ttyACM0')
+--local h0 = libHokuyo.new_hokuyo('/dev/ttyACM0')
 --local h0 = libHokuyo.new_hokuyo('/dev/cu.usbmodem1411',nil,9600)
+local h0 = libHokuyo.new_hokuyo(11)
 h0.name = 'front'
 h0.ch = si.new_publisher'lidar0'
 h0.callback = cb

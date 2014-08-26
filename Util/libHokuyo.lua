@@ -79,8 +79,8 @@ end
 
 -- Data encoding is how many bytes
 local data_encoding = {
-	2 = 'MS',
-	3 = 'MD',
+	[2] = 'MS',
+	[3] = 'MD',
 }
 -------------------------
 -- Form the stream command
@@ -237,7 +237,7 @@ local new_hokuyo_net = function(host_id)
   obj.get_sensor_info = get_sensor_info
   obj.callback = nil
 	obj.char_encoding = 3
-	obj.scan_request = create_scan_request(0, 1080, 1, self.char_encoding, 0, 0)
+	obj.scan_request = create_scan_request(0, 1080, 1, obj.char_encoding, 0, 0)
 	obj.parse = HokuyoPacket.parse
 	-- TODO: Use sensor_params.scan_rate
 	obj.update_time = 1/40
@@ -320,13 +320,14 @@ function(ttyname, serial_number, ttybaud, char_encoding )
 	obj.char_encoding = char_encoding
 	if char_encoding==2 then
 		-- URG-04LX
-		obj.scan_request = create_scan_request(44, 725, 1, self.char_encoding, 0, 0)
+		obj.scan_request = create_scan_request(44, 725, 1, obj.char_encoding, 0, 0)
 		obj.parse = HokuyoPacket.parse2
 		obj.update_time = 1 / 10
 		hokuyo.res = 360 / 1024
 	else
 		-- UTM-30LX
-		obj.scan_request = create_scan_request(0, 1080, 1, self.char_encoding, 0, 0)
+		obj.scan_request =
+		create_scan_request(0, 1080, 1, obj.char_encoding, 0, 0)
 		obj.parse = HokuyoPacket.parse
 		-- TODO: Use sensor_params.scan_rate
 		obj.update_time = 1/40

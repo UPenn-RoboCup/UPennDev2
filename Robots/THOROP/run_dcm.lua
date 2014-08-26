@@ -84,22 +84,20 @@ local function step_to_radian(idx, step)
 end
 
 -- Make the cdata for each ft sensor
+
 local left_ft = {
 	raw = ffi.new'int16_t[4]',
-	readings = ffi.new'double[6]'
+	readings = ffi.new'double[6]',
 	components = ffi.new'double[6]',
-	unloaded = ffi.new('double[6]', ft_config.unloaded),
-	calibration_mat = ffi.new('double[6][6]', ft_config.matrix),
-	calibration_gain = ft_config.gain,
+	unloaded = ffi.new('double[6]', Config.left_ft.unloaded),
+	calibration_mat = ffi.new('double[6][6]', Config.left_ft.matrix),
+	calibration_gain = Config.left_ft.gain,
 	m_ids = {}
 }
 
 -- Set the force and torque into memory
 local function parse_ft(ft_tbl, raw_str, m_id)
-	if true then
-		print('PARSE FT')
-		return
-	end
+	if true then return end
 	ffi.copy(ft_raw_c, raw_str, 8)
 	-- Lower ID has the 2 components
 	if m_id==ft_tbl.m_ids[1] then
@@ -164,7 +162,7 @@ local function parse_read_position(pkt, bus)
 	-- Set in Shared memory
 	p_ptr[read_j_id - 1] = read_rad
 	p_ptr_t[read_j_id - 1] = t_read
-	return read_j_id
+	return read_j_id, read_rad
 end
 
 -- General Read Packet

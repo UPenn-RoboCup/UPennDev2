@@ -641,6 +641,7 @@ while is_running do
 				bname, bus.cmds_cnt / dt_debug, bus.reqs_cnt / dt_debug, bus.n_read_timeouts, bus.reads_cnt))
       bus.reads_cnt = 0
 			bus.cmds_cnt = 0
+			bus.reqs_cnt = 0
       bus.n_read_timeouts = 0
 		end
     debug_str = table.concat(debug_str, '\n')

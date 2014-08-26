@@ -120,7 +120,7 @@ local function parse_ft(ft, raw_str, m_id)
 	else
 		return
 	end
-	--print(vector.slice(ft.component,0,5))
+--	print(ft.id, vector.slice(ft.component,0,5))
 	-- New is always zeroed
 	ffi.fill(ft.readings, ffi.sizeof(ft.readings))
 	for i=0,5 do
@@ -132,7 +132,7 @@ local function parse_ft(ft, raw_str, m_id)
 		end
 	end
 	--ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.shm))
-	print(ft.id, vector.slice(ft.readings, 0, 5))
+	if ft.id:find'216' then print(ft.id, vector.slice(ft.readings, 0, 5)) end
 end
 
 -- Custom Leg Packet

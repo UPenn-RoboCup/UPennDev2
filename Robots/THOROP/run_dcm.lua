@@ -34,7 +34,6 @@ local to_steps, to_radians  = Config.servo.to_steps, Config.servo.to_radians
 local step_zero, step_offset = Config.servo.step_zero, Config.servo.step_offset
 local m_to_j, j_to_m = Config.servo.motor_to_joint, Config.servo.joint_to_motor
 local dcm_chains = Config.chain
-local left_ft, right_ft = Config.left_ft, Config.right_ft
 
 -- DCM Cache
 local cp_ptr = dcm.actuatorPtr.command_position
@@ -84,30 +83,44 @@ local function step_to_radian(idx, step)
 end
 
 -- Make the cdata for each ft sensor
-
 local left_ft = {
 	raw = ffi.new'int16_t[4]',
 	readings = ffi.new'double[6]',
-	components = ffi.new'double[6]',
+	component = ffi.new'double[6]',
 	unloaded = ffi.new('double[6]', Config.left_ft.unloaded),
 	calibration_mat = ffi.new('double[6][6]', Config.left_ft.matrix),
 	calibration_gain = Config.left_ft.gain,
-	m_ids = {}
+	m_ids = {24, 26},
+	shm = dcm.sensorPtr.lfoot
+}
+local right_ft = {
+	raw = ffi.new'int16_t[4]',
+	readings = ffi.new'double[6]',
+	component = ffi.new'double[6]',
+	unloaded = ffi.new('double[6]', Config.right_ft.unloaded),
+	calibration_mat = ffi.new('double[6][6]', Config.right_ft.matrix),
+	calibration_gain = Config.right_ft.gain,
+	m_ids = {23, 25},
+	shm = dcm.sensorPtr.rfoot
 }
 
 -- Set the force and torque into memory
 local function parse_ft(ft, raw_str, m_id)
-	ffi.copy(ft.raw, raw_str, 8)
 	-- Lower ID has the 2 components
-	if m_id==ft_tbl.m_ids[1] then
+	if m_id==ft.m_ids[1] then
+		ffi.copy(ft.raw, raw_str, 8)
 		ft.component[0] = 3.3 * ft.raw[0] / 4095
 		ft.component[1] = 3.3 * ft.raw[1] / 4095
 		ft.component[2] = 3.3 * ft.raw[2] / 4095
 		ft.component[3] = 3.3 * ft.raw[3] / 4095
-	else
+	elseif m_id==ft.m_ids[2] then
+		ffi.copy(ft.raw, raw_str, 4)
 		ft.component[4] = 3.3 * ft.raw[0] / 4095
 		ft.component[5] = 3.3 * ft.raw[1] / 4095
+	else
+		return
 	end
+	--print(vector.slice(ft.component,0,5))
 	-- New is always zeroed
 	ffi.fill(ft.readings, ffi.sizeof(ft.readings))
 	for i=0,5 do
@@ -118,6 +131,8 @@ local function parse_ft(ft, raw_str, m_id)
 				* ft.calibration_gain
 		end
 	end
+	ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.shm))
+	--return vector.slice(ft.readings, 0, 5)
 end
 
 -- Custom Leg Packet

@@ -17,5 +17,5 @@ if not one_chain then
   end
 end
 
-local found_ids = left_leg:ping_probe()
-lD.set_indirect_address(found_ids, {'position', 'data'}, left_leg)
+local found_ids = right_leg:ping_probe()
+lD.set_indirect_address(found_ids, {'position', 'data'}, right_leg)

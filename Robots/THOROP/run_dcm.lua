@@ -105,6 +105,25 @@ local function parse_read_position(pkt, bus)
 	return read_j_id, read_rad
 end
 
+-- Custom Leg Packet
+local function parse_read_custom(pkt, bus)
+	-- Nothing to do if an error
+	if pkt.error ~= 0 then return end
+	-- Assume just reading position, for now
+	local m_id = pkt.id
+	local read_j_id = m_to_j[m_id]
+	local read_val
+	-- Assume NX, since leg
+	--if #pkt.parameter~=lD.nx_registers.position[2] then return end
+	-- First, just the read part
+	read_val = p_parse(unpack(pkt.parameter, 1, lD.nx_registers.position[2]))
+	local read_rad = step_to_radian(read_j_id, read_val)
+	-- Set in Shared memory
+	p_ptr[read_j_id - 1] = read_rad
+	p_ptr_t[read_j_id - 1] = t_read
+	return read_j_id, read_rad
+end
+
 -- General Read Packet
 local function parse_read_packet(pkt, bus)
 	if pkt.error ~= 0 then return end
@@ -136,10 +155,28 @@ local parse = setmetatable({}, {
   end
 })
 parse.position = parse_read_position
+-- Custom reading from the legs for F/T
+parse.custom = parse_read_custom
 
 -- Be able to form the read loop command on-demand
+local function form_leg_read_cmd(bus)
+	-- TODO: Verify the addresses for each leg
+	assert(
+	lD.check_indirect_address(bus.m_ids, {'position', 'data'}, bus),
+	'Bad Indirect addresses for the leg chain'
+	)
+	bus.read_loop_cmd_str = lD.get_indirect_data(bus.m_ids, {'position', 'data'})
+	bus.read_loop_cmd_n = #bus.m_ids
+	bus.read_loop_cmd = 'custom'
+	--os.exit()
+end
+--
 -- For now, just have the position
 local function form_read_loop_cmd(bus, cmd)
+	-- leg is *not* position, but indirect now
+	if bus.name:find'leg' then
+		return form_leg_read_cmd(bus)
+	end
 	local rd_addrs, has_mx, has_nx = {}, false, false
 	for _, m_id in ipairs(bus.m_ids) do
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]

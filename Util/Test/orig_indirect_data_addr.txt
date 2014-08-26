@@ -1,0 +1,889 @@
+
+Found 2.0 Motor: 16, Model (210, 8)
+NX Motor
+	Firmware: 18
+	Operating Mode: 3
+	Return Delay: 0
+
+Found 2.0 Motor: 18, Model (211, 136)
+NX Motor
+	Firmware: 18
+	Operating Mode: 3
+	Return Delay: 0
+
+Found 2.0 Motor: 20, Model (211, 136)
+NX Motor
+	Firmware: 18
+	Operating Mode: 3
+	Return Delay: 0
+
+Found 2.0 Motor: 22, Model (211, 8)
+NX Motor
+	Firmware: 18
+	Operating Mode: 3
+	Return Delay: 0
+
+Found 2.0 Motor: 24, Model (211, 136)
+NX Motor
+	Firmware: 18
+	Operating Mode: 3
+	Return Delay: 0
+
+Found 2.0 Motor: 26, Model (210, 8)
+NX Motor
+	Firmware: 18
+	Operating Mode: 3
+	Return Delay: 0
+
+Found 2.0 Motor: 27, Model (211, 8)
+NX Motor
+	Firmware: 18
+	Operating Mode: 3
+	Return Delay: 0
+====	16
+INDIRECT	49	0	:	99	2
+string
+error	0
+instruction	85
+id	16
+checksum	ﬂW
+length	6
+raw_parameter	z
+parameter	table: 0xb751f068
+122	2
+INDIRECT	51	0	:	100	2
+string
+error	0
+instruction	85
+id	16
+checksum	‹—
+length	6
+raw_parameter	{
+parameter	table: 0xb75316d8
+123	2
+INDIRECT	53	0	:	101	2
+string
+error	0
+instruction	85
+id	16
+checksum	ﬂC
+length	6
+raw_parameter	|
+parameter	table: 0xb752a940
+124	2
+INDIRECT	55	0	:	102	2
+string
+error	0
+instruction	85
+id	16
+checksum	‹≈
+length	6
+raw_parameter	}
+parameter	table: 0xb7505af0
+125	2
+INDIRECT	57	0	:	114	2
+string
+error	0
+instruction	85
+id	16
+checksum	‹œ
+length	6
+raw_parameter	~
+parameter	table: 0xb75211e8
+126	2
+INDIRECT	59	0	:	115	2
+string
+error	0
+instruction	85
+id	16
+checksum	ﬂI
+length	6
+raw_parameter	
+parameter	table: 0xb75211a0
+127	2
+INDIRECT	61	0	:	116	2
+string
+error	0
+instruction	85
+id	16
+checksum	–À
+length	6
+raw_parameter	Ä
+parameter	table: 0xb75143e8
+128	2
+INDIRECT	63	0	:	117	2
+string
+error	0
+instruction	85
+id	16
+checksum	”M
+length	6
+raw_parameter	Å
+parameter	table: 0xb752ae70
+129	2
+INDIRECT	65	0	:	118	2
+string
+error	0
+instruction	85
+id	16
+checksum	”G
+length	6
+raw_parameter	Ç
+parameter	table: 0xb7536c00
+130	2
+INDIRECT	67	0	:	119	2
+string
+error	0
+instruction	85
+id	16
+checksum	–¡
+length	6
+raw_parameter	É
+parameter	table: 0xb750c450
+131	2
+INDIRECT	69	0	:	120	2
+string
+error	0
+instruction	85
+id	16
+checksum	”S
+length	6
+raw_parameter	Ñ
+parameter	table: 0xb754e9b8
+132	2
+INDIRECT	71	0	:	121	2
+string
+error	0
+instruction	85
+id	16
+checksum	–’
+length	6
+raw_parameter	Ö
+parameter	table: 0xb75066d0
+133	2
+====	18
+INDIRECT	49	0	:	99	2
+string
+error	0
+instruction	85
+id	18
+checksum	¸’
+length	6
+raw_parameter	z
+parameter	table: 0xb752ca78
+122	2
+INDIRECT	51	0	:	100	2
+string
+error	0
+instruction	85
+id	18
+checksum	ˇS
+length	6
+raw_parameter	{
+parameter	table: 0xb7505958
+123	2
+INDIRECT	53	0	:	101	2
+string
+error	0
+instruction	85
+id	18
+checksum	¸¡
+length	6
+raw_parameter	|
+parameter	table: 0xb74fffb8
+124	2
+INDIRECT	55	0	:	102	2
+string
+error	0
+instruction	85
+id	18
+checksum	ˇG
+length	6
+raw_parameter	}
+parameter	table: 0xb752e7b8
+125	2
+INDIRECT	57	0	:	114	2
+string
+error	0
+instruction	85
+id	18
+checksum	ˇM
+length	6
+raw_parameter	~
+parameter	table: 0xb75213a8
+126	2
+INDIRECT	59	0	:	115	2
+string
+error	0
+instruction	85
+id	18
+checksum	¸À
+length	6
+raw_parameter	
+parameter	table: 0xb7538798
+127	2
+INDIRECT	61	0	:	116	2
+string
+error	0
+instruction	85
+id	18
+checksum	ÛI
+length	6
+raw_parameter	Ä
+parameter	table: 0xb754dce8
+128	2
+INDIRECT	63	0	:	117	2
+string
+error	0
+instruction	85
+id	18
+checksum	œ
+length	6
+raw_parameter	Å
+parameter	table: 0xb7547b98
+129	2
+INDIRECT	65	0	:	118	2
+string
+error	0
+instruction	85
+id	18
+checksum	≈
+length	6
+raw_parameter	Ç
+parameter	table: 0xb7553008
+130	2
+INDIRECT	67	0	:	119	2
+string
+error	0
+instruction	85
+id	18
+checksum	ÛC
+length	6
+raw_parameter	É
+parameter	table: 0xb750c850
+131	2
+INDIRECT	69	0	:	120	2
+string
+error	0
+instruction	85
+id	18
+checksum	—
+length	6
+raw_parameter	Ñ
+parameter	table: 0xb75001f0
+132	2
+INDIRECT	71	0	:	121	2
+string
+error	0
+instruction	85
+id	18
+checksum	ÛW
+length	6
+raw_parameter	Ö
+parameter	table: 0xb751df28
+133	2
+====	20
+INDIRECT	49	0	:	99	2
+string
+error	0
+instruction	85
+id	20
+checksum	ú”
+length	6
+raw_parameter	z
+parameter	table: 0xb74fa040
+122	2
+INDIRECT	51	0	:	100	2
+string
+error	0
+instruction	85
+id	20
+checksum	üU
+length	6
+raw_parameter	{
+parameter	table: 0xb74fc6e0
+123	2
+INDIRECT	53	0	:	101	2
+string
+error	0
+instruction	85
+id	20
+checksum	ú«
+length	6
+raw_parameter	|
+parameter	table: 0xb74ffa60
+124	2
+INDIRECT	55	0	:	102	2
+string
+error	0
+instruction	85
+id	20
+checksum	üA
+length	6
+raw_parameter	}
+parameter	table: 0xb7553270
+125	2
+INDIRECT	57	0	:	114	2
+string
+error	0
+instruction	85
+id	20
+checksum	üK
+length	6
+raw_parameter	~
+parameter	table: 0xb751b570
+126	2
+INDIRECT	59	0	:	115	2
+string
+error	0
+instruction	85
+id	20
+checksum	úÕ
+length	6
+raw_parameter	
+parameter	table: 0xb7544c08
+127	2
+INDIRECT	61	0	:	116	2
+string
+error	0
+instruction	85
+id	20
+checksum	ìO
+length	6
+raw_parameter	Ä
+parameter	table: 0xb7506f10
+128	2
+INDIRECT	63	0	:	117	2
+string
+error	0
+instruction	85
+id	20
+checksum	ê…
+length	6
+raw_parameter	Å
+parameter	table: 0xb751d860
+129	2
+INDIRECT	65	0	:	118	2
+string
+error	0
+instruction	85
+id	20
+checksum	ê√
+length	6
+raw_parameter	Ç
+parameter	table: 0xb74fcce8
+130	2
+INDIRECT	67	0	:	119	2
+string
+error	0
+instruction	85
+id	20
+checksum	ìE
+length	6
+raw_parameter	É
+parameter	table: 0xb7521d30
+131	2
+INDIRECT	69	0	:	120	2
+string
+error	0
+instruction	85
+id	20
+checksum	ê◊
+length	6
+raw_parameter	Ñ
+parameter	table: 0xb7523600
+132	2
+INDIRECT	71	0	:	121	2
+string
+error	0
+instruction	85
+id	20
+checksum	ìQ
+length	6
+raw_parameter	Ö
+parameter	table: 0xb752f6a0
+133	2
+====	22
+INDIRECT	49	0	:	99	2
+string
+error	0
+instruction	85
+id	22
+checksum	øQ
+length	6
+raw_parameter	z
+parameter	table: 0xb7547d88
+122	2
+INDIRECT	51	0	:	100	2
+string
+error	0
+instruction	85
+id	22
+checksum	º◊
+length	6
+raw_parameter	{
+parameter	table: 0xb7493d50
+123	2
+INDIRECT	53	0	:	101	2
+string
+error	0
+instruction	85
+id	22
+checksum	øE
+length	6
+raw_parameter	|
+parameter	table: 0xb748b458
+124	2
+INDIRECT	55	0	:	102	2
+string
+error	0
+instruction	85
+id	22
+checksum	º√
+length	6
+raw_parameter	}
+parameter	table: 0xb748acc8
+125	2
+INDIRECT	57	0	:	114	2
+string
+error	0
+instruction	85
+id	22
+checksum	º…
+length	6
+raw_parameter	~
+parameter	table: 0xb75476a0
+126	2
+INDIRECT	59	0	:	115	2
+string
+error	0
+instruction	85
+id	22
+checksum	øO
+length	6
+raw_parameter	
+parameter	table: 0xb7489f00
+127	2
+INDIRECT	61	0	:	116	2
+string
+error	0
+instruction	85
+id	22
+checksum	∞Õ
+length	6
+raw_parameter	Ä
+parameter	table: 0xb752a150
+128	2
+INDIRECT	63	0	:	117	2
+string
+error	0
+instruction	85
+id	22
+checksum	≥K
+length	6
+raw_parameter	Å
+parameter	table: 0xb75186f8
+129	2
+INDIRECT	65	0	:	118	2
+string
+error	0
+instruction	85
+id	22
+checksum	≥A
+length	6
+raw_parameter	Ç
+parameter	table: 0xb7517a60
+130	2
+INDIRECT	67	0	:	119	2
+string
+error	0
+instruction	85
+id	22
+checksum	∞«
+length	6
+raw_parameter	É
+parameter	table: 0xb7517008
+131	2
+INDIRECT	69	0	:	120	2
+string
+error	0
+instruction	85
+id	22
+checksum	≥U
+length	6
+raw_parameter	Ñ
+parameter	table: 0xb75153f0
+132	2
+INDIRECT	71	0	:	121	2
+string
+error	0
+instruction	85
+id	22
+checksum	∞”
+length	6
+raw_parameter	Ö
+parameter	table: 0xb75149b0
+133	2
+====	24
+INDIRECT	49	0	:	99	2
+string
+error	0
+instruction	85
+id	24
+checksum	\ﬂ
+length	6
+raw_parameter	z
+parameter	table: 0xb748b6f0
+122	2
+INDIRECT	51	0	:	100	2
+string
+error	0
+instruction	85
+id	24
+checksum	_Y
+length	6
+raw_parameter	{
+parameter	table: 0xb7528c18
+123	2
+INDIRECT	53	0	:	101	2
+string
+error	0
+instruction	85
+id	24
+checksum	\À
+length	6
+raw_parameter	|
+parameter	table: 0xb74fbdc0
+124	2
+INDIRECT	55	0	:	102	2
+string
+error	0
+instruction	85
+id	24
+checksum	_M
+length	6
+raw_parameter	}
+parameter	table: 0xb754b5f8
+125	2
+INDIRECT	57	0	:	114	2
+string
+error	0
+instruction	85
+id	24
+checksum	_G
+length	6
+raw_parameter	~
+parameter	table: 0xb75169a8
+126	2
+INDIRECT	59	0	:	115	2
+string
+error	0
+instruction	85
+id	24
+checksum	\¡
+length	6
+raw_parameter	
+parameter	table: 0xb7494788
+127	2
+INDIRECT	61	0	:	116	2
+string
+error	0
+instruction	85
+id	24
+checksum	SC
+length	6
+raw_parameter	Ä
+parameter	table: 0xb7494368
+128	2
+INDIRECT	63	0	:	117	2
+string
+error	0
+instruction	85
+id	24
+checksum	P≈
+length	6
+raw_parameter	Å
+parameter	table: 0xb7509550
+129	2
+INDIRECT	65	0	:	118	2
+string
+error	0
+instruction	85
+id	24
+checksum	Pœ
+length	6
+raw_parameter	Ç
+parameter	table: 0xb748dce0
+130	2
+INDIRECT	67	0	:	119	2
+string
+error	0
+instruction	85
+id	24
+checksum	SI
+length	6
+raw_parameter	É
+parameter	table: 0xb7516cf8
+131	2
+INDIRECT	69	0	:	120	2
+string
+error	0
+instruction	85
+id	24
+checksum	P€
+length	6
+raw_parameter	Ñ
+parameter	table: 0xb7516338
+132	2
+INDIRECT	71	0	:	121	2
+string
+error	0
+instruction	85
+id	24
+checksum	S]
+length	6
+raw_parameter	Ö
+parameter	table: 0xb7515938
+133	2
+====	26
+INDIRECT	49	0	:	99	2
+string
+error	0
+instruction	85
+id	26
+checksum	]
+length	6
+raw_parameter	z
+parameter	table: 0xb7513f08
+122	2
+INDIRECT	51	0	:	100	2
+string
+error	0
+instruction	85
+id	26
+checksum	|€
+length	6
+raw_parameter	{
+parameter	table: 0xb7513dd0
+123	2
+INDIRECT	53	0	:	101	2
+string
+error	0
+instruction	85
+id	26
+checksum	I
+length	6
+raw_parameter	|
+parameter	table: 0xb752c730
+124	2
+INDIRECT	55	0	:	102	2
+string
+error	0
+instruction	85
+id	26
+checksum	|œ
+length	6
+raw_parameter	}
+parameter	table: 0xb7518350
+125	2
+INDIRECT	57	0	:	114	2
+string
+error	0
+instruction	85
+id	26
+checksum	|≈
+length	6
+raw_parameter	~
+parameter	table: 0xb75176d8
+126	2
+INDIRECT	59	0	:	115	2
+string
+error	0
+instruction	85
+id	26
+checksum	C
+length	6
+raw_parameter	
+parameter	table: 0xb7517418
+127	2
+INDIRECT	61	0	:	116	2
+string
+error	0
+instruction	85
+id	26
+checksum	p¡
+length	6
+raw_parameter	Ä
+parameter	table: 0xb752d090
+128	2
+INDIRECT	63	0	:	117	2
+string
+error	0
+instruction	85
+id	26
+checksum	sG
+length	6
+raw_parameter	Å
+parameter	table: 0xb74936e0
+129	2
+INDIRECT	65	0	:	118	2
+string
+error	0
+instruction	85
+id	26
+checksum	sM
+length	6
+raw_parameter	Ç
+parameter	table: 0xb752cc90
+130	2
+INDIRECT	67	0	:	119	2
+string
+error	0
+instruction	85
+id	26
+checksum	pÀ
+length	6
+raw_parameter	É
+parameter	table: 0xb7494988
+131	2
+INDIRECT	69	0	:	120	2
+string
+error	0
+instruction	85
+id	26
+checksum	sY
+length	6
+raw_parameter	Ñ
+parameter	table: 0xb7509bd8
+132	2
+INDIRECT	71	0	:	121	2
+string
+error	0
+instruction	85
+id	26
+checksum	pﬂ
+length	6
+raw_parameter	Ö
+parameter	table: 0xb748eb88
+133	2
+====	27
+INDIRECT	49	0	:	99	2
+string
+error	0
+instruction	85
+id	27
+checksum	l‹
+length	6
+raw_parameter	z
+parameter	table: 0xb74896f8
+122	2
+INDIRECT	51	0	:	100	2
+string
+error	0
+instruction	85
+id	27
+checksum	oZ
+length	6
+raw_parameter	{
+parameter	table: 0xb7518c18
+123	2
+INDIRECT	53	0	:	101	2
+string
+error	0
+instruction	85
+id	27
+checksum	l»
+length	6
+raw_parameter	|
+parameter	table: 0xb7517fa8
+124	2
+INDIRECT	55	0	:	102	2
+string
+error	0
+instruction	85
+id	27
+checksum	oN
+length	6
+raw_parameter	}
+parameter	table: 0xb752bc70
+125	2
+INDIRECT	57	0	:	114	2
+string
+error	0
+instruction	85
+id	27
+checksum	oD
+length	6
+raw_parameter	~
+parameter	table: 0xb7510f60
+126	2
+INDIRECT	59	0	:	115	2
+string
+error	0
+instruction	85
+id	27
+checksum	l¬
+length	6
+raw_parameter	
+parameter	table: 0xb752d5c0
+127	2
+INDIRECT	61	0	:	116	2
+string
+error	0
+instruction	85
+id	27
+checksum	c@
+length	6
+raw_parameter	Ä
+parameter	table: 0xb752c318
+128	2
+INDIRECT	63	0	:	117	2
+string
+error	0
+instruction	85
+id	27
+checksum	`∆
+length	6
+raw_parameter	Å
+parameter	table: 0xb7529d58
+129	2
+INDIRECT	65	0	:	118	2
+string
+error	0
+instruction	85
+id	27
+checksum	`Ã
+length	6
+raw_parameter	Ç
+parameter	table: 0xb7527d30
+130	2
+INDIRECT	67	0	:	119	2
+string
+error	0
+instruction	85
+id	27
+checksum	cJ
+length	6
+raw_parameter	É
+parameter	table: 0xb750b648
+131	2
+INDIRECT	69	0	:	120	2
+string
+error	0
+instruction	85
+id	27
+checksum	`ÿ
+length	6
+raw_parameter	Ñ
+parameter	table: 0xb75335d8
+132	2
+INDIRECT	71	0	:	121	2
+string
+error	0
+instruction	85
+id	27
+checksum	c^
+length	6
+raw_parameter	Ö
+parameter	table: 0xb74fca28
+133	2

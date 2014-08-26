@@ -426,16 +426,55 @@ end
 -- Indirect data
 --indirect_data = {char(0x7A,2), 1},
 function libDynamixel.set_indirect_address(motor_ids, values, bus)
-	local indirect_address_base = char(49,0)
+	assert(type(bus)=='table', 'need a bus for this one')
+  local ptable = require'util'.ptable
 	local addresses = {}
 	for i, reg in ipairs(values) do
-		local register = assert(nx_registers[reg], 'BAD REGISTER FOR INDIRECT')
+		local register = assert(nx_registers[reg], 'BAD INDIRECT REGISTER')
 		local addr, sz = unpack(register)
+		local base_addr = addr:byte(1) + 256 * addr:byte(2)
 		for offset=0, sz-1 do
-			table.insert(addresses, addr + offset)
+			local addr_num = base_addr + offset
+			local high = addr_num % 256
+			local low = (addr_num - high) / 256
+			table.insert(addresses, {high, low})
 		end
 	end
-	print(table.concat(addresses), '\n')
+	for i, id in ipairs(motor_ids) do
+--		print('====', id)
+		local ind_base_addr, ind_offset = 49, 0
+		for a, addr in ipairs(addresses) do
+			local ind_addr = ind_base_addr + ind_offset
+			local ind_high = ind_addr % 256
+			local ind_low = (ind_addr - ind_high) / 256
+			local addr_high, addr_low = unpack(addr)
+			local addr_val = addr_high + addr_low * 256
+			ind_offset = ind_offset + 2
+--			print('INDIRECT', ind_high, ind_low, ':', addr_high, addr_low, addr_val)
+			local instruction = DP2.read_data(id, char(ind_high, ind_low), 2)
+			--[[
+			local instruction = DP2.write_word(
+				id,
+				char(ind_high, ind_low),
+				addr_val
+			)
+			--]]
+			local buf
+			repeat buf = unix.read(bus.fd) until not buf
+			-- Write the instruction to the bus
+			stty.flush(bus.fd)
+			unix.write(bus.fd, instruction)
+			local statuses = get_status(bus.fd, 1)
+			for p, stat in pairs(statuses) do
+--				print('CURRENT',unpack(stat.parameter))
+				if addr_high==stat.parameter[1] and addr_low==stat.parameter[2] then
+				else
+					print('NO GOOD! MUST UPDATE')
+					ptable(stat)
+				end
+			end
+		end
+	end
 end
 
 -- Get NX functions

@@ -18,4 +18,4 @@ if not one_chain then
 end
 
 local found_ids = left_leg:ping_probe()
-libDynamixel.set_indirect_address(found_ids, {'position', 'data'}, left_leg)
+lD.set_indirect_address(found_ids, {'position', 'data'}, left_leg)

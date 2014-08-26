@@ -167,8 +167,6 @@ local nx_registers = {
   ['data4_mode'] = {char(47,0x00),1},
   --
   ['shutdown'] = {char(48,0x00),1},
-	--
-	indirect_address = {char(49,0), 1},
 
   -- ENTER RAM AREA
   ['torque_enable'] = {char(0x32,0x02),1},
@@ -221,20 +219,11 @@ local nx_registers = {
   ['data4'] = {char(0x78,0x02),2},
   --
   ['data']  = {char(0x72,0x02),8},
-	
-	-- Indirect data
-	indirect_data = {char(0x7A,2), 1},
 
   -- Status return
   ['status_return_level'] = {char(0x7B,0x03),1},
 }
 libDynamixel.nx_registers = nx_registers
---[[
-libDynamixel.nx_registers = setmetatble(nx_registers,{
-	__index = function(t, k)
-  end
-})
---]]
 
 -- Assume MX and NX are at least similar
 libDynamixel.registers_sensor = {
@@ -432,6 +421,21 @@ for k,v in pairs(nx_registers) do
 			return get_status(bus.fd, 1)
 		end
   end --function
+end
+
+-- Indirect data
+--indirect_data = {char(0x7A,2), 1},
+function libDynamixel.set_indirect_address(motor_ids, values, bus)
+	local indirect_address_base = char(49,0)
+	local addresses = {}
+	for i, reg in ipairs(values) do
+		local register = assert(nx_registers[reg], 'BAD REGISTER FOR INDIRECT')
+		local addr, sz = unpack(register)
+		for offset=0, sz-1 do
+			table.insert(addresses, addr + offset)
+		end
+	end
+	print(table.concat(addresses), '\n')
 end
 
 -- Get NX functions

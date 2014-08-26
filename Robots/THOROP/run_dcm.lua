@@ -92,6 +92,7 @@ local left_ft = {
 	unloaded = ffi.new('double[6]', Config.left_ft.unloaded),
 	calibration_mat = ffi.new('double[6][6]', Config.left_ft.matrix),
 	calibration_gain = Config.left_ft.gain,
+	shm = dcm.sensorPtr.lfoot,
 }
 local right_ft = {
 	id = Config.right_ft.id,
@@ -102,6 +103,7 @@ local right_ft = {
 	unloaded = ffi.new('double[6]', Config.right_ft.unloaded),
 	calibration_mat = ffi.new('double[6][6]', Config.right_ft.matrix),
 	calibration_gain = Config.right_ft.gain,
+	shm = dcm.sensorPtr.rfoot,
 }
 
 -- Set the force and torque into memory
@@ -120,7 +122,7 @@ local function parse_ft(ft, raw_str, m_id)
 	else
 		return
 	end
---	print(ft.id, vector.slice(ft.component,0,5))
+	--if ft.id:find'217' then print(ft.id, vector.slice(ft.component, 0, 5)) end
 	-- New is always zeroed
 	ffi.fill(ft.readings, ffi.sizeof(ft.readings))
 	for i=0,5 do
@@ -131,8 +133,8 @@ local function parse_ft(ft, raw_str, m_id)
 				* ft.calibration_gain
 		end
 	end
-	--ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.shm))
-	if ft.id:find'216' then print(ft.id, vector.slice(ft.readings, 0, 5)) end
+	ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.readings))
+	--if ft.id:find'217' then print(ft.id, vector.slice(ft.readings, 0, 5)) end
 end
 
 -- Custom Leg Packet
@@ -153,7 +155,7 @@ local function parse_read_custom(pkt, bus)
 	p_ptr_t[read_j_id - 1] = t_read
 	-- Update the F/T Sensor
 	local raw_str = pkt.raw_parameter:sub(lD.nx_registers.position[2]+1)
-	parse_ft(left_ft, raw_str, m_id)
+	--parse_ft(left_ft, raw_str, m_id)
 	parse_ft(right_ft, raw_str, m_id)
 	return read_j_id
 end

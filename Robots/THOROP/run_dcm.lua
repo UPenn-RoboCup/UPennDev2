@@ -16,7 +16,7 @@ local signal = require'signal'
 local ffi = require'ffi'
 
 -- Timeouts
-local WRITE_TIMEOUT = 1 / 320
+local WRITE_TIMEOUT = 1 / 250
 local READ_TIMEOUT = 1 / 250
 
 -- Setup the channels
@@ -639,11 +639,9 @@ while is_running do
 			string.format('\nDCM | Uptime %.2f sec, Mem: %d kB', t_start - t0, collectgarbage('count')),
 		}
 		for bname, bus in pairs(named_buses) do
-			insert(debug_str, string.format(
-				'%s Command @ %.1f Hz | Read @ %.1f (%d / %d timeouts)',
-					bname, bus.cmds_cnt / dt_debug, bus.reads_cnt / dt_debug bus.n_read_timeouts, bus.reads_cnt
-				)
-			)
+			insert(debug_str,
+			string.format('%s Command @ %.1f Hz | Read [%d / %d timeouts]',
+				bname, bus.cmds_cnt / dt_debug, bus.n_read_timeouts, bus.reads_cnt))
       bus.reads_cnt = 0
 			bus.cmds_cnt = 0
       bus.n_read_timeouts = 0

@@ -267,8 +267,8 @@ function state.exit()
   end
   mcm.set_walk_ismoving(0) --We are stopped
   --now disable leg joint reading
-  Body.disable_read'lleg'
-  Body.disable_read'rleg'
+  --Body.disable_read'lleg'
+  --Body.disable_read'rleg'
   wcm.set_robot_initdone(1)
 
 end

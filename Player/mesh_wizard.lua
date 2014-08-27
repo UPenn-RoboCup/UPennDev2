@@ -2,12 +2,11 @@
 -- Accumulate lidar readings into an image for mesh viewing
 -- (c) Stephen McGill, Seung Joon Yi, 2013, 2014
 dofile'../include.lua'
+local ffi = require'ffi'
+local torch = require'torch'
 local si = require'simple_ipc'
 local mpack = require'msgpack.MessagePack'.pack
 local munpack = require('msgpack.MessagePack')['unpack']
-local torch = require'torch'
-local util = require'util'
-local ffi = require'ffi'
 local p_compress = require'png'.compress
 local j_compress = require'jpeg'.compressor'gray'
 require'vcm'
@@ -29,9 +28,8 @@ else
 end
 local stream = Config.net.streams['mesh']
 local mesh_tcp_ch = si.new_publisher(stream.tcp, operator)
-local mesh_udp_ch = si.new_sender(operator, stream.udp)
-print('OPERATOR', operator)
-util.ptable(stream)
+local mesh_udp_ch = require'udp'.new_sender(operator, stream.udp)
+print('OPERATOR', operator, stream.udp, stream.tcp)
 
 local metadata = {
 	name = 'mesh0',
@@ -39,7 +37,7 @@ local metadata = {
 
 -- Setup tensors for a lidar mesh
 local mesh, mesh_byte, mesh_adj, scan_angles, offset_idx
-local n_returns, n_scanlines
+local n_scanlines
 local function setup_mesh(meta)
 	local n, res = meta.n, meta.res
 	local fov = n * res
@@ -54,6 +52,7 @@ local function setup_mesh(meta)
   offset_idx = math.floor(fov_offset + 0.5)
 	-- Round to get the number of returns for each scanline
 	n_returns = math.floor((max_view - min_view) / res + 0.5)
+	print("n_returns", n_returns, max_view, min_view, res)
 	-- Check the number of scanlines in each mesh
 	-- Indexed by the actuator angle
 	-- Depends on the speed we use
@@ -189,14 +188,15 @@ local function update(meta, ranges)
 	local rad_angle = meta.angle
   local scanlines = angle_to_scanlines(rad_angle)
   -- Update each outdated scanline in the mesh
-	local byte_sz = n_returns * ffi.sizeof'float'
+	local byte_sz = mesh:size(2) * ffi.sizeof'float'
 	
   for _,line in ipairs(scanlines) do
 		-- TODO: Save the pose into each scanline
 		-- Perform the copy. NOTE: mesh:select(1, line) must be contiguous!
 		if line >= 1 and line<=n_scanlines then
-			--cutil.string2tensor(ranges, mesh:select(1,line), mesh:size(2), offset_idx)
-			ffi.copy(mesh:select(1, line):data(), ffi.cast('float*', ranges) + offset_idx, byte_sz)
+			local dest = mesh:select(1, line)
+			--cutil.string2tensor(ranges, dest, mesh:size(2), offset_idx)
+			ffi.copy(dest:data(), ffi.cast('float*', ranges) + offset_idx, byte_sz)
 			-- Save the pan angle
 			scan_angles[line] = rad_angle
 		end

@@ -96,30 +96,28 @@ local left_ft = {
 }
 
 -- Set the force and torque into memory
-local function parse_ft(ft_tbl, raw_str, m_id)
-	if true then return end
-	ffi.copy(ft_raw_c, raw_str, 8)
+local function parse_ft(ft, raw_str, m_id)
+	ffi.copy(ft.raw, raw_str, 8)
 	-- Lower ID has the 2 components
 	if m_id==ft_tbl.m_ids[1] then
-		ft_component_c[0] = 3.3 * ft_raw_c[0] / 4095
-		ft_component_c[1] = 3.3 * ft_raw_c[1] / 4095
-		ft_component_c[2] = 3.3 * ft_raw_c[2] / 4095
-		ft_component_c[3] = 3.3 * ft_raw_c[3] / 4095
+		ft.component[0] = 3.3 * ft.raw[0] / 4095
+		ft.component[1] = 3.3 * ft.raw[1] / 4095
+		ft.component[2] = 3.3 * ft.raw[2] / 4095
+		ft.component[3] = 3.3 * ft.raw[3] / 4095
 	else
-		ft_component_c[4] = 3.3 * ft_raw_c[0] / 4095
-		ft_component_c[5] = 3.3 * ft_raw_c[1] / 4095
+		ft.component[4] = 3.3 * ft.raw[0] / 4095
+		ft.component[5] = 3.3 * ft.raw[1] / 4095
 	end
 	-- New is always zeroed
-	ffi.fill(ft_readings_c, ffi.sizeof(ft_readings_c))
+	ffi.fill(ft.readings, ffi.sizeof(ft.readings))
 	for i=0,5 do
 		for j=0,5 do
-			ft_readings_c[i] = ft_readings_c[i]
-				+ calib_matrix_c[i][j]
-				* (ft_component_c[j] - unloaded_voltage_c[j])
-				* calib_matrix_gain
+			ft.readings[i] = ft.readings[i]
+				+ ft.calibration_mat[i][j]
+				* (ft.component[j] - ft.unloaded[j])
+				* ft.calibration_gain
 		end
 	end
-	return ft_readings_c
 end
 
 -- Custom Leg Packet
@@ -139,7 +137,7 @@ local function parse_read_custom(pkt, bus)
 	p_ptr[read_j_id - 1] = read_rad
 	p_ptr_t[read_j_id - 1] = t_read
 	-- Update the F/T Sensor
-	parse_ft()
+	parse_ft(left_ft, pkt.raw_parameter:sub(lD.nx_registers.position[2]+1), m_id)
 	return read_j_id
 end
 

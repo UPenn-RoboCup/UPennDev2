@@ -84,24 +84,24 @@ end
 
 -- Make the cdata for each ft sensor
 local left_ft = {
+	id = Config.left_ft.id,
+	m_ids = Config.left_ft.m_ids,
 	raw = ffi.new'int16_t[4]',
 	readings = ffi.new'double[6]',
 	component = ffi.new'double[6]',
 	unloaded = ffi.new('double[6]', Config.left_ft.unloaded),
 	calibration_mat = ffi.new('double[6][6]', Config.left_ft.matrix),
 	calibration_gain = Config.left_ft.gain,
-	m_ids = {24, 26},
-	shm = dcm.sensorPtr.lfoot
 }
 local right_ft = {
+	id = Config.right_ft.id,
+	m_ids = Config.right_ft.m_ids,
 	raw = ffi.new'int16_t[4]',
 	readings = ffi.new'double[6]',
 	component = ffi.new'double[6]',
 	unloaded = ffi.new('double[6]', Config.right_ft.unloaded),
 	calibration_mat = ffi.new('double[6][6]', Config.right_ft.matrix),
 	calibration_gain = Config.right_ft.gain,
-	m_ids = {23, 25},
-	shm = dcm.sensorPtr.rfoot
 }
 
 -- Set the force and torque into memory
@@ -132,7 +132,7 @@ local function parse_ft(ft, raw_str, m_id)
 		end
 	end
 	--ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.shm))
-	--return vector.slice(ft.readings, 0, 5)
+	print(ft.id, vector.slice(ft.readings, 0, 5))
 end
 
 -- Custom Leg Packet
@@ -152,7 +152,9 @@ local function parse_read_custom(pkt, bus)
 	p_ptr[read_j_id - 1] = read_rad
 	p_ptr_t[read_j_id - 1] = t_read
 	-- Update the F/T Sensor
-	parse_ft(left_ft, pkt.raw_parameter:sub(lD.nx_registers.position[2]+1), m_id)
+	local raw_str = pkt.raw_parameter:sub(lD.nx_registers.position[2]+1)
+	parse_ft(left_ft, raw_str, m_id)
+	parse_ft(right_ft, raw_str, m_id)
 	return read_j_id
 end
 

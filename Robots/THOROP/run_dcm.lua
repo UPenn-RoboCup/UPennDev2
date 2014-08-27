@@ -415,15 +415,15 @@ local function output_co(bus)
 				-- MX sync does not work for some reason
 				lD.set_bulk(char(unpack(send_ids)), cmd_addrs, commands, bus)
 			end
+			bus.cmds_cnt = bus.cmds_cnt + 1
 			coroutine.yield(0)
---		else
---			coroutine.yield(0)
 		end
 		-- Run the parent queue until a write to the bus
 		request = table.remove(bus.request_queue, 1)
 		while request do
 			n, reg = do_external(request, bus)
 			if n then
+				--bus.reads_cnt = bus.reads_cnt + n
 				coroutine.yield(n, reg)
 				break
 			end
@@ -434,6 +434,8 @@ local function output_co(bus)
 		if bus.enable_read then
       bus:send_instruction(bus.read_loop_cmd_str)
       bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_n
+			bus.reads_cnt = bus.reads_cnt + bus.read_loop_cmd_n
+			bus.reqs_cnt = bus.reqs_cnt + 1
 			coroutine.yield(bus.read_loop_cmd_n, bus.read_loop_cmd)
 		else
 			for i, m_id in ipairs(m_ids) do
@@ -490,6 +492,7 @@ local function initialize(bus)
 	bus.request_queue = {}
   bus.cmds_cnt = 0
   bus.reads_cnt = 0
+	bus.reqs_cnt = 0
 	-- Add the fd
 	insert(_fds, bus.fd)
 	-- Populate the IDs of the bus
@@ -586,12 +589,6 @@ while is_running do
 		-- We may output a read request
     if bus.npkt_to_expect < 1 then
 			bus.npkt_to_expect, bus.read_reg = bus.output_co()
-			--if bname=='larm' then print(bus.npkt_to_expect) end
-			if bus.npkt_to_expect == 0 then
-    		bus.cmds_cnt = bus.cmds_cnt + 1
-			else
-    		bus.reads_cnt = bus.reads_cnt + bus.npkt_to_expect
-      end
     end
 	end
 	-- Load data from the bus into the input coroutine
@@ -628,7 +625,7 @@ while is_running do
       collectgarbage'step'
     end
 ----[[
-		sel_wait = WRITE_TIMEOUT - (get_time() - t_start) - 1e-3
+		sel_wait = WRITE_TIMEOUT - (get_time() - t_start)
   end
 --]]
 	-- Debug messages for the user
@@ -640,8 +637,8 @@ while is_running do
 		}
 		for bname, bus in pairs(named_buses) do
 			insert(debug_str,
-			string.format('%s Command @ %.1f Hz | Read [%d / %d timeouts]',
-				bname, bus.cmds_cnt / dt_debug, bus.n_read_timeouts, bus.reads_cnt))
+			string.format('%s Command @ %.1f Hz | Read @ %.1f Hz [%d / %d timeouts]',
+				bname, bus.cmds_cnt / dt_debug, bus.reqs_cnt / dt_debug, bus.n_read_timeouts, bus.reads_cnt))
       bus.reads_cnt = 0
 			bus.cmds_cnt = 0
       bus.n_read_timeouts = 0

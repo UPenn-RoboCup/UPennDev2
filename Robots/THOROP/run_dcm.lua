@@ -83,6 +83,68 @@ local function step_to_radian(idx, step)
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
 
+-- Make the cdata for each ft sensor
+local left_ft = {
+	raw = ffi.new'int16_t[4]',
+	readings = ffi.new'double[6]'
+	components = ffi.new'double[6]',
+	unloaded = ffi.new('double[6]', ft_config.unloaded),
+	calibration_mat = ffi.new('double[6][6]', ft_config.matrix),
+	calibration_gain = ft_config.gain,
+	m_ids = {}
+}
+
+-- Set the force and torque into memory
+local function parse_ft(ft_tbl, raw_str, m_id)
+	if true then
+		print('PARSE FT')
+		return
+	end
+	ffi.copy(ft_raw_c, raw_str, 8)
+	-- Lower ID has the 2 components
+	if m_id==ft_tbl.m_ids[1] then
+		ft_component_c[0] = 3.3 * ft_raw_c[0] / 4095
+		ft_component_c[1] = 3.3 * ft_raw_c[1] / 4095
+		ft_component_c[2] = 3.3 * ft_raw_c[2] / 4095
+		ft_component_c[3] = 3.3 * ft_raw_c[3] / 4095
+	else
+		ft_component_c[4] = 3.3 * ft_raw_c[0] / 4095
+		ft_component_c[5] = 3.3 * ft_raw_c[1] / 4095
+	end
+	-- New is always zeroed
+	ffi.fill(ft_readings_c, ffi.sizeof(ft_readings_c))
+	for i=0,5 do
+		for j=0,5 do
+			ft_readings_c[i] = ft_readings_c[i]
+				+ calib_matrix_c[i][j]
+				* (ft_component_c[j] - unloaded_voltage_c[j])
+				* calib_matrix_gain
+		end
+	end
+	return ft_readings_c
+end
+
+-- Custom Leg Packet
+local custom_sz = lD.nx_registers.position[2]+lD.nx_registers.data[2]
+local function parse_read_custom(pkt, bus)
+	-- Nothing to do if an error
+	if pkt.error ~= 0 then return end
+	-- Assume just reading position, for now
+	local m_id = pkt.id
+	local read_j_id = m_to_j[m_id]
+	local read_val
+	-- Assume NX, since leg
+	if #pkt.parameter ~= custom_sz then return end
+	-- Set Position in SHM
+	read_val = p_parse(unpack(pkt.parameter, 1, lD.nx_registers.position[2]))
+	local read_rad = step_to_radian(read_j_id, read_val)
+	p_ptr[read_j_id - 1] = read_rad
+	p_ptr_t[read_j_id - 1] = t_read
+	-- Update the F/T Sensor
+	parse_ft()
+	return read_j_id
+end
+
 -- Position Packet
 local function parse_read_position(pkt, bus)
 	-- Nothing to do if an error
@@ -102,26 +164,7 @@ local function parse_read_position(pkt, bus)
 	-- Set in Shared memory
 	p_ptr[read_j_id - 1] = read_rad
 	p_ptr_t[read_j_id - 1] = t_read
-	return read_j_id, read_rad
-end
-
--- Custom Leg Packet
-local function parse_read_custom(pkt, bus)
-	-- Nothing to do if an error
-	if pkt.error ~= 0 then return end
-	-- Assume just reading position, for now
-	local m_id = pkt.id
-	local read_j_id = m_to_j[m_id]
-	local read_val
-	-- Assume NX, since leg
-	--if #pkt.parameter~=lD.nx_registers.position[2] then return end
-	-- First, just the read part
-	read_val = p_parse(unpack(pkt.parameter, 1, lD.nx_registers.position[2]))
-	local read_rad = step_to_radian(read_j_id, read_val)
-	-- Set in Shared memory
-	p_ptr[read_j_id - 1] = read_rad
-	p_ptr_t[read_j_id - 1] = t_read
-	return read_j_id, read_rad
+	return read_j_id
 end
 
 -- General Read Packet
@@ -145,7 +188,7 @@ local function parse_read_packet(pkt, bus)
   if not ptr or not ptr_t then return end
 	ptr[read_j_id - 1] = j_val
 	ptr_t[read_j_id - 1] = t_read
-	return read_j_id, j_val
+	return read_j_id
 end
 
 -- Packet parsing lookup
@@ -200,57 +243,6 @@ local function form_read_loop_cmd(bus, cmd)
 	end
   bus.read_loop_cmd_n = #bus.m_ids
 	bus.read_loop_cmd = cmd
-end
-
-------------------------
--- Get Force & Torque --
-------------------------
-local function get_ft(ft_motors, ft_config, bus)
-	local status = lD.get_nx_data(ft_motors, bus)
-	-- Return if receive nothing
-	if not status then return end
-	local s1, s2 = status[1], status[2]
-	-- Need both readings for an actual FT reading
-	if not s1 or not s2 then return end
-	-- Make the cdata
-	local ft_raw_c, ft_ptr = ffi.new'int16_t[4]'
-	local ft_component_c = ffi.new'double[6]'
-	local ft_readings_c = ffi.new'double[6]'
-	-- Load the calibration
-	local unloaded_voltage_c = ffi.new('double[6]', ft_config.unloaded)
-	local calib_matrix_c = ffi.new('double[6][6]', ft_config.matrix)
-	local calib_matrix_gain = ft_config.gain
-	-- Lower ID has the 2 components
-	if s1.id==ft_motors[1] then
-		ffi.copy(ft_raw_c, s2.raw_parameter, 8)
-		ft_component_c[0] = 3.3 * ft_raw_c[0] / 4095
-		ft_component_c[1] = 3.3 * ft_raw_c[1] / 4095
-		ft_component_c[2] = 3.3 * ft_raw_c[2] / 4095
-		ft_component_c[3] = 3.3 * ft_raw_c[3] / 4095
-		ffi.copy(ft_raw_c, s1.raw_parameter, 8)
-		ft_component_c[4] = 3.3 * ft_raw_c[0] / 4095
-		ft_component_c[5] = 3.3 * ft_raw_c[1] / 4095
-	else
-		ffi.copy(ft_raw_c, s2.raw_parameter, 8)
-		ft_component_c[0] = 3.3 * ft_raw_c[0] / 4095
-		ft_component_c[1] = 3.3 * ft_raw_c[1] / 4095
-		ft_component_c[2] = 3.3 * ft_raw_c[2] / 4095
-		ft_component_c[3] = 3.3 * ft_raw_c[3] / 4095
-		ffi.copy(ft_raw_c, s1.raw_parameter, 8)
-		ft_component_c[4] = 3.3 * ft_raw_c[0] / 4095
-		ft_component_c[5] = 3.3 * ft_raw_c[1] / 4095
-	end
-	-- New is always zeroed
-	ffi.fill(ft_readings_c, ffi.sizeof(ft_readings_c))
-	for i=0,5 do
-		for j=0,5 do
-			ft_readings_c[i] = ft_readings_c[i]
-				+ calib_matrix_c[i][j]
-				* (ft_component_c[j] - unloaded_voltage_c[j])
-				* calib_matrix_gain
-		end
-	end
-	return ft_readings_c
 end
 
 -- Parent command handling

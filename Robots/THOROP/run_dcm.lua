@@ -412,12 +412,12 @@ local function output_co(bus)
 			elseif has_nx then
 				lD.set_nx_command_position(send_ids, commands, bus)
 			else
+				-- MX sync does not work for some reason
 				lD.set_bulk(char(unpack(send_ids)), cmd_addrs, commands, bus)
---				lD.set_nx_command_position(send_ids, commands, bus)
 			end
 			coroutine.yield(0)
-		else
-			coroutine.yield(0)
+--		else
+--			coroutine.yield(0)
 		end
 		-- Run the parent queue until a write to the bus
 		request = table.remove(bus.request_queue, 1)
@@ -640,7 +640,9 @@ while is_running do
 		}
 		for bname, bus in pairs(named_buses) do
 			insert(debug_str, string.format(
-				'%s Command Rate %.1f Hz with %d timeouts of %d reads', bname, bus.cmds_cnt / dt_debug, bus.n_read_timeouts, bus.reads_cnt)
+				'%s Command @ %.1f Hz | Read @ %.1f (%d / %d timeouts)',
+					bname, bus.cmds_cnt / dt_debug, bus.reads_cnt / dt_debug bus.n_read_timeouts, bus.reads_cnt
+				)
 			)
       bus.reads_cnt = 0
 			bus.cmds_cnt = 0

@@ -9,6 +9,7 @@ local mpack = require'msgpack.MessagePack'.pack
 local munpack = require('msgpack.MessagePack')['unpack']
 local p_compress = require'png'.compress
 local j_compress = require'jpeg'.compressor'gray'
+local vector = require'vector'
 require'vcm'
 
 -- Shared with LidarFSM

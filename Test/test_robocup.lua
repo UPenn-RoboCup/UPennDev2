@@ -1,6 +1,7 @@
 #!/usr/bin/env luajit
 -- (c) 2014 Team THORwIn
-dofile'../fiddle.lua'
+local ok = pcall(dofile,'../fiddle.lua')
+if not ok then dofile'fiddle.lua' end
 
 local targetvel = {0,0,0}
 local targetvel_new = {0,0,0}

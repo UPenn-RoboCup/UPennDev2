@@ -109,14 +109,14 @@ local function parse_ft(ft, raw_str, m_id)
 	-- Lower ID has the 2 components
 	if m_id==ft.m_ids[1] then
 		ffi.copy(ft.raw, raw_str, 8)
-		ft.component[0] = 3.3 * ft.raw[0] / 4095
-		ft.component[1] = 3.3 * ft.raw[1] / 4095
-		ft.component[2] = 3.3 * ft.raw[2] / 4095
-		ft.component[3] = 3.3 * ft.raw[3] / 4095
+		ft.component[0] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[0]
+		ft.component[1] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[1]
+		ft.component[2] = 3.3 * ft.raw[2] / 4095 - ft.unloaded[2]
+		ft.component[3] = 3.3 * ft.raw[3] / 4095 - ft.unloaded[3]
 	elseif m_id==ft.m_ids[2] then
 		ffi.copy(ft.raw, raw_str, 4)
-		ft.component[4] = 3.3 * ft.raw[0] / 4095
-		ft.component[5] = 3.3 * ft.raw[1] / 4095
+		ft.component[4] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[4]
+		ft.component[5] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[5]
 	else
 		return
 	end
@@ -127,11 +127,11 @@ local function parse_ft(ft, raw_str, m_id)
 		for j=0,5 do
 			ft.readings[i] = ft.readings[i]
 				+ ft.calibration_mat[i][j]
-				* (ft.component[j] - ft.unloaded[j])
+				* ft.component[j]
 				* ft.calibration_gain
 		end
 	end
-	ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.shm))
+	--ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.shm))
 	--return vector.slice(ft.readings, 0, 5)
 end
 

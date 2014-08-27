@@ -7,6 +7,7 @@ local mpack = require'msgpack.MessagePack'.pack
 local munpack = require('msgpack.MessagePack')['unpack']
 local torch = require'torch'
 local util = require'util'
+local ffi = require'ffi'
 local p_compress = require'png'.compress
 local j_compress = require'jpeg'.compressor'gray'
 require'vcm'
@@ -24,11 +25,13 @@ local operator
 if Config.net.use_wireless then
 	operator = Config.net.operator.wireless
 else
-	operator = Config.net.operator.wired_broadcast
+	operator = Config.net.operator.wired
 end
 local stream = Config.net.streams['mesh']
 local mesh_tcp_ch = si.new_publisher(stream.tcp, operator)
 local mesh_udp_ch = si.new_sender(operator, stream.udp)
+print('OPERATOR', operator)
+util.ptable(stream)
 
 local metadata = {
 	name = 'mesh0',
@@ -104,7 +107,10 @@ end
 
 local function send_mesh(destination, compression, dynrange)
   local near, far = unpack(dynrange)
-	if near>far then return end
+	if near>far then
+		print('Near greater than far...')
+		return
+	end
   -- Enhance the dynamic range of the mesh image
   mesh_adj:copy(mesh):add(-near)
   mesh_adj:mul(255/(far-near))
@@ -121,6 +127,7 @@ local function send_mesh(destination, compression, dynrange)
   else
     -- raw data?
 		-- Maybe needed for sending a mesh to another process
+		print('No raw sending support...')
     return
   end
 	-- Update relevant metadata
@@ -136,11 +143,13 @@ local function send_mesh(destination, compression, dynrange)
 		f_img:close()
 		f_meta:write(mpack(metadata))
 		f_meta:close()
+		print('Mesh | Wrote local')
 	elseif destination then
 		mesh_tcp_ch:send{mpack(metadata), c_mesh}
+		print('Mesh | Sent TCP')
 	else
 		local ret, err = mesh_udp_ch:send(mpack(metadata)..c_mesh)
-		if err then return err end
+		print('Mesh | Sent UDP', err)
 	end
 end
 
@@ -153,7 +162,6 @@ local function check_send_mesh()
 	-- Reset the request
 	net[1] = 0
 	vcm.set_mesh_net(net)
-	print('Mesh | Sent')
 end
 
 local function update(meta, ranges)

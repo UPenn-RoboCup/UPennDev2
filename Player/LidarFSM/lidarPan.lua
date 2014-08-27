@@ -42,6 +42,9 @@ function state.entry()
 		if ph>1.1 or ph<.1 then print('LIDAR WAY OUT OF PHASE') end
 	end
 
+	-- Torque enable
+	Body.set_lidar_torque_enable(1)
+
 end
 
 function state.update()

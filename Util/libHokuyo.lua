@@ -6,6 +6,7 @@ local libHokuyo = {}
 local HokuyoPacket = require'HokuyoPacket'
 local stty = require'stty'
 local unix = require'unix'
+local unix = unix or require'unix'
 local tcp = require'tcp'
 
 -- Reading properties
@@ -82,13 +83,13 @@ local data_encoding = {
 	[2] = 'MS',
 	[3] = 'MD',
 }
--------------------------
+
 -- Form the stream command
 local create_scan_request = 
 function(scan_start, scan_end, scan_skip, encoding, scan_type, num_scans)
 
-	local enc = data_encoding[encoding]
-	assert(num_scans~=0 and enc, 'Invalid scan request')
+	local enc = assert(data_encoding[encoding], "BAD ENCODING")
+--	assert(num_scans~=0, 'Invalid scan request')
 
 	return string.format(
 		"%s%04d%04d%02x0%02d\n",
@@ -207,27 +208,23 @@ local set_baudrate = function(self, baud)
 --	local res = write_command(self.fd, cmd, '04')
 end
 
+function close_hokuyo(self)
+	return unix.close(self.fd) == 0
+end
+
 ---------------------------
 -- Service multiple hokuyos over ethernet
 local new_hokuyo_net = function(host_id)
   local host = string.format('192.168.0.%d',host_id)
-	-- Open the tcp client
   local fd = tcp.open(host, 10940, 1)
-  
-	-----------
 	-- Begin the Hokuyo object
-	local obj = {}
-
-	-----------
-	-- Set the TCP data
-	obj.fd = fd
-	obj.host = host 
-	obj.port = port
-	obj.close = function(self)
-		return unix.close(self.fd) == 0
-	end
+	local obj = {
+		fd = fd,
+		host = host,
+		port = port,
+		close = close_hokuyo
+	}
   
-	-----------
 	-- Set the methods for accessing the data
 	obj.stream_on = stream_on
 	obj.stream_off = stream_off
@@ -240,22 +237,18 @@ local new_hokuyo_net = function(host_id)
 	obj.scan_request = create_scan_request(0, 1080, 1, obj.char_encoding, 0, 0)
 	obj.parse = HokuyoPacket.parse
 	-- TODO: Use sensor_params.scan_rate
-	obj.update_time = 1/40
-	hokuyo.res = 360 / 1440
-	-----------
+	obj.update_time = 1 / 40
+	obj.res = 360 / 1440
+	obj.n = 1081
 
-	-----------
 	-- Setup the Hokuyo properly
   if not obj:stream_off() then
     obj:close()
-    return nil
+    return
   end
---	obj:set_baudrate(baud)
 	obj.params = obj:get_sensor_params()
 	obj.info = obj:get_sensor_info()
-	-----------
 
-	-----------
 	-- Return the hokuyo object
 	return obj
 end

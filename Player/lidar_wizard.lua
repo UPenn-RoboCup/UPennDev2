@@ -5,20 +5,22 @@
 ---------------------------------
 dofile'../include.lua'
 
+local unix = unix or require'unix'
 local libHokuyo  = require'libHokuyo'
 local signal = require'signal'.signal
-local get_time = require'unix'.time
+local get_time = unix.time
 local mpack = require'msgpack'.pack
 local color = require'util'.color
 local si = require'simple_ipc'
+local Body = require'Body'
 
 local cb = function(self, data)
 	self.ch:send({
 	mpack({
 		t = get_time(),
-		n = #scan,
+		n = self.n,
 		res = self.res,
-		name = self.name,
+		angle = Body.get_lidar_position()
 	}),
 	data})
 end

@@ -37,7 +37,7 @@ shared.us.distance  = vector.zeros(2)
 -- Mesh formation
 shared.mesh = {}
 -- Sweep: Field of View (radians), time to complete sweep (seconds)
-shared.mesh.sweep = {math.pi/2, 3}
+shared.mesh.sweep = {80 * DEG_TO_RAD, 2}
 -- fov: In a single scan, which ranges to use (field of view)
 -- Like pitch: positive is down, negative is up. 90 deg is straight down
 shared.mesh.fov = {0, math.pi/2}

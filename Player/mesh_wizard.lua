@@ -28,11 +28,11 @@ else
 end
 local stream = Config.net.streams['mesh']
 local mesh_tcp_ch = si.new_publisher(stream.tcp, operator)
-local mesh_udp_ch = require'udp'.new_sender(operator, stream.udp)
-print('OPERATOR', operator, stream.udp, stream.tcp)
+local mesh_udp_ch = si.new_sender(operator, stream.udp)
 
 local metadata = {
 	name = 'mesh0',
+	t = 0,
 }
 
 -- Setup tensors for a lidar mesh
@@ -57,25 +57,38 @@ local function setup_mesh(meta)
 	-- Indexed by the actuator angle
 	-- Depends on the speed we use
 	n_scanlines = math.floor(t_sweep / t_scan + 0.5)
-	--print('Tracking', n_scanlines, 'scanlines with ', n_returns, 'returns each')
-  -- TODO: Pose information for each scanline
   -- In-memory mesh
   mesh = torch.FloatTensor(n_scanlines, n_returns):zero()
   -- Mesh buffers for compressing and sending to the user
 	mesh_adj  = torch.FloatTensor(n_scanlines, n_returns)
   mesh_byte = torch.ByteTensor(n_scanlines, n_returns)
-  -- Save the exact actuator angles of every scan
-  --scan_angles = torch.DoubleTensor(n_scanlines):zero()
-	scan_angles = vector.zeros(n_scanlines)
-	-- Metadata
+  -- Data for each scanline
+	if TORCH_SCANLINE_INFO then
+		scan_angles = torch.DoubleTensor(n_scanlines):zero()
+		scan_x = torch.DoubleTensor(n_scanlines):zero()
+		scan_y = torch.DoubleTensor(n_scanlines):zero()
+		scan_a = torch.DoubleTensor(n_scanlines):zero()
+	else
+		scan_angles = vector.zeros(n_scanlines)
+		scan_x = vector.zeros(n_scanlines)
+		scan_y = vector.zeros(n_scanlines)
+		scan_a = vector.zeros(n_scanlines)
+	end
+	-- Metadata for the mesh
+	metadata.rfov = ranges_fov
+	metadata.sfov = {-mag_sweep / 2, mag_sweep / 2}
 	metadata.a = scan_angles
+	metadata.px = scan_x
+	metadata.py = scan_y
+	metadata.pa = scan_a
+	-- TODO: Add IMU for body orientation
 end
 
 -- Convert a pan angle to a column of the chest mesh image
 local scanline, direction
 local function angle_to_scanlines(rad)
 	-- Find the scanline
-  local ratio = (rad + mag_sweep / 2)/mag_sweep
+  local ratio = (rad + mag_sweep / 2) / mag_sweep
   local scanline_now = math.floor(ratio*n_scanlines+.5)
   scanline_now = math.max(math.min(scanline_now, n_scanlines), 1)
 	local prev_scanline = scanline or scanline_now
@@ -96,10 +109,10 @@ local function angle_to_scanlines(rad)
 	end
 	-- Changed directions, so populate the borders, too
 	if direction > 0 then
-		local fill_line = math.max(prev_scanline-1, scanline)
+		local fill_line = math.max(prev_scanline - 1, scanline)
 		for s=1,fill_line do table.insert(scanlines, s) end
 	else
-		local fill_line = math.min(prev_scanline+1, scanline)
+		local fill_line = math.min(prev_scanline + 1, scanline)
 		for s=fill_line,n_scanlines do table.insert(scanlines, s) end
 	end
   return scanlines
@@ -133,8 +146,6 @@ local function send_mesh(destination, compression, dynrange)
 	-- Update relevant metadata
 	metadata.c = compression
 	metadata.dr = dynrange
-	metadata.rfov = ranges_fov
-	metadata.sfov = {-mag_sweep / 2, mag_sweep / 2}
 	-- Send away
 	if type(destination)=='string' then
 		local f_img = io.open(destination..'.'..metadata.c, 'w')
@@ -149,7 +160,7 @@ local function send_mesh(destination, compression, dynrange)
 		print('Mesh | Sent TCP')
 	else
 		local ret, err = mesh_udp_ch:send(mpack(metadata)..c_mesh)
-		print('Mesh | Sent UDP', err)
+		print('Mesh | Sent UDP', err or 'successfully')
 	end
 end
 
@@ -168,10 +179,9 @@ local function update(meta, ranges)
 	-- Check shared parameters
 	local mag_sweep0, t_sweep0 = unpack(vcm.get_mesh_sweep())
 	local ranges_fov0 = vcm.get_mesh_fov()
-	-- Some simple safety checks
 	mag_sweep0 = math.min(math.max(mag_sweep0, 10 * DEG_TO_RAD), math.pi)
 	t_sweep0 = math.min(math.max(t_sweep0, 1), 20)
-	-- Update the points
+	-- Check if updated parameters
 	if not mesh or mag_sweep~=mag_sweep0 or t_sweep~=t_sweep0 or ranges_fov~=ranges_fov0 then
 		mag_sweep = mag_sweep0
 		t_sweep = t_sweep0
@@ -179,30 +189,23 @@ local function update(meta, ranges)
 		setup_mesh(meta)
 		print('Mesh | Updated containers')
 	end
-	-- Save the latest lidar timestamp
-	metadata.t = meta.t
-	-- TODO: Save the rpy of the body
-	--metadata.rpy = meta.rpy
-  -- TODO: Save the body pose info
-  --local px, py, pa = unpack(meta.pose)
-  -- Insert into the correct column
+  -- Find the scanline indices
 	local rad_angle = meta.angle
   local scanlines = angle_to_scanlines(rad_angle)
-  -- Update each outdated scanline in the mesh
 	local byte_sz = mesh:size(2) * ffi.sizeof'float'
-	
+	local float_ranges = ffi.cast('float*', ranges)
+	local dest
   for _,line in ipairs(scanlines) do
-		-- TODO: Save the pose into each scanline
-		-- Perform the copy. NOTE: mesh:select(1, line) must be contiguous!
 		if line >= 1 and line<=n_scanlines then
-			local dest = mesh:select(1, line)
-			--cutil.string2tensor(ranges, dest, mesh:size(2), offset_idx)
-			ffi.copy(dest:data(), ffi.cast('float*', ranges) + offset_idx, byte_sz)
+			dest = mesh:select(1, line) -- NOTE: must be contiguous
+			ffi.copy(dest:data(), float_ranges + offset_idx, byte_sz)
 			-- Save the pan angle
 			scan_angles[line] = rad_angle
+			-- TODO: Save the pose
 		end
   end
 	-- Check for sending out on the wire
+	-- TODO: This *should* be from another ZeroMQ event, in case the lidar dies
 	check_send_mesh()
 end
 

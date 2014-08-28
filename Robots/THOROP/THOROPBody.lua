@@ -496,15 +496,18 @@ if IS_WEBOTS then
 
     -- FSR
     if ENABLE_FSR then
-      dcm.sensorPtr.lfoot[0] = webots.wb_touch_sensor_get_value(tags.l_fsr)*4
-      dcm.sensorPtr.rfoot[0] = webots.wb_touch_sensor_get_value(tags.r_fsr)*4
+      dcm.sensorPtr.lfoot[0] = webots.wb_touch_sensor_get_value(tags.l_fsr)
+      dcm.sensorPtr.rfoot[0] = webots.wb_touch_sensor_get_value(tags.r_fsr)
     end
 		
-		-- FSR
+		-- F/T sensor
     if ENABLE_FT then
-      local l_ft = webots.wb_touch_sensor_get_values(tags.l_ft)
-      local r_ft = webots.wb_touch_sensor_get_values(tags.r_ft)
-			--print('FT', l_ft, r_ft)
+			local l_ft = Body.get_lfoot()
+			l_ft[1], l_ft[2], l_ft[3] = unpack(webots.wb_touch_sensor_get_values(tags.l_ft))
+			dcm.set_sensor_lfoot(l_ft)
+      local r_ft = Body.get_rfoot()
+			r_ft[1], r_ft[2], r_ft[3] = unpack(webots.wb_touch_sensor_get_values(tags.r_ft))
+			dcm.set_sensor_rfoot(r_ft)
     end
 
     -- GPS and compass data

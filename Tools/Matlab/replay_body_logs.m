@@ -25,7 +25,8 @@ end
 clear str;
 
 %% Aquire the body joint angles
-fid = fopen('Logs/joint_m_06.04.2014.13.54.20.log');
+timestamp = '08.27.2014.19.03.15';
+fid = fopen(strcat('Logs/joint_m_',timestamp,'.log'));
 msg = fread(fid,inf,'*uchar');
 fclose(fid);
 clear fid;
@@ -43,7 +44,6 @@ ft_l = zeros(numel(jobjs), numel(jobjs{1}.ft_l));
 ft_r = zeros(numel(jobjs), numel(jobjs{1}.ft_r));
 gyro = zeros(numel(jobjs), numel(jobjs{1}.gyro));
 acc = zeros(numel(jobjs), numel(jobjs{1}.acc));
-rpy = zeros(numel(jobjs), numel(jobjs{1}.rpy));
 for i=1:numel(jobjs)
     jobj = jobjs{i};
     ts(i)    = jobj.t - t0;
@@ -53,12 +53,11 @@ for i=1:numel(jobjs)
     ft_r(i,:) = jobj.ft_r;
     gyro(i,:) = jobj.gyro;
     acc(i,:) = jobj.acc;
-    rpy(i,:) = jobj.rpy;
 end
 clear jobj
 %% Save
 % clear jobjs;
-%save('Logs/joint_06.04.2014.13.54.20.mat')
+save(strcat('Logs/joint_m_',timestamp,'.mat'));
 %% Plot a joint
 %load('Logs/joint_06.04.2014.13.54.20.mat')
 figure(1);
@@ -79,7 +78,3 @@ title('Right Force Torque');
 figure(4);
 plot(gyro);
 title('Gyro');
-
-figure(5);
-plot(rpy);
-title('RPY');

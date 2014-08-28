@@ -718,7 +718,7 @@ Robot {
                         endPoint Solid {
                           physics Physics {
                             density -1
-                            mass 0.1
+                            mass 0.3
 														centerOfMass [0 0 0]
 														inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                           }
@@ -749,9 +749,10 @@ Robot {
                               endPoint Solid {
                                 physics Physics {
                                   density -1
-                                  mass 4.28
+                                  mass 1.1
 																	# TODO: Test that this is the correct center of mass...
-																	centerOfMass [-0.0211 -0.1241 -0.0082]
+																	#centerOfMass [-0.0211 -0.1241 -0.0082]
+																	centerOfMass [-0.01 -0.18 0]
 																	inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                 }
                                 children[
@@ -779,8 +780,8 @@ Robot {
                                       translation 0 -0.3 -0.03
                                       physics Physics {
                                         density -1
-                                        mass 2.24
-																				centerOfMass 0.0313 -0.1796 0.0374
+                                        mass 1.1
+																				centerOfMass -0.01 -0.16 0
 																				inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                       }
                                       children[
@@ -812,7 +813,7 @@ Robot {
                                             translation 0 -0.3 0.03
                                             physics Physics {
                                               density -1
-                                              mass 0.1
+                                              mass 0.2
 																							centerOfMass [0 0 0]
 																							inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                             }
@@ -844,8 +845,8 @@ Robot {
                                                 endPoint Solid {
                                                   physics Physics {
                                                     density -1
-																										mass 1.74
-																										centerOfMass [0 -0.0429 -0.0048]
+																										mass 0.6
+																										centerOfMass [-0.01 -0.07 0.02]
 																										inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                                   }
                                                   children[
@@ -884,14 +885,14 @@ Robot {
                                                             translation 0 0.1115 -0.018
                                                           }
                                                           DEF R_FSR TouchSensor {
-                                                            name "R_FSR"
+                                                            name "R_FT"
                                                             # Should be a bit bigger
                                                             boundingObject Box {size 0.145 0.013 0.26}
                                                             physics Physics {
                                                               density -1
                                                               mass 0.0001
                                                             }
-                                                            type "force"
+                                                            type "force-3d"
                                                           }
                                                         ]
                                                       }
@@ -943,7 +944,7 @@ Robot {
                         endPoint Solid {
                           physics Physics {
                             density -1
-                            mass 0.0001
+                            mass 0.3
 														centerOfMass [0 0 0]
 														inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                           }
@@ -974,10 +975,8 @@ Robot {
                               endPoint Solid {
                                 physics Physics {
                                   density -1
-                                  #mass 0.0001
-																	#centerOfMass [0 0 0]
-																	mass 4.28
-                        					centerOfMass [0.0211 -0.1241 -0.0082]
+																	mass 1.1
+                        					centerOfMass [0.01 -0.18 0]
 																	inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                 }
                                 children[
@@ -1005,8 +1004,8 @@ Robot {
                                       translation 0 -0.3 -0.03
                                       physics Physics {
                                         density -1
-                                        mass 0.0001
-																				centerOfMass [0 0 0]
+                                        mass 1.1
+																				centerOfMass [0.01 -0.16 0]
 																				inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                       }
                                       children[
@@ -1040,7 +1039,7 @@ Robot {
                                             translation 0 -0.3 0.03
                                             physics Physics {
                                               density -1
-                                              mass 0.0001
+                                              mass 0.2
 																							centerOfMass [0 0 0]
 																							inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                             }
@@ -1072,8 +1071,8 @@ Robot {
                                                 endPoint Solid {
                                                   physics Physics {
                                                     density -1																										
-																										mass 1.74
-																										centerOfMass [0 -0.0429 -0.0048]
+																										mass 0.6
+																										centerOfMass [0.01 -0.07 0.02]
 																										inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                                                   }
                                                   children[
@@ -1112,14 +1111,15 @@ Robot {
                                                             translation 0 0.1115 -0.018
                                                           }
                                                           DEF L_FSR TouchSensor {
-																														name "L_FSR"
+																														name "L_FT"
+																														#translation 0 -0.09 0
 																														# Should be a bit bigger
 																														boundingObject Box {size 0.145 0.013 0.26}
 																														physics Physics {
 																														 density -1
 																														 mass 0.0001
 																														}
-																														type "force"
+																														type "force-3d"
 																													}
                                                         ]
                                                       }

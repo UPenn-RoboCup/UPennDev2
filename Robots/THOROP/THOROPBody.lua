@@ -9,7 +9,7 @@ local vector = require'vector'
 local util   = require'util'
 local si     = require'simple_ipc'
 local Kinematics = require'THOROPKinematics'
-local mpack  = require'msgpack'.pack
+local mpack  = require'msgpack.MessagePack'.pack
 require'dcm'
 
 local Body = {}
@@ -331,6 +331,20 @@ if IS_WEBOTS then
         ENABLE_FSR = true
       end
     end,
+		t = function(override)
+			if override~=nil then en=override else en=ENABLE_FT==false end
+      if en==false then
+        print(util.color('FT disabled!','yellow'))
+        webots.wb_touch_sensor_disable(tags.l_ft)
+  			webots.wb_touch_sensor_disable(tags.r_ft)
+        ENABLE_FT = false
+      else
+        print(util.color('FT enabled!','green'))
+        webots.wb_touch_sensor_enable(tags.l_ft, timeStep)
+  			webots.wb_touch_sensor_enable(tags.r_ft, timeStep)
+        ENABLE_FT = true
+      end
+    end,
   }
 	-- Check if we are using the OLD api
 	local OLD_API = webots.wb_device_get_type(webots.wb_robot_get_device(jointNames[1]))==89
@@ -377,7 +391,8 @@ if IS_WEBOTS then
       tags.r_fsr = webots.wb_robot_get_device("R_FSR")
     end
     if Config.sensors.ft then
-
+			tags.l_ft = webots.wb_robot_get_device("L_FT")
+      tags.r_ft = webots.wb_robot_get_device("R_FT")
     end
     
 		-- Enable or disable the sensors
@@ -388,6 +403,7 @@ if IS_WEBOTS then
 		key_action.l(ENABLE_CHEST_LIDAR)
 		--key_action.k(ENABLE_KINECT)
 		--key_action.f(ENABLE_FSR)
+		key_action.t(ENABLE_FT)
 
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
@@ -482,6 +498,13 @@ if IS_WEBOTS then
     if ENABLE_FSR then
       dcm.sensorPtr.lfoot[0] = webots.wb_touch_sensor_get_value(tags.l_fsr)*4
       dcm.sensorPtr.rfoot[0] = webots.wb_touch_sensor_get_value(tags.r_fsr)*4
+    end
+		
+		-- FSR
+    if ENABLE_FT then
+      local l_ft = webots.wb_touch_sensor_get_values(tags.l_ft)
+      local r_ft = webots.wb_touch_sensor_get_values(tags.r_ft)
+			--print('FT', l_ft, r_ft)
     end
 
     -- GPS and compass data

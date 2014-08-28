@@ -14,7 +14,7 @@ Config.sensors = {
   head_lidar = false,
   chest_lidar = false,
   fsr = false,
-  ft = true,
+  ft = false,
 }
 
 Config.left_ft = {

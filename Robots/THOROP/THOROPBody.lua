@@ -398,12 +398,9 @@ if IS_WEBOTS then
 		-- Enable or disable the sensors
 		key_action.i(ENABLE_IMU)
 		key_action.p(ENABLE_POSE)
-		key_action.c(ENABLE_CAMERA)
-		--key_action.h(ENABLE_HEAD_LIDAR)
-		key_action.l(ENABLE_CHEST_LIDAR)
-		--key_action.k(ENABLE_KINECT)
-		--key_action.f(ENABLE_FSR)
-		key_action.t(ENABLE_FT)
+		if ENABLE_CAMERA then key_action.c(ENABLE_CAMERA) end
+		if ENABLE_CHEST_LIDAR then key_action.l(ENABLE_CHEST_LIDAR) end
+		if ENABLE_FT then key_action.t(ENABLE_FT) end
 
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)

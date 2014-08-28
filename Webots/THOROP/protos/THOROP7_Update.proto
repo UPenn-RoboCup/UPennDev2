@@ -33,14 +33,17 @@ Robot {
   description "Robotis THOR-OP"
   
   # Use a simple bounding object for the center of mass area
-  boundingObject Transform { children [Box {size 0.5 0.2 0.25}] }
+  boundingObject Transform {
+		translation 0 -0.04 -0.029
+		children [
+			Box {size 0.35 0.23 0.32}
+		]
+	}
   # Unsure why there is physics here...
   physics Physics {
     density -1
-    #mass 9.21
 		mass 1
     centerOfMass [0 0.1557 -0.0208]
-		inertiaMatrix [0.001 0.001 0.001, 0 0 0]
   }
 
   # Children items
@@ -217,6 +220,12 @@ Robot {
     ## Begin the Right arm chain
     DEF Right_shoulder_pitch Solid {
       translation -0.234 0 0
+			physics Physics {
+				density -1
+				mass 0.1
+				centerOfMass 0 0 0
+				inertiaMatrix [0.001 0.001 0.001, 0 0 0]
+			}
       children [
         # Has no mesh?
         ## Shoulder Pitch is root child    
@@ -237,6 +246,12 @@ Robot {
             anchor -0.081 0 0
           } # End of the ShoulderR HingeJointParameters
           endPoint Solid {
+						physics Physics {
+							density -1
+							mass 0.3
+							centerOfMass 0 0 0
+							inertiaMatrix [0.001 0.001 0.001, 0 0 0]
+						}
             ## Begin Shoulder Roll
             children [
               # Has a mesh, with offsets, etc.
@@ -262,6 +277,12 @@ Robot {
                   anchor 0 0 0.081
                 } # End of the ArmUpperR HingeJointParameters
                 endPoint Solid {
+									physics Physics {
+										density -1
+										mass 0.8
+										centerOfMass 0 -0.15 0.01
+										inertiaMatrix [0.001 0.001 0.001, 0 0 0]
+									}
                   ## Begin Shoulder Yaw
                   children [
                     RIGHT_SHOULDER_ROLL{
@@ -426,6 +447,12 @@ Robot {
     ## Begin the Left arm chain
     DEF Left_shoulder_pitch Solid {
       translation 0.234 0 0
+			physics Physics {
+				density -1
+				mass 0.1
+				centerOfMass 0 0 0
+				inertiaMatrix [0.001 0.001 0.001, 0 0 0]
+			}
       children [
         # Has no mesh?
         ## Shoulder Pitch is root child    
@@ -446,6 +473,12 @@ Robot {
             anchor -0.081 0 0
           } # End of the ShoulderL HingeJointParameters
           endPoint Solid {
+						physics Physics {
+							density -1
+							mass 0.3
+							centerOfMass 0 0 0
+							inertiaMatrix [0.001 0.001 0.001, 0 0 0]
+						}
             ## Begin Shoulder Roll
             children [
               # Has a mesh, with offsets, etc.
@@ -463,15 +496,21 @@ Robot {
                   # Not sure of these...
                   minPosition -2.92343
                   maxPosition 2.92343
-                } # End of the ArmUpperR RotationalMotor
+                } # End of the ArmUpperL RotationalMotor
                 jointParameters HingeJointParameters {
                   # Straight up in the y-axis for webots
                   axis 0 0 -1
                   # I think anchor means the up direction?
                   anchor 0 0 0.081
-                } # End of the ArmUpperR HingeJointParameters
+                } # End of the ArmUpperL HingeJointParameters
                 endPoint Solid {
                   ## Begin Shoulder Yaw
+									physics Physics {
+										density -1
+										mass 0.8
+										centerOfMass 0 -0.15 0.01
+										inertiaMatrix [0.001 0.001 0.001, 0 0 0]
+									}
                   children [
                     RIGHT_SHOULDER_ROLL{
                       scale 0.001 0.001 0.001

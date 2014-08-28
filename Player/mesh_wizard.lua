@@ -30,6 +30,7 @@ end
 local stream = Config.net.streams['mesh']
 local mesh_tcp_ch = si.new_publisher(stream.tcp, operator)
 local mesh_udp_ch = si.new_sender(operator, stream.udp)
+print("OPERATOR", operator, stream.udp)
 
 local metadata = {
 	name = 'mesh0',

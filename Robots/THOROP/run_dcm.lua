@@ -155,7 +155,7 @@ local function parse_read_custom(pkt, bus)
 	p_ptr_t[read_j_id - 1] = t_read
 	-- Update the F/T Sensor
 	local raw_str = pkt.raw_parameter:sub(lD.nx_registers.position[2]+1)
-	--parse_ft(left_ft, raw_str, m_id)
+	parse_ft(left_ft, raw_str, m_id)
 	parse_ft(right_ft, raw_str, m_id)
 	return read_j_id
 end

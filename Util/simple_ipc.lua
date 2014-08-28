@@ -11,7 +11,6 @@ if type(jit)=='table' then
 	poller = require'lzmq.ffi.poller'
 	llthreads = require'llthreads'
   udp = require'udp.ffi'
-  --udp = require'udp'
 else
 	zmq    = require'lzmq'
 	poller = require'lzmq.poller'
@@ -53,7 +52,40 @@ local type2prefix = {
 }
 
 -- Use UDP directly
-if udp then
+if type(udp)=='table' and udp.ffi then
+	local function udp_send(self, data)
+		self.sender:send(data)
+	end
+	local function udp_receive(self)
+		return self.sender:receive()
+	end
+	local function recv_all(self)
+		local skt_buffer = {}
+		while self:size() > 0 do tinsert(skt_buffer, self:receive()) end
+		return skt_buffer
+	end
+  function simple_ipc.new_sender(ip, port)
+		local sender = udp.new_sender(ip, port)
+		local obj = {
+			sender = sender,
+			ip = ip,
+			port = port,
+			fd = sender:descriptor(),
+			send = udp_send,
+			close = close,
+		}
+		return obj
+	end
+  function simple_ipc.new_receiver(port)
+		local receiver = udp.new_receiver(port)
+		local obj = {
+			port = port,
+			fd = fd,
+			receive = udp_receive,
+			recv_all = udp_recv_all,
+		}
+	end
+elseif type(udp)=='table' then
   simple_ipc.new_sender = udp.new_sender
   simple_ipc.new_receiver = udp.new_receiver
 end

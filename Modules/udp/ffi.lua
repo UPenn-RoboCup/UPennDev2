@@ -2,8 +2,9 @@
 -- (c) Stephen McGill 2014
 local ok, ffi = pcall(require, 'ffi')
 if not ok then return require'udp' end
+if ffi.os=='Linux' and ffi.arch=='x86' then return require'udp' end
 
-local udp = {}
+local udp = {ffi=true}
 local C = ffi.C
 local bit = require'bit'
 local bor = bit.bor
@@ -28,7 +29,6 @@ if ffi.os=='Linux' then
   SO_BROADCAST = 6
 end
 
---ffi.cdef("extern int errno;")
 local function strerror()
   return ffi.string(C.strerror(ffi.errno()))
 end
@@ -41,14 +41,26 @@ typedef struct hostent {
   int     h_length;       /* length of address */
   char    **h_addr_list;  /* list of addresses from name server */
 } hostent;
-
-typedef struct in_addr {
-  uint32_t s_addr;
-} in_addr;
 ]]
 
-if ffi.os=='Linux' then
+if ffi.os=='Linux' and ffi.arch=='x86' then
+	-- http://www.gta.ufrj.br/ensino/eel878/sockets/sockaddr_inman.html
   ffi.cdef[[
+	typedef struct in_addr {
+		unsigned long s_addr;  // load with inet_aton()
+	};
+  typedef struct sockaddr_in {
+    short sin_family;
+    unsigned short sin_port;
+    struct in_addr sin_addr;
+    char sin_zero[8];
+  } sockaddr_in;
+  ]]
+elseif ffi.os=='Linux' then 
+  ffi.cdef[[
+	typedef struct in_addr {
+		uint32_t s_addr;
+	} in_addr;
   typedef struct sockaddr_in {
     uint8_t sin_len;
     uint16_t sin_family;
@@ -59,6 +71,9 @@ if ffi.os=='Linux' then
   ]]
 elseif ffi.os=='OSX' then
   ffi.cdef[[
+	typedef struct in_addr {
+		uint32_t s_addr;
+	} in_addr;
   typedef struct sockaddr_in {
     uint8_t sin_len;
     uint8_t sin_family;
@@ -139,7 +154,6 @@ local function send(self, data, len)
 end
 
 function udp.new_sender(ip, port)
-  local hostptr = assert(C.gethostbyname(ip), "Could not get hostname")
   local fd = C.socket(AF_INET, SOCK_DGRAM, 0)
   assert(fd > 0, "Could not open datagram send socket")
   local i, ret = ffi.new('int[1]', 1)
@@ -150,6 +164,7 @@ function udp.new_sender(ip, port)
   assert(ret==0, "Re-use address"..strerror())
   local dest_addr = ffi.new('struct sockaddr_in')
   dest_addr.sin_family = AF_INET
+  local hostptr = assert(C.gethostbyname(ip), "Could not get hostname")
   ffi.copy(hostptr.h_addr_list[0], ffi.cast('char*', dest_addr.sin_addr), hostptr.h_length)
   dest_addr.sin_port = C.htons(port)
   ret = C.connect(fd, ffi.cast('struct sockaddr *', dest_addr), ffi.sizeof(dest_addr))

@@ -37,8 +37,8 @@ Robot {
   # Unsure why there is physics here...
   physics Physics {
     density -1
-    mass 9.21
-		#mass 0.001
+    #mass 9.21
+		mass 1
     centerOfMass [0 0.1557 -0.0208]
 		inertiaMatrix [0.001 0.001 0.001, 0 0 0]
   }
@@ -639,7 +639,7 @@ Robot {
           device RotationalMotor {
             name "TorsoPitch"
             # TODO: Use NX Motor specs
-            ##maxVelocity 5.65486677646
+            #maxVelocity 5.65486677646
             maxTorque 40
             # Not sure of these...
             minPosition -2.92343
@@ -655,7 +655,7 @@ Robot {
             translation 0 -0.038 0
             physics Physics {
 							density -1
-              mass 8.0
+              mass 0.2
 							centerOfMass [0 -0.1208 -0.0264]
 							inertiaMatrix [0.001 0.001 0.001, 0 0 0]
             }
@@ -680,7 +680,7 @@ Robot {
                 endPoint Solid {
                   physics Physics {
                     density -1
-                    mass 0.1
+                    mass 0.6
 										centerOfMass [0 0 0]
 										inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                   }
@@ -694,8 +694,8 @@ Robot {
                     translation -0.072 -0.232 0
                     physics Physics {
                       density -1
-                      mass 0.01
-											centerOfMass [0 0 0]
+                      mass 0.05
+											centerOfMass [0 0.03 -0.02]
 											inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                     }
                     children [
@@ -919,8 +919,8 @@ Robot {
                     translation 0.072 -0.232 0
                     physics Physics {
                       density -1
-                      mass 0.0001
-											centerOfMass [0 0 0]
+                      mass 0.05
+											centerOfMass [0 0.03 -0.02]
 											inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                     }
                     children [

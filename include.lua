@@ -73,7 +73,7 @@ KEYFRAME_DIR = HOME.."/Player/Keyframes"
 LOG_DIR = HOME.."/Logs"
 
 -- Use functional idioms
---require "fun" ()
+require "fun" ()
 
 -- include platform specific modules
 PLATFORM_NAME = require('Config').PLATFORM_NAME

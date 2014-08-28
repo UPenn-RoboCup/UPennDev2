@@ -52,7 +52,7 @@ local type2prefix = {
 }
 
 -- Use UDP directly
-if type(udp)=='table' and udp.ffi then
+if type(udp)=='table' and not udp.ffi then
 	local function udp_send(self, data)
 		self.sender:send(data)
 	end

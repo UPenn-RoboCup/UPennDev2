@@ -710,83 +710,95 @@ Robot {
 		
 		
     ## The Head is a root child
-    DEF Head Solid {
-      children [
-        ## Neck must Yaw
-        HingeJoint {
-          device RotationalMotor {
-            name "Neck"
-            # TODO: Use NX specs
-            #maxVelocity 5.65486677646
-            maxTorque 40
-            # Not sure of these...
-            minPosition -2.92343
-            maxPosition 2.92343
-          } # End of the Head RotationalMotor
-          jointParameters HingeJointParameters {
-            # Straight up in the y-axis for webots
-            axis 0 1 0
-            # I think anchor means the up direction?
-            anchor 0 0.081 0
-          } # End of the Head HingeJointParameters
-          endPoint Solid {
-            translation 0 0.161 0
-            #rotation -1 0 0 -0.17
-            children [
-              NECK{
-                translation 0 -0.111 0
-                scale 0.001 0.001 0.001
-              }
-              
-              HingeJoint {
-                device RotationalMotor {
-                  name "Head"
-                  # TODO: Use NX specs
-                  #maxVelocity 5.65486677646
-                  maxTorque 40
-                  # Not sure of these...
-                  minPosition -2.92343
-                  maxPosition 2.92343
-                } # End of the Head RotationalMotor
-                jointParameters HingeJointParameters {
-                  # Out the x
-                  axis 1 0 0
-                  # I think anchor means the up direction?
-                  anchor 0.081 0 0
-                } # End of the Head HingeJointParameters
-                endPoint Solid {
-                  #translation 0 0.161 0
-                  rotation -1 0 0 -0.17
-                  children [
-                    CAM {
-                      scale 0.001 0.001 0.001
-                    }
-                    #hokuyo{
-        						#  rotation 0 1 0 3.14159
-                    #  translation 0 0.1 0
-                    #  name "HeadLidar"
-                    #}
-                    Camera {
-                      rotation 0 1 0 3.14159
-                      translation 0 0.072 0.0785
-                      name "HeadCamera"
-                      windowPosition IS cameraWindowPosition
-                      fieldOfView IS cameraFov
-                      width IS cameraWidth
-                      height IS cameraHeight
-                      pixelSize IS cameraPixelSize
-                      near 0.02
-                    }
-                    
-                  ] # End of the Head Children
-                } # End of the Head endpoint
-              } # End of the Head HingeJoint
-              
-            ] # End of the Head Children
-          } # End of the Head endpoint
-        } # End of the Head HingeJoint
-      ] # End the solid children
-    }
+		DEF Neck HingeJoint {
+			device RotationalMotor {
+				name "Neck"
+				# TODO: Use NX specs
+				#maxVelocity 5.65486677646
+				maxTorque 40
+				# Not sure of these...
+				minPosition -2.92343
+				maxPosition 2.92343
+			} # End of the Head RotationalMotor
+			jointParameters HingeJointParameters {
+				# Straight up in the y-axis for webots
+				axis 0 1 0
+			} # End of the Head HingeJointParameters
+			endPoint Solid {
+				boundingObject Transform {
+					translation 0 0.06 0
+					children [
+						Box {
+							size 0.04 0.125 0.04
+						}
+					]
+				}
+				physics Physics {
+					density -1
+					mass 0.1
+					centerOfMass 0 0.06 0
+				}
+				children [
+					NECK {
+						translation 0 0.05 0
+						scale 0.001 0.001 0.001
+					}
+					DEF Head HingeJoint {
+						device RotationalMotor {
+							name "Head"
+							# TODO: Use NX specs
+							#maxVelocity 5.65486677646
+							maxTorque 40
+							# Not sure of these...
+							minPosition -2.92343
+							maxPosition 2.92343
+						}
+						jointParameters HingeJointParameters {
+							axis 1 0 0
+							anchor 0 0.161 0
+						} # End of the Head HingeJointParameters
+						endPoint Solid {
+							translation 0 0.161 0
+							rotation -1 0 0 -0.17
+							boundingObject Transform {
+								translation 0 0 0.01
+								children [
+									Box {
+										size 0.1 0.18 0.16
+									}
+								]
+							}
+							physics Physics {
+								density -1
+								mass 0.2
+							}
+							children [
+								CAM {
+									scale 0.001 0.001 0.001
+								}
+#								hokuyo {
+#								  rotation 0 1 0 3.14159
+#								  translation 0 0.1 0
+#								  name "HeadLidar"
+#								}
+								Camera {
+									rotation 0 1 0 3.14159
+									translation 0 0.072 0.0785
+									name "HeadCamera"
+									windowPosition IS cameraWindowPosition
+									fieldOfView IS cameraFov
+									width IS cameraWidth
+									height IS cameraHeight
+									pixelSize IS cameraPixelSize
+									near 0.02
+								}
+							] # End of the Head Children
+						} # End of the Head endpoint
+					} # End of the Head HingeJoint
+
+				] # End of the Head Children
+			} # End of the Head endpoint
+		} # End of the Head HingeJoint
     # End of the Head
     
     ## Begin the Chest lidar chain

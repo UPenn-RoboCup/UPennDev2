@@ -1,4 +1,4 @@
-#VRML_SIM V6.0 utf8
+#VRML_SIM V7.4.3 utf8
 WorldInfo {
   info [
     "Default world for the THOR-OP"
@@ -8,8 +8,8 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-  orientation -0.919353 -0.360365 -0.157881 0.930193
-  position -0.994031 5.3268 3.82571
+  orientation -0.805208 0.582317 0.112009 0.398656
+  position 0.66458 1.39513 1.38052
 }
 Background {
   skyColor [
@@ -28,7 +28,6 @@ DirectionalLight {
 }
 DEF FLOOR Floor {
   tileSize 2 2
-	size 10 10
   texture [
     "textures/texture_grid.png"
   ]
@@ -38,7 +37,7 @@ WoodBox {
 }
 THOROP7_Update {
   translation 0 1.155 0
-  controller "thorop"
+	controller "thorop"
   controllerArgs "0 32"
-	lidarRays 360
+  lidarRays 360
 }

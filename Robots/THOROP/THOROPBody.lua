@@ -210,7 +210,6 @@ if IS_WEBOTS then
   local servo = Config.servo
 
   -- Default configuration (toggle during run time)
-  local ENABLE_CAMERA = true --false
   local ENABLE_LOG, t_log = false, 0
   if ENABLE_LOG then
   	libLog = require'libLog'
@@ -222,10 +221,10 @@ if IS_WEBOTS then
   local ENABLE_HEAD_LIDAR = Config.sensors.head_lidar
   local ENABLE_FSR = Config.sensors.fsr
   local ENABLE_FT = Config.sensors.ft
-
-  local ENABLE_KINECT = false
-  local ENABLE_POSE   = true
-  local ENABLE_IMU   = true
+	local ENABLE_CAMERA = Config.sensors.head_camera
+  local ENABLE_KINECT = Config.sensors.kinect
+  local ENABLE_POSE = true
+  local ENABLE_IMU = true
 
   -- Start the system
   webots.wb_robot_init()
@@ -392,7 +391,7 @@ if IS_WEBOTS then
     end
     if Config.sensors.ft then
 			tags.l_ft = webots.wb_robot_get_device("L_FT")
-      tags.r_ft = webots.wb_robot_get_device("R_FT")
+      tags.r_ft = webots.wb_robot_get_device("RAnkle_force")
     end
     
 		-- Enable or disable the sensors

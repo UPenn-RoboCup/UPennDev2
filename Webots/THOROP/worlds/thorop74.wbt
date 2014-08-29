@@ -5,6 +5,7 @@ WorldInfo {
   ]
   title "THOR-OP Only"
   basicTimeStep 8
+	#basicTimeStep 40
   FPS 15
 }
 Viewpoint {

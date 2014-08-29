@@ -4,7 +4,7 @@ WorldInfo {
     "World for the Adult size soccer league"
   ]
   title "THORwIn RoboCup"
-  basicTimeStep 30
+  basicTimeStep 33
   FPS 15
 }
 Viewpoint {

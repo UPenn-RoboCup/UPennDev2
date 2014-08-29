@@ -217,11 +217,11 @@ if IS_WEBOTS then
   end
 
   -- Added to Config rather than hard-code 
-  local ENABLE_CHEST_LIDAR  = Config.sensors.chest_lidar
+	local ENABLE_CAMERA, NEXT_CAMERA = Config.sensors.head_camera, 0
+  local ENABLE_CHEST_LIDAR, NEXT_CHEST_LIDAR  = Config.sensors.chest_lidar, 0
   local ENABLE_HEAD_LIDAR = Config.sensors.head_lidar
   local ENABLE_FSR = Config.sensors.fsr
   local ENABLE_FT = Config.sensors.ft
-	local ENABLE_CAMERA = Config.sensors.head_camera
   local ENABLE_KINECT = Config.sensors.kinect
   local ENABLE_POSE = true
   local ENABLE_IMU = true
@@ -271,6 +271,7 @@ if IS_WEBOTS then
       elseif tags.chest_lidar then
         print(util.color('CHEST_LIDAR enabled!','green'))
         webots.wb_camera_enable(tags.chest_lidar,lidar_timeStep)
+				NEXT_CHEST_LIDAR = get_time() + lidar_timeStep / 1000
         ENABLE_CHEST_LIDAR = true
       end
     end,
@@ -283,6 +284,7 @@ if IS_WEBOTS then
       else
         print(util.color('CAMERA enabled!','green'))
         webots.wb_camera_enable(tags.head_camera,camera_timeStep)
+				NEXT_CAMERA = get_time() + camera_timeStep / 1000
         ENABLE_CAMERA = true
       end
     end,
@@ -422,7 +424,7 @@ if IS_WEBOTS then
 
 	function Body.update()
 
-    local t = Body.get_time()
+    local t = get_time()
     --Body.update_finger(timeStep)
 
 		-- Set actuator commands from shared memory
@@ -476,6 +478,7 @@ if IS_WEBOTS then
 
 		-- Step the simulation, and shutdown if the update fails
 		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
+		t = get_time()
 
     if ENABLE_IMU then
       -- Accelerometer data (verified)
@@ -550,14 +553,15 @@ if IS_WEBOTS then
 		dcm.set_sensor_position(positions)
 
     -- Grab a camera frame
-    if ENABLE_CAMERA then
+    if ENABLE_CAMERA and t >= NEXT_CAMERA then
       local w = webots.wb_camera_get_width(tags.head_camera)
       local h = webots.wb_camera_get_height(tags.head_camera)
       local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.head_camera), w, h)
 			WebotsBody.update_head_camera(img, 2*w*h, 0, t)
+			NEXT_CAMERA = get_time() + camera_timeStep / 1000
     end
     -- Grab a lidar scan
-    if ENABLE_CHEST_LIDAR then
+    if ENABLE_CHEST_LIDAR and t >= NEXT_CHEST_LIDAR then
       local n = webots.wb_camera_get_width(tags.chest_lidar)
 			local fov = webots.wb_camera_get_fov(tags.chest_lidar)
 			local res = fov / n
@@ -565,6 +569,7 @@ if IS_WEBOTS then
 			local metadata = {n=n,res=res,t=t,angle=Body.get_lidar_position()}
 			WebotsBody.update_chest_lidar(metadata,ranges)
       --local lidar_array = require'carray'.float(ranges, w)
+			NEXT_CHEST_LIDAR = get_time() + lidar_timeStep / 1000
     end
     -- Grab a lidar scan
     if ENABLE_HEAD_LIDAR then

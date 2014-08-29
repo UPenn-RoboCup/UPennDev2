@@ -2,11 +2,10 @@
 #############################################
 # THOR-OP webots prototype file
 # Based on Robotis wbt
-# Converted and augmented by Seung-Joon Yi (2013/7)
-# Converted to 7.3.0 API by Stephen McGill (2014/01)
+# (c) Stephen McGill, 2014
 #############################################
 
-PROTO THOROP7_Update [
+PROTO THOROP_UPENN [
   field SFVec3f    translation 0 1 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
@@ -801,9 +800,8 @@ Robot {
     DEF Right_shoulder_pitch HingeJoint {
       device RotationalMotor {
         name "ShoulderR"
-        # TODO: Use NX Motor specs
-        #maxVelocity 5.65486677646
-        maxTorque 40
+        maxVelocity 2.9216811678
+				maxTorque 44.2
         # Not sure of these...
         minPosition -2.92343
         maxPosition 2.92343
@@ -835,9 +833,8 @@ Robot {
           DEF Right_shoulder_roll HingeJoint {
             device RotationalMotor {
               name "ArmUpperR"
-              # TODO: Use NX Motor specs
-              #maxVelocity 5.65486677646
-              maxTorque 40
+              maxVelocity 2.9216811678
+							maxTorque 44.2
               # Not sure of these...
               minPosition -2.92343
               maxPosition 2.92343
@@ -862,9 +859,8 @@ Robot {
                 DEF Right_shoulder_yaw HingeJoint {
                   device RotationalMotor {
                     name "RightShoulderYaw"
-                    # TODO: Use NX Motor specs
-                    #maxVelocity 5.65486677646
-                    maxTorque 40
+                    maxVelocity 2.9216811678
+										maxTorque 44.2
                     # Not sure of these...
                     minPosition -2.92343
                     maxPosition 2.92343
@@ -895,9 +891,8 @@ Robot {
                       DEF Right_elbow_pitch HingeJoint {
                         device RotationalMotor {
                           name "ArmLowerR"
-                          # TODO: Use NX Motor specs
-                          #maxVelocity 5.65486677646
-                          maxTorque 40
+                          maxVelocity 3.1520646292
+													maxTorque 24.8
                           # Not sure of these...
                           minPosition -2.92343
                           maxPosition 2.92343
@@ -942,9 +937,8 @@ Robot {
                             DEF Right_wrist_yaw HingeJoint {
                               device RotationalMotor {
                                 name "RightWristYaw"
-                                # TODO: Use NX Motor specs
-                                #maxVelocity 5.65486677646
-                                maxTorque 40
+                                maxVelocity 3.1206487025
+                                maxTorque 6.3
                                 # Not sure of these...
                                 minPosition -2.92343
                                 maxPosition 2.92343
@@ -967,9 +961,8 @@ Robot {
                                   DEF Right_wrist_roll HingeJoint {
                                     device RotationalMotor {
                                       name "RightWristRoll"
-                                      # TODO: Use NX Motor specs
-                                      #maxVelocity 5.65486677646
-                                      maxTorque 40
+                                      maxVelocity 3.1206487025
+																			maxTorque 6.3
                                       # Not sure of these...
                                       minPosition -2.92343
                                       maxPosition 2.92343
@@ -994,9 +987,8 @@ Robot {
                                         DEF Right_wrist_yaw2 HingeJoint {
                                           device RotationalMotor {
                                             name "RightWristYaw2"
-                                            # TODO: Use NX Motor specs
-                                            #maxVelocity 5.65486677646
-                                            maxTorque 40
+                                            maxVelocity 3.1206487025
+																						maxTorque 6.3
                                             # Not sure of these...
                                             minPosition -2.92343
                                             maxPosition 2.92343
@@ -1044,9 +1036,8 @@ Robot {
     DEF Left_shoulder_pitch HingeJoint {
       device RotationalMotor {
         name "ShoulderL"
-        # TODO: Use NX Motor specs
-        #maxVelocity 5.65486677646
-        maxTorque 40
+        maxVelocity 2.9216811678
+				maxTorque 44.2
         # Not sure of these...
         minPosition -2.92343
         maxPosition 2.92343
@@ -1078,9 +1069,8 @@ Robot {
           DEF Left_shoulder_roll HingeJoint {
             device RotationalMotor {
               name "ArmUpperL"
-              # TODO: Use NX Motor specs
-              #maxVelocity 5.65486677646
-              maxTorque 40
+              maxVelocity 2.9216811678
+							maxTorque 44.2
               # Not sure of these...
               minPosition -2.92343
               maxPosition 2.92343
@@ -1105,9 +1095,8 @@ Robot {
                 DEF Left_shoulder_yaw HingeJoint {
                   device RotationalMotor {
                     name "LeftShoulderYaw"
-                    # TODO: Use NX Motor specs
-                    #maxVelocity 5.65486677646
-                    maxTorque 40
+                    maxVelocity 2.9216811678
+										maxTorque 44.2
                     # Not sure of these...
                     minPosition -2.92343
                     maxPosition 2.92343
@@ -1138,9 +1127,8 @@ Robot {
                       DEF Left_elbow_pitch HingeJoint {
                         device RotationalMotor {
                           name "ArmLowerL"
-                          # TODO: Use NX Motor specs
-                          #maxVelocity 5.65486677646
-                          maxTorque 40
+                          maxVelocity 3.1520646292
+													maxTorque 24.8
                           # Not sure of these...
                           minPosition -2.92343
                           maxPosition 2.92343
@@ -1185,9 +1173,8 @@ Robot {
                             DEF Left_wrist_yaw HingeJoint {
                               device RotationalMotor {
                                 name "LeftWristYaw"
-                                # TODO: Use NX Motor specs
-                                #maxVelocity 5.65486677646
-                                maxTorque 40
+                                maxVelocity 3.1206487025
+                                maxTorque 6.3
                                 # Not sure of these...
                                 minPosition -2.92343
                                 maxPosition 2.92343
@@ -1210,9 +1197,8 @@ Robot {
                                   DEF Left_wrist_roll HingeJoint {
                                     device RotationalMotor {
                                       name "LeftWristRoll"
-                                      # TODO: Use NX Motor specs
-                                      #maxVelocity 5.65486677646
-                                      maxTorque 40
+                                      maxVelocity 3.1206487025
+																			maxTorque 6.3
                                       # Not sure of these...
                                       minPosition -2.92343
                                       maxPosition 2.92343
@@ -1237,9 +1223,8 @@ Robot {
                                         DEF Left_wrist_yaw2 HingeJoint {
                                           device RotationalMotor {
                                             name "LeftWristYaw2"
-                                            # TODO: Use NX Motor specs
-                                            #maxVelocity 5.65486677646
-                                            maxTorque 40
+                                            maxVelocity 3.1206487025
+																						maxTorque 6.3
                                             # Not sure of these...
                                             minPosition -2.92343
                                             maxPosition 2.92343

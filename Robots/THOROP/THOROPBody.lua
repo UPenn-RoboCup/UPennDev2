@@ -436,14 +436,14 @@ if IS_WEBOTS then
 			-- TODO: What is velocity?
 			local vel = 0 or Body.get_command_velocity()[idx]
 			local en  = 1 or Body.get_torque_enable()[idx]
-			local deltaMax = timeStep * vel
 			-- Only update the joint if the motor is torqued on
 
 			-- If the joint is moving
 			-- Clamp the difference between commanded and actuated
 			-- so that we don't have huge jumped
 			-- NOTE: This *should* be handled by the simulator?
-
+			--[[
+			local deltaMax = timeStep * vel
 			local new_pos = cmd
 			if vel > 0 then
         local delta = util.mod_angle(cmd - pos)
@@ -454,10 +454,11 @@ if IS_WEBOTS then
 				end
 				new_pos = pos + delta
 			end
+			--]]
 
 			if en>0 and jtag>0 then
-        local rad = servo.direction[idx] * (new_pos + servo.rad_offset[idx])
-                
+        local rad = servo.direction[idx] * (cmd + servo.rad_offset[idx])
+        set_pos(jtag, rad)
 --SJ: Webots is STUPID so we should set direction correctly to prevent flip        
 --[[        
         local val = get_pos(jtag)
@@ -468,11 +469,13 @@ if IS_WEBOTS then
         end
 				rad = rad==rad and rad or 0
         set_pos(jtag, rad)
---]]        
+--]]
 				--Fixed
+				--[[
         local val = get_pos(jtag)
         local delta = util.mod_angle(rad-val)
         set_pos(jtag, rad+delta)
+				--]]
       end
 		end --for
 

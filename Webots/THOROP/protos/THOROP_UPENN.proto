@@ -678,9 +678,8 @@ Robot {
 		DEF Neck HingeJoint {
 			device RotationalMotor {
 				name "Neck"
-				# TODO: Use NX specs
-				#maxVelocity 5.65486677646
-				maxTorque 40
+				maxVelocity 3.1206487025
+				maxTorque 6.3
 				# Not sure of these...
 				minPosition -2.92343
 				maxPosition 2.92343
@@ -711,9 +710,8 @@ Robot {
 					DEF Head HingeJoint {
 						device RotationalMotor {
 							name "Head"
-							# TODO: Use NX specs
-							#maxVelocity 5.65486677646
-							maxTorque 40
+							maxVelocity 3.1206487025
+							maxTorque 6.3
 							# Not sure of these...
 							minPosition -2.92343
 							maxPosition 2.92343
@@ -724,7 +722,7 @@ Robot {
 						} # End of the Head HingeJointParameters
 						endPoint Solid {
 							translation 0 0.161 0
-							rotation -1 0 0 -0.17
+#							rotation -1 0 0 -0.17
 							boundingObject Transform {
 								translation 0 0 0.01
 								children [
@@ -741,11 +739,11 @@ Robot {
 								CAM {
 									scale 0.001 0.001 0.001
 								}
-#								hokuyo {
-#								  rotation 0 1 0 3.14159
-#								  translation 0 0.1 0
-#								  name "HeadLidar"
-#								}
+								hokuyo {
+								  rotation 0 1 0 3.14159
+								  translation 0 0.1 0
+								  name "HeadLidar"
+								}
 								Camera {
 									rotation 0 1 0 3.14159
 									translation 0 0.072 0.0785
@@ -807,7 +805,7 @@ Robot {
         maxPosition 2.92343
       } # End of the ShoulderR RotationalMotor
       jointParameters HingeJointParameters {
-        axis -1 0 0
+        axis 1 0 0
         anchor -0.234 0 0
       } # End of the ShoulderR HingeJointParameters
       endPoint Solid {
@@ -939,9 +937,6 @@ Robot {
                                 name "RightWristYaw"
                                 maxVelocity 3.1206487025
                                 maxTorque 6.3
-                                # Not sure of these...
-                                minPosition -2.92343
-                                maxPosition 2.92343
                               } # End of the RightWristYaw RotationalMotor
                               jointParameters HingeJointParameters {
                                 axis 0 -1 0
@@ -989,9 +984,6 @@ Robot {
                                             name "RightWristYaw2"
                                             maxVelocity 3.1206487025
 																						maxTorque 6.3
-                                            # Not sure of these...
-                                            minPosition -2.92343
-                                            maxPosition 2.92343
                                           }
                                           jointParameters HingeJointParameters {
                                             axis 0 1 0
@@ -1175,9 +1167,6 @@ Robot {
                                 name "LeftWristYaw"
                                 maxVelocity 3.1206487025
                                 maxTorque 6.3
-                                # Not sure of these...
-                                minPosition -2.92343
-                                maxPosition 2.92343
                               } # End of the LeftWristYaw RotationalMotor
                               jointParameters HingeJointParameters {
                                 axis 0 -1 0
@@ -1225,9 +1214,6 @@ Robot {
                                             name "LeftWristYaw2"
                                             maxVelocity 3.1206487025
 																						maxTorque 6.3
-                                            # Not sure of these...
-                                            minPosition -2.92343
-                                            maxPosition 2.92343
                                           }
                                           jointParameters HingeJointParameters {
                                             axis 0 1 0

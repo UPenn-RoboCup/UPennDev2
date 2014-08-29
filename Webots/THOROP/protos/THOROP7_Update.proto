@@ -103,9 +103,8 @@ Robot {
     DEF Torso_pitch HingeJoint {
 			device RotationalMotor {
 				name "TorsoPitch"
-				# TODO: Use NX Motor specs
-				#maxVelocity 5.65486677646
-				maxTorque 40
+				maxVelocity 2.9216811678
+				maxTorque 44.2
 				# Not sure of these...
 				minPosition -2.92343
 				maxPosition 2.92343
@@ -129,9 +128,8 @@ Robot {
 					DEF Torso_yaw HingeJoint {
 						device RotationalMotor {
 							name "TorsoYaw"
-							# TODO: Use NX Motor specs
-							#maxVelocity 5.65486677646
-							maxTorque 40
+							maxVelocity 2.9216811678
+							maxTorque 44.2
 							# Not sure of these...
 							minPosition -2.92343
 							maxPosition 2.92343
@@ -160,13 +158,13 @@ Robot {
 									translation 0 -0.0875 0
 									scale 0.001 0.001 0.001
 								}
+								
 ## Begin Right Leg
 								DEF Right_hip_yaw HingeJoint {
 									device RotationalMotor {
 										name "PelvYR"
-										# TODO: Use NX Motor specs
-										#maxVelocity 5.65486677646
-										maxTorque 40
+										maxVelocity 3.1520646292
+										maxTorque 24.8
 										# Not sure of these...
 										minPosition -2.92343
 										maxPosition 2.92343
@@ -199,10 +197,8 @@ Robot {
 												device RotationalMotor {
 													name "PelvR"
 													# TODO: Use NX Motor specs
-													maxVelocity 5.65486677646
-													maxTorque 41
-													#maxTorque 200
-													#maxVelocity 250
+													maxVelocity 2.9216811678
+													maxTorque 44.2
 													# Not sure of these...
 													minPosition -2.92343
 													maxPosition 2.92343
@@ -231,19 +227,16 @@ Robot {
 														DEF Right_hip_pitch HingeJoint {
 															device RotationalMotor {
 																name "LegUpperR"
-																# TODO: Use NX Motor specs
-																maxVelocity 5.65486677646
-																maxTorque 41
-																#maxTorque 200
-																#maxVelocity 250
+																maxVelocity 2.9216811678
+																maxTorque 44.2
 																# Not sure of these...
 																minPosition -2.92343
 																maxPosition 2.92343
-															} # End of the PelvYR RotationalMotor
+															}
 															jointParameters HingeJointParameters {
 																# I think z?
 																axis 1 0 0
-															} # End of the PelvYR HingeJointParameters
+															}
 															endPoint Solid {
                                 physics Physics {
                                   density -1
@@ -280,11 +273,8 @@ Robot {
 																	DEF Right_knee_pitch HingeJoint {
 																		device RotationalMotor {
 																			name "LegLowerR"
-																			# TODO: Use NX Motor specs
-																			maxVelocity 5.65486677646
-																			maxTorque 41
-																			#maxTorque 200
-																			#maxVelocity 250
+																			maxVelocity 2.9216811678
+																			maxTorque 44.2
 																			# Not sure of these...
 																			minPosition -2.92343
 																			maxPosition 2.92343
@@ -317,11 +307,8 @@ Robot {
 																				DEF Right_ankle_pitch HingeJoint {
 																					device RotationalMotor {
 																						name "AnkleR"
-																						# TODO: Use NX Motor specs
-																						maxVelocity 5.65486677646
-																						maxTorque 41
-																						#maxTorque 200
-																						#maxVelocity 250
+																						maxVelocity 2.9216811678
+																						maxTorque 44.2
 																						# Not sure of these...
 																						minPosition -2.92343
 																						maxPosition 2.92343
@@ -351,11 +338,8 @@ Robot {
 																							DEF Right_ankle_roll HingeJoint {
 																								device RotationalMotor {
 																									name "FootR"
-																									# TODO: Use NX Motor specs
-																									maxVelocity 5.65486677646
-																									maxTorque 41
-																									#maxTorque 200
-																									#maxVelocity 250
+																									maxVelocity 3.1520646292
+																									maxTorque 24.8
 																									# Not sure of these...
 																									minPosition -2.92343
 																									maxPosition 2.92343
@@ -430,9 +414,8 @@ Robot {
 								DEF Left_hip_yaw HingeJoint {
 									device RotationalMotor {
 										name "PelvYL"
-										# TODO: Use NX Motor specs
-										#maxVelocity 5.65486677646
-										maxTorque 40
+										maxVelocity 3.1520646292
+										maxTorque 24.8
 										# Not sure of these...
 										minPosition -2.92343
 										maxPosition 2.92343
@@ -464,19 +447,16 @@ Robot {
 											DEF Left_hip_roll HingeJoint {
 												device RotationalMotor {
 													name "PelvL"
-													# TODO: Use NX Motor specs
-													maxVelocity 5.65486677646
-													maxTorque 41
-													#maxTorque 200
-													#maxVelocity 250
+													maxVelocity 2.9216811678
+													maxTorque 44.2
 													# Not sure of these...
 													minPosition -2.92343
 													maxPosition 2.92343
-												} # End of the PelvYR RotationalMotor
+												}
 												jointParameters HingeJointParameters {
 													# Out x for pitch
 													axis 0 0 1
-												} # End of the PelvYR HingeJointParameters
+												}
 												endPoint Solid {
                           physics Physics {
                             density -1
@@ -497,19 +477,16 @@ Robot {
 														DEF Left_hip_pitch HingeJoint {
 															device RotationalMotor {
 																name "LegUpperL"
-																# TODO: Use NX Motor specs
-																maxVelocity 5.65486677646
-																maxTorque 41
-																#maxTorque 200
-																#maxVelocity 250
+																maxVelocity 2.9216811678
+																maxTorque 44.2
 																# Not sure of these...
 																minPosition -2.92343
 																maxPosition 2.92343
-															} # End of the PelvYR RotationalMotor
+															}
 															jointParameters HingeJointParameters {
 																# I think z?
 																axis 1 0 0
-															} # End of the PelvYR HingeJointParameters
+															}
 															endPoint Solid {
                                 physics Physics {
                                   density -1
@@ -546,11 +523,8 @@ Robot {
 																	DEF  Left_knee_pitch HingeJoint {
 																		device RotationalMotor {
 																			name "LegLowerL"
-																			# TODO: Use NX Motor specs
-																			maxVelocity 5.65486677646
-																			maxTorque 41
-																			#maxTorque 200
-																			#maxVelocity 250
+																			maxVelocity 2.9216811678
+																			maxTorque 44.2
 																			# Not sure of these...
 																			minPosition -2.92343
 																			maxPosition 2.92343
@@ -583,11 +557,8 @@ Robot {
 																				DEF Left_ankle_pitch HingeJoint {
 																					device RotationalMotor {
 																						name "AnkleL"
-																						# TODO: Use NX Motor specs
-																						maxVelocity 5.65486677646
-																						maxTorque 41
-																						#maxTorque 200
-																						#maxVelocity 250
+																						maxVelocity 2.9216811678
+																						maxTorque 44.2
 																						# Not sure of these...
 																						minPosition -2.92343
 																						maxPosition 2.92343
@@ -617,11 +588,8 @@ Robot {
 																							DEF Left_ankle_roll HingeJoint {
 																								device RotationalMotor {
 																									name "FootL"
-																									# TODO: Use NX Motor specs
-																									maxVelocity 5.65486677646
-																									maxTorque 41
-																									#maxTorque 200
-																									#maxVelocity 250
+																									maxVelocity 3.1520646292
+																									maxTorque 24.8
 																									# Not sure of these...
 																									minPosition -2.92343
 																									maxPosition 2.92343

@@ -1004,26 +1004,11 @@ Robot {
                                           jointParameters HingeJointParameters {
                                             axis 0 1 0
                                           }
-                                          endPoint Solid {
-                                            translation 0 -0.05 0
-
-## Begin the right end effector
-## TODO: Add a separate proto here
-                                            boundingObject Box { size 0.075 0.005 0.075 }
-                                            physics Physics {
-                                              density -1
-                                              mass 0.1
-                                            }
-                                            children [
-                                              Transform {
-                                                children [
-                                                  Shape { geometry Box { size 0.065 0.005 0.065 } }
-                                                ]
-                                              }
-                                            ]
-## End the right end effector
-                                                    
-                                          } # End of the Wrist Yaw2 endpoint
+																					endPoint GRIPPER {
+																						translation 0 -0.05 0
+																						trigger_name "r_trigger"
+																						grip_name "r_grip"
+																					}
                                         } # End of the Wrist Yaw2 HingeJoint
                                       ] # End the solid children
                                       ## End Wrist Yaw2
@@ -1262,26 +1247,8 @@ Robot {
                                           jointParameters HingeJointParameters {
                                             axis 0 1 0
                                           }
-                                          endPoint Solid {
-                                            translation 0 -0.05 0
-
-## Begin the left end effector
-## TODO: Add a separate proto here
-                                            boundingObject Box { size 0.075 0.005 0.075 }
-                                            physics Physics {
-                                              density -1
-                                              mass 0.1
-                                            }
-                                            children [
-                                              Transform {
-                                                children [
-                                                  Shape { geometry Box { size 0.065 0.005 0.065 } }
-                                                ]
-                                              }
-                                            ]
-## End the left end effector
-                                                    
-                                          } # End of the Wrist Yaw2 endpoint
+																					#endPoint GRIPPER_PLATE {translation 0 -0.05 0}
+																					endPoint CHOPSTICKS {translation 0 -0.05 0}
                                         } # End of the Wrist Yaw2 HingeJoint
                                       ] # End the solid children
                                       ## End Wrist Yaw2

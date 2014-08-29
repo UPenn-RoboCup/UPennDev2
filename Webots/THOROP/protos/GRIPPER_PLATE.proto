@@ -1,0 +1,19 @@
+PROTO GRIPPER_PLATE [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation  0 1 0 0
+	field SFVec3f size 0.08 0.005 0.08
+]
+{
+	Solid {
+		translation IS translation
+		rotation IS rotation
+		children [
+			DEF PLATE Shape { geometry Box { size IS size } }
+		]
+		boundingObject USE PLATE
+		physics Physics {
+			density -1
+			mass 0.1
+		}
+	}
+}

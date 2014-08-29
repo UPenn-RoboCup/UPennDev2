@@ -225,7 +225,7 @@ Robot {
 														]
 													}
 													children[
-														RIGHT_HIP_ROLL {
+														HIP_ROLL {
 															scale 0.001 0.001 0.001
 														}
 														DEF Right_hip_pitch HingeJoint {
@@ -406,255 +406,293 @@ Robot {
 																											physics Physics {}
 																											type "force-3d"
 																										}
-                                                        ]
-                                                      }
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            ]
-                                          }
-                                        }
-                                      ]
-                                    }
-                                  }
-                                ]
-                              }
-                            }
-                          ]
-                        }
-                      }
+																									]
+																								}
+																							}
+																						]
+																					}
+																				}
+																			]
+																		}
+																	}
+																]
+															}
+														}
+													]
+												}
+											}
+										]
+									}
+								}
 
                   ## End Right Leg
 									
 									
-                  ## Begin Left Leg
-                  DEF Left_hip_yaw Solid {
-                    translation 0.072 -0.232 0
-                    physics Physics {
-                      density -1
-                      mass 0.05
+                  ## Begin  Left Leg
+								DEF Left_hip_yaw HingeJoint {
+									device RotationalMotor {
+										name "PelvYL"
+										# TODO: Use NX Motor specs
+										#maxVelocity 5.65486677646
+										maxTorque 40
+										# Not sure of these...
+										minPosition -2.92343
+										maxPosition 2.92343
+									}
+									jointParameters HingeJointParameters {
+										axis 0 1 0
+										anchor -0.072 -0.232 0
+									}
+									endPoint Solid {
+										translation 0.072 -0.232 0
+										physics Physics {
+											density -1
+											mass 0.05
 											centerOfMass [0 0.03 -0.02]
-											inertiaMatrix [0.001 0.001 0.001, 0 0 0]
-                    }
-                    children [
-                      HingeJoint {
-                        device RotationalMotor {
-                          name "PelvYL"
-                          # TODO: Use NX Motor specs
-                          maxVelocity 5.65486677646
-                          maxTorque 41
-                          # Not sure of these...
-                          minPosition -2.92343
-                          maxPosition 2.92343
-                        } # End of the PelvYL RotationalMotor
-                        jointParameters HingeJointParameters {
-                          # Out x for pitch
-                          axis 0 1 0
-                          # I think anchor means the up direction?
-                          anchor 0 0.081 0
-                        } # End of the PelvYL HingeJointParameters
-                        endPoint Solid {
+										}
+										boundingObject Transform {
+											translation 0 0.02 -0.025
+											children [
+												Box {
+													size 0.065 0.1 0.15
+												}
+											]
+										}
+										children[
+											LEFT_HIP_YAW {
+												translation 0 0.063 0
+												scale 0.001 0.001 0.001
+											}													    
+											DEF Left_hip_roll HingeJoint {
+												device RotationalMotor {
+													name "PelvL"
+													# TODO: Use NX Motor specs
+													maxVelocity 5.65486677646
+													maxTorque 41
+													#maxTorque 200
+													#maxVelocity 250
+													# Not sure of these...
+													minPosition -2.92343
+													maxPosition 2.92343
+												} # End of the PelvYR RotationalMotor
+												jointParameters HingeJointParameters {
+													# Out x for pitch
+													axis 0 0 1
+												} # End of the PelvYR HingeJointParameters
+												endPoint Solid {
                           physics Physics {
                             density -1
                             mass 0.3
-														centerOfMass [0 0 0]
-														inertiaMatrix [0.001 0.001 0.001, 0 0 0]
                           }
-                          children[
-                            LEFT_HIP_YAW{
-                              translation 0 0.063 0
-                              scale 0.001 0.001 0.001
-                            }
-                            # Left_hip_roll
-                            HingeJoint {
-                              device RotationalMotor {
-                                name "PelvL"
-                                # TODO: Use NX Motor specs
-                                maxVelocity 5.65486677646
-                                maxTorque 40
+													boundingObject Transform {
+														translation 0 0 -0.03
+														children [
+															Box {
+																size 0.07 0.07 0.14
+															}
+														]
+													}
+													children[
+														HIP_ROLL {
+															scale 0.001 0.001 0.001
+														}
+														DEF Left_hip_pitch HingeJoint {
+															device RotationalMotor {
+																name "LegUpperL"
+																# TODO: Use NX Motor specs
+																maxVelocity 5.65486677646
+																maxTorque 41
 																#maxTorque 200
 																#maxVelocity 250
-                                # Not sure of these...
-                                minPosition -2.92343
-                                maxPosition 2.92343
-                              } # End of the PelvL RotationalMotor
-                              jointParameters HingeJointParameters {
-                                # Out x for pitch
-                                axis 0 0 1
-                                # I think anchor means the up direction?
-                                anchor 0 0 0.081
-                              } # End of the PelvL HingeJointParameters
-                              endPoint Solid {
+																# Not sure of these...
+																minPosition -2.92343
+																maxPosition 2.92343
+															} # End of the PelvYR RotationalMotor
+															jointParameters HingeJointParameters {
+																# I think z?
+																axis 1 0 0
+															} # End of the PelvYR HingeJointParameters
+															endPoint Solid {
                                 physics Physics {
                                   density -1
-																	mass 1.1
-                        					centerOfMass [0.01 -0.18 0]
-																	inertiaMatrix [0.001 0.001 0.001, 0 0 0]
+                                  mass 1.1
+																	# TODO: Test that this is the correct center of mass...
+																	centerOfMass [-0.01 -0.18 0]
                                 }
-                                children[
-                                  RIGHT_HIP_ROLL{scale 0.001 0.001 0.001}
-                                  # Left_hip_pitch
-                                  HingeJoint {
-                                    device RotationalMotor {
-                                      name "LegUpperL"
-                                      # TODO: Use NX Motor specs
-                                      maxVelocity 5.65486677646
-                                      maxTorque 40
+																boundingObject Group {
+																	children [
+																		Transform {
+																			translation 0.025 -0.145 0.012
+																			children [
+																				Box {
+																					size 0.144 0.355 0.085
+																				}
+																			]
+																		}
+																		Transform {
+																			translation 0.025 -0.3 -0.025
+																			rotation 1 0 0 0.7854
+																			children [
+																				Box {
+																					size 0.144 0.066 0.066
+																				}
+																			]
+																		}
+																	]
+																}
+																children [
+																	L_THIGH{
+																		#rotation 0 1 0 3.14159
+																		scale 0.001 0.001 0.001
+																	}
+																	DEF  Left_knee_pitch HingeJoint {
+																		device RotationalMotor {
+																			name "LegLowerL"
+																			# TODO: Use NX Motor specs
+																			maxVelocity 5.65486677646
+																			maxTorque 41
 																			#maxTorque 200
 																			#maxVelocity 250
-                                      # Not sure of these...
-                                      minPosition -2.92343
-                                      maxPosition 2.92343
-                                    } # End of the LegUpperL RotationalMotor
-                                    jointParameters HingeJointParameters {
-                                      # I think z?
-                                      axis 1 0 0
-                                      # I think anchor means the up direction?
-                                      anchor 0.081 0 0
-                                    } # End of the LegUpperL HingeJointParameters
-                                    endPoint Solid {
-                                      translation 0 -0.3 -0.03
+																			# Not sure of these...
+																			minPosition -2.92343
+																			maxPosition 2.92343
+																		}
+																		jointParameters HingeJointParameters {
+																			axis 1 0 0
+																			anchor 0 -0.3 -0.03
+																		}
+																		endPoint Solid {
+																			translation 0 -0.3 -0.03
+																			boundingObject Transform {
+																				translation 0.025 -0.192 0.043
+																				children [
+																					Box {
+																						size 0.144 0.35 0.085
+																					}
+																				]
+																			}
                                       physics Physics {
                                         density -1
                                         mass 1.1
-																				centerOfMass [0.01 -0.16 0]
-																				inertiaMatrix [0.001 0.001 0.001, 0 0 0]
+																				centerOfMass -0.01 -0.16 0
                                       }
-                                      children[
-                                        L_THIGH{
-                                          #rotation 0 1 0 3.14159
-                                          translation 0 0.3 0.03
-                                          scale 0.001 0.001 0.001
-                                        }
-                                        # Left_knee_pitch
-                                        HingeJoint {
-                                          device RotationalMotor {
-                                            name "LegLowerL"
-                                            # TODO: Use NX Motor specs
-                                            maxVelocity 5.65486677646
-                                            maxTorque 41
+																			children[
+																				L_LEG{
+																					translation 0 0 0.03
+																					#rotation 0 1 0 3.14159
+																					scale 0.001 0.001 0.001
+																				}
+																				DEF Left_ankle_pitch HingeJoint {
+																					device RotationalMotor {
+																						name "AnkleL"
+																						# TODO: Use NX Motor specs
+																						maxVelocity 5.65486677646
+																						maxTorque 41
 																						#maxTorque 200
 																						#maxVelocity 250
-                                            # Not sure of these...
-                                            #minPosition -2.92343
-                                            #maxPosition 2.92343
-																						#minPosition -4
-                                            #maxPosition 4
-                                          } # End of the LegLowerL RotationalMotor
-                                          jointParameters HingeJointParameters {
-                                            # I think z?
-                                            axis 1 0 0
-                                            # I think anchor means the up direction?
-                                            anchor 0.081 0 0
-                                          } # End of the LegLowerL HingeJointParameters
-                                          endPoint Solid {
-                                            translation 0 -0.3 0.03
-                                            physics Physics {
-                                              density -1
-                                              mass 0.2
-																							centerOfMass [0 0 0]
-																							inertiaMatrix [0.001 0.001 0.001, 0 0 0]
-                                            }
-                                            children[
-                                              L_LEG{
-                                                translation 0 0.3 0
-                                                #rotation 0 1 0 3.14159
-                                                scale 0.001 0.001 0.001
-                                              }
-                                              # Left_ankle_pitch
-                                              HingeJoint {
-                                                device RotationalMotor {
-                                                  name "AnkleL"
-                                                  # TODO: Use NX Motor specs
-                                                  maxVelocity 5.65486677646
-                                                  maxTorque 41
+																						# Not sure of these...
+																						minPosition -2.92343
+																						maxPosition 2.92343
+																					} # End of the LegLowerR RotationalMotor
+																					jointParameters HingeJointParameters {
+																						axis 1 0 0
+																						anchor 0 -0.3 0.03
+																					} # End of the LegLowerR HingeJointParameters
+																					endPoint Solid {
+																						translation 0 -0.3 0.03		
+																						boundingObject Transform {
+																							translation 0 0 -0.012
+																							children [
+																								Box {
+																									size 0.06 0.06 0.12
+																								}
+																							]
+																						}
+																						physics Physics {
+																							density -1
+																							mass 0.2
+																						}
+																						children[
+																							LEFT_ANKLE {
+																								scale 0.001 0.001 0.001
+																							}
+																							DEF Left_ankle_roll HingeJoint {
+																								device RotationalMotor {
+																									name "FootL"
+																									# TODO: Use NX Motor specs
+																									maxVelocity 5.65486677646
+																									maxTorque 41
 																									#maxTorque 200
 																									#maxVelocity 250
-                                                  # Not sure of these...
-                                                  minPosition -2.92343
-                                                  maxPosition 2.92343
-                                                } # End of the AnkleL RotationalMotor
-                                                jointParameters HingeJointParameters {
-                                                  # I think z?
-                                                  axis 1 0 0
-                                                  # I think anchor means the up direction?
-                                                  anchor 0.081 0 0
-                                                } # End of the AnkleL HingeJointParameters
-                                                endPoint Solid {
-                                                  physics Physics {
-                                                    density -1																										
-																										mass 0.6
-																										centerOfMass [0.01 -0.07 0.02]
-																										inertiaMatrix [0.001 0.001 0.001, 0 0 0]
-                                                  }
-                                                  children[
-                                                    LEFT_ANKLE{scale 0.001 0.001 0.001}
-                                                    # Left_ankle_roll
-                                                    HingeJoint {
-                                                      device RotationalMotor {
-                                                        name "FootL"
-                                                        # TODO: Use NX Motor specs
-                                                        maxVelocity 5.65486677646
-                                                        maxTorque 41
-																												#maxTorque 200
-																												#maxVelocity 250
-                                                        # Not sure of these...
-                                                        minPosition -2.92343
-                                                        maxPosition 2.92343
-                                                      } # End of the FootL RotationalMotor
-                                                      jointParameters HingeJointParameters {
-                                                        # I think z?
-                                                        axis 0 0 1
-                                                        # I think anchor means the up direction?
-                                                        anchor 0 0 0.081
-                                                      } # End of the FootL HingeJointParameters
-                                                      endPoint Solid {
-                                                        translation 0 -0.1115 0.018
-                                                        boundingObject Box {size 0.145 0.012 0.26}
-                                                        physics Physics {
-																													#density -1
-																													#mass 0.0001
-																													#centerOfMass [0 0 0]
-																													#inertiaMatrix [0.001 0.001 0.001, 0 0 0]
-																												}
-                                                        children[
-                                                          FOOT{
-                                                            scale 0.001 0.001 0.001
-                                                            translation 0 0.1115 -0.018
-                                                          }
-                                                          DEF L_FSR TouchSensor {
-																														name "L_FT"
-																														#translation 0 -0.09 0
-																														# Should be a bit bigger
-																														boundingObject Box {size 0.145 0.013 0.26}
-																														physics Physics {
-																														 density -1
-																														 mass 0.0001
-																														}
-																														type "force-3d"
+																									# Not sure of these...
+																									minPosition -2.92343
+																									maxPosition 2.92343
+																								} # End of the LegLowerR RotationalMotor
+																								jointParameters HingeJointParameters {
+																									axis 0 0 1
+																									#anchor 0 -0.1115 0.018
+																								}
+																								endPoint Solid {
+																									boundingObject Group {
+																										children [
+																											Transform {
+																												translation 0 -0.1115 0.018
+																												children [
+																													Box {
+																														size 0.145 0.012 0.26
 																													}
-                                                        ]
-                                                      }
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            ]
-                                          }
-                                        }
-                                      ]
-                                    }
-                                  }
-                                ]
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                  ## End Left Leg
+																												]
+																											}
+																											Transform {
+																												translation 0 -0.04 -0.013
+																												children [
+																													Box {
+																														size 0.066 0.14 0.13
+																													}
+																												]
+																											}
+																										]
+																									}
+																									physics Physics {
+																										density -1
+																										mass 0.6
+																										centerOfMass -0.01 -0.07 0.02
+																									}
+																									children [
+																										FOOT {
+																											scale 0.001 0.001 0.001
+																										}
+																										DEF Left_ankle_force TouchSensor {
+																											translation 0 -0.09 0
+																											name "LAnkle_force"
+																											boundingObject Transform {
+																												translation 0 -0.003 0.0177
+																												children [
+																													Box {size 0.147 0.05 0.262}
+																												]
+																											}
+																											physics Physics {}
+																											type "force-3d"
+																										}
+																									]
+																								}
+																							}
+																						]
+																					}
+																				}
+																			]
+																		}
+																	}
+																]
+															}
+														}
+													]
+												}
+											}
+										]
+									}
+								}
+								# End Left Leg
 							
 							
 							

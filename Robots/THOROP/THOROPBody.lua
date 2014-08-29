@@ -390,7 +390,7 @@ if IS_WEBOTS then
       tags.r_fsr = webots.wb_robot_get_device("R_FSR")
     end
     if Config.sensors.ft then
-			tags.l_ft = webots.wb_robot_get_device("L_FT")
+			tags.l_ft = webots.wb_robot_get_device("LAnkle_force")
       tags.r_ft = webots.wb_robot_get_device("RAnkle_force")
     end
     

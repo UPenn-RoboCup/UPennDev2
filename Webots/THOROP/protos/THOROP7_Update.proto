@@ -801,42 +801,30 @@ Robot {
 		} # End of the Head HingeJoint
     # End of the Head
     
-    ## Begin the Chest lidar chain
-    DEF Chest_Pan Solid {
-			translation 0 0 0.1
-      children [
-        ## Chest lidar is root child    
-        HingeJoint {
-          device RotationalMotor {
-            name "ChestLidarPan"
-            # Use MX-28 specs (54*pi/30)
-            #maxVelocity 5.65486677646
-            maxTorque 40
-            # Not sure of these...
-            minPosition -2.92343
-            maxPosition 2.92343
-          } # End of the ChestLidarPan RotationalMotor
-          jointParameters HingeJointParameters {
-            # Straight up in the y-axis for webots
-            axis 0 1 0
-            # I think anchor means the up direction?
-            anchor 0 0.081 0
-          } # End of the ChestLidarPan HingeJointParameters
-          endPoint Solid {
-            translation 0 0 0.010 # lidar chest offset
-						rotation 0.707107 -0.707107 0 3.14159
-						#rotation 0.707107 0.707107 0 3.14159
-            children [
-              hokuyo {
-                name "ChestLidar"
-                width IS lidarRays
-								fieldOfView IS lidarFov
-              }
-            ] # End of the ChestLidarPan Children
-          } # End of the ChestLidarPan endpoint
-        } # End of the ChestLidarPan HingeJoint
-      ] # End the solid children
-    }
+    ## Begin the Chest lidar chain  
+		DEF Chest_Pan HingeJoint {
+			device RotationalMotor {
+				name "ChestLidarPan"
+				# Use MX-28 specs (54*pi/30)
+				#maxVelocity 5.65486677646
+				maxTorque 40
+				# Not sure of these...
+				minPosition -2.92343
+				maxPosition 2.92343
+			} # End of the ChestLidarPan RotationalMotor
+			jointParameters HingeJointParameters {
+				axis 0 1 0
+				anchor 0 0 0.1
+			} # End of the ChestLidarPan HingeJointParameters
+			endPoint hokuyo {
+				name "ChestLidar"
+				width IS lidarRays
+				fieldOfView IS lidarFov
+				# Is if offset a bit from the axis, though?
+				translation 0 0 0.1
+				rotation 0.707107 -0.707107 0 3.14159
+			}			
+		} # End of the ChestLidarPan HingeJoint
     ## End the Chest lidar chain
     
     ## Begin the Right arm chain

@@ -12,8 +12,8 @@ Config.imu = {
 
 Config.sensors = {
 	ft = true,
-	head_camera = true,
-	chest_lidar = true,
+	head_camera = false,
+	chest_lidar = false,
   head_lidar = false,
   fsr = false,
 }

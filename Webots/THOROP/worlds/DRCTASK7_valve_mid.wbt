@@ -37,14 +37,10 @@ THOROP_UPENN {
   controller "thorop"
   controllerArgs "0 32"
 }
-Solid {
-  translation -0.9 1.02 1.3
+
+ValveDRCLever {
+	translation -0.9 1.02 1.3
   rotation 0 1 0 1.57
-  children [
-    ValveDRCLever {
-    }
-  ]
-  locked TRUE
 }
 
 DEF MEDIUM ValveDRCMedium {

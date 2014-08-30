@@ -2,7 +2,7 @@
 -- (c) Stephen McGill 2014
 local ok, ffi = pcall(require, 'ffi')
 if not ok then return require'udp' end
-if ffi.os=='Linux' and ffi.arch=='x86' then return require'udp' end
+if ffi.os=='Linux' then return require'udp' end
 
 local udp = {ffi=true}
 local C = ffi.C

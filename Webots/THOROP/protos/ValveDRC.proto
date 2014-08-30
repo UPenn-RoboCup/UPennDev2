@@ -1,20 +1,11 @@
-# Quck steerng wheel for DRC
-# Seung-Joon Yi
-# Feb 2013
-
 PROTO ValveDRC [
-  field SFVec3f translation 0 0.0325 0
-  field SFRotation rotation 0 1 0 0
   field SFColor color 1.0 0.54 0.08
-
   field SFFloat radius 0.0125
   field SFFloat height 0.09
   field SFFloat mass 0.35
-
-  field SFVec3f centerOfMass 0 -0.0001 0
-  field SFFloat linearDamping 0.17
-  field SFFloat angularDamping 0.33
-  field SFString contactMaterial "default"
+	# Quck steering wheel for DRC
+	# Seung-Joon Yi
+	# Feb 2013
 ]
 {
   Servo {

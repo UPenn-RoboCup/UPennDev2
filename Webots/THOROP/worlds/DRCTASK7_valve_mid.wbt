@@ -4,7 +4,7 @@ WorldInfo {
     "Valve operating test for DRC"
   ]
   title "valvetest"
-  basicTimeStep 40
+  basicTimeStep 33
   FPS 15
 }
 Viewpoint {
@@ -17,7 +17,7 @@ Background {
   ]
 }
 DirectionalLight {
-  ambientIntensity 1.6
+  ambientIntensity 0.8
   direction -0.5 -2 -0.5
   intensity 0.3
   castShadows TRUE
@@ -26,10 +26,13 @@ DirectionalLight {
   direction 0.5 -0.5 0.5
   intensity 0.5
 }
-DEF FLOOR MetricFloor {
-  color 0.95 0.95 0.95
+DEF FLOOR Floor {
+  tileSize 2 2
+  texture [
+    "textures/texture_grid.png"
+  ]
 }
-THOROP7_NoBoundaries_LongClawHook {
+THOROP_UPENN {
   translation -1.5 1.15535 0.4
   controller "thorop"
   controllerArgs "0 32"
@@ -43,14 +46,10 @@ Solid {
   ]
   locked TRUE
 }
-Solid {
+
+DEF MEDIUM ValveDRCMedium {
   translation -1.5 1.02 1.3
   rotation 0 1 0 1.57
-  children [
-    ValveDRCMedium {
-    }
-  ]
-  locked TRUE
 }
 Solid {
   translation -2.1 1.02 1.3
@@ -110,7 +109,7 @@ DEF WALL3 Solid {
   translation 0 1 -0.5
   rotation 0 1 0 -0.785
   children [
-    Shape {
+    DEF WALL3_SH Shape {
       appearance Appearance {
         material Material {
         }
@@ -120,13 +119,7 @@ DEF WALL3 Solid {
       }
     }
   ]
-  boundingObject Transform {
-    children [
-      Box {
-        size 2.8 2 0.01
-      }
-    ]
-  }
+  boundingObject USE WALL3_SH
   locked TRUE
 }
 DEF MARKER1 Solid {

@@ -11,10 +11,11 @@ Config.imu = {
 }
 
 Config.sensors = {
+	ft = true,
+	head_camera = false,
+	chest_lidar = false,
   head_lidar = false,
-  chest_lidar = false,
   fsr = false,
-  ft = false,
 }
 
 Config.left_ft = {
@@ -387,10 +388,10 @@ if IS_WEBOTS then
   -- Webots overrides tested in Webots 7.2.3, with ShortNewHand
   servo.direction = vector.new({
    	1,1, -- Head
-    1,-1,-1,  1,  -1,-1,-1, --LArm
+    1,-1,-1,  1,  -1,-1,1, --LArm
     --[[Yaw/Roll:]] 1, 1, --[[3 Pitch:]] 1,1, 1, 1, --LLeg
     --[[Yaw/Roll:]] 1, 1, --[[3 Pitch:]] 1,1, 1, 1, --RLeg
-    1,-1,-1,  -1,  -1,-1,-1, --RArm
+    1,-1,-1,  -1,  -1,-1,1, --RArm
     -- TODO: Check the gripper
     -1,1, -- Waist
     1,-1, -- left gripper
@@ -400,15 +401,11 @@ if IS_WEBOTS then
   })
 
   servo.rad_offset = vector.new({
---    0,0, -- head
--- I don't know why but the webots model has stupid 10 degree offset...
--- And this killed all our webots vision for months!
-
-    0,-10 ,
+    0,0, -- head
     -90,0,0,  0,  0,0,0,
     0,0,0,0,0,0,
     0,0,0,0,0,0,
-    -180,0,0,  0,  0,0,0,
+    -90,0,0,  0,  0,0,0,
     0,0,
     0,0,
     0,0,

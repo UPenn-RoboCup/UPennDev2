@@ -10,10 +10,8 @@ PROTO SingleDoorCommonPush_40 [
   field MFString mainTextureUrl [
     "textures/single_door_common.png"
   ]
-  field SFColor frameColor 1 1 1
-  field MFString frameTextureUrl [
-    "textures/metal.png"
-  ]
+  #field SFColor frameColor 1 1 1
+  #field MFString frameTextureUrl [ "textures/metal.png" ]
   field SFColor handleColor 1 1 1
   field MFString handleTextureUrl [
     "textures/metal.png"

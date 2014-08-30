@@ -1,20 +1,19 @@
-PROTO RIGHT_HIP_ROLL [
+PROTO HIP_ROLL [
 field SFVec3f scale 1 1 1
 ]
 {
 Transform {
-  scale IS scale
- children [
-
-                        Shape {
-                          appearance Appearance {
-                            material Material {
-                              diffuseColor 0.243 0.243 0.243
-                              emissiveColor 0.08 0.08 0.08
-                              shininess 0.5
-                              specularColor 0.1 0.1 0.1
-                            }
-                          }
+	scale IS scale
+	children [
+	Shape {
+		appearance Appearance {
+		material Material {
+			diffuseColor 0.243 0.243 0.243
+			emissiveColor 0.08 0.08 0.08
+			shininess 0.5
+			specularColor 0.1 0.1 0.1
+		}
+	}
                           geometry IndexedFaceSet {
                             coord Coordinate {
                               point [

@@ -4,7 +4,7 @@ WorldInfo {
     "World for the Adult size soccer league"
   ]
   title "THORwIn RoboCup"
-  basicTimeStep 30
+  basicTimeStep 33
   FPS 15
 }
 Viewpoint {
@@ -54,7 +54,7 @@ DEF OBS2 ObjectGPS {
 DEF OPPONENT Block {
   translation -4.2 0.5 0
 }
-THOROP7_Update {
+THOROP_UPENN {
   translation 0 1.155 0
   rotation 0 1 0 -1.5708
   controller "thorop"

@@ -210,7 +210,6 @@ if IS_WEBOTS then
   local servo = Config.servo
 
   -- Default configuration (toggle during run time)
-  local ENABLE_CAMERA = true --false
   local ENABLE_LOG, t_log = false, 0
   if ENABLE_LOG then
   	libLog = require'libLog'
@@ -218,14 +217,14 @@ if IS_WEBOTS then
   end
 
   -- Added to Config rather than hard-code 
-  local ENABLE_CHEST_LIDAR  = Config.sensors.chest_lidar
+	local ENABLE_CAMERA, NEXT_CAMERA = Config.sensors.head_camera, 0
+  local ENABLE_CHEST_LIDAR, NEXT_CHEST_LIDAR  = Config.sensors.chest_lidar, 0
   local ENABLE_HEAD_LIDAR = Config.sensors.head_lidar
   local ENABLE_FSR = Config.sensors.fsr
   local ENABLE_FT = Config.sensors.ft
-
-  local ENABLE_KINECT = false
-  local ENABLE_POSE   = true
-  local ENABLE_IMU   = true
+  local ENABLE_KINECT = Config.sensors.kinect
+  local ENABLE_POSE = true
+  local ENABLE_IMU = true
 
   -- Start the system
   webots.wb_robot_init()
@@ -272,6 +271,7 @@ if IS_WEBOTS then
       elseif tags.chest_lidar then
         print(util.color('CHEST_LIDAR enabled!','green'))
         webots.wb_camera_enable(tags.chest_lidar,lidar_timeStep)
+				NEXT_CHEST_LIDAR = get_time() + lidar_timeStep / 1000
         ENABLE_CHEST_LIDAR = true
       end
     end,
@@ -284,6 +284,7 @@ if IS_WEBOTS then
       else
         print(util.color('CAMERA enabled!','green'))
         webots.wb_camera_enable(tags.head_camera,camera_timeStep)
+				NEXT_CAMERA = get_time() + camera_timeStep / 1000
         ENABLE_CAMERA = true
       end
     end,
@@ -367,7 +368,7 @@ if IS_WEBOTS then
 	        webots.wb_servo_set_velocity(tag, 4)
 				else
 					webots.wb_motor_enable_position(tag, timeStep)
-					webots.wb_motor_set_velocity(tag, 4)
+					--webots.wb_motor_set_velocity(tag, 4)
 				end
 			end
 		end
@@ -391,8 +392,8 @@ if IS_WEBOTS then
       tags.r_fsr = webots.wb_robot_get_device("R_FSR")
     end
     if Config.sensors.ft then
-			tags.l_ft = webots.wb_robot_get_device("L_FT")
-      tags.r_ft = webots.wb_robot_get_device("R_FT")
+			tags.l_ft = webots.wb_robot_get_device("LAnkle_force")
+      tags.r_ft = webots.wb_robot_get_device("RAnkle_force")
     end
     
 		-- Enable or disable the sensors
@@ -423,7 +424,7 @@ if IS_WEBOTS then
 
 	function Body.update()
 
-    local t = Body.get_time()
+    local t = get_time()
     --Body.update_finger(timeStep)
 
 		-- Set actuator commands from shared memory
@@ -435,14 +436,14 @@ if IS_WEBOTS then
 			-- TODO: What is velocity?
 			local vel = 0 or Body.get_command_velocity()[idx]
 			local en  = 1 or Body.get_torque_enable()[idx]
-			local deltaMax = timeStep * vel
 			-- Only update the joint if the motor is torqued on
 
 			-- If the joint is moving
 			-- Clamp the difference between commanded and actuated
 			-- so that we don't have huge jumped
 			-- NOTE: This *should* be handled by the simulator?
-
+			--[[
+			local deltaMax = timeStep * vel
 			local new_pos = cmd
 			if vel > 0 then
         local delta = util.mod_angle(cmd - pos)
@@ -453,10 +454,11 @@ if IS_WEBOTS then
 				end
 				new_pos = pos + delta
 			end
+			--]]
 
 			if en>0 and jtag>0 then
-        local rad = servo.direction[idx] * (new_pos + servo.rad_offset[idx])
-                
+        local rad = servo.direction[idx] * (cmd + servo.rad_offset[idx])
+        set_pos(jtag, rad)
 --SJ: Webots is STUPID so we should set direction correctly to prevent flip        
 --[[        
         local val = get_pos(jtag)
@@ -467,16 +469,19 @@ if IS_WEBOTS then
         end
 				rad = rad==rad and rad or 0
         set_pos(jtag, rad)
---]]        
+--]]
 				--Fixed
+				--[[
         local val = get_pos(jtag)
         local delta = util.mod_angle(rad-val)
         set_pos(jtag, rad+delta)
+				--]]
       end
 		end --for
 
 		-- Step the simulation, and shutdown if the update fails
 		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
+		t = get_time()
 
     if ENABLE_IMU then
       -- Accelerometer data (verified)
@@ -513,12 +518,12 @@ if IS_WEBOTS then
     if ENABLE_POSE then
       local gps     = webots.wb_gps_get_values(tags.gps)
       local compass = webots.wb_compass_get_values(tags.compass)
-
---SJ:fixed for robocup wbt
-      --local angle   = math.atan2( compass[3], compass[1] )
-      --local pose    = vector.pose{gps[3], gps[1], angle}
-      local angle   = math.atan2( compass[1], -compass[3] )
-      local pose    = vector.pose{-gps[1], gps[3], angle}
+			local angle   = math.atan2( compass[3], compass[1] )
+      local pose    = vector.pose{gps[3], gps[1], angle}
+			
+			-- SJ:fixed for robocup wbt
+      --local angle   = math.atan2( compass[1], -compass[3] )
+      --local pose    = vector.pose{-gps[1], gps[3], angle}
 
       --wcm.set_robot_pose( pose )
       wcm.set_robot_pose_gps( pose )
@@ -551,14 +556,15 @@ if IS_WEBOTS then
 		dcm.set_sensor_position(positions)
 
     -- Grab a camera frame
-    if ENABLE_CAMERA then
+    if ENABLE_CAMERA and t >= NEXT_CAMERA then
       local w = webots.wb_camera_get_width(tags.head_camera)
       local h = webots.wb_camera_get_height(tags.head_camera)
       local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.head_camera), w, h)
 			WebotsBody.update_head_camera(img, 2*w*h, 0, t)
+			NEXT_CAMERA = get_time() + camera_timeStep / 1000
     end
     -- Grab a lidar scan
-    if ENABLE_CHEST_LIDAR then
+    if ENABLE_CHEST_LIDAR and t >= NEXT_CHEST_LIDAR then
       local n = webots.wb_camera_get_width(tags.chest_lidar)
 			local fov = webots.wb_camera_get_fov(tags.chest_lidar)
 			local res = fov / n
@@ -566,6 +572,7 @@ if IS_WEBOTS then
 			local metadata = {n=n,res=res,t=t,angle=Body.get_lidar_position()}
 			WebotsBody.update_chest_lidar(metadata,ranges)
       --local lidar_array = require'carray'.float(ranges, w)
+			NEXT_CHEST_LIDAR = get_time() + lidar_timeStep / 1000
     end
     -- Grab a lidar scan
     if ENABLE_HEAD_LIDAR then

@@ -38,7 +38,7 @@ THOROP_UPENN {
   controllerArgs "0 32"
 }
 
-ValveDRCLever {
+DEF LEVER ValveDRCLever {
 	translation -0.9 1.02 1.3
   rotation 0 1 0 1.57
 }
@@ -53,7 +53,7 @@ DEF SMALL ValveDRC {
   rotation 0 1 0 1.57
 }
 
-DEF WALL_TO_BREAK Solid {
+DEF WALL Solid {
   translation -1.5 1 1.5
   children [
     Shape {
@@ -75,46 +75,7 @@ DEF WALL_TO_BREAK Solid {
   }
   locked TRUE
 }
-DEF WALL2 Solid {
-  translation 1 1 0.5
-  rotation 0 1 0 0.785
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-        }
-      }
-      geometry Box {
-        size 2.8 2 0.01
-      }
-    }
-  ]
-  boundingObject Transform {
-    children [
-      Box {
-        size 2.8 2 0.01
-      }
-    ]
-  }
-  locked TRUE
-}
-DEF WALL3 Solid {
-  translation 0 1 -0.5
-  rotation 0 1 0 -0.785
-  children [
-    DEF WALL3_SH Shape {
-      appearance Appearance {
-        material Material {
-        }
-      }
-      geometry Box {
-        size 2.8 2 0.01
-      }
-    }
-  ]
-  boundingObject USE WALL3_SH
-  locked TRUE
-}
+
 DEF MARKER1 Solid {
   translation -1.5 0 0.6
   rotation 0 1 0 1.57

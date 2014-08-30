@@ -11,7 +11,7 @@ PROTO GRIPPER [
 		boundingObject Box { size 0.08 0.005 0.08 }
 		physics Physics {
 			density -1
-			mass 0.1
+			mass 0.01
 		}
 		children [
 			Shape { geometry Box { size 0.08 0.005 0.08 } }
@@ -48,7 +48,7 @@ PROTO GRIPPER [
 					boundingObject Box { size 0.02 0.06 0.02 }
 					physics Physics {
 						density -1
-						mass 0.1
+						mass 0.01
 					}
 					children [
 						GRIPPER_PLATE { size 0.02 0.06 0.02 }
@@ -77,7 +77,7 @@ PROTO GRIPPER [
 					boundingObject Box { size 0.02 0.06 0.02 }
 					physics Physics {
 						density -1
-						mass 0.1
+						mass 0.01
 					}
 					children [
 						GRIPPER_PLATE { size 0.02 0.06 0.02 }

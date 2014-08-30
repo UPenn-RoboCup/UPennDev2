@@ -13,7 +13,7 @@ PROTO GRIPPER_PLATE [
 		boundingObject USE PLATE
 		physics Physics {
 			density -1
-			mass 0.1
+			mass 0.01
 		}
 	}
 }

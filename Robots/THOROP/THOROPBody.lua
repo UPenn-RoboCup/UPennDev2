@@ -518,12 +518,12 @@ if IS_WEBOTS then
     if ENABLE_POSE then
       local gps     = webots.wb_gps_get_values(tags.gps)
       local compass = webots.wb_compass_get_values(tags.compass)
-
---SJ:fixed for robocup wbt
-      --local angle   = math.atan2( compass[3], compass[1] )
-      --local pose    = vector.pose{gps[3], gps[1], angle}
-      local angle   = math.atan2( compass[1], -compass[3] )
-      local pose    = vector.pose{-gps[1], gps[3], angle}
+			local angle   = math.atan2( compass[3], compass[1] )
+      local pose    = vector.pose{gps[3], gps[1], angle}
+			
+			-- SJ:fixed for robocup wbt
+      --local angle   = math.atan2( compass[1], -compass[3] )
+      --local pose    = vector.pose{-gps[1], gps[3], angle}
 
       --wcm.set_robot_pose( pose )
       wcm.set_robot_pose_gps( pose )

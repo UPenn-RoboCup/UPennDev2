@@ -27,8 +27,12 @@ DirectionalLight {
   intensity 0.5
 }
 DEF FLOOR Floor {
+  tileSize 2 2
+  texture [
+    "textures/texture_grid.png"
+  ]
 }
-THOROP7_Update {
+THOROP_UPENN {
   translation -1.5 1.15535 0.4
   controller "thorop"
   controllerArgs "0 32"
@@ -68,7 +72,7 @@ DEF MY_DRILL1 Solid {
       }
       geometry Cylinder {
         height 0.1
-        radius 0.025
+        radius 0.015
       }
     }
     Transform {
@@ -113,7 +117,7 @@ DEF MY_DRILL1 Solid {
         children [
           Cylinder {
             height 0.1
-            radius 0.025
+            radius 0.015
           }
         ]
       }
@@ -145,17 +149,18 @@ DEF MY_DRILL2 Solid {
       }
       geometry Cylinder {
         height 0.1
-        radius 0.025
+        radius 0.015
       }
     }
     Transform {
       translation 0 -0.075 0
       children [
         Shape {
-          geometry Cylinder {
-            height 0.05
-            radius 0.05
-          }
+          #geometry Cylinder {
+          #  height 0.05
+          #  radius 0.05
+          #}
+					geometry Box { size 0.08 0.05 0.1}
         }
       ]
     }
@@ -188,19 +193,21 @@ DEF MY_DRILL2 Solid {
     children [
       Transform {
         children [
-          Cylinder {
-            height 0.1
-            radius 0.025
-          }
+          #Cylinder {
+          #  height 0.1
+          #  radius 0.015
+          #}
+					Box { size 0.03 0.1 0.03}
         ]
       }
       Transform {
         translation 0 -0.075 0
         children [
-          Cylinder {
-            height 0.05
-            radius 0.05
-          }
+          #Cylinder {
+          #  height 0.05
+          #  radius 0.05
+          #}
+					Box { size 0.08 0.05 0.1}
         ]
       }
     ]
@@ -232,52 +239,7 @@ DEF WALL_TO_BREAK Solid {
   }
   locked TRUE
 }
-DEF WALL2 Solid {
-  translation 1 1 0.5
-  rotation 0 1 0 0.785
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-        }
-      }
-      geometry Box {
-        size 2.8 2 0.01
-      }
-    }
-  ]
-  boundingObject Transform {
-    children [
-      Box {
-        size 2.8 2 0.01
-      }
-    ]
-  }
-  locked TRUE
-}
-DEF WALL3 Solid {
-  translation 0 1 -0.5
-  rotation 0 1 0 -0.785
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-        }
-      }
-      geometry Box {
-        size 2.8 2 0.01
-      }
-    }
-  ]
-  boundingObject Transform {
-    children [
-      Box {
-        size 2.8 2 0.01
-      }
-    ]
-  }
-  locked TRUE
-}
+
 Solid {
   translation -1.5 0.9 1.49
   rotation 1 0 0 1.57

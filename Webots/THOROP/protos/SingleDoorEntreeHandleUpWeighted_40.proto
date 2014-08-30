@@ -11,10 +11,8 @@ PROTO SingleDoorEntreeHandleUpWeighted_40 [
   field MFString mainTextureUrl [
     "textures/single_door_entree.png"
   ]
-  field SFColor frameColor 1 1 1
-  field MFString frameTextureUrl [
-    "textures/metal.png"
-  ]
+  #field SFColor frameColor 1 1 1
+  #field MFString frameTextureUrl [ "textures/metal.png" ]
   field SFColor handleColor 1 1 1
   field MFString handleTextureUrl [
     "textures/metal.png"

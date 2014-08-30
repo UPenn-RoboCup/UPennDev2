@@ -51,15 +51,12 @@ DEF MEDIUM ValveDRCMedium {
   translation -1.5 1.02 1.3
   rotation 0 1 0 1.57
 }
-Solid {
+
+DEF SMALL ValveDRC {
   translation -2.1 1.02 1.3
   rotation 0 1 0 1.57
-  children [
-    ValveDRC {
-    }
-  ]
-  locked TRUE
 }
+
 DEF WALL_TO_BREAK Solid {
   translation -1.5 1 1.5
   children [

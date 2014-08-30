@@ -3,17 +3,27 @@ PROTO ValveDRC [
   field SFFloat radius 0.0125
   field SFFloat height 0.09
   field SFFloat mass 0.35
+	field SFVec3f translation 0 0 0
+  field SFRotation rotation  0 1 0 0
 	# Quck steering wheel for DRC
 	# Seung-Joon Yi
 	# Feb 2013
 ]
 {
-  Servo {
-    maxForce 0
-    staticFriction 0.1
-    name "ValveDRC"
-    rotation 1 0 0 0
-    children [
+Solid {
+	translation IS translation
+	rotation IS rotation
+	locked TRUE
+	children [
+  HingeJoint {
+		jointParameters HingeJointParameters {
+			axis 1 0 0
+			staticFriction 1
+			minStop -6.28
+			maxStop 6.28
+		}
+		endPoint Solid {
+			children [
       Transform{
         translation 0 0.11 0
         rotation 1 0 0 1.57
@@ -95,11 +105,6 @@ PROTO ValveDRC [
         children[USE CROSSBAR_SEGMENT_SHAPE]
       }
 
-
-
-
-
-
     ]
     boundingObject Group{
       children[
@@ -113,9 +118,12 @@ PROTO ValveDRC [
       }
       ]
     }
-    physics Physics {
-      density -1
-      mass IS mass
-    }
-  }
+			physics Physics {
+				density -1
+				mass IS mass
+			}
+		}
+	}
+	]
+}
 }

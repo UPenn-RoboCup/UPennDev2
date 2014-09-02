@@ -2,16 +2,19 @@ import sympybotics
 
 print('Define the Robot')
 
-dh_params = [('-pi/2', 0, 0, 'q'),
-('pi/2', 0, 0, 'pi/2+q'),
-('pi/2', 0, 0.246, 'pi/2+q'),
+dh_params = [
+('-pi/2', 0, 0, 'q'),
+('pi/2', 0, 0, 'q+pi/2'),
+('pi/2', 0, 0.246, 'q+pi/2'),
 ('pi/2', 0.030, 0, 'q'),
-('-pi/2', -0.030, 0.250, '-pi/2+q'),
+('-pi/2', -0.030, 0.250, 'q-pi/2'),
 ('-pi/2', 0, 0, 'q'),
 ('pi/2', 0, 0, 'q'),
-('-pi/2', 0, 0, '-pi/2')]
+('-pi/2', 0, 0, '-pi/2')
+]
 
-rbtdef = sympybotics.RobotDef('THOR-OP 7DOF Arm', dh_params, dh_convention='standard')
+#rbtdef = sympybotics.RobotDef('THOR-OP 7DOF Arm', dh_params, dh_convention='standard')
+rbtdef = sympybotics.RobotDef('THOR-OP 7DOF Arm', dh_params, dh_convention='modified')
 
 rbtdef.dynparms()
 
@@ -19,9 +22,6 @@ rbt = sympybotics.RobotDynCode(rbtdef, verbose=True)
 
 print('Generate the C code for the inverse dynamics')
 tau_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.invdyn_code, 'tau_out', 'tau', rbtdef)
-
-print('Find the base parameters for dynamics')
-rbt.calc_base_parms()
 
 # Just printing stuff
 #rbt.geo.T[-1]
@@ -50,17 +50,19 @@ try:
 finally:
     f.close()
     
-f = open("inverse_dynamics.txt", "w")
-try:
-    f.write(str(rbt.dyn.baseparms))
-    f.write('\n')
-    f.write(tau_str)
-finally:
-    f.close()
-    
 f = open("DH Parameters used.txt", "w")
 try:
     f.write('(alpha, a, d, theta)\n')
     f.write(str(dh_params))
 finally:
     f.close()
+
+#print('Find the base parameters for dynamics')
+#rbt.calc_base_parms(verbose=True)
+#f = open("inverse_dynamics.txt", "w")
+#try:
+#    f.write(str(rbt.dyn.baseparms))
+#    f.write('\n')
+#    f.write(tau_str)
+#finally:
+#    f.close()

@@ -518,7 +518,7 @@ local function process_external()
 end
 
 -- Initialize a bus object with useful variables
-local function Initialize(bus)
+local function initialize(bus)
   bus.n_read_timeouts = 0
 	bus.read_timeout_t = 0
   bus.npkt_to_expect = 0

@@ -677,10 +677,14 @@ Body.Kinematics = Kinematics
 ----------------------
 -- Add the gripper API
 ----------------------
-local lgrip_ids = Config.parts.LGrip
-local lgrip1_id, lgrip2_id = unpack(lgrip_ids)
-local rgrip_ids = Config.parts.RGrip
-local rgrip1_id, rgrip2_id = unpack(rgrip_ids)
+local lgrip1_id, lgrip2_id = unpack(Config.parts.LGrip)
+local rgrip1_id, rgrip2_id = unpack(Config.parts.RGrip)
+local lgrip_ids = {
+	lgrip1_id = true, lgrip2_id = true
+}
+local rgrip_ids = {
+	rgrip1_id = true, rgrip2_id = true
+}
 function Body.set_lgrip_mode(mode)
 	local msg = {wr_reg='torque_mode', ids=lgrip_ids}
 	if mode=='torque' then

@@ -62,7 +62,19 @@ Config.default_state = 5 -- 0 1 2 3 4 for init~finished, 5 for untorqued, 6 for 
 ---------------------------
 -- Complementary Configs --
 ---------------------------
-local exo = {'Robot', 'Walk', 'Net', 'Manipulation', 'FSM', 'World', 'Vision'}
+
+--SJ: Now we choose the which config to load here
+local exo = {
+  'Robot',
+  'Walk',
+  'Net',
+  'Manipulation',
+  'FSM',
+  --'FSM_RoboCup',
+  --'FSM_DRCTrials',
+  'World',
+  'Vision'
+}
 
 -- Load each exogenous Config file
 for _,v in ipairs(exo) do
@@ -72,7 +84,7 @@ for _,v in ipairs(exo) do
   dofile(table.concat(fname))
 	--]]
 	----[[
-	local fname = {'Config_', Config.PLATFORM_NAME, '_', v}
+	local fname = {Config.PLATFORM_NAME,'/Config_', Config.PLATFORM_NAME, '_', v}  
   require(table.concat(fname))
 	--]]
 end

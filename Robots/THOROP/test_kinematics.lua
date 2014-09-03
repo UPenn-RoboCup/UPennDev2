@@ -21,26 +21,50 @@ print()
 -- 6 DOF arm, with angles given in qLArm
 local qLArm = vector.new({0,0,0, 0, 0,0,0})
 local qLArm2 = vector.new({90,0,0, -90, 0,0,0})*DEG_TO_RAD
+local fL2_t, fL2a_t = torch.eye(4), torch.eye(4)
+-- Hack to make super fast (don't go to C ever)
+if jit then
+	fL2_d = fL2_t:data()
+	fL2a_d = fL2a_t:data()
+end
+
+dt_all = vector.zeros(6)
+local n = 1000
+for i=1,n do
+	t0 = unix.time()
+	fL = K.l_arm_torso_7(qLArm, 0, {0,0}, 0,0,0)
+	t1 = unix.time()
+	fL2 = K2.fk(qLArm)
+	t2 = unix.time()
+	if fL2_d then K2.fk_t(fL2_d, qLArm) end
+	t3 = unix.time()
+	fLa = K.l_arm_torso_7(qLArm2, 0, {0,0}, 0,0,0)
+	t4 = unix.time()
+	fL2a = K2.fk(qLArm2)
+	t5 = unix.time()
+	if fL2a_d then K2.fk_t(fL2a_d, qLArm2) end
+	t6 = unix.time()
+	dt = vector.new{t1-t0, t2-t1,t3-t2,t4-t3,t5-t4,t6-t5}
+	dt_all = dt_all + dt
+end
+print('Times:',dt_all)
+
 -- Find the forward kinematics
-local fL = K.l_arm_torso_7(qLArm, 0, {0,0}, 0,0,0)
-local fL2 = K.l_arm_torso_7(qLArm2, 0, {0,0}, 0,0,0)
 fL[2] = fL[2] - K.shoulderOffsetY
 fL[3] = fL[3] - K.shoulderOffsetZ
-fL2[2] = fL2[2] - K.shoulderOffsetY
-fL2[3] = fL2[3] - K.shoulderOffsetZ
-print('Left Angles', qLArm)
-print('Left end effector x,y,z, roll, pitch, yaw')
-print()
-print(vector.new(fL))
-print(vector.new(fL2))
+fLa[2] = fLa[2] - K.shoulderOffsetY
+fLa[3] = fLa[3] - K.shoulderOffsetZ
+
+--print('Left end effector x,y,z, roll, pitch, yaw')
 
 -- Test other FK
 print()
-print('=======NewK=========')
-print()
-local fL2 = K2.fk(qLArm)
-local fL2a = K2.fk(qLArm2)
+print('Left Angles', qLArm)
+print(vector.new(fL))
 print(T.position6D(fL2))
+print(T.position6D(fL2_t))
+print()
+print('Left Angles', qLArm2)
+print(vector.new(fLa))
 print(T.position6D(fL2a))
---util.ptorch(fL2)
---util.ptorch(fL2a)
+print(T.position6D(fL2a_t))

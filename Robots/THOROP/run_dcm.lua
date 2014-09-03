@@ -278,7 +278,6 @@ local function do_external(request, bus)
 			m_id = j_to_m[j_id]
 			if bus.has_mx_id[m_id] then
 				local value = ptr and ptr[j_id-1] or val[j_id]
-				print('MX', wr_reg, j_id, m_id, value)
 				has_mx = true
 				insert(m_ids, m_id)
 				insert(m_vals, value)

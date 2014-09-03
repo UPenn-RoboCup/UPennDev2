@@ -70,3 +70,37 @@ print('Left Angles', qLArm2)
 print(vector.new(fLa))
 print(T.position6D(fL2a))
 print(T.position6D(fL2a_t))
+
+print()
+print('IK2')
+local ik2 = require'ik2'
+
+fL[2] = fL[2] + K.shoulderOffsetY
+fL[3] = fL[3] + K.shoulderOffsetZ
+fLa[2] = fLa[2] + K.shoulderOffsetY
+fLa[3] = fLa[3] + K.shoulderOffsetZ
+
+dt_all = vector.zeros(2)
+for i=1,n do
+	t0 = unix.time()
+	iqLArm2 = ik2.ik(fL2_t, qLArm, 0, false)
+	t1 = unix.time()
+	iqLArm = K.inverse_l_arm_7(fL, qLArm, 0, 0, {0,0}, 0,0,0, 0)
+	t2 = unix.time()
+	dt_all = vector.new{t1-t0, t2-t1} + dt_all
+end
+
+iqLArm2a = ik2.ik(fL2a_t, qLArm2, 0, false)
+iqLArm_a = K.inverse_l_arm_7(fLa, qLArm2, 0, 0, {0,0}, 0,0,0, 0)
+
+--print(fL2_t)
+
+print('Time:', dt_all)
+print()
+print(qLArm)
+print(vector.new(iqLArm2))
+print(vector.new(iqLArm))
+print()
+print(qLArm2)
+print(vector.new(iqLArm2a))
+print(vector.new(iqLArm_a))

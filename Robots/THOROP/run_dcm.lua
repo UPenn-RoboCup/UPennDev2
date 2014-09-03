@@ -277,9 +277,11 @@ local function do_external(request, bus)
 		for j_id, is_changed in pairs(request.ids) do
 			m_id = j_to_m[j_id]
 			if bus.has_mx_id[m_id] then
+				local value = ptr and ptr[j_id-1] or val[j_id]
+				print('MX', wr_reg, j_id, m_id, value)
 				has_mx = true
 				insert(m_ids, m_id)
-				insert(m_vals, ptr and ptr[j_id-1] or val[j_id])
+				insert(m_vals, value)
 				insert(addr_n_len, lD.mx_registers[wr_reg])
 			elseif bus.has_nx_id[m_id] then
 				has_nx = true

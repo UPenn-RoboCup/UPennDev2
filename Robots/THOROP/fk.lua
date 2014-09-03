@@ -15,7 +15,6 @@ local fks = {
   local lowerArmLength = .250; -- LONGARM model
   ]],
 }
-table.insert(fks, 'local torch = require"torch"')
 local j_ids = {}
 local function simp_trig(trig, j)
   local id = tonumber(j)
@@ -46,10 +45,10 @@ for row in matrix:sub(s+1, e-1):gmatch('%{%C*%}') do
   end
 end
 table.insert(fks, 'end')
---local r1, r2, r3, r4 = m(), m(), m(), m()
 
 -- Export the object
 table.insert(fks, 'K.fk = fk')
+-- Given a torch storage using :data()
 table.insert(fks, 'K.fk_t = fk_t')
 table.insert(fks, 'return K')
 

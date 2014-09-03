@@ -5,6 +5,7 @@ local T = require'Transform'
 local K2 = require'fk2'
 local torch = require'torch'
 local util = require'util'
+local ok, ffi = pcall(require, 'ffi')
 
 print()
 print('================')
@@ -20,7 +21,7 @@ print()
 -- Test forward left
 -- 6 DOF arm, with angles given in qLArm
 local qLArm = vector.new({0,0,0, 0, 0,0,0})
-local qLArm2 = vector.new({90,0,0, -90, 0,0,0})*DEG_TO_RAD
+local qLArm2 = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
 local fL2_t, fL2a_t = torch.eye(4), torch.eye(4)
 -- Hack to make super fast (don't go to C ever)
 if jit then
@@ -56,6 +57,7 @@ fLa[2] = fLa[2] - K.shoulderOffsetY
 fLa[3] = fLa[3] - K.shoulderOffsetZ
 
 --print('Left end effector x,y,z, roll, pitch, yaw')
+--if ffi then ffi.new('double[4][4]',fL2) end
 
 -- Test other FK
 print()

@@ -29,6 +29,7 @@ DirectionalLight {
 }
 DEF FLOOR Floor {
   tileSize 2 2
+  size 10 10
   texture [
     "textures/texture_grid.png"
   ]

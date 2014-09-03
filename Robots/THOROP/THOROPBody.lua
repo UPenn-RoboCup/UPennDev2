@@ -684,18 +684,18 @@ local rgrip_ids = {[rgrip1_id] = true, [rgrip2_id] = true}
 function Body.set_lgrip_mode(mode)
 	local msg = {wr_reg='torque_mode', ids=lgrip_ids}
 	if mode=='torque' then
-		msg.val = {[lgrip1_id] = 0, [lgrip2_id] = 0}
-	elseif mode=='position' then
 		msg.val = {[lgrip1_id] = 1, [lgrip2_id] = 1}
+	elseif mode=='position' then
+		msg.val = {[lgrip1_id] = 0, [lgrip2_id] = 0}
 	end
 	dcm_ch:send(mpack(msg))
 end
 function Body.set_rgrip_mode(mode)
 	local msg = {wr_reg='torque_mode', ids=rgrip_ids}
 	if mode=='torque' then
-		msg.val = {[rgrip1_id] = 0, [rgrip2_id] = 0}
-	elseif mode=='position' then
 		msg.val = {[rgrip1_id] = 1, [rgrip2_id] = 1}
+	elseif mode=='position' then
+		msg.val = {[rgrip1_id] = 0, [rgrip2_id] = 0}
 	end
 	dcm_ch:send(mpack(msg))
 end

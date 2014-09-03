@@ -20,7 +20,7 @@ print()
 
 -- Test forward left
 -- 6 DOF arm, with angles given in qLArm
-local qLArm = vector.new({0,0,0, 0, 0,0,0})
+local qLArm = vector.new({0,0,0, -1, 0,0,0})*DEG_TO_RAD
 local qLArm2 = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
 local fL2_t, fL2a_t = torch.eye(4), torch.eye(4)
 -- Hack to make super fast (don't go to C ever)
@@ -80,27 +80,34 @@ fL[3] = fL[3] + K.shoulderOffsetZ
 fLa[2] = fLa[2] + K.shoulderOffsetY
 fLa[3] = fLa[3] + K.shoulderOffsetZ
 
-dt_all = vector.zeros(2)
+fL2_t4 = ffi.new('double[4][4]', fL2)
+fL2a_t4 = ffi.new('double[4][4]', fL2a)
+
+dt_all = vector.zeros(3)
+n = 10
 for i=1,n do
 	t0 = unix.time()
-	iqLArm2 = ik2.ik(fL2_t, qLArm, 0, false)
-	t1 = unix.time()
 	iqLArm = K.inverse_l_arm_7(fL, qLArm, 0, 0, {0,0}, 0,0,0, 0)
+	t1 = unix.time()
+	iqLArm2 = ik2.ik(fL2_t, qLArm, 0, false)
 	t2 = unix.time()
-	dt_all = vector.new{t1-t0, t2-t1} + dt_all
+	iqLArm3 = ik2.ik2(fL2_t4, qLArm, 0, false)
+	t3 = unix.time()
+	dt_all = vector.new{t1-t0, t2-t1, t3-t2} + dt_all
 end
 
-iqLArm2a = ik2.ik(fL2a_t, qLArm2, 0, false)
 iqLArm_a = K.inverse_l_arm_7(fLa, qLArm2, 0, 0, {0,0}, 0,0,0, 0)
-
---print(fL2_t)
+iqLArm2a = ik2.ik(fL2a_t, qLArm2, 0, false)
+iqLArm3a = ik2.ik2(fL2a_t4, qLArm2, 0, false)
 
 print('Time:', dt_all)
 print()
 print(qLArm)
-print(vector.new(iqLArm2))
 print(vector.new(iqLArm))
+print(vector.new(iqLArm2))
+print(vector.new(iqLArm3))
 print()
 print(qLArm2)
-print(vector.new(iqLArm2a))
 print(vector.new(iqLArm_a))
+print(vector.new(iqLArm2a))
+print(vector.new(iqLArm3a))

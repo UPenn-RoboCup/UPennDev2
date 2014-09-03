@@ -61,7 +61,9 @@ local right_arm = {
   ttyname = '/dev/ttyUSB0',
   m_ids = {1,3,5,7,9,11,13,
         --head
-        29, 30
+        29, 30,
+				-- gripper
+				66, 67
         },
 	enable_read = true,
 }

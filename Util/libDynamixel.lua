@@ -844,8 +844,9 @@ local function ping_verify(self, m_ids, protocol, twait)
 		status = assert(status[1], 'NOT FOUND: '..id)
     if status.error~=0 then
       ptable(status)
-			error("ERROR PING PACKET ID "..id)
-    else
+			print("ERROR PING PACKET ID ", id)
+		end
+--    else
 			local id = status.id
 			table.insert(found_ids, id)
 			local lsb, msb = unpack(status.parameter)
@@ -877,7 +878,7 @@ local function ping_verify(self, m_ids, protocol, twait)
 				print("MX Motor")
 			end
 
-    end
+--    end
     -- Wait .1 ms
     unix.usleep(READ_TIMEOUT * 1e6)
   end

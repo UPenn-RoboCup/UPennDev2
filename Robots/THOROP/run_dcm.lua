@@ -406,7 +406,9 @@ local function form_write_command(bus, m_ids)
 		if tq_en_ptr[j_id-1]==1 then
 			insert(send_ids, m_id)
 			if is_gripper[j_id] then
-				insert(commands, tq_ptr[j_id-1])
+				local val = min(max(tq_ptr[j_id-1], -1023, 1023)
+				if val<0 then val=1024-val end
+				insert(commands, val)
 				insert(cmd_addrs, lD.mx_registers.command_torque)
 			else
 				insert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))

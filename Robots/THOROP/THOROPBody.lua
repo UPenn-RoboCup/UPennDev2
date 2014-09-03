@@ -674,6 +674,33 @@ Body.jointNames = jointNames
 Body.parts = Config.parts
 Body.Kinematics = Kinematics
 
+----------------------
+-- Add the gripper API
+----------------------
+local lgrip_ids = Config.parts.LGrip
+local lgrip1_id, lgrip2_id = unpack(lgrip_ids)
+local rgrip_ids = Config.parts.RGrip
+local rgrip1_id, rgrip2_id = unpack(rgrip_ids)
+function Body.set_lgrip_mode(mode)
+	local msg = {wr_reg='torque_mode', ids=lgrip_ids}
+	if mode=='torque' then
+		msg.val = {0, 0}
+	elseif mode=='position' then
+		msg.val = {1, 1}
+	end
+	dcm_ch:send(mpack(msg))
+end
+function Body.set_rgrip_mode(mode)
+	local msg = {wr_reg='torque_mode', ids=rgrip_ids}
+	if mode=='torque' then
+		msg.val = {0, 0}
+	elseif mode=='position' then
+		msg.val = {1, 1}
+	end
+	dcm_ch:send(mpack(msg))
+end
+----------------------
+
 -- Check the error from a desired transform tr
 -- to a forwards kinematics of in IK solution q
 local function check_ik_error( tr, tr_check, pos_tol, ang_tol )

@@ -37,7 +37,8 @@ local dcm_chains = Config.chain
 
 -- DCM Cache
 local cp_ptr = dcm.actuatorPtr.command_position
-local tq_ptr = dcm.actuatorPtr.torque_enable
+local tq_en_ptr = dcm.actuatorPtr.torque_enable
+local tq_ptr = dcm.actuatorPtr.command_torque
 local p_ptr  = dcm.sensorPtr.position
 local p_ptr_t = dcm.tsensorPtr.position
 
@@ -268,6 +269,9 @@ local function do_external(request, bus)
 	local m_id
 	if wr_reg then
 		local ptr = dcm.actuatorPtr[wr_reg]
+		local val = request.val
+		-- Ensure we have values to give
+		if not ptr and not val then return end
 		local m_ids, m_vals, addr_n_len = {}, {}, {}
 		local has_nx, has_mx = false, false
 		for j_id, is_changed in pairs(request.ids) do
@@ -275,12 +279,12 @@ local function do_external(request, bus)
 			if bus.has_mx_id[m_id] then
 				has_mx = true
 				insert(m_ids, m_id)
-				insert(m_vals, ptr[j_id-1])
+				insert(m_vals, ptr and ptr[j_id-1] or val[j_id])
 				insert(addr_n_len, lD.mx_registers[wr_reg])
 			elseif bus.has_nx_id[m_id] then
 				has_nx = true
 				insert(m_ids, m_id)
-				insert(m_vals, ptr[j_id-1])
+				insert(m_vals, ptr and ptr[j_id-1] or val[j_id])
 				insert(addr_n_len, lD.nx_registers[wr_reg])
 			end
 		end
@@ -306,11 +310,13 @@ local function do_external(request, bus)
               status = lD.get_nx_position(m_id, bus)[1]
             end
             j_id, pos = parse_read_position(status, bus)
-            if not j_id then print("Bad pos read in tq_en") end
+            if not j_id then
+							print(get_time(), "BAD TORQUE ENABLE POS READ", m_id, status and status.error)
+						end
             cp_ptr[j_id - 1] = p_ptr[j_id - 1]
           end
         else
-          print("BAD TORQUE ENABLE", m_id, tq_val, status and status.error)
+          print(get_time(), "BAD TORQUE ENABLE", m_id, tq_val, status and status.error)
         end
       end
       -- Done the cycle if setting torque
@@ -377,6 +383,43 @@ local function do_external(request, bus)
 	end
 end
 
+-- Gripper lookup
+local is_gripper = {}
+for _,id in ipairs(Config.parts.LGrip) do
+	is_gripper[id] = true
+end
+for _,id in ipairs(Config.parts.RGrip) do
+	is_gripper[id] = true
+end
+local function form_write_command(bus, m_ids)
+	local m_ids = bus.m_ids
+	local send_ids, commands, cmd_addrs = {}, {}, {}
+	local has_mx, has_nx = false, false
+	for i, m_id in ipairs(m_ids) do
+		is_mx = bus.has_mx_id[m_id]
+		has_mx = has_mx or is_mx
+		has_nx = has_nx or (not is_mx)
+		j_id = m_to_j[m_id]
+		-- Only add position commands if torque enabled
+		-- TODO: Gripper should get a command_torque!
+		if tq_en_ptr[j_id-1]==1 then
+			insert(send_ids, m_id)
+			if is_gripper[j_id] then
+				insert(commands, tq_ptr[j_id-1])
+				insert(cmd_addrs, lD.mx_registers.command_torque)
+			else
+				insert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))
+				insert(cmd_addrs,
+					is_mx and lD.mx_registers.command_position or lD.nx_registers.command_position
+				)
+			end
+		end
+	end
+	-- MX-only sync does not work for some reason
+	if not has_mx then cmd_addrs = nil end
+	return send_ids, commands, cmd_addrs
+end
+
 ------------------------
 -- Default Read/Write --
 ------------------------
@@ -390,31 +433,13 @@ local function output_co(bus)
 	coroutine.yield()
 	while true do
 		-- Send the position commands
-		send_ids, commands, cmd_addrs = {}, {}, {}
-		has_mx, has_nx = false, false
-		for i, m_id in ipairs(m_ids) do
-			is_mx = bus.has_mx_id[m_id]
-			has_mx = has_mx or is_mx
-			has_nx = has_nx or (not is_mx)
-			j_id = m_to_j[m_id]
-			-- Only add position commands if torque enabled
-			if tq_ptr[j_id-1]==1 then
-				insert(send_ids, m_id)
-				insert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))
-				insert(cmd_addrs,
-					is_mx and lD.mx_registers.command_position or lD.nx_registers.command_position
-				)
-			end
-		end
+		local send_ids, commands, cmd_addrs = form_write_command(bus)
 		-- Perform the sync write
 		if #commands>0 then
-			if has_nx and has_mx then
+			if cmd_addrs then
 				lD.set_bulk(char(unpack(send_ids)), cmd_addrs, commands, bus)
-			elseif has_nx then
-				lD.set_nx_command_position(send_ids, commands, bus)
 			else
-				-- MX sync does not work for some reason
-				lD.set_bulk(char(unpack(send_ids)), cmd_addrs, commands, bus)
+				lD.set_nx_command_position(send_ids, commands, bus)
 			end
 			bus.cmds_cnt = bus.cmds_cnt + 1
 			coroutine.yield(0)

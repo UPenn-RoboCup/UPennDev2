@@ -18,58 +18,85 @@ fsm.enabled = {
   'Body',
   'Head',
   'Motion',
-	'Lidar'
+  'Lidar'
 }
 
---TODO!!!!
+--SJ: now we can have multiple FSM options 
 fsm.select = {
   Arm = 'DRCTrials',  
-  Body = 'DRCTrials'  
+  Head = 'Default',
+  Body = 'Default',
 }
 
 
 fsm.Lidar = {
   {'lidarIdle', 'pan', 'lidarPan'},
-	{'lidarPan', 'switch', 'lidarPan'},
+  {'lidarPan', 'switch', 'lidarPan'},
   {'lidarPan', 'stop', 'lidarIdle'},
-}
-
-fsm.Arm = {
-  {'armIdle', 'timeout', 'armIdle'},
-  {'armIdle', 'init', 'armInit'},
-  {'armInit', 'done', 'armPose1'},
 }
 
 fsm.Head = {  
   {'headIdle', 'teleop', 'headTeleop'},
-  
-  -- 
-  {'headTeleop', 'scan', 'headBackScan'},
-  {'headTeleop', 'scanobs', 'headObstacleScan'},
-  -- 
 }
 
 fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   {'bodyInit', 'done', 'bodyStop'},
 
-  {'bodyStop', 'footrace', 'bodyFootRace'},
-  {'bodyFootRace', 'done', 'bodyStop'},
-
-
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
---  {'bodyStop', 'stepwaypoint', 'bodyStepWaypoint'},
-  {'bodyStop', 'kick', 'bodyRobocupKick'},
-  {'bodyStop', 'play', 'bodyRobocupIdle'},
-  {'bodyStop', 'goalie', 'bodyRobocupGoalieIdle'},
-
-  {'bodyStop', 'approach', 'bodyRobocupApproach'},
-
---test stuff
   {'bodyStepPlace',   'done', 'bodyStop'},
 --  {'bodyStepWaypoint',   'done', 'bodyStop'},
-
 }
+
+fsm.Arm = {
+  {'armIdle', 'timeout', 'armIdle'},
+  {'armIdle', 'drive', 'armDrive'},
+  {'armIdle', 'init', 'armInit'},
+
+  {'armInit', 'done', 'armPose1'},
+
+  
+  {'armPose1', 'teleop', 'armTeleop'},
+  --{'armPose1', 'teleop', 'armIKTest'},
+  --{'armIKTest', 'teleop', 'armPose1'},
+
+  {'armPose1', 'pushdoorgrab', 'armPushDoorSideGrip'},
+  {'armPose1', 'doorgrab', 'armPullDoorSideGrip'},
+
+  {'armPose1', 'toolgrab', 'armToolGrip'},
+  {'armPose1', 'hosegrab', 'armHoseGrip'},
+
+
+  {'armPose1', 'debrisgrab', 'armDebrisGrip'},
+  {'armPose1', 'smallvalvegrab', 'armSmallValveGrip'},
+  {'armPose1', 'barvalvegrab', 'armBarValveGrip'},
+  {'armPose1', 'smallvalverightgrab', 'armSmallValveRightGrip'},
+  {'armPose1', 'barvalverightgrab', 'armBarValveRightGrip'},
+
+
+  {'armSmallValveGrip', 'done', 'armPose1'},
+  {'armSmallValveRightGrip', 'done', 'armPose1'},
+  {'armBarValveGrip', 'done', 'armPose1'},
+  {'armBarValveRightGrip', 'done', 'armPose1'},
+
+  {'armToolGrip', 'done', 'armPose1'},
+  {'armToolGrip', 'hold', 'armToolHold'},
+  {'armToolHold', 'toolgrab', 'armToolChop'},
+  {'armToolChop', 'done', 'armToolHold'},
+
+  {'armHoseGrip', 'done', 'armPose1'},
+  {'armHoseGrip', 'hold', 'armHoseHold'},
+  {'armHoseHold', 'hold', 'armHoseHold'},
+  {'armHoseHold', 'hosegrab', 'armHoseTap'},
+  {'armHoseTap', 'done', 'armHoseHold'},
+
+  {'armPushDoorSideGrip', 'done', 'armPose1'},
+  {'armPullDoorSideGrip', 'done', 'armPose1'},
+
+  {'armDebrisGrip', 'done', 'armPose1'},
+  {'armTeleop', 'done', 'armPose1'},
+}
+
 
 assert(Config.dev.walk, 'Need a walk engine specification')
 fsm.Motion = {
@@ -118,57 +145,14 @@ fsm.dqNeckLimit = {
   60 * DEG_TO_RAD, 60 * DEG_TO_RAD
 }
 
-fsm.headScan = {
-  pitch0 = 30 * DEG_TO_RAD,
-  pitchMag = 20 * DEG_TO_RAD,
-  --yawMag = 80 * DEG_TO_RAD,
-  yawMag = 40 * DEG_TO_RAD,
-  tScan = 5, --sec
-}
-
 --HeadReady
 fsm.headReady = {
   dist = 3
 }
 
---HeadTrack
-fsm.headTrack = {
-  tLost = 5,
-  timeout = 6,
-	dist_th = 0.5,
-}
 
---HeadLookGoal: Look up to see the goal
-fsm.headLookGoal = {
-  yawSweep = 80*DEG_TO_RAD,
-}
-
---HeadSweep: Look around to find the goal
-fsm.headSweep = {
-  tScan = 2.0,
-  tWait = 0.25,
-}
-
-fsm.headObstacleScan = {
-  yawMag = 55*DEG_TO_RAD,
-  pitchUp = 25*DEG_TO_RAD,
-  pitchDown = 35*DEG_TO_RAD,
-}
-
-fsm.bodyRobocupFollow = {
-  th_lfoot = 0.001,
-  th_rfoot = 0.001,
-  th_dist = 0.08,  --TODO
-}
-
-fsm.bodyRobocupApproach = {
-  target={0.30,0.12} ,
-  th = {0.34, 0.02}
-}
 
 if IS_WEBOTS then
-  fsm.headScan.tScan = 16
-  fsm.bodyRobocupFollow.th_dist = 0.2
 end
 
 Config.fsm = fsm

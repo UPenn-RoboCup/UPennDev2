@@ -3,16 +3,6 @@
 #include <math.h>
 #include <stdio.h>
 
-void printTransform(Transform tr) {
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      printf("%.4g ",tr(i,j));
-    }
-    printf("\n");
-  }
-  printf("\n");
-}
-
 // NEED TO FIX HEAD KINEMATICS
 Transform
 darwinop_kinematics_forward_head(const double *q)

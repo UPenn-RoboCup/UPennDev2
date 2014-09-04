@@ -186,8 +186,8 @@ servo.joint_to_motor={
   15,17,19,21,23,25, -- right leg
   1,3,5,7,9,11,13,  --RArm
   27,28, --Waist yaw/pitch
-  66,67, -- left gripper/trigger
-  70,65, -- right gripper/trigger
+  70,65, -- left gripper/trigger
+  66,67, -- right gripper/trigger
   37, -- Lidar pan
 }
 

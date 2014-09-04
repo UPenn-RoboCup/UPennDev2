@@ -739,7 +739,8 @@ Robot {
 								}
 								Camera {
 									rotation 0 1 0 3.14159
-									translation 0 0.072 0.0785
+									#translation 0 0.072 0.0785
+									translation 0 0.105 0.045
 									name "HeadCamera"
 									windowPosition IS cameraWindowPosition
 									fieldOfView IS cameraFov

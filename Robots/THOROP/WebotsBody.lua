@@ -1,6 +1,6 @@
 local WebotsBody = {}
 
---local ww = require'world_wizard'
+local ww = require'world_wizard'
 local cw = require'camera_wizard'
 local mw = require'mesh_wizard'
 

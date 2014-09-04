@@ -1,4 +1,4 @@
-#VRML_SIM V7.4.3 utf8
+#VRML_SIM V6.0 utf8
 WorldInfo {
   info [
     "World for the Adult size soccer league"
@@ -54,7 +54,7 @@ DEF OBS2 ObjectGPS {
 DEF OPPONENT Block {
   translation -4.2 0.5 0
 }
-THOROP7_Update {
+THOROP_RoboCup {
   translation 0 1.155 0
   rotation 0 1 0 -1.5708
   controller "thorop"

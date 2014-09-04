@@ -35,6 +35,17 @@ local step_zero, step_offset = Config.servo.step_zero, Config.servo.step_offset
 local m_to_j, j_to_m = Config.servo.motor_to_joint, Config.servo.joint_to_motor
 local dcm_chains = Config.chain
 
+-- Gripper states
+local is_gripper, gripper_mode = {}, {}
+for _,id in ipairs(Config.parts.LGrip) do
+	is_gripper[id] = true
+  gripper_mode[id] = 0
+end
+for _,id in ipairs(Config.parts.RGrip) do
+	is_gripper[id] = true
+  gripper_mode[id] = 0
+end
+
 -- DCM Cache
 local cp_ptr = dcm.actuatorPtr.command_position
 local tq_en_ptr = dcm.actuatorPtr.torque_enable
@@ -323,6 +334,8 @@ local function do_external(request, bus)
       -- Done the cycle if setting torque
       return
     end
+    -- TODO: Special code for changing torque modes
+    
 		-- Send to the bus in sync fashion, for now
 		if has_nx and has_mx then
 			lD.set_bulk(m_ids, addr_n_len, m_vals, bus, true)
@@ -384,14 +397,6 @@ local function do_external(request, bus)
 	end
 end
 
--- Gripper lookup
-local is_gripper = {}
-for _,id in ipairs(Config.parts.LGrip) do
-	is_gripper[id] = true
-end
-for _,id in ipairs(Config.parts.RGrip) do
-	is_gripper[id] = true
-end
 local function form_write_command(bus, m_ids)
 	local m_ids = bus.m_ids
 	local send_ids, commands, cmd_addrs = {}, {}, {}
@@ -405,10 +410,9 @@ local function form_write_command(bus, m_ids)
 		-- TODO: Gripper should get a command_torque!
 		if tq_en_ptr[j_id-1]==1 then
 			insert(send_ids, m_id)
-			if is_gripper[j_id] then
+			if is_gripper[j_id] and gripper_mode[j_id]==1 then
 				local val = min(max(tq_ptr[j_id-1], -1023), 1023)
-				if val<0 then val=1024-val end
-				insert(commands, val)
+				insert(commands, val < 0 and (1024 - val) or val)
 				insert(cmd_addrs, lD.mx_registers.command_torque)
 			else
 				insert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))
@@ -514,7 +518,7 @@ local function process_external()
 end
 
 -- Initialize a bus object with useful variables
-local function initialize(bus)
+local function Initialize(bus)
   bus.n_read_timeouts = 0
 	bus.read_timeout_t = 0
   bus.npkt_to_expect = 0
@@ -574,7 +578,7 @@ local function initialize(bus)
     else
       tq_parse = lD.byte_to_number[lD.nx_registers.torque_enable[2]]
     end
-		dcm.actuatorPtr.torque_enable[j_id-1] = tq_parse(unpack(status.parameter))
+		tq_en_ptr[j_id-1] = tq_parse(unpack(status.parameter))
 	end
 	-- Set the default reading command for the bus
 	form_read_loop_cmd(bus, 'position')

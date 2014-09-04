@@ -6,8 +6,8 @@
 
 -- Utilities
 local vector = require'vector'
-local util   = require'util'
-local si     = require'simple_ipc'
+local util = require'util'
+local si = require'simple_ipc'
 local Kinematics = require'THOROPKinematics'
 local mpack  = require'msgpack.MessagePack'.pack
 require'dcm'
@@ -55,11 +55,10 @@ end
 
 -- Body actuators
 for actuator, n_el in pairs(dcm.actuatorKeys) do
-	--local cur = dcm['get_actuator_'..actuator]()
-	--local n_el = type(cur)=='table' and #cur or 1
 	-- Only command_position is constantly synced
 	-- Other commands need to be specially sent to the Body
-	local not_synced = actuator~='command_position'
+  -- TODO: Check the torque usage in NX motors...
+	local not_synced = not (actuator=='command_position' or actuator=='command_torque')
   local ptr = dcm.actuatorPtr and dcm.actuatorPtr[actuator]
   local idx
 	local function set(val, idx1, idx2)

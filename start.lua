@@ -13,7 +13,7 @@ if kind=='motion' then
   local ps = {}
   local imu_ps = io.popen("pgrep -f run_imu"):lines()
   for p in imu_ps do table.insert(ps, p) end
-  local dcm_ps = io.popen("pgrep -f run_co_dcm"):lines()
+  local dcm_ps = io.popen("pgrep -f run_dcm"):lines()
   for p in dcm_ps do table.insert(ps, p) end
   local state_ps = io.popen("pgrep -f state_wizard"):lines()
   for p in state_ps do table.insert(ps, p) end

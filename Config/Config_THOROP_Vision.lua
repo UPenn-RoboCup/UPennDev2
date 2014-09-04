@@ -176,7 +176,8 @@ table.insert(Config.camera,
       'libVision',
     },
     --Logitech C920
-    lut = 'empty',
+    --lut = 'empty',
+    lut = 'm308_lightson',
 		-- f = 640/2/tan(78/180*pi / 2)
 		--fov = 2*arctan(d/2f)
 		-- f = d/2/tan(fov/2)

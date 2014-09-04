@@ -421,12 +421,13 @@ walk.velLimitY = {-.06,.06}
 walk.supportX = 0.05 --After fixing the waist
 
 
+if not IS_WEBOTS then
 
---After re-fitting heavier arms
-walk.tZMP = 0.40
-walk.stepHeight = 0.03
-walk.supportY = 0.05
-
+  --After re-fitting heavier arms
+  walk.tZMP = 0.40
+  walk.stepHeight = 0.03
+  walk.supportY = 0.05
+end
 
 ------------------------------------
 -- Associate with the table

@@ -128,15 +128,15 @@ local function update(img, sz, cnt, t)
 
 	-- Do the logging if we wish
 	if ENABLE_LOG and t - t_log > LOG_INTERVAL then
-		meta.rsz = sz
-    meta.obs = wcm.get_obstacle_enable()
-    meta.head = Body.get_head_command_position()
-    meta.head = Body.get_head_position() --TODO: which one?
-    meta.rpy = Body.get_rpy()
-    meta.pose = wcm.get_robot_pose()
+		metadata.rsz = sz
+    metadata.obs = wcm.get_obstacle_enable()
+    metadata.head = Body.get_head_command_position()
+    metadata.head = Body.get_head_position() --TODO: which one?
+    metadata.rpy = Body.get_rpy()
+    metadata.pose = wcm.get_robot_pose()
     --TODO: log joint angles
-		for pname, p in pairs(pipeline) do meta[pname] = p.get_metadata() end
-		logger:record(meta, img, sz)
+		for pname, p in pairs(pipeline) do metadata[pname] = p.get_metadata() end
+		logger:record(metadata, img, sz)
 		t_log = t
 		nlog = nlog + 1
 		if nlog % 10 == 0 then print("# camera logs: "..nlog) end

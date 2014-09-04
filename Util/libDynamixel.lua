@@ -31,6 +31,7 @@ end
 function DP2.parse_status_packet(pkt) -- 2.0 protocol
   --print('status pkt',pkt:byte(1,#pkt) )
   local err, len = pkt:byte(9), pkt:byte(6) + 256 * pkt:byte(7)
+	--[[
   if err>0 then
     return {
       id = pkt:byte(5),
@@ -40,6 +41,7 @@ function DP2.parse_status_packet(pkt) -- 2.0 protocol
       checksum = char(pkt:byte(10), pkt:byte(11))
     }
   else
+	--]]
     return {
       id = pkt:byte(5),
       length = len,
@@ -49,7 +51,7 @@ function DP2.parse_status_packet(pkt) -- 2.0 protocol
       raw_parameter = pkt:sub(10, len+5),
       checksum = char(pkt:byte(len+6), pkt:byte(len+7))
     }
-  end
+  --end
 end
 
 -- RX (uses 1.0)
@@ -88,8 +90,13 @@ local mx_registers = {
   ['id'] = {char(3,0),1},
   ['baud'] = {char(4,0),1},
   ['delay'] = {char(5,0),1},
+  ['min_voltage'] = {char(12,0),1},
+  ['max_voltage'] = {char(13,0),1},
   ['max_torque'] = {char(14,0),2},
   ['status_return_level'] = {char(16,0),1},
+  ['alarm_led'] = {char(17,0),1},
+  ['alarm_shutdown'] = {char(18,0),1},
+
   ['torque_enable'] = {char(24,0),1},
   ['led'] = {char(25,0),1},
 
@@ -107,7 +114,7 @@ local mx_registers = {
   ['speed'] = {char(38,0),2},
   ['load'] = {char(40,0),2},
 
-  ['battery'] = {char(42,0),2},
+  ['voltage'] = {char(42,0),2},
   ['temperature'] = {char(43,0),1},
 
   -- For the MX-106
@@ -837,8 +844,9 @@ local function ping_verify(self, m_ids, protocol, twait)
 		status = assert(status[1], 'NOT FOUND: '..id)
     if status.error~=0 then
       ptable(status)
-			error("ERROR PING PACKET ID "..id)
-    else
+			print("ERROR PING PACKET ID ", id)
+		end
+--    else
 			local id = status.id
 			table.insert(found_ids, id)
 			local lsb, msb = unpack(status.parameter)
@@ -870,7 +878,7 @@ local function ping_verify(self, m_ids, protocol, twait)
 				print("MX Motor")
 			end
 
-    end
+--    end
     -- Wait .1 ms
     unix.usleep(READ_TIMEOUT * 1e6)
   end

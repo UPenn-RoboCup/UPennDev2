@@ -162,8 +162,8 @@ end
 
 -- Position Packet
 local function parse_read_position(pkt, bus)
-	-- Nothing to do if an error
-	if pkt.error ~= 0 then return end
+	-- TODO: Nothing to do if an error
+	--if pkt.error ~= 0 then return end
 	-- Assume just reading position, for now
 	local m_id = pkt.id
 	local read_j_id = m_to_j[m_id]
@@ -184,7 +184,7 @@ end
 
 -- General Read Packet
 local function parse_read_packet(pkt, bus)
-	if pkt.error ~= 0 then return end
+	--if pkt.error ~= 0 then return end
 	local reg_name = bus.read_reg
   if not reg_name then return end
 	local m_id = pkt.id
@@ -296,7 +296,8 @@ local function do_external(request, bus)
         else
           status = lD.set_nx_torque_enable(m_id, tq_val, bus)[1]
         end
-        if status and status.error==0 then
+        --if status and status.error==0 then
+        if status then
           -- Set the CP and the P
           if tq_val==1 then
             if is_mx then
@@ -514,7 +515,8 @@ local function initialize(bus)
       else
         status = lD.get_nx_position(m_id, bus)[1]
       end
-      if status and status.error==0 then break end
+      --if status and status.error==0 then break end
+      if status then break end
 			n = n + 1
 		until n > 5
 		assert(n<=5, 'Too many attempts at reading position')
@@ -531,7 +533,8 @@ local function initialize(bus)
       else
         status = lD.get_nx_torque_enable(m_id, bus)[1]
       end
-      if status and status.error==0 then break end
+      --if status and status.error==0 then break end
+      if status then break end
 			n = n + 1
 		until n > 5
 		assert(n<=5, 'Too many attempts at reading torque enable')

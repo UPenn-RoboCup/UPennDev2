@@ -49,6 +49,7 @@ ffi.cdef[[
 local function pkt2tbl(raw, obj)
 	local pkt = ffi.string(raw, obj.length+N_PACKET_HEADERS)
 	local err, len = pkt:byte(9), pkt:byte(6) + 256 * pkt:byte(7)
+	--[[
 	if err>0 then
 		return {
 			id = pkt:byte(5),
@@ -58,6 +59,7 @@ local function pkt2tbl(raw, obj)
 			checksum = char(pkt:byte(10), pkt:byte(11))
 		}
 	else
+	--]]
 		return {
 			id = pkt:byte(5),
 			length = len,
@@ -67,7 +69,7 @@ local function pkt2tbl(raw, obj)
 			raw_parameter = pkt:sub(10, len+5),
 			checksum = char(pkt:byte(len+6), pkt:byte(len+7))
 		}
-	end
+--	end
 end
 
 -- This is a coroutine for processing any inputs from the bus

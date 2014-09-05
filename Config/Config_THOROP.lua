@@ -71,9 +71,9 @@ local exo = {
   'Walk',
   'Net',
   'Manipulation',
-  'FSM',
+  --'FSM',
   --'FSM_RoboCup',
-  --'FSM_DRCTrials',
+  'FSM_DRCTrials',
   'World',
   'Vision'
 }

@@ -19,8 +19,10 @@ if torch then torch.Tensor = torch.DoubleTensor end
 -- FSM communicationg
 local listing = unix.readdir(HOME..'/Player')
 -- Add all FSM directories that are in Player
+--[[
 local simple_ipc = require'simple_ipc'
 local fsm_ch_vars = {}
+
 for _,sm in ipairs(listing) do
   local found = sm:find'FSM'
   if found then
@@ -31,6 +33,17 @@ for _,sm in ipairs(listing) do
     _G[name] = simple_ipc.new_publisher(sm,true)
   end
 end
+--]]
+
+local si = require'simple_ipc'
+-- FSM communicationg
+local fsm_chs = {}
+for _,sm in ipairs(Config.fsm.enabled) do
+  local fsm_name = sm..'FSM'
+  table.insert(fsm_chs, fsm_name)
+  _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")
+end
+
 
 -- Shared memory
 local listing = unix.readdir(HOME..'/Memory')
@@ -45,16 +58,16 @@ for _,mem in ipairs(listing) do
 end
 
 -- RPC engine
-rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
+--rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
 
 -- Mesh requester
-mesh_req_ch = simple_ipc.new_requester(Config.net.reliable_mesh)
+--mesh_req_ch = simple_ipc.new_requester(Config.net.reliable_mesh)
 
 -- Useful constants
 DEG_TO_RAD = Body.DEG_TO_RAD
 RAD_TO_DEG = Body.RAD_TO_DEG
 
-print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
+--print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
 print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
 
 

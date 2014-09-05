@@ -724,6 +724,14 @@ if false then
 	return in_tolerance
 end
 
+
+--TODO:fix here
+--[[
+-- will we ever use lower-dof arm for anything?
+local nJointLArm = 7
+local nJointRArm = 7
+--where's servo.min_rad defined now?
+
 local function check_larm_bounds(qL)
   for i=1,nJointLArm do
     if qL[i]<servo.min_rad[indexLArm+i-1] or qL[i]>servo.max_rad[indexLArm+i-1] then
@@ -741,6 +749,15 @@ local function check_rarm_bounds(qR)
       return false
     end
   end
+  return true
+end
+
+--]]
+
+local function check_larm_bounds(qL)
+  return true
+end
+local function check_rarm_bounds(qR)
   return true
 end
 

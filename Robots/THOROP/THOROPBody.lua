@@ -726,22 +726,28 @@ if false then
 end
 
 local function check_larm_bounds(qL)
+  --SJ: now we don't hacve nJointLArm definition
+--[[  
+  print("check larm bound, nJointLArm:",nJointLArm)
   for i=1,nJointLArm do
     if qL[i]<servo.min_rad[indexLArm+i-1] or qL[i]>servo.max_rad[indexLArm+i-1] then
 --      print("out of range",i,"at ",qL_target[i]*RAD_TO_DEG)
       return false
     end
   end
-  return true
+  --]]
+  return true  
 end
 
 local function check_rarm_bounds(qR)
+  --[[
   for i=1,nJointRArm do
     if qR[i]<servo.min_rad[indexRArm+i-1] or qR[i]>servo.max_rad[indexRArm+i-1] then
 --      print("out of range",i,"at ",qR_target[i]*RAD_TO_DEG)
       return false
     end
   end
+  --]]
   return true
 end
 

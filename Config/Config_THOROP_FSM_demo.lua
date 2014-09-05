@@ -31,6 +31,10 @@ fsm.Arm = {
   {'armIdle', 'timeout', 'armIdle'},
   {'armIdle', 'init', 'armInit'},
   {'armInit', 'done', 'armPose1'},
+
+--should we enable celebration arm pose?
+  {'armPose1', 'awesome', 'armAwesome'},
+  {'armAwesome', 'done', 'armPose1'},
 }
 
 fsm.Head = {

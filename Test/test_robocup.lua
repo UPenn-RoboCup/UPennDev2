@@ -107,6 +107,10 @@ local function update(key_code)
 			body_ch:send'approach'
 
 
+		elseif key_char_lower==("s") then      
+			arm_ch:send'awesome'
+
+
 		elseif key_char_lower==("3") then      
 			mcm.set_walk_kickfoot(0)
 			mcm.set_walk_kicktype(1)

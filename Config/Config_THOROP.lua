@@ -25,8 +25,9 @@ Config.dev = {
 
 --SJ: now we can choose which mid-level libraries to use
 Config.libs = {
-  Arm = 'DRCTrials',
-  Motion = 'RoboCup',
+  ArmLib = 'DRCTrials',
+  MotionLib = 'RoboCup',
+  World = 'RoboCup'
 }
 
 --SJ: Now we choose the which config to load here
@@ -44,7 +45,7 @@ local exo = {
 
 --Add path to selected librares
 for i,sm in pairs(Config.libs) do
-  local pname = {HOME, '/Player/', i, 'Lib/',sm, '/?.lua;', package.path}
+  local pname = {HOME, '/Player/', i,'/' ,sm, '/?.lua;', package.path}
   package.path = table.concat(pname)
 end
 

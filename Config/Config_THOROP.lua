@@ -13,31 +13,38 @@ Config.USE_DUMMY_ARMS = false
 -----------------------
 Config.dev = {
 	body         = 'THOROPBody',
---	walk         = 'HumbleWalk',
---	largestep    = 'ZMPStepStair',
 	gender       = 'boy',
 }
 
+--SJ: now we can choose which config, fsm and mid-level libraries to use
 
---SJ: now we can choose which mid-level libraries to use
+--Robocup 
+--
 Config.libs = {
   ArmLib = 'DRCTrials',
   MotionLib = 'RoboCup',
   World = 'RoboCup'
 }
-
---SJ: Now we choose the which config to load here
 local exo = {
-  'Robot',
-  'Walk',
-  'Net',
-  'Manipulation',
-  --'FSM',
-  'FSM_RoboCup',
-  --'FSM_DRCTrials',
-  'World',
-  'Vision'
+  'Robot','Walk','Net','Manipulation',
+  'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
 }
+--]]
+
+--[[
+--DRC Trials
+Config.libs = {
+  ArmLib = 'DRCTrials',
+  MotionLib = 'RoboCup',
+  World = 'Default'
+}
+local exo = {'Robot','Walk','Net','Manipulation',
+'FSM_DRCTrials','World_DRCTrials','Vision_DRCTrials'
+}
+--]]
+
+
+
 
 --Add path to selected librares
 for i,sm in pairs(Config.libs) do
@@ -55,34 +62,14 @@ Config.debug = {
   --goalpost = true,
 }
 
-Config.use_angle_localization = true
-Config.demo = false
---Config.demo = true
 Config.use_localhost = false
---Config.disable_kick = true
-Config.disable_kick = false
-
 
 -- Monitor and logging
 Config.enable_monitor = true
 Config.enable_log = false
 Config.use_log = false
 
-if IS_WEBOTS then
-  Config.USE_DUMMY_ARMS = false
-  Config.use_gps_pose = false
---  Config.use_gps_pose = true
-  
-  Config.use_localhost = true
-  Config.use_walkkick = true
-  --Config.use_walkkick = false
-  --Config.backward_approach = true
-end
-
-Config.default_role = 2 --0 goalie / 1 attacker / 2 tester
-Config.default_state = 5 -- 0 1 2 3 4 for init~finished, 5 for untorqued, 6 for testing
-
----------------------------
+-------------
 -- Complementary Configs --
 ---------------------------
 
@@ -101,11 +88,7 @@ for _,v in ipairs(exo) do
 	--]]
 end
 
-
-
-
 Config.supportY_preview = -0.02
 Config.supportY_preview2 = -0.01
-
 
 return Config

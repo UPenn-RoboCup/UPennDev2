@@ -2,6 +2,12 @@ assert(Config, 'Need a pre-existing Config table!')
 
 local world = {}
 
+
+world.ballFilter = true
+
+
+
+
 -------------------------------------------------------------
 --GRASP LAB
 

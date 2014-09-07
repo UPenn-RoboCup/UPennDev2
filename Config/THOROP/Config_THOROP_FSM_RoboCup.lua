@@ -238,15 +238,6 @@ end
 
 Config.fsm = fsm
 
-
--- Add all FSM directories that are in Player
---[[]
-for _,sm in ipairs(Config.fsm.enabled) do
-  local pname = {HOME, '/Player/', sm, 'FSM', '/?.lua;', package.path}
-  package.path = table.concat(pname)
-end
---]]
-
 for _,sm in ipairs(Config.fsm.enabled) do
   if Config.fsm.select[sm] then
     local pname = {HOME, '/Player/', sm, 'FSM/',Config.fsm.select[sm], '/?.lua;', package.path}
@@ -258,8 +249,45 @@ for _,sm in ipairs(Config.fsm.enabled) do
 end
 
 
---Vision parameter hack (robot losing ball in webots)
-if IS_WEBOTS then
+
+
+
+
+
+
+
+
+
+
+
+Config.default_role = 2 --0 goalie / 1 attacker / 2 tester
+Config.default_state = 5 -- 0 1 2 3 4 for init~finished, 5 for untorqued, 6 for testing
+
+Config.stop_at_neutral = true --false for walk testing
+
+--Config.fsm.headTrack.timeout = 6  --ORG value
+Config.fsm.headTrack.timeout = 3  
+Config.fsm.dqNeckLimit ={40*DEG_TO_RAD, 180*DEG_TO_RAD}
+
+Config.approachTargetX = {
+  0.45, --for kick 0 (walkkick)
+  0.28, --for kick 1 (st kick)
+  0.35  --for kick 2 (weak walkkick)
+}
+
+--Config.disable_kick = true
+Config.disable_kick = false
+
+Config.use_angle_localization = true
+Config.demo = false
+--Config.demo = true
+
+if IS_WEBOTS then 
+  Config.approachTargetX = {
+    0.35, --for kick 0 (walkkick)
+    0.30, --for kick 1 (st kick)
+    0.35  --for kick 2 (weak walkkick)
+  }
 
   Config.fsm.headLookGoal.yawSweep = 30*math.pi/180
   Config.fsm.headLookGoal.tScan = 2.0
@@ -275,29 +303,16 @@ if IS_WEBOTS then
 
 --  Config.world.use_imu_yaw = true
 --  Config.vision.ball.th_min_fill_rate = 0.25 
+  Config.USE_DUMMY_ARMS = false
+  Config.use_gps_pose = false
+--  Config.use_gps_pose = true
   
+  Config.use_localhost = true
+  Config.use_walkkick = true
+  --Config.use_walkkick = false
+  --Config.backward_approach = true
 end
 
-
-Config.stop_at_neutral = true --false for walk testing
-
---Config.fsm.headTrack.timeout = 6  --ORG value
-Config.fsm.headTrack.timeout = 3  
-Config.fsm.dqNeckLimit ={40*DEG_TO_RAD, 180*DEG_TO_RAD}
-
-Config.approachTargetX = {
-  0.45, --for kick 0 (walkkick)
-  0.28, --for kick 1 (st kick)
-  0.35  --for kick 2 (weak walkkick)
-}
-
-if IS_WEBOTS then 
-  Config.approachTargetX = {
-    0.35, --for kick 0 (walkkick)
-    0.30, --for kick 1 (st kick)
-    0.35  --for kick 2 (weak walkkick)
-  }
-end
 
 --  Config.approachTargetY= {-0.07,0.05}  --L/R aiming offsets
 Config.approachTargetY= {-0.07,0.02}  --L/R aiming offsets

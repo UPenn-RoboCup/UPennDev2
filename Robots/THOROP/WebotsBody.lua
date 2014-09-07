@@ -21,6 +21,7 @@ end
 
 function WebotsBody.update(keycode)
 	if ww then ww.update() end
+
 	if WebotsBody.USING_KB then kb.update(keycode) end
 	-- Add logging capability
 end

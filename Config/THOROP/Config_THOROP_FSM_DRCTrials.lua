@@ -144,13 +144,6 @@ fsm.dqNeckLimit = {
   60 * DEG_TO_RAD, 60 * DEG_TO_RAD
 }
 
---HeadReady
-fsm.headReady = {
-  dist = 3
-}
-
-
-
 if IS_WEBOTS then
 end
 

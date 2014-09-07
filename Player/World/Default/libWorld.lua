@@ -8,13 +8,8 @@ local libWorld = {}
 local Body   = require'Body'
 local vector = require'vector'
 local util = require'util'
-local ballFilter = require'ballFilter'
-local poseFilter = require'poseFilter'
-local obsFilter = require'obstacleFilter'
-local odomScale = Config.world.odomScale
+local odomScale = Config.world.odomScale 
 local use_imu_yaw = Config.world.use_imu_yaw
-local RESAMPLE_PERIOD = Config.world.resample_period
-local RESAMPLE_COUNT = Config.world.resample_count
 
 
 require'wcm'
@@ -57,8 +52,8 @@ local function update_odometry(uOdometry)
   end
 
   -- Update the filters based on the new odometry
-  ballFilter.odometry(unpack(uOdometry))
-  poseFilter.odometry(unpack(uOdometry))
+--TODO: need posefilter for slam + odometry
+--  poseFilter.odometry(unpack(uOdometry))
 end
 
 local function update_vision()  end
@@ -66,17 +61,15 @@ local function update_vision()  end
 
 function libWorld.entry()
   t_entry = unix.time()
-  -- Initialize the pose filter
-  -- poseFilter.initialize_unified()
-  poseFilter.initialize()
+  -- Initialize the pose filter  
+--TODO: init pose  
+--  poseFilter.initialize()
+
   -- Save this resampling time
   t_resample = t_entry
   -- Set the initial odometry
   wcm.set_robot_pose({0,0,0})
   wcm.set_robot_odometry({0,0,0})
-  wcm.set_robot_traj_num(0)
-  wcm.set_obstacle_num(0)  
-  wcm.set_ball_notvisible(0)
   -- Processing count
   count = 0
   
@@ -107,7 +100,10 @@ function libWorld.exit()
 end
 
 function libWorld.get_pose()
-  return vector.pose{poseFilter.get_pose()}
+--TODO
+
+  return vector.pose({0,0,0})
+  --return vector.pose{poseFilter.get_pose()}
 end
 
 libWorld.update_odometry = update_odometry

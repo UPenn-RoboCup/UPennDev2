@@ -73,7 +73,7 @@ walk.velLimitA = {-.2,.2}
 walk.velDelta  = {0.025,0.02,0.1}
 walk.foot_traj = 1 --curved step
 
-if IS_WEBOTS or HOSTNAME ~="alvin" then
+if IS_WEBOTS or (HOSTNAME ~="alvin" and HOSTNAME ~= "teddy") then
   walk.foot_traj = 2 --square step
   walk.tZMP = 0.40 
   walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
@@ -312,13 +312,6 @@ kick.stepqueue["RightKick2"]=
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
   }
 
-
-
-
-
-
-
-
 kick.stepqueue["null"]=
   {
     {{0.0,0,0},2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,0,0}}, 
@@ -387,21 +380,22 @@ end
 --]]
 
 
+--quick param reset (for alvin@robocup)
+if not IS_WEBOTS then
+  walk.tZMP = 0.40 
+  walk.tStep = 0.80
+  walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
+  walk.hipRollCompensation = 1.5*DEG_TO_RAD
+  walk.supportY = 0.07
+  walk.supportX = 0.06 --better
+  walk.velLimitY = {-.06,.06}
+  walk.supportX = 0.05 --After fixing the waist
+end
 
---quick param reset
-walk.tZMP = 0.40 
-walk.tStep = 0.80
-walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
-
-walk.hipRollCompensation = 1.5*DEG_TO_RAD
-walk.supportX = 0.07 --With clown feet, good for forward walking
-walk.supportY = 0.07
-walk.supportX = 0.06 --better
-walk.velLimitY = {-.06,.06}
-
-walk.supportX = 0.05 --After fixing the waist
-
-
+--Quick fix for 33ms world (with 7dof arms)
+if IS_WEBOTS then
+  walk.supportY = 0.09
+end
 
 ------------------------------------
 -- Associate with the table

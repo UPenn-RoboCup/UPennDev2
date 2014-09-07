@@ -18,7 +18,6 @@ function state.entry()
   t_update = t_entry
   -- Reset the human position
   hcm.set_motion_headangle(Body.get_head_position())
-  wcm.set_ball_disable(0)  
 end
 
 function state.update()
@@ -37,29 +36,14 @@ function state.update()
   local headBias = hcm.get_camera_bias()
   qNeck[1] = qNeck[1] - headBias[1]  
 
-
   -- Go!
   local qNeck_approach, doneNeck = 
     util.approachTol( qNeck, neckAngleTarget, dqNeckLimit, dt )
     
   -- Update the motors
 
-
-
   local headBias = hcm.get_camera_bias()
   Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
-
-  --5 is the idle state! 
-  -- Ready, set, playing states
-  if gcm.get_game_state()==3 then 
-    print("Headteleop: game state",gcm.get_game_state())
-    if Config.enable_obstacle_scan then
-      return 'scanobs'
-    else
-      return 'scan' 
-    end
-  end
-
 end
 
 function state.exit()  

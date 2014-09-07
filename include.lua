@@ -46,11 +46,14 @@ package.path = HOME..'/Memory/?.lua;'..package.path
 -- include Robot Agnostic wrappers
 package.path = HOME..'/Player/Dev/?.lua;'..package.path
 
+-- include Robot Agnostic wrappers
+package.path = HOME..'/Player/Run/?.lua;'..package.path
+
 -- include World files to the path
-package.path = HOME..'/Player/World/?.lua;'..package.path
+--package.path = HOME..'/Player/World/?.lua;'..package.path
 
 -- include Vision files to the path
-package.path = HOME..'/Player/Vision/?.lua;'..package.path
+--package.path = HOME..'/Player/Vision/?.lua;'..package.path
 
 -- include Config files to path
 package.path = HOME..'/Config/?.lua;'..package.path

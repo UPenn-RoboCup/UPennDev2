@@ -26,6 +26,7 @@ fsm.select = {
   Arm = 'Default',  
   Head = 'Default',
   Body = 'Default',
+  Motion = 'RoboCup'
 }
 
 
@@ -54,7 +55,6 @@ fsm.Body = {
 --  {'bodyStepWaypoint',   'done', 'bodyStop'},
 }
 
-assert(Config.dev.walk, 'Need a walk engine specification')
 fsm.Motion = {
   {'motionIdle', 'timeout', 'motionIdle'},
   {'motionIdle', 'stand', 'motionInit'},
@@ -67,7 +67,6 @@ fsm.Motion = {
 
   {'motionStance', 'bias', 'motionBiasInit'},
   {'motionStance', 'preview', 'motionStepPreview'},
-  {'motionStance', 'walk', Config.dev.walk},
   {'motionStance', 'kick', 'motionKick'},
   {'motionStance', 'done_step', 'motionHybridWalkKick'},
 
@@ -76,7 +75,6 @@ fsm.Motion = {
   {'motionStandup', 'done', 'motionStance'},
 
   {'motionStepPreview', 'done', 'motionStance'},
-  {Config.dev.walk, 'done', 'motionStance'},
   {'motionKick', 'done', 'motionStance'},
 
 --For new hybrid walk

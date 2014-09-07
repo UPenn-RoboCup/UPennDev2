@@ -13,12 +13,8 @@ Config.USE_DUMMY_ARMS = false
 -----------------------
 Config.dev = {
 	body         = 'THOROPBody',
-	game_control = 'OPGameControl',
-	team         = 'TeamNSL',
-	kick         = 'NewNewKick',
-	walk         = 'HumbleWalk',
-	crawl        = 'ScrambleCrawl',
-	largestep    = 'ZMPStepStair',
+--	walk         = 'HumbleWalk',
+--	largestep    = 'ZMPStepStair',
 	gender       = 'boy',
 }
 

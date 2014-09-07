@@ -261,7 +261,7 @@ end
 
 --Vision parameter hack (robot losing ball in webots)
 if IS_WEBOTS then
-  Config.vision.ball.th_min_fill_rate = 0.25 
+
   Config.fsm.headLookGoal.yawSweep = 30*math.pi/180
   Config.fsm.headLookGoal.tScan = 2.0
 
@@ -270,9 +270,13 @@ if IS_WEBOTS then
 
   Config.fsm.bodyRobocupApproach.target={0.25,0.12}  
   Config.fsm.bodyRobocupApproach.th = {0.01, 0.01}
-  Config.world.use_imu_yaw = true
 
   Config.stop_after_score = false
+
+
+--  Config.world.use_imu_yaw = true
+--  Config.vision.ball.th_min_fill_rate = 0.25 
+  
 end
 
 

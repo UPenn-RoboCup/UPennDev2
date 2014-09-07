@@ -17,24 +17,7 @@ for _,lib in ipairs(libs) do _G[lib] = require(lib) end
 if torch then torch.Tensor = torch.DoubleTensor end
 
 -- FSM communicationg
-local listing = unix.readdir(HOME..'/Player')
 -- Add all FSM directories that are in Player
---[[
-local simple_ipc = require'simple_ipc'
-local fsm_ch_vars = {}
-
-for _,sm in ipairs(listing) do
-  local found = sm:find'FSM'
-  if found then
-    -- make GameFSM to game_ch
-    local name = sm:sub(1,found-1):lower()..'_ch'
-    table.insert(fsm_ch_vars,name)
-    -- Put into the global space
-    _G[name] = simple_ipc.new_publisher(sm,true)
-  end
-end
---]]
-
 local si = require'simple_ipc'
 -- FSM communicationg
 local fsm_chs = {}
@@ -85,11 +68,8 @@ local char_to_event = {
   ['2'] = {'arm_ch','toolgrab'},
   ['3'] = {'arm_ch','pushdoorgrab'},
 
-
   ['6'] = {'arm_ch','smallvalvegrab'},
   ['7'] = {'arm_ch','barvalvegrab'},
-
-
 
   ['9'] = {'arm_ch','hosegrab'},
   ['0'] = {'arm_ch','debrisgrab'},
@@ -148,7 +128,7 @@ local function send_command_to_ch(channel, cmd_string)
 --  local ret   = channel:send(msgpack.pack(cmd))
 --  local reply = channel:receive()
 --  return msgpack.unpack(reply)
-print(cmd_string)
+  print(cmd_string)
   local ret   = channel:send(cmd_string)
   return
 end

@@ -22,6 +22,32 @@ Config.dev = {
 	gender       = 'boy',
 }
 
+
+--SJ: now we can choose which mid-level libraries to use
+Config.libs = {
+  Arm = 'DRCTrials',
+  Motion = 'RoboCup',
+}
+
+--SJ: Now we choose the which config to load here
+local exo = {
+  'Robot',
+  'Walk',
+  'Net',
+  'Manipulation',
+  --'FSM',
+  'FSM_RoboCup',
+  --'FSM_DRCTrials',
+  'World',
+  'Vision'
+}
+
+--Add path to selected librares
+for i,sm in pairs(Config.libs) do
+  local pname = {HOME, '/Player/', i, 'Lib/',sm, '/?.lua;', package.path}
+  package.path = table.concat(pname)
+end
+
 -- Printing of debug messages
 Config.debug = {
 	webots_wizard=false,	
@@ -64,19 +90,6 @@ Config.default_state = 5 -- 0 1 2 3 4 for init~finished, 5 for untorqued, 6 for 
 ---------------------------
 
 Config.torque_legs = true
-
---SJ: Now we choose the which config to load here
-local exo = {
-  'Robot',
-  'Walk',
-  'Net',
-  'Manipulation',
-  --'FSM',
-  --'FSM_RoboCup',
-  'FSM_DRCTrials',
-  'World',
-  'Vision'
-}
 
 -- Load each exogenous Config file
 for _,v in ipairs(exo) do

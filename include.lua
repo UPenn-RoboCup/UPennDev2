@@ -56,7 +56,8 @@ package.path = HOME..'/Player/Vision/?.lua;'..package.path
 package.path = HOME..'/Config/?.lua;'..package.path
 
 -- include Player wizards for webots require
-package.path = HOME..'/Player/?.lua;'..package.path
+--package.path = HOME..'/Player/?.lua;'..package.path
+package.path = HOME..'/Run/?.lua;'..package.path
 
 -- include test scripts to path
 package.path = HOME..'/Test/?.lua;'..package.path

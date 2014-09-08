@@ -8,7 +8,6 @@ local vector = require'vector'
 local util = require'util'
 local ballFilter = require'ballFilter'
 local poseFilter = require'poseFilter'
-local obsFilter = require'obstacleFilter'
 local odomScale = Config.world.odomScale
 local use_imu_yaw = Config.world.use_imu_yaw
 local RESAMPLE_PERIOD = Config.world.resample_period
@@ -25,8 +24,6 @@ local t_entry
 local count
 -- Objects
 local ball, goal, obstacle, line
--- Obstacle filters
-local OF = {}
 
 -- Initial odometry
 local uOdometry0 = vector.zeros(3)
@@ -43,7 +40,6 @@ end
 local function new_obstacle(a,r)
   --2nd order stat for the obstacle group
   return {asum=a,rsum=r,asqsum=a*a,rsqsum=r*r,count=1,aave=a,rave=r}
-  --return {filter=obsFilter.new(a,r), count=1}
 end
 
 local function add_obstacle(a, r, da, dr)
@@ -53,16 +49,12 @@ local function add_obstacle(a, r, da, dr)
     --Just check angle to cluster observation
     --TODO: we can use distance too
     local adist = math.abs(util.mod_angle(obstacles[i].aave-a))
-    --local adist = math.abs(util.mod_angle(obstacles[i].filter.a - a))
     if adist<min_dist then min_dist,min_index = adist,i end
   end
   if min_index==0 or min_dist>10*DEG_TO_RAD then 
     obstacles[#obstacles+1] = new_obstacle(a,r)
   else
-   --obstacles[min_index].filter:observation_ra(r, a, dr, da)
-   obstacles[min_index].count = obstacles[min_index].count + 1
-    
----[[    
+    obstacles[min_index].count = obstacles[min_index].count + 1
     obstacles[min_index].asum = obstacles[min_index].asum + a
     obstacles[min_index].rsum = obstacles[min_index].rsum + r
 		-- TODO: these are not used for filtering
@@ -70,7 +62,6 @@ local function add_obstacle(a, r, da, dr)
     obstacles[min_index].rsqsum = obstacles[min_index].rsqsum + r*r
     obstacles[min_index].aave = obstacles[min_index].asum/obstacles[min_index].count
     obstacles[min_index].rave = obstacles[min_index].rsum/obstacles[min_index].count
---]]
   end
 end
 
@@ -92,9 +83,6 @@ local function update_obstacles()
 				--print('counts:',counts[i])
         local x = obstacles[j].rave * math.cos(obstacles[j].aave )
         local y = obstacles[j].rave * math.sin(obstacles[j].aave )
-        
-        --local x = obstacles[j].filter.r * math.cos(obstacles[j].filter.a)
-        --local y = obstacles[j].filter.r * math.sin(obstacles[j].filter.a)
         
         local obs_global = util.pose_global({x,y,0},pose)
         wcm['set_obstacle_v'..i]({obs_global[1],obs_global[2]})

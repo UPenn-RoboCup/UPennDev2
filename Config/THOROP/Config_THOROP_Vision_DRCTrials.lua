@@ -15,8 +15,7 @@ local head = {
 	-- Head angle bias
 	yawBias = 0,
 	-- Camera bias
-  -- cameraPos = {0.05, 0.0, 0.13}, --C920
-  cameraPos = {0.045, 0.0, 0.155}, --RC14 brazil
+  cameraPos = {0.045, 0.0, 0.105}, -- Post RC14
 	cameraPitch = 5*DEG_TO_RAD,
 	cameraRoll = 0, --14*DEG_TO_RAD,
   --From CoM to neck joint

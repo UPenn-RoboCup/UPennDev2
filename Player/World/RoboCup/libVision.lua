@@ -16,18 +16,6 @@ require'hcm'
 require'gcm'
 
 
--- Occ for map
-local MAP = {}
-MAP.res = 0.25
-if IS_WEBOTS then MAP.res = 0.2 end
---TODO: don't need to care about the other half
-MAP.sizex = 9/MAP.res
-MAP.sizey = 6/MAP.res
-MAP.xmax, MAP.ymin = 4.5, -3
---TODO: put wraparound on occupancy
-MAP.grid = torch.Tensor(MAP.sizex, MAP.sizey):zero()
-
-
 -- Body should be optional...
 local Body
 -- Important local variables

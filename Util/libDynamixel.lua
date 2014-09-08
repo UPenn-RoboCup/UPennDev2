@@ -843,8 +843,8 @@ local function ping_verify(self, m_ids, protocol, twait)
     local status = send_ping(self, id, protocol, twait)
 		status = assert(status[1], 'NOT FOUND: '..id)
     if status.error~=0 then
-      ptable(status)
-			print("ERROR PING PACKET ID ", id)
+--      ptable(status)
+			print("ERROR PING PACKET ID ", id, status.error)
 		end
 --    else
 			local id = status.id

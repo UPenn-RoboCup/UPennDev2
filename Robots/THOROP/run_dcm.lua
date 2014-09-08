@@ -314,6 +314,7 @@ local function do_external(request, bus)
         end
         --if status and status.error==0 then
         if status then
+					ptable(status)
           -- Set the CP and the P
           if tq_val==1 then
             if is_mx then
@@ -333,6 +334,16 @@ local function do_external(request, bus)
       end
       -- Done the cycle if setting torque
       return
+		elseif wr_reg=='torque_mode' then
+			local status
+			for i, m_id in ipairs(m_ids) do
+				status = lD['set_mx_'..wr_reg](m_id, m_vals[i], bus)[1]
+				if status then
+					gripper_mode[m_to_j[m_id]] = m_vals[i]
+				else
+					print("BAD TORQUE MODE!!")
+				end
+			end
     end
     -- TODO: Special code for changing torque modes
     
@@ -381,19 +392,6 @@ local function do_external(request, bus)
 		if not bus then return end
 		bus[request.key] = request.val
     return
-	elseif request.ft then
-    print("FORCE/TORQUE READING")
-		if bus.name=='lleg' then
-			local ft_reading = get_ft({24, 26}, left_ft, bus)
-			if not ft_reading then return end
-			-- Copy into SHM
-			ffi.copy(dcm.sensorPtr.lfoot, ft_reading, ffi.sizeof(ft_reading))
-		elseif bus.name=='rleg' then
-			local ft_reading = get_ft({23, 25}, right_ft, bus)
-			if not ft_reading then return end
-			-- Copy into SHM
-			ffi.copy(dcm.sensorPtr.rfoot, ft_reading, ffi.sizeof(ft_reading))
-		end
 	end
 end
 
@@ -579,6 +577,18 @@ local function initialize(bus)
       tq_parse = lD.byte_to_number[lD.nx_registers.torque_enable[2]]
     end
 		tq_en_ptr[j_id-1] = tq_parse(unpack(status.parameter))
+		-- Get the torque mode if the gripper
+		if is_gripper[j_id] then
+			n = 0
+			repeat
+				status = lD.get_mx_torque_mode(m_id, bus)[1]
+				if status then break end
+				n = n + 1
+			until n > 5
+			assert(n <= 5, 'Too many attempts at reading torque mode')
+			local parse = lD.byte_to_number[lD.mx_registers.torque_mode[2]]
+			gripper_mode[j_id] = parse(unpack(status.parameter))
+		end
 	end
 	-- Set the default reading command for the bus
 	form_read_loop_cmd(bus, 'position')

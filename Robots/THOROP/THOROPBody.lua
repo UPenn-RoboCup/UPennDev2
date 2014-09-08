@@ -758,6 +758,8 @@ end
 local nJointLArm = 7
 local nJointRArm = 7
 --where's servo.min_rad defined now?
+-- It is in Config.servo, Config_THOROP_Robot.lua
+--]]
 
 local function check_larm_bounds(qL)
   --SJ: now we don't hacve nJointLArm definition
@@ -787,17 +789,8 @@ end
 
 --]]
 
-local function check_larm_bounds(qL)
-  return true
-end
-local function check_rarm_bounds(qR)
-  return true
-end
-
 --SJ: Now we consider waist angle and bodyTilt into FK/IK calculation
 --Which is read from SHM
-
-
 
 
 -- Take in joint angles and output an {x,y,z,r,p,yaw} table

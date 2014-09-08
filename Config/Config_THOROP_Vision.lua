@@ -135,12 +135,12 @@ vision.line = {
 Config.camera = {}
 
 local m308_param = {
-	{'White Balance Temperature', 3600},
-	{'Exposure (Absolute)', 100},
+	{'White Balance Temperature', 2300},
+	{'Exposure (Absolute)', 112},
 	{'Focus (absolute)', 0},
 	{'Brightness', 128},
 	{'Contrast', 128},
-	{'Saturation', 150},
+	{'Saturation', 200},
 	{'Gain', 0},
 	{'Sharpness', 0},
 }
@@ -177,7 +177,8 @@ table.insert(Config.camera,
     },
     --Logitech C920
     --lut = 'empty',
-    lut = 'm308_lightson',
+    --lut = 'm308_lightson',
+		lut = 'demo_wu_chen0',
 		-- f = 640/2/tan(78/180*pi / 2)
 		--fov = 2*arctan(d/2f)
 		-- f = d/2/tan(fov/2)

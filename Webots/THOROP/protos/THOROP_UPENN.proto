@@ -939,7 +939,8 @@ Robot {
                                 maxTorque 6.3
                               } # End of the RightWristYaw RotationalMotor
                               jointParameters HingeJointParameters {
-                                axis 0 -1 0
+                              #fixed
+                                axis 0 1 0
 																anchor 0 -0.216 -0.03
                               } # End of the RightWristYaw HingeJointParameters
                               endPoint Solid {
@@ -964,7 +965,8 @@ Robot {
                                     } # End of the RightWristRoll RotationalMotor
                                     jointParameters HingeJointParameters {
                                       # Straight out the z axis
-                                      axis 0 0 1
+                                      #fixed
+                                      axis 0 0 -1
                                     } # End of the RightWristRoll HingeJointParameters
                                     endPoint Solid {
                                       #translation 0 -0.075 0
@@ -986,10 +988,12 @@ Robot {
 																						maxTorque 6.3
                                           }
                                           jointParameters HingeJointParameters {
-                                            axis 0 1 0
+                                          	#fixed
+                                            axis 0 -1 0
                                           }
 																					endPoint GRIPPER {
-																						translation 0 -0.05 0
+																						translation 0 -0.075 0
+																						rotation 0 0 -1 0.707
 																						trigger_name "r_trigger"
 																						grip_name "r_grip"
 																					}
@@ -1169,7 +1173,8 @@ Robot {
                                 maxTorque 6.3
                               } # End of the LeftWristYaw RotationalMotor
                               jointParameters HingeJointParameters {
-                                axis 0 -1 0
+                              	#fixed
+                                axis 0 1 0
 																anchor 0 -0.216 -0.03
                               } # End of the LeftWristYaw HingeJointParameters
                               endPoint Solid {
@@ -1194,7 +1199,8 @@ Robot {
                                     } # End of the LeftWristRoll RotationalMotor
                                     jointParameters HingeJointParameters {
                                       # Straight out the z axis
-                                      axis 0 0 1
+                                      #fixed
+                                      axis 0 0 -1
                                     } # End of the LeftWristRoll HingeJointParameters
                                     endPoint Solid {
                                       #translation 0 -0.075 0
@@ -1216,7 +1222,8 @@ Robot {
 																						maxTorque 6.3
                                           }
                                           jointParameters HingeJointParameters {
-                                            axis 0 1 0
+                                          	#fixed
+                                            axis 0 -1 0 
                                           }
 																					#endPoint GRIPPER_PLATE {translation 0 -0.05 0}
 																					endPoint CHOPSTICKS {translation 0 -0.05 0}

@@ -177,19 +177,23 @@ local nx_registers = {
 
   -- ENTER RAM AREA
   ['torque_enable'] = {char(0x32,0x02),1},
-  -- Position Options --
-  -- Position Commands (position control mode)
-  ['command_position'] = {char(0x54,0x02),4},
-  ['command_velocity'] = {char(0x58,0x02),4},
-  ['command_acceleration'] = {char(0x5E,0x02),4},
+  -- LED lighting
+  ['led_red'] = {char(0x33,0x02),1},
+  ['led_green'] = {char(0x34,0x02),1},
+  ['led_blue'] = {char(0x35,0x02),1},
+  -- Velocity PID Gains (position control mode)
+  ['velocity_i'] = {char(0x4A,0x02),2},
+  ['velocity_p'] = {char(0x46,0x02),2},
+  --['velocity_d'] = {char(0x4C,0x02),2},
   -- Position PID Gains (position control mode)
   ['position_p'] = {char(0x52,0x02),2},
   ['position_i'] = {char(0x50,0x02),2},
   ['position_d'] = {char(0x4E,0x02),2},
-  -- Velocity PID Gains (position control mode)
-  ['velocity_p'] = {char(0x46,0x02),2},
-  ['velocity_i'] = {char(0x4A,0x02),2},
-  ['velocity_d'] = {char(0x4C,0x02),2},
+  
+	-- Position Commands (position control mode)
+  ['command_position'] = {char(0x54,0x02),4},
+  ['command_velocity'] = {char(0x58,0x02),4},
+  ['command_acceleration'] = {char(0x5E,0x02),4},
 
   -- Low Pass Fitler settings
   ['position_lpf'] = {char(0x42,0x02),4},
@@ -205,11 +209,6 @@ local nx_registers = {
   ['current_p'] = {char(0x38,0x02),2},
   ['current_i'] = {char(0x36,0x02),2},
 
-  -- LED lighting
-  ['led'] = {char(0x33,0x02),1}, -- legacy support (red)
-  ['led_red'] = {char(0x33,0x02),1},
-  ['led_green'] = {char(0x34,0x02),1},
-  ['led_blue'] = {char(0x35,0x02),1},
 
   -- Present information
   ['position'] = {char(0x63,0x02),4},

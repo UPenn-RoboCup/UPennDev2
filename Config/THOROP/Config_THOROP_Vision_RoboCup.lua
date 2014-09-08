@@ -16,7 +16,8 @@ local head = {
 	yawBias = 0,
 	-- Camera bias
   -- cameraPos = {0.05, 0.0, 0.13}, --C920
-  cameraPos = {0.045, 0.0, 0.155}, --RC14 brazil
+  --cameraPos = {0.045, 0.0, 0.155}, --RC14 brazil
+  cameraPos = {0.045, 0.0, 0.105}, --Post RC14
 	cameraPitch = 5*DEG_TO_RAD,
 	cameraRoll = 0, --14*DEG_TO_RAD,
   --From CoM to neck joint
@@ -134,12 +135,12 @@ vision.line = {
 Config.camera = {}
 
 local m308_param = {
-	{'White Balance Temperature', 3600},
-	{'Exposure (Absolute)', 100},
+	{'White Balance Temperature', 2300},
+	{'Exposure (Absolute)', 112},
 	{'Focus (absolute)', 0},
 	{'Brightness', 128},
 	{'Contrast', 128},
-	{'Saturation', 150},
+	{'Saturation', 200},
 	{'Gain', 0},
 	{'Sharpness', 0},
 }
@@ -175,7 +176,10 @@ table.insert(Config.camera,
       'libVision',
     },
     --Logitech C920
-    lut = 'empty',
+    --lut = 'empty',
+    --lut = 'm308_lightson',
+		lut = 'demo_wu_chen0',
+    --lut = 'demo_wu_chen1',
 		-- f = 640/2/tan(78/180*pi / 2)
 		--fov = 2*arctan(d/2f)
 		-- f = d/2/tan(fov/2)

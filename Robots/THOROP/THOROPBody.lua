@@ -6,8 +6,8 @@
 
 -- Utilities
 local vector = require'vector'
-local util   = require'util'
-local si     = require'simple_ipc'
+local util = require'util'
+local si = require'simple_ipc'
 local Kinematics = require'THOROPKinematics'
 local mpack  = require'msgpack.MessagePack'.pack
 require'dcm'
@@ -55,11 +55,10 @@ end
 
 -- Body actuators
 for actuator, n_el in pairs(dcm.actuatorKeys) do
-	--local cur = dcm['get_actuator_'..actuator]()
-	--local n_el = type(cur)=='table' and #cur or 1
 	-- Only command_position is constantly synced
 	-- Other commands need to be specially sent to the Body
-	local not_synced = actuator~='command_position'
+  -- TODO: Check the torque usage in NX motors...
+	local not_synced = not (actuator=='command_position' or actuator=='command_torque')
   local ptr = dcm.actuatorPtr and dcm.actuatorPtr[actuator]
   local idx
 	local function set(val, idx1, idx2)
@@ -518,12 +517,13 @@ if IS_WEBOTS then
     if ENABLE_POSE then
       local gps     = webots.wb_gps_get_values(tags.gps)
       local compass = webots.wb_compass_get_values(tags.compass)
-			local angle   = math.atan2( compass[3], compass[1] )
-      local pose    = vector.pose{gps[3], gps[1], angle}
-			
-			-- SJ:fixed for robocup wbt
-      --local angle   = math.atan2( compass[1], -compass[3] )
-      --local pose    = vector.pose{-gps[1], gps[3], angle}
+
+			--local angle   = math.atan2( compass[3], compass[1] )
+      --local pose    = vector.pose{gps[3], gps[1], angle}
+
+			-- Fixed for robocup wbt
+      local angle   = math.atan2( compass[1], -compass[3] )
+      local pose    = vector.pose{-gps[1], gps[3], angle}
 
       --wcm.set_robot_pose( pose )
       wcm.set_robot_pose_gps( pose )
@@ -674,6 +674,33 @@ Body.jointNames = jointNames
 Body.parts = Config.parts
 Body.Kinematics = Kinematics
 
+----------------------
+-- Add the gripper API
+----------------------
+local lgrip1_id, lgrip2_id = unpack(Config.parts.LGrip)
+local rgrip1_id, rgrip2_id = unpack(Config.parts.RGrip)
+local lgrip_ids = {[lgrip1_id] = true, [lgrip2_id] = true}
+local rgrip_ids = {[rgrip1_id] = true, [rgrip2_id] = true}
+function Body.set_lgrip_mode(mode)
+	local msg = {wr_reg='torque_mode', ids=lgrip_ids}
+	if mode=='torque' then
+		msg.val = {[lgrip1_id] = 1, [lgrip2_id] = 1}
+	elseif mode=='position' then
+		msg.val = {[lgrip1_id] = 0, [lgrip2_id] = 0}
+	end
+	dcm_ch:send(mpack(msg))
+end
+function Body.set_rgrip_mode(mode)
+	local msg = {wr_reg='torque_mode', ids=rgrip_ids}
+	if mode=='torque' then
+		msg.val = {[rgrip1_id] = 1, [rgrip2_id] = 1}
+	elseif mode=='position' then
+		msg.val = {[rgrip1_id] = 0, [rgrip2_id] = 0}
+	end
+	dcm_ch:send(mpack(msg))
+end
+----------------------
+
 -- Check the error from a desired transform tr
 -- to a forwards kinematics of in IK solution q
 local function check_ik_error( tr, tr_check, pos_tol, ang_tol )
@@ -733,22 +760,28 @@ local nJointRArm = 7
 --where's servo.min_rad defined now?
 
 local function check_larm_bounds(qL)
+  --SJ: now we don't hacve nJointLArm definition
+--[[  
+  print("check larm bound, nJointLArm:",nJointLArm)
   for i=1,nJointLArm do
     if qL[i]<servo.min_rad[indexLArm+i-1] or qL[i]>servo.max_rad[indexLArm+i-1] then
 --      print("out of range",i,"at ",qL_target[i]*RAD_TO_DEG)
       return false
     end
   end
-  return true
+  --]]
+  return true  
 end
 
 local function check_rarm_bounds(qR)
+  --[[
   for i=1,nJointRArm do
     if qR[i]<servo.min_rad[indexRArm+i-1] or qR[i]>servo.max_rad[indexRArm+i-1] then
 --      print("out of range",i,"at ",qR_target[i]*RAD_TO_DEG)
       return false
     end
   end
+  --]]
   return true
 end
 

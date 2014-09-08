@@ -84,7 +84,7 @@ fL2_t4 = ffi.new('double[4][4]', fL2)
 fL2a_t4 = ffi.new('double[4][4]', fL2a)
 
 dt_all = vector.zeros(3)
-n = 10
+--n = 10
 for i=1,n do
 	t0 = unix.time()
 	iqLArm = K.inverse_l_arm_7(fL, qLArm, 0, 0, {0,0}, 0,0,0, 0)

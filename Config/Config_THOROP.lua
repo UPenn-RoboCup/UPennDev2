@@ -66,13 +66,12 @@ Config.use_localhost = false
 
 -- Monitor and logging
 Config.enable_monitor = true
-Config.enable_log = false
+Config.enable_log = true --false
 Config.use_log = false
 
 -------------
 -- Complementary Configs --
 ---------------------------
-
 Config.torque_legs = true
 
 -- Load each exogenous Config file

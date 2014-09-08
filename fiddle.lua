@@ -1,8 +1,8 @@
 #!/usr/local/bin/luajit -i
 
 if IS_FIDDLE then return end
-local ok = pcall(dofile, 'include.lua')
-if not ok then pcall(dofile, '../include.lua') end
+local ok = pcall(dofile, '../include.lua')
+if not ok then pcall(dofile, 'include.lua') end
 
 -- Important libraries in the global space
 mp = require'msgpack.MessagePack'

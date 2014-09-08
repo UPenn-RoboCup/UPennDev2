@@ -19,10 +19,48 @@ end
 local byte_to_number = lD.byte_to_number
 local nx_registers = lD.nx_registers
 local mx_registers = lD.mx_registers
-local pFirmware = byte_to_number[nx_registers.firmware[2]]
+local pTorqueMode = byte_to_number[mx_registers.torque_mode[2]]
+local pTorque = byte_to_number[mx_registers.command_torque[2]]
 local pVoltage = byte_to_number[mx_registers.min_voltage[2]]
 
+local status = lD.get_mx_torque_mode(66, right_arm)
+print('ID status', status)
+if status then
+	ptable(status)
+	status = status[1]
+	if status then
+		ptable(status)
+		print('Current mode', pTorqueMode(unpack(status.parameter)))
+	end
+end
+local status = lD.set_mx_torque_enable(66, 1, right_arm)
+local status = lD.set_mx_command_torque(66, 10, right_arm)
+if status then
+	ptable(status)
+	status = status[1]
+	if status then
+		ptable(status)
+	end
+end
+local status = lD.set_mx_torque_mode(66, 1, right_arm)
+if status then
+	ptable(status)
+	status = status[1]
+	if status then
+		ptable(status)
+	end
+end
+local status = lD.set_mx_command_torque(66, 10, right_arm)
+if status then
+	ptable(status)
+	status = status[1]
+	if status then
+		ptable(status)
+	end
+end
+
 --local found_ids = right_arm:ping_probe()
+--[[
 local status = lD.get_mx_id(66, right_arm)
 print('ID status', status)
 if status then ptable(status) end
@@ -79,5 +117,5 @@ if status then
 		print('Current voltage', pVoltage(unpack(status[1].parameter))/10)
 	end
 end
-
+--]]
 --lD.set_indirect_address(found_ids, {'position', 'data'}, right_leg)

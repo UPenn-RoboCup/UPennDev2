@@ -35,9 +35,21 @@ local step_zero, step_offset = Config.servo.step_zero, Config.servo.step_offset
 local m_to_j, j_to_m = Config.servo.motor_to_joint, Config.servo.joint_to_motor
 local dcm_chains = Config.chain
 
+-- Gripper states
+local is_gripper, gripper_mode = {}, {}
+for _,id in ipairs(Config.parts.LGrip) do
+	is_gripper[id] = true
+  gripper_mode[id] = 0
+end
+for _,id in ipairs(Config.parts.RGrip) do
+	is_gripper[id] = true
+  gripper_mode[id] = 0
+end
+
 -- DCM Cache
 local cp_ptr = dcm.actuatorPtr.command_position
-local tq_ptr = dcm.actuatorPtr.torque_enable
+local tq_en_ptr = dcm.actuatorPtr.torque_enable
+local tq_ptr = dcm.actuatorPtr.command_torque
 local p_ptr  = dcm.sensorPtr.position
 local p_ptr_t = dcm.tsensorPtr.position
 
@@ -268,19 +280,23 @@ local function do_external(request, bus)
 	local m_id
 	if wr_reg then
 		local ptr = dcm.actuatorPtr[wr_reg]
+		local val = request.val
+		-- Ensure we have values to give
+		if not ptr and not val then return end
 		local m_ids, m_vals, addr_n_len = {}, {}, {}
 		local has_nx, has_mx = false, false
 		for j_id, is_changed in pairs(request.ids) do
 			m_id = j_to_m[j_id]
 			if bus.has_mx_id[m_id] then
+				local value = ptr and ptr[j_id-1] or val[j_id]
 				has_mx = true
 				insert(m_ids, m_id)
-				insert(m_vals, ptr[j_id-1])
+				insert(m_vals, value)
 				insert(addr_n_len, lD.mx_registers[wr_reg])
 			elseif bus.has_nx_id[m_id] then
 				has_nx = true
 				insert(m_ids, m_id)
-				insert(m_vals, ptr[j_id-1])
+				insert(m_vals, ptr and ptr[j_id-1] or val[j_id])
 				insert(addr_n_len, lD.nx_registers[wr_reg])
 			end
 		end
@@ -298,6 +314,7 @@ local function do_external(request, bus)
         end
         --if status and status.error==0 then
         if status then
+					--ptable(status)
           -- Set the CP and the P
           if tq_val==1 then
             if is_mx then
@@ -306,16 +323,37 @@ local function do_external(request, bus)
               status = lD.get_nx_position(m_id, bus)[1]
             end
             j_id, pos = parse_read_position(status, bus)
-            if not j_id then print("Bad pos read in tq_en") end
+            if not j_id then
+							print(get_time(), "BAD TORQUE ENABLE POS READ", m_id, status and status.error)
+						end
             cp_ptr[j_id - 1] = p_ptr[j_id - 1]
           end
         else
-          print("BAD TORQUE ENABLE", m_id, tq_val, status and status.error)
+          print(get_time(), "BAD TORQUE ENABLE", m_id, tq_val, status and status.error)
         end
       end
       -- Done the cycle if setting torque
       return
+		elseif wr_reg=='torque_mode' then
+			local status, j_id, val
+			for i, m_id in ipairs(m_ids) do
+				val = m_vals[i]
+				j_id = m_to_j[m_id]
+				status = lD['set_mx_'..wr_reg](m_id, val, bus)[1]
+				if status then
+					gripper_mode[j_id] = val
+					-- copy the position if going to command position mode
+					if m_vals[i]==0 then
+						-- TODO: ASSUMES reading actively!!
+						cp_ptr[j_id - 1] = p_ptr[j_id - 1]
+					end
+				else
+					print("BAD TORQUE MODE!!")
+				end
+			end
     end
+    -- TODO: Special code for changing torque modes
+    
 		-- Send to the bus in sync fashion, for now
 		if has_nx and has_mx then
 			lD.set_bulk(m_ids, addr_n_len, m_vals, bus, true)
@@ -361,20 +399,37 @@ local function do_external(request, bus)
 		if not bus then return end
 		bus[request.key] = request.val
     return
-	elseif request.ft then
-    print("FORCE/TORQUE READING")
-		if bus.name=='lleg' then
-			local ft_reading = get_ft({24, 26}, left_ft, bus)
-			if not ft_reading then return end
-			-- Copy into SHM
-			ffi.copy(dcm.sensorPtr.lfoot, ft_reading, ffi.sizeof(ft_reading))
-		elseif bus.name=='rleg' then
-			local ft_reading = get_ft({23, 25}, right_ft, bus)
-			if not ft_reading then return end
-			-- Copy into SHM
-			ffi.copy(dcm.sensorPtr.rfoot, ft_reading, ffi.sizeof(ft_reading))
+	end
+end
+
+local function form_write_command(bus, m_ids)
+	local m_ids = bus.m_ids
+	local send_ids, commands, cmd_addrs = {}, {}, {}
+	local has_mx, has_nx = false, false
+	for i, m_id in ipairs(m_ids) do
+		is_mx = bus.has_mx_id[m_id]
+		has_mx = has_mx or is_mx
+		has_nx = has_nx or (not is_mx)
+		j_id = m_to_j[m_id]
+		-- Only add position commands if torque enabled
+		-- TODO: Gripper should get a command_torque!
+		if tq_en_ptr[j_id-1]==1 then
+			insert(send_ids, m_id)
+			if is_gripper[j_id] and gripper_mode[j_id]==1 then
+				local val = min(max(tq_ptr[j_id-1], -1023), 1023)
+				insert(commands, val < 0 and (1024 - val) or val)
+				insert(cmd_addrs, lD.mx_registers.command_torque)
+			else
+				insert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))
+				insert(cmd_addrs,
+					is_mx and lD.mx_registers.command_position or lD.nx_registers.command_position
+				)
+			end
 		end
 	end
+	-- MX-only sync does not work for some reason
+	if not has_mx then cmd_addrs = nil end
+	return send_ids, commands, cmd_addrs
 end
 
 ------------------------
@@ -390,31 +445,13 @@ local function output_co(bus)
 	coroutine.yield()
 	while true do
 		-- Send the position commands
-		send_ids, commands, cmd_addrs = {}, {}, {}
-		has_mx, has_nx = false, false
-		for i, m_id in ipairs(m_ids) do
-			is_mx = bus.has_mx_id[m_id]
-			has_mx = has_mx or is_mx
-			has_nx = has_nx or (not is_mx)
-			j_id = m_to_j[m_id]
-			-- Only add position commands if torque enabled
-			if tq_ptr[j_id-1]==1 then
-				insert(send_ids, m_id)
-				insert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))
-				insert(cmd_addrs,
-					is_mx and lD.mx_registers.command_position or lD.nx_registers.command_position
-				)
-			end
-		end
+		local send_ids, commands, cmd_addrs = form_write_command(bus)
 		-- Perform the sync write
 		if #commands>0 then
-			if has_nx and has_mx then
+			if cmd_addrs then
 				lD.set_bulk(char(unpack(send_ids)), cmd_addrs, commands, bus)
-			elseif has_nx then
-				lD.set_nx_command_position(send_ids, commands, bus)
 			else
-				-- MX sync does not work for some reason
-				lD.set_bulk(char(unpack(send_ids)), cmd_addrs, commands, bus)
+				lD.set_nx_command_position(send_ids, commands, bus)
 			end
 			bus.cmds_cnt = bus.cmds_cnt + 1
 			coroutine.yield(0)
@@ -546,7 +583,19 @@ local function initialize(bus)
     else
       tq_parse = lD.byte_to_number[lD.nx_registers.torque_enable[2]]
     end
-		dcm.actuatorPtr.torque_enable[j_id-1] = tq_parse(unpack(status.parameter))
+		tq_en_ptr[j_id-1] = tq_parse(unpack(status.parameter))
+		-- Get the torque mode if the gripper
+		if is_gripper[j_id] then
+			n = 0
+			repeat
+				status = lD.get_mx_torque_mode(m_id, bus)[1]
+				if status then break end
+				n = n + 1
+			until n > 5
+			assert(n <= 5, 'Too many attempts at reading torque mode')
+			local parse = lD.byte_to_number[lD.mx_registers.torque_mode[2]]
+			gripper_mode[j_id] = parse(unpack(status.parameter))
+		end
 	end
 	-- Set the default reading command for the bus
 	form_read_loop_cmd(bus, 'position')

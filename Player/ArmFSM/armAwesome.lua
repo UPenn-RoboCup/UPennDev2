@@ -51,6 +51,11 @@ function state.entry()
   local trLArm1 = util.shallow_copy(trLArm0)
   local trRArm1 = util.shallow_copy(trRArm0)
 
+  mcm.set_arm_dpVelLeft(vel_limit_arm*5)
+  mcm.set_arm_dpVelRight(vel_limit_arm*5)
+
+
+
   trLArm1[1] = trLArm1[1] + 0.15
   trRArm1[1] = trRArm1[1] + 0.15
 

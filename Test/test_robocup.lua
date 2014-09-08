@@ -98,13 +98,13 @@ local function update(key_code)
 			mcm.set_walk_kicktype(0)
 			body_ch:send'approach'
 
-		elseif key_char_lower==("w") then      
-			mcm.set_walk_kicktype(1)
-			body_ch:send'approach'
+--		elseif key_char_lower==("w") then      
+--			mcm.set_walk_kicktype(1)
+--			body_ch:send'approach'
 
-		elseif key_char_lower==("e") then      
-			mcm.set_walk_kicktype(2)
-			body_ch:send'approach'
+--		elseif key_char_lower==("e") then      
+--			mcm.set_walk_kicktype(2)
+--			body_ch:send'approach'
 
 
 		elseif key_char_lower==("s") then      

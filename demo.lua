@@ -1,5 +1,7 @@
 dofile'fiddle.lua'
-head_ch:send''
+body_ch:send'init'
+unix.usleep(1e6)
+head_ch:send'scan'
 unix.usleep(3e6)
 motion_ch:send'hybridwalk'
 unix.usleep(1e6)

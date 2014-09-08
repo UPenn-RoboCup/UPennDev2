@@ -445,6 +445,10 @@ if not IS_WEBOTS then
   walk.tZMP = 0.40
   walk.stepHeight = 0.03
   walk.supportY = 0.05
+
+
+--walk.supportX = 0.08 
+
 end
 
 ------------------------------------

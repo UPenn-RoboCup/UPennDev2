@@ -217,7 +217,7 @@ servo.direction = vector.new({
   -1,-1,1,-1, 1,1,1, --RArm
   1,1, -- Waist
   1,1, -- left gripper TODO
-  -1,1, -- right gripper (2nd one is correct)
+  -1,1, -- right gripper (Verified 9/8/2014)
   -1, -- Lidar pan
 })
 
@@ -244,7 +244,7 @@ servo.min_rad = vector.new({
   -90,-87,-90,    -160,   -180,-87,-180, --RArm
   -90,-45, -- Waist
   0, -90,
-  0, -90,
+  -90, -90,
   -60, -- Lidar pan
 })*DEG_TO_RAD
 
@@ -257,7 +257,7 @@ servo.max_rad = vector.new({
   160,-0,90,   0,     180,87,180, --RArm
   90,45, -- Waist
   90,20,
-  90,20,
+  90,90,
   60, -- Lidar pan
 })*DEG_TO_RAD
 

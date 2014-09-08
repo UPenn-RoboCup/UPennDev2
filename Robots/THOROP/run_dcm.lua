@@ -314,7 +314,7 @@ local function do_external(request, bus)
         end
         --if status and status.error==0 then
         if status then
-					ptable(status)
+					--ptable(status)
           -- Set the CP and the P
           if tq_val==1 then
             if is_mx then
@@ -335,11 +335,18 @@ local function do_external(request, bus)
       -- Done the cycle if setting torque
       return
 		elseif wr_reg=='torque_mode' then
-			local status
+			local status, j_id, val
 			for i, m_id in ipairs(m_ids) do
-				status = lD['set_mx_'..wr_reg](m_id, m_vals[i], bus)[1]
+				val = m_vals[i]
+				j_id = m_to_j[m_id]
+				status = lD['set_mx_'..wr_reg](m_id, val, bus)[1]
 				if status then
-					gripper_mode[m_to_j[m_id]] = m_vals[i]
+					gripper_mode[j_id] = val
+					-- copy the position if going to command position mode
+					if m_vals[i]==0 then
+						-- TODO: ASSUMES reading actively!!
+						cp_ptr[j_id - 1] = p_ptr[j_id - 1]
+					end
 				else
 					print("BAD TORQUE MODE!!")
 				end

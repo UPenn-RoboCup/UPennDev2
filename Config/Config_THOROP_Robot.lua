@@ -217,7 +217,7 @@ servo.direction = vector.new({
   -1,-1,1,-1, 1,1,1, --RArm
   1,1, -- Waist
   1,1, -- left gripper TODO
-  1,1, -- right gripper TODO
+  -1,1, -- right gripper (2nd one is correct)
   -1, -- Lidar pan
 })
 
@@ -230,7 +230,7 @@ servo.rad_offset = vector.new({
   90,-90,90,-45,-90,0,0, --RArm
   0,0, -- Waist
   0,0, -- left gripper
-  0,0, -- right gripper
+  -20, 26, -- right gripper
   0, -- Lidar pan
 })*DEG_TO_RAD
 

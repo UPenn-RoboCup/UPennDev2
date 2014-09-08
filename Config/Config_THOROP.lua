@@ -42,7 +42,7 @@ Config.disable_kick = false
 
 -- Monitor and logging
 Config.enable_monitor = true
-Config.enable_log = false
+Config.enable_log = true --false
 Config.use_log = false
 
 if IS_WEBOTS then
@@ -62,7 +62,10 @@ Config.default_state = 5 -- 0 1 2 3 4 for init~finished, 5 for untorqued, 6 for 
 ---------------------------
 -- Complementary Configs --
 ---------------------------
-local exo = {'Robot', 'Walk', 'Net', 'Manipulation', 'FSM', 'World', 'Vision'}
+local exo = {'Robot', 'Walk', 'Net', 'Manipulation', 
+    --'FSM',
+    'FSM_demo',
+    'World', 'Vision'}
 
 -- Load each exogenous Config file
 for _,v in ipairs(exo) do

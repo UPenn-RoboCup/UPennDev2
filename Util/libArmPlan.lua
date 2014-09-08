@@ -262,12 +262,13 @@ end
 
 
 local function plan_unified(self, plantype, init_cond, init_param, target_param)
+--[[
 --hack for now (constant speed)
   mcm.set_arm_dpVelLeft(Config.arm.vel_linear_limit)
   mcm.set_arm_dpVelRight(Config.arm.vel_linear_limit)
   mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit)
   mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit)
-
+--]]
   local dpVelLeft = mcm.get_arm_dpVelLeft()
   local dpVelRight = mcm.get_arm_dpVelRight()
 

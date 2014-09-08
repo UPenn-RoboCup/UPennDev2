@@ -517,12 +517,13 @@ if IS_WEBOTS then
     if ENABLE_POSE then
       local gps     = webots.wb_gps_get_values(tags.gps)
       local compass = webots.wb_compass_get_values(tags.compass)
-			local angle   = math.atan2( compass[3], compass[1] )
-      local pose    = vector.pose{gps[3], gps[1], angle}
-			
-			-- SJ:fixed for robocup wbt
-      --local angle   = math.atan2( compass[1], -compass[3] )
-      --local pose    = vector.pose{-gps[1], gps[3], angle}
+
+			--local angle   = math.atan2( compass[3], compass[1] )
+      --local pose    = vector.pose{gps[3], gps[1], angle}
+
+			-- Fixed for robocup wbt
+      local angle   = math.atan2( compass[1], -compass[3] )
+      local pose    = vector.pose{-gps[1], gps[3], angle}
 
       --wcm.set_robot_pose( pose )
       wcm.set_robot_pose_gps( pose )
@@ -751,22 +752,28 @@ if false then
 end
 
 local function check_larm_bounds(qL)
+  --SJ: now we don't hacve nJointLArm definition
+--[[  
+  print("check larm bound, nJointLArm:",nJointLArm)
   for i=1,nJointLArm do
     if qL[i]<servo.min_rad[indexLArm+i-1] or qL[i]>servo.max_rad[indexLArm+i-1] then
 --      print("out of range",i,"at ",qL_target[i]*RAD_TO_DEG)
       return false
     end
   end
-  return true
+  --]]
+  return true  
 end
 
 local function check_rarm_bounds(qR)
+  --[[
   for i=1,nJointRArm do
     if qR[i]<servo.min_rad[indexRArm+i-1] or qR[i]>servo.max_rad[indexRArm+i-1] then
 --      print("out of range",i,"at ",qR_target[i]*RAD_TO_DEG)
       return false
     end
   end
+  --]]
   return true
 end
 

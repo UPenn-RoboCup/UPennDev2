@@ -66,7 +66,7 @@ Config.use_localhost = false
 
 -- Monitor and logging
 Config.enable_monitor = true
-Config.enable_log = true --false
+Config.enable_log = false
 Config.use_log = false
 
 -------------

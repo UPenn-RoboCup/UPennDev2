@@ -14,7 +14,7 @@ Config.sensors = {
 	ft = true,
 	head_camera = true,
 	chest_lidar = false,
-  head_lidar = false,
+  head_lidar = true,
   fsr = false,
 }
 

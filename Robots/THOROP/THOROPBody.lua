@@ -218,7 +218,7 @@ if IS_WEBOTS then
   -- Added to Config rather than hard-code 
 	local ENABLE_CAMERA, NEXT_CAMERA = Config.sensors.head_camera, 0
   local ENABLE_CHEST_LIDAR, NEXT_CHEST_LIDAR  = Config.sensors.chest_lidar, 0
-  local ENABLE_HEAD_LIDAR = Config.sensors.head_lidar
+  local ENABLE_HEAD_LIDAR, NEXT_HEAD_LIDAR = Config.sensors.head_lidar, 0
   local ENABLE_FSR = Config.sensors.fsr
   local ENABLE_FT = Config.sensors.ft
   local ENABLE_KINECT = Config.sensors.kinect
@@ -255,19 +255,20 @@ if IS_WEBOTS then
         print(util.color('HEAD_LIDAR disabled!','yellow'))
         webots.wb_camera_disable(tags.head_lidar)
         ENABLE_HEAD_LIDAR = false
-      elseif tags.head_lidar then
+      else
         print(util.color('HEAD_LIDAR enabled!','green'))
         webots.wb_camera_enable(tags.head_lidar,lidar_timeStep)
+				NEXT_HEAD_LIDAR = get_time() + lidar_timeStep / 1000
         ENABLE_HEAD_LIDAR = true
       end
     end,
     l = function(override)
 			if override~=nil then en=override else en=ENABLE_CHEST_LIDAR==false end
-      if en==false and tags.chest_lidar then
+      if en==false then
         print(util.color('CHEST_LIDAR disabled!','yellow'))
         webots.wb_camera_disable(tags.chest_lidar)
         ENABLE_CHEST_LIDAR = false
-      elseif tags.chest_lidar then
+      else
         print(util.color('CHEST_LIDAR enabled!','green'))
         webots.wb_camera_enable(tags.chest_lidar,lidar_timeStep)
 				NEXT_CHEST_LIDAR = get_time() + lidar_timeStep / 1000
@@ -400,6 +401,7 @@ if IS_WEBOTS then
 		key_action.p(ENABLE_POSE)
 		if ENABLE_CAMERA then key_action.c(ENABLE_CAMERA) end
 		if ENABLE_CHEST_LIDAR then key_action.l(ENABLE_CHEST_LIDAR) end
+		if ENABLE_HEAD_LIDAR then key_action.h(ENABLE_HEAD_LIDAR) end
 		if ENABLE_FT then key_action.t(ENABLE_FT) end
 
 		-- Take a step to get some values
@@ -575,10 +577,14 @@ if IS_WEBOTS then
 			NEXT_CHEST_LIDAR = get_time() + lidar_timeStep / 1000
     end
     -- Grab a lidar scan
-    if ENABLE_HEAD_LIDAR then
-      local w = webots.wb_camera_get_width(tags.head_lidar)
-      local lidar_fr = webots.wb_camera_get_range_image(tags.head_lidar)
-      --local lidar_array = carray.float( lidar_fr, w )
+    if ENABLE_HEAD_LIDAR and t >= NEXT_HEAD_LIDAR then
+      local n = webots.wb_camera_get_width(tags.head_lidar)
+      local fov = webots.wb_camera_get_fov(tags.head_lidar)
+      local res = fov / n
+      local ranges = webots.wb_camera_get_range_image(tags.head_lidar)
+      local metadata = {n=n,res=res,t=t,angle=Body.get_lidar_position()}
+      WebotsBody.update_head_lidar(metadata,ranges)
+      NEXT_HEAD_LIDAR = get_time() + lidar_timeStep / 1000
     end
 
 		-- Receive webot messaging
@@ -623,6 +629,7 @@ if IS_WEBOTS then
 			WebotsBody.update(key_code)
 		else
 			WebotsBody.update()
+			local key_char_lower = string.char(key_code):lower()
 			local key_toggle = key_action[key_char_lower]
 			if key_toggle and t-t_last_keypress>1 then
 				key_toggle()

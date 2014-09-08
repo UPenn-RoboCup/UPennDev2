@@ -12,7 +12,7 @@ local cutil = require'cutil'
 local Body = require'Body'
 local torch = require'torch'
 local libMap = require'libMap'
-local libDetect = require'libDetect'
+--local libDetect = require'libDetect'
 
 -- Flags
 local USE_ODOMETRY = true
@@ -21,6 +21,10 @@ local USE_ODOMETRY = true
 
 -- Open the map to localize against
 local map = libMap.open_map(HOME..'/Data/map.ppm')
+--[[
+local map_area, map_resolution = 25, 0.05
+local map = libMap.new_map(map_area, map_resolution)
+--]]
 
 -- Render so that I can see it :)
 if DO_EXPORT==true then
@@ -64,7 +68,7 @@ end
 -- Listen for lidars
 local lidar_cb = function(sh)
 	local ch = wait_channels.lut[sh]
-	localt = Body.get_time()
+	local t = Body.get_time()
 	local meta, ranges
 	repeat
 		-- Do not block
@@ -116,7 +120,7 @@ local lidar_cb = function(sh)
 	end
 	
 	-- Detect circles
-	libDetect.lidar_circles(ch)
+	--libDetect.lidar_circles(ch)
 
 end
 

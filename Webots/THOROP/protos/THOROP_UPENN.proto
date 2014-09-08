@@ -13,6 +13,9 @@ PROTO THOROP_UPENN [
   field SFBool     synchronization TRUE
 	field SFFloat    lidarFov 3.1415926536
 	field SFInt32    lidarRays 720
+  # We may want wider FOV for head lidar
+	#field SFFloat    headLidarFov 4.7123889803
+	#field SFInt32    headLidarRays 1080
   field SFString   name "THOR-OP"
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
@@ -740,9 +743,11 @@ Robot {
 									scale 0.001 0.001 0.001
 								}
 								hokuyo {
+								  name "HeadLidar"
 								  rotation 0 1 0 3.14159
 								  translation 0 0.1 0
-								  name "HeadLidar"
+								  width IS lidarRays
+                  fieldOfView IS lidarFov
 								}
 								Camera {
 									rotation 0 1 0 3.14159

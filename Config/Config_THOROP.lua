@@ -19,7 +19,7 @@ Config.dev = {
 --SJ: now we can choose which config, fsm and mid-level libraries to use
 
 --Robocup 
---
+--[[
 Config.libs = {
   ArmLib = 'DRCTrials',
   MotionLib = 'RoboCup',
@@ -31,7 +31,7 @@ local exo = {
 }
 --]]
 
---[[
+----[[
 --DRC Trials
 Config.libs = {
   ArmLib = 'DRCTrials',

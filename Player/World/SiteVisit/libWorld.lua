@@ -56,7 +56,10 @@ local function update_odometry(uOdometry)
 --  poseFilter.odometry(unpack(uOdometry))
 end
 
-local function update_vision()  end
+local function update_vision(detected)  
+
+
+end
 
 
 function libWorld.entry()
@@ -78,9 +81,21 @@ end
 function libWorld.update(uOdom, detection)
   local t = unix.time()
   -- Run the updates
-  update_odometry(uOdom)
+
+  if IS_WEBOTS and Config.use_gps_pose then
+    wcm.set_robot_pose(wcm.get_robot_pose_gps())
+--    print("gps pose:",unpack(wcm.get_robot_pose()))
+  else
+    update_odometry(uOdom)
+  end
   -- Increment the process count
   count = count + 1
+
+  if detection.balls then
+    print(string.format('BALL_1: %.2f %.2f\n', unpack(detection.balls.v[1])))
+    print(string.format('BALL_2: %.2f %.2f\n', unpack(detection.balls.v[2])))
+  end
+
 end
 
 
@@ -101,8 +116,8 @@ end
 
 function libWorld.get_pose()
 --TODO
-
-  return vector.pose({0,0,0})
+  return wcm.get_robot_pose(wcm.get_robot_pose_gps())
+  --return vector.pose({0,0,0})
   --return vector.pose{poseFilter.get_pose()}
 end
 

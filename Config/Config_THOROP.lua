@@ -31,17 +31,31 @@ local exo = {
 }
 --]]
 
-----[[
+--[[
 --DRC Trials
 Config.libs = {
   ArmLib = 'DRCTrials',
   MotionLib = 'RoboCup',
-  World = 'Default'
+  World = 'DRCNew'
 }
 local exo = {'Robot','Walk','Net','Manipulation',
-'FSM_DRCTrials','World_DRCTrials','Vision_DRCTrials'
+'FSM_DRCTrials','World_RoboCup','Vision_DRCTrials'
 }
 --]]
+
+
+----[[
+--DRC Site visit 2014
+Config.libs = {
+  ArmLib = 'DRCTrials',
+  MotionLib = 'RoboCup',
+  World = 'SiteVisit'   
+}
+local exo = {'Robot','Walk','Net','Manipulation',
+'FSM_SiteVisit','World_DRCTrials','Vision_DRCTrials'
+}
+--]]
+
 
 
 

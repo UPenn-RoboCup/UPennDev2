@@ -20,7 +20,6 @@ function WebotsBody.update_head_camera(img, sz, cnt, t)
 end
 
 function WebotsBody.update_chest_lidar(metadata, ranges)
-	print("gogogo")	
 	if mw then mw.update(metadata, ranges) end
 end
 

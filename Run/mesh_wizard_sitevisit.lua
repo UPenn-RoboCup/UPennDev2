@@ -1,3 +1,4 @@
+#!/usr/bin/env luajit
 -- Mesh Wizard for Team THOR
 -- Accumulate lidar readings into an image for mesh viewing
 -- (c) Stephen McGill, Seung Joon Yi, 2013, 2014
@@ -197,8 +198,6 @@ local function update(meta, ranges)
 	local byte_sz = mesh:size(2) * ffi.sizeof'float'
 	local float_ranges = ffi.cast('float*', ranges)
 
-
-print(float_ranges)
 	local dest
   for _,line in ipairs(scanlines) do
 		if line >= 1 and line<=n_scanlines then

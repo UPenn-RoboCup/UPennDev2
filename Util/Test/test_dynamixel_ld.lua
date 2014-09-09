@@ -18,11 +18,11 @@ if not one_chain then
 		--chain = lD.new_bus(nil, 57600)
 		chain = lD.new_bus()
 	else
-		right_arm = lD.new_bus('/dev/ttyUSB0')
-		left_arm  = lD.new_bus'/dev/ttyUSB1'
-		right_leg = lD.new_bus'/dev/ttyUSB2'
+		--right_arm = lD.new_bus('/dev/ttyUSB0')
+		--left_arm  = lD.new_bus'/dev/ttyUSB1'
+		--right_leg = lD.new_bus'/dev/ttyUSB2'
 		left_leg  = lD.new_bus'/dev/ttyUSB3'
-		chain = right_leg
+		chain = left_leg
 	end
 end
 
@@ -121,14 +121,14 @@ local status, data, volt, proc, rawA, rawB
 while true do
 
   print('\n===')
-	--[[
+	----[[
 	status = lD.get_nx_data(26, chain)[1]
 	if status then proc, volt, rawA = parse_ft(left_ft, status.raw_parameter, 26) end
 	status = lD.get_nx_data(24, chain)[1]
 	if status then proc, volt, rawB = parse_ft(left_ft, status.raw_parameter, 24) end
 	--]]
 
-	----[[
+	--[[
 	status = lD.get_nx_data(25, chain)[1]
 	if status then proc, volt, rawA = parse_ft(right_ft, status.raw_parameter, 25) end
 	status = lD.get_nx_data(23, chain)[1]

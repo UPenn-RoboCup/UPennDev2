@@ -18,8 +18,6 @@ if not one_chain then
 		--chain = lD.new_bus(nil, 57600)
 		chain = lD.new_bus()
 	else
-		right_arm = lD.new_bus('/dev/ttyUSB0')
-		left_arm  = lD.new_bus'/dev/ttyUSB1'
 		right_leg = lD.new_bus'/dev/ttyUSB2'
 		left_leg  = lD.new_bus'/dev/ttyUSB3'
 		chain = right_leg

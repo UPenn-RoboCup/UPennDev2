@@ -343,7 +343,8 @@ if IS_WEBOTS then
         print(util.color('FT enabled!','green'))
         webots.wb_touch_sensor_enable(tags.l_ft, timeStep)
   			webots.wb_touch_sensor_enable(tags.r_ft, timeStep)
-        print('FORCE (TORQUE) FEEDBACK')
+        --print('FORCE (TORQUE) FEEDBACK')
+        --NOT WORKING YET
         webots.wb_motor_enable_force_feedback(tags.jointsByName.FootR, timeStep)
         webots.wb_motor_enable_force_feedback(tags.jointsByName.FootL, timeStep)
         webots.wb_motor_enable_force_feedback(tags.jointsByName.AnkleR, timeStep)

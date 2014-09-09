@@ -56,7 +56,10 @@ local function update_odometry(uOdometry)
 --  poseFilter.odometry(unpack(uOdometry))
 end
 
-local function update_vision()  end
+local function update_vision(detected)  
+
+
+end
 
 
 function libWorld.entry()
@@ -88,7 +91,10 @@ function libWorld.update(uOdom, detection)
   -- Increment the process count
   count = count + 1
 
-
+  if detection.balls then
+    print(string.format('BALL_1: %.2f %.2f\n', unpack(detection.balls.v[1])))
+    print(string.format('BALL_2: %.2f %.2f\n', unpack(detection.balls.v[2])))
+  end
 
 end
 

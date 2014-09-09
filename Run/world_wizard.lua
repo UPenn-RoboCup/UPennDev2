@@ -20,6 +20,7 @@ if Config.net.use_wireless then
 else
 	operator = Config.net.operator.wired_broadcast
 end
+local ENABLE_SEND = false
 local udp_ch = si.new_sender(operator, Config.net.streams.camera0.udp)
 -- SHM
 require'wcm'
@@ -78,7 +79,7 @@ local function update()
     wcm.set_robot_pose(lW.get_pose())
   end
   t = get_time()
-	if t-t_send > send_interval then
+	if ENABLE_SEND and t-t_send > send_interval then
 		-- Send localization info to monitor
 		local metadata = {}
 		metadata.id = 'world'

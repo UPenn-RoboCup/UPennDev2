@@ -426,11 +426,6 @@ function libVision.update(img)
   -- Save the detection information
   detected.balls = balls
   
-  -- DEBUGGING
-  if balls then
-    print(unpack(balls.v[1]))
-    print(unpack(balls.v[2]))
-  end
   
   detected.debug={}
   detected.debug.ball = ball_debug or ' '

@@ -22,6 +22,7 @@ if not one_chain then
 		left_arm  = lD.new_bus'/dev/ttyUSB1'
 		right_leg = lD.new_bus'/dev/ttyUSB2'
 		left_leg  = lD.new_bus'/dev/ttyUSB3'
+		chain = left_leg
 	end
 end
 
@@ -37,8 +38,8 @@ local left_ft = {
 	component = ffi.new'double[6]',
 	--unloaded = ffi.new('double[6]',{1.13707, 1.31597, 0.984762, 0.813919, 1.24505, 1.50132}),
 	--unloaded = ffi.new('double[6]',{1.243, 1.511, 1.343, 1.483, 1.144, 1.332}),
-	--unloaded = ffi.new('double[6]', vector.zeros(6)),
-	unloaded = ffi.new('double[6]', {1.227, 1.519, 1.342, 1.501, 1.142, 1.332}),
+	unloaded = ffi.new('double[6]', vector.zeros(6)),
+	--unloaded = ffi.new('double[6]', {1.227, 1.519, 1.342, 1.501, 1.142, 1.332}),
 	calibration_mat = ffi.new('double[6][6]', Config.left_ft.matrix),
 	calibration_gain = Config.left_ft.gain,
 }
@@ -52,14 +53,14 @@ local function parse_ft(ft, raw_str, m_id)
 		ft.component[3] = 3.3 * ft.raw[3] / 4095 - ft.unloaded[3]
 		local v = vector.zeros(4)
 		for i=0,#v-1 do v[i+1] = 3.3 * ft.raw[i] / 4095 end
-		--print('A',v)
+		print('A',v)
 	elseif m_id==ft.m_ids[2] then
 		ffi.copy(ft.raw, raw_str, 8)
 		ft.component[4] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[4]
 		ft.component[5] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[5]
 		local v = vector.zeros(4)
 		for i=0,#v-1 do v[i+1] = 3.3 * ft.raw[i] / 4095 end
-		--print('B',v)
+		print('B',v)
 	else
 		return
 	end
@@ -83,11 +84,11 @@ local pData = byte_to_number[nx_registers.data[2]]
 local status, data, volt, proc
 --for i=1,5 do
 while true do
-	status = lD.get_nx_data(1, chain)[1]
+	status = lD.get_nx_data(26, chain)[1]
 	if status then proc, volt = parse_ft(left_ft, status.raw_parameter, 26) end
-	status = lD.get_nx_data(20, chain)[1]
+	status = lD.get_nx_data(24, chain)[1]
 	if status then proc, volt = parse_ft(left_ft, status.raw_parameter, 24) end
-	--print(string.format("V: %3.3f, %3.3f, %3.3f, %3.3f, %3.3f, %3.3f", unpack(volt)))
+	print(string.format("V: %3.3f, %3.3f, %3.3f, %3.3f, %3.3f, %3.3f", unpack(volt)))
 	--print(string.format("P: %3.3f %3.3f %3.3f %3.3f %3.3f %3.3f", unpack(proc)))
 	print(string.format("Fx: %3.3f Fy: %3.3f Fz: %3.3f | Tz: %3.3f Ty: %3.3f Tx: %3.3f", unpack(proc)))
 	unix.usleep(1e6)

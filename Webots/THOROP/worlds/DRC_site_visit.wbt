@@ -1,4 +1,4 @@
-#VRML_SIM V6.0 utf8
+#VRML_SIM V7.4.3 utf8
 WorldInfo {
   info [
     "World for the Adult size soccer league"
@@ -8,8 +8,8 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-  orientation -0.419924 0.878657 0.227214 1.07363
-  position 4.73506 3.43573 2.80419
+  orientation -0.190779 0.96655 0.17142 1.45785
+  position 5.90301 2.62259 0.607004
 }
 Background {
   skyColor [
@@ -33,14 +33,14 @@ DEF FLOOR Floor {
   ]
 }
 DEF BLOCK QualStep {
-  translation 0 0.075 0
+  translation -0.2 0.075 0
 }
 DEF BALL_LEFT BallGPS_Landmark {
-  translation 0 0.109919 1.1
+  translation 0 0.109919 0.55
   radius 0.11
 }
 DEF BALL_RIGHT BallGPS_Landmark {
-  translation 0 0.109919 -1.1
+  translation 0 0.109919 -0.55
   radius 0.11
 }
 THOROP_UPENN {

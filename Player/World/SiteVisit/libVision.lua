@@ -216,8 +216,16 @@ local function projectGround(v,targetheight)
   return vout
 end
 
+
+
+
 function libVision.ball(labelA_t, labelB_t, cc_t)
+  
   debug_ball_clear() 
+
+  local balls = {}
+  
+  balls.v, balls.r, balls.dr, balls.da = {},{},{},{}
   
   local cc = cc_t[colors.orange]
   if cc<6 then return'Color count' end
@@ -241,7 +249,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       -- Check the coordinate on the field
 
       local dArea = math.sqrt((4/math.pi) * propsA.area)
-      local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
+      local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter)
 
       local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height0,b_height1,true)
 
@@ -251,7 +259,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       else        
 --			print(string.format('ball height:%.2f, thr: %.2f', v[3], b_height0+b_height1*math.sqrt(v[1]*v[1]+v[2]*v[2])))
        
-        ---[[ Field bounds check
+        --[[ Field bounds check
         if not check_fail and math.sqrt(v[1]*v[1]+v[2]*v[2])>3 then
 					local margin = 0.85 --TODO
           local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
@@ -262,7 +270,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
         end
 				--]]
 
-        -- Ground check
+        --[[ Ground check
         if not check_fail and Body.get_head_position()[2] < Config.vision.ball.th_ground_head_pitch then
           local th_ground_boundingbox = Config.vision.ball.th_ground_boundingbox
           local ballCentroid = propsA.centroid
@@ -291,24 +299,37 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
             end --end white line check
           end
         end --end bottom margin check
+        --]]
+        
         
         if not check_fail then
-          -- Project the ball to the ground
+          table.insert(balls.v, projectGround(v,b_diameter/2))
+  				-- For ballFilter
+          local ball_r = math.sqrt(v[1]*v[1]+v[2]*v[2])
+          table.insert(balls.r, ball_r)
+          table.insert(balls.dr, ball_r*0.25)
+          table.insert(balls.da, 10*math.pi/180)
+          
+          
+          --[[ Project the ball to the ground
           propsA.v = projectGround(v,b_diameter/2)
           propsA.t = Body and Body.get_time() or 0
   				-- For ballFilter
   			  propsA.r = math.sqrt(v[1]*v[1]+v[2]*v[2])
   				propsA.dr = 0.25*propsA.r --TODO: tweak 
   				propsA.da = 10*math.pi/180
+          --]]
+          
         end
       end
 
     end -- end of the check on a single propsA
     
-    -- Did we succeed in finding a ball?
-    if check_fail==false then 
-      debug_ball(string.format('Ball detected at %.2f, %.2f (z = %.2f)',propsA.v[1],propsA.v[2], propsA.v[3]))
-      return tostring(propsA.v), propsA 
+    -- Did we succeed in finding two balls?
+    if #balls.v==2 then
+      local db_str = 'TWO BALLS DETECTED!'
+      debug_ball(db_str)
+      return db_str, balls
     end
   end  -- end of loop
 
@@ -392,7 +413,6 @@ function libVision.update(img)
   -- Update the motion elements
   update_head()
   
-
   -- Images to labels
   labelA_t = ImageProc2.yuyv_to_label(img, lut_t:data())
   labelB_t = ImageProc2.block_bitor(labelA_t)
@@ -401,13 +421,23 @@ function libVision.update(img)
   -- NOTE: Muse entry each time since on webots, we switch cameras
   -- In camera wizard, we do not switch cameras, so call only once
   local cc_t = ImageProc2.color_count(labelA_t)
-  local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc_t)
+  local ball_fails, balls = libVision.ball(labelA_t, labelB_t, cc_t)
 
   -- Save the detection information
-  detected.ball = ball
-
+  detected.balls = balls
+  
+  -- DEBUGGING
+  if balls then
+    print(unpack(balls.v[1]))
+    print(unpack(balls.v[2]))
+  end
+  
   detected.debug={}
   detected.debug.ball = ball_debug or ' '
+  detected.debug.post = post_fails or ' '
+  detected.debug.obstacle = obstacle_fails or ' '
+  detected.debug.line = line_fails or ' '
+  
 
   -- Send the detected stuff over the channel every cycle
   vision_ch:send(mp.pack(detected))

@@ -6,8 +6,7 @@ local mw = require'mesh_wizard'
 --local sw = require'slam_wizard'
 
 local kb = require'test_empty'
---WebotsBody.USING_KB = type(kb)=='table' and type(kb.update)=='function'
-WebotsBody.USING_KB = false
+WebotsBody.USING_KB = type(kb)=='table' and type(kb.update)=='function'
 
 function WebotsBody.entry()
 	if ww then ww.entry() end

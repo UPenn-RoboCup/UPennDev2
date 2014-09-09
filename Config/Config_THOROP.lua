@@ -76,7 +76,9 @@ Config.debug = {
   --goalpost = true,
 }
 
-Config.use_localhost = false
+--Config.use_localhost = false
+Config.use_localhost = true
+
 
 -- Monitor and logging
 Config.enable_monitor = true

@@ -196,6 +196,9 @@ local function update(meta, ranges)
   local scanlines = angle_to_scanlines(rad_angle)
 	local byte_sz = mesh:size(2) * ffi.sizeof'float'
 	local float_ranges = ffi.cast('float*', ranges)
+
+
+print(float_ranges)
 	local dest
   for _,line in ipairs(scanlines) do
 		if line >= 1 and line<=n_scanlines then

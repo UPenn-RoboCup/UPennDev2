@@ -31,15 +31,15 @@ local exo = {
 }
 --]]
 
-----[[
+---[[
 --DRC Trials
 Config.libs = {
   ArmLib = 'DRCTrials',
   MotionLib = 'RoboCup',
-  World = 'Default'
+  World = 'DRCNew'
 }
 local exo = {'Robot','Walk','Net','Manipulation',
-'FSM_DRCTrials','World_DRCTrials','Vision_DRCTrials'
+'FSM_DRCTrials','World_RoboCup','Vision_DRCTrials'
 }
 --]]
 

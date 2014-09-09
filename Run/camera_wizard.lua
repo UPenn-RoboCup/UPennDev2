@@ -66,7 +66,7 @@ end
 local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[camera_identifier]
 local udp_ch = stream and stream.udp and si.new_sender(operator, stream.udp)
-local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
+-- local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
 print('Camera | ', operator, camera_identifier)
 
 -- Metadata for the operator for compressed image data

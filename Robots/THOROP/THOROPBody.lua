@@ -343,6 +343,11 @@ if IS_WEBOTS then
         print(util.color('FT enabled!','green'))
         webots.wb_touch_sensor_enable(tags.l_ft, timeStep)
   			webots.wb_touch_sensor_enable(tags.r_ft, timeStep)
+        print('FORCE (TORQUE) FEEDBACK')
+        webots.wb_motor_enable_force_feedback(tags.jointsByName.FootR, timeStep)
+        webots.wb_motor_enable_force_feedback(tags.jointsByName.FootL, timeStep)
+        webots.wb_motor_enable_force_feedback(tags.jointsByName.AnkleR, timeStep)
+        webots.wb_motor_enable_force_feedback(tags.jointsByName.AnkleL, timeStep)
         ENABLE_FT = true
       end
     end,
@@ -358,10 +363,11 @@ if IS_WEBOTS then
     -- Request @ t=0 to always be earlier than position reads
 
 		-- Grab the tags from the joint names
-		tags.joints = {}
+		tags.joints, tags.jointsByName = {}, {}
 		for i,v in ipairs(jointNames) do
       local tag = webots.wb_robot_get_device(v)
 			tags.joints[i] = tag
+      tags.jointsByName[v] = tag
 			if tag>0 then
 				if OLD_API then
 					webots.wb_servo_enable_position(tag, timeStep)
@@ -507,9 +513,14 @@ if IS_WEBOTS then
     if ENABLE_FT then
 			local l_ft = Body.get_lfoot()
 			l_ft[1], l_ft[2], l_ft[3] = unpack(webots.wb_touch_sensor_get_values(tags.l_ft))
+      l_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleL)
+      l_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootL)
 			dcm.set_sensor_lfoot(l_ft)
+      --
       local r_ft = Body.get_rfoot()
 			r_ft[1], r_ft[2], r_ft[3] = unpack(webots.wb_touch_sensor_get_values(tags.r_ft))
+      r_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleR)
+      r_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootR)
 			dcm.set_sensor_rfoot(r_ft)
     end
 

@@ -1,6 +1,6 @@
 PROTO QualStep [
 #  DARPA Qualification step
-#  0.2m deep, 0.2m high, 2 meter wide
+#  0.2m deep, 0.15m high, 2 meter wide
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
 ]
@@ -16,12 +16,12 @@ Solid {
             specularColor 0 0 0
           }
         }
-        geometry Box {size 0.2 0.2 2.0}
+        geometry Box {size 0.2 0.15 2.0}
      }
   ]
   boundingObject Transform {
     translation 0 0 0
-    children [Box {size 0.2 0.2 2.0}]
+    children [Box {size 0.2 0.15 2.0}]
   }  
   locked TRUE 
 }

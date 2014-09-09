@@ -116,8 +116,8 @@ end
 
 function libWorld.get_pose()
 --TODO
-
-  return vector.pose({0,0,0})
+  return wcm.get_robot_pose(wcm.get_robot_pose_gps())
+  --return vector.pose({0,0,0})
   --return vector.pose{poseFilter.get_pose()}
 end
 

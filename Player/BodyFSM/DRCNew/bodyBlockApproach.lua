@@ -93,7 +93,8 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
     uTorsoNext = util.se2_interpolate(0.5, uLSupportNext, uRSupportNext)
   end
   
-  local vStepTarget = {uTorsoNext[1],uTorsoNext[2],0}
+  --local vStepTarget = {uTorsoNext[1],uTorsoNext[2],0}
+  local vStepTarget = {uTorsoNext[1],uTorsoNext[2],uTorsoNext[3]}
 
   local maxStep = 0.06
   if Config.maxStepApproach1 then
@@ -108,11 +109,13 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
   vStep={0,0,0}
   vStep[1] = math.min(Config.walk.velLimitX[2],math.max(Config.walk.velLimitX[1],vStepTarget[1]))
   vStep[2] = math.min(Config.walk.velLimitY[2],math.max(Config.walk.velLimitY[1],vStepTarget[2]))
+  vStep[3] = math.min(Config.walk.velLimitA[2],math.max(Config.walk.velLimitA[1],vStepTarget[3]))
 
   velMag = math.sqrt(vStep[1]^2+vStep[2]^2)
   vStep[1]=vStep[1]/velMag * math.min(maxStep,velMag)
   vStep[2]=vStep[2]/velMag * math.min(maxStep,velMag)
-  vStep[3]=0
+  --vStep[3]=0
+  vStep[3]=vStep[3]*0.3
 
   if Config.debug.approach then
     print("=====\n"..supportStr)
@@ -141,23 +144,24 @@ end
 
 local function update_velocity()
   local pose = wcm.get_robot_pose()
+  local pose_0 = {0,0,0}
+--  print("pose:",pose[1],pose[2])
 
-  local ballx = 0
-  local bally = 0
-
-  approachTargetX = 0.35
-  approachTargetY = 0
+  local ballx, bally = 0,0 --This should be the relative position of the blocks
+  local approachTargetX, approachTargetY = 0.03,0
 
   local uLeftGlobalTarget, uRightGlobalTarget
 
   uLeftGlobalTarget = util.pose_global({
     ballx - approachTargetX - Config.walk.supportX,
     bally + approachTargetY + Config.walk.footY,
-    0},pose)
+    0},pose_0)
   uRightGlobalTarget = util.pose_global({
     ballx - approachTargetX - Config.walk.supportX,
     bally + approachTargetY- Config.walk.footY,
-    0},pose)
+    0},pose_0)
+
+--  print("uLeftGlobalTarget:",unpack(uLeftGlobalTarget))
 
   local vStep,arrived = step_approach(uLeftGlobalTarget, uRightGlobalTarget)
 
@@ -165,7 +169,7 @@ local function update_velocity()
 
   local t  = Body.get_time()
 
-  if arrived then
+  if arrived then    
     mcm.set_walk_stoprequest(1)
     return 'done'
   end

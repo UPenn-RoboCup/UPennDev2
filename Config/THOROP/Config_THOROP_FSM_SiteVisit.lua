@@ -32,6 +32,8 @@ fsm.select = {
 
 fsm.Lidar = {
   {'lidarIdle', 'pan', 'lidarPan'},
+  {'lidarIdle', 'pansingle', 'lidarPanSingle'},
+  {'lidarPanSingle', 'done', 'lidarIdle'},
   {'lidarPan', 'switch', 'lidarPan'},
   {'lidarPan', 'stop', 'lidarIdle'},
 }
@@ -52,7 +54,8 @@ fsm.Body = {
   {'bodyStepPlace',   'done', 'bodyStop'},
 --  {'bodyStepWaypoint',   'done', 'bodyStop'},
 
-  {'bodyBlockApproach', 'done', 'bodyStop'},
+  {'bodyBlockApproach', 'done', 'bodyBlockWait'},
+  {'bodyBlockWait', 'done', 'bodyStepOver'},
 }
 
 fsm.Arm = {

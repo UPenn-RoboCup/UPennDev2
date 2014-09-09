@@ -2,7 +2,10 @@ local WebotsBody = {}
 
 local ww = require'world_wizard'
 local cw = require'camera_wizard'
-local mw = require'mesh_wizard'
+--local mw = require'mesh_wizard'
+local mw = require'mesh_wizard_sitevisit'
+
+
 --local sw = require'slam_wizard'
 
 local kb = require'test_robocup'
@@ -17,6 +20,7 @@ function WebotsBody.update_head_camera(img, sz, cnt, t)
 end
 
 function WebotsBody.update_chest_lidar(metadata, ranges)
+	print("gogogo")	
 	if mw then mw.update(metadata, ranges) end
 end
 

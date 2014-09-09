@@ -98,7 +98,7 @@ end
 local left_ft = {
 	id = Config.left_ft.id,
 	m_ids = Config.left_ft.m_ids,
-	raw = ffi.new'int16_t[4]',
+	raw = ffi.new'uint16_t[4]',
 	readings = ffi.new'double[6]',
 	component = ffi.new'double[6]',
 	unloaded = ffi.new('double[6]', Config.left_ft.unloaded),
@@ -109,7 +109,7 @@ local left_ft = {
 local right_ft = {
 	id = Config.right_ft.id,
 	m_ids = Config.right_ft.m_ids,
-	raw = ffi.new'int16_t[4]',
+	raw = ffi.new'uint16_t[4]',
 	readings = ffi.new'double[6]',
 	component = ffi.new'double[6]',
 	unloaded = ffi.new('double[6]', Config.right_ft.unloaded),

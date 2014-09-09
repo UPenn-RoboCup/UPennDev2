@@ -255,7 +255,7 @@ if IS_WEBOTS then
         print(util.color('HEAD_LIDAR disabled!','yellow'))
         webots.wb_camera_disable(tags.head_lidar)
         ENABLE_HEAD_LIDAR = false
-      else
+      elseif tags.head_lidar then
         print(util.color('HEAD_LIDAR enabled!','green'))
         webots.wb_camera_enable(tags.head_lidar,lidar_timeStep)
 				NEXT_HEAD_LIDAR = get_time() + lidar_timeStep / 1000
@@ -264,11 +264,11 @@ if IS_WEBOTS then
     end,
     l = function(override)
 			if override~=nil then en=override else en=ENABLE_CHEST_LIDAR==false end
-      if en==false then
+      if en==false and tags.chest_lidar then
         print(util.color('CHEST_LIDAR disabled!','yellow'))
         webots.wb_camera_disable(tags.chest_lidar)
         ENABLE_CHEST_LIDAR = false
-      else
+      elseif tags.chest_lidar then
         print(util.color('CHEST_LIDAR enabled!','green'))
         webots.wb_camera_enable(tags.chest_lidar,lidar_timeStep)
 				NEXT_CHEST_LIDAR = get_time() + lidar_timeStep / 1000

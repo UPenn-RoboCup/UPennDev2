@@ -4,7 +4,7 @@ WorldInfo {
     "World for the Adult size soccer league"
   ]
   title "THORwIn RoboCup"
-  basicTimeStep 33
+  basicTimeStep 8
   FPS 15
 }
 Viewpoint {
@@ -35,16 +35,16 @@ DEF FLOOR Floor {
 }
 
 DEF BLOCK QualStep {
-  translation -1 0.1 1
+  translation 0 0.075 0
 }
 
 DEF BALL_LEFT BallGPS_Landmark {
-  translation -0.8 0.109919 2.1
+  translation 0 0.109919 1.1
   radius 0.11
 }
 
 DEF BALL_RIGHT BallGPS_Landmark {
-  translation -0.8 0.109919 -0.1
+  translation 0 0.109919 -1.1
   radius 0.11
 }
 

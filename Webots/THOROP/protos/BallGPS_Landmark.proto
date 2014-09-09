@@ -1,4 +1,4 @@
-PROTO BallGPS [
+PROTO BallGPS_Landmark [
 #VRML_SIM V7.4.3 utf8
 # The Ball's size, mass and color correspond to the soccer ball used in the Robocup SPL
 # You can change the centerOfMass to [0 0 0] to avoid the random rolling effect
@@ -8,9 +8,6 @@ PROTO BallGPS [
   field SFRotation rotation 0 1 0 0
   field SFColor color 1.0 0.54 0.08
   field SFFloat radius 0.0325
-  field SFFloat mass 0.055
-  field SFFloat linearDamping 0.17
-  field SFFloat angularDamping 0.33
   field SFString contactMaterial "default"
   field SFString controller "void"
   field SFString controllerArgs ""
@@ -23,6 +20,7 @@ PROTO BallGPS [
     controller IS controller
     controllerArgs IS controllerArgs
     name "ballGPS"
+		locked TRUE
     children [
       GPS {
         name "GPS"
@@ -47,15 +45,5 @@ PROTO BallGPS [
       }
     ]
     contactMaterial IS contactMaterial
-    boundingObject USE BALL_SHAPE
-    physics Physics {
-      density -1
-      mass IS mass
-      centerOfMass 0 -0.0001 0
-      damping Damping {
-        linear IS linearDamping
-        angular IS angularDamping
-      }
-    }
   }
 }

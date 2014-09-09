@@ -37,12 +37,12 @@ DEF BLOCK QualStep {
   translation -1 0.1 1
 }
 
-DEF BALL BallGPS {
+DEF BALL_LEFT BallGPS_Landmark {
   translation -0.8 0.109919 2.1
   radius 0.11
 }
 
-DEF BALL BallGPS {
+DEF BALL_RIGHT BallGPS_Landmark {
   translation -0.8 0.109919 -0.1
   radius 0.11
 }

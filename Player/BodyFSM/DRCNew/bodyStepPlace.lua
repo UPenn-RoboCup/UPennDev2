@@ -3,6 +3,8 @@ state._NAME = ...
 local Body   = require'Body'
 local util   = require'util'
 local vector = require'vector'
+local libStep = require'libStep'
+local step_planner
 
 -- Get the human guided approach
 require'hcm'
@@ -19,55 +21,65 @@ local t_entry, t_update, t_exit
 local nwaypoints, wp_id
 local waypoints = {}
 
+
+
 local pose, target_pose
-local step_planner
 local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local supportLeg
 
-
-
 local function calculate_footsteps()
-  local step_queue
+  step_planner = libStep.new_planner()
+  uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
+      step_planner:init_stance()
+  supportLeg = 0
 
+  local step_queue={}
 
---For webots with 10ms
-  if IS_WEBOTS then
-    step_queue={
-      {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
-      {{0.27,0,0},0,  0.25, 1,   0.5,   {0,-0.02,0}, {0,0.20,0.15}},   --LS
-      {{0.27,0,0},1,  0.5,   1.1, 0.5,    {0,0.02,0},  {0,0.20,0.15}},    --RS
-      {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
-      {{0.27,0,0} ,0, 0.5,   1.1, 0.5,    {0,-0.02,0},  {0.15,0.20,0.0}},--LS
-      {{0.27,0,0}, 1, 0.5,  1.1, 0.5,   {0,0.02,0},  {0.15,0.20,0.0}},--RS
-      {{0,0,0,},  2,   0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
-    }
-  else  
-  step_queue={
-      {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
-      {{0.27,0,0},0,  0.5, 2.2,   1,   {0,-0.01,0}, {0,0.20,0.142}},   --LS
-      {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
+  local tSlope1 = Config.walk.tStep*Config.walk.phSingle[1]
+  local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
+  
+   step_queue[1] = {{0,0,0},2, 0.1,1,0.1,{0,0,0},{0,0,0}}
+  local step_queue_count = 1;
 
-      {{0.27,0,0},1,  1,   2.2, 1,    {0.0,0.0,0},  {0,0.20,0.142}},    --RS
+  local num_steps = 2
+  local num_steps = 8
 
-      {{0,0,0},   2,  0.1, 3, 0.1,   {0,0.0,0},  {0, 0, 0}},
+  for i=1,num_steps  do
 
-      {{0.25,0,0} ,0, 1,   2.2,  1,    {0,0.0,0},  {0.142,0.20,0.0}},--LS
-      {{0,0,0},   2,  0.1, 2, 0.1,   {0,0.0,0},  {0, 0, 0}},
+--    step_planner.velCurrent = vector.new({0,0,0.1})
+--    step_planner.velCurrent = vector.new({0,0,0.1})
+    step_planner.velCurrent = vector.new({0,0,0})
 
-      {{0.25,0,0}, 1,  1,  2.2, 1,   {0,0.0,0},  {0.142,0.20,0.0}},--RS
+    local new_step
+    supportLeg = 1-supportLeg
+    step_queue_count = step_queue_count + 1
+    initial_step = false
+    last_step = false
+    if i==num_steps then last_step = true end
 
-
-
-      {{0,0,0,},  2,   0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
-    }
+    uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
+      step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step,last_step)
+    local leg_movemet
+    if supportLeg==0 then --Left support
+      leg_movement = util.pose_relative(uRight_next,uRight_now)  
+    else
+      leg_movement = util.pose_relative(uLeft_next,uLeft_now)  
+    end
+    new_step={leg_movement, 
+              supportLeg, 
+              tSlope1, 
+              Config.walk.tStep-tSlope1-tSlope2,
+              tSlope2,
+              {0,0,0},
+              {0,Config.walk.stepHeight,0}
+             }
+    
+    step_queue[step_queue_count]=new_step
   end
 
+  step_queue[step_queue_count+1] = {{0,0,0},2,  0.1,1,0.1,{0,0,0},{0,0,0}}
 
-    
-
-
-
---Write to SHM
+  --Write to the SHM
   local maxSteps = 40
   step_queue_vector = vector.zeros(12*maxSteps)
   for i=1,#step_queue do    
@@ -94,16 +106,27 @@ local function calculate_footsteps()
   mcm.set_step_nfootholds(#step_queue)
 end
 
+
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
+  
+  -- Grab the pose
+  local pose = {0,0,0}
+  pose = wcm.get_robot_pose();
 
   calculate_footsteps()
   motion_ch:send'preview'  
 end
+
+
+
+
 
 function state.update()
   --print(state._NAME..' Update' ) 

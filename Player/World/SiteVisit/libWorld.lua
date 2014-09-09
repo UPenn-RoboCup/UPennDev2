@@ -78,6 +78,7 @@ end
 function libWorld.update(uOdom, detection)
   local t = unix.time()
   -- Run the updates
+
   if IS_WEBOTS and Config.use_gps_pose then
     wcm.set_robot_pose(wcm.get_robot_pose_gps())
 --    print("gps pose:",unpack(wcm.get_robot_pose()))

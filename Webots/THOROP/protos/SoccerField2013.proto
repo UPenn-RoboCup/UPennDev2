@@ -1,14 +1,13 @@
-# RoboCup 2013 Standard Platform League Official Field
-# The soccer field is built on a total carpet area of length 10.4 m and width 7.4 m
-# The field dimensions (within the white lines) are 9 x 6 m
-# Created: November 09, 2012 by Yvan Bourquin - www.cyberbotics.com
-
 PROTO SoccerField2013 [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
   field SFColor color 1 1 1
   field SFBool locked TRUE
   field SFString contactMaterial "default"
+# RoboCup 2013 Standard Platform League Official Field
+# The soccer field is built on a total carpet area of length 10.4 m and width 7.4 m
+# The field dimensions (within the white lines) are 9 x 6 m
+# Created: November 09, 2012 by Yvan Bourquin - www.cyberbotics.com
 ]
 {
 Solid {

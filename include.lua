@@ -9,6 +9,7 @@ CWD = assert(os.getenv'PWD','No PWD variable set!')
 IS_WEBOTS = false
 HOME = CWD:gsub('sur','UPennDev')
 HOME = HOME:gsub('Player.*$','')
+HOME = HOME:gsub('Run.*$','')
 HOME = HOME:gsub('Robots.*$','')
 HOME = HOME:gsub('Operate.*$','')
 HOME = HOME:gsub('Modules.*$','')

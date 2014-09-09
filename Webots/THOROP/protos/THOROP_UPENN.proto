@@ -392,6 +392,28 @@ Robot {
 																											physics Physics {}
 																											type "force-3d"
 																										}
+#
+      																							DEF Right_ankle_yaw HingeJoint {
+      																								device RotationalMotor {
+      																									name "right_ankle_yaw"
+      																								}
+      																								jointParameters HingeJointParameters {
+      																									axis 0 1 0
+      																								}
+      																								endPoint Solid {
+                                                        translation 0 -0.09 0
+                                                        boundingObject Transform {
+                                                          translation 0 -0.003 0.0177
+                                                          children [
+                                                            Box {
+                                                              size 0.147 0.05 0.262
+                                                            }
+                                                          ]
+                                                        }
+      																									physics Physics {}
+                                                      }
+                                                    }
+#
 																									]
 																								}
 																							}
@@ -595,7 +617,7 @@ Robot {
 																									# Not sure of these...
 																									minPosition -2.92343
 																									maxPosition 2.92343
-																								} # End of the LegLowerR RotationalMotor
+																								}
 																								jointParameters HingeJointParameters {
 																									axis 0 0 1
 																									#anchor 0 -0.1115 0.018
@@ -642,6 +664,28 @@ Robot {
 																											physics Physics {}
 																											type "force-3d"
 																										}
+#
+      																							DEF Left_ankle_yaw HingeJoint {
+      																								device RotationalMotor {
+      																									name "left_ankle_yaw"
+      																								}
+      																								jointParameters HingeJointParameters {
+      																									axis 0 1 0
+      																								}
+      																								endPoint Solid {
+                                                        translation 0 -0.09 0
+                                                        boundingObject Transform {
+                                                          translation 0 -0.003 0.0177
+                                                          children [
+                                                            Box {
+                                                              size 0.147 0.05 0.262
+                                                            }
+                                                          ]
+                                                        }
+      																									physics Physics {}
+                                                      }
+                                                    }
+#
 																									]
 																								}
 																							}

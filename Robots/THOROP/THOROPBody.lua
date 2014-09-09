@@ -343,12 +343,16 @@ if IS_WEBOTS then
         print(util.color('FT enabled!','green'))
         webots.wb_touch_sensor_enable(tags.l_ft, timeStep)
   			webots.wb_touch_sensor_enable(tags.r_ft, timeStep)
-        --print('FORCE (TORQUE) FEEDBACK')
-        --NOT WORKING YET
         webots.wb_motor_enable_force_feedback(tags.jointsByName.FootR, timeStep)
         webots.wb_motor_enable_force_feedback(tags.jointsByName.FootL, timeStep)
         webots.wb_motor_enable_force_feedback(tags.jointsByName.AnkleR, timeStep)
         webots.wb_motor_enable_force_feedback(tags.jointsByName.AnkleL, timeStep)
+        if tags.left_ankle_yaw > 0 then
+          webots.wb_motor_enable_force_feedback(tags.left_ankle_yaw, timeStep)
+        end
+        if tags.right_ankle_yaw > 0 then
+          webots.wb_motor_enable_force_feedback(tags.right_ankle_yaw, timeStep)
+        end
         ENABLE_FT = true
       end
     end,
@@ -369,7 +373,7 @@ if IS_WEBOTS then
       local tag = webots.wb_robot_get_device(v)
 			tags.joints[i] = tag
       tags.jointsByName[v] = tag
-			if tag>0 then
+			if tag > 0 then
 				if OLD_API then
 					webots.wb_servo_enable_position(tag, timeStep)
 	        webots.wb_servo_set_velocity(tag, 4)
@@ -379,6 +383,9 @@ if IS_WEBOTS then
 				end
 			end
 		end
+    -- Add the foot yaw, giving the Torque around the z axis
+    tags.left_ankle_yaw = webots.wb_robot_get_device('left_ankle_yaw')
+    tags.right_ankle_yaw = webots.wb_robot_get_device('right_ankle_yaw')
 
 		-- Add Sensor Tags
 		tags.accelerometer = webots.wb_robot_get_device("Accelerometer")
@@ -516,12 +523,18 @@ if IS_WEBOTS then
 			l_ft[1], l_ft[2], l_ft[3] = unpack(webots.wb_touch_sensor_get_values(tags.l_ft))
       l_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleL)
       l_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootL)
+      if tags.left_ankle_yaw > 0 then
+        l_ft[6] = webots.wb_motor_get_force_feedback(tags.left_ankle_yaw)
+      end
 			dcm.set_sensor_lfoot(l_ft)
       --
       local r_ft = Body.get_rfoot()
 			r_ft[1], r_ft[2], r_ft[3] = unpack(webots.wb_touch_sensor_get_values(tags.r_ft))
       r_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleR)
       r_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootR)
+      if tags.right_ankle_yaw > 0 then
+        r_ft[6] = webots.wb_motor_get_force_feedback(tags.right_ankle_yaw)
+      end
 			dcm.set_sensor_rfoot(r_ft)
     end
 

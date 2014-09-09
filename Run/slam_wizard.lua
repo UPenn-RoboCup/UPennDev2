@@ -5,7 +5,8 @@
 dofile'../include.lua'
 local simple_ipc = require'simple_ipc'
 local wait_channels = {}
-local mp = require'msgpack'
+local mpack = require'msgpack.MessagePack'.pack
+local munpack = require('msgpack.MessagePack')['unpack']
 local vector = require'vector'
 local util = require'util'
 local cutil = require'cutil'
@@ -21,12 +22,15 @@ local USE_ODOMETRY = true
 
 -- Open the map to localize against
 local map = libMap.open_map(HOME..'/Data/map.ppm')
---[[
+--[[ TODO: put into Config
 local map_area, map_resolution = 25, 0.05
 local map = libMap.new_map(map_area, map_resolution)
 --]]
 
--- Render so that I can see it :)
+
+
+-- Render the map
+-- TODO: setup channels for sending maps to operator
 if DO_EXPORT==true then
 	local c_map = map:render'png'
 	local f_map = io.open('cur_map.png','w')
@@ -34,6 +38,8 @@ if DO_EXPORT==true then
 	f_map:close()
 	libMap.export(map.omap,'omap.raw','byte')
 end
+
+
 
 local function setup_ch( ch, meta )
 	ch.n   = meta.n
@@ -77,7 +83,7 @@ local lidar_cb = function(sh)
 		if not metadata then break end
 		-- Must have a pair with the range data
 		assert(has_more,"metadata and not lidar ranges!")
-		meta = mp.unpack(metadata)
+		meta = mpack(metadata)
 		ranges, has_more = ch:receive(true)
 	until false
 	-- Update the points
@@ -119,10 +125,15 @@ local lidar_cb = function(sh)
 		wcm.set_robot_pose(pose)
 	end
 	
-	-- Detect circles
-	--libDetect.lidar_circles(ch)
-
 end
+
+
+--[[ If required from Webots, return the table
+if ... and type(...)=='string' then
+	return {entry=nil, update=update, exit=nil}
+end
+--]]
+
 
 local lidar_ch = simple_ipc.new_subscriber'lidar0'
 lidar_ch.name = 'head'

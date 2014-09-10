@@ -29,8 +29,9 @@ else
 	operator = Config.net.operator.wired
 end
 local stream = Config.net.streams['mesh']
-local mesh_tcp_ch = si.new_publisher(stream.tcp, operator)
-local mesh_udp_ch = si.new_sender(operator, stream.udp)
+local mesh_tcp_ch = stream.tcp and si.new_publisher(stream.tcp, operator)
+local mesh_udp_ch = stream.udp and si.new_sender(operator, stream.udp)
+local mesh_ch = stream.sub and si.new_publisher(stream.sub)
 print("OPERATOR", operator, stream.udp)
 
 local metadata = {
@@ -158,6 +159,9 @@ local function send_mesh(destination, compression, dynrange)
 		f_meta:write(mpack(metadata))
 		f_meta:close()
 		print('Mesh | Wrote local')
+  elseif IS_WEBOTS and mesh_ch then
+    mesh_ch:send{mpack(metadata), c_mesh}
+    print('Mesh | Sent PUB')
 	elseif destination then
 		mesh_tcp_ch:send{mpack(metadata), c_mesh}
 		print('Mesh | Sent TCP')

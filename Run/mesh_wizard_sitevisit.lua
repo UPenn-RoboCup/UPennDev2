@@ -79,7 +79,7 @@ local function postprocess()
     last[i+1][1], last[i+1][2], last[i+1][3] = x_l, y_l, z_l
   end
   --print('ANGLES FOR MESH',mag_sweep, unpack(ranges_fov))
-  print('POST PROCESS MESH TRANSFORM', first, last)
+  --print('POST PROCESS MESH TRANSFORM', first, last)
   -- TODO: Just write this to file... (However you wish)
 end
 

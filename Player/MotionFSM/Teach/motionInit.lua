@@ -4,30 +4,24 @@ state._NAME = ...
 
 require'mcm'
 require'hcm'
-local Body       = require'Body'
-local K          = Body.Kinematics
-local util       = require'util'
-local vector     = require'vector'
-local timeout    = 20.0
-local t_readings = 0.20
-local t_settle   = 0.10
+local Body = require'Body'
+local K = Body.Kinematics
+local moveleg = require'moveleg'
+local util = require'util'
+local vector = require'vector'
+local timeout = 20.0
 local t_entry, t_update, t_finish
 
 -- Set the desired leg and torso poses
 local pLLeg_desired = vector.new{-Config.walk.supportX,  Config.walk.footY, 0, 0,0,0}
 local pRLeg_desired = vector.new{-Config.walk.supportX,  -Config.walk.footY, 0, 0,0,0}
 local pTorso_desired = vector.new{-Config.walk.torsoX, 0, Config.walk.bodyHeight, 0,Config.walk.bodyTilt,0}
-local err_th = IS_WEBOTS and 5*DEG_TO_RAD or 1*DEG_TO_RAD
--- Set movement speed limits
-local dpMaxDelta = Config.stance.dpLimitStance
-local dqWaistLimit = Config.stance.dqWaistLimit
-local dqLegLimit = Config.stance.dqLegLimit
--- Set the desired waist
 local qWaist_desired = Config.stance.qWaist
 
-local pTorso, qLLeg, qRLeg
-
-local stage = 1
+-- Tolerance on the waist
+local qWaist_tol = vector.ones(2) * DEG_TO_RAD
+-- How far away to tell the P controller to go in one step
+local dqWaistSz = vector.ones(2) * 2 * DEG_TO_RAD
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -41,23 +35,6 @@ function state.entry()
   Body.enable_read'lleg'
   Body.enable_read'rleg'
 
-  --SJ: Now we only use commanded positions
-  --As the actual values are read at motionIdle state
-
-  local legBias = mcm.get_leg_bias()
-  local legBiasL = vector.slice(legBias,1,6)
-  local legBiasR = vector.slice(legBias,7,12)
-  qLLeg = Body.get_lleg_position() - legBiasL
-  qRLeg = Body.get_rleg_position() - legBiasR
-
-  -- How far away from the torso are the legs currently?
-  local dpLLeg = K.torso_lleg(qLLeg)
-  local dpRLeg = K.torso_rleg(qRLeg)
-  local pTorsoL = pLLeg_desired + dpLLeg
-  local pTorsoR = pRLeg_desired + dpRLeg
-  pTorso = (pTorsoL + pTorsoR) / 2
-
-  stage = 1
   -- Hardware accomodation
   if not IS_WEBOTS then
     -- Set speed limits for initial moving
@@ -76,10 +53,7 @@ function state.entry()
       unix.usleep(1e6*0.01);
     end
   end
-
-  mcm.set_stance_bodyHeight(pTorso[3])
-  mcm.set_stance_bodyTilt(pTorso[5])
-
+  
 end
 
 ---
@@ -95,59 +69,17 @@ function state.update()
 
   -- Zero the waist
   local qWaist = Body.get_waist_position()
-  local qWaist_approach, doneWaist =
-    util.approachTol( qWaist, qWaist_desired, dqWaistLimit, dt )
+  local qWaist_approach, doneWaist = util.goto(qWaist, qWaist_desired, dqWaistSz, qWaist_tol)
   Body.set_waist_command_position(qWaist_approach)
---  Body.set_waist_command_position({0,0})
 
-  -- Ensure that we do not move motors too quickly
-  local pTorso_approach, doneTorso =
-    util.approachTol( pTorso, pTorso_desired, dpMaxDelta, dt )
-  -- If not yet within tolerance, then update the last known finish time
+  if not Config.torque_legs then return doneWaist and 'done' end
 
-  if not Config.torque_legs then
-    return (doneTorso and doneWaist) and 'done' or nil
-  end
-
-  -- Command the body
-  local qLegsTarget = K.inverse_legs(pLLeg_desired, pRLeg_desired, pTorso_approach, 0)
-
-  local legBias = vector.new(mcm.get_leg_bias())
-  local legBiasL = vector.slice(legBias,1,6)
-  local legBiasR = vector.slice(legBias,7,12)
-  qLegsTarget = vector.new(qLegsTarget) + legBias
-
-  local qLLegTarget = vector.slice(qLegsTarget,1,6)
-  local qRLegTarget = vector.slice(qLegsTarget,7,12)
-
-  qLLegMove,doneL = util.approachTol(qLLeg,qLLegTarget, dqLegLimit, dt )
-  qRLegMove,doneR = util.approachTol(qRLeg,qRLegTarget, dqLegLimit, dt )
-
-  Body.set_lleg_command_position(qLLegMove)
-  Body.set_rleg_command_position(qRLegMove)
-
-  local qLLegActual = Body.get_lleg_position() - legBiasL
-  local qRLegActual = Body.get_rleg_position() - legBiasR
-  local qWaistActual = Body.get_waist_position()
-
-  local qLLegCommand = qLLegMove - legBiasL
-  local qRLegCommand = qRLegMove - legBiasR
-  local qWaistCommand = Body.get_waist_command_position()
-
-  local err = 0
-  for i=1,4 do --hack: skip ankle angles for now
-    err = err + math.abs(qLLegActual[i]- qLLegCommand[i])
-    err = err + math.abs(qRLegActual[i]- qRLegCommand[i])
-  end
-  err = err + math.abs(qWaistActual[1]- qWaistCommand[1])
-  err = err + math.abs(qWaistActual[2]- qWaistCommand[2])
-
-  --print("err: ", err, doneL, doneR, err_th, t-t_entry)
-
---  if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end
-
-  if err<err_th and t-t_entry > 1 then return'done' end
-  --if IS_WEBOTS then return'done' end
+  -- Move legs if they are torqued on
+  local doneLegs = moveleg.set_lower_body_slowly(
+    pTorso_desired, pLLeg_desired, pRLeg_desired
+  )
+  
+  return doneLegs and doneWaist and 'done'
 
 end
 
@@ -164,12 +96,7 @@ function state.exit()
   mcm.set_status_uLeft(uLeft)
   mcm.set_status_uRight(uRight)
   mcm.set_status_uTorso(uTorso)
-  mcm.set_status_uTorsoVel(vector.new{0,0,0})
-  mcm.set_stance_bodyHeight(pTorso[3])
-  mcm.set_stance_bodyTilt(pTorso[5])
-  hcm.set_motion_bodyHeightTarget(pTorso[3])
-  mcm.set_stance_bodyHeight(Config.walk.bodyHeight)
-  mcm.set_stance_bodyHeightTarget(Config.walk.bodyHeight)
+  mcm.set_status_uTorsoVel({0,0,0})
   mcm.set_stance_uTorsoComp({0,0})
   mcm.set_status_iskneeling(0)
   mcm.set_walk_bipedal(1)

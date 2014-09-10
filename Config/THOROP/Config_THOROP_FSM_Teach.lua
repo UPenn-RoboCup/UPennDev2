@@ -26,59 +26,15 @@ fsm.select = {
 fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   {'bodyInit', 'done', 'bodyStop'},
-
-  {'bodyStop', 'footrace', 'bodyFootRace'},
-  {'bodyFootRace', 'done', 'bodyStop'},
-
-  {'bodyStop', 'stepinplace', 'bodyStepPlace'},
---  {'bodyStop', 'stepwaypoint', 'bodyStepWaypoint'},
-  {'bodyStop', 'kick', 'bodyRobocupKick'},
-  {'bodyStop', 'play', 'bodyRobocupIdle'},
-  {'bodyStop', 'goalie', 'bodyRobocupGoalieIdle'},
-
-  {'bodyStop', 'approach', 'bodyRobocupApproach'},
-
 }
 
 
 fsm.Motion = {
+  -- Idle
   {'motionIdle', 'timeout', 'motionIdle'},
   {'motionIdle', 'stand', 'motionInit'},
-  {'motionIdle', 'bias', 'motionBiasInit'},
-
-  {'motionBiasInit', 'done', 'motionBiasIdle'}, 
-  {'motionBiasIdle', 'stand', 'motionInit'}, 
-
+  -- Init
   {'motionInit', 'done', 'motionStance'},
-
-  {'motionStance', 'bias', 'motionBiasInit'},
-  {'motionStance', 'preview', 'motionStepPreview'},
-  {'motionStance', 'kick', 'motionKick'},
-  {'motionStance', 'done_step', 'motionHybridWalkKick'},
-
-  {'motionStance', 'sit', 'motionSit'},
-  {'motionSit', 'stand', 'motionStandup'},
-  {'motionStandup', 'done', 'motionStance'},
-
-  {'motionStepPreview', 'done', 'motionStance'},
-  {'motionKick', 'done', 'motionStance'},
-
---For new hybrid walk
-  {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
-  {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
-
-  {'motionHybridWalk', 'done', 'motionStance'},
-  {'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
-
-  {'motionHybridWalk', 'done_step', 'motionHybridWalkKick'},
-  {'motionHybridWalkKick', 'done', 'motionStance'},
-  {'motionHybridWalkKick', 'walkalong', 'motionHybridWalk'},
-  
---  {'motionHybridWalk', 'done_step', 'motionStepNonstop'},
---  {'motionStepNonstop', 'done', 'motionStance'},
-
-  {'motionHybridWalkEnd', 'done', 'motionStance'},
-
 }
 
 Config.fsm = fsm

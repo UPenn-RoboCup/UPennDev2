@@ -231,6 +231,10 @@ if IS_WEBOTS then
   local timeStep = webots.wb_robot_get_basic_time_step()
   local camera_timeStep = math.max(33, timeStep)
   local lidar_timeStep = math.max(25, timeStep)
+
+lidar_timeStep = 100 --10fps scan
+  
+
   Body.timeStep = timeStep
   get_time = webots.wb_robot_get_time
 

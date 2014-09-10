@@ -29,6 +29,7 @@ local exo = {
   'Robot','Walk','Net','Manipulation',
   'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
 }
+Config.testfile = 'test_robocup'
 --]]
 
 --[[
@@ -41,6 +42,7 @@ Config.libs = {
 local exo = {'Robot','Walk','Net','Manipulation',
 'FSM_DRCTrials','World_RoboCup','Vision_DRCTrials'
 }
+Config.testfile = 'test_robocup'
 --]]
 
 
@@ -54,6 +56,7 @@ Config.libs = {
 local exo = {'Robot','Walk','Net','Manipulation',
 'FSM_SiteVisit','World_DRCTrials','Vision_DRCTrials'
 }
+Config.testfile = 'test_sitevisit'
 --]]
 
 

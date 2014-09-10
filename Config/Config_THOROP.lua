@@ -59,6 +59,17 @@ local exo = {'Robot','Walk','Net','Manipulation',
 Config.testfile = 'test_sitevisit'
 --]]
 
+--[[
+-- Teach robot to go up steps
+Config.libs = {
+  MotionLib = 'RoboCup',
+}
+local exo = {
+	'Robot','Walk','Net','FSM_Teach'
+}
+Config.testfile = 'test_teach'
+--]]
+
 
 
 

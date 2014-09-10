@@ -32,7 +32,8 @@ io.stdout:setvbuf'no'
 
 -- include C modules to cpath
 -- For copying to the Nao and just dumping into one directory
-package.cpath = HOME..'/Lib/?.so;'..package.cpath
+--package.cpath = HOME..'/Lib/?.so;'..package.cpath
+
 -- getch.so is in Modules/getch/ (Modules/unix/unix.so -> Modules/?/?.so)
 package.cpath = HOME..'/Modules/?/?.so;'..package.cpath
 -- Sometimes there are helper lua files (even for ffi, but still experimental)
@@ -48,7 +49,7 @@ package.path = HOME..'/Memory/?.lua;'..package.path
 package.path = HOME..'/Player/Dev/?.lua;'..package.path
 
 -- include Robot Agnostic wrappers
-package.path = HOME..'/Player/Run/?.lua;'..package.path
+--package.path = HOME..'/Player/Run/?.lua;'..package.path
 
 -- include World files to the path
 --package.path = HOME..'/Player/World/?.lua;'..package.path
@@ -81,7 +82,8 @@ LOG_DIR = HOME.."/Logs"
 require "fun" ()
 
 -- include platform specific modules
-PLATFORM_NAME = require('Config').PLATFORM_NAME
+require'Config'
+PLATFORM_NAME = Config.PLATFORM_NAME
 ROBOT_HOME = HOME..'/Robots/'..PLATFORM_NAME
 package.path  = ROBOT_HOME..'/?.lua;'..package.path
 package.cpath = ROBOT_HOME..'/?.so;'..package.cpath

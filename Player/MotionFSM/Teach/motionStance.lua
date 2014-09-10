@@ -21,9 +21,10 @@ local t_entry, t_update, t_last_step
 -- They are filtered.  TODO: Use dt in the filters
 local angleShift = vector.new{0,0,0,0}
 
----------------------------
--- State machine methods --
----------------------------
+-- bodyHeight bounds
+local MIN_BH, MAX_BH = 0.75, Config.walk.bodyHeight
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -55,7 +56,7 @@ function state.update()
   --Adjust body height
   local bodyHeight_now = mcm.get_stance_bodyHeight()
   local bodyHeightTarget = hcm.get_motion_bodyHeightTarget()
-  bodyHeightTarget = math.max(0.75,math.min(Config.walk.bodyHeight,bodyHeightTarget))
+  bodyHeightTarget = math.max(MIN_BH, math.min(bodyHeightTarget, MAX_BH))
 
   local bodyHeight = util.approachTol( bodyHeight_now, 
     bodyHeightTarget, Config.stance.dHeight, t_diff )

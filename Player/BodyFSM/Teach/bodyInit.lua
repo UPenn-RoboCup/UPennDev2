@@ -3,9 +3,7 @@ state._NAME = ...
 
 local Body = require'Body'
 
---local vector=require'vector'
---local util = require'util'
-local timeout = 10.0
+local timeout = 30.0
 local t_entry, t_update, t_exit
 
 local si = require'simple_ipc'
@@ -28,8 +26,8 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   -- TODO: Investigate this...
-  --if t-t_entry > timeout then return'timeout' end
-  --TODO: Check whether all FSMs have done initialzing 
+  if t-t_entry > timeout then return'timeout' end
+  --TODO: Check whether all FSMs have done initializing
   return 'done'
 end
 

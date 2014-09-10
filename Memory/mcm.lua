@@ -168,7 +168,8 @@ shared.motion.state = vector.zeros(1)
 --HybridWalkEnd 5
 --HybridWalkKick 6
 
-
+shared.teach = {}
+shared.teach.sway = 'none'
 
 
 local maxSteps = 8

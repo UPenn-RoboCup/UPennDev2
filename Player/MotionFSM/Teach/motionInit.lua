@@ -10,7 +10,7 @@ local moveleg = require'moveleg'
 local util = require'util'
 local vector = require'vector'
 local timeout = 20.0
-local t_entry, t_update, t_finish
+local t_entry, t_update
 
 -- Set the desired leg and torso poses
 local pLLeg_desired = vector.new{-Config.walk.supportX,  Config.walk.footY, 0, 0,0,0}
@@ -38,19 +38,14 @@ function state.entry()
   -- Hardware accomodation
   if not IS_WEBOTS then
     -- Set speed limits for initial moving
-    for i=1,10 do
+    for i=1,5 do
       Body.set_head_command_velocity({500,500})
-      unix.usleep(1e6*0.01);
       Body.set_waist_command_velocity({500,500})
-      unix.usleep(1e6*0.01);
       Body.set_lleg_command_velocity({500,500,500,500,500,500})
-      unix.usleep(1e6*0.01);
       Body.set_rleg_command_velocity({500,500,500,500,500,500})
-      unix.usleep(1e6*0.01);
       Body.set_rleg_command_acceleration({50,50,50,50,50,50})
-      unix.usleep(1e6*0.01);
       Body.set_lleg_command_acceleration({50,50,50,50,50,50})
-      unix.usleep(1e6*0.01);
+      unix.usleep(1e4)
     end
   end
   
@@ -65,7 +60,7 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  --if t-t_entry > timeout then return'timeout' end
+  if t-t_entry > timeout then return'timeout' end
 
   -- Zero the waist
   local qWaist = Body.get_waist_position()
@@ -84,7 +79,7 @@ function state.update()
 end
 
 function state.exit()
-  print(state._NAME..' Exit.  Time elapsed:',t_finish-t_entry)
+  print(string.format('%s Exit | %.3f seconds elapsed', state._NAME, Body.get_time()-t_entry))
   
   -- Update current pose
   -- Generate current 2D pose for feet and torso
@@ -108,40 +103,28 @@ function state.exit()
     -- Gains
     local pg = Config.walk.leg_p_gain or 64
     local ag = Config.walk.ankle_p_gain or 64
+    local unlimited = vector.zeros(6)
+    local p_legs = {pg,pg,pg,pg,pg,ag}
+    local p_head = {pg,pg}
     -- Update the limits
     -- Setting the command accel and command velocity to zero means no limit for vel and accel
-    for i=1,10 do
+    for i=1,5 do
       -- {2000,2000}
       Body.set_head_command_velocity({6000,6000})
-      unix.usleep(1e4)
-
       Body.set_waist_command_velocity({0,0})
-      unix.usleep(1e4)
-
       if Config.torque_legs then
-
         --{17000,17000,17000,17000,17000,17000}
-        Body.set_lleg_command_velocity({0,0,0,0,0,0})
-        unix.usleep(1e6*0.01);
-        Body.set_rleg_command_velocity({0,0,0,0,0,0})
-        unix.usleep(1e6*0.01);
-
+        Body.set_lleg_command_velocity(unlimited)
+        Body.set_rleg_command_velocity(unlimited)
         --{200,200,200,200,200,200}
-        Body.set_lleg_command_acceleration({0,0,0,0,0,0})
-        unix.usleep(1e6*0.01)
-        Body.set_rleg_command_acceleration({0,0,0,0,0,0})
-        unix.usleep(1e6*0.01);
-
+        Body.set_lleg_command_acceleration(unlimited)
+        Body.set_rleg_command_acceleration(unlimited)
         --SJ: this somehow locks down head movement!!!!!!!!
-        Body.set_head_position_p({pg,pg})
-        unix.usleep(1e6*0.01);
-
-        Body.set_rleg_position_p({pg,pg,pg,pg,pg,ag})
-        unix.usleep(1e6*0.01);
-
-        Body.set_lleg_position_p({pg,pg,pg,pg,pg,ag})
-        unix.usleep(1e6*0.01);
+        Body.set_head_position_p(p_head)
+        Body.set_rleg_position_p(p_legs)
+        Body.set_lleg_position_p(p_legs)
       end
+      unix.usleep(1e4)
     end
   end -- hardware accomodation
 end --exit

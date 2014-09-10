@@ -303,9 +303,8 @@ function moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight)
     mcm.get_stance_bodyTilt(),
     uTorsoActual[3]
   }
-  local pLLeg = {uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]}
-  local pRLeg = {uRight[1],uRight[2],zRight,0,0,uRight[3]}
-  
+  local pLLeg = vector.new{uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]}
+  local pRLeg = vector.new{uRight[1],uRight[2],zRight,0,0,uRight[3]}
   return set_lower_body_slowly(pTorso, pLLeg, pRLeg)
 end
 

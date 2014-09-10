@@ -97,6 +97,7 @@ function state.exit()
   mcm.set_walk_bipedal(1)
   mcm.set_walk_ismoving(0) -- We are stopped
   wcm.set_robot_initdone(1)
+  mcm.set_status_zLeg{0,0}
 
   -- Real hardware accomodation
   if not IS_WEBOTS then

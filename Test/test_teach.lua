@@ -15,6 +15,9 @@ end
 lower_lut['s'] = function()
   motion_ch:send'sway'
 end
+lower_lut['q'] = function()
+  motion_ch:send'quit'
+end
 
 local function show_status()
   os.execute('clear')

@@ -20,8 +20,8 @@ local zLeft, zRight
 local side
 
 -- Lift properties
-local zTarget = 0.22
-local dz = 0.0002
+local xTarget = 0.25
+local dpose = vector.pose{0.0001, 0, 0}
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -55,11 +55,11 @@ function state.update()
   if side=='right' and r_ft[3] < 2*l_ft[3] then return'lean' end
   --
   if side=='left' then
-    zRight = zRight + dz
-    if zRight > zTarget then return'done' end
+    uRight = uRight + dpose
+    if uRight[1] > xTarget then return'done' end
   else
-    zLeft = zLeft + dz
-    if zLeft > zTarget then return'done' end
+    uLeft = uLeft + dpose
+    if uLeft[1] > xTarget then return'done' end
   end
   mcm.set_status_zLeg{zLeft, zRight}
   moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight)

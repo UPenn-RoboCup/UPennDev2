@@ -13,15 +13,11 @@ require'mcm'
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
-local timeout = 20
+local timeout = 5
 -- Track the torso
 local uTorso, uLeft, uRight
 local zLeft, zRight
 local side
-
--- Lift properties
-local zTarget = 0.22
-local dz = 0.0002
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -46,7 +42,7 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
-  if t - t_entry > timeout then return'timeout' end
+  --if t - t_entry > timeout then return'timeout' end
   
   local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
   
@@ -55,15 +51,14 @@ function state.update()
   if side=='right' and r_ft[3] < 2*l_ft[3] then return'lean' end
   --
   if side=='left' then
-    zRight = zRight + dz
-    if zRight > zTarget then return'done' end
+    zRight = zRight - 0.0001
+    if zRight < 0 then return'done' end
   else
-    zLeft = zLeft + dz
-    if zLeft > zTarget then return'done' end
+    zLeft = zLeft - 0.0001
+    if zLeft < 0 then return'done' end
   end
   mcm.set_status_zLeg{zLeft, zRight}
   moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight)
-  
 end
 
 function state.exit()

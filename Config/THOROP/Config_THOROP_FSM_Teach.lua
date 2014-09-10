@@ -50,11 +50,13 @@ fsm.Motion = {
   --
   {'motionLift', 'lean', 'motionLean'},
   {'motionLift', 'timeout', 'motionLower'},
-  {'motionLift', 'escape', 'motionLower'},
+  {'motionLift', 'quit', 'motionLower'},
   --{'motionLift', 'done', 'motionLower'},
   {'motionLift', 'done', 'motionHold'},
   --
-  {'motionLower', 'done', 'motionInit'},
+  {'motionHold', 'done', 'motionLower'},
+  --
+  --{'motionLower', 'done', 'motionInit'},
 }
 
 Config.fsm = fsm

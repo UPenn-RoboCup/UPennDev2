@@ -13,7 +13,7 @@ require'mcm'
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
-local timeout = 20
+local timeout = 30
 -- Track the torso
 local uTorso, uLeft, uRight
 local zLeft, zRight
@@ -21,7 +21,7 @@ local side
 
 -- Lift properties
 local xTarget = 0.25
-local dpose = vector.pose{0.0001, 0, 0}
+local dpose = vector.pose{0.0002, 0, 0}
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -57,11 +57,13 @@ function state.update()
   if side=='left' then
     uRight = uRight + dpose
     if uRight[1] > xTarget then return'done' end
+    mcm.set_status_uRight(uRight)
   else
     uLeft = uLeft + dpose
     if uLeft[1] > xTarget then return'done' end
+    mcm.set_status_uLeft(uLeft)
   end
-  mcm.set_status_zLeg{zLeft, zRight}
+  
   moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight)
   
 end

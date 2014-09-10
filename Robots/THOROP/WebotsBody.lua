@@ -1,15 +1,10 @@
 local WebotsBody = {}
 
-local ww = require'world_wizard'
-local cw = require'camera_wizard'
---local mw = require'mesh_wizard'
-local mw = require'mesh_wizard_sitevisit'
-
-
---local sw = require'slam_wizard'
-
---local kb = require'test_robocup'
-local kb = require(Config.testfile)
+local ww = Config.wizards.world and require(Config.wizards.world)
+local cw = Config.wizards.camera and require(Config.wizards.camera)
+local mw = Config.wizards.mesh and require(Config.wizards.mesh)
+local sw = Config.wizards.slam and require(Config.wizards.slam)
+local kb = Config.testfile and require(Config.testfile)
 
 WebotsBody.USING_KB = type(kb)=='table' and type(kb.update)=='function'
 

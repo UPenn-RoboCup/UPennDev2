@@ -68,17 +68,15 @@ shared.arm.dqVelRight = vector.zeros(6)
 shared.arm.dpVelRight = vector.zeros(7)
 
 --hand offset X and Y (for hook)
-shared.arm.handoffset = vector.new(Config.arm.handoffset.gripper)
-
-shared.arm.lhandoffset = vector.new(Config.arm.handoffset.gripper)
-shared.arm.rhandoffset = vector.new(Config.arm.handoffset.gripper)
+if Config.arm then
+  shared.arm.handoffset = vector.new(Config.arm.handoffset.gripper)
+  shared.arm.lhandoffset = vector.new(Config.arm.handoffset.gripper)
+  shared.arm.rhandoffset = vector.new(Config.arm.handoffset.gripper)
+end
 
 
 -- Walk Parameters (for tuning on the fly)
 shared.walk = {}
-
-
-
 shared.walk.tStep      = vector.zeros(1)
 shared.walk.tZmp 	   = vector.zeros(1)
 shared.walk.bodyHeight = vector.zeros(1)
@@ -89,15 +87,7 @@ shared.walk.supportX   = vector.zeros(1)
 shared.walk.supportY   = vector.zeros(1)
 shared.walk.hipRollCompensation = vector.zeros(1)
 
-
-
-
-
-
 --Walk state variables
-
-
-
 shared.walk.bodyOffset = vector.zeros(3)
 shared.walk.vel        = vector.zeros(3)
 shared.walk.bipedal    = vector.zeros(1)
@@ -112,10 +102,6 @@ shared.walk.step_supportleg= vector.zeros(1)
 shared.walk.kickphase= vector.zeros(1)
 shared.walk.kicktype = vector.zeros(1)
 shared.walk.kickfoot = vector.zeros(1)
-
-
-
-
 
 -- Motion Status
 shared.status = {}

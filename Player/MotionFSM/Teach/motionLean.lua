@@ -13,9 +13,10 @@ require'mcm'
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
--- Trak the torso
+-- Track the torso
 local uTorso, uLeft, uRight
-
+local zLeft, zRight = 0, 0
+local side
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -26,6 +27,9 @@ function state.entry()
   uTorso = mcm.get_status_uTorso()  
   uLeft = mcm.get_status_uLeft()
   uRight = mcm.get_status_uRight()
+  side = mcm.get_teach_sway()
+  side = side=='none' and 'left' or side
+  print('Lean to the', side)
 end
 
 function state.update()
@@ -40,16 +44,25 @@ function state.update()
   --print('R FT', r_ft)
   
   -- Check the CoM first
-  if 4*r_ft[3] > l_ft[3] then
-    uTorso = uTorso + vector.new{0,0.0001,0}
-    -- Save
-    --mcm.set_status_uLeft(uLeft)
-    --mcm.set_status_uRight(uRight)
-    mcm.set_status_uTorso(uTorso)
-  
-    local zLeft, zRight = 0, 0
-    moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight)
+  if side=='left' then
+    if l_ft[3] < 3*r_ft[3] then
+      uTorso = uTorso + vector.new{0,0.0005,0}
+      mcm.set_status_uTorso(uTorso)
+    else
+      return'done'
+    end
+  elseif side=='right' then
+    --print('L FT', l_ft)
+    --print('R FT', r_ft)
+    if r_ft[3] < 3*l_ft[3] then
+      uTorso = uTorso - vector.new{0,0.0005,0}
+      mcm.set_status_uTorso(uTorso)
+    else
+      return'done'
+    end
   end
+  
+  moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight)
   
 end
 

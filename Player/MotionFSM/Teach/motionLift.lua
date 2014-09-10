@@ -13,10 +13,10 @@ require'mcm'
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
-local timeout = 2
+local timeout = 5
 -- Track the torso
 local uTorso, uLeft, uRight
-local zLeft, zRight = 0, 0
+local zLeft, zRight
 local side
 
 function state.entry()
@@ -30,7 +30,10 @@ function state.entry()
   uRight = mcm.get_status_uRight()
   side = mcm.get_teach_sway()
   side = side=='none' and 'left' or side
-  print('Sway to the', side)
+  print('Support on the', side)
+  local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
+  side = l_ft[3]>r_ft[3] and 'left' or 'right'
+  zLeft, zRight = 0, 0
 end
 
 function state.update()
@@ -39,32 +42,18 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
-  
   if t - t_entry > timeout then return'timeout' end
   
   local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
   
-  -- Check the CoM first
+  -- Make sure we lean enough before lifting our legs
+  if side=='left' and l_ft[3] < 2*r_ft[3] then return'lean' end
+  if side=='right' and r_ft[3] < 2*l_ft[3] then return'lean' end
+  --
   if side=='left' then
-    if l_ft[3] < 3*r_ft[3] then
-      uTorso = uTorso + vector.new{0,0.0005,0}
-      mcm.set_status_uTorso(uTorso)
-    else
-      side = 'right'
-      mcm.set_teach_sway(side)
-      --return'switch'
-    end
-  elseif side=='right' then
-    --print('L FT', l_ft)
-    --print('R FT', r_ft)
-    if r_ft[3] < 3*l_ft[3] then
-      uTorso = uTorso - vector.new{0,0.0005,0}
-      mcm.set_status_uTorso(uTorso)
-    else
-      side = 'left'
-      mcm.set_teach_sway(side)
-      --return'switch'
-    end
+    zRight = zRight + 0.0001
+  else
+    zLeft = zLeft + 0.0001
   end
   moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight)
 end

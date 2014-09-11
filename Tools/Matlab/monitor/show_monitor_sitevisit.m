@@ -138,7 +138,7 @@ function h = show_monitor_sitevisit
         mesh_float = typecast(raw, 'single');
         
         % clamp on ranges
-        mesh_float(mesh_float>10) = 0;
+        mesh_float(mesh_float>2) = 0;
 %         mesh_float(mesh_float<0.1) = 0;
 
         mesh = reshape(mesh_float, [n_returns n_scanlines])';
@@ -164,7 +164,7 @@ function h = show_monitor_sitevisit
                       -sin(body_pitch)  cos(body_pitch)];
         
         
-        % dumb visualize
+        % dumb visualization
         figure(2)
         xs_new = xs; zs_new = zs;
         for i = 1:n_scanlines 

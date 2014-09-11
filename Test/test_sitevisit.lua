@@ -98,10 +98,16 @@ local function update(key_code)
 	elseif key_char_lower==("3") then      
 		lidar_ch:send'pansingle'
 
-
-
 	elseif key_char_lower==("q") then      
 		body_ch:send'approach'
+
+
+	elseif key_char_lower==("x") then      
+		motion_ch:send'getup'
+
+
+	elseif key_char_lower==("=") then      
+		hcm.set_state_proceed(1)
 
 --		elseif key_char_lower==("w") then      
 --			mcm.set_walk_kicktype(1)

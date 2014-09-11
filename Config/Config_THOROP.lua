@@ -32,7 +32,7 @@ local exo = {
 Config.testfile = 'test_robocup'
 --]]
 
---[[
+----[[
 --DRC Trials
 Config.libs = {
   ArmLib = 'DRCTrials',
@@ -59,11 +59,7 @@ local exo = {'Robot','Walk','Net','Manipulation',
 Config.testfile = 'test_sitevisit'
 --]]
 
-
-Config.camera_timestep = 33
-Config.lidar_timestep = 200 --slower
-
---[[
+----[[
 -- Teach robot to go up steps
 Config.libs = {
   MotionLib = 'RoboCup',
@@ -101,6 +97,9 @@ if IS_WEBOTS then
   Config.wizards.camera = 'camera_wizard'
   Config.wizards.test = 'post_mesh_wizard'
   --Config.wizards.slam = 'slam_wizard'
+  -- Adjust the tiemsteps if desired
+  --Config.camera_timestep = 33
+  --Config.lidar_timestep = 200 --slower
 end
 
 --Config.use_localhost = false

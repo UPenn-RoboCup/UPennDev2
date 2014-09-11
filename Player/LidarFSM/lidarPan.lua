@@ -10,6 +10,7 @@ local t_sweep, ph, forward
 local function update_pan_params()
 	-- Necessary variables
 	mag_sweep, t_sweep = unpack(vcm.get_mesh_sweep())
+	print('MAG_SWEEP', mag_sweep*RAD_TO_DEG)
 	-- Some simple safety checks
 	mag_sweep = math.min(math.max(mag_sweep, 10 * DEG_TO_RAD), math.pi)
 	t_sweep = math.min(math.max(t_sweep, 1), 20)

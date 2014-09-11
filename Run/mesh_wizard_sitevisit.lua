@@ -37,9 +37,10 @@ local stream = Config.net.streams['mesh']
 local mesh_tcp_ch = stream.tcp and si.new_publisher(stream.tcp, operator)
 local mesh_udp_ch = stream.udp and si.new_sender(operator, stream.udp)
 local mesh_ch = stream.sub and si.new_publisher(stream.sub)
-print("OPERATOR", operator, stream.udp)
+print("OPERATOR", operator, stream.sub)
 
 local metadata = {
+  id = 'chest_mesh',
 	name = 'mesh0',
 	t = 0,
 }
@@ -81,7 +82,10 @@ local function postprocess()
   --print('ANGLES FOR MESH',mag_sweep, unpack(ranges_fov))
   --print('POST PROCESS MESH TRANSFORM', first, last)
   -- TODO: Just write this to file... (However you wish)
+  
+  
 end
+
 
 local function setup_mesh(meta)
 	local n, res = meta.n, meta.res
@@ -126,6 +130,8 @@ local function setup_mesh(meta)
 	metadata.px = scan_x
 	metadata.py = scan_y
 	metadata.pa = scan_a
+  metadata.n_scanlines = n_scanlines
+  metadata.n_returns = n_returns
 	-- TODO: Add IMU for body orientation
 end
 
@@ -177,20 +183,27 @@ local function send_mesh(destination, compression, dynrange)
   mesh_byte:copy(mesh_adj)
   -- Compression
   local c_mesh
+  
+  --HARD CODE
+  -- compression = 'jpeg'
+  compression = 'raw'
+  
   if compression=='jpeg' then
+    print('JPEG FOR NOW...')
 		c_mesh = j_compress:compress(mesh_byte)
   elseif compression=='png' then
     c_mesh = p_compress(mesh_byte)
   else
-    -- raw data?
-		-- Maybe needed for sending a mesh to another process
-		print('No raw sending support...')
-    return
+    print('compressing RAW...')
+    
+    c_mesh = ffi.string(mesh:data(), mesh:nElement() * ffi.sizeof'float')
   end
+  
 	-- Update relevant metadata
 	metadata.c = compression
 	metadata.dr = dynrange
 	-- Send away
+    
 	if type(destination)=='string' then
 		local f_img = io.open(destination..'.'..metadata.c, 'w')
 		local f_meta = io.open(destination..'.meta', 'w')

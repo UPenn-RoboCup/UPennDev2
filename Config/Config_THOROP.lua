@@ -95,6 +95,7 @@ if IS_WEBOTS then
   Config.wizards.mesh = 'mesh_wizard_sitevisit'
   Config.wizards.world = 'world_wizard'
   Config.wizards.camera = 'camera_wizard'
+  Config.wizards.test = 'post_mesh_wizard'
   --Config.wizards.slam = 'slam_wizard'
 end
 

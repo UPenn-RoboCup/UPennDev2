@@ -144,9 +144,7 @@ function h = show_monitor_sitevisit
         mesh = reshape(mesh_float, [n_returns n_scanlines])';
         % ray angles 
         rfov = floor(metadata.rfov / pi * 180);
-        v_angles = rfov(1):0.25:rfov(2);
-        %test
-        
+        v_angles = rfov(1):0.25:rfov(2);        
         v_angles = v_angles / 180 * pi;
         
         if length(v_angles)>n_returns
@@ -158,19 +156,29 @@ function h = show_monitor_sitevisit
         % Convert to x, y, z
         xs = bsxfun(@times, cos(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
         ys = bsxfun(@times, sin(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
-        zs = -1*bsxfun(@times, mesh, sin(v_angles)) + 1.1;  %TODO
+        zs = -1*bsxfun(@times, mesh, sin(v_angles)) + metadata.lidarZ;
+        
+        % Body orientation
+        body_pitch = metadata.bodyPitch;
+        body_trans = [cos(body_pitch) sin(body_pitch); 
+                      -sin(body_pitch)  cos(body_pitch)];
         
         
         % dumb visualize
         figure(2)
+        xs_new = xs; zs_new = zs;
         for i = 1:n_scanlines 
-            plot3(xs(i,:), ys(i,:), zs(i,:), '.');
+            % TODO: better factorization
+            new_xz = body_trans*[xs(1,:); zs(1,:)];
+            xs_new(i,:) = new_xz(1,:);
+            zs_new(i,:) = new_xz(2,:) + 1;  %TODO: bodyHeight
+
+            plot3(xs_new(i,:), ys(i,:), zs_new(i,:), '.');
             hold on;
         end
         
         hold off;
         
-        holdon = 1;
         
     end
   end

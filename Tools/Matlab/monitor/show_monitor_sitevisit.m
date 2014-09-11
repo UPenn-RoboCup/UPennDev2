@@ -136,20 +136,30 @@ function h = show_monitor_sitevisit
         s_angles = metadata.a;
         % Raw
         mesh_float = typecast(raw, 'single');
-        mesh = reshape(mesh_float, [n_scanlines n_returns]);
+        
+        % clamp on ranges
+        mesh_float(mesh_float>10) = 0;
+%         mesh_float(mesh_float<0.1) = 0;
+
+        mesh = reshape(mesh_float, [n_returns n_scanlines])';
         % ray angles 
         rfov = floor(metadata.rfov / pi * 180);
         v_angles = rfov(1):0.25:rfov(2);
+        %test
+        
         v_angles = v_angles / 180 * pi;
         
         if length(v_angles)>n_returns
             v_angles = v_angles(1:360);
         end
         
+
+        
         % Convert to x, y, z
         xs = bsxfun(@times, cos(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
         ys = bsxfun(@times, sin(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
-        zs = bsxfun(@times, mesh, sin(v_angles));
+        zs = -1*bsxfun(@times, mesh, sin(v_angles)) + 1.1;  %TODO
+        
         
         % dumb visualize
         figure(2)

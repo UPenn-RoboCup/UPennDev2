@@ -154,9 +154,9 @@ function h = show_monitor_sitevisit
 
         
         % Convert to x, y, z
-        xs = bsxfun(@times, cos(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
-        ys = bsxfun(@times, sin(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
-        zs = -1*bsxfun(@times, mesh, sin(v_angles)) + metadata.lidarZ;
+        xs0 = bsxfun(@times, cos(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
+        ys0 = bsxfun(@times, sin(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
+        zs0 = -1*bsxfun(@times, mesh, sin(v_angles)) + metadata.lidarZ;
         
         % Body orientation
         body_pitch = metadata.bodyPitch;
@@ -166,16 +166,79 @@ function h = show_monitor_sitevisit
         
         % Visualization
         figure(2)
-        xs_new = xs; zs_new = zs;
+        xs = xs0; ys = ys0; zs = zs0;
         for i = 1:n_scanlines 
             % TODO: better factorization
-            new_xz = body_trans*[xs(1,:); zs(1,:)];
-            xs_new(i,:) = new_xz(1,:);
-            zs_new(i,:) = new_xz(2,:) + 1;  %TODO: bodyHeight
-
-            plot3(xs_new(i,:), ys(i,:), zs_new(i,:), '.');
-            hold on;
+            new_xz = body_trans*[xs0(i,:); zs0(i,:)];
+            xs(i,:) = new_xz(1,:);
+            zs(i,:) = new_xz(2,:) + 1;  %TODO: bodyHeight
+  
+%             plot3(xs(i,:), ys(i,:), zs(i,:), '.');
+%             hold on;
         end
+        
+        
+        %%% Pixelize the points
+        
+        % Grid params: meters
+        grid_res = 0.02; 
+        
+        xss = xs(:); yss = ys(:);  zss = zs(:);
+        x_min = min(xss);  x_max = max(xss);
+        y_min = min(yss);  y_max = max(yss);
+        size_x = ceil((x_max - x_min) /grid_res);
+        size_y = ceil((y_max - y_min) /grid_res);
+        
+        xis = ceil((xss - x_min) / grid_res);
+        yis = ceil((yss - y_min) / grid_res);
+        
+        % check is max of xis/yis is exceeding grid size
+        xis(xis>size_x) = size_x;
+        xis(xis<=0) = 1;
+        yis(yis>size_y) = size_y;
+        yis(yis<=0) = 1;
+        % Linear indices
+        ind = sub2ind([size_x size_y], xis, yis);
+        
+        
+        % TODO: dumb loop for now
+        proj_plane = zeros(size_x, size_y);
+        p_count = zeros(size_x, size_y);
+        for i=1:length(ind)
+            p_count(ind(i)) = p_count(ind(i)) + 1;
+            proj_plane(ind(i)) = proj_plane(ind(i)) + zss(i);
+        end
+        
+        % take average on the plane
+        proj_plane = proj_plane ./ p_count;
+        proj_plane(isnan(proj_plane(:))) = 0;
+        
+        % visual debug
+        % imshow(proj_plane);
+
+        
+        proj_dz = proj_plane(1:end-1, :) - proj_plane(2:end,:);
+        proj_dz = [abs(proj_dz); zeros(1, size(proj_dz, 2))];
+        
+        % visual debug
+%         imshow(proj_dz);
+        
+        
+        % Convert to uint8
+        z_thres = 0.01; %TODO
+        proj_dz(proj_dz<z_thres) = 1;
+        proj_dz(proj_dz~=1) = 0;
+
+        % visual debug
+        imshow(proj_dz);
+
+        % connected regions TODO
+%         connected_regions(uint8(proj_dz), 1);
+        
+        
+        % or we can first cluster (using hist or something) and check connected components
+        % use edge detection and filter to a line? just a thought...
+        
         
         hold off;
         

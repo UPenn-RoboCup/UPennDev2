@@ -59,6 +59,10 @@ local exo = {'Robot','Walk','Net','Manipulation',
 Config.testfile = 'test_sitevisit'
 --]]
 
+
+Config.camera_timestep = 33
+Config.lidar_timestep = 200 --slower
+
 --[[
 -- Teach robot to go up steps
 Config.libs = {

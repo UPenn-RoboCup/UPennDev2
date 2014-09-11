@@ -7,7 +7,16 @@ local WAS_REQUIRED = ... and type(...)=='string'
 local code_lut, char_lut, lower_lut = {}, {}, {}
 -- 
 char_lut['1'] = function()
-  body_ch:send'init'
+  motion_ch:send'stand'
+end
+lower_lut['l'] = function()
+  motion_ch:send'lean'
+end
+lower_lut['s'] = function()
+  motion_ch:send'sway'
+end
+lower_lut['q'] = function()
+  motion_ch:send'quit'
 end
 
 local function show_status()

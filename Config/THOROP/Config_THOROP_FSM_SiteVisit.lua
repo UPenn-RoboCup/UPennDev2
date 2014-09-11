@@ -65,6 +65,7 @@ fsm.Arm = {
 
   {'armInit', 'done', 'armPose1'},
 
+  {'armPose1', 'bodyslave', 'armSlave'}, --Full body motion
   
   {'armPose1', 'teleop', 'armTeleop'},
   --{'armPose1', 'teleop', 'armIKTest'},
@@ -123,6 +124,8 @@ fsm.Motion = {
   {'motionStance', 'preview', 'motionStepPreview'},
   {'motionStance', 'kick', 'motionKick'},
   {'motionStance', 'done_step', 'motionHybridWalkKick'},
+
+  {'motionStance', 'getup', 'motionGetupFront'},
 
   {'motionStance', 'sit', 'motionSit'},
   {'motionSit', 'stand', 'motionStandup'},

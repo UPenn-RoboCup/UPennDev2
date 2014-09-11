@@ -12,7 +12,7 @@ fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
 fsm.enabled = {
-  'Body',
+--  'Body',
   'Motion',
 }
 
@@ -22,12 +22,11 @@ fsm.select = {
   Motion = 'Teach'
 }
 
-
 fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
+  --
   {'bodyInit', 'done', 'bodyStop'},
 }
-
 
 fsm.Motion = {
   -- Idle
@@ -35,6 +34,29 @@ fsm.Motion = {
   {'motionIdle', 'stand', 'motionInit'},
   -- Init
   {'motionInit', 'done', 'motionStance'},
+  {'motionInit', 'timeout', 'motionInit'},
+  --
+  {'motionStance', 'lean', 'motionLean'},
+  {'motionStance', 'sway', 'motionSway'},
+  --
+  {'motionSway', 'lean', 'motionLean'},
+  {'motionSway', 'switch', 'motionSway'},
+  {'motionSway', 'timeout', 'motionInit'},
+  {'motionSway', 'stand', 'motionInit'},
+  --
+  {'motionLean', 'sway', 'motionSway'},
+  {'motionLean', 'done', 'motionLift'},
+  {'motionLean', 'stand', 'motionInit'},
+  --
+  {'motionLift', 'lean', 'motionLean'},
+  {'motionLift', 'timeout', 'motionLower'},
+  {'motionLift', 'quit', 'motionLower'},
+  --{'motionLift', 'done', 'motionLower'},
+  {'motionLift', 'done', 'motionHold'},
+  --
+  {'motionHold', 'done', 'motionLower'},
+  --
+  --{'motionLower', 'done', 'motionInit'},
 }
 
 Config.fsm = fsm

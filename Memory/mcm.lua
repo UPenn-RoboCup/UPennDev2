@@ -113,6 +113,7 @@ shared.status.falling    = vector.zeros(1)
 --Current Foot and Torso Poses
 shared.status.uLeft = vector.zeros(3)
 shared.status.uRight = vector.zeros(3)
+shared.status.zLeg = vector.zeros(2) -- left, right
 shared.status.uTorso = vector.zeros(3)
 shared.status.uSupport = vector.zeros(3)
 shared.status.supportLeg = vector.zeros(1)
@@ -168,7 +169,8 @@ shared.motion.state = vector.zeros(1)
 --HybridWalkEnd 5
 --HybridWalkKick 6
 
-
+shared.teach = {}
+shared.teach.sway = 'none'
 
 
 local maxSteps = 8

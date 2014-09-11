@@ -8,7 +8,7 @@ startup;
 
 global cam monitor
 
-monitor = show_monitor_thorwin();
+monitor = show_monitor_sitevisit();
 monitor.init();
 
 

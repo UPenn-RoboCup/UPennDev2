@@ -9,19 +9,33 @@ local t_sweep, ph, forward
 -- Sync mesh parameters
 local function update_pan_params()
 	-- Necessary variables
-	mag_sweep, t_sweep = unpack(vcm.get_mesh_sweep())
-	print('MAG_SWEEP', mag_sweep*RAD_TO_DEG)
+	--mag_sweep, t_sweep = unpack(vcm.get_mesh_sweep())
+
+--SJ: BIG BUG HERE
+--SWEEP time takes roughly 3X than specified time
+
+mag_sweep, t_sweep = 20*math.pi/180,0.3	
+
+
+
+
 	-- Some simple safety checks
 	mag_sweep = math.min(math.max(mag_sweep, 10 * DEG_TO_RAD), math.pi)
-	t_sweep = math.min(math.max(t_sweep, 1), 20)
+	--t_sweep = math.min(math.max(t_sweep, 1), 20)
+
+
+
+
 	-- Convenience variables
 	min_pan = -mag_sweep/2
-  max_pan = mag_sweep/2
+  	max_pan = mag_sweep/2
   mid_pan = 0
 end
 
 function state.entry()
   print(state._NAME..' Entry' ) 
+
+  vcm.set_mesh_sweep({20*math.pi/180,1})
 
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
@@ -60,6 +74,9 @@ function state.update()
 	ph = ph + (is_forward and 1 or -1) * (dt/t_sweep * mag_sweep)
 	ph = math.max(math.min(ph, 1), 0)
 
+--	print(t-t_entry,ph,dt,t_sweep)
+
+
   -- Set the desired angle of the lidar tilt
 	Body.set_lidar_command_position(min_pan + ph * mag_sweep)
 	
@@ -76,12 +93,13 @@ function state.update()
 			net[1] = 1
 			vcm.set_mesh_net(net)
 		end
-		return'switch'
+		return'done'
 	end
 	
 end
 
 function state.exit()
+	print("Lidar single pan time:",Body.get_time()-t_entry)
   print(state._NAME..' Exit' )
 end
 

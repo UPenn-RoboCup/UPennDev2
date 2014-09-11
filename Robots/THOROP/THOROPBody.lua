@@ -229,8 +229,9 @@ if IS_WEBOTS then
   webots.wb_robot_init()
   -- Acquire the timesteps
   local timeStep = webots.wb_robot_get_basic_time_step()
-  local camera_timeStep = math.max(33, timeStep)
-  local lidar_timeStep = math.max(25, timeStep)
+  local camera_timeStep = math.max(Config.camera_timestep or 33, timeStep)
+  local lidar_timeStep = math.max(Config.lidar_timestep or 25, timeStep)
+
   Body.timeStep = timeStep
   get_time = webots.wb_robot_get_time
 
@@ -520,7 +521,7 @@ if IS_WEBOTS then
 		-- F/T sensor
     if ENABLE_FT then
 			local l_ft = Body.get_lfoot()
-			l_ft[1], l_ft[2], l_ft[3] = unpack(webots.wb_touch_sensor_get_values(tags.l_ft))
+			l_ft[2], l_ft[3], l_ft[1] = unpack(webots.wb_touch_sensor_get_values(tags.l_ft))
       l_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleL)
       l_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootL)
       if tags.left_ankle_yaw > 0 then
@@ -529,7 +530,7 @@ if IS_WEBOTS then
 			dcm.set_sensor_lfoot(l_ft)
       --
       local r_ft = Body.get_rfoot()
-			r_ft[1], r_ft[2], r_ft[3] = unpack(webots.wb_touch_sensor_get_values(tags.r_ft))
+			r_ft[2], r_ft[3], r_ft[1] = unpack(webots.wb_touch_sensor_get_values(tags.r_ft))
       r_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleR)
       r_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootR)
       if tags.right_ankle_yaw > 0 then

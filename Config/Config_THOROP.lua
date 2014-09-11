@@ -29,6 +29,7 @@ local exo = {
   'Robot','Walk','Net','Manipulation',
   'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
 }
+Config.testfile = 'test_robocup'
 --]]
 
 --[[
@@ -41,6 +42,7 @@ Config.libs = {
 local exo = {'Robot','Walk','Net','Manipulation',
 'FSM_DRCTrials','World_RoboCup','Vision_DRCTrials'
 }
+Config.testfile = 'test_robocup'
 --]]
 
 
@@ -54,10 +56,24 @@ Config.libs = {
 local exo = {'Robot','Walk','Net','Manipulation',
 'FSM_SiteVisit','World_DRCTrials','Vision_DRCTrials'
 }
+Config.testfile = 'test_sitevisit'
 --]]
 
 
+Config.camera_timestep = 33
+Config.lidar_timestep = 200 --slower
 
+--[[
+-- Teach robot to go up steps
+Config.libs = {
+  MotionLib = 'RoboCup',
+}
+-- Precedence in loading, for overrides!
+local exo = {
+	'Robot', 'Walk', 'Net', 'FSM_Teach'
+}
+Config.testfile = 'test_teach'
+--]]
 
 
 --Add path to selected librares
@@ -69,25 +85,34 @@ end
 -- Printing of debug messages
 Config.debug = {
 	webots_wizard=false,	
-  -- obstacle = true,
+  obstacle = false,
   follow = false,	
-  --approach = true,
-  --planning = true,
-  --goalpost = true,
+  approach = false,
+  planning = false,
+  goalpost = false,
 }
 
-Config.use_localhost = false
+if IS_WEBOTS then
+  -- Tune which wizards to run in webots
+  Config.wizards = {}
+  --Config.wizards.mesh = 'mesh_wizard'
+  Config.wizards.mesh = 'mesh_wizard_sitevisit'
+  Config.wizards.world = 'world_wizard'
+  Config.wizards.camera = 'camera_wizard'
+  Config.wizards.test = 'post_mesh_wizard'
+  --Config.wizards.slam = 'slam_wizard'
+end
+
+--Config.use_localhost = false
+Config.use_localhost = true
 
 -- Monitor and logging
 Config.enable_monitor = true
 Config.enable_log = false
 Config.use_log = false
-
--------------
--- Complementary Configs --
----------------------------
 Config.torque_legs = true
 
+-- Complementary Configs --
 -- Load each exogenous Config file
 for _,v in ipairs(exo) do
 	--[[
@@ -100,8 +125,5 @@ for _,v in ipairs(exo) do
   require(table.concat(fname))
 	--]]
 end
-
-Config.supportY_preview = -0.02
-Config.supportY_preview2 = -0.01
 
 return Config

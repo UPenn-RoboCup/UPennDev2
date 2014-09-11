@@ -308,6 +308,37 @@ function h = show_monitor_thorwin
         xlim(cam.f_yuyv,[0 nc]);
         ylim(cam.f_yuyv,[0 nr]);
         needs_draw = 1;
+    elseif strcmp(msg_id, 'chest_mesh')
+        % metadata
+        n_scanlines = metadata.n_scanlines;
+        n_returns = metadata.n_returns;
+        s_angles = metadata.a;
+        % Raw
+        mesh_float = typecast(raw, 'single');
+        mesh = reshape(mesh_float, [n_scanlines n_returns]);
+        % ray angles TODO: which one is correct?
+        rfov = floor(metadata.rfov / pi * 180);
+        v_angles = rfov(1):0.25:rfov(2);
+        v_angles = v_angles / 180 * pi;
+        
+        if length(v_angles)>n_returns
+            v_angles = v_angles(1:360);
+        end
+        
+        % Convert to x, y, z
+        xs = bsxfun(@times, cos(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
+        ys = bsxfun(@times, sin(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
+        zs = bsxfun(@times, mesh, sin(v_angles));
+        
+        % visualize
+        figure(2)
+        for i = 1:n_scanlines 
+            plot3(xs(i,:), ys(i,:), zs(i,:), '.');
+            hold on;
+        end
+        
+        holdon = 1;
+        
     elseif strcmp(msg_id,'labelA')
         cam.labelA = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';%'
         set(cam.im_lA,'Cdata', cam.labelA);

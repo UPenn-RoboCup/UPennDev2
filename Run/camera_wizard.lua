@@ -66,7 +66,7 @@ end
 local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[camera_identifier]
 local udp_ch = stream and stream.udp and si.new_sender(operator, stream.udp)
--- local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
+local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
 print('Camera | ', operator, camera_identifier)
 
 -- Metadata for the operator for compressed image data
@@ -147,9 +147,7 @@ local function update(img, sz, cnt, t)
 		p.update(img)
 		if ENABLE_NET and p.send and t-t_send>SEND_INTERVAL then
 			if IS_WEBOTS and camera_ch then
-				for _,v in ipairs(p.send()) do
-					camera_ch:send({mp.pack(v[1]), v[2]})
-				end
+				for _,v in ipairs(p.send()) do camera_ch:send({mp.pack(v[1]), v[2]}) end
 				t_send = t
 			elseif udp_ch then
 				for _,v in ipairs(p.send()) do

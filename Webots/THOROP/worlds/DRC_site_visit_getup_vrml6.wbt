@@ -4,12 +4,12 @@ WorldInfo {
     "World for the Adult size soccer league"
   ]
   title "THORwIn RoboCup"
-  basicTimeStep 8
+  basicTimeStep 33
   FPS 15
 }
 Viewpoint {
-  orientation -0.190779 0.96655 0.17142 1.45785
-  position 5.90301 2.62259 0.607004
+  orientation -0.855354 -0.517911 -0.0117499 0.202814
+  position -0.349832 1.58631 5.38906
 }
 Background {
   skyColor [
@@ -32,18 +32,7 @@ DEF FLOOR Floor {
     "textures/texture_grid.png"
   ]
 }
-DEF BLOCK QualStep {
-  translation -0.2 0.075 0
-}
-DEF BALL_LEFT BallGPS_Landmark {
-  translation 0 0.109919 0.55
-  radius 0.11
-}
-DEF BALL_RIGHT BallGPS_Landmark {
-  translation 0 0.109919 -0.55
-  radius 0.11
-}
-THOROP_UPENN {
+THOROP_UPENN_nohands {
   translation 0.49372 1.155 -0.14128
   rotation 0 1 0 -1.5708
   controller "thorop"

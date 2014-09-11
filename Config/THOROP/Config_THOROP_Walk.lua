@@ -397,6 +397,9 @@ if IS_WEBOTS then
   walk.supportY = 0.09
 end
 
+Config.supportY_preview = -0.02
+Config.supportY_preview2 = -0.01
+
 ------------------------------------
 -- Associate with the table
 Config.walk    = walk

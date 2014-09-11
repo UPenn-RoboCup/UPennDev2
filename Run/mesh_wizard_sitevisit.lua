@@ -20,6 +20,11 @@ require'vcm'
 local t_sweep, mag_sweep, ranges_fov
 -- NOTE: The following is LIDAR dependent
 local t_scan = 1 / 40 -- Time to gather returns
+-- Setup tensors for a lidar mesh
+local mesh, mesh_byte, mesh_adj, scan_angles, offset_idx
+local n_scanlines
+-- Save the current scanline and current direction
+local scanline, direction
 
 -- Open up channels to send/receive data
 local operator
@@ -32,16 +37,56 @@ local stream = Config.net.streams['mesh']
 local mesh_tcp_ch = stream.tcp and si.new_publisher(stream.tcp, operator)
 local mesh_udp_ch = stream.udp and si.new_sender(operator, stream.udp)
 local mesh_ch = stream.sub and si.new_publisher(stream.sub)
-print("OPERATOR", operator, stream.udp)
+print("OPERATOR", operator, stream.sub)
 
 local metadata = {
+  id = 'chest_mesh',
 	name = 'mesh0',
 	t = 0,
 }
 
--- Setup tensors for a lidar mesh
-local mesh, mesh_byte, mesh_adj, scan_angles, offset_idx
-local n_scanlines
+local function postprocess()
+  -- Let's cheat, since we know we are the chest mesh
+  local first = mesh:select(1, 1)
+  local last = mesh:select(1, mesh:size(1))
+  -- Cheat again due to chest: contiguous selections
+  --print('FIRST', first:isContiguous())
+  --print('LAST', last:isContiguous())
+  -- Iterate via the FFI (C style 0-based indexing)
+  local first_c, last_c = first:data(), last:data()
+  local n = first:nElement()
+  local first, last = torch.DoubleTensor(n, 3), torch.DoubleTensor(n, 3)
+  local sin, cos = math.sin, math.cos
+  local bodyHeight, bodyTilt, lidarOffZ = 1, 3 * DEG_TO_RAD, 0.1
+  local sp, cp = sin(bodyTilt), cos(bodyTilt)
+  for i=0,n-1 do
+    local v_angle = scan_angles[1] + (ranges_fov[2] - ranges_fov[1]) * i/(n-1)
+    local x_f0 = first_c[i] * cos(-mag_sweep) * cos(v_angle)
+    local x_l0 = last_c[i] * cos(mag_sweep) * cos(v_angle)
+    --print('X', x_f0, x_l0)
+    local y_f = first_c[i] * cos(v_angle) * sin(-mag_sweep)
+    local y_l = last_c[i] * cos(v_angle) * sin(mag_sweep)
+    --print('Y', y_f, y_l)
+    local z_f0 = first_c[i] * sin(v_angle) + lidarOffZ
+    local z_l0 = last_c[i] * sin(v_angle) + lidarOffZ
+    --print('Z', z_f0, z_l0)
+    local x_f = cp * x_f0 + sp * z_f0
+    local z_f = -sp * x_f0 + cp * z_f0 + bodyHeight
+    local x_l = cp * x_l0 + sp * z_l0
+    local z_l = -sp * x_l0 + cp * z_l0 + bodyHeight
+--    print('FIRST:', vector.new{x_f, y_f, z_f})
+--    print('LAST:', vector.new{x_l, y_l, z_l})
+    first[i+1][1], first[i+1][2], first[i+1][3] = x_f, y_f, z_f
+    last[i+1][1], last[i+1][2], last[i+1][3] = x_l, y_l, z_l
+  end
+  --print('ANGLES FOR MESH',mag_sweep, unpack(ranges_fov))
+  --print('POST PROCESS MESH TRANSFORM', first, last)
+  -- TODO: Just write this to file... (However you wish)
+  
+  
+end
+
+
 local function setup_mesh(meta)
 	local n, res = meta.n, meta.res
 	local fov = n * res
@@ -85,11 +130,15 @@ local function setup_mesh(meta)
 	metadata.px = scan_x
 	metadata.py = scan_y
 	metadata.pa = scan_a
+  metadata.n_scanlines = n_scanlines
+  metadata.n_returns = n_returns
+  metadata.lidarZ = 0.1
 	-- TODO: Add IMU for body orientation
+  metadata.bodyPitch = 3*DEG_TO_RAD
+  metadata.bodyRoll = 0
 end
 
 -- Convert a pan angle to a column of the chest mesh image
-local scanline, direction
 local function angle_to_scanlines(rad)
 	-- Find the scanline
   local ratio = (rad + mag_sweep / 2) / mag_sweep
@@ -137,20 +186,27 @@ local function send_mesh(destination, compression, dynrange)
   mesh_byte:copy(mesh_adj)
   -- Compression
   local c_mesh
+  
+  --HARD CODE
+  -- compression = 'jpeg'
+  compression = 'raw'
+  
   if compression=='jpeg' then
+    print('JPEG FOR NOW...')
 		c_mesh = j_compress:compress(mesh_byte)
   elseif compression=='png' then
     c_mesh = p_compress(mesh_byte)
   else
-    -- raw data?
-		-- Maybe needed for sending a mesh to another process
-		print('No raw sending support...')
-    return
+    print('compressing RAW...')
+    
+    c_mesh = ffi.string(mesh:data(), mesh:nElement() * ffi.sizeof'float')
   end
+  
 	-- Update relevant metadata
 	metadata.c = compression
 	metadata.dr = dynrange
 	-- Send away
+    
 	if type(destination)=='string' then
 		local f_img = io.open(destination..'.'..metadata.c, 'w')
 		local f_meta = io.open(destination..'.meta', 'w')
@@ -180,6 +236,8 @@ local function check_send_mesh()
 	-- Reset the request
 	net[1] = 0
 	vcm.set_mesh_net(net)
+  -- Post process
+  postprocess()
 end
 
 local function update(meta, ranges)
@@ -201,6 +259,7 @@ local function update(meta, ranges)
   local scanlines = angle_to_scanlines(rad_angle)
 	local byte_sz = mesh:size(2) * ffi.sizeof'float'
 	local float_ranges = ffi.cast('float*', ranges)
+
 	local dest
   for _,line in ipairs(scanlines) do
 		if line >= 1 and line<=n_scanlines then

@@ -11,6 +11,11 @@ function state.entry()
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
+
+
+  mag_sweep, t_sweep = unpack(vcm.get_mesh_sweep())
+  min_pan = -mag_sweep/2
+  max_pan = mag_sweep/2
 end
 
 function state.update()
@@ -20,6 +25,15 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
+
+  local lidar_pos = Body.get_lidar_position()
+  Body.set_lidar_torque_enable(1)
+  if lidar_pos<0 then
+   Body.set_lidar_command_position(min_pan) 
+  else
+   Body.set_lidar_command_position(max_pan) 
+  end
+
 end
 
 function state.exit()

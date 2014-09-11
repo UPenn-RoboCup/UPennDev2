@@ -129,7 +129,7 @@ function h = show_monitor_sitevisit
         xlim(cam.f_yuyv,[0 nc]);
         ylim(cam.f_yuyv,[0 nr]);
         needs_draw = 1;
-    elseif strcmp(msg_id, 'chest_mesh')
+    elseif strcmp(msg_id, 'mesh0')
         % metadata
         n_scanlines = metadata.n_scanlines;
         n_returns = metadata.n_returns;
@@ -138,7 +138,7 @@ function h = show_monitor_sitevisit
         mesh_float = typecast(raw, 'single');
         
         % clamp on ranges
-        mesh_float(mesh_float>2) = 0;
+        mesh_float(mesh_float>2.5) = 0;
 %         mesh_float(mesh_float<0.1) = 0;
 
         mesh = reshape(mesh_float, [n_returns n_scanlines])';
@@ -164,7 +164,7 @@ function h = show_monitor_sitevisit
                       -sin(body_pitch)  cos(body_pitch)];
         
         
-        % dumb visualization
+        % Visualization
         figure(2)
         xs_new = xs; zs_new = zs;
         for i = 1:n_scanlines 

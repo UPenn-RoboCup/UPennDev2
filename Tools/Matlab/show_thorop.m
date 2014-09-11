@@ -139,46 +139,21 @@ while running
                 %raw = data(offset+1:end); % This must be uint8
                 
                 
-                if ~isfield(metadata, 'id')
-                    continue;
-                end
+                if ~isfield(metadata, 'id'); continue; end
+                
                 msg_id = char(metadata.id);
                 if strcmp(msg_id,'head_camera')
                     count_cam = count_cam + 1;
                     data_yuyv.meta = metadata;
                     data_yuyv.raw = raw;
                     data_yuyv.recv = true;
-                elseif strcmp(msg_id, 'chest_mesh')
+                elseif strcmp(msg_id, 'mesh0')
                     count_mesh = count_mesh + 1;
                     data_mesh.meta = metadata;
                     data_mesh.raw = raw;
                     data_mesh.recv = true;
                 end
                 
-                %                 if strcmp(msg_id,'world')
-                %                   count_world = count_world + 1;
-                %                   data_world.meta = metadata;
-                %                   data_world.raw = raw;
-                %                   data_world.recv = true;
-                %                 end
-                %                 if strcmp(msg_id,'detect')
-                %                   count_detect = count_detect + 1;
-                %                   data_detect.meta = metadata;
-                %                   data_detect.raw = raw;
-                %                   data_detect.recv = true;
-                %                 end
-                %                 if strcmp(msg_id,'labelA')
-                %                   count_labelA = count_labelA + 1;
-                %                   data_labelA.meta = metadata;
-                %                   data_labelA.raw = raw;
-                %                   data_labelA.recv = true;
-                %                 end
-                
-                
-                
-                %                 [has_draw] = process_monitor_message(metadata, raw, cam);
-                %                 if has_draw; needs_draw = 1; end;
-                % Get more data
                 
                 if has_more<1; break; end;
                 

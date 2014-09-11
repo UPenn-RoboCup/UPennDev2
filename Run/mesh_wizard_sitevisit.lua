@@ -40,8 +40,7 @@ local mesh_ch = stream.sub and si.new_publisher(stream.sub)
 print("OPERATOR", operator, stream.sub)
 
 local metadata = {
-  id = 'chest_mesh',
-	name = 'mesh0',
+	id = 'mesh0',
 	t = 0,
 }
 

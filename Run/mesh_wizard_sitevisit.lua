@@ -132,7 +132,10 @@ local function setup_mesh(meta)
 	metadata.pa = scan_a
   metadata.n_scanlines = n_scanlines
   metadata.n_returns = n_returns
+  metadata.lidarZ = 0.1
 	-- TODO: Add IMU for body orientation
+  metadata.bodyPitch = 3*DEG_TO_RAD
+  metadata.bodyRoll = 0
 end
 
 -- Convert a pan angle to a column of the chest mesh image

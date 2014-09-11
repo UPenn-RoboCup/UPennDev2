@@ -32,7 +32,7 @@ local exo = {
 Config.testfile = 'test_robocup'
 --]]
 
-----[[
+--[[
 --DRC Trials
 Config.libs = {
   ArmLib = 'DRCTrials',
@@ -59,7 +59,7 @@ local exo = {'Robot','Walk','Net','Manipulation',
 Config.testfile = 'test_sitevisit'
 --]]
 
-----[[
+--[[
 -- Teach robot to go up steps
 Config.libs = {
   MotionLib = 'RoboCup',

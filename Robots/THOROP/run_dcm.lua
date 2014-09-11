@@ -129,6 +129,8 @@ local function parse_ft(ft, raw_str, m_id)
 		ft.component[3] = 3.3 * ft.raw[3] / 4095 - ft.unloaded[3]
 	elseif m_id==ft.m_ids[2] then
 		ffi.copy(ft.raw, raw_str, 4)
+		local raw16_as_8 = ffi.cast('uint8_t*', ft.raw)
+    if m_id==23 and raw16_as_8[1]==0 then raw16_as_8[1] = 8 end
 		ft.component[4] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[4]
 		ft.component[5] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[5]
 	else

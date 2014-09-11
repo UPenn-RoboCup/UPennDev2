@@ -177,9 +177,7 @@ function h = show_monitor_sitevisit
 %             hold on;
         end
         
-        
-        %%% Pixelize the points
-        
+                
         % Grid params: meters
         grid_res = 0.02; 
         
@@ -209,14 +207,17 @@ function h = show_monitor_sitevisit
             proj_plane(ind(i)) = proj_plane(ind(i)) + zss(i);
         end
         
-        % take average on the plane
+        % Averaging the height
         proj_plane = proj_plane ./ p_count;
-        proj_plane(isnan(proj_plane(:))) = 0;
+        % remove NaN
+        free_ind = isnan(proj_plane(:));
+        proj_plane(free_ind) = 0;
+        
         
         % visual debug
         % imshow(proj_plane);
 
-        
+        % Z difference
         proj_dz = proj_plane(1:end-1, :) - proj_plane(2:end,:);
         proj_dz = [abs(proj_dz); zeros(1, size(proj_dz, 2))];
         
@@ -224,20 +225,46 @@ function h = show_monitor_sitevisit
 %         imshow(proj_dz);
         
         
-        % Convert to uint8
-        z_thres = 0.01; %TODO
-        proj_dz(proj_dz<z_thres) = 1;
+        % For connecting horizontal planes.. seems not necessary for now
+%         low_thes = 0.01; %TODO
+%         proj_dz(free_ind) = 2;  % so that free space is not in consideration
+%         proj_dz(proj_dz<low_thes) = 1;
+%         proj_dz(proj_dz~=1) = 0;
+
+        % For finding vertical wall
+        high_thres = 0.05; 
+        proj_dz(free_ind) = -2;  % so that free space is not in consideration
+        proj_dz(proj_dz>high_thres) = 1;
         proj_dz(proj_dz~=1) = 0;
+        
+        
 
         % visual debug
         imshow(proj_dz);
 
-        % connected regions TODO
-%         connected_regions(uint8(proj_dz), 1);
+        % connected regions: this doesn't give orientation
+        props = connected_regions(uint8(proj_dz), 1);
+        
+        for i=1:3
+            % plot the bounding box for debugging...
+            hold on;
+            bbox = props(i).boundingBox;
+            
+            bbox_xs = [bbox(1,1) bbox(2,1) bbox(2,1) bbox(1,1) bbox(1,1)];
+            bbox_ys = [bbox(1,2) bbox(1,2) bbox(2,2) bbox(2,2) bbox(1,2)];
+            
+            plot(bbox_ys, bbox_xs);
+        end
+        
+        hold off;
+
         
         
-        % or we can first cluster (using hist or something) and check connected components
-        % use edge detection and filter to a line? just a thought...
+        % For vertical wall, we can cheat since we know its with 10cm-20cm
+        % high...
+        
+        % use edge detection and filter to a line? something like line 
+        % detection in lua... just a thought
         
         
         hold off;

@@ -62,7 +62,7 @@ Config.testfile = 'test_sitevisit'
 --[[
 -- Teach robot to go up steps
 Config.libs = {
-  MotionLib = 'RoboCup',
+  MotionLib = 'Teach',
 }
 -- Precedence in loading, for overrides!
 local exo = {

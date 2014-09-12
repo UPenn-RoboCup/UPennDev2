@@ -139,7 +139,7 @@ function h = show_monitor_sitevisit
         
         % clamp on ranges
         mesh_float(mesh_float>2.5) = 0;
-%         mesh_float(mesh_float<0.1) = 0;
+        mesh_float(mesh_float<0.1) = 0;
 
         mesh = reshape(mesh_float, [n_returns n_scanlines])';
         % ray angles 
@@ -179,7 +179,7 @@ function h = show_monitor_sitevisit
         
                 
         % Grid params: meters
-        grid_res = 0.02; 
+        grid_res = 0.01; 
         
         xss = xs(:); yss = ys(:);  zss = zs(:);
         x_min = min(xss);  x_max = max(xss);
@@ -206,25 +206,73 @@ function h = show_monitor_sitevisit
             proj_plane(ind(i)) = proj_plane(ind(i)) + zss(i);
         end
         
-        % Averaging the height
-        proj_plane = proj_plane ./ p_count;
-        % remove NaN and track free space
-        free_ind = isnan(proj_plane(:));
-        proj_plane(free_ind) = 0;
+        % Get rid of the body part
+        p_count(1:0.2/grid_res, :) = 0;        
+        
+        thres1 = 0.3*max(p_count(:));
+%         thres2 = mean(p_count(:));
+        wall_ind = find(p_count(:)>thres1);
+        
+        hmap = zeros(size(p_count));
+        hmap(wall_ind)=1;
+        
+        imshow(hmap);
         
         
-        % visual debug
-%         imshow(proj_plane);
-%         colormap('hot');
+        % Retrieve the x, y info of the wall line
+        [wall_xis wall_yis] = ind2sub([size_x size_y], wall_ind);
+        % TODO: rounding u
+        wall_xs = wall_xis*grid_res + x_min;
+        wall_ys = wall_yis*grid_res + y_min;
+        
+        % Fit into a line
+        % Use polyfit for now, should be easy to implement in lua later
+        P = polyfit(wall_xis, wall_yis, 1);
+        line_angle = atan(P(1));
+        
+        xi_c = mean(wall_xis);
+        yi_c = mean(wall_yis);
+        
+        x1 = xi_c - 50*cos(line_angle);
+        x2 = xi_c + 50*cos(line_angle);
+        y1 = yi_c - 50*sin(line_angle);
+        y2 = yi_c + 50*sin(line_angle);
+        
+        hold on;
+        plot(yi_c, xi_c, 'y*')
+        plot([y2 y1], [x2 x1],'r');
+        hold off;
 
-        % Height difference
-        Jx = proj_plane(2:end, :) - proj_plane(1:end-1,:);
-        Jx = [ zeros(1, size(Jx, 2)); abs(Jx)];
         
-        Jy = proj_plane(:,2:end) - proj_plane(:,1:end-1);
-        Jy = [zeros(size(Jy,1), 1) abs(Jy)];
+        % Right now just use the center points as target
+        x_target = mean(wall_xs);
+        y_target = mean(wall_ys);
+               
+        norm_orientation = line_angle/pi*180 - 90;
+        
+        [x_target y_target norm_orientation]
         
         
+        
+%         % Averaging the height
+%         proj_plane = proj_plane ./ p_count;
+%         % remove NaN and track free space
+%         free_ind = isnan(proj_plane(:));
+%         proj_plane(free_ind) = 0;
+%         
+%         
+%         % visual debug
+% %         imshow(proj_plane);
+% %         colormap('hot');
+% 
+%         % Height difference
+%         Jx = proj_plane(2:end, :) - proj_plane(1:end-1,:);
+%         Jx = [ zeros(1, size(Jx, 2)); abs(Jx)];
+%         
+%         Jy = proj_plane(:,2:end) - proj_plane(:,1:end-1);
+%         Jy = [zeros(size(Jy,1), 1) abs(Jy)];
+%         
+%         
         % visual debug
 %         imshow(Jx);
         
@@ -235,34 +283,34 @@ function h = show_monitor_sitevisit
 %         proj_dz(proj_dz<low_thes) = 1;
 %         proj_dz(proj_dz~=1) = 0;
 
-        % For finding vertical wall
-        high_thres = 0.03;
-        Jx(Jx>high_thres) = 1; Jx(Jx~=1) = 0;
-        Jy(Jy>high_thres) = 1; Jy(Jy~=1) = 0;
-        % Find 'cliffs'
-%         wall_ind = (Jx==1) | (Jy==1);
-        wall_ind = Jx==1;
-        p_walls = zeros(size(Jx));
-        p_walls(wall_ind) = 1;
+%         % For finding vertical wall
+%         high_thres = 0.03;
+%         Jx(Jx>high_thres) = 1; Jx(Jx~=1) = 0;
+%         Jy(Jy>high_thres) = 1; Jy(Jy~=1) = 0;
+%         % Find 'cliffs'
+% %         wall_ind = (Jx==1) | (Jy==1);
+%         wall_ind = Jx==1;
+%         p_walls = zeros(size(Jx));
+%         p_walls(wall_ind) = 1;
         
-        % visual debug
-        imshow(p_walls);
-
-        % connected regions: this doesn't give orientation...
-        props = connected_regions(uint8(p_walls), 1);
-        
-        for i=1:3
-            % plot the bounding box for debugging...
-            hold on;
-            bbox = props(i).boundingBox;
-            
-            bbox_xs = [bbox(1,1) bbox(2,1) bbox(2,1) bbox(1,1) bbox(1,1)];
-            bbox_ys = [bbox(1,2) bbox(1,2) bbox(2,2) bbox(2,2) bbox(1,2)];
-            
-            plot(bbox_ys, bbox_xs);
-        end
-        
-        hold off;
+%         % visual debug
+%         imshow(p_walls);
+% 
+%         % connected regions: this doesn't give orientation...
+%         props = connected_regions(uint8(p_walls), 1);
+%         
+%         for i=1:3
+%             % plot the bounding box for debugging...
+%             hold on;
+%             bbox = props(i).boundingBox;
+%             
+%             bbox_xs = [bbox(1,1) bbox(2,1) bbox(2,1) bbox(1,1) bbox(1,1)];
+%             bbox_ys = [bbox(1,2) bbox(1,2) bbox(2,2) bbox(2,2) bbox(1,2)];
+%             
+%             plot(bbox_ys, bbox_xs);
+%         end
+%         
+%         hold off;
 
         
         
@@ -271,10 +319,7 @@ function h = show_monitor_sitevisit
         
         % use edge detection and filter to a line? something like line 
         % detection in lua... just a thought
-        
-        
-        hold off;
-        
+                
         
     end
   end

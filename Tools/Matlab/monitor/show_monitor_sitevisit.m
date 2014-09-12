@@ -187,14 +187,13 @@ function h = show_monitor_sitevisit
         size_x = ceil((x_max - x_min) /grid_res);
         size_y = ceil((y_max - y_min) /grid_res);
         
+        % Subscripts
         xis = ceil((xss - x_min) / grid_res);
         yis = ceil((yss - y_min) / grid_res);
+        % Boundaries check
+        xis(xis>size_x) = size_x;    xis(xis<=0) = 1;
+        yis(yis>size_y) = size_y;    yis(yis<=0) = 1;
         
-        % check is max of xis/yis is exceeding grid size
-        xis(xis>size_x) = size_x;
-        xis(xis<=0) = 1;
-        yis(yis>size_y) = size_y;
-        yis(yis<=0) = 1;
         % Linear indices
         ind = sub2ind([size_x size_y], xis, yis);
         
@@ -209,20 +208,25 @@ function h = show_monitor_sitevisit
         
         % Averaging the height
         proj_plane = proj_plane ./ p_count;
-        % remove NaN
+        % remove NaN and track free space
         free_ind = isnan(proj_plane(:));
         proj_plane(free_ind) = 0;
         
         
         % visual debug
-        % imshow(proj_plane);
+%         imshow(proj_plane);
+%         colormap('hot');
 
-        % Z difference
-        proj_dz = proj_plane(1:end-1, :) - proj_plane(2:end,:);
-        proj_dz = [abs(proj_dz); zeros(1, size(proj_dz, 2))];
+        % Height difference
+        Jx = proj_plane(2:end, :) - proj_plane(1:end-1,:);
+        Jx = [ zeros(1, size(Jx, 2)); abs(Jx)];
+        
+        Jy = proj_plane(:,2:end) - proj_plane(:,1:end-1);
+        Jy = [zeros(size(Jy,1), 1) abs(Jy)];
+        
         
         % visual debug
-%         imshow(proj_dz);
+%         imshow(Jx);
         
         
         % For connecting horizontal planes.. seems not necessary for now
@@ -232,18 +236,20 @@ function h = show_monitor_sitevisit
 %         proj_dz(proj_dz~=1) = 0;
 
         % For finding vertical wall
-        high_thres = 0.05; 
-        proj_dz(free_ind) = -2;  % so that free space is not in consideration
-        proj_dz(proj_dz>high_thres) = 1;
-        proj_dz(proj_dz~=1) = 0;
+        high_thres = 0.03;
+        Jx(Jx>high_thres) = 1; Jx(Jx~=1) = 0;
+        Jy(Jy>high_thres) = 1; Jy(Jy~=1) = 0;
+        % Find 'cliffs'
+%         wall_ind = (Jx==1) | (Jy==1);
+        wall_ind = Jx==1;
+        p_walls = zeros(size(Jx));
+        p_walls(wall_ind) = 1;
         
-        
-
         % visual debug
-        imshow(proj_dz);
+        imshow(p_walls);
 
-        % connected regions: this doesn't give orientation
-        props = connected_regions(uint8(proj_dz), 1);
+        % connected regions: this doesn't give orientation...
+        props = connected_regions(uint8(p_walls), 1);
         
         for i=1:3
             % plot the bounding box for debugging...

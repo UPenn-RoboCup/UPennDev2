@@ -1,0 +1,52 @@
+#VRML_SIM V6.4.3 utf8
+WorldInfo {
+  info [
+    "World for the Adult size soccer league"
+  ]
+  title "THORwIn RoboCup"
+  basicTimeStep 8
+  FPS 15
+}
+Viewpoint {
+  orientation -0.190779 0.96655 0.17142 1.45785
+  position 5.90301 2.62259 0.607004
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 0.8
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR Floor {
+  tileSize 2 2
+  texture [
+    "textures/texture_grid.png"
+  ]
+}
+DEF BLOCK QualStep {
+  translation -0.2 0.075 0
+}
+DEF BALL_LEFT BallGPS_Landmark {
+  translation 0 0.109919 0.55
+  radius 0.11
+}
+DEF BALL_RIGHT BallGPS_Landmark {
+  translation 0 0.109919 -0.55
+  radius 0.11
+}
+THOROP_UPENN {
+  translation 0.3 1.155 -0.14128
+  rotation 0 1 0 -1.3
+  controller "thorop"
+  controllerArgs "0 32"
+  cameraWindowPosition 0.24238 0.191898
+}

@@ -35,16 +35,16 @@ DEF FLOOR Floor {
 DEF BLOCK QualStep {
   translation -0.2 0.075 0
 }
-DEF BALL_LEFT BallGPS_Landmark {
-  translation 0 0.109919 0.55
-  radius 0.11
-}
-DEF BALL_RIGHT BallGPS_Landmark {
-  translation 0 0.109919 -0.55
-  radius 0.11
-}
+#DEF BALL_LEFT BallGPS_Landmark {
+#  translation 0 0.109919 0.55
+#  radius 0.11
+#}
+#DEF BALL_RIGHT BallGPS_Landmark {
+#  translation 0 0.109919 -0.55
+#  radius 0.11
+#}
 THOROP_UPENN {
-  translation 0.3 1.155 -0.14128
+  translation 1 1.155 -0.2
   rotation 0 1 0 -1.3
   controller "thorop"
   controllerArgs "0 32"

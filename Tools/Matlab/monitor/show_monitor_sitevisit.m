@@ -173,9 +173,10 @@ function h = show_monitor_sitevisit
             xs(i,:) = new_xz(1,:);
             zs(i,:) = new_xz(2,:) + 1;  %TODO: bodyHeight
   
-%             plot3(xs(i,:), ys(i,:), zs(i,:), '.');
-%             hold on;
+            plot3(xs(i,:), ys(i,:), zs(i,:), '.');
+            hold on;
         end
+        hold off;
         
                 
         % Grid params: meters
@@ -209,13 +210,14 @@ function h = show_monitor_sitevisit
         % Get rid of the body part
         p_count(1:0.2/grid_res, :) = 0;        
         
-        thres1 = 0.3*max(p_count(:));
+        thres1 = 0.6*max(p_count(:));
 %         thres2 = mean(p_count(:));
         wall_ind = find(p_count(:)>thres1);
         
         hmap = zeros(size(p_count));
         hmap(wall_ind)=1;
         
+        figure(3);
         imshow(hmap);
         
         
@@ -248,9 +250,9 @@ function h = show_monitor_sitevisit
         x_target = mean(wall_xs);
         y_target = mean(wall_ys);
                
-        norm_orientation = line_angle/pi*180 - 90;
-        
-        [x_target y_target norm_orientation]
+        yaw_target = line_angle/pi*180 - 90;
+        % TODO: filter angle into -pi/2, pi/2
+        [x_target y_target yaw_target]
         
         
         

@@ -47,7 +47,7 @@ local command2=
   
 
 local function show_status()
-  os.execute('clear')
+	if not IS_WEBOTS then os.execute('clear') end
   print("Game role:",gcm.get_game_role())
   print("Game state:",gcm.get_game_state())
 

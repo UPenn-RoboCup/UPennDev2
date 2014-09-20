@@ -229,7 +229,7 @@ if( len >= sizeof(RoboCupGameControlData) ){
 
 }
 
-static const struct luaL_reg GameControlReceiver_lib [] = {
+static const struct luaL_Reg GameControlReceiver_lib [] = {
   {"receive", lua_gamecontrolpacket_receive},
   //{"parse", lua_gamecontrolpacket_parse},
   {NULL, NULL}
@@ -239,7 +239,11 @@ static const struct luaL_reg GameControlReceiver_lib [] = {
 extern "C"
 #endif
 int luaopen_GameControlReceiver (lua_State *L) {
+#if LUA_VERSION_NUM == 502
+	luaL_newlib(L, GameControlReceiver_lib);
+#else
   luaL_register(L, "GameControlReceiver", GameControlReceiver_lib);
+#endif
 
   return 1;
 }

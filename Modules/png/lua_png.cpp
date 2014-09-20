@@ -642,7 +642,7 @@ static int lua_png_uncompress(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg png_Functions [] = {
+static const struct luaL_Reg png_Functions [] = {
   {"new", lua_png_new},
   {"load", lua_png_load},
   {"save", lua_png_save},
@@ -651,7 +651,7 @@ static const struct luaL_reg png_Functions [] = {
   {NULL, NULL}
 };
 
-static const struct luaL_reg png_Methods [] = {
+static const struct luaL_Reg png_Methods [] = {
   {"pointer", lua_png_pointer},
   {"read", lua_png_read},
   {"write", lua_png_write},

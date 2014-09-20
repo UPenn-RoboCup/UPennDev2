@@ -17,6 +17,8 @@ local t_entry, t_update, t_last_step
 local uTorso, uLeft, uRight
 local zLeft, zRight = 0, 0
 local side
+local relTorso, relX, relY, relR
+local dTorsoScale = 0.0005
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -30,6 +32,12 @@ function state.entry()
   side = mcm.get_teach_sway()
   side = side=='none' and 'left' or side
   print('Lean to the', side)
+  relTorso = util.pose_relative(uLeft, uRight)
+  relR = math.sqrt(relTorso.x^2+relTorso.y^2)
+  relX = dTorsoScale * relTorso.x / relR
+  relY = dTorsoScale * relTorso.y / relR
+  print(relTorso, relX, relY)
+  dTorso = vector.pose{relX, relY, 0}
 end
 
 function state.update()
@@ -45,8 +53,9 @@ function state.update()
   
   -- Check the CoM first
   if side=='left' then
+    -- left is the frame
     if l_ft[3] < 3*r_ft[3] then
-      uTorso = uTorso + vector.new{0,0.0005,0}
+      uTorso = uTorso + dTorso
       mcm.set_status_uTorso(uTorso)
     else
       return'done'
@@ -55,7 +64,7 @@ function state.update()
     --print('L FT', l_ft)
     --print('R FT', r_ft)
     if r_ft[3] < 3*l_ft[3] then
-      uTorso = uTorso - vector.new{0,0.0005,0}
+      uTorso = uTorso - dTorso
       mcm.set_status_uTorso(uTorso)
     else
       return'done'

@@ -239,9 +239,9 @@ local slow_p_tolerance = {
 }
 local slow_qleg_tolerance = vector.ones(6) * DEG_TO_RAD
 -- How far away to tell the P controller to go in one step
-local dqLegSz = vector.new{1, 1, 4.5, 9, 4.5, 1} * DEG_TO_RAD
+local dqLegSz = vector.new{1, 1, 4.5, 9, 4.5, 1} * DEG_TO_RAD * 1e-2
 -- Same, but via IK
-local dpTorsoSz = vector.new{4, 3, 3, 40, 40, 40} * 1e-3
+local dpTorsoSz = vector.new{4, 3, 3, 40, 40, 40} * 1e-5
 
 local function set_lower_body_slowly(pTorso, pLLeg, pRLeg)
   -- Deal with the leg bias
@@ -249,8 +249,8 @@ local function set_lower_body_slowly(pTorso, pLLeg, pRLeg)
   local legBiasL = vector.slice(legBias, 1, 6)
   local legBiasR = vector.slice(legBias, 7, 12)
   -- Where are we actually?
-  local qL = .7 * Body.get_lleg_position() + .3 * Body.get_lleg_command_position()
-  local qR = .7 * Body.get_rleg_position() + .3 * Body.get_rleg_command_position()
+  local qL = Body.get_lleg_command_position()
+  local qR = Body.get_rleg_command_position()
   local qLLegActual = qL - legBiasL
   local qRLegActual = qR - legBiasR
   -- How far away from the torso are the legs currently?

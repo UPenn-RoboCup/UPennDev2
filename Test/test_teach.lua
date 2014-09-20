@@ -20,7 +20,7 @@ lower_lut['q'] = function()
 end
 
 local function show_status()
-  os.execute('clear')
+  if not IS_WEBOTS then os.execute('clear') end
   print(util.color('Teach a bot', 'magenta'))
 end
 

@@ -643,7 +643,7 @@ static int lua_jpeg_index(lua_State *L) {
 	return 1;
 }
 
-static const struct luaL_reg jpeg_Methods [] = {
+static const struct luaL_Reg jpeg_Methods [] = {
   {"compress", lua_jpeg_compress},
 	{"compress_crop", lua_jpeg_compress_crop},
 	{"quality", lua_jpeg_quality},
@@ -654,7 +654,7 @@ static const struct luaL_reg jpeg_Methods [] = {
   {NULL, NULL}
 };
 
-static const struct luaL_reg jpeg_Functions [] = {
+static const struct luaL_Reg jpeg_Functions [] = {
 	{"compressor", lua_jpeg_new_compressor},
   {NULL, NULL}
 };

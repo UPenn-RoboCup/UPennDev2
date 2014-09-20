@@ -365,6 +365,7 @@ if IS_WEBOTS then
 		set_pos = webots.wb_servo_set_position
 		get_pos = webots.wb_servo_get_position
 	end
+  local PID_P = 32 * vector.ones(nJoint)
 	function Body.entry()
     -- Request @ t=0 to always be earlier than position reads
 
@@ -421,11 +422,19 @@ if IS_WEBOTS then
 
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
+    
+    -- PID setting
+    Body.set_position_p(PID_P)
 
 		local rad, val
 		local positions = vector.zeros(nJoint)
+    
     for idx, jtag in ipairs(tags.joints) do
       if jtag>0 then
+        -- Update the PID if necessary
+        if not OLD_API then
+          webots.wb_motor_set_control_pid(jtag, PID_P[idx], 0, 0)
+        end
 				val = get_pos(jtag)
         rad = servo.direction[idx] * val - servo.rad_offset[idx]
 				rad = rad==rad and rad or 0
@@ -473,6 +482,16 @@ if IS_WEBOTS then
 			--]]
 
 			if en>0 and jtag>0 then
+        -- Update the PID
+        if not OLD_API then
+          local new_P, old_P = Body.get_position_p()[idx], PID_P[idx]
+          if new_P ~= old_P then
+            print('UPDATE P!', idx, old_P, new_P)
+            PID_P[idx] = new_P
+            webots.wb_motor_set_control_pid(jtag, new_P, 0, 0)
+          end
+        end
+        
         local rad = servo.direction[idx] * (cmd + servo.rad_offset[idx])
         set_pos(jtag, rad)
 --SJ: Webots is STUPID so we should set direction correctly to prevent flip        

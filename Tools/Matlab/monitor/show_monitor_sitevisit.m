@@ -138,8 +138,8 @@ function h = show_monitor_sitevisit
         mesh_float = typecast(raw, 'single');
         
         % clamp on ranges
-        mesh_float(mesh_float>2.5) = 0;
-%         mesh_float(mesh_float<0.1) = 0;
+        mesh_float(mesh_float>5) = 0;
+        mesh_float(mesh_float<0.1) = 0;
 
         mesh = reshape(mesh_float, [n_returns n_scanlines])';
         % ray angles 
@@ -154,9 +154,9 @@ function h = show_monitor_sitevisit
 
         
         % Convert to x, y, z
-        xs = bsxfun(@times, cos(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
-        ys = bsxfun(@times, sin(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
-        zs = -1*bsxfun(@times, mesh, sin(v_angles)) + metadata.lidarZ;
+        xs0 = bsxfun(@times, cos(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
+        ys0 = bsxfun(@times, sin(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
+        zs0 = -1*bsxfun(@times, mesh, sin(v_angles)) + metadata.lidarZ;
         
         % Body orientation
         body_pitch = metadata.bodyPitch;
@@ -166,19 +166,162 @@ function h = show_monitor_sitevisit
         
         % Visualization
         figure(2)
-        xs_new = xs; zs_new = zs;
+        xs = xs0; ys = ys0; zs = zs0;
         for i = 1:n_scanlines 
             % TODO: better factorization
-            new_xz = body_trans*[xs(1,:); zs(1,:)];
-            xs_new(i,:) = new_xz(1,:);
-            zs_new(i,:) = new_xz(2,:) + 1;  %TODO: bodyHeight
-
-            plot3(xs_new(i,:), ys(i,:), zs_new(i,:), '.');
+            new_xz = body_trans*[xs0(i,:); zs0(i,:)];
+            xs(i,:) = new_xz(1,:);
+            zs(i,:) = new_xz(2,:) + 1;  %TODO: bodyHeight
+  
+            plot3(xs(i,:), ys(i,:), zs(i,:), '.');
             hold on;
         end
-        
         hold off;
         
+                
+        % Grid params: meters
+        grid_res = 0.01; 
+        
+        xss = xs(:); yss = ys(:);  zss = zs(:);
+        x_min = min(xss);  x_max = max(xss);
+        y_min = min(yss);  y_max = max(yss);
+        size_x = ceil((x_max - x_min) /grid_res);
+        size_y = ceil((y_max - y_min) /grid_res);
+        
+        % Subscripts
+        xis = ceil((xss - x_min) / grid_res);
+        yis = ceil((yss - y_min) / grid_res);
+        % Boundaries check
+        xis(xis>size_x) = size_x;    xis(xis<=0) = 1;
+        yis(yis>size_y) = size_y;    yis(yis<=0) = 1;
+        
+        % Linear indices
+        ind = sub2ind([size_x size_y], xis, yis);
+        
+        
+        % TODO: dumb loop for now
+        proj_plane = zeros(size_x, size_y);
+        p_count = zeros(size_x, size_y);
+        for i=1:length(ind)
+            p_count(ind(i)) = p_count(ind(i)) + 1;
+            proj_plane(ind(i)) = proj_plane(ind(i)) + zss(i);
+        end
+        
+        % Get rid of the body part
+        p_count(1:0.2/grid_res, :) = 0;        
+        
+        thres1 = 0.6*max(p_count(:));
+%         thres2 = mean(p_count(:));
+        wall_ind = find(p_count(:)>thres1);
+        
+        hmap = zeros(size(p_count));
+        hmap(wall_ind)=1;
+        
+        figure(3);
+        imshow(hmap);
+        
+        
+        % Retrieve the x, y info of the wall line
+        [wall_xis wall_yis] = ind2sub([size_x size_y], wall_ind);
+        % TODO: rounding u
+        wall_xs = wall_xis*grid_res + x_min;
+        wall_ys = wall_yis*grid_res + y_min;
+        
+        % Fit into a line
+        % Use polyfit for now, should be easy to implement in lua later
+        P = polyfit(wall_xis, wall_yis, 1);
+        line_angle = atan(P(1));
+        
+        xi_c = mean(wall_xis);
+        yi_c = mean(wall_yis);
+        
+        x1 = xi_c - 50*cos(line_angle);
+        x2 = xi_c + 50*cos(line_angle);
+        y1 = yi_c - 50*sin(line_angle);
+        y2 = yi_c + 50*sin(line_angle);
+        
+        hold on;
+        plot(yi_c, xi_c, 'y*')
+        plot([y2 y1], [x2 x1],'r');
+        hold off;
+
+        
+        % Right now just use the center points as target
+        x_target = mean(wall_xs);
+        y_target = mean(wall_ys);
+               
+        yaw_target = line_angle/pi*180 - 90;
+        % TODO: filter angle into -pi/2, pi/2
+        [x_target y_target yaw_target]
+        
+        
+        
+%         % Averaging the height
+%         proj_plane = proj_plane ./ p_count;
+%         % remove NaN and track free space
+%         free_ind = isnan(proj_plane(:));
+%         proj_plane(free_ind) = 0;
+%         
+%         
+%         % visual debug
+% %         imshow(proj_plane);
+% %         colormap('hot');
+% 
+%         % Height difference
+%         Jx = proj_plane(2:end, :) - proj_plane(1:end-1,:);
+%         Jx = [ zeros(1, size(Jx, 2)); abs(Jx)];
+%         
+%         Jy = proj_plane(:,2:end) - proj_plane(:,1:end-1);
+%         Jy = [zeros(size(Jy,1), 1) abs(Jy)];
+%         
+%         
+        % visual debug
+%         imshow(Jx);
+        
+        
+        % For connecting horizontal planes.. seems not necessary for now
+%         low_thes = 0.01; %TODO
+%         proj_dz(free_ind) = 2;  % so that free space is not in consideration
+%         proj_dz(proj_dz<low_thes) = 1;
+%         proj_dz(proj_dz~=1) = 0;
+
+%         % For finding vertical wall
+%         high_thres = 0.03;
+%         Jx(Jx>high_thres) = 1; Jx(Jx~=1) = 0;
+%         Jy(Jy>high_thres) = 1; Jy(Jy~=1) = 0;
+%         % Find 'cliffs'
+% %         wall_ind = (Jx==1) | (Jy==1);
+%         wall_ind = Jx==1;
+%         p_walls = zeros(size(Jx));
+%         p_walls(wall_ind) = 1;
+        
+%         % visual debug
+%         imshow(p_walls);
+% 
+%         % connected regions: this doesn't give orientation...
+%         props = connected_regions(uint8(p_walls), 1);
+%         
+%         for i=1:3
+%             % plot the bounding box for debugging...
+%             hold on;
+%             bbox = props(i).boundingBox;
+%             
+%             bbox_xs = [bbox(1,1) bbox(2,1) bbox(2,1) bbox(1,1) bbox(1,1)];
+%             bbox_ys = [bbox(1,2) bbox(1,2) bbox(2,2) bbox(2,2) bbox(1,2)];
+%             
+%             plot(bbox_ys, bbox_xs);
+%         end
+%         
+%         hold off;
+
+        
+        
+        % For vertical wall, we can cheat since we know its with 10cm-20cm
+        % high...
+        
+        % use edge detection and filter to a line? something like line 
+        % detection in lua... just a thought
+                
         
     end
   end

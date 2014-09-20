@@ -13,6 +13,7 @@ local arm_ch    = simple_ipc.new_publisher('ArmFSM!')
 local head_ch   = simple_ipc.new_publisher('HeadFSM!')
 local lidar_ch  = simple_ipc.new_publisher('LidarFSM!')
 local motion_ch = simple_ipc.new_publisher('MotionFSM!')
+require'wcm'
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -36,7 +37,8 @@ function state.entry()
 
   arm_ch:send'init'
   motion_ch:send'stand'
-  lidar_ch:send'pansingle'
+  --lidar_ch:send'pansingle'
+  lidar_ch:send'pan'
 
 end
 

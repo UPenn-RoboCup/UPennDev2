@@ -16,6 +16,37 @@ Config.dev = {
 	gender       = 'boy',
 }
 
+Config.use_localhost = false
+if IS_WEBOTS then
+  -- Tune which wizards to run in webots
+  Config.wizards = {}
+  Config.wizards.mesh = 'mesh_wizard'
+  Config.wizards.world = 'world_wizard'
+  Config.wizards.camera = 'camera_wizard'
+  Config.wizards.test = 'post_mesh_wizard'
+  --Config.wizards.slam = 'slam_wizard'
+  -- Adjust the tiemsteps if desired
+  --Config.camera_timestep = 33
+  --Config.lidar_timestep = 200 --slower
+  Config.use_localhost = true
+end
+
+-- Printing of debug messages
+Config.debug = {
+	webots_wizard = false,	
+  obstacle = false,
+  follow = false,	
+  approach = false,
+  planning = false,
+  goalpost = false,
+}
+
+-- Monitor and logging
+Config.enable_monitor = true
+Config.enable_log = false
+Config.use_log = false
+Config.torque_legs = true
+
 --SJ: now we can choose which config, fsm and mid-level libraries to use
 
 --Robocup 
@@ -53,6 +84,7 @@ Config.libs = {
   MotionLib = 'RoboCup',
   World = 'SiteVisit'   
 }
+--Config.wizards.mesh = 'mesh_wizard_sitevisit'
 local exo = {'Robot','Walk','Net','Manipulation',
 'FSM_SiteVisit','World_DRCTrials','Vision_DRCTrials'
 }
@@ -71,44 +103,11 @@ local exo = {
 Config.testfile = 'test_teach'
 --]]
 
-
 --Add path to selected librares
 for i,sm in pairs(Config.libs) do
   local pname = {HOME, '/Player/', i,'/' ,sm, '/?.lua;', package.path}
   package.path = table.concat(pname)
 end
-
--- Printing of debug messages
-Config.debug = {
-	webots_wizard=false,	
-  obstacle = false,
-  follow = false,	
-  approach = false,
-  planning = false,
-  goalpost = false,
-}
-
-Config.use_localhost = false
-if IS_WEBOTS then
-  -- Tune which wizards to run in webots
-  Config.wizards = {}
-  --Config.wizards.mesh = 'mesh_wizard'
-  Config.wizards.mesh = 'mesh_wizard_sitevisit'
-  Config.wizards.world = 'world_wizard'
-  Config.wizards.camera = 'camera_wizard'
-  Config.wizards.test = 'post_mesh_wizard'
-  --Config.wizards.slam = 'slam_wizard'
-  -- Adjust the tiemsteps if desired
-  --Config.camera_timestep = 33
-  --Config.lidar_timestep = 200 --slower
-  Config.use_localhost = true
-end
-
--- Monitor and logging
-Config.enable_monitor = true
-Config.enable_log = false
-Config.use_log = false
-Config.torque_legs = true
 
 -- Complementary Configs --
 -- Load each exogenous Config file
@@ -123,5 +122,8 @@ for _,v in ipairs(exo) do
   require(table.concat(fname))
 	--]]
 end
+
+Config.use_gps_pose = false
+Config.use_imu_yaw = true
 
 return Config

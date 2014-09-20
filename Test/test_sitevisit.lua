@@ -22,6 +22,7 @@ local gcm_names={
   util.color('Untorqued','red'),    
   util.color('Test','blue'),    
 }
+--[[
 local command1='\nKey commands:\n'
   ..'1 : game Initial\n'
   ..'3 : game Set\n'
@@ -44,7 +45,9 @@ local command2=
 ..'9 : start walking\n'
 ..'a : Enter attacker mode\n'
 ..'g : Enter goalie mode\n'
-  
+  --]]
+
+  local command1,command2 = '',''
 
 local function show_status()
   os.execute('clear')
@@ -105,6 +108,9 @@ local function update(key_code)
 	elseif key_char_lower==("x") then      
 		motion_ch:send'getup'
 
+	elseif key_char_lower==("e") then      
+		body_ch:send'footrace'		
+
 
 	elseif key_char_lower==("=") then      
 		hcm.set_state_proceed(1)
@@ -154,10 +160,8 @@ if ... and type(...)=='string' then
 	return {entry=nil, update=update, exit=nil}
 end
 
-vcm.set_mesh_sweep({15*math.pi/180,1.0})
-
-
-
+-- Field of View and timing for the mesh
+vcm.set_mesh_sweep({40*DEG_TO_RAD, 1.0})
 
 local getch = require'getch'
 local running = true

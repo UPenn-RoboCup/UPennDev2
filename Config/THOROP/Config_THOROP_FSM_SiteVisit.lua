@@ -48,6 +48,8 @@ fsm.Body = {
 
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
   {'bodyStop', 'approach', 'bodyBlockApproach'},
+  {'bodyStop', 'footrace', 'bodyFootRace'},
+
 
   {'bodyStop', 'stepover', 'bodyStepOver'},
 
@@ -55,7 +57,12 @@ fsm.Body = {
 --  {'bodyStepWaypoint',   'done', 'bodyStop'},
 
   {'bodyBlockApproach', 'done', 'bodyBlockWait'},
-  {'bodyBlockWait', 'done', 'bodyStepOver'},
+--  {'bodyBlockWait', 'done', 'bodyStepOver'},
+  {'bodyBlockWait', 'done', 'bodyStop'},
+
+
+  {'bodyFootRace', 'done', 'bodyStop'},
+
 }
 
 fsm.Arm = {

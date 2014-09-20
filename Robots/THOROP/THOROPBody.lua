@@ -360,6 +360,7 @@ if IS_WEBOTS then
   }
 	-- Check if we are using the OLD api
 	local OLD_API = webots.wb_device_get_type(webots.wb_robot_get_device(jointNames[1]))==89
+
 	local set_pos, get_pos = webots.wb_motor_set_position, webots.wb_motor_get_position
 	if OLD_API then
 		set_pos = webots.wb_servo_set_position
@@ -431,7 +432,7 @@ if IS_WEBOTS then
     for idx, jtag in ipairs(tags.joints) do
       if jtag>0 then
         -- Update the PID if necessary
-        if not OLD_API then
+        if not OLD_API and webots.wb_motor_set_control_pid then
           webots.wb_motor_set_control_pid(jtag, PID_P[idx], 0, 0)
         end
 				val = get_pos(jtag)

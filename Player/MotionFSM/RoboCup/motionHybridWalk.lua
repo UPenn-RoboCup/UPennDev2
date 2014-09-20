@@ -55,10 +55,6 @@ local update_odometry = function(uTorso_in)
   
   wcm.set_robot_utorso1(uTorso_in)--updae odometry variable
 
-  local odom_mode = wcm.get_robot_odom_mode();
-  if odom_mode==0 then wcm.set_robot_pose(pose_odom)
-  else wcm.set_robot_pose(wcm.get_slam_pose())
-  end
 
 end
 

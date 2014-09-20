@@ -73,10 +73,15 @@ local function update()
     else uOdometry0 = uOdometry end
     uOdometry = mcm.get_status_odometry()
     dOdometry = util.pose_relative(uOdometry,uOdometry0)
-    lW.update_odometry(dOdometry)
+    lW.update(dOdometry)
     
-    -- Update the pose here
-    wcm.set_robot_pose(lW.get_pose())
+--  Update the pose here
+--  SJ: now done in libworld, not here
+--  wcm.set_robot_pose(lW.get_pose())
+
+
+
+
   end
   t = get_time()
 	if ENABLE_SEND and t-t_send > send_interval then

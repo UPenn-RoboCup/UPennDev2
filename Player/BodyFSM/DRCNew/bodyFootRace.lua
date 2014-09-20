@@ -74,7 +74,7 @@ function state.update()
 
   --add 0.2 sec delay (to wait for pose reset at world)
   if phase==0 then
-   if t-t_entry<0.2 then return end
+   if t-t_entry<0.8 then return end
    phase=1
   end
 

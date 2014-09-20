@@ -392,13 +392,30 @@ if not IS_WEBOTS then
   walk.supportX = 0.05 --After fixing the waist
 end
 
---Quick fix for 33ms world (with 7dof arms)
-if IS_WEBOTS then
-  walk.supportY = 0.09
-end
 
 Config.supportY_preview = -0.02
 Config.supportY_preview2 = -0.01
+
+
+--Quick fix for 33ms world (with 7dof arms)
+if IS_WEBOTS then
+  walk.supportY = 0.09
+else
+  --quick fix with 7dof arm (lil slower)
+  walk.velLimitX = {-.10,.10} 
+--  walk.torsoX = 0.02     -- com-to-body-center offset
+  walk.torsoX = 0.0     -- com-to-body-center offset
+  walk.supportX = 0.07 --better
+  walk.supportY = 0.07
+
+--  Config.supportY_preview = -0.02
+--  Config.supportY_preview2 = -0.01
+
+  Config.supportY_preview = -0.03
+  Config.supportY_preview2 = -0.02
+
+end
+
 
 ------------------------------------
 -- Associate with the table

@@ -21,19 +21,24 @@ local t_entry, t_update, t_last_step
 local qLArm0, qRArm0,qLLeg0,qRLeg0,qWaist0
 local qLArm1, qRArm1,qLLeg1,qRLeg1,qWaist1
 
+
+
+local slow_down_factor = 2
+
+
 local keyframe={
   {
-    qLArm = {150,0,0,-140,   90,70,0},
-    qRArm = {150,0,0,-140,   -90,-70,0},
+    qLArm = {150,10,0,-140,   90,70,0},
+    qRArm = {150,-10,0,-140,   -90,-70,0},
     qWaist={0,0},
-    duration = 2.0,
+    duration = 2.0*slow_down_factor,
   },
   {    
-    qLArm = {130,0,0,-140,   90,70,0},
-    qRArm = {130,0,0,-140,   -90,-70,0},    
+    qLArm = {130,5,0,-140,   90,70,0},
+    qRArm = {130,-5,0,-140,   -90,-70,0},    
     qLLeg={0,0,15,30,-100,0},
     qRLeg={0,0,15,30,-100,0},
-    duration = 4.0,
+    duration = 4.0*slow_down_factor,
   },
 
   {    
@@ -42,7 +47,7 @@ local keyframe={
     qLLeg={0,0,-45,90,-100,0},
     qRLeg={0,0,-45,90,-100,0},
     qWaist={0,-45},
-    duration = 4.0,
+    duration = 4.0*slow_down_factor,
   },
   
  {    
@@ -51,29 +56,29 @@ local keyframe={
     qLLeg={0,0,-85,160,-100,0},
     qRLeg={0,0,-85,160,-100,0},
     qWaist={0,-60},
-    duration = 4.0,
+    duration = 4.0*slow_down_factor,
   },
   
 --larm fold back 
   {    
     qLArm = {40,0,0,  -100,   90,  30,0},    
-    duration = 2.0,
+    duration = 2.0*slow_down_factor,
   },
 --larm place 
   {    
     qLArm = {35,0,0,  -70,   90,  0,0},    
-    duration = 2.0,
+    duration = 2.0*slow_down_factor,
   },
 
 --rarm fold back 
   {    
     qRArm = {40,0,0,  -100,   -90,  -30,0},    
-    duration = 2.0,
+    duration = 2.0*slow_down_factor,
   },
 --rarm place 
   {    
     qRArm = {35,0,0,  -70,   -90,  0,0},    
-    duration = 2.0,
+    duration = 2.0*slow_down_factor,
   },
 
 
@@ -82,7 +87,7 @@ local keyframe={
     qLArm = {50,0,0,  -20,   90,  0,0},    
     qRArm = {50,0,0,  -20,   -90,  0,0},    
     qWaist={0,-20},
-    duration = 4.0,
+    duration = 4.0*slow_down_factor,
   },
 
 --arm backward
@@ -90,14 +95,14 @@ local keyframe={
     qLArm = {130,0,0,  0,   90,  0,0},    
     qRArm = {130,0,0,  0,   -90,  0,0},            
     qWaist={0,-0},
-    duration = 4.0,
+    duration = 4.0*slow_down_factor,
   },
 
 --torso straight
   {    
     qLLeg={0,0,-50,160,-100,0},
     qRLeg={0,0,-50,160,-100,0},
-    duration = 4.0,
+    duration = 4.0*slow_down_factor,
   },
 
 --Stand up
@@ -106,7 +111,7 @@ local keyframe={
     qRArm = {140, -21, 5, -98, -42, -16, -62},    
     qLLeg={0,0,-40,80,-45,0},
     qRLeg={0,0,-40,80,-45,0},
-    duration = 4.0,
+    duration = 4.0*slow_down_factor,
   }
 }
 
@@ -151,7 +156,7 @@ function state.update()
   if stage==0 or 
    (t_diff>keyframe[stage].duration and hcm.get_state_proceed()==1) 
     then
---    hcm.set_state_proceed(0)
+    hcm.set_state_proceed(0)
     t_start=t
     stage = stage +1
     if stage > #keyframe then return "done" end

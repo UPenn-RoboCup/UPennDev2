@@ -12,6 +12,7 @@ local p_compress = require'png'.compress
 local j_compress = require'jpeg'.compressor'gray'
 local vector = require'vector'
 require'vcm'
+require'Body'
 
 -- Shared with LidarFSM
 -- t_sweep: Time (seconds) to fulfill scan angles in one sweep

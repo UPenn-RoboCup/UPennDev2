@@ -616,7 +616,9 @@ if IS_WEBOTS then
 			local fov = webots.wb_camera_get_fov(tags.chest_lidar)
 			local res = fov / n
       local ranges = webots.wb_camera_get_range_image(tags.chest_lidar)
-			local metadata = {n=n,res=res,t=t,angle=Body.get_lidar_position()}
+			local metadata = {
+        n=n,res=res,t=t,angle=Body.get_lidar_position(),rpy=Body.get_rpy()
+      }
 			WebotsBody.update_chest_lidar(metadata,ranges)
       --local lidar_array = require'carray'.float(ranges, w)
 			NEXT_CHEST_LIDAR = get_time() + lidar_timeStep / 1000

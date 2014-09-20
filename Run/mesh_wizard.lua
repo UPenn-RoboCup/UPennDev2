@@ -147,7 +147,7 @@ local function send_mesh(destination, compression, dynrange)
   mesh_byte:copy(mesh_adj)
   -- Compression
   local c_mesh
-  compression = 'raw'
+  --compression = 'raw'
   if compression=='jpeg' then
 		c_mesh = j_compress:compress(mesh_byte)
   elseif compression=='png' then
@@ -213,8 +213,7 @@ local function update(meta, ranges)
 	end
   -- Metadata
   -- NOTE: Orientation should include the joint positions as well!
-  local rpy = Body.get_rpy()
-  local roll, pitch, yaw = unpack(rpy)
+  local roll, pitch, yaw = unpack(meta.rpy)
   -- Find the scanline indices
 	local rad_angle = meta.angle
   local scanlines = angle_to_scanlines(rad_angle)

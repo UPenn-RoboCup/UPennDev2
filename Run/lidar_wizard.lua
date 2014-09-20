@@ -19,7 +19,8 @@ local cb = function(self, data)
 		t = get_time(),
 		n = self.n,
 		res = self.res,
-		angle = Body.get_lidar_position()
+		angle = Body.get_lidar_position(),
+    rpy = Body.get_rpy()
 	}),
 	data})
 end

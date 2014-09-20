@@ -88,6 +88,7 @@ Config.debug = {
   goalpost = false,
 }
 
+Config.use_localhost = false
 if IS_WEBOTS then
   -- Tune which wizards to run in webots
   Config.wizards = {}
@@ -100,10 +101,8 @@ if IS_WEBOTS then
   -- Adjust the tiemsteps if desired
   --Config.camera_timestep = 33
   --Config.lidar_timestep = 200 --slower
+  Config.use_localhost = true
 end
-
---Config.use_localhost = false
-Config.use_localhost = true
 
 -- Monitor and logging
 Config.enable_monitor = true

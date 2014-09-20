@@ -1,5 +1,17 @@
 assert(Config, 'Need a pre-existing Config table!')
 
+-- IP addresses
+local IP = {
+  STEVE = 23,
+  SJ = 200,
+  KAREN = 30,
+  ALVIN = 24,
+}
+
+-- Who do we use?
+local WHO = IP.KAREN
+local WHICH = IP.ALVIN
+
 -- Network settings --
 local net = {
 	use_wireless = false,
@@ -9,26 +21,26 @@ local net = {
 -- TODO: Find IP of this computer
 if Config.use_localhost then	
   net.robot = {
-		['wired']    = 'localhost',
-		['wireless'] = 'localhost',
+		wired   = 'localhost',
+		wireless = 'localhost',
 	}
 	net.operator = {
-		['wired']              = 'localhost',
+		wired              = 'localhost',
 		['wired_broadcast']    = 'localhost',
 		--
-		['wireless']           = 'localhost',
+		wireless           = 'localhost',
 		['wireless_broadcast'] = 'localhost',
 	}
 else
 	net.robot = {
-		['wired']    = '192.168.123.24',
-		['wireless'] = '192.168.1.24',
+		wired    = '192.168.123.'..WHICH,
+		wireless = '192.168.1.'..WHICH,
 	}
 	net.operator = {
-		['wired']              = '192.168.123.23',
+		wired              = '192.168.123.'..WHO,
 		['wired_broadcast']    = '192.168.123.255',
 		--
-		['wireless']           = '192.168.1.23',
+		wireless           = '192.168.1.'..WHO,
 		['wireless_broadcast'] = '192.168.1.255'
 	}
 end

@@ -26,6 +26,7 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+--[[
   local lidar_pos = Body.get_lidar_position()
   Body.set_lidar_torque_enable(1)
   if lidar_pos<0 then
@@ -33,6 +34,7 @@ function state.update()
   else
    Body.set_lidar_command_position(max_pan) 
   end
+--]]
 
 end
 

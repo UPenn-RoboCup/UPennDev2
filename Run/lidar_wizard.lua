@@ -1,8 +1,7 @@
------------------------------------------------------------------
+#!/usr/bin/env luajit
 -- Hokuyo LIDAR Wizard
 -- Reads lidar scans and saves to shared memory
 -- (c) Stephen McGill 2013, 2014
----------------------------------
 dofile'../include.lua'
 
 local unix = unix or require'unix'

@@ -226,7 +226,6 @@ function lidar_ch.callback(skt)
 	local mdata, ranges = unpack(skt:recv_all())
 	local meta = munpack(mdata)
 	update(meta, ranges)
-	print("hey")
 end
 
 si.wait_on_channels({lidar_ch}):start()

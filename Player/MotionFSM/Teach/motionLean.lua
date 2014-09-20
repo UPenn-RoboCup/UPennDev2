@@ -9,6 +9,7 @@ state._NAME = ...
 local Body   = require'Body'
 local vector = require'vector'
 local moveleg = require'moveleg'
+local util = require'util'
 require'mcm'
 
 -- Keep track of important times
@@ -18,6 +19,7 @@ local uTorso, uLeft, uRight
 local zLeft, zRight = 0, 0
 local side
 local relTorso, relX, relY, relR
+local uTorso = vector.new({Config.walk.supportX, 0, 0})
 local dTorsoScale = 0.0005
 
 function state.entry()
@@ -32,12 +34,15 @@ function state.entry()
   side = mcm.get_teach_sway()
   side = side=='none' and 'left' or side
   print('Lean to the', side)
+  --relTorso = util.pose_global(uTorso, util.se2_interpolate(.5, uLeft, uRight))
+  ----[[
   relTorso = util.pose_relative(uLeft, uRight)
   relR = math.sqrt(relTorso.x^2+relTorso.y^2)
   relX = dTorsoScale * relTorso.x / relR
   relY = dTorsoScale * relTorso.y / relR
   print(relTorso, relX, relY)
   dTorso = vector.pose{relX, relY, 0}
+  --]]
 end
 
 function state.update()

@@ -154,10 +154,8 @@ if ... and type(...)=='string' then
 	return {entry=nil, update=update, exit=nil}
 end
 
-vcm.set_mesh_sweep({15*math.pi/180,1.0})
-
-
-
+-- Field of View and timing for the mesh
+vcm.set_mesh_sweep({40*DEG_TO_RAD, 1.0})
 
 local getch = require'getch'
 local running = true

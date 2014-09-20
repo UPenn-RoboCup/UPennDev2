@@ -73,13 +73,15 @@ local function setup_mesh(meta)
 		scan_x = scan_angles:clone()
 		scan_y = scan_angles:clone()
 		scan_a = scan_angles:clone()
-    scan_p = scan_angles:clone()
+    scan_pitch = scan_angles:clone()
+    scan_roll = scan_angles:clone()
 	else
 		scan_angles = vector.zeros(n_scanlines)
 		scan_x = vector.zeros(n_scanlines)
 		scan_y = vector.zeros(n_scanlines)
 		scan_a = vector.zeros(n_scanlines)
-    scan_p = vector.zeros(n_scanlines)
+    scan_pitch = vector.zeros(n_scanlines)
+    scan_roll = vector.zeros(n_scanlines)
 	end
 	-- Metadata for the mesh
 	metadata.rfov = ranges_fov
@@ -89,11 +91,10 @@ local function setup_mesh(meta)
 	metadata.py = scan_y
 	metadata.pa = scan_a
 	-- Add Orientation for pitch and roll
-  metadata.op = scan_p
+  metadata.pitch = scan_pitch
+  metadata.roll = scan_roll
   -- Add the dimensions (useful for raw)
-  metadata.n_scanlines = n_scanlines
-  metadata.n_returns = n_returns
-  
+  metadata.dims = {n_scanlines, n_returns}
 end
 
 -- Convert a pan angle to a column of the chest mesh image
@@ -228,7 +229,8 @@ local function update(meta, ranges)
 			scan_angles[line] = rad_angle
 			-- TODO: Save the pose
       -- Save the orientation
-      scan_p[line] = pitch
+      scan_pitch[line] = pitch
+      scan_roll[line] = roll
 		end
   end
 	-- Check for sending out on the wire

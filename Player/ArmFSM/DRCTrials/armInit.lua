@@ -148,7 +148,15 @@ function state.exit()
   Body.set_rgrip_percent(0.9)
 --]]
 
+
+print("qRArm:",
+
+unpack(vector.new(qRArmTarget)*180/math.pi))
+
+
+
   print(state._NAME..' Exit' )
 end
 
 return state
+

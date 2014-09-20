@@ -92,6 +92,13 @@ arm.torso_comp_limit = vector.new({0.06,0.03})
 arm.pLWristTarget0 = {-.0,.30,-.20,0,0,0}
 arm.pRWristTarget0 = {-.0,-.30,-.20,0,0,0}
 
+--ONLY FOR GETUP!!!
+--[[
+arm.pLWristTarget0 = {-.10,.30,-.20,0,0,0}
+arm.pRWristTarget0 = {-.10,-.30,-.20,0,0,0}
+--]]
+
+
 --POse 1 wrist angle
 arm.lrpy0 = vector.new({0,0,0,0,30,0})*DEG_TO_RAD
 arm.rrpy0 = vector.new({0,0,0,-0,30,0})*DEG_TO_RAD

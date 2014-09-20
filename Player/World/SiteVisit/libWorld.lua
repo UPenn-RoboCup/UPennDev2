@@ -89,6 +89,7 @@ function libWorld.entry()
 end
 
 local function print_pose()
+  if not Config.debug.world then return end
   local pose = wcm.get_robot_pose()
   local gpspose1 = wcm.get_robot_pose_gps()
   local gpspose0 = wcm.get_robot_pose_gps0()
@@ -107,10 +108,6 @@ function libWorld.update(uOdom, detection)
   local t = unix.time()
   -- Run the updates
   if wcm.get_robot_reset_pose()==1 then
-    print("POSE RESET!!!!!")
-    print("POSE RESET!!!!!")
-    print("POSE RESET!!!!!")
-    print("POSE RESET!!!!!")
     print("POSE RESET!!!!!")
     libWorld.pose_reset()    
   end

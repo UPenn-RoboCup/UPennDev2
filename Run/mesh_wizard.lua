@@ -90,6 +90,9 @@ local function setup_mesh(meta)
 	metadata.pa = scan_a
 	-- Add Orientation for pitch and roll
   metadata.op = scan_p
+  -- Add the dimensions (useful for raw)
+  metadata.n_scanlines = n_scanlines
+  metadata.n_returns = n_returns
   
 end
 

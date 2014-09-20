@@ -33,16 +33,9 @@ DEF FLOOR Floor {
   ]
 }
 DEF BLOCK QualStep {
-  translation -0.2 0.075 0
+  translation -0.2 0.0625 0
 }
-DEF BALL_LEFT BallGPS_Landmark {
-  translation 0 0.109919 0.55
-  radius 0.11
-}
-DEF BALL_RIGHT BallGPS_Landmark {
-  translation 0 0.109919 -0.55
-  radius 0.11
-}
+
 THOROP_UPENN {
   translation 0.49372 1.155 -0.14128
   rotation 0 1 0 -1.5708

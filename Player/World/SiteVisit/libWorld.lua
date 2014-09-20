@@ -78,6 +78,8 @@ function libWorld.pose_reset()
   yaw0 = Body.get_rpy()[3]
 
   if IS_WEBOTS then
+    gps_pose = wcm.get_robot_pose_gps()
+    yaw0 = gps_pose[3]
     wcm.set_robot_pose_gps0(wcm.get_robot_pose_gps())
   end
 
@@ -107,7 +109,7 @@ local function print_pose()
   local gpspose = util.pose_relative(gpspose1,gpspose0)
 
   print(string.format(
-    "odometry: %.3f %.3f %d gps: %.3f %.3f %d",
+    "pose: %.3f %.3f %d gps: %.3f %.3f %d",
     pose[1],pose[2],pose[3]*180/math.pi,
     gpspose[1],gpspose[2],gpspose[3]*180/math.pi))
 end

@@ -13,6 +13,7 @@ local unix   = require'unix'
 local util   = require'util'
 local moveleg = require'moveleg'
 require'mcm'
+local supportX = Config.walk.supportX
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
@@ -61,22 +62,26 @@ function state.update()
   local bodyHeight = util.approachTol( bodyHeight_now, 
     bodyHeightTarget, Config.stance.dHeight, t_diff )
   
-  local zLeft,zRight = 0,0
-  supportLeg = 2; --Double support
-
-
+  -- Compensation
+  --[[
   local gyro_rpy = Body.get_gyro()
-
+  supportLeg = 2; --Double support
   local delta_legs
   delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,0,gyro_rpy, angleShift)
-
---Compensation for arm / objects
   local uTorsoComp = mcm.get_stance_uTorsoComp()
   local uTorsoCompensated = util.pose_global(
      {uTorsoComp[1],uTorsoComp[2],0},uTorso)
   mcm.set_stance_bodyHeight(bodyHeight)  
-  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
-    0,0,delta_legs)
+  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,0,0,delta_legs)
+  --]]
+  local zLeft, zRight = unpack(mcm.get_status_zLeg())
+  local uTorsoMid0 = util.se2_interpolate(.5, uLeft, uRight)
+  local uTorsoMid  = util.pose_global(vector.new({supportX, 0, 0}), uTorsoMid0)
+  --print("uTorso, uLeft, uRight",uTorso, uLeft, uRight)
+  --print('uTorsoMid0', uTorsoMid0, 'uTorsoMid', uTorsoMid)
+  --moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, 0, 0) -- just stay
+  moveleg.set_leg_positions_slowly(uTorsoMid, uLeft, uRight, zLeft, zRight)
+  
   mcm.set_status_uTorsoVel({0,0,0})
   local steprequest = mcm.get_walk_steprequest()    
   if steprequest>0 then return "done_step" end

@@ -51,15 +51,25 @@ function state.update()
   if side=='left' and l_ft[3] < 2*r_ft[3] then return'lean' end
   if side=='right' and r_ft[3] < 2*l_ft[3] then return'lean' end
   -- F/T to know if done
+  local IS_TOUCHED = false
   if side=='left' then
     zRight = zRight - dz
-    --if zRight < 0 then return'done' end
-    if r_ft[3] > 50 then return 'done' end
+    IS_TOUCHED = r_ft[3] > 50
   else
     zLeft = zLeft - dz
-    --if zLeft < 0 then return'done' end
-    if l_ft[3] > 50 then return 'done' end
+    IS_TOUCHED = l_ft[3] > 50
   end
+  
+  if IS_TOUCHED then
+    -- switch sides
+    mcm.set_teach_sway(side=='left' and 'right' or 'left')
+    if math.abs(zLeft - zRight) > 0.025 then
+      return'uneven'
+    else
+      return'flat'
+    end
+  end
+  
   mcm.set_status_zLeg{zLeft, zRight}
   moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight)
 end

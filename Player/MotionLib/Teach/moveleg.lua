@@ -239,9 +239,9 @@ local slow_p_tolerance = {
 }
 local slow_qleg_tolerance = vector.ones(6) * DEG_TO_RAD
 -- How far away to tell the P controller to go in one step
-local dqLegSz = vector.new{1, 1, 4.5, 9, 4.5, 1} * DEG_TO_RAD * 1e-2
+local dqLegSz = vector.new{1, 1, 4.5, 9, 4.5, 1} * DEG_TO_RAD * 1e-2 * 2
 -- Same, but via IK
-local dpTorsoSz = vector.new{4, 3, 3, 40, 40, 40} * 1e-5
+local dpTorsoSz = vector.new{4, 3, 3, 40, 40, 40} * 1e-5 * 2
 
 local function set_lower_body_slowly(pTorso, pLLeg, pRLeg)
   -- Deal with the leg bias

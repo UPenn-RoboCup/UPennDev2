@@ -51,8 +51,8 @@ function state.update()
   local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
   
   -- Make sure we lean enough before lifting our legs
-  if side=='left' and l_ft[3] < 2*r_ft[3] then return'lean' end
-  if side=='right' and r_ft[3] < 2*l_ft[3] then return'lean' end
+  --if side=='left' and l_ft[3] < 2*r_ft[3] then return'lean' end
+  --if side=='right' and r_ft[3] < 2*l_ft[3] then return'lean' end
   --
   if side=='left' then
     zRight = zRight + dz

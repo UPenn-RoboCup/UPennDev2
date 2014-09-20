@@ -381,7 +381,6 @@ if IS_WEBOTS then
 	        webots.wb_servo_set_velocity(tag, 4)
 				else
 					webots.wb_motor_enable_position(tag, timeStep)
-					--webots.wb_motor_set_velocity(tag, 4)
 				end
 			end
 		end

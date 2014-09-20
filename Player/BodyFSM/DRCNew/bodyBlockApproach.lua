@@ -164,7 +164,7 @@ local function update_target()
 ---------------------------------------
   --HACK for testing!
 
-  local target_dist = 0.30
+  local target_dist = 0.33
 
 
   uLeftGlobalTarget = {target_dist,Config.walk.footY,0}

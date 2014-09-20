@@ -6,7 +6,7 @@ startup;
 %% Camera Figure
 
 
-global cam monitor matlab_ch
+global cam monitor matlab_ch REAL_ROBOT
 
 monitor = show_monitor_sitevisit();
 monitor.init();
@@ -14,7 +14,7 @@ monitor.init();
 
 %% Network
 % Add the network
-REAL_ROBOT = 1;  % TODO: better way?
+REAL_ROBOT = 0;  % TODO: better way?
 cams = {};
 cams{1} = {};
 cams{2} = {};
@@ -33,8 +33,8 @@ else
     cams{3}.s = zmq( 'subscribe', 'ipc', 'mesh0'  );
 end
 
-% % Setup a publisher /  udp_send
-% matlab_ch = zmq( 'publish', 'ipc', 'matlab' );
+% Setup a udp_send
+        matlab_ch = zmq('publish', 'tcp', '192.168.123.30', 55558);
 
 %% Loop
 running = 1;
@@ -101,7 +101,6 @@ while running
                 % This must be uint8
                 raw = udp_data(offset+1:end);
                 
-                % some HACK
                 if ~isfield(metadata, 'id')
                     if ~isfield(metadata, 'name')
                         continue; 
@@ -161,9 +160,23 @@ while running
                 %raw = data(offset+1:end); % This must be uint8
                 
                 
-                if ~isfield(metadata, 'id'); continue; end
+               if ~isfield(metadata, 'id')
+                    if ~isfield(metadata, 'name')
+                        continue; 
+                    else
+                        msg_id = char(metadata.name);
+                        if strcmp(msg_id, 'mesh0')
+                            count_mesh = count_mesh + 1;
+                            data_mesh.meta = metadata;
+                            data_mesh.raw = raw;
+                            data_mesh.recv = true;
+                        end
+
+                    end
+                else
+                    msg_id = char(metadata.id);
+               end
                 
-                msg_id = char(metadata.id);
                 if strcmp(msg_id,'head_camera')
                     count_cam = count_cam + 1;
                     data_yuyv.meta = metadata;

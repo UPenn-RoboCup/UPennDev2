@@ -154,6 +154,7 @@ local function send_mesh(destination, compression, dynrange)
     c_mesh = p_compress(mesh_byte)
   else
     -- Raw
+    print('compressing RAW...')
     c_mesh = ffi.string(mesh:data(), mesh:nElement() * ffi.sizeof'float')
   end
 	-- Update relevant metadata

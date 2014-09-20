@@ -1,5 +1,5 @@
 function h = show_monitor_sitevisit
-  global cam 
+  global cam matlab_ch REAL_ROBOT
 
   h = []
   h.init = @init;
@@ -114,7 +114,11 @@ function h = show_monitor_sitevisit
 
   function [needs_draw] = process_msg(metadata, raw, cam)
 % Process each type of message
-    msg_id = char(metadata.id);
+    if isfield(metadata, 'id') 
+        msg_id = char(metadata.id);
+    elseif isfield(metadata, 'name')
+        msg_id = char(metadata.name);
+    end
     needs_draw = 0;
     
 
@@ -131,15 +135,19 @@ function h = show_monitor_sitevisit
         needs_draw = 1;
     elseif strcmp(msg_id, 'mesh0')
         % metadata
-        n_scanlines = metadata.n_scanlines;
-        n_returns = metadata.n_returns;
+        %n_scanlines = metadata.n_scanlines;
+        %n_returns = metadata.n_returns;
+        n_scanlines = metadata.dims(1);
+        n_returns = metadata.dims(2);
         s_angles = metadata.a;
+        s_pitch = metadata.pitch;
+        s_roll = metadata.roll;
         % Raw
         mesh_float = typecast(raw, 'single');
         
         % clamp on ranges
-        mesh_float(mesh_float>5) = 0;
-        mesh_float(mesh_float<0.1) = 0;
+        mesh_float(mesh_float>2) = 0;
+        mesh_float(mesh_float<0.15) = 0;
 
         mesh = reshape(mesh_float, [n_returns n_scanlines])';
         % ray angles 
@@ -156,26 +164,51 @@ function h = show_monitor_sitevisit
         % Convert to x, y, z
         xs0 = bsxfun(@times, cos(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
         ys0 = bsxfun(@times, sin(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
-        zs0 = -1*bsxfun(@times, mesh, sin(v_angles)) + metadata.lidarZ;
+        zs0 = -1*bsxfun(@times, mesh, sin(v_angles)) + 0.1; %lidarX offset
         
-        % Body orientation
-        body_pitch = metadata.bodyPitch;
-        body_trans = [cos(body_pitch) sin(body_pitch); 
-                      -sin(body_pitch)  cos(body_pitch)];
+        % Body orientation: TODO: each scanline has its own pitch
+        % TODO: for now we just pick a single pitch since it's standing
+        % And assume s_roll = 0
         
+%         figure(4);
+%         plot(s_pitch/pi*180);
+                
         
         % Visualization
         figure(2)
         xs = xs0; ys = ys0; zs = zs0;
+        
+        if REAL_ROBOT==1
+            body_pitch_offset = -2.5/180*pi;
+        else
+            body_pitch_offset = 0;
+        end
+        
         for i = 1:n_scanlines 
             % TODO: better factorization
-            new_xz = body_trans*[xs0(i,:); zs0(i,:)];
+            body_pitch = s_pitch(i) + body_pitch_offset;
+            body_roll = s_roll(i);
+            
+            trans_pitch = [cos(body_pitch) sin(body_pitch); 
+                      -sin(body_pitch)  cos(body_pitch)];
+                  
+            trans_roll = [cos(body_roll) sin(body_roll); 
+                      -sin(body_roll)  cos(body_roll)];
+                  
+            
+            new_xz = trans_pitch*[xs0(i,:); zs0(i,:)];
+            
+            new_yz = trans_roll*[ys0(i,:); new_xz(2,:)];
+            
             xs(i,:) = new_xz(1,:);
-            zs(i,:) = new_xz(2,:) + 1;  %TODO: bodyHeight
+            ys(i,:) = new_yz(1,:);
+            zs(i,:) = new_yz(2,:) + 0.93;  %TODO: bodyHeight
+            
   
             plot3(xs(i,:), ys(i,:), zs(i,:), '.');
             hold on;
         end
+        view([0 0]);
         hold off;
         
                 
@@ -208,16 +241,17 @@ function h = show_monitor_sitevisit
         end
         
         % Get rid of the body part
-        p_count(1:0.2/grid_res, :) = 0;        
+        p_count(1:0.3/grid_res, :) = 0;  
+        % Get rid of the distant part
+        p_count(end-0.2/grid_res:end, :) = 0;
         
-        thres1 = 0.6*max(p_count(:));
-%         thres2 = mean(p_count(:));
+        thres1 = 0.7*max(p_count(:));
         wall_ind = find(p_count(:)>thres1);
         
         hmap = zeros(size(p_count));
         hmap(wall_ind)=1;
         
-        figure(3);
+        figure(3);  %TODO: flip the image
         imshow(hmap);
         
         
@@ -252,7 +286,24 @@ function h = show_monitor_sitevisit
                
         yaw_target = line_angle/pi*180 - 90;
         % TODO: filter angle into -pi/2, pi/2
-        [x_target y_target yaw_target]
+%         [x_target y_target yaw_target]
+        
+        
+        send_data = {};
+        send_data.shm = 'wcm';
+        send_data.seg = 'step';
+        send_data.key = 'pos';
+        send_data.val = [x_target y_target yaw_target];
+        
+        
+        send_data = msgpack('pack', send_data);
+%         udp_send('init', '192.168.123.30', 55556);
+%         ret = udp_send('send', 55556, send_data);
+        
+        % if use zmq
+        ret = zmq('send', matlab_ch, send_data);
+                
+        
         
         
         

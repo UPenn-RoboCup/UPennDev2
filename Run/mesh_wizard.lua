@@ -147,15 +147,14 @@ local function send_mesh(destination, compression, dynrange)
   mesh_byte:copy(mesh_adj)
   -- Compression
   local c_mesh
+  compression = 'raw'
   if compression=='jpeg' then
 		c_mesh = j_compress:compress(mesh_byte)
   elseif compression=='png' then
     c_mesh = p_compress(mesh_byte)
   else
     -- Raw
-    compression = 'raw'
     c_mesh = ffi.string(mesh:data(), mesh:nElement() * ffi.sizeof'float')
-    return
   end
 	-- Update relevant metadata
 	metadata.c = compression

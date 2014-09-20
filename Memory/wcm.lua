@@ -12,6 +12,8 @@ local shsize = {}
 shared.robot = {}
 -- Webot pose
 shared.robot.pose_gps = vector.zeros(3)
+shared.robot.pose_gps0 = vector.zeros(3)
+
 shared.robot.time = vector.zeros(1)
 -- 0: unknown, 1: attack, 2: defend
 shared.robot.role = vector.ones(1)
@@ -31,7 +33,13 @@ shared.robot.odometry = vector.zeros(3)
 -- 2: slam + odom
 shared.robot.odom_mode = vector.zeros(1)
 
-shared.robot.reset_pose = vector.zeros(1)
+shared.robot.reset_pose = vector.ones(1) --this forces the pose to be resetted
+
+
+
+
+
+
 
 shared.robot.ballglobal = vector.zeros(2)
 shared.robot.goal1 = vector.zeros(2)

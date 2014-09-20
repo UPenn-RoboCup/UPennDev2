@@ -13,6 +13,7 @@ local arm_ch    = simple_ipc.new_publisher('ArmFSM!')
 local head_ch   = simple_ipc.new_publisher('HeadFSM!')
 local lidar_ch  = simple_ipc.new_publisher('LidarFSM!')
 local motion_ch = simple_ipc.new_publisher('MotionFSM!')
+require'wcm'
 
 function state.entry()
   print(state._NAME..' Entry' )

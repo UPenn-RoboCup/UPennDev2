@@ -9,7 +9,6 @@ local Body   = require'Body'
 local vector = require'vector'
 local util = require'util'
 local odomScale = Config.world.odomScale 
-local use_imu_yaw = Config.world.use_imu_yaw
 
 
 require'wcm'
@@ -40,7 +39,7 @@ local function update_odometry(uOdometry)
   uOdometry[3] = odomScale[3] * uOdometry[3]
   -- Next, grab the gyro yaw
 
-  if use_imu_yaw then    
+  if Config.use_imu_yaw then    
     if IS_WEBOTS then
       gps_pose = wcm.get_robot_pose_gps()
       uOdometry[3] = gps_pose[3] - yaw0
@@ -59,8 +58,20 @@ end
 
 local function update_vision(detected)  
 
-
+  print("POSE RESETTED")
 end
+
+
+
+function libWorld.pose_reset()
+  wcm.set_robot_reset_pose(0)
+  wcm.set_robot_pose({0,0,0})
+  wcm.set_robot_odometry({0,0,0})
+  if IS_WEBOTS then
+    wcm.set_robot_pose_gps0(wcm.get_robot_pose_gps())
+  end
+end
+
 
 
 function libWorld.entry()
@@ -72,22 +83,46 @@ function libWorld.entry()
   -- Save this resampling time
   t_resample = t_entry
   -- Set the initial odometry
-  wcm.set_robot_pose({0,0,0})
-  wcm.set_robot_odometry({0,0,0})
+  libWorld.pose_reset()
   -- Processing count
   count = 0
-  
 end
 
+local function print_pose()
+  local pose = wcm.get_robot_pose()
+  local gpspose1 = wcm.get_robot_pose_gps()
+  local gpspose0 = wcm.get_robot_pose_gps0()
+  local gpspose = util.pose_relative(gpspose1,gpspose0)
+
+  print(string.format(
+    "odometry: %.3f %.3f %d gps: %.3f %.3f %d",
+    pose[1],pose[2],pose[3]*180/math.pi,
+    gpspose[1],gpspose[2],gpspose[3]*180/math.pi))
+end
+
+
+
 function libWorld.update(uOdom, detection)
+
   local t = unix.time()
   -- Run the updates
+  if wcm.get_robot_reset_pose()==1 then
+    print("POSE RESET!!!!!")
+    print("POSE RESET!!!!!")
+    print("POSE RESET!!!!!")
+    print("POSE RESET!!!!!")
+    print("POSE RESET!!!!!")
+    libWorld.pose_reset()    
+  end
 
   if IS_WEBOTS and Config.use_gps_pose then
-    wcm.set_robot_pose(wcm.get_robot_pose_gps())
---    print("gps pose:",unpack(wcm.get_robot_pose()))
+    local gpspose1 = wcm.get_robot_pose_gps()
+    local gpspose0 = wcm.get_robot_pose_gps0()
+    local gpspose = util.pose_relative(gpspose1,gpspose0)
+    wcm.set_robot_pose(gpspose)
   else
     update_odometry(uOdom)
+    print_pose()   
   end
   -- Increment the process count
   count = count + 1

@@ -110,6 +110,8 @@ Config.enable_log = false
 Config.use_log = false
 Config.torque_legs = true
 
+
+
 -- Complementary Configs --
 -- Load each exogenous Config file
 for _,v in ipairs(exo) do
@@ -123,5 +125,8 @@ for _,v in ipairs(exo) do
   require(table.concat(fname))
 	--]]
 end
+
+Config.use_gps_pose = false
+Config.use_imu_yaw = true
 
 return Config

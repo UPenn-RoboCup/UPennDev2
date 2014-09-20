@@ -40,6 +40,7 @@ local function update_odometry(uOdometry)
   -- Next, grab the gyro yaw
 
   if Config.use_imu_yaw then    
+
     if IS_WEBOTS then
       gps_pose = wcm.get_robot_pose_gps()
       uOdometry[3] = gps_pose[3] - yaw0
@@ -50,6 +51,13 @@ local function update_odometry(uOdometry)
       yaw0 = yaw
     end
   end
+
+  --Update pose using odometry info for now
+  local pose = wcm.get_robot_pose()
+  wcm.set_robot_pose(util.pose_global(uOdometry,pose))
+
+
+
 
   -- Update the filters based on the new odometry
 --TODO: need posefilter for slam + odometry
@@ -67,9 +75,12 @@ function libWorld.pose_reset()
   wcm.set_robot_reset_pose(0)
   wcm.set_robot_pose({0,0,0})
   wcm.set_robot_odometry({0,0,0})
+  yaw0 = Body.get_rpy()[3]
+
   if IS_WEBOTS then
     wcm.set_robot_pose_gps0(wcm.get_robot_pose_gps())
   end
+
 end
 
 
@@ -104,7 +115,6 @@ end
 
 
 function libWorld.update(uOdom, detection)
-
   local t = unix.time()
   -- Run the updates
   if wcm.get_robot_reset_pose()==1 then
@@ -124,7 +134,7 @@ function libWorld.update(uOdom, detection)
   -- Increment the process count
   count = count + 1
 
-  if detection.balls then
+  if detection and detection.balls then
     print(string.format('BALL_1: %.2f %.2f\n', unpack(detection.balls.v[1])))
     print(string.format('BALL_2: %.2f %.2f\n', unpack(detection.balls.v[2])))
   end
@@ -149,9 +159,12 @@ end
 
 function libWorld.get_pose()
 --TODO
-  return wcm.get_robot_pose(wcm.get_robot_pose_gps())
+--  return wcm.get_robot_pose(wcm.get_robot_pose_gps())
   --return vector.pose({0,0,0})
   --return vector.pose{poseFilter.get_pose()}
+  return wcm.get_robot_pose()
+
+
 end
 
 libWorld.update_odometry = update_odometry

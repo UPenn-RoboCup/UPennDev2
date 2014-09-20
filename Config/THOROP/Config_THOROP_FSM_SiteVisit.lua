@@ -52,6 +52,7 @@ fsm.Body = {
 
 
   {'bodyStop', 'stepover', 'bodyStepOver'},
+  {'bodyStepOver', 'done', 'bodyStop'},
 
   {'bodyStepPlace',   'done', 'bodyStop'},
 --  {'bodyStepWaypoint',   'done', 'bodyStop'},

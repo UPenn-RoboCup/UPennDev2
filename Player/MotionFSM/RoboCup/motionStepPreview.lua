@@ -246,7 +246,8 @@ function walk.update()
       --print("IMU roll angle:",roll_max)
     end
 
-    local roll_threshold = 5 --this is degree
+   -- local roll_threshold = 5 --this is degree
+    local roll_threshold = 555555 --this is degree
 
     if roll_max>roll_threshold and hcm.get_motion_estop()==0 then
       print("EMERGENCY STOPPING")

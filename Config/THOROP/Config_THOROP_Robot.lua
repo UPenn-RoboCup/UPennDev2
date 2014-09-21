@@ -214,7 +214,7 @@ servo.direction = vector.new({
   -1, -1,-1, -1,  1,1, --RLeg
   ------
   -1,-1,1,-1, 1,1,1, --RArm
-  1,1, -- Waist
+  -1, -1, -- Waist
   1,1, -- left gripper TODO
   -1,1, -- right gripper (Verified 9/8/2014)
   -1, -- Lidar pan

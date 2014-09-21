@@ -406,13 +406,20 @@ else
 --  walk.torsoX = 0.02     -- com-to-body-center offset
   walk.torsoX = 0.0     -- com-to-body-center offset
   walk.supportX = 0.07 --better
-  walk.supportY = 0.07
+--  walk.supportY = 0.07
 
 --  Config.supportY_preview = -0.02
 --  Config.supportY_preview2 = -0.01
 
   Config.supportY_preview = -0.03
   Config.supportY_preview2 = -0.02
+
+
+  walk.supportX = 0.05 --better
+  walk.supportY = 0.05
+
+
+--5:40pm
 
 end
 

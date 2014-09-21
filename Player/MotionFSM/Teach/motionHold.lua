@@ -21,7 +21,7 @@ local side
 
 -- Lift properties
 local xTarget
-local dxTarget = 0.25
+local dxTarget = 0.26
 local dpose = vector.pose{0.002, 0, 0}
 
 function state.entry()

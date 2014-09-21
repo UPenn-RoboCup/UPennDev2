@@ -20,7 +20,7 @@ local zLeft, zRight
 local side
 local supportDir, supportFoot, supportPoint
 local uTorso, dTorso
-local dTorsoScale = 0.0005
+local dTorsoScale = 0.001
 local supportX, supportY = Config.walk.supportX, Config.walk.supportY
 
 

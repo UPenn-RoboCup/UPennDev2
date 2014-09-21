@@ -17,7 +17,7 @@ local timeout = 5
 -- Track the torso
 local uTorso, uLeft, uRight
 local zLeft, zRight
-local dz = 0.0001
+local dz = 0.0005
 local side
 
 function state.entry()

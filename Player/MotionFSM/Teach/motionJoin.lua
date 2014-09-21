@@ -21,10 +21,13 @@ local side
 
 -- Lift properties
 local xTarget
-local dxTarget = 0.29
 local dpose = vector.pose{0.002, 0, 0}
 local dzTarget = 0.01
 local zTarget
+local supportDir, supportFoot, supportPoint
+local supportX, supportY = Config.walk.supportX, Config.walk.supportY
+local dTorsoScale = 0.0005
+local uTorso, dTorso
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -35,18 +38,28 @@ function state.entry()
   uTorso = mcm.get_status_uTorso()  
   uLeft = mcm.get_status_uLeft()
   uRight = mcm.get_status_uRight()
-  side = mcm.get_teach_sway()
-  side = side=='none' and 'left' or side
+  zLeft, zRight = unpack(mcm.get_status_zLeg())
+  side = zLeft < zRight and 'left' or 'right'
+  mcm.set_teach_sway(side)
   print('Support on the', side)
+  
   local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
   local side_check = l_ft[3]>r_ft[3] and 'left' or 'right'
   if side_check~=side then print('BAD SUPPORT FOR HOLD!') end
-  zLeft, zRight = unpack(mcm.get_status_zLeg())
-  xTarget = (side=='left' and uRight[1] or uLeft[1]) + dxTarget
+  
+  -- Join the x
+  xTarget = (side=='left' and uLeft[1] or uRight[1])
+  -- lift the non support a bit
   zTarget = (side=='left' and zRight or zLeft) + dzTarget
   print('TARGETS', xTarget, zTarget)
   print('LEFT', uLeft[1], zLeft)
   print('RIGHT', uRight[1], zRight)
+  
+  supportDir = side=='left' and 1 or -1
+  supportFoot = side=='left' and uLeft or uRight
+  supportPoint = util.pose_global({supportX, supportDir*supportY, 0}, supportFoot)
+  print('SUPPORT POINT', supportPoint, uTorso)
+  
 end
 
 function state.update()
@@ -60,30 +73,51 @@ function state.update()
   -- TODO: If the foot hits something, then must retract and lower the foot!
   local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
   
+  -- Torso shift
+  local torsoDone = false
+  local relTorso = util.pose_relative(uTorso, supportPoint)
+  local drTorso = math.sqrt(relTorso.x^2 + relTorso.y^2)
+  --print('relTorso', supportPoint, relTorso, uTorso)
+  if drTorso<1e-3 and math.abs(relTorso.a)<DEG_TO_RAD then
+    torsoDone = true
+  else
+    mcm.set_status_uTorso(uTorso)
+    -- How spread are our feet?
+    local dX = dTorsoScale * relTorso.x / drTorso
+    local dY = dTorsoScale * relTorso.y / drTorso
+    -- TODO: Add the angle
+    -- Move toward the support point
+    uTorso = uTorso - vector.pose{dX, dY, 0}
+  end
+  
   -- Increment the leg height
   local zDone, dz
-  if side=='left' then
-    zDone = zRight > zTarget
-    dz = zDone and 0 or 0.0002
-    zRight = zRight + dz
-  else
-    zDone = zLeft > zTarget
-    dz = zDone and 0 or 0.0002
-    zLeft = zLeft + dz
+  if torsoDone then
+    if side=='left' then
+      zDone = zRight > zTarget
+      dz = (zDone or not torsoDone) and 0 or 0.0002
+      zRight = zRight + dz
+    else
+      zDone = zLeft > zTarget
+      dz = (zDone or not torsoDone) and 0 or 0.0002
+      zLeft = zLeft + dz
+    end
   end
   
   local xDone
-  if side=='left' then
-    uRight = uRight + dpose
-    xDone = uRight[1] > xTarget
-    if not xDone then mcm.set_status_uRight(uRight) end
-  else
-    uLeft = uLeft + dpose
-    xDone = uLeft[1] > xTarget
-    if not xDone then mcm.set_status_uLeft(uLeft) end
+  if zDone then
+    if side=='left' then
+      uRight = uRight + dpose
+      xDone = uRight[1] > xTarget
+      if not xDone then mcm.set_status_uRight(uRight) end
+    else
+      uLeft = uLeft + dpose
+      xDone = uLeft[1] > xTarget
+      if not xDone then mcm.set_status_uLeft(uLeft) end
+    end
   end
   
-  if xDone and zDone then return'done' end
+  if torsoDone and xDone and zDone then return'done' end
   
   moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight, dt)
 end

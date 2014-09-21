@@ -60,11 +60,13 @@ fsm.Motion = {
   {'motionLower', 'uneven', 'motionCaptainMorgan'},
   --
   {'motionCaptainMorgan', 'stepup', 'motionStepUp'},
-  --{'motionCaptainMorgan', 'stepdown', 'motionLean'},
+  {'motionCaptainMorgan', 'stepdown', 'motionJoin'},
   --
   {'motionStepUp', 'done', 'motionHold'},
   --
   {'motionStepDown', 'done', 'motionLower'},
+  --
+  {'motionJoin', 'done', 'motionLower'},
 }
 
 Config.fsm = fsm

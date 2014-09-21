@@ -16,11 +16,13 @@ require'mcm'
 local t_entry, t_update, t_last_step
 -- Track the torso
 local uTorso, uLeft, uRight
-local zLeft, zRight = 0, 0
+local zLeft, zRight
 local side
-local relTorso, relX, relY, relR
-local uTorso = vector.new({Config.walk.supportX, 0, 0})
+local supportDir, supportFoot, supportPoint
+local uTorso, dTorso
 local dTorsoScale = 0.0005
+local supportX, supportY = Config.walk.supportX, Config.walk.supportY
+
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -29,55 +31,46 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   uTorso = mcm.get_status_uTorso()  
-  uLeft = mcm.get_status_uLeft()
-  uRight = mcm.get_status_uRight()
+  uLeft, uRight = mcm.get_status_uLeft(), mcm.get_status_uRight()
+  zLeft, zRight = unpack(mcm.get_status_zLeg())
   side = mcm.get_teach_sway()
   side = side=='none' and 'left' or side
-  print('Lean to the', side)
-  --relTorso = util.pose_global(uTorso, util.se2_interpolate(.5, uLeft, uRight))
-  ----[[
-  relTorso = util.pose_relative(uLeft, uRight)
-  relR = math.sqrt(relTorso.x^2+relTorso.y^2)
-  relX = dTorsoScale * relTorso.x / relR
-  relY = dTorsoScale * relTorso.y / relR
-  print(relTorso, relX, relY)
-  dTorso = vector.pose{relX, relY, 0}
-  --]]
+  print('Support on the', side)
+  
+  supportDir = side=='left' and 1 or -1
+  supportFoot = side=='left' and uLeft or uRight
+  supportPoint = util.pose_global({supportX, supportDir*supportY, 0}, supportFoot)
+  print('SUPPORT POINT', supportPoint, uTorso)
+
 end
 
 function state.update()
   -- Get the time of update
   local t = Body.get_time()
-  local t_diff = t - t_update
+  local dt = t - t_update
   -- Save this at the last update time
   t_update = t
   
-  local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
-  --print('L FT', l_ft)
-  --print('R FT', r_ft)
-  
-  -- Check the CoM first
-  if side=='left' then
-    -- left is the frame
-    if l_ft[3] < 3*r_ft[3] then
-      uTorso = uTorso + dTorso
-      mcm.set_status_uTorso(uTorso)
-    else
-      return'done'
-    end
-  elseif side=='right' then
-    --print('L FT', l_ft)
-    --print('R FT', r_ft)
-    if r_ft[3] < 3*l_ft[3] then
-      uTorso = uTorso - dTorso
-      mcm.set_status_uTorso(uTorso)
-    else
-      return'done'
-    end
+  -- Where is our offset?
+  local relTorso = util.pose_relative(uTorso, supportPoint)
+  local drTorso = math.sqrt(relTorso.x^2 + relTorso.y^2)
+  --print('relTorso', supportPoint, relTorso, uTorso)
+  if drTorso<1e-3 and math.abs(relTorso.a)<DEG_TO_RAD then
+    local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
+    print('L FT', l_ft)
+    print('R FT', r_ft)
+    return'done'
   end
   
-  moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight)
+  -- How spread are our feet?
+  local dX = dTorsoScale * relTorso.x / drTorso
+  local dY = dTorsoScale * relTorso.y / drTorso
+  -- TODO: Add the angle
+  -- Move toward the support point
+  uTorso = uTorso - vector.pose{dX, dY, 0}
   
+  mcm.set_status_uTorso(uTorso)
+  moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight, dt)
 end
 
 function state.exit()

@@ -41,7 +41,7 @@ end
 function state.update()
   -- Get the time of update
   local t = Body.get_time()
-  local t_diff = t - t_update
+  local dt = t - t_update
   -- Save this at the last update time
   t_update = t
 
@@ -59,8 +59,8 @@ function state.update()
   local bodyHeightTarget = hcm.get_motion_bodyHeightTarget()
   bodyHeightTarget = math.max(MIN_BH, math.min(bodyHeightTarget, MAX_BH))
 
-  local bodyHeight = util.approachTol( bodyHeight_now, 
-    bodyHeightTarget, Config.stance.dHeight, t_diff )
+  local bodyHeight = util.approachTol(bodyHeight_now, 
+    bodyHeightTarget, Config.stance.dHeight, dt )
   
   -- Compensation
   --[[
@@ -79,8 +79,9 @@ function state.update()
   local uTorsoMid  = util.pose_global(vector.new({supportX, 0, 0}), uTorsoMid0)
   --print("uTorso, uLeft, uRight",uTorso, uLeft, uRight)
   --print('uTorsoMid0', uTorsoMid0, 'uTorsoMid', uTorsoMid)
-  --moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, 0, 0) -- just stay
-  moveleg.set_leg_positions_slowly(uTorsoMid, uLeft, uRight, zLeft, zRight)
+  --moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, 0, 0, dt) -- just stay
+  mcm.set_status_uTorso(uTorsoMid)
+  moveleg.set_leg_positions_slowly(uTorsoMid, uLeft, uRight, zLeft, zRight, dt)
   
   mcm.set_status_uTorsoVel({0,0,0})
   local steprequest = mcm.get_walk_steprequest()    

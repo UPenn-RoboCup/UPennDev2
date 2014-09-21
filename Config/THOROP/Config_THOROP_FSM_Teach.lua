@@ -48,7 +48,7 @@ fsm.Motion = {
   {'motionLean', 'done', 'motionLift'},
   {'motionLean', 'stand', 'motionInit'},
   --
-  --{'motionLift', 'lean', 'motionLean'},
+  {'motionLift', 'lean', 'motionLean'},
   {'motionLift', 'timeout', 'motionLower'},
   {'motionLift', 'quit', 'motionLower'},
   --{'motionLift', 'done', 'motionLower'},

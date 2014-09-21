@@ -486,7 +486,7 @@ if IS_WEBOTS then
         if not OLD_API then
           local new_P, old_P = Body.get_position_p()[idx], PID_P[idx]
           if new_P ~= old_P then
-            print('UPDATE P!', idx, old_P, new_P)
+            --print('UPDATE P!', idx, old_P, new_P)
             PID_P[idx] = new_P
             webots.wb_motor_set_control_pid(jtag, new_P, 0, 0)
           end

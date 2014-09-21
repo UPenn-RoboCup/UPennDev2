@@ -60,17 +60,16 @@ function state.update()
   if t-t_entry > timeout then return'timeout' end
 
   -- Zero the waist
-  local qWaist = Body.get_waist_position()
-  local qWaist_approach, doneWaist = util.goto(qWaist, qWaist_desired, dqWaistSz, qWaist_tol)
+  local qWaist = Body.get_waist_command_position()
+  local qWaist_approach, doneWaist = util.approachTol(qWaist, qWaist_desired, dqWaistSz, dt, qWaist_tol)
   Body.set_waist_command_position(qWaist_approach)
 
   if not Config.torque_legs then return doneWaist and 'done' end
 
   -- Move legs if they are torqued on
   local doneLegs = moveleg.set_lower_body_slowly(
-    pTorso_desired, pLLeg_desired, pRLeg_desired
+    pTorso_desired, pLLeg_desired, pRLeg_desired, dt
   )
-  
   return doneLegs and doneWaist and 'done'
 
 end

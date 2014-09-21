@@ -33,8 +33,8 @@ else
     cams{3}.s = zmq( 'subscribe', 'ipc', 'mesh0'  );
 end
 
-% Setup a udp_send
-        matlab_ch = zmq('publish', 'tcp', '192.168.123.30', 55558);
+% Setup a send channel
+matlab_ch = zmq('publish', 'tcp', '192.168.123.30', 55558);
 
 %% Loop
 running = 1;
@@ -116,33 +116,32 @@ while running
                     end
                 else
                     msg_id = char(metadata.id);
-                end
-                
-                msg_id = '';  % FOR NOW
-                
-                if strcmp(msg_id,'world')
-                    count_world = count_world + 1;
-                    data_world.meta = metadata;
-                    data_world.raw = raw;
-                    data_world.recv = true;
-                end
-                if strcmp(msg_id,'detect')
-                    count_detect = count_detect + 1;
-                    data_detect.meta = metadata;
-                    data_detect.raw = raw;
-                    data_detect.recv = true;
-                end
-                if strcmp(msg_id,'labelA')
-                    count_labelA = count_labelA + 1;
-                    data_labelA.meta = metadata;
-                    data_labelA.raw = raw;
-                    data_labelA.recv = true;
-                end
-                if strcmp(msg_id,'head_camera')
-                    count_cam = count_cam + 1;
-                    data_yuyv.meta = metadata;
-                    data_yuyv.raw = raw;
-                    data_yuyv.recv = true;
+                    
+                    if strcmp(msg_id,'world')
+                        count_world = count_world + 1;
+                        data_world.meta = metadata;
+                        data_world.raw = raw;
+                        data_world.recv = true;
+                    end
+                    if strcmp(msg_id,'detect')
+                        count_detect = count_detect + 1;
+                        data_detect.meta = metadata;
+                        data_detect.raw = raw;
+                        data_detect.recv = true;
+                    end
+                    if strcmp(msg_id,'labelA')
+                        count_labelA = count_labelA + 1;
+                        data_labelA.meta = metadata;
+                        data_labelA.raw = raw;
+                        data_labelA.recv = true;
+                    end
+                    if strcmp(msg_id,'head_camera')
+                        count_cam = count_cam + 1;
+                        data_yuyv.meta = metadata;
+                        data_yuyv.raw = raw;
+                        data_yuyv.recv = true;
+                    end
+
                 end
                 
             end
@@ -165,15 +164,8 @@ while running
                         continue; 
                     else
                         msg_id = char(metadata.name);
-                        if strcmp(msg_id, 'mesh0')
-                            count_mesh = count_mesh + 1;
-                            data_mesh.meta = metadata;
-                            data_mesh.raw = raw;
-                            data_mesh.recv = true;
-                        end
-
                     end
-                else
+               else
                     msg_id = char(metadata.id);
                end
                 
@@ -197,6 +189,7 @@ while running
         end
         
     end
+    
     t=toc;
     %    disp(sprintf('recv time: %.2f ms %d items',(t-t_last)*1000, recv_items));
     t_last = t;

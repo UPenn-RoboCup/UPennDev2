@@ -165,14 +165,7 @@ function h = show_monitor_sitevisit
         xs0 = bsxfun(@times, cos(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
         ys0 = bsxfun(@times, sin(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
         zs0 = -1*bsxfun(@times, mesh, sin(v_angles)) + 0.1; %lidarX offset
-        
-        % Body orientation: TODO: each scanline has its own pitch
-        % TODO: for now we just pick a single pitch since it's standing
-        % And assume s_roll = 0
-        
-%         figure(4);
-%         plot(s_pitch/pi*180);
-                
+                        
         
         % Visualization
         figure(2)
@@ -233,19 +226,23 @@ function h = show_monitor_sitevisit
         
         
         % TODO: dumb loop for now
-        proj_plane = zeros(size_x, size_y);
+%         proj_plane = zeros(size_x, size_y);
         p_count = zeros(size_x, size_y);
+        hmax_map = zeros(size_x, size_y);
         for i=1:length(ind)
             p_count(ind(i)) = p_count(ind(i)) + 1;
-            proj_plane(ind(i)) = proj_plane(ind(i)) + zss(i);
+            cur_hmax = hmax_map(ind(i));
+            cur_z = zss(i);
+            if cur_z > cur_hmax; hmax_map(ind(i)) = cur_z; end
+%             proj_plane(ind(i)) = proj_plane(ind(i)) + zss(i);
         end
         
-        % Get rid of the body part
-        p_count(1:0.3/grid_res, :) = 0;  
-        % Get rid of the distant part
-        p_count(end-0.2/grid_res:end, :) = 0;
         
-        thres1 = 0.7*max(p_count(:));
+        % Filtering on height (kinda cheating since we know the step height)
+        p_count(hmax_map>0.25) = 0;
+        p_count(hmax_map<=0) = 0;
+        
+        thres1 = 0.5*max(p_count(:));
         wall_ind = find(p_count(:)>thres1);
         
         hmap = zeros(size(p_count));
@@ -286,7 +283,7 @@ function h = show_monitor_sitevisit
                
         yaw_target = line_angle/pi*180 - 90;
         % TODO: filter angle into -pi/2, pi/2
-%         [x_target y_target yaw_target]
+        [x_target y_target yaw_target]
         
         
         send_data = {};
@@ -297,11 +294,13 @@ function h = show_monitor_sitevisit
         
         
         send_data = msgpack('pack', send_data);
+        
+        % If use udp
 %         udp_send('init', '192.168.123.30', 55556);
 %         ret = udp_send('send', 55556, send_data);
         
         % if use zmq
-        ret = zmq('send', matlab_ch, send_data);
+%         ret = zmq('send', matlab_ch, send_data);
                 
         
         

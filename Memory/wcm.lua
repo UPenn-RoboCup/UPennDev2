@@ -138,7 +138,7 @@ if Config.vision then
 	
 	-- step for site visit
 	shared.step = {}
-	shared.step.pos = vector.zeros(3)
+	shared.step.pose = vector.zeros(3)
 
 end
 

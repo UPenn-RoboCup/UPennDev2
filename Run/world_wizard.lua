@@ -94,6 +94,18 @@ local function update()
 		--if err then print(ret, err) end
 		t_send = t
 	end
+  
+  
+  --Print the local position of step
+  if t-t_debug>debug_interval then
+    t_debug = t
+    local step_pose = util.pose_relative(wcm.get_step_pose(), wcm.get_robot_pose())
+    print(string.format('HURDLE: %.2f %.2f %.1f', 
+      step_pose[1], step_pose[2], step_pose[3]*RAD_TO_DEG))
+  end  
+  
+  
+  
 end
 
 if ... and type(...)=='string' then

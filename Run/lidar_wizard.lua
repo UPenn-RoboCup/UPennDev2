@@ -20,7 +20,8 @@ local cb = function(self, data)
 		n = self.n,
 		res = self.res,
 		angle = Body.get_lidar_position(),
-    rpy = Body.get_rpy()
+    rpy = Body.get_rpy(), 
+    pose = wcm.get_robot_pose()
 	}),
 	data})
 end

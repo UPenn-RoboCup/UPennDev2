@@ -22,7 +22,7 @@ local qLArm1, qRArm1,qLLeg1,qRLeg1,qWaist1
 
 
 
-local slow_down_factor = 3
+local slow_down_factor = 2
 
 
 local keyframe={
@@ -61,7 +61,7 @@ local keyframe={
 --larm fold back 
   {    
     qLArm = {40,0,0,  -100,   90,  30,0},    
-    duration = 2.0*slow_down_factor,
+    duration = 1.0*slow_down_factor,
   },
 --larm place 
   {    
@@ -78,6 +78,7 @@ local keyframe={
   {    
     qRArm = {35,0,0,  -70,   -90,  0,0},    
     duration = 1.0*slow_down_factor,
+    stop = true,
   },
 
 
@@ -102,6 +103,7 @@ local keyframe={
     qLLeg={0,5,-50,160,-100,-5},
     qRLeg={0,-5,-50,160,-100,5},
     duration = 4.0*slow_down_factor,
+    stop = true,
   },
 
 --Stand up
@@ -110,7 +112,7 @@ local keyframe={
     qRArm = {140, -21, 5, -98, -42, -16, -62},    
     qLLeg={0,5,-40,80,-45,-5},
     qRLeg={0,-5,-40,80,-45,5},
-    duration = 4.0*slow_down_factor,
+    duration = 6.0*slow_down_factor,
   }
 }
 
@@ -166,7 +168,8 @@ function state.update()
   if stage==0 or 
    (t_diff>keyframe[stage].duration and hcm.get_state_proceed()==1) 
     then
-    hcm.set_state_proceed(0)
+
+    if stage>0 and keyframe[stage].stop then hcm.set_state_proceed(0) end
     t_start=t
     stage = stage +1
     if stage > #keyframe then return "done" end
@@ -190,3 +193,4 @@ function state.exit()
 end
 
 return state
+

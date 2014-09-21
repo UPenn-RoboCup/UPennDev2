@@ -21,8 +21,10 @@ local side
 
 -- Lift properties
 local xTarget
-local dxTarget = 0.25
+local dxTarget = 0.28
 local dpose = vector.pose{0.002, 0, 0}
+local dzTarget = 0.01
+local zTarget
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -41,6 +43,10 @@ function state.entry()
   if side_check~=side then print('BAD SUPPORT FOR HOLD!') end
   zLeft, zRight = unpack(mcm.get_status_zLeg())
   xTarget = (side=='left' and uRight[1] or uLeft[1]) + dxTarget
+  zTarget = (side=='left' and zRight or zLeft) + dzTarget
+  print('TARGETS', xTarget, zTarget)
+  print('LEFT', uLeft[1], zLeft)
+  print('RIGHT', uRight[1], zRight)
 end
 
 function state.update()
@@ -54,15 +60,31 @@ function state.update()
   -- TODO: If the foot hits something, then must retract and lower the foot!
   local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
   
+  -- Increment the leg height
+  local zDone, dz
+  if side=='left' then
+    zDone = zRight > zTarget
+    dz = zDone and 0 or 0.0002
+    zRight = zRight + dz
+  else
+    zDone = zLeft > zTarget
+    dz = zDone and 0 or 0.0002
+    zLeft = zLeft + dz
+  end
+  
+  local xDone
   if side=='left' then
     uRight = uRight + dpose
-    if uRight[1] > xTarget then return'done' end
-    mcm.set_status_uRight(uRight)
+    xDone = uRight[1] > xTarget
+    if not xDone then mcm.set_status_uRight(uRight) end
   else
     uLeft = uLeft + dpose
-    if uLeft[1] > xTarget then return'done' end
-    mcm.set_status_uLeft(uLeft)
+    xDone = uLeft[1] > xTarget
+    if not xDone then mcm.set_status_uLeft(uLeft) end
   end
+  
+  if xDone and zDone then return'done' end
+  
   moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight, dt)
 end
 

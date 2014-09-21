@@ -242,6 +242,7 @@ local dqLegLimit = Config.stance.dqLegLimit
 local dpLimitStance = Config.stance.dpLimitStance
 
 local function set_lower_body_slowly(pTorso, pLLeg, pRLeg, dt)
+  local zGround = mcm.get_status_zGround()
   -- Deal with the leg bias
   local legBias = mcm.get_leg_bias()
   local legBiasL = vector.slice(legBias, 1, 6)

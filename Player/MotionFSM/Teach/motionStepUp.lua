@@ -20,9 +20,10 @@ local zLeft, zRight
 local side
 local supportDir, supportFoot, supportPoint
 local uTorso, dTorso
-local dTorsoScale = 0.0005
+local dTorsoScale = 0.001
 local supportX, supportY = Config.walk.supportX, Config.walk.supportY
-
+local zTarget = 0.16
+local bH0, bH_final
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -54,10 +55,7 @@ function state.update()
   -- Where is our offset?
   local relTorso = util.pose_relative(uTorso, supportPoint)
   local drTorso = math.sqrt(relTorso.x^2 + relTorso.y^2)
-  --print('relTorso', supportPoint, relTorso, uTorso)
-  if drTorso<1e-3 and math.abs(relTorso.a)<DEG_TO_RAD then
-    return'done'
-  end
+  local torsoDone = drTorso<1e-3 and math.abs(relTorso.a)<DEG_TO_RAD
   
   -- How spread are our feet?
   local dX = dTorsoScale * relTorso.x / drTorso
@@ -66,15 +64,33 @@ function state.update()
   -- Move toward the support point
   uTorso = uTorso - vector.pose{dX, dY, 0}
   
+  local zDone, dz
+  if side=='left' then
+    zDone = zRight > zTarget
+    dz = (zDone or not torsoDone) and 0 or 0.0002
+    zRight = zRight + dz
+  else
+    zDone = zLeft > zTarget
+    dz = (zDone or not torsoDone) and 0 or 0.0002
+    zLeft = zLeft + dz
+  end
+  
+  if torsoDone and zDone then
+    local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
+    print('L FT', l_ft)
+    print('R FT', r_ft)
+    return'done'
+  end
+  
+  -- Update
+  mcm.set_status_zLeg{zLeft, zRight}
   mcm.set_status_uTorso(uTorso)
   moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight, dt)
 end
 
 function state.exit()
   print(state._NAME..' Exit')
-  local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
-  print('L FT', l_ft)
-  print('R FT', r_ft)
+  
 end
 
 return state

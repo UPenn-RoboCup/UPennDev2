@@ -46,6 +46,8 @@ function state.entry()
     Body.set_lleg_command_acceleration({50,50,50,50,50,50})
     if not IS_WEBOTS then unix.usleep(1e4) end
   end
+  
+  mcm.set_status_zGround({0})
 end
 
 ---

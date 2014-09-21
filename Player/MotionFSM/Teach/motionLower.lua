@@ -65,6 +65,8 @@ function state.update()
     if math.abs(zLeft - zRight) > 0.025 then
       return'uneven'
     else
+      print('New ground level!', zLeft)
+      mcm.set_status_zGround(zLeft)
       return'flat'
     end
   end

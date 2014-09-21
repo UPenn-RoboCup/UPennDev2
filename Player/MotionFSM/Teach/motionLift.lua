@@ -21,7 +21,7 @@ local side
 
 -- Lift properties
 local zTarget = 0.16
-local dz = 0.0002
+local dz = 0.001
 
 function state.entry()
   print(state._NAME..' Entry' )

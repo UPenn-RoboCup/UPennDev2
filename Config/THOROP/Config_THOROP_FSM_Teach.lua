@@ -36,16 +36,16 @@ fsm.Motion = {
   {'motionInit', 'done', 'motionStance'},
   {'motionInit', 'timeout', 'motionInit'},
   --
-  {'motionStance', 'lean', 'motionLean'},
   {'motionStance', 'sway', 'motionSway'},
+  {'motionStance', 'lean', 'motionLean'},
   --
   {'motionSway', 'lean', 'motionLean'},
   {'motionSway', 'switch', 'motionSway'},
   {'motionSway', 'timeout', 'motionStance'},
   {'motionSway', 'stand', 'motionStance'},
   --
-  {'motionLean', 'sway', 'motionSway'},
-  {'motionLean', 'done', 'motionLift'},
+  {'motionLean', 'stepup', 'motionLift'},
+  {'motionLean', 'stepdown', 'motionStepDown'},
   {'motionLean', 'stand', 'motionInit'},
   --
   {'motionLift', 'lean', 'motionLean'},
@@ -57,7 +57,14 @@ fsm.Motion = {
   {'motionHold', 'done', 'motionLower'},
   --
   {'motionLower', 'flat', 'motionStance'},
-  {'motionLower', 'uneven', 'motionStance'},
+  {'motionLower', 'uneven', 'motionCaptainMorgan'},
+  --
+  {'motionCaptainMorgan', 'stepup', 'motionStepUp'},
+  --{'motionCaptainMorgan', 'stepdown', 'motionLean'},
+  --
+  {'motionStepUp', 'done', 'motionHold'},
+  --
+  {'motionStepDown', 'done', 'motionLower'},
 }
 
 Config.fsm = fsm

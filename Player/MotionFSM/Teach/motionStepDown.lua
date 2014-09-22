@@ -13,15 +13,18 @@ require'mcm'
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
-local timeout = 20
+local timeout = 30
 -- Track the torso
 local uTorso, uLeft, uRight
 local zLeft, zRight
 local side
 
 -- Lift properties
-local zTarget = 0.16
-local dz = 0.001
+local xTarget
+local dxTarget = 0.29
+local dpose = vector.pose{0.002, 0, 0}
+local dzTarget = 0.01
+local zTarget
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -35,7 +38,15 @@ function state.entry()
   side = mcm.get_teach_sway()
   side = side=='none' and 'left' or side
   print('Support on the', side)
+  local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
+  local side_check = l_ft[3]>r_ft[3] and 'left' or 'right'
+  if side_check~=side then print('BAD SUPPORT FOR HOLD!') end
   zLeft, zRight = unpack(mcm.get_status_zLeg())
+  xTarget = (side=='left' and uRight[1] or uLeft[1]) + dxTarget
+  zTarget = (side=='left' and zRight or zLeft) + dzTarget
+  print('TARGETS', xTarget, zTarget)
+  print('LEFT', uLeft[1], zLeft)
+  print('RIGHT', uRight[1], zRight)
 end
 
 function state.update()
@@ -46,23 +57,35 @@ function state.update()
   t_update = t
   if t - t_entry > timeout then return'timeout' end
   
+  -- TODO: If the foot hits something, then must retract and lower the foot!
   local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
   
-  -- TODO: Make sure we lean enough before lifting our legs
-  if side=='left' and l_ft[3] < 2*r_ft[3] then return'lean' end
-  if side=='right' and r_ft[3] < 2*l_ft[3] then return'lean' end
-  
   -- Increment the leg height
+  local zDone, dz
   if side=='left' then
+    zDone = zRight > zTarget
+    dz = zDone and 0 or 0.0002
     zRight = zRight + dz
-    if zRight > zTarget then return'done' end
   else
+    zDone = zLeft > zTarget
+    dz = zDone and 0 or 0.0002
     zLeft = zLeft + dz
-    if zLeft > zTarget then return'done' end
   end
-  mcm.set_status_zLeg{zLeft, zRight}
-  moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight, dt)
   
+  local xDone
+  if side=='left' then
+    uRight = uRight + dpose
+    xDone = uRight[1] > xTarget
+    if not xDone then mcm.set_status_uRight(uRight) end
+  else
+    uLeft = uLeft + dpose
+    xDone = uLeft[1] > xTarget
+    if not xDone then mcm.set_status_uLeft(uLeft) end
+  end
+  
+  if xDone and zDone then return'done' end
+  
+  moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight, dt)
 end
 
 function state.exit()

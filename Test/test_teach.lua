@@ -12,6 +12,12 @@ end
 lower_lut['l'] = function()
   motion_ch:send'lean'
 end
+lower_lut['u'] = function()
+  motion_ch:send'stepup'
+end
+lower_lut['d'] = function()
+  motion_ch:send'stepdown'
+end
 lower_lut['s'] = function()
   motion_ch:send'sway'
 end

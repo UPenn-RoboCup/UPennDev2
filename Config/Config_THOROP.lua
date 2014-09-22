@@ -25,9 +25,9 @@ Config.sensors = {
 }
 
 Config.use_localhost = false
+Config.wizards = {}
 if IS_WEBOTS then
   -- Tune which wizards to run in webots
-  Config.wizards = {}
   Config.wizards.mesh = 'mesh_wizard'
   Config.wizards.world = 'world_wizard'
   Config.wizards.camera = 'camera_wizard'

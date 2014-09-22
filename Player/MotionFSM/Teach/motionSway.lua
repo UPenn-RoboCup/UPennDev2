@@ -16,7 +16,7 @@ local t_entry, t_update, t_last_step
 local timeout = 2
 -- Track the torso
 local uTorso, uLeft, uRight
-local zLeft, zRight = 0, 0
+local zLeft, zRight
 local side
 
 function state.entry()
@@ -28,6 +28,7 @@ function state.entry()
   uTorso = mcm.get_status_uTorso()  
   uLeft = mcm.get_status_uLeft()
   uRight = mcm.get_status_uRight()
+  zLeft, zRight = unpack(mcm.get_status_zLeg())
   side = mcm.get_teach_sway()
   side = side=='none' and 'left' or side
   print('Sway to the', side)
@@ -36,7 +37,7 @@ end
 function state.update()
   -- Get the time of update
   local t = Body.get_time()
-  local t_diff = t - t_update
+  local dt = t - t_update
   -- Save this at the last update time
   t_update = t
   
@@ -66,7 +67,7 @@ function state.update()
       --return'switch'
     end
   end
-  moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight)
+  moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight, dt)
 end
 
 function state.exit()

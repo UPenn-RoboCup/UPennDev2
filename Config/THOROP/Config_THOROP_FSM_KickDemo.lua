@@ -36,30 +36,23 @@ fsm.Arm = {
 }
 
 fsm.Head = {
-  {'headIdle', 'scan', 'headBackScan'},
+  {'headIdle', 'scan', 'headScan'},
   {'headIdle', 'teleop', 'headTeleop'},
-  {'headIdle', 'scanobs', 'headObstacleScan'},
+  
   --
 
   {'headScan', 'ballfound', 'headTrack'},
   {'headScan', 'noball', 'headBackScan'},
   {'headScan', 'teleop', 'headTeleop'},
-  {'headScan', 'scanobs', 'headObstacleScan'},
-  -- 
-  {'headTeleop', 'scan', 'headBackScan'},
-  {'headTeleop', 'scanobs', 'headObstacleScan'},
-  -- 
+    -- 
+  {'headTeleop', 'scan', 'headScan'},
+  {'headTeleop', 'scanobs', 'headScan'},
   
-  {'headObstacleScan', 'done', 'headTrack'},
-  {'headObstacleScan', 'backscan', 'headBackScan'},
-  {'headObstacleScan', 'teleop', 'headTeleop'},
- 
 
   {'headBackScan', 'ballfound', 'headTrack'},
   {'headBackScan', 'noball', 'headBackScan'},
   {'headBackScan', 'teleop', 'headTeleop'},
-  {'headBackScan', 'scanobs', 'headObstacleScan'},
-  
+    
   --
   {'headTrack', 'balllost', 'headScan'},
   {'headTrack', 'timeout', 'headLookGoal'},
@@ -70,7 +63,7 @@ fsm.Head = {
   {'headKickFollow', 'done', 'headTrack'},
 
   {'headLookGoal', 'timeout', 'headTrack'},
-  {'headLookGoal', 'scanobs', 'headObstacleScan'},
+  
   --
   --
   
@@ -249,17 +242,6 @@ for _,sm in ipairs(Config.fsm.enabled) do
 end
 
 
-
-
-
-
-
-
-
-
-
-
-
 Config.default_role = 2 --0 goalie / 1 attacker / 2 tester
 Config.default_state = 5 -- 0 1 2 3 4 for init~finished, 5 for untorqued, 6 for testing
 
@@ -279,12 +261,14 @@ Config.approachTargetX = {
 Config.disable_kick = false
 
 Config.use_angle_localization = true
-Config.demo = false
---Config.demo = true
+
+
 
 if IS_WEBOTS then 
   Config.approachTargetX = {
-    0.35, --for kick 0 (walkkick)
+--    0.35, --for kick 0 (walkkick)
+    0.30, --for kick 0 (walkkick)
+
     0.30, --for kick 1 (st kick)
     0.35  --for kick 2 (weak walkkick)
   }
@@ -373,5 +357,8 @@ Config.goalie_t_startmove = 10.0
 
 Config.assume_goalie_blocking = true
 Config.enemy_goalie_shift_factor = 0.15
+
+--DEMO!!!
+Config.demo = true
 
 return Config

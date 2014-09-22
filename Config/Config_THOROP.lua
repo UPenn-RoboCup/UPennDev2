@@ -64,21 +64,24 @@ Config.enable_log = false
 Config.use_log = false
 Config.torque_legs = true
 
+--Default motion libraries
+Config.libs={
+  ArmLib = 'DRCTrials',
+  MotionLib = 'RoboCup',  
+  World = 'DRCNew'  
+}
+
+
 --SJ: now we can choose which config, fsm and mid-level libraries to use
 
 --Robocup 
-----[[
-Config.libs = {
-  ArmLib = 'DRCTrials',
-  MotionLib = 'RoboCup',
-  --World = 'RoboCup'
+--[[
+Config.libs.World = 'RoboCup'
 
-  World = 'DRCNew'
-
-}
 local exo = {
   'Robot','Walk','Net','Manipulation',
-  'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
+ -- 'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
+ 'FSM_KickDemo','World_RoboCup','Vision_RoboCup' 
 }
 Config.testfile = 'test_robocup'
 Config.sensors.chest_lidar = false
@@ -88,11 +91,6 @@ Config.wizards.mesh = nil
 
 --[[
 --DRC Trials
-Config.libs = {
-  ArmLib = 'DRCTrials',
-  MotionLib = 'RoboCup',
-  World = 'DRCNew'
-}
 local exo = {'Robot','Walk','Net','Manipulation',
 'FSM_DRCTrials','World_RoboCup','Vision_DRCTrials'
 }
@@ -100,13 +98,9 @@ Config.testfile = 'test_robocup'
 --]]
 
 
---[[
+----[[
 --DRC Site visit 2014
-Config.libs = {
-  ArmLib = 'DRCTrials',
-  MotionLib = 'RoboCup',
-  World = 'SiteVisit'   
-}
+Config.libs.World = 'SiteVisit'   
 --Config.wizards.mesh = 'mesh_wizard_sitevisit'
 local exo = {'Robot','Walk','Net','Manipulation',
 'FSM_SiteVisit','World_DRCTrials','Vision_DRCTrials'
@@ -116,9 +110,7 @@ Config.testfile = 'test_sitevisit'
 
 --[[
 -- Teach robot to go up steps
-Config.libs = {
-  MotionLib = 'Teach',
-}
+Config.libs.MotionLib = 'Teach'}
 -- Precedence in loading, for overrides!
 local exo = {
 	'Robot', 'Walk', 'Net', 'FSM_Teach'

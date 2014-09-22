@@ -16,6 +16,14 @@ Config.dev = {
 	gender       = 'boy',
 }
 
+Config.sensors = {
+  ft = true,
+  head_camera = true,
+  chest_lidar = true,
+  head_lidar = false,
+  fsr = false,
+}
+
 Config.use_localhost = false
 if IS_WEBOTS then
   -- Tune which wizards to run in webots
@@ -27,9 +35,16 @@ if IS_WEBOTS then
   --Config.wizards.slam = 'slam_wizard'
   -- Adjust the tiemsteps if desired
   --Config.camera_timestep = 33
-  --Config.lidar_timestep = 200 --slower
+--  Config.lidar_timestep = 200 --slower
+
   Config.use_localhost = true
 end
+
+--diable lidar stuff for speedup
+--[[
+  
+--]]
+
 
 -- Printing of debug messages
 Config.debug = {
@@ -52,17 +67,23 @@ Config.torque_legs = true
 --SJ: now we can choose which config, fsm and mid-level libraries to use
 
 --Robocup 
---[[
+----[[
 Config.libs = {
   ArmLib = 'DRCTrials',
   MotionLib = 'RoboCup',
-  World = 'RoboCup'
+  --World = 'RoboCup'
+
+  World = 'DRCNew'
+
 }
 local exo = {
   'Robot','Walk','Net','Manipulation',
   'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
 }
 Config.testfile = 'test_robocup'
+Config.sensors.chest_lidar = false
+Config.wizards.test = nil
+Config.wizards.mesh = nil
 --]]
 
 --[[
@@ -79,7 +100,7 @@ Config.testfile = 'test_robocup'
 --]]
 
 
-----[[
+--[[
 --DRC Site visit 2014
 Config.libs = {
   ArmLib = 'DRCTrials',

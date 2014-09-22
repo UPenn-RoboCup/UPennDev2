@@ -120,6 +120,9 @@ if ONE_CHAIN then
   right_leg = nil
   left_leg  = nil
 else
+	-- Both keys and indices
+	Config.chain[right_leg.name] = right_leg
+	Config.chain[left_leg.name] = left_leg
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)
   if Config.USE_DUMMY_ARMS then
@@ -129,6 +132,8 @@ else
   else
     table.insert(Config.chain, right_arm)
     table.insert(Config.chain, left_arm)
+		Config.chain[right_arm.name] = right_arm
+		Config.chain[left_arm.name] = left_arm
   end
   one_chain = nil
 end

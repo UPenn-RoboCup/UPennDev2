@@ -58,9 +58,9 @@ function state.update()
   local bodyHeight_now = mcm.get_stance_bodyHeight()
   local bodyHeightTarget = hcm.get_motion_bodyHeightTarget()
   bodyHeightTarget = math.max(MIN_BH, math.min(bodyHeightTarget, MAX_BH))
+
   local bodyHeight = util.approachTol(bodyHeight_now, 
-    bodyHeightTarget, Config.stance.dHeight, dt)
-  mcm.set_stance_bodyHeight(bodyHeight)
+    bodyHeightTarget, Config.stance.dHeight, dt )
   
   -- Compensation
   --[[
@@ -71,6 +71,7 @@ function state.update()
   local uTorsoComp = mcm.get_stance_uTorsoComp()
   local uTorsoCompensated = util.pose_global(
      {uTorsoComp[1],uTorsoComp[2],0},uTorso)
+  mcm.set_stance_bodyHeight(bodyHeight)  
   moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,0,0,delta_legs)
   --]]
   local zLeft, zRight = unpack(mcm.get_status_zLeg())
@@ -90,9 +91,6 @@ end -- walk.update
 function state.exit()
   print(state._NAME..' Exit')
   -- TODO: Store things in shared memory?
-  local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
-  print('L FT', l_ft)
-  print('R FT', r_ft)
 end
 
 return state

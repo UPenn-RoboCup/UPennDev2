@@ -5,6 +5,7 @@ cal={}
 cal[HOSTNAME] = {}
 cal["asus"] = {}
 cal["alvin"]={}
+cal["teddy"]={}
 
 
 

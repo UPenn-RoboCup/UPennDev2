@@ -10,14 +10,6 @@ Config.imu = {
   -- TODO: Add some mapping, etc.
 }
 
-Config.sensors = {
-	ft = true,
-	head_camera = true,
-  chest_lidar = true,
-  head_lidar = false,
-  fsr = false,
-}
-
 Config.left_ft = {
 	id = 'FT14217 TWE',
 	m_ids = {26, 24},

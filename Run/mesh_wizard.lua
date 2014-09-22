@@ -76,6 +76,7 @@ local function setup_mesh(meta)
 		scan_a = scan_angles:clone()
     scan_pitch = scan_angles:clone()
     scan_roll = scan_angles:clone()
+    scan_pose = torch.DoubleTensor(n_scanlines,3):zero()
 	else
 		scan_angles = vector.zeros(n_scanlines)
 		scan_x = vector.zeros(n_scanlines)
@@ -83,6 +84,7 @@ local function setup_mesh(meta)
 		scan_a = vector.zeros(n_scanlines)
     scan_pitch = vector.zeros(n_scanlines)
     scan_roll = vector.zeros(n_scanlines)
+    scan_pose = {}
 	end
 	-- Metadata for the mesh
 	metadata.rfov = ranges_fov
@@ -94,6 +96,8 @@ local function setup_mesh(meta)
 	-- Add Orientation for pitch and roll
   metadata.pitch = scan_pitch
   metadata.roll = scan_roll
+  -- Odometry
+  metadata.pose = scan_pose
   -- Add the dimensions (useful for raw)
   metadata.dims = {n_scanlines, n_returns}
 end
@@ -147,13 +151,14 @@ local function send_mesh(destination, compression, dynrange)
   mesh_byte:copy(mesh_adj)
   -- Compression
   local c_mesh
-  --compression = 'raw'
+  compression = 'raw'
   if compression=='jpeg' then
 		c_mesh = j_compress:compress(mesh_byte)
   elseif compression=='png' then
     c_mesh = p_compress(mesh_byte)
   else
     -- Raw
+    print('compressing RAW...')
     c_mesh = ffi.string(mesh:data(), mesh:nElement() * ffi.sizeof'float')
   end
 	-- Update relevant metadata
@@ -214,6 +219,9 @@ local function update(meta, ranges)
   -- Metadata
   -- NOTE: Orientation should include the joint positions as well!
   local roll, pitch, yaw = unpack(meta.rpy)
+  -- Body pose
+  local pose = meta.pose
+  
   -- Find the scanline indices
 	local rad_angle = meta.angle
   local scanlines = angle_to_scanlines(rad_angle)
@@ -227,6 +235,7 @@ local function update(meta, ranges)
 			-- Save the pan angle
 			scan_angles[line] = rad_angle
 			-- TODO: Save the pose
+      scan_pose[line] = vector.new(pose)
       -- Save the orientation
       scan_pitch[line] = pitch
       scan_roll[line] = roll

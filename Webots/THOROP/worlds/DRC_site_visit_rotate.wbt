@@ -32,8 +32,11 @@ DEF FLOOR Floor {
     "textures/texture_grid.png"
   ]
 }
+DEF WALL PartialWalls {
+  translation -1.1 0 -0.8	
+}
 DEF BLOCK QualStep {
-  translation -0.2 0.075 0
+  translation 0 0.075 0
 }
 #DEF BALL_LEFT BallGPS_Landmark {
 #  translation 0 0.109919 0.55

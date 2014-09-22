@@ -40,6 +40,7 @@ Config.debug = {
   planning = false,
   goalpost = false,
   world = false,
+--  world = true,
 }
 
 -- Monitor and logging

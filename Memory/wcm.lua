@@ -135,6 +135,10 @@ if Config.vision then
 	-- line for goalie
 	shared.line = {}
 	shared.line.detect = vector.zeros(1)
+	
+	-- step for site visit
+	shared.step = {}
+	shared.step.pose = vector.zeros(3)
 
 end
 

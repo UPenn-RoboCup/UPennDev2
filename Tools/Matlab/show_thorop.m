@@ -6,10 +6,12 @@ startup;
 %% Camera Figure
 
 
-global cam monitor
+global cam monitor matlab_ch REAL_ROBOT line_angle0
+
+line_angle0 = 555;
 
 monitor = show_monitor_sitevisit();
-monitor.init();
+% monitor.init();
 
 
 %% Network
@@ -27,10 +29,18 @@ if REAL_ROBOT==1
     s_bottom = zmq( 'fd', cams{2}.fd );
     cams{3}.fd = udp_recv('new', 33344);
     s_mesh = zmq('fd', cams{3}.fd);
+    
+    % Setup a send channel
+    matlab_ch = zmq('publish', 'tcp', '192.168.123.30', 55558);
+
 else
     cams{1}.s = zmq( 'subscribe', 'ipc', 'camera0' );
     cams{2}.s = zmq( 'subscribe', 'ipc', 'camera1' );
     cams{3}.s = zmq( 'subscribe', 'ipc', 'mesh0'  );
+    
+    % Setup a send channel
+    matlab_ch = zmq('publish', 'tcp', 'localhost', 55558);
+
 end
 
 
@@ -91,37 +101,55 @@ while running
         camera = cams{s_idx_m};
         
         if isfield(camera, 'fd')
-            while udp_recv('getQueueSize', fd) > 0
+            while udp_recv('getQueueSize', camera.fd) > 0
                 recv_items = recv_items + 1;
-                udp_data = udp_recv('receive',fd);
+                udp_data = udp_recv('receive',camera.fd);
                 [metadata, offset] = msgpack('unpack', udp_data);
                 
                 % This must be uint8
                 raw = udp_data(offset+1:end);
-                msg_id = char(metadata.id);
-                if strcmp(msg_id,'world')
-                    count_world = count_world + 1;
-                    data_world.meta = metadata;
-                    data_world.raw = raw;
-                    data_world.recv = true;
-                end
-                if strcmp(msg_id,'detect')
-                    count_detect = count_detect + 1;
-                    data_detect.meta = metadata;
-                    data_detect.raw = raw;
-                    data_detect.recv = true;
-                end
-                if strcmp(msg_id,'labelA')
-                    count_labelA = count_labelA + 1;
-                    data_labelA.meta = metadata;
-                    data_labelA.raw = raw;
-                    data_labelA.recv = true;
-                end
-                if strcmp(msg_id,'head_camera')
-                    count_cam = count_cam + 1;
-                    data_yuyv.meta = metadata;
-                    data_yuyv.raw = raw;
-                    data_yuyv.recv = true;
+                
+                if ~isfield(metadata, 'id')
+                    if ~isfield(metadata, 'name')
+                        continue; 
+                    else
+                        msg_id = char(metadata.name);
+                        if strcmp(msg_id, 'mesh0')
+                            count_mesh = count_mesh + 1;
+                            data_mesh.meta = metadata;
+                            data_mesh.raw = raw;
+                            data_mesh.recv = true;
+                        end
+
+                    end
+                else
+                    msg_id = char(metadata.id);
+                    
+                    if strcmp(msg_id,'world')
+                        count_world = count_world + 1;
+                        data_world.meta = metadata;
+                        data_world.raw = raw;
+                        data_world.recv = true;
+                    end
+                    if strcmp(msg_id,'detect')
+                        count_detect = count_detect + 1;
+                        data_detect.meta = metadata;
+                        data_detect.raw = raw;
+                        data_detect.recv = true;
+                    end
+                    if strcmp(msg_id,'labelA')
+                        count_labelA = count_labelA + 1;
+                        data_labelA.meta = metadata;
+                        data_labelA.raw = raw;
+                        data_labelA.recv = true;
+                    end
+                    if strcmp(msg_id,'head_camera')
+                        count_cam = count_cam + 1;
+                        data_yuyv.meta = metadata;
+                        data_yuyv.raw = raw;
+                        data_yuyv.recv = true;
+                    end
+
                 end
                 
             end
@@ -139,9 +167,16 @@ while running
                 %raw = data(offset+1:end); % This must be uint8
                 
                 
-                if ~isfield(metadata, 'id'); continue; end
+               if ~isfield(metadata, 'id')
+                    if ~isfield(metadata, 'name')
+                        continue; 
+                    else
+                        msg_id = char(metadata.name);
+                    end
+               else
+                    msg_id = char(metadata.id);
+               end
                 
-                msg_id = char(metadata.id);
                 if strcmp(msg_id,'head_camera')
                     count_cam = count_cam + 1;
                     data_yuyv.meta = metadata;
@@ -162,6 +197,7 @@ while running
         end
         
     end
+    
     t=toc;
     %    disp(sprintf('recv time: %.2f ms %d items',(t-t_last)*1000, recv_items));
     t_last = t;
@@ -174,7 +210,7 @@ while running
         if data_world.recv monitor.process_msg(data_world.meta,data_world.raw,cam); end
         if data_detect.recv monitor.process_msg(data_detect.meta,data_detect.raw,cam); end
         if data_labelA.recv monitor.process_msg(data_labelA.meta,data_labelA.raw,cam); end
-        if data_yuyv.recv monitor.process_msg(data_yuyv.meta,data_yuyv.raw,cam); end
+%         if data_yuyv.recv monitor.process_msg(data_yuyv.meta,data_yuyv.raw,cam); end
         
         if data_mesh.recv
             monitor.process_msg(data_mesh.meta, data_mesh.raw, cam);

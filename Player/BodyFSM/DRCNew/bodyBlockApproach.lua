@@ -137,12 +137,10 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
   return vStep,false
 end
 
+local uLeftGlobalTarget, uRightGlobalTarget
 
+local function update_target()
 
-
-
-
-local function update_velocity()
   local pose = wcm.get_robot_pose()
   local pose_0 = {0,0,0}
 --  print("pose:",pose[1],pose[2])
@@ -150,7 +148,7 @@ local function update_velocity()
   local ballx, bally = 0,0 --This should be the relative position of the blocks
   local approachTargetX, approachTargetY = 0.03,0
 
-  local uLeftGlobalTarget, uRightGlobalTarget
+  
 
   uLeftGlobalTarget = util.pose_global({
     ballx - approachTargetX - Config.walk.supportX,
@@ -160,6 +158,33 @@ local function update_velocity()
     ballx - approachTargetX - Config.walk.supportX,
     bally + approachTargetY- Config.walk.footY,
     0},pose_0)
+
+
+
+---------------------------------------
+  --HACK for testing!
+
+  local target_dist = 0.33
+  uLeftGlobalTarget = {target_dist,Config.walk.footY,0}
+  uRightGlobalTarget = {target_dist,-Config.walk.footY,0}
+
+if IS_WEBOTS then
+  local target_pose = util.pose_relative(wcm.get_step_pose(), wcm.get_robot_pose())
+  local target_x = target_pose[1] - 0.15 -- HACK
+  local target_leftY = target_pose[2] + Config.walk.footY
+  local target_rightY = target_pose[2] - Config.walk.footY
+  local target_yaw = util.mod_angle(target_pose[3])
+
+
+  uLeftGlobalTarget = {target_x, target_leftY, target_yaw}
+  uRightGlobalTarget = {target_x, target_rightY, target_yaw}
+end
+
+end
+
+
+local function update_velocity()
+  update_target()
 
 --  print("uLeftGlobalTarget:",unpack(uLeftGlobalTarget))
 
@@ -188,6 +213,9 @@ function state.entry()
   last_ph = 0  
   last_step = 0
   wcm.set_robot_etastep(-1) --we're in approach
+
+  wcm.set_robot_reset_pose(1)
+  motion_ch:send'hybridwalk'
 
 end
 

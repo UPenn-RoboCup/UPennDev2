@@ -1,7 +1,7 @@
 function h = show_monitor_sitevisit
-  global cam 
+  global cam matlab_ch REAL_ROBOT line_angle0
 
-  h = []
+  h = [];
   h.init = @init;
   h.process_msg = @process_msg;
 
@@ -114,7 +114,11 @@ function h = show_monitor_sitevisit
 
   function [needs_draw] = process_msg(metadata, raw, cam)
 % Process each type of message
-    msg_id = char(metadata.id);
+    if isfield(metadata, 'id') 
+        msg_id = char(metadata.id);
+    elseif isfield(metadata, 'name')
+        msg_id = char(metadata.name);
+    end
     needs_draw = 0;
     
 
@@ -131,15 +135,21 @@ function h = show_monitor_sitevisit
         needs_draw = 1;
     elseif strcmp(msg_id, 'mesh0')
         % metadata
-        n_scanlines = metadata.n_scanlines;
-        n_returns = metadata.n_returns;
+        %n_scanlines = metadata.n_scanlines;
+        %n_returns = metadata.n_returns;
+        n_scanlines = metadata.dims(1);
+        n_returns = metadata.dims(2);
         s_angles = metadata.a;
+        s_pitch = metadata.pitch;
+        s_roll = metadata.roll;
+        s_pose = metadata.pose;
+        
         % Raw
         mesh_float = typecast(raw, 'single');
         
         % clamp on ranges
-        mesh_float(mesh_float>5) = 0;
-        mesh_float(mesh_float<0.1) = 0;
+        mesh_float(mesh_float>2) = 0;
+        mesh_float(mesh_float<0.15) = 0;
 
         mesh = reshape(mesh_float, [n_returns n_scanlines])';
         % ray angles 
@@ -156,31 +166,61 @@ function h = show_monitor_sitevisit
         % Convert to x, y, z
         xs0 = bsxfun(@times, cos(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
         ys0 = bsxfun(@times, sin(s_angles)', bsxfun(@times, mesh, cos(v_angles)));
-        zs0 = -1*bsxfun(@times, mesh, sin(v_angles)) + metadata.lidarZ;
-        
-        % Body orientation
-        body_pitch = metadata.bodyPitch;
-        body_trans = [cos(body_pitch) sin(body_pitch); 
-                      -sin(body_pitch)  cos(body_pitch)];
-        
+        zs0 = -1*bsxfun(@times, mesh, sin(v_angles)) + 0.1; %lidarX offset
+                        
         
         % Visualization
         figure(2)
         xs = xs0; ys = ys0; zs = zs0;
+        
+        if REAL_ROBOT==1
+            body_pitch_offset = -2.5/180*pi;
+        else
+            body_pitch_offset = 0;
+        end
+        
         for i = 1:n_scanlines 
             % TODO: better factorization
-            new_xz = body_trans*[xs0(i,:); zs0(i,:)];
-            xs(i,:) = new_xz(1,:);
-            zs(i,:) = new_xz(2,:) + 1;  %TODO: bodyHeight
+            body_pitch = s_pitch(i) + body_pitch_offset;
+            body_roll = s_roll(i);
+            cur_pose = s_pose(i);
+            cur_pose = cur_pose{1}; 
+%             if REAL_ROBOT==0
+%                 cur_pose(3) = pi/2 - cur_pose(3);
+%             end
+            
+            rot_yaw = [cos(cur_pose(3)) -sin(cur_pose(3)); 
+                      sin(cur_pose(3))  cos(cur_pose(3))];
+            
+            rot_pitch = [cos(body_pitch) sin(body_pitch); 
+                      -sin(body_pitch)  cos(body_pitch)];
+                  
+            rot_roll = [cos(body_roll) sin(body_roll); 
+                      -sin(body_roll)  cos(body_roll)];
+                  
+            
+            new_xz = rot_pitch*[xs0(i,:); zs0(i,:)];
+            new_yz = rot_roll*[ys0(i,:); new_xz(2,:)];
+            new_xy = rot_yaw*[new_xz(1,:); new_yz(1,:)];
+            
+            
+            % Now xs, ys, and zs are in GLOBAL coordinates
+            xs(i,:) = new_xy(1,:) + cur_pose(1);
+            ys(i,:) = new_xy(2,:) + cur_pose(2);
+            zs(i,:) = new_yz(2,:) + 0.93;  %TODO: bodyHeight
+            
   
             plot3(xs(i,:), ys(i,:), zs(i,:), '.');
             hold on;
         end
+        view([0 0]);
         hold off;
         
                 
         % Grid params: meters
-        grid_res = 0.01; 
+        grid_res = 0.02; 
+        
+        % TODO: use the pose of first scanline as baseline?
         
         xss = xs(:); yss = ys(:);  zss = zs(:);
         x_min = min(xss);  x_max = max(xss);
@@ -200,29 +240,39 @@ function h = show_monitor_sitevisit
         
         
         % TODO: dumb loop for now
-        proj_plane = zeros(size_x, size_y);
         p_count = zeros(size_x, size_y);
+        hmax_map = zeros(size_x, size_y);
         for i=1:length(ind)
+            % Cheat since we know the step height
+%             if zss(i)<=0 || zss(i)>0.2; continue; end;
+            
             p_count(ind(i)) = p_count(ind(i)) + 1;
-            proj_plane(ind(i)) = proj_plane(ind(i)) + zss(i);
+            cur_hmax = hmax_map(ind(i));
+            cur_z = zss(i);
+            if cur_z > cur_hmax; hmax_map(ind(i)) = cur_z; end
         end
         
-        % Get rid of the body part
-        p_count(1:0.2/grid_res, :) = 0;        
+        
+        p_count(hmax_map>0.18) = 0;
+        p_count(hmax_map<=0) = 0;
         
         thres1 = 0.6*max(p_count(:));
-%         thres2 = mean(p_count(:));
         wall_ind = find(p_count(:)>thres1);
         
         hmap = zeros(size(p_count));
         hmap(wall_ind)=1;
         
-        figure(3);
+        figure(3);  %TODO: flip the image
         imshow(hmap);
         
         
         % Retrieve the x, y info of the wall line
         [wall_xis wall_yis] = ind2sub([size_x size_y], wall_ind);
+        
+        % Filter out the outliers according to x distance
+        wall_yis(wall_xis>median(wall_xis)*1.5) = [];
+        wall_xis(wall_xis>median(wall_xis)*1.5) = [];
+        
         % TODO: rounding u
         wall_xs = wall_xis*grid_res + x_min;
         wall_ys = wall_yis*grid_res + y_min;
@@ -230,7 +280,17 @@ function h = show_monitor_sitevisit
         % Fit into a line
         % Use polyfit for now, should be easy to implement in lua later
         P = polyfit(wall_xis, wall_yis, 1);
-        line_angle = atan(P(1));
+        if line_angle0==555
+            line_angle0 = atan(P(1));
+        end
+        line_angle1 = atan(P(1));
+        
+        if abs(line_angle1-line_angle0) > deg2rad(50)
+            line_angle = line_angle0;
+        else
+            line_angle = line_angle1;
+            line_angle0 = line_angle1;
+        end
         
         xi_c = mean(wall_xis);
         yi_c = mean(wall_yis);
@@ -253,6 +313,25 @@ function h = show_monitor_sitevisit
         yaw_target = line_angle/pi*180 - 90;
         % TODO: filter angle into -pi/2, pi/2
         [x_target y_target yaw_target]
+        
+        
+        send_data = {};
+        send_data.shm = 'wcm';
+        send_data.seg = 'step';
+        send_data.key = 'pose';
+        send_data.val = [x_target y_target deg2rad(yaw_target)];
+        
+        
+        send_data = msgpack('pack', send_data);
+        
+        % If use udp
+%         udp_send('init', '192.168.123.30', 55556);
+%         ret = udp_send('send', 55556, send_data);
+        
+        % if use zmq
+        ret = zmq('send', matlab_ch, send_data);
+                
+        
         
         
         

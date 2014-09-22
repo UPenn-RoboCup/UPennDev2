@@ -40,12 +40,6 @@ if IS_WEBOTS then
   Config.use_localhost = true
 end
 
---diable lidar stuff for speedup
---[[
-  
---]]
-
-
 -- Printing of debug messages
 Config.debug = {
 	webots_wizard = false,	
@@ -77,7 +71,6 @@ Config.libs={
 --Robocup 
 --[[
 Config.libs.World = 'RoboCup'
-
 local exo = {
   'Robot','Walk','Net','Manipulation',
  -- 'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
@@ -88,6 +81,7 @@ Config.sensors.chest_lidar = false
 Config.wizards.test = nil
 Config.wizards.mesh = nil
 --]]
+
 
 --[[
 --DRC Trials
@@ -101,12 +95,20 @@ Config.testfile = 'test_robocup'
 ----[[
 --DRC Site visit 2014
 Config.libs.World = 'SiteVisit'   
---Config.wizards.mesh = 'mesh_wizard_sitevisit'
+Config.wizards.mesh = 'mesh_wizard_sitevisit'
+----[[
+Config.sensors.chest_lidar = false
+Config.wizards.test = nil
+Config.wizards.mesh = nil
+--]]
 local exo = {'Robot','Walk','Net','Manipulation',
 'FSM_SiteVisit','World_DRCTrials','Vision_DRCTrials'
 }
 Config.testfile = 'test_sitevisit'
 --]]
+
+
+
 
 --[[
 -- Teach robot to go up steps

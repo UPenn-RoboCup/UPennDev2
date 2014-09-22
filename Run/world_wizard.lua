@@ -99,7 +99,7 @@ local function update()
   
   
   --Print the local position of step
-  if t-t_debug>debug_interval then
+  if t-t_debug>debug_interval and Config.debug.wolrld then
     t_debug = t
     local step_pose = util.pose_relative(wcm.get_step_pose(), wcm.get_robot_pose())
     print(string.format('HURDLE: %.2f %.2f %.1f', 

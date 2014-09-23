@@ -177,7 +177,7 @@ table.insert(Config.camera,
     --Logitech C920
     --lut = 'empty',
     --lut = 'm308_lightson',
-		lut = 'ucla0',
+		lut = 'ucla1',
 		-- f = 640/2/tan(78/180*pi / 2)
 		--fov = 2*arctan(d/2f)
 		-- f = d/2/tan(fov/2)

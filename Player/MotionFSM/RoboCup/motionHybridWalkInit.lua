@@ -125,9 +125,9 @@ local function calculate_footsteps()
 
 --Write to the SHM
   local maxSteps = 40
-  step_queue_vector = vector.zeros(12*maxSteps)
+  step_queue_vector = vector.zeros(15*maxSteps)
   for i=1,#step_queue do    
-    local offset = (i-1)*13;
+    local offset = (i-1)*15;
     step_queue_vector[offset+1] = step_queue[i][1][1]
     step_queue_vector[offset+2] = step_queue[i][1][2]
     step_queue_vector[offset+3] = step_queue[i][1][3]
@@ -145,6 +145,10 @@ local function calculate_footsteps()
     step_queue_vector[offset+11] = step_queue[i][7][1]
     step_queue_vector[offset+12] = step_queue[i][7][2]
     step_queue_vector[offset+13] = step_queue[i][7][3]
+
+    step_queue_vector[offset+14] = 0
+    step_queue_vector[offset+15] = 0
+
   end
 
   mcm.set_step_footholds(step_queue_vector)
@@ -201,7 +205,7 @@ function walk.entry()
   local footQueue = mcm.get_step_footholds()
 
   for i=1,nFootHolds do
-    local offset = (i-1)*13;
+    local offset = (i-1)*15;
     local foot_movement = {footQueue[offset+1],footQueue[offset+2],footQueue[offset+3]}
     local supportLeg = footQueue[offset+4]
     local t0 = footQueue[offset+5]
@@ -209,6 +213,8 @@ function walk.entry()
     local t2 = footQueue[offset+7]
     local zmp_mod = {footQueue[offset+8],footQueue[offset+9],footQueue[offset+10]}
     local footparam = {footQueue[offset+11],footQueue[offset+12],footQueue[offset+13]}    
+
+    
     step_planner:step_enque_trapezoid(foot_movement, supportLeg, t0,t1,t2,zmp_mod,footparam)
   end
 

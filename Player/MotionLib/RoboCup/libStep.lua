@@ -150,7 +150,8 @@ local function step_enque(self,uFoot,supportLeg,tStep, zmpMod, stepParams)
   table.insert(self.stepqueue,step)
 end
 
-local function step_enque_trapezoid(self,uFoot,supportLeg, t0,t1,t2, zmpMod, stepParams, is_last)
+--local function step_enque_trapezoid(self,uFoot,supportLeg, t0,t1,t2, zmpMod, stepParams, is_last)
+local function step_enque_trapezoid(self,uFoot,supportLeg, t0,t1,t2, zmpMod, stepParams, zmpMod2)
 
 --[[
   local step_ds = {}
@@ -181,6 +182,7 @@ local function step_enque_trapezoid(self,uFoot,supportLeg, t0,t1,t2, zmpMod, ste
   step.zmpMod = zmpMod or vector.new({0,0,0})
   step.stepParams = stepParams  
   step.is_last = is_last --transition signal
+  step.zmpMod2 = zmpMod2 or vector.new({0,0,0})
   table.insert(self.stepqueue,step)
 
 end
@@ -200,18 +202,21 @@ local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initi
     uRight_next = util.pose_global(current_step.uFoot,uRight_now)
     local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
     uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
+
+    uSupport_next = util.pose_global(current_step.zmpMod2,uTorso_next)
   elseif supportLeg==1 then    
     uSupport = util.pose_global(current_step.zmpMod,uRSupport)
     uLeft_next =  util.pose_global(current_step.uFoot,uLeft_now)
     local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
     uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
+
+    uSupport_next = util.pose_global(current_step.zmpMod2,uTorso_next)
   else --Double support    
     uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
-
-    --ADDED!!
+    --ADDED for DS too!
     uSupport = util.pose_global(current_step.zmpMod,uSupport)
 
-
+    uSupport_next = util.pose_global(current_step.zmpMod2,uTorso_next)
   end
   local trapezoidparams={}
   if current_step.is_trapezoid then
@@ -222,7 +227,8 @@ local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initi
 
   return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next,
          uSupport, supportLeg, current_step.tStep, current_step.stepParams, current_step.is_last,
-         trapezoidparams
+         trapezoidparams,
+         uSupport_next --added
 end
 
 

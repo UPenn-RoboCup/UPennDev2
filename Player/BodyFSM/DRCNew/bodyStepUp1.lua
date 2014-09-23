@@ -33,8 +33,10 @@ local step_queues={
   {
     {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
     {{step1,0,0},0,  0.5, 2.5,   1,   {0.0,-0.01,0}, {0,sh1,sh2}},   --LS
-    {{0,0,0},   2,  0.1, 2, 0.1,   {0,0,0},  {0, 0, 0}},
-    {{0,0,0},   2,  1, 1, 0.1,   {0.10,-0.05,0},  {0, 0, 0}},
+--    {{0,0,0},   2,  0.1, 2, 0.1,   {0,0,0},  {0, 0, 0}},
+--    {{0,0,0},   2,  1, 1, 0.1,   {0.10,-0.05,0},  {0, 0, 0}},
+
+    {{0,0,0},   2,  5, 1, 0.1,   {0.10,-0.05,0},  {0, 0, 0}},
   },
 
   { --put second step up
@@ -53,6 +55,33 @@ local step_queues={
     {{0,0,0,},  2,   0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
   }
 }
+
+
+--ZMP modulation testing
+
+step_queues={
+   {
+    {{0,0,0},   2,  0.1, 1, 0.1,    {0,0},  {0, 0, 0}},
+    {{step1,0,0},0,  1, 2.5, 0.5,   {0,0}, {0,0.06,0}   ,  {-step1/2,Config.walk.footY}},   --LS
+    {{0,0,0},   2,  1, 1, 0.1,      {-step1/2,Config.walk.footY},  {0, 0, 0},{-step1/2,Config.walk.footY}},
+   },
+
+  {
+    {{0,0,0},   2,  4, 1, 0.1,     {step1/2,-Config.walk.footY},  {0, 0, 0}, {step1/2,-Config.walk.footY}},
+   },
+
+  { --put second step up
+    {{step1,0,0},1,  0.5,   2.5, 1,  {0,0},  {0,0.06,0}},    --RS    
+    {{0,0,0},   2,  0.1, 1, 0.1,   {0,0},  {0, 0, 0}},
+  },
+}
+
+
+
+
+
+
+
 local stage = 1
 local ready_for_input = true
 
@@ -60,9 +89,9 @@ local function calculate_footsteps(stage)
   local step_queue = step_queues[stage]
   --Write to SHM
   local maxSteps = 40
-  step_queue_vector = vector.zeros(12*maxSteps)
+  step_queue_vector = vector.zeros(15*maxSteps)
   for i=1,#step_queue do    
-    local offset = (i-1)*13;
+    local offset = (i-1)*15;
     step_queue_vector[offset+1] = step_queue[i][1][1]
     step_queue_vector[offset+2] = step_queue[i][1][2]
     step_queue_vector[offset+3] = step_queue[i][1][3]
@@ -75,11 +104,21 @@ local function calculate_footsteps(stage)
 
     step_queue_vector[offset+8] = step_queue[i][6][1]
     step_queue_vector[offset+9] = step_queue[i][6][2]
-    step_queue_vector[offset+10] = step_queue[i][6][3]
+    step_queue_vector[offset+10] = 0
 
     step_queue_vector[offset+11] = step_queue[i][7][1]
     step_queue_vector[offset+12] = step_queue[i][7][2]
-    step_queue_vector[offset+13] = step_queue[i][7][3]
+    step_queue_vector[offset+13] = 0
+
+    if step_queue[i][8] then
+      step_queue_vector[offset+14] = step_queue[i][8][1]
+      step_queue_vector[offset+15] = step_queue[i][8][2]
+    else
+      step_queue_vector[offset+14] = 0
+      step_queue_vector[offset+15] = 0
+    end
+
+
   end
   mcm.set_step_footholds(step_queue_vector)
   mcm.set_step_nfootholds(#step_queue)

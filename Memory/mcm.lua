@@ -40,6 +40,10 @@ shared.stance.waistPitchBiasTarget = vector.zeros(1) --To cancel out body sag
 shared.stance.singlesupport = vector.zeros(1) --we are doing quasi-static motion, so need more roll compensation
 
 
+shared.stance.last_support = vector.zeros(3) --We keep last support point here
+
+
+
 --Used for drilling task
 --Torso compensation is used to follow arm position, not for balancing
 --0: compensation
@@ -186,8 +190,9 @@ local maxSteps = 8
 shared.step = {}
 
 --Footsteps queue
---{[rx ry ra supportLeg t0 t1 t2 zmpmodx zmpmody zmpmoda stepparam1 stepparam2 stepparam3]}
-shared.step.footholds  = vector.zeros(13*maxSteps)
+--SJ: now 15 entries per item (we have the zmp mod for the final zmp of the trapzoid)
+--{[rx ry ra supportLeg t0 t1 t2 zmpmodx zmpmody zmpmoda stepparam1 stepparam2 stepparam3      zmpxmod2 zmpymod2 ]}
+shared.step.footholds  = vector.zeros(15*maxSteps)
 shared.step.nfootholds = vector.zeros(1)
 
 

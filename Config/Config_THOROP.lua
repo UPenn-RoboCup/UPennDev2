@@ -102,7 +102,7 @@ Config.wizards.test = nil
 Config.wizards.mesh = nil
 --]]
 local exo = {'Robot','Walk','Net','Manipulation',
-'FSM_SiteVisit','World_DRCTrials','Vision_DRCTrials'
+'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup'
 }
 Config.testfile = 'test_sitevisit'
 --]]

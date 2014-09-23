@@ -98,14 +98,18 @@ Config.wizards.mesh = 'mesh_wizard_sitevisit'
 Config.wizards.test = nil
 
 Config.sensors.chest_lidar = true
-
 local exo = {'Robot','Walk','Net','Manipulation',
 'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup'
 }
 Config.testfile = 'test_sitevisit'
 --]]
 
-
+--Turning off sensor for motion only testing
+----[[
+Config.sensors.chest_lidar = false
+Config.wizards.test = nil
+Config.wizards.mesh = nil
+--]]
 
 
 --[[

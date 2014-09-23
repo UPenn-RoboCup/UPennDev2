@@ -14,13 +14,11 @@ function h = show_monitor_sitevisit
     clf;
     set(gcf,'position',[1 1 600 450]);
     f_mainA = gca;
-    f_lA = axes('Units','Normalized','position',[0 0.6 0.3 0.4]);
-    f_yuyv = axes('Units','Normalized','position',[0.3 0.6 0.3 0.4]);
+    f_lA = axes('Units','Normalized','position',[0 0 0.5 1]);
+    f_yuyv = axes('Units','Normalized','position',[0.5 0 0.5 1]);
 
 
-    %    f_field = axes('Units','Normalized','position',[0.3 -0.05 0.3 0.5]);
-
-    f_field = axes('Units','Normalized','position',[0 0 0.6 0.6]);
+%     f_field = axes('Units','Normalized','position',[0 0 0.6 0.6]);
 
     cam = {};
 
@@ -64,32 +62,32 @@ function h = show_monitor_sitevisit
     % Show the field here
     %set(gcf,'CurrentAxes',f_field);
     
-    cam.h_field = f_field;
+%     cam.h_field = f_field;
     hold on;
  
     % Camera 1 Debug messages
 
 
     set(gcf,'CurrentAxes',f_mainA);    
-    cam.a_debug_ball=uicontrol('Style','text','Units','Normalized',...
-       'Position',[0.6 0.3 0.13 0.7],'FontSize',10, ...
-       'BackgroundColor',[0.9  0.9 0.9],...
-        'FontName','Arial');
-
-    cam.a_debug_goal=uicontrol('Style','text','Units','Normalized',...
-       'Position',[0.73 0.3 0.13 0.7],'FontSize',10, ...
-       'BackgroundColor',[0.9  0.9 0.9],...
-        'FontName','Arial');
-
-    cam.a_debug_obstacle=uicontrol('Style','text','Units','Normalized',...
-       'Position',[0.86 0.3 0.14 0.7],'FontSize',10, ...
-       'BackgroundColor',[0.9  0.9 0.9],...
-        'FontName','Arial');
-
-    cam.w_debug = uicontrol('Style','text','Units','Normalized',...
-       'Position',[0.6 0 0.4 0.3],'FontSize',10, ...
-       'BackgroundColor',[0.9  0.9 0.9],...
-        'FontName','Arial');
+%     cam.a_debug_ball=uicontrol('Style','text','Units','Normalized',...
+%        'Position',[0.6 0.3 0.13 0.7],'FontSize',10, ...
+%        'BackgroundColor',[0.9  0.9 0.9],...
+%         'FontName','Arial');
+% 
+%     cam.a_debug_goal=uicontrol('Style','text','Units','Normalized',...
+%        'Position',[0.73 0.3 0.13 0.7],'FontSize',10, ...
+%        'BackgroundColor',[0.9  0.9 0.9],...
+%         'FontName','Arial');
+% 
+%     cam.a_debug_obstacle=uicontrol('Style','text','Units','Normalized',...
+%        'Position',[0.86 0.3 0.14 0.7],'FontSize',10, ...
+%        'BackgroundColor',[0.9  0.9 0.9],...
+%         'FontName','Arial');
+% 
+%     cam.w_debug = uicontrol('Style','text','Units','Normalized',...
+%        'Position',[0.6 0 0.4 0.3],'FontSize',10, ...
+%        'BackgroundColor',[0.9  0.9 0.9],...
+%         'FontName','Arial');
 
 
  
@@ -98,7 +96,7 @@ function h = show_monitor_sitevisit
     cam.f_lA = f_lA;
     cam.im_lA = im_lA;
     cam.f_yuyv = f_yuyv;
-    cam.f_field = f_field;
+%     cam.f_field = f_field;
     cam.im_yuyv = im_yuyv;
     cam.p_ball = p_ball;
     cam.r_ball = r_ball;
@@ -107,7 +105,6 @@ function h = show_monitor_sitevisit
     cam.h_line = h_line;
     % Plot scale
     % Default: labelA is half size, so scale twice
-    scale = 2;
     cam.scale = 2;
   end
 
@@ -133,6 +130,46 @@ function h = show_monitor_sitevisit
         xlim(cam.f_yuyv,[0 nc]);
         ylim(cam.f_yuyv,[0 nr]);
         needs_draw = 1;
+    elseif strcmp(msg_id,'labelA')
+        cam.labelA = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';%'
+        set(cam.im_lA,'Cdata', cam.labelA);
+        xlim(cam.f_lA,[0 metadata.w]);
+        ylim(cam.f_lA,[0 metadata.h]);
+        needs_draw = 1;
+
+    elseif strcmp(msg_id,'detect')
+        % Clear graphics objects
+        % ball
+        set(cam.p_ball,'Xdata', [],'Ydata', []);
+        %TODO: assume up to 3 obstacls for now
+        for i=1:2 
+          % posts
+          set(cam.p_post{i},'Xdata', [],'Ydata', []);
+          % obstacles
+          set(cam.h_obstacle{i}, 'Xdata', [], 'Ydata', []);
+        end      
+      
+
+        % Process the ball detection result
+        if isfield(metadata,'ball')
+            % Show ball on label image
+            ball_c = metadata.ball.centroid;
+            ball_radius = (metadata.ball.axisMajor / 2);
+            ball_box = [ball_c(1)-ball_radius ball_c(2)-ball_radius...
+                2*ball_radius 2*ball_radius];
+            set(cam.p_ball, 'Xdata', ball_c(1));
+            set(cam.p_ball, 'Ydata', ball_c(2));
+            set(cam.r_ball, 'Position', ball_box);
+        else
+            %REMOVE BALL IF WE CANNOT SEE IT!
+            set(cam.p_ball, 'Xdata', []);
+            set(cam.p_ball, 'Ydata', []);
+            set(cam.r_ball, 'Position', [0 0 0.0001 0.0001]);
+
+        end
+
+        
+        
     elseif strcmp(msg_id, 'mesh0')
         % metadata
         %n_scanlines = metadata.n_scanlines;
@@ -331,67 +368,6 @@ function h = show_monitor_sitevisit
         % if use zmq
         ret = zmq('send', matlab_ch, send_data);
                 
-        
-        
-        
-        
-%         % Averaging the height
-%         proj_plane = proj_plane ./ p_count;
-%         % remove NaN and track free space
-%         free_ind = isnan(proj_plane(:));
-%         proj_plane(free_ind) = 0;
-%         
-%         
-%         % visual debug
-% %         imshow(proj_plane);
-% %         colormap('hot');
-% 
-%         % Height difference
-%         Jx = proj_plane(2:end, :) - proj_plane(1:end-1,:);
-%         Jx = [ zeros(1, size(Jx, 2)); abs(Jx)];
-%         
-%         Jy = proj_plane(:,2:end) - proj_plane(:,1:end-1);
-%         Jy = [zeros(size(Jy,1), 1) abs(Jy)];
-%         
-%         
-        % visual debug
-%         imshow(Jx);
-        
-        
-        % For connecting horizontal planes.. seems not necessary for now
-%         low_thes = 0.01; %TODO
-%         proj_dz(free_ind) = 2;  % so that free space is not in consideration
-%         proj_dz(proj_dz<low_thes) = 1;
-%         proj_dz(proj_dz~=1) = 0;
-
-%         % For finding vertical wall
-%         high_thres = 0.03;
-%         Jx(Jx>high_thres) = 1; Jx(Jx~=1) = 0;
-%         Jy(Jy>high_thres) = 1; Jy(Jy~=1) = 0;
-%         % Find 'cliffs'
-% %         wall_ind = (Jx==1) | (Jy==1);
-%         wall_ind = Jx==1;
-%         p_walls = zeros(size(Jx));
-%         p_walls(wall_ind) = 1;
-        
-%         % visual debug
-%         imshow(p_walls);
-% 
-%         % connected regions: this doesn't give orientation...
-%         props = connected_regions(uint8(p_walls), 1);
-%         
-%         for i=1:3
-%             % plot the bounding box for debugging...
-%             hold on;
-%             bbox = props(i).boundingBox;
-%             
-%             bbox_xs = [bbox(1,1) bbox(2,1) bbox(2,1) bbox(1,1) bbox(1,1)];
-%             bbox_ys = [bbox(1,2) bbox(1,2) bbox(2,2) bbox(2,2) bbox(1,2)];
-%             
-%             plot(bbox_ys, bbox_xs);
-%         end
-%         
-%         hold off;
 
         
         

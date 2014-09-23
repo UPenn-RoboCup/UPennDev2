@@ -618,7 +618,7 @@ if IS_WEBOTS then
       local ranges = webots.wb_camera_get_range_image(tags.chest_lidar)
 			local metadata = {
         n=n,res=res,t=t,angle=Body.get_lidar_position(),rpy=Body.get_rpy(),
-        pose=wcm.get_robot_pose()   --TODO: it the pose reliable?
+        pose = wcm.get_robot_odometry()
         -- pose=mcm.get_status_odometry()
       }
 			WebotsBody.update_chest_lidar(metadata,ranges)

@@ -11,12 +11,12 @@ global cam monitor matlab_ch REAL_ROBOT line_angle0
 line_angle0 = 555;
 
 monitor = show_monitor_sitevisit();
-% monitor.init();
+monitor.init();
 
 
 %% Network
 % Add the network
-REAL_ROBOT = 0;  % TODO: better way?
+REAL_ROBOT = 1;  % TODO: better way?
 cams = {};
 cams{1} = {};
 cams{2} = {};
@@ -182,12 +182,33 @@ while running
                     data_yuyv.meta = metadata;
                     data_yuyv.raw = raw;
                     data_yuyv.recv = true;
-                elseif strcmp(msg_id, 'mesh0')
+                end
+                if strcmp(msg_id, 'mesh0')
                     count_mesh = count_mesh + 1;
                     data_mesh.meta = metadata;
                     data_mesh.raw = raw;
                     data_mesh.recv = true;
                 end
+                
+                if strcmp(msg_id,'world')
+                    count_world = count_world + 1;
+                    data_world.meta = metadata;
+                    data_world.raw = raw;
+                    data_world.recv = true;
+                end
+                if strcmp(msg_id,'detect')
+                    count_detect = count_detect + 1;
+                    data_detect.meta = metadata;
+                    data_detect.raw = raw;
+                    data_detect.recv = true;
+                end
+                if strcmp(msg_id,'labelA')
+                    count_labelA = count_labelA + 1;
+                    data_labelA.meta = metadata;
+                    data_labelA.raw = raw;
+                    data_labelA.recv = true;
+                end
+
                 
                 
                 if has_more<1; break; end;
@@ -210,7 +231,7 @@ while running
         if data_world.recv monitor.process_msg(data_world.meta,data_world.raw,cam); end
         if data_detect.recv monitor.process_msg(data_detect.meta,data_detect.raw,cam); end
         if data_labelA.recv monitor.process_msg(data_labelA.meta,data_labelA.raw,cam); end
-%         if data_yuyv.recv monitor.process_msg(data_yuyv.meta,data_yuyv.raw,cam); end
+        if data_yuyv.recv monitor.process_msg(data_yuyv.meta,data_yuyv.raw,cam); end
         
         if data_mesh.recv
             monitor.process_msg(data_mesh.meta, data_mesh.raw, cam);

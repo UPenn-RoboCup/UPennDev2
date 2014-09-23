@@ -189,8 +189,7 @@ function walk.entry()
   zmp_solver.x[2][2] = torsoVel[2]
 
   iStep = 1   -- Initialize the step index  
-  mcm.set_walk_bipedal(1)
-  mcm.set_walk_stoprequest(0) --cancel stop request flag
+  mcm.set_walk_bipedal(1) 
   mcm.set_walk_ismoving(1) --We started moving
   --Reset odometry varialbe
   init_odometry(uTorso_now)  
@@ -344,7 +343,7 @@ end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')  
-
+  mcm.set_walk_stoprequest(0) --cancel stop request flag
 end
 
 return walk

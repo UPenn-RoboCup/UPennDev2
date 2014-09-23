@@ -64,13 +64,6 @@ local update_odometry = function(uTorso_in)
   local pose_odom = util.pose_global(odometry_step, pose_odom0)
   wcm.set_robot_odometry(pose_odom)
 
-  local odom_mode = wcm.get_robot_odom_mode();
-  if odom_mode==0 then
-    wcm.set_robot_pose(pose_odom)
-  else
-    wcm.set_robot_pose(wcm.get_slam_pose())
-  end
-
   --updae odometry variable
   wcm.set_robot_utorso1(uTorso_in)
 end
@@ -99,8 +92,8 @@ function walk.entry()
 
   step_planner = libStep.new_planner()
 
-  zLeft, zRight = 0,0
-  uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
+  
+  uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, zLeft, zRight =
       step_planner:init_stance()
 
   zmp_solver:init_preview_queue(uLeft_now,uRight_now, uTorso_now, Body.get_time(), step_planner)
@@ -191,7 +184,7 @@ function walk.update()
 --      if walkParam then print(unpack(walkParam))end
     elseif supportLeg == 2 then --Double support
     end
-    step_planner:save_stance(uLeft,uRight,uTorso)  
+    step_planner:save_stance(uLeft,uRight,uTorso,zLeft,zRight)  
 
     --Update the odometry variable
     update_odometry(uTorso)
@@ -319,7 +312,6 @@ function walk.exit()
     debugfile:flush();
     debugfile:close();  
   end
-  print("DONE")
 end
 
 return walk

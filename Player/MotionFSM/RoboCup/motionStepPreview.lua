@@ -64,12 +64,6 @@ local update_odometry = function(uTorso_in)
   local pose_odom = util.pose_global(odometry_step, pose_odom0)
   wcm.set_robot_odometry(pose_odom)
 
-  local odom_mode = wcm.get_robot_odom_mode();
-  if odom_mode==0 then
-    wcm.set_robot_pose(pose_odom)
-  else
-    wcm.set_robot_pose(wcm.get_slam_pose())
-  end
 
   --updae odometry variable
   wcm.set_robot_utorso1(uTorso_in)
@@ -191,7 +185,7 @@ function walk.update()
 --      if walkParam then print(unpack(walkParam))end
     elseif supportLeg == 2 then --Double support
     end
-    step_planner:save_stance(uLeft,uRight,uTorso)  
+    step_planner:save_stance(uLeft,uRight,uTorso,zLeft,zRight)  
 
     --Update the odometry variable
     update_odometry(uTorso)

@@ -25,55 +25,38 @@ local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local supportLeg
 
 
+local sh1,sh2 = 0.18, 0.142
+local step1,step2 = 0.30, 0.27
 
-local function calculate_footsteps()
-  local step_queue
+local step_queues={
+    --put first step up
+  {
+    {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
+    {{step1,0,0},0,  0.5, 2.5,   1,   {0.0,-0.0,0}, {0,sh1,sh2}},   --LS
+    {{0,0,0},   2,  0.1, 2, 0.1,   {step1/2,-Config.walk.footY,0},  {0, 0, 0}},
+  },
 
-  local sh1 = 0.20
-  local sh2 = 0.15
+  { --put second step up
+    {{step1,0,0},1,  2,   3, 2,  {0.03,0.00,0},  {0,sh1,sh2}},    --RS
+    {{0,0,0},   2,  0.1, 2, 0.1,   {0,00,0,0},  {0, 0, 0}},
+  },
 
-  local sh1,sh2 = 0.16, 0.125
+  {
+    {{step2,0,0} ,0, 2,   2.2,  1,  {-0.03,-0.00,0},  {sh2,sh1,0.0}},--LS
+    {{0,0,0},   2,  0.1, 2, 0.1,    {-0.00,0,0},  {0, 0, 0}},
+  },
 
-  local sh1,sh2 = 0.18, 0.142
-  local step1,step2 = 0.30, 0.27
+  {
+    {{step2,0,0}, 1,  1,  2.2, 1,   {0,0.00,0},  {sh2,sh1,0.0}},--RS
+    {{0,0,0,},  2,   0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
+  }
+}
+local stage = 1
+local ready_for_input = true
 
-
-
-
-  local shift1={0.0,0,0}
-  local shift2={0.0,0,0}
-
-
-  step_queue={
-      {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
-      {{step1,0,0},0,  0.5, 2.5,   1,   {0.0,-0.0,0}, {0,sh1,sh2}},   --LS
---      {{0,0,0},   2,  0.1, 2, 0.1,   {0.00,0.0,0},  {0, 0, 0}},
-
--- change to SS
-      {{0,0,0},   2,  0.1, 2, 0.1,   {step1/2,-Config.walk.footY,0},  {0, 0, 0}},
-
-
-
---[[      
-      {{step1,0,0},1,  2,   3, 2,  {0.03,0.00,0},  {0,sh1,sh2}},    --RS
-      {{0,0,0},   2,  0.1, 2, 0.1,   {0,00,0,0},  {0, 0, 0}},
---]]
-
---[[      
-      {{step2,0,0} ,0, 2,   2.2,  1,  {-0.03,-0.00,0},  {sh2,sh1,0.0}},--LS
-      {{0,0,0},   2,  0.1, 2, 0.1,    {-0.00,0,0},  {0, 0, 0}},
-      {{step2,0,0}, 1,  1,  2.2, 1,   {0,0.00,0},  {sh2,sh1,0.0}},--RS
-      {{0,0,0,},  2,   0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
---]]      
-    }
-  
-
-
-    
-
-
-
---Write to SHM
+local function calculate_footsteps(stage)
+  local step_queue = step_queues[stage]
+  --Write to SHM
   local maxSteps = 40
   step_queue_vector = vector.zeros(12*maxSteps)
   for i=1,#step_queue do    
@@ -107,7 +90,8 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  calculate_footsteps()
+  stage = 1
+  calculate_footsteps(stage)
 --  motion_ch:send'preview'  
   motion_ch:send'stair'  
 end
@@ -120,9 +104,23 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  if mcm.get_walk_ismoving()==0 then
-    return 'done'
+  if mcm.get_walk_ismoving()==0 then    
+    if ready_for_input then print("Ready")
+      ready_for_input = false
+    end    
+    if stage==#step_queues then return 'done'
+    elseif hcm.get_state_proceed()==1 then       
+      hcm.set_state_proceed(0)
+      stage = stage+1
+      calculate_footsteps(stage)
+      --  motion_ch:send'preview'  
+      motion_ch:send'stair'  
+      ready_for_input = true
+    end
+  else 
+    hcm.set_state_proceed(0) --no pogo stick
   end
+
 end
 
 function state.exit()

@@ -12,7 +12,6 @@ local vector = require'vector'
 local unix   = require'unix'
 local util   = require'util'
 local moveleg = require'moveleg'
-local libStep = require'libStep'
 require'mcm'
 
 -- Keep track of important times
@@ -34,10 +33,11 @@ function state.entry()
 
   mcm.set_walk_bipedal(1)
   mcm.set_walk_steprequest(0)
-  mcm.set_motion_state(2)
+  mcm.set_walk_ismoving(0) --We stopped moving
 end
 
 function state.update()
+  --[[
   -- Get the time of update
   local t = Body.get_time()
   local t_diff = t - t_update
@@ -50,6 +50,8 @@ function state.update()
   local uTorso = mcm.get_status_uTorso()  
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
+
+  
 
   --Adjust body height
   local bodyHeight_now = mcm.get_stance_bodyHeight()
@@ -78,9 +80,7 @@ function state.update()
   mcm.set_status_uTorsoVel({0,0,0})
   local steprequest = mcm.get_walk_steprequest()    
   if steprequest>0 then return "done_step" end
-
-  --todo... we can handle body height change here
-  mcm.set_status_zLeg({0,0})
+--]]  
 end -- walk.update
 
 function state.exit()

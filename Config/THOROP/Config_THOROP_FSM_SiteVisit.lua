@@ -143,7 +143,9 @@ fsm.Motion = {
   {'motionStandup', 'done', 'motionStance'},
 
   {'motionStepPreview', 'done', 'motionStance'},
---  {'motionStepPreviewStair', 'done', 'motionStanceStair'},
+  {'motionStepPreviewStair', 'done', 'motionStepPreviewStairStopped'},
+  {'motionStepPreviewStairStopped', 'stair', 'motionStepPreviewStair'},
+
   {'motionKick', 'done', 'motionStance'},
 
 --For new hybrid walk

@@ -68,14 +68,16 @@ local function init_stance(self)
   local uTorso = mcm.get_status_uTorso()  
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
-  return uLeft,uRight,uTorso,uLeft,uRight,uTorso
+  local zLeg =  mcm.get_status_zLeg()
+  return uLeft,uRight,uTorso,uLeft,uRight,uTorso,zLeg[1],zLeg[2]
 end
 
-local function save_stance(self,uLeft,uRight,uTorso)
+local function save_stance(self,uLeft,uRight,uTorso,zLeft,zRight)
   supportFoot = supportFoot or 0;
   mcm.set_status_uLeft(uLeft)
   mcm.set_status_uRight(uRight)
   mcm.set_status_uTorso(uTorso)
+  if zLeft then mcm.set_status_zLeg({zLeft,zRight}) end
 end
 
 local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, supportLeg, initialStep,lastStep)  
@@ -83,14 +85,11 @@ local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, su
   local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
   local uSupport
 
---OMG why do we still have these?
-initialStep = false
-velocityBias = vector.new({0,0,0})
+  --OMG why do we still have these?
+  initialStep = false
+  velocityBias = vector.new({0,0,0})
 
   local velWalk = self.velCurrent + velocityBias
-
-
-
 
   if initialStep then
     if supportLeg == 0 then    -- Left support      

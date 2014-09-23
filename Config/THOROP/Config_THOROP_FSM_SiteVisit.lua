@@ -24,7 +24,7 @@ fsm.enabled = {
 --SJ: now we can have multiple FSM options 
 fsm.select = {
   Arm = 'DRCTrials',  
-  Head = 'Default',
+  Head = 'RoboCup', --'Default',
   Body = 'DRCNew',
   Motion = 'RoboCup'
 }
@@ -39,7 +39,19 @@ fsm.Lidar = {
 }
 
 fsm.Head = {  
+  {'headIdle', 'scan', 'headScan'},
   {'headIdle', 'teleop', 'headTeleop'},
+	--
+  {'headScan', 'ballfound', 'headTrack'},
+	{'headScan', 'teleop', 'headTeleop'},
+  {'headScan', 'noball', 'headScan'},
+  {'headIdle', 'teleop', 'headTeleop'},
+	--
+	{'headTrack', 'balllost', 'headScan'},
+	{'headTrack', 'teleop', 'headTeleop'},
+	--
+  {'headTeleop', 'idle', 'headIdle'},
+  {'headTeleop', 'scan', 'headScan'},
 }
 
 fsm.Body = {
@@ -52,7 +64,10 @@ fsm.Body = {
 
 
   {'bodyStop', 'stepover', 'bodyStepOver'},
+  {'bodyStop', 'stepover1', 'bodyStepUp1'},
   {'bodyStepOver', 'done', 'bodyStop'},
+  {'bodyStepUp1', 'done', 'bodyStop'},
+
 
   {'bodyStepPlace',   'done', 'bodyStop'},
 --  {'bodyStepWaypoint',   'done', 'bodyStop'},
@@ -130,6 +145,8 @@ fsm.Motion = {
 
   {'motionStance', 'bias', 'motionBiasInit'},
   {'motionStance', 'preview', 'motionStepPreview'},
+  {'motionStance', 'stair', 'motionStepPreviewStair'},
+
   {'motionStance', 'kick', 'motionKick'},
   {'motionStance', 'done_step', 'motionHybridWalkKick'},
 
@@ -140,6 +157,9 @@ fsm.Motion = {
   {'motionStandup', 'done', 'motionStance'},
 
   {'motionStepPreview', 'done', 'motionStance'},
+  {'motionStepPreviewStair', 'done', 'motionStepPreviewStairStopped'},
+  {'motionStepPreviewStairStopped', 'stair', 'motionStepPreviewStair'},
+
   {'motionKick', 'done', 'motionStance'},
 
 --For new hybrid walk

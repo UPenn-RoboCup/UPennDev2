@@ -6,11 +6,13 @@ local IP = {
   SJ = 200,
   KAREN = 30,
   ALVIN = 24,
+	TEDDY = 26,
 }
 
 -- Who do we use?
 local WHO = IP.KAREN
-local WHICH = IP.ALVIN
+--local WHICH = IP.ALVIN
+local WHICH = IP.TEDDY
 
 -- Network settings --
 local net = {

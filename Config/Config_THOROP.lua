@@ -28,6 +28,7 @@ Config.use_localhost = false
 Config.wizards = {}
 if IS_WEBOTS then
   -- Tune which wizards to run in webots
+  Config.wizards.feedback = 'feedback_wizard'
   Config.wizards.mesh = 'mesh_wizard'
   Config.wizards.world = 'world_wizard'
   Config.wizards.camera = 'camera_wizard'
@@ -49,7 +50,6 @@ Config.debug = {
   planning = false,
   goalpost = false,
   world = false,
---  world = true,
 }
 
 -- Monitor and logging
@@ -102,7 +102,7 @@ Config.wizards.test = nil
 Config.wizards.mesh = nil
 --]]
 local exo = {'Robot','Walk','Net','Manipulation',
-'FSM_SiteVisit','World_DRCTrials','Vision_DRCTrials'
+'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup'
 }
 Config.testfile = 'test_sitevisit'
 --]]

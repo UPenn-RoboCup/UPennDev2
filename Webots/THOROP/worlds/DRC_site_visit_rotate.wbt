@@ -35,17 +35,19 @@ DEF FLOOR Floor {
 DEF WALL PartialWalls {
   translation -1.1 0 -0.8	
 }
-DEF BLOCK QualStep {
-  translation 0 0.075 0
+
+DEF STEP1 WoodBox {
+  translation 0 0.071 0
+  rotation 0 1 0 1.570796
+  boxSize 1 0.142 0.2
 }
-#DEF BALL_LEFT BallGPS_Landmark {
-#  translation 0 0.109919 0.55
-#  radius 0.11
-#}
-#DEF BALL_RIGHT BallGPS_Landmark {
-#  translation 0 0.109919 -0.55
-#  radius 0.11
-#}
+
+# DEF STEP2 WoodBox {
+#   translation -0.7 0.1 0
+#   rotation 0 1 0 1.570796
+#   boxSize 1 0.2 0.2
+# }
+
 THOROP_UPENN {
   translation 1 1.155 -0.2
   rotation 0 1 0 -1.3

@@ -103,6 +103,9 @@ shared.walk.kickphase= vector.zeros(1)
 shared.walk.kicktype = vector.zeros(1)
 shared.walk.kickfoot = vector.zeros(1)
 
+
+
+
 -- Motion Status
 shared.status = {}
 shared.status.velocity   = vector.zeros(3)
@@ -114,7 +117,10 @@ shared.status.falling    = vector.zeros(1)
 shared.status.uLeft = vector.zeros(3)
 shared.status.uRight = vector.zeros(3)
 shared.status.zLeg = vector.zeros(2) -- left, right
+shared.status.aLeg = vector.zeros(2) --foot pitch angles
 shared.status.zGround = vector.zeros(0) -- if feet on a higher ground
+
+
 shared.status.uTorso = vector.zeros(3)
 shared.status.uSupport = vector.zeros(3)
 shared.status.supportLeg = vector.zeros(1)

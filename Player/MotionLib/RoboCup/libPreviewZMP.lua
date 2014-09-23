@@ -231,6 +231,7 @@ local function update_preview_queue_steps(self,step_planner,t)
             false, --initial_step
             {last_preview_zmpx,last_preview_zmpy,0} --uSupport_now
             )
+
     local new_preview_item = {}
     if not uLeft_now then --No more footsteps            
 
@@ -242,8 +243,21 @@ local function update_preview_queue_steps(self,step_planner,t)
       new_preview_item.tStart = last_preview_item.tEnd
       new_preview_item.tEnd = last_preview_item.tEnd + self.preview_tStep
       new_preview_item.ended = true
+
       uSupport = step_planner.get_torso(
-          last_preview_item.uLeft_next,last_preview_item.uRight_next)
+            last_preview_item.uLeft_next,last_preview_item.uRight_next)
+      
+      if mcm.get_walk_stoprequest()==0 then
+        if last_preview_item.uSupport2 then
+          uSupport = last_preview_item.uSupport2
+          new_preview_item.uSupport0 = uSupport
+          new_preview_item.uSupport1 = uSupport
+          new_preview_item.uSupport2 = uSupport
+          new_preview_item.trapezoidparams = trapezoidparams        
+        end
+      else
+
+      end
     else
       --New footstep
       new_preview_item.uLeft_now = uLeft_now
@@ -256,12 +270,42 @@ local function update_preview_queue_steps(self,step_planner,t)
       new_preview_item.stepParams = stepParams
       new_preview_item.is_last = is_last
 
+--[[
       if trapezoidparams then
         new_preview_item.uSupport0 = uTorso_now
         new_preview_item.uSupport1 = uSupport
         new_preview_item.uSupport2 = uTorso_next
         new_preview_item.trapezoidparams = trapezoidparams        
+      end     
+--]]
+
+      if trapezoidparams then
+        if new_preview_item.supportLeg==2 then
+
+          new_preview_item.uSupport0 = uTorso_now
+          new_preview_item.uSupport1 = uSupport
+          if mcm.get_walk_stoprequest()==0 then
+            new_preview_item.uSupport2 = uSupport
+          else --when we are stopping, we always stop with center support
+            new_preview_item.uSupport2 = uTorso_next
+          end
+          new_preview_item.trapezoidparams = trapezoidparams        
+        else          
+          new_preview_item.uSupport0 = uTorso_now
+          new_preview_item.uSupport1 = uSupport
+          new_preview_item.uSupport2 = uTorso_next
+          new_preview_item.trapezoidparams = trapezoidparams        
+
+          if last_preview_item.supportLeg==2 then
+            if last_preview_item.uSupport2 then
+              print("DS to something!")
+              new_preview_item.uSupport0 = last_preview_item.uSupport2
+            end
+          end
+        end
+
       end      
+--]]              
     end
 
     table.insert(self.preview_queue,new_preview_item)

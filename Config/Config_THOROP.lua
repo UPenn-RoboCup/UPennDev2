@@ -28,6 +28,7 @@ Config.use_localhost = false
 Config.wizards = {}
 if IS_WEBOTS then
   -- Tune which wizards to run in webots
+  Config.wizards.feedback = 'feedback_wizard'
   Config.wizards.mesh = 'mesh_wizard'
   Config.wizards.world = 'world_wizard'
   Config.wizards.camera = 'camera_wizard'
@@ -49,7 +50,6 @@ Config.debug = {
   planning = false,
   goalpost = false,
   world = false,
---  world = true,
 }
 
 -- Monitor and logging
@@ -112,7 +112,7 @@ Config.testfile = 'test_sitevisit'
 
 --[[
 -- Teach robot to go up steps
-Config.libs.MotionLib = 'Teach'}
+Config.libs.MotionLib = 'Teach'
 -- Precedence in loading, for overrides!
 local exo = {
 	'Robot', 'Walk', 'Net', 'FSM_Teach'

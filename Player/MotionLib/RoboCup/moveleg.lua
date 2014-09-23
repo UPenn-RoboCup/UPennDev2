@@ -5,6 +5,8 @@ local T      = require'Transform'
 local util   = require'util'
 local vector = require'vector'
 
+require'mcm'
+
 -- SJ: Shared library for 2D leg trajectory generation
 -- So that we can reuse them for different controllers
 
@@ -117,12 +119,17 @@ function moveleg.get_leg_compensation(supportLeg, ph, gyro_rpy,angleShift)
   end
 --]]
 
+local comp_factor = 1
+if mcm.get_stance_singlesupport()==1 then
+  comp_factor = 2
+end
+
 if supportLeg == 0 then
     -- Left support
-  delta_legs[2] = angleShift[4] + hipRollCompensation*phComp
+  delta_legs[2] = angleShift[4] + hipRollCompensation*phComp*comp_factor
 elseif supportLeg==1 then
     -- Right support
-  delta_legs[8]  = angleShift[4] - hipRollCompensation*phComp
+  delta_legs[8]  = angleShift[4] - hipRollCompensation*phComp*comp_factor
 else
   delta_legs[2] = angleShift[4]
   delta_legs[8]  = angleShift[4]
@@ -488,6 +495,16 @@ function moveleg.foot_trajectory_square_stair(phSingle,uStart,uEnd, stepHeight, 
       zHeight0 = 0
       special = true
     end
+
+
+    local move1 = math.abs(zHeight0-stepHeight)
+    local move2 = math.abs(zHeight1-stepHeight)
+  
+    if move1>move2*2.0 then --step up
+      phase1,phase2 = 0.5,0.8
+    elseif move1*2.0<move2 then --step down
+      phase1,phase2 = 0.2,0.5
+    end
   end
 
   if phSingle<phase1 then --Lifting phase
@@ -708,12 +725,19 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   local phComp = math.min( phSingleComp/phCompSlope, 1,
                           (1-phSingleComp)/phCompSlope)
   supportRatioLeft, supportRatioRight = 0,0
+
+
+  if mcm.get_stance_singlesupport()==1 then
+    phComp = phComp*2
+  end
+
+
+
   if supportLeg == 0 then -- Left support
     supportRatioLeft = phComp;
   elseif supportLeg==1 then
     supportRatioRight = phComp;
   end
-
     delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft
     delta_legs[3] = - hipPitchCompensation*supportRatioLeft
     delta_legs[4] = angleShift[3] - kneePitchCompensation*supportRatioLeft

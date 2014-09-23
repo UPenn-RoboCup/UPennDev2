@@ -37,6 +37,8 @@ shared.stance.uTorsoCompBias = vector.zeros(2)
 shared.stance.waistPitchBias = vector.zeros(1) --To cancel out body sag
 shared.stance.waistPitchBiasTarget = vector.zeros(1) --To cancel out body sag
 
+shared.stance.singlesupport = vector.zeros(1) --we are doing quasi-static motion, so need more roll compensation
+
 
 --Used for drilling task
 --Torso compensation is used to follow arm position, not for balancing

@@ -16,7 +16,7 @@ local head = {
 	yawBias = 0,
 	-- Camera bias
   cameraPos = {0.045, 0.0, 0.105}, --Post RC14: alvin
-  cameraPos = {0.045, 0.0, 0.105}, --Post RC14: TODO: teddy
+  cameraPos = {0.045, 0.0, 0.107}, --Post RC14: TODO: teddy
 	cameraPitch = 5*DEG_TO_RAD,
 	cameraRoll = 0, --14*DEG_TO_RAD,
   --From CoM to neck joint

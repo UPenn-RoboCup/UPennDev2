@@ -9,7 +9,7 @@ local Body   = require'Body'
 local vector = require'vector'
 local util = require'util'
 local odomScale = Config.world.odomScale 
-
+local ballFilter = require'ballFilter'
 
 require'wcm'
 require'gcm'
@@ -66,7 +66,14 @@ end
 
 local function update_vision(detected)  
 
-  print("POSE RESETTED")
+
+  -- If the ball is detected
+  ball = detected.ball
+
+	if ball then
+		ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
+	end
+
 end
 
 
@@ -136,9 +143,8 @@ function libWorld.update(uOdom, detection)
   -- Increment the process count
   count = count + 1
 
-  if detection and detection.balls then
-    print(string.format('BALL_1: %.2f %.2f\n', unpack(detection.balls.v[1])))
-    print(string.format('BALL_2: %.2f %.2f\n', unpack(detection.balls.v[2])))
+  if detection and detection.ball then
+		update_vision(detection)
   end
 
 end

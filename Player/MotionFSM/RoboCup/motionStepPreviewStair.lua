@@ -24,7 +24,7 @@ local tStep
 local stepHeight  = Config.walk.stepHeight
 
 local zLeft,zRight --Step landing heights
-
+local aLeft,aRight = 0,0
 -- Save gyro stabilization variables between update cycles
 -- They are filtered.  TODO: Use dt in the filters
 local angleShift = vector.new{0,0,0,0}
@@ -177,12 +177,13 @@ function walk.update()
     local uLeft, uRight = uLeft_now, uRight_now
     
     if supportLeg == 0 then  -- Left support    
-      uRight,zRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
+      uRight,zRight,aRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
 --      if walkParam then print(unpack(walkParam))end
     elseif supportLeg==1 then    -- Right support    
-      uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)    
+      uLeft,zLeft,aLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)    
 --      if walkParam then print(unpack(walkParam))end
     elseif supportLeg == 2 then --Double support
+      aLeft,aRight = 0,0
     end
     step_planner:save_stance(uLeft,uRight,uTorso,zLeft,zRight)  
 
@@ -228,7 +229,10 @@ function walk.update()
       {uTorsoComp[1],uTorsoComp[2],0},uTorso)
 
     moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
-      zLeft,zRight,delta_legs)    
+      zLeft,zRight,delta_legs,aLeft,aRight)    
+
+
+
 --print("Y:",uLeft[2],uTorso[2],uRight[2])
 
     local rpy = Body.get_rpy()

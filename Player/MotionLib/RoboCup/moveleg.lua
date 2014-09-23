@@ -203,13 +203,20 @@ end
 
 
 
-function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
+function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs,aLeft,aRight)
   local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   local pTorso = vector.new({
         uTorsoActual[1], uTorsoActual[2], mcm.get_stance_bodyHeight(),
         0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
   local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
   local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
+  
+
+  if aLeft then
+    pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,aLeft,uLeft[3]})
+    pRLeg = vector.new({uRight[1],uRight[2],zRight,0,aRight,uRight[3]})
+  end
+
   local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
   local legBias = vector.new(mcm.get_leg_bias())
 
@@ -468,22 +475,36 @@ end
 function moveleg.foot_trajectory_square_stair(phSingle,uStart,uEnd, stepHeight, walkParam)
   local phase1,phase2 = 0.2, 0.7 --TODO: automatic detect
   local xf,zf = 0,0
-  local zFoot
+  local zFoot,aFoot = 0,0
   local zHeight0, zHeight1= 0,0,0
+  local special = false
 
-  if walkParam then
+
+  if walkParam then    
     zHeight0, zHeight1 = walkParam[1],walkParam[3]
     stepHeight = walkParam[2]
+    --hack for the special step for block climbing
+    if walkParam[1]==-999 then
+      zHeight0 = 0
+      special = true
+    end
   end
 
   if phSingle<phase1 then --Lifting phase
     ph1 = phSingle / phase1
     zf = ph1;
     zFoot = zHeight0 + (stepHeight-zHeight0) * zf
+    if special then
+      if ph1<0.4 then ph2=ph1/0.4
+      elseif ph1<0.7 then ph2 = 1
+      else ph2 = (1-ph1)/0.3 end
+      aFoot = 20*math.pi/180*ph2      
+    end
   elseif phSingle<phase2 then
     ph1 = (phSingle-phase1) / (phase2-phase1)
     xf,zf = ph1, 1
     zFoot = stepHeight * zf
+
   else
     ph1 = (phSingle-phase2) / (1-phase2)
     xf,zf = 1, 1-ph1
@@ -491,7 +512,7 @@ function moveleg.foot_trajectory_square_stair(phSingle,uStart,uEnd, stepHeight, 
   end
 
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
-  return uFoot, zFoot
+  return uFoot, zFoot, aFoot
 end
 
 

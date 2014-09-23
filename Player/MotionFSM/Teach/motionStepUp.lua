@@ -22,6 +22,7 @@ local supportDir, supportFoot, supportPoint
 local uTorso, dTorso
 local dTorsoScale = 0.001
 local supportX, supportY = Config.walk.supportX, Config.walk.supportY
+local zDelta = 0.001
 local zTarget = 0.16
 local bH0, bH_final
 
@@ -67,11 +68,11 @@ function state.update()
   local zDone, dz
   if side=='left' then
     zDone = zRight > zTarget
-    dz = (zDone or not torsoDone) and 0 or 0.0002
+    dz = (zDone or not torsoDone) and 0 or zDelta
     zRight = zRight + dz
   else
     zDone = zLeft > zTarget
-    dz = (zDone or not torsoDone) and 0 or 0.0002
+    dz = (zDone or not torsoDone) and 0 or zDelta
     zLeft = zLeft + dz
   end
   

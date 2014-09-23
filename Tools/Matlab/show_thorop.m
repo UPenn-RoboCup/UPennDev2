@@ -10,13 +10,14 @@ global cam monitor matlab_ch REAL_ROBOT line_angle0
 
 line_angle0 = 555;
 
-monitor = show_monitor_sitevisit();
+% monitor = show_monitor_sitevisit();
+monitor = show_single_scanline();
 monitor.init();
 
 
 %% Network
 % Add the network
-REAL_ROBOT = 1;  % TODO: better way?
+REAL_ROBOT = 0;  
 cams = {};
 cams{1} = {};
 cams{2} = {};
@@ -31,7 +32,8 @@ if REAL_ROBOT==1
     s_mesh = zmq('fd', cams{3}.fd);
     
     % Setup a send channel
-    matlab_ch = zmq('publish', 'tcp', '192.168.123.30', 55558);
+    % teddy - 26,  alvin - 24
+    matlab_ch = zmq('publish', 'tcp', '192.168.123.26', 55558);
 
 else
     cams{1}.s = zmq( 'subscribe', 'ipc', 'camera0' );
@@ -228,10 +230,12 @@ while running
             (data_yuyv.recv || data_world.recv || ...
             data_detect.recv || data_labelA.recv || data_mesh.recv)
         
-        if data_world.recv monitor.process_msg(data_world.meta,data_world.raw,cam); end
-        if data_detect.recv monitor.process_msg(data_detect.meta,data_detect.raw,cam); end
-        if data_labelA.recv monitor.process_msg(data_labelA.meta,data_labelA.raw,cam); end
-        if data_yuyv.recv monitor.process_msg(data_yuyv.meta,data_yuyv.raw,cam); end
+        if REAL_ROBOT==1
+            if data_world.recv monitor.process_msg(data_world.meta,data_world.raw,cam); end
+            if data_detect.recv monitor.process_msg(data_detect.meta,data_detect.raw,cam); end
+            if data_labelA.recv monitor.process_msg(data_labelA.meta,data_labelA.raw,cam); end
+            if data_yuyv.recv monitor.process_msg(data_yuyv.meta,data_yuyv.raw,cam); end
+        end
         
         if data_mesh.recv
             monitor.process_msg(data_mesh.meta, data_mesh.raw, cam);

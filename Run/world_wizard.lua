@@ -73,14 +73,16 @@ local function update()
     else uOdometry0 = uOdometry end
     uOdometry = mcm.get_status_odometry()
     dOdometry = util.pose_relative(uOdometry,uOdometry0)
-    lW.update(dOdometry)
-    
---  Update the pose here
---  SJ: now done in libworld, not here
---  wcm.set_robot_pose(lW.get_pose())
 
-
-
+    --Hack dor robocup
+    if Config.libs.World=='RoboCup' then
+      lW.update_odometry(dOdometry)
+      wcm.set_robot_pose(lW.get_pose())
+    else
+    -- general world
+    --  SJ: now pose update is done in libworld, not here  
+      lW.update(dOdometry)
+    end
 
   end
   t = get_time()
@@ -97,7 +99,7 @@ local function update()
   
   
   --Print the local position of step
-  if t-t_debug>debug_interval then
+  if t-t_debug>debug_interval and Config.debug.wolrld then
     t_debug = t
     local step_pose = util.pose_relative(wcm.get_step_pose(), wcm.get_robot_pose())
     print(string.format('HURDLE: %.2f %.2f %.1f', 

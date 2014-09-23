@@ -101,34 +101,35 @@ end
 
 -- Tolerance approach to a vector
 -- Kinda like a gradient descent
-function util.approachTol( values, targets, speedlimits, dt, tolerance )
-  tolerance = tolerance or 1e-6
+function util.approachTol(values, targets, speedlimits, dt, tolerance)
   -- Tolerance check (Asumme within tolerance)
   local within_tolerance = true
   -- Iterate through the limits of movements to approach
-  
   --SJ: Now can be used for scalar
   if type(values)=="table" then
+    local tp = type(tolerance)
+    tolerance = tp=='table' and tolerance or (vector.ones(#speedlimits) * (tp=='number' and tolerance or 1e-6))
     for i,speedlimit in ipairs(speedlimits) do
       -- Target value minus present value
       local delta = targets[i] - values[i]
       -- If any values is out of tolerance,
       -- then we are not within tolerance
-      if math.abs(delta) > tolerance then
+      if abs(delta) > tolerance[i] then
         within_tolerance = false
         -- Ensure that we do not move motors too quickly
-        delta = util.procFunc(delta,0,speedlimit*dt)
-        values[i] = values[i]+delta
+        delta = procFunc(delta, 0, speedlimit * dt)
+        values[i] = values[i] + delta
       end
     end
   else
+    tolerance = tolerance or 1e-6
     local delta = targets - values      
-      if math.abs(delta) > tolerance then
-        within_tolerance = false
-        -- Ensure that we do not move motors too quickly
-        delta = util.procFunc(delta,0,speedlimits*dt)
-        values = values+delta
-      end
+    if abs(delta) > tolerance then
+      within_tolerance = false
+      -- Ensure that we do not move motors too quickly
+      delta = procFunc(delta, 0, speedlimits * dt)
+      values = values + delta
+    end
   end
   -- Return the next values to take and if we are within tolerance
   return values, within_tolerance
@@ -139,12 +140,11 @@ end
 
 --SJ: This approaches to the DIRECTION of the target position
 
-function util.approachTolTransform( values, targets, vellimit, dt, tolerance )
+function util.approachTolTransform(values, targets, vellimit, dt, tolerance)
   tolerance = tolerance or 1e-6
   -- Tolerance check (Asumme within tolerance)
   local within_tolerance = true
   -- Iterate through the limits of movements to approach
-  
   local linearvellimit = vellimit[1] --hack for now
 
   local cur_pos = vector.slice(values,1,3)  
@@ -225,43 +225,6 @@ function util.approachTolRad( values, targets, speedlimits, dt, tolerance )
   -- Return the next values to take and if we are within tolerance
   return values, within_tolerance
 end
-
--- Tolerance approach to a vector
--- Kinda like a gradient descent
-function util.goto(cur, target, step, tolerance)
-  -- Tolerance check (Asumme within tolerance)
-  local within_tolerance = true
-  -- Iterate through the limits of movements to approach
-  local next
-  --SJ: Now can be used for scalar
-  if type(cur)=="table" then
-    next = vector.copy(cur)
-    for i, s in ipairs(step) do
-      -- Target value minus present value
-      local delta = target[i] - cur[i]
-      -- If any values is out of tolerance,
-      -- then we are not within tolerance
-      if abs(delta) > tolerance[i] then
-        within_tolerance = false
-        -- Ensure that we do not move motors too quickly
-        delta = procFunc(delta, 0, s)
-        next[i] = cur[i] + delta
-      end
-    end
-  else
-    local delta = target - values
-    next = cur
-    if abs(delta) > tolerance then
-      within_tolerance = false
-      -- Ensure that we do not move motors too quickly
-      delta = procFunc(delta, 0, step)
-      next = cur + delta
-    end
-  end
-  -- Return the next values to take and if we are within tolerance
-  return within_tolerance and target or next, within_tolerance
-end
-
 
 function util.pose_global(pRelative, pose)
   local ca = math.cos(pose[3])

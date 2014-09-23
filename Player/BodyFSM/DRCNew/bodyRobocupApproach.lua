@@ -297,6 +297,11 @@ function state.entry()
     end
   end
 
+
+  if Config.demo then
+   mcm.set_walk_kicktype(0) --Walkkick only for demo
+  end
+
 end
 
 function state.update()

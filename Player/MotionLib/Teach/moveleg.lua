@@ -237,13 +237,12 @@ local slow_p_tolerance = {
   -- r, p, y
   1*DEG_TO_RAD, 1*DEG_TO_RAD, 1*DEG_TO_RAD
 }
-local slow_qleg_tolerance = vector.ones(6) * DEG_TO_RAD
 -- How far away to tell the P controller to go in one step
-local dqLegSz = vector.new{1, 1, 4.5, 9, 4.5, 1} * DEG_TO_RAD * 1e-2 * 2
--- Same, but via IK
-local dpTorsoSz = vector.new{4, 3, 3, 40, 40, 40} * 1e-5 * 2
+local dqLegLimit = Config.stance.dqLegLimit
+local dpLimitStance = Config.stance.dpLimitStance
 
-local function set_lower_body_slowly(pTorso, pLLeg, pRLeg)
+local function set_lower_body_slowly(pTorso, pLLeg, pRLeg, dt)
+  local zGround = mcm.get_status_zGround()
   -- Deal with the leg bias
   local legBias = mcm.get_leg_bias()
   local legBiasL = vector.slice(legBias, 1, 6)
@@ -260,18 +259,21 @@ local function set_lower_body_slowly(pTorso, pLLeg, pRLeg)
   local pTorsoR = pRLeg + dpRLeg
   local pTorsoActual = (pTorsoL + pTorsoR) / 2
   -- Which torso to approach
-  local pTorso_approach, doneTorso = util.goto(pTorsoActual, pTorso, dpTorsoSz, slow_p_tolerance)
+  local pTorso_approach, doneTorso = util.approachTol(pTorsoActual, pTorso, dpLimitStance, dt, slow_p_tolerance)
   -- Where should the legs go?
   local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso_approach)
   local qLLegTarget = vector.slice(qLegs, 1, 6) + legBiasL
   local qRLegTarget = vector.slice(qLegs, 7, 12) + legBiasR
-  local qLLegMove, doneL = util.goto(qLLegActual, qLLegTarget, dqLegSz, slow_qleg_tolerance)
-  local qRLegMove, doneR = util.goto(qRLegActual, qRLegTarget, dqLegSz, slow_qleg_tolerance)
+  local qLLegMove, doneL = util.approachTol(qLLegActual, qLLegTarget, dqLegLimit, dt)
+  local qRLegMove, doneR = util.approachTol(qRLegActual, qRLegTarget, dqLegLimit, dt)
   -- Set the legs
   Body.set_lleg_command_position(qLLegMove)
   Body.set_rleg_command_position(qRLegMove)
-  --print('DESIRED', pTorso, pLLeg, pRLeg)
-  --print('CURRENT', pTorso_approach, doneTorso, doneL, doneR)
+  --[[
+  print('TORSO APPROACH', pTorso, pTorso_approach)
+  print('QLEG', qLLegTarget, qLLegActual)
+  print('DONE', doneTorso, doneL, doneR)
+  --]]
   -- Update our current situation
   local bH = pTorsoActual[3]
   mcm.set_stance_bodyTilt(pTorsoActual[5])
@@ -291,7 +293,7 @@ zLeft:
 zRight:
 dq: Limit the amount of movement (unit: radians NOT radians per second)
 ]]
-function moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight)
+function moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight, dt)
   local uTorsoActual = util.pose_global({-torsoX, 0, 0},uTorso)
   local pTorso = vector.new{
     -- XYZ
@@ -305,7 +307,7 @@ function moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight)
   }
   local pLLeg = vector.new{uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]}
   local pRLeg = vector.new{uRight[1],uRight[2],zRight,0,0,uRight[3]}
-  return set_lower_body_slowly(pTorso, pLLeg, pRLeg)
+  return set_lower_body_slowly(pTorso, pLLeg, pRLeg, dt)
 end
 
 

@@ -114,6 +114,7 @@ shared.status.falling    = vector.zeros(1)
 shared.status.uLeft = vector.zeros(3)
 shared.status.uRight = vector.zeros(3)
 shared.status.zLeg = vector.zeros(2) -- left, right
+shared.status.zGround = vector.zeros(0) -- if feet on a higher ground
 shared.status.uTorso = vector.zeros(3)
 shared.status.uSupport = vector.zeros(3)
 shared.status.supportLeg = vector.zeros(1)

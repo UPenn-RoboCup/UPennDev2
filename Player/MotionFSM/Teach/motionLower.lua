@@ -17,7 +17,7 @@ local timeout = 5
 -- Track the torso
 local uTorso, uLeft, uRight
 local zLeft, zRight
-local dz = 0.0001
+local dz = 0.0005
 local side
 
 function state.entry()
@@ -40,11 +40,10 @@ end
 function state.update()
   -- Get the time of update
   local t = Body.get_time()
-  local t_diff = t - t_update
+  local dt = t - t_update
   -- Save this at the last update time
   t_update = t
   --if t - t_entry > timeout then return'timeout' end
-  
   local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
   
   -- Make sure we lean enough before lifting our legs
@@ -66,12 +65,13 @@ function state.update()
     if math.abs(zLeft - zRight) > 0.025 then
       return'uneven'
     else
+      print('New ground level!', zLeft)
+      mcm.set_status_zGround(zLeft)
       return'flat'
     end
   end
-  
   mcm.set_status_zLeg{zLeft, zRight}
-  moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight)
+  moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight, dt)
 end
 
 function state.exit()

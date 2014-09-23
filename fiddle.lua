@@ -57,5 +57,5 @@ IS_FIDDLE = true
 if arg and arg[-1]=='-i' and jit then
   -- Interactive LuaJIT
   package.path = package.path..';'..HOME..'/Tools/iluajit/?.lua'
-  dofile'Tools/iluajit/iluajit.lua'
+  dofile(HOME..'/Tools/iluajit/iluajit.lua')
 end

@@ -309,7 +309,9 @@ end
 
 --  Config.approachTargetY= {-0.07,0.05}  --L/R aiming offsets
 Config.approachTargetY= {-0.07,0.02}  --L/R aiming offsets
-Config.approachTargetY= {-0.04,0.02}  --L/R aiming offsets
+
+--For teddy
+Config.approachTargetY= {0,0.02}  --L/R aiming offsets
 
 Config.ballX_threshold1 = -1.5 --The threshold we use walkkick
 Config.ballX_threshold2 = 0.5 --The threshold we start using strong kick

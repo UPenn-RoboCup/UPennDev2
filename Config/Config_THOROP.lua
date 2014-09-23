@@ -16,6 +16,8 @@ Config.dev = {
 	gender       = 'boy',
 }
 
+Config.use_localhost = false
+Config.wizards = {}
 Config.sensors = {
   ft = true,
   head_camera = true,
@@ -23,9 +25,6 @@ Config.sensors = {
   head_lidar = false,
   fsr = false,
 }
-
-Config.use_localhost = false
-Config.wizards = {}
 if IS_WEBOTS then
   -- Tune which wizards to run in webots
   Config.wizards.feedback = 'feedback_wizard'
@@ -96,11 +95,11 @@ Config.testfile = 'test_robocup'
 --DRC Site visit 2014
 Config.libs.World = 'SiteVisit'   
 Config.wizards.mesh = 'mesh_wizard_sitevisit'
-----[[
-Config.sensors.chest_lidar = false
 Config.wizards.test = nil
-Config.wizards.mesh = nil
---]]
+
+--Config.wizards.mesh = nil
+--Config.sensors.chest_lidar = false
+
 local exo = {'Robot','Walk','Net','Manipulation',
 'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup'
 }

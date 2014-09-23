@@ -216,7 +216,7 @@ function h = show_monitor_sitevisit
             % Now xs, ys, and zs are in GLOBAL coordinates
             xs(i,:) = new_xy(1,:) + cur_pose(1);
             ys(i,:) = new_xy(2,:) + cur_pose(2);
-            zs(i,:) = new_yz(2,:) + 0.93;  %TODO: bodyHeight
+            zs(i,:) = new_yz(2,:) + 1;  %TODO: bodyHeight
             
   
             plot3(xs(i,:), ys(i,:), zs(i,:), '.');
@@ -234,7 +234,7 @@ function h = show_monitor_sitevisit
         
         temp_array = ones(size(xss));
         
-        temp_array(zss<0.1) = 0;
+        temp_array(zss<0.08) = 0;
         temp_array(zss>0.18) = 0;
         temp_array(xss<0.1) = 0;
         
@@ -356,7 +356,7 @@ function h = show_monitor_sitevisit
         send_data.seg = 'step';
         send_data.key = 'pose';
 %         send_data.val = [x_target y_target deg2rad(yaw_target)];
-        send_data.val = [x_target y_target 0];
+        send_data.val = [x_target 0 0];
 
         send_data = msgpack('pack', send_data);
         

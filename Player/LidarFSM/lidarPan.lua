@@ -61,7 +61,11 @@ function state.update()
 	ph = math.max(math.min(ph, 1), 0)
 
   -- Set the desired angle of the lidar tilt
-	Body.set_lidar_command_position(min_pan + ph * mag_sweep)
+  if Config.use_single_scan then
+	  Body.set_lidar_command_position(0)
+  else
+	  Body.set_lidar_command_position(min_pan + ph * mag_sweep)
+	end
 	
 	-- We are switching directions, so emit an event
 	if forward ~= is_forward then

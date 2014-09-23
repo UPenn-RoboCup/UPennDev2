@@ -51,8 +51,8 @@ fsm.Body = {
   {'bodyStop', 'footrace', 'bodyFootRace'},
 
 
-  --{'bodyStop', 'stepover', 'bodyStepOver'},
-  {'bodyStop', 'stepover', 'bodyStepUp1'},
+  {'bodyStop', 'stepover', 'bodyStepOver'},
+  {'bodyStop', 'stepover1', 'bodyStepUp1'},
   {'bodyStepOver', 'done', 'bodyStop'},
 
   {'bodyStepPlace',   'done', 'bodyStop'},
@@ -131,6 +131,8 @@ fsm.Motion = {
 
   {'motionStance', 'bias', 'motionBiasInit'},
   {'motionStance', 'preview', 'motionStepPreview'},
+  {'motionStance', 'stair', 'motionStepPreviewStair'},
+
   {'motionStance', 'kick', 'motionKick'},
   {'motionStance', 'done_step', 'motionHybridWalkKick'},
 
@@ -141,6 +143,7 @@ fsm.Motion = {
   {'motionStandup', 'done', 'motionStance'},
 
   {'motionStepPreview', 'done', 'motionStance'},
+--  {'motionStepPreviewStair', 'done', 'motionStanceStair'},
   {'motionKick', 'done', 'motionStance'},
 
 --For new hybrid walk

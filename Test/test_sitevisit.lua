@@ -111,6 +111,9 @@ local function update(key_code)
 	elseif key_char_lower==("c") then      
 		body_ch:send'stepover'
 
+	elseif key_char_lower==("v") then      
+		body_ch:send'stepover1'		
+
 
 	elseif key_char_lower==("e") then      
 		body_ch:send'footrace'		

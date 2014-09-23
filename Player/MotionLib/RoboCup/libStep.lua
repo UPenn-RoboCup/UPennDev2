@@ -208,6 +208,11 @@ local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initi
     uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
   else --Double support    
     uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
+
+    --ADDED!!
+    uSupport = util.pose_global(current_step.zmpMod,uSupport)
+
+
   end
   local trapezoidparams={}
   if current_step.is_trapezoid then

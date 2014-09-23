@@ -51,7 +51,8 @@ fsm.Body = {
   {'bodyStop', 'footrace', 'bodyFootRace'},
 
 
-  {'bodyStop', 'stepover', 'bodyStepOver'},
+  --{'bodyStop', 'stepover', 'bodyStepOver'},
+  {'bodyStop', 'stepover', 'bodyStepUp1'},
   {'bodyStepOver', 'done', 'bodyStop'},
 
   {'bodyStepPlace',   'done', 'bodyStop'},

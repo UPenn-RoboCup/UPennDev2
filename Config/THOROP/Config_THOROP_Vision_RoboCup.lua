@@ -139,7 +139,7 @@ local m308_param = {
 	{'Focus (absolute)', 0},
 	{'Brightness', 128},
 	{'Contrast', 128},
-	{'Saturation', 200},
+	{'Saturation', 220},
 	{'Gain', 0},
 	{'Sharpness', 0},
 }
@@ -177,8 +177,7 @@ table.insert(Config.camera,
     --Logitech C920
     --lut = 'empty',
     --lut = 'm308_lightson',
-		lut = 'demo_wu_chen0',
-    --lut = 'demo_wu_chen1',
+		lut = 'ucla0',
 		-- f = 640/2/tan(78/180*pi / 2)
 		--fov = 2*arctan(d/2f)
 		-- f = d/2/tan(fov/2)

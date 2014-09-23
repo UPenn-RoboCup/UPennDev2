@@ -140,5 +140,6 @@ end
 
 Config.use_gps_pose = false
 Config.use_imu_yaw = true
+Config.use_single_scan = true
 
 return Config

@@ -96,6 +96,9 @@ function walk.entry()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, zLeft, zRight =
       step_planner:init_stance()
 
+  print(string.format("Current torso: %.2f %.2f",
+    uTorso_now[1],uTorso_now[2]))
+
   zmp_solver:init_preview_queue(uLeft_now,uRight_now, uTorso_now, Body.get_time(), step_planner)
   
   iStep = 1   -- Initialize the step index  
@@ -117,7 +120,7 @@ function walk.entry()
   print("step #:",nFootHolds)
 
   for i=1,nFootHolds do
-    local offset = (i-1)*13;
+    local offset = (i-1)*15;
     local foot_movement = {footQueue[offset+1],footQueue[offset+2],footQueue[offset+3]}
     local supportLeg = footQueue[offset+4]
     local t0 = footQueue[offset+5]
@@ -125,7 +128,10 @@ function walk.entry()
     local t2 = footQueue[offset+7]
     local zmp_mod = {footQueue[offset+8],footQueue[offset+9],footQueue[offset+10]}
     local footparam = {footQueue[offset+11],footQueue[offset+12],footQueue[offset+13]}    
-    step_planner:step_enque_trapezoid(foot_movement, supportLeg, t0,t1,t2,zmp_mod,footparam)
+
+    local zmp_mod2 = {footQueue[offset+14],footQueue[offset+15],0}
+
+    step_planner:step_enque_trapezoid(foot_movement, supportLeg, t0,t1,t2,zmp_mod,footparam,zmp_mod2)
   end
 
   t = Body.get_time()

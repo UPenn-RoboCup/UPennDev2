@@ -146,16 +146,16 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
     local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
     local tStepMid =Config.walk.tStep-tSlope1-tSlope2
 
-    for i=1,13 do step_queue_vector[i] = 0 end
+    for i=1,15 do step_queue_vector[i] = 0 end
     step_queue_vector[4] = pre_step
     step_queue_vector[5] = tSlope1
     step_queue_vector[6] = tStepMid
     step_queue_vector[7] = tSlope2
-    offset0 = 13
+    offset0 = 15
   end
   
   for i=1,#step_queue do    
-    local offset = (i-1)*13 + offset0;
+    local offset = (i-1)*15 + offset0;
     step_queue_vector[offset+1] = step_queue[i][1][1]
     step_queue_vector[offset+2] = step_queue[i][1][2]
     step_queue_vector[offset+3] = step_queue[i][1][3]
@@ -173,6 +173,9 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
     step_queue_vector[offset+11] = step_queue[i][7][1]
     step_queue_vector[offset+12] = step_queue[i][7][2]
     step_queue_vector[offset+13] = step_queue[i][7][3]
+
+    step_queue_vector[offset+14] = 0
+    step_queue_vector[offset+15] = 0
   end
   mcm.set_step_footholds(step_queue_vector)
   mcm.set_step_nfootholds(#step_queue)
@@ -228,7 +231,7 @@ function walk.entry()
   local footQueue = mcm.get_step_footholds()
 
   for i=1,nFootHolds do
-    local offset = (i-1)*13;
+    local offset = (i-1)*15;
     local foot_movement = {footQueue[offset+1],footQueue[offset+2],footQueue[offset+3]}
     local supportLeg = footQueue[offset+4]
     local t0 = footQueue[offset+5]

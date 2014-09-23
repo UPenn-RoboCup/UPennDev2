@@ -1,11 +1,12 @@
+#!/usr/local/bin/luajit -i
 dofile'../../include.lua'
 -- Libraries
-local lD = require'libDynamixel'
-local vector = require'vector'
+lD = require'libDynamixel'
+vector = require'vector'
 local ptable = require'util'.ptable
-local byte_to_number = lD.byte_to_number
-local nx_registers = lD.nx_registers
-local mx_registers = lD.mx_registers
+byte_to_number = lD.byte_to_number
+nx_registers = lD.nx_registers
+mx_registers = lD.mx_registers
 
 if not one_chain then
 	if OPERATING_SYSTEM=='darwin' then
@@ -26,103 +27,16 @@ if not one_chain then
 	end
 end
 
-local pTorqueMode = byte_to_number[mx_registers.torque_mode[2]]
-local pTorque = byte_to_number[mx_registers.command_torque[2]]
-local pVoltage = byte_to_number[mx_registers.min_voltage[2]]
-
-local status = lD.get_mx_torque_mode(66, right_arm)
-print('ID status', status)
-if status then
-	ptable(status)
+function pStatus(status)
+	if not status then return end
+	--ptable(status)
 	status = status[1]
-	if status then
-		ptable(status)
-		print('Current mode', pTorqueMode(unpack(status.parameter)))
-	end
-end
-local status = lD.set_mx_torque_enable(66, 1, right_arm)
-local status = lD.set_mx_command_torque(66, 10, right_arm)
-if status then
-	ptable(status)
-	status = status[1]
-	if status then
-		ptable(status)
-	end
-end
-local status = lD.set_mx_torque_mode(66, 1, right_arm)
-if status then
-	ptable(status)
-	status = status[1]
-	if status then
-		ptable(status)
-	end
-end
-local status = lD.set_mx_command_torque(66, 10, right_arm)
-if status then
-	ptable(status)
-	status = status[1]
-	if status then
-		ptable(status)
-	end
+	if not status then return end
+	--ptable(status)
+	local parse = byte_to_number[#status.parameter]
+	if not parse then return end
+	return parse(unpack(status.parameter)), status
 end
 
 --local found_ids = right_arm:ping_probe()
---[[
-local status = lD.get_mx_id(66, right_arm)
-print('ID status', status)
-if status then ptable(status) end
-if status[1] then ptable(status[1]) end
-local status = lD.set_mx_led(66, 1, right_arm)
-print('LED set status', status)
-if status then ptable(status) end
-if status[1] then ptable(status[1]) end
-local status = lD.set_mx_led(67, 1, right_arm)
-print('LED set status', status)
-if status then ptable(status) end
-if status[1] then ptable(status[1]) end
-
-print()
-local status = lD.get_mx_min_voltage(66, right_arm)
-if status then
-ptable(status)
-if status[1] then
-ptable(status[1])
-print('min voltage', pVoltage(unpack(status[1].parameter))/10)
-end
-end
-print()
-local bad_limit = false
-local status = lD.get_mx_max_voltage(66, right_arm)
-if status then
-ptable(status)
-if status[1] then
-ptable(status[1])
-local v = pVoltage(unpack(status[1].parameter))/10
-print('max voltage', v)
-if v<24 then bad_limit = true end
-end
-end
-
-if bad_limit then
-print('UPDATE THE LIMIT')
-status = nil
---local status = lD.set_mx_max_voltage(66, 220, right_arm)
-if status then
-ptable(status)
-if status[1] then
-ptable(status[1])
-end
-end
-end
-
-print()
-local status = lD.get_mx_voltage(66, right_arm)
-if status then
-ptable(status)
-if status[1] then
-ptable(status[1])
-print('Current voltage', pVoltage(unpack(status[1].parameter))/10)
-end
-end
---]]
---lD.set_indirect_address(found_ids, {'position', 'data'}, right_leg)
+dofile'../../fiddle.lua'

@@ -28,7 +28,7 @@ Config.sensors = {
 if IS_WEBOTS then
   -- Tune which wizards to run in webots
   Config.wizards.feedback = 'feedback_wizard'
-  Config.wizards.mesh = 'mesh_wizard'
+  Config.wizards.mesh = 'mesh_wizard_sitevisit'
   Config.wizards.world = 'world_wizard'
   Config.wizards.camera = 'camera_wizard'
   Config.wizards.test = 'post_mesh_wizard'
@@ -68,7 +68,7 @@ Config.libs={
 --SJ: now we can choose which config, fsm and mid-level libraries to use
 
 --Robocup 
-----[[
+--[[
 Config.libs.World = 'RoboCup'
 local exo = {
   'Robot','Walk','Net','Manipulation',
@@ -91,14 +91,13 @@ Config.testfile = 'test_robocup'
 --]]
 
 
---[[
+---[[
 --DRC Site visit 2014
 Config.libs.World = 'SiteVisit'   
 Config.wizards.mesh = 'mesh_wizard_sitevisit'
 Config.wizards.test = nil
 
-Config.wizards.mesh = nil
-Config.sensors.chest_lidar = false
+Config.sensors.chest_lidar = true
 
 local exo = {'Robot','Walk','Net','Manipulation',
 'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup'

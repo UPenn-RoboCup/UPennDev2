@@ -4,8 +4,8 @@ WorldInfo {
     "Default world for the THOR-OP"
   ]
   title "THOR-OP Only"
-  #basicTimeStep 8
-	basicTimeStep 20
+  basicTimeStep 8
+	#basicTimeStep 20
   FPS 15
   # TODO: Tune the friction a bit, comparing the F/T sensors
   contactProperties [
@@ -52,7 +52,7 @@ DEF FLOOR Floor {
 }
 WoodBox {
   translation 0 0.075 0.3
-  boxSize 0.6 0.15 0.2
+  boxSize 0.8 0.142 0.1905
 }
 THOROP_UPENN {
   translation 0 1.155 0

@@ -112,7 +112,7 @@ Config.testfile = 'test_sitevisit'
 
 --[[
 -- Teach robot to go up steps
-Config.libs.MotionLib = 'Teach'}
+Config.libs.MotionLib = 'Teach'
 -- Precedence in loading, for overrides!
 local exo = {
 	'Robot', 'Walk', 'Net', 'FSM_Teach'

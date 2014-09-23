@@ -15,8 +15,9 @@ local feedback = {}
 local function update()
   feedback.t = Body.get_time()
   feedback.joints = Body.get_position()
-	feedback.pose = wcm.get_robot_pose()
+	feedback.pose = wcm.get_robot_odometry()--wcm.get_robot_pose()
 	feedback.rpy = Body.get_rpy()
+  feedback.height = mcm.get_stance_bodyHeight()
   feedback.battery = Body.get_battery()
 	ret, err = feedback_udp_ch:send(mpack(feedback))
 	if err then print('Feedback UDP error',err) end

@@ -24,7 +24,7 @@ fsm.enabled = {
 --SJ: now we can have multiple FSM options 
 fsm.select = {
   Arm = 'DRCTrials',  
-  Head = 'Default',
+  Head = 'RoboCup', --'Default',
   Body = 'DRCNew',
   Motion = 'RoboCup'
 }
@@ -39,7 +39,19 @@ fsm.Lidar = {
 }
 
 fsm.Head = {  
+  {'headIdle', 'scan', 'headScan'},
   {'headIdle', 'teleop', 'headTeleop'},
+	--
+  {'headScan', 'ballfound', 'headTrack'},
+	{'headScan', 'teleop', 'headTeleop'},
+  {'headScan', 'noball', 'headScan'},
+  {'headIdle', 'teleop', 'headTeleop'},
+	--
+	{'headTrack', 'balllost', 'headScan'},
+	{'headTrack', 'teleop', 'headTeleop'},
+	--
+  {'headTeleop', 'idle', 'headIdle'},
+  {'headTeleop', 'scan', 'headScan'},
 }
 
 fsm.Body = {

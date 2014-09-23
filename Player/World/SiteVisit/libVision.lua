@@ -1,5 +1,6 @@
--- Temp vision library for DRC site visit 
-
+-- libVision
+-- (c) 2014 Stephen McGill
+-- General Detection methods
 local libVision = {}
 -- Detection and HeadTransform information
 local ImageProc = require'ImageProc'
@@ -46,6 +47,11 @@ local yMax = 3   --Config.world.yMax
 local colors
 local c_zlib = zlib.compress
 local vision_ch = si.new_publisher'vision'
+
+
+-- Debug printing in terminal
+local DEBUG = Config.debug.obstacle
+
 
 
 local ball_debug=''
@@ -216,16 +222,8 @@ local function projectGround(v,targetheight)
   return vout
 end
 
-
-
-
 function libVision.ball(labelA_t, labelB_t, cc_t)
-  
   debug_ball_clear() 
-
-  local balls = {}
-  
-  balls.v, balls.r, balls.dr, balls.da = {},{},{},{}
   
   local cc = cc_t[colors.orange]
   if cc<6 then return'Color count' end
@@ -249,7 +247,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       -- Check the coordinate on the field
 
       local dArea = math.sqrt((4/math.pi) * propsA.area)
-      local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter)
+      local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
 
       local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height0,b_height1,true)
 
@@ -259,7 +257,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
       else        
 --			print(string.format('ball height:%.2f, thr: %.2f', v[3], b_height0+b_height1*math.sqrt(v[1]*v[1]+v[2]*v[2])))
        
-        --[[ Field bounds check
+        ---[[ Field bounds check
         if not check_fail and math.sqrt(v[1]*v[1]+v[2]*v[2])>3 then
 					local margin = 0.85 --TODO
           local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
@@ -270,7 +268,7 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
         end
 				--]]
 
-        --[[ Ground check
+        -- Ground check
         if not check_fail and Body.get_head_position()[2] < Config.vision.ball.th_ground_head_pitch then
           local th_ground_boundingbox = Config.vision.ball.th_ground_boundingbox
           local ballCentroid = propsA.centroid
@@ -299,37 +297,24 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
             end --end white line check
           end
         end --end bottom margin check
-        --]]
-        
         
         if not check_fail then
-          table.insert(balls.v, projectGround(v,b_diameter/2))
-  				-- For ballFilter
-          local ball_r = math.sqrt(v[1]*v[1]+v[2]*v[2])
-          table.insert(balls.r, ball_r)
-          table.insert(balls.dr, ball_r*0.25)
-          table.insert(balls.da, 10*math.pi/180)
-          
-          
-          --[[ Project the ball to the ground
+          -- Project the ball to the ground
           propsA.v = projectGround(v,b_diameter/2)
           propsA.t = Body and Body.get_time() or 0
   				-- For ballFilter
   			  propsA.r = math.sqrt(v[1]*v[1]+v[2]*v[2])
   				propsA.dr = 0.25*propsA.r --TODO: tweak 
   				propsA.da = 10*math.pi/180
-          --]]
-          
         end
       end
 
     end -- end of the check on a single propsA
     
-    -- Did we succeed in finding two balls?
-    if #balls.v==2 then
-      local db_str = 'TWO BALLS DETECTED!'
-      debug_ball(db_str)
-      return db_str, balls
+    -- Did we succeed in finding a ball?
+    if check_fail==false then 
+      debug_ball(string.format('Ball detected at %.2f, %.2f (z = %.2f)',propsA.v[1],propsA.v[2], propsA.v[3]))
+      return tostring(propsA.v), propsA 
     end
   end  -- end of loop
 
@@ -337,6 +322,402 @@ function libVision.ball(labelA_t, labelB_t, cc_t)
   return ball_debug
 end
 
+
+-- TODO: Allow the loop to run many times
+function libVision.goal(labelA_t, labelB_t, cc_t)
+  -- Form the initial goal check
+  local postB = ImageProc.goal_posts(labelB_t, colors.yellow)
+  if not postB then return'None detected' end
+  -- Now process each goal post
+  -- Store failures in the array
+  local failures, successes = {}, {}
+	local nPosts, i_validB, valid_posts = 0, {}, {}
+	--for i=1, math.min(#postB, th_nPostB) do
+	for i=1, #postB do
+		local post = postB[i]
+    local fail, has_stats = {}, true
+    local postStats = check_prop(colors.yellow, post, g_bbox_area, g_area, g_fill_rate, labelA_t)
+    if type(postStats)=='string' then
+      table.insert(fail, postStats)
+    else
+			table.insert(fail, string.format('\n Post # %d ', i))
+			local check_passed = true
+      -- TODO: Add lower goal post bbox check
+      -- Orientation check
+      if check_passed and math.abs(postStats.orientation) < g_orientation then
+        table.insert(fail, 
+					string.format('Orientation:%.1f < %.1f \n', postStats.orientation, g_orientation) )
+				check_passed = false
+      end
+      -- Aspect Ratio check
+			if check_passed then
+				local aspect = postStats.axisMajor / postStats.axisMinor;
+				if (aspect < g_aspect_ratio[1]) or (aspect > g_aspect_ratio[2]) then
+					table.insert(fail, 
+						string.format('Aspect ratio:%.2f, [%.2f %.2f]\n', aspect, unpack(g_aspect_ratio)) )
+					check_passed = false
+				end
+			end
+      -- Edge Margin
+			if check_passed then
+				local leftPoint= postStats.centroid[1] - postStats.axisMinor / 2
+				local rightPoint= postStats.centroid[1] + postStats.axisMinor / 2
+				local margin = math.min(leftPoint, wa - rightPoint)
+				if margin <= g_margin then
+					table.insert(fail, string.format('Edge margin:%.1f < %.1f\n', margin, g_margin))
+					check_passed = false
+				end
+			end
+			-- TODO: Add ground check
+
+			-- Height Check
+			if check_passed then
+				local scale = postStats.axisMinor / postDiameter 
+				local v = check_coordinateA(postStats.centroid, scale)
+         --print('GOAL HEIGHT:', v[3])
+				if v[3] < Config.vision.goal.height_min then
+					table.insert(fail, 'TOO LOW\n')
+					check_passed = false 
+        elseif v[3]>Config.vision.goal.height_max then
+					table.insert(fail, 'TO HIGH\n')
+					check_passed = false 
+				end
+			end
+
+			-- Check # of valid postB
+			if check_passed then 
+				table.insert(fail, 'is good\n')
+				nPosts = nPosts + 1 
+				i_validB[#i_validB + 1] = i
+				valid_posts[nPosts] = postStats
+			end
+    end  -- End of check on this postB
+		table.insert(failures, table.concat(fail, ',') )
+	end -- End of checks on all postB
+
+	-- Goal type detection
+	local post_detected = true
+	if nPosts>2 or nPosts<1 then
+		--TODO: this might have problem when robot see goal posts on other fields
+		table.insert(failures, table.concat({'Bad post number'},','))
+		post_detected = false
+	end
+
+	-- 0:unknown 1:left 2:right 3:double
+	local goalStats = {}
+	if post_detected then
+		-- Convert to body coordinate
+		for i=1,nPosts do
+      goalStats[i] = {}
+			local good_postB = postB[i_validB[1]]
+			local good_post = valid_posts[i]
+
+			local scale1 = good_post.axisMinor / postDiameter
+			local scale2 = good_post.axisMajor / postHeight
+			local scale3 = math.sqrt(good_post.area / (postDiameter*postHeight))
+			local scale
+			if good_postB.boundingBox[3]<2 then 
+				--This post is touching the top, so we can only use diameter
+				scale = scale1
+			else
+			  scale = math.max(scale1,scale2,scale3)
+			end
+			if scale == scale1 then
+				goalStats[i].v = check_coordinateA(good_post.centroid, scale1)
+			elseif scale == scale2 then
+				goalStats[i].v = check_coordinateA(good_post.centroid, scale2)
+			else
+				goalStats[i].v = check_coordinateA(good_post.centroid, scale3)
+			end
+			--TODO: distanceFactor
+			goalStats[i].post = good_post
+			goalStats[i].postB = good_postB
+		end
+
+		-- Check goal type
+    local fail_msg = {}
+		if nPosts==2 then
+			goalStats[1].type = 3
+      goalStats[2].type = 3
+      
+      -- Goal width check in x-y space
+      local dx = goalStats[1].v[1]-goalStats[2].v[1]
+      local dy = goalStats[1].v[2]-goalStats[2].v[2]
+      local dist = math.sqrt(dx*dx+dy*dy)
+      if dist > goalWidth * 3 then --TODO: put into Config
+        local fail_str = string.format("Goal too wide: %.1f > %.1f\n", dist, goalWidth*3)
+        return table.insert(fail_msg, fail_str)
+      elseif dist<goalWidth * 0.2 then
+        local fail_str = string.format("Goal too wide: %.1f < %.1f\n", dist, goalWidth*0.2)
+        return table.insert(fail_msg, fail_str)
+      end
+     
+    else  -- Only single post is detected
+      -- look for crossbar stats
+      local dxCrossbar, crossbar_ratio
+      --If the post touches the top, it should be an unknown post
+      if goalStats[1].postB.boundingBox[3]<2 then --touching the top
+        dxCrossbar = 0 --Should be unknown post
+        crossbar_ratio = 0
+      else
+        -- The crossbar should be seen
+        local postWidth = goalStats[1].post.axisMinor
+
+        local leftX = goalStats[1].post.boundingBox[1]-5*postWidth
+        local rightX = goalStats[1].post.boundingBox[2]+5*postWidth
+        local topY = goalStats[1].post.boundingBox[3]-5*postWidth
+        local bottomY = goalStats[1].post.boundingBox[3]+5*postWidth    
+        local bboxA = {leftX, rightX, topY, bottomY}
+
+        local crossbarStats = ImageProc.color_stats(labelA_t, colors.yellow, bboxA)
+        dxCrossbar = crossbarStats.centroid[1] - goalStats[1].post.centroid[1]
+        crossbar_ratio = dxCrossbar / postWidth
+      end
+      -- Determine left/right/unknown
+      if (math.abs(crossbar_ratio) > min_crossbar_ratio) then
+        if crossbar_ratio>0 then goalStats[1].type = 1
+        else goalStats[1].type = 2 end
+      else
+        -- Eliminate small post without cross bars
+        if goalStats[1].post.area < th_min_area_unknown_post then
+          return table.insert(fail_msg, 'single post size too small')
+        end
+        -- unknown post
+        goalStats[1].type = 0
+      end
+      
+    end  --End of goal type check
+    
+    -- Convert torch tensor to table
+    for i=1,#goalStats do
+      goalStats[i].v = vector.new(goalStats[i].v)
+			table.insert(failures, table.concat({'\n\n Goal Position',
+				string.format('%.2f %.2f', goalStats[i].v[1], goalStats[i].v[2])},'\n') )
+    end
+    wcm.set_goal_t(Body.get_time())
+
+	end
+    
+	if post_detected then
+		return table.concat(failures, ','), goalStats
+	end
+
+  -- Yield the failure messages and the success tables
+  return table.concat(failures,',')
+end
+
+
+function libVision.goal_low(labelB_t)
+  local goals = {}
+  goals.detect = 0
+  -- Parameters
+  local min_width, max_width = 2, 8
+  
+  local goalProps = ImageProc.goal(labelB_t, min_width, max_width)
+  
+end
+
+
+
+function libVision.obstacle(labelB_t)
+  -- Obstacle table
+  local obstacle, obs_count, obs_debug = {}, 0, ''
+  obstacle.iv, obstacle.v, obstacle.detect = {}, {}, 0
+  obstacle.axisMinor, obstacle.axisMajor, obstacle.orientation = {}, {}, {}
+  obstacle.dist = {}
+  
+  -- Parameters  TODO: put into entry()
+  local label_flag = Config.vision.obstacle.label
+  local grid_x = Config.vision.obstacle.grid_x
+  local grid_y = Config.vision.obstacle.grid_y
+  local th_min_area = Config.vision.obstacle.th_min_area
+  local min_black_fill_rate = Config.vision.obstacle.min_black_fill_rate
+  local th_aspect_ratio = Config.vision.obstacle.th_aspect_ratio
+  local th_max_height = Config.vision.obstacle.th_max_height
+  local th_min_height = Config.vision.obstacle.th_min_height
+  local th_min_orientation = Config.vision.obstacle.th_min_orientation
+  local min_ground_fill_rate = Config.vision.obstacle.min_ground_fill_rate
+    
+  -- Update horizon
+  local pa = Body.get_head_position()[2]   -- + Config.walk.bodyTilt
+  local horizonB = (hb/2.0) - focalB*math.tan(pa - 10*DEG_TO_RAD)
+  horizonB = math.min(hb, math.max(math.floor(horizonB), 0))
+  --TODO: plot it in monitor
+  
+  local obsProps = ImageProc.obstacles(labelB_t,
+    Config.vision.obstacle.min_width, Config.vision.obstacle.max_width, horizonB)
+  
+    -- print("HORIZON: ", horizonB, 'hb:', hb)  
+
+  if #obsProps == 0 then return 'NO OBS' end
+  
+  --for i=1,math.min(30, #obsProps) do
+  for i=1, #obsProps do
+    local check_passed, v, obstacle_dist = true
+		-- Black check
+		local lx = obsProps[i].position[1] - obsProps[i].width/2
+		local rx = obsProps[i].position[1] + obsProps[i].width/2 
+		local ty = obsProps[i].position[2] - 2*obsProps[i].width
+		local by = obsProps[i].position[2]
+		local black_box = {lx, rx, ty, by}
+		local blackStats, box_area = bboxStats('b', colors.black, black_box)
+    local black_fill_rate = blackStats.area / box_area
+		if black_fill_rate < min_black_fill_rate then
+			check_passed = false
+			obs_debug = obs_debug..string.format("blak fillrate: %.2f<%.2f", 
+        black_fill_rate, min_black_fill_rate)
+		end
+		
+    
+
+
+    -- Convert to local frame
+		if check_passed then
+    	local scale = math.max(1, obsProps[i].width / Config.world.obsDiameter)
+    --Instead of the width-based distance 
+    --Let's just project the bottom position to the ground
+      v = check_coordinateB(
+        { obsProps[i].position[1],  obsProps[i].position[2]}, 0.1) 
+      v = projectGround(v,0)
+    	obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
+		end
+    
+    -- Field bounds check
+    if check_passed then
+      local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
+      --TODO: for now ignore opponent
+      if math.abs(global_v[1])>xMax-0.3 or math.abs(global_v[2])>yMax then
+        check_passed = false
+        obs_debug = obs_debug..'OUTSIDE FIELD!\n'
+      end
+    end
+    -- Distance check
+    if check_passed and obstacle_dist>7 then  --TODO
+      check_passed = false
+      obs_debug = obs_debug..string.format('TOO FAR:%.2f >%.2f\n', obstacle_dist, 7)
+    end
+    
+    -- Ground check
+    if check_passed and hb-obsProps[i].position[2]>10 then
+      local left_x = obsProps[i].position[1] - obsProps[i].width/2
+      local right_x = obsProps[i].position[1] + obsProps[i].width/2
+      local top_y = obsProps[i].position[2]
+      local bot_y = math.min(hb, obsProps[i].position[2]+20)
+
+      local ground_bbox = {left_x, right_x, top_y, bot_y}
+      local groundStats, bbox_area = bboxStats('b', colors.field, ground_bbox)
+      if groundStats.area/bbox_area < min_ground_fill_rate then  --TODO
+        check_passed = false
+        obs_debug = obs_debug..string.format('GROUND CHECK FAIL: %.2f < %.2f\n',
+          groundStats.area/bbox_area, min_ground_fill_rate)
+      end
+    end
+    
+    if check_passed then
+      obs_count = obs_count + 1
+      table.insert(obstacle.dist, obstacle_dist)
+      obstacle.iv[obstacle_dist] = vector.new(obsProps[i].position)*scaleB
+      obstacle.axisMinor[obstacle_dist] = obsProps[i].width
+      obstacle.axisMajor[obstacle_dist] = obsProps[i].width 
+              
+      obstacle.v[obstacle_dist] = v
+      obstacle.detect = 1
+      obstacle.count = obs_count
+    end
+    
+  end -- end loop
+  
+  if obstacle.detect == 1 then
+    -- Sort to get the closest two 
+    local obsStats = {}
+    obsStats.iv, obsStats.xs, obsStats.ys = {},{},{}
+    obsStats.axisMinor, obsStats.axisMajor, obsStats.orientation = {}, {}, {}
+    table.sort(obstacle.dist)
+    for i=1, math.min(5, obstacle.count) do
+      obsStats.iv[i] = obstacle.iv[obstacle.dist[i]]
+	    local pos = vector.new(obstacle.v[obstacle.dist[i]])  -- LOCAL
+      obsStats.xs[i] = pos[1]
+      obsStats.ys[i] = pos[2]
+      
+      obsStats.axisMinor[i] = obstacle.axisMinor[obstacle.dist[i]]
+      obsStats.axisMajor[i] = obstacle.axisMajor[obstacle.dist[i]] 
+      obsStats.orientation[i] = math.pi/2
+    end    
+
+    return 'Detected', obsStats
+  else
+    return obs_debug, obsStats
+  end
+  
+end
+
+-- FOR GOALIE
+function libVision.line(labelB_t)
+  local line_cfg = Config.vision.line
+  local lines, line_debug = {}, ''
+  
+    lines.detect = 0
+    local linePropsB = ImageProc.field_lines(labelB_t, line_cfg.max_width,
+        line_cfg.connect_th, line_cfg.max_gap, line_cfg.min_length)
+
+    if #linePropsB==0 then 
+      return 'no linePropsB'
+    end
+
+    lines.propsB = linePropsB
+    lines.v, lines.endpoint = {},{}
+    lines.angle, lines.length= {},{}
+
+    local num_line = 4
+    for i = 1,num_line do
+      lines.endpoint[i] = vector.zeros(4)
+      lines.v[i] = {}
+      lines.v[i][1] = vector.zeros(4)
+      lines.v[i][2] = vector.zeros(4)
+      lines.angle[i] = 0
+    end
+
+    local bestindex = 1
+    local bestlength = 0
+    local linecount = 0
+
+    local length, vendpoint, vHeight = 0, {}, 0
+    for i=1, #linePropsB do
+      length = math.sqrt(
+      	(lines.propsB[i].endpoint[1]-lines.propsB[i].endpoint[2])^2+
+      	(lines.propsB[i].endpoint[3]-lines.propsB[i].endpoint[4])^2);
+
+        vendpoint[1] = check_coordinateB(vector.new(
+      		{lines.propsB[i].endpoint[1],lines.propsB[i].endpoint[3]}),1);
+        vendpoint[2] = check_coordinateB(vector.new(
+      		{lines.propsB[i].endpoint[2],lines.propsB[i].endpoint[4]}),1);
+
+      vHeight = 0.5*(vendpoint[1][3]+vendpoint[2][3])
+
+      local vHeightMax = 0.50 --TODO
+
+      --TODO: added debug message
+      if length>line_cfg.min_length and linecount<num_line and vHeight<vHeightMax then          
+        linecount = linecount + 1
+        lines.length[linecount] = length
+        lines.endpoint[linecount] = vector.new(lines.propsB[i].endpoint)*scaleB
+        vendpoint[1] = projectGround(vendpoint[1],0)
+        vendpoint[2] = projectGround(vendpoint[2],0)
+        lines.v[linecount] = {}
+        lines.v[linecount][1] = vendpoint[1]
+        lines.v[linecount][2] = vendpoint[2]
+        lines.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2],
+  			    vendpoint[1][1]-vendpoint[2][1]));
+      end
+    end
+    
+    lines.nLines = linecount
+    if lines.nLines>0 then
+      lines.detect = 1
+      -- print('line v:', unpack(lines.v[1][1]), unpack(lines.v[1][2]))
+    end
+    return 'blah', lines
+end
 
 
 -- Set the variables based on the config file
@@ -413,31 +794,44 @@ function libVision.update(img)
   -- Update the motion elements
   update_head()
   
+
   -- Images to labels
   labelA_t = ImageProc2.yuyv_to_label(img, lut_t:data())
   labelB_t = ImageProc2.block_bitor(labelA_t)
-
   -- Detection System
   -- NOTE: Muse entry each time since on webots, we switch cameras
   -- In camera wizard, we do not switch cameras, so call only once
   local cc_t = ImageProc2.color_count(labelA_t)
-  local ball_fails, balls = libVision.ball(labelA_t, labelB_t, cc_t)
+  local ball_fails, ball = libVision.ball(labelA_t, labelB_t, cc_t)
+  local post_fails, posts = libVision.goal(labelA_t, labelB_t, cc_t)
+	local obstacle_fails, obstacles
+  local line_fails, lines
+
+  if wcm.get_obstacle_enable()==0 then
+    obstacle_fails = 'Disabled'
+  else
+    obstacle_fails, obstacles = libVision.obstacle(labelB_t)
+  end
+  
+  if gcm.get_game_role()==0 then
+    --line_fails, lines = libVision.line(labelB_t)
+  end
 
   -- Save the detection information
-  detected.balls = balls
-  
-  
+  detected.ball = ball
+  detected.posts = posts
+  detected.obstacles = obstacles
+  detected.line = lines
+
   detected.debug={}
   detected.debug.ball = ball_debug or ' '
   detected.debug.post = post_fails or ' '
   detected.debug.obstacle = obstacle_fails or ' '
   detected.debug.line = line_fails or ' '
-  
-
+    
   -- Send the detected stuff over the channel every cycle
   vision_ch:send(mp.pack(detected))
 
 end
-
 
 return libVision

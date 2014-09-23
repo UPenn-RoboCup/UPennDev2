@@ -253,7 +253,7 @@ function h = show_monitor_sitevisit
         end
         
         
-        p_count(hmax_map>0.18) = 0;
+        p_count(hmax_map>0.15) = 0;
         p_count(hmax_map<=0) = 0;
         
         thres1 = 0.6*max(p_count(:));

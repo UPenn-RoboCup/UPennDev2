@@ -170,7 +170,7 @@ local function update_target()
 
 if IS_WEBOTS then
   local target_pose = util.pose_relative(wcm.get_step_pose(), wcm.get_robot_pose())
-  local target_x = target_pose[1] - 0.15 -- HACK
+  local target_x = target_pose[1] - 0.1
   local target_leftY = target_pose[2] + Config.walk.footY
   local target_rightY = target_pose[2] - Config.walk.footY
   local target_yaw = util.mod_angle(target_pose[3])

@@ -37,50 +37,10 @@ function state.entry()
 end
 
 function state.update()
-  --[[
-  -- Get the time of update
-  local t = Body.get_time()
-  local t_diff = t - t_update
-  -- Save this at the last update time
-  t_update = t
 
-  local qWaist = Body.get_waist_command_position()
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()    
-  local uTorso = mcm.get_status_uTorso()  
-  local uLeft = mcm.get_status_uLeft()
-  local uRight = mcm.get_status_uRight()
-
-  
-
-  --Adjust body height
-  local bodyHeight_now = mcm.get_stance_bodyHeight()
-  local bodyHeightTarget = hcm.get_motion_bodyHeightTarget()
-  bodyHeightTarget = math.max(0.75,math.min(Config.walk.bodyHeight,bodyHeightTarget))
-
-  local bodyHeight = util.approachTol( bodyHeight_now, 
-    bodyHeightTarget, Config.stance.dHeight, t_diff )
-  
-  local zLeft,zRight = 0,0
-  supportLeg = 2; --Double support
-
-
-  local gyro_rpy = Body.get_gyro()
-
-  local delta_legs
-  delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,0,gyro_rpy, angleShift)
-
---Compensation for arm / objects
-  local uTorsoComp = mcm.get_stance_uTorsoComp()
-  local uTorsoCompensated = util.pose_global(
-     {uTorsoComp[1],uTorsoComp[2],0},uTorso)
-  mcm.set_stance_bodyHeight(bodyHeight)  
-  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
-    0,0,delta_legs)
-  mcm.set_status_uTorsoVel({0,0,0})
-  local steprequest = mcm.get_walk_steprequest()    
-  if steprequest>0 then return "done_step" end
---]]  
+  if mcm.get_stance_singlesupport()==0 then
+    return "done"
+  end
 end -- walk.update
 
 function state.exit()

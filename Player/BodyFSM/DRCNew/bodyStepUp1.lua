@@ -181,7 +181,6 @@ end
 function state.exit()
   print(state._NAME..' Exit' )
   mcm.set_stance_singlesupport(0)
-
 end
 
 return state

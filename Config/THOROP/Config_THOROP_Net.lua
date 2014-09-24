@@ -16,7 +16,7 @@ local WHICH = IP.TEDDY
 
 -- Network settings --
 local net = {
-	use_wireless = true,
+	use_wireless = false,
 }
 
 -- IP Addresses

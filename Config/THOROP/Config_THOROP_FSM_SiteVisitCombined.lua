@@ -18,68 +18,34 @@ fsm.enabled = {
   'Body',
   'Head',
   'Motion',
---  'Lidar'
 }
 
 --SJ: now we can have multiple FSM options 
 fsm.select = {
-  Arm = 'DRCTrials',  
-  Head = 'RoboCup', --'Default',
+  Arm = 'DRCTrials',   
+  Head = 'RoboCup',
   Body = 'DRCNew',
   Motion = 'RoboCup'
 }
 
 
-fsm.Lidar = {
-  {'lidarIdle', 'pan', 'lidarPan'},
-  {'lidarIdle', 'pansingle', 'lidarPanSingle'},
-  {'lidarPanSingle', 'done', 'lidarIdle'},
-  {'lidarPan', 'switch', 'lidarPan'},
-  {'lidarPan', 'stop', 'lidarIdle'},
-}
-
-fsm.Head = {  
+fsm.Head = {
   {'headIdle', 'scan', 'headScan'},
   {'headIdle', 'teleop', 'headTeleop'},
-	--
+  --
   {'headScan', 'ballfound', 'headTrack'},
-	{'headScan', 'teleop', 'headTeleop'},
   {'headScan', 'noball', 'headScan'},
-  {'headIdle', 'teleop', 'headTeleop'},
-	--
-	{'headTrack', 'balllost', 'headScan'},
-	{'headTrack', 'teleop', 'headTeleop'},
-	--
-  {'headTeleop', 'idle', 'headIdle'},
+  {'headScan', 'teleop', 'headTeleop'},
+    -- 
   {'headTeleop', 'scan', 'headScan'},
+  --
+  {'headTrack', 'balllost', 'headScan'},
+  {'headTrack', 'teleop', 'headTeleop'},
+  {'headTrack', 'kickfollow', 'headKickFollow'},
+  --
+  {'headKickFollow', 'done', 'headTrack'},
 }
 
-fsm.Body = {
-  {'bodyIdle', 'init', 'bodyInit'},
-  {'bodyInit', 'done', 'bodyStop'},
-
-  {'bodyStop', 'stepinplace', 'bodyStepPlace'},
-  {'bodyStop', 'approach', 'bodyBlockApproach'},
-  {'bodyStop', 'footrace', 'bodyFootRace'},
-
-
-  {'bodyStop', 'stepover', 'bodyStepOver'},
-  {'bodyStop', 'stepover1', 'bodyStepUp1'},
-  {'bodyStepOver', 'done', 'bodyStop'},
-  {'bodyStepUp1', 'done', 'bodyStop'},
-
-
-  {'bodyStepPlace',   'done', 'bodyStop'},
---  {'bodyStepWaypoint',   'done', 'bodyStop'},
-
-  {'bodyBlockApproach', 'done', 'bodyBlockWait'},
---  {'bodyBlockWait', 'done', 'bodyStepOver'},
-  {'bodyBlockWait', 'done', 'bodyStop'},
-
-
-  {'bodyFootRace', 'done', 'bodyStop'},
-
-}
 
 fsm.Arm = {
   {'armIdle', 'timeout', 'armIdle'},
@@ -87,12 +53,8 @@ fsm.Arm = {
   {'armIdle', 'init', 'armInit'},
 
   {'armInit', 'done', 'armPose1'},
-
   {'armPose1', 'bodyslave', 'armSlave'}, --Full body motion
-  
   {'armPose1', 'teleop', 'armTeleop'},
-  --{'armPose1', 'teleop', 'armIKTest'},
-  --{'armIKTest', 'teleop', 'armPose1'},
 
   {'armPose1', 'pushdoorgrab', 'armPushDoorSideGrip'},
   {'armPose1', 'doorgrab', 'armPullDoorSideGrip'},
@@ -100,13 +62,11 @@ fsm.Arm = {
   {'armPose1', 'toolgrab', 'armToolGrip'},
   {'armPose1', 'hosegrab', 'armHoseGrip'},
 
-
   {'armPose1', 'debrisgrab', 'armDebrisGrip'},
   {'armPose1', 'smallvalvegrab', 'armSmallValveGrip'},
   {'armPose1', 'barvalvegrab', 'armBarValveGrip'},
   {'armPose1', 'smallvalverightgrab', 'armSmallValveRightGrip'},
   {'armPose1', 'barvalverightgrab', 'armBarValveRightGrip'},
-
 
   {'armSmallValveGrip', 'done', 'armPose1'},
   {'armSmallValveRightGrip', 'done', 'armPose1'},
@@ -126,11 +86,42 @@ fsm.Arm = {
 
   {'armPushDoorSideGrip', 'done', 'armPose1'},
   {'armPullDoorSideGrip', 'done', 'armPose1'},
-
   {'armDebrisGrip', 'done', 'armPose1'},
   {'armTeleop', 'done', 'armPose1'},
 }
 
+
+fsm.Body = {
+  {'bodyIdle', 'init', 'bodyInit'},
+  {'bodyInit', 'done', 'bodyStop'},
+
+  {'bodyStop', 'kick', 'bodyRobocupKick'},
+  {'bodyStop', 'play', 'bodyRobocupIdle'},
+  {'bodyStop', 'approach', 'bodyRobocupApproach'},
+
+
+  {'bodyStop', 'play', 'bodyRobocupIdle'},
+
+
+  {'bodyStop', 'stepover1', 'bodyStepUp1'},
+  {'bodyStepUp1', 'done', 'bodyStop'},
+  
+  {'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
+  {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
+  {'bodyRobocupIdle','stop','bodyStop'},
+
+  {'bodyRobocupFollow', 'done', 'bodyRobocupIdle'},
+  {'bodyRobocupFollow', 'timeout', 'bodyRobocupFollow'},
+  {'bodyRobocupFollow', 'ballclose', 'bodyRobocupApproach'},
+  {'bodyRobocupFollow','stop','bodyStop'},
+  
+  {'bodyRobocupApproach', 'done', 'bodyRobocupKick'},
+  {'bodyRobocupApproach', 'ballfar', 'bodyRobocupFollow'},
+  {'bodyRobocupApproach','stop','bodyStop'},
+
+  {'bodyRobocupKick', 'done', 'bodyRobocupIdle'},
+  {'bodyRobocupKick', 'testdone', 'bodyStop'},
+}
 
 
 fsm.Motion = {
@@ -145,25 +136,13 @@ fsm.Motion = {
 
   {'motionStance', 'bias', 'motionBiasInit'},
   {'motionStance', 'preview', 'motionStepPreview'},
-  {'motionStance', 'stair', 'motionStepPreviewStair'},
-
   {'motionStance', 'kick', 'motionKick'},
   {'motionStance', 'done_step', 'motionHybridWalkKick'},
 
   {'motionStance', 'getup', 'motionGetupFront'},
-
   {'motionGetupFront', 'done', 'motionInit'},
 
-  {'motionStance', 'done', 'motionInit'},
-
-  {'motionStance', 'sit', 'motionSit'},
-  {'motionSit', 'stand', 'motionStandup'},
-  {'motionStandup', 'done', 'motionStance'},
-
   {'motionStepPreview', 'done', 'motionStance'},
-  {'motionStepPreviewStair', 'done', 'motionStepPreviewStairStopped'},
-  {'motionStepPreviewStairStopped', 'stair', 'motionStepPreviewStair'},
-
   {'motionKick', 'done', 'motionStance'},
 
 --For new hybrid walk
@@ -176,16 +155,9 @@ fsm.Motion = {
   {'motionHybridWalk', 'done_step', 'motionHybridWalkKick'},
   {'motionHybridWalkKick', 'done', 'motionStance'},
   {'motionHybridWalkKick', 'walkalong', 'motionHybridWalk'},
-  
---  {'motionHybridWalk', 'done_step', 'motionStepNonstop'},
---  {'motionStepNonstop', 'done', 'motionStance'},
 
   {'motionHybridWalkEnd', 'done', 'motionStance'},
 
-}
-
-fsm.dqNeckLimit = {
-  60 * DEG_TO_RAD, 60 * DEG_TO_RAD
 }
 
 fsm.dqNeckLimit = {
@@ -209,7 +181,7 @@ fsm.headReady = {
 fsm.headTrack = {
   tLost = 5,
   timeout = 6,
-  dist_th = 0.5,
+	dist_th = 0.5,
 }
 
 --HeadLookGoal: Look up to see the goal
@@ -258,14 +230,12 @@ for _,sm in ipairs(Config.fsm.enabled) do
 end
 
 
+Config.default_role = 2 --0 goalie / 1 attacker / 2 tester
+Config.default_state = 5 -- 0 1 2 3 4 for init~finished, 5 for untorqued, 6 for testing
 
+Config.stop_at_neutral = true --false for walk testing
 
-
-
-
-
-
-
+--Config.fsm.headTrack.timeout = 6  --ORG value
 Config.fsm.headTrack.timeout = 3  
 Config.fsm.dqNeckLimit ={40*DEG_TO_RAD, 180*DEG_TO_RAD}
 
@@ -275,26 +245,83 @@ Config.approachTargetX = {
   0.35  --for kick 2 (weak walkkick)
 }
 
+--kick lil closer!
+Config.approachTargetX = {
+  0.38, --for kick 0 (walkkick)
+  0.28, --for kick 1 (st kick)
+  0.35  --for kick 2 (weak walkkick)
+}
+
+
+
 --Config.disable_kick = true
 Config.disable_kick = false
 
 Config.use_angle_localization = true
-Config.demo = false
---Config.demo = true
+
+
 
 if IS_WEBOTS then 
---  Config.use_gps_pose = false
-  Config.use_gps_pose = true
+  Config.approachTargetX = {
+--    0.35, --for kick 0 (walkkick)
+    0.30, --for kick 0 (walkkick)
+
+    0.30, --for kick 1 (st kick)
+    0.35  --for kick 2 (weak walkkick)
+  }
+
+  Config.fsm.headLookGoal.yawSweep = 30*math.pi/180
+  Config.fsm.headLookGoal.tScan = 2.0
+
+  Config.fsm.bodyRobocupFollow.circleR = 1
+  Config.fsm.bodyRobocupFollow.kickoffset = 0.5
+
+  Config.fsm.bodyRobocupApproach.target={0.25,0.12}  
+  Config.fsm.bodyRobocupApproach.th = {0.01, 0.01}
+
+  Config.stop_after_score = false
+
+
+--  Config.world.use_imu_yaw = true
+--  Config.vision.ball.th_min_fill_rate = 0.25 
+  Config.USE_DUMMY_ARMS = false
+  Config.use_gps_pose = false
+--  Config.use_gps_pose = true
+  
   Config.use_localhost = true
+  Config.use_walkkick = true
+  --Config.use_walkkick = false
+  --Config.backward_approach = true
 end
 
 
 --  Config.approachTargetY= {-0.07,0.05}  --L/R aiming offsets
 Config.approachTargetY= {-0.07,0.02}  --L/R aiming offsets
 
+--For teddy
+Config.approachTargetY= {0,0.02}  --L/R aiming offsets
+
 Config.ballX_threshold1 = -1.5 --The threshold we use walkkick
 Config.ballX_threshold2 = 0.5 --The threshold we start using strong kick
 
+--  Config.use_walkkick = true
+Config.use_walkkick = false
+
+--Config.torque_legs = false
+Config.torque_legs = true
+Config.enable_obstacle_scan = true
+Config.disable_goal_vision = false
+
+--  Config.auto_state_advance = true
+Config.auto_state_advance = false
+
+Config.enable_single_goalpost_detection = false
+Config.enable_single_goalpost_detection = true
+
+-- Config.enable_weaker_kick = true
+
+Config.use_walkkick = true
+--  Config.use_walkkick = false
 
 Config.disable_ball_when_lookup = true
 
@@ -303,24 +330,35 @@ Config.maxStepApproach1 = 0.10
 Config.maxStepApproach2 = 0.06
 
 
-Config.fsm = fsm
+--Config.enable_goalie_legspread = true --NOT WORKING FOR NOW
+--Config.enable_goalie_legspread = false
+--Config.goalie_turn_to_ball = true
 
---[[
--- Add all FSM directories that are in Player
-for _,sm in ipairs(Config.fsm.enabled) do
-  local pname = {HOME, '/Player/', sm, 'FSM', '/?.lua;', package.path}
-  package.path = table.concat(pname)
-end
---]]
+---------------------------------------------------------------
+--Semi-final config end
+---------------------------------------------------------------
 
-for _,sm in ipairs(Config.fsm.enabled) do
-  if Config.fsm.select[sm] then
-    local pname = {HOME, '/Player/', sm, 'FSM/',Config.fsm.select[sm], '/?.lua;', package.path}
-    package.path = table.concat(pname)
-  else --default fsm
-    local pname = {HOME, '/Player/', sm, 'FSM', '/?.lua;', package.path}
-    package.path = table.concat(pname)
-  end  
-end
+
+Config.goalieBallX_th = -0.5
+Config.goalie_odometry_only = true
+Config.goaliePosX = 0.40
+Config.ballYFactor = 1.4
+Config.gamecontroller_detect = true
+Config.gamecontroller_timeout = 5.0
+
+
+Config.max_goalie_y = 0.7
+---------------------------------------------------
+-- testing
+
+Config.goalie_threshold_x = 0.10
+Config.goalie_t_startmove = 10.0
+
+
+Config.assume_goalie_blocking = true
+Config.enemy_goalie_shift_factor = 0.15
+
+--DEMO!!!
+Config.demo = true
 
 return Config

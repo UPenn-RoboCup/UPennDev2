@@ -127,10 +127,6 @@ function state.update()
   end 
 
   if gcm.get_game_state()==3 then
-    if wcm.get_robot_timestarted()==0 then 
-      wcm.set_robot_timestarted(t)
-      print("COUNTING STARTED!!!")
-    end
     if gcm.get_game_role()==0 then --goalie
       print("Goalie start!")
       return'goalie'

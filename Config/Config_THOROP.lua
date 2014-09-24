@@ -93,15 +93,33 @@ Config.testfile = 'test_robocup'
 
 ---[[
 --DRC Site visit 2014
-Config.libs.World = 'SiteVisit'   
-Config.wizards.mesh = 'mesh_wizard_sitevisit'
-Config.wizards.test = nil
+--We are not doing any lidar based stuff
+--Config.libs.World = 'SiteVisit'   
+--Config.wizards.mesh = 'mesh_wizard_sitevisit'
+--Config.sensors.chest_lidar = true
 
-Config.sensors.chest_lidar = true
-local exo = {'Robot','Walk','Net','Manipulation',
-'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup'
+
+Config.libs.World = 'RoboCup'
+local exo = {
+  'Robot','Walk','Net','Manipulation',
+ -- 'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
+-- 'FSM_KickDemo','World_RoboCup','Vision_RoboCup' 
+-- 'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup' 
+
+ 'FSM_SiteVisitCombined','World_RoboCup','Vision_RoboCup' 
+
+
 }
+
+Config.sensors.chest_lidar = false
+Config.wizards.test = nil
+Config.wizards.mesh = nil
+
+--Config.testfile = 'test_robocup'
 Config.testfile = 'test_sitevisit'
+
+
+
 --]]
 
 --Turning off sensor for motion only testing

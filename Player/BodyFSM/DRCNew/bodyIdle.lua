@@ -21,6 +21,13 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
+
+
+
+--[[
+  local gamestate = gcm.get_game_state()
+  if gamestate~=5 then return 'init' end --5 is idle state 
+--]]  
 end
 
 function state.exit()

@@ -13,6 +13,10 @@ local unix   = require'unix'
 local util   = require'util'
 local moveleg = require'moveleg'
 require'mcm'
+require'hcm'
+
+local simple_ipc = require'simple_ipc'
+local head_ch   = simple_ipc.new_publisher('HeadFSM!')
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
@@ -78,7 +82,6 @@ local keyframe={
   {    
     qRArm = {35,0,0,  -70,   -90,  0,0},    
     duration = 1.0*slow_down_factor,
-    stop = true,
   },
 
 
@@ -96,6 +99,7 @@ local keyframe={
     qRArm = {130,-10,0,  0,   -90,  0,0},            
     qWaist={0,-0},
     duration = 4.0*slow_down_factor,
+    stop = true,    
   },
 
 --torso straight
@@ -103,7 +107,6 @@ local keyframe={
     qLLeg={0,5,-50,160,-100,-5},
     qRLeg={0,-5,-50,160,-100,5},
     duration = 4.0*slow_down_factor,
-    stop = true,
   },
 
 --Stand up
@@ -134,9 +137,11 @@ function state.entry()
   qRLeg1 = vector.new(Body.get_rleg_command_position())  
   qWaist1 = vector.new(Body.get_waist_command_position())  
 
-print(unpack(vector.new(qLArm1)/DEG_TO_RAD))
+--print(unpack(vector.new(qLArm1)/DEG_TO_RAD))
 
   stage = 0  
+  hcm.set_state_proceed(1)
+  head_ch:send'teleop'
 end
 
 function state.update()
@@ -145,6 +150,15 @@ function state.update()
   local t_diff = t - t_start
   if stage > #keyframe then return "done" end
 
+  if stage==0 then
+    local rpy = Body.get_rpy()
+    if math.abs(rpy[1])<45*math.pi/180 and
+      math.abs(rpy[2])<45*math.pi/180 then
+    --check imu angle.....
+      return "done" end
+  end
+
+  hcm.set_motion_headangle({0,-60*math.pi/180})
   if stage>0 then    
     local ph = math.max(0,math.min(1, t_diff/keyframe[stage].duration))
     Body.set_larm_command_position((1-ph)* qLArm0 + ph * qLArm1)
@@ -172,7 +186,10 @@ function state.update()
     if stage>0 and keyframe[stage].stop then hcm.set_state_proceed(0) end
     t_start=t
     stage = stage +1
-    if stage > #keyframe then return "done" end
+    if stage > #keyframe then 
+      print("DONE")
+      return "done" 
+    end
 
     qLArm0 = qLArm1
     qRArm0 = qRArm1
@@ -190,6 +207,7 @@ end -- walk.update
 function state.exit()
   print(state._NAME..' Exit')
   -- TODO: Store things in shared memory?
+  hcm.set_motion_headangle({0,0*math.pi/180})
 end
 
 return state

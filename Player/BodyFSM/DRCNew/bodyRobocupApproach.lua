@@ -172,6 +172,8 @@ local function update_velocity()
   local ballx = wcm.get_ball_x() 
   local bally = wcm.get_ball_y() 
 
+print("ball:",ballx,bally)
+
   local kicktype = mcm.get_walk_kicktype()
 
   approachTargetX = Config.approachTargetX[kicktype+1] or 0.35
@@ -297,11 +299,9 @@ function state.entry()
     end
   end
 
-
   if Config.demo then
    mcm.set_walk_kicktype(0) --Walkkick only for demo
   end
-
 end
 
 function state.update()

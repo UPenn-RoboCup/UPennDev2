@@ -98,8 +98,14 @@ local function update(key_code)
 	elseif key_char_lower==("2") then      
 		head_ch:send'scan'
 
+	elseif key_char_lower==("g") then      
+		gcm.set_game_role(1)		
+		gcm.set_game_state(3)		
+		head_ch:send'scan'
+		body_ch:send'play'
+
 	elseif key_char_lower==("3") then      
-		lidar_ch:send'pansingle'
+--		lidar_ch:send'pansingle'
 
 	elseif key_char_lower==("q") then      
 		body_ch:send'approach'
@@ -107,39 +113,24 @@ local function update(key_code)
 
 	elseif key_char_lower==("x") then      
 		motion_ch:send'getup'
-
-	elseif key_char_lower==("c") then      
-		body_ch:send'stepover'
+	
 
 	elseif key_char_lower==("v") then      
 		body_ch:send'stepover1'		
 
 
-	elseif key_char_lower==("e") then      
-		body_ch:send'footrace'		
-
 
 	elseif key_char_lower==("=") then      
 		hcm.set_state_proceed(1)
 
---		elseif key_char_lower==("w") then      
---			mcm.set_walk_kicktype(1)
---			body_ch:send'approach'
 
---		elseif key_char_lower==("e") then      
---			mcm.set_walk_kicktype(2)
---			body_ch:send'approach'
-
-
-	elseif key_char_lower==("s") then      
-		arm_ch:send'awesome'
-
-
-	elseif key_char_lower==("7") then      
-		motion_ch:send'sit'
 	elseif key_char_lower==("8") then  
+		gcm.set_game_state(6) --this stops body state
 		motion_ch:send'stand'
 		body_ch:send'stop'
+		head_ch:send'teleop'
+		hcm.set_motion_headangle({0,0*math.pi/180})
+		
 		if mcm.get_walk_ismoving()>0 then 
 			print("requesting stop")
 			mcm.set_walk_stoprequest(1) 

@@ -13,7 +13,7 @@ require'mcm'
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
-local timeout = 2
+local timeout = 10
 -- Track the torso
 local uTorso, uLeft, uRight
 local zLeft, zRight
@@ -47,7 +47,7 @@ function state.update()
   
   -- Check the CoM first
   if side=='left' then
-    if l_ft[3] < 3*r_ft[3] then
+    if l_ft[3] < 2*r_ft[3] then
       uTorso = uTorso + vector.new{0,0.0005,0}
       mcm.set_status_uTorso(uTorso)
     else
@@ -58,7 +58,7 @@ function state.update()
   elseif side=='right' then
     --print('L FT', l_ft)
     --print('R FT', r_ft)
-    if r_ft[3] < 3*l_ft[3] then
+    if r_ft[3] < 2*l_ft[3] then
       uTorso = uTorso - vector.new{0,0.0005,0}
       mcm.set_status_uTorso(uTorso)
     else

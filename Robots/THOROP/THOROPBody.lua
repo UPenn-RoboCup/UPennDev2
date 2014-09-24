@@ -556,6 +556,9 @@ if IS_WEBOTS then
         r_ft[6] = webots.wb_motor_get_force_feedback(tags.right_ankle_yaw)
       end
 			dcm.set_sensor_rfoot(r_ft)
+      -- ZMP calculation
+      dcm.set_sensor_lzmp({-l_ft[5] / l_ft[3], l_ft[4] / l_ft[3]})
+      dcm.set_sensor_rzmp({-r_ft[5] / r_ft[3], r_ft[4] / r_ft[3]})
     end
 
     -- GPS and compass data

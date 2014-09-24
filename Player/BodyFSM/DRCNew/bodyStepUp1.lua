@@ -62,7 +62,7 @@ local step_queues={
 step_queues={
    {
     {{0,0,0},   2,  0.1, 1, 0.1,    {0,0},  {0, 0, 0}},
-    {{step1,0,0},0,  1, 2.5, 0.5,   {0,0}, {0,0.06,0}   ,  {-step1/2,Config.walk.footY}},   --LS
+    {{step1,0,0},0,  1, 2.5, 0.5,   {0,0}, {0,sh1,sh2}   ,  {-step1/2,Config.walk.footY}},   --LS
     {{0,0,0},   2,  1, 1, 0.1,      {-step1/2,Config.walk.footY},  {0, 0, 0},{-step1/2,Config.walk.footY}},
    },
 
@@ -71,9 +71,25 @@ step_queues={
    },
 
   { --put second step up
-    {{step1,0,0},1,  0.5,   2.5, 1,  {0,0},  {0,0.06,0}},    --RS    
+    {{step1,0,0},1,  0.5,   4, 1,  {0.04,0},  {0,0.20,sh2}},    --RS    
     {{0,0,0},   2,  0.1, 1, 0.1,   {0,0},  {0, 0, 0}},
   },
+
+
+  {  --landing
+    {{step2,0,0} ,0, 2,   2.2,  1,  {-0.03,-0.00,0},  {sh2,sh1,0.0},{-step1/2,Config.walk.footY}},--LS
+    {{0,0,0},   2,  1, 1, 0.1,      {-step1/2,Config.walk.footY},  {0, 0, 0},{-step1/2,Config.walk.footY}},
+  },
+
+  {
+    {{0,0,0},   2,  0.1, 2, 0.1,    {-0.00,0,0},  {0, 0, 0}},
+  },
+
+  {
+    {{step2,0,0}, 1,  1,  3, 1,   {0,0.00,0},  {sh2,sh1,0.0}},--RS
+    {{0,0,0,},  2,   0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
+  }
+
 }
 
 
@@ -108,7 +124,7 @@ local function calculate_footsteps(stage)
 
     step_queue_vector[offset+11] = step_queue[i][7][1]
     step_queue_vector[offset+12] = step_queue[i][7][2]
-    step_queue_vector[offset+13] = 0
+    step_queue_vector[offset+13] = step_queue[i][7][3]
 
     if step_queue[i][8] then
       step_queue_vector[offset+14] = step_queue[i][8][1]

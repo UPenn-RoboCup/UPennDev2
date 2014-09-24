@@ -175,6 +175,7 @@ if IS_WEBOTS then
   local target_rightY = target_pose[2] - Config.walk.footY
   local target_yaw = util.mod_angle(target_pose[3])
 
+print(string.format('TARGET x:%.2f', target_x))
 
   uLeftGlobalTarget = {target_x, target_leftY, target_yaw}
   uRightGlobalTarget = {target_x, target_rightY, target_yaw}

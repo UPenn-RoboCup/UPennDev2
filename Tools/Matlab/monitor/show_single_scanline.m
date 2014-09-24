@@ -183,7 +183,7 @@ function h = show_monitor_sitevisit
         xs = xs0; ys = ys0; zs = zs0;
         
         if REAL_ROBOT==1
-            body_pitch_offset = -2.5/180*pi;
+            body_pitch_offset = -1.5/180*pi;
         else
             body_pitch_offset = 0;
         end
@@ -216,7 +216,7 @@ function h = show_monitor_sitevisit
             % Now xs, ys, and zs are in GLOBAL coordinates
             xs(i,:) = new_xy(1,:) + cur_pose(1);
             ys(i,:) = new_xy(2,:) + cur_pose(2);
-            zs(i,:) = new_yz(2,:) + 1;  %TODO: bodyHeight
+            zs(i,:) = new_yz(2,:) + 0.93;  %TODO: bodyHeight
             
   
             plot3(xs(i,:), ys(i,:), zs(i,:), '.');
@@ -365,7 +365,9 @@ function h = show_monitor_sitevisit
 %         ret = udp_send('send', 55556, send_data);
         
         % if use zmq
-        ret = zmq('send', matlab_ch, send_data);
+        if ~isempty(x_target)
+            ret = zmq('send', matlab_ch, send_data);
+        end
                 
 
         

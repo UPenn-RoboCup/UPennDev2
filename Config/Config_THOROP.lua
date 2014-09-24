@@ -102,32 +102,22 @@ Config.testfile = 'test_robocup'
 Config.libs.World = 'RoboCup'
 local exo = {
   'Robot','Walk','Net','Manipulation',
- -- 'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
--- 'FSM_KickDemo','World_RoboCup','Vision_RoboCup' 
--- 'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup' 
-
- 'FSM_SiteVisitCombined','World_RoboCup','Vision_RoboCup' 
-
-
+  'FSM_SiteVisitCombined','World_RoboCup','Vision_RoboCup' 
 }
 
+--[[
+Config.libs.World = 'SiteVisit'   
+local exo = {
+  'Robot','Walk','Net','Manipulation',
+  'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup' 
+}
+--]]
 Config.sensors.chest_lidar = false
 Config.wizards.test = nil
 Config.wizards.mesh = nil
-
---Config.testfile = 'test_robocup'
 Config.testfile = 'test_sitevisit'
-
-
-
 --]]
 
---Turning off sensor for motion only testing
-----[[
-Config.sensors.chest_lidar = false
-Config.wizards.test = nil
-Config.wizards.mesh = nil
---]]
 
 
 --[[

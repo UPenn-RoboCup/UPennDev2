@@ -28,14 +28,12 @@ local supportLeg
 local sh1,sh2 = 0.18, 0.142
 local step1,step2 = 0.30, 0.27
 
+--[[
 local step_queues={
     --put first step up
   {
     {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
     {{step1,0,0},0,  0.5, 2.5,   1,   {0.0,-0.01,0}, {0,sh1,sh2}},   --LS
---    {{0,0,0},   2,  0.1, 2, 0.1,   {0,0,0},  {0, 0, 0}},
---    {{0,0,0},   2,  1, 1, 0.1,   {0.10,-0.05,0},  {0, 0, 0}},
-
     {{0,0,0},   2,  5, 1, 0.1,   {0.10,-0.05,0},  {0, 0, 0}},
   },
 
@@ -55,34 +53,34 @@ local step_queues={
     {{0,0,0,},  2,   0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
   }
 }
-
+--]]
 
 --ZMP modulation testing
 
 step_queues={
    {
     {{0,0,0},   2,  0.1, 1, 0.1,    {0,0},  {0, 0, 0}},
-    {{step1,0,0},0,  1, 2.5, 0.5,   {0,0}, {0,sh1,sh2}   ,  {-step1/2,Config.walk.footY}},   --LS
-    {{0,0,0},   2,  1, 1, 0.1,      {-step1/2,Config.walk.footY},  {0, 0, 0},{-step1/2,Config.walk.footY}},
+    {{step1,0,0},0,  1, 2.5, 0.5,   {-0.04,0}, {0,sh1,sh2}   ,  {-step1/2*0.8  ,Config.walk.footY*0.4}},   --LS
+    {{0,0,0},   2,  1, 1, 0.1,      {-step1/2*0.8,Config.walk.footY*0.4},  {0, 0, 0},{-step1/2*0.8,Config.walk.footY*0.4}},
    },
 
   {
-    {{0,0,0},   2,  4, 1, 0.1,     {step1/2,-Config.walk.footY},  {0, 0, 0}, {step1/2,-Config.walk.footY}},
+    {{0,0,0},   2,  4, 1, 0.1,     {step1/2,-Config.walk.footY*0.8},  {0, 0, 0}, {step1/2,-Config.walk.footY*0.8}},
    },
 
   { --put second step up
-    {{step1,0,0},1,  0.5,   4, 1,  {0.04,0},  {0,0.20,sh2}},    --RS    
+    {{step1,0,0},1,  0.5,   4, 1,  {0.02,0},  {0,0.20,sh2}},    --RS    
     {{0,0,0},   2,  0.1, 1, 0.1,   {0,0},  {0, 0, 0}},
   },
 
 
   {  --landing
-    {{step2,0,0} ,0, 2,   2.2,  1,  {-0.03,-0.00,0},  {sh2,sh1,0.0},{-step1/2,Config.walk.footY}},--LS
-    {{0,0,0},   2,  1, 1, 0.1,      {-step1/2,Config.walk.footY},  {0, 0, 0},{-step1/2,Config.walk.footY}},
+    {{step2,0,0} ,0, 2,   3,  1,  {-0.0,-0.00,0},  {sh2,sh1,0.0},{-step1/2,Config.walk.footY*0.8}},--LS
+    {{0,0,0},   2,  1, 1, 0.1,      {-step1/2,Config.walk.footY*0.8},  {0, 0, 0},{-step1/2,Config.walk.footY*0.8}},
   },
 
   {
-    {{0,0,0},   2,  0.1, 2, 0.1,    {-0.00,0,0},  {0, 0, 0}},
+    {{0,0,0},   2,  2, 1, 0.1,    {-0.00,0,0},  {0, 0, 0}},
   },
 
   {
@@ -91,7 +89,6 @@ step_queues={
   }
 
 }
-
 
 
 

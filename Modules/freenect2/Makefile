@@ -1,4 +1,4 @@
-LIBNAME=libfreenect2
+LIBNAME=freenect2
 EXTRA_OBJ=\
 command_transaction.o \
 cpu_depth_packet_processor.o \
@@ -20,7 +20,11 @@ opengl_depth_packet_processor.o
 #generate_resources.o \
 #test_opengl_depth_packet_processor.o
 include ../../Makefile.inc
-INCLUDES+=-I/usr/local/include/libusb-1.0/ -I. \
+INCLUDES+=-DDEBUG\
+-I/usr/local/include/libusb-1.0/ \
+-I. \
 -DLIBFREENECT2_THREADING_TINYTHREAD -DRESOURCES_INC \
 -DGLEW_MX -DGLEW_STATIC
-#LDFLAGS+=-lfreenect2
+LDFLAGS+=-lglfw3 -lGLEW -lGLEWmx -lturbojpeg -lusb-1.0 \
+-lopencv_core
+#-lfreenect2

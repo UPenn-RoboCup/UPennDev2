@@ -22,6 +22,7 @@ local gcm_names={
   util.color('Untorqued','red'),    
   util.color('Test','blue'),    
 }
+--[[
 local command1='\nKey commands:\n'
   ..'1 : game Initial\n'
   ..'3 : game Set\n'
@@ -44,10 +45,11 @@ local command2=
 ..'9 : start walking\n'
 ..'a : Enter attacker mode\n'
 ..'g : Enter goalie mode\n'
-  
+--]]
+local command1, command2 = '',''  
 
 local function show_status()
-  os.execute('clear')
+	if not IS_WEBOTS then os.execute('clear') end
   print("Game role:",gcm.get_game_role())
   print("Game state:",gcm.get_game_state())
 

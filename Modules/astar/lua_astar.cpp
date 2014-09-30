@@ -213,10 +213,11 @@ static const luaL_Reg astar_functions [] = {
   {"graph", lua_astar_graph},
   {NULL, NULL}
 };
-
+/*
 static const luaL_Reg astar_methods [] = {
   {NULL, NULL}
 };
+*/
 
 #ifdef __cplusplus
 extern "C"

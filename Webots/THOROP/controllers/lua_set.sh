@@ -5,7 +5,9 @@
 ##############################
 EXT_TERM=0
 # Go into the Player directory
-cd Player
+#cd Player
+cd Run
+
 # Set up the right settings for a mac
 COMPUTER=`uname`
 export COMPUTER

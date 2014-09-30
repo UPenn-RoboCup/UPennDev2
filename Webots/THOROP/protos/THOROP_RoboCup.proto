@@ -4,6 +4,7 @@
 # Based on Robotis wbt
 # (c) Stephen McGill, 2014
 #############################################
+# Wrist rotation direction fixed 
 
 PROTO THOROP_RoboCup [
   field SFVec3f    translation 0 1 0
@@ -911,7 +912,8 @@ Robot {
                                 maxTorque 6.3
                               } # End of the RightWristYaw RotationalMotor
                               jointParameters HingeJointParameters {
-                                axis 0 -1 0
+                              	# fixed
+                                axis 0 1 0
 																anchor 0 -0.216 -0.03
                               } # End of the RightWristYaw HingeJointParameters
                               endPoint Solid {
@@ -922,7 +924,7 @@ Robot {
                                   mass 0.2
                                 }
                                 children [
-  																WRIST { # The 20W motor
+																	WRIST { # The 20W motor
   																	scale 0.001 0.001 0.001
   																}
                                   DEF Right_wrist_roll HingeJoint {
@@ -936,7 +938,8 @@ Robot {
                                     } # End of the RightWristRoll RotationalMotor
                                     jointParameters HingeJointParameters {
                                       # Straight out the z axis
-                                      axis 0 0 1
+                                      # fixed
+                                      axis 0 0 -1                                    
                                     } # End of the RightWristRoll HingeJointParameters
                                     endPoint Solid {
                                       #translation 0 -0.075 0
@@ -958,7 +961,8 @@ Robot {
 																						maxTorque 6.3
                                           }
                                           jointParameters HingeJointParameters {
-                                            axis 0 1 0
+                                          	# fixed
+                                            axis 0 -1 0
                                           }
 																					endPoint GRIPPER_PLATE {
 																						translation 0 -0.05 0
@@ -1138,8 +1142,9 @@ Robot {
                                 maxVelocity 3.1206487025
                                 maxTorque 6.3
                               } # End of the LeftWristYaw RotationalMotor
-                              jointParameters HingeJointParameters {
-                                axis 0 -1 0
+                              jointParameters HingeJointParameters {                                
+                              	# fixed
+																axis 0 1 0
 																anchor 0 -0.216 -0.03
                               } # End of the LeftWristYaw HingeJointParameters
                               endPoint Solid {
@@ -1163,8 +1168,9 @@ Robot {
                                       maxPosition 2.92343
                                     } # End of the LeftWristRoll RotationalMotor
                                     jointParameters HingeJointParameters {
-                                      # Straight out the z axis
-                                      axis 0 0 1
+                                      # Straight out the z axis                                      
+                                      # fixed
+                                      axis 0 0 -1
                                     } # End of the LeftWristRoll HingeJointParameters
                                     endPoint Solid {
                                       #translation 0 -0.075 0
@@ -1186,7 +1192,8 @@ Robot {
 																						maxTorque 6.3
                                           }
                                           jointParameters HingeJointParameters {
-                                            axis 0 1 0
+                                          	# fixed
+                                            axis 0 -1 0
                                           }
 																					endPoint GRIPPER_PLATE {translation 0 -0.05 0}
                                         } # End of the Wrist Yaw2 HingeJoint

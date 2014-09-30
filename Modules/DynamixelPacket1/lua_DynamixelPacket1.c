@@ -168,7 +168,7 @@ static int lua_dynamixel_word_to_byte(lua_State *L) {
   return ret;
 }
 
-static const struct luaL_reg dynamixelpacket_functions[] = {
+static const struct luaL_Reg dynamixelpacket_functions[] = {
   {"input", lua_dynamixel_input},
   {"ping", lua_dynamixel_instruction_ping},
   {"write_data", lua_dynamixel_instruction_write_data},
@@ -183,23 +183,28 @@ static const struct luaL_reg dynamixelpacket_functions[] = {
   {NULL, NULL}
 };
 
-static const struct luaL_reg dynamixelpacket_methods[] = {
+#if LUA_VERSION_NUM != 502
+static const struct luaL_Reg dynamixelpacket_methods[] = {
   {NULL, NULL}
 };
+#endif
 
 #ifdef __cplusplus
 extern "C"
 #endif
 int luaopen_DynamixelPacket1 (lua_State *L) {
-  luaL_newmetatable(L, "dynamixelpacket_mt");
 
+#if LUA_VERSION_NUM == 502
+  luaL_newlib(L, dynamixelpacket_functions);
+#else
   // OO access: mt.__index = mt
   // Not compatible with array access
+  luaL_newmetatable(L, "dynamixelpacket_mt");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-
   luaL_register(L, NULL, dynamixelpacket_methods);
   luaL_register(L, "DynamixelPacket1", dynamixelpacket_functions);
+#endif
 
   return 1;
 }

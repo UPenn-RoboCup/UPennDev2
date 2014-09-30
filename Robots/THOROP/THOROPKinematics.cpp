@@ -1570,6 +1570,54 @@ THOROP_kinematics_inverse_leg(Transform trLeg, int leg)
   double dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + xLeg[2]*xLeg[2];
 
   double cKnee = .5*(dLeg-dTibia*dTibia-dThigh*dThigh)/(dTibia*dThigh);
+
+
+  //Automatic heel lift when IK limit is reached
+  double footCompZ = 0;
+  double ankle_tilt_angle = 0;
+
+
+  if ((cKnee>1) || (cKnee<-1)) {
+    double f_h = 0;
+    printf("leg %d cos knee: %.2f\n",leg,cKnee);
+    f_h = sqrt((dTibia+dThigh)*(dTibia+dThigh) - xLeg[0]*xLeg[0] - xLeg[1]*xLeg[1]);
+    printf("Needed z offset:%.2f\n", xLeg[2]-f_h);
+
+    footCompZ = xLeg[2]-f_h;
+    xLeg[2] = f_h;
+
+
+    //Calculate the amount of heel lift
+    double footSizeX = 0.130;
+    double footSizeZ = 0.118;
+
+    double angle1 = atan2(footSizeZ,footSizeX);
+    double dist1 = sqrt(footSizeX*footSizeX + footSizeZ*footSizeZ);
+
+    //sin (angle1+da)*dist = footSizeZ + footCompZ
+
+    double val1 = (footSizeZ+footCompZ)/dist1;
+    printf("asin value:%.2f\n",val1);
+
+    if (val1>1) val1= 1;
+    if (val1<-1) val1= -1;
+
+    ankle_tilt_angle = asin( val1 ) - angle1;
+    printf("Ankle tilt angle: %.2f\n",ankle_tilt_angle*180/3.1415);
+
+    if (ankle_tilt_angle>30*3.1415/180)  ankle_tilt_angle=30*3.1415/180;
+
+
+    xLeg[0] = xLeg[0] - 
+      (sin(ankle_tilt_angle)*footSizeZ + (1-cos(ankle_tilt_angle))*footSizeX);
+
+
+    dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + xLeg[2]*xLeg[2];
+    cKnee = .5*(dLeg-dTibia*dTibia-dThigh*dThigh)/(dTibia*dThigh);
+  }
+
+
+
   if (cKnee > 1) cKnee = 1;
   if (cKnee < -1) cKnee = -1;
   double kneePitch = acos(cKnee);
@@ -1582,6 +1630,7 @@ THOROP_kinematics_inverse_leg(Transform trLeg, int leg)
   double anklePitch = asin(-xLeg[0]/lLeg) - pitch0;
 
   Transform rHipT = trLeg;
+
   rHipT = rHipT.rotateX(-ankleRoll).rotateY(-anklePitch-kneePitch);
 
   double hipYaw = atan2(-rHipT(0,1), rHipT(1,1));
@@ -1595,6 +1644,11 @@ THOROP_kinematics_inverse_leg(Transform trLeg, int leg)
   qLeg[3] = kneePitch+aThigh+aTibia;
   qLeg[4] = anklePitch-aTibia;
   qLeg[5] = ankleRoll;
+
+
+  
+
+  qLeg[4] = qLeg[4]+ankle_tilt_angle;
   return qLeg;
 }
 

@@ -324,7 +324,7 @@ static int lua_dynamixel_byte_to_dword(lua_State *L) {
   return ret;
 }
 
-static const struct luaL_reg dynamixelpacket_functions[] = {
+static const struct luaL_Reg dynamixelpacket_functions[] = {
   {"input", lua_dynamixel_input},
   {"ping", lua_dynamixel_instruction_ping},
   {"write_data", lua_dynamixel_instruction_write_data},
@@ -345,9 +345,11 @@ static const struct luaL_reg dynamixelpacket_functions[] = {
   {NULL, NULL}
 };
 
-static const struct luaL_reg dynamixelpacket_methods[] = {
+/*
+static const struct luaL_Reg dynamixelpacket_methods[] = {
   {NULL, NULL}
 };
+*/
 
 #ifdef __cplusplus
 extern "C"

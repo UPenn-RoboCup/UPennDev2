@@ -15,7 +15,7 @@ LIBRT=-lrt
 SHLIBEXT=so
 STRIP=strip
 USE_TORCH=1
-INCLUDES=-I/usr/local/include -I/usr/include/lua5.1
+INCLUDES=-I/usr/local/include -I/usr/include/lua5.1 -I/usr/local/include/lua5.1
 
 # OS Specific overrides
 ifeq ($(OSTYPE),darwin)
@@ -24,6 +24,8 @@ ifeq ($(OSTYPE),darwin)
 	#LDFLAGS=-lc++ -bundle -undefined dynamic_lookup
 	LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup
   LIBRT=
+	#	CFLAGS+=$(pkg-config lua5.1 --cflags)
+	# CXXFLAGS+=$(pkg-config lua5.1 --cflags)
 else # Linux
 #  CFLAGS+= -mtune=native -march=native `pkg-config lua5.1 --cflags`
 #  CXXFLAGS+= -mtune=native -march=native `pkg-config lua5.1 --cflags`

@@ -17,7 +17,8 @@ Config.dev.body = 'YouBotBody'
 local exo = {'Net', 'FSM', 'Robot', 'Vision', 'Human'}
 -- Perform the load
 for i, v in ipairs(exo) do
-	local fname = {HOME, '/Config/Config_', Config.PLATFORM_NAME, '_', v, '.lua'}
+--	local fname = {HOME, '/Config/Config_', Config.PLATFORM_NAME, '_', v, '.lua'}
+	local fname = {Config.PLATFORM_NAME,'/Config_', Config.PLATFORM_NAME, '_', v}  
 	dofile(table.concat(fname))
 end
 

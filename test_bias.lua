@@ -48,7 +48,7 @@ for _,mem in ipairs(listing) do
 end
 
 -- RPC engine
-rpc_ch = si.new_requester(Config.net.reliable_rpc)
+--rpc_ch = si.new_requester(Config.net.reliable_rpc)
 
 print( util.color('FSM Channel','yellow'), table.concat(fsm_chs,' ') )
 print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
@@ -137,7 +137,7 @@ function process_keyinput()
       unpack(vector.new(legBias)*RAD_TO_DEG)))
 
       --Append at the end of calibration file
-      outfile=assert(io.open("./Config/calibration.lua","a+"));
+      outfile=assert(io.open("./Config/THOROP/calibration.lua","a+"));
       --TODO: which one should we use?
       data=string.format("\n\n-- Updated date: %s\n" , os.date() );
       data=data..string.format("cal[\"%s\"].legBias=vector.new({\n   ",unix.gethostname());

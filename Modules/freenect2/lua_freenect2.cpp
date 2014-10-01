@@ -93,11 +93,8 @@ static int lua_freenect_init(lua_State *L) {
   //SyncMultiFrameListener listener(
   //  Frame::Color | Frame::Ir | Frame::Depth
   //);
-  //listener = new SyncMultiFrameListener(
-  //  Frame::Color | Frame::Ir | Frame::Depth
-  //);
   listener = new SyncMultiFrameListener(
-    Frame::Color
+    Frame::Color | Frame::Ir | Frame::Depth
   );
   
 #ifdef DEBUG

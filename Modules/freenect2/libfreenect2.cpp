@@ -332,6 +332,7 @@ Freenect2DeviceImpl::Freenect2DeviceImpl(Freenect2Impl *context, libusb_device *
   command_seq_(0),
   rgb_packet_processor_(),
   //depth_packet_processor_(0),
+  depth_packet_processor_(),
   rgb_packet_parser_(&rgb_packet_processor_),
   depth_packet_parser_(&depth_packet_processor_),
   serial_(serial),

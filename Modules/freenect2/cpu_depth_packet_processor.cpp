@@ -852,6 +852,7 @@ void CpuDepthPacketProcessor::process(const DepthPacket &packet)
         impl_->processPixelStage2(x, y, m_ptr + 0, m_ptr + 3, m_ptr + 6, out_ir.ptr<float>(423 - y, x), out_depth.ptr<float>(423 - y, x), 0);
       }
   }
+*/
 
   if(listener_->onNewFrame(Frame::Ir, impl_->ir_frame))
   {
@@ -862,7 +863,7 @@ void CpuDepthPacketProcessor::process(const DepthPacket &packet)
   {
     impl_->newDepthFrame();
   }
-  */
+  
 
   impl_->stopTiming();
 }

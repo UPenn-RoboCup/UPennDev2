@@ -21,8 +21,8 @@ opengl_depth_packet_processor.o
 #test_opengl_depth_packet_processor.o
 include ../../Makefile.inc
 INCLUDES+=-DDEBUG\
--I/usr/local/include/libusb-1.0/ \
--I/usr/include/libusb-1.0/ \
+-I/Users/smcgill3/src/libfreenect2/depends/libusb/include/libusb-1.0 \
+-I/usr/local/Cellar/jpeg-turbo/1.3.1/include \
 -I. \
 -DLIBFREENECT2_THREADING_TINYTHREAD \
 -DRESOURCES_INC \
@@ -32,3 +32,9 @@ LDFLAGS+=\
 -lturbojpeg -lusb-1.0
 #-lopencv_core
 #-lfreenect2
+#-I/usr/local/include/libusb-1.0/
+#-I/usr/include/libusb-1.0/
+#-I/Users/smcgill3/src/libfreenect2-cl/depends/libusb/include/libusb-1.0
+#EXTRA_LINK+=-L/Users/smcgill3/src/libfreenect2-cl/depends/libusb/lib
+EXTRA_LINK+=-L/Users/smcgill3/src/libfreenect2/depends/libusb/lib \
+						-L/usr/local/Cellar/jpeg-turbo/1.3.1/lib/

@@ -178,7 +178,8 @@ static int lua_freenect_update(lua_State *L) {
   lua_rawset(L, -3);
   // TODO: Push lstring instead?
   lua_pushstring(L, "data");
-  lua_pushlightuserdata(L, rgb->data);
+  //lua_pushlightuserdata(L, rgb->data);
+  lua_pushlstring(L, (char*)rgb->data, rgb->height*rgb->width*rgb->bytes_per_pixel);
   lua_rawset(L, -3);
   
   lua_newtable(L);
@@ -195,10 +196,12 @@ static int lua_freenect_update(lua_State *L) {
   lua_pushnumber(L, depth->bytes_per_pixel);
   lua_rawset(L, -3);
   // TODO: Push lstring instead?
+	/*
   lua_pushstring(L, "data");
   lua_pushlightuserdata(L, depth->data);
   lua_rawset(L, -3);
-  
+  */
+
   lua_newtable(L);
   lua_pushstring(L, "name");
   lua_pushstring(L, "ir");
@@ -213,10 +216,12 @@ static int lua_freenect_update(lua_State *L) {
   lua_pushnumber(L, ir->bytes_per_pixel);
   lua_rawset(L, -3);
   // TODO: Push lstring instead?
+	/*
   lua_pushstring(L, "data");
   lua_pushlightuserdata(L, ir->data);
   lua_rawset(L, -3);
-	
+	*/
+
   return 3;
 }
 

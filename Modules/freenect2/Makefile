@@ -20,7 +20,7 @@ opengl_depth_packet_processor.o
 #generate_resources.o \
 #test_opengl_depth_packet_processor.o
 include ../../Makefile.inc
-INCLUDES+=-DDEBUG\
+INCLUDES+=\
 -I/Users/smcgill3/src/libfreenect2/depends/libusb/include/libusb-1.0 \
 -I/usr/local/Cellar/jpeg-turbo/1.3.1/include \
 -I. \
@@ -30,6 +30,7 @@ INCLUDES+=-DDEBUG\
 LDFLAGS+=\
 -lglfw3 -lGLEW -lGLEWmx \
 -lturbojpeg -lusb-1.0
+#-DDEBUG
 #-lopencv_core
 #-lfreenect2
 #-I/usr/local/include/libusb-1.0/

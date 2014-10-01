@@ -119,6 +119,8 @@ public:
     // Old
     //timing_acc += (cv::getTickCount() - timing_current_start) / cv::getTickFrequency();
     timing_acc_n += 1.0;
+    
+    //std::cout << "[CpuDepthPacketProcessor] acc: " << timing_acc_n << std::endl;
 
     if(timing_acc_n >= 100.0)
     {
@@ -781,7 +783,12 @@ void CpuDepthPacketProcessor::load11To16LutFromFile(const char* filename)
 
 void CpuDepthPacketProcessor::process(const DepthPacket &packet)
 {
+  
+  //std::cout << "[CpuDepthPacketProcessor::process] Entry" << std::endl;
+  
   if(listener_ == 0) return;
+
+  //std::cout << "[CpuDepthPacketProcessor::process] Starting" << std::endl;
 
   impl_->startTiming();
   /*

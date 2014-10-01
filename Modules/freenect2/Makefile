@@ -23,8 +23,11 @@ include ../../Makefile.inc
 INCLUDES+=-DDEBUG\
 -I/usr/local/include/libusb-1.0/ \
 -I. \
--DLIBFREENECT2_THREADING_TINYTHREAD -DRESOURCES_INC \
+-DLIBFREENECT2_THREADING_TINYTHREAD \
+-DRESOURCES_INC \
 -DGLEW_MX -DGLEW_STATIC
-LDFLAGS+=-lglfw3 -lGLEW -lGLEWmx -lturbojpeg -lusb-1.0 \
--lopencv_core
+LDFLAGS+=\
+-lglfw3 -lGLEW -lGLEWmx \
+-lturbojpeg -lusb-1.0
+#-lopencv_core
 #-lfreenect2

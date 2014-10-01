@@ -22,6 +22,7 @@ opengl_depth_packet_processor.o
 include ../../Makefile.inc
 INCLUDES+=-DDEBUG\
 -I/usr/local/include/libusb-1.0/ \
+-I/usr/include/libusb-1.0/ \
 -I. \
 -DLIBFREENECT2_THREADING_TINYTHREAD \
 -DRESOURCES_INC \

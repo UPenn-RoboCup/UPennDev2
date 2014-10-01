@@ -45,13 +45,18 @@ FrameMap frames;
 /* Device state variables */
 char init = 0;
 
+Freenect2* freenect2 = NULL;
+Freenect2Device* dev = NULL;
+SyncMultiFrameListener* listener = NULL;
+FrameMap frames;
+
 static int lua_freenect_init(lua_State *L) {
 
-#ifdef DEBUG	
+#ifdef DEBUG
   fprintf(stdout,"Starting up!\n");
   fflush(stdout);
 #endif
-  
+
   if(init==1)
     return luaL_error(L, "Two libfreenect2 devices not supported yet.\n" );
 
@@ -59,15 +64,17 @@ static int lua_freenect_init(lua_State *L) {
   fprintf(stdout,"Initializing Freenect2...\n");
   fflush(stdout);
 #endif
-  
-  Freenect2 freenect2;
+
+	// Freenect2 freenect2;
+	freenect2 = new Freenect2();
 
 #ifdef DEBUG
   fprintf(stdout,"Open Device...\n");
   fflush(stdout);
 #endif
   
-  Freenect2Device* dev = freenect2.openDefaultDevice();
+  //Freenect2Device* dev = freenect2.openDefaultDevice();
+  dev = freenect2->openDefaultDevice();
 
 #ifdef DEBUG
   fprintf(stdout,"Checking Device status...\n");
@@ -83,8 +90,14 @@ static int lua_freenect_init(lua_State *L) {
   fflush(stdout);
 #endif
   
-  SyncMultiFrameListener listener(
-    Frame::Color | Frame::Ir | Frame::Depth
+  //SyncMultiFrameListener listener(
+  //  Frame::Color | Frame::Ir | Frame::Depth
+  //);
+  //listener = new SyncMultiFrameListener(
+  //  Frame::Color | Frame::Ir | Frame::Depth
+  //);
+  listener = new SyncMultiFrameListener(
+    Frame::Color
   );
   
 #ifdef DEBUG
@@ -97,13 +110,15 @@ static int lua_freenect_init(lua_State *L) {
   fprintf(stdout,"Color listener...\n");
   fflush(stdout);
 #endif
-  dev->setColorFrameListener(&listener);
+  //dev->setColorFrameListener(&listener);
+  dev->setColorFrameListener(listener);
   
 #ifdef DEBUG
   fprintf(stdout,"IR/Depth listener...\n");
   fflush(stdout);
 #endif
-  dev->setIrAndDepthFrameListener(&listener);
+  //dev->setIrAndDepthFrameListener(&listener);
+  dev->setIrAndDepthFrameListener(listener);
   
 #ifdef DEBUG
   fprintf(stdout, "Start device...\n");
@@ -124,8 +139,13 @@ static int lua_freenect_init(lua_State *L) {
   return 2;
 }
 
-/*
 static int lua_freenect_update(lua_State *L) {
+
+#ifdef DEBUG
+  fprintf(stdout, "Release frames...\n");
+  fflush(stdout);
+#endif  
+	listener->release(frames);
 
 #ifdef DEBUG
   fprintf(stdout, "Wait for frame...\n");
@@ -140,7 +160,7 @@ static int lua_freenect_update(lua_State *L) {
   Frame *rgb = frames[Frame::Color];
   Frame *ir = frames[Frame::Ir];
   Frame *depth = frames[Frame::Depth];
-  
+
 #ifdef DEBUG
   fprintf(stdout, "Push frames...\n");
   fflush(stdout);
@@ -202,9 +222,7 @@ static int lua_freenect_update(lua_State *L) {
 	
   return 3;
 }
-*/
 
-/*
 static int lua_freenect_shutdown(lua_State *L) {
 	
   if(init==0)
@@ -227,12 +245,11 @@ static int lua_freenect_shutdown(lua_State *L) {
   
   return 0;
 }
-*/
 
 static const struct luaL_Reg freenect2_lib [] = {
   {"init", lua_freenect_init},
-//  {"update", lua_freenect_update},
-//  {"shutdown", lua_freenect_shutdown},
+  {"update", lua_freenect_update},
+  {"shutdown", lua_freenect_shutdown},
   {NULL, NULL}
 };
 

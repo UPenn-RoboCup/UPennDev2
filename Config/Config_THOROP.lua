@@ -23,6 +23,7 @@ Config.sensors = {
   head_camera = true,
   chest_lidar = true,
   head_lidar = false,
+  kinect = true,
   fsr = false,
 }
 if IS_WEBOTS then
@@ -33,9 +34,11 @@ if IS_WEBOTS then
   Config.wizards.camera = 'camera_wizard'
   Config.wizards.test = 'post_mesh_wizard'
   --Config.wizards.slam = 'slam_wizard'
+  
   -- Adjust the tiemsteps if desired
   --Config.camera_timestep = 33
 --  Config.lidar_timestep = 200 --slower
+  Config.kinect_timestep = 30
 
   Config.use_localhost = true
 end

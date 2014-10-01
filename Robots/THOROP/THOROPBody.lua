@@ -221,7 +221,7 @@ if IS_WEBOTS then
   local ENABLE_HEAD_LIDAR, NEXT_HEAD_LIDAR = Config.sensors.head_lidar, 0
   local ENABLE_FSR = Config.sensors.fsr
   local ENABLE_FT = Config.sensors.ft
-  local ENABLE_KINECT = Config.sensors.kinect
+  local ENABLE_KINECT, NEXT_KINECT = Config.sensors.kinect, 0
   local ENABLE_POSE = true
   local ENABLE_IMU = true
 
@@ -231,6 +231,7 @@ if IS_WEBOTS then
   local timeStep = webots.wb_robot_get_basic_time_step()
   local camera_timeStep = math.max(Config.camera_timestep or 33, timeStep)
   local lidar_timeStep = math.max(Config.lidar_timestep or 25, timeStep)
+  local kinect_timeStep = math.max(Config.kinect_timestep or 30, timeStep)
 
   Body.timeStep = timeStep
   get_time = webots.wb_robot_get_time
@@ -276,6 +277,19 @@ if IS_WEBOTS then
         ENABLE_CHEST_LIDAR = true
       end
     end,
+    k = function(override)
+      if override~=nil then en=override else en=ENABLE_KINECT==false end
+      if en==false and tags.kinect then
+        print(util.color('KINECT disabled!','yellow'))
+        webots.wb_camera_disable(tags.kinect)
+        ENABLE_KINECT = false
+      elseif tags.kinect then
+        print(util.color('KINECT enabled!','green'))
+        webots.wb_camera_enable(tags.kinect, kinect_timeStep)
+				NEXT_KINECT = get_time() + kinect_timeStep / 1000
+        ENABLE_KINECT = true
+      end
+    end,    
     c = function(override)
       if override~=nil then en=override else en=ENABLE_CAMERA==false end
       if en==false then
@@ -403,6 +417,9 @@ if IS_WEBOTS then
     if Config.sensors.head_lidar then
       tags.head_lidar = webots.wb_robot_get_device("HeadLidar")
     end
+    if Config.sensors.kinect then
+      tags.kinect = webots.wb_robot_get_device("kinect")
+    end
     if Config.sensors.fsr then
       tags.l_fsr = webots.wb_robot_get_device("L_FSR")
       tags.r_fsr = webots.wb_robot_get_device("R_FSR")
@@ -416,8 +433,9 @@ if IS_WEBOTS then
 		key_action.i(ENABLE_IMU)
 		key_action.p(ENABLE_POSE)
 		if ENABLE_CAMERA then key_action.c(ENABLE_CAMERA) end
-		if ENABLE_CHEST_LIDAR then key_action.l(ENABLE_CHEST_LIDAR) end
+    if ENABLE_CHEST_LIDAR then key_action.l(ENABLE_CHEST_LIDAR) end
 		if ENABLE_HEAD_LIDAR then key_action.h(ENABLE_HEAD_LIDAR) end
+		if ENABLE_KINECT then key_action.k(ENABLE_KINECT) end    
 		if ENABLE_FT then key_action.t(ENABLE_FT) end
 
 		-- Take a step to get some values
@@ -613,6 +631,23 @@ if IS_WEBOTS then
 			WebotsBody.update_head_camera(img, 2*w*h, 0, t)
 			NEXT_CAMERA = get_time() + camera_timeStep / 1000
     end
+    -- Grab a kinect frame
+    if ENABLE_KINECT and t >= NEXT_KINECT then
+      -- Grab the RGB image
+      local w = webots.wb_camera_get_width(tags.kinect)
+      local h = webots.wb_camera_get_height(tags.kinect)
+      -- TODO: do we need img from kinect?
+      local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.kinect), w, h)
+      -- Grab the ranges
+      local ranges = webots.wb_camera_get_range_image(tags.kinect)
+      -- TODO: fov? res?
+      
+			local metadata = {}
+			WebotsBody.update_chest_lidar(metadata,ranges)
+      --local lidar_array = require'carray'.float(ranges, w)
+			NEXT_KINECT = get_time() + kinect_timeStep / 1000
+    end
+    
     -- Grab a lidar scan
     if ENABLE_CHEST_LIDAR and t >= NEXT_CHEST_LIDAR then
       local n = webots.wb_camera_get_width(tags.chest_lidar)

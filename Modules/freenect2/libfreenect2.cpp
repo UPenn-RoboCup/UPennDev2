@@ -74,6 +74,7 @@ private:
 
   TurboJpegRgbPacketProcessor rgb_packet_processor_;
   OpenCLDepthPacketProcessor depth_packet_processor_;
+  //CpuDepthPacketProcessor depth_packet_processor_;
 
   RgbPacketStreamParser rgb_packet_parser_;
   DepthPacketStreamParser depth_packet_parser_;
@@ -463,6 +464,8 @@ void Freenect2DeviceImpl::start()
   if(serial_ != new_serial)
   {
     std::cout << "[Freenect2DeviceImpl] serial number reported by libusb " << serial_ << " differs from serial number " << new_serial << " in device protocol! " << std::endl;
+  } else {
+    std::cout << "[Freenect2DeviceImpl] Good serial" << std::endl;
   }
 
   command_tx_.execute(ReadDepthCameraParametersCommand(nextCommandSeq()), result);
@@ -477,9 +480,16 @@ void Freenect2DeviceImpl::start()
   ir_camera_params_.k3 = ir_p->k3;
   ir_camera_params_.p1 = ir_p->p1;
   ir_camera_params_.p2 = ir_p->p2;
+  
+  std::cout << "[Freenect2DeviceImpl] Done IR parameters" << std::endl;
 
   command_tx_.execute(ReadP0TablesCommand(nextCommandSeq()), result);
+  std::cout << "[Freenect2DeviceImpl] P0Tables response" << std::endl;
+  //std::cout << GenericResponse(result.data, result.length).toString() << std::endl;
+  
   depth_packet_processor_.loadP0TablesFromCommandResponse(result.data, result.length);
+  
+  std::cout << "[Freenect2DeviceImpl] Loaded P0Tables " << std::endl;
 
   command_tx_.execute(ReadRgbCameraParametersCommand(nextCommandSeq()), result);
   RgbCameraParamsResponse *rgb_p = reinterpret_cast<RgbCameraParamsResponse *>(result.data);

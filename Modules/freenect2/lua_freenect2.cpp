@@ -122,6 +122,9 @@ static int lua_freenect_init(lua_State *L) {
   fflush(stdout);
 #endif
   dev->start();
+  
+  // Initialized!
+  init = 1;
 
 #ifdef DEBUG
   fprintf(stdout, "Get information...\n");
@@ -130,10 +133,9 @@ static int lua_freenect_init(lua_State *L) {
   lua_pushstring(L, dev->getSerialNumber().c_str());
   lua_pushstring(L, dev->getFirmwareVersion().c_str());
   
-  // Initialized!
-  init = 1;
-  
   return 2;
+  
+  //return 0;
 }
 
 static int lua_freenect_update(lua_State *L) {

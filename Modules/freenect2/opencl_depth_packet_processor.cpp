@@ -235,7 +235,8 @@ public:
     if(!readProgram(sourceCode))
     {
       return false;
-    }
+    };
+
 
     cl_int err = CL_SUCCESS;
     try
@@ -404,6 +405,7 @@ public:
 
   bool readProgram(std::string &source) const
   {
+    std::cout << "Load CL source: " << REG_OPENCL_FILE << std::endl;
     source = loadCLSource(REG_OPENCL_FILE);
     return !source.empty();
   }
@@ -495,11 +497,16 @@ void OpenCLDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char *
 
   if(buffer_length < sizeof(libfreenect2::protocol::P0TablesResponse))
   {
-    std::cerr << "[CpuDepthPacketProcessor::loadP0TablesFromCommandResponse] P0Table response too short!" << std::endl;
+    std::cerr << "[OpenCLDepthPacketProcessor::loadP0TablesFromCommandResponse] P0Table response too short!" << std::endl;
     return;
+  } else {
+    std::cout << "[OpenCLDepthPacketProcessor::loadP0TablesFromCommandResponse] P0Table response is long enough!" << std::endl;
   }
 
   impl_->fill_trig_table(p0table);
+  
+  std::cout << "[OpenCLDepthPacketProcessor::loadP0TablesFromCommandResponse] Done filling the trig table" << std::endl;
+  
   impl_->init();
 }
 

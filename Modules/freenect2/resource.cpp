@@ -47,6 +47,8 @@ bool loadResource(const std::string &name, unsigned char const**data, size_t *le
   bool result = false;
   for(int i = 0; i < sizeof(resource_descriptors); ++i)
   {
+    printf("%s Loading... %s\n", name.c_str(), resource_descriptors[i].filename);
+    fflush(stdout);
     if(name.compare(resource_descriptors[i].filename) == 0)
     {
       *data = resource_descriptors[i].data;
@@ -55,6 +57,7 @@ bool loadResource(const std::string &name, unsigned char const**data, size_t *le
       break;
     }
   }
+  printf("DONE LOADING\n");
   return result;
 }
 

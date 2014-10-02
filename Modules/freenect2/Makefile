@@ -27,6 +27,7 @@ INCLUDES+=\
 -I. \
 -DLIBFREENECT2_THREADING_TINYTHREAD \
 -DRESOURCES_INC \
+-DREG_OPENCL_FILE=\"opencl_depth_packet_processor.cl\" \
 -DGLEW_MX -DGLEW_STATIC -DDEBUG
 LDFLAGS+=\
 -lglfw3 -lGLEW -lGLEWmx \
@@ -38,5 +39,7 @@ LDFLAGS+=\
 #-I/usr/include/libusb-1.0/
 #-I/Users/smcgill3/src/libfreenect2-cl/depends/libusb/include/libusb-1.0
 #EXTRA_LINK+=-L/Users/smcgill3/src/libfreenect2-cl/depends/libusb/lib
-EXTRA_LINK+=-L/Users/smcgill3/src/libfreenect2/depends/libusb/lib \
-						-L/usr/local/Cellar/jpeg-turbo/1.3.1/lib/
+EXTRA_LINK+=\
+-L/usr/local/Cellar/jpeg-turbo/1.3.1/lib/ \
+-framework OpenCL
+#-L/Users/smcgill3/src/libfreenect2/depends/libusb/lib

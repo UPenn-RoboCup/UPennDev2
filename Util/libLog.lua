@@ -15,8 +15,8 @@ else
 	carray = require'carray'
 end
 local torch = require'torch'
-local mp = require'msgpack'
---local mp = require'msgpack.MessagePack'
+--local mp = require'msgpack'
+local mp = require'msgpack.MessagePack'
 
 local function stop(self)
 	-- Close the files
@@ -50,10 +50,11 @@ local function record(self, meta, raw, n_raw)
 			local data = carray.byte(raw,n_raw)
 			r_ok = self.f_raw:write(tostring(data))
 		end
-	elseif rt=='string' then
+	elseif rtype=='string' then
 		r_ok = self.f_raw:write(raw)
 	end
 	-- Return the status of the writes
+  self.n = self.n + 1
 	return m_ok, r_ok
 end
 
@@ -73,6 +74,7 @@ function libLog.new(prefix, has_raw)
 	t.f_meta = f_meta
 	t.record = record
 	t.stop = stop
+  t.n = 0
 	return t
 end
 

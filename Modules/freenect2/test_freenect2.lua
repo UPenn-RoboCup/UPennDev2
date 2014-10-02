@@ -2,10 +2,31 @@ dofile'../../include.lua'
 require'freenect2'
 serial_number, firmware_version = freenect2.init()
 print("serial_number, firmware_version:", serial_number, firmware_version)
+
+require'unix'
+get_time = unix.time
+
+local c_rgb = require'jpeg'.compressor('rgb')
+
+local libLog, logger
+libLog = require'libLog'
+log_rgb = libLog.new('k2_rgb', true)
+log_ir = libLog.new('k2_ir', true)
+log_depth = libLog.new('k2_depth', true)
+-- Log data with libLog
 for i=1,120 do
---	print('\nUpdate', i)
 	rgb, depth, ir = freenect2.update()
+  if i%5==0 then
+    local t = get_time()
+    log_rgb:record({t = t,rsz = #rgb.data}, c_rgb:compress(rgb.data, rgb.width, rgb.height))
+    log_ir:record({t = t,rsz = #ir.data}, ir.data)
+    local m_ok, r_ok = log_depth:record({t = t, rsz = #depth.data}, depth.data)
+    print('Logged', log_depth.n)
+  end
 end
+log_rgb:stop()
+log_ir:stop()
+log_depth:stop()
 
 -- Show the data
 print('Process the data', rgb)
@@ -28,7 +49,6 @@ for k, v in pairs(ir) do
 end
 
 print('JPEG save the rgb')
-local c_rgb = require'jpeg'.compressor('rgb')
 img_jpeg = c_rgb:compress(rgb.data, rgb.width, rgb.height)
 f = io.open('rgb.jpeg', 'w')
 f:write(img_jpeg)

@@ -16,7 +16,8 @@ transfer_pool.o \
 turbo_jpeg_rgb_packet_processor.o \
 usb_control.o \
 opengl.o \
-opengl_depth_packet_processor.o
+opengl_depth_packet_processor.o \
+opencl_depth_packet_processor.o
 #generate_resources.o \
 #test_opengl_depth_packet_processor.o
 include ../../Makefile.inc
@@ -26,7 +27,7 @@ INCLUDES+=\
 -I. \
 -DLIBFREENECT2_THREADING_TINYTHREAD \
 -DRESOURCES_INC \
--DGLEW_MX -DGLEW_STATIC
+-DGLEW_MX -DGLEW_STATIC -DDEBUG
 LDFLAGS+=\
 -lglfw3 -lGLEW -lGLEWmx \
 -lturbojpeg -lusb-1.0

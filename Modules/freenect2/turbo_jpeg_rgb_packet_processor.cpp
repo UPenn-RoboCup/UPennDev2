@@ -26,11 +26,7 @@
 
 #include <libfreenect2/rgb_packet_processor.h>
 
-//#include <opencv2/opencv.hpp>
-#include <iostream>
-#include <sys/time.h>
-
-
+#include <opencv2/opencv.hpp>
 #include <turbojpeg.h>
 
 namespace libfreenect2
@@ -82,26 +78,12 @@ public:
 
   void startTiming()
   {
-    // Replacement
-    static struct timeval t;
-    gettimeofday(&t, NULL);
-    timing_current_start = t.tv_sec + 1E-6 * t.tv_usec;
-    
-    // Old
-    //timing_current_start = cv::getTickCount();
+    timing_current_start = cv::getTickCount();
   }
 
   void stopTiming()
   {
-    
-    // Replacement
-    static struct timeval t;
-    gettimeofday(&t, NULL);
-    double timing_now = t.tv_sec + 1E-6 * t.tv_usec;
-    timing_acc += timing_now - timing_current_start;
-    
-    // Old
-    //timing_acc += (cv::getTickCount() - timing_current_start) / cv::getTickFrequency();
+    timing_acc += (cv::getTickCount() - timing_current_start) / cv::getTickFrequency();
     timing_acc_n += 1.0;
 
     if(timing_acc_n >= 100.0)

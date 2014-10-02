@@ -17,20 +17,35 @@ end
 
 print()
 print('Depth')
-for k, v in pairs(depth) do print(k,v) end
+for k, v in pairs(depth) do
+  if k~='data' then print(k,v) else print(k, #v) end
+end
 
 print()
 print('IR')
-for k, v in pairs(ir) do print(k,v) end
+for k, v in pairs(ir) do
+  if k~='data' then print(k,v) else print(k, #v) end
+end
 
 print('JPEG save the rgb')
 local c_rgb = require'jpeg'.compressor('rgb')
-c_rgb:quality(95)
-print('Compressing...')
 img_jpeg = c_rgb:compress(rgb.data, rgb.width, rgb.height)
-print('Compressed', #img_jpeg)
-f = io.open('test.jpeg', 'w')
+f = io.open('rgb.jpeg', 'w')
 f:write(img_jpeg)
+f:close()
+--
+f = io.open('rgb.raw', 'w')
+f:write(rgb.data)
+f:close()
+
+print('RAW save the IR')
+f = io.open('ir.raw', 'w')
+f:write(ir.data)
+f:close()
+
+print('RAW save the Depth')
+f = io.open('depth.raw', 'w')
+f:write(depth.data)
 f:close()
 
 print('Shutting down')

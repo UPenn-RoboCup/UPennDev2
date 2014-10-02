@@ -60,9 +60,7 @@ inline int bfi(int width, int offset, int src2, int src3)
 class CpuDepthPacketProcessorImpl
 {
 public:
-  // New code
-  std::vector<float> p0_table0, p0_table1, p0_table2, x_table, z_table;
-  // TODO: no cvMat
+  // TODO: Torch
   //cv::Mat p0_table0, p0_table1, p0_table2, x_table, z_table;
 
   int16_t lut11to16[2048];
@@ -749,8 +747,6 @@ void CpuDepthPacketProcessor::loadP0TablesFromFiles(const char* p0_filename, con
 
 void CpuDepthPacketProcessor::loadXTableFromFile(const char* filename)
 {
-  // New code
-  impl_->x_table.resize(424 * 512);
   // TODO: no cvMat
   //impl_->x_table.create(424, 512, CV_32FC1);
   
@@ -759,8 +755,6 @@ void CpuDepthPacketProcessor::loadXTableFromFile(const char* filename)
 
   if(loadResource("xTable.bin", &data, &length))
   {
-    // New Code
-    std::copy(data, data + length, impl_->x_table.begin());
     // TODO: no cvMat
     //std::copy(data, data + length, impl_->x_table.data);
   }
@@ -772,8 +766,6 @@ void CpuDepthPacketProcessor::loadXTableFromFile(const char* filename)
 
 void CpuDepthPacketProcessor::loadZTableFromFile(const char* filename)
 {
-  // New code
-  impl_->z_table.resize(424 * 512);
   // TODO: No cvMat
   //impl_->z_table.create(424, 512, CV_32FC1);
 
@@ -782,8 +774,6 @@ void CpuDepthPacketProcessor::loadZTableFromFile(const char* filename)
 
   if(loadResource("zTable.bin", &data, &length))
   {
-    // New Code
-    std::copy(data, data + length, impl_->z_table.begin());
     // TODO: No zTable
     //std::copy(data, data + length, impl_->z_table.data);
   }

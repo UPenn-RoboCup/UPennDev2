@@ -20,13 +20,19 @@ fid = fopen('Data/rgb.raw');
 raw = fread(fid,Inf,'*uint8');
 fclose(fid);
 rgb_raw = reshape(raw, [3, 1920*1080]);
-rgb = permute(reshape(rgb_raw, [3, 1920, 1080]), [3,2,1]);
 clear raw;
+rgb0 = permute(reshape(rgb_raw, [3, 1920, 1080]), [3,2,1]);
+% Smarter way to do this?
+rgb = uint8(zeros(size(rgb0)));
+rgb(:,:,1) = rgb0(:,:,3);
+rgb(:,:,2) = rgb0(:,:,2);
+rgb(:,:,3) = rgb0(:,:,1);
+clear rgb0;
 
 figure(1);
 clf;
 imagesc(ir_raw)
-title('Raw IR');
+title('Raw IR (centimeters)');
 
 figure(2);
 clf;

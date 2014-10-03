@@ -1673,7 +1673,7 @@ THOROP_kinematics_calculate_foot_lift(Transform trLeg, int leg)
   double toe_lift = 0;
 
   if (dLeg>dLegMax*dLegMax) {
-    printf("xLeg: %.3f,%.3f,%.3f\n",xLeg[0],xLeg[1],xLeg[2]);
+//    printf("xLeg: %.3f,%.3f,%.3f\n",xLeg[0],xLeg[1],xLeg[2]);
    
     //Calculate the amount of heel lift
 
@@ -1749,7 +1749,7 @@ THOROP_kinematics_calculate_foot_lift(Transform trLeg, int leg)
 
 
   std::vector<double>
-THOROP_kinematics_inverse_leg_foottilt(Transform trLeg,double footTilt, int leg)
+THOROP_kinematics_inverse_leg_tilt(Transform trLeg,double footTilt, int leg)
 {
   std::vector<double> qLeg(6);
   Transform trInvLeg = inv(trLeg);
@@ -1856,13 +1856,9 @@ THOROP_kinematics_inverse_leg(Transform trLeg, int leg)
   double xLeg0ModHeel = xLeg[0] + footHeelX;
 
   if (dLeg>dLegMax*dLegMax) {
-    printf("xLeg: %.3f,%.3f,%.3f\n",xLeg[0],xLeg[1],xLeg[2]);
-
-
-
-    
+//    printf("xLeg: %.3f,%.3f,%.3f\n",xLeg[0],xLeg[1],xLeg[2]);
+   
     //Calculate the amount of heel lift
-
     // then rotated ankle position (ax,az) is footToeX-cos(a+aFootA)*footC, sin(a+aFootA)*footC
     // or footToeX-cosb*footC, sinb *footC
     // then 
@@ -1898,11 +1894,10 @@ THOROP_kinematics_inverse_leg(Transform trLeg, int leg)
         else ankle_tilt_angle = ankle_tilt_angle2;
       }
 
-//          printf("angle values: %.3f,%.3f\n",asin(a1)*180/3.14,asin(a2)*180/3.14);
-      printf("errors:%.8f , %.8f\n",err1,err2);
-      printf("Heel lift angle: %.2f\n",ankle_tilt_angle*180/3.1415);
+//      printf("errors:%.8f , %.8f\n",err1,err2);
+//      printf("Heel lift angle: %.2f\n",ankle_tilt_angle*180/3.1415);
     }else {
-      printf("SOLUTION ERROR!!!!");
+//      printf("SOLUTION ERROR!!!!");
       ankle_tilt_angle = 0;
     }
     if (ankle_tilt_angle>30*3.1415/180)  ankle_tilt_angle=30*3.1415/180;
@@ -2040,12 +2035,8 @@ THOROP_kinematics_calculate_knee_height(const double *q){
 
   std::vector<double>
 THOROP_kinematics_inverse_l_leg(Transform trLeg)
-{
-  return THOROP_kinematics_inverse_leg(trLeg, LEG_LEFT);
-}
+{return THOROP_kinematics_inverse_leg(trLeg, LEG_LEFT);}
 
   std::vector<double>
 THOROP_kinematics_inverse_r_leg(Transform trLeg)
-{
-  return THOROP_kinematics_inverse_leg(trLeg, LEG_RIGHT);
-}
+{return THOROP_kinematics_inverse_leg(trLeg, LEG_RIGHT);}

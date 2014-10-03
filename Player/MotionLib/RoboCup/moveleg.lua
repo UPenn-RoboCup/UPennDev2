@@ -209,7 +209,6 @@ function moveleg.get_leg_compensation_simple(supportLeg, phSingle, gyro_rpy,angl
 end
 
 
-
 function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs,aLeft,aRight)
   local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   local pTorso = vector.new({
@@ -241,6 +240,77 @@ function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs,a
   mcm.set_status_bodyOffset( bodyOffset )
   ------------------------------------------
 end
+
+
+function moveleg.set_leg_positions_ankletilt(uTorso,uLeft,uRight,zLeft,zRight,delta_legs,aLeft,aRight)
+
+  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
+  local pTorso = vector.new({
+        uTorsoActual[1], uTorsoActual[2], mcm.get_stance_bodyHeight(),
+        0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
+  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
+  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
+  
+  local footLift = K.calculate_foot_tilt(pLLeg, pRLeg, pTorso)
+  local footLiftL, footLiftR = 0,0
+  --LeftHeel LeftToe RightHeel RightToe
+
+  --check which leg is forward
+
+  local uLeftTorso = util.pose_relative(uLeft,uTorso)
+  local uRightTorso = util.pose_relative(uRight,uTorso)
+  if uLeft[1]>uRight[1] then --left foot forward
+    footLiftL = footLift[2] --Left foot toe lift
+    footLiftR = footLift[3] --Right foot heel lift
+  else --right foot forward
+    footLiftL = footLift[1] --Left foot heel lift
+    footLiftR = footLift[4] --Right foot toe lift
+  end
+
+  if math.abs(footLiftL)>0 or math.abs(footLiftR)>0 then
+    --print("Foot tilt:",unpack(footLift))
+    print(string.format("Foot lift: L %.2f R %.1f"
+    ,footLiftL*180/math.pi,footLiftR*180/math.pi
+    ))
+  end
+
+
+
+
+
+
+  if aLeft then
+    pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,aLeft,uLeft[3]})
+    pRLeg = vector.new({uRight[1],uRight[2],zRight,0,aRight,uRight[3]})
+  end
+
+--  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
+  local qLegs = K.inverse_legs_foot_tilt(pLLeg, pRLeg, pTorso,{footLiftL,footLiftR})
+  local legBias = vector.new(mcm.get_leg_bias())
+
+  qLegs = qLegs + delta_legs + legBias
+
+  Body.set_lleg_command_position(vector.slice(qLegs,1,6))
+  Body.set_rleg_command_position(vector.slice(qLegs,7,12))
+
+  ------------------------------------------
+  -- Update the status in shared memory
+  local uFoot = util.se2_interpolate(.5, uLeft, uRight)
+  mcm.set_status_odometry( uFoot )
+  --util.pose_relative(uFoot, u0) for relative odometry to point u0
+  local bodyOffset = util.pose_relative(uTorso, uFoot)
+  mcm.set_status_bodyOffset( bodyOffset )
+  ------------------------------------------
+end
+
+
+
+
+
+
+
+
+
 
 function moveleg.set_leg_positions_kneel(dt)
   local uTorso = mcm.get_status_uTorso()

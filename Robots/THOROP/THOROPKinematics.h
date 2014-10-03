@@ -224,6 +224,9 @@ std::vector<double> THOROP_kinematics_calculate_zmp(
 std::vector<double> THOROP_kinematics_calculate_foot_lift(
 	Transform trLeg, int leg);
 
+std::vector<double> THOROP_kinematics_inverse_leg_tilt(
+	const Transform trLeg, double footTilt, int leg);
+
 
 double THOROP_kinematics_calculate_knee_height(const double *q); 
 

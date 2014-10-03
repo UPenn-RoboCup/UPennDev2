@@ -18,7 +18,8 @@ for i=1,120 do
 	rgb, depth, ir = freenect2.update()
   if i%5==0 then
     local t = get_time()
-    log_rgb:record({t = t,rsz = #rgb.data}, c_rgb:compress(rgb.data, rgb.width, rgb.height))
+    local j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
+    log_rgb:record({t = t,rsz = #j_rgb}, j_rgb)
     log_ir:record({t = t,rsz = #ir.data}, ir.data)
     local m_ok, r_ok = log_depth:record({t = t, rsz = #depth.data}, depth.data)
     print('Logged', log_depth.n)

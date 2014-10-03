@@ -77,13 +77,15 @@ streams.lidar0 = {
   ws = 9015,
 	sub = 'lidar0',
 }
-streams.kinect_depth = {
+streams.kinect2_depth = {
   ws = 9010,
 	udp= 33346,
+	sub = 'kinect2_depth'
 }
-streams.kinect_color = {
+streams.kinect2_color = {
   ws = 9011,
 	udp= 33347,
+	sub = 'kinect2_color'
 }
 streams.feedback = {
   ws = 9013,

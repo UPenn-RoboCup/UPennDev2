@@ -15,8 +15,9 @@ else
 	carray = require'carray'
 end
 local torch = require'torch'
---local mp = require'msgpack'
-local mp = require'msgpack.MessagePack'
+-- Need the C version for unpacker
+local mp = require'msgpack'
+--local mp = require'msgpack.MessagePack'
 
 local function stop(self)
 	-- Close the files

@@ -24,6 +24,7 @@ local tStep
 local stepHeight  = Config.walk.stepHeight
 
 local zLeft,zRight --Step landing heights
+local zLeft0,zRight0
 local aLeft,aRight = 0,0
 -- Save gyro stabilization variables between update cycles
 -- They are filtered.  TODO: Use dt in the filters
@@ -95,7 +96,7 @@ function walk.entry()
   
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, zLeft, zRight =
       step_planner:init_stance()
-
+  zLeft0,zRight0 = zLeft,zRight
   print(string.format("Current torso: %.2f %.2f",
     uTorso_now[1],uTorso_now[2]))
 
@@ -185,12 +186,37 @@ function walk.update()
     if supportLeg == 0 then  -- Left support    
       uRight,zRight,aRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
 --      if walkParam then print(unpack(walkParam))end
+--[[
+      if zLeft0 >0.10 then --support foot too high, we raise whole body
+        local zDiff = zRight-zRight0
+        zLeft = zLeft0 - phSingle*0.10
+        zRight = zRight0 - phSingle*0.10 +zDiff
+      end
+--]]      
     elseif supportLeg==1 then    -- Right support    
       uLeft,zLeft,aLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)    
 --      if walkParam then print(unpack(walkParam))end
+
+--[[
+      if zRight0 > 0.10 then --support foot too high, we raise it
+        local zDiff = zLeft-zLeft0
+        zLeft = zLeft0 - phSingle*0.10 + zDiff
+        zRight = zRight0 - phSingle*0.10
+      end
+--]]      
     elseif supportLeg == 2 then --Double support
       aLeft,aRight = 0,0
+      zLeft0 = zLeft
+      zRight0 = zRight
     end
+
+    local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
+--    print("Z force:",l_ft[3],r_ft[3])    
+
+
+
+
+
     step_planner:save_stance(uLeft,uRight,uTorso,zLeft,zRight)  
 
     --Update the odometry variable

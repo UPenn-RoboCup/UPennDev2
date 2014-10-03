@@ -49,9 +49,10 @@ EXTRA_LINK+=\
 else
 
 # Use: https://github.com/wiedemeyer/libfreenect2
-LIBFREENECT2_DIR="/home/thor/Desktop/libfreenect2-cl"
+LIBFREENECT2_DIR=/home/thor/Desktop/libfreenect2-cl
 
-INCLUDES=-L$(LIBFREENECT2_DIR)/depends/libusb/include/libusb-1.0
-EXTRA_LINK+=-L$(LIBFREENECT2_DIR)/depends/libusb/lib
+INCLUDES+=-I$(LIBFREENECT2_DIR)/depends/libusb/include/libusb-1.0
+EXTRA_LINK+=-L$(LIBFREENECT2_DIR)/depends/libusb/lib \
+						-lOpenCL
 
 endif

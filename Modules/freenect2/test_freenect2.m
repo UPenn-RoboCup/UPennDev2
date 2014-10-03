@@ -32,12 +32,12 @@ clear rgb0;
 figure(1);
 clf;
 imagesc(ir_raw)
-title('Raw IR (centimeters)');
+title('Raw IR');
 
 figure(2);
 clf;
 imagesc(depth_raw)
-title('Raw Depth');
+title('Raw Depth (centimeters)');
 
 figure(3);
 clf;

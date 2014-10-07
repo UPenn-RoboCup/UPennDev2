@@ -23,7 +23,7 @@ Config.sensors = {
   head_camera = true,
   chest_lidar = true,
   head_lidar = false,
-  kinect = true,
+  kinect = false,
   fsr = false,
 }
 if IS_WEBOTS then
@@ -52,6 +52,7 @@ Config.debug = {
   planning = false,
   goalpost = false,
   world = false,
+  feedback = false,
 }
 
 -- Monitor and logging
@@ -71,12 +72,12 @@ Config.libs={
 --SJ: now we can choose which config, fsm and mid-level libraries to use
 
 --Robocup 
---[[
+---[[
 Config.libs.World = 'RoboCup'
 local exo = {
   'Robot','Walk','Net','Manipulation',
- -- 'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
- 'FSM_KickDemo','World_RoboCup','Vision_RoboCup' 
+ 'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
+ -- 'FSM_KickDemo','World_RoboCup','Vision_RoboCup'
 }
 Config.testfile = 'test_robocup'
 Config.sensors.chest_lidar = false
@@ -86,15 +87,6 @@ Config.wizards.mesh = nil
 
 
 --[[
---DRC Trials
-local exo = {'Robot','Walk','Net','Manipulation',
-'FSM_DRCTrials','World_RoboCup','Vision_DRCTrials'
-}
-Config.testfile = 'test_robocup'
---]]
-
-
----[[
 --DRC Site visit 2014
 --We are not doing any lidar based stuff
 --Config.libs.World = 'SiteVisit'   
@@ -102,19 +94,12 @@ Config.testfile = 'test_robocup'
 --Config.sensors.chest_lidar = true
 
 
-Config.libs.World = 'RoboCup'
-local exo = {
-  'Robot','Walk','Net','Manipulation',
-  'FSM_SiteVisitCombined','World_RoboCup','Vision_RoboCup' 
-}
-
---[[
 Config.libs.World = 'SiteVisit'   
 local exo = {
   'Robot','Walk','Net','Manipulation',
   'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup' 
 }
---]]
+
 Config.sensors.chest_lidar = false
 Config.wizards.test = nil
 Config.wizards.mesh = nil

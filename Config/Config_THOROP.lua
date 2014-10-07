@@ -72,7 +72,7 @@ Config.libs={
 --SJ: now we can choose which config, fsm and mid-level libraries to use
 
 --Robocup 
----[[
+--[[
 Config.libs.World = 'RoboCup'
 local exo = {
   'Robot','Walk','Net','Manipulation',
@@ -86,7 +86,7 @@ Config.wizards.mesh = nil
 --]]
 
 
---[[
+----[[
 --DRC Site visit 2014
 --We are not doing any lidar based stuff
 --Config.libs.World = 'SiteVisit'   

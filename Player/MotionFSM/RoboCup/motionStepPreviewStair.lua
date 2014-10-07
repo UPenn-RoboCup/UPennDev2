@@ -35,9 +35,8 @@ local iStep
 -- What foot trajectory are we using?
 local foot_traj_func  
 --foot_traj_func = moveleg.foot_trajectory_base
---foot_traj_func = moveleg.foot_trajectory_square
-foot_traj_func = moveleg.foot_trajectory_square_stair_touchdown
---foot_traj_func = moveleg.foot_trajectory_square_stair_2
+foot_traj_func = moveleg.foot_trajectory_square_stair
+--foot_traj_func = moveleg.foot_trajectory_square_stair_touchdown
 
 local touched =false
 

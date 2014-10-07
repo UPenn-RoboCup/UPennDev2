@@ -14,19 +14,10 @@ jointNames = { ...
 	'ChestLidarPan',...
 };
 
-joint = 'AnkleL';
-joint_idx = 1;
-for i=1:numel(jointNames)
-    str = jointNames{i};
-    if strncmp(str, joint, 4)==1
-        joint_idx = i;
-    end
-end
-clear str;
-
 %% Aquire the body joint angles
-timestamp = '08.27.2014.19.03.15';
-fid = fopen(strcat('Logs/joint_m_',timestamp,'.log'));
+%timestamp = '10.06.2014.16.00.04'; % Walking
+timestamp = '10.06.2014.17.07.04'; % Walk & turn
+fid = fopen(strcat('Data/joint_m_',timestamp,'.log'));
 msg = fread(fid,inf,'*uchar');
 fclose(fid);
 clear fid;
@@ -44,6 +35,7 @@ ft_l = zeros(numel(jobjs), numel(jobjs{1}.ft_l));
 ft_r = zeros(numel(jobjs), numel(jobjs{1}.ft_r));
 gyro = zeros(numel(jobjs), numel(jobjs{1}.gyro));
 acc = zeros(numel(jobjs), numel(jobjs{1}.acc));
+rpy = zeros(numel(jobjs), numel(jobjs{1}.rpy));
 for i=1:numel(jobjs)
     jobj = jobjs{i};
     ts(i)    = jobj.t - t0;
@@ -53,28 +45,63 @@ for i=1:numel(jobjs)
     ft_r(i,:) = jobj.ft_r;
     gyro(i,:) = jobj.gyro;
     acc(i,:) = jobj.acc;
+    rpy(i,:) = jobj.rpy;
 end
 clear jobj
 %% Save
 % clear jobjs;
-save(strcat('Logs/joint_m_',timestamp,'.mat'));
+%save(strcat('Data/joint_m_',timestamp,'.mat'));
 %% Plot a joint
-%load('Logs/joint_06.04.2014.13.54.20.mat')
+%load(strcat('Data/joint_m_',timestamp,'.mat'));
+
+joint = 'PelvL';
+joint_idx = 1;
+for i=1:numel(jointNames)
+    str = jointNames{i};
+    if strncmp(str, joint, 8)==1
+        joint_idx = i;
+    end
+end
+
 figure(1);
-plot( ts, pos(:, joint_idx), ...
-    ts, cmd(:, joint_idx) ...
+plot( ts, rad2deg(pos(:, joint_idx)), ...
+    ts, rad2deg(cmd(:, joint_idx)) ...
     );
 legend('Position', 'Command');
-title('Command vs. Position');
+title('PelvL Command vs. Position');
+joint_idx
+
+joint = 'PelvR';
+joint_idx = 1;
+for i=1:numel(jointNames)
+    str = jointNames{i};
+    if strncmp(str, joint, 8)==1
+        joint_idx = i;
+    end
+end
 
 figure(2);
-plot(ft_l);
-title('Left Force Torque');
+plot( ts, rad2deg(pos(:, joint_idx)), ...
+    ts, rad2deg(cmd(:, joint_idx)) ...
+    );
+legend('Position', 'Command');
+title('PelvR Command vs. Position');
+joint_idx
 
-figure(3);
-plot(ft_r);
-title('Right Force Torque');
+% figure(2);
+% plot(gyro);
+% title('Gyro');
+% legend('Roll', 'Pitch', 'Yaw');
+% 
+% figure(3);
+% plot(rpy);
+% title('Angle');
+% legend('Roll', 'Pitch', 'Yaw');
 
-figure(4);
-plot(gyro);
-title('Gyro');
+% figure(2);
+% plot(ft_l);
+% title('Left Force Torque');
+% 
+% figure(3);
+% plot(ft_r);
+% title('Right Force Torque');

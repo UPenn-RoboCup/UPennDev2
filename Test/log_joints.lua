@@ -1,3 +1,4 @@
+#!/usr/bin/env luajit
 dofile'../include.lua'
 local signal = require'signal'.signal
 local running = true
@@ -13,7 +14,7 @@ local si = require'simple_ipc'
 local libLog = require'libLog'
 local Body = require('Body')
 local logger = libLog.new'joint'
-local sample_hz = 250
+local sample_hz = 200
 
 local get_time, usleep, max = unix.time, unix.usleep, math.max
 local t0, t_sleep = get_time(), 1 / sample_hz
@@ -33,6 +34,7 @@ while running do
 	e.ft_r, e.t_ft_r = Body.get_rfoot()
 	e.gyro, e.t_imu = Body.get_gyro()
 	e.acc = Body.get_accelerometer()
+	e.rpy = Body.get_rpy()
 	-- Write the log
   logger:record(e)
 	-- Status message

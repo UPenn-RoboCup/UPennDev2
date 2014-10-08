@@ -121,22 +121,24 @@ local function send_feedback(self)
   local rpy = Body.get_accelerometer()
   RC_data.accX, RC_data.accY, RC_data.accZ = unpack(rpy)
   
-  return tonumber(self.sender:send(ffi.string(RC_data, ffi.sizeof(RC_data))))
+  self.send_ok = self.sender:send(ffi.string(RC_data, ffi.sizeof(RC_data))) > 0
+  return self
 end
 
 local function wait_for_commands(self)
-  return unix.select({self.recv_fd}, RC_TIMEOUT)
+  self.ready = unix.select({self.recv_fd}, RC_TIMEOUT) > 0
+  return self
 end
 
-
 local function receive_commands(self)
+  if not self.ready then return end
   local buf = self.receiver:receive()
-  if not buf then return end
+  if not buf then self.cmds = nil end
   local sz = #buf
-  if sz ~= ffi.sizeof'struct ThorUdpPacket' then return end
-  local cmds = ffi.new('struct ThorUdpPacket')
-  ffi.copy(cmds, buf, sz)
-  return cmds
+  if sz ~= ffi.sizeof'struct ThorUdpPacket' then self.cmds = nil end
+  self.cmds = ffi.new('struct ThorUdpPacket')
+  ffi.copy(self.cmds, buf, sz)
+  return self
 end
 
 local function process_commands(self, cmds)
@@ -163,12 +165,19 @@ local function process_commands(self, cmds)
   }
 end
 
+local function rc_tostring(self, formatstr)
+  return string.format('Remote Controller | %s', self.address)
+end
+
+local __mt = {__tostring = rc_tostring}
+
 function libRC.init(RC_addr)
-  local sender = si.new_sender(RC_addr or 'localhost', libRC.REMOTE_CONTROL_PORT)
+  local address = RC_addr or 'localhost'
+  local sender = si.new_sender(address, libRC.REMOTE_CONTROL_PORT)
   local receiver = si.new_receiver(libRC.REMOTE_CONTROL_PORT)
   local RC_data = ffi.new('struct ThorUdpPacket')
   RC_data.id = libRC.REMOTE_CONTROL_STRUCT_ID
-  return {
+  return setmetatable({
     send = send_feedback,
     wait = wait_for_commands,
     receive = receive_commands,
@@ -177,8 +186,10 @@ function libRC.init(RC_addr)
     sender = sender,
     recv_fd = receiver.fd,
     feedback_data = RC_data,
-    
-  }
+    address = address
+  },
+  __mt
+  )
 end
 
 return libRC

@@ -3,7 +3,7 @@ state._NAME = ...
 
 --motionInit: initialize legs to correct position
 
-
+require'wcm'
 require'mcm'
 require'hcm'
 local Body       = require'Body'

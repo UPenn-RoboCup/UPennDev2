@@ -80,10 +80,13 @@ local function def(structs, defines, tbl)
 end
 
 def(RC_structs, RC_constants, libRC)
-local RC_data = ffi.new('struct ThorUdpPacket')
-RC_data.id = libRC.REMOTE_CONTROL_STRUCT_ID
 
 local function send_feedback(self)
+  local RC_data = self.feedback_data
+  -- Head
+  local head = Body.get_head_position()
+  RC_data.neckZ, RC_data.neckY = unpack(head)
+
   -- Left Arm
   local larm = Body.get_larm_position()
   RC_data.leftShoulderY, RC_data.leftShoulderX, RC_data.leftShoulderZ,
@@ -118,33 +121,63 @@ local function send_feedback(self)
   local rpy = Body.get_accelerometer()
   RC_data.accX, RC_data.accY, RC_data.accZ = unpack(rpy)
   
-  return self.sender:send(ffi.string(RC_data, ffi.sizeof(RC_data)))
-end
-
-local RC_cmd = ffi.new('struct ThorUdpPacket')
-local function receive_commands(self, buf)
-  if not buf then return end
-  local sz = #buf
-  if sz ~= ffi.sizeof(RC_cmd) then return end
-  if RC_data.id ~= libRC.REMOTE_CONTROL_STRUCT_ID then return end
-  ffi.copy(RC_cmd, buf, sz)
-  return RC_cmd
+  return tonumber(self.sender:send(ffi.string(RC_data, ffi.sizeof(RC_data))))
 end
 
 local function wait_for_commands(self)
-  local fd = self.receiver:descriptor()
-  local status, ready = unix.select({fd}, RC_TIMEOUT)
+  return unix.select({self.recv_fd}, RC_TIMEOUT)
 end
 
-function libRC.init(team, player, RC_addr)
-  local udp_sender = si.new_sender(RC_addr or 'localhost', libRC.REMOTE_CONTROL_PORT)
-  local udp_receiver = si.new_receiver(libRC.REMOTE_CONTROL_PORT)
+
+local function receive_commands(self)
+  local buf = self.receiver:receive()
+  if not buf then return end
+  local sz = #buf
+  if sz ~= ffi.sizeof'struct ThorUdpPacket' then return end
+  local cmds = ffi.new('struct ThorUdpPacket')
+  ffi.copy(cmds, buf, sz)
+  return cmds
+end
+
+local function process_commands(self, cmds)
+  if not cmds then return end
+  if cmds.id ~= libRC.REMOTE_CONTROL_STRUCT_ID then return end
+  Body.set_head_command_position{RC_data.neckZ, RC_data.neckY}
+  Body.set_larm_command_position{
+    RC_data.leftShoulderY, RC_data.leftShoulderX, RC_data.leftShoulderZ,
+    RC_data.leftElbowY,
+    RC_data.leftElbowZ, RC_data.leftWristX, RC_data.leftWristZ
+  }
+  Body.set_lleg_command_position{
+    RC_data.leftHipZ, RC_data.leftHipZ, RC_data.leftHipX,
+    RC_data.leftHipY, RC_data.leftKnee, RC_data.leftAnkleY
+  }
+  Body.set_rarm_command_position{
+    RC_data.rightShoulderY, RC_data.rightShoulderX, RC_data.rightShoulderZ,
+    RC_data.rightElbowY,
+    RC_data.rightElbowZ, RC_data.rightWristX, RC_data.rightWristZ
+  }
+  Body.set_rleg_command_position{
+    RC_data.rightHipZ, RC_data.rightHipZ, RC_data.rightHipX,
+    RC_data.rightHipY, RC_data.rightKnee, RC_data.rightAnkleY
+  }
+end
+
+function libRC.init(RC_addr)
+  local sender = si.new_sender(RC_addr or 'localhost', libRC.REMOTE_CONTROL_PORT)
+  local receiver = si.new_receiver(libRC.REMOTE_CONTROL_PORT)
+  local RC_data = ffi.new('struct ThorUdpPacket')
+  RC_data.id = libRC.REMOTE_CONTROL_STRUCT_ID
   return {
     send = send_feedback,
     wait = wait_for_commands,
     receive = receive_commands,
-    receiver = udp_receiver,
-    sender = udp_sender,
+    process = process_commands,
+    receiver = receiver,
+    sender = sender,
+    recv_fd = receiver.fd,
+    feedback_data = RC_data,
+    
   }
 end
 

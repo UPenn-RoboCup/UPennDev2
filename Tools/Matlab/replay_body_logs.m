@@ -16,7 +16,8 @@ jointNames = { ...
 
 %% Aquire the body joint angles
 %timestamp = '10.06.2014.16.00.04'; % Walking
-timestamp = '10.06.2014.17.07.04'; % Walk & turn
+%timestamp = '10.06.2014.17.07.04'; % Walk & turn
+timestamp = '10.07.2014.11.42.26'; % Stand on one leg
 fid = fopen(strcat('Data/joint_m_',timestamp,'.log'));
 msg = fread(fid,inf,'*uchar');
 fclose(fid);
@@ -69,9 +70,11 @@ plot( ts, rad2deg(pos(:, joint_idx)), ...
     );
 legend('Position', 'Command');
 title('PelvL Command vs. Position');
-joint_idx
 
-joint = 'PelvR';
+hip_roll_pos = rad2deg(pos(:, joint_idx));
+hip_roll_cmd = rad2deg(cmd(:, joint_idx));
+
+joint = 'FootL';
 joint_idx = 1;
 for i=1:numel(jointNames)
     str = jointNames{i};
@@ -80,23 +83,38 @@ for i=1:numel(jointNames)
     end
 end
 
+foot_roll_pos = rad2deg(pos(:, joint_idx));
+foot_roll_cmd = rad2deg(cmd(:, joint_idx));
+
 figure(2);
 plot( ts, rad2deg(pos(:, joint_idx)), ...
     ts, rad2deg(cmd(:, joint_idx)) ...
     );
 legend('Position', 'Command');
-title('PelvR Command vs. Position');
-joint_idx
+title('FootL Command vs. Position (Degrees)');
+
+figure(3);
+plot( ts, foot_roll_pos + hip_roll_pos, ...
+    ts, foot_roll_cmd + hip_roll_cmd, ...
+    ts, rad2deg(rpy(:, 1)) ...
+    );
+legend('Position', 'Command', 'IMU Roll');
+title('Combined Command vs. Position (Degrees)');
 
 % figure(2);
 % plot(gyro);
 % title('Gyro');
 % legend('Roll', 'Pitch', 'Yaw');
 % 
-% figure(3);
+% figure(4);
 % plot(rpy);
 % title('Angle');
 % legend('Roll', 'Pitch', 'Yaw');
+
+% figure(4);
+% plot( ts, rad2deg(rpy(:, 1)) );
+% title('Roll Angle (Degrees)');
+% ylim([-5 5]);
 
 % figure(2);
 % plot(ft_l);

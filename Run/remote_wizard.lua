@@ -6,20 +6,22 @@ local RemoteControl = require'RemoteControl.ffi'
 local rc
 
 local function entry()
-  --rc = RemoteControl.init('192.168.123.77')
+  rc = RemoteControl.init('192.168.123.77')
   --rc = RemoteControl.init('192.168.123.255')
-  rc = RemoteControl.init('192.168.123.24')
+  --rc = RemoteControl.init('192.168.123.24')
   print(rc)
 end
 
 local function update()
+  ----[[
   rc:send():wait()
   repeat
     rc:receive():process()
   until not rc.cmds
+  --]]
   
   --[[
-  rc:send()
+  --rc:send()
   repeat
     rc:wait():receive():process()
   until not rc.ready

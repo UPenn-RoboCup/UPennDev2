@@ -126,6 +126,7 @@ Config.wizards = {
   --remote = 'remote_wizard',
 }
 Config.testfile = 'test_remote'
+Config.sensors.chest_lidar = false
 --]]
 
 --Add path to selected librares

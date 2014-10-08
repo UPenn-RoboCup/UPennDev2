@@ -1,11 +1,21 @@
 local state = {}
 state._NAME = ...
+local vector = require'vector'
 
-local RemoteControl = require'RemoteControl.ffi'
-
-local timeout = 5.0
+local timeout = 10.0
 local t_entry, t_update
 local rc
+
+local lleg0 = vector.new{
+  0, 0.05, -0.18, 
+  0.4,
+  -0.22, -0.05
+}
+local rleg0 = vector.new{
+  0, -0.05, -0.18, 
+  0.4,
+  -0.22, 0.05
+}
 
 function state.entry()
   print(state._NAME..' Entry')
@@ -15,8 +25,6 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   
-  rc = rc or RemoteControl.init('192.168.123.77')
-  print('Interface', rc, rc.n)
 end
 
 ---
@@ -31,12 +39,18 @@ function state.update()
   t_update = t
   if t - t_entry > timeout then return'timeout' end
 
-  -- Process
-  rc:send():wait()
-  
-  repeat
-    rc:receive():process()
-  until not rc.cmds
+  local lleg, donelleg = util.approachTol(
+    Body.get_lleg_command_position(),
+    lleg0, 3*DEG_TO_RAD*vector.ones(#lleg0), t_diff )
+    
+  local rleg, donerleg = util.approachTol(
+    Body.get_rleg_command_position(),
+    rleg0, 3*DEG_TO_RAD*vector.ones(#rleg0), t_diff )
+    
+  Body.set_lleg_command_position(lleg)
+  Body.set_rleg_command_position(rleg)
+    
+  if donelleg and donerleg then return'done' end
 
 end
 

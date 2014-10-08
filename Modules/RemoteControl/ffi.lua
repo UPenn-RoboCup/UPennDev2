@@ -1,5 +1,5 @@
 local libRC = {}
-local si = require'simple_ipc'
+local udp = require'udp'
 local RC_TIMEOUT = 1 / 50
 local ffi = require'ffi'
 local Body = require'Body'
@@ -126,6 +126,7 @@ end
 
 local function wait_for_commands(self)
   self.ready = unix.select({self.recv_fd}, RC_TIMEOUT) > 0
+  --print('READY', self.ready)
   return self
 end
 
@@ -149,7 +150,7 @@ end
 local function process_commands(self)
   local cmds = self.cmds
   if not cmds then return self end
-  if cmds.id ~= libRC.REMOTE_CONTROL_REMOTE_ID then return self end
+  if cmds.header[0] ~= libRC.REMOTE_CONTROL_REMOTE_ID then return self end
   self.n = self.n + 1
   
   Body.set_head_command_position{cmds.neckZ, cmds.neckY}
@@ -159,7 +160,7 @@ local function process_commands(self)
     cmds.leftElbowZ, cmds.leftWristX, cmds.leftWristZ
   }
   Body.set_lleg_command_position{
-    cmds.leftHipZ, cmds.leftHipX, cmds.leftHipY, cmds.leftKnee, cmds.leftAnkleY, cmds.rightAnkleX
+    cmds.leftHipZ, cmds.leftHipX, cmds.leftHipY, cmds.leftKnee, cmds.leftAnkleY, cmds.leftAnkleX
   }
   Body.set_rarm_command_position{
     cmds.rightShoulderY, cmds.rightShoulderX, cmds.rightShoulderZ,
@@ -180,8 +181,8 @@ local __mt = {__tostring = rc_tostring}
 
 function libRC.init(RC_addr)
   local address = RC_addr or 'localhost'
-  local sender = require'udp'.new_sender(address, libRC.REMOTE_CONTROL_PORT)
-  local receiver = require'udp'.new_receiver(libRC.REMOTE_CONTROL_PORT)
+  local sender = udp.new_sender(address, libRC.REMOTE_CONTROL_PORT)
+  local receiver = udp.new_receiver(libRC.REMOTE_CONTROL_PORT)
   local RC_data = ffi.new('struct ThorUdpPacket')
   RC_data.header[0] = libRC.REMOTE_CONTROL_ROBOT_ID
   return setmetatable({
@@ -191,7 +192,7 @@ function libRC.init(RC_addr)
     process = process_commands,
     receiver = receiver,
     sender = sender,
-    recv_fd = receiver.fd,
+    recv_fd = receiver.fd or receiver:descriptor(),
     feedback_data = RC_data,
     address = address,
     n = 0

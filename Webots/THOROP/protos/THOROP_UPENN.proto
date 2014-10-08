@@ -451,7 +451,7 @@ Robot {
 									}
 									jointParameters HingeJointParameters {
 										axis 0 1 0
-										anchor -0.072 -0.232 0
+										anchor 0.072 -0.232 0
 									}
 									endPoint Solid {
 										translation 0.072 -0.232 0

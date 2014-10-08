@@ -5,7 +5,7 @@ local ffi = require'ffi'
 local Body = require'Body'
 
 local RC_constants = [[
-#define REMOTE_CONTROL_PORT 10101
+#define REMOTE_CONTROL_PORT 54321
 #define REMOTE_CONTROL_STRUCT_ID 0x0A
 ]]
 
@@ -122,46 +122,57 @@ local function send_feedback(self)
   RC_data.accX, RC_data.accY, RC_data.accZ = unpack(rpy)
   
   self.send_ok = self.sender:send(ffi.string(RC_data, ffi.sizeof(RC_data))) > 0
+  print('SEND', self.send_ok)
   return self
 end
 
 local function wait_for_commands(self)
   self.ready = unix.select({self.recv_fd}, RC_TIMEOUT) > 0
+  print('READY', self.ready)
   return self
 end
 
 local function receive_commands(self)
   if not self.ready then return end
   local buf = self.receiver:receive()
-  if not buf then self.cmds = nil end
+  if not buf then
+    self.cmds = nil
+    return self
+  end
   local sz = #buf
-  if sz ~= ffi.sizeof'struct ThorUdpPacket' then self.cmds = nil end
+  print('SZ', sz, ffi.sizeof'struct ThorUdpPacket')
+  if sz ~= ffi.sizeof'struct ThorUdpPacket' then
+    self.cmds = nil
+    return self
+  end
   self.cmds = ffi.new('struct ThorUdpPacket')
   ffi.copy(self.cmds, buf, sz)
   return self
 end
 
-local function process_commands(self, cmds)
-  if not cmds then return end
+local function process_commands(self)
+  local cmds = self.cmds
+  if not cmds then return self end
   if cmds.id ~= libRC.REMOTE_CONTROL_STRUCT_ID then return end
-  Body.set_head_command_position{RC_data.neckZ, RC_data.neckY}
+  
+  Body.set_head_command_position{cmds.neckZ, cmds.neckY}
   Body.set_larm_command_position{
-    RC_data.leftShoulderY, RC_data.leftShoulderX, RC_data.leftShoulderZ,
-    RC_data.leftElbowY,
-    RC_data.leftElbowZ, RC_data.leftWristX, RC_data.leftWristZ
+    cmds.leftShoulderY, cmds.leftShoulderX, cmds.leftShoulderZ,
+    cmds.leftElbowY,
+    cmds.leftElbowZ, cmds.leftWristX, cmds.leftWristZ
   }
   Body.set_lleg_command_position{
-    RC_data.leftHipZ, RC_data.leftHipZ, RC_data.leftHipX,
-    RC_data.leftHipY, RC_data.leftKnee, RC_data.leftAnkleY
+    cmds.leftHipZ, cmds.leftHipZ, cmds.leftHipX,
+    cmds.leftHipY, cmds.leftKnee, cmds.leftAnkleY
   }
   Body.set_rarm_command_position{
-    RC_data.rightShoulderY, RC_data.rightShoulderX, RC_data.rightShoulderZ,
-    RC_data.rightElbowY,
-    RC_data.rightElbowZ, RC_data.rightWristX, RC_data.rightWristZ
+    cmds.rightShoulderY, cmds.rightShoulderX, cmds.rightShoulderZ,
+    cmds.rightElbowY,
+    cmds.rightElbowZ, cmds.rightWristX, cmds.rightWristZ
   }
   Body.set_rleg_command_position{
-    RC_data.rightHipZ, RC_data.rightHipZ, RC_data.rightHipX,
-    RC_data.rightHipY, RC_data.rightKnee, RC_data.rightAnkleY
+    cmds.rightHipZ, cmds.rightHipZ, cmds.rightHipX,
+    cmds.rightHipY, cmds.rightKnee, cmds.rightAnkleY
   }
 end
 

@@ -15,7 +15,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   
-  rc = rc or RemoteControl.init()
+  rc = rc or RemoteControl.init('192.168.123.77')
 end
 
 ---

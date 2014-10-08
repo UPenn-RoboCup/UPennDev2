@@ -1,10 +1,5 @@
 assert(Config, 'Need a pre-existing Config table!')
 
--- Override! Disable the wizards
--- Based on the master config, our fsm config has the highest priority!
-Config.wizards = {}
-Config.sensors = {ft = true}
-
 local fsm = {}
 
 -- Update rate in Hz

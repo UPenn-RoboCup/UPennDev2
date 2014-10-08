@@ -103,17 +103,20 @@ Config.wizards.mesh = nil
 Config.testfile = 'test_sitevisit'
 --]]
 
---[[
 -- Teach robot to go up steps
+--[[
 Config.libs.MotionLib = 'Teach'
 -- Precedence in loading, for overrides!
 local exo = {
 	'Robot', 'Walk', 'Net', 'FSM_Teach'
 }
 Config.testfile = 'test_teach'
+Config.wizards = {}
+Config.sensors = {ft = true}
 --]]
 
 -- Remote Control
+----[[
 local exo = {
 	'Robot', 'Walk', 'Net', 'FSM_Remote'
 }
@@ -123,6 +126,7 @@ Config.wizards = {
   --remote = 'remote_wizard',
 }
 Config.testfile = 'test_remote'
+--]]
 
 --Add path to selected librares
 for i,sm in pairs(Config.libs) do

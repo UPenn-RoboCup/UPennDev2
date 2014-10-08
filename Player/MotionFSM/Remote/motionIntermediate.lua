@@ -1,6 +1,7 @@
 local state = {}
 state._NAME = ...
 local vector = require'vector'
+local util = require'util'
 
 local timeout = 10.0
 local t_entry, t_update
@@ -41,11 +42,11 @@ function state.update()
 
   local lleg, donelleg = util.approachTol(
     Body.get_lleg_command_position(),
-    lleg0, 3*DEG_TO_RAD*vector.ones(#lleg0), t_diff )
+    lleg0, 5*DEG_TO_RAD*vector.ones(#lleg0), t_diff )
     
   local rleg, donerleg = util.approachTol(
     Body.get_rleg_command_position(),
-    rleg0, 3*DEG_TO_RAD*vector.ones(#rleg0), t_diff )
+    rleg0, 5*DEG_TO_RAD*vector.ones(#rleg0), t_diff )
     
   Body.set_lleg_command_position(lleg)
   Body.set_rleg_command_position(rleg)

@@ -17,6 +17,13 @@ function state.entry()
   
   rc = rc or RemoteControl.init('192.168.123.77')
   print('Interface', rc, rc.n)
+	-- Torque off most things
+	Body.set_head_torque_enable(0)
+	Body.set_waist_torque_enable(0)
+	Body.set_larm_torque_enable(0)
+	Body.set_rarm_torque_enable(0)
+	--Body.set_rleg_torque_enable(0)
+	--Body.set_lleg_torque_enable(0)
 end
 
 ---
@@ -35,7 +42,8 @@ function state.update()
   rc:send():wait()
   
   repeat
-    rc:receive():process()
+    rc:receive()
+    rc:process()
   until not rc.cmds
 
 end

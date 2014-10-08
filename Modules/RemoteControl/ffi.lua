@@ -96,8 +96,7 @@ local function send_feedback(self)
   
   -- Left Leg
   local lleg = Body.get_lleg_position()
-  RC_data.leftHipZ, RC_data.leftHipZ, RC_data.leftHipX,
-  RC_data.leftHipY, RC_data.leftKnee, RC_data.leftAnkleY = unpack(lleg)
+  RC_data.leftHipZ, RC_data.leftHipX, RC_data.leftHipY, RC_data.leftKnee, RC_data.leftAnkleY, RC_data.leftAnkleX = unpack(lleg)
   
   -- Right Arm
   local rarm = Body.get_rarm_position()
@@ -107,8 +106,7 @@ local function send_feedback(self)
   
   -- Right Leg
   local rleg = Body.get_rleg_position()
-  RC_data.rightHipZ, RC_data.rightHipZ, RC_data.rightHipX,
-  RC_data.rightHipY, RC_data.rightKnee, RC_data.rightAnkleY = unpack(rleg)
+  RC_data.rightHipZ, RC_data.rightHipX, RC_data.rightHipY, RC_data.rightKnee, RC_data.rightAnkleY, RC_data.rightAnkleX = unpack(rleg)
   
   -- Angle
   local rpy = Body.get_rpy()
@@ -153,6 +151,7 @@ local function process_commands(self)
   local cmds = self.cmds
   if not cmds then return self end
   if cmds.id ~= libRC.REMOTE_CONTROL_REMOTE_ID then return self end
+  self.n = self.n + 1
   
   Body.set_head_command_position{cmds.neckZ, cmds.neckY}
   Body.set_larm_command_position{
@@ -161,8 +160,7 @@ local function process_commands(self)
     cmds.leftElbowZ, cmds.leftWristX, cmds.leftWristZ
   }
   Body.set_lleg_command_position{
-    cmds.leftHipZ, cmds.leftHipZ, cmds.leftHipX,
-    cmds.leftHipY, cmds.leftKnee, cmds.leftAnkleY
+    cmds.leftHipZ, cmds.leftHipX, cmds.leftHipY, cmds.leftKnee, cmds.leftAnkleY, cmds.rightAnkleX
   }
   Body.set_rarm_command_position{
     cmds.rightShoulderY, cmds.rightShoulderX, cmds.rightShoulderZ,
@@ -170,8 +168,7 @@ local function process_commands(self)
     cmds.rightElbowZ, cmds.rightWristX, cmds.rightWristZ
   }
   Body.set_rleg_command_position{
-    cmds.rightHipZ, cmds.rightHipZ, cmds.rightHipX,
-    cmds.rightHipY, cmds.rightKnee, cmds.rightAnkleY
+    cmds.rightHipZ, cmds.rightHipX, cmds.rightHipY, cmds.rightKnee, cmds.rightAnkleY, cmds.rightAnkleX
   }
   return self
 end
@@ -185,7 +182,7 @@ local __mt = {__tostring = rc_tostring}
 function libRC.init(RC_addr)
   local address = RC_addr or 'localhost'
   local sender = require'udp'.new_sender(address, libRC.REMOTE_CONTROL_PORT)
-  local receiver = si.new_receiver(libRC.REMOTE_CONTROL_PORT)
+  local receiver = require'udp'.new_receiver(libRC.REMOTE_CONTROL_PORT)
   local RC_data = ffi.new('struct ThorUdpPacket')
   RC_data.id = libRC.REMOTE_CONTROL_ROBOT_ID
   return setmetatable({
@@ -197,7 +194,8 @@ function libRC.init(RC_addr)
     sender = sender,
     recv_fd = receiver.fd,
     feedback_data = RC_data,
-    address = address
+    address = address,
+    n = 0
   },
   __mt
   )

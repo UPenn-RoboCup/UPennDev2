@@ -32,9 +32,16 @@ function state.update()
   if t - t_entry > timeout then return'timeout' end
 
   -- Process
+  --[[
   rc:send()
   repeat
     rc:wait():receive():process()
+  until not rc.cmds
+  --]]
+
+  rc:send():wait()
+  repeat
+    rc:receive():process()
   until not rc.cmds
 
 end

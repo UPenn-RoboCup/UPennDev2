@@ -7,20 +7,23 @@ local rc
 
 local function entry()
   --rc = RemoteControl.init('192.168.123.77')
-  rc = RemoteControl.init('192.168.123.255')
+  --rc = RemoteControl.init('192.168.123.255')
+  rc = RemoteControl.init('192.168.123.24')
   print(rc)
 end
 
 local function update()
-  --rc:send():wait()
-  --repeat
-    --rc:receive():process()
-  --until not rc.cmds
+  rc:send():wait()
+  repeat
+    rc:receive():process()
+  until not rc.cmds
   
+  --[[
   rc:send()
   repeat
     rc:wait():receive():process()
   until not rc.ready
+  --]]
   
 end
 
@@ -45,6 +48,7 @@ while running do
   local t = unix.time()
   if t-t_debug > 1 then
     print('Remote Control | Uptime:', t-t0)
+    print('Processed',rc.n)
     t_debug = t
   end
   update()

@@ -17,7 +17,6 @@ Config.dev = {
 }
 
 Config.use_localhost = false
-Config.wizards = {}
 Config.sensors = {
   ft = true,
   head_camera = true,
@@ -26,21 +25,20 @@ Config.sensors = {
   kinect = false,
   fsr = false,
 }
+Config.wizards = {}
 if IS_WEBOTS then
-  -- Tune which wizards to run in webots
-  Config.wizards.feedback = 'feedback_wizard'
-  Config.wizards.mesh = 'mesh_wizard_sitevisit'
-  Config.wizards.world = 'world_wizard'
-  Config.wizards.camera = 'camera_wizard'
-  Config.wizards.test = 'post_mesh_wizard'
-  --Config.wizards.slam = 'slam_wizard'
-  
-  -- Adjust the tiemsteps if desired
-  --Config.camera_timestep = 33
---  Config.lidar_timestep = 200 --slower
-  Config.kinect_timestep = 30
-
   Config.use_localhost = true
+  -- Tune which wizards to run in webots
+  Config.wizards = {
+    feedback = 'feedback_wizard',
+    mesh = 'mesh_wizard',
+    world = 'world_wizard',
+    camera = 'camera_wizard'
+  }  
+  -- Adjust the tiemsteps if desired
+  -- Config.camera_timestep = 33
+  -- Config.lidar_timestep = 200 --slower
+  Config.kinect_timestep = 30
 end
 
 -- Printing of debug messages
@@ -86,13 +84,12 @@ Config.wizards.mesh = nil
 --]]
 
 
-----[[
+--[[
 --DRC Site visit 2014
 --We are not doing any lidar based stuff
 --Config.libs.World = 'SiteVisit'   
 --Config.wizards.mesh = 'mesh_wizard_sitevisit'
 --Config.sensors.chest_lidar = true
-
 
 Config.libs.World = 'SiteVisit'   
 local exo = {
@@ -106,8 +103,6 @@ Config.wizards.mesh = nil
 Config.testfile = 'test_sitevisit'
 --]]
 
-
-
 --[[
 -- Teach robot to go up steps
 Config.libs.MotionLib = 'Teach'
@@ -117,6 +112,17 @@ local exo = {
 }
 Config.testfile = 'test_teach'
 --]]
+
+-- Remote Control
+local exo = {
+	'Robot', 'Walk', 'Net', 'FSM_Remote'
+}
+Config.libs.MotionLib = 'RoboCup'
+Config.wizards = {
+  feedback = 'feedback_wizard',
+  --remote = 'remote_wizard',
+}
+Config.testfile = 'test_remote'
 
 --Add path to selected librares
 for i,sm in pairs(Config.libs) do

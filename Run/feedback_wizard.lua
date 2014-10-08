@@ -7,11 +7,15 @@ local Body = require'Body'
 
 -- 2 Hz feedback
 local t_sleep = 1e6 / 2
-local feedback_udp_ch =
-si.new_sender(Config.net.operator.wired, Config.net.streams.feedback.udp)
-
+local feedback_udp_ch
 local ret, err
 local feedback = {}
+
+local function entry()
+  feedback_udp_ch =
+    si.new_sender(Config.net.operator.wired, Config.net.streams.feedback.udp)
+end
+
 local function update()
   feedback.t = Body.get_time()
   feedback.joints = Body.get_position()
@@ -25,7 +29,7 @@ end
 
 -- If required from Webots, return the table
 if ... and type(...)=='string' then
-	return {entry=nil, update=update, exit=nil}
+	return {entry=entry, update=update, exit=nil}
 end
 
 local running = true
@@ -36,8 +40,9 @@ local signal = require'signal'.signal
 signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
 
-local unix = require'unix'
+local usleep = require'unix'.usleep
+entry()
 while running do
 	update()
-	unix.usleep(t_sleep)
+	usleep(t_sleep)
 end

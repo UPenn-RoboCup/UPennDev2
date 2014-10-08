@@ -9,17 +9,8 @@ local code_lut, char_lut, lower_lut = {}, {}, {}
 char_lut['1'] = function()
   motion_ch:send'stand'
 end
-lower_lut['l'] = function()
-  motion_ch:send'lean'
-end
-lower_lut['u'] = function()
-  motion_ch:send'stepup'
-end
-lower_lut['d'] = function()
-  motion_ch:send'stepdown'
-end
-lower_lut['s'] = function()
-  motion_ch:send'sway'
+lower_lut['r'] = function()
+  motion_ch:send'remote'
 end
 lower_lut['q'] = function()
   motion_ch:send'quit'
@@ -27,7 +18,8 @@ end
 
 local function show_status()
   if not IS_WEBOTS then os.execute('clear') end
-  print(util.color('Teach a bot', 'magenta'))
+  print(util.color('Remote Control', 'magenta'))
+  print('Motion:', util.color(gcm.get_fsm_Motion(), 'green'))
 end
 
 local function update(key_code)
@@ -52,9 +44,6 @@ end
 show_status()
 
 if WAS_REQUIRED then return {entry=nil, update=update, exit=nil} end
-
-print("Game role:",gcm.get_game_role())
-print("Game state:",gcm.get_game_state())
 
 local getch = require'getch'
 local running = true

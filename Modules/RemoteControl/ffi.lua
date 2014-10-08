@@ -183,7 +183,7 @@ function libRC.init(RC_addr)
   local sender = require'udp'.new_sender(address, libRC.REMOTE_CONTROL_PORT)
   local receiver = require'udp'.new_receiver(libRC.REMOTE_CONTROL_PORT)
   local RC_data = ffi.new('struct ThorUdpPacket')
-  RC_data.id = libRC.REMOTE_CONTROL_ROBOT_ID
+  RC_data.header[0] = libRC.REMOTE_CONTROL_ROBOT_ID
   return setmetatable({
     send = send_feedback,
     wait = wait_for_commands,

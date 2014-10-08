@@ -13,7 +13,7 @@ local RC_constants = [[
 local RC_structs = [[
 typedef struct ThorUdpPacket
 {
-	unsigned char id;
+	char header[8];
 
 	double neckZ;
 	double neckY;
@@ -56,7 +56,6 @@ typedef struct ThorUdpPacket
 	double accY;
 	double accZ;
 } ThorUdpPacket;
-
 ]]
 
 local function define_to_vars(define, tbl)

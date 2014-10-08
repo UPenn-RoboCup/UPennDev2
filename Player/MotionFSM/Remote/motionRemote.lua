@@ -16,6 +16,7 @@ function state.entry()
   t_update = t_entry
   
   rc = rc or RemoteControl.init('192.168.123.77')
+  print('Interface', rc)
 end
 
 ---
@@ -31,7 +32,10 @@ function state.update()
   if t - t_entry > timeout then return'timeout' end
 
   -- Process
-  rc:send():wait():receive():process()
+  rc:send()
+  repeat
+    rc:wait():receive():process()
+  until not rc.cmds
 
 end
 

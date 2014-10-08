@@ -6,16 +6,22 @@ local RemoteControl = require'RemoteControl.ffi'
 local rc
 
 local function entry()
-  rc = RemoteControl.init('192.168.123.77')
-  --rc = RemoteControl.init('192.168.123.255')
+  --rc = RemoteControl.init('192.168.123.77')
+  rc = RemoteControl.init('192.168.123.255')
   print(rc)
 end
 
 local function update()
-  --rc:send():wait():receive():process()
-  rc:wait()
-  rc:receive()
-  rc:process()
+  --rc:send():wait()
+  --repeat
+    --rc:receive():process()
+  --until not rc.cmds
+  
+  rc:send()
+  repeat
+    rc:wait():receive():process()
+  until not rc.ready
+  
 end
 
 -- If required from Webots, return the table
@@ -42,4 +48,5 @@ while running do
     t_debug = t
   end
   update()
+  unix.usleep(1e6/100)
 end

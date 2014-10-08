@@ -6,7 +6,8 @@ local Body = require'Body'
 
 local RC_constants = [[
 #define REMOTE_CONTROL_PORT 54321
-#define REMOTE_CONTROL_STRUCT_ID 0x0A
+#define REMOTE_CONTROL_ROBOT_ID 0x0A
+#define REMOTE_CONTROL_REMOTE_ID 0x0B
 ]]
 
 local RC_structs = [[
@@ -122,25 +123,23 @@ local function send_feedback(self)
   RC_data.accX, RC_data.accY, RC_data.accZ = unpack(rpy)
   
   self.send_ok = self.sender:send(ffi.string(RC_data, ffi.sizeof(RC_data))) > 0
-  print('SEND', self.send_ok)
+  --print('SEND', self.send_ok)
   return self
 end
 
 local function wait_for_commands(self)
   self.ready = unix.select({self.recv_fd}, RC_TIMEOUT) > 0
-  print('READY', self.ready)
   return self
 end
 
 local function receive_commands(self)
-  if not self.ready then return end
+  if not self.ready then return self end
   local buf = self.receiver:receive()
   if not buf then
     self.cmds = nil
     return self
   end
   local sz = #buf
-  print('SZ', sz, ffi.sizeof'struct ThorUdpPacket')
   if sz ~= ffi.sizeof'struct ThorUdpPacket' then
     self.cmds = nil
     return self
@@ -153,7 +152,7 @@ end
 local function process_commands(self)
   local cmds = self.cmds
   if not cmds then return self end
-  if cmds.id ~= libRC.REMOTE_CONTROL_STRUCT_ID then return end
+  if cmds.id ~= libRC.REMOTE_CONTROL_REMOTE_ID then return self end
   
   Body.set_head_command_position{cmds.neckZ, cmds.neckY}
   Body.set_larm_command_position{
@@ -174,6 +173,7 @@ local function process_commands(self)
     cmds.rightHipZ, cmds.rightHipZ, cmds.rightHipX,
     cmds.rightHipY, cmds.rightKnee, cmds.rightAnkleY
   }
+  return self
 end
 
 local function rc_tostring(self, formatstr)
@@ -184,10 +184,10 @@ local __mt = {__tostring = rc_tostring}
 
 function libRC.init(RC_addr)
   local address = RC_addr or 'localhost'
-  local sender = si.new_sender(address, libRC.REMOTE_CONTROL_PORT)
+  local sender = require'udp'.new_sender(address, libRC.REMOTE_CONTROL_PORT)
   local receiver = si.new_receiver(libRC.REMOTE_CONTROL_PORT)
   local RC_data = ffi.new('struct ThorUdpPacket')
-  RC_data.id = libRC.REMOTE_CONTROL_STRUCT_ID
+  RC_data.id = libRC.REMOTE_CONTROL_ROBOT_ID
   return setmetatable({
     send = send_feedback,
     wait = wait_for_commands,

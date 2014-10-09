@@ -205,6 +205,7 @@ function state.exit()
 
   local pg = Config.walk.leg_p_gain or 64
   local ag = Config.walk.ankle_p_gain or 64
+	pg, ag = 16, 16
 
   if not IS_WEBOTS then
     for i=1,10 do

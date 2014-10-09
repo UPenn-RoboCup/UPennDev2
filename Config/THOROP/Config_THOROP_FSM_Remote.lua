@@ -35,7 +35,7 @@ fsm.Motion = {
   {'motionIntermediate', 'done', 'motionRemote'},
   {'motionIntermediate', 'timeout', 'motionIntermediate'},
   --
-  {'motionRemote', 'quit', 'motionStance'},
+  --{'motionRemote', 'quit', 'motionStance'},
   {'motionRemote', 'timeout', 'motionRemote'},
 }
 

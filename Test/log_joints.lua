@@ -14,7 +14,7 @@ local si = require'simple_ipc'
 local libLog = require'libLog'
 local Body = require('Body')
 local logger = libLog.new'joint'
-local sample_hz = 200
+local sample_hz = 100
 
 local get_time, usleep, max = unix.time, unix.usleep, math.max
 local t0, t_sleep = get_time(), 1 / sample_hz

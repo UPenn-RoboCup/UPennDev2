@@ -31,42 +31,41 @@ char_lut['['] = function()
   gain_joint = gain_joint - 1
   gain_joint = math.max(1, math.min(gain_joint, nleg))
 end
+local pgLLeg = Body.get_lleg_position_p()
+local pgRLeg = Body.get_rleg_position_p()
 char_lut['='] = function()
   if gain_leg==0 then
-    local gains = Body.get_lleg_position_p()
+    local gains = pgLLeg
     local pg0 = gains[gain_joint]
     pg0 = pg0 * 2
     gains[gain_joint] = math.max(1, math.min(pg0, 64))
-    Body.set_lleg_position_p(gains)
   else
-    local gains = Body.get_rleg_position_p()
+    local gains = pgRLeg
     local pg0 = gains[gain_joint]
     pg0 = pg0 * 2
     gains[gain_joint] = math.max(1, math.min(pg0, 64))
-    Body.set_rleg_position_p(gains)
   end
 end
 char_lut['-'] = function()
   if gain_leg==0 then
-    local gains = Body.get_lleg_position_p()
+    local gains = pgLLeg
     local pg0 = gains[gain_joint]
     pg0 = pg0 / 2
     gains[gain_joint] = math.max(1, math.min(pg0, 64))
-    Body.set_lleg_position_p(gains)
   else
-    local gains = Body.get_rleg_position_p()
+    local gains = pgRLeg
     local pg0 = gains[gain_joint]
     pg0 = pg0 / 2
     gains[gain_joint] = math.max(1, math.min(pg0, 64))
-    Body.set_rleg_position_p(gains)
   end
 end
 -- Resend to the joints, in case of dropped packet
 char_lut['0'] = function()
-  local pgLLeg = Body.get_lleg_position_p()
-  local pgRLeg = Body.get_rleg_position_p()
   Body.set_lleg_position_p(pgLLeg)
   Body.set_rleg_position_p(pgRLeg)
+  -- Gains
+  --pgLLeg = Body.get_lleg_position_p()
+  --pgRLeg = Body.get_rleg_position_p()
 end
 
 local function show_status()
@@ -74,10 +73,7 @@ local function show_status()
   print(util.color('Remote Control', 'magenta'))
   print('Motion:', util.color(gcm.get_fsm_Motion(), 'green'))
   
-  -- Gains
-  local pgLLeg = Body.get_lleg_position_p()
-  local pgRLeg = Body.get_rleg_position_p()
-  
+	print('0: Write P Gains')
   local l_gain_indicator = vector.zeros(#pgLLeg)
   l_gain_indicator[gain_joint] = gain_leg==0 and 1 or 0
   local r_gain_indicator = vector.zeros(#pgLLeg)

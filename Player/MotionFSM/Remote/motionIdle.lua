@@ -64,6 +64,11 @@ function state.exit()
     Body.set_lleg_torque_enable(1)
     Body.set_rleg_torque_enable(1)
   end
+  
+  -- ARMS TOO!!
+  Body.set_larm_torque_enable(1)
+  Body.set_rarm_torque_enable(1)
+  
 end
 
 return state

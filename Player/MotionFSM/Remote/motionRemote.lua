@@ -19,11 +19,12 @@ function state.entry()
   print('Interface', rc, rc.n)
 	-- Torque off most things
 	Body.set_head_torque_enable(0)
-	Body.set_waist_torque_enable(0)
 	Body.set_larm_torque_enable(0)
 	Body.set_rarm_torque_enable(0)
+  --Body.set_waist_torque_enable(0)
 	--Body.set_rleg_torque_enable(0)
 	--Body.set_lleg_torque_enable(0)
+  
 end
 
 ---

@@ -15,11 +15,89 @@ end
 lower_lut['q'] = function()
   motion_ch:send'quit'
 end
+--
+local nleg = #Body.get_lleg_position()
+local gain_leg = 0 -- left
+code_lut[92] = function()
+  -- Backslash
+  gain_leg = 1 - gain_leg
+end
+local gain_joint = 1
+char_lut[']'] = function()
+  gain_joint = gain_joint + 1
+  gain_joint = math.max(1, math.min(gain_joint, nleg))
+end
+char_lut['['] = function()
+  gain_joint = gain_joint - 1
+  gain_joint = math.max(1, math.min(gain_joint, nleg))
+end
+char_lut['='] = function()
+  if gain_leg==0 then
+    local gains = Body.get_lleg_position_p()
+    local pg0 = gains[gain_joint]
+    pg0 = pg0 * 2
+    gains[gain_joint] = math.max(1, math.min(pg0, 64))
+    Body.set_lleg_position_p(gains)
+  else
+    local gains = Body.get_rleg_position_p()
+    local pg0 = gains[gain_joint]
+    pg0 = pg0 * 2
+    gains[gain_joint] = math.max(1, math.min(pg0, 64))
+    Body.set_rleg_position_p(gains)
+  end
+end
+char_lut['-'] = function()
+  if gain_leg==0 then
+    local gains = Body.get_lleg_position_p()
+    local pg0 = gains[gain_joint]
+    pg0 = pg0 / 2
+    gains[gain_joint] = math.max(1, math.min(pg0, 64))
+    Body.set_lleg_position_p(gains)
+  else
+    local gains = Body.get_rleg_position_p()
+    local pg0 = gains[gain_joint]
+    pg0 = pg0 / 2
+    gains[gain_joint] = math.max(1, math.min(pg0, 64))
+    Body.set_rleg_position_p(gains)
+  end
+end
+-- Resend to the joints, in case of dropped packet
+char_lut['0'] = function()
+  local pgLLeg = Body.get_lleg_position_p()
+  local pgRLeg = Body.get_rleg_position_p()
+  Body.set_lleg_position_p(pgLLeg)
+  Body.set_rleg_position_p(pgRLeg)
+end
 
 local function show_status()
   if not IS_WEBOTS then os.execute('clear') end
   print(util.color('Remote Control', 'magenta'))
   print('Motion:', util.color(gcm.get_fsm_Motion(), 'green'))
+  
+  -- Gains
+  local pgLLeg = Body.get_lleg_position_p()
+  local pgRLeg = Body.get_rleg_position_p()
+  
+  local l_gain_indicator = vector.zeros(#pgLLeg)
+  l_gain_indicator[gain_joint] = gain_leg==0 and 1 or 0
+  local r_gain_indicator = vector.zeros(#pgLLeg)
+  r_gain_indicator[gain_joint] = gain_leg==1 and 1 or 0
+  
+  print(string.format('%s %s\n%s\n%s',
+    util.color('Left Leg P Gains', 'yellow'),
+    gain_leg==0 and '*' or '',
+    tostring(pgLLeg),
+    l_gain_indicator
+    )
+  )
+  print(string.format('%s %s\n%s\n%s',
+    util.color('Right Leg P Gains', 'yellow'),
+    gain_leg==1 and '*' or '',
+    tostring(pgRLeg),
+    r_gain_indicator
+    )
+  )
+  
 end
 
 local function update(key_code)
@@ -29,6 +107,7 @@ local function update(key_code)
 	local key_char_lower = string.lower(key_char)
   
   local code_f, char_f, lower_f = code_lut[key_code], char_lut[key_char], lower_lut[key_char_lower]
+  --print('Codes', key_code, key_char, key_char_lower)
   -- Precedence
   if type(code_f)=='function' then
     code_f()

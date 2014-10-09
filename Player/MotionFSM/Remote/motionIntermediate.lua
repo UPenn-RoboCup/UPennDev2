@@ -18,12 +18,12 @@ local rleg0 = vector.new{
   -0.22, 0.05
 }
 local larm0 = vector.new{
-  0.39, .4, 0, 
+  1.97, .4, 0, 
   -1.18,
   0,0,0
 }
 local rarm0 = vector.new{
-  0.39, -.4, 0, 
+  1.97, -.4, 0, 
   -1.18,
   0,0,0
 }
@@ -60,18 +60,18 @@ function state.update()
     
   local rarm, donerarm = util.approachTol(
     Body.get_rarm_command_position(),
-    rarm0, 5*DEG_TO_RAD*vector.ones(#rleg0), t_diff )
+    rarm0, 5*DEG_TO_RAD*vector.ones(#rarm0), t_diff )
     
   local larm, donelarm = util.approachTol(
     Body.get_larm_command_position(),
-    larm0, 5*DEG_TO_RAD*vector.ones(#lleg0), t_diff )
+    larm0, 5*DEG_TO_RAD*vector.ones(#larm0), t_diff )
     
   Body.set_lleg_command_position(lleg)
   Body.set_rleg_command_position(rleg)
   Body.set_larm_command_position(larm)
   Body.set_rarm_command_position(rarm)
     
-  if donelleg and donerleg then return'done' end
+  if donelleg and donerleg and donerarm and donelarm then return'done' end
 
 end
 

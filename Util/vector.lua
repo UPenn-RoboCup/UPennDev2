@@ -117,7 +117,7 @@ local function div(v1, v2)
   end
 end
 
-local function tostring(v1, formatstr)
+local function v_tostring(v1, formatstr)
   formatstr = formatstr or "%g"
   local str = "{"..string.format(formatstr, v1[1] or 0/0)
   for i = 2, #v1 do
@@ -184,6 +184,6 @@ mt.__sub = sub
 mt.__mul = mul
 mt.__div = div
 mt.__unm = unm
-mt.__tostring = tostring
+mt.__tostring = v_tostring
 
 return vector

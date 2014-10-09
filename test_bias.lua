@@ -48,7 +48,7 @@ for _,mem in ipairs(listing) do
 end
 
 -- RPC engine
-rpc_ch = si.new_requester(Config.net.reliable_rpc)
+--rpc_ch = si.new_requester(Config.net.reliable_rpc)
 
 print( util.color('FSM Channel','yellow'), table.concat(fsm_chs,' ') )
 print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )

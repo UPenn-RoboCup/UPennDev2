@@ -64,12 +64,6 @@ local update_odometry = function(uTorso_in)
   local pose_odom = util.pose_global(odometry_step, pose_odom0)
   wcm.set_robot_odometry(pose_odom)
 
-  local odom_mode = wcm.get_robot_odom_mode();
-  if odom_mode==0 then
-    wcm.set_robot_pose(pose_odom)
-  else
-    wcm.set_robot_pose(wcm.get_slam_pose())
-  end
 
   --updae odometry variable
   wcm.set_robot_utorso1(uTorso_in)
@@ -124,7 +118,7 @@ function walk.entry()
   print("step #:",nFootHolds)
 
   for i=1,nFootHolds do
-    local offset = (i-1)*13;
+    local offset = (i-1)*15;
     local foot_movement = {footQueue[offset+1],footQueue[offset+2],footQueue[offset+3]}
     local supportLeg = footQueue[offset+4]
     local t0 = footQueue[offset+5]
@@ -132,6 +126,9 @@ function walk.entry()
     local t2 = footQueue[offset+7]
     local zmp_mod = {footQueue[offset+8],footQueue[offset+9],footQueue[offset+10]}
     local footparam = {footQueue[offset+11],footQueue[offset+12],footQueue[offset+13]}    
+
+    local zmp_mod2 = {footQueue[offset+14],footQueue[offset+15],0}
+
     step_planner:step_enque_trapezoid(foot_movement, supportLeg, t0,t1,t2,zmp_mod,footparam)
   end
 
@@ -191,7 +188,7 @@ function walk.update()
 --      if walkParam then print(unpack(walkParam))end
     elseif supportLeg == 2 then --Double support
     end
-    step_planner:save_stance(uLeft,uRight,uTorso)  
+    step_planner:save_stance(uLeft,uRight,uTorso,zLeft,zRight)  
 
     --Update the odometry variable
     update_odometry(uTorso)
@@ -246,7 +243,8 @@ function walk.update()
       --print("IMU roll angle:",roll_max)
     end
 
-    local roll_threshold = 5 --this is degree
+   -- local roll_threshold = 5 --this is degree
+    local roll_threshold = 555555 --this is degree
 
     if roll_max>roll_threshold and hcm.get_motion_estop()==0 then
       print("EMERGENCY STOPPING")

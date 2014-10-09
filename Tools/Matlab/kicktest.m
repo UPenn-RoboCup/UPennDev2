@@ -53,10 +53,12 @@ for i=1:size(coefY,1)
 end
 disp('}');
 
-subplot(2,1,1);
+subplot(1,2,1);
 fnplt(p);
 ylabel('x');
+xlabel('t');
 
-subplot(2,1,2);
+subplot(1,2,2);
 fnplt(q);
 ylabel('y');
+xlabel('t');

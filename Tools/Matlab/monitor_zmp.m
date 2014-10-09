@@ -2,8 +2,12 @@ addpath(genpath('.'));
 clf
 clear all
 
-a=shm('mcmStatus01sj');
-a2=shm('mcmWalk01sj');
+%a=shm('mcmStatus01sj');
+%a2=shm('mcmWalk01sj');
+
+a=shm('mcmStatus01thor');
+a2=shm('mcmWalk01thor');
+
 
 t=[];
 zmp_x=[];
@@ -15,17 +19,18 @@ com_y=[];
 vel_y=[];
 
 f_handle_1 = subplot(2,1,1);
-p_handle_1 = plot(0,0,'r',0,0,'g',0,0,'b');
+p_handle_1 = plot(0,0,'k-',0,0,'k--',0,0,'r-.');
 xlabel('X Axis')
 legend('COM','ZMP','Walk Velocity')
 
 f_handle_2 = subplot(2,1,2);
-p_handle_2 = plot(0,0,'r',0,0,'g', 0,0,'b');
+p_handle_2 = plot(0,0,'k-',0,0,'k--',0,0,'r-.');
 xlabel('Y Axis')
 
 legend('COM','ZMP','Walk Velocity')
 
-t_dur = 3.0;
+%t_dur = 3.0;
+t_dur = 10.0;
 x_mag = 1.0;
 y_mag = 0.3;
 

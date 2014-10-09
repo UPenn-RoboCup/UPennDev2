@@ -5,14 +5,15 @@ require'vcm'
 local t_entry, t_update, t_exit
 local min_pan, max_pan, mid_pan, mag_sweep
 local t_sweep, ph, forward
+local min, max = math.min, math.max
 
 -- Sync mesh parameters
 local function update_pan_params()
 	-- Necessary variables
 	mag_sweep, t_sweep = unpack(vcm.get_mesh_sweep())
 	-- Some simple safety checks
-	mag_sweep = math.min(math.max(mag_sweep, 10 * DEG_TO_RAD), math.pi)
-	t_sweep = math.min(math.max(t_sweep, 1), 20)
+	mag_sweep = min(max(mag_sweep, 10 * DEG_TO_RAD), math.pi)
+	t_sweep = min(max(t_sweep, 1), 20)
 	-- Convenience variables
 	min_pan = -mag_sweep/2
   max_pan = mag_sweep/2
@@ -60,7 +61,11 @@ function state.update()
 	ph = math.max(math.min(ph, 1), 0)
 
   -- Set the desired angle of the lidar tilt
-	Body.set_lidar_command_position(min_pan + ph * mag_sweep)
+  if Config.use_single_scan then
+	  Body.set_lidar_command_position(0)
+  else
+	  Body.set_lidar_command_position(min_pan + ph * mag_sweep)
+	end
 	
 	-- We are switching directions, so emit an event
 	if forward ~= is_forward then

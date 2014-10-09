@@ -35,3 +35,6 @@ Making
 * make clean
 * make -j8
 * make THOROP
+
+speaker-test -c1 -Dsysdefault:Device
+pulseaudio -k; and sudo alsa force-reload

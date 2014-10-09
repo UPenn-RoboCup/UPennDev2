@@ -22,6 +22,8 @@ end
 -- Force Torque
 shared_data.sensor.lfoot = vector.zeros(6)
 shared_data.sensor.rfoot = vector.zeros(6)
+shared_data.sensor.lzmp = vector.zeros(2)
+shared_data.sensor.rzmp = vector.zeros(2)
 
 -- These should not be tied in with the motor readings,
 -- so they come after the read/tread setup

@@ -10,19 +10,11 @@ Config.imu = {
   -- TODO: Add some mapping, etc.
 }
 
-Config.sensors = {
-	ft = true,
-	head_camera = true,
-	chest_lidar = false,
-  head_lidar = true,
-  fsr = false,
-}
-
 Config.left_ft = {
 	id = 'FT14217 TWE',
 	m_ids = {26, 24},
 	--unloaded = vector.zeros(6),
-	unloaded = {1.227, 1.519, 1.342, 1.501, 1.142, 1.332},
+	unloaded = {1.235, 1.504, 1.298, 1.490, 1.124, 1.322},
   matrix = {
 		{2.24055870943031, 3.21898655638095, -69.6302903163513, -582.507603676633, 26.5895070211013, 592.264263072671},
 		{10.1986499170584, 736.678172919388, -94.6227635386607, -349.921756240223, 165.688384271921, -334.619696194179},
@@ -36,9 +28,9 @@ Config.left_ft = {
 
 Config.right_ft = {
 	id = 'FT14216 TWE',
-	m_ids = {23, 25},
+	m_ids = {25, 23},
 	--unloaded = vector.zeros(6),
-	unloaded = {1.66894, 1.80513, 1.51985, 1.7052, 1.53436, 1.64154},
+	unloaded = {1.667, 1.799, 1.511, 1.700, 1.535, 1.639},
 	--unloaded = {1.67388218470982, 1.80328334263393, 1.51483258928571, 1.69404680524554, 1.56903076171875, 1.71295113699777},
   matrix = {
 		{-17.5872608700674, 2.86249513629984, 72.4712451797635, -572.19055012366, -137.501990956589, 579.666084140972},
@@ -62,7 +54,7 @@ local right_arm = {
         --head
         29, 30,
 				-- gripper
-				66, 67
+--				66, 67
         },
 	enable_read = true,
 }
@@ -128,6 +120,9 @@ if ONE_CHAIN then
   right_leg = nil
   left_leg  = nil
 else
+	-- Both keys and indices
+	Config.chain[right_leg.name] = right_leg
+	Config.chain[left_leg.name] = left_leg
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)
   if Config.USE_DUMMY_ARMS then
@@ -137,6 +132,8 @@ else
   else
     table.insert(Config.chain, right_arm)
     table.insert(Config.chain, left_arm)
+		Config.chain[right_arm.name] = right_arm
+		Config.chain[left_arm.name] = left_arm
   end
   one_chain = nil
 end
@@ -214,7 +211,7 @@ servo.direction = vector.new({
   -1, -1,-1, -1,  1,1, --RLeg
   ------
   -1,-1,1,-1, 1,1,1, --RArm
-  1,1, -- Waist
+  -1, -1, -- Waist
   1,1, -- left gripper TODO
   -1,1, -- right gripper (Verified 9/8/2014)
   -1, -- Lidar pan
@@ -238,7 +235,7 @@ servo.min_rad = vector.new({
   ---90,-80, -- Head
   -135,-80, -- Head
   -90, 0, -90,    -160,   -180,-87,-180, --LArm
-  -175,-175,-175,-175,-175,-175, --LLeg
+  -175,-25,-175,-175,-175,-175, --LLeg
   -175,-175,-175,-175,-175,-175, --RLeg
   -90,-87,-90,    -160,   -180,-87,-180, --RArm
   -90,-45, -- Waist
@@ -251,7 +248,7 @@ servo.max_rad = vector.new({
   --90,80, -- Head
   135,80, -- Head
   160,87,90,   0,     180,87,180, --LArm
-  175,175,175,175,175,175, --LLeg
+  175,25,175,175,175,175, --LLeg
   175,175,175,175,175,175, --RLeg
   160,-0,90,   0,     180,87,180, --RArm
   90,45, -- Waist

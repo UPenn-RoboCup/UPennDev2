@@ -147,9 +147,7 @@ local function update(img, sz, cnt, t)
 		p.update(img)
 		if ENABLE_NET and p.send and t-t_send>SEND_INTERVAL then
 			if IS_WEBOTS and camera_ch then
-				for _,v in ipairs(p.send()) do
-					camera_ch:send({mp.pack(v[1]), v[2]})
-				end
+				for _,v in ipairs(p.send()) do camera_ch:send({mp.pack(v[1]), v[2]}) end
 				t_send = t
 			elseif udp_ch then
 				for _,v in ipairs(p.send()) do

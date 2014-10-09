@@ -22,6 +22,7 @@ PROTO THOROP_UPENN [
   field SFInt32    cameraWidth 320
   field SFInt32    cameraHeight 180
 	field SFFloat    cameraFov 1.0472
+  field SFString   footContactMaterial "default"
 ]
 {
 Robot {
@@ -318,9 +319,10 @@ Robot {
 																					jointParameters HingeJointParameters {
 																						axis 1 0 0
 																						anchor 0 -0.3 0.03
-																					} # End of the LegLowerR HingeJointParameters
+																					}
 																					endPoint Solid {
-																						translation 0 -0.3 0.03		
+																						translation 0 -0.3 0.03
+                                            contactMaterial IS footContactMaterial
 																						boundingObject Transform {
 																							translation 0 0 -0.012
 																							children [
@@ -351,6 +353,7 @@ Robot {
 																									#anchor 0 -0.1115 0.018
 																								}
 																								endPoint Solid {
+                                                contactMaterial IS footContactMaterial
 																									boundingObject Group {
 																										children [
 																											Transform {
@@ -383,6 +386,7 @@ Robot {
 																										DEF Right_ankle_force TouchSensor {
 																											translation 0 -0.09 0
 																											name "RAnkle_force"
+                                                      contactMaterial IS footContactMaterial
 																											boundingObject Transform {
 																												translation 0 -0.003 0.0177
 																												children [
@@ -392,6 +396,29 @@ Robot {
 																											physics Physics {}
 																											type "force-3d"
 																										}
+#
+      																							DEF Right_ankle_yaw HingeJoint {
+      																								device RotationalMotor {
+      																									name "right_ankle_yaw"
+      																								}
+      																								jointParameters HingeJointParameters {
+      																									axis 0 1 0
+      																								}
+      																								endPoint Solid {
+                                                        translation 0 -0.09 0
+                                                        contactMaterial IS footContactMaterial
+                                                        boundingObject Transform {
+                                                          translation 0 -0.003 0.0177
+                                                          children [
+                                                            Box {
+                                                              size 0.147 0.05 0.262
+                                                            }
+                                                          ]
+                                                        }
+      																									physics Physics {}
+                                                      }
+                                                    }
+#
 																									]
 																								}
 																							}
@@ -424,7 +451,7 @@ Robot {
 									}
 									jointParameters HingeJointParameters {
 										axis 0 1 0
-										anchor -0.072 -0.232 0
+										anchor 0.072 -0.232 0
 									}
 									endPoint Solid {
 										translation 0.072 -0.232 0
@@ -570,7 +597,8 @@ Robot {
 																						anchor 0 -0.3 0.03
 																					} # End of the LegLowerR HingeJointParameters
 																					endPoint Solid {
-																						translation 0 -0.3 0.03		
+																						translation 0 -0.3 0.03
+                                            contactMaterial IS footContactMaterial
 																						boundingObject Transform {
 																							translation 0 0 -0.012
 																							children [
@@ -595,12 +623,13 @@ Robot {
 																									# Not sure of these...
 																									minPosition -2.92343
 																									maxPosition 2.92343
-																								} # End of the LegLowerR RotationalMotor
+																								}
 																								jointParameters HingeJointParameters {
 																									axis 0 0 1
 																									#anchor 0 -0.1115 0.018
 																								}
 																								endPoint Solid {
+                                                  contactMaterial IS footContactMaterial
 																									boundingObject Group {
 																										children [
 																											Transform {
@@ -633,6 +662,7 @@ Robot {
 																										DEF Left_ankle_force TouchSensor {
 																											translation 0 -0.09 0
 																											name "LAnkle_force"
+                                                      contactMaterial IS footContactMaterial
 																											boundingObject Transform {
 																												translation 0 -0.003 0.0177
 																												children [
@@ -642,6 +672,29 @@ Robot {
 																											physics Physics {}
 																											type "force-3d"
 																										}
+#
+      																							DEF Left_ankle_yaw HingeJoint {
+      																								device RotationalMotor {
+      																									name "left_ankle_yaw"
+      																								}
+      																								jointParameters HingeJointParameters {
+      																									axis 0 1 0
+      																								}
+      																								endPoint Solid {
+                                                        translation 0 -0.09 0
+                                                        contactMaterial IS footContactMaterial
+                                                        boundingObject Transform {
+                                                          translation 0 -0.003 0.0177
+                                                          children [
+                                                            Box {
+                                                              size 0.147 0.05 0.262
+                                                            }
+                                                          ]
+                                                        }
+      																									physics Physics {}
+                                                      }
+                                                    }
+#
 																									]
 																								}
 																							}
@@ -751,7 +804,8 @@ Robot {
 								}
 								Camera {
 									rotation 0 1 0 3.14159
-									translation 0 0.072 0.0785
+									#translation 0 0.072 0.0785
+									translation 0 0.105 0.045
 									name "HeadCamera"
 									windowPosition IS cameraWindowPosition
 									fieldOfView IS cameraFov

@@ -221,7 +221,7 @@ if IS_WEBOTS then
   local ENABLE_HEAD_LIDAR, NEXT_HEAD_LIDAR = Config.sensors.head_lidar, 0
   local ENABLE_FSR = Config.sensors.fsr
   local ENABLE_FT = Config.sensors.ft
-  local ENABLE_KINECT = Config.sensors.kinect
+  local ENABLE_KINECT, NEXT_KINECT = Config.sensors.kinect, 0
   local ENABLE_POSE = true
   local ENABLE_IMU = true
 
@@ -229,8 +229,10 @@ if IS_WEBOTS then
   webots.wb_robot_init()
   -- Acquire the timesteps
   local timeStep = webots.wb_robot_get_basic_time_step()
-  local camera_timeStep = math.max(33, timeStep)
-  local lidar_timeStep = math.max(25, timeStep)
+  local camera_timeStep = math.max(Config.camera_timestep or 33, timeStep)
+  local lidar_timeStep = math.max(Config.lidar_timestep or 25, timeStep)
+  local kinect_timeStep = math.max(Config.kinect_timestep or 30, timeStep)
+
   Body.timeStep = timeStep
   get_time = webots.wb_robot_get_time
 
@@ -275,6 +277,19 @@ if IS_WEBOTS then
         ENABLE_CHEST_LIDAR = true
       end
     end,
+    k = function(override)
+      if override~=nil then en=override else en=ENABLE_KINECT==false end
+      if en==false and tags.kinect then
+        print(util.color('KINECT disabled!','yellow'))
+        webots.wb_camera_disable(tags.kinect)
+        ENABLE_KINECT = false
+      elseif tags.kinect then
+        print(util.color('KINECT enabled!','green'))
+        webots.wb_camera_enable(tags.kinect, kinect_timeStep)
+				NEXT_KINECT = get_time() + kinect_timeStep / 1000
+        ENABLE_KINECT = true
+      end
+    end,    
     c = function(override)
       if override~=nil then en=override else en=ENABLE_CAMERA==false end
       if en==false then
@@ -343,35 +358,50 @@ if IS_WEBOTS then
         print(util.color('FT enabled!','green'))
         webots.wb_touch_sensor_enable(tags.l_ft, timeStep)
   			webots.wb_touch_sensor_enable(tags.r_ft, timeStep)
+        webots.wb_motor_enable_force_feedback(tags.jointsByName.FootR, timeStep)
+        webots.wb_motor_enable_force_feedback(tags.jointsByName.FootL, timeStep)
+        webots.wb_motor_enable_force_feedback(tags.jointsByName.AnkleR, timeStep)
+        webots.wb_motor_enable_force_feedback(tags.jointsByName.AnkleL, timeStep)
+        if tags.left_ankle_yaw > 0 then
+          webots.wb_motor_enable_force_feedback(tags.left_ankle_yaw, timeStep)
+        end
+        if tags.right_ankle_yaw > 0 then
+          webots.wb_motor_enable_force_feedback(tags.right_ankle_yaw, timeStep)
+        end
         ENABLE_FT = true
       end
     end,
   }
 	-- Check if we are using the OLD api
 	local OLD_API = webots.wb_device_get_type(webots.wb_robot_get_device(jointNames[1]))==89
+
 	local set_pos, get_pos = webots.wb_motor_set_position, webots.wb_motor_get_position
 	if OLD_API then
 		set_pos = webots.wb_servo_set_position
 		get_pos = webots.wb_servo_get_position
 	end
+  local PID_P = 32 * vector.ones(nJoint)
 	function Body.entry()
     -- Request @ t=0 to always be earlier than position reads
 
 		-- Grab the tags from the joint names
-		tags.joints = {}
+		tags.joints, tags.jointsByName = {}, {}
 		for i,v in ipairs(jointNames) do
       local tag = webots.wb_robot_get_device(v)
 			tags.joints[i] = tag
-			if tag>0 then
+      tags.jointsByName[v] = tag
+			if tag > 0 then
 				if OLD_API then
 					webots.wb_servo_enable_position(tag, timeStep)
 	        webots.wb_servo_set_velocity(tag, 4)
 				else
 					webots.wb_motor_enable_position(tag, timeStep)
-					--webots.wb_motor_set_velocity(tag, 4)
 				end
 			end
 		end
+    -- Add the foot yaw, giving the Torque around the z axis
+    tags.left_ankle_yaw = webots.wb_robot_get_device('left_ankle_yaw')
+    tags.right_ankle_yaw = webots.wb_robot_get_device('right_ankle_yaw')
 
 		-- Add Sensor Tags
 		tags.accelerometer = webots.wb_robot_get_device("Accelerometer")
@@ -387,6 +417,9 @@ if IS_WEBOTS then
     if Config.sensors.head_lidar then
       tags.head_lidar = webots.wb_robot_get_device("HeadLidar")
     end
+    if Config.sensors.kinect then
+      tags.kinect = webots.wb_robot_get_device("kinect")
+    end
     if Config.sensors.fsr then
       tags.l_fsr = webots.wb_robot_get_device("L_FSR")
       tags.r_fsr = webots.wb_robot_get_device("R_FSR")
@@ -400,17 +433,26 @@ if IS_WEBOTS then
 		key_action.i(ENABLE_IMU)
 		key_action.p(ENABLE_POSE)
 		if ENABLE_CAMERA then key_action.c(ENABLE_CAMERA) end
-		if ENABLE_CHEST_LIDAR then key_action.l(ENABLE_CHEST_LIDAR) end
+    if ENABLE_CHEST_LIDAR then key_action.l(ENABLE_CHEST_LIDAR) end
 		if ENABLE_HEAD_LIDAR then key_action.h(ENABLE_HEAD_LIDAR) end
+		if ENABLE_KINECT then key_action.k(ENABLE_KINECT) end    
 		if ENABLE_FT then key_action.t(ENABLE_FT) end
 
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
+    
+    -- PID setting
+    Body.set_position_p(PID_P)
 
 		local rad, val
 		local positions = vector.zeros(nJoint)
+    
     for idx, jtag in ipairs(tags.joints) do
       if jtag>0 then
+        -- Update the PID if necessary
+        if not OLD_API and webots.wb_motor_set_control_pid then
+          webots.wb_motor_set_control_pid(jtag, PID_P[idx], 0, 0)
+        end
 				val = get_pos(jtag)
         rad = servo.direction[idx] * val - servo.rad_offset[idx]
 				rad = rad==rad and rad or 0
@@ -458,6 +500,16 @@ if IS_WEBOTS then
 			--]]
 
 			if en>0 and jtag>0 then
+        -- Update the PID
+        if not OLD_API then
+          local new_P, old_P = Body.get_position_p()[idx], PID_P[idx]
+          if new_P ~= old_P then
+            --print('UPDATE P!', idx, old_P, new_P)
+            PID_P[idx] = new_P
+            webots.wb_motor_set_control_pid(jtag, new_P, 0, 0)
+          end
+        end
+        
         local rad = servo.direction[idx] * (cmd + servo.rad_offset[idx])
         set_pos(jtag, rad)
 --SJ: Webots is STUPID so we should set direction correctly to prevent flip        
@@ -506,11 +558,25 @@ if IS_WEBOTS then
 		-- F/T sensor
     if ENABLE_FT then
 			local l_ft = Body.get_lfoot()
-			l_ft[1], l_ft[2], l_ft[3] = unpack(webots.wb_touch_sensor_get_values(tags.l_ft))
+			l_ft[2], l_ft[3], l_ft[1] = unpack(webots.wb_touch_sensor_get_values(tags.l_ft))
+      l_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleL)
+      l_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootL)
+      if tags.left_ankle_yaw > 0 then
+        l_ft[6] = webots.wb_motor_get_force_feedback(tags.left_ankle_yaw)
+      end
 			dcm.set_sensor_lfoot(l_ft)
+      --
       local r_ft = Body.get_rfoot()
-			r_ft[1], r_ft[2], r_ft[3] = unpack(webots.wb_touch_sensor_get_values(tags.r_ft))
+			r_ft[2], r_ft[3], r_ft[1] = unpack(webots.wb_touch_sensor_get_values(tags.r_ft))
+      r_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleR)
+      r_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootR)
+      if tags.right_ankle_yaw > 0 then
+        r_ft[6] = webots.wb_motor_get_force_feedback(tags.right_ankle_yaw)
+      end
 			dcm.set_sensor_rfoot(r_ft)
+      -- ZMP calculation
+      dcm.set_sensor_lzmp({-l_ft[5] / l_ft[3], l_ft[4] / l_ft[3]})
+      dcm.set_sensor_rzmp({-r_ft[5] / r_ft[3], r_ft[4] / r_ft[3]})
     end
 
     -- GPS and compass data
@@ -565,13 +631,34 @@ if IS_WEBOTS then
 			WebotsBody.update_head_camera(img, 2*w*h, 0, t)
 			NEXT_CAMERA = get_time() + camera_timeStep / 1000
     end
+    -- Grab a kinect frame
+    if ENABLE_KINECT and t >= NEXT_KINECT then
+      -- Grab the RGB image
+      local w = webots.wb_camera_get_width(tags.kinect)
+      local h = webots.wb_camera_get_height(tags.kinect)
+      -- TODO: do we need img from kinect?
+      local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.kinect), w, h)
+      -- Grab the ranges
+      local ranges = webots.wb_camera_get_range_image(tags.kinect)
+      -- TODO: fov? res?
+      
+			local metadata = {}
+			WebotsBody.update_chest_lidar(metadata,ranges)
+      --local lidar_array = require'carray'.float(ranges, w)
+			NEXT_KINECT = get_time() + kinect_timeStep / 1000
+    end
+    
     -- Grab a lidar scan
     if ENABLE_CHEST_LIDAR and t >= NEXT_CHEST_LIDAR then
       local n = webots.wb_camera_get_width(tags.chest_lidar)
 			local fov = webots.wb_camera_get_fov(tags.chest_lidar)
 			local res = fov / n
       local ranges = webots.wb_camera_get_range_image(tags.chest_lidar)
-			local metadata = {n=n,res=res,t=t,angle=Body.get_lidar_position()}
+			local metadata = {
+        n=n,res=res,t=t,angle=Body.get_lidar_position(),rpy=Body.get_rpy(),
+        pose = wcm.get_robot_odometry()
+        -- pose=mcm.get_status_odometry()
+      }
 			WebotsBody.update_chest_lidar(metadata,ranges)
       --local lidar_array = require'carray'.float(ranges, w)
 			NEXT_CHEST_LIDAR = get_time() + lidar_timeStep / 1000

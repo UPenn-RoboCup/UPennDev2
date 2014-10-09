@@ -1,8 +1,7 @@
------------------------------------------------------------------
+#!/usr/bin/env luajit
 -- Hokuyo LIDAR Wizard
 -- Reads lidar scans and saves to shared memory
 -- (c) Stephen McGill 2013, 2014
----------------------------------
 dofile'../include.lua'
 
 local unix = unix or require'unix'
@@ -13,6 +12,7 @@ local mpack = require'msgpack'.pack
 local color = require'util'.color
 local si = require'simple_ipc'
 local Body = require'Body'
+require'wcm'
 
 local cb = function(self, data)
 	self.ch:send({
@@ -20,7 +20,9 @@ local cb = function(self, data)
 		t = get_time(),
 		n = self.n,
 		res = self.res,
-		angle = Body.get_lidar_position()
+		angle = Body.get_lidar_position(),
+    rpy = Body.get_rpy(), 
+    pose = wcm.get_robot_odometry()
 	}),
 	data})
 end
@@ -31,7 +33,16 @@ local hokuyos = {}
 -- Initialize the Hokuyos
 --local h0 = libHokuyo.new_hokuyo('/dev/ttyACM0')
 --local h0 = libHokuyo.new_hokuyo('/dev/cu.usbmodem1411',nil,9600)
-local h0 = libHokuyo.new_hokuyo(11)
+
+local h0
+if HOSTNAME=='teddy' then
+	h0 = libHokuyo.new_hokuyo(10)
+elseif HOSTNAME == 'alvin' then
+	h0 = libHokuyo.new_hokuyo(11)
+else
+	print('WRONG HOST NAME !!')
+end
+
 h0.name = 'front'
 h0.ch = si.new_publisher'lidar0'
 h0.callback = cb

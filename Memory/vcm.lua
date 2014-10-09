@@ -44,7 +44,7 @@ shared.mesh.fov = {0, math.pi/2}
 -- Net: {request, destination, compression}
 -- request: 1 means mesh needs to be sent to destination
 -- destination: 0 is udp, 1 is tcp PUB
--- compression: 0 is JPEG, 1 is PNG
+-- compression: 0 is JPEG, 1 is PNG, 2 is RAW
 -- is_streaming: 1 is LidarFSM setting mesh_net on each sweep
 shared.mesh.net = {0, 0, 1, 1}
 -- Net: {direction}

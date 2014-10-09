@@ -1,10 +1,9 @@
+PROTO BallGPS [
 #VRML_SIM V7.4.3 utf8
 # The Ball's size, mass and color correspond to the soccer ball used in the Robocup SPL
 # You can change the centerOfMass to [0 0 0] to avoid the random rolling effect
 # Author: Yvan Bourquin - www.cyberbotics.com
 # May 12, 2011: Added damping
-
-PROTO BallGPS [
   field SFVec3f translation 0 0.0325 0
   field SFRotation rotation 0 1 0 0
   field SFColor color 1.0 0.54 0.08

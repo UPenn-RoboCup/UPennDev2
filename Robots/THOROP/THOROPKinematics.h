@@ -36,7 +36,10 @@ const double hipOffsetZ = 0.282;
 const double thighLength = 0.30;
 const double tibiaLength = 0.30;
 const double kneeOffsetX = 0.03;
+
 const double footHeight = 0.118; // Webots value
+const double footToeX = 0.130; //from ankle to toe
+const double footHeelX = 0.130; //from ankle to heel
 
 //=================================================================
 
@@ -217,6 +220,12 @@ std::vector<double> THOROP_kinematics_calculate_zmp(
 	const double *com0, const double *com1, const double *com2,
 	double dt0, double dt1
 	);
+
+std::vector<double> THOROP_kinematics_calculate_foot_lift(
+	Transform trLeg, int leg);
+
+std::vector<double> THOROP_kinematics_inverse_leg_tilt(
+	const Transform trLeg, double footTilt, int leg);
 
 
 double THOROP_kinematics_calculate_knee_height(const double *q); 

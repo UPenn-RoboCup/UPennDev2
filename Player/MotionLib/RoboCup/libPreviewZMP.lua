@@ -14,8 +14,12 @@ require'Config'
 
 --Initialize a stationary preview queue
 local function init_preview_queue(self,uLeft,uRight,uTorso,t,step_planner)
+  --[[
   local uLSupport,uRSupport = step_planner.get_supports(uLeft,uRight)
   local uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
+  --]]
+
+  local uSupport = uTorso
 
   self.x = matrix:new{{uTorso[1],uTorso[2]},{0,0},{0,0}}
   
@@ -45,6 +49,8 @@ local function init_preview_queue(self,uLeft,uRight,uTorso,t,step_planner)
     self.preview_queue[i] = preview_item
     self.preview_queue_zmpx[i] = uSupport[1]
     self.preview_queue_zmpy[i] = uSupport[2]
+
+    mcm.set_stance_last_support(uSupport)        
   end  
   self.is_estopping = false
 end
@@ -133,9 +139,6 @@ local function update_preview_queue_velocity(self,step_planner,t,stoprequest)
     new_preview_item.tEnd = last_preview_item.tEnd + self.tStep
 
     table.insert(self.preview_queue,new_preview_item)
---    table.insert(self.preview_queue_zmpx,uSupport[1])
---    table.insert(self.preview_queue_zmpy,uSupport[2])
-
 
     new_preview_item.uSupport_now = step_planner.get_torso(uLeft_now,uRight_now)
     new_preview_item.uSupport_target = uSupport    
@@ -144,7 +147,6 @@ local function update_preview_queue_velocity(self,step_planner,t,stoprequest)
     self.zmp_current = new_preview_item.uSupport_now
     table.insert(self.preview_queue_zmpx,new_preview_item.uSupport_now[1])
     table.insert(self.preview_queue_zmpy,new_preview_item.uSupport_now[2])
-
 
   else --Stop requested, insert double support
     new_preview_item.uLeft_now = last_preview_item.uLeft_next
@@ -222,7 +224,8 @@ local function update_preview_queue_steps(self,step_planner,t)
       uLeft_now, uRight_now, uTorso_now, 
       uLeft_next, uRight_next, uTorso_next,
       uSupport, supportLeg, tStep, 
-      stepParams, is_last, trapezoidparams
+      stepParams, is_last, trapezoidparams,
+      uSupport_next
             = step_planner:get_next_step_queue(
             last_preview_item.uLeft_next,
             last_preview_item.uRight_next,
@@ -231,6 +234,7 @@ local function update_preview_queue_steps(self,step_planner,t)
             false, --initial_step
             {last_preview_zmpx,last_preview_zmpy,0} --uSupport_now
             )
+
     local new_preview_item = {}
     if not uLeft_now then --No more footsteps            
 
@@ -242,10 +246,23 @@ local function update_preview_queue_steps(self,step_planner,t)
       new_preview_item.tStart = last_preview_item.tEnd
       new_preview_item.tEnd = last_preview_item.tEnd + self.preview_tStep
       new_preview_item.ended = true
+
       uSupport = step_planner.get_torso(
-          last_preview_item.uLeft_next,last_preview_item.uRight_next)
-    else
-      --New footstep
+            last_preview_item.uLeft_next,last_preview_item.uRight_next)
+      
+      if mcm.get_walk_stoprequest()==0 then
+        if last_preview_item.uSupport2 then
+          uSupport = last_preview_item.uSupport2
+          new_preview_item.uSupport0 = uSupport
+          new_preview_item.uSupport1 = uSupport
+          new_preview_item.uSupport2 = uSupport
+          new_preview_item.trapezoidparams = trapezoidparams        
+        end
+      else
+
+      end
+    else -- We have footstep to execute
+      
       new_preview_item.uLeft_now = uLeft_now
       new_preview_item.uLeft_next = uLeft_next
       new_preview_item.uRight_now = uRight_now
@@ -257,11 +274,38 @@ local function update_preview_queue_steps(self,step_planner,t)
       new_preview_item.is_last = is_last
 
       if trapezoidparams then
-        new_preview_item.uSupport0 = uTorso_now
-        new_preview_item.uSupport1 = uSupport
-        new_preview_item.uSupport2 = uTorso_next
         new_preview_item.trapezoidparams = trapezoidparams        
-      end      
+        local last_support = mcm.get_stance_last_support()        
+        new_preview_item.uSupport0 = last_support
+        new_preview_item.uSupport1 = uSupport
+        new_preview_item.uSupport2 = uSupport_next
+
+--[[
+        if last_preview_item.uSupport2 then
+          new_preview_item.uSupport0 = last_preview_item.uSupport2
+        else
+          new_preview_item.uSupport0 = uTorso_now
+        end
+--]]        
+
+        --DS phase and not stopping - we keep the target support till the end
+        if new_preview_item.supportLeg==2 and mcm.get_walk_stoprequest()==0 then
+          new_preview_item.uSupport2 = uSupport
+        end      
+
+--[[
+        print("New step")
+        print(string.format("Last support: %.3f %.3f\nSupport0: %.3f %.3f\n Support1: %.3f %.3f\n Support2: %.3f %.3f\n",
+          last_support[1],last_support[2],
+          new_preview_item.uSupport0[1],new_preview_item.uSupport0[2],
+          new_preview_item.uSupport1[1],new_preview_item.uSupport1[2],
+          new_preview_item.uSupport2[1],new_preview_item.uSupport2[2]
+          ))
+--]]
+
+        mcm.set_stance_last_support(new_preview_item.uSupport2)        
+
+      end
     end
 
     table.insert(self.preview_queue,new_preview_item)

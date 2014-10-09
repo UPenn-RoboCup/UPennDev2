@@ -16,35 +16,118 @@ Config.dev = {
 	gender       = 'boy',
 }
 
+Config.use_localhost = false
+Config.sensors = {
+  ft = true,
+  head_camera = true,
+  chest_lidar = true,
+  head_lidar = false,
+  kinect = false,
+  fsr = false,
+}
+Config.wizards = {}
+if IS_WEBOTS then
+  Config.use_localhost = true
+  -- Tune which wizards to run in webots
+  Config.wizards = {
+    feedback = 'feedback_wizard',
+    mesh = 'mesh_wizard',
+    world = 'world_wizard',
+    camera = 'camera_wizard'
+  }  
+  -- Adjust the tiemsteps if desired
+  -- Config.camera_timestep = 33
+  -- Config.lidar_timestep = 200 --slower
+  Config.kinect_timestep = 30
+end
+
+-- Printing of debug messages
+Config.debug = {
+	webots_wizard = false,	
+  obstacle = false,
+  follow = false,	
+  approach = false,
+  planning = false,
+  goalpost = false,
+  world = false,
+  feedback = false,
+}
+
+-- Monitor and logging
+Config.enable_monitor = true
+Config.enable_log = false
+Config.use_log = false
+Config.torque_legs = true
+
+--Default motion libraries
+Config.libs={
+  ArmLib = 'DRCTrials',
+  MotionLib = 'RoboCup',  
+  World = 'DRCNew'  
+}
+
+
 --SJ: now we can choose which config, fsm and mid-level libraries to use
 
 --Robocup 
 --[[
-Config.libs = {
-  ArmLib = 'DRCTrials',
-  MotionLib = 'RoboCup',
-  World = 'RoboCup'
-}
+Config.libs.World = 'RoboCup'
 local exo = {
   'Robot','Walk','Net','Manipulation',
-  'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
+ 'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
+ -- 'FSM_KickDemo','World_RoboCup','Vision_RoboCup'
 }
+Config.testfile = 'test_robocup'
+Config.sensors.chest_lidar = false
+Config.wizards.test = nil
+Config.wizards.mesh = nil
 --]]
 
+
+--[[
+--DRC Site visit 2014
+--We are not doing any lidar based stuff
+--Config.libs.World = 'SiteVisit'   
+--Config.wizards.mesh = 'mesh_wizard_sitevisit'
+--Config.sensors.chest_lidar = true
+
+Config.libs.World = 'SiteVisit'   
+local exo = {
+  'Robot','Walk','Net','Manipulation',
+  'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup' 
+}
+
+Config.sensors.chest_lidar = false
+Config.wizards.test = nil
+Config.wizards.mesh = nil
+Config.testfile = 'test_sitevisit'
+--]]
+
+-- Teach robot to go up steps
+--[[
+Config.libs.MotionLib = 'Teach'
+-- Precedence in loading, for overrides!
+local exo = {
+	'Robot', 'Walk', 'Net', 'FSM_Teach'
+}
+Config.testfile = 'test_teach'
+Config.wizards = {}
+Config.sensors = {ft = true}
+--]]
+
+-- Remote Control
 ----[[
---DRC Trials
-Config.libs = {
-  ArmLib = 'DRCTrials',
-  MotionLib = 'RoboCup',
-  World = 'Default'
+local exo = {
+	'Robot', 'Walk', 'Net', 'FSM_Remote'
 }
-local exo = {'Robot','Walk','Net','Manipulation',
-'FSM_DRCTrials','World_DRCTrials','Vision_DRCTrials'
+Config.libs.MotionLib = 'RoboCup'
+Config.wizards = {
+  feedback = 'feedback_wizard',
+  --remote = 'remote_wizard',
 }
+Config.testfile = 'test_remote'
+Config.sensors.chest_lidar = false
 --]]
-
-
-
 
 --Add path to selected librares
 for i,sm in pairs(Config.libs) do
@@ -52,28 +135,7 @@ for i,sm in pairs(Config.libs) do
   package.path = table.concat(pname)
 end
 
--- Printing of debug messages
-Config.debug = {
-	webots_wizard=false,	
-  -- obstacle = true,
-  follow = false,	
-  --approach = true,
-  --planning = true,
-  --goalpost = true,
-}
-
-Config.use_localhost = false
-
--- Monitor and logging
-Config.enable_monitor = true
-Config.enable_log = false
-Config.use_log = false
-
--------------
 -- Complementary Configs --
----------------------------
-Config.torque_legs = true
-
 -- Load each exogenous Config file
 for _,v in ipairs(exo) do
 	--[[
@@ -87,7 +149,8 @@ for _,v in ipairs(exo) do
 	--]]
 end
 
-Config.supportY_preview = -0.02
-Config.supportY_preview2 = -0.01
+Config.use_gps_pose = false
+Config.use_imu_yaw = true
+Config.use_single_scan = true
 
 return Config

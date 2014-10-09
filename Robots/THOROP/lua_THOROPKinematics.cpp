@@ -420,6 +420,49 @@ static int inverse_legs(lua_State *L) {
 	return 1;
 }
 
+static int calculate_foot_tilt(lua_State *L) {
+	std::vector<double> qLFootLift(4), qRFootLift;
+	std::vector<double> pLLeg = lua_checkvector(L, 1);
+	std::vector<double> pRLeg = lua_checkvector(L, 2);
+	std::vector<double> pTorso = lua_checkvector(L, 3);
+
+	Transform trLLeg = transform6D(&pLLeg[0]);
+	Transform trRLeg = transform6D(&pRLeg[0]);
+	Transform trTorso = transform6D(&pTorso[0]);
+	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
+	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
+
+	qLFootLift = THOROP_kinematics_calculate_foot_lift(trTorso_LLeg,0);
+	qRFootLift = THOROP_kinematics_calculate_foot_lift(trTorso_RLeg,1);
+
+	qLFootLift.insert(qLFootLift.end(), 
+		qRFootLift.begin(), qRFootLift.end());
+	//LHeel LToe RHeel RToe
+	lua_pushvector(L, qLFootLift);
+	return 1;
+}
+
+static int inverse_legs_foot_tilt(lua_State *L) {
+	std::vector<double> qLLeg(12), qRLeg;
+	std::vector<double> pLLeg = lua_checkvector(L, 1);
+	std::vector<double> pRLeg = lua_checkvector(L, 2);
+	std::vector<double> pTorso = lua_checkvector(L, 3);
+	std::vector<double> qFootLift = lua_checkvector(L, 4);
+
+	Transform trLLeg = transform6D(&pLLeg[0]);
+	Transform trRLeg = transform6D(&pRLeg[0]);
+	Transform trTorso = transform6D(&pTorso[0]);
+	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
+	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
+
+	qLLeg = THOROP_kinematics_inverse_leg_tilt(trTorso_LLeg,qFootLift[0],0);
+	qRLeg = THOROP_kinematics_inverse_leg_tilt(trTorso_RLeg,qFootLift[1],1);
+	qLLeg.insert(qLLeg.end(), qRLeg.begin(), qRLeg.end());
+
+	lua_pushvector(L, qLLeg);
+	return 1;
+}
+
 static const struct luaL_Reg kinematics_lib [] = {
 	{"forward_head", forward_head},
 //	{"forward_larm", forward_l_arm},
@@ -466,6 +509,9 @@ static const struct luaL_Reg kinematics_lib [] = {
 
 	{"com_upperbody_2",com_upperbody_2},
 
+	{"calculate_foot_tilt",calculate_foot_tilt},
+	{"inverse_legs_foot_tilt",inverse_legs_foot_tilt},
+
 
 	{NULL, NULL}
 };
@@ -481,7 +527,7 @@ static const def_info kinematics_constants[] = {
   {"elbowOffsetX", elbowOffsetX},
   {"handOffsetX", handOffsetX},
   {"handOffsetY", handOffsetY},
-  {"handOffsetZ", handOffsetZ},
+  {"handOffsetZ", handOffsetZ},  
   {NULL, 0}
 };
 

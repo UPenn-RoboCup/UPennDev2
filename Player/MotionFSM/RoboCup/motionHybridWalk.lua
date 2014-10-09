@@ -54,6 +54,8 @@ local update_odometry = function(uTorso_in)
   wcm.set_robot_odometry(pose_odom)
   
   wcm.set_robot_utorso1(uTorso_in)--updae odometry variable
+
+
 end
 
 ---------------------------
@@ -182,8 +184,14 @@ function walk.update()
 
   local uTorsoComp = mcm.get_stance_uTorsoComp()
   local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
-  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,zLeft,zRight,delta_legs)    
+
+
+--  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,zLeft,zRight,delta_legs)    
+  moveleg.set_leg_positions_ankletilt(uTorsoCompensated,uLeft,uRight,zLeft,zRight,delta_legs)    
  
+
+
+
   update_odometry(uTorso)--Update the odometry variable
 end -- walk.update
 

@@ -14,7 +14,7 @@ fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
 fsm.enabled = {
---  'Arm',
+  'Arm',
   'Body',
   'Head',
   'Motion',
@@ -22,7 +22,7 @@ fsm.enabled = {
 
 --SJ: now we can have multiple FSM options 
 fsm.select = {
---  Arm = 'RoboCup',  
+  Arm = 'Default',  
   Head = 'RoboCup',
   Body = 'RoboCup',
   Motion = 'RoboCup'

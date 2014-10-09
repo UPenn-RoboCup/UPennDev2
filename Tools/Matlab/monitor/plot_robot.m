@@ -217,7 +217,8 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       xb = x0 + ball(1)*ca - ball(2)*sa;   
       yb = y0 + ball(1)*sa + ball(2)*ca;
 
-      hb = plot(xb, yb, 'ro');
+      hb = plot(xb, yb, 'O',...
+       'MarkerSize',10,'MarkerFaceColor',[1 0 0]);
       hrb = plot([x0 xb],[y0 yb],'r');
       % set(hb, 'XData', xb, 'YData', yb);
       % set(hrb, 'XData', [x0 xb], 'YData', [y0 yb]);

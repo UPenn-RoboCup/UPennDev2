@@ -25,7 +25,7 @@ fsm.enabled = {
 fsm.select = {
   Arm = 'DRCTrials',  
   Head = 'Default',
-  Body = 'Default',
+  Body = 'DRCNew',
   Motion = 'RoboCup'
 }
 
@@ -45,6 +45,9 @@ fsm.Body = {
   {'bodyInit', 'done', 'bodyStop'},
 
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
+
+  {'bodyStop', 'stepover', 'bodyStepOver'},
+
   {'bodyStepPlace',   'done', 'bodyStop'},
 --  {'bodyStepWaypoint',   'done', 'bodyStop'},
 }

@@ -63,7 +63,9 @@ while running do
 	if t-t_debug>debug_interval then
 		t_debug = t
 		local kb = collectgarbage('count')
-		print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, kb))
+    if not IS_WEBOTS then --we don't need for webots
+		  print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, kb))
+    end
   end
 
   -- If not webots, then wait the update cycle rate

@@ -1,3 +1,4 @@
+#!/usr/bin/env luajit
 -- Mesh Wizard for Team THOR
 -- Accumulate lidar readings into an image for mesh viewing
 -- (c) Stephen McGill, Seung Joon Yi, 2013, 2014
@@ -11,6 +12,7 @@ local p_compress = require'png'.compress
 local j_compress = require'jpeg'.compressor'gray'
 local vector = require'vector'
 require'vcm'
+require'Body'
 
 -- Shared with LidarFSM
 -- t_sweep: Time (seconds) to fulfill scan angles in one sweep
@@ -28,8 +30,9 @@ else
 	operator = Config.net.operator.wired
 end
 local stream = Config.net.streams['mesh']
-local mesh_tcp_ch = si.new_publisher(stream.tcp, operator)
-local mesh_udp_ch = si.new_sender(operator, stream.udp)
+local mesh_tcp_ch = stream.tcp and si.new_publisher(stream.tcp, operator)
+local mesh_udp_ch = stream.udp and si.new_sender(operator, stream.udp)
+local mesh_ch = stream.sub and si.new_publisher(stream.sub)
 print("OPERATOR", operator, stream.udp)
 
 local metadata = {
@@ -37,8 +40,9 @@ local metadata = {
 	t = 0,
 }
 
+local scan_angles, scan_x, scan_y, scan_a, scan_p, scan_angles
 -- Setup tensors for a lidar mesh
-local mesh, mesh_byte, mesh_adj, scan_angles, offset_idx
+local mesh, mesh_byte, mesh_adj, offset_idx
 local n_scanlines
 local function setup_mesh(meta)
 	local n, res = meta.n, meta.res
@@ -62,19 +66,25 @@ local function setup_mesh(meta)
   -- In-memory mesh
   mesh = torch.FloatTensor(n_scanlines, n_returns):zero()
   -- Mesh buffers for compressing and sending to the user
-	mesh_adj  = torch.FloatTensor(n_scanlines, n_returns)
-  mesh_byte = torch.ByteTensor(n_scanlines, n_returns)
+	mesh_adj  = torch.FloatTensor(n_scanlines, n_returns):zero()
+  mesh_byte = torch.ByteTensor(n_scanlines, n_returns):zero()
   -- Data for each scanline
 	if TORCH_SCANLINE_INFO then
 		scan_angles = torch.DoubleTensor(n_scanlines):zero()
-		scan_x = torch.DoubleTensor(n_scanlines):zero()
-		scan_y = torch.DoubleTensor(n_scanlines):zero()
-		scan_a = torch.DoubleTensor(n_scanlines):zero()
+		scan_x = scan_angles:clone()
+		scan_y = scan_angles:clone()
+		scan_a = scan_angles:clone()
+    scan_pitch = scan_angles:clone()
+    scan_roll = scan_angles:clone()
+    scan_pose = torch.DoubleTensor(n_scanlines,3):zero()
 	else
 		scan_angles = vector.zeros(n_scanlines)
 		scan_x = vector.zeros(n_scanlines)
 		scan_y = vector.zeros(n_scanlines)
 		scan_a = vector.zeros(n_scanlines)
+    scan_pitch = vector.zeros(n_scanlines)
+    scan_roll = vector.zeros(n_scanlines)
+    scan_pose = {}
 	end
 	-- Metadata for the mesh
 	metadata.rfov = ranges_fov
@@ -83,7 +93,13 @@ local function setup_mesh(meta)
 	metadata.px = scan_x
 	metadata.py = scan_y
 	metadata.pa = scan_a
-	-- TODO: Add IMU for body orientation
+	-- Add Orientation for pitch and roll
+  metadata.pitch = scan_pitch
+  metadata.roll = scan_roll
+  -- Odometry
+  metadata.pose = scan_pose
+  -- Add the dimensions (useful for raw)
+  metadata.dims = {n_scanlines, n_returns}
 end
 
 -- Convert a pan angle to a column of the chest mesh image
@@ -140,23 +156,25 @@ local function send_mesh(destination, compression, dynrange)
   elseif compression=='png' then
     c_mesh = p_compress(mesh_byte)
   else
-    -- raw data?
-		-- Maybe needed for sending a mesh to another process
-		print('No raw sending support...')
-    return
+    -- Raw
+    print('compressing RAW...')
+    c_mesh = ffi.string(mesh:data(), mesh:nElement() * ffi.sizeof'float')
   end
 	-- Update relevant metadata
 	metadata.c = compression
 	metadata.dr = dynrange
 	-- Send away
 	if type(destination)=='string' then
-		local f_img = io.open(destination..'.'..metadata.c, 'w')
+		local f_img = io.open(destination..'.'..compression, 'w')
 		local f_meta = io.open(destination..'.meta', 'w')
 		f_img:write(c_mesh)
 		f_img:close()
 		f_meta:write(mpack(metadata))
 		f_meta:close()
 		print('Mesh | Wrote local')
+  elseif IS_WEBOTS and mesh_ch then
+    mesh_ch:send{mpack(metadata), c_mesh}
+    print('Mesh | Sent PUB')
 	elseif destination then
 		mesh_tcp_ch:send{mpack(metadata), c_mesh}
 		print('Mesh | Sent TCP')
@@ -166,12 +184,18 @@ local function send_mesh(destination, compression, dynrange)
 	end
 end
 
+local compression = {
+  [0] = 'jpeg',
+  [1] = 'png',
+  [2] = 'raw'
+}
+
 local function check_send_mesh()
 	local net = vcm.get_mesh_net()
-	local request, destination, compression = unpack(net)
+	local request, destination, comp = unpack(net)
 	if request==0 then return end
 	local dynrange = vcm.get_mesh_dynrange()
-	send_mesh(destination==1, compression==1 and 'png' or 'jpeg', dynrange)
+	send_mesh(destination==1, compression[comp], dynrange)
 	-- Reset the request
 	net[1] = 0
 	vcm.set_mesh_net(net)
@@ -191,6 +215,12 @@ local function update(meta, ranges)
 		setup_mesh(meta)
 		print('Mesh | Updated containers')
 	end
+  -- Metadata
+  -- NOTE: Orientation should include the joint positions as well!
+  local roll, pitch, yaw = unpack(meta.rpy)
+  -- Body pose
+  local pose = meta.pose
+  
   -- Find the scanline indices
 	local rad_angle = meta.angle
   local scanlines = angle_to_scanlines(rad_angle)
@@ -204,6 +234,10 @@ local function update(meta, ranges)
 			-- Save the pan angle
 			scan_angles[line] = rad_angle
 			-- TODO: Save the pose
+      scan_pose[line] = vector.new(pose)
+      -- Save the orientation
+      scan_pitch[line] = pitch
+      scan_roll[line] = roll
 		end
   end
 	-- Check for sending out on the wire

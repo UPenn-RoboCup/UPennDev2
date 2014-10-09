@@ -4,9 +4,25 @@ WorldInfo {
     "Default world for the THOR-OP"
   ]
   title "THOR-OP Only"
-  basicTimeStep 8
+  #basicTimeStep 8
+  basicTimeStep 20
 	#basicTimeStep 40
   FPS 15
+  # TODO: Tune the friction a bit, comparing the F/T sensors
+  contactProperties [
+    ContactProperties {
+      material1 "feet"
+      material2 "floor"
+      #bounce 0.9
+      #bounceVelocity 0.003
+      # Plastic feet may not have great friction...
+      coulombFriction 0.5
+      forceDependentSlip 0.0001
+      #
+      #coulombFriction 0.2
+      #forceDependentSlip 0.00001
+    }
+  ]
 }
 Viewpoint {
   orientation -0.805208 0.582317 0.112009 0.398656
@@ -30,6 +46,7 @@ DirectionalLight {
 DEF FLOOR Floor {
   tileSize 2 2
   size 10 10
+  contactMaterial "floor"
   texture [
     "textures/texture_grid.png"
   ]
@@ -42,4 +59,5 @@ THOROP_UPENN {
 	controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
+  footContactMaterial "feet"
 }

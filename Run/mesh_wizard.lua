@@ -194,6 +194,10 @@ local function check_send_mesh()
 	local net = vcm.get_mesh_net()
 	local request, destination, comp = unpack(net)
 	if request==0 then return end
+  
+  -- TEMP HACK
+  comp = 2
+  
 	local dynrange = vcm.get_mesh_dynrange()
 	send_mesh(destination==1, compression[comp], dynrange)
 	-- Reset the request

@@ -6,6 +6,8 @@ local mw = Config.wizards.mesh and require(Config.wizards.mesh)
 local sw = Config.wizards.slam and require(Config.wizards.slam)
 local fw = Config.wizards.feedback and require(Config.wizards.feedback)
 local rw = Config.wizards.remote and require(Config.wizards.remote)
+local dw = Config.wizards.detect and require(Config.wizards.detect)
+
 local kb = Config.testfile and require(Config.testfile)
 
 WebotsBody.USING_KB = type(kb)=='table' and type(kb.update)=='function'
@@ -32,6 +34,7 @@ function WebotsBody.update(keycode)
 	if ww then ww.update() end
   if fw then fw.update() end
   if rw then rw.update() end
+  if dw then dw.update() end
 
 	if WebotsBody.USING_KB then kb.update(keycode) end
 	-- Add logging capability

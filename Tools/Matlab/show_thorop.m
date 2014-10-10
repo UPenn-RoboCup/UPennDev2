@@ -10,9 +10,9 @@ global cam monitor matlab_ch REAL_ROBOT line_angle0
 
 line_angle0 = 555;
 
-% monitor = show_monitor_sitevisit();
-monitor = show_single_scanline();
-monitor.init();
+monitor = show_monitor_sitevisit();
+% monitor = show_single_scanline();
+% monitor.init();
 
 
 %% Network

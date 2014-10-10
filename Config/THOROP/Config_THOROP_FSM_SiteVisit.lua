@@ -18,7 +18,7 @@ fsm.enabled = {
   'Body',
   'Head',
   'Motion',
---  'Lidar'
+  'Lidar'
 }
 
 --SJ: now we can have multiple FSM options 

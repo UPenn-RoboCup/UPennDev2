@@ -69,27 +69,6 @@ function h = show_monitor_sitevisit
 
 
     set(gcf,'CurrentAxes',f_mainA);    
-%     cam.a_debug_ball=uicontrol('Style','text','Units','Normalized',...
-%        'Position',[0.6 0.3 0.13 0.7],'FontSize',10, ...
-%        'BackgroundColor',[0.9  0.9 0.9],...
-%         'FontName','Arial');
-% 
-%     cam.a_debug_goal=uicontrol('Style','text','Units','Normalized',...
-%        'Position',[0.73 0.3 0.13 0.7],'FontSize',10, ...
-%        'BackgroundColor',[0.9  0.9 0.9],...
-%         'FontName','Arial');
-% 
-%     cam.a_debug_obstacle=uicontrol('Style','text','Units','Normalized',...
-%        'Position',[0.86 0.3 0.14 0.7],'FontSize',10, ...
-%        'BackgroundColor',[0.9  0.9 0.9],...
-%         'FontName','Arial');
-% 
-%     cam.w_debug = uicontrol('Style','text','Units','Normalized',...
-%        'Position',[0.6 0 0.4 0.3],'FontSize',10, ...
-%        'BackgroundColor',[0.9  0.9 0.9],...
-%         'FontName','Arial');
-
-
  
     % Save the camera handles
     
@@ -172,8 +151,6 @@ function h = show_monitor_sitevisit
         
     elseif strcmp(msg_id, 'mesh0')
         % metadata
-        %n_scanlines = metadata.n_scanlines;
-        %n_returns = metadata.n_returns;
         n_scanlines = metadata.dims(1);
         n_returns = metadata.dims(2);
         s_angles = metadata.a;
@@ -195,7 +172,7 @@ function h = show_monitor_sitevisit
         v_angles = v_angles / 180 * pi;
         
         if length(v_angles)>n_returns
-            v_angles = v_angles(1:360);
+            v_angles = v_angles(1:n_returns);
         end
         
 
@@ -222,9 +199,6 @@ function h = show_monitor_sitevisit
             body_roll = s_roll(i);
             cur_pose = s_pose(i);
             cur_pose = cur_pose{1}; 
-%             if REAL_ROBOT==0
-%                 cur_pose(3) = pi/2 - cur_pose(3);
-%             end
             
             rot_yaw = [cos(cur_pose(3)) -sin(cur_pose(3)); 
                       sin(cur_pose(3))  cos(cur_pose(3))];
@@ -250,15 +224,16 @@ function h = show_monitor_sitevisit
             plot3(xs(i,:), ys(i,:), zs(i,:), '.');
             hold on;
         end
-        view([0 0]);
+%         view([0 0]);
         hold off;
         
-                
+        
+        %{
+        
+        %----------- Create a naive height map
         % Grid params: meters
         grid_res = 0.02; 
-        
-        % TODO: use the pose of first scanline as baseline?
-        
+                
         xss = xs(:); yss = ys(:);  zss = zs(:);
         x_min = min(xss);  x_max = max(xss);
         y_min = min(yss);  y_max = max(yss);
@@ -289,7 +264,7 @@ function h = show_monitor_sitevisit
             if cur_z > cur_hmax; hmax_map(ind(i)) = cur_z; end
         end
         
-        
+        % Filter out points not at proper height
         p_count(hmax_map>0.15) = 0;
         p_count(hmax_map<=0) = 0;
         
@@ -299,6 +274,8 @@ function h = show_monitor_sitevisit
         hmap = zeros(size(p_count));
         hmap(wall_ind)=1;
         
+        
+        %----------- Fit a line for the vertical wall
         figure(3);  %TODO: flip the image
         imshow(hmap);
         
@@ -352,6 +329,8 @@ function h = show_monitor_sitevisit
         [x_target y_target yaw_target]
         
         
+        
+        %----------- Send data back to robot
         send_data = {};
         send_data.shm = 'wcm';
         send_data.seg = 'step';
@@ -369,6 +348,7 @@ function h = show_monitor_sitevisit
         ret = zmq('send', matlab_ch, send_data);
                 
 
+        %}
         
         
         % For vertical wall, we can cheat since we know its with 10cm-20cm

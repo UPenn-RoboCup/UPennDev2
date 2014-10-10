@@ -5,7 +5,7 @@ WorldInfo {
   ]
   title "handletest"
   basicTimeStep 25
-  FPS 10
+  FPS 30
 }
 Viewpoint {
   orientation -0.0271166 -0.999353 -0.0236394 1.68555
@@ -29,7 +29,7 @@ DirectionalLight {
 DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
-THOROP7_NoBoundaries {
+THOROP_UPENN {
   translation -1 1.1552 1.4
   rotation 0.883001 0.00115848 0.46937 0.00245978
   controller "thorop"

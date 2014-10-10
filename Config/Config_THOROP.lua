@@ -26,20 +26,7 @@ Config.sensors = {
   fsr = false,
 }
 Config.wizards = {}
-if IS_WEBOTS then
-  Config.use_localhost = true
-  -- Tune which wizards to run in webots
-  Config.wizards = {
-    feedback = 'feedback_wizard',
-    mesh = 'mesh_wizard',
-    world = 'world_wizard',
-    camera = 'camera_wizard'
-  }  
-  -- Adjust the tiemsteps if desired
-  -- Config.camera_timestep = 33
-  -- Config.lidar_timestep = 200 --slower
-  Config.kinect_timestep = 30
-end
+
 
 -- Printing of debug messages
 Config.debug = {
@@ -67,7 +54,7 @@ Config.libs={
 }
 
 
---SJ: now we can choose which config, fsm and mid-level libraries to use
+--Choose which config, fsm and mid-level libraries to use
 
 --Robocup 
 --[[
@@ -84,7 +71,7 @@ Config.wizards.mesh = nil
 --]]
 
 
---[[
+---[[
 --DRC Site visit 2014
 --We are not doing any lidar based stuff
 --Config.libs.World = 'SiteVisit'   
@@ -97,9 +84,9 @@ local exo = {
   'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup' 
 }
 
-Config.sensors.chest_lidar = false
-Config.wizards.test = nil
-Config.wizards.mesh = nil
+-- Config.sensors.chest_lidar = false
+-- Config.wizards.test = nil
+-- Config.wizards.mesh = nil
 Config.testfile = 'test_sitevisit'
 --]]
 
@@ -116,7 +103,7 @@ Config.sensors = {ft = true}
 --]]
 
 -- Remote Control
-----[[
+--[[
 local exo = {
 	'Robot', 'Walk', 'Net', 'FSM_Remote'
 }
@@ -128,6 +115,24 @@ Config.wizards = {
 Config.testfile = 'test_remote'
 Config.sensors.chest_lidar = false
 --]]
+
+
+-- Webots specified
+if IS_WEBOTS then
+  Config.use_localhost = true
+  -- Tune which wizards to run in webots
+  Config.wizards = {
+    feedback = 'feedback_wizard',
+    mesh = 'mesh_wizard',
+    world = 'world_wizard',
+    camera = 'camera_wizard',
+    detect = 'detect_wizard',
+  }  
+  -- Adjust the tiemsteps if desired
+  -- Config.camera_timestep = 33
+  -- Config.lidar_timestep = 200 --slower
+  Config.kinect_timestep = 30
+end
 
 --Add path to selected librares
 for i,sm in pairs(Config.libs) do
@@ -151,6 +156,6 @@ end
 
 Config.use_gps_pose = false
 Config.use_imu_yaw = true
-Config.use_single_scan = true
+Config.use_single_scan = false
 
 return Config

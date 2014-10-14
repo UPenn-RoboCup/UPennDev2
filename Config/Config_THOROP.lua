@@ -38,6 +38,7 @@ Config.debug = {
   goalpost = false,
   world = false,
   feedback = false,
+  detect = true,
 }
 
 -- Monitor and logging

@@ -152,16 +152,31 @@ local function parse_ft(ft, raw_str, m_id)
 end
 
 -- Custom Leg Packet
-local custom_sz = lD.nx_registers.position[2]+lD.nx_registers.data[2]
-local function parse_read_custom(pkt, bus)
+-- Be able to form the read loop command on-demand
+local leg_packet_reg = {'position', 'current', 'data'}
+local leg_packet_sz = 0
+for i,v in ipairs(leg_packet_reg) do
+	local reg = assert(lD.nx_registers[v])
+	leg_packet_sz = leg_packet_sz + reg[2]
+end
+local function form_leg_read_cmd(bus)
+	-- TODO: Verify the addresses for each leg
+	assert(
+	lD.check_indirect_address(bus.m_ids, leg_packet_reg, bus),
+	'Bad Indirect addresses for the leg chain'
+	)
+	bus.read_loop_cmd_str = lD.get_indirect_data(bus.m_ids, leg_packet_reg)
+	bus.read_loop_cmd_n = #bus.m_ids
+	bus.read_loop_cmd = 'leg'
+end
+local function parse_read_leg(pkt, bus)
 	-- Nothing to do if an error
 	if pkt.error ~= 0 then return end
 	-- Assume just reading position, for now
 	local m_id = pkt.id
 	local read_j_id = m_to_j[m_id]
 	local read_val
-	-- Assume NX, since leg
-	if #pkt.parameter ~= custom_sz then return end
+	if #pkt.parameter ~= leg_packet_sz then return end
 	-- Set Position in SHM
 	read_val = p_parse(unpack(pkt.parameter, 1, lD.nx_registers.position[2]))
 	local read_rad = step_to_radian(read_j_id, read_val)
@@ -228,21 +243,7 @@ local parse = setmetatable({}, {
 })
 parse.position = parse_read_position
 -- Custom reading from the legs for F/T
-parse.custom = parse_read_custom
-
--- Be able to form the read loop command on-demand
-local function form_leg_read_cmd(bus)
-	-- TODO: Verify the addresses for each leg
-	local data_registers = {'position', 'current', 'data'}
-	assert(
-	lD.check_indirect_address(bus.m_ids, data_registers, bus),
-	'Bad Indirect addresses for the leg chain'
-	)
-	bus.read_loop_cmd_str = lD.get_indirect_data(bus.m_ids, data_registers)
-	bus.read_loop_cmd_n = #bus.m_ids
-	bus.read_loop_cmd = 'custom'
-	--os.exit()
-end
+parse.leg = parse_read_leg
 
 --[[
 local function form_arm_read_cmd(bus)

@@ -50,8 +50,11 @@ end
 local cp_ptr = dcm.actuatorPtr.command_position
 local tq_en_ptr = dcm.actuatorPtr.torque_enable
 local tq_ptr = dcm.actuatorPtr.command_torque
+--
 local p_ptr  = dcm.sensorPtr.position
 local p_ptr_t = dcm.tsensorPtr.position
+local c_ptr  = dcm.sensorPtr.current
+local c_ptr_t = dcm.tsensorPtr.current
 
 --------------------------
 -- Global tmp variables --
@@ -75,12 +78,12 @@ signal.signal("SIGTERM", shutdown)
 -- libDynamixel Cache
 local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 local p_parse_mx = lD.byte_to_number[lD.mx_registers.position[2]]
+local c_parse = lD.byte_to_number[lD.nx_registers.current[2]]
 
 -- Standard Lua Cache
 local min, max, floor = math.min, math.max, math.floor
 local char = string.char
 local sel, uread, get_time, usleep = unix.select, unix.read, unix.time, unix.usleep
-local insert = table.insert
 
 -- Packet Processing Helpers
 local function radian_clamp(idx, radian)
@@ -94,7 +97,7 @@ local function step_to_radian(idx, step)
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
 
--- Make the cdata for each ft sensor
+-- Force/Torque Data handling
 local left_ft = {
 	id = Config.left_ft.id,
 	m_ids = Config.left_ft.m_ids,
@@ -117,8 +120,6 @@ local right_ft = {
 	calibration_gain = Config.right_ft.gain,
 	shm = dcm.sensorPtr.rfoot,
 }
-
--- Set the force and torque into memory
 local function parse_ft(ft, raw_str, m_id)
 	-- Lower ID has the 2 components
 	if m_id==ft.m_ids[1] then
@@ -136,7 +137,6 @@ local function parse_ft(ft, raw_str, m_id)
 	else
 		return
 	end
-	--if ft.id:find'217' then print(ft.id, vector.slice(ft.component, 0, 5)) end
 	-- New is always zeroed
 	ffi.fill(ft.readings, ffi.sizeof(ft.readings))
 	for i=0,5 do
@@ -148,16 +148,17 @@ local function parse_ft(ft, raw_str, m_id)
 		end
 	end
 	ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.readings))
-	--if ft.id:find'217' then print(ft.id, vector.slice(ft.readings, 0, 5)) end
 end
 
 -- Custom Leg Packet
--- Be able to form the read loop command on-demand
 local leg_packet_reg = {'position', 'current', 'data'}
 local leg_packet_sz = 0
+local leg_packet_offsets = {}
 for i,v in ipairs(leg_packet_reg) do
 	local reg = assert(lD.nx_registers[v])
-	leg_packet_sz = leg_packet_sz + reg[2]
+	local sz = reg[2]
+	table.insert(leg_packet_offsets, (leg_packet_offsets[1] or 0) + sz)
+	leg_packet_sz = leg_packet_sz + sz
 end
 local function form_leg_read_cmd(bus)
 	-- TODO: Verify the addresses for each leg
@@ -178,12 +179,97 @@ local function parse_read_leg(pkt, bus)
 	local read_val
 	if #pkt.parameter ~= leg_packet_sz then return end
 	-- Set Position in SHM
-	read_val = p_parse(unpack(pkt.parameter, 1, lD.nx_registers.position[2]))
+	read_val = p_parse(unpack(pkt.parameter, 1, leg_packet_offsets[1]))
 	local read_rad = step_to_radian(read_j_id, read_val)
 	p_ptr[read_j_id - 1] = read_rad
 	p_ptr_t[read_j_id - 1] = t_read
+	-- Set Current in SHM
+	local read_cur = c_parse(unpack(pkt.parameter, leg_packet_offsets[1]+1, leg_packet_offsets[2]))
+	c_ptr[read_j_id - 1] = read_cur
+	c_ptr_t[read_j_id - 1] = t_read
 	-- Update the F/T Sensor
-	local raw_str = pkt.raw_parameter:sub(lD.nx_registers.position[2]+1)
+	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+1, leg_packet_offsets[3])
+	parse_ft(left_ft, raw_str, m_id)
+	parse_ft(right_ft, raw_str, m_id)
+	return read_j_id
+end
+
+-- Custom Arm Packet
+local arm_packet_reg = {'position', 'current', 'data'}
+local arm_packet_sz = 0
+local arm_packet_offsets = {}
+local arm_read_current = false
+for i,v in ipairs(arm_packet_reg) do
+	local reg = assert(lD.nx_registers[v])
+	local sz = reg[2]
+	table.insert(arm_packet_offsets, (arm_packet_offsets[1] or 0) + sz)
+	arm_packet_sz = arm_packet_sz + sz
+end
+local function form_arm_read_cmd(bus)
+	local rd_addrs, has_mx, has_nx = {}, false, false
+	for _, m_id in ipairs(bus.m_ids) do
+		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
+		if is_mx then
+			if arm_read_current then
+				-- Current is far away; no indirect addessing it seems
+				table.insert(rd_addrs, lD.nx_registers.current)
+			else
+				-- Position through temperature
+				table.insert(rd_addrs, {lD.nx_registers.position[1], 8})
+			end
+			arm_read_current = not arm_read_current
+			has_mx = true
+		else
+			assert(
+			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
+			'Bad Indirect addresses for the arm chain ID '..m_id
+			)
+			table.insert(rd_addrs, {lD.nx_registers.indirect_data[1], arm_packet_sz})
+			has_nx = true
+		end
+	end
+	-- Set the default reading command for the bus
+	if has_mx and has_nx then
+		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+	elseif has_nx then
+		bus.read_loop_cmd_str = lD.get_nx_position(bus.m_ids)
+	else
+		-- Sync read with just MX does not work for some reason
+		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
+		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+	end
+	bus.read_loop_cmd_n = #bus.m_ids
+	bus.read_loop_cmd = 'arm'
+end
+local function parse_read_arm(pkt, bus)
+	-- Nothing to do if an error
+	--if pkt.error ~= 0 then return end
+	-- Assume just reading position, for now
+	local m_id = pkt.id
+	local read_j_id = m_to_j[m_id]
+	if bus.has_mx_id[m_id] then
+		-- Check if MX
+		if #pkt.parameter==8 then
+			
+		else
+			-- Current reading
+		end
+		return read_j_id
+	end
+	
+	local read_val
+	if #pkt.parameter ~= arm_packet_sz then return end
+	-- Set Position in SHM
+	read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
+	local read_rad = step_to_radian(read_j_id, read_val)
+	p_ptr[read_j_id - 1] = read_rad
+	p_ptr_t[read_j_id - 1] = t_read
+	-- Set Current in SHM
+	local read_cur = c_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
+	c_ptr[read_j_id - 1] = read_cur
+	c_ptr_t[read_j_id - 1] = t_read
+	-- Update the F/T Sensor
+	local raw_str = pkt.raw_parameter:sub(arm_packet_offsets[2]+1, arm_packet_offsets[3])
 	parse_ft(left_ft, raw_str, m_id)
 	parse_ft(right_ft, raw_str, m_id)
 	return read_j_id
@@ -193,7 +279,6 @@ end
 local function parse_read_position(pkt, bus)
 	-- TODO: Nothing to do if an error
 	--if pkt.error ~= 0 then return end
-	-- Assume just reading position, for now
 	local m_id = pkt.id
 	local read_j_id = m_to_j[m_id]
 	local read_val
@@ -211,7 +296,7 @@ local function parse_read_position(pkt, bus)
 	return read_j_id, read_rad
 end
 
--- General Read Packet
+-- Arbitrary Packet
 local function parse_read_packet(pkt, bus)
 	--if pkt.error ~= 0 then return end
 	local reg_name = bus.read_reg
@@ -235,49 +320,18 @@ local function parse_read_packet(pkt, bus)
 	return read_j_id
 end
 
--- Packet parsing lookup
+-- Packet parsing lookup table
 local parse = setmetatable({}, {
 	__index = function(t, k)
 		return parse_read_packet
 	end
 })
+-- Custom packets
 parse.position = parse_read_position
--- Custom reading from the legs for F/T
 parse.leg = parse_read_leg
+parse.arm = parse_read_arm
 
---[[
-local function form_arm_read_cmd(bus)
-	local rd_addrs, has_mx, has_nx = {}, false, false
-	for _, m_id in ipairs(bus.m_ids) do
-		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
-		if is_mx then
-			insert(rd_addrs, lD.mx_registers.position)
-			has_mx = true
-		else
-			assert(
-			lD.check_indirect_address(bus.m_ids, data_registers, bus),
-			'Bad Indirect addresses for the arm chain'
-			)
-			insert(rd_addrs, lD.nx_registers.position)
-			has_nx = true
-		end
-	end
-	-- Set the default reading command for the bus
-	if has_mx and has_nx then
-		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
-	elseif has_nx then
-		bus.read_loop_cmd_str = lD.get_nx_position(bus.m_ids)
-	else
-		-- Sync read with just MX does not work for some reason
-		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
-		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
-	end
-	bus.read_loop_cmd_n = #bus.m_ids
-	bus.read_loop_cmd = cmd
-end
---]]
-
--- For now, just have the position
+-- Read loop packet
 local function form_read_loop_cmd(bus, cmd)
 	-- leg is *not* position, but indirect now
 	if bus.name:find'leg' then
@@ -289,10 +343,10 @@ local function form_read_loop_cmd(bus, cmd)
 	for _, m_id in ipairs(bus.m_ids) do
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
 		if is_mx then
-			insert(rd_addrs, lD.mx_registers.position)
+			table.insert(rd_addrs, lD.mx_registers.position)
 			has_mx = true
 		else
-			insert(rd_addrs, lD.nx_registers.position)
+			table.insert(rd_addrs, lD.nx_registers.position)
 			has_nx = true
 		end
 	end
@@ -328,14 +382,14 @@ local function do_external(request, bus)
 			if bus.has_mx_id[m_id] then
 				local value = ptr and ptr[j_id-1] or val[j_id]
 				has_mx = true
-				insert(m_ids, m_id)
-				insert(m_vals, value)
-				insert(addr_n_len, lD.mx_registers[wr_reg])
+				table.insert(m_ids, m_id)
+				table.insert(m_vals, value)
+				table.insert(addr_n_len, lD.mx_registers[wr_reg])
 			elseif bus.has_nx_id[m_id] then
 				has_nx = true
-				insert(m_ids, m_id)
-				insert(m_vals, ptr and ptr[j_id-1] or val[j_id])
-				insert(addr_n_len, lD.nx_registers[wr_reg])
+				table.insert(m_ids, m_id)
+				table.insert(m_vals, ptr and ptr[j_id-1] or val[j_id])
+				table.insert(addr_n_len, lD.nx_registers[wr_reg])
 			end
 		end
 		if wr_reg=='torque_enable' then
@@ -415,12 +469,12 @@ local function do_external(request, bus)
 			m_id = j_to_m[j_id]
 			if bus.has_mx_id[m_id] then
 				has_mx = true
-				insert(m_ids, m_id)
-				insert(addr_n_len, lD.mx_registers[rd_reg])
+				table.insert(m_ids, m_id)
+				table.insert(addr_n_len, lD.mx_registers[rd_reg])
 			elseif bus.has_nx_id[m_id] then
 				has_nx = true
-				insert(m_ids, m_id)
-				insert(addr_n_len, lD.nx_registers[rd_reg])
+				table.insert(m_ids, m_id)
+				table.insert(addr_n_len, lD.nx_registers[rd_reg])
 			end
 		end
 		if has_mx and has_nx then
@@ -452,14 +506,14 @@ local function form_write_command(bus, m_ids)
 		-- Only add position commands if torque enabled
 		-- TODO: Gripper should get a command_torque!
 		if tq_en_ptr[j_id-1]==1 then
-			insert(send_ids, m_id)
+			table.insert(send_ids, m_id)
 			if is_gripper[j_id] and gripper_mode[j_id]==1 then
 				local val = min(max(tq_ptr[j_id-1], -1023), 1023)
-				insert(commands, val < 0 and (1024 - val) or val)
-				insert(cmd_addrs, lD.mx_registers.command_torque)
+				table.insert(commands, val < 0 and (1024 - val) or val)
+				table.insert(cmd_addrs, lD.mx_registers.command_torque)
 			else
-				insert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))
-				insert(cmd_addrs,
+				table.insert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))
+				table.insert(cmd_addrs,
 				is_mx and lD.mx_registers.command_position or lD.nx_registers.command_position
 				)
 			end
@@ -554,7 +608,7 @@ local function consolidate(queue)
 			req = munpack(request)
 			for bname, bus in pairs(named_buses) do
 				queue = bus.request_queue
-				insert(queue, req)
+				table.insert(queue, req)
 				--if req.ids then consolidate(queue) end
 			end
 		end
@@ -570,7 +624,7 @@ local function consolidate(queue)
 		bus.reads_cnt = 0
 		bus.reqs_cnt = 0
 		-- Add the fd
-		insert(_fds, bus.fd)
+		table.insert(_fds, bus.fd)
 		-- Populate the IDs of the bus
 		if bus.m_ids then
 			bus:ping_verify(bus.m_ids)
@@ -647,7 +701,7 @@ local function consolidate(queue)
 		-- Lookup tables
 		assert(bus.name, 'No bus name identifier!')
 		named_buses[bus.name] = bus
-		--insert(numbered_buses, bus)
+		--table.insert(numbered_buses, bus)
 		numbered_buses[bus.fd] = bus
 		initialize(bus)
 		-- Make the output coroutine
@@ -718,7 +772,7 @@ local function consolidate(queue)
 				string.format('\nDCM | Uptime %.2f sec, Mem: %d kB', t_start - t0, collectgarbage('count')),
 			}
 			for bname, bus in pairs(named_buses) do
-				insert(debug_str,
+				table.insert(debug_str,
 				string.format('%s Command @ %.1f Hz | Read @ %.1f Hz [%d / %d timeouts]',
 				bname, bus.cmds_cnt / dt_debug, bus.reqs_cnt / dt_debug, bus.n_read_timeouts, bus.reads_cnt))
 				bus.reads_cnt = 0

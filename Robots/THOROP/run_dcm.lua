@@ -173,13 +173,12 @@ end
 local function parse_read_leg(pkt, bus)
 	-- Nothing to do if an error
 	if pkt.error ~= 0 then return end
+	if #pkt.parameter ~= leg_packet_sz then return end
 	-- Assume just reading position, for now
 	local m_id = pkt.id
 	local read_j_id = m_to_j[m_id]
-	local read_val
-	if #pkt.parameter ~= leg_packet_sz then return end
 	-- Set Position in SHM
-	read_val = p_parse(unpack(pkt.parameter, 1, leg_packet_offsets[1]))
+	local read_val = p_parse(unpack(pkt.parameter, 1, leg_packet_offsets[1]))
 	local read_rad = step_to_radian(read_j_id, read_val)
 	p_ptr[read_j_id - 1] = read_rad
 	p_ptr_t[read_j_id - 1] = t_read
@@ -198,25 +197,28 @@ end
 local arm_packet_reg = {'position', 'current', 'data'}
 local arm_packet_sz = 0
 local arm_packet_offsets = {}
-local arm_read_current = false
 for i,v in ipairs(arm_packet_reg) do
 	local reg = assert(lD.nx_registers[v])
 	local sz = reg[2]
 	table.insert(arm_packet_offsets, (arm_packet_offsets[1] or 0) + sz)
 	arm_packet_sz = arm_packet_sz + sz
 end
+local arm_packet_reg_mx = {'position','speed','load','voltage','temperature'}
+local arm_packet_sz_mx = 0
+local arm_packet_offsets_mx = {}
+for i,v in ipairs(arm_packet_reg_mx) do
+	local reg = assert(lD.mx_registers[v])
+	local sz = reg[2]
+	table.insert(arm_packet_offsets_mx, (arm_packet_offsets_mx[1] or 0) + sz)
+	arm_packet_sz_mx = arm_packet_sz_mx + sz
+end
 local function form_arm_read_cmd(bus)
 	local rd_addrs, has_mx, has_nx = {}, false, false
 	for _, m_id in ipairs(bus.m_ids) do
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
 		if is_mx then
-			if arm_read_current then
-				-- Current is far away; no indirect addessing it seems
-				table.insert(rd_addrs, lD.nx_registers.current)
-			else
-				-- Position through temperature
-				table.insert(rd_addrs, {lD.nx_registers.position[1], 8})
-			end
+			-- Position through temperature (NOTE: No current)
+			table.insert(rd_addrs, {lD.nx_registers.position[1], 8})
 			arm_read_current = not arm_read_current
 			has_mx = true
 		else
@@ -250,17 +252,21 @@ local function parse_read_arm(pkt, bus)
 	if bus.has_mx_id[m_id] then
 		-- Check if MX
 		if #pkt.parameter==8 then
-			
-		else
-			-- Current reading
+			-- Set Position in SHM
+			local read_val = p_parse_mx(unpack(pkt.parameter, 1, arm_packet_offsets_mx[1]))
+			local read_rad = step_to_radian(read_j_id, read_val)
+			p_ptr[read_j_id - 1] = read_rad
+			p_ptr_t[read_j_id - 1] = t_read
+			-- Set temperature (Celsius)
+			dcm.sensorPtr.temperature[read_j_id - 1] = pkt.parameter[8]
+			dcm.tsensorPtr.temperature[read_j_id - 1] = t_read
 		end
 		return read_j_id
 	end
 	
-	local read_val
 	if #pkt.parameter ~= arm_packet_sz then return end
 	-- Set Position in SHM
-	read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
+	local read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
 	local read_rad = step_to_radian(read_j_id, read_val)
 	p_ptr[read_j_id - 1] = read_rad
 	p_ptr_t[read_j_id - 1] = t_read

@@ -106,13 +106,12 @@ local mx_registers = {
 	['position_d'] = {char(26,0),1},
 	-- Commanded
 	['command_position'] = {char(30,0),2},
-
-	-- Sensed
 	['velocity'] = {char(32,0),2},
+	-- Sensed
 	['position'] = {char(36,0),2},
 	['speed'] = {char(38,0),2},
 	['load'] = {char(40,0),2},
-	['voltage'] = {char(42,0),2},
+	['voltage'] = {char(42,0),1},
 	['temperature'] = {char(43,0),1},
 
 	-- For the MX-106
@@ -219,9 +218,9 @@ local nx_registers = {
 	['data2'] = {char(0x74,0x02),2},
 	['data3'] = {char(0x76,0x02),2},
 	['data4'] = {char(0x78,0x02),2},
-	--
+	-- All data
 	['data']  = {char(0x72,0x02),8},
-	['indirect_data'] = char(0x7A, 1),
+	['indirect_data']  = {char(0x7A,0x02),1},
 
 	-- Status return
 	['status_return_level'] = {char(0x7B,0x03),1},

@@ -12,20 +12,22 @@ local ret, err
 local feedback = {}
 
 local function entry()
-  feedback_udp_ch =
-    si.new_sender(Config.net.operator.wired, Config.net.streams.feedback.udp)
+	feedback_udp_ch =
+	si.new_sender(Config.net.operator.wired, Config.net.streams.feedback.udp)
 end
 
 local function update()
-  feedback.t = Body.get_time()
-  feedback.joints = Body.get_position()
+	feedback.t = Body.get_time()
+	feedback.joints = Body.get_position()
 	feedback.pose = wcm.get_robot_odometry()--wcm.get_robot_pose()
 	feedback.rpy = Body.get_rpy()
-  feedback.gyro = Body.get_gyro()
-  feedback.height = mcm.get_stance_bodyHeight()
-  feedback.battery = Body.get_battery()
+	feedback.gyro = Body.get_gyro()
+	feedback.height = mcm.get_stance_bodyHeight()
+	feedback.battery = Body.get_battery()
 	ret, err = feedback_udp_ch:send(mpack(feedback))
-	if err and Config.debug.feedback then print('Feedback UDP error',err) end
+	if err and Config.debug.feedback then
+		print('Feedback UDP error',err)
+	end
 end
 
 -- If required from Webots, return the table
@@ -35,7 +37,7 @@ end
 
 local running = true
 local function shutdown()
-  running = false
+	running = false
 end
 local signal = require'signal'.signal
 signal("SIGINT", shutdown)

@@ -39,11 +39,11 @@ local dcm_chains = Config.chain
 local is_gripper, gripper_mode = {}, {}
 for _,id in ipairs(Config.parts.LGrip) do
 	is_gripper[id] = true
-  gripper_mode[id] = 0
+	gripper_mode[id] = 0
 end
 for _,id in ipairs(Config.parts.RGrip) do
 	is_gripper[id] = true
-  gripper_mode[id] = 0
+	gripper_mode[id] = 0
 end
 
 -- DCM Cache
@@ -67,7 +67,7 @@ local is_running = true
 
 -- Clean up
 local function shutdown ()
-  is_running = false
+	is_running = false
 end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
@@ -130,7 +130,7 @@ local function parse_ft(ft, raw_str, m_id)
 	elseif m_id==ft.m_ids[2] then
 		ffi.copy(ft.raw, raw_str, 4)
 		local raw16_as_8 = ffi.cast('uint8_t*', ft.raw)
-    if m_id==23 and raw16_as_8[1]==0 then raw16_as_8[1] = 8 end
+		if m_id==23 and raw16_as_8[1]==0 then raw16_as_8[1] = 8 end
 		ft.component[4] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[4]
 		ft.component[5] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[5]
 	else
@@ -142,9 +142,9 @@ local function parse_ft(ft, raw_str, m_id)
 	for i=0,5 do
 		for j=0,5 do
 			ft.readings[i] = ft.readings[i]
-				+ ft.calibration_mat[i][j]
-				* ft.component[j]
-				* ft.calibration_gain
+			+ ft.calibration_mat[i][j]
+			* ft.component[j]
+			* ft.calibration_gain
 		end
 	end
 	ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.readings))
@@ -182,11 +182,11 @@ local function parse_read_position(pkt, bus)
 	local m_id = pkt.id
 	local read_j_id = m_to_j[m_id]
 	local read_val
-  if bus.has_mx_id[m_id] then
-    if #pkt.parameter~=lD.mx_registers.position[2] then return end
+	if bus.has_mx_id[m_id] then
+		if #pkt.parameter~=lD.mx_registers.position[2] then return end
 		read_val = p_parse_mx(unpack(pkt.parameter)) 
 	else
-    if #pkt.parameter~=lD.nx_registers.position[2] then return end
+		if #pkt.parameter~=lD.nx_registers.position[2] then return end
 		read_val = p_parse(unpack(pkt.parameter))
 	end
 	local read_rad = step_to_radian(read_j_id, read_val)
@@ -200,7 +200,7 @@ end
 local function parse_read_packet(pkt, bus)
 	--if pkt.error ~= 0 then return end
 	local reg_name = bus.read_reg
-  if not reg_name then return end
+	if not reg_name then return end
 	local m_id = pkt.id
 	if bus.has_mx_id[m_id] then
 		reg = lD.mx_registers[reg_name]
@@ -208,13 +208,13 @@ local function parse_read_packet(pkt, bus)
 		reg = lD.nx_registers[reg_name]
 	end
 	if not reg then return end
-  if #pkt.parameter~=reg[2] then return end
+	if #pkt.parameter~=reg[2] then return end
 	local parse = lD.byte_to_number[reg[2]]
 	-- Assume just reading position, for now
 	local j_val, read_j_id = parse(unpack(pkt.parameter)), m_to_j[m_id]
 	-- Set in Shared memory
 	local ptr, ptr_t = dcm.sensorPtr[reg_name], dcm.tsensorPtr[reg_name]
-  if not ptr or not ptr_t then return end
+	if not ptr or not ptr_t then return end
 	ptr[read_j_id - 1] = j_val
 	ptr_t[read_j_id - 1] = t_read
 	return read_j_id
@@ -222,9 +222,9 @@ end
 
 -- Packet parsing lookup
 local parse = setmetatable({}, {
-  __index = function(t, k)
-    return parse_read_packet
-  end
+	__index = function(t, k)
+		return parse_read_packet
+	end
 })
 parse.position = parse_read_position
 -- Custom reading from the legs for F/T
@@ -233,21 +233,56 @@ parse.custom = parse_read_custom
 -- Be able to form the read loop command on-demand
 local function form_leg_read_cmd(bus)
 	-- TODO: Verify the addresses for each leg
+	local data_registers = {'position', 'current', 'data'}
 	assert(
-	lD.check_indirect_address(bus.m_ids, {'position', 'data'}, bus),
+	lD.check_indirect_address(bus.m_ids, data_registers, bus),
 	'Bad Indirect addresses for the leg chain'
 	)
-	bus.read_loop_cmd_str = lD.get_indirect_data(bus.m_ids, {'position', 'data'})
+	bus.read_loop_cmd_str = lD.get_indirect_data(bus.m_ids, data_registers)
 	bus.read_loop_cmd_n = #bus.m_ids
 	bus.read_loop_cmd = 'custom'
 	--os.exit()
 end
---
+
+--[[
+local function form_arm_read_cmd(bus)
+	local rd_addrs, has_mx, has_nx = {}, false, false
+	for _, m_id in ipairs(bus.m_ids) do
+		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
+		if is_mx then
+			insert(rd_addrs, lD.mx_registers.position)
+			has_mx = true
+		else
+			assert(
+			lD.check_indirect_address(bus.m_ids, data_registers, bus),
+			'Bad Indirect addresses for the arm chain'
+			)
+			insert(rd_addrs, lD.nx_registers.position)
+			has_nx = true
+		end
+	end
+	-- Set the default reading command for the bus
+	if has_mx and has_nx then
+		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+	elseif has_nx then
+		bus.read_loop_cmd_str = lD.get_nx_position(bus.m_ids)
+	else
+		-- Sync read with just MX does not work for some reason
+		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
+		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+	end
+	bus.read_loop_cmd_n = #bus.m_ids
+	bus.read_loop_cmd = cmd
+end
+--]]
+
 -- For now, just have the position
 local function form_read_loop_cmd(bus, cmd)
 	-- leg is *not* position, but indirect now
 	if bus.name:find'leg' then
 		return form_leg_read_cmd(bus)
+--	elseif bus.name:find'arm' then
+--		return form_arm_read_cmd(bus)
 	end
 	local rd_addrs, has_mx, has_nx = {}, false, false
 	for _, m_id in ipairs(bus.m_ids) do
@@ -266,11 +301,11 @@ local function form_read_loop_cmd(bus, cmd)
 	elseif has_nx then
 		bus.read_loop_cmd_str = lD.get_nx_position(bus.m_ids)
 	else
-    -- Sync read with just MX does not work for some reason
-    -- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
-    bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+		-- Sync read with just MX does not work for some reason
+		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
+		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
 	end
-  bus.read_loop_cmd_n = #bus.m_ids
+	bus.read_loop_cmd_n = #bus.m_ids
 	bus.read_loop_cmd = cmd
 end
 
@@ -302,40 +337,40 @@ local function do_external(request, bus)
 				insert(addr_n_len, lD.nx_registers[wr_reg])
 			end
 		end
-    if wr_reg=='torque_enable' then
-      -- Need this to work well
-      local status, is_mx, tq_val, j_id, pos
-      for i, m_id in ipairs(m_ids) do
-        is_mx = bus.has_mx_id[m_id]
-        j_id = m_to_j[m_id]
-        tq_val = m_vals[i]
-        if is_mx then
-          status = lD.set_mx_torque_enable(m_id, tq_val, bus)[1]
-        else
-          status = lD.set_nx_torque_enable(m_id, tq_val, bus)[1]
-        end
-        --if status and status.error==0 then
-        if status then
+		if wr_reg=='torque_enable' then
+			-- Need this to work well
+			local status, is_mx, tq_val, j_id, pos
+			for i, m_id in ipairs(m_ids) do
+				is_mx = bus.has_mx_id[m_id]
+				j_id = m_to_j[m_id]
+				tq_val = m_vals[i]
+				if is_mx then
+					status = lD.set_mx_torque_enable(m_id, tq_val, bus)[1]
+				else
+					status = lD.set_nx_torque_enable(m_id, tq_val, bus)[1]
+				end
+				--if status and status.error==0 then
+				if status then
 					--ptable(status)
-          -- Set the CP and the P
-          if tq_val==1 then
-            if is_mx then
-              status = lD.get_mx_position(m_id, bus)[1]
-            else
-              status = lD.get_nx_position(m_id, bus)[1]
-            end
-            j_id, pos = parse_read_position(status, bus)
-            if not j_id then
+					-- Set the CP and the P
+					if tq_val==1 then
+						if is_mx then
+							status = lD.get_mx_position(m_id, bus)[1]
+						else
+							status = lD.get_nx_position(m_id, bus)[1]
+						end
+						j_id, pos = parse_read_position(status, bus)
+						if not j_id then
 							print(get_time(), "BAD TORQUE ENABLE POS READ", m_id, status and status.error)
 						end
-            cp_ptr[j_id - 1] = p_ptr[j_id - 1]
-          end
-        else
-          print(get_time(), "BAD TORQUE ENABLE", m_id, tq_val, status and status.error)
-        end
-      end
-      -- Done the cycle if setting torque
-      return
+						cp_ptr[j_id - 1] = p_ptr[j_id - 1]
+					end
+				else
+					print(get_time(), "BAD TORQUE ENABLE", m_id, tq_val, status and status.error)
+				end
+			end
+			-- Done the cycle if setting torque
+			return
 		elseif wr_reg=='torque_mode' then
 			local status, j_id, val
 			for i, m_id in ipairs(m_ids) do
@@ -353,9 +388,9 @@ local function do_external(request, bus)
 					print("BAD TORQUE MODE!!")
 				end
 			end
-    end
-    -- TODO: Special code for changing torque modes
-    
+		end
+		-- TODO: Special code for changing torque modes
+
 		-- Send to the bus in sync fashion, for now
 		if has_nx and has_mx then
 			lD.set_bulk(m_ids, addr_n_len, m_vals, bus, true)
@@ -369,7 +404,7 @@ local function do_external(request, bus)
 		end
 	elseif rd_reg then
 		-- Check if reading position already
-    if rd_reg=='position' and bus.enable_read then return end
+		if rd_reg=='position' and bus.enable_read then return end
 		-- TODO: Add bulk read if mix mx and nx
 		-- FOR NOW: Just do one, and re-enqueue the other
 		local j_ids = request.ids
@@ -396,11 +431,11 @@ local function do_external(request, bus)
 		end
 		return #m_ids, rd_reg
 	elseif bus_name then
-    print("Externally set", request.key, request.val, bus_name)
+		print("Externally set", request.key, request.val, bus_name)
 		local bus = named_buses[bus_name]
 		if not bus then return end
 		bus[request.key] = request.val
-    return
+		return
 	end
 end
 
@@ -424,7 +459,7 @@ local function form_write_command(bus, m_ids)
 			else
 				insert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))
 				insert(cmd_addrs,
-					is_mx and lD.mx_registers.command_position or lD.nx_registers.command_position
+				is_mx and lD.mx_registers.command_position or lD.nx_registers.command_position
 				)
 			end
 		end
@@ -472,8 +507,8 @@ local function output_co(bus)
 		-- Copy the command positions if reading is not enabled,
 		-- otherwise, send a read instruction
 		if bus.enable_read then
-      bus:send_instruction(bus.read_loop_cmd_str)
-      bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_n
+			bus:send_instruction(bus.read_loop_cmd_str)
+			bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_n
 			bus.reads_cnt = bus.reads_cnt + bus.read_loop_cmd_n
 			bus.reqs_cnt = bus.reqs_cnt + 1
 			coroutine.yield(bus.read_loop_cmd_n, bus.read_loop_cmd)
@@ -499,211 +534,203 @@ local function consolidate(queue)
 		req1 = queue[i]
 		if (req0.rd_reg and req0.rd_reg==req1.rd_reg) or 
 			(req0.wr_reg and req0.wr_reg==req1.wr_reg) 
-		then
-			table.remove(queue, i)
-			ids0 = req0.ids
-			for _, id in ipairs(req1.ids) do ids0[id] = true end
+			then
+				table.remove(queue, i)
+				ids0 = req0.ids
+				for _, id in ipairs(req1.ids) do ids0[id] = true end
+			else
+				i = i + 1
+			end
+		end
+	end
+
+	-- Listen for command packets in non-blocking mode
+	local function process_external()
+		local requests = dcm_ch:receive(true)
+		if not requests then return end
+		local req, queue
+		for _, request in ipairs(requests) do
+			req = munpack(request)
+			for bname, bus in pairs(named_buses) do
+				queue = bus.request_queue
+				insert(queue, req)
+				--if req.ids then consolidate(queue) end
+			end
+		end
+	end
+
+	-- Initialize a bus object with useful variables
+	local function initialize(bus)
+		bus.n_read_timeouts = 0
+		bus.read_timeout_t = 0
+		bus.npkt_to_expect = 0
+		bus.request_queue = {}
+		bus.cmds_cnt = 0
+		bus.reads_cnt = 0
+		bus.reqs_cnt = 0
+		-- Add the fd
+		insert(_fds, bus.fd)
+		-- Populate the IDs of the bus
+		if bus.m_ids then
+			bus:ping_verify(bus.m_ids)
 		else
-			i = i + 1
+			bus:ping_probe()
 		end
-	end
-end
-
--- Listen for command packets in non-blocking mode
-local function process_external()
-	local requests = dcm_ch:receive(true)
-	if not requests then return end
-	local req, queue
-	for _, request in ipairs(requests) do
-		req = munpack(request)
-		for bname, bus in pairs(named_buses) do
-			queue = bus.request_queue
-			insert(queue, req)
-			--if req.ids then consolidate(queue) end
-		end
-	end
-end
-
--- Initialize a bus object with useful variables
-local function initialize(bus)
-  bus.n_read_timeouts = 0
-	bus.read_timeout_t = 0
-  bus.npkt_to_expect = 0
-	bus.request_queue = {}
-  bus.cmds_cnt = 0
-  bus.reads_cnt = 0
-	bus.reqs_cnt = 0
-	-- Add the fd
-	insert(_fds, bus.fd)
-	-- Populate the IDs of the bus
-	if bus.m_ids then
-		bus:ping_verify(bus.m_ids)
-	else
-		bus:ping_probe()
-	end
-	local status, n
-	local has_mx, has_nx = false, false
-	for _, m_id in ipairs(bus.m_ids) do
-		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
-		assert(is_mx or is_nx, "Unclassified motor ID "..m_id)
-		-- Get the initial position
-    n = 0
-		repeat
-      if is_mx then
-  			status = lD.get_mx_position(m_id, bus)[1]
-      else
-        status = lD.get_nx_position(m_id, bus)[1]
-      end
-      --if status and status.error==0 then break end
-      if status then break end
-			n = n + 1
-		until n > 5
-		assert(n<=5, 'Too many attempts at reading position')
-		assert(status.id==m_id, 'Bad id coherence, position')
-		t_read = get_time()
-		local j_id, rad = parse_read_position(status, bus)
-    assert(j_id, 'Bad pos read in initialize')
-		cp_ptr[j_id-1] = rad
-		-- Read the current torque states
-		n = 0
-		repeat
-      if is_mx then
-  			status = lD.get_mx_torque_enable(m_id, bus)[1]
-      else
-        status = lD.get_nx_torque_enable(m_id, bus)[1]
-      end
-      --if status and status.error==0 then break end
-      if status then break end
-			n = n + 1
-		until n > 5
-		assert(n<=5, 'Too many attempts at reading torque enable')
-		assert(status.id==m_id, 'Bad id coherence, torque enable')
-    j_id = m_to_j[m_id]
-		local tq_parse
-    if is_mx then
-      tq_parse = lD.byte_to_number[lD.mx_registers.torque_enable[2]]
-    else
-      tq_parse = lD.byte_to_number[lD.nx_registers.torque_enable[2]]
-    end
-		tq_en_ptr[j_id-1] = tq_parse(unpack(status.parameter))
-		-- Get the torque mode if the gripper
-		if is_gripper[j_id] then
+		local status, n
+		local has_mx, has_nx = false, false
+		for _, m_id in ipairs(bus.m_ids) do
+			local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
+			assert(is_mx or is_nx, "Unclassified motor ID "..m_id)
+			-- Get the initial position
 			n = 0
 			repeat
-				status = lD.get_mx_torque_mode(m_id, bus)[1]
+				if is_mx then
+					status = lD.get_mx_position(m_id, bus)[1]
+				else
+					status = lD.get_nx_position(m_id, bus)[1]
+				end
+				--if status and status.error==0 then break end
 				if status then break end
 				n = n + 1
 			until n > 5
-			assert(n <= 5, 'Too many attempts at reading torque mode')
-			local parse = lD.byte_to_number[lD.mx_registers.torque_mode[2]]
-			gripper_mode[j_id] = parse(unpack(status.parameter))
+			assert(n<=5, 'Too many attempts at reading position')
+			assert(status.id==m_id, 'Bad id coherence, position')
+			t_read = get_time()
+			local j_id, rad = parse_read_position(status, bus)
+			assert(j_id, 'Bad pos read in initialize')
+			cp_ptr[j_id-1] = rad
+			-- Read the current torque states
+			n = 0
+			repeat
+				if is_mx then
+					status = lD.get_mx_torque_enable(m_id, bus)[1]
+				else
+					status = lD.get_nx_torque_enable(m_id, bus)[1]
+				end
+				--if status and status.error==0 then break end
+				if status then break end
+				n = n + 1
+			until n > 5
+			assert(n<=5, 'Too many attempts at reading torque enable')
+			assert(status.id==m_id, 'Bad id coherence, torque enable')
+			j_id = m_to_j[m_id]
+			local tq_parse
+			if is_mx then
+				tq_parse = lD.byte_to_number[lD.mx_registers.torque_enable[2]]
+			else
+				tq_parse = lD.byte_to_number[lD.nx_registers.torque_enable[2]]
+			end
+			tq_en_ptr[j_id-1] = tq_parse(unpack(status.parameter))
+			-- Get the torque mode if the gripper
+			if is_gripper[j_id] then
+				n = 0
+				repeat
+					status = lD.get_mx_torque_mode(m_id, bus)[1]
+					if status then break end
+					n = n + 1
+				until n > 5
+				assert(n <= 5, 'Too many attempts at reading torque mode')
+				local parse = lD.byte_to_number[lD.mx_registers.torque_mode[2]]
+				gripper_mode[j_id] = parse(unpack(status.parameter))
+			end
 		end
+		-- Set the default reading command for the bus
+		form_read_loop_cmd(bus, 'position')
 	end
-	-- Set the default reading command for the bus
-	form_read_loop_cmd(bus, 'position')
-end
 
-for chain_id, chain in ipairs(dcm_chains) do
-	print("========\nOpening", chain.name, chain.ttyname)
-	local bus = lD.new_bus(chain.ttyname)
-	-- Point to the configuration
-	for k, v in pairs(chain) do bus[k] = v end
-	-- Lookup tables
-	assert(bus.name, 'No bus name identifier!')
-	named_buses[bus.name] = bus
-  --insert(numbered_buses, bus)
-  numbered_buses[bus.fd] = bus
-	initialize(bus)
-	-- Make the output coroutine
-	bus.output_co = coroutine.wrap(output_co)
-  bus.output_co(bus)
-	-- Make the input coroutine
-	bus.input_co = coroutine.wrap(input_co)
-  bus.input_co(bus)
-end
-
-local t0 = get_time()
--- Begin the master loop
-while is_running do
-  t_start = get_time()
-	-- Check for commands for the DCM from external sources
-	process_external()
-	-- Resume the write coroutines
-	t_write = get_time()
-	for bname, bus in pairs(named_buses) do
-		-- Check if we await packets and have expired the timeout
-    if bus.npkt_to_expect > 0 and t_write > bus.read_timeout_t then
-      bus.n_read_timeouts = bus.n_read_timeouts + bus.npkt_to_expect
-      bus.read_reg = nil
-      bus.npkt_to_expect = 0
-      bus.input_co(false)
-    end
-		-- Check if we are not expecting any packets
-		-- We now output to the bus
-		-- We may output a read request
-    if bus.npkt_to_expect < 1 then
-			bus.npkt_to_expect, bus.read_reg = bus.output_co()
-    end
+	for chain_id, chain in ipairs(dcm_chains) do
+		print("========\nOpening", chain.name, chain.ttyname)
+		local bus = lD.new_bus(chain.ttyname)
+		-- Point to the configuration
+		for k, v in pairs(chain) do bus[k] = v end
+		-- Lookup tables
+		assert(bus.name, 'No bus name identifier!')
+		named_buses[bus.name] = bus
+		--insert(numbered_buses, bus)
+		numbered_buses[bus.fd] = bus
+		initialize(bus)
+		-- Make the output coroutine
+		bus.output_co = coroutine.wrap(output_co)
+		bus.output_co(bus)
+		-- Make the input coroutine
+		bus.input_co = coroutine.wrap(input_co)
+		bus.input_co(bus)
 	end
-	-- Load data from the bus into the input coroutine
-	--[[
-		usleep(1e6/250)
-		status, ready = sel(_fds, 0)
-	--]]
-  -- Loop until the write timeout is expired
-	----[[
-  do_collect = true
-	sel_wait = WRITE_TIMEOUT
-  while sel_wait > 0 do
-		status, ready = sel(_fds, sel_wait)
-    if status==0 then break end
-    --]]
-		-- Read in packets if we received data from the bus
-		t_read = get_time()
-    local pkts, rxi
-		for bnum, is_ready in pairs(ready) do
-      if is_ready then
-  			bus = numbered_buses[bnum]
-				-- Place the data into packet structs
-        pkts, rxi = bus.input_co(uread(bus.fd))
-				-- Parse the packets into shared memory
-        bus.npkt_to_expect = bus.npkt_to_expect - #pkts
-        for _, pkt in ipairs(pkts) do
-          parse[bus.read_reg](pkt, bus, bus)
-        end
-      end
-		end
-		-- Loop maintenence
-    if do_collect then
-      do_collect = false
-      collectgarbage'step'
-    end
-----[[
-		sel_wait = WRITE_TIMEOUT - (get_time() - t_start)
-  end
---]]
-	-- Debug messages for the user
-  dt_debug = t_start - t_debug
-	if dt_debug > 2 then
-    t_debug = t_start
-		debug_str = {
-			string.format('\nDCM | Uptime %.2f sec, Mem: %d kB', t_start - t0, collectgarbage('count')),
-		}
+
+	local t0 = get_time()
+	-- Begin the master loop
+	while is_running do
+		t_start = get_time()
+		-- Check for commands for the DCM from external sources
+		process_external()
+		-- Resume the write coroutines
+		t_write = get_time()
 		for bname, bus in pairs(named_buses) do
-			insert(debug_str,
-			string.format('%s Command @ %.1f Hz | Read @ %.1f Hz [%d / %d timeouts]',
-				bname, bus.cmds_cnt / dt_debug, bus.reqs_cnt / dt_debug, bus.n_read_timeouts, bus.reads_cnt))
-      bus.reads_cnt = 0
-			bus.cmds_cnt = 0
-			bus.reqs_cnt = 0
-      bus.n_read_timeouts = 0
+			-- Check if we await packets and have expired the timeout
+			if bus.npkt_to_expect > 0 and t_write > bus.read_timeout_t then
+				bus.n_read_timeouts = bus.n_read_timeouts + bus.npkt_to_expect
+				bus.read_reg = nil
+				bus.npkt_to_expect = 0
+				bus.input_co(false)
+			end
+			-- Check if we are not expecting any packets
+			-- We now output to the bus
+			-- We may output a read request
+			if bus.npkt_to_expect < 1 then
+				bus.npkt_to_expect, bus.read_reg = bus.output_co()
+			end
 		end
-    debug_str = table.concat(debug_str, '\n')
-    print(debug_str)
+		-- Load data from the bus into the input coroutine
+		-- Loop until the write timeout is expired
+		do_collect = true
+		sel_wait = WRITE_TIMEOUT
+		while sel_wait > 0 do
+			status, ready = sel(_fds, sel_wait)
+			if status==0 then break end
+			-- Read in packets if we received data from the bus
+			t_read = get_time()
+			local pkts, rxi
+			for bnum, is_ready in pairs(ready) do
+				if is_ready then
+					bus = numbered_buses[bnum]
+					-- Place the data into packet structs
+					pkts, rxi = bus.input_co(uread(bus.fd))
+					-- Parse the packets into shared memory
+					bus.npkt_to_expect = bus.npkt_to_expect - #pkts
+					for _, pkt in ipairs(pkts) do
+						parse[bus.read_reg](pkt, bus, bus)
+					end
+				end
+			end
+			-- Loop maintenence
+			if do_collect then
+				do_collect = false
+				collectgarbage'step'
+			end
+			sel_wait = WRITE_TIMEOUT - (get_time() - t_start)
+		end
+		-- Debug messages for the user
+		dt_debug = t_start - t_debug
+		if dt_debug > 2 then
+			t_debug = t_start
+			debug_str = {
+				string.format('\nDCM | Uptime %.2f sec, Mem: %d kB', t_start - t0, collectgarbage('count')),
+			}
+			for bname, bus in pairs(named_buses) do
+				insert(debug_str,
+				string.format('%s Command @ %.1f Hz | Read @ %.1f Hz [%d / %d timeouts]',
+				bname, bus.cmds_cnt / dt_debug, bus.reqs_cnt / dt_debug, bus.n_read_timeouts, bus.reads_cnt))
+				bus.reads_cnt = 0
+				bus.cmds_cnt = 0
+				bus.reqs_cnt = 0
+				bus.n_read_timeouts = 0
+			end
+			debug_str = table.concat(debug_str, '\n')
+			print(debug_str)
+		end
 	end
-end
 
--- Exit
-for bname, bus in pairs(named_buses) do
-  bus:close()
-end
+	-- Exit
+	for bname, bus in pairs(named_buses) do
+		bus:close()
+	end

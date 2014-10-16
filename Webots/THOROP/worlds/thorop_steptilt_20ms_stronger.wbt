@@ -4,10 +4,8 @@ WorldInfo {
     "Default world for the THOR-OP"
   ]
   title "THOR-OP Only"
-  #basicTimeStep 8
   basicTimeStep 20
-	#basicTimeStep 40
-  FPS 15
+	FPS 15
   # TODO: Tune the friction a bit, comparing the F/T sensors
   contactProperties [
     ContactProperties {
@@ -25,8 +23,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.805208 0.582317 0.112009 0.398656
-  position 0.66458 1.39513 1.38052
+  orientation -0.172269 0.97527 0.138466 1.3286
+  position 1.71509 0.889703 0.39383
 }
 Background {
   skyColor [
@@ -52,9 +50,22 @@ DEF FLOOR Floor {
   ]
 }
 WoodBox {
-  translation 0.0108684 0.3 1.04426
+  translation 0 0.095 0.3
+  rotation 1 0 0 -0.1
+  boxSize 0.8 0.19 0.22
 }
-THOROP_UPENN {
+
+WoodBox {
+  translation 0 0.11 0.85  
+  boxSize 0.8 0.22 0.22
+}
+
+WoodBox {
+  translation 0 0.075 1.4
+  boxSize 0.8 0.15 0.22
+}
+
+THOROP_UPENN_strong {
   translation 0 1.155 0
 	controller "thorop"
   controllerArgs "0 32"

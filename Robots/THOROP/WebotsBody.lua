@@ -5,12 +5,15 @@ local cw = Config.wizards.camera and require(Config.wizards.camera)
 local mw = Config.wizards.mesh and require(Config.wizards.mesh)
 local sw = Config.wizards.slam and require(Config.wizards.slam)
 local fw = Config.wizards.feedback and require(Config.wizards.feedback)
+local rw = Config.wizards.remote and require(Config.wizards.remote)
 local kb = Config.testfile and require(Config.testfile)
 
 WebotsBody.USING_KB = type(kb)=='table' and type(kb.update)=='function'
 
 function WebotsBody.entry()
 	if ww then ww.entry() end
+  if fw then fw.entry() end
+  if rw then rw.entry() end
 end
 
 function WebotsBody.update_head_camera(img, sz, cnt, t)
@@ -28,6 +31,7 @@ end
 function WebotsBody.update(keycode)
 	if ww then ww.update() end
   if fw then fw.update() end
+  if rw then rw.update() end
 
 	if WebotsBody.USING_KB then kb.update(keycode) end
 	-- Add logging capability

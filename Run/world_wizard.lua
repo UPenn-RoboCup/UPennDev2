@@ -20,7 +20,11 @@ if Config.net.use_wireless then
 else
 	operator = Config.net.operator.wired_broadcast
 end
-local ENABLE_SEND = false
+
+local ENABLE_SEND = false 
+if Config.enable_monitor then
+	ENABLE_SEND = true
+end
 local udp_ch = si.new_sender(operator, Config.net.streams.camera0.udp)
 -- SHM
 require'wcm'
@@ -93,7 +97,7 @@ local function update()
 		metadata.world = lW.send()
 		-- Send!
 		local ret, err = udp_ch:send(mp.pack(metadata))
-		--if err then print(ret, err) end
+		if err and Config.debug.world then print(ret, err) end
 		t_send = t
 	end
   

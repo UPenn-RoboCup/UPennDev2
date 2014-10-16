@@ -8,7 +8,7 @@ require'wcm'
 require'mcm'
 
 -- 2 Hz feedback
-local t_sleep = 1e6 / 2
+local t_sleep = 1e6 / 100
 local feedback_udp_ch
 local ret, err
 local feedback = {}
@@ -16,14 +16,18 @@ local feedback = {}
 local function entry()
 	feedback_udp_ch =
 	si.new_sender(Config.net.operator.wired, Config.net.streams.feedback.udp)
+	print('Connected to', Config.net.operator.wired)
+	print('Port', Config.net.streams.feedback.udp)
 end
 
 local function update()
 	feedback.t = Body.get_time()
-	feedback.joints = Body.get_position()
-	feedback.pose = wcm.get_robot_odometry()--wcm.get_robot_pose()
+	feedback.p = Body.get_position()
+	feedback.cp = Body.get_command_position()
+	feedback.i = Body.get_current()
 	feedback.rpy = Body.get_rpy()
 	feedback.gyro = Body.get_gyro()
+	feedback.pose = wcm.get_robot_odometry()--wcm.get_robot_pose()
 	feedback.height = mcm.get_stance_bodyHeight()
 	feedback.battery = Body.get_battery()
 	ret, err = feedback_udp_ch:send(mpack(feedback))

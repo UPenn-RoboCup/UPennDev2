@@ -10,7 +10,7 @@ local IP = {
 }
 
 -- Who do we use?
-local WHO = IP.KAREN
+local WHO = IP.STEVE
 --local WHICH = IP.ALVIN
 local WHICH = IP.TEDDY
 

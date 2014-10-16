@@ -147,27 +147,6 @@ fsm.dqNeckLimit = {
   60 * DEG_TO_RAD, 60 * DEG_TO_RAD
 }
 
-if IS_WEBOTS then
-end
-
 Config.fsm = fsm
-
---[[
--- Add all FSM directories that are in Player
-for _,sm in ipairs(Config.fsm.enabled) do
-  local pname = {HOME, '/Player/', sm, 'FSM', '/?.lua;', package.path}
-  package.path = table.concat(pname)
-end
---]]
-
-for _,sm in ipairs(Config.fsm.enabled) do
-  if Config.fsm.select[sm] then
-    local pname = {HOME, '/Player/', sm, 'FSM/',Config.fsm.select[sm], '/?.lua;', package.path}
-    package.path = table.concat(pname)
-  else --default fsm
-    local pname = {HOME, '/Player/', sm, 'FSM', '/?.lua;', package.path}
-    package.path = table.concat(pname)
-  end  
-end
 
 return Config

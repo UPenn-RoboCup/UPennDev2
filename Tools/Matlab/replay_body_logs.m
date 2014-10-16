@@ -17,7 +17,8 @@ jointNames = { ...
 %% Aquire the body joint angles
 %timestamp = '10.06.2014.16.00.04'; % Walking
 %timestamp = '10.06.2014.17.07.04'; % Walk & turn
-timestamp = '10.07.2014.11.42.26'; % Stand on one leg
+%timestamp = '10.07.2014.11.42.26'; % Stand on one leg
+timestamp = '10.09.2014.15.08.25'; % Marcell
 fid = fopen(strcat('Data/joint_m_',timestamp,'.log'));
 msg = fread(fid,inf,'*uchar');
 fclose(fid);
@@ -51,7 +52,7 @@ end
 clear jobj
 %% Save
 % clear jobjs;
-%save(strcat('Data/joint_m_',timestamp,'.mat'));
+save(strcat('Data/joint_m_',timestamp,'.mat'));
 %% Plot a joint
 %load(strcat('Data/joint_m_',timestamp,'.mat'));
 

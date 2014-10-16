@@ -2,6 +2,18 @@ assert(Config, 'Need a pre-existing Config table!')
 
 local fsm = {}
 
+
+Config.stop_at_neutral = true --false for walk testing
+
+Config.demo = false
+--Config.demo = true
+
+--  Config.use_walkkick = true
+Config.use_walkkick = false
+
+--Config.torque_legs = false
+Config.torque_legs = true
+
 -- Update rate in Hz
 fsm.update_rate = 100
 
@@ -65,26 +77,5 @@ fsm.Motion = {
 }
 
 Config.fsm = fsm
-
-for _,sm in ipairs(Config.fsm.enabled) do
-  if Config.fsm.select[sm] then
-    local pname = {HOME, '/Player/', sm, 'FSM/',Config.fsm.select[sm], '/?.lua;', package.path}
-    package.path = table.concat(pname)
-  else --default fsm
-    local pname = {HOME, '/Player/', sm, 'FSM', '/?.lua;', package.path}
-    package.path = table.concat(pname)
-  end  
-end
-
-Config.stop_at_neutral = true --false for walk testing
-
-Config.demo = false
---Config.demo = true
-
---  Config.use_walkkick = true
-Config.use_walkkick = false
-
---Config.torque_legs = false
-Config.torque_legs = true
 
 return Config

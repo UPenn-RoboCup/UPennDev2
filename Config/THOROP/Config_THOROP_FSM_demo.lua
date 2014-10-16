@@ -217,10 +217,4 @@ end
 
 Config.fsm = fsm
 
--- Add all FSM directories that are in Player
-for _,sm in ipairs(Config.fsm.enabled) do
-  local pname = {HOME, '/Player/', sm, 'FSM', '/?.lua;', package.path}
-  package.path = table.concat(pname)
-end
-
 return Config

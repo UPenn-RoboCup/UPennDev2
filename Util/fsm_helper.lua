@@ -44,7 +44,7 @@ local function update(self)
 		end
 	end
 	--local state = self.sm.currentState
-	local ret = self.sm:update()
+	local ret = self.sm:update() --self.sm.events
 	--if ret then print(color(state._NAME, 'magenta'), ret) end
 	return ret
 end

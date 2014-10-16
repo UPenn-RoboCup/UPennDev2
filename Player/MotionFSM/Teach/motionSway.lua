@@ -25,12 +25,15 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
+	-- Shared variables
   uTorso = mcm.get_status_uTorso()  
   uLeft = mcm.get_status_uLeft()
   uRight = mcm.get_status_uRight()
   zLeft, zRight = unpack(mcm.get_status_zLeg())
   side = mcm.get_teach_sway()
+	-- Local variables
   side = side=='none' and 'left' or side
+	--
   print('Sway to the', side)
 end
 

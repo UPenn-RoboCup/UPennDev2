@@ -20,11 +20,13 @@ fsm.update_rate = 100
 -- Which FSMs should be enabled?
 fsm.enabled = {
 --  'Body',
+	'Arm',
   'Motion',
 }
 
 --SJ: now we can have multiple FSM options 
 fsm.select = {
+	Arm = 'Teach',
   Body = 'Teach',
   Motion = 'Teach'
 }
@@ -33,6 +35,15 @@ fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   --
   {'bodyInit', 'done', 'bodyStop'},
+}
+
+fsm.Arm = {
+	-- Idle
+  {'armIdle', 'timeout', 'armIdle'},
+	-- Init
+	{'armIdle', 'init', 'armInit'},
+	--
+  {'armInit', 'done', 'armStance'},
 }
 
 fsm.Motion = {

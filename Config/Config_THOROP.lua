@@ -117,9 +117,10 @@ end
 -- Teach robot to go up steps
 ----[[
 Config.libs.MotionLib = 'Teach'
+Config.libs.ArmLib = 'Teach'
 -- Precedence in loading, for overrides!
 local exo = {
-	'Robot', 'Walk', 'Net', 'FSM_Teach'
+	'Robot', 'Walk', 'Net', 'FSM_Teach', 'Arm_Teach'
 }
 if IS_WEBOTS then
   Config.testfile = 'test_teach'

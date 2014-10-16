@@ -28,18 +28,19 @@ local byte_to_number = lD.byte_to_number
 local nx_registers = lD.nx_registers
 local mx_registers = lD.mx_registers
 
+local leg_regs = {'position','current', 'data'}
 local lleg = Config.chain.lleg
-local lleg_ok = lD.check_indirect_address(lleg.m_ids, {'position', 'data'}, left_leg)
+local lleg_ok = lD.check_indirect_address(lleg.m_ids, leg_regs, left_leg)
 print('LLeg Check', lleg_ok)
 if not lleg_ok then
-  lD.set_indirect_address(lleg.m_ids, {'position', 'data'}, left_leg)
+  lD.set_indirect_address(lleg.m_ids, leg_regs, left_leg)
 end
 
 local rleg = Config.chain.rleg
-local rleg_ok = lD.check_indirect_address(rleg.m_ids, {'position', 'data'}, right_leg)
+local rleg_ok = lD.check_indirect_address(rleg.m_ids, leg_regs, right_leg)
 print('RLeg Check', rleg_ok)
 if not rleg_ok then
-  lD.set_indirect_address(rleg.m_ids, {'position', 'data'}, right_leg)
+  lD.set_indirect_address(rleg.m_ids, leg_regs, right_leg)
 end
 
 os.exit()

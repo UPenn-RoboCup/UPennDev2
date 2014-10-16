@@ -94,7 +94,7 @@ end
 
 
 -- DRC Site visit 2014
---[[
+----[[
 --We are not doing any lidar based stuff
 --Config.libs.World = 'SiteVisit'   
 Config.libs.World = 'SiteVisit'   
@@ -115,7 +115,7 @@ end
 
 
 -- Teach robot to go up steps
-----[[
+--[[
 Config.libs.MotionLib = 'Teach'
 Config.libs.ArmLib = 'Teach'
 -- Precedence in loading, for overrides!

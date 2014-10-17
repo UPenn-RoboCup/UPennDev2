@@ -66,11 +66,6 @@ Config.use_single_scan = true
 
 
 
-
-
-
-
-
 ----------------------------------
 -- Application specific Configs --
 ----------------------------------
@@ -112,6 +107,22 @@ if IS_WEBOTS then
 end
 --]]
 
+
+-- DRC Final setup
+-- for testing new walk controller
+----[[
+Config.libs.World = 'SiteVisit'   
+local exo = {
+  'Robot','Walk','Net','Manipulation',
+  'FSM_DRCFinal','World_DRCTrials','Vision_RoboCup' 
+}
+if IS_WEBOTS then
+  Config.sensors.chest_lidar = false
+  Config.wizards.test = nil
+  Config.wizards.mesh = nil
+  Config.testfile = 'test_sitevisit'
+end
+--]]
 
 
 -- Teach robot to go up steps

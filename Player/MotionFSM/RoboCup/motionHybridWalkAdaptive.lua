@@ -117,14 +117,33 @@ function walk.update()
   if ph_last<0.5 and ph>=0.5 then
     local rpy = Body.get_rpy()
     local roll = rpy[1]
-    local delay_threshold_angle = 5*math.pi/180
+    local delay_threshold_angle = 2.5*math.pi/180
 
-    if supportLeg==0 and roll>delay_threshold_angle then      
-      print("Right landing delayed, roll angle",roll*RAD_TO_DEG)
-      zmp_solver:set_landing_delay_factor(1.7)
-    elseif supportLeg==0 and roll<-delay_threshold_angle then      
-      print("Left landing delayed roll angle",roll*RAD_TO_DEG)
-      zmp_solver:set_landing_delay_factor(1.7)
+
+    if supportLeg==0 then
+      print("Right landing, roll angle",roll*RAD_TO_DEG)
+
+      if roll>delay_threshold_angle then      
+        print("LANDING DELAYED!")
+        zmp_solver:set_landing_delay_factor(1.7)
+      elseif roll<-delay_threshold_angle then
+        print("LANDING FASTENED")
+        zmp_solver:set_landing_delay_factor(0.8)
+      else
+        zmp_solver:set_landing_delay_factor(1)
+      end
+    elseif supportLeg==1 then
+      print("Left landing, roll angle",roll*RAD_TO_DEG)
+
+      if roll<-delay_threshold_angle then      
+        print("LANDING DELAYED!")
+        zmp_solver:set_landing_delay_factor(1.7)
+      elseif roll>delay_threshold_angle then
+        print("LANDING FASTENED")
+        zmp_solver:set_landing_delay_factor(0.8)
+      else
+        zmp_solver:set_landing_delay_factor(1)
+      end
     else
       zmp_solver:set_landing_delay_factor(1)
     end

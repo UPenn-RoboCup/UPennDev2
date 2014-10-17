@@ -1,8 +1,3 @@
---Stance state is basically a Walk controller
---Without any torso or feet update
---We share the leg joint generation / balancing code 
---with walk controllers
-
 local state = {}
 state._NAME = ...
 
@@ -14,39 +9,36 @@ require'mcm'
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
--- Track the torso
+
+-- Local tracking
 local uTorso, uLeft, uRight
 local zLeft, zRight
 local side
 local supportDir, supportFoot, supportPoint
 local uTorso, dTorso
+
+-- Config tuning
 local dTorsoScale = 0.001
 local supportX, supportY = Config.walk.supportX, Config.walk.supportY
-local zDelta = 0.001
-local zTarget = 0.16
-local bH0, bH_final
 
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
-  local t_entry_prev = t_entry -- When entry was previously called
+  local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-	
-	-- Shared memory status
+	-- Shared variables
   uTorso = mcm.get_status_uTorso()  
   uLeft, uRight = mcm.get_status_uLeft(), mcm.get_status_uRight()
   zLeft, zRight = unpack(mcm.get_status_zLeg())
   side = mcm.get_teach_sway()
-	
-	-- Local variables
-  side = side=='none' and 'left' or side
+	-- Local vairables
+	side = side=='none' and 'left' or side
   supportDir = side=='left' and 1 or -1
   supportFoot = side=='left' and uLeft or uRight
   supportPoint = util.pose_global({supportX, supportDir*supportY, 0}, supportFoot)
-	
 	--
-  print(state._NAME, side, 'foot. SUPPORT POINT:', supportPoint, uTorso)
+	print(state._NAME, side, 'foot. SUPPORT POINT:', supportPoint, uTorso)
 end
 
 function state.update()
@@ -59,7 +51,10 @@ function state.update()
   -- Where is our offset?
   local relTorso = util.pose_relative(uTorso, supportPoint)
   local drTorso = math.sqrt(relTorso.x^2 + relTorso.y^2)
-  local torsoDone = drTorso<1e-3 and math.abs(relTorso.a)<DEG_TO_RAD
+  --print('relTorso', supportPoint, relTorso, uTorso)
+  if drTorso<1e-3 and math.abs(relTorso.a)<DEG_TO_RAD then
+    return'done'
+  end
   
   -- How spread are our feet?
   local dX = dTorsoScale * relTorso.x / drTorso
@@ -68,33 +63,15 @@ function state.update()
   -- Move toward the support point
   uTorso = uTorso - vector.pose{dX, dY, 0}
   
-  local zDone, dz
-  if side=='left' then
-    zDone = zRight > zTarget
-    dz = (zDone or not torsoDone) and 0 or zDelta
-    zRight = zRight + dz
-  else
-    zDone = zLeft > zTarget
-    dz = (zDone or not torsoDone) and 0 or zDelta
-    zLeft = zLeft + dz
-  end
-  
-  if torsoDone and zDone then
-    local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
-    print('L FT', l_ft)
-    print('R FT', r_ft)
-    return'done'
-  end
-  
-  -- Update
-  mcm.set_status_zLeg{zLeft, zRight}
   mcm.set_status_uTorso(uTorso)
   moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, zLeft, zRight, dt)
 end
 
 function state.exit()
   print(state._NAME..' Exit')
-  
+  local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
+  print('L FT', l_ft)
+  print('R FT', r_ft)
 end
 
 return state

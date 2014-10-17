@@ -41,14 +41,4 @@ fsm.Motion = {
 
 Config.fsm = fsm
 
-for _,sm in ipairs(Config.fsm.enabled) do
-  if Config.fsm.select[sm] then
-    local pname = {HOME, '/Player/', sm, 'FSM/',Config.fsm.select[sm], '/?.lua;', package.path}
-    package.path = table.concat(pname)
-  else --default fsm
-    local pname = {HOME, '/Player/', sm, 'FSM', '/?.lua;', package.path}
-    package.path = table.concat(pname)
-  end  
-end
-
 return Config

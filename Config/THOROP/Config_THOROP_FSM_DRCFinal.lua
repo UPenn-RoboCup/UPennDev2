@@ -18,7 +18,7 @@ fsm.enabled = {
   'Body',
   'Head',
   'Motion',
-  'Lidar'
+--  'Lidar'
 }
 
 --SJ: now we can have multiple FSM options 
@@ -127,14 +127,20 @@ fsm.Motion = {
 
 --For new hybrid walk
   {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
-  {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
+--  {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
+-- {'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
+--  {'motionHybridWalk', 'done_step', 'motionHybridWalkKick'},
 
-  {'motionHybridWalk', 'done', 'motionStance'},
-  {'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
-
-  {'motionHybridWalk', 'done_step', 'motionHybridWalkKick'},
+  {'motionHybridWalkInit', 'done', 'motionHybridWalkAdaptive'},
+  {'motionHybridWalkAdaptive', 'done', 'motionHybridWalkEnd'},  
+  {'motionHybridWalkAdaptive', 'done_step', 'motionHybridWalkKick'},
+  
   {'motionHybridWalkKick', 'done', 'motionStance'},
-  {'motionHybridWalkKick', 'walkalong', 'motionHybridWalk'},
+--  {'motionHybridWalkKick', 'walkalong', 'motionHybridWalk'},
+
+  {'motionHybridWalkKick', 'walkalong', 'motionHybridWalkAdaptive'},
+
+
   
 --  {'motionHybridWalk', 'done_step', 'motionStepNonstop'},
 --  {'motionStepNonstop', 'done', 'motionStance'},

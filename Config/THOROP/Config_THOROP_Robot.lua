@@ -52,7 +52,7 @@ local right_arm = {
   ttyname = '/dev/ttyUSB0',
   m_ids = {1,3,5,7,9,11,13,
         --head
-        29, 30,
+--        29, 30,
 				-- gripper
 --				66, 67
         },
@@ -170,6 +170,28 @@ Config.parts = {
   RGrip = vector.count(indexRGrip,nJointRGrip),
   Lidar = vector.count(indexLidar,nJointLidar)
 }
+
+local jointNames = {
+  "Neck","Head", -- Head (Yaw,pitch)
+  -- Left Arm
+  "ShoulderL", "ArmUpperL", "LeftShoulderYaw",
+  "ArmLowerL","LeftWristYaw","LeftWristRoll","LeftWristYaw2",
+  -- Left leg
+  "PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",
+  -- Right leg
+  "PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
+  --Right arm
+  "ShoulderR", "ArmUpperR", "RightShoulderYaw","ArmLowerR",
+  "RightWristYaw","RightWristRoll","RightWristYaw2",
+  -- Waist
+  "TorsoYaw","TorsoPitch",
+  -- Gripper
+  "l_grip", "l_trigger",
+  "r_grip", "r_trigger",
+  -- lidar movement
+  "ChestLidarPan",
+}
+Config.jointNames = jointNames
 
 ----------------------
 -- Servo Properties --
@@ -437,6 +459,7 @@ if IS_WEBOTS then
 
 end
 
+assert(#jointNames==nJoint,'Bad servo rad_offset!')
 assert(#servo.rad_offset==nJoint,'Bad servo rad_offset!')
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')

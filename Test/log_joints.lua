@@ -30,8 +30,9 @@ while running do
 	e.n = count
 	e.cp, e.t_cp = Body.get_command_position()
 	e.p, e.t_p = Body.get_position()
-	e.ft_l, e.t_ft_l = Body.get_lfoot()
-	e.ft_r, e.t_ft_r = Body.get_rfoot()
+	e.i = Body.get_current()
+	e.ft_l = Body.get_lfoot()
+	e.ft_r = Body.get_rfoot()
 	e.gyro, e.t_imu = Body.get_gyro()
 	e.acc = Body.get_accelerometer()
 	e.rpy = Body.get_rpy()

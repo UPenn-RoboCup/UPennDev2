@@ -236,20 +236,6 @@ if IS_WEBOTS then
   fsm.bodyRobocupFollow.th_dist = 0.2
 end
 
-Config.fsm = fsm
-
-for _,sm in ipairs(Config.fsm.enabled) do
-  if Config.fsm.select[sm] then
-    local pname = {HOME, '/Player/', sm, 'FSM/',Config.fsm.select[sm], '/?.lua;', package.path}
-    package.path = table.concat(pname)
-  else --default fsm
-    local pname = {HOME, '/Player/', sm, 'FSM', '/?.lua;', package.path}
-    package.path = table.concat(pname)
-  end  
-end
-
-
-
 
 
 
@@ -373,5 +359,7 @@ Config.goalie_t_startmove = 10.0
 
 Config.assume_goalie_blocking = true
 Config.enemy_goalie_shift_factor = 0.15
+
+Config.fsm = fsm
 
 return Config

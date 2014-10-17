@@ -29,13 +29,18 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
+	
+	-- Shared memory access
   uTorso = mcm.get_status_uTorso()  
   uLeft = mcm.get_status_uLeft()
   uRight = mcm.get_status_uRight()
   side = mcm.get_teach_sway()
+	zLeft, zRight = unpack(mcm.get_status_zLeg())
+	
+	-- Local variables
   side = side=='none' and 'left' or side
-  print('Support on the', side)
-  zLeft, zRight = unpack(mcm.get_status_zLeg())
+	
+	print(state._NAME, side, 'foot. Torso:', uTorso)
 end
 
 function state.update()
@@ -49,8 +54,12 @@ function state.update()
   local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
   
   -- TODO: Make sure we lean enough before lifting our legs
-  if side=='left' and l_ft[3] < 2*r_ft[3] then return'lean' end
-  if side=='right' and r_ft[3] < 2*l_ft[3] then return'lean' end
+  if side=='left' and l_ft[3] < 2*r_ft[3] then
+		return'lean'
+	end
+  if side=='right' and r_ft[3] < 2*l_ft[3] then
+		return'lean'
+	end
   
   -- Increment the leg height
   if side=='left' then

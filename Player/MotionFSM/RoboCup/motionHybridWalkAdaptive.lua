@@ -1,6 +1,3 @@
---New, cleaned-up humblewalk 
---Got rid of any non-used codes (including walkkick)
---Arm movement is turned off (only handled by arm FSM)
 
 local walk = {}
 walk._NAME = ...
@@ -9,8 +6,7 @@ local Body   = require'Body'
 local vector = require'vector'
 local util   = require'util'
 local moveleg = require'moveleg'
-local libReactiveZMP = require'libReactiveZMP'
---local libReactiveZMP = require'libReactiveZMPAdaptive'
+local libReactiveZMP = require'libReactiveZMPAdaptive'
 
 local libStep = require'libStep'
 local zmp_solver

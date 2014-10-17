@@ -114,6 +114,33 @@ function walk.update()
 
   -- Grab the phase of the current step
   local ph,is_next_step = zmp_solver:get_ph(t,t_last_step,ph_last)
+  if ph_last<0.5 and ph>=0.5 then
+    local rpy = Body.get_rpy()
+    local roll = rpy[1]
+    local delay_threshold_angle = 5*math.pi/180
+
+    if supportLeg==0 and roll>delay_threshold_angle then      
+      print("Right landing delayed, roll angle",roll*RAD_TO_DEG)
+      zmp_solver:set_landing_delay_factor(1.7)
+    elseif supportLeg==0 and roll<-delay_threshold_angle then      
+      print("Left landing delayed roll angle",roll*RAD_TO_DEG)
+      zmp_solver:set_landing_delay_factor(1.7)
+    else
+      zmp_solver:set_landing_delay_factor(1)
+    end
+
+--[[
+    if iStep%5==0 then
+      print("Landing delayed")
+      zmp_solver:set_landing_delay_factor(1.7)
+    else
+      zmp_solver:set_landing_delay_factor(1)
+    end      
+--]]    
+
+  end
+
+
   ph_last = ph
   
   if is_next_step then

@@ -137,14 +137,33 @@ local function set_param(self,tStep,tZmp)
 end
 
 local function get_ph(self,t,t_last_step)
-  local ph = (t-t_last_step)/self.tStep
+  local tPassed = t-t_last_step
   local is_next_step = false
-  if ph>1 then 
-    ph = ph%1
+
+  if tPassed>(self.tStepLift+self.tStepLand) then
+    tPassed = tPassed % (self.tStepLift+self.tStepLand)
     is_next_step = true
   end
+
+  local ph 
+  if tPassed<self.tStepLift then
+    ph = (tPassed/self.tStepLift)/2 --lifting phase
+  else
+    ph = 0.5 + (tPassed-self.tStepLift)/self.tStepLand/2 --landing phase
+  end
+
   return ph, is_next_step
 end
+
+
+local function set_landing_delay_factor(self,factor)
+  self.tStepLand = Config.walk.tStep / 2 *factor
+end
+
+
+
+
+
 
 -- Begin the library code
 local libReaciveZMP = {}
@@ -169,7 +188,9 @@ libReaciveZMP.new_solver = function( params )
   s.get_com_vel  = get_com_vel
   s.get_zmp  = get_zmp
   s.set_param = set_param
+
   s.get_ph = get_ph
+  s.set_landing_delay_factor = set_landing_delay_factor
 	return s
 end
 

@@ -184,28 +184,7 @@ if IS_WEBOTS then
   end
 
 	local nJoint = Config.nJoint
-  local jointNames = {
-    "Neck","Head", -- Head (Yaw,pitch)
-    -- Left Arm
-    "ShoulderL", "ArmUpperL", "LeftShoulderYaw",
-    "ArmLowerL","LeftWristYaw","LeftWristRoll","LeftWristYaw2",
-    -- Left leg
-    "PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",
-    -- Right leg
-    "PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
-    --Right arm
-    "ShoulderR", "ArmUpperR", "RightShoulderYaw","ArmLowerR",
-    "RightWristYaw","RightWristRoll","RightWristYaw2",
-    -- Waist
-    "TorsoYaw","TorsoPitch",
-    -- Gripper
-    "l_grip", "l_trigger",
-    "r_grip", "r_trigger",
-    -- lidar movement
-    "ChestLidarPan",
-  }
-  assert(nJoint==#jointNames,'bad jointNames!')
-
+	local jointNames = Config.jointNames
   local servo = Config.servo
 
   -- Default configuration (toggle during run time)

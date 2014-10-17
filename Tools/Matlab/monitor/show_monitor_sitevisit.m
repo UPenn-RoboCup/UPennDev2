@@ -206,8 +206,8 @@ function h = show_monitor_sitevisit
             rot_pitch = [cos(body_pitch) sin(body_pitch); 
                       -sin(body_pitch)  cos(body_pitch)];
                   
-            rot_roll = [cos(body_roll) sin(body_roll); 
-                      -sin(body_roll)  cos(body_roll)];
+            rot_roll = [cos(body_roll) -sin(body_roll); 
+                      sin(body_roll)  cos(body_roll)];
                   
             
             new_xz = rot_pitch*[xs0(i,:); zs0(i,:)];
@@ -228,7 +228,7 @@ function h = show_monitor_sitevisit
         hold off;
         
         
-        %{
+        %
         
         %----------- Create a naive height map
         % Grid params: meters

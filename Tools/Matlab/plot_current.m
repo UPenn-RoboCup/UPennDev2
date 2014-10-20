@@ -1,6 +1,8 @@
+%close all;
+
 %% Which time points
 t0 = 5;
-tf = 8;
+tf = 10;
 t_selected = ts>t0&ts<tf;
 t = ts(t_selected);
 
@@ -15,7 +17,7 @@ figure;
 h_yy = gca;
 
 %% Show the left leg pitch
-joint = 'LegUpperL';
+joint = 'PelvYL';
 joint_idx = 1;
 for i=1:numel(jointNames)
     if strcmp(jointNames{i}, joint)==1
@@ -23,13 +25,14 @@ for i=1:numel(jointNames)
     end
 end
 
-lleg = pos(t_selected, joint_idx) + pos(t_selected, joint_idx+1) + pos(t_selected, joint_idx+2);
-lleg_cmd = cmd(t_selected, joint_idx) + cmd(t_selected, joint_idx+1) + cmd(t_selected, joint_idx+2);
-lleg_cur = cur(t_selected, joint_idx) + cur(t_selected, joint_idx+1) + cur(t_selected, joint_idx+2);
+lleg = pos(t_selected, joint_idx:joint_idx+5);
+z_lleg = zeros(size(lleg,1), 1);
+for i=1:numel(z_lleg)
+    tr = kinematics(lleg(i,:));
+    z_lleg(i) = tr(3,4);
+end
 
-plot( h_nw, t, rad2deg(lleg), ...
-    t, rad2deg(lleg_cmd) ...
-    );
+plot( h_nw, t, pos(t_selected, joint_idx), t, cmd(t_selected, joint_idx) );
 xlim(h_nw, [t0, tf]);
 legend(h_nw, 'Position', 'Command');
 title(h_ne,'Left Pitch Command vs. Position (Degrees)');
@@ -40,7 +43,7 @@ xlim(h_sw, [t0, tf]);
 title(h_sw, sprintf('%s: Current (milliAmperes)', joint));
 
 % Show current and position together
-hAx = plotyy(h_yy, t, lleg_cur,t,rad2deg(lleg));
+hAx = plotyy(h_yy, t, sum(abs(cur(t_selected, joint_idx+2:joint_idx+4)),2), t, z_lleg);
 title(h_yy, sprintf('%s: Current (milliAmperes)', joint));
 ylabel(hAx(1),'Current (mA)') % left y-axis
 ylabel(hAx(2),'Position (Degrees)') % right y-axis

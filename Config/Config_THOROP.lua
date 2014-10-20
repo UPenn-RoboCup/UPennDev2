@@ -81,7 +81,6 @@ local exo = {
 Config.testfile = 'test_robocup'
 Config.sensors.chest_lidar = false
 if IS_WEBOTS then
-  Config.wizards.test = nil
   Config.wizards.mesh = nil
 end
 --]]
@@ -89,7 +88,7 @@ end
 
 
 -- DRC Site visit 2014
-----[[
+--[[
 --We are not doing any lidar based stuff
 --Config.libs.World = 'SiteVisit'   
 Config.libs.World = 'SiteVisit'   
@@ -98,10 +97,8 @@ local exo = {
   'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup' 
 }
 if IS_WEBOTS then
-  --Config.wizards.mesh = 'mesh_wizard_sitevisit'
-  --Config.sensors.chest_lidar = true
   Config.sensors.chest_lidar = false
-  Config.wizards.test = nil
+	Config.sensors.head_camera = true
   Config.wizards.mesh = nil
   Config.testfile = 'test_sitevisit'
 end
@@ -135,12 +132,10 @@ local exo = {
 }
 if IS_WEBOTS then
   Config.testfile = 'test_teach'
-  Config.wizards = {}
+  Config.wizards = {feedback = 'feedback_wizard'}
   Config.sensors = {ft = true}
 end
 --]]
-
-
 
 -- Remote Control
 --[[

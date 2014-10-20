@@ -192,8 +192,8 @@ local function joint_iter (self, qArm0, qGoal, res_q)
 	return function(cur_qArm, human)
 		local dq = qGoal - cur_qArm
 		local distance = vector.norm(dq)
-		local ddq = res_q / distance * dq
-		if distance<res_q then return end
+		if distance<res_q then return true end
+		local ddq = dq / distance * res_q
 		return cur_qArm + ddq
 	end
 

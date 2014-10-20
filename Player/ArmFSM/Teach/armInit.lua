@@ -6,7 +6,6 @@ local state = {}
 state._NAME = ...
 
 local Body   = require'Body'
-local util   = require'util'
 local vector = require'vector'
 local movearm = require'movearm'
 local t_entry, t_update, t_finish
@@ -26,12 +25,6 @@ function state.entry()
   t_finish = t
 
   stage = 1
-
-  --Slowly close all fingers
---  Body.move_lgrip1(Config.arm.torque.movement)
---  Body.move_lgrip2(Config.arm.torque.movement)
---  Body.move_rgrip1(Config.arm.torque.movement)
---  Body.move_rgrip2(Config.arm.torque.movement)
 
   local qLArm = Body.get_larm_position()
   local qRArm = Body.get_rarm_position()
@@ -60,20 +53,13 @@ unpack( vector.new(qLArmTarget)*RAD_TO_DEG)
   mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit)
   mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit)
 
---[[
-  if not IS_WEBOTS then
-    for i=1,10 do
-      Body.set_larm_command_velocity({500,500,500,500,500,500,500})
-      unix.usleep(1e6*0.01);
-      Body.set_rarm_command_velocity({500,500,500,500,500,500,500})
-      unix.usleep(1e6*0.01);
-      Body.set_larm_command_acceleration({50,50,50,50,50,50,50})
-      unix.usleep(1e6*0.01);
-      Body.set_rarm_command_acceleration({50,50,50,50,50,50,50})
-      unix.usleep(1e6*0.01);
-    end
+  for i=1,10 do
+    Body.set_larm_command_velocity({500,500,500,500,500,500,500})
+    Body.set_rarm_command_velocity({500,500,500,500,500,500,500})
+    Body.set_larm_command_acceleration({50,50,50,50,50,50,50})
+    Body.set_rarm_command_acceleration({50,50,50,50,50,50,50})
+    if not IS_WEBOTS then unix.usleep(1e5) end
   end
---]]
 end
 
 function state.update()
@@ -108,30 +94,13 @@ function state.exit()
 
   --print("qLArm:",unpack(qLArmTarget))
   arm_planner:reset_torso_comp(qLArmTarget,qRArmTarget)
---[[
-  Body.move_lgrip1(0)
-  Body.move_lgrip2(0)
-  Body.move_rgrip1(0)
-  Body.move_rgrip2(0)
---]]
-
---[[
-  if not IS_WEBOTS then
-    for i=1,10 do
-      Body.set_larm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
-      unix.usleep(1e6*0.01);
-      Body.set_rarm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
-      unix.usleep(1e6*0.01);
-      Body.set_larm_comma0nd_acceleration({200,200,200,200,200,200,200})
-      unix.usleep(1e6*0.01);
-      Body.set_rarm_command_acceleration({200,200,200,200,200,200,200})
-      unix.usleep(1e6*0.01);
-    end
+  for i=1,10 do
+    Body.set_larm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
+    Body.set_rarm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
+    Body.set_larm_command_acceleration({200,200,200,200,200,200,200})
+    Body.set_rarm_command_acceleration({200,200,200,200,200,200,200})
+    if not IS_WEBOTS then unix.usleep(1e5) end
   end
-
-  Body.set_lgrip_percent(0.9)
-  Body.set_rgrip_percent(0.9)
---]]
 
   print(state._NAME..' Exit' )
 end

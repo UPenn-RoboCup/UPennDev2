@@ -2,16 +2,9 @@ assert(Config, 'Need a pre-existing Config table!')
 
 local fsm = {}
 
-
-Config.stop_at_neutral = true --false for walk testing
-
 Config.demo = false
 --Config.demo = true
 
---  Config.use_walkkick = true
-Config.use_walkkick = false
-
---Config.torque_legs = false
 Config.torque_legs = true
 
 -- Update rate in Hz
@@ -40,10 +33,14 @@ fsm.Body = {
 fsm.Arm = {
 	-- Idle
   {'armIdle', 'timeout', 'armIdle'},
-	-- Init
 	{'armIdle', 'init', 'armInit'},
-	--
+	-- Init
   {'armInit', 'done', 'armStance'},
+	-- Stance
+	{'armStance', 'timeout', 'armStance'},
+	{'armStance', 'ready', 'armReady'},
+	-- Ready
+	{'armReady', 'timeout', 'armReady'},
 }
 
 fsm.Motion = {

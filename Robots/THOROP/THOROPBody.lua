@@ -332,6 +332,16 @@ if IS_WEBOTS then
         print(util.color('FT disabled!','yellow'))
         webots.wb_touch_sensor_disable(tags.l_ft)
   			webots.wb_touch_sensor_disable(tags.r_ft)
+        webots.wb_motor_disable_force_feedback(tags.jointsByName.FootR)
+        webots.wb_motor_disable_force_feedback(tags.jointsByName.FootL)
+        webots.wb_motor_disable_force_feedback(tags.jointsByName.AnkleR)
+        webots.wb_motor_disable_force_feedback(tags.jointsByName.AnkleL)
+        if tags.left_ankle_yaw > 0 then
+          webots.wb_motor_disable_force_feedback(tags.left_ankle_yaw)
+        end
+        if tags.right_ankle_yaw > 0 then
+          webots.wb_motor_disable_force_feedback(tags.right_ankle_yaw)
+        end
         ENABLE_FT = false
       else
         print(util.color('FT enabled!','green'))
@@ -375,6 +385,10 @@ if IS_WEBOTS then
 	        webots.wb_servo_set_velocity(tag, 4)
 				else
 					webots.wb_motor_enable_position(tag, timeStep)
+					-- Add Torque feedback
+					if v~='ChestLidarPan' then
+						webots.wb_motor_enable_force_feedback(tag, timeStep)
+					end
 				end
 			end
 		end
@@ -598,6 +612,10 @@ if IS_WEBOTS then
         rad = servo.direction[idx] * val - servo.rad_offset[idx]
 				rad = rad==rad and rad or 0
 				positions[idx] = rad
+				if not OLD_API then
+					local tq = webots.wb_motor_get_force_feedback(jtag)
+					dcm.sensorPtr.current[idx-1] = tq==tq and tq or 0
+				end
       end
     end
 		dcm.set_sensor_position(positions)

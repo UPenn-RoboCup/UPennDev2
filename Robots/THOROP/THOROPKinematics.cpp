@@ -1075,7 +1075,7 @@ THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, 
     t=t
       .translateZ(-shoulderOffsetZ)
       .translateY(-shoulderOffsetY)
-      .translateY(-shoulderOffsetX)
+      .translateX(-shoulderOffsetX)
       .rotateY(-qWaist[1])
       .rotateZ(-qWaist[0])
       .rotateY(-bodyPitch)
@@ -1084,7 +1084,7 @@ THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, 
     t=t
       .translateZ(-shoulderOffsetZ)
       .translateY(shoulderOffsetY)
-      .translateY(shoulderOffsetX)
+      .translateX(shoulderOffsetX)
       .rotateY(-qWaist[1])
       .rotateZ(-qWaist[0])
       .rotateY(-bodyPitch)
@@ -1227,7 +1227,7 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
     t=t
     .translateZ(-shoulderOffsetZ)
   	.translateY(-shoulderOffsetY)
-    .translateY(-shoulderOffsetX)
+    .translateX(-shoulderOffsetX)
     .rotateY(-qWaist[1])
     .rotateZ(-qWaist[0])
     .rotateY(-bodyPitch)
@@ -1239,7 +1239,7 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
     t=t
     .translateZ(-shoulderOffsetZ)
     .translateY(shoulderOffsetY)
-    .translateY(shoulderOffsetX)
+    .translateX(shoulderOffsetX)
     .rotateY(-qWaist[1])
     .rotateZ(-qWaist[0])
     .rotateY(-bodyPitch)
@@ -2033,15 +2033,17 @@ THOROP_kinematics_inverse_r_leg(Transform trLeg)
 	  double bodyPitch, const double *qWaist, double handOffsetXNew, double handOffsetYNew, double handOffsetZNew, int flip_shoulderroll) 
 	{
 		*/
-	/* NOTE: !!Assume the ARM_LEFT only!!! */
+	/* NOTE: !!Assume the ARM_LEFT/ARM_RIGHT only!!! */
 	// TODO: Add flip_shoulderroll
 	// TODO: Add end effector OffsetNew code back in
 	// TODO: Deal with the waist and bodyPitch
 	// NOTE: trArm *WILL* be modified
-std::vector<double> THOROP_kinematics_inverse_arm(Transform trArm, std::vector<double>& qOrg, double shoulderYaw = 0) {
+std::vector<double> THOROP_kinematics_inverse_arm(Transform trArm, std::vector<double>& qOrg, double shoulderYaw) {
   // Closed-form inverse kinematics for THOR-OP 7DOF arm
   // (pitch-roll-yaw-pitch-yaw-roll-yaw)
   // Shoulder yaw angle is given
+	
+	printf("shoulderYaw: %f\n", shoulderYaw);
 
 //Forward kinematics:
 /*
@@ -2062,12 +2064,24 @@ std::vector<double> THOROP_kinematics_inverse_arm(Transform trArm, std::vector<d
     .translateZ(handOffsetZ);
 */
 
+
 	// t is trArm with no offsets of waist roations or shoulder position
 	Transform t;
+	t = t * trArm;
+	/*
+	Transform t;
+	// Left
+//  t = t
+//	  .translateZ(-shoulderOffsetZ)
+//		.translateY(-shoulderOffsetY)
+//	  .translateX(-shoulderOffsetX) * trArm;
+
+	// Right
   t = t
 	  .translateZ(-shoulderOffsetZ)
-		.translateY(-shoulderOffsetY)
-	  .translateY(-shoulderOffsetX) * trArm;
+		.translateY(shoulderOffsetY)
+	  .translateX(-shoulderOffsetX) * trArm;
+	*/
 		
 	// trArmRot is the Rotation-only part of trArm
 	// NOTE: Here, trArm is mutated

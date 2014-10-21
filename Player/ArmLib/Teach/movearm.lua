@@ -5,6 +5,7 @@ local util   = require'util'
 local vector = require'vector'
 local P = require'libPlan'
 require'hcm'
+local fk2 = require'fk2'
 
 local lShoulderYaw = -45*DEG_TO_RAD;
 local rShoulderYaw = 45*DEG_TO_RAD;

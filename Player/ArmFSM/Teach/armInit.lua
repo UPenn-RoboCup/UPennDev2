@@ -9,96 +9,59 @@ local Body   = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
 local t_entry, t_update, t_finish
-local timeout = 15.0
-local arm_planner = require 'libArmPlan'.new_planner()
+local timeout = 10.0
 
--- Goal position is arm Init, with hands in front, ready to manipulate
-
-local qLArmTarget, qRArmTarget, stage
+local lPathIter, rPathIter
 
 function state.entry()
   print(state._NAME..' Entry' )
-  -- Update the time of entry
-  local t_entry_prev = t_entry -- When entry was previously called
+  local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-  t_finish = t
 
-  stage = 1
-
-  local qLArm = Body.get_larm_position()
-  local qRArm = Body.get_rarm_position()
-
-  local qLWrist = Body.get_inverse_lwrist(
-    qLArm,
-    Config.arm.pLWristTarget0,
-    Config.arm.lShoulderYaw0)
-  local qRWrist = Body.get_inverse_rwrist(
-    qRArm,
-    Config.arm.pRWristTarget0,
-    Config.arm.rShoulderYaw0)
-
-  qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)
-  qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
-
-print(string.format("qLArm: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
-  unpack(qLArm*RAD_TO_DEG)
-))
-print(string.format("qLArmTarget: %.2f %.2f %.2f %.2f",
-unpack( vector.new(qLArmTarget)*RAD_TO_DEG)
-))
-
-  mcm.set_stance_enable_torso_track(0)
-
-  mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit)
-  mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit)
-
+	lPathIter, rPathIter = movearm.goto_wrists(
+		{Config.arm.pLWristTarget0, Config.arm.lShoulderYaw0, Config.arm.lrpy0},
+		{Config.arm.pRWristTarget0, Config.arm.rShoulderYaw0, Config.arm.rrpy0}
+	)
+	
+	-- Set Hardware limits in case
   for i=1,10 do
-    Body.set_larm_command_velocity({500,500,500,500,500,500,500})
-    Body.set_rarm_command_velocity({500,500,500,500,500,500,500})
-    Body.set_larm_command_acceleration({50,50,50,50,50,50,50})
-    Body.set_rarm_command_acceleration({50,50,50,50,50,50,50})
+    Body.set_larm_command_velocity(500)
+    Body.set_rarm_command_velocity(500)
+    Body.set_larm_command_acceleration(50)
+    Body.set_rarm_command_acceleration(50)
+    Body.set_larm_position_p(8)
+    Body.set_rarm_position_p(8)
     if not IS_WEBOTS then unix.usleep(1e5) end
   end
 end
 
 function state.update()
+	--  print(state._NAME..' Update' )
   local t  = Body.get_time()
   local dt = t - t_update
-  -- Save this at the last update time
   t_update = t
---  print(state._NAME..' Update' )
+  if t-t_entry > timeout then return'timeout' end
+	
+	local moreL, q_lWaypoint = lPathIter(Body.get_larm_command_position())
+	Body.set_larm_command_position(q_lWaypoint)
+	local moreR, q_rWaypoint = rPathIter(Body.get_rarm_command_position())
+	Body.set_rarm_command_position(q_rWaypoint)
+	-- Check if done
+	if not moreL and not moreR then return 'done' end
 
---[[
-print(string.format("Cur: %.2f %.2f %.2f %.2f" ,
-qLArm[1]*Body.RAD_TO_DEG,
-qLArm[2]*Body.RAD_TO_DEG,
-qLArm[3]*Body.RAD_TO_DEG,
-qLArm[4]*Body.RAD_TO_DEG
-))
-
-print(string.format("Nxt: %.2f %.2f %.2f %.2f",
-qLArmTarget[1]*Body.RAD_TO_DEG,
-qLArmTarget[2]*Body.RAD_TO_DEG,
-qLArmTarget[3]*Body.RAD_TO_DEG,
-qLArmTarget[4]*Body.RAD_TO_DEG
-
-))
---]]
-  if movearm.setArmJoints(qLArmTarget, qRArmTarget, dt)==1 then
-    return "done"
-  end
 end
 
 function state.exit()
 
-  --print("qLArm:",unpack(qLArmTarget))
-  arm_planner:reset_torso_comp(qLArmTarget,qRArmTarget)
+	-- Undo the hardware limits
   for i=1,10 do
     Body.set_larm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
     Body.set_rarm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
     Body.set_larm_command_acceleration({200,200,200,200,200,200,200})
     Body.set_rarm_command_acceleration({200,200,200,200,200,200,200})
+    Body.set_larm_position_p(32)
+    Body.set_rarm_position_p(32)
     if not IS_WEBOTS then unix.usleep(1e5) end
   end
 

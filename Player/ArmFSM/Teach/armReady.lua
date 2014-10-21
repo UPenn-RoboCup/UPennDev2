@@ -2,32 +2,14 @@ local state = {}
 state._NAME = ...
 require'hcm'
 local Body = require'Body'
-local K = Body.Kinematics
 local vector = require'vector'
 local util   = require'util'
 local movearm = require'movearm'
-local P = require'libPlan'
 local t_entry, t_update, t_finish
 local timeout = 10.0
 
-local q_rGoal = Kinematics.inverse_r_arm_7(
-	{0.46,-0.25, 0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
-	Body.get_rarm_command_position(),
-	0,
-	0,
-	Body.get_waist_command_position()
-)
-
-local q_lGoal = vector.zeros(#Body.get_larm_position())
-
-local lPlanner = P.new_planner(K,
-	vector.slice(Config.servo.min_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
-	vector.slice(Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]))
-local rPlanner = P.new_planner(K,
-	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]), 
-	vector.slice(Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]))
-
-
+local trRGoal = {0.46,-0.25, 0.15, 0,0*DEG_TO_RAD, 45*DEG_TO_RAD}
+local qLGoal = vector.zeros(#Body.get_larm_position())
 local lPathIter, rPathIter
 
 function state.entry()
@@ -36,8 +18,8 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 	--
-	lPathIter = lPlanner:joint_iter(Body.get_larm_position(), q_lGoal, DEG_TO_RAD / 2)
-	rPathIter = rPlanner:joint_iter(Body.get_rarm_position(), q_rGoal, DEG_TO_RAD / 2)
+	lPathIter, rPathIter = movearm.goto_tr6(nil, trRGoal)
+	lPathIter = movearm.goto_q(qLGoal)
 end
 
 function state.update()
@@ -50,16 +32,13 @@ function state.update()
 	--print('L Current', Body.get_larm_current()*1)
 	--print('R Current', Body.get_rarm_current()*1)
 	-- Plan the next joint position
-  local q_lWaypoint = lPathIter(Body.get_larm_command_position())
-	if type(q_lWaypoint)=='table' then
-		Body.set_larm_command_position(q_lWaypoint)
-	end
-	local q_rWaypoint = rPathIter(Body.get_rarm_command_position())
-	if type(q_rWaypoint)=='table' then
-		Body.set_rarm_command_position(q_rWaypoint)
-	end
+	
+	local moreL, q_lWaypoint = lPathIter(Body.get_larm_command_position())
+	Body.set_larm_command_position(q_lWaypoint)
+	local moreR, q_rWaypoint = rPathIter(Body.get_rarm_command_position())
+	Body.set_rarm_command_position(q_rWaypoint)
 	-- Check if done
-	if q_lWaypoint==true and q_rWaypoint==true then
+	if not moreL and not moreR then
 		return 'done'
 	end
 end

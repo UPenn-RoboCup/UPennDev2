@@ -186,27 +186,16 @@ local function joint_stack (self, qArm, qGoal, res_q)
 	return setmetatable(qStack, mt)
 end
 
-local function joint_iter (self, qArm0, qGoal, res_q)
+local function joint_iter (self, qGoal, res_q)
 	res_q = res_q or 2 * DEG_TO_RAD
 	qGoal = util.clamp_vector(qGoal, self.min_q, self.max_q)
 	return function(cur_qArm, human)
 		local dq = qGoal - cur_qArm
 		local distance = vector.norm(dq)
-		if distance<res_q then return true end
+		if distance < res_q then return nil, qGoal end
 		local ddq = dq / distance * res_q
-		return cur_qArm + ddq
+		return distance, cur_qArm + ddq
 	end
-
-end
-
--- Return a joint iter or a line iter
--- Also, could return some other policy
--- Each policy, I guess, should be able to take some feedback
--- It's a greedy follower then, with some feedback
-local learn_planner = function()
-	-- Initialize all the policies given the goal
-	-- Should we have them all running inside a thread?
-	return policy[imax]
 end
 
 libPlan.new_planner = function(kinematics, min_q, max_q)

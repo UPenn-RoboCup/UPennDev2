@@ -35,6 +35,7 @@ fsm.Arm = {
   {'armIdle', 'timeout', 'armIdle'},
 	{'armIdle', 'init', 'armInit'},
 	-- Init
+	{'armInit', 'timeout', 'armInit'},
   {'armInit', 'done', 'armStance'},
 	-- Stance
 	{'armStance', 'timeout', 'armStance'},

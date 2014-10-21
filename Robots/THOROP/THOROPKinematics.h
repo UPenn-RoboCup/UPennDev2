@@ -228,6 +228,8 @@ std::vector<double> THOROP_kinematics_inverse_leg_tilt(
 	const Transform trLeg, double footTilt, int leg);
 
 
-double THOROP_kinematics_calculate_knee_height(const double *q); 
+double THOROP_kinematics_calculate_knee_height(const double *q);
+
+std::vector<double> THOROP_kinematics_inverse_arm(Transform trArm, std::vector<double>& q, double shoulderYaw);
 
 #endif

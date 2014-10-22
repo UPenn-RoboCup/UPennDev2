@@ -20,7 +20,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 	--
-	lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal)
+	lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal, {20*DEG_TO_RAD}, {-45*DEG_TO_RAD})
 end
 
 function state.update()
@@ -45,6 +45,7 @@ function state.update()
 	local moreL, q_lWaypoint = lPathIter(qLArm)
 	--]]
 	Body.set_larm_command_position(q_lWaypoint)
+	
 	----[[
 	local qRArm = Body.get_rarm_command_position()
 	local moreR, q_rWaypoint = rPathIter(qRArm, dt)

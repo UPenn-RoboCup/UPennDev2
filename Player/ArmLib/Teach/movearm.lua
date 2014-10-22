@@ -7,9 +7,6 @@ local P = require'libPlan'
 require'hcm'
 local K = require'K_ffi'
 
-local lShoulderYaw = -45*DEG_TO_RAD;
-local rShoulderYaw = 45*DEG_TO_RAD;
-
 local lPlanner = P.new_planner(K,
 	vector.slice(Config.servo.min_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
 	vector.slice(Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
@@ -22,13 +19,8 @@ local rPlanner = P.new_planner(K,
 )
 rPlanner:set_chain(K.forward_r_arm, K.inverse_r_arm)
 
+-- TODO: Add dt into the joint iterator
 local dqLimit = DEG_TO_RAD / 3
-
-	-- Body.get_inverse_lwrist:
-	--[[
-  return Kinematics.inverse_l_wrist(trL, qL, lShoulderYaw or qL[3],
-      bodyTilt or mcm.get_stance_bodyTilt(), qWaist or Body.get_waist_command_position())
-	--]]
 
 function movearm.goto_wrists(lwrist, rwrist)
 	local lPathIter, rPathIter
@@ -64,15 +56,15 @@ function movearm.goto_tr_via_q(lwrist, rwrist)
 end
 
 -- Take a desired Transformation matrix and move in a line towards it
-function movearm.goto_tr(lwrist, rwrist)
+function movearm.goto_tr(lwrist, rwrist, loptions, roptions)
 	local lPathIter, rPathIter
 	if lwrist then
 		local qLArm = Body.get_larm_command_position()
-		lPathIter = lPlanner:line_iter(lwrist, qLArm, dqLimit)
+		lPathIter = lPlanner:line_iter(lwrist, qLArm, 0.01, 3*DEG_TO_RAD, loptions)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
-		rPathIter = rPlanner:line_iter(rwrist, qRArm, dqLimit)
+		rPathIter = rPlanner:line_iter(rwrist, qRArm, 0.01, 3*DEG_TO_RAD, roptions)
 	end
 	return lPathIter, rPathIter
 end

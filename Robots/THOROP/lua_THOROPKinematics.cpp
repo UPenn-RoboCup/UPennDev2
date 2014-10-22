@@ -585,8 +585,11 @@ static int luaTHOROP_inverse_arm(lua_State *L) {
     qArm = THOROP_kinematics_inverse_arm(tr, qArm0, shoulderYaw);
 	}
 	lua_pushvector(L, qArm);
-	// TODO:  some other indicator...
-	//lua_pushnumber(L, is_reach_back);
+	// Push the shoulder yaw is the indicator of the current null space setup
+	//lua_pushnumber(L, qArm[2]);
+	// NOTE: Just for forward, actually :P we know from the inverse input
+	// TODO: Common API to mean a float value for interpolation?
+	// TODO: Is COM compensation a good null space option?
 	return 1;
 }
 

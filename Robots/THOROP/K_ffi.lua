@@ -32,14 +32,14 @@ function K.forward_r_arm(qRArm)
 	tr0[1][4] = tr0[1][4] + shoulderOffsetX
 	tr0[2][4] = tr0[2][4] - shoulderOffsetY
 	tr0[3][4] = tr0[3][4] + shoulderOffsetZ
-	return T.copy(tr0)
+	return T.copy(tr0), {qRArm[3]}
 end
 function K.forward_l_arm(qLArm)
 	local tr0 = fk_arm(qLArm)
 	tr0[1][4] = tr0[1][4] + shoulderOffsetX
 	tr0[2][4] = tr0[2][4] + shoulderOffsetY
 	tr0[3][4] = tr0[3][4] + shoulderOffsetZ
-	return T.copy(tr0)
+	return T.copy(tr0), {qLArm[3]}
 end
 
 -- Inverse with respect to the torso

@@ -36,13 +36,13 @@ local line_stack = function(self, qArm, trGoal, res_pos, res_ang, use_safe_inver
 	-- If goal is position vector, then skip check
 	local skip_angles = type(trGoal[1])=='number'
 	-- Save the goal
-	local qGoal, posGoal, quatGoal, is_reach_back
+	local qGoal, posGoal, quatGoal
 	if skip_angles==true then
 		posGoal = trGoal
-		qGoal, is_reach_back = K.inverse_arm_position(posGoal,qArm)
+		qGoal = K.inverse_arm_position(posGoal,qArm)
 	else
 		-- Must also fix the rotation matrix, else the yaw will not be correct!
-		qGoal, is_reach_back = K.inverse_arm(trGoal,qArm,use_safe_inverse)
+		qGoal = K.inverse_arm(trGoal,qArm)
 	end
 	--
 	qGoal = util.clamp_vector(qGoal,self.min_q,self.max_q)
@@ -125,36 +125,42 @@ end
 
 -- This should have exponential approach properties...
 -- ... are the kinematics "extras" - like shoulderYaw, etc. (Null space)
-local line_iter = function(self, trGoal, qArm0, res_pos, res_ang, ...)
+local line_iter = function(self, trGoal, qArm0, res_pos, res_ang, null_options)
 	res_pos = res_pos or 0.005
 	res_ang = res_ang or 3*DEG_TO_RAD
+	null_options = null_options or {}
 	-- If goal is position vector, then skip check
 	local skip_angles = type(trGoal[1])=='number'
 	--
 	local forward, inverse = self.forward, self.inverse
 	-- Save the goal
-	local qGoal, posGoal, quatGoal, is_reach_back
+	local qGoal, posGoal, quatGoal
 	if skip_angles then
 		posGoal = trGoal
-		qGoal, is_reach_back = inverse_position(posGoal, qArm0)
+		qGoal = inverse_position(posGoal, qArm0, unpack(null_options))
 	else
 		-- Must also fix the rotation matrix, else the yaw will not be correct!
-		qGoal, is_reach_back = inverse(trGoal, qArm0)
+		qGoal = inverse(trGoal, qArm0, unpack(null_options))
 	end
 	--
 	qGoal = util.clamp_vector(qGoal, self.min_q, self.max_q)
 	--
-	local fkGoal = forward(qGoal)
-	--
+	local fkGoal, null_options0 = forward(qGoal)
 	if not skip_angles then
 		quatGoal, posGoal = T.to_quaternion(fkGoal)
 		vector.new(posGoal)
 	end
+	
+	local fkArm0, null_options0 = forward(qArm0)
+	local quatArm0, posArm0 = T.to_quaternion(fkArm0)
+	local dPos0 = posGoal - posArm0
+	local distance0 = vector.norm(dPos0)
+	
 	local dqdt_limit = self.dqdt_limit
 	-- We return the iterator and the final joint configuarion
 	-- TODO: Add failure detection; if no dist/ang changes in a while
 	return function(cur_qArm, dt)
-		local cur_trArm, is_singular = forward(cur_qArm)
+		local cur_trArm, null_options_tmp = forward(cur_qArm)
 		--if skip_angles==false and is_singular then print('PLAN SINGULARITY') end
 		local trStep, dAng, dAxis, quatArm, posArm
 		if skip_angles then
@@ -181,7 +187,7 @@ local line_iter = function(self, trGoal, qArm0, res_pos, res_ang, ...)
 			-- Just translation
 			local ddpos = (res_pos / distance) * dPos
 			if skip_angles then
-				return inverse_position(ddpos+posArm, cur_qArm)
+				return inverse_position(ddpos+posArm, cur_qArm, unpack(null_options))
 			end
 			trStep = T.trans(unpack(ddpos)) * cur_trArm
 		else
@@ -191,8 +197,16 @@ local line_iter = function(self, trGoal, qArm0, res_pos, res_ang, ...)
 				res_pos * dPos/distance + posArm
 			)
 		end
+		-- Abstract idea of how far we are from the goal, as a percentage.
+		-- Closer to the start, means the null options should be closer there, too.
+		-- Closer to the finish, the null options should be closer to the goal options
+		-- null_options_tmp: has the *current* option
+		local null_ph = 1 - math.max(0, math.min(1, distance / distance0))
+		for i, v in ipairs(null_options) do
+			null_options_tmp[i] = null_options0[i] * (1-null_ph) + v * null_ph
+		end
+		local iqWaypoint = inverse(trStep, cur_qArm, unpack(null_options_tmp))
 		-- Sanitize to avoid trouble with wrist yaw
-		local iqWaypoint = inverse(trStep, cur_qArm)
 		sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
 		return distance, iqWaypoint
 	end, qGoal

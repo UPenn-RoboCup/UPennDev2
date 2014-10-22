@@ -23,7 +23,8 @@ function WebotsBody.update_head_camera(img, sz, cnt, t)
 end
 
 function WebotsBody.update_chest_lidar(metadata, ranges)
-	if mw then mw.update(metadata, ranges) end
+  if mw then mw.update(metadata, ranges) end
+  if dw then dw.update(metadata, ranges) end
 end
 
 function WebotsBody.update_head_lidar(metadata, ranges)
@@ -34,7 +35,6 @@ function WebotsBody.update(keycode)
 	if ww then ww.update() end
   if fw then fw.update() end
   if rw then rw.update() end
-  if dw then dw.update() end
 
 	if WebotsBody.USING_KB then kb.update(keycode) end
 	-- Add logging capability

@@ -127,7 +127,7 @@ if IS_WEBOTS then
     mesh = 'mesh_wizard',
     world = 'world_wizard',
     camera = 'camera_wizard',
-    detect = 'detect_wizard',
+    detect = 'detect_wizard2',
   }  
   -- Adjust the tiemsteps if desired
   -- Config.camera_timestep = 33

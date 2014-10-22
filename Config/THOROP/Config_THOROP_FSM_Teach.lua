@@ -43,10 +43,12 @@ fsm.Arm = {
 	{'armStance', 'teleop', 'armTeleop'},
 	-- Ready pose (for manipulating)
 	{'armReady', 'timeout', 'armReady'},
+	{'armReady', 'done', 'armTeleop'},
 	{'armReady', 'teleop', 'armTeleop'},
 	-- Teleop
 	{'armTeleop', 'timeout', 'armTeleop'},
 	{'armTeleop', 'init', 'armInit'},
+	{'armTeleop', 'ready', 'armReady'},
 }
 
 fsm.Motion = {

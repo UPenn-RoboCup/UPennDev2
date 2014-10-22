@@ -102,11 +102,32 @@ local line_stack = function(self, qArm, trGoal, res_pos, res_ang, use_safe_inver
 	return setmetatable(qStack, mt), qGoal
 end
 
+local function sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
+	local diff, mod_diff
+	for i, v in ipairs(cur_qArm) do
+		diff = iqWaypoint[i] - v
+		mod_diff = util.mod_angle(diff)
+		if math.abs(diff) > math.abs(mod_diff) then
+			if dt then
+				iqWaypoint[i] = v + util.procFunc(mod_diff, 0, dqdt_limit[i]*dt)
+			else
+				iqWaypoint[i] = v + mod_diff
+			end
+		else
+			if dt then
+				iqWaypoint[i] = v + util.procFunc(diff, 0, dqdt_limit[i]*dt)
+			else
+				iqWaypoint[i] = v + diff
+			end
+		end
+	end
+end
+
 -- This should have exponential approach properties...
 -- ... are the kinematics "extras" - like shoulderYaw, etc. (Null space)
 local line_iter = function(self, trGoal, qArm0, res_pos, res_ang, ...)
 	res_pos = res_pos or 0.005
-	res_ang = res_ang or 2*DEG_TO_RAD
+	res_ang = res_ang or 3*DEG_TO_RAD
 	-- If goal is position vector, then skip check
 	local skip_angles = type(trGoal[1])=='number'
 	--
@@ -129,9 +150,10 @@ local line_iter = function(self, trGoal, qArm0, res_pos, res_ang, ...)
 		quatGoal, posGoal = T.to_quaternion(fkGoal)
 		vector.new(posGoal)
 	end
+	local dqdt_limit = self.dqdt_limit
 	-- We return the iterator and the final joint configuarion
 	-- TODO: Add failure detection; if no dist/ang changes in a while
-	return function(cur_qArm)
+	return function(cur_qArm, dt)
 		local cur_trArm, is_singular = forward(cur_qArm)
 		--if skip_angles==false and is_singular then print('PLAN SINGULARITY') end
 		local trStep, dAng, dAxis, quatArm, posArm
@@ -149,7 +171,8 @@ local line_iter = function(self, trGoal, qArm0, res_pos, res_ang, ...)
 				-- If both within tolerance, then we are done
 				-- If singular and no position to go, then done
 					-- TODO: Return the goal
-				return nil, cur_qArm, is_singular
+				sanitize(qGoal, cur_qArm, dt, dqdt_limit)
+				return nil, qGoal, is_singular
 			end
 			-- Else, just rotate in place
 			local qSlerp = q.slerp(quatArm,quatGoal,res_ang/dAng)
@@ -165,17 +188,12 @@ local line_iter = function(self, trGoal, qArm0, res_pos, res_ang, ...)
 			-- Both translation and rotation
 			trStep = T.from_quaternion(
 				q.slerp(quatArm,quatGoal,res_ang/dAng),
-				dPos*res_pos/distance + posArm
+				res_pos * dPos/distance + posArm
 			)
 		end
 		-- Sanitize to avoid trouble with wrist yaw
 		local iqWaypoint = inverse(trStep, cur_qArm)
-		local diff, mod_diff
-		for i, v in ipairs(cur_qArm) do
-			diff = iqWaypoint[i] - v
-			mod_diff = util.mod_angle(diff)
-			if math.abs(diff) > math.abs(mod_diff) then iqWaypoint[i] = v + mod_diff end
-		end
+		sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
 		return distance, iqWaypoint
 	end, qGoal
 end
@@ -213,10 +231,11 @@ local function set_chain(self, forward, inverse)
 	self.inverse = inverse
 end
 
-libPlan.new_planner = function(kinematics, min_q, max_q)
+libPlan.new_planner = function(kinematics, min_q, max_q, dqdt_limit)
 	local planner = {
 		min_q = min_q or -90*DEG_TO_RAD*vector.ones(7),
 		max_q = max_q or 90*DEG_TO_RAD*vector.ones(7),
+		dqdt_limit = dqdt_limit or DEG_TO_RAD*vector.new{5,5,5, 5, 10,10,10},
 		line_stack = line_stack,
 		line_iter = line_iter,
 		joint_stack = joint_stack,

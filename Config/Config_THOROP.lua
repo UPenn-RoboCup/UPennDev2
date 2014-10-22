@@ -88,7 +88,7 @@ end
 
 
 -- DRC Site visit 2014
-----[[
+--[[
 --We are not doing any lidar based stuff
 --Config.libs.World = 'SiteVisit'   
 Config.libs.World = 'SiteVisit'   
@@ -107,7 +107,7 @@ end
 
 -- DRC Final setup
 -- for testing new walk controller
---[[
+----[[
 Config.libs.World = 'SiteVisit'   
 local exo = {
   'Robot','Walk','Net','Manipulation',
@@ -131,7 +131,7 @@ local exo = {
 	'Robot', 'Walk', 'Net', 'FSM_Teach', 'Arm_Teach'
 }
 if IS_WEBOTS then
-  Config.testfile = 'test_teach'
+  Config.testfile = 'test_teleop'--'test_teach'
   Config.wizards = {feedback = 'feedback_wizard'}
   Config.sensors = {ft = true}
 end

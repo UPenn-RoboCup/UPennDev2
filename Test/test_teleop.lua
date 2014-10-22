@@ -17,6 +17,12 @@ char_lut['1'] = function()
   motion_ch:send'stand'
 	arm_ch:send'init'
 end
+char_lut['2'] = function()
+	arm_ch:send'ready'
+end
+char_lut['0'] = function()
+	arm_ch:send'teleop'
+end
 char_lut[' '] = function()
   -- Debugging
   local qLArm = Body.get_larm_command_position()
@@ -40,20 +46,31 @@ char_lut[' '] = function()
 	print('Arm  COM',com_arm)
 	--]]
 end
-
+-- Sanitize to avoid trouble with wrist yaw
+local fabs = math.abs
+local function sanitize(iqArm, cur_qArm)
+	local diff, mod_diff
+	for i, v in ipairs(cur_qArm) do
+		diff = iqArm[i] - v
+		mod_diff = util.mod_angle(diff)
+		if fabs(diff) > fabs(mod_diff) then iqArm[i] = v + mod_diff end
+	end
+end
 lower_lut.g = function()
   if selected_arm==0 then
     local qLArm = Body.get_larm_command_position()
 		local tr = K.forward_l_arm(qLArm)
-		local iq = K.inverse_l_arm(tr, qLArm, qLArm[3] - DEG_TO_RAD)
-		local itr = K.forward_l_arm(iq)
-		Body.set_larm_command_position(iq)
+		local iqArm = K.inverse_l_arm(tr, qLArm, qLArm[3] - DEG_TO_RAD)
+		local itr = K.forward_l_arm(iqArm)
+		sanitize(iqArm, qLArm)
+		Body.set_larm_command_position(iqArm)
   else
     local qRArm = Body.get_rarm_command_position()
 		local tr = K.forward_r_arm(qRArm)
-		local iq = K.inverse_r_arm(tr, qRArm, qRArm[3] - DEG_TO_RAD)
-		local itr = K.forward_r_arm(iq)
-		Body.set_rarm_command_position(iq)
+		local iqArm = K.inverse_r_arm(tr, qRArm, qRArm[3] - DEG_TO_RAD)
+		local itr = K.forward_r_arm(iqArm)
+		sanitize(iqArm, qRArm)
+		Body.set_rarm_command_position(iqArm)
   end
 end
 
@@ -62,15 +79,17 @@ lower_lut.h = function()
   if selected_arm==0 then
     local qLArm = Body.get_larm_command_position()
 		local tr = K.forward_l_arm(qLArm)
-		local iq = K.inverse_l_arm(tr, qLArm, qLArm[3] + DEG_TO_RAD)
-		local itr = K.forward_l_arm(iq)
-		Body.set_larm_command_position(iq)
+		local iqArm = K.inverse_l_arm(tr, qLArm, qLArm[3] + DEG_TO_RAD)
+		local itr = K.forward_l_arm(iqArm)
+		sanitize(iqArm, qLArm)
+		Body.set_larm_command_position(iqArm)
   else
     local qRArm = Body.get_rarm_command_position()
 		local tr = K.forward_r_arm(qRArm)
-		local iq = K.inverse_r_arm(tr, qRArm, qRArm[3] + DEG_TO_RAD)
-		local itr = K.forward_r_arm(iq)
-		Body.set_rarm_command_position(iq)
+		local iqArm = K.inverse_r_arm(tr, qRArm, qRArm[3] + DEG_TO_RAD)
+		local itr = K.forward_r_arm(iqArm)
+		sanitize(iqArm, qRArm)
+		Body.set_rarm_command_position(iqArm)
   end
 end
 
@@ -156,12 +175,14 @@ local function apply_pre(d_tr)
 		local fkL = K.forward_l_arm(qLArm)
 		local trLGoal = d_tr * fkL
 		local iqArm = vector.new(K.inverse_l_arm(trLGoal, qLArm))
+		sanitize(iqArm, qLArm)
 		Body.set_larm_command_position(iqArm)
 	else
 		local qRArm = Body.get_rarm_command_position()
 		local fkR = K.forward_r_arm(qRArm)
 		local trRGoal = d_tr * fkR
 		local iqArm = vector.new(K.inverse_r_arm(trRGoal, qRArm))
+		sanitize(iqArm, qRArm)
 		Body.set_rarm_command_position(iqArm)
 	end
 end
@@ -172,12 +193,14 @@ local function apply_post(d_tr)
 		local fkL = K.forward_l_arm(qLArm)
 		local trLGoal = fkL * d_tr
 		local iqArm = vector.new(K.inverse_l_arm(trLGoal, qLArm))
+		sanitize(iqArm, qLArm)
 		Body.set_larm_command_position(iqArm)
 	else
 		local qRArm = Body.get_rarm_command_position()
 		local fkR = K.forward_r_arm(qLArm)
 		local trRGoal = fkR * d_tr
 		local iqArm = vector.new(K.inverse_r_arm(trRGoal, qRArm))
+		sanitize(iqArm, qRArm)
 		Body.set_rarm_command_position(iqArm)
 	end
 end

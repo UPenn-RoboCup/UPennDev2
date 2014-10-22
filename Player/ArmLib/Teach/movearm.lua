@@ -12,10 +12,14 @@ local rShoulderYaw = 45*DEG_TO_RAD;
 
 local lPlanner = P.new_planner(K,
 	vector.slice(Config.servo.min_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
-	vector.slice(Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]))
+	vector.slice(Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
+	vector.new{10,10,10, 10, 20,20,20}*DEG_TO_RAD
+)
 local rPlanner = P.new_planner(K,
 	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]), 
-	vector.slice(Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]))
+	vector.slice(Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
+	vector.new{10,10,10, 10, 20,20,20}*DEG_TO_RAD -- Angular speedlimits
+)
 rPlanner:set_chain(K.forward_r_arm, K.inverse_r_arm)
 
 local dqLimit = DEG_TO_RAD / 3
@@ -43,24 +47,23 @@ function movearm.goto_wrists(lwrist, rwrist)
 	return lPathIter, rPathIter
 end
 
--- Take in 6D Transform
-function movearm.goto_tr6(lwrist, rwrist)
+-- Take a desired Transformation matrix and move joint-wise to it
+function movearm.goto_tr_via_q(lwrist, rwrist)
 	local lPathIter, rPathIter
 	if lwrist then
 		local qLArm = Body.get_larm_command_position()
-		local qWaist = Body.get_waist_command_position()
-		local q_lGoal = Body.Kinematics.inverse_l_arm_7(lwrist,qRArm,0,0,qWaist)
-		lPathIter = lPlanner:joint_iter(q_lGoal, dqLimit)
+		local iqLArm = K.inverse_l_arm(lwrist)
+		lPathIter = lPlanner:joint_iter(iqLArm, dqLimit)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
-		local qWaist = Body.get_waist_command_position()
-		local q_rGoal = Body.Kinematics.inverse_r_arm_7(rwrist,qRArm,0,0,qWaist)
-		rPathIter = rPlanner:joint_iter(q_rGoal, dqLimit)
+		local iqRArm = K.inverse_r_arm(rwrist)
+		rPathIter = rPlanner:joint_iter(iqRArm, dqLimit)
 	end
 	return lPathIter, rPathIter
 end
 
+-- Take a desired Transformation matrix and move in a line towards it
 function movearm.goto_tr(lwrist, rwrist)
 	local lPathIter, rPathIter
 	if lwrist then
@@ -74,7 +77,7 @@ function movearm.goto_tr(lwrist, rwrist)
 	return lPathIter, rPathIter
 end
 
--- Take in Angles
+-- Take a desired joint configuration and move linearly in each joint towards it
 function movearm.goto_q(lwrist, rwrist)
 	local lPathIter, rPathIter
 	if lwrist then
@@ -84,30 +87,6 @@ function movearm.goto_q(lwrist, rwrist)
 		rPathIter = rPlanner:joint_iter(rwrist, dqLimit)
 	end
 	return lPathIter, rPathIter
-end
-
-function movearm.setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim)
-
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()  
-
-  local dqVelLeft = mcm.get_arm_dqVelLeft()
-  local dqVelRight = mcm.get_arm_dqVelRight()
-
-  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqVelLeft, dt )  
-  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqVelRight, dt )
-
-  -- TODO: Dynamixel is STUPID so we should manually check for the direction
-  for i=1,7 do
-    local qL_increment = util.mod_angle(qL_approach[i]-qLArm[i])
-    local qR_increment = util.mod_angle(qR_approach[i]-qRArm[i])
-    qL_approach[i] = qLArm[i] + qL_increment
-    qR_approach[i] = qRArm[i] + qR_increment
-  end
-
-  Body.set_larm_command_position( qL_approach )
-  Body.set_rarm_command_position( qR_approach )
-  if doneL2 and doneR2 then return 1 end
 end
 
 return movearm

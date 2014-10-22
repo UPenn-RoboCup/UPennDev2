@@ -94,8 +94,8 @@ lower_lut.h = function()
 end
 
 -- Translate the end effector
-local ds = 0.005
-local dr = 0.05
+local ds = 0.01
+local dr = 3 * DEG_TO_RAD
 local pre_arm = {
   u = T.trans(0,0,ds),
   m = T.trans(0,0,-ds),

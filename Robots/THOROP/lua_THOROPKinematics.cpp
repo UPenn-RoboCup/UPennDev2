@@ -590,6 +590,31 @@ static int luaTHOROP_inverse_arm(lua_State *L) {
 	return 1;
 }
 
+// Assume just the Left arm
+static int luaTHOROP_inverse_wrist(lua_State *L) {
+	std::vector<double> qArm;
+	double shoulderYaw;
+	//char is_reach_back;
+
+	// Current joint angles must be given as arg 2
+  if( !lua_istable(L, 1) ){
+		Transform tr = luaT_checktransform(L, 1);
+		std::vector<double> qArm0 = lua_checkvector(L, 2);
+		shoulderYaw = luaL_optnumber(L, 3, 0.0);
+		// TODO: Add any extra flags
+    qArm = THOROP_kinematics_inverse_wrist(tr, qArm0, shoulderYaw);
+	} else {
+		Transform tr = lua_checktransform(L, 1);
+		std::vector<double> qArm0 = lua_checkvector(L, 2);
+		shoulderYaw = luaL_optnumber(L, 3, 0.0);
+    qArm = THOROP_kinematics_inverse_wrist(tr, qArm0, shoulderYaw);
+	}
+	lua_pushvector(L, qArm);
+	// TODO:  some other indicator...
+	//lua_pushnumber(L, is_reach_back);
+	return 1;
+}
+
 static const struct luaL_Reg kinematics_lib [] = {
 	{"forward_head", forward_head},
 //	{"forward_larm", forward_l_arm},
@@ -641,6 +666,7 @@ static const struct luaL_Reg kinematics_lib [] = {
 
 	/* Extras */
 	{"inverse_arm", luaTHOROP_inverse_arm},
+	{"inverse_wrist", luaTHOROP_inverse_wrist},
 
 	{NULL, NULL}
 };

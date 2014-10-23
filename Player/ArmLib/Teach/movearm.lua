@@ -40,16 +40,16 @@ function movearm.goto_wrists(lwrist, rwrist)
 end
 
 -- Take a desired Transformation matrix and move joint-wise to it
-function movearm.goto_tr_via_q(lwrist, rwrist)
+function movearm.goto_tr_via_q(lwrist, rwrist, loptions, roptions)
 	local lPathIter, rPathIter
 	if lwrist then
 		local qLArm = Body.get_larm_command_position()
-		local iqLArm = K.inverse_l_arm(lwrist)
+		local iqLArm = K.inverse_l_arm(lwrist, qLArm, unpack(loptions))
 		lPathIter = lPlanner:joint_iter(iqLArm, dqLimit)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
-		local iqRArm = K.inverse_r_arm(rwrist)
+		local iqRArm = K.inverse_r_arm(rwrist, qRArm, unpack(roptions))
 		rPathIter = rPlanner:joint_iter(iqRArm, dqLimit)
 	end
 	return lPathIter, rPathIter

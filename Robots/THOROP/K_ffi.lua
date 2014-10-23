@@ -12,6 +12,20 @@ local elbowOffsetX =   .030;
 --local lowerArmLength = .186; //Default 7DOF arm
 local lowerArmLength = .250; -- LONGARM model
   
+--[[
+T = require'libTransform'
+K = require'K_ffi'
+qR = vector.zeros(7)
+sh = -30*DEG_TO_RAD
+trR = T.transform6D({0.2, -0.3, 0.13, 0, 0*DEG_TO_RAD, 45*DEG_TO_RAD})
+iqR = K.inverse_r_arm(trR, qR, sh)
+itrR = K.forward_r_arm(iqR)
+print(trR)
+print(itrR)
+print(qR)
+print(iqR)
+--]]
+	
 local function fk_arm(q)
 	local c1, s1 = cos(q[1]), sin(q[1])
 	local c2, s2 = cos(q[2]), sin(q[2])
@@ -51,11 +65,16 @@ end
 
 -- Inverse with respect to the torso
 function K.inverse_r_arm(trR, qRArm, shoulderYaw)
+	--[[
 	local tr = T.copy(trR)
 	tr[1][4] = tr[1][4] - shoulderOffsetX
 	tr[2][4] = tr[2][4] + shoulderOffsetY
 	tr[3][4] = tr[3][4] - shoulderOffsetZ
 	return vector.new(ik_arm(tr, qRArm or vector.zeros(7), shoulderYaw or qRArm[3]))
+	--]]
+	local tr6 = vector.new(T.position6D(trR))
+	return vector.new(Kinematics.inverse_r_arm_7(tr6, qRArm, shoulderYaw or qRArm[3], 0, {0,0}, 0,0,0))
+	
 end
 function K.inverse_l_arm(trL, qLArm, shoulderYaw)
 	local tr = T.copy(trL)

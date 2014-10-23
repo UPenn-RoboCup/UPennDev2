@@ -194,7 +194,7 @@ local function parse_read_leg(pkt, bus)
 end
 
 -- Custom Arm Packet
-local arm_packet_reg = {'position', 'current', 'data'}
+local arm_packet_reg = {'position', 'current'}
 local arm_packet_sz = 0
 local arm_packet_offsets = {}
 for i,v in ipairs(arm_packet_reg) do
@@ -234,7 +234,7 @@ local function form_arm_read_cmd(bus)
 	if has_mx and has_nx then
 		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
 	elseif has_nx then
-		bus.read_loop_cmd_str = lD.get_nx_position(bus.m_ids)
+		bus.read_loop_cmd_str = lD.get_indirect_data(bus.m_ids, arm_packet_reg)
 	else
 		-- Sync read with just MX does not work for some reason
 		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
@@ -274,10 +274,7 @@ local function parse_read_arm(pkt, bus)
 	local read_cur = c_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
 	c_ptr[read_j_id - 1] = read_cur
 	c_ptr_t[read_j_id - 1] = t_read
-	-- Update the F/T Sensor
-	local raw_str = pkt.raw_parameter:sub(arm_packet_offsets[2]+1, arm_packet_offsets[3])
-	parse_ft(left_ft, raw_str, m_id)
-	parse_ft(right_ft, raw_str, m_id)
+	--
 	return read_j_id
 end
 
@@ -342,8 +339,8 @@ local function form_read_loop_cmd(bus, cmd)
 	-- leg is *not* position, but indirect now
 	if bus.name:find'leg' then
 		return form_leg_read_cmd(bus)
---	elseif bus.name:find'arm' then
---		return form_arm_read_cmd(bus)
+	elseif bus.name:find'arm' then
+		return form_arm_read_cmd(bus)
 	end
 	local rd_addrs, has_mx, has_nx = {}, false, false
 	for _, m_id in ipairs(bus.m_ids) do

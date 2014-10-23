@@ -20,7 +20,8 @@ extern "C" {
 #include <iostream>
 #endif
 
-#define SKIP 1
+#define CAPACITY 200 // TODO
+#define CUBOID_DEPTH 0.02 // meters
 #define DEFAULT_RESOLUTION 0.02
 #define DEFAULT_INV_RESOLUTION 50
 
@@ -37,12 +38,15 @@ const int range_min = 0;
 
 double xmin, ymin, xmax, ymax;
 double invxmax, invymax;
+int nrow, ncol;
+
+int depth = CUBOID_DEPTH;
 double res = DEFAULT_RESOLUTION, invRes = DEFAULT_INV_RESOLUTION;
 
 typedef struct CUBOID {
   int pnum; // # of points registered
   int cls;  // class label
-  float h, d;  // height and depth of the tccm
+  float h, d;  // height and depth of the cuboid
   std::list<int> msnlist;
   float p[3], P[3][3], s[3], S[3][3];
 } CUBOID;
@@ -63,11 +67,61 @@ int lua_set_boundaries(lua_State *L) {
 	ymax = luaL_checknumber(L, 4);
 	invymax = ymax * DEFAULT_INV_RESOLUTION;
 	invxmax = xmax * DEFAULT_INV_RESOLUTION;
+  nrow = floor((ymax-ymin)*invRes + 0.5);
+  ncol = floor((xmax-xmin)*invRes + 0.5);
 	return 0;
 }
 
+/* Set up empty map */
+// TODO: list or vector inside each cell?
+// we need to insert in a sorted list
+// and we also need constatnly random access...
+static std::vector<std::vector<CUBOID> > map;
+int lua_set_up_map(lua_State *L) {
+  map.resize(nrow*ncol);
+  return 0;
+}
+
+// Add a point and update the cuboid accordingly
+void add_point(std::vector<CUBOID> cell, int z) {
+  for (int i=0; i<cell.size(); i++) {
+    if (cell[i].h-cell[i].d>z) {
+      // Point is not within or close to any cuboid
+      CUBOID c;
+      c.h = z;
+      c.d = depth;
+      c.pnum = 1;
+      cell.insert(cell.begin()+i, i, c);
+      break;
+      
+    } else if (cell[i].h>=z && cell[i].h-cell[i].d<=z) {
+      // Point is IN current cuboid
+      cell[i].d = cell[i].d + cell[i].h - z;
+      break;
+    } else if (cell[i].h<z && cell[i].h+depth>=z) {
+      // Point is above current cuboid but close
+      cell[i].h = z;
+      cell[i].d = cell[i].d + z - cell[i].h;
+      break;
+    } else if (i==cell.size()-1) {
+      // hit the last one already and need a new cuboid
+      CUBOID c;
+      c.h = z;
+      c.d = depth;
+      c.pnum = 1;
+      cell.push_back(c);
+      break;
+    } 
+  }
+}
+
+void update_part_map(int x) {
+  
+}
 
 int lua_grow_map (lua_State *L) {
+  printf("TCCM MAP UPDATING...\n");
+  
 	THFloatTensor *scan_t = (THFloatTensor *) luaT_checkudata(L, 1, "torch.FloatTensor");
 	THArgCheck(scan_t->nDimension == 2, 1, "tensor must have two dimensions");
   
@@ -85,53 +139,39 @@ int lua_grow_map (lua_State *L) {
   
   // Project the points into cuboids
   float x, y, z;
-  long p = scan_t->size[1];
+  int xi, yi, map_idx;
   float* scan_ptr = scan_t->storage->data ; //TODO?: + scan_t->storageOffset;
-  for (int i=0; i<p; i++) {
+  std::vector<std::vector<CUBOID> > part_map(nrow*ncol);
+  for (int i=0; i<scan_t->size[1]; i++) {
     x = *(scan_ptr);
     y = *(scan_ptr + scan_istride);
     z = *(scan_ptr + 2*scan_istride);
     scan_ptr += 1;
-    
+    // Boundary check
 		if(x<xmin||x>xmax||y<ymin||y>ymax) continue;
     
-    // put into cuboid
+		// Floor so that it starts from 0
+		xi = floor((x - xmin) * invRes);
+		yi = floor((y - ymin) * invRes);
+		// Get the index on the map
+		map_idx = xi * scan_istride + yi;
+    
+    // update cuboid in this cell
+    if (part_map[map_idx].empty()) {
+      // Create a new cuboid
+      CUBOID c;
+      c.pnum = 1;
+      c.h = z;
+      c.d = depth;
+      // TODO: insert as needed
+      part_map[map_idx].push_back(c);
+    } else {
+      // check if fall into an existing cuboid
+      add_point(part_map[map_idx], z);
+    }
+    
   }
   return 0;
-}
-
-
-int lua_grow_map_old(lua_State *L) {
-	THDoubleTensor *cost_t = (THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
-	THArgCheck(cost_t->nDimension == 2, 1, "tensor must have two dimensions");
-	int r_i = luaL_checkint(L, 2);
-	int r_j = luaL_checkint(L, 3);
-	long m = cost_t->size[0];
-	long n = cost_t->size[1];
-	//long size = m*n;
-	THDoubleTensor *grown_t = THDoubleTensor_newClone(cost_t);
-	double* grown_ptr = grown_t->storage->data;
-	double* cur_ptr = grown_ptr;
-	for (long i = 0; i<m; i++){
-		for (long j = 0; j<n; j++){
-			cur_ptr++;
-			if(i<r_i||i>m-r_i||j<r_j||j>n-r_j) continue;
-			double c = THTensor_fastGet2d( cost_t, i, j );
-			if(c>127){
-				for(long b = -r_j; b<r_j; b++){
-					for(long a = 1; a<r_i; a++){
-						double* ptr = cur_ptr + a*n + b;
-						if(c>*ptr) *ptr = c;
-						ptr = cur_ptr - a*n + b;
-						if(c>*ptr) *ptr = c;
-					}
-				}
-			}
-		}
-	}
-
-	luaT_pushudata(L, grown_t, "torch.DoubleTensor");
-	return 1;
 }
 
 
@@ -278,6 +318,7 @@ static const struct luaL_Reg tccm_lib [] = {
 	//
 	{"set_resolution", lua_set_resolution},
 	{"set_boundaries", lua_set_boundaries},
+  {"set_up_map", lua_set_up_map},
 	//
 	{NULL, NULL}
 };

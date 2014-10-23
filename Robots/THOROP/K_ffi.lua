@@ -1,4 +1,5 @@
 local K = {}
+local vector = require'vector'
 local torch = require'torch'
 local T = require'libTransform'
 local Kinematics = require'THOROPKinematics'

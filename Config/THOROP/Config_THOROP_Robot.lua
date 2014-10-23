@@ -63,7 +63,7 @@ local left_arm = {
   ttyname = '/dev/ttyUSB1',
   m_ids = {2,4,6,8,10,12,14,
   -- lidar
-  37,
+  --37,
 },
   enable_read = true
 }

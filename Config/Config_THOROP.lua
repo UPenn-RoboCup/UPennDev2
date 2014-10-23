@@ -107,7 +107,7 @@ end
 
 -- DRC Final setup
 -- for testing new walk controller
-----[[
+--[[
 Config.libs.World = 'SiteVisit'   
 local exo = {
   'Robot','Walk','Net','Manipulation',
@@ -123,7 +123,7 @@ end
 
 
 -- Teach robot to go up steps
---[[
+----[[
 Config.libs.MotionLib = 'Teach'
 Config.libs.ArmLib = 'Teach'
 -- Precedence in loading, for overrides!

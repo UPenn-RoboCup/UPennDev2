@@ -9,8 +9,8 @@ local t_entry, t_update, t_finish
 local timeout = 10.0
 
 local T = require'libTransform'
-local trRGoal = T.transform6D({0.46,-0.25, 0.15, 0, 0*DEG_TO_RAD, 45*DEG_TO_RAD})
-local trLGoal = T.trans(0.36, 0.25, 0.0)
+local trRGoal = T.transform6D({0.2, -0.3, 0.13, 0, 0*DEG_TO_RAD, 45*DEG_TO_RAD})
+local trLGoal = T.trans(0.25, 0.25, 0.0)
 
 local lPathIter, rPathIter
 

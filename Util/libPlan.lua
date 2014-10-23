@@ -147,8 +147,10 @@ local line_iter = function(self, trGoal, qArm0, res_pos, res_ang, null_options)
 	--
 	local fkGoal, null_options0 = forward(qGoal)
 	if not skip_angles then
+		print('posGoal In ', trGoal)
 		quatGoal, posGoal = T.to_quaternion(fkGoal)
 		vector.new(posGoal)
+		print('posGoal Out', posGoal)
 	end
 	
 	local fkArm0, null_options0 = forward(qArm0)
@@ -170,7 +172,8 @@ local line_iter = function(self, trGoal, qArm0, res_pos, res_ang, null_options)
 			dAng, dAxis = q.diff(quatArm,quatGoal)
 		end
 		--
-		local dPos = posGoal - posArm
+		local dPos = posGoal - vector.new(posArm)
+		--print('dPos', dPos, posGoal, posArm)
 		local distance = vector.norm(dPos)
 		if distance < res_pos then
 			if skip_angles or math.abs(dAng)<res_ang or is_singular then

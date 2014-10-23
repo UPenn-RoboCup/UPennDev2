@@ -197,7 +197,7 @@ local function apply_post(d_tr)
 		Body.set_larm_command_position(iqArm)
 	else
 		local qRArm = Body.get_rarm_command_position()
-		local fkR = K.forward_r_arm(qLArm)
+		local fkR = K.forward_r_arm(qRArm)
 		local trRGoal = fkR * d_tr
 		local iqArm = vector.new(K.inverse_r_arm(trRGoal, qRArm))
 		sanitize(iqArm, qRArm)
@@ -213,25 +213,28 @@ local function show_status()
 	local qlarm = Body.get_larm_position()
 	local qrarm = Body.get_rarm_position()
 	
+	local fkL = K.forward_l_arm(qlarm)
+	local fkR = K.forward_r_arm(qrarm)
+	
   local l_indicator = vector.zeros(#qlarm)
   l_indicator[selected_joint] = selected_arm==0 and 1 or 0
   local r_indicator = vector.zeros(#qlarm)
   r_indicator[selected_joint] = selected_arm==1 and 1 or 0
-	
-  print(string.format('%s %s\n%s\n%s',
+
+  print(string.format('%s %s\n%s\n%s\n%s',
     util.color('Left Arm Position', 'yellow'),
     selected_arm==0 and '*' or '',
-    tostring(qlarm*RAD_TO_DEG),
-    l_indicator
-    )
-  )
-  print(string.format('%s %s\n%s\n%s',
+		l_indicator,
+    'q: '..tostring(qlarm*RAD_TO_DEG),
+		'Pos6d: '..tostring(vector.new(T.position6D(fkL)))
+  ))
+  print(string.format('%s %s\n%s\n%s\n%s',
     util.color('Right Arm Position', 'yellow'),
     selected_arm==1 and '*' or '',
-    tostring(qrarm*RAD_TO_DEG),
-    r_indicator
-    )
-  )
+		r_indicator,
+    'q: '..tostring(qrarm*RAD_TO_DEG),
+    'Pos6d: '..tostring(vector.new(T.position6D(fkR)))
+  ))
   
 end
 

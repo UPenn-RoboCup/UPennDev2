@@ -41,7 +41,7 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
+  --if t-t_entry > timeout then return'timeout' end
 	
 	local moreL, q_lWaypoint = lPathIter(Body.get_larm_command_position())
 	Body.set_larm_command_position(q_lWaypoint)
@@ -60,8 +60,8 @@ function state.exit()
     Body.set_rarm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
     Body.set_larm_command_acceleration({200,200,200,200,200,200,200})
     Body.set_rarm_command_acceleration({200,200,200,200,200,200,200})
-    Body.set_larm_position_p(32)
-    Body.set_rarm_position_p(32)
+    --Body.set_larm_position_p(32)
+    --Body.set_rarm_position_p(32)
     if not IS_WEBOTS then unix.usleep(1e5) end
   end
 

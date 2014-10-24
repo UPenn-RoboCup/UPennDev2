@@ -53,10 +53,10 @@ plot(gyro);
 title('Gyro');
 legend('Roll', 'Pitch', 'Yaw');
 % 
-% figure(4);
-% plot(rpy);
-% title('Angle');
-% legend('Roll', 'Pitch', 'Yaw');
+figure(6);
+plot(rpy);
+title('Angle');
+legend('Roll', 'Pitch', 'Yaw');
 
 % figure(4);
 % plot( ts, rad2deg(rpy(:, 1)) );

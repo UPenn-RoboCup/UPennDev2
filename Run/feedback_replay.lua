@@ -2,7 +2,7 @@
 -- (c) 2013, 2014 Stephen McGill, Seung-Joon Yi
 dofile'../include.lua'
 
-local LOG_DATE = '10.24.2014.10.57.42.poke'
+local LOG_DATE = '10.24.2014.14.12.36'
 
 local si = require'simple_ipc'
 local feedback_udp_ch =
@@ -31,7 +31,7 @@ local signal = require'signal'.signal
 signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
 
-local min_cnt, max_cnt = 1140, 2210
+local min_cnt, max_cnt = -math.huge, math.huge
 
 for i, metadata_joint in logged_joint do
 

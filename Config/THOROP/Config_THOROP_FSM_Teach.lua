@@ -49,6 +49,10 @@ fsm.Arm = {
 	{'armTeleop', 'timeout', 'armTeleop'},
 	{'armTeleop', 'init', 'armInit'},
 	{'armTeleop', 'ready', 'armReady'},
+	{'armTeleop', 'poke', 'armPoke'},
+	-- Poke
+	{'armPoke', 'timeout', 'armPoke'},
+	{'armPoke', 'done', 'armReady'},
 }
 
 fsm.Motion = {

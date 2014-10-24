@@ -48,10 +48,10 @@ figure(4);
 plot( ts, cur(:, joint_idx) );
 title('Current (Amperes)');
 
-% figure(2);
-% plot(gyro);
-% title('Gyro');
-% legend('Roll', 'Pitch', 'Yaw');
+figure(5);
+plot(gyro);
+title('Gyro');
+legend('Roll', 'Pitch', 'Yaw');
 % 
 % figure(4);
 % plot(rpy);

@@ -20,6 +20,9 @@ end
 char_lut['2'] = function()
 	arm_ch:send'ready'
 end
+char_lut['3'] = function()
+	arm_ch:send'poke'
+end
 char_lut['0'] = function()
 	arm_ch:send'teleop'
 end

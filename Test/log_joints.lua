@@ -36,6 +36,8 @@ while running do
 	e.gyro, e.t_imu = Body.get_gyro()
 	e.acc = Body.get_accelerometer()
 	e.rpy = Body.get_rpy()
+	e.pose = wcm.get_robot_odometry()
+	e.battery = Body.get_battery()
 	-- Write the log
   logger:record(e)
 	-- Status message

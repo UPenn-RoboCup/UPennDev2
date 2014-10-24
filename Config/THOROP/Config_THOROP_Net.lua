@@ -90,6 +90,7 @@ streams.kinect2_color = {
 streams.feedback = {
   ws = 9013,
 	udp= 54329,
+	sub = 'feedback'
 }
 streams.audio = {
   ws = 9014,

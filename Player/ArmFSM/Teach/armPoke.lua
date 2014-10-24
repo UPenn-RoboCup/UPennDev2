@@ -21,7 +21,8 @@ function state.entry()
 	
 	local qR = Body.get_rarm_position()
 	local fR = K.forward_r_arm(qR)
-	local trRGoal = fR * T.trans(0.1,0,0)
+	--local trRGoal = fR * T.trans(0.1,0,0)
+	local trRGoal = fR * T.trans(0,0.1,0)
 	--
 	local qL = Body.get_larm_position()
 	local fL = K.forward_l_arm(qL)

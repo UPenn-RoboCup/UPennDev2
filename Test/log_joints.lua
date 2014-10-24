@@ -9,7 +9,7 @@ end
 signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
 
-
+require'wcm'
 local si = require'simple_ipc'
 local libLog = require'libLog'
 local Body = require('Body')

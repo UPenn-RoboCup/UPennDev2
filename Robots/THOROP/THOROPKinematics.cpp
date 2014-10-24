@@ -2038,7 +2038,7 @@ THOROP_kinematics_inverse_r_leg(Transform trLeg)
 	// TODO: Add end effector OffsetNew code back in
 	// TODO: Deal with the waist and bodyPitch
 	// NOTE: trArm *WILL* be modified
-std::vector<double> THOROP_kinematics_inverse_arm(Transform trArm, std::vector<double>& qOrg, double shoulderYaw) {
+std::vector<double> THOROP_kinematics_inverse_arm(Transform trArm, std::vector<double>& qOrg, double shoulderYaw, bool flip_shoulderroll) {
   // Closed-form inverse kinematics for THOR-OP 7DOF arm
   // (pitch-roll-yaw-pitch-yaw-roll-yaw)
   // Shoulder yaw angle is given
@@ -2202,12 +2202,13 @@ std::vector<double> THOROP_kinematics_inverse_arm(Transform trArm, std::vector<d
   //Now we extend shoulder roll angle to 0~pi for left, -pi~0 for right
   //We manually choose either shoulderRoll area (normal / flipped up)
 	// TODO: Add this back in
-	/*
-  if (flip_shoulderroll>0){
+  if (flip_shoulderroll) {
+		shoulderRoll = PI - shoulderRoll;
+		/*
     if (arm==ARM_LEFT) shoulderRoll = PI-shoulderRoll;
     else shoulderRoll = (-PI) - shoulderRoll;
+		*/
   }
-	*/
 
 //Now we know shoulder Roll and Yaw
 //Solve for shoulder Pitch
@@ -2255,8 +2256,7 @@ std::vector<double> THOROP_kinematics_inverse_arm(Transform trArm, std::vector<d
 //  Transform rotWrist = inv(tRot) * trArmRot;
   Transform rotWrist = tInvRot * trArmRot;
 
-  double wristYaw_a, wristRoll_a, wristYaw2_a,
-        wristYaw_b, wristRoll_b, wristYaw2_b;
+  double wristYaw_a, wristRoll_a, wristYaw2_a, wristYaw_b, wristRoll_b, wristYaw2_b;
 
   //Two solutions
   wristRoll_a = acos(rotWrist(0,0)); //0 to pi
@@ -2264,7 +2264,7 @@ std::vector<double> THOROP_kinematics_inverse_arm(Transform trArm, std::vector<d
   wristYaw_a = atan2 (rotWrist(2,0)*swa,rotWrist(1,0)*swa);
   wristYaw2_a = atan2 (rotWrist(0,2)*swa,-rotWrist(0,1)*swa);
 
-  //Filpped position
+  // Flipped position
   wristRoll_b = -wristRoll_a; //-pi to 0
   double swb = sin(wristRoll_b);
   wristYaw_b = atan2 (rotWrist(2,0)*swb,rotWrist(1,0)*swb);  

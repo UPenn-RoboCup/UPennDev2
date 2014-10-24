@@ -566,23 +566,30 @@ static Transform lua_checktransform(lua_State *L, int narg) {
 }
 
 // Assume just the Left arm
+// TODO: Add any extra flags
 static int luaTHOROP_inverse_arm(lua_State *L) {
 	std::vector<double> qArm;
 	double shoulderYaw;
-	//char is_reach_back;
+	bool flip_shoulderroll;
 
 	// Current joint angles must be given as arg 2
   if( !lua_istable(L,1) ){
 		Transform tr = luaT_checktransform(L, 1);
 		std::vector<double> qArm0 = lua_checkvector(L, 2);
-		shoulderYaw = luaL_optnumber(L, 3, 0.0);
-		// TODO: Add any extra flags
-    qArm = THOROP_kinematics_inverse_arm(tr, qArm0, shoulderYaw);
+		shoulderYaw = luaL_checknumber(L, 3);
+		flip_shoulderroll = lua_toboolean(L, 4);
+    qArm = THOROP_kinematics_inverse_arm(
+			tr,
+			qArm0,
+			shoulderYaw,
+			flip_shoulderroll
+		);
 	} else {
 		Transform tr = lua_checktransform(L, 1);
 		std::vector<double> qArm0 = lua_checkvector(L, 2);
-		shoulderYaw = luaL_optnumber(L, 3, 0.0);
-    qArm = THOROP_kinematics_inverse_arm(tr, qArm0, shoulderYaw);
+		shoulderYaw = luaL_checknumber(L, 3);
+		flip_shoulderroll = lua_toboolean(L, 4);
+    qArm = THOROP_kinematics_inverse_arm(tr, qArm0, shoulderYaw, flip_shoulderroll);
 	}
 	lua_pushvector(L, qArm);
 	// Push the shoulder yaw is the indicator of the current null space setup

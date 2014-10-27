@@ -39,7 +39,7 @@ local function ik(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
   local dWrist = xWrist[1]^2+xWrist[2]^2+xWrist[3]^2
   local cElbow = (dWrist-dUpperArm^2-dLowerArm^2)/(2*dUpperArm*dLowerArm)
   if (cElbow > 1) then cElbow = 1 elseif (cElbow < -1) then cElbow = -1 end
-  local elbowPitch = -acos(cElbow)-aUpperArm-aLowerArm
+  local elbowPitch = aElbowMax - acos(cElbow)
 
   
   -- From shoulder yaw to wrist 

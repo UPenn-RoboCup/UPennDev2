@@ -2,7 +2,10 @@ local vector = require'vector'
 local quaternion = require'quaternion'
 local Transform = {}
 
-mt = {}
+local cos = math.cos
+local sin = math.sin
+
+local mt = {}
 
 function Transform.inv(a)
   local t = {}
@@ -29,8 +32,8 @@ function Transform.eye()
 end
 
 function Transform.rotZ(a)
-  local ca = math.cos(a)
-  local sa = math.sin(a)
+  local ca = cos(a)
+  local sa = sin(a)
   local t = {}
   t[1] = vector.new({ca, -sa, 0, 0})
   t[2] = vector.new({sa, ca, 0, 0})
@@ -40,8 +43,8 @@ function Transform.rotZ(a)
 end
 
 function Transform.rotY(a)
-  local ca = math.cos(a)
-  local sa = math.sin(a)
+  local ca = cos(a)
+  local sa = sin(a)
   local t = {}
   t[1] = vector.new({ca, 0, sa, 0})
   t[2] = vector.new({0, 1, 0, 0})
@@ -51,8 +54,8 @@ function Transform.rotY(a)
 end
 
 function Transform.rotX(a)
-  local ca = math.cos(a)
-  local sa = math.sin(a)
+  local ca = cos(a)
+  local sa = sin(a)
   local t = {}
   t[1] = vector.new({1, 0, 0, 0})
   t[2] = vector.new({0, ca, -sa, 0})
@@ -155,12 +158,12 @@ end
 function Transform.transform6D(p)
   local t = {}
 
-  local cwx = math.cos(p[4])
-  local swx = math.sin(p[4])
-  local cwy = math.cos(p[5])
-  local swy = math.sin(p[5])
-  local cwz = math.cos(p[6])
-  local swz = math.sin(p[6])
+  local cwx = cos(p[4])
+  local swx = sin(p[4])
+  local cwy = cos(p[5])
+  local swy = sin(p[5])
+  local cwz = cos(p[6])
+  local swz = sin(p[6])
 
   t[1] = vector.new({1, 0, 0, 0})
   t[2] = vector.new({0, 1, 0, 0})
@@ -210,8 +213,8 @@ local function mul(t1, t2)
 end
 
 -- Copy
-Transform.copy = function(tt)
-  if type(t)=='table' then
+function Transform.copy(tt)
+  if type(tt)=='table' then
     -- Copy the table
     local t = {}
     t[1] = vector.copy(tt[1])
@@ -228,6 +231,15 @@ Transform.copy = function(tt)
   end
   -- copy a tensor
   return t
+end
+
+-- Do it unsafe; assume a table
+function Transform.new(tt)
+  vector.new(tt[1])
+  vector.new(tt[2])
+  vector.new(tt[3])
+  vector.new(tt[4])
+  return setmetatable(tt, mt)
 end
 
 -- Use the 6D vector

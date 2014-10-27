@@ -111,3 +111,113 @@ print(qLArm2)
 print(vector.new(iqLArm_a))
 print(vector.new(iqLArm2a))
 print(vector.new(iqLArm3a))
+
+--[[
+K2 = require'K_ffi'
+T = require'libTransform'
+
+q = Body.get_rarm_position()
+tr = K2.forward_r_arm(q)
+iq = K2.inverse_r_arm(tr, q)
+itr = K2.forward_r_arm(iq)
+Body.set_rarm_command_position(iq)
+
+q = Body.get_rarm_position()
+tr1 = T.copy(itr)
+iq1 = K2.inverse_r_arm(tr1, q, -5*DEG_TO_RAD)
+itr1 = K2.forward_r_arm(iq1)
+Body.set_rarm_command_position(iq1)
+
+q = Body.get_rarm_position()
+tr2 = T.trans(0.4,0,0.4) * tr
+iq2 = K2.inverse_r_arm(tr2, q, -20*DEG_TO_RAD)
+itr2 = K2.forward_r_arm(iq2)
+Body.set_rarm_command_position(iq2)
+
+q = Body.get_rarm_position()
+tr = K2.forward_r_arm(q)
+tr3 = tr * T.rotY(-15*DEG_TO_RAD)
+iq3 = K2.inverse_r_arm(tr3, q)
+itr3 = K2.forward_r_arm(iq3)
+Body.set_rarm_command_position(iq3)
+
+q = Body.get_rarm_position()
+tr = K2.forward_r_arm(q)
+tr4 = tr * T.trans(0,0.1,0)
+iq4 = K2.inverse_r_arm(tr4, q)
+itr4 = K2.forward_r_arm(iq4)
+Body.set_rarm_command_position(iq4)
+
+--------
+
+q = Body.get_larm_position()
+tr = K2.forward_l_arm(q)
+iq = K2.inverse_l_arm(tr, q)
+itr = K2.forward_l_arm(iq)
+Body.set_larm_command_position(iq)
+
+q = Body.get_larm_position()
+tr1 = T.copy(itr)
+iq1 = K2.inverse_l_arm(tr1, q, 5*DEG_TO_RAD)
+itr1 = K2.forward_l_arm(iq1)
+Body.set_larm_command_position(iq1)
+
+q = Body.get_larm_position()
+tr2 = T.trans(0.2,0.2,-0.1) * tr
+iq2 = K2.inverse_l_arm(tr2, q, 20*DEG_TO_RAD)
+itr2 = K2.forward_l_arm(iq2)
+Body.set_larm_command_position(iq2)
+
+q = Body.get_larm_position()
+tr = K2.forward_l_arm(q)
+tr3 = tr * T.rotY(-15*DEG_TO_RAD)
+iq3 = K2.inverse_l_arm(tr3, q)
+itr3 = K2.forward_l_arm(iq3)
+Body.set_larm_command_position(iq3)
+
+q = Body.get_larm_position()
+tr = K2.forward_l_arm(q)
+tr4 = tr * T.trans(0,0.1,0)
+iq4 = K2.inverse_l_arm(tr4, q)
+itr4 = K2.forward_l_arm(iq4)
+Body.set_larm_command_position(iq4)
+
+P = require'libPlan'
+K = require'K_ffi'
+T = require'libTransform'
+q = Body.get_larm_position()
+tr = K.forward_l_arm(q)
+tr1 = tr*T.trans(0.05,0,0)
+pl=P.new_planner(K)
+it = pl:line_iter(tr1, q)
+=it(q)
+=q
+--]]
+
+--[[
+T = require'libTransform'
+K = require'K_ffi'
+qR = vector.zeros(7)
+sh = -30*DEG_TO_RAD
+trR = T.transform6D({0.2, -0.3, 0.13, 0, 0*DEG_TO_RAD, 45*DEG_TO_RAD})
+iqR = K.inverse_r_arm(trR, qR, sh)
+itrR = K.forward_r_arm(iqR)
+print(trR)
+print(itrR)
+print(qR)
+print(iqR)
+--]]
+
+--[[
+T = require'libTransform'
+K = require'K_ffi'
+qL = vector.zeros(7)
+sh = 30*DEG_TO_RAD
+trL = T.transform6D({0.22, 0.3, 0.13, 0, 0*DEG_TO_RAD, 45*DEG_TO_RAD})
+iqL = K.inverse_l_arm(trL, qL, sh)
+itrL = K.forward_l_arm(iqL)
+print(trL)
+print(itrL)
+print(qL)
+print(iqL)
+--]]

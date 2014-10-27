@@ -42,6 +42,13 @@ local ik_arm = Kinematics.inverse_arm
 K.inverse_arm = ik_arm
 
 -- Forward with respect to the torso
+function K.forward_l_arm(qLArm)
+	local tr0 = fk_arm(qLArm)
+	tr0[1][4] = tr0[1][4] + shoulderOffsetX
+	tr0[2][4] = tr0[2][4] + shoulderOffsetY
+	tr0[3][4] = tr0[3][4] + shoulderOffsetZ
+	return T.copy(tr0), {qLArm[3]}
+end
 function K.forward_r_arm(qRArm)
 	----[[
 	local tr0 = fk_arm(qRArm)	
@@ -55,15 +62,19 @@ function K.forward_r_arm(qRArm)
 	return T.transform6D(tr0), {qRArm[3]}
 	--]]
 end
-function K.forward_l_arm(qLArm)
-	local tr0 = fk_arm(qLArm)
-	tr0[1][4] = tr0[1][4] + shoulderOffsetX
-	tr0[2][4] = tr0[2][4] + shoulderOffsetY
-	tr0[3][4] = tr0[3][4] + shoulderOffsetZ
-	return T.copy(tr0), {qLArm[3]}
-end
 
 -- Inverse with respect to the torso
+function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
+	--[[
+	local tr = T.copy(trL)
+	tr[1][4] = tr[1][4] - shoulderOffsetX
+	tr[2][4] = tr[2][4] - shoulderOffsetY
+	tr[3][4] = tr[3][4] - shoulderOffsetZ
+	return vector.new(ik_arm(tr, qLArm or vector.zeros(7), shoulderYaw or qLArm[3], flipRoll))
+	--]]
+	local tr6 = vector.new(T.position6D(trL))
+	return vector.new(Kinematics.inverse_l_arm_7(tr6, qLArm, shoulderYaw or qLArm[3], 0, {0,0}, 0,0,0))
+end
 function K.inverse_r_arm(trR, qRArm, shoulderYaw, flipRoll)
 	--[[
 	local tr = T.copy(trR)
@@ -74,14 +85,6 @@ function K.inverse_r_arm(trR, qRArm, shoulderYaw, flipRoll)
 	--]]
 	local tr6 = vector.new(T.position6D(trR))
 	return vector.new(Kinematics.inverse_r_arm_7(tr6, qRArm, shoulderYaw or qRArm[3], 0, {0,0}, 0,0,0))
-	
-end
-function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
-	local tr = T.copy(trL)
-	tr[1][4] = tr[1][4] - shoulderOffsetX
-	tr[2][4] = tr[2][4] - shoulderOffsetY
-	tr[3][4] = tr[3][4] - shoulderOffsetZ
-	return vector.new(ik_arm(tr, qLArm or vector.zeros(7), shoulderYaw or qLArm[3], flipRoll))
 end
 
 --[[

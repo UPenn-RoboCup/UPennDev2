@@ -9,7 +9,7 @@ local Body   = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
 local t_entry, t_update, t_finish
-local timeout = 10.0
+local timeout = 15.0
 
 local T = require'libTransform'
 local trRGoal = T.transform6D{-0.1, -0.3, -0.2, 0, 30*DEG_TO_RAD, 0}
@@ -42,7 +42,7 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
-  --if t-t_entry > timeout then return'timeout' end
+  if t-t_entry > timeout then return'timeout' end
 	
 	-- Timing necessary
 	--[[

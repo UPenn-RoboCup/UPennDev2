@@ -264,7 +264,7 @@ function Transform.tostring(tr)
 end
 
 mt.__mul = mul
-mt.__tostring = tostring
+mt.__tostring = Transform.tostring --tostring
 --mt.__call = function(self,idx) print('idx',idx,type(idx),self[idx]); return self[idx] end
 
 return Transform

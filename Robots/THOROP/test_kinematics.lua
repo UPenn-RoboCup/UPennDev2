@@ -195,7 +195,7 @@ it = pl:line_iter(tr1, q)
 --]]
 
 --[[
-T = require'libTransform'
+T = require'Transform'
 K = require'K_ffi'
 qR = vector.zeros(7)
 sh = -30*DEG_TO_RAD
@@ -209,7 +209,7 @@ print(iqR)
 --]]
 
 --[[
-T = require'libTransform'
+T = require'Transform'
 K = require'K_ffi'
 qL = vector.zeros(7)
 sh = 30*DEG_TO_RAD

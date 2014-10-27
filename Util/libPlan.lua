@@ -2,16 +2,13 @@
 -- (c) 2014 Stephen McGill
 -- Plan a path with the arm
 local libPlan = {}
-local torch  = require'torch'
 local vector = require'vector'
 local q = require'quaternion'
-local carray = require 'carray'
-local util = require 'util'
---local T = require'libTransform'
+local util = require'util'
 local T = require'Transform'
+--local T = require'libTransform'
 
 local mt = {}
-
 local function tbl_iter(t,k)
 	return table.remove(t)
 end

@@ -9,7 +9,8 @@ local t_entry, t_update, t_finish
 local timeout = 10.0
 
 local T = require'Transform'
-local trRGoal = T.transform6D({0.35, -0.05, 0.15, 0, 0*DEG_TO_RAD, 45*DEG_TO_RAD})
+--local trRGoal = T.transform6D({0.35, -0.05, 0.15, 0, 0*DEG_TO_RAD, 45*DEG_TO_RAD})
+local trRGoal = T.transform6D({0.35, -0.05, 0.15, 0, 0*DEG_TO_RAD, 0*DEG_TO_RAD})
 local trLGoal = T.trans(0.45, 0.25, 0.0)
 
 local lPathIter, rPathIter
@@ -19,7 +20,7 @@ function state.entry()
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-	lPathIter, rPathIter = movearm.goto_tr_via_q(trLGoal, trRGoal, {20*DEG_TO_RAD}, {-75*DEG_TO_RAD})
+	lPathIter, rPathIter = movearm.goto_tr_via_q(trLGoal, trRGoal, {20*DEG_TO_RAD}, {-25*DEG_TO_RAD})
 end
 
 function state.update()

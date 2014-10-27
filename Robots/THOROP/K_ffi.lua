@@ -8,6 +8,8 @@ local T0 = require'Transform'
 -- Use torch later if needed
 --local torch = require'torch'
 --local T = require'libTransform'
+-- Check against standard kinematics
+--local Kinematics = require'THOROPKinematics'
 -- Cache math
 local sin, cos = math.sin, math.cos
 local asin, acos = math.asin, math.acos
@@ -33,9 +35,6 @@ local handOffsetZ = 0;
 -- Shoulder (TODO: Left/Right?)
 -- TODO: Add the waist with this...
 --local trShoulder = T.trans(shoulderOffsetX, shoulderOffsetY, shoulderOffsetZ)
-
--- TODO: Remove all Kinematics references...
-local Kinematics = require'THOROPKinematics'
 
 local function fk_arm(q)
 	local c1, s1 = cos(q[1]), sin(q[1])
@@ -229,7 +228,7 @@ function K.forward_r_arm(qRArm)
 	return T.transform6D(tr0), {qRArm[3]}
 	--]]
 	----[[
-	local tr0 = T0.trans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ) * fk_arm(qRArm) * T0.trans(handOffsetX, handOffsetY, handOffsetZ)
+	local tr0 = T0.trans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ) * fk_arm(qRArm) * T0.trans(handOffsetX, handOffsetY, handOffsetZ) * T0.rotZ(-45*DEG_TO_RAD)
 	return tr0, {qRArm[3]}
 	--]]
 	--[[
@@ -302,7 +301,7 @@ function K.inverse_r_arm(trR, qRArm, shoulderYaw, flipRoll)
 	--]]
 	----[[
 	local sol = ik_arm2(
-		T0.trans(-shoulderOffsetX,shoulderOffsetY,-shoulderOffsetZ) * trR * T0.trans(-handOffsetX, -handOffsetY, -handOffsetZ),
+		T0.trans(-shoulderOffsetX,shoulderOffsetY,-shoulderOffsetZ) * trR * T0.rotZ(45*DEG_TO_RAD) * T0.trans(-handOffsetX, -handOffsetY, -handOffsetZ),
 		qRArm,
 		shoulderYaw or qRArm[3]
 	)

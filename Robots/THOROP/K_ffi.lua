@@ -9,6 +9,7 @@ local sin, cos = math.sin, math.cos
 local asin, acos = math.asin, math.acos
 local sqrt, atan2 = math.sqrt, math.atan2
 local PI = math.pi
+local min, max = math.min, math.max
 
 local shoulderOffsetX = 0;    
 local shoulderOffsetY = 0.234;
@@ -80,22 +81,25 @@ local aLowerArm = math.atan(elbowOffsetX / lowerArmLength)
 local aElbowMax = -1*(aUpperArm + aLowerArm)
 -- Assume left arm
 local function ik_arm2(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
-  trArm = T0.copy(trArm)
-  local xWrist = {trArm[1][4], trArm[2][4], trArm[3][4]}
+  --trArm = T0.copy(trArm)
+  --local xWrist = {trArm[1][4], trArm[2][4], trArm[3][4]}
+	local xWrist1, xWrist2, xWrist3 = trArm[1][4], trArm[2][4], trArm[3][4]
   
   -- SJ: Robot can have TWO elbow pitch values (near elbowPitch==0)
   -- We are only using the smaller one (arm more bent) 
-  local dWrist = xWrist[1]^2 + xWrist[2]^2 + xWrist[3]^2
+  local dWrist = xWrist1^2 + xWrist2^2 + xWrist3^2
   local cElbow = (dWrist-dUpperArm^2 - dLowerArm^2)/(2*dUpperArm*dLowerArm)
-  if (cElbow > 1) then cElbow = 1 elseif (cElbow < -1) then cElbow = -1 end
-  local elbowPitch = -acos(cElbow)-aUpperArm-aLowerArm
+  
+	--if (cElbow > 1) then cElbow = 1 elseif (cElbow < -1) then cElbow = -1 end
+	cElbow = max(-1, min(1, cElbow))
+	
+  local elbowPitch = -acos(cElbow) - aUpperArm - aLowerArm
   
   -- From shoulder yaw to wrist 
   local m = T0.rotX(shoulderYaw) * trans_upper * T0.rotY(elbowPitch) * trans_lower
-  
   local a = m[1][4]^2 + m[2][4]^2
-  local b = -m[1][4] * xWrist[2]
-  local c = xWrist[2]^2 - m[2][4]^2
+  local b = -m[1][4] * xWrist2
+  local c = xWrist2^2 - m[2][4]^2
   --
   local shoulderRoll
   -- NaN handling
@@ -109,21 +113,17 @@ local function ik_arm2(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
     if (s21 > 1) then s21 = 1 elseif (s21 < -1) then s21 = -1 end
     if (s22 > 1) then s22 = 1 elseif (s22 < -1) then s22 = -1 end
     local shoulderRoll1, shoulderRoll2 = asin(s21), asin(s22)
-    local err1 = s21*m[1][4] + cos(shoulderRoll1)*m[2][4] - xWrist[2]
-    local err2 = s22*m[1][4] + cos(shoulderRoll2)*m[2][4] - xWrist[2]
+    local err1 = s21*m[1][4] + cos(shoulderRoll1)*m[2][4] - xWrist2
+    local err2 = s22*m[1][4] + cos(shoulderRoll2)*m[2][4] - xWrist2
     shoulderRoll = err1^2 < err2^2 and shoulderRoll1 or shoulderRoll2
   end
-  if FLIP_SHOULDER_ROLL then
-    shoulderRoll = PI - shoulderRoll
-  end
+  shoulderRoll = FLIP_SHOULDER_ROLL and PI - shoulderRoll or shoulderRoll
   
-  local s2 = sin(shoulderRoll)
-  local c2 = cos(shoulderRoll)
-  local t1 = -c2 * m[1][4] + s2 * m[2][4]
+  local t1 = m[2][4] * sin(shoulderRoll) - m[1][4] * cos(shoulderRoll)
  
   local m23 = m[3][4]
-  local c1 = (m23*xWrist[3] - t1*xWrist[1]) / (m23^2 + t1^2)
-  local s1 = (m23*xWrist[1] + t1*xWrist[3]) / (m23^2 + t1^2)
+  local c1 = (m23*xWrist3 - t1*xWrist1) / (m23^2 + t1^2)
+  local s1 = (m23*xWrist1 + t1*xWrist3) / (m23^2 + t1^2)
 
   local shoulderPitch = atan2(s1, c1)
 	
@@ -134,31 +134,34 @@ local function ik_arm2(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
 	--
 	local tRot = T0.rotY(shoulderPitch) * T0.rotZ(shoulderRoll) * T0.rotX(shoulderYaw) * T0.rotY(elbowPitch)
 	local tInvRot = T0.inv(tRot)
-	
   
   -- Now we know shoulder pich, roll, yaw and elbow pitch
   -- Calc the final transform for the wrist based on rotation alone
   local rotWrist = tInvRot * trArm
-  
-  -- Two solutions
-  local wristRoll_a = acos(rotWrist[1][1]) -- 0 to pi
-  local swa = sin(wristRoll_a)
-  local wristYaw_a = atan2 (rotWrist[3][1]*swa,rotWrist[2][1]*swa)
-  local wristYaw2_a = atan2 (rotWrist[1][3]*swa,-rotWrist[1][2]*swa)
-
-  -- Flipped position
-  local wristRoll_b = -wristRoll_a -- -pi to 0
-  local swb = sin(wristRoll_b)
-  local wristYaw_b = atan2(rotWrist[3][1]*swb, rotWrist[2][1]*swb)  
-  local wristYaw2_b = atan2(rotWrist[1][3]*swb, -rotWrist[1][2]*swb)
-  -- singular point: just use current angles
-  if swa<1e-5 then
+	
+  -- NOTE: singular point: just use current angles
+	local wristYaw_a, wristYaw2_a, wristRoll_b, wristYaw_b, wristYaw2_b
+	local wristRoll_a = acos(rotWrist[1][1]) -- 0 to pi
+  if sin(wristRoll_a) < 1e-5 then
+	--if (wristRoll_a) < 1e-5 then
+	--if (wristRoll_a%(2*PI)) < 1e-5 then
     wristYaw_a = qOrg[5]    
     wristRoll_a = qOrg[6]
     wristYaw2_a = qOrg[7]
     wristYaw_b = qOrg[5]
     wristRoll_b = qOrg[6]
     wristYaw2_b = qOrg[7]
+	else
+	  -- Two solutions
+	  wristYaw_a = atan2(rotWrist[3][1], rotWrist[2][1])
+	  wristYaw2_a = atan2 (rotWrist[1][3], -rotWrist[1][2])
+	  -- Flipped position
+		-- -pi to 0
+	  wristRoll_b = -wristRoll_a
+		wristYaw_b = -wristYaw_a
+		wristYaw2_b = -wristYaw2_a
+	  --wristYaw_b = atan2(rotWrist[3][1], rotWrist[2][1])  
+	  --wristYaw2_b = atan2(rotWrist[1][3], -rotWrist[1][2])
   end
 
   local err_a = ( (qOrg[5] - wristYaw_a+5*PI) % 2*PI ) - PI
@@ -237,8 +240,10 @@ function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
 	--return vector.new(Kinematics.inverse_l_arm_7(tr6, qLArm, shoulderYaw or qLArm[3], 0, {0,0}, 0,0,0))
 	--]]
 	
+	local tr0 = T0.copy(tr)
+	
 	local t0 = unix.time()
-	local sol2 = ik_arm2(tr, qLArm, shoulderYaw or qLArm[3])
+	local sol2 = ik_arm2(tr0, qLArm, shoulderYaw or qLArm[3])
 	local t1 = unix.time()
 	print(t1-t0, 'ik_arm2', sol2)
 	

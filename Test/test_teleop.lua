@@ -5,7 +5,8 @@ pcall(dofile, '../fiddle.lua')
 local WAS_REQUIRED = ... and type(...)=='string'
 
 local K = require'K_ffi'
-local T = require'libTransform'
+--local T = require'libTransform'
+local T = require'Transform'
 
 local narm = #Body.get_larm_position()
 local selected_arm = 0 -- left

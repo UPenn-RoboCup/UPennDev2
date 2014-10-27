@@ -8,14 +8,14 @@ local movearm = require'movearm'
 local t_entry, t_update, t_finish
 local timeout = 10.0
 
-local T = require'libTransform'
+local T = require'Transform'
 local trRGoal = T.transform6D({0.35, -0.05, 0.15, 0, 0*DEG_TO_RAD, 45*DEG_TO_RAD})
 local trLGoal = T.trans(0.45, 0.25, 0.0)
 
 local lPathIter, rPathIter
 
 function state.entry()
-  print(state._NAME..' Entry' )
+  print(state._NAME..' Entry')
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry

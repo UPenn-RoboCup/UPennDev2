@@ -8,7 +8,7 @@ local movearm = require'movearm'
 local t_entry, t_update, t_finish
 local timeout = 20.0
 
-local T = require'libTransform'
+local T = require'Transform'
 local K = require'K_ffi'
 
 local lPathIter, rPathIter

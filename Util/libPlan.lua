@@ -7,7 +7,8 @@ local vector = require'vector'
 local q = require'quaternion'
 local carray = require 'carray'
 local util = require 'util'
-local T = require'libTransform'
+--local T = require'libTransform'
+local T = require'Transform'
 
 local mt = {}
 

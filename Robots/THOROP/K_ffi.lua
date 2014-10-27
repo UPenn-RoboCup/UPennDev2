@@ -1,9 +1,6 @@
 local K = {}
 local vector = require'vector'
-local torch = require'torch'
-local T = require'libTransform'
 local T0 = require'Transform'
-local Kinematics = require'THOROPKinematics'
 -- Cache math
 local sin, cos = math.sin, math.cos
 local asin, acos = math.asin, math.acos
@@ -22,12 +19,20 @@ local lowerArmLength = .250; -- LONGARM model
 local handOffsetX = 0.245;
 local handOffsetY = 0.035;
 local handOffsetZ = 0;
-local trPlate = T.trans(handOffsetX, handOffsetY, handOffsetZ)
+
+--local trPlate = T.trans(handOffsetX, handOffsetY, handOffsetZ)
 -- TODO: Add the 45 Degree change here
 --local trGripper = trPlate * T.trans(0.025, 0, 0) * T.rotZ(45*DEG_TO_RAD)
 -- Shoulder (TODO: Left/Right?)
 -- TODO: Add the waist with this...
-local trShoulder = T.trans(shoulderOffsetX, shoulderOffsetY, shoulderOffsetZ)
+--local trShoulder = T.trans(shoulderOffsetX, shoulderOffsetY, shoulderOffsetZ)
+
+-- Use torch later
+--local torch = require'torch'
+--local T = require'libTransform'
+
+-- TODO: Remove all Kinematics references...
+local Kinematics = require'THOROPKinematics'
 
 local function fk_arm(q)
 	local c1, s1 = cos(q[1]), sin(q[1])
@@ -40,7 +45,7 @@ local function fk_arm(q)
 	return T0.new{{(((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*s6 + (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*c6, ((((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*c6 - (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*s6)*c7 + (((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*c5 - (s1*s3 - s2*c1*c3)*s5)*s7, -((((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*c6 - (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*s6)*s7 + (((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*c5 - (s1*s3 - s2*c1*c3)*s5)*c7, -0.25*(s1*c3 + s2*s3*c1)*s4 - 0.03*(s1*c3 + s2*s3*c1)*c4 + 0.03*s1*c3 + 0.03*s2*s3*c1 - 0.03*s4*c1*c2 + 0.25*c1*c2*c4 + 0.246*c1*c2}, {((s2*s4 - s3*c2*c4)*s5 + c2*c3*c5)*s6 + (s2*c4 + s3*s4*c2)*c6, (((s2*s4 - s3*c2*c4)*s5 + c2*c3*c5)*c6 - (s2*c4 + s3*s4*c2)*s6)*c7 + ((s2*s4 - s3*c2*c4)*c5 - s5*c2*c3)*s7, -(((s2*s4 - s3*c2*c4)*s5 + c2*c3*c5)*c6 - (s2*c4 + s3*s4*c2)*s6)*s7 + ((s2*s4 - s3*c2*c4)*c5 - s5*c2*c3)*c7, -0.03*s2*s4 + 0.25*s2*c4 + 0.246*s2 + 0.25*s3*s4*c2 + 0.03*s3*c2*c4 - 0.03*s3*c2}, {(((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*s5 + (s1*s2*c3 + s3*c1)*c5)*s6 + (-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4)*c6, ((((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*s5 + (s1*s2*c3 + s3*c1)*c5)*c6 - (-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4)*s6)*c7 + (((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*c5 - (s1*s2*c3 + s3*c1)*s5)*s7, -((((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*s5 + (s1*s2*c3 + s3*c1)*c5)*c6 - (-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4)*s6)*s7 + (((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*c5 - (s1*s2*c3 + s3*c1)*s5)*c7, -0.25*(-s1*s2*s3 + c1*c3)*s4 - 0.03*(-s1*s2*s3 + c1*c3)*c4 - 0.03*s1*s2*s3 + 0.03*s1*s4*c2 - 0.25*s1*c2*c4 - 0.246*s1*c2 + 0.03*c1*c3}, {0, 0, 0, 1}}
 end
 K.forward_arm = fk_arm
-
+--[[
 local function fk_arm_t(q)
 	local c1, s1 = cos(q[1]), sin(q[1])
 	local c2, s2 = cos(q[2]), sin(q[2])
@@ -70,6 +75,7 @@ local function fk_arm_t(q)
 	return tr
 end
 K.forward_arm_t = fk_arm_t
+--]]
 
 -- Precalculate some stuff
 local trans_upper = T0.trans(upperArmLength, 0, elbowOffsetX)
@@ -132,12 +138,14 @@ local function ik_arm2(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
 	--
 	-- Now find the wrist
 	--
-	local tRot = T0.rotY(shoulderPitch) * T0.rotZ(shoulderRoll) * T0.rotX(shoulderYaw) * T0.rotY(elbowPitch)
-	local tInvRot = T0.inv(tRot)
-  
   -- Now we know shoulder pich, roll, yaw and elbow pitch
   -- Calc the final transform for the wrist based on rotation alone
+	--[[
+	local tRot = T0.rotY(shoulderPitch) * T0.rotZ(shoulderRoll) * T0.rotX(shoulderYaw) * T0.rotY(elbowPitch)
+	local tInvRot = T0.inv(tRot)
   local rotWrist = tInvRot * trArm
+	--]]
+	local rotWrist = T0.rotY(-elbowPitch) * T0.rotX(-shoulderYaw) * T0.rotZ(-shoulderRoll) * T0.rotY(-shoulderPitch) * trArm
 	
   -- NOTE: singular point: just use current angles
 	local wristYaw_a, wristYaw2_a, wristRoll_b, wristYaw_b, wristYaw2_b
@@ -199,7 +207,7 @@ function K.forward_l_arm(qLArm)
 	local tr0 = T0.trans(shoulderOffsetX, shoulderOffsetY, shoulderOffsetZ) * fk_arm(qLArm) * T0.trans(handOffsetX, handOffsetY, handOffsetZ)
 	--]]
 	local tr0 = Kinematics.l_arm_torso_7(qLArm, 0, {0,0})
-	return T.transform6D(tr0), {qLArm[3]}	
+	return T0.transform6D(tr0), {qLArm[3]}	
 end
 function K.forward_r_arm(qRArm)
 	--[[
@@ -218,12 +226,12 @@ function K.forward_r_arm(qRArm)
 	local tr0 = T0.trans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ) * fk_arm(qRArm) * T0.trans(handOffsetX, handOffsetY, handOffsetZ)
 	--]]
 	local tr0 = Kinematics.r_arm_torso_7(qRArm, 0, {0,0})
-	return T.transform6D(tr0), {qRArm[3]}	
+	return T0.transform6D(tr0), {qRArm[3]}	
 end
 
 -- Inverse with respect to the torso
 function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
-	----[[
+	--[[
 	local tr = T.copy(trL)
 	tr[1][4] = tr[1][4] - shoulderOffsetX
 	tr[2][4] = tr[2][4] - shoulderOffsetY
@@ -231,7 +239,7 @@ function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
 	--return vector.new(ik_arm(tr, qLArm or vector.zeros(7), shoulderYaw or qLArm[3], flipRoll))
 	print('ik_arm1', vector.new(ik_arm(tr, qLArm or vector.zeros(7), shoulderYaw or qLArm[3], flipRoll)))
 	--]]
-	----[[
+	--[[
 	local t0 = unix.time()
 	local tr6 = vector.new(T.position6D(trL))
 	local sol1 = vector.new(Kinematics.inverse_l_arm_7(tr6, qLArm, shoulderYaw or qLArm[3], 0, {0,0}, 0,0,0))
@@ -240,12 +248,13 @@ function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
 	--return vector.new(Kinematics.inverse_l_arm_7(tr6, qLArm, shoulderYaw or qLArm[3], 0, {0,0}, 0,0,0))
 	--]]
 	
+	--[[
 	local tr0 = T0.copy(tr)
-	
 	local t0 = unix.time()
 	local sol2 = ik_arm2(tr0, qLArm, shoulderYaw or qLArm[3])
 	local t1 = unix.time()
 	print(t1-t0, 'ik_arm2', sol2)
+	--]]
 	
 	local tr6 = T0.position6D(trL)
 	return vector.new(Kinematics.inverse_l_arm_7(tr6, qLArm, shoulderYaw or qLArm[3], 0, {0,0}))

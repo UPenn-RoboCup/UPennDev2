@@ -31,7 +31,7 @@ local signal = require'signal'.signal
 signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
 
-local min_cnt, max_cnt = -math.huge, math.huge
+local min_cnt, max_cnt = 400, 600
 
 for i, metadata_joint in logged_joint do
 

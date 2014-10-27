@@ -1,6 +1,6 @@
 Poke in x
 joint_m_10.24.2014.14.12.36.log
-joint_m_10.24.2014.14.13.29.log                                        100%
+joint_m_10.24.2014.14.13.29.log
 Poke in y
-joint_m_10.24.2014.14.16.48.log                                        100%
+joint_m_10.24.2014.14.16.48.log
 joint_m_10.24.2014.14.17.07.log

@@ -42,10 +42,17 @@ function state.update()
   local dt = t - t_update
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
-	
-	local moreL, q_lWaypoint = lPathIter(Body.get_larm_command_position())
+	--[[
+	local moreL, q_lWaypoint = lPathIter(Body.get_larm_command_position(), dt)
 	Body.set_larm_command_position(q_lWaypoint)
-	local moreR, q_rWaypoint = rPathIter(Body.get_rarm_command_position())
+	local moreR, q_rWaypoint = rPathIter(Body.get_rarm_command_position(), dt)
+	Body.set_rarm_command_position(q_rWaypoint)
+	--]]
+	local qL = Body.get_larm_position()
+	local moreL, q_lWaypoint = lPathIter(qL)
+	Body.set_larm_command_position(q_lWaypoint)
+	local qR = Body.get_rarm_position()
+	local moreR, q_rWaypoint = rPathIter(qR)
 	Body.set_rarm_command_position(q_rWaypoint)
 	-- Check if done
 	if not moreL and not moreR then return 'done' end

@@ -10,34 +10,17 @@ local K = require'K_ffi'
 local lPlanner = P.new_planner(K,
 	vector.slice(Config.servo.min_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
 	vector.slice(Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
-	vector.new{15,10,10, 15, 20,20,20}*DEG_TO_RAD
+	vector.new{15,10,20, 15, 20,20,20}*DEG_TO_RAD
 )
 local rPlanner = P.new_planner(K,
 	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]), 
 	vector.slice(Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
-	vector.new{15,10,10, 15, 20,20,20}*DEG_TO_RAD -- Angular speedlimits
+	vector.new{15,10,20, 15, 20,20,20}*DEG_TO_RAD -- Angular speedlimits
 )
 rPlanner:set_chain(K.forward_r_arm, K.inverse_r_arm)
 
 -- TODO: Add dt into the joint iterator
 local dqLimit = DEG_TO_RAD / 3
-
-function movearm.goto_wrists(lwrist, rwrist)
-	local lPathIter, rPathIter
-	if lwrist then
-	  local qLArm = Body.get_larm_position()
-	  local qLWrist = Body.get_inverse_lwrist(qLArm, unpack(lwrist, 1, 2))
-	  local qLGoal = Body.get_inverse_arm_given_wrist(qLWrist, lwrist[3])
-		lPathIter = lPlanner:joint_iter(qLGoal, qLArm, dqLimit)
-	end
-	if rwrist then
-		local qRArm = Body.get_rarm_position()
-	  local qRWrist = Body.get_inverse_rwrist(qRArm, unpack(rwrist, 1, 2))
-	  local qRGoal = Body.get_inverse_arm_given_wrist(qRWrist, rwrist[3])
-		rPathIter = rPlanner:joint_iter(qRGoal, qRArm, dqLimit)
-	end
-	return lPathIter, rPathIter
-end
 
 -- Take a desired Transformation matrix and move joint-wise to it
 function movearm.goto_tr_via_q(lwrist, rwrist, loptions, roptions)
@@ -79,6 +62,23 @@ function movearm.goto_q(lwrist, rwrist)
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
 		rPathIter = rPlanner:joint_iter(rwrist, qRArm, dqLimit)
+	end
+	return lPathIter, rPathIter
+end
+
+function movearm.goto_wrists(lwrist, rwrist)
+	local lPathIter, rPathIter
+	if lwrist then
+	  local qLArm = Body.get_larm_position()
+	  local qLWrist = Body.get_inverse_lwrist(qLArm, unpack(lwrist, 1, 2))
+	  local qLGoal = Body.get_inverse_arm_given_wrist(qLWrist, lwrist[3])
+		lPathIter = lPlanner:joint_iter(qLGoal, qLArm, dqLimit)
+	end
+	if rwrist then
+		local qRArm = Body.get_rarm_position()
+	  local qRWrist = Body.get_inverse_rwrist(qRArm, unpack(rwrist, 1, 2))
+	  local qRGoal = Body.get_inverse_arm_given_wrist(qRWrist, rwrist[3])
+		rPathIter = rPlanner:joint_iter(qRGoal, qRArm, dqLimit)
 	end
 	return lPathIter, rPathIter
 end

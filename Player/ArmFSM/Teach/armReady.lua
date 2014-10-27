@@ -34,12 +34,12 @@ function state.update()
 	-- Plan the next joint position
 	
 	-- Timing necessary
-	----[[
+	--[[
 	local qLArm = Body.get_larm_command_position()
 	local moreL, q_lWaypoint = lPathIter(qLArm, dt)
 	--]]
 	-- No time needed
-	--[[
+	----[[
 	local qLArm = Body.get_larm_position()
 	local moreL, q_lWaypoint = lPathIter(qLArm)
 	--]]

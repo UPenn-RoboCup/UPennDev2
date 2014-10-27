@@ -12,7 +12,6 @@ function state.entry()
   t_update = t_entry
 end
 
-
 function state.update()
 	--  print(state._NAME..' Update' )
   -- Get the time of update

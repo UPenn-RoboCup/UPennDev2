@@ -147,10 +147,10 @@ local line_iter = function(self, trGoal, qArm0, res_pos, res_ang, null_options)
 	--
 	local fkGoal, null_options0 = forward(qGoal)
 	if not skip_angles then
-		print('posGoal In ', trGoal)
+		--print('posGoal In ', trGoal)
 		quatGoal, posGoal = T.to_quaternion(fkGoal)
 		vector.new(posGoal)
-		print('posGoal Out', posGoal)
+		--print('posGoal Out', posGoal)
 	end
 	
 	local fkArm0, null_options0 = forward(qArm0)

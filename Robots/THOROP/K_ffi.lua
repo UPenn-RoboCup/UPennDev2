@@ -1,6 +1,13 @@
+--------------------------------
+-- Lua Kinematics for THOR-OP
+-- (c) 2014 Stephen McGill, Seung-Joon Yi
+--------------------------------
 local K = {}
 local vector = require'vector'
 local T0 = require'Transform'
+-- Use torch later if needed
+--local torch = require'torch'
+--local T = require'libTransform'
 -- Cache math
 local sin, cos = math.sin, math.cos
 local asin, acos = math.asin, math.acos
@@ -27,12 +34,8 @@ local handOffsetZ = 0;
 -- TODO: Add the waist with this...
 --local trShoulder = T.trans(shoulderOffsetX, shoulderOffsetY, shoulderOffsetZ)
 
--- Use torch later
---local torch = require'torch'
---local T = require'libTransform'
-
 -- TODO: Remove all Kinematics references...
---local Kinematics = require'THOROPKinematics'
+local Kinematics = require'THOROPKinematics'
 
 local function fk_arm(q)
 	local c1, s1 = cos(q[1]), sin(q[1])
@@ -116,13 +119,16 @@ local function ik_arm2(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
 		local sqrt_det = sqrt(det)
     local s21 = (-b + sqrt_det)/a
     local s22 = (-b - sqrt_det)/a
-    if (s21 > 1) then s21 = 1 elseif (s21 < -1) then s21 = -1 end
-    if (s22 > 1) then s22 = 1 elseif (s22 < -1) then s22 = -1 end
+    --if (s21 > 1) then s21 = 1 elseif (s21 < -1) then s21 = -1 end
+    --if (s22 > 1) then s22 = 1 elseif (s22 < -1) then s22 = -1 end
+		s21 = max(-1, min(1, s21))
+		s22 = max(-1, min(1, s22))
     local shoulderRoll1, shoulderRoll2 = asin(s21), asin(s22)
     local err1 = s21*m[1][4] + cos(shoulderRoll1)*m[2][4] - xWrist2
     local err2 = s22*m[1][4] + cos(shoulderRoll2)*m[2][4] - xWrist2
     shoulderRoll = err1^2 < err2^2 and shoulderRoll1 or shoulderRoll2
   end
+	-- TODO: This is only valid for the left arm
   shoulderRoll = FLIP_SHOULDER_ROLL and PI - shoulderRoll or shoulderRoll
   
   local t1 = m[2][4] * sin(shoulderRoll) - m[1][4] * cos(shoulderRoll)
@@ -166,14 +172,11 @@ local function ik_arm2(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
 	  -- Flipped position
 		-- -pi to 0
 	  wristRoll_b = -wristRoll_a
-		wristYaw_b = -wristYaw_a
-		wristYaw2_b = -wristYaw2_a
-	  --wristYaw_b = atan2(rotWrist[3][1], rotWrist[2][1])  
-	  --wristYaw2_b = atan2(rotWrist[1][3], -rotWrist[1][2])
+	  wristYaw_b = atan2(-rotWrist[3][1], -rotWrist[2][1])  
+	  wristYaw2_b = atan2(-rotWrist[1][3], rotWrist[1][2])
   end
-
-  local err_a = ( (qOrg[5] - wristYaw_a+5*PI) % 2*PI ) - PI
-  local err_b = ( (qOrg[5] - wristYaw_b+5*PI) % 2*PI ) - PI
+  local err_a = ( (qOrg[5] - wristYaw_a+5*PI) % (2*PI) ) - PI
+  local err_b = ( (qOrg[5] - wristYaw_b+5*PI) % (2*PI) ) - PI
   if err_a^2 < err_b^2 then
     qArm[5] = wristYaw_a
     qArm[6] = wristRoll_a
@@ -267,7 +270,7 @@ function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
 	--print('tr1', tr1)
 	--print('trL', trL)
 	--print('tr2', tr2)
-	--[[
+	----[[
 	local sol = ik_arm2(
 		tr1 * trL * tr2,
 		qLArm,
@@ -276,7 +279,7 @@ function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
 	--print('L', sol)
 	return sol
 	--]]
-	----[[
+	--[[
 	local tr6 = T0.position6D(trL)
 	local sol = vector.new(Kinematics.inverse_l_arm_7(tr6, qLArm, shoulderYaw or qLArm[3], 0, {0,0}))
 	--print('C', sol)
@@ -297,16 +300,17 @@ function K.inverse_r_arm(trR, qRArm, shoulderYaw, flipRoll)
 	local tr6 = vector.new(T.position6D(trR))
 	return vector.new(Kinematics.inverse_r_arm_7(tr6, qRArm, shoulderYaw or qRArm[3], 0, {0,0}, 0,0,0))
 	--]]
-	--[[
+	----[[
 	local sol = ik_arm2(
 		T0.trans(-shoulderOffsetX,shoulderOffsetY,-shoulderOffsetZ) * trR * T0.trans(-handOffsetX, -handOffsetY, -handOffsetZ),
 		qRArm,
 		shoulderYaw or qRArm[3]
 	)
 	--print('L', sol)
+	--print('C', vector.new(Kinematics.inverse_r_arm_7(T0.position6D(trR), qRArm, shoulderYaw or qRArm[3], 0, {0,0})))
 	return sol
 	--]]
-	----[[
+	--[[
 	local tr6 = T0.position6D(trR)
 	local sol = vector.new(Kinematics.inverse_r_arm_7(tr6, qRArm, shoulderYaw or qRArm[3], 0, {0,0}))
 	--print('C', sol)

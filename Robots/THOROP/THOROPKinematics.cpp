@@ -1405,6 +1405,10 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
   bool select_a = false;
   double err_a = fmodf(qOrg[4] - wristYaw_a+5*PI, 2*PI) - PI;
   double err_b = fmodf(qOrg[4] - wristYaw_b+5*PI, 2*PI) - PI;
+	
+	//printf("wristYaw_a, wristYaw_b: %f, %f\n", wristYaw_a, wristYaw_b);
+	//printf("err_a, err_b: %f, %f\n", err_a, err_b);
+	
   if (err_a*err_a<err_b*err_b)   select_a=true;
   
   std::vector<double> qArm(7);

@@ -12,6 +12,7 @@ local lPlanner = P.new_planner(K,
 	vector.slice(Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
 	vector.new{15,10,20, 15, 20,20,20}*DEG_TO_RAD
 )
+lPlanner:set_chain(K.forward_l_arm, K.inverse_l_arm)
 local rPlanner = P.new_planner(K,
 	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]), 
 	vector.slice(Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),

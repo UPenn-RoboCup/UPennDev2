@@ -278,8 +278,8 @@ libPlan.new_planner = function(kinematics, min_q, max_q, dqdt_limit)
 		joint_stack = joint_stack,
 		joint_iter = joint_iter,
 		-- Default is the left arm:
-		inverse = kinematics.inverse_l_arm,
-		forward = kinematics.forward_l_arm,
+		inverse = kinematics.inverse_arm,
+		forward = kinematics.forward_arm,
 		set_chain = set_chain
 	}
 	return planner

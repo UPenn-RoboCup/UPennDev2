@@ -20,6 +20,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 	lPathIter, rPathIter = movearm.goto_tr_via_q(trLGoal, trRGoal, {20*DEG_TO_RAD}, {-75*DEG_TO_RAD})
+	
 end
 
 function state.update()

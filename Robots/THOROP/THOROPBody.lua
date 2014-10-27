@@ -431,6 +431,9 @@ if IS_WEBOTS then
 		if ENABLE_KINECT then key_action.k(ENABLE_KINECT) end    
 		if ENABLE_FT then key_action.t(ENABLE_FT) end
 
+		-- Ensure torqued on
+		Body.set_torque_enable(1)
+
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
     
@@ -471,7 +474,7 @@ if IS_WEBOTS then
 
 			-- TODO: What is velocity?
 			local vel = 0 or Body.get_command_velocity()[idx]
-			local en  = 1 or Body.get_torque_enable()[idx]
+			local en = Body.get_torque_enable()[idx]
 			-- Only update the joint if the motor is torqued on
 
 			-- If the joint is moving
@@ -493,6 +496,11 @@ if IS_WEBOTS then
 			--]]
 
 			if en>0 and jtag>0 then
+				
+				if jointNames[idx]:lower():find('grip') or jointNames[idx]:lower():find('trigger') then
+					webots.wb_motor_set_available_torque(jtag, 8)
+				end
+				
         -- Update the PID
         if not OLD_API then
           local new_P, old_P = Body.get_position_p()[idx], PID_P[idx]
@@ -505,23 +513,12 @@ if IS_WEBOTS then
         
         local rad = servo.direction[idx] * (cmd + servo.rad_offset[idx])
         set_pos(jtag, rad)
---SJ: Webots is STUPID so we should set direction correctly to prevent flip        
---[[        
-        local val = get_pos(jtag)
-        if pos > val + math.pi then
-					rad = rad - 2 * math.pi
-        elseif rad < val - math.pi then
-					rad = rad + 2 * math.pi
-        end
-				rad = rad==rad and rad or 0
-        set_pos(jtag, rad)
---]]
-				--Fixed
-				--[[
-        local val = get_pos(jtag)
-        local delta = util.mod_angle(rad-val)
-        set_pos(jtag, rad+delta)
-				--]]
+			
+			elseif en==0 and jtag>0 then
+				-- Disabling torque
+				if jointNames[idx]:lower():find('grip') or jointNames[idx]:lower():find('trigger') then
+					webots.wb_motor_set_available_torque(jtag, 0.01)
+				end
       end
 		end --for
 

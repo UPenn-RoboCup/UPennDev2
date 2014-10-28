@@ -77,13 +77,16 @@ int lua_set_boundaries(lua_State *L) {
 // we need to insert in a sorted list
 // and we also need constatnly random access...
 static std::vector<std::vector<CUBOID> > map;
+static std::vector<std::vector<CUBOID> > part_map;
+
 int lua_set_up_map(lua_State *L) {
   map.resize(nrow*ncol);
+  part_map.resize(nrow*ncol);
   return 0;
 }
 
 // Add a point and update the cuboid accordingly
-void add_point(std::vector<CUBOID> cell, int z) {
+void add_point_my(std::vector<CUBOID> cell, int z) {
   for (int i=0; i<cell.size(); i++) {
     if (cell[i].h-cell[i].d>z) {
       // Point is not within or close to any cuboid
@@ -115,9 +118,40 @@ void add_point(std::vector<CUBOID> cell, int z) {
   }
 }
 
-void update_part_map(int x) {
-  
+// Use this updating rule we don't neet to insert in a vector ;)
+void add_point(std::vector<CUBOID> cell, float z) {
+  for (int i=0; i<cell.size(); i++) {
+    if (cell[i].h >= z) {
+      // Point is IN current cuboid
+      cell[i].d = cell[i].d + cell[i].h - z;
+      cell[i].pnum += 1;
+      break;
+    } else if (cell[i].h<z && cell[i].h+depth >= z) {
+      // Point is above current cuboid but close
+      cell[i].h = z;
+      cell[i].d = cell[i].d + z - cell[i].h;
+      cell[i].pnum += 1;
+      break;
+    } else if (i==cell.size()-1) {
+      // hit the highest one already and need a new cuboid
+      CUBOID c;
+      c.h = z;
+      c.d = depth;
+      c.pnum = 1;
+      cell.push_back(c);
+      break;
+    } 
+  }
 }
+
+
+
+void update_part_map(std::vector<CUBOID> cell, float z) {
+  add_point(cell, z);
+}
+
+/* TODO: need a queue of part maps,
+   which MAY take too much memory...? */
 
 int lua_grow_map (lua_State *L) {
   printf("TCCM MAP UPDATING...\n");
@@ -140,8 +174,9 @@ int lua_grow_map (lua_State *L) {
   // Project the points into cuboids
   float x, y, z;
   int xi, yi, map_idx;
-  float* scan_ptr = scan_t->storage->data ; //TODO?: + scan_t->storageOffset;
-  std::vector<std::vector<CUBOID> > part_map(nrow*ncol);
+  float* scan_ptr = scan_t->storage->data + scan_t->storageOffset;
+  part_map.clear(); //TODO: is this good?
+  int dummy = 0;
   for (int i=0; i<scan_t->size[1]; i++) {
     x = *(scan_ptr);
     y = *(scan_ptr + scan_istride);
@@ -156,21 +191,24 @@ int lua_grow_map (lua_State *L) {
 		// Get the index on the map
 		map_idx = xi * scan_istride + yi;
     
-    // update cuboid in this cell
+    // update cuboid in this cell 
     if (part_map[map_idx].empty()) {
+      dummy += 1;
       // Create a new cuboid
-      CUBOID c;
+      CUBOID c ;
       c.pnum = 1;
       c.h = z;
       c.d = depth;
       // TODO: insert as needed
       part_map[map_idx].push_back(c);
+      printf("TIMES OF CREATING NEW CUBOID %d", dummy);
     } else {
       // check if fall into an existing cuboid
-      add_point(part_map[map_idx], z);
-    }
+      // update_part_map(part_map[map_idx], z);
+    }    
     
   }
+  
   return 0;
 }
 

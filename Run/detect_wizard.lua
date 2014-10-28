@@ -8,7 +8,7 @@ local T = require'libTransform'
 local si = require'simple_ipc'
 local mpack = require'msgpack.MessagePack'.pack
 local munpack = require('msgpack.MessagePack')['unpack']
-
+local unix = require'unix'
 local vector = require'vector'
 require'vcm'
 
@@ -22,6 +22,7 @@ local mesh_ch = si.new_subscriber'mesh0'
 local n_scanlines, n_returns, scan_angles
 local body_pitch_offset
 local lidar_z = 0.1  -- TODO
+local max_range = 3 --meters
 
 --TODO: robot specific
 local body_height = 1.03
@@ -34,7 +35,17 @@ else -- teddy
 end
 
 
-local xyz_global
+local octomap = require'octomap'
+-- TODO: read params from shm
+octomap.set_resolution(0.01)
+octomap.set_range(0.05, 3)
+-- 0.02m ~ 0.5 sec
+-- 0.01m ~ 1.5 sec
+-- well, it's just bad...
+
+
+local xyz_global, xyz_local
+local roll, pitch, pose
 
 local function transform(points, data)    
   local rfov = vector.new(data.rfov)*RAD_TO_DEG
@@ -45,17 +56,14 @@ local function transform(points, data)
     v_angles = torch.mul(v_angles0, DEG_TO_RAD):type('torch.FloatTensor')
   end
     
-  --TODO: maybe just build a 3D tensor?
-  xyz_global = torch.FloatTensor(n_scanlines, n_returns, 3)
-  
+  xyz_global = torch.FloatTensor(n_scanlines*n_returns, 3):zero()
+    
   -- Transfrom to x,y,z
-  local roll, pitch, pose
   local pre_pose -- this is for scanlines that are not updated
   -- Buffers for points
   local xs = torch.FloatTensor(1, n_returns)
   local ys = torch.FloatTensor(1, n_returns)
   local zs = torch.FloatTensor(1, n_returns)
-  local xyz_new = torch.FloatTensor(4, n_returns)
   for i=1,n_scanlines do
     local scanline = points:select(1, i)
     
@@ -74,6 +82,7 @@ local function transform(points, data)
       pose = data.pose[i] 
       pre_pose = pose
     else 
+      print('WARNING!!!!!!!!!!!!!!!!!!!')
       pose = pre_pose
     end
     
@@ -84,42 +93,24 @@ local function transform(points, data)
     local rotX = T.rotX(roll)
     local rotZ = T.rotX(pose[3])
     local trans = T.trans(pose[1], pose[2], body_height)
-    
     local R = torch.mm(trans, torch.mm(rotZ,torch.mm(rotX, rotY))):type('torch.FloatTensor')
         
     -- Transform to global coordinates
     -- Maybe dumb 
-    local xyz_local = torch.cat(torch.cat(torch.cat(xs,ys,1),zs,1),
+    xyz_local = torch.cat(torch.cat(torch.cat(xs,ys,1),zs,1),
       torch.ones(1,n_returns):type('torch.FloatTensor'),1)
       
-    xyz_new:mm(R, xyz_local)
-    xyz_global:select(3,1)[i]:copy(xyz_new[1])
-    xyz_global:select(3,2)[i]:copy(xyz_new[2])
-    xyz_global:select(3,3)[i]:copy(xyz_new[3])
-    
-    if DEBUG and i==40 then
-      -- print( unpack(vector.new(scanline)) )
-      -- print( unpack(vector.new(zs)) )
-      -- print('POSE:', unpack(pose))
-      -- print(string.format('Roll %.2f, Pitch %.2f \n', roll*RAD_TO_DEG, pitch*RAD_TO_DEG))
-      print(xyz_new:size())      
-      -- print(unpack(vector.new(xyz_new:select(2,3))))
-      -- print('AFTER', unpack(vector.new(pz[i])))
-      print(unpack(vector.new(xyz_global:select(3,3)[i])))
-      -- Above is good
-      
-    end
-
+    xyz_local = torch.mm(R, xyz_local)   -- 4*360
+    -- TODO: if we use octomap, we may insert point cloud per scanline?
+    xyz_global[{{(i-1)*n_returns+1, i*n_returns},{}}]:copy(xyz_local:sub(1,3):t())
+        
+  end
+  
+  if DEBUG then
+    -- print(unpack(vector.new(xyz_global[{{10*n_returns+1, 11*n_returns},3}])))
   end
 
-  -- visualize
-  
-  -- Now we somehow have the point clouds, convert to TCCM
-  -- TODO: we may add a libTccm or something in Util
-  -- GRID
-  -- STRUCT OF A CUBOID
-  -- C++ ?
-
+  -- visualize: octovis or matlab
   
     
 end
@@ -127,6 +118,8 @@ end
 local function plane_detect()
   return
 end
+
+local td -- for benchmarking
 
 mesh_ch.callback = function(skt)  
   -- Only use the last one
@@ -140,10 +133,6 @@ mesh_ch.callback = function(skt)
   local points = torch.FloatTensor(n_scanlines, n_returns):zero()
   ffi.copy(points:data(), ranges)
 
-  if DEBUG then
-  --   print(unpack(vector.new(points:select(1, 40))))
-    -- print(unpack(scan_angles))
-  end
   
   -- If the laser data is not ready
   if #data.pose==0 then
@@ -152,11 +141,23 @@ mesh_ch.callback = function(skt)
   end
     
   -- Transform to cartesian space
+  -- TODO: transform in octomap *maybe* faster
+  td = unix.time()
   transform(points, data)
+  if DEBUG then
+    print('Transform the entir scan..', unix.time()-td)
+  end
   
-  -- Model building
-  plane_detect()
-  
+  -- Update sensor pose
+  octomap.set_origin(torch.DoubleTensor({pose[1], pose[2], body_height}))
+
+  -- Insert point cloud to Octree  
+  td = unix.time()
+  octomap.add_scan(xyz_global)
+  if DEBUG then
+    print('Added one full scan.. ', unix.time()-td, '\n')
+  end
+
 end
 
 
@@ -165,8 +166,7 @@ local TIMEOUT = 1 / 10 * 1e3  --TODO
 local poller = si.wait_on_channels{mesh_ch}
 local npoll
 
--- TODO: for TCCM, we shouldn't use the mesh_wizard
--- just add each scanline to the global map
+
 
 local function update()  
   npoll = poller:poll(TIMEOUT)
@@ -180,6 +180,7 @@ end
 
 
 --TODO: add signal to kill properly
+
 while trun do
 	update()
 	if t - t_debug > debug_interval then

@@ -2,16 +2,9 @@ assert(Config, 'Need a pre-existing Config table!')
 
 local fsm = {}
 
-
-Config.stop_at_neutral = true --false for walk testing
-
 Config.demo = false
 --Config.demo = true
 
---  Config.use_walkkick = true
-Config.use_walkkick = false
-
---Config.torque_legs = false
 Config.torque_legs = true
 
 -- Update rate in Hz
@@ -40,10 +33,27 @@ fsm.Body = {
 fsm.Arm = {
 	-- Idle
   {'armIdle', 'timeout', 'armIdle'},
-	-- Init
 	{'armIdle', 'init', 'armInit'},
-	--
+	-- Init
+	{'armInit', 'timeout', 'armInit'},
   {'armInit', 'done', 'armStance'},
+	-- Stance pose (for walking)
+	{'armStance', 'timeout', 'armStance'},
+	{'armStance', 'ready', 'armReady'},
+	{'armStance', 'teleop', 'armTeleop'},
+	-- Ready pose (for manipulating)
+	{'armReady', 'timeout', 'armReady'},
+	{'armReady', 'done', 'armTeleop'},
+	{'armReady', 'teleop', 'armTeleop'},
+	-- Teleop
+	{'armTeleop', 'timeout', 'armTeleop'},
+	{'armTeleop', 'init', 'armInit'},
+	{'armTeleop', 'ready', 'armReady'},
+	{'armTeleop', 'poke', 'armPoke'},
+	-- Poke
+	{'armPoke', 'timeout', 'armPoke'},
+	{'armPoke', 'done', 'armTeleop'},
+	{'armPoke', 'touch', 'armTeleop'},
 }
 
 fsm.Motion = {

@@ -1,72 +1,78 @@
+local Transform = {}
+local mt = {}
+
 local vector = require'vector'
 local quaternion = require'quaternion'
-local Transform = {}
 
-mt = {}
+local cos = math.cos
+local sin = math.sin
+local atan2 = math.atan2
+local sqrt = math.sqrt
+local vnew = vector.new
 
 function Transform.inv(a)
   local t = {}
   local r = {}
   local p = {}
-  r[1] = vector.new({a[1][1],a[2][1],a[3][1]})
-  r[2] = vector.new({a[1][2],a[2][2],a[3][2]})
-  r[3] = vector.new({a[1][3],a[2][3],a[3][3]})
-  p = vector.new({a[1][4],a[2][4],a[3][4]})
-  t[1] = vector.new({r[1][1],r[1][2],r[1][3],-(r[1][1]*p[1]+r[1][2]*p[2]+r[1][3]*p[3])})
-  t[2] = vector.new({r[2][1],r[2][2],r[2][3],-(r[2][1]*p[1]+r[2][2]*p[2]+r[2][3]*p[3])})
-  t[3] = vector.new({r[3][1],r[3][2],r[3][3],-(r[3][1]*p[1]+r[3][2]*p[2]+r[3][3]*p[3])})
-  t[4] = vector.new({0,0,0,1})
+  r[1] = vnew({a[1][1],a[2][1],a[3][1]})
+  r[2] = vnew({a[1][2],a[2][2],a[3][2]})
+  r[3] = vnew({a[1][3],a[2][3],a[3][3]})
+  p = vnew({a[1][4],a[2][4],a[3][4]})
+  t[1] = vnew({r[1][1],r[1][2],r[1][3],-(r[1][1]*p[1]+r[1][2]*p[2]+r[1][3]*p[3])})
+  t[2] = vnew({r[2][1],r[2][2],r[2][3],-(r[2][1]*p[1]+r[2][2]*p[2]+r[2][3]*p[3])})
+  t[3] = vnew({r[3][1],r[3][2],r[3][3],-(r[3][1]*p[1]+r[3][2]*p[2]+r[3][3]*p[3])})
+  t[4] = vnew({0,0,0,1})
   return setmetatable(t,mt)
 end
 
 function Transform.eye()
   local t = {}
-  t[1] = vector.new({1, 0, 0, 0})
-  t[2] = vector.new({0, 1, 0, 0})
-  t[3] = vector.new({0, 0, 1, 0})
-  t[4] = vector.new({0, 0, 0, 1})
+  t[1] = vnew({1, 0, 0, 0})
+  t[2] = vnew({0, 1, 0, 0})
+  t[3] = vnew({0, 0, 1, 0})
+  t[4] = vnew({0, 0, 0, 1})
   return setmetatable(t, mt)
 end
 
 function Transform.rotZ(a)
-  local ca = math.cos(a)
-  local sa = math.sin(a)
+  local ca = cos(a)
+  local sa = sin(a)
   local t = {}
-  t[1] = vector.new({ca, -sa, 0, 0})
-  t[2] = vector.new({sa, ca, 0, 0})
-  t[3] = vector.new({0, 0, 1, 0})
-  t[4] = vector.new({0, 0, 0, 1})
+  t[1] = vnew({ca, -sa, 0, 0})
+  t[2] = vnew({sa, ca, 0, 0})
+  t[3] = vnew({0, 0, 1, 0})
+  t[4] = vnew({0, 0, 0, 1})
   return setmetatable(t, mt)
 end
 
 function Transform.rotY(a)
-  local ca = math.cos(a)
-  local sa = math.sin(a)
+  local ca = cos(a)
+  local sa = sin(a)
   local t = {}
-  t[1] = vector.new({ca, 0, sa, 0})
-  t[2] = vector.new({0, 1, 0, 0})
-  t[3] = vector.new({-sa, 0, ca, 0})
-  t[4] = vector.new({0, 0, 0, 1})
+  t[1] = vnew({ca, 0, sa, 0})
+  t[2] = vnew({0, 1, 0, 0})
+  t[3] = vnew({-sa, 0, ca, 0})
+  t[4] = vnew({0, 0, 0, 1})
   return setmetatable(t, mt)
 end
 
 function Transform.rotX(a)
-  local ca = math.cos(a)
-  local sa = math.sin(a)
+  local ca = cos(a)
+  local sa = sin(a)
   local t = {}
-  t[1] = vector.new({1, 0, 0, 0})
-  t[2] = vector.new({0, ca, -sa, 0})
-  t[3] = vector.new({0, sa, ca, 0})
-  t[4] = vector.new({0, 0, 0, 1})
+  t[1] = vnew({1, 0, 0, 0})
+  t[2] = vnew({0, ca, -sa, 0})
+  t[3] = vnew({0, sa, ca, 0})
+  t[4] = vnew({0, 0, 0, 1})
   return setmetatable(t, mt)
 end
 
 function Transform.trans(dx, dy, dz)
   local t = {}
-  t[1] = vector.new({1, 0, 0, dx})
-  t[2] = vector.new({0, 1, 0, dy})
-  t[3] = vector.new({0, 0, 1, dz})
-  t[4] = vector.new({0, 0, 0, 1})
+  t[1] = vnew({1, 0, 0, dx})
+  t[2] = vnew({0, 1, 0, dy})
+  t[3] = vnew({0, 0, 1, dz})
+  t[4] = vnew({0, 0, 0, 1})
   return setmetatable(t, mt)
 end
 
@@ -76,9 +82,9 @@ function Transform.to_zyz(t)
   -- Modelling and Control of Robot Manipulators, pg. 30
   -- Lorenzo Sciavicco and Bruno Siciliano
   local e = vector.zeros(3)
-  e[1]=math.atan2(t[2][3],t[1][3]) -- Z (phi)
-  e[2]=math.atan2(math.sqrt( t[1][3]^2 + t[2][3]^2),t[3][3]) -- Y (theta)
-  e[3]=math.atan2(t[3][2],-t[3][1]) -- Z' (psi)
+  e[1]=atan2(t[2][3],t[1][3]) -- Z (phi)
+  e[2]=atan2(sqrt( t[1][3]^2 + t[2][3]^2),t[3][3]) -- Y (theta)
+  e[3]=atan2(t[3][2],-t[3][1]) -- Z' (psi)
   return e
 end
 
@@ -87,47 +93,47 @@ function Transform.to_rpy(t)
   -- http://planning.cs.uiuc.edu/node103.html
   -- returns [roll, pitch, yaw] vector
   local e = vector.zeros(3)
-  e[1]=math.atan2(t[3][2],t[3][3]) --Roll
-  e[2]=math.atan2(-t[3][1],math.sqrt( t[3][2]^2 + t[3][3]^2) ) -- Pitch
-  e[3]=math.atan2(t[2][1],t[1][1]) -- Yaw
+  e[1]=atan2(t[3][2],t[3][3]) --Roll
+  e[2]=atan2(-t[3][1],sqrt( t[3][2]^2 + t[3][3]^2) ) -- Pitch
+  e[3]=atan2(t[2][1],t[1][1]) -- Yaw
   return e
 end
 
 function Transform.position6D(tr)
-  return vector.new{
+  return vnew{
   tr[1][4],tr[2][4],tr[3][4],
-  math.atan2(tr[3][2],tr[3][3]),
+  atan2(tr[3][2],tr[3][3]),
   -math.asin(tr[3][1]),
-  math.atan2(tr[2][1],tr[1][1])
+  atan2(tr[2][1],tr[1][1])
   }
 end
 
 -- Rotation Matrix to quaternion
 -- from Yida.  Adapted to take a transformation matrix
-Transform.to_quaternion = function( t )
-  local offset = vector.new{t[1][4],t[2][4],t[3][4]}
+function Transform.to_quaternion( t )
+  local offset = vnew{t[1][4],t[2][4],t[3][4]}
   local q = quaternion.new()
   local tr = t[1][1] + t[2][2] + t[3][3]
   if tr > 0 then
-    local S = math.sqrt(tr + 1.0) * 2
+    local S = sqrt(tr + 1.0) * 2
     q[1] = 0.25 * S
     q[2] = (t[3][2] - t[2][3]) / S
     q[3] = (t[1][3] - t[3][1]) / S
     q[4] = (t[2][1] - t[1][2]) / S
   elseif t[1][1] > t[2][2] and t[1][1] > t[3][3] then
-    local S = math.sqrt(1.0 + t[1][1] - t[2][2] - t[3][3]) * 2
+    local S = sqrt(1.0 + t[1][1] - t[2][2] - t[3][3]) * 2
     q[1] = (t[3][2] - t[2][3]) / S
     q[2] = 0.25 * S
     q[3] = (t[1][2] + t[2][1]) / S 
     q[4] = (t[1][3] + t[3][1]) / S
   elseif t[2][2] > t[3][3] then
-    local S = math.sqrt(1.0 + t[2][2] - t[1][1] - t[3][3]) * 2
+    local S = sqrt(1.0 + t[2][2] - t[1][1] - t[3][3]) * 2
     q[1] = (t[1][3] - t[3][1]) / S
     q[2] = (t[1][2] + t[2][1]) / S 
     q[3] = 0.25 * S
     q[4] = (t[2][3] + t[3][2]) / S
   else
-    local S = math.sqrt(1.0 + t[3][3] - t[1][1] - t[2][2]) * 2
+    local S = sqrt(1.0 + t[3][3] - t[1][1] - t[2][2]) * 2
     q[1] = (t[2][1] - t[1][2]) / S
     q[2] = (t[1][3] + t[3][1]) / S 
     q[3] = (t[2][3] + t[3][2]) / S
@@ -137,7 +143,7 @@ Transform.to_quaternion = function( t )
 end
 
 -- Can give the position
-Transform.from_quaternion = function(q,pos)
+function Transform.from_quaternion(q, pos)
   local t = Transform.eye()
   t[1][1] = 1 - 2 * q[3] * q[3] - 2 * q[4] * q[4]
   t[1][2] = 2 * q[2] * q[3] - 2 * q[4] * q[1]
@@ -153,19 +159,19 @@ Transform.from_quaternion = function(q,pos)
 end
 
 function Transform.transform6D(p)
-  local t = {}
+  local cwx = cos(p[4])
+  local swx = sin(p[4])
+  local cwy = cos(p[5])
+  local swy = sin(p[5])
+  local cwz = cos(p[6])
+  local swz = sin(p[6])
 
-  local cwx = math.cos(p[4])
-  local swx = math.sin(p[4])
-  local cwy = math.cos(p[5])
-  local swy = math.sin(p[5])
-  local cwz = math.cos(p[6])
-  local swz = math.sin(p[6])
-
-  t[1] = vector.new({1, 0, 0, 0})
-  t[2] = vector.new({0, 1, 0, 0})
-  t[3] = vector.new({0, 0, 1, 0})
-  t[4] = vector.new({0, 0, 0, 1})
+	local t = {
+	  vnew({1, 0, 0, 0}),
+	  vnew({0, 1, 0, 0}),
+	  vnew({0, 0, 1, 0}),
+	  vnew({0, 0, 0, 1})
+	}
 
   t[1][1] = cwy*cwz
   t[1][2] = swx*swy*cwz-cwx*swz
@@ -193,11 +199,11 @@ local function mul(t1, t2)
       + t1[i][3] * t2[3]
       + t1[i][4] * t2[4]
     end
-    return vector.new(t)
+    return vnew(t)
   elseif type(t2[1]) == "table" then
     -- Matrix * Matrix
     for i = 1,4 do
-      t[i] = {}
+      t[i] = vnew()
       for j = 1,4 do
         t[i][j] = t1[i][1] * t2[1][j]
         + t1[i][2] * t2[2][j]
@@ -210,8 +216,8 @@ local function mul(t1, t2)
 end
 
 -- Copy
-Transform.copy = function(tt)
-  if type(t)=='table' then
+function Transform.copy(tt)
+  if type(tt)=='table' then
     -- Copy the table
     local t = {}
     t[1] = vector.copy(tt[1])
@@ -230,12 +236,21 @@ Transform.copy = function(tt)
   return t
 end
 
+-- Do it unsafe; assume a table
+function Transform.new(tt)
+  vnew(tt[1])
+  vnew(tt[2])
+  vnew(tt[3])
+  vnew(tt[4])
+  return setmetatable(tt, mt)
+end
+
 -- Use the 6D vector
 local function tostring(t, formatstr)
   return tostring( Transform.position6D(t), formatstr )
 end
 -- Full matrix for the library tostring helper
-Transform.tostring = function(tr)
+function Transform.tostring(tr)
   local pr = {}
   for i=1,4 do
     local row = {}
@@ -249,7 +264,7 @@ Transform.tostring = function(tr)
 end
 
 mt.__mul = mul
-mt.__tostring = tostring
+mt.__tostring = Transform.tostring --tostring
 --mt.__call = function(self,idx) print('idx',idx,type(idx),self[idx]); return self[idx] end
 
 return Transform

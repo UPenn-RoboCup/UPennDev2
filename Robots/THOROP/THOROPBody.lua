@@ -332,6 +332,16 @@ if IS_WEBOTS then
         print(util.color('FT disabled!','yellow'))
         webots.wb_touch_sensor_disable(tags.l_ft)
   			webots.wb_touch_sensor_disable(tags.r_ft)
+        webots.wb_motor_disable_force_feedback(tags.jointsByName.FootR)
+        webots.wb_motor_disable_force_feedback(tags.jointsByName.FootL)
+        webots.wb_motor_disable_force_feedback(tags.jointsByName.AnkleR)
+        webots.wb_motor_disable_force_feedback(tags.jointsByName.AnkleL)
+        if tags.left_ankle_yaw > 0 then
+          webots.wb_motor_disable_force_feedback(tags.left_ankle_yaw)
+        end
+        if tags.right_ankle_yaw > 0 then
+          webots.wb_motor_disable_force_feedback(tags.right_ankle_yaw)
+        end
         ENABLE_FT = false
       else
         print(util.color('FT enabled!','green'))
@@ -375,6 +385,10 @@ if IS_WEBOTS then
 	        webots.wb_servo_set_velocity(tag, 4)
 				else
 					webots.wb_motor_enable_position(tag, timeStep)
+					-- Add Torque feedback
+					if v~='ChestLidarPan' then
+						webots.wb_motor_enable_force_feedback(tag, timeStep)
+					end
 				end
 			end
 		end
@@ -417,6 +431,9 @@ if IS_WEBOTS then
 		if ENABLE_KINECT then key_action.k(ENABLE_KINECT) end    
 		if ENABLE_FT then key_action.t(ENABLE_FT) end
 
+		-- Ensure torqued on
+		Body.set_torque_enable(1)
+
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
     
@@ -457,7 +474,7 @@ if IS_WEBOTS then
 
 			-- TODO: What is velocity?
 			local vel = 0 or Body.get_command_velocity()[idx]
-			local en  = 1 or Body.get_torque_enable()[idx]
+			local en = Body.get_torque_enable()[idx]
 			-- Only update the joint if the motor is torqued on
 
 			-- If the joint is moving
@@ -479,6 +496,11 @@ if IS_WEBOTS then
 			--]]
 
 			if en>0 and jtag>0 then
+				
+				if jointNames[idx]:lower():find('grip') or jointNames[idx]:lower():find('trigger') then
+					webots.wb_motor_set_available_torque(jtag, 8)
+				end
+				
         -- Update the PID
         if not OLD_API then
           local new_P, old_P = Body.get_position_p()[idx], PID_P[idx]
@@ -491,23 +513,12 @@ if IS_WEBOTS then
         
         local rad = servo.direction[idx] * (cmd + servo.rad_offset[idx])
         set_pos(jtag, rad)
---SJ: Webots is STUPID so we should set direction correctly to prevent flip        
---[[        
-        local val = get_pos(jtag)
-        if pos > val + math.pi then
-					rad = rad - 2 * math.pi
-        elseif rad < val - math.pi then
-					rad = rad + 2 * math.pi
-        end
-				rad = rad==rad and rad or 0
-        set_pos(jtag, rad)
---]]
-				--Fixed
-				--[[
-        local val = get_pos(jtag)
-        local delta = util.mod_angle(rad-val)
-        set_pos(jtag, rad+delta)
-				--]]
+			
+			elseif en==0 and jtag>0 then
+				-- Disabling torque
+				if jointNames[idx]:lower():find('grip') or jointNames[idx]:lower():find('trigger') then
+					webots.wb_motor_set_available_torque(jtag, 0.01)
+				end
       end
 		end --for
 
@@ -598,6 +609,10 @@ if IS_WEBOTS then
         rad = servo.direction[idx] * val - servo.rad_offset[idx]
 				rad = rad==rad and rad or 0
 				positions[idx] = rad
+				if not OLD_API then
+					local tq = webots.wb_motor_get_force_feedback(jtag)
+					dcm.sensorPtr.current[idx-1] = tq==tq and tq or 0
+				end
       end
     end
 		dcm.set_sensor_position(positions)

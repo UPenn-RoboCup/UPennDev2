@@ -1,4 +1,6 @@
-dofile'include.lua'
+#!/usr/bin/env luajit
+pcall(dofile, 'include.lua')
+pcall(dofile, '../include.lua')
 
 -- Important libraries in the global space
 local libs = {

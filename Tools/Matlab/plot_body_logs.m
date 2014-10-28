@@ -7,12 +7,12 @@ for i=1:numel(jointNames)
     end
 end
 
-figure(1);
-plot( ts, rad2deg(pos(:, joint_idx)), ...
-    ts, rad2deg(cmd(:, joint_idx)) ...
-    );
-legend('Position', 'Command');
-title('PelvL Command vs. Position');
+% figure(1);
+% plot( ts, rad2deg(pos(:, joint_idx)), ...
+%     ts, rad2deg(cmd(:, joint_idx)) ...
+%     );
+% legend('Position', 'Command');
+% title('PelvL Command vs. Position');
 
 hip_roll_pos = rad2deg(pos(:, joint_idx));
 hip_roll_cmd = rad2deg(cmd(:, joint_idx));
@@ -29,34 +29,36 @@ end
 foot_roll_pos = rad2deg(pos(:, joint_idx));
 foot_roll_cmd = rad2deg(cmd(:, joint_idx));
 
-figure(2);
-plot( ts, rad2deg(pos(:, joint_idx)), ...
-    ts, rad2deg(cmd(:, joint_idx)) ...
-    );
-legend('Position', 'Command');
-title('FootL Command vs. Position (Degrees)');
-
-figure(3);
-plot( ts, foot_roll_pos + hip_roll_pos, ...
-    ts, foot_roll_cmd + hip_roll_cmd, ...
-    ts, rad2deg(rpy(:, 1)) ...
-    );
-legend('Position', 'Command', 'IMU Roll');
-title('Combined Command vs. Position (Degrees)');
-
-figure(4);
-plot( ts, cur(:, joint_idx) );
-title('Current (Amperes)');
-
 % figure(2);
-% plot(gyro);
-% title('Gyro');
-% legend('Roll', 'Pitch', 'Yaw');
+% plot( ts, rad2deg(pos(:, joint_idx)), ...
+%     ts, rad2deg(cmd(:, joint_idx)) ...
+%     );
+% legend('Position', 'Command');
+% title('FootL Command vs. Position (Degrees)');
+% 
+% figure(3);
+% plot( ts, foot_roll_pos + hip_roll_pos, ...
+%     ts, foot_roll_cmd + hip_roll_cmd, ...
+%     ts, rad2deg(rpy(:, 1)) ...
+%     );
+% legend('Position', 'Command', 'IMU Roll');
+% title('Combined Command vs. Position (Degrees)');
 % 
 % figure(4);
-% plot(rpy);
-% title('Angle');
-% legend('Roll', 'Pitch', 'Yaw');
+% plot( ts, cur(:, joint_idx) );
+% title('Current (Amperes)');
+
+figure(5);
+plot(gyro(400:600,:));
+title('Gyro');
+legend('Roll', 'Pitch', 'Yaw');
+xlim([1 201]);
+% 
+figure(6);
+plot(rpy(400:600,1));
+title('Angle');
+legend('Roll', 'Pitch', 'Yaw');
+xlim([1 201]);
 
 % figure(4);
 % plot( ts, rad2deg(rpy(:, 1)) );

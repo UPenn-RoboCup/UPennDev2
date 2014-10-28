@@ -109,11 +109,13 @@ local function log_iter(self)
 	local function iter(param, state)
 		i = i + 1
 		if i>n then
-			f_r:close()
+			if f_r then f_r:close() end
 			return nil
 		end
 		--if not param then return end
 		local m = metadata[i]
+		-- Metadata only
+		if not f_r then return i, m end
 		if C then
 			buf_t:resize(m.rsz)
 			local n_read = C.fread(buf_t:data(),1,m.rsz,f_r)

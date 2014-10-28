@@ -19,7 +19,8 @@ jointNames = { ...
 %timestamp = '10.06.2014.17.07.04'; % Walk & turn
 %timestamp = '10.07.2014.11.42.26'; % Stand on one leg
 %timestamp = '10.09.2014.15.08.25'; % Marcell
-timestamp = '10.16.2014.16.46.42'; % With current readings
+%timestamp = '10.16.2014.16.46.42'; % With current readings
+timestamp = '10.24.2014.14.12.36'; % Poke x
 
 % TODO: Check if already available
 %load(strcat('Data/joint_m_',timestamp,'.mat'));

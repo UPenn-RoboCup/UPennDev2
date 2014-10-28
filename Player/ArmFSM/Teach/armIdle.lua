@@ -34,7 +34,7 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  --if t-t_entry > timeout then return'timeout' end
+  if t-t_entry > timeout then return'timeout' end
 
   -- TODO: What if exit before first
   -- read request arrives?

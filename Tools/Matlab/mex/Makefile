@@ -84,6 +84,9 @@ field_lines.$(MEXEXT): field_lines.cc RadonTransform.o
 
 field_spots.$(MEXEXT): field_spots.cc RegionProps.o ConnectRegions.o
 	$(MEX) $^
+
+kinematics.$(MEXEXT): kinematics.cc
+	$(MEX) $^ ../../../Robots/THOROP/THOROPKinematics.cpp ../../../Robots/Transform/Transform.cpp  -I../../../Robots/THOROP -I../../../Robots/Transform
 	
 test:
 	@echo "Testing matlab scripts!"

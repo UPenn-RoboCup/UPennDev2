@@ -9,12 +9,7 @@ local Body   = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
 local t_entry, t_update, t_finish
-local timeout = 15.0
-
-local T = require'Transform'
-local trRGoal = T.transform6D{0.12, -0.15, -0.28, 0, 30*DEG_TO_RAD, 0}
-local trLGoal = T.transform6D{0.12, 0.265, -0.32, 0, 30*DEG_TO_RAD, -20*DEG_TO_RAD}
-
+local timeout = 10.0
 
 local lPathIter, rPathIter
 
@@ -24,7 +19,10 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-	lPathIter, rPathIter = movearm.goto_tr_via_q(trLGoal, trRGoal, {5*DEG_TO_RAD}, {-5*DEG_TO_RAD})
+	lPathIter, rPathIter = movearm.goto_wrists(
+		{Config.arm.pLWristTarget0, Config.arm.lShoulderYaw0, Config.arm.lrpy0},
+		{Config.arm.pRWristTarget0, Config.arm.rShoulderYaw0, Config.arm.rrpy0}
+	)
 	
 	-- Set Hardware limits in case
   for i=1,10 do
@@ -43,33 +41,21 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
-	
-	-- Timing necessary
+  --if t-t_entry > timeout then return'timeout' end
 	--[[
-	local qLArm = Body.get_larm_command_position()
-	local moreL, q_lWaypoint = lPathIter(qLArm, dt)
-	--]]
-	-- No time needed
-	----[[
-	local qLArm = Body.get_larm_position()
-	local moreL, q_lWaypoint = lPathIter(qLArm)
-	--]]
+	local moreL, q_lWaypoint = lPathIter(Body.get_larm_command_position(), dt)
 	Body.set_larm_command_position(q_lWaypoint)
-	
-	--[[
-	local qRArm = Body.get_rarm_command_position()
-	local moreR, q_rWaypoint = rPathIter(qRArm, dt)
+	local moreR, q_rWaypoint = rPathIter(Body.get_rarm_command_position(), dt)
+	Body.set_rarm_command_position(q_rWaypoint)
 	--]]
-	----[[
-	local qRArm = Body.get_rarm_position()
-	local moreR, q_rWaypoint = rPathIter(qRArm)
-	--]]
+	local qL = Body.get_larm_position()
+	local moreL, q_lWaypoint = lPathIter(qL)
+	Body.set_larm_command_position(q_lWaypoint)
+	local qR = Body.get_rarm_position()
+	local moreR, q_rWaypoint = rPathIter(qR)
 	Body.set_rarm_command_position(q_rWaypoint)
 	-- Check if done
-	if not moreL and not moreR then
-		return 'done'
-	end
+	if not moreL and not moreR then return 'done' end
 
 end
 

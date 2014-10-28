@@ -4,12 +4,12 @@ WorldInfo {
     "Valve operating test for DRC"
   ]
   title "valvetest"
-  basicTimeStep 40
+  basicTimeStep 8
   FPS 15
 }
 Viewpoint {
-  orientation -0.00191394 0.959179 0.282794 3.10487
-  position -0.362324 3.25236 -3.38634
+  orientation 0.00507013 0.963325 0.268291 3.15298
+  position -1.34684 3.39797 -2.98244
 }
 Background {
   skyColor [
@@ -17,7 +17,7 @@ Background {
   ]
 }
 DirectionalLight {
-  ambientIntensity 1.6
+  ambientIntensity 0.6
   direction -0.5 -2 -0.5
   intensity 0.3
   castShadows TRUE
@@ -27,20 +27,21 @@ DirectionalLight {
   intensity 0.5
 }
 DEF FLOOR Floor {
+  size 12 12
+  texture [
+    "textures/texture_grid.png"
+  ]
 }
-THOROP7_Update {
-  translation -0.65 1.15535 0.4
+THOROP_UPENN {
+  translation -0.5 1.15535 0.5
   controller "thorop"
   controllerArgs "0 32"
 }
-
-
 DEF MY_TABLE Solid {
-  #translation -0.525 1 1.05
   translation -0.525 1 1.15
   children [
     Transform {
-			translation 0 0 0.1
+      translation 0 0 0.1
       children [
         Shape {
           geometry Box {
@@ -59,8 +60,6 @@ DEF MY_TABLE Solid {
     ]
   }
 }
-
-
 DEF MY_DRILL1 Solid {
   translation -0.37 1.15 1.1
   children [
@@ -73,23 +72,24 @@ DEF MY_DRILL1 Solid {
       }
       geometry Cylinder {
         height 0.1
-        radius 0.025
+        radius 0.015
       }
     }
     Transform {
       translation 0 -0.075 0
-      children[
+      children [
         Shape {
           geometry Cylinder {
-            height 0.05 radius 0.05
+            height 0.05
+            radius 0.05
           }
         }
       ]
     }
-    Transform{
+    Transform {
       translation 0 0.06 0.03
       rotation 1 0 0 1.57
-      children[
+      children [
         Shape {
           geometry Cylinder {
             height 0.15
@@ -98,10 +98,10 @@ DEF MY_DRILL1 Solid {
         }
       ]
     }
-    Transform{
+    Transform {
       translation 0 0.06 0.15
       rotation 1 0 0 1.57
-      children[
+      children [
         Shape {
           geometry Cylinder {
             height 0.2
@@ -111,16 +111,13 @@ DEF MY_DRILL1 Solid {
       ]
     }
   ]
-
-
-
-  boundingObject Group{
+  boundingObject Group {
     children [
       Transform {
         children [
           Cylinder {
             height 0.1
-            radius 0.025
+            radius 0.015
           }
         ]
       }
@@ -135,17 +132,11 @@ DEF MY_DRILL1 Solid {
       }
     ]
   }
-
   physics Physics {
     density -1
     mass 3
   }
 }
-
-
-
-
-
 DEF MY_DRILL2 Solid {
   translation -0.67 1.15 1.1
   children [
@@ -158,23 +149,25 @@ DEF MY_DRILL2 Solid {
       }
       geometry Cylinder {
         height 0.1
-        radius 0.025
+        radius 0.015
       }
     }
     Transform {
       translation 0 -0.075 0
-      children[
+      children [
         Shape {
-          geometry Cylinder {
-            height 0.05 radius 0.05
-          }
+          #geometry Cylinder {
+          #  height 0.05
+          #  radius 0.05
+          #}
+					geometry Box { size 0.08 0.05 0.1}
         }
       ]
     }
-    Transform{
+    Transform {
       translation 0 0.06 0.03
       rotation 1 0 0 1.57
-      children[
+      children [
         Shape {
           geometry Cylinder {
             height 0.15
@@ -183,10 +176,10 @@ DEF MY_DRILL2 Solid {
         }
       ]
     }
-    Transform{
+    Transform {
       translation 0 0.06 0.15
       rotation 1 0 0 1.57
-      children[
+      children [
         Shape {
           geometry Cylinder {
             height 0.2
@@ -196,33 +189,32 @@ DEF MY_DRILL2 Solid {
       ]
     }
   ]
-
-
-
-  boundingObject Group{
+  boundingObject Group {
     children [
       Transform {
         children [
-          Cylinder {
-            height 0.1
-            radius 0.025
-          }
+          #Cylinder {
+          #  height 0.1
+          #  radius 0.015
+          #}
+					Box { size 0.03 0.1 0.03}
         ]
       }
       Transform {
         translation 0 -0.075 0
         children [
-          Cylinder {
-            height 0.05
-            radius 0.05
-          }
+          #Cylinder {
+          #  height 0.05
+          #  radius 0.05
+          #}
+					Box { size 0.08 0.05 0.1}
         ]
       }
     ]
   }
-
   physics Physics {
     density -1
     mass 3
   }
 }
+

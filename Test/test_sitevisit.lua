@@ -107,6 +107,14 @@ local function update(key_code)
 	elseif key_char_lower==("3") then      
 --		lidar_ch:send'pansingle'
 
+	elseif key_char_lower==("5") then      
+		arm_ch:send'smallvalvegrab'
+	elseif key_char_lower==("-") then      
+		hcm.set_state_proceed(-1)
+	elseif key_char_lower==("=") then      
+		hcm.set_state_proceed(1)
+
+
 	elseif key_char_lower==("q") then      
 		body_ch:send'approach'
 

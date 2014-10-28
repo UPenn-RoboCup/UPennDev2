@@ -17,7 +17,7 @@ figure;
 h_yy = gca;
 
 %% Show the left leg pitch
-joint = 'PelvYL';
+joint = 'ShoulderR';
 joint_idx = 1;
 for i=1:numel(jointNames)
     if strcmp(jointNames{i}, joint)==1

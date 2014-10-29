@@ -10,6 +10,8 @@ local T0 = require'Transform'
 --local T = require'libTransform'
 -- Check against standard kinematics
 --local Kinematics = require'THOROPKinematics'
+--local ik_arm = Kinematics.inverse_arm
+--K.inverse_arm = ik_arm
 -- Cache math
 local sin, cos = math.sin, math.cos
 local asin, acos = math.asin, math.acos
@@ -88,7 +90,7 @@ local aUpperArm = math.atan(elbowOffsetX / upperArmLength)
 local aLowerArm = math.atan(elbowOffsetX / lowerArmLength)
 local aElbowMax = -1*(aUpperArm + aLowerArm)
 -- Assume left arm
-local function ik_arm2(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
+local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
   --trArm = T0.copy(trArm)
   --local xWrist = {trArm[1][4], trArm[2][4], trArm[3][4]}
 	local xWrist1, xWrist2, xWrist3 = trArm[1][4], trArm[2][4], trArm[3][4]
@@ -127,8 +129,11 @@ local function ik_arm2(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
     local err2 = s22*m[1][4] + cos(shoulderRoll2)*m[2][4] - xWrist2
     shoulderRoll = err1^2 < err2^2 and shoulderRoll1 or shoulderRoll2
   end
-	-- TODO: This is only valid for the left arm
-  shoulderRoll = FLIP_SHOULDER_ROLL and PI - shoulderRoll or shoulderRoll
+	-- Right is -1, left is 1 for flipping
+	-- Hopefully this becomes a ternary
+  --shoulderRoll = (FLIP_SHOULDER_ROLL and FLIP_SHOULDER_ROLL~=0) and (FLIP_SHOULDER_ROLL*PI - shoulderRoll) or shoulderRoll
+	--shoulderRoll = (FLIP_SHOULDER_ROLL and FLIP_SHOULDER_ROLL==0) and shoulderRoll or (FLIP_SHOULDER_ROLL*PI - shoulderRoll)
+	shoulderRoll = FLIP_SHOULDER_ROLL==0 and shoulderRoll or (FLIP_SHOULDER_ROLL*PI - shoulderRoll)
   
   local t1 = m[2][4] * sin(shoulderRoll) - m[1][4] * cos(shoulderRoll)
  
@@ -167,7 +172,7 @@ local function ik_arm2(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
 	else
 	  -- Two solutions
 	  wristYaw_a = atan2(rotWrist[3][1], rotWrist[2][1])
-	  wristYaw2_a = atan2 (rotWrist[1][3], -rotWrist[1][2])
+	  wristYaw2_a = atan2(rotWrist[1][3], -rotWrist[1][2])
 	  -- Flipped position
 		-- -pi to 0
 	  wristRoll_b = -wristRoll_a
@@ -187,9 +192,6 @@ local function ik_arm2(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
   end
   return vector.new(qArm)
 end
-K.inverse_arm2 = ik_arm2
-
-local ik_arm = Kinematics.inverse_arm
 K.inverse_arm = ik_arm
 
 -- Forward with respect to the torso
@@ -260,9 +262,9 @@ function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
 	--[[
 	local tr0 = T0.copy(tr)
 	local t0 = unix.time()
-	local sol2 = ik_arm2(tr0, qLArm, shoulderYaw or qLArm[3])
+	local sol2 = ik_arm(tr0, qLArm, shoulderYaw or qLArm[3])
 	local t1 = unix.time()
-	print(t1-t0, 'ik_arm2', sol2)
+	print(t1-t0, 'ik_arm', sol2)
 	--]]
 	local tr1 = T0.trans(-shoulderOffsetX,-shoulderOffsetY,-shoulderOffsetZ)
 	local tr2 = T0.trans(-handOffsetX, handOffsetY, -handOffsetZ)
@@ -270,10 +272,11 @@ function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
 	--print('trL', trL)
 	--print('tr2', tr2)
 	----[[
-	local sol = ik_arm2(
+	local sol = ik_arm(
 		tr1 * trL * tr2,
 		qLArm,
-		shoulderYaw or qLArm[3]
+		shoulderYaw or qLArm[3],
+		flipRoll and 1 or 0
 	)
 	--print('L', sol)
 	return sol
@@ -300,10 +303,11 @@ function K.inverse_r_arm(trR, qRArm, shoulderYaw, flipRoll)
 	return vector.new(Kinematics.inverse_r_arm_7(tr6, qRArm, shoulderYaw or qRArm[3], 0, {0,0}, 0,0,0))
 	--]]
 	----[[
-	local sol = ik_arm2(
+	local sol = ik_arm(
 		T0.trans(-shoulderOffsetX,shoulderOffsetY,-shoulderOffsetZ) * trR * T0.rotZ(45*DEG_TO_RAD) * T0.trans(-handOffsetX, -handOffsetY, -handOffsetZ),
 		qRArm,
-		shoulderYaw or qRArm[3]
+		shoulderYaw or qRArm[3],
+		flipRoll and -1 or 0
 	)
 	--print('L', sol)
 	--print('C', vector.new(Kinematics.inverse_r_arm_7(T0.position6D(trR), qRArm, shoulderYaw or qRArm[3], 0, {0,0})))

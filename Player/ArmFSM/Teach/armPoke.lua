@@ -13,6 +13,7 @@ local K = require'K_ffi'
 
 local lPathIter, rPathIter
 local grip0, is_open
+local grip_open = vector.new{-45, -45}*DEG_TO_RAD
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -31,7 +32,12 @@ function state.entry()
 	--
 	lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal, {20*DEG_TO_RAD}, {-75*DEG_TO_RAD})
 	-- Let the trigger detect impact, so open it
-	Body.set_rgrip_command_position(45*DEG_TO_RAD)
+	--
+	
+	Body.set_rgrip_torque_enable(1)
+	unix.usleep(2e4)
+	Body.set_rgrip_mode('position')
+		
 	is_open = false
 end
 
@@ -48,13 +54,14 @@ function state.update()
 	
 	-- Wait until the gripper is open before moving
 	if not is_open then
+		Body.set_rgrip_command_position(grip_open)
 		grip0 = Body.get_rgrip_position()
-		if vector.norm(grip0 - Body.get_rgrip_command_position()) > 2*DEG_TO_RAD then
+		if vector.norm(grip0 - grip_open) > 2*DEG_TO_RAD then
 			return
 		else
+			Body.set_rgrip_torque_enable(0)
 			print('GRIPPER OPENED!')
 			is_open = true
-			Body.set_rgrip_torque_enable(0)
 		end
 	end
 	

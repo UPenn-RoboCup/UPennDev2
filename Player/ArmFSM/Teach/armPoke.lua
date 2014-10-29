@@ -13,7 +13,7 @@ local K = require'K_ffi'
 
 local lPathIter, rPathIter
 local grip0, is_open
-local grip_open = vector.new{-45, -45}*DEG_TO_RAD
+local grip_open = vector.new{-100, -90}*DEG_TO_RAD
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -34,11 +34,14 @@ function state.entry()
 	-- Let the trigger detect impact, so open it
 	--
 	
-	Body.set_rgrip_torque_enable(1)
-	unix.usleep(2e4)
-	Body.set_rgrip_mode('position')
-		
 	is_open = false
+	for k=1,5 do
+		print('SETUP!')
+		Body.set_rgrip_torque_enable(1)
+		Body.set_rgrip_mode('position')
+		unix.usleep(1e4)
+	end
+		
 end
 
 function state.update()
@@ -46,7 +49,7 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
+  if t-t_entry > timeout then print('POKE TIMEOUT'); return'timeout' end
 	-- Check the current for collisions
 	--print('L Current', Body.get_larm_current()*1)
 	--print('R Current', Body.get_rarm_current()*1)
@@ -59,7 +62,14 @@ function state.update()
 		if vector.norm(grip0 - grip_open) > 2*DEG_TO_RAD then
 			return
 		else
-			Body.set_rgrip_torque_enable(0)
+	for k=1,5 do
+		print('LOOSEN')
+--		print('SETUP!')
+--		Body.set_rgrip_torque_enable(0)
+		Body.set_rgrip_mode('torque')
+		unix.usleep(1e4)
+	end
+	--		Body.set_rgrip_torque_enable(0)
 			print('GRIPPER OPENED!')
 			is_open = true
 		end
@@ -68,8 +78,8 @@ function state.update()
 	-- Check if we have touched anything
 	local grip = Body.get_rgrip_position()
 	local grip_diff = grip - grip0
-	if grip_diff[1] > 2*DEG_TO_RAD or grip_diff[2] > 2*DEG_TO_RAD then
-		print('grip_diff', grip_diff)
+	if math.abs(grip_diff[1]) > 1*DEG_TO_RAD or math.abs(grip_diff[2]) > 1*DEG_TO_RAD then
+		print('grip_diff', grip_diff, grip0)
 		return 'touch'
 	end
 	
@@ -96,7 +106,7 @@ function state.update()
 	Body.set_rarm_command_position(q_rWaypoint)
 	-- Check if done
 	if not moreL and not moreR then
-		print('DONE POKE')
+		print('NO POKE TOUCH')
 		return 'done'
 	end
 end

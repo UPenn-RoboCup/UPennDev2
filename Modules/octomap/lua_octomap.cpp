@@ -1,16 +1,16 @@
 /*
  Lua Octomap Wrapper
-(c) 2013 Stephen McGill
-    2014 Qin He
+(c) 2014 Stephen McGill, Qin He
 */
 
 #include <lua.hpp>
-#include "torch/luaT.h"
-#include "torch/TH/TH.h"
+#include <torch/luaT.h>
+#include <torch/TH/TH.h>
 
 #include <stdio.h>
 #include <vector>
 #include <string>
+#include <time.h>
 
 #include <octomap/octomap.h>
 #include <octomap/math/Utils.h>
@@ -26,6 +26,8 @@ using namespace octomap;
 #define DEFAULT_MIN_RANGE 0.05
 #define DEFAULT_MAX_RANGE 10
 
+// For timing
+clock_t t0, t1;
 
 double min_range = DEFAULT_MIN_RANGE; //TODO: do we use it?
 double max_range = DEFAULT_MAX_RANGE;
@@ -59,6 +61,11 @@ static int lua_set_origin( lua_State *L ) {
 	return 0;
 }
 
+//TODO: reset map
+static int lua_reset_octomap() {
+  return 0;
+}
+
 static int lua_add_scan( lua_State *L ) {
 	/* Grab the points from the last laser scan*/
 	const THFloatTensor * points_t =
@@ -75,6 +82,8 @@ static int lua_add_scan( lua_State *L ) {
   float *points_ptr = (float *)(points_t->storage->data + points_t->storageOffset);  
 	float x,y,z;
 	Pointcloud cloud;
+  
+  t0 = clock();  
 	for (long p=0; p<nps; p++) {
     x = *(points_ptr);
     y = *(points_ptr+1);
@@ -86,18 +95,56 @@ static int lua_add_scan( lua_State *L ) {
     
 		/* Add point to the cloud */
     cloud.push_back(x,y,z);
-	}  
-  // tree.updateInnerOccupancy();
+	}
+  t1 = clock();
+  printf("(%f seconds) creating cloud\n", (float)(t1-t0)/CLOCKS_PER_SEC);
   
+  
+  t0 = clock();
 	// Update tree chunk by chunk
   tree.insertPointCloud(cloud, origin, max_range, true);
-	
+  tree.updateInnerOccupancy();
+  tree.prune();
+  t1 = clock();
+  printf("(%f seconds) inserting cloud\n", (float)(t1-t0)/CLOCKS_PER_SEC);	
+  printf("Mem for tree: %d \n",tree.memoryUsage());
+  printf("tree depth: %u, \t # of leaves:%u \n\n", tree.getTreeDepth(), tree.getNumLeafNodes());
+  
 	/*
 	lua_pushnumber(L, tree.memoryUsage());
 	return 1;
 	*/
 	return 0;
 }
+
+
+
+// Our primer normals
+point3d ground_normal = point3d(0.0f, 0.0f, 1.0f);
+
+// Get the horizontal nodes in givein bbox
+static vector<OcTreeKey> get_horizontal(lua_State *L) {
+  vector<OcTreeKey> candidates;
+  // Bbox for searching the candidates
+  point3d min = point3d(0, -0.5, 0.5);  // TODO: hack for now
+  point3d max = point3d(0.8, 0.5, 1.5);
+  vector<point3d> normals;
+  for(OcTree::leaf_bbx_iterator it = tree.begin_leafs_bbx(min,max),
+         end=tree.end_leafs_bbx(); it!= end; ++it)
+    {
+      tree.getNormals(it.getCoordinate(), normals);
+      if (normals[1].angleTo(ground_normal) < DEG2RAD(2)) {
+        printf("HEIGHT IS: %d", it.getZ());
+        candidates.push_back(it.getKey());
+      }
+
+    }
+  return candidates;
+}
+
+// static void connected_region(vector<OcTreeKey> keys) {
+//
+// }
 
 static int lua_get_pruned_data( lua_State *L ) {
 	stringstream ss;

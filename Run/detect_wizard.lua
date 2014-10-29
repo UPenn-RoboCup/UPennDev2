@@ -35,13 +35,16 @@ else -- teddy
 end
 
 
+---[[ Octomap
 local octomap = require'octomap'
 -- TODO: read params from shm
-octomap.set_resolution(0.01)
+octomap.set_resolution(0.02)
 octomap.set_range(0.05, 3)
 -- 0.02m ~ 0.5 sec
 -- 0.01m ~ 1.5 sec
 -- well, it's just bad...
+--]]
+
 
 
 local xyz_global, xyz_local
@@ -101,7 +104,6 @@ local function transform(points, data)
       torch.ones(1,n_returns):type('torch.FloatTensor'),1)
       
     xyz_local = torch.mm(R, xyz_local)   -- 4*360
-    -- TODO: if we use octomap, we may insert point cloud per scanline?
     xyz_global[{{(i-1)*n_returns+1, i*n_returns},{}}]:copy(xyz_local:sub(1,3):t())
         
   end
@@ -148,7 +150,7 @@ mesh_ch.callback = function(skt)
     print('Transform the entir scan..', unix.time()-td)
   end
   
-  -- Update sensor pose
+  ---[[ Update sensor pose
   octomap.set_origin(torch.DoubleTensor({pose[1], pose[2], body_height}))
 
   -- Insert point cloud to Octree  
@@ -157,6 +159,7 @@ mesh_ch.callback = function(skt)
   if DEBUG then
     print('Added one full scan.. ', unix.time()-td, '\n')
   end
+  --]]
 
 end
 

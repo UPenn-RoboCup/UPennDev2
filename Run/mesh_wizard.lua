@@ -16,9 +16,9 @@ require'Body'
 
 -- Shared with LidarFSM
 -- t_sweep: Time (seconds) to fulfill scan angles in one sweep
--- mag_sweep: How much will we sweep over
+-- min/max_sweep: sweep limitis
 -- ranges_fov: In a single scan, which ranges to use
-local t_sweep, mag_sweep, ranges_fov
+local t_sweep, min_sweep, max_sweep, mag_sweep, ranges_fov
 -- NOTE: The following is LIDAR dependent
 local t_scan = 1 / 40 -- Time to gather returns
 
@@ -58,7 +58,7 @@ local function setup_mesh(meta)
   offset_idx = math.floor(fov_offset + 0.5)
 	-- Round to get the number of returns for each scanline
 	n_returns = math.floor((max_view - min_view) / res + 0.5)
-	print("n_returns", n_returns, max_view, min_view, res)
+	print("n_returns", n_returns, max_view, min_view, res, offset_idx)
 	-- Check the number of scanlines in each mesh
 	-- Indexed by the actuator angle
 	-- Depends on the speed we use
@@ -88,7 +88,7 @@ local function setup_mesh(meta)
 	end
 	-- Metadata for the mesh
 	metadata.rfov = ranges_fov
-	metadata.sfov = {-mag_sweep / 2, mag_sweep / 2}
+	metadata.sfov = {min_sweep, max_sweep}
 	metadata.a = scan_angles
 	metadata.px = scan_x
 	metadata.py = scan_y
@@ -207,13 +207,16 @@ end
 
 local function update(meta, ranges)
 	-- Check shared parameters
-	local mag_sweep0, t_sweep0 = unpack(vcm.get_mesh_sweep())
+	local min_sweep0, max_sweep0, t_sweep0 = unpack(vcm.get_mesh_sweep())
 	local ranges_fov0 = vcm.get_mesh_fov()
-	mag_sweep0 = math.min(math.max(mag_sweep0, 10 * DEG_TO_RAD), math.pi)
+  -- mag_sweep0 = math.min(math.max(mag_sweep0, 10 * DEG_TO_RAD), math.pi)
 	t_sweep0 = math.min(math.max(t_sweep0, 1), 20)
 	-- Check if updated parameters
-	if not mesh or mag_sweep~=mag_sweep0 or t_sweep~=t_sweep0 or ranges_fov~=ranges_fov0 then
-		mag_sweep = mag_sweep0
+	if not mesh or min_sweep~=min_sweep0 or max_sweep~=max_sweep0 
+    or t_sweep~=t_sweep0 or ranges_fov~=ranges_fov0 then
+		min_sweep = min_sweep0
+    max_sweep = max_sweep0
+    mag_sweep = max_sweep - min_sweep
 		t_sweep = t_sweep0
 		ranges_fov = ranges_fov0
 		setup_mesh(meta)

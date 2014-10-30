@@ -38,7 +38,7 @@ function state.entry()
   arm_ch:send'init'
   motion_ch:send'stand'
   --lidar_ch:send'pansingle'
-  lidar_ch:send'pan'
+  --lidar_ch:send'pan'
 
 end
 

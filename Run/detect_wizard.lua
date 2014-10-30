@@ -29,9 +29,9 @@ local body_height = 1.03
 if IS_WEBOTS then
   body_pitch_offset = 0
 elseif HOSTNAME=='alvin' then
-    body_pitch_offset = -2.5/180*pi
+  body_pitch_offset = -2.5/180*pi
 else -- teddy
-    body_pitch_offset = 0
+  body_pitch_offset = 0
 end
 
 
@@ -41,8 +41,8 @@ local octomap = require'octomap'
 octomap.set_resolution(0.01)
 octomap.set_range(0.05, 1.5)
 -- 0.02m ~ 0.5 sec
--- 0.01m ~ 1.5 sec
--- well, it's just bad...
+-- 0.01m ~ 1.5 sec  <0.5sec if range is shorter
+-- not that terrible...
 --]]
 
 
@@ -60,7 +60,7 @@ local function transform(points, data)
   end
     
   xyz_global = torch.FloatTensor(n_scanlines*n_returns, 3):zero()
-    
+        
   -- Transfrom to x,y,z
   local pre_pose -- this is for scanlines that are not updated
   -- Buffers for points
@@ -74,9 +74,20 @@ local function transform(points, data)
     ys:copy(scanline)
     zs:copy(scanline)
     
-    xs:cmul(torch.cos(v_angles)):mul(math.cos(scan_angles[i]))
-    ys:cmul(torch.cos(v_angles)):mul(math.sin(scan_angles[i]))
-    zs:cmul(torch.sin(v_angles)):mul(-1):add(lidar_z)
+    -- If the lidar is paning 
+    if vcm.get_mesh_direction()==0 then
+      print('LIDAR IS PANNING...')
+      xs:cmul(torch.cos(v_angles)):mul(math.cos(scan_angles[i]))
+      ys:cmul(torch.cos(v_angles)):mul(math.sin(scan_angles[i]))
+      zs:cmul(torch.sin(v_angles)):mul(-1):add(lidar_z)
+    else    
+      print('LIDAR IS TILTING...')
+      -- If the lidar is tilting
+      -- TODO: verify if this is correct
+      xs:cmul(torch.cos(v_angles)):mul(math.cos(scan_angles[i]))
+      ys:cmul(torch.sin(v_angles)):mul(-1)
+      zs:cmul(torch.cos(v_angles)):mul(math.sin(scan_angles[i])):mul(-1):add(lidar_z)   
+    end    
     
     -- Transform to GLOBAL frame
     pitch = data.pitch[i] + body_pitch_offset

@@ -38,8 +38,8 @@ end
 ---[[ Octomap
 local octomap = require'octomap'
 -- TODO: read params from shm
-octomap.set_resolution(0.02)
-octomap.set_range(0.05, 3)
+octomap.set_resolution(0.01)
+octomap.set_range(0.05, 1.5)
 -- 0.02m ~ 0.5 sec
 -- 0.01m ~ 1.5 sec
 -- well, it's just bad...
@@ -122,6 +122,7 @@ local function plane_detect()
 end
 
 local td -- for benchmarking
+local saved = false
 
 mesh_ch.callback = function(skt)  
   -- Only use the last one
@@ -147,7 +148,7 @@ mesh_ch.callback = function(skt)
   td = unix.time()
   transform(points, data)
   if DEBUG then
-    print('Transform the entir scan..', unix.time()-td)
+    -- print('Transform the entir scan..', unix.time()-td)
   end
   
   ---[[ Update sensor pose
@@ -160,7 +161,14 @@ mesh_ch.callback = function(skt)
     print('Added one full scan.. ', unix.time()-td, '\n')
   end
   --]]
-
+  
+  -- octomap.get_horizontal(0, -0.5, 0.5, 0.8, 0.5, 1.5)
+  
+  -- if unix.time()-td>5 and not saved then
+  --   octomap.save_tree('test.bt')
+  --   saved = true
+  -- end
+  --
 end
 
 
@@ -170,9 +178,14 @@ local poller = si.wait_on_channels{mesh_ch}
 local npoll
 
 
-
+local t_entry = unix.time()
 local function update()  
   npoll = poller:poll(TIMEOUT)
+  if hcm.get_tree_save()==1 then
+    octomap.save_tree('test.bt')
+    hcm.set_tree_save(0)
+  end
+  
 end
 
 

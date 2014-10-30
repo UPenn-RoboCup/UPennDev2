@@ -26,7 +26,10 @@ local ball = {}
 ball.approach = vector.zeros(0)
 shared_data.ball = ball
 
-
+-- For tree saving
+local tree = {}
+tree.save = vector.zeros(0)
+shared_data.tree = tree
 
 shared_data.state={}
 shared_data.state.proceed = vector.zeros(0)

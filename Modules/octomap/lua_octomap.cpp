@@ -107,8 +107,8 @@ static int lua_add_scan( lua_State *L ) {
   tree.prune();
   t1 = clock();
   printf("(%f seconds) inserting cloud\n", (float)(t1-t0)/CLOCKS_PER_SEC);	
-  printf("Mem for tree: %d \n",tree.memoryUsage());
-  printf("tree depth: %u, \t # of leaves:%u \n\n", tree.getTreeDepth(), tree.getNumLeafNodes());
+  printf("Mem for tree: %f MB\n\n",(double)tree.memoryUsage()/1E6);
+  // printf("tree depth: %u, \t # of leaves:%u \n\n", tree.getTreeDepth(), tree.getNumLeafNodes());
   
 	/*
 	lua_pushnumber(L, tree.memoryUsage());
@@ -123,28 +123,42 @@ static int lua_add_scan( lua_State *L ) {
 point3d ground_normal = point3d(0.0f, 0.0f, 1.0f);
 
 // Get the horizontal nodes in givein bbox
-static vector<OcTreeKey> get_horizontal(lua_State *L) {
+// static vector<OcTreeKey> get_horizontal(lua_State *L) {
+static int lua_get_horizontal(lua_State *L) {
+  float min_x, min_y, min_z;
+  float max_x, max_y, max_z;
+  min_x = luaL_checknumber(L, 1);  //TODO
+  min_y = luaL_checknumber(L, 2);
+  min_z = luaL_checknumber(L, 3);
+  max_x = luaL_checknumber(L, 4);
+  max_y = luaL_checknumber(L, 5);
+  max_z = luaL_checknumber(L, 6);
+  
+
   vector<OcTreeKey> candidates;
   // Bbox for searching the candidates
-  point3d min = point3d(0, -0.5, 0.5);  // TODO: hack for now
-  point3d max = point3d(0.8, 0.5, 1.5);
+  point3d min = point3d(min_x, min_y, min_z);
+  point3d max = point3d(max_x, max_y, max_z);
   vector<point3d> normals;
   for(OcTree::leaf_bbx_iterator it = tree.begin_leafs_bbx(min,max),
-         end=tree.end_leafs_bbx(); it!= end; ++it)
-    {
+         end=tree.end_leafs_bbx(); it!= end; ++it) {
+      
       tree.getNormals(it.getCoordinate(), normals);
-      if (normals[1].angleTo(ground_normal) < DEG2RAD(2)) {
-        printf("HEIGHT IS: %d", it.getZ());
-        candidates.push_back(it.getKey());
-      }
+      printf("# of Normals: %d\n", normals.size());
+      // if (normals[1].angleTo(ground_normal) < DEG2RAD(2)) {
+      //   printf("HEIGHT IS: %d", it.getZ());
+      //   candidates.push_back(it.getKey());
+      // }
 
-    }
-  return candidates;
+  }
+  // return candidates;
+  return 0;
 }
 
 // static void connected_region(vector<OcTreeKey> keys) {
 //
 // }
+
 
 static int lua_get_pruned_data( lua_State *L ) {
 	stringstream ss;
@@ -176,7 +190,11 @@ static const struct luaL_Reg octomap_lib [] = {
   {"set_resolution", lua_set_resolution},
 	{"set_origin", lua_set_origin},
   {"set_range", lua_set_range},
+  //
 	{"add_scan", lua_add_scan},
+  //
+  {"get_horizontal", lua_get_horizontal},
+  //
 	{"get_data", lua_get_data},
 	{"get_pruned_data", lua_get_pruned_data},
 	{"save_tree", lua_save_tree},

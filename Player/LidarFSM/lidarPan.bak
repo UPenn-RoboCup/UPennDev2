@@ -10,14 +10,14 @@ local min, max = math.min, math.max
 -- Sync mesh parameters
 local function update_pan_params()
 	-- Necessary variables
-	min_pan, max_pan, t_sweep = unpack(vcm.get_mesh_sweep())
+	mag_sweep, t_sweep = unpack(vcm.get_mesh_sweep())
 	-- Some simple safety checks
-	min_pan = min(max(min_pan, -20*DEG_TO_RAD), max_pan)
-	max_pan = min(max(max_pan, min_pan), 70*DEG_TO_RAD)
-	t_sweep = min(max(t_sweep, 1), 5)
+	mag_sweep = min(max(mag_sweep, 10 * DEG_TO_RAD), math.pi)
+	t_sweep = min(max(t_sweep, 1), 20)
 	-- Convenience variables
-	mag_sweep = max_pan - min_pan
-  mid_pan = (max_pan + min_pan) / 2
+	min_pan = -mag_sweep/2
+  max_pan = mag_sweep/2
+  mid_pan = 0
 end
 
 function state.entry()

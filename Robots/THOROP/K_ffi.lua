@@ -333,7 +333,7 @@ end
 -- TODO: No automatic toe lift when limit reached...
 -- From a5e23ca190258b7957ff18932055e4baaca19346
 local dLegMax = dTibia + dThigh
-local function ik_leg(trLeg, qOrg, IS_LEFT, ankleTilt)
+local function ik_leg(trLeg, IS_LEFT, ankleTilt)
   -- Hip Offset vector in Torso frame
 	local xLeg1, xLeg2, xLeg3 = unpack(T0.inv(trLeg) * {0, IS_LEFT and hipOffsetY or -hipOffsetY, -hipOffsetZ})
   xLeg3 = xLeg3 - footHeight;	
@@ -360,8 +360,8 @@ end
 
 -- Let's try to replicate the leg IK
 -- Check against standard kinematics
-local function inverse_l_leg(trLLeg, qLLeg)
-	return ik_leg(trLLeg, qLLeg, true)
+function K.inverse_l_leg(trLLeg)
+	return ik_leg(trLLeg, true)
 	--[[
 	local sol = ik_leg(trLLeg, qLLeg, true)
 	print('L', sol)
@@ -371,10 +371,9 @@ local function inverse_l_leg(trLLeg, qLLeg)
 	print('C', sol)
 	--]]
 end
-K.inverse_l_leg = inverse_l_leg
 
-local function inverse_r_leg(trRLeg, qRLeg)
-	return ik_leg(trRLeg, qRLeg, false)
+function K.inverse_r_leg(trRLeg)
+	return ik_leg(trRLeg, false)
 	--[[
 	local t0 = unix.time()
 	local sol = ik_leg(trRLeg, qRLeg, false)
@@ -391,18 +390,17 @@ local function inverse_r_leg(trRLeg, qRLeg)
 	print('C', sol)
 	--]]
 end
-K.inverse_r_leg = inverse_r_leg
 
 function K.inverse_legs(trLLeg, trRLeg, trTorso)
-	--local invTorso = T0.inv(trTorso)
-	--return inverse_l_leg(invTorso*trLLeg), inverse_r_leg(invTorso*trLLeg)
-	----[[
+	local invTorso = T0.inv(trTorso)
+	return ik_leg(invTorso*trLLeg, true), ik_leg(invTorso*trLLeg, false)
+	--[[
 	local t0 = unix.time()
 	local invTorso = T0.inv(trTorso)
 	
 	local t1 = unix.time()
 	print('L', t1-t0)
-	print(inverse_l_leg(invTorso*trLLeg), inverse_r_leg(invTorso*trRLeg))
+	print(ik_leg(invTorso*trLLeg, true), ik_leg(invTorso*trLLeg, false))
 	print()
 	
 	local tl6 = T0.position6D(trLLeg)

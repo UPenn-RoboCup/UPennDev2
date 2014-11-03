@@ -360,7 +360,7 @@ end
 
 -- Let's try to replicate the leg IK
 -- Check against standard kinematics
-function K.inverse_l_leg(trLLeg, qLLeg)
+local function inverse_l_leg(trLLeg, qLLeg)
 	return ik_leg(trLLeg, qLLeg, true)
 	--[[
 	local sol = ik_leg(trLLeg, qLLeg, true)
@@ -371,8 +371,9 @@ function K.inverse_l_leg(trLLeg, qLLeg)
 	print('C', sol)
 	--]]
 end
+K.inverse_l_leg = inverse_l_leg
 
-function K.inverse_r_leg(trRLeg, qRLeg)
+local function inverse_r_leg(trRLeg, qRLeg)
 	return ik_leg(trRLeg, qRLeg, false)
 	--[[
 	local t0 = unix.time()
@@ -390,6 +391,30 @@ function K.inverse_r_leg(trRLeg, qRLeg)
 	print('C', sol)
 	--]]
 end
+K.inverse_r_leg = inverse_r_leg
+
+function K.inverse_legs(trLLeg, trRLeg, trTorso)
+	--local invTorso = T0.inv(trTorso)
+	--return inverse_l_leg(invTorso*trLLeg), inverse_r_leg(invTorso*trLLeg)
+	----[[
+	local t0 = unix.time()
+	local invTorso = T0.inv(trTorso)
+	
+	local t1 = unix.time()
+	print('L', t1-t0)
+	print(inverse_l_leg(invTorso*trLLeg), inverse_r_leg(invTorso*trRLeg))
+	print()
+	
+	local tl6 = T0.position6D(trLLeg)
+	local tr6 = T0.position6D(trRLeg)
+	local tt6 = T0.position6D(trTorso)
+	t0 = unix.time()
+	local sol = vector.new(Kinematics.inverse_legs(tl6,tr6,tt6))
+	t1 = unix.time()
+	print('C', t1-t0)
+	print(sol)
+	--]]
+end
 
 --[[
 T0 = require'Transform'
@@ -402,6 +427,7 @@ trR = T0.new(K1.forward_rleg(qR))
 
 K0.inverse_l_leg(trL, qL)
 K0.inverse_r_leg(trR, qR)
+K0.inverse_legs(trL, trR, T0.trans(unpack(mcm.get_status_uTorso())))
 --]]
 
 

@@ -392,8 +392,10 @@ function K.inverse_r_leg(trRLeg)
 end
 
 function K.inverse_legs(trLLeg, trRLeg, trTorso)
+	----[[
 	local invTorso = T0.inv(trTorso)
 	return ik_leg(invTorso*trLLeg, true), ik_leg(invTorso*trLLeg, false)
+	--]]
 	--[[
 	local t0 = unix.time()
 	local invTorso = T0.inv(trTorso)

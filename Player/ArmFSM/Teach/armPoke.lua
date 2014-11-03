@@ -22,15 +22,15 @@ function state.entry()
   t_update = t_entry
 	
 	local qR = Body.get_rarm_position()
-	local fR = K.forward_r_arm(qR)
+	local fR, paramR = K.forward_r_arm(qR)
 	local trRGoal = fR * T.trans(0.10,0,0)
 	--local trRGoal = fR * T.trans(0,0.1,0)
 	--
 	local qL = Body.get_larm_position()
-	local fL = K.forward_l_arm(qL)
+	local fL, paramL = K.forward_l_arm(qL)
 	local trLGoal = fL
 	--
-	lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal, {20*DEG_TO_RAD}, {-25*DEG_TO_RAD})
+	lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal, paramL, paramR)
 	-- Let the trigger detect impact, so open it
 	--
 	is_open = false

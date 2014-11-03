@@ -15,21 +15,35 @@ local T0 = require'Transform'
 -- Cache math
 local sin, cos = math.sin, math.cos
 local asin, acos = math.asin, math.acos
-local sqrt, atan2 = math.sqrt, math.atan2
+local sqrt, atan2, atan = math.sqrt, math.atan2, math.atan
 local PI = math.pi
 local min, max = math.min, math.max
 
 local shoulderOffsetX = 0;    
 local shoulderOffsetY = 0.234;
 local shoulderOffsetZ = 0.165;
-local upperArmLength = .246;
-local elbowOffsetX =   .030; 
---local lowerArmLength = .186; -- Default 7DOF arm
-local lowerArmLength = .250; -- LONGARM model
+local upperArmLength = 0.246;
+local elbowOffsetX = 0.030; 
+--local lowerArmLength = 0.186; -- Default 7DOF arm
+local lowerArmLength = 0.250; -- LONGARM model
 -- No appendage - just the plate
 local handOffsetX = 0.245;
 local handOffsetY = 0.035;
 local handOffsetZ = 0;
+
+local hipOffsetX = 0
+local hipOffsetY = 0.072
+local hipOffsetZ = 0.282;
+local thighLength = 0.30
+local tibiaLength = 0.30
+local kneeOffsetX = 0.03
+local footHeight = 0.118 -- Webots value
+local footToeX = 0.130 -- from ankle to toe
+local footHeelX = 0.130 -- from ankle to heel
+local dThigh = sqrt(thighLength*thighLength+kneeOffsetX*kneeOffsetX)
+local aThigh = atan(kneeOffsetX/thighLength)
+local dTibia = sqrt(tibiaLength*tibiaLength+kneeOffsetX*kneeOffsetX)
+local aTibia = atan(kneeOffsetX/tibiaLength)
 
 --local trPlate = T.trans(handOffsetX, handOffsetY, handOffsetZ)
 -- TODO: Add the 45 Degree change here
@@ -46,40 +60,13 @@ local function fk_arm(q)
 	local c5, s5 = cos(q[5]), sin(q[5])
 	local c6, s6 = cos(q[6]), sin(q[6])
 	local c7, s7 = cos(q[7]), sin(q[7])
-	return T0.new{{(((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*s6 + (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*c6, ((((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*c6 - (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*s6)*c7 + (((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*c5 - (s1*s3 - s2*c1*c3)*s5)*s7, -((((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*c6 - (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*s6)*s7 + (((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*c5 - (s1*s3 - s2*c1*c3)*s5)*c7, -0.25*(s1*c3 + s2*s3*c1)*s4 - 0.03*(s1*c3 + s2*s3*c1)*c4 + 0.03*s1*c3 + 0.03*s2*s3*c1 - 0.03*s4*c1*c2 + 0.25*c1*c2*c4 + 0.246*c1*c2}, {((s2*s4 - s3*c2*c4)*s5 + c2*c3*c5)*s6 + (s2*c4 + s3*s4*c2)*c6, (((s2*s4 - s3*c2*c4)*s5 + c2*c3*c5)*c6 - (s2*c4 + s3*s4*c2)*s6)*c7 + ((s2*s4 - s3*c2*c4)*c5 - s5*c2*c3)*s7, -(((s2*s4 - s3*c2*c4)*s5 + c2*c3*c5)*c6 - (s2*c4 + s3*s4*c2)*s6)*s7 + ((s2*s4 - s3*c2*c4)*c5 - s5*c2*c3)*c7, -0.03*s2*s4 + 0.25*s2*c4 + 0.246*s2 + 0.25*s3*s4*c2 + 0.03*s3*c2*c4 - 0.03*s3*c2}, {(((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*s5 + (s1*s2*c3 + s3*c1)*c5)*s6 + (-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4)*c6, ((((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*s5 + (s1*s2*c3 + s3*c1)*c5)*c6 - (-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4)*s6)*c7 + (((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*c5 - (s1*s2*c3 + s3*c1)*s5)*s7, -((((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*s5 + (s1*s2*c3 + s3*c1)*c5)*c6 - (-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4)*s6)*s7 + (((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*c5 - (s1*s2*c3 + s3*c1)*s5)*c7, -0.25*(-s1*s2*s3 + c1*c3)*s4 - 0.03*(-s1*s2*s3 + c1*c3)*c4 - 0.03*s1*s2*s3 + 0.03*s1*s4*c2 - 0.25*s1*c2*c4 - 0.246*s1*c2 + 0.03*c1*c3}, {0, 0, 0, 1}}
+	return T0.new{
+		{(((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*s6 + (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*c6, ((((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*c6 - (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*s6)*c7 + (((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*c5 - (s1*s3 - s2*c1*c3)*s5)*s7, -((((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*c6 - (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*s6)*s7 + (((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*c5 - (s1*s3 - s2*c1*c3)*s5)*c7, -elbowOffsetX*((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2) + elbowOffsetX*(s1*c3 + s2*s3*c1) + lowerArmLength*(-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4) + upperArmLength*c1*c2}, 
+		{((s2*s4 - s3*c2*c4)*s5 + c2*c3*c5)*s6 + (s2*c4 + s3*s4*c2)*c6, (((s2*s4 - s3*c2*c4)*s5 + c2*c3*c5)*c6 - (s2*c4 + s3*s4*c2)*s6)*c7 + ((s2*s4 - s3*c2*c4)*c5 - s5*c2*c3)*s7, -(((s2*s4 - s3*c2*c4)*s5 + c2*c3*c5)*c6 - (s2*c4 + s3*s4*c2)*s6)*s7 + ((s2*s4 - s3*c2*c4)*c5 - s5*c2*c3)*c7, -elbowOffsetX*(s2*s4 - s3*c2*c4) - elbowOffsetX*s3*c2 + lowerArmLength*(s2*c4 + s3*s4*c2) + upperArmLength*s2},
+		{(((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*s5 + (s1*s2*c3 + s3*c1)*c5)*s6 + (-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4)*c6, ((((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*s5 + (s1*s2*c3 + s3*c1)*c5)*c6 - (-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4)*s6)*c7 + (((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*c5 - (s1*s2*c3 + s3*c1)*s5)*s7, -((((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*s5 + (s1*s2*c3 + s3*c1)*c5)*c6 - (-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4)*s6)*s7 + (((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*c5 - (s1*s2*c3 + s3*c1)*s5)*c7, -elbowOffsetX*((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2) + elbowOffsetX*(-s1*s2*s3 + c1*c3) + lowerArmLength*(-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4) - upperArmLength*s1*c2},
+		{0, 0, 0, 1}}
 end
 K.forward_arm = fk_arm
---[[
-local function fk_arm_t(q)
-	local c1, s1 = cos(q[1]), sin(q[1])
-	local c2, s2 = cos(q[2]), sin(q[2])
-	local c3, s3 = cos(q[3]), sin(q[3])
-	local c4, s4 = cos(q[4]), sin(q[4])
-	local c5, s5 = cos(q[5]), sin(q[5])
-	local c6, s6 = cos(q[6]), sin(q[6])
-	local c7, s7 = cos(q[7]), sin(q[7])
-	local tr = torch.Tensor(4,4)
-	local tr_d = tr:data()
-	tr_d[0] = (((s1*c3+s2*s3*c1)*c4+s4*c1*c2)*s5+(s1*s3-s2*c1*c3)*c5)*s6+(-(s1*c3+s2*s3*c1)*s4+c1*c2*c4)*c6
-	tr_d[1] = ((((s1*c3+s2*s3*c1)*c4+s4*c1*c2)*s5+(s1*s3-s2*c1*c3)*c5)*c6-(-(s1*c3+s2*s3*c1)*s4+c1*c2*c4)*s6)*c7+(((s1*c3+s2*s3*c1)*c4+s4*c1*c2)*c5-(s1*s3-s2*c1*c3)*s5)*s7
-	tr_d[2] = -((((s1*c3+s2*s3*c1)*c4+s4*c1*c2)*s5+(s1*s3-s2*c1*c3)*c5)*c6-(-(s1*c3+s2*s3*c1)*s4+c1*c2*c4)*s6)*s7+(((s1*c3+s2*s3*c1)*c4+s4*c1*c2)*c5-(s1*s3-s2*c1*c3)*s5)*c7
-	tr_d[3] = -0.25*(s1*c3+s2*s3*c1)*s4-0.03*(s1*c3+s2*s3*c1)*c4+0.03*s1*c3+0.03*s2*s3*c1-0.03*s4*c1*c2+0.25*c1*c2*c4+0.246*c1*c2
-	tr_d[4] = ((s2*s4-s3*c2*c4)*s5+c2*c3*c5)*s6+(s2*c4+s3*s4*c2)*c6
-	tr_d[5] = (((s2*s4-s3*c2*c4)*s5+c2*c3*c5)*c6-(s2*c4+s3*s4*c2)*s6)*c7+((s2*s4-s3*c2*c4)*c5-s5*c2*c3)*s7
-	tr_d[6] = -(((s2*s4-s3*c2*c4)*s5+c2*c3*c5)*c6-(s2*c4+s3*s4*c2)*s6)*s7+((s2*s4-s3*c2*c4)*c5-s5*c2*c3)*c7
-	tr_d[7] = -0.03*s2*s4+0.25*s2*c4+0.246*s2+0.25*s3*s4*c2+0.03*s3*c2*c4-0.03*s3*c2
-	tr_d[8] = (((-s1*s2*s3+c1*c3)*c4-s1*s4*c2)*s5+(s1*s2*c3+s3*c1)*c5)*s6+(-(-s1*s2*s3+c1*c3)*s4-s1*c2*c4)*c6
-	tr_d[9] = ((((-s1*s2*s3+c1*c3)*c4-s1*s4*c2)*s5+(s1*s2*c3+s3*c1)*c5)*c6-(-(-s1*s2*s3+c1*c3)*s4-s1*c2*c4)*s6)*c7+(((-s1*s2*s3+c1*c3)*c4-s1*s4*c2)*c5-(s1*s2*c3+s3*c1)*s5)*s7
-	tr_d[10] = -((((-s1*s2*s3+c1*c3)*c4-s1*s4*c2)*s5+(s1*s2*c3+s3*c1)*c5)*c6-(-(-s1*s2*s3+c1*c3)*s4-s1*c2*c4)*s6)*s7+(((-s1*s2*s3+c1*c3)*c4-s1*s4*c2)*c5-(s1*s2*c3+s3*c1)*s5)*c7
-	tr_d[11] = -0.25*(-s1*s2*s3+c1*c3)*s4-0.03*(-s1*s2*s3+c1*c3)*c4-0.03*s1*s2*s3+0.03*s1*s4*c2-0.25*s1*c2*c4-0.246*s1*c2+0.03*c1*c3
-	tr_d[12] = 0
-	tr_d[13] = 0
-	tr_d[14] = 0
-	tr_d[15] = 1
-	return tr
-end
-K.forward_arm_t = fk_arm_t
---]]
 
 -- Precalculate some stuff
 local trans_upper = T0.trans(upperArmLength, 0, elbowOffsetX)
@@ -320,5 +307,102 @@ function K.inverse_r_arm(trR, qRArm, shoulderYaw, flipRoll)
 	return sol
 	--]]
 end
+
+-- Left leg...
+local function fk_leg(q)
+	local c1, s1 = cos(q[1]), sin(q[1])
+	local c2, s2 = cos(q[2]), sin(q[2])
+	local c6, s6 = cos(q[6]), sin(q[6])
+	local q3, q4, q5 = unpack(q,3,5)
+	return T0.new{
+		{((-(-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*cos(aTibia + q5) + ((-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*sin(aTibia + q5))*c6 + s1*s6*c2, -((-(-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*cos(aTibia + q5) + ((-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*sin(aTibia + q5))*s6 + s1*c2*c6, -(-(-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*sin(aTibia + q5) + ((-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*cos(aTibia + q5), -dThigh*(s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1) - dTibia*(-(-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))}, 
+		{(((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*sin(aTibia + q5) + ((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) - (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*cos(aTibia + q5))*c6 - s6*c1*c2, -(((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*sin(aTibia + q5) + ((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) - (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*cos(aTibia + q5))*s6 - c1*c2*c6, ((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*cos(aTibia + q5) - ((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) - (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*sin(aTibia + q5), -dThigh*(s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3)) - dTibia*((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) - (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))}, 
+		{((sin(aThigh + q3)*sin(aThigh + aTibia - q4)*c2 + c2*cos(aThigh + q3)*cos(aThigh + aTibia - q4))*cos(aTibia + q5) + (-sin(aThigh + q3)*c2*cos(aThigh + aTibia - q4) + sin(aThigh + aTibia - q4)*c2*cos(aThigh + q3))*sin(aTibia + q5))*c6 - s2*s6, -((sin(aThigh + q3)*sin(aThigh + aTibia - q4)*c2 + c2*cos(aThigh + q3)*cos(aThigh + aTibia - q4))*cos(aTibia + q5) + (-sin(aThigh + q3)*c2*cos(aThigh + aTibia - q4) + sin(aThigh + aTibia - q4)*c2*cos(aThigh + q3))*sin(aTibia + q5))*s6 - s2*c6, -(sin(aThigh + q3)*sin(aThigh + aTibia - q4)*c2 + c2*cos(aThigh + q3)*cos(aThigh + aTibia - q4))*sin(aTibia + q5) + (-sin(aThigh + q3)*c2*cos(aThigh + aTibia - q4) + sin(aThigh + aTibia - q4)*c2*cos(aThigh + q3))*cos(aTibia + q5), -dThigh*c2*cos(aThigh + q3) - dTibia*(sin(aThigh + q3)*sin(aThigh + aTibia - q4)*c2 + c2*cos(aThigh + q3)*cos(aThigh + aTibia - q4))},
+		{0, 0, 0, 1}}
+end
+
+function K.forward_l_leg(qLLeg)
+	return T0.trans(0, hipOffsetY, -hipOffsetZ) * fk_leg(qLLeg) * T0.rotZ(PI) * T0.rotY(-PI/2) * T0.trans(0,0,-footHeight)
+end
+
+function K.forward_r_leg(qRLeg)
+	return T0.trans(0, -hipOffsetY, -hipOffsetZ) * fk_leg(qRLeg) * T0.rotZ(PI) * T0.rotY(-PI/2) * T0.trans(0,0,-footHeight)
+end
+
+-- NOTE: Allow the ankle tilt, as well
+-- TODO: No automatic toe lift when limit reached...
+-- From a5e23ca190258b7957ff18932055e4baaca19346
+local dLegMax = dTibia + dThigh
+local function ik_leg(trLeg, qOrg, IS_LEFT, ankleTilt)
+  -- Hip Offset vector in Torso frame
+	local xLeg1, xLeg2, xLeg3 = unpack(T0.inv(trLeg) * {0, IS_LEFT and hipOffsetY or -hipOffsetY, -hipOffsetZ})
+  xLeg3 = xLeg3 - footHeight;	
+  local dLeg = xLeg1^2 + xLeg2^2 + xLeg3^2
+	
+	-- Grab the knee angle
+  local cKnee = (dLeg - dTibia^2 - dThigh^2)/(2*dTibia*dThigh)
+	local kneePitch = acos(max(-1, min(1, cKnee)))
+	
+	-- Ankle pitch and roll
+	local ankleRoll = atan2(xLeg2, xLeg3)
+	local lLeg = max(1e-16, sqrt(dLeg))
+	local pitch0 = asin(dThigh*sin(kneePitch)/lLeg)
+	local anklePitch = asin(-xLeg1/lLeg) - pitch0
+	
+	local rHipT = T0.copy(trLeg) * T0.rotX(-ankleRoll) * T0.rotY(-anklePitch - kneePitch)
+	local hipYaw = atan2(-rHipT[1][2], rHipT[2][2])
+	local hipRoll = asin(rHipT[3][2])
+	local hipPitch = atan2(-rHipT[3][1], rHipT[3][3])
+	
+  -- NOTE: Need to compensate for KneeOffsetX:
+	return vector.new{hipYaw, hipRoll, hipPitch-aThigh, kneePitch+aThigh+aTibia, anklePitch-aTibia, ankleRoll}
+end
+
+-- Let's try to replicate the leg IK
+-- Check against standard kinematics
+function K.inverse_l_leg(trLLeg, qLLeg)
+	return ik_leg(trLLeg, qLLeg, true)
+	--[[
+	local sol = ik_leg(trLLeg, qLLeg, true)
+	print('L', sol)
+	print()
+	local tr6 = T0.position6D(trLLeg)
+	local sol = vector.new(Kinematics.inverse_l_leg(tr6))
+	print('C', sol)
+	--]]
+end
+
+function K.inverse_r_leg(trRLeg, qRLeg)
+	return ik_leg(trRLeg, qRLeg, false)
+	--[[
+	local t0 = unix.time()
+	local sol = ik_leg(trRLeg, qRLeg, false)
+	local t1 = unix.time()
+	print(t1-t0)
+	print('L', sol)
+	print()
+	
+	local tr6 = T0.position6D(trRLeg)
+	t0 = unix.time()
+	local sol = vector.new(Kinematics.inverse_r_leg(tr6))
+	t1 = unix.time()
+	print(t1-t0)
+	print('C', sol)
+	--]]
+end
+
+--[[
+T0 = require'Transform'
+K0 = require'K_ffi'
+K1 = Body.Kinematics
+qL = Body.get_lleg_position()
+qR = Body.get_rleg_position()
+trL = T0.new(K1.forward_lleg(qL))
+trR = T0.new(K1.forward_rleg(qR))
+
+K0.inverse_l_leg(trL, qL)
+K0.inverse_r_leg(trR, qR)
+--]]
+
 
 return K

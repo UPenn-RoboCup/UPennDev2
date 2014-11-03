@@ -197,7 +197,7 @@ local function mul(t1, t2)
       t[i] = t1[i][1] * t2[1]
       + t1[i][2] * t2[2]
       + t1[i][3] * t2[3]
-      + t1[i][4] * t2[4]
+      + t1[i][4] * (t2[4] or 1)
     end
     return vnew(t)
   elseif type(t2[1]) == "table" then

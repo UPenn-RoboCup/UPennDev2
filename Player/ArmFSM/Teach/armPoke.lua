@@ -30,16 +30,15 @@ function state.entry()
 	local fL = K.forward_l_arm(qL)
 	local trLGoal = fL
 	--
-	lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal, {20*DEG_TO_RAD}, {-75*DEG_TO_RAD})
+	lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal, {20*DEG_TO_RAD}, {-25*DEG_TO_RAD})
 	-- Let the trigger detect impact, so open it
 	--
-	
 	is_open = false
-	for k=1,5 do
+	for k=1,3 do
 		print('SETUP!')
 		Body.set_rgrip_torque_enable(1)
 		Body.set_rgrip_mode('position')
-		unix.usleep(1e4)
+		if not WEBOTS then unix.usleep(1e4) end
 	end
 		
 end
@@ -50,36 +49,34 @@ function state.update()
   local dt = t - t_update
   t_update = t
   if t-t_entry > timeout then print('POKE TIMEOUT'); return'timeout' end
-	-- Check the current for collisions
-	--print('L Current', Body.get_larm_current()*1)
-	--print('R Current', Body.get_rarm_current()*1)
-	-- Plan the next joint position
 	
 	-- Wait until the gripper is open before moving
 	if not is_open then
 		Body.set_rgrip_command_position(grip_open)
-		grip0 = Body.get_rgrip_position()
-		if vector.norm(grip0 - grip_open) > 2*DEG_TO_RAD then
-			return
-		else
-	for k=1,5 do
-		print('LOOSEN')
---		print('SETUP!')
---		Body.set_rgrip_torque_enable(0)
-		Body.set_rgrip_mode('torque')
-		unix.usleep(1e4)
-	end
-	--		Body.set_rgrip_torque_enable(0)
+		grip0, tgrip0 = Body.get_rgrip_position()
+		local grip_diff = grip0 - grip_open
+		--print('GRIP', grip_diff*RAD_TO_DEG)
+		--print('T', tgrip0 - t_entry*vector.ones(#tgrip0))
+		if (math.abs(grip_diff[1]) < 2*DEG_TO_RAD and tgrip0[1]-t_entry>0.5) and (math.abs(grip_diff[2]) < 2*DEG_TO_RAD and tgrip0[2]-t_entry>0.5) then
+			for k=1,3 do
+				Body.set_rgrip_torque_enable(0)
+				if not WEBOTS then unix.usleep(1e4) end
+			end
 			print('GRIPPER OPENED!')
 			is_open = true
 		end
+		return
 	end
 	
 	-- Check if we have touched anything
 	local grip = Body.get_rgrip_position()
 	local grip_diff = grip - grip0
-	if math.abs(grip_diff[1]) > 1*DEG_TO_RAD or math.abs(grip_diff[2]) > 1*DEG_TO_RAD then
-		print('grip_diff', grip_diff, grip0)
+	local touchTrigger = math.abs(grip_diff[1]) > 1*DEG_TO_RAD
+	local touchVice = math.abs(grip_diff[2]) > 1*DEG_TO_RAD
+	if touchTrigger or touchVice then
+		print('Trigger', touchTrigger)
+		print('Vice', touchVice)
+		print('grip_diff', grip_diff*RAD_TO_DEG, grip0)
 		return 'touch'
 	end
 	

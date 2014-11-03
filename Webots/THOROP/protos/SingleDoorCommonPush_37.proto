@@ -6,18 +6,12 @@
 PROTO SingleDoorCommonPush_37 [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
-  field SFColor mainColor 1 1 1
-  field MFString mainTextureUrl [
-    "textures/single_door_common.png"
-  ]
-  field SFColor frameColor 1 1 1
-  field MFString frameTextureUrl [
-    "textures/metal.png"
-  ]
+  #field MFString mainTextureUrl ["textures/single_door_common.png"]
+  #field MFString frameTextureUrl [ "textures/metal.png" ]
+	#field MFString handleTextureUrl ["textures/metal.png"]
+	field SFColor mainColor 1 1 1
+	#field SFColor frameColor 1 1 1
   field SFColor handleColor 1 1 1
-  field MFString handleTextureUrl [
-    "textures/metal.png"
-  ]
 ]
 {
   Solid {
@@ -40,7 +34,7 @@ PROTO SingleDoorCommonPush_37 [
               jointParameters HingeJointParameters {
                 axis 0 0 -1
                 anchor 0.77 -0.0762 0
-                maxStop 1
+#                maxStop 1
                 staticFriction 0.1
                 springConstant 5
               }
@@ -55,9 +49,7 @@ PROTO SingleDoorCommonPush_37 [
                         diffuseColor IS handleColor
                         specularColor 0.6 0.6 0.6
                       }
-                      texture ImageTexture {
-                        url IS handleTextureUrl
-                      }
+#                      texture ImageTexture { url IS handleTextureUrl }
                     }
                     geometry IndexedFaceSet {
                       coord Coordinate {
@@ -173,9 +165,7 @@ PROTO SingleDoorCommonPush_37 [
                   diffuseColor IS mainColor
                   specularColor 0.4 0.4 0.4
                 }
-                texture ImageTexture {
-                  url IS mainTextureUrl
-                }
+#                texture ImageTexture {url IS mainTextureUrl}
               }
               geometry IndexedFaceSet {
                 coord Coordinate {

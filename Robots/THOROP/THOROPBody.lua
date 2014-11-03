@@ -616,6 +616,7 @@ if IS_WEBOTS then
       end
     end
 		dcm.set_sensor_position(positions)
+		dcm.set_tsensor_position(t*vector.ones(#positions))
 
     -- Grab a camera frame
     if ENABLE_CAMERA and t >= NEXT_CAMERA then

@@ -423,6 +423,16 @@ static int inverse_legs(lua_State *L) {
 	Transform trLLeg = transform6D(&pLLeg[0]);
 	Transform trRLeg = transform6D(&pRLeg[0]);
 	Transform trTorso = transform6D(&pTorso[0]);
+	
+	/*
+	printf("inv(trTorso)\n");
+	printTransform(inv(trTorso));
+	printf("trLLeg\n");
+	printTransform(trLLeg);
+	printf("trRLeg\n");
+	printTransform(trRLeg);
+	*/
+	
 	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
 	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
 

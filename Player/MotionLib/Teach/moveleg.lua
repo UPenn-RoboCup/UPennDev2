@@ -1,11 +1,11 @@
 local moveleg = {}
 local Body   = require'Body'
-local K      = Body.Kinematics
-local T      = require'Transform'
-require'mcm'
-require'hcm'
+local K = require'K_ffi'
+local T = require'Transform'
 local util   = require'util'
 local vector = require'vector'
+require'mcm'
+require'hcm'
 
 -- SJ: Shared library for 2D leg trajectory generation
 -- So that we can reuse them for different controllers
@@ -28,8 +28,6 @@ local anklePitchCompensation = Config.walk.anklePitchCompensation or 0
 local kneePitchCompensation = Config.walk.kneePitchCompensation or 0
 local hipPitchCompensation = Config.walk.hipPitchCompensation or 0
 
-
-
 local slow_p_tolerance = {
   -- x, y, z
   1e-3, 1e-3, 1e-3,
@@ -40,6 +38,7 @@ local slow_p_tolerance = {
 local dqLegLimit = Config.stance.dqLegLimit
 local dpLimitStance = Config.stance.dpLimitStance
 
+--local K0 = require'THOROPKinematics'
 local function set_lower_body_slowly(pTorso, pLLeg, pRLeg, dt)
   local zGround = mcm.get_status_zGround()
   -- Deal with the leg bias
@@ -53,17 +52,19 @@ local function set_lower_body_slowly(pTorso, pLLeg, pRLeg, dt)
   local qLLegActual = qL - legBiasL
   local qRLegActual = qR - legBiasR
   -- How far away from the torso are the legs currently?
-  local dpLLeg = K.torso_lleg(qLLegActual)
-  local dpRLeg = K.torso_rleg(qRLegActual)
+  local dpLLeg = T.position6D(T.inv(K.forward_l_leg(qLLegActual)))
+  local dpRLeg = T.position6D(T.inv(K.forward_r_leg(qRLegActual)))
+	
   local pTorsoL = pLLeg + dpLLeg
   local pTorsoR = pRLeg + dpRLeg
   local pTorsoActual = (pTorsoL + pTorsoR) / 2
   -- Which torso to approach
   local pTorso_approach, doneTorso = util.approachTol(pTorsoActual, pTorso, dpLimitStance, dt, slow_p_tolerance)
   -- Where should the legs go?
-  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso_approach)
-  local qLLegTarget = vector.slice(qLegs, 1, 6) + legBiasL
-  local qRLegTarget = vector.slice(qLegs, 7, 12) + legBiasR
+  local qLLegTarget, qRLegTarget = K.inverse_legs(T.transform6D(pLLeg), T.transform6D(pRLeg), T.transform6D(pTorso_approach))
+	
+	qLLegTarget = qLLegTarget + legBiasL
+	qRLegTarget = qRLegTarget + legBiasR
   local qLLegMove, doneL = util.approachTol(qLLegActual, qLLegTarget, dqLegLimit, dt)
   local qRLegMove, doneR = util.approachTol(qRLegActual, qRLegTarget, dqLegLimit, dt)
   -- Set the legs

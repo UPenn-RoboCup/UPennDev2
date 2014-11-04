@@ -183,6 +183,7 @@ K.inverse_arm = ik_arm
 
 -- Forward with respect to the torso
 function K.forward_l_arm(qLArm)
+	return T0.trans(shoulderOffsetX, shoulderOffsetY, shoulderOffsetZ) * fk_arm(qLArm) * T0.trans(handOffsetX, -handOffsetY, handOffsetZ), {qLArm[3]}
 	--[[
 	local tr0 = fk_arm(qLArm)
 	tr0[1][4] = tr0[1][4] + shoulderOffsetX
@@ -194,7 +195,7 @@ function K.forward_l_arm(qLArm)
 	local tr0 = Kinematics.l_arm_torso_7(qRArm, 0, {0,0}, 0,0,0)
 	return T.transform6D(tr0), {qLArm[3]}
 	--]]
-	----[[
+	--[[
 	local tr0 = T0.trans(shoulderOffsetX, shoulderOffsetY, shoulderOffsetZ) * fk_arm(qLArm) * T0.trans(handOffsetX, -handOffsetY, handOffsetZ)
 	return tr0, {qLArm[3]}
 	--]]
@@ -204,6 +205,7 @@ function K.forward_l_arm(qLArm)
 	--]]
 end
 function K.forward_r_arm(qRArm)
+	return T0.trans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ) * fk_arm(qRArm) * T0.trans(handOffsetX, handOffsetY, handOffsetZ) * T0.rotZ(-45*DEG_TO_RAD), {qRArm[3]}
 	--[[
 	local tr0 = fk_arm(qRArm)	
 	tr0[1][4] = tr0[1][4] + shoulderOffsetX
@@ -216,7 +218,7 @@ function K.forward_r_arm(qRArm)
 	print(T.transform6D(tr0))
 	return T.transform6D(tr0), {qRArm[3]}
 	--]]
-	----[[
+	--[[
 	local tr0 = T0.trans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ) * fk_arm(qRArm) * T0.trans(handOffsetX, handOffsetY, handOffsetZ) * T0.rotZ(-45*DEG_TO_RAD)
 	return tr0, {qRArm[3]}
 	--]]
@@ -228,7 +230,15 @@ function K.forward_r_arm(qRArm)
 end
 
 -- Inverse with respect to the torso
+local tr1 = T0.trans(-shoulderOffsetX,-shoulderOffsetY,-shoulderOffsetZ)
+local tr2 = T0.trans(-handOffsetX, handOffsetY, -handOffsetZ)
 function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
+	return ik_arm(
+		tr1 * trL * tr2,
+		qLArm,
+		shoulderYaw or qLArm[3],
+		flipRoll and 1 or 0
+	)
 	--[[
 	local tr = T.copy(trL)
 	tr[1][4] = tr[1][4] - shoulderOffsetX
@@ -252,13 +262,11 @@ function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
 	local sol2 = ik_arm(tr0, qLArm, shoulderYaw or qLArm[3])
 	local t1 = unix.time()
 	print(t1-t0, 'ik_arm', sol2)
-	--]]
 	local tr1 = T0.trans(-shoulderOffsetX,-shoulderOffsetY,-shoulderOffsetZ)
 	local tr2 = T0.trans(-handOffsetX, handOffsetY, -handOffsetZ)
 	--print('tr1', tr1)
 	--print('trL', trL)
 	--print('tr2', tr2)
-	----[[
 	local sol = ik_arm(
 		tr1 * trL * tr2,
 		qLArm,
@@ -278,6 +286,12 @@ end
 
 -- TODO: Right arm does not have FLIP_ROLL working yet!!!
 function K.inverse_r_arm(trR, qRArm, shoulderYaw, flipRoll)
+	return ik_arm(
+		T0.trans(-shoulderOffsetX,shoulderOffsetY,-shoulderOffsetZ) * trR * T0.rotZ(45*DEG_TO_RAD) * T0.trans(-handOffsetX, -handOffsetY, -handOffsetZ),
+		qRArm,
+		shoulderYaw or qRArm[3],
+		flipRoll and -1 or 0
+	)
 	--[[
 	local tr = T.copy(trR)
 	tr[1][4] = tr[1][4] - shoulderOffsetX
@@ -289,15 +303,20 @@ function K.inverse_r_arm(trR, qRArm, shoulderYaw, flipRoll)
 	local tr6 = vector.new(T.position6D(trR))
 	return vector.new(Kinematics.inverse_r_arm_7(tr6, qRArm, shoulderYaw or qRArm[3], 0, {0,0}, 0,0,0))
 	--]]
-	----[[
+	--[[
+	t0 = unix.time()
 	local sol = ik_arm(
 		T0.trans(-shoulderOffsetX,shoulderOffsetY,-shoulderOffsetZ) * trR * T0.rotZ(45*DEG_TO_RAD) * T0.trans(-handOffsetX, -handOffsetY, -handOffsetZ),
 		qRArm,
 		shoulderYaw or qRArm[3],
 		flipRoll and -1 or 0
 	)
-	--print('L', sol)
-	--print('C', vector.new(Kinematics.inverse_r_arm_7(T0.position6D(trR), qRArm, shoulderYaw or qRArm[3], 0, {0,0})))
+	t1 = unix.time()
+	print(t1-t0,'L', sol)
+	t0 = unix.time()
+	local sol1 = vector.new(Kinematics.inverse_r_arm_7(T0.position6D(trR), qRArm, shoulderYaw or qRArm[3], 0, {0,0}))
+	t1 = unix.time()
+	print(t1-t0,'C', sol1)
 	return sol
 	--]]
 	--[[
@@ -336,26 +355,25 @@ local dLegMax = dTibia + dThigh
 local function ik_leg(trLeg, IS_LEFT, ankleTilt)
   -- Hip Offset vector in Torso frame
 	local xLeg1, xLeg2, xLeg3 = unpack(T0.inv(trLeg) * {0, IS_LEFT and hipOffsetY or -hipOffsetY, -hipOffsetZ})
-  xLeg3 = xLeg3 - footHeight;	
+  xLeg3 = xLeg3 - footHeight
   local dLeg = xLeg1^2 + xLeg2^2 + xLeg3^2
-	
 	-- Grab the knee angle
-  local cKnee = (dLeg - dTibia^2 - dThigh^2)/(2*dTibia*dThigh)
+  local cKnee = (dLeg - dTibia^2 - dThigh^2)/(2 * dTibia * dThigh)
 	local kneePitch = acos(max(-1, min(1, cKnee)))
 	
 	-- Ankle pitch and roll
 	local ankleRoll = atan2(xLeg2, xLeg3)
 	local lLeg = max(1e-16, sqrt(dLeg))
-	local pitch0 = asin(dThigh*sin(kneePitch)/lLeg)
-	local anklePitch = asin(-xLeg1/lLeg) - pitch0
+	local pitch0 = asin(dThigh * sin(kneePitch) / lLeg)
+	local anklePitch = asin(-xLeg1 / lLeg) - pitch0
 	
-	local rHipT = T0.copy(trLeg) * T0.rotX(-ankleRoll) * T0.rotY(-anklePitch - kneePitch)
+	local rHipT = trLeg * T0.rotX(-ankleRoll) * T0.rotY(-anklePitch - kneePitch)
 	local hipYaw = atan2(-rHipT[1][2], rHipT[2][2])
 	local hipRoll = asin(rHipT[3][2])
 	local hipPitch = atan2(-rHipT[3][1], rHipT[3][3])
 	
   -- NOTE: Need to compensate for KneeOffsetX:
-	return vector.new{hipYaw, hipRoll, hipPitch-aThigh, kneePitch+aThigh+aTibia, anklePitch-aTibia, ankleRoll}
+	return vector.new{hipYaw, hipRoll, hipPitch-aThigh, kneePitch + aThigh + aTibia, anklePitch-aTibia, ankleRoll}
 end
 
 -- Let's try to replicate the leg IK
@@ -392,42 +410,44 @@ function K.inverse_r_leg(trRLeg)
 end
 
 function K.inverse_legs(trLLeg, trRLeg, trTorso)
-	----[[
-	local invTorso = T0.inv(trTorso)
-	return ik_leg(invTorso*trLLeg, true), ik_leg(invTorso*trLLeg, false)
-	--]]
 	--[[
+	print('\ninv\n')
 	local t0 = unix.time()
 	local invTorso = T0.inv(trTorso)
-	
+	local sol1, sol2 = ik_leg(invTorso*trLLeg, true), ik_leg(invTorso*trRLeg, false)
 	local t1 = unix.time()
-	print('L', t1-t0)
-	print(ik_leg(invTorso*trLLeg, true), ik_leg(invTorso*trLLeg, false))
-	print()
+	print('Lua', t1-t0)
+	print('L:', sol1)
+	print('R:', sol2)
 	
 	local tl6 = T0.position6D(trLLeg)
 	local tr6 = T0.position6D(trRLeg)
 	local tt6 = T0.position6D(trTorso)
-	t0 = unix.time()
+	local t0 = unix.time()
 	local sol = vector.new(Kinematics.inverse_legs(tl6,tr6,tt6))
-	t1 = unix.time()
-	print('C', t1-t0)
-	print(sol)
+	local t1 = unix.time()
+	print('C  ', t1-t0)
+	print(vector.slice(sol,1,6), vector.slice(sol,7,12))
+	--]]
+	----[[
+	local invTorso = T0.inv(trTorso)
+	return ik_leg(invTorso*trLLeg, true), ik_leg(invTorso*trRLeg, false)
 	--]]
 end
 
 --[[
-T0 = require'Transform'
-K0 = require'K_ffi'
-K1 = Body.Kinematics
+T = require'Transform'
+K = require'K_ffi'
 qL = Body.get_lleg_position()
 qR = Body.get_rleg_position()
-trL = T0.new(K1.forward_lleg(qL))
-trR = T0.new(K1.forward_rleg(qR))
+trL = T.new(K.forward_l_leg(qL))
+trR = T.new(K.forward_r_leg(qR))
 
-K0.inverse_l_leg(trL, qL)
-K0.inverse_r_leg(trR, qR)
-K0.inverse_legs(trL, trR, T0.trans(unpack(mcm.get_status_uTorso())))
+pLLeg = {-0.07, 0.095, 0, 0, 0, 0}
+pRLeg = {-0.07, -0.095, 0, 0, 0, 0}
+pTorso_approach = {-0.0687997, 0, 1, 0, 0.012, 0}
+
+=K.inverse_legs(T.transform6D(pLLeg), T.transform6D(pRLeg), T.transform6D(pTorso_approach))
 --]]
 
 

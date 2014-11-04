@@ -8,7 +8,7 @@ local cos = math.cos
 local sin = math.sin
 local atan2 = math.atan2
 local sqrt = math.sqrt
-local vnew = vector.new
+local vnew, vcopy = vector.new, vector.copy
 
 function Transform.inv(a)
 	local p = {a[1][4],a[2][4],a[3][4]}
@@ -27,10 +27,10 @@ end
 
 local function eye()
   return setmetatable({
-		{0, 0, 0, 1},
-		{0, 0, 1, 0},
+		{1, 0, 0, 0},
 		{0, 1, 0, 0},
-		{1, 0, 0, 0}
+		{0, 0, 1, 0},
+		{0, 0, 0, 1}
 	}, mt)	
 end
 Transform.eye = eye
@@ -200,7 +200,7 @@ local function mul(t1, t2)
   elseif type(t2[1]) == "table" then
     -- Matrix * Matrix
     for i = 1,4 do
-      t[i] = vnew()
+      t[i] = {}
       for j = 1,4 do
         t[i][j] = t1[i][1] * t2[1][j]
         + t1[i][2] * t2[2][j]
@@ -216,14 +216,14 @@ end
 function Transform.copy(tt)
   if type(tt)=='table' then
     -- Copy the table
-    local t = {}
-    t[1] = vector.copy(tt[1])
-    t[2] = vector.copy(tt[2])
-    t[3] = vector.copy(tt[3])
-    t[4] = vector.copy(tt[4])
-    return setmetatable(t, mt)
+    return setmetatable({
+    	vector.copy(tt[1]),
+    	vector.copy(tt[2]),
+    	vector.copy(tt[3]),
+    	vector.copy(tt[4])
+		}, mt)
   end
-  local t = Transform.eye()
+  local t = eye()
   for i=1,3 do
     for j=1,4 do
       t[i][j] = tt[i][j]

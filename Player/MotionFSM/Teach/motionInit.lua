@@ -6,7 +6,6 @@ require'mcm'
 require'hcm'
 require'wcm'
 local Body = require'Body'
-local K = Body.Kinematics
 local moveleg = require'moveleg'
 local util = require'util'
 local vector = require'vector'
@@ -16,6 +15,9 @@ local t_entry, t_update
 -- Set the desired leg and torso poses
 local pLLeg_desired = vector.new{-Config.walk.supportX,  Config.walk.footY, 0, 0,0,0}
 local pRLeg_desired = vector.new{-Config.walk.supportX,  -Config.walk.footY, 0, 0,0,0}
+--local pLLeg_desired = T.transform6D{-Config.walk.supportX,  Config.walk.footY, 0, 0,0,0}
+--local pRLeg_desired = T.transform6D{-Config.walk.supportX,  -Config.walk.footY, 0, 0,0,0}
+
 local pTorso_desired = vector.new{-Config.walk.torsoX, 0, Config.walk.bodyHeight, 0,Config.walk.bodyTilt,0}
 local qWaist_desired = Config.stance.qWaist
 

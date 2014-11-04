@@ -2,7 +2,7 @@ local moveleg = {}
 local Body   = require'Body'
 local K = require'K_ffi'
 local T = require'Transform'
-local util   = require'util'
+local util = require'util'
 local vector = require'vector'
 require'mcm'
 require'hcm'
@@ -37,8 +37,7 @@ local slow_p_tolerance = {
 -- How far away to tell the P controller to go in one step
 local dqLegLimit = Config.stance.dqLegLimit
 local dpLimitStance = Config.stance.dpLimitStance
-
---local K0 = require'THOROPKinematics'
+local K0 = require'K_ffi_old'
 local function set_lower_body_slowly(pTorso, pLLeg, pRLeg, dt)
   local zGround = mcm.get_status_zGround()
   -- Deal with the leg bias
@@ -53,8 +52,7 @@ local function set_lower_body_slowly(pTorso, pLLeg, pRLeg, dt)
   local qRLegActual = qR - legBiasR
   -- How far away from the torso are the legs currently?
   local dpLLeg = T.position6D(T.inv(K.forward_l_leg(qLLegActual)))
-  local dpRLeg = T.position6D(T.inv(K.forward_r_leg(qRLegActual)))
-	
+  local dpRLeg = T.position6D(T.inv(K.forward_r_leg(qRLegActual)))	
   local pTorsoL = pLLeg + dpLLeg
   local pTorsoR = pRLeg + dpRLeg
   local pTorsoActual = (pTorsoL + pTorsoR) / 2
@@ -76,11 +74,10 @@ local function set_lower_body_slowly(pTorso, pLLeg, pRLeg, dt)
   print('DONE', doneTorso, doneL, doneR)
   --]]
   -- Update our current situation
-  local bH = pTorsoActual[3]
   mcm.set_stance_bodyTilt(pTorsoActual[5])
-  mcm.set_stance_bodyHeightTarget(bH)
-  mcm.set_stance_bodyHeight(bH)
-  hcm.set_motion_bodyHeightTarget(bH)
+  mcm.set_stance_bodyHeightTarget(pTorsoActual[3])
+  mcm.set_stance_bodyHeight(pTorsoActual[3])
+  hcm.set_motion_bodyHeightTarget(pTorsoActual[3])
   -- Return the status
   return doneL and doneR and doneTorso
 end

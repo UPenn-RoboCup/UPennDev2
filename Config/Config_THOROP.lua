@@ -129,11 +129,14 @@ Config.libs.ArmLib = 'Teach'
 Config.libs.World = 'Teach'
 -- Precedence in loading, for overrides!
 local exo = {
-	'Robot', 'Walk', 'Net', 'FSM_Teach', 'Arm_Teach', 'Vision_Teach'
+	'Robot', 'Walk', 'Net', 'FSM_Teach', 'Arm_Teach', 'Vision_Teach', 'World_Teach'
 }
 if IS_WEBOTS then
   Config.testfile = 'test_teleop'--'test_teach'
-  Config.wizards = {feedback = 'feedback_wizard'}
+  Config.wizards = {
+		feedback = 'feedback_wizard',
+		camera = 'camera_wizard',
+	}
   Config.sensors = {ft = true, head_camera = true,}
 end
 --]]

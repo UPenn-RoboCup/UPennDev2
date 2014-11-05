@@ -1,16 +1,19 @@
 local WebotsBody = {}
 
-local ww = Config.wizards.world and require(Config.wizards.world)
-local cw = Config.wizards.camera and require(Config.wizards.camera)
-local mw = Config.wizards.mesh and require(Config.wizards.mesh)
-local sw = Config.wizards.slam and require(Config.wizards.slam)
-local fw = Config.wizards.feedback and require(Config.wizards.feedback)
-local rw = Config.wizards.remote and require(Config.wizards.remote)
-local kb = Config.testfile and require(Config.testfile)
-
-WebotsBody.USING_KB = type(kb)=='table' and type(kb.update)=='function'
+local ww, cw, mw, sw, fw, rw, kb
 
 function WebotsBody.entry()
+	
+	ww = Config.wizards.world and require(Config.wizards.world)
+	cw = Config.wizards.camera and require(Config.wizards.camera)
+	mw = Config.wizards.mesh and require(Config.wizards.mesh)
+	sw = Config.wizards.slam and require(Config.wizards.slam)
+	fw = Config.wizards.feedback and require(Config.wizards.feedback)
+	rw = Config.wizards.remote and require(Config.wizards.remote)
+	kb = Config.testfile and require(Config.testfile)
+
+	WebotsBody.USING_KB = type(kb)=='table' and type(kb.update)=='function'
+	
 	if ww then ww.entry() end
   if fw then fw.entry() end
   if rw then rw.entry() end

@@ -7,13 +7,10 @@ local function update(key_code)
   local code_f, char_f, lower_f = code_lut[key_code], char_lut[key_char], lower_lut[key_char_lower]
   -- Precedence
   if type(code_f)=='function' then
-		print('HERE CODE')
     code_f()
   elseif type(char_f)=='function' then
-		print('HERE CHAR')
     char_f()
   elseif type(lower_f)=='function' then
-		print('HERE LOWER')
     lower_f()
   end
 	if type(show_status)=='function' then

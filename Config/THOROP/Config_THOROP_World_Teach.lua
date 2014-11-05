@@ -2,70 +2,12 @@ assert(Config, 'Need a pre-existing Config table!')
 
 local world = {}
 
-
-world.ballFilter = true
-
-
-
-
--------------------------------------------------------------
---GRASP LAB
-
-
-
-
--- Ball
-world.ballDiameter = 0.22
--- Goal post
-
-
--------------------------------------------
+------------------
 -- Standard field
-
 world.goalHeight = 1.8
 world.goalWidth = 3.1 --3.0 for I-I, 3.1 for C-C
 world.postDiameter = 0.1
-world.obsDiameter = 0.2
 
--- Field
-world.xBoundary = 4.5
-world.yBoundary = 3.0
-world.xMax = 4.8
-world.yMax = 3.3
---Field corners
-world.Lcorner={}
-world.Lcorner[1]={4.5,3.0}
-world.Lcorner[2]={4.5,-3.0}
-world.Lcorner[3]={-4.5,3.0}
-world.Lcorner[4]={-4.5,-3.0}
---Center T edge
-world.Lcorner[5]={0,3.0}
-world.Lcorner[6]={0,-3.0}
-
--------------------------------------------
-
--- Obstacle
-world.obsDiameter = 0.25 --0.15  -- our purchased ones
-world.obsHeight = 0.9
-
-
-
-
--- M308 post
---[[
---------------------------------------------
-world.goalHeight = 1.8
-world.goalWidth = 2.6  -- in m308
-------------------------------------------------
---]]
-
-
---GRASP small post
-------------------------------------------------
---[[
-world.goalHeight = 0.85
-world.goalWidth = 1.6
---]]
 
 if IS_WEBOTS then
   world.goalHeight = 1.8

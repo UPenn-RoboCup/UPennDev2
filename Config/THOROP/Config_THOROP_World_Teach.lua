@@ -4,19 +4,6 @@ local world = {}
 
 ------------------
 -- Standard field
-world.goalHeight = 1.8
-world.goalWidth = 3.1 --3.0 for I-I, 3.1 for C-C
-world.postDiameter = 0.1
-
-
-if IS_WEBOTS then
-  world.goalHeight = 1.8
-  world.goalWidth = 3.1
-  world.xBoundary = 4.5
-  world.yBoundary = 3.0
-end
-
-
 
 world.goalUpper = {} -- Attacking goal
 world.goalUpper[1] = {world.xBoundary, world.goalWidth/2}
@@ -54,8 +41,14 @@ world.odomScale = {1,1,1} -- For now IMU not in use
 world.resample_period = 0.3 -- seconds
 world.resample_count = 20 -- partile filter cycles
 
-
 world.use_imu_yaw = true
+
+if IS_WEBOTS then
+  world.goalHeight = 1.8
+  world.goalWidth = 3.1
+  world.xBoundary = 4.5
+  world.yBoundary = 3.0
+end
 
 -- Associate with the table
 Config.world = world

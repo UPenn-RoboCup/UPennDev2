@@ -32,7 +32,7 @@ hcm.set_camera_bias(Config.walk.headBias or {0,0,0})
 --]]
 
 -- Update the Head transform
-local function get_head_position(head, rpy)  
+local function get_head_transform(head, rpy)  
 
   local trNeck0 = trBody * T.rotY(rpy[2]) * trNeckOffset
 	
@@ -56,8 +56,7 @@ local function get_head_position(head, rpy)
 	local trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
   
   local trHead = trNeck * dtrCamera
-  -- Grab the position only (4 coords, which includes scale)
-  return T.position4(trHead)
+  return trHead
 end
 
 --[[
@@ -68,7 +67,8 @@ local function projectGround(v, target_height)
   -- Grab head angles
   local head = Body.get_head_position() 
   local rpy = Body.get_rpy()
-  local vHead_homo = get_head_position(head, rpy)
+  local trHead = get_head_transform(head, rpy)
+	local vHead_homo = T.position4(trHead)
   
   -- Project to plane
   if vHead[3] ~= target_height then
@@ -80,7 +80,10 @@ local function projectGround(v, target_height)
 
 end
 
-function HeadTransform.project()
+function HeadTransform.project(v0)
+  local head = Body.get_head_position() 
+  local rpy = Body.get_rpy()
+	local trHead = get_head_transform(head, rpy)
 	return (trHead * v0) / v0[4]
 end
 
@@ -89,7 +92,8 @@ function HeadTransform.ikineCam(x0, y0, z0)
   local head = Body.get_head_position() 
   local rpy = Body.get_rpy()
 	
-  local vHead = get_head_position(head, rpy)
+  local trHead = get_head_transform(head, rpy)
+	local vHead = T.position(trHead)
   x0 = x0 - vHead[1]
   -- Assume looking forward (for goal detection)
   z0 = (z0 or vHead[3]) - vHead[3]

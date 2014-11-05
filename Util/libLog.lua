@@ -1,5 +1,4 @@
 local libLog = {}
-local mt_log = {}
 local LOG_DIR = '/tmp'
 local carray
 if ffi then
@@ -15,10 +14,11 @@ else
 	carray = require'carray'
 end
 local torch = require'torch'
+local mpack = require'msgpack.MessagePack'.pack
 -- Need the C version for unpacker
-local mp = require'msgpack'
---local mp = require'msgpack.MessagePack'
+local munpacker = require'msgpack'.unpacker
 
+-- TODO: __gc should call stop
 local function stop(self)
 	-- Close the files
 	self.f_meta:close()
@@ -33,7 +33,7 @@ local function record(self, meta, raw, n_raw)
 	if mtype=='string' then
 		m_ok = self.f_meta:write(meta)
 	elseif mtype then
-		local metapack = mp.pack(meta)
+		local metapack = mpack(meta)
 		m_ok = self.f_meta:write(metapack)
 	end
 	-- Record the raw
@@ -84,7 +84,7 @@ local function unroll_meta(self)
 	local f_m = assert(io.open(self.m_name,'r'))
 	-- Must use an unpacker...
 	local metadata = {}
-	local u = mp.unpacker(2048)
+	local u = munpacker(2048)
 	local buf, nbuf = f_m:read(512),0
 	while buf do
 		nbuf = nbuf + #buf

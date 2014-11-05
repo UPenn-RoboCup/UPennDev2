@@ -174,7 +174,6 @@ end
 if IS_WEBOTS then
 	require'wcm'
 	local WebotsBody
-  local torch = require'torch'
   local webots = require'webots'
 	local ImageProc = require'ImageProc'
   
@@ -186,13 +185,6 @@ if IS_WEBOTS then
 	local nJoint = Config.nJoint
 	local jointNames = Config.jointNames
   local servo = Config.servo
-
-  -- Default configuration (toggle during run time)
-  local ENABLE_LOG, t_log = false, 0
-  if ENABLE_LOG then
-  	libLog = require'libLog'
-  	logger = libLog.new('yuyv', true)
-  end
 
   -- Added to Config rather than hard-code 
 	local ENABLE_CAMERA, NEXT_CAMERA = Config.sensors.head_camera, 0

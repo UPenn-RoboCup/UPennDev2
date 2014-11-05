@@ -39,6 +39,16 @@ int lua_goal_posts(lua_State *L) {
     mask = luaL_optinteger(L, 4, 1);
     threshold = luaL_optinteger(L, 5, thresholdDefault);
   }
+	else if( lua_type(L, 1) == LUA_TNUMBER ){
+		im_ptr = (uint8_t *)luaL_optlong(L, 1, 0);
+    if (im_ptr == NULL) {
+      return luaL_error(L, "Input image bad");
+    }
+    m = luaL_checkint(L, 2);
+    n = luaL_checkint(L, 3);
+    mask = luaL_optinteger(L, 4, 1);
+    threshold = luaL_optinteger(L, 5, thresholdDefault);
+	}
 #ifdef TORCH
 	else if(luaT_isudata(L,1,"torch.ByteTensor")){
 		THByteTensor* b_t =

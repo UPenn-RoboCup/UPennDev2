@@ -57,14 +57,8 @@ if IS_WEBOTS then
 end
 
 -- TODO: Get rid of these
--- Monitor and logging
 Config.enable_monitor = true
-Config.enable_log = false
 Config.torque_legs = true
-Config.use_imu_yaw = true
-Config.use_single_scan = true
-
-
 
 ----------------------------------
 -- Application specific Configs --
@@ -129,7 +123,7 @@ Config.libs.ArmLib = 'Teach'
 Config.libs.World = 'Teach'
 -- Precedence in loading, for overrides!
 local exo = {
-	'Robot', 'Walk', 'Net', 'FSM_Teach', 'Arm_Teach', 'Vision_Teach', 'World_Teach'
+	'Robot', 'Walk', 'Net', 'FSM_Teach', 'Arm_Teach', 'Vision_Teach' --, 'World_Teach'
 }
 if IS_WEBOTS then
   Config.testfile = 'test_teleop'--'test_teach'

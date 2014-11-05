@@ -4,24 +4,27 @@
 local libVision = {}
 -- Detection and HeadTransform information
 local ImageProc = require'ImageProc'
-local ImageProc2 = require'ImageProc.ffi'
+local ImageProc2 = require'ImageProc.ffi2'
 local T = require'Transform'
 local HT = require'libHeadTransform'
 local mp = require'msgpack.MessagePack'
 local vector = require'vector'
 local util = require'util'
-local zlib = require'zlib.ffi'
+local c_zlib = require'zlib.ffi'.compress
 local si = require'simple_ipc'
 require'wcm'
 require'hcm'
 require'gcm'
 
+local vision_ch = si.new_publisher'vision'
+
 -- Important local variables
-local w, h, wa, wb, ha, hab, scaleA, scaleB, lut_t
--- Hold on to these
-local labelA_t, labelB_t
+local colors
+local w, h, wa, wb, ha, scaleA, scaleB
+local labelA_d, labelB_d
 -- Camera information
-local x0A, y0A, focalA, focal_length, focal_base
+local focal_length, focal_base
+local x0A, y0A, focalA
 local x0B, y0B, focalB
 -- Detection thresholds
 local th_nPostB, g_area, g_bbox_area, g_fill_rate, g_orientation, g_aspect_ratio, g_margin
@@ -30,17 +33,9 @@ local detected = {
   id = 'detect',
 }
 -- World config
-local postDiameter = Config.world.postDiameter
-local postHeight = Config.world.goalHeight
-local goalWidth = Config.world.goalWidth
--- Field
-local xMax = 4.5 --Config.world.xMax
-local yMax = 3   --Config.world.yMax
-
---
-local colors
-local c_zlib = zlib.compress
-local vision_ch = si.new_publisher'vision'
+local postDiameter = Config.vision.goal.postDiameter
+local postHeight = Config.vision.goal.goalHeight
+local goalWidth = Config.vision.goal.goalWidth
 
 -- Debug printing in terminal
 local DEBUG = Config.debug.obstacle
@@ -52,10 +47,10 @@ end
 function libVision.send()
 
   local to_send = {}
-  local lA_raw = c_zlib(labelA_t:data(), labelA_t:nElement())
+  local lA_raw = c_zlib(ImageProc2.labelA_d, ImageProc2.labelA_n)
   local lA_meta = {
-    w = labelA_t:size(2),
-    h = labelA_t:size(1),
+    w = wa,
+    h = ha,
     sz = #lA_raw,
     c = 'zlib',
     id = 'labelA',
@@ -77,16 +72,10 @@ end
 -- Simple bbox with no tilted color stats
 -- Assume always input bboxB
 local function bboxStats(label, color, bboxB)
-  if label=='a' then 
-    bbox = bboxB2A(bboxB) 
-    local area = (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1)
-  	local stats = ImageProc.color_stats(labelA_t, color, bbox)
-    return stats, area
-  else
-    local area = (bboxB[2] - bboxB[1] + 1) * (bboxB[4] - bboxB[3] + 1)
-  	local stats = ImageProc.color_stats(labelB_t, color, bboxB)
-    return stats, area
-  end
+	local bbox = label=='a' and bboxB2A(bboxB) or bboxB
+  local area = (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1)
+	local stats = ImageProc2.color_stats(label, color, bbox)
+  return stats, area
 end
 
 local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_t)
@@ -155,9 +144,13 @@ local function check_coordinateB(centroid, scale, maxD, maxH)
 end
 
 -- TODO: Allow the loop to run many times
-local function find_goal(labelA_t, labelB_t, cc_t)
+local function find_goal()
   -- Form the initial goal check
-  local postB = ImageProc.goal_posts(labelB_t, colors.yellow)
+  local postB = ImageProc.goal_posts(
+		tonumber(ffi.cast('intptr_t', ffi.cast('void *', ImageProc2.labelB_d))),
+		wb,
+		hb,
+		colors.magenta)
   if not postB then return'None detected' end
   -- Now process each goal post
   -- Store failures in the array
@@ -167,7 +160,7 @@ local function find_goal(labelA_t, labelB_t, cc_t)
 	for i=1, #postB do
 		local post = postB[i]
     local fail, has_stats = {}, true
-    local postStats = check_prop(colors.yellow, post, g_bbox_area, g_area, g_fill_rate, labelA_t)
+    local postStats = check_prop(colors.magenta, post, g_bbox_area, g_area, g_fill_rate, labelA_t)
     if type(postStats)=='string' then
       table.insert(fail, postStats)
     else
@@ -300,7 +293,7 @@ local function find_goal(labelA_t, labelB_t, cc_t)
         local bottomY = goalStats[1].post.boundingBox[3]+5*postWidth    
         local bboxA = {leftX, rightX, topY, bottomY}
 
-        local crossbarStats = ImageProc.color_stats(labelA_t, colors.yellow, bboxA)
+        local crossbarStats = ImageProc2.color_stats('a', colors.magenta, bboxA)
         dxCrossbar = crossbarStats.centroid[1] - goalStats[1].post.centroid[1]
         crossbar_ratio = dxCrossbar / postWidth
       end
@@ -371,20 +364,25 @@ function libVision.entry()
     th_min_area_unknown_post = cfg.vision.goal.th_min_area_unknown_post
   end
   -- Load the lookup table
-  local lut_fname = {HOME, "/Data/", "lut_", cfg.lut, ".raw"}
-  lut_t = ImageProc2.load_lut(table.concat(lut_fname))
+  ImageProc2.load_lut(table.concat{HOME, "/Data/", "lut_", cfg.lut, ".raw"})
 end
 
 function libVision.update(img)
 
   -- Images to labels
-  labelA_t = ImageProc2.yuyv_to_label(img, lut_t:data())
-  labelB_t = ImageProc2.block_bitor(labelA_t)
+  ImageProc2.yuyv_to_labelA(img)
+  ImageProc2.block_bitor()
   -- Detection System
   -- NOTE: Muse entry each time since on webots, we switch cameras
   -- In camera wizard, we do not switch cameras, so call only once
-  local cc_t = ImageProc2.color_count(labelA_t)
-  local post_fails, posts = find_goal(labelA_t, labelB_t, cc_t)
+	--[[
+  local cc_d = ImageProc2.color_countA()
+	if cc_d[colors.magenta]>0 or cc_d[colors.cyan]>0 then
+		print('Magenta, Cyan', cc_d[colors.magenta], cc_d[colors.cyan])
+	end
+	--]]
+	
+  local post_fails, posts = find_goal()
 
   -- Save the detection information
   detected.posts = posts

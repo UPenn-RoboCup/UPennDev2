@@ -1,6 +1,8 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
+Config.enable_log = false
+
 local monitor = {
 	minFPS = 1,
 	maxFPS = 15,
@@ -27,12 +29,14 @@ local head = {
 
 local vision = {
   colors = {
+		black = 0,
     orange = 1,
     yellow = 2,
-    cyan = 4,
+    blue = 4,
     field = 8,
     white = 16,
-    black = 0,
+		cyan = 32,
+		magenta = 64,
   },
   scaleA = 2,
   scaleB = 2,
@@ -49,27 +53,6 @@ local vision = {
   --Use this angle instead of walk.bodyTilt
   bodyTilt = 3*DEG_TO_RAD, 
 
-  --
-}
-
-vision.ball = {
-  diameter = 0.22,
-  th_min_bbox_area = 40, --50
-  th_min_area = 20, --10,
-  th_min_fill_rate = 0.35,
-
-  --TODO: to test on real robot
-  max_height0 = 0.3,    --Max height = max_height0 + dist*max_height1
-  max_height1 = 0.12,
-
-  max_distance = 9, 
-  th_ground_head_pitch = 50*DEG_TO_RAD,
-  th_ground_boundingbox = {-30,30,0,20},
-  th_ground_green = 400,  --TODO
-  th_ground_white = 150,  --TODO
-  check_for_ground = 1,
-  check_for_field = 1,
-  field_margin = 2.0,
 }
 
 vision.goal = {
@@ -94,40 +77,10 @@ vision.goal = {
   use_centerpost = 1,
   min_crossbar_ratio = 0.6,
   check_for_ground = 1,
-}
-
--- Testing in M308 and grasp with thinner obstacles
-vision.obstacle = {
-  label = 'b',
-  grid_x = 40, --32,
-  grid_y = 20, --18,
-	th_min_area = 40,
-  min_black_fill_rate = 0.48,
-  th_aspect_ratio = {1.8, 10},
-  th_max_height = 1.3,
-  th_min_height = -0.2,
-  th_min_orientation = 60/180*math.pi,
-  th_green_black_ratio = 2,
-  min_ground_fill_rate = 0.4,  
-	--
-	min_width = 5, 
-	max_width = 16,
-}
-
--- Line
-vision.line = {
-  -- min_white_pixel = 300,
-  -- min_green_pixel = 5000,
-  max_width = 15,
-  connect_th = 1.4,
-  max_gap = 1,
-  -- labelB space
-  min_count = 20,
-  min_length = 5,--10,
-  max_height = 0.3,
-  min_aspect_ratio = 2.5,
-  min_angle_diff = 10,
-  max_angle_diff = 85,
+	-- Metric properties
+	goalHeight = 1.8,
+	goalWidth = 3.1, --3.0 for I-I, 3.1 for C-C
+	postDiameter = 0.1,
 }
 
 -- Cameras
@@ -200,7 +153,7 @@ table.insert(Config.camera,
 if IS_WEBOTS then
   Config.camera[1].w = 320
   Config.camera[1].h = 180
-  Config.camera[1].lut = 'webots'
+  Config.camera[1].lut = 'wbt_chopsticks'
 
   Config.camera[1].cx_offset = 0
   Config.camera[1].cy_offset = 0
@@ -208,7 +161,7 @@ if IS_WEBOTS then
   focal_length = 395.17
   focal_base = 640
   
-	head.neckX= 0 --From CoM to neck joint
+	head.neckX = 0 --From CoM to neck joint
 
   vision.scaleA = 2
   vision.scaleB = 2
@@ -237,43 +190,12 @@ if IS_WEBOTS then
     use_centerpost = 1,
     min_crossbar_ratio = 0.6,
     check_for_ground = 1,
-
-    height_max = 9, 
+    height_max = 9,
+		-- Metric properties
+		goalHeight = 1.8,
+		goalWidth = 3.1, --3.0 for I-I, 3.1 for C-C
+		postDiameter = 0.1,
   }
-  
-  vision.obstacle = {
-    label = 'b',
-    grid_x = 10, 
-    grid_y = 15,
-    th_min_area = 42,
-    th_min_orientation = 70/180*math.pi,
-    th_aspect_ratio = {2, 8},
-    min_black_fill_rate = 0.4,
-
-    th_max_height = 1.25,
-    th_min_height = -0.2,
-    min_ground_fill_rate = 0.55,
-		--
-		min_width = 3, 
-		max_width = 15,
-  }
-  
-  vision.ball = {
-  diameter = 0.22,
-  th_min_bbox_area = 10,
-  th_min_area = 5,
-  th_min_fill_rate = 0.35,
-  max_height0 = 0.34,    --Max height = max_height0 + dist*max_height1
-  max_height1 = 0.19,
-  max_distance = 9, 
-  th_ground_head_pitch = 50*DEG_TO_RAD,
-  th_ground_boundingbox = {-30,30,0,20},
-  th_ground_green = 400,  --TODO
-  th_ground_white = 150,  --TODO
-  check_for_ground = 1,
-  check_for_field = 1,
-  field_margin = 2.0,
-}
 end
 
 -- Associate with the table

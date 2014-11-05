@@ -80,7 +80,7 @@ shared.slam = {}
 shared.slam.pose = vector.zeros(3)
 
 
-if Config.vision then
+if Config.world then
 	-- Particles for pose estimation
 	shared.particle = {}
 	shared.particle.x = vector.zeros(Config.world.nParticle)

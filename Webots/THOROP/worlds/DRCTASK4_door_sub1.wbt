@@ -8,8 +8,8 @@ WorldInfo {
   FPS 15
 }
 Viewpoint {
-  orientation 0.165612 0.902369 0.397873 3.84338
-  position -3.57194 7.21729 -3.60315
+  orientation 0.106719 0.905508 0.41069 3.58747
+  position -3 3 -1
 }
 Background {
   skyColor [

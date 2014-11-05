@@ -15,9 +15,11 @@ code_lut, char_lut, lower_lut = {}, {}, {}
 char_lut['1'] = function()
   motion_ch:send'stand'
 	arm_ch:send'init'
+	head_ch:send'init'
 end
 char_lut['2'] = function()
 	arm_ch:send'ready'
+	head_ch:send'trackhand'
 end
 char_lut['3'] = function()
 	arm_ch:send'poke'
@@ -42,16 +44,16 @@ end
 lower_lut['g'] = function()
   if selected_arm==0 then
     local qLArm = Body.get_larm_command_position()
-		local tr = K.forward_l_arm(qLArm)
-		local iqArm = K.inverse_l_arm(tr, qLArm, qLArm[3] - DEG_TO_RAD)
-		local itr = K.forward_l_arm(iqArm)
+		local tr = K.forward_larm(qLArm)
+		local iqArm = K.inverse_larm(tr, qLArm, qLArm[3] - DEG_TO_RAD)
+		local itr = K.forward_larm(iqArm)
 		sanitize(iqArm, qLArm)
 		Body.set_larm_command_position(iqArm)
   else
     local qRArm = Body.get_rarm_command_position()
-		local tr = K.forward_r_arm(qRArm)
-		local iqArm = K.inverse_r_arm(tr, qRArm, qRArm[3] - DEG_TO_RAD)
-		local itr = K.forward_r_arm(iqArm)
+		local tr = K.forward_rarm(qRArm)
+		local iqArm = K.inverse_rarm(tr, qRArm, qRArm[3] - DEG_TO_RAD)
+		local itr = K.forward_rarm(iqArm)
 		sanitize(iqArm, qRArm)
 		Body.set_rarm_command_position(iqArm)
   end
@@ -60,16 +62,16 @@ end
 lower_lut['h'] = function()
   if selected_arm==0 then
     local qLArm = Body.get_larm_command_position()
-		local tr = K.forward_l_arm(qLArm)
-		local iqArm = K.inverse_l_arm(tr, qLArm, qLArm[3] + DEG_TO_RAD)
-		local itr = K.forward_l_arm(iqArm)
+		local tr = K.forward_larm(qLArm)
+		local iqArm = K.inverse_larm(tr, qLArm, qLArm[3] + DEG_TO_RAD)
+		local itr = K.forward_larm(iqArm)
 		sanitize(iqArm, qLArm)
 		Body.set_larm_command_position(iqArm)
   else
     local qRArm = Body.get_rarm_command_position()
-		local tr = K.forward_r_arm(qRArm)
-		local iqArm = K.inverse_r_arm(tr, qRArm, qRArm[3] + DEG_TO_RAD)
-		local itr = K.forward_r_arm(iqArm)
+		local tr = K.forward_rarm(qRArm)
+		local iqArm = K.inverse_rarm(tr, qRArm, qRArm[3] + DEG_TO_RAD)
+		local itr = K.forward_rarm(iqArm)
 		sanitize(iqArm, qRArm)
 		Body.set_rarm_command_position(iqArm)
   end
@@ -128,16 +130,16 @@ print('des zyz:',zyz[1],zyz[2],zyz[3])
 local function apply_pre(d_tr)
 	if selected_arm==0 then --left
 		local qLArm = Body.get_larm_command_position()
-		local fkL = K.forward_l_arm(qLArm)
+		local fkL = K.forward_larm(qLArm)
 		local trLGoal = d_tr * fkL
-		local iqArm = vector.new(K.inverse_l_arm(trLGoal, qLArm))
+		local iqArm = vector.new(K.inverse_larm(trLGoal, qLArm))
 		sanitize(iqArm, qLArm)
 		Body.set_larm_command_position(iqArm)
 	else
 		local qRArm = Body.get_rarm_command_position()
-		local fkR = K.forward_r_arm(qRArm)
+		local fkR = K.forward_rarm(qRArm)
 		local trRGoal = d_tr * fkR
-		local iqArm = vector.new(K.inverse_r_arm(trRGoal, qRArm))
+		local iqArm = vector.new(K.inverse_rarm(trRGoal, qRArm))
 		sanitize(iqArm, qRArm)
 		Body.set_rarm_command_position(iqArm)
 	end
@@ -146,16 +148,16 @@ end
 local function apply_post(d_tr)
 	if selected_arm==0 then --left
 		local qLArm = Body.get_larm_command_position()
-		local fkL = K.forward_l_arm(qLArm)
+		local fkL = K.forward_larm(qLArm)
 		local trLGoal = fkL * d_tr
-		local iqArm = vector.new(K.inverse_l_arm(trLGoal, qLArm))
+		local iqArm = vector.new(K.inverse_larm(trLGoal, qLArm))
 		sanitize(iqArm, qLArm)
 		Body.set_larm_command_position(iqArm)
 	else
 		local qRArm = Body.get_rarm_command_position()
-		local fkR = K.forward_r_arm(qRArm)
+		local fkR = K.forward_rarm(qRArm)
 		local trRGoal = fkR * d_tr
-		local iqArm = vector.new(K.inverse_r_arm(trRGoal, qRArm))
+		local iqArm = vector.new(K.inverse_rarm(trRGoal, qRArm))
 		sanitize(iqArm, qRArm)
 		Body.set_rarm_command_position(iqArm)
 	end
@@ -205,8 +207,8 @@ setmetatable(char_lut, mt_tr)
 function show_status()
 	local qlarm = Body.get_larm_position()
 	local qrarm = Body.get_rarm_position()
-	local fkL = K.forward_l_arm(qlarm)
-	local fkR = K.forward_r_arm(qrarm)
+	local fkL = K.forward_larm(qlarm)
+	local fkR = K.forward_rarm(qrarm)
   local l_indicator = vector.zeros(#qlarm)
   l_indicator[selected_joint] = selected_arm==0 and 1 or 0
   local r_indicator = vector.zeros(#qlarm)

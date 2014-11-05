@@ -109,6 +109,10 @@ function Transform.position6D(tr)
   }
 end
 
+function Transform.position(tr)
+  return vnew{tr[1][4],tr[2][4],tr[3][4]}
+end
+
 -- Rotation Matrix to quaternion
 -- from Yida.  Adapted to take a transformation matrix
 function Transform.to_quaternion( t )

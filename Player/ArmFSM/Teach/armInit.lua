@@ -15,7 +15,6 @@ local T = require'Transform'
 local trRGoal = T.transform6D{0.12, -0.15, -0.28, 0, 30*DEG_TO_RAD, 0}
 local trLGoal = T.transform6D{0.12, 0.265, -0.32, 0, 30*DEG_TO_RAD, -20*DEG_TO_RAD}
 
-
 local lPathIter, rPathIter
 
 function state.entry()

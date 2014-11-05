@@ -22,12 +22,12 @@ function state.entry()
   t_update = t_entry
 	
 	local qR = Body.get_rarm_position()
-	local fR, paramR = K.forward_r_arm(qR)
+	local fR, paramR = K.forward_rarm(qR)
 	local trRGoal = fR * T.trans(0.10,0,0)
 	--local trRGoal = fR * T.trans(0,0.1,0)
 	--
 	local qL = Body.get_larm_position()
-	local fL, paramL = K.forward_l_arm(qL)
+	local fL, paramL = K.forward_larm(qL)
 	local trLGoal = fL
 	--
 	lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal, paramL, paramR)

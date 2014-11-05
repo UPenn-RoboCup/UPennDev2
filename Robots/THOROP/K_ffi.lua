@@ -160,17 +160,17 @@ end
 
 -- Forward with respect to the torso
 local preLArm, postLArm = Ttrans(shoulderOffsetX, shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, -handOffsetY, handOffsetZ)
-function K.forward_l_arm(qLArm)
+function K.forward_larm(qLArm)
 	return preLArm * fk_arm(qLArm) * postLArm, {qLArm[3]}
 end
 local preRArm, postRArm = Ttrans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, handOffsetY, handOffsetZ) * TrotZ(-45*DEG_TO_RAD)
-function K.forward_r_arm(qRArm)
+function K.forward_rarm(qRArm)
 	return preRArm * fk_arm(qRArm) * postRArm, {qRArm[3]}
 end
 
 -- Inverse with respect to the torso
 local preLArmInv, postLArmInv = Tinv(preLArm), Tinv(postLArm)
-function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
+function K.inverse_larm(trL, qLArm, shoulderYaw, flipRoll)
 	return ik_arm(
 		preLArmInv * trL * postLArmInv,
 		qLArm,
@@ -179,7 +179,7 @@ function K.inverse_l_arm(trL, qLArm, shoulderYaw, flipRoll)
 	)	
 end
 local preRArmInv, postRArmInv = Tinv(preRArm), Tinv(postRArm)
-function K.inverse_r_arm(trR, qRArm, shoulderYaw, flipRoll)
+function K.inverse_rarm(trR, qRArm, shoulderYaw, flipRoll)
 	return ik_arm(
 		preRArmInv * trR * postRArmInv,
 		qRArm,
@@ -202,12 +202,12 @@ local function fk_leg(q)
 end
 
 local preLLeg, postLLeg = Ttrans(0, hipOffsetY, -hipOffsetZ), TrotZ(PI) * TrotY(-PI/2) * Ttrans(0,0,-footHeight)
-function K.forward_l_leg(qLLeg)
+function K.forward_lleg(qLLeg)
 	return preLLeg * fk_leg(qLLeg) * postLLeg
 end
 
 local preRLeg, postRLeg = Ttrans(0, -hipOffsetY, -hipOffsetZ), TrotZ(PI) * TrotY(-PI/2) * Ttrans(0,0,-footHeight)
-function K.forward_r_leg(qRLeg)
+function K.forward_rleg(qRLeg)
 	return preRLeg * fk_leg(qRLeg) * postRLeg
 end
 
@@ -236,12 +236,12 @@ local function ik_leg(trLeg, hipOffset)
 end
 
 local offsetLHip = {0, hipOffsetY, -hipOffsetZ}
-function K.inverse_l_leg(trLLeg)
+function K.inverse_lleg(trLLeg)
 	return ik_leg(trLLeg, offsetLHip)
 end
 
 local offsetRHip = {0, -hipOffsetY, -hipOffsetZ}
-function K.inverse_r_leg(trRLeg)
+function K.inverse_rleg(trRLeg)
 	return ik_leg(trRLeg, offsetRHip)
 end
 

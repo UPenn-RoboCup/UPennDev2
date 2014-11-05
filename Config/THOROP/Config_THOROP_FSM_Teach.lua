@@ -15,12 +15,14 @@ fsm.enabled = {
 --  'Body',
 	'Arm',
   'Motion',
+	'Head'
 }
 
 --SJ: now we can have multiple FSM options 
 fsm.select = {
 	Arm = 'Teach',
   Body = 'Teach',
+	Head = 'Teach',
   Motion = 'Teach'
 }
 
@@ -28,6 +30,11 @@ fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   --
   {'bodyInit', 'done', 'bodyStop'},
+}
+
+fsm.Head = {
+  {'headIdle', 'init', 'headCenter'},
+	{'headCenter', 'trackhand', 'headTrackHand'},
 }
 
 fsm.Arm = {

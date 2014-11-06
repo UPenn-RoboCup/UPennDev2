@@ -436,7 +436,7 @@ Robot {
 								}
 								## End Right Leg
 								
-								## Begin  Left Leg
+								## Begin Left Leg
 								DEF Left_hip_yaw HingeJoint {
 									device RotationalMotor {
 										name "PelvYL"
@@ -448,7 +448,7 @@ Robot {
 									}
 									jointParameters HingeJointParameters {
 										axis 0 1 0
-										anchor -0.072 -0.232 0
+										anchor 0.072 -0.232 0
 									}
 									endPoint Solid {
 										translation 0.072 -0.232 0
@@ -835,14 +835,6 @@ Robot {
 				axis 0 1 0
 				anchor 0 0 0.1
 			} # End of the ChestLidarPan HingeJointParameters
-			#endPoint hokuyo {
-			#	name "ChestLidar"
-			#	width IS lidarRays
-			#	fieldOfView IS lidarFov
-				# Is if offset a bit from the axis, though?
-			#	translation 0 0 0.1
-			#	rotation 0.707107 -0.707107 0 3.14159
-			#}
       # We may remove the pan servo later
 			endPoint kinect2 {
 			  translation 0 0 0.1
@@ -852,10 +844,6 @@ Robot {
 			}
 		} # End of the ChestLidarPan HingeJoint
 ## End the Chest lidar chain
-    
-
-
-
 
 ## Begin the Right arm chain
     DEF Right_shoulder_pitch HingeJoint {

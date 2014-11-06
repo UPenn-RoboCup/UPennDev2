@@ -15,17 +15,71 @@ PROTO GRIPPER [
 		}
 		children [
 			Shape { geometry Box { size 0.08 0.005 0.08 } }
-			DEF PALM GRIPPER_PLATE {
+			
+			DEF PALM Solid {
 				translation 0.03 -0.04 0
-				size 0.02 0.08 0.08
+				children [
+					DEF PALM_PLATE Shape {
+						geometry Box { size 0.02 0.08 0.08 }
+			      appearance Appearance {
+			        material Material {
+			          diffuseColor 0.6 1 0.6
+			          emissiveColor 0.06 0.1 0.06
+			          shininess 0.5
+			          specularColor 0.12 0.2 0.12
+			        }
+			      }
+					}
+				]
+				boundingObject USE PALM_PLATE
+				physics Physics {
+					density -1
+					mass 0.01
+				}
 			}
-			DEF TRIGGER_NUB GRIPPER_PLATE {
-				translation -0.03 -0.01 0.03
-				size 0.02 0.02 0.02
-			}
-			DEF GRIP_NUB GRIPPER_PLATE {
+
+			DEF TRIGGER_NUB Solid {
 				translation -0.03 -0.01 -0.03
-				size 0.02 0.02 0.02
+				children [
+					DEF TRIGGER_NUB_PLATE Shape {
+						geometry Box { size 0.02 0.02 0.02 }
+			      appearance Appearance {
+			        material Material {
+			          diffuseColor 1 0.4 0.8
+			          emissiveColor 0.1 0.04 0.08
+			          shininess 0.5
+			          specularColor 0.2 0.08 0.16
+			        }
+			      }
+					}
+				]
+				boundingObject USE TRIGGER_NUB_PLATE
+				physics Physics {
+					density -1
+					mass 0.01
+				}
+			}
+			
+			DEF GRIP_NUB Solid {
+				translation -0.03 -0.01 0.03
+				children [
+					DEF GRIP_NUB_PLATE Shape {
+						geometry Box { size 0.02 0.02 0.02 }
+			      appearance Appearance {
+			        material Material {
+			          diffuseColor 0 0.75 1
+			          emissiveColor 0 0.075 0.1
+			          shininess 0.5
+			          specularColor 0 0.15 0.2
+			        }
+			      }
+					}
+				]
+				boundingObject USE GRIP_NUB_PLATE
+				physics Physics {
+					density -1
+					mass 0.01
+				}
 			}
 			
 # Begin Trigger
@@ -49,15 +103,25 @@ PROTO GRIPPER [
 						density -1
 						mass 0.01
 					}
-					children [
-						GRIPPER_PLATE { size 0.02 0.06 0.02 }
+					children[
+						Shape {
+							geometry Box { size 0.02 0.06 0.02 }
+				      appearance Appearance {
+				        material Material {
+				          diffuseColor 1 0.4 0.8
+				          emissiveColor 0.1 0.04 0.08
+				          shininess 0.5
+				          specularColor 0.2 0.08 0.16
+				        }
+				      }
+						}
 					]
 				}
 			}
 # End Trigger
 
 # Begin Grip
-			DEF Trigger HingeJoint {
+			DEF Grip HingeJoint {
 				device RotationalMotor {
 					name IS grip_name
 					#maxVelocity 5.65486677646
@@ -77,8 +141,18 @@ PROTO GRIPPER [
 						density -1
 						mass 0.01
 					}
-					children [
-						GRIPPER_PLATE { size 0.02 0.06 0.02 }
+					children[
+						Shape {
+							geometry Box { size 0.02 0.06 0.02 }
+				      appearance Appearance {
+				        material Material {
+				          diffuseColor 0 0.75 1
+				          emissiveColor 0 0.075 0.1
+				          shininess 0.5
+				          specularColor 0 0.15 0.2
+				        }
+				      }
+						}
 					]
 				}
 			}

@@ -130,8 +130,9 @@ if IS_WEBOTS then
   Config.wizards = {
 		feedback = 'feedback_wizard',
 		camera = 'camera_wizard',
+		kinect = 'kinect2_wizard',
 	}
-  Config.sensors = {ft = true, head_camera = true,}
+  Config.sensors = {ft = true, head_camera = true, kinect = true}
 end
 --]]
 

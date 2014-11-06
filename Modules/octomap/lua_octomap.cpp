@@ -120,7 +120,7 @@ static int lua_add_scan( lua_State *L ) {
 
 
 // Our primer normals
-point3d ground_normal = point3d(0.0f, 0.0f, 1.0f);
+const point3d ground_normal = point3d(0.0f, 0.0f, 1.0f);
 
 // Get the horizontal nodes in givein bbox
 // static vector<OcTreeKey> get_horizontal(lua_State *L) {
@@ -143,21 +143,42 @@ static int lua_get_horizontal(lua_State *L) {
   for(OcTree::leaf_bbx_iterator it = tree.begin_leafs_bbx(min,max),
          end=tree.end_leafs_bbx(); it!= end; ++it) {
       
+      if (fabs(it.getZ()-1)<0.05) {
+        candidates.push_back(it.getKey());
+      }
+
       tree.getNormals(it.getCoordinate(), normals);
-      printf("# of Normals: %d\n", normals.size());
-      // if (normals[1].angleTo(ground_normal) < DEG2RAD(2)) {
+      // printf("# of Normals: %d\n", normals.size());
+      // printf("point: %.2f %.2f %.2f\n", it.getX(), it.getY(), it.getZ());
+      // printf("1st normal: %.2f %.2f %.2f\n", normals[1].x(), normals[1].y(),normals[1].z());
+      
+      // if (normals[1].angleTo(ground_normal) < DEG2RAD(2)) { //TODO:something wrong
       //   printf("HEIGHT IS: %d", it.getZ());
       //   candidates.push_back(it.getKey());
       // }
 
   }
+  printf("# of cands %d\n", candidates.size());
   // return candidates;
   return 0;
 }
 
-// static void connected_region(vector<OcTreeKey> keys) {
-//
-// }
+
+//TODO: segmentaion thoughs: table, object, brackground
+
+
+//TODO: Region growing
+static void connected_region(vector<OcTreeKey> &keys, bool hor) {
+  if (hor) {
+    
+  } else {
+    
+  }
+  // Propagate
+  // if it's a sinlge layer
+  // if it's surrounded by 4 cells
+  
+}
 
 
 static int lua_get_pruned_data( lua_State *L ) {

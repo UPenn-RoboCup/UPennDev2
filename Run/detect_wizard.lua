@@ -76,12 +76,12 @@ local function transform(points, data)
     
     -- If the lidar is paning 
     if vcm.get_mesh_direction()==0 then
-      print('LIDAR IS PANNING...')
+      -- print('LIDAR IS PANNING...')
       xs:cmul(torch.cos(v_angles)):mul(math.cos(scan_angles[i]))
       ys:cmul(torch.cos(v_angles)):mul(math.sin(scan_angles[i]))
       zs:cmul(torch.sin(v_angles)):mul(-1):add(lidar_z)
     else    
-      print('LIDAR IS TILTING...')
+      -- print('LIDAR IS TILTING...')
       -- If the lidar is tilting
       -- TODO: verify if this is correct
       xs:cmul(torch.cos(v_angles)):mul(math.cos(scan_angles[i]))
@@ -173,7 +173,8 @@ mesh_ch.callback = function(skt)
   end
   --]]
   
-  -- octomap.get_horizontal(0, -0.5, 0.5, 0.8, 0.5, 1.5)
+  -- min x/y/z, max x/y/z
+  octomap.get_horizontal(0.1, -0.5, 1, 0.8, 0.5, 1.5)
   
   -- if unix.time()-td>5 and not saved then
   --   octomap.save_tree('test.bt')

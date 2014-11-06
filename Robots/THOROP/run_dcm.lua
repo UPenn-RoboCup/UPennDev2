@@ -218,8 +218,7 @@ local function form_arm_read_cmd(bus)
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
 		if is_mx then
 			-- Position through temperature (NOTE: No current)
-			table.insert(rd_addrs, {lD.nx_registers.position[1], 8})
-			arm_read_current = not arm_read_current
+			table.insert(rd_addrs, {lD.mx_registers.position[1], arm_packet_sz_mx})
 			has_mx = true
 		else
 			assert(
@@ -255,6 +254,7 @@ local function parse_read_arm(pkt, bus)
 			-- Set Position in SHM
 			local read_val = p_parse_mx(unpack(pkt.parameter, 1, arm_packet_offsets_mx[1]))
 			local read_rad = step_to_radian(read_j_id, read_val)
+			--print(m_id, 'Read val', read_val, unpack(pkt.parameter))
 			p_ptr[read_j_id - 1] = read_rad
 			p_ptr_t[read_j_id - 1] = t_read
 			-- Set temperature (Celsius)

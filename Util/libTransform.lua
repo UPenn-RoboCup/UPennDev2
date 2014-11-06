@@ -260,7 +260,7 @@ function libTransform.transform6D(p)
   return t
 end
 
-function libTransform.get_pos(tr)
+function libTransform.position(tr)
   return vector.new(tr:select(2,4):narrow(1,1,3))
 end
 

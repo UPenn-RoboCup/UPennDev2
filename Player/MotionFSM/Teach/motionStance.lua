@@ -79,9 +79,10 @@ function state.update()
   --print("uTorso, uLeft, uRight",uTorso, uLeft, uRight)
   --print('uTorsoMid0', uTorsoMid0, 'uTorsoMid', uTorsoMid)
   --moveleg.set_leg_positions_slowly(uTorso, uLeft, uRight, 0, 0, dt) -- just stay
-  mcm.set_status_uTorso(uTorsoMid)
   moveleg.set_leg_positions_slowly(uTorsoMid, uLeft, uRight, zLeft, zRight, dt)
   
+	-- Update the Shared memory
+	mcm.set_status_uTorso(uTorsoMid)
   mcm.set_status_uTorsoVel({0,0,0})
   local steprequest = mcm.get_walk_steprequest()    
   if steprequest>0 then return "done_step" end

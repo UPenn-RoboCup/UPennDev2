@@ -43,7 +43,7 @@ PROTO GRIPPER [
 					anchor -0.03 -0.02 0.03
 				}
 				endPoint Solid {
-					translation -0.03 -0.05 0.03
+					translation -0.03 -0.05 -0.03
 					boundingObject Box { size 0.02 0.06 0.02 }
 					physics Physics {
 						density -1
@@ -71,7 +71,7 @@ PROTO GRIPPER [
 					anchor -0.03 -0.02 -0.03
 				}
 				endPoint Solid {
-					translation -0.03 -0.05 -0.03
+					translation -0.03 -0.05 0.03
 					boundingObject Box { size 0.02 0.06 0.02 }
 					physics Physics {
 						density -1

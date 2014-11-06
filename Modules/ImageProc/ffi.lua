@@ -17,6 +17,7 @@ local RadonTransform = require'ImageProc.ffi.RadonTransform'
 local w, h, wa, ha, wb, hb
 -- Form the labelA and labelB tensors
 local labelA_t, labelB_t = torch.ByteTensor(), torch.ByteTensor()
+local labelA_d, labelB_d
 -- Color Count always the same, as 8 bits for 8 colors means 256 color combos
 local cc_t = torch.IntTensor(256)
 -- The pointer will not change for this one
@@ -25,7 +26,7 @@ local cc_d = cc_t:data()
 local luts = {}
 -- Downscaling
 local scaleA, scaleB, log_sA, log_sB
-local log2 = {[1] = 0, [2] = 1, [4] = 2, [8] = 3,}
+local log2 = {[1] = 0, [2] = 1, [4] = 2, [8] = 3, [16] = 4, [32] = 5, [64] = 6}
 -- For the edge system
 local edge_t = torch.Tensor()
 local grey_t = torch.Tensor()
@@ -62,7 +63,7 @@ function ImageProc.yuyv_to_label(yuyv_ptr, lut_ptr)
   local lut_d = ffi.cast("uint8_t*", lut_ptr)
   -- Temporary variables for the loop
   -- NOTE: 4 bytes yields 2 pixels, so stride of (4/2)*w
-  local a_ptr, stride, yuyv = labelA_t:data(), w / 2
+  local a_ptr, stride, yuyv = labelA_d, w / 2
   for j=0,ha-1 do
     for i=0,wa-1 do
       yuyv = yuyv_d[0]
@@ -82,6 +83,18 @@ function ImageProc.yuyv_to_label(yuyv_ptr, lut_ptr)
   end
   --
   return labelA_t
+end
+
+local cc_d = ffi.new('int[256]')
+local cc_n = ffi.sizeof(cc_d)
+function ImageProc.color_countA(label_t)
+  -- Reset the color count
+  ffi.fill(cc_d, cc_n)
+  -- Loop variables
+  for i=0,np_a-1 do
+		cc_d[labelA_d[i]] = cc_d[labelA_d[i]] + 1
+	end
+  return cc_d
 end
 
 function ImageProc.color_count(label_t)
@@ -502,6 +515,7 @@ function ImageProc.setup(w0, h0, sA, sB)
   -- Resize as needed
   labelA_t:resize(ha, wa)
   labelB_t:resize(hb, wb)
+	labelA_d, labelB_d = labelA_t:data(), labelB_t:data()
   -- Select faster bit_or
   if scaleB==2 then
     ImageProc.block_bitor = block_bitor2

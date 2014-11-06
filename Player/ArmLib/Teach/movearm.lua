@@ -1,7 +1,7 @@
-local movearm={}
-local Body   = require'Body'
-local T      = require'Transform'
-local util   = require'util'
+local movearm = {}
+local Body = require'Body'
+local T = require'Transform'
+local util = require'util'
 local vector = require'vector'
 local P = require'libPlan'
 require'hcm'
@@ -12,13 +12,13 @@ local lPlanner = P.new_planner(K,
 	vector.slice(Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
 	vector.new{15,10,20, 15, 20,20,20}*DEG_TO_RAD
 )
-lPlanner:set_chain(K.forward_l_arm, K.inverse_l_arm)
+lPlanner:set_chain(K.forward_larm, K.inverse_larm)
 local rPlanner = P.new_planner(K,
 	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]), 
 	vector.slice(Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
 	vector.new{15,10,20, 15, 20,20,20}*DEG_TO_RAD -- Angular speedlimits
 )
-rPlanner:set_chain(K.forward_r_arm, K.inverse_r_arm)
+rPlanner:set_chain(K.forward_rarm, K.inverse_rarm)
 
 -- TODO: Add dt into the joint iterator
 local dqLimit = DEG_TO_RAD / 3
@@ -28,12 +28,12 @@ function movearm.goto_tr_via_q(lwrist, rwrist, loptions, roptions)
 	local lPathIter, rPathIter
 	if lwrist then
 		local qLArm = Body.get_larm_command_position()
-		local iqLArm = K.inverse_l_arm(lwrist, qLArm, unpack(loptions))
+		local iqLArm = K.inverse_larm(lwrist, qLArm, unpack(loptions))
 		lPathIter = lPlanner:joint_iter(iqLArm, qLArm, dqLimit)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
-		local iqRArm = K.inverse_r_arm(rwrist, qRArm, unpack(roptions))
+		local iqRArm = K.inverse_rarm(rwrist, qRArm, unpack(roptions))
 		rPathIter = rPlanner:joint_iter(iqRArm, qRArm, dqLimit)
 	end
 	return lPathIter, rPathIter

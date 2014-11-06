@@ -54,7 +54,7 @@ local right_arm = {
         --head
 --        29, 30,
 				-- gripper
---				66, 67
+				66, 67
         },
 	enable_read = true,
 }
@@ -248,7 +248,7 @@ servo.rad_offset = vector.new({
   90,-90,90,-45,-90,0,0, --RArm
   0,0, -- Waist
   0,0, -- left gripper
-  -20, 26, -- right gripper
+  35, -35, -- right gripper
   0, -- Lidar pan
 })*DEG_TO_RAD
 
@@ -415,7 +415,7 @@ if IS_WEBOTS then
     -- TODO: Check the gripper
     -1,1, -- Waist
     1,-1, -- left gripper
-    -1,-1, -- right gripper
+    1,1, -- right gripper
 
     1, -- Lidar pan
   })

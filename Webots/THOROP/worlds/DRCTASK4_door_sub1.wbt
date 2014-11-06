@@ -4,12 +4,12 @@ WorldInfo {
     "Valve operating test for DRC"
   ]
   title "doortest"
-  basicTimeStep 40
+  basicTimeStep 30
   FPS 15
 }
 Viewpoint {
-  orientation 0.165612 0.902369 0.397873 3.84338
-  position -3.57194 7.21729 -3.60315
+  orientation 0.106719 0.905508 0.41069 3.58747
+  position -3 3 -1
 }
 Background {
   skyColor [
@@ -17,7 +17,7 @@ Background {
   ]
 }
 DirectionalLight {
-  ambientIntensity 1.6
+  ambientIntensity 0.8
   direction -0.5 -2 -0.5
   intensity 0.3
   castShadows TRUE
@@ -26,10 +26,13 @@ DirectionalLight {
   direction 0.5 -0.5 0.5
   intensity 0.5
 }
-DEF FLOOR MetricFloor {
-  color 0.95 0.95 0.95
+DEF FLOOR Floor {
+  size 12 12
+  texture [
+    "textures/texture_grid.png"
+  ]
 }
-THOROP7_NoBoundaries_LongClaw2 {
+THOROP_UPENN {
   translation -2.3 1.15535 0.6
   rotation 0 1 0 1.57
   controller "thorop"

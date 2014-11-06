@@ -4,7 +4,7 @@ WorldInfo {
     "Valve operating test for DRC"
   ]
   title "doortest"
-  basicTimeStep 40
+  basicTimeStep 30
   FPS 15
 }
 Viewpoint {
@@ -32,7 +32,7 @@ DEF FLOOR Floor {
     "textures/texture_grid.png"
   ]
 }
-THOROP7_Update {
+THOROP_UPENN {
   translation -2.9 1.15535 0.6
   rotation 0 1 0 1.57
   controller "thorop"
@@ -50,8 +50,6 @@ SingleDoorEntreeHandleUpWeighted_33 {
   translation 2 0 0.6
   rotation 0 1 0 1.57
 }
-
-simple_wall {}
 
 Solid {
   translation 0 1 1.8

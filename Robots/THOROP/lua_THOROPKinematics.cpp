@@ -400,7 +400,7 @@ static int inverse_l_leg(lua_State *L) {
 	std::vector<double> qLeg;
 	std::vector<double> pLeg = lua_checkvector(L, 1);
 	Transform trLeg = transform6D(&pLeg[0]);
-	qLeg = THOROP_kinematics_inverse_r_leg(trLeg);
+	qLeg = THOROP_kinematics_inverse_l_leg(trLeg);
 	lua_pushvector(L, qLeg);
 	return 1;
 }
@@ -409,7 +409,7 @@ static int inverse_r_leg(lua_State *L) {
 	std::vector<double> qLeg;
 	std::vector<double> pLeg = lua_checkvector(L, 1);
 	Transform trLeg = transform6D(&pLeg[0]);
-	qLeg = THOROP_kinematics_inverse_l_leg(trLeg);
+	qLeg = THOROP_kinematics_inverse_r_leg(trLeg);
 	lua_pushvector(L, qLeg);
 	return 1;
 }
@@ -423,6 +423,16 @@ static int inverse_legs(lua_State *L) {
 	Transform trLLeg = transform6D(&pLLeg[0]);
 	Transform trRLeg = transform6D(&pRLeg[0]);
 	Transform trTorso = transform6D(&pTorso[0]);
+	
+	/*
+	printf("inv(trTorso)\n");
+	printTransform(inv(trTorso));
+	printf("trLLeg\n");
+	printTransform(trLLeg);
+	printf("trRLeg\n");
+	printTransform(trRLeg);
+	*/
+	
 	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
 	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
 

@@ -112,7 +112,7 @@ local function update_head()
 
   trHead = trNeck * dtrCamera
   -- Grab the position only
-  vHead = T.get_pos(trHead)
+  vHead = T.position(trHead)
 end
 
 local function bboxB2A(bboxB)

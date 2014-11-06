@@ -48,7 +48,7 @@ DEF STEP1 WoodBox {
 #   boxSize 1 0.2 0.2
 # }
 
-THOROP_UPENN {
+THOROP_UPENN_kinect {
   translation 1 1.155 -0.2
   rotation 0 1 0 -1.57
   controller "thorop"

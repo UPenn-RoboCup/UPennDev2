@@ -20,9 +20,9 @@ Config.use_localhost = false
 Config.sensors = {
   ft = true,
   head_camera = true,
-  chest_lidar = true,
+  chest_lidar = false,
   head_lidar = false,
-  kinect = false,
+  kinect = true,
   fsr = false,
 }
 Config.wizards = {}
@@ -124,9 +124,9 @@ if IS_WEBOTS then
   -- Tune which wizards to run in webots
   Config.wizards = {
     feedback = 'feedback_wizard',
-    mesh = 'mesh_wizard',
+    mesh = Config.sensors.chest_lidar and 'mesh_wizard',
     world = 'world_wizard',
-    camera = 'camera_wizard',
+    camera = Config.sensors.head_camera and 'camera_wizard',
     detect = 'detect_wizard',
   }  
   -- Adjust the tiemsteps if desired

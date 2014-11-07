@@ -595,18 +595,19 @@ if IS_WEBOTS then
       local w = webots.wb_camera_get_width(tags.kinect)
       local h = webots.wb_camera_get_height(tags.kinect)
       -- TODO: fov? res?
-			local metadata = {}
 			local rgb = {
 				data = webots.to_rgb(tags.kinect),
 				width = w,
 				height = h,
+				t = t,
 			}
 			local depth = {
 				data = webots.wb_camera_get_range_image(tags.kinect),
 				width = w,
 				height = h,
+				t = t,
 			}
-			WebotsBody.update_chest_kinect(metadata, rgb, depth)
+			WebotsBody.update_chest_kinect(rgb, depth)
 			NEXT_KINECT = t + kinect_timeStep / 1000
     end
     

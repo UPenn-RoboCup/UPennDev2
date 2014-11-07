@@ -11,7 +11,7 @@ local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
 local c_rgb = require'jpeg'.compressor('rgb')
 
 local cnt = 0
-local function update(metadata, rgb, depth)
+local function update(rgb, depth)
   cnt = cnt + 1
   if cnt % 5 == 0 then
 	  -- Send color
@@ -34,7 +34,7 @@ if ... and type(...)=='string' then
 	return {entry=nil, update=update, exit=nil}
 end
 
-local freenects2 = require'freenect2'
+local freenect2 = require'freenect2'
 
 local function entry()
   local serial_number, firmware_version = freenect2.init()
@@ -62,7 +62,9 @@ entry()
 while running do
 	local rgb, depth, ir = freenect2.update()
 	local t = get_time()
-	update({}, rgb, depth)
+	rgb.t = t
+	depth.t = t
+	update(rgb, depth)
 	if t-t_debug>1 then
 		t_debug = t
 		local kb = collectgarbage('count')

@@ -32,7 +32,8 @@ DEF FLOOR Floor {
     "textures/texture_grid.png"
   ]
 }
-THOROP_UPENN {
+#THOROP_UPENN {
+THOROP_UPENN_kinect {
   translation -2.3 1.15535 0.6
   rotation 0 1 0 1.57
   controller "thorop"

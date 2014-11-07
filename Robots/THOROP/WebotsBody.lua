@@ -32,10 +32,10 @@ function WebotsBody.update_chest_lidar(metadata, ranges)
 	if mw then mw.update(metadata, ranges) end
 end
 
-function WebotsBody.update_chest_kinect(metadata, rgb, depth)
+function WebotsBody.update_chest_kinect(rgb, depth)
 	depth.bpp = ffi.sizeof('float')
 	depth.data = ffi.string(depth.data, depth.width*depth.height*depth.bpp)
-	if kw then kw.update(metadata, rgb, depth) end
+	if kw then kw.update(rgb, depth) end
 end
 
 function WebotsBody.update(keycode)

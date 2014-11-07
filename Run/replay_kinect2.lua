@@ -1,5 +1,5 @@
 dofile'../include.lua'
-local LOG_DATE = '10.03.2014.14.27.30' --'10.03.2014.13.18.48'
+local LOG_DATE = '11.07.2014.10.25.37' --'10.03.2014.13.18.48'
 
 local libLog = require'libLog'
 local replay_depth = libLog.open(HOME..'/Data/', LOG_DATE, 'k2_depth')

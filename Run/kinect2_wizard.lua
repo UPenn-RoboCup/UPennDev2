@@ -76,3 +76,4 @@ while running do
 	collectgarbage'step'
 end
 exit()
+

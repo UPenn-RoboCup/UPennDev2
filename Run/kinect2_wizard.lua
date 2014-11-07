@@ -18,6 +18,7 @@ local function update(metadata, rgb, depth)
 	  local j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
 	  rgb.data = nil
 	  rgb.sz = #j_rgb
+		rgb.c = 'jpeg'
     color_ch:send({mpack(rgb), j_rgb})
 	  -- Send depth (TODO: zlib)
 	  local ranges = depth.data

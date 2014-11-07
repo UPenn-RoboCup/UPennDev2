@@ -17,7 +17,7 @@ PROTO GRIPPER [
 			Shape { geometry Box { size 0.08 0.005 0.08 } }
 			
 			DEF PALM Solid {
-				translation 0.03 -0.04 0
+				translation -0.03 -0.04 0
 				children [
 					DEF PALM_PLATE Shape {
 						geometry Box { size 0.02 0.08 0.08 }
@@ -37,13 +37,14 @@ PROTO GRIPPER [
 					mass 0.01
 				}
 			}
-
+			
+# Begin Trigger
 			DEF TRIGGER_NUB Solid {
-				translation -0.03 -0.01 -0.03
+				translation 0.03 -0.01 -0.03
 				children [
 					DEF TRIGGER_NUB_PLATE Shape {
 						geometry Box { size 0.02 0.02 0.02 }
-			      appearance Appearance {
+			      appearance DEF ROBOT_PINK Appearance {
 			        material Material {
 			          diffuseColor 1 0.4 0.8
 			          emissiveColor 0.1 0.04 0.08
@@ -52,6 +53,34 @@ PROTO GRIPPER [
 			        }
 			      }
 					}
+					DEF TRIGGER HingeJoint {
+						device RotationalMotor {
+							name IS trigger_name
+							#maxVelocity 5.65486677646
+							maxTorque 8
+							# Not sure of these...
+							minPosition -2.92343
+							maxPosition 2.92343
+						}
+						jointParameters HingeJointParameters {
+							axis 0 0 1
+							anchor 0 -0.01 0
+						}
+						endPoint Solid {
+							translation 0 -0.04 0
+							boundingObject Box { size 0.02 0.06 0.02 }
+							physics Physics {
+								density -1
+								mass 0.01
+							}
+							children[
+								Shape {
+									geometry Box { size 0.02 0.06 0.02 }
+						      appearance USE ROBOT_PINK
+								}
+							]
+						}
+					}
 				]
 				boundingObject USE TRIGGER_NUB_PLATE
 				physics Physics {
@@ -59,13 +88,15 @@ PROTO GRIPPER [
 					mass 0.01
 				}
 			}
-			
+# End Trigger
+
+# Begin Grip
 			DEF GRIP_NUB Solid {
-				translation -0.03 -0.01 0.03
+				translation 0.03 -0.01 0.03
 				children [
 					DEF GRIP_NUB_PLATE Shape {
 						geometry Box { size 0.02 0.02 0.02 }
-			      appearance Appearance {
+			      appearance DEF ROBOT_BLUE Appearance {
 			        material Material {
 			          diffuseColor 0 0.75 1
 			          emissiveColor 0 0.075 0.1
@@ -74,86 +105,39 @@ PROTO GRIPPER [
 			        }
 			      }
 					}
+					DEF Grip HingeJoint {
+						device RotationalMotor {
+							name IS grip_name
+							#maxVelocity 5.65486677646
+							maxTorque 8
+							# Not sure of these...
+							minPosition -2.92343
+							maxPosition 2.92343
+						}
+						jointParameters HingeJointParameters {
+							axis 0 0 1
+							anchor 0 -0.01 0
+						}
+						endPoint Solid {
+							translation 0 -0.04 0
+							boundingObject Box { size 0.02 0.06 0.02 }
+							physics Physics {
+								density -1
+								mass 0.01
+							}
+							children[
+								Shape {
+									geometry Box { size 0.02 0.06 0.02 }
+						      appearance USE ROBOT_BLUE
+								}
+							]
+						}
+					}
 				]
 				boundingObject USE GRIP_NUB_PLATE
 				physics Physics {
 					density -1
 					mass 0.01
-				}
-			}
-			
-# Begin Trigger
-			DEF Trigger HingeJoint {
-				device RotationalMotor {
-					name IS trigger_name
-					#maxVelocity 5.65486677646
-					maxTorque 8
-					# Not sure of these...
-					minPosition -2.92343
-					maxPosition 2.92343
-				}
-				jointParameters HingeJointParameters {
-					axis 0 0 1
-					anchor -0.03 -0.02 0.03
-				}
-				endPoint Solid {
-					translation -0.03 -0.05 -0.03
-					boundingObject Box { size 0.02 0.06 0.02 }
-					physics Physics {
-						density -1
-						mass 0.01
-					}
-					children[
-						Shape {
-							geometry Box { size 0.02 0.06 0.02 }
-				      appearance Appearance {
-				        material Material {
-				          diffuseColor 1 0.4 0.8
-				          emissiveColor 0.1 0.04 0.08
-				          shininess 0.5
-				          specularColor 0.2 0.08 0.16
-				        }
-				      }
-						}
-					]
-				}
-			}
-# End Trigger
-
-# Begin Grip
-			DEF Grip HingeJoint {
-				device RotationalMotor {
-					name IS grip_name
-					#maxVelocity 5.65486677646
-					maxTorque 8
-					# Not sure of these...
-					minPosition -2.92343
-					maxPosition 2.92343
-				}
-				jointParameters HingeJointParameters {
-					axis 0 0 1
-					anchor -0.03 -0.02 -0.03
-				}
-				endPoint Solid {
-					translation -0.03 -0.05 0.03
-					boundingObject Box { size 0.02 0.06 0.02 }
-					physics Physics {
-						density -1
-						mass 0.01
-					}
-					children[
-						Shape {
-							geometry Box { size 0.02 0.06 0.02 }
-				      appearance Appearance {
-				        material Material {
-				          diffuseColor 0 0.75 1
-				          emissiveColor 0 0.075 0.1
-				          shininess 0.5
-				          specularColor 0 0.15 0.2
-				        }
-				      }
-						}
-					]
 				}
 			}
 # End Grip

@@ -7,7 +7,7 @@ PROTO kinect2 [
   field SFInt32 width 320
   field SFInt32 height 190
   field SFFloat fieldOfView 1.2217 #70 horizontal
-  field SFFloat maxRange 3.5
+  field SFFloat maxRange 8
   field SFFloat colorNoise 0.0
   field SFFloat rangeNoise 0.0
   field SFString name "kinect"

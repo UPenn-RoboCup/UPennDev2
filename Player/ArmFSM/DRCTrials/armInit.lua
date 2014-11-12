@@ -38,12 +38,14 @@ function state.entry()
   local qRArm = Body.get_rarm_command_position()
 
 
-print(string.format("qLArmr: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
+print(string.format("Current L Arm: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
 unpack(qLArm*RAD_TO_DEG)
 ))
 
 
 
+print(Config.arm.pLWristTarget0)
+print(Config.arm.lShoulderYaw0)
 
   local qLWrist = Body.get_inverse_lwrist(
     qLArm,
@@ -56,15 +58,12 @@ unpack(qLArm*RAD_TO_DEG)
 
   qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)
   qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
-
-
+  --qLArmTarget = {0,0,0,0}
+print("qLWrist: %.2f",qLWrist)
+print("lrpy0: %.2f", Config.arm.lrpy0)
 print(string.format("QLArmTarget: %.2f %.2f %.2f %.2f",
 unpack( vector.new(qLArmTarget)*RAD_TO_DEG)
 ))
-
-
-
-
 
 
   mcm.set_stance_enable_torso_track(0)
@@ -84,9 +83,10 @@ unpack( vector.new(qLArmTarget)*RAD_TO_DEG)
       Body.set_rarm_command_acceleration({50,50,50,50,50,50,50})
       unix.usleep(1e6*0.01);
     end
-  end
 --]]
-end
+  end
+
+
 
 function state.update()
   local t  = Body.get_time()
@@ -114,6 +114,7 @@ qLArmTarget[4]*Body.RAD_TO_DEG
 
 ))
 --]]
+
   local ret = movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)
   if ret==1 then return "done" end
 end
@@ -149,12 +150,7 @@ function state.exit()
 --]]
 
 
-print("qRArm:",
-
-unpack(vector.new(qRArmTarget)*180/math.pi))
-
-
-
+--print("qRArm:", unpack(vector.new(qRArmTarget)*180/math.pi))
   print(state._NAME..' Exit' )
 end
 

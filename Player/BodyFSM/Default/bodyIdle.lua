@@ -23,8 +23,8 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
-  t_update = t
-
+  t_updae = t
+  print("Default Folder")
   local gamestate = gcm.get_game_state()
   if gamestate~=5 then return 'init' end --5 is idle state 
 
@@ -38,6 +38,7 @@ function state.update()
 end
 
 function state.exit()
+  print("Default Folder")
   print(state._NAME..' Exit' )
 end
 

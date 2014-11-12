@@ -962,6 +962,17 @@ Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)
   local passed = check_rarm_bounds(qR_target) and check_ik_error( trR, trR_check)
   if passed then return qR_target end
 end
+
+Body.get_inverse_rleg = function( trRleg )
+  local qRleg_target = Kinematics.inverse_leg(trRleg,LEG_RIGHT)
+  return qRleg_target
+end
+
+Body.get_inverse_lleg = function( trLleg )
+  local qLleg_target = Kinematics.inverse_leg(trLleg,LEG_LEFT)
+  return qLleg_target
+end
+
 --
 
 ---------------------------------------------

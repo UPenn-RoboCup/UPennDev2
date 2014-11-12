@@ -31,6 +31,7 @@ function state.update()
 end
 
 function state.exit()
+  print("Folder check")
   print(state._NAME..' Exit' )
 end
 

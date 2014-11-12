@@ -20,7 +20,7 @@ local timeout = 15.0
 
 local qLArm0,qRArm0
 
-local qArmCurrent, qArmTarget
+local qRArmCurrent, qRArmTarget, qLArmTarget, qLArmCurrent
 local wheel_angle = 0
 
 function state.entry()
@@ -31,6 +31,7 @@ function state.entry()
   t_update = t_entry
   t_finish = t
 
+  --print("Dance Entry")
   stage = 1
 
   qLArm0 = Body.get_larm_command_position()
@@ -41,8 +42,12 @@ function state.entry()
   qArmTarget =  Body.get_larm_command_position()
 --]]
 
-  qArmCurrent =  Body.get_rarm_command_position()
-  qArmTarget =  Body.get_rarm_command_position()
+  qRArmCurrent =  Body.get_rarm_command_position()
+  qRArmTarget  =  Body.get_rarm_command_position()
+
+  qLArmCurrent =  Body.get_larm_command_position()
+  qLArmTarget  =  Body.get_larm_command_position()
+  print(qLArmTarget)
 
   local pg = 4
   local tg = 16
@@ -59,38 +64,71 @@ end
 function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
+  local i = 1
+  local j = 1
   -- Save this at the last update time
   t_update = t
 --  print(state._NAME..' Update' )
 
 --  wheel_angle = wheel_angle + hcm.get_drive_wheel_angle()
   wheel_angle = hcm.get_drive_wheel_angle()
-
 --[[
-  local qArmTarget = {
-    qLArm0[1],qLArm0[2],qLArm0[3],
-    qLArm0[4],qLArm0[5],qLArm0[6],
-    qLArm0[7]+wheel_angle,
-  }
-
-  qArmCurrent = util.approachTolRad(qArmCurrent, qArmTarget,
-    vector.new({0,0,0,0,0,0,1})*45*math.pi/180,dt)
-
-  Body.set_larm_command_position(qArmCurrent)  
---]]  
-  local qArmTarget = {
+  local qRArmTarget = {
     qRArm0[1],qRArm0[2],qRArm0[3],
     qRArm0[4],qRArm0[5],qRArm0[6],
-    qRArm0[7]+wheel_angle,
+    qRArm0[7],
   }
+   local qLArmTarget = {
+    qLArm0[1],qLArm0[2],qLArm0[3],
+    qLArm0[4],qLArm0[5],qLArm0[6],
+    qLArm0[7],
+  }
+  --]]
+  qRArmCurrent =  Body.get_rarm_command_position()
+  qLArmCurrent =  Body.get_larm_command_position()
 
-  qArmCurrent = util.approachTol(qArmCurrent, qArmTarget,
-    vector.new({0,0,0,0,0,0,1})*45*math.pi/180,dt)
+  --for i=1,20 do
+    for j=1,7 do
+      qRArmTarget[j] = -5*180*3.14+qRArmCurrent[j]
+      qLArmTarget[j] = 5*180*3.14+qLArmCurrent[j]
+    end
 
-  Body.set_rarm_command_position({0,0,0,0,0,0,0})
-  Body.set_larm_command_position({0,0,0,0,0,0,0})
+    --qRArmCurrent = util.approachTol(qRArmCurrent, qRArmTarget,
+    --vector.new({0,0,0,0,0,0,1})*45*math.pi/180,dt)
+    --qLArmCurrent = util.approachTol(qLArmCurrent, qLArmTarget,
+    --vector.new({0,0,0,0,0,0,1})*45*math.pi/180,dt)
 
-  --Body.set_rarm_command_position(qArmCurrent)  
+
+  --Body.set_rarm_command_position(qRArmCurrent) 
+  
+    Body.set_rarm_command_position(qRArmTarget)
+    Body.set_larm_command_position(qLArmTarget) 
+    
+    --print("i = ")
+    --print(i)
+    unix.usleep(10000);
+
+  --end
+--[[
+  for i=1,20 do
+    for j=1,7 do
+      qRArmTarget[j] = i/180*3.14+qRArmCurrent[j]
+      qLArmTarget[j] = i/180*3.14+qLArmCurrent[j]
+    end 
+  
+    Body.set_rarm_command_position(qRArmTarget)
+    Body.set_larm_command_position(qLArmTarget) 
+    
+    print("i = ")
+    print(i)
+    unix.usleep(1000000);
+
+  end
+  
+  --unix.usleep(10000);
+  --]]
+
+
 end
 
 function state.exit()

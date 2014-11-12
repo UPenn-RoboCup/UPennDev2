@@ -16,7 +16,8 @@ Config.dev = {
 	gender       = 'boy',
 }
 
-Config.use_localhost = false
+--Config.use_localhost = false
+Config.use_localhost = true
 Config.wizards = {}
 Config.sensors = {
   ft = true,
@@ -102,7 +103,7 @@ Config.testfile = 'test_robocup'
 Config.libs.World = 'RoboCup'
 local exo = {
   'Robot','Walk','Net','Manipulation',
-  'FSM_SiteVisitCombined','World_RoboCup','Vision_RoboCup' 
+  'FSM_HJ','World_RoboCup','Vision_RoboCup' 
 }
 
 --[[
@@ -115,7 +116,8 @@ local exo = {
 Config.sensors.chest_lidar = false
 Config.wizards.test = nil
 Config.wizards.mesh = nil
-Config.testfile = 'test_sitevisit'
+Config.testfile = 'test_webot_hj'
+--Config.testfile = 'test_arms_new'
 --]]
 
 

@@ -53,10 +53,10 @@ function state.entry()
         mcm.get_stance_bodyTilt(), 0,0)        
   uTorsoComp0 = {-com[1]/com[4],-com[2]/com[4]}
 
-print("bodyTilt:",mcm.get_stance_bodyTilt())
-print("qLArm:",unpack(qLArm0))
-print("UTorsoComp0:",unpack(uTorsoComp0))
-print("armplanner:",unpack(mcm.get_stance_uTorsoCompBias() ) )
+  print("bodyTilt:",mcm.get_stance_bodyTilt())
+  print("qLArm:",unpack(qLArm0))
+  print("UTorsoComp0:",unpack(uTorsoComp0))
+  print("armplanner:",unpack(mcm.get_stance_uTorsoCompBias() ) )
 
 --  arm_planner:reset_torso_comp(qLArm0, qRArm0)
 --  arm_planner:save_boundary_condition({qLArm0, qRArm0, qLArm0, qRArm0, {0,0}})

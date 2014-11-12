@@ -46,7 +46,9 @@ function state.update()
 
   local qWaist = Body.get_waist_command_position()
   local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()    
+  local qRArm = Body.get_rarm_command_position() 
+  local qLLeg = Body.get_lleg_command_position()
+  local qRLeg = Body.get_rleg_command_position()    
   local uTorso = mcm.get_status_uTorso()  
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
@@ -72,9 +74,10 @@ function state.update()
   local uTorsoComp = mcm.get_stance_uTorsoComp()
   local uTorsoCompensated = util.pose_global(
      {uTorsoComp[1],uTorsoComp[2],0},uTorso)
-  mcm.set_stance_bodyHeight(bodyHeight)  
-  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
-    0,0,delta_legs)
+  mcm.set_stance_bodyHeight(bodyHeight)
+
+  --moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  0,0,delta_legs)
+  
   mcm.set_status_uTorsoVel({0,0,0})
   local steprequest = mcm.get_walk_steprequest()    
   if steprequest>0 then return "done_step" end

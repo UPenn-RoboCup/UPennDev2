@@ -20,7 +20,7 @@ local function update()
   feedback.height = mcm.get_stance_bodyHeight()
   feedback.battery = Body.get_battery()
 	ret, err = feedback_udp_ch:send(mpack(feedback))
-	if err then print('Feedback UDP error',err) end
+--	if err then print('Feedback UDP error',err) end
 end
 
 -- If required from Webots, return the table

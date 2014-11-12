@@ -1066,7 +1066,7 @@ THOROP_kinematics_inverse_joints(const double *q)  //dereks code to write
 
   std::vector<double>
 THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist) {
-  //calculate soulder and elbow angle given wrist POSITION
+  //calculate shoulder and elbow angle given wrist POSITION
   // Shoulder yaw angle is given
 
   Transform t;

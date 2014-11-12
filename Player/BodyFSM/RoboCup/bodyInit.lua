@@ -50,13 +50,13 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
-
   --TODO: Check whether all FSMs have done initialzing 
   return 'done'
 
 end
 
 function state.exit()
+  print("Robocup Folder")
   print(state._NAME..' Exit' )
   t_exit = Body.get_time()
 end

@@ -26,16 +26,18 @@ local qLArm1, qRArm1,qLLeg1,qRLeg1,qWaist1
 
 
 
-local slow_down_factor = 2
+local slow_down_factor = 1
 
 
 local keyframe={
+--#1
   {
     qLArm = {150,10,0,-140,   90,70,0},
     qRArm = {150,-10,0,-140,   -90,-70,0},
     qWaist={0,0},
     duration = 2.0*slow_down_factor,
   },
+--#2
   {    
     qLArm = {130,5,0,-140,   90,70,0},
     qRArm = {130,-5,0,-140,   -90,-70,0},    
@@ -43,7 +45,7 @@ local keyframe={
     qRLeg={0,-5,15,30,-100,5},
     duration = 4.0*slow_down_factor,
   },
-
+--#3
   {    
     qLArm = {0,0,0,-20,   90,85,0},
     qRArm = {0,0,0,-20,   -90,-85,0},    
@@ -52,7 +54,7 @@ local keyframe={
     qWaist={0,-45},
     duration = 4.0*slow_down_factor,
   },
-  
+--#4
  {    
     qLArm = {-20,0,0,-20,   90,  60,0},
     qRArm = {-20,0,0,-20,   -90, -60,0},    
@@ -62,30 +64,30 @@ local keyframe={
     duration = 4.0*slow_down_factor,
   },
   
---larm fold back 
+--#5 larm fold back 
   {    
     qLArm = {40,0,0,  -100,   90,  30,0},    
     duration = 1.0*slow_down_factor,
   },
---larm place 
+--#6 larm place 
   {    
     qLArm = {35,0,0,  -70,   90,  0,0},    
     duration = 1.0*slow_down_factor,
   },
 
---rarm fold back 
+--#7 rarm fold back 
   {    
     qRArm = {40,0,0,  -100,   -90,  -30,0},    
     duration = 1.0*slow_down_factor,
   },
---rarm place 
+--#8 rarm place 
   {    
     qRArm = {35,0,0,  -70,   -90,  0,0},    
     duration = 1.0*slow_down_factor,
   },
 
 
---both arm push
+--#9 both arm push
   {    
     qLArm = {50,0,0,  -20,   90,  0,0},    
     qRArm = {50,0,0,  -20,   -90,  0,0},    
@@ -93,23 +95,23 @@ local keyframe={
     duration = 4.0*slow_down_factor,
   },
 
---arm backward
+--#10 arm backward
   {    
     qLArm = {130,10,0,  0,   90,  0,0},    
     qRArm = {130,-10,0,  0,   -90,  0,0},            
     qWaist={0,-0},
     duration = 4.0*slow_down_factor,
-    stop = true,    
+
   },
 
---torso straight
+--#11 torso straight
   {    
     qLLeg={0,5,-50,160,-100,-5},
     qRLeg={0,-5,-50,160,-100,5},
     duration = 4.0*slow_down_factor,
   },
 
---Stand up
+--#12 Stand up
   {    
     qLArm = {140, 21, 5, -98, 42, 16, -62},    
     qRArm = {140, -21, 5, -98, -42, -16, -62},    
@@ -148,9 +150,10 @@ function state.update()
   -- Get the time of update
   local t = Body.get_time()
   local t_diff = t - t_start
-  if stage > #keyframe then return "done" end
 
-  if stage==0 then
+--  if stage > #keyframe then return "done" end -- Task done! ( current #keyframe=12 )
+
+  if stage==0 then -- Initial 
     local rpy = Body.get_rpy()
     if math.abs(rpy[1])<45*math.pi/180 and
       math.abs(rpy[2])<45*math.pi/180 then
@@ -161,7 +164,8 @@ function state.update()
   hcm.set_motion_headangle({0,-60*math.pi/180})
   if stage>0 then    
     local ph = math.max(0,math.min(1, t_diff/keyframe[stage].duration))
-    Body.set_larm_command_position((1-ph)* qLArm0 + ph * qLArm1)
+    
+    Body.set_larm_command_position( (1-ph)*qLArm0 + ph*qLArm1 )
 
     --hack to fix weird motion
     local qRArmCurrent={}
@@ -172,8 +176,8 @@ function state.update()
     end
 
 
---    Body.set_rarm_command_position(qRArm0 + ph * (qRArm1-qRArm0))
-    Body.set_rarm_command_position(qRArmCurrent)
+    Body.set_rarm_command_position(qRArm0 + ph * (qRArm1-qRArm0))
+--    Body.set_rarm_command_position(qRArmCurrent)
     Body.set_lleg_command_position((1-ph)*qLLeg0 + ph * qLLeg1)
     Body.set_rleg_command_position((1-ph)*qRLeg0 + ph * qRLeg1)
     Body.set_waist_command_position((1-ph)*qWaist0 + ph * qWaist1)
@@ -183,13 +187,21 @@ function state.update()
    (t_diff>keyframe[stage].duration and hcm.get_state_proceed()==1) 
     then
 
-    if stage>0 and keyframe[stage].stop then hcm.set_state_proceed(0) end
+    if stage > 0 and keyframe[stage].stop then hcm.set_state_proceed(0) end
+   
+   print(stage)
+   print(#keyframe)
+
+
     t_start=t
     stage = stage +1
+
     if stage > #keyframe then 
       print("DONE")
       return "done" 
     end
+
+
 
     qLArm0 = qLArm1
     qRArm0 = qRArm1

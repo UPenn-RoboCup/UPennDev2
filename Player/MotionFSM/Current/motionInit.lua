@@ -209,7 +209,7 @@ function state.exit()
   if not IS_WEBOTS then
     for i=1,10 do
 
---[[
+
       Body.set_lleg_command_velocity({17000,17000,17000,17000,17000,17000})
       unix.usleep(1e6*0.01);
 
@@ -221,7 +221,7 @@ function state.exit()
 
       Body.set_lleg_command_acceleration({200,200,200,200,200,200})
       unix.usleep(1e6*0.01);
---]]
+
 
 
 --set to zero = max value
@@ -262,6 +262,8 @@ function state.exit()
 
         Body.set_lleg_position_p({pg,pg,pg,pg,pg,ag})
         unix.usleep(1e6*0.01);
+
+       
       end
     end
   end

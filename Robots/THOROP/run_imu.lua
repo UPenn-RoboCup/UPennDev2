@@ -118,7 +118,7 @@ if CALIBRATE_GYRO_BIAS then
     t_diff = t - t0
     cur_reading = dcm.get_sensor_gyro()
     max_reading = math.abs(math.max(unpack(cur_reading)))
-    if max_reading > CALIBRATION_THRESHOLD then
+    if max_reading > CALIBRATION_THRESHOLD then --CALIBRATION_THRESHOLD=0.01;
       print("\n!!! Bad calibration !!")
       print("Please run IMU again")
       print(string.format("Value %f exceeds %f limit\n", max_reading, CALIBRATION_THRESHOLD))

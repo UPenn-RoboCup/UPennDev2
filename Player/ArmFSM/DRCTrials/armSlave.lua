@@ -12,6 +12,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   t_finish = t
+  print("entry slave")
 end
 
 function state.update()
@@ -22,6 +23,7 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
+  print("update slave")
 
 end
 

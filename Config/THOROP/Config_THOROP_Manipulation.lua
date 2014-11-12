@@ -93,7 +93,7 @@ arm.pLWristTarget0 = {-.0,.30,-.20,0,0,0}
 arm.pRWristTarget0 = {-.0,-.30,-.20,0,0,0}
 
 --ONLY FOR GETUP!!!
---
+--[[
 arm.pLWristTarget0 = {-.10,.30,-.20,0,0,0}
 arm.pRWristTarget0 = {-.10,-.30,-.20,0,0,0}
 --]]

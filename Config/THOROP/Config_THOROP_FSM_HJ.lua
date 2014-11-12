@@ -24,8 +24,8 @@ fsm.enabled = {
 fsm.select = {
   Arm = 'DRCTrials',   
   Head = 'RoboCup',
-  Body = 'DRCNew',
-  Motion = 'RoboCup'
+  Body = 'Current',
+  Motion = 'Current'
 }
 
 
@@ -50,6 +50,12 @@ fsm.Head = {
 fsm.Arm = {
   {'armIdle', 'timeout', 'armIdle'},
   {'armIdle', 'drive', 'armDrive'},
+
+  --Added by Heejin
+  {'armIdle', 'dance', 'armDance'},
+  --{'armIdle', 'iktest', 'armIKTest'}
+  ------------
+  
   {'armIdle', 'init', 'armInit'},
 
   {'armInit', 'done', 'armPose1'},
@@ -139,7 +145,8 @@ fsm.Motion = {
   {'motionStance', 'kick', 'motionKick'},
   {'motionStance', 'done_step', 'motionHybridWalkKick'},
 
-
+-----
+  {'motionStance', 'getupback','motionGetupBack'},
   {'motionStance', 'getup', 'motionGetupFront'},  
   {'motionGetupFront', 'done', 'motionInit'},
 

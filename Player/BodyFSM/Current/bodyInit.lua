@@ -34,6 +34,8 @@ function state.entry()
   -- Torque on the motors...
   Body.set_larm_torque_enable(1)
   Body.set_rarm_torque_enable(1)
+  Body.set_lleg_torque_enable(1)
+  Body.set_rleg_torque_enable(1)
 
   arm_ch:send'init'
   motion_ch:send'stand'

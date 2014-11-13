@@ -1,0 +1,4 @@
+Goto: http://threejs.org/editor/
+Export as stl
+Run:
+./meshconv -vrmlver 2 torus.stl -c wrl -o torus

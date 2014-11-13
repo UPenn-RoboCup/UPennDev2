@@ -1,4 +1,4 @@
-datestamp = '11.05.2014.15.32.18'
+datestamp = '11.13.2014.13.07.03'
 % Metadata
 fid = fopen(sprintf('Data/yuyv_m_%s.log',datestamp));
 yuyvMeta = fread(fid,Inf,'*uint8');

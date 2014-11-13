@@ -40,14 +40,8 @@ local t_send, t_log = 0, 0
 local LOG_INTERVAL = 1/5
 local SEND_INTERVAL = .5
 
-local ENABLE_NET
-local ENABLE_LOG
-if Config.enable_monitor then
-  ENABLE_NET = true
-end
-if Config.enable_log then
-  ENABLE_LOG = true
-end
+local ENABLE_NET = Config.enable_monitor
+local ENABLE_LOG = Config.enable_log
 
 local libLog, logger
 

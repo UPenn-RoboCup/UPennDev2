@@ -63,6 +63,7 @@ fsm.Arm = {
 	{'armPoke', 'touch', 'armTeleop'},
 }
 
+--[[
 fsm.Motion = {
   -- Idle
   {'motionIdle', 'timeout', 'motionIdle'},
@@ -102,6 +103,48 @@ fsm.Motion = {
   {'motionStepDown', 'done', 'motionLower'},
   --
   {'motionJoin', 'done', 'motionLower'},
+}
+--]]
+
+fsm.select.Motion = 'RoboCup'
+fsm.Motion = {
+  {'motionIdle', 'timeout', 'motionIdle'},
+  {'motionIdle', 'stand', 'motionInit'},
+  {'motionIdle', 'bias', 'motionBiasInit'},
+
+  {'motionBiasInit', 'done', 'motionBiasIdle'}, 
+  {'motionBiasIdle', 'stand', 'motionInit'}, 
+
+  {'motionInit', 'done', 'motionStance'},
+
+  {'motionStance', 'bias', 'motionBiasInit'},
+  {'motionStance', 'preview', 'motionStepPreview'},
+  {'motionStance', 'kick', 'motionKick'},
+  {'motionStance', 'done_step', 'motionHybridWalkKick'},
+
+  {'motionStance', 'sit', 'motionSit'},
+  {'motionSit', 'stand', 'motionStandup'},
+  {'motionStandup', 'done', 'motionStance'},
+
+  {'motionStepPreview', 'done', 'motionStance'},
+  {'motionKick', 'done', 'motionStance'},
+
+--For new hybrid walk
+  {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
+  {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
+
+  {'motionHybridWalk', 'done', 'motionStance'},
+  {'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
+
+  {'motionHybridWalk', 'done_step', 'motionHybridWalkKick'},
+  {'motionHybridWalkKick', 'done', 'motionStance'},
+  {'motionHybridWalkKick', 'walkalong', 'motionHybridWalk'},
+  
+--  {'motionHybridWalk', 'done_step', 'motionStepNonstop'},
+--  {'motionStepNonstop', 'done', 'motionStance'},
+
+  {'motionHybridWalkEnd', 'done', 'motionStance'},
+
 }
 
 Config.fsm = fsm

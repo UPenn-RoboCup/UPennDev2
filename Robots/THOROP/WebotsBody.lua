@@ -1,6 +1,7 @@
 local WebotsBody = {}
 local ptable = require'util'.ptable
 local ww, cw, mw, sw, fw, rw, kb
+local ffi = require'ffi'
 
 function WebotsBody.entry()
 	
@@ -32,9 +33,19 @@ function WebotsBody.update_chest_lidar(metadata, ranges)
 	if mw then mw.update(metadata, ranges) end
 end
 
+local depth_fl = ffi.new('float[?]', 1)
+local n_depth_fl = ffi.sizeof(depth_fl)
 function WebotsBody.update_chest_kinect(rgb, depth)
 	depth.bpp = ffi.sizeof('float')
-	depth.data = ffi.string(depth.data, depth.width*depth.height*depth.bpp)
+	local n_pixels = depth.width * depth.height
+	if n_pixels~=n_depth_fl then
+		depth_fl = ffi.new('float[?]', n_pixels)
+	end
+	local byte_sz = n_pixels * depth.bpp
+	ffi.copy(depth_fl, depth.data, byte_sz)
+	-- Convert to mm
+	for i=1,n_pixels do depth_fl[i] = 1000 * depth_fl[i] end
+	depth.data = ffi.string(depth_fl, byte_sz)
 	if kw then kw.update(rgb, depth) end
 end
 

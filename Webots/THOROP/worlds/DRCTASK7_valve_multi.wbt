@@ -1,10 +1,10 @@
-#VRML_SIM V6.0 utf8
+#VRML_SIM V7.4.3 utf8
 WorldInfo {
   info [
     "Valve operating test for DRC"
   ]
   title "valvetest"
-  basicTimeStep 33
+  basicTimeStep 30
   FPS 15
 }
 Viewpoint {
@@ -31,36 +31,60 @@ DEF FLOOR Floor {
     "textures/texture_grid.png"
   ]
 }
-#THOROP_UPENN {
 THOROP_UPENN_kinect {
-  translation -1.5 1.15535 0.4
   controller "thorop"
   controllerArgs "0 32"
 }
 
-DEF LEVER ValveDRCLever {
-	translation -0.9 1.2 1.3
-  rotation 0 1 0 1.57
+# Bottom left
+DEF MEDIUM_CYAN ValveDRCSmooth {
+  translation 0.5 0.8 1.3
+	scale 0.15 0.15 0.15
+	color 0 0.1 0.5
 }
 
-DEF SMALL ValveDRCSmooth {
-  translation -2.1 1.2 1.3
+# Top left
+DEF LEVER ValveDRCLever {
+	translation 0.4 1.2 1.3
+  rotation 0 1 0 1.57
+	color 1 1 0
+}
+
+# Middle Center
+DEF BIG_CYAN ValveDRCSmooth {
+  translation 0 1 1.3
+	scale 0.25 0.25 0.25
+	color 0 1 1
+}
+
+# Top right
+DEF SMALL_TOP_PINK ValveDRCSmooth {
+  translation -0.5 1.2 1.3
 	scale 0.11 0.11 0.11
 	color 1 0 1
-	color 1 0 1
 }
 
-DEF MEDIUM ValveDRCSmooth {
-  translation -1.5 1.2 1.3
-	scale 0.25 0.25 0.25
+# Bottom right
+DEF SMALL_BOTTOM_PINK ValveDRCSmooth {
+  translation -0.75 0.8 1.3
+	scale 0.11 0.11 0.11
+	color 1 0 1
 }
 
 DEF WALL Solid {
-  translation -1.5 1 1.5
+  translation 0 1 1.5
   children [
     Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.4
+          diffuseColor 0.9 0.9 0.9
+          shininess 0.5
+          specularColor 0.8 0.8 0.8
+        }
+      }
       geometry DEF WALL_BOX Box {
-        size 4 2 0.01
+        size 3 2 0.01
       }
     }
   ]
@@ -69,30 +93,21 @@ DEF WALL Solid {
 }
 
 DEF MARKER1 Solid {
-  translation -1.5 0 0.6
+  translation 0 0 0.2
   rotation 0 1 0 1.57
   children [
     Shape {
-      appearance Appearance {
+      appearance DEF MARKER_COLOR Appearance {
         material Material {
           ambientIntensity 0.1
           diffuseColor 0 0.5 0
         }
       }
-      geometry Box {
-        size 0.1 0.01 1.2
-      }
+      geometry Box { size 0.1 0.01 1.2 }
     }
     Shape {
-      appearance Appearance {
-        material Material {
-          ambientIntensity 0.1
-          diffuseColor 0 0.5 0
-        }
-      }
-      geometry Box {
-        size 0.2 0.01 0.1
-      }
+      appearance USE MARKER_COLOR
+      geometry Box { size 0.2 0.01 0.1 }
     }
   ]
   locked TRUE

@@ -31,16 +31,33 @@ function MultiValve.entry(cfg)
   lA_meta.h = ha
 end
 
+local ptable = require'util'.ptable
 function MultiValve.update(rgb, depth)
   ImageProc2.rgb_to_labelA(rgb.data)
   ImageProc2.block_bitor()
-	for color, index in pairs(colors) do
-	  detected[color] = ImageProc.connected_regions(
+	local color_detected
+	detected.n = 0
+	for color, color_index in pairs(colors) do
+	  color_detected = ImageProc.connected_regions(
 			tonumber(ffi.cast('intptr_t', ffi.cast('void *', ImageProc2.labelB_d))),
 			wb,
 			hb,
-			index
+			color_index
 		)
+		if color_detected then
+			detected[color] = color_detected
+			detected.n = detected.n + #color_detected
+			--[[
+			local bbox_stats
+			for i, d in ipairs(color_detected) do
+				--print(color_index, 'd.boundingBox',unpack(d.boundingBox))
+				bbox_stats = ImageProc2.color_stats('a', color_index, d.boundingBox)
+				--ptable(bbox_stats)
+				for k, v in pairs(bbox_stats) do d[k] = d[k] or v end
+			end
+			--]]
+		end
+		
 	end
 end
 

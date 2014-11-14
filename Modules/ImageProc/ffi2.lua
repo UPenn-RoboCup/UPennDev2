@@ -195,7 +195,8 @@ function ImageProc.color_stats(label, color, bbox)
     j0 = bbox[3]
     j1 = bbox[4]
   end
-  color = color or 1
+	l_ptr = l_ptr + ni * j0 + i0
+	color = color or 1
 	-- Initialize statistics
 	local area = 0
 	local minI, maxI = ni - 1, 0

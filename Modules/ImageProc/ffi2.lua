@@ -69,6 +69,39 @@ function ImageProc.yuyv_to_labelA(yuyv_ptr, lut_ptr)
   --
   return labelA_d
 end
+function ImageProc.rgb_to_labelA(rgb_ptr, lut_ptr)
+  -- The yuyv pointer changes each time
+  -- Cast the lightuserdata to cdata
+  local rgb_d = ffi.cast("uint8_t*", rgb_ptr)
+  -- Set the LUT Raw data
+  local lut_d = ffi.cast("uint8_t*", lut_ptr or luts[1])
+  -- Temporary variables for the loop
+  local a_ptr = labelA_d
+	local r, g, b
+	local y, u, v
+  for j=1,ha do
+    for i=1,wa do
+      -- Get Pixel
+      r, g, b = rgb_d[0], rgb_d[1], rgb_d[2]
+			-- Convert to YUV
+      y = g
+      u = 128 + (b-g)/2
+      v = 128 + (r-g)/2
+			-- Set the label
+      a_ptr[0] = lut_d[bor(
+        rshift(band(v, 0xFC), 2),
+        lshift(band(u, 0xFC), 4),
+        lshift(band(y, 0xFC), 10)
+      )]
+      -- Move the labelA pointer
+      a_ptr = a_ptr + 1
+      -- Move the image pointer
+      rgb_d = rgb_d + 3
+    end
+  end
+  --
+  return labelA_d
+end
 
 -- Bit OR on blocks of NxN to get to labelB from labelA
 local labelB_d, labelB_n, log_sB
@@ -297,6 +330,17 @@ function ImageProc.setup(w0, h0, sA, sB)
   else
     ImageProc.block_bitor = block_bitorN
   end
+end
+
+function ImageProc.get_info()
+	return {
+		wa = wa,
+		ha = ha,
+		wb = wb,
+		hb = hb,
+		scaleA = scaleA,
+		scaleB = scaleB,
+	}
 end
 
 return ImageProc

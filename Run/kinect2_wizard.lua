@@ -10,9 +10,21 @@ local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
 local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
 local c_rgb = require'jpeg'.compressor('rgb')
 
+local cfg = Config.kinect
+
+local has_detection, detection = pcall(require, cfg.detection)
+if type(detection)=='string' then
+	print(detection)
+end
+
 local cnt = 0
 local function update(rgb, depth)
   cnt = cnt + 1
+	-- Process
+	if has_detection then
+		detection.update(rgb, depth)
+	end
+	-- Send debug
   if cnt % 5 == 0 then
 	  -- Send color
 	  local j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
@@ -25,13 +37,15 @@ local function update(rgb, depth)
 	  depth.data = nil
 	  depth.sz = #ranges
     depth_ch:send({mpack(depth), ranges})
+		-- Send extra color processing
+		for _,v in ipairs(detection.send()) do color_ch:send({mp.pack(v[1]), v[2]}) end
   end
   return t
 end
 
 -- If required from Webots, return the table
 if ... and type(...)=='string' then
-	return {entry=nil, update=update, exit=nil}
+	return {entry=has_detection and detection.entry, update=update, exit=has_detection and detection.exit}
 end
 
 local freenect2 = require'freenect2'
@@ -39,9 +53,11 @@ local freenect2 = require'freenect2'
 local function entry()
   local serial_number, firmware_version = freenect2.init()
   print("serial_number, firmware_version:", serial_number, firmware_version)
+	if has_detection then detection.entry() end
 end
 local function exit()
   freenect2.shutdown()
+	if has_detection then detection.exit() end
 end
 
 -- Cleanly exit on Ctrl-C
@@ -76,4 +92,3 @@ while running do
 	collectgarbage'step'
 end
 exit()
-

@@ -6,7 +6,7 @@ function WebotsBody.entry()
 	
 	ww = Config.wizards.world and require(Config.wizards.world)
 	cw = Config.wizards.camera and require(Config.wizards.camera)
-	mw = Config.wizards.mesh and require(Config.wizards.mesh)
+  -- mw = Config.wizards.mesh and require(Config.wizards.mesh)
 	sw = Config.wizards.slam and require(Config.wizards.slam)
 	fw = Config.wizards.feedback and require(Config.wizards.feedback)
 	rw = Config.wizards.remote and require(Config.wizards.remote)
@@ -26,7 +26,10 @@ end
 
 function WebotsBody.update_chest_lidar(metadata, ranges)
   if mw then mw.update(metadata, ranges) end
-  -- if dw then dw.update(metadata, ranges) end
+end
+
+function WebotsBody.update_kinect_depth(metadata, ranges)
+  if dw then dw.update_kinect_depth(metadata, ranges) end
 end
 
 function WebotsBody.update_head_lidar(metadata, ranges)

@@ -66,6 +66,66 @@ static int lua_reset_octomap() {
   return 0;
 }
 
+
+static int lua_add_depth(lua_State *L) {
+	/* Grab the depth image*/
+  const THFloatTensor * depths_t =
+    (THFloatTensor *) luaT_checkudata(L, 1, "torch.FloatTensor");
+  float focal_len = (float) luaL_checknumber(L, 2);
+  const long nr = depths_t->size[0];
+  const long nc = depths_t->size[1];
+  // Check contiguous
+  THArgCheck(depths_t->stride[1] == 1, 1, "Depth not contiguous (j)");
+  THArgCheck(depths_t->stride[0] == nc, 1, "Improper depth layout (i)");
+  // Get the pose
+  float px = (float) luaL_checknumber(L, 3);
+  float py = (float) luaL_checknumber(L, 4);
+  float pz = (float) luaL_checknumber(L, 5);
+  double roll = (double) luaL_checknumber(L, 6);
+  double pitch = (double) luaL_checknumber(L, 7);
+  double yaw = (double) luaL_checknumber(L, 8);
+  pose6d kinect_pose = pose6d(px,py,pz,roll,pitch,yaw);
+  
+  /*
+  X = d
+  Y = -(x-cx)*d/f
+  Z = -(y-cy)*d/f
+  */
+  //TODO: cx, cy need to be calibrated
+  float cx = 0.0f, cy = 0.0f;
+  float inv_f = 1 / focal_len;
+  float x, y, z;
+  float *depths_ptr = (float *)(depths_t->storage->data + depths_t->storageOffset);
+  Pointcloud cloud;
+
+  t0 = clock();
+  for (int j=0; j<nr; j++) {
+    for (int i=0; i<nc; i++) {
+      x = *(depths_ptr);
+      y = -(i-cx) * x * inv_f;
+      z = -(j-cy) * x * inv_f;
+      depths_ptr++;
+      // Add to cloud
+      cloud.push_back(x,y,z);
+    }
+  }
+  t1 = clock();
+  printf("(%f seconds) creating cloud\n", (float)(t1-t0)/CLOCKS_PER_SEC);
+  
+  t0 = clock();
+	// Update tree chunk by chunk
+  tree.insertPointCloud(cloud, point3d(0.0f,0.0f,0.0f), kinect_pose, max_range, true);
+  tree.updateInnerOccupancy();
+  tree.prune();
+  t1 = clock();
+  printf("(%f seconds) inserting cloud\n", (float)(t1-t0)/CLOCKS_PER_SEC);	
+  printf("Mem for tree: %f MB\n\n",(double)tree.memoryUsage()/1E6);
+  printf("tree depth: %u, \t # of leaves:%u \n\n", tree.getTreeDepth(), tree.getNumLeafNodes());
+  
+  
+  return 0;
+}
+
 static int lua_add_scan( lua_State *L ) {
 	/* Grab the points from the last laser scan*/
 	const THFloatTensor * points_t =
@@ -213,6 +273,7 @@ static const struct luaL_Reg octomap_lib [] = {
   {"set_range", lua_set_range},
   //
 	{"add_scan", lua_add_scan},
+  {"add_depth", lua_add_depth},
   //
   {"get_horizontal", lua_get_horizontal},
   //

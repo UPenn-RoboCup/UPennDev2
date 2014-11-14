@@ -17,6 +17,7 @@ local DEBUG = Config.debug.detect
 
 -- Subscribe to important messages
 local mesh_ch = si.new_subscriber'mesh0'
+local kinect_depth_ch = si.new_subscriber'kinect2_depth'
 
 -- Some global variables
 local n_scanlines, n_returns, scan_angles
@@ -35,7 +36,7 @@ else -- teddy
 end
 
 
----[[ Octomap
+-- Octomap
 local octomap = require'octomap'
 -- TODO: read params from shm
 octomap.set_resolution(0.01)
@@ -43,7 +44,6 @@ octomap.set_range(0.05, 1.5)
 -- 0.02m ~ 0.5 sec
 -- 0.01m ~ 1.5 sec  <0.5sec if range is shorter
 -- not that terrible...
---]]
 
 
 
@@ -135,7 +135,11 @@ end
 local td -- for benchmarking
 local saved = false
 
-mesh_ch.callback = function(skt)  
+-- Callback function for mech channel
+mesh_ch.callback = function(skt) 
+  print('I AM HERE...')
+  
+   
   -- Only use the last one
   local pdata, ranges = unpack(skt:recv_all())
   local data = munpack(pdata)
@@ -184,9 +188,44 @@ mesh_ch.callback = function(skt)
 end
 
 
+local depths_t, w, h, focal_len
+local function update_kinect_depth(data, depths)
+  print('Updating kinect depth...')
+  -- Useful params
+  w, h = unpack(data.dims)
+  --TODO: no need to calculate every time
+  -- Focal length
+  -- f = w/2/tan(fov/2)  fov = 1.2217
+  focal_len = w/2/math.tan(1.2217/2)
+  
+  --TODO: use octomap methods to directly manipulate depths
+	local float_depths = ffi.cast('float*', depths)
+  local byte_sz = w * h * ffi.sizeof'float'
+  print('w=', w, 'h=', h, 'FLOAT DEPTH SIZE', byte_sz)
+  depths_t = torch.FloatTensor(w, h):zero()
+  -- ffi.copy(depths_t:data(), float_depths, byte_sz)
+  -- print(unpack(vector.new(depths_t:select(1, 300))))
+  
+  local rpy, pose, angle = data.rpy, data.pose, data.angle
+  octomap.add_depth(depths_t, focal_len, 
+    pose[1], pose[2], lidar_z, 
+    unpack(rpy))
+end
+
+
+
+-- Callback function for kinect depth channel
+kinect_depth_ch.callback = function(skt)
+  -- Only use the last one
+  local pdata, depths = unpack(skt:recv_all())
+  local data = munpack(pdata)
+  update_kinect_depth(data, depths)
+end
+
+
 
 local TIMEOUT = 1 / 10 * 1e3  --TODO
-local poller = si.wait_on_channels{mesh_ch}
+local poller = si.wait_on_channels{mesh_ch, kinect_depth_ch}
 local npoll
 
 
@@ -203,7 +242,8 @@ end
 
 if ... and type(...)=='string' then
 	TIMEOUT = 0
-	return {entry=nil, update=update, exit=nil}
+	return {entry=nil, update=update, exit=nil, 
+    update_kinect_depth=update_kinect_depth, }
 end
 
 

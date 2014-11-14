@@ -195,17 +195,18 @@ function ImageProc.color_stats(label, color, bbox)
     j0 = bbox[3]
     j1 = bbox[4]
   end
-	l_ptr = l_ptr + ni * j0 + i0
 	color = color or 1
 	-- Initialize statistics
+	local col_ptr
 	local area = 0
 	local minI, maxI = ni - 1, 0
 	local minJ, maxJ = nj - 1, 0
 	local sumI, sumJ = 0, 0
 	local sumII, sumJJ, sumIJ = 0, 0, 0
   for j=j0,j1 do
+		col_ptr = l_ptr + j * ni
     for i=i0,i1 do
-			if l_ptr[i] == color then
+			if col_ptr[i] == color then
 				-- Increment area size
 				area = area + 1
 				-- Update min/max row/column values
@@ -222,7 +223,7 @@ function ImageProc.color_stats(label, color, bbox)
       end
       -- If
     end
-    l_ptr = l_ptr + ni
+    --col_ptr = col_ptr + ni
   end
 	if area==0 then return { area = area } end
 	--

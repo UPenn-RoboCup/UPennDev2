@@ -47,15 +47,11 @@ function MultiValve.update(rgb, depth)
 		if color_detected then
 			detected[color] = color_detected
 			detected.n = detected.n + #color_detected
-			--[[
 			local bbox_stats
 			for i, d in ipairs(color_detected) do
-				--print(color_index, 'd.boundingBox',unpack(d.boundingBox))
-				bbox_stats = ImageProc2.color_stats('a', color_index, d.boundingBox)
-				--ptable(bbox_stats)
+				bbox_stats = ImageProc2.color_stats('b', color_index, d.boundingBox)
 				for k, v in pairs(bbox_stats) do d[k] = d[k] or v end
 			end
-			--]]
 		end
 		
 	end

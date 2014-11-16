@@ -10,8 +10,12 @@ local DEG_TO_RAD = math.pi/180
 local shared_data = {}
 local shared_data_sz = {}
 
+shared_data.guidance={}
+shared_data.guidance.color = 'CYAN'
+shared_data.guidance.t = vector.zeros(1)
+
 shared_data.audio={}
-shared_data.audio.request = vector.zeros(0)
+shared_data.audio.request = vector.zeros(1)
 
 shared_data.drive={}
 shared_data.drive.gas_pedal = vector.zeros(2)

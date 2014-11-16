@@ -2,23 +2,18 @@
 -- (c) 2014 Stephen McGill
 -- General Detection methods
 local ImageProc = {}
-local vector = require'vector'
 local lshift = require'bit'.lshift
 local rshift = require'bit'.rshift
 local band = require'bit'.band
 local bor = require'bit'.bor
 local ffi = require'ffi'
-
--- Widths and Heights of Image, LabelA, LabelB
-local w, h, wa, ha, wb, hb
+local log2 = {[1] = 0, [2] = 1, [4] = 2, [8] = 3, [16] = 4, [32] = 5, [64] = 6}
 
 -- Load Lookup Table for Color -> Label
 --[[
 filename: LUT file of 262144 bytes
 --]]
-local luts = {}
-ImageProc.luts = luts
-function ImageProc.load_lut(filename)
+function ImageProc.load_lut(self, filename)
   local f_lut = io.open(filename)
   -- We know the size of the LUT, so load the storage
   local lut_s = f_lut:read('*a')
@@ -26,10 +21,10 @@ function ImageProc.load_lut(filename)
 	assert(#lut_s==262144, 'Bad LUT size')
   -- Form a tensor for us
   local lut_d = ffi.new('uint8_t[?]', 262144, lut_s)
-  table.insert(luts, lut_d)
+  table.insert(self.luts, lut_d)
   -- Return LUT and the id of this LUT
 	print('Loaded', filename)
-  return lut_d, #luts
+  return lut_d, #self.luts
 end
 
 --[[
@@ -39,22 +34,27 @@ lut_ptr: Lookup table as string, lightuserdata, or cdata
 returns: labelA array
 --]]
 -- Assumes a subscale of 2 (i.e. drop every other column and row)
--- Define labelA array
-local labelA_d, labelA_n
-function ImageProc.yuyv_to_labelA(yuyv_ptr, lut_ptr)
+function ImageProc.yuyv_to_labelA(self, yuyv_ptr, lut_ptr)
   -- The yuyv pointer changes each time
   -- Cast the lightuserdata to cdata
   local yuyv_d = ffi.cast("uint32_t*", yuyv_ptr)
   -- Set the LUT Raw data
-  local lut_d = ffi.cast("uint8_t*", lut_ptr or luts[1])
+  local lut_d = ffi.cast("uint8_t*", lut_ptr or self.luts[1])
   -- Temporary variables for the loop
   -- NOTE: 4 bytes yields 2 pixels, so stride of (4/2)*w
-  local a_ptr, stride = labelA_d, w / 2
-  for j=1,ha do
-    for i=1,wa do
+  local a_ptr, stride = self.labelA_d, self.w / 2
+  for j=1,self.ha do
+    for i=1,self.wa do
       -- Set the label
+			--[[
       a_ptr[0] = lut_d[bor(
         rshift(band(yuyv_d[0], 0xFC000000), 26),
+        rshift(band(yuyv_d[0], 0x0000FC00), 4),
+        lshift(band(yuyv_d[0], 0xFC), 10)
+      )]
+			--]]
+      a_ptr[0] = lut_d[bor(
+        rshift(yuyv_d[0], 26),
         rshift(band(yuyv_d[0], 0x0000FC00), 4),
         lshift(band(yuyv_d[0], 0xFC), 10)
       )]
@@ -67,31 +67,38 @@ function ImageProc.yuyv_to_labelA(yuyv_ptr, lut_ptr)
     yuyv_d = yuyv_d + stride
   end
   --
-  return labelA_d
+  return self.labelA_d
 end
-function ImageProc.rgb_to_labelA(rgb_ptr, lut_ptr)
+function ImageProc.rgb_to_labelA(self, rgb_ptr, lut_ptr)
   -- The yuyv pointer changes each time
   -- Cast the lightuserdata to cdata
   local rgb_d = ffi.cast("uint8_t*", rgb_ptr)
   -- Set the LUT Raw data
-  local lut_d = ffi.cast("uint8_t*", lut_ptr or luts[1])
+  local lut_d = ffi.cast("uint8_t*", lut_ptr or self.luts[1])
   -- Temporary variables for the loop
-  local a_ptr = labelA_d
-	local r, g, b
-	local y, u, v
-  for j=1,ha do
-    for i=1,wa do
+  local a_ptr = self.labelA_d
+	--local r, g, b
+	--local y, u, v
+  for j=1,self.ha do
+    for i=1,self.wa do
+			--[[
       -- Get Pixel
       r, g, b = rgb_d[0], rgb_d[1], rgb_d[2]
 			-- Convert to YUV
       y = g
-      u = 128 + (b-g)/2
-      v = 128 + (r-g)/2
-			-- Set the label
+      u = 128 + (b - g)/2
+      v = 128 + (r - g)/2
       a_ptr[0] = lut_d[bor(
         rshift(band(v, 0xFC), 2),
         lshift(band(u, 0xFC), 4),
         lshift(band(y, 0xFC), 10)
+      )]
+			--]]
+			-- Set the label
+      a_ptr[0] = lut_d[bor(
+        rshift(128 + (rgb_d[0] - rgb_d[1])/2, 0xFC),
+        lshift(band(128 + (rgb_d[2] - rgb_d[1])/2, 0xFC), 4),
+        lshift(band(rgb_d[1], 0xFC), 10)
       )]
       -- Move the labelA pointer
       a_ptr = a_ptr + 1
@@ -100,40 +107,40 @@ function ImageProc.rgb_to_labelA(rgb_ptr, lut_ptr)
     end
   end
   --
-  return labelA_d
+  return self.labelA_d
 end
 
 -- Bit OR on blocks of NxN to get to labelB from labelA
 local labelB_d, labelB_n, log_sB
-local function block_bitorN()
+local function block_bitorN(self)
   -- Zero the downsampled image
-  ffi.fill(labelB_d, labelB_n)
+	local a_ptr, b_ptr = self.labelA_d, self.labelB_d
+  ffi.fill(b_ptr, ffi.sizeof(b_ptr))
 	-- Begin the loop
-  local a_ptr, b_ptr = labelA_d, labelB_d
   local jy, iy, ind_b, off_j
-  for jx=0,ha-1 do
-    jy = rshift(jx, log_sB)
+  for jx=0,self.ha-1 do
+    jy = rshift(jx, log2[scaleB])
     off_j = jy * wb
-    for ix=0,wa-1 do
-      iy = rshift(ix, log_sB)
+    for ix=0,self.wa-1 do
+      iy = rshift(ix, log2[scaleB])
       ind_b = iy + off_j
       b_ptr[ind_b] = bor(b_ptr[ind_b], a_ptr[0])
       a_ptr = a_ptr + 1
     end
   end
-  return labelB_d
+  return self.labelB_d
 end
 -- Bit OR on blocks of 2x2 to get to labelB from labelA
-local function block_bitor2()
+local function block_bitor2(self)
   -- Zero the downsampled image
   ffi.fill(labelB_d, labelB_n)
   local a_ptr, b_ptr = labelA_d, labelB_d
   -- Offset a row
-  local a_ptr1 = a_ptr + wa
+  local a_ptr1 = a_ptr + self.wa
   -- Start the loop
-  for jb=1,hb do
-    for ib=1,wb do
-      b_ptr[0] = bor(a_ptr[0],a_ptr[1],a_ptr1[0],a_ptr1[1])
+  for jb=1,self.hb do
+    for ib=1,self.wb do
+      b_ptr[0] = bor(a_ptr[0], a_ptr[1], a_ptr1[0], a_ptr1[1])
       -- Move b
       b_ptr = b_ptr + 1
       -- Move to the next pixel
@@ -141,36 +148,40 @@ local function block_bitor2()
       a_ptr1 = a_ptr1 + 2
     end
     -- Move another row, too
-    a_ptr = a_ptr + wa
-    a_ptr1 = a_ptr1 + wa
+    a_ptr = a_ptr + self.wa
+    a_ptr1 = a_ptr1 + self.wa
   end
   return labelB_d
 end
-
-local ccA_d = ffi.new('int[256]')
-local ccB_d = ffi.new('int[256]')
-local cc_n = ffi.sizeof(ccA_d)
-function ImageProc.color_countA()
-  -- Reset the color count
-  ffi.fill(ccA_d, cc_n)
-  -- Loop variables
-  local l_ptr = labelA_d
-  for i=1,np_a do
-    ccA_d[l_ptr[0]] = ccA_d[l_ptr[0]] + 1
-    l_ptr = l_ptr + 1
-  end
-  return ccA_d
+function ImageProc.block_bitor(self)
+	if self.scaleB==2 then
+	  return block_bitor2(self)
+	else
+	  return block_bitorN(self)
+	end
 end
-function ImageProc.color_countB()
+
+function ImageProc.color_countA(self)
   -- Reset the color count
-  ffi.fill(ccB_d, cc_n)
+  ffi.fill(ccA_d, ffi.sizeof(ccA_d))
   -- Loop variables
-  local l_ptr = labelB_d
-  for i=1,np_b do
-    ccB_d[l_ptr[0]] = ccB_d[l_ptr[0]] + 1
+  local l_ptr = self.labelA_d
+  for i=1,self.wa*self.ha do
+    self.ccA_d[l_ptr[0]] = self.ccA_d[l_ptr[0]] + 1
     l_ptr = l_ptr + 1
   end
-  return ccB_d
+  return self.ccA_d
+end
+function ImageProc.color_countB(self)
+  -- Reset the color count
+  ffi.fill(ccB_d, ffi.sizeof(ccB_d))
+  -- Loop variables
+  local l_ptr = self.labelB_d
+  for i=1,self.wb*self.hb do
+    self.ccB_d[l_ptr[0]] = self.ccB_d[l_ptr[0]] + 1
+    l_ptr = l_ptr + 1
+  end
+  return self.ccB_d
 end
 
 -- Get the color stats for a bounding box
@@ -179,33 +190,43 @@ end
 local max = require'math'.max
 local sqrt = require'math'.sqrt
 local atan2 = require'math'.atan2
-function ImageProc.color_stats(label, color, bbox)
-	local l_ptr = label=='a' and labelA_d or labelB_d
-	local ni = label=='a' and wa or wb
-	local nj = label=='a' and ha or hb
+local min = require'math'.min
+local max = require'math'.max
+function ImageProc.color_stats(self, label, color, bbox)
+	local l_ptr, ni, nj
+	if label=='a' then
+		l_ptr = self.labelA_d
+		ni = self.wa
+		nj = self.ha
+	else
+		l_ptr = self.labelB_d
+		ni = self.wb
+		nj = self.hb
+	end
 	--
   local i0 = 0
   local i1 = ni - 1
   local j0 = 0
   local j1 = nj - 1
   if bbox then
-    -- TODO: bounds check
-    i0 = bbox[1]
-    i1 = bbox[2]
-    j0 = bbox[3]
-    j1 = bbox[4]
+    i0 = max(i0, bbox[1])
+    i1 = min(i1, bbox[2])
+    j0 = max(j0, bbox[3])
+    j1 = min(j1, bbox[4])
   end
 	color = color or 1
 	-- Initialize statistics
 	local col_ptr
+	-- RegionProps based
 	local area = 0
 	local minI, maxI = ni - 1, 0
 	local minJ, maxJ = nj - 1, 0
 	local sumI, sumJ = 0, 0
 	local sumII, sumJJ, sumIJ = 0, 0, 0
+	l_ptr = l_ptr + j0 * ni
   for j=j0,j1 do
-		col_ptr = l_ptr + j * ni
     for i=i0,i1 do
+			-- If our color, then update the RegionProps
 			if col_ptr[i] == color then
 				-- Increment area size
 				area = area + 1
@@ -223,7 +244,7 @@ function ImageProc.color_stats(label, color, bbox)
       end
       -- If
     end
-    --col_ptr = col_ptr + ni
+    col_ptr = col_ptr + ni
   end
 	if area==0 then return { area = area } end
 	--
@@ -253,8 +274,30 @@ function ImageProc.color_stats(label, color, bbox)
 	}
 end
 
-local equivalence_mt = {}
-function equivalence_mt.addEquivalence(self, label1, label2)
+local RegionProps_mt = {}
+function RegionProps_mt.__lt(r1, r2)
+	return r1.area > r2.area
+end
+
+--[[
+image: labeled image
+m: width of labeled image
+n: height of labeled image
+mask: label index (color code)
+-- NOTE: 256 is the maximum number of regions
+-- TODO: Increase the max
+--]]
+-- NOTE: the following two are static to the connected regions function!!
+local label_array = ffi.new('int[256][256]')
+local equiv_table = {
+	n_label = 0,
+	m_table = {},
+}
+function equiv_table.ensureAllocated(self, label)
+	local m_table = self.m_table
+	for i=#m_table,label do table.insert(m_table, i) end
+end
+function equiv_table.addEquivalence(self, label1, label2)
 	local m_table = self.m_table
   while label1 ~= m_table[label1] do label1 = m_table[label1] end
 	while label2 ~= m_table[label2] do label2 = m_table[label2] end
@@ -264,11 +307,11 @@ function equivalence_mt.addEquivalence(self, label1, label2)
     m_table[label1] = label2
 	end
 end
-function equivalence_mt.traverseLinks(self)
+function equiv_table.traverseLinks(self)
 	local m_table = self.m_table
 	for i=1,#m_table do m_table[i] = m_table[ m_table[i] ] end
 end
-function equivalence_mt.removeGaps(self)
+function equiv_table.removeGaps(self)
 	local m_table = self.m_table
 	local next = 0
 	for i=1,#m_table do
@@ -277,71 +320,150 @@ function equivalence_mt.removeGaps(self)
 	end
 	self.n_label = next - 1
 end
-function equivalence_mt.getEquivalentLabel(self, label)
-	-- Note: TraverseLinks() must be called before this function
-	return m_table[label]
-end
-function equivalence_mt.ensureAllocated(self, label)
-	local m_table = self.m_table
-	for i=#m_table,label do table.insert(m_table, i) end
-end
-function equivalence_mt.clear(self)
-	self.m_table = {}
-end
-function equivalence_mt.numLabel(self)
-  -- Note: RemoveGaps() must be called before this function
-  return self.n_label
-end
-function gen_equivalence_table()
-	return setmetatable({
-		n_label = 0,
-		m_table = {}
-	}, equivalence_mt)
-end
 
--- TODO: ConnectRegions
+function ImageProc.connected_regions(self, image, m, n, mask)
+	-- Ensure we have enough room to compute
+  if m > NMAX or n > NMAX then return -1 end
+	-- Clear the Equivelence table
+  equiv_table.m_table = {}
+	local nlabel = 1
+  equiv_table:ensureAllocated(nlabel)
+  -- Iterate over pixels in image:
+  local n_neighbor = 0
+  local label_neighbor = {0, 0, 0, 0}
+	-- Loop over the image
+	local pixel
+  for j=1,n-1 do
+    for i=1,m-1 do
+			-- Grab the pixel
+      pixel = image[0]; image = image + 1
+			-- See if the pixel includes our mask
+      if band(pixel, mask)==0 then
+        label_array[i][j] = 0
+				-- TODO: Fix
+			else
+				-- See if we have any neighbors who are our same mask
+	      n_neighbor = 0
+	      -- Check 4-connected neighboring pixels:
+	      if ((i > 0) and (label_array[i-1][j])) then
+	        label_neighbor[n_neighbor++] = label_array[i-1][j]
+				end
+	      if ((j > 0) and (label_array[i][j-1])) then
+	        label_neighbor[n_neighbor++] = label_array[i][j-1]
+				end
+	      -- Check 8-connected neighboring pixels:
+	      if ((i > 0) and (j > 0) and (label_array[i-1][j-1])) then
+	        label_neighbor[n_neighbor++] = label_array[i-1][j-1]
+				end
+	      if ((i < n-1) and (j > 0) and (label_array[i+1][j-1])) then
+	        label_neighbor[n_neighbor++] = label_array[i+1][j-1]
+				end
+	      local label
+	      if (n_neighbor > 0) then
+	        label = nlabel
+	        -- Determine minimum neighbor label
+	        for i_neighbor = 0,n_neighbor-1 do
+	          if (label_neighbor[i_neighbor] < label) then label = label_neighbor[i_neighbor] end
+					end
+	        -- Update equivalences
+					for i_neighbor = 0,n_neighbor-1 do
+	          if (label ~= label_neighbor[i_neighbor]) then
+	            equiv_table.addEquivalence(label, label_neighbor[i_neighbor])
+						end
+					end
+	      else
+					-- TODO: check the order of operations on the ++
+	        --label = nlabel++
+					nlabel = nlabel + 1; label = nlabel
+	        equiv_table.ensureAllocated(label)
+				end
+	      -- Set label of current pixel
+	      label_array[i][j] = label
+			end
+			-- if
+		end
+	end
+	-- double for
+  -- Clean up equivalence table
+  equiv_table:traverseLinks()
+  equiv_table:removeGaps()
+  --nlabel = equiv_table:numLabel()
+	nlabel = equiv_table.numLabel
+	-- Make the RegionProps array
+	local props = {}
+	for i=1,nlabel do
+		props[i] = setmetatable({
+			area = 0,
+			minI = math.huge,
+			maxI = -math.huge,
+			minJ = math.huge,
+			maxJ = -math.huge,
+			sumI = 0,
+			sumJ = 0,
+		}, RegionProps_mt)
+	end
+	-- TODO: This can be a single loop
+	local label, prop
+  for i=0,m-1 do
+		for j=0,n-1 do
+			-- Note: TraverseLinks() must be called before grabbing the label
+      label = equiv_table.m_table[label_array[i][j]]
+      if (label > 0) then
+				prop = props[label]				
+			  prop.area = prop.area + 1
+			  prop.sumI = prop.sumI + i
+			  prop.sumJ = prop.sumJ + j
+			  if (i < prop.minI) then prop.minI = i end
+			  if (i > prop.maxI) then prop.maxI = i end
+			  if (j < prop.minJ) then prop.minJ = j end
+			  if (j > prop.maxJ) then prop.maxJ = j end
+			end
+    end
+  end
+		
+	-- double for
+	-- Sort by area
+	table.sort(props)
+	-- Return in a better format
+	local regions = {}
+	for i, prop in ipairs(props) do
+		if prop.area == 0 then break end
+		table.insert(regions, {
+			area = prop.area,
+			centroid = {props.sumI/props.area, props.sumJ/props.area},
+			boundingBox = {props.minI, props.maxI, props.minJ, props.maxJ}
+		})
+	end
+	return #regions>0 and regions
+end
 
 -- Setup should be able to quickly switch between cameras
 -- i.e. not much overhead here.
 -- Resize should be expensive at most n_cameras times (if all increase the sz)
--- Downscaling
-local scaleA, scaleB
-local log2 = {[1] = 0, [2] = 1, [4] = 2, [8] = 3, [16] = 4, [32] = 5, [64] = 6}
-function ImageProc.setup(w0, h0, sA, sB)
-  -- Save the scale paramter
-  scaleA = sA or 2
-  scaleB = sB or 2
-  --log_sA = log2[scaleA]
-	log_sB = log2[scaleB]
-  -- Recompute the width and height of the images
-  w, h = w0, h0
-  wa, ha = w / scaleA, h / scaleA
-  wb, hb = wa / scaleB, ha / scaleB
-  -- Save the number of pixels
-  np_a, np_b = wa * ha, wb * hb
-	labelA_d = ffi.new('uint8_t[?]', ha*wa)
-	labelB_d = ffi.new('uint8_t[?]', hb*wb)
-	labelA_n = ffi.sizeof(labelA_d)
-	labelB_n = ffi.sizeof(labelB_d)
-	-- Allow access
-	ImageProc.labelA_d, ImageProc.labelA_n = labelA_d, labelA_n
-	ImageProc.labelB_d, ImageProc.labelB_n = labelB_d, labelB_n
-  -- Select faster bit_or
-  if scaleB==2 then
-    ImageProc.block_bitor = block_bitor2
-  else
-    ImageProc.block_bitor = block_bitorN
-  end
-end
-
-function ImageProc.get_info()
+function ImageProc.new(w, h, scaleA, scaleB)
+  scaleA = scaleA or 2
+  scaleB = scaleB or 2
+  local wa, ha = w / scaleA, h / scaleA
+  local wb, hb = wa / scaleB, ha / scaleB
 	return {
+		-- Widths and Heights of Image, LabelA, LabelB
+		w = w,
+		h = h,
 		wa = wa,
 		ha = ha,
 		wb = wb,
 		hb = hb,
+		-- Downsampling scales
 		scaleA = scaleA,
 		scaleB = scaleB,
+		-- Memory allocation of the labels
+		labelA_d = ffi.new('uint8_t[?]', ha * wa),
+		labelB_d = ffi.new('uint8_t[?]', hb * wb),
+		-- Color count allocations
+		ccB_d = ffi.new('int[256]'),
+		ccA_d = ffi.new('int[256]'),
+		luts = {},
+		-- TODO: Functions?
 	}
 end
 

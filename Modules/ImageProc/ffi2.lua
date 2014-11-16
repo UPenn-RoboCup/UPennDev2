@@ -81,7 +81,7 @@ function ImageProc.rgb_to_labelA(self, rgb_ptr, lut_ptr)
 	--local y, u, v
   for j=1,self.ha do
     for i=1,self.wa do
-			--[[
+			----[[
       -- Get Pixel
       r, g, b = rgb_d[0], rgb_d[1], rgb_d[2]
 			-- Convert to YUV
@@ -94,12 +94,14 @@ function ImageProc.rgb_to_labelA(self, rgb_ptr, lut_ptr)
         lshift(band(y, 0xFC), 10)
       )]
 			--]]
+			--[[
 			-- Set the label
       a_ptr[0] = lut_d[bor(
         rshift(128 + (rgb_d[0] - rgb_d[1])/2, 0xFC),
         lshift(band(128 + (rgb_d[2] - rgb_d[1])/2, 0xFC), 4),
         lshift(band(rgb_d[1], 0xFC), 10)
       )]
+			--]]
       -- Move the labelA pointer
       a_ptr = a_ptr + 1
       -- Move the image pointer
@@ -111,7 +113,6 @@ function ImageProc.rgb_to_labelA(self, rgb_ptr, lut_ptr)
 end
 
 -- Bit OR on blocks of NxN to get to labelB from labelA
-local labelB_d, labelB_n, log_sB
 local function block_bitorN(self)
   -- Zero the downsampled image
 	local a_ptr, b_ptr = self.labelA_d, self.labelB_d
@@ -133,8 +134,8 @@ end
 -- Bit OR on blocks of 2x2 to get to labelB from labelA
 local function block_bitor2(self)
   -- Zero the downsampled image
-  ffi.fill(labelB_d, labelB_n)
-  local a_ptr, b_ptr = labelA_d, labelB_d
+  ffi.fill(self.labelB_d, ffi.sizeof(self.labelB_d))
+  local a_ptr, b_ptr = self.labelA_d, self.labelB_d
   -- Offset a row
   local a_ptr1 = a_ptr + self.wa
   -- Start the loop
@@ -184,6 +185,11 @@ function ImageProc.color_countB(self)
   return self.ccB_d
 end
 
+local RegionProps_mt = {}
+function RegionProps_mt.__lt(r1, r2)
+	return r1.area > r2.area
+end
+
 -- Get the color stats for a bounding box
 -- TODO: Add tilted color stats if needed
 -- TODO: use the bbox in the for loop
@@ -192,42 +198,31 @@ local sqrt = require'math'.sqrt
 local atan2 = require'math'.atan2
 local min = require'math'.min
 local max = require'math'.max
-function ImageProc.color_stats(self, label, color, bbox)
-	local l_ptr, ni, nj
-	if label=='a' then
-		l_ptr = self.labelA_d
-		ni = self.wa
-		nj = self.ha
-	else
-		l_ptr = self.labelB_d
-		ni = self.wb
-		nj = self.hb
-	end
-	--
+function ImageProc.color_stats(image, width, height, color, bbox)
   local i0 = 0
-  local i1 = ni - 1
+  local i1 = width - 1
   local j0 = 0
-  local j1 = nj - 1
+  local j1 = height - 1
   if bbox then
     i0 = max(i0, bbox[1])
     i1 = min(i1, bbox[2])
     j0 = max(j0, bbox[3])
     j1 = min(j1, bbox[4])
   end
+	-- Move pointer to the bbox start
+	image = image + j0 * width
 	color = color or 1
-	-- Initialize statistics
-	local col_ptr
-	-- RegionProps based
+	-- RegionProps based statistics
 	local area = 0
-	local minI, maxI = ni - 1, 0
-	local minJ, maxJ = nj - 1, 0
+	local minI, maxI = width - 1, 0
+	local minJ, maxJ = height - 1, 0
 	local sumI, sumJ = 0, 0
 	local sumII, sumJJ, sumIJ = 0, 0, 0
-	l_ptr = l_ptr + j0 * ni
   for j=j0,j1 do
     for i=i0,i1 do
 			-- If our color, then update the RegionProps
-			if col_ptr[i] == color then
+			--if image[i] == color then
+			if band(image[i], color)>0 then
 				-- Increment area size
 				area = area + 1
 				-- Update min/max row/column values
@@ -244,7 +239,7 @@ function ImageProc.color_stats(self, label, color, bbox)
       end
       -- If
     end
-    col_ptr = col_ptr + ni
+    image = image + width
   end
 	if area==0 then return { area = area } end
 	--
@@ -256,27 +251,22 @@ function ImageProc.color_stats(self, label, color, bbox)
 	local covIJ = sumIJ/area - centroidI*centroidJ
 	local covTrace = covII + covJJ
 	local covDet = covII*covJJ - covIJ^2
-	local covFactor = sqrt(max(covTrace*covTrace-4*covDet, 0))
+	local covFactor = sqrt(max(covTrace^2 - 4*covDet, 0))
 	local covAdd = (covTrace + covFactor) / 2
 	local covSubtract = max((covTrace - covFactor), 0) / 2
 	--
-	local axisMajor = sqrt(12*covAdd) + 0.5
-	local axisMinor = sqrt(12*covSubtract) + 0.5
+	local axisMajor = sqrt(12 * covAdd) + 0.5
+	local axisMinor = sqrt(12 * covSubtract) + 0.5
 	local orientation = atan2(covJJ-covIJ-covSubtract, covII-covIJ-covSubtract)
 	--
-	return {
+	return setmetatable({
 		area = area,
 		centroid = {centroidI, centroidJ},
 		boundingBox = {minI,maxI,minJ,maxJ},
 		axisMajor = axisMajor,
 		axisMinor = axisMinor,
 		orientation = orientation,
-	}
-end
-
-local RegionProps_mt = {}
-function RegionProps_mt.__lt(r1, r2)
-	return r1.area > r2.area
+		}, RegionProps_mt)
 end
 
 --[[
@@ -321,7 +311,8 @@ function equiv_table.removeGaps(self)
 	self.n_label = next - 1
 end
 
-function ImageProc.connected_regions(self, image, m, n, mask)
+--[[
+function ImageProc.connected_regions(image, m, n, mask)
 	-- Ensure we have enough room to compute
   if m > NMAX or n > NMAX then return -1 end
 	-- Clear the Equivelence table
@@ -402,21 +393,25 @@ function ImageProc.connected_regions(self, image, m, n, mask)
 			sumJ = 0,
 		}, RegionProps_mt)
 	end
-	-- TODO: This can be a single loop
+	-- TODO: This can be a single loop, not double for
 	local label, prop
   for i=0,m-1 do
 		for j=0,n-1 do
 			-- Note: TraverseLinks() must be called before grabbing the label
-      label = equiv_table.m_table[label_array[i][j]]
+      label = equiv_table.m_table[ label_array[i][j] ]
       if (label > 0) then
 				prop = props[label]				
 			  prop.area = prop.area + 1
 			  prop.sumI = prop.sumI + i
 			  prop.sumJ = prop.sumJ + j
-			  if (i < prop.minI) then prop.minI = i end
-			  if (i > prop.maxI) then prop.maxI = i end
-			  if (j < prop.minJ) then prop.minJ = j end
-			  if (j > prop.maxJ) then prop.maxJ = j end
+			  --if (i < prop.minI) then prop.minI = i end
+			  --if (i > prop.maxI) then prop.maxI = i end
+			  --if (j < prop.minJ) then prop.minJ = j end
+			  --if (j > prop.maxJ) then prop.maxJ = j end
+				prop.minI = i < prop.minI and i or prop.minI
+				prop.maxI = i > prop.maxI and i or prop.maxI
+				prop.minJ = j < prop.minJ and i or prop.minJ
+				prop.maxJ = j > prop.maxJ and i or prop.maxJ
 			end
     end
   end
@@ -436,6 +431,7 @@ function ImageProc.connected_regions(self, image, m, n, mask)
 	end
 	return #regions>0 and regions
 end
+--]]
 
 -- Setup should be able to quickly switch between cameras
 -- i.e. not much overhead here.

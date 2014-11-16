@@ -46,8 +46,13 @@ local function process_rpc(rpc)
     if val then
       local func = mem['set_'..seg..'_'..rpc.key]
       if type(func)~='function' then return'Invalid set function' end
-      if type(val)~='table' then return'Bad shm data' end
-      if #val~=n_el then return'Bad shm length' end
+      if type(val)=='table' then
+				if #val~=n_el then return'Bad shm value' end
+			elseif type(val)=='string' then
+				if #val==0 then return'Bad shm val' end
+			else
+				return'Unsupported SHM value'
+			end
       reply = pcall(func, val)
     else
       local func = mem['get_'..seg..'_'..rpc.key]

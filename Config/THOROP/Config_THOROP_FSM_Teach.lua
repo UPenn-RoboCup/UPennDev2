@@ -12,7 +12,7 @@ fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
 fsm.enabled = {
---  'Body',
+  'Body',
 	'Arm',
   'Motion',
 	'Head'

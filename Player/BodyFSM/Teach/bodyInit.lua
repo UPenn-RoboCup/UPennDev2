@@ -3,7 +3,7 @@ state._NAME = ...
 
 local Body = require'Body'
 
-local timeout = 30.0
+local timeout = 10.0
 local t_entry, t_update, t_exit
 
 local si = require'simple_ipc'

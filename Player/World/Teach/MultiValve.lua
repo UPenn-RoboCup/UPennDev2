@@ -10,26 +10,65 @@ local lA_meta = {
 local detected
 --local ptable = require'util'.ptable
 
-local color_posterior = {}
-local color_priors = {
+hcm.set_guidance_color('GRAB ANY VALVE')
+
+local discrete_prior_mt = {}
+function discrete_prior_mt.__call(t, k)
+	return t[k]
+end
+
+-- Autonomous Prior
+local color_auto_priors = setmetatable({
 	cyan = 1,
 	magenta = 1,
 	yellow = 1,
+	}, discrete_prior_mt)
+-- Normalize
+local color_auto_priors_sum = 0
+for k,v in pairs(color_auto_priors) do color_auto_priors_sum = color_auto_priors_sum + v end
+for k,v in pairs(color_auto_priors) do color_auto_priors[k] = color_auto_priors[k] / color_auto_priors_sum end
+-- Human prior
+local color_human_priors = {
+	cyan = setmetatable({cyan = 0.9, magenta = 0.1, yellow = 0.1,}, discrete_prior_mt),
+	magenta = setmetatable({cyan = 0.1, magenta = 0.9, yellow = 0.1,}, discrete_prior_mt),
+	yellow = setmetatable({cyan = 0.1, magenta = 0.1, yellow = 0.9,}, discrete_prior_mt),
 }
 -- Normalize
-local color_priors_sum = 0
-for k,v in pairs(color_priors) do color_priors_sum = color_priors_sum + v end
-for k,v in pairs(color_priors) do
-	color_priors[k] = color_priors[k] / color_priors_sum
-	color_posterior[k] = color_priors[k]
+for kk, pr in pairs(color_human_priors) do
+	local color_auto_priors_sum = 0
+	for k,v in pairs(pr) do color_auto_priors_sum = color_auto_priors_sum + v end
+	for k,v in pairs(pr) do pr[k] = v / color_auto_priors_sum end
+end
+-- Effective prior is the autonomous one
+local color_prior = setmetatable({}, discrete_prior_mt)
+for k,v in pairs(color_auto_priors) do
+	color_auto_priors[k] = color_auto_priors[k] / color_auto_priors_sum
+	-- Effective prior is the autonomous one
+	color_prior[k] = color_auto_priors[k]
 end
 
--- When human says a word, multiply by these values
-local color_human_updates = {
-	cyan = {cyan = 0.9, magenta = 0.3, yellow = 0.1,},
-	magenta = {cyan = 0.3, magenta = 0.9, yellow = 0.1,},
-	yellow = {cyan = 0.1, magenta = 0.1, yellow = 0.9,},
-}
+
+-- Human prior
+local size_human_priors = {}
+function size_human_priors.small(area)
+	if area < 50 then return .7
+	elseif area < 150 then return .6
+	elseif area < 250 then return .5
+	elseif area < 400 then return .4
+	else return .1
+	end
+end
+function size_human_priors.large(area)
+	if area > 750 then return .7
+	elseif area > 500 then return .6
+	elseif area > 250 then return .5
+	else return .1
+	end
+end
+-- Autonomous Prior wants larger valves
+local size_auto_priors = size_human_priors.large
+-- Default
+local size_prior = size_auto_priors
 
 -- Should have a common API (meta/raw)
 function MultiValve.send()
@@ -88,15 +127,11 @@ function MultiValve.update(rgb, depth)
 		end
 	end
 	-- Normalize tracks
-	--io.write('Stage 1:')
-	for i,track in ipairs(tracked) do
-		track.p = track.p / t_sum
-		--io.write(' ', track.p)
-	end
-	--io.write('\n')
+	for i,track in ipairs(tracked) do track.p = track.p / t_sum end
 	
 	-- Robot only guess based on area alone
 	table.sort(tracked)
+	--[[
 	local ntracked = #tracked
 	local t_sum = 0
 	for i,track in ipairs(tracked) do
@@ -112,47 +147,44 @@ function MultiValve.update(rgb, depth)
 		--io.write(' ', track.p)
 	end
 	--io.write('\n')
+	--]]
 	
 	-- Add human guess to color
 	local g_t = hcm.get_guidance_t()
-	while g_t > 0 do
-		hcm.set_guidance_t({0})
-		local g_color = hcm.get_guidance_color():match('GRAB%s(%S*)%sVALVE')
-		hcm.set_guidance_color('NONE')
-		if not g_color then break end
-		g_color = g_color:lower()
-		local updates = color_human_updates[g_color]
-		if not updates then break end
-		-- Update the ones we are tracking
-		local p_sum = 0
-		for k,v in pairs(color_posterior) do
-			color_posterior[k] = v * updates[k]
-			p_sum = p_sum + color_posterior[k]
+	if g_t > 0 then
+		hcm.set_guidance_t({g_t})
+		local g_color = hcm.get_guidance_color():match('GRAB%s([%s|%w]*)%sVALVE')
+		g_color = g_color and g_color:lower() or ''
+		-- Grab the prior for this vocabulary word
+		local human_color_prior = color_human_priors[g_color]
+		-- If does not exist, then no replacement
+		if human_color_prior then
+			-- Full replace the prior
+			for k,v in pairs(color_prior) do color_prior[k] = human_color_prior[k] or color_prior[k] end
+		elseif g_color:find'any color' or g_color=='any' then
+			-- Go back to auto
+			for k,v in pairs(color_prior) do color_prior[k] = color_auto_priors[k] end
 		end
-		-- Normalize
-		io.write('Color Posterior:')
-		for k,v in pairs(color_posterior) do
-			color_posterior[k] = v / p_sum
-			io.write(' ', k, '|', color_posterior[k])
+		local human_size_prior = g_color and size_human_priors[g_color]
+		if human_size_prior then
+			-- Full replace the prior
+			size_prior = human_size_prior
+		elseif g_color:find'any size' or g_color=='any' then
+			-- Go back to auto
+			size_prior = size_auto_priors
 		end
-		io.write('\n')
-		break
 	end
-	
-	-- Update tracked probabilities based on color posterior
+	-- Update tracked probabilities based on effective priors
 	local t_sum = 0
 	for i,track in ipairs(tracked) do
-		track.p = track.p * color_posterior[track.color]
+		track.p = track.p * color_prior(track.color) * size_prior(track.area)
 		t_sum = t_sum + track.p
 	end
 	-- Normalize
-	--io.write('Stage 3:')
 	for i,track in ipairs(tracked) do
 		track.p = track.p / t_sum
-		--io.write(' ', track.p)
+		--print(track.area, track.p)
 	end
-	--io.write('\n')
-	
 	-- Save
 	detected.tracked = tracked
 end

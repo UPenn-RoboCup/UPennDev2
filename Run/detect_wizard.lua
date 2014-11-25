@@ -176,17 +176,11 @@ mesh_ch.callback = function(skt)
   -- min x/y/z, max x/y/z
   octomap.get_horizontal(0.1, -0.5, 1, 0.8, 0.5, 1.5)
   
-  -- if unix.time()-td>5 and not saved then
-  --   octomap.save_tree('test.bt')
-  --   saved = true
-  -- end
-  --
 end
 
 
 local depths_t, w, h, focal_len
 local function update_kinect_depth(data, depths)
-  print('Updating kinect depth...')
   -- Useful params
   w, h = unpack(data.dims)
   --TODO: no need to calculate every time
@@ -203,9 +197,9 @@ local function update_kinect_depth(data, depths)
   
   local rpy, pose, angle = data.rpy, data.pose, data.angle
   
-  print('POSE:', pose[1], pose[2], lidar_z)
-  print('RPY:', unpack(rpy))
-  print('angle:', angle)
+  -- print('POSE:', pose[1], pose[2], lidar_z)
+  -- print('RPY:', unpack(rpy))
+  -- print('angle:', angle)
   
   
   -- TODO: this takes most of the time
@@ -251,7 +245,7 @@ end
 
 --TODO: add signal to kill properly
 
-while trun do
+while true do
 	update()
 	if t - t_debug > debug_interval then
     t_debug = t

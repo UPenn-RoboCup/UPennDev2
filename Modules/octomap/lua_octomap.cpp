@@ -98,7 +98,7 @@ static int lua_add_depth(lua_State *L) {
   float *depths_ptr = (float *)(depths_t->storage->data + depths_t->storageOffset);
   Pointcloud cloud;
 
-  t0 = clock();
+  // t0 = clock();
   for (int j=0; j<nr; j++) {
     for (int i=0; i<nc; i++) {
       x = *(depths_ptr);
@@ -109,8 +109,8 @@ static int lua_add_depth(lua_State *L) {
       cloud.push_back(x,y,z);
     }
   }
-  t1 = clock();
-  printf("(%f seconds) creating cloud\n", (float)(t1-t0)/CLOCKS_PER_SEC);
+  // t1 = clock();
+  // printf("(%f seconds) creating cloud\n", (float)(t1-t0)/CLOCKS_PER_SEC);
   
   t0 = clock();
 	// Update tree chunk by chunk
@@ -121,8 +121,7 @@ static int lua_add_depth(lua_State *L) {
   printf("(%f seconds) inserting cloud\n", (float)(t1-t0)/CLOCKS_PER_SEC);	
   printf("Mem for tree: %f MB\n\n",(double)tree.memoryUsage()/1E6);
   printf("tree depth: %u, \t # of leaves:%u \n\n", tree.getTreeDepth(), tree.getNumLeafNodes());
-  
-  
+    
   return 0;
 }
 
@@ -207,7 +206,7 @@ static int lua_get_horizontal(lua_State *L) {
         candidates.push_back(it.getKey());
       }
 
-      tree.getNormals(it.getCoordinate(), normals);
+      // tree.getNormals(it.getCoordinate(), normals);
       // printf("# of Normals: %d\n", normals.size());
       // printf("point: %.2f %.2f %.2f\n", it.getX(), it.getY(), it.getZ());
       // printf("1st normal: %.2f %.2f %.2f\n", normals[1].x(), normals[1].y(),normals[1].z());

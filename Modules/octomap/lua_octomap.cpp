@@ -92,7 +92,7 @@ static int lua_add_depth(lua_State *L) {
   Z = -(y-cy)*d/f
   */
   //TODO: cx, cy need to be calibrated
-  float cx = 0.0f, cy = 0.0f;
+  float cx = (float) nc/2, cy = (float) nr/2;
   float inv_f = 1 / focal_len;
   float x, y, z;
   float *depths_ptr = (float *)(depths_t->storage->data + depths_t->storageOffset);

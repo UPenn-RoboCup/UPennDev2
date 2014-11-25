@@ -26,9 +26,10 @@ local ball = {}
 ball.approach = vector.zeros(0)
 shared_data.ball = ball
 
--- For tree saving
+-- For OctoTree saving
 local tree = {}
-tree.save = vector.zeros(0)
+tree.update = vector.zeros(1)
+tree.save = vector.zeros(1)
 shared_data.tree = tree
 
 shared_data.state={}

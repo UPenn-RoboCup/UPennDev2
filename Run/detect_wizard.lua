@@ -40,11 +40,7 @@ end
 local octomap = require'octomap'
 -- TODO: read params from shm
 octomap.set_resolution(0.01)
-octomap.set_range(0.05, 1.5)
--- 0.02m ~ 0.5 sec
--- 0.01m ~ 1.5 sec  <0.5sec if range is shorter
--- not that terrible...
-
+octomap.set_range(0.05, 2)
 
 
 local xyz_global, xyz_local
@@ -201,14 +197,20 @@ local function update_kinect_depth(data, depths)
   --TODO: use octomap methods to directly manipulate depths
 	local float_depths = ffi.cast('float*', depths)
   local byte_sz = w * h * ffi.sizeof'float'
-  print('w=', w, 'h=', h, 'FLOAT DEPTH SIZE', byte_sz)
-  depths_t = torch.FloatTensor(w, h):zero()
-  -- ffi.copy(depths_t:data(), float_depths, byte_sz)
-  -- print(unpack(vector.new(depths_t:select(1, 300))))
+  -- print('w=', w, 'h=', h, 'FLOAT DEPTH SIZE', byte_sz)
+  depths_t = torch.FloatTensor(h, w):zero()
+  ffi.copy(depths_t:data(), float_depths, byte_sz)
   
   local rpy, pose, angle = data.rpy, data.pose, data.angle
-  octomap.add_depth(depths_t, focal_len, 
-    pose[1], pose[2], lidar_z, 
+  
+  print('POSE:', pose[1], pose[2], lidar_z)
+  print('RPY:', unpack(rpy))
+  print('angle:', angle)
+  
+  
+  -- TODO: this takes most of the time
+  octomap.add_depth(depths_t, focal_len,
+    pose[1], pose[2], lidar_z,
     unpack(rpy))
 end
 

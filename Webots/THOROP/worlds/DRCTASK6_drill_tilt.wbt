@@ -32,10 +32,11 @@ DEF FLOOR Floor {
     "textures/texture_grid.png"
   ]
 }
-THOROP_UPENN_tilt_lidar {
+THOROP_UPENN_kinect {
   translation -0.5 1.15535 0.4
   controller "thorop"
   controllerArgs "0 32"
+  cameraWindowPosition 0.24238 0.191898
 }
 DEF MY_TABLE Solid {
   translation -0.525 1 1.15

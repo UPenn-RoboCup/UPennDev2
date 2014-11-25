@@ -132,7 +132,7 @@ if IS_WEBOTS then
   -- Adjust the tiemsteps if desired
   -- Config.camera_timestep = 33
   -- Config.lidar_timestep = 200 --slower
-  Config.kinect_timestep = 30
+  Config.kinect_timestep = 300  -- slower
 end
 
 --Add path to selected librares

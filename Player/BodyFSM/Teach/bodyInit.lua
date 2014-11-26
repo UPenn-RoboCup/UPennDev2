@@ -14,7 +14,8 @@ function state.entry()
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-
+	--
+	arm_ch:send'init'
   motion_ch:send'stand'
 end
 

@@ -269,13 +269,17 @@ local function update(meta, ranges)
   -- Find the scanline indices
 	local rad_angle = meta.angle
   local scanlines = angle_to_scanlines(rad_angle)
-	local byte_sz = mesh:size(2) * ffi.sizeof'float'
 	local float_ranges = ffi.cast('float*', ranges)
+  --local byte_sz = mesh:size(2) * ffi.sizeof'float'
+  local byte_sz = n_returns * ffi.sizeof'float'
 	local dest
   for _,line in ipairs(scanlines) do
 		if line >= 1 and line<=n_scanlines then
-			dest = mesh:select(1, line) -- NOTE: must be contiguous
-			ffi.copy(dest:data(), float_ranges + offset_idx, byte_sz)
+			
+      --dest = mesh:select(1, line) -- NOTE: must be contiguous
+			--ffi.copy(dest:data(), float_ranges + offset_idx, byte_sz)
+      ffi.copy(mesh + (line-1) * n_scanlines, float_ranges + offset_idx, byte_sz)
+      
 			-- Save the pan angle
 			scan_angles[line] = rad_angle
 			-- TODO: Save the pose

@@ -480,8 +480,8 @@ static int lua_png_compress(lua_State *L) {
     if (data == NULL) {
       return luaL_error(L, "Input image bad");
     }
-		width  = luaL_checkint(L, 2);
-		height = luaL_checkint(L, 3);
+		w = luaL_checkint(L, 2);
+		h = luaL_checkint(L, 3);
     bytes_per_pixel = luaL_optinteger(L, 4, 3);
 	}
 #ifdef TORCH

@@ -84,7 +84,7 @@ static int lua_add_depth(lua_State *L) {
   double roll = (double) luaL_checknumber(L, 6);
   double pitch = (double) luaL_checknumber(L, 7);
   double yaw = (double) luaL_checknumber(L, 8);
-  pose6d kinect_pose = pose6d(px,py,pz,roll,pitch,yaw);
+  pose6d frame_origin = pose6d(px,py,pz,roll,pitch,yaw);
   
   /*
   X = d
@@ -115,7 +115,7 @@ static int lua_add_depth(lua_State *L) {
   
   t0 = clock();
 	// Update tree chunk by chunk
-  tree.insertPointCloud(cloud, point3d(0.0f,0.0f,0.0f), kinect_pose, max_range, true);
+  tree.insertPointCloud(cloud, point3d(0.0f,0.0f,0.0f), frame_origin, max_range, true);
   tree.updateInnerOccupancy();
   tree.prune();
   t1 = clock();

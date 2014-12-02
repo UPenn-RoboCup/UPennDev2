@@ -37,15 +37,15 @@ shared.us.distance  = vector.zeros(2)
 -- Mesh formation
 shared.mesh = {}
 -- Lidar servo rotational axis
-shared.mesh.direction = vector.ones(1)  -- 1: pitching   0: yawing
+shared.mesh.direction = vector.ones(0)  -- 1: pitching   0: yawing
 -- Sweep: min and max of View (radians), time to complete sweep (seconds)
---shared.mesh.sweep = {-5*DEG_TO_RAD, 60*DEG_TO_RAD, 2}
-shared.mesh.sweep = {-40*DEG_TO_RAD, 40*DEG_TO_RAD, 2}
+--shared.mesh.sweep = {-5*DEG_TO_RAD, 60*DEG_TO_RAD, 2} -- for pitching
+shared.mesh.sweep = {-40*DEG_TO_RAD, 40*DEG_TO_RAD, 2}  -- for yawing
 -- fov: In a single scan, which ranges to use (field of view)
 -- Like pitch: positive is down, negative is up. 90 deg is straight down
 -- TODO: Also like yaw, positive is left, negative is right
---shared.mesh.fov = {-math.pi/4, math.pi/4}
-shared.mesh.fov = {0, math.pi/2}
+--shared.mesh.fov = {-math.pi/4, math.pi/4} -- for pitching
+shared.mesh.fov = {-10*DEG_TO_RAD, math.pi/2}  -- for yawing
 -- Net: {request, destination, compression}
 -- request: 1 means mesh needs to be sent to destination
 -- destination: 0 is udp, 1 is tcp PUB

@@ -39,7 +39,7 @@ end
 -- Octomap
 local octomap = require'octomap'
 -- TODO: read params from shm
-octomap.set_resolution(0.01)
+octomap.set_resolution(0.005)
 octomap.set_range(0.05, 2)
 
 
@@ -87,7 +87,7 @@ local function transform(points, data)
     
     -- Transform to GLOBAL frame
     pitch = data.pitch[i] + body_pitch_offset
-    roll = data.roll[i]
+    roll = data.roll[i] + math.pi/2 -- TODO: a hack...
     if data.pose[i] then 
       pose = data.pose[i] 
       pre_pose = pose
@@ -111,17 +111,9 @@ local function transform(points, data)
       torch.ones(1,n_returns):type('torch.FloatTensor'),1)
       
     xyz_local = torch.mm(R, xyz_local)   -- 4*360
-    xyz_global[{{(i-1)*n_returns+1, i*n_returns},{}}]:copy(xyz_local:sub(1,3):t())
-        
-  end
-  
-  if DEBUG then
-    -- print(unpack(vector.new(xyz_global[{{10*n_returns+1, 11*n_returns},3}])))
+    xyz_global[{{(i-1)*n_returns+1, i*n_returns},{}}]:copy(xyz_local:sub(1,3):t())       
   end
 
-  -- visualize: octovis or matlab
-  
-    
 end
 
 local function plane_detect()
@@ -168,11 +160,11 @@ mesh_ch.callback = function(skt)
   td = unix.time()
   octomap.add_scan(xyz_global)
   if DEBUG then
-    print('Added one full scan.. ', unix.time()-td, '\n')
+    -- print('Added one full scan.. ', unix.time()-td, '\n')
   end
   
   -- min x/y/z, max x/y/z
-  octomap.get_horizontal(0.1, -0.5, 1, 0.8, 0.5, 1.5)
+  -- octomap.get_horizontal(0.1, -0.5, 1, 0.8, 0.5, 1.5)
   
 end
 
@@ -195,9 +187,9 @@ local function update_kinect_depth(data, depths)
   
   local rpy, pose, angle = data.rpy, data.pose, data.angle
   
-  -- print('POSE:', pose[1], pose[2], lidar_z)
-  -- print('RPY:', unpack(rpy))
-  -- print('angle:', angle)
+  -- TODO: we need sensor origin in body frame
+  -- point cloud in BODY frame.. (according to doc..)
+  -- body pose in global frame
   
   
   -- TODO: this takes most of the time

@@ -200,6 +200,19 @@ local function check_send_mesh()
 	-- Reset the request
 	net[1] = 0
 	vcm.set_mesh_net(net)
+	-- Log
+	-- Do the logging if we wish
+	if ENABLE_LOG then
+		metadata.rsz = mesh:nElement() * ffi.sizeof'float'
+		logger:record(metadata, mesh:data(), metadata.rsz)
+		nlog = nlog + 1
+		print("# mesh logs: "..nlog, metadata.rsz)
+		if nlog % 100 == 0 then
+			logger:stop()
+			logger = libLog.new('mesh', true)
+			print('Open new log!')
+		end
+	end
 end
 
 local function update(meta, ranges)
@@ -244,21 +257,6 @@ local function update(meta, ranges)
 	-- Check for sending out on the wire
 	-- TODO: This *should* be from another ZeroMQ event, in case the lidar dies
 	check_send_mesh()
-  
-	-- Do the logging if we wish
-	if ENABLE_LOG then
-		metadata.rsz = mesh:nElement() * ffi.sizeof'float'
-		logger:record(metadata, mesh:data(), metadata.rsz)
-		nlog = nlog + 1
-		if nlog % 10 == 0 then
-			print("# mesh logs: "..nlog)
-			if nlog % 100 == 0 then
-				logger:stop()
-				logger = libLog.new('mesh', true)
-				print('Open new log!')
-			end
-		end
-	end
   
 end
 

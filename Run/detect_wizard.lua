@@ -162,7 +162,6 @@ mesh_ch.callback = function(skt)
     -- print('Transform the entir scan..', unix.time()-td)
   end
   
-  ---[[ Update sensor pose
   octomap.set_origin(torch.DoubleTensor({pose[1], pose[2], body_height}))
 
   -- Insert point cloud to Octree  
@@ -171,7 +170,6 @@ mesh_ch.callback = function(skt)
   if DEBUG then
     print('Added one full scan.. ', unix.time()-td, '\n')
   end
-  --]]
   
   -- min x/y/z, max x/y/z
   octomap.get_horizontal(0.1, -0.5, 1, 0.8, 0.5, 1.5)
@@ -204,8 +202,11 @@ local function update_kinect_depth(data, depths)
   
   -- TODO: this takes most of the time
   octomap.add_depth(depths_t, focal_len,
-    pose[1], pose[2], lidar_z,
+    pose[1], pose[2], lidar_z+body_height,
     unpack(rpy))
+    
+  octomap.get_horizontal(0.1, -0.5, 0.9, 1.5, 0.5, 1.1)
+  
 end
 
 

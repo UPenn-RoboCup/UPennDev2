@@ -3,6 +3,8 @@
 local ok = pcall(dofile,'../fiddle.lua')
 if not ok then dofile'fiddle.lua' end
 
+hcm.set_tree_update(0)
+
 local targetvel = {0,0,0}
 local targetvel_new = {0,0,0}
 local WAS_REQUIRED
@@ -168,6 +170,7 @@ end
 
 -- Field of View and timing for the mesh
 vcm.set_mesh_sweep({40*DEG_TO_RAD, 1.0})
+-- Disable kinect updates at beginning
 
 local getch = require'getch'
 local running = true

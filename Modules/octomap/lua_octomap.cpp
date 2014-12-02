@@ -99,6 +99,7 @@ static int lua_add_depth(lua_State *L) {
   Pointcloud cloud;
 
   // t0 = clock();
+  // This cloud is in kinect coordinates
   for (int j=0; j<nr; j++) {
     for (int i=0; i<nc; i++) {
       x = *(depths_ptr);
@@ -177,6 +178,15 @@ static int lua_add_scan( lua_State *L ) {
 }
 
 
+// Plane fitting
+static void ransac(vector<OcTreeKey> &keys, int maxIter, float eps) {
+  int counts = 0;
+  for (int i=0; i<maxIter; i++) {
+    // Randomly pick three nodes
+    
+  }
+}
+
 
 // Our primer normals
 const point3d ground_normal = point3d(0.0f, 0.0f, 1.0f);
@@ -195,21 +205,29 @@ static int lua_get_horizontal(lua_State *L) {
   
 
   vector<OcTreeKey> candidates;
+  vector<point3d> normals;
+  
   // Bbox for searching the candidates
   point3d min = point3d(min_x, min_y, min_z);
   point3d max = point3d(max_x, max_y, max_z);
-  vector<point3d> normals;
   for(OcTree::leaf_bbx_iterator it = tree.begin_leafs_bbx(min,max),
-         end=tree.end_leafs_bbx(); it!= end; ++it) {
-      
-      if (fabs(it.getZ()-1)<0.05) {
-        candidates.push_back(it.getKey());
-      }
+         end = tree.end_leafs_bbx(); it!= end; ++it) {
 
-      // tree.getNormals(it.getCoordinate(), normals);
-      // printf("# of Normals: %d\n", normals.size());
-      // printf("point: %.2f %.2f %.2f\n", it.getX(), it.getY(), it.getZ());
-      // printf("1st normal: %.2f %.2f %.2f\n", normals[1].x(), normals[1].y(),normals[1].z());
+           
+      if (fabs(it.getZ()-1)<0.05) {
+        // candidates.push_back(it.getKey());
+        tree.getNormals(it.getCoordinate(), normals);
+        if (normals.size()>0) {
+          // printf("# of Normals: %d\n", normals.size());
+          // printf("1st normal: %.2f %.2f %.2f\n", normals[0].x(), normals[0].y(),normals[0].z());
+          
+          if (normals[0].angleTo(ground_normal) < DEG2RAD(2)) { //TODO:something wrong
+            candidates.push_back(it.getKey());
+            // printf("Z values: %.2f ", it.getZ());
+          }
+                   
+        }
+      }
       
       // if (normals[1].angleTo(ground_normal) < DEG2RAD(2)) { //TODO:something wrong
       //   printf("HEIGHT IS: %d", it.getZ());
@@ -218,26 +236,24 @@ static int lua_get_horizontal(lua_State *L) {
 
   }
   printf("# of cands %d\n", candidates.size());
-  // return candidates;
+  
+  // ransac(candidates, 200, 200);  //TODO
   return 0;
 }
 
 
-//TODO: segmentaion thoughs: table, object, brackground
+//TODO: segmentaion: table, object, brackground
+
 
 
 //TODO: Region growing
-static void connected_region(vector<OcTreeKey> &keys, bool hor) {
-  if (hor) {
-    
-  } else {
-    
-  }
+// static void connected_region(vector<OcTreeKey> &keys) {
+
   // Propagate
   // if it's a sinlge layer
   // if it's surrounded by 4 cells
   
-}
+// }
 
 
 static int lua_get_pruned_data( lua_State *L ) {

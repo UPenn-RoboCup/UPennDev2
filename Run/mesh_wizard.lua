@@ -181,23 +181,29 @@ local function send_mesh(destination, compression, dynrange)
   --]]
   
   local scalar = 255 / (far - near)
+	print('n_mesh_el-1', n_mesh_el-1)
   for i=0,n_mesh_el-1 do
     mesh_byte[i] = max(0, min(255, scalar * (mesh[i] - near)))
+		if i>n_scanlines*2 and i<n_scanlines*3 then
+			io.write('\n',i,': ', mesh_byte[i], ' ', mesh[i],'\n')
+		end
   end
-  
+
   -- Compression
   local c_mesh
   if compression=='jpeg' then
 		--c_mesh = j_compress:compress(mesh_byte)
     c_mesh = j_compress:compress(
       tonumber(ffi.cast('intptr_t', ffi.cast('void *', mesh_byte))),
-      n_scanlines, n_returns
+      n_scanlines,
+			n_returns
     )
   elseif compression=='png' then
     --c_mesh = p_compress(mesh_byte)
     c_mesh = p_compress(
       tonumber(ffi.cast('intptr_t', ffi.cast('void *', mesh_byte))),
-      n_scanlines, n_returns
+      n_scanlines,
+			n_returns
     )
   else
     -- Raw
@@ -234,8 +240,8 @@ local function check_send_mesh()
 	-- Log
 	-- Do the logging if we wish
 	if ENABLE_LOG then
-		metadata.rsz = mesh:nElement() * ffi.sizeof'float'
-		logger:record(metadata, mesh:data(), metadata.rsz)
+		metadata.rsz = n_mesh_el * ffi.sizeof'float'
+		logger:record(metadata, mesh, metadata.rsz)
 		nlog = nlog + 1
 		print("# mesh logs: "..nlog, metadata.rsz)
 		if nlog % 100 == 0 then
@@ -278,7 +284,12 @@ local function update(meta, ranges)
 			
       --dest = mesh:select(1, line) -- NOTE: must be contiguous
 			--ffi.copy(dest:data(), float_ranges + offset_idx, byte_sz)
-      ffi.copy(mesh + (line-1) * n_scanlines, float_ranges + offset_idx, byte_sz)
+			dest = mesh + (line-1) * n_scanlines
+      ffi.copy(
+				dest,
+				float_ranges + offset_idx,
+				byte_sz
+			)
       
 			-- Save the pan angle
 			scan_angles[line] = rad_angle

@@ -8,7 +8,9 @@ PROTO GRIPPER_PLATE [
 		translation IS translation
 		rotation IS rotation
 		children [
-			DEF PLATE Shape { geometry Box { size IS size } }
+			DEF PLATE Shape {
+				geometry Box { size IS size }
+			}
 		]
 		boundingObject USE PLATE
 		physics Physics {

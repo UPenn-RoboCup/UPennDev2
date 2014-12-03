@@ -218,6 +218,54 @@ function ImageProc.color_stats(label, color, bbox)
 	}
 end
 
+local equivalence_mt = {}
+function equivalence_mt.addEquivalence(self, label1, label2)
+	local m_table = self.m_table
+  while label1 ~= m_table[label1] do label1 = m_table[label1] end
+	while label2 ~= m_table[label2] do label2 = m_table[label2] end
+  if label1 < label2 then
+    m_table[label2] = label1
+	else
+    m_table[label1] = label2
+	end
+end
+function equivalence_mt.traverseLinks(self)
+	local m_table = self.m_table
+	for i=1,#m_table do m_table[i] = m_table[ m_table[i] ] end
+end
+function equivalence_mt.removeGaps(self)
+	local m_table = self.m_table
+	local next = 0
+	for i=1,#m_table do
+    m_table[i] = (i == m_table[i]) and next or m_table[m_table[i]]
+		next = (i == m_table[i]) and next + 1 or next
+	end
+	self.n_label = next - 1
+end
+function equivalence_mt.getEquivalentLabel(self, label)
+	-- Note: TraverseLinks() must be called before this function
+	return m_table[label]
+end
+function equivalence_mt.ensureAllocated(self, label)
+	local m_table = self.m_table
+	for i=#m_table,label do table.insert(m_table, i) end
+end
+function equivalence_mt.clear(self)
+	self.m_table = {}
+end
+function equivalence_mt.numLabel(self)
+  -- Note: RemoveGaps() must be called before this function
+  return self.n_label
+end
+function gen_equivalence_table()
+	return setmetatable({
+		n_label = 0,
+		m_table = {}
+	}, equivalence_mt)
+end
+
+-- TODO: ConnectRegions
+
 -- Setup should be able to quickly switch between cameras
 -- i.e. not much overhead here.
 -- Resize should be expensive at most n_cameras times (if all increase the sz)

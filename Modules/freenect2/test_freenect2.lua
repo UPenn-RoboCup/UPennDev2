@@ -8,6 +8,12 @@ get_time = unix.time
 
 local c_rgb = require'jpeg'.compressor('rgb')
 
+
+local meta = {
+	serial_number = serial_number,
+	firmware_version = firmware_version,
+}
+
 local libLog, logger
 libLog = require'libLog'
 log_rgb = libLog.new('k2_rgb', true)
@@ -17,12 +23,19 @@ log_depth = libLog.new('k2_depth', true)
 for i=1,120 do
 	rgb, depth, ir = freenect2.update()
   if i%5==0 then
-    local t = get_time()
-    local j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
-    log_rgb:record({t = t,rsz = #j_rgb}, j_rgb)
-    log_ir:record({t = t,rsz = #ir.data}, ir.data)
-    local m_ok, r_ok = log_depth:record({t = t, rsz = #depth.data}, depth.data)
-    print('Logged', log_depth.n)
+		meta.t = get_time()
+		--
+    j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
+		meta.rsz = #j_rgb
+    log_rgb:record(meta, j_rgb)
+		--
+		meta.rsz = #ir.data
+    log_ir:record(meta, ir.data)
+		--
+		meta.rsz = #depth.data
+    log_depth:record(meta, depth.data)
+		--
+    io.write('Logged ', log_depth.n, '\n')
   end
 end
 log_rgb:stop()

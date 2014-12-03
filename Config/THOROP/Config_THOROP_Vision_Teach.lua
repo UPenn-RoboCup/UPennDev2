@@ -153,7 +153,7 @@ table.insert(Config.camera,
 if IS_WEBOTS then
   Config.camera[1].w = 320
   Config.camera[1].h = 180
-  Config.camera[1].lut = 'wbt_chopsticks'
+  Config.camera[1].lut = 'multi_valve'
 
   Config.camera[1].cx_offset = 0
   Config.camera[1].cy_offset = 0

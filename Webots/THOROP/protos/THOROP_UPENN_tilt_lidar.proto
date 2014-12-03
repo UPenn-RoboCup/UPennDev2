@@ -5,17 +5,14 @@
 # (c) Stephen McGill, 2014
 #############################################
 
-PROTO THOROP_UPENN_tilt_lidar [
-  field SFVec3f    translation 0 1 0
+PROTO THOROP_UPENN_kinect [
+  field SFVec3f    translation 0 1.155 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
   field SFString   controllerArgs ""
   field SFBool     synchronization TRUE
-	field SFFloat    lidarFov 3.1415926536
-	field SFInt32    lidarRays 720
-  # We may want wider FOV for head lidar
-	#field SFFloat    headLidarFov 4.7123889803
-	#field SFInt32    headLidarRays 1080
+  field SFFloat    lidarFov 3.1415926536
+  field SFInt32    lidarRays 720
   field SFString   name "THOR-OP"
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
@@ -439,7 +436,7 @@ Robot {
 								}
 								## End Right Leg
 								
-								## Begin  Left Leg
+								## Begin Left Leg
 								DEF Left_hip_yaw HingeJoint {
 									device RotationalMotor {
 										name "PelvYL"
@@ -835,22 +832,18 @@ Robot {
 				acceleration 55
 			} # End of the ChestLidarPan RotationalMotor
 			jointParameters HingeJointParameters {
-				axis 1 0 0
+				axis 0 1 0
 				anchor 0 0 0.1
 			} # End of the ChestLidarPan HingeJointParameters
-			endPoint hokuyo {
-				name "ChestLidar"
-				width IS lidarRays
-				fieldOfView IS lidarFov
-				translation 0 0 0.1
-        rotation 0 1 0 3.14159265
-			}			
+      # We may remove the pan servo later
+			endPoint kinect2 {
+			  translation 0 0 0.1
+			  rotation 0 1 0 3.14159265
+        #TODO: add a pitch angle
+			  maxRange 3.5
+			}
 		} # End of the ChestLidarPan HingeJoint
 ## End the Chest lidar chain
-    
-
-
-
 
 ## Begin the Right arm chain
     DEF Right_shoulder_pitch HingeJoint {

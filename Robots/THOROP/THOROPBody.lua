@@ -454,58 +454,30 @@ if IS_WEBOTS then
 	end
 
 	function Body.update()
-
     local t = get_time()
-    --Body.update_finger(timeStep)
-
 		-- Set actuator commands from shared memory
 		local cmds = Body.get_command_position()
 		local poss = Body.get_position()
 		for idx, jtag in ipairs(tags.joints) do
 			local cmd, pos = cmds[idx], poss[idx]
-
 			-- TODO: What is velocity?
 			local vel = 0 or Body.get_command_velocity()[idx]
 			local en = Body.get_torque_enable()[idx]
-			-- Only update the joint if the motor is torqued on
-
-			-- If the joint is moving
-			-- Clamp the difference between commanded and actuated
-			-- so that we don't have huge jumped
-			-- NOTE: This *should* be handled by the simulator?
-			--[[
-			local deltaMax = timeStep * vel
-			local new_pos = cmd
-			if vel > 0 then
-        local delta = util.mod_angle(cmd - pos)
-				if delta > deltaMax then
-					delta = deltaMax
-				elseif delta < -deltaMax then
-					delta = -deltaMax
-				end
-				new_pos = pos + delta
-			end
-			--]]
-
 			if en>0 and jtag>0 then
-				
+				-- Only update the joint if the motor is torqued on
 				if jointNames[idx]:lower():find('grip') or jointNames[idx]:lower():find('trigger') then
 					webots.wb_motor_set_available_torque(jtag, 8)
 				end
-				
         -- Update the PID
         if not OLD_API then
           local new_P, old_P = Body.get_position_p()[idx], PID_P[idx]
           if new_P ~= old_P then
-            --print('UPDATE P!', idx, old_P, new_P)
             PID_P[idx] = new_P
             webots.wb_motor_set_control_pid(jtag, new_P, 0, 0)
           end
-        end
-        
+        end        
         local rad = servo.direction[idx] * (cmd + servo.rad_offset[idx])
         set_pos(jtag, rad)
-			
 			elseif en==0 and jtag>0 then
 				-- Disabling torque
 				if jointNames[idx]:lower():find('grip') or jointNames[idx]:lower():find('trigger') then
@@ -616,13 +588,13 @@ if IS_WEBOTS then
       local h = webots.wb_camera_get_height(tags.head_camera)
       local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.head_camera), w, h)
 			WebotsBody.update_head_camera(img, 2*w*h, 0, t)
-			NEXT_CAMERA = get_time() + camera_timeStep / 1000
+			NEXT_CAMERA = t + camera_timeStep / 1000
     end
     -- Grab a kinect frame
     if ENABLE_KINECT and t >= NEXT_KINECT then
-      -- Grab the RGB image
       local w = webots.wb_camera_get_width(tags.kinect)
       local h = webots.wb_camera_get_height(tags.kinect)
+-- dev-slam
       -- TODO: do we need img from kinect?
       -- local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.kinect), w, h)
       -- Grab the ranges
@@ -632,6 +604,23 @@ if IS_WEBOTS then
             pose=wcm.get_robot_odometry(), dims={w, h}}
 			WebotsBody.update_kinect_depth(metadata,ranges)
 			NEXT_KINECT = get_time() + kinect_timeStep / 1000
+--[[ dev-master
+      -- TODO: fov? res?
+			local rgb = {
+				data = webots.to_rgb(tags.kinect),
+				width = w,
+				height = h,
+				t = t,
+			}
+			local depth = {
+				data = webots.wb_camera_get_range_image(tags.kinect),
+				width = w,
+				height = h,
+				t = t,
+			}
+			WebotsBody.update_chest_kinect(rgb, depth)
+			NEXT_KINECT = t + kinect_timeStep / 1000
+--]]
     end
     
     -- Grab a lidar scan
@@ -647,7 +636,7 @@ if IS_WEBOTS then
       }
 			WebotsBody.update_chest_lidar(metadata,ranges)
       --local lidar_array = require'carray'.float(ranges, w)
-			NEXT_CHEST_LIDAR = get_time() + lidar_timeStep / 1000
+			NEXT_CHEST_LIDAR = t + lidar_timeStep / 1000
     end
     -- Grab a lidar scan
     if ENABLE_HEAD_LIDAR and t >= NEXT_HEAD_LIDAR then
@@ -657,7 +646,7 @@ if IS_WEBOTS then
       local ranges = webots.wb_camera_get_range_image(tags.head_lidar)
       local metadata = {n=n,res=res,t=t,angle=Body.get_lidar_position()}
       WebotsBody.update_head_lidar(metadata,ranges)
-      NEXT_HEAD_LIDAR = get_time() + lidar_timeStep / 1000
+      NEXT_HEAD_LIDAR = t + lidar_timeStep / 1000
     end
 
 		-- Receive webot messaging

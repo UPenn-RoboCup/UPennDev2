@@ -45,8 +45,6 @@ end
 
 -- Should have a common API (meta/raw)
 function libVision.send()
-
-  local to_send = {}
   local lA_raw = c_zlib(ImageProc2.labelA_d, ImageProc2.labelA_n)
   local lA_meta = {
     w = wa,
@@ -55,9 +53,10 @@ function libVision.send()
     c = 'zlib',
     id = 'labelA',
   }
-  to_send[1] = {lA_meta, lA_raw}
-  to_send[2] = {detected}
-  return to_send
+  return {
+  	{lA_meta, lA_raw},
+		{detected},
+	}
 end
 
 local function bboxB2A(bboxB)
@@ -223,7 +222,7 @@ local function find_goal()
 	local post_detected = true
 	if nPosts>2 or nPosts<1 then
 		--TODO: this might have problem when robot see goal posts on other fields
-		table.insert(failures, table.concat({'Bad post number'},','))
+		table.insert(failures, 'Bad number of posts')
 		post_detected = false
 	end
 

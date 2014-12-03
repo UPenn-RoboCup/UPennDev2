@@ -184,9 +184,6 @@ local function send_mesh(destination, compression, dynrange)
 	print('n_mesh_el-1', n_mesh_el-1)
   for i=0,n_mesh_el-1 do
     mesh_byte[i] = max(0, min(255, scalar * (mesh[i] - near)))
-		if i>n_scanlines*2 and i<n_scanlines*3 then
-			io.write('\n',i,': ', mesh_byte[i], ' ', mesh[i],'\n')
-		end
   end
 
   -- Compression

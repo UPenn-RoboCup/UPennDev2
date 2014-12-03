@@ -43,8 +43,8 @@ if IS_WEBOTS then
   -- Default Webots sensors
   Config.sensors = {
     ft = true,
-    head_camera = true,
-    chest_lidar = true,
+    head_camera = false,
+    chest_lidar = false,
     head_lidar = false,
     kinect = false,
     fsr = false,
@@ -127,16 +127,16 @@ local exo = {
 	'FSM_Teach', 'Arm_Teach', 'Vision_Teach' --, 'World_Teach'
 }
 if IS_WEBOTS then
-  Config.testfile = 'test_teleop'--'test_teach'
+  Config.testfile = 'test_teleop'
   Config.wizards = {
 		feedback = 'feedback_wizard',
-		--camera = 'camera_wizard',
 		kinect = 'kinect2_wizard',
+    mesh = 'mesh_wizard',
 	}
   Config.sensors = {
 		ft = true,
-		--head_camera = true,
 		kinect = true,
+    chest_lidar = true,
 	}
 end
 --]]

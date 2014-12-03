@@ -15,7 +15,15 @@ LIBRT=-lrt
 SHLIBEXT=so
 STRIP=strip
 USE_TORCH=1
-INCLUDES=-I/usr/local/include -I/usr/include/lua5.1 -I/usr/local/include/lua5.1
+INCLUDES=-I/usr/local/include
+
+# Lua 5.1
+#INCLUDES+=-I/usr/include/lua5.1 -I/usr/local/include/lua5.1
+#LUA_INC=$(pkg-config --cflags-only-I lua5.1)
+# LuaJIT 2.1
+#LUA_INC=$(pkg-config --cflags-only-I luajit)
+LUA_INC=-I/usr/local/include/luajit-2.1
+INCLUDES+=$(LUA_INC)
 
 # OS Specific overrides
 ifeq ($(OSTYPE),darwin)

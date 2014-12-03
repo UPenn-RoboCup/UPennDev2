@@ -15,8 +15,10 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 	--
+  head_ch:send'init'
 	arm_ch:send'init'
   motion_ch:send'stand'
+  lidar_ch:send'pan'
 end
 
 function state.update()

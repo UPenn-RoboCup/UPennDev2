@@ -17,11 +17,11 @@ PROTO THOROP_UPENN [
 	#field SFFloat    headLidarFov 4.7123889803
 	#field SFInt32    headLidarRays 1080
   field SFString   name "THOR-OP"
-  field SFVec2f    cameraWindowPosition 0 0
-  field SFFloat    cameraPixelSize 1.0
-  field SFInt32    cameraWidth 320
-  field SFInt32    cameraHeight 180
-	field SFFloat    cameraFov 1.0472
+#  field SFVec2f    cameraWindowPosition 0 0
+#  field SFFloat    cameraPixelSize 1.0
+#  field SFInt32    cameraWidth 320
+#  field SFInt32    cameraHeight 180
+#	field SFFloat    cameraFov 1.0472
   field SFString   footContactMaterial "default"
 ]
 {
@@ -776,46 +776,59 @@ Robot {
 							axis 1 0 0
 							anchor 0 0.161 0
 						} # End of the Head HingeJointParameters
-						endPoint Solid {
-							translation 0 0.161 0
-#							rotation -1 0 0 -0.17
-							boundingObject Transform {
-								translation 0 0 0.01
-								children [
-									Box {
-										size 0.1 0.18 0.16
-									}
-								]
-							}
-							physics Physics {
-								density -1
-								mass 0.2
-							}
-							children [
-								CAM {
-									scale 0.001 0.001 0.001
-								}
-								hokuyo {
-								  name "HeadLidar"
-								  rotation 0 1 0 3.14159
-								  translation 0 0.1 0
-								  width IS lidarRays
-                  fieldOfView IS lidarFov
-								}
-								Camera {
-									rotation 0 1 0 3.14159
-									#translation 0 0.072 0.0785
-									translation 0 0.105 0.045
-									name "HeadCamera"
-									windowPosition IS cameraWindowPosition
-									fieldOfView IS cameraFov
-									width IS cameraWidth
-									height IS cameraHeight
-									pixelSize IS cameraPixelSize
-									near 0.02
-								}
-							] # End of the Head Children
-						} # End of the Head endpoint
+						endPoint
+            kinect2 {
+      			  #translation 0 0.05 0
+              translation 0 0.21 0
+      			  rotation 0 1 0 3.14159265
+              #TODO: add a pitch angle
+      			  maxRange 4
+      			}
+            
+            
+#            Solid {
+#							translation 0 0.161 0
+##							rotation -1 0 0 -0.17
+#							boundingObject Transform {
+#								translation 0 0 0.01
+#								children [
+#									Box {
+#										size 0.1 0.18 0.16
+#									}
+#								]
+#							}
+#							physics Physics {
+#								density -1
+#								mass 0.2
+#							}
+#							children [
+#								CAM {
+#									scale 0.001 0.001 0.001
+#								}
+#								hokuyo {
+#								  name "HeadLidar"
+#								  rotation 0 1 0 3.14159
+#								  translation 0 0.1 0
+#								  width IS lidarRays
+#                 fieldOfView IS lidarFov
+#								}
+#								Camera {
+#									rotation 0 1 0 3.14159
+#									#translation 0 0.072 0.0785
+#									translation 0 0.105 0.045
+#									name "HeadCamera"
+#									windowPosition IS cameraWindowPosition
+#									fieldOfView IS cameraFov
+#									width IS cameraWidth
+#									height IS cameraHeight
+#									pixelSize IS cameraPixelSize
+#									near 0.02
+#								}
+#                
+#							] # End of the Head Children
+#						} # End of the Head endpoint
+            
+            
 					} # End of the Head HingeJoint
 
 				] # End of the Head Children

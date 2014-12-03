@@ -6,7 +6,7 @@ function WebotsBody.entry()
 	
 	ww = Config.wizards.world and require(Config.wizards.world)
 	cw = Config.wizards.camera and require(Config.wizards.camera)
-  -- mw = Config.wizards.mesh and require(Config.wizards.mesh)
+  mw = Config.wizards.mesh and require(Config.wizards.mesh)
 	sw = Config.wizards.slam and require(Config.wizards.slam)
 	fw = Config.wizards.feedback and require(Config.wizards.feedback)
 	rw = Config.wizards.remote and require(Config.wizards.remote)

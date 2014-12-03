@@ -40,10 +40,12 @@ ifeq ($(shell uname),Darwin)
 
 INCLUDES+=\
 `pkg-config libusb-1.0 --cflags` \
--I/usr/local/Cellar/jpeg-turbo/1.3.1/include
+-I/usr/local/Cellar/jpeg-turbo/1.3.1/include \
+-I/usr/local/opt/jpeg-turbo/include
 
 EXTRA_LINK+=\
 -L/usr/local/Cellar/jpeg-turbo/1.3.1/lib/ \
+-L/usr/local/opt/jpeg-turbo/lib \
 -framework OpenCL
 
 else

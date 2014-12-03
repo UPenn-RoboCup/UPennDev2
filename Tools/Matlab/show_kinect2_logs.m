@@ -1,6 +1,5 @@
 % Starting timestamp
-%datestamp0 = '11.07.2014.10.22.29';
-datestamp0 = '11.07.2014.10.25.37';
+datestamp0 = '12.03.2014.15.52.17';
 
 prefix = 'k2_depth_m_';
 nprefix = numel(prefix);

@@ -196,7 +196,6 @@ local leg_packet_offsets = {}
 for i,v in ipairs(leg_packet_reg) do
 	local reg = assert(lD.nx_registers[v])
 	local sz = reg[2]
-	--print(v, 'sz', sz)
 	table.insert(leg_packet_offsets, (i>1 and leg_packet_offsets[i-1] or 0) + sz)
 	leg_packet_sz = leg_packet_sz + sz
 end
@@ -244,7 +243,7 @@ local arm_packet_offsets = {}
 for i,v in ipairs(arm_packet_reg) do
 	local reg = assert(lD.nx_registers[v])
 	local sz = reg[2]
-	table.insert(arm_packet_offsets, (arm_packet_offsets[1] or 0) + sz)
+	table.insert(arm_packet_offsets, (arm_packet_offsets[i-1] or 0) + sz)
 	arm_packet_sz = arm_packet_sz + sz
 end
 local arm_packet_reg_mx = {'position','speed','load','voltage','temperature'}

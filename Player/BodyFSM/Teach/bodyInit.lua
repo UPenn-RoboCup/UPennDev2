@@ -6,15 +6,12 @@ local Body = require'Body'
 local timeout = 10.0
 local t_entry, t_update, t_exit
 
-local si = require'simple_ipc'
-local motion_ch = si.new_publisher('MotionFSM!')
-
 function state.entry()
   print(state._NAME..' Entry' )
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-	--
+	-- The channels are globally available
   head_ch:send'init'
 	arm_ch:send'init'
   motion_ch:send'stand'
@@ -28,9 +25,8 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  -- TODO: Investigate this...
-  if t-t_entry > timeout then return'timeout' end
-  --TODO: Check whether all FSMs have done initializing
+  -- TODO: Check whether all FSMs have done initializing
+  --if t-t_entry > timeout then return'timeout' end
   return 'done'
 end
 

@@ -35,8 +35,7 @@ local right_ft = {
   readings = ffi.new'double[6]',
   component = ffi.new'double[6]',
 	--unloaded = ffi.new('double[6]', vector.zeros(6)),
-  --unloaded = ffi.new('double[6]', Config.right_ft.unloaded),
-	unloaded = ffi.new('double[6]', {1.667, 1.799, 1.511, 1.700, 1.535, 1.639}),
+  unloaded = ffi.new('double[6]', Config.right_ft.unloaded),
   calibration_mat = ffi.new('double[6][6]', Config.right_ft.matrix),
   calibration_gain = Config.right_ft.gain,
 }
@@ -59,7 +58,7 @@ local function parse_ft(ft, raw_str, m_id)
 		ft.component[3] = 3.3 * tonumber(ft.raw16[3]) / 4095.0 - ft.unloaded[3]
 		local v = vector.zeros(4)
 		for i=0,#v-1 do v[i+1] = 3.3 * ft.raw16[i] / 4096 end
-		--print(m_id,'A',v)
+		print(m_id,'A',v)
 		for i=0,#v-1 do v[i+1] = ft.raw16[i] end
 		--print(m_id,'A',v)
 	elseif m_id==ft.m_ids[2] then
@@ -80,7 +79,7 @@ local function parse_ft(ft, raw_str, m_id)
 		for i=0,#v-1 do v[i+1] = 3.3 * ft.raw16[i] / 4095 end
 		print(m_id,'B',v)
 		for i=0,#v-1 do v[i+1] = ft.raw16[i] end
-		print(m_id,'B',v)
+		--print(m_id,'B',v)
 	else
 		return
 	end
@@ -107,17 +106,16 @@ while true do
 
   print('\n===')
 
-
 	status = lD.get_nx_data(25, chain)[1]
 	if status then
-		print('PARAM 25',unpack(status.parameter))
-		print('PARAM 25',vector.slice(ffi.new('int8_t[8]',status.parameter), 0, 1))
+		--print('PARAM 25',unpack(status.parameter))
+		--print('PARAM 25',vector.slice(ffi.new('int8_t[8]',status.parameter), 0, 3))
 		proc, volt, rawA = parse_ft(right_ft, status.raw_parameter, 25)
 	end
 	status = lD.get_nx_data(23, chain)[1]
 	if status then
-		print('PARAM 23',unpack(status.parameter))
-		print('PARAM 23',vector.slice(ffi.new('int8_t[8]',status.parameter), 0, 1))
+		--print('PARAM 23',unpack(status.parameter))
+		--print('PARAM 23',vector.slice(ffi.new('int8_t[8]',status.parameter), 0, 3))
 		proc, volt, rawB = parse_ft(right_ft, status.raw_parameter, 23)
 	end
 

@@ -32,12 +32,11 @@ local left_ft = {
   raw = ffi.new'uint8_t[8]',
   readings = ffi.new'double[6]',
   component = ffi.new'double[6]',
---  unloaded = ffi.new('double[6]', vector.zeros(6)),
+	--unloaded = ffi.new('double[6]', vector.zeros(6)),
   unloaded = ffi.new('double[6]', Config.left_ft.unloaded),
   calibration_mat = ffi.new('double[6][6]', Config.left_ft.matrix),
   calibration_gain = Config.left_ft.gain,
 }
-
 
 local function parse_ft(ft, raw_str, m_id)
 	-- Lower ID has the 2 components
@@ -57,7 +56,7 @@ local function parse_ft(ft, raw_str, m_id)
 		ft.component[3] = 3.3 * tonumber(ft.raw16[3]) / 4095.0 - ft.unloaded[3]
 		local v = vector.zeros(4)
 		for i=0,#v-1 do v[i+1] = 3.3 * ft.raw16[i] / 4096 end
-		--print(m_id,'A',v)
+		print(m_id,'A',v)
 		for i=0,#v-1 do v[i+1] = ft.raw16[i] end
 		--print(m_id,'A',v)
 	elseif m_id==ft.m_ids[2] then
@@ -70,11 +69,13 @@ local function parse_ft(ft, raw_str, m_id)
 			raw16_as_8[i] = ft.raw[i]
 			raw16_as_8[i+1] = ft.raw[i+1]
 		end
-		ft.component[4] = 3.3 * tonumber(ft.raw16[0]) / 4095.0 - ft.unloaded[4]
+		raw16_as_8[1] = raw16_as_8[1]==0 and 8 or raw16_as_8[1]
+		ft.component[4] = 3.3 * tonumber(ft.raw16[0]) / 4095.0
+		ft.component[4] = ft.component[4]< 0.7 and 1.5 or ft.component[4] - ft.unloaded[4]
 		ft.component[5] = 3.3 * tonumber(ft.raw16[1]) / 4095.0 - ft.unloaded[5]
-		local v = vector.zeros(4)
-		for i=0,#v-1 do v[i+1] = 3.3 * ft.raw16[i] / 4096 end
-		--print(m_id,'B',v)
+		local v = vector.zeros(2)
+		for i=0,#v-1 do v[i+1] = 3.3 * ft.raw16[i] / 4095 end
+		print(m_id,'B',v)
 		for i=0,#v-1 do v[i+1] = ft.raw16[i] end
 		--print(m_id,'B',v)
 	else
@@ -91,7 +92,7 @@ local function parse_ft(ft, raw_str, m_id)
 --				* ft.calibration_gain
 		end
 	end
-	return vector.slice(ft.readings, 0, 5), vector.slice(ft.component, 0, 5), vector.slice(ft.raw, 0, 3)
+	return vector.slice(ft.readings, 0, 5), vector.slice(ft.component, 0, 5), vector.slice(ft.raw16, 0, 3)
 	--ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.readings))
 	--if ft.id:find'217' then print(ft.id, vector.slice(ft.readings, 0, 5)) end
 end
@@ -104,13 +105,23 @@ while true do
   print('\n===')
 
 	status = lD.get_nx_data(26, chain)[1]
-	if status then proc, volt, rawA = parse_ft(left_ft, status.raw_parameter, 26) end
+	if status then
+		print('status.raw_parameter', #status.raw_parameter)
+		--print('PARAM 25',unpack(status.parameter))
+		--print('PARAM 25',vector.slice(ffi.new('int8_t[8]',status.parameter), 0, 3))
+		proc, volt, rawA = parse_ft(left_ft, status.raw_parameter, 26)
+	end
 	status = lD.get_nx_data(24, chain)[1]
-	if status then proc, volt, rawB = parse_ft(left_ft, status.raw_parameter, 24) end
+	if status then
+		print('status.raw_parameter', #status.raw_parameter)
+		--print('PARAM 23',unpack(status.parameter))
+		--print('PARAM 23',vector.slice(ffi.new('int8_t[8]',status.parameter), 0, 3))
+		proc, volt, rawB = parse_ft(left_ft, status.raw_parameter, 24)
+	end
 
---	print(string.format("A: %3.3f, %3.3f, %3.3f, %3.3f", unpack(rawA)))
---	print(string.format("B: %3.3f, %3.3f, %3.3f, %3.3f", unpack(rawB)))
---	print(string.format("V: %3.3f, %3.3f, %3.3f, %3.3f, %3.3f, %3.3f", unpack(volt)))
+	--print(string.format("%d: %3.3f, %3.3f, %3.3f, %3.3f", 25, unpack(rawA)))
+	--print(string.format("%d: %3.3f, %3.3f, %3.3f, %3.3f", 23, unpack(rawB)))
+	--print(string.format("V: %3.3f, %3.3f, %3.3f, %3.3f, %3.3f, %3.3f", unpack(volt)))
 	print(string.format("Fx: %3.3f Fy: %3.3f Fz: %3.3f | Tx: %3.3f Ty: %3.3f Tz: %3.3f", unpack(proc)))
 	unix.usleep(0.5*1e6)
 end

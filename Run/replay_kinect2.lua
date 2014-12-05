@@ -46,7 +46,7 @@ for i, metadata_depth, payload_depth in logged_depth do
   metadata_depth.height = 424
   metadata_depth.rpy = {0, 3*DEG_TO_RAD, 0}
   metadata_depth.pose = {0,0,0}
-  metadata_depth.angle = 0
+  metadata_depth.head = {0,0}
   --------------------------
 
 	depth_ch:send({mp.pack(metadata_depth), payload_depth})

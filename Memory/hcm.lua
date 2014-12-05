@@ -30,6 +30,7 @@ shared_data.ball = ball
 local octomap = {}
 octomap.update = vector.zeros(1)
 octomap.save = vector.zeros(1)
+octomap.clear = vector.zeros(1)
 shared_data.octomap = octomap
 
 shared_data.state={}

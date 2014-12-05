@@ -75,8 +75,8 @@ static int lua_set_prob_hit_miss(lua_State *L) {
   return 0;
 }  
 
-//TODO: reset map
-static int lua_reset_octomap() {
+static int lua_clear_tree(lua_State *L) {
+  tree.clear();
   return 0;
 }
 
@@ -313,6 +313,7 @@ static const struct luaL_Reg octomap_lib [] = {
 	{"get_data", lua_get_data},
 	{"get_pruned_data", lua_get_pruned_data},
 	{"save_tree", lua_save_tree},
+	{"clear_tree", lua_clear_tree},
 	{NULL, NULL}
 };
 

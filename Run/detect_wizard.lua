@@ -200,9 +200,10 @@ local function update_head(md)
   * T.rotZ(kinectYaw or 0)
 
   trKinect = trNeck * dtrKinect
-  -- Grab the position only
+  -- Grab the pose
   vKinect = vector.new(T.position6D(trKinect)) -- tenor to vetor
 end
+
 
 local depths_t, w, h, focal_len
 local function update_kinect_depth(data, depths)
@@ -230,15 +231,9 @@ local function update_kinect_depth(data, depths)
   if not IS_WEBOTS then
     depths_t:mul(1/1000)
   end
-  
-  
-  -- TODO: we need sensor origin in body frame
-  -- point cloud in BODY frame.. (according to doc)
-  -- body pose in global frame
-  
-  
+    
   octomap.add_depth(depths_t, focal_len, 
-    unpack(vKinect)
+    unpack(vKinect) -- sensor_origin w.r.t global reference
   )
     
   -- octomap.get_horizontal(0.1, -0.5, 0.9, 1.5, 0.5, 1.1)
@@ -266,11 +261,17 @@ local npoll
 local t_entry = unix.time()
 local function update()  
   npoll = poller:poll(TIMEOUT)
+  -- save the current tree
   if hcm.get_octomap_save()==1 then
     octomap.save_tree('../Data/from_log.bt')
     hcm.set_octomap_save(0)
   end
-  
+  -- clear the map
+  if hcm.get_octomap_clear()==1 then
+    octomap.clear_tree()
+    hcm.set_octomap_clear(0)
+    hcm.set_octomap_update(0)
+  end  
 end
 
 

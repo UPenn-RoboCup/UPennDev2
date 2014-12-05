@@ -5,7 +5,7 @@
 # (c) Stephen McGill, 2014
 #############################################
 
-PROTO THOROP_UPENN_kinect [
+PROTO THOROP_UPENN_kinect_lidar [
   field SFVec3f    translation 0 1 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
@@ -844,13 +844,14 @@ Robot {
 				anchor 0 0 0.1
 			} # End of the ChestLidarPan HingeJointParameters
 
-      # We may remove the pan servo later
-      # endPoint kinect2 {
-      #   translation 0 0 0.1
-      #   rotation 0 1 0 3.14159265
-      #         #TODO: add a pitch angle
-      #   maxRange 3.5
-      # }
+			endPoint hokuyo {
+				name "ChestLidar"
+				width IS lidarRays
+				fieldOfView IS lidarFov
+				# Is if offset a bit from the axis, though?
+				translation 0 0 0.1
+				rotation 0.707107 -0.707107 0 3.14159
+			}
 		} # End of the ChestLidarPan HingeJoint
 ## End the Chest lidar chain
     

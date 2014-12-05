@@ -91,7 +91,7 @@ static int lua_add_depth(lua_State *L) {
   // Check contiguous
   THArgCheck(depths_t->stride[1] == 1, 1, "Depth not contiguous (j)");
   THArgCheck(depths_t->stride[0] == nc, 1, "Improper depth layout (i)");
-  // Get the pose
+  // Get the kinect origion (6D) in global reference
   float px = (float) luaL_checknumber(L, 3);
   float py = (float) luaL_checknumber(L, 4);
   float pz = (float) luaL_checknumber(L, 5);
@@ -112,7 +112,6 @@ static int lua_add_depth(lua_State *L) {
   float *depths_ptr = (float *)(depths_t->storage->data + depths_t->storageOffset);
   Pointcloud cloud;
 
-  // t0 = clock();
   // This cloud is in kinect coordinates
   for (int j=0; j<nr; j++) {
     for (int i=0; i<nc; i++) {
@@ -124,12 +123,15 @@ static int lua_add_depth(lua_State *L) {
       cloud.push_back(x,y,z);
     }
   }
+  
+  // t0 = clock();
+  cloud.transform(frame_origin);
   // t1 = clock();
-  // printf("(%f seconds) creating cloud\n", (float)(t1-t0)/CLOCKS_PER_SEC);
+  // printf("(%f seconds) transforming cloud\n", (float)(t1-t0)/CLOCKS_PER_SEC);
   
   t0 = clock();
 	// Update tree chunk by chunk
-  tree.insertPointCloud(cloud, point3d(0.0f,0.0f,0.0f), frame_origin, max_range, true);
+  tree.insertPointCloud(cloud, point3d(px, py, pz), max_range, true);
   tree.updateInnerOccupancy();
   tree.prune();
   t1 = clock();

@@ -594,13 +594,15 @@ if IS_WEBOTS then
     if ENABLE_KINECT and t >= NEXT_KINECT then
       local w = webots.wb_camera_get_width(tags.kinect)
       local h = webots.wb_camera_get_height(tags.kinect)
--- dev-slam
-      -- local img = ImageProc.rgb_to_yuyv(webots.to_rgb(tags.kinect), w, h)
-      -- Grab the ranges
-      local ranges = webots.wb_camera_get_range_image(tags.kinect)      
-			local metadata = {rpy=Body.get_rpy(), angle=Body.get_lidar_position(),
-            pose=wcm.get_robot_odometry(), width=w, height=h}
-			WebotsBody.update_kinect_depth(metadata,ranges)
+
+      local depth = webots.wb_camera_get_range_image(tags.kinect)      
+			local metadata = {
+        head = Body.get_head_position(),
+        rpy = Body.get_rpy(),
+        pose = wcm.get_robot_odometry(), 
+        width = w, height = h
+      }
+			WebotsBody.update_kinect_depth(metadata, depth)
 			NEXT_KINECT = get_time() + kinect_timeStep / 1000
 
 --[[ dev-master

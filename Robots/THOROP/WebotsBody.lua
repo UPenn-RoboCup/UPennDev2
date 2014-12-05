@@ -35,7 +35,7 @@ function WebotsBody.update_chest_lidar(metadata, ranges)
 end
 
 function WebotsBody.update_kinect_depth(metadata, ranges)
-  if dw and hcm.get_tree_update()==1 then 
+  if dw and hcm.get_octomap_update()==1 then 
     dw.update_kinect_depth(metadata, ranges) 
   end
 end

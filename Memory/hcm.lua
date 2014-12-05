@@ -26,11 +26,11 @@ local ball = {}
 ball.approach = vector.zeros(0)
 shared_data.ball = ball
 
--- For OctoTree saving
-local tree = {}
-tree.update = vector.zeros(1)
-tree.save = vector.zeros(1)
-shared_data.tree = tree
+-- For OctoMap
+local octomap = {}
+octomap.update = vector.zeros(1)
+octomap.save = vector.zeros(1)
+shared_data.octomap = octomap
 
 shared_data.state={}
 shared_data.state.proceed = vector.zeros(0)
@@ -235,6 +235,12 @@ shared_data.camera.log = vector.zeros(1)
 --Neck yaw
 --Camera roll, pitch, yaw
 
+-- Kinect
+shared_data.kinect = {}
+shared_data.kinect.bias = vector.zeros(4)
+shared_data.kinect.log = vector.zeros(1)
+--Neck yaw
+--Kinect roll, pitch, yaw
 
 --These variables are only used for offline testing of arm states
 shared_data.state.success = vector.zeros(0)

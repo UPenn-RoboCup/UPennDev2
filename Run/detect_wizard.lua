@@ -151,7 +151,6 @@ mesh_ch.callback = function(skt)
   end
     
   -- Transform to cartesian space
-  -- TODO: transform in octomap *maybe* faster
   td = unix.time()
   transform_mesh(points, data)
   if DEBUG then
@@ -163,9 +162,6 @@ mesh_ch.callback = function(skt)
   -- Insert point cloud to Octree  
   td = unix.time()
   octomap.add_scan(xyz_global)
-  if DEBUG then
-    -- print('Added one full scan.. ', unix.time()-td, '\n')
-  end
   
   -- min x/y/z, max x/y/z
   -- octomap.get_horizontal(0.1, -0.5, 1, 0.8, 0.5, 1.5)
@@ -174,8 +170,38 @@ end
 
 
 
-local function transform_depth(data, depths)
-  
+-- Update the Head transform
+local trKinect, vKinect, trNeck, trNeck0
+local dtrKinect, kinectPitch, kinectRoll, kinectPos
+local kinectPos = Config.head.kinectPos or {0,0,0}
+
+local function update_head(md)
+	if not Body then return end
+	-- Get from Body...
+	
+  local head = md.head
+  local headBias = hcm.get_kinect_bias()
+  head[1] = head[1] - headBias[1]  
+	
+  -- Use imu value to recalculate kinect transform every frame
+  local rpy = md.rpy
+  trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
+  * T.rotY(rpy[2])
+  * T.trans(Config.head.neckX, 0, Config.head.neckZ)
+  trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
+	
+	kinectPitch = headBias[2]
+	kinectRoll = headBias[3]
+	kinectYaw = headBias[4]
+
+	dtrKinect = T.trans(unpack(kinectPos))
+  * T.rotY(kinectPitch or 0)
+  * T.rotX(kinectRoll or 0)
+  * T.rotZ(kinectYaw or 0)
+
+  trKinect = trNeck * dtrKinect
+  -- Grab the position only
+  vKinect = vector.new(T.position6D(trKinect)) -- tenor to vetor
 end
 
 local depths_t, w, h, focal_len
@@ -194,8 +220,13 @@ local function update_kinect_depth(data, depths)
   depths_t = torch.FloatTensor(h, w):zero()
   ffi.copy(depths_t:data(), float_depths, byte_sz)
   
+  
+  -- update head transform
+  update_head(data)
+  
   local rpy, pose, angle = data.rpy, data.pose, data.angle
   
+  -- Convert to meters
   if not IS_WEBOTS then
     depths_t:mul(1/1000)
   end
@@ -206,9 +237,9 @@ local function update_kinect_depth(data, depths)
   -- body pose in global frame
   
   
-  octomap.add_depth(depths_t, focal_len,
-    pose[1], pose[2], lidar_z+body_height,
-    unpack(rpy))
+  octomap.add_depth(depths_t, focal_len, 
+    unpack(vKinect)
+  )
     
   -- octomap.get_horizontal(0.1, -0.5, 0.9, 1.5, 0.5, 1.1)
   
@@ -235,9 +266,9 @@ local npoll
 local t_entry = unix.time()
 local function update()  
   npoll = poller:poll(TIMEOUT)
-  if hcm.get_tree_save()==1 then
-    octomap.save_tree('from_log.bt')
-    hcm.set_tree_save(0)
+  if hcm.get_octomap_save()==1 then
+    octomap.save_tree('../Data/from_log.bt')
+    hcm.set_octomap_save(0)
   end
   
 end

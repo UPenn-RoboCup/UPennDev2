@@ -82,7 +82,7 @@ Config.wizards.mesh = nil
 Config.libs.World = 'SiteVisit'   
 local exo = {
   'Robot','Walk','Net','Manipulation',
-  'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup' 
+  'FSM_SiteVisit','World_DRCTrials','Vision_DRCFinal' 
 }
 
 -- Config.sensors.chest_lidar = false

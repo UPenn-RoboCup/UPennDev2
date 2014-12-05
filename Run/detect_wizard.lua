@@ -2,6 +2,7 @@
 -- process 
 
 dofile'../include.lua'
+local Body = require(Config.dev.body)
 local ffi = require'ffi'
 local torch = require'torch'
 local T = require'libTransform'
@@ -11,9 +12,12 @@ local munpack = require('msgpack.MessagePack')['unpack']
 local unix = require'unix'
 local vector = require'vector'
 require'vcm'
+require'hcm'
 
 -- Debugging flag
 local DEBUG = Config.debug.detect
+local t0 = Body.get_time()
+local t, t_debug, debug_interval = t0, t0, 1
 
 -- Subscribe to important messages
 local mesh_ch = si.new_subscriber'mesh0'
@@ -39,14 +43,17 @@ end
 -- Octomap
 local octomap = require'octomap'
 -- TODO: read params from shm
-octomap.set_resolution(0.005)
+octomap.set_resolution(0.01)
 octomap.set_range(0.05, 2)
+-- Set the map parameters
+octomap.set_occupancyThres(0.7)
+octomap.set_prob_hit_miss(0.8, 0.3)
 
 
 local xyz_global, xyz_local
 local roll, pitch, pose
 
-local function transform(points, data)    
+local function transform_mesh(points, data)    
   local rfov = vector.new(data.rfov)*RAD_TO_DEG
   local v_angles0, v_angles = torch.range(rfov[1], rfov[2], 0.25)  
   if v_angles0:size(1) > n_returns then
@@ -125,9 +132,6 @@ local saved = false
 
 -- Callback function for mech channel
 mesh_ch.callback = function(skt) 
-  print('I AM HERE...')
-  
-   
   -- Only use the last one
   local pdata, ranges = unpack(skt:recv_all())
   local data = munpack(pdata)
@@ -149,7 +153,7 @@ mesh_ch.callback = function(skt)
   -- Transform to cartesian space
   -- TODO: transform in octomap *maybe* faster
   td = unix.time()
-  transform(points, data)
+  transform_mesh(points, data)
   if DEBUG then
     -- print('Transform the entir scan..', unix.time()-td)
   end
@@ -169,10 +173,15 @@ mesh_ch.callback = function(skt)
 end
 
 
+
+local function transform_depth(data, depths)
+  
+end
+
 local depths_t, w, h, focal_len
 local function update_kinect_depth(data, depths)
   -- Useful params
-  w, h = unpack(data.dims)
+  w, h = data.width, data.height
   --TODO: no need to calculate every time
   -- Focal length
   -- f = w/2/tan(fov/2)  fov = 1.2217
@@ -181,23 +190,27 @@ local function update_kinect_depth(data, depths)
   --TODO: use octomap methods to directly manipulate depths
 	local float_depths = ffi.cast('float*', depths)
   local byte_sz = w * h * ffi.sizeof'float'
-  -- print('w=', w, 'h=', h, 'FLOAT DEPTH SIZE', byte_sz)
+  print('w=', w, 'h=', h)
   depths_t = torch.FloatTensor(h, w):zero()
   ffi.copy(depths_t:data(), float_depths, byte_sz)
   
   local rpy, pose, angle = data.rpy, data.pose, data.angle
   
+  if not IS_WEBOTS then
+    depths_t:mul(1/1000)
+  end
+  
+  
   -- TODO: we need sensor origin in body frame
-  -- point cloud in BODY frame.. (according to doc..)
+  -- point cloud in BODY frame.. (according to doc)
   -- body pose in global frame
   
   
-  -- TODO: this takes most of the time
   octomap.add_depth(depths_t, focal_len,
     pose[1], pose[2], lidar_z+body_height,
     unpack(rpy))
     
-  octomap.get_horizontal(0.1, -0.5, 0.9, 1.5, 0.5, 1.1)
+  -- octomap.get_horizontal(0.1, -0.5, 0.9, 1.5, 0.5, 1.1)
   
 end
 
@@ -205,6 +218,7 @@ end
 
 -- Callback function for kinect depth channel
 kinect_depth_ch.callback = function(skt)
+  print('getting data from depth_ch...')
   -- Only use the last one
   local pdata, depths = unpack(skt:recv_all())
   local data = munpack(pdata)
@@ -222,7 +236,7 @@ local t_entry = unix.time()
 local function update()  
   npoll = poller:poll(TIMEOUT)
   if hcm.get_tree_save()==1 then
-    octomap.save_tree('test.bt')
+    octomap.save_tree('from_log.bt')
     hcm.set_tree_save(0)
   end
   
@@ -236,7 +250,9 @@ if ... and type(...)=='string' then
 end
 
 
---TODO: add signal to kill properly
+local signal = require'signal'.signal
+signal("SIGINT", shutdown)
+signal("SIGTERM", shutdown)
 
 while true do
 	update()

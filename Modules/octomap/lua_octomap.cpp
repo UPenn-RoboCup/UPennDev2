@@ -61,6 +61,20 @@ static int lua_set_origin( lua_State *L ) {
 	return 0;
 }
 
+static int lua_set_occupancyThres(lua_State *L) {
+  static double thres = (double) luaL_checknumber(L, 1);
+  tree.setOccupancyThres(thres);
+  return 0;
+}
+
+static int lua_set_prob_hit_miss(lua_State *L) {
+  static double probHit = (double) luaL_checknumber(L, 1);
+  static double probMiss = (double) luaL_checknumber(L, 2);
+  tree.setProbHit(probHit);
+  tree.setProbMiss(probMiss);
+  return 0;
+}  
+
 //TODO: reset map
 static int lua_reset_octomap() {
   return 0;
@@ -286,6 +300,8 @@ static const struct luaL_Reg octomap_lib [] = {
   {"set_resolution", lua_set_resolution},
 	{"set_origin", lua_set_origin},
   {"set_range", lua_set_range},
+  {"set_occupancyThres", lua_set_occupancyThres},
+  {"set_prob_hit_miss", lua_set_prob_hit_miss},
   //
 	{"add_scan", lua_add_scan},
   {"add_depth", lua_add_depth},

@@ -1,5 +1,5 @@
 dofile'../include.lua'
-local LOG_DATE = '12.03.2014.15.52.17' --'10.03.2014.13.18.48'
+local LOG_DATE = '12.04.2014.09.31.54'
 
 local libLog = require'libLog'
 local replay_depth = libLog.open(HOME..'/Data/', LOG_DATE, 'k2_depth')
@@ -22,9 +22,10 @@ local get_time = unix.time
 local metadata_t0 = metadata[1].t
 local t0
 
+local count = 0
 for i, metadata_depth, payload_depth in logged_depth do
-	local i_rgb, metadata_rgb, payload_rgb = logged_rgb()
-  metadata_rgb.c = 'jpeg'
+  -- local i_rgb, metadata_rgb, payload_rgb = logged_rgb()
+  --   metadata_rgb.c = 'jpeg'
 
 	if i%10==0 then
 		print('Count', i)
@@ -38,7 +39,21 @@ for i, metadata_depth, payload_depth in logged_depth do
 	local t_sleep = metadata_dt-dt
 	if t_sleep>0 then unix.usleep(1e6*t_sleep) end
 
+
+  --------------------------
+  -- TODO: manually adding the missing data
+  metadata_depth.width = 512
+  metadata_depth.height = 424
+  metadata_depth.rpy = {0, 3*DEG_TO_RAD, 0}
+  metadata_depth.pose = {0,0,0}
+  metadata_depth.angle = 0
+  --------------------------
+
 	depth_ch:send({mp.pack(metadata_depth), payload_depth})
+  
+  -- if count>=3 then break end
+  -- count = count + 1
+  
   if payload_rgb then
     --metadata_rgb.rsz = #payload_rgb
     --if metadata_rgb.sz==metadata_rgb.rsz then

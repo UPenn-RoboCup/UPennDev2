@@ -34,7 +34,7 @@ local body_height = 1.03
 if IS_WEBOTS then
   body_pitch_offset = 0
 elseif HOSTNAME=='alvin' then
-  body_pitch_offset = -2.5/180*pi
+  body_pitch_offset = -2.5/180*math.pi
 else -- teddy
   body_pitch_offset = 0
 end

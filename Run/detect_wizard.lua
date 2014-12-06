@@ -43,7 +43,7 @@ end
 -- Octomap
 local octomap = require'octomap'
 -- TODO: read params from shm
-octomap.set_resolution(0.01)
+octomap.set_resolution(0.02)
 octomap.set_range(0.05, 2)
 -- Set the map parameters
 octomap.set_occupancyThres(0.7)
@@ -131,7 +131,9 @@ local td -- for benchmarking
 local saved = false
 
 -- Callback function for mech channel
-mesh_ch.callback = function(skt) 
+mesh_ch.callback = function(skt)
+  print('MESH_CH CALL BACK...')
+   
   -- Only use the last one
   local pdata, ranges = unpack(skt:recv_all())
   local data = munpack(pdata)

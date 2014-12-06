@@ -14,6 +14,16 @@ local vector = require'vector'
 require'vcm'
 require'Body'
 
+
+-- local ENABLE_LOG = true
+
+local libLog, logger, nlog
+if ENABLE_LOG then
+	libLog = require'libLog'
+	logger = libLog.new('mesh', true)
+  nlog = 0
+end
+
 -- Shared with LidarFSM
 -- t_sweep: Time (seconds) to fulfill scan angles in one sweep
 -- min/max_sweep: sweep limitis
@@ -250,6 +260,23 @@ local function update(meta, ranges)
 	-- Check for sending out on the wire
 	-- TODO: This *should* be from another ZeroMQ event, in case the lidar dies
 	check_send_mesh()
+  
+  
+	-- Logging
+	if ENABLE_LOG then
+		metadata.rsz = mesh:nElement() * ffi.sizeof'float'
+		logger:record(metadata, mesh:data(), metadata.rsz)
+		nlog = nlog + 1
+		if nlog % 10 == 0 then
+			print("# mesh logs: "..nlog)
+			if nlog % 100 == 0 then
+				logger:stop()
+				logger = libLog.new('mesh', true)
+				print('Open new log!')
+			end
+		end
+	end
+  
 end
 
 -- If required from Webots, return the table
@@ -263,5 +290,8 @@ function lidar_ch.callback(skt)
 	local meta = munpack(mdata)
 	update(meta, ranges)
 end
+
+-- TODO: put into shutdown func or something
+logger:stop()
 
 si.wait_on_channels({lidar_ch}):start()

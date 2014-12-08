@@ -840,7 +840,7 @@ Robot {
 				acceleration 55
 			} # End of the ChestLidarPan RotationalMotor
 			jointParameters HingeJointParameters {
-				axis 1 0 0
+				axis 0 1 0
 				anchor 0 0 0.1
 			} # End of the ChestLidarPan HingeJointParameters
 

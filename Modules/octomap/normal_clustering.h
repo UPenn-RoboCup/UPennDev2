@@ -5,7 +5,7 @@
 #include <octomap/math/Utils.h>
 
 struct group {
-  int count = 0;
+  int count = 0;  
   octomap::point3d mean_normal = octomap::point3d(0.0f, 0.0f, 0.0f);
   octomap::point3d sum_normal = octomap::point3d(0.0f, 0.0f, 0.0f);
   std::vector<octomap::OcTreeKey> members;

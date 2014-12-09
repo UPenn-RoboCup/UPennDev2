@@ -20,9 +20,9 @@ Config.use_localhost = false
 Config.sensors = {
   ft = true,
   head_camera = false, --true,
-  chest_lidar = true,
+  chest_lidar = false,
   head_lidar = false,
-  kinect = false,
+  kinect = true, --false,
   fsr = false,
 }
 Config.wizards = {}

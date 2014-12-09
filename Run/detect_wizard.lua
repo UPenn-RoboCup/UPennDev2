@@ -43,7 +43,7 @@ end
 -- Octomap
 local octomap = require'octomap'
 -- TODO: read params from shm
-octomap.set_resolution(0.02)
+octomap.set_resolution(0.015)
 octomap.set_range(0.05, 2)
 -- Set the map parameters
 octomap.set_occupancyThres(0.7)
@@ -238,10 +238,8 @@ local function update_kinect_depth(data, depths)
     unpack(vKinect) -- sensor_origin w.r.t global reference
   )
     
-  -- octomap.get_horizontal(0.1, -0.5, 0.9, 1.5, 0.5, 1.1)
-  
+  -- octomap.get_horizontal(0.1, -0.5, 0.9, 1.5, 0.5, 1.1)  
 end
-
 
 
 -- Callback function for kinect depth channel
@@ -274,6 +272,11 @@ local function update()
     hcm.set_octomap_clear(0)
     hcm.set_octomap_update(0)
   end  
+  -- segmentation methods
+  if hcm.get_octomap_get_plane()==1 then
+    octomap.get_planes()
+    hcm.set_octomap_get_plane(0)
+  end
 end
 
 

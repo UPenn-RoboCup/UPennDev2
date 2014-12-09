@@ -11,11 +11,12 @@
 #include <vector>
 #include <string>
 #include <time.h>
+#include <sstream>
 
 #include <octomap/octomap.h>
 #include <octomap/math/Utils.h>
 
-#include <sstream>
+#include "normal_clustering.h"
 
 using namespace std;
 using namespace octomap;
@@ -194,12 +195,27 @@ static int lua_add_scan( lua_State *L ) {
 }
 
 
-// Plane fitting
+// Clustering the normals
+static int lua_get_planes(lua_State *L) {
+  group *re = normal_clustering(tree, 10); //TODO: 2nd input
+  return 0;
+}
+
+
+//TODO: Plane fitting. May use openblas or Eigen
+//TODO: put into another file
 static void ransac(vector<OcTreeKey> &keys, int maxIter, float eps) {
   int counts = 0;
+  int num_leaf = keys.size();
   for (int i=0; i<maxIter; i++) {
     // Randomly pick three nodes
+    int p1 = rand() % num_leaf + 1;
+    int p2 = rand() % num_leaf + 1;
+    int p3 = rand() % num_leaf + 1;
+    // indToOcTreeKey
     
+    // check if colinear
+
   }
 }
 
@@ -228,8 +244,7 @@ static int lua_get_horizontal(lua_State *L) {
   point3d max = point3d(max_x, max_y, max_z);
   for(OcTree::leaf_bbx_iterator it = tree.begin_leafs_bbx(min,max),
          end = tree.end_leafs_bbx(); it!= end; ++it) {
-
-           
+         
       if (fabs(it.getZ()-1)<0.05) {
         // candidates.push_back(it.getKey());
         tree.getNormals(it.getCoordinate(), normals);
@@ -244,22 +259,12 @@ static int lua_get_horizontal(lua_State *L) {
                    
         }
       }
-      
-      // if (normals[1].angleTo(ground_normal) < DEG2RAD(2)) { //TODO:something wrong
-      //   printf("HEIGHT IS: %d", it.getZ());
-      //   candidates.push_back(it.getKey());
-      // }
-
   }
   printf("# of cands %d\n", candidates.size());
   
   // ransac(candidates, 200, 200);  //TODO
   return 0;
 }
-
-
-//TODO: segmentaion: table, object, brackground
-
 
 
 //TODO: Region growing
@@ -296,7 +301,6 @@ static int lua_save_tree( lua_State *L ) {
 	return 0;
 }
 
-// TODO: query nodes, connected components for plane fitting
 
 static const struct luaL_Reg octomap_lib [] = {
   {"set_resolution", lua_set_resolution},
@@ -308,6 +312,7 @@ static const struct luaL_Reg octomap_lib [] = {
 	{"add_scan", lua_add_scan},
   {"add_depth", lua_add_depth},
   //
+  {"get_planes", lua_get_planes},
   {"get_horizontal", lua_get_horizontal},
   //
 	{"get_data", lua_get_data},

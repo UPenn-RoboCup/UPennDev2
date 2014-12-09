@@ -197,7 +197,7 @@ static int lua_add_scan( lua_State *L ) {
 
 // Clustering the normals
 static int lua_get_planes(lua_State *L) {
-  group *re = normal_clustering(tree, 10); //TODO: 2nd input
+  group *re = normal_clustering(tree, 3); //TODO: 2nd input
   return 0;
 }
 

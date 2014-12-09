@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <math.h>
 #include "normal_clustering.h"
 
 using namespace std;
@@ -23,7 +25,6 @@ void associate(point3d new_normal, OcTreeKey key, int max_n_group) {
       // printf("Discarding nodes...\n");
       return;
     }
-    printf("new group...\n");
     group new_group;
     new_group.count = 1;
     new_group.mean_normal = new_normal;
@@ -55,9 +56,7 @@ void associate(point3d new_normal, OcTreeKey key, int max_n_group) {
   }
 }
 
-
 group *normal_clustering(OcTree tree, int max_num_plane) {
-  groups.clear();    
   int count = 0;  
   
   for(OcTree::leaf_iterator it = tree.begin_leafs(),
@@ -67,21 +66,48 @@ group *normal_clustering(OcTree tree, int max_num_plane) {
     tree.getNormals(it.getCoordinate(), normals);
     if (normals.size()>0) {
       count++;
-      associate(normals[0], it.getKey(), max_num_plane);
+      // We only consider up to 10 groups
+      associate(normals[0], it.getKey(), 10);
     }    
   }
   printf("%d leaves have normal\n", count);  
   printf("%d groups \n", groups.size());
   
+  vector<int> count_vec;
   for (int g=0; g<groups.size(); g++) {
-    printf("%i points, w/ normal: %.2f %.2f %.2f\n",
-      groups[g].count,
-      groups[g].mean_normal.x(),
-      groups[g].mean_normal.y(),
-      groups[g].mean_normal.z());
+    count_vec.push_back(groups[g].count);
+  }  
+  // Sort the groups according to size
+  sort(count_vec.begin(), count_vec.end(), greater<int>());
+  int num_plane = min((int)groups.size(), max_num_plane);
+  
+  printf("We want %d planes!\n", num_plane);
+
+  vector<group> planes;
+  for (int i=0; i<num_plane; i++) {
+    bool found = false;
+    int j = 0;
+    while (!found) {
+      if (groups[j].count==count_vec[i]) {
+        planes.push_back(groups[j]);
+        found = true;
+      }
+      j++;
+    }
+  }
+  // Shrinking the capacity
+  //http://www.cplusplus.com/reference/vector/vector/clear/
+  groups.clear();
+  groups.swap(groups);
+  
+  for (int i=0; i<planes.size(); i++) {
+    printf("%i points, mean normal: %.2f %.2f %.2f\n",
+      planes[i].count,
+      planes[i].mean_normal.x(),
+      planes[i].mean_normal.y(),
+      planes[i].mean_normal.z());
   }
   
-  //TODO: sort the groups according to size
-  
-  return &groups[0];
+  return &planes[0];
+
 }

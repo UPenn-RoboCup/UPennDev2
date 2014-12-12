@@ -1,7 +1,6 @@
 #include <vector>
 #include <stdint.h>
 #include <octomap/octomap.h>
-// #include <octomap/octomap_types.h>
 #include <octomap/math/Utils.h>
 
 struct group {
@@ -11,5 +10,5 @@ struct group {
   std::vector<octomap::OcTreeKey> members;
 };
 
-group *normal_clustering(octomap::OcTree tree, int n);
+void normal_clustering(std::vector<group> &groups, octomap::OcTree tree, int n);
 

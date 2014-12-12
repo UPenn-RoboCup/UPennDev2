@@ -274,7 +274,7 @@ local function update()
   end  
   -- segmentation methods
   if hcm.get_octomap_get_plane()==1 then
-    octomap.get_planes()
+    octomap.get_planes(3, 20)
     hcm.set_octomap_get_plane(0)
   end
 end

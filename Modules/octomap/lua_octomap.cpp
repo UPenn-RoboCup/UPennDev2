@@ -16,7 +16,8 @@
 #include <octomap/octomap.h>
 #include <octomap/math/Utils.h>
 
-#include "normal_clustering.h"
+// #include "normal_clustering.h"
+#include "ransac.h"
 
 using namespace std;
 using namespace octomap;
@@ -197,26 +198,13 @@ static int lua_add_scan( lua_State *L ) {
 
 // Clustering the normals
 static int lua_get_planes(lua_State *L) {
-  group *re = normal_clustering(tree, 3); //TODO: 2nd input
+  int num_plane = luaL_checknumber(L, 1);
+  int max_iter = luaL_checknumber(L, 2);
+  // Group points based on normal direction
+  vector<group> groups; //TODO
+  normal_clustering(groups, tree, num_plane);
+  int blah = ransac(tree, groups, max_iter, 0.01f);
   return 0;
-}
-
-
-//TODO: Plane fitting. May use openblas or Eigen
-//TODO: put into another file
-static void ransac(vector<OcTreeKey> &keys, int maxIter, float eps) {
-  int counts = 0;
-  int num_leaf = keys.size();
-  for (int i=0; i<maxIter; i++) {
-    // Randomly pick three nodes
-    int p1 = rand() % num_leaf + 1;
-    int p2 = rand() % num_leaf + 1;
-    int p3 = rand() % num_leaf + 1;
-    // indToOcTreeKey
-    
-    // check if colinear
-
-  }
 }
 
 
@@ -262,7 +250,6 @@ static int lua_get_horizontal(lua_State *L) {
   }
   printf("# of cands %d\n", candidates.size());
   
-  // ransac(candidates, 200, 200);  //TODO
   return 0;
 }
 

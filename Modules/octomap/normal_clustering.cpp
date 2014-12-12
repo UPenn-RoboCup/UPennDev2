@@ -5,7 +5,7 @@
 using namespace std;
 using namespace octomap;
 
-static vector<group> groups;
+vector<group> groups;
 
 void associate(point3d new_normal, OcTreeKey key, int max_n_group) {
   double min_da = 4.00;
@@ -56,7 +56,7 @@ void associate(point3d new_normal, OcTreeKey key, int max_n_group) {
   }
 }
 
-group *normal_clustering(OcTree tree, int max_num_plane) {
+void normal_clustering(vector<group> &planes, OcTree tree, int max_num_plane) {
   int count = 0;  
   
   for(OcTree::leaf_iterator it = tree.begin_leafs(),
@@ -83,7 +83,11 @@ group *normal_clustering(OcTree tree, int max_num_plane) {
   
   printf("We want %d planes!\n", num_plane);
 
-  vector<group> planes;
+  // static vector<group> planes;
+  // clear and shrink capacity
+  //http://stackoverflow.com/questions/319292/changing-the-reserve-memory-of-c-vector
+  // vector<group>().swap(planes);
+  
   for (int i=0; i<num_plane; i++) {
     bool found = false;
     int j = 0;
@@ -95,11 +99,7 @@ group *normal_clustering(OcTree tree, int max_num_plane) {
       j++;
     }
   }
-  // Shrinking the capacity
-  //http://www.cplusplus.com/reference/vector/vector/clear/
-  groups.clear();
-  groups.swap(groups);
-  
+    
   for (int i=0; i<planes.size(); i++) {
     printf("%i points, mean normal: %.2f %.2f %.2f\n",
       planes[i].count,
@@ -108,6 +108,6 @@ group *normal_clustering(OcTree tree, int max_num_plane) {
       planes[i].mean_normal.z());
   }
   
-  return &planes[0];
+  // return planes;
 
 }

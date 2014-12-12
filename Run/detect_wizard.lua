@@ -274,7 +274,10 @@ local function update()
   end  
   -- segmentation methods
   if hcm.get_octomap_get_plane()==1 then
-    octomap.get_planes(3, 20)
+    -- 1: # of plane to detect
+    -- 2: max # of iterations
+    -- 3: error thres for RANSAC
+    octomap.get_planes(3, 50, 0.01)
     hcm.set_octomap_get_plane(0)
   end
 end

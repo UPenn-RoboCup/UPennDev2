@@ -200,10 +200,14 @@ static int lua_add_scan( lua_State *L ) {
 static int lua_get_planes(lua_State *L) {
   int num_plane = luaL_checknumber(L, 1);
   int max_iter = luaL_checknumber(L, 2);
+  float eps = (float)luaL_checknumber(L, 3);
   // Group points based on normal direction
   vector<group> groups; //TODO
   normal_clustering(groups, tree, num_plane);
-  int blah = ransac(tree, groups, max_iter, 0.01f);
+  t0 = clock();
+  int blah = ransac(tree, groups, max_iter, eps);
+  t1 = clock();
+  printf("(%f seconds) for RANSAC\n", (float)(t1-t0)/CLOCKS_PER_SEC);	
   return 0;
 }
 

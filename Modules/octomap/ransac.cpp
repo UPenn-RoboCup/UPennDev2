@@ -4,12 +4,12 @@
 using namespace std;
 using namespace octomap;
 
-int ransac(OcTree tree, vector<group> &groups, int maxIter, float eps) {
+int ransac(vector<OcTreeKey> &bestInliersKey, vector<group> &groups, OcTree tree, int maxIter, float eps) {
   // Params for RANSAC
   int n_inliers = 0, most_inliers = 0;
   point3d abc;
   float d = 0.0f;
-  static vector<OcTreeKey> inliersKey, bestInliersKey;
+  vector<OcTreeKey> inliersKey;
   
   int n_points = groups[0].members.size();
   int i1=0, i2=0, i3=0;
@@ -25,8 +25,8 @@ int ransac(OcTree tree, vector<group> &groups, int maxIter, float eps) {
     p3 = tree.keyToCoord(groups[0].members[i3]);
     // Check if collinear
     // If the area of the triangle is close to zero
-    if (fabs((p1-p2).cross(p1-p3).norm()) < 0.001) {
-      printf("COLLINEAR!!");
+    if ((p1-p2).cross(p1-p3).norm() < 0.001) {
+      printf("COLLINEAR!!\n");
       continue;
     }
     
@@ -54,15 +54,14 @@ int ransac(OcTree tree, vector<group> &groups, int maxIter, float eps) {
         inliersKey.push_back(groups[0].members[j]);
       }
     }
-    if (n_inliers>most_inliers) {
+    if (n_inliers>0.5*n_points && n_inliers > most_inliers) {
       most_inliers = n_inliers;
-      bestInliersKey = inliersKey;
+      bestInliersKey = inliersKey; // it's copying
     }
-    // TODO: we can early terminate the iteration if...
-  } // End of interation
+  } // End of iteration
   
   // Use SVD to get the final parameters
-  printf("%d inliers out of %d\n", most_inliers, n_points);
+  printf("%d inliers out of %d\n", most_inliers, n_points);  
   
-  return 0;
+  return most_inliers;
 }

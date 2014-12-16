@@ -197,18 +197,57 @@ static int lua_add_scan( lua_State *L ) {
 
 
 // Clustering the normals
-static int lua_get_planes(lua_State *L) {
+static int lua_get_door(lua_State *L) {
   int num_plane = luaL_checknumber(L, 1);
   int max_iter = luaL_checknumber(L, 2);
   float eps = (float)luaL_checknumber(L, 3);
-  // Group points based on normal direction
-  vector<group> groups; //TODO
-  normal_clustering(groups, tree, num_plane);
+  int cluster = luaL_optint(L, 4, 0);
+  vector<group> groups;
+    
+  if (cluster==1) {
+    // Group points based on normal direction  
+    normal_clustering(groups, tree, num_plane);    
+  } else {
+    printf("Use all leaves for ransac!\n");
+    //ransac w/ all leaves
+    // TODO: ransac w/ leaves within a bbox
+    group new_group;
+    for(OcTree::leaf_iterator it = tree.begin_leafs(),
+           end = tree.end_leafs(); it!= end; ++it) {
+         
+      new_group.members.push_back(it.getKey());
+    }
+    groups.push_back(new_group); 
+  }  
+  
   t0 = clock();
-  int blah = ransac(tree, groups, max_iter, eps);
+  vector<OcTreeKey> inliersKey;
+  int n_inliers = ransac(inliersKey, groups, tree, max_iter, eps);
   t1 = clock();
   printf("(%f seconds) for RANSAC\n", (float)(t1-t0)/CLOCKS_PER_SEC);	
-  return 0;
+  
+  if (n_inliers==0) {
+    lua_pushnumber(L, 0);
+    return 1;
+  }
+  
+  // Store the inliers into a torch tensor
+  THFloatTensor *inliers_t = THFloatTensor_newWithSize2d(n_inliers, 4);
+  // Check contiguous
+  THArgCheck(inliers_t->stride[1] == 1, 1, "Improper memory layout (j)");
+  THArgCheck(inliers_t->stride[0] == inliers_t->size[1], 1, "Improper memory layout (i)");
+  float* inliers_ptr = inliers_t->storage->data + inliers_t->storageOffset;
+  point3d xyz;
+  for (int i=0; i<n_inliers;i++) {
+    xyz = tree.keyToCoord(inliersKey[i]);
+    *(inliers_ptr++) = xyz.x(); 
+    *(inliers_ptr++) = xyz.y(); 
+    *(inliers_ptr++) = xyz.z(); 
+    *(inliers_ptr++) = 1.0f; 
+  }
+  // Return the tensor to lua process
+  luaT_pushudata(L, inliers_t, "torch.FloatTensor");
+  return 1;
 }
 
 
@@ -303,7 +342,7 @@ static const struct luaL_Reg octomap_lib [] = {
 	{"add_scan", lua_add_scan},
   {"add_depth", lua_add_depth},
   //
-  {"get_planes", lua_get_planes},
+  {"get_door", lua_get_door},
   {"get_horizontal", lua_get_horizontal},
   //
 	{"get_data", lua_get_data},

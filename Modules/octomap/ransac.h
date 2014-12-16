@@ -7,5 +7,6 @@
 
 //TODO: a class for plane??
 
-int ransac(octomap::OcTree tree, std::vector<group> &groups, int n, float eps);
+int ransac(std::vector<octomap::OcTreeKey> &bestInlierKey, std::vector<group> &groups, 
+  octomap::OcTree tree, int n, float eps);
 

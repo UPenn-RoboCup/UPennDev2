@@ -31,7 +31,7 @@ local octomap = {}
 octomap.update = vector.zeros(1)
 octomap.save = vector.zeros(1)
 octomap.clear = vector.zeros(1)
-octomap.get_plane = vector.zeros(1)
+octomap.get_door = vector.zeros(1)
 shared_data.octomap = octomap
 
 shared_data.state={}

@@ -43,7 +43,7 @@ end
 -- Octomap
 local octomap = require'octomap'
 -- TODO: read params from shm
-octomap.set_resolution(0.015)
+octomap.set_resolution(0.01)
 octomap.set_range(0.05, 2)
 -- Set the map parameters
 octomap.set_occupancyThres(0.7)
@@ -273,12 +273,42 @@ local function update()
     hcm.set_octomap_update(0)
   end  
   -- segmentation methods
-  if hcm.get_octomap_get_plane()==1 then
+  if hcm.get_octomap_get_door()==1 then
     -- 1: # of plane to detect
     -- 2: max # of iterations
     -- 3: error thres for RANSAC
-    octomap.get_planes(3, 50, 0.01)
-    hcm.set_octomap_get_plane(0)
+    -- 4: [opt] 1 means first cluster according to normals
+    n_planes, max_iter, eps = 1, 1500, 0.1
+    inliers = octomap.get_door(n_planes, max_iter, eps)
+    if inliers==0 then
+      print("FAIL TO DETECT A DOOR!!!")
+    else
+
+      -- SVD for computing the plane
+      u, s, v = torch.svd(inliers)
+      abcd = v:select(2, 4)
+      door_yaw = math.atan2(abcd[2], abcd[1])*RAD_TO_DEG
+      if (door_yaw>90) then
+        door_yaw = door_yaw - 180
+      elseif (door_yaw<-90) then
+        door_yaw = 180 + door_yaw
+      end
+      plane_pos = torch.mean(inliers, 1)
+    
+      print("normal:", unpack(vector.new(abcd)))
+      print("orientation:", door_yaw)
+      print("pos:", unpack(vector.new(plane_pos)))
+    
+      --[[ debugging msg
+      print("u size:", unpack(vector.new(u:size())))
+      print("s size:", unpack(vector.new(s:size())))
+      print("v size:", unpack(vector.new(v:size())))
+      check_error = torch.dot(inliers:select(1, 1), abcd)
+      print(unpack(vector.new(check_error)))
+      --]]
+    end
+    
+    hcm.set_octomap_get_door(0)
   end
 end
 

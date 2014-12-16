@@ -4,6 +4,7 @@ local ok = pcall(dofile,'../fiddle.lua')
 if not ok then dofile'fiddle.lua' end
 
 hcm.set_octomap_update(0)
+hcm.set_octomap_get_door(0)
 
 local targetvel = {0,0,0}
 local targetvel_new = {0,0,0}

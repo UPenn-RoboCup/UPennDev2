@@ -26,16 +26,26 @@ local function update(rgb, depth)
 	end
 	-- Send debug
   if cnt % 5 == 0 then
+    local q, rpy, bh = Body.get_position(), Body.get_rpy(), mcm.get_walk_bodyHeight()
 	  -- Send color
 	  local j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
 	  rgb.data = nil
 	  rgb.sz = #j_rgb
 		rgb.c = 'jpeg'
+    rgb.q = q
+    rgb.bh = bh
+    rgb.rpy = rpy
+    rgb.id = 'k2_rgb'
     color_ch:send({mpack(rgb), j_rgb})
 	  -- Send depth (TODO: zlib)
 	  local ranges = depth.data
 	  depth.data = nil
 	  depth.sz = #ranges
+    depth.c = 'raw'
+    depth.q = q
+    depth.bh = bh
+    depth.rpy = rpy
+    depth.id = 'k2_depth'
     depth_ch:send({mpack(depth), ranges})
 		-- Send extra color processing
 		for _,v in ipairs(detection.send()) do color_ch:send({mp.pack(v[1]), v[2]}) end

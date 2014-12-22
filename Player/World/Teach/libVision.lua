@@ -70,11 +70,16 @@ end
 
 -- Simple bbox with no tilted color stats
 -- Assume always input bboxB
-local function bboxStats(label, color, bboxB)
-	local bbox = label=='a' and bboxB2A(bboxB) or bboxB
-  local area = (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1)
-	local stats = ImageProc2.color_stats(label, color, bbox)
-  return stats, area
+local function bboxStats(label, color, bbox)
+	local stats
+	if label=='a' then
+		stats = ImageProc2.color_stats(label, color, bbox)
+	else
+		bbox = bboxB2A(bbox)
+		stats = ImageProc2.color_stats(label, color, bbox)
+	end
+	-- return stats and area
+  return stats, (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1)
 end
 
 local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_t)

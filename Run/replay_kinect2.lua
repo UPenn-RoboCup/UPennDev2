@@ -1,5 +1,6 @@
+#!/usr/bin/env luajit
 dofile'../include.lua'
-local LOG_DATE = '12.03.2014.15.52.17' --'10.03.2014.13.18.48'
+local LOG_DATE = '12.04.2014.09.30.05'
 
 local libLog = require'libLog'
 local replay_depth = libLog.open(HOME..'/Data/', LOG_DATE, 'k2_depth')
@@ -7,7 +8,6 @@ local replay_rgb = libLog.open(HOME..'/Data/', LOG_DATE, 'k2_rgb')
 local metadata = replay_depth:unroll_meta()
 local metadata_rgb = replay_rgb:unroll_meta()
 print('Unlogging', #metadata, 'images from', LOG_DATE)
-
 
 local util = require'util'
 local si = require'simple_ipc'
@@ -26,17 +26,22 @@ for i, metadata_depth, payload_depth in logged_depth do
 	local i_rgb, metadata_rgb, payload_rgb = logged_rgb()
   metadata_rgb.c = 'jpeg'
 
-	if i%10==0 then
-		print('Count', i)
-	end
+--	if i%10==0 then
+		io.write('Count ', i, '\n')
+--	end
 
 	local t = get_time()
 	t0 = t0 or t
 	local dt = t - t0
 
 	local metadata_dt = metadata_depth.t - metadata_t0
-	local t_sleep = metadata_dt-dt
+	local t_sleep = metadata_dt - dt
 	if t_sleep>0 then unix.usleep(1e6*t_sleep) end
+
+  print('payload_depth', #payload_depth)
+  -- Assume real kinect
+  metadata_depth.width = metadata_depth.width or 512
+  metadata_depth.height = metadata_depth.height or 424
 
 	depth_ch:send({mp.pack(metadata_depth), payload_depth})
   if payload_rgb then

@@ -12,17 +12,18 @@ fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
 fsm.enabled = {
---  'Body',
-	'Arm',
+  'Body',
+  'Arm',
   'Motion',
-	'Head'
+  'Head',
+  'Lidar'
 }
 
 --SJ: now we can have multiple FSM options 
 fsm.select = {
-	Arm = 'Teach',
+  Arm = 'Teach',
   Body = 'Teach',
-	Head = 'Teach',
+  Head = 'Teach',
   Motion = 'Teach'
 }
 
@@ -34,75 +35,81 @@ fsm.Body = {
 
 fsm.Head = {
   {'headIdle', 'init', 'headCenter'},
-	{'headCenter', 'trackhand', 'headTrackHand'},
+  {'headCenter', 'trackhand', 'headTrackHand'},
+}
+
+fsm.Lidar = {
+  {'lidarIdle', 'pan', 'lidarPan'},
+  {'lidarPan', 'switch', 'lidarPan'},
+  {'lidarPan', 'stop', 'lidarIdle'},
 }
 
 fsm.Arm = {
-	-- Idle
+  -- Idle
   {'armIdle', 'timeout', 'armIdle'},
-	{'armIdle', 'init', 'armInit'},
-	-- Init
-	{'armInit', 'timeout', 'armInit'},
+  {'armIdle', 'init', 'armInit'},
+  -- Init
+  {'armInit', 'timeout', 'armInit'},
   {'armInit', 'done', 'armStance'},
-	-- Stance pose (for walking)
-	{'armStance', 'timeout', 'armStance'},
-	{'armStance', 'ready', 'armReady'},
-	{'armStance', 'teleop', 'armTeleop'},
-	-- Ready pose (for manipulating)
-	{'armReady', 'timeout', 'armReady'},
-	{'armReady', 'done', 'armTeleop'},
-	{'armReady', 'teleop', 'armTeleop'},
-	-- Teleop
-	{'armTeleop', 'timeout', 'armTeleop'},
-	{'armTeleop', 'init', 'armInit'},
-	{'armTeleop', 'ready', 'armReady'},
-	{'armTeleop', 'poke', 'armPoke'},
-	-- Poke
-	{'armPoke', 'timeout', 'armPoke'},
-	{'armPoke', 'done', 'armTeleop'},
-	{'armPoke', 'touch', 'armTeleop'},
+  -- Stance pose (for walking)
+  {'armStance', 'timeout', 'armStance'},
+  {'armStance', 'ready', 'armReady'},
+  {'armStance', 'teleop', 'armTeleop'},
+  -- Ready pose (for manipulating)
+  {'armReady', 'timeout', 'armReady'},
+  {'armReady', 'done', 'armTeleop'},
+  {'armReady', 'teleop', 'armTeleop'},
+  -- Teleop
+  {'armTeleop', 'timeout', 'armTeleop'},
+  {'armTeleop', 'init', 'armInit'},
+  {'armTeleop', 'ready', 'armReady'},
+  {'armTeleop', 'poke', 'armPoke'},
+  -- Poke
+  {'armPoke', 'timeout', 'armPoke'},
+  {'armPoke', 'done', 'armTeleop'},
+  {'armPoke', 'touch', 'armTeleop'},
 }
 
 --[[
 fsm.Motion = {
-  -- Idle
-  {'motionIdle', 'timeout', 'motionIdle'},
-  {'motionIdle', 'stand', 'motionInit'},
-  -- Init
-  {'motionInit', 'done', 'motionStance'},
-  {'motionInit', 'timeout', 'motionInit'},
-  --
-  {'motionStance', 'sway', 'motionSway'},
-  {'motionStance', 'lean', 'motionLean'},
-  --
-  {'motionSway', 'lean', 'motionLean'},
-  {'motionSway', 'switch', 'motionSway'},
-  {'motionSway', 'timeout', 'motionSway'},
-  {'motionSway', 'stand', 'motionStance'},
-  --
-  {'motionLean', 'stepup', 'motionLift'},
-  {'motionLean', 'stepdown', 'motionStepDown'},
-  {'motionLean', 'stand', 'motionInit'},
-  --
-  {'motionLift', 'lean', 'motionLean'},
-  {'motionLift', 'timeout', 'motionLower'},
-  {'motionLift', 'quit', 'motionLower'},
-  --{'motionLift', 'done', 'motionLower'},
-  {'motionLift', 'done', 'motionHold'},
-  --
-  {'motionHold', 'done', 'motionLower'},
-  --
-  {'motionLower', 'flat', 'motionStance'},
-  {'motionLower', 'uneven', 'motionCaptainMorgan'},
-  --
-  {'motionCaptainMorgan', 'stepup', 'motionStepUp'},
-  {'motionCaptainMorgan', 'stepdown', 'motionJoin'},
-  --
-  {'motionStepUp', 'done', 'motionHold'},
-  --
-  {'motionStepDown', 'done', 'motionLower'},
-  --
-  {'motionJoin', 'done', 'motionLower'},
+-- Idle
+{'motionIdle', 'timeout', 'motionIdle'},
+{'motionIdle', 'stand', 'motionInit'},
+-- Init
+{'motionInit', 'done', 'motionStance'},
+{'motionInit', 'timeout', 'motionInit'},
+--
+{'motionStance', 'sway', 'motionSway'},
+{'motionStance', 'lean', 'motionLean'},
+--
+{'motionSway', 'lean', 'motionLean'},
+{'motionSway', 'switch', 'motionSway'},
+{'motionSway', 'timeout', 'motionSway'},
+{'motionSway', 'stand', 'motionStance'},
+--
+{'motionLean', 'stepup', 'motionLift'},
+{'motionLean', 'stepdown', 'motionStepDown'},
+{'motionLean', 'stand', 'motionInit'},
+--
+{'motionLift', 'lean', 'motionLean'},
+{'motionLift', 'timeout', 'motionLower'},
+{'motionLift', 'quit', 'motionLower'},
+--{'motionLift', 'done', 'motionLower'},
+{'motionLift', 'done', 'motionHold'},
+--
+{'motionHold', 'done', 'motionLower'},
+--
+{'motionLower', 'flat', 'motionStance'},
+{'motionLower', 'uneven', 'motionCaptainMorgan'},
+--
+{'motionCaptainMorgan', 'stepup', 'motionStepUp'},
+{'motionCaptainMorgan', 'stepdown', 'motionJoin'},
+--
+{'motionStepUp', 'done', 'motionHold'},
+--
+{'motionStepDown', 'done', 'motionLower'},
+--
+{'motionJoin', 'done', 'motionLower'},
 }
 --]]
 
@@ -129,7 +136,7 @@ fsm.Motion = {
   {'motionStepPreview', 'done', 'motionStance'},
   {'motionKick', 'done', 'motionStance'},
 
---For new hybrid walk
+  --For new hybrid walk
   {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
   {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
 
@@ -140,8 +147,8 @@ fsm.Motion = {
   {'motionHybridWalkKick', 'done', 'motionStance'},
   {'motionHybridWalkKick', 'walkalong', 'motionHybridWalk'},
   
---  {'motionHybridWalk', 'done_step', 'motionStepNonstop'},
---  {'motionStepNonstop', 'done', 'motionStance'},
+  --  {'motionHybridWalk', 'done_step', 'motionStepNonstop'},
+  --  {'motionStepNonstop', 'done', 'motionStance'},
 
   {'motionHybridWalkEnd', 'done', 'motionStance'},
 

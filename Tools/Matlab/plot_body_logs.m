@@ -7,12 +7,12 @@ for i=1:numel(jointNames)
     end
 end
 
-% figure(1);
-% plot( ts, rad2deg(pos(:, joint_idx)), ...
-%     ts, rad2deg(cmd(:, joint_idx)) ...
-%     );
-% legend('Position', 'Command');
-% title('PelvL Command vs. Position');
+figure(1);
+plot( ts(ts>50), rad2deg(pos(ts>50, joint_idx)), ...
+    ts(ts>50), rad2deg(cmd(ts>50, joint_idx)) ...
+    );
+legend('Position', 'Command');
+title('PelvL Command vs. Position');
 
 hip_roll_pos = rad2deg(pos(:, joint_idx));
 hip_roll_cmd = rad2deg(cmd(:, joint_idx));
@@ -48,27 +48,27 @@ foot_roll_cmd = rad2deg(cmd(:, joint_idx));
 % plot( ts, cur(:, joint_idx) );
 % title('Current (Amperes)');
 
-figure(5);
-plot(gyro(400:600,:));
-title('Gyro');
-legend('Roll', 'Pitch', 'Yaw');
-xlim([1 201]);
-% 
-figure(6);
-plot(rpy(400:600,1));
-title('Angle');
-legend('Roll', 'Pitch', 'Yaw');
-xlim([1 201]);
+% figure(5);
+% plot(gyro(400:600,:));
+% title('Gyro');
+% legend('Roll', 'Pitch', 'Yaw');
+% xlim([1 201]);
+% % 
+% figure(6);
+% plot(rpy(400:600,1));
+% title('Angle');
+% legend('Roll', 'Pitch', 'Yaw');
+% xlim([1 201]);
 
 % figure(4);
 % plot( ts, rad2deg(rpy(:, 1)) );
 % title('Roll Angle (Degrees)');
 % ylim([-5 5]);
 
-% figure(2);
-% plot(ft_l);
-% title('Left Force Torque');
-% 
-% figure(3);
-% plot(ft_r);
-% title('Right Force Torque');
+figure(2);
+plot(ts(ts>50), ft_l(ts>50,3));
+title('Left Force Torque (Fz)');
+
+figure(3);
+plot(ts(ts>50), ft_r(ts>50,3));
+title('Right Force Torque (Fz)');

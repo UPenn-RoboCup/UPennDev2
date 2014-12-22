@@ -66,7 +66,7 @@ DEF SMALL_TOP_PINK ValveDRCSmooth {
 
 # Bottom right
 DEF SMALL_BOTTOM_PINK ValveDRCSmooth {
-  translation -0.75 0.8 1.3
+  translation -0.65 0.8 1.3
 	scale 0.11 0.11 0.11
 	color 1 0 1
 }

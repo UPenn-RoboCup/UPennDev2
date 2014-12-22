@@ -10,12 +10,12 @@
  should be a simple thing with pointers
 */
 
-#include <lauxlib.h>
 #include <lua.h>
-#include <jpeglib.h>
+#include <lauxlib.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "jpeglib.h"
 
 #ifdef TORCH
 #include <torch/luaT.h>
@@ -399,6 +399,15 @@ static int lua_jpeg_compress(lua_State *L) {
 		height = luaL_checkint(L, 4);
 		stride = cinfo->input_components * width;
   }
+	else if( lua_type(L, 2) == LUA_TNUMBER ){
+		data = (uint8_t *)luaL_optlong(L, 2, 0);
+    if (data == NULL) {
+      return luaL_error(L, "Input image bad");
+    }
+		width  = luaL_checkint(L, 3);
+		height = luaL_checkint(L, 4);
+    stride = cinfo->input_components * width;
+	}
 #ifdef TORCH
 	else {
 		THByteTensor* b_t = 

@@ -13,9 +13,7 @@ code_lut, char_lut, lower_lut = {}, {}, {}
 
 -- State Machine events
 char_lut['1'] = function()
-  motion_ch:send'stand'
-	arm_ch:send'init'
-	head_ch:send'init'
+  body_ch:send'init'
 end
 char_lut['2'] = function()
 	arm_ch:send'ready'

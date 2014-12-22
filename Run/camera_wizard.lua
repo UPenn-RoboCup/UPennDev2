@@ -74,14 +74,9 @@ local c_meta = {
 	n = 0,
 }
 
--- Form the detection pipeline
-local pipeline = {}
-for _, d in ipairs(metadata.detection_pipeline) do
-	local detect = require(d)
-	-- Send which camera we are using
-	detect.entry(metadata, Body)
-	pipeline[d] = detect
-end
+local has_detection, detection = pcall(require, metadata.detection)
+-- Send which camera we are using
+detection.entry(metadata)
 
 -- JPEG Compressor
 local c_grey = jpeg.compressor('gray')
@@ -93,7 +88,6 @@ local c_yuyv = jpeg.compressor('yuyv')
 -- LOGGING
 if ENABLE_LOG then
 	libLog = require'libLog'
-	-- Make the logger
 	logger = libLog.new('yuyv', true)
 end
 
@@ -143,14 +137,14 @@ local function update(img, sz, cnt, t)
 	end
 
 	-- Update the vision routines
-	for pname, p in pairs(pipeline) do
-		p.update(img)
-		if ENABLE_NET and p.send and t-t_send>SEND_INTERVAL then
+	if has_detection then
+		detection.update(img)
+		if ENABLE_NET and detection.send and t-t_send>SEND_INTERVAL then
 			if IS_WEBOTS and camera_ch then
-				for _,v in ipairs(p.send()) do camera_ch:send({mp.pack(v[1]), v[2]}) end
+				for _,v in ipairs(detection.send()) do camera_ch:send({mp.pack(v[1]), v[2]}) end
 				t_send = t
 			elseif udp_ch then
-				for _,v in ipairs(p.send()) do
+				for _,v in ipairs(detection.send()) do
 					if v[2] then
 						udp_data = mp.pack(v[1])..v[2]
 					else

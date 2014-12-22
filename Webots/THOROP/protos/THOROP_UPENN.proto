@@ -746,10 +746,10 @@ Robot {
 			} # End of the Head HingeJointParameters
 			endPoint Solid {
 				boundingObject Transform {
-					translation 0 0.06 0
+					translation 0 0.12 0
 					children [
 						Box {
-							size 0.04 0.125 0.04
+							size 0.05 0.125 0.05
 						}
 					]
 				}

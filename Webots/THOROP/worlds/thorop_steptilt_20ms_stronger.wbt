@@ -69,6 +69,5 @@ THOROP_UPENN_strong {
   translation 0 1.155 0
 	controller "thorop"
   controllerArgs "0 32"
-  lidarRays 360
   footContactMaterial "feet"
 }

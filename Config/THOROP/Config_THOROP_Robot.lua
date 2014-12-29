@@ -54,9 +54,9 @@ local right_arm = {
   ttyname = '/dev/ttyUSB0',
   m_ids = {1,3,5,7,9,11,13,
         --head
---        29, 30,
+        29, 30,
 				-- gripper
-				66, 67
+--				66, 67
         },
 	enable_read = true,
 }
@@ -228,7 +228,7 @@ servo.steps = 2 * vector.new({
 
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
-  1,1, -- Head
+  1,-1, -- Head
   1,-1,1,1,1,1,1, --LArm
   ------
   -1, -1,1,   1,  -1,1, --LLeg
@@ -243,7 +243,7 @@ servo.direction = vector.new({
 
 -- TODO: Offset in addition to bias?
 servo.rad_offset = vector.new({
-  0,0, -- Head
+  -180,135, -- Head
   -90,90,-90,45,90,0,0, --LArm
   0,0,0,-45,0,0, --LLeg
   0,0,0,45,0,0, --RLeg
@@ -329,7 +329,7 @@ if Config.USE_DUMMY_ARMS then
 	})
 	--
 	servo.direction = vector.new({
-		1,1, -- Head
+		1,-1, -- Head
 		-1,1, --LArm
 		------
 		-1, -1,1,   1,  -1,1, --LLeg
@@ -341,7 +341,7 @@ if Config.USE_DUMMY_ARMS then
 	})
 	--
 	servo.rad_offset = vector.new({
-		0,0, -- Head
+		-180,135, -- Head
 		0, -90, --LArm
 		0,0,0,-45,0,0, --LLeg
 		0,0,0,45,0,0, --RLeg

@@ -1,6 +1,6 @@
 local WebotsBody = {}
 local ptable = require'util'.ptable
-local ww, cw, mw, sw, fw, rw, kb
+local ww, cw, mw, kw, sw, fw, rw, kb
 local ffi = require'ffi'
 
 function WebotsBody.entry()
@@ -19,7 +19,7 @@ function WebotsBody.entry()
 	if ww then ww.entry() end
   if fw then fw.entry() end
   if rw then rw.entry() end
-  if kw then kw.entry(Config.kinect) end
+  if kw and kw.entry then kw.entry() end
 end
 
 function WebotsBody.update_head_camera(img, sz, cnt, t)

@@ -405,10 +405,12 @@ if IS_WEBOTS then
     if Config.sensors.kinect then
       tags.kinect = webots.wb_robot_get_device("kinect")
     end
+    --[[
     if Config.sensors.fsr then
       tags.l_fsr = webots.wb_robot_get_device("L_FSR")
       tags.r_fsr = webots.wb_robot_get_device("R_FSR")
     end
+    --]]
     if Config.sensors.ft then
 			tags.l_ft = webots.wb_robot_get_device("LAnkle_force")
       tags.r_ft = webots.wb_robot_get_device("RAnkle_force")

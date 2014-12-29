@@ -36,9 +36,10 @@ if IS_WEBOTS then
   Config.use_localhost = true
   Config.wizards = {
     feedback = 'feedback_wizard',
-    mesh = 'mesh_wizard',
-    world = 'world_wizard',
-    camera = 'camera_wizard'
+    mesh = false, --'mesh_wizard',
+    world = false, --'world_wizard',
+    camera = false, --'camera_wizard'
+    kinect = false, --'kinect2_wizard',
   }
   -- Default Webots sensors
   Config.sensors = {
@@ -47,7 +48,6 @@ if IS_WEBOTS then
     chest_lidar = false,
     head_lidar = false,
     kinect = false,
-    fsr = false,
   }
   -- Adjust the tiemsteps if desired
   -- Config.camera_timestep = 33
@@ -64,41 +64,7 @@ Config.torque_legs = true
 -- Application specific Configs --
 ----------------------------------
 
--- Robocup
---[[
-Config.libs.World = 'RoboCup'
-local exo = {
-  'Robot','Walk','Net','Manipulation',
- 'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
- -- 'FSM_KickDemo','World_RoboCup','Vision_RoboCup'
-}
-Config.testfile = 'test_robocup'
-Config.sensors.chest_lidar = false
-if IS_WEBOTS then
-  Config.wizards.mesh = nil
-end
---]]
-
--- DRC Site visit 2014
---[[
---We are not doing any lidar based stuff
---Config.libs.World = 'SiteVisit'   
-Config.libs.World = 'SiteVisit'   
-local exo = {
-  'Robot','Walk','Net','Manipulation',
-  'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup' 
-}
-if IS_WEBOTS then
-  Config.sensors.chest_lidar = false
-	Config.sensors.head_camera = true
-  Config.wizards.mesh = nil
-  Config.testfile = 'test_sitevisit'
-end
---]]
-
-
--- DRC Final setup
--- for testing new walk controller
+-- DRC Final setup: testing new walk controller
 ----[[
 Config.libs.World = 'SiteVisit'   
 local exo = {
@@ -106,18 +72,14 @@ local exo = {
   'FSM_DRCFinal','World_DRCTrials','Vision_RoboCup' 
 }
 if IS_WEBOTS then
-  Config.sensors.chest_lidar = false
-  Config.wizards.test = nil
-  Config.wizards.mesh = nil
-  Config.wizards.camera = nil
   Config.testfile = 'test_sitevisit'
 end
 --]]
 
 
--- Teach robot to go up steps
+-- Steve Manipulation and Locomotion
 --[[
---Config.libs.MotionLib = 'Teach'
+Config.libs.MotionLib = 'Teach'
 Config.libs.ArmLib = 'Teach'
 Config.libs.World = 'Teach'
 -- Precedence in loading, for overrides!
@@ -140,7 +102,31 @@ if IS_WEBOTS then
 end
 --]]
 
--- Remote Control
+-- Robocup
+--[[
+Config.libs.World = 'RoboCup'
+local exo = {
+  'Robot','Walk','Net','Manipulation',
+ 'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
+ -- 'FSM_KickDemo','World_RoboCup','Vision_RoboCup'
+}
+Config.testfile = 'test_robocup'
+--]]
+
+-- DRC Site visit 2014
+--[[
+Config.libs.World = 'SiteVisit'   
+local exo = {
+  'Robot','Walk','Net','Manipulation',
+  'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup' 
+}
+if IS_WEBOTS then
+	Config.sensors.head_camera = true
+  Config.testfile = 'test_sitevisit'
+end
+--]]
+
+-- Remote Control for testing with Marcell
 --[[
 local exo = {
 	'Robot', 'Walk', 'Net', 'FSM_Remote'
@@ -152,7 +138,6 @@ if IS_WEBOTS then
     --remote = 'remote_wizard',
   }
   Config.testfile = 'test_remote'
-  Config.sensors.chest_lidar = false
 end
 --]]
 

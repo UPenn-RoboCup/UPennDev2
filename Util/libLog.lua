@@ -84,7 +84,8 @@ local function unroll_meta(self)
 	local f_m = assert(io.open(self.m_name,'r'))
 	-- Must use an unpacker...
 	local metadata = {}
-	local u = munpacker(2048)
+	--local u = munpacker(2048)
+	local u = munpacker(3072)
 	local buf, nbuf = f_m:read(512),0
 	while buf do
 		nbuf = nbuf + #buf

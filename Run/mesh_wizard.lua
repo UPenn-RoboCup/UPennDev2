@@ -15,7 +15,7 @@ require'vcm'
 require'Body'
 
 
--- local ENABLE_LOG = true
+--local ENABLE_LOG = true
 
 local libLog, logger, nlog
 if ENABLE_LOG then
@@ -168,7 +168,8 @@ local function send_mesh(destination, compression, dynrange)
   else
     -- Raw
     print('compressing RAW...')
-    c_mesh = ffi.string(mesh:data(), mesh:nElement() * ffi.sizeof'float')
+    metadata.rsz = mesh:nElement() * ffi.sizeof'float'
+    c_mesh = ffi.string(mesh:data(), metadata.rsz)
   end
 	-- Update relevant metadata
 	metadata.c = compression
@@ -192,6 +193,24 @@ local function send_mesh(destination, compression, dynrange)
 		local ret, err = mesh_udp_ch:send(mpack(metadata)..c_mesh)
 		print('Mesh | Sent UDP', err or 'successfully')
 	end
+  
+  
+	-- Logging
+	if ENABLE_LOG then
+		print('LOGGING MESH...')
+		logger:record(metadata, c_mesh)
+		nlog = nlog + 1
+		if nlog % 10 == 0 then
+			print("# mesh logs: "..nlog)
+			if nlog % 50 == 0 then
+				logger:stop()
+				logger = libLog.new('mesh', true)
+				print('Open new log!')
+			end
+
+		end
+	end
+  
 end
 
 local compression = {
@@ -205,8 +224,8 @@ local function check_send_mesh()
 	local request, destination, comp = unpack(net)
 	if request==0 then return end
   
-  -- TEMP HACK
-  comp = 2
+  -- TODO: TEMP HACK
+  comp = 2 -- raw string
   
 	local dynrange = vcm.get_mesh_dynrange()
 	send_mesh(destination==1, compression[comp], dynrange)
@@ -261,21 +280,7 @@ local function update(meta, ranges)
 	-- TODO: This *should* be from another ZeroMQ event, in case the lidar dies
 	check_send_mesh()
   
-  
-	-- Logging
-	if ENABLE_LOG then
-		metadata.rsz = mesh:nElement() * ffi.sizeof'float'
-		logger:record(metadata, mesh:data(), metadata.rsz)
-		nlog = nlog + 1
-		if nlog % 10 == 0 then
-			print("# mesh logs: "..nlog)
-			if nlog % 100 == 0 then
-				logger:stop()
-				logger = libLog.new('mesh', true)
-				print('Open new log!')
-			end
-		end
-	end
+
   
 end
 

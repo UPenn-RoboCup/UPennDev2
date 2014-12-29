@@ -133,6 +133,7 @@ local saved = false
 -- Callback function for mech channel
 mesh_ch.callback = function(skt)
   print('MESH_CH CALL BACK...')
+  --if hcm.get_octomap_update()==0 then return end
    
   -- Only use the last one
   local pdata, ranges = unpack(skt:recv_all())
@@ -209,6 +210,7 @@ end
 
 local depths_t, w, h, focal_len
 local function update_kinect_depth(data, depths)
+  if hcm.get_octomap_update()==0 then return end 
   -- Useful params
   w, h = data.width, data.height
   --TODO: no need to calculate every time

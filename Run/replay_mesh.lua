@@ -1,10 +1,9 @@
 dofile'../include.lua'
--- local LOG_DATE = '12.04.2014.09.31.54'
 
 -- local LOG_DATE = '12.05.2014.13.34.15'
-local LOG_DATE = '12.05.2014.13.28.58'
--- local LOG_DATE = '12.05.2014.14.06.51'
--- local LOG_DATE = '12.05.2014.14.06.43'
+--local LOG_DATE = '12.05.2014.13.28.58'
+ local LOG_DATE = '12.05.2014.14.06.51'
+--local LOG_DATE = '12.29.2014.17.50.39'
 
 local libLog = require'libLog'
 local replay_mesh = libLog.open(HOME..'/Data/', LOG_DATE, 'mesh')
@@ -37,6 +36,7 @@ for i, metadata_mesh, payload_mesh in logged_mesh do
   -- if t_sleep>0 then unix.usleep(1e6*t_sleep) end
 
   unix.usleep(1e6)
+  --mesh_string = ffi.string(payload_mesh, metadata_mesh.rsz)
 	mesh_ch:send({mp.pack(metadata_mesh), payload_mesh})
       
 end

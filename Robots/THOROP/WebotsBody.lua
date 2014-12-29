@@ -19,7 +19,7 @@ function WebotsBody.entry()
 	if ww then ww.entry() end
   if fw then fw.entry() end
   if rw then rw.entry() end
-	if kw then kw.entry(Config.kinect) end
+  if kw then kw.entry(Config.kinect) end
 end
 
 function WebotsBody.update_head_camera(img, sz, cnt, t)

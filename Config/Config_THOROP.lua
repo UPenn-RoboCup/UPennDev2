@@ -79,8 +79,6 @@ if IS_WEBOTS then
 end
 --]]
 
-
-
 -- DRC Site visit 2014
 --[[
 --We are not doing any lidar based stuff
@@ -101,7 +99,7 @@ end
 
 -- DRC Final setup
 -- for testing new walk controller
---[[
+----[[
 Config.libs.World = 'SiteVisit'   
 local exo = {
   'Robot','Walk','Net','Manipulation',
@@ -111,13 +109,14 @@ if IS_WEBOTS then
   Config.sensors.chest_lidar = false
   Config.wizards.test = nil
   Config.wizards.mesh = nil
+  Config.wizards.camera = nil
   Config.testfile = 'test_sitevisit'
 end
 --]]
 
 
 -- Teach robot to go up steps
-----[[
+--[[
 --Config.libs.MotionLib = 'Teach'
 Config.libs.ArmLib = 'Teach'
 Config.libs.World = 'Teach'

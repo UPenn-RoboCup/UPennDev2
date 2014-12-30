@@ -10,9 +10,8 @@ Config.imu = {
   -- TODO: Add some mapping, etc.
 }
 
-Config.left_ft = {
+Config.right_ft = {   --
 	id = 'FT13288 TWE',
-	m_ids = {26, 24},
 -- Robotis: 1.372045898 1.824023438 1.604882813 2.045581055 1.819995117 1.914257813
   unloaded= {1.385, 1.860, 1.636, 2.085, 1.855, 1.940},
   matrix = {
@@ -26,9 +25,8 @@ Config.left_ft = {
   gain = 1,
 }
 
-Config.right_ft = {
+Config.left_ft = {
 	id = 'FT14216 TWE',
-	m_ids = {25, 23},
 	--Robotis: 1.752319336	1.839331055	1.696728516	1.773266602	1.718481445	1.874780273
 	unloaded = {1.765, 1.843, 1.705, 1.792, 1.744, 1.880},
 	matrix = {
@@ -41,6 +39,8 @@ Config.right_ft = {
 	},
   gain = 1,
 }
+Config.left_ft.m_ids = {24,26}--{26, 24}
+Config.right_ft.m_ids = {25, 23}
 
 -- DCM Chains
 Config.chain = {

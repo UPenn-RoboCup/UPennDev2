@@ -94,7 +94,7 @@ local function transform_mesh(points, data)
     
     -- Transform to GLOBAL frame
     pitch = data.pitch[i] + body_pitch_offset
-    roll = data.roll[i] + math.pi/2 -- TODO: a hack...
+    roll = data.roll[i]
     if data.pose[i] then 
       pose = data.pose[i] 
       pre_pose = pose
@@ -154,11 +154,7 @@ mesh_ch.callback = function(skt)
   end
     
   -- Transform to cartesian space
-  td = unix.time()
   transform_mesh(points, data)
-  if DEBUG then
-    -- print('Transform the entir scan..', unix.time()-td)
-  end
   
   octomap.set_origin(torch.DoubleTensor({pose[1], pose[2], body_height}))
 

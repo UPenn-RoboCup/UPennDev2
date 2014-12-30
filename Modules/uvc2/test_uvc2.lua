@@ -23,6 +23,7 @@ unix.usleep(1e6)
 print()
 print('Set parameters...')
 cam:set_param()
+unix.usleep(1e6)
 
 print()
 print('Get params...')

@@ -33,23 +33,21 @@ local function record(self, meta, raw, n_raw)
 	if mtype=='string' then
 		m_ok = self.f_meta:write(meta)
 	elseif mtype then
-		local metapack = mpack(meta)
-		m_ok = self.f_meta:write(metapack)
+		m_ok = self.f_meta:write(mpack(meta))
 	end
 	-- Record the raw
 	local rtype, r_ok = type(raw), false
 	if rtype=='userdata' or rtype=='cdata' then
-		-- If no FFI, then cannot record usedata
+		-- If no FFI, then cannot record userdata
 		-- If no number of raw data, then cannot record
 		-- TODO: Use carray as FFI fallback
 		if not n_raw then return end
 		if C then
-			local n_written = C.fwrite(raw,1,n_raw,self.f_raw)
+			local n_written = C.fwrite(raw, 1, n_raw, self.f_raw)
 			--print('wrote',n_written)
 			r_ok = n_written==n_raw
 		else
-			local data = carray.byte(raw,n_raw)
-			r_ok = self.f_raw:write(tostring(data))
+			r_ok = self.f_raw:write(tostring(carray.byte(raw ,n_raw)))
 		end
 	elseif rtype=='string' then
 		r_ok = self.f_raw:write(raw)

@@ -3,8 +3,7 @@
 -- State Machine Manager --
 -- (c) Stephen McGill    --
 ---------------------------
-dofile'../include.lua'
-require'gcm'
+dofile'../fiddle.lua'
 local Body = require(Config.dev.body)
 -- Cache some functions
 local get_time, usleep = Body.get_time, unix.usleep

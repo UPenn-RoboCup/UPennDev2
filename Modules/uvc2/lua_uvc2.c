@@ -50,6 +50,14 @@ static int lua_uvc2_index(lua_State *L) {
   return 1;
 }
 
+void status_cb(enum uvc_status_class status_class, int event, int selector, enum uvc_status_attribute status_attribute, void *data, size_t data_len, void *user_ptr){
+	printf(
+			"Controls callback. class: %d, event: %d, selector: %d, attr: %d, data_len: %zu\n",
+			status_class, event, selector, status_attribute, data_len
+			);
+
+}
+
 void cb(uvc_frame_t *frame, void *ptr) {
   uvc2_dev *ud = (uvc2_dev *) ptr;
   struct timeval t;
@@ -99,10 +107,10 @@ static int lua_uvc2_stream_on(lua_State *L) {
 #endif
   res = uvc_start_streaming(devh, ctrl, cb, ud, 0);
   if (res < 0) {
-    /* unable to start stream */
     uvc_perror(res, "start_streaming");
-    return luaL_error(L, "Bad stream start");
+    return luaL_error(L, "Unable to start stream!");
   }
+
   return 0;
 }
 
@@ -134,6 +142,7 @@ static int lua_uvc2_get_param(lua_State *L) {
   int16_t mode16s;
   uint32_t mode32;
   uvc_error_t res;
+
   
   res = uvc_get_ae_mode(devh, &mode8, UVC_GET_CUR);
   if (res < 0) { uvc_perror(res, "uvc_get_ae_mode!!!"); } else
@@ -168,6 +177,10 @@ static int lua_uvc2_get_param(lua_State *L) {
   printf("uvc_get_contrast %u\n", mode16);
   
   // Problems
+	res = uvc_get_scanning_mode(devh, &mode8, UVC_GET_CUR);
+  if (res < 0) { uvc_perror(res, "uvc_get_scanning_mode!!!"); } else
+  printf("uvc_scanning mode %d\n", mode8);
+
   res = uvc_get_saturation(devh, &mode16, UVC_GET_CUR);
   if (res < 0) { uvc_perror(res, "uvc_get_saturation!!!"); } else
   printf("uvc_get_saturation %d\n", mode16);
@@ -211,7 +224,7 @@ static int lua_uvc2_set_param(lua_State *L) {
   */
 
   // units of 0.0001 seconds
-  uint32_t e = 66;
+  uint32_t e = 1000;
   res = uvc_set_exposure_abs(devh, e);
   if (res < 0) { uvc_perror(res, "uvc exposure"); }
   
@@ -350,12 +363,16 @@ static int lua_uvc2_init(lua_State *L) {
   ud->count = 0;
   ud->t_frame = 0;
   uvc_stream_ctrl_t* ctrl = &(ud->ctrl);
-  
+ 
+	uvc_set_status_callback(devh, status_cb, NULL);
+
   /* Try to negotiate a 640x480 30 fps YUYV stream profile */
   res = uvc_get_stream_ctrl_format_size(
       devh, ctrl, /* result stored in ctrl */
-      UVC_FRAME_FORMAT_YUYV, /* YUV 422, aka YUV 4:2:2. try _COMPRESSED */
-      640, 480, 30 /* width, height, fps */
+			UVC_COLOR_FORMAT_UNCOMPRESSED,
+      /*UVC_FRAME_FORMAT_YUYV,*/ /* YUV 422, aka YUV 4:2:2 */
+			/*try _COMPRESSED*/
+      320, 240, 30 /* width, height, fps */
   );
   /* Print out the result */
   uvc_print_stream_ctrl(ctrl, stderr);

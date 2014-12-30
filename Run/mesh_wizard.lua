@@ -14,7 +14,6 @@ local vector = require'vector'
 require'vcm'
 require'Body'
 
-
 --local ENABLE_LOG = true
 
 local libLog, logger, nlog
@@ -44,6 +43,13 @@ local mesh_tcp_ch = stream.tcp and si.new_publisher(stream.tcp, operator)
 local mesh_udp_ch = stream.udp and si.new_sender(operator, stream.udp)
 local mesh_ch = stream.sub and si.new_publisher(stream.sub)
 print("OPERATOR", operator, stream.udp)
+
+local libLog, logger, nlog
+if ENABLE_LOG then
+	libLog = require'libLog'
+	logger = libLog.new('mesh', true)
+  nlog = 0
+end
 
 local metadata = {
 	name = 'mesh0',
@@ -146,6 +152,12 @@ local function angle_to_scanlines(rad)
   return scanlines
 end
 
+local compression = {
+  [0] = 'jpeg',
+  [1] = 'png',
+  [2] = 'raw'
+}
+
 local function send_mesh(destination, compression, dynrange)
   local near, far = unpack(dynrange)
 	if near>far then
@@ -175,15 +187,7 @@ local function send_mesh(destination, compression, dynrange)
 	metadata.c = compression
 	metadata.dr = dynrange
 	-- Send away
-	if type(destination)=='string' then
-		local f_img = io.open(destination..'.'..compression, 'w')
-		local f_meta = io.open(destination..'.meta', 'w')
-		f_img:write(c_mesh)
-		f_img:close()
-		f_meta:write(mpack(metadata))
-		f_meta:close()
-		print('Mesh | Wrote local')
-  elseif IS_WEBOTS and mesh_ch then
+	if IS_WEBOTS and mesh_ch then
     mesh_ch:send{mpack(metadata), c_mesh}
     print('Mesh | Sent PUB')
 	elseif destination then
@@ -213,12 +217,6 @@ local function send_mesh(destination, compression, dynrange)
   
 end
 
-local compression = {
-  [0] = 'jpeg',
-  [1] = 'png',
-  [2] = 'raw'
-}
-
 local function check_send_mesh()
 	local net = vcm.get_mesh_net()
 	local request, destination, comp = unpack(net)
@@ -232,6 +230,19 @@ local function check_send_mesh()
 	-- Reset the request
 	net[1] = 0
 	vcm.set_mesh_net(net)
+	-- Log
+	-- Do the logging if we wish
+	if ENABLE_LOG then
+		metadata.rsz = mesh:nElement() * ffi.sizeof'float'
+		logger:record(metadata, mesh:data(), metadata.rsz)
+		nlog = nlog + 1
+		print("# mesh logs: "..nlog, metadata.rsz)
+		if nlog % 100 == 0 then
+			logger:stop()
+			logger = libLog.new('mesh', true)
+			print('Open new log!')
+		end
+	end
 end
 
 local function update(meta, ranges)
@@ -279,8 +290,6 @@ local function update(meta, ranges)
 	-- Check for sending out on the wire
 	-- TODO: This *should* be from another ZeroMQ event, in case the lidar dies
 	check_send_mesh()
-  
-
   
 end
 

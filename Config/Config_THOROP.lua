@@ -25,6 +25,7 @@ Config.sensors = {
   kinect = false,
   fsr = false,
 }
+
 Config.wizards = {}
 
 
@@ -41,7 +42,7 @@ Config.debug = {
   detect = true,
 }
 
--- Monitor and logging
+
 Config.enable_monitor = true
 Config.enable_log = false
 Config.use_log = false
@@ -57,13 +58,24 @@ Config.libs={
 
 --Choose which config, fsm and mid-level libraries to use
 
---Robocup 
+
+-- Karen perception
+Config.libs.World = 'SiteVisit'   
+local exo = {
+  'Robot','Walk','Net','Manipulation',
+  'FSM_SiteVisit','World_DRCTrials','Vision_DRCFinal' 
+}
+Config.testfile = 'test_sitevisit'
+
+
+
+
+-- Robocup 
 --[[
 Config.libs.World = 'RoboCup'
 local exo = {
   'Robot','Walk','Net','Manipulation',
- 'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
- -- 'FSM_KickDemo','World_RoboCup','Vision_RoboCup'
+ 'FSM_RoboCup','World_RoboCup','Vision_RoboCup' 
 }
 Config.testfile = 'test_robocup'
 Config.sensors.chest_lidar = false
@@ -72,24 +84,6 @@ Config.wizards.mesh = nil
 --]]
 
 
----[[
---DRC Site visit 2014
---We are not doing any lidar based stuff
---Config.libs.World = 'SiteVisit'   
---Config.wizards.mesh = 'mesh_wizard_sitevisit'
---Config.sensors.chest_lidar = true
-
-Config.libs.World = 'SiteVisit'   
-local exo = {
-  'Robot','Walk','Net','Manipulation',
-  'FSM_SiteVisit','World_DRCTrials','Vision_DRCFinal' 
-}
-
--- Config.sensors.chest_lidar = false
--- Config.wizards.test = nil
--- Config.wizards.mesh = nil
-Config.testfile = 'test_sitevisit'
---]]
 
 -- Teach robot to go up steps
 --[[
@@ -101,9 +95,48 @@ local exo = {
 Config.testfile = 'test_teach'
 Config.wizards = {}
 Config.sensors = {ft = true}
+if IS_WEBOTS then
+  Config.testfile = 'test_sitevisit'
+end
 --]]
 
--- Remote Control
+
+-- Steve Manipulation and Locomotion
+--[[
+Config.libs.MotionLib = 'Teach'
+Config.libs.ArmLib = 'Teach'
+Config.libs.World = 'Teach'
+-- Precedence in loading, for overrides!
+local exo = {
+	'Robot', 'Walk', 'Net',
+	'FSM_Teach', 'Arm_Teach', 'Vision_Teach' --, 'World_Teach'
+}
+if IS_WEBOTS then
+  Config.testfile = 'test_teleop'
+  Config.sensors.kinect = true
+  Config.sensors.chest_lidar = true
+	Config.wizards.kinect = 'kinect2_wizard'
+  Config.wizards.mesh = 'mesh_wizard'
+end
+--]]
+
+
+-- DRC Site visit 2014
+--[[
+Config.libs.World = 'SiteVisit'   
+local exo = {
+  'Robot','Walk','Net','Manipulation',
+  'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup' 
+}
+if IS_WEBOTS then
+	Config.sensors.head_camera = true
+  Config.testfile = 'test_sitevisit'
+end
+--]]
+
+
+
+-- Remote Control for testing with Marcell
 --[[
 local exo = {
 	'Robot', 'Walk', 'Net', 'FSM_Remote'
@@ -121,19 +154,32 @@ Config.sensors.chest_lidar = false
 -- Webots specified
 if IS_WEBOTS then
   Config.use_localhost = true
+  -- Default Webots sensors
+  Config.sensors = {
+    ft = true,
+    head_camera = false,
+    chest_lidar = true,
+    head_lidar = false,
+    kinect = false,
+  }
   -- Tune which wizards to run in webots
   Config.wizards = {
     feedback = 'feedback_wizard',
     mesh = Config.sensors.chest_lidar and 'mesh_wizard',
-    world = 'world_wizard',
+    world = false, --'world_wizard',
     camera = Config.sensors.head_camera and 'camera_wizard',
+    kinect = false,  --'kinect2_wizard',
     detect = 'detect_wizard',
+    remote = false, -- 'remote_wizard',
   }  
   -- Adjust the tiemsteps if desired
   -- Config.camera_timestep = 33
   -- Config.lidar_timestep = 200 --slower
   Config.kinect_timestep = 300  -- slower
+  
+  Config.testfile = 'test_sitevisit'
 end
+
 
 --Add path to selected librares
 for i,sm in pairs(Config.libs) do

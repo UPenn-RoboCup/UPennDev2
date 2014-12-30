@@ -475,6 +475,15 @@ static int lua_png_compress(lua_State *L) {
 		h = lua_tointeger(L, 3);
 		bytes_per_pixel = luaL_optinteger(L, 4, 3);
   }
+	else if( lua_type(L, 1) == LUA_TNUMBER ){
+		data = (uint8_t *)luaL_optlong(L, 1, 0);
+    if (data == NULL) {
+      return luaL_error(L, "Input image bad");
+    }
+		w = luaL_checkint(L, 2);
+		h = luaL_checkint(L, 3);
+    bytes_per_pixel = luaL_optinteger(L, 4, 3);
+	}
 #ifdef TORCH
 	else if ( luaT_isudata(L, 1, "torch.ByteTensor") ) {
 		// TODO: Make a bit more type safe

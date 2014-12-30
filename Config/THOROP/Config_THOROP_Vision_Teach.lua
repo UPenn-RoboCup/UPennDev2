@@ -10,10 +10,10 @@ local monitor = {
 
 -- TODO: put this into FSM config, and state-specific
 local head = {
-  pitchMin = -10 * math.pi/180,
-  pitchMax = 75 * math.pi/180,
-  yawMin = -135 * math.pi/180,
-  yawMax = 135 * math.pi/180,
+  pitchMin = -10 * DEG_TO_RAD,
+  pitchMax = 75 * DEG_TO_RAD,
+  yawMin = -135 * DEG_TO_RAD,
+  yawMax = 135 * DEG_TO_RAD,
 	-- Head angle bias
 	yawBias = 0,
 	-- Camera bias
@@ -24,11 +24,9 @@ local head = {
   --From CoM to neck joint
   neckZ = .165 + .161,
   neckX = 0,
-
 }
 
-local vision = {
-  colors = {
+local colors = {
 		black = 0,
     orange = 1,
     yellow = 2,
@@ -37,29 +35,25 @@ local vision = {
     white = 16,
 		cyan = 32,
 		magenta = 64,
-  },
+  }
+
+local vision = {
+  colors = colors,
   scaleA = 2,
   scaleB = 2,
-  --TODO: clean up unused stuff
-  use_white_wall = 1,
-  white_wall_is_blue = 0,
-  white_wall_min_count = 3000,
-  white_wall_min_rate = 0.3,
-  use_nonwhite_wall = 0,
-  nonwhite_wall_min_area = 3000,
-  nonwhite_wall_max_rate = 0.15,
+}
 
-  --To compensate for the body flexing backward
-  --Use this angle instead of walk.bodyTilt
-  bodyTilt = 3*DEG_TO_RAD, 
-
+local vision_k2 = {
+  colors = colors,
+  scaleA = 1,
+  scaleB = 2,
 }
 
 vision.goal = {
   th_min_bbox_area = 80, --100, 
   th_nPostB = 15,
   th_min_area = 40,
-  th_min_orientation = 80*math.pi/180,
+  th_min_orientation = 80*DEG_TO_RAD,
   th_min_fill_rate = 0.4, --0.45,
   -- TODO: need to test on real robot
   height_min = 1, 
@@ -84,7 +78,7 @@ vision.goal = {
 }
 
 -- Cameras
-Config.camera = {}
+local camera = {}
 
 local m308_param = {
 	{'White Balance Temperature', 2300},
@@ -107,7 +101,7 @@ local grasp_afternoon_param = {
 	{'Sharpness', 0},
 }
 
-table.insert(Config.camera,
+table.insert(camera,
   {
     name = 'head',
     dev = '/dev/video0',
@@ -124,9 +118,7 @@ table.insert(Config.camera,
     -- Use the default vision parameters
     vision = vision,
     -- Run the standard RoboCup vision processing
-    detection_pipeline = {
-      'libVision',
-    },
+    detection = 'libVision',
     --Logitech C920
     --lut = 'empty',
     --lut = 'm308_lightson',
@@ -148,24 +140,36 @@ table.insert(Config.camera,
 		param = m308_param,
     --param = grasp_afternoon_param,
   })
+	
+local kinect = {
+  name = 'kinect2',
+  w = 512,
+  h = 424,
+  jpeg_quality = 60,
+  -- Use the default vision parameters
+  vision = vision_k2,
+  -- Run the standard RoboCup vision processing
+  detection = 'MultiValve',
+	lut = 'multi_valve',
+}
 
 --Webots use 1/2 resolution but 2x label resolution
 if IS_WEBOTS then
-  Config.camera[1].w = 320
-  Config.camera[1].h = 180
-  Config.camera[1].lut = 'multi_valve'
-
-  Config.camera[1].cx_offset = 0
-  Config.camera[1].cy_offset = 0
-
-  focal_length = 395.17
-  focal_base = 640
+  camera[1].w = 320
+  camera[1].h = 180
+  camera[1].cx_offset = 0
+  camera[1].cy_offset = 0
+  camera[1].lut = 'multi_valve'
+  camera[1].focal_length = 395.17
+  camera[1].focal_base = 640
+	
+	-- Kinect width and height
+	kinect.w, kinect.h = 256, 212
   
-	head.neckX = 0 --From CoM to neck joint
-
   vision.scaleA = 2
   vision.scaleB = 2
-  
+	
+	head.neckX = 0 --From CoM to neck joint
   head.cameraPitch = 0
   head.cameraRoll = 0
 	head.yawBias = 0
@@ -174,7 +178,7 @@ if IS_WEBOTS then
     th_min_bbox_area = 80, 
     th_nPostB = 10,
     th_min_area = 35,
-    th_min_orientation = 80*math.pi/180,
+    th_min_orientation = 80*DEG_TO_RAD,
     th_min_fill_rate = 0.28, --0.28,
     height_min = -0.9,  --TODO
     th_aspect_ratio = {2.5,110},
@@ -199,6 +203,8 @@ if IS_WEBOTS then
 end
 
 -- Associate with the table
+Config.camera = camera
+Config.kinect = kinect
 Config.vision = vision
 Config.head = head
 Config.monitor = monitor

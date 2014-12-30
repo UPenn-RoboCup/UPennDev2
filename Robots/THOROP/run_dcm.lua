@@ -101,7 +101,8 @@ end
 local left_ft = {
 	id = Config.left_ft.id,
 	m_ids = Config.left_ft.m_ids,
-	raw = ffi.new'uint16_t[4]',
+	raw = ffi.new'uint8_t[8]',
+	raw16 = ffi.new'uint16_t[4]',
 	readings = ffi.new'double[6]',
 	component = ffi.new'double[6]',
 	unloaded = ffi.new('double[6]', Config.left_ft.unloaded),
@@ -112,7 +113,8 @@ local left_ft = {
 local right_ft = {
 	id = Config.right_ft.id,
 	m_ids = Config.right_ft.m_ids,
-	raw = ffi.new'uint16_t[4]',
+	raw = ffi.new'uint8_t[8]',
+	raw16 = ffi.new'uint16_t[4]',
 	readings = ffi.new'double[6]',
 	component = ffi.new'double[6]',
 	unloaded = ffi.new('double[6]', Config.right_ft.unloaded),
@@ -121,7 +123,43 @@ local right_ft = {
 	shm = dcm.sensorPtr.rfoot,
 }
 local function parse_ft(ft, raw_str, m_id)
+
+	if m_id==ft.m_ids[1] then
+		ffi.copy(ft.raw, raw_str, 8)
+		local raw16_as_8 = ffi.cast('uint8_t*', ft.raw16)
+		for i=0,6,2 do
+			raw16_as_8[i] = ft.raw[i]
+			raw16_as_8[i+1] = ft.raw[i+1]
+--			if i==6 then print(ft.raw[i], ft.raw[i+1]) end
+		end
+		--print('V1', m_id)
+		--print(3.3 * tonumber(ft.raw16[0]) / 4095.0)
+		--print(3.3 * tonumber(ft.raw16[1]) / 4095.0)
+		--print(3.3 * tonumber(ft.raw16[2]) / 4095.0)
+		--print(3.3 * tonumber(ft.raw16[3]) / 4095.0)
+
+		ft.component[0] = 3.3 * tonumber(ft.raw16[0]) / 4095.0 - ft.unloaded[0]
+		ft.component[1] = 3.3 * tonumber(ft.raw16[1]) / 4095.0 - ft.unloaded[1]
+		ft.component[2] = 3.3 * tonumber(ft.raw16[2]) / 4095.0 - ft.unloaded[2]
+		ft.component[3] = 3.3 * tonumber(ft.raw16[3]) / 4095.0 - ft.unloaded[3]
+	elseif m_id==ft.m_ids[2] then
+		ffi.copy(ft.raw, raw_str, 8)
+		local raw16_as_8 = ffi.cast('uint8_t*', ft.raw16)
+		for i=0,6,2 do
+			raw16_as_8[i] = ft.raw[i]
+			raw16_as_8[i+1] = ft.raw[i+1]
+		end
+		--print('V2')
+		--print(3.3 * tonumber(ft.raw16[0]) / 4095.0)
+		--print(3.3 * tonumber(ft.raw16[1]) / 4095.0)
+		ft.component[4] = 3.3 * tonumber(ft.raw16[0]) / 4095.0 - ft.unloaded[4]
+		ft.component[5] = 3.3 * tonumber(ft.raw16[1]) / 4095.0 - ft.unloaded[5]
+	else
+		return
+	end
+
 	-- Lower ID has the 2 components
+	--[[
 	if m_id==ft.m_ids[1] then
 		ffi.copy(ft.raw, raw_str, 8)
 		ft.component[0] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[0]
@@ -131,12 +169,13 @@ local function parse_ft(ft, raw_str, m_id)
 	elseif m_id==ft.m_ids[2] then
 		ffi.copy(ft.raw, raw_str, 4)
 		local raw16_as_8 = ffi.cast('uint8_t*', ft.raw)
-		if m_id==23 and raw16_as_8[1]==0 then raw16_as_8[1] = 8 end
 		ft.component[4] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[4]
 		ft.component[5] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[5]
 	else
 		return
 	end
+	--]]
+	
 	-- New is always zeroed
 	ffi.fill(ft.readings, ffi.sizeof(ft.readings))
 	for i=0,5 do
@@ -144,7 +183,7 @@ local function parse_ft(ft, raw_str, m_id)
 			ft.readings[i] = ft.readings[i]
 			+ ft.calibration_mat[i][j]
 			* ft.component[j]
-			* ft.calibration_gain
+--			* ft.calibration_gain
 		end
 	end
 	ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.readings))
@@ -157,7 +196,7 @@ local leg_packet_offsets = {}
 for i,v in ipairs(leg_packet_reg) do
 	local reg = assert(lD.nx_registers[v])
 	local sz = reg[2]
-	table.insert(leg_packet_offsets, (leg_packet_offsets[1] or 0) + sz)
+	table.insert(leg_packet_offsets, (i>1 and leg_packet_offsets[i-1] or 0) + sz)
 	leg_packet_sz = leg_packet_sz + sz
 end
 local function form_leg_read_cmd(bus)
@@ -188,6 +227,10 @@ local function parse_read_leg(pkt, bus)
 	c_ptr_t[read_j_id - 1] = t_read
 	-- Update the F/T Sensor
 	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+1, leg_packet_offsets[3])
+
+--	for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
+--	print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
+	
 	parse_ft(left_ft, raw_str, m_id)
 	parse_ft(right_ft, raw_str, m_id)
 	return read_j_id
@@ -200,7 +243,7 @@ local arm_packet_offsets = {}
 for i,v in ipairs(arm_packet_reg) do
 	local reg = assert(lD.nx_registers[v])
 	local sz = reg[2]
-	table.insert(arm_packet_offsets, (arm_packet_offsets[1] or 0) + sz)
+	table.insert(arm_packet_offsets, (arm_packet_offsets[i-1] or 0) + sz)
 	arm_packet_sz = arm_packet_sz + sz
 end
 local arm_packet_reg_mx = {'position','speed','load','voltage','temperature'}

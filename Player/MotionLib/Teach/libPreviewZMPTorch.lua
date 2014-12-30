@@ -3,7 +3,6 @@
 local vector = require'vector'
 local util   = require'util'
 local torch  = require'torch'
-torch.Tensor = torch.DoubleTensor
 
 -- step_definition format
 --{ Supportfoot relstep zmpmod duration steptype }--

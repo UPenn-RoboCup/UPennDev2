@@ -28,7 +28,7 @@ local function update()
 	feedback.rpy = Body.get_rpy()
 	feedback.gyro = Body.get_gyro()
 	feedback.pose = wcm.get_robot_odometry()--wcm.get_robot_pose()
-	feedback.height = mcm.get_stance_bodyHeight()
+	feedback.bh = mcm.get_stance_bodyHeight()
 	feedback.battery = Body.get_battery()
 	ret, err = feedback_udp_ch:send(mpack(feedback))
 	if err and Config.debug.feedback then

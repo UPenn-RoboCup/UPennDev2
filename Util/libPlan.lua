@@ -2,17 +2,17 @@
 -- (c) 2014 Stephen McGill
 -- Plan a path with the arm
 local libPlan = {}
+local util = require'util'
 local vector = require'vector'
 local q = require'quaternion'
-local util = require'util'
 local T = require'Transform'
---local T = require'libTransform'
+local tremove = table.remove
 
 local mt = {}
 local function tbl_iter(t,k)
-	return table.remove(t)
+	return tremove(t)
 end
-mt.__call  = tbl_iter
+mt.__call = tbl_iter
 
 local function sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
 	local diff, mod_diff
@@ -48,7 +48,7 @@ end
 -- res_pos: resolution in meters
 -- res_ang: resolution in radians
 -- use_safe_inverse: Adjust for pseudo roll?
-local line_stack = function(self, qArm, trGoal, res_pos, res_ang, use_safe_inverse)
+local function line_stack(self, qArm, trGoal, res_pos, res_ang, use_safe_inverse)
 	res_pos = res_pos or 0.005
 	res_ang = res_ang or 1*DEG_TO_RAD
 	local K = self.K
@@ -123,7 +123,7 @@ end
 
 -- This should have exponential approach properties...
 -- ... are the kinematics "extras" - like shoulderYaw, etc. (Null space)
-local line_iter = function(self, trGoal, qArm0, res_pos, res_ang, null_options)
+local function line_iter(self, trGoal, qArm0, res_pos, res_ang, null_options)
 	res_pos = res_pos or 0.005
 	res_ang = res_ang or 3*DEG_TO_RAD
 	null_options = null_options or {}
@@ -213,7 +213,7 @@ local line_iter = function(self, trGoal, qArm0, res_pos, res_ang, null_options)
 	end, qGoal
 end
 
-local function joint_stack (self, qGoal, qArm, res_q)
+local function joint_stack(self, qGoal, qArm, res_q)
 	res_q = res_q or 2*DEG_TO_RAD
 	qGoal = util.clamp_vector(qGoal,self.min_q,self.max_q)
 	--
@@ -266,10 +266,12 @@ end
 local function set_chain(self, forward, inverse)
 	self.forward = forward
 	self.inverse = inverse
+  return self
 end
 
-libPlan.new_planner = function(kinematics, min_q, max_q, dqdt_limit)
-	local planner = {
+-- Still must set the forward and inverse kinematics
+function libPlan.new_planner(min_q, max_q, dqdt_limit)
+	return {
 		min_q = min_q or -90*DEG_TO_RAD*vector.ones(7),
 		max_q = max_q or 90*DEG_TO_RAD*vector.ones(7),
 		dqdt_limit = dqdt_limit or DEG_TO_RAD*vector.new{15,10,10, 15, 20,20,20},
@@ -277,12 +279,8 @@ libPlan.new_planner = function(kinematics, min_q, max_q, dqdt_limit)
 		line_iter = line_iter,
 		joint_stack = joint_stack,
 		joint_iter = joint_iter,
-		-- Default is the left arm:
-		inverse = kinematics.inverse_arm,
-		forward = kinematics.forward_arm,
 		set_chain = set_chain
 	}
-	return planner
 end
 
 return libPlan

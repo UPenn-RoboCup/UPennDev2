@@ -4,7 +4,8 @@ WorldInfo {
     "Valve operating test for DRC"
   ]
   title "valvetest"
-  basicTimeStep 8
+  #basicTimeStep 8
+  basicTimeStep 30
   FPS 15
 }
 Viewpoint {

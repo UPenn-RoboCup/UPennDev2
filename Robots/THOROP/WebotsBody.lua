@@ -5,13 +5,13 @@ local ffi = require'ffi'
 
 function WebotsBody.entry()
 	
-	ww = Config.wizards.world and require(Config.wizards.world)
-	cw = Config.wizards.camera and require(Config.wizards.camera)
-	mw = Config.wizards.mesh and require(Config.wizards.mesh)
-	kw = Config.wizards.kinect and require(Config.wizards.kinect)
+  fw = Config.wizards.feedback and require(Config.wizards.feedback)
+  rw = Config.wizards.remote and require(Config.wizards.remote)
+	cw = Config.sensors.camera and Config.wizards.camera and require(Config.wizards.camera)
+  kw = Config.sensors.kinect and Config.wizards.kinect and require(Config.wizards.kinect)
+	mw = Config.sensors.chest_lidar and Config.wizards.mesh and require(Config.wizards.mesh)
 	sw = Config.wizards.slam and require(Config.wizards.slam)
-	fw = Config.wizards.feedback and require(Config.wizards.feedback)
-	rw = Config.wizards.remote and require(Config.wizards.remote)
+  ww = Config.wizards.world and require(Config.wizards.world)
 	kb = Config.testfile and require(Config.testfile)
 
 	WebotsBody.USING_KB = type(kb)=='table' and type(kb.update)=='function'

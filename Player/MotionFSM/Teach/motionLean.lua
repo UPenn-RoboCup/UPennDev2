@@ -31,7 +31,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 	-- Shared variables
-  uTorso = mcm.get_status_uTorso()  
+  uTorso = mcm.get_status_uTorso()
   uLeft, uRight = mcm.get_status_uLeft(), mcm.get_status_uRight()
   zLeft, zRight = unpack(mcm.get_status_zLeg())
   side = mcm.get_teach_sway()
@@ -56,7 +56,7 @@ function state.update()
   -- Where is our offset?
   local relTorso = util.pose_relative(uTorso, supportPoint)
   local drTorso = math.sqrt(relTorso.x^2 + relTorso.y^2)
-  --print('relTorso', supportPoint, relTorso, uTorso)
+  print('relTorso', supportPoint, relTorso, uTorso)
   if drTorso<1e-3 and math.abs(relTorso.a)<DEG_TO_RAD then
     return'done'
   end

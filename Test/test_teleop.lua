@@ -31,11 +31,12 @@ end
 
 -- Sanitize to avoid trouble with wrist yaw
 local fabs = math.abs
+local mod_angle = require'util'.mod_angle
 local function sanitize(iqArm, cur_qArm)
 	local diff, mod_diff
 	for i, v in ipairs(cur_qArm) do
 		diff = iqArm[i] - v
-		mod_diff = util.mod_angle(diff)
+		mod_diff = mod_angle(diff)
 		if fabs(diff) > fabs(mod_diff) then iqArm[i] = v + mod_diff end
 	end
 end

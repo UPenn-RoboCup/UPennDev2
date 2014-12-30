@@ -16,7 +16,7 @@ Config.dev = {
 Config.libs = {
   ArmLib = 'DRCTrials',
   MotionLib = 'RoboCup',  
-  World = 'DRCNew'  
+  World = 'DRCNew'
 }
 
 -- Printing of debug messages
@@ -89,16 +89,10 @@ local exo = {
 }
 if IS_WEBOTS then
   Config.testfile = 'test_teleop'
-  Config.wizards = {
-		feedback = 'feedback_wizard',
-		kinect = 'kinect2_wizard',
-    mesh = 'mesh_wizard',
-	}
-  Config.sensors = {
-		ft = true,
-		kinect = true,
-    chest_lidar = true,
-	}
+  Config.sensors.kinect = true
+  Config.sensors.chest_lidar = true
+	Config.wizards.kinect = 'kinect2_wizard'
+  Config.wizards.mesh = 'mesh_wizard'
 end
 --]]
 

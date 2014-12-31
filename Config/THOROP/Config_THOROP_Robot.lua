@@ -63,6 +63,8 @@ local left_arm = {
   m_ids = {2,4,6,8,10,12,14,
   -- lidar
   37,
+	-- gripper
+  66, 67
 },
   enable_read = true
 }
@@ -203,8 +205,11 @@ servo.joint_to_motor={
   15,17,19,21,23,25, -- right leg
   1,3,5,7,9,11,13,  --RArm
   27,28, --Waist yaw/pitch
-  70,65, -- left gripper/trigger
-  66,67, -- right gripper/trigger
+  --70,65, -- left gripper/trigger
+  --66,67, -- right gripper/trigger
+  -- Swapped gripper
+  66,67, -- left gripper/trigger
+  70,65, -- right gripper/trigger
   37, -- Lidar pan
 }
 
@@ -233,7 +238,7 @@ servo.direction = vector.new({
   ------
   -1,-1,1,-1, 1,1,1, --RArm
   -1, -1, -- Waist
-  1,1, -- left gripper TODO
+  1,-1, -- left gripper TODO
   -1,1, -- right gripper (Verified 9/8/2014)
   -1, -- Lidar pan
 })
@@ -246,7 +251,7 @@ servo.rad_offset = vector.new({
   0,0,0,45,0,0, --RLeg
   90,-90,90,-45,-90,0,0, --RArm
   0,0, -- Waist
-  0,0, -- left gripper
+  75,-80, -- left gripper
   35, -35, -- right gripper
   0, -- Lidar pan
 })*DEG_TO_RAD
@@ -260,7 +265,7 @@ servo.min_rad = vector.new({
   -175,-175,-175,-175,-175,-175, --RLeg
   -90,-87,-90,    -160,   -180,-87,-180, --RArm
   -90,-45, -- Waist
-  0, -90,
+  -30, -30,
   -90, -90,
   -60, -- Lidar pan
 })*DEG_TO_RAD
@@ -273,7 +278,7 @@ servo.max_rad = vector.new({
   175,175,175,175,175,175, --RLeg
   160,-0,90,   0,     180,87,180, --RArm
   90,45, -- Waist
-  90,20,
+  65,65, -- lgrip
   90,90,
   60, -- Lidar pan
 })*DEG_TO_RAD

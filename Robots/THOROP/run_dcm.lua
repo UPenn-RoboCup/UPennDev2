@@ -96,6 +96,10 @@ end
 local function step_to_radian(idx, step)
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
+local function torque_to_cmd(idx, tq)
+	local cmd = min(max(direction[idx] * tq, -1023), 1023)
+	return cmd < 0 and (1024 - cmd) or cmd
+end
 
 -- Force/Torque Data handling
 local left_ft = {
@@ -554,8 +558,7 @@ local function form_write_command(bus, m_ids)
 		if tq_en_ptr[j_id-1]==1 then
 			table.insert(send_ids, m_id)
 			if is_gripper[j_id] and gripper_mode[j_id]==1 then
-				local val = min(max(tq_ptr[j_id-1], -1023), 1023)
-				table.insert(commands, val < 0 and (1024 - val) or val)
+				table.insert(commands, torque_to_cmd(j_id, tq_ptr[j_id-1]))
 				table.insert(cmd_addrs, lD.mx_registers.command_torque)
 			else
 				table.insert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))

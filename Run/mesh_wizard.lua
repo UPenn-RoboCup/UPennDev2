@@ -306,6 +306,6 @@ function lidar_ch.callback(skt)
 end
 
 -- TODO: put into shutdown func or something
-logger:stop()
 
 si.wait_on_channels({lidar_ch}):start()
+if logger then logger:stop() end

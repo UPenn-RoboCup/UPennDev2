@@ -73,8 +73,8 @@ private:
   int command_seq_;
 
   TurboJpegRgbPacketProcessor rgb_packet_processor_;
-  OpenCLDepthPacketProcessor depth_packet_processor_;
-  //CpuDepthPacketProcessor depth_packet_processor_;
+  //OpenCLDepthPacketProcessor depth_packet_processor_;
+  CpuDepthPacketProcessor depth_packet_processor_;
 
   RgbPacketStreamParser rgb_packet_parser_;
   DepthPacketStreamParser depth_packet_parser_;

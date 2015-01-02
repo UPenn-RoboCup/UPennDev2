@@ -29,12 +29,13 @@ INCLUDES+=\
 -DRESOURCES_INC \
 -DREG_OPENCL_FILE=\"opencl_depth_packet_processor.cl\" \
 -DGLEW_MX \
--DGLEW_STATIC
-#-DDEBUG
+-DGLEW_STATIC \
+-g \
+-DDEBUG
 
 LDFLAGS+=\
--lglfw3 -lGLEW -lGLEWmx \
 -lturbojpeg -lusb-1.0
+#-lglfw3 -lGLEW -lGLEWmx \
 
 ifeq ($(shell uname),Darwin)
 

@@ -101,6 +101,7 @@ void DepthPacketStreamParser::onDataReceived(unsigned char* buffer, size_t in_le
           {
             if(processor_.ready())
             {
+              std::cerr << "[DepthPacketStreamParser::handleNewData] processing depth packet!" << std::endl;
               buffer_.swap();
 
               DepthPacket packet;
@@ -112,7 +113,7 @@ void DepthPacketStreamParser::onDataReceived(unsigned char* buffer, size_t in_le
             }
             else
             {
-              //std::cerr << "[DepthPacketStreamParser::handleNewData] skipping depth packet!" << std::endl;
+              std::cerr << "[DepthPacketStreamParser::handleNewData] skipping depth packet!" << std::endl;
             }
           }
           else

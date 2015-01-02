@@ -33,6 +33,9 @@ Lua Wrapper for some libfreenect2 functionality
 #include <libfreenect2/frame_listener_impl.h>
 #include <libfreenect2/threading.h>
 
+//#define USE_DEPTH
+#define USE_RGB
+
 using namespace libfreenect2;
 
 /*
@@ -93,9 +96,15 @@ static int lua_freenect_init(lua_State *L) {
   //SyncMultiFrameListener listener(
   //  Frame::Color | Frame::Ir | Frame::Depth
   //);
+#ifdef USE_DEPTH
   listener = new SyncMultiFrameListener(
     Frame::Color | Frame::Ir | Frame::Depth
   );
+#else
+  listener = new SyncMultiFrameListener(
+    Frame::Color
+  );
+#endif
   
 #ifdef DEBUG
 //  fprintf(stdout,"Instantiate frames...\n");
@@ -114,8 +123,10 @@ static int lua_freenect_init(lua_State *L) {
   fprintf(stdout,"IR/Depth listener...\n");
   fflush(stdout);
 #endif
+#ifdef USE_DEPTH
   //dev->setIrAndDepthFrameListener(&listener);
   dev->setIrAndDepthFrameListener(listener);
+#endif
   
 #ifdef DEBUG
   fprintf(stdout, "Start device...\n");
@@ -157,8 +168,11 @@ static int lua_freenect_update(lua_State *L) {
   fflush(stdout);
 #endif  
   Frame *rgb = frames[Frame::Color];
+
+#ifdef USE_DEPTH
   Frame *ir = frames[Frame::Ir];
   Frame *depth = frames[Frame::Depth];
+#endif
 
 #ifdef DEBUG
   fprintf(stdout, "Push frames...\n");
@@ -183,6 +197,8 @@ static int lua_freenect_update(lua_State *L) {
   lua_pushlstring(L, (char*)rgb->data, rgb->height*rgb->width*rgb->bytes_per_pixel);
   lua_rawset(L, -3);
   
+
+#ifdef USE_DEPTH
   lua_newtable(L);
   lua_pushstring(L, "name");
   lua_pushstring(L, "depth");
@@ -218,6 +234,7 @@ static int lua_freenect_update(lua_State *L) {
   //lua_pushlightuserdata(L, ir->data);
   lua_pushlstring(L, (char*)ir->data, ir->height*ir->width*ir->bytes_per_pixel);
   lua_rawset(L, -3);
+#endif
 
   return 3;
 }

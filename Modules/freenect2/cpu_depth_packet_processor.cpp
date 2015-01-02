@@ -33,6 +33,7 @@
 //#include <opencv2/opencv.hpp>
 #include <sys/time.h>
 #include <cmath>
+#include <limits>
 
 #include <iostream>
 #include <fstream>

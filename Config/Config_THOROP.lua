@@ -65,7 +65,7 @@ Config.torque_legs = true
 ----------------------------------
 
 -- DRC Final setup: testing new walk controller
-----[[
+--[[
 Config.libs.World = 'SiteVisit'   
 local exo = {
   'Robot','Walk','Net','Manipulation',
@@ -78,7 +78,7 @@ end
 
 
 -- Steve Manipulation and Locomotion
---[[
+----[[
 Config.libs.MotionLib = 'Teach'
 Config.libs.ArmLib = 'Teach'
 Config.libs.World = 'Teach'

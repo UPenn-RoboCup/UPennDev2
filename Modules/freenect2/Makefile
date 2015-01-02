@@ -15,8 +15,8 @@ transfer_pool.o \
 usb_control.o \
 libfreenect2.o \
 turbo_jpeg_rgb_packet_processor.o \
-opencl_depth_packet_processor.o
-#cpu_depth_packet_processor.o
+opencl_depth_packet_processor.o \
+cpu_depth_packet_processor.o
 #opengl.o
 #opengl_depth_packet_processor.o
 #generate_resources.o \

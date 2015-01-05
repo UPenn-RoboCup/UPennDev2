@@ -34,7 +34,7 @@ Lua Wrapper for some libfreenect2 functionality
 #include <libfreenect2/threading.h>
 
 #define USE_DEPTH
-//#define USE_COLOR
+#define USE_COLOR
 
 using namespace libfreenect2;
 
@@ -61,7 +61,6 @@ static int lua_freenect_init(lua_State *L) {
   fflush(stdout);
 #endif
 
-	// Freenect2 freenect2;
 	freenect2 = new Freenect2();
 
 #ifdef DEBUG
@@ -69,7 +68,6 @@ static int lua_freenect_init(lua_State *L) {
   fflush(stdout);
 #endif
   
-  //Freenect2Device* dev = freenect2.openDefaultDevice();
   dev = freenect2->openDefaultDevice();
 
 #ifdef DEBUG
@@ -87,20 +85,8 @@ static int lua_freenect_init(lua_State *L) {
 #endif
 
   listener = new SyncMultiFrameListener(
-    0
-#ifdef USE_COLOR
-    | Frame::Color
-#endif
-#ifdef USE_DEPTH
-      | Frame::Ir | Frame::Depth
-#endif
+    Frame::Color | Frame::Ir | Frame::Depth
   );
-  
-#ifdef DEBUG
-//  fprintf(stdout,"Instantiate frames...\n");
-//  fflush(stdout);
-#endif
-  //frames = new FrameMap();
   
 #ifdef USE_COLOR
 #ifdef DEBUG

@@ -15,8 +15,9 @@ transfer_pool.o \
 usb_control.o \
 libfreenect2.o \
 turbo_jpeg_rgb_packet_processor.o \
-opencl_depth_packet_processor.o \
 cpu_depth_packet_processor.o
+#opencl_depth_packet_processor.o
+
 #opengl.o
 #opengl_depth_packet_processor.o
 #generate_resources.o \
@@ -28,10 +29,10 @@ INCLUDES+=\
 -DLIBFREENECT2_THREADING_TINYTHREAD \
 -DRESOURCES_INC \
 -DREG_OPENCL_FILE=\"opencl_depth_packet_processor.cl\" \
--DGLEW_MX \
--DGLEW_STATIC \
 -g \
 -DDEBUG
+#-DGLEW_MX
+#-DGLEW_STATIC
 
 LDFLAGS+=\
 -lturbojpeg -lusb-1.0
@@ -55,7 +56,7 @@ else
 LIBFREENECT2_DIR=/home/thor/Desktop/libfreenect2-cl
 
 INCLUDES+=-I$(LIBFREENECT2_DIR)/depends/libusb/include/libusb-1.0
-EXTRA_LINK+=-L$(LIBFREENECT2_DIR)/depends/libusb/lib \
-						-lOpenCL
+EXTRA_LINK+=-L$(LIBFREENECT2_DIR)/depends/libusb/lib
+#						-lOpenCL
 
 endif

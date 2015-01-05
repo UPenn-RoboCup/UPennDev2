@@ -842,8 +842,11 @@ void CpuDepthPacketProcessor::loadXTableFromFile(const char* filename)
 
   if(loadResource("xTable.bin", &data, &length))
   {
-    // New Code
-    std::copy(data, data + length, impl_->x_table.begin());
+		//////////
+    // TODO: New Code
+    //std::copy(data, data + length, impl_->x_table.begin());
+		//////////
+
     // TODO: no cvMat
     //std::copy(data, data + length, impl_->x_table.data);
   }
@@ -865,8 +868,13 @@ void CpuDepthPacketProcessor::loadZTableFromFile(const char* filename)
 
   if(loadResource("zTable.bin", &data, &length))
   {
+
+		////////////
     // New Code
-    std::copy(data, data + length, impl_->z_table.begin());
+    //std::copy(data, data + length, impl_->z_table.begin());
+		////////////
+
+
     // TODO: No zTable
     //std::copy(data, data + length, impl_->z_table.data);
   }
@@ -894,6 +902,7 @@ void CpuDepthPacketProcessor::load11To16LutFromFile(const char* filename)
 void CpuDepthPacketProcessor::process(const DepthPacket &packet)
 {
   
+	std::cerr << "CPU Depth Process start" << std::endl;
   if(listener_ == 0) return;
 
   impl_->startTiming();

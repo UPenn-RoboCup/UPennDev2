@@ -25,6 +25,7 @@
  */
 
 #include <libfreenect2/frame_listener_impl.h>
+#include <stdio.h>
 
 namespace libfreenect2
 {
@@ -73,6 +74,7 @@ void SyncMultiFrameListener::release(FrameMap &frame)
 
 bool SyncMultiFrameListener::onNewFrame(Frame::Type type, Frame *frame)
 {
+	fprintf(stderr, "SyncMultiFrameListener onNewFrame %d\n", type);
   if((subscribed_frame_types_ & type) == 0) return false;
 
   {

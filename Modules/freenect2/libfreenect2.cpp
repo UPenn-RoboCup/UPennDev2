@@ -338,6 +338,8 @@ Freenect2DeviceImpl::Freenect2DeviceImpl(Freenect2Impl *context, libusb_device *
   firmware_("<unknown>")
 {
   rgb_transfer_pool_.setCallback(&rgb_packet_parser_);
+
+	std::cout << "Depth Packet Callback" << std::endl;
   ir_transfer_pool_.setCallback(&depth_packet_parser_);
 
   depth_packet_processor_.load11To16LutFromFile("11to16.bin");
@@ -404,6 +406,7 @@ void Freenect2DeviceImpl::setIrAndDepthFrameListener(libfreenect2::FrameListener
 {
   // TODO: should only be possible, if not started
   depth_packet_processor_.setFrameListener(ir_frame_listener);
+	std::cerr << "Set the processor frame listener" << std::endl;
 }
 
 bool Freenect2DeviceImpl::open()
@@ -535,7 +538,11 @@ void Freenect2DeviceImpl::start()
   ir_transfer_pool_.enableSubmission();
 
   std::cout << "[Freenect2DeviceImpl] submitting usb transfers..." << std::endl;
+
+  std::cout << "[Freenect2DeviceImpl] submitting RGB usb transfers..." << std::endl;
   rgb_transfer_pool_.submit(20);
+
+  std::cout << "[Freenect2DeviceImpl] submitting IR usb transfers..." << std::endl;
   ir_transfer_pool_.submit(60);
 
   state_ = Streaming;
@@ -650,6 +657,7 @@ Freenect2Device *Freenect2::openDevice(int idx)
 Freenect2Device *Freenect2::openDevice(int idx, bool attempting_reset)
 {
   int num_devices = impl_->getNumDevices();
+	std::cerr << "N Devices: " << num_devices << std::endl;
   Freenect2DeviceImpl *device = 0;
 
   if(idx >= num_devices)

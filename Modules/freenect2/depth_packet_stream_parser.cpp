@@ -53,6 +53,9 @@ DepthPacketStreamParser::~DepthPacketStreamParser()
 
 void DepthPacketStreamParser::onDataReceived(unsigned char* buffer, size_t in_length)
 {
+
+	std::cerr << "Got depth Data" << std::endl;
+
   // TODO: simplify this crap (so code, such unreadable, wow ;)
   Buffer &wb = work_buffer_;
 

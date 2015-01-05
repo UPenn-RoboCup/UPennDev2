@@ -102,7 +102,7 @@ void TransferPool::submit(size_t num_parallel_transfers)
     else
     {
       idle_transfers_.push_back(transfer);
-      std::cerr << "[TransferPool::submit] failed to submit transfer" << std::endl;
+      std::cerr << "[TransferPool::submit] failed to submit transfer: " << r << std::endl;
     }
   }
 //	std::cerr << "Pending: " << pending_transfers_.size() << std::endl;

@@ -56,6 +56,8 @@ protected:
   libfreenect2::FrameListener *listener_;
 };
 
+class DumpRgbPacketProcessorImpl;
+
 class DumpRgbPacketProcessor : public RgbPacketProcessor
 {
 public:
@@ -63,6 +65,8 @@ public:
   virtual ~DumpRgbPacketProcessor();
 protected:
   virtual void process(const libfreenect2::RgbPacket &packet);
+private:
+  DumpRgbPacketProcessorImpl *impl_;
 };
 
 class TurboJpegRgbPacketProcessorImpl;

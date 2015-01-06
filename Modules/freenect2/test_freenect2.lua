@@ -1,3 +1,4 @@
+#!/usr/bin/env luajit
 require'freenect2'
 serial_number, firmware_version = freenect2.init()
 print("serial_number, firmware_version:", serial_number, firmware_version)

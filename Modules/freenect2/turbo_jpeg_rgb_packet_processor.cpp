@@ -26,7 +26,6 @@
 
 #include <libfreenect2/rgb_packet_processor.h>
 
-//#include <opencv2/opencv.hpp>
 #include <sys/time.h>
 #include <iostream>
 #include <turbojpeg.h>

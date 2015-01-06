@@ -24,6 +24,9 @@ cpu_depth_packet_processor.o
 #test_opengl_depth_packet_processor.o
 
 include ../../Makefile.inc
+
+CXXFLAGS+=-std=c++11
+
 INCLUDES+=\
 -I. \
 -DLIBFREENECT2_THREADING_TINYTHREAD \

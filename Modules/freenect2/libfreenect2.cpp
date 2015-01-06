@@ -72,8 +72,9 @@ private:
   CommandTransaction command_tx_;
   int command_seq_;
 
-  TurboJpegRgbPacketProcessor rgb_packet_processor_;
+  //TurboJpegRgbPacketProcessor rgb_packet_processor_;
   //OpenCLDepthPacketProcessor depth_packet_processor_;
+  DumpRgbPacketProcessor rgb_packet_processor_;
   CpuDepthPacketProcessor depth_packet_processor_;
 
   RgbPacketStreamParser rgb_packet_parser_;
@@ -338,8 +339,6 @@ Freenect2DeviceImpl::Freenect2DeviceImpl(Freenect2Impl *context, libusb_device *
   firmware_("<unknown>")
 {
   rgb_transfer_pool_.setCallback(&rgb_packet_parser_);
-
-	std::cout << "Depth Packet Callback" << std::endl;
   ir_transfer_pool_.setCallback(&depth_packet_parser_);
 
   depth_packet_processor_.load11To16LutFromFile("11to16.bin");

@@ -105,8 +105,6 @@ void TransferPool::submit(size_t num_parallel_transfers)
       std::cerr << "[TransferPool::submit] failed to submit transfer: " << r << std::endl;
     }
   }
-//	std::cerr << "Pending: " << pending_transfers_.size() << std::endl;
-//	std::cerr << "Idle: " << idle_transfers_.size() << std::endl;
 }
 
 void TransferPool::cancel()
@@ -127,7 +125,7 @@ void TransferPool::cancel()
 
 void TransferPool::setCallback(TransferPool::DataReceivedCallback *callback)
 {
-	std::cerr << "Setting the transfer pool callback" << std::endl;
+	//std::cerr << "Setting the transfer pool callback" << std::endl;
   callback_ = callback;
 }
 

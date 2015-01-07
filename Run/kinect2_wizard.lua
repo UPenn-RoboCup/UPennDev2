@@ -8,7 +8,6 @@ local ptable = require'util'.ptable
 local mpack = require'msgpack.MessagePack'.pack
 local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
 local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
-local c_rgb = require'jpeg'.compressor('rgb')
 
 local cfg = Config.kinect
 local Body = require'Body'
@@ -42,7 +41,7 @@ local function update(rgb, depth)
     local q, rpy, bh = Body.get_position(), Body.get_rpy(), mcm.get_walk_bodyHeight()
 	  -- Send color
     rgb.t = t
-		rgb.c = 'jpeg'
+    rgb.c = 'jpeg'
     rgb.q = q
     rgb.bh = bh
     rgb.rpy = rpy

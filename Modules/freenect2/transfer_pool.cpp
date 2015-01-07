@@ -210,7 +210,7 @@ void BulkTransferPool::processTransfer(libusb_transfer* transfer)
 {
 
   if(transfer->status != LIBUSB_TRANSFER_COMPLETED){
-		std::cerr << "Transfer not completed" << std::endl;
+		//std::cerr << "Transfer not completed" << std::endl;
 		return;
 	}
 
@@ -260,7 +260,7 @@ void IsoTransferPool::processTransfer(libusb_transfer* transfer)
   {
     if(transfer->iso_packet_desc[i].status != LIBUSB_TRANSFER_COMPLETED)
 		{
-			std::cerr << "Transfer not completed" << std::endl;
+//			std::cerr << "Transfer not completed" << std::endl;
 			continue;
 		}
 

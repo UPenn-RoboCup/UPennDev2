@@ -12,10 +12,10 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 	-- The channels are globally available
-  head_ch:send'init'
 	arm_ch:send'init'
   motion_ch:send'stand'
-  lidar_ch:send'pan'
+	if head_ch then head_ch:send'init' end
+	if lidar_ch then lidar_ch:send'pan' end
 end
 
 function state.update()

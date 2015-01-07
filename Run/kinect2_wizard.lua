@@ -14,6 +14,8 @@ local cfg = Config.kinect
 local Body = require'Body'
 require'mcm'
 
+local ptable = require'util'.ptable
+
 --local has_detection, detection = pcall(require, cfg.detection)
 
 local ENABLE_LOG = true
@@ -45,7 +47,8 @@ local function update(rgb, depth)
     rgb.bh = bh
     rgb.rpy = rpy
     rgb.id = 'k2_rgb'
-    local j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
+    --local j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
+    local j_rgb = rgb.data
     rgb.data = nil
     rgb.sz = #j_rgb
     rgb.rsz = #j_rgb
@@ -61,6 +64,7 @@ local function update(rgb, depth)
 	  depth.data = nil
 	  depth.sz = #ranges
     depth.rsz = #ranges
+    ptable(depth)
     local m_depth = mpack(depth)
     depth_ch:send({m_depth, ranges})
     -- Log

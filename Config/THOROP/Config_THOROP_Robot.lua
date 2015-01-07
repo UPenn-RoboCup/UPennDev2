@@ -62,7 +62,7 @@ local left_arm = {
   ttyname = '/dev/ttyUSB1',
   m_ids = {2,4,6,8,10,12,14,
   -- lidar
-  37,
+ -- 37,
 	-- gripper
   66, 67
 },
@@ -98,10 +98,10 @@ local arms_rc = {
 }
 
 if OPERATING_SYSTEM=='darwin' then
-  right_arm.device = '/dev/cu.usbserial-FTVTLUY0A'
-  left_arm.device  = '/dev/cu.usbserial-FTVTLUY0B'
-  right_leg.device = '/dev/cu.usbserial-FTVTLUY0C'
-  left_leg.device  = '/dev/cu.usbserial-FTVTLUY0D'
+  right_arm.ttyname = '/dev/cu.usbserial-FTVTLUY0A'
+  left_arm.ttyname = '/dev/cu.usbserial-FTVTLUY0B'
+  right_leg.ttyname = '/dev/cu.usbserial-FTVTLUY0C'
+  left_leg.ttyname  = '/dev/cu.usbserial-FTVTLUY0D'
 end
 if ONE_CHAIN then
   -- Add the one chain support

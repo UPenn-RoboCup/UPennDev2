@@ -859,6 +859,7 @@ local function ping_verify(self, m_ids, protocol, twait)
 			-- Check the Operating Mode
 			status = lD.get_nx_mode(id, self)
 			status = status[1]
+      assert(status, 'bad read mode')
 			local mode = parse_delay(unpack(status.parameter))
 			print('\tOperating Mode: '..mode)
 			-- Return Delay

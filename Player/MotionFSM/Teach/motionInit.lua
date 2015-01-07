@@ -3,7 +3,6 @@ local state = {}
 state._NAME = ...
 
 require'mcm'
-require'hcm'
 require'wcm'
 local Body = require'Body'
 local moveleg = require'moveleg'

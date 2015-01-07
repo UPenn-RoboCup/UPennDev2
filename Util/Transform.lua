@@ -173,25 +173,12 @@ function Transform.transform6D(p)
   local swy = sin(p[5])
   local cwz = cos(p[6])
   local swz = sin(p[6])
-
-	local t = eye()
-
-  t[1][1] = cwy*cwz
-  t[1][2] = swx*swy*cwz-cwx*swz
-  t[1][3] = cwx*swy*cwz+swx*swz
-  t[1][4] = p[1]
-	--
-  t[2][1] = cwy*swz
-  t[2][2] = swx*swy*swz+cwx*cwz
-  t[2][3] = cwx*swy*swz-swx*cwz
-  t[2][4] = p[2]
-	--
-  t[3][1] = -swy
-  t[3][2] = swx*cwy
-  t[3][3] = cwx*cwy
-  t[3][4] = p[3]
-
-  return setmetatable(t, mt)
+  return setmetatable({
+    {cwy*cwz, swx*swy*cwz-cwx*swz, cwx*swy*cwz+swx*swz, p[1]},
+    {cwy*swz, swx*swy*swz+cwx*cwz, cwx*swy*swz-swx*cwz, p[2]},
+    {-swy, swx*cwy, cwx*cwy, p[3]},
+    {0,0,0,1},
+    }, mt)
 end
 
 local function mul(t1, t2)
@@ -225,10 +212,10 @@ function Transform.copy(tt)
   if type(tt)=='table' then
     -- Copy the table
     return setmetatable({
-    	vector.copy(tt[1]),
-    	vector.copy(tt[2]),
-    	vector.copy(tt[3]),
-    	vector.copy(tt[4])
+    	vcopy(tt[1]),
+    	vcopy(tt[2]),
+    	vcopy(tt[3]),
+    	vcopy(tt[4])
 		}, mt)
   end
   local t = eye()
@@ -239,6 +226,19 @@ function Transform.copy(tt)
   end
   -- copy a tensor
   return t
+end
+
+function Transform.from_flat(flat)
+  return setmetatable({
+    {unpack(flat, 1, 4)},
+    {unpack(flat, 5, 8)},
+    {unpack(flat, 9, 12)},
+    {unpack(flat, 13, 16)}
+  }, mt)
+end
+-- Do it unsafe; assume a table
+function Transform.flatten(tt)
+  return vnew{t[1][1], t[1][2], t[1][3], t[1][4], t[2][1], t[2][2], t[2][3], t[2][4], t[3][1], t[3][2], t[3][3], t[3][4], t[4][1], t[4][2], t[4][3], t[4][4]}
 end
 
 -- Do it unsafe; assume a table

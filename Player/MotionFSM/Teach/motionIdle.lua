@@ -1,6 +1,5 @@
 local state = {}
 state._NAME = ...
-require'mcm'
 -- IDLE IS A RELAX STATE
 -- NOTHING SHOULD BE TORQUED ON HERE!
 

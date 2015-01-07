@@ -12,7 +12,6 @@ local vector = require'vector'
 local unix   = require'unix'
 local util   = require'util'
 local moveleg = require'moveleg'
-require'mcm'
 local supportX = Config.walk.supportX
 
 -- Keep track of important times
@@ -54,12 +53,11 @@ function state.update()
 
   mcm.set_walk_ismoving(0) --We stopped moving
 
-  --Adjust body height
+  -- Adjust body height
   local bodyHeight_now = mcm.get_stance_bodyHeight()
-  local bodyHeightTarget = hcm.get_motion_bodyHeightTarget()
+  local bodyHeightTarget = Config.walk.bodyHeight
   bodyHeightTarget = math.max(MIN_BH, math.min(bodyHeightTarget, MAX_BH))
-  local bodyHeight = util.approachTol(bodyHeight_now, 
-    bodyHeightTarget, Config.stance.dHeight, dt)
+  local bodyHeight = util.approachTol(bodyHeight_now, bodyHeightTarget, Config.stance.dHeight, dt)
   mcm.set_stance_bodyHeight(bodyHeight)
   
   -- Compensation

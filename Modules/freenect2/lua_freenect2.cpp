@@ -162,17 +162,22 @@ static int lua_freenect_update(lua_State *L) {
   lua_pushstring(L, "color");
   lua_rawset(L, -3);
   lua_pushstring(L, "height");
-  lua_pushnumber(L, rgb->height);
+  //lua_pushnumber(L, rgb->height);
+  lua_pushnumber(L, 1080);
   lua_rawset(L, -3);
   lua_pushstring(L, "width");
-  lua_pushnumber(L, rgb->width);
+  //lua_pushnumber(L, rgb->width);
+  lua_pushnumber(L, 1920);
   lua_rawset(L, -3);
   lua_pushstring(L, "bpp");
-  lua_pushnumber(L, rgb->bytes_per_pixel);
+  //lua_pushnumber(L, rgb->bytes_per_pixel);
+  lua_pushnumber(L, 3);
   lua_rawset(L, -3);
   lua_pushstring(L, "data");
   //lua_pushlightuserdata(L, rgb->data);
-  lua_pushlstring(L, (char*)rgb->data, rgb->height*rgb->width*rgb->bytes_per_pixel);
+  //lua_pushlstring(L, (char*)rgb->data, rgb->height*rgb->width*rgb->bytes_per_pixel);
+  // I just put the byte count directly in bpp
+  lua_pushlstring(L, (char*)rgb->data, rgb->bytes_per_pixel);
   lua_rawset(L, -3);
   nret++;
 #endif

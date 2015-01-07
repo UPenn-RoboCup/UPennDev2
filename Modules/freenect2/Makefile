@@ -31,9 +31,7 @@ INCLUDES+=\
 -I. \
 -DLIBFREENECT2_THREADING_TINYTHREAD \
 -DRESOURCES_INC \
--DREG_OPENCL_FILE=\"opencl_depth_packet_processor.cl\" \
--g \
--DDEBUG
+-DREG_OPENCL_FILE=\"opencl_depth_packet_processor.cl\"
 #-DGLEW_MX
 #-DGLEW_STATIC
 

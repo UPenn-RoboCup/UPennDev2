@@ -809,7 +809,7 @@ void CpuDepthPacketProcessor::load11To16LutFromFile(const char* filename)
 void CpuDepthPacketProcessor::process(const DepthPacket &packet)
 {
   
-	std::cerr << "CPU Depth Process start" << std::endl;
+	//std::cerr << "CPU Depth Process start" << std::endl;
   if(listener_ == 0) return;
 
   impl_->startTiming();

@@ -69,6 +69,7 @@ private:
   DumpRgbPacketProcessorImpl *impl_;
 };
 
+#ifdef USE_JPEG
 class TurboJpegRgbPacketProcessorImpl;
 
 class TurboJpegRgbPacketProcessor : public RgbPacketProcessor
@@ -81,6 +82,7 @@ protected:
 private:
   TurboJpegRgbPacketProcessorImpl *impl_;
 };
+#endif
 
 } /* namespace libfreenect2 */
 #endif /* RGB_PACKET_PROCESSOR_H_ */

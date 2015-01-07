@@ -63,8 +63,10 @@ else
 # Use: https://github.com/wiedemeyer/libfreenect2
 LIBFREENECT2_DIR=/home/thor/Desktop/libfreenect2-cl
 
-INCLUDES+=-I$(LIBFREENECT2_DIR)/depends/libusb/include/libusb-1.0
-EXTRA_LINK+=-L$(LIBFREENECT2_DIR)/depends/libusb/lib
+#INCLUDES+=-I$(LIBFREENECT2_DIR)/depends/libusb/include/libusb-1.0
+#EXTRA_LINK+=-L$(LIBFREENECT2_DIR)/depends/libusb/lib
+INCLUDES+=`pkg-config libusb-1.0 --cflags`
+EXTRA_LINK+=`pkg-config libusb-1.0 --libs`
 ifdef USE_OPENCL
 EXTRA_LINK+=-lOpenCL
 endif

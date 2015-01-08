@@ -271,5 +271,17 @@ function lidar_ch.callback(skt)
 	local meta = munpack(mdata)
 	update(meta, ranges)
 end
+local poller = si.wait_on_channels({lidar_ch})
 
-si.wait_on_channels({lidar_ch}):start()
+-- Cleanly exit on Ctrl-C
+local running = true
+local function shutdown()
+  print('Shutdown!')
+  poller:stop()
+end
+
+local signal = require'signal'.signal
+signal("SIGINT", shutdown)
+signal("SIGTERM", shutdown)
+
+poller:start()

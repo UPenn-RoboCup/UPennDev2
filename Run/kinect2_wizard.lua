@@ -9,8 +9,18 @@ local Body = require'Body'
 require'mcm'
 local ptable = require'util'.ptable
 local mpack = require'msgpack.MessagePack'.pack
+
+local operator
+if Config.net.use_wireless then
+	operator = Config.net.operator.wireless
+else
+	operator = Config.net.operator.wired
+end
+local depth_net_ch = require'simple_ipc'.new_publisher(stream.tcp, operator)
+local color_net_ch = require'simple_ipc'.new_publisher(stream.tcp, operator)
 local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
 local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
+
 local c_rgb
 if IS_WEBOTS then c_rgb = require'jpeg'.compressor('rgb') end
 local T = require'Transform'
@@ -56,7 +66,7 @@ local function update(rgb, depth)
     local bh = mcm.get_walk_bodyHeight()
     local qHead = Body.get_head_position()
     local tr = get_transform(qHead, rpy, bh)
-	  -- Send color
+	  -- Form color
     rgb.t = t
     rgb.c = 'jpeg'
     rgb.id = 'k2_rgb'
@@ -74,8 +84,8 @@ local function update(rgb, depth)
     rgb.sz = #j_rgb
     rgb.rsz = #j_rgb
     local m_rgb = mpack(rgb)
-    color_ch:send({m_rgb, j_rgb})
-	  -- Send depth (TODO: zlib)
+    
+	  -- Form depth (TODO: zlib)
     depth.t = t
     depth.c = 'raw'
     depth.id = 'k2_depth'
@@ -88,12 +98,15 @@ local function update(rgb, depth)
 	  depth.sz = #ranges
     depth.rsz = #ranges
     local m_depth = mpack(depth)
-    depth_ch:send({m_depth, ranges})
     -- Log
     if ENABLE_LOG then
       log_rgb:record(m_rgb, j_rgb)
       log_depth:record(m_depth, ranges)
     end
+    -- Send
+    color_ch:send({m_rgb, j_rgb})
+    depth_ch:send({m_depth, ranges})
+    
   end
   return t
 end

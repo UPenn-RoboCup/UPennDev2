@@ -6,12 +6,13 @@ local IP = {
   SJ = 200,
   KAREN = 30,
   ALVIN = 24,
+  ALVIN_Z = 222,
 	TEDDY = 26,
 }
 
 -- Who do we use?
 local WHO = IP.STEVE
-local WHICH = IP.ALVIN
+local WHICH = IP.ALVIN_Z
 --local WHICH = IP.TEDDY
 
 -- Network settings --
@@ -79,12 +80,14 @@ streams.lidar0 = {
 }
 streams.kinect2_depth = {
   ws = 9010,
-	udp= 33346,
+	udp = 33346,
+  tcp = 43346,
 	sub = 'kinect2_depth'
 }
 streams.kinect2_color = {
   ws = 9011,
-	udp= 33347,
+	udp = 33347,
+  tcp = 43347,
 	sub = 'kinect2_color'
 }
 streams.feedback = {

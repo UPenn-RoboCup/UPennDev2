@@ -460,8 +460,6 @@ local function do_external(request, bus)
 					status = lD.set_nx_torque_enable(m_id, tq_val, bus)[1]
 				end
 				--if status and status.error==0 then
--- Dangerous
-----[[
 				if status then
 					--ptable(status)
 					-- Set the CP and the P
@@ -481,7 +479,6 @@ local function do_external(request, bus)
 				else
 					print(get_time(), "BAD TORQUE ENABLE", m_id, tq_val, status and status.error)
 				end
---]]
 			end
 			-- Done the cycle if setting torque
 			return

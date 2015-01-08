@@ -90,8 +90,9 @@ local exo = {
 if IS_WEBOTS then
   Config.testfile = 'test_teleop'
   Config.sensors.kinect = true
-  Config.sensors.chest_lidar = true
+  --Config.sensors.chest_lidar = true
 	Config.wizards.kinect = 'kinect2_wizard'
+  Config.kinect_timestep = 50
   Config.wizards.mesh = 'mesh_wizard'
 end
 --]]

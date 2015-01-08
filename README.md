@@ -41,7 +41,7 @@ pulseaudio -k; and sudo alsa force-reload
 
 sudo chown -R thor /usr/local
 sudo usermod -a -G dialout thor
-sudo apt-get install git htop build-essential gfortran automake libudev-dev pkg-config zlib1g-dev
+sudo apt-get install git htop build-essential gfortran automake libudev-dev pkg-config zlib1g-dev libpcre3-dev liblzma-dev libreadline-dev
 
 cd ~/
 mkdir -p src
@@ -57,6 +57,8 @@ cd ~/src
 
 wget http://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.tar.bz2
 tar xvvf boost_1_57_0.tar.bz2
+cd /usr/local
+sudo ln -s ~/src/boost_1_57_0/boost .
 
 git clone https://github.com/libusb/libusb.git
 cd libusb
@@ -92,6 +94,14 @@ make prep
 make
 make install
 cd ~/src
+
+git clone git clone https://github.com/ggreer/the_silver_searcher.git
+cd the_silver_searcher
+./build.sh
+make install
+
+# Fish
+sudo apt-get install build-essential ncurses-dev libncurses5-dev gettext
 
 cd ~/
 git clone https://github.com/smcgill3/UPennDev.git

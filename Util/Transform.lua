@@ -100,6 +100,17 @@ function Transform.to_rpy(t)
   return e
 end
 
+-- http://planning.cs.uiuc.edu/node102.html
+function Transform.from_rpy_trans(rpy, trans)
+  local gamma, beta, alpha = unpack(rpy)
+  return setmetatable({
+    {cos(alpha) * cos(beta), cos(alpha) * sin(beta) * sin(gamma) - sin(alpha) * cos(gamma), cos(alpha) * sin(beta) * cos(gamma) + sin(alpha) * sin(gamma), trans[1]},
+    {sin(alpha) * cos(beta), sin(alpha) * sin(beta) * sin(gamma) + cos(alpha) * cos(gamma), sin(alpha) * sin(beta) * cos(gamma) - cos(alpha) * sin(gamma), trans[2]},
+    {-sin(beta), cos(beta) * sin(gamma), cos(beta) * cos(gamma), trans[3]},
+    {0, 0, 0, 1}
+  }, mt)
+end
+
 function Transform.position6D(tr)
   return vnew{
   tr[1][4],tr[2][4],tr[3][4],

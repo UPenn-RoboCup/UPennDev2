@@ -4,16 +4,30 @@
 -- (c) Stephen McGill, 2014
 ----------------------------
 dofile'../include.lua'
+local cfg = Config.kinect
+local Body = require'Body'
+require'mcm'
 local ptable = require'util'.ptable
 local mpack = require'msgpack.MessagePack'.pack
 local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
 local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
+local c_rgb
+if IS_WEBOTS then c_rgb = require'jpeg'.compressor('rgb') end
+local T = require'Transform'
+local rotY = T.rotY
+local rotZ = T.rotZ
+local trans = T.trans
+local from_rpy_trans = T.from_rpy_trans
 
-local cfg = Config.kinect
-local Body = require'Body'
-require'mcm'
-
-local ptable = require'util'.ptable
+-- CoM to the Neck (32cm in z)
+local tNeck = T.trans(unpack(Config.head.neckOffset))
+-- Mounting of Kinect from the neck axes
+local tKinect = T.trans(unpack(cfg.mountOffset))
+-- Next rotation
+local function get_transform(head_angles, imu_rpy, body_height)
+  -- {yaw, pitch}
+  return from_rpy_trans(imu_rpy, {0, 0, body_height}) * tNeck * rotZ(head_angles[1]) * rotY(head_angles[2]) * tKinect
+end
 
 --local has_detection, detection = pcall(require, cfg.detection)
 
@@ -38,32 +52,41 @@ local function update(rgb, depth)
 	-- Send debug
   if t - t_send > 1 then
     t_send = t
-    local q, rpy, bh = Body.get_position(), Body.get_rpy(), mcm.get_walk_bodyHeight()
+    local rpy = Body.get_rpy()
+    local bh = mcm.get_walk_bodyHeight()
+    local qHead = Body.get_head_position()
+    local tr = get_transform(qHead, rpy, bh)
 	  -- Send color
     rgb.t = t
     rgb.c = 'jpeg'
-    rgb.q = q
-    rgb.bh = bh
-    rgb.rpy = rpy
     rgb.id = 'k2_rgb'
-    --local j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
-    local j_rgb = rgb.data
+    rgb.head_angles = qHead
+    rgb.body_height = bh
+    rgb.imu_rpy = rpy
+    rgb.tr = tr
+    local j_rgb
+    if IS_WEBOTS then
+      j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
+    else
+      j_rgb = rgb.data
+    end
     rgb.data = nil
     rgb.sz = #j_rgb
     rgb.rsz = #j_rgb
     local m_rgb = mpack(rgb)
     color_ch:send({m_rgb, j_rgb})
 	  -- Send depth (TODO: zlib)
+    depth.t = t
     depth.c = 'raw'
-    depth.q = q
-    depth.bh = bh
-    depth.rpy = rpy
     depth.id = 'k2_depth'
+    depth.head_angles = qHead
+    depth.body_height = bh
+    depth.imu_rpy = rpy
+    depth.tr = tr
 	  local ranges = depth.data
 	  depth.data = nil
 	  depth.sz = #ranges
     depth.rsz = #ranges
-    ptable(depth)
     local m_depth = mpack(depth)
     depth_ch:send({m_depth, ranges})
     -- Log

@@ -21,9 +21,11 @@ local head = {
   cameraPos = {0.045, 0.0, 0.107}, --Post RC14: TODO: teddy
 	cameraPitch = 5*DEG_TO_RAD,
 	cameraRoll = 0, --14*DEG_TO_RAD,
-  --From CoM to neck joint
+  -- From CoM to neck joint
   neckZ = .165 + .161,
   neckX = 0,
+  -- From CoM to neck joint
+  neckOffset = {0, 0, 0.32}
 }
 
 local colors = {
@@ -151,6 +153,7 @@ local kinect = {
   -- Run the standard RoboCup vision processing
   detection = 'MultiValve',
 	lut = 'multi_valve',
+  mountOffset = {0.03,0,0.10}
 }
 
 --Webots use 1/2 resolution but 2x label resolution

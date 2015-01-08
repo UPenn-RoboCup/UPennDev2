@@ -94,6 +94,7 @@ function state.update()
 -- FT testing
 ----------------------------------------------------------------------------------------------
 ft_test = false
+ft_test = true
 
 if ft_test then
 
@@ -111,6 +112,12 @@ if ft_test then
   --local r_const_z = -0.00000005
   local r_const_z = -0.0000 --Let's assume no damping 
   local z_shift_max = 0.03
+
+--higher value for robot
+  k_const_z = 0.0001  --Z spring constnat: 0.015m / 300N
+   z_shift_max = 0.05
+
+
   local z_shift_db = 0.005
   local z_vel_max = 0.03 --max 5cm per sec
 
@@ -166,6 +173,11 @@ if ft_test then
 
   local k_const_ty =  -1 *   math.pi/180   --Y angular spring constant: 10 deg / 5 Nm
 
+
+--for actual robot (inverted torque)
+   k_const_ty =  1 *   math.pi/180   --Y angular spring constant: 10 deg / 5 Nm
+
+
   local r_const_ty =   0 --zero damping for now
 
   local ay_shift_max = 30*math.pi/180
@@ -174,7 +186,7 @@ if ft_test then
 
 
 
---balancing_torque = 0
+balancing_torque = 0
 
 lt_y,rt_y = 0,0 --zero sensed torque
 

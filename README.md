@@ -41,7 +41,7 @@ pulseaudio -k; and sudo alsa force-reload
 
 sudo chown -R thor /usr/local
 sudo usermod -a -G dialout thor
-sudo apt-get install git htop build-essential gfortran automake libudev-dev pkg-config zlib1g-dev libpcre3-dev liblzma-dev libreadline-dev
+sudo apt-get install git htop build-essential gfortran automake libudev-dev pkg-config zlib1g-dev libpcre3-dev liblzma-dev libreadline-dev libpng12-dev libjpeg-dev
 
 cd ~/
 mkdir -p src

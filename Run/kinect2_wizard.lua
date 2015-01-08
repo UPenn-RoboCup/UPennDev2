@@ -16,10 +16,12 @@ if Config.net.use_wireless then
 else
 	operator = Config.net.operator.wired
 end
-local depth_net_ch = require'simple_ipc'.new_publisher(stream.tcp, operator)
-local color_net_ch = require'simple_ipc'.new_publisher(stream.tcp, operator)
+print(Config.net.streams['kinect2_depth'].tcp, operator)
+local depth_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp, operator)
+local color_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp, operator)
 local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
 local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
+print(depth_net_ch.name)
 
 local c_rgb
 if IS_WEBOTS then c_rgb = require'jpeg'.compressor('rgb') end
@@ -28,6 +30,7 @@ local rotY = T.rotY
 local rotZ = T.rotZ
 local trans = T.trans
 local from_rpy_trans = T.from_rpy_trans
+local flatten = T.flatten
 
 -- CoM to the Neck (32cm in z)
 local tNeck = T.trans(unpack(Config.head.neckOffset))
@@ -36,7 +39,7 @@ local tKinect = T.trans(unpack(cfg.mountOffset))
 -- Next rotation
 local function get_transform(head_angles, imu_rpy, body_height)
   -- {yaw, pitch}
-  return from_rpy_trans(imu_rpy, {0, 0, body_height}) * tNeck * rotZ(head_angles[1]) * rotY(head_angles[2]) * tKinect
+  return from_rpy_trans({-imu_rpy[1], -imu_rpy[2], 0}, {0, 0, body_height}) * tNeck * rotZ(head_angles[1]) * rotY(head_angles[2]) * tKinect
 end
 
 --local has_detection, detection = pcall(require, cfg.detection)
@@ -65,7 +68,7 @@ local function update(rgb, depth)
     local rpy = Body.get_rpy()
     local bh = mcm.get_walk_bodyHeight()
     local qHead = Body.get_head_position()
-    local tr = get_transform(qHead, rpy, bh)
+    local tr = flatten(get_transform(qHead, rpy, bh))
 	  -- Form color
     rgb.t = t
     rgb.c = 'jpeg'
@@ -104,9 +107,8 @@ local function update(rgb, depth)
       log_depth:record(m_depth, ranges)
     end
     -- Send
-    color_ch:send({m_rgb, j_rgb})
-    depth_ch:send({m_depth, ranges})
-    
+		color_net_ch:send({m_rgb, j_rgb})
+    depth_net_ch:send({m_depth, ranges})
   end
   return t
 end

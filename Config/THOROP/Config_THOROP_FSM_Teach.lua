@@ -15,7 +15,7 @@ fsm.enabled = {
   'Body',
   'Arm',
   'Motion',
-  --'Head',
+  'Head',
   'Lidar'
 }
 

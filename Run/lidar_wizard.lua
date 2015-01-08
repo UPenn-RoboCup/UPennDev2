@@ -37,7 +37,7 @@ local hokuyos = {}
 local h0
 if HOSTNAME=='teddy' then
 	h0 = libHokuyo.new_hokuyo(10)
-elseif HOSTNAME == 'alvin' then
+elseif HOSTNAME == 'alvin' or true then
 	h0 = libHokuyo.new_hokuyo(11)
 else
 	print('WRONG HOST NAME !!')

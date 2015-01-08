@@ -62,7 +62,7 @@ local left_arm = {
   ttyname = '/dev/ttyUSB1',
   m_ids = {2,4,6,8,10,12,14,
   -- lidar
- -- 37,
+  37,
 	-- gripper
   66, 67
 },
@@ -245,7 +245,7 @@ servo.direction = vector.new({
 
 -- TODO: Offset in addition to bias?
 servo.rad_offset = vector.new({
-  180,155, -- Head
+  0,155, -- Head
   -90,90,-90,45,90,0,0, --LArm
   0,0,0,-45,0,0, --LLeg
   0,0,0,45,0,0, --RLeg

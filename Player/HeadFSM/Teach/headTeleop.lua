@@ -1,13 +1,14 @@
-local Body = require'Body'
-local t_entry, t_update
 local state = {}
 state._NAME = ...
-require'hcm'
-require'gcm'
+
+local Body = require'Body'
 local util = require'util'
+local vector = require'vector'
+local t_entry, t_update
 
 -- Neck limits
-local dqNeckLimit = Config.fsm.dqNeckLimit or {60*DEG_TO_RAD, 60*DEG_TO_RAD}
+local headSpeed = 5 * DEG_TO_RAD * vector.ones(2)
+local headThresh = 1 * DEG_TO_RAD * vector.ones(2)
 
 function state.entry()
   print(state._NAME..' Entry' ) 
@@ -17,7 +18,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   -- Reset the human position
-  hcm.set_motion_headangle(Body.get_head_position())
+  hcm.set_teleop_head(Body.get_head_position())
 end
 
 function state.update()
@@ -29,19 +30,13 @@ function state.update()
   t_update = t 
 
   -- Grab the target
-  local neckAngleTarget = hcm.get_motion_headangle()
-  --print('Neck angle',unpack(neckAngleTarget))
-  -- Grab where we are
-  local qNeck = Body.get_head_command_position()
-  local headBias = hcm.get_camera_bias()
-  qNeck[1] = qNeck[1] - headBias[1]  
-
-  -- Go!
-  local qNeck_approach, doneNeck = 
-    util.approachTol( qNeck, neckAngleTarget, dqNeckLimit, dt )
-    
+  local headAngles = hcm.get_teleop_head()
+	local headNow = Body.get_head_command_position()
+  local apprAng, doneHead = util.approachTol(headNow, headAngles, headSpeed, dt, headThresh)
+	
   -- Update the motors
-  Body.set_head_command_position({qNeck_approach[1],qNeck_approach[2]})
+	Body.set_head_command_position(apprAng)
+  
 end
 
 function state.exit()  

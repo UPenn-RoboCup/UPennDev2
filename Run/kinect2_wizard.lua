@@ -44,7 +44,7 @@ end
 
 --local has_detection, detection = pcall(require, cfg.detection)
 
-local ENABLE_LOG = true
+--local ENABLE_LOG = true
 local libLog, logger
 if ENABLE_LOG then
   libLog = require'libLog'

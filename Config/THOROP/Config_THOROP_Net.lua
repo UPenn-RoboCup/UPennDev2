@@ -12,7 +12,8 @@ local IP = {
 }
 
 -- Who do we use?
-local WHO = IP.BHORAM --IP.STEVE
+local WHO = IP.BHORAM
+--local WHO = IP.STEVE
 local WHICH = IP.ALVIN_Z
 --local WHICH = IP.TEDDY
 

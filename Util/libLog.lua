@@ -1,7 +1,10 @@
 local libLog = {}
 local LOG_DIR = '/tmp'
 local carray
-if ffi then
+local ok, ffi = pcall(require, 'ffi')
+local C
+if ok then
+	C = ffi.C
 	ffi.cdef [[
 	typedef struct __IO_FILE FILE;
 	size_t fwrite
@@ -44,7 +47,6 @@ local function record(self, meta, raw, n_raw)
 		if not n_raw then return end
 		if C then
 			local n_written = C.fwrite(raw, 1, n_raw, self.f_raw)
-			--print('wrote',n_written)
 			r_ok = n_written==n_raw
 		else
 			r_ok = self.f_raw:write(tostring(carray.byte(raw ,n_raw)))

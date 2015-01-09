@@ -1,5 +1,5 @@
 MATLAB=matlab -nosplash -nodesktop -nojvm -nodisplay
-MEX=mex -O -I/usr/local/include -L/usr/local/lib
+MEX=mex -v -O -I/usr/local/include -L/usr/local/lib
 MEXEXT=$(shell mexext)
 PWD=$(shell pwd)
 LIBRT= $(shell [ `uname` != "Darwin" ] && echo "-lrt")

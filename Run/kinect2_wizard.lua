@@ -33,9 +33,11 @@ local from_rpy_trans = T.from_rpy_trans
 local flatten = T.flatten
 
 -- CoM to the Neck (32cm in z)
-local tNeck = T.trans(unpack(Config.head.neckOffset))
+local tNeck = trans(unpack(Config.head.neckOffset))
 -- Mounting of Kinect from the neck axes
-local tKinect = T.trans(unpack(cfg.mountOffset))
+--local tKinect = trans(unpack(cfg.mountOffset))
+local tKinect = from_rpy_trans({4*DEG_TO_RAD, 0, 0}, cfg.mountOffset)
+
 -- Next rotation
 local function get_transform(head_angles, imu_rpy, body_height)
   -- {yaw, pitch}
@@ -107,8 +109,10 @@ local function update(rgb, depth)
       log_depth:record(m_depth, ranges)
     end
     -- Send
-		color_net_ch:send({m_rgb, j_rgb})
-    depth_net_ch:send({m_depth, ranges})
+		--color_net_ch:send({m_rgb, j_rgb})
+    --depth_net_ch:send({m_depth, ranges})
+		color_ch:send({m_rgb, j_rgb})
+    depth_ch:send({m_depth, ranges})
   end
   return t
 end

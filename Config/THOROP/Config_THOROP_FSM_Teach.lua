@@ -35,7 +35,9 @@ fsm.Body = {
 
 fsm.Head = {
   {'headIdle', 'init', 'headCenter'},
+	--
   {'headCenter', 'trackhand', 'headTrackHand'},
+  {'headCenter', 'teleop', 'headTeleop'},
 }
 
 fsm.Lidar = {

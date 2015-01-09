@@ -245,7 +245,7 @@ servo.direction = vector.new({
 
 -- TODO: Offset in addition to bias?
 servo.rad_offset = vector.new({
-  0,155, -- Head
+  0,140, -- Head
   -90,90,-90,45,90,0,0, --LArm
   0,0,0,-45,0,0, --LLeg
   0,0,0,45,0,0, --RLeg

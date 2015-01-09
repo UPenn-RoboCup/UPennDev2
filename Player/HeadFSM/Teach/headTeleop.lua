@@ -41,9 +41,7 @@ function state.update()
     util.approachTol( qNeck, neckAngleTarget, dqNeckLimit, dt )
     
   -- Update the motors
-
-  local headBias = hcm.get_camera_bias()
-  Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
+  Body.set_head_command_position({qNeck_approach[1],qNeck_approach[2]})
 end
 
 function state.exit()  

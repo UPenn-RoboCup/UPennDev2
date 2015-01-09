@@ -21,7 +21,7 @@ local function update_pan_params()
 end
 
 function state.entry()
-  print(state._NAME..' Entry' ) 
+--  print(state._NAME..' Entry' ) 
 
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
@@ -86,7 +86,7 @@ function state.update()
 end
 
 function state.exit()
-  print(state._NAME..' Exit' )
+--  print(state._NAME..' Exit' )
 end
 
 return state

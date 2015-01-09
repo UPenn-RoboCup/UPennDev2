@@ -12,6 +12,8 @@ local function update(key_code)
     char_f()
   elseif type(lower_f)=='function' then
     lower_f()
+  else
+    io.write('\nkey_code:', key_code, 'key_char:', key_char)
   end
 	if type(show_status)=='function' then
 		if not IS_WEBOTS then os.execute('clear') end

@@ -11,6 +11,25 @@ local selected_arm = 0 -- left to start
 -- Look up tables for the test.lua script (NOTE: global)
 code_lut, char_lut, lower_lut = {}, {}, {}
 
+-- Switch to head teleop
+local head_mode = false
+char_lut['`'] = function()
+  head_mode = not head_mode
+end
+local dHead = 5*DEG_TO_RAD
+local head = {
+  w = dHead * vector.new{0,-1},
+  a = dHead * vector.new{1, 0},
+  s = dHead * vector.new{0,1},
+  d = dHead * vector.new{-1, 0},
+}
+local function apply_head(dHead)
+  if not dHead then return end
+  local goalBefore = hcm.get_teleop_head()
+  local goalAfter = goalBefore + dHead
+  hcm.set_teleop_head(goalAfter)
+end
+
 -- State Machine events
 char_lut['1'] = function()
   body_ch:send'init'
@@ -189,20 +208,21 @@ local post_arm = {
 }
 
 -- Add the access to the transforms
-local mt_tr = {
+setmetatable(char_lut, {
 	__index = function(t, k)
-		if pre_arm[k] then
+    if head_mode then
+      apply_head(head[k])
+    elseif pre_arm[k] then
 			apply_pre(pre_arm[k])
-			return Body.get_time
 		elseif post_arm[k] then
 			apply_post(post_arm[k])
-			return Body.get_time
 		end
+    return Body.get_time
 	end
-}
-setmetatable(char_lut, mt_tr)
+})
 
 -- Global status to show (NOTE: global)
+local color = require'util'.color
 function show_status()
 	local qlarm = Body.get_larm_position()
 	local qrarm = Body.get_rarm_position()
@@ -213,22 +233,36 @@ function show_status()
   local r_indicator = vector.zeros(#qlarm)
   r_indicator[selected_joint] = selected_arm==1 and 1 or 0
 	--
-  print(util.color('Remote Control', 'magenta'))
-  print('Motion:', util.color(gcm.get_fsm_Motion(), 'green'))
-  print(string.format('%s %s\n%s\n%s\n%s',
-    util.color('Left Arm Position', 'yellow'),
-    selected_arm==0 and '*' or '',
+  local larm_info = string.format('\n%s %s %s\n%s\n%s',
+    util.color('Left Arm', 'yellow'),
+    (not head_mode) and selected_arm==0 and '*' or '',
 		l_indicator,
     'q: '..tostring(qlarm*RAD_TO_DEG),
 		'Pos6d: '..tostring(vector.new(T.position6D(fkL)))
-  ))
-  print(string.format('%s %s\n%s\n%s\n%s',
-    util.color('Right Arm Position', 'yellow'),
-    selected_arm==1 and '*' or '',
+  )
+  local rarm_info = string.format('\n%s %s %s\n%s\n%s',
+    util.color('Right Arm', 'yellow'),
+    (not head_mode) and selected_arm==1 and '*' or '',
 		r_indicator,
     'q: '..tostring(qrarm*RAD_TO_DEG),
     'Pos6d: '..tostring(vector.new(T.position6D(fkR)))
-  ))
+  )
+  local head_info = string.format('\n%s %s\n%s',
+    util.color('Head', 'yellow'),
+    head_mode and '*' or '',
+    'q: '..tostring(Body.get_head_position()*RAD_TO_DEG)
+  )
+  local info = {
+    color('== Teleoperation ==', 'magenta'),
+    'BodyFSM: '..color(gcm.get_fsm_Body(), 'green'),
+    'ArmFSM: '..color(gcm.get_fsm_Arm(), 'green'),
+    'HeadFSM: '..color(gcm.get_fsm_Head(), 'green'),
+    'MotionFSM: '..color(gcm.get_fsm_Motion(), 'green'),
+    larm_info,
+    rarm_info,
+    head_info,
+  }
+  io.write(table.concat(info,'\n'))
 end
 
 -- Run the generic keypress library

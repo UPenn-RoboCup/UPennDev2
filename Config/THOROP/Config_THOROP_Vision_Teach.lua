@@ -153,7 +153,10 @@ local kinect = {
   -- Run the standard RoboCup vision processing
   detection = 'MultiValve',
 	lut = 'multi_valve',
-  mountOffset = {0.03,0,0.10}
+  mountOffset = {
+    {0,0,0}, -- RPY
+    {0.03,0,0.08} -- translaction
+  }
 }
 
 --Webots use 1/2 resolution but 2x label resolution

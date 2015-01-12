@@ -34,12 +34,12 @@ DEF FLOOR Floor {
   ]
 }
 THOROP_UPENN {
-  translation -0.5 1.15535 0.5
+  translation 0 1.15535 0
   controller "thorop"
   controllerArgs "0 32"
 }
 DEF MY_TABLE Solid {
-  translation -0.525 1 1.15
+  translation 0 1 0.6
   children [
     Transform {
       translation 0 0 0.1
@@ -62,7 +62,7 @@ DEF MY_TABLE Solid {
   }
 }
 DEF MY_DRILL1 Solid {
-  translation -0.37 1.15 1.1
+  translation 0.17 1.15 0.5
   children [
     Shape {
       appearance Appearance {
@@ -138,84 +138,3 @@ DEF MY_DRILL1 Solid {
     mass 3
   }
 }
-DEF MY_DRILL2 Solid {
-  translation -0.67 1.15 1.1
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          ambientIntensity 0.1
-          diffuseColor 0.2 0.5 0.2
-        }
-      }
-      geometry Cylinder {
-        height 0.1
-        radius 0.015
-      }
-    }
-    Transform {
-      translation 0 -0.075 0
-      children [
-        Shape {
-          #geometry Cylinder {
-          #  height 0.05
-          #  radius 0.05
-          #}
-					geometry Box { size 0.08 0.05 0.1}
-        }
-      ]
-    }
-    Transform {
-      translation 0 0.06 0.03
-      rotation 1 0 0 1.57
-      children [
-        Shape {
-          geometry Cylinder {
-            height 0.15
-            radius 0.04
-          }
-        }
-      ]
-    }
-    Transform {
-      translation 0 0.06 0.15
-      rotation 1 0 0 1.57
-      children [
-        Shape {
-          geometry Cylinder {
-            height 0.2
-            radius 0.01
-          }
-        }
-      ]
-    }
-  ]
-  boundingObject Group {
-    children [
-      Transform {
-        children [
-          #Cylinder {
-          #  height 0.1
-          #  radius 0.015
-          #}
-					Box { size 0.03 0.1 0.03}
-        ]
-      }
-      Transform {
-        translation 0 -0.075 0
-        children [
-          #Cylinder {
-          #  height 0.05
-          #  radius 0.05
-          #}
-					Box { size 0.08 0.05 0.1}
-        ]
-      }
-    ]
-  }
-  physics Physics {
-    density -1
-    mass 3
-  }
-}
-

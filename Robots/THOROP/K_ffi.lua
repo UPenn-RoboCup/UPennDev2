@@ -23,12 +23,12 @@ local shoulderOffsetX = 0;
 local shoulderOffsetY = 0.234;
 local shoulderOffsetZ = 0.165;
 local upperArmLength = 0.246;
-local elbowOffsetX = 0.030; 
+local elbowOffsetX = 0.030;
 --local lowerArmLength = 0.186; -- Default 7DOF arm
 local lowerArmLength = 0.250; -- LONGARM model
 -- Gripper of no appendage - just the plate
-local handOffsetX = 0.245;
-local handOffsetY = 0.035;
+local handOffsetX = 0.125;--0.245;
+local handOffsetY = 0;--0.035;
 local handOffsetZ = 0;
 -- Leg constants
 local hipOffsetX = 0
@@ -66,8 +66,8 @@ local trans_upper = Ttrans(upperArmLength, 0, elbowOffsetX)
 local trans_lower = Ttrans(lowerArmLength, 0, -elbowOffsetX)
 local dUpperArm = sqrt(upperArmLength^2 + elbowOffsetX^2)
 local dLowerArm = sqrt(lowerArmLength^2 + elbowOffsetX^2)
-local aUpperArm = require'math'.atan(elbowOffsetX / upperArmLength)
-local aLowerArm = require'math'.atan(elbowOffsetX / lowerArmLength)
+local aUpperArm = atan(elbowOffsetX / upperArmLength)
+local aLowerArm = atan(elbowOffsetX / lowerArmLength)
 local aElbowMax = -1*(aUpperArm + aLowerArm)
 -- Assume left arm
 local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
@@ -163,7 +163,8 @@ local preLArm, postLArm = Ttrans(shoulderOffsetX, shoulderOffsetY, shoulderOffse
 function K.forward_larm(qLArm)
 	return preLArm * fk_arm(qLArm) * postLArm, {qLArm[3]}
 end
-local preRArm, postRArm = Ttrans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, handOffsetY, handOffsetZ) * TrotZ(-45*DEG_TO_RAD)
+local preRArm, postRArm = Ttrans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, handOffsetY, handOffsetZ)
+-- * TrotZ(-45*DEG_TO_RAD)
 function K.forward_rarm(qRArm)
 	return preRArm * fk_arm(qRArm) * postRArm, {qRArm[3]}
 end

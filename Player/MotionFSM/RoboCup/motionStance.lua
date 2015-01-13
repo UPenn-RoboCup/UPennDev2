@@ -65,6 +65,7 @@ function state.entry()
   hcm.set_legdebug_right({uRight[1],uRight[2],uRight[3],0})
   hcm.set_legdebug_torso({uTorso[1],uTorso[2]})
   hcm.set_legdebug_torso_angle({0,0})
+  hcm.set_legdebug_enable_balance(0)
 end
 
 function state.update()

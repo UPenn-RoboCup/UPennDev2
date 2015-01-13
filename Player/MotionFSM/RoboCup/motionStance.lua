@@ -133,6 +133,17 @@ function state.update()
 
 
 
+local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
+local lf_z,rf_z = l_ft[3],r_ft[3]
+local lt_y,rt_y = l_ft[5],r_ft[5] 
+local lt_x,rt_x = l_ft[4],r_ft[4] 
+if IS_WEBOTS then  
+  --FOR WEBOTS, ft sensor is rotated
+  --FOR webots, torque readings are inverted too    
+  lt_y,rt_y = -l_ft[4],-r_ft[5]      
+  lt_x,rt_x = -l_ft[5],-r_ft[4] 
+end
+
 
 
 
@@ -142,22 +153,20 @@ function state.update()
 
 if hcm.get_legdebug_enable_balance()>0 then
 
-  local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
-  local lf_z,rf_z = l_ft[3],r_ft[3]
-  local lt_y,rt_y = l_ft[5],r_ft[5] 
-  local lt_x,rt_x = l_ft[4],r_ft[4] 
-  if IS_WEBOTS then  
-    --FOR WEBOTS, ft sensor is rotated
-    --FOR webots, torque readings are inverted too    
-
-    lt_y,rt_y = -l_ft[4],-r_ft[5]      
-    lt_x,rt_x = -l_ft[5],-r_ft[4] 
-  end
+  
   print(string.format("Fz: %d %d  T_p: %d %d T_r: %d %d", lf_z,rf_z,lt_y,rt_y, lt_x,rt_x))
   
   --roll reading: positive for 
 
+  local rpy = Body.get_rpy()
+  local y_angle_zero = 3*math.pi/180
+  local roll_err = rpy[1]
+  local pitch_err = rpy[2]-y_angle_zero  
+  virtual_torso_angle = hcm.get_legdebug_torso_angle()
+  print(string.format("angle err: r %.1f p %.1f",roll_err*180/math.pi, pitch_err*180/math.pi))
 
+  local uLeftTorso = util.pose_relative(uLeft,uTorso)
+  local uRightTorso = util.pose_relative(uRight,uTorso)
 
 
   
@@ -175,6 +184,10 @@ if hcm.get_legdebug_enable_balance()>0 then
   local z_shift_db = 0.005
   local z_vel_max = 0.03 --max 5cm per sec
 
+
+  local balancing_db = 1*math.pi/180
+
+--[[
   zShiftTarget[1] = (lf_z-z_force_zero)*k_const_z + zvShift[1]*r_const_z 
   zShiftTarget[2] = (rf_z-z_force_zero)*k_const_z + zvShift[2]*r_const_z
 
@@ -192,75 +205,75 @@ if hcm.get_legdebug_enable_balance()>0 then
 
   zShift[1] = zShift[1]+zvShift[1]*t_diff
   zShift[2] = zShift[2]+zvShift[2]*t_diff
+--]]
 
 
 
+  local zf_touchdown = 50
   local z_shift_max = 0.05
   local z_shift_db = 0.01
-  local z_vel_max = 0.1 --max 10cm per sec
+  local z_vel_max = 0.4 --max 10cm per sec
+  
+  k_const_z = 0.01  
 
-  local zShiftTargetDiff = (lf_z-rf_z)*k_const_z
+  if ((lf_z<zf_touchdown and rf_z>zf_touchdown) or (lf_z>zf_touchdown and rf_z<zf_touchdown) )
+    and math.abs(roll_err)<2*math.pi/180
+
+    then 
+    print("single foot touch, adapting")
+    local zShiftTargetDiff = (lf_z-rf_z)*k_const_z
+    --At least one foot in air, quickly adapt to make both feet touch the ground
+    zShiftTarget[1] = math.min(z_shift_max,math.max(-z_shift_max,zShiftTargetDiff))
+
+    if math.abs(zShiftTarget[1])<z_shift_db then zShiftTarget[1]=0 end
+
+    zShiftTarget[2] = -zShiftTarget[1]
+
+    zvShift[1] =  (zShiftTarget[1]-zShift[1])/t_diff
+    zvShift[2] =  (zShiftTarget[2]-zShift[2])/t_diff
+
+    zvShift[1]=math.min(z_vel_max,math.max(-z_vel_max,zvShift[1]))
+    zvShift[2]=math.min(z_vel_max,math.max(-z_vel_max,zvShift[2]))
+
+    print("adapting vel:",zvShift[1])
+
+    zShift[1] = zShift[1]+zvShift[1]*t_diff
+    zShift[2] = zShift[2]+zvShift[2]*t_diff
+  else
+    print("both feet touch, balancing")
+    --both feet on the ground. use IMU to keep torso orientation up
+   
+   
+
+    local LR_pitch_err = -(uLeftTorso[1]-uRightTorso[1])*math.tan(pitch_err)
+    local LR_roll_err =  (uLeftTorso[2]-uRightTorso[2])*math.tan(roll_err)
+    
+    k_balancing = 0.4
+
+    local zvShiftTarget = (LR_pitch_err + LR_roll_err) * k_balancing
+    zvShiftTarget = math.min(z_vel_max,math.max(-z_vel_max,zvShiftTarget))
+
+    zvShift[1] = zvShiftTarget
+    zvShift[2] = -zvShiftTarget
 
 
-  zShiftTarget[1] = math.min(z_shift_max,math.max(-z_shift_max,zShiftTargetDiff))
+    print("balancing vel:",zvShift[1])
 
-  if math.abs(zShiftTarget[1])<z_shift_db then zShiftTarget[1]=0 end
+    zShift[1] = zShift[1]+zvShift[1]*t_diff
+    zShift[2] = zShift[2]+zvShift[2]*t_diff
 
-  zShiftTarget[2] = -zShiftTarget[1]
+    zShift[1] = math.min(z_shift_max,math.max(-z_shift_max,zShift[1]))
+    zShift[2] = math.min(z_shift_max,math.max(-z_shift_max,zShift[2]))
 
-  zvShift[1] =  (zShiftTarget[1]-zShift[1])/t_diff
-  zvShift[2] =  (zShiftTarget[2]-zShift[2])/t_diff
-
-  zvShift[1]=math.min(z_vel_max,math.max(-z_vel_max,zvShift[1]))
-  zvShift[2]=math.min(z_vel_max,math.max(-z_vel_max,zvShift[2]))
-
-  zShift[1] = zShift[1]+zvShift[1]*t_diff
-  zShift[2] = zShift[2]+zvShift[2]*t_diff
-
-
-
-
-  zShift[1],zShift[2]=0,0
+  end
 
   print(string.format("Zshift: %.2f %.2f cm",zShift[1]*100,zShift[2]*100))
 
-
+  
 
 
 ------------------------------------------------------------------------------------------------
 
-
-  --Y neutral torque: 0
-
-
-
-  local rpy = Body.get_rpy()
-  local y_angle_zero = 3*math.pi/180
-
-  
-
-
-
-  local k_balancing_y = -10 / (math.pi/180) --10Nm per 1 deg error
-
-  k_balancing_y = -100 / (math.pi/180) --10Nm per 1 deg error
- 
-  local balancing_db = 1*math.pi/180
-
-  local roll_err = rpy[1]
-  local pitch_err = rpy[2]-y_angle_zero  
-  local balancing_torque = pitch_err * k_balancing_y
-  virtual_torso_angle = hcm.get_legdebug_torso_angle()
-
-
-
-  
-
-
-
-
-  print(string.format("angle err: r %.1f p %.1f",roll_err*180/math.pi, pitch_err*180/math.pi))
-  if math.abs(pitch_err)<balancing_db then balancing_torque = 0 end
 
 
   --make it conform to external torque
@@ -284,42 +297,49 @@ if hcm.get_legdebug_enable_balance()>0 then
   local ax_vel_max = 30*math.pi/180 
 
 
---lt_y,rt_y = 0,0 --zero sensed torque
+--adapt ankle pitch angles
+----------------------------------------------------------------------------------------
+
+  local adaptive_torque_max = 10
+  local balancing_torque = pitch_err/(3*math.pi/180) * 0.5
+  local ay_vel_max = 30*math.pi/180 
+  
+  local ay_vel_max = 90*math.pi/180 
+
+--Check pitch controllability with height modification
+  local LR_spread_angle = math.abs((uLeftTorso[1]-uRightTorso[1])/(uLeftTorso[2]-uRightTorso[2]))
 
 
---  if math.abs(pitch_err)>=balancing_db then
 
-if false then
-    --has angle error, stop adjusting ankle
+  if math.abs(pitch_err)<2*math.pi/180 then
 
+    lt_y = math.min(adaptive_torque_max,math.max(-adaptive_torque_max,lt_y))
+    rt_y = math.min(adaptive_torque_max,math.max(-adaptive_torque_max,rt_y))
 
-    local vt_angle_vel_limit = 90*math.pi/180
-    local vt_angle_limit = 20*math.pi/180
+    local aShiftModY1=(lt_y+balancing_torque)*k_const_ty + avShiftY[1]*r_const_ty
+    local aShiftModY2=(rt_y+balancing_torque)*k_const_ty + avShiftY[2]*r_const_ty
 
-    local k_vt_angle = -2
+    if math.abs(aShiftModY1)<ay_shift_db then aShiftModY1=0 end
+    if math.abs(aShiftModY2)<ay_shift_db then aShiftModY2=0 end
 
-    local vt_angle_diff = 
-      math.min(vt_angle_vel_limit ,  math.max(-vt_angle_vel_limit,  k_vt_angle*pitch_err))
+    aShiftTargetY[1] = aShiftY[1]+aShiftModY1
+    aShiftTargetY[2] = aShiftY[2]+aShiftModY2
+
+    aShiftTargetY[1] = math.min(ay_shift_max,math.max(-ay_shift_max,aShiftTargetY[1]))
+    aShiftTargetY[2] = math.min(ay_shift_max,math.max(-ay_shift_max,aShiftTargetY[2]))
     
-    virtual_torso_angle[1] = virtual_torso_angle[1] + vt_angle_diff*t_diff
+    avShiftY[1] =  (aShiftTargetY[1]-aShiftY[1])/t_diff
+    avShiftY[2] =  (aShiftTargetY[2]-aShiftY[2])/t_diff
 
-    virtual_torso_angle[1] = 
-      math.min(vt_angle_limit ,  math.max(-vt_angle_limit,  virtual_torso_angle[1]))
-     
+    avShiftY[1]=math.min(ay_vel_max,math.max(-ay_vel_max,avShiftY[1]))
+    avShiftY[2]=math.min(ay_vel_max,math.max(-ay_vel_max,avShiftY[2]))
 
-
-
---    virtual_torso_angle[1] =  - pitch_err
-    print("ankleerror vta:",virtual_torso_angle[1]*180/math.pi)
-
-    hcm.set_legdebug_torso_angle(virtual_torso_angle)
-
+    aShiftY[1] = aShiftY[1]+avShiftY[1]*t_diff
+    aShiftY[2] = aShiftY[2]+avShiftY[2]*t_diff
   else
-    virtual_torso_angle[1]=0
 
-
-    local aShiftModY1=(lt_y)*k_const_ty + avShiftY[1]*r_const_ty
-    local aShiftModY2=(rt_y)*k_const_ty + avShiftY[2]*r_const_ty
+    local aShiftModY1=pitch_err
+    local aShiftModY2=pitch_err
 
     if math.abs(aShiftModY1)<ay_shift_db then aShiftModY1=0 end
     if math.abs(aShiftModY2)<ay_shift_db then aShiftModY2=0 end
@@ -339,13 +359,11 @@ if false then
     aShiftY[1] = aShiftY[1]+avShiftY[1]*t_diff
     aShiftY[2] = aShiftY[2]+avShiftY[2]*t_diff
 
-    print(string.format("Ashift: %.1f %.1f deg",aShiftY[1]*180/math.pi,aShiftY[2]*180/math.pi))   
-
   end
 
---  aShiftY[1], aShiftY[2] = 0,0
+  print(string.format("Ashift: %.1f %.1f deg",aShiftY[1]*180/math.pi,aShiftY[2]*180/math.pi))   
 
-
+----------------------------------------------------------------------------------------
 
 
   --Always adapt ankle roll angles (as they are spreaded)
@@ -376,6 +394,7 @@ print(string.format("Rshift: %.1f %.1f deg",aShiftX[1]*180/math.pi,aShiftX[2]*18
 
 end
 
+virtual_torso_angle={0,0}
 
   delta_legs[5]=delta_legs[5]+aShiftY[1]
   delta_legs[11]=delta_legs[11]+aShiftY[2]

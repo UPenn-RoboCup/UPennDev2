@@ -45,16 +45,26 @@ WoodBox {
   translation 0 0.02 0.3
   boxSize 0.8 0.04 0.2005
 }
+
 WoodBox {
   translation 0 0.02 1
   rotation 1 0 0 0.1
-  boxSize 0.8 0.04 0.2005
+  boxSize 0.8 0.04 0.4005
 }
+
+
 WoodBox {
   translation 0 0.02 1.7
-  rotation 0 0 1 0.05
+  rotation 0 0 1 0.1
   boxSize 0.8 0.04 0.2005
 }
+
+WoodBox {
+  translation 0 0.02 1.35
+  rotation 0 0 1 0.2
+  boxSize 0.8 0.04 0.2005
+}
+
 THOROP_UPENN {
   translation -0.000168872 1.15718 -0.000429255
   rotation 0.930259 0.000208559 -0.366904 -0.000397534

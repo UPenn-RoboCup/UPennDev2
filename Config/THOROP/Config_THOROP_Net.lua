@@ -8,7 +8,7 @@ local IP = {
   BHORAM = 54,
   ALVIN = 24,
   ALVIN_Z = 222,
-	TEDDY = 26,
+  TEDDY = 26,
 }
 
 -- Who do we use?

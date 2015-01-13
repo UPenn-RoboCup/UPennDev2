@@ -158,23 +158,53 @@ step_queues={
 }
 --]]
 
+
 --for deflection test
-local sh1,sh2 = 0.15, 0.10
-local step1,step2 = 0.10, 0.10
+local sh1,sh2 = 0.10, 0.0
+local step1,step2 = 0.20, 0.20
 step_queues={
    {
     {{0,0,0},   2,  0.1, 1, 0.1,    {0,0},  {0, 0, 0}},
     {{step1,0,0},0,  1, 6, 4,   {0,-0.04}, {0,sh1,sh2}   ,  {-step1/2  ,Config.walk.footY+0.04}},   --LS    
-    {{0,0,0},   2,    0.1, 4, 0.1,   {-step1/2,Config.walk.footY+0.04},  {-step1/2,Config.walk.footY+0.04,0}},
+    {{0,0,0},   2,    0.1, 2, 0.1,   {-step1/2,Config.walk.footY+0.04},  {-step1/2,Config.walk.footY+0.04,0}},    
    },
 
-
+   --weight shift to center
    {
+    {{0,0,0},   2,    0.1, 4, 0.1,   {0,0},  {0,0,0}},    
+   },
+
+  
+   {
+    {{0,0,0},   2,    0.1, 2, 0.1,   {0,0},  {0,0,0}},    
     {{step1,0,0},1,   1, 6, 1,  {0.0,0},  {0,sh1,sh2}},    --RS    
     {{0,0,0},   2,    0.1, 1, 0.1,   {0,0},  {0, 0, 0}},
    }
 }
  
+
+--faster
+step_queues={
+   {
+    {{step1,0,0},0,  1, 3, 1,   {0,-0.04}, {0,sh1,sh2}   ,  {-step1/2  ,Config.walk.footY+0.04}},   --LS    
+   },
+
+   --weight shift to center
+    {
+    {{0,0,0},   2,    0.1, 2, 0.1,   {0,0},  {0,0,0}},    
+   },
+  
+   {
+    {{step1,0,0},1,   1, 3, 1,  {0.0,0},  {0,sh1,sh2}},    --RS    
+   }
+}
+
+
+
+
+
+
+
 local stage = 1
 local ready_for_input = true
 
@@ -229,6 +259,9 @@ function state.entry()
 --  motion_ch:send'preview'  
   motion_ch:send'stair'  
   mcm.set_stance_singlesupport(1)
+
+print("step queue size:",#step_queues)
+
 end
 
 function state.update()
@@ -239,14 +272,22 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+
+
+
   if mcm.get_walk_ismoving()==0 then    
     if ready_for_input then print("Ready")
       ready_for_input = false
     end    
-    if stage==#step_queues then return 'done'
+    if stage==#step_queues then 
+      --TODO: motion state get stuck at motionPreviewStair
+      return 'done'
     elseif hcm.get_state_proceed()==1 then       
       hcm.set_state_proceed(0)
       stage = stage+1
+
+print("STAGE:",stage)
+
       calculate_footsteps(stage)
       --  motion_ch:send'preview'  
       motion_ch:send'stair'  

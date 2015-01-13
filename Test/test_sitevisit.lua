@@ -125,6 +125,7 @@ local function update(key_code)
 
 	elseif key_char_lower==("v") then      
 		body_ch:send'stepover1'		
+		--motion_ch:send'stair'		
 
 
 

@@ -235,6 +235,22 @@ shared_data.camera.log = vector.zeros(1)
 --Neck yaw
 --Camera roll, pitch, yaw
 
+shared_data.legdebug={}
+shared_data.legdebug.left=vector.zeros(4) --x,y,a,z
+shared_data.legdebug.right=vector.zeros(4) --x,y,a,z
+shared_data.legdebug.torso=vector.zeros(2) --x,y
+
+shared_data.legdebug.enable_balance=vector.zeros(1) --imu based orientation stabilization
+shared_data.legdebug.enable_imu=vector.zeros(1) --imu based orientation stabilization
+shared_data.legdebug.enable_z_compliance=vector.zeros(1) 
+shared_data.legdebug.enable_a_compliance=vector.zeros(1) 
+
+shared_data.legdebug.torso_angle=vector.zeros(2) --pitch roll
+
+
+
+
+
 
 --These variables are only used for offline testing of arm states
 shared_data.state.success = vector.zeros(0)

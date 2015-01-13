@@ -242,6 +242,75 @@ function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs,a
 end
 
 
+
+
+
+
+
+function moveleg.set_leg_positions_torsoflex(uTorso,uLeft,uRight,zLeft,zRight,delta_legs,virtual_torso_angle)
+  
+  local bodyHeight = mcm.get_stance_bodyHeight()
+
+  local bodyHeightTilt = bodyHeight * math.cos(virtual_torso_angle[1])*math.cos(virtual_torso_angle[2])
+
+
+--  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
+
+  local uTorsoM=util.pose_global(
+    vector.new({
+      bodyHeight*math.sin(virtual_torso_angle[1]),
+      -bodyHeight*math.sin(virtual_torso_angle[2]),
+      0}),    uTorso)
+
+  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}), uTorsoM)
+
+  local pTorso = vector.new({
+        uTorsoActual[1], uTorsoActual[2], mcm.get_stance_bodyHeight(),
+        0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
+
+local pTorso = vector.new({
+        uTorsoActual[1], uTorsoActual[2], bodyHeightTilt,
+        virtual_torso_angle[2],virtual_torso_angle[1]+mcm.get_stance_bodyTilt(),uTorsoActual[3]})
+
+
+
+  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
+  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
+  
+
+  if aLeft then
+    pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,aLeft,uLeft[3]})
+    pRLeg = vector.new({uRight[1],uRight[2],zRight,0,aRight,uRight[3]})
+  end
+
+  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
+  local legBias = vector.new(mcm.get_leg_bias())
+
+  qLegs = qLegs + delta_legs + legBias
+
+  Body.set_lleg_command_position(vector.slice(qLegs,1,6))
+  Body.set_rleg_command_position(vector.slice(qLegs,7,12))
+
+  ------------------------------------------
+  -- Update the status in shared memory
+  local uFoot = util.se2_interpolate(.5, uLeft, uRight)
+  mcm.set_status_odometry( uFoot )
+  --util.pose_relative(uFoot, u0) for relative odometry to point u0
+  local bodyOffset = util.pose_relative(uTorso, uFoot)
+  mcm.set_status_bodyOffset( bodyOffset )
+  ------------------------------------------
+end
+
+
+
+
+
+
+
+
+
+
+
 function moveleg.set_leg_positions_ankletilt(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
 
   local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
@@ -781,6 +850,30 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 
   return delta_legs, angleShift
 end
+
+
+function moveleg.process_ft(lf_z,rf_z,lt_x,rt_x,lt_y,rt_y,  support)
+
+
+
+
+
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 return moveleg

@@ -39,7 +39,7 @@ THOROP_UPENN {
   controllerArgs "0 32"
 }
 DEF MY_TABLE Solid {
-  translation 0 1 0.6
+  translation 0 1 0.5
   children [
     Transform {
       translation 0 0 0.1
@@ -62,7 +62,7 @@ DEF MY_TABLE Solid {
   }
 }
 DEF MY_DRILL1 Solid {
-  translation 0.17 1.15 0.5
+  translation 0.2 1.15 0.35
   children [
     Shape {
       appearance Appearance {
@@ -77,18 +77,18 @@ DEF MY_DRILL1 Solid {
       }
     }
     Transform {
-      translation 0 -0.075 0
+      translation 0 -0.085 0
       children [
         Shape {
           geometry Cylinder {
-            height 0.05
+            height 0.07
             radius 0.05
           }
         }
       ]
     }
     Transform {
-      translation 0 0.06 0.03
+      translation 0 0.09 0.03
       rotation 1 0 0 1.57
       children [
         Shape {
@@ -100,7 +100,7 @@ DEF MY_DRILL1 Solid {
       ]
     }
     Transform {
-      translation 0 0.06 0.15
+      translation 0 0.085 0.15
       rotation 1 0 0 1.57
       children [
         Shape {
@@ -123,10 +123,10 @@ DEF MY_DRILL1 Solid {
         ]
       }
       Transform {
-        translation 0 -0.075 0
+        translation 0 -0.085 0
         children [
           Cylinder {
-            height 0.05
+            height 0.07
             radius 0.05
           }
         ]

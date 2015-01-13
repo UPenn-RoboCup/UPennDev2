@@ -1311,9 +1311,9 @@ Robot {
 																					#endPoint GRIPPER_PLATE {translation 0 -0.05 0}
 																					#endPoint CHOPSTICKS {translation 0 -0.05 0}
                                           endPoint GRIPPER {
-                                            translation 0 -0.05 0
-																						#translation 0 -0.075 0
-																						#rotation 0 0 -1 0.707
+                                            #translation 0 -0.05 0
+                                            translation 0 -0.095 0
+																						rotation 0 0 -1 0.707
 																						trigger_name "l_trigger"
 																						grip_name "l_grip"
 																					}

@@ -12,8 +12,8 @@ local t_entry, t_update, t_finish
 local timeout = 15.0
 
 local T = require'Transform'
-local trRGoal = T.transform6D{0.12, -0.265, -0.3, 0, 30*DEG_TO_RAD, 20*DEG_TO_RAD}
-local trLGoal = T.transform6D{0.12, 0.265, -0.3, 0, 30*DEG_TO_RAD, -20*DEG_TO_RAD}
+local trLGoal = T.transform6D{0.12, 0.24, -0.3, 0, 30*DEG_TO_RAD, -45*DEG_TO_RAD}
+local trRGoal = T.transform6D{0.12, -0.265, -0.3, 0, 30*DEG_TO_RAD, 0}
 
 local lPathIter, rPathIter
 
@@ -23,7 +23,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-	lPathIter, rPathIter = movearm.goto_tr_via_q(trLGoal, trRGoal, {5*DEG_TO_RAD}, {-5*DEG_TO_RAD})
+	lPathIter, rPathIter = movearm.goto_tr_via_q(trLGoal, trRGoal, {10*DEG_TO_RAD}, {-5*DEG_TO_RAD})
 	
 	-- Set Hardware limits in case
   for i=1,10 do

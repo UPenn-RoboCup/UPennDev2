@@ -38,13 +38,9 @@ char_lut['1'] = function()
 end
 char_lut['2'] = function()
 	arm_ch:send'ready'
-	head_ch:send'trackhand'
+  head_ch:send'teleop'
 end
 char_lut['3'] = function()
-  head_ch:send'teleop'
-  arm_ch:send'teleop'
-end
-char_lut['4'] = function()
   arm_ch:send'grab'
   head_ch:send'trackhand'
 end

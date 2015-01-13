@@ -25,7 +25,7 @@ local function alignTable()
   local xc,yc,zc = unpack(T.position6D(localCyl))
   local x,y,z = unpack(T.position6D(fkLArm))
   local trLGoal = T.transform6D{x, y, zc, 0, 0, -90*DEG_TO_RAD}
-  return movearm.goto_tr_via_q(trLGoal, nil, {trLGoal[2][4] > 0.2 and 20*DEG_TO_RAD or 70*DEG_TO_RAD}), true
+  return movearm.goto_tr_via_q(trLGoal, nil, {-20*DEG_TO_RAD}), true
 end
 
 local function faceDrill()
@@ -34,7 +34,7 @@ local function faceDrill()
   local xc,yc,zc = unpack(T.position6D(localCyl))
   local x,y,z = unpack(T.position6D(fkLArm))
   local trLGoal = T.transform6D{xc, yc + 0.10, zc, 0, 0, -90*DEG_TO_RAD}
-  return movearm.goto_tr(trLGoal, nil, {yc > 0.2 and -10*DEG_TO_RAD or 30*DEG_TO_RAD}), true
+  return movearm.goto_tr(trLGoal, nil, {-20*DEG_TO_RAD}), true
 end
 
 local function go2drill()
@@ -43,7 +43,7 @@ local function go2drill()
   local xc,yc,zc = unpack(T.position6D(localCyl))
   local x,y,z = unpack(T.position6D(fkLArm))
   local trLGoal = T.transform6D{xc, yc, zc, 0, 0, -90*DEG_TO_RAD}
-  return movearm.goto_tr(trLGoal, nil, {yc > 0.2 and -10*DEG_TO_RAD or 30*DEG_TO_RAD}), true
+  return movearm.goto_tr(trLGoal, nil, {-20*DEG_TO_RAD}), true
 end
 
 local stage2iter = {

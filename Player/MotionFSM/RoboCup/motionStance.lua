@@ -136,7 +136,7 @@ function state.update()
 local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
 local lf_z,rf_z = l_ft[3],r_ft[3]
 local lt_y,rt_y = l_ft[5],r_ft[5] 
-local lt_x,rt_x = l_ft[4],r_ft[4] 
+local lt_x,rt_x = -l_ft[4],-r_ft[4] --fixed, actual robot
 if IS_WEBOTS then  
   --FOR WEBOTS, ft sensor is rotated
   --FOR webots, torque readings are inverted too    
@@ -153,7 +153,7 @@ end
 
 if hcm.get_legdebug_enable_balance()>0 then
 
-  
+os.execute('clear')  
   print(string.format("Fz: %d %d  T_p: %d %d T_r: %d %d", lf_z,rf_z,lt_y,rt_y, lt_x,rt_x))
   
   --roll reading: positive for 
@@ -210,7 +210,7 @@ if hcm.get_legdebug_enable_balance()>0 then
 
 
 
-
+--[[
 --------------------------------------------------------------------------------------------------------
 -- Foot height differential adaptation
 
@@ -259,15 +259,27 @@ if hcm.get_legdebug_enable_balance()>0 then
   print(string.format("Zshift: %.2f %.2f cm",zShift[1]*100,zShift[2]*100))
 
   --------------------------------------------------------------------------------------------------------
-
+--]]
 
 
 
   local k_const_tx =   20 * math.pi/180 /5  --Y angular spring constant: 20 deg/s  / 5 Nm
   local r_const_tx =   0 --zero damping for now  
-  local ax_shift_db =  2 -- 2Nm deadband
+  local ax_shift_db =  1 -- 2Nm deadband
   local ax_vel_max = 30*math.pi/180 
   local ax_shift_max = 30*math.pi/180
+
+
+ k_const_tx =   30 * math.pi/180 /2  --Y angular spring constant: 20 deg/s  / 5 Nm
+
+  local ax_shift_db =  0.5 -- 2Nm deadband
+
+  local ax_vel_max = 60*math.pi/180 
+
+
+  k_const_tx =   30 * math.pi/180 /5  --Y angular spring constant: 20 deg/s  / 5 Nm
+  local ax_shift_db =  2 -- 2Nm deadband
+
 
 
 ----------------------------------------------------------------------------------------

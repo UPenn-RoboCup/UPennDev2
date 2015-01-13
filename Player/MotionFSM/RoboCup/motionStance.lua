@@ -209,41 +209,32 @@ if hcm.get_legdebug_enable_balance()>0 then
 
 
 
+
+
+--------------------------------------------------------------------------------------------------------
+-- Foot height differential adaptation
+
   local zf_touchdown = 50
-  local z_shift_max = 0.05
-  local z_shift_db = 0.01
-  local z_vel_max = 0.4 --max 10cm per sec
-  
-  k_const_z = 0.01  
+  local z_shift_max = 0.05 --max 5cm difference
+  local z_vel_max_diff = 0.4 --max 40cm per sec
+  local k_const_z_diff = 0.5 / 100  -- 50cm/s for 100 N difference
+  local z_shift_diff_db = 50 --50N deadband
+
 
   if ((lf_z<zf_touchdown and rf_z>zf_touchdown) or (lf_z>zf_touchdown and rf_z<zf_touchdown) )
     and math.abs(roll_err)<2*math.pi/180
 
     then 
     print("single foot touch, adapting")
-    local zShiftTargetDiff = (lf_z-rf_z)*k_const_z
-    --At least one foot in air, quickly adapt to make both feet touch the ground
-    zShiftTarget[1] = math.min(z_shift_max,math.max(-z_shift_max,zShiftTargetDiff))
 
-    if math.abs(zShiftTarget[1])<z_shift_db then zShiftTarget[1]=0 end
+    local zvShiftTarget = util.procFunc( (lf_z-rf_z)*k_const_z_diff , z_shift_diff_db*k_const_z_diff, z_vel_max_diff)
 
-    zShiftTarget[2] = -zShiftTarget[1]
-
-    zvShift[1] =  (zShiftTarget[1]-zShift[1])/t_diff
-    zvShift[2] =  (zShiftTarget[2]-zShift[2])/t_diff
-
-    zvShift[1]=math.min(z_vel_max,math.max(-z_vel_max,zvShift[1]))
-    zvShift[2]=math.min(z_vel_max,math.max(-z_vel_max,zvShift[2]))
-
+    zvShift[1] = zvShiftTarget
+    zvShift[2] = -zvShiftTarget
     print("adapting vel:",zvShift[1])
-
-    zShift[1] = zShift[1]+zvShift[1]*t_diff
-    zShift[2] = zShift[2]+zvShift[2]*t_diff
   else
     print("both feet touch, balancing")
     --both feet on the ground. use IMU to keep torso orientation up
-   
-   
 
     local LR_pitch_err = -(uLeftTorso[1]-uRightTorso[1])*math.tan(pitch_err)
     local LR_roll_err =  (uLeftTorso[2]-uRightTorso[2])*math.tan(roll_err)
@@ -256,49 +247,73 @@ if hcm.get_legdebug_enable_balance()>0 then
     zvShift[1] = zvShiftTarget
     zvShift[2] = -zvShiftTarget
 
-
-    print("balancing vel:",zvShift[1])
-
-    zShift[1] = zShift[1]+zvShift[1]*t_diff
-    zShift[2] = zShift[2]+zvShift[2]*t_diff
-
-    zShift[1] = math.min(z_shift_max,math.max(-z_shift_max,zShift[1]))
-    zShift[2] = math.min(z_shift_max,math.max(-z_shift_max,zShift[2]))
-
   end
+
+  print(string.format("dZ : %.1f",zvShift[1]))
+  zShift[1] = zShift[1]+zvShift[1]*t_diff
+  zShift[2] = zShift[2]+zvShift[2]*t_diff
+
+  zShift[1] = math.min(z_shift_max,math.max(-z_shift_max,zShift[1]))
+  zShift[2] = math.min(z_shift_max,math.max(-z_shift_max,zShift[2]))
 
   print(string.format("Zshift: %.2f %.2f cm",zShift[1]*100,zShift[2]*100))
 
+  --------------------------------------------------------------------------------------------------------
+
+
+
+
+  local k_const_tx =   20 * math.pi/180 /5  --Y angular spring constant: 20 deg/s  / 5 Nm
+  local r_const_tx =   0 --zero damping for now  
+  local ax_shift_db =  2 -- 2Nm deadband
+  local ax_vel_max = 30*math.pi/180 
+  local ax_shift_max = 30*math.pi/180
+
+
+----------------------------------------------------------------------------------------
+-- Ankle roll adaptation 
+
   
+  avShiftX[1] = util.procFunc(   lt_x*k_const_tx + avShiftX[1]*r_const_tx    
+      ,k_const_tx*ax_shift_db, ax_vel_max)
+  avShiftX[2] = util.procFunc(   rt_x*k_const_tx + avShiftX[2]*r_const_tx    
+      ,k_const_tx*ax_shift_db, ax_vel_max)
+  
+  aShiftX[1] = aShiftX[1]+avShiftX[1]*t_diff
+  aShiftX[2] = aShiftX[2]+avShiftX[2]*t_diff
+
+  aShiftX[1] = math.min(ax_shift_max,math.max(-ax_shift_max,aShiftX[1]))
+  aShiftX[2] = math.min(ax_shift_max,math.max(-ax_shift_max,aShiftX[2]))
+
+
+  print(string.format("dRoll: %.1f %.1f Roll: %.1f %.1f",
+    avShiftX[1]*180/math.pi,avShiftX[2]*180/math.pi,
+    aShiftX[1]*180/math.pi,aShiftX[2]*180/math.pi))   
+
+end
+
+----------------------------------------------------------------------------------------
+
+
+
 
 
 ------------------------------------------------------------------------------------------------
 
 
 
-  --make it conform to external torque
-
-  local k_const_ty =  1 *   math.pi/180   --Y angular spring constant: 10 deg / 5 Nm
-  local k_const_tx =  1 *   math.pi/180   --Y angular spring constant: 10 deg / 5 Nm
-
---for actual robot (inverted torque)
-   
-
-
+ local k_const_ty =  4 *   math.pi/180   --Y angular spring constant: 20 deg/s  / 5 Nm
   local r_const_ty =   0 --zero damping for now
-  local r_const_tx =   0 --zero damping for now  
-
   local ay_shift_max = 30*math.pi/180
   local ay_shift_db = 1*math.pi/180
   local ay_vel_max = 30*math.pi/180 
 
-  local ax_shift_max = 30*math.pi/180
-  local ax_shift_db = 1*math.pi/180
-  local ax_vel_max = 30*math.pi/180 
 
 
 --adapt ankle pitch angles
 ----------------------------------------------------------------------------------------
+
+--[[
 
   local adaptive_torque_max = 10
   local balancing_torque = pitch_err/(3*math.pi/180) * 0.5
@@ -308,6 +323,8 @@ if hcm.get_legdebug_enable_balance()>0 then
 
 --Check pitch controllability with height modification
   local LR_spread_angle = math.abs((uLeftTorso[1]-uRightTorso[1])/(uLeftTorso[2]-uRightTorso[2]))
+
+
 
 
 
@@ -363,36 +380,14 @@ if hcm.get_legdebug_enable_balance()>0 then
 
   print(string.format("Ashift: %.1f %.1f deg",aShiftY[1]*180/math.pi,aShiftY[2]*180/math.pi))   
 
-----------------------------------------------------------------------------------------
+--]]
 
 
-  --Always adapt ankle roll angles (as they are spreaded)
-
-  local aShiftModX1=(lt_x)*k_const_tx + avShiftX[1]*r_const_tx
-  local aShiftModX2=(rt_x)*k_const_tx + avShiftX[2]*r_const_tx
-
-  if math.abs(aShiftModX1)<ax_shift_db then aShiftModX1=0 end
-  if math.abs(aShiftModX2)<ax_shift_db then aShiftModX2=0 end
-
-  aShiftTargetX[1] = aShiftX[1] + aShiftModX1
-  aShiftTargetX[2] = aShiftX[2] + aShiftModX2
-
-  aShiftTargetX[1] = math.min(ax_shift_max,math.max(-ax_shift_max,aShiftTargetX[1]))
-  aShiftTargetX[2] = math.min(ax_shift_max,math.max(-ax_shift_max,aShiftTargetX[2]))
-
-  avShiftX[1] =  (aShiftTargetX[1]-aShiftX[1])/t_diff
-  avShiftX[2] =  (aShiftTargetX[2]-aShiftX[2])/t_diff
-
-  avShiftX[1]=math.min(ax_vel_max,math.max(-ax_vel_max,avShiftX[1]))
-  avShiftX[2]=math.min(ax_vel_max,math.max(-ax_vel_max,avShiftX[2]))
-
-  aShiftX[1] = aShiftX[1]+avShiftX[1]*t_diff
-  aShiftX[2] = aShiftX[2]+avShiftX[2]*t_diff
 
 
-print(string.format("Rshift: %.1f %.1f deg",aShiftX[1]*180/math.pi,aShiftX[2]*180/math.pi))   
 
-end
+
+
 
 virtual_torso_angle={0,0}
 

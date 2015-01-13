@@ -17,6 +17,7 @@ local sin, cos = require'math'.sin, require'math'.cos
 local asin, acos = require'math'.asin, require'math'.acos
 local sqrt, atan2, atan = require'math'.sqrt, require'math'.atan2, require'math'.atan
 local PI = require'math'.pi
+local TWO_PI = 2 * PI
 local min, max = require'math'.min, require'math'.max
 -- Arm constants
 local shoulderOffsetX = 0;    
@@ -44,6 +45,22 @@ local dThigh = sqrt(thighLength*thighLength+kneeOffsetX*kneeOffsetX)
 local aThigh = atan(kneeOffsetX/thighLength)
 local dTibia = sqrt(tibiaLength*tibiaLength+kneeOffsetX*kneeOffsetX)
 local aTibia = atan(kneeOffsetX/tibiaLength)
+
+-- Sanitize to avoid trouble with wrist yaw
+local fabs = math.abs
+local function mod_angle(a)
+  -- Reduce angle to [-pi, pi)
+  local b = a % TWO_PI
+  return b>=PI and (b - TWO_PI) or b
+end
+function K.sanitize(iqArm, cur_qArm)
+	local diff, mod_diff
+	for i, v in ipairs(cur_qArm) do
+		diff = iqArm[i] - v
+		mod_diff = mod_angle(diff)
+    iqArm[i] = (fabs(diff) > fabs(mod_diff)) and v + mod_diff or iqArm[i]
+	end
+end
 
 local function fk_arm(q)
 	local c1, s1 = cos(q[1]), sin(q[1])

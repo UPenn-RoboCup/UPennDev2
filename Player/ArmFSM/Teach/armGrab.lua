@@ -20,38 +20,36 @@ local function get_local_cylinder()
 end
 
 local function alignTable()
-  -- Grab the hcm input
-  local localCyl = get_local_cylinder()
-  -- Grab our current coords
-  local fkLArm = K.forward_larm(Body.get_larm_position())
-  local z_now, z_later = fkLArm[3][4], localCyl[3][4]
-  --local y_now, y_later = fkLArm[2][4], localCyl[2][4]
-  local trLGoal = T.trans(0,0,z_later - z_now) * fkLArm
-  -- Keep the x for now, to avoid the table
-  --trLGoal[1][4] = fkLArm[1][4]
-  return movearm.goto_tr_via_q(trLGoal, nil, {trLGoal[2][4] > 0.2 and 20*DEG_TO_RAD or 50*DEG_TO_RAD}), true
-end
-
-local function faceDrill()
-  -- Grab the hcm input
   local localCyl = get_local_cylinder()
   local fkLArm = K.forward_larm(Body.get_larm_position())
   local xc,yc,zc = unpack(T.position6D(localCyl))
   local x,y,z = unpack(T.position6D(fkLArm))
-  local trLGoal = T.trans(0, yc - y + 0.10, 0) * fkLArm
-  return movearm.goto_tr(trLGoal, nil, {yc > 0.2 and -10*DEG_TO_RAD or 50*DEG_TO_RAD}), false
+  local trLGoal = T.transform6D{x, y, zc, 0, 0, -90*DEG_TO_RAD}
+  return movearm.goto_tr_via_q(trLGoal, nil, {trLGoal[2][4] > 0.2 and 20*DEG_TO_RAD or 70*DEG_TO_RAD}), true
+end
+
+local function faceDrill()
+  local localCyl = get_local_cylinder()
+  local fkLArm = K.forward_larm(Body.get_larm_position())
+  local xc,yc,zc = unpack(T.position6D(localCyl))
+  local x,y,z = unpack(T.position6D(fkLArm))
+  local trLGoal = T.transform6D{xc, yc + 0.10, zc, 0, 0, -90*DEG_TO_RAD}
+  return movearm.goto_tr(trLGoal, nil, {yc > 0.2 and -10*DEG_TO_RAD or 30*DEG_TO_RAD}), true
 end
 
 local function go2drill()
-  -- Grab the hcm input
   local localCyl = get_local_cylinder()
-  return movearm.goto_tr(localCyl, nil, {localCyl[2][4] > 0.2 and 20*DEG_TO_RAD or 50*DEG_TO_RAD}), false
+  local fkLArm = K.forward_larm(Body.get_larm_position())
+  local xc,yc,zc = unpack(T.position6D(localCyl))
+  local x,y,z = unpack(T.position6D(fkLArm))
+  local trLGoal = T.transform6D{xc, yc, zc, 0, 0, -90*DEG_TO_RAD}
+  return movearm.goto_tr(trLGoal, nil, {yc > 0.2 and -10*DEG_TO_RAD or 30*DEG_TO_RAD}), true
 end
 
 local stage2iter = {
   alignTable,
   faceDrill,
-  --go2drill
+  go2drill
 }
 
 function state.entry()

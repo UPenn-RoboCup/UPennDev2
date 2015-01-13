@@ -3,8 +3,10 @@
 pcall(dofile,'fiddle.lua')
 pcall(dofile, '../fiddle.lua')
 
-local K = require'K_ffi'
 local T = require'Transform'
+local K = require'K_ffi'
+local sanitize = K.sanitize
+
 local narm = #Body.get_larm_position()
 local selected_arm = 0 -- left to start
 
@@ -38,26 +40,15 @@ char_lut['2'] = function()
 	arm_ch:send'ready'
 	head_ch:send'trackhand'
 end
-lower_lut['3'] = function()
+char_lut['3'] = function()
   head_ch:send'teleop'
   arm_ch:send'teleop'
 end
-lower_lut['4'] = function()
+char_lut['4'] = function()
   arm_ch:send'grab'
   head_ch:send'trackhand'
 end
 
--- Sanitize to avoid trouble with wrist yaw
-local fabs = math.abs
-local mod_angle = require'util'.mod_angle
-local function sanitize(iqArm, cur_qArm)
-	local diff, mod_diff
-	for i, v in ipairs(cur_qArm) do
-		diff = iqArm[i] - v
-		mod_diff = mod_angle(diff)
-		if fabs(diff) > fabs(mod_diff) then iqArm[i] = v + mod_diff end
-	end
-end
 char_lut['g'] = function()
   if selected_arm==0 then
     local qLArm = hcm.get_teleop_larm()
@@ -65,15 +56,14 @@ char_lut['g'] = function()
 		local tr = K.forward_larm(qLArm)
 		local iqArm = K.inverse_larm(tr, qLArm, qLArm[3] - DEG_TO_RAD)
 		local itr = K.forward_larm(iqArm)
-		--sanitize(iqArm, qLArm)
-    --print('Post',vectoriqLArm*RAD_TO_DEG)
+		sanitize(iqArm, qLArm)
 		hcm.set_teleop_larm(iqArm)
   else
     local qRArm = hcm.get_teleop_rarm()
 		local tr = K.forward_rarm(qRArm)
 		local iqArm = K.inverse_rarm(tr, qRArm, qRArm[3] - DEG_TO_RAD)
 		local itr = K.forward_rarm(iqArm)
-		--sanitize(iqArm, qRArm)
+		sanitize(iqArm, qRArm)
 		hcm.set_teleop_rarm(iqArm)
   end
 end

@@ -15,7 +15,7 @@ local function get_local_cylinder()
   local cyl = hcm.get_assist_cylinder()
   local xc, yc, zc, r, h = unpack(cyl)
   local globalCyl = T.trans(xc, yc, zc)
-  local globalTorso = T.from_rpy_trans(-Body.get_rpy(), {0,0,mcm.get_walk_bodyHeight()})
+  local globalTorso = T.from_rpy_trans(Body.get_rpy(), {0,0,mcm.get_walk_bodyHeight()})
   return T.inv(globalTorso) * globalCyl
 end
 

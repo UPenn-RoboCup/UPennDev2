@@ -45,7 +45,7 @@ if ENABLE_LOG then
 end
 
 local metadata = {
-	name = 'mesh0',
+	id = 'mesh0',
 	t = 0,
 }
 

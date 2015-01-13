@@ -2,7 +2,6 @@ local state = {}
 state._NAME = ...
 local Body = require'Body'
 local vector = require'vector'
-local util   = require'util'
 local movearm = require'movearm'
 local t_entry, t_update, t_finish
 local timeout = 10.0
@@ -27,18 +26,13 @@ function state.update()
   local dt = t - t_update
   t_update = t
   if t-t_entry > timeout then return'timeout' end
-	-- Check the current for collisions
-	--print('L Current', Body.get_larm_current()*1)
-	--print('R Current', Body.get_rarm_current()*1)
-	-- Plan the next joint position
-	
 	-- Timing necessary
-	--[[
+	----[[
 	local qLArm = Body.get_larm_command_position()
 	local moreL, q_lWaypoint = lPathIter(qLArm, dt)
 	--]]
 	-- No time needed
-	----[[
+	--[[
 	local qLArm = Body.get_larm_position()
 	local moreL, q_lWaypoint = lPathIter(qLArm)
 	--]]

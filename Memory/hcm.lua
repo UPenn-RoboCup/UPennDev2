@@ -10,7 +10,15 @@ local shared_data = {}
 local shared_data_sz = {}
 
 shared_data.teleop = {
-  head = zeros(2)
+  head = zeros(2),
+  -- Assume 7DOF arm
+  larm = zeros(7),
+  rarm = zeros(7),
+}
+
+shared_data.assist = {
+  -- Cylinder: [x center, y center, z center, radius, height]
+  cylinder = zeros(5),
 }
 
 shared_data.guidance={}

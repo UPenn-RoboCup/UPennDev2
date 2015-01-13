@@ -35,7 +35,7 @@ function state.update()
   local apprAng, doneHead = util.approachTol(headNow, headAngles, headSpeed, dt, headThresh)
 	
   -- Update the motors
-	Body.set_head_command_position(apprAng)
+	Body.set_head_command_position(doneHead and headAngles or apprAng)
   
 end
 

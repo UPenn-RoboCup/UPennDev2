@@ -17,18 +17,19 @@ local sin, cos = require'math'.sin, require'math'.cos
 local asin, acos = require'math'.asin, require'math'.acos
 local sqrt, atan2, atan = require'math'.sqrt, require'math'.atan2, require'math'.atan
 local PI = require'math'.pi
+local TWO_PI = 2 * PI
 local min, max = require'math'.min, require'math'.max
 -- Arm constants
 local shoulderOffsetX = 0;    
 local shoulderOffsetY = 0.234;
 local shoulderOffsetZ = 0.165;
 local upperArmLength = 0.246;
-local elbowOffsetX = 0.030; 
+local elbowOffsetX = 0.030;
 --local lowerArmLength = 0.186; -- Default 7DOF arm
 local lowerArmLength = 0.250; -- LONGARM model
 -- Gripper of no appendage - just the plate
-local handOffsetX = 0.245;
-local handOffsetY = 0.035;
+local handOffsetX = 0.125;--0.245;
+local handOffsetY = 0;--0.035;
 local handOffsetZ = 0;
 -- Leg constants
 local hipOffsetX = 0
@@ -44,6 +45,22 @@ local dThigh = sqrt(thighLength*thighLength+kneeOffsetX*kneeOffsetX)
 local aThigh = atan(kneeOffsetX/thighLength)
 local dTibia = sqrt(tibiaLength*tibiaLength+kneeOffsetX*kneeOffsetX)
 local aTibia = atan(kneeOffsetX/tibiaLength)
+
+-- Sanitize to avoid trouble with wrist yaw
+local fabs = math.abs
+local function mod_angle(a)
+  -- Reduce angle to [-pi, pi)
+  local b = a % TWO_PI
+  return b>=PI and (b - TWO_PI) or b
+end
+function K.sanitize(iqArm, cur_qArm)
+	local diff, mod_diff
+	for i, v in ipairs(cur_qArm) do
+		diff = iqArm[i] - v
+		mod_diff = mod_angle(diff)
+    iqArm[i] = (fabs(diff) > fabs(mod_diff)) and v + mod_diff or iqArm[i]
+	end
+end
 
 local function fk_arm(q)
 	local c1, s1 = cos(q[1]), sin(q[1])
@@ -66,8 +83,8 @@ local trans_upper = Ttrans(upperArmLength, 0, elbowOffsetX)
 local trans_lower = Ttrans(lowerArmLength, 0, -elbowOffsetX)
 local dUpperArm = sqrt(upperArmLength^2 + elbowOffsetX^2)
 local dLowerArm = sqrt(lowerArmLength^2 + elbowOffsetX^2)
-local aUpperArm = require'math'.atan(elbowOffsetX / upperArmLength)
-local aLowerArm = require'math'.atan(elbowOffsetX / lowerArmLength)
+local aUpperArm = atan(elbowOffsetX / upperArmLength)
+local aLowerArm = atan(elbowOffsetX / lowerArmLength)
 local aElbowMax = -1*(aUpperArm + aLowerArm)
 -- Assume left arm
 local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
@@ -163,7 +180,8 @@ local preLArm, postLArm = Ttrans(shoulderOffsetX, shoulderOffsetY, shoulderOffse
 function K.forward_larm(qLArm)
 	return preLArm * fk_arm(qLArm) * postLArm, {qLArm[3]}
 end
-local preRArm, postRArm = Ttrans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, handOffsetY, handOffsetZ) * TrotZ(-45*DEG_TO_RAD)
+local preRArm, postRArm = Ttrans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, handOffsetY, handOffsetZ)
+-- * TrotZ(-45*DEG_TO_RAD)
 function K.forward_rarm(qRArm)
 	return preRArm * fk_arm(qRArm) * postRArm, {qRArm[3]}
 end

@@ -36,7 +36,7 @@ local flatten = T.flatten
 local tNeck = trans(unpack(Config.head.neckOffset))
 -- Mounting of Kinect from the neck axes
 --local tKinect = trans(unpack(cfg.mountOffset))
-local tKinect = from_rpy_trans({4*DEG_TO_RAD, 0, 0}, cfg.mountOffset)
+local tKinect = from_rpy_trans(unpack(cfg.mountOffset))
 
 -- Next rotation
 local function get_transform(head_angles, imu_rpy, body_height)

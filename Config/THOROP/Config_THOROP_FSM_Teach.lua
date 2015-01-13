@@ -38,10 +38,17 @@ fsm.Head = {
 	--
   {'headCenter', 'trackhand', 'headTrackHand'},
   {'headCenter', 'teleop', 'headTeleop'},
+  --
+  {'headTrackHand', 'init', 'headCenter'},
+  {'headTrackHand', 'teleop', 'headTeleop'},
+  --
+  {'headTeleop', 'init', 'headCenter'},
+  {'headTeleop', 'trackhand', 'headTrackHand'},
 }
 
 fsm.Lidar = {
   {'lidarIdle', 'pan', 'lidarPan'},
+  --
   {'lidarPan', 'switch', 'lidarPan'},
   {'lidarPan', 'stop', 'lidarIdle'},
 }
@@ -61,6 +68,7 @@ fsm.Arm = {
   {'armReady', 'timeout', 'armReady'},
   {'armReady', 'done', 'armTeleop'},
   {'armReady', 'teleop', 'armTeleop'},
+  {'armReady', 'grab', 'armGrab'},
   -- Teleop
   {'armTeleop', 'timeout', 'armTeleop'},
   {'armTeleop', 'teleop', 'armTeleop'},
@@ -68,10 +76,17 @@ fsm.Arm = {
   {'armTeleop', 'init', 'armInit'},
   {'armTeleop', 'ready', 'armReady'},
   {'armTeleop', 'poke', 'armPoke'},
+  {'armTeleop', 'grab', 'armGrab'},
   -- Poke
   {'armPoke', 'timeout', 'armPoke'},
   {'armPoke', 'done', 'armTeleop'},
   {'armPoke', 'touch', 'armTeleop'},
+  -- Grab
+  {'armGrab', 'timeout', 'armGrab'},
+  {'armGrab', 'done', 'armTeleop'},
+  {'armGrab', 'teleop', 'armTeleop'},
+  {'armGrab', 'ready', 'armReady'},
+  {'armGrab', 'init', 'armInit'},
 }
 
 ----[[

@@ -130,7 +130,10 @@ local function update(key_code)
 
 			print("Balance:",unpack(hcm.get_legdebug_enable_balance()))
 
-
+		elseif key_char_lower==("4") then
+			local enable_gyro = hcm.get_legdebug_enable_gyro()
+			hcm.set_legdebug_enable_gyro(1-enable_gyro)
+			print("Gyro:",hcm.get_legdebug_enable_gyro())
 
 		elseif key_char_lower==("8") then  
 			motion_ch:send'stand'

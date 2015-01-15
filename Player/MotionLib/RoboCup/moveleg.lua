@@ -770,6 +770,9 @@ function moveleg.get_leg_compensation_simple(supportLeg, phSingle, gyro_rpy,angl
   local gyro_pitch = gyro_rpy[2]
   local gyro_roll = gyro_rpy[1]
 
+  local enable_gyro = hcm.get_legdebug_enable_gyro()
+  if enable_gyro>0 then gyro_pitch,gyro_roll = 0,0 end
+
   -- Ankle feedback
   local ankleShiftX = util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4])
   local ankleShiftY = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])

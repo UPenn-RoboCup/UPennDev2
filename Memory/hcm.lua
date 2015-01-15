@@ -241,6 +241,7 @@ shared_data.legdebug.right=vector.zeros(4) --x,y,a,z
 shared_data.legdebug.torso=vector.zeros(2) --x,y
 
 shared_data.legdebug.enable_balance=vector.zeros(2) --imu based orientation stabilization
+shared_data.legdebug.enable_gyro=vector.zeros(1) --imu based orientation stabilization
 
 
 shared_data.legdebug.enable_imu=vector.zeros(1) --imu based orientation stabilization

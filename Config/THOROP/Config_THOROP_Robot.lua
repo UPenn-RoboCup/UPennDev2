@@ -245,7 +245,7 @@ servo.direction = vector.new({
 
 -- TODO: Offset in addition to bias?
 servo.rad_offset = vector.new({
-  0,0, -- Head
+  0,140.41837037037, -- Head
   -90,90,-90,45,90,0,0, --LArm
   0,0,0,-45,0,0, --LLeg
   0,0,0,45,0,0, --RLeg
@@ -342,6 +342,7 @@ if Config.USE_DUMMY_ARMS then
 		-1, -- Lidar pan
 	})
 	--
+	print('DUMMY ARMS RAD OFFSET')
 	servo.rad_offset = vector.new({
 		-180,135, -- Head
 		0, -90, --LArm

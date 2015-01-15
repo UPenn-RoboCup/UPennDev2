@@ -154,7 +154,7 @@ local kinect = {
   detection = 'MultiValve',
 	lut = 'multi_valve',
   mountOffset = {
-    {0,0,0}, -- RPY
+    {3*DEG_TO_RAD,-3*DEG_TO_RAD,0}, -- RPY
     {0.03,0,0.08} -- translaction
   }
 }

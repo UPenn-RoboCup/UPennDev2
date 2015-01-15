@@ -41,7 +41,7 @@ local tKinect = from_rpy_trans(unpack(cfg.mountOffset))
 -- Next rotation
 local function get_transform(head_angles, imu_rpy, body_height)
   -- {yaw, pitch}
-  return from_rpy_trans({-0*imu_rpy[1], imu_rpy[2], 0}, {0, 0, body_height}) * tNeck * rotZ(head_angles[1]) * rotY(head_angles[2]) * tKinect
+  return from_rpy_trans({imu_rpy[1], imu_rpy[2], 0}, {0, 0, body_height}) * tNeck * rotZ(head_angles[1]) * rotY(head_angles[2]) * tKinect
 end
 
 --local has_detection, detection = pcall(require, cfg.detection)

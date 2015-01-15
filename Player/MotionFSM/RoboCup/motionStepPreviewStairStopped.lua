@@ -20,6 +20,7 @@ local t_entry, t_update, t_last_step
 -- Save gyro stabilization variables between update cycles
 -- They are filtered.  TODO: Use dt in the filters
 local angleShift = vector.new{0,0,0,0}
+local delta_legs = vector.zeros(12)
 
 ---------------------------
 -- State machine methods --
@@ -37,10 +38,25 @@ function state.entry()
 end
 
 function state.update()
+  local t = Body.get_time()
+  local t_diff = t - t_update
+  -- Save this at the last update time
+  t_update = t
 
   if mcm.get_stance_singlesupport()==0 then
     return "done"
   end
+
+  local uTorso = mcm.get_status_uTorso()  
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  local uTorsoComp = mcm.get_stance_uTorsoComp()
+  local uTorsoCompensated = util.pose_global(
+     {uTorsoComp[1],uTorsoComp[2],0},uTorso)
+  moveleg.ft_compensate(t_diff)
+
+  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,0,0,delta_legs)
+
 end -- walk.update
 
 function state.exit()

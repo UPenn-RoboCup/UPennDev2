@@ -203,6 +203,13 @@ function state.exit()
   mcm.set_stance_uTorsoComp({0,0})
   mcm.set_status_iskneeling(0)
 
+  mcm.set_walk_zShift({0,0})
+  mcm.set_walk_zvShift({0,0})
+  mcm.set_walk_aShiftX({0,0})
+  mcm.set_walk_avShiftX({0,0})
+  mcm.set_walk_aShiftY({0,0})
+  mcm.set_walk_avShiftY({0,0})
+
   local pg = Config.walk.leg_p_gain or 64
   local ag = Config.walk.ankle_p_gain or 64
 

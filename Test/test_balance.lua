@@ -49,9 +49,7 @@ local command2=
 local command1, command2 = '',''  
 
 local function show_status()
-	if not IS_WEBOTS then os.execute('clear') end
-  print("Game role:",gcm.get_game_role())
-  print("Game state:",gcm.get_game_state())
+	--[[
 
   local outstring=''
 --  if gcm.get_game_state()==6 then --Testing state
@@ -72,6 +70,7 @@ local function show_status()
   end
  
   print(outstring)
+--]]  
 end
 
 local function update(key_code)
@@ -118,10 +117,18 @@ local function update(key_code)
 			body_ch:send'init'
 	
 		elseif key_char_lower==("2") then
+			local enable_balance = hcm.get_legdebug_enable_balance()	
 			hcm.set_legdebug_enable_balance(
-				1-hcm.get_legdebug_enable_balance())
-			
+				{1-enable_balance[1],enable_balance[2]})
 
+			print("Balance:",unpack(hcm.get_legdebug_enable_balance()))			
+							
+		elseif key_char_lower==("3") then
+			local enable_balance = hcm.get_legdebug_enable_balance()
+			hcm.set_legdebug_enable_balance(
+				{enable_balance[1],1-enable_balance[2]})
+
+			print("Balance:",unpack(hcm.get_legdebug_enable_balance()))
 
 
 
@@ -166,8 +173,6 @@ if ... and type(...)=='string' then
 	return {entry=nil, update=update, exit=nil}
 end
 
-print("Game role:",gcm.get_game_role())
-print("Game state:",gcm.get_game_state())
 
 local getch = require'getch'
 local running = true

@@ -151,95 +151,6 @@ end
 
 
 
---Robotis style simple feedback
-function moveleg.get_leg_compensation_simple(supportLeg, phSingle, gyro_rpy,angleShift)
-  local gyro_pitch = gyro_rpy[2]
-  local gyro_roll = gyro_rpy[1]
-
-  -- Ankle feedback
-  local ankleShiftX = util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4])
-  local ankleShiftY = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])
-
-  -- Ankle shift is filtered... thus a global
-  angleShift[1] = angleShift[1] + ankleImuParamX[1]*(ankleShiftX-angleShift[1])
-  angleShift[2] = angleShift[2] + ankleImuParamY[1]*(ankleShiftY-angleShift[2])
-
-  -- Knee feedback
-  local kneeShiftX = util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4])
-  angleShift[3] = angleShift[3] + kneeImuParamX[1]*(kneeShiftX-angleShift[3])
-
-  -- Hip feedback
-  local hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
-  angleShift[4] = angleShift[4]+hipImuParamY[1]*(hipShiftY-angleShift[4])
-
-  local delta_legs = vector.zeros(12)
-  -- Change compensation in the beginning of the phase (first 10%)
-  -- Saturate compensation afterwards
-  -- Change compensation at the beginning of the phase (first 10%)
-  -- Same sort of trapezoid at double->single->double support shape
-  local phComp = 10 * math.min( phSingle, .1, 1-phSingle )
-
-  delta_legs[4] = angleShift[3]
-  delta_legs[5] = angleShift[1]
-
-  delta_legs[10] = angleShift[3]
-  delta_legs[11] = angleShift[1]
-
- delta_legs[2] = angleShift[4]
- delta_legs[6] = angleShift[2]
-  delta_legs[8]  = angleShift[4]
-  delta_legs[12] = angleShift[2]
-  --[[
-  if supportLeg == 0 then -- Left support
-    delta_legs[2] = angleShift[4]
-    delta_legs[2] = delta_legs[2] + hipRollCompensation*phComp
-    delta_legs[6] = angleShift[2]
-  elseif supportLeg==1 then    -- Right support
-    delta_legs[8]  = angleShift[4]
-    delta_legs[8]  = delta_legs[8] - hipRollCompensation*phComp
-    delta_legs[12] = angleShift[2]
-  elseif supportLeg==2 then
-
-  end
-  --]]
-
---  print('Ankle shift',angleShift[1]*Body.RAD_TO_DEG )
-
-  return delta_legs, angleShift
-end
-
-
-function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs,aLeft,aRight)
-  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
-  local pTorso = vector.new({
-        uTorsoActual[1], uTorsoActual[2], mcm.get_stance_bodyHeight(),
-        0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
-  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
-  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
-  
-
-  if aLeft then
-    pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,aLeft,uLeft[3]})
-    pRLeg = vector.new({uRight[1],uRight[2],zRight,0,aRight,uRight[3]})
-  end
-
-  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
-  local legBias = vector.new(mcm.get_leg_bias())
-
-  qLegs = qLegs + delta_legs + legBias
-
-  Body.set_lleg_command_position(vector.slice(qLegs,1,6))
-  Body.set_rleg_command_position(vector.slice(qLegs,7,12))
-
-  ------------------------------------------
-  -- Update the status in shared memory
-  local uFoot = util.se2_interpolate(.5, uLeft, uRight)
-  mcm.set_status_odometry( uFoot )
-  --util.pose_relative(uFoot, u0) for relative odometry to point u0
-  local bodyOffset = util.pose_relative(uTorso, uFoot)
-  mcm.set_status_bodyOffset( bodyOffset )
-  ------------------------------------------
-end
 
 
 
@@ -247,59 +158,9 @@ end
 
 
 
-function moveleg.set_leg_positions_torsoflex(uTorso,uLeft,uRight,zLeft,zRight,delta_legs,virtual_torso_angle)
-  
-  local bodyHeight = mcm.get_stance_bodyHeight()
-
-  local bodyHeightTilt = bodyHeight * math.cos(virtual_torso_angle[1])*math.cos(virtual_torso_angle[2])
-
-
---  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
-
-  local uTorsoM=util.pose_global(
-    vector.new({
-      bodyHeight*math.sin(virtual_torso_angle[1]),
-      -bodyHeight*math.sin(virtual_torso_angle[2]),
-      0}),    uTorso)
-
-  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}), uTorsoM)
-
-  local pTorso = vector.new({
-        uTorsoActual[1], uTorsoActual[2], mcm.get_stance_bodyHeight(),
-        0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
-
-local pTorso = vector.new({
-        uTorsoActual[1], uTorsoActual[2], bodyHeightTilt,
-        virtual_torso_angle[2],virtual_torso_angle[1]+mcm.get_stance_bodyTilt(),uTorsoActual[3]})
 
 
 
-  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
-  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
-  
-
-  if aLeft then
-    pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,aLeft,uLeft[3]})
-    pRLeg = vector.new({uRight[1],uRight[2],zRight,0,aRight,uRight[3]})
-  end
-
-  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
-  local legBias = vector.new(mcm.get_leg_bias())
-
-  qLegs = qLegs + delta_legs + legBias
-
-  Body.set_lleg_command_position(vector.slice(qLegs,1,6))
-  Body.set_rleg_command_position(vector.slice(qLegs,7,12))
-
-  ------------------------------------------
-  -- Update the status in shared memory
-  local uFoot = util.se2_interpolate(.5, uLeft, uRight)
-  mcm.set_status_odometry( uFoot )
-  --util.pose_relative(uFoot, u0) for relative odometry to point u0
-  local bodyOffset = util.pose_relative(uTorso, uFoot)
-  mcm.set_status_bodyOffset( bodyOffset )
-  ------------------------------------------
-end
 
 
 
@@ -852,24 +713,308 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 end
 
 
-function moveleg.process_ft(lf_z,rf_z,lt_x,rt_x,lt_y,rt_y,  support)
 
 
+function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs,aLeft,aRight)
 
 
+  local zShift=mcm.get_walk_zShift()
+  local aShiftX=mcm.get_walk_aShiftX()
+  local aShiftY=mcm.get_walk_aShiftY()
 
+  zLeft = zLeft + zShift[1]
+  zRight = zRight + zShift[2]
+
+
+  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
+  local pTorso = vector.new({
+        uTorsoActual[1], uTorsoActual[2], mcm.get_stance_bodyHeight(),
+        0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
+  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
+  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
+  
+
+  if aLeft then
+    pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,aLeft,uLeft[3]})
+    pRLeg = vector.new({uRight[1],uRight[2],zRight,0,aRight,uRight[3]})
+  end
+
+  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
+  local legBias = vector.new(mcm.get_leg_bias())
+
+  qLegs = qLegs + delta_legs + legBias
+
+  qLegs[5]=qLegs[5]+aShiftY[1]
+  qLegs[11]=qLegs[11]+aShiftY[2]
+  qLegs[6]=qLegs[6]+aShiftX[1]
+  qLegs[12]=qLegs[12]+aShiftX[2]
+
+
+  Body.set_lleg_command_position(vector.slice(qLegs,1,6))
+  Body.set_rleg_command_position(vector.slice(qLegs,7,12))
+
+  ------------------------------------------
+  -- Update the status in shared memory
+  local uFoot = util.se2_interpolate(.5, uLeft, uRight)
+  mcm.set_status_odometry( uFoot )
+  --util.pose_relative(uFoot, u0) for relative odometry to point u0
+  local bodyOffset = util.pose_relative(uTorso, uFoot)
+  mcm.set_status_bodyOffset( bodyOffset )
+  ------------------------------------------
+end
+
+
+--Robotis style simple feedback
+function moveleg.get_leg_compensation_simple(supportLeg, phSingle, gyro_rpy,angleShift)
+
+  local gyro_pitch = gyro_rpy[2]
+  local gyro_roll = gyro_rpy[1]
+
+  -- Ankle feedback
+  local ankleShiftX = util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4])
+  local ankleShiftY = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])
+
+  -- Ankle shift is filtered... thus a global
+  angleShift[1] = angleShift[1] + ankleImuParamX[1]*(ankleShiftX-angleShift[1])
+  angleShift[2] = angleShift[2] + ankleImuParamY[1]*(ankleShiftY-angleShift[2])
+
+  -- Knee feedback
+  local kneeShiftX = util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4])
+  angleShift[3] = angleShift[3] + kneeImuParamX[1]*(kneeShiftX-angleShift[3])
+
+  -- Hip feedback
+  local hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
+  angleShift[4] = angleShift[4]+hipImuParamY[1]*(hipShiftY-angleShift[4])
+
+  local delta_legs = vector.zeros(12)
+  -- Change compensation in the beginning of the phase (first 10%)
+  -- Saturate compensation afterwards
+  -- Change compensation at the beginning of the phase (first 10%)
+  -- Same sort of trapezoid at double->single->double support shape
+  local phComp = 10 * math.min( phSingle, .1, 1-phSingle )
+
+  delta_legs[4] = angleShift[3]
+  delta_legs[5] = angleShift[1]
+
+  delta_legs[10] = angleShift[3]
+  delta_legs[11] = angleShift[1]
+
+  delta_legs[2] = angleShift[4]
+  delta_legs[6] = angleShift[2]
+  delta_legs[8]  = angleShift[4]
+  delta_legs[12] = angleShift[2]
+
+  return delta_legs, angleShift
+end
+
+
+function moveleg.ft_compensate(t_diff)
+
+  local enable_balance = hcm.get_legdebug_enable_balance()
+  local ft,imu = moveleg.get_ft()
+
+  if enable_balance[1]+enable_balance[2]>0 then
+    print()
+
+    print(string.format("%d%d Fz: %d %d  T_p: %d %d T_r: %d %d", 
+      enable_balance[1],enable_balance[2],
+      ft.lf_z,ft.rf_z,ft.lt_y,ft.rt_y, ft.lt_x,ft.rt_x))
+    print(string.format("angle: %.1f p %.1f",imu.roll_err*180/math.pi, imu.pitch_err*180/math.pi))
+  end
+
+
+--[[
+  local t = Body.get_time()
+  local t_last = mcm.get_walk_t_last()
+  local t_diff = t-t_last
+  mcm.set_walk_t_last(t)
+--]]
+
+  moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
+  moveleg.process_ft_roll(ft,t_diff) -- roll adaptation
+  moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
 
 end
 
 
+function moveleg.get_ft()
+  local y_angle_zero = 3*math.pi/180
+
+  local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()  
+  local ft= {
+    lf_z=l_ft[3],
+    rf_z=r_ft[3],
+    lt_x=-l_ft[4],
+    rt_x=-r_ft[4],
+    lt_y=l_ft[5],
+    rt_Y=r_ft[5]
+  }
+  if IS_WEBOTS then
+    ft.lt_y, ft.rt_y = -l_ft[4],-r_ft[5]      
+    ft.lt_x,ft.rt_x = -l_ft[5],-r_ft[4] 
+  end
+  local rpy = Body.get_rpy()
+  local gyro, gyro_t = Body.get_gyro()
+  local imu={
+    roll_err = rpy[1],
+    pitch_err = rpy[2]-y_angle_zero,
+    v_roll = gyro[1],
+    v_pitch = gyro[2]
+  }
+  return ft,imu
+end
 
 
 
+function moveleg.process_ft_height(ft,imu,t_diff)
+  --------------------------------------------------------------------------------------------------------
+  -- Foot height differential adaptation
+
+  local zf_touchdown = 50
+  local z_shift_max = 0.05 --max 5cm difference
+  local z_vel_max_diff = 0.4 --max 40cm per sec
+  local z_vel_max_balance = 0.05 --max 5cm per sec
+  local k_const_z_diff = 0.5 / 100  -- 50cm/s for 100 N difference
+  local z_shift_diff_db = 50 --50N deadband
+  local k_balancing = 0.4 
 
 
+  local enable_balance = hcm.get_legdebug_enable_balance()
+
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  local uTorso = mcm.get_status_uTorso()  
+
+  local uLeftTorso = util.pose_relative(uLeft,uTorso)
+  local uRightTorso = util.pose_relative(uRight,uTorso)
+
+  local zvShift={0,0}
+  local balancing_type=0
 
 
+  local enable_adapt = false
 
+
+  if ((ft.lf_z<zf_touchdown and ft.rf_z>zf_touchdown) or (ft.lf_z>zf_touchdown and ft.rf_z<zf_touchdown) )
+    and math.abs(imu.roll_err)<2*math.pi/180
+    and enable_adapt
+
+    then 
+    
+
+    local zvShiftTarget = util.procFunc( (ft.lf_z-ft.rf_z)*k_const_z_diff , z_shift_diff_db*k_const_z_diff, z_vel_max_diff)
+    if enable_balance[1]>0 then zvShift[1] = zvShiftTarget end
+    if enable_balance[2]>0 then zvShift[2] = -zvShiftTarget end      
+  else
+    balancing_type=1
+    --both feet on the ground. use IMU to keep torso orientation up
+
+    local LR_pitch_err = -(uLeftTorso[1]-uRightTorso[1])*math.tan(imu.pitch_err)
+    local LR_roll_err =  (uLeftTorso[2]-uRightTorso[2])*math.tan(imu.roll_err)
+    local zvShiftTarget = util.procFunc( (LR_pitch_err + LR_roll_err) * k_balancing, 0, z_vel_max_balance )
+
+    if enable_balance[1]>0 then zvShift[1] = zvShiftTarget end
+    if enable_balance[2]>0 then zvShift[2] = -zvShiftTarget end  
+  end
+
+  local zShift = mcm.get_walk_zShift()
+  zShift[1] = util.procFunc( zShift[1]+zvShift[1]*t_diff , 0, z_shift_max)
+  zShift[2] = util.procFunc( zShift[2]+zvShift[2]*t_diff , 0, z_shift_max)
+  mcm.set_walk_zShift(zShift)
+  mcm.set_walk_zvShift(zvShift)
+
+  if enable_balance[1]+enable_balance[2]>0 then
+    if balancing_type>0 then print"DS balancing" end
+    print(string.format("dZ : %.1f Zshift: %.2f %.2f cm",zvShift[1],zShift[1]*100,zShift[2]*100))
+  end
+  --------------------------------------------------------------------------------------------------------
+end
+
+function moveleg.process_ft_roll(ft,t_diff)
+
+  local k_const_tx =   20 * math.pi/180 /5  --Y angular spring constant: 20 deg/s  / 5 Nm
+  local r_const_tx =   0 --zero damping for now  
+  local ax_shift_db =  0.3 -- 0.3Nm deadband
+  local ax_vel_max = 30*math.pi/180 
+  local ax_shift_max = 30*math.pi/180
+
+  ----------------------------------------------------------------------------------------
+  -- Ankle roll adaptation 
+
+  local aShiftX=mcm.get_walk_aShiftX()
+  local avShiftX=mcm.get_walk_avShiftX()
+
+  local enable_balance = hcm.get_legdebug_enable_balance()
+
+  avShiftX[1] = util.procFunc( ft.lt_x*k_const_tx + avShiftX[1]*r_const_tx    
+      ,k_const_tx*ax_shift_db, ax_vel_max)
+  avShiftX[2] = util.procFunc( ft.rt_x*k_const_tx + avShiftX[2]*r_const_tx    
+      ,k_const_tx*ax_shift_db, ax_vel_max)
+
+  if enable_balance[1]>0 then
+    aShiftX[1] = aShiftX[1]+avShiftX[1]*t_diff
+    aShiftX[1] = math.min(ax_shift_max,math.max(-ax_shift_max,aShiftX[1]))
+  end
+
+  if enable_balance[2]>0 then
+    aShiftX[2] = aShiftX[2]+avShiftX[2]*t_diff
+    aShiftX[2] = math.min(ax_shift_max,math.max(-ax_shift_max,aShiftX[2]))
+  end
+
+  mcm.set_walk_aShiftX(aShiftX)
+  mcm.set_walk_avShiftX(avShiftX)
+
+  if enable_balance[1]+enable_balance[2]>0 then
+  print(string.format("dRoll: %.1f %.1f Roll: %.1f %.1f",
+    avShiftX[1]*180/math.pi,avShiftX[2]*180/math.pi,
+    aShiftX[1]*180/math.pi,aShiftX[2]*180/math.pi))   
+  end
+
+  ----------------------------------------------------------------------------------------
+
+end
+
+function moveleg.process_ft_pitch(ft,t_diff)
+
+  local k_const_ty =  4 *   math.pi/180   --Y angular spring constant: 20 deg/s  / 5 Nm
+  local r_const_ty =   0 --zero damping for now
+  local ay_shift_max = 30*math.pi/180
+  local ay_shift_db = 1*math.pi/180
+  local ay_vel_max = 30*math.pi/180 
+
+  ----------------------------------------------------------------------------------------
+  -- Ankle pitch adaptation 
+  local aShiftY=mcm.get_walk_aShiftY()
+  local avShiftY=mcm.get_walk_avShiftY()
+
+  local enable_balance = hcm.get_legdebug_enable_balance()
+    
+  avShiftY[1] = util.procFunc(  ft.lt_y*k_const_ty + avShiftY[1]*r_const_ty    
+      ,k_const_ty*ay_shift_db, ay_vel_max)
+  avShiftY[2] = util.procFunc(  ft.rt_y*k_const_ty + avShiftY[2]*r_const_ty    
+      ,k_const_ty*ay_shift_db, ay_vel_max)
+
+  if enable_balance[1]>0 then
+    aShiftY[1] = aShiftY[1]+avShiftY[1]*t_diff
+    aShiftY[1] = math.min(ay_shift_max,math.max(-ay_shift_max,aShiftY[1]))
+  end
+
+  if enable_balance[2]>0 then
+    aShiftY[2] = aShiftY[2]+avShiftY[2]*t_diff
+    aShiftY[2] = math.min(ay_shift_max,math.max(-ay_shift_max,aShiftY[2]))
+  end
+
+  mcm.set_walk_aShiftY(aShiftY)
+  mcm.set_walk_avShiftY(avShiftY)
+
+  if enable_balance[1]+enable_balance[2]>0 then
+    print(string.format("dPitch: %.1f %.1f Pitch: %.1f %.1f",
+      avShiftY[1]*180/math.pi,avShiftY[2]*180/math.pi,
+      aShiftY[1]*180/math.pi,aShiftY[2]*180/math.pi))   
+  end
+  ----------------------------------------------------------------------------------------
+
+end
 
 
 

@@ -232,6 +232,14 @@ function walk.update()
 
     --delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,ph,gyro_rpy, angleShift)
 
+
+    moveleg.ft_compensate(t_diff)
+
+
+
+
+
+
     delta_legs, angleShift = moveleg.get_leg_compensation_new(
       supportLeg,
       ph,
@@ -242,8 +250,10 @@ function walk.update()
     --Move legs
     local uTorsoComp = mcm.get_stance_uTorsoComp()
     local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
-    moveleg.set_leg_positions_ankletilt(uTorsoCompensated,uLeft,uRight,  
-      zLeft,zRight,delta_legs)    
+    moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight, zLeft,zRight,delta_legs)    
+
+
+    --moveleg.set_leg_positions_ankletilt(uTorsoCompensated,uLeft,uRight, zLeft,zRight,delta_legs)    
 
     --store last step height
     if phSingle==1 then 

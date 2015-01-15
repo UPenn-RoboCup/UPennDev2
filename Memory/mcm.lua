@@ -111,6 +111,22 @@ shared.walk.kickfoot = vector.zeros(1)
 
 
 
+--feet shift/tilt info
+
+shared.walk.zShift = vector.zeros(2)
+shared.walk.zvShift = vector.zeros(2)
+
+shared.walk.aShiftX = vector.zeros(2)
+shared.walk.avShiftX = vector.zeros(2)
+
+shared.walk.aShiftY = vector.zeros(2)
+shared.walk.avShiftY = vector.zeros(2)
+
+shared.walk.t_last = vector.zeros(1)
+
+
+
+
 
 -- Motion Status
 shared.status = {}

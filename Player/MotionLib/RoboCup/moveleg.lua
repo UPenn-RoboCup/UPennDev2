@@ -833,7 +833,7 @@ function moveleg.ft_compensate(t_diff)
   mcm.set_walk_t_last(t)
 --]]
 
-  moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
+--  moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
   moveleg.process_ft_roll(ft,t_diff) -- roll adaptation
   moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
 
@@ -850,7 +850,7 @@ function moveleg.get_ft()
     lt_x=-l_ft[4],
     rt_x=-r_ft[4],
     lt_y=l_ft[5],
-    rt_Y=r_ft[5]
+    rt_y=r_ft[5]
   }
   if IS_WEBOTS then
     ft.lt_y, ft.rt_y = -l_ft[4],-r_ft[5]      
@@ -935,11 +935,22 @@ end
 
 function moveleg.process_ft_roll(ft,t_diff)
 
+--[[
   local k_const_tx =   20 * math.pi/180 /5  --Y angular spring constant: 20 deg/s  / 5 Nm
   local r_const_tx =   0 --zero damping for now  
   local ax_shift_db =  0.3 -- 0.3Nm deadband
   local ax_vel_max = 30*math.pi/180 
   local ax_shift_max = 30*math.pi/180
+--]]
+
+--slower, more damped
+  local k_const_tx =  10 *   math.pi/180 /5  --Y angular spring constant: 10 deg/s  / 5 Nm
+  local r_const_tx =   -0.2 --zero damping for now
+  local ax_shift_max = 30*math.pi/180
+  local ax_shift_db = 1
+  local ax_vel_max = 10*math.pi/180 
+
+
 
   ----------------------------------------------------------------------------------------
   -- Ankle roll adaptation 
@@ -979,11 +990,11 @@ end
 
 function moveleg.process_ft_pitch(ft,t_diff)
 
-  local k_const_ty =  4 *   math.pi/180   --Y angular spring constant: 20 deg/s  / 5 Nm
-  local r_const_ty =   0 --zero damping for now
+  local k_const_ty =  10 *   math.pi/180 /5  --Y angular spring constant: 10 deg/s  / 5 Nm
+  local r_const_ty =   -0.2 --zero damping for now
   local ay_shift_max = 30*math.pi/180
-  local ay_shift_db = 1*math.pi/180
-  local ay_vel_max = 30*math.pi/180 
+  local ay_shift_db = 1
+  local ay_vel_max = 10*math.pi/180 
 
   ----------------------------------------------------------------------------------------
   -- Ankle pitch adaptation 

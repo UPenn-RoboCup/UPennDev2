@@ -270,7 +270,8 @@ local balancing_db = 1*math.pi/180
 
 
 --  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  zShift[1],zShift[2],delta_legs)
-  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,0,0,delta_legs)
+
+  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,uLeftTarget[4],uRightTarget[4],delta_legs)
   mcm.set_status_uTorsoVel({0,0,0})
 
   local steprequest = mcm.get_walk_steprequest()    

@@ -34,6 +34,8 @@ local dqLegLimit = Config.stance.dqLegLimit
 local pTorso, qLLeg, qRLeg
 
 local stage = 1
+local t_last_debug
+local last_error = 999
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -45,6 +47,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   t_finish = t_entry
+  t_last_debug=t_entry
 
   --SJ: Now we only use commanded positions
   --As the actual values are read at motionIdle state
@@ -161,6 +164,31 @@ function state.update()
     --print("err: ", err, doneL, doneR, err_th, t-t_entry)
 
   --  if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end
+
+if t>t_last_debug+1 then
+
+    local qLLegActual = Body.get_lleg_position() - legBiasL
+    local qRLegActual = Body.get_rleg_position() - legBiasR
+    local qLLegCommand = Body.get_lleg_command_position()
+    local qRLegCommand = Body.get_rleg_command_position()
+
+  print(string.format("LLeg err: %.1f %.1f %.1f %.1f %.1f %.1f",
+	unpack(vector.new(qLLegActual-qLLegCommand)*180/math.pi ) ))
+  print(string.format("RLeg err: %.1f %.1f %.1f %.1f %.1f %.1f",
+	unpack(vector.new(qRLegActual-qRLegCommand)*180/math.pi )))
+
+
+   print("total err:",err*180/math.pi)
+  t_last_debug=t
+
+--SJ: we do have some steady steady error due to faulty servo (maybe)
+--so if the totall error does not decrase, we just exit
+  if math.abs(last_error-err)<0.2*math.pi/180 then return 'done'  end
+  last_error = err
+
+
+
+end
 
     if err<err_th and t-t_entry > 1 then return'done' end
     --if IS_WEBOTS then return'done' end

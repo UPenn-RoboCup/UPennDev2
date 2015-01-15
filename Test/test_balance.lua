@@ -93,23 +93,28 @@ local function update(key_code)
 		elseif key_char_lower==("k") then  
 		elseif key_char_lower==("l") then  lright[2]=lright[2]-0.01
 		elseif key_char_lower==(",") then  lright[1]=lright[1]-0.01
+		elseif key_char_lower==("u") then  lright[4]=lright[4]+0.01
+		elseif key_char_lower==("m") then  lright[4]=lright[4]-0.01
 	
 		elseif key_char_lower==("w") then  lleft[1]=lleft[1]+0.01
 		elseif key_char_lower==("a") then  lleft[2]=lleft[2]+0.01
 		elseif key_char_lower==("s") then  
 		elseif key_char_lower==("d") then  lleft[2]=lleft[2]-0.01
 		elseif key_char_lower==("x") then  lleft[1]=lleft[1]-0.01
+		elseif key_char_lower==("q") then  lleft[4]=lleft[4]+0.01
+		elseif key_char_lower==("z") then  lleft[4]=lleft[4]-0.01
+
 		
 		elseif key_char_lower==("t") then  ltorso[1]=ltorso[1]+0.01
 		elseif key_char_lower==("f") then  ltorso[2]=ltorso[2]+0.01		
 		elseif key_char_lower==("h") then  ltorso[2]=ltorso[2]-0.01
 		elseif key_char_lower==("b") then  ltorso[1]=ltorso[1]-0.01
-		
+--[[		
 		elseif key_char_lower==("-") then  torsoangle[1]=torsoangle[1]-math.pi/180		
 		elseif key_char_lower==("=") then  torsoangle[1]=torsoangle[1]+math.pi/180			
 		elseif key_char_lower==("[") then  torsoangle[2]=torsoangle[2]-math.pi/180		
 		elseif key_char_lower==("]") then  torsoangle[2]=torsoangle[2]+math.pi/180			
-					
+--]]					
 
 
 
@@ -134,6 +139,16 @@ local function update(key_code)
 			local enable_gyro = hcm.get_legdebug_enable_gyro()
 			hcm.set_legdebug_enable_gyro(1-enable_gyro)
 			print("Gyro:",hcm.get_legdebug_enable_gyro())
+
+
+	elseif key_char_lower==("6") then      
+		body_ch:send'stepover1'		
+
+	elseif key_char_lower==("=") then      
+		hcm.set_state_proceed(1)
+
+
+
 
 		elseif key_char_lower==("8") then  
 			motion_ch:send'stand'

@@ -51,8 +51,7 @@ function state.update()
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
   local uTorsoComp = mcm.get_stance_uTorsoComp()
-  local uTorsoCompensated = util.pose_global(
-     {uTorsoComp[1],uTorsoComp[2],0},uTorso)
+  local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
   moveleg.ft_compensate(t_diff)
 
   moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,0,0,delta_legs)

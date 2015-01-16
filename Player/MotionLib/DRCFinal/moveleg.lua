@@ -232,70 +232,6 @@ end
 
 
 
-function moveleg.set_leg_positions_kneel(dt)
-  local uTorso = mcm.get_status_uTorso()
-  local uLeft = mcm.get_status_uLeft()
-  local uRight = mcm.get_status_uRight()
-
-  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
-
-  local bodyHeightVel = 0.01
-
-  local bodyHeight0 = mcm.get_stance_bodyHeight()
-  local bodyHeight1 = mcm.get_stance_bodyHeight() + dt*bodyHeightVel
-  local bodyHeight2 = mcm.get_stance_bodyHeight() - dt*bodyHeightVel
-
-  local pTorso0 = vector.new({
-        uTorsoActual[1], uTorsoActual[2], bodyHeight0,
-        0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
-
-  local pTorso1 = vector.new({
-        uTorsoActual[1], uTorsoActual[2], bodyHeight1,
-        0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
-
-  local pTorso2 = vector.new({
-        uTorsoActual[1], uTorsoActual[2], bodyHeight2,
-        0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
-
-
-  local pLLeg = vector.new({uLeft[1],uLeft[2],0,0,0,uLeft[3]})
-  local pRLeg = vector.new({uRight[1],uRight[2],0,0,0,uRight[3]})
-
-  local qLegs0 = K.inverse_legs(pLLeg, pRLeg, pTorso0)
-  local qLegs1 = K.inverse_legs(pLLeg, pRLeg, pTorso1)
-  local qLegs2 = K.inverse_legs(pLLeg, pRLeg, pTorso2)
-
-  local kneePadding = 0.08
-
-  local kneeHeight0 = K.calculate_knee_height(vector.slice(qLegs0,1,6)) - kneePadding
-  local kneeHeight1 = K.calculate_knee_height(vector.slice(qLegs1,1,6)) - kneePadding
-  local kneeHeight2 = K.calculate_knee_height(vector.slice(qLegs2,1,6)) - kneePadding
-
-  if kneeHeight0>0 then
-    if kneeHeight2>0 and kneeHeight2<kneeHeight0 then
-      mcm.set_stance_bodyHeight(bodyHeight2)
-      Body.set_lleg_command_position(qLegs2)
-    else
-      Body.set_lleg_command_position(qLegs0)
-    end
-  else
-    if kneeHeight1<0 and kneeHeight1>kneeHeight0 then
-      mcm.set_stance_bodyHeight(bodyHeight1)
-      Body.set_lleg_command_position(qLegs1)
-    else
-      Body.set_lleg_command_position(qLegs0)
-    end
-  end
-
-  ------------------------------------------
-  -- Update the status in shared memory
-  local uFoot = util.se2_interpolate(.5, uLeft, uRight)
-  mcm.set_status_odometry( uFoot )
-  --util.pose_relative(uFoot, u0) for relative odometry to point u0
-  local bodyOffset = util.pose_relative(uTorso, uFoot)
-  mcm.set_status_bodyOffset( bodyOffset )
-  ------------------------------------------
-end
 
 
 function moveleg.set_leg_transforms(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)
@@ -324,118 +260,6 @@ end
 
 
 
-
-function moveleg.foot_trajectory_walkkick(phSingle,uStart,uEnd,stepHeight)
-
-
-
-local breaksTX={0.300000,0.600000,0.700000,0.800000,0.900000,1.000000,}
-local breaksTY={0.300000,0.500000,0.700000,0.800000,0.900000,1.000000,}
-local coefsX={
-  {-5.566198,3.898467,1.664751,0.000000,},
-  {-5.566198,-1.111111,2.500958,0.700000,},
-  {28.065134,-6.120690,0.331418,1.200000,},
-  {-17.911877,2.298851,-0.050766,1.200000,},
-  {-6.417625,-3.074713,-0.128352,1.200000,},
-  {-6.417625,-5.000000,-0.935824,1.150000,},
-}
-local coefsY={
-  {5.646481,-9.517185,5.346972,0.000000,},
-  {5.646481,-4.435352,1.161211,0.900000,},
-  {-8.878887,-1.047463,0.064648,1.000000,},
-  {5.728314,-6.374795,-1.419804,0.900000,},
-  {-1.145663,-4.656301,-2.522913,0.700000,},
-  {-1.145663,-5.000000,-3.488543,0.400000,},
-}
-
-
-local breaksTX={0.300000,0.400000,0.600000,0.800000,0.900000,1.000000,}
-local breaksTY={0.300000,0.500000,0.700000,0.800000,0.900000,1.000000,}
-local coefsX={
-  {8.359213,0.815217,-0.163561,0.000000,},
-  {8.359213,8.338509,2.582557,0.250000,},
-  {-54.257246,10.846273,4.501035,0.600000,},
-  {31.573499,-21.708075,2.328675,1.500000,},
-  {34.213251,-2.763975,-2.565735,1.350000,},
-  {34.213251,7.500000,-2.092133,1.100000,},
-}
-local coefsY={
-  {5.646481,-9.517185,5.346972,0.000000,},
-  {5.646481,-4.435352,1.161211,0.900000,},
-  {-8.878887,-1.047463,0.064648,1.000000,},
-  {5.728314,-6.374795,-1.419804,0.900000,},
-  {-1.145663,-4.656301,-2.522913,0.700000,},
-  {-1.145663,-5.000000,-3.488543,0.400000,},
-}
-
-
-
-
-
-
-
-  local xf=eval_spline(breaksTX, coefsX,phSingle)  
-  local zf=eval_spline(breaksTY, coefsY,phSingle)  
-  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
-  local zFoot = stepHeight * zf*1.5
-  return uFoot, zFoot
-end
-
---csapi([0 0.1 0.3 0.7 0.8 0.9 1],[0 -0.2 -1 2  2 1.4 1])
-function moveleg.foot_trajectory_kick(phSingle,uStart,uEnd,stepHeight)
-  local breaksTX={0.100000,0.300000,0.600000,0.700000,0.800000,0.900000,1.000000,}
-  local breaksTY={0.100000,0.300000,0.500000,0.700000,0.800000,0.900000,1.000000,}
-  local coefsX={
-    {141.283466,-63.180053,2.905171,0.000000,},
-    {141.283466,-20.795013,-5.492336,-0.200000,},
-    {-137.068828,63.975066,3.143675,-1.000000,},
-    {241.855712,-59.386879,4.520131,2.000000,},
-    {-221.540977,13.169834,-0.101574,2.100000,},
-    {244.308195,-53.292459,-4.113836,2.000000,},
-    {244.308195,20.000000,-7.443082,1.300000,},
-  }
-  local coefsY={
-    {36.771326,-33.041864,9.936473,0.000000,},
-    {36.771326,-22.010466,4.431240,0.700000,},
-    {-1.251969,0.052330,0.039613,1.000000,},
-    {-6.763448,-0.698852,-0.089692,1.000000,},
-    {-34.346163,-4.756921,-1.180846,0.900000,},
-    {66.869233,-15.060770,-3.162615,0.700000,},
-    {66.869233,5.000000,-4.168692,0.300000,},
-  }
-
-
-  --More swing back
-
-local breaksTX={0.100000,0.400000,0.670000,0.720000,0.800000,0.900000,1.000000,}
-local breaksTY={0.100000,0.300000,0.500000,0.700000,0.800000,0.900000,1.000000,}
-local coefsX={
-  {103.699049,-45.182858,-3.518705,0.000000,},
-  {103.699049,-14.073143,-9.444305,-0.700000,},
-  {-229.010397,79.256001,10.110553,-2.000000,},
-  {995.160754,-106.242421,2.824219,2.000000,},
-  {-485.346581,43.031692,-0.336317,2.000000,},
-  {311.504957,-73.451487,-2.769901,2.000000,},
-  {311.504957,20.000000,-8.115050,1.300000,},
-}
-local coefsY={
-  {-32.433041,1.306550,7.193675,0.000000,},
-  {-32.433041,-8.423363,6.481994,0.700000,},
-  {108.898830,-27.883187,-0.779316,1.400000,},
-  {-165.662278,37.456111,1.135269,1.000000,},
-  {295.588566,-61.941256,-3.761760,1.400000,},
-  {-39.117713,26.735314,-7.282354,0.700000,},
-  {-39.117713,15.000000,-3.108823,0.200000,},
-}
-
-
-
-  local xf=eval_spline(breaksTX, coefsX,phSingle)  
-  local zf=eval_spline(breaksTY, coefsY,phSingle)  
-  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
-  local zFoot = stepHeight * zf*2.5
-  return uFoot, zFoot
-end
 
 
 
@@ -833,7 +657,7 @@ function moveleg.ft_compensate(t_diff)
   mcm.set_walk_t_last(t)
 --]]
 
---  moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
+  moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
   moveleg.process_ft_roll(ft,t_diff) -- roll adaptation
   moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
 

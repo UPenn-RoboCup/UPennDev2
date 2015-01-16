@@ -38,17 +38,12 @@ step_queues={
    --weight shift to center
     {
     {{0,0,0},   2,    0.1, 2, 0.1,   {0,0},  {0,0,0}},    
-   },
+    },
   
    {
     {{step1,0,0},1,   1, 3, 1,  {0.0,0},  {0,sh1,sh2}},    --RS    
    }
 }
-
-
-
-
-
 
 
 local stage = 1
@@ -87,7 +82,6 @@ local function calculate_footsteps(stage)
       step_queue_vector[offset+15] = 0
     end
 
-
   end
   mcm.set_step_footholds(step_queue_vector)
   mcm.set_step_nfootholds(#step_queue)
@@ -99,7 +93,6 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-    
 
   stage = 1
   calculate_footsteps(stage)
@@ -107,12 +100,7 @@ function state.entry()
   mcm.set_stance_singlesupport(1)
   is_started = true  
   t_stage = t_entry
-
 end
-
-
-
-
 
 
 function state.update()
@@ -129,6 +117,7 @@ function state.update()
       ready_for_input = false
     end    
     if stage==#step_queues then 
+      motion_ch:send'stop'  
       print("ended")
       return 'done'
     elseif hcm.get_state_proceed()==1 then       

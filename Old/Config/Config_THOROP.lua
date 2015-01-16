@@ -12,6 +12,13 @@ Config.dev = {
 	gender       = 'boy',
 }
 
+-- Default motion libraries
+Config.libs = {
+  ArmLib = 'DRCTrials',
+  MotionLib = 'RoboCup',  
+  World = 'DRCNew'
+}
+
 -- Printing of debug messages
 Config.debug = {
 	webots_wizard = false,	
@@ -58,31 +65,100 @@ Config.torque_legs = true
 ----------------------------------
 
 -- DRC Final setup: testing new walk controller
+----[[
+Config.libs.World = 'SiteVisit'   
 local exo = {
   'Robot','Walk','Net','Manipulation',
-  'FSM_DRCFinal','World_DRCFinal','Vision_DRCFinal' 
+  'FSM_DRCFinal','World_DRCTFinal','Vision_DRCFinal' 
 }
 if IS_WEBOTS then
   Config.testfile = 'test_sitevisit'
 end
+--]]
+
+
+-- Steve Manipulation and Locomotion
+--[[
+Config.libs.MotionLib = 'Teach'
+Config.libs.ArmLib = 'Teach'
+Config.libs.World = 'Teach'
+-- Precedence in loading, for overrides!
+local exo = {
+	'Robot', 'Walk', 'Net',
+	'FSM_Teach', 'Arm_Teach', 'Vision_Teach' --, 'World_Teach'
+}
+if IS_WEBOTS then
+  Config.testfile = 'test_teleop'
+  Config.sensors.kinect = true
+  Config.sensors.chest_lidar = true
+	Config.wizards.kinect = 'kinect2_wizard'
+  Config.wizards.mesh = 'mesh_wizard'
+end
+--]]
+
+-- Robocup
+--[[
+Config.libs.World = 'RoboCup'
+local exo = {
+  'Robot','Walk','Net','Manipulation',
+ 'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
+ -- 'FSM_KickDemo','World_RoboCup','Vision_RoboCup'
+}
+Config.testfile = 'test_robocup'
+--]]
+
+-- DRC Site visit 2014
+--[[
+Config.libs.World = 'SiteVisit'   
+local exo = {
+  'Robot','Walk','Net','Manipulation',
+  'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup' 
+}
+if IS_WEBOTS then
+	Config.sensors.head_camera = true
+  Config.testfile = 'test_sitevisit'
+end
+--]]
+
+-- Remote Control for testing with Marcell
+--[[
+local exo = {
+	'Robot', 'Walk', 'Net', 'FSM_Remote'
+}
+Config.libs.MotionLib = 'RoboCup'
+if IS_WEBOTS then
+  Config.wizards = {
+    feedback = 'feedback_wizard',
+    --remote = 'remote_wizard',
+  }
+  Config.testfile = 'test_remote'
+end
+--]]
+
+
+
+
+
+
+
 
 -----------------------------------
 -- Load Paths and Configurations --
 -----------------------------------
 
--- Load custom Config files first 
-for _,v in ipairs(exo) do
-  local fname = {Config.PLATFORM_NAME,'/Config_', Config.PLATFORM_NAME, '_', v}  
-  require(table.concat(fname))
-end
-
--- Load custom libraries
-for i,sm in pairs(Config.fsm.libraries) do
+-- Custom motion libraries
+for i,sm in pairs(Config.libs) do
   local pname = {HOME, '/Player/', i,'/' ,sm, '/?.lua;', package.path}
   package.path = table.concat(pname)
 end
 
--- Load custom FSMs
+-- Custom Config files
+for _,v in ipairs(exo) do
+	local fname = {Config.PLATFORM_NAME,'/Config_', Config.PLATFORM_NAME, '_', v}  
+  require(table.concat(fname))
+end
+
+-- Finite state machine paths
 for _,sm in ipairs(Config.fsm.enabled) do
   local selected = Config.fsm.select[sm]
   if selected then

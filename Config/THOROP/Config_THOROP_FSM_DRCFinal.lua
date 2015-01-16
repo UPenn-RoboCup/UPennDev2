@@ -23,11 +23,19 @@ fsm.enabled = {
 
 --SJ: now we can have multiple FSM options 
 fsm.select = {
-  Arm = 'DRCTrials',  
-  Head = 'Default',
-  Body = 'DRCNew',
-  Motion = 'RoboCup'
+  Arm = 'DRCFinal',  
+  Head = 'DRCFinal',
+  Body = 'DRCFinal',
+  Motion = 'DRCFinal'
 }
+
+--SJ: custom library selection moved to HERE
+fsm.libraries = {
+  ArmLib = 'DRCFinal',
+  MotionLib = 'DRCFinal',  
+  World = 'DRCNew'
+}
+
 
 
 fsm.Lidar = {

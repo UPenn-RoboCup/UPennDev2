@@ -15,7 +15,7 @@ require'mcm'
 local simple_ipc = require'simple_ipc'
 local motion_ch = simple_ipc.new_publisher('MotionFSM!')
 
-local t_entry, t_update, t_exit
+local t_entry, t_update, t_exit, t_stage
 local nwaypoints, wp_id
 local waypoints = {}
 
@@ -25,45 +25,42 @@ local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local supportLeg
 
 
+--for deflection test
+local sh1,sh2 = 0.10, 0.0
+local step1,step2 = 0.20, 0.20
 
-local function calculate_footsteps()
-  local step_queue
+--faster
+step_queues={
+   {
+    {{step1,0,0},0,  1, 3, 1,   {0,-0.04}, {0,sh1,sh2}   ,  {-step1/2  ,Config.walk.footY+0.04}},   --LS    
+   },
 
-  local sh1 = 0.20
-  local sh2 = 0.15
-
-  local sh1,sh2 = 0.16, 0.125
-
-  local sh1,sh2 = 0.18, 0.142
-  local step1,step2 = 0.28, 0.27
-
-
-
-
-  local shift1={0.0,0,0}
-  local shift2={0.0,0,0}
-
- step_queue={
-      {{0,0,0},   2,  0.1, 1, 0.1,   {0,0.0,0},  {0, 0, 0}},
-      {{step1,0,0},0,  0.5, 2.5,   1,   {0.0,-0.0,0}, {0,sh1,sh2}},   --LS
-      {{0,0,0},   2,  0.1, 2, 0.1,   {0.00,0.0,0},  {0, 0, 0}},
-      {{step1,0,0},1,  2,   3, 2,  {0.03,0.00,0},  {0,sh1,sh2}},    --RS
-      {{0,0,0},   2,  0.1, 2, 0.1,   {0,00,0,0},  {0, 0, 0}},
-
-      {{step2,0,0} ,0, 2,   2.2,  1,  {-0.03,-0.00,0},  {sh2,sh1,0.0}},--LS
-      {{0,0,0},   2,  0.1, 2, 0.1,    {-0.00,0,0},  {0, 0, 0}},
-      {{step2,0,0}, 1,  1,  2.2, 1,   {0,0.00,0},  {sh2,sh1,0.0}},--RS
-      {{0,0,0,},  2,   0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
-    }
+   --weight shift to center
+    {
+    {{0,0,0},   2,    0.1, 2, 0.1,   {0,0},  {0,0,0}},    
+   },
   
+   {
+    {{step1,0,0},1,   1, 3, 1,  {0.0,0},  {0,sh1,sh2}},    --RS    
+   }
+}
 
 
 
---Write to SHM
+
+
+
+
+local stage = 1
+local ready_for_input = true
+
+local function calculate_footsteps(stage)
+  local step_queue = step_queues[stage]
+  --Write to SHM
   local maxSteps = 40
-  step_queue_vector = vector.zeros(12*maxSteps)
+  step_queue_vector = vector.zeros(15*maxSteps)
   for i=1,#step_queue do    
-    local offset = (i-1)*13;
+    local offset = (i-1)*15;
     step_queue_vector[offset+1] = step_queue[i][1][1]
     step_queue_vector[offset+2] = step_queue[i][1][2]
     step_queue_vector[offset+3] = step_queue[i][1][3]
@@ -76,11 +73,21 @@ local function calculate_footsteps()
 
     step_queue_vector[offset+8] = step_queue[i][6][1]
     step_queue_vector[offset+9] = step_queue[i][6][2]
-    step_queue_vector[offset+10] = step_queue[i][6][3]
+    step_queue_vector[offset+10] = 0
 
     step_queue_vector[offset+11] = step_queue[i][7][1]
     step_queue_vector[offset+12] = step_queue[i][7][2]
     step_queue_vector[offset+13] = step_queue[i][7][3]
+
+    if step_queue[i][8] then
+      step_queue_vector[offset+14] = step_queue[i][8][1]
+      step_queue_vector[offset+15] = step_queue[i][8][2]
+    else
+      step_queue_vector[offset+14] = 0
+      step_queue_vector[offset+15] = 0
+    end
+
+
   end
   mcm.set_step_footholds(step_queue_vector)
   mcm.set_step_nfootholds(#step_queue)
@@ -92,26 +99,55 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
+    
 
-  calculate_footsteps()
-  motion_ch:send'preview'  
+  stage = 1
+  calculate_footsteps(stage)
+  motion_ch:send'stair'  
+  mcm.set_stance_singlesupport(1)
+  is_started = true  
+  t_stage = t_entry
+
 end
 
+
+
+
+
+
 function state.update()
+  local t  = Body.get_time()
+
   --print(state._NAME..' Update' ) 
   -- Get the time of update
-  local t  = Body.get_time()
+  
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-
-  if mcm.get_walk_ismoving()==0 then
-    return 'done'
+  if mcm.get_walk_ismoving()==0 and t-t_stage>0.5 then    
+    if ready_for_input then print("Ready")
+      ready_for_input = false
+    end    
+    if stage==#step_queues then 
+      print("ended")
+      return 'done'
+    elseif hcm.get_state_proceed()==1 then       
+      hcm.set_state_proceed(0)
+      stage = stage+1
+      calculate_footsteps(stage)
+      motion_ch:send'stair'  
+      ready_for_input = true
+      t_stage = t
+    end
+  else 
+    hcm.set_state_proceed(0) --no pogo stick
   end
+
 end
 
 function state.exit()
   print(state._NAME..' Exit' )
+  mcm.set_stance_singlesupport(0)
 end
 
 return state

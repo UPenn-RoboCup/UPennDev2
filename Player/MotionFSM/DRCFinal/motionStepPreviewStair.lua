@@ -230,15 +230,8 @@ function walk.update()
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
 
-    --delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,ph,gyro_rpy, angleShift)
-
 
     moveleg.ft_compensate(t_diff)
-
-
-
-
-
 
     delta_legs, angleShift = moveleg.get_leg_compensation_new(
       supportLeg,
@@ -252,7 +245,6 @@ function walk.update()
     local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
     moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight, zLeft,zRight,delta_legs)    
 
-
     --moveleg.set_leg_positions_ankletilt(uTorsoCompensated,uLeft,uRight, zLeft,zRight,delta_legs)    
 
     --store last step height
@@ -260,8 +252,6 @@ function walk.update()
       mcm.set_status_zLeg0({zLeft,zRight}) 
       touched = false
     end
-
-
 
     local rpy = Body.get_rpy()
     local roll = rpy[1] * RAD_TO_DEG

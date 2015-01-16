@@ -33,7 +33,7 @@ fsm.select = {
 fsm.libraries = {
   ArmLib = 'DRCFinal',
   MotionLib = 'DRCFinal',  
-  World = 'DRCNew'
+  World = 'DRCFinal'
 }
 
 
@@ -53,13 +53,10 @@ fsm.Body = {
   {'bodyInit', 'done', 'bodyStop'},
 
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
-
-  {'bodyStop', 'stepover', 'bodyStepOver'},
-
   {'bodyStepPlace',   'done', 'bodyStop'},
-  {'bodyStop', 'stepover1', 'bodyStepUp1'},
-  {'bodyStepUp1', 'done', 'bodyStop'},
---  {'bodyStepWaypoint',   'done', 'bodyStop'},
+  
+  {'bodyStop', 'stepover1', 'bodyStep'},
+  {'bodyStep', 'done', 'bodyStop'},
 }
 
 fsm.Arm = {

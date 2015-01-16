@@ -22,11 +22,17 @@ local t_entry, t_update, t_last_step
 -- Save gyro stabilization variables between update cycles
 -- They are filtered.  TODO: Use dt in the filters
 local angleShift = vector.new{0,0,0,0}
+local uLeft,uRight,uTorso
+local zLeft,zRight = 0,0
 
 
 ---------------------------
 -- State machine methods --
 ---------------------------
+
+
+local vel_movement = 0.02 --1cm per sec
+local vel_lift = 0.01 --1cm per sec
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -42,9 +48,11 @@ function state.entry()
   mcm.set_motion_state(2)
 
 
-  local uLeft = mcm.get_status_uLeft()
-  local uRight = mcm.get_status_uRight()
-  local uTorso = mcm.get_status_uTorso()  
+  uLeft = mcm.get_status_uLeft()
+  uRight = mcm.get_status_uRight()
+  uTorso = mcm.get_status_uTorso()  
+  zLeft,zRight = 0,0
+
   hcm.set_legdebug_left({uLeft[1],uLeft[2],uLeft[3],0})
   hcm.set_legdebug_right({uRight[1],uRight[2],uRight[3],0})
   hcm.set_legdebug_torso({uTorso[1],uTorso[2]})
@@ -74,7 +82,6 @@ function state.update()
 
   local bodyHeight = util.approachTol( bodyHeight_now, bodyHeightTarget, Config.stance.dHeight, t_diff )
   
-  local zLeft,zRight = 0,0
   supportLeg = 2; --Double support
 
 
@@ -86,13 +93,20 @@ function state.update()
   local uLeftTarget = hcm.get_legdebug_left() 
   local uRightTarget = hcm.get_legdebug_right()  
   local uTorsoTarget = hcm.get_legdebug_torso()  
+  
+  uLeft[1] = util.approachTol( uLeft[1],uLeftTarget[1],vel_movement , t_diff )
+  uLeft[2] = util.approachTol( uLeft[2],uLeftTarget[2],vel_movement , t_diff )
 
-  uLeft[1],uLeft[2],uLeft[3]=
-    uLeftTarget[1],uLeftTarget[2],uLeftTarget[3]
-  uRight[1],uRight[2],uRight[3]=
-    uRightTarget[1],uRightTarget[2],uRightTarget[3]
-  uTorso[1],uTorso[2]=
-    uTorsoTarget[1],uTorsoTarget[2]
+  uRight[1] = util.approachTol( uRight[1],uRightTarget[1],vel_movement , t_diff )
+  uRight[2] = util.approachTol( uRight[2],uRightTarget[2],vel_movement , t_diff )
+
+  uTorso[1] = util.approachTol( uTorso[1],uTorsoTarget[1],vel_movement , t_diff )
+  uTorso[2] = util.approachTol( uTorso[2],uTorsoTarget[2],vel_movement , t_diff )
+
+  zLeft = util.approachTol( zLeft,uLeftTarget[4],vel_lift , t_diff )
+  zRight = util.approachTol( zRight,uRightTarget[4],vel_movement , t_diff )
+
+
 ------------------------------------------------
 
   mcm.set_status_uLeft(uLeft)
@@ -109,7 +123,7 @@ function state.update()
 
 --moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  zShift[1],zShift[2],delta_legs)
 
-  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,uLeftTarget[4],uRightTarget[4],delta_legs)
+  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,zLeft,zRight,delta_legs)
   mcm.set_status_uTorsoVel({0,0,0})
 
   local steprequest = mcm.get_walk_steprequest()    

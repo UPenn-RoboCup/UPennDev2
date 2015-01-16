@@ -1,6 +1,3 @@
---New, cleaned-up humblewalk 
---Got rid of any non-used codes (including walkkick)
---Arm movement is turned off (only handled by arm FSM)
 
 local walk = {}
 walk._NAME = ...
@@ -9,7 +6,8 @@ local Body   = require'Body'
 local vector = require'vector'
 local util   = require'util'
 local moveleg = require'moveleg'
-local libReactiveZMP = require'libReactiveZMP'
+local libReactiveZMP = require'libReactiveZMPAdaptive'
+
 local libStep = require'libStep'
 local zmp_solver
 local step_planner
@@ -28,7 +26,7 @@ local stepHeight  = Config.walk.stepHeight
 -- They are filtered.  TODO: Use dt in the filters
 local angleShift = vector.new{0,0,0,0}
 
-local iStep
+local iStep,ph_last
 
 
 local zmp_param_set = false
@@ -89,6 +87,7 @@ function walk.entry()
   t_last_step = Body.get_time() - tStep 
 
   iStep = 1   -- Initialize the step index  
+  ph_last = 0 
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
   mcm.set_walk_steprequest(0) --cancel walkkick request flag
@@ -114,16 +113,54 @@ function walk.update()
   t_update = t   -- Save this at the last update time
 
   -- Grab the phase of the current step
-  local ph = (t-t_last_step)/tStep
-  if ph>1 then
+  local ph,is_next_step = zmp_solver:get_ph(t,t_last_step,ph_last)
+  if ph_last<0.5 and ph>=0.5 then
+    local rpy = Body.get_rpy()
+    local roll = rpy[1]
+    local delay_threshold_angle = 2.5*math.pi/180
+
+
+-------------------------------------------------------
+-- Adaptive timing support
+
+    if supportLeg==0 then
+      print("Right landing, roll angle",roll*RAD_TO_DEG)
+      if roll>delay_threshold_angle then      
+        print("LANDING DELAYED!")
+        zmp_solver:set_landing_delay_factor(1.7)
+      elseif roll<-delay_threshold_angle then
+        print("LANDING FASTENED")
+        zmp_solver:set_landing_delay_factor(0.8)
+      else
+        zmp_solver:set_landing_delay_factor(1)
+      end
+    elseif supportLeg==1 then
+      print("Left landing, roll angle",roll*RAD_TO_DEG)
+
+      if roll<-delay_threshold_angle then      
+        print("LANDING DELAYED!")
+        zmp_solver:set_landing_delay_factor(1.7)
+      elseif roll>delay_threshold_angle then
+        print("LANDING FASTENED")
+        zmp_solver:set_landing_delay_factor(0.8)
+      else
+        zmp_solver:set_landing_delay_factor(1)
+      end
+    else
+      zmp_solver:set_landing_delay_factor(1)
+    end
+  end
+---------------------------------------------------
+
+  ph_last = ph
+  
+  if is_next_step then
     --Should we stop now?
     local stoprequest = mcm.get_walk_stoprequest()
-    if stoprequest>0 then return"done"   end
-
     local steprequest = mcm.get_walk_steprequest()    
+    if stoprequest>0 then return"done"   end
     if steprequest>0 then return "done_step" end
-
-    ph = ph % 1
+    
     iStep = iStep + 1  -- Increment the step index  
     supportLeg = iStep % 2 -- supportLeg: 0 for left support, 1 for right support   
 
@@ -188,9 +225,6 @@ function walk.update()
 
 --  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,zLeft,zRight,delta_legs)    
   moveleg.set_leg_positions_ankletilt(uTorsoCompensated,uLeft,uRight,zLeft,zRight,delta_legs)    
- 
-
-
 
   update_odometry(uTorso)--Update the odometry variable
 end -- walk.update

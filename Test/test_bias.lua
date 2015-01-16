@@ -1,6 +1,8 @@
---(c) 2014 Team THORwIn
-
-dofile'include.lua'
+#!/usr/bin/env luajit
+-- (c) 2014 Team THORwIn
+local ok = pcall(dofile,'../fiddle.lua')
+if not ok then dofile'fiddle.lua' end
+--dofile'include.lua'
 
 -- Important libraries in the global space
 local libs = {

@@ -132,6 +132,8 @@ shared.walk.ankleshiftY = vector.zeros(2)
 shared.walk.kneeshiftX = vector.zeros(2)
 shared.walk.hipshiftY = vector.zeros(2)
 
+shared.walk.delta_legs = vector.zeros(12)
+
 -------------------------------------------
 
 

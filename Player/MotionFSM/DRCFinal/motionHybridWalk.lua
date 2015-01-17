@@ -180,8 +180,7 @@ function walk.update()
     zmp_solver:compute( uSupport, uTorso_now, uTorso_next )
     t_last_step = Body.get_time() -- Update t_last_step
   end
-
-  mcm.set_status_ph(ph)
+  
   local uTorso = zmp_solver:get_com(ph)
   uTorso[3] = ph*(uLeft_next[3]+uRight_next[3])/2 + (1-ph)*(uLeft_now[3]+uRight_now[3])/2
 
@@ -192,18 +191,12 @@ function walk.update()
   else uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    -- RS
   end
 
-  -- Grab gyro feedback for these joint angles
-  local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
-
   local uZMP = zmp_solver:get_zmp(ph)
-  mcm.set_status_uTorso(uTorso) --For external monitoring
-  mcm.set_status_uLeft(uLeft)
-  mcm.set_status_uRight(uRight)
-  mcm.set_status_supportLeg(supportLeg)
+  moveleg.store_stance(t,ph,uLeft,uTorso,uRight,supportLeg,uZMP, zLeft,zRight)
 
-  mcm.set_status_uZMP(uZMP)
-  mcm.set_status_t(t)
 
+-- Grab gyro feedback for these joint angles
+  local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
 
   --Calculate how close the ZMP is to each foot
   local uLeftSupport,uRightSupport = step_planner.get_supports(uLeft,uRight)
@@ -219,10 +212,9 @@ function walk.update()
       supportRatio,
       t_diff)
 
-  local uTorsoComp = mcm.get_stance_uTorsoComp()
-  local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
+  
 
-  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,zLeft,zRight,delta_legs)    
+  moveleg.set_leg_positions()       
   update_odometry(uTorso)--Update the odometry variable
 end -- walk.update
 

@@ -223,6 +223,8 @@ function state.exit()
   mcm.set_status_uTorso(uTorso)
   mcm.set_status_uTorsoVel(vector.new{0,0,0})
 
+  mcm.set_status_zLeg({0,0})
+
   mcm.set_stance_bodyHeight(Config.walk.bodyHeight)
   mcm.set_stance_bodyHeightTarget(Config.walk.bodyHeight)
 

@@ -33,6 +33,19 @@ local hipPitchCompensation = Config.walk.hipPitchCompensation or 0
 
 function moveleg.get_ph_single(ph,phase1,phase2) return math.min(1, math.max(0, (ph-phase1)/(phase2-phase1) ))end
 
+function moveleg.store_stance(t,ph,uLeft,uTorso,uRight,supportLeg,uZMP,zLeft,zRight)
+
+  mcm.set_status_t(t)
+  mcm.set_status_ph(ph)
+  mcm.set_status_uTorso(uTorso)
+  mcm.set_status_uLeft(uLeft)
+  mcm.set_status_uRight(uRight)
+  mcm.set_status_supportLeg(supportLeg)
+  mcm.set_status_uZMP(uZMP)
+
+  if zLeft then mcm.set_status_zLeg({zLeft,zRight}) end 
+end
+
 function moveleg.get_ft()
   local y_angle_zero = 3*math.pi/180
   local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()  
@@ -165,6 +178,8 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   delta_legs[11] = angleShift[1] - anklePitchCompensation*supportRatioRight
   delta_legs[12] = angleShift[2] - ankleRollCompensation
 
+  mcm.set_walk_delta_legs(delta_legs)  
+
   return delta_legs, angleShift
 end
 
@@ -236,16 +251,25 @@ end
 
 
 
-function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
+function moveleg.set_leg_positions()
 
+
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  local uTorso = mcm.get_status_uTorso()
+  local zLeg = mcm.get_status_zLeg()
+  local zLeft,zRight = zLeg[1],zLeg[2]
+  local supportLeg = mcm.get_status_supportLeg()
+  local uTorsoComp = mcm.get_stance_uTorsoComp()
+  local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
 
   local zShift=mcm.get_walk_zShift()
   local aShiftX=mcm.get_walk_aShiftX()
   local aShiftY=mcm.get_walk_aShiftY()
+  local delta_legs = mcm.get_walk_delta_legs()  
 
   zLeft = zLeft + zShift[1]
   zRight = zRight + zShift[2]
-
 
   local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   local pTorso = vector.new({
@@ -254,12 +278,6 @@ function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
   local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
   local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
   
-
-  if aLeft then
-    pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,aLeft,uLeft[3]})
-    pRLeg = vector.new({uRight[1],uRight[2],zRight,0,aRight,uRight[3]})
-  end
-
   local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
   local legBias = vector.new(mcm.get_leg_bias())
 
@@ -269,7 +287,6 @@ function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
   qLegs[11]=qLegs[11]+aShiftY[2]
   qLegs[6]=qLegs[6]+aShiftX[1]
   qLegs[12]=qLegs[12]+aShiftX[2]
-
 
   Body.set_lleg_command_position(vector.slice(qLegs,1,6))
   Body.set_rleg_command_position(vector.slice(qLegs,7,12))

@@ -27,9 +27,10 @@ local supportLeg
 
 --for deflection test
 local sh1,sh2 = 0.10, 0.0
-local step1,step2 = 0.20, 0.20
+local step1,step2 = 0.25, 0.25
 
---faster
+--[[
+--This is for webots
 step_queues={
    {
     {{step1,0,0},0,  1, 3, 1,   {0,-0.04}, {0,sh1,sh2}   ,  {-step1/2  ,Config.walk.footY+0.04}},   --LS    
@@ -44,6 +45,37 @@ step_queues={
     {{step1,0,0},1,   1, 3, 1,  {0.0,0},  {0,sh1,sh2}},    --RS    
    }
 }
+
+
+--weight shift to center
+    {
+  
+    },
+  
+
+--]]
+
+local sh1,sh2 = 0.10, 0.05
+
+
+--This is for webots
+step_queues={
+   {
+    {{step1,0,0},0,  0.5,2,0.5,   {0,-0.04}, {0,sh1,sh2}   ,  {-step1/2  ,Config.walk.footY+0.04}},   --LS    
+
+   },
+
+   {
+    {{0,0,0},    2,  0.1, 1, 0.1,   {0,0},  {0,0,0}},    
+   },
+   
+   {
+    {{step1,0,0},1,   0.5,2,0.5,  {0.0,0},  {0,sh1,sh2}},    --RS    
+   }
+}
+
+
+
 
 
 local stage = 1

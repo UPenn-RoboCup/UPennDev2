@@ -51,10 +51,10 @@ function state.entry()
   uLeft = mcm.get_status_uLeft()
   uRight = mcm.get_status_uRight()
   uTorso = mcm.get_status_uTorso()  
-  zLeft,zRight = 0,0
+  local zLeg = mcm.get_status_zLeg()
 
-  hcm.set_legdebug_left({uLeft[1],uLeft[2],uLeft[3],0})
-  hcm.set_legdebug_right({uRight[1],uRight[2],uRight[3],0})
+  hcm.set_legdebug_left({uLeft[1],uLeft[2],uLeft[3],zLeg[1]})
+  hcm.set_legdebug_right({uRight[1],uRight[2],uRight[3],zLeg[2]})
   hcm.set_legdebug_torso({uTorso[1],uTorso[2]})
   hcm.set_legdebug_torso_angle({0,0})
   hcm.set_legdebug_enable_balance({0,0})
@@ -74,6 +74,7 @@ function state.update()
   local uTorso = mcm.get_status_uTorso()  
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
+  local zLeg = mcm.get_status_zLeg()
 
   --Adjust body height
   local bodyHeight_now = mcm.get_stance_bodyHeight()
@@ -103,31 +104,25 @@ function state.update()
   uTorso[1] = util.approachTol( uTorso[1],uTorsoTarget[1],vel_movement , t_diff )
   uTorso[2] = util.approachTol( uTorso[2],uTorsoTarget[2],vel_movement , t_diff )
 
-  zLeft = util.approachTol( zLeft,uLeftTarget[4],vel_lift , t_diff )
-  zRight = util.approachTol( zRight,uRightTarget[4],vel_movement , t_diff )
+  zLeg[1] = util.approachTol( zLeg[1],uLeftTarget[4],vel_lift , t_diff )
+  zLeg[2] = util.approachTol( zLeg[2],uRightTarget[4],vel_movement , t_diff )
 
 
-------------------------------------------------
 
-  mcm.set_status_uLeft(uLeft)
-  mcm.set_status_uRight(uRight)
-  mcm.set_status_uTorso(uTorso)  
+  moveleg.store_stance(t,0,uLeft,uTorso,uRight,2,uTorso, zLeg[1],zLeg[2])
 
---Compensation for arm / objects
-  local uTorsoComp = mcm.get_stance_uTorsoComp()
-  local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
   mcm.set_stance_bodyHeight(bodyHeight)  
   moveleg.ft_compensate(t_diff)
 
   delta_legs, angleShift = moveleg.get_leg_compensation_new(supportLeg,0,gyro_rpy, angleShift,t_diff)
-  moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,zLeft,zRight,delta_legs)
+  moveleg.set_leg_positions(delta_legs)
+
+
   mcm.set_status_uTorsoVel({0,0,0})
 
   local steprequest = mcm.get_walk_steprequest()    
   if steprequest>0 then return "done_step" end
 
-  --todo... we can handle body height change here
-  mcm.set_status_zLeg({0,0})
 end -- walk.update
 
 function state.exit()

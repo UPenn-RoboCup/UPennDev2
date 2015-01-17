@@ -281,9 +281,8 @@ function walk.update()
     update_odometry(uTorso)
 
     local uZMP = zmp_solver:get_zmp()
-    mcm.set_status_uTorso(uTorso)
-    mcm.set_status_uZMP(uZMP)
-    mcm.set_status_t(t)
+    moveleg.store_stance(t,ph,uLeft,uTorso,uRight,supportLeg,uZMP, zLeft,zRight)
+
 
 
     --Calculate how close the ZMP is to each foot
@@ -312,13 +311,8 @@ function walk.update()
       angleShift,
       supportRatio,
       t_diff)
-
-    --Move legs
-    local uTorsoComp = mcm.get_stance_uTorsoComp()
-    local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
-
-    moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
-      zLeft,zRight,delta_legs)    
+    
+    moveleg.set_leg_positions()      
 
     local rpy = Body.get_rpy()
     local roll = rpy[1] * RAD_TO_DEG

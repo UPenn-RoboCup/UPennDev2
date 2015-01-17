@@ -61,7 +61,8 @@ function moveleg.get_ft()
   local rpy = Body.get_rpy()
   local gyro, gyro_t = Body.get_gyro()
   local imu={
-    roll_err = rpy[1], pitch_err = rpy[2]-y_angle_zero,  v_roll = gyro[1], v_pitch = gyro[2]
+    roll_err = rpy[1], pitch_err = rpy[2]-y_angle_zero,  
+    v_roll = gyro[1], v_pitch = gyro[2]
   }
   return ft,imu
 end
@@ -263,13 +264,11 @@ function moveleg.set_leg_positions()
   local uTorsoComp = mcm.get_stance_uTorsoComp()
   local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
 
-  local zShift=mcm.get_walk_zShift()
+
   local aShiftX=mcm.get_walk_aShiftX()
   local aShiftY=mcm.get_walk_aShiftY()
   local delta_legs = mcm.get_walk_delta_legs()  
 
-  zLeft = zLeft + zShift[1]
-  zRight = zRight + zShift[2]
 
   local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   local pTorso = vector.new({
@@ -353,40 +352,43 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   local balancing_type=0
 
 
-  local enable_adapt = false
+  local enable_adapt = true
 
+  local LR_pitch_err = -(uLeftTorso[1]-uRightTorso[1])*math.tan( imu.pitch_err)
+  local LR_roll_err =  (uLeftTorso[2]-uRightTorso[2])*math.tan(imu.roll_err)
+  local zvShiftTarget = util.procFunc( (LR_pitch_err + LR_roll_err) * k_balancing, 0, z_vel_max_balance )
 
-  if ((ft.lf_z<zf_touchdown and ft.rf_z>zf_touchdown) or (ft.lf_z>zf_touchdown and ft.rf_z<zf_touchdown) )
-    and math.abs(imu.roll_err)<2*math.pi/180
-    and enable_adapt
-
-    then 
-    
-
-    local zvShiftTarget = util.procFunc( (ft.lf_z-ft.rf_z)*k_const_z_diff , z_shift_diff_db*k_const_z_diff, z_vel_max_diff)
-    if enable_balance[1]>0 then zvShift[1] = zvShiftTarget end
-    if enable_balance[2]>0 then zvShift[2] = -zvShiftTarget end      
-  else
-    balancing_type=1
-    --both feet on the ground. use IMU to keep torso orientation up
-
-    local LR_pitch_err = -(uLeftTorso[1]-uRightTorso[1])*math.tan(imu.pitch_err)
-    local LR_roll_err =  (uLeftTorso[2]-uRightTorso[2])*math.tan(imu.roll_err)
-    local zvShiftTarget = util.procFunc( (LR_pitch_err + LR_roll_err) * k_balancing, 0, z_vel_max_balance )
-
-    if enable_balance[1]>0 then zvShift[1] = zvShiftTarget end
-    if enable_balance[2]>0 then zvShift[2] = -zvShiftTarget end  
+  if enable_balance[1]>0 and ft.rf_z>zf_touchdown then --right support
+    if ft.lf_z<zf_touchdown then --left foot afloat. lower it
+      zvShift[1] = -0.01 --1cm per sec
+    else
+      --both foot on the ground!
+      zvShift[1] = zvShiftTarget
+    end
   end
 
-  local zShift = mcm.get_walk_zShift()
+  if enable_balance[2]>0 and ft.lf_z>zf_touchdown then --left support
+    if ft.rf_z<zf_touchdown then --left foot afloat. lower it
+      zvShift[2] = -0.01 --1cm per sec
+    else
+      --both foot on the ground!
+      zvShift[2] = -zvShiftTarget 
+    end
+  end
+
+  local zShift = mcm.get_status_zLeg()
+
+--  local zShift = mcm.get_walk_zShift()
   zShift[1] = util.procFunc( zShift[1]+zvShift[1]*t_diff , 0, z_shift_max)
   zShift[2] = util.procFunc( zShift[2]+zvShift[2]*t_diff , 0, z_shift_max)
-  mcm.set_walk_zShift(zShift)
   mcm.set_walk_zvShift(zvShift)
+
+  mcm.set_walk_zShift(zShift)
+  mcm.set_status_zLeg(zShift)
 
   if enable_balance[1]+enable_balance[2]>0 then
     if balancing_type>0 then print"DS balancing" end
-    print(string.format("dZ : %.1f Zshift: %.2f %.2f cm",zvShift[1],zShift[1]*100,zShift[2]*100))
+    print(string.format("dZ : %.1f %.1f Zshift: %.2f %.2f cm",zvShift[1]*100,zvShift[2]*100,zShift[1]*100,zShift[2]*100))
   end
   --------------------------------------------------------------------------------------------------------
 end
@@ -409,6 +411,8 @@ function moveleg.process_ft_roll(ft,t_diff)
   local ax_vel_max = 10*math.pi/180 
 
 
+  local df_max = 100 --full damping beyond this
+  local df_min = 30 -- zero damping 
 
   ----------------------------------------------------------------------------------------
   -- Ankle roll adaptation 
@@ -418,10 +422,20 @@ function moveleg.process_ft_roll(ft,t_diff)
 
   local enable_balance = hcm.get_legdebug_enable_balance()
 
-  avShiftX[1] = util.procFunc( ft.lt_x*k_const_tx + avShiftX[1]*r_const_tx    
-      ,k_const_tx*ax_shift_db, ax_vel_max)
-  avShiftX[2] = util.procFunc( ft.rt_x*k_const_tx + avShiftX[2]*r_const_tx    
-      ,k_const_tx*ax_shift_db, ax_vel_max)
+  local left_damping_factor = math.max(0,math.min(1, (ft.lf_z-df_min)/df_max))
+  local right_damping_factor = math.max(0,math.min(1, (ft.rf_z-df_min)/df_max))
+
+
+
+  avShiftX[1] = util.procFunc( ft.lt_x*k_const_tx + 
+    avShiftX[1]*r_const_tx*left_damping_factor    
+      ,k_const_tx*ax_shift_db*left_damping_factor, 
+      ax_vel_max)
+
+  avShiftX[2] = util.procFunc( ft.rt_x*k_const_tx + 
+    avShiftX[2]*r_const_tx*right_damping_factor 
+      ,k_const_tx*ax_shift_db*right_damping_factor, 
+      ax_vel_max)
 
   if enable_balance[1]>0 then
     aShiftX[1] = aShiftX[1]+avShiftX[1]*t_diff
@@ -454,17 +468,30 @@ function moveleg.process_ft_pitch(ft,t_diff)
   local ay_shift_db = 1
   local ay_vel_max = 10*math.pi/180 
 
+ local df_max = 100 --full damping beyond this
+  local df_min = 30 -- zero damping 
+
   ----------------------------------------------------------------------------------------
   -- Ankle pitch adaptation 
   local aShiftY=mcm.get_walk_aShiftY()
   local avShiftY=mcm.get_walk_avShiftY()
 
   local enable_balance = hcm.get_legdebug_enable_balance()
+
+
+  local left_damping_factor = math.max(0,math.min(1, (ft.lf_z-df_min)/df_max))
+  local right_damping_factor = math.max(0,math.min(1, (ft.rf_z-df_min)/df_max))
+
+
     
-  avShiftY[1] = util.procFunc(  ft.lt_y*k_const_ty + avShiftY[1]*r_const_ty    
-      ,k_const_ty*ay_shift_db, ay_vel_max)
-  avShiftY[2] = util.procFunc(  ft.rt_y*k_const_ty + avShiftY[2]*r_const_ty    
-      ,k_const_ty*ay_shift_db, ay_vel_max)
+  avShiftY[1] = util.procFunc(  ft.lt_y*k_const_ty + 
+    avShiftY[1]*r_const_ty*left_damping_factor 
+      ,k_const_ty*ay_shift_db*left_damping_factor , 
+      ay_vel_max)
+  avShiftY[2] = util.procFunc(  ft.rt_y*k_const_ty + 
+    avShiftY[2]*r_const_ty*right_damping_factor    
+      ,k_const_ty*ay_shift_db*right_damping_factor , 
+      ay_vel_max)
 
   if enable_balance[1]>0 then
     aShiftY[1] = aShiftY[1]+avShiftY[1]*t_diff

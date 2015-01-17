@@ -104,8 +104,16 @@ function state.update()
   uTorso[1] = util.approachTol( uTorso[1],uTorsoTarget[1],vel_movement , t_diff )
   uTorso[2] = util.approachTol( uTorso[2],uTorsoTarget[2],vel_movement , t_diff )
 
-  zLeg[1] = util.approachTol( zLeg[1],uLeftTarget[4],vel_lift , t_diff )
-  zLeg[2] = util.approachTol( zLeg[2],uRightTarget[4],vel_movement , t_diff )
+  local enable_balance = hcm.get_legdebug_enable_balance()
+  if enable_balance[1]+enable_balance[2]>0 then
+    uLeftTarget[4] = zLeg[1]
+    uRightTarget[4] = zLeg[2]
+    hcm.set_legdebug_left(uLeftTarget) 
+    hcm.set_legdebug_right(uRightTarget) 
+  else
+    zLeg[1] = util.approachTol( zLeg[1],uLeftTarget[4],vel_lift , t_diff )
+    zLeg[2] = util.approachTol( zLeg[2],uRightTarget[4],vel_movement , t_diff )
+  end
 
 
 

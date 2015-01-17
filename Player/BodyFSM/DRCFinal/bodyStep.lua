@@ -55,7 +55,9 @@ step_queues={
 
 --]]
 
-local sh1,sh2 = 0.10, 0.05
+--local sh1,sh2 = 0.10, 0.05
+
+local sh1,sh2 = 0.08, 0.0
 
 
 --This is for webots
